@@ -30,13 +30,8 @@ enum tlsf_public
 /* Private constants: do not modify. */
 enum tlsf_private
 {
-#if defined (TLSF_64BIT)
 	/* All allocation sizes and addresses are aligned to 8 bytes. */
 	ALIGN_SIZE_LOG2 = 3,
-#else
-	/* All allocation sizes and addresses are aligned to 4 bytes. */
-	ALIGN_SIZE_LOG2 = 2,
-#endif
 	ALIGN_SIZE = (1 << ALIGN_SIZE_LOG2),
 
 	/*
@@ -101,6 +96,8 @@ tlsf_static_assert(sizeof(unsigned int) * CHAR_BIT >= SL_INDEX_COUNT);
 /* Ensure we've properly tuned our sizes. */
 tlsf_static_assert(ALIGN_SIZE == SMALL_BLOCK_SIZE / SL_INDEX_COUNT);
 
+tlsf_static_assert(ALIGN_SIZE >= CONFIG_MALLOC_ALIGNMENT);
+
 /*
 ** Data structures and associated constants.
 */
@@ -122,6 +119,7 @@ typedef struct block_header_t
 
 	/* The size of this block, excluding the block header. */
 	size_t size;
+	u32 : BYTES_TO_BITS(ALIGN_SIZE - sizeof(size_t));
 
 	/* Next and previous free blocks. */
 	struct block_header_t* next_free;
@@ -134,28 +132,29 @@ typedef struct block_header_t
 ** - bit 0: whether block is busy or free
 ** - bit 1: whether previous block is busy or free
 */
-static const size_t block_header_free_bit = 1 << 0;
-static const size_t block_header_prev_free_bit = 1 << 1;
+#define block_header_free_bit		(1 << 0)
+#define block_header_prev_free_bit	(1 << 1)
 
 /*
 ** The size of the block header exposed to used blocks is the size field.
 ** The prev_phys_block field is stored *inside* the previous free block.
 */
-static const size_t block_header_overhead = sizeof(size_t);
+#define block_header_shift		offsetof(block_header_t, size)
+#define block_header_overhead		ALIGN_SIZE
 
 /* User data starts directly after the size field in a used block. */
-static const size_t block_start_offset =
-	offsetof(block_header_t, size) + sizeof(size_t);
+#define block_start_offset		(block_header_shift + block_header_overhead)
 
 /*
 ** A free block must be large enough to store its header minus the size of
 ** the prev_phys_block field, and no larger than the number of addressable
 ** bits for FL_INDEX.
 */
-static const size_t block_size_min =
-	sizeof(block_header_t) - sizeof(block_header_t*);
-static const size_t block_size_max = tlsf_cast(size_t, 1) << FL_INDEX_MAX;
+#define block_size_min			(sizeof(block_header_t) - sizeof(block_header_t*))
+#define block_size_max			(tlsf_cast(size_t, 1) << FL_INDEX_MAX)
 
+tlsf_static_assert(block_size_min % ALIGN_SIZE == 0);
+tlsf_static_assert(block_size_max % ALIGN_SIZE == 0);
 
 /* The TLSF control structure. */
 typedef struct control_t
@@ -166,10 +165,12 @@ typedef struct control_t
 	/* Bitmaps for free lists. */
 	unsigned int fl_bitmap;
 	unsigned int sl_bitmap[FL_INDEX_COUNT];
+	u32 : BYTES_TO_BITS(ALIGN_SIZE - sizeof(size_t));
 
 	/* Head of free lists. */
 	block_header_t* blocks[FL_INDEX_COUNT][SL_INDEX_COUNT];
 } control_t;
+tlsf_static_assert(sizeof(control_t) % ALIGN_SIZE == 0);
 
 /* A type used for casting when doing pointer arithmetic. */
 typedef ptrdiff_t tlsfptr_t;
@@ -253,7 +254,7 @@ static block_header_t* block_prev(const block_header_t* block)
 static block_header_t* block_next(const block_header_t* block)
 {
 	block_header_t* next = offset_to_block(block_to_ptr(block),
-		block_size(block) - block_header_overhead);
+		block_size(block) - block_header_shift);
 	tlsf_assert(!block_is_last(block));
 	return next;
 }
@@ -464,7 +465,7 @@ static block_header_t* block_split(block_header_t* block, size_t size)
 {
 	/* Calculate the amount of space left in the remaining block. */
 	block_header_t* remaining =
-		offset_to_block(block_to_ptr(block), size - block_header_overhead);
+		offset_to_block(block_to_ptr(block), size - block_header_shift);
 
 	const size_t remain_size = block_size(block) - (size + block_header_overhead);
 
@@ -730,7 +731,7 @@ void tlsf_walk_pool(pool_t pool, tlsf_walker walker, void* user)
 {
 	tlsf_walker pool_walker = walker ? walker : default_walker;
 	block_header_t* block =
-		offset_to_block(pool, -(int)block_header_overhead);
+		offset_to_block(pool, -(int)block_header_shift);
 
 	while (block && !block_is_last(block))
 	{
@@ -765,11 +766,11 @@ int tlsf_check_pool(pool_t pool)
 
 /*
 ** Size of the TLSF structures in a given memory block passed to
-** tlsf_create, equal to the size of a control_t
+** tlsf_create, equal to aligned size of a control_t
 */
 size_t tlsf_size(void)
 {
-	return sizeof(control_t);
+	return align_up(sizeof(control_t), ALIGN_SIZE);
 }
 
 size_t tlsf_align_size(void)
@@ -836,7 +837,7 @@ pool_t tlsf_add_pool(tlsf_t tlsf, void* mem, size_t bytes)
 	** so that the prev_phys_block field falls outside of the pool -
 	** it will never be used.
 	*/
-	block = offset_to_block(mem, -(tlsfptr_t)block_header_overhead);
+	block = offset_to_block(mem, -(tlsfptr_t)block_header_shift);
 	block_set_size(block, pool_bytes);
 	block_set_free(block);
 	block_set_prev_used(block);
@@ -854,7 +855,7 @@ pool_t tlsf_add_pool(tlsf_t tlsf, void* mem, size_t bytes)
 void tlsf_remove_pool(tlsf_t tlsf, pool_t pool)
 {
 	control_t* control = tlsf_cast(control_t*, tlsf);
-	block_header_t* block = offset_to_block(pool, -(int)block_header_overhead);
+	block_header_t* block = offset_to_block(pool, -(int)block_header_shift);
 
 	int fl = 0, sl = 0;
 
@@ -982,7 +983,7 @@ void* tlsf_memalign(tlsf_t tlsf, size_t align, size_t size)
 	block = block_locate_free(control, aligned_size);
 
 	/* This can't be a static assert. */
-	tlsf_assert(sizeof(block_header_t) == block_size_min + block_header_overhead);
+	tlsf_assert(sizeof(block_header_t) == block_size_min + block_header_shift);
 
 	if (block)
 	{

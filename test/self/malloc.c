@@ -7,26 +7,62 @@
 #include <malloc.h>
 #include <memory.h>
 #include <linux/sizes.h>
+#include <linux/bitops.h>
 
 BSELFTEST_GLOBALS();
 
-static void __expect(bool cond, bool expect,
-		     const char *condstr, const char *func, int line)
+#define get_alignment(val) \
+	BIT(__builtin_constant_p(val) ?  __builtin_ffsll(val) : __ffs64(val))
+
+static_assert(get_alignment(0x1)	!= 1);
+static_assert(get_alignment(0x2)	!= 2);
+static_assert(get_alignment(0x3)	!= 1);
+static_assert(get_alignment(0x4)	!= 4);
+static_assert(get_alignment(0x5)	!= 1);
+static_assert(get_alignment(0x6)	!= 2);
+static_assert(get_alignment(0x8)	!= 8);
+static_assert(get_alignment(0x99)	!= 0x1);
+static_assert(get_alignment(0xDEADBEE0)	!= 0x10);
+
+static bool __expect_cond(bool cond, bool expect,
+			  const char *condstr, const char *func, int line)
 {
 	total_tests++;
-	if (cond != expect) {
-		failed_tests++;
-		printf("%s:%d: %s to %s\n", func, line,
-		       expect ? "failed" : "unexpectedly succeeded",
-		       condstr);
-	}
+	if (cond == expect)
+		return true;
+
+	failed_tests++;
+	printf("%s:%d: %s to %s\n", func, line,
+	       expect ? "failed" : "unexpectedly succeeded",
+	       condstr);
+	return false;
+
 }
 
-#define expect_alloc_ok(cond) \
-	__expect((cond), true, #cond, __func__, __LINE__)
+static void *__expect(void *ptr, bool expect,
+		     const char *condstr, const char *func, int line)
+{
+	bool ok;
+	total_tests++;
 
-#define expect_alloc_fail(cond) \
-	__expect((cond), false, #cond, __func__, __LINE__)
+	ok = __expect_cond(ptr != NULL, expect, condstr, func, line);
+	if (ok && ptr) {
+		unsigned alignment = get_alignment((uintptr_t)ptr);
+		if (alignment < CONFIG_MALLOC_ALIGNMENT) {
+			failed_tests++;
+			printf("%s:%d: invalid alignment of %u in %s = %p\n", func, line,
+			       alignment, condstr, ptr);
+		}
+	}
+
+	return ptr;
+}
+
+#define expect_alloc_ok(ptr) \
+	__expect((ptr), true, #ptr, __func__, __LINE__)
+
+#define expect_alloc_fail(ptr) \
+	__expect((ptr), false, #ptr, __func__, __LINE__)
 
 static void test_malloc(void)
 {
@@ -45,37 +81,42 @@ static void test_malloc(void)
 		mem_malloc_size = 0;
 	}
 
-	expect_alloc_ok(p = malloc(1));
+	p = expect_alloc_ok(malloc(1));
 	free(p);
 
 	if (mem_malloc_size) {
-		expect_alloc_fail(malloc(SIZE_MAX));
+		tmp = expect_alloc_fail(malloc(SIZE_MAX));
+		free(tmp);
 
 		if (0xf0000000 > mem_malloc_size) {
-			expect_alloc_fail((tmp = malloc(0xf0000000)));
+			tmp = expect_alloc_fail(malloc(0xf0000000));
 			free(tmp);
 		}
 	} else {
 		skipped_tests += 2;
 	}
 
-	p = realloc(NULL, 1);
-	expect_alloc_ok(p = realloc(NULL, 1));
+	free(realloc(NULL, 1));
+	p = expect_alloc_ok(realloc(NULL, 1));
 
 	*p = 0x42;
 
-	expect_alloc_ok(tmp = realloc(p, 2));
+	tmp = expect_alloc_ok(realloc(p, 2));
 
 	p = tmp;
-	__expect(*p == 0x42, true, "reread after realloc", __func__, __LINE__);
+	__expect_cond(*p == 0x42, true, "reread after realloc", __func__, __LINE__);
 
 	if (mem_malloc_size) {
-		expect_alloc_fail(tmp = realloc(p, mem_malloc_size));
+		tmp = expect_alloc_fail(realloc(p, mem_malloc_size));
+		free(tmp);
 
-		if (0xf0000000 > mem_malloc_size)
-			expect_alloc_fail((tmp = realloc(p, 0xf0000000)));
+		if (0xf0000000 > mem_malloc_size) {
+			tmp = expect_alloc_fail(realloc(p, 0xf0000000));
+			free(tmp);
+		}
 
-		expect_alloc_fail(tmp = realloc(p, SIZE_MAX));
+		tmp = expect_alloc_fail(realloc(p, SIZE_MAX));
+		free(tmp);
 
 	} else {
 		skipped_tests += 3;
@@ -83,9 +124,12 @@ static void test_malloc(void)
 
 	free(p);
 
-	expect_alloc_ok(p = malloc(0));
-	expect_alloc_ok(tmp = malloc(0));
+	p = expect_alloc_ok(malloc(0));
+	tmp = expect_alloc_ok(malloc(0));
 
-	__expect(p != tmp, true, "allocate distinct 0-size buffers", __func__, __LINE__);
+	__expect_cond(p != tmp, true, "allocate distinct 0-size buffers", __func__, __LINE__);
+
+	free(p);
+	free(tmp);
 }
 bselftest(core, test_malloc);

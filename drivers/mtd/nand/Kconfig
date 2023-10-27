@@ -114,10 +114,14 @@ config NAND_ATMEL
 	depends on ARCH_AT91 || (OFDEVICE && COMPILE_TEST)
 
 config NAND_ATMEL_LEGACY
-	def_bool !AT91_MULTI_BOARDS
+	def_bool !AT91_MULTI_BOARDS || SOC_AT91SAM9
 	depends on NAND_ATMEL
 	help
-	  Select legacy non-device tree enabled driver.
+	  Select legacy driver for non-DT-enabled platforms
+	  and for the deprecated non-EBI binding.
+
+	  The deprecated binding is currently the only one
+	  support for AT91SAM9.
 
 config NAND_ATMEL_PMECC
 	bool

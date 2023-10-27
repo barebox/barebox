@@ -10,6 +10,7 @@
 #include <linux/bitfield.h>
 #include <linux/clk.h>
 #include <mach/at91/at91_rstc.h>
+#include <mach/at91/at91sam9260.h>
 #include <reset_source.h>
 
 struct at91sam9x_rst {
@@ -56,6 +57,16 @@ static void __noreturn at91sam9x_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
+void __noreturn at91sam9_reset(void __iomem *sdram, void __iomem *rstc_cr);
+
+static void __noreturn at91sam9260_restart_soc(struct restart_handler *rst)
+{
+	struct at91sam9x_rst *priv = container_of(rst, struct at91sam9x_rst, restart);
+
+	at91sam9_reset(IOMEM(AT91SAM9260_BASE_SDRAMC),
+		       IOMEM(priv->base + AT91_RSTC_CR));
+}
+
 static int at91sam9x_rst_probe(struct device *dev)
 {
 	struct at91sam9x_rst *priv;
@@ -83,14 +94,15 @@ static int at91sam9x_rst_probe(struct device *dev)
 	at91sam9x_set_reset_reason(dev, priv->base);
 
 	priv->restart.name = "at91sam9x-rst";
-	priv->restart.restart = at91sam9x_restart_soc;
+	priv->restart.restart = device_get_match_data(dev);
 
 	return restart_handler_register(&priv->restart);
 }
 
 static const __maybe_unused struct of_device_id at91sam9x_rst_dt_ids[] = {
-	{ .compatible = "atmel,at91sam9g45-rstc", },
-	{ .compatible = "atmel,sama5d3-rstc", },
+	{ .compatible = "atmel,at91sam9260-rstc", at91sam9260_restart_soc },
+	{ .compatible = "atmel,at91sam9g45-rstc", at91sam9x_restart_soc },
+	{ .compatible = "atmel,sama5d3-rstc", at91sam9x_restart_soc },
 	{ /* sentinel */ },
 };
 MODULE_DEVICE_TABLE(of, at91sam9x_rst_dt_ids);

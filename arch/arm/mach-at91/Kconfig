@@ -42,6 +42,9 @@ config HAVE_AT91_I2S_MUX_CLK
 config HAVE_AT91_SAM9X60_PLL
 	bool
 
+config HAVE_AT91_SDRAMC
+	bool
+
 config HAVE_AT91_DDRAMC
 	bool
 
@@ -567,6 +570,16 @@ config AT91_MULTI_BOARDS
 	select ARM_USE_COMPRESSED_DTB
 
 if AT91_MULTI_BOARDS
+
+config MACH_CALAO
+	bool "CALAO DT-enabled boards (TNY/USB-A9260/A9G20)"
+	select SOC_AT91SAM9260
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	select HAVE_AT91_SDRAMC
+	help
+	  Select this if you are using a device tree enabled board
+	  from Calao Systems: TNY-A9260, TNY-A9G20, USB-A9260 or USB-A9G20.
 
 config MACH_SKOV_ARM9CPU
 	bool "SKOV ARM9 CPU"

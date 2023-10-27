@@ -13,6 +13,8 @@
 #ifndef AT91SAM9_SDRAMC_H
 #define AT91SAM9_SDRAMC_H
 
+#include <linux/compiler.h>
+
 /* SDRAM Controller (SDRAMC) registers */
 #define AT91_SDRAMC_MR		0x00	/* SDRAM Controller Mode Register */
 #define		AT91_SDRAMC_MODE	(0xf << 0)		/* Command Mode */
@@ -267,6 +269,8 @@ static inline bool at91sam9263_is_low_power_sdram(int bank)
 		return false;
 	}
 }
+
+void __noreturn at91sam9260_barebox_entry(void *boarddata);
 
 #endif
 #endif

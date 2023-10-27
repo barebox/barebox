@@ -133,6 +133,8 @@
 #ifdef CONFIG_ARM
 #	ifdef CONFIG_CPU_64
 #		define XZ_DEC_ARM64
+#	elif defined CONFIG_THUMB2_BAREBOX
+#		define XZ_DEC_ARMTHUMB
 #	else
 #		define XZ_DEC_ARM
 #	endif

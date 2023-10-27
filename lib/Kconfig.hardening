@@ -61,7 +61,7 @@ config STACKPROTECTOR_ALL
 endchoice
 
 choice
-	prompt "Stack Protector buffer overflow detection for PBL"
+	prompt "Stack Protector buffer overflow detection for PBL" if PBL_IMAGE
 
 config PBL_STACKPROTECTOR_NONE
 	bool "None"
@@ -69,6 +69,7 @@ config PBL_STACKPROTECTOR_NONE
 config PBL_STACKPROTECTOR_STRONG
 	bool "Strong"
 	depends on $(cc-option,-fstack-protector-strong)
+	depends on PBL_IMAGE
 	select STACKPROTECTOR
 	help
 	  For PBL, This option turns on the "stack-protector" GCC feature. This
@@ -93,7 +94,7 @@ config PBL_STACKPROTECTOR_STRONG
 config PBL_STACKPROTECTOR_ALL
 	bool "PBL"
 	depends on $(cc-option,-fstack-protector-strong)
-	depends on COMPILE_TEST
+	depends on PBL_IMAGE && COMPILE_TEST
 	select STACKPROTECTOR
 	help
 	  This pushes and verifies stack protector canaries on all functions,

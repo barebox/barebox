@@ -8,6 +8,7 @@
 #define _REGPARM
 
 #include <linux/linkage.h>
+#include <asm-generic/pointer.h>
 
 .text
 .align 8
@@ -53,7 +54,9 @@ ENDPROC(longjmp)
 ENTRY(initjmp)
 
 	movl %edx, 20(%eax)	/* Return address */
-	movl %ecx, 4(%eax)	/* Post-return %esp! */
+	movl   $0, 8(%edx)	/* Base pointer */
+	sub $ASM_SZPTR, %ecx	/* ESP - 4 has to be 16-byte aligned on entry */
+	movl %ecx, 4(%eax)	/* Stack top */
 	xorl %eax, %eax		/* Return value */
 	ret
 

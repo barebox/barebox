@@ -23,12 +23,7 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x00000000
 
-config SANDBOX_REEXEC
-	prompt "exec(2) reset handler"
-	def_bool y
-	help
-	  The normal reset handler hangs barebox. On Linux, barebox
-	  instead can exec itself to simulate a reset.
+menu "Sandbox specific settings"
 
 config PHYS_ADDR_T_64BIT
 	bool
@@ -52,5 +47,14 @@ config 32BIT
 config SANDBOX_LINUX_I386
 	bool "32-bit x86 barebox" if CC_HAS_LINUX_I386_SUPPORT
 
+config SANDBOX_REEXEC
+	prompt "exec(2) reset handler"
+	def_bool y
+	help
+	  The normal reset handler hangs barebox. On Linux, barebox
+	  instead can exec itself to simulate a reset.
+
 config SDL
 	bool
+
+endmenu

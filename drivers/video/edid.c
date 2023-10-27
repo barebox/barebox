@@ -847,20 +847,27 @@ edid_do_read_i2c(struct i2c_adapter *adapter, unsigned char *buf,
 		ret = i2c_transfer(adapter, &msgs[3 - xfers], xfers);
 	} while (ret != xfers && --retries);
 
-	return ret == xfers ? 0 : -1;
+	if (ret == 0)
+		ret = -EPROTO;
+
+	return ret == xfers ? 0 : ret;
 }
 
 void *edid_read_i2c(struct i2c_adapter *adapter)
 {
 	u8 *block;
+	int ret;
 
 	if (!IS_ENABLED(CONFIG_I2C))
 		return NULL;
 
 	block = xmalloc(EDID_LENGTH);
 
-	if (edid_do_read_i2c(adapter, block, 0, EDID_LENGTH))
+	ret = edid_do_read_i2c(adapter, block, 0, EDID_LENGTH);
+	if (ret) {
+		dev_dbg(&adapter->dev, "EDID readout failed: %pe\n", ERR_PTR(ret));
 		goto out;
+	}
 
 	return block;
 out:

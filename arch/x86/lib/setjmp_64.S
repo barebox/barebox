@@ -6,6 +6,7 @@
  */
 
 #include <linux/linkage.h>
+#include <asm-generic/pointer.h>
 
 .text
 .align 8
@@ -53,6 +54,8 @@ ENDPROC(longjmp)
 ENTRY(initjmp)
 
 	movq	%rsi, (%rdi)	/* Return address */
+	movq	$0,  16(%rdi)	/* Base pointer */
+	sub	$ASM_SZPTR, %rdx	/* RSP - 8 has to be 16-byte aligned on entry */
 	movq	%rdx, 8(%rdi)	/* Stack top */
 	xorq	%rax, %rax
 	ret

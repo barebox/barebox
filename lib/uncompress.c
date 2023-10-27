@@ -199,7 +199,7 @@ ssize_t uncompress_buf_to_buf(const void *input, size_t input_len,
 		goto free_temp;
 	}
 
-	ret = uncompress_buf_to_fd(input, input_len, outfd, uncompress_err_stdout);
+	ret = uncompress_buf_to_fd(input, input_len, outfd, error_fn);
 	if (ret)
 		goto close_outfd;
 

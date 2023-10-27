@@ -5,9 +5,16 @@
 
 #if IS_ENABLED(CONFIG_MACHINE_ID)
 
+const void *machine_id_get_hashable(size_t *len);
+
 void machine_id_set_hashable(const void *hashable, size_t len);
 
 #else
+
+static inline const void *machine_id_get_hashable(size_t *len)
+{
+	return NULL;
+}
 
 static inline void machine_id_set_hashable(const void *hashable, size_t len)
 {

@@ -121,6 +121,8 @@ static void __init test_of_manipulation(void)
 
 	expected = of_unflatten_dtb(__dtb_of_manipulation_start,
 				    __dtb_of_manipulation_end - __dtb_of_manipulation_start);
+	if (WARN_ON(IS_ERR(expected)))
+		return;
 
 	assert_equal(root, expected);
 

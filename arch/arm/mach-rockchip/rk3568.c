@@ -93,6 +93,8 @@ static void qos_priority_init(void)
 
 void rk3568_lowlevel_init(void)
 {
+	arm_cpu_lowlevel_init();
+
 	/*
 	 * When perform idle operation, corresponding clock can
 	 * be opened or gated automatically.

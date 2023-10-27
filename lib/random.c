@@ -68,11 +68,11 @@ int get_crypto_bytes(void *buf, int len)
 	}
 
 	if (!IS_ENABLED(CONFIG_ALLOW_PRNG_FALLBACK)) {
-		pr_err("error: no HWRNG available!\n");
+		pr_err("no HWRNG available!\n");
 		return err;
 	}
 
-	pr_warn("warning: falling back to Pseudo RNG source!\n");
+	pr_warn("falling back to Pseudo RNG source!\n");
 
 	get_random_bytes(buf, len);
 

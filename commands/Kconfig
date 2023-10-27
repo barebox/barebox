@@ -2403,6 +2403,7 @@ config CMD_UBSAN
 
 config CMD_STACKSMASH
 	tristate "stacksmash"
+	depends on STACKPROTECTOR || STACK_GUARD_PAGE || COMPILE_TEST
 	help
 	  This commands trashes the stack to test stackprotector and
 	  guard page. This command does not return.

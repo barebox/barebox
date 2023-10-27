@@ -582,15 +582,15 @@ int devfs_del_partition(const char *name)
 	if (!cdev)
 		return -ENOENT;
 
-	if (IS_ENABLED(CONFIG_MTD) && cdev->mtd) {
-		ret = mtd_del_partition(cdev->mtd);
-		return ret;
-	}
-
 	if (!cdev_is_partition(cdev))
 		return -EINVAL;
 	if (cdev->flags & DEVFS_PARTITION_FIXED)
 		return -EPERM;
+
+	if (IS_ENABLED(CONFIG_MTD) && cdev->mtd) {
+		ret = mtd_del_partition(cdev->mtd);
+		return ret;
+	}
 
 	ret = devfs_remove(cdev);
 	if (ret)

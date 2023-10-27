@@ -688,6 +688,7 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 					     mtd->dev.id);
 
 	INIT_LIST_HEAD(&mtd->partitions);
+	INIT_LIST_HEAD(&mtd->partitions_entry);
 
 	mtd->cdev.priv = mtd;
 	mtd->cdev.dev = &mtd->dev;
@@ -763,8 +764,7 @@ int del_mtd_device(struct mtd_info *mtd)
 	unregister_device(&mtd->dev);
 	free(mtd->param_size.value);
 	free(mtd->cdev.name);
-	if (mtd->parent)
-		list_del(&mtd->partitions_entry);
+	list_del(&mtd->partitions_entry);
 
 	return 0;
 }

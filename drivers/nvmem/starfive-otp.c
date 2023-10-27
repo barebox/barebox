@@ -13,7 +13,7 @@
 #include <net.h>
 #include <io.h>
 #include <of.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <machine_id.h>
 #include <linux/reset.h>
 #include <linux/clk.h>

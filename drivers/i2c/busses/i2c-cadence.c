@@ -16,7 +16,7 @@
 #include <driver.h>
 #include <io.h>
 #include <linux/clk.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 struct __packed i2c_regs {
 	u32 control;

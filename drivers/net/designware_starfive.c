@@ -6,6 +6,7 @@
 #include <common.h>
 #include <init.h>
 #include <linux/reset.h>
+#include <linux/regmap.h>
 #include <linux/clk.h>
 #include <mfd/syscon.h>
 #include <soc/starfive/sysmain.h>

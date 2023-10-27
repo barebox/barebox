@@ -7,7 +7,7 @@
 #include <libfile.h>
 #include <mach/imx/generic.h>
 #include <hab.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <fs.h>
 #include <mach/imx/iim.h>
 #include <mach/imx/imx25-fusemap.h>

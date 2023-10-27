@@ -8,7 +8,7 @@
 #include <linux/mdio.h>
 #include <net.h>
 #include <of_device.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 #define KSZ8873_CHIP_ID0		0x00
 #define KSZ8873_CHIP_ID1		0x01

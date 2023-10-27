@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 //
 #include <driver.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <stdio.h>
 #include <mfd/syscon.h>
 

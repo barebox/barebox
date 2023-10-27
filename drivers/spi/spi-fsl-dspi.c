@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <init.h>
 #include <io.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <spi/spi.h>
 #include <linux/clk.h>
 #include <linux/math64.h>

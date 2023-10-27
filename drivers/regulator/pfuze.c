@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <of.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <mfd/pfuze.h>
 
 #include <i2c/i2c.h>

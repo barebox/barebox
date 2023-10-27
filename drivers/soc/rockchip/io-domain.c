@@ -14,7 +14,7 @@
 #include <of.h>
 #include <linux/err.h>
 #include <mfd/syscon.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <regulator.h>
 
 #define MAX_SUPPLIES		16

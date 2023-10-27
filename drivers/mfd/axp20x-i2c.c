@@ -19,7 +19,7 @@
 #include <i2c/i2c.h>
 #include <module.h>
 #include <linux/mfd/axp20x.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 static int axp20x_i2c_probe(struct device *dev)
 {

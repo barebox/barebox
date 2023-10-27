@@ -9,7 +9,7 @@
 #include <linux/overflow.h>
 #include <of.h>
 #include <mfd/syscon.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 #include <dt-bindings/clock/at91.h>
 

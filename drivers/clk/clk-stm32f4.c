@@ -12,7 +12,7 @@
 #include <of_address.h>
 #include <linux/math64.h>
 #include <linux/iopoll.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <mfd/syscon.h>
 
 /*

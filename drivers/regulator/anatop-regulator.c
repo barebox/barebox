@@ -6,7 +6,7 @@
 #include <common.h>
 #include <init.h>
 #include <mfd/syscon.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <regulator.h>
 
 struct anatop_regulator {

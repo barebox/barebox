@@ -19,7 +19,7 @@
 #include <malloc.h>
 #include <of.h>
 #include <io.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <regulator.h>
 #include <linux/err.h>
 

@@ -11,7 +11,7 @@
 #include <asm/memory.h>
 #include <pbl.h>
 #include <io.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <mfd/syscon.h>
 #include <mach/rockchip/dmc.h>
 #include <mach/rockchip/rk3399-regs.h>

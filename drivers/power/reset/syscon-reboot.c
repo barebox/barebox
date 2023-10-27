@@ -9,6 +9,7 @@
 #include <init.h>
 #include <restart.h>
 #include <mfd/syscon.h>
+#include <linux/regmap.h>
 
 struct syscon_reboot_context {
 	struct regmap *map;

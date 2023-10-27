@@ -12,7 +12,7 @@
  */
 
 #include <common.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <malloc.h>
 #include <linux/log2.h>
 
@@ -248,27 +248,27 @@ int regmap_write_bits(struct regmap *map, unsigned int reg,
  * @map: Register map to read from
  * @reg: First register to be read from
  * @val: Pointer to store read value
- * @val_len: Size of data to read
+ * @val_count: Number of registers to read
  *
  * A value of zero will be returned on success, a negative errno will
  * be returned in error cases.
  */
 int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
-		     size_t val_len)
+		     size_t val_count)
 {
-	size_t val_bytes = map->format.val_bytes;
-	size_t val_count = val_len / val_bytes;
 	unsigned int v;
 	int ret, i;
 
-	if (val_len % val_bytes)
-		return -EINVAL;
 	if (!IS_ALIGNED(reg, map->reg_stride))
 		return -EINVAL;
 	if (val_count == 0)
 		return -EINVAL;
 
 	for (i = 0; i < val_count; i++) {
+
+#ifdef CONFIG_64BIT
+		u64 *u64 = val;
+#endif
 		u32 *u32 = val;
 		u16 *u16 = val;
 		u8 *u8 = val;
@@ -278,6 +278,11 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 			goto out;
 
 		switch (map->format.val_bytes) {
+#ifdef CONFIG_64BIT
+		case 8:
+			u64[i] = v;
+			break;
+#endif
 		case 4:
 			u32[i] = v;
 			break;
@@ -303,20 +308,17 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
  * @reg: Initial register to write to
  * @val: Block of data to be written, laid out for direct transmission to the
  *       device
- * @val_len: Length of data pointed to by val.
+ * @val_len: Number of registers to write
  *
  * A value of zero will be returned on success, a negative errno will
  * be returned in error cases.
  */
 int regmap_bulk_write(struct regmap *map, unsigned int reg,
-		     const void *val, size_t val_len)
+		     const void *val, size_t val_count)
 {
 	size_t val_bytes = map->format.val_bytes;
-	size_t val_count = val_len / val_bytes;
 	int ret, i;
 
-	if (val_len % val_bytes)
-		return -EINVAL;
 	if (!IS_ALIGNED(reg, map->reg_stride))
 		return -EINVAL;
 	if (val_count == 0)
@@ -335,6 +337,11 @@ int regmap_bulk_write(struct regmap *map, unsigned int reg,
 		case 4:
 			ival = *(u32 *)(val + (i * val_bytes));
 			break;
+#ifdef CONFIG_64BIT
+		case 8:
+			ival = *(u64 *)(val + (i * val_bytes));
+			break;
+#endif
 		default:
 			ret = -EINVAL;
 			goto out;
@@ -374,9 +381,11 @@ static ssize_t regmap_cdev_read(struct cdev *cdev, void *buf, size_t count, loff
 		       unsigned long flags)
 {
 	struct regmap *map = container_of(cdev, struct regmap, cdev);
+	size_t val_bytes = map->format.val_bytes;
 	int ret;
 
-	ret = regmap_bulk_read(map, offset, buf, count);
+	count = ALIGN_DOWN(count, val_bytes);
+	ret = regmap_bulk_read(map, offset, buf, count / val_bytes);
 	if (ret)
 		return ret;
 
@@ -387,9 +396,11 @@ static ssize_t regmap_cdev_write(struct cdev *cdev, const void *buf, size_t coun
 			unsigned long flags)
 {
 	struct regmap *map = container_of(cdev, struct regmap, cdev);
+	size_t val_bytes = map->format.val_bytes;
 	int ret;
 
-	ret = regmap_bulk_write(map, offset, buf, count);
+	count = ALIGN_DOWN(count, val_bytes);
+	ret = regmap_bulk_write(map, offset, buf, count / val_bytes);
 	if (ret)
 		return ret;
 

@@ -17,7 +17,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <linux/clk.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <mfd/syscon.h>
 #include <linux/spinlock.h>
 #include <linux/rational.h>

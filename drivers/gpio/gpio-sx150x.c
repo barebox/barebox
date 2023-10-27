@@ -19,7 +19,7 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <i2c/i2c.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 #include <gpio.h>
 #include <of_device.h>

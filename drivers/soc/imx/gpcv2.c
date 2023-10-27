@@ -10,7 +10,7 @@
 
 #include <of_device.h>
 #include <common.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/clk.h>
 #include <linux/reset.h>
 #include <clock.h>

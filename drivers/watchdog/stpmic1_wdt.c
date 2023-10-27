@@ -11,6 +11,7 @@
 #include <linux/iopoll.h>
 #include <poweroff.h>
 #include <mfd/syscon.h>
+#include <linux/regmap.h>
 #include <restart.h>
 #include <reset_source.h>
 

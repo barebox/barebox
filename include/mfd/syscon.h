@@ -14,7 +14,7 @@
 #ifndef __MFD_SYSCON_H__
 #define __MFD_SYSCON_H__
 
-#include <regmap.h>
+struct regmap;
 
 #ifdef CONFIG_MFD_SYSCON
 void __iomem *syscon_base_lookup_by_phandle

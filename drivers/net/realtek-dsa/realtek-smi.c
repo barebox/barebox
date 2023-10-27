@@ -35,7 +35,7 @@
 #include <clock.h>
 #include <linux/gpio/consumer.h>
 #include <driver.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/bitops.h>
 #include <linux/if_bridge.h>
 

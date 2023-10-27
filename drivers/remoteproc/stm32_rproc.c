@@ -13,7 +13,7 @@
 #include <mach/stm32mp/smc.h>
 #include <mfd/syscon.h>
 #include <of_address.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/remoteproc.h>
 #include <linux/reset.h>
 

@@ -12,7 +12,7 @@
  */
 
 #include <common.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/log2.h>
 #include <asm/unaligned.h>
 

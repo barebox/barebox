@@ -16,7 +16,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <i2c/i2c.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <rtc.h>
 #include <linux/rtc.h>
 #include <linux/bcd.h>

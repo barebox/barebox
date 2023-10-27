@@ -13,7 +13,7 @@
 #include <net.h>
 #include <io.h>
 #include <of.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <mach/stm32mp/bsec.h>
 #include <machine_id.h>
 #include <linux/nvmem-provider.h>
@@ -82,7 +82,7 @@ static void stm32_bsec_set_unique_machine_id(struct regmap *map)
 	int ret;
 
 	ret = regmap_bulk_read(map, BSEC_OTP_SERIAL * 4,
-			       unique_id, sizeof(unique_id));
+			       unique_id, sizeof(unique_id) / 4);
 	if (ret)
 		return;
 

@@ -14,7 +14,7 @@
 #include <linux/printk.h>
 #include <linux/bitops.h>
 #include <module.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/usb/typec.h>
 #include <linux/usb/typec_altmode.h>
 

@@ -9,7 +9,7 @@
 #include <common.h>
 #include <i2c/i2c.h>
 #include <init.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/clk.h>
 #include <linux/iopoll.h>
 #include <linux/reset.h>

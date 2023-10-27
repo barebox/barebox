@@ -16,6 +16,7 @@
 #include <of_address.h>
 #include <linux/err.h>
 #include <linux/clk.h>
+#include <linux/regmap.h>
 
 #include <mfd/syscon.h>
 

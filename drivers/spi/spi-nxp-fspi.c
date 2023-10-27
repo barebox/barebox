@@ -38,7 +38,7 @@
 #include <errno.h>
 #include <init.h>
 #include <io.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/types.h>
 #include <linux/bitops.h>
 #include <linux/clk.h>

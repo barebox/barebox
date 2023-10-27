@@ -6,7 +6,7 @@
 //
 // Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <spi/spi.h>
 
 static int regmap_spi_write(void *context, const void *data, size_t count)

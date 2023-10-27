@@ -6,7 +6,7 @@
 #include <common.h>
 #include <io.h>
 #include <malloc.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
 #include <mach/socfpga/arria10-regs.h>

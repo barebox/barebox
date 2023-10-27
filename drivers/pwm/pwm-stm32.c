@@ -14,6 +14,7 @@
 #include <io.h>
 #include <linux/bitfield.h>
 #include <linux/mfd/stm32-timers.h>
+#include <linux/regmap.h>
 #include <linux/math64.h>
 #include <of.h>
 #include <pwm.h>

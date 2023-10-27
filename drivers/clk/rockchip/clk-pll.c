@@ -17,7 +17,7 @@
 #include <linux/barebox-wrapper.h>
 #include "clk.h"
 #include <xfuncs.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/iopoll.h>
 
 #define PLL_MODE_WIDTH		2

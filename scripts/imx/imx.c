@@ -20,6 +20,23 @@
  */
 #define ENCRYPT_OFFSET	(HEADER_LEN + 0x10)
 
+static char *strcata(char *str, const char *add)
+{
+	size_t size = (str ? strlen(str) : 0) + strlen(add) + 1;
+	bool need_init = str ? false : true;
+
+	str = realloc(str, size);
+	if (!str)
+		return NULL;
+
+	if (need_init)
+		memset(str, 0, size);
+
+	strcat(str, add);
+
+	return str;
+}
+
 static int parse_line(char *line, char *argv[])
 {
 	int nargs = 0;
@@ -282,16 +299,53 @@ static int do_max_load_size(struct config_data *data, int argc, char *argv[])
 	return 0;
 }
 
+static int do_hab_qspi(struct config_data *data, int argc, char *argv[])
+{
+	/*
+	 * Force 'hab_qspi' to specified before any 'hab' to ensure correct CSF
+	 * generation.
+	 */
+	if (data->csf) {
+		fprintf(stderr,
+			"'hab_qspi' must be specified before any 'hab' command\n");
+		return -EINVAL;
+	}
+
+	data->hab_qspi_support = true;
+
+	return 0;
+}
+
 static int hab_add_str(struct config_data *data, const char *str)
 {
-	int len = strlen(str);
-
-	if (data->csf_space < len)
+	data->csf = strcata(data->csf, str);
+	if (!data->csf)
 		return -ENOMEM;
 
-	strcat(data->csf, str);
+	if (!data->hab_qspi_support)
+		return 0;
 
-	data->csf_space -= len;
+	data->flexspi_csf = strcata(data->flexspi_csf, str);
+	if (!data->flexspi_csf)
+		return -ENOMEM;
+
+	return 0;
+}
+
+static int hab_add_barebox_blocks(struct config_data *data,
+				  const char *csf_str,
+				  const char *flexspi_csf_str)
+{
+	data->csf = strcata(data->csf, csf_str);
+	if (!data->csf)
+		return -ENOMEM;
+
+	if (!flexspi_csf_str)
+		return 0;
+
+	data->flexspi_csf = strcata(data->flexspi_csf, flexspi_csf_str);
+	if (!data->flexspi_csf)
+		return -ENOMEM;
 
 	return 0;
 }
@@ -299,14 +353,6 @@ static int hab_add_str(struct config_data *data, const char *str)
 static int do_hab(struct config_data *data, int argc, char *argv[])
 {
 	int i, ret;
-
-	if (!data->csf) {
-		data->csf_space = 0x10000;
-
-		data->csf = calloc(data->csf_space + 1, 1);
-		if (!data->csf)
-			return -ENOMEM;
-	}
 
 	for (i = 1; i < argc; i++) {
 		ret = hab_add_str(data, argv[i]);
@@ -325,13 +371,44 @@ static int do_hab(struct config_data *data, int argc, char *argv[])
 	return 0;
 }
 
+static void
+imx8m_get_offset_size(struct config_data *data,
+		      uint32_t *offset, uint32_t *signed_size,
+		      uint32_t *flexspi_offset, uint32_t *flexspi_signed_size)
+{
+	unsigned int hdrlen = HEADER_LEN;
+
+	if (flexspi_image(data))
+		hdrlen += FLEXSPI_HEADER_LEN;
+
+	*signed_size = roundup(data->pbl_code_size + hdrlen, 0x1000);
+	*flexspi_signed_size = roundup(data->pbl_code_size + FLEXSPI_HEADER_LEN,
+				       0x1000);
+
+	*offset += data->header_gap;
+	*flexspi_offset += data->header_gap;
+	/*
+	 * Starting with i.MX8MP/N the FlexSPI IVT offset is 0x0 but the primary
+	 * image offset is at 0x1000.
+	 */
+	if (data->cpu_type != IMX_CPU_IMX8MM)
+		*flexspi_offset += HEADER_LEN;
+
+	if (data->signed_hdmi_firmware_file) {
+		*offset += PLUGIN_HDMI_SIZE;
+		*flexspi_offset += PLUGIN_HDMI_SIZE;
+	}
+}
+
 static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 {
-	char *str;
+	char *str, *flexspi_str = NULL;
 	int ret;
 	int i;
 	uint32_t signed_size = data->load_size;
+	uint32_t flexspi_signed_size = signed_size;
 	uint32_t offset = data->image_ivt_offset;
+	uint32_t flexspi_offset = data->image_flexspi_ivt_offset;
 
 	if (!data->csf)
 		return -EINVAL;
@@ -346,17 +423,21 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	/*
 	 * Ensure we only sign the PBL for i.MX8MQ
 	 */
-	if (data->pbl_code_size && cpu_is_mx8m(data)) {
-		offset += data->header_gap;
-		signed_size = roundup(data->pbl_code_size + HEADER_LEN, 0x1000);
-		if (data->signed_hdmi_firmware_file)
-			offset += PLUGIN_HDMI_SIZE;
-	}
+	if (data->pbl_code_size && cpu_is_mx8m(data))
+		imx8m_get_offset_size(data, &offset, &signed_size,
+				      &flexspi_offset, &flexspi_signed_size);
 
 	if (signed_size > 0) {
 		ret = asprintf(&str, "Blocks = 0x%08x 0x%08x 0x%08x \"%s\"",
 			data->image_load_addr + data->image_ivt_offset, offset,
 			signed_size - data->image_ivt_offset, data->outfile);
+		if (data->flexspi_csf)
+			ret |= asprintf(&flexspi_str,
+					"Blocks = 0x%08x 0x%08x 0x%08x \"%s\"",
+					data->image_load_addr +
+					data->image_flexspi_ivt_offset,
+					flexspi_offset, flexspi_signed_size,
+					data->outfile);
 	} else {
 		fprintf(stderr, "Invalid signed size area 0x%08x\n",
 			signed_size);
@@ -366,8 +447,9 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	if (ret < 0)
 		return -ENOMEM;
 
-	ret = hab_add_str(data, str);
+	ret = hab_add_barebox_blocks(data, str, flexspi_str);
 	free(str);
+	free(flexspi_str);
 	if (ret)
 		return ret;
 
@@ -614,6 +696,12 @@ static int do_flexspi_ivtofs(struct config_data *data, int argc, char *argv[])
 	if (argc < 2)
 		return -EINVAL;
 
+	if (data->csf) {
+		fprintf(stderr, "#include <mach/imx/flexspi-imx8m*-cfg.h> must be placed in front "
+				"of #include <mach/imx/habv4-imx8-gencsf.h>\n");
+		return -EINVAL;
+	}
+
 	data->image_flexspi_ivt_offset = strtoul(argv[1], NULL, 0);
 
 	return 0;
@@ -623,6 +711,12 @@ static int do_flexspi_fcfbofs(struct config_data *data, int argc, char *argv[])
 {
 	if (argc < 2)
 		return -EINVAL;
+
+	if (data->csf) {
+		fprintf(stderr, "#include <mach/imx/flexspi-imx8m*-cfg.h> must be placed in front "
+				"of #include <mach/imx/habv4-imx8-gencsf.h>\n");
+		return -EINVAL;
+	}
 
 	data->image_flexspi_fcfb_offset = strtoul(argv[1], NULL, 0);
 
@@ -681,6 +775,9 @@ struct command cmds[] = {
 	}, {
 		.name = "hab_encrypt_blocks",
 		.parse = do_hab_encrypt_blocks,
+	}, {
+		.name = "hab_qspi",
+		.parse = do_hab_qspi,
 	}, {
 		.name = "super_root_key",
 		.parse = do_super_root_key,

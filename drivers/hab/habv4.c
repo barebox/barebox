@@ -168,6 +168,7 @@ struct habv4_rvt {
 #define FSL_SIP_HAB_REPORT_STATUS       0x04
 #define FSL_SIP_HAB_FAILSAFE            0x05
 #define FSL_SIP_HAB_CHECK_TARGET        0x06
+#define FSL_SIP_HAB_GET_VERSION		0x07
 
 static enum hab_status hab_sip_report_status(enum hab_config *config,
 					     enum habv4_state *state)
@@ -193,17 +194,42 @@ static enum hab_status hab_sip_report_status(enum hab_config *config,
 	return (enum hab_status)res.a0;
 }
 
+static uint32_t hab_sip_get_version(void)
+{
+	struct arm_smccc_res res;
+
+	arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_GET_VERSION, 0, 0, 0, 0, 0, 0, &res);
+
+	return (uint32_t)res.a0;
+}
+
+#define IMX8MQ_ROM_OCRAM_ADDRESS	0x9061C0
+#define IMX8MM_ROM_OCRAM_ADDRESS	0x908040
+#define IMX8MN_ROM_OCRAM_ADDRESS	0x908040
+#define IMX8MP_ROM_OCRAM_ADDRESS	0x90D040
+
 static enum hab_status imx8m_read_sram_events(enum hab_status status,
 					     uint32_t index, void *event,
 					     uint32_t *bytes)
 {
 	struct hab_event_record *events[10];
 	int num_events = 0;
-	char *sram = (char *)0x9061c0;
+	char *sram;
 	int i = 0;
 	int internal_index = 0;
 	char *end = 0;
 	struct hab_event_record *search;
+
+	if (cpu_is_mx8mq())
+		sram = (char *)IMX8MQ_ROM_OCRAM_ADDRESS;
+	else if (cpu_is_mx8mm())
+		sram = (char *)IMX8MM_ROM_OCRAM_ADDRESS;
+	else if (cpu_is_mx8mn())
+		sram = (char *)IMX8MN_ROM_OCRAM_ADDRESS;
+	else if (cpu_is_mx8mp())
+		sram = (char *)IMX8MP_ROM_OCRAM_ADDRESS;
+	else
+		return HAB_STATUS_FAILURE;
 
 	/*
 	 * AN12263 HABv4 Guidelines and Recommendations
@@ -224,7 +250,7 @@ static enum hab_status imx8m_read_sram_events(enum hab_status status,
 		}
 	}
 	while (i < num_events) {
-		if (events[i]->status == status) {
+		if (events[i]->status >= status) {
 			if (internal_index == index) {
 				*bytes = sizeof(struct hab_event_record) +
 					be16_to_cpu(events[i]->hdr.len);
@@ -590,9 +616,11 @@ static int imx8m_hab_get_status(void)
 
 static int init_imx8m_hab_get_status(void)
 {
-	if (!cpu_is_mx8mq())
+	if (!cpu_is_mx8m())
 		/* can happen in multi-image builds and is not an error */
 		return 0;
+
+	pr_info("ROM version: 0x%x\n", hab_sip_get_version());
 
 	/*
 	 * Nobody will check the return value if there were HAB errors, but the
@@ -602,12 +630,6 @@ static int init_imx8m_hab_get_status(void)
 
 	return 0;
 }
-
-/*
- *
- *
- *
- */
 postmmu_initcall(init_imx8m_hab_get_status);
 
 static int init_imx6_hab_get_status(void)

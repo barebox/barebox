@@ -15,4 +15,17 @@ static inline int cpu_is_mx8m(const struct config_data *data)
 	}
 }
 
+static inline bool flexspi_image(const struct config_data *data)
+{
+	/*
+	 *           | FlexSPI-FCFB  | FlexSPI-IVT
+	 * -----------------------------------------
+	 * i.MX8MM   |   0x0         |  0x1000
+	 * i.MX8MN/P |   0x400       |  0x0
+	 */
+
+	return data->image_flexspi_ivt_offset ||
+	       data->image_flexspi_fcfb_offset;
+}
+
 int parse_config(struct config_data *data, const char *filename);

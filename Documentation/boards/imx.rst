@@ -21,7 +21,7 @@ The Internal Boot Mode is supported on:
 * i.MX53
 * i.MX6
 * i.MX7
-* i.MX8MQ
+* i.MX8M
 
 With the Internal Boot Mode, the images contain a header which describes
 where the binary shall be loaded and started. These headers also contain
@@ -64,8 +64,8 @@ of the image to the card, use:
 
   dd if=images/barebox-freescale-imx51-babbage.img of=/dev/sdd bs=1024 skip=1 seek=1
 
-Note that MaskROM on i.MX8 expects the image to start at the +33KiB mark, so the
-following command has to be used instead:
+Note that MaskROM on i.MX8M expects the image to start at the +33KiB mark, so
+the following command has to be used instead:
 
 .. code-block:: sh
 
@@ -393,6 +393,86 @@ with only the image name as argument:
 .. code-block:: sh
 
   scripts/imx/imx-usb-loader images/barebox-freescale-imx51-babbage.img
+
+FlexSPI Boot
+^^^^^^^^^^^^
+
+FlexSPI boot is currently supported on: i.MX8MM, i.MX8MN and i.MX8MP.
+
+To generate FlexSPI/QSPI image(s) the board flash header file must specify:
+``flexspi_ivtofs`` and ``flexspi_fcfbofs``.
+
+It is recommended to do this via the ``include/mach/imx/flexspi-imx8m*-cfg.h``
+header files.
+
+.. code-block:: none
+
+  #include <mach/imx/flexspi-imx8mp-cfg.h>
+
+There are two different headers, one for the i.MX8MM and one for the i.MX8MP/N.
+It's important to use the correct one because the BootROM expects the IVT and
+flash configuration block (FCB) on different offsets.
+
+Barebox doesn't generate a separate FlexSPI image instead the same image used
+for SD/MMC/USB is extended to support FlexSPI boot. This is done by adding a 2nd
+IVT header and the required FCB at the required boot offsets.
+
+Barebox also support `High Assurance Boot`_ images for QSPI boot mediums. This
+feature must be enabled via the ``CONFIG_HABV4_QSPI`` option. The below figures
+show a fully featured MMC/SD/USB/FlexSPI image with enabled HAB support for the
+i.MX8M family.
+
+i.MX8MM layout::
+
+                 0x0 +------------------------------------------+
+                     | Barebox Header                           |
+          header_gap +------------------------------------------+
+                     | FlexSPI Flash Configuration Block (FCFB) |
+  header_gap + 0x400 +------------------------------------------+                            ---
+                     | i.MX MMC/SD/USB IVT Header               |                             |
+                     | Boot Data                                +--.                          |
+                     | CSF Pointer                              +--|--.                       |
+ header_gap + 0x1000 +------------------------------------------+  |  |     ---               |
+                     | i.MX FlexSPI IVT Header                  |  |  |      |                | Signed Area
+                     | Boot Data                                +--+  |      |                |  MMC/SD/
+                     | CSF Pointer                              +--|--|--.   | Signed Area    |    USB
+ header_gap + 0x2000 +------------------------------------------+  |  |  |   |  FlexSPI       |
+                     | Barebox Prebootloader (PBL)              |<-´  |  |   |                |
+                     | Piggydata Hash (SHA256)                  |     |  |   |                |
+                     +------------------------------------------+     |  |  ---              ---
+                     | Command Sequence File (CSF) Slot-0       |<----´  |
+                     +------------------------------------------+        |
+                     | Command Sequence File (CSF) Slot-1       |<-------´
+                     +------------------------------------------+           ---
+                     | Piggydata (Main Barebox Binary)          |            | Hashed Area
+                     +------------------------------------------+           ---
+
+i.MX8MP/N layout::
+
+                 0x0 +------------------------------------------+
+                     | Barebox Header                           |
+          header_gap +------------------------------------------+                            ---
+                     | i.MX MMC/SD/USB IVT Header               |                             |
+                     | Boot Data                                +--.                          |
+                     | CSF Pointer                              +--|--.                       |
+  header_gap + 0x400 +------------------------------------------+  |  |                       |
+                     | FlexSPI Flash Configuration Block (FCFB) |  |  |                       | Signed Area
+ header_gap + 0x1000 +------------------------------------------+  |  |     ---               |  MMC/SD/
+                     | i.MX FlexSPI IVT Header                  |  |  |      |                |    USB
+                     | Boot Data                                +--+  |      |                |
+                     | CSF Pointer                              +--|--|--.   | Signed Area    |
+ header_gap + 0x2000 +------------------------------------------+  |  |  |   |  FlexSPI       |
+                     | Barebox Prebootloader (PBL)              |<-´  |  |   |                |
+                     | Piggydata Hash (SHA256)                  |     |  |   |                |
+                     +------------------------------------------+     |  |  ---              ---
+                     | Command Sequence File (CSF) Slot-0       |<----´  |
+                     +------------------------------------------+        |
+                     | Command Sequence File (CSF) Slot-1       |<-------´
+                     +------------------------------------------+           ---
+                     | Piggydata (Main Barebox Binary)          |            | Hashed Area
+                     +------------------------------------------+           ---
+
+At the moment ``header_gap`` is always 32K for all supported devices.
 
 External Boot Mode
 ------------------

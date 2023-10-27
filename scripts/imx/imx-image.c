@@ -290,18 +290,6 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
 	return 0;
 }
 
-static bool flexspi_image(const struct config_data *data)
-{
-	/*
-	 *           | FlexSPI-FCFB  | FlexSPI-IVT
-	 * -----------------------------------------
-	 * i.MX8MM   |   0x0         |  0x1000
-	 * i.MX8MN/P |   0x400       |  0x0
-	 */
-
-	return data->image_flexspi_ivt_offset || data->image_flexspi_fcfb_offset;
-}
-
 /*
  * ============================================================================
  * i.MX flash header v2 handling. Found on i.MX50, i.MX53 and i.MX6
@@ -310,7 +298,7 @@ static bool flexspi_image(const struct config_data *data)
 
 static size_t
 add_header_v2(const struct config_data *data, void *buf, uint32_t offset,
-	      size_t header_len)
+	      size_t header_len, unsigned int csf_slot)
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
@@ -353,8 +341,10 @@ add_header_v2(const struct config_data *data, void *buf, uint32_t offset,
 		hdr->boot_data.size	= imagesize;
 
 	if (data->sign_image) {
-		hdr->csf = loadaddr + imagesize;
+		hdr->csf = loadaddr + imagesize + (csf_slot * CSF_LEN);
 		hdr->boot_data.size += CSF_LEN;
+		if (data->flexspi_csf)
+			hdr->boot_data.size += CSF_LEN;
 	} else if (data->pbl_code_size && data->csf) {
 		/*
 		 * For i.MX8 the CSF space is added via the linker script, so
@@ -362,6 +352,8 @@ add_header_v2(const struct config_data *data, void *buf, uint32_t offset,
 		 * signing is not.
 		 */
 		hdr->boot_data.size += CSF_LEN;
+		if (data->flexspi_csf)
+			hdr->boot_data.size += CSF_LEN;
 	}
 
 	buf += sizeof(*hdr);
@@ -420,8 +412,6 @@ static size_t add_flexspi_fcfb_header(const struct config_data *data, void *buf)
 	return sizeof(nor_conf);
 }
 
-#define FLEXSPI_HEADER_LEN	HEADER_LEN
-
 static size_t
 add_flexspi_header(const struct config_data *data, void **_buf, size_t *header_len)
 {
@@ -477,7 +467,7 @@ add_flexspi_header(const struct config_data *data, void **_buf, size_t *header_l
 	    data->cpu_type == IMX_CPU_IMX8MN)
 		buf += SZ_4K;
 
-	size += add_header_v2(data, buf, ivt_offset, len);
+	size += add_header_v2(data, buf, ivt_offset, len, 1);
 
 	*header_len += FLEXSPI_HEADER_LEN;
 
@@ -674,12 +664,13 @@ static int nop(const struct config_data *data)
  * The cst is expected to be executable as 'cst' or if exists, the content
  * of the environment variable 'CST' is used.
  */
-static int hab_sign(struct config_data *data)
+static int hab_sign(struct config_data *data, const char *csfcmds,
+		    unsigned int csf_slot)
 {
 	int fd, outfd, ret, lockfd;
 	char *csffile, *command;
 	struct stat s;
-	char *cst;
+	char *cst, *cstopts;
 	void *buf;
 	size_t csf_space = CSF_LEN;
 	unsigned int offset = 0;
@@ -688,7 +679,11 @@ static int hab_sign(struct config_data *data)
 	if (!cst)
 		cst = "cst";
 
-	ret = asprintf(&csffile, "%s.csfbin", data->outfile);
+	cstopts = getenv("CST_EXTRA_CMDLINE_OPTIONS");
+	if (!cstopts)
+		cstopts = "";
+
+	ret = asprintf(&csffile, "%s.slot%u.csfbin", data->outfile, csf_slot);
 	if (ret < 0)
 		exit(1);
 
@@ -725,11 +720,11 @@ static int hab_sign(struct config_data *data)
 	if (ret == -1)
 		return -EINVAL;
 	else if (ret == 0)
-		ret = asprintf(&command, "%s -o %s -i /dev/stdin",
-			       cst, csffile);
+		ret = asprintf(&command, "%s -o %s -i /dev/stdin %s",
+			       cst, csffile, cstopts);
 	else
-		ret = asprintf(&command, "%s -o %s;",
-			       cst, csffile);
+		ret = asprintf(&command, "%s -o %s %s;",
+			       cst, csffile, cstopts);
 	if (ret < 0)
 		return -ENOMEM;
 
@@ -757,7 +752,7 @@ static int hab_sign(struct config_data *data)
 		return -errno;
 	}
 
-	fwrite(data->csf, 1, strlen(data->csf) + 1, f);
+	fwrite(csfcmds, 1, strlen(csfcmds) + 1, f);
 
 	pclose(f);
 
@@ -805,6 +800,8 @@ static int hab_sign(struct config_data *data)
 
 	xread(fd, buf, s.st_size);
 
+	close(fd);
+
 	/*
 	 * For i.MX8M, write into the reserved CSF section
 	 */
@@ -824,8 +821,13 @@ static int hab_sign(struct config_data *data)
 		 * For i.MX8 insert the CSF data into the reserved CSF area
 		 * right behind the PBL
 		 */
-		offset = roundup(data->header_gap + data->pbl_code_size +
-				 HEADER_LEN, 0x1000);
+		offset = data->header_gap + data->pbl_code_size + HEADER_LEN;
+		if (flexspi_image(data))
+			offset += FLEXSPI_HEADER_LEN;
+
+		offset += csf_slot * CSF_LEN;
+
+		offset = roundup(offset, 0x1000);
 		if (data->signed_hdmi_firmware_file)
 			offset += PLUGIN_HDMI_SIZE;
 
@@ -1029,7 +1031,7 @@ int main(int argc, char *argv[])
 		barebox_image_size += add_flexspi_header(&data, &buf, &header_len);
 		barebox_image_size += add_header_v2(&data, buf +
 						    signed_hdmi_firmware_size,
-						    data.image_ivt_offset, header_len);
+						    data.image_ivt_offset, header_len, 0);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",
@@ -1115,9 +1117,14 @@ int main(int argc, char *argv[])
 	}
 
 	if (data.csf && data.sign_image) {
-		ret = hab_sign(&data);
+		ret = hab_sign(&data, data.csf, 0);
 		if (ret)
 			exit(1);
+		if (data.flexspi_csf) {
+			ret = hab_sign(&data, data.flexspi_csf, 1);
+			if (ret)
+				exit(1);
+		}
 	}
 
 	if (create_usb_image) {

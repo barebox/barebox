@@ -150,7 +150,7 @@ static int imx_hab_permanent_write_enable_ocotp(int enable)
 	return imx_ocotp_permanent_write(enable);
 }
 
-static int imx_hab_lockdown_device_ocotp(void)
+static int imx6_hab_lockdown_device_ocotp(void)
 {
 	int ret;
 
@@ -161,7 +161,22 @@ static int imx_hab_lockdown_device_ocotp(void)
 	return imx_ocotp_write_field(OCOTP_SEC_CONFIG_1, 1);
 }
 
-static int imx_hab_device_locked_down_ocotp(void)
+static int imx8m_hab_lockdown_device_ocotp(void)
+{
+	int ret;
+
+	ret = imx_ocotp_write_field(MX8M_OCOTP_SEC_CONFIG_1, 1);
+	if (ret < 0)
+		return ret;
+
+	/* Only i.MX8MQ requires fusing of DIR_BT_DIS */
+	if (!cpu_is_mx8mq())
+		return ret;
+
+	return imx_ocotp_write_field(MX8MQ_OCOTP_DIR_BT_DIS, 1);
+}
+
+static int imx6_hab_device_locked_down_ocotp(void)
 {
 	int ret;
 	unsigned int v;
@@ -173,8 +188,19 @@ static int imx_hab_device_locked_down_ocotp(void)
 	return v;
 }
 
+static int imx8m_hab_device_locked_down_ocotp(void)
+{
+	int ret;
+	unsigned int v;
+
+	ret = imx_ocotp_read_field(MX8M_OCOTP_SEC_CONFIG_1, &v);
+	if (ret < 0)
+		return ret;
+
+	return v;
+}
+
 struct imx_hab_ops {
-	int (*init)(void);
 	int (*write_srk_hash)(const u8 *srk, unsigned flags);
 	int (*read_srk_hash)(u8 *srk);
 	int (*permanent_write_enable)(int enable);
@@ -190,36 +216,37 @@ static struct imx_hab_ops imx_hab_ops_iim = {
 	.permanent_write_enable = imx_hab_permanent_write_enable_iim,
 };
 
-static struct imx_hab_ops imx_hab_ops_ocotp = {
+static struct imx_hab_ops imx6_hab_ops_ocotp = {
 	.write_srk_hash = imx_hab_write_srk_hash_ocotp,
 	.read_srk_hash =  imx_hab_read_srk_hash_ocotp,
-	.lockdown_device = imx_hab_lockdown_device_ocotp,
-	.device_locked_down = imx_hab_device_locked_down_ocotp,
+	.lockdown_device = imx6_hab_lockdown_device_ocotp,
+	.device_locked_down = imx6_hab_device_locked_down_ocotp,
+	.permanent_write_enable = imx_hab_permanent_write_enable_ocotp,
+};
+
+static struct imx_hab_ops imx8m_hab_ops_ocotp = {
+	.write_srk_hash = imx_hab_write_srk_hash_ocotp,
+	.read_srk_hash =  imx_hab_read_srk_hash_ocotp,
+	.lockdown_device = imx8m_hab_lockdown_device_ocotp,
+	.device_locked_down = imx8m_hab_device_locked_down_ocotp,
 	.permanent_write_enable = imx_hab_permanent_write_enable_ocotp,
 };
 
 static struct imx_hab_ops *imx_get_hab_ops(void)
 {
-	static struct imx_hab_ops *ops, *tmp;
-	int ret;
+	static struct imx_hab_ops *ops;
 
 	if (ops)
 		return ops;
 
 	if (IS_ENABLED(CONFIG_HABV3) && (cpu_is_mx25() || cpu_is_mx35()))
-		tmp = &imx_hab_ops_iim;
-	else if (IS_ENABLED(CONFIG_HABV4) && (cpu_is_mx6() || cpu_is_mx8mq()))
-		tmp = &imx_hab_ops_ocotp;
+		ops = &imx_hab_ops_iim;
+	else if (IS_ENABLED(CONFIG_HABV4) && cpu_is_mx6())
+		ops = &imx6_hab_ops_ocotp;
+	else if (IS_ENABLED(CONFIG_HABV4) && cpu_is_mx8m())
+		ops = &imx8m_hab_ops_ocotp;
 	else
 		return NULL;
-
-	if (tmp->init) {
-		ret = tmp->init();
-		if (ret)
-			return NULL;
-	}
-
-	ops = tmp;
 
 	return ops;
 }

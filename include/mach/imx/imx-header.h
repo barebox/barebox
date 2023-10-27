@@ -7,6 +7,7 @@
 
 #define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */
 #define CSF_LEN 0x2000		/* length of the CSF (needed for HAB) */
+#define FLEXSPI_HEADER_LEN	HEADER_LEN
 
 #define DEK_BLOB_HEADER 8	/* length of DEK blob header */
 #define DEK_BLOB_KEY 32		/* length of DEK blob AES-256 key */
@@ -114,12 +115,13 @@ struct config_data {
 	int (*write_mem)(const struct config_data *data, uint32_t addr,
 			 uint32_t val, int width, int set_bits, int clear_bits);
 	int (*nop)(const struct config_data *data);
-	int csf_space;
 	char *csf;
+	char *flexspi_csf;
 	int sign_image;
 	char *signed_hdmi_firmware_file;
 	int encrypt_image;
 	size_t dek_size;
+	bool hab_qspi_support;
 };
 
 #define MAX_RECORDS_DCD_V2 1024

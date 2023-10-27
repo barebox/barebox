@@ -21,6 +21,20 @@ endif
 )
 endef
 
+define build_imx8m_habv4img =
+$(eval
+ifeq ($($(strip $(1))), y)
+	pblb-y += $(strip $(2))
+	CFG_$(strip $(2)).pblb.imximg = $(board)/$(strip $(3)).imxcfg
+	MAX_PBL_MEMORY_SIZE_$(strip $(2)) = 0x3f000
+	FILE_barebox-$(strip $(4)).img    = $(strip $(2)).pblb.pimximg
+	FILE_barebox-$(strip $(4))-s.img  = $(strip $(2)).pblb.psimximg
+	image-y += barebox-$(strip $(4)).img
+	image-$(CONFIG_HABV4_IMAGE_SIGNED) += barebox-$(strip $(4))-s.img
+endif
+)
+endef
+
 # %.imximg - convert into i.MX image
 # ----------------------------------------------------------------
 
@@ -431,83 +445,38 @@ FILE_barebox-kamstrup-mx7-concentrator.img = start_kamstrup_mx7_concentrator.pbl
 image-$(CONFIG_MACH_KAMSTRUP_MX7_CONCENTRATOR) += barebox-kamstrup-mx7-concentrator.img
 
 # ----------------------- i.MX8mm based boards --------------------------
-pblb-$(CONFIG_MACH_NXP_IMX8MM_EVK) += start_nxp_imx8mm_evk
-CFG_start_nxp_imx8mm_evk.pblb.imximg = $(board)/nxp-imx8mm-evk/flash-header-imx8mm-evk.imxcfg
-FILE_barebox-nxp-imx8mm-evk.img = start_nxp_imx8mm_evk.pblb.pimximg
-image-$(CONFIG_MACH_NXP_IMX8MM_EVK) += barebox-nxp-imx8mm-evk.img
+$(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MM_EVK, start_nxp_imx8mm_evk, nxp-imx8mm-evk/flash-header-imx8mm-evk, nxp-imx8mm-evk)
 
-pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += start_phyboard_polis_rdk_ddr_autodetect
-CFG_start_phyboard_polis_rdk_ddr_autodetect.pblb.imximg = $(board)/phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk.imxcfg
-FILE_barebox-phyboard-polis-rdk-ddr-autodetect.img = start_phyboard_polis_rdk_ddr_autodetect.pblb.pimximg
-image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += barebox-phyboard-polis-rdk-ddr-autodetect.img
+$(call build_imx8m_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX8MM, start_phyboard_polis_rdk_ddr_autodetect, phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk, phyboard-polis-rdk-ddr-autodetect)
 
-pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += start_phyboard_polis_rdk_ddr_1g
-CFG_start_phyboard_polis_rdk_ddr_1g.pblb.imximg = $(board)/phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk.imxcfg
-FILE_barebox-phyboard-polis-rdk-ddr-1g.img = start_phyboard_polis_rdk_ddr_1g.pblb.pimximg
-image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += barebox-phyboard-polis-rdk-ddr-1g.img
+$(call build_imx8m_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX8MM, start_phyboard_polis_rdk_ddr_1g, phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk, phyboard-polis-rdk-ddr-1g)
 
-pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += start_phyboard_polis_rdk_ddr_2g
-CFG_start_phyboard_polis_rdk_ddr_2g.pblb.imximg = $(board)/phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk.imxcfg
-FILE_barebox-phyboard-polis-rdk-ddr-2g.img = start_phyboard_polis_rdk_ddr_2g.pblb.pimximg
-image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += barebox-phyboard-polis-rdk-ddr-2g.img
+$(call build_imx8m_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX8MM, start_phyboard_polis_rdk_ddr_2g, phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk, phyboard-polis-rdk-ddr-2g)
 
-pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += start_phyboard_polis_rdk_ddr_4g
-CFG_start_phyboard_polis_rdk_ddr_4g.pblb.imximg = $(board)/phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk.imxcfg
-FILE_barebox-phyboard-polis-rdk-ddr-4g.img = start_phyboard_polis_rdk_ddr_4g.pblb.pimximg
-image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += barebox-phyboard-polis-rdk-ddr-4g.img
+$(call build_imx8m_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX8MM, start_phyboard_polis_rdk_ddr_4g, phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk, phyboard-polis-rdk-ddr-4g)
 
-pblb-$(CONFIG_MACH_PROTONIC_IMX8M) += start_prt_prt8mm
-CFG_start_prt_prt8mm.pblb.imximg = $(board)/protonic-imx8m/flash-header-prt8mm.imxcfg
-FILE_barebox-prt-prt8mm.img = start_prt_prt8mm.pblb.pimximg
-image-$(CONFIG_MACH_PROTONIC_IMX8M) += barebox-prt-prt8mm.img
+$(call build_imx8m_habv4img, CONFIG_MACH_PROTONIC_IMX8M, start_prt_prt8mm, protonic-imx8m/flash-header-prt8mm, prt-prt8mm)
 
-pblb-$(CONFIG_MACH_INNOCOMM_WB15) += start_innocomm_wb15_evk
-CFG_start_innocomm_wb15_evk.pblb.imximg = $(board)/innocomm-imx8mm-wb15/flash-header-imx8mm-wb15.imxcfg
-FILE_barebox-innocomm-imx8mm-wb15-evk.img = start_innocomm_wb15_evk.pblb.pimximg
-image-$(CONFIG_MACH_INNOCOMM_WB15) += barebox-innocomm-imx8mm-wb15-evk.img
+$(call build_imx8m_habv4img, CONFIG_MACH_INNOCOMM_WB15, start_innocomm_wb15_evk, innocomm-imx8mm-wb15/flash-header-imx8mm-wb15, innocomm-imx8mm-wb15-evk)
 
 # ----------------------- i.MX8mn based boards --------------------------
-pblb-$(CONFIG_MACH_NXP_IMX8MN_EVK) += start_nxp_imx8mn_evk
-CFG_start_nxp_imx8mn_evk.pblb.imximg = $(board)/nxp-imx8mn-evk/flash-header-imx8mn-evk.imxcfg
-FILE_barebox-nxp-imx8mn-evk.img = start_nxp_imx8mn_evk.pblb.pimximg
-image-$(CONFIG_MACH_NXP_IMX8MN_EVK) += barebox-nxp-imx8mn-evk.img
+$(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MN_EVK, start_nxp_imx8mn_evk, nxp-imx8mn-evk/flash-header-imx8mn-evk, nxp-imx8mn-evk)
 
 # ----------------------- i.MX8mp based boards --------------------------
-pblb-$(CONFIG_MACH_NXP_IMX8MP_EVK) += start_nxp_imx8mp_evk
-CFG_start_nxp_imx8mp_evk.pblb.imximg = $(board)/nxp-imx8mp-evk/flash-header-imx8mp-evk.imxcfg
-FILE_barebox-nxp-imx8mp-evk.img = start_nxp_imx8mp_evk.pblb.pimximg
-image-$(CONFIG_MACH_NXP_IMX8MP_EVK) += barebox-nxp-imx8mp-evk.img
+$(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MP_EVK, start_nxp_imx8mp_evk, nxp-imx8mp-evk/flash-header-imx8mp-evk, nxp-imx8mp-evk)
 
-pblb-$(CONFIG_MACH_SKOV_IMX8MP) += start_skov_imx8mp
-CFG_start_skov_imx8mp.pblb.imximg = $(board)/skov-imx8mp/flash-header-skov-imx8mp.imxcfg
-FILE_barebox-skov-imx8mp.img = start_skov_imx8mp.pblb.pimximg
-image-$(CONFIG_MACH_SKOV_IMX8MP) += barebox-skov-imx8mp.img
+$(call build_imx8m_habv4img, CONFIG_MACH_SKOV_IMX8MP, start_skov_imx8mp, skov-imx8mp/flash-header-skov-imx8mp, skov-imx8mp)
 
-pblb-$(CONFIG_MACH_TQ_MBA8MPXL) += start_tqma8mpxl
-CFG_start_tqma8mpxl.pblb.imximg = $(board)/tqma8mpxl/flash-header-tqma8mpxl.imxcfg
-FILE_barebox-tqma8mpxl.img = start_tqma8mpxl.pblb.pimximg
-image-$(CONFIG_MACH_TQ_MBA8MPXL) += barebox-tqma8mpxl.img
+$(call build_imx8m_habv4img, CONFIG_MACH_TQ_MBA8MPXL, start_tqma8mpxl, tqma8mpxl/flash-header-tqma8mpxl, tqma8mpxl)
 
-pblb-$(CONFIG_MACH_POLYHEX_DEBIX) += start_polyhex_debix
-CFG_start_polyhex_debix.pblb.imximg = $(board)/polyhex-debix/flash-header-polyhex-debix.imxcfg
-FILE_barebox-polyhex-debix.img = start_polyhex_debix.pblb.pimximg
-image-$(CONFIG_MACH_POLYHEX_DEBIX) += barebox-polyhex-debix.img
+$(call build_imx8m_habv4img, CONFIG_MACH_POLYHEX_DEBIX, start_polyhex_debix, polyhex-debix/flash-header-polyhex-debix, polyhex-debix)
 
-pblb-$(CONFIG_MACH_POLYHEX_DEBIX) += start_polyhex_debix_som_a_8g
-CFG_start_polyhex_debix_som_a_8g.pblb.imximg = $(board)/polyhex-debix/flash-header-polyhex-debix.imxcfg
-FILE_barebox-polyhex-debix-som-a-8g.img = start_polyhex_debix_som_a_8g.pblb.pimximg
-image-$(CONFIG_MACH_POLYHEX_DEBIX) += barebox-polyhex-debix-som-a-8g.img
+$(call build_imx8m_habv4img, CONFIG_MACH_POLYHEX_DEBIX, start_polyhex_debix_som_a_8g, polyhex-debix/flash-header-polyhex-debix, polyhex-debix-som-a-8g)
 
-pblb-$(CONFIG_MACH_VARISCITE_DT8MCUSTOMBOARD_IMX8MP) += start_variscite_imx8mp_dart
-CFG_start_variscite_imx8mp_dart.pblb.imximg = $(board)/variscite-dt8mcustomboard-imx8mp/flash-header-imx8mp-dart.imxcfg
-FILE_barebox-variscite-imx8mp-dart-cb.img = start_variscite_imx8mp_dart.pblb.pimximg
-image-$(CONFIG_MACH_VARISCITE_DT8MCUSTOMBOARD_IMX8MP) += barebox-variscite-imx8mp-dart-cb.img
+$(call build_imx8m_habv4img, CONFIG_MACH_VARISCITE_DT8MCUSTOMBOARD_IMX8MP, start_variscite_imx8mp_dart, variscite-dt8mcustomboard-imx8mp/flash-header-imx8mp-dart, variscite-imx8mp-dart-cb)
 
 # ----------------------- i.MX8mq based boards --------------------------
-pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk
-CFG_start_nxp_imx8mq_evk.pblb.imximg = $(board)/nxp-imx8mq-evk/flash-header-imx8mq-evk.imxcfg
-FILE_barebox-nxp-imx8mq-evk.img = start_nxp_imx8mq_evk.pblb.pimximg
-image-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += barebox-nxp-imx8mq-evk.img
+$(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MQ_EVK, start_nxp_imx8mq_evk, nxp-imx8mq-evk/flash-header-imx8mq-evk, nxp-imx8mq-evk)
 
 pblb-$(CONFIG_MACH_ZII_IMX8MQ_DEV) += start_zii_imx8mq_dev
 CFG_start_zii_imx8mq_dev.pblb.imximg = $(board)/zii-imx8mq-dev/flash-header-zii-imx8mq-dev.imxcfg

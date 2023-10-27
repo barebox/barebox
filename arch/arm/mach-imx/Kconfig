@@ -745,10 +745,16 @@ config HABV4
 	select HAB
 	select NVMEM
 	select IMX_OCOTP
-	depends on ARCH_IMX6 || ARCH_IMX8MQ
+	depends on ARCH_IMX6 || ARCH_IMX8M
 	depends on OFDEVICE
 	help
-	  High Assurance Boot, as found on i.MX28/i.MX6/i.MX8MQ.
+	  High Assurance Boot, as found on i.MX28/i.MX6/i.MX8M.
+
+config HABV4_QSPI
+	depends on HABV4
+	bool "HABv4 QPSI support"
+	help
+	  Enable this option to build signed QSPI/FlexSPI images.
 
 config HAB_CERTS_ENV
 	depends on HAB

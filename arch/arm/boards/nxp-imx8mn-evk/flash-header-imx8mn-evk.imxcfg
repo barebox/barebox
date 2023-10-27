@@ -6,5 +6,5 @@ loadaddr 0x912000
 max_load_size 0x3f000
 ivtofs 0x0
 
-flexspi_ivtofs 0x0
-flexspi_fcfbofs 0x400
+#include <mach/imx/flexspi-imx8mp-cfg.h>
+#include <mach/imx/habv4-imx8-gencsf.h>

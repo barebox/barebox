@@ -5,6 +5,7 @@
 
 #include <io.h>
 #include <mach/stm32mp/stm32.h>
+#include <linux/bitops.h>
 
 #define DEBUG_LL_UART_ADDR	STM32_UART4_BASE
 
@@ -18,13 +19,18 @@
 
 #define USART_ISR_TXE	BIT(7)
 
-static inline void PUTC_LL(int c)
+static inline void stm32_serial_putc(void *ctx, int c)
 {
-	void __iomem *base = IOMEM(DEBUG_LL_UART_ADDR);
+	void __iomem *base = IOMEM(ctx);
 
 	writel(c, base + TDR_OFFSET);
 
 	while ((readl(base + ISR_OFFSET) & USART_ISR_TXE) == 0);
+}
+
+static inline void PUTC_LL(int c)
+{
+	stm32_serial_putc(IOMEM(DEBUG_LL_UART_ADDR), c);
 }
 
 #endif /* __MACH_STM32MP1_DEBUG_LL_H */

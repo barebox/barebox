@@ -123,7 +123,7 @@ static inline unsigned stm32mp1_ddrctrl_ramsize(void)
 	return ddrctrl_ramsize(IOMEM(STM32_DDRCTL_BASE), nb_bytes);
 }
 
-void __noreturn stm32mp1_barebox_entry(void *boarddata)
+void __noreturn __prereloc stm32mp1_barebox_entry(void *boarddata)
 {
 	barebox_arm_entry(STM32_DDR_BASE, stm32mp1_ddrctrl_ramsize(), boarddata);
 }

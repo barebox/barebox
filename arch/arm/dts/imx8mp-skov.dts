@@ -231,6 +231,7 @@
 		pinctrl-0 = <&pinctrl_pmic>;
 		interrupt-parent = <&gpio1>;
 		interrupts = <3 IRQ_TYPE_EDGE_RISING>;
+		reset-source-priority = <500>;
 
 		regulators {
 			buck1: BUCK1 {

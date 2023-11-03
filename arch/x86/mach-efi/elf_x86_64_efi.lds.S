@@ -58,6 +58,8 @@ SECTIONS
 	}
 	_edata = .;
 
+	.barebox_imd : { BAREBOX_IMD }
+
 	. = ALIGN(4096);
 	.dynamic : { *(.dynamic) }
 	. = ALIGN(4096);

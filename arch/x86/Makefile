@@ -62,7 +62,7 @@ KBUILD_LDFLAGS := --no-undefined
 
 OBJCOPYFLAGS_barebox.efi = \
 	-j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel -j .rela \
-	-j .reloc -j .bbenv.* -j .bblogo.* --target=$(TARGET)
+	-j .reloc -j .bbenv.* -j .bblogo.* -j .barebox_imd --target=$(TARGET)
 
 barebox.efi: $(KBUILD_BINARY) FORCE
 	$(call if_changed,objcopy)

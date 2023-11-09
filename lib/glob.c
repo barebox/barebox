@@ -1,19 +1,5 @@
-/* Copyright (C) 1991, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public License as
-published by the Free Software Foundation; either version 2 of the
-License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
-
-You should have received a copy of the GNU Library General Public
-License along with this library; see the file COPYING.LIB.  If
-not, write to the Free Software Foundation, Inc., 675 Mass Ave,
-Cambridge, MA 02139, USA.  */
+// SPDX-License-Identifier: LGPL-2.1-or-later
+// SPDX-FileCopyrightText: (C) 1991, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 #include <common.h>
 #include <errno.h>
@@ -23,25 +9,15 @@ Cambridge, MA 02139, USA.  */
 #include <xfuncs.h>
 #include <fnmatch.h>
 #include <qsort.h>
-#define _GNU_SOURCE
 #include <glob.h>
 
-#ifdef CONFIG_GLOB
-
-extern __ptr_t(*__glob_opendir_hook) __P((const char *directory));
-extern void (*__glob_closedir_hook) __P((__ptr_t stream));
-extern const char *(*__glob_readdir_hook) __P((__ptr_t stream));
-
-static int glob_in_dir __P((const char *pattern, const char *directory,
+static int glob_in_dir (const char *pattern, const char *directory,
 			    int flags,
-			    int (*errfunc) __P((const char *, int)),
-			    glob_t * pglob));
-static int prefix_array __P((const char *prefix, char **array, size_t n,
-			     int add_slash));
+			    int (*errfunc) (const char *, int),
+			    glob_t * pglob);
+static int prefix_array (const char *prefix, char **array, size_t n,
+			     int add_slash);
 
-#ifdef __GLOB64
-extern int glob_pattern_p(const char *pattern, int quote);
-#else
 /* Return nonzero if PATTERN contains any metacharacters.
    Metacharacters can be quoted with backslashes if QUOTE is nonzero.  */
 int glob_pattern_p(const char *pattern, int quote)
@@ -72,7 +48,6 @@ int glob_pattern_p(const char *pattern, int quote)
 
 	return 0;
 }
-#endif
 
 #ifdef CONFIG_GLOB_SORT
 /* Do a collated comparison of A and B.  */
@@ -100,7 +75,7 @@ static int collated_compare(const void *a, const void *b)
    If memory cannot be allocated for PGLOB, GLOB_NOSPACE is returned.
    Otherwise, `glob' returns zero.  */
 int glob(const char *pattern, int flags,
-		int (*errfunc) __P((const char *, int)), glob_t *pglob)
+		int (*errfunc) (const char *, int), glob_t *pglob)
 {
 	const char *filename;
 	char *dirname = NULL;
@@ -168,19 +143,6 @@ int glob(const char *pattern, int flags,
 		   appending the results to PGLOB.  */
 		for (i = 0; i < dirs.gl_pathc; ++i) {
 			int oldcount1;
-
-#ifdef	SHELL
-			{
-				/* Make globbing interruptible in the bash shell. */
-				extern int interrupt_state;
-
-				if (interrupt_state) {
-					globfree(&dirs);
-					globfree(&files);
-					status = GLOB_ABEND goto out;
-				}
-			}
-#endif				/* SHELL.  */
 
 			oldcount1 = pglob->gl_pathc;
 			status = glob_in_dir(filename, dirs.gl_pathv[i],
@@ -263,7 +225,7 @@ int glob(const char *pattern, int flags,
 #ifdef CONFIG_GLOB_SORT
 	if (!(flags & GLOB_NOSORT))
 		/* Sort the vector.  */
-		qsort((__ptr_t) & pglob->gl_pathv[oldcount],
+		qsort(&pglob->gl_pathv[oldcount],
 		      pglob->gl_pathc - oldcount,
 		      sizeof(char *), collated_compare);
 #endif
@@ -299,7 +261,7 @@ static int prefix_array(const char *dirname, char **array, size_t n,
 		memcpy(new, dirname, dirlen);
 		new[dirlen] = '/';
 		memcpy(&new[dirlen + 1], array[i], eltlen);
-		free((__ptr_t) array[i]);
+		free(array[i]);
 		array[i] = new;
 	}
 
@@ -311,9 +273,9 @@ static int prefix_array(const char *dirname, char **array, size_t n,
    The GLOB_NOSORT bit in FLAGS is ignored.  No sorting is ever done.
    The GLOB_APPEND flag is assumed to be set (always appends).  */
 static int glob_in_dir(const char *pattern, const char *directory,
-		int flags, int (*errfunc) __P((const char *, int)), glob_t *pglob)
+		int flags, int (*errfunc) (const char *, int), glob_t *pglob)
 {
-	__ptr_t stream = NULL;
+	void *stream = NULL;
 
 	struct globlink {
 		struct globlink *next;
@@ -356,7 +318,7 @@ static int glob_in_dir(const char *pattern, const char *directory,
 			    (struct globlink *)xmalloc(sizeof(struct globlink));
 			len = strlen(name);
 			new->name = xmalloc(len + ((flags & GLOB_MARK) ? 1 : 0) + 1);
-			memcpy((__ptr_t) new->name, name, len);
+			memcpy(new->name, name, len);
 			new->name[len] = '\0';
 			new->next = names;
 			names = new;
@@ -414,44 +376,7 @@ void globfree(glob_t *pglob)
 		int i = pglob->gl_flags & GLOB_DOOFFS ? pglob->gl_offs : 0;
 		for (; i < pglob->gl_pathc; ++i)
 			if (pglob->gl_pathv[i] != NULL)
-				free((__ptr_t) pglob->gl_pathv[i]);
-		free((__ptr_t) pglob->gl_pathv);
+				free(pglob->gl_pathv[i]);
+		free(pglob->gl_pathv);
 	}
 }
-#endif /* CONFIG_GLOB */
-
-#ifdef CONFIG_FAKE_GLOB
-/* Fake version of glob. We simply put the input string into
- * the gl_pathv array. Currently we don't need it as hush.c won't
- * call us if no glob support is available.
- */
-int glob(pattern, flags, errfunc, pglob)
-const char *pattern;
-int flags;
-int (*errfunc) __P((const char *, int));
-glob_t *pglob;
-{
-	int elems, i;
-
-	if (!(flags & GLOB_APPEND)) {
-		pglob->gl_pathc = 0;
-		pglob->gl_pathv = NULL;
-	}
-
-	elems = pglob->gl_pathc + 2;
-	if (flags & GLOB_DOOFFS)
-		elems += pglob->gl_offs;
-
-	pglob->gl_pathv = xrealloc(pglob->gl_pathv, elems * sizeof(char *));
-
-	if (flags & GLOB_DOOFFS)
-		for (i = 0; i < pglob->gl_offs; i++)
-			pglob->gl_pathv[i] = NULL;
-
-	pglob->gl_pathv[pglob->gl_pathc] = strdup(pattern);
-	pglob->gl_pathc++;
-	pglob->gl_pathv[pglob->gl_pathc] = NULL;
-
-	return 0;
-}
-#endif /* CONFIG_FAKE_GLOB */

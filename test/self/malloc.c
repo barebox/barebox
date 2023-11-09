@@ -85,11 +85,11 @@ static void test_malloc(void)
 	free(p);
 
 	if (mem_malloc_size) {
-		tmp = expect_alloc_fail(malloc(SIZE_MAX));
+		tmp = expect_alloc_fail(malloc(RELOC_HIDE(SIZE_MAX, 0)));
 		free(tmp);
 
 		if (0xf0000000 > mem_malloc_size) {
-			tmp = expect_alloc_fail(malloc(0xf0000000));
+			tmp = expect_alloc_fail(malloc(RELOC_HIDE(0xf0000000, 0)));
 			free(tmp);
 		}
 	} else {
@@ -111,11 +111,11 @@ static void test_malloc(void)
 		free(tmp);
 
 		if (0xf0000000 > mem_malloc_size) {
-			tmp = expect_alloc_fail(realloc(p, 0xf0000000));
+			tmp = expect_alloc_fail(realloc(p, RELOC_HIDE(0xf0000000, 0)));
 			free(tmp);
 		}
 
-		tmp = expect_alloc_fail(realloc(p, SIZE_MAX));
+		tmp = expect_alloc_fail(realloc(p, RELOC_HIDE(SIZE_MAX, 0)));
 		free(tmp);
 
 	} else {

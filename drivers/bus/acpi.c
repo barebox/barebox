@@ -186,7 +186,7 @@ static int acpi_register_devices(struct bus_type *bus)
 		return -EIO;
 	}
 
-	dev_info(bus->dev, "Found %s (OEM: %.8s) with %lu entries\n",
+	dev_info(bus->dev, "Found %s (OEM: %.8s) with %zu entries\n",
 		sig, root->sdt.oem_id, entry_count);
 
 	for (i = 0; i < entry_count; i++) {

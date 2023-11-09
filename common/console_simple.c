@@ -70,7 +70,7 @@ EXPORT_SYMBOL(console_flush);
 int ctrlc (void)
 {
 	int ret = 0;
-#ifdef ARCH_HAS_CTRLC
+#ifdef CONFIG_ARCH_HAS_CTRLC
 	ret = arch_ctrlc();
 #else
 	if (tstc() && getchar() == 3)

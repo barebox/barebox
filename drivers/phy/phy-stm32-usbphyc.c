@@ -277,7 +277,7 @@ static int __stm32_usbphyc_pll_disable(struct stm32_usbphyc *usbphyc)
 static int stm32_usbphyc_pll_disable(struct stm32_usbphyc *usbphyc)
 {
 	/* Check if a phy port is still active or clk48 in use */
-	if (atomic_dec_return(&usbphyc->n_pll_cons) > 0)
+	if (atomic_dec_return(&usbphyc->n_pll_cons) != 1)
 		return 0;
 
 	return __stm32_usbphyc_pll_disable(usbphyc);

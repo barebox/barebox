@@ -9,6 +9,7 @@
 #include <abort.h>
 #include <zero_page.h>
 #include <linux/sizes.h>
+#include <memory.h>
 
 #define TEST_BUFFER_SIZE		SZ_1M
 #define TEST_BUFFER_ALIGN		SZ_4K
@@ -171,6 +172,34 @@ out:
 	free(mirror);
 }
 
+static bool zero_page_access_ok(void)
+{
+	struct memory_bank *bank;
+	const char *reason;
+	struct resource null_res = {
+		.name = "null",
+		.flags = IORESOURCE_MEM,
+		.start = 0,
+		.end = sizeof(int) - 1,
+	};
+
+	if (!IS_ENABLED(CONFIG_ARCH_HAS_ZERO_PAGE)) {
+		reason = "CONFIG_ARCH_HAS_ZERO_PAGE=n";
+		goto not_ok;
+	}
+
+	for_each_memory_bank(bank) {
+		if (resource_contains(bank->res, &null_res))
+			return true;
+	}
+
+	reason = "no memory at address zero";
+
+not_ok:
+	pr_info("skipping rest of zero page tests because %s\n", reason);
+	return false;
+}
+
 static void test_zero_page(void)
 {
 	void __iomem *null = NULL;
@@ -197,9 +226,7 @@ static void test_zero_page(void)
 		failed_tests++;
 	}
 
-	if (!IS_ENABLED(CONFIG_ARCH_HAS_ZERO_PAGE)) {
-		pr_info("skipping %s because %s=n\n",
-			"CONFIG_ARCH_HAS_ZERO_PAGE", __func__);
+	if (!zero_page_access_ok()) {
 		skipped_tests += 2;
 		return;
 	}

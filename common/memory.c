@@ -218,10 +218,6 @@ struct resource *reserve_sdram_region(const char *name, resource_size_t start,
 {
 	struct resource *res;
 
-	res = __request_sdram_region(name, IORESOURCE_BUSY, start, size);
-	if (IS_ERR(res))
-		return ERR_CAST(res);
-
 	if (!IS_ALIGNED(start, PAGE_SIZE)) {
 		pr_err("%s: %s start is not page aligned\n", __func__, name);
 		start = ALIGN_DOWN(start, PAGE_SIZE);
@@ -231,6 +227,10 @@ struct resource *reserve_sdram_region(const char *name, resource_size_t start,
 		pr_err("%s: %s size is not page aligned\n", __func__, name);
 		size = ALIGN(size, PAGE_SIZE);
 	}
+
+	res = __request_sdram_region(name, IORESOURCE_BUSY, start, size);
+	if (IS_ERR(res))
+		return ERR_CAST(res);
 
 	remap_range((void *)start, size, MAP_UNCACHED);
 

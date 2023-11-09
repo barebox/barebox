@@ -186,6 +186,21 @@ static int device_param_complete(struct device *dev, const char *devname,
 	return 0;
 }
 
+int driver_complete(struct string_list *sl, char *instr)
+{
+	struct driver_d *drv;
+
+	for_each_driver(drv) {
+		if (!strstarts_escaped(drv->name, instr))
+			continue;
+
+		string_list_add_asprintf(sl, "%s ", drv->name);
+	}
+
+	return COMPLETE_CONTINUE;
+}
+EXPORT_SYMBOL(driver_complete);
+
 int empty_complete(struct string_list *sl, char *instr)
 {
 	return COMPLETE_END;

@@ -12,6 +12,6 @@ typedef int   spinlock_t;
 #define spin_lock_irqsave(lock, flags) do { flags = 0; } while (0)
 #define spin_unlock_irqrestore(lock, flags) do { flags = flags; } while (0)
 
-#define DEFINE_SPINLOCK(lock) spinlock_t lock
+#define DEFINE_SPINLOCK(lock) spinlock_t __always_unused lock
 
 #endif /* __LINUX_SPINLOCK_H */

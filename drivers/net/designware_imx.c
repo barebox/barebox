@@ -17,6 +17,17 @@
 #define GPR_ENET_QOS_CLK_TX_CLK_SEL	BIT(20)
 #define GPR_ENET_QOS_RGMII_EN		BIT(21)
 
+#define MX93_GPR_ENET_QOS_INTF_MODE_MASK	GENMASK(3, 0)
+#define MX93_GPR_ENET_QOS_INTF_MASK		GENMASK(3, 1)
+#define MX93_GPR_ENET_QOS_INTF_SEL_MII		(0x0 << 1)
+#define MX93_GPR_ENET_QOS_INTF_SEL_RMII		(0x4 << 1)
+#define MX93_GPR_ENET_QOS_INTF_SEL_RGMII	(0x1 << 1)
+#define MX93_GPR_ENET_QOS_CLK_GEN_EN		(0x1 << 0)
+
+struct eqos_imx_soc_data {
+	int (*set_interface_mode)(struct eqos *eqos);
+	bool mac_rgmii_txclk_auto_adj;
+};
 
 struct eqos_imx_priv {
 	struct device *dev;
@@ -25,6 +36,7 @@ struct eqos_imx_priv {
 	struct regmap *intf_regmap;
 	u32 intf_reg_off;
 	bool rmii_refclk_ext;
+	struct eqos_imx_soc_data *soc_data;
 };
 
 enum { CLK_STMMACETH, CLK_PCLK, CLK_PTP_REF, CLK_TX};
@@ -42,15 +54,13 @@ static unsigned long eqos_get_csr_clk_rate_imx(struct eqos *eqos)
 	return clk_get_rate(priv->clks[CLK_PCLK].clk);
 }
 
-
-static void eqos_adjust_link_imx(struct eth_device *edev)
+static int eqos_set_txclk(struct eqos *eqos, int speed)
 {
-	struct eqos *eqos = edev->priv;
 	struct eqos_imx_priv *priv = eqos->priv;
 	unsigned long rate;
 	int ret;
 
-	switch (edev->phydev->speed) {
+	switch (speed) {
 	case SPEED_10:
 		rate = 2500000;
 		break;
@@ -61,27 +71,32 @@ static void eqos_adjust_link_imx(struct eth_device *edev)
 		rate = 125000000;
 		break;
 	default:
-		dev_err(priv->dev, "unknown speed value for GMAC speed=%d",
-			edev->phydev->speed);
-		return;
+		dev_err(priv->dev, "unknown speed value for GMAC speed=%d", speed);
+		return -EINVAL;
 	}
 
 	ret = clk_set_rate(priv->clks[CLK_TX].clk, rate);
 	if (ret)
-		dev_err(priv->dev, "set TX clk rate %ld failed %d\n",
-			rate, ret);
+		dev_err(priv->dev, "set TX clk rate %ld failed %d\n", rate, ret);
+
+	return ret;
+}
+
+static void eqos_adjust_link_imx(struct eth_device *edev)
+{
+	struct eqos *eqos = edev->priv;
+	struct eqos_imx_priv *priv = eqos->priv;
+
+	if (!priv->soc_data->mac_rgmii_txclk_auto_adj)
+		eqos_set_txclk(eqos, edev->phydev->speed);
 
 	eqos_adjust_link(edev);
 }
 
-static void eqos_imx_set_interface_mode(struct eqos *eqos)
+static int eqos_imx8mp_set_interface_mode(struct eqos *eqos)
 {
 	struct eqos_imx_priv *priv = eqos->priv;
-	struct device_node *np = priv->dev->device_node;
 	int val;
-
-	if (!of_device_is_compatible(np, "nxp,imx8mp-dwmac-eqos"))
-		return;
 
 	switch (eqos->interface) {
 	case PHY_INTERFACE_MODE_MII:
@@ -100,14 +115,45 @@ static void eqos_imx_set_interface_mode(struct eqos *eqos)
 		break;
 	default:
 		dev_err(priv->dev, "no valid interface mode found!\n");
-		return;
+		return -EINVAL;
 	}
 
 	val |= GPR_ENET_QOS_CLK_GEN_EN;
 
-	regmap_update_bits(priv->intf_regmap, priv->intf_reg_off,
-			   GPR_ENET_QOS_INTF_MODE_MASK, val);
+	return regmap_update_bits(priv->intf_regmap, priv->intf_reg_off,
+				  GPR_ENET_QOS_INTF_MODE_MASK, val);
 }
+
+static int eqos_imx93_set_interface_mode(struct eqos *eqos)
+{
+	struct eqos_imx_priv *priv = eqos->priv;
+
+	int val;
+
+	switch (eqos->interface) {
+	case PHY_INTERFACE_MODE_MII:
+		val = MX93_GPR_ENET_QOS_INTF_SEL_MII;
+		break;
+	case PHY_INTERFACE_MODE_RMII:
+		val = MX93_GPR_ENET_QOS_INTF_SEL_RMII;
+		break;
+	case PHY_INTERFACE_MODE_RGMII:
+	case PHY_INTERFACE_MODE_RGMII_ID:
+	case PHY_INTERFACE_MODE_RGMII_RXID:
+	case PHY_INTERFACE_MODE_RGMII_TXID:
+		val = MX93_GPR_ENET_QOS_INTF_SEL_RGMII;
+		break;
+	default:
+		dev_dbg(priv->dev, "imx dwmac doesn't support %d interface\n",
+			 eqos->interface);
+		return -EINVAL;
+	}
+
+	val |= MX93_GPR_ENET_QOS_CLK_GEN_EN;
+
+	return regmap_update_bits(priv->intf_regmap, priv->intf_reg_off,
+				  MX93_GPR_ENET_QOS_INTF_MODE_MASK, val);
+};
 
 static int eqos_init_imx(struct device *dev, struct eqos *eqos)
 {
@@ -115,19 +161,19 @@ static int eqos_init_imx(struct device *dev, struct eqos *eqos)
 	struct eqos_imx_priv *priv = eqos->priv;
 	int ret;
 
-	if (of_device_is_compatible(np, "nxp,imx8mp-dwmac-eqos")) {
-		priv->intf_regmap = syscon_regmap_lookup_by_phandle(np, "intf_mode");
-		if (IS_ERR(priv->intf_regmap))
-			return PTR_ERR(priv->intf_regmap);
+	priv->intf_regmap = syscon_regmap_lookup_by_phandle(np, "intf_mode");
+	if (IS_ERR(priv->intf_regmap))
+		return PTR_ERR(priv->intf_regmap);
 
-		ret = of_property_read_u32_index(np, "intf_mode", 1, &priv->intf_reg_off);
-		if (ret) {
-			dev_err(dev, "Can't get intf mode reg offset (%d)\n", ret);
-			return ret;
-		}
+	ret = of_property_read_u32_index(np, "intf_mode", 1, &priv->intf_reg_off);
+	if (ret) {
+		dev_err(dev, "Can't get intf mode reg offset (%d)\n", ret);
+		return ret;
 	}
 
-	eqos_imx_set_interface_mode(eqos);
+	ret = priv->soc_data->set_interface_mode(eqos);
+	if (ret)
+		return ret;
 
 	return 0;
 }
@@ -146,11 +192,17 @@ static struct eqos_ops imx_ops = {
 static int eqos_probe_imx(struct device *dev)
 {
 	struct device_node *np = dev->device_node;
+	struct eqos_imx_soc_data *soc_data;
 	struct eqos_imx_priv *priv;
 	int ret;
 
+	ret = dev_get_drvdata(dev, (const void **)&soc_data);
+	if (ret)
+		return ret;
+
 	priv = xzalloc(sizeof(*priv));
 
+	priv->soc_data = soc_data;
 	priv->dev = dev;
 
 	if (of_get_property(np, "snps,rmii_refclk_ext", NULL))
@@ -186,8 +238,24 @@ static void eqos_remove_imx(struct device *dev)
 	clk_bulk_put(priv->num_clks, priv->clks);
 }
 
+static struct eqos_imx_soc_data imx93_soc_data = {
+	.set_interface_mode = eqos_imx93_set_interface_mode,
+	.mac_rgmii_txclk_auto_adj = true,
+};
+
+static struct eqos_imx_soc_data imx8mp_soc_data = {
+	.set_interface_mode = eqos_imx8mp_set_interface_mode,
+	.mac_rgmii_txclk_auto_adj = false,
+};
+
 static __maybe_unused struct of_device_id eqos_imx_ids[] = {
-	{ .compatible = "nxp,imx8mp-dwmac-eqos"},
+	{
+		.compatible = "nxp,imx93-dwmac-eqos",
+		.data = &imx93_soc_data,
+	}, {
+		.compatible = "nxp,imx8mp-dwmac-eqos",
+		.data = &imx8mp_soc_data,
+	},
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, eqos_imx_ids);

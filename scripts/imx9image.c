@@ -346,7 +346,7 @@ static void set_imx_hdr_v3(struct imx_header_v3 *imxhdr, uint32_t dcd_len,
 	fhdr_v3->version = IVT_VERSION_B0;
 }
 
-static void set_image_hash(struct boot_img *img, char *filename, uint32_t hash_type)
+static void set_image_hash(struct boot_img *img, char *filename, uint32_t hash_type, int size)
 {
 	FILE *fp = NULL;
 	char sha_command[512];
@@ -383,13 +383,11 @@ static void set_image_hash(struct boot_img *img, char *filename, uint32_t hash_t
 		break;
 	}
 
-	if (img->size == 0 || !filename)
+	if (!size || !filename)
 		sprintf(sha_command, "%s /dev/null", digest_type);
 	else
-		sprintf(sha_command, "dd status=none if=/dev/zero of=tmp_pad bs=%d count=1;\
-				dd status=none if=\'%s\' of=tmp_pad conv=notrunc;\
-				%s tmp_pad; rm -f tmp_pad",
-			img->size, filename, digest_type);
+		sprintf(sha_command, "cat \'%s\' /dev/zero | dd status=none bs=1 count=%d | %s",
+			filename, size, digest_type);
 
 	memset(img->hash, 0, HASH_MAX_LEN);
 
@@ -562,7 +560,7 @@ static void set_image_array_entry(struct flash_header_v3 *container, soc_type_t 
 	img->offset = offset;  /* Is re-adjusted later */
 	img->size = size;
 
-	set_image_hash(img, tmp_filename, get_hash_algo(images_hash));
+	set_image_hash(img, tmp_filename, get_hash_algo(images_hash), size);
 
 	switch (type) {
 	case SECO:
@@ -678,7 +676,7 @@ static void set_image_array_entry(struct flash_header_v3 *container, soc_type_t 
 			img = &container->img[container->num_images];
 			img->hab_flags |= IMG_TYPE_DCD_DDR;
 			img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
-			set_image_hash(img, "/dev/null", IMAGE_HASH_ALGO_DEFAULT);
+			set_image_hash(img, "/dev/null", IMAGE_HASH_ALGO_DEFAULT, 0);
 			img->offset = offset + img->size;
 			img->entry = read_dcd_offset(tmp_filename);
 			img->dst = img->entry - 1;
@@ -871,6 +869,8 @@ close:
 	(void) close (dfd);
 }
 
+static int pblsize;
+
 static int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_offset,
 				    char *out_file, bool emmc_fastboot, image_t *image_stack,
 				    bool dcd_skip, uint8_t fuse_version, uint16_t sw_version,
@@ -920,6 +920,7 @@ static int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32
 	img_sp = image_stack;
 
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
+		int isize;
 		switch (img_sp->option) {
 		case FCB:
 		case AP:
@@ -934,11 +935,14 @@ static int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32
 				exit(EXIT_FAILURE);
 			}
 			check_file(&sbuf, img_sp->filename);
+			isize = ALIGN(sbuf.st_size, sector_size);
+			if (pblsize && isize > ALIGN(pblsize, 1024))
+				isize = ALIGN(pblsize, 1024);
 			set_image_array_entry(&imx_header.fhdr[container],
 						soc,
 						img_sp,
 						file_off,
-						ALIGN(sbuf.st_size, sector_size),
+						isize,
 						img_sp->filename,
 						dcd_skip,
 						images_hash);
@@ -1788,6 +1792,7 @@ int main(int argc, char **argv)
 		{"upower", required_argument, NULL, 'w'},
 		{"fcb", required_argument, NULL, 'b'},
 		{"padding", required_argument, NULL, 'G'},
+		{"pblsize", required_argument, NULL, 0x1000},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -2121,6 +2126,9 @@ int main(int argc, char **argv)
 		case 'G':
 			printf("Padding length:\t%s bytes\n", optarg);
 			file_off = atoi(optarg);
+			break;
+		case 0x1000:
+			pblsize = atoi(optarg);
 			break;
 		case '?':
 		default:

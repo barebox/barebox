@@ -10,21 +10,21 @@
 #include <errno.h>
 #include <soc/imx8m/ddr.h>
 
-void ddrphy_trained_csr_save(struct dram_cfg_param *ddrphy_csr,
+void ddrphy_trained_csr_save(struct dram_controller *dram, struct dram_cfg_param *ddrphy_csr,
 			     unsigned int num)
 {
 	int i = 0;
 
 	/* enable the ddrphy apb */
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	dwc_ddrphy_apb_wr(0xc0080, 0x3);
+	dwc_ddrphy_apb_wr(dram, 0xd0000, 0x0);
+	dwc_ddrphy_apb_wr(dram, 0xc0080, 0x3);
 	for (i = 0; i < num; i++) {
-		ddrphy_csr->val = dwc_ddrphy_apb_rd(ddrphy_csr->reg);
+		ddrphy_csr->val = dwc_ddrphy_apb_rd(dram, ddrphy_csr->reg);
 		ddrphy_csr++;
 	}
 	/* disable the ddrphy apb */
-	dwc_ddrphy_apb_wr(0xc0080, 0x2);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
+	dwc_ddrphy_apb_wr(dram, 0xc0080, 0x2);
+	dwc_ddrphy_apb_wr(dram, 0xd0000, 0x1);
 }
 
 void dram_config_save(struct dram_timing_info *timing_info,

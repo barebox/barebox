@@ -107,7 +107,7 @@ int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timi
 	num  = dram_timing->ddrphy_cfg_num;
 	for (i = 0; i < num; i++) {
 		/* config phy reg */
-		dwc_ddrphy_apb_wr(dram_cfg->reg, dram_cfg->val);
+		dwc_ddrphy_apb_wr(dram, dram_cfg->reg, dram_cfg->val);
 		dram_cfg++;
 	}
 
@@ -119,14 +119,14 @@ int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timi
 		dram->set_dfi_clk(dram, fsp_msg->drate);
 
 		/* load the dram training firmware image */
-		dwc_ddrphy_apb_wr(0xd0000, 0x0);
+		dwc_ddrphy_apb_wr(dram, 0xd0000, 0x0);
 		ddr_load_train_code(dram->dram_type, fsp_msg->fw_type);
 
 		/* load the frequency set point message block parameter */
 		dram_cfg = fsp_msg->fsp_cfg;
 		num = fsp_msg->fsp_cfg_num;
 		for (j = 0; j < num; j++) {
-			dwc_ddrphy_apb_wr(dram_cfg->reg, dram_cfg->val);
+			dwc_ddrphy_apb_wr(dram, dram_cfg->reg, dram_cfg->val);
 			dram_cfg++;
 		}
 
@@ -140,10 +140,10 @@ int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timi
 		 * 4. read the message block result.
 		 * -------------------------------------------------------------
 		 */
-		dwc_ddrphy_apb_wr(0xd0000, 0x1);
-		dwc_ddrphy_apb_wr(0xd0099, 0x9);
-		dwc_ddrphy_apb_wr(0xd0099, 0x1);
-		dwc_ddrphy_apb_wr(0xd0099, 0x0);
+		dwc_ddrphy_apb_wr(dram, 0xd0000, 0x1);
+		dwc_ddrphy_apb_wr(dram, 0xd0099, 0x9);
+		dwc_ddrphy_apb_wr(dram, 0xd0099, 0x1);
+		dwc_ddrphy_apb_wr(dram, 0xd0099, 0x0);
 
 		/* Wait for the training firmware to complete */
 		ret = wait_ddrphy_training_complete();
@@ -151,17 +151,17 @@ int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timi
 			return ret;
 
 		/* Halt the microcontroller. */
-		dwc_ddrphy_apb_wr(0xd0099, 0x1);
+		dwc_ddrphy_apb_wr(dram, 0xd0099, 0x1);
 
 		/* Read the Message Block results */
-		dwc_ddrphy_apb_wr(0xd0000, 0x0);
+		dwc_ddrphy_apb_wr(dram, 0xd0000, 0x0);
 
 		ddrphy_init_read_msg_block(fsp_msg->fw_type);
 
 		if (fsp_msg->fw_type != FW_2D_IMAGE)
 			dram->get_trained_CDD(dram, i);
 
-		dwc_ddrphy_apb_wr(0xd0000, 0x1);
+		dwc_ddrphy_apb_wr(dram, 0xd0000, 0x1);
 
 		fsp_msg++;
 	}
@@ -170,12 +170,12 @@ int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timi
 	dram_cfg = dram_timing->ddrphy_pie;
 	num = dram_timing->ddrphy_pie_num;
 	for (i = 0; i < num; i++) {
-		dwc_ddrphy_apb_wr(dram_cfg->reg, dram_cfg->val);
+		dwc_ddrphy_apb_wr(dram, dram_cfg->reg, dram_cfg->val);
 		dram_cfg++;
 	}
 
 	/* save the ddr PHY trained CSR in memory for low power use */
-	ddrphy_trained_csr_save(ddrphy_trained_csr, ddrphy_trained_csr_num);
+	ddrphy_trained_csr_save(dram, ddrphy_trained_csr, ddrphy_trained_csr_num);
 
 	return 0;
 }

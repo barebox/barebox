@@ -15,7 +15,9 @@
 
 bool imx8m_ddr_old_spreadsheet = true;
 
-struct dram_controller imx8m_dram_controller;
+struct dram_controller imx8m_dram_controller = {
+	.phy_base = IOMEM(IP2APB_DDRPHY_IPS_BASE_ADDR(0)),
+};
 
 static void ddr_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
 {
@@ -71,15 +73,13 @@ static void get_trained_CDD(struct dram_controller *dram, u32 fsp)
 	ddr_type = reg32_read(DDRC_MSTR(0)) & 0x3f;
 	if (ddr_type == 0x20) {
 		for (i = 0; i < 6; i++) {
-			tmp = reg32_read(IP2APB_DDRPHY_IPS_BASE_ADDR(0) +
-					 (0x54013UL + i) * 4);
+			tmp = dwc_ddrphy_apb_rd(dram, 0x54013UL + i);
 			cdd_cha[i * 2] = tmp & 0xff;
 			cdd_cha[i * 2 + 1] = (tmp >> 8) & 0xff;
 		}
 
 		for (i = 0; i < 7; i++) {
-			tmp = reg32_read(IP2APB_DDRPHY_IPS_BASE_ADDR(0) +
-					 (0x5402cUL + i) * 4);
+			tmp = dwc_ddrphy_apb_rd(dram, 0x5402cUL + i);
 			if (i == 0) {
 				cdd_cha[0] = (tmp >> 8) & 0xff;
 			} else if (i == 6) {
@@ -106,8 +106,7 @@ static void get_trained_CDD(struct dram_controller *dram, u32 fsp)
 		unsigned int ddr4_cdd[64];
 
 		for( i = 0; i < 29; i++) {
-			tmp = reg32_read(IP2APB_DDRPHY_IPS_BASE_ADDR(0) +
-					 (0x54012UL + i) * 4);
+			tmp = dwc_ddrphy_apb_rd(dram, 0x54012UL + i);
 			ddr4_cdd[i * 2] = tmp & 0xff;
 			ddr4_cdd[i * 2 + 1] = (tmp >> 8) & 0xff;
 		}

@@ -385,6 +385,7 @@ struct dram_timing_info {
 struct dram_controller {
 	enum ddrc_type ddrc_type;
 	enum dram_type dram_type;
+	void __iomem *phy_base;
 	void (*get_trained_CDD)(struct dram_controller *dram, u32 fsp);
 	void (*set_dfi_clk)(struct dram_controller *dram, unsigned int drate_mhz);
 };
@@ -449,7 +450,8 @@ static inline int imx8mp_ddr_init(struct dram_timing_info *dram_timing,
 }
 
 int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *timing_info);
-void ddrphy_trained_csr_save(struct dram_cfg_param *param, unsigned int num);
+void ddrphy_trained_csr_save(struct dram_controller *dram, struct dram_cfg_param *param,
+			     unsigned int num);
 void dram_config_save(struct dram_timing_info *info, unsigned long base);
 
 /* utils function for ddr phy training */
@@ -464,10 +466,20 @@ static inline void reg32setbit(unsigned long addr, u32 bit)
 	setbits_le32(addr, (1 << bit));
 }
 
-#define dwc_ddrphy_apb_wr(addr, data) \
-	reg32_write(IOMEM(IP2APB_DDRPHY_IPS_BASE_ADDR(0)) + 4 * (addr), data)
-#define dwc_ddrphy_apb_rd(addr) \
-	reg32_read(IOMEM(IP2APB_DDRPHY_IPS_BASE_ADDR(0)) + 4 * (addr))
+static inline void *dwc_ddrphy_apb_addr(struct dram_controller *dram, unsigned int addr)
+{
+	return dram->phy_base + addr * 4;
+}
+
+static inline void dwc_ddrphy_apb_wr(struct dram_controller *dram, unsigned int addr, u32 data)
+{
+	reg32_write(dwc_ddrphy_apb_addr(dram, addr), data);
+}
+
+static inline u32 dwc_ddrphy_apb_rd(struct dram_controller *dram, unsigned int addr)
+{
+	return reg32_read(dwc_ddrphy_apb_addr(dram, addr));
+}
 
 extern bool imx8m_ddr_old_spreadsheet;
 extern struct dram_cfg_param ddrphy_trained_csr[];

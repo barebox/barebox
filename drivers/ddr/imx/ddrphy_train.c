@@ -93,10 +93,8 @@ void ddr_load_train_code(enum dram_type dram_type, enum fw_type fw_type)
 			       DDRC_PHY_DMEM, dmem, dsize);
 }
 
-int ddr_cfg_phy(struct dram_timing_info *dram_timing, unsigned type)
+int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timing)
 {
-	enum ddrc_type ddrc_type = get_ddrc_type(type);
-	enum dram_type dram_type = get_dram_type(type);
 	struct dram_cfg_param *dram_cfg;
 	struct dram_fsp_msg *fsp_msg;
 	unsigned int num;
@@ -118,11 +116,11 @@ int ddr_cfg_phy(struct dram_timing_info *dram_timing, unsigned type)
 	for (i = 0; i < dram_timing->fsp_msg_num; i++) {
 		pr_debug("DRAM PHY training for %dMTS\n", fsp_msg->drate);
 		/* set dram PHY input clocks to desired frequency */
-		ddrphy_init_set_dfi_clk(fsp_msg->drate, ddrc_type);
+		ddrphy_init_set_dfi_clk(fsp_msg->drate, dram->ddrc_type);
 
 		/* load the dram training firmware image */
 		dwc_ddrphy_apb_wr(0xd0000, 0x0);
-		ddr_load_train_code(dram_type, fsp_msg->fw_type);
+		ddr_load_train_code(dram->dram_type, fsp_msg->fw_type);
 
 		/* load the frequency set point message block parameter */
 		dram_cfg = fsp_msg->fsp_cfg;

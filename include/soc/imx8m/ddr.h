@@ -384,6 +384,11 @@ struct dram_timing_info {
 	unsigned int fsp_table[4];
 };
 
+struct dram_controller {
+	enum ddrc_type ddrc_type;
+	enum dram_type dram_type;
+};
+
 extern struct dram_timing_info dram_timing;
 
 void ddr_get_firmware_lpddr4(void);
@@ -397,42 +402,55 @@ static inline void ddr_get_firmware(enum dram_type dram_type)
 		ddr_get_firmware_ddr();
 }
 
-int imx8m_ddr_init(struct dram_timing_info *dram_timing,
-		   unsigned type);
+int imx8m_ddr_init(struct dram_controller *dram, struct dram_timing_info *dram_timing);
+
+extern struct dram_controller imx8m_dram_controller;
 
 static inline int imx8mm_ddr_init(struct dram_timing_info *dram_timing,
 				  enum dram_type dram_type)
 {
+	imx8m_dram_controller.ddrc_type = DDRC_TYPE_MM;
+	imx8m_dram_controller.dram_type = dram_type;
+
 	ddr_get_firmware(dram_type);
 
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MM | dram_type);
+	return imx8m_ddr_init(&imx8m_dram_controller, dram_timing);
 }
 
 static inline int imx8mn_ddr_init(struct dram_timing_info *dram_timing,
 				  enum dram_type dram_type)
 {
+	imx8m_dram_controller.ddrc_type = DDRC_TYPE_MN;
+	imx8m_dram_controller.dram_type = dram_type;
+
 	ddr_get_firmware(dram_type);
 
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MN | dram_type);
+	return imx8m_ddr_init(&imx8m_dram_controller, dram_timing);
 }
 
 static inline int imx8mq_ddr_init(struct dram_timing_info *dram_timing,
 				  enum dram_type dram_type)
 {
+	imx8m_dram_controller.ddrc_type = DDRC_TYPE_MQ;
+	imx8m_dram_controller.dram_type = dram_type;
+
 	ddr_get_firmware(dram_type);
 
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MQ | dram_type);
+	return imx8m_ddr_init(&imx8m_dram_controller, dram_timing);
 }
 
 static inline int imx8mp_ddr_init(struct dram_timing_info *dram_timing,
 				  enum dram_type dram_type)
 {
+	imx8m_dram_controller.ddrc_type = DDRC_TYPE_MP;
+	imx8m_dram_controller.dram_type = dram_type;
+
 	ddr_get_firmware(dram_type);
 
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MP | dram_type);
+	return imx8m_ddr_init(&imx8m_dram_controller, dram_timing);
 }
 
-int ddr_cfg_phy(struct dram_timing_info *timing_info, unsigned type);
+int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *timing_info);
 void load_lpddr4_phy_pie(void);
 void ddrphy_trained_csr_save(struct dram_cfg_param *param, unsigned int num);
 void dram_config_save(struct dram_timing_info *info, unsigned long base);

@@ -15,6 +15,8 @@
 
 bool imx8m_ddr_old_spreadsheet = true;
 
+struct dram_controller imx8m_dram_controller;
+
 static void ddr_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
 {
 	int i = 0;
@@ -49,18 +51,16 @@ static void ddr_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
  */
 #define IMX8M_SAVED_DRAM_TIMING_BASE		0x180000
 
-int imx8m_ddr_init(struct dram_timing_info *dram_timing,
-		   unsigned type)
+int imx8m_ddr_init(struct dram_controller *dram, struct dram_timing_info *dram_timing)
 {
 	unsigned long src_ddrc_rcr = MX8M_SRC_DDRC_RCR_ADDR;
 	unsigned int tmp, initial_drate, target_freq;
-	enum ddrc_type ddrc_type = get_ddrc_type(type);
 	int ret;
 
 	pr_debug("start DRAM init\n");
 
 	/* Step1: Follow the power up procedure */
-	switch (ddrc_type) {
+	switch (dram->ddrc_type) {
 	case DDRC_TYPE_MQ:
 		reg32_write(src_ddrc_rcr + 0x04, 0x8f00000f);
 		reg32_write(src_ddrc_rcr, 0x8f00000f);
@@ -82,7 +82,7 @@ int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 
 	initial_drate = dram_timing->fsp_msg[0].drate;
 	/* default to the frequency point 0 clock */
-	ddrphy_init_set_dfi_clk(initial_drate, ddrc_type);
+	ddrphy_init_set_dfi_clk(initial_drate, dram->ddrc_type);
 
 	/* D-aasert the presetn */
 	reg32_write(src_ddrc_rcr, 0x8F000006);
@@ -112,7 +112,7 @@ int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 	 * might not have been called
 	 */
 	tmp = reg32_read(DDRC_MSTR(0));
-	if (tmp & (0x1 << 5) && ddrc_type != DDRC_TYPE_MN)
+	if (tmp & (0x1 << 5) && dram->ddrc_type != DDRC_TYPE_MN)
 		reg32_write(DDRC_DDR_SS_GPR0, 0x01); /* LPDDR4 mode */
 
 	/* determine the initial boot frequency */
@@ -139,7 +139,7 @@ int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 	 */
 	pr_debug("ddrphy config start\n");
 
-	ret = ddr_cfg_phy(dram_timing, type);
+	ret = ddr_cfg_phy(dram, dram_timing);
 	if (ret)
 		return ret;
 
@@ -159,7 +159,7 @@ int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 	reg32_write(DDRC_SWCTL(0), 0x00000000);
 
 	/* Apply rank-to-rank workaround */
-	update_umctl2_rank_space_setting(dram_timing->fsp_msg_num - 1, ddrc_type);
+	update_umctl2_rank_space_setting(dram_timing->fsp_msg_num - 1, dram->ddrc_type);
 
 	/* Step16: Set DFIMISC.dfi_init_start to 1 */
 	setbits_le32(DDRC_DFIMISC(0), (0x1 << 5));

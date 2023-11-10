@@ -495,3 +495,14 @@ CFG_start_mnt_reform.pblb.imximg = $(board)/mnt-reform/flash-header-mnt-reform.i
 MAX_PBL_MEMORY_SIZE_start_mnt_reform = 0x3f000
 FILE_barebox-mnt-reform.img = start_mnt_reform.pblb.imximg
 image-$(CONFIG_MACH_MNT_REFORM) += barebox-mnt-reform.img
+
+quiet_cmd_imx9img = IMX9IMG  $@
+cmd_imx9img = $(objtree)/scripts/imx9image -soc IMX9 -c -ap $< a55 0x2049A000 -out $@ \
+		-pblsize $($(patsubst $(obj)/%.pblb,PBL_MEMORY_SIZE_%,$<)) > /dev/null
+
+$(obj)/%.imx9img: $(obj)/% FORCE
+	$(call if_changed,imx9img)
+
+pblb-$(CONFIG_MACH_TQ_MBA9XXXCA) += start_imx93_tqma9352_mba93xxca
+FILE_barebox-tqmba9xxxca.img = start_imx93_tqma9352_mba93xxca.pblb.imx9img
+image-$(CONFIG_MACH_TQ_MBA9XXXCA) += barebox-tqmba9xxxca.img

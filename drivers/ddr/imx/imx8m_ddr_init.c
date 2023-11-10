@@ -543,7 +543,7 @@ int imx8m_ddr_init(struct dram_controller *dram, struct dram_timing_info *dram_t
 	 */
 	tmp = reg32_read(DDRC_MSTR(0));
 	if (tmp & (0x1 << 5) && dram->ddrc_type != DDRC_TYPE_MN)
-		reg32_write(DDRC_DDR_SS_GPR0, 0x01); /* LPDDR4 mode */
+		reg32_write(MX8M_DDRC_DDR_SS_GPR0, 0x01); /* LPDDR4 mode */
 
 	/* determine the initial boot frequency */
 	target_freq = reg32_read(DDRC_MSTR2(0)) & 0x3;

@@ -8,11 +8,9 @@
 
 #include <io.h>
 #include <asm/types.h>
+#include <mach/imx/imx8m-regs.h>
 
-#define DDRC_DDR_SS_GPR0		0x3d000000
-#define DDRC_IPS_BASE_ADDR_0		0x3f400000
-#define IP2APB_DDRPHY_IPS_BASE_ADDR(X)	(0x3c000000 + (X * 0x2000000))
-#define DDRPHY_MEM(X)			(0x3c000000 + (X * 0x2000000) + 0x50000)
+#define IP2APB_DDRPHY_IPS_BASE_ADDR(X)	MX8M_DDRC_PHY_BASE_ADDR
 
 #define DDRC_MSTR(X)             (DDRC_IPS_BASE_ADDR(X) + 0x00)
 #define DDRC_STAT(X)             (DDRC_IPS_BASE_ADDR(X) + 0x04)
@@ -320,7 +318,7 @@
 #define DRC_PERF_MON_MRR14_DAT(X)            (DRC_PERF_MON_BASE_ADDR(X) + 0x78)
 #define DRC_PERF_MON_MRR15_DAT(X)            (DRC_PERF_MON_BASE_ADDR(X) + 0x7C)
 
-#define DDRC_IPS_BASE_ADDR(X) (0x3d400000 + (X * 0x2000000))
+#define DDRC_IPS_BASE_ADDR(X) MX8M_DDRC_IPS_BASE_ADDR(X)
 
 /* user data type */
 enum fw_type {
@@ -391,8 +389,6 @@ struct dram_controller {
 	void (*set_dfi_clk)(struct dram_controller *dram, unsigned int drate_mhz);
 };
 
-extern struct dram_timing_info dram_timing;
-
 void ddr_get_firmware_lpddr4(void);
 void ddr_get_firmware_ddr(void);
 
@@ -453,7 +449,6 @@ static inline int imx8mp_ddr_init(struct dram_timing_info *dram_timing,
 }
 
 int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *timing_info);
-void load_lpddr4_phy_pie(void);
 void ddrphy_trained_csr_save(struct dram_cfg_param *param, unsigned int num);
 void dram_config_save(struct dram_timing_info *info, unsigned long base);
 

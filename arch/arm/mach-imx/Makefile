@@ -33,3 +33,4 @@ obj-$(CONFIG_RESET_IMX_SRC) += src.o
 lwl-y += cpu_init.o
 pbl-y += xload-spi.o xload-common.o xload-imx-nand.o xload-gpmi-nand.o
 pbl-y += xload-qspi.o
+obj-pbl-$(CONFIG_ARCH_IMX9) += ele.o

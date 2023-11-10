@@ -57,26 +57,6 @@ static __noreturn void imx8m_atf_start_bl31(const void *fw, size_t fw_size, void
 	__builtin_unreachable();
 }
 
-__noreturn void imx8mm_atf_load_bl31(const void *fw, size_t fw_size)
-{
-	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
-}
-
-__noreturn void imx8mn_atf_load_bl31(const void *fw, size_t fw_size)
-{
-	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
-}
-
-__noreturn void imx8mp_atf_load_bl31(const void *fw, size_t fw_size)
-{
-	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);
-}
-
-__noreturn void imx8mq_atf_load_bl31(const void *fw, size_t fw_size)
-{
-	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
-}
-
 void imx8mm_load_bl33(void *bl33)
 {
 	enum bootsource src;
@@ -138,16 +118,32 @@ void imx8mm_load_bl33(void *bl33)
 
 __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 {
+	const void *bl31;
+	size_t bl31_size;
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
 	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
 	imx8mm_load_bl33(bl33);
 
-	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mm, (void *)arm_mem_optee(endmem), bl33);
-	else
-		imx8mm_load_and_start_tfa(imx8mm_bl31_bin);
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE)) {
+		void *bl32 = (void *)arm_mem_optee(endmem);
+		size_t bl32_size;
+		void *bl32_image;
+
+		imx8mm_tzc380_init();
+		get_builtin_firmware_ext(imx8mm_bl32_bin,
+				bl33, &bl32_image,
+				&bl32_size);
+
+		memcpy(bl32, bl32_image, bl32_size);
+
+		get_builtin_firmware(imx8mm_bl31_bin_optee, &bl31, &bl31_size);
+	} else {
+		get_builtin_firmware(imx8mm_bl31_bin, &bl31, &bl31_size);
+	}
+
+	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
 }
 
 void imx8mp_load_bl33(void *bl33)
@@ -185,16 +181,32 @@ void imx8mp_load_bl33(void *bl33)
 
 __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 {
+	const void *bl31;
+	size_t bl31_size;
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
 	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
 	imx8mp_load_bl33(bl33);
 
-	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mp, (void *)arm_mem_optee(endmem), bl33);
-	else
-		imx8mp_load_and_start_tfa(imx8mp_bl31_bin);
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE)) {
+		void *bl32 = (void *)arm_mem_optee(endmem);
+		size_t bl32_size;
+		void *bl32_image;
+
+		imx8mp_tzc380_init();
+		get_builtin_firmware_ext(imx8mp_bl32_bin,
+				bl33, &bl32_image,
+				&bl32_size);
+
+		memcpy(bl32, bl32_image, bl32_size);
+
+		get_builtin_firmware(imx8mp_bl31_bin_optee, &bl31, &bl31_size);
+	} else {
+		get_builtin_firmware(imx8mp_bl31_bin, &bl31, &bl31_size);
+	}
+
+	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);
 }
 
 
@@ -233,16 +245,32 @@ void imx8mn_load_bl33(void *bl33)
 
 __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 {
+	const void *bl31;
+	size_t bl31_size;
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(16);
 
 	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
 	imx8mn_load_bl33(bl33);
 
-	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mn, (void *)arm_mem_optee(endmem), bl33);
-	else
-		imx8mn_load_and_start_tfa(imx8mn_bl31_bin);
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE)) {
+		void *bl32 = (void *)arm_mem_optee(endmem);
+		size_t bl32_size;
+		void *bl32_image;
+
+		imx8mn_tzc380_init();
+		get_builtin_firmware_ext(imx8mn_bl32_bin,
+				bl33, &bl32_image,
+				&bl32_size);
+
+		memcpy(bl32, bl32_image, bl32_size);
+
+		get_builtin_firmware(imx8mn_bl31_bin_optee, &bl31, &bl31_size);
+	} else {
+		get_builtin_firmware(imx8mn_bl31_bin, &bl31, &bl31_size);
+	}
+
+	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
 }
 
 void imx8mq_load_bl33(void *bl33)
@@ -274,14 +302,30 @@ void imx8mq_load_bl33(void *bl33)
 
 __noreturn void imx8mq_load_and_start_image_via_tfa(void)
 {
+	const void *bl31;
+	size_t bl31_size;
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(16);
 
 	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
 	imx8mq_load_bl33(bl33);
 
-	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mq, (void *)arm_mem_optee(endmem), bl33);
-	else
-		imx8mq_load_and_start_tfa(imx8mq_bl31_bin);
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_OPTEE)) {
+		void *bl32 = (void *)arm_mem_optee(endmem);
+		size_t bl32_size;
+		void *bl32_image;
+
+		imx8mq_tzc380_init();
+		get_builtin_firmware_ext(imx8mq_bl32_bin,
+				bl33, &bl32_image,
+				&bl32_size);
+
+		memcpy(bl32, bl32_image, bl32_size);
+
+		get_builtin_firmware(imx8mq_bl31_bin_optee, &bl31, &bl31_size);
+	} else {
+		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
+	}
+
+	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
 }

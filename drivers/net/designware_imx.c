@@ -115,11 +115,6 @@ static int eqos_init_imx(struct device *dev, struct eqos *eqos)
 	struct eqos_imx_priv *priv = eqos->priv;
 	int ret;
 
-	priv->dev = dev;
-
-	if (of_get_property(np, "snps,rmii_refclk_ext", NULL))
-		priv->rmii_refclk_ext = true;
-
 	if (of_device_is_compatible(np, "nxp,imx8mp-dwmac-eqos")) {
 		priv->intf_regmap = syscon_regmap_lookup_by_phandle(np, "intf_mode");
 		if (IS_ERR(priv->intf_regmap))
@@ -130,22 +125,6 @@ static int eqos_init_imx(struct device *dev, struct eqos *eqos)
 			dev_err(dev, "Can't get intf mode reg offset (%d)\n", ret);
 			return ret;
 		}
-	}
-
-	priv->num_clks = ARRAY_SIZE(imx_clks);
-	priv->clks = xmalloc(priv->num_clks * sizeof(*priv->clks));
-	memcpy(priv->clks, imx_clks, sizeof imx_clks);
-
-	ret = clk_bulk_get(dev, priv->num_clks, priv->clks);
-	if (ret) {
-		dev_err(dev, "Failed to get clks: %s\n", strerror(-ret));
-		return ret;
-	}
-
-	ret = clk_bulk_enable(priv->num_clks, priv->clks);
-	if (ret) {
-		dev_err(dev, "Failed to enable clks: %s\n", strerror(-ret));
-		return ret;
 	}
 
 	eqos_imx_set_interface_mode(eqos);
@@ -166,7 +145,34 @@ static struct eqos_ops imx_ops = {
 
 static int eqos_probe_imx(struct device *dev)
 {
-	return eqos_probe(dev, &imx_ops, xzalloc(sizeof(struct eqos_imx_priv)));
+	struct device_node *np = dev->device_node;
+	struct eqos_imx_priv *priv;
+	int ret;
+
+	priv = xzalloc(sizeof(*priv));
+
+	priv->dev = dev;
+
+	if (of_get_property(np, "snps,rmii_refclk_ext", NULL))
+		priv->rmii_refclk_ext = true;
+
+	priv->num_clks = ARRAY_SIZE(imx_clks);
+	priv->clks = xmalloc(priv->num_clks * sizeof(*priv->clks));
+	memcpy(priv->clks, imx_clks, sizeof imx_clks);
+
+	ret = clk_bulk_get(dev, priv->num_clks, priv->clks);
+	if (ret) {
+		dev_err(dev, "Failed to get clks: %s\n", strerror(-ret));
+		return ret;
+	}
+
+	ret = clk_bulk_enable(priv->num_clks, priv->clks);
+	if (ret) {
+		dev_err(dev, "Failed to enable clks: %s\n", strerror(-ret));
+		return ret;
+	}
+
+	return eqos_probe(dev, &imx_ops, priv);
 }
 
 static void eqos_remove_imx(struct device *dev)

@@ -617,6 +617,11 @@ int imx8m_bbu_internal_mmcboot_register_handler(const char *name,
 						 unsigned long flags)
 	__alias(imx_bbu_internal_mmcboot_register_handler);
 
+int imx9_bbu_internal_mmcboot_register_handler(const char *name,
+						 const char *devicefile,
+						 unsigned long flags)
+	__alias(imx_bbu_internal_mmcboot_register_handler);
+
 /*
  * Register an i.MX53 internal boot update handler for i2c/spi
  * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to

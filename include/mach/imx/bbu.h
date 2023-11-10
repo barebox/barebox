@@ -82,6 +82,8 @@ int imx8m_bbu_internal_mmc_register_handler(const char *name, const char *device
 					    unsigned long flags);
 int imx8m_bbu_internal_mmcboot_register_handler(const char *name, const char *devicefile,
 						unsigned long flags);
+int imx9_bbu_internal_mmcboot_register_handler(const char *name, const char *devicefile,
+					       unsigned long flags);
 
 int imx_bbu_external_nor_register_handler(const char *name, const char *devicefile,
 		unsigned long flags);
@@ -176,6 +178,13 @@ static inline int imx8m_bbu_internal_mmc_register_handler(const char *name, cons
 }
 
 static inline int imx8m_bbu_internal_mmcboot_register_handler(const char *name,
+							      const char *devicefile,
+							      unsigned long flags)
+{
+	return -ENOSYS;
+}
+
+static inline int imx9_bbu_internal_mmcboot_register_handler(const char *name,
 							      const char *devicefile,
 							      unsigned long flags)
 {

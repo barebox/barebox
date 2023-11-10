@@ -456,7 +456,6 @@ void dram_config_save(struct dram_timing_info *info, unsigned long base);
 
 /* utils function for ddr phy training */
 int wait_ddrphy_training_complete(void);
-void ddrphy_init_read_msg_block(enum fw_type fw_type);
 
 #define reg32_write(a, v)	writel(v, a)
 #define reg32_read(a)		readl(a)

@@ -101,7 +101,3 @@ int wait_ddrphy_training_complete(void)
 		}
 	}
 }
-
-void ddrphy_init_read_msg_block(enum fw_type type)
-{
-}

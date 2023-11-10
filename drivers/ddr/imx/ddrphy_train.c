@@ -156,8 +156,6 @@ int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timi
 		/* Read the Message Block results */
 		dwc_ddrphy_apb_wr(dram, 0xd0000, 0x0);
 
-		ddrphy_init_read_msg_block(fsp_msg->fw_type);
-
 		if (fsp_msg->fw_type != FW_2D_IMAGE)
 			dram->get_trained_CDD(dram, i);
 

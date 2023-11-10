@@ -34,4 +34,5 @@ obj-$(CONFIG_ARCH_IMX8MM) += clk-imx8mm.o
 obj-$(CONFIG_ARCH_IMX8MN) += clk-imx8mn.o
 obj-$(CONFIG_ARCH_IMX8MP) += clk-imx8mp.o
 obj-$(CONFIG_ARCH_IMX8MQ) += clk-imx8mq.o
+obj-$(CONFIG_ARCH_IMX93) += clk-imx93.o clk-composite-93.o clk-gate-93.o clk-fracn-gppll.o
 obj-$(CONFIG_ARCH_VF610)  += clk-vf610.o

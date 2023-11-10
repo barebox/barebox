@@ -9,7 +9,6 @@
 #include <linux/kernel.h>
 #include <soc/imx8m/ddr.h>
 #include <firmware.h>
-#include <mach/imx/imx8m-regs.h>
 
 static const u16 *lpddr4_imem_1d;
 static size_t lpddr4_imem_1d_size;
@@ -53,7 +52,8 @@ void ddr_get_firmware_ddr(void)
 			     &ddr4_dmem_2d_size);
 }
 
-void ddr_load_train_code(enum dram_type dram_type, enum fw_type fw_type)
+void ddr_load_train_code(struct dram_controller *dram, enum dram_type dram_type,
+			 enum fw_type fw_type)
 {
 	const u16 *imem, *dmem;
 	size_t isize, dsize;
@@ -86,11 +86,9 @@ void ddr_load_train_code(enum dram_type dram_type, enum fw_type fw_type)
 		panic("No matching DDR PHY firmware found");
 	}
 
-	ddrc_phy_load_firmware(IOMEM(MX8M_DDRC_PHY_BASE_ADDR),
-			       DDRC_PHY_IMEM, imem, isize);
+	ddrc_phy_load_firmware(dram, DDRC_PHY_IMEM, imem, isize);
 
-	ddrc_phy_load_firmware(IOMEM(MX8M_DDRC_PHY_BASE_ADDR),
-			       DDRC_PHY_DMEM, dmem, dsize);
+	ddrc_phy_load_firmware(dram, DDRC_PHY_DMEM, dmem, dsize);
 }
 
 int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timing)
@@ -120,7 +118,7 @@ int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timi
 
 		/* load the dram training firmware image */
 		dwc_ddrphy_apb_wr(dram, 0xd0000, 0x0);
-		ddr_load_train_code(dram->dram_type, fsp_msg->fw_type);
+		ddr_load_train_code(dram, dram->dram_type, fsp_msg->fw_type);
 
 		/* load the frequency set point message block parameter */
 		dram_cfg = fsp_msg->fsp_cfg;
@@ -146,7 +144,7 @@ int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timi
 		dwc_ddrphy_apb_wr(dram, 0xd0099, 0x0);
 
 		/* Wait for the training firmware to complete */
-		ret = wait_ddrphy_training_complete();
+		ret = wait_ddrphy_training_complete(dram);
 		if (ret)
 			return ret;
 

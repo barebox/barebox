@@ -10,15 +10,13 @@
 #include <io.h>
 #include <linux/iopoll.h>
 #include <soc/imx8m/ddr.h>
-#include <mach/imx/imx8m-regs.h>
-#include <mach/imx/imx8m-ccm-regs.h>
 
-void ddrc_phy_load_firmware(void __iomem *phy,
+void ddrc_phy_load_firmware(struct dram_controller *dram,
 			    enum ddrc_phy_firmware_offset offset,
 			    const u16 *blob, size_t size)
 {
 	while (size) {
-		writew(*blob++, phy + DDRC_PHY_REG(offset));
+		writew(*blob++, dwc_ddrphy_apb_addr(dram, offset));
 		offset++;
 		size -= sizeof(*blob);
 	}
@@ -33,28 +31,27 @@ enum pmc_constants {
 	PMC_TRAIN_FAIL		= 0xff,
 };
 
-static u32 ddrc_phy_get_message(void __iomem *phy, int type)
+static u32 ddrc_phy_get_message(struct dram_controller *dram, int type)
 {
-	u32 r, message;
+	u32 message;
 
 	/*
 	 * When BIT0 set to 0, the PMU has a message for the user
 	 * Wait for it indefinitely.
 	 */
-	readl_poll_timeout(phy + DDRC_PHY_REG(0xd0004),
-			   r, !(r & BIT(0)), 0);
+	while (dwc_ddrphy_apb_rd(dram, 0xd0004) & BIT(0));
 
 	switch (type) {
 	case PMC_MESSAGE_ID:
 		/*
 		 * Get the major message ID
 		 */
-		message = readl(phy + DDRC_PHY_REG(0xd0032));
+		message = dwc_ddrphy_apb_rd(dram, 0xd0032);
 		break;
 	case PMC_MESSAGE_STREAM:
-		message = readl(phy + DDRC_PHY_REG(0xd0034));
+		message = dwc_ddrphy_apb_rd(dram, 0xd0034);
 		message <<= 16;
-		message |= readl(phy + DDRC_PHY_REG(0xd0032));
+		message |= dwc_ddrphy_apb_rd(dram, 0xd0032);
 		break;
 	}
 
@@ -62,37 +59,34 @@ static u32 ddrc_phy_get_message(void __iomem *phy, int type)
 	 * By setting this register to 0, the user acknowledges the
 	 * receipt of the message.
 	 */
-	writel(0x00000000, phy + DDRC_PHY_REG(0xd0031));
+	dwc_ddrphy_apb_wr(dram, 0xd0031, 0x00000000);
 	/*
 	 * When BIT0 set to 0, the PMU has a message for the user
 	 */
-	readl_poll_timeout(phy + DDRC_PHY_REG(0xd0004),
-			   r, r & BIT(0), 0);
+	while (!(dwc_ddrphy_apb_rd(dram, 0xd0004) & BIT(0)));
 
-	writel(0x00000001, phy + DDRC_PHY_REG(0xd0031));
+	dwc_ddrphy_apb_wr(dram, 0xd0031, 0x00000001);
 
 	return message;
 }
 
-static void ddrc_phy_fetch_streaming_message(void __iomem *phy)
+static void ddrc_phy_fetch_streaming_message(struct dram_controller *dram)
 {
-	const u16 index = ddrc_phy_get_message(phy, PMC_MESSAGE_STREAM);
+	const u16 index = ddrc_phy_get_message(dram, PMC_MESSAGE_STREAM);
 	u16 i;
 
 	for (i = 0; i < index; i++)
-		ddrc_phy_get_message(phy, PMC_MESSAGE_STREAM);
+		ddrc_phy_get_message(dram, PMC_MESSAGE_STREAM);
 }
 
-int wait_ddrphy_training_complete(void)
+int wait_ddrphy_training_complete(struct dram_controller *dram)
 {
-	void __iomem *phy = IOMEM(MX8M_DDRC_PHY_BASE_ADDR);
-
 	for (;;) {
-		const u32 m = ddrc_phy_get_message(phy, PMC_MESSAGE_ID);
+		const u32 m = ddrc_phy_get_message(dram, PMC_MESSAGE_ID);
 
 		switch (m) {
 		case PMC_TRAIN_STREAM_START:
-			ddrc_phy_fetch_streaming_message(phy);
+			ddrc_phy_fetch_streaming_message(dram);
 			break;
 		case PMC_TRAIN_SUCCESS:
 			return 0;

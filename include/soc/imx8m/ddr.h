@@ -455,7 +455,12 @@ void ddrphy_trained_csr_save(struct dram_controller *dram, struct dram_cfg_param
 void dram_config_save(struct dram_timing_info *info, unsigned long base);
 
 /* utils function for ddr phy training */
-int wait_ddrphy_training_complete(void);
+int wait_ddrphy_training_complete(struct dram_controller *dram);
+
+static inline int imx8m_wait_ddrphy_training_complete(void)
+{
+	return wait_ddrphy_training_complete(&imx8m_dram_controller);
+}
 
 #define reg32_write(a, v)	writel(v, a)
 #define reg32_read(a)		readl(a)
@@ -489,9 +494,15 @@ enum ddrc_phy_firmware_offset {
 	DDRC_PHY_DMEM = 0x00054000U,
 };
 
-void ddr_load_train_code(enum dram_type dram_type, enum fw_type fw_type);
+void ddr_load_train_code(struct dram_controller *dram, enum dram_type dram_type,
+			 enum fw_type fw_type);
+static inline void imx8m_ddr_load_train_code(enum dram_type dram_type,
+					     enum fw_type fw_type)
+{
+	ddr_load_train_code(&imx8m_dram_controller, dram_type, fw_type);
+}
 
-void ddrc_phy_load_firmware(void __iomem *,
+void ddrc_phy_load_firmware(struct dram_controller *dram,
 			    enum ddrc_phy_firmware_offset,
 			    const u16 *, size_t);
 

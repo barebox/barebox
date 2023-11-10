@@ -387,6 +387,7 @@ struct dram_timing_info {
 struct dram_controller {
 	enum ddrc_type ddrc_type;
 	enum dram_type dram_type;
+	void (*get_trained_CDD)(struct dram_controller *dram, u32 fsp);
 };
 
 extern struct dram_timing_info dram_timing;
@@ -459,10 +460,6 @@ void dram_config_save(struct dram_timing_info *info, unsigned long base);
 int wait_ddrphy_training_complete(void);
 void ddrphy_init_set_dfi_clk(unsigned int drate, enum ddrc_type ddrc_type);
 void ddrphy_init_read_msg_block(enum fw_type fw_type);
-
-void update_umctl2_rank_space_setting(unsigned int pstat_num,
-				      enum ddrc_type ddrc_type);
-void get_trained_CDD(unsigned int fsp);
 
 #define reg32_write(a, v)	writel(v, a)
 #define reg32_read(a)		readl(a)

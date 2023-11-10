@@ -159,7 +159,7 @@ int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timi
 		ddrphy_init_read_msg_block(fsp_msg->fw_type);
 
 		if (fsp_msg->fw_type != FW_2D_IMAGE)
-			get_trained_CDD(i);
+			dram->get_trained_CDD(dram, i);
 
 		dwc_ddrphy_apb_wr(0xd0000, 0x1);
 

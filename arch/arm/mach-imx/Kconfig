@@ -27,6 +27,9 @@ config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 	depends on MTD_WRITE
 	default y
 
+config USB_GADGET_DRIVER_ARC_PBL
+	bool
+
 config RESET_IMX_SRC
 	def_bool y
 	depends on ARCH_IMX6 || ARCH_IMX50 || ARCH_IMX51 || ARCH_IMX53

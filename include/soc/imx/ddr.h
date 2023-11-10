@@ -41,6 +41,12 @@ struct dram_cfg_param {
 	unsigned int val;
 };
 
+struct dram_fsp_cfg {
+	struct dram_cfg_param ddrc_cfg[20];
+	struct dram_cfg_param mr_cfg[10];
+	unsigned int bypass;
+};
+
 struct dram_fsp_msg {
 	unsigned int drate;
 	enum fw_type fw_type;
@@ -52,6 +58,9 @@ struct dram_timing_info {
 	/* umctl2 config */
 	struct dram_cfg_param *ddrc_cfg;
 	unsigned int ddrc_cfg_num;
+	/* fsp config */
+	struct dram_fsp_cfg *fsp_cfg;
+	unsigned int fsp_cfg_num;
 	/* ddrphy config */
 	struct dram_cfg_param *ddrphy_cfg;
 	unsigned int ddrphy_cfg_num;
@@ -72,6 +81,7 @@ struct dram_controller {
 	enum ddrc_type ddrc_type;
 	enum dram_type dram_type;
 	void __iomem *phy_base;
+	u32 (*phy_remap)(u32 paddr_apb_from_ctlr);
 	void (*get_trained_CDD)(struct dram_controller *dram, u32 fsp);
 	void (*set_dfi_clk)(struct dram_controller *dram, unsigned int drate_mhz);
 	bool imx8m_ddr_old_spreadsheet;
@@ -107,7 +117,12 @@ static inline void reg32setbit(unsigned long addr, u32 bit)
 
 static inline void *dwc_ddrphy_apb_addr(struct dram_controller *dram, unsigned int addr)
 {
-	return dram->phy_base + addr * 4;
+	if (dram->phy_remap)
+		addr = dram->phy_remap(addr);
+	else
+		addr *= 4;
+
+	return dram->phy_base + addr;
 }
 
 static inline void dwc_ddrphy_apb_wr(struct dram_controller *dram, unsigned int addr, u32 data)

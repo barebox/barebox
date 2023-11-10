@@ -155,4 +155,14 @@ static inline void lpuart32_putc(void __iomem *base, int c)
 	writel(c, base + LPUART32_UARTDATA);
 }
 
+static inline void imx9_uart_setup(void __iomem *uartbase)
+{
+	/*
+	 * On i.MX9 the registers start at offset 0x10
+	 */
+	BUG_ON((unsigned long)uartbase & 0x10);
+
+	lpuart32_setup(uartbase + 0x10, 24000000);
+}
+
 #endif

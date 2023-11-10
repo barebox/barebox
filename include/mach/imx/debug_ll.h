@@ -18,10 +18,12 @@
 #include <mach/imx/imx6-regs.h>
 #include <mach/imx/imx7-regs.h>
 #include <mach/imx/imx8m-regs.h>
+#include <mach/imx/imx9-regs.h>
 #include <mach/imx/vf610-regs.h>
 
 #include <serial/imx-uart.h>
 #include <serial/lpuart.h>
+#include <serial/lpuart32.h>
 
 #ifdef CONFIG_DEBUG_IMX_UART
 
@@ -54,6 +56,8 @@
 #define IMX_DEBUG_SOC MX8M
 #elif defined CONFIG_DEBUG_VF610_UART
 #define IMX_DEBUG_SOC VF610
+#elif defined CONFIG_DEBUG_IMX9_UART
+#define IMX_DEBUG_SOC MX9
 #else
 #error "unknown i.MX debug uart soc type"
 #endif
@@ -107,6 +111,13 @@ static inline void imx8m_uart_setup_ll(void)
 	imx8m_uart_setup(base);
 }
 
+static inline void imx9_uart_setup_ll(void)
+{
+	void *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,
+					 CONFIG_DEBUG_IMX_UART_PORT));
+	lpuart32_setup(base + 0x10, 24000000);
+}
+
 static inline void PUTC_LL(int c)
 {
 	void __iomem *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,
@@ -117,6 +128,8 @@ static inline void PUTC_LL(int c)
 
 	if (IS_ENABLED(CONFIG_DEBUG_VF610_UART))
 		lpuart_putc(base, c);
+	else if (IS_ENABLED(CONFIG_DEBUG_IMX9_UART))
+		lpuart32_putc(base + 0x10, c);
 	else
 		imx_uart_putc(base, c);
 }

@@ -14,7 +14,7 @@
 #include <init.h>
 #include <pbl.h>
 
-static int imx8m_bootrom_load(struct rom_api *rom_api, void *adr, size_t size)
+static int imx_romapi_load(struct rom_api *rom_api, void *adr, size_t size)
 {
 	while (size) {
 		size_t chunksize = min(size, (size_t)1024);
@@ -35,25 +35,25 @@ static int imx8m_bootrom_load(struct rom_api *rom_api, void *adr, size_t size)
 }
 
 /* read piggydata via a bootrom callback and place it behind our copy in SDRAM */
-static int imx8m_bootrom_load_image(struct rom_api *rom_api)
+static int imx_romapi_load_image(struct rom_api *rom_api)
 {
-	return imx8m_bootrom_load(rom_api,
+	return imx_romapi_load(rom_api,
 				  (void *)MX8M_ATF_BL33_BASE_ADDR + barebox_pbl_size,
 				  __image_end - __piggydata_start);
 }
 
-int imx8mp_bootrom_load_image(void)
+int imx8mp_romapi_load_image(void)
 {
 	struct rom_api *rom_api = (void *)0x980;
 
 	OPTIMIZER_HIDE_VAR(rom_api);
 
-	return imx8m_bootrom_load_image(rom_api);
+	return imx_romapi_load_image(rom_api);
 }
 
-int imx8mn_bootrom_load_image(void)
+int imx8mn_romapi_load_image(void)
 {
-	return imx8mp_bootrom_load_image();
+	return imx8mp_romapi_load_image();
 }
 
 const u32 *imx8m_get_bootrom_log(void)

@@ -157,7 +157,7 @@ void imx8mp_load_bl33(void *bl33)
 		imx8mp_esdhc_load_image(instance, false);
 		break;
 	case BOOTSOURCE_SERIAL:
-		imx8mp_bootrom_load_image();
+		imx8mp_romapi_load_image();
 		break;
 	case BOOTSOURCE_SPI:
 		imx8mp_qspi_load_image(instance, false);
@@ -221,7 +221,7 @@ void imx8mn_load_bl33(void *bl33)
 		imx8mn_esdhc_load_image(instance, false);
 		break;
 	case BOOTSOURCE_SERIAL:
-		imx8mn_bootrom_load_image();
+		imx8mn_romapi_load_image();
 		break;
 	case BOOTSOURCE_SPI:
 		imx8mn_qspi_load_image(instance, false);

@@ -27,7 +27,7 @@ void ddrphy_trained_csr_save(struct dram_controller *dram, struct dram_cfg_param
 	dwc_ddrphy_apb_wr(dram, 0xd0000, 0x1);
 }
 
-void dram_config_save(struct dram_timing_info *timing_info,
+void *dram_config_save(struct dram_timing_info *timing_info,
 		      unsigned long saved_timing_base)
 {
 	int i = 0;
@@ -83,4 +83,6 @@ void dram_config_save(struct dram_timing_info *timing_info,
 		cfg->val = timing_info->ddrphy_pie[i].val;
 		cfg++;
 	}
+
+	return cfg;
 }

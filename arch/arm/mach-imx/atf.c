@@ -329,3 +329,37 @@ __noreturn void imx8mq_load_and_start_image_via_tfa(void)
 
 	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
 }
+
+void __noreturn imx93_load_and_start_image_via_tfa(void)
+{
+	unsigned long atf_dest = MX93_ATF_BL31_BASE_ADDR;
+	void __noreturn (*bl31)(void) = (void *)atf_dest;
+	const void *tfa;
+	size_t tfa_size;
+
+	/*
+	 * On completion the TF-A will jump to MX93_ATF_BL33_BASE_ADDR
+	 * in EL2. Copy the image there, but replace the PBL part of
+	 * that image with ourselves. On a high assurance boot only the
+	 * currently running code is validated and contains the checksum
+	 * for the piggy data, so we need to ensure that we are running
+	 * the same code in DRAM.
+	 *
+	 * The second purpose of this memcpy is for USB booting. When booting
+	 * from USB the image comes in as a stream, so the PBL is transferred
+	 * only once. As we jump into the PBL again in SDRAM we need to copy
+	 * it there. The USB protocol transfers data in chunks of 1024 bytes,
+	 * so align the copy size up to the next 1KiB boundary.
+	 */
+	memcpy((void *)MX93_ATF_BL33_BASE_ADDR, __image_start, ALIGN(barebox_pbl_size, 1024));
+
+	get_builtin_firmware(imx93_bl31_bin, &tfa, &tfa_size);
+
+	memcpy(bl31, tfa, tfa_size);
+
+	asm volatile("msr sp_el2, %0" : :
+		     "r" (MX93_ATF_BL33_BASE_ADDR - 16) :
+		     "cc");
+	bl31();
+	__builtin_unreachable();
+}

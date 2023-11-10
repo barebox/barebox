@@ -18,7 +18,7 @@
 #define GPR_ENET_QOS_RGMII_EN		BIT(21)
 
 
-struct eqos_imx8_priv {
+struct eqos_imx_priv {
 	struct device *dev;
 	struct clk_bulk_data *clks;
 	int num_clks;
@@ -28,25 +28,25 @@ struct eqos_imx8_priv {
 };
 
 enum { CLK_STMMACETH, CLK_PCLK, CLK_PTP_REF, CLK_TX};
-static const struct clk_bulk_data imx8_clks[] = {
+static const struct clk_bulk_data imx_clks[] = {
 	[CLK_STMMACETH] = { .id = "stmmaceth" },
 	[CLK_PCLK]      = { .id = "pclk" },
 	[CLK_PTP_REF]   = { .id = "ptp_ref" },
 	[CLK_TX]        = { .id = "tx" },
 };
 
-static unsigned long eqos_get_csr_clk_rate_imx8(struct eqos *eqos)
+static unsigned long eqos_get_csr_clk_rate_imx(struct eqos *eqos)
 {
-	struct eqos_imx8_priv *priv = eqos->priv;
+	struct eqos_imx_priv *priv = eqos->priv;
 
 	return clk_get_rate(priv->clks[CLK_PCLK].clk);
 }
 
 
-static void eqos_adjust_link_imx8(struct eth_device *edev)
+static void eqos_adjust_link_imx(struct eth_device *edev)
 {
 	struct eqos *eqos = edev->priv;
-	struct eqos_imx8_priv *priv = eqos->priv;
+	struct eqos_imx_priv *priv = eqos->priv;
 	unsigned long rate;
 	int ret;
 
@@ -74,9 +74,9 @@ static void eqos_adjust_link_imx8(struct eth_device *edev)
 	eqos_adjust_link(edev);
 }
 
-static void eqos_imx8_set_interface_mode(struct eqos *eqos)
+static void eqos_imx_set_interface_mode(struct eqos *eqos)
 {
-	struct eqos_imx8_priv *priv = eqos->priv;
+	struct eqos_imx_priv *priv = eqos->priv;
 	struct device_node *np = priv->dev->device_node;
 	int val;
 
@@ -109,10 +109,10 @@ static void eqos_imx8_set_interface_mode(struct eqos *eqos)
 			   GPR_ENET_QOS_INTF_MODE_MASK, val);
 }
 
-static int eqos_init_imx8(struct device *dev, struct eqos *eqos)
+static int eqos_init_imx(struct device *dev, struct eqos *eqos)
 {
 	struct device_node *np = dev->device_node;
-	struct eqos_imx8_priv *priv = eqos->priv;
+	struct eqos_imx_priv *priv = eqos->priv;
 	int ret;
 
 	priv->dev = dev;
@@ -132,9 +132,9 @@ static int eqos_init_imx8(struct device *dev, struct eqos *eqos)
 		}
 	}
 
-	priv->num_clks = ARRAY_SIZE(imx8_clks);
+	priv->num_clks = ARRAY_SIZE(imx_clks);
 	priv->clks = xmalloc(priv->num_clks * sizeof(*priv->clks));
-	memcpy(priv->clks, imx8_clks, sizeof imx8_clks);
+	memcpy(priv->clks, imx_clks, sizeof imx_clks);
 
 	ret = clk_bulk_get(dev, priv->num_clks, priv->clks);
 	if (ret) {
@@ -148,31 +148,31 @@ static int eqos_init_imx8(struct device *dev, struct eqos *eqos)
 		return ret;
 	}
 
-	eqos_imx8_set_interface_mode(eqos);
+	eqos_imx_set_interface_mode(eqos);
 
 	return 0;
 }
 
-static struct eqos_ops imx8_ops = {
-	.init = eqos_init_imx8,
+static struct eqos_ops imx_ops = {
+	.init = eqos_init_imx,
 	.get_ethaddr = eqos_get_ethaddr,
 	.set_ethaddr = eqos_set_ethaddr,
-	.adjust_link = eqos_adjust_link_imx8,
-	.get_csr_clk_rate = eqos_get_csr_clk_rate_imx8,
+	.adjust_link = eqos_adjust_link_imx,
+	.get_csr_clk_rate = eqos_get_csr_clk_rate_imx,
 
 	.clk_csr = EQOS_MDIO_ADDR_CR_250_300,
 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_DCB,
 };
 
-static int eqos_probe_imx8(struct device *dev)
+static int eqos_probe_imx(struct device *dev)
 {
-	return eqos_probe(dev, &imx8_ops, xzalloc(sizeof(struct eqos_imx8_priv)));
+	return eqos_probe(dev, &imx_ops, xzalloc(sizeof(struct eqos_imx_priv)));
 }
 
-static void eqos_remove_imx8(struct device *dev)
+static void eqos_remove_imx(struct device *dev)
 {
 	struct eqos *eqos = dev->priv;
-	struct eqos_imx8_priv *priv = eqos->priv;
+	struct eqos_imx_priv *priv = eqos->priv;
 
 	eqos_remove(dev);
 
@@ -180,16 +180,16 @@ static void eqos_remove_imx8(struct device *dev)
 	clk_bulk_put(priv->num_clks, priv->clks);
 }
 
-static __maybe_unused struct of_device_id eqos_imx8_ids[] = {
+static __maybe_unused struct of_device_id eqos_imx_ids[] = {
 	{ .compatible = "nxp,imx8mp-dwmac-eqos"},
 	{ /* sentinel */ }
 };
-MODULE_DEVICE_TABLE(of, eqos_imx8_ids);
+MODULE_DEVICE_TABLE(of, eqos_imx_ids);
 
-static struct driver eqos_imx8_driver = {
-	.name = "eqos-imx8",
-	.probe = eqos_probe_imx8,
-	.remove = eqos_remove_imx8,
-	.of_compatible = DRV_OF_COMPAT(eqos_imx8_ids),
+static struct driver eqos_imx_driver = {
+	.name = "eqos-imx",
+	.probe = eqos_probe_imx,
+	.remove = eqos_remove_imx,
+	.of_compatible = DRV_OF_COMPAT(eqos_imx_ids),
 };
-device_platform_driver(eqos_imx8_driver);
+device_platform_driver(eqos_imx_driver);

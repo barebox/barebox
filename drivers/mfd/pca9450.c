@@ -92,6 +92,7 @@ static int __init pca9450_probe(struct device *dev)
 static __maybe_unused struct of_device_id pca9450_dt_ids[] = {
 	{ .compatible = "nxp,pca9450a" },
 	{ .compatible = "nxp,pca9450c" },
+	{ .compatible = "nxp,pca9451a" },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, pca9450_dt_ids);

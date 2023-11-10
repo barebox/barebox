@@ -63,21 +63,10 @@ static __noreturn void ddr_helper_halt(void)
 
 static void zii_imx8mq_dev_sram_setup(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-	int ret = -ENOTSUPP;
-
 	ddr_init();
 
 	if (running_as_ddr_helper())
 		ddr_helper_halt();
-
-	imx8mq_get_boot_source(&src, &instance);
-
-	if (src == BOOTSOURCE_MMC)
-		ret = imx8m_esdhc_load_image(instance, true);
-
-	BUG_ON(ret);
 }
 
 enum zii_platform_imx8mq_type {
@@ -141,13 +130,8 @@ static __noreturn noinline void zii_imx8mq_dev_start(void)
 	 * initialization routine, it is EL2 which means we'll skip
 	 * loadting ATF blob again
 	 */
-	if (current_el() == 3) {
-		const u8 *bl31;
-		size_t bl31_size;
-
-		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
-		imx8mq_atf_load_bl31(bl31, bl31_size);
-	}
+	if (current_el() == 3)
+		imx8mq_load_and_start_image_via_tfa();
 
 	system_type = get_system_type();
 

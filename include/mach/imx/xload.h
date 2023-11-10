@@ -24,10 +24,12 @@ int imx8mp_qspi_load_image(int instance, bool start);
 void imx8mm_load_bl33(void *bl33);
 void imx8mn_load_bl33(void *bl33);
 void imx8mp_load_bl33(void *bl33);
+void imx8mq_load_bl33(void *bl33);
 
 void __noreturn imx8mm_load_and_start_image_via_tfa(void);
 void __noreturn imx8mn_load_and_start_image_via_tfa(void);
 void __noreturn imx8mp_load_and_start_image_via_tfa(void);
+void __noreturn imx8mq_load_and_start_image_via_tfa(void);
 
 int imx_load_image(ptrdiff_t address, ptrdiff_t entry, u32 offset,
 		   u32 ivt_offset, bool start, unsigned int alignment,

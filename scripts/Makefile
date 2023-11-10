@@ -25,6 +25,7 @@ hostprogs-always-$(CONFIG_SOCFPGA_MKIMAGE)		+= socfpga_mkimage
 hostprogs-always-$(CONFIG_MXS_HOSTTOOLS)		+= mxsimage mxsboot
 hostprogs-always-$(CONFIG_LAYERSCAPE_PBLIMAGE)		+= pblimage
 hostprogs-always-$(CONFIG_STM32_IMAGE)			+= stm32image
+hostprogs-always-$(CONFIG_IMX9_IMAGE)			+= imx9image
 hostprogs-always-$(CONFIG_RISCV)			+= prelink-riscv
 hostprogs-always-$(CONFIG_RK_IMAGE)			+= rkimage
 HOSTCFLAGS_rkimage.o = `$(PKG_CONFIG) --cflags openssl`

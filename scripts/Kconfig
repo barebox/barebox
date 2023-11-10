@@ -28,6 +28,13 @@ config ZYNQ_MKIMAGE
 	help
 	  This enables building the image creation tool for Zynq
 
+config IMX9_IMAGE
+	bool "imx9image"
+	depends on ARCH_IMX93 || COMPILE_HOST_TOOLS
+	default y if ARCH_IMX93
+	help
+	  This enables building the image tool for NXP i.MX9 SoCs
+
 config MXS_HOSTTOOLS
 	bool "MXS host tools" if COMPILE_HOST_TOOLS
 	depends on ARCH_MXS || COMPILE_HOST_TOOLS

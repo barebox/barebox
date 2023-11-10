@@ -74,6 +74,7 @@ struct dram_controller {
 	void __iomem *phy_base;
 	void (*get_trained_CDD)(struct dram_controller *dram, u32 fsp);
 	void (*set_dfi_clk)(struct dram_controller *dram, unsigned int drate_mhz);
+	bool imx8m_ddr_old_spreadsheet;
 };
 
 void ddr_get_firmware_lpddr4(void);
@@ -90,7 +91,8 @@ static inline void ddr_get_firmware(enum dram_type dram_type)
 int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *timing_info);
 void ddrphy_trained_csr_save(struct dram_controller *dram, struct dram_cfg_param *param,
 			     unsigned int num);
-void *dram_config_save(struct dram_timing_info *info, unsigned long base);
+void *dram_config_save(struct dram_controller *dram, struct dram_timing_info *info,
+		       unsigned long base);
 
 /* utils function for ddr phy training */
 int wait_ddrphy_training_complete(struct dram_controller *dram);

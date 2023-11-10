@@ -374,8 +374,6 @@ static inline int imx8m_wait_ddrphy_training_complete(void)
 	return wait_ddrphy_training_complete(&imx8m_dram_controller);
 }
 
-extern bool imx8m_ddr_old_spreadsheet;
-
 static inline void imx8m_ddr_load_train_code(enum dram_type dram_type,
 					     enum fw_type fw_type)
 {

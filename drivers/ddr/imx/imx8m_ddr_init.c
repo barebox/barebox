@@ -13,19 +13,19 @@
 #include <mach/imx/imx8m-regs.h>
 #include <mach/imx/imx8m-ccm-regs.h>
 
-bool imx8m_ddr_old_spreadsheet = true;
-
 struct dram_controller imx8m_dram_controller = {
 	.phy_base = IOMEM(IP2APB_DDRPHY_IPS_BASE_ADDR(0)),
 };
 
-static void ddr_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
+static void ddr_cfg_umctl2(struct dram_controller *dram, struct dram_cfg_param *ddrc_cfg, int num)
 {
 	int i = 0;
 
+	dram->imx8m_ddr_old_spreadsheet = true;
+
 	for (i = 0; i < num; i++) {
 		if (ddrc_cfg->reg == DDRC_ADDRMAP7(0))
-		    imx8m_ddr_old_spreadsheet = false;
+		    dram->imx8m_ddr_old_spreadsheet = false;
 		reg32_write((unsigned long)ddrc_cfg->reg, ddrc_cfg->val);
 		ddrc_cfg++;
 	}
@@ -35,7 +35,7 @@ static void ddr_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
 	 * which falsifies the memory size read back from the controller
 	 * in barebox proper.
 	 */
-	if (imx8m_ddr_old_spreadsheet) {
+	if (dram->imx8m_ddr_old_spreadsheet) {
 		pr_warn("Working around old spreadsheet. Please regenerate\n");
 		/*
 		 * Alternatively, stick { DDRC_ADDRMAP7(0), 0xf0f } into
@@ -518,7 +518,7 @@ int imx8m_ddr_init(struct dram_controller *dram, struct dram_timing_info *dram_t
 
 	/* Step2: Program the dwc_ddr_umctl2 registers */
 	pr_debug("ddrc config start\n");
-	ddr_cfg_umctl2(dram_timing->ddrc_cfg, dram_timing->ddrc_cfg_num);
+	ddr_cfg_umctl2(dram, dram_timing->ddrc_cfg, dram_timing->ddrc_cfg_num);
 	pr_debug("ddrc config done\n");
 
 	/* Step3: De-assert reset signal(core_ddrc_rstn & aresetn_n) */
@@ -640,7 +640,7 @@ int imx8m_ddr_init(struct dram_controller *dram, struct dram_timing_info *dram_t
 	pr_debug("ddrmix config done\n");
 
 	/* save the dram timing config into memory */
-	dram_config_save(dram_timing, IMX8M_SAVED_DRAM_TIMING_BASE);
+	dram_config_save(dram, dram_timing, IMX8M_SAVED_DRAM_TIMING_BASE);
 
 	return 0;
 }

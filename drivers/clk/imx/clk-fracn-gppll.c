@@ -10,37 +10,9 @@
 #include <of_address.h>
 #include <linux/iopoll.h>
 #include <linux/bitfield.h>
+#include <soc/imx/clk-fracn-gppll.h>
 
 #include "clk.h"
-
-#define PLL_CTRL		0x0
-#define HW_CTRL_SEL		BIT(16)
-#define CLKMUX_BYPASS		BIT(2)
-#define CLKMUX_EN		BIT(1)
-#define POWERUP_MASK		BIT(0)
-
-#define PLL_ANA_PRG		0x10
-#define PLL_SPREAD_SPECTRUM	0x30
-
-#define PLL_NUMERATOR		0x40
-#define PLL_MFN_MASK		GENMASK(31, 2)
-
-#define PLL_DENOMINATOR		0x50
-#define PLL_MFD_MASK		GENMASK(29, 0)
-
-#define PLL_DIV			0x60
-#define PLL_MFI_MASK		GENMASK(24, 16)
-#define PLL_RDIV_MASK		GENMASK(15, 13)
-#define PLL_ODIV_MASK		GENMASK(7, 0)
-
-#define PLL_DFS_CTRL(x)		(0x70 + (x) * 0x10)
-
-#define PLL_STATUS		0xF0
-#define LOCK_STATUS		BIT(0)
-
-#define DFS_STATUS		0xF4
-
-#define LOCK_TIMEOUT_US		200
 
 #define PLL_FRACN_GP(_rate, _mfi, _mfn, _mfd, _rdiv, _odiv)	\
 	{							\
@@ -118,19 +90,6 @@ static inline struct clk_fracn_gppll *to_clk_fracn_gppll(struct clk_hw *hw)
 	return container_of(hw, struct clk_fracn_gppll, hw);
 }
 
-static const struct imx_fracn_gppll_rate_table *
-imx_get_pll_settings(struct clk_fracn_gppll *pll, unsigned long rate)
-{
-	const struct imx_fracn_gppll_rate_table *rate_table = pll->rate_table;
-	int i;
-
-	for (i = 0; i < pll->rate_count; i++)
-		if (rate == rate_table[i].rate)
-			return &rate_table[i];
-
-	return NULL;
-}
-
 static long clk_fracn_gppll_round_rate(struct clk_hw *hw, unsigned long rate,
 				       unsigned long *prate)
 {
@@ -157,17 +116,17 @@ static unsigned long clk_fracn_gppll_recalc_rate(struct clk_hw *hw, unsigned lon
 	long rate = 0;
 	int i;
 
-	pll_numerator = readl_relaxed(pll->base + PLL_NUMERATOR);
-	mfn = FIELD_GET(PLL_MFN_MASK, pll_numerator);
+	pll_numerator = readl_relaxed(pll->base + GPPLL_NUMERATOR);
+	mfn = FIELD_GET(GPPLL_MFN_MASK, pll_numerator);
 
-	pll_denominator = readl_relaxed(pll->base + PLL_DENOMINATOR);
-	mfd = FIELD_GET(PLL_MFD_MASK, pll_denominator);
+	pll_denominator = readl_relaxed(pll->base + GPPLL_DENOMINATOR);
+	mfd = FIELD_GET(GPPLL_MFD_MASK, pll_denominator);
 
-	pll_div = readl_relaxed(pll->base + PLL_DIV);
-	mfi = FIELD_GET(PLL_MFI_MASK, pll_div);
+	pll_div = readl_relaxed(pll->base + GPPLL_DIV);
+	mfi = FIELD_GET(GPPLL_MFI_MASK, pll_div);
 
-	rdiv = FIELD_GET(PLL_RDIV_MASK, pll_div);
-	odiv = FIELD_GET(PLL_ODIV_MASK, pll_div);
+	rdiv = FIELD_GET(GPPLL_RDIV_MASK, pll_div);
+	odiv = FIELD_GET(GPPLL_ODIV_MASK, pll_div);
 
 	/*
 	 * Sometimes, the recalculated rate has deviation due to
@@ -214,70 +173,16 @@ static unsigned long clk_fracn_gppll_recalc_rate(struct clk_hw *hw, unsigned lon
 
 static int clk_fracn_gppll_wait_lock(struct clk_fracn_gppll *pll)
 {
-	u32 val;
-
-	return readl_poll_timeout(pll->base + PLL_STATUS, val,
-				  val & LOCK_STATUS, LOCK_TIMEOUT_US);
+	return fracn_gppll_wait_lock(pll->base);
 }
 
 static int clk_fracn_gppll_set_rate(struct clk_hw *hw, unsigned long drate,
 				    unsigned long prate)
 {
 	struct clk_fracn_gppll *pll = to_clk_fracn_gppll(hw);
-	const struct imx_fracn_gppll_rate_table *rate;
-	u32 tmp, pll_div, ana_mfn;
-	int ret;
 
-	rate = imx_get_pll_settings(pll, drate);
-
-	/* Hardware control select disable. PLL is control by register */
-	tmp = readl_relaxed(pll->base + PLL_CTRL);
-	tmp &= ~HW_CTRL_SEL;
-	writel_relaxed(tmp, pll->base + PLL_CTRL);
-
-	/* Disable output */
-	tmp = readl_relaxed(pll->base + PLL_CTRL);
-	tmp &= ~CLKMUX_EN;
-	writel_relaxed(tmp, pll->base + PLL_CTRL);
-
-	/* Power Down */
-	tmp &= ~POWERUP_MASK;
-	writel_relaxed(tmp, pll->base + PLL_CTRL);
-
-	/* Disable BYPASS */
-	tmp &= ~CLKMUX_BYPASS;
-	writel_relaxed(tmp, pll->base + PLL_CTRL);
-
-	pll_div = FIELD_PREP(PLL_RDIV_MASK, rate->rdiv) | rate->odiv |
-		FIELD_PREP(PLL_MFI_MASK, rate->mfi);
-	writel_relaxed(pll_div, pll->base + PLL_DIV);
-	if (pll->flags & CLK_FRACN_GPPLL_FRACN) {
-		writel_relaxed(rate->mfd, pll->base + PLL_DENOMINATOR);
-		writel_relaxed(FIELD_PREP(PLL_MFN_MASK, rate->mfn), pll->base + PLL_NUMERATOR);
-	}
-
-	/* Wait for 5us according to fracn mode pll doc */
-	udelay(5);
-
-	/* Enable Powerup */
-	tmp |= POWERUP_MASK;
-	writel_relaxed(tmp, pll->base + PLL_CTRL);
-
-	/* Wait Lock */
-	ret = clk_fracn_gppll_wait_lock(pll);
-	if (ret)
-		return ret;
-
-	/* Enable output */
-	tmp |= CLKMUX_EN;
-	writel_relaxed(tmp, pll->base + PLL_CTRL);
-
-	ana_mfn = readl_relaxed(pll->base + PLL_STATUS);
-	ana_mfn = FIELD_GET(PLL_MFN_MASK, ana_mfn);
-
-	WARN(ana_mfn != rate->mfn, "ana_mfn != rate->mfn\n");
-
-	return 0;
+	return fracn_gppll_set_rate(pll->base, pll->flags, pll->rate_table,
+				    pll->rate_count, drate);
 }
 
 static int clk_fracn_gppll_prepare(struct clk_hw *hw)
@@ -286,25 +191,25 @@ static int clk_fracn_gppll_prepare(struct clk_hw *hw)
 	u32 val;
 	int ret;
 
-	val = readl_relaxed(pll->base + PLL_CTRL);
+	val = readl_relaxed(pll->base + GPPLL_CTRL);
 	if (val & POWERUP_MASK)
 		return 0;
 
 	val |= CLKMUX_BYPASS;
-	writel_relaxed(val, pll->base + PLL_CTRL);
+	writel_relaxed(val, pll->base + GPPLL_CTRL);
 
 	val |= POWERUP_MASK;
-	writel_relaxed(val, pll->base + PLL_CTRL);
+	writel_relaxed(val, pll->base + GPPLL_CTRL);
 
 	val |= CLKMUX_EN;
-	writel_relaxed(val, pll->base + PLL_CTRL);
+	writel_relaxed(val, pll->base + GPPLL_CTRL);
 
 	ret = clk_fracn_gppll_wait_lock(pll);
 	if (ret)
 		return ret;
 
 	val &= ~CLKMUX_BYPASS;
-	writel_relaxed(val, pll->base + PLL_CTRL);
+	writel_relaxed(val, pll->base + GPPLL_CTRL);
 
 	return 0;
 }
@@ -314,7 +219,7 @@ static int clk_fracn_gppll_is_prepared(struct clk_hw *hw)
 	struct clk_fracn_gppll *pll = to_clk_fracn_gppll(hw);
 	u32 val;
 
-	val = readl_relaxed(pll->base + PLL_CTRL);
+	val = readl_relaxed(pll->base + GPPLL_CTRL);
 
 	return (val & POWERUP_MASK) ? 1 : 0;
 }
@@ -324,9 +229,9 @@ static void clk_fracn_gppll_unprepare(struct clk_hw *hw)
 	struct clk_fracn_gppll *pll = to_clk_fracn_gppll(hw);
 	u32 val;
 
-	val = readl_relaxed(pll->base + PLL_CTRL);
+	val = readl_relaxed(pll->base + GPPLL_CTRL);
 	val &= ~POWERUP_MASK;
-	writel_relaxed(val, pll->base + PLL_CTRL);
+	writel_relaxed(val, pll->base + GPPLL_CTRL);
 }
 
 static const struct clk_ops clk_fracn_gppll_ops = {

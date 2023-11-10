@@ -304,33 +304,7 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 #define imx8m_clk_composite_critical(name, parent_names, reg) \
 	__imx8m_clk_composite(name, parent_names, reg, CLK_IS_CRITICAL)
 
-#define CLK_FRACN_GPPLL_INTEGER BIT(0)
-#define CLK_FRACN_GPPLL_FRACN   BIT(1)
-
-/* NOTE: Rate table should be kept sorted in descending order. */
-struct imx_fracn_gppll_rate_table {
-	unsigned int rate;
-	unsigned int mfi;
-	unsigned int mfn;
-	unsigned int mfd;
-	unsigned int rdiv;
-	unsigned int odiv;
-};
-
-struct imx_fracn_gppll_clk {
-	const struct imx_fracn_gppll_rate_table *rate_table;
-	int rate_count;
-	int flags;
-};
-
-struct clk *imx_clk_fracn_gppll(const char *name, const char *parent_name, void __iomem *base,
-				const struct imx_fracn_gppll_clk *pll_clk);
-struct clk *imx_clk_fracn_gppll_integer(const char *name, const char *parent_name,
-					void __iomem *base,
-					const struct imx_fracn_gppll_clk *pll_clk);
-
-extern struct imx_fracn_gppll_clk imx_fracn_gppll;
-extern struct imx_fracn_gppll_clk imx_fracn_gppll_integer;
+#include <soc/imx/clk-fracn-gppll.h>
 
 struct clk *imx93_clk_composite_flags(const char *name,
 				      const char * const *parent_names,

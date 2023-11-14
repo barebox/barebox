@@ -305,7 +305,7 @@
 #define EXT_CSD_ENH_USR_MASK		(1 << 0)
 
 /* register PARTITIONING_SUPPORT [160] */
-#define EXT_CSD_ENH_ATTRIBUTE_EN_MASK	(1 << 0)
+#define EXT_CSD_ENH_ATTRIBUTE_EN_MASK	(1 << 1)
 
 /* register BUS_WIDTH [183], field Bus Mode Selection [4:0] */
 #define EXT_CSD_BUS_WIDTH_1	0	/* Card is in 1 bit mode */

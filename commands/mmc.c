@@ -95,6 +95,7 @@ static int do_mmc_enh_area(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "c")) > 0) {
 		switch (opt) {
 		case 'c':
+			printf("Use -c to complete the partitioning is deprecated, use separate partition_complete command instead\n");
 			set_completed = 1;
 			break;
 		}
@@ -283,7 +284,7 @@ BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("The subcommand enh_area creates an enhanced area of")
 BAREBOX_CMD_HELP_TEXT("maximal size.")
 BAREBOX_CMD_HELP_TEXT("Note, with -c this is an irreversible action.")
-BAREBOX_CMD_HELP_OPT("-c", "complete partitioning")
+BAREBOX_CMD_HELP_OPT("-c", "complete partitioning (deprecated)")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("The subcommand write_reliability enable write reliability")
 BAREBOX_CMD_HELP_TEXT("")

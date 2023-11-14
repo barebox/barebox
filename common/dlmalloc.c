@@ -628,7 +628,13 @@ nextchunk-> +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 /* conversion from malloc headers to user pointers, and back */
 
 #define chunk2mem(p)   ((void*)((char*)(p) + 2*SIZE_SZ))
-#define mem2chunk(mem) ((mchunkptr)((char*)(mem) - 2*SIZE_SZ))
+
+static inline mchunkptr mem2chunk(void *mem)
+{
+	OPTIMIZER_HIDE_VAR(mem);
+
+	return mem - 2 * SIZE_SZ;
+}
 
 /* pad request bytes into a usable size */
 
@@ -1683,8 +1689,8 @@ void *memalign(size_t alignment, size_t bytes)
 		   this is always possible.
 		 */
 
-		brk = (char*) mem2chunk(((unsigned long) (m + alignment - 1)) &
-					  -((signed) alignment));
+		brk = (char*) mem2chunk((void *)(((unsigned long) (m + alignment - 1)) &
+					  -((signed) alignment)));
 		if ((long)(brk - (char*)(p)) < MINSIZE)
 			brk = brk + alignment;
 

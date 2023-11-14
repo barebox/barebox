@@ -518,6 +518,23 @@ int mci_switch(struct mci *mci, unsigned index, unsigned value)
 	return 0;
 }
 
+u8 *mci_get_ext_csd(struct mci *mci)
+{
+	u8 *ext_csd;
+	int ret;
+
+	ext_csd = xmalloc(512);
+
+	ret = mci_send_ext_csd(mci, ext_csd);
+	if (ret) {
+		printf("Failure to read EXT_CSD register\n");
+		free(ext_csd);
+		return ERR_PTR(-EIO);
+	}
+
+	return ext_csd;
+}
+
 static blkcnt_t mci_calc_blk_cnt(blkcnt_t cap, unsigned shift)
 {
 	blkcnt_t ret = cap >> shift;

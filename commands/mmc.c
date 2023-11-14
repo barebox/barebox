@@ -65,23 +65,6 @@ static int mmc_partitioning_complete(struct mci *mci)
 	return ret;
 }
 
-static u8 *mci_get_ext_csd(struct mci *mci)
-{
-	u8 *ext_csd;
-	int ret;
-
-	ext_csd = xmalloc(512);
-
-	ret = mci_send_ext_csd(mci, ext_csd);
-	if (ret) {
-		printf("Failure to read EXT_CSD register\n");
-		free(ext_csd);
-		return ERR_PTR(-EIO);
-	}
-
-	return ext_csd;
-}
-
 /* enh_area [-c] /dev/mmcX */
 static int do_mmc_enh_area(int argc, char *argv[])
 {

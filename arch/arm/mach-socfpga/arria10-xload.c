@@ -353,17 +353,9 @@ int arria10_prepare_mmc(int barebox_part, int rbf_part)
 	return 0;
 }
 
-int arria10_load_fpga(int offset, int bitstream_size)
+static inline int __arria10_load_fpga(void *buf, uint32_t count, uint32_t size)
 {
-	void *buf = (void *)0xffe00000 + SZ_256K - 256 - SZ_16K;
 	int ret;
-	uint32_t count;
-	uint32_t size = bitstream_size / SECTOR_SIZE;
-
-	if (offset)
-		offset = offset / SECTOR_SIZE;
-
-	count = offset;
 
 	arria10_read_blocks(buf, count + bitstream.first_sec, SZ_16K);
 
@@ -371,21 +363,54 @@ int arria10_load_fpga(int offset, int bitstream_size)
 
 	ret = a10_fpga_init(buf);
 	if (ret)
-		hang();
+		return -EAGAIN;
 
 	while (count <= size) {
 		ret = a10_fpga_write(buf, SZ_16K);
 		if (ret == -ENOSPC)
-			break;
+			return -EAGAIN;
+
 		count += SZ_16K / SECTOR_SIZE;
 		ret = arria10_read_blocks(buf, count, SZ_16K);
+		// Reading failed, consider this a failed attempt to configure the FPGA and retry
+		if (ret)
+			return -EAGAIN;
 	}
 
 	ret = a10_fpga_write_complete();
 	if (ret)
-		hang();
+		return -EAGAIN;
 
 	return 0;
+}
+
+int arria10_load_fpga(int offset, int bitstream_size)
+{
+	int ret;
+	void *buf = (void *)0xffe00000 + SZ_256K - 256 - SZ_16K;
+	uint32_t count;
+	uint32_t size = bitstream_size / SECTOR_SIZE;
+	uint32_t retryCount;
+
+	if (offset)
+		offset = offset / SECTOR_SIZE;
+
+	/* Up to 4 retries have been seen on the Enclustra Mercury AA1+ board, as
+	 * FPGA configuration is mandatory to be able to continue the boot, take
+	 * some margin and try up to 10 times
+	 */
+	for (retryCount = 0; retryCount < 10; ++retryCount) {
+		count = offset;
+
+		ret = __arria10_load_fpga(buf, count, size);
+		if (!ret)
+			return 0;
+		else if (ret == -EAGAIN)
+			continue;
+	}
+
+	hang();
+	return -EIO;
 }
 
 void arria10_start_image(int offset)

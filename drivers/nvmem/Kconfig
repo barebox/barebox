@@ -44,6 +44,13 @@ config IMX_OCOTP_WRITE
 	    mw -l -d /dev/imx-ocotp 0x8C 0x00001234
 	    mw -l -d /dev/imx-ocotp 0x88 0x56789ABC
 
+config IMX_OCOTP_ELE
+	tristate "i.MX9 On Chip OTP controller"
+	depends on ARCH_IMX93
+	depends on OFDEVICE
+	help
+	  This adds support for the i.MX9 On-Chip OTP controller.
+
 config RAVE_SP_EEPROM
 	tristate "Rave SP EEPROM Support"
 	depends on RAVE_SP_CORE

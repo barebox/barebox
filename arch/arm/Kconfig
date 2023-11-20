@@ -101,6 +101,7 @@ config ARCH_LAYERSCAPE
 	select HW_HAS_PCI
 	select OFTREE
 	select OFDEVICE
+	select ARM_USE_COMPRESSED_DTB
 
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"

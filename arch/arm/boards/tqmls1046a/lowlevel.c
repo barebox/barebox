@@ -90,7 +90,7 @@ static struct fsl_ddr_controller ddrc[] = {
 	},
 };
 
-extern char __dtb_fsl_tqmls1046a_mbls10xxa_start[];
+extern char __dtb_z_fsl_tqmls1046a_mbls10xxa_start[];
 
 static noinline __noreturn void tqmls1046a_r_entry(void)
 {
@@ -98,7 +98,7 @@ static noinline __noreturn void tqmls1046a_r_entry(void)
 
 	if (get_pc() >= membase)
 		barebox_arm_entry(membase, 0x80000000 - SZ_64M,
-				  __dtb_fsl_tqmls1046a_mbls10xxa_start);
+				  __dtb_z_fsl_tqmls1046a_mbls10xxa_start);
 
 	arm_cpu_lowlevel_init();
 	ls1046a_init_lowlevel();

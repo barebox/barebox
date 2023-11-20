@@ -4,6 +4,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <mmu.h>
 #include <firmware.h>
 #include <memory.h>
 #include <linux/sizes.h>
@@ -54,16 +55,10 @@ static int ppa_init(void *ppa, size_t ppa_size, void *sec_firmware_addr)
 	int ret;
 	u32 *boot_loc_ptr_l, *boot_loc_ptr_h;
 	struct ccsr_scfg __iomem *scfg = (void *)(LSCH2_SCFG_ADDR);
-	int el = current_el();
 	struct fit_handle *fit;
 	void *conf;
 	const void *buf;
 	unsigned long firmware_size;
-
-	if (el < 3) {
-		printf("EL%d, skip ppa init\n", el);
-		return 0;
-	}
 
 	boot_loc_ptr_l = &scfg->scratchrw[1];
 	boot_loc_ptr_h = &scfg->scratchrw[0];
@@ -115,6 +110,7 @@ int ls1046a_ppa_init(resource_size_t ppa_start, resource_size_t ppa_size)
 	struct resource *res;
 	void *ppa_fw;
 	size_t ppa_fw_size;
+	int el = current_el();
 	int ret;
 
 	res = reserve_sdram_region("ppa", ppa_start, ppa_size);
@@ -126,9 +122,13 @@ int ls1046a_ppa_init(resource_size_t ppa_start, resource_size_t ppa_size)
 
 	get_builtin_firmware(ppa_ls1046a_bin, &ppa_fw, &ppa_fw_size);
 
-	ret = ppa_init(ppa_fw, ppa_fw_size, (void *)ppa_start);
-	if (ret)
-		return ret;
+	if (el == 3) {
+		remap_range((void *)ppa_start, ppa_size, MAP_CACHED);
+		ret = ppa_init(ppa_fw, ppa_fw_size, (void *)ppa_start);
+		remap_range((void *)ppa_start, ppa_size, MAP_UNCACHED);
+		if (ret)
+			return ret;
+	}
 
 	of_register_fixup(of_fixup_reserved_memory, res);
 

@@ -93,9 +93,6 @@ struct console_device *console_get_by_dev(struct device *dev);
 struct console_device *console_get_by_name(const char *name);
 struct console_device *of_console_get_by_alias(const char *alias);
 
-extern struct list_head console_list;
-#define for_each_console(console) list_for_each_entry(console, &console_list, list)
-
 #define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16)
 
 extern int barebox_loglevel;
@@ -199,8 +196,13 @@ static inline void pbl_set_putc(void (*putcf)(void *ctx, int c), void *ctx) {}
 bool console_allow_color(void);
 
 #ifndef CONFIG_CONSOLE_NONE
+extern struct list_head console_list;
+#define for_each_console(console) list_for_each_entry(console, &console_list, list)
+
 struct console_device *console_get_first_active(void);
 #else
+#define for_each_console(console) while (((void)console, 0))
+
 static inline struct console_device *console_get_first_active(void)
 {
 	return NULL;

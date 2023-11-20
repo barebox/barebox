@@ -42,14 +42,14 @@ static inline void debug_ll_init(void)
 
 #elif defined CONFIG_DEBUG_RPI3_MINI_UART
 
-static inline uint8_t debug_ll_read_reg(int reg)
+static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)
 {
-	return readb(BCM2836_MINIUART_BASE + (reg << 2));
+	return readb(base + (reg << 2));
 }
 
-static inline void debug_ll_write_reg(int reg, uint8_t val)
+static inline void debug_ll_write_reg(void __iomem *base, int reg, uint8_t val)
 {
-	writeb(val, BCM2836_MINIUART_BASE + (reg << 2));
+	writeb(val, base + (reg << 2));
 }
 
 #define BCM2836_AUX_CLOCK_ENB		0x3f215004 /* BCM2835 AUX Clock enable register */
@@ -60,28 +60,31 @@ static inline void debug_ll_write_reg(int reg, uint8_t val)
 static inline void debug_ll_init(void)
 {
 	uint16_t divisor;
+	void __iomem *base = IOMEM(BCM2836_MINIUART_BASE);
 
 	writeb(BCM2836_AUX_CLOCK_EN_UART, BCM2836_AUX_CLOCK_ENB);
 
 	divisor = debug_ll_ns16550_calc_divisor(250000000 * 2);
-	debug_ll_ns16550_init(divisor);
+	debug_ll_ns16550_init(base, divisor);
 }
 
 static inline void PUTC_LL(int c)
 {
-	debug_ll_ns16550_putc(c);
+	void __iomem  *base = IOMEM(BCM2836_MINIUART_BASE);
+
+	debug_ll_ns16550_putc(base, c);
 }
 
 #elif defined CONFIG_DEBUG_RPI4_MINI_UART
 
-static inline uint8_t debug_ll_read_reg(int reg)
+static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)
 {
-	return readb(BCM2711_MINIUART_BASE + (reg << 2));
+	return readb(base + (reg << 2));
 }
 
-static inline void debug_ll_write_reg(int reg, uint8_t val)
+static inline void debug_ll_write_reg(void __iomem *base, int reg, uint8_t val)
 {
-	writeb(val, BCM2711_MINIUART_BASE + (reg << 2));
+	writeb(val, base + (reg << 2));
 }
 
 #include <debug_ll/ns16550.h>
@@ -93,7 +96,9 @@ static inline void debug_ll_init(void)
 
 static inline void PUTC_LL(int c)
 {
-	debug_ll_ns16550_putc(c);
+	void __iomem *base = IOMEM(BCM2711_MINIUART_BASE);
+
+	debug_ll_ns16550_putc(base, c);
 }
 
 #else

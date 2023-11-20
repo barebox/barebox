@@ -95,8 +95,6 @@ struct console_device *of_console_get_by_alias(const char *alias);
 
 #define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16)
 
-extern int barebox_loglevel;
-
 int console_open(struct console_device *cdev);
 int console_close(struct console_device *cdev);
 int console_set_active(struct console_device *cdev, unsigned active);
@@ -200,12 +198,25 @@ extern struct list_head console_list;
 #define for_each_console(console) list_for_each_entry(console, &console_list, list)
 
 struct console_device *console_get_first_active(void);
+
+extern int barebox_loglevel;
+static inline int barebox_set_loglevel(int loglevel)
+{
+	int old_loglevel = barebox_loglevel;
+	barebox_loglevel = loglevel;
+	return old_loglevel;
+}
 #else
 #define for_each_console(console) while (((void)console, 0))
 
 static inline struct console_device *console_get_first_active(void)
 {
 	return NULL;
+}
+
+static inline int barebox_set_loglevel(int loglevel)
+{
+	return loglevel;
 }
 #endif
 

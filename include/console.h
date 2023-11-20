@@ -100,8 +100,6 @@ extern struct list_head console_list;
 
 extern int barebox_loglevel;
 
-struct console_device *console_get_first_active(void);
-
 int console_open(struct console_device *cdev);
 int console_close(struct console_device *cdev);
 int console_set_active(struct console_device *cdev, unsigned active);
@@ -199,6 +197,15 @@ static inline void pbl_set_putc(void (*putcf)(void *ctx, int c), void *ctx) {}
 #endif
 
 bool console_allow_color(void);
+
+#ifndef CONFIG_CONSOLE_NONE
+struct console_device *console_get_first_active(void);
+#else
+static inline struct console_device *console_get_first_active(void)
+{
+	return NULL;
+}
+#endif
 
 #ifdef CONFIG_CONSOLE_FULL
 void console_ctrlc_allow(void);

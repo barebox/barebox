@@ -297,6 +297,8 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 
 	el = current_el();
 	set_ttbr_tcr_mair(el, ttb, calc_tcr(el, BITS_PER_VA), MEMORY_ATTRIBUTES);
+	if (el == 3)
+		set_ttbr_tcr_mair(2, ttb, calc_tcr(2, BITS_PER_VA), MEMORY_ATTRIBUTES);
 
 	memset((void *)ttb, 0, GRANULE_SIZE);
 

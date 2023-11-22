@@ -5,8 +5,4 @@
 
 / {
 	model = "STM32MP153F-DK";
-
-	chosen {
-		stdout-path = "serial0:115200n8";
-	};
 };

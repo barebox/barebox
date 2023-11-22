@@ -116,6 +116,8 @@ static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
 	*addr &= ~mask;
 }
 
+#define atomic_cmpxchg(v, o, n)	cmpxchg(&((v)->counter), o, n)
+
 /* Atomic operations are already serializing on ARM */
 #define smp_mb__before_atomic_dec()	barrier()
 #define smp_mb__after_atomic_dec()	barrier()

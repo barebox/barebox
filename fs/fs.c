@@ -2539,6 +2539,35 @@ int open(const char *pathname, int flags, ...)
 	const char *s;
 	struct filename *filename;
 
+	if (flags & O_TMPFILE) {
+		fsdev = get_fsdevice_by_path(pathname);
+		if (!fsdev) {
+			errno = ENOENT;
+			return -errno;
+		}
+
+		if (fsdev->driver != ramfs_driver) {
+			errno = EOPNOTSUPP;
+			return -errno;
+		}
+
+		f = get_file();
+		if (!f) {
+			errno = EMFILE;
+			return -errno;
+		}
+
+		f->path = NULL;
+		f->dentry = NULL;
+		f->f_inode = new_inode(&fsdev->sb);
+		f->f_inode->i_mode = S_IFREG;
+		f->flags = flags;
+		f->size = 0;
+		f->fsdev = fsdev;
+
+		return f->no;
+	}
+
 	filename = getname(pathname);
 	if (IS_ERR(filename))
 		return PTR_ERR(filename);

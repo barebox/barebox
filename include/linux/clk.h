@@ -14,6 +14,7 @@
 #include <linux/spinlock.h>
 #include <linux/stringify.h>
 #include <linux/container_of.h>
+#include <deep-probe.h>
 #include <xfuncs.h>
 
 struct device;
@@ -978,6 +979,26 @@ static inline struct clk *clk_get_enabled(struct device *dev, const char *id)
 		clk_put(clk);
 		return ERR_PTR(ret);
 	}
+
+	return clk;
+}
+
+/**
+ * clk_get_if_available - get clock, ignoring known unavailable clock controller
+ * @dev: device for clock "consumer"
+ * @id: clock consumer ID
+ *
+ * Return: a struct clk corresponding to the clock producer, a
+ * valid IS_ERR() condition containing errno or NULL if it could
+ * be determined that the clock producer will never be probed in
+ * absence of modules.
+ */
+static inline struct clk *clk_get_if_available(struct device *dev, const char *id)
+{
+	struct clk *clk = clk_get(dev, id);
+
+	if (clk == ERR_PTR(-EPROBE_DEFER) && deep_probe_is_supported())
+		return NULL;
 
 	return clk;
 }

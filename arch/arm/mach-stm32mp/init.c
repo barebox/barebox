@@ -42,12 +42,8 @@
 
 /* TAMP registers */
 #define TAMP_BACKUP_REGISTER(x)         (STM32_TAMP_BASE + 0x100 + 4 * x)
-/* secure access */
-#define TAMP_BACKUP_MAGIC_NUMBER        TAMP_BACKUP_REGISTER(4)
-#define TAMP_BACKUP_BRANCH_ADDRESS      TAMP_BACKUP_REGISTER(5)
 /* non secure access */
 #define TAMP_BOOT_CONTEXT               TAMP_BACKUP_REGISTER(20)
-#define TAMP_BOOTCOUNT                  TAMP_BACKUP_REGISTER(21)
 
 #define TAMP_BOOT_MODE_MASK             GENMASK(15, 8)
 #define TAMP_BOOT_MODE_SHIFT            8

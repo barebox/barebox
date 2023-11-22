@@ -24,19 +24,31 @@ struct idr {
 #define DEFINE_IDR(name)	\
 	struct idr name = { .list = LIST_HEAD_INIT((name).list) }
 
-#define __idr_for_each_entry(head, idr) \
-	list_for_each_entry((idr), &(head)->list, list)
+/**
+ * idr_for_each_entry() - Iterate over an IDR's elements of a given type.
+ * @_idr: IDR handle.
+ * @_entry: The type * to use as cursor
+ * @_id: Entry ID.
+ *
+ * @_entry and @_id do not need to be initialized before the loop, and
+ * after normal termination @_entry is left with the value NULL.  This
+ * is convenient for a "not found" value.
+ */
+#define idr_for_each_entry(_idr, _entry, _id)				\
+	for (struct idr *iter =						\
+	     list_first_entry_or_null(&(_idr)->list, struct idr, list);	\
+	     (iter && iter != (_idr)) || (_entry = NULL);	\
+	     iter = list_next_entry(iter, list))			\
+	if ((_entry = iter->ptr, _id = iter->id, true))
 
-static inline struct idr *__idr_find(struct idr *head, int id)
+struct idr *__idr_find(struct idr *head, int lookup_id);
+
+int idr_for_each(const struct idr *idr,
+		 int (*fn)(int id, void *p, void *data), void *data);
+
+static inline int idr_is_empty(const struct idr *idr)
 {
-	struct idr *idr;
-
-	__idr_for_each_entry(head, idr) {
-		if (idr->id == id)
-			return idr;
-	}
-
-	return NULL;
+	return list_empty(&idr->list);
 }
 
 static inline void *idr_find(struct idr *head, int id)
@@ -46,36 +58,15 @@ static inline void *idr_find(struct idr *head, int id)
 	return idr ? idr->ptr : NULL;
 }
 
-static inline int idr_alloc_one(struct idr *head, void *ptr, int start)
-{
-	struct idr *idr;
-
-	if (__idr_find(head, start))
-		return -EBUSY;
-
-	idr = malloc(sizeof(*idr));
-	if (!idr)
-		return -ENOMEM;
-
-	idr->id = start;
-	idr->ptr = ptr;
-
-	list_add(&idr->list, &head->list);
-
-	return start;
-}
+int idr_alloc_one(struct idr *head, void *ptr, int start);
 
 static inline void idr_init(struct idr *idr)
 {
 	INIT_LIST_HEAD(&idr->list);
 }
 
-static inline void idr_remove(struct idr *head, int id)
-{
-	struct idr *idr = __idr_find(head, id);
+void idr_destroy(struct idr *idr);
 
-	list_del(&idr->list);
-	free(idr);
-}
+void idr_remove(struct idr *idr, int id);
 
 #endif /* __IDR_H__ */

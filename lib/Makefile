@@ -28,6 +28,7 @@ obj-y			+= cmdlinepart.o
 obj-y			+= recursive_action.o
 obj-y			+= make_directory.o
 obj-y			+= math.o
+obj-$(CONFIG_IDR)	+= idr.o
 obj-y			+= math/
 obj-y			+= uuid.o
 obj-$(CONFIG_XXHASH)	+= xxhash.o

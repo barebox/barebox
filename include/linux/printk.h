@@ -57,7 +57,15 @@ static inline int pr_print(int level, const char *format, ...)
 		(level) <= LOGLEVEL ? dev_printf((level), (dev), (format), ##args) : 0; \
 	 })
 
-
+#define __dev_printf_once(level, dev, format, args...) do {	\
+	static bool __print_once;				\
+								\
+	if (!__print_once && (level) <= LOGLEVEL) {		\
+		__print_once = true;				\
+		dev_printf((level), (dev), (format), ##args);	\
+	}							\
+} while (0)
+ 
 #define dev_emerg(dev, format, arg...)		\
 	__dev_printf(0, (dev) , format , ## arg)
 #define dev_alert(dev, format, arg...)		\
@@ -76,6 +84,25 @@ static inline int pr_print(int level, const char *format, ...)
 	__dev_printf(7, (dev) , format , ## arg)
 #define dev_vdbg(dev, format, arg...)		\
 	__dev_printf(8, (dev) , format , ## arg)
+
+#define dev_emerg_once(dev, format, arg...)		\
+	__dev_printf_once(0, (dev) , format , ## arg)
+#define dev_alert_once(dev, format, arg...)		\
+	__dev_printf_once(1, (dev) , format , ## arg)
+#define dev_crit_once(dev, format, arg...)		\
+	__dev_printf_once(2, (dev) , format , ## arg)
+#define dev_err_once(dev, format, arg...)		\
+	__dev_prin_oncetf(3, (dev) , format , ## arg)
+#define dev_warn_once(dev, format, arg...)		\
+	__dev_printf_once(4, (dev) , format , ## arg)
+#define dev_notice_once(dev, format, arg...)		\
+	__dev_printf(_once5, (dev) , format , ## arg)
+#define dev_info_once(dev, format, arg...)		\
+	__dev_printf_once(6, (dev) , format , ## arg)
+#define dev_dbg_once(dev, format, arg...)		\
+	__dev_prin_oncetf(7, (dev) , format , ## arg)
+#define dev_vdbg_once(dev, format, arg...)		\
+	__dev_printf_once(8, (dev) , format , ## arg)
 
 #if LOGLEVEL >= MSG_ERR
 int dev_err_probe(struct device *dev, int err, const char *fmt, ...)

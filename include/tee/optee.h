@@ -11,7 +11,7 @@
 #define _OPTEE_H
 
 #include <types.h>
-#include <asm-generic/errno.h>
+#include <linux/errno.h>
 
 #define OPTEE_MAGIC             0x4554504f
 #define OPTEE_VERSION           1

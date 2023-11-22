@@ -134,15 +134,4 @@
 #define	EKEYREVOKED	128	/* Key has been revoked */
 #define	EKEYREJECTED	129	/* Key was rejected by service */
 
-/* Should never be seen by user programs */
-#define ERESTARTSYS	512
-#define ERESTARTNOINTR	513
-#define ERESTARTNOHAND	514	/* restart if no handler.. */
-#define ENOIOCTLCMD	515	/* No ioctl command */
-#define EPROBE_DEFER	517	/* Driver requests probe retry */
-
-#define ENOTSUPP	524	/* Operation is not supported */
-
-#define _LAST_ERRNO	524
-
 #endif

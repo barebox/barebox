@@ -44,7 +44,7 @@
 #include <module.h>
 #include <linux/string.h>
 #include <stdio.h>
-#include <asm-generic/errno.h>
+#include <linux/errno.h>
 
 /* This list holds all currently allocated rs control structures */
 static LIST_HEAD (rslist);

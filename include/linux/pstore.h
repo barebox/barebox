@@ -23,7 +23,7 @@
 
 #include <linux/time.h>
 #include <linux/types.h>
-#include <asm-generic/errno.h>
+#include <linux/errno.h>
 
 struct module;
 

@@ -8,6 +8,7 @@
 #include <linux/limits.h>
 #include <linux/math64.h>
 #include <linux/container_of.h>
+#include <linux/instruction_pointer.h>
 #include <linux/minmax.h>
 
 #define ALIGN(x, a)		__ALIGN_MASK(x, (typeof(x))(a) - 1)
@@ -116,8 +117,6 @@ extern long long simple_strtoll(const char *,char **,unsigned int);
 	(quot * (numer)) + ((rem * (numer)) / (denom));	\
 }							\
 )
-
-#define _RET_IP_             (unsigned long)__builtin_return_address(0)
 
 extern const char hex_asc[];
 #define hex_asc_lo(x)	hex_asc[((x) & 0x0f)]

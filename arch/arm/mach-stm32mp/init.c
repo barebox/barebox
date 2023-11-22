@@ -158,7 +158,6 @@ static int stm32mp15_setup_cpu_type(void)
 {
 	unsigned long cpufixupctx = 0, pkgfixupctx = 0;
 	int cputype, package;
-	int ret;
 
 	__stm32mp15_get_cpu_type(&cputype);
 	switch (cputype) {
@@ -222,14 +221,10 @@ static int stm32mp15_setup_cpu_type(void)
 
 	pr_debug("cputype = 0x%x, package = 0x%x\n", cputype, package);
 
-	if (cpufixupctx) {
-		ret = of_register_fixup(stm32mp15_fixup_cpus, (void*)cpufixupctx);
-		if (ret)
-			return ret;
-	}
-
+	if (cpufixupctx)
+		of_register_fixup(stm32mp15_fixup_cpus, (void*)cpufixupctx);
 	if (pkgfixupctx)
-		return of_register_fixup(stm32mp15_fixup_pkg, (void*)pkgfixupctx);
+		of_register_fixup(stm32mp15_fixup_pkg, (void*)pkgfixupctx);
 
 	return 0;
 }

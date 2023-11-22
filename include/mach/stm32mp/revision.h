@@ -32,29 +32,13 @@
 #define CPU_STM32MP151Fxx	0x050000AE
 #define CPU_STM32MP151Dxx	0x050000AF
 
-#define cpu_stm32_is(mask, val) ({ \
-	u32 type; \
-	__stm32mp_get_cpu_type(&type) == 0 ? (type & mask) == val : 0; \
-})
-
-#define cpu_stm32_is_stm32mp15() cpu_stm32_is(0xFFFF0000, 0x05000000)
-#define cpu_stm32_is_stm32mp13() cpu_stm32_is(0xFFFF0000, 0x05010000)
+#define cpu_stm32_is_stm32mp15() (__stm32mp_get_cpu() == 0x0500)
+#define cpu_stm32_is_stm32mp13() (__stm32mp_get_cpu() == 0x0501)
 
 /* silicon revisions */
 #define CPU_REV_A	0x1000
 #define CPU_REV_B	0x2000
 #define CPU_REV_Z	0x2001
-
-int stm32mp_silicon_revision(void);
-int stm32mp_cputype(void);
-int stm32mp_package(void);
-
-#define cpu_is_stm32mp157c() (stm32mp_cputype() == CPU_STM32MP157Cxx)
-#define cpu_is_stm32mp157a() (stm32mp_cputype() == CPU_STM32MP157Axx)
-#define cpu_is_stm32mp153c() (stm32mp_cputype() == CPU_STM32MP153Cxx)
-#define cpu_is_stm32mp153a() (stm32mp_cputype() == CPU_STM32MP153Axx)
-#define cpu_is_stm32mp151c() (stm32mp_cputype() == CPU_STM32MP151Cxx)
-#define cpu_is_stm32mp151a() (stm32mp_cputype() == CPU_STM32MP151Axx)
 
 /* DBGMCU register */
 #define DBGMCU_APB4FZ1		(STM32_DBGMCU_BASE + 0x2C)
@@ -77,8 +61,13 @@ static inline u32 stm32mp_read_idc(void)
 	return readl(IOMEM(DBGMCU_IDC));
 }
 
+static inline u32 __stm32mp_get_cpu(void)
+{
+	return stm32mp_read_idc() & DBGMCU_IDC_DEV_ID_MASK >> DBGMCU_IDC_DEV_ID_SHIFT;
+}
+
 /* Get Device Part Number (RPN) from OTP */
-static inline int __stm32mp_get_cpu_rpn(u32 *rpn)
+static inline int __stm32mp15_get_cpu_rpn(u32 *rpn)
 {
 	int ret = bsec_read_field(BSEC_OTP_RPN, rpn);
 	if (ret)
@@ -88,15 +77,15 @@ static inline int __stm32mp_get_cpu_rpn(u32 *rpn)
 	return 0;
 }
 
-static inline int __stm32mp_get_cpu_type(u32 *type)
+static inline int __stm32mp15_get_cpu_type(u32 *type)
 {
-	u32 id;
-	int ret = __stm32mp_get_cpu_rpn(type);
+	int ret;
+
+	ret = __stm32mp15_get_cpu_rpn(type);
 	if (ret)
 		return ret;
 
-	id = (stm32mp_read_idc() & DBGMCU_IDC_DEV_ID_MASK) >> DBGMCU_IDC_DEV_ID_SHIFT;
-	*type |= id << 16;
+	*type |= __stm32mp_get_cpu() << 16;
 	return 0;
 }
 

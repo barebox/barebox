@@ -24,7 +24,7 @@ ENTRY_FUNCTION(start_stm32mp15xx_dkx, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	err = __stm32mp_get_cpu_type(&cputype);
+	err = __stm32mp15_get_cpu_type(&cputype);
 	if (!err && cputype == CPU_STM32MP157Axx)
 		fdt = __dtb_z_stm32mp157a_dk1_start;
 	else

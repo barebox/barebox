@@ -43,7 +43,8 @@
 /* TAMP registers */
 #define TAMP_BACKUP_REGISTER(x)         (STM32_TAMP_BASE + 0x100 + 4 * x)
 /* non secure access */
-#define TAMP_BOOT_CONTEXT               TAMP_BACKUP_REGISTER(20)
+#define STM32MP13_TAMP_BOOT_CONTEXT     TAMP_BACKUP_REGISTER(30)
+#define STM32MP15_TAMP_BOOT_CONTEXT     TAMP_BACKUP_REGISTER(20)
 
 #define TAMP_BOOT_MODE_MASK             GENMASK(15, 8)
 #define TAMP_BOOT_MODE_SHIFT            8
@@ -56,9 +57,8 @@
 #define FIXUP_CPU_NUM(mask) ((mask) >> 16)
 #define FIXUP_CPU_HZ(mask) (((mask) & GENMASK(15, 0)) * 1000UL * 1000UL)
 
-static void setup_boot_mode(void)
+static void setup_boot_mode(u32 boot_ctx)
 {
-	u32 boot_ctx = readl(TAMP_BOOT_CONTEXT);
 	u32 boot_mode =
 		(boot_ctx & TAMP_BOOT_MODE_MASK) >> TAMP_BOOT_MODE_SHIFT;
 	int instance = (boot_mode & TAMP_BOOT_INSTANCE_MASK) - 1;
@@ -95,24 +95,6 @@ static void setup_boot_mode(void)
 		 boot_ctx, boot_mode, instance);
 
 	bootsource_set_raw(src, instance);
-}
-
-static int __stm32mp_cputype;
-int stm32mp_cputype(void)
-{
-	return __stm32mp_cputype;
-}
-
-static int __stm32mp_silicon_revision;
-int stm32mp_silicon_revision(void)
-{
-	return __stm32mp_silicon_revision;
-}
-
-static int __stm32mp_package;
-int stm32mp_package(void)
-{
-	return __stm32mp_package;
 }
 
 static u32 get_cpu_revision(void)
@@ -177,15 +159,15 @@ static int stm32mp15_fixup_pkg(struct device_node *root, void *_pkg)
 	return fixup_pinctrl(root, "st,stm32mp157-z-pinctrl", pkg);
 }
 
-static int setup_cpu_type(void)
+static int stm32mp15_setup_cpu_type(void)
 {
 	const char *cputypestr, *cpupkgstr, *cpurevstr;
 	unsigned long cpufixupctx = 0, pkgfixupctx = 0;
-	u32 pkg;
+	int cputype, silicon_revision, package;
 	int ret;
 
-	__stm32mp_get_cpu_type(&__stm32mp_cputype);
-	switch (__stm32mp_cputype) {
+	__stm32mp15_get_cpu_type(&cputype);
+	switch (cputype) {
 	case CPU_STM32MP157Fxx:
 		cputypestr = "157F";
 		cpufixupctx = FIXUP_CPU_MASK(2, 800);
@@ -239,8 +221,8 @@ static int setup_cpu_type(void)
 		break;
 	}
 
-	get_cpu_package(&__stm32mp_package );
-	switch (__stm32mp_package) {
+	get_cpu_package(&package);
+	switch (package) {
 	case PKG_AA_LBGA448:
 		cpupkgstr = "AA";
 		pkgfixupctx = STM32MP_PKG_AA;
@@ -262,8 +244,8 @@ static int setup_cpu_type(void)
 		break;
 	}
 
-	__stm32mp_silicon_revision = get_cpu_revision();
-	switch (__stm32mp_silicon_revision) {
+	silicon_revision = get_cpu_revision();
+	switch (silicon_revision) {
 	case CPU_REV_A:
 		cpurevstr = "A";
 		break;
@@ -278,7 +260,7 @@ static int setup_cpu_type(void)
 	}
 
 	pr_debug("cputype = 0x%x, package = 0x%x, revision = 0x%x\n",
-		 __stm32mp_cputype, pkg, __stm32mp_silicon_revision);
+		 cputype, package, silicon_revision);
 	pr_info("detected STM32MP%s%s Rev.%s\n", cputypestr, cpupkgstr, cpurevstr);
 
 	if (cpufixupctx) {
@@ -302,6 +284,8 @@ int stm32mp_soc(void)
 
 static int stm32mp_init(void)
 {
+	u32 boot_ctx;
+
 	if (of_machine_is_compatible("st,stm32mp135"))
 		__st32mp_soc = 32135;
 	else if (of_machine_is_compatible("st,stm32mp151"))
@@ -313,8 +297,14 @@ static int stm32mp_init(void)
 	else
 		return 0;
 
-	setup_cpu_type();
-	setup_boot_mode();
+	if (__st32mp_soc == 32135) {
+		boot_ctx = readl(STM32MP13_TAMP_BOOT_CONTEXT);
+	} else {
+		stm32mp15_setup_cpu_type();
+		boot_ctx = readl(STM32MP15_TAMP_BOOT_CONTEXT);
+	}
+
+	setup_boot_mode(boot_ctx);
 
 	return 0;
 }

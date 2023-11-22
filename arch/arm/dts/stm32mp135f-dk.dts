@@ -4,5 +4,5 @@
 #include "stm32mp131.dtsi"
 
 / {
-	model = "STM32MP153F-DK";
+	model = "STM32MP135F-DK";
 };

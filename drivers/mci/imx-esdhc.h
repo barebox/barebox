@@ -39,6 +39,8 @@
 
 #define PIO_TIMEOUT		100000
 
+#define SDHCI_ACMD12_ERR__HOST_CONTROL2_UHSM GENMASK(18, 16) /* Layerscape specific */
+
 #define IMX_SDHCI_WML		0x44
 #define IMX_SDHCI_MIXCTRL	0x48
 /* Imported from Linux Kernel drivers/mmc/host/sdhci-esdhc-imx.c */

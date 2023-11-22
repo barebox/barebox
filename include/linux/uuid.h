@@ -107,6 +107,14 @@ extern const u8 uuid_index[16];
 int guid_parse(const char *uuid, guid_t *u);
 int uuid_parse(const char *uuid, uuid_t *u);
 
+static inline void uuid_make_v4(uuid_t *u) {
+	/* Set UUID version to 4 --- truly random generation */
+	u->b[6] = (u->b[6] & 0x0F) | 0x40;
+
+	/* Set the UUID variant to DCE */
+	u->b[8] = (u->b[8] & 0x3F) | 0x80;
+}
+
 /* MEI UUID type, don't use anywhere else */
 #include <uapi/linux/uuid.h>
 

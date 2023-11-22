@@ -25,6 +25,7 @@
 #include <init.h>
 #include <globalvar.h>
 #include <magicvar.h>
+#include <machine_id.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
 
@@ -365,6 +366,43 @@ IPaddr_t net_get_gateway(void)
 
 static LIST_HEAD(connection_list);
 
+/**
+ * generate_ether_addr - Generates stable software assigned Ethernet address
+ * @addr: Pointer to a six-byte array to contain the Ethernet address
+ * @ethid: index of the Ethernet interface
+ *
+ * Derives an Ethernet address (MAC) from the machine ID, that's stable
+ * per board that is not multicast and has the local assigned bit set.
+ *
+ * Return 0 if an address could be generated or a negative error code otherwise.
+ */
+int generate_ether_addr(u8 *ethaddr, int ethid)
+{
+	const char *hostname;
+	uuid_t id;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_NET_ETHADDR_FROM_MACHINE_ID))
+		return -ENOSYS;
+
+	hostname = barebox_get_hostname();
+	if (!hostname)
+		return -EINVAL;
+
+	ret = machine_id_get_app_specific(&id, ARRAY_AND_SIZE("barebox-macaddr:"),
+					  hostname, strlen(hostname), NULL);
+	if (ret)
+		return ret;
+
+	memcpy(ethaddr, &id.b, ETH_ALEN);
+	eth_addr_add(ethaddr, ethid);
+
+	ethaddr[0] &= 0xfe;	/* clear multicast bit */
+	ethaddr[0] |= 0x02;	/* set local assignment bit (IEEE802) */
+
+	return 0;
+}
+
 static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 				      rx_handler_f *handler, void *ctx)
 {
@@ -381,9 +419,16 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 
 	if (!is_valid_ether_addr(edev->ethaddr)) {
 		char str[sizeof("xx:xx:xx:xx:xx:xx")];
-		random_ether_addr(edev->ethaddr);
+
+		ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
+		if (ret)
+			random_ether_addr(edev->ethaddr);
+
 		ethaddr_to_string(edev->ethaddr, str);
-		dev_warn(&edev->dev, "No MAC address set. Using random address %s\n", str);
+
+		dev_warn(&edev->dev, "No MAC address set. Using %s %s\n",
+			 ret == 1 ? "address computed from unique ID" : "random address",
+			 str);
 		eth_set_ethaddr(edev, edev->ethaddr);
 	}
 

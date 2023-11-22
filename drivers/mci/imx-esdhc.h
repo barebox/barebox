@@ -60,7 +60,7 @@
 
 #define ESDHC_DMA_SYSCTL	0x40c /* Layerscape specific */
 #define ESDHC_SYSCTL_DMA_SNOOP 	BIT(6)
-
+#define ESDHC_SYSCTL_PERIPHERAL_CLK_SEL	BIT(19)
 
 /*
  * The CMDTYPE of the CMD register (offset 0xE) should be set to

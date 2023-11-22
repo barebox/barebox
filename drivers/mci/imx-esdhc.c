@@ -51,6 +51,9 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 	u32 clk;
 	unsigned long  cur_clock;
 
+	if (esdhc_is_layerscape(host))
+		sdhc_clk >>= 1;
+
 	/*
 	 * With eMMC and imx53 (sdhc_clk=200MHz) a pre_div of 1 results in
 	 *	pre_div=1,div=4 (=50MHz)
@@ -231,9 +234,10 @@ static int esdhc_init(struct mci_host *mci, struct device *dev)
 	/* RSTA doesn't reset MMC_BOOT register, so manually reset it */
 	sdhci_write32(&host->sdhci, SDHCI_MMC_BOOT, 0);
 
-	/* Enable cache snooping */
 	if (esdhc_is_layerscape(host))
-		esdhc_setbits32(host, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
+		esdhc_setbits32(host, ESDHC_DMA_SYSCTL,
+				ESDHC_SYSCTL_DMA_SNOOP | /* Enable cache snooping */
+				ESDHC_SYSCTL_PERIPHERAL_CLK_SEL);
 
 	/* Set the initial clock speed */
 	set_sysctl(mci, 400000, false);

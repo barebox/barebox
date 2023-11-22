@@ -123,9 +123,16 @@ int ls1046a_ppa_init(resource_size_t ppa_start, resource_size_t ppa_size)
 	get_builtin_firmware(ppa_ls1046a_bin, &ppa_fw, &ppa_fw_size);
 
 	if (el == 3) {
+		unsigned int cr;
+
+		asm volatile("mrs %0, sctlr_el3" : "=r" (cr) : : "cc");
 		remap_range((void *)ppa_start, ppa_size, MAP_CACHED);
+
 		ret = ppa_init(ppa_fw, ppa_fw_size, (void *)ppa_start);
+
+		asm volatile("msr sctlr_el2, %0" : : "r" (cr) : "cc");
 		remap_range((void *)ppa_start, ppa_size, MAP_UNCACHED);
+
 		if (ret)
 			return ret;
 	}

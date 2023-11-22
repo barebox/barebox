@@ -64,9 +64,6 @@ int stm32mp_package(void);
 #define DBGMCU_IDC_REV_ID_MASK	GENMASK(31, 16)
 #define DBGMCU_IDC_REV_ID_SHIFT	16
 
-#define RCC_DBGCFGR		(STM32_RCC_BASE + 0x080C)
-#define RCC_DBGCFGR_DBGCKEN	BIT(8)
-
 /* BSEC OTP index */
 #define BSEC_OTP_RPN	1
 #define BSEC_OTP_PKG	16
@@ -77,7 +74,6 @@ int stm32mp_package(void);
 
 static inline u32 stm32mp_read_idc(void)
 {
-	setbits_le32(RCC_DBGCFGR, RCC_DBGCFGR_DBGCKEN);
 	return readl(IOMEM(DBGMCU_IDC));
 }
 

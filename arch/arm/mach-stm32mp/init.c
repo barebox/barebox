@@ -97,11 +97,6 @@ static void setup_boot_mode(u32 boot_ctx)
 	bootsource_set_raw(src, instance);
 }
 
-static u32 get_cpu_revision(void)
-{
-	return (stm32mp_read_idc() & DBGMCU_IDC_REV_ID_MASK) >> DBGMCU_IDC_REV_ID_SHIFT;
-}
-
 static int get_cpu_package(u32 *pkg)
 {
 	int ret = bsec_read_field(BSEC_OTP_PKG, pkg);
@@ -161,107 +156,71 @@ static int stm32mp15_fixup_pkg(struct device_node *root, void *_pkg)
 
 static int stm32mp15_setup_cpu_type(void)
 {
-	const char *cputypestr, *cpupkgstr, *cpurevstr;
 	unsigned long cpufixupctx = 0, pkgfixupctx = 0;
-	int cputype, silicon_revision, package;
+	int cputype, package;
 	int ret;
 
 	__stm32mp15_get_cpu_type(&cputype);
 	switch (cputype) {
 	case CPU_STM32MP157Fxx:
-		cputypestr = "157F";
 		cpufixupctx = FIXUP_CPU_MASK(2, 800);
 		break;
 	case CPU_STM32MP157Dxx:
-		cputypestr = "157D";
 		cpufixupctx = FIXUP_CPU_MASK(2, 800);
 		break;
 	case CPU_STM32MP157Cxx:
-		cputypestr = "157C";
 		cpufixupctx = FIXUP_CPU_MASK(2, 650);
 		break;
 	case CPU_STM32MP157Axx:
-		cputypestr = "157A";
 		cpufixupctx = FIXUP_CPU_MASK(2, 650);
 		break;
 	case CPU_STM32MP153Fxx:
-		cputypestr = "153F";
 		cpufixupctx = FIXUP_CPU_MASK(2, 800);
 		break;
 	case CPU_STM32MP153Dxx:
-		cputypestr = "153D";
 		cpufixupctx = FIXUP_CPU_MASK(2, 800);
 		break;
 	case CPU_STM32MP153Cxx:
-		cputypestr = "153C";
 		cpufixupctx = FIXUP_CPU_MASK(2, 650);
 		break;
 	case CPU_STM32MP153Axx:
-		cputypestr = "153A";
 		cpufixupctx = FIXUP_CPU_MASK(2, 650);
 		break;
 	case CPU_STM32MP151Cxx:
-		cputypestr = "151C";
 		cpufixupctx = FIXUP_CPU_MASK(1, 650);
 		break;
 	case CPU_STM32MP151Axx:
-		cputypestr = "151A";
 		cpufixupctx = FIXUP_CPU_MASK(1, 650);
 		break;
 	case CPU_STM32MP151Fxx:
-		cputypestr = "151F";
 		cpufixupctx = FIXUP_CPU_MASK(1, 800);
 		break;
 	case CPU_STM32MP151Dxx:
-		cputypestr = "151D";
 		cpufixupctx = FIXUP_CPU_MASK(1, 800);
 		break;
 	default:
-		cputypestr = "????";
 		break;
 	}
 
 	get_cpu_package(&package);
 	switch (package) {
 	case PKG_AA_LBGA448:
-		cpupkgstr = "AA";
 		pkgfixupctx = STM32MP_PKG_AA;
 		break;
 	case PKG_AB_LBGA354:
-		cpupkgstr = "AB";
 		pkgfixupctx = STM32MP_PKG_AB;
 		break;
 	case PKG_AC_TFBGA361:
-		cpupkgstr = "AC";
 		pkgfixupctx = STM32MP_PKG_AC;
 		break;
 	case PKG_AD_TFBGA257:
-		cpupkgstr = "AD";
 		pkgfixupctx = STM32MP_PKG_AD;
 		break;
 	default:
-		cpupkgstr = "??";
 		break;
 	}
 
-	silicon_revision = get_cpu_revision();
-	switch (silicon_revision) {
-	case CPU_REV_A:
-		cpurevstr = "A";
-		break;
-	case CPU_REV_B:
-		cpurevstr = "B";
-		break;
-	case CPU_REV_Z:
-		cpurevstr = "Z";
-		break;
-	default:
-		cpurevstr = "?";
-	}
-
-	pr_debug("cputype = 0x%x, package = 0x%x, revision = 0x%x\n",
-		 cputype, package, silicon_revision);
-	pr_info("detected STM32MP%s%s Rev.%s\n", cputypestr, cpupkgstr, cpurevstr);
+	pr_debug("cputype = 0x%x, package = 0x%x\n", cputype, package);
 
 	if (cpufixupctx) {
 		ret = of_register_fixup(stm32mp15_fixup_cpus, (void*)cpufixupctx);

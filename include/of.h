@@ -40,7 +40,7 @@ struct device_node {
 };
 
 struct of_device_id {
-	char *compatible;
+	const char *compatible;
 	const void *data;
 };
 

@@ -15,62 +15,7 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <asm/byteorder.h>
-
-/*****************************************************************************/
-/*
- * readX/writeX() are used to access memory mapped devices. On some
- * architectures the memory mapped IO stuff needs to be accessed
- * differently. On the simple architectures, we just read/write the
- * memory location directly.
- */
-
-#ifndef __raw_readb
-#define __raw_readb(a)		(__chk_io_ptr(a), *(volatile unsigned char __force  *)(a))
-#endif
-
-#ifndef __raw_readw
-#define __raw_readw(a)		(__chk_io_ptr(a), *(volatile unsigned short __force *)(a))
-#endif
-
-#ifndef __raw_readl
-#define __raw_readl(a)		(__chk_io_ptr(a), *(volatile unsigned int __force   *)(a))
-#endif
-
-#ifndef readb
-#define readb __raw_readb
-#endif
-
-#ifndef readw
-#define readw(addr) __le16_to_cpu(__raw_readw(addr))
-#endif
-
-#ifndef readl
-#define readl(addr) __le32_to_cpu(__raw_readl(addr))
-#endif
-
-#ifndef __raw_writeb
-#define __raw_writeb(v,a)	(__chk_io_ptr(a), *(volatile unsigned char __force  *)(a) = (v))
-#endif
-
-#ifndef __raw_writew
-#define __raw_writew(v,a)	(__chk_io_ptr(a), *(volatile unsigned short __force *)(a) = (v))
-#endif
-
-#ifndef __raw_writel
-#define __raw_writel(v,a)	(__chk_io_ptr(a), *(volatile unsigned int __force   *)(a) = (v))
-#endif
-
-#ifndef writeb
-#define writeb __raw_writeb
-#endif
-
-#ifndef writew
-#define writew(b,addr) __raw_writew(__cpu_to_le16(b),addr)
-#endif
-
-#ifndef writel
-#define writel(b,addr) __raw_writel(__cpu_to_le32(b),addr)
-#endif
+#include <asm-generic/io-typeconfused.h>
 
 #ifdef CONFIG_64BIT
 static inline u64 __raw_readq(const volatile void __iomem *addr)

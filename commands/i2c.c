@@ -195,7 +195,7 @@ static int do_i2c_read(int argc, char *argv[])
 	struct i2c_adapter *adapter = NULL;
 	struct i2c_client client;
 	u8 *buf;
-	int count = -1, addr = -1, reg = -1, verbose = 0, ret, opt, bus = 0, wide = 0;
+	int count = 1, addr = -1, reg = -1, verbose = 0, ret, opt, bus = 0, wide = 0;
 
 	while ((opt = getopt(argc, argv, "a:b:c:r:vw")) > 0) {
 		switch (opt) {
@@ -264,7 +264,7 @@ BAREBOX_CMD_HELP_OPT("-b BUS\t", "i2c bus number (default 0)")
 BAREBOX_CMD_HELP_OPT("-a ADDR\t", "i2c device address")
 BAREBOX_CMD_HELP_OPT("-r START", "start register (optional, master receive mode if none given)")
 BAREBOX_CMD_HELP_OPT("-w\t",       "use word (16 bit) wide access")
-BAREBOX_CMD_HELP_OPT("-c COUNT", "byte count")
+BAREBOX_CMD_HELP_OPT("-c COUNT", "byte count (default 1)")
 BAREBOX_CMD_HELP_OPT("-v\t",       "verbose")
 BAREBOX_CMD_HELP_END
 

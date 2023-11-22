@@ -1221,6 +1221,16 @@ int of_device_disable(struct device_node *node);
 int of_device_disable_path(const char *path);
 int of_device_disable_by_alias(const char *alias);
 
+static inline int of_devices_ensure_probed_by_compatible(const char *compatible)
+{
+	struct of_device_id match_id[] = {
+		{ .compatible = compatible, },
+		{ /* sentinel */ },
+	};
+
+	return of_devices_ensure_probed_by_dev_id(match_id);
+}
+
 phandle of_get_tree_max_phandle(struct device_node *root);
 phandle of_node_create_phandle(struct device_node *node);
 int of_set_property_to_child_phandle(struct device_node *node, char *prop_name);

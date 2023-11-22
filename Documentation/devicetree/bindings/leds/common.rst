@@ -9,6 +9,7 @@ Common leds properties
     * ``net`` - LED indicates network activity (tx and rx)
     * ``net-rx`` - LED indicates network activity (rx only)
     * ``net-tx`` - LED indicates network activity (tx only)
+    * ``default-on`` - LED is switched on by default
 
 * ``label``: The label for this LED. If omitted, the label is taken
   from the node name (excluding the unit address).

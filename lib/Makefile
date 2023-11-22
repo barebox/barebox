@@ -70,6 +70,7 @@ obj-$(CONFIG_BAREBOX_LOGO)     += logo/
 obj-y			+= reed_solomon/
 obj-$(CONFIG_RATP)	+= ratp.o
 obj-y			+= list_sort.o
+obj-y			+= refcount.o
 obj-y			+= int_sqrt.o
 obj-y			+= parseopt.o
 obj-y			+= clz_ctz.o

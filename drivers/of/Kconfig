@@ -11,8 +11,12 @@ config OFTREE_MEM_GENERIC
 config DTC
 	bool
 
+config OF
+	bool
+
 config OFDEVICE
 	select OFTREE
+	select OF
 	select DTC
 	bool "Enable probing of devices from the devicetree"
 

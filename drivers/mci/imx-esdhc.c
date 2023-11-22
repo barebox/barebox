@@ -232,7 +232,7 @@ static int esdhc_init(struct mci_host *mci, struct device *dev)
 	sdhci_write32(&host->sdhci, SDHCI_MMC_BOOT, 0);
 
 	/* Enable cache snooping */
-	if (host->socdata->flags & ESDHC_FLAG_CACHE_SNOOPING)
+	if (esdhc_is_layerscape(host))
 		esdhc_setbits32(host, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
 
 	/* Set the initial clock speed */
@@ -377,7 +377,7 @@ static struct esdhc_soc_data usdhc_imx6sx_data = {
 
 static struct esdhc_soc_data esdhc_ls_data = {
 	.flags = ESDHC_FLAG_MULTIBLK_NO_INT | ESDHC_FLAG_BIGENDIAN |
-		 ESDHC_FLAG_CACHE_SNOOPING,
+		 ESDHC_FLAG_LAYERSCAPE,
 };
 
 static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {

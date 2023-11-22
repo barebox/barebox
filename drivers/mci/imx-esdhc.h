@@ -103,8 +103,8 @@
 #define ESDHC_FLAG_HS400		BIT(9)
 /* Need to access registers in bigendian mode */
 #define ESDHC_FLAG_BIGENDIAN		BIT(10)
-/* Enable cache snooping */
-#define ESDHC_FLAG_CACHE_SNOOPING	BIT(11)
+/* Layerscape variant ls1046a, ls1028a, ls1088a, revisit for ls1012a */
+#define ESDHC_FLAG_LAYERSCAPE		BIT(11)
 
 struct esdhc_soc_data {
 	u32 flags;
@@ -122,6 +122,11 @@ struct fsl_esdhc_host {
 static inline int esdhc_is_usdhc(struct fsl_esdhc_host *data)
 {
 	return !!(data->socdata->flags & ESDHC_FLAG_USDHC);
+}
+
+static inline int esdhc_is_layerscape(struct fsl_esdhc_host *data)
+{
+	return !!(data->socdata->flags & ESDHC_FLAG_LAYERSCAPE);
 }
 
 static inline struct fsl_esdhc_host *sdhci_to_esdhc(struct sdhci *sdhci)

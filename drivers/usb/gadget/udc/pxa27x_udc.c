@@ -882,12 +882,12 @@ static const struct usb_gadget_ops pxa_udc_ops = {
 	.udc_poll	= pxa_udc_gadget_poll,
 };
 
-static void clk_enable(void)
+static void usb_clk_enable(void)
 {
 	CKEN |= CKEN_USB;
 }
 
-static void clk_disable(void)
+static void usb_clk_disable(void)
 {
 	CKEN &= ~CKEN_USB;
 }
@@ -901,7 +901,7 @@ static void udc_disable(struct pxa_udc *udc)
 	udc_writel(udc, UDCICR1, 0);
 
 	udc_clear_mask_UDCCR(udc, UDCCR_UDE);
-	clk_disable();
+	usb_clk_disable();
 
 	ep0_idle(udc);
 	udc->gadget.speed = USB_SPEED_UNKNOWN;
@@ -946,7 +946,7 @@ static void udc_enable(struct pxa_udc *udc)
 	udc_writel(udc, UDCICR1, 0);
 	udc_clear_mask_UDCCR(udc, UDCCR_UDE);
 
-	clk_enable();
+	usb_clk_enable();
 
 	ep0_idle(udc);
 	udc->gadget.speed = USB_SPEED_FULL;

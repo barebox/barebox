@@ -538,10 +538,13 @@ static void stm32_sdmmc2_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	struct stm32_sdmmc2_priv *priv = to_mci_host(mci);
 	u32 desired = mci->clock;
 	u32 sys_clock = clk_get_rate(priv->clk);
-	u32 clk = 0;
+	u32 clk = 0, ddr = 0;
 
 	dev_dbg(priv->dev, "%s: bus_width = %d, clock = %d\n", __func__,
 		mci->bus_width, mci->clock);
+
+	if (mci_timing_is_ddr(ios->timing))
+		ddr = SDMMC_CLKCR_DDR;
 
 	if (mci->clock)
 		stm32_sdmmc2_pwron(priv);
@@ -555,12 +558,14 @@ static void stm32_sdmmc2_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	 * clk_div > 0 and NEGEDGE = 1 => command and data generated on
 	 * SDMMCCLK falling edge
 	 */
-	if (desired && (sys_clock > desired ||
+	if (desired && (sys_clock > desired || ddr ||
 			IS_RISING_EDGE(priv->clk_reg_msk))) {
 		clk = DIV_ROUND_UP(sys_clock, 2 * desired);
 		if (clk > SDMMC_CLKCR_CLKDIV_MAX)
 			clk = SDMMC_CLKCR_CLKDIV_MAX;
 	}
+
+	clk |= ddr;
 
 	if (mci->bus_width == MMC_BUS_WIDTH_4)
 		clk |= SDMMC_CLKCR_WIDBUS_4;
@@ -623,6 +628,11 @@ static int stm32_sdmmc2_probe(struct amba_device *adev,
 		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED;
 	if (mci->f_max >= 52000000)
 		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ;
+
+	if (of_property_read_bool(np, "mmc-ddr-3_3v"))
+		mci->host_caps |= MMC_CAP_MMC_3_3V_DDR;
+	if (of_property_read_bool(np, "mmc-ddr-1_8v"))
+		mci->host_caps |= MMC_CAP_MMC_1_8V_DDR;
 
 	return mci_register(&priv->mci);
 

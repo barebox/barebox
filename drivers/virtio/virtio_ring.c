@@ -256,8 +256,8 @@ void *virtqueue_get_buf(struct virtqueue *vq, unsigned int *len)
 		virtio_store_mb(&vring_used_event(&vq->vring),
 				cpu_to_virtio16(vq->vdev, vq->last_used_idx));
 
-	return (void *)(uintptr_t)virtio64_to_cpu(vq->vdev,
-						  vq->vring.desc[i].addr);
+	return IOMEM((uintptr_t)virtio64_to_cpu(vq->vdev,
+						  vq->vring.desc[i].addr));
 }
 
 static struct virtqueue *__vring_new_virtqueue(unsigned int index,

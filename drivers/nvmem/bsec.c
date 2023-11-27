@@ -18,24 +18,28 @@
 #include <machine_id.h>
 #include <linux/nvmem-provider.h>
 
+#include "stm32-bsec-optee-ta.h"
+
 #define BSEC_OTP_SERIAL	13
 
 struct bsec_priv {
 	struct device dev;
-	u32 svc_id;
 	struct regmap_config map_config;
 	int permanent_write_enable;
+	u8 lower;
+	struct tee_context *ctx;
 };
 
 struct stm32_bsec_data {
-	unsigned long svc_id;
-	int num_regs;
+	size_t size;
+	u8 lower;
+	bool ta;
 };
 
-static int bsec_smc(struct bsec_priv *priv, enum bsec_op op, u32 field,
+static int bsec_smc(enum bsec_op op, u32 field,
 		    unsigned data2, unsigned *val)
 {
-	enum bsec_smc ret = stm32mp_smc(priv->svc_id, op, field / 4, data2, val);
+	enum bsec_smc ret = stm32mp_smc(STM32_SMC_BSEC, op, field / 4, data2, val);
 	switch(ret)
 	{
 	case BSEC_SMC_OK:
@@ -58,7 +62,7 @@ static int bsec_smc(struct bsec_priv *priv, enum bsec_op op, u32 field,
 
 static int stm32_bsec_read_shadow(void *ctx, unsigned reg, unsigned *val)
 {
-	return bsec_smc(ctx, BSEC_SMC_READ_SHADOW, reg, 0, val);
+	return bsec_smc(BSEC_SMC_READ_SHADOW, reg, 0, val);
 }
 
 static int stm32_bsec_reg_write(void *ctx, unsigned reg, unsigned val)
@@ -66,9 +70,9 @@ static int stm32_bsec_reg_write(void *ctx, unsigned reg, unsigned val)
 	struct bsec_priv *priv = ctx;
 
 	if (priv->permanent_write_enable)
-		return bsec_smc(ctx, BSEC_SMC_PROG_OTP, reg, val, NULL);
+		return bsec_smc(BSEC_SMC_PROG_OTP, reg, val, NULL);
 	else
-		return bsec_smc(ctx, BSEC_SMC_WRITE_SHADOW, reg, val, NULL);
+		return bsec_smc(BSEC_SMC_WRITE_SHADOW, reg, val, NULL);
 }
 
 static struct regmap_bus stm32_bsec_regmap_bus = {
@@ -94,13 +98,17 @@ static int stm32_bsec_read_mac(struct bsec_priv *priv, int offset, u8 *mac)
 	u32 val[2];
 	int ret;
 
-	/* Some TF-A does not copy all of OTP into shadow registers, so make
-	 * sure we read the _real_ OTP bits here.
-	 */
-	ret = bsec_smc(priv, BSEC_SMC_READ_OTP, offset * 4, 0, &val[0]);
-	if (ret)
-		return ret;
-	ret = bsec_smc(priv, BSEC_SMC_READ_OTP, offset * 4 + 4, 0, &val[1]);
+	if (priv->ctx) {
+		ret = stm32_bsec_optee_ta_read(priv->ctx, offset * 4, val, sizeof(val));
+	} else {
+		/* Some TF-A does not copy all of OTP into shadow registers, so make
+		 * sure we read the _real_ OTP bits here.
+		 */
+		ret = bsec_smc(BSEC_SMC_READ_OTP, offset * 4, 0, &val[0]);
+		if (!ret)
+			ret = bsec_smc(BSEC_SMC_READ_OTP, offset * 4 + 4, 0, &val[1]);
+	}
+
 	if (ret)
 		return ret;
 
@@ -141,8 +149,56 @@ static void stm32_bsec_init_dt(struct bsec_priv *priv, struct device *dev,
 	of_eth_register_ethaddr(rnode, mac);
 }
 
+static int stm32_bsec_pta_read(void *context, unsigned int offset, unsigned int *val)
+{
+	struct bsec_priv *priv = context;
+
+	return stm32_bsec_optee_ta_read(priv->ctx, offset, val, sizeof(val));
+}
+
+static int stm32_bsec_pta_write(void *context, unsigned int offset, unsigned int val)
+{
+	struct bsec_priv *priv = context;
+
+	if (!priv->permanent_write_enable)
+		return -EACCES;
+
+	return stm32_bsec_optee_ta_write(priv->ctx, priv->lower, offset, &val, sizeof(val));
+}
+
+static struct regmap_bus stm32_bsec_optee_regmap_bus = {
+	.reg_write = stm32_bsec_pta_write,
+	.reg_read = stm32_bsec_pta_read,
+};
+
+static bool stm32_bsec_smc_check(void)
+{
+	u32 val;
+	int ret;
+
+	/* check that the OP-TEE support the BSEC SMC (legacy mode) */
+	ret = bsec_smc(BSEC_SMC_READ_SHADOW, 0, 0, &val);
+
+	return !ret;
+}
+
+static bool optee_presence_check(void)
+{
+	struct device_node *np;
+	bool tee_detected = false;
+
+	/* check that the OP-TEE node is present and available. */
+	np = of_find_compatible_node(NULL, NULL, "linaro,optee-tz");
+	if (np && of_device_is_available(np))
+		tee_detected = true;
+	of_node_put(np);
+
+	return tee_detected;
+}
+
 static int stm32_bsec_probe(struct device *dev)
 {
+	const struct regmap_bus *regmap_bus;
 	struct regmap *map;
 	struct bsec_priv *priv;
 	int ret = 0;
@@ -155,8 +211,6 @@ static int stm32_bsec_probe(struct device *dev)
 
 	priv = xzalloc(sizeof(*priv));
 
-	priv->svc_id = data->svc_id;
-
 	dev_set_name(&priv->dev, "bsec");
 	priv->dev.parent = dev;
 	register_device(&priv->dev);
@@ -164,9 +218,28 @@ static int stm32_bsec_probe(struct device *dev)
 	priv->map_config.reg_bits = 32;
 	priv->map_config.val_bits = 32;
 	priv->map_config.reg_stride = 4;
-	priv->map_config.max_register = data->num_regs;
+	priv->map_config.max_register = (data->size / 4) - 1;
 
-	map = regmap_init(dev, &stm32_bsec_regmap_bus, priv, &priv->map_config);
+	priv->lower = data->lower;
+
+	if (data->ta || optee_presence_check()) {
+		ret = stm32_bsec_optee_ta_open(&priv->ctx);
+		if (ret) {
+			/* wait for OP-TEE client driver to be up and ready */
+			if (ret == -EPROBE_DEFER)
+				return -EPROBE_DEFER;
+			/* BSEC PTA is required or SMC not supported */
+			if (data->ta || !stm32_bsec_smc_check())
+				return ret;
+		}
+	}
+
+	if (priv->ctx)
+		regmap_bus = &stm32_bsec_optee_regmap_bus;
+	else
+		regmap_bus = &stm32_bsec_regmap_bus;
+
+	map = regmap_init(dev, regmap_bus, priv, &priv->map_config);
 	if (IS_ERR(map))
 		return PTR_ERR(map);
 
@@ -184,16 +257,34 @@ static int stm32_bsec_probe(struct device *dev)
 
 	stm32_bsec_init_dt(priv, dev, map);
 
+	dev_dbg(dev, "using %s API\n", priv->ctx ? "OP-TEE" : "SiP");
+
 	return 0;
 }
 
+/*
+ * STM32MP15/13 BSEC OTP regions: 4096 OTP bits (with 3072 effective bits)
+ * => 96 x 32-bits data words
+ * - Lower: 1K bits, 2:1 redundancy, incremental bit programming
+ *   => 32 (x 32-bits) lower shadow registers = words 0 to 31
+ * - Upper: 2K bits, ECC protection, word programming only
+ *   => 64 (x 32-bits) = words 32 to 95
+ */
 static struct stm32_bsec_data stm32mp15_bsec_data = {
-	.num_regs = 95 * 4,
-	.svc_id = STM32_SMC_BSEC,
+	.size = 384,
+	.lower = 32,
+	.ta = false,
+};
+
+static const struct stm32_bsec_data stm32mp13_bsec_data = {
+	.size = 384,
+	.lower = 32,
+	.ta = true,
 };
 
 static __maybe_unused struct of_device_id stm32_bsec_dt_ids[] = {
 	{ .compatible = "st,stm32mp15-bsec", .data = &stm32mp15_bsec_data },
+	{ .compatible = "st,stm32mp13-bsec", .data = &stm32mp13_bsec_data },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, stm32_bsec_dt_ids);

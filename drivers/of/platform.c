@@ -486,11 +486,10 @@ int of_device_ensure_probed(struct device_node *np)
 		return 0;
 
 	dev = of_device_create_on_demand(np);
+	if (!dev)
+		return -ENODEV;
 	if (IS_ERR(dev))
 		return PTR_ERR(dev);
-
-	if (!dev)
-		panic("deep-probe: device for '%pOF' couldn't be created\n", np);
 
 	/*
 	 * The deep-probe mechanism relies on the fact that all necessary

@@ -1,0 +1,6 @@
+/*
+ * SPDX-License-Identifier: GPL-2.0-only
+ * SPDX-FileCopyrightText: 2023 Roland Hieber, Pengutronix <rhi@pengutronix.de>
+ */
+#include "imx7d-var-som-mx7.kernel.dtsi"
+#include "imx7d-ddrc.dtsi"

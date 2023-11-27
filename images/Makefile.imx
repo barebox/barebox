@@ -444,6 +444,11 @@ CFG_start_kamstrup_mx7_concentrator.pblb.imximg = $(board)/kamstrup-mx7-concentr
 FILE_barebox-kamstrup-mx7-concentrator.img = start_kamstrup_mx7_concentrator.pblb.imximg
 image-$(CONFIG_MACH_KAMSTRUP_MX7_CONCENTRATOR) += barebox-kamstrup-mx7-concentrator.img
 
+pblb-$(CONFIG_MACH_VARISCITE_SOM_MX7) += start_gome_e143_01
+CFG_start_gome_e143_01.pblb.imximg = $(board)/variscite-som-mx7/flash-header.imxcfg
+FILE_barebox-gome-e143_01.img = start_gome_e143_01.pblb.imximg
+image-$(CONFIG_MACH_VARISCITE_SOM_MX7) += barebox-gome-e143_01.img
+
 # ----------------------- i.MX8mm based boards --------------------------
 $(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MM_EVK, start_nxp_imx8mm_evk, nxp-imx8mm-evk/flash-header-imx8mm-evk, nxp-imx8mm-evk)
 

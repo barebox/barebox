@@ -1,0 +1,119 @@
+/*
+ * SPDX-License-Identifier: GPL-2.0-only
+ * SPDX-FileCopyrightText: 2022 Roland Hieber, Pengutronix
+ */
+
+/dts-v1/;
+
+#include "imx7d-gome-e143_01.kernel.dts"
+
+/ {
+	compatible = "gome,e143_01", "variscite,var-som-mx7", "fsl,imx7d";
+
+	aliases {
+		state = &state;
+	};
+
+	chosen {
+		stdout-path = &uart1;
+
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &emmc_env;
+		};
+	};
+
+	state: state {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		magic = <0x1929603f>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&emmc_state>;
+		backend-stridesize = <0x80>;
+		backend-storage-type = "direct";
+
+		bootstate: bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			system0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@0 {
+					reg = <0x0 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+
+				priority@4 {
+					reg = <0x4 0x4>;
+					type = "uint32";
+					default = <10>;
+				};
+			};
+
+			system1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@8 {
+					reg = <0x8 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+
+				priority@c {
+					reg = <0xc 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+			};
+
+			last_chosen@10 {
+				reg = <0x10 0x4>;
+				type = "uint32";
+			};
+		};
+	};
+};
+
+&usdhc3 {
+	partitions {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "fixed-partitions";
+
+		/** original storage layout:
+		offset     size  label
+		000000000  512   MBR
+		000000200  512   (empty)
+		000000400  68k   SPL
+		000011400  800k  u-boot
+		0000E0000  3.2M  u-boot-env (only first 8k are used)
+		000400000  2.9G  rootfs1
+		0BA400000  2.9G  rootfs2
+		174400000  1.5G  data
+		1D2000000        (end)
+
+		Keep the original layout for now for possible fallback to u-boot
+		later; put the storage for barebox-env and barebox-state
+		somewhere where it doesn't conflict with u-boot.
+		*/
+
+		emmc_state: partition@200000 {
+			label = "barebox-state";
+			reg = <0x200000 0x100000>;
+		};
+
+		emmc_env: partition@300000 {
+			label = "barebox-environment";
+			reg = <0x300000 0x100000>;
+		};
+	};
+};
+
+&{/leds2/led_netz_rt} {
+	barebox,default-trigger = "default-on";
+};

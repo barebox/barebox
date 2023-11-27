@@ -169,6 +169,7 @@ lwl-$(CONFIG_MACH_UDOO) += imx6q-udoo.dtb.o
 lwl-$(CONFIG_MACH_UDOO_NEO) += imx6sx-udoo-neo-full.dtb.o
 lwl-$(CONFIG_MACH_USI_TOPKICK) += kirkwood-topkick-bb.dtb.o
 lwl-$(CONFIG_MACH_VARISCITE_MX6) += imx6q-var-custom.dtb.o
+lwl-$(CONFIG_MACH_VARISCITE_SOM_MX7) += imx7d-gome-e143_01.dtb.o
 lwl-$(CONFIG_MACH_VERSATILEPB) += versatile-pb.dtb.o
 lwl-$(CONFIG_MACH_VEXPRESS) += vexpress-v2p-ca9.dtb.o
 lwl-$(CONFIG_MACH_VEXPRESS) += vexpress-v2p-ca15.dtb.o

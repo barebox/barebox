@@ -7,7 +7,7 @@
 #include <common.h>
 #include <io.h>
 #include <malloc.h>
-#include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/err.h>
 #include <linux/log2.h>
 #include <linux/math64.h>
@@ -238,6 +238,39 @@ long divider_round_rate(struct clk *clk, unsigned long rate,
 	div = clk_divider_bestdiv(clk, rate, prate, table, width, flags);
 
 	return DIV_ROUND_UP(*prate, div);
+}
+
+long divider_round_rate_parent(struct clk_hw *hw, struct clk_hw *parent,
+			       unsigned long rate, unsigned long *prate,
+			       const struct clk_div_table *table,
+			       u8 width, unsigned long flags)
+{
+	int div;
+
+	div = clk_divider_bestdiv(&hw->clk, rate, prate, table, width, flags);
+
+	return DIV_ROUND_UP_ULL((u64)*prate, div);
+}
+EXPORT_SYMBOL_GPL(divider_round_rate_parent);
+
+long divider_ro_round_rate_parent(struct clk_hw *hw, struct clk_hw *parent,
+				  unsigned long rate, unsigned long *prate,
+				  const struct clk_div_table *table, u8 width,
+				  unsigned long flags, unsigned int val)
+{
+	int div;
+
+	div = _get_div(table, val, flags, width);
+
+	/* Even a read-only clock can propagate a rate change */
+	if (clk_hw_get_flags(hw) & CLK_SET_RATE_PARENT) {
+		if (!*prate)
+			return -EINVAL;
+
+		*prate = clk_hw_round_rate(clk_hw_get_parent(hw), rate * div);
+	}
+
+	return DIV_ROUND_UP_ULL((u64)*prate, div);
 }
 
 static long clk_divider_round_rate(struct clk_hw *hw, unsigned long rate,

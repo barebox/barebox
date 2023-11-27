@@ -39,6 +39,8 @@
 
 #define PIO_TIMEOUT		100000
 
+#define SDHCI_ACMD12_ERR__HOST_CONTROL2_UHSM GENMASK(18, 16) /* Layerscape specific */
+
 #define IMX_SDHCI_WML		0x44
 #define IMX_SDHCI_MIXCTRL	0x48
 /* Imported from Linux Kernel drivers/mmc/host/sdhci-esdhc-imx.c */
@@ -60,7 +62,7 @@
 
 #define ESDHC_DMA_SYSCTL	0x40c /* Layerscape specific */
 #define ESDHC_SYSCTL_DMA_SNOOP 	BIT(6)
-
+#define ESDHC_SYSCTL_PERIPHERAL_CLK_SEL	BIT(19)
 
 /*
  * The CMDTYPE of the CMD register (offset 0xE) should be set to
@@ -103,8 +105,8 @@
 #define ESDHC_FLAG_HS400		BIT(9)
 /* Need to access registers in bigendian mode */
 #define ESDHC_FLAG_BIGENDIAN		BIT(10)
-/* Enable cache snooping */
-#define ESDHC_FLAG_CACHE_SNOOPING	BIT(11)
+/* Layerscape variant ls1046a, ls1028a, ls1088a, revisit for ls1012a */
+#define ESDHC_FLAG_LAYERSCAPE		BIT(11)
 
 struct esdhc_soc_data {
 	u32 flags;
@@ -122,6 +124,11 @@ struct fsl_esdhc_host {
 static inline int esdhc_is_usdhc(struct fsl_esdhc_host *data)
 {
 	return !!(data->socdata->flags & ESDHC_FLAG_USDHC);
+}
+
+static inline int esdhc_is_layerscape(struct fsl_esdhc_host *data)
+{
+	return !!(data->socdata->flags & ESDHC_FLAG_LAYERSCAPE);
 }
 
 static inline struct fsl_esdhc_host *sdhci_to_esdhc(struct sdhci *sdhci)

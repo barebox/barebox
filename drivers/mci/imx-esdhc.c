@@ -45,11 +45,17 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 {
-	int div, pre_div, ddr_pre_div = ddr ? 2 : 1;
+	int div, pre_div, ddr_pre_div = 1;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	int sdhc_clk = clk_get_rate(host->clk);
 	u32 clk;
 	unsigned long  cur_clock;
+
+	if (esdhc_is_usdhc(host) && ddr)
+		ddr_pre_div = 2;
+
+	if (esdhc_is_layerscape(host))
+		sdhc_clk >>= 1;
 
 	/*
 	 * With eMMC and imx53 (sdhc_clk=200MHz) a pre_div of 1 results in
@@ -103,7 +109,7 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 		   10 * MSECOND);
 }
 
-static void esdhc_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing)
+static void usdhc_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing)
 {
 	u32 mixctrl;
 
@@ -123,6 +129,30 @@ static void esdhc_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing
 	host->sdhci.timing = timing;
 }
 
+static void layerscape_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing)
+{
+	esdhc_clrbits32(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
+			SYSCTL_CKEN);
+
+	switch (timing) {
+	case MMC_TIMING_UHS_DDR50:
+	case MMC_TIMING_MMC_DDR52:
+		esdhc_clrsetbits32(host, SDHCI_ACMD12_ERR__HOST_CONTROL2,
+				   SDHCI_ACMD12_ERR__HOST_CONTROL2_UHSM,
+				   FIELD_PREP(SDHCI_ACMD12_ERR__HOST_CONTROL2_UHSM, 4));
+		break;
+	default:
+		esdhc_clrbits32(host, SDHCI_ACMD12_ERR__HOST_CONTROL2,
+				SDHCI_ACMD12_ERR__HOST_CONTROL2_UHSM);
+		break;
+	}
+
+	esdhc_setbits32(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
+			SYSCTL_CKEN);
+
+	host->sdhci.timing = timing;
+}
+
 static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
@@ -134,8 +164,12 @@ static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	 * divide by 2 automatically. So need to do this before
 	 * setting clock rate.
 	 */
-	if (esdhc_is_usdhc(host) && host->sdhci.timing != ios->timing)
-		esdhc_set_timing(host, ios->timing);
+	if (host->sdhci.timing != ios->timing) {
+		if (esdhc_is_usdhc(host))
+			usdhc_set_timing(host, ios->timing);
+		else if (esdhc_is_layerscape(host))
+			layerscape_set_timing(host, ios->timing);
+	}
 
 	/* Set the clock speed */
 	set_sysctl(mci, ios->clock, mci_timing_is_ddr(ios->timing));
@@ -231,9 +265,10 @@ static int esdhc_init(struct mci_host *mci, struct device *dev)
 	/* RSTA doesn't reset MMC_BOOT register, so manually reset it */
 	sdhci_write32(&host->sdhci, SDHCI_MMC_BOOT, 0);
 
-	/* Enable cache snooping */
-	if (host->socdata->flags & ESDHC_FLAG_CACHE_SNOOPING)
-		esdhc_setbits32(host, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
+	if (esdhc_is_layerscape(host))
+		esdhc_setbits32(host, ESDHC_DMA_SYSCTL,
+				ESDHC_SYSCTL_DMA_SNOOP | /* Enable cache snooping */
+				ESDHC_SYSCTL_PERIPHERAL_CLK_SEL);
 
 	/* Set the initial clock speed */
 	set_sysctl(mci, 400000, false);
@@ -315,7 +350,7 @@ static int fsl_esdhc_probe(struct device *dev)
 	if (ret)
 		goto err_clk_disable;
 
-	if (esdhc_is_usdhc(host))
+	if (esdhc_is_usdhc(host) || esdhc_is_layerscape(host))
 		mci->host_caps |= MMC_CAP_MMC_3_3V_DDR | MMC_CAP_MMC_1_8V_DDR;
 
 	rate = clk_get_rate(host->clk);
@@ -377,7 +412,7 @@ static struct esdhc_soc_data usdhc_imx6sx_data = {
 
 static struct esdhc_soc_data esdhc_ls_data = {
 	.flags = ESDHC_FLAG_MULTIBLK_NO_INT | ESDHC_FLAG_BIGENDIAN |
-		 ESDHC_FLAG_CACHE_SNOOPING,
+		 ESDHC_FLAG_LAYERSCAPE,
 };
 
 static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {

@@ -28,6 +28,11 @@ config COMMON_CLK_STM32F
 	help
 	  Support for stm32f4 and stm32f7 SoC families clocks
 
+config COMMON_CLK_STM32MP157
+	def_bool ARCH_STM32MP157
+	help
+	  Support for stm32mp157 SoC family clocks
+
 config COMMON_CLK_SCMI
 	tristate "Clock driver controlled via SCMI interface"
 	depends on ARM_SCMI_PROTOCOL || COMPILE_TEST

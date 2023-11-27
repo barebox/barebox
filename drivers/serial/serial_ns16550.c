@@ -553,6 +553,12 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 	}, {
 		.compatible = "nvidia,tegra20-uart",
 	},
+#if IS_ENABLED(CONFIG_ARCH_K3)
+	{
+		.compatible = "ti,am654-uart",
+		.data = &omap_clk48m_drvdata,
+	},
+#endif
 #if IS_ENABLED(CONFIG_ARCH_OMAP)
 	{
 		.compatible = "ti,omap2-uart",

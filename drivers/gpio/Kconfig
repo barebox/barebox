@@ -45,8 +45,8 @@ config GPIO_CLPS711X
 
 config GPIO_DAVINCI
 	bool "TI Davinci/Keystone GPIO support"
-	default y if ARCH_DAVINCI
-	depends on (ARM && ARCH_DAVINCI) || COMPILE_TEST
+	default y if ARCH_DAVINCI || ARCH_K3
+	depends on (ARM && (ARCH_DAVINCI || ARCH_K3)) || COMPILE_TEST
 	help
 	  Say yes here to enable GPIO support for TI Davinci/Keystone SoCs.
 

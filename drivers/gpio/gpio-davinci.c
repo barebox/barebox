@@ -30,40 +30,42 @@ struct davinci_gpio_controller {
 	struct gpio_chip	chip;
 	/* Serialize access to GPIO registers */
 	void __iomem		*regs;
-	void __iomem		*set_data;
-	void __iomem		*clr_data;
-	void __iomem		*in_data;
 };
 
 #define chip2controller(chip)	\
 	container_of(chip, struct davinci_gpio_controller, chip)
 
-static struct davinci_gpio_regs __iomem *gpio2regs(void __iomem *gpio_base,
-							unsigned gpio)
+static struct davinci_gpio_regs __iomem *gpio2regs(struct davinci_gpio_controller *d,
+						   unsigned gpio)
 {
 	void __iomem *ptr;
 
 	if (gpio < 32 * 1)
-		ptr = gpio_base + 0x10;
+		ptr = d->regs + 0x10;
 	else if (gpio < 32 * 2)
-		ptr = gpio_base + 0x38;
+		ptr = d->regs + 0x38;
 	else if (gpio < 32 * 3)
-		ptr = gpio_base + 0x60;
+		ptr = d->regs + 0x60;
 	else if (gpio < 32 * 4)
-		ptr = gpio_base + 0x88;
+		ptr = d->regs + 0x88;
 	else if (gpio < 32 * 5)
-		ptr = gpio_base + 0xb0;
+		ptr = d->regs + 0xb0;
 	else
 		ptr = NULL;
 	return ptr;
 }
 
+static inline u32 __gpio_mask(unsigned gpio)
+{
+	return 1 << (gpio % 32);
+}
+
 static int davinci_get_direction(struct gpio_chip *chip, unsigned offset)
 {
 	struct davinci_gpio_controller *d = chip2controller(chip);
-	struct davinci_gpio_regs __iomem *g = d->regs;
+	struct davinci_gpio_regs __iomem *g = gpio2regs(d, offset);
 
-	return ((readl_relaxed(&g->dir)) & (1 << offset)) ?
+	return ((readl_relaxed(&g->dir)) & __gpio_mask(offset)) ?
 		GPIOF_DIR_IN : GPIOF_DIR_OUT;
 }
 
@@ -71,9 +73,9 @@ static inline int __davinci_direction(struct gpio_chip *chip,
 			unsigned offset, bool out, int value)
 {
 	struct davinci_gpio_controller *d = chip2controller(chip);
-	struct davinci_gpio_regs __iomem *g = d->regs;
+	struct davinci_gpio_regs __iomem *g = gpio2regs(d, offset);
 	u32 temp;
-	u32 mask = 1 << offset;
+	u32 mask = __gpio_mask(offset);
 
 	temp = readl_relaxed(&g->dir);
 	if (out) {
@@ -108,9 +110,9 @@ davinci_direction_out(struct gpio_chip *chip, unsigned offset, int value)
 static int davinci_gpio_get(struct gpio_chip *chip, unsigned offset)
 {
 	struct davinci_gpio_controller *d = chip2controller(chip);
-	struct davinci_gpio_regs __iomem *g = d->regs;
+	struct davinci_gpio_regs __iomem *g = gpio2regs(d, offset);
 
-	return ((1 << offset) & readl_relaxed(&g->in_data)) ? 1 : 0;
+	return (__gpio_mask(offset) & readl_relaxed(&g->in_data)) ? 1 : 0;
 }
 
 /*
@@ -120,9 +122,9 @@ static void
 davinci_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
 {
 	struct davinci_gpio_controller *d = chip2controller(chip);
-	struct davinci_gpio_regs __iomem *g = d->regs;
+	struct davinci_gpio_regs __iomem *g = gpio2regs(d, offset);
 
-	writel_relaxed((1 << offset), value ? &g->set_data : &g->clr_data);
+	writel_relaxed(__gpio_mask(offset), value ? &g->set_data : &g->clr_data);
 }
 
 static struct gpio_ops davinci_gpio_ops = {
@@ -139,9 +141,9 @@ static int davinci_gpio_probe(struct device *dev)
 	void __iomem *gpio_base;
 	int ret;
 	u32 val;
-	int i, base;
 	unsigned ngpio;
 	struct davinci_gpio_controller *chips;
+	struct gpio_chip *gc;
 
 	ret = of_property_read_u32(dev->of_node, "ti,ngpio", &val);
 	if (ret) {
@@ -154,7 +156,7 @@ static int davinci_gpio_probe(struct device *dev)
 	if (WARN_ON(ARCH_NR_GPIOS < ngpio))
 		ngpio = ARCH_NR_GPIOS;
 
-	chips = xzalloc((ngpio / 32 + 1) * sizeof(*chips));
+	chips = xzalloc(sizeof(*chips));
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores)) {
@@ -163,32 +165,22 @@ static int davinci_gpio_probe(struct device *dev)
 	}
 	gpio_base = IOMEM(iores->start);
 
-	for (i = 0, base = 0; base < ngpio; i++, base += 32) {
-		struct davinci_gpio_regs __iomem *regs;
-		struct gpio_chip *gc;
+	gc = &chips->chip;
+	gc->ops = &davinci_gpio_ops;
+	gc->dev = dev;
+	gc->ngpio = ngpio;
+	gc->base = -1;
 
-		gc = &chips[i].chip;
-		gc->ops = &davinci_gpio_ops;
+	chips->regs = gpio_base;
 
-		gc->dev = dev;
-		gc->base = base;
-		gc->ngpio = ngpio - base;
-		if (gc->ngpio > 32)
-			gc->ngpio = 32;
-
-		regs = gpio2regs(gpio_base, base);
-		chips[i].regs = regs;
-		chips[i].set_data = &regs->set_data;
-		chips[i].clr_data = &regs->clr_data;
-		chips[i].in_data = &regs->in_data;
-
-		gpiochip_add(gc);
-	}
+	gpiochip_add(gc);
 
 	return 0;
 }
 
 static struct of_device_id davinci_gpio_ids[] = {
+	{ .compatible = "ti,keystone-gpio", },
+	{ .compatible = "ti,am654-gpio", },
 	{ .compatible = "ti,dm6441-gpio", },
 	{ /* sentinel */ },
 };

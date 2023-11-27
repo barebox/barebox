@@ -537,6 +537,28 @@ void sdhci_enable_clk(struct sdhci *host, u16 clk)
 	sdhci_write16(host, SDHCI_CLOCK_CONTROL, clk);
 }
 
+int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd)
+{
+	u32 mask;
+	int ret;
+
+	mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
+
+	if (cmd && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+		mask &= ~SDHCI_CMD_INHIBIT_DATA;
+
+	ret = wait_on_timeout(10 * MSECOND,
+			!(sdhci_read32(host, SDHCI_PRESENT_STATE) & mask));
+
+	if (ret) {
+		dev_err(host->mci->hw_dev,
+				"SDHCI timeout while waiting for idle\n");
+		return -EBUSY;
+	}
+
+	return 0;
+}
+
 void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_clock)
 {
 	u16 clk;
@@ -544,6 +566,8 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 	BUG_ON(!host->mci); /* Call sdhci_setup_host() before using this */
 
 	host->mci->clock = 0;
+
+	sdhci_wait_idle(host, NULL);
 
 	sdhci_write16(host, SDHCI_CLOCK_CONTROL, 0);
 

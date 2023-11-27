@@ -185,6 +185,14 @@ config MCI_ARASAN
 	  Enable this to support SD and MMC card read/write on systems with
 	  the Arasan SD3.0 / SDIO3.0 / eMMC4.51 host controller.
 
+config MCI_AM654
+	bool "Support for the SDHCI Controller in TI's AM654 SOCs"
+	select MCI_SDHCI
+	help
+	  This selects the Secure Digital Host Controller Interface (SDHCI)
+	  support present in TI's AM654 SOCs. The controller supports
+	  SD/MMC/SDIO devices.
+
 config MCI_SPI
 	bool "MMC/SD over SPI"
 	select CRC7

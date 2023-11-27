@@ -3,5 +3,6 @@ menu "SoC drivers"
 source "drivers/soc/imx/Kconfig"
 source "drivers/soc/kvx/Kconfig"
 source "drivers/soc/rockchip/Kconfig"
+source "drivers/soc/ti/Kconfig"
 
 endmenu

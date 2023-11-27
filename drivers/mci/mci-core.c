@@ -1193,9 +1193,6 @@ static int mci_mmc_try_bus_width(struct mci *mci, enum mci_bus_width bus_width,
 	u32 ext_csd_bits;
 	int err;
 
-	dev_dbg(&mci->dev, "attempting buswidth %u%s\n", 1 << bus_width,
-		mci_timing_is_ddr(timing) ? " (DDR)" : "");
-
 	ext_csd_bits = mci_bus_width_ext_csd_bits(bus_width);
 
 	if (mci_timing_is_ddr(timing))
@@ -1203,16 +1200,20 @@ static int mci_mmc_try_bus_width(struct mci *mci, enum mci_bus_width bus_width,
 
 	err = mci_switch(mci, EXT_CSD_BUS_WIDTH, ext_csd_bits);
 	if (err < 0)
-		return err;
+		goto out;
 
 	mci->host->timing = timing;
 	mci_set_bus_width(mci, bus_width);
 
 	err = mmc_compare_ext_csds(mci, bus_width);
 	if (err < 0)
-		return err;
+		goto out;
 
-	return bus_width;
+out:
+	dev_dbg(&mci->dev, "Tried buswidth %u%s: %s\n", 1 << bus_width,
+		mci_timing_is_ddr(timing) ? " (DDR)" : "", err ? "failed" : "OK");
+
+	return err ?: bus_width;
 }
 
 static int mci_mmc_select_bus_width(struct mci *mci)

@@ -64,6 +64,7 @@ obj-y			+= wchar.o
 obj-y			+= libfile.o
 obj-y			+= bitmap.o
 obj-y			+= gcd.o
+obj-y			+= bsearch.o
 obj-pbl-y		+= hexdump.o
 obj-$(CONFIG_FONTS)	+= fonts/
 obj-$(CONFIG_BAREBOX_LOGO)     += logo/

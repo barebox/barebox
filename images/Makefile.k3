@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# barebox image generation Makefile for K3 images
+#
+
+pblb-$(CONFIG_MACH_BEAGLEPLAY) += start_beagleplay
+FILE_barebox-beagleplay.img = start_beagleplay.pblb
+image-$(CONFIG_MACH_BEAGLEPLAY) += barebox-beagleplay.img
+
+$(obj)/k3-am625-beagleplay.fit: $(obj)/barebox-beagleplay.img
+FILE_barebox-beagleplay-fit.img = k3-am625-beagleplay.fit
+image-$(CONFIG_MACH_BEAGLEPLAY) += barebox-beagleplay-fit.img
+

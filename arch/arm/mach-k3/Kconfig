@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+menu "K3 boards"
+        depends on ARCH_K3
+
+config MACH_BEAGLEPLAY
+	bool "BeagleBoard BeaglePlay"
+	help
+	  Say Y here if you are using a TI AM62x based BeaglePlay board
+
+endmenu

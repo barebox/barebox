@@ -94,21 +94,13 @@ int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
 {
 	unsigned command, xfer;
 	struct sdhci *sdhci = &host->sdhci;
-	u32 mask, state;
+	u32 mask;
 	int status;
 	int ret;
 
-	/* Wait for idle before next command */
-	mask = SDHCI_CMD_INHIBIT_CMD;
-	if (cmd->cmdidx != MMC_CMD_STOP_TRANSMISSION)
-		mask |= SDHCI_CMD_INHIBIT_DATA;
-
-	ret = sdhci_read32_poll_timeout(sdhci, SDHCI_PRESENT_STATE, state,
-					!(state & mask), 100 * USEC_PER_MSEC);
-	if (ret) {
-		dev_err(host->dev, "timeout while waiting for idle\n");
+	ret = sdhci_wait_idle(&host->sdhci, cmd);
+	if (ret)
 		return ret;
-	}
 
 	sdhci_write32(sdhci, SDHCI_INT_STATUS, ~0U);
 
@@ -193,17 +185,12 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 	struct sdhci *sdhci = &host->sdhci;
 	unsigned clk = 0, clk_div;
 	unsigned reg;
-	u32 present_mask, caps, caps_clk_mult;
+	u32 caps, caps_clk_mult;
 	int ret;
 
-	present_mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
-	ret = sdhci_read32_poll_timeout(sdhci, SDHCI_PRESENT_STATE, reg,
-					!(reg & present_mask),
-					100 * USEC_PER_MSEC);
-	if (ret) {
-		dev_warn(host->dev, "Timeout waiting for CMD and DAT Inhibit bits\n");
+	ret = sdhci_wait_idle(&host->sdhci, NULL);
+	if (ret)
 		return ret;
-	}
 
 	sdhci_write16(sdhci, SDHCI_CLOCK_CONTROL, 0);
 

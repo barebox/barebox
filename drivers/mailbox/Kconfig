@@ -1,0 +1,22 @@
+menuconfig MAILBOX
+	bool "Mailbox Hardware Support"
+	help
+	  Mailbox is a framework to control hardware communication between
+	  on-chip processors through queued messages and interrupt driven
+	  signals. Say Y if your platform supports hardware mailboxes.
+
+if MAILBOX
+
+config TI_MESSAGE_MANAGER
+	tristate "Texas Instruments Message Manager Driver"
+	depends on ARCH_K3
+	default y
+	help
+	  An implementation of Message Manager slave driver for Keystone
+	  and K3 architecture SoCs from Texas Instruments. Message Manager
+	  is a communication entity found on few of Texas Instrument's keystone
+	  and K3 architecture SoCs. These may be used for communication between
+	  multiple processors within the SoC. Select this driver if your
+	  platform has support for the hardware block.
+
+endif

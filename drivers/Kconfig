@@ -46,5 +46,6 @@ source "drivers/nvme/Kconfig"
 source "drivers/ddr/Kconfig"
 source "drivers/power/Kconfig"
 source "drivers/virtio/Kconfig"
+source "drivers/mailbox/Kconfig"
 
 endmenu

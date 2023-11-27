@@ -115,6 +115,15 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 $(obj)/%.s: $(obj)/% FORCE
 	$(call if_changed,disasm)
 
+quiet_cmd_fit = FIT     $@
+cmd_fit = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
+	-D'$(subst -,_,$(*F))_dts=1' $(foreach f,$< $(2),-include '$(f)') /dev/null ; \
+	mkimage -f $(dtc-tmp) $@ -E \
+	cat $(depfile).pre $(depfile).dtc > $(depfile)
+
+$(obj)/%.fit: $(obj)/%.its FORCE
+	$(call if_changed,fit)
+
 $(obj)/piggy.o: $(obj)/barebox.z FORCE
 
 $(obj)/sha_sum.o: $(obj)/barebox.sha.bin FORCE
@@ -170,6 +179,7 @@ include $(srctree)/images/Makefile.zynq
 include $(srctree)/images/Makefile.zynqmp
 include $(srctree)/images/Makefile.layerscape
 include $(srctree)/images/Makefile.riscv
+include $(srctree)/images/Makefile.k3
 
 
 pblb-$(CONFIG_BOARD_GENERIC_DT) += start_dt_2nd

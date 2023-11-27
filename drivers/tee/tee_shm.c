@@ -18,8 +18,13 @@ static void tee_shm_release(struct tee_device *teedev, struct tee_shm *shm)
 	if (shm->flags & TEE_SHM_DYNAMIC)
 		teedev->desc->ops->shm_unregister(shm->ctx, shm);
 
-	if (!(shm->flags & TEE_SHM_PRIV))
+	if (!(shm->flags & TEE_SHM_PRIV)) {
 		list_del(&shm->link);
+		if (IS_ENABLED(CONFIG_OPTEE_DEVFS)) {
+			devfs_remove(&shm->cdev);
+			unregister_device(&shm->dev);
+		}
+	}
 
 	if (shm->flags & TEE_SHM_POOL)
 		free(shm->kaddr);
@@ -30,6 +35,11 @@ static void tee_shm_release(struct tee_device *teedev, struct tee_shm *shm)
 
 	tee_device_put(teedev);
 }
+
+static const struct cdev_operations tee_shm_ops = {
+	.read = mem_read,
+	.memmap = generic_memmap_ro,
+};
 
 static struct tee_shm *
 register_shm_helper(struct tee_context *ctx, void *addr,
@@ -53,14 +63,45 @@ register_shm_helper(struct tee_context *ctx, void *addr,
 		goto err;
 	}
 
+	shm->fd = -EBADF;
+	shm->dev.id = -EACCES;
 	shm->ctx = ctx;
 	shm->kaddr = addr;
 	shm->paddr = virt_to_phys(shm->kaddr);
 	shm->size = size;
 	shm->flags = flags;
 
-	if (!(flags & TEE_SHM_PRIV))
+	if (!(flags & TEE_SHM_PRIV)) {
+		if (IS_ENABLED(CONFIG_OPTEE_DEVFS)) {
+			shm->res.start = (resource_size_t)addr;
+			shm->res.end = (resource_size_t)(addr + size - 1);
+			shm->res.flags = IORESOURCE_MEM;
+
+			shm->dev.id = DEVICE_ID_DYNAMIC;
+			shm->dev.parent = &ctx->teedev->dev;
+			shm->dev.resource = &shm->res;
+			shm->dev.num_resources = 1;
+			rc = dev_set_name(&shm->dev, "%s-shm", ctx->teedev->dev.unique_name);
+			if (rc)
+				goto err;
+
+			rc = register_device(&shm->dev);
+			if (rc)
+				goto err;
+
+			shm->res.name = shm->dev.unique_name;
+
+			shm->cdev.dev = &shm->dev;
+			shm->cdev.ops = &tee_shm_ops;
+			shm->cdev.size = size;
+			shm->cdev.name = shm->dev.unique_name;
+			rc = devfs_create(&shm->cdev);
+			if (rc)
+				goto err;
+		}
+
 		list_add(&shm->link, &ctx->list_shm);
+	}
 
 	if (flags & TEE_SHM_DYNAMIC) {
 		rc = ctx->teedev->desc->ops->shm_register(ctx, shm);
@@ -70,19 +111,40 @@ register_shm_helper(struct tee_context *ctx, void *addr,
 
 	refcount_set(&shm->refcount, 1);
 
-	pr_debug("%s: shm=%p addr=%p size=%zu\n", __func__, shm,
-		 addr, size);
+	pr_debug("%s: shm=%p cdev=%s addr=%p size=%zu\n", __func__, shm,
+		 shm->cdev.name ?: "(priv)", addr, size);
 
 	return shm;
 err:
-	if (!(flags & TEE_SHM_PRIV))
+	if (!(flags & TEE_SHM_PRIV)) {
 		list_del(&shm->link);
+		if (IS_ENABLED(CONFIG_OPTEE_DEVFS)) {
+			devfs_remove(&shm->cdev);
+			unregister_device(&shm->dev);
+		}
+	}
 
 	free(shm);
 	teedev_ctx_put(ctx);
 	tee_device_put(teedev);
 
 	return ERR_PTR(rc);
+}
+
+/**
+ * tee_shm_register_user_buf() - Register a userspace shared memory buffer
+ * @ctx:	Context that registers the shared memory
+ * @addr:	The userspace address of the shared buffer
+ * @length:	Length of the shared buffer
+ *
+ * @returns a pointer to 'struct tee_shm'
+ */
+struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
+					  unsigned long addr, size_t length)
+{
+	u32 flags = TEE_SHM_USER_MAPPED | TEE_SHM_DYNAMIC;
+
+	return register_shm_helper(ctx, (void *)addr, length, flags);
 }
 
 static struct tee_shm *shm_alloc_helper(struct tee_context *ctx, size_t size,
@@ -103,6 +165,21 @@ static struct tee_shm *shm_alloc_helper(struct tee_context *ctx, size_t size,
 
 	return shm;
 }
+
+/**
+ * tee_shm_alloc_user_buf() - Allocate shared memory for user space
+ * @ctx:	Context that allocates the shared memory
+ * @size:	Requested size of shared memory
+ *
+ * Memory allocated as user space shared memory is automatically freed when
+ * the TEE file pointer is closed. The primary usage of this function is
+ * when the TEE driver doesn't support registering ordinary user space
+ * memory.
+ *
+ * @returns a pointer to 'struct tee_shm'
+ */
+struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t size)
+	__alias(tee_shm_alloc_kernel_buf);
 
 /**
  * tee_shm_alloc_kernel_buf() - Allocate shared memory for kernel buffer
@@ -148,6 +225,39 @@ struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t size)
 EXPORT_SYMBOL_GPL(tee_shm_alloc_priv_buf);
 
 /**
+ * tee_shm_get_fd() - Increase reference count and return file descriptor
+ * @shm:	Shared memory handle
+ * @returns user space file descriptor to shared memory
+ */
+int tee_shm_get_fd(struct tee_shm *shm)
+{
+	int fd;
+
+	if (!IS_ENABLED(CONFIG_OPTEE_DEVFS))
+		return -ENOSYS;
+
+	refcount_inc(&shm->refcount);
+
+	if (shm->fd < 0) {
+		char *tmp;
+
+		tmp = basprintf("/dev/%s", shm->cdev.name);
+		if (!tmp)
+			return -ENOMEM;
+
+		shm->fd = open(tmp, O_RDONLY);
+		free(tmp);
+	}
+
+	fd = shm->fd;
+
+	if (shm->fd < 0)
+		tee_shm_put(shm);
+
+	return fd;
+}
+
+/**
  * tee_shm_free() - Free shared memory
  * @shm:	Handle to shared memory to free
  */
@@ -191,6 +301,28 @@ int tee_shm_get_pa(struct tee_shm *shm, size_t offs, phys_addr_t *pa)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(tee_shm_get_pa);
+
+/**
+ * tee_shm_get_from_id() - Find shared memory object and increase reference
+ * count
+ * @ctx:	Context owning the shared memory
+ * @id:		Id of shared memory object
+ * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
+ */
+struct tee_shm *tee_shm_get_from_id(struct tee_context *ctx, int id)
+{
+	struct tee_shm *shm;
+
+	list_for_each_entry(shm, &ctx->list_shm, link) {
+		if (shm->dev.id == id) {
+			refcount_inc(&shm->refcount);
+			return shm;
+		}
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL_GPL(tee_shm_get_from_id);
 
 /**
  * tee_shm_put() - Decrease reference count on a shared memory handle

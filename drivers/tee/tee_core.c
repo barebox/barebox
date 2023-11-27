@@ -82,6 +82,32 @@ void teedev_close_context(struct tee_context *ctx)
 }
 EXPORT_SYMBOL_GPL(teedev_close_context);
 
+static int tee_open(struct cdev *cdev, unsigned long flags)
+{
+	struct tee_context *ctx;
+
+	if (cdev->priv)
+		return -EBUSY;
+
+	ctx = teedev_open(container_of(cdev, struct tee_device, cdev));
+	if (IS_ERR(ctx))
+		return PTR_ERR(ctx);
+
+	cdev->priv = ctx;
+
+	return 0;
+}
+
+static int tee_release(struct cdev *cdev)
+{
+	struct tee_context *ctx = cdev->priv;
+
+	teedev_close_context(ctx);
+	cdev->priv = NULL;
+
+	return 0;
+}
+
 int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
 				 const u8 connection_data[TEE_IOCTL_UUID_LEN])
 {
@@ -95,6 +121,367 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
 
 }
 EXPORT_SYMBOL_GPL(tee_session_calc_client_uuid);
+
+static int tee_ioctl_version(struct tee_context *ctx,
+			     struct tee_ioctl_version_data __user *uvers)
+{
+	struct tee_ioctl_version_data vers;
+
+	ctx->teedev->desc->ops->get_version(ctx->teedev, &vers);
+
+	if (ctx->teedev->desc->flags & TEE_DESC_PRIVILEGED)
+		vers.gen_caps |= TEE_GEN_CAP_PRIVILEGED;
+
+	if (copy_to_user(uvers, &vers, sizeof(vers)))
+		return -EFAULT;
+
+	return 0;
+}
+
+static int tee_ioctl_shm_alloc(struct tee_context *ctx,
+			       struct tee_ioctl_shm_alloc_data *data)
+{
+	struct tee_shm *shm;
+
+	/* Currently no input flags are supported */
+	if (data->flags)
+		return -EINVAL;
+
+	shm = tee_shm_alloc_user_buf(ctx, data->size);
+	if (IS_ERR(shm))
+		return PTR_ERR(shm);
+
+	data->id = shm->dev.id;
+	data->flags = shm->flags;
+	data->size = shm->size;
+
+	return tee_shm_get_fd(shm);
+}
+
+static int
+tee_ioctl_shm_register(struct tee_context *ctx,
+		       struct tee_ioctl_shm_register_data *data)
+{
+	struct tee_shm *shm;
+
+	/* Currently no input flags are supported */
+	if (data->flags)
+		return -EINVAL;
+
+	shm = tee_shm_register_user_buf(ctx, data->addr, data->length);
+	if (IS_ERR(shm))
+		return PTR_ERR(shm);
+
+	data->id = shm->dev.id;
+	data->flags = shm->flags;
+	data->length = shm->size;
+
+	return tee_shm_get_fd(shm);
+}
+
+static int params_from_user(struct tee_context *ctx, struct tee_param *params,
+			    size_t num_params,
+			    struct tee_ioctl_param __user *uparams)
+{
+	size_t n;
+
+	for (n = 0; n < num_params; n++) {
+		struct tee_shm *shm;
+		struct tee_ioctl_param ip;
+
+		if (copy_from_user(&ip, uparams + n, sizeof(ip)))
+			return -EFAULT;
+
+		/* All unused attribute bits has to be zero */
+		if (ip.attr & ~TEE_IOCTL_PARAM_ATTR_MASK)
+			return -EINVAL;
+
+		params[n].attr = ip.attr;
+		switch (ip.attr & TEE_IOCTL_PARAM_ATTR_TYPE_MASK) {
+		case TEE_IOCTL_PARAM_ATTR_TYPE_NONE:
+		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT:
+			break;
+		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INPUT:
+		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT:
+			params[n].u.value.a = ip.a;
+			params[n].u.value.b = ip.b;
+			params[n].u.value.c = ip.c;
+			break;
+		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT:
+		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
+		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
+			/*
+			 * If a NULL pointer is passed to a TA in the TEE,
+			 * the ip.c IOCTL parameters is set to TEE_MEMREF_NULL
+			 * indicating a NULL memory reference.
+			 */
+			if (ip.c != TEE_MEMREF_NULL) {
+				/*
+				 * If we fail to get a pointer to a shared
+				 * memory object (and increase the ref count)
+				 * from an identifier we return an error. All
+				 * pointers that has been added in params have
+				 * an increased ref count. It's the callers
+				 * responibility to do tee_shm_put() on all
+				 * resolved pointers.
+				 */
+				shm = tee_shm_get_from_id(ctx, ip.c);
+				if (IS_ERR(shm))
+					return PTR_ERR(shm);
+
+				/*
+				 * Ensure offset + size does not overflow
+				 * offset and does not overflow the size of
+				 * the referred shared memory object.
+				 */
+				if ((ip.a + ip.b) < ip.a ||
+				    (ip.a + ip.b) > shm->size) {
+					tee_shm_put(shm);
+					return -EINVAL;
+				}
+			} else if (ctx->cap_memref_null) {
+				/* Pass NULL pointer to OP-TEE */
+				shm = NULL;
+			} else {
+				return -EINVAL;
+			}
+
+			params[n].u.memref.shm_offs = ip.a;
+			params[n].u.memref.size = ip.b;
+			params[n].u.memref.shm = shm;
+			break;
+		default:
+			/* Unknown attribute */
+			return -EINVAL;
+		}
+	}
+	return 0;
+}
+
+static int params_to_user(struct tee_ioctl_param __user *uparams,
+			  size_t num_params, struct tee_param *params)
+{
+	size_t n;
+
+	for (n = 0; n < num_params; n++) {
+		struct tee_ioctl_param __user *up = uparams + n;
+		struct tee_param *p = params + n;
+
+		switch (p->attr) {
+		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_OUTPUT:
+		case TEE_IOCTL_PARAM_ATTR_TYPE_VALUE_INOUT:
+			if (put_user(p->u.value.a, &up->a) ||
+			    put_user(p->u.value.b, &up->b) ||
+			    put_user(p->u.value.c, &up->c))
+				return -EFAULT;
+			break;
+		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_OUTPUT:
+		case TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT:
+			if (put_user((u64)p->u.memref.size, &up->b))
+				return -EFAULT;
+			break;
+		default:
+			break;
+		}
+	}
+	return 0;
+}
+
+static int tee_ioctl_open_session(struct tee_context *ctx,
+				  struct tee_ioctl_buf_data __user *ubuf)
+{
+	int rc;
+	size_t n;
+	struct tee_ioctl_buf_data buf;
+	struct tee_ioctl_open_session_arg __user *uarg;
+	struct tee_ioctl_open_session_arg arg;
+	struct tee_ioctl_param __user *uparams = NULL;
+	struct tee_param *params = NULL;
+	bool have_session = false;
+
+	if (!ctx->teedev->desc->ops->open_session)
+		return -EINVAL;
+
+	if (copy_from_user(&buf, ubuf, sizeof(buf)))
+		return -EFAULT;
+
+	if (buf.buf_len > TEE_MAX_ARG_SIZE ||
+	    buf.buf_len < sizeof(struct tee_ioctl_open_session_arg))
+		return -EINVAL;
+
+	uarg = u64_to_user_ptr(buf.buf_ptr);
+	if (copy_from_user(&arg, uarg, sizeof(arg)))
+		return -EFAULT;
+
+	if (sizeof(arg) + TEE_IOCTL_PARAM_SIZE(arg.num_params) != buf.buf_len)
+		return -EINVAL;
+
+	if (arg.num_params) {
+		params = kcalloc(arg.num_params, sizeof(struct tee_param),
+				 GFP_KERNEL);
+		if (!params)
+			return -ENOMEM;
+		uparams = uarg->params;
+		rc = params_from_user(ctx, params, arg.num_params, uparams);
+		if (rc)
+			goto out;
+	}
+
+	if (arg.clnt_login >= TEE_IOCTL_LOGIN_REE_KERNEL_MIN &&
+	    arg.clnt_login <= TEE_IOCTL_LOGIN_REE_KERNEL_MAX) {
+		pr_debug("login method not allowed for user-space client\n");
+		rc = -EPERM;
+		goto out;
+	}
+
+	rc = ctx->teedev->desc->ops->open_session(ctx, &arg, params);
+	if (rc)
+		goto out;
+	have_session = true;
+
+	if (put_user(arg.session, &uarg->session) ||
+	    put_user(arg.ret, &uarg->ret) ||
+	    put_user(arg.ret_origin, &uarg->ret_origin)) {
+		rc = -EFAULT;
+		goto out;
+	}
+	rc = params_to_user(uparams, arg.num_params, params);
+out:
+	/*
+	 * If we've succeeded to open the session but failed to communicate
+	 * it back to user space, close the session again to avoid leakage.
+	 */
+	if (rc && have_session && ctx->teedev->desc->ops->close_session)
+		ctx->teedev->desc->ops->close_session(ctx, arg.session);
+
+	if (params) {
+		/* Decrease ref count for all valid shared memory pointers */
+		for (n = 0; n < arg.num_params; n++)
+			if (tee_param_is_memref(params + n) &&
+			    params[n].u.memref.shm)
+				tee_shm_put(params[n].u.memref.shm);
+		kfree(params);
+	}
+
+	return rc;
+}
+
+static int tee_ioctl_invoke(struct tee_context *ctx,
+			    struct tee_ioctl_buf_data __user *ubuf)
+{
+	int rc;
+	size_t n;
+	struct tee_ioctl_buf_data buf;
+	struct tee_ioctl_invoke_arg __user *uarg;
+	struct tee_ioctl_invoke_arg arg;
+	struct tee_ioctl_param __user *uparams = NULL;
+	struct tee_param *params = NULL;
+
+	if (!ctx->teedev->desc->ops->invoke_func)
+		return -EINVAL;
+
+	if (copy_from_user(&buf, ubuf, sizeof(buf)))
+		return -EFAULT;
+
+	if (buf.buf_len > TEE_MAX_ARG_SIZE ||
+	    buf.buf_len < sizeof(struct tee_ioctl_invoke_arg))
+		return -EINVAL;
+
+	uarg = u64_to_user_ptr(buf.buf_ptr);
+	if (copy_from_user(&arg, uarg, sizeof(arg)))
+		return -EFAULT;
+
+	if (sizeof(arg) + TEE_IOCTL_PARAM_SIZE(arg.num_params) != buf.buf_len)
+		return -EINVAL;
+
+	if (arg.num_params) {
+		params = kcalloc(arg.num_params, sizeof(struct tee_param),
+				 GFP_KERNEL);
+		if (!params)
+			return -ENOMEM;
+		uparams = uarg->params;
+		rc = params_from_user(ctx, params, arg.num_params, uparams);
+		if (rc)
+			goto out;
+	}
+
+	rc = ctx->teedev->desc->ops->invoke_func(ctx, &arg, params);
+	if (rc)
+		goto out;
+
+	if (put_user(arg.ret, &uarg->ret) ||
+	    put_user(arg.ret_origin, &uarg->ret_origin)) {
+		rc = -EFAULT;
+		goto out;
+	}
+	rc = params_to_user(uparams, arg.num_params, params);
+out:
+	if (params) {
+		/* Decrease ref count for all valid shared memory pointers */
+		for (n = 0; n < arg.num_params; n++)
+			if (tee_param_is_memref(params + n) &&
+			    params[n].u.memref.shm)
+				tee_shm_put(params[n].u.memref.shm);
+		kfree(params);
+	}
+	return rc;
+}
+
+static int tee_ioctl_cancel(struct tee_context *ctx,
+			    struct tee_ioctl_cancel_arg __user *uarg)
+{
+	return -EINVAL;
+}
+
+static int
+tee_ioctl_close_session(struct tee_context *ctx,
+			struct tee_ioctl_close_session_arg __user *uarg)
+{
+	struct tee_ioctl_close_session_arg arg;
+
+	if (!ctx->teedev->desc->ops->close_session)
+		return -EINVAL;
+
+	if (copy_from_user(&arg, uarg, sizeof(arg)))
+		return -EFAULT;
+
+	return ctx->teedev->desc->ops->close_session(ctx, arg.session);
+}
+
+static int tee_ioctl(struct cdev *cdev, int cmd, void *arg)
+{
+	struct tee_context *ctx = cdev->priv;
+	void __user *uarg = (void __user *)arg;
+
+	switch (cmd) {
+	case TEE_IOC_VERSION:
+		return tee_ioctl_version(ctx, uarg);
+	case TEE_IOC_SHM_ALLOC:
+		return tee_ioctl_shm_alloc(ctx, uarg);
+	case TEE_IOC_SHM_REGISTER:
+		return tee_ioctl_shm_register(ctx, uarg);
+	case TEE_IOC_OPEN_SESSION:
+		return tee_ioctl_open_session(ctx, uarg);
+	case TEE_IOC_INVOKE:
+		return tee_ioctl_invoke(ctx, uarg);
+	case TEE_IOC_CANCEL:
+		return tee_ioctl_cancel(ctx, uarg);
+	case TEE_IOC_CLOSE_SESSION:
+		return tee_ioctl_close_session(ctx, uarg);
+	case TEE_IOC_SUPPL_RECV:
+		return -ENOSYS;
+	case TEE_IOC_SUPPL_SEND:
+		return -ENOSYS;
+	default:
+		return -EINVAL;
+	}
+}
+
+static const struct cdev_operations tee_cdev_ops = {
+	.open = tee_open,
+	.close = tee_release,
+	.ioctl = tee_ioctl,
+};
 
 static void tee_devinfo(struct device *dev)
 {
@@ -148,6 +535,11 @@ struct tee_device *tee_device_alloc(const struct tee_desc *teedesc,
 		goto err;
 	}
 
+	if (IS_ENABLED(CONFIG_OPTEE_DEVFS)) {
+		teedev->cdev.dev = &teedev->dev;
+		teedev->cdev.ops = &tee_cdev_ops;
+	}
+
 	/* 1 as tee_device_unregister() does one final tee_device_put() */
 	teedev->num_users = 1;
 	mutex_init(&teedev->mutex);
@@ -190,10 +582,22 @@ int tee_device_register(struct tee_device *teedev)
 	if (rc)
 		return rc;
 
+	if (IS_ENABLED(CONFIG_OPTEE_DEVFS)) {
+		teedev->cdev.name = teedev->dev.unique_name;
+
+		rc = devfs_create(&teedev->cdev);
+		if (rc)
+			goto out;
+	}
+
 	list_add_tail(&teedev->list, &tee_clients);
 
 	teedev->flags |= TEE_DEVICE_FLAG_REGISTERED;
 	return 0;
+
+out:
+	unregister_device(&teedev->dev);
+	return rc;
 }
 EXPORT_SYMBOL_GPL(tee_device_register);
 
@@ -236,6 +640,8 @@ void tee_device_unregister(struct tee_device *teedev)
 		return;
 
 	list_del(&teedev->list);
+	if (IS_ENABLED(CONFIG_OPTEE_DEVFS))
+		devfs_remove(&teedev->cdev);
 	unregister_device(&teedev->dev);
 }
 EXPORT_SYMBOL_GPL(tee_device_unregister);

@@ -182,6 +182,9 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
  * @refcount:	reference counter
  * @flags:	defined by TEE_SHM_* in tee_drv.h
  * @link:	list head for registering object globally
+ * @fd:		file descriptor for use in userspace
+ * @dev:	device for registering shared memory
+ * @res:	resource to be associated with device
  *
  * This pool is only supposed to be accessed directly from the TEE
  * subsystem and from drivers that implements their own shm pool manager.
@@ -194,6 +197,11 @@ struct tee_shm {
 	refcount_t refcount;
 	u32 flags;
 	struct list_head link;
+
+	int fd;
+	struct device_d dev;
+	struct cdev cdev;
+	struct resource res;
 };
 
 /**
@@ -204,6 +212,10 @@ void *tee_get_drvdata(struct tee_device *teedev);
 
 struct tee_shm *tee_shm_alloc_priv_buf(struct tee_context *ctx, size_t size);
 struct tee_shm *tee_shm_alloc_kernel_buf(struct tee_context *ctx, size_t size);
+
+struct tee_shm *tee_shm_alloc_user_buf(struct tee_context *ctx, size_t size);
+struct tee_shm *tee_shm_register_user_buf(struct tee_context *ctx,
+					  unsigned long addr, size_t length);
 
 /**
  * tee_shm_is_dynamic() - Check if shared memory object is of the dynamic kind
@@ -255,6 +267,27 @@ static inline size_t tee_shm_get_size(struct tee_shm *shm)
 {
 	return shm->size;
 }
+
+/**
+ * tee_shm_get_id() - Get id of a shared memory object
+ * @shm:	Shared memory handle
+ * @returns id
+ */
+static inline int tee_shm_get_id(struct tee_shm *shm)
+{
+	/* Only call on non-private SHMs */
+	BUG_ON(shm->dev.id < 0);
+	return shm->dev.id;
+}
+
+/**
+ * tee_shm_get_from_id() - Find shared memory object and increase reference
+ * count
+ * @ctx:	Context owning the shared memory
+ * @id:		Id of shared memory object
+ * @returns a pointer to 'struct tee_shm' on success or an ERR_PTR on failure
+ */
+struct tee_shm *tee_shm_get_from_id(struct tee_context *ctx, int id);
 
 /**
  * tee_client_open_context() - Open a TEE context

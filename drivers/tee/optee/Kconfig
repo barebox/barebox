@@ -18,3 +18,12 @@ config OPTEE
 	  CONFIG_BOOTM_OPTEE and PBL_OPTEE.
 
 	  If unsure, say n here.
+
+config OPTEE_DEVFS
+	bool "Provide /dev/tee0 interface"
+	depends on OPTEE && FS_DEVFS && EXPERIMENTAL
+	help
+	  Userspace accesses OP-TEE via ioctls and mmaps of the /dev/tee0
+	  device. This are no current in-tree users of this interface,
+	  but it's useful for compiling libteeclient + optee_tests for
+	  use inside barebox to verify proper operation of CONFIG_OPTEE.

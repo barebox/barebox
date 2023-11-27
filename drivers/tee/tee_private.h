@@ -22,6 +22,7 @@ struct tee_context;
  * @id:		unique id of device
  * @flags:	represented by TEE_DEVICE_FLAG_REGISTERED above
  * @dev:	embedded basic device structure
+ * @cdev:	embedded cdev
  * @num_users:	number of active users of this device
  * @mutex:	mutex protecting @num_users and @idr
  */
@@ -32,10 +33,13 @@ struct tee_device {
 	unsigned int flags;
 
 	struct device dev;
+	struct cdev cdev;
 
 	size_t num_users;
 	struct mutex mutex;	/* protects num_users and idr */
 };
+
+int tee_shm_get_fd(struct tee_shm *shm);
 
 bool tee_device_get(struct tee_device *teedev);
 void tee_device_put(struct tee_device *teedev);

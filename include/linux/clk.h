@@ -129,6 +129,7 @@ int clk_hw_set_rate(struct clk_hw *hw, unsigned long rate);
  */
 int clk_set_parent(struct clk *clk, struct clk *parent);
 int clk_hw_set_parent(struct clk_hw *hw, struct clk_hw *hwp);
+struct clk_hw *clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int idx);
 
 /**
  * clk_get_parent - get the parent clock source for this clock

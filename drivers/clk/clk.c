@@ -318,6 +318,26 @@ int clk_hw_set_parent(struct clk_hw *hw, struct clk_hw *newparent)
 	return clk_set_parent(&hw->clk, &newparent->clk);
 }
 
+static struct clk *clk_get_parent_by_index(struct clk *clk, u8 idx)
+{
+	if (IS_ERR_OR_NULL(clk->parents[idx]))
+		clk->parents[idx] = clk_lookup(clk->parent_names[idx]);
+
+	return clk->parents[idx];
+}
+
+struct clk_hw *
+clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int idx)
+{
+	struct clk *clk = clk_hw_to_clk(hw);
+
+	if (!clk || idx >= clk->num_parents || !clk->parents)
+		return NULL;
+
+	return clk_to_clk_hw(clk_get_parent_by_index(clk, idx));
+}
+EXPORT_SYMBOL_GPL(clk_hw_get_parent_by_index);
+
 struct clk *clk_get_parent(struct clk *clk)
 {
 	struct clk_hw *hw;
@@ -343,10 +363,7 @@ struct clk *clk_get_parent(struct clk *clk)
 		idx = 0;
 	}
 
-	if (IS_ERR_OR_NULL(clk->parents[idx]))
-		clk->parents[idx] = clk_lookup(clk->parent_names[idx]);
-
-	return clk->parents[idx];
+	return clk_get_parent_by_index(clk, idx);
 }
 
 struct clk_hw *clk_hw_get_parent(struct clk_hw *hw)

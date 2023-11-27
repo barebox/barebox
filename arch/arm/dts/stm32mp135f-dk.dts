@@ -5,4 +5,13 @@
 
 / {
 	model = "STM32MP135F-DK";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1, "partname:barebox-environment";
+		};
+	};
 };

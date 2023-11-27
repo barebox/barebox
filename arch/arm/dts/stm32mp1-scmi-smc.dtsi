@@ -1,0 +1,49 @@
+/* SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause) */
+
+/ {
+	firmware {
+		scmi: scmi {
+			compatible = "arm,scmi-smc";
+			shmem = <&scmi0_shm>;
+			arm,smc-id = <0x82002000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			scmi_clk: protocol@14 {
+				reg = <0x14>;
+				#clock-cells = <1>;
+			};
+
+			scmi_reset: protocol@16 {
+				reg = <0x16>;
+				#reset-cells = <1>;
+			};
+		};
+	};
+
+	soc {
+		sram@2ffff000 {
+			compatible = "mmio-sram";
+			reg = <0x2ffff000 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0 0x2ffff000 0x1000>;
+
+			scmi0_shm: scmi_shm@0 {
+				compatible = "arm,scmi-shmem";
+				reg = <0 0x80>;
+			};
+
+			scmi1_shm: scmi_shm@200 {
+				compatible = "arm,scmi-shmem";
+				reg = <0x200 0x80>;
+			};
+		};
+	};
+};
+
+/delete-node/ &clk_hse;
+/delete-node/ &clk_hsi;
+/delete-node/ &clk_lse;
+/delete-node/ &clk_lsi;
+/delete-node/ &clk_csi;

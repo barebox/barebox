@@ -329,6 +329,8 @@ struct clk_ops {
  * @name: clock name
  * @ops: operations this clock supports
  * @parent_names: array of string names for all possible parents
+ * @parent_hws: array of pointers to all possible parents (when all parents
+ *              are internal to the clk controller)
  * @num_parents: number of possible parents
  * @flags: framework-level hints and quirks
  */
@@ -336,6 +338,7 @@ struct clk_init_data {
 	const char		*name;
 	const struct clk_ops	*ops;
 	const char		* const *parent_names;
+	const struct clk_hw	**parent_hws;
 	unsigned int		num_parents;
 	unsigned long		flags;
 };

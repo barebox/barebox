@@ -431,7 +431,7 @@ int clk_get_phase(struct clk *clk)
 	return ret;
 }
 
-int bclk_register(struct clk *clk)
+static int __bclk_register(struct clk *clk)
 {
 	struct clk_hw *hw = clk_to_clk_hw(clk);
 	struct clk *c;
@@ -444,8 +444,6 @@ int bclk_register(struct clk *clk)
 			return -EBUSY;
 		}
 	}
-
-	clk->parents = xzalloc(sizeof(struct clk *) * clk->num_parents);
 
 	list_add_tail(&clk->list, &clks);
 
@@ -461,7 +459,19 @@ int bclk_register(struct clk *clk)
 	return 0;
 out:
 	list_del(&clk->list);
-	free(clk->parents);
+
+	return ret;
+}
+
+int bclk_register(struct clk *clk)
+{
+	int ret;
+
+	clk->parents = xzalloc(sizeof(struct clk *) * clk->num_parents);
+
+	ret = __bclk_register(clk);
+	if (ret)
+		free(clk->parents);
 
 	return ret;
 }
@@ -470,7 +480,7 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 {
 	struct clk *clk;
 	const struct clk_init_data *init = hw->init;
-	char **parent_names;
+	char **parent_names = NULL;
 	int i, ret;
 
 	if (!hw->init)
@@ -483,20 +493,32 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 	clk->name = xstrdup(init->name);
 	clk->ops = init->ops;
 	clk->num_parents = init->num_parents;
-	parent_names = xzalloc(init->num_parents * sizeof(char *));
 
-	for (i = 0; i < init->num_parents; i++)
-		parent_names[i] = xstrdup(init->parent_names[i]);
+	clk->parents = xzalloc(sizeof(struct clk *) * clk->num_parents);
 
-	clk->parent_names = (const char *const*)parent_names;
+	if (init->parent_names) {
+		parent_names = xzalloc(init->num_parents * sizeof(char *));
+
+		for (i = 0; i < init->num_parents; i++)
+			parent_names[i] = xstrdup(init->parent_names[i]);
+
+		clk->parent_names = (const char *const*)parent_names;
+
+	} else {
+		for (i = 0; i < init->num_parents; i++)
+			clk->parents[i] = clk_hw_to_clk(init->parent_hws[i]);
+	}
 
 	clk->flags = init->flags;
 
-	ret = bclk_register(clk);
+	ret = __bclk_register(clk);
 	if (ret) {
-		for (i = 0; i < init->num_parents; i++)
-			free(parent_names[i]);
-		free(parent_names);
+		if (parent_names) {
+			for (i = 0; i < init->num_parents; i++)
+				free(parent_names[i]);
+			free(parent_names);
+		}
+		free(clk->parents);
 		return ERR_PTR(ret);
 	}
 
@@ -997,6 +1019,15 @@ static const char *clk_hw_stat(struct clk *clk)
 	return "unknown";
 }
 
+static const char *clk_parent_name_by_index(struct clk *clk, u8 idx)
+{
+	if (clk->parent_names)
+		return clk->parent_names[idx];
+	if (clk->parents[idx])
+		return clk->parents[idx]->name;
+	return "unknown";
+}
+
 static void dump_one(struct clk *clk, int verbose, int indent)
 {
 	int enabled = clk_is_enabled(clk);
@@ -1021,7 +1052,7 @@ static void dump_one(struct clk *clk, int verbose, int indent)
 			int i;
 			printf("%*s`---- possible parents: ", indent * 4, "");
 			for (i = 0; i < clk->num_parents; i++)
-				printf("%s ", clk->parent_names[i]);
+				printf("%s ", clk_parent_name_by_index(clk, i));
 			printf("\n");
 		}
 	}

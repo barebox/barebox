@@ -299,7 +299,7 @@ static int scmi_regulator_probe(struct scmi_device *sdev)
 	if (!handle)
 		return -ENODEV;
 
-	voltage_ops = handle->protocol_get(sdev, SCMI_PROTOCOL_VOLTAGE, &ph);
+	voltage_ops = handle->dev_protocol_get(sdev, SCMI_PROTOCOL_VOLTAGE, &ph);
 	if (IS_ERR(voltage_ops))
 		return PTR_ERR(voltage_ops);
 
@@ -362,13 +362,16 @@ static int scmi_regulator_probe(struct scmi_device *sdev)
 		if (ret)
 			continue;
 
-		ret = of_regulator_register(&sreg->rdev, np);
+		sreg->rdev.desc = &sdesc->desc;
+		sreg->rdev.dev = &sdev->dev;
+
+		ret = of_regulator_register(&sreg->rdev, sreg->of_node);
 		if (ret)
 			continue;
 
-		dev_info(&sdev->dev,
-			 "Regulator %s registered for domain [%d]\n",
-			 sreg->sdesc.name, sreg->id);
+		dev_dbg(&sdev->dev,
+			"Regulator %s registered for domain [%d]\n",
+			sreg->sdesc.name, sreg->id);
 	}
 
 	return 0;

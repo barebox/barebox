@@ -2,16 +2,15 @@
 /*
  * System Control and Power Interface (SCMI) Protocol based clock driver
  *
- * Copyright (C) 2018-2021 ARM Ltd.
+ * Copyright (C) 2018-2022 ARM Ltd.
  */
 
-#include <common.h>
 #include <linux/clk.h>
-#include <driver.h>
+#include <linux/device.h>
 #include <linux/err.h>
 #include <of.h>
+#include <module.h>
 #include <linux/scmi_protocol.h>
-#include <linux/overflow.h>
 #include <linux/math64.h>
 
 static const struct scmi_clk_proto_ops *scmi_proto_clk_ops;
@@ -89,24 +88,57 @@ static void scmi_clk_disable(struct clk_hw *hw)
 	scmi_proto_clk_ops->disable(clk->ph, clk->id);
 }
 
+static int scmi_clk_atomic_enable(struct clk_hw *hw)
+{
+	struct scmi_clk *clk = to_scmi_clk(hw);
+
+	return scmi_proto_clk_ops->enable_atomic(clk->ph, clk->id);
+}
+
+static void scmi_clk_atomic_disable(struct clk_hw *hw)
+{
+	struct scmi_clk *clk = to_scmi_clk(hw);
+
+	scmi_proto_clk_ops->disable_atomic(clk->ph, clk->id);
+}
+
+/*
+ * We can provide enable/disable atomic callbacks only if the underlying SCMI
+ * transport for an SCMI instance is configured to handle SCMI commands in an
+ * atomic manner.
+ *
+ * When no SCMI atomic transport support is available we instead provide only
+ * the prepare/unprepare API, as allowed by the clock framework when atomic
+ * calls are not available.
+ *
+ * Two distinct sets of clk_ops are provided since we could have multiple SCMI
+ * instances with different underlying transport quality, so they cannot be
+ * shared.
+ */
 static const struct clk_ops scmi_clk_ops = {
 	.recalc_rate = scmi_clk_recalc_rate,
 	.round_rate = scmi_clk_round_rate,
 	.set_rate = scmi_clk_set_rate,
-	/*
-	 * Unlike Linux, we can provide enable/disable callback as everything
-	 * runs in atomic context.
-	 */
 	.enable = scmi_clk_enable,
 	.disable = scmi_clk_disable,
 };
 
-static int scmi_clk_ops_init(struct device *dev, struct scmi_clk *sclk)
+static const struct clk_ops scmi_atomic_clk_ops = {
+	.recalc_rate = scmi_clk_recalc_rate,
+	.round_rate = scmi_clk_round_rate,
+	.set_rate = scmi_clk_set_rate,
+	.enable = scmi_clk_atomic_enable,
+	.disable = scmi_clk_atomic_disable,
+};
+
+static int scmi_clk_ops_init(struct device *dev, struct scmi_clk *sclk,
+			     const struct clk_ops *scmi_ops)
 {
 	struct clk_init_data init = {
 		.flags = CLK_GET_RATE_NOCACHE,
+	
 		.num_parents = 0,
-		.ops = &scmi_clk_ops,
+		.ops = scmi_ops,
 		.name = sclk->info->name,
 	};
 
@@ -117,8 +149,10 @@ static int scmi_clk_ops_init(struct device *dev, struct scmi_clk *sclk)
 static int scmi_clocks_probe(struct scmi_device *sdev)
 {
 	int idx, count, err;
-	struct clk **clks;
-	struct clk_onecell_data *clk_data;
+	unsigned int atomic_threshold;
+	bool is_atomic;
+	struct clk_hw **hws;
+	struct clk_hw_onecell_data *clk_data;
 	struct device *dev = &sdev->dev;
 	struct device_node *np = dev->of_node;
 	const struct scmi_handle *handle = sdev->handle;
@@ -128,7 +162,7 @@ static int scmi_clocks_probe(struct scmi_device *sdev)
 		return -ENODEV;
 
 	scmi_proto_clk_ops =
-		handle->protocol_get(sdev, SCMI_PROTOCOL_CLOCK, &ph);
+		handle->dev_protocol_get(sdev, SCMI_PROTOCOL_CLOCK, &ph);
 	if (IS_ERR(scmi_proto_clk_ops))
 		return PTR_ERR(scmi_proto_clk_ops);
 
@@ -138,17 +172,21 @@ static int scmi_clocks_probe(struct scmi_device *sdev)
 		return -EINVAL;
 	}
 
-	clk_data = kzalloc(sizeof (*clk_data), GFP_KERNEL);
+	clk_data = devm_kzalloc(dev, struct_size(clk_data, hws, count),
+				GFP_KERNEL);
 	if (!clk_data)
 		return -ENOMEM;
 
-	clk_data->clk_num = count;
-	clks = clk_data->clks = calloc(clk_data->clk_num, sizeof(struct clk *));
+	clk_data->num = count;
+	hws = clk_data->hws;
+
+	is_atomic = handle->is_transport_atomic(handle, &atomic_threshold);
 
 	for (idx = 0; idx < count; idx++) {
 		struct scmi_clk *sclk;
+		const struct clk_ops *scmi_ops;
 
-		sclk = kzalloc(sizeof(*sclk), GFP_KERNEL);
+		sclk = devm_kzalloc(dev, sizeof(*sclk), GFP_KERNEL);
 		if (!sclk)
 			return -ENOMEM;
 
@@ -161,25 +199,39 @@ static int scmi_clocks_probe(struct scmi_device *sdev)
 		sclk->id = idx;
 		sclk->ph = ph;
 
-		err = scmi_clk_ops_init(dev, sclk);
+		/*
+		 * Note that when transport is atomic but SCMI protocol did not
+		 * specify (or support) an enable_latency associated with a
+		 * clock, we default to use atomic operations mode.
+		 */
+		if (is_atomic &&
+		    sclk->info->enable_latency <= atomic_threshold)
+			scmi_ops = &scmi_atomic_clk_ops;
+		else
+			scmi_ops = &scmi_clk_ops;
+
+		err = scmi_clk_ops_init(dev, sclk, scmi_ops);
 		if (err) {
 			dev_err(dev, "failed to register clock %d\n", idx);
-			kfree(sclk);
-			clks[idx] = NULL;
+			devm_kfree(dev, sclk);
+			hws[idx] = NULL;
 		} else {
-			dev_dbg(dev, "Registered clock:%s\n", sclk->info->name);
-			clks[idx] = &sclk->hw.clk;
+			dev_dbg(dev, "Registered clock:%s%s\n",
+				sclk->info->name,
+				scmi_ops == &scmi_atomic_clk_ops ?
+				" (atomic ops)" : "");
+			hws[idx] = &sclk->hw;
 		}
 	}
 
-	return of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
-				   clk_data);
+	return of_clk_add_hw_provider(np, of_clk_hw_onecell_get, clk_data);
 }
 
 static const struct scmi_device_id scmi_id_table[] = {
 	{ SCMI_PROTOCOL_CLOCK, "clocks" },
 	{ },
 };
+MODULE_DEVICE_TABLE(scmi, scmi_id_table);
 
 static struct scmi_driver scmi_clocks_driver = {
 	.name = "scmi-clocks",

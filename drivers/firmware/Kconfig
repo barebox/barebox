@@ -23,16 +23,6 @@ config FIRMWARE_ZYNQMP_FPGA
 	help
 	  Load a bitstream to the PL of Zynq Ultrascale+
 
-config ARM_SCMI_PROTOCOL
-	tristate "ARM System Control and Management Interface (SCMI) Message Protocol"
-	depends on ARM || COMPILE_TEST
-	depends on ARM_SMCCC
-	select IDR
-	help
-	  ARM System Control and Management Interface (SCMI) protocol is a
-	  set of operating system-independent software interfaces that are
-	  used in system management.
-
 config QEMU_FW_CFG
 	bool "QEMU FW CFG interface"
 	help
@@ -57,5 +47,7 @@ config TI_SCI_PROTOCOL
 
 	  This protocol library is used by client drivers to use the features
 	  provided by the system controller.
+
+source "drivers/firmware/arm_scmi/Kconfig"
 
 endmenu

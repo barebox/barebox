@@ -112,7 +112,7 @@ config DRIVER_SPI_STM32
 
 config SPI_NXP_FLEXSPI
 	tristate "NXP Flex SPI controller"
-	depends on ARCH_IMX8M || COMPILE_TEST
+	depends on ARCH_IMX8M || ARCH_IMX93 || COMPILE_TEST
 	help
 	  This enables support for the Flex SPI controller in master mode.
 	  Up to four slave devices can be connected on two buses with two

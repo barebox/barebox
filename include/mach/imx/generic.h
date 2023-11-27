@@ -52,6 +52,7 @@ int imx8mm_init(void);
 int imx8mn_init(void);
 int imx8mp_init(void);
 int imx8mq_init(void);
+int imx93_init(void);
 
 int imx1_devices_init(void);
 int imx21_devices_init(void);
@@ -73,6 +74,7 @@ void imx8mq_cpu_lowlevel_init(void);
 void imx8mm_cpu_lowlevel_init(void);
 void imx8mn_cpu_lowlevel_init(void);
 void imx8mp_cpu_lowlevel_init(void);
+void imx93_cpu_lowlevel_init(void);
 
 /* There's a off-by-one betweem the gpio bank number and the gpiochip */
 /* range e.g. GPIO_1_5 is gpio 5 under linux */
@@ -259,6 +261,18 @@ extern unsigned int __imx_cpu_type;
 # define cpu_is_mx8mq()	(imx_cpu_type == IMX_CPU_IMX8MQ)
 #else
 # define cpu_is_mx8mq()	(0)
+#endif
+
+#ifdef CONFIG_ARCH_IMX93
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX93
+# endif
+# define cpu_is_mx93()	(imx_cpu_type == IMX_CPU_IMX93)
+#else
+# define cpu_is_mx93()	(0)
 #endif
 
 #ifdef CONFIG_ARCH_VF610

@@ -76,6 +76,7 @@ struct mach_id {
 	unsigned short max_transfer;
 #define DEV_IMX		0
 #define DEV_MXS		1
+#define DEV_IMX9	2
 	unsigned char dev_type;
 	unsigned char hid_endpoint;
 };
@@ -214,6 +215,14 @@ static const struct mach_id imx_ids[] = {
 		.header_type = HDR_MX53,
 		.mode = MODE_HID,
 		.max_transfer = 1024,
+	}, {
+		.vid = 0x1fc9,
+		.pid = 0x014e,
+		.name = "i.MX9",
+		.mode = MODE_HID,
+		.max_transfer = 1020,
+		.hid_endpoint = 1,
+		.dev_type = DEV_IMX9,
 	},
 };
 
@@ -1350,6 +1359,23 @@ static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
 	return -ENODEV;
 }
 
+static int imx9_load_file(struct usb_work *curr)
+{
+	void *buf;
+	size_t fsize = 0;
+	int ret;
+
+	buf = read_file(curr->filename, &fsize);
+	if (!buf)
+		return -errno;
+
+	ret = send_buf(buf, fsize);
+	if (ret)
+		return ret;
+
+	return ret;
+}
+
 static int do_irom_download(struct usb_work *curr, int verify)
 {
 	int ret;
@@ -1648,6 +1674,9 @@ int main(int argc, char *argv[])
 
 	if (mach_id->dev_type == DEV_MXS) {
 		ret = mxs_load_file(&w);
+		goto out;
+	} else if (mach_id->dev_type == DEV_IMX9) {
+		ret = imx9_load_file(&w);
 		goto out;
 	}
 

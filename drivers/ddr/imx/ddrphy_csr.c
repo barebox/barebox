@@ -3,7 +3,7 @@
  * Copyright 2018 NXP
  */
 
-#define pr_fmt(fmt) "imx8m-ddr: " fmt
+#define pr_fmt(fmt) "imx-ddr: " fmt
 
 #include <linux/kernel.h>
 #include <soc/imx8m/ddr.h>

@@ -122,6 +122,10 @@ config DRIVER_SERIAL_LPUART
 	default y
 	bool "LPUART serial driver"
 
+config DRIVER_SERIAL_LPUART32
+	depends on ARCH_IMX
+	bool "LPUART32 serial driver"
+
 config VIRTIO_CONSOLE
 	tristate "Virtio console"
 	depends on VIRTIO

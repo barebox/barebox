@@ -24,10 +24,13 @@ int imx8mp_qspi_load_image(int instance, bool start);
 void imx8mm_load_bl33(void *bl33);
 void imx8mn_load_bl33(void *bl33);
 void imx8mp_load_bl33(void *bl33);
+void imx8mq_load_bl33(void *bl33);
 
 void __noreturn imx8mm_load_and_start_image_via_tfa(void);
 void __noreturn imx8mn_load_and_start_image_via_tfa(void);
 void __noreturn imx8mp_load_and_start_image_via_tfa(void);
+void __noreturn imx8mq_load_and_start_image_via_tfa(void);
+void __noreturn imx93_load_and_start_image_via_tfa(void);
 
 int imx_load_image(ptrdiff_t address, ptrdiff_t entry, u32 offset,
 		   u32 ivt_offset, bool start, unsigned int alignment,
@@ -50,20 +53,5 @@ struct imx_scratch_space *__imx8m_scratch_space(int ddr_buswidth);
 #define imx8mm_scratch_space() __imx8m_scratch_space(32)
 #define imx8mn_scratch_space() __imx8m_scratch_space(16)
 #define imx8mp_scratch_space() __imx8m_scratch_space(32)
-
-#define imx8m_load_and_start_optee_via_tfa(soc, bl32, bl33)			\
-do {										\
-	size_t bl32_size;							\
-	void *bl32_image;							\
-										\
-	soc##_tzc380_init();							\
-	get_builtin_firmware_ext(soc##_bl32_bin,				\
-				bl33, &bl32_image,				\
-				&bl32_size);					\
-										\
-	memcpy(bl32, bl32_image, bl32_size);					\
-										\
-	soc##_load_and_start_tfa(soc##_bl31_bin_optee);				\
-} while (0)
 
 #endif /* __MACH_IMX_XLOAD_H */

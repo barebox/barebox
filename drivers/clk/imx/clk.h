@@ -304,6 +304,22 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 #define imx8m_clk_composite_critical(name, parent_names, reg) \
 	__imx8m_clk_composite(name, parent_names, reg, CLK_IS_CRITICAL)
 
+#include <soc/imx/clk-fracn-gppll.h>
+
+struct clk *imx93_clk_composite_flags(const char *name,
+				      const char * const *parent_names,
+				      int num_parents,
+				      void __iomem *reg,
+				      u32 domain_id,
+				      unsigned long flags);
+#define imx93_clk_composite(name, parent_names, num_parents, reg, domain_id) \
+        imx93_clk_composite_flags(name, parent_names, num_parents, reg, domain_id \
+                                  CLK_SET_RATE_NO_REPARENT | CLK_OPS_PARENT_ENABLE)
+
+struct clk *imx93_clk_gate(struct device *dev, const char *name, const char *parent_name,
+			   unsigned long flags, void __iomem *reg, u32 bit_idx, u32 val,
+			   u32 mask, u32 domain_id, unsigned int *share_count);
+
 /*
  * Names of the above functions used in the Linux Kernel. Added here
  * to be able to use the same names in barebox to reduce the diffs

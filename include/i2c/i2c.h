@@ -329,6 +329,10 @@ extern int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 extern int i2c_master_send(struct i2c_client *client, const char *buf, int count);
 extern int i2c_master_recv(struct i2c_client *client, char *buf, int count);
 
+static inline u8 i2c_8bit_addr_from_msg(const struct i2c_msg *msg)
+{
+	return (msg->addr << 1) | (msg->flags & I2C_M_RD ? 1 : 0);
+}
 
 #define I2C_ADDR_16_BIT	(1 << 31)
 

@@ -27,9 +27,20 @@ config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 	depends on MTD_WRITE
 	default y
 
+config USB_GADGET_DRIVER_ARC_PBL
+	bool
+
 config RESET_IMX_SRC
 	def_bool y
 	depends on ARCH_IMX6 || ARCH_IMX50 || ARCH_IMX51 || ARCH_IMX53
+
+config ARCH_IMX_ATF
+	def_bool y
+	depends on ARCH_IMX8M || ARCH_IMX9
+
+config ARCH_IMX_ROMAPI
+	def_bool y
+	depends on ARCH_IMX8M || ARCH_IMX9
 
 #
 # PMIC configuration found on i.MX51 Babbadge board
@@ -163,6 +174,19 @@ config ARCH_IMX8MP
 config ARCH_IMX8MQ
 	select ARCH_IMX8M
 	bool
+
+config ARCH_IMX9
+	bool
+
+config ARCH_IMX93
+	bool
+	select ARCH_IMX9
+	select CPU_V8
+	select PINCTRL_IMX_IOMUX_V3
+	select OFTREE
+	select COMMON_CLK_OF_PROVIDER
+	select ARM_USE_COMPRESSED_DTB
+	select ARCH_HAS_FEC_IMX
 
 config ARCH_VF610
 	bool
@@ -697,6 +721,15 @@ config MACH_ZII_IMX8MQ_DEV
 	select ARM_SMCCC
 	select MCI_IMX_ESDHC_PBL
 	select MACH_ZII_COMMON
+
+comment "i.MX93 boards"
+
+config MACH_TQ_MBA9XXXCA
+	bool "TQ i.MX93 on MBa9xxxCA Board"
+	select ARCH_IMX93
+	select IMX9_DRAM
+	select FIRMWARE_IMX93_ATF
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 
 endif
 

@@ -3,13 +3,12 @@
  * Copyright 2018 NXP
  */
 
-#define pr_fmt(fmt) "imx8m-ddr: " fmt
+#define pr_fmt(fmt) "imx-ddr: " fmt
 
 #include <common.h>
 #include <linux/kernel.h>
 #include <soc/imx8m/ddr.h>
 #include <firmware.h>
-#include <mach/imx/imx8m-regs.h>
 
 static const u16 *lpddr4_imem_1d;
 static size_t lpddr4_imem_1d_size;
@@ -53,7 +52,8 @@ void ddr_get_firmware_ddr(void)
 			     &ddr4_dmem_2d_size);
 }
 
-void ddr_load_train_code(enum dram_type dram_type, enum fw_type fw_type)
+void ddr_load_train_code(struct dram_controller *dram, enum dram_type dram_type,
+			 enum fw_type fw_type)
 {
 	const u16 *imem, *dmem;
 	size_t isize, dsize;
@@ -86,17 +86,13 @@ void ddr_load_train_code(enum dram_type dram_type, enum fw_type fw_type)
 		panic("No matching DDR PHY firmware found");
 	}
 
-	ddrc_phy_load_firmware(IOMEM(MX8M_DDRC_PHY_BASE_ADDR),
-			       DDRC_PHY_IMEM, imem, isize);
+	ddrc_phy_load_firmware(dram, DDRC_PHY_IMEM, imem, isize);
 
-	ddrc_phy_load_firmware(IOMEM(MX8M_DDRC_PHY_BASE_ADDR),
-			       DDRC_PHY_DMEM, dmem, dsize);
+	ddrc_phy_load_firmware(dram, DDRC_PHY_DMEM, dmem, dsize);
 }
 
-int ddr_cfg_phy(struct dram_timing_info *dram_timing, unsigned type)
+int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timing)
 {
-	enum ddrc_type ddrc_type = get_ddrc_type(type);
-	enum dram_type dram_type = get_dram_type(type);
 	struct dram_cfg_param *dram_cfg;
 	struct dram_fsp_msg *fsp_msg;
 	unsigned int num;
@@ -109,7 +105,7 @@ int ddr_cfg_phy(struct dram_timing_info *dram_timing, unsigned type)
 	num  = dram_timing->ddrphy_cfg_num;
 	for (i = 0; i < num; i++) {
 		/* config phy reg */
-		dwc_ddrphy_apb_wr(dram_cfg->reg, dram_cfg->val);
+		dwc_ddrphy_apb_wr(dram, dram_cfg->reg, dram_cfg->val);
 		dram_cfg++;
 	}
 
@@ -118,17 +114,17 @@ int ddr_cfg_phy(struct dram_timing_info *dram_timing, unsigned type)
 	for (i = 0; i < dram_timing->fsp_msg_num; i++) {
 		pr_debug("DRAM PHY training for %dMTS\n", fsp_msg->drate);
 		/* set dram PHY input clocks to desired frequency */
-		ddrphy_init_set_dfi_clk(fsp_msg->drate, ddrc_type);
+		dram->set_dfi_clk(dram, fsp_msg->drate);
 
 		/* load the dram training firmware image */
-		dwc_ddrphy_apb_wr(0xd0000, 0x0);
-		ddr_load_train_code(dram_type, fsp_msg->fw_type);
+		dwc_ddrphy_apb_wr(dram, 0xd0000, 0x0);
+		ddr_load_train_code(dram, dram->dram_type, fsp_msg->fw_type);
 
 		/* load the frequency set point message block parameter */
 		dram_cfg = fsp_msg->fsp_cfg;
 		num = fsp_msg->fsp_cfg_num;
 		for (j = 0; j < num; j++) {
-			dwc_ddrphy_apb_wr(dram_cfg->reg, dram_cfg->val);
+			dwc_ddrphy_apb_wr(dram, dram_cfg->reg, dram_cfg->val);
 			dram_cfg++;
 		}
 
@@ -142,28 +138,26 @@ int ddr_cfg_phy(struct dram_timing_info *dram_timing, unsigned type)
 		 * 4. read the message block result.
 		 * -------------------------------------------------------------
 		 */
-		dwc_ddrphy_apb_wr(0xd0000, 0x1);
-		dwc_ddrphy_apb_wr(0xd0099, 0x9);
-		dwc_ddrphy_apb_wr(0xd0099, 0x1);
-		dwc_ddrphy_apb_wr(0xd0099, 0x0);
+		dwc_ddrphy_apb_wr(dram, 0xd0000, 0x1);
+		dwc_ddrphy_apb_wr(dram, 0xd0099, 0x9);
+		dwc_ddrphy_apb_wr(dram, 0xd0099, 0x1);
+		dwc_ddrphy_apb_wr(dram, 0xd0099, 0x0);
 
 		/* Wait for the training firmware to complete */
-		ret = wait_ddrphy_training_complete();
+		ret = wait_ddrphy_training_complete(dram);
 		if (ret)
 			return ret;
 
 		/* Halt the microcontroller. */
-		dwc_ddrphy_apb_wr(0xd0099, 0x1);
+		dwc_ddrphy_apb_wr(dram, 0xd0099, 0x1);
 
 		/* Read the Message Block results */
-		dwc_ddrphy_apb_wr(0xd0000, 0x0);
-
-		ddrphy_init_read_msg_block(fsp_msg->fw_type);
+		dwc_ddrphy_apb_wr(dram, 0xd0000, 0x0);
 
 		if (fsp_msg->fw_type != FW_2D_IMAGE)
-			get_trained_CDD(i);
+			dram->get_trained_CDD(dram, i);
 
-		dwc_ddrphy_apb_wr(0xd0000, 0x1);
+		dwc_ddrphy_apb_wr(dram, 0xd0000, 0x1);
 
 		fsp_msg++;
 	}
@@ -172,12 +166,12 @@ int ddr_cfg_phy(struct dram_timing_info *dram_timing, unsigned type)
 	dram_cfg = dram_timing->ddrphy_pie;
 	num = dram_timing->ddrphy_pie_num;
 	for (i = 0; i < num; i++) {
-		dwc_ddrphy_apb_wr(dram_cfg->reg, dram_cfg->val);
+		dwc_ddrphy_apb_wr(dram, dram_cfg->reg, dram_cfg->val);
 		dram_cfg++;
 	}
 
 	/* save the ddr PHY trained CSR in memory for low power use */
-	ddrphy_trained_csr_save(ddrphy_trained_csr, ddrphy_trained_csr_num);
+	ddrphy_trained_csr_save(dram, ddrphy_trained_csr, ddrphy_trained_csr_num);
 
 	return 0;
 }

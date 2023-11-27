@@ -5,9 +5,6 @@ menuconfig USB_GADGET
 	select NLS
 	bool "USB gadget support"
 
-config USB_GADGET_DRIVER_ARC_PBL
-	bool
-
 if USB_GADGET
 
 config USB_GADGET_DUALSPEED

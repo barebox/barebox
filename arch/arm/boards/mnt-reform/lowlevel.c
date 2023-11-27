@@ -117,44 +117,13 @@ static __noreturn noinline void mnt_reform_start(void)
 	 * The TF-A will then jump to DRAM in EL2.
 	 */
 	if (current_el() == 3) {
-		size_t bl31_size;
-		const u8 *bl31;
-		enum bootsource src;
-		int instance;
-
 		mnt_reform_setup_uart();
 
 		mnt_reform_init_power();
 
 		imx8mq_ddr_init(&mnt_reform_dram_timing, DRAM_TYPE_LPDDR4);
 
-		imx8mq_get_boot_source(&src, &instance);
-		switch (src) {
-		case BOOTSOURCE_MMC:
-			imx8m_esdhc_load_image(instance, false);
-			break;
-		case BOOTSOURCE_SERIAL:
-			imx8m_esdhc_load_image(1, false);
-			break;
-		default:
-			printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
-			hang();
-		}
-
-		/*
-		 * On completion the TF-A will jump to MX8M_ATF_BL33_BASE_ADDR
-		 * in EL2. Copy the image there, but replace the PBL part of
-		 * that image with ourselves. On a high assurance boot only the
-		 * currently running code is validated and contains the checksum
-		 * for the piggy data, so we need to ensure that we are running
-		 * the same code in DRAM.
-		 */
-		memcpy((void *)MX8M_ATF_BL33_BASE_ADDR,
-		       __image_start, barebox_pbl_size);
-
-		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
-
-		imx8mq_atf_load_bl31(bl31, bl31_size);
+		imx8mq_load_and_start_image_via_tfa();
 	}
 
 	/*

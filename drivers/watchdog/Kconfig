@@ -59,6 +59,12 @@ config WATCHDOG_IMX
 	help
 	  Add support for watchdog found on Freescale i.MX SoCs.
 
+config WATCHDOG_IMXULP
+	bool "i.MX ULP watchdog"
+	depends on ARCH_IMX || COMPILE_TEST
+	help
+	  Add support for watchdog found on Freescale i.MX SoCs.
+
 config WATCHDOG_JZ4740
 	bool "Ingenic jz4740 SoC hardware watchdog"
 	depends on MACH_MIPS_XBURST || COMPILE_TEST

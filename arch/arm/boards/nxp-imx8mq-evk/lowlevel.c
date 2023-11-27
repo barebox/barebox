@@ -65,33 +65,9 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 	 * to DRAM in EL2.
 	 */
 	if (current_el() == 3) {
-		enum bootsource src = BOOTSOURCE_UNKNOWN;
-		int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-		int ret = -ENOTSUPP;
-		size_t bl31_size;
-		const u8 *bl31;
-
 		ddr_init();
 
-		/*
-		 * On completion the TF-A will jump to MX8MQ_ATF_BL33_BASE_ADDR
-		 * in EL2. Copy the image there, but replace the PBL part of
-		 * that image with ourselves. On a high assurance boot only the
-		 * currently running code is validated and contains the checksum
-		 * for the piggy data, so we need to ensure that we are running
-		 * the same code in DRAM.
-		 */
-		imx8mq_get_boot_source(&src, &instance);
-		if (src == BOOTSOURCE_MMC)
-			ret = imx8m_esdhc_load_image(instance, false);
-		BUG_ON(ret);
-
-		memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR,
-		       __image_start, barebox_pbl_size);
-
-		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
-		imx8mq_atf_load_bl31(bl31, bl31_size);
-		/* not reached */
+		imx8mq_load_and_start_image_via_tfa();
 	}
 
 	/*

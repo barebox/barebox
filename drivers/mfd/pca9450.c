@@ -61,6 +61,23 @@ static int pca9450_get_reset_source(struct device *dev, struct regmap *map)
 	return 0;
 };
 
+static struct regmap *pca9450_map;
+
+static void (*pca9450_init_callback)(struct regmap *map);
+
+int pca9450_register_init_callback(void(*callback)(struct regmap *map))
+{
+	if (pca9450_init_callback)
+		return -EBUSY;
+
+	pca9450_init_callback = callback;
+
+	if (pca9450_map)
+		pca9450_init_callback(pca9450_map);
+
+	return 0;
+}
+
 static int __init pca9450_probe(struct device *dev)
 {
 	struct regmap *regmap;
@@ -84,6 +101,10 @@ static int __init pca9450_probe(struct device *dev)
 	/* Chip ID defined in bits [7:4] */
 	dev_info(dev, "PMIC Chip ID: 0x%x\n", (reg >> 4));
 
+	if (pca9450_init_callback)
+		pca9450_init_callback(regmap);
+	pca9450_map = regmap;
+
 	pca9450_get_reset_source(dev,regmap);
 
 	return of_platform_populate(dev->of_node, NULL, dev);
@@ -92,6 +113,7 @@ static int __init pca9450_probe(struct device *dev)
 static __maybe_unused struct of_device_id pca9450_dt_ids[] = {
 	{ .compatible = "nxp,pca9450a" },
 	{ .compatible = "nxp,pca9450c" },
+	{ .compatible = "nxp,pca9451a" },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, pca9450_dt_ids);

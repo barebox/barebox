@@ -10,6 +10,8 @@
 #include <mach/imx/imx7-regs.h>
 #include <mach/imx/imx8mq-regs.h>
 #include <mach/imx/imx8m-ccm-regs.h>
+#include <mach/imx/imx9-regs.h>
+#include <mach/imx/trdc.h>
 #include <io.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
@@ -85,4 +87,44 @@ void imx8mq_cpu_lowlevel_init(void)
 {
 	imx8m_cpu_lowlevel_init();
 }
+
+#define CCM_AUTHEN_TZ_NS	BIT(9)
+
+#define OSCPLLa_AUTHEN(n)		(0x5030  + (n) * 0x40) /* 0..18 */
+#define CLOCK_ROOT_AUTHEN(n)		(0x30  + (n) * 0x80) /* 0..94 */
+#define LPCGa_AUTHEN(n)			(0x8030 + (n) * 0x40) /* 0..126 */
+#define GPR_SHARED0_AUTHEN(n)		(0x4810 + (n) * 0x10) /* 0..3 */
+#define SET 4
+
+#define SRC_SP_ISO_CTRL			0x10c
+
+void imx93_cpu_lowlevel_init(void)
+{
+	void __iomem *ccm = IOMEM(MX9_CCM_BASE_ADDR);
+	void __iomem *src = IOMEM(MX9_SRC_BASE_ADDR);
+	int i;
+
+	arm_cpu_lowlevel_init();
+
+	if (current_el() != 3)
+		return;
+
+	imx9_trdc_init();
+
+	imx_cpu_timer_init(IOMEM(MX9_SYSCNT_CTRL_BASE_ADDR));
+
+	for (i = 0; i <= 18; i++)
+		writel(CCM_AUTHEN_TZ_NS, ccm + OSCPLLa_AUTHEN(i) + SET);
+	for (i = 0; i <= 94; i++)
+		writel(CCM_AUTHEN_TZ_NS, ccm + CLOCK_ROOT_AUTHEN(i) + SET);
+	for (i = 0; i <= 126 ; i++)
+		writel(CCM_AUTHEN_TZ_NS, ccm + LPCGa_AUTHEN(i) + SET);
+	for (i = 0; i <= 3 ; i++)
+		writel(CCM_AUTHEN_TZ_NS, ccm + GPR_SHARED0_AUTHEN(i) + SET);
+
+	/* clear isolation for usbphy, dsi, csi*/
+	writel(0x0, src + SRC_SP_ISO_CTRL);
+
+}
+
 #endif

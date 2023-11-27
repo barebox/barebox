@@ -3,39 +3,31 @@
  * Copyright 2018 NXP
  */
 
-#define pr_fmt(fmt) "imx8m-ddr: " fmt
+#define pr_fmt(fmt) "imx-ddr: " fmt
 
 #include <common.h>
 #include <io.h>
 #include <errno.h>
 #include <soc/imx8m/ddr.h>
 
-#define IMEM_LEN 32768 /* byte */
-#define DMEM_LEN 16384 /* byte */
-#define IMEM_2D_OFFSET	49152
-
-#define IMEM_OFFSET_ADDR 0x00050000
-#define DMEM_OFFSET_ADDR 0x00054000
-#define DDR_TRAIN_CODE_BASE_ADDR IP2APB_DDRPHY_IPS_BASE_ADDR(0)
-
-void ddrphy_trained_csr_save(struct dram_cfg_param *ddrphy_csr,
+void ddrphy_trained_csr_save(struct dram_controller *dram, struct dram_cfg_param *ddrphy_csr,
 			     unsigned int num)
 {
 	int i = 0;
 
 	/* enable the ddrphy apb */
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	dwc_ddrphy_apb_wr(0xc0080, 0x3);
+	dwc_ddrphy_apb_wr(dram, 0xd0000, 0x0);
+	dwc_ddrphy_apb_wr(dram, 0xc0080, 0x3);
 	for (i = 0; i < num; i++) {
-		ddrphy_csr->val = dwc_ddrphy_apb_rd(ddrphy_csr->reg);
+		ddrphy_csr->val = dwc_ddrphy_apb_rd(dram, ddrphy_csr->reg);
 		ddrphy_csr++;
 	}
 	/* disable the ddrphy apb */
-	dwc_ddrphy_apb_wr(0xc0080, 0x2);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
+	dwc_ddrphy_apb_wr(dram, 0xc0080, 0x2);
+	dwc_ddrphy_apb_wr(dram, 0xd0000, 0x1);
 }
 
-void dram_config_save(struct dram_timing_info *timing_info,
+void *dram_config_save(struct dram_controller *dram, struct dram_timing_info *timing_info,
 		      unsigned long saved_timing_base)
 {
 	int i = 0;
@@ -62,7 +54,7 @@ void dram_config_save(struct dram_timing_info *timing_info,
 		cfg++;
 	}
 
-	if (imx8m_ddr_old_spreadsheet) {
+	if (dram->imx8m_ddr_old_spreadsheet) {
 		cfg->reg = DDRC_ADDRMAP7(0);
 		cfg->val = 0xf0f;
 		cfg++;
@@ -91,4 +83,6 @@ void dram_config_save(struct dram_timing_info *timing_info,
 		cfg->val = timing_info->ddrphy_pie[i].val;
 		cfg++;
 	}
+
+	return cfg;
 }

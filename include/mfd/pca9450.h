@@ -6,6 +6,8 @@
 #ifndef PCA9450_H_
 #define PCA9450_H_
 
+#include <linux/regmap.h>
+
 enum {
 	PCA9450_REG_DEV_ID      = 0x00,
 	PCA9450_INT1            = 0x01,
@@ -51,5 +53,17 @@ enum {
 	PCA9450_VRFLT2_MASK     = 0x2E,
 	PCA9450_REG_NUM,
 };
+
+#ifdef CONFIG_MFD_PCA9450
+
+int pca9450_register_init_callback(void(*callback)(struct regmap *map));
+
+#else
+
+static inline int pca9450_register_init_callback(void(*callback)(struct regmap *map))
+{
+	return -ENODEV;
+}
+#endif
 
 #endif

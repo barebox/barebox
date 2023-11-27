@@ -63,7 +63,8 @@ config GPIO_IMX
 
 config GPIO_VF610
 	bool "VF610 GPIO controller" if COMPILE_TEST
-	default y if ARCH_VF610
+	depends on ARCH_IMX || ARCH_VF610 || COMPILE_TEST
+	default y if ARCH_VF610 || ARCH_IMX93
 
 config GPIO_MXS
 	bool "MXS GPIO controller" if COMPILE_TEST

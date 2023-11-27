@@ -148,7 +148,7 @@ void ddr_cfg_phy(void) {
 	//enable APB bus to access DDRPHY RAM
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x0);
 	//load the 1D training image
-	ddr_load_train_code(DRAM_TYPE_LPDDR4, FW_1D_IMAGE);
+	imx8m_ddr_load_train_code(DRAM_TYPE_LPDDR4, FW_1D_IMAGE);
 
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54003,0xc80);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54004,0x2);
@@ -190,7 +190,7 @@ void ddr_cfg_phy(void) {
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x9);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x1);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x0);
-	wait_ddrphy_training_complete();
+	imx8m_wait_ddrphy_training_complete();
 
 	//configure DDRPHY-FW DMEM structure @clock1...
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x1);
@@ -224,7 +224,7 @@ void ddr_cfg_phy(void) {
 	//enable APB bus to access DDRPHY RAM
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x0);
 	//load the 1D training image
-	ddr_load_train_code(DRAM_TYPE_LPDDR4, FW_1D_IMAGE);
+	imx8m_ddr_load_train_code(DRAM_TYPE_LPDDR4, FW_1D_IMAGE);
 
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54002,0x1);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54003,0x29c);
@@ -267,7 +267,7 @@ void ddr_cfg_phy(void) {
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x9);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x1);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x0);
-	wait_ddrphy_training_complete();
+	imx8m_wait_ddrphy_training_complete();
 
 	//set the PHY input clock to the desired frequency for pstate 0
 	reg32_write(0x3038a088,0x7070000);
@@ -300,7 +300,7 @@ void ddr_cfg_phy(void) {
 	//enable APB bus to access DDRPHY RAM
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x0);
 	//load the 2D training image
-	ddr_load_train_code(DRAM_TYPE_LPDDR4, FW_2D_IMAGE);
+	imx8m_ddr_load_train_code(DRAM_TYPE_LPDDR4, FW_2D_IMAGE);
 
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54003,0xc80);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54004,0x2);
@@ -343,7 +343,7 @@ void ddr_cfg_phy(void) {
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x9);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x1);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x0);
-	wait_ddrphy_training_complete();
+	imx8m_wait_ddrphy_training_complete();
 
 	//Halt MPU
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x1);

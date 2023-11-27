@@ -43,22 +43,6 @@ static void setup_uart(void)
 	putc_ll('>');
 }
 
-static void phytec_imx8mq_som_sram_setup(void)
-{
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-	int ret = -ENOTSUPP;
-
-	ddr_init();
-
-	imx8mq_get_boot_source(&src, &instance);
-
-	if (src == BOOTSOURCE_MMC)
-		ret = imx8m_esdhc_load_image(instance, true);
-
-	BUG_ON(ret);
-}
-
 static __noreturn noinline void phytec_phycore_imx8mq_start(void)
 {
 	setup_uart();
@@ -70,7 +54,7 @@ static __noreturn noinline void phytec_phycore_imx8mq_start(void)
 		 * that means DDR needs to be initialized for the
 		 * first time.
 		 */
-		phytec_imx8mq_som_sram_setup();
+		ddr_init();
 	}
 	/*
 	 * Straight from the power-on we are at EL3, so the following
@@ -80,13 +64,8 @@ static __noreturn noinline void phytec_phycore_imx8mq_start(void)
 	 * initialization routine, it is EL2 which means we'll skip
 	 * loadting ATF blob again
 	 */
-	if (current_el() == 3) {
-		const u8 *bl31;
-		size_t bl31_size;
-
-		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
-		imx8mq_atf_load_bl31(bl31, bl31_size);
-	}
+	if (current_el() == 3)
+		imx8mq_load_and_start_image_via_tfa();
 
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF

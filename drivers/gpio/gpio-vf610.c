@@ -21,6 +21,8 @@ struct vf610_gpio_port {
 	struct gpio_chip chip;
 	void __iomem *gpio_base;
 	unsigned int pinctrl_base;
+	bool have_paddr;
+	bool need_pinctrl;
 };
 
 #define GPIO_PDOR		0x00
@@ -28,9 +30,27 @@ struct vf610_gpio_port {
 #define GPIO_PCOR		0x08
 #define GPIO_PTOR		0x0c
 #define GPIO_PDIR		0x10
+#define GPIO_PDDR		0x14
+
+struct fsl_gpio_soc_data {
+	/* SoCs has a Port Data Direction Register (PDDR) */
+	bool have_paddr;
+	bool need_pinctrl;
+};
+
+static const struct fsl_gpio_soc_data vf610_data = {
+	.need_pinctrl = true,
+};
+
+static const struct fsl_gpio_soc_data imx_data = {
+	.have_paddr = true,
+};
 
 static const struct of_device_id vf610_gpio_dt_ids[] = {
-	{ .compatible = "fsl,vf610-gpio" },
+	{ .compatible = "fsl,vf610-gpio", .data = &vf610_data, },
+	{ .compatible = "fsl,imx7ulp-gpio", .data = &imx_data, },
+	{ .compatible = "fsl,imx8ulp-gpio", .data = &imx_data, },
+	{ .compatible = "fsl,imx93-gpio", .data = &imx_data, },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, vf610_gpio_dt_ids);
@@ -40,8 +60,16 @@ static int vf610_gpio_get_value(struct gpio_chip *chip, unsigned int gpio)
 {
 	struct vf610_gpio_port *port =
 		container_of(chip, struct vf610_gpio_port, chip);
+	unsigned long mask = BIT(gpio);
+	unsigned long offset = GPIO_PDIR;
 
-	return !!(readl(port->gpio_base + GPIO_PDIR) & BIT(gpio));
+	if (port->have_paddr) {
+		mask &= readl(port->gpio_base + GPIO_PDDR);
+		if (mask)
+			offset = GPIO_PDOR;
+	}
+
+	return !!(readl(port->gpio_base + offset) & BIT(gpio));
 }
 
 static void vf610_gpio_set_value(struct gpio_chip *chip,
@@ -58,8 +86,19 @@ static int vf610_gpio_direction_input(struct gpio_chip *chip, unsigned gpio)
 {
 	struct vf610_gpio_port *port =
 		container_of(chip, struct vf610_gpio_port, chip);
+	unsigned long mask = BIT(gpio);
+	u32 val;
 
-	return pinctrl_gpio_direction_input(port->pinctrl_base + gpio);
+	if (port->have_paddr) {
+		val = readl(port->gpio_base + GPIO_PDDR);
+		val &= ~mask;
+		writel(val, port->gpio_base + GPIO_PDDR);
+	}
+
+	if (port->need_pinctrl)
+		return pinctrl_gpio_direction_input(port->pinctrl_base + gpio);
+
+	return 0;
 }
 
 static int vf610_gpio_direction_output(struct gpio_chip *chip, unsigned gpio,
@@ -67,18 +106,41 @@ static int vf610_gpio_direction_output(struct gpio_chip *chip, unsigned gpio,
 {
 	struct vf610_gpio_port *port =
 		container_of(chip, struct vf610_gpio_port, chip);
+	unsigned long mask = BIT(gpio);
+	u32 val;
 
 	vf610_gpio_set_value(chip, gpio, value);
 
-	return pinctrl_gpio_direction_output(port->pinctrl_base + gpio);
+	if (port->have_paddr) {
+		val = readl(port->gpio_base + GPIO_PDDR);
+		val |= mask;
+		writel(val, port->gpio_base + GPIO_PDDR);
+	}
+
+	if (port->need_pinctrl)
+		return pinctrl_gpio_direction_output(port->pinctrl_base + gpio);
+
+	return 0;
 }
 
 static int vf610_gpio_get_direction(struct gpio_chip *chip, unsigned gpio)
 {
 	struct vf610_gpio_port *port =
 		container_of(chip, struct vf610_gpio_port, chip);
+	u32 val;
 
-	return pinctrl_gpio_get_direction(port->pinctrl_base + gpio);
+	if (port->have_paddr) {
+		val = readl(port->gpio_base + GPIO_PDDR);
+		if (val & BIT(gpio))
+			return GPIOF_DIR_OUT;
+		else
+			return GPIOF_DIR_IN;
+	}
+
+	if (port->need_pinctrl)
+		return pinctrl_gpio_get_direction(port->pinctrl_base + gpio);
+
+	return 0;
 }
 
 static struct gpio_ops vf610_gpio_ops = {
@@ -95,6 +157,11 @@ static int vf610_gpio_probe(struct device *dev)
 	struct resource *iores;
 	struct vf610_gpio_port *port;
 	const __be32 *gpio_ranges;
+	struct fsl_gpio_soc_data *devtype;
+
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
+	if (ret)
+		return ret;
 
 	port = xzalloc(sizeof(*port));
 
@@ -106,17 +173,30 @@ static int vf610_gpio_probe(struct device *dev)
 		goto free_port;
 	}
 
+	port->have_paddr = devtype->have_paddr;
+	port->need_pinctrl = devtype->need_pinctrl;
+
 	port->pinctrl_base = be32_to_cpu(gpio_ranges[PINCTRL_BASE]);
 	port->chip.ngpio   = be32_to_cpu(gpio_ranges[COUNT]);
 
+	/*
+	 * Some old bindings have two register ranges. When we have two ranges
+	 * the GPIO base is in the second range. With only one range the GPIO
+	 * base is at offset 0x40.
+	 */
 	iores = dev_request_mem_resource(dev, 1);
 	if (IS_ERR(iores)) {
-		ret = PTR_ERR(iores);
-		dev_dbg(dev, "Failed to request memory resource\n");
-		goto free_port;
+		iores = dev_request_mem_resource(dev, 0);
+		if (IS_ERR(iores)) {
+			ret = PTR_ERR(iores);
+			dev_dbg(dev, "Failed to request memory resource\n");
+			goto free_port;
+		} else {
+			port->gpio_base = IOMEM(iores->start) + 0x40;
+		}
+	} else {
+		port->gpio_base = IOMEM(iores->start);
 	}
-
-	port->gpio_base = IOMEM(iores->start);
 
 	port->chip.ops  = &vf610_gpio_ops;
 	if (dev->id < 0) {

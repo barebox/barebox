@@ -108,13 +108,13 @@ config DRIVER_NET_DESIGNWARE_EQOS
 	  Designware Ethernet Quality-of-Service (GMAC4).
 
 config DRIVER_NET_DESIGNWARE_IMX8
-	bool "Designware EQOS i.MX8 Ethernet driver"
-	depends on HAS_DMA && COMMON_CLK && OFTREE && (ARCH_IMX8M || COMPILE_TEST)
+	bool "Designware EQOS i.MX Ethernet driver"
+	depends on HAS_DMA && COMMON_CLK && OFTREE && (ARCH_IMX8M || ARCH_IMX93 || COMPILE_TEST)
 	select DRIVER_NET_DESIGNWARE_EQOS
 	select MFD_SYSCON
 	help
 	  This option enables support for the Designware EQOS MAC implemented on
-	  the NXP i.MX8 SoCs.
+	  the NXP i.MX SoCs.
 
 config DRIVER_NET_DESIGNWARE_STM32
 	bool "STM32 Designware Ethernet driver"

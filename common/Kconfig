@@ -1365,6 +1365,11 @@ config DEBUG_IMX8M_UART
 	  Say Y here if you want barebox low-level debugging support
 	  on i.MX8M*.
 
+config DEBUG_IMX9_UART
+	bool "i.MX9 Debug UART"
+	depends on ARCH_IMX93
+	select DEBUG_IMX_UART
+
 config DEBUG_VEXPRESS_UART
 	bool "Vexpress Debug UART"
 	depends on ARCH_VEXPRESS
@@ -1571,6 +1576,7 @@ config DEBUG_IMX_UART_PORT
 						DEBUG_IMX6Q_UART || \
 						DEBUG_IMX7D_UART || \
 						DEBUG_IMX8M_UART || \
+						DEBUG_IMX9_UART || \
 						DEBUG_VF610_UART
 	default 1
 	depends on ARCH_IMX

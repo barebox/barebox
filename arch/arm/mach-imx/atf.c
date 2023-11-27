@@ -57,26 +57,6 @@ static __noreturn void imx8m_atf_start_bl31(const void *fw, size_t fw_size, void
 	__builtin_unreachable();
 }
 
-__noreturn void imx8mm_atf_load_bl31(const void *fw, size_t fw_size)
-{
-	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
-}
-
-__noreturn void imx8mn_atf_load_bl31(const void *fw, size_t fw_size)
-{
-	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
-}
-
-__noreturn void imx8mp_atf_load_bl31(const void *fw, size_t fw_size)
-{
-	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);
-}
-
-__noreturn void imx8mq_atf_load_bl31(const void *fw, size_t fw_size)
-{
-	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
-}
-
 void imx8mm_load_bl33(void *bl33)
 {
 	enum bootsource src;
@@ -138,16 +118,32 @@ void imx8mm_load_bl33(void *bl33)
 
 __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 {
+	const void *bl31;
+	size_t bl31_size;
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
 	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
 	imx8mm_load_bl33(bl33);
 
-	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mm, (void *)arm_mem_optee(endmem), bl33);
-	else
-		imx8mm_load_and_start_tfa(imx8mm_bl31_bin);
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE)) {
+		void *bl32 = (void *)arm_mem_optee(endmem);
+		size_t bl32_size;
+		void *bl32_image;
+
+		imx8mm_tzc380_init();
+		get_builtin_firmware_ext(imx8mm_bl32_bin,
+				bl33, &bl32_image,
+				&bl32_size);
+
+		memcpy(bl32, bl32_image, bl32_size);
+
+		get_builtin_firmware(imx8mm_bl31_bin_optee, &bl31, &bl31_size);
+	} else {
+		get_builtin_firmware(imx8mm_bl31_bin, &bl31, &bl31_size);
+	}
+
+	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
 }
 
 void imx8mp_load_bl33(void *bl33)
@@ -161,7 +157,7 @@ void imx8mp_load_bl33(void *bl33)
 		imx8mp_esdhc_load_image(instance, false);
 		break;
 	case BOOTSOURCE_SERIAL:
-		imx8mp_bootrom_load_image();
+		imx8mp_romapi_load_image();
 		break;
 	case BOOTSOURCE_SPI:
 		imx8mp_qspi_load_image(instance, false);
@@ -185,16 +181,32 @@ void imx8mp_load_bl33(void *bl33)
 
 __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 {
+	const void *bl31;
+	size_t bl31_size;
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
 	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
 	imx8mp_load_bl33(bl33);
 
-	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mp, (void *)arm_mem_optee(endmem), bl33);
-	else
-		imx8mp_load_and_start_tfa(imx8mp_bl31_bin);
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE)) {
+		void *bl32 = (void *)arm_mem_optee(endmem);
+		size_t bl32_size;
+		void *bl32_image;
+
+		imx8mp_tzc380_init();
+		get_builtin_firmware_ext(imx8mp_bl32_bin,
+				bl33, &bl32_image,
+				&bl32_size);
+
+		memcpy(bl32, bl32_image, bl32_size);
+
+		get_builtin_firmware(imx8mp_bl31_bin_optee, &bl31, &bl31_size);
+	} else {
+		get_builtin_firmware(imx8mp_bl31_bin, &bl31, &bl31_size);
+	}
+
+	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);
 }
 
 
@@ -209,7 +221,7 @@ void imx8mn_load_bl33(void *bl33)
 		imx8mn_esdhc_load_image(instance, false);
 		break;
 	case BOOTSOURCE_SERIAL:
-		imx8mn_bootrom_load_image();
+		imx8mn_romapi_load_image();
 		break;
 	case BOOTSOURCE_SPI:
 		imx8mn_qspi_load_image(instance, false);
@@ -233,14 +245,121 @@ void imx8mn_load_bl33(void *bl33)
 
 __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 {
+	const void *bl31;
+	size_t bl31_size;
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(16);
 
 	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
 	imx8mn_load_bl33(bl33);
 
-	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mn, (void *)arm_mem_optee(endmem), bl33);
-	else
-		imx8mn_load_and_start_tfa(imx8mn_bl31_bin);
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE)) {
+		void *bl32 = (void *)arm_mem_optee(endmem);
+		size_t bl32_size;
+		void *bl32_image;
+
+		imx8mn_tzc380_init();
+		get_builtin_firmware_ext(imx8mn_bl32_bin,
+				bl33, &bl32_image,
+				&bl32_size);
+
+		memcpy(bl32, bl32_image, bl32_size);
+
+		get_builtin_firmware(imx8mn_bl31_bin_optee, &bl31, &bl31_size);
+	} else {
+		get_builtin_firmware(imx8mn_bl31_bin, &bl31, &bl31_size);
+	}
+
+	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
+}
+
+void imx8mq_load_bl33(void *bl33)
+{
+	enum bootsource src;
+	int instance;
+
+	imx8mn_get_boot_source(&src, &instance);
+	switch (src) {
+	case BOOTSOURCE_MMC:
+		imx8m_esdhc_load_image(instance, false);
+		break;
+	default:
+		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
+		hang();
+	}
+
+
+	/*
+	 * On completion the TF-A will jump to MX8M_ATF_BL33_BASE_ADDR
+	 * in EL2. Copy the image there, but replace the PBL part of
+	 * that image with ourselves. On a high assurance boot only the
+	 * currently running code is validated and contains the checksum
+	 * for the piggy data, so we need to ensure that we are running
+	 * the same code in DRAM.
+	 */
+	memcpy(bl33, __image_start, barebox_pbl_size);
+}
+
+__noreturn void imx8mq_load_and_start_image_via_tfa(void)
+{
+	const void *bl31;
+	size_t bl31_size;
+	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
+	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(16);
+
+	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
+	imx8mq_load_bl33(bl33);
+
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_OPTEE)) {
+		void *bl32 = (void *)arm_mem_optee(endmem);
+		size_t bl32_size;
+		void *bl32_image;
+
+		imx8mq_tzc380_init();
+		get_builtin_firmware_ext(imx8mq_bl32_bin,
+				bl33, &bl32_image,
+				&bl32_size);
+
+		memcpy(bl32, bl32_image, bl32_size);
+
+		get_builtin_firmware(imx8mq_bl31_bin_optee, &bl31, &bl31_size);
+	} else {
+		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
+	}
+
+	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
+}
+
+void __noreturn imx93_load_and_start_image_via_tfa(void)
+{
+	unsigned long atf_dest = MX93_ATF_BL31_BASE_ADDR;
+	void __noreturn (*bl31)(void) = (void *)atf_dest;
+	const void *tfa;
+	size_t tfa_size;
+
+	/*
+	 * On completion the TF-A will jump to MX93_ATF_BL33_BASE_ADDR
+	 * in EL2. Copy the image there, but replace the PBL part of
+	 * that image with ourselves. On a high assurance boot only the
+	 * currently running code is validated and contains the checksum
+	 * for the piggy data, so we need to ensure that we are running
+	 * the same code in DRAM.
+	 *
+	 * The second purpose of this memcpy is for USB booting. When booting
+	 * from USB the image comes in as a stream, so the PBL is transferred
+	 * only once. As we jump into the PBL again in SDRAM we need to copy
+	 * it there. The USB protocol transfers data in chunks of 1024 bytes,
+	 * so align the copy size up to the next 1KiB boundary.
+	 */
+	memcpy((void *)MX93_ATF_BL33_BASE_ADDR, __image_start, ALIGN(barebox_pbl_size, 1024));
+
+	get_builtin_firmware(imx93_bl31_bin, &tfa, &tfa_size);
+
+	memcpy(bl31, tfa, tfa_size);
+
+	asm volatile("msr sp_el2, %0" : :
+		     "r" (MX93_ATF_BL33_BASE_ADDR - 16) :
+		     "cc");
+	bl31();
+	__builtin_unreachable();
 }

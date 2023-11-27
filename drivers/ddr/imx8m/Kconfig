@@ -1,8 +1,0 @@
-# SPDX-License-Identifier: GPL-2.0-only
-menu "i.MX8M DDR controllers"
-	depends on ARCH_IMX8MQ || ARCH_IMX8MM || ARCH_IMX8MN || ARCH_IMX8MP
-
-config IMX8M_DRAM
-	bool "imx8m dram controller support"
-
-endmenu

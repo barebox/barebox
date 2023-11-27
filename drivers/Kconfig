@@ -47,5 +47,6 @@ source "drivers/ddr/Kconfig"
 source "drivers/power/Kconfig"
 source "drivers/virtio/Kconfig"
 source "drivers/mailbox/Kconfig"
+source "drivers/tee/Kconfig"
 
 endmenu

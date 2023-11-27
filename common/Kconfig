@@ -1125,6 +1125,11 @@ menu "OP-TEE loading"
 
 config HAVE_OPTEE
 	bool
+	help
+	  This symbol is selected by configuration where barebox either
+	  starts OP-TEE or runs while OP-TEE is running. Actual
+	  bidirectional communication with OP-TEE is enabled via
+	  CONFIG_OPTEE.
 
 config OPTEE_SIZE
 	hex

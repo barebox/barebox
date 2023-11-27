@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Generic Trusted Execution Environment Configuration
+menuconfig TEE
+	tristate "Trusted Execution Environment support"
+	select ARM_SMCCC
+	help
+	  This implements a generic interface towards a Trusted Execution
+	  Environment (TEE). A TEE is a trusted OS running in some secure
+	  environment, for example, TrustZone on ARM cpus, or a separate
+	  secure co-processor etc. See also:
+	  https://en.wikipedia.org/wiki/Trusted_execution_environment
+
+if TEE
+
+source "drivers/tee/optee/Kconfig"
+
+endif

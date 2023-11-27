@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# OP-TEE Trusted Execution Environment Configuration
+config OPTEE
+	tristate "OP-TEE communication"
+	select HAVE_OPTEE
+	select ARM_SMCCC
+	depends on MMU
+	help
+	  This driver implements bidirectional communication with the OP-TEE
+	  Trusted Execution Environment (TEE). OP-TEE is a Trusted OS designed
+	  primarily to rely on the ARM TrustZone(R) technology as the
+	  underlying hardware isolation mechanism.
+	  This driver can request services from OP-TEE, but doesn't
+	  yet provide a supplicant to handle Remote Procedure Calls (RPC).
+	  For more information see: https://www.op-tee.org
+
+	  This driver doesn't actually load OP-TEE. For that see
+	  CONFIG_BOOTM_OPTEE and PBL_OPTEE.
+
+	  If unsure, say n here.

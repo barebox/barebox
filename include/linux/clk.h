@@ -139,6 +139,7 @@ int clk_hw_set_parent(struct clk_hw *hw, struct clk_hw *hwp);
  */
 struct clk *clk_get_parent(struct clk *clk);
 struct clk_hw *clk_hw_get_parent(struct clk_hw *hw);
+int clk_hw_get_parent_index(struct clk_hw *hw);
 
 int clk_set_phase(struct clk *clk, int degrees);
 int clk_get_phase(struct clk *clk);
@@ -183,6 +184,11 @@ static inline struct clk *clk_get(struct device *dev, const char *id)
 static inline struct clk *clk_get_parent(struct clk *clk)
 {
 	return NULL;
+}
+
+static inline int clk_hw_get_parent_index(struct clk_hw *hw)
+{
+	return -EINVAL;
 }
 
 static inline int clk_enable(struct clk *clk)

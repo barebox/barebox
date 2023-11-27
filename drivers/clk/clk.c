@@ -211,6 +211,47 @@ int clk_hw_set_rate(struct clk_hw *hw, unsigned long rate)
 	return clk_set_rate(&hw->clk, rate);
 }
 
+static int clk_fetch_parent_index(struct clk *clk,
+				  struct clk *parent)
+{
+	int i;
+
+	if (!parent)
+		return -EINVAL;
+
+	for (i = 0; i < clk->num_parents; i++) {
+		if (IS_ERR_OR_NULL(clk->parents[i]))
+			clk->parents[i] = clk_lookup(clk->parent_names[i]);
+
+		if (!IS_ERR_OR_NULL(clk->parents[i]))
+			if (clk->parents[i] == parent)
+				break;
+	}
+
+	if (i == clk->num_parents)
+		return -EINVAL;
+
+	return i;
+}
+
+/**
+ * clk_hw_get_parent_index - return the index of the parent clock
+ * @hw: clk_hw associated with the clk being consumed
+ *
+ * Fetches and returns the index of parent clock. Returns -EINVAL if the given
+ * clock does not have a current parent.
+ */
+int clk_hw_get_parent_index(struct clk_hw *hw)
+{
+	struct clk_hw *parent = clk_hw_get_parent(hw);
+
+	if (WARN_ON(parent == NULL))
+		return -EINVAL;
+
+	return clk_fetch_parent_index(clk_hw_to_clk(hw), clk_hw_to_clk(parent));
+}
+EXPORT_SYMBOL_GPL(clk_hw_get_parent_index);
+
 struct clk *clk_lookup(const char *name)
 {
 	struct clk *c;
@@ -245,17 +286,9 @@ int clk_set_parent(struct clk *clk, struct clk *newparent)
 	if (!clk->ops->set_parent)
 		return -EINVAL;
 
-	for (i = 0; i < clk->num_parents; i++) {
-		if (IS_ERR_OR_NULL(clk->parents[i]))
-			clk->parents[i] = clk_lookup(clk->parent_names[i]);
-
-		if (!IS_ERR_OR_NULL(clk->parents[i]))
-			if (clk->parents[i] == newparent)
-				break;
-	}
-
-	if (i == clk->num_parents)
-		return -EINVAL;
+	i = clk_fetch_parent_index(clk, newparent);
+	if (i < 0)
+		return i;
 
 	if (clk->enable_count)
 		clk_enable(newparent);

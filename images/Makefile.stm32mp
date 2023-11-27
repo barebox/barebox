@@ -30,7 +30,6 @@ pblb-$(CONFIG_ARCH_STM32MP) += start_stm32mp_bl33
 FILE_barebox-stm32mp-generic-bl33.img  = start_stm32mp_bl33.pblb
 image-$(CONFIG_ARCH_STM32MP) += barebox-stm32mp-generic-bl33.img
 
-$(call build_stm32mp_image, CONFIG_MACH_STM32MP13XX_DK, start_stm32mp13xx_dk, stm32mp13xx-dk)
 $(call build_stm32mp_image, CONFIG_MACH_STM32MP15XX_DKX, start_stm32mp15xx_dkx, stm32mp15xx-dkx)
 $(call build_stm32mp_image, CONFIG_MACH_STM32MP15X_EV1, start_stm32mp15x_ev1, stm32mp15x-ev1)
 

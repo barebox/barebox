@@ -436,6 +436,11 @@ static inline void clk_hw_reparent(struct clk_hw *hw, struct clk_hw *new_parent)
 	/* clk_get_parent always reads from HW, so nothing to update here */
 }
 
+static inline int __clk_get_enable_count(struct clk *clk)
+{
+	return !clk ? 0 : clk->enable_count;
+}
+
 unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
 		unsigned int val,
 		const struct clk_div_table *table,

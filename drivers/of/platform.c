@@ -442,9 +442,6 @@ static struct device *of_device_create_on_demand(struct device_node *np)
 	if (!np->dev && parent->dev)
 		device_rescan(parent->dev);
 
-	if (!np->dev)
-		pr_debug("Creating device for %pOF\n", np);
-
 	/* Create all parent devices needed for the requested device */
 	parent_dev = parent->dev ? : of_device_create_on_demand(parent);
 	if (IS_ERR(parent_dev))
@@ -457,6 +454,11 @@ static struct device *of_device_create_on_demand(struct device_node *np)
 	 */
 	if (np->dev)
 		return np->dev;
+
+	if (!of_property_present(np, "compatible"))
+		return NULL;
+
+	pr_debug("Creating device for %pOF\n", np);
 
 	if (of_device_is_compatible(np, "arm,primecell"))
 		dev = of_amba_device_create(np);

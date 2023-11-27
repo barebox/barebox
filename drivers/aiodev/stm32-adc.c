@@ -362,9 +362,23 @@ static const struct stm32_adc_cfg stm32mp1_adc_cfg = {
 	.has_vregready = true,
 };
 
+/* STM32MP13 programmable sampling time (ADC clock cycles, rounded down) */
+static const unsigned int stm32mp13_adc_smp_cycles[STM32_ADC_MAX_SMP + 1] = {
+	        2, 6, 12, 24, 47, 92, 247, 640,
+};
+
+static const struct stm32_adc_cfg stm32mp13_adc_cfg = {
+	.num_bits = 16,
+	.max_channels = 19,
+	.smp_bits = stm32h7_smp_bits,
+	.smp_cycles = stm32mp13_adc_smp_cycles,
+	.has_vregready = false,
+};
+
 static const struct of_device_id stm32_adc_match[] = {
 	{ .compatible = "st,stm32h7-adc", .data = &stm32h7_adc_cfg },
 	{ .compatible = "st,stm32mp1-adc", .data = &stm32mp1_adc_cfg },
+	{ .compatible = "st,stm32mp13-adc", .data = &stm32mp13_adc_cfg },
 	{}
 };
 MODULE_DEVICE_TABLE(of, stm32_adc_match);

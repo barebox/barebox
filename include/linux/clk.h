@@ -431,6 +431,11 @@ struct clk_divider {
 extern const struct clk_ops clk_divider_ops;
 extern const struct clk_ops clk_divider_ro_ops;
 
+static inline void clk_hw_reparent(struct clk_hw *hw, struct clk_hw *new_parent)
+{
+	/* clk_get_parent always reads from HW, so nothing to update here */
+}
+
 unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
 		unsigned int val,
 		const struct clk_div_table *table,

@@ -103,8 +103,17 @@ static int do_devinfo(int argc, char *argv[])
 		}
 #ifdef CONFIG_OFDEVICE
 		if (dev->of_node) {
-			printf("Device node: %pOF\n", dev->of_node);
-			of_print_nodes(dev->of_node, 0, ~0);
+			struct device *main_dev = dev->of_node->dev;
+
+			printf("Device node: %pOF", dev->of_node);
+			if (!main_dev) {
+			       printf(" (unpopulated)\n");
+			} else if (main_dev != dev) {
+			       printf(" (populated by %s)\n", dev_name(main_dev));
+			} else {
+				printf("\n");
+				of_print_nodes(dev->of_node, 0, ~0);
+			}
 		}
 #endif
 	}

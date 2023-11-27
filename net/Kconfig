@@ -6,6 +6,23 @@ menuconfig NET
 
 if NET
 
+config NET_ETHADDR_FROM_MACHINE_ID
+	bool
+	prompt "generate stable Ethernet address"
+	depends on MACHINE_ID && HAVE_DIGEST_SHA256 && HAVE_DIGEST_HMAC
+	help
+	  By default, barebox will generate random Ethernet addresses for
+	  interfaces that had no explicit Ethernet address set via
+	  either board code or NVMEM properties in device tree.
+
+	  Say y here, to randomize Ethernet addresses only if no machine ID
+	  is available. Should barebox have a machine ID, it will be used
+	  alongside the hostname to generate MAC addresses that are unlikely
+	  to change between subsequent runs of barebox.
+
+	  This is not recommended for use in production as it may leak
+	  information about the machine ID.
+
 config NET_NFS
 	bool
 	prompt "nfs support"

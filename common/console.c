@@ -625,7 +625,7 @@ int ctrlc(void)
 	if (ctrlc_abort)
 		return 1;
 
-#ifdef ARCH_HAS_CTRLC
+#ifdef CONFIG_ARCH_HAS_CTRLC
 	ret = arch_ctrlc();
 #else
 	if (tstc() && getchar() == 3)

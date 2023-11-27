@@ -8,6 +8,7 @@
 #define _CONSOLE_H_
 
 #include <param.h>
+#include <linux/clk.h>
 #include <linux/list.h>
 #include <driver.h>
 #include <serdev.h>
@@ -227,5 +228,31 @@ void console_ctrlc_forbid(void);
 static inline void console_ctrlc_allow(void) { }
 static inline void console_ctrlc_forbid(void) { }
 #endif
+
+/**
+ * clk_get_for_console - get clock, ignoring known unavailable clock controller
+ * @dev: device for clock "consumer"
+ * @id: clock consumer ID
+ *
+ * Return: a struct clk corresponding to the clock producer, a
+ * valid IS_ERR() condition containing errno or NULL if it could
+ * be determined that the clock producer will never be probed in
+ * absence of modules. The NULL return allows serial drivers to
+ * skip clock handling for the stdout console and rely on CONFIG_DEBUG_LL.
+ */
+static inline struct clk *clk_get_for_console(struct device *dev, const char *id)
+{
+	__always_unused unsigned baudrate;
+	struct clk *clk;
+
+	if (!IS_ENABLED(CONFIG_DEBUG_LL) || !of_device_is_stdout_path(dev, &baudrate))
+		return clk_get(dev, id);
+
+	clk = clk_get_if_available(dev, id);
+	if (clk == NULL)
+		dev_warn(dev, "couldn't get clock (ignoring)\n");
+
+	return clk;
+}
 
 #endif

@@ -166,7 +166,7 @@
 
 #define MVNETA_MH_SIZE		2
 #define TXQ_NUM			8
-#define RX_RING_SIZE		4
+#define RX_RING_SIZE		128
 #define TRANSFER_TIMEOUT	(10 * MSECOND)
 
 struct rxdesc {

@@ -29,12 +29,12 @@
 
 #define NS16550_LCR_BKSE	0x80 /* Bank select enable */
 
-static inline void debug_ll_ns16550_putc(char ch)
+static inline void debug_ll_ns16550_putc(void __iomem *base, char ch)
 {
-        while (!(debug_ll_read_reg(NS16550_LSR) & NS16550_LSR_THRE))
+        while (!(debug_ll_read_reg(base, NS16550_LSR) & NS16550_LSR_THRE))
                 ;
 
-        debug_ll_write_reg(NS16550_THR, ch);
+        debug_ll_write_reg(base, NS16550_THR, ch);
 }
 
 static inline uint16_t debug_ll_ns16550_calc_divisor(unsigned long clk)
@@ -42,17 +42,17 @@ static inline uint16_t debug_ll_ns16550_calc_divisor(unsigned long clk)
 	return clk / (CONFIG_BAUDRATE * 16);
 }
 
-static inline void debug_ll_ns16550_init(uint16_t divisor)
+static inline void debug_ll_ns16550_init(void __iomem *base, uint16_t divisor)
 {
-	debug_ll_write_reg(NS16550_LCR, 0x0); /* select ier reg */
-	debug_ll_write_reg(NS16550_IER, 0x0); /* disable interrupts */
+	debug_ll_write_reg(base, NS16550_LCR, 0x0); /* select ier reg */
+	debug_ll_write_reg(base, NS16550_IER, 0x0); /* disable interrupts */
 
-	debug_ll_write_reg(NS16550_LCR, NS16550_LCR_BKSE);
-	debug_ll_write_reg(NS16550_DLL, divisor & 0xff);
-	debug_ll_write_reg(NS16550_DLM, (divisor >> 8) & 0xff);
-	debug_ll_write_reg(NS16550_LCR, NS16550_LCR_VAL);
-	debug_ll_write_reg(NS16550_MCR, NS16550_MCR_VAL);
-	debug_ll_write_reg(NS16550_FCR, NS16550_FCR_VAL);
+	debug_ll_write_reg(base, NS16550_LCR, NS16550_LCR_BKSE);
+	debug_ll_write_reg(base, NS16550_DLL, divisor & 0xff);
+	debug_ll_write_reg(base, NS16550_DLM, (divisor >> 8) & 0xff);
+	debug_ll_write_reg(base, NS16550_LCR, NS16550_LCR_VAL);
+	debug_ll_write_reg(base, NS16550_MCR, NS16550_MCR_VAL);
+	debug_ll_write_reg(base, NS16550_FCR, NS16550_FCR_VAL);
 }
 
 #endif

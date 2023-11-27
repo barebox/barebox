@@ -3,6 +3,9 @@
 #ifndef _PM_DOMAIN_H
 #define _PM_DOMAIN_H
 
+#include <linux/list.h>
+#include <of.h>
+
 enum gpd_status {
 	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
 	GPD_STATE_POWER_OFF,	/* PM domain is off */

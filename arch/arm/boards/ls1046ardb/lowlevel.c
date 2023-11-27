@@ -147,7 +147,7 @@ found:
 	popts->cpo_sample = 0x61;
 }
 
-extern char __dtb_fsl_ls1046a_rdb_start[];
+extern char __dtb_z_fsl_ls1046a_rdb_start[];
 
 static struct spd_eeprom spd_eeprom[] = {
 	{
@@ -195,7 +195,7 @@ static noinline __noreturn void ls1046ardb_r_entry(unsigned long memsize)
 			memsize = 0x100000000 - membase;
 
 		barebox_arm_entry(membase, 0x80000000 - SZ_64M,
-				  __dtb_fsl_ls1046a_rdb_start);
+				  __dtb_z_fsl_ls1046a_rdb_start);
 	}
 
 	arm_cpu_lowlevel_init();

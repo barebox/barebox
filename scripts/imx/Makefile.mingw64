@@ -1,0 +1,48 @@
+ifeq ($(strip $(LIBUSB_DIR)),)
+$(error Please specify LIBUSB_DIR e.g. LIBUSB_DIR=~/libusb-1.0.26-binaries)
+endif
+
+CC := x86_64-w64-mingw32-gcc
+ifeq ($(shell which $(CC)),)
+$(error "No $(CC) in $(PATH) found")
+endif
+
+LIBUSB_MINGW := $(LIBUSB_DIR)/libusb-MinGW-x64
+ifeq ($(wildcard $(strip $(LIBUSB_MINGW))),)
+$(error "$(LIBUSB_MINGW) not found")
+endif
+
+src := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
+# Do we want to change the working directory?
+ifeq ("$(origin O)", "command line")
+  OUTPUT := $(O)
+else
+  OUTPUT := $(src)/imx-usb-loader-windows
+endif # ifneq ($(OUTPUT),)
+
+# Make's built-in functions such as $(abspath ...), $(realpath ...) cannot
+# expand a shell special character '~'. We use a somewhat tedious way here.
+obj := $(shell mkdir -p $(OUTPUT) && cd $(OUTPUT) && pwd)
+$(if $(obj),, \
+     $(error failed to create output directory "$(OUTPUT)"))
+
+# $(realpath ...) resolves symlinks
+obj := $(realpath $(obj))
+
+CPPFLAGS := -I $(LIBUSB_MINGW)/include/libusb-1.0 -I $(src)/../include/ -I $(src)/../../include/mach/
+LDFLAGS := -L $(LIBUSB_MINGW)/lib -lusb-1.0 -static
+
+OBJECTS := $(addprefix $(obj)/, imx.o imx-usb-loader.o)
+
+$(obj)/%.o: $(src)/%.c
+	@$(CC) -c -o $@ $< $(CPPFLAGS)
+
+$(obj)/imx-usb-loader.exe: $(OBJECTS)
+	@$(CC) -o $@ $(OBJECTS) $(LDFLAGS)
+
+all: $(obj)/imx-usb-loader.exe
+
+.PHONY: clean
+clean:
+	@rm -rf $(obj)

@@ -46,6 +46,7 @@ RUN apt-get update && apt-get install -y \
 	python3-setuptools \
 	virtualenv \
 	sudo \
+	u-boot-tools \
 	&& rm -rf /var/lib/apt/lists/*
 
 ENV GCC_VERSION=13.1.0

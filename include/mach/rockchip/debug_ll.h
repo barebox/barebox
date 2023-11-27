@@ -43,19 +43,13 @@
 #define __RK_UART_BASE(soc, num) soc##_UART##num##_BASE
 #define RK_UART_BASE(soc, num) __RK_UART_BASE(soc, num)
 
-static inline uint8_t debug_ll_read_reg(int reg)
+static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)
 {
-	void __iomem *base = IOMEM(RK_UART_BASE(RK_DEBUG_SOC,
-		CONFIG_DEBUG_ROCKCHIP_UART_PORT));
-
 	return readb(base + (reg << 2));
 }
 
-static inline void debug_ll_write_reg(int reg, uint8_t val)
+static inline void debug_ll_write_reg(void __iomem *base, int reg, uint8_t val)
 {
-	void __iomem *base = IOMEM(RK_UART_BASE(RK_DEBUG_SOC,
-		CONFIG_DEBUG_ROCKCHIP_UART_PORT));
-
 	writeb(val, base + (reg << 2));
 }
 
@@ -63,15 +57,20 @@ static inline void debug_ll_write_reg(int reg, uint8_t val)
 
 static inline void rockchip_debug_ll_init(void)
 {
+	void __iomem *base = IOMEM(RK_UART_BASE(RK_DEBUG_SOC,
+		CONFIG_DEBUG_ROCKCHIP_UART_PORT));
 	unsigned int divisor;
 
 	divisor = debug_ll_ns16550_calc_divisor(RK_DEBUG_UART_CLOCK * 2);
-	debug_ll_ns16550_init(divisor);
+	debug_ll_ns16550_init(base, divisor);
 }
 
 static inline void PUTC_LL(int c)
 {
-	debug_ll_ns16550_putc(c);
+	void __iomem *base = IOMEM(RK_UART_BASE(RK_DEBUG_SOC,
+		CONFIG_DEBUG_ROCKCHIP_UART_PORT));
+
+	debug_ll_ns16550_putc(base, c);
 }
 
 #else

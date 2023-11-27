@@ -19,6 +19,8 @@ obj-$(CONFIG_CRYPTO_PBKDF2)	+= pbkdf2.o
 obj-$(CONFIG_CRYPTO_RSA)	+= rsa.o
 obj-$(CONFIG_CRYPTO_KEYSTORE)	+= keystore.o
 
+obj-$(CONFIG_JWT)		+= jwt.o
+
 extra-$(CONFIG_CRYPTO_RSA_BUILTIN_KEYS) += rsa-keys.h
 
 ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS

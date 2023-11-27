@@ -165,7 +165,7 @@ static int stm32_serial_probe(struct device *dev)
 	stm32->stm32f4 = info->stm32f4;
 	stm32->uart_enable_bit = info->uart_enable_bit;
 
-	stm32->clk = clk_get(dev, NULL);
+	stm32->clk = clk_get_for_console(dev, NULL);
 	if (IS_ERR(stm32->clk)) {
 		ret = PTR_ERR(stm32->clk);
 		dev_err(dev, "Failed to get UART clock %d\n", ret);
@@ -183,7 +183,7 @@ static int stm32_serial_probe(struct device *dev)
 	cdev->putc   = stm32_serial_putc;
 	cdev->getc   = stm32_serial_getc;
 	cdev->flush  = stm32_serial_flush;
-	cdev->setbrg = stm32_serial_setbaudrate;
+	cdev->setbrg = stm32->clk ? stm32_serial_setbaudrate : NULL;
 	cdev->linux_console_name = "ttySTM";
 
 	if (dev->of_node) {

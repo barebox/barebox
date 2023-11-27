@@ -10,6 +10,7 @@
 #include <dhcp.h>
 #include <net.h>
 #include <dma.h>
+#include <machine_id.h>
 #include <of.h>
 #include <of_net.h>
 #include <linux/phy.h>
@@ -554,10 +555,11 @@ void eth_open_all(void)
 	}
 }
 
-static int of_populate_ethaddr(void)
+static int populate_ethaddr(void)
 {
 	char str[sizeof("xx:xx:xx:xx:xx:xx")];
 	struct eth_device *edev;
+	bool generated = false;
 	int ret;
 
 	list_for_each_entry(edev, &netdev_list, list) {
@@ -566,14 +568,21 @@ static int of_populate_ethaddr(void)
 
 		ret = of_get_mac_addr_nvmem(edev->parent->of_node,
 					    edev->ethaddr);
+		if (IS_ENABLED(CONFIG_NET_ETHADDR_FROM_MACHINE_ID) && ret) {
+			ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
+			generated = true;
+		}
 		if (ret)
 			continue;
 
 		ethaddr_to_string(edev->ethaddr, str);
-		dev_info(&edev->dev, "Got preset MAC address from device tree: %s\n", str);
+		if (generated)
+			dev_notice(&edev->dev, "Generated MAC address from unique id: %s\n", str);
+		else
+			dev_info(&edev->dev, "Got preset MAC address from NVMEM: %s\n", str);
 		eth_set_ethaddr(edev, edev->ethaddr);
 	}
 
 	return 0;
 }
-postenvironment_initcall(of_populate_ethaddr);
+postenvironment_initcall(populate_ethaddr);

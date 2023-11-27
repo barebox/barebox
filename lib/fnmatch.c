@@ -1,50 +1,11 @@
-/* Copyright (C) 1991, 1992, 1993, 1996 Free Software Foundation, Inc.
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public License as
-published by the Free Software Foundation; either version 2 of the
-License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
-
-You should have received a copy of the GNU Library General Public
-License along with this library; see the file COPYING.LIB.  If
-not, write to the Free Software Foundation, Inc., 675 Mass Ave,
-Cambridge, MA 02139, USA.  */
-
-/* Enable GNU extensions in fnmatch.h.  */
-#ifndef _GNU_SOURCE
-# define _GNU_SOURCE	1
-#endif
+// SPDX-License-Identifier: LGPL-2.1-or-later
+// SPDX-FileCopyrightText: (C) 1991, 1992, 1993, 1996 Free Software Foundation, Inc.
 
 #include <errno.h>
 #include <fnmatch.h>
 #include <linux/ctype.h>
 
-
-/* Comment out all this code if we are using the GNU C Library, and are not
-   actually compiling the library itself.  This code is part of the GNU C
-   Library, but also included in many other GNU distributions.  Compiling
-   and linking in this code is a waste when using the GNU C library
-   (especially if it is a shared library).  Rather than having every GNU
-   program understand `configure --with-gnu-libc' and omit the object files,
-   it is simpler to just do this in the source for each such file.  */
-
-# if defined (STDC_HEADERS) || !defined (isascii)
-#  define ISASCII(c) 1
-# else
-#  define ISASCII(c) isascii(c)
-# endif
-
-# define ISUPPER(c) (ISASCII (c) && isupper (c))
-
-
-# ifndef errno
-extern int errno;
-# endif
+# define ISUPPER(c) (isascii(c) && isupper(c))
 
 /* Match STRING against the filename pattern PATTERN, returning zero if
    it matches, nonzero if not.  */

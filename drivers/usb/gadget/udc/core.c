@@ -1204,7 +1204,7 @@ int usb_add_gadget(struct usb_gadget *gadget)
 	gadget->productname = xstrdup(barebox_get_model());
 	dev_add_param_string(&gadget->dev, "productname", NULL, NULL,
 			     &gadget->productname, NULL);
-	gadget->serialnumber = xstrdup("");
+	gadget->serialnumber = xstrdup(barebox_get_serial_number() ? : "unset");
 	dev_add_param_string(&gadget->dev, "serialnumber", NULL, NULL,
 			     &gadget->serialnumber, NULL);
 

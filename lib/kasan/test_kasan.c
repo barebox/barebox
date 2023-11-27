@@ -38,6 +38,8 @@ static noinline void malloc_oob_right(void)
 		return;
 	}
 
+	OPTIMIZER_HIDE_VAR(ptr);
+
 	ptr[size] = 'x';
 
 	free(ptr);
@@ -54,6 +56,8 @@ static noinline void malloc_oob_left(void)
 		pr_err("Allocation failed\n");
 		return;
 	}
+
+	OPTIMIZER_HIDE_VAR(ptr);
 
 	*ptr = *(ptr - 1);
 	free(ptr);
@@ -75,6 +79,8 @@ static noinline void malloc_oob_realloc_more(void)
 		return;
 	}
 
+	OPTIMIZER_HIDE_VAR(ptr2);
+
 	ptr2[size2] = 'x';
 
 	free(ptr2);
@@ -94,6 +100,8 @@ static noinline void malloc_oob_realloc_less(void)
 		free(ptr1);
 		return;
 	}
+
+	OPTIMIZER_HIDE_VAR(ptr2);
 
 	ptr2[size2] = 'x';
 
@@ -115,6 +123,9 @@ static noinline void malloc_oob_16(void)
 		free(ptr2);
 		return;
 	}
+
+	OPTIMIZER_HIDE_VAR(ptr1);
+
 	*ptr1 = *ptr2;
 	free(ptr1);
 	free(ptr2);

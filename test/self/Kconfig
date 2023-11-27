@@ -36,12 +36,15 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_FS_RAMFS if FS_RAMFS
 	select SELFTEST_TFTP if FS_TFTP
 	select SELFTEST_JSON if JSMN
+	select SELFTEST_JWT if JWT
 	select SELFTEST_DIGEST if DIGEST
 	select SELFTEST_MMU if MMU
 	select SELFTEST_STRING
 	select SELFTEST_SETJMP if ARCH_HAS_SJLJ
 	select SELFTEST_REGULATOR if REGULATOR && OFDEVICE
 	select SELFTEST_TEST_COMMAND if CMD_TEST
+	help
+	  Selects all self-tests compatible with current configuration
 
 config SELFTEST_MALLOC
 	bool "malloc() selftest"
@@ -72,6 +75,10 @@ config SELFTEST_FS_RAMFS
 config SELFTEST_JSON
 	bool "JSON selftest"
 	depends on JSMN
+
+config SELFTEST_JWT
+	bool "JSON Web Token selftest"
+	depends on JWT
 
 config SELFTEST_MMU
 	bool "MMU remapping selftest"

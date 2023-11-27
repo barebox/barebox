@@ -26,7 +26,7 @@
 #define TX_TIMEOUT (250 * MSECOND)
 #define CMD_TIMEOUT (100 * MSECOND)
 
-static void clk_enable(void)
+static void mmc_clk_enable(void)
 {
 	CKEN |= CKEN_MMC;
 }
@@ -334,7 +334,7 @@ static int pxamci_probe(struct device *dev)
 	struct pxamci_host *host;
 	int gpio_power = -1;
 
-	clk_enable();
+	mmc_clk_enable();
 	host = xzalloc(sizeof(*host));
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

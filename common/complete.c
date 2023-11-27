@@ -14,6 +14,27 @@
 #include <command.h>
 #include <environment.h>
 
+static bool is_valid_escape(const char *str)
+{
+	return str[0] == '\\' && (str[1] == ' ' || str[1] == '\\');
+}
+
+static bool strstarts_escaped(const char *whole, const char *prefix_escaped)
+{
+	if (!prefix_escaped)
+		return true;
+
+	while (*prefix_escaped) {
+		if (is_valid_escape(prefix_escaped))
+			prefix_escaped++;
+
+		if (*whole++ != *prefix_escaped++)
+			return false;
+	}
+
+	return true;
+}
+
 static int file_complete(struct string_list *sl, char *instr,
 			 const char *dirn, int exec)
 {
@@ -35,7 +56,7 @@ static int file_complete(struct string_list *sl, char *instr,
 		if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
 			continue;
 
-		if (strncmp(base, d->d_name, strlen(base)))
+		if (!strstarts_escaped(d->d_name, base))
 			continue;
 
 		strcpy(tmp, instr);
@@ -94,7 +115,7 @@ static int path_command_complete(struct string_list *sl, char *instr)
 					!strcmp(d->d_name, ".."))
 				continue;
 
-			if (!strncmp(instr, d->d_name, strlen(instr))) {
+			if (strstarts_escaped(d->d_name, instr)) {
 				strcpy(tmp, d->d_name);
 				if (!stat(tmp, &s) &&
 						S_ISDIR(s.st_mode))
@@ -136,15 +157,9 @@ EXPORT_SYMBOL(command_complete);
 int device_complete(struct string_list *sl, char *instr)
 {
 	struct device *dev;
-	int len;
-
-	if (!instr)
-		instr = "";
-
-	len = strlen(instr);
 
 	for_each_device(dev) {
-		if (strncmp(instr, dev_name(dev), len))
+		if (!strstarts_escaped(dev_name(dev), instr))
 			continue;
 
 		string_list_add_asprintf(sl, "%s ", dev_name(dev));
@@ -158,12 +173,9 @@ static int device_param_complete(struct device *dev, const char *devname,
 				 struct string_list *sl, char *instr, int eval)
 {
 	struct param_d *param;
-	int len;
-
-	len = strlen(instr);
 
 	list_for_each_entry(param, &dev->parameters, list) {
-		if (strncmp(instr, param->name, len))
+		if (!strstarts_escaped(param->name, instr))
 			continue;
 
 		string_list_add_asprintf(sl, "%s%s.%s%c",
@@ -173,6 +185,21 @@ static int device_param_complete(struct device *dev, const char *devname,
 
 	return 0;
 }
+
+int driver_complete(struct string_list *sl, char *instr)
+{
+	struct driver_d *drv;
+
+	for_each_driver(drv) {
+		if (!strstarts_escaped(drv->name, instr))
+			continue;
+
+		string_list_add_asprintf(sl, "%s ", drv->name);
+	}
+
+	return COMPLETE_CONTINUE;
+}
+EXPORT_SYMBOL(driver_complete);
 
 int empty_complete(struct string_list *sl, char *instr)
 {
@@ -340,21 +367,43 @@ void complete_reset(void)
 	tab_pressed = 0;
 }
 
+static char *skip_to_last_unescaped_space(char *instr)
+{
+	char *t;
+
+	t = strrchr(instr, ' ');
+	if (t && (instr == t || t[-1] != '\\'))
+		return t + 1;
+
+	return instr;
+}
+
+static size_t strlen_escaped(char *instr)
+{
+	size_t count = 0;
+
+	for (; *instr; instr++) {
+		if (is_valid_escape(instr))
+			instr++;
+
+		count++;
+	}
+
+	return count;
+}
+
 static char* cmd_complete_lookup(struct string_list *sl, char *instr)
 {
 	struct command *cmdtp;
 	int len;
 	int ret = COMPLETE_END;
 	char *res = NULL;
-	char *t;
 
 	for_each_command(cmdtp) {
 		len = strlen(cmdtp->name);
 		if (!strncmp(instr, cmdtp->name, len) && instr[len] == ' ') {
 			instr += len + 1;
-			t = strrchr(instr, ' ');
-			if (t)
-				instr = t + 1;
+			instr = skip_to_last_unescaped_space(instr);
 
 			if (cmdtp->complete) {
 				ret = cmdtp->complete(sl, instr);
@@ -414,7 +463,7 @@ int complete(char *instr, char **outstr)
 			env_param_complete(&sl, instr + 1, 1);
 	}
 
-	pos = strlen(instr);
+	pos = strlen_escaped(instr);
 
 	*outstr = "";
 	if (list_empty(&sl.list))

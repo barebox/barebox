@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 // SPDX-FileCopyrightText: 2021 Rouven Czerwinski <r.czerwinski@pengutronix.de>, Pengutronix
 
+#define pr_fmt(fmt) "of-reserved-mem: " fmt
+
 #include <stdio.h>
 #include <of.h>
 #include <of_address.h>
@@ -16,6 +18,8 @@ static void request_region(struct resource *r)
 	for_each_memory_bank(bank) {
 		if (!resource_contains(bank->res, r))
 			continue;
+
+		pr_debug("reserving %s at %pad-%pad\n", r->name, &r->start, &r->end);
 
 		if (!reserve_sdram_region(r->name, r->start, resource_size(r)))
 			pr_warn("couldn't request reserved sdram region %pa-%pa\n",

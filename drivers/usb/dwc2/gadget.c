@@ -1,18 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include <dma.h>
 #include <linux/usb/gadget.h>
+#include <linux/spinlock.h>
 #include "dwc2.h"
 
 #define to_dwc2 gadget_to_dwc2
 #define dwc2_set_bit(d, r, b)	dwc2_writel(d, (b) | dwc2_readl(d, r), r)
 #define dwc2_clear_bit(d, r, b)	dwc2_writel(d, ~(b) & dwc2_readl(d, r), r)
 
-#define spin_lock(lock)
-#define spin_unlock(lock)
 #define local_irq_save(flags)(void)(flags)
 #define local_irq_restore(flags) (void)(flags)
-#define spin_lock_irqsave(lock, flags) (void)(flags)
-#define spin_unlock_irqrestore(lock, flags) (void)(flags)
 
 static void kill_all_requests(struct dwc2 *, struct dwc2_ep *, int);
 

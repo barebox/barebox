@@ -1,5 +1,6 @@
 
 #include <config.h>
+#include <errno.h>
 #include <malloc.h>
 #include <string.h>
 #include <memory.h>
@@ -628,7 +629,13 @@ nextchunk-> +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 /* conversion from malloc headers to user pointers, and back */
 
 #define chunk2mem(p)   ((void*)((char*)(p) + 2*SIZE_SZ))
-#define mem2chunk(mem) ((mchunkptr)((char*)(mem) - 2*SIZE_SZ))
+
+static inline mchunkptr mem2chunk(void *mem)
+{
+	OPTIMIZER_HIDE_VAR(mem);
+
+	return mem - 2 * SIZE_SZ;
+}
 
 /* pad request bytes into a usable size */
 
@@ -1161,8 +1168,10 @@ void *malloc(size_t bytes)
 
 	INTERNAL_SIZE_T nb;
 
-	if ((long) bytes < 0)
+	if ((long) bytes < 0) {
+		errno = ENOMEM;
 		return NULL;
+	}
 
 	nb = request2size(bytes); /* padded request size; */
 
@@ -1316,8 +1325,10 @@ void *malloc(size_t bytes)
 	if ((remainder_size = chunksize (top) - nb) < (long) MINSIZE) {
 		/* Try to extend */
 		malloc_extend_top(nb);
-		if ((remainder_size = chunksize(top) - nb) < (long) MINSIZE)
+		if ((remainder_size = chunksize(top) - nb) < (long) MINSIZE) {
+			errno = ENOMEM;
 			return NULL;	/* propagate failure */
+		}
 	}
 
 	victim = top;
@@ -1481,8 +1492,10 @@ void *realloc(void *oldmem, size_t bytes)
 	}
 #endif
 
-	if ((long)bytes < 0)
+	if ((long)bytes < 0) {
+		errno = ENOMEM;
 		return NULL;
+	}
 
 	/* realloc of null is supposed to be same as malloc */
 	if (!oldmem)
@@ -1648,8 +1661,10 @@ void *memalign(size_t alignment, size_t bytes)
 	mchunkptr remainder;	/* spare room at end to split off */
 	long remainder_size;	/* its size */
 
-	if ((long) bytes < 0)
+	if ((long) bytes < 0) {
+		errno = ENOMEM;
 		return NULL;
+	}
 
 	/* If need less alignment than we give anyway, just relay to malloc */
 
@@ -1683,8 +1698,8 @@ void *memalign(size_t alignment, size_t bytes)
 		   this is always possible.
 		 */
 
-		brk = (char*) mem2chunk(((unsigned long) (m + alignment - 1)) &
-					  -((signed) alignment));
+		brk = (char*) mem2chunk((void *)(((unsigned long) (m + alignment - 1)) &
+					  -((signed) alignment)));
 		if ((long)(brk - (char*)(p)) < MINSIZE)
 			brk = brk + alignment;
 
@@ -1731,8 +1746,10 @@ void *calloc(size_t n, size_t elem_size)
 	mchunkptr oldtop = top;
 	INTERNAL_SIZE_T oldtopsize = chunksize(top);
 
-	if ((long)n < 0)
+	if ((long)n < 0) {
+		errno = ENOMEM;
 		return NULL;
+	}
 
 	mem = malloc(sz);
 

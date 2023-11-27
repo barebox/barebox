@@ -13,6 +13,7 @@
 
 #define MACHINE_ID_LENGTH 32
 
+static bool __machine_id_initialized;
 static void *__machine_id_hashable;
 static size_t __machine_id_hashable_length;
 
@@ -22,11 +23,90 @@ const void *machine_id_get_hashable(size_t *len)
 	return __machine_id_hashable;
 }
 
+/**
+ * machine_id_set_hashable - Provide per-board unique data
+ * @hashable: Buffer
+ * @len: size of buffer
+ *
+ * The data supplied to the last call of this function prior to
+ * late_initcall will be hashed and stored into global.machine_id,
+ * which can be later used for fixup into the kernel command line
+ * or for deriving application specific unique IDs via
+ * machine_id_get_app_specific().
+ */
 void machine_id_set_hashable(const void *hashable, size_t len)
 {
-
 	__machine_id_hashable = xmemdup(hashable, len);
 	__machine_id_hashable_length = len;
+}
+
+/**
+ * machine_id_get_app_specific - Generates an application-specific UUID
+ * @result: UUID output of the function
+ * @...: pairs of (const void *, size_t) arguments of data to factor
+ * into the UUID followed by a NULL sentinel value.
+ *
+ * Combines the machine ID with the application specific varargs data
+ * to arrive at an application-specific and board-specific UUID that is
+ * stable and unique.
+ *
+ * The function returns 0 if a UUID was successfully written into @result
+ * and a negative error code otherwise.
+ */
+int machine_id_get_app_specific(uuid_t *result, ...)
+{
+	static u8 hmac[SHA256_DIGEST_SIZE];
+	const void *data;
+	size_t size;
+	va_list args;
+	struct digest *d;
+	int ret;
+
+	if (!__machine_id_initialized)
+		return -ENODATA;
+
+	d = digest_alloc("hmac(sha256)");
+	if (!d)
+		return -ENOSYS;
+
+	ret = digest_set_key(d, __machine_id_hashable, __machine_id_hashable_length);
+	if (ret)
+		goto out;
+
+	ret = digest_init(d);
+	if (ret)
+		goto out;
+
+	ret = -ENODATA;
+
+	va_start(args, result);
+
+	while ((data = va_arg(args, const void *))) {
+		size = va_arg(args, size_t);
+
+		ret = digest_update(d, data, size);
+		if (ret)
+			break;
+	}
+
+	va_end(args);
+
+	if (ret)
+		goto out;
+
+	ret = digest_final(d, hmac);
+	if (ret)
+		goto out;
+
+	/* Take only the first half. */
+	memcpy(result, hmac, min(sizeof(hmac), sizeof(*result)));
+
+	uuid_make_v4(result);
+
+out:
+	digest_free(d);
+
+	return ret;
 }
 
 static int machine_id_set_globalvar(void)
@@ -66,6 +146,7 @@ static int machine_id_set_globalvar(void)
 	env_machine_id = basprintf("%.*s", MACHINE_ID_LENGTH, hex_machine_id);
 	globalvar_add_simple("machine_id", env_machine_id);
 	free(env_machine_id);
+	__machine_id_initialized = true;
 
 out:
 	digest_free(digest);

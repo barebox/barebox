@@ -4,9 +4,5 @@
 #include "stm32mp131.dtsi"
 
 / {
-	model = "STM32MP153F-DK";
-
-	chosen {
-		stdout-path = "serial0:115200n8";
-	};
+	model = "STM32MP135F-DK";
 };

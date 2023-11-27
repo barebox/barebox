@@ -1289,7 +1289,13 @@ static int mci_mmc_select_hs_ddr(struct mci *mci)
 	struct mci_host *host = mci->host;
 	int ret;
 
-	if (!(mci_caps(mci) & MMC_CAP_MMC_1_8V_DDR))
+	/*
+	 * barebox MCI core does not change voltage, so we don't know here
+	 * if we should check for the 1.8v or 3.3v mode. Until we support
+	 * higher speed modes that require voltage switching like HS200/HS400,
+	 * let's just check for either bit.
+	 */
+	if (!(mci_caps(mci) & (MMC_CAP_MMC_1_8V_DDR | MMC_CAP_MMC_3_3V_DDR)))
 		return 0;
 
 	ret = mci_mmc_try_bus_width(mci, host->bus_width, MMC_TIMING_MMC_DDR52);

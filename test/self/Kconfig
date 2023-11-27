@@ -43,6 +43,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_SETJMP if ARCH_HAS_SJLJ
 	select SELFTEST_REGULATOR if REGULATOR && OFDEVICE
 	select SELFTEST_TEST_COMMAND if CMD_TEST
+	select SELFTEST_IDR
 	help
 	  Selects all self-tests compatible with current configuration
 
@@ -106,5 +107,9 @@ config SELFTEST_REGULATOR
 config SELFTEST_TEST_COMMAND
 	bool "test command selftest"
 	depends on CMD_TEST
+
+config SELFTEST_IDR
+	bool "idr selftest"
+	select IDR
 
 endif

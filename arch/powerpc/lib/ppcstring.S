@@ -9,7 +9,7 @@
  * 2 of the License, or (at your option) any later version.
  */
 #include <asm/ppc_asm.tmpl>
-#include <asm-generic/errno.h>
+#include <linux/errno.h>
 
 	.globl	strcpy
 strcpy:

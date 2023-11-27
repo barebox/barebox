@@ -35,4 +35,7 @@ int clock_notifier_call_chain(void);
 		.blocks = LIST_HEAD_INIT((name).blocks),	\
 	};
 
+#define NOTIFY_DONE		0x0000		/* Don't care */
+#define NOTIFY_OK		0x0001		/* Suits me */
+
 #endif /* __NOTIFIER_H */

@@ -2,7 +2,7 @@
 #ifndef __INCLUDE_BBU_H
 #define __INCLUDE_BBU_H
 
-#include <asm-generic/errno.h>
+#include <linux/errno.h>
 #include <linux/list.h>
 #include <linux/types.h>
 #include <filetype.h>

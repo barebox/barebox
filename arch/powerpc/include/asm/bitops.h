@@ -184,6 +184,7 @@ static inline int ffs(int x)
 	return __ilog2(x & -x) + 1;
 }
 
+#include <asm-generic/bitops/__fls.h>
 #include <asm-generic/bitops/fls64.h>
 #include <asm-generic/bitops/hweight.h>
 

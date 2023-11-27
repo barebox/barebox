@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
 #include <asm/ppc_asm.tmpl>
-#include <asm-generic/errno.h>
+#include <linux/errno.h>
 
 	.globl	__ashrdi3
 __ashrdi3:

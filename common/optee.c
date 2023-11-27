@@ -4,7 +4,7 @@
 
 #include <tee/optee.h>
 #include <linux/printk.h>
-#include <asm-generic/errno.h>
+#include <linux/errno.h>
 
 int optee_verify_header(struct optee_header *hdr)
 {

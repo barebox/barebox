@@ -226,6 +226,9 @@ config GENERIC_ALLOCATOR
 	help
 	  Support is curently limited to allocaing a complete mmio-sram at once.
 
+config IDR
+	bool
+
 endmenu
 
 source "lib/Kconfig.hardening"

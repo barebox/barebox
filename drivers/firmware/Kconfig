@@ -27,6 +27,7 @@ config ARM_SCMI_PROTOCOL
 	tristate "ARM System Control and Management Interface (SCMI) Message Protocol"
 	depends on ARM || COMPILE_TEST
 	depends on ARM_SMCCC
+	select IDR
 	help
 	  ARM System Control and Management Interface (SCMI) protocol is a
 	  set of operating system-independent software interfaces that are

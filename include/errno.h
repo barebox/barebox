@@ -2,7 +2,7 @@
 #ifndef __ERRNO_H
 #define __ERRNO_H
 
-#include <asm-generic/errno.h>
+#include <linux/errno.h>
 #include <linux/err.h>
 
 extern int errno;

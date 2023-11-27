@@ -88,6 +88,12 @@ unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
 	unsigned int div;
 
 	div = _get_div(table, val, flags, width);
+	if (!div) {
+		WARN(!(flags & CLK_DIVIDER_ALLOW_ZERO),
+			"%s: Zero divisor and CLK_DIVIDER_ALLOW_ZERO not set\n",
+			clk->name);
+		return parent_rate;
+	}
 
 	return DIV_ROUND_UP_ULL((u64)parent_rate, div);
 }

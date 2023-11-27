@@ -417,6 +417,7 @@ struct clk_divider {
 #define clk_div_mask(width)	((1 << (width)) - 1)
 
 #define CLK_DIVIDER_POWER_OF_TWO	(1 << 1)
+#define CLK_DIVIDER_ALLOW_ZERO		(1 << 2)
 #define CLK_DIVIDER_HIWORD_MASK		(1 << 3)
 #define CLK_DIVIDER_READ_ONLY		(1 << 5)
 

@@ -2,6 +2,8 @@
 #ifndef __REGULATOR_H
 #define __REGULATOR_H
 
+#include <linux/bitops.h>
+
 struct device;
 
 /* struct regulator is an opaque object for consumers */
@@ -155,7 +157,8 @@ static inline int of_regulator_register(struct regulator_dev *rd,
 #endif
 int dev_regulator_register(struct regulator_dev *rd, const char *name);
 
-void regulators_print(void);
+#define REGULATOR_PRINT_DEVS	BIT(0)
+void regulators_print(unsigned flags);
 
 const char *rdev_get_name(struct regulator_dev *rdev);
 

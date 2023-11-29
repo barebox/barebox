@@ -450,7 +450,7 @@ static int mmc_send_op_cond(struct mci *mci)
 	mci->ocr = cmd.response[0];
 
 	mci->high_capacity = ((mci->ocr & OCR_HCS) == OCR_HCS);
-	mci->rca = 0;
+	mci->rca = 2;
 
 	return 0;
 }

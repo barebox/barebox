@@ -298,7 +298,8 @@ static int mci_read_block(struct mci *mci, void *dst, int blocknum,
 	ret = mci_send_cmd(mci, &cmd, &data);
 
 	if (ret || blocks > 1) {
-		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0, MMC_RSP_R1b);
+		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0,
+			      IS_SD(mci) ? MMC_RSP_R1b : MMC_RSP_R1);
 		mci_send_cmd(mci, &cmd, NULL);
 	}
 	return ret;

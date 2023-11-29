@@ -131,7 +131,7 @@ barebox supports generating signed images, signed USB images suitable for
 *imx-usb-loader* and encrypted images.
 
 In contrast to normal (unsigned) images booting signed images via
-imx-usb-loader requires special images:
+imx-usb-loader on i.MX6 (but not in i.MX8M) requires special images:
 DCD data is invalidated (DCD pointer set to zero), the image is then signed and
 afterwards the DCD pointer is set to the DCD data again (practically making
 the signature invalid).

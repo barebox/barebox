@@ -212,7 +212,8 @@ like a Linux kernel that is passed an external device tree. For example:
 
   U-Boot: tftp $kernel_addr barebox-dt-2nd.img
   U-Boot: tftp $fdt_addr my-board.dtb
-  U-Boot: booti $kernel_addr - $fdt_addr
+  U-Boot: bootm $kernel_addr - $fdt_addr # On 32-bit ARM
+  U-Boot: booti $kernel_addr - $fdt_addr # for other platforms
 
 For non-DT enabled-bootloaders or other architectures, often the normal barebox
 binaries can also be used as they are designed to be startable second stage
@@ -224,7 +225,7 @@ converted to uImage format using the mkimage tool provided with U-Boot:
 .. code-block:: console
 
   sh: mkimage -n barebox -A arm -T kernel -C none -a 0x80000000 -d \
-      build/images/barebox-freescale-imx53-loco.img image
+      build/images/barebox-freescale-imx53-loco.img barebox.uImage
 
 U-Boot expects the start address of the binary to be given in the image using the
 ``-a`` option. The address depends on the board and must be an address which isn't
@@ -233,7 +234,7 @@ image for that board. The image can then be started with ``bootm``:
 
 .. code-block:: console
 
-  U-Boot: tftp $load_addr barebox.bin
+  U-Boot: tftp $load_addr barebox.uImage
   U-Boot: bootm $load_addr
 
 With barebox already running on your board, this can be used to chainload

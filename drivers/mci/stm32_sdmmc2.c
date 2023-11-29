@@ -257,11 +257,12 @@ static void stm32_sdmmc2_pwron(struct stm32_sdmmc2_priv *priv)
 	udelay(DIV_ROUND_UP(74 * USEC_PER_SEC, priv->mci.clock));
 }
 
-static void stm32_sdmmc2_start_data(struct stm32_sdmmc2_priv *priv,
-				    struct mci_data *data, u32 data_length)
+static dma_addr_t stm32_sdmmc2_start_data(struct stm32_sdmmc2_priv *priv,
+					  struct mci_data *data, u32 data_length)
 {
 	unsigned int num_bytes = data->blocks * data->blocksize;
-	u32 data_ctrl, idmabase0;
+	dma_addr_t idmabase0;
+	u32 data_ctrl;
 
 	/* Configure the SDMMC DPSM (Data Path State Machine) */
 	data_ctrl = (__ilog2_u32(data->blocksize) <<
@@ -270,10 +271,15 @@ static void stm32_sdmmc2_start_data(struct stm32_sdmmc2_priv *priv,
 
 	if (data->flags & MMC_DATA_READ) {
 		data_ctrl |= SDMMC_DCTRL_DTDIR;
-		idmabase0 = (u32)data->dest;
+		idmabase0 = dma_map_single(priv->dev, (void *)data->src, num_bytes,
+					   DMA_FROM_DEVICE);
 	} else {
-		idmabase0 = (u32)data->src;
+		idmabase0 = dma_map_single(priv->dev, (void *)data->src, num_bytes,
+					   DMA_TO_DEVICE);
 	}
+
+	if (dma_mapping_error(priv->dev, idmabase0))
+		return DMA_ERROR_CODE;
 
 	/* Set the SDMMC DataLength value */
 	writel(data_length, priv->base + SDMMC_DLEN);
@@ -281,16 +287,11 @@ static void stm32_sdmmc2_start_data(struct stm32_sdmmc2_priv *priv,
 	/* Write to SDMMC DCTRL */
 	writel(data_ctrl, priv->base + SDMMC_DCTRL);
 
-	if (data->flags & MMC_DATA_WRITE)
-		dma_sync_single_for_device(priv->dev, (unsigned long)idmabase0,
-					   num_bytes, DMA_TO_DEVICE);
-	else
-		dma_sync_single_for_device(priv->dev, (unsigned long)idmabase0,
-					   num_bytes, DMA_FROM_DEVICE);
-
 	/* Enable internal DMA */
 	writel(idmabase0, priv->base + SDMMC_IDMABASE0);
 	writel(SDMMC_IDMACTRL_IDMAEN, priv->base + SDMMC_IDMACTRL);
+
+	return idmabase0;
 }
 
 static void stm32_sdmmc2_start_cmd(struct stm32_sdmmc2_priv *priv,
@@ -415,7 +416,8 @@ static int stm32_sdmmc2_end_cmd(struct stm32_sdmmc2_priv *priv,
 
 static int stm32_sdmmc2_end_data(struct stm32_sdmmc2_priv *priv,
 				 struct mci_cmd *cmd,
-				 struct mci_data *data)
+				 struct mci_data *data,
+				 dma_addr_t dma_addr)
 {
 	u32 mask = SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT |
 		   SDMMC_STA_IDMATE | SDMMC_STA_DATAEND;
@@ -436,12 +438,10 @@ static int stm32_sdmmc2_end_data(struct stm32_sdmmc2_priv *priv,
 		return ret;
 	}
 
-	if (data->flags & MMC_DATA_WRITE)
-		dma_sync_single_for_cpu(priv->dev, (unsigned long)data->src,
-					num_bytes, DMA_TO_DEVICE);
+	if (data->flags & MMC_DATA_READ)
+		dma_unmap_single(priv->dev, dma_addr, num_bytes, DMA_FROM_DEVICE);
 	else
-		dma_sync_single_for_cpu(priv->dev, (unsigned long)data->dest,
-					num_bytes, DMA_FROM_DEVICE);
+		dma_unmap_single(priv->dev, dma_addr, num_bytes, DMA_TO_DEVICE);
 
 	if (status & SDMMC_STA_DCRCFAIL) {
 		dev_err(priv->dev, "error SDMMC_STA_DCRCFAIL (0x%x) for cmd %d\n",
@@ -481,23 +481,26 @@ static int stm32_sdmmc2_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 {
 	struct stm32_sdmmc2_priv *priv = to_mci_host(mci);
 	u32 cmdat = data ? SDMMC_CMD_CMDTRANS : 0;
+	dma_addr_t dma_addr = DMA_ERROR_CODE;
 	u32 data_length = 0;
 	int ret;
 
 	if (data) {
 		data_length = data->blocks * data->blocksize;
-		stm32_sdmmc2_start_data(priv, data, data_length);
+		dma_addr = stm32_sdmmc2_start_data(priv, data, data_length);
+		if (dma_addr == DMA_ERROR_CODE)
+			return -EFAULT;
 	}
 
 	stm32_sdmmc2_start_cmd(priv, cmd, cmdat, data_length);
 
-	dev_dbg(priv->dev, "%s: send cmd %d data: 0x%x @ 0x%x\n", __func__,
-		cmd->cmdidx, data ? data_length : 0, (unsigned int)data);
+	dev_dbg(priv->dev, "%s: send cmd %d data: 0x%x @ %p\n", __func__,
+		cmd->cmdidx, data ? data_length : 0, data);
 
 	ret = stm32_sdmmc2_end_cmd(priv, cmd);
 
 	if (data && !ret)
-		ret = stm32_sdmmc2_end_data(priv, cmd, data);
+		ret = stm32_sdmmc2_end_data(priv, cmd, data, dma_addr);
 
 	/* Clear flags */
 	writel(SDMMC_ICR_STATIC_FLAGS, priv->base + SDMMC_ICR);

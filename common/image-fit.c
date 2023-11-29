@@ -545,6 +545,7 @@ int fit_get_image_address(struct fit_handle *handle, void *configuration,
 {
 	struct device_node *image;
 	const char *unit = name;
+	const char *type;
 	int ret;
 
 	if (!address || !property || !name)
@@ -553,6 +554,11 @@ int fit_get_image_address(struct fit_handle *handle, void *configuration,
 	ret = fit_get_image(handle, configuration, &unit, &image);
 	if (ret)
 		return ret;
+
+	/* Treat type = "kernel_noload" as if entry/load address is missing */
+	ret = of_property_read_string(image, "type", &type);
+	if (!ret && !strcmp(type, "kernel_noload"))
+	    return -ENOENT;
 
 	ret = fit_get_address(image, property, address);
 

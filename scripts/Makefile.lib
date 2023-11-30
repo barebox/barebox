@@ -220,8 +220,7 @@ dtc_cpp_flags  = -Wp,-MD,$(depfile).pre -nostdinc                        \
 		 -I$(srctree)/include                                    \
 		 -I$(srctree)/dts/include                                \
 		 -I$(srctree)/dts/src/                                   \
-		 $(DTC_CPP_FLAGS_$(basetarget).dtb)                      \
-		 $(DTC_CPP_FLAGS_$(basetarget).dtbo)                     \
+		 $(DTC_CPP_FLAGS_$(basetarget)$(suffix $@))              \
 		 -undef -D__DTS__
 
 ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
@@ -369,7 +368,7 @@ DTC_FLAGS += -Wno-unit_address_vs_reg \
 	 -Wno-interrupt_provider
 
 ifeq ($(CONFIG_OF_OVERLAY_LIVE), y)
-DTC_FLAGS += -@
+DTC_FLAGS.dtb += -@
 endif
 
 # Generate an assembly file to wrap the output of the device tree compiler
@@ -391,7 +390,7 @@ quiet_cmd_dtc = DTC     $@
 cmd_dtc = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
 	-D'$(subst -,_,$(*F))_dts=1' $(foreach f,$< $(2),-include '$(f)') /dev/null ; \
 	$(objtree)/scripts/dtc/dtc -O dtb -o $@ -b 0 \
-		-i $(srctree)/arch/$(SRCARCH)/dts $(DTC_FLAGS) \
+		-i $(srctree)/arch/$(SRCARCH)/dts $(DTC_FLAGS) $(DTC_FLAGS$(suffix $@)) \
 		-i $(srctree)/dts/src/$(SRCARCH) \
 		-i $(srctree)/dts/src/arm/ti/omap \
 		-d $(depfile).dtc $(dtc-tmp) ; \

@@ -124,17 +124,14 @@ static int macb_send(struct eth_device *edev, void *packet,
 	if (dma_mapping_error(macb->dev, packet_dma))
 		return -EFAULT;
 
-	macb->tx_ring[tx_head].ctrl = ctrl;
-	macb->tx_ring[tx_head].addr = packet_dma;
-	barrier();
-
+	writel(ctrl, &macb->tx_ring[tx_head].ctrl);
+	writel(packet_dma, &macb->tx_ring[tx_head].addr);
 	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE) | MACB_BIT(TSTART));
 
 	start = get_time_ns();
 	ret = -ETIMEDOUT;
 	do {
-		barrier();
-		ctrl = macb->tx_ring[0].ctrl;
+		ctrl = readl(&macb->tx_ring[0].ctrl);
 		if (ctrl & MACB_BIT(TX_USED)) {
 			ret = 0;
 			break;
@@ -160,18 +157,17 @@ static void reclaim_rx_buffers(struct macb_device *macb,
 
 	i = macb->rx_tail;
 	while (i > new_tail) {
-		macb->rx_ring[i].addr &= ~MACB_BIT(RX_USED);
+		clrbits_le32(&macb->rx_ring[i].addr, MACB_BIT(RX_USED));
 		i++;
 		if (i > macb->rx_ring_size)
 			i = 0;
 	}
 
 	while (i < new_tail) {
-		macb->rx_ring[i].addr &= ~MACB_BIT(RX_USED);
+		clrbits_le32(&macb->rx_ring[i].addr, MACB_BIT(RX_USED));
 		i++;
 	}
 
-	barrier();
 	macb->rx_tail = new_tail;
 }
 
@@ -183,12 +179,10 @@ static int gem_recv(struct eth_device *edev)
 	u32 status;
 
 	for (;;) {
-		barrier();
-		if (!(macb->rx_ring[macb->rx_tail].addr & MACB_BIT(RX_USED)))
+		if (!(readl(&macb->rx_ring[macb->rx_tail].addr) & MACB_BIT(RX_USED)))
 			return -1;
 
-		barrier();
-		status = macb->rx_ring[macb->rx_tail].ctrl;
+		status = readl(&macb->rx_ring[macb->rx_tail].ctrl);
 		length = MACB_BFEXT(RX_FRMLEN, status);
 		buffer = macb->rx_buffer_phys + macb->rx_buffer_size * macb->rx_tail;
 		dma_sync_single_for_cpu(macb->dev, buffer, length, DMA_FROM_DEVICE);
@@ -196,8 +190,7 @@ static int gem_recv(struct eth_device *edev)
 			    macb->rx_buffer + macb->rx_buffer_size * macb->rx_tail,
 			    length);
 		dma_sync_single_for_device(macb->dev, buffer, length, DMA_FROM_DEVICE);
-		macb->rx_ring[macb->rx_tail].addr &= ~MACB_BIT(RX_USED);
-		barrier();
+		clrbits_le32(&macb->rx_ring[macb->rx_tail].addr, MACB_BIT(RX_USED));
 
 		macb->rx_tail++;
 		if (macb->rx_tail >= macb->rx_ring_size)
@@ -217,12 +210,10 @@ static int macb_recv(struct eth_device *edev)
 	u32 status;
 
 	for (;;) {
-		barrier();
-		if (!(macb->rx_ring[rx_tail].addr & MACB_BIT(RX_USED)))
+		if (!(readl(&macb->rx_ring[rx_tail].addr) & MACB_BIT(RX_USED)))
 			return -1;
 
-		barrier();
-		status = macb->rx_ring[rx_tail].ctrl;
+		status = readl(&macb->rx_ring[rx_tail].ctrl);
 		if (status & MACB_BIT(RX_SOF)) {
 			if (rx_tail != macb->rx_tail)
 				reclaim_rx_buffers(macb, rx_tail);
@@ -256,7 +247,6 @@ static int macb_recv(struct eth_device *edev)
 					    length);
 				dma_sync_single_for_device(macb->dev, buffer, length, DMA_FROM_DEVICE);
 			}
-			barrier();
 			if (++rx_tail >= macb->rx_ring_size)
 				rx_tail = 0;
 			reclaim_rx_buffers(macb, rx_tail);
@@ -376,9 +366,9 @@ static int gmac_init_dummy_tx_queues(struct macb_device *macb)
 		if (queue_mask & (1 << i))
 			num_queues++;
 
-	macb->gem_q1_descs[0].addr = 0;
-	macb->gem_q1_descs[0].ctrl = MACB_BIT(TX_WRAP) |
-		MACB_BIT(TX_LAST) | MACB_BIT(TX_USED);
+	writel(0, &macb->gem_q1_descs[0].addr);
+	writel(MACB_BIT(TX_WRAP) | MACB_BIT(TX_LAST) | MACB_BIT(TX_USED),
+	       &macb->gem_q1_descs[0].ctrl);
 
 	for (i = 1; i < num_queues; i++)
 		gem_writel_queue_TBQP(macb, (ulong)macb->gem_q1_descs, i - 1);
@@ -404,17 +394,17 @@ static int macb_init(struct macb_device *macb)
 	/* initialize DMA descriptors */
 	paddr = (ulong)macb->rx_buffer;
 	for (i = 0; i < macb->rx_ring_size; i++) {
-		macb->rx_ring[i].addr = paddr;
-		macb->rx_ring[i].ctrl = 0;
+		writel(paddr, &macb->rx_ring[i].addr);
+		writel(0, &macb->rx_ring[i].ctrl);
 		paddr += macb->rx_buffer_size;
 	}
-	macb->rx_ring[macb->rx_ring_size - 1].addr |= MACB_BIT(RX_WRAP);
+	setbits_le32(&macb->rx_ring[macb->rx_ring_size - 1].addr, MACB_BIT(RX_WRAP));
 
 	for (i = 0; i < TX_RING_SIZE; i++) {
-		macb->tx_ring[i].addr = 0;
-		macb->tx_ring[i].ctrl = MACB_BIT(TX_USED);
+		writel(0, &macb->tx_ring[i].addr);
+		writel(MACB_BIT(TX_USED), &macb->tx_ring[i].ctrl);
 	}
-	macb->tx_ring[TX_RING_SIZE - 1].addr |= MACB_BIT(TX_WRAP);
+	setbits_le32(&macb->tx_ring[TX_RING_SIZE - 1].addr, MACB_BIT(TX_WRAP));
 
 	macb->rx_tail = macb->tx_head = 0;
 
@@ -427,9 +417,8 @@ static int macb_init(struct macb_device *macb)
 		gmac_init_dummy_tx_queues(macb);
 
 		/* Disable the second priority rx queue */
-		macb->gem_q1_descs[1].addr = MACB_BIT(RX_USED) |
-				MACB_BIT(RX_WRAP);
-		macb->gem_q1_descs[1].ctrl = 0;
+		writel(MACB_BIT(RX_USED) | MACB_BIT(RX_WRAP), &macb->gem_q1_descs[1].addr);
+		writel(0, &macb->gem_q1_descs[1].ctrl);
 
 		gem_writel(macb, RQ1, (ulong)&macb->gem_q1_descs[1]);
 	}

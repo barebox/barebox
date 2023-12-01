@@ -45,7 +45,7 @@ static uint64_t *alloc_pte(void)
 	if (idx * GRANULE_SIZE >= ARM_EARLY_PAGETABLE_SIZE)
 		return NULL;
 
-	return get_ttb() + idx * GRANULE_SIZE;
+	return (void *)get_ttb() + idx * GRANULE_SIZE;
 }
 #else
 static uint64_t *alloc_pte(void)

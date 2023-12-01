@@ -174,7 +174,7 @@ resource_size_t rk3588_ram0_size(void)
 	size1 = rockchip_sdram_size(sys_reg2, sys_reg3);
 	size2 = rockchip_sdram_size(sys_reg4, sys_reg5);
 
-	pr_info("%s() size1 = %llu, size2 = %llu\n", __func__, (u64)size1, (u64)size2);
+	pr_info("%s() size1 = 0x%08llx, size2 = 0x%08llx\n", __func__, (u64)size1, (u64)size2);
 
 	size = min_t(resource_size_t, RK3568_INT_REG_START, size1 + size2);
 

@@ -99,6 +99,9 @@ static void split_block(uint64_t *pte, int level)
 	levelshift = level2shift(level + 1);
 
 	new_table = alloc_pte();
+	if (!new_table)
+		panic("Unable to allocate PTE\n");
+
 
 	for (i = 0; i < MAX_PTE_ENTRIES; i++) {
 		new_table[i] = old_pte | (i << levelshift);

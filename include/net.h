@@ -236,9 +236,9 @@ struct icmphdr {
  * Maximum packet size; used to allocate packet storage.
  * TFTP packets can be 524 bytes + IP header + ethernet header.
  * Lets be conservative, and go for 38 * 16.  (Must also be
- * a multiple of 32 bytes).
+ * a multiple of 64 bytes).
  */
-#define PKTSIZE			1518
+#define PKTSIZE			1536
 
 /**********************************************************************/
 /*

@@ -63,10 +63,13 @@ struct macb_device {
 	unsigned int		tx_head;
 
 	void			*rx_buffer;
+	dma_addr_t		rx_buffer_phys;
 	void			*tx_buffer;
 	void			*rx_packet_buf;
 	struct macb_dma_desc	*rx_ring;
+	dma_addr_t		rx_ring_phys;
 	struct macb_dma_desc	*tx_ring;
+	dma_addr_t		tx_ring_phys;
 	struct macb_dma_desc	*gem_q1_descs;
 
 	int			rx_buffer_size;
@@ -105,6 +108,7 @@ static int macb_send(struct eth_device *edev, void *packet,
 	int ret = 0;
 	uint64_t start;
 	unsigned int tx_head = macb->tx_head;
+	dma_addr_t packet_dma;
 
 	ctrl = MACB_BF(TX_FRMLEN, length);
 	ctrl |= MACB_BIT(TX_LAST);
@@ -116,10 +120,14 @@ static int macb_send(struct eth_device *edev, void *packet,
 		macb->tx_head++;
 	}
 
+	packet_dma = dma_map_single(macb->dev, packet, length, DMA_TO_DEVICE);
+	if (dma_mapping_error(macb->dev, packet_dma))
+		return -EFAULT;
+
 	macb->tx_ring[tx_head].ctrl = ctrl;
-	macb->tx_ring[tx_head].addr = (ulong)packet;
+	macb->tx_ring[tx_head].addr = packet_dma;
 	barrier();
-	dma_sync_single_for_device(macb->dev, (unsigned long)packet, length, DMA_TO_DEVICE);
+
 	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE) | MACB_BIT(TSTART));
 
 	start = get_time_ns();
@@ -132,7 +140,8 @@ static int macb_send(struct eth_device *edev, void *packet,
 			break;
 		}
 	} while (!is_timeout(start, 100 * MSECOND));
-	dma_sync_single_for_cpu(macb->dev, (unsigned long)packet, length, DMA_TO_DEVICE);
+
+	dma_unmap_single(macb->dev, packet_dma, length, DMA_TO_DEVICE);
 
 	if (ctrl & MACB_BIT(TX_UNDERRUN))
 		dev_err(macb->dev, "TX underrun\n");
@@ -169,7 +178,7 @@ static void reclaim_rx_buffers(struct macb_device *macb,
 static int gem_recv(struct eth_device *edev)
 {
 	struct macb_device *macb = edev->priv;
-	void *buffer;
+	dma_addr_t buffer;
 	int length;
 	u32 status;
 
@@ -181,12 +190,12 @@ static int gem_recv(struct eth_device *edev)
 		barrier();
 		status = macb->rx_ring[macb->rx_tail].ctrl;
 		length = MACB_BFEXT(RX_FRMLEN, status);
-		buffer = macb->rx_buffer + macb->rx_buffer_size * macb->rx_tail;
-		dma_sync_single_for_cpu(macb->dev, (unsigned long)buffer, length,
-					DMA_FROM_DEVICE);
-		net_receive(edev, buffer, length);
-		dma_sync_single_for_device(macb->dev, (unsigned long)buffer, length,
-					   DMA_FROM_DEVICE);
+		buffer = macb->rx_buffer_phys + macb->rx_buffer_size * macb->rx_tail;
+		dma_sync_single_for_cpu(macb->dev, buffer, length, DMA_FROM_DEVICE);
+		net_receive(edev,
+			    macb->rx_buffer + macb->rx_buffer_size * macb->rx_tail,
+			    length);
+		dma_sync_single_for_device(macb->dev, buffer, length, DMA_FROM_DEVICE);
 		macb->rx_ring[macb->rx_tail].addr &= ~MACB_BIT(RX_USED);
 		barrier();
 
@@ -202,7 +211,7 @@ static int macb_recv(struct eth_device *edev)
 {
 	struct macb_device *macb = edev->priv;
 	unsigned int rx_tail = macb->rx_tail;
-	void *buffer;
+	dma_addr_t buffer;
 	int length;
 	int wrapped = 0;
 	u32 status;
@@ -221,7 +230,7 @@ static int macb_recv(struct eth_device *edev)
 		}
 
 		if (status & MACB_BIT(RX_EOF)) {
-			buffer = macb->rx_buffer + macb->rx_buffer_size * macb->rx_tail;
+			buffer = macb->rx_buffer_phys + macb->rx_buffer_size * macb->rx_tail;
 			length = MACB_BFEXT(RX_FRMLEN, status);
 			if (wrapped) {
 				unsigned int headlen, taillen;
@@ -229,23 +238,23 @@ static int macb_recv(struct eth_device *edev)
 				headlen = macb->rx_buffer_size * (macb->rx_ring_size
 						 - macb->rx_tail);
 				taillen = length - headlen;
-				dma_sync_single_for_cpu(macb->dev, (unsigned long)buffer,
-							headlen, DMA_FROM_DEVICE);
-				memcpy(macb->rx_packet_buf, buffer, headlen);
-				dma_sync_single_for_cpu(macb->dev, (unsigned long)macb->rx_buffer,
+				dma_sync_single_for_cpu(macb->dev, buffer, headlen, DMA_FROM_DEVICE);
+				memcpy(macb->rx_packet_buf,
+				       macb->rx_buffer + macb->rx_buffer_size * macb->rx_tail,
+				       headlen);
+				dma_sync_single_for_cpu(macb->dev, macb->rx_buffer_phys,
 							taillen, DMA_FROM_DEVICE);
 				memcpy(macb->rx_packet_buf + headlen, macb->rx_buffer, taillen);
-				dma_sync_single_for_device(macb->dev, (unsigned long)buffer,
-							headlen, DMA_FROM_DEVICE);
-				dma_sync_single_for_device(macb->dev, (unsigned long)macb->rx_buffer,
+				dma_sync_single_for_device(macb->dev, buffer, headlen, DMA_FROM_DEVICE);
+				dma_sync_single_for_device(macb->dev, macb->rx_buffer_phys,
 							taillen, DMA_FROM_DEVICE);
 				net_receive(edev, macb->rx_packet_buf, length);
 			} else {
-				dma_sync_single_for_cpu(macb->dev, (unsigned long)buffer, length,
-							DMA_FROM_DEVICE);
-				net_receive(edev, buffer, length);
-				dma_sync_single_for_device(macb->dev, (unsigned long)buffer, length,
-							DMA_FROM_DEVICE);
+				dma_sync_single_for_cpu(macb->dev, buffer, length, DMA_FROM_DEVICE);
+				net_receive(edev,
+					    macb->rx_buffer + macb->rx_buffer_size * macb->rx_tail,
+					    length);
+				dma_sync_single_for_device(macb->dev, buffer, length, DMA_FROM_DEVICE);
 			}
 			barrier();
 			if (++rx_tail >= macb->rx_ring_size)
@@ -377,7 +386,7 @@ static int gmac_init_dummy_tx_queues(struct macb_device *macb)
 	return 0;
 }
 
-static void macb_init(struct macb_device *macb)
+static int macb_init(struct macb_device *macb)
 {
 	unsigned long paddr, val = 0;
 	int i;
@@ -386,6 +395,11 @@ static void macb_init(struct macb_device *macb)
 	 * macb_halt should have been called at some point before now,
 	 * so we'll assume the controller is idle.
 	 */
+	macb->rx_buffer_phys = dma_map_single(macb->dev, macb->rx_buffer,
+					      macb->rx_buffer_size * macb->rx_ring_size,
+					      DMA_FROM_DEVICE);
+	if (dma_mapping_error(macb->dev, macb->rx_buffer_phys))
+		return -EFAULT;
 
 	/* initialize DMA descriptors */
 	paddr = (ulong)macb->rx_buffer;
@@ -442,6 +456,7 @@ static void macb_init(struct macb_device *macb)
 
 	macb_or_gem_writel(macb, USRIO, val);
 
+	return 0;
 }
 
 static void macb_halt(struct eth_device *edev)
@@ -460,6 +475,13 @@ static void macb_halt(struct eth_device *edev)
 
 	/* Disable TX and RX, and clear statistics */
 	macb_writel(macb, NCR, MACB_BIT(CLRSTAT));
+
+	dma_unmap_single(macb->dev, macb->rx_buffer_phys,
+			 macb->rx_buffer_size * macb->rx_ring_size,
+			 DMA_FROM_DEVICE);
+	free(macb->rx_buffer);
+	dma_free_coherent((void *)macb->rx_ring, macb->rx_ring_phys, RX_RING_BYTES(macb));
+	dma_free_coherent((void *)macb->tx_ring, macb->tx_ring_phys, TX_RING_BYTES);
 }
 
 static int macb_phy_read(struct mii_bus *bus, int addr, int reg)
@@ -780,6 +802,7 @@ static int macb_probe(struct device *dev)
 	const char *pclk_name, *hclk_name;
 	const struct macb_config *config = NULL;
 	u32 ncfgr;
+	int ret;
 
 	macb = xzalloc(sizeof(*macb));
 	edev = &macb->netdev;
@@ -877,7 +900,7 @@ static int macb_probe(struct device *dev)
 		clk_enable(macb->rxclk);
 
 	if (config) {
-		int ret = config->txclk_init(dev, &macb->txclk);
+		ret = config->txclk_init(dev, &macb->txclk);
 		if (ret)
 			return ret;
 	}
@@ -891,8 +914,8 @@ static int macb_probe(struct device *dev)
 
 	macb_init_rx_buffer_size(macb, PKTSIZE);
 	macb->rx_buffer = dma_alloc(macb->rx_buffer_size * macb->rx_ring_size);
-	macb->rx_ring = dma_alloc_coherent(RX_RING_BYTES(macb), DMA_ADDRESS_BROKEN);
-	macb->tx_ring = dma_alloc_coherent(TX_RING_BYTES, DMA_ADDRESS_BROKEN);
+	macb->rx_ring = dma_alloc_coherent(RX_RING_BYTES(macb), &macb->rx_ring_phys);
+	macb->tx_ring = dma_alloc_coherent(TX_RING_BYTES, &macb->tx_ring_phys);
 
 	if (macb->is_gem)
 		macb->gem_q1_descs = dma_alloc_coherent(GEM_Q1_DESC_BYTES,
@@ -907,7 +930,9 @@ static int macb_probe(struct device *dev)
 	ncfgr |= macb_dbw(macb);
 	macb_writel(macb, NCFGR, ncfgr);
 
-	macb_init(macb);
+	ret = macb_init(macb);
+	if (ret)
+		return ret;
 
 	mdiobus_register(&macb->miibus);
 	eth_register(edev);

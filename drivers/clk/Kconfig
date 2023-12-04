@@ -38,6 +38,15 @@ config COMMON_CLK_SCMI
 	  This driver uses SCMI Message Protocol to interact with the
 	  firmware providing all the clock controls.
 
+config TI_SCI_CLK
+	tristate "TI System Control Interface clock drivers"
+	depends on TI_SCI_PROTOCOL
+	default ARCH_K3
+	help
+	  This adds the clock driver support over TI System Control Interface.
+	  If you wish to use clock resources from the PMMC firmware, say Y.
+	  Otherwise, say N.
+
 config COMMON_CLK_GPIO
 	bool
 	default y

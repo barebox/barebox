@@ -717,6 +717,9 @@ const struct of_device_id *of_match_node(const struct of_device_id *matches,
 		if (score > best_score) {
 			best_match = matches;
 			best_score = score;
+
+			if (score == OF_DEVICE_COMPATIBLE_MAX_SCORE)
+				break;
 		}
 	}
 

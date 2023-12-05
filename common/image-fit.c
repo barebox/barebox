@@ -720,6 +720,7 @@ static int fit_find_compatible_unit(struct device_node *conf_node,
 {
 	struct device_node *child = NULL;
 	struct device_node *barebox_root;
+	int best_score = 0;
 	const char *machine;
 	int ret;
 
@@ -732,11 +733,19 @@ static int fit_find_compatible_unit(struct device_node *conf_node,
 		return -ENOENT;
 
 	for_each_child_of_node(conf_node, child) {
-		if (of_device_is_compatible(child, machine)) {
+		int score = of_device_is_compatible(child, machine);
+		if (score > best_score) {
+			best_score = score;
 			*unit = child->name;
-			pr_info("matching unit '%s' found\n", *unit);
-			return 0;
+
+			if (score == OF_DEVICE_COMPATIBLE_MAX_SCORE)
+				break;
 		}
+	}
+
+	if (best_score) {
+		pr_info("matching unit '%s' found\n", *unit);
+		return 0;
 	}
 
 default_unit:

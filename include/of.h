@@ -5,6 +5,7 @@
 #include <fdt.h>
 #include <errno.h>
 #include <linux/types.h>
+#include <linux/limits.h>
 #include <linux/list.h>
 #include <linux/err.h>
 #include <asm/byteorder.h>
@@ -123,6 +124,9 @@ struct device_node *of_unflatten_dtb_const(const void *infdt, int size);
 int of_fixup_reserved_memory(struct device_node *node, void *data);
 
 struct cdev;
+
+/* Maximum score returned by of_device_is_compatible() */
+#define OF_DEVICE_COMPATIBLE_MAX_SCORE	(INT_MAX / 2)
 
 #ifdef CONFIG_OFTREE
 extern struct device_node *of_read_file(const char *filename);

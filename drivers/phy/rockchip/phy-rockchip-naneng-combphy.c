@@ -594,7 +594,7 @@ static int rk3588_combphy_cfg(struct rockchip_combphy_priv *priv)
 
 	/* Configure PHY reference clock frequency */
 	for (i = 0; i < priv->num_clks; i++) {
-		if (!strncmp(priv->clks[i].id, "refclk", 6)) {
+		if (!strncmp(priv->clks[i].id, "ref", 6)) {
 			refclk = priv->clks[i].clk;
 			break;
 		}
@@ -843,9 +843,9 @@ static const struct rockchip_combphy_grfcfg rk3588_combphy_grfcfgs = {
 
 
 static const struct clk_bulk_data rk3588_clks[] = {
-	{ .id = "refclk" },
-	{ .id = "apbclk" },
-	{ .id = "phpclk" },
+	{ .id = "ref" },
+	{ .id = "apb" },
+	{ .id = "pipe" },
 };
 
 static const struct rockchip_combphy_cfg rk3588_combphy_cfgs = {

@@ -19,6 +19,7 @@
 #include <asm/cache.h>
 #include <memory.h>
 #include <asm/system_info.h>
+#include <linux/pagemap.h>
 
 #include "mmu_64.h"
 
@@ -131,6 +132,8 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 	addr = virt;
 
 	attr &= ~PTE_TYPE_MASK;
+
+	size = PAGE_ALIGN(size);
 
 	while (size) {
 		table = ttb;

@@ -1101,19 +1101,21 @@ struct clk *rockchip_clk_register_pll(struct rockchip_clk_provider *ctx,
 	    pll_type == pll_rk3588_core)
 		pll_mux->flags |= CLK_MUX_HIWORD_MASK;
 
-	/* the actual muxing is xin24m, pll-output, xin32k */
-	pll_parents[0] = parent_names[0];
-	pll_parents[1] = pll_name;
-	pll_parents[2] = parent_names[1];
-
 	init.name = name;
 	init.flags = CLK_SET_RATE_PARENT;
 	init.ops = pll->pll_mux_ops;
 	init.parent_names = pll_parents;
-	if (pll_type == pll_rk3328)
+
+	/* the actual muxing is xin24m, pll-output, xin32k */
+	pll_parents[0] = parent_names[0];
+	pll_parents[1] = pll_name;
+
+	if (pll_type == pll_rk3328) {
 		init.num_parents = 2;
-	else
+	} else {
+		pll_parents[2] = parent_names[1];
 		init.num_parents = ARRAY_SIZE(pll_parents);
+	}
 
 	mux_clk = clk_register(NULL, &pll_mux->hw);
 	if (IS_ERR(mux_clk))

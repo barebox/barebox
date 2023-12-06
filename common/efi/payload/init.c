@@ -107,6 +107,44 @@ int efi_set_variable_usec(char *name, efi_guid_t *vendor, uint64_t usec)
 				(strlen(buf)+1) * sizeof(wchar_t));
 }
 
+static int efi_set_variable_printf(char *name, efi_guid_t *vendor, const char *fmt, ...)
+{
+	va_list args;
+	char *buf;
+	wchar_t *buf16;
+
+	va_start(args, fmt);
+	buf = xvasprintf(fmt, args);
+	va_end(args);
+	buf16 = xstrdup_char_to_wchar(buf);
+
+	return efi_set_variable(name, vendor,
+				EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				EFI_VARIABLE_RUNTIME_ACCESS, buf16,
+				(strlen(buf)+1) * sizeof(wchar_t));
+	free(buf);
+	free(buf16);
+}
+
+static int efi_set_variable_uint64_le(char *name, efi_guid_t *vendor, uint64_t value)
+{
+	uint8_t buf[8];
+
+	buf[0] = (uint8_t)(value >> 0U & 0xFF);
+	buf[1] = (uint8_t)(value >> 8U & 0xFF);
+	buf[2] = (uint8_t)(value >> 16U & 0xFF);
+	buf[3] = (uint8_t)(value >> 24U & 0xFF);
+	buf[4] = (uint8_t)(value >> 32U & 0xFF);
+	buf[5] = (uint8_t)(value >> 40U & 0xFF);
+	buf[6] = (uint8_t)(value >> 48U & 0xFF);
+	buf[7] = (uint8_t)(value >> 56U & 0xFF);
+
+	return efi_set_variable(name, vendor,
+				EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				EFI_VARIABLE_RUNTIME_ACCESS, buf,
+				sizeof(buf));
+}
+
 struct efi_boot {
 	u32 attributes;
 	u16 file_path_len;

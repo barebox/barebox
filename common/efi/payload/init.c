@@ -36,6 +36,7 @@
 #include <libfile.h>
 #include <state.h>
 #include <bbu.h>
+#include <generated/utsrelease.h>
 
 efi_runtime_services_t *RT;
 efi_boot_services_t *BS;
@@ -322,12 +323,45 @@ static int efi_core_init(void)
 }
 core_initcall(efi_core_init);
 
+/* Features of the loader, i.e. systemd-boot, barebox (imported from systemd) */
+#define EFI_LOADER_FEATURE_CONFIG_TIMEOUT          (1LL << 0)
+#define EFI_LOADER_FEATURE_CONFIG_TIMEOUT_ONE_SHOT (1LL << 1)
+#define EFI_LOADER_FEATURE_ENTRY_DEFAULT           (1LL << 2)
+#define EFI_LOADER_FEATURE_ENTRY_ONESHOT           (1LL << 3)
+#define EFI_LOADER_FEATURE_BOOT_COUNTING           (1LL << 4)
+#define EFI_LOADER_FEATURE_XBOOTLDR                (1LL << 5)
+#define EFI_LOADER_FEATURE_RANDOM_SEED             (1LL << 6)
+#define EFI_LOADER_FEATURE_LOAD_DRIVER             (1LL << 7)
+#define EFI_LOADER_FEATURE_SORT_KEY                (1LL << 8)
+#define EFI_LOADER_FEATURE_SAVED_ENTRY             (1LL << 9)
+#define EFI_LOADER_FEATURE_DEVICETREE              (1LL << 10)
+#define EFI_LOADER_FEATURE_SECUREBOOT_ENROLL       (1LL << 11)
+#define EFI_LOADER_FEATURE_RETAIN_SHIM             (1LL << 12)
+
+
 static int efi_postcore_init(void)
 {
 	char *uuid;
+	static const uint64_t loader_features =
+		EFI_LOADER_FEATURE_DEVICETREE;
 
 	efi_set_variable_usec("LoaderTimeInitUSec", &efi_systemd_vendor_guid,
 			      get_time_ns()/1000);
+
+	efi_set_variable_printf("LoaderInfo", &efi_systemd_vendor_guid,
+			"barebox-" UTS_RELEASE);
+
+	efi_set_variable_printf("LoaderFirmwareInfo", &efi_systemd_vendor_guid,
+				"%ls %u.%02u", efi_sys_table->fw_vendor,
+				efi_sys_table->fw_revision >> 16,
+				efi_sys_table->fw_revision & 0xffff);
+
+	efi_set_variable_printf("LoaderFirmwareType", &efi_systemd_vendor_guid,
+				"UEFI %u.%02u", efi_sys_table->hdr.revision >> 16,
+				efi_sys_table->hdr.revision & 0xffff);
+
+	efi_set_variable_uint64_le("LoaderFeatures", &efi_systemd_vendor_guid,
+				   loader_features);
 
 	uuid = device_path_to_partuuid(device_path_from_handle(
 				       efi_loaded_image->device_handle));

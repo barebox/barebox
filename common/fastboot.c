@@ -598,7 +598,7 @@ static int fastboot_handle_sparse(struct fastboot *fb,
 
 			pos = lseek(fd, pos, SEEK_SET);
 			if (pos == -1) {
-				ret = -errno;
+				ret = errno == EINVAL ? -ENOSPC : -errno;
 				goto out;
 			}
 

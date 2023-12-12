@@ -56,7 +56,7 @@ static void make_crc_table(void)
 	/* terms of polynomial defining this crc (except x^32): */
 	static const char p[] = { 0, 1, 2, 4, 5, 7, 8, 10, 11, 12, 16, 22, 23, 26 };
 
-	if (crc_table[0])
+	if (crc_table[1])
 		return;
 
 	/* make exclusive-or pattern from polynomial (0xedb88320L) */

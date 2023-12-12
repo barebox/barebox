@@ -17,7 +17,7 @@
 
 #include <asm/armlinux.h>
 #include <asm/io.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <asm/mmu.h>
 
 #define PCM990_CTRL_PHYS	(void *)PXA_CS1_PHYS

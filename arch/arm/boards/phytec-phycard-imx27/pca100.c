@@ -10,7 +10,7 @@
 #include <linux/sizes.h>
 #include <asm/armlinux.h>
 #include <asm/sections.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <nand.h>

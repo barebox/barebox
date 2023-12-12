@@ -19,7 +19,7 @@
 #include <mach/mxs/fb.h>
 #include <mach/mxs/ocotp.h>
 #include <mach/mxs/iomux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 
 #include "tx28.h"
 

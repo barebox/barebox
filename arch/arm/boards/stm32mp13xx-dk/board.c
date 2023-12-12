@@ -4,9 +4,12 @@
 #include <init.h>
 #include <mach/stm32mp/bbu.h>
 #include <deep-probe.h>
+#include <asm/mach-types.h>
 
 static int stm32mp13xx_dk_probe(struct device *dev)
 {
+	if (machine_is_pcaaxs1())
+		return 1;
 	stm32mp_bbu_mmc_fip_register("sd", "/dev/mmc0", BBU_HANDLER_FLAG_DEFAULT);
 	return 0;
 }

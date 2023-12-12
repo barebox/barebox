@@ -16,7 +16,7 @@
 
 #include <environment.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <asm/io.h>
 #include <asm/mmu.h>
 #include <mach/imx/generic.h>

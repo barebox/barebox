@@ -17,7 +17,7 @@
 #include <net.h>
 #include <bootsource.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/omap/am33xx-silicon.h>
 #include <mach/omap/sys_info.h>
 #include <mach/omap/syslib.h>

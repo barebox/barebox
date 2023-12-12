@@ -5,7 +5,7 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/imx/imx1-regs.h>
 #include <asm/armlinux.h>
 #include <mach/imx/weim.h>

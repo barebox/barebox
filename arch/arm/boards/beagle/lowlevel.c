@@ -15,7 +15,7 @@
 #include <mach/omap/sdrc.h>
 #include <mach/omap/syslib.h>
 #include <mach/omap/sys_info.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 
 /**
  * @brief Do the pin muxing required for Board operation.

@@ -12,7 +12,7 @@
 #include <gpio.h>
 #include <mach/imx/bbu.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <of.h>
 #include <deep-probe.h>
 #include <linux/phy.h>

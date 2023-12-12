@@ -40,7 +40,7 @@
 #include <linux/sizes.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <linux/err.h>
 #include <mach/omap/gpmc.h>
 #include <mach/omap/gpmc_nand.h>

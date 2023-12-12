@@ -36,7 +36,7 @@
 #include <mach/omap/omap3-mux.h>
 #include <mach/omap/gpmc.h>
 #include <errno.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/omap/omap3-devices.h>
 
 /**

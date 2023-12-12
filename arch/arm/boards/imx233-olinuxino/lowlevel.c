@@ -9,7 +9,7 @@
 #include <io.h>
 #include <debug_ll.h>
 #include <mach/mxs/iomux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 
 static noinline void continue_imx_entry(size_t size)
 {

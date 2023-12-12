@@ -29,7 +29,7 @@
 
 #include <mach/mxs/fb.h>
 
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 
 #include "hwdetect.h"
 

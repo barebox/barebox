@@ -13,7 +13,7 @@
 #include <init.h>
 #include <asm/armlinux.h>
 #include <asm/system_info.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/versatile/platform.h>
 #include <environment.h>
 #include <linux/sizes.h>

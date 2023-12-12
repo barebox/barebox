@@ -20,7 +20,7 @@
 #include <mach/nomadik/hardware.h>
 #include <mach/nomadik/board.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <linux/amba/bus.h>
 
 #include "clock.h"

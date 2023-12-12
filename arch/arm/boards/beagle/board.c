@@ -11,7 +11,7 @@
 #include <filetype.h>
 #include <envfs.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/omap/gpmc.h>
 #include <mach/omap/gpmc_nand.h>
 #include <mach/omap/ehci.h>

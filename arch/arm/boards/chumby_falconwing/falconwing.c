@@ -14,7 +14,7 @@
 #include <asm/barebox-arm.h>
 #include <io.h>
 #include <asm/mmu.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/mxs/imx-regs.h>
 #include <mach/mxs/mci.h>
 #include <mach/mxs/fb.h>

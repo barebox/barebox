@@ -2,7 +2,7 @@
 
 #include <common.h>
 #include <linux/sizes.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/mxs/imx23-regs.h>

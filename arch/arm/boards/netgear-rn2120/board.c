@@ -7,7 +7,7 @@
 #include <linux/printk.h>
 #include <linux/kernel.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 
 static int rn2120_init(void)
 {

@@ -13,7 +13,7 @@
 #include <libfile.h>
 #include <globalvar.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <linux/sizes.h>
 #include <linux/usb/fsl_usb2.h>
 #include <mach/imx/generic.h>

@@ -5,28 +5,35 @@ Raspberry Pi
 ------------
 
 barebox has support for BCM283x-based Raspberry Pi single board computers.
-Support is most extensive for BCM283[567]. For the newer BCM2711 used in the
-Raspberry Pi 4, only basic support is currently available (Serial Port,
-Pinctrl/GPIO, SD-Card).
+Support is most extensive for BCM283[567], but barebox can also boot Linux
+over SD or Ethernet on the Raspberry Pi 4.
 
   1. Prepare an SD or microSD card with a FAT filesystem of at least 30 MB in size.
 
   2. Download the `Raspberry Pi firmware`_ (195 MB), unzip it, and copy the
      contents of the ``boot/`` folder to your card.
 
-  3. Use ``make rpi_defconfig; make`` to build barebox. This will create the following images:
+  3. Use ``make rpi_defconfig; make`` to build barebox for 32-bit boards or
+     ``make rpi_v8a_defconfig; make`` to build barebox for 64-bit.
+
+     ``rpi_defconfig`` will build at least following images:
 
      - ``images/barebox-raspberry-pi-1.img`` for the BCM2835/ARM1176JZF-S (Raspberry Pi 1, Raspberry Pi Zero)
      - ``images/barebox-raspberry-pi-2.img`` for the BCM2836/CORTEX-A7 (Raspberry Pi 2)
      - ``images/barebox-raspberry-pi-3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi 3)
      - ``images/barebox-raspberry-pi-cm3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi CM3)
-     - ``images/barebox-raspberry-pi.img``, which is a super set of all the other images
+     - ``images/barebox-raspberry-pi.img``, which is a super set of all the other images,
+       including Raspberry Pi 4 32-bit support.
 
      Copy the respective image for your model to your SD card and name it
      ``barebox.img``.
 
-     The ``images/barebox-raspberry-pi.img`` is expected to replace the other images
-     in the future. It contains the device trees of all supported (and enabled) variants
+     For 64-bit, only ``images/barebox-raspberry-pi.img`` will be created, which is usable
+     for both Raspberry Pi 3 and Raspberry Pi 4 in 64-bit mode. No support for the Raspberry
+     Pi 5 has been contributed yet.
+
+     The ``images/barebox-raspberry-pi.img`` is expected to be the sole image for 32-bit
+     also in the future. It contains the device trees of all supported (and enabled) variants
      and determines at runtime what board it runs on and does the right thing.
 
   4. Create a text file ``config.txt`` on the SD card with the following content::

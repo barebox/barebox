@@ -59,19 +59,14 @@ static int esdhc_setup_data(struct fsl_esdhc_host *host, struct mci_data *data,
 	u32 wml_value;
 
 	wml_value = data->blocksize / 4;
+	if (wml_value > 0x80)
+		wml_value = 0x80;
 
-	if (data->flags & MMC_DATA_READ) {
-		if (wml_value > 0x10)
-			wml_value = 0x10;
-
+	if (data->flags & MMC_DATA_READ)
 		esdhc_clrsetbits32(host, IMX_SDHCI_WML, WML_RD_WML_MASK, wml_value);
-	} else {
-		if (wml_value > 0x80)
-			wml_value = 0x80;
-
+	else
 		esdhc_clrsetbits32(host, IMX_SDHCI_WML, WML_WR_WML_MASK,
 					wml_value << 16);
-	}
 
 	host->sdhci.sdma_boundary = 0;
 

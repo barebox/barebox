@@ -21,6 +21,8 @@
 #include <platform_data/mmc-esdhc-imx.h>
 #include <gpio.h>
 #include <of_device.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx53-regs.h>
 
 #include "sdhci.h"
 #include "imx-esdhc.h"
@@ -57,15 +59,11 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 	if (esdhc_is_layerscape(host))
 		sdhc_clk >>= 1;
 
-	/*
-	 * With eMMC and imx53 (sdhc_clk=200MHz) a pre_div of 1 results in
-	 *	pre_div=1,div=4 (=50MHz)
-	 * which is valid and should work, but somehow doesn't.
-	 * Starting with pre_div=2 gives
-	 *	pre_div=2, div=2 (=50MHz)
-	 * and works fine.
-	 */
-	pre_div = 2;
+	/* For i.MX53 eSDHCv3, SYSCTL.SDCLKFS may not be set to 0. */
+	if (cpu_is_mx53() && host->sdhci.base == (void *)MX53_ESDHC3_BASE_ADDR)
+		pre_div = 2;
+	else
+		pre_div = 1;
 
 	if (sdhc_clk == clock)
 		pre_div = 1;

@@ -321,7 +321,7 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 	int ret;
 	uint32_t val;
 	struct esdhc_soc_data data = {
-		.flags = ESDHC_FLAG_BIGENDIAN,
+		.flags = ESDHC_FLAG_MULTIBLK_NO_INT | ESDHC_FLAG_BIGENDIAN,
 	};
 	struct fsl_esdhc_host host = {
 		.sdhci.base = IOMEM(0x01560000),

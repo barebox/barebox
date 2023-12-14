@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0
+
+&{/memory@0} {
+	reg = <0x0 0x0 0x0>;
+};
+
+&uart1 {
+	/* VPU core clock is reported at 200MHz, but needs to be 500Mhz
+	 * for ns16550 driver to set correct baudrate. Until that's
+	 * figured out, hardcode clock frequency to the expected value
+	 */
+	clock-frequency = <500000000>;
+};

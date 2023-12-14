@@ -128,7 +128,8 @@ void socfpga_cyclone5_timer_init(void)
 static int socfpga_detect_sdram(void)
 {
 	void __iomem *base = (void *)CYCLONE5_SDR_ADDRESS;
-	uint32_t dramaddrw, ctrlwidth, memsize;
+	uint32_t dramaddrw, ctrlwidth;
+	uint64_t memsize;
 	int colbits, rowbits, bankbits;
 	int width_bytes;
 
@@ -153,12 +154,20 @@ static int socfpga_detect_sdram(void)
 		break;
 	}
 
-	memsize = (1 << colbits) * (1 << rowbits) * (1 << bankbits) * width_bytes;
+	memsize = (1ULL << colbits) * (1ULL << rowbits) * (1ULL << bankbits) *
+		  width_bytes;
 
-	pr_debug("%s: colbits: %d rowbits: %d bankbits: %d width: %d => memsize: 0x%08x\n",
+	pr_debug(
+		"%s: colbits: %d rowbits: %d bankbits: %d width: %d => memsize: 0x%08llx\n",
 			__func__, colbits, rowbits, bankbits, width_bytes, memsize);
 
-	arm_add_mem_device("ram0", 0x0, memsize);
+	/* To work around an erratum in the dram controller, the previous booting
+	 * stage may have increased the amount of rows to fake having 4G of RAM. In
+	 * that case, we assume the previous booting stage will have fixed up a
+	 * proper memory size into the device tree and don't add a bank here */
+	if (memsize < SZ_4G) {
+		arm_add_mem_device("ram0", 0x0, memsize);
+	}
 
 	return 0;
 }

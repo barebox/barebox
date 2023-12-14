@@ -651,6 +651,9 @@ static const struct rpi_machine_data rpi_4_ids[] = {
 		.hw_id = BCM2711_BOARD_REV_CM4,
 		.init = rpi_eth_init,
 	}, {
+		.hw_id = BCM2711_BOARD_REV_CM4_S,
+		.init = rpi_eth_init,
+	}, {
 		.hw_id = U8_MAX
 	},
 };
@@ -682,6 +685,7 @@ static const struct of_device_id rpi_of_match[] = {
 	/* BCM2711 based Boards */
 	{ .compatible = "raspberrypi,4-model-b", .data = rpi_4_ids },
 	{ .compatible = "raspberrypi,4-compute-module", .data = rpi_4_ids },
+	{ .compatible = "raspberrypi,4-compute-module-s", .data = rpi_4_ids },
 	{ .compatible = "raspberrypi,400", .data = rpi_4_ids },
 
 	{ /* sentinel */ },

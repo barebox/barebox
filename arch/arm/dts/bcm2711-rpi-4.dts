@@ -4,11 +4,6 @@
 	reg = <0x0 0x0 0x0>;
 };
 
-&sdhci {
-	/* no use for SDIO WiFi in barebox */
-	status = "disabled";
-};
-
 &uart1 {
 	/* VPU core clock is reported at 200MHz, but needs to be 500Mhz
 	 * for ns16550 driver to set correct baudrate. Until that's

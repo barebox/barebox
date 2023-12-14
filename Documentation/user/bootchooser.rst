@@ -92,6 +92,12 @@ list of space-separated flags. Possible values are:
   (``$global.system.reset="POR"``) is detected, the ``remaining_attempts``
   counters of all enabled targets are reset to their defaults.
   This means after a power cycle all boot targets will be tried again for the configured number of retries.
+- ``reset``: When the bootchooser starts and a generic reset
+  (``$global.system.reset="RST"``) is detected, the ``remaining_attempts``
+  counters of all enabled targets are reset to their defaults.
+  This means that, if the systems reports a generic restart, the
+  ``remaining_attempts`` counters of all enabled targets are reset to
+  their defaults.
 - ``all-zero``: When the bootchooser starts and the ``remaining_attempts``
   counters of all enabled targets are zero, the ``remaining_attempts``
   counters of all enabled targets are reset to their defaults.

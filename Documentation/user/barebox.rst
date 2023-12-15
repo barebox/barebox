@@ -215,6 +215,32 @@ like a Linux kernel that is passed an external device tree. For example:
   U-Boot: bootz $kernel_addr - $fdt_addr # On 32-bit ARM
   U-Boot: booti $kernel_addr - $fdt_addr # for other platforms
 
+Another option is to generate a FIT image containing the generic DT image and a
+matching device tree with ``mkimage``:
+
+.. code-block:: console
+  sh: mkimage --architecture arm \
+      --os linux \
+      --type kernel \
+      --fit auto \
+      --load-address $kernel_addr_r \
+      --compression none \
+      --image images/barebox-dt-2nd.img \
+      --device-tree arch/${ARCH}/dts/my-board.dtb \
+      barebox-dt-2nd.fit
+
+This FIT image can then be loaded by U-Boot and executed just like a regular
+Linux kernel:
+
+.. code-block:: console
+  U-Boot: tftp $fit_addr barebox-dt-2nd.fit
+  U-Boot: bootm $fit_addr
+
+Make sure that the address in ``$fit_addr`` is different from the
+``$kernel_addr_r`` passed to ``mkimage`` as the load address of the Kernel
+image. Otherwise U-Boot may attempt to overwrite the FIT image with the barebox
+image contained within.
+
 For non-DT enabled-bootloaders or other architectures, often the normal barebox
 binaries can also be used as they are designed to be startable second stage
 from another bootloader, where possible. For example, if you have U-Boot running

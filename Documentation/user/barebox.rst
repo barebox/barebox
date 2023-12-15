@@ -212,7 +212,7 @@ like a Linux kernel that is passed an external device tree. For example:
 
   U-Boot: tftp $kernel_addr barebox-dt-2nd.img
   U-Boot: tftp $fdt_addr my-board.dtb
-  U-Boot: bootm $kernel_addr - $fdt_addr # On 32-bit ARM
+  U-Boot: bootz $kernel_addr - $fdt_addr # On 32-bit ARM
   U-Boot: booti $kernel_addr - $fdt_addr # for other platforms
 
 For non-DT enabled-bootloaders or other architectures, often the normal barebox

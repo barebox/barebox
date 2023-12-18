@@ -729,20 +729,32 @@ int regulator_get_voltage(struct regulator *regulator)
 }
 EXPORT_SYMBOL_GPL(regulator_get_voltage);
 
-static void regulator_print_one(struct regulator_dev *rdev, int level)
+static int regulator_name_indent(unsigned flags)
 {
+	return 30 + (flags & REGULATOR_PRINT_DEVS ? 50 : 0);
+}
+
+static void regulator_print_one(struct regulator_dev *rdev, int level, unsigned flags)
+{
+	const char *name = rdev->name;
 	struct regulator *r;
+	char buf[256];
 
 	if (!rdev)
 		return;
 
+	if (flags & REGULATOR_PRINT_DEVS) {
+		snprintf(buf, sizeof(buf), "%s  %s", dev_name(rdev->dev), rdev->name);
+		name = buf;
+	}
+
 	printf("%*s%-*s %6d %10d %10d\n", level * 3, "",
-	       30 - level * 3,
-	       rdev->name, rdev->enable_count, rdev->min_uv, rdev->max_uv);
+	       regulator_name_indent(flags) - level * 3,
+	       name, rdev->enable_count, rdev->min_uv, rdev->max_uv);
 
 	list_for_each_entry(r, &rdev->consumer_list, list) {
 		if (r->rdev_consumer)
-			regulator_print_one(r->rdev_consumer, level + 1);
+			regulator_print_one(r->rdev_consumer, level + 1, flags);
 		else
 			printf("%*s%s\n", (level + 1) * 3, "", r->dev ? dev_name(r->dev) : "none");
 	}
@@ -751,13 +763,14 @@ static void regulator_print_one(struct regulator_dev *rdev, int level)
 /*
  * regulators_print - print informations about all regulators
  */
-void regulators_print(void)
+void regulators_print(unsigned flags)
 {
 	struct regulator_dev *rdev;
 
-	printf("%-30s %6s %10s %10s\n", "name", "enable", "min_uv", "max_uv");
+	printf("%-*s %6s %10s %10s\n", regulator_name_indent(flags),
+	       "name", "enable", "min_uv", "max_uv");
 	list_for_each_entry(rdev, &regulator_list, list) {
 		if (!rdev->supply)
-			regulator_print_one(rdev, 0);
+			regulator_print_one(rdev, 0, flags);
 	}
 }

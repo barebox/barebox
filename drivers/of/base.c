@@ -546,7 +546,9 @@ struct device_node *of_get_cpu_node(int cpu, unsigned int *thread)
 EXPORT_SYMBOL(of_get_cpu_node);
 
 /** Checks if the given "compat" string matches one of the strings in
- * the device's "compatible" property
+ * the device's "compatible" property. Returns 0 on mismatch and a
+ * positive score on match with the maximum being OF_DEVICE_COMPATIBLE_MAX_SCORE,
+ * which is only returned if the first compatible matched.
  */
 int of_device_is_compatible(const struct device_node *device,
 		const char *compat)
@@ -559,7 +561,7 @@ int of_device_is_compatible(const struct device_node *device,
 	for (cp = of_prop_next_string(prop, NULL); cp;
 	     cp = of_prop_next_string(prop, cp), index++) {
 		if (of_compat_cmp(cp, compat, strlen(compat)) == 0) {
-			score = INT_MAX/2 - (index << 2);
+			score = OF_DEVICE_COMPATIBLE_MAX_SCORE - (index << 2);
 			break;
 		}
 	}
@@ -715,6 +717,9 @@ const struct of_device_id *of_match_node(const struct of_device_id *matches,
 		if (score > best_score) {
 			best_match = matches;
 			best_score = score;
+
+			if (score == OF_DEVICE_COMPATIBLE_MAX_SCORE)
+				break;
 		}
 	}
 

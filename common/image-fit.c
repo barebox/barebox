@@ -545,6 +545,7 @@ int fit_get_image_address(struct fit_handle *handle, void *configuration,
 {
 	struct device_node *image;
 	const char *unit = name;
+	const char *type;
 	int ret;
 
 	if (!address || !property || !name)
@@ -553,6 +554,11 @@ int fit_get_image_address(struct fit_handle *handle, void *configuration,
 	ret = fit_get_image(handle, configuration, &unit, &image);
 	if (ret)
 		return ret;
+
+	/* Treat type = "kernel_noload" as if entry/load address is missing */
+	ret = of_property_read_string(image, "type", &type);
+	if (!ret && !strcmp(type, "kernel_noload"))
+	    return -ENOENT;
 
 	ret = fit_get_address(image, property, address);
 
@@ -714,6 +720,7 @@ static int fit_find_compatible_unit(struct device_node *conf_node,
 {
 	struct device_node *child = NULL;
 	struct device_node *barebox_root;
+	int best_score = 0;
 	const char *machine;
 	int ret;
 
@@ -726,11 +733,19 @@ static int fit_find_compatible_unit(struct device_node *conf_node,
 		return -ENOENT;
 
 	for_each_child_of_node(conf_node, child) {
-		if (of_device_is_compatible(child, machine)) {
+		int score = of_device_is_compatible(child, machine);
+		if (score > best_score) {
+			best_score = score;
 			*unit = child->name;
-			pr_info("matching unit '%s' found\n", *unit);
-			return 0;
+
+			if (score == OF_DEVICE_COMPATIBLE_MAX_SCORE)
+				break;
 		}
+	}
+
+	if (best_score) {
+		pr_info("matching unit '%s' found\n", *unit);
+		return 0;
 	}
 
 default_unit:

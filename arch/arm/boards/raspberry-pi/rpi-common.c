@@ -188,14 +188,20 @@ mem_initcall(rpi_mem_init);
 static int rpi_env_init(void)
 {
 	struct stat s;
-	const char *diskdev = "/dev/disk0.0";
+	const char *diskdev;
 	int ret;
 
 	device_detect_by_name("mci0");
 
+	diskdev = "/dev/disk0.0";
 	ret = stat(diskdev, &s);
 	if (ret) {
-		printf("no %s. using default env\n", diskdev);
+		device_detect_by_name("mmc0");
+		diskdev = "/dev/mmc0.0";
+		ret = stat(diskdev, &s);
+	}
+	if (ret) {
+		printf("no /dev/disk0.0 or /dev/mmc0.0. using default env\n");
 		return 0;
 	}
 
@@ -645,6 +651,9 @@ static const struct rpi_machine_data rpi_4_ids[] = {
 		.hw_id = BCM2711_BOARD_REV_CM4,
 		.init = rpi_eth_init,
 	}, {
+		.hw_id = BCM2711_BOARD_REV_CM4_S,
+		.init = rpi_eth_init,
+	}, {
 		.hw_id = U8_MAX
 	},
 };
@@ -676,6 +685,7 @@ static const struct of_device_id rpi_of_match[] = {
 	/* BCM2711 based Boards */
 	{ .compatible = "raspberrypi,4-model-b", .data = rpi_4_ids },
 	{ .compatible = "raspberrypi,4-compute-module", .data = rpi_4_ids },
+	{ .compatible = "raspberrypi,4-compute-module-s", .data = rpi_4_ids },
 	{ .compatible = "raspberrypi,400", .data = rpi_4_ids },
 
 	{ /* sentinel */ },

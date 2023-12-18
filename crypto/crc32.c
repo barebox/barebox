@@ -56,7 +56,7 @@ static void make_crc_table(void)
 	/* terms of polynomial defining this crc (except x^32): */
 	static const char p[] = { 0, 1, 2, 4, 5, 7, 8, 10, 11, 12, 16, 22, 23, 26 };
 
-	if (crc_table[0])
+	if (crc_table[1])
 		return;
 
 	/* make exclusive-or pattern from polynomial (0xedb88320L) */
@@ -76,28 +76,6 @@ static void make_crc_table(void)
 #define DO2(buf)  DO1(buf); DO1(buf);
 #define DO4(buf)  DO2(buf); DO2(buf);
 #define DO8(buf)  DO4(buf); DO4(buf);
-
-STATIC uint32_t crc32(uint32_t crc, const void *_buf, unsigned int len)
-{
-	const unsigned char *buf = _buf;
-
-	make_crc_table();
-
-	crc = crc ^ 0xffffffffL;
-	while (len >= 8) {
-		DO8(buf);
-		len -= 8;
-	}
-	if (len)
-		do {
-			DO1(buf);
-		} while (--len);
-	return crc ^ 0xffffffffL;
-}
-
-#ifdef __BAREBOX__
-EXPORT_SYMBOL(crc32);
-#endif
 
 /* No ones complement version. JFFS2 (and other things ?)
  * don't use ones compliment in their CRC calculations.
@@ -119,6 +97,15 @@ STATIC uint32_t crc32_no_comp(uint32_t crc, const void *_buf, unsigned int len)
 
 	return crc;
 }
+
+STATIC uint32_t crc32(uint32_t crc, const void *buf, unsigned int len)
+{
+	return ~crc32_no_comp(~crc, buf, len);
+}
+
+#ifdef __BAREBOX__
+EXPORT_SYMBOL(crc32);
+#endif
 
 STATIC uint32_t crc32_be(uint32_t crc, const void *_buf, unsigned int len)
 {

@@ -12,6 +12,8 @@ char *read_file_line(const char *fmt, ...);
 
 void *read_file(const char *filename, size_t *size);
 
+void *read_fd(int fd, size_t *size);
+
 int read_file_2(const char *filename, size_t *size, void **outbuf,
 		loff_t max_size);
 

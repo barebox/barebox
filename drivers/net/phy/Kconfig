@@ -35,6 +35,12 @@ config DP83TD510_PHY
 	  Support for the DP83TD510 Ethernet 10Base-T1L PHY. This PHY supports
 	  a 10M single pair Ethernet connection for up to 1000 meter cable.
 
+config DP83TG720_PHY
+	tristate "Texas Instruments DP83TG720 Ethernet 1000Base-T1 PHY"
+	help
+	  Support for the DP83TG720 Ethernet 10000Base-T1 PHY. This PHY supports
+	  a 1000M single pair Ethernet.
+
 config LXT_PHY
 	bool "Driver for the Intel LXT PHYs"
 	help

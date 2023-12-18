@@ -36,6 +36,7 @@
 #include <libfile.h>
 #include <state.h>
 #include <bbu.h>
+#include <generated/utsrelease.h>
 
 efi_runtime_services_t *RT;
 efi_boot_services_t *BS;
@@ -105,6 +106,44 @@ int efi_set_variable_usec(char *name, efi_guid_t *vendor, uint64_t usec)
 				EFI_VARIABLE_BOOTSERVICE_ACCESS |
 				EFI_VARIABLE_RUNTIME_ACCESS, buf16,
 				(strlen(buf)+1) * sizeof(wchar_t));
+}
+
+static int efi_set_variable_printf(char *name, efi_guid_t *vendor, const char *fmt, ...)
+{
+	va_list args;
+	char *buf;
+	wchar_t *buf16;
+
+	va_start(args, fmt);
+	buf = xvasprintf(fmt, args);
+	va_end(args);
+	buf16 = xstrdup_char_to_wchar(buf);
+
+	return efi_set_variable(name, vendor,
+				EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				EFI_VARIABLE_RUNTIME_ACCESS, buf16,
+				(strlen(buf)+1) * sizeof(wchar_t));
+	free(buf);
+	free(buf16);
+}
+
+static int efi_set_variable_uint64_le(char *name, efi_guid_t *vendor, uint64_t value)
+{
+	uint8_t buf[8];
+
+	buf[0] = (uint8_t)(value >> 0U & 0xFF);
+	buf[1] = (uint8_t)(value >> 8U & 0xFF);
+	buf[2] = (uint8_t)(value >> 16U & 0xFF);
+	buf[3] = (uint8_t)(value >> 24U & 0xFF);
+	buf[4] = (uint8_t)(value >> 32U & 0xFF);
+	buf[5] = (uint8_t)(value >> 40U & 0xFF);
+	buf[6] = (uint8_t)(value >> 48U & 0xFF);
+	buf[7] = (uint8_t)(value >> 56U & 0xFF);
+
+	return efi_set_variable(name, vendor,
+				EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				EFI_VARIABLE_RUNTIME_ACCESS, buf,
+				sizeof(buf));
 }
 
 struct efi_boot {
@@ -284,12 +323,45 @@ static int efi_core_init(void)
 }
 core_initcall(efi_core_init);
 
+/* Features of the loader, i.e. systemd-boot, barebox (imported from systemd) */
+#define EFI_LOADER_FEATURE_CONFIG_TIMEOUT          (1LL << 0)
+#define EFI_LOADER_FEATURE_CONFIG_TIMEOUT_ONE_SHOT (1LL << 1)
+#define EFI_LOADER_FEATURE_ENTRY_DEFAULT           (1LL << 2)
+#define EFI_LOADER_FEATURE_ENTRY_ONESHOT           (1LL << 3)
+#define EFI_LOADER_FEATURE_BOOT_COUNTING           (1LL << 4)
+#define EFI_LOADER_FEATURE_XBOOTLDR                (1LL << 5)
+#define EFI_LOADER_FEATURE_RANDOM_SEED             (1LL << 6)
+#define EFI_LOADER_FEATURE_LOAD_DRIVER             (1LL << 7)
+#define EFI_LOADER_FEATURE_SORT_KEY                (1LL << 8)
+#define EFI_LOADER_FEATURE_SAVED_ENTRY             (1LL << 9)
+#define EFI_LOADER_FEATURE_DEVICETREE              (1LL << 10)
+#define EFI_LOADER_FEATURE_SECUREBOOT_ENROLL       (1LL << 11)
+#define EFI_LOADER_FEATURE_RETAIN_SHIM             (1LL << 12)
+
+
 static int efi_postcore_init(void)
 {
 	char *uuid;
+	static const uint64_t loader_features =
+		EFI_LOADER_FEATURE_DEVICETREE;
 
 	efi_set_variable_usec("LoaderTimeInitUSec", &efi_systemd_vendor_guid,
 			      get_time_ns()/1000);
+
+	efi_set_variable_printf("LoaderInfo", &efi_systemd_vendor_guid,
+			"barebox-" UTS_RELEASE);
+
+	efi_set_variable_printf("LoaderFirmwareInfo", &efi_systemd_vendor_guid,
+				"%ls %u.%02u", efi_sys_table->fw_vendor,
+				efi_sys_table->fw_revision >> 16,
+				efi_sys_table->fw_revision & 0xffff);
+
+	efi_set_variable_printf("LoaderFirmwareType", &efi_systemd_vendor_guid,
+				"UEFI %u.%02u", efi_sys_table->hdr.revision >> 16,
+				efi_sys_table->hdr.revision & 0xffff);
+
+	efi_set_variable_uint64_le("LoaderFeatures", &efi_systemd_vendor_guid,
+				   loader_features);
 
 	uuid = device_path_to_partuuid(device_path_from_handle(
 				       efi_loaded_image->device_handle));

@@ -19,4 +19,5 @@ obj-$(CONFIG_MDIO_BUS_MUX)	+= mdio-mux.o
 obj-$(CONFIG_MDIO_BUS_MUX_GPIO)	+= mdio-mux-gpio.o
 obj-$(CONFIG_DP83867_PHY)	+= dp83867.o
 obj-$(CONFIG_DP83TD510_PHY)	+= dp83td510.o
+obj-$(CONFIG_DP83TG720_PHY)	+= dp83tg720.o
 

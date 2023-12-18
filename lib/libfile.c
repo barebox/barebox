@@ -307,6 +307,56 @@ void *read_file(const char *filename, size_t *size)
 EXPORT_SYMBOL(read_file);
 
 /**
+ * read_fd - read from a file descriptor to an allocated buffer
+ * @filename:  The file descriptor to read
+ * @size:      After successful return contains the size of the file
+ *
+ * This function reads a file descriptor from offset 0 until EOF to an
+ * allocated buffer.
+ *
+ * Return: On success, returns a nul-terminated buffer with the file's
+ * contents that should be deallocated with free().
+ * On error, NULL is returned and errno is set to an error code.
+ */
+void *read_fd(int fd, size_t *out_size)
+{
+	struct stat st;
+	ssize_t ret;
+	void *buf;
+
+	ret = fstat(fd, &st);
+	if (ret < 0)
+		return NULL;
+
+	if (st.st_size == FILE_SIZE_STREAM) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	/* For user convenience, we always nul-terminate the buffer in
+	 * case it contains a string. As we don't want to assume the string
+	 * to be either an array of char or wchar_t, we just unconditionally
+	 * add 2 bytes as terminator. As the two byte terminator needs to be
+	 * aligned, we just make it three bytes
+	 */
+	buf = malloc(st.st_size + 3);
+	if (!buf)
+		return NULL;
+
+	ret = pread_full(fd, buf, st.st_size, 0);
+	if (ret < 0) {
+		free(buf);
+		return NULL;
+	}
+
+	memset(buf + st.st_size, '\0', 3);
+	*out_size = st.st_size;
+
+	return buf;
+}
+EXPORT_SYMBOL(read_fd);
+
+/**
  * write_file - write a buffer to a file
  * @filename:    The filename to write
  * @size:        The size of the buffer

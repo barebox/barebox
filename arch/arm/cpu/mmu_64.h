@@ -105,12 +105,27 @@ static inline uint64_t level2mask(int level)
 	return mask;
 }
 
+/**
+ * @brief Returns the TCR (Translation Control Register) value
+ * 
+ * @param el - Exception Level
+ * @param va_bits - Virtual Address bits
+ * @return uint64_t TCR
+ */
 static inline uint64_t calc_tcr(int el, int va_bits)
 {
-	u64 ips;
-	u64 tcr;
+	u64 ips; // Intermediate Physical Address Size
+	u64 tcr; // Translation Control Register
 
+#if (BITS_PER_PA == 40)
 	ips = 2;
+#elif (BITS_PER_PA == 36)
+	ips = 1;
+#elif (BITS_PER_PA == 32)
+	ips = 0;
+#else
+#error "Unsupported"
+#endif
 
 	if (el == 1)
 		tcr = (ips << 32) | TCR_EPD1_DISABLE;

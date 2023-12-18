@@ -8,6 +8,7 @@
 
 #define VA_START                   0x0
 #define BITS_PER_VA                48
+#define BITS_PER_PA                40 // Use 40 Physical address bits
 
 /* Granule size of 4KB is being used */
 #define GRANULE_SIZE_SHIFT         12

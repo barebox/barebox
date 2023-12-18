@@ -218,7 +218,6 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 {
 	struct mci_cmd cmd;
 	struct mci_data data;
-	const void *buf;
 	unsigned mmccmd;
 	int ret;
 
@@ -238,19 +237,12 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 	else
 		mmccmd = MMC_CMD_WRITE_SINGLE_BLOCK;
 
-	if ((unsigned long)src & 0x3) {
-		memcpy(sector_buf, src, SECTOR_SIZE);
-		buf = sector_buf;
-	} else {
-		buf = src;
-	}
-
 	mci_setup_cmd(&cmd,
 		mmccmd,
 		mci->high_capacity != 0 ? blocknum : blocknum * mci->write_bl_len,
 		MMC_RSP_R1);
 
-	data.src = buf;
+	data.src = src;
 	data.blocks = blocks;
 	data.blocksize = mci->write_bl_len;
 	data.flags = MMC_DATA_WRITE;

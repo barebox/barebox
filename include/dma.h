@@ -68,8 +68,6 @@ static inline void *dma_to_cpu(struct device *dev, dma_addr_t addr)
 	return phys_to_virt(addr);
 }
 
-#ifndef __PBL__
-/* streaming DMA - implement the below calls to support HAS_DMA */
 #ifndef arch_sync_dma_for_cpu
 void arch_sync_dma_for_cpu(void *vaddr, size_t size,
 			   enum dma_data_direction dir);
@@ -79,57 +77,36 @@ void arch_sync_dma_for_cpu(void *vaddr, size_t size,
 void arch_sync_dma_for_device(void *vaddr, size_t size,
 			      enum dma_data_direction dir);
 #endif
+
+#ifndef __PBL__
+void dma_sync_single_for_cpu(struct device *dev, dma_addr_t address,
+			     size_t size, enum dma_data_direction dir);
+
+void dma_sync_single_for_device(struct device *dev, dma_addr_t address,
+				size_t size, enum dma_data_direction dir);
 #else
-#ifndef arch_sync_dma_for_cpu
 /*
  * assumes buffers are in coherent/uncached memory, e.g. because
  * MMU is only enabled in barebox_arm_entry which hasn't run yet.
  */
-static inline void arch_sync_dma_for_cpu(void *vaddr, size_t size,
-					 enum dma_data_direction dir)
-{
-	barrier_data(vaddr);
-}
-#endif
-
-#ifndef arch_sync_dma_for_device
-static inline void arch_sync_dma_for_device(void *vaddr, size_t size,
-					    enum dma_data_direction dir)
-{
-	barrier_data(vaddr);
-}
-#endif
-#endif
-
 static inline void dma_sync_single_for_cpu(struct device *dev, dma_addr_t address,
 					   size_t size, enum dma_data_direction dir)
 {
-	void *ptr = dma_to_cpu(dev, address);
-
-	arch_sync_dma_for_cpu(ptr, size, dir);
+	barrier_data(address);
 }
 
 static inline void dma_sync_single_for_device(struct device *dev, dma_addr_t address,
 					      size_t size, enum dma_data_direction dir)
 {
-	void *ptr = dma_to_cpu(dev, address);
-
-	arch_sync_dma_for_device(ptr, size, dir);
+	barrier_data(address);
 }
+#endif
 
-static inline dma_addr_t dma_map_single(struct device *dev, void *ptr,
-					size_t size, enum dma_data_direction dir)
-{
-	arch_sync_dma_for_device(ptr, size, dir);
+dma_addr_t dma_map_single(struct device *dev, void *ptr,
+			  size_t size, enum dma_data_direction dir);
 
-	return cpu_to_dma(dev, ptr);
-}
-
-static inline void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
-				    size_t size, enum dma_data_direction dir)
-{
-	dma_sync_single_for_cpu(dev, dma_addr, size, dir);
-}
+void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
+		      size_t size, enum dma_data_direction dir);
 
 #ifndef dma_alloc_coherent
 void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle);

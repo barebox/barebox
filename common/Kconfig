@@ -1685,6 +1685,20 @@ config DEBUG_PROBES
 	  Most consoles do not implement a remove callback to remain operable until
 	  the very end. Consoles using DMA, however, must be removed.
 
+config DMA_API_DEBUG
+	bool "Enable debugging of DMA-API usage"
+	depends on HAS_DMA
+	help
+	  Enable this option to debug the use of the DMA API by device drivers.
+	  With this option you will be able to detect common bugs in device
+	  drivers like double-freeing of DMA mappings or freeing mappings that
+	  were never allocated.
+
+	  This option causes a performance degradation.  Use only if you want to
+	  debug device drivers and dma interactions.
+
+	  If unsure, say N.
+
 config PBL_BREAK
 	bool "Execute software break on pbl start"
 	depends on ARM && (!CPU_32v4T && !ARCH_TEGRA)

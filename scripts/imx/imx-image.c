@@ -1102,12 +1102,21 @@ int main(int argc, char *argv[])
 
 	xwrite(outfd, infile, insize);
 
-	/* pad until next 4k boundary */
-	now = 4096 - (insize % 4096);
-	if (data.csf && now) {
-		memset(buf, 0x5a, now);
+	/*
+	 * The alignment may be required on ARMv7 SoCs like i.MX6/7 for HAB
+	 * boot. On newer SoCs like i.MX8MP/N this cause libusb communication
+	 * errors while uploading images because these machines request the
+	 * exact amount of required bytes and move on afterwards while the host
+	 * tool still try to send the whole (padded) file size.
+	 */
+	if (!cpu_is_mx8m(&data)) {
+		/* pad until next 4k boundary */
+		now = 4096 - (insize % 4096);
+		if (data.csf && now) {
+			memset(buf, 0x5a, now);
 
-		xwrite(outfd, buf, now);
+			xwrite(outfd, buf, now);
+		}
 	}
 
 	ret = close(outfd);

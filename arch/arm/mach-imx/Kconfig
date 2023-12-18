@@ -550,6 +550,14 @@ config MACH_PHYTEC_PHYCORE_IMX7
 	bool "Phytec phyCORE i.MX7"
 	select ARCH_IMX7
 
+config MACH_VARISCITE_SOM_MX7
+	bool "Variscite VAR-SOM-MX7"
+	select ARCH_IMX7
+	select ARM_USE_COMPRESSED_DTB
+	help
+	  Support for boards that use a Variscite SOM-MX7, like:
+	  - Gossen Metrawatt e143_01
+
 config MACH_ZII_IMX7D_DEV
 	bool "ZII i.MX7D based devices"
 	select ARCH_IMX7

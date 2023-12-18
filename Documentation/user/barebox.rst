@@ -219,6 +219,7 @@ Another option is to generate a FIT image containing the generic DT image and a
 matching device tree with ``mkimage``:
 
 .. code-block:: console
+
   sh: mkimage --architecture arm \
       --os linux \
       --type kernel \
@@ -233,6 +234,7 @@ This FIT image can then be loaded by U-Boot and executed just like a regular
 Linux kernel:
 
 .. code-block:: console
+
   U-Boot: tftp $fit_addr barebox-dt-2nd.fit
   U-Boot: bootm $fit_addr
 

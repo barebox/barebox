@@ -23,6 +23,7 @@ nvmem_eeprom_93xx46-y		:= eeprom_93xx46.o
 
 obj-$(CONFIG_STM32_BSEC)	+= nvmem_bsec.o
 nvmem_bsec-y			:= bsec.o
+nvmem_bsec-$(CONFIG_STM32_BSEC_OPTEE_TA) += stm32-bsec-optee-ta.o
 
 obj-$(CONFIG_KVX_OTP_NV)	+= nvmem-kvx-otp-nv.o
 nvmem-kvx-otp-nv-y		:= kvx-otp-nv.o

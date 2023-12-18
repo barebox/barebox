@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR X11)
+
+#include <arm/st/stm32mp157c-ev1-scmi.dts>
+#include "stm32mp151.dtsi"
+
+/ {
+	chosen {
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &sdmmc2, "partname:barebox-environment";
+			status = "disabled";
+		};
+	};
+};

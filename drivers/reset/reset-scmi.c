@@ -97,7 +97,7 @@ static int scmi_reset_probe(struct scmi_device *sdev)
 	if (!handle)
 		return -ENODEV;
 
-	reset_ops = handle->protocol_get(sdev, SCMI_PROTOCOL_RESET, &ph);
+	reset_ops = handle->dev_protocol_get(sdev, SCMI_PROTOCOL_RESET, &ph);
 	if (IS_ERR(reset_ops))
 		return PTR_ERR(reset_ops);
 

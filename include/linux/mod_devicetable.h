@@ -10,6 +10,7 @@
 #define LINUX_MOD_DEVICETABLE_H
 
 #include <linux/types.h>
+#include <linux/uuid.h>
 
 #define PCI_ANY_ID (~0)
 
@@ -25,6 +26,15 @@ struct pci_device_id {
 struct spi_device_id {
 	const char *name;
 	unsigned long driver_data;
+};
+
+/**
+ * struct tee_client_device_id - tee based device identifier
+ * @uuid: For TEE based client devices we use the device uuid as
+ *        the identifier.
+ */
+struct tee_client_device_id {
+	uuid_t uuid;
 };
 
 #endif /* LINUX_MOD_DEVICETABLE_H */

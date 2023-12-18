@@ -273,6 +273,7 @@ int unregister_device(struct device *old_dev)
 	struct device_alias *alias, *at;
 	struct cdev *cdev, *ct;
 	struct device *child, *dt;
+	struct device_node *np;
 
 	dev_dbg(old_dev, "unregister\n");
 
@@ -305,8 +306,10 @@ int unregister_device(struct device *old_dev)
 	/* remove device from parents child list */
 	if (old_dev->parent)
 		list_del(&old_dev->sibling);
-	if (dev_of_node(old_dev))
-		old_dev->of_node->dev = NULL;
+
+	np = dev_of_node(old_dev);
+	if (np && np->dev == old_dev)
+		np->dev = NULL;
 
 	return 0;
 }

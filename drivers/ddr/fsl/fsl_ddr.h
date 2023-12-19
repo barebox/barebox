@@ -189,7 +189,6 @@ static inline int is_ddr3_4(const memctl_options_t *popts)
 
 struct fsl_ddr_info;
 
-phys_size_t fsl_ddr_sdram(struct fsl_ddr_info *pinfo);
 u32 fsl_ddr_get_intl3r(void);
 
 void board_mem_sleep_setup(void);

@@ -428,7 +428,7 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 		pr_debug("%02x:%02x [%04x:%04x]\n", bus->number, dev->devfn,
 		    dev->vendor, dev->device);
 
-		switch (hdr_type & 0x7f) {
+		switch (hdr_type & PCI_HEADER_TYPE_MASK) {
 		case PCI_HEADER_TYPE_NORMAL:
 			if (class == PCI_CLASS_BRIDGE_PCI)
 				goto bad;
@@ -642,7 +642,7 @@ u8 pci_find_capability(struct pci_dev *dev, int cap)
 {
 	u8 pos;
 
-	pos = __pci_bus_find_cap_start(dev->bus, dev->devfn, dev->hdr_type);
+	pos = __pci_bus_find_cap_start(dev->bus, dev->devfn, dev->hdr_type & PCI_HEADER_TYPE_MASK);
 	if (pos)
 		pos = __pci_find_next_cap(dev->bus, dev->devfn, pos, cap);
 

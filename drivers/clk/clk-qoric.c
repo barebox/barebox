@@ -203,6 +203,13 @@ static void __init t2080_init_periph(struct clockgen *cg)
 	cg->fman[0] = cg->hwaccel[0];
 }
 
+static const struct clockgen_chipinfo chipinfo_ls1012a = {
+	.compat = "fsl,ls1012a-clockgen",
+	.cmux_groups = { &ls1012a_cmux },
+	.cmux_to_group = { 0, -1 },
+	.pll_mask = 0x03,
+};
+
 static const struct clockgen_chipinfo chipinfo_ls1021a = {
 	.compat = "fsl,ls1021a-clockgen",
 	.cmux_groups = { &t1023_cmux },
@@ -236,13 +243,6 @@ static const struct clockgen_chipinfo chipinfo_ls1088a = {
 	.cmux_to_group = { 0, 0, -1 },
 	.pll_mask = 0x07,
 	.flags = CG_VER3 | CG_LITTLE_ENDIAN,
-};
-
-static const struct clockgen_chipinfo chipinfo_ls1012a = {
-	.compat = "fsl,ls1012a-clockgen",
-	.cmux_groups = { &ls1012a_cmux },
-	.cmux_to_group = { 0, -1 },
-	.pll_mask = 0x03,
 };
 
 static const struct clockgen_chipinfo chipinfo_ls2080a = {

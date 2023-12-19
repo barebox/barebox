@@ -408,9 +408,13 @@ static struct esdhc_soc_data usdhc_imx6sx_data = {
 	.clkidx = "per",
 };
 
-static struct esdhc_soc_data esdhc_ls_data = {
+static struct esdhc_soc_data esdhc_ls_be_data = {
 	.flags = ESDHC_FLAG_MULTIBLK_NO_INT | ESDHC_FLAG_BIGENDIAN |
 		 ESDHC_FLAG_LAYERSCAPE,
+};
+
+static struct esdhc_soc_data esdhc_ls_le_data = {
+	.flags = ESDHC_FLAG_MULTIBLK_NO_INT | ESDHC_FLAG_LAYERSCAPE,
 };
 
 static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
@@ -425,7 +429,8 @@ static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	{ .compatible = "fsl,imx8mm-usdhc", .data = &usdhc_imx6sx_data },
 	{ .compatible = "fsl,imx8mn-usdhc", .data = &usdhc_imx6sx_data },
 	{ .compatible = "fsl,imx8mp-usdhc", .data = &usdhc_imx6sx_data },
-	{ .compatible = "fsl,ls1046a-esdhc",.data = &esdhc_ls_data  },
+	{ .compatible = "fsl,ls1028a-esdhc",.data = &esdhc_ls_le_data  },
+	{ .compatible = "fsl,ls1046a-esdhc",.data = &esdhc_ls_be_data  },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, fsl_esdhc_compatible);

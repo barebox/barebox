@@ -60,12 +60,6 @@ static uint32_t pbl_cmd_initaddr;
 static uint32_t pbi_crc_cmd1;
 static uint32_t pbi_crc_cmd2;
 
-enum arch {
-	ARCH_ARM,
-	ARCH_POWERPC,
-};
-
-enum arch architecture = ARCH_ARM;
 static char *rcwfile;
 static char *pbifile;
 static char *outfile;
@@ -253,17 +247,11 @@ static int pblimage_check_params(void)
 		exit(EXIT_FAILURE);
 	}
 
-	if (architecture == ARCH_ARM) {
-		pbi_crc_cmd1 = 0x61;
-		pbi_crc_cmd2 = 0;
-		pbl_cmd_initaddr = loadaddr & PBL_ADDR_24BIT_MASK;
-		pbl_cmd_initaddr |= PBL_ACS_CONT_CMD;
-		pbl_cmd_initaddr += image_size;
-	} else {
-		pbi_crc_cmd1 = 0x13;
-		pbi_crc_cmd2 = 0x80;
-		pbl_cmd_initaddr = 0x82000000;
-	}
+	pbi_crc_cmd1 = 0x61;
+	pbi_crc_cmd2 = 0;
+	pbl_cmd_initaddr = loadaddr & PBL_ADDR_24BIT_MASK;
+	pbl_cmd_initaddr |= PBL_ACS_CONT_CMD;
+	pbl_cmd_initaddr += image_size;
 
 	next_pbl_cmd = pbl_cmd_initaddr;
 	return 0;

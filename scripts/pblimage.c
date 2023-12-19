@@ -14,12 +14,12 @@
 #include <getopt.h>
 #include <endian.h>
 #include <byteswap.h>
+#include <linux/kernel.h>
 
 #include "common.h"
 #include "common.c"
 #include "../crypto/crc32.c"
 
-#define roundup(x, y)		((((x) + ((y) - 1)) / (y)) * (y))
 #define PBL_ACS_CONT_CMD	0x81000000
 #define PBL_ADDR_24BIT_MASK	0x00ffffff
 

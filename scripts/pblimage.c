@@ -40,10 +40,6 @@
 #define BAREBOX_START	(128 * 1024)
 
 /*
- * Initialize to an invalid value.
- */
-static uint32_t next_pbl_cmd = 0x82000000;
-/*
  * need to store all bytes in memory for calculating crc32, then write the
  * bytes to image file for PBL boot.
  */
@@ -56,7 +52,6 @@ static int out_fd;
 static int in_fd;
 static int spiimage;
 
-static uint32_t pbl_cmd_initaddr;
 static uint32_t pbi_crc_cmd1;
 static uint32_t pbi_crc_cmd2;
 
@@ -77,10 +72,8 @@ static uint32_t pbl_crc32(uint32_t in_crc, const char *buf, uint32_t len)
  * "xxxxxx" is the offset. Calculate the start offset by subtracting the size of
  * the image from the top of the allowable 24-bit range.
  */
-static void generate_pbl_cmd(void)
+static void generate_pbl_cmd(uint32_t val)
 {
-	uint32_t val = next_pbl_cmd;
-	next_pbl_cmd += 0x40;
 	int i;
 
 	for (i = 3; i >= 0; i--) {
@@ -186,6 +179,7 @@ static void add_end_cmd(void)
 static void pbl_load_image(void)
 {
 	int size;
+	unsigned int n;
 	uint64_t *buf64 = (void *)mem_buf;
 
 	/* parse the rcw.cfg file. */
@@ -195,9 +189,12 @@ static void pbl_load_image(void)
 	if (pbifile)
 		pbl_parser(pbifile);
 
-	next_pbl_cmd = pbl_cmd_initaddr - image_size;
-	while (next_pbl_cmd < pbl_cmd_initaddr) {
-		generate_pbl_cmd();
+	for (n = 0; n < image_size; n += 0x40) {
+		uint32_t pbl_cmd;
+
+		pbl_cmd = (loadaddr & PBL_ADDR_24BIT_MASK) | PBL_ACS_CONT_CMD;
+		pbl_cmd += n;
+		generate_pbl_cmd(pbl_cmd);
 		pbl_fget(64, in_fd);
 	}
 
@@ -249,11 +246,7 @@ static int pblimage_check_params(void)
 
 	pbi_crc_cmd1 = 0x61;
 	pbi_crc_cmd2 = 0;
-	pbl_cmd_initaddr = loadaddr & PBL_ADDR_24BIT_MASK;
-	pbl_cmd_initaddr |= PBL_ACS_CONT_CMD;
-	pbl_cmd_initaddr += image_size;
 
-	next_pbl_cmd = pbl_cmd_initaddr;
 	return 0;
 };
 

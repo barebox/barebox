@@ -13,6 +13,8 @@
 #include <linux/log2.h>
 #include "fsl_ddr.h"
 
+enum ddr_endianess ddr_endianess;
+
 /*
  * ASSUMPTIONS:
  *    - Same number of CONFIG_DIMM_SLOTS_PER_CTLR on each controller
@@ -378,11 +380,16 @@ static unsigned long long fsl_ddr_compute(struct fsl_ddr_info *pinfo)
 	return total_mem;
 }
 
-phys_size_t fsl_ddr_sdram(struct fsl_ddr_info *pinfo)
+phys_size_t fsl_ddr_sdram(struct fsl_ddr_info *pinfo, bool little_endian)
 {
 	unsigned int i;
 	unsigned long long total_memory;
 	int deassert_reset = 0;
+
+	if (little_endian)
+		ddr_endianess = DDR_ENDIANESS_LE;
+	else
+		ddr_endianess = DDR_ENDIANESS_BE;
 
 	total_memory = fsl_ddr_compute(pinfo);
 
@@ -428,14 +435,14 @@ phys_size_t fsl_ddr_sdram(struct fsl_ddr_info *pinfo)
 		 * The following call with step = 1 returns before enabling
 		 * the controller. It has to finish with step = 2 later.
 		 */
-		fsl_ddr_set_memctl_regs(c, deassert_reset ? 1 : 0);
+		fsl_ddr_set_memctl_regs(c, deassert_reset ? 1 : 0, little_endian);
 	}
 	if (deassert_reset) {
 		for (i = 0; i < pinfo->num_ctrls; i++) {
 			struct fsl_ddr_controller *c = &pinfo->c[i];
 
 			/* Call with step = 2 to continue initialization */
-			fsl_ddr_set_memctl_regs(c, 2);
+			fsl_ddr_set_memctl_regs(c, 2, little_endian);
 		}
 	}
 

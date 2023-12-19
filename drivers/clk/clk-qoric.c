@@ -143,6 +143,58 @@ static const struct clockgen_muxinfo clockgen2_cmux_cgb = {
 	},
 };
 
+static const struct clockgen_muxinfo ls1028a_hwa1 = {
+	{
+		{ CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV4 },
+		{},
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV3 },
+	},
+};
+
+static const struct clockgen_muxinfo ls1028a_hwa2 = {
+	{
+		{ CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV3 },
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV4 },
+		{},
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
+	},
+};
+
+static const struct clockgen_muxinfo ls1028a_hwa3 = {
+	{
+		{ CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV4 },
+		{},
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV3 },
+	},
+};
+
+static const struct clockgen_muxinfo ls1028a_hwa4 = {
+	{
+		{ CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV3 },
+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV4 },
+		{},
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
+	},
+};
+
 static const struct clockgen_muxinfo ls1043a_hwa1 = {
 	{
 		{},
@@ -215,6 +267,15 @@ static const struct clockgen_chipinfo chipinfo_ls1021a = {
 	.cmux_groups = { &t1023_cmux },
 	.cmux_to_group = { 0, -1 },
 	.pll_mask = 0x03,
+};
+
+static const struct clockgen_chipinfo chipinfo_ls1028a = {
+	.compat = "fsl,ls1028a-clockgen",
+	.cmux_groups = { &clockgen2_cmux_cga12 },
+	.hwaccel = { &ls1028a_hwa1, &ls1028a_hwa2, &ls1028a_hwa3, &ls1028a_hwa4 },
+	.cmux_to_group = { 0, 0, 0, 0, -1 },
+	.pll_mask = 0x07,
+	.flags = CG_VER3 | CG_LITTLE_ENDIAN,
 };
 
 static const struct clockgen_chipinfo chipinfo_ls1043a = {
@@ -622,6 +683,11 @@ static void __maybe_unused clockgen_init_ls1021a(struct device_node *np)
 	clockgen_init(np, &chipinfo_ls1021a);
 }
 
+static void __maybe_unused clockgen_init_ls1028a(struct device_node *np)
+{
+	clockgen_init(np, &chipinfo_ls1028a);
+}
+
 static void __maybe_unused clockgen_init_ls1043a(struct device_node *np)
 {
 	clockgen_init(np, &chipinfo_ls1043a);
@@ -647,6 +713,9 @@ CLK_OF_DECLARE(qoriq_clockgen_ls1012a, "fsl,ls1012a-clockgen", clockgen_init_ls1
 #endif
 #ifdef CONFIG_ARCH_LS1021
 CLK_OF_DECLARE(qoriq_clockgen_ls1021a, "fsl,ls1021a-clockgen", clockgen_init_ls1021a);
+#endif
+#ifdef CONFIG_ARCH_LS1028
+CLK_OF_DECLARE(qoriq_clockgen_ls1021a, "fsl,ls1028a-clockgen", clockgen_init_ls1028a);
 #endif
 #ifdef CONFIG_ARCH_LS1043
 CLK_OF_DECLARE(qoriq_clockgen_ls1043a, "fsl,ls1043a-clockgen", clockgen_init_ls1043a);

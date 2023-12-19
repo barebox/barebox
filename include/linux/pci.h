@@ -201,10 +201,6 @@ struct pci_driver {
 
 #define	to_pci_driver(drv) container_of(drv, struct pci_driver, driver)
 
-/* these helpers provide future and backwards compatibility
- * for accessing popular PCI BAR info */
-#define pci_resource_start(dev, bar)    ((dev)->resource[(bar)].start)
-
 /**
  * DEFINE_PCI_DEVICE_TABLE - macro used to describe a pci device table
  * @_table: device table name

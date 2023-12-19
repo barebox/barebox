@@ -329,6 +329,8 @@ u8 pci_find_capability(struct pci_dev *dev, int cap);
 
 extern void __iomem *pci_iomap(struct pci_dev *dev, int bar);
 
+int pci_flr(struct pci_dev *pdev);
+
 /*
  * The world is not perfect and supplies us with broken PCI devices.
  * For at least a part of these bugs we need a work-around, so both

@@ -553,6 +553,38 @@ pci_of_match_device(struct device *parent, unsigned int devfn)
 	return NULL;
 }
 
+/**
+ * pcie_flr - initiate a PCIe function level reset
+ * @dev:	device to reset
+ *
+ * Initiate a function level reset on @dev.
+ */
+int pci_flr(struct pci_dev *pdev)
+{
+	u16 val;
+	int pcie_off;
+	u32 cap;
+
+	/* look for PCI Express Capability */
+	pcie_off = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+	if (!pcie_off)
+		return -ENOENT;
+
+	/* check FLR capability */
+	pci_read_config_dword(pdev, pcie_off + PCI_EXP_DEVCAP, &cap);
+	if (!(cap & PCI_EXP_DEVCAP_FLR))
+		return -ENOENT;
+
+	pci_read_config_word(pdev, pcie_off + PCI_EXP_DEVCTL, &val);
+	val |= PCI_EXP_DEVCTL_BCR_FLR;
+	pci_write_config_word(pdev, pcie_off + PCI_EXP_DEVCTL, val);
+
+	/* wait 100ms, per PCI spec */
+	mdelay(100);
+
+	return 0;
+}
+
 static unsigned int pci_scan_bus(struct pci_bus *bus)
 {
 	struct pci_dev *dev;

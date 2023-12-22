@@ -236,7 +236,7 @@ static int realtek_mdio_probe(struct phy_device *mdiodev)
 	priv->ds->dev = dev;
 	priv->ds->num_ports = priv->num_ports;
 	priv->ds->priv = priv;
-	priv->ds->ops = var->ds_ops_mdio;
+	priv->ds->ops = var->ds_ops;
 
 	ret = realtek_dsa_init_tagger(priv);
 	if (ret)

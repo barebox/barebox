@@ -450,7 +450,7 @@ static int realtek_smi_probe(struct device *dev)
 	priv->ds->dev = dev;
 	priv->ds->num_ports = priv->num_ports;
 	priv->ds->priv = priv;
-	priv->ds->ops = var->ds_ops_smi;
+	priv->ds->ops = var->ds_ops;
 
 	ret = realtek_dsa_init_tagger(priv);
 	if (ret)

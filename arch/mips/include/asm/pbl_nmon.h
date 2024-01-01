@@ -5,6 +5,9 @@
  * Copyright (C) 2013 Antony Pavlov <antonynpavlov@gmail.com>
  */
 
+#ifndef __ASM_PBL_NMON_H
+#define __ASM_PBL_NMON_H
+
 #include <mach/debug_ll.h>
 
 #define CODE_ESC	0x1b
@@ -286,3 +289,5 @@ nmon_exit:
 #endif /* CONFIG_NMON */
 	.set	pop
 	.endm
+
+#endif /* __ASM_PBL_NMON_H */

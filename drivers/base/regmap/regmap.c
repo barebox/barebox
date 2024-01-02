@@ -412,10 +412,34 @@ static struct cdev_operations regmap_fops = {
 	.write	= regmap_cdev_write,
 };
 
+/*
+ * regmap_count_registers - returns the total number of registers
+ *
+ * @map:	The map
+ *
+ * Returns the total number of registers in a regmap
+ */
+static size_t regmap_count_registers(struct regmap *map)
+{
+	/*
+	 * max_register is in units of reg_stride, so we need to divide
+	 * by the register stride before adding one to arrive at the
+	 * total number of registers.
+	 */
+	return (map->max_register / map->reg_stride) + 1;
+}
+
+/*
+ * regmap_size_bytes - computes the size of the regmap in bytes
+ *
+ * @map:	The map
+ *
+ * Returns the number of bytes needed to hold all values in the
+ * regmap.
+ */
 size_t regmap_size_bytes(struct regmap *map)
 {
-	return regmap_round_val_bytes(map) * (map->max_register + 1) /
-		map->reg_stride;
+	return regmap_round_val_bytes(map) * regmap_count_registers(map);
 }
 
 /*

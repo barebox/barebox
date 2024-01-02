@@ -218,7 +218,7 @@ static int stm32_bsec_probe(struct device *dev)
 	priv->map_config.reg_bits = 32;
 	priv->map_config.val_bits = 32;
 	priv->map_config.reg_stride = 4;
-	priv->map_config.max_register = (data->size / 4) - 1;
+	priv->map_config.max_register = data->size - priv->map_config.reg_stride;
 
 	priv->lower = data->lower;
 

@@ -9,7 +9,7 @@ struct pmic_config {
 	u8 val;
 };
 
-static void pmic_reg_write(struct pbl_i2c *i2c, int addr, u8 reg, u8 val)
+static void pmic_reg_write8(struct pbl_i2c *i2c, int addr, u8 reg, u8 val)
 {
 	int ret;
 	u8 buf[32];
@@ -35,7 +35,7 @@ static inline void pmic_configure(struct pbl_i2c *i2c, u8 addr,
 				  size_t config_len)
 {
 	for (; config_len--; config++)
-		pmic_reg_write(i2c, addr, config->reg, config->val);
+		pmic_reg_write8(i2c, addr, config->reg, config->val);
 }
 
 #endif

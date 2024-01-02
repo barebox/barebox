@@ -172,7 +172,7 @@ static int starfive_otp_probe(struct device *dev)
 	config.reg_bits = 32;
 	config.val_bits = 32;
 	config.reg_stride = 4;
-	config.max_register = total_fuses;
+	config.max_register = (total_fuses - 1) * config.reg_stride;
 
 	priv = xzalloc(sizeof(*priv));
 

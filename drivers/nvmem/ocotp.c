@@ -107,7 +107,7 @@ enum imx_ocotp_format_mac_direction {
 struct ocotp_priv;
 
 struct imx_ocotp_data {
-	int num_regs;
+	int nregs;
 	u32 (*addr_to_offset)(u32 addr);
 	void (*format_mac)(u8 *dst, const u8 *src,
 			   enum imx_ocotp_format_mac_direction dir);
@@ -769,7 +769,7 @@ static int imx_ocotp_probe(struct device *dev)
 	priv->map_config.reg_bits = 32;
 	priv->map_config.val_bits = 32;
 	priv->map_config.reg_stride = 4;
-	priv->map_config.max_register = data->num_regs - 1;
+	priv->map_config.max_register = priv->map_config.reg_stride * (data->nregs - 1);
 
 	priv->map = regmap_init(dev, &imx_ocotp_regmap_bus, priv, &priv->map_config);
 	if (IS_ERR(priv->map))
@@ -853,7 +853,7 @@ static u32 vf610_addr_to_offset(u32 addr)
 }
 
 static struct imx_ocotp_data imx6q_ocotp_data = {
-	.num_regs = 512,
+	.nregs = 128,
 	.addr_to_offset = imx6q_addr_to_offset,
 	.mac_offsets_num = 1,
 	.mac_offsets = { MAC_OFFSET_0 },
@@ -864,7 +864,7 @@ static struct imx_ocotp_data imx6q_ocotp_data = {
 };
 
 static struct imx_ocotp_data imx6sl_ocotp_data = {
-	.num_regs = 256,
+	.nregs = 64,
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 1,
 	.mac_offsets = { MAC_OFFSET_0 },
@@ -875,7 +875,7 @@ static struct imx_ocotp_data imx6sl_ocotp_data = {
 };
 
 static struct imx_ocotp_data imx6ul_ocotp_data = {
-	.num_regs = 512,
+	.nregs = 128,
 	.addr_to_offset = imx6q_addr_to_offset,
 	.mac_offsets_num = 2,
 	.mac_offsets = { MAC_OFFSET_0, IMX6UL_MAC_OFFSET_1 },
@@ -886,7 +886,7 @@ static struct imx_ocotp_data imx6ul_ocotp_data = {
 };
 
 static struct imx_ocotp_data imx6ull_ocotp_data = {
-	.num_regs = 256,
+	.nregs = 64,
 	.addr_to_offset = imx6q_addr_to_offset,
 	.mac_offsets_num = 2,
 	.mac_offsets = { MAC_OFFSET_0, IMX6UL_MAC_OFFSET_1 },
@@ -897,7 +897,7 @@ static struct imx_ocotp_data imx6ull_ocotp_data = {
 };
 
 static struct imx_ocotp_data vf610_ocotp_data = {
-	.num_regs = 512,
+	.nregs = 128,
 	.addr_to_offset = vf610_addr_to_offset,
 	.mac_offsets_num = 2,
 	.mac_offsets = { MAC_OFFSET_0, MAC_OFFSET_1 },
@@ -914,7 +914,7 @@ static struct imx8m_featctrl_data imx8mp_featctrl_data = {
 };
 
 static struct imx_ocotp_data imx8mp_ocotp_data = {
-	.num_regs = 1024,
+	.nregs = 256,
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 2,
 	.mac_offsets = { 0x90, 0x94 },
@@ -923,7 +923,7 @@ static struct imx_ocotp_data imx8mp_ocotp_data = {
 };
 
 static struct imx_ocotp_data imx8mq_ocotp_data = {
-	.num_regs = 2048,
+	.nregs = 512,
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 1,
 	.mac_offsets = { 0x90 },
@@ -939,7 +939,7 @@ static struct imx8m_featctrl_data imx8mm_featctrl_data = {
 };
 
 static struct imx_ocotp_data imx8mm_ocotp_data = {
-	.num_regs = 2048,
+	.nregs = 512,
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 1,
 	.mac_offsets = { 0x90 },
@@ -956,7 +956,7 @@ static struct imx8m_featctrl_data imx8mn_featctrl_data = {
 };
 
 static struct imx_ocotp_data imx8mn_ocotp_data = {
-	.num_regs = 2048,
+	.nregs = 512,
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 1,
 	.mac_offsets = { 0x90 },
@@ -968,7 +968,7 @@ static struct imx_ocotp_data imx8mn_ocotp_data = {
 };
 
 static struct imx_ocotp_data imx7d_ocotp_data = {
-	.num_regs = 2048,
+	.nregs = 512,
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 1,
 	.mac_offsets = { MAC_OFFSET_0, IMX6UL_MAC_OFFSET_1 },

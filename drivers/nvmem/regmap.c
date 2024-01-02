@@ -38,7 +38,7 @@ static int nvmem_regmap_read(void *ctx, unsigned offset, void *buf, size_t bytes
 	skip_bytes = offset & (stride - 1);
 	rbytes = roundup(bytes + skip_bytes, stride);
 
-	if (roffset + rbytes > stride * regmap_get_max_register(map))
+	if (roffset + rbytes > regmap_size_bytes(map))
 		return -EINVAL;
 
 	for (i = roffset; i < roffset + rbytes; i += stride) {
@@ -78,7 +78,7 @@ nvmem_regmap_register_with_pp(struct regmap *map, const char *name,
 	config.priv = map;
 	config.stride = 1;
 	config.word_size = 1;
-	config.size = regmap_get_max_register(map) * regmap_get_reg_stride(map);
+	config.size = regmap_size_bytes(map);
 	config.cell_post_process = cell_post_process;
 	config.reg_write = nvmem_regmap_write;
 	config.reg_read = nvmem_regmap_read;

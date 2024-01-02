@@ -5,3 +5,5 @@ soc imx8mp
 loadaddr 0x920000
 max_load_size 0x3f000
 ivtofs 0x0
+
+#include <mach/imx/habv4-imx8-gencsf.h>

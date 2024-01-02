@@ -91,9 +91,6 @@ static void rng_done(struct device *jrdev, u32 *desc, u32 err, void *context)
 
 	/* Buffer refilled, invalidate cache */
 	dma_sync_single_for_cpu(jrdev, bd->addr, RN_BUF_SIZE, DMA_FROM_DEVICE);
-
-	print_hex_dump_debug("rng refreshed buf@: ", DUMP_PREFIX_OFFSET,
-			     16, 4, bd->buf, RN_BUF_SIZE, 1);
 }
 
 static inline int submit_job(struct caam_rng_ctx *ctx, int to_current)

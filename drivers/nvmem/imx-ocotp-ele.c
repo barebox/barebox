@@ -139,7 +139,7 @@ static int imx_ele_ocotp_probe(struct device *dev)
 	priv->map_config.reg_bits = 32;
 	priv->map_config.val_bits = 32;
 	priv->map_config.reg_stride = 4;
-	priv->map_config.max_register = priv->data->size - 1;
+	priv->map_config.max_register = priv->data->size - priv->map_config.reg_stride;
 
 	priv->map = regmap_init(dev, &imx_ocotp_regmap_bus, priv, &priv->map_config);
 	if (IS_ERR(priv->map))

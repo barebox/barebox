@@ -478,6 +478,7 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 		const struct devfs_partition *partinfo, loff_t *end)
 {
 	loff_t offset, size;
+	loff_t _end = end ? *end : 0;
 	static struct cdev *new;
 	struct cdev *overlap;
 
@@ -488,7 +489,7 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 		offset = partinfo->offset;
 	else if (partinfo->offset == 0)
 		/* append to previous partition */
-		offset = *end;
+		offset = _end;
 	else
 		/* relative to end of cdev */
 		offset = cdev->size + partinfo->offset;
@@ -498,13 +499,15 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 	else
 		size = cdev->size + partinfo->size - offset;
 
-	if (offset >= 0 && offset < *end)
+	if (offset >= 0 && offset < _end)
 		pr_debug("partition %s not after previous partition\n",
 				partinfo->name);
 
-	*end = offset + size;
+	_end = offset + size;
+	if (end)
+		*end = _end;
 
-	if (offset < 0 || *end > cdev->size) {
+	if (offset < 0 || _end > cdev->size) {
 		pr_warn("partition %s not completely inside device %s\n",
 				partinfo->name, cdev->name);
 		return ERR_PTR(-EINVAL);
@@ -558,7 +561,6 @@ struct cdev *devfs_add_partition(const char *devname, loff_t offset,
 		loff_t size, unsigned int flags, const char *name)
 {
 	struct cdev *cdev;
-	loff_t end = 0;
 	const struct devfs_partition partinfo = {
 		.offset = offset,
 		.size = size,
@@ -570,7 +572,7 @@ struct cdev *devfs_add_partition(const char *devname, loff_t offset,
 	if (!cdev)
 		return ERR_PTR(-ENOENT);
 
-	return __devfs_add_partition(cdev, &partinfo, &end);
+	return __devfs_add_partition(cdev, &partinfo, NULL);
 }
 
 int devfs_del_partition(const char *name)

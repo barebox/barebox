@@ -71,6 +71,7 @@ obj-$(CONFIG_FONTS)	+= fonts/
 obj-$(CONFIG_BAREBOX_LOGO)     += logo/
 obj-y			+= reed_solomon/
 obj-$(CONFIG_RATP)	+= ratp.o
+obj-$(CONFIG_DEBUG_LIST) += list_debug.o
 obj-y			+= list_sort.o
 obj-y			+= refcount.o
 obj-y			+= int_sqrt.o

@@ -1704,6 +1704,14 @@ config DMA_API_DEBUG
 
 	  If unsure, say N.
 
+config DEBUG_LIST
+	bool "Debug linked list manipulation"
+	help
+	  Enable this to turn on extended checks in the linked-list
+	  walking routines.
+
+	  If unsure, say N.
+
 config PBL_BREAK
 	bool "Execute software break on pbl start"
 	depends on ARM && (!CPU_32v4T && !ARCH_TEGRA)

@@ -1,5 +1,15 @@
 menu "Hardening options"
 
+config BUG_ON_DATA_CORRUPTION
+	bool "Trigger a BUG when data corruption is detected"
+	select DEBUG_LIST
+	help
+	  Select this option if barebox should BUG when it encounters
+	  data corruption in its memory structures when they get checked
+	  for validity.
+
+	  If unsure, say N.
+
 config STACK_GUARD_PAGE
 	bool "Place guard page to catch stack overflows"
 	depends on ARM && MMU

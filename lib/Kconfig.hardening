@@ -30,7 +30,7 @@ config STACKPROTECTOR_STRONG
 	  the value just before actually returning.  Stack based buffer
 	  overflows (that need to overwrite this return address) now also
 	  overwrite the canary, which gets detected and the attack is then
-	  neutralized via a kernel panic.
+	  neutralized via a barebox panic.
 
 	  Functions will have the stack-protector canary logic added in any
 	  of the following conditions:
@@ -78,7 +78,7 @@ config PBL_STACKPROTECTOR_STRONG
 	  the value just before actually returning.  Stack based buffer
 	  overflows (that need to overwrite this return address) now also
 	  overwrite the canary, which gets detected and the attack is then
-	  neutralized via a kernel panic.
+	  neutralized via a barebox panic.
 
 	  Functions will have the stack-protector canary logic added in any
 	  of the following conditions:

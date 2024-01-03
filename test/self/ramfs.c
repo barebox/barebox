@@ -27,7 +27,16 @@ BSELFTEST_GLOBALS();
 	__cond; \
 })
 
+static inline int ptr_to_err(const void *ptr)
+{
+	if (ptr)
+		return PTR_ERR_OR_ZERO(ptr);
+
+	return -errno ?: -EFAULT;
+}
+
 #define expect_success(ret, ...) __expect((ret), (ret) >= 0, __VA_ARGS__)
+#define expect_ptrok(ptr, ...) expect_success(ptr_to_err(ptr), __VA_ARGS__)
 #define expect_fail(ret, ...) __expect((ret), (ret) < 0, __VA_ARGS__)
 
 static inline int get_file_count(int i)
@@ -101,7 +110,7 @@ static void test_ramfs(void)
 		}
 
 		dir = opendir(dname);
-		if (!expect_success(PTR_ERR_OR_ZERO(dir), "opening parent directory"))
+		if (!expect_ptrok(dir, "opening parent directory"))
 			continue;
 
 		j = 0;
@@ -120,11 +129,11 @@ static void test_ramfs(void)
 	}
 
 	oldpwd = pushd(dname);
-	if (!expect_success(oldpwd != NULL ? 0 : -EINVAL, "pushd()"))
+	if (!expect_ptrok(oldpwd, "pushd()"))
 		goto out;;
 
 	dir = opendir(".");
-	if (!expect_success(PTR_ERR_OR_ZERO(dir), "opening parent directory"))
+	if (!expect_ptrok(dir, "opening parent directory"))
 		goto out;
 
 	i = 1;
@@ -183,7 +192,7 @@ static void test_ramfs(void)
 		expect_success(ret, "write_file()");
 
 		buf = read_file("test/a/b/c/d/e/f/g/h/i/j/k/l/FILE", NULL);
-		if (expect_success(PTR_ERR_OR_ZERO(buf), "read_file()")) {
+		if (expect_ptrok(buf, "read_file()")) {
 			expect_success(memcmp(buf, ARRAY_AND_SIZE(hello)),
 				       "read_file() content");
 		}

@@ -32,17 +32,21 @@ static int register_one_partition(struct block_device *blk,
 {
 	char *partition_name;
 	int ret;
-	uint64_t start = part->first_sec * SECTOR_SIZE;
-	uint64_t size = part->size * SECTOR_SIZE;
 	struct cdev *cdev;
+	struct devfs_partition partinfo = {
+		.offset = part->first_sec * SECTOR_SIZE,
+		.size = part->size * SECTOR_SIZE,
+	};
 
 	partition_name = basprintf("%s.%d", blk->cdev.name, no);
 	if (!partition_name)
 		return -ENOMEM;
+
+	partinfo.name = partition_name;
+
 	dev_dbg(blk->dev, "Registering partition %s on drive %s (partuuid=%s)\n",
 				partition_name, blk->cdev.name, part->partuuid);
-	cdev = devfs_add_partition(blk->cdev.name,
-				start, size, 0, partition_name);
+	cdev = cdevfs_add_partition(&blk->cdev, &partinfo);
 	if (IS_ERR(cdev)) {
 		ret = PTR_ERR(cdev);
 		goto out;

@@ -223,14 +223,6 @@ error_available:
 
 static void virtio_pci_del_vq(struct virtqueue *vq)
 {
-	struct virtio_pci_device *vp_dev = to_vp_device(vq->vdev);
-	unsigned int index = vq->index;
-
-	iowrite16(index, &vp_dev->common->queue_select);
-
-	/* Select and deactivate the queue */
-	iowrite16(0, &vp_dev->common->queue_enable);
-
 	vring_del_virtqueue(vq);
 }
 

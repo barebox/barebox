@@ -375,6 +375,7 @@ int devfs_create_link(struct cdev *cdev, const char *name)
 	}
 
 	INIT_LIST_HEAD(&new->links);
+	INIT_LIST_HEAD(&new->partitions);
 	list_add_tail(&new->list, &cdev_list);
 	list_add_tail(&new->link_entry, &cdev->links);
 
@@ -395,6 +396,9 @@ int devfs_remove(struct cdev *cdev)
 
 	list_for_each_entry_safe(c, tmp, &cdev->links, link_entry)
 		devfs_remove(c);
+
+	list_for_each_entry_safe(c, tmp, &cdev->partitions, partition_entry)
+		cdevfs_del_partition(c);
 
 	if (cdev_is_partition(cdev))
 		list_del(&cdev->partition_entry);

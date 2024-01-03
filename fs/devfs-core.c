@@ -557,6 +557,12 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 	return new;
 }
 
+struct cdev *cdevfs_add_partition(struct cdev *cdev,
+				  const struct devfs_partition *partinfo)
+{
+	return __devfs_add_partition(cdev, partinfo, NULL);
+}
+
 struct cdev *devfs_add_partition(const char *devname, loff_t offset,
 		loff_t size, unsigned int flags, const char *name)
 {
@@ -572,7 +578,7 @@ struct cdev *devfs_add_partition(const char *devname, loff_t offset,
 	if (!cdev)
 		return ERR_PTR(-ENOENT);
 
-	return __devfs_add_partition(cdev, &partinfo, NULL);
+	return cdevfs_add_partition(cdev, &partinfo);
 }
 
 int devfs_del_partition(const char *name)

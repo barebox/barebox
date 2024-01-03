@@ -207,8 +207,8 @@ static void test_zero_page(void)
 	total_tests += 3;
 
 	if (!IS_ENABLED(CONFIG_ARCH_HAS_DATA_ABORT_MASK)) {
-		pr_info("skipping %s because %s=n\n",
-			"CONFIG_ARCH_HAS_DATA_ABORT_MASK", __func__);
+		pr_info("skipping %s because CONFIG_ARCH_HAS_DATA_ABORT_MASK=n\n",
+			__func__);
 		skipped_tests += 3;
 		return;
 	}

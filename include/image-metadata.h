@@ -125,10 +125,10 @@ int imd_verify_crc32(void *buf, size_t size);
 #ifdef __BAREBOX__
 
 #include <linux/stringify.h>
+#include <linux/compiler_types.h>
 
 #define __BAREBOX_IMD_SECTION(_section) \
-	__attribute__ ((unused,section (__stringify(_section)))) \
-	__attribute__((aligned(4)))
+	__ll_elem(_section) __attribute__((aligned(4)))
 
 #define BAREBOX_IMD_TAG_STRING(_name, _type, _string, _keep_if_unused)			\
 	const struct imd_entry_string __barebox_imd_##_name				\

@@ -2,6 +2,8 @@
 #ifndef _INIT_H
 #define _INIT_H
 
+#include <linux/compiler_types.h>
+
 /*
  * fake define to simplify the linux sync
  */
@@ -33,13 +35,11 @@ typedef void (*exitcall_t)(void);
 
 #ifndef __ASSEMBLY__
 
-#define __define_initcall(level,fn,id) \
-	static initcall_t __initcall_##fn##id __attribute__((__used__)) \
-	__attribute__((__section__(".initcall." level))) = fn
+#define __define_initcall(fn,id) \
+	static initcall_t __initcall_##fn##id __ll_elem(.initcall.##id) = fn
 
-#define __define_exitcall(level,fn,id) \
-	static exitcall_t __exitcall_##fn##id __attribute__((__used__)) \
-	__attribute__((__section__(".exitcall." level))) = fn
+#define __define_exitcall(fn,id) \
+	static exitcall_t __exitcall_##fn##id __ll_elem(.exitcall.##id) = fn
 
 
 /*
@@ -51,32 +51,32 @@ typedef void (*exitcall_t)(void);
  * The only purpose for "of_populate" is to call of_probe() other functions are
  * not allowed.
  */
-#define pure_initcall(fn)		__define_initcall("0",fn,0)
+#define pure_initcall(fn)		__define_initcall(fn, 0)
 
-#define core_initcall(fn)		__define_initcall("1",fn,1)
-#define postcore_initcall(fn)		__define_initcall("2",fn,2)
-#define console_initcall(fn)		__define_initcall("3",fn,3)
-#define postconsole_initcall(fn)	__define_initcall("4",fn,4)
-#define mem_initcall(fn)		__define_initcall("5",fn,5)
-#define postmem_initcall(fn)		__define_initcall("6",fn,6)
-#define mmu_initcall(fn)		__define_initcall("7",fn,7)
-#define postmmu_initcall(fn)		__define_initcall("8",fn,8)
-#define coredevice_initcall(fn)		__define_initcall("9",fn,9)
-#define fs_initcall(fn)			__define_initcall("10",fn,10)
-#define device_initcall(fn)		__define_initcall("11",fn,11)
-#define crypto_initcall(fn)		__define_initcall("12",fn,12)
-#define of_populate_initcall(fn)	__define_initcall("13",fn,13)
-#define late_initcall(fn)		__define_initcall("14",fn,14)
-#define environment_initcall(fn)	__define_initcall("15",fn,15)
-#define postenvironment_initcall(fn)	__define_initcall("16",fn,16)
+#define core_initcall(fn)		__define_initcall(fn, 1)
+#define postcore_initcall(fn)		__define_initcall(fn, 2)
+#define console_initcall(fn)		__define_initcall(fn, 3)
+#define postconsole_initcall(fn)	__define_initcall(fn, 4)
+#define mem_initcall(fn)		__define_initcall(fn, 5)
+#define postmem_initcall(fn)		__define_initcall(fn, 6)
+#define mmu_initcall(fn)		__define_initcall(fn, 7)
+#define postmmu_initcall(fn)		__define_initcall(fn, 8)
+#define coredevice_initcall(fn)		__define_initcall(fn, 9)
+#define fs_initcall(fn)			__define_initcall(fn, 10)
+#define device_initcall(fn)		__define_initcall(fn, 11)
+#define crypto_initcall(fn)		__define_initcall(fn, 12)
+#define of_populate_initcall(fn)	__define_initcall(fn, 13)
+#define late_initcall(fn)		__define_initcall(fn, 14)
+#define environment_initcall(fn)	__define_initcall(fn, 15)
+#define postenvironment_initcall(fn)	__define_initcall(fn, 16)
 
-#define early_exitcall(fn)		__define_exitcall("0",fn,0)
-#define predevshutdown_exitcall(fn)	__define_exitcall("1",fn,1)
-#define devshutdown_exitcall(fn)	__define_exitcall("2",fn,2)
-#define postdevshutdown_exitcall(fn)	__define_exitcall("3",fn,3)
-#define prearchshutdown_exitcall(fn)	__define_exitcall("4",fn,4)
-#define archshutdown_exitcall(fn)	__define_exitcall("5",fn,5)
-#define postarchshutdown_exitcall(fn)	__define_exitcall("6",fn,6)
+#define early_exitcall(fn)		__define_exitcall(fn, 0)
+#define predevshutdown_exitcall(fn)	__define_exitcall(fn, 1)
+#define devshutdown_exitcall(fn)	__define_exitcall(fn, 2)
+#define postdevshutdown_exitcall(fn)	__define_exitcall(fn, 3)
+#define prearchshutdown_exitcall(fn)	__define_exitcall(fn, 4)
+#define archshutdown_exitcall(fn)	__define_exitcall(fn, 5)
+#define postarchshutdown_exitcall(fn)	__define_exitcall(fn, 6)
 
 #endif /* __ASSEMBLY__ */
 

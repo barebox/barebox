@@ -12,6 +12,7 @@
 
 #include <linux/list.h>
 #include <linux/stringify.h>
+#include <linux/compiler_types.h>
 #include <linux/stddef.h>
 #include <string.h>
 
@@ -75,8 +76,7 @@ int run_command(const char *cmd);
 #define BAREBOX_CMD_START(_name)						\
 static struct command __barebox_cmd_##_name;					\
 const struct command *barebox_cmd_##_name 					\
-	__attribute__ ((unused,section (".barebox_cmd_" __stringify(_name))))	\
-			= &__barebox_cmd_##_name;				\
+	__ll_elem(.barebox_cmd_##_name)	= &__barebox_cmd_##_name;		\
 static struct command __barebox_cmd_##_name = {					\
 	.name		= #_name,
 

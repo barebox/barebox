@@ -274,6 +274,12 @@ struct ftrace_likely_data {
 #define __cold			__attribute__((cold))
 #define __section(S)		__attribute__((__section__(#S)))
 
+#ifdef __clang__
+#define __ll_elem(S)		__section(S) __used __no_sanitize_address
+#else
+#define __ll_elem(S)		__section(S) __used
+#endif
+
 
 #ifdef CONFIG_ENABLE_MUST_CHECK
 #define __must_check		__attribute__((warn_unused_result))

@@ -581,17 +581,10 @@ struct cdev *devfs_add_partition(const char *devname, loff_t offset,
 	return cdevfs_add_partition(cdev, &partinfo);
 }
 
-int devfs_del_partition(const char *name)
+int cdevfs_del_partition(struct cdev *cdev)
 {
-	struct cdev *cdev;
 	int ret;
 
-	cdev = cdev_by_name(name);
-	if (!cdev)
-		return -ENOENT;
-
-	if (!cdev_is_partition(cdev))
-		return -EINVAL;
 	if (cdev->flags & DEVFS_PARTITION_FIXED)
 		return -EPERM;
 
@@ -609,6 +602,20 @@ int devfs_del_partition(const char *name)
 	free(cdev);
 
 	return 0;
+}
+
+int devfs_del_partition(const char *name)
+{
+	struct cdev *cdev;
+
+	cdev = cdev_by_name(name);
+	if (!cdev)
+		return -ENOENT;
+
+	if (!cdev_is_partition(cdev))
+		return -EINVAL;
+
+	return cdevfs_del_partition(cdev);
 }
 
 int devfs_create_partitions(const char *devname,

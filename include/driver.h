@@ -683,6 +683,7 @@ int devfs_del_partition(const char *name);
 
 struct cdev *cdevfs_add_partition(struct cdev *cdev,
 		const struct devfs_partition *partinfo);
+int cdevfs_del_partition(struct cdev *cdev);
 
 #define of_match_ptr(compat) \
 	IS_ENABLED(CONFIG_OFDEVICE) ? (compat) : NULL

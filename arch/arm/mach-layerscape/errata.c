@@ -6,9 +6,7 @@
 #include <asm/system.h>
 #include <mach/layerscape/errata.h>
 #include <mach/layerscape/lowlevel.h>
-
-#define scfg_clrsetbits32(addr, clear, set) clrsetbits_be32(addr, clear, set)
-#define scfg_clrbits32(addr, clear) clrbits_be32(addr, clear)
+#include <soc/fsl/scfg.h>
 
 static inline void set_usb_pcstxswingfull(u32 __iomem *scfg, u32 offset)
 {

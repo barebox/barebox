@@ -14,6 +14,7 @@
 #include <mach/layerscape/fsl_epu.h>
 #include <soc/fsl/immap_lsch2.h>
 #include <soc/fsl/fsl_immap.h>
+#include <soc/fsl/scfg.h>
 
 void udelay(unsigned long usecs)
 {
@@ -320,6 +321,7 @@ void ls102xa_init_lowlevel(void)
 	cortex_a7_lowlevel_init();
 	arm_cpu_lowlevel_init();
 
+	scfg_init(SCFG_ENDIANESS_BIG);
 	init_csu();
 
 	writel(SYS_COUNTER_CTRL_ENABLE, LSCH2_SYS_COUNTER_ADDR);

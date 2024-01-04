@@ -5,9 +5,13 @@
 
 #include <io.h>
 #include <soc/fsl/immap_lsch2.h>
+#include <soc/fsl/immap_lsch3.h>
 
 #define __LS_UART_BASE(num)	LSCH2_NS16550_COM##num
 #define LS_UART_BASE(num) __LS_UART_BASE(num)
+
+#define __LSCH3_UART_BASE(num)	LSCH3_NS16550_COM##num
+#define LSCH3_UART_BASE(num) __LSCH3_UART_BASE(num)
 
 static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)
 {
@@ -31,9 +35,24 @@ static inline void ls1046a_uart_setup(void *base)
 
 static inline void ls1046a_debug_ll_init(void)
 {
-	void __iomem *base = IOMEM(LS_UART_BASE(CONFIG_DEBUG_LAYERSCAPE_UART_PORT));
+	void __iomem *base = IOMEM(LSCH3_UART_BASE(CONFIG_DEBUG_LAYERSCAPE_UART_PORT));
 
 	ls1046a_uart_setup(base);
+}
+
+static inline void ls1028a_uart_setup(void *base)
+{
+	uint16_t divisor;
+
+	divisor = debug_ll_ns16550_calc_divisor(200000000);
+	debug_ll_ns16550_init(base, divisor);
+}
+
+static inline void ls1028a_debug_ll_init(void)
+{
+	void __iomem *base = IOMEM(LS_UART_BASE(CONFIG_DEBUG_LAYERSCAPE_UART_PORT));
+
+	ls1028a_uart_setup(base);
 }
 
 static inline void ls102xa_uart_setup(void *base)

@@ -15,7 +15,7 @@ static inline void set_usb_pcstxswingfull(u32 __iomem *scfg, u32 offset)
 			SCFG_USB_PCSTXSWINGFULL << 9);
 }
 
-static void erratum_a008997_layerscape(void)
+static void erratum_a008997_ls1021a(void)
 {
 	u32 __iomem *scfg = (u32 __iomem *)LSCH2_SCFG_ADDR;
 
@@ -26,6 +26,7 @@ static void erratum_a008997_ls1046a(void)
 {
 	u32 __iomem *scfg = (u32 __iomem *)LSCH2_SCFG_ADDR;
 
+	set_usb_pcstxswingfull(scfg, SCFG_USB3PRM2CR_USB1);
 	set_usb_pcstxswingfull(scfg, SCFG_USB3PRM2CR_USB2);
 	set_usb_pcstxswingfull(scfg, SCFG_USB3PRM2CR_USB3);
 }
@@ -121,7 +122,6 @@ static void layerscape_errata(void)
 	erratum_a008850_early();
 	erratum_a009008_layerscape();
 	erratum_a009798_layerscape();
-	erratum_a008997_layerscape();
 }
 
 void ls1046a_errata(void)
@@ -136,6 +136,7 @@ void ls1046a_errata(void)
 void ls1021a_errata(void)
 {
 	layerscape_errata();
+	erratum_a008997_ls1021a();
 	erratum_a009007_ls1021a();
 	erratum_a009008_ls1021a();
 }

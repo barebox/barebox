@@ -29,4 +29,16 @@ static inline int ls1046a_ppa_init(resource_size_t ppa_start,
 }
 #endif
 
+struct dram_region_info {
+        uint64_t addr;
+        uint64_t size;
+};
+#define NUM_DRAM_REGIONS  3
+
+struct dram_regions_info {
+        uint64_t num_dram_regions;
+        int64_t total_dram_size;
+        struct dram_region_info region[NUM_DRAM_REGIONS];
+};
+
 #endif /* __MACH_LAYERSCAPE_H */

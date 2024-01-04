@@ -9,6 +9,8 @@
 #include <asm/sections.h>
 #include <asm/cache.h>
 #include <mach/imx/xload.h>
+#include <firmware.h>
+#include <asm/atf_common.h>
 #ifdef CONFIG_ARCH_IMX
 #include <mach/imx/atf.h>
 #include <mach/imx/imx6-regs.h>
@@ -319,7 +321,8 @@ static int layerscape_esdhc_load_image(struct fsl_esdhc_host *host, void *adr, u
 	val |= div_val;
 	sdhci_write32(&host->sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET, val);
 
-	sdhci_write32(&host->sdhci, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
+	sdhci_write32(&host->sdhci, ESDHC_DMA_SYSCTL,
+		      ESDHC_SYSCTL_DMA_SNOOP | ESDHC_SYSCTL_PERIPHERAL_CLK_SEL);
 
 	ret = esdhc_read_blocks(host, adr, size);
 	if (ret) {
@@ -373,4 +376,54 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 
 	return -EINVAL;
 }
+
+static int ls1028a_esdhc_start_image(void __iomem *base, struct dram_regions_info *dram_info)
+{
+	struct esdhc_soc_data data = {
+		.flags = ESDHC_FLAG_MULTIBLK_NO_INT,
+	};
+	struct fsl_esdhc_host host = {
+		.sdhci.base = base,
+		.socdata = &data,
+	};
+	void *sdram = (void *)0x80000000;
+	void (*bl31)(void) = (void *)0xfbe00000;
+	size_t bl31_size;
+	void *bl31_image;
+	struct bl2_to_bl31_params_mem_v2 *params;
+	unsigned long size = ALIGN(barebox_image_size + LS1046A_SD_IMAGE_OFFSET, 512);
+	void (*barebox)(unsigned long, unsigned long, unsigned long) =
+		(sdram + LS1046A_SD_IMAGE_OFFSET);
+	int ret;
+
+	ret = layerscape_esdhc_load_image(&host, sdram, size, 8 << 4);
+	if (ret)
+		return ret;
+
+	get_builtin_firmware_ext(ls1028a_bl31_bin, barebox, &bl31_image, &bl31_size);
+	memcpy(bl31, bl31_image, bl31_size);
+
+	/* Setup an initial stack for EL2 */
+	asm volatile("msr sp_el2, %0" : : "r" ((unsigned long)barebox - 16) : "cc");
+
+	params = bl2_plat_get_bl31_params_v2(0, (uintptr_t)barebox, 0);
+	params->bl31_ep_info.args.arg3 = (unsigned long)dram_info;
+
+	printf("Starting bl31\n");
+
+	bl31_entry_v2((uintptr_t)bl31, &params->bl_params, NULL);
+
+	return -EINVAL;
+}
+
+int ls1028a_esdhc1_start_image(struct dram_regions_info *dram_info)
+{
+	return ls1028a_esdhc_start_image(IOMEM(0x2140000), dram_info);
+}
+
+int ls1028a_esdhc2_start_image(struct dram_regions_info *dram_info)
+{
+	return ls1028a_esdhc_start_image(IOMEM(0x2150000), dram_info);
+}
+
 #endif

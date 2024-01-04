@@ -93,11 +93,10 @@ static void erratum_a009798_ls1046a(void)
 	set_usb_sqrxtune(scfg, SCFG_USB3PRM1CR_USB3);
 }
 
-static void erratum_a008850_early(void)
+static void erratum_a008850_early(struct ccsr_cci400 __iomem *cci,
+				  struct ccsr_ddr __iomem *ddr)
 {
 	/* part 1 of 2 */
-	struct ccsr_cci400 __iomem *cci = IOMEM(LSCH2_CCI400_ADDR);
-	struct ccsr_ddr __iomem *ddr = IOMEM(LSCH2_DDR_ADDR);
 
 	/* Skip if running at lower exception level */
 #if __LINUX_ARM_ARCH__ > 7
@@ -112,14 +111,9 @@ static void erratum_a008850_early(void)
 	ddr_out32(&ddr->eor, DDR_EOR_RD_REOD_DIS | DDR_EOR_WD_REOD_DIS);
 }
 
-static void layerscape_errata(void)
-{
-	erratum_a008850_early();
-}
-
 void ls1046a_errata(void)
 {
-	layerscape_errata();
+	erratum_a008850_early(IOMEM(LSCH2_CCI400_ADDR), IOMEM(LSCH2_DDR_ADDR));
 	erratum_a009008_ls1046a();
 	erratum_a009798_ls1046a();
 	erratum_a008997_ls1046a();
@@ -128,18 +122,17 @@ void ls1046a_errata(void)
 
 void ls1021a_errata(void)
 {
-	layerscape_errata();
+	erratum_a008850_early(IOMEM(LSCH2_CCI400_ADDR), IOMEM(LSCH2_DDR_ADDR));
 	erratum_a009008_ls1021a();
 	erratum_a009798_ls1021a();
 	erratum_a008997_ls1021a();
 	erratum_a009007_ls1021a();
 }
 
-static void erratum_a008850_post(void)
+static void erratum_a008850_post(struct ccsr_cci400 __iomem *cci,
+				 struct ccsr_ddr __iomem *ddr)
 {
 	/* part 2 of 2 */
-	struct ccsr_cci400 __iomem *cci = IOMEM(LSCH2_CCI400_ADDR);
-	struct ccsr_ddr __iomem *ddr = IOMEM(LSCH2_DDR_ADDR);
 	u32 tmp;
 
 	/* Skip if running at lower exception level */
@@ -227,11 +220,11 @@ static void erratum_a009942_check_cpo(void)
 
 void ls1046a_errata_post_ddr(void)
 {
-	erratum_a008850_post();
+	erratum_a008850_post(IOMEM(LSCH2_CCI400_ADDR), IOMEM(LSCH2_DDR_ADDR));
 	erratum_a009942_check_cpo();
 }
 
 void ls1021a_errata_post_ddr(void)
 {
-	erratum_a008850_post();
+	erratum_a008850_post(IOMEM(LSCH2_CCI400_ADDR), IOMEM(LSCH2_DDR_ADDR));
 }

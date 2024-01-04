@@ -188,6 +188,15 @@ config DRIVER_NET_FEC_IMX
 	depends on HAS_DMA
 	select PHYLIB
 
+config DRIVER_NET_FSL_ENETC
+	bool "Freescale enetc ethernet driver"
+	select PHYLIB
+	depends on PCI
+	depends on HAS_DMA
+	help
+	  This option enables support for the Freescale enetc core found
+	  on Layerscape SoCs.
+
 config DRIVER_NET_FSL_FMAN
 	bool "Freescale fman ethernet driver"
 	select PHYLIB

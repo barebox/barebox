@@ -42,10 +42,10 @@
 #define KASAN_ALLOCA_LEFT	0xCA
 #define KASAN_ALLOCA_RIGHT	0xCB
 
-#if defined(CONFIG_KASAN) && !defined(__PBL__)
-
 extern unsigned long kasan_shadow_start;
 extern unsigned long kasan_shadow_base;
+
+#if defined(CONFIG_KASAN) && !defined(__PBL__)
 
 static inline void *kasan_mem_to_shadow(const void *addr)
 {

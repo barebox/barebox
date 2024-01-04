@@ -301,17 +301,6 @@ struct ls102xa_ccsr_gur {
 #define SCFG_USB_PHY2			0x08500000
 #define SCFG_USB_PHY3			0x08510000
 #define SCFG_USB_PHY_RX_OVRD_IN_HI		0x200c
-#if defined CONFIG_ARCH_LS1046
-#define USB_PHY_RX_EQ_VAL_1		0x0000
-#define USB_PHY_RX_EQ_VAL_2		0x0080
-#define USB_PHY_RX_EQ_VAL_3		0x0380
-#define USB_PHY_RX_EQ_VAL_4		0x0b80
-#elif defined CONFIG_ARCH_LS1021
-#define USB_PHY_RX_EQ_VAL_1		0x0000
-#define USB_PHY_RX_EQ_VAL_2		0x8000
-#define USB_PHY_RX_EQ_VAL_3		0x8004
-#define USB_PHY_RX_EQ_VAL_4		0x800C
-#endif
 
 #define SCFG_ETSECDMAMCR_LE_BD_FR	0x00000c00
 #define SCFG_SNPCNFGCR_SEC_RD_WR	0xc0000000
@@ -516,4 +505,4 @@ struct ls102xa_ccsr_scfg {
 	u32 core0sftrstsr;
 	u32 clusterpmcr;
 };
-#endif	/* __ARCH_FSL_LSCH2_IMMAP_H__*/
+#endif /* __ARCH_FSL_LSCH2_IMMAP_H__*/

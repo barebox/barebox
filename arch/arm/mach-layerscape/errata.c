@@ -30,27 +30,24 @@ static void erratum_a008997_ls1046a(void)
 	set_usb_pcstxswingfull(scfg, SCFG_USB3PRM2CR_USB3);
 }
 
-#define PROGRAM_USB_PHY_RX_OVRD_IN_HI(phy)      \
-	out_be16((phy) + SCFG_USB_PHY_RX_OVRD_IN_HI, USB_PHY_RX_EQ_VAL_1);      \
-	out_be16((phy) + SCFG_USB_PHY_RX_OVRD_IN_HI, USB_PHY_RX_EQ_VAL_2);      \
-	out_be16((phy) + SCFG_USB_PHY_RX_OVRD_IN_HI, USB_PHY_RX_EQ_VAL_3);      \
-	out_be16((phy) + SCFG_USB_PHY_RX_OVRD_IN_HI, USB_PHY_RX_EQ_VAL_4)
-
-static void erratum_a009007_layerscape(void)
+static void erratum_a009007(void __iomem *phy, u16 val1, u16 val2, u16 val3, u16 val4)
 {
-	void __iomem *usb_phy = IOMEM(SCFG_USB_PHY1);
-
-	usb_phy = (void __iomem *)SCFG_USB_PHY3;
-	PROGRAM_USB_PHY_RX_OVRD_IN_HI(usb_phy);
+	scfg_out16(phy + SCFG_USB_PHY_RX_OVRD_IN_HI, val1);
+	scfg_out16(phy + SCFG_USB_PHY_RX_OVRD_IN_HI, val2);
+	scfg_out16(phy + SCFG_USB_PHY_RX_OVRD_IN_HI, val3);
+	scfg_out16(phy + SCFG_USB_PHY_RX_OVRD_IN_HI, val4);
 }
 
 static void erratum_a009007_ls1046a(void)
 {
-	void __iomem *usb_phy = IOMEM(SCFG_USB_PHY1);
+	erratum_a009007(IOMEM(SCFG_USB_PHY1), 0x0000, 0x0080, 0x0380, 0x0b80);
+	erratum_a009007(IOMEM(SCFG_USB_PHY2), 0x0000, 0x0080, 0x0380, 0x0b80);
+	erratum_a009007(IOMEM(SCFG_USB_PHY3), 0x0000, 0x0080, 0x0380, 0x0b80);
+}
 
-	PROGRAM_USB_PHY_RX_OVRD_IN_HI(usb_phy);
-	usb_phy = (void __iomem *)SCFG_USB_PHY2;
-	PROGRAM_USB_PHY_RX_OVRD_IN_HI(usb_phy);
+static void erratum_a009007_ls1021a(void)
+{
+	erratum_a009007(IOMEM(SCFG_USB_PHY1), 0x0000, 0x8000, 0x8004, 0x800C);
 }
 
 static inline void set_usb_txvreftune(u32 __iomem *scfg, u32 offset)
@@ -125,7 +122,6 @@ static void layerscape_errata(void)
 	erratum_a009008_layerscape();
 	erratum_a009798_layerscape();
 	erratum_a008997_layerscape();
-	erratum_a009007_layerscape();
 }
 
 void ls1046a_errata(void)
@@ -140,6 +136,7 @@ void ls1046a_errata(void)
 void ls1021a_errata(void)
 {
 	layerscape_errata();
+	erratum_a009007_ls1021a();
 	erratum_a009008_ls1021a();
 }
 

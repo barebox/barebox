@@ -63,10 +63,6 @@
 #define LSCH2_QDMA_BASE_ADDR		(LSCH2_IMMR + 0x07380000)
 #define LSCH2_EHCI_USB1_ADDR		(LSCH2_IMMR + 0x07600000)
 
-#define TIMER_COMP_VAL			0xffffffffffffffffull
-#define ARCH_TIMER_CTRL_ENABLE		(1 << 0)
-#define SYS_COUNTER_CTRL_ENABLE		(1 << 24)
-
 struct ccsr_gur {
 	u32     porsr1;         /* POR status 1 */
 #define FSL_CHASSIS2_CCSR_PORSR1_RCW_MASK	0xFF800000
@@ -306,13 +302,11 @@ struct ls102xa_ccsr_gur {
 #define SCFG_USB_PHY3			0x08510000
 #define SCFG_USB_PHY_RX_OVRD_IN_HI		0x200c
 #if defined CONFIG_ARCH_LS1046
-#define SCFG_QSPI_CLKSEL		0x40100000
 #define USB_PHY_RX_EQ_VAL_1		0x0000
 #define USB_PHY_RX_EQ_VAL_2		0x0080
 #define USB_PHY_RX_EQ_VAL_3		0x0380
 #define USB_PHY_RX_EQ_VAL_4		0x0b80
 #elif defined CONFIG_ARCH_LS1021
-#define SCFG_QSPI_CLKSEL		0x50100000
 #define USB_PHY_RX_EQ_VAL_1		0x0000
 #define USB_PHY_RX_EQ_VAL_2		0x8000
 #define USB_PHY_RX_EQ_VAL_3		0x8004

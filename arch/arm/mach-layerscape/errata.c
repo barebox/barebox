@@ -71,13 +71,6 @@ static void erratum_a009008_ls1046a(void)
 	set_usb_txvreftune(scfg, SCFG_USB3PRM1CR_USB3);
 }
 
-static void erratum_a009008_ls1021a(void)
-{
-	u32 __iomem *scfg = IOMEM(LSCH2_SCFG_ADDR);
-
-	set_usb_txvreftune(scfg, SCFG_USB3PRM2CR_USB1);
-}
-
 static inline void set_usb_sqrxtune(u32 __iomem *scfg, u32 offset)
 {
 	scfg_clrbits32(scfg + offset / 4, SCFG_USB_SQRXTUNE_MASK << 23);
@@ -139,7 +132,6 @@ void ls1021a_errata(void)
 	erratum_a009798_ls1021a();
 	erratum_a008997_ls1021a();
 	erratum_a009007_ls1021a();
-	erratum_a009008_ls1021a();
 }
 
 static void erratum_a008850_post(void)

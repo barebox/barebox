@@ -2,6 +2,7 @@
 #include <common.h>
 #include <io.h>
 #include <soc/fsl/immap_lsch2.h>
+#include <soc/fsl/immap_lsch3.h>
 #include <soc/fsl/fsl_ddr_sdram.h>
 #include <asm/system.h>
 #include <mach/layerscape/errata.h>
@@ -20,6 +21,15 @@ static void erratum_a008997_ls1021a(void)
 	u32 __iomem *scfg = (u32 __iomem *)LSCH2_SCFG_ADDR;
 
 	set_usb_pcstxswingfull(scfg, SCFG_USB3PRM2CR_USB1);
+}
+
+static void erratum_a008997_ls1028a(void)
+{
+	void __iomem *dcsr = IOMEM(LSCH3_DCSR_BASE);
+
+	clrsetbits_le32(dcsr + LSCH3_DCSR_USB_IOCR1,
+			0x7f << 11,
+			LSCH3_DCSR_USB_PCSTXSWINGFULL << 11);
 }
 
 static void erratum_a008997_ls1046a(void)
@@ -54,6 +64,11 @@ static void erratum_a009007_ls1021a(void)
 static inline void set_usb_txvreftune(u32 __iomem *scfg, u32 offset)
 {
 	scfg_clrsetbits32(scfg + offset / 4, 0xf << 6, SCFG_USB_TXVREFTUNE << 6);
+}
+
+static void erratum_a009007_ls1028a(void)
+{
+	erratum_a009007(IOMEM(LSCH3_DCSR_BASE), 0x0000, 0x0080, 0x0380, 0x0b80);
 }
 
 static void erratum_a009008_ls1021a(void)
@@ -111,6 +126,26 @@ static void erratum_a008850_early(struct ccsr_cci400 __iomem *cci,
 	ddr_out32(&ddr->eor, DDR_EOR_RD_REOD_DIS | DDR_EOR_WD_REOD_DIS);
 }
 
+/*
+ * This erratum requires a register write before being Memory
+ * controller 3 being enabled.
+ */
+static void erratum_a008514(void)
+{
+	u32 *eddrtqcr1;
+
+	eddrtqcr1 = IOMEM(LSCH3_DCSR_DDR3_ADDR) + 0x800;
+	out_le32(eddrtqcr1, 0x63b20002);
+}
+
+static void erratum_a009798(void)
+{
+        u32 __iomem *scfg = IOMEM(LSCH3_SCFG_BASE);
+
+        clrbits_be32(scfg + LSCH3_SCFG_USB3PRM1CR / 4,
+                        LSCH3_SCFG_USB_SQRXTUNE_MASK << 23);
+}
+
 void ls1046a_errata(void)
 {
 	erratum_a008850_early(IOMEM(LSCH2_CCI400_ADDR), IOMEM(LSCH2_DDR_ADDR));
@@ -127,6 +162,15 @@ void ls1021a_errata(void)
 	erratum_a009798_ls1021a();
 	erratum_a008997_ls1021a();
 	erratum_a009007_ls1021a();
+}
+
+void ls1028a_errata(void)
+{
+	erratum_a008850_early(IOMEM(LSCH3_CCI400_ADDR), IOMEM(LSCH3_DDR_ADDR));
+	erratum_a009007_ls1028a();
+	erratum_a008997_ls1028a();
+	erratum_a008514();
+	erratum_a009798();
 }
 
 static void erratum_a008850_post(struct ccsr_cci400 __iomem *cci,
@@ -227,4 +271,9 @@ void ls1046a_errata_post_ddr(void)
 void ls1021a_errata_post_ddr(void)
 {
 	erratum_a008850_post(IOMEM(LSCH2_CCI400_ADDR), IOMEM(LSCH2_DDR_ADDR));
+}
+
+void ls1028a_errata_post_ddr(void)
+{
+	erratum_a008850_post(IOMEM(LSCH3_CCI400_ADDR), IOMEM(LSCH3_DDR_ADDR));
 }

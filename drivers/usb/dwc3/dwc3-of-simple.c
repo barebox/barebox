@@ -67,13 +67,7 @@ static void dwc3_of_simple_remove(struct device *dev)
 static const struct of_device_id of_dwc3_simple_match[] = {
 	{.compatible = "rockchip,rk3399-dwc3"},
 	{.compatible = "xlnx,zynqmp-dwc3"},
-	{.compatible = "fsl,ls1046a-dwc3"},
 	{.compatible = "fsl,imx8mp-dwc3"},
-	{.compatible = "cavium,octeon-7130-usb-uctl"},
-	{.compatible = "sprd,sc9860-dwc3"},
-	{.compatible = "amlogic,meson-axg-dwc3"},
-	{.compatible = "amlogic,meson-gxl-dwc3"},
-	{.compatible = "allwinner,sun50i-h6-dwc3"},
 	{/* Sentinel */}};
 MODULE_DEVICE_TABLE(of, of_dwc3_simple_match);
 

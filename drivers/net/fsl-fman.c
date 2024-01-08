@@ -583,7 +583,6 @@ static int fm_eth_rx_port_parameter_init(struct fm_eth *fm_eth)
 	void *rx_bd_ring_base;
 	void *rx_buf_pool;
 	u32 bd_ring_base_lo, bd_ring_base_hi;
-	u32 buf_lo, buf_hi;
 	struct fm_port_bd *rxbd;
 	struct fm_port_qd *rxqd;
 	struct fm_bmi_rx_port *bmi_rx_port = fm_eth->rx_port;
@@ -631,19 +630,21 @@ static int fm_eth_rx_port_parameter_init(struct fm_eth *fm_eth)
 
 	/* init Rx BDs ring */
 	for (i = 0; i < RX_BD_RING_SIZE; i++) {
+		dma_addr_t dma;
+
 		rxbd = &fm_eth->rx_bd_ring[i];
 
 		muram_writew(&rxbd->status, RxBD_EMPTY);
 		muram_writew(&rxbd->len, 0);
-		buf_hi = upper_32_bits(virt_to_phys(rx_buf_pool +
-					i * MAX_RXBUF_LEN));
-		buf_lo = lower_32_bits(virt_to_phys(rx_buf_pool +
-					i * MAX_RXBUF_LEN));
-		dma_sync_single_for_device(fm_eth->dev,
-					   (unsigned long)rx_buf_pool + i * MAX_RXBUF_LEN,
-					   MAX_RXBUF_LEN, DMA_FROM_DEVICE);
-		muram_writew(&rxbd->buf_ptr_hi, (u16)buf_hi);
-		out_be32(&rxbd->buf_ptr_lo, buf_lo);
+
+		dma = dma_map_single(fm_eth->dev,
+				     rx_buf_pool + i * MAX_RXBUF_LEN,
+				     MAX_RXBUF_LEN, DMA_FROM_DEVICE);
+		if (dma_mapping_error(fm_eth->dev, dma))
+			return -EFAULT;
+
+		muram_writew(&rxbd->buf_ptr_hi, (u16)upper_32_bits(dma));
+		out_be32(&rxbd->buf_ptr_lo, lower_32_bits(dma));
 	}
 
 	/* set the Rx queue descriptor */

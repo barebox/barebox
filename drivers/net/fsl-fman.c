@@ -620,9 +620,7 @@ static int fm_eth_rx_port_parameter_init(struct fm_eth *fm_eth)
 			* RX_BD_RING_SIZE);
 
 	/* alloc Rx buffer from main memory */
-	rx_buf_pool = malloc(MAX_RXBUF_LEN * RX_BD_RING_SIZE);
-	if (!rx_buf_pool)
-		return -ENOMEM;
+	rx_buf_pool = dma_alloc(MAX_RXBUF_LEN * RX_BD_RING_SIZE);
 
 	memset(rx_buf_pool, 0, MAX_RXBUF_LEN * RX_BD_RING_SIZE);
 

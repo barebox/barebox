@@ -21,6 +21,15 @@ quiet_cmd_lspbl_spi_image = LSPBL-SPI-IMG $@
 			    $(objtree)/scripts/pblimage -o $@ -r $(lspbl-rcw-tmp) -s \
 			    -c $(2) -m $($(patsubst $(obj)/%.pblb,PBL_CODE_SIZE_%,$<)) -p $(lspbl-pbi-tmp) -i $<
 
+pbl-$(CONFIG_MACH_LS1028ARDB) += start_ls1028ardb.pbl
+
+$(obj)/barebox-ls1028ardb-sd.image: $(obj)/start_ls1028ardb.pblb \
+		$(board)/ls1028ardb/ls1028ardb_rcw_sd.cfg \
+		$(board)/ls1028ardb/ls1028ardb_pbi.cfg
+	$(call if_changed,lspbl_image,ls1028a)
+
+image-$(CONFIG_MACH_LS1028ARDB) += barebox-ls1028ardb-sd.image
+
 pbl-$(CONFIG_MACH_LS1046ARDB) += start_ls1046ardb.pbl
 
 $(obj)/barebox-ls1046ardb-sd.image: $(obj)/start_ls1046ardb.pblb \

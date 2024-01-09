@@ -7,7 +7,6 @@ config ARCH_LAYERSCAPE_PPA
 	select ARM_PSCI_OF
 	select ARM_SMCCC
 	select FITIMAGE
-	bool
 	help
 	  The "Primary Protected Application" (PPA) is a PSCI compliant firmware
 	  distributed by NXP. It is needed to start the secondary cores on
@@ -15,11 +14,23 @@ config ARCH_LAYERSCAPE_PPA
 	  work properly. The precompiled firmware images can be found here:
 	  https://github.com/NXP/qoriq-ppa-binary
 
-config ARCH_LS1046
-	select CPU_V8
+config ARCH_LS1028
 	bool
+	select CPU_V8
+	select SYS_SUPPORTS_64BIT_KERNEL
+	select ARM_ATF
+	select FIRMWARE_LS1028A_ATF
+
+config ARCH_LS1046
+	bool
+	select CPU_V8
+	select SYS_SUPPORTS_64BIT_KERNEL
 
 if 64BIT
+
+config MACH_LS1028ARDB
+	bool "QorIQ LS1028A Reference Design Board"
+	select ARCH_LS1028
 
 config MACH_LS1046ARDB
 	bool "QorIQ LS1046A Reference Design Board"

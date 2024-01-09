@@ -496,16 +496,16 @@ static void setup_qbman_portals(void)
 static void of_set_qportal_iommu_prop(struct device_node *np, phandle iommu_handle,
 			       const struct qportal_info *qp_info)
 {
-	u32 prop[6];
+	u32 prop[] = {
+		iommu_handle,
+		qp_info->icid,
+		iommu_handle,
+		qp_info->dicid,
+		iommu_handle,
+		qp_info->ficid
+	};
 
-	prop[0] = cpu_to_fdt32(iommu_handle);
-	prop[1] = cpu_to_fdt32(qp_info->icid);
-	prop[2] = cpu_to_fdt32(iommu_handle);
-	prop[3] = cpu_to_fdt32(qp_info->dicid);
-	prop[4] = cpu_to_fdt32(iommu_handle);
-	prop[5] = cpu_to_fdt32(qp_info->ficid);
-
-	of_set_property(np, "iommus", prop, sizeof(prop), 1);
+	of_property_write_u32_array(np, "iommus", prop, ARRAY_SIZE(prop));
 }
 
 static void of_fixup_qportals(struct device_node *root, phandle iommu_handle)

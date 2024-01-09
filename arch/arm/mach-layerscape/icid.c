@@ -292,7 +292,7 @@ static int get_fman_port_icid(int port_id, const struct fman_icid_id_table *tbl,
 	return -ENODEV;
 }
 
-static void fdt_set_iommu_prop(struct device_node *np, phandle iommu_handle,
+static void of_set_iommu_prop(struct device_node *np, phandle iommu_handle,
 			       int stream_id)
 {
 	u32 prop[2];
@@ -303,7 +303,7 @@ static void fdt_set_iommu_prop(struct device_node *np, phandle iommu_handle,
 	of_set_property(np, "iommus", prop, sizeof(prop), 1);
 }
 
-static void fdt_fixup_fman_port_icid_by_compat(struct device_node *root,
+static void of_fixup_fman_port_icid_by_compat(struct device_node *root,
 					       phandle iommu_handle,
 					       const char *compat)
 {
@@ -324,11 +324,11 @@ static void fdt_fixup_fman_port_icid_by_compat(struct device_node *root,
 			continue;
 		}
 
-		fdt_set_iommu_prop(np, iommu_handle, icid);
+		of_set_iommu_prop(np, iommu_handle, icid);
 	}
 }
 
-static void fdt_fixup_fman_icids(struct device_node *root, phandle iommu_handle)
+static void of_fixup_fman_icids(struct device_node *root, phandle iommu_handle)
 {
 	static const char * const compats[] = {
 		"fsl,fman-v3-port-oh",
@@ -338,7 +338,7 @@ static void fdt_fixup_fman_icids(struct device_node *root, phandle iommu_handle)
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(compats); i++)
-		fdt_fixup_fman_port_icid_by_compat(root, iommu_handle, compats[i]);
+		of_fixup_fman_port_icid_by_compat(root, iommu_handle, compats[i]);
 }
 
 struct qportal_info {
@@ -452,7 +452,7 @@ static void setup_qbman_portals(void)
 	inhibit_portals(qpaddr, ARRAY_SIZE(qp_info), QMAN_SP_CINH_SIZE);
 }
 
-static void fdt_set_qportal_iommu_prop(struct device_node *np, phandle iommu_handle,
+static void of_set_qportal_iommu_prop(struct device_node *np, phandle iommu_handle,
 			       const struct qportal_info *qp_info)
 {
 	u32 prop[6];
@@ -467,7 +467,7 @@ static void fdt_set_qportal_iommu_prop(struct device_node *np, phandle iommu_han
 	of_set_property(np, "iommus", prop, sizeof(prop), 1);
 }
 
-static void fdt_fixup_qportals(struct device_node *root, phandle iommu_handle)
+static void of_fixup_qportals(struct device_node *root, phandle iommu_handle)
 {
 	struct device_node *np;
 	unsigned int maj, min;
@@ -487,7 +487,7 @@ static void fdt_fixup_qportals(struct device_node *root, phandle iommu_handle)
 		if (ret)
 			continue;
 
-		fdt_set_qportal_iommu_prop(np, iommu_handle, &qp_info[cell_index]);
+		of_set_qportal_iommu_prop(np, iommu_handle, &qp_info[cell_index]);
 	}
 }
 
@@ -519,14 +519,14 @@ static int icid_of_fixup(struct device_node *root, void *context)
 				continue;
 
 			if (res.start == icid->compat_addr) {
-				fdt_set_iommu_prop(np, iommu_handle, icid->id);
+				of_set_iommu_prop(np, iommu_handle, icid->id);
 				break;
 			}
 		}
 	}
 
-	fdt_fixup_fman_icids(root, iommu_handle);
-	fdt_fixup_qportals(root, iommu_handle);
+	of_fixup_fman_icids(root, iommu_handle);
+	of_fixup_qportals(root, iommu_handle);
 
 	return 0;
 }

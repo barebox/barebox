@@ -71,12 +71,12 @@ struct icid_id_table {
 static void of_set_iommu_prop(struct device_node *np, phandle iommu_handle,
 			       int stream_id)
 {
-	u32 prop[2];
+	u32 prop[] = {
+		iommu_handle,
+		stream_id
+	};
 
-	prop[0] = cpu_to_fdt32(iommu_handle);
-	prop[1] = cpu_to_fdt32(stream_id);
-
-	of_set_property(np, "iommus", prop, sizeof(prop), 1);
+	of_property_write_u32_array(np, "iommus", prop, ARRAY_SIZE(prop));
 }
 
 static phandle of_get_iommu_handle(struct device_node *root)

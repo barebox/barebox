@@ -349,6 +349,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_layerscape_image;
 	if (buf[0] == 0x01ee0100 && buf[1] == 0xaa55aa55)
 		return filetype_layerscape_qspi_image;
+	if (buf[0] == 0xaa55aa55 && buf[1] == 0x80100000)
+		return filetype_layerscape_image;
 
 	if (le32_to_cpu(buf[0]) == 0x00112233 && le32_to_cpu(buf[1]) == 0x1)
 		return filetype_mxs_sd_image;

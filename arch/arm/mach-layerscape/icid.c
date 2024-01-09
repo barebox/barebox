@@ -120,6 +120,20 @@ static int of_fixup_icid(struct device_node *root, phandle iommu_handle,
 	return 0;
 }
 
+static void setup_icid_offsets(const struct icid_id_table *icid_table, int num_icids, bool le)
+{
+	int i;
+
+	for (i = 0; i < num_icids; i++) {
+		const struct icid_id_table *icid = &icid_table[i];
+
+		if (le)
+			out_le32((u32 *)(icid->reg_addr), icid->reg);
+		else
+			out_be32((u32 *)(icid->reg_addr), icid->reg);
+	}
+}
+
 struct fman_icid_id_table {
 	u32 port_id;
 	u32 icid;
@@ -549,15 +563,10 @@ static int of_fixup_ls1046a(struct device_node *root, void *context)
 
 void ls1046a_setup_icids(void)
 {
-	int i;
 	struct ccsr_fman *fm = (void *)LSCH2_FM1_ADDR;
+	int i;
 
-	/* setup general icid offsets */
-	for (i = 0; i < ARRAY_SIZE(icid_tbl_ls1046a); i++) {
-		const struct icid_id_table *icid = &icid_tbl_ls1046a[i];
-
-		out_be32((u32 *)(icid->reg_addr), icid->reg);
-	}
+	setup_icid_offsets(icid_tbl_ls1046a, ARRAY_SIZE(icid_tbl_ls1046a), false);
 
 	/* setup fman icids */
 	for (i = 0; i < ARRAY_SIZE(fman_icid_tbl_ls1046a); i++) {

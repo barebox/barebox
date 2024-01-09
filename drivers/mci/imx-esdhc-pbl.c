@@ -21,6 +21,7 @@
 #endif
 #ifdef CONFIG_ARCH_LAYERSCAPE
 #include <mach/layerscape/xload.h>
+#include <mach/layerscape/layerscape.h>
 #endif
 #include "sdhci.h"
 #include "imx-esdhc.h"
@@ -387,7 +388,7 @@ static int ls1028a_esdhc_start_image(void __iomem *base, struct dram_regions_inf
 		.socdata = &data,
 	};
 	void *sdram = (void *)0x80000000;
-	void (*bl31)(void) = (void *)0xfbe00000;
+	void (*bl31)(void) = (void *)LS1028A_TFA_RESERVED_START;
 	size_t bl31_size;
 	void *bl31_image;
 	struct bl2_to_bl31_params_mem_v2 *params;

@@ -4,6 +4,7 @@
 #include <init.h>
 #include <memory.h>
 #include <linux/bug.h>
+#include <linux/printk.h>
 #include <mach/layerscape/layerscape.h>
 #include <of.h>
 
@@ -95,6 +96,27 @@ static int ls1028a_init(void)
 
 	return 0;
 }
+
+static int ls1028a_reserve_tfa(void)
+{
+	resource_size_t tfa_start = LS1028A_TFA_RESERVED_START;
+	resource_size_t tfa_size = LS1028A_TFA_RESERVED_SIZE;
+	struct resource *res;
+
+	if (!cpu_is_ls1028a())
+		return 0;
+
+	res = reserve_sdram_region("tfa", tfa_start, tfa_size);
+	if (!res) {
+		pr_err("Cannot request SDRAM region %pa - %pa\n", &tfa_start, &tfa_size);
+                return -EINVAL;
+	}
+
+	of_register_fixup(of_fixup_reserved_memory, res);
+
+	return 0;
+}
+mmu_initcall(ls1028a_reserve_tfa);
 
 static int ls1046a_init(void)
 {

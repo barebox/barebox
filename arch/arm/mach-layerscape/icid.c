@@ -68,6 +68,58 @@ struct icid_id_table {
 	phys_addr_t reg_addr;
 };
 
+static void of_set_iommu_prop(struct device_node *np, phandle iommu_handle,
+			       int stream_id)
+{
+	u32 prop[2];
+
+	prop[0] = cpu_to_fdt32(iommu_handle);
+	prop[1] = cpu_to_fdt32(stream_id);
+
+	of_set_property(np, "iommus", prop, sizeof(prop), 1);
+}
+
+static phandle of_get_iommu_handle(struct device_node *root)
+{
+	struct device_node *iommu;
+
+	iommu = of_find_compatible_node(root, NULL, "arm,mmu-500");
+	if (!iommu) {
+		pr_info("No \"arm,mmu-500\" node found, won't fixup\n");
+		return 0;
+	}
+
+	return of_node_create_phandle(iommu);
+}
+
+static int of_fixup_icid(struct device_node *root, phandle iommu_handle,
+			 const struct icid_id_table *icid_table, int num_icid)
+{
+	int i;
+
+	for (i = 0; i < num_icid; i++) {
+		const struct icid_id_table *icid = &icid_table[i];
+		struct device_node *np;
+
+		if (!icid->compat)
+			continue;
+
+		for_each_compatible_node_from(np, root, NULL, icid->compat) {
+			struct resource res;
+
+			if (of_address_to_resource(np, 0, &res))
+				continue;
+
+			if (res.start == icid->compat_addr) {
+				of_set_iommu_prop(np, iommu_handle, icid->id);
+				break;
+			}
+		}
+	}
+
+	return 0;
+}
+
 struct fman_icid_id_table {
 	u32 port_id;
 	u32 icid;
@@ -292,17 +344,6 @@ static int get_fman_port_icid(int port_id, const struct fman_icid_id_table *tbl,
 	return -ENODEV;
 }
 
-static void of_set_iommu_prop(struct device_node *np, phandle iommu_handle,
-			       int stream_id)
-{
-	u32 prop[2];
-
-	prop[0] = cpu_to_fdt32(iommu_handle);
-	prop[1] = cpu_to_fdt32(stream_id);
-
-	of_set_property(np, "iommus", prop, sizeof(prop), 1);
-}
-
 static void of_fixup_fman_port_icid_by_compat(struct device_node *root,
 					       phandle iommu_handle,
 					       const char *compat)
@@ -491,40 +532,15 @@ static void of_fixup_qportals(struct device_node *root, phandle iommu_handle)
 	}
 }
 
-static int icid_of_fixup(struct device_node *root, void *context)
+static int of_fixup_ls1046a(struct device_node *root, void *context)
 {
-	int i;
-	struct device_node *iommu;
 	phandle iommu_handle;
 
-	iommu = of_find_compatible_node(root, NULL, "arm,mmu-500");
-	if (!iommu) {
-		pr_info("No \"arm,mmu-500\" node found, won't fixup\n");
+	iommu_handle = of_get_iommu_handle(root);
+	if (!iommu_handle)
 		return 0;
-	}
 
-	iommu_handle = of_node_create_phandle(iommu);
-
-	for (i = 0; i < ARRAY_SIZE(icid_tbl_ls1046a); i++) {
-		const struct icid_id_table *icid = &icid_tbl_ls1046a[i];
-		struct device_node *np;
-
-		if (!icid->compat)
-			continue;
-
-		for_each_compatible_node_from(np, root, NULL, icid->compat) {
-			struct resource res;
-
-			if (of_address_to_resource(np, 0, &res))
-				continue;
-
-			if (res.start == icid->compat_addr) {
-				of_set_iommu_prop(np, iommu_handle, icid->id);
-				break;
-			}
-		}
-	}
-
+	of_fixup_icid(root, iommu_handle, icid_tbl_ls1046a, ARRAY_SIZE(icid_tbl_ls1046a));
 	of_fixup_fman_icids(root, iommu_handle);
 	of_fixup_qportals(root, iommu_handle);
 
@@ -553,5 +569,5 @@ void ls1046a_setup_icids(void)
 
 	setup_qbman_portals();
 
-	of_register_fixup(icid_of_fixup, NULL);
+	of_register_fixup(of_fixup_ls1046a, NULL);
 }

@@ -32,13 +32,12 @@ enum bootsource ls1021a_bootsource_get(void)
 	return ls1046a_bootsource_get();
 }
 
-static int layerscape_bootsource_init(void)
+void ls1021a_bootsource_init(void)
 {
-	if (of_machine_is_compatible("fsl,ls1046a"))
-		bootsource_set_raw(ls1046a_bootsource_get(), BOOTSOURCE_INSTANCE_UNKNOWN);
-	if (of_machine_is_compatible("fsl,ls1021a"))
-		bootsource_set_raw(ls1021a_bootsource_get(), BOOTSOURCE_INSTANCE_UNKNOWN);
-
-	return 0;
+	bootsource_set_raw(ls1021a_bootsource_get(), BOOTSOURCE_INSTANCE_UNKNOWN);
 }
-coredevice_initcall(layerscape_bootsource_init);
+
+void ls1046a_bootsource_init(void)
+{
+	bootsource_set_raw(ls1046a_bootsource_get(), BOOTSOURCE_INSTANCE_UNKNOWN);
+}

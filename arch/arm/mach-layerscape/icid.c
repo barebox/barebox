@@ -7,6 +7,7 @@
 #include <soc/fsl/immap_lsch2.h>
 #include <soc/fsl/fsl_qbman.h>
 #include <soc/fsl/fsl_fman.h>
+#include <mach/layerscape/layerscape.h>
 
 /*
  * Stream IDs on Chassis-2 (for example ls1043a, ls1046a, ls1012) devices
@@ -530,13 +531,10 @@ static int icid_of_fixup(struct device_node *root, void *context)
 	return 0;
 }
 
-static int layerscape_setup_icids(void)
+void ls1046a_setup_icids(void)
 {
 	int i;
 	struct ccsr_fman *fm = (void *)LSCH2_FM1_ADDR;
-
-	if (!of_machine_is_compatible("fsl,ls1046a"))
-		return 0;
 
 	/* setup general icid offsets */
 	for (i = 0; i < ARRAY_SIZE(icid_tbl_ls1046a); i++) {
@@ -556,7 +554,4 @@ static int layerscape_setup_icids(void)
 	setup_qbman_portals();
 
 	of_register_fixup(icid_of_fixup, NULL);
-
-	return 0;
 }
-coredevice_initcall(layerscape_setup_icids);

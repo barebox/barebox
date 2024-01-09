@@ -6,6 +6,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <soc/fsl/immap_lsch2.h>
+#include <mach/layerscape/layerscape.h>
 
 struct smmu_stream_id {
 	uint16_t offset;
@@ -43,13 +44,7 @@ ls102xa_config_smmu_stream_id(struct smmu_stream_id *id, uint32_t num)
 	}
 }
 
-static int ls102xa_smmu_stream_id_init(void)
+void ls102xa_smmu_stream_id_init(void)
 {
-	if (!of_machine_is_compatible("fsl,ls1021a"))
-		return 0;
-
 	ls102xa_config_smmu_stream_id(dev_stream_id, ARRAY_SIZE(dev_stream_id));
-
-	return 0;
 }
-mmu_initcall(ls102xa_smmu_stream_id_init);

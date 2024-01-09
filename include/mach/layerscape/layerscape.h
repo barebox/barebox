@@ -19,6 +19,10 @@
 enum bootsource ls1046a_bootsource_get(void);
 enum bootsource ls1021a_bootsource_get(void);
 
+#define LAYERSCAPE_SOC_LS1021A		1021
+#define LAYERSCAPE_SOC_LS1028A		1028
+#define LAYERSCAPE_SOC_LS1046A		1046
+
 #ifdef CONFIG_ARCH_LAYERSCAPE_PPA
 int ls1046a_ppa_init(resource_size_t ppa_start, resource_size_t ppa_size);
 #else
@@ -40,5 +44,32 @@ struct dram_regions_info {
         int64_t total_dram_size;
         struct dram_region_info region[NUM_DRAM_REGIONS];
 };
+
+void ls1021a_bootsource_init(void);
+void ls1046a_bootsource_init(void);
+void layerscape_register_pbl_image_handler(void);
+void ls102xa_smmu_stream_id_init(void);
+void ls1021a_restart_register_feature(void);
+void ls1046a_setup_icids(void);
+
+extern int __layerscape_soc_type;
+
+static inline bool cpu_is_ls1021a(void)
+{
+	return IS_ENABLED(CONFIG_ARCH_LS1021) &&
+		__layerscape_soc_type == LAYERSCAPE_SOC_LS1021A;
+}
+
+static inline bool cpu_is_ls1028a(void)
+{
+	return IS_ENABLED(CONFIG_ARCH_LS1028) &&
+		__layerscape_soc_type == LAYERSCAPE_SOC_LS1028A;
+}
+
+static inline bool cpu_is_ls1046a(void)
+{
+	return IS_ENABLED(CONFIG_ARCH_LS1046) &&
+		__layerscape_soc_type == LAYERSCAPE_SOC_LS1046A;
+}
 
 #endif /* __MACH_LAYERSCAPE_H */

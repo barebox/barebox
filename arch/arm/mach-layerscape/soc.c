@@ -92,6 +92,7 @@ static int ls1028a_init(void)
 	if (!cpu_is_ls1028a())
 		return -EINVAL;
 
+	ls1028a_bootsource_init();
 	layerscape_register_pbl_image_handler();
 	ls1028a_setup_icids();
 

@@ -54,6 +54,7 @@ struct dram_regions_info {
 };
 
 void ls1021a_bootsource_init(void);
+void ls1028a_bootsource_init(void);
 void ls1046a_bootsource_init(void);
 void layerscape_register_pbl_image_handler(void);
 void ls102xa_smmu_stream_id_init(void);

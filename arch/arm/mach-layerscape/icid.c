@@ -81,7 +81,7 @@ struct fman_icid_id_table {
 #define SEC_QIIC_LS	0x70024
 #define	SEC_IRBAR_JRn(n) 	(0x10000 * ((n) + 1))
 
-struct icid_id_table icid_tbl_ls1046a[] = {
+static const struct icid_id_table icid_tbl_ls1046a[] = {
 	{
 		.compat = "fsl,qman",
 		.id = DPAA1_SID_START,
@@ -209,7 +209,7 @@ struct icid_id_table icid_tbl_ls1046a[] = {
 	},
 };
 
-struct fman_icid_id_table fman_icid_tbl_ls1046a[] = {
+static const struct fman_icid_id_table fman_icid_tbl_ls1046a[] = {
 	{
 		.port_id = 0x02,
 		.icid = DPAA1_SID_END,
@@ -279,7 +279,7 @@ struct fman_icid_id_table fman_icid_tbl_ls1046a[] = {
 	},
 };
 
-static int get_fman_port_icid(int port_id, struct fman_icid_id_table *tbl,
+static int get_fman_port_icid(int port_id, const struct fman_icid_id_table *tbl,
 		       const int size)
 {
 	int i;
@@ -348,7 +348,7 @@ struct qportal_info {
 	u8 sdest;
 };
 
-struct qportal_info qp_info[] = {
+static const struct qportal_info qp_info[] = {
 	{
 		.dicid = DPAA1_SID_END,
 		.ficid = DPAA1_SID_END,
@@ -440,7 +440,7 @@ static void setup_qbman_portals(void)
 	out_be32(&qman->qcsp_bar, (u32)QMAN_MEM_PHYS);
 
 	for (i = 0; i < ARRAY_SIZE(qp_info); i++) {
-		struct qportal_info *qi = &qp_info[i];
+		const struct qportal_info *qi = &qp_info[i];
 
 		out_be32(&qman->qcsp[i].qcsp_lio_cfg, (qi->icid << 16) | qi->dicid);
 		/* set frame icid */
@@ -453,7 +453,7 @@ static void setup_qbman_portals(void)
 }
 
 static void fdt_set_qportal_iommu_prop(struct device_node *np, phandle iommu_handle,
-			       struct qportal_info *qp_info)
+			       const struct qportal_info *qp_info)
 {
 	u32 prop[6];
 
@@ -506,7 +506,7 @@ static int icid_of_fixup(struct device_node *root, void *context)
 	iommu_handle = of_node_create_phandle(iommu);
 
 	for (i = 0; i < ARRAY_SIZE(icid_tbl_ls1046a); i++) {
-		struct icid_id_table *icid = &icid_tbl_ls1046a[i];
+		const struct icid_id_table *icid = &icid_tbl_ls1046a[i];
 		struct device_node *np;
 
 		if (!icid->compat)
@@ -538,14 +538,14 @@ void ls1046a_setup_icids(void)
 
 	/* setup general icid offsets */
 	for (i = 0; i < ARRAY_SIZE(icid_tbl_ls1046a); i++) {
-		struct icid_id_table *icid = &icid_tbl_ls1046a[i];
+		const struct icid_id_table *icid = &icid_tbl_ls1046a[i];
 
 		out_be32((u32 *)(icid->reg_addr), icid->reg);
 	}
 
 	/* setup fman icids */
 	for (i = 0; i < ARRAY_SIZE(fman_icid_tbl_ls1046a); i++) {
-		struct fman_icid_id_table *icid = &fman_icid_tbl_ls1046a[i];
+		const struct fman_icid_id_table *icid = &fman_icid_tbl_ls1046a[i];
 
 		out_be32(&fm->fm_bmi_common.fmbm_ppid[icid->port_id - 1],
 			 icid->icid);

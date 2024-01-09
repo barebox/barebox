@@ -29,8 +29,23 @@
 #define LSCH3_IFC_ADDR				(LSCH3_IMMR + 0x01240000)
 #define LSCH3_NS16550_COM1			(LSCH3_IMMR + 0x011C0500)
 #define LSCH3_NS16550_COM2			(LSCH3_IMMR + 0x011C0600)
+#define LSCH3_EDMA_ADDR				(LSCH3_IMMR + 0x012c0000)
 #define LSCH3_TIMER_ADDR			(LSCH3_IMMR + 0x013e0000)
+#define LSCH3_XHCI_USB1_ADDR			(LSCH3_IMMR + 0x02100000)
+#define LSCH3_XHCI_USB2_ADDR			(LSCH3_IMMR + 0x02110000)
+#define LSCH3_AHCI1_ADDR			(LSCH3_IMMR + 0x02200000)
+#define LSCH3_AHCI2_ADDR			(LSCH3_IMMR + 0x02210000)
+#define LSCH3_AHCI3_ADDR			(LSCH3_IMMR + 0x02220000)
+#define LSCH3_AHCI4_ADDR			(LSCH3_IMMR + 0x02230000)
 #define LSCH3_CCI400_ADDR			(LSCH3_IMMR + 0x03090000)
+#define LSCH3_SEC_ADDR				(LSCH3_IMMR + 0x07000000)
+#define LSCH3_SEC_JR0_ADDR			(LSCH3_IMMR + 0x07010000)
+#define LSCH3_SEC_JR1_ADDR			(LSCH3_IMMR + 0x07020000)
+#define LSCH3_SEC_JR2_ADDR			(LSCH3_IMMR + 0x07030000)
+#define LSCH3_SEC_JR3_ADDR			(LSCH3_IMMR + 0x07040000)
+#define LSCH3_QDMA_ADDR				(LSCH3_IMMR + 0x07380000)
+#define LSCH3_DISPLAY_ADDR			(LSCH3_IMMR + 0x0e080000)
+#define LSCH3_GPU_ADDR				(LSCH3_IMMR + 0x0e0c0000)
 #define LSCH3_PMU_CLTBENR			(LSCH3_PMU_ADDR + 0x18A0)
 #define LSCH3_PCTBENR_OFFSET			(LSCH3_PMU_ADDR + 0x8A0)
 #define LSCH3_SVR				(LSCH3_GUTS_ADDR + 0xA4)
@@ -181,6 +196,110 @@ struct lsch3_ccsr_gur {
 	u32 ipbrr1;
 	u32 ipbrr2;
 	u8	res_858[0x1000-0xc00];
+};
+
+struct rng4tst {
+	u32 rtmctl;		/* misc. control register */
+	u32 rtscmisc;		/* statistical check misc. register */
+	u32 rtpkrrng;		/* poker range register */
+	union {
+		u32 rtpkrmax;	/* PRGM=1: poker max. limit register */
+		u32 rtpkrsq;	/* PRGM=0: poker square calc. result register */
+	};
+	u32 rtsdctl;		/* seed control register */
+	union {
+		u32 rtsblim;	/* PRGM=1: sparse bit limit register */
+		u32 rttotsam;	/* PRGM=0: total samples register */
+	};
+	u32 rtfreqmin;		/* frequency count min. limit register */
+	union {
+		u32 rtfreqmax;	/* PRGM=1: freq. count max. limit register */
+		u32 rtfreqcnt;	/* PRGM=0: freq. count register */
+	};
+	u32 rsvd1[40];
+	u32 rdsta;		/*RNG DRNG Status Register*/
+	u32 rsvd2[15];
+};
+
+struct version_regs {
+	u32 crca;	/* CRCA_VERSION */
+	u32 afha;	/* AFHA_VERSION */
+	u32 kfha;	/* KFHA_VERSION */
+	u32 pkha;	/* PKHA_VERSION */
+	u32 aesa;	/* AESA_VERSION */
+	u32 mdha;	/* MDHA_VERSION */
+	u32 desa;	/* DESA_VERSION */
+	u32 snw8a;	/* SNW8A_VERSION */
+	u32 snw9a;	/* SNW9A_VERSION */
+	u32 zuce;	/* ZUCE_VERSION */
+	u32 zuca;	/* ZUCA_VERSION */
+	u32 ccha;	/* CCHA_VERSION */
+	u32 ptha;	/* PTHA_VERSION */
+	u32 rng;	/* RNG_VERSION */
+	u32 trng;	/* TRNG_VERSION */
+	u32 aaha;	/* AAHA_VERSION */
+	u32 rsvd[10];
+	u32 sr;		/* SR_VERSION */
+	u32 dma;	/* DMA_VERSION */
+	u32 ai;		/* AI_VERSION */
+	u32 qi;		/* QI_VERSION */
+	u32 jr;		/* JR_VERSION */
+	u32 deco;	/* DECO_VERSION */
+};
+
+struct ccsr_sec {
+	u32	res0;
+	u32	mcfgr;		/* Master CFG Register */
+	u8	res1[0x4];
+	u32	scfgr;
+	struct {
+		u32	ms;	/* Job Ring LIODN Register, MS */
+		u32	ls;	/* Job Ring LIODN Register, LS */
+	} jrliodnr[4];
+	u8	res2[0x2c];
+	u32	jrstartr;	/* Job Ring Start Register */
+	struct {
+		u32	ms;	/* RTIC LIODN Register, MS */
+		u32	ls;	/* RTIC LIODN Register, LS */
+	} rticliodnr[4];
+	u8	res3[0x1c];
+	u32	decorr;		/* DECO Request Register */
+	struct {
+		u32	ms;	/* DECO LIODN Register, MS */
+		u32	ls;	/* DECO LIODN Register, LS */
+	} decoliodnr[16];
+	u32	dar;		/* DECO Avail Register */
+	u32	drr;		/* DECO Reset Register */
+	u8	res5[0x4d8];
+	struct rng4tst rng;	/* RNG Registers */
+	u8	res6[0x780];
+	struct version_regs vreg; /* version registers since era 10 */
+	u8	res7[0xa0];
+	u32	crnr_ms;	/* CHA Revision Number Register, MS */
+	u32	crnr_ls;	/* CHA Revision Number Register, LS */
+	u32	ctpr_ms;	/* Compile Time Parameters Register, MS */
+	u32	ctpr_ls;	/* Compile Time Parameters Register, LS */
+	u8	res8[0x10];
+	u32	far_ms;		/* Fault Address Register, MS */
+	u32	far_ls;		/* Fault Address Register, LS */
+	u32	falr;		/* Fault Address LIODN Register */
+	u32	fadr;		/* Fault Address Detail Register */
+	u8	res9[0x4];
+	u32	csta;		/* CAAM Status Register */
+	u32	smpart;		/* Secure Memory Partition Parameters */
+	u32	smvid;		/* Secure Memory Version ID */
+	u32	rvid;		/* Run Time Integrity Checking Version ID Reg.*/
+	u32	ccbvid;		/* CHA Cluster Block Version ID Register */
+	u32	chavid_ms;	/* CHA Version ID Register, MS */
+	u32	chavid_ls;	/* CHA Version ID Register, LS */
+	u32	chanum_ms;	/* CHA Number Register, MS */
+	u32	chanum_ls;	/* CHA Number Register, LS */
+	u32	secvid_ms;	/* SEC Version ID Register, MS */
+	u32	secvid_ls;	/* SEC Version ID Register, LS */
+	u8	res10[0x6f020];
+	u32	qilcr_ms;	/* Queue Interface LIODN CFG Register, MS */
+	u32	qilcr_ls;	/* Queue Interface LIODN CFG Register, LS */
+	u8	res11[0x8ffd8];
 };
 
 #endif /*__ASSEMBLY__ */

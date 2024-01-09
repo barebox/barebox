@@ -93,6 +93,7 @@ static int ls1028a_init(void)
 		return -EINVAL;
 
 	layerscape_register_pbl_image_handler();
+	ls1028a_setup_icids();
 
 	return 0;
 }

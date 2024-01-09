@@ -58,6 +58,7 @@ void ls1046a_bootsource_init(void);
 void layerscape_register_pbl_image_handler(void);
 void ls102xa_smmu_stream_id_init(void);
 void ls1021a_restart_register_feature(void);
+void ls1028a_setup_icids(void);
 void ls1046a_setup_icids(void);
 
 extern int __layerscape_soc_type;

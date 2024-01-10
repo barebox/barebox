@@ -14,6 +14,7 @@
 #include <io.h>
 #include <of_mtd.h>
 #include <errno.h>
+#include <globalvar.h>
 
 #include <linux/clk.h>
 #include <linux/spinlock.h>
@@ -43,6 +44,18 @@ static const struct denali_dt_data denali_socfpga_data = {
 	.ecc_caps = &denali_socfpga_ecc_caps,
 };
 
+enum of_binding_name {
+	DENALI_OF_BINDING_CHIP,
+	DENALI_OF_BINDING_CONTROLLER,
+	DENALI_OF_BINDING_AUTO,
+};
+
+static const char *denali_of_binding_names[] = {
+	"chip", "controller", "auto"
+};
+
+static int denali_of_binding;
+
 /*
  * Older versions of the kernel driver require the partition nodes
  * to be direct subnodes of the controller node. Starting with Kernel
@@ -70,25 +83,49 @@ static int denali_partition_fixup(struct mtd_info *mtd, struct device_node *root
 							struct denali_controller,
 							controller);
 	struct device_node *np, *mtdnp = mtd_get_of_node(mtd);
+	struct device_node *chip_np, *controller_np;
 	char *name;
 
 	name = of_get_reproducible_name(mtdnp);
-	np = of_find_node_by_reproducible_name(root, name);
+	chip_np = of_find_node_by_reproducible_name(root, name);
 	free(name);
 
-	if (np) {
-		dev_info(denali->dev, "Fixing up chip node %pOF\n", np);
-	} else {
-		name = of_get_reproducible_name(mtdnp->parent);
-		np = of_find_node_by_reproducible_name(root, name);
-		free(name);
+	name = of_get_reproducible_name(mtdnp->parent);
+	controller_np = of_find_node_by_reproducible_name(root, name);
+	free(name);
 
-		if (np)
-			dev_info(denali->dev, "Fixing up controller node %pOF\n", np);
-	}
+	if (!controller_np)
+		return -EINVAL;
+
+	switch (denali_of_binding) {
+	case DENALI_OF_BINDING_CHIP:
+		if (chip_np) {
+			np = chip_np;
+		} else {
+			np = of_new_node(controller_np, mtdnp->name);
+			of_property_write_u32(np, "reg", 0);
+			chip_np = np;
+		}
+		break;
+	case DENALI_OF_BINDING_CONTROLLER:
+		np = controller_np;
+		break;
+	case DENALI_OF_BINDING_AUTO:
+	default:
+		np = chip_np ? chip_np : controller_np;
+		break;
+	};
 
 	if (!np)
 		return -EINVAL;
+
+	dev_info(denali->dev, "Fixing up %s node %pOF\n",
+		 chip_np ? "chip" : "controller", np);
+
+	if (!chip_np) {
+		of_property_write_bool(np, "#size-cells", false);
+		of_property_write_bool(np, "#address-cells", false);
+	}
 
 	return of_fixup_partitions(np, &mtd->cdev);
 }
@@ -123,7 +160,15 @@ static int denali_dt_chip_init(struct denali_controller *denali,
 		nand_set_flash_node(&dchip->chip, chip_np);
 	}
 
-	return denali_chip_init(denali, dchip);
+	ret = denali_chip_init(denali, dchip);
+	if (ret)
+		return ret;
+
+	dev_add_param_enum(&dchip->chip.base.mtd.dev, "denali_partition_binding",
+			   NULL, NULL,  &denali_of_binding, denali_of_binding_names,
+			   ARRAY_SIZE(denali_of_binding_names), NULL);
+
+	return 0;
 }
 
 static int denali_dt_probe(struct device *ofdev)

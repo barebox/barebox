@@ -5,6 +5,7 @@ config X86
 	select HAS_KALLSYMS
 	select HAS_DMA
 	select GENERIC_FIND_NEXT_BIT
+	select ARCH_DMA_DEFAULT_COHERENT
 	default y
 
 config ARCH_TEXT_BASE

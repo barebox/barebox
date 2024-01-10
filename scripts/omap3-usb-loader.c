@@ -330,7 +330,7 @@ static int transfer_first_stage(libusb_device_handle * handle, struct arg_state 
 
 	/* TODO determine buffer size based on endpoint */
 	buffer = calloc(bufsize, sizeof (unsigned char));
-	filelen = cpu_to_le32(file->size);
+	filelen = file->size;
 
 	data = file->data;
 	dbuf = data;
@@ -397,6 +397,8 @@ static int transfer_first_stage(libusb_device_handle * handle, struct arg_state 
 		goto fail;
 	}
 
+	filelen = cpu_to_le32(filelen);
+
 	/* send the length of the first file (little endian) */
 	if (!omap_usb_write
 	    (handle, (unsigned char *) &filelen, sizeof (filelen))) {
@@ -406,9 +408,9 @@ static int transfer_first_stage(libusb_device_handle * handle, struct arg_state 
 	}
 
 	/* send the file! */
-	if (!omap_usb_write(handle, data, filelen)) {
+	if (!omap_usb_write(handle, data, file->size)) {
 		log_error("failed to send file \'%s\' (size %u)\n",
-			  file->basename, filelen);
+			  file->basename, file->size);
 		goto fail;
 	}
 

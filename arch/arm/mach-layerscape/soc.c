@@ -4,9 +4,11 @@
 #include <init.h>
 #include <memory.h>
 #include <linux/bug.h>
+#include <linux/bitfield.h>
 #include <linux/printk.h>
 #include <mach/layerscape/layerscape.h>
 #include <of.h>
+#include <of_address.h>
 
 int __layerscape_soc_type;
 
@@ -120,6 +122,35 @@ static int ls1028a_reserve_tfa(void)
 }
 mmu_initcall(ls1028a_reserve_tfa);
 
+#define DWC3_GSBUSCFG0				0xc100
+#define DWC3_GSBUSCFG0_CACHETYPE_MASK		GENMASK(31, 16)
+
+static void layerscape_usb_enable_snooping(void)
+{
+	struct device_node *np;
+
+	for_each_compatible_node(np, NULL, "snps,dwc3") {
+		struct resource res;
+
+		if (of_address_to_resource(np, 0, &res))
+			continue;
+
+		/* Set cacheable bit for all of Data read, Descriptor read,
+		 * Data write and Descriptor write. Bufferable and read/write
+		 * allocate bits are not set. This is the recommended configurationr
+		 * in LS1046ARM Rev. 3 34.2.10.2:
+		 * "For master interface DMA access, program the GSBUSCFG0
+		 * register to 0x2222000F for better performance.".
+		 * The 0x000F is configured via snps,incr-burst-type-adjustment
+		 * (which despite the name is Layerscape-specific), so below
+		 * line only manipulates the upper 16 bits.
+		 */
+		clrsetbits_le32(IOMEM(res.start) + DWC3_GSBUSCFG0,
+				DWC3_GSBUSCFG0_CACHETYPE_MASK,
+				FIELD_PREP(DWC3_GSBUSCFG0_CACHETYPE_MASK, 0x2222));
+	}
+}
+
 static int ls1046a_init(void)
 {
 	if (!cpu_is_ls1046a())
@@ -128,6 +159,7 @@ static int ls1046a_init(void)
 	ls1046a_bootsource_init();
 	ls1046a_setup_icids();
 	layerscape_register_pbl_image_handler();
+	layerscape_usb_enable_snooping();
 
 	return 0;
 }

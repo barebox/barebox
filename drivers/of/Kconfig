@@ -35,10 +35,6 @@ config FEATURE_CONTROLLER_FIXUP
 config OF_ADDRESS_PCI
 	bool
 
-config OF_DMA_DEFAULT_COHERENT
-	# arches should select this if DMA is coherent by default for OF devices
-	bool
-
 config OF_GPIO
 	depends on GPIOLIB
 	depends on OFDEVICE

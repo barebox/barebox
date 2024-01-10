@@ -109,7 +109,7 @@ bool of_dma_is_coherent(struct device_node *node)
 		node = of_get_next_dma_parent(node);
 	}
 
-	return IS_ENABLED(CONFIG_OF_DMA_DEFAULT_COHERENT);
+	return IS_ENABLED(CONFIG_ARCH_DMA_DEFAULT_COHERENT);
 }
 EXPORT_SYMBOL_GPL(of_dma_is_coherent);
 

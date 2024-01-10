@@ -101,12 +101,14 @@ static struct device_node *of_get_next_dma_parent(const struct device_node *np)
  */
 bool of_dma_is_coherent(struct device_node *node)
 {
-	while (node) {
-		if (of_property_read_bool(node, "dma-coherent"))
-			return true;
-		if (of_property_read_bool(node, "dma-noncoherent"))
-			return false;
-		node = of_get_next_dma_parent(node);
+	if (IS_ENABLED(CONFIG_OF_DMA_COHERENCY)) {
+		while (node) {
+			if (of_property_read_bool(node, "dma-coherent"))
+				return true;
+			if (of_property_read_bool(node, "dma-noncoherent"))
+				return false;
+			node = of_get_next_dma_parent(node);
+		}
 	}
 
 	return IS_ENABLED(CONFIG_ARCH_DMA_DEFAULT_COHERENT);

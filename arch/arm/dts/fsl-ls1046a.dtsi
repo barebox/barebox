@@ -5,3 +5,24 @@
 		mmc0 = &esdhc;
 	};
 };
+
+&soc {
+	/delete-property/ dma-coherent;
+	dma-noncoherent;
+};
+
+&crypto {
+	dma-coherent;
+};
+
+&msi1 {
+	dma-coherent;
+};
+
+&pcie2 {
+	dma-coherent;
+};
+
+&pcie3 {
+	dma-coherent;
+};

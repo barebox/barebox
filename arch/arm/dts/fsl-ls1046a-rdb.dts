@@ -3,11 +3,11 @@
 /dts-v1/;
 
 #include <arm64/freescale/fsl-ls1046a-rdb.dts>
+#include "fsl-ls1046a.dtsi"
 
 / {
 	aliases {
 		eeprom = &{i2c0/eeprom@52};
-		mmc0 = &esdhc;
 	};
 
 	chosen {

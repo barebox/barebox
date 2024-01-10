@@ -11,6 +11,7 @@
 #include <dt-bindings/gpio/gpio.h>
 
 #include "fsl-tqmls1046a.dtsi"
+#include "fsl-ls1046a.dtsi"
 
 / {
 	model = "TQ TQMLS1046A SoM on MBLS10xxA board";
@@ -19,7 +20,6 @@
 	aliases {
 		serial0 = &duart0;
 		serial1 = &duart1;
-		mmc0 = &esdhc;
 		qspiflash0 = &qflash0;
 		qspiflash1 = &qflash1;
 		qsgmii_s1_p1 = &qsgmii1_phy1;

@@ -246,6 +246,7 @@ config ARCH_LAYERSCAPE
 	select OFTREE
 	select OFDEVICE
 	select ARM_USE_COMPRESSED_DTB
+	select OF_DMA_COHERENCY
 
 config ARCH_OMAP_MULTI
 	bool "TI OMAP"

@@ -5,5 +5,4 @@
 print <<'EOT'
 Sascha Hauer <s.hauer@pengutronix.de> (maintainer:BAREBOX)
 barebox@lists.infradead.org (open list:BAREBOX)
-Maintained
 EOT

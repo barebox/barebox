@@ -129,6 +129,7 @@ static void of_dma_configure(struct device *dev, struct device_node *np)
 	}
 
 	dev->dma_offset = offset;
+	dev->dma_coherent = of_dma_is_coherent(np);
 }
 
 /**

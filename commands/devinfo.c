@@ -105,6 +105,10 @@ static int do_devinfo(int argc, char *argv[])
 		if (dev->of_node) {
 			struct device *main_dev = dev->of_node->dev;
 
+			printf("DMA Coherent: %s%s\n",
+			       dev_is_dma_coherent(dev) ? "true" : "false",
+			       dev->dma_coherent == DEV_DMA_COHERENCE_DEFAULT ? " (default)" : "");
+
 			printf("Device node: %pOF", dev->of_node);
 			if (!main_dev) {
 			       printf(" (unpopulated)\n");

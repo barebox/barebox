@@ -216,11 +216,11 @@ static enum hab_status imx8m_read_sram_events(enum hab_status status,
 {
 	struct hab_event_record *events[10];
 	int num_events = 0;
-	char *sram;
+	u8 *sram;
 	int i = 0;
 	int internal_index = 0;
 	uint16_t ev_len;
-	char *end = 0;
+	u8 *end = 0;
 	struct hab_event_record *search;
 
 	if (cpu_is_mx8mq())

@@ -254,6 +254,11 @@ static enum hab_status imx8m_read_sram_events(enum hab_status status,
 			if (sram > end)
 				break;
 
+			if (num_events == ARRAY_SIZE(events)) {
+				pr_warn("Discarding excess event\n");
+				continue;
+			}
+
 			events[num_events] = search;
 			num_events++;
 		} else {

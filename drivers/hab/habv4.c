@@ -184,6 +184,33 @@ enum hab_sip_cmd {
 	FSL_SIP_HAB_AUTH_IMG_NO_DCD = 0x08,
 };
 
+static enum hab_status hab_sip_report_event(enum hab_status status,
+					    uint32_t index, uint8_t *event,
+					    size_t *bytes)
+{
+	struct arm_smccc_res res;
+
+	v8_flush_dcache_range((unsigned long)bytes,
+			      (unsigned long)bytes + sizeof(*bytes));
+
+	if (event)
+		v8_flush_dcache_range((unsigned long)event,
+				      (unsigned long)event + *bytes);
+
+	arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_REPORT_EVENT,
+		      (unsigned long)index, (unsigned long)event,
+		      (unsigned long)bytes, 0, 0, 0, &res);
+
+	v8_inv_dcache_range((unsigned long)bytes,
+			    (unsigned long)bytes + sizeof(*bytes));
+
+	if (event)
+		v8_inv_dcache_range((unsigned long)event,
+				    (unsigned long)event + *bytes);
+
+	return (enum hab_status)res.a0;
+}
+
 static enum hab_status hab_sip_report_status(enum hab_config *config,
 					     enum habv4_state *state)
 {
@@ -218,9 +245,6 @@ static uint32_t hab_sip_get_version(void)
 }
 
 #define IMX8MQ_ROM_OCRAM_ADDRESS	0x9061C0
-#define IMX8MM_ROM_OCRAM_ADDRESS	0x908040
-#define IMX8MN_ROM_OCRAM_ADDRESS	0x908040
-#define IMX8MP_ROM_OCRAM_ADDRESS	0x90D040
 
 static enum hab_status imx8m_read_sram_events(enum hab_status status,
 					     uint32_t index, uint8_t *event,
@@ -236,12 +260,6 @@ static enum hab_status imx8m_read_sram_events(enum hab_status status,
 
 	if (cpu_is_mx8mq())
 		sram = (char *)IMX8MQ_ROM_OCRAM_ADDRESS;
-	else if (cpu_is_mx8mm())
-		sram = (char *)IMX8MM_ROM_OCRAM_ADDRESS;
-	else if (cpu_is_mx8mn())
-		sram = (char *)IMX8MN_ROM_OCRAM_ADDRESS;
-	else if (cpu_is_mx8mp())
-		sram = (char *)IMX8MP_ROM_OCRAM_ADDRESS;
 	else
 		return HAB_STATUS_FAILURE;
 
@@ -280,9 +298,19 @@ static enum hab_status imx8m_read_sram_events(enum hab_status status,
 	return HAB_STATUS_FAILURE;
 }
 
+static enum hab_status imx8m_report_event(enum hab_status status,
+					  uint32_t index, uint8_t *event,
+					  size_t *bytes)
+{
+	if (cpu_is_mx8mq())
+		return imx8m_read_sram_events(status, index, event, bytes);
+	else
+		return hab_sip_report_event(status, index, event, bytes);
+}
+
 struct habv4_rvt hab_smc_ops = {
 	.header = { .tag = 0xdd },
-	.report_event = imx8m_read_sram_events,
+	.report_event = imx8m_report_event,
 	.report_status = hab_sip_report_status,
 };
 

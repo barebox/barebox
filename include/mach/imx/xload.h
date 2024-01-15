@@ -14,12 +14,14 @@ int imx6_esdhc_start_image(int instance);
 int imx6_nand_start_image(void);
 int imx7_esdhc_start_image(int instance);
 int imx7_nand_start_image(void);
-int imx8m_esdhc_load_image(int instance, bool start);
-int imx8mn_esdhc_load_image(int instance, bool start);
-int imx8mp_esdhc_load_image(int instance, bool start);
-int imx8mm_qspi_load_image(int instance, bool start);
-int imx8mn_qspi_load_image(int instance, bool start);
-int imx8mp_qspi_load_image(int instance, bool start);
+
+/* Below functions only load and don't start the image */
+int imx8m_esdhc_load_image(int instance);
+int imx8mn_esdhc_load_image(int instance);
+int imx8mp_esdhc_load_image(int instance);
+int imx8mm_qspi_load_image(int instance);
+int imx8mn_qspi_load_image(int instance);
+int imx8mp_qspi_load_image(int instance);
 
 void imx8mm_load_bl33(void *bl33);
 void imx8mn_load_bl33(void *bl33);

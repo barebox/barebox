@@ -239,17 +239,16 @@ int imx7_esdhc_start_image(int instance)
 /**
  * imx8m_esdhc_load_image - Load and optionally start an image from USDHC controller
  * @instance: The USDHC controller instance (0..2)
- * @start: Whether to directly start the loaded image
  *
  * This uses esdhc_start_image() to load an image from SD/MMC.  It is
  * assumed that the image is the currently running barebox image (This
  * information is used to calculate the length of the image). The
- * image is started afterwards.
+ * image is not started afterwards.
  *
- * Return: If successful, this function does not return (if directly started)
- * or 0. A negative error code is returned when this function fails.
+ * Return: If image successfully loaded, returns 0.
+ * A negative error code is returned when this function fails.
  */
-int imx8m_esdhc_load_image(int instance, bool start)
+int imx8m_esdhc_load_image(int instance)
 {
 	struct esdhc_soc_data data;
 	struct fsl_esdhc_host host = { 0 };
@@ -261,23 +260,22 @@ int imx8m_esdhc_load_image(int instance, bool start)
 
 	return esdhc_load_image(&host, MX8M_DDR_CSD1_BASE_ADDR,
 				MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K, SZ_1K,
-				start);
+				false);
 }
 
 /**
  * imx8mp_esdhc_load_image - Load and optionally start an image from USDHC controller
  * @instance: The USDHC controller instance (0..2)
- * @start: Whether to directly start the loaded image
  *
  * This uses esdhc_start_image() to load an image from SD/MMC.  It is
  * assumed that the image is the currently running barebox image (This
  * information is used to calculate the length of the image). The
- * image is started afterwards.
+ * image is not started afterwards.
  *
- * Return: If successful, this function does not return (if directly started)
- * or 0. A negative error code is returned when this function fails.
+ * Return: If image successfully loaded, returns 0.
+ * A negative error code is returned when this function fails.
  */
-int imx8mp_esdhc_load_image(int instance, bool start)
+int imx8mp_esdhc_load_image(int instance)
 {
 	struct esdhc_soc_data data;
 	struct fsl_esdhc_host host = { 0 };
@@ -291,10 +289,10 @@ int imx8mp_esdhc_load_image(int instance, bool start)
 	offset = esdhc_bootpart_active(&host)? 0 : SZ_32K;
 
 	return esdhc_load_image(&host, MX8M_DDR_CSD1_BASE_ADDR,
-				MX8MQ_ATF_BL33_BASE_ADDR, offset, 0, start);
+				MX8MQ_ATF_BL33_BASE_ADDR, offset, 0, false);
 }
 
-int imx8mn_esdhc_load_image(int instance, bool start)
+int imx8mn_esdhc_load_image(int instance)
 	__alias(imx8mp_esdhc_load_image);
 #endif
 

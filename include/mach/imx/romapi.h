@@ -35,6 +35,7 @@ enum boot_dev_type_e {
 
 #define ROM_API_OKAY		0xF0
 
+/* Below functions only load and don't start the image */
 int imx8mp_romapi_load_image(void);
 int imx8mn_romapi_load_image(void);
 int imx93_romapi_load_image(void);

@@ -65,7 +65,7 @@ void imx8mm_load_bl33(void *bl33)
 	imx8mm_get_boot_source(&src, &instance);
 	switch (src) {
 	case BOOTSOURCE_MMC:
-		imx8m_esdhc_load_image(instance, false);
+		imx8m_esdhc_load_image(instance);
 		break;
 	case BOOTSOURCE_SERIAL:
 		if (!IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC_PBL)) {
@@ -98,7 +98,7 @@ void imx8mm_load_bl33(void *bl33)
 
 		break;
 	case BOOTSOURCE_SPI:
-		imx8mm_qspi_load_image(instance, false);
+		imx8mm_qspi_load_image(instance);
 		break;
 	default:
 		printf("Unsupported bootsource BOOTSOURCE_%d\n", src);
@@ -154,13 +154,13 @@ void imx8mp_load_bl33(void *bl33)
 	imx8mp_get_boot_source(&src, &instance);
 	switch (src) {
 	case BOOTSOURCE_MMC:
-		imx8mp_esdhc_load_image(instance, false);
+		imx8mp_esdhc_load_image(instance);
 		break;
 	case BOOTSOURCE_SERIAL:
 		imx8mp_romapi_load_image();
 		break;
 	case BOOTSOURCE_SPI:
-		imx8mp_qspi_load_image(instance, false);
+		imx8mp_qspi_load_image(instance);
 		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
@@ -218,13 +218,13 @@ void imx8mn_load_bl33(void *bl33)
 	imx8mn_get_boot_source(&src, &instance);
 	switch (src) {
 	case BOOTSOURCE_MMC:
-		imx8mn_esdhc_load_image(instance, false);
+		imx8mn_esdhc_load_image(instance);
 		break;
 	case BOOTSOURCE_SERIAL:
 		imx8mn_romapi_load_image();
 		break;
 	case BOOTSOURCE_SPI:
-		imx8mn_qspi_load_image(instance, false);
+		imx8mn_qspi_load_image(instance);
 		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
@@ -281,7 +281,7 @@ void imx8mq_load_bl33(void *bl33)
 	imx8mn_get_boot_source(&src, &instance);
 	switch (src) {
 	case BOOTSOURCE_MMC:
-		imx8m_esdhc_load_image(instance, false);
+		imx8m_esdhc_load_image(instance);
 		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);

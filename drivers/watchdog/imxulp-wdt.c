@@ -50,7 +50,7 @@ struct imxulp_wd {
 #define WDOG_TOVAL		0x8
 
 #define CLK_RATE_1KHZ		1000
-#define CLK_RATE_32KHZ		125
+#define CLK_RATE_32KHZ		128
 
 static int imxulp_watchdog_set_timeout(struct watchdog *wd, unsigned int timeout)
 {

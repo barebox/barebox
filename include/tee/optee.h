@@ -31,7 +31,7 @@ struct optee_header {
 	uint32_t paged_size;
 };
 
-int optee_verify_header (struct optee_header *hdr);
+int optee_verify_header (const struct optee_header *hdr);
 
 #ifdef CONFIG_HAVE_OPTEE
 

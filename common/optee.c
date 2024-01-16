@@ -8,7 +8,7 @@
 
 static u64 optee_membase = U64_MAX;
 
-int optee_verify_header(struct optee_header *hdr)
+int optee_verify_header(const struct optee_header *hdr)
 {
 	if (!hdr)
 		return -EINVAL;

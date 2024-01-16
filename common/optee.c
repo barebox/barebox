@@ -14,8 +14,14 @@ int optee_verify_header(struct optee_header *hdr)
 		return -EINVAL;
 	}
 
-	if (hdr->arch != OPTEE_ARCH_ARM32 || hdr->init_load_addr_hi) {
-		pr_err("Only 32bit supported\n");
+	if (IS_ENABLED(CPU_V7) &&
+	    (hdr->arch != OPTEE_ARCH_ARM32 || hdr->init_load_addr_hi)) {
+		pr_err("Wrong OP-TEE Arch for ARM v7 CPU\n");
+		return -EINVAL;
+	}
+
+	if (IS_ENABLED(CPU_V8) && hdr->arch != OPTEE_ARCH_ARM64) {
+		pr_err("Wrong OP-TEE Arch for ARM v8 CPU\n");
 		return -EINVAL;
 	}
 

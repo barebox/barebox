@@ -8,10 +8,13 @@
 #include <mach/imx/esdctl.h>
 #include <mach/imx/scratch.h>
 #include <memory.h>
+#include <tee/optee.h>
 #include <pbl.h>
 
 struct imx_scratch_space {
 	u32 bootrom_log[128];
+	u32 reserved[128];		/* reserve for bootrom log */
+	struct optee_header optee_hdr;
 };
 
 static struct imx_scratch_space *scratch;
@@ -51,6 +54,32 @@ const u32 *imx8m_scratch_get_bootrom_log(void)
 	}
 
 	return scratch->bootrom_log;
+}
+
+void imx_scratch_save_optee_hdr(const struct optee_header *hdr)
+{
+	size_t sz = sizeof(*hdr);
+
+	if (!scratch) {
+		pr_err("No scratch area initialized, skip saving optee-hdr");
+		return;
+	}
+
+	pr_debug("Saving optee-hdr to scratch area 0x%p\n", &scratch->optee_hdr);
+
+	memcpy(&scratch->optee_hdr, hdr, sz);
+}
+
+const struct optee_header *imx_scratch_get_optee_hdr(void)
+{
+	if (!scratch) {
+		if (IN_PBL)
+			return ERR_PTR(-EINVAL);
+		else
+			scratch = (void *)arm_mem_scratch_get();
+	}
+
+	return &scratch->optee_hdr;
 }
 
 static int imx8m_reserve_scratch_area(void)

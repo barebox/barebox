@@ -20,6 +20,7 @@
 #include <memory.h>
 #include <asm/system_info.h>
 #include <linux/pagemap.h>
+#include <tee/optee.h>
 
 #include "mmu_64.h"
 
@@ -310,6 +311,7 @@ static void init_range(size_t total_level0_tables)
 void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
 	int el;
+	u64 optee_membase;
 	unsigned long ttb = arm_mem_ttb(membase + memsize);
 
 	pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
@@ -326,8 +328,14 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 	 * Set 1:1 mapping of VA->PA. So to cover the full 1TB range we need 2 tables.
 	 */
 	init_range(2);
-	early_remap_range(membase, memsize - OPTEE_SIZE, MAP_CACHED);
-	early_remap_range(membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_FAULT);
+
+	early_remap_range(membase, memsize, MAP_CACHED);
+
+	if (optee_get_membase(&optee_membase))
+                optee_membase = membase + memsize - OPTEE_SIZE;
+
+	early_remap_range(optee_membase, OPTEE_SIZE, MAP_FAULT);
+
 	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext), MAP_CACHED);
 
 	mmu_enable();

@@ -29,6 +29,8 @@
 #include <mach/imx/imx8m-regs.h>
 #include <mach/imx/imx7-regs.h>
 #include <mach/imx/imx9-regs.h>
+#include <mach/imx/scratch.h>
+#include <tee/optee.h>
 
 struct imx_esdctl_data {
 	unsigned long base0;
@@ -1004,6 +1006,8 @@ resource_size_t imx8m_barebox_earlymem_size(unsigned buswidth)
 
 static void __noreturn imx8m_barebox_entry(void *boarddata, unsigned buswidth)
 {
+	imx8m_init_scratch_space(buswidth, false);
+	optee_set_membase(imx_scratch_get_optee_hdr());
 	barebox_arm_entry(MX8M_DDR_CSD1_BASE_ADDR,
 			  imx8m_barebox_earlymem_size(buswidth), boarddata);
 }

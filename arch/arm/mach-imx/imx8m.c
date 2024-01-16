@@ -17,8 +17,10 @@
 #include <mach/imx/ocotp.h>
 #include <mach/imx/imx8mp-regs.h>
 #include <mach/imx/imx8mq-regs.h>
+#include <mach/imx/scratch.h>
 #include <mach/imx/tzasc.h>
 #include <soc/imx8m/clk-early.h>
+#include <tee/optee.h>
 
 #include <linux/iopoll.h>
 #include <linux/arm-smccc.h>
@@ -73,6 +75,7 @@ static int imx8m_init(const char *cputypestr)
 			.method = "smc",
 		};
 
+		optee_set_membase(imx_scratch_get_optee_hdr());
 		of_optee_fixup(of_get_root_node(), &optee_fixup_data);
 		of_register_fixup(of_optee_fixup, &optee_fixup_data);
 	}

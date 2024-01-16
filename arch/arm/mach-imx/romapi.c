@@ -220,10 +220,8 @@ const u32 *imx8m_get_bootrom_log(void)
 		return (u32 *)rom_log_addr;
 	}
 
-	if (!IN_PBL) {
-		const struct imx_scratch_space *scratch = arm_mem_scratch_get();
-		return scratch->bootrom_log;
-	}
+	if (!IN_PBL)
+		return imx8m_scratch_get_bootrom_log();
 
 	return NULL;
 }

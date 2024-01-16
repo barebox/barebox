@@ -8,12 +8,22 @@
 #include <mach/imx/scratch.h>
 #include <memory.h>
 
-struct imx_scratch_space *__imx8m_scratch_space(int ddr_buswidth)
+struct imx_scratch_space {
+	u32 bootrom_log[128];
+};
+
+void *__imx8m_scratch_space(int ddr_buswidth)
 {
 	ulong endmem = MX8M_DDR_CSD1_BASE_ADDR +
 		imx8m_barebox_earlymem_size(ddr_buswidth);
 
 	return (void *)arm_mem_scratch(endmem);
+}
+
+const u32 *imx8m_scratch_get_bootrom_log(void)
+{
+	const struct imx_scratch_space *scratch = arm_mem_scratch_get();
+	return scratch->bootrom_log;
 }
 
 static int imx8m_reserve_scratch_area(void)

@@ -239,6 +239,7 @@ int imx7_esdhc_start_image(int instance)
 /**
  * imx8m_esdhc_load_image - Load and optionally start an image from USDHC controller
  * @instance: The USDHC controller instance (0..2)
+ * @bl33: Where to load the bl33 barebox image
  *
  * This uses esdhc_start_image() to load an image from SD/MMC.  It is
  * assumed that the image is the currently running barebox image (This
@@ -248,7 +249,7 @@ int imx7_esdhc_start_image(int instance)
  * Return: If image successfully loaded, returns 0.
  * A negative error code is returned when this function fails.
  */
-int imx8m_esdhc_load_image(int instance)
+int imx8m_esdhc_load_image(int instance, void *bl33)
 {
 	struct esdhc_soc_data data;
 	struct fsl_esdhc_host host = { 0 };
@@ -259,13 +260,14 @@ int imx8m_esdhc_load_image(int instance)
 		return ret;
 
 	return esdhc_load_image(&host, MX8M_DDR_CSD1_BASE_ADDR,
-				MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K, SZ_1K,
+				(ptrdiff_t)bl33, SZ_32K, SZ_1K,
 				false);
 }
 
 /**
  * imx8mp_esdhc_load_image - Load and optionally start an image from USDHC controller
  * @instance: The USDHC controller instance (0..2)
+ * @bl33: Where to load the bl33 barebox image
  *
  * This uses esdhc_start_image() to load an image from SD/MMC.  It is
  * assumed that the image is the currently running barebox image (This
@@ -275,7 +277,7 @@ int imx8m_esdhc_load_image(int instance)
  * Return: If image successfully loaded, returns 0.
  * A negative error code is returned when this function fails.
  */
-int imx8mp_esdhc_load_image(int instance)
+int imx8mp_esdhc_load_image(int instance, void *bl33)
 {
 	struct esdhc_soc_data data;
 	struct fsl_esdhc_host host = { 0 };
@@ -289,10 +291,10 @@ int imx8mp_esdhc_load_image(int instance)
 	offset = esdhc_bootpart_active(&host)? 0 : SZ_32K;
 
 	return esdhc_load_image(&host, MX8M_DDR_CSD1_BASE_ADDR,
-				MX8MQ_ATF_BL33_BASE_ADDR, offset, 0, false);
+				(ptrdiff_t)bl33, offset, 0, false);
 }
 
-int imx8mn_esdhc_load_image(int instance)
+int imx8mn_esdhc_load_image(int instance, void *bl33)
 	__alias(imx8mp_esdhc_load_image);
 #endif
 

@@ -14,6 +14,11 @@ int optee_verify_header(struct optee_header *hdr)
 		return -EINVAL;
 	}
 
+	if (hdr->version != OPTEE_VERSION_V1) {
+		pr_err("Only V1 headers are supported right now\n");
+		return -EINVAL;
+	}
+
 	if (IS_ENABLED(CPU_V7) &&
 	    (hdr->arch != OPTEE_ARCH_ARM32 || hdr->init_load_addr_hi)) {
 		pr_err("Wrong OP-TEE Arch for ARM v7 CPU\n");

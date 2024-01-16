@@ -14,7 +14,8 @@
 #include <linux/errno.h>
 
 #define OPTEE_MAGIC             0x4554504f
-#define OPTEE_VERSION           1
+#define OPTEE_VERSION_V1        1
+#define OPTEE_VERSION_V2        2
 #define OPTEE_ARCH_ARM32        0
 #define OPTEE_ARCH_ARM64        1
 

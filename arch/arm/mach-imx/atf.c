@@ -13,6 +13,7 @@
 #include <mach/imx/imx8m-regs.h>
 #include <soc/fsl/fsl_udc.h>
 #include <soc/fsl/caam.h>
+#include <tee/optee.h>
 
 /**
  * imx8m_atf_load_bl31 - Load ATF BL31 blob and transfer control to it
@@ -116,6 +117,24 @@ void imx8mm_load_bl33(void *bl33)
 	memcpy(bl33, __image_start, barebox_pbl_size);
 }
 
+static void imx_adjust_optee_memory(void **bl32, void **bl32_image, size_t *bl32_size)
+{
+	struct optee_header *hdr = *bl32_image;
+	u64 membase;
+
+	if (optee_verify_header(hdr))
+		return;
+
+	imx_scratch_save_optee_hdr(hdr);
+
+	membase = (u64)hdr->init_load_addr_hi << 32;
+	membase |= hdr->init_load_addr_lo;
+
+	*bl32 = (void *)membase;
+	*bl32_size -= sizeof(*hdr);
+	*bl32_image += sizeof(*hdr);
+}
+
 __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 {
 	const void *bl31;
@@ -136,6 +155,8 @@ __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 		get_builtin_firmware_ext(imx8mm_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
+
+		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
 
 		memcpy(bl32, bl32_image, bl32_size);
 
@@ -200,6 +221,8 @@ __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 		get_builtin_firmware_ext(imx8mp_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
+
+		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
 
 		memcpy(bl32, bl32_image, bl32_size);
 
@@ -266,6 +289,8 @@ __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 				bl33, &bl32_image,
 				&bl32_size);
 
+		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
+
 		memcpy(bl32, bl32_image, bl32_size);
 
 		get_builtin_firmware(imx8mn_bl31_bin_optee, &bl31, &bl31_size);
@@ -323,6 +348,8 @@ __noreturn void imx8mq_load_and_start_image_via_tfa(void)
 		get_builtin_firmware_ext(imx8mq_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
+
+		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
 
 		memcpy(bl32, bl32_image, bl32_size);
 

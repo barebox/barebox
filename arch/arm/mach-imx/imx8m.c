@@ -68,8 +68,7 @@ static int imx8m_init(const char *cputypestr)
 	imx_set_reset_reason(src + IMX7_SRC_SRSR, imx7_reset_reasons);
 	pr_info("%s unique ID: %llx\n", cputypestr, imx8m_uid());
 
-	if (IS_ENABLED(CONFIG_PBL_OPTEE) && tzc380_is_enabled() &&
-	    !of_find_node_by_path_from(NULL, "/firmware/optee")) {
+	if (IS_ENABLED(CONFIG_PBL_OPTEE) && tzc380_is_enabled()) {
 		static struct of_optee_fixup_data optee_fixup_data = {
 			.shm_size = OPTEE_SHM_SIZE,
 			.method = "smc",

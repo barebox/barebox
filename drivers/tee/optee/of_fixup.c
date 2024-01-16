@@ -9,12 +9,16 @@
 int of_optee_fixup(struct device_node *root, void *_data)
 {
 	struct of_optee_fixup_data *fixup_data = _data;
+	const char *optee_of_path = "/firmware/optee";
 	struct resource res = {};
 	struct device_node *node;
 	u64 optee_membase;
 	int ret;
 
-	node = of_create_node(root, "/firmware/optee");
+	if (of_find_node_by_path_from(root, optee_of_path))
+		return 0;
+
+	node = of_create_node(root, optee_of_path);
 	if (!node)
 		return -ENOMEM;
 

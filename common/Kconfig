@@ -1144,7 +1144,7 @@ config OPTEE_SIZE
 config BOOTM_OPTEE
 	bool
 	prompt "support booting OP-TEE"
-	depends on BOOTM && ARM
+	depends on BOOTM && ARM && 32BIT
 	select HAVE_OPTEE
 	help
 	  OP-TEE is a trusted execution environment (TEE). With this option

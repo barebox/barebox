@@ -33,6 +33,24 @@ struct optee_header {
 
 int optee_verify_header (struct optee_header *hdr);
 
+#ifdef CONFIG_HAVE_OPTEE
+
+void optee_set_membase(const struct optee_header *hdr);
+int optee_get_membase(u64 *membase);
+
+#else
+
+static inline void optee_set_membase(const struct optee_header *hdr)
+{
+}
+
+static inline int optee_get_membase(u64 *membase)
+{
+	return -ENOSYS;
+}
+
+#endif /* CONFIG_HAVE_OPTEE */
+
 #ifdef __PBL__
 
 int start_optee_early(void* fdt, void* tee);

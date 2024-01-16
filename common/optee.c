@@ -6,8 +6,13 @@
 #include <linux/printk.h>
 #include <linux/errno.h>
 
+static u64 optee_membase = U64_MAX;
+
 int optee_verify_header(struct optee_header *hdr)
 {
+	if (!hdr)
+		return -EINVAL;
+
 	if (hdr->magic != OPTEE_MAGIC) {
 		pr_err("Invalid header magic 0x%08x, expected 0x%08x\n",
 			   hdr->magic, OPTEE_MAGIC);
@@ -31,4 +36,26 @@ int optee_verify_header(struct optee_header *hdr)
 	}
 
 	return 0;
+}
+
+int optee_get_membase(u64 *membase)
+{
+	if (optee_membase == U64_MAX)
+		return -EINVAL;
+
+	*membase = optee_membase;
+
+	return 0;
+}
+
+void optee_set_membase(const struct optee_header *hdr)
+{
+	int ret;
+
+	ret = optee_verify_header(hdr);
+	if (ret)
+		return;
+
+	optee_membase = (u64)hdr->init_load_addr_hi << 32;
+	optee_membase |= hdr->init_load_addr_lo;
 }

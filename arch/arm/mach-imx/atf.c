@@ -123,7 +123,8 @@ __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
-	imx8mm_save_bootrom_log();
+	imx8mm_init_scratch_space();
+	imx8m_save_bootrom_log();
 	imx8mm_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE)) {
@@ -186,7 +187,8 @@ __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
-	imx8mp_save_bootrom_log();
+	imx8mp_init_scratch_space();
+	imx8m_save_bootrom_log();
 	imx8mp_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE)) {
@@ -250,7 +252,8 @@ __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(16);
 
-	imx8mn_save_bootrom_log();
+	imx8mn_init_scratch_space();
+	imx8m_save_bootrom_log();
 	imx8mn_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE)) {
@@ -307,7 +310,8 @@ __noreturn void imx8mq_load_and_start_image_via_tfa(void)
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
-	imx8mq_save_bootrom_log();
+	imx8mq_init_scratch_space();
+	imx8m_save_bootrom_log();
 	imx8mq_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_OPTEE)) {

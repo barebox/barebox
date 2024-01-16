@@ -3,26 +3,53 @@
 #include <asm/barebox-arm.h>
 #include <init.h>
 #include <linux/err.h>
+#include <linux/printk.h>
 #include <mach/imx/imx8m-regs.h>
 #include <mach/imx/esdctl.h>
 #include <mach/imx/scratch.h>
 #include <memory.h>
+#include <pbl.h>
 
 struct imx_scratch_space {
 	u32 bootrom_log[128];
 };
 
-void *__imx8m_scratch_space(int ddr_buswidth)
+static struct imx_scratch_space *scratch;
+
+void imx8m_init_scratch_space(int ddr_buswidth, bool zero_init)
 {
 	ulong endmem = MX8M_DDR_CSD1_BASE_ADDR +
 		imx8m_barebox_earlymem_size(ddr_buswidth);
 
-	return (void *)arm_mem_scratch(endmem);
+	scratch = (void *)arm_mem_scratch(endmem);
+
+	if (zero_init)
+		memset(scratch, 0, sizeof(*scratch));
+}
+
+void imx8m_scratch_save_bootrom_log(const u32 *rom_log)
+{
+	size_t sz = sizeof(scratch->bootrom_log);
+
+	if (!scratch) {
+		pr_err("No scratch area initialized, skip saving bootrom log");
+		return;
+	}
+
+	pr_debug("Saving bootrom log to scratch area 0x%p\n", &scratch->bootrom_log);
+
+	memcpy(scratch->bootrom_log, rom_log, sz);
 }
 
 const u32 *imx8m_scratch_get_bootrom_log(void)
 {
-	const struct imx_scratch_space *scratch = arm_mem_scratch_get();
+	if (!scratch) {
+		if (IN_PBL)
+			return ERR_PTR(-EINVAL);
+		else
+			scratch = (void *)arm_mem_scratch_get();
+	}
+
 	return scratch->bootrom_log;
 }
 

@@ -226,7 +226,7 @@ const u32 *imx8m_get_bootrom_log(void)
 	return NULL;
 }
 
-void imx8m_save_bootrom_log(void *dest)
+void imx8m_save_bootrom_log(void)
 {
 	const u32 *rom_log;
 
@@ -241,7 +241,5 @@ void imx8m_save_bootrom_log(void *dest)
 		return;
 	}
 
-	pr_debug("Saving bootrom log to 0x%p\n", dest);
-
-	memcpy(dest, rom_log, 128 * sizeof(u32));
+	imx8m_scratch_save_bootrom_log(rom_log);
 }

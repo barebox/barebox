@@ -3,13 +3,14 @@
 #ifndef __MACH_IMX_SCRATCH_H
 #define __MACH_IMX_SCRATCH_H
 
-void *__imx8m_scratch_space(int ddr_buswidth);
+void imx8m_init_scratch_space(int ddr_buswidth, bool zero_init);
 
 const u32 *imx8m_scratch_get_bootrom_log(void);
+void imx8m_scratch_save_bootrom_log(const u32 *rom_log);
 
-#define imx8mq_scratch_space() __imx8m_scratch_space(32)
-#define imx8mm_scratch_space() __imx8m_scratch_space(32)
-#define imx8mn_scratch_space() __imx8m_scratch_space(16)
-#define imx8mp_scratch_space() __imx8m_scratch_space(32)
+#define imx8mq_init_scratch_space() imx8m_init_scratch_space(32, true)
+#define imx8mm_init_scratch_space() imx8m_init_scratch_space(32, true)
+#define imx8mn_init_scratch_space() imx8m_init_scratch_space(16, true)
+#define imx8mp_init_scratch_space() imx8m_init_scratch_space(32, true)
 
 #endif /* __MACH_IMX_SCRATCH_H */

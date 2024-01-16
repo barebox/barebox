@@ -174,7 +174,7 @@ static __noreturn noinline void zii_imx8mq_dev_start(void)
  *
  * 4. BL31 blob is uploaded to OCRAM and the control is transfer to it
  *
- * 5. BL31 exits EL3 into EL2 at address MX8MQ_ATF_BL33_BASE_ADDR,
+ * 5. BL31 exits EL3 into EL2 at address MX8M_ATF_BL33_BASE_ADDR,
  *    executing start_nxp_imx8mq_evk() the third time
  *
  * 6. Standard barebox boot flow continues

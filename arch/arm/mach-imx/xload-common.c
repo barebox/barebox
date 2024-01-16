@@ -21,14 +21,6 @@ int piggydata_size(void)
 	return input_data_end - input_data;
 }
 
-struct imx_scratch_space *__imx8m_scratch_space(int ddr_buswidth)
-{
-	ulong endmem = MX8M_DDR_CSD1_BASE_ADDR +
-		imx8m_barebox_earlymem_size(ddr_buswidth);
-
-	return (void *)arm_mem_scratch(endmem);
-}
-
 #define HDR_SIZE	512
 
 static int

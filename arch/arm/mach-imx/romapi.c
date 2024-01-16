@@ -228,14 +228,6 @@ const u32 *imx8m_get_bootrom_log(void)
 	return NULL;
 }
 
-static int imx8m_reserve_scratch_area(void)
-{
-	return PTR_ERR_OR_ZERO(request_sdram_region("scratch area",
-				    (ulong)arm_mem_scratch_get(),
-				    sizeof(struct imx_scratch_space)));
-}
-device_initcall(imx8m_reserve_scratch_area);
-
 void imx8m_save_bootrom_log(void *dest)
 {
 	const u32 *rom_log;

@@ -2,7 +2,7 @@
 #ifndef __MACH_IMX_ROMAPI_H
 #define __MACH_IMX_ROMAPI_H
 
-#include <mach/imx/xload.h>
+#include <mach/imx/scratch.h>
 #include <linux/types.h>
 
 struct rom_api {

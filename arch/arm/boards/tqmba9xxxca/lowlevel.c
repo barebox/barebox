@@ -7,6 +7,7 @@
 #include <asm/barebox-arm.h>
 #include <soc/imx9/ddr.h>
 #include <mach/imx/atf.h>
+#include <mach/imx/xload.h>
 #include <mach/imx/romapi.h>
 
 extern char __dtb_z_imx93_tqma9352_mba93xxca_start[];

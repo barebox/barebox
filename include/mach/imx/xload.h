@@ -45,15 +45,4 @@ int piggydata_size(void);
 extern unsigned char input_data[];
 extern unsigned char input_data_end[];
 
-struct imx_scratch_space {
-	u32 bootrom_log[128];
-};
-
-struct imx_scratch_space *__imx8m_scratch_space(int ddr_buswidth);
-
-#define imx8mq_scratch_space() __imx8m_scratch_space(32)
-#define imx8mm_scratch_space() __imx8m_scratch_space(32)
-#define imx8mn_scratch_space() __imx8m_scratch_space(16)
-#define imx8mp_scratch_space() __imx8m_scratch_space(32)
-
 #endif /* __MACH_IMX_XLOAD_H */

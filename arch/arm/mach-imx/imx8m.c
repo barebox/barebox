@@ -8,6 +8,7 @@
 #include <pm_domain.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
+#include <asm-generic/memory_layout.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/revision.h>
 #include <mach/imx/imx8mq.h>
@@ -68,7 +69,7 @@ static int imx8m_init(const char *cputypestr)
 	if (IS_ENABLED(CONFIG_PBL_OPTEE) && tzc380_is_enabled() &&
 	    !of_find_node_by_path_from(NULL, "/firmware/optee")) {
 		static struct of_optee_fixup_data optee_fixup_data = {
-			.shm_size = SZ_4M,
+			.shm_size = OPTEE_SHM_SIZE,
 			.method = "smc",
 		};
 

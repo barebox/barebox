@@ -20,6 +20,10 @@ config MACH_AT91SAM9263EK_DT
 	  Enabled for at91sam9263ek - evaluation kit.
 	  But only if we need the device tree (bootstrap do not use DT)
 
+config HAVE_AT91_LEGACY_CLK
+	def_bool !COMMON_CLK_OF_PROVIDER
+	select HAVE_LEGACY_CLK
+
 config HAVE_AT91_SMD
 	bool
 

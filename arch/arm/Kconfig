@@ -133,7 +133,7 @@ config ARCH_NOMADIK
 	depends on 32BIT
 	select CPU_ARM926T
 	select CLOCKSOURCE_NOMADIK
-	select HAVE_CLK
+	select HAVE_LEGACY_CLK
 	help
 	  Support for the Nomadik platform by ST-Ericsson
 
@@ -242,7 +242,6 @@ config ARCH_K3
 	select CLKDEV_LOOKUP
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
-	select HAVE_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select PM_GENERIC_DOMAINS
 
@@ -279,7 +278,6 @@ config ARCH_STM32MP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select HAS_DEBUG_LL
-	select HAVE_CLK
 	select GPIOLIB
 	select ARCH_HAS_RESET_CONTROLLER
 	select ARM_AMBA
@@ -292,7 +290,6 @@ config ARCH_VERSATILE
 	select GPIOLIB
 	select ARM_AMBA
 	select AMBA_SP804
-	select HAVE_CLK
 	select HAS_DEBUG_LL
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER

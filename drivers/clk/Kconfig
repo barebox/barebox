@@ -21,6 +21,7 @@ config COMMON_CLK
 	bool "Common Clock Framework"
 	depends on !HAVE_LEGACY_CLK
 	select HAVE_CLK
+	select CLKDEV_LOOKUP
 	help
 	  The common clock framework is a single definition of struct
 	  clk, useful across many platforms, as well as an

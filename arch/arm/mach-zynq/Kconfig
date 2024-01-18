@@ -13,7 +13,6 @@ config ZYNQ_DEBUG_LL_UART_BASE
 config ARCH_ZYNQ7000
 	bool
 	select CPU_V7
-	select CLKDEV_LOOKUP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select ARM_SMP_TWD

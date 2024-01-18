@@ -81,7 +81,6 @@ config MACH_MIPS_MALTA
 	select HAS_DEBUG_LL
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select HW_HAS_PCI
 	select HAVE_PBL_IMAGE
@@ -106,7 +105,6 @@ config MACH_MIPS_ATH79
 	select HAS_DEBUG_LL
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select CLKDEV_LOOKUP
 	select OFTREE
 	select GPIOLIB
 
@@ -181,7 +179,6 @@ config CPU_LOONGSON1B
 	bool "Loongson 1B"
 	depends on SYS_HAS_CPU_LOONGSON1B
 	select CPU_GS232
-	select CLKDEV_LOOKUP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	help

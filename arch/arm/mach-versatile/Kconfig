@@ -9,7 +9,6 @@ config MACH_VERSATILEPB
 	bool
 	default y
 	select ARM_AMBA
-	select CLKDEV_LOOKUP
 	select CPU_ARM926T
 	select CPU_ARM1176
 

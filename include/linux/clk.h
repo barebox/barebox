@@ -818,7 +818,7 @@ of_clk_src_simple_get(struct of_phandle_args *clkspec, void *data)
 {
 	return ERR_PTR(-ENOENT);
 }
-static inline struct clk *
+static inline struct clk_hw *
 of_clk_hw_simple_get(struct of_phandle_args *clkspec, void *data)
 {
 	return ERR_PTR(-ENOENT);

@@ -7,11 +7,13 @@
 #include <linux/types.h>
 
 struct imx8m_featctrl_data {
-	u32 vpu_bitmask;
-	u32 gpu_bitmask;
-	u32 mipi_dsi_bitmask;
-	u32 isp_bitmask;
-	bool check_cpus;
+	struct {
+		u32 vpu_bitmask;
+		u32 gpu_bitmask;
+		u32 mipi_dsi_bitmask;
+		u32 isp_bitmask;
+		u32 cpu_bitmask;
+	} tester4;
 };
 
 struct device;

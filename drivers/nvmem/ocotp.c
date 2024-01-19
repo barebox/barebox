@@ -959,9 +959,9 @@ static struct imx_ocotp_data vf610_ocotp_data = {
 };
 
 static struct imx8m_featctrl_data imx8mp_featctrl_data = {
-	.gpu_bitmask = 0xc0,
-	.mipi_dsi_bitmask = 0x60000,
-	.isp_bitmask = 0x3,
+	.tester4.gpu_bitmask = 0xc0,
+	.tester4.mipi_dsi_bitmask = 0x60000,
+	.tester4.isp_bitmask = 0x3,
 };
 
 static struct imx_ocotp_data imx8mp_ocotp_data = {
@@ -990,8 +990,8 @@ static struct imx_ocotp_data imx8mq_ocotp_data = {
 };
 
 static struct imx8m_featctrl_data imx8mm_featctrl_data = {
-	.vpu_bitmask = 0x1c0000,
-	.check_cpus = true,
+	.tester4.vpu_bitmask = 0x1c0000,
+	.tester4.cpu_bitmask = 0x3,
 };
 
 static struct imx_ocotp_data imx8mm_ocotp_data = {
@@ -1008,8 +1008,8 @@ static struct imx_ocotp_data imx8mm_ocotp_data = {
 };
 
 static struct imx8m_featctrl_data imx8mn_featctrl_data = {
-	.gpu_bitmask = 0x1000000,
-	.check_cpus = true,
+	.tester4.gpu_bitmask = 0x1000000,
+	.tester4.cpu_bitmask = 0x3,
 };
 
 static struct imx_ocotp_data imx8mn_ocotp_data = {

@@ -306,7 +306,7 @@ void genpd_activate(void)
 	have_genpd_providers = true;
 }
 
-static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
+static int __genpd_dev_pm_attach(struct device *dev,
 				 unsigned int index, bool power_on)
 {
 	struct of_phandle_args pd_args;
@@ -316,7 +316,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 	if (!have_genpd_providers)
 		return 0;
 
-	ret = of_parse_phandle_with_args(np, "power-domains",
+	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
 				"#power-domain-cells", index, &pd_args);
 	if (ret < 0)
 		return ret;
@@ -372,7 +372,7 @@ int genpd_dev_pm_attach(struct device *dev)
 				       "#power-domain-cells") != 1)
 		return 0;
 
-	return __genpd_dev_pm_attach(dev, dev->of_node, 0, true);
+	return __genpd_dev_pm_attach(dev, 0, true);
 }
 EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
 

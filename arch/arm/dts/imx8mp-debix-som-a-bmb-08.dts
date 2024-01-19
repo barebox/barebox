@@ -37,7 +37,7 @@
 			reg = <0x0 0x0 0x0 0x100000>;
 		};
 
-		env_sd: partition@e0000 {
+		env_sd: partition@100000 {
 			label = "barebox-environment";
 			reg = <0x0 0x100000 0x0 0x100000>;
 		};
@@ -55,7 +55,7 @@
 			reg = <0x0 0x0 0x0 0x100000>;
 		};
 
-		env_emmc: partition@e0000 {
+		env_emmc: partition@100000 {
 			label = "barebox-environment";
 			reg = <0x0 0x100000 0x0 0x100000>;
 		};

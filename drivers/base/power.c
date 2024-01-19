@@ -2,6 +2,7 @@
 #include <common.h>
 #include <driver.h>
 #include <errno.h>
+#include <linux/device.h>
 #include <of.h>
 
 #include <pm_domain.h>
@@ -306,6 +307,16 @@ void genpd_activate(void)
 	have_genpd_providers = true;
 }
 
+static struct bus_type genpd_bus_type = {
+	.name		= "genpd",
+};
+
+static int __init genpd_bus_init(void)
+{
+	return bus_register(&genpd_bus_type);
+}
+core_initcall(genpd_bus_init);
+
 static int __genpd_dev_pm_attach(struct device *dev,
 				 unsigned int index, bool power_on)
 {
@@ -375,6 +386,101 @@ int genpd_dev_pm_attach(struct device *dev)
 	return __genpd_dev_pm_attach(dev, 0, true);
 }
 EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+
+/**
+ * dev_pm_domain_attach_by_id - Associate a device with one of its PM domains.
+ * @dev: The device used to lookup the PM domain.
+ * @index: The index of the PM domain.
+ *
+ * As @dev may only be attached to a single PM domain, the backend PM domain
+ * provider creates a virtual device to attach instead. If attachment succeeds,
+ * the ->detach() callback in the struct dev_pm_domain are assigned by the
+ * corresponding backend attach function, as to deal with detaching of the
+ * created virtual device.
+ *
+ * This function should typically be invoked by a driver during the probe phase,
+ * in case its device requires power management through multiple PM domains. The
+ * driver may benefit from using the received device, to configure device-links
+ * towards its original device. Depending on the use-case and if needed, the
+ * links may be dynamically changed by the driver, which allows it to control
+ * the power to the PM domains independently from each other.
+ *
+ * Callers must ensure proper synchronization of this function with power
+ * management callbacks.
+ *
+ * Returns the virtual created device when successfully attached to its PM
+ * domain, NULL in case @dev don't need a PM domain, else an ERR_PTR().
+ * Note that, to detach the returned virtual device, the driver shall call
+ * dev_pm_domain_detach() on it, typically during the remove phase.
+ */
+struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+					 unsigned int index)
+{
+	struct device *virt_dev;
+	int num_domains;
+	int ret;
+
+	if (!dev->of_node)
+		return NULL;
+
+	/* Verify that the index is within a valid range. */
+	num_domains = of_count_phandle_with_args(dev->of_node, "power-domains",
+						 "#power-domain-cells");
+	if (index >= num_domains)
+		return NULL;
+
+	/* Allocate and register device on the genpd bus. */
+	virt_dev = kzalloc(sizeof(*virt_dev), GFP_KERNEL);
+	if (!virt_dev)
+		return ERR_PTR(-ENOMEM);
+
+	dev_set_name(virt_dev, "genpd");
+	virt_dev->bus = &genpd_bus_type;
+	virt_dev->parent = dev;
+	virt_dev->of_node = dev->of_node;
+	virt_dev->id = index;
+
+	ret = device_register(virt_dev);
+	if (ret) {
+		kfree(dev);
+		return ERR_PTR(ret);
+	}
+
+	/* Try to attach the device to the PM domain at the specified index. */
+	ret = __genpd_dev_pm_attach(virt_dev, index, false);
+	if (ret < 1) {
+		device_unregister(virt_dev);
+		return ret ? ERR_PTR(ret) : NULL;
+	}
+
+	return virt_dev;
+}
+EXPORT_SYMBOL_GPL(genpd_dev_pm_attach_by_id);
+
+/**
+ * genpd_dev_pm_attach_by_name - Associate a device with one of its PM domains.
+ * @dev: The device used to lookup the PM domain.
+ * @name: The name of the PM domain.
+ *
+ * Parse device's OF node to find a PM domain specifier using the
+ * power-domain-names DT property. For further description see
+ * genpd_dev_pm_attach_by_id().
+ */
+struct device *genpd_dev_pm_attach_by_name(struct device *dev, const char *name)
+{
+	int index;
+
+	if (!dev->of_node)
+		return NULL;
+
+	index = of_property_match_string(dev->of_node, "power-domain-names",
+					 name);
+	if (index < 0)
+		return NULL;
+
+	return genpd_dev_pm_attach_by_id(dev, index);
+}
+EXPORT_SYMBOL_GPL(genpd_dev_pm_attach_by_name);
 
 void pm_genpd_print(void)
 {

@@ -10,6 +10,14 @@
 
 static LIST_HEAD(gpd_list);
 
+static inline struct generic_pm_domain *dev_to_genpd(struct device *dev)
+{
+	if (IS_ERR_OR_NULL(dev->pm_domain))
+		return ERR_PTR(-EINVAL);
+
+	return dev->pm_domain;
+}
+
 /**
  * pm_genpd_init - Initialize a generic I/O PM domain object.
  * @genpd: PM domain object to initialize.
@@ -280,6 +288,17 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
 	return 0;
 }
 
+static void genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
+{
+	dev->pm_domain = genpd;
+}
+
+static void genpd_remove_device(struct generic_pm_domain *genpd,
+			       struct device *dev)
+{
+	dev->pm_domain = NULL;
+}
+
 static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 				 unsigned int index, bool power_on)
 {
@@ -306,8 +325,13 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 
 	dev_dbg(dev, "adding to PM domain %s\n", pd ? pd->name : "dummy");
 
-	if (power_on)
+	genpd_add_device(pd, dev);
+
+	if (power_on) {
 		ret = genpd_power_on(pd);
+		if (ret < 0)
+			genpd_remove_device(pd, dev);
+	}
 
 	return ret ?: 1;
 }

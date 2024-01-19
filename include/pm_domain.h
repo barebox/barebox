@@ -4,6 +4,7 @@
 #define _PM_DOMAIN_H
 
 #include <linux/list.h>
+#include <driver.h>
 #include <of.h>
 
 enum gpd_status {
@@ -93,6 +94,9 @@ of_genpd_add_provider_simple(struct device_node *np,
  */
 static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
 {
+	if (dev->pm_domain)
+		return 0;
+
 	return genpd_dev_pm_attach(dev);
 }
 

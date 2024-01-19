@@ -299,12 +299,22 @@ static void genpd_remove_device(struct generic_pm_domain *genpd,
 	dev->pm_domain = NULL;
 }
 
+static bool have_genpd_providers;
+
+void genpd_activate(void)
+{
+	have_genpd_providers = true;
+}
+
 static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 				 unsigned int index, bool power_on)
 {
 	struct of_phandle_args pd_args;
 	struct generic_pm_domain *pd;
 	int ret;
+
+	if (!have_genpd_providers)
+		return 0;
 
 	ret = of_parse_phandle_with_args(np, "power-domains",
 				"#power-domain-cells", index, &pd_args);
@@ -336,13 +346,6 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 	return ret ?: 1;
 }
 
-static bool have_genpd_providers;
-
-void genpd_activate(void)
-{
-	have_genpd_providers = true;
-}
-
 /**
  * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
  * @dev: Device to attach.
@@ -359,9 +362,6 @@ void genpd_activate(void)
 int genpd_dev_pm_attach(struct device *dev)
 {
 	if (!dev->of_node)
-		return 0;
-
-	if (!have_genpd_providers)
 		return 0;
 
 	/*

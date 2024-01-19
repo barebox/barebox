@@ -4,6 +4,7 @@
 #define __MACH_IMX_SCRATCH_H
 
 void imx8m_init_scratch_space(int ddr_buswidth, bool zero_init);
+void imx93_init_scratch_space(bool zero_init);
 
 const u32 *imx8m_scratch_get_bootrom_log(void);
 void imx8m_scratch_save_bootrom_log(const u32 *rom_log);

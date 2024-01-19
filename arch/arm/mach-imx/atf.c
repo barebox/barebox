@@ -384,6 +384,8 @@ void __noreturn imx93_load_and_start_image_via_tfa(void)
 	const void *tfa;
 	size_t tfa_size;
 
+	imx93_init_scratch_space(true);
+
 	/*
 	 * On completion the TF-A will jump to MX93_ATF_BL33_BASE_ADDR
 	 * in EL2. Copy the image there, but replace the PBL part of

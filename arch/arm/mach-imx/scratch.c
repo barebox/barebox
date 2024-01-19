@@ -5,6 +5,7 @@
 #include <linux/err.h>
 #include <linux/printk.h>
 #include <mach/imx/imx8m-regs.h>
+#include <mach/imx/imx9-regs.h>
 #include <mach/imx/esdctl.h>
 #include <mach/imx/scratch.h>
 #include <memory.h>
@@ -23,6 +24,16 @@ void imx8m_init_scratch_space(int ddr_buswidth, bool zero_init)
 {
 	ulong endmem = MX8M_DDR_CSD1_BASE_ADDR +
 		imx8m_barebox_earlymem_size(ddr_buswidth);
+
+	scratch = (void *)arm_mem_scratch(endmem);
+
+	if (zero_init)
+		memset(scratch, 0, sizeof(*scratch));
+}
+
+void imx93_init_scratch_space(bool zero_init)
+{
+	ulong endmem = MX9_DDR_CSD1_BASE_ADDR + imx9_ddrc_sdram_size();
 
 	scratch = (void *)arm_mem_scratch(endmem);
 

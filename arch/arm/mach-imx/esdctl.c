@@ -1048,6 +1048,7 @@ void __noreturn imx7d_barebox_entry(void *boarddata)
 void __noreturn imx93_barebox_entry(void *boarddata)
 {
 	imx93_init_scratch_space(false);
+	optee_set_membase(imx_scratch_get_optee_hdr());
 
 	barebox_arm_entry(MX9_DDR_CSD1_BASE_ADDR,
 			  imx9_ddrc_sdram_size(), boarddata);

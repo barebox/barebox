@@ -11,9 +11,11 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx/imx8m-regs.h>
+#include <mach/imx/imx9-regs.h>
 #include <soc/fsl/fsl_udc.h>
 #include <soc/fsl/caam.h>
 #include <tee/optee.h>
+#include <mach/imx/ele.h>
 
 /**
  * imx8m_atf_load_bl31 - Load ATF BL31 blob and transfer control to it
@@ -383,6 +385,8 @@ void __noreturn imx93_load_and_start_image_via_tfa(void)
 	void __noreturn (*bl31)(void) = (void *)atf_dest;
 	const void *tfa;
 	size_t tfa_size;
+	void *bl33 = (void *)MX93_ATF_BL33_BASE_ADDR;
+	unsigned long endmem = MX9_DDR_CSD1_BASE_ADDR + imx9_ddrc_sdram_size();
 
 	imx93_init_scratch_space(true);
 
@@ -402,7 +406,25 @@ void __noreturn imx93_load_and_start_image_via_tfa(void)
 	 */
 	memcpy((void *)MX93_ATF_BL33_BASE_ADDR, __image_start, ALIGN(barebox_pbl_size, 1024));
 
-	get_builtin_firmware(imx93_bl31_bin, &tfa, &tfa_size);
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX93_OPTEE)) {
+		void *bl32 = (void *)arm_mem_optee(endmem);
+		size_t bl32_size;
+		void *bl32_image;
+
+		imx93_ele_load_fw(bl33);
+
+		get_builtin_firmware_ext(imx93_bl32_bin,
+				bl33, &bl32_image,
+				&bl32_size);
+
+		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
+
+		memcpy(bl32, bl32_image, bl32_size);
+
+		get_builtin_firmware(imx93_bl31_bin_optee, &tfa, &tfa_size);
+	} else {
+		get_builtin_firmware(imx93_bl31_bin, &tfa, &tfa_size);
+	}
 
 	memcpy(bl31, tfa, tfa_size);
 

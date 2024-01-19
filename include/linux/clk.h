@@ -1019,6 +1019,9 @@ static inline void clk_bulk_disable(int num_clks,
 
 #endif
 
+#define clk_bulk_prepare_enable clk_bulk_enable
+#define clk_bulk_disable_unprepare clk_bulk_disable
+
 /**
  * clk_get_optional - lookup and obtain a reference to an optional clock
  *		      producer.

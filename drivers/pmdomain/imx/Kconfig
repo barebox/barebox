@@ -3,7 +3,7 @@ menu "i.MX PM Domains"
 
 config IMX_GPCV2_PM_DOMAINS
 	bool "i.MX GPCv2 PM domains"
-	depends on ARCH_IMX7 || ARCH_IMX8M
+	depends on ARCH_IMX7 || ARCH_IMX8M || COMPILE_TEST
 	select PM_GENERIC_DOMAINS
 	default y if ARCH_IMX7 || ARCH_IMX8M
 

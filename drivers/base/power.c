@@ -249,7 +249,7 @@ static struct generic_pm_domain *genpd_get_from_provider(
 	return genpd;
 }
 
-static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+static int _genpd_power_on(struct generic_pm_domain *genpd)
 {
 	if (!genpd->power_on)
 		return 0;
@@ -260,19 +260,18 @@ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
 /**
  * genpd_power_on - Restore power to a given PM domain and its masters.
  * @genpd: PM domain to power up.
- * @depth: nesting count for lockdep.
  *
  * Restore power to @genpd and all of its masters so that it is possible to
  * resume a device belonging to it.
  */
-static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
+static int genpd_power_on(struct generic_pm_domain *genpd)
 {
 	int ret;
 
 	if (!genpd || genpd_status_on(genpd))
 		return 0;
 
-	ret = _genpd_power_on(genpd, true);
+	ret = _genpd_power_on(genpd);
 	if (ret)
 		return ret;
 
@@ -308,7 +307,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 	dev_dbg(dev, "adding to PM domain %s\n", pd ? pd->name : "dummy");
 
 	if (power_on)
-		ret = genpd_power_on(pd, 0);
+		ret = genpd_power_on(pd);
 
 	return ret ?: 1;
 }

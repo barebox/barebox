@@ -40,6 +40,19 @@ int pm_genpd_init(struct generic_pm_domain *genpd, void *gov, bool is_off)
 }
 EXPORT_SYMBOL_GPL(pm_genpd_init);
 
+int pm_genpd_remove(struct generic_pm_domain *genpd)
+{
+	if (IS_ERR_OR_NULL(genpd))
+		return -EINVAL;
+
+	list_del(&genpd->gpd_list_node);
+
+	pr_debug("%s: removed %s\n", __func__, genpd->name);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(pm_genpd_remove);
+
 /**
  * struct of_genpd_provider - PM domain provider registration structure
  * @link: Entry in global list of PM domain providers
@@ -208,6 +221,24 @@ error:
 	return ret;
 }
 EXPORT_SYMBOL_GPL(of_genpd_add_provider_onecell);
+
+/**
+ * of_genpd_del_provider() - Remove a previously registered PM domain provider
+ * @np: Device node pointer associated with the PM domain provider
+ */
+void of_genpd_del_provider(struct device_node *np)
+{
+	struct of_genpd_provider *cp, *tmp;
+
+	list_for_each_entry_safe(cp, tmp, &of_genpd_providers, link) {
+		if (cp->node == np) {
+			list_del(&cp->link);
+			kfree(cp);
+			break;
+		}
+	}
+}
+EXPORT_SYMBOL_GPL(of_genpd_del_provider);
 
 /**
  * genpd_get_from_provider() - Look-up PM domain

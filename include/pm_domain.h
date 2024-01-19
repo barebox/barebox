@@ -39,6 +39,8 @@ int pm_runtime_resume_and_get_genpd(struct device *dev);
 
 int pm_genpd_init(struct generic_pm_domain *genpd, void *gov, bool is_off);
 
+int pm_genpd_remove(struct generic_pm_domain *genpd);
+
 int of_genpd_add_provider_simple(struct device_node *np,
 				 struct generic_pm_domain *genpd);
 
@@ -50,6 +52,8 @@ struct genpd_onecell_data {
 
 int of_genpd_add_provider_onecell(struct device_node *np,
 				  struct genpd_onecell_data *data);
+
+void of_genpd_del_provider(struct device_node *np);
 
 void pm_genpd_print(void);
 
@@ -63,6 +67,11 @@ static inline int pm_genpd_init(struct generic_pm_domain *genpd,
 				void *gov, bool is_off)
 {
 	return -ENOSYS;
+}
+
+static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
+{
+	return -EOPNOTSUPP;
 }
 
 static inline int genpd_dev_pm_attach(struct device *dev)
@@ -92,6 +101,10 @@ of_genpd_add_provider_simple(struct device_node *np,
 			     struct generic_pm_domain *genpd)
 {
 	return -ENOTSUPP;
+}
+
+static inline void of_genpd_del_provider(struct device_node *np)
+{
 }
 
 #endif

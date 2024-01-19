@@ -30,11 +30,12 @@ typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
 void genpd_activate(void);
 
 int genpd_dev_pm_attach(struct device *dev);
-
 struct device *genpd_dev_pm_attach_by_id(struct device *dev,
 					 unsigned int index);
 struct device *genpd_dev_pm_attach_by_name(struct device *dev,
 					   const char *name);
+
+int pm_runtime_resume_and_get_genpd(struct device *dev);
 
 int pm_genpd_init(struct generic_pm_domain *genpd, void *gov, bool is_off);
 
@@ -79,6 +80,11 @@ static inline struct device *genpd_dev_pm_attach_by_name(struct device *dev,
 							 const char *name)
 {
 	return NULL;
+}
+
+static inline int pm_runtime_resume_and_get_genpd(struct device *dev)
+{
+	return 0;
 }
 
 static inline int

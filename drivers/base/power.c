@@ -289,6 +289,17 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
 	return 0;
 }
 
+int pm_runtime_resume_and_get_genpd(struct device *dev)
+{
+	struct generic_pm_domain *genpd;
+
+	genpd = dev_to_genpd(dev);
+	if (IS_ERR(genpd))
+		return PTR_ERR(genpd);
+
+	return genpd_power_on(genpd);
+}
+
 static void genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
 {
 	dev->pm_domain = genpd;

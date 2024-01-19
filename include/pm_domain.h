@@ -180,4 +180,11 @@ static inline void dev_pm_domain_detach(struct device *dev, bool power_off)
 	 * start doing reference counting
 	 */
 }
+
+static inline void pm_runtime_put_genpd(struct device *dev)
+{
+	/* Just keep power domain enabled until pm_runtime_resume_and_get_genpd
+	 * starts doing reference counting
+	 */
+}
 #endif

@@ -736,7 +736,7 @@ static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 	char mac[MAC_BYTES];
 	const __be32 *prop;
 	struct device_node *node = priv->dev.parent->of_node;
-	u32 tester4;
+	u32 tester3, tester4;
 	int ret, len = 0;
 
 	if (!node)
@@ -764,11 +764,15 @@ static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 	if (!of_property_read_bool(node, "barebox,feature-controller"))
 		return 0;
 
+	ret = regmap_read(priv->map, OCOTP_OFFSET_TO_ADDR(0x440), &tester3);
+	if (ret != 0)
+		return ret;
+
 	ret = regmap_read(priv->map, OCOTP_OFFSET_TO_ADDR(0x450), &tester4);
 	if (ret != 0)
 		return ret;
 
-	return imx8m_feat_ctrl_init(priv->dev.parent, tester4, priv->data->feat);
+	return imx8m_feat_ctrl_init(priv->dev.parent, tester3, tester4, priv->data->feat);
 }
 
 static void imx_ocotp_set_unique_machine_id(void)
@@ -959,9 +963,14 @@ static struct imx_ocotp_data vf610_ocotp_data = {
 };
 
 static struct imx8m_featctrl_data imx8mp_featctrl_data = {
+	.tester3.cpu_bitmask = 0xc0000,
+	.tester3.vpu_bitmask = 0x43000000,
+	.tester4.npu_bitmask = 0x8,
 	.tester4.gpu_bitmask = 0xc0,
 	.tester4.mipi_dsi_bitmask = 0x60000,
+	.tester4.lvds_bitmask = 0x180000,
 	.tester4.isp_bitmask = 0x3,
+	.tester4.dsp_bitmask = 0x10,
 };
 
 static struct imx_ocotp_data imx8mp_ocotp_data = {

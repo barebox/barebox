@@ -32,6 +32,18 @@
 #define driver_register register_driver
 #define driver_unregister unregister_driver
 
+
+static inline void __iomem *dev_platform_ioremap_resource(struct device *dev,
+							  int resource)
+{
+	/*
+	 * barebox maps everything outside the RAM banks suitably for MMIO,
+	 * so we don't need to do anything besides requesting the regions
+	 * and can leave the memory attributes unchanged.
+	 */
+	return dev_request_mem_region_err_null(dev, resource);
+}
+
 static inline void __iomem *devm_ioremap(struct device *dev,
 					 resource_size_t start,
 					 resource_size_t size)

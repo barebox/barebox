@@ -152,6 +152,7 @@ void __noreturn imx93_barebox_entry(void *boarddata);
 #define imx6sx_barebox_entry(boarddata) imx6ul_barebox_entry(boarddata)
 void imx_esdctl_disable(void);
 resource_size_t imx8m_barebox_earlymem_size(unsigned buswidth);
+resource_size_t imx9_ddrc_sdram_size(void);
 #endif
 
 #endif /* __MACH_ESDCTL_V2_H */

@@ -563,8 +563,9 @@ static int imx8mn_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 #define IMX9_DDRC_CS_COL_BITS	GENMASK(2, 0)
 #define IMX9_DDRC_CS_EN		BIT(31)
 
-static resource_size_t imx9_ddrc_sdram_size(void __iomem *mmdcbase)
+resource_size_t imx9_ddrc_sdram_size(void)
 {
+	void __iomem *mmdcbase = IOMEM(MX9_DDR_CTL_BASE);
 	int width = 2;
 	int banks = 8;
 	unsigned long mem = 0;
@@ -593,7 +594,7 @@ static resource_size_t imx9_ddrc_sdram_size(void __iomem *mmdcbase)
 
 static int imx9_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 {
-	return arm_add_mem_device("ram0", data->base0, imx9_ddrc_sdram_size(mmdcbase));
+	return arm_add_mem_device("ram0", data->base0, imx9_ddrc_sdram_size());
 }
 
 static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
@@ -1047,5 +1048,5 @@ void __noreturn imx7d_barebox_entry(void *boarddata)
 void __noreturn imx93_barebox_entry(void *boarddata)
 {
 	barebox_arm_entry(MX9_DDR_CSD1_BASE_ADDR,
-			  imx9_ddrc_sdram_size(IOMEM(MX9_DDR_CTL_BASE)), boarddata);
+			  imx9_ddrc_sdram_size(), boarddata);
 }

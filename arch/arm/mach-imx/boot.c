@@ -711,15 +711,18 @@ void imx8mm_get_boot_source(enum bootsource *src, int *instance)
 		return;
 	}
 
+	addr = IMX8M_BOOT_SW_INFO_POINTER_ADDR_A0;
+
+	__imx7_get_boot_source(src, instance, addr, sbmr2);
+
+	if (*src != BOOTSOURCE_UNKNOWN)
+		return;
+
 	if (imx8mm_bootsource_qspi(sbmr1)) {
 		*src = BOOTSOURCE_SPI; /* Really: qspi */
 		*instance = 0;
 		return;
 	}
-
-	addr = IMX8M_BOOT_SW_INFO_POINTER_ADDR_A0;
-
-	__imx7_get_boot_source(src, instance, addr, sbmr2);
 }
 
 void imx8mm_boot_save_loc(void)

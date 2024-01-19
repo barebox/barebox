@@ -11,6 +11,7 @@
 #include <linux/uuid.h>
 #include <linux/printk.h>
 #include <of.h>
+#include <init.h>
 #include <filetype.h>
 
 #define FORMAT_DRIVER_NAME_ID	"%s%d"

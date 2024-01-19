@@ -174,4 +174,10 @@ static inline struct device *dev_pm_domain_attach_by_name(struct device *dev,
 	return genpd_dev_pm_attach_by_name(dev, name);
 }
 
+static inline void dev_pm_domain_detach(struct device *dev, bool power_off)
+{
+	/* Just keep power domain enabled until dev_pm_domain_attach*
+	 * start doing reference counting
+	 */
+}
 #endif

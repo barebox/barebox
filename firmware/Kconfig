@@ -53,6 +53,10 @@ config FIRMWARE_IMX8MP_OPTEE
 	bool "install OP-TEE on i.MX8MP boards"
 	depends on FIRMWARE_IMX8MP_ATF && PBL_OPTEE
 
+config FIRMWARE_IMX8MQ_OPTEE
+	bool "install OP-TEE on i.MX8MQ boards"
+	depends on FIRMWARE_IMX8MQ_ATF && PBL_OPTEE
+
 config FIRMWARE_CCBV2_OPTEE
 	bool
 	depends on MACH_WEBASTO_CCBV2 && PBL_OPTEE

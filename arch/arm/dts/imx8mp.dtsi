@@ -17,15 +17,6 @@
 	};
 };
 
-/* Temporary workaround until snps,gfladj-refclk-lpm-sel-quirk is supported */
-&usb_dwc3_0 {
-	snps,dis-u2-freeclk-exists-quirk;
-};
-
-&usb_dwc3_1 {
-	snps,dis-u2-freeclk-exists-quirk;
-};
-
 /*
  * The DSP reserved memory will collide with the Barebox malloc area for some
  * DRAM sizes, even though the DSP itself is disabled in most configurations.

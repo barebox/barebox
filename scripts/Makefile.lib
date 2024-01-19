@@ -301,7 +301,7 @@ quiet_cmd_sha256bin ?= SHA-BIN $@
 			while read -r byte; do printf '\%o' $$byte; done)" > $@
 
 quiet_cmd_sha256sum ?= SHA     $@
-      cmd_sha256sum ?= sha256sum $< > $@
+      cmd_sha256sum ?= sha256sum $2 > $@
 
 # Decompressor for barebox proper binary when using PBL
 # ---------------------------------------------------------------------------

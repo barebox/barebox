@@ -92,8 +92,8 @@ $(obj)/%.extgen.S: $(obj)/%.sha.bin FORCE
 $(obj)/%.sha.bin: $(obj)/%.sum FORCE
 	$(call if_changed,sha256bin)
 
-$(obj)/%.sum: $(obj)/% FORCE
-	$(call if_changed,sha256sum)
+$(obj)/%.sum: FORCE
+	$(if $(wildcard $(fwdir)/$*), $(call if_changed,sha256sum,$(fwdir)/$*), @touch $@)
 
 clean-files += *.sha.bin *.sum
 

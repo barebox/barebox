@@ -132,7 +132,7 @@ $(obj)/barebox.sha.bin: $(obj)/barebox.sum FORCE
 	$(call if_changed,sha256bin)
 
 $(obj)/barebox.sum: $(obj)/barebox.z FORCE
-	$(call if_changed,sha256sum)
+	$(call if_changed,sha256sum,$<)
 
 
 # barebox.z - compressed barebox binary

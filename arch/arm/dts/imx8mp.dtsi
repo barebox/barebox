@@ -73,7 +73,3 @@ feat: &ocotp {
 &gpu2d {
 	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
 };
-
-&hsio_blk_ctrl {
-	barebox,allow-dummy;
-};

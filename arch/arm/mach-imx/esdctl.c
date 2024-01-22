@@ -568,7 +568,7 @@ resource_size_t imx9_ddrc_sdram_size(void)
 	void __iomem *mmdcbase = IOMEM(MX9_DDR_CTL_BASE);
 	int width = 2;
 	int banks = 8;
-	unsigned long mem = 0;
+	resource_size_t mem = 0;
 	int i;
 
 	for (i = 0; i < 2; i++) {

@@ -219,9 +219,9 @@ enum ddr_rate {
 	DDR_3720,
 	DDR_3200,
 	DDR_3000,
-	DDR_2600, /* Unused */
+	DDR_2600,
 	DDR_2400,
-	DDR_2376, /* Unused */
+	DDR_2376,
 	DDR_1600,
 	DDR_1000, /* Unused */
 	DDR_1066,
@@ -450,7 +450,9 @@ static void ddrphy_init_set_dfi_clk(struct dram_controller *dram, unsigned int d
 	case 3720: drate = DDR_3720; break;
 	case 3200: drate = DDR_3200; break;
 	case 3000: drate = DDR_3000; break;
+	case 2600: drate = DDR_2600; break;
 	case 2400: drate = DDR_2400; break;
+	case 2376: drate = DDR_2376; break;
 	case 1600: drate = DDR_1600; break;
 	case 1066: drate = DDR_1066; break;
 	case 667: drate = DDR_667; break;

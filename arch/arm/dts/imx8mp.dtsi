@@ -17,21 +17,16 @@
 	};
 };
 
-/* Temporary workaround until snps,gfladj-refclk-lpm-sel-quirk is supported */
-&usb_dwc3_0 {
-	snps,dis-u2-freeclk-exists-quirk;
-};
-
-&usb_dwc3_1 {
-	snps,dis-u2-freeclk-exists-quirk;
-};
-
 /*
  * The DSP reserved memory will collide with the Barebox malloc area for some
  * DRAM sizes, even though the DSP itself is disabled in most configurations.
  */
-/delete-node/ &dsp;
 /delete-node/ &dsp_reserved;
+&dsp {
+	barebox,feature-gates = <&feat IMX8M_FEAT_DSP>;
+	/delete-property/ memory-region;
+	status = "disabled";
+};
 
 &edacmc {
 	compatible = "fsl,imx8mp-ddrc", "fsl,imx8m-ddrc", "snps,ddrc-3.80a";
@@ -62,6 +57,14 @@ feat: &ocotp {
 	barebox,feature-gates = <&feat IMX8M_FEAT_MIPI_DSI>;
 };
 
+&mipi_dsi {
+	barebox,feature-gates = <&feat IMX8M_FEAT_MIPI_DSI>;
+};
+
+&lcdif1 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_MIPI_DSI>;
+};
+
 &pgc_ispdwp {
 	barebox,feature-gates = <&feat IMX8M_FEAT_ISP>;
 };
@@ -76,4 +79,44 @@ feat: &ocotp {
 
 &hsio_blk_ctrl {
 	barebox,allow-dummy;
+};
+
+&pgc_vpumix {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&pgc_vpu_g1 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&pgc_vpu_g2 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&pgc_vpu_vc8000e {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&vpu_g1 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&vpu_g2 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&vpumix_blk_ctrl {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&pgc_mlmix {
+	barebox,feature-gates = <&feat IMX8M_FEAT_NPU>;
+};
+
+&lcdif2 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_LVDS>;
+};
+
+&lvds_bridge {
+	barebox,feature-gates = <&feat IMX8M_FEAT_LVDS>;
 };

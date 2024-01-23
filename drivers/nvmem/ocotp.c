@@ -25,6 +25,7 @@
 #include <of.h>
 #include <clock.h>
 #include <linux/regmap.h>
+#include <linux/bits.h>
 #include <linux/clk.h>
 #include <machine_id.h>
 #ifdef CONFIG_ARCH_IMX
@@ -66,25 +67,29 @@
 #define DEF_STROBE_PROG			10000	/* IPG clocks */
 
 /* OCOTP Registers bits and masks */
-#define OCOTP_CTRL_WR_UNLOCK		16
-#define OCOTP_CTRL_WR_UNLOCK_KEY	0x3E77
-#define OCOTP_CTRL_WR_UNLOCK_MASK	0xFFFF0000
-#define OCOTP_CTRL_ADDR			0
-#define OCOTP_CTRL_ADDR_MASK		0x000000FF
-#define OCOTP_CTRL_BUSY			(1 << 8)
-#define OCOTP_CTRL_ERROR		(1 << 9)
-#define OCOTP_CTRL_RELOAD_SHADOWS	(1 << 10)
+#define OCOTP_CTRL_ADDR		  GENMASK(7, 0)
+#define OCOTP_CTRL_BUSY		  BIT(8)
+#define OCOTP_CTRL_ERROR	  BIT(9)
+#define OCOTP_CTRL_RELOAD_SHADOWS BIT(10)
+#define OCOTP_CTRL_WR_UNLOCK	  GENMASK(31, 16)
+#define OCOTP_CTRL_WR_UNLOCK_KEY  0x3E77
 
-#define OCOTP_TIMING_STROBE_READ_MASK	0x003F0000
-#define OCOTP_TIMING_RELAX_MASK		0x0000F000
-#define OCOTP_TIMING_STROBE_PROG_MASK	0x00000FFF
-#define OCOTP_TIMING_WAIT_MASK		0x0FC00000
+/* i.MX8MP OCOTP CTRL has a different layout. See RM Rev.1 06/2021 Section
+	* 6.3.5.1.2.4 */
+#define OCOTP_CTRL_ADDR_8MP	      GENMASK(8, 0)
+#define OCOTP_CTRL_BUSY_8MP	      BIT(9)
+#define OCOTP_CTRL_ERROR_8MP	      BIT(10)
+#define OCOTP_CTRL_RELOAD_SHADOWS_8MP BIT(11)
+#define OCOTP_CTRL_WR_UNLOCK_8MP      GENMASK(31, 16)
 
-#define OCOTP_READ_CTRL_READ_FUSE	0x00000001
+#define OCOTP_TIMING_STROBE_READ GENMASK(21, 16)
+#define OCOTP_TIMING_RELAX	 GENMASK(15, 12)
+#define OCOTP_TIMING_STROBE_PROG GENMASK(11, 0)
+#define OCOTP_TIMING_WAIT	 GENMASK(27, 22)
 
-#define BF(value, field)		FIELD_PREP(field##_MASK, value)
+#define OCOTP_READ_CTRL_READ_FUSE BIT(1)
 
-#define OCOTP_OFFSET_TO_ADDR(o)		(OCOTP_OFFSET_TO_INDEX(o) * 4)
+#define OCOTP_OFFSET_TO_ADDR(o) (OCOTP_OFFSET_TO_INDEX(o) * 4)
 
 /* Other definitions */
 #define IMX6_OTP_DATA_ERROR_VAL		0xBADABADA
@@ -99,9 +104,35 @@
 #define MAC_BYTES			8
 #define UNIQUE_ID_NUM			2
 
+#define field_prep(_mask, _val) (((_val) << (ffs(_mask) - 1)) & (_mask))
+
 enum imx_ocotp_format_mac_direction {
 	OCOTP_HW_TO_MAC,
 	OCOTP_MAC_TO_HW,
+};
+
+struct ocotp_ctrl_reg {
+	u32 bm_addr;
+	u32 bm_busy;
+	u32 bm_error;
+	u32 bm_reload_shadows;
+	u32 bm_wr_unlock;
+};
+
+const struct ocotp_ctrl_reg ocotp_ctrl_reg_default = {
+	.bm_addr = OCOTP_CTRL_ADDR,
+	.bm_busy = OCOTP_CTRL_BUSY,
+	.bm_error = OCOTP_CTRL_ERROR,
+	.bm_reload_shadows = OCOTP_CTRL_RELOAD_SHADOWS,
+	.bm_wr_unlock = OCOTP_CTRL_WR_UNLOCK,
+};
+
+const struct ocotp_ctrl_reg ocotp_ctrl_reg_8mp = {
+	.bm_addr = OCOTP_CTRL_ADDR_8MP,
+	.bm_busy = OCOTP_CTRL_BUSY_8MP,
+	.bm_error = OCOTP_CTRL_ERROR_8MP,
+	.bm_reload_shadows = OCOTP_CTRL_RELOAD_SHADOWS_8MP,
+	.bm_wr_unlock = OCOTP_CTRL_WR_UNLOCK_8MP,
 };
 
 struct ocotp_priv;
@@ -117,6 +148,7 @@ struct imx_ocotp_data {
 	u8  mac_offsets[MAX_MAC_OFFSETS];
 	u8  mac_offsets_num;
 	struct imx8m_featctrl_data *feat;
+	const struct ocotp_ctrl_reg *ctrl;
 };
 
 struct ocotp_priv_ethaddr {
@@ -181,10 +213,10 @@ static int imx6_ocotp_set_timing(struct ocotp_priv *priv)
 					1000000);
 	strobe_prog += 2 * (relax + 1) - 1;
 
-	timing = readl(priv->base + OCOTP_TIMING) & OCOTP_TIMING_WAIT_MASK;
-	timing |= BF(relax, OCOTP_TIMING_RELAX);
-	timing |= BF(strobe_read, OCOTP_TIMING_STROBE_READ);
-	timing |= BF(strobe_prog, OCOTP_TIMING_STROBE_PROG);
+	timing = readl(priv->base + OCOTP_TIMING) & OCOTP_TIMING_WAIT;
+	timing |= FIELD_PREP(OCOTP_TIMING_RELAX, relax);
+	timing |= FIELD_PREP(OCOTP_TIMING_STROBE_READ, strobe_read);
+	timing |= FIELD_PREP(OCOTP_TIMING_STROBE_PROG, strobe_prog);
 
 	writel(timing, priv->base + OCOTP_TIMING);
 
@@ -215,8 +247,9 @@ static int imx7_ocotp_set_timing(struct ocotp_priv *priv)
 static int imx6_ocotp_wait_busy(struct ocotp_priv *priv, u32 flags)
 {
 	uint64_t start = get_time_ns();
+	u32 bm_ctrl_busy = priv->data->ctrl->bm_busy;
 
-	while (readl(priv->base + OCOTP_CTRL) & (OCOTP_CTRL_BUSY | flags))
+	while (readl(priv->base + OCOTP_CTRL) & (bm_ctrl_busy | flags))
 		if (is_timeout(start, MSECOND))
 			return -ETIMEDOUT;
 
@@ -242,13 +275,16 @@ static int imx6_fuse_read_addr(struct ocotp_priv *priv, u32 addr, u32 *pdata)
 {
 	u32 ctrl_reg;
 	int ret;
+	u32 bm_ctrl_error = priv->data->ctrl->bm_error;
+	u32 bm_ctrl_addr = priv->data->ctrl->bm_addr;
+	u32 bm_ctrl_wr_unlock = priv->data->ctrl->bm_wr_unlock;
 
-	writel(OCOTP_CTRL_ERROR, priv->base + OCOTP_CTRL_CLR);
+	writel(bm_ctrl_error, priv->base + OCOTP_CTRL_CLR);
 
 	ctrl_reg = readl(priv->base + OCOTP_CTRL);
-	ctrl_reg &= ~OCOTP_CTRL_ADDR_MASK;
-	ctrl_reg &= ~OCOTP_CTRL_WR_UNLOCK_MASK;
-	ctrl_reg |= BF(addr, OCOTP_CTRL_ADDR);
+	ctrl_reg &= ~bm_ctrl_addr;
+	ctrl_reg &= ~bm_ctrl_wr_unlock;
+	ctrl_reg |= field_prep(bm_ctrl_addr, addr);
 	writel(ctrl_reg, priv->base + OCOTP_CTRL);
 
 	writel(OCOTP_READ_CTRL_READ_FUSE, priv->base + OCOTP_READ_CTRL);
@@ -256,7 +292,7 @@ static int imx6_fuse_read_addr(struct ocotp_priv *priv, u32 addr, u32 *pdata)
 	if (ret)
 		return ret;
 
-	if (readl(priv->base + OCOTP_CTRL) & OCOTP_CTRL_ERROR)
+	if (readl(priv->base + OCOTP_CTRL) & bm_ctrl_error)
 		*pdata = 0xbadabada;
 	else
 		*pdata = readl(priv->base + OCOTP_READ_FUSE_DATA);
@@ -270,16 +306,19 @@ static int imx7_fuse_read_addr(struct ocotp_priv *priv, u32 index, u32 *pdata)
 	u32 bank_addr;
 	u16 word;
 	int ret;
+	u32 bm_ctrl_error = priv->data->ctrl->bm_error;
+	u32 bm_ctrl_addr = priv->data->ctrl->bm_addr;
+	u32 bm_ctrl_wr_unlock = priv->data->ctrl->bm_wr_unlock;
 
 	word = index & 0x3;
 	bank_addr = index >> 2;
 
-	writel(OCOTP_CTRL_ERROR, priv->base + OCOTP_CTRL_CLR);
+	writel(bm_ctrl_error, priv->base + OCOTP_CTRL_CLR);
 
 	ctrl_reg = readl(priv->base + OCOTP_CTRL);
-	ctrl_reg &= ~OCOTP_CTRL_ADDR_MASK;
-	ctrl_reg &= ~OCOTP_CTRL_WR_UNLOCK_MASK;
-	ctrl_reg |= BF(bank_addr, OCOTP_CTRL_ADDR);
+	ctrl_reg &= ~bm_ctrl_addr;
+	ctrl_reg &= ~bm_ctrl_wr_unlock;
+	ctrl_reg |= field_prep(bm_ctrl_addr, bank_addr);
 	writel(ctrl_reg, priv->base + OCOTP_CTRL);
 
 	writel(OCOTP_READ_CTRL_READ_FUSE, priv->base + MX7_OCOTP_READ_CTRL);
@@ -287,7 +326,7 @@ static int imx7_fuse_read_addr(struct ocotp_priv *priv, u32 index, u32 *pdata)
 	if (ret)
 		return ret;
 
-	if (readl(priv->base + OCOTP_CTRL) & OCOTP_CTRL_ERROR)
+	if (readl(priv->base + OCOTP_CTRL) & bm_ctrl_error)
 		*pdata = 0xbadabada;
 	else
 		switch (word) {
@@ -351,24 +390,28 @@ static int imx_ocotp_reg_read(void *ctx, unsigned int reg, unsigned int *val)
 static void imx_ocotp_clear_unlock(struct ocotp_priv *priv, u32 index)
 {
 	u32 ctrl_reg;
+	u32 bm_ctrl_error = priv->data->ctrl->bm_error;
+	u32 bm_ctrl_addr = priv->data->ctrl->bm_addr;
+	u32 bm_ctrl_wr_unlock = priv->data->ctrl->bm_wr_unlock;
 
-	writel(OCOTP_CTRL_ERROR, priv->base + OCOTP_CTRL_CLR);
+	writel(bm_ctrl_error, priv->base + OCOTP_CTRL_CLR);
 
 	/* Control register */
 	ctrl_reg = readl(priv->base + OCOTP_CTRL);
-	ctrl_reg &= ~OCOTP_CTRL_ADDR_MASK;
-	ctrl_reg |= BF(index, OCOTP_CTRL_ADDR);
-	ctrl_reg |= BF(OCOTP_CTRL_WR_UNLOCK_KEY, OCOTP_CTRL_WR_UNLOCK);
+	ctrl_reg &= ~bm_ctrl_addr;
+	ctrl_reg |= field_prep(bm_ctrl_addr, index);
+	ctrl_reg |= field_prep(bm_ctrl_wr_unlock, OCOTP_CTRL_WR_UNLOCK_KEY);
 	writel(ctrl_reg, priv->base + OCOTP_CTRL);
 }
 
 static int imx6_fuse_blow_addr(struct ocotp_priv *priv, u32 index, u32 value)
 {
 	int ret;
+	u32 bm_ctrl_error = priv->data->ctrl->bm_error;
 
 	imx_ocotp_clear_unlock(priv, index);
 
-	writel(OCOTP_CTRL_ERROR, priv->base + OCOTP_CTRL_CLR);
+	writel(bm_ctrl_error, priv->base + OCOTP_CTRL_CLR);
 
 	writel(value, priv->base + OCOTP_DATA);
 	ret = imx6_ocotp_wait_busy(priv, 0);
@@ -429,17 +472,20 @@ static int imx7_fuse_blow_addr(struct ocotp_priv *priv, u32 index, u32 value)
 
 static int imx6_ocotp_reload_shadow(struct ocotp_priv *priv)
 {
+	u32 bm_ctrl_reload_shadows = priv->data->ctrl->bm_reload_shadows;
+
 	dev_info(&priv->dev, "reloading shadow registers...\n");
-	writel(OCOTP_CTRL_RELOAD_SHADOWS, priv->base + OCOTP_CTRL_SET);
+	writel(bm_ctrl_reload_shadows, priv->base + OCOTP_CTRL_SET);
 	udelay(1);
 
-	return imx6_ocotp_wait_busy(priv, OCOTP_CTRL_RELOAD_SHADOWS);
+	return imx6_ocotp_wait_busy(priv, bm_ctrl_reload_shadows);
 }
 
 static int imx6_ocotp_blow_one_u32(struct ocotp_priv *priv, u32 index, u32 data,
 			    u32 *pfused_value)
 {
 	int ret;
+	u32 bm_ctrl_error = priv->data->ctrl->bm_error;
 
 	ret = imx6_ocotp_prepare(priv);
 	if (ret) {
@@ -453,7 +499,7 @@ static int imx6_ocotp_blow_one_u32(struct ocotp_priv *priv, u32 index, u32 data,
 		return ret;
 	}
 
-	if (readl(priv->base + OCOTP_CTRL) & OCOTP_CTRL_ERROR) {
+	if (readl(priv->base + OCOTP_CTRL) & bm_ctrl_error) {
 		dev_err(&priv->dev, "bad write status\n");
 		return -EFAULT;
 	}
@@ -690,7 +736,7 @@ static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 	char mac[MAC_BYTES];
 	const __be32 *prop;
 	struct device_node *node = priv->dev.parent->of_node;
-	u32 tester4;
+	u32 tester3, tester4;
 	int ret, len = 0;
 
 	if (!node)
@@ -718,11 +764,15 @@ static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 	if (!of_property_read_bool(node, "barebox,feature-controller"))
 		return 0;
 
+	ret = regmap_read(priv->map, OCOTP_OFFSET_TO_ADDR(0x440), &tester3);
+	if (ret != 0)
+		return ret;
+
 	ret = regmap_read(priv->map, OCOTP_OFFSET_TO_ADDR(0x450), &tester4);
 	if (ret != 0)
 		return ret;
 
-	return imx8m_feat_ctrl_init(priv->dev.parent, tester4, priv->data->feat);
+	return imx8m_feat_ctrl_init(priv->dev.parent, tester3, tester4, priv->data->feat);
 }
 
 static void imx_ocotp_set_unique_machine_id(void)
@@ -861,6 +911,7 @@ static struct imx_ocotp_data imx6q_ocotp_data = {
 	.set_timing = imx6_ocotp_set_timing,
 	.fuse_blow = imx6_fuse_blow_addr,
 	.fuse_read = imx6_fuse_read_addr,
+	.ctrl = &ocotp_ctrl_reg_default,
 };
 
 static struct imx_ocotp_data imx6sl_ocotp_data = {
@@ -872,6 +923,7 @@ static struct imx_ocotp_data imx6sl_ocotp_data = {
 	.set_timing = imx6_ocotp_set_timing,
 	.fuse_blow = imx6_fuse_blow_addr,
 	.fuse_read = imx6_fuse_read_addr,
+	.ctrl = &ocotp_ctrl_reg_default,
 };
 
 static struct imx_ocotp_data imx6ul_ocotp_data = {
@@ -883,6 +935,7 @@ static struct imx_ocotp_data imx6ul_ocotp_data = {
 	.set_timing = imx6_ocotp_set_timing,
 	.fuse_blow = imx6_fuse_blow_addr,
 	.fuse_read = imx6_fuse_read_addr,
+	.ctrl = &ocotp_ctrl_reg_default,
 };
 
 static struct imx_ocotp_data imx6ull_ocotp_data = {
@@ -894,6 +947,7 @@ static struct imx_ocotp_data imx6ull_ocotp_data = {
 	.set_timing = imx6_ocotp_set_timing,
 	.fuse_blow = imx6_fuse_blow_addr,
 	.fuse_read = imx6_fuse_read_addr,
+	.ctrl = &ocotp_ctrl_reg_default,
 };
 
 static struct imx_ocotp_data vf610_ocotp_data = {
@@ -905,12 +959,18 @@ static struct imx_ocotp_data vf610_ocotp_data = {
 	.set_timing = imx6_ocotp_set_timing,
 	.fuse_blow = imx6_fuse_blow_addr,
 	.fuse_read = imx6_fuse_read_addr,
+	.ctrl = &ocotp_ctrl_reg_default,
 };
 
 static struct imx8m_featctrl_data imx8mp_featctrl_data = {
-	.gpu_bitmask = 0xc0,
-	.mipi_dsi_bitmask = 0x60000,
-	.isp_bitmask = 0x3,
+	.tester3.cpu_bitmask = 0xc0000,
+	.tester3.vpu_bitmask = 0x43000000,
+	.tester4.npu_bitmask = 0x8,
+	.tester4.gpu_bitmask = 0xc0,
+	.tester4.mipi_dsi_bitmask = 0x60000,
+	.tester4.lvds_bitmask = 0x180000,
+	.tester4.isp_bitmask = 0x3,
+	.tester4.dsp_bitmask = 0x10,
 };
 
 static struct imx_ocotp_data imx8mp_ocotp_data = {
@@ -920,6 +980,10 @@ static struct imx_ocotp_data imx8mp_ocotp_data = {
 	.mac_offsets = { 0x90, 0x94 },
 	.format_mac = imx_ocotp_format_mac,
 	.feat = &imx8mp_featctrl_data,
+	.set_timing = imx6_ocotp_set_timing,
+	.fuse_blow = imx6_fuse_blow_addr,
+	.fuse_read = imx6_fuse_read_addr,
+	.ctrl = &ocotp_ctrl_reg_8mp,
 };
 
 static struct imx_ocotp_data imx8mq_ocotp_data = {
@@ -931,11 +995,12 @@ static struct imx_ocotp_data imx8mq_ocotp_data = {
 	.set_timing = imx6_ocotp_set_timing,
 	.fuse_blow = imx6_fuse_blow_addr,
 	.fuse_read = imx6_fuse_read_addr,
+	.ctrl = &ocotp_ctrl_reg_default,
 };
 
 static struct imx8m_featctrl_data imx8mm_featctrl_data = {
-	.vpu_bitmask = 0x1c0000,
-	.check_cpus = true,
+	.tester4.vpu_bitmask = 0x1c0000,
+	.tester4.cpu_bitmask = 0x3,
 };
 
 static struct imx_ocotp_data imx8mm_ocotp_data = {
@@ -948,11 +1013,12 @@ static struct imx_ocotp_data imx8mm_ocotp_data = {
 	.fuse_blow = imx6_fuse_blow_addr,
 	.fuse_read = imx6_fuse_read_addr,
 	.feat = &imx8mm_featctrl_data,
+	.ctrl = &ocotp_ctrl_reg_default,
 };
 
 static struct imx8m_featctrl_data imx8mn_featctrl_data = {
-	.gpu_bitmask = 0x1000000,
-	.check_cpus = true,
+	.tester4.gpu_bitmask = 0x1000000,
+	.tester4.cpu_bitmask = 0x3,
 };
 
 static struct imx_ocotp_data imx8mn_ocotp_data = {
@@ -965,6 +1031,7 @@ static struct imx_ocotp_data imx8mn_ocotp_data = {
 	.fuse_blow = imx6_fuse_blow_addr,
 	.fuse_read = imx6_fuse_read_addr,
 	.feat = &imx8mn_featctrl_data,
+	.ctrl = &ocotp_ctrl_reg_default,
 };
 
 static struct imx_ocotp_data imx7d_ocotp_data = {
@@ -976,6 +1043,7 @@ static struct imx_ocotp_data imx7d_ocotp_data = {
 	.set_timing = imx7_ocotp_set_timing,
 	.fuse_blow = imx7_fuse_blow_addr,
 	.fuse_read = imx7_fuse_read_addr,
+	.ctrl = &ocotp_ctrl_reg_default,
 };
 
 static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {

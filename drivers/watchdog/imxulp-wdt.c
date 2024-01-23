@@ -16,14 +16,16 @@
 #include <asm/system.h>
 
 struct imxulp_socdata {
+	bool prescaler_enable;
 	unsigned int rate;
 };
 
 struct imxulp_wd {
 	struct watchdog wd;
 	void __iomem *base;
-	unsigned int rate;
+	bool prescaler_enable;
 	struct device *dev;
+	const struct imxulp_socdata *socdata;
 };
 
 #define REFRESH_WORD0 0xA602 /* 1st refresh word */
@@ -50,7 +52,7 @@ struct imxulp_wd {
 #define WDOG_TOVAL		0x8
 
 #define CLK_RATE_1KHZ		1000
-#define CLK_RATE_32KHZ		125
+#define CLK_RATE_32KHZ		128
 
 static int imxulp_watchdog_set_timeout(struct watchdog *wd, unsigned int timeout)
 {
@@ -72,10 +74,13 @@ static int imxulp_watchdog_set_timeout(struct watchdog *wd, unsigned int timeout
 	while (!(readl(imxwd->base + WDOG_CS) & WDOG_CS_ULK))
 		;
 
-	writel(timeout * imxwd->rate, imxwd->base + WDOG_TOVAL);
+	writel(timeout * imxwd->socdata->rate, imxwd->base + WDOG_TOVAL);
+
+	if (imxwd->socdata->prescaler_enable)
+		cmd32 |= WDOG_CS_PRES;
 
 	writel(cmd32 | WDOG_CS_EN | WDOG_CS_UPDATE | WDOG_CS_LPO_CLK |
-	       WDOG_CS_FLG | WDOG_CS_PRES | WDOG_CS_INT, imxwd->base + WDOG_CS);
+	       WDOG_CS_FLG | WDOG_CS_INT, imxwd->base + WDOG_CS);
 
 	/* Wait WDOG reconfiguration */
 	while (!(readl(imxwd->base + WDOG_CS) & WDOG_CS_RCS))
@@ -115,10 +120,10 @@ static int imxulp_wd_probe(struct device *dev)
 	if (IS_ERR(iores))
 		return dev_err_probe(dev, PTR_ERR(iores), "could not get memory region\n");
 
-	imxwd->rate = socdata->rate;
+	imxwd->socdata = socdata;
 	imxwd->base = IOMEM(iores->start);
 	imxwd->wd.set_timeout = imxulp_watchdog_set_timeout;
-	imxwd->wd.timeout_max = 0xffff / imxwd->rate;
+	imxwd->wd.timeout_max = 0xffff / imxwd->socdata->rate;
 	imxwd->wd.hwdev = dev;
 	imxwd->wd.running = imxulp_wd_running(imxwd);
 
@@ -130,10 +135,12 @@ static int imxulp_wd_probe(struct device *dev)
 }
 
 static struct imxulp_socdata imx7ulp_wd_socdata = {
+	.prescaler_enable = false,
 	.rate = CLK_RATE_1KHZ,
 };
 
 static struct imxulp_socdata imx93_wd_socdata = {
+	.prescaler_enable = true,
 	.rate = CLK_RATE_32KHZ,
 };
 

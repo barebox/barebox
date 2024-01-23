@@ -2,7 +2,7 @@
 #ifndef __MACH_IMX_ROMAPI_H
 #define __MACH_IMX_ROMAPI_H
 
-#include <mach/imx/xload.h>
+#include <mach/imx/scratch.h>
 #include <linux/types.h>
 
 struct rom_api {
@@ -35,17 +35,13 @@ enum boot_dev_type_e {
 
 #define ROM_API_OKAY		0xF0
 
-int imx8mp_romapi_load_image(void);
-int imx8mn_romapi_load_image(void);
+/* Below functions only load and don't start the image */
+int imx8mp_romapi_load_image(void *bl33);
+int imx8mn_romapi_load_image(void *bl33);
 int imx93_romapi_load_image(void);
 
 /* only call after DRAM has been configured */
-void imx8m_save_bootrom_log(void *dst);
+void imx8m_save_bootrom_log(void);
 const u32 *imx8m_get_bootrom_log(void);
-
-#define imx8mq_save_bootrom_log() imx8m_save_bootrom_log(imx8mq_scratch_space())
-#define imx8mm_save_bootrom_log() imx8m_save_bootrom_log(imx8mm_scratch_space())
-#define imx8mn_save_bootrom_log() imx8m_save_bootrom_log(imx8mn_scratch_space())
-#define imx8mp_save_bootrom_log() imx8m_save_bootrom_log(imx8mp_scratch_space())
 
 #endif /* __MACH_IMX_ROMAPI_H */

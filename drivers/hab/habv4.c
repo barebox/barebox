@@ -144,31 +144,72 @@ struct hab_header {
 	uint8_t par;
 } __packed;
 
-typedef enum hab_status hab_loader_callback_fn(void **start, uint32_t *bytes, const void *boot_data);
+typedef enum hab_status hab_loader_callback_fn(void **start, size_t *bytes, const void *boot_data);
+typedef void hab_image_entry_fn(void);
 
+/* This table is constructed from the NXP manual "High Assurance Boot Version 4
+ * Application Programming Interface Reference Manual", section 4.5 ROM vector
+ * table. Revision 1.4 */
 struct habv4_rvt {
 	struct hab_header header;
 	enum hab_status (*entry)(void);
 	enum hab_status (*exit)(void);
-	enum hab_status (*check_target)(enum hab_target target, const void *start, uint32_t bytes);
-	void *(*authenticate_image)(uint8_t cid, uint32_t ivt_offset, void **start, uint32_t *bytes, hab_loader_callback_fn *loader);
-	enum hab_status (*run_dcd)(const void *dcd);
-	enum hab_status (*run_csf)(const void *csf, uint8_t cid);
+	enum hab_status (*check_target)(enum hab_target target, const void *start, size_t bytes);
+	void *(*authenticate_image)(uint8_t cid, ptrdiff_t ivt_offset, void **start, size_t *bytes, hab_loader_callback_fn *loader);
+	enum hab_status (*run_dcd)(const uint8_t *dcd);
+	enum hab_status (*run_csf)(const uint8_t *csf, uint8_t cid, uint32_t srkmask);
 	enum hab_status (*assert)(enum hab_assertion assertion, const void *data, uint32_t count);
-	enum hab_status (*report_event)(enum hab_status status, uint32_t index, void *event, uint32_t *bytes);
+	enum hab_status (*report_event)(enum hab_status status, uint32_t index, uint8_t *event, size_t *bytes);
 	enum hab_status (*report_status)(enum hab_config *config, enum habv4_state *state);
 	void (*failsafe)(void);
+	hab_image_entry_fn* (* authenticate_image_no_dcd)(uint8_t cid, ptrdiff_t ivt_offset, void **start, size_t *bytes, hab_loader_callback_fn *loader);
+	uint32_t (*get_version)(void);
+	enum hab_status (*authenticate_container)(uint8_t cid, ptrdiff_t ivt_offset, void **start, size_t *bytes, hab_loader_callback_fn *loader, uint32_t srkmask, int skip_dcd);
 } __packed;
 
-#define FSL_SIP_HAB             0xC2000007
-#define FSL_SIP_HAB_AUTHENTICATE        0x00
-#define FSL_SIP_HAB_ENTRY               0x01
-#define FSL_SIP_HAB_EXIT                0x02
-#define FSL_SIP_HAB_REPORT_EVENT        0x03
-#define FSL_SIP_HAB_REPORT_STATUS       0x04
-#define FSL_SIP_HAB_FAILSAFE            0x05
-#define FSL_SIP_HAB_CHECK_TARGET        0x06
-#define FSL_SIP_HAB_GET_VERSION		0x07
+#define FSL_SIP_HAB 0xC2000007
+
+/* These values correspondent to the jump table found in the upstream TF-A
+ * version 2.10 `imx_hab_handler`, not all HAB rom functions are supported yet.
+ * */
+enum hab_sip_cmd {
+	FSL_SIP_HAB_AUTHENTICATE = 0x00,
+	FSL_SIP_HAB_ENTRY = 0x01,
+	FSL_SIP_HAB_EXIT = 0x02,
+	FSL_SIP_HAB_REPORT_EVENT = 0x03,
+	FSL_SIP_HAB_REPORT_STATUS = 0x04,
+	FSL_SIP_HAB_FAILSAFE = 0x05,
+	FSL_SIP_HAB_CHECK_TARGET = 0x06,
+	FSL_SIP_HAB_GET_VERSION = 0x07,
+	FSL_SIP_HAB_AUTH_IMG_NO_DCD = 0x08,
+};
+
+static enum hab_status hab_sip_report_event(enum hab_status status,
+					    uint32_t index, uint8_t *event,
+					    size_t *bytes)
+{
+	struct arm_smccc_res res;
+
+	v8_flush_dcache_range((unsigned long)bytes,
+			      (unsigned long)bytes + sizeof(*bytes));
+
+	if (event)
+		v8_flush_dcache_range((unsigned long)event,
+				      (unsigned long)event + *bytes);
+
+	arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_REPORT_EVENT,
+		      (unsigned long)index, (unsigned long)event,
+		      (unsigned long)bytes, 0, 0, 0, &res);
+
+	v8_inv_dcache_range((unsigned long)bytes,
+			    (unsigned long)bytes + sizeof(*bytes));
+
+	if (event)
+		v8_inv_dcache_range((unsigned long)event,
+				    (unsigned long)event + *bytes);
+
+	return (enum hab_status)res.a0;
+}
 
 static enum hab_status hab_sip_report_status(enum hab_config *config,
 					     enum habv4_state *state)
@@ -206,13 +247,10 @@ static uint32_t hab_sip_get_version(void)
 #define HABV4_EVENT_MAX_LEN		0x80
 
 #define IMX8MQ_ROM_OCRAM_ADDRESS	0x9061C0
-#define IMX8MM_ROM_OCRAM_ADDRESS	0x908040
-#define IMX8MN_ROM_OCRAM_ADDRESS	0x908040
-#define IMX8MP_ROM_OCRAM_ADDRESS	0x90D040
 
 static enum hab_status imx8m_read_sram_events(enum hab_status status,
-					     uint32_t index, void *event,
-					     uint32_t *bytes)
+					     uint32_t index, uint8_t *event,
+					     size_t *bytes)
 {
 	struct hab_event_record *events[10];
 	int num_events = 0;
@@ -225,12 +263,6 @@ static enum hab_status imx8m_read_sram_events(enum hab_status status,
 
 	if (cpu_is_mx8mq())
 		sram = (char *)IMX8MQ_ROM_OCRAM_ADDRESS;
-	else if (cpu_is_mx8mm())
-		sram = (char *)IMX8MM_ROM_OCRAM_ADDRESS;
-	else if (cpu_is_mx8mn())
-		sram = (char *)IMX8MN_ROM_OCRAM_ADDRESS;
-	else if (cpu_is_mx8mp())
-		sram = (char *)IMX8MP_ROM_OCRAM_ADDRESS;
 	else
 		return HAB_STATUS_FAILURE;
 
@@ -282,9 +314,19 @@ static enum hab_status imx8m_read_sram_events(enum hab_status status,
 	return HAB_STATUS_FAILURE;
 }
 
+static enum hab_status imx8m_report_event(enum hab_status status,
+					  uint32_t index, uint8_t *event,
+					  size_t *bytes)
+{
+	if (cpu_is_mx8mq())
+		return imx8m_read_sram_events(status, index, event, bytes);
+	else
+		return hab_sip_report_event(status, index, event, bytes);
+}
+
 struct habv4_rvt hab_smc_ops = {
 	.header = { .tag = 0xdd },
-	.report_event = imx8m_read_sram_events,
+	.report_event = imx8m_report_event,
 	.report_status = hab_sip_report_status,
 };
 
@@ -478,7 +520,7 @@ static void habv4_display_event_record(struct hab_event_record *record)
 	pr_err("Engine: %s (0x%02x)\n", habv4_get_engine_str(record->engine), record->engine);
 }
 
-static void habv4_display_event(uint8_t *data, uint32_t len)
+static void habv4_display_event(uint8_t *data, size_t len)
 {
 	unsigned int i;
 
@@ -525,7 +567,7 @@ static bool is_known_rng_fail_event(const uint8_t *data, size_t len)
 	return false;
 }
 
-static uint8_t *hab_get_event(const struct habv4_rvt *rvt, int index, int *len)
+static uint8_t *hab_get_event(const struct habv4_rvt *rvt, int index, size_t *len)
 {
 	enum hab_status err;
 	uint8_t *buf;
@@ -558,7 +600,7 @@ int habv4_get_state(void)
 static int habv4_get_status(const struct habv4_rvt *rvt)
 {
 	uint8_t *data;
-	uint32_t len;
+	size_t len;
 	int i;
 	enum hab_status status;
 	enum hab_config config = 0x0;

@@ -44,14 +44,46 @@ config FIRMWARE_IMX93_ATF
 config FIRMWARE_IMX8MM_OPTEE
 	bool "install OP-TEE on i.MX8MM boards"
 	depends on FIRMWARE_IMX8MM_ATF && PBL_OPTEE
+	help
+	  This enables OP-TEE loading and starting on i.MX8MM. Place the OP-TEE binary
+	  in CONFIG_EXTRA_FIRMWARE_DIR/imx8mm-bl32.bin. When this option is enabled then
+	  the TF-A binary will be used from CONFIG_EXTRA_FIRMWARE_DIR/imx8mm-bl31.bin-optee.
 
 config FIRMWARE_IMX8MN_OPTEE
 	bool "install OP-TEE on i.MX8MN boards"
 	depends on FIRMWARE_IMX8MN_ATF && PBL_OPTEE
+	help
+	  This enables OP-TEE loading and starting on i.MX8MN. Place the OP-TEE binary
+	  in CONFIG_EXTRA_FIRMWARE_DIR/imx8mn-bl32.bin. When this option is enabled then
+	  the TF-A binary will be used from CONFIG_EXTRA_FIRMWARE_DIR/imx8mn-bl31.bin-optee.
 
 config FIRMWARE_IMX8MP_OPTEE
 	bool "install OP-TEE on i.MX8MP boards"
 	depends on FIRMWARE_IMX8MP_ATF && PBL_OPTEE
+	help
+	  This enables OP-TEE loading and starting on i.MX8MP. Place the OP-TEE binary
+	  in CONFIG_EXTRA_FIRMWARE_DIR/imx8mp-bl32.bin. When this option is enabled then
+	  the TF-A binary will be used from CONFIG_EXTRA_FIRMWARE_DIR/imx8mp-bl31.bin-optee.
+
+config FIRMWARE_IMX8MQ_OPTEE
+	bool "install OP-TEE on i.MX8MQ boards"
+	depends on FIRMWARE_IMX8MQ_ATF && PBL_OPTEE
+	help
+	  This enables OP-TEE loading and starting on i.MX8MQ. Place the OP-TEE binary
+	  in CONFIG_EXTRA_FIRMWARE_DIR/imx8mq-bl32.bin. When this option is enabled then
+	  the TF-A binary will be used from CONFIG_EXTRA_FIRMWARE_DIR/imx8mq-bl31.bin-optee.
+
+config FIRMWARE_IMX93_OPTEE
+	bool "install OP-TEE on i.MX93 boards"
+	depends on FIRMWARE_IMX93_ATF && PBL_OPTEE
+	help
+	  This enables OP-TEE loading and starting on i.MX8MQ. Place the OP-TEE binary
+	  in CONFIG_EXTRA_FIRMWARE_DIR/imx93-bl32.bin. When this option is enabled then
+	  the TF-A binary will be used from CONFIG_EXTRA_FIRMWARE_DIR/imx93-bl31.bin-optee.
+	  Additionally OP-TEE requires a RAM firmware loaded into the ELE. This is expected
+	  in CONFIG_EXTRA_FIRMWARE_DIR/mx93a0-ahab-container.img and
+	  CONFIG_EXTRA_FIRMWARE_DIR/mx93a1-ahab-container.img. You can obtain it from
+	  https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-ele-imx-0.1.0.bin
 
 config FIRMWARE_CCBV2_OPTEE
 	bool

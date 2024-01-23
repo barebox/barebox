@@ -7,6 +7,10 @@
 #include <mach/imx/ele.h>
 #include <linux/bitfield.h>
 #include <mach/imx/imx9-regs.h>
+#include <tee/optee.h>
+#include <asm-generic/memory_layout.h>
+#include <asm/optee.h>
+#include <mach/imx/scratch.h>
 
 #define SPEED_GRADING_MASK GENMASK(11, 6)
 #define MARKETING_GRADING_MASK     GENMASK(5, 4)
@@ -168,6 +172,17 @@ int imx93_init(void)
 {
 	imx93_type();
 	imx93_set_arm_clock();
+
+	if (IS_ENABLED(CONFIG_PBL_OPTEE)) {
+		static struct of_optee_fixup_data optee_fixup_data = {
+			.shm_size = OPTEE_SHM_SIZE,
+			.method = "smc",
+		};
+
+		optee_set_membase(imx_scratch_get_optee_hdr());
+		of_optee_fixup(of_get_root_node(), &optee_fixup_data);
+		of_register_fixup(of_optee_fixup, &optee_fixup_data);
+	}
 
 	return 0;
 }

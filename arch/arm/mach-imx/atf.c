@@ -11,8 +11,11 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx/imx8m-regs.h>
+#include <mach/imx/imx9-regs.h>
 #include <soc/fsl/fsl_udc.h>
 #include <soc/fsl/caam.h>
+#include <tee/optee.h>
+#include <mach/imx/ele.h>
 
 /**
  * imx8m_atf_load_bl31 - Load ATF BL31 blob and transfer control to it
@@ -65,7 +68,7 @@ void imx8mm_load_bl33(void *bl33)
 	imx8mm_get_boot_source(&src, &instance);
 	switch (src) {
 	case BOOTSOURCE_MMC:
-		imx8m_esdhc_load_image(instance, false);
+		imx8m_esdhc_load_image(instance, bl33);
 		break;
 	case BOOTSOURCE_SERIAL:
 		if (!IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC_PBL)) {
@@ -98,7 +101,7 @@ void imx8mm_load_bl33(void *bl33)
 
 		break;
 	case BOOTSOURCE_SPI:
-		imx8mm_qspi_load_image(instance, false);
+		imx8mm_qspi_load_image(instance, bl33);
 		break;
 	default:
 		printf("Unsupported bootsource BOOTSOURCE_%d\n", src);
@@ -116,14 +119,37 @@ void imx8mm_load_bl33(void *bl33)
 	memcpy(bl33, __image_start, barebox_pbl_size);
 }
 
+static void imx_adjust_optee_memory(void **bl32, void **bl32_image, size_t *bl32_size)
+{
+	struct optee_header *hdr = *bl32_image;
+	u64 membase;
+
+	if (optee_verify_header(hdr))
+		return;
+
+	imx_scratch_save_optee_hdr(hdr);
+
+	membase = (u64)hdr->init_load_addr_hi << 32;
+	membase |= hdr->init_load_addr_lo;
+
+	*bl32 = (void *)membase;
+	*bl32_size -= sizeof(*hdr);
+	*bl32_image += sizeof(*hdr);
+}
+
 __noreturn void imx8mm_load_and_start_image_via_tfa(void)
+{
+	__imx8mm_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+}
+
+__noreturn void __imx8mm_load_and_start_image_via_tfa(void *bl33)
 {
 	const void *bl31;
 	size_t bl31_size;
-	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
-	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
+	imx8mm_init_scratch_space();
+	imx8m_save_bootrom_log();
 	imx8mm_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE)) {
@@ -135,6 +161,8 @@ __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 		get_builtin_firmware_ext(imx8mm_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
+
+		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
 
 		memcpy(bl32, bl32_image, bl32_size);
 
@@ -154,13 +182,13 @@ void imx8mp_load_bl33(void *bl33)
 	imx8mp_get_boot_source(&src, &instance);
 	switch (src) {
 	case BOOTSOURCE_MMC:
-		imx8mp_esdhc_load_image(instance, false);
+		imx8mp_esdhc_load_image(instance, bl33);
 		break;
 	case BOOTSOURCE_SERIAL:
-		imx8mp_romapi_load_image();
+		imx8mp_romapi_load_image(bl33);
 		break;
 	case BOOTSOURCE_SPI:
-		imx8mp_qspi_load_image(instance, false);
+		imx8mp_qspi_load_image(instance, bl33);
 		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
@@ -181,12 +209,17 @@ void imx8mp_load_bl33(void *bl33)
 
 __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 {
+	__imx8mp_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+}
+
+__noreturn void __imx8mp_load_and_start_image_via_tfa(void *bl33)
+{
 	const void *bl31;
 	size_t bl31_size;
-	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
-	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
+	imx8mp_init_scratch_space();
+	imx8m_save_bootrom_log();
 	imx8mp_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE)) {
@@ -198,6 +231,8 @@ __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 		get_builtin_firmware_ext(imx8mp_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
+
+		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
 
 		memcpy(bl32, bl32_image, bl32_size);
 
@@ -218,13 +253,13 @@ void imx8mn_load_bl33(void *bl33)
 	imx8mn_get_boot_source(&src, &instance);
 	switch (src) {
 	case BOOTSOURCE_MMC:
-		imx8mn_esdhc_load_image(instance, false);
+		imx8mn_esdhc_load_image(instance, bl33);
 		break;
 	case BOOTSOURCE_SERIAL:
-		imx8mn_romapi_load_image();
+		imx8mn_romapi_load_image(bl33);
 		break;
 	case BOOTSOURCE_SPI:
-		imx8mn_qspi_load_image(instance, false);
+		imx8mn_qspi_load_image(instance, bl33);
 		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
@@ -245,12 +280,17 @@ void imx8mn_load_bl33(void *bl33)
 
 __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 {
+	__imx8mn_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+}
+
+__noreturn void __imx8mn_load_and_start_image_via_tfa(void *bl33)
+{
 	const void *bl31;
 	size_t bl31_size;
-	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(16);
 
-	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
+	imx8mn_init_scratch_space();
+	imx8m_save_bootrom_log();
 	imx8mn_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE)) {
@@ -262,6 +302,8 @@ __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 		get_builtin_firmware_ext(imx8mn_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
+
+		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
 
 		memcpy(bl32, bl32_image, bl32_size);
 
@@ -281,7 +323,7 @@ void imx8mq_load_bl33(void *bl33)
 	imx8mn_get_boot_source(&src, &instance);
 	switch (src) {
 	case BOOTSOURCE_MMC:
-		imx8m_esdhc_load_image(instance, false);
+		imx8m_esdhc_load_image(instance, bl33);
 		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
@@ -302,12 +344,17 @@ void imx8mq_load_bl33(void *bl33)
 
 __noreturn void imx8mq_load_and_start_image_via_tfa(void)
 {
+	__imx8mq_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+}
+
+__noreturn void __imx8mq_load_and_start_image_via_tfa(void *bl33)
+{
 	const void *bl31;
 	size_t bl31_size;
-	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
-	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(16);
+	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
-	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
+	imx8mq_init_scratch_space();
+	imx8m_save_bootrom_log();
 	imx8mq_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_OPTEE)) {
@@ -319,6 +366,8 @@ __noreturn void imx8mq_load_and_start_image_via_tfa(void)
 		get_builtin_firmware_ext(imx8mq_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
+
+		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
 
 		memcpy(bl32, bl32_image, bl32_size);
 
@@ -336,6 +385,10 @@ void __noreturn imx93_load_and_start_image_via_tfa(void)
 	void __noreturn (*bl31)(void) = (void *)atf_dest;
 	const void *tfa;
 	size_t tfa_size;
+	void *bl33 = (void *)MX93_ATF_BL33_BASE_ADDR;
+	unsigned long endmem = MX9_DDR_CSD1_BASE_ADDR + imx9_ddrc_sdram_size();
+
+	imx93_init_scratch_space(true);
 
 	/*
 	 * On completion the TF-A will jump to MX93_ATF_BL33_BASE_ADDR
@@ -353,7 +406,25 @@ void __noreturn imx93_load_and_start_image_via_tfa(void)
 	 */
 	memcpy((void *)MX93_ATF_BL33_BASE_ADDR, __image_start, ALIGN(barebox_pbl_size, 1024));
 
-	get_builtin_firmware(imx93_bl31_bin, &tfa, &tfa_size);
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX93_OPTEE)) {
+		void *bl32 = (void *)arm_mem_optee(endmem);
+		size_t bl32_size;
+		void *bl32_image;
+
+		imx93_ele_load_fw(bl33);
+
+		get_builtin_firmware_ext(imx93_bl32_bin,
+				bl33, &bl32_image,
+				&bl32_size);
+
+		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
+
+		memcpy(bl32, bl32_image, bl32_size);
+
+		get_builtin_firmware(imx93_bl31_bin_optee, &tfa, &tfa_size);
+	} else {
+		get_builtin_firmware(imx93_bl31_bin, &tfa, &tfa_size);
+	}
 
 	memcpy(bl31, tfa, tfa_size);
 

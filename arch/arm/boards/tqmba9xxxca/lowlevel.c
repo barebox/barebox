@@ -4,10 +4,13 @@
 #include <debug_ll.h>
 #include <mach/imx/debug_ll.h>
 #include <mach/imx/generic.h>
+#include <mach/imx/xload.h>
 #include <asm/barebox-arm.h>
 #include <soc/imx9/ddr.h>
 #include <mach/imx/atf.h>
+#include <mach/imx/xload.h>
 #include <mach/imx/romapi.h>
+#include <mach/imx/esdctl.h>
 
 extern char __dtb_z_imx93_tqma9352_mba93xxca_start[];
 extern struct dram_timing_info tqma93xxca_dram_timing;
@@ -28,7 +31,7 @@ static noinline void tqma9352_mba93xxca_continue(void)
 		imx93_load_and_start_image_via_tfa();
 	}
 
-	barebox_arm_entry(0x80000000, 0x40000000, __dtb_z_imx93_tqma9352_mba93xxca_start);
+	imx93_barebox_entry(__dtb_z_imx93_tqma9352_mba93xxca_start);
 }
 
 ENTRY_FUNCTION(start_imx93_tqma9352_mba93xxca, r0, r1, r2)

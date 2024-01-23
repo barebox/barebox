@@ -29,6 +29,8 @@
 #include <mach/imx/imx8m-regs.h>
 #include <mach/imx/imx7-regs.h>
 #include <mach/imx/imx9-regs.h>
+#include <mach/imx/scratch.h>
+#include <tee/optee.h>
 
 struct imx_esdctl_data {
 	unsigned long base0;
@@ -561,11 +563,12 @@ static int imx8mn_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 #define IMX9_DDRC_CS_COL_BITS	GENMASK(2, 0)
 #define IMX9_DDRC_CS_EN		BIT(31)
 
-static int imx9_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+resource_size_t imx9_ddrc_sdram_size(void)
 {
+	void __iomem *mmdcbase = IOMEM(MX9_DDR_CTL_BASE);
 	int width = 2;
 	int banks = 8;
-	unsigned long mem = 0;
+	resource_size_t mem = 0;
 	int i;
 
 	for (i = 0; i < 2; i++) {
@@ -586,7 +589,12 @@ static int imx9_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 		mem += memory_sdram_size(cols, rows, banks, width);
 	}
 
-	return arm_add_mem_device("ram0", data->base0, mem);
+	return mem;
+}
+
+static int imx9_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+{
+	return arm_add_mem_device("ram0", data->base0, imx9_ddrc_sdram_size());
 }
 
 static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
@@ -1004,6 +1012,8 @@ resource_size_t imx8m_barebox_earlymem_size(unsigned buswidth)
 
 static void __noreturn imx8m_barebox_entry(void *boarddata, unsigned buswidth)
 {
+	imx8m_init_scratch_space(buswidth, false);
+	optee_set_membase(imx_scratch_get_optee_hdr());
 	barebox_arm_entry(MX8M_DDR_CSD1_BASE_ADDR,
 			  imx8m_barebox_earlymem_size(buswidth), boarddata);
 }
@@ -1035,4 +1045,11 @@ void __noreturn imx7d_barebox_entry(void *boarddata)
 			  boarddata);
 }
 
+void __noreturn imx93_barebox_entry(void *boarddata)
+{
+	imx93_init_scratch_space(false);
+	optee_set_membase(imx_scratch_get_optee_hdr());
 
+	barebox_arm_entry(MX9_DDR_CSD1_BASE_ADDR,
+			  imx9_ddrc_sdram_size(), boarddata);
+}

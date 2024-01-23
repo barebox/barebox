@@ -8,6 +8,7 @@
 #include <pm_domain.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
+#include <asm-generic/memory_layout.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/revision.h>
 #include <mach/imx/imx8mq.h>
@@ -16,8 +17,10 @@
 #include <mach/imx/ocotp.h>
 #include <mach/imx/imx8mp-regs.h>
 #include <mach/imx/imx8mq-regs.h>
+#include <mach/imx/scratch.h>
 #include <mach/imx/tzasc.h>
 #include <soc/imx8m/clk-early.h>
+#include <tee/optee.h>
 
 #include <linux/iopoll.h>
 #include <linux/arm-smccc.h>
@@ -65,13 +68,13 @@ static int imx8m_init(const char *cputypestr)
 	imx_set_reset_reason(src + IMX7_SRC_SRSR, imx7_reset_reasons);
 	pr_info("%s unique ID: %llx\n", cputypestr, imx8m_uid());
 
-	if (IS_ENABLED(CONFIG_PBL_OPTEE) && tzc380_is_enabled() &&
-	    !of_find_node_by_path_from(NULL, "/firmware/optee")) {
+	if (IS_ENABLED(CONFIG_PBL_OPTEE) && tzc380_is_enabled()) {
 		static struct of_optee_fixup_data optee_fixup_data = {
-			.shm_size = SZ_4M,
+			.shm_size = OPTEE_SHM_SIZE,
 			.method = "smc",
 		};
 
+		optee_set_membase(imx_scratch_get_optee_hdr());
 		of_optee_fixup(of_get_root_node(), &optee_fixup_data);
 		of_register_fixup(of_optee_fixup, &optee_fixup_data);
 	}

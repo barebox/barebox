@@ -1141,10 +1141,19 @@ config OPTEE_SIZE
 	  Can be smaller than the actual size used by OP-TEE, this is used to prevent
 	  barebox from allocating memory in this area.
 
+config OPTEE_SHM_SIZE
+	hex
+	default 0x400000
+	prompt "OP-TEE Shared Memory Size"
+	depends on HAVE_OPTEE
+	help
+	  Size to reserve in main memory for OP-TEE shared memory communication.
+	  Can be used for fixing up the OP-TEE OF node.
+
 config BOOTM_OPTEE
 	bool
 	prompt "support booting OP-TEE"
-	depends on BOOTM && ARM
+	depends on BOOTM && ARM && 32BIT
 	select HAVE_OPTEE
 	help
 	  OP-TEE is a trusted execution environment (TEE). With this option

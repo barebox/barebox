@@ -9,6 +9,8 @@
 #include <mach/imx/ele.h>
 #include <mach/imx/imx9-regs.h>
 #include <linux/iopoll.h>
+#include <firmware.h>
+#include <linux/bitfield.h>
 
 #define MU_SR_TE0_MASK		BIT(0)
 #define MU_SR_RF0_MASK		BIT(0)
@@ -140,6 +142,71 @@ static int imx9_s3mua_call(struct ele_msg *msg, bool get_response)
 int ele_call(struct ele_msg *msg, bool get_response)
 {
 	return imx9_s3mua_call(msg, get_response);
+}
+
+int ele_get_info(struct ele_get_info_data *info)
+{
+        struct ele_msg msg = {
+		.version = ELE_VERSION,
+		.tag = ELE_CMD_TAG,
+		.size = 4,
+		.command = ELE_GET_INFO_REQ,
+		.data = {
+			upper_32_bits((unsigned long)info),
+			lower_32_bits((unsigned long)info),
+			sizeof(struct ele_get_info_data),
+		},
+	};
+	int ret;
+
+	ret = ele_call(&msg, true);
+	if (ret)
+		pr_err("Could not get ELE info: ret %d, response 0x%x\n",
+			ret, msg.data[0]);
+
+	return ret;
+}
+
+int imx93_ele_load_fw(void *bl33)
+{
+	struct ele_get_info_data info = {};
+	struct ele_msg msg = {
+		.version = ELE_VERSION,
+		.tag = ELE_CMD_TAG,
+		.size = 4,
+		.command = ELE_FW_AUTH_REQ,
+	};
+	void *firmware;
+	int size, ret;
+	int rev = 0;
+
+	ele_get_info(&info);
+
+	rev = FIELD_GET(ELE_INFO_SOC_REV, info.soc);
+
+	switch (rev) {
+	case 0xa0:
+		get_builtin_firmware_ext(mx93a0_ahab_container_img, bl33, &firmware, &size);
+		break;
+	case 0xa1:
+		get_builtin_firmware_ext(mx93a1_ahab_container_img, bl33, &firmware, &size);
+		break;
+	default:
+		pr_err("Unknown unhandled SoC revision %2x\n", rev);
+		return -EINVAL;
+	}
+
+	/* Address of the container header */
+	msg.data[0] = lower_32_bits((unsigned long)firmware);
+	/* Actual address of the container header */
+	msg.data[2] = lower_32_bits((unsigned long)firmware);
+
+	ret = ele_call(&msg, true);
+	if (ret)
+		pr_err("Could not start ELE firmware: ret %d, response 0x%x\n",
+			ret, msg.data[0]);
+
+	return 0;
 }
 
 int ele_read_common_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)

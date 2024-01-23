@@ -79,25 +79,24 @@ static int imx_romapi_load_seekable(struct rom_api *rom_api, void *adr, uint32_t
 }
 
 /* read piggydata via a bootrom callback and place it behind our copy in SDRAM */
-static int imx_romapi_load_image(struct rom_api *rom_api)
+static int imx_romapi_load_image(struct rom_api *rom_api, void *bl33)
 {
-	return imx_romapi_load_stream(rom_api,
-			(void *)MX8M_ATF_BL33_BASE_ADDR + barebox_pbl_size,
-			__image_end - __piggydata_start);
+	return imx_romapi_load_stream(rom_api, bl33 + barebox_pbl_size,
+				      __image_end - __piggydata_start);
 }
 
-int imx8mp_romapi_load_image(void)
+int imx8mp_romapi_load_image(void *bl33)
 {
 	struct rom_api *rom_api = (void *)0x980;
 
 	OPTIMIZER_HIDE_VAR(rom_api);
 
-	return imx_romapi_load_image(rom_api);
+	return imx_romapi_load_image(rom_api, bl33);
 }
 
-int imx8mn_romapi_load_image(void)
+int imx8mn_romapi_load_image(void *bl33)
 {
-	return imx8mp_romapi_load_image();
+	return imx8mp_romapi_load_image(bl33);
 }
 
 static int imx_romapi_boot_device_seekable(struct rom_api *rom_api)
@@ -220,23 +219,13 @@ const u32 *imx8m_get_bootrom_log(void)
 		return (u32 *)rom_log_addr;
 	}
 
-	if (!IN_PBL) {
-		const struct imx_scratch_space *scratch = arm_mem_scratch_get();
-		return scratch->bootrom_log;
-	}
+	if (!IN_PBL)
+		return imx8m_scratch_get_bootrom_log();
 
 	return NULL;
 }
 
-static int imx8m_reserve_scratch_area(void)
-{
-	return PTR_ERR_OR_ZERO(request_sdram_region("scratch area",
-				    (ulong)arm_mem_scratch_get(),
-				    sizeof(struct imx_scratch_space)));
-}
-device_initcall(imx8m_reserve_scratch_area);
-
-void imx8m_save_bootrom_log(void *dest)
+void imx8m_save_bootrom_log(void)
 {
 	const u32 *rom_log;
 
@@ -251,7 +240,5 @@ void imx8m_save_bootrom_log(void *dest)
 		return;
 	}
 
-	pr_debug("Saving bootrom log to 0x%p\n", dest);
-
-	memcpy(dest, rom_log, 128 * sizeof(u32));
+	imx8m_scratch_save_bootrom_log(rom_log);
 }

@@ -132,10 +132,15 @@ struct ele_get_info_data {
 	u32 state;
 };
 
+#define ELE_INFO_SOC_REV	GENMASK(31, 24)
+
 int ele_call(struct ele_msg *msg, bool get_response);
 
 int ele_read_common_fuse(u16 fuse_id, u32 *fuse_word, u32 *response);
 int ele_release_rdc(u8 core_id, u8 xrdc, u32 *response);
 int ele_read_shadow_fuse(u16 fuse_id, u32 *fuse_word, u32 *response);
+int ele_get_info(struct ele_get_info_data *info);
+
+int imx93_ele_load_fw(void *bl33);
 
 #endif

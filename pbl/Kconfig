@@ -48,7 +48,7 @@ config PBL_RELOCATABLE
 
 config PBL_VERIFY_PIGGY
 	depends on ARM
-	bool
+	bool "Verify barebox proper hash before decompression" if COMPILE_TEST
 
 config BOARD_GENERIC_DT
 	bool

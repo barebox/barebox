@@ -12,6 +12,7 @@
 #include <driver.h>
 #include <debug_ll.h>
 #include <linux/kernel.h>
+#include <asm/sections.h>
 
 struct firmware {
 	size_t size;

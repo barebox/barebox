@@ -11,6 +11,7 @@
 #include <linux/uuid.h>
 #include <linux/printk.h>
 #include <of.h>
+#include <init.h>
 #include <filetype.h>
 
 #define FORMAT_DRIVER_NAME_ID	"%s%d"
@@ -19,6 +20,7 @@
 
 struct filep;
 struct bus_type;
+struct generic_pm_domain;
 
 struct platform_device_id {
 	const char *name;
@@ -66,6 +68,8 @@ struct device {
 	struct list_head active;   /* The list of all devices which have a driver */
 
 	struct device *parent;   /* our parent, NULL if not present */
+
+	struct generic_pm_domain *pm_domain;	/* attached power domain */
 
 	struct bus_type *bus;
 

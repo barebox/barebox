@@ -77,10 +77,6 @@ feat: &ocotp {
 	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
 };
 
-&hsio_blk_ctrl {
-	barebox,allow-dummy;
-};
-
 &pgc_vpumix {
 	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
 };

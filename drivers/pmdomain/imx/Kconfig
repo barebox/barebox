@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menu "i.MX PM Domains"
+
+config IMX_GPCV2_PM_DOMAINS
+	bool "i.MX GPCv2 PM domains"
+	depends on ARCH_IMX7 || ARCH_IMX8M || COMPILE_TEST
+	select PM_GENERIC_DOMAINS
+	default y if ARCH_IMX7 || ARCH_IMX8M
+
+config IMX8M_BLK_CTRL
+	bool "i.MX8MP HSIO blk-ctrl" if COMPILE_TEST
+	default ARCH_IMX8MP && IMX_GPCV2_PM_DOMAINS
+	depends on PM_GENERIC_DOMAINS
+	depends on COMMON_CLK
+
+endmenu

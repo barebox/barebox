@@ -3,6 +3,7 @@
 #define __LINUX_REGMAP_H
 
 #include <linux/compiler.h>
+#include <linux/iopoll.h>
 #include <linux/types.h>
 
 enum regmap_endian {

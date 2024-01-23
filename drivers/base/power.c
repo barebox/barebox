@@ -2,6 +2,7 @@
 #include <common.h>
 #include <driver.h>
 #include <errno.h>
+#include <linux/device.h>
 #include <of.h>
 
 #include <pm_domain.h>
@@ -9,6 +10,14 @@
 #define genpd_status_on(genpd)		(genpd->status == GPD_STATE_ACTIVE)
 
 static LIST_HEAD(gpd_list);
+
+static inline struct generic_pm_domain *dev_to_genpd(struct device *dev)
+{
+	if (IS_ERR_OR_NULL(dev->pm_domain))
+		return ERR_PTR(-EINVAL);
+
+	return dev->pm_domain;
+}
 
 /**
  * pm_genpd_init - Initialize a generic I/O PM domain object.
@@ -30,6 +39,19 @@ int pm_genpd_init(struct generic_pm_domain *genpd, void *gov, bool is_off)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(pm_genpd_init);
+
+int pm_genpd_remove(struct generic_pm_domain *genpd)
+{
+	if (IS_ERR_OR_NULL(genpd))
+		return -EINVAL;
+
+	list_del(&genpd->gpd_list_node);
+
+	pr_debug("%s: removed %s\n", __func__, genpd->name);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(pm_genpd_remove);
 
 /**
  * struct of_genpd_provider - PM domain provider registration structure
@@ -201,6 +223,24 @@ error:
 EXPORT_SYMBOL_GPL(of_genpd_add_provider_onecell);
 
 /**
+ * of_genpd_del_provider() - Remove a previously registered PM domain provider
+ * @np: Device node pointer associated with the PM domain provider
+ */
+void of_genpd_del_provider(struct device_node *np)
+{
+	struct of_genpd_provider *cp, *tmp;
+
+	list_for_each_entry_safe(cp, tmp, &of_genpd_providers, link) {
+		if (cp->node == np) {
+			list_del(&cp->link);
+			kfree(cp);
+			break;
+		}
+	}
+}
+EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+
+/**
  * genpd_get_from_provider() - Look-up PM domain
  * @genpdspec: OF phandle args to use for look-up
  *
@@ -249,7 +289,7 @@ static struct generic_pm_domain *genpd_get_from_provider(
 	return genpd;
 }
 
-static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+static int _genpd_power_on(struct generic_pm_domain *genpd)
 {
 	if (!genpd->power_on)
 		return 0;
@@ -260,19 +300,18 @@ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
 /**
  * genpd_power_on - Restore power to a given PM domain and its masters.
  * @genpd: PM domain to power up.
- * @depth: nesting count for lockdep.
  *
  * Restore power to @genpd and all of its masters so that it is possible to
  * resume a device belonging to it.
  */
-static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
+static int genpd_power_on(struct generic_pm_domain *genpd)
 {
 	int ret;
 
 	if (!genpd || genpd_status_on(genpd))
 		return 0;
 
-	ret = _genpd_power_on(genpd, true);
+	ret = _genpd_power_on(genpd);
 	if (ret)
 		return ret;
 
@@ -281,14 +320,56 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
 	return 0;
 }
 
-static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
+int pm_runtime_resume_and_get_genpd(struct device *dev)
+{
+	struct generic_pm_domain *genpd;
+
+	genpd = dev_to_genpd(dev);
+	if (IS_ERR(genpd))
+		return PTR_ERR(genpd);
+
+	return genpd_power_on(genpd);
+}
+
+static void genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
+{
+	dev->pm_domain = genpd;
+}
+
+static void genpd_remove_device(struct generic_pm_domain *genpd,
+			       struct device *dev)
+{
+	dev->pm_domain = NULL;
+}
+
+static bool have_genpd_providers;
+
+void genpd_activate(void)
+{
+	have_genpd_providers = true;
+}
+
+static struct bus_type genpd_bus_type = {
+	.name		= "genpd",
+};
+
+static int __init genpd_bus_init(void)
+{
+	return bus_register(&genpd_bus_type);
+}
+core_initcall(genpd_bus_init);
+
+static int __genpd_dev_pm_attach(struct device *dev,
 				 unsigned int index, bool power_on)
 {
 	struct of_phandle_args pd_args;
 	struct generic_pm_domain *pd;
 	int ret;
 
-	ret = of_parse_phandle_with_args(np, "power-domains",
+	if (!have_genpd_providers)
+		return 0;
+
+	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
 				"#power-domain-cells", index, &pd_args);
 	if (ret < 0)
 		return ret;
@@ -307,17 +388,15 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 
 	dev_dbg(dev, "adding to PM domain %s\n", pd ? pd->name : "dummy");
 
-	if (power_on)
-		ret = genpd_power_on(pd, 0);
+	genpd_add_device(pd, dev);
+
+	if (power_on) {
+		ret = genpd_power_on(pd);
+		if (ret < 0)
+			genpd_remove_device(pd, dev);
+	}
 
 	return ret ?: 1;
-}
-
-static bool have_genpd_providers;
-
-void genpd_activate(void)
-{
-	have_genpd_providers = true;
 }
 
 /**
@@ -338,9 +417,6 @@ int genpd_dev_pm_attach(struct device *dev)
 	if (!dev->of_node)
 		return 0;
 
-	if (!have_genpd_providers)
-		return 0;
-
 	/*
 	 * Devices with multiple PM domains must be attached separately, as we
 	 * can only attach one PM domain per device.
@@ -349,9 +425,104 @@ int genpd_dev_pm_attach(struct device *dev)
 				       "#power-domain-cells") != 1)
 		return 0;
 
-	return __genpd_dev_pm_attach(dev, dev->of_node, 0, true);
+	return __genpd_dev_pm_attach(dev, 0, true);
 }
 EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+
+/**
+ * dev_pm_domain_attach_by_id - Associate a device with one of its PM domains.
+ * @dev: The device used to lookup the PM domain.
+ * @index: The index of the PM domain.
+ *
+ * As @dev may only be attached to a single PM domain, the backend PM domain
+ * provider creates a virtual device to attach instead. If attachment succeeds,
+ * the ->detach() callback in the struct dev_pm_domain are assigned by the
+ * corresponding backend attach function, as to deal with detaching of the
+ * created virtual device.
+ *
+ * This function should typically be invoked by a driver during the probe phase,
+ * in case its device requires power management through multiple PM domains. The
+ * driver may benefit from using the received device, to configure device-links
+ * towards its original device. Depending on the use-case and if needed, the
+ * links may be dynamically changed by the driver, which allows it to control
+ * the power to the PM domains independently from each other.
+ *
+ * Callers must ensure proper synchronization of this function with power
+ * management callbacks.
+ *
+ * Returns the virtual created device when successfully attached to its PM
+ * domain, NULL in case @dev don't need a PM domain, else an ERR_PTR().
+ * Note that, to detach the returned virtual device, the driver shall call
+ * dev_pm_domain_detach() on it, typically during the remove phase.
+ */
+struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+					 unsigned int index)
+{
+	struct device *virt_dev;
+	int num_domains;
+	int ret;
+
+	if (!dev->of_node)
+		return NULL;
+
+	/* Verify that the index is within a valid range. */
+	num_domains = of_count_phandle_with_args(dev->of_node, "power-domains",
+						 "#power-domain-cells");
+	if (index >= num_domains)
+		return NULL;
+
+	/* Allocate and register device on the genpd bus. */
+	virt_dev = kzalloc(sizeof(*virt_dev), GFP_KERNEL);
+	if (!virt_dev)
+		return ERR_PTR(-ENOMEM);
+
+	dev_set_name(virt_dev, "genpd");
+	virt_dev->bus = &genpd_bus_type;
+	virt_dev->parent = dev;
+	virt_dev->of_node = dev->of_node;
+	virt_dev->id = index;
+
+	ret = device_register(virt_dev);
+	if (ret) {
+		kfree(dev);
+		return ERR_PTR(ret);
+	}
+
+	/* Try to attach the device to the PM domain at the specified index. */
+	ret = __genpd_dev_pm_attach(virt_dev, index, false);
+	if (ret < 1) {
+		device_unregister(virt_dev);
+		return ret ? ERR_PTR(ret) : NULL;
+	}
+
+	return virt_dev;
+}
+EXPORT_SYMBOL_GPL(genpd_dev_pm_attach_by_id);
+
+/**
+ * genpd_dev_pm_attach_by_name - Associate a device with one of its PM domains.
+ * @dev: The device used to lookup the PM domain.
+ * @name: The name of the PM domain.
+ *
+ * Parse device's OF node to find a PM domain specifier using the
+ * power-domain-names DT property. For further description see
+ * genpd_dev_pm_attach_by_id().
+ */
+struct device *genpd_dev_pm_attach_by_name(struct device *dev, const char *name)
+{
+	int index;
+
+	if (!dev->of_node)
+		return NULL;
+
+	index = of_property_match_string(dev->of_node, "power-domain-names",
+					 name);
+	if (index < 0)
+		return NULL;
+
+	return genpd_dev_pm_attach_by_id(dev, index);
+}
+EXPORT_SYMBOL_GPL(genpd_dev_pm_attach_by_name);
 
 void pm_genpd_print(void)
 {

@@ -541,7 +541,7 @@ void __iomem *dev_request_mem_region_err_null(struct device *dev, int num)
 	struct resource *res;
 
 	res = dev_request_mem_resource(dev, num);
-	if (IS_ERR(res))
+	if (IS_ERR(res) || WARN_ON(!res->start))
 		return NULL;
 
 	return IOMEM(res->start);

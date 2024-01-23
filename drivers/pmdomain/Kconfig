@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menu "PM Domains"
+
+source "drivers/pmdomain/imx/Kconfig"
+source "drivers/pmdomain/ti/Kconfig"
+
+endmenu

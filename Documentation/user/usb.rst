@@ -233,7 +233,7 @@ and initrd:
 USB Mass storage gadget
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Example exporting barebox block devices to a USB host::
+Example exporting barebox block devices to a USB host:
 
 .. code-block:: sh
 

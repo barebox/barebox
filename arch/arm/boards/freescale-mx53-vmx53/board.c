@@ -10,7 +10,7 @@
 #include <init.h>
 #include <linux/sizes.h>
 
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/imx/imx5.h>
 #include <asm/armlinux.h>
 #include <mach/imx/bbu.h>

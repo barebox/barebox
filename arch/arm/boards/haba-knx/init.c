@@ -7,7 +7,7 @@
 #include <init.h>
 #include <environment.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <io.h>

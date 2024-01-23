@@ -14,7 +14,7 @@
 #include <gpio.h>
 #include <mci.h>
 
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 
 #include <mach/imx/imx53-regs.h>
 #include <mach/imx/iomux-mx53.h>

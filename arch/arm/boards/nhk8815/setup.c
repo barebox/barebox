@@ -7,7 +7,7 @@
 #include <linux/mtd/nand.h>
 #include <nand.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <io.h>
 #include <envfs.h>
 

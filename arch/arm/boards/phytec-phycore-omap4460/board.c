@@ -9,7 +9,7 @@
 #include <io.h>
 #include <envfs.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/omap/devices.h>
 #include <mach/omap/omap4-silicon.h>
 #include <mach/omap/omap4-devices.h>

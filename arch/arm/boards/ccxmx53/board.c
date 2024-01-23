@@ -9,7 +9,7 @@
 #include <i2c/i2c.h>
 #include <gpio.h>
 
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/imx/imx5.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/imx53-regs.h>

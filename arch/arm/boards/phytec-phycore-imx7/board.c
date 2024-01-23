@@ -6,7 +6,7 @@
 #include <environment.h>
 #include <mach/imx/bbu.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/imx/generic.h>
 #include <linux/sizes.h>
 #include <asm/psci.h>

@@ -7,7 +7,7 @@
 #include <init.h>
 
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/imx/bbu.h>
 
 static int tqma53_devices_init(void)

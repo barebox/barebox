@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2013 Sascha Hauer, Pengutronix
 
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <environment.h>
 #include <bootsource.h>
 #include <common.h>

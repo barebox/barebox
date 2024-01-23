@@ -9,7 +9,7 @@
 #include <mci.h>
 #include <linux/err.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <asm/barebox-arm.h>
 #include <mach/mxs/imx-regs.h>
 #include <mach/mxs/mci.h>

@@ -17,7 +17,7 @@
 #include <asm/armlinux.h>
 #include <asm/mmu.h>
 
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 
 #include <mach/imx/imx53-regs.h>
 #include <mach/imx/revision.h>

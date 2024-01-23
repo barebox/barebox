@@ -77,6 +77,7 @@ struct bootchooser_target {
 enum reset_attempts {
 	RESET_ATTEMPTS_POWER_ON,
 	RESET_ATTEMPTS_ALL_ZERO,
+	RESET_ATTEMPTS_SRC_RST,
 };
 
 static unsigned long reset_attempts;
@@ -435,6 +436,13 @@ struct bootchooser *bootchooser_get(void)
 	if (test_bit(RESET_ATTEMPTS_POWER_ON, &reset_attempts) &&
 	    reset_source_get() == RESET_POR && !attempts_resetted) {
 		pr_info("Power-on Reset, resetting remaining attempts\n");
+		bootchooser_reset_attempts(bc);
+		attempts_resetted = 1;
+	}
+
+	if (test_bit(RESET_ATTEMPTS_SRC_RST, &reset_attempts) &&
+	    reset_source_get() == RESET_RST && !attempts_resetted) {
+		pr_info("RST Reset, resetting remaining attempts\n");
 		bootchooser_reset_attempts(bc);
 		attempts_resetted = 1;
 	}
@@ -915,6 +923,7 @@ static int bootchooser_add_entry(struct bootentries *entries, const char *name)
 static const char * const reset_attempts_names[] = {
 	[RESET_ATTEMPTS_POWER_ON] = "power-on",
 	[RESET_ATTEMPTS_ALL_ZERO] = "all-zero",
+	[RESET_ATTEMPTS_SRC_RST] = "reset",
 };
 
 static const char * const reset_priorities_names[] = {
@@ -951,6 +960,8 @@ BAREBOX_MAGICVAR(global.bootchooser.targets,
 		 "bootchooser: Space separated list of target names");
 BAREBOX_MAGICVAR(global.bootchooser.default_attempts,
 		 "bootchooser: Default number of attempts for a target");
+BAREBOX_MAGICVAR(global.bootchooser.reset_attempts,
+		"bootchooser: Choose condition to reset number of attempts for all enabled targets ('power-on', 'all-zero', 'reset')");
 BAREBOX_MAGICVAR(global.bootchooser.default_priority,
 		 "bootchooser: Default priority for a target");
 BAREBOX_MAGICVAR(global.bootchooser.state_prefix,

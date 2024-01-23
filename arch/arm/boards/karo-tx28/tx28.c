@@ -9,7 +9,7 @@
 #include <asm/armlinux.h>
 #include <asm/barebox-arm.h>
 #include <io.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <mach/mxs/imx-regs.h>
 #include <mach/mxs/devices.h>
 #include <mach/mxs/iomux.h>

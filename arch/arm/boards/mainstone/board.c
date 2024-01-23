@@ -22,7 +22,7 @@
 #include <asm/io.h>
 #include <asm/mmu.h>
 
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 
 static struct smc91c111_pdata smsc91x_pdata = {
 	.word_aligned_short_writes = true,

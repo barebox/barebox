@@ -18,7 +18,7 @@
 #include <mach/at91/hardware.h>
 #include <mach/at91/at91rm9200_emac.h>
 #include <mach/at91/board.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <linux/clk.h>
 #include <linux/mii.h>
 #include <errno.h>

@@ -175,12 +175,6 @@ dts := arch/arm/dts
 
 KBUILD_IMAGE ?= $(KBUILD_BINARY)
 
-archprepare: maketools
-maketools:
-	$(Q)$(MAKE) $(build)=arch/arm/tools include/generated/mach-types.h
-
-PHONY += maketools
-
 ifneq ($(machine-y),)
 MACH := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 else
@@ -207,6 +201,6 @@ endif
 
 common- += $(patsubst %,arch/arm/boards/%/,$(board-))
 
-CLEAN_FILES += include/generated/mach-types.h barebox-flash-image
+CLEAN_FILES += barebox-flash-image
 CLEAN_FILES += arch/arm/lib64/barebox.lds
 CLEAN_FILES += arch/arm/lib32/barebox.lds

@@ -22,7 +22,7 @@
 #include <asm/io.h>
 #include <asm/mmu.h>
 
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 
 #define ECOR            0x8000
 #define ECOR_RESET      0x80

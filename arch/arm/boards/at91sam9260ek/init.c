@@ -6,7 +6,7 @@
 #include <envfs.h>
 #include <environment.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/rawnand.h>

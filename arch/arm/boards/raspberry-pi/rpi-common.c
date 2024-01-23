@@ -19,7 +19,7 @@
 #include <led.h>
 #include <asm/armlinux.h>
 #include <asm/barebox-arm.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <linux/sizes.h>
 #include <globalvar.h>
 #include <asm/system_info.h>

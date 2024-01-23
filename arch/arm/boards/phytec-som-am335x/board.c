@@ -18,7 +18,7 @@
 #include <envfs.h>
 #include <state.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <linux/phy.h>
 #include <linux/micrel_phy.h>
 #include <mach/omap/am33xx-generic.h>

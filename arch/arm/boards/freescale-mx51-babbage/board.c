@@ -9,7 +9,7 @@
 #include <mach/imx/imx51-regs.h>
 #include <gpio.h>
 #include <asm/armlinux.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <fs.h>
 #include <of.h>
 #include <fcntl.h>

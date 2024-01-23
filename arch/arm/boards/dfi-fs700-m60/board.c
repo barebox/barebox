@@ -3,7 +3,7 @@
 
 #define pr_fmt(fmt)  "dfi-fs700-m60: " fmt
 
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <environment.h>
 #include <bootsource.h>
 #include <globalvar.h>

@@ -10,7 +10,7 @@
 #include <init.h>
 #include <io.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <i2c/i2c.h>
 
 #include <asm/armlinux.h>

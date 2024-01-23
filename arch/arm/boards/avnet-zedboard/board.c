@@ -4,7 +4,7 @@
 #include <asm/armlinux.h>
 #include <common.h>
 #include <environment.h>
-#include <generated/mach-types.h>
+#include <asm/mach-types.h>
 #include <init.h>
 #include <mach/zynq/zynq7000-regs.h>
 #include <linux/sizes.h>

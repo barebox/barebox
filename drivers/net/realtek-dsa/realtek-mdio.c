@@ -47,22 +47,27 @@ static int realtek_mdio_write(void *ctx, u32 reg, u32 val)
 	struct mii_bus *bus = priv->bus;
 	int ret;
 
-	ret = bus->write(bus, priv->mdio_addr, REALTEK_MDIO_CTRL0_REG, REALTEK_MDIO_ADDR_OP);
+	ret = mdiobus_write(bus, priv->mdio_addr, REALTEK_MDIO_CTRL0_REG,
+			    REALTEK_MDIO_ADDR_OP);
 	if (ret)
-		goto out_unlock;
+		return ret;
 
-	ret = bus->write(bus, priv->mdio_addr, REALTEK_MDIO_ADDRESS_REG, reg);
+	ret = mdiobus_write(bus, priv->mdio_addr, REALTEK_MDIO_ADDRESS_REG,
+			    reg);
 	if (ret)
-		goto out_unlock;
+		return ret;
 
-	ret = bus->write(bus, priv->mdio_addr, REALTEK_MDIO_DATA_WRITE_REG, val);
+	ret = mdiobus_write(bus, priv->mdio_addr, REALTEK_MDIO_DATA_WRITE_REG,
+			    val);
 	if (ret)
-		goto out_unlock;
+		return ret;
 
-	ret = bus->write(bus, priv->mdio_addr, REALTEK_MDIO_CTRL1_REG, REALTEK_MDIO_WRITE_OP);
+	ret = mdiobus_write(bus, priv->mdio_addr, REALTEK_MDIO_CTRL1_REG,
+			    REALTEK_MDIO_WRITE_OP);
+	if (ret)
+		return ret;
 
-out_unlock:
-	return ret;
+	return 0;
 }
 
 static int realtek_mdio_read(void *ctx, u32 reg, u32 *val)
@@ -71,26 +76,43 @@ static int realtek_mdio_read(void *ctx, u32 reg, u32 *val)
 	struct mii_bus *bus = priv->bus;
 	int ret;
 
-	ret = bus->write(bus, priv->mdio_addr, REALTEK_MDIO_CTRL0_REG, REALTEK_MDIO_ADDR_OP);
+	ret = mdiobus_write(bus, priv->mdio_addr, REALTEK_MDIO_CTRL0_REG,
+			    REALTEK_MDIO_ADDR_OP);
 	if (ret)
-		goto out_unlock;
+		return ret;
 
-	ret = bus->write(bus, priv->mdio_addr, REALTEK_MDIO_ADDRESS_REG, reg);
+	ret = mdiobus_write(bus, priv->mdio_addr, REALTEK_MDIO_ADDRESS_REG,
+			    reg);
 	if (ret)
-		goto out_unlock;
+		return ret;
 
-	ret = bus->write(bus, priv->mdio_addr, REALTEK_MDIO_CTRL1_REG, REALTEK_MDIO_READ_OP);
+	ret = mdiobus_write(bus, priv->mdio_addr, REALTEK_MDIO_CTRL1_REG,
+			    REALTEK_MDIO_READ_OP);
 	if (ret)
-		goto out_unlock;
+		return ret;
 
-	ret = bus->read(bus, priv->mdio_addr, REALTEK_MDIO_DATA_READ_REG);
-	if (ret >= 0) {
-		*val = ret;
-		ret = 0;
-	}
+	ret = mdiobus_read(bus, priv->mdio_addr, REALTEK_MDIO_DATA_READ_REG);
+	if (ret < 0)
+		return ret;
 
-out_unlock:
-	return ret;
+	*val = ret;
+
+	return 0;
+}
+
+static int realtek_mdio_mdio_write(struct mii_bus *bus, int addr, int regnum,
+				   u16 val)
+{
+	struct realtek_priv *priv = bus->priv;
+
+	return priv->ops->phy_write(priv, addr, regnum, val);
+}
+
+static int realtek_mdio_mdio_read(struct mii_bus *bus, int addr, int regnum)
+{
+	struct realtek_priv *priv = bus->priv;
+
+	return priv->ops->phy_read(priv, addr, regnum);
 }
 
 static const struct regmap_config realtek_mdio_regmap_config = {
@@ -106,6 +128,42 @@ static const struct regmap_bus realtek_mdio_regmap_bus = {
 	.reg_write = realtek_mdio_write,
 	.reg_read = realtek_mdio_read,
 };
+
+static int realtek_mdio_setup_mdio(struct dsa_switch *ds)
+{
+	struct realtek_priv *priv =  ds->priv;
+	struct device_node *np;
+	int ret;
+
+	np = of_get_child_by_name(priv->dev->of_node, "mdio");
+	if (!np) {
+		dev_err(priv->dev, "missing 'mdio' child node\n");
+		return -ENODEV;
+	}
+
+	priv->slave_mii_bus->priv = priv;
+	priv->slave_mii_bus->read = realtek_mdio_mdio_read;
+	priv->slave_mii_bus->write = realtek_mdio_mdio_write;
+	priv->slave_mii_bus->dev.of_node = np;
+	priv->slave_mii_bus->parent = priv->dev;
+
+	ret = mdiobus_register(priv->slave_mii_bus);
+	if (ret) {
+		dev_err(priv->dev, "unable to register MDIO bus %pOF\n", np);
+		goto err_put_node;
+	}
+
+	/* Avoid interleaved MDIO access during PHY status polling */
+	slice_depends_on(mdiobus_slice(priv->slave_mii_bus),
+			 mdiobus_slice(priv->bus));
+
+	return 0;
+
+err_put_node:
+	of_node_put(np);
+
+	return ret;
+}
 
 static int realtek_mdio_probe(struct phy_device *mdiodev)
 {
@@ -142,6 +200,7 @@ static int realtek_mdio_probe(struct phy_device *mdiodev)
 	priv->cmd_write = var->cmd_write;
 	priv->ops = var->ops;
 
+	priv->setup_interface = realtek_mdio_setup_mdio;
 	priv->write_reg_noack = realtek_mdio_write;
 
 	np = dev->of_node;
@@ -177,7 +236,7 @@ static int realtek_mdio_probe(struct phy_device *mdiodev)
 	priv->ds->dev = dev;
 	priv->ds->num_ports = priv->num_ports;
 	priv->ds->priv = priv;
-	priv->ds->ops = var->ds_ops_mdio;
+	priv->ds->ops = var->ds_ops;
 
 	ret = realtek_dsa_init_tagger(priv);
 	if (ret)

@@ -895,18 +895,18 @@ static int fec_probe(struct device *dev)
 	fec->miibus.priv = fec;
 	fec->miibus.parent = dev;
 
-	ret = mdiobus_register(&fec->miibus);
+	ret = eth_register(edev);
 	if (ret)
 		goto free_receive_packets;
 
-	ret = eth_register(edev);
+	ret = mdiobus_register(&fec->miibus);
 	if (ret)
-		goto unregister_mdio;
+		goto unregister_eth;
 
 	return 0;
 
-unregister_mdio:
-	mdiobus_unregister(&fec->miibus);
+unregister_eth:
+	eth_unregister(edev);
 free_receive_packets:
 	fec_free_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 free_xbd:

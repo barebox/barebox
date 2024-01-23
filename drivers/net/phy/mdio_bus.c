@@ -119,6 +119,7 @@ static int of_mdiobus_register_phy(struct mii_bus *mdio, struct device_node *chi
 	 * Associate the OF node with the device structure so it
 	 * can be looked up later
 	 */
+	child->dev = &phy->dev;
 	phy->dev.of_node = child;
 
 	/*
@@ -145,6 +146,7 @@ static int of_mdiobus_register_device(struct mii_bus *mdio,
 	if (IS_ERR(mdiodev))
 		return PTR_ERR(mdiodev);
 
+	child->dev = &mdiodev->dev;
 	mdiodev->dev.of_node = child;
 
 	ret = mdio_register_device(mdiodev);
@@ -315,6 +317,8 @@ int mdiobus_register(struct mii_bus *bus)
 	pr_info("%s: probed\n", dev_name(&bus->dev));
 
 	if (bus->dev.of_node) {
+		bus->dev.of_node->dev = &bus->dev;
+
 		/* Register PHY's as child node to mdio node */
 		of_mdiobus_register(bus, bus->dev.of_node);
 	}

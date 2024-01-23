@@ -577,7 +577,6 @@ config MACH_VF610_TWR
 config MACH_ZII_VF610_DEV
 	bool "ZII VF610 Dev Family"
 	select ARCH_VF610
-	select CLKDEV_LOOKUP
 	select MACH_ZII_COMMON
 	select ARM_USE_COMPRESSED_DTB
 

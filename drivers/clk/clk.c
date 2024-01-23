@@ -641,8 +641,7 @@ struct of_clk_provider {
 };
 
 extern struct of_device_id __clk_of_table_start[];
-const struct of_device_id __clk_of_table_sentinel
-	__attribute__ ((unused,section (".__clk_of_table_end")));
+const struct of_device_id __clk_of_table_sentinel __ll_elem(.__clk_of_table_end);
 
 static LIST_HEAD(of_clk_providers);
 

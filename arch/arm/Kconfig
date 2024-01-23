@@ -56,7 +56,6 @@ config ARCH_AT91
 config ARCH_CLPS711X
 	bool "Cirrus Logic EP711x/EP721x/EP731x"
 	depends on 32BIT
-	select CLKDEV_LOOKUP
 	select CLOCKSOURCE_CLPS711X
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
@@ -95,7 +94,6 @@ config ARCH_MVEBU
 	depends on 32BIT
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
@@ -111,7 +109,6 @@ config ARCH_MXS
 	select GPIOLIB
 	select GENERIC_GPIO
 	select COMMON_CLK
-	select CLKDEV_LOOKUP
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
 
@@ -120,7 +117,7 @@ config ARCH_NOMADIK
 	depends on 32BIT
 	select CPU_ARM926T
 	select CLOCKSOURCE_NOMADIK
-	select HAVE_CLK
+	select HAVE_LEGACY_CLK
 	help
 	  Support for the Nomadik platform by ST-Ericsson
 
@@ -141,7 +138,6 @@ config ARCH_SOCFPGA
 	select ARM_SMP_TWD
 	select CPU_V7
 	select COMMON_CLK
-	select CLKDEV_LOOKUP
 
 config ARCH_TEGRA
 	bool "NVIDIA Tegra"
@@ -151,7 +147,6 @@ config ARCH_TEGRA
 	select HW_HAS_PCI
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select GPIO_TEGRA
 	select HAVE_PBL_MULTI_IMAGES
@@ -167,7 +162,6 @@ config ARCH_UEMD
 	select CPU_ARM1176
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select CLKDEV_LOOKUP
 	select OFDEVICE
 	select OFTREE
 	select CLOCKSOURCE_UEMD
@@ -198,7 +192,6 @@ config ARCH_ARM64_VIRT
 config ARCH_BCM283X
 	bool "Broadcom BCM283x based boards"
 	select GPIOLIB
-	select CLKDEV_LOOKUP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select CLOCKSOURCE_BCM283X
@@ -214,7 +207,6 @@ config ARCH_IMX
 	depends on ARCH_MULTIARCH
 	select GPIOLIB
 	select COMMON_CLK
-	select CLKDEV_LOOKUP
 	select WATCHDOG_IMX_RESET_SOURCE
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
@@ -226,10 +218,8 @@ config ARCH_K3
 	select CPU_V8
 	select GPIOLIB
 	select COMMON_CLK
-	select CLKDEV_LOOKUP
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
-	select HAVE_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select PM_GENERIC_DOMAINS
 
@@ -240,7 +230,6 @@ config ARCH_LAYERSCAPE
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
 	select COMMON_CLK
-	select CLKDEV_LOOKUP
 	select COMMON_CLK_OF_PROVIDER
 	select HW_HAS_PCI
 	select OFTREE
@@ -261,7 +250,6 @@ config ARCH_ROCKCHIP
 	bool "Rockchip RX3xxx"
 	depends on ARCH_MULTIARCH
 	select COMMON_CLK
-	select CLKDEV_LOOKUP
 	select COMMON_CLK_OF_PROVIDER
 	select GPIOLIB
 	select PINCTRL
@@ -277,11 +265,9 @@ config ARCH_STM32MP
 	select ARCH_STM32
 	select CPU_V7
 	select HAVE_PBL_MULTI_IMAGES
-	select CLKDEV_LOOKUP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select HAS_DEBUG_LL
-	select HAVE_CLK
 	select GPIOLIB
 	select ARCH_HAS_RESET_CONTROLLER
 	select ARM_AMBA
@@ -294,7 +280,6 @@ config ARCH_VERSATILE
 	select GPIOLIB
 	select ARM_AMBA
 	select AMBA_SP804
-	select HAVE_CLK
 	select HAS_DEBUG_LL
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
@@ -307,7 +292,6 @@ config ARCH_VEXPRESS
 	select CPU_V7
 	select ARM_AMBA
 	select AMBA_SP804
-	select CLKDEV_LOOKUP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select OFTREE
@@ -324,7 +308,6 @@ config ARCH_ZYNQMP
 	select ARM_SMCCC
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select OFDEVICE
 	select OFTREE

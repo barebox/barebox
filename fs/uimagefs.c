@@ -297,28 +297,24 @@ static int uimagefs_add_data_entry(struct uimagefs_handle *priv, size_t offset,
 	return 0;
 }
 
-#if defined(CONFIG_TIMESTAMP)
 static int uimagefs_add_time(struct uimagefs_handle *priv)
 {
 	struct image_header *header = &priv->header;
-	struct rtc_time tm;
-	char *val;
 
-	to_tm(header->ih_time, &tm);
-	val = basprintf("%4d-%02d-%02d  %2d:%02d:%02d UTC",
-			tm.tm_year, tm.tm_mon, tm.tm_mday,
-			tm.tm_hour, tm.tm_min, tm.tm_sec);
+	if (IS_ENABLED(CONFIG_TIMESTAMP)) {
+		struct rtc_time tm;
+		char *val;
 
-	return uimagefs_add_str(priv, UIMAGEFS_TIME, val);
-}
-#else
-static int uimagefs_add_time(struct uimagefs_handle *priv)
-{
-	struct image_header *header = &priv->header;
+		to_tm(header->ih_time, &tm);
+		val = basprintf("%4d-%02d-%02d  %2d:%02d:%02d UTC",
+				tm.tm_year, tm.tm_mon, tm.tm_mday,
+				tm.tm_hour, tm.tm_min, tm.tm_sec);
+
+		return uimagefs_add_str(priv, UIMAGEFS_TIME, val);
+	}
 
 	return uimagefs_add_hex(priv, UIMAGEFS_TIME, header->ih_time);
 }
-#endif
 
 static int uimagefs_add_os(struct uimagefs_handle *priv)
 {

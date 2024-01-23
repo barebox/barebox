@@ -21,19 +21,15 @@
 #define DMA_ALIGNMENT	32
 #endif
 
-#ifndef dma_alloc
 static inline void *dma_alloc(size_t size)
 {
 	return xmemalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
 }
-#endif
 
-#ifndef dma_free
 static inline void dma_free(void *mem)
 {
 	free(mem);
 }
-#endif
 
 #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
 

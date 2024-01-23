@@ -762,7 +762,7 @@ struct clk_hw_onecell_data {
 
 #define CLK_OF_DECLARE(name, compat, fn)				\
 const struct of_device_id __clk_of_table_##name				\
-__attribute__ ((unused,section (".__clk_of_table"))) \
+	__ll_elem(.__clk_of_table) \
 	= { .compatible = compat, .data = fn }
 
 void of_clk_del_provider(struct device_node *np);

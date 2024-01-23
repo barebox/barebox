@@ -34,6 +34,7 @@
 *.so.dbg
 *.symtypes
 *.tab.[ch]
+binary.0
 Module.symvers
 *.dtb
 *.dtb.*

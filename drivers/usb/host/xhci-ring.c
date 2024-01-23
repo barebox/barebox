@@ -639,8 +639,10 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 	 */
 	ret = prepare_ring(ctrl, ring,
 			   le32_to_cpu(ep_ctx->ep_info) & EP_STATE_MASK);
-	if (ret < 0)
+	if (ret < 0) {
+		dma_unmap_single(ctrl->host.hw_dev, map, length, direction);
 		return ret;
+	}
 
 	/*
 	 * Don't give the first TRB to the hardware (by toggling the cycle bit)
@@ -725,6 +727,7 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 		abort_td(udev, ep_index);
 		udev->status = USB_ST_NAK_REC;  /* closest thing to a timeout */
 		udev->act_len = 0;
+		dma_unmap_single(ctrl->host.hw_dev, map, length, direction);
 		return -ETIMEDOUT;
 	}
 	field = le32_to_cpu(event->trans_event.flags);
@@ -967,5 +970,6 @@ abort:
 	abort_td(udev, ep_index);
 	udev->status = USB_ST_NAK_REC;
 	udev->act_len = 0;
+	dma_unmap_single(ctrl->host.hw_dev, map, length, direction);
 	return -ETIMEDOUT;
 }

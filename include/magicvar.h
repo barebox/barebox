@@ -3,6 +3,7 @@
 #define __MAGIC_VARS_H
 
 #include <linux/stringify.h>
+#include <linux/compiler_types.h>
 
 struct magicvar {
 	const char *name;
@@ -19,9 +20,9 @@ extern struct magicvar __barebox_magicvar_end;
 #endif
 
 #ifdef CONFIG_CMD_MAGICVAR
-#define __BAREBOX_MAGICVAR_NAMED(_name, _varname, _description)			\
-static const struct magicvar _name							\
-        __attribute__ ((used,section (".barebox_magicvar_" __stringify(_name)))) = {	\
+#define __BAREBOX_MAGICVAR_NAMED(_name, _varname, _description)	\
+static const struct magicvar _name				\
+        __ll_elem(.barebox_magicvar_##_name) = {		\
         .name	= #_varname,					\
 	.description = MAGICVAR_DESCRIPTION(_description),	\
 };

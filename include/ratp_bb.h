@@ -3,6 +3,7 @@
 #define __RATP_BB_H
 
 #include <linux/stringify.h>
+#include <linux/compiler_types.h>
 
 #define BB_RATP_TYPE_COMMAND		1
 #define BB_RATP_TYPE_COMMAND_RETURN	2
@@ -66,7 +67,7 @@ __attribute__((aligned(64)))
 #define BAREBOX_RATP_CMD_START(_name)							\
 extern const struct ratp_command __barebox_ratp_cmd_##_name;				\
 const struct ratp_command __barebox_ratp_cmd_##_name					\
-	__attribute__ ((unused,section (".barebox_ratp_cmd_" __stringify(_name)))) = {
+	__ll_elem(.barebox_ratp_cmd_##_name) = {
 
 #define BAREBOX_RATP_CMD_END								\
 };

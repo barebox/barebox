@@ -4,9 +4,7 @@ obj-y += setup.o aic.o
 lwl-y += at91_pmc_ll.o ddramc_ll.o at91sam9_sdramc_ll.o matrix.o
 lwl-$(CONFIG_CLOCKSOURCE_ATMEL_PIT) += early_udelay.o
 
-ifeq ($(CONFIG_COMMON_CLK_OF_PROVIDER),)
-obj-y += clock.o
-endif
+obj-$(CONFIG_HAVE_AT91_LEGACY_CLK) += clock.o
 
 obj-$(CONFIG_CMD_AT91_BOOT_TEST) += boot_test_cmd.o
 

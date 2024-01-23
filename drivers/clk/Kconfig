@@ -1,13 +1,33 @@
 # SPDX-License-Identifier: GPL-2.0-only
 config HAVE_CLK
 	bool
+	help
+	  The <linux/clk.h> calls support software clock gating and
+	  thus are a key power management tool on many systems.
+
+config HAVE_LEGACY_CLK
+	select HAVE_CLK
+	bool
+	help
+	  Select this option when the clock API in <linux/clk.h> is implemented
+	  by platform/architecture code. This method is deprecated. Modern
+	  code should select COMMON_CLK instead and not define a custom
+	  'struct clk'.
 
 config CLKDEV_LOOKUP
 	bool
 
 config COMMON_CLK
+	bool "Common Clock Framework"
+	depends on !HAVE_LEGACY_CLK
 	select HAVE_CLK
-	bool
+	select CLKDEV_LOOKUP
+	help
+	  The common clock framework is a single definition of struct
+	  clk, useful across many platforms, as well as an
+	  implementation of the clock API in include/linux/clk.h.
+	  Architectures utilizing the common struct clk should select
+	  this option.
 
 config COMMON_CLK_OF_PROVIDER
 	bool

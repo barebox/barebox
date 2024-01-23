@@ -533,12 +533,11 @@ config TIMESTAMP
 	bool
 	default y
 	select GREGORIAN_CALENDER
-	prompt "print timestamp information from images"
+	prompt "print timestamp information from uImages"
 	help
 	  When CONFIG_TIMESTAMP is selected, the timestamp
-	  (date and time) of an image is printed by image
-	  commands like bootm or iminfo. This option is
-	  automatically enabled when you select CFG_CMD_DATE .
+	  (date and time) of an uImage is printed by image
+	  commands like bootm or uimage.
 
 menuconfig BOOTM
 	select UIMAGE
@@ -1710,6 +1709,14 @@ config DMA_API_DEBUG
 
 	  This option causes a performance degradation.  Use only if you want to
 	  debug device drivers and dma interactions.
+
+	  If unsure, say N.
+
+config DEBUG_LIST
+	bool "Debug linked list manipulation"
+	help
+	  Enable this to turn on extended checks in the linked-list
+	  walking routines.
 
 	  If unsure, say N.
 

@@ -3,6 +3,7 @@
 #define __DEEP_PROBE_H
 
 #include <linux/stringify.h>
+#include <linux/compiler_types.h>
 #include <linux/types.h>
 
 struct deep_probe_entry {
@@ -23,7 +24,7 @@ extern struct deep_probe_entry __barebox_deep_probe_end;
 
 #define __BAREBOX_DEEP_PROBE_ENABLE(_entry,_device_id)			\
 	static const struct deep_probe_entry _entry			\
-	__attribute__ ((used,section (".barebox_deep_probe_" __stringify(_entry)))) = { \
+	__ll_elem(.barebox_deep_probe_##_entry) = {			\
 		.device_id = _device_id,				\
 	}
 

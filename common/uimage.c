@@ -29,17 +29,19 @@ static inline int uimage_is_multi_image(struct uimage_handle *handle)
 void uimage_print_contents(struct uimage_handle *handle)
 {
 	struct image_header *hdr = &handle->header;
-#if defined(CONFIG_TIMESTAMP)
-	struct rtc_time tm;
-#endif
+
 	printf("   Image Name:   %.*s\n", IH_NMLEN, hdr->ih_name);
-#if defined(CONFIG_TIMESTAMP)
-	printf("   Created:      ");
-	to_tm(hdr->ih_time, &tm);
-	printf("%4d-%02d-%02d  %2d:%02d:%02d UTC\n",
-			tm.tm_year, tm.tm_mon, tm.tm_mday,
-			tm.tm_hour, tm.tm_min, tm.tm_sec);
-#endif
+
+	if (IS_ENABLED(CONFIG_TIMESTAMP)) {
+		struct rtc_time tm;
+
+		printf("   Created:      ");
+		to_tm(hdr->ih_time, &tm);
+		printf("%4d-%02d-%02d  %2d:%02d:%02d UTC\n",
+				tm.tm_year, tm.tm_mon, tm.tm_mday,
+				tm.tm_hour, tm.tm_min, tm.tm_sec);
+	}
+
 #if defined(CONFIG_BOOTM_SHOW_TYPE)
 	printf("   OS:           %s\n", image_get_os_name(hdr->ih_os));
 	printf("   Architecture: %s\n", image_get_arch_name(hdr->ih_arch));

@@ -49,7 +49,6 @@ struct eth_device {
 	/* Set promiscuous mode */
 	int  (*set_promisc) (struct eth_device*, bool enable);
 
-	struct eth_device *next;
 	void *priv;
 	void *rx_preprocessor_priv;
 

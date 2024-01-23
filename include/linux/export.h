@@ -15,21 +15,20 @@ struct kernel_symbol
 };
 
 /* For every exported symbol, place a struct in the __ksymtab section */
-#define __EXPORT_SYMBOL(sym, sec)				\
+#define __EXPORT_SYMBOL(sym)					\
 	extern typeof(sym) sym;					\
 	static const char __ustrtab_##sym[]			\
-	__attribute__((section("__usymtab_strings")))		\
+	__ll_elem(__usymtab_strings)				\
 	= MODULE_SYMBOL_PREFIX #sym;                    	\
 	static const struct kernel_symbol __usymtab_##sym	\
-	__used \
-	__attribute__((section("__usymtab" sec), unused))	\
+	__ll_elem(__usymtab)					\
 	= { (unsigned long)&sym, __ustrtab_##sym }
 
 #define EXPORT_SYMBOL(sym)					\
-	__EXPORT_SYMBOL(sym, "")
+	__EXPORT_SYMBOL(sym)
 
 #define EXPORT_SYMBOL_GPL(sym)					\
-	__EXPORT_SYMBOL(sym, "")
+	__EXPORT_SYMBOL(sym)
 
 #else
 

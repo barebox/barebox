@@ -59,7 +59,7 @@ static void i2c_mux_set(struct pbl_i2c *i2c, u8 channel)
 
 static void i2c_regulator_set_voltage(struct pbl_i2c *i2c, u8 reg, u8 voffs)
 {
-	pmic_reg_write(i2c, 0x60, reg, 0x80 + voffs);
+	pmic_reg_write8(i2c, 0x60, reg, 0x80 + voffs);
 }
 
 #define I2C_PAD_CTRL	MUX_PAD_CTRL(MX8MQ_PAD_CTL_DSE_45R | \

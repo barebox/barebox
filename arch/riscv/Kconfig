@@ -8,7 +8,6 @@ config RISCV
 	select OFDEVICE
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select CLKDEV_LOOKUP
 	select HAS_DMA
 	select ARCH_DMA_DEFAULT_COHERENT
 	select HAVE_PBL_IMAGE

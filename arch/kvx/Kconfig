@@ -7,7 +7,6 @@ config KVX
 	select BOOTM_ELF
 	select BOOTM_OFTREE
 	select BOOTM_INITRD
-	select CLKDEV_LOOKUP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select ELF

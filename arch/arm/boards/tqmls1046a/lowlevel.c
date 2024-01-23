@@ -108,7 +108,7 @@ static noinline __noreturn void tqmls1046a_r_entry(void)
 	udelay(500);
 	putc_ll('>');
 
-	fsl_ddr_set_memctl_regs(&ddrc[0], 0);
+	fsl_ddr_set_memctl_regs(&ddrc[0], 0, false);
 
 	ls1046a_errata_post_ddr();
 

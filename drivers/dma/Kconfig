@@ -7,4 +7,17 @@ config MXS_APBH_DMA
 	select STMP_DEVICE
 	help
 	  Experimental!
+
+config OF_DMA_COHERENCY
+	bool "Respect device tree DMA coherency settings" if COMPILE_TEST
+	depends on HAS_DMA && OFDEVICE
+	help
+	  For most platforms supported, either all DMA is coherent or it isn't.
+	  Platforms that have DMA masters of mixed coherency or that differ
+	  from the architecture default will select this option to parse
+	  DMA coherency out of the DT. This allows barebox to choose the
+	  correct cache maintenance operation during runtime and will cause
+	  barebox to fix up its own DMA coherency setting into the kernel
+	  DT if it differs.
+
 endmenu

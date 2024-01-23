@@ -18,6 +18,7 @@ config SANDBOX
 	select ARCH_HAS_SJLJ
 	select ARCH_HAS_CTRLC
 	select HAS_DEBUG_LL
+	select ARCH_DMA_DEFAULT_COHERENT
 	default y
 
 config ARCH_TEXT_BASE

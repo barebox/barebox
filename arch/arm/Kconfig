@@ -90,19 +90,6 @@ config ARCH_EP93XX
 	select CPU_ARM920T
 	select GENERIC_GPIO
 
-config ARCH_LAYERSCAPE
-	bool "NXP Layerscape based"
-	select GPIOLIB
-	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
-	select COMMON_CLK
-	select CLKDEV_LOOKUP
-	select COMMON_CLK_OF_PROVIDER
-	select HW_HAS_PCI
-	select OFTREE
-	select OFDEVICE
-	select ARM_USE_COMPRESSED_DTB
-
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"
 	depends on 32BIT
@@ -245,6 +232,21 @@ config ARCH_K3
 	select HAVE_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select PM_GENERIC_DOMAINS
+
+config ARCH_LAYERSCAPE
+	bool "NXP Layerscape based"
+	depends on ARCH_MULTIARCH
+	select GPIOLIB
+	select HAS_DEBUG_LL
+	select HAVE_PBL_MULTI_IMAGES
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select COMMON_CLK_OF_PROVIDER
+	select HW_HAS_PCI
+	select OFTREE
+	select OFDEVICE
+	select ARM_USE_COMPRESSED_DTB
+	select OF_DMA_COHERENCY
 
 config ARCH_OMAP_MULTI
 	bool "TI OMAP"

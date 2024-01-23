@@ -91,7 +91,7 @@ static noinline __noreturn void ls1021aiot_r_entry(void)
 	udelay(500);
 	putc_ll('>');
 
-	fsl_ddr_set_memctl_regs(&ddrc[0], 0);
+	fsl_ddr_set_memctl_regs(&ddrc[0], 0, false);
 
 	ls1021a_errata_post_ddr();
 

@@ -449,21 +449,54 @@ struct fsl_ddr_info {
 	unsigned long long mem_base;
 };
 
-phys_size_t fsl_ddr_sdram(struct fsl_ddr_info *pinfo);
-void fsl_ddr_set_memctl_regs(struct fsl_ddr_controller *c, int step);
+phys_size_t fsl_ddr_sdram(struct fsl_ddr_info *pinfo, bool little_endian);
+void fsl_ddr_set_memctl_regs(struct fsl_ddr_controller *c, int step, bool little_endian);
 
-#ifdef CONFIG_SYS_FSL_DDR_LE
-#define ddr_in32(a)	in_le32(a)
-#define ddr_out32(a, v)	out_le32(a, v)
-#define ddr_setbits32(a, v)	setbits_le32(a, v)
-#define ddr_clrbits32(a, v)	clrbits_le32(a, v)
-#define ddr_clrsetbits32(a, clear, set)	clrsetbits_le32(a, clear, set)
-#else
-#define ddr_in32(a)	in_be32(a)
-#define ddr_out32(a, v)	out_be32(a, v)
-#define ddr_setbits32(a, v)	setbits_be32(a, v)
-#define ddr_clrbits32(a, v)	clrbits_be32(a, v)
-#define ddr_clrsetbits32(a, clear, set)	clrsetbits_be32(a, clear, set)
-#endif
+enum ddr_endianess {
+	DDR_ENDIANESS_LE,
+	DDR_ENDIANESS_BE,
+};
+
+extern enum ddr_endianess ddr_endianess;
+
+static inline u32 ddr_in32(void __iomem *reg)
+{
+	if (ddr_endianess == DDR_ENDIANESS_LE)
+		return in_le32(reg);
+	else
+		return in_be32(reg);
+}
+
+static inline void ddr_out32(void __iomem *reg, u32 val)
+{
+	if (ddr_endianess == DDR_ENDIANESS_LE)
+		out_le32(reg, val);
+	else
+		out_be32(reg, val);
+}
+
+static inline void ddr_setbits32(void __iomem *reg, u32 set)
+{
+	if (ddr_endianess == DDR_ENDIANESS_LE)
+		setbits_le32(reg, set);
+	else
+		setbits_be32(reg, set);
+}
+
+static inline void ddr_clrbits32(void __iomem *reg, u32 clr)
+{
+	if (ddr_endianess == DDR_ENDIANESS_LE)
+		clrbits_le32(reg, clr);
+	else
+		clrbits_be32(reg, clr);
+}
+
+static inline void ddr_clrsetbits32(void __iomem *reg, u32 clr, u32 set)
+{
+	if (ddr_endianess == DDR_ENDIANESS_LE)
+		clrsetbits_le32(reg, clr, set);
+	else
+		clrsetbits_be32(reg, clr, set);
+}
 
 #endif

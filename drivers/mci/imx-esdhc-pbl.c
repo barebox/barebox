@@ -9,6 +9,8 @@
 #include <asm/sections.h>
 #include <asm/cache.h>
 #include <mach/imx/xload.h>
+#include <firmware.h>
+#include <asm/atf_common.h>
 #ifdef CONFIG_ARCH_IMX
 #include <mach/imx/atf.h>
 #include <mach/imx/imx6-regs.h>
@@ -17,8 +19,9 @@
 #include <mach/imx/imx8mm-regs.h>
 #include <mach/imx/imx-header.h>
 #endif
-#ifdef CONFIG_ARCH_LS1046
+#ifdef CONFIG_ARCH_LAYERSCAPE
 #include <mach/layerscape/xload.h>
+#include <mach/layerscape/layerscape.h>
 #endif
 #include "sdhci.h"
 #include "imx-esdhc.h"
@@ -298,7 +301,40 @@ int imx8mn_esdhc_load_image(int instance, void *bl33)
 	__alias(imx8mp_esdhc_load_image);
 #endif
 
-#ifdef CONFIG_ARCH_LS1046
+#ifdef CONFIG_ARCH_LAYERSCAPE
+
+static int layerscape_esdhc_load_image(struct fsl_esdhc_host *host, void *adr, unsigned long size,
+				       uint32_t div_val)
+{
+	uint32_t val;
+	int ret;
+
+	esdhc_populate_sdhci(host);
+	sdhci_write32(&host->sdhci, IMX_SDHCI_WML, 0);
+
+	/*
+	 * The ROM leaves us here with a clock frequency of around 400kHz. Speed
+	 * this up a bit. FIXME: The resulting frequency has not yet been verified
+	 * to work on all cards.
+	 */
+	val = sdhci_read32(&host->sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
+	val &= ~0x0000fff0;
+	val |= div_val;
+	sdhci_write32(&host->sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET, val);
+
+	sdhci_write32(&host->sdhci, ESDHC_DMA_SYSCTL,
+		      ESDHC_SYSCTL_DMA_SNOOP | ESDHC_SYSCTL_PERIPHERAL_CLK_SEL);
+
+	ret = esdhc_read_blocks(host, adr, size);
+	if (ret) {
+		pr_err("%s: reading blocks failed with: %d\n", __func__, ret);
+		return ret;
+	}
+
+	sync_caches_for_execution();
+
+	return 0;
+}
 
 /*
  * The image on the SD card starts at 0x1000. We reserved 128KiB for the PBL,
@@ -319,7 +355,6 @@ int imx8mn_esdhc_load_image(int instance, void *bl33)
 int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long r2)
 {
 	int ret;
-	uint32_t val;
 	struct esdhc_soc_data data = {
 		.flags = ESDHC_FLAG_MULTIBLK_NO_INT | ESDHC_FLAG_BIGENDIAN,
 	};
@@ -327,33 +362,14 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 		.sdhci.base = IOMEM(0x01560000),
 		.socdata = &data,
 	};
-	unsigned long sdram = 0x80000000;
+	void *sdram = (void *)0x80000000;
+	unsigned long size = ALIGN(barebox_image_size + LS1046A_SD_IMAGE_OFFSET, 512);
 	void (*barebox)(unsigned long, unsigned long, unsigned long) =
-		(void *)(sdram + LS1046A_SD_IMAGE_OFFSET);
+		(sdram + LS1046A_SD_IMAGE_OFFSET);
 
-	esdhc_populate_sdhci(&host);
-	sdhci_write32(&host.sdhci, IMX_SDHCI_WML, 0);
-
-	/*
-	 * The ROM leaves us here with a clock frequency of around 400kHz. Speed
-	 * this up a bit. FIXME: The resulting frequency has not yet been verified
-	 * to work on all cards.
-	 */
-	val = sdhci_read32(&host.sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
-	val &= ~0x0000fff0;
-	val |= (8 << 8) | (3 << 4);
-	sdhci_write32(&host.sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET, val);
-
-	sdhci_write32(&host.sdhci, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
-
-	ret = esdhc_read_blocks(&host, (void *)sdram,
-			ALIGN(barebox_image_size + LS1046A_SD_IMAGE_OFFSET, 512));
-	if (ret) {
-		pr_err("%s: reading blocks failed with: %d\n", __func__, ret);
+	ret = layerscape_esdhc_load_image(&host, sdram, size, (8 << 8) | (3 << 4));
+	if (ret)
 		return ret;
-	}
-
-	sync_caches_for_execution();
 
 	printf("Starting barebox\n");
 
@@ -361,4 +377,54 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 
 	return -EINVAL;
 }
+
+static int ls1028a_esdhc_start_image(void __iomem *base, struct dram_regions_info *dram_info)
+{
+	struct esdhc_soc_data data = {
+		.flags = ESDHC_FLAG_MULTIBLK_NO_INT,
+	};
+	struct fsl_esdhc_host host = {
+		.sdhci.base = base,
+		.socdata = &data,
+	};
+	void *sdram = (void *)0x80000000;
+	void (*bl31)(void) = (void *)LS1028A_TFA_RESERVED_START;
+	size_t bl31_size;
+	void *bl31_image;
+	struct bl2_to_bl31_params_mem_v2 *params;
+	unsigned long size = ALIGN(barebox_image_size + LS1046A_SD_IMAGE_OFFSET, 512);
+	void (*barebox)(unsigned long, unsigned long, unsigned long) =
+		(sdram + LS1046A_SD_IMAGE_OFFSET);
+	int ret;
+
+	ret = layerscape_esdhc_load_image(&host, sdram, size, 8 << 4);
+	if (ret)
+		return ret;
+
+	get_builtin_firmware_ext(ls1028a_bl31_bin, barebox, &bl31_image, &bl31_size);
+	memcpy(bl31, bl31_image, bl31_size);
+
+	/* Setup an initial stack for EL2 */
+	asm volatile("msr sp_el2, %0" : : "r" ((unsigned long)barebox - 16) : "cc");
+
+	params = bl2_plat_get_bl31_params_v2(0, (uintptr_t)barebox, 0);
+	params->bl31_ep_info.args.arg3 = (unsigned long)dram_info;
+
+	printf("Starting bl31\n");
+
+	bl31_entry_v2((uintptr_t)bl31, &params->bl_params, NULL);
+
+	return -EINVAL;
+}
+
+int ls1028a_esdhc1_start_image(struct dram_regions_info *dram_info)
+{
+	return ls1028a_esdhc_start_image(IOMEM(0x2140000), dram_info);
+}
+
+int ls1028a_esdhc2_start_image(struct dram_regions_info *dram_info)
+{
+	return ls1028a_esdhc_start_image(IOMEM(0x2150000), dram_info);
+}
+
 #endif

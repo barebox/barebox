@@ -1347,7 +1347,12 @@ static int fman_of_fixup(struct device_node *root, void *context)
 	struct device_node *child, *child_bb;
 
 	fman_bb = of_find_compatible_node(NULL, NULL, "fsl,fman");
+	if (!fman_bb)
+		return 0;
+
 	fman = of_find_compatible_node(root, NULL, "fsl,fman");
+	if (!fman)
+		return 0;
 
 	/*
 	 * The dts files in the Linux tree have all network interfaces

@@ -90,4 +90,7 @@ config FIRMWARE_CCBV2_OPTEE
 	depends on MACH_WEBASTO_CCBV2 && PBL_OPTEE
 	default y
 
+config FIRMWARE_LS1028A_ATF
+	bool
+
 endmenu

@@ -209,7 +209,7 @@ static noinline __noreturn void ls1046ardb_r_entry(unsigned long memsize)
 		goto err;
 	}
 
-	memsize = fsl_ddr_sdram(&ls1046a_info);
+	memsize = fsl_ddr_sdram(&ls1046a_info, false);
 
 	ls1046a_errata_post_ddr();
 

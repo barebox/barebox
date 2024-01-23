@@ -21,7 +21,7 @@
  * Dividing the initialization to two steps to deassert DDR reset signal
  * to comply with JEDEC specs for RDIMMs.
  */
-void fsl_ddr_set_memctl_regs(struct fsl_ddr_controller *c, int step)
+void fsl_ddr_set_memctl_regs(struct fsl_ddr_controller *c, int step, bool little_endian)
 {
 	struct ccsr_ddr __iomem *ddr = c->base;
 	const fsl_ddr_cfg_regs_t *regs = &c->fsl_ddr_config_reg;
@@ -29,6 +29,11 @@ void fsl_ddr_set_memctl_regs(struct fsl_ddr_controller *c, int step)
 	u32 temp_sdram_cfg;
 	u32 total_gb_size_per_controller;
 	int timeout;
+
+	if (little_endian)
+		ddr_endianess = DDR_ENDIANESS_LE;
+	else
+		ddr_endianess = DDR_ENDIANESS_BE;
 
 	if (step == 2)
 		goto step2;

@@ -6,6 +6,8 @@
 #ifndef __ARM_PSCI_H__
 #define __ARM_PSCI_H__
 
+struct device_node;
+
 #define ARM_PSCI_VER(major, minor)	(((major) << 16) | (minor))
 #define ARM_PSCI_VER_1_0		ARM_PSCI_VER(1,0)
 #define ARM_PSCI_VER_0_2		ARM_PSCI_VER(0,2)

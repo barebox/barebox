@@ -14,8 +14,14 @@
 #define ATF_PARAM_EP		0x01
 #define ATF_PARAM_IMAGE_BINARY	0x02
 #define ATF_PARAM_BL31		0x03
+#define ATF_PARAM_BL_PARAMS	0x05
 
 #define ATF_VERSION_1	0x01
+#define ATF_VERSION_2	0x02
+
+#define ATF_BL31_IMAGE_ID	0x03
+#define ATF_BL32_IMAGE_ID	0x04
+#define ATF_BL33_IMAGE_ID	0x05
 
 #define ATF_EP_SECURE	0x0
 #define ATF_EP_NON_SECURE	0x1
@@ -157,6 +163,40 @@ struct bl31_params {
 
 void bl31_entry(uintptr_t bl31_entry, uintptr_t bl32_entry,
 		uintptr_t bl33_entry, uintptr_t fdt_addr);
+
+/* BL image node in the BL image execution sequence */
+struct bl_params_node {
+	unsigned int image_id;
+	struct atf_image_info *image_info;
+	struct entry_point_info *ep_info;
+	struct bl_params_node *next_params_info;
+};
+
+/*
+ * BL image head node in the BL image execution sequence
+ * It is also used to pass information to next BL image.
+ */
+struct bl_params {
+	struct param_header h;
+	struct bl_params_node *head;
+};
+
+struct bl2_to_bl31_params_mem_v2 {
+	struct bl_params bl_params;
+	struct bl_params_node bl31_params_node;
+	struct bl_params_node bl32_params_node;
+	struct bl_params_node bl33_params_node;
+	struct atf_image_info bl31_image_info;
+	struct atf_image_info bl32_image_info;
+	struct atf_image_info bl33_image_info;
+	struct entry_point_info bl31_ep_info;
+	struct entry_point_info bl32_ep_info;
+	struct entry_point_info bl33_ep_info;
+};
+
+struct bl2_to_bl31_params_mem_v2 *bl2_plat_get_bl31_params_v2(uintptr_t bl32_entry,
+					uintptr_t bl33_entry, uintptr_t fdt_addr);
+void bl31_entry_v2(uintptr_t bl31_entry, struct bl_params *params, void *fdt_addr);
 
 #endif /*__ASSEMBLY__ */
 

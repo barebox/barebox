@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+/dts-v1/;
+
+#include <arm64/freescale/fsl-ls1028a-rdb.dts>
+#include "fsl-ls1028a.dtsi"
+
+/ {
+	chosen {
+		environment-sd {
+			status = "disabled";
+			compatible = "barebox,environment";
+			device-path = &part_env_sd;
+		};
+
+		environment-emmc {
+			status = "disabled";
+			compatible = "barebox,environment";
+			device-path = &part_env_emmc;
+		};
+	};
+
+	memory@80000000 {
+		/* Upstream dts has size 4GiB here which is wrong */
+		reg = <0x0 0x80000000 0x0 0x80000000>;
+	};
+};
+
+/* SD */
+&esdhc {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@1000 {
+		label = "barebox";
+		reg = <0x1000 0x1df000>;
+	};
+
+	part_env_sd: partition@1e0000 {
+		label = "barebox-environment";
+		reg = <0x1e0000 0x20000>;
+	};
+};
+
+/* eMMC */
+&esdhc1 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@1000 {
+		label = "barebox";
+		reg = <0x1000 0x1df000>;
+	};
+
+	part_env_emmc: partition@1e0000 {
+		label = "barebox-environment";
+		reg = <0x1e0000 0x20000>;
+	};
+};

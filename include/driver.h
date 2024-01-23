@@ -27,6 +27,12 @@ struct platform_device_id {
 	unsigned long driver_data;
 };
 
+enum dev_dma_coherence {
+	DEV_DMA_COHERENCE_DEFAULT = 0,
+	DEV_DMA_COHERENT,
+	DEV_DMA_NON_COHERENT,
+};
+
 /** @brief Describes a particular device present in the system */
 struct device {
 	/*! This member (and 'type' described below) is used to match
@@ -46,6 +52,8 @@ struct device {
 	 * will show up under /dev/ as the device's name. Usually this is
 	 * something like eth0 or nor0. */
 	int id;
+
+	enum dev_dma_coherence dma_coherent;
 
 	struct resource *resource;
 	int num_resources;
@@ -722,6 +730,22 @@ struct device *device_find_child(struct device *parent, void *data,
 static inline struct device_node *dev_of_node(struct device *dev)
 {
 	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->of_node : NULL;
+}
+
+static inline bool dev_is_dma_coherent(struct device *dev)
+{
+	if (dev) {
+		switch (dev->dma_coherent) {
+		case DEV_DMA_NON_COHERENT:
+			return false;
+		case DEV_DMA_COHERENT:
+			return true;
+		case DEV_DMA_COHERENCE_DEFAULT:
+			break;
+		}
+	}
+
+	return IS_ENABLED(CONFIG_ARCH_DMA_DEFAULT_COHERENT);
 }
 
 static inline void *dev_get_priv(const struct device *dev)

@@ -24,6 +24,7 @@ FW_BL31="
 	firmware/imx8mq-bl31.bin
 	firmware/rk3568-bl31.bin
 	firmware/rk3588-bl31.bin
+	firmware/ls1028a-bl31.bin
 "
 
 FW_ROCKCHIP_SDRAM_INIT="

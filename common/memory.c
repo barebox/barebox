@@ -229,8 +229,8 @@ struct resource *reserve_sdram_region(const char *name, resource_size_t start,
 	}
 
 	res = __request_sdram_region(name, IORESOURCE_BUSY, start, size);
-	if (IS_ERR(res))
-		return ERR_CAST(res);
+	if (!res)
+		return NULL;
 
 	remap_range((void *)start, size, MAP_UNCACHED);
 

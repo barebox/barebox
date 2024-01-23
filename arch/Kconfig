@@ -11,3 +11,10 @@ source "arch/$(SRCARCH)/Kconfig"
 
 config ARCH_HAS_CTRLC
 	bool
+
+#
+# Select this option if the architecture assumes DMA devices are coherent
+# by default.
+#
+config ARCH_DMA_DEFAULT_COHERENT
+        bool

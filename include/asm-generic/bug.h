@@ -62,4 +62,9 @@
 	unlikely(__ret_warn_once);			\
 })
 
+#define ASSERT(expr)  do {				\
+	if (IS_ENABLED(CONFIG_BUG_ON_DATA_CORRUPTION))	\
+		BUG_ON(!(expr));			\
+} while (0)
+
 #endif

@@ -13,30 +13,39 @@ quiet_cmd_lspbl_image = LSPBL-IMG $@
       cmd_lspbl_image = $(CPP) $(lspbl_cfg_cpp_flags) -o $(lspbl-rcw-tmp) $(word 2,$^) ; \
 			$(CPP) $(lspbl_cfg_cpp_flags) -o $(lspbl-pbi-tmp) $(word 3,$^) ; \
 			$(objtree)/scripts/pblimage -o $@ -r $(lspbl-rcw-tmp) \
-			-m $($(patsubst $(obj)/%.pblb,PBL_CODE_SIZE_%,$<)) -p $(lspbl-pbi-tmp) -i $<
+			-c $(2) -m $($(patsubst $(obj)/%.pblb,PBL_CODE_SIZE_%,$<)) -p $(lspbl-pbi-tmp) -i $<
 
 quiet_cmd_lspbl_spi_image = LSPBL-SPI-IMG $@
       cmd_lspbl_spi_image = $(CPP) $(lspbl_cfg_cpp_flags) -o $(lspbl-rcw-tmp) $(word 2,$^) ; \
 			    $(CPP) $(lspbl_cfg_cpp_flags) -o $(lspbl-pbi-tmp) $(word 3,$^) ; \
 			    $(objtree)/scripts/pblimage -o $@ -r $(lspbl-rcw-tmp) -s \
-			    -m $($(patsubst $(obj)/%.pblb,PBL_CODE_SIZE_%,$<)) -p $(lspbl-pbi-tmp) -i $<
+			    -c $(2) -m $($(patsubst $(obj)/%.pblb,PBL_CODE_SIZE_%,$<)) -p $(lspbl-pbi-tmp) -i $<
+
+pbl-$(CONFIG_MACH_LS1028ARDB) += start_ls1028ardb.pbl
+
+$(obj)/barebox-ls1028ardb-sd.image: $(obj)/start_ls1028ardb.pblb \
+		$(board)/ls1028ardb/ls1028ardb_rcw_sd.cfg \
+		$(board)/ls1028ardb/ls1028ardb_pbi.cfg
+	$(call if_changed,lspbl_image,ls1028a)
+
+image-$(CONFIG_MACH_LS1028ARDB) += barebox-ls1028ardb-sd.image
 
 pbl-$(CONFIG_MACH_LS1046ARDB) += start_ls1046ardb.pbl
 
 $(obj)/barebox-ls1046ardb-sd.image: $(obj)/start_ls1046ardb.pblb \
 		$(board)/ls1046ardb/ls1046ardb_rcw_sd.cfg \
 		$(board)/ls1046ardb/ls1046ardb_pbi.cfg
-	$(call if_changed,lspbl_image)
+	$(call if_changed,lspbl_image,ls1046a)
 
 $(obj)/barebox-ls1046ardb-emmc.image: $(obj)/start_ls1046ardb.pblb \
 		$(board)/ls1046ardb/ls1046ardb_rcw_emmc.cfg \
 		$(board)/ls1046ardb/ls1046ardb_pbi.cfg
-	$(call if_changed,lspbl_image)
+	$(call if_changed,lspbl_image,ls1046a)
 
 $(obj)/barebox-ls1046ardb-qspi.image: $(obj)/start_ls1046ardb.pblb \
 		$(board)/ls1046ardb/ls1046ardb_rcw_qspi.cfg \
 		$(board)/ls1046ardb/ls1046ardb_pbi.cfg
-	$(call if_changed,lspbl_spi_image)
+	$(call if_changed,lspbl_spi_image,ls1046a)
 
 image-$(CONFIG_MACH_LS1046ARDB) += barebox-ls1046ardb-sd.image barebox-ls1046ardb-qspi.image \
 	barebox-ls1046ardb-emmc.image
@@ -46,12 +55,12 @@ pbl-$(CONFIG_MACH_TQMLS1046A) += start_tqmls1046a.pbl
 $(obj)/barebox-tqmls1046a-sd.image: $(obj)/start_tqmls1046a.pblb \
 		$(board)/tqmls1046a/tqmls1046a_rcw_sd_3333_5559.cfg \
 		$(board)/tqmls1046a/tqmls1046a_pbi.cfg
-	$(call if_changed,lspbl_image)
+	$(call if_changed,lspbl_image,ls1046a)
 
 $(obj)/barebox-tqmls1046a-qspi.image: $(obj)/start_tqmls1046a.pblb \
 		$(board)/tqmls1046a/tqmls1046a_rcw_qspi_3333_5559.cfg \
 		$(board)/tqmls1046a/tqmls1046a_pbi.cfg
-	$(call if_changed,lspbl_spi_image)
+	$(call if_changed,lspbl_spi_image,ls1046a)
 
 image-$(CONFIG_MACH_TQMLS1046A) += barebox-tqmls1046a-sd.image \
 	barebox-tqmls1046a-qspi.image
@@ -61,6 +70,6 @@ pbl-$(CONFIG_MACH_LS1021AIOT) += start_ls1021aiot.pbl
 $(obj)/barebox-ls1021aiot-qspi.image: $(obj)/start_ls1021aiot.pblb \
 		$(board)/ls1021aiot/ls102xa_rcw_sd_qspi.cfg \
 		$(board)/ls1021aiot/ls102xa_pbi.cfg
-	$(call if_changed,lspbl_spi_image)
+	$(call if_changed,lspbl_spi_image,ls1046a)
 
 image-$(CONFIG_MACH_LS1021AIOT) += barebox-ls1021aiot-qspi.image

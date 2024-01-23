@@ -7,6 +7,7 @@
 #include <mach/layerscape/lowlevel.h>
 #include <soc/fsl/immap_lsch2.h>
 #include <soc/fsl/fsl_immap.h>
+#include <soc/fsl/scfg.h>
 
 enum csu_cslx_access {
 	CSU_NS_SUP_R = 0x08,
@@ -222,16 +223,19 @@ void ls1046a_init_lowlevel(void)
 	struct ccsr_cci400 __iomem *cci = IOMEM(LSCH2_CCI400_ADDR);
 	struct ccsr_scfg *scfg = IOMEM(LSCH2_SCFG_ADDR);
 
+	scfg_init(SCFG_ENDIANESS_BIG);
 	init_csu();
 	ls1046a_init_l2_latency();
 	set_cntfrq(25000000);
 	syscnt_enable(IOMEM(LSCH2_SYS_COUNTER_ADDR));
 
-	/* Make SEC reads and writes snoopable */
+	/* Make DMA master reads and writes snoopable */
 	setbits_be32(&scfg->snpcnfgcr, SCFG_SNPCNFGCR_SECRDSNP |
-		SCFG_SNPCNFGCR_SECWRSNP |
-		SCFG_SNPCNFGCR_SATARDSNP |
-		SCFG_SNPCNFGCR_SATAWRSNP);
+		SCFG_SNPCNFGCR_SECWRSNP | SCFG_SNPCNFGCR_USB1RDSNP |
+		SCFG_SNPCNFGCR_USB1WRSNP | SCFG_SNPCNFGCR_USB2RDSNP |
+		SCFG_SNPCNFGCR_USB2WRSNP | SCFG_SNPCNFGCR_USB3RDSNP |
+		SCFG_SNPCNFGCR_USB3WRSNP | SCFG_SNPCNFGCR_SATARDSNP |
+		SCFG_SNPCNFGCR_SATAWRSNP | SCFG_SNPCNFGCR_EDMASNP);
 
 	/*
 	 * Enable snoop requests and DVM message requests for

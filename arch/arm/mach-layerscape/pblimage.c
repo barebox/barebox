@@ -7,6 +7,7 @@
 #include <init.h>
 #include <memory.h>
 #include <linux/sizes.h>
+#include <mach/layerscape/layerscape.h>
 
 #define BAREBOX_STAGE2_OFFSET	SZ_128K
 
@@ -50,11 +51,8 @@ static struct image_handler image_handler_layerscape_qspi_pbl_image = {
 	.filetype = filetype_layerscape_qspi_image,
 };
 
-static int layerscape_register_pbl_image_handler(void)
+void layerscape_register_pbl_image_handler(void)
 {
 	register_image_handler(&image_handler_layerscape_pbl_image);
 	register_image_handler(&image_handler_layerscape_qspi_pbl_image);
-
-	return 0;
 }
-late_initcall(layerscape_register_pbl_image_handler);

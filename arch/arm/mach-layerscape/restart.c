@@ -5,6 +5,7 @@
 #include <asm/io.h>
 #include <soc/fsl/immap_lsch2.h>
 #include <soc/fsl/fsl_immap.h>
+#include <mach/layerscape/layerscape.h>
 
 static void ls102xa_restart(struct restart_handler *rst)
 {
@@ -18,13 +19,7 @@ static void ls102xa_restart(struct restart_handler *rst)
 	hang();
 }
 
-static int restart_register_feature(void)
+void ls1021a_restart_register_feature(void)
 {
-	if (!of_machine_is_compatible("fsl,ls1021a"))
-		return 0;
-
 	restart_handler_register_fn("soc-reset", ls102xa_restart);
-
-	return 0;
 }
-coredevice_initcall(restart_register_feature);

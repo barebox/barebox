@@ -14,6 +14,7 @@
 #include <mach/layerscape/fsl_epu.h>
 #include <soc/fsl/immap_lsch2.h>
 #include <soc/fsl/fsl_immap.h>
+#include <soc/fsl/scfg.h>
 
 void udelay(unsigned long usecs)
 {
@@ -299,6 +300,11 @@ static void fsl_epu_clean(void *epu_base)
 		out_be32(epu_base + offset, 0);
 }
 
+#define TIMER_COMP_VAL			0xffffffffffffffffull
+#define ARCH_TIMER_CTRL_ENABLE		(1 << 0)
+#define SYS_COUNTER_CTRL_ENABLE		(1 << 24)
+#define SCFG_QSPI_CLKSEL		0x50100000
+
 /* ls102xa_init_lowlevel
  * Based on ls1046 and U-boot ls102xa arch_cpu_init
  */
@@ -315,6 +321,7 @@ void ls102xa_init_lowlevel(void)
 	cortex_a7_lowlevel_init();
 	arm_cpu_lowlevel_init();
 
+	scfg_init(SCFG_ENDIANESS_BIG);
 	init_csu();
 
 	writel(SYS_COUNTER_CTRL_ENABLE, LSCH2_SYS_COUNTER_ADDR);

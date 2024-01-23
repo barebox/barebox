@@ -26,13 +26,12 @@ enum of_binding_name {
 
 struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 {
+	struct devfs_partition partinfo = {};
 	const char *partname;
 	char *filename;
 	struct cdev *new;
 	const __be32 *reg;
-	u64 offset, size;
 	int len;
-	unsigned long flags = 0;
 	int na, ns;
 
 	if (!node)
@@ -50,8 +49,8 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 		return NULL;
 	}
 
-	offset = of_read_number(reg, na);
-	size = of_read_number(reg + na, ns);
+	partinfo.offset = of_read_number(reg, na);
+	partinfo.size = of_read_number(reg + na, ns);
 
 	partname = of_get_property(node, "label", NULL);
 	if (!partname)
@@ -59,14 +58,15 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	if (!partname)
 		return NULL;
 
-	debug("add partition: %s.%s 0x%08llx 0x%08llx\n", cdev->name, partname, offset, size);
+	debug("add partition: %s.%s 0x%08llx 0x%08llx\n", cdev->name, partname,
+	      partinfo.offset, partinfo.size);
 
 	if (of_get_property(node, "read-only", NULL))
-		flags = DEVFS_PARTITION_READONLY;
+		partinfo.flags = DEVFS_PARTITION_READONLY;
 
-	filename = basprintf("%s.%s", cdev->name, partname);
+	partinfo.name = filename = basprintf("%s.%s", cdev->name, partname);
 
-	new = devfs_add_partition(cdev->name, offset, size, flags, filename);
+	new = cdevfs_add_partition(cdev, &partinfo);
 	if (IS_ERR(new)) {
 		pr_err("Adding partition %s failed: %pe\n", filename, new);
 		new = NULL;

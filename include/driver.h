@@ -631,10 +631,6 @@ cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, guid_t *typeuuid)
 	return ERR_PTR(-ENOENT);
 }
 
-struct cdev *devfs_add_partition(const char *devname, loff_t offset,
-		loff_t size, unsigned int flags, const char *name);
-int devfs_del_partition(const char *name);
-
 #ifdef CONFIG_FS_AUTOMOUNT
 void cdev_create_default_automount(struct cdev *cdev);
 #else
@@ -680,6 +676,14 @@ struct devfs_partition {
  */
 int devfs_create_partitions(const char *devname,
 		const struct devfs_partition partinfo[]);
+
+struct cdev *devfs_add_partition(const char *devname, loff_t offset,
+		loff_t size, unsigned int flags, const char *name);
+int devfs_del_partition(const char *name);
+
+struct cdev *cdevfs_add_partition(struct cdev *cdev,
+		const struct devfs_partition *partinfo);
+int cdevfs_del_partition(struct cdev *cdev);
 
 #define of_match_ptr(compat) \
 	IS_ENABLED(CONFIG_OFDEVICE) ? (compat) : NULL

@@ -150,7 +150,7 @@ free_memory:
 	}
 
 delete_devfs_partition:
-	devfs_del_partition(partname);
+	cdevfs_del_partition(partition);
 
 	return result;
 }

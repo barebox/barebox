@@ -20,6 +20,7 @@
 #include <lzo.h>
 #include <linux/xz.h>
 #include <linux/decompress/unlz4.h>
+#include <linux/decompress/unzstd.h>
 #include <errno.h>
 #include <filetype.h>
 #include <malloc.h>
@@ -120,6 +121,11 @@ int uncompress(unsigned char *inbuf, long len,
 #ifdef CONFIG_XZ_DECOMPRESS
 	case filetype_xz_compressed:
 		compfn = decompress_unxz;
+		break;
+#endif
+#ifdef CONFIG_ZSTD_DECOMPRESS
+	case filetype_zstd_compressed:
+		compfn = unzstd;
 		break;
 #endif
 	default:

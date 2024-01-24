@@ -168,12 +168,13 @@ The Fastboot gadget supports the following commands:
 ``fastboot flash`` additionally supports image types UBI and Barebox. For UBI
 Images and a MTD device as target, ubiformat is called. For a Barebox image
 with an available barebox update handler for the fastboot exported device, the
-barebox_update is called.
+barebox_update is called (exported as ``bbu-<update_handler_name>`` fastboot
+partition).
 
 The barebox Fastboot gadget supports the following non standard extensions:
 
 - ``fastboot getvar all``
-  Shows a list of all variables
+  Shows a list of all variables, including exported partitions
 - ``fastboot oem getenv <varname>``
   Shows a barebox environment variable
 - ``fastboot oem setenv <varname>=<value>``

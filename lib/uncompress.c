@@ -97,6 +97,8 @@ int uncompress(unsigned char *inbuf, long len,
 		ft = file_detect_type(uncompress_buf, 32);
 	}
 
+	pr_debug("Filetype detected: %s\n", file_type_to_string(ft));
+
 	switch (ft) {
 #ifdef CONFIG_BZLIB
 	case filetype_bzip2:

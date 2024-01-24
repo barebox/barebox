@@ -60,6 +60,7 @@ enum filetype {
 	filetype_fip,
 	filetype_qemu_fw_cfg,
 	filetype_nxp_fspi_image,
+	filetype_zstd_compressed,
 	filetype_max,
 };
 
@@ -84,6 +85,7 @@ static inline bool file_is_compressed_file(enum filetype ft)
 	case filetype_gzip:
 	case filetype_bzip2:
 	case filetype_xz_compressed:
+	case filetype_zstd_compressed:
 		return true;
 	default:
 		return false;

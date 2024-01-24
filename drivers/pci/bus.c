@@ -114,6 +114,9 @@ int pci_register_device(struct pci_dev *pdev)
 	struct device *dev = &pdev->dev;
 	int ret;
 
+	if (!of_device_is_available(pdev->dev.of_node))
+		return 0;
+
 	dev_set_name(dev, "pci-%04x:%04x.", pdev->vendor, pdev->device);
 	dev->bus = &pci_bus;
 	dev->id = DEVICE_ID_DYNAMIC;

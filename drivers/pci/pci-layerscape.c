@@ -551,6 +551,9 @@ static void ls_pcie_fixup(struct pci_dev *pcidev)
 	uint32_t devid;
 	int base_bus_num = 0;
 
+	if (!of_match_device(ls_pcie_of_match, host->parent))
+		return;
+
 	stream_id = ls_pcie_next_streamid(lspcie);
 	index = ls_pcie_next_lut_index(lspcie);
 

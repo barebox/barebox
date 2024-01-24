@@ -4,6 +4,7 @@
 #include <common.h>
 #include <linux/sizes.h>
 #include <linux/pci.h>
+#include <linux/bitfield.h>
 
 static unsigned int pci_scan_bus(struct pci_bus *bus);
 
@@ -152,6 +153,189 @@ static u32 pci_size(u32 base, u32 maxbase, u32 mask)
 	return size + 1;
 }
 
+static unsigned long pci_ea_flags(struct pci_dev *dev, u8 prop)
+{
+	unsigned long flags = IORESOURCE_PCI_FIXED;
+
+	switch (prop) {
+	case PCI_EA_P_MEM:
+	case PCI_EA_P_VF_MEM:
+		flags |= IORESOURCE_MEM;
+		break;
+	case PCI_EA_P_MEM_PREFETCH:
+	case PCI_EA_P_VF_MEM_PREFETCH:
+		flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH;
+		break;
+	case PCI_EA_P_IO:
+		flags |= IORESOURCE_IO;
+		break;
+	default:
+		return 0;
+	}
+
+	return flags;
+}
+
+static struct resource *pci_ea_get_resource(struct pci_dev *dev, u8 bei,
+					    u8 prop)
+{
+	if (bei <= PCI_EA_BEI_BAR5 && prop <= PCI_EA_P_IO)
+		return &dev->resource[bei];
+	else if (bei == PCI_EA_BEI_ROM)
+		return &dev->resource[PCI_ROM_RESOURCE];
+	else
+		return NULL;
+}
+
+/* Read an Enhanced Allocation (EA) entry */
+static int pci_ea_read(struct pci_dev *dev, int offset)
+{
+	struct resource *res;
+	int ent_size, ent_offset = offset;
+	resource_size_t start, end;
+	unsigned long flags;
+	u32 dw0, bei, base, max_offset;
+	u8 prop;
+	bool support_64 = (sizeof(resource_size_t) >= 8);
+
+	pci_read_config_dword(dev, ent_offset, &dw0);
+	ent_offset += 4;
+
+	/* Entry size field indicates DWORDs after 1st */
+	ent_size = (FIELD_GET(PCI_EA_ES, dw0) + 1) << 2;
+
+	if (!(dw0 & PCI_EA_ENABLE)) /* Entry not enabled */
+		goto out;
+
+	bei = FIELD_GET(PCI_EA_BEI, dw0);
+	prop = FIELD_GET(PCI_EA_PP, dw0);
+
+	/*
+	 * If the Property is in the reserved range, try the Secondary
+	 * Property instead.
+	 */
+	if (prop > PCI_EA_P_BRIDGE_IO && prop < PCI_EA_P_MEM_RESERVED)
+		prop = FIELD_GET(PCI_EA_SP, dw0);
+	if (prop > PCI_EA_P_BRIDGE_IO)
+		goto out;
+
+	res = pci_ea_get_resource(dev, bei, prop);
+	if (!res) {
+		dev_dbg(&dev->dev, "Unsupported EA entry BEI: %u\n", bei);
+		goto out;
+	}
+
+	flags = pci_ea_flags(dev, prop);
+	if (!flags) {
+		dev_err(&dev->dev, "Unsupported EA properties: %#x\n", prop);
+		goto out;
+	}
+
+	/* Read Base */
+	pci_read_config_dword(dev, ent_offset, &base);
+	start = (base & PCI_EA_FIELD_MASK);
+	ent_offset += 4;
+
+	/* Read MaxOffset */
+	pci_read_config_dword(dev, ent_offset, &max_offset);
+	ent_offset += 4;
+
+	/* Read Base MSBs (if 64-bit entry) */
+	if (base & PCI_EA_IS_64) {
+		u32 base_upper;
+
+		pci_read_config_dword(dev, ent_offset, &base_upper);
+		ent_offset += 4;
+
+		flags |= IORESOURCE_MEM_64;
+
+		/* entry starts above 32-bit boundary, can't use */
+		if (!support_64 && base_upper)
+			goto out;
+
+		if (support_64)
+			start |= ((u64)base_upper << 32);
+	}
+
+	end = start + (max_offset | 0x03);
+
+	/* Read MaxOffset MSBs (if 64-bit entry) */
+	if (max_offset & PCI_EA_IS_64) {
+		u32 max_offset_upper;
+
+		pci_read_config_dword(dev, ent_offset, &max_offset_upper);
+		ent_offset += 4;
+
+		flags |= IORESOURCE_MEM_64;
+
+		/* entry too big, can't use */
+		if (!support_64 && max_offset_upper)
+			goto out;
+
+		if (support_64)
+			end += ((u64)max_offset_upper << 32);
+	}
+
+	if (end < start) {
+		dev_err(&dev->dev, "EA Entry crosses address boundary\n");
+		goto out;
+	}
+
+	if (ent_size != ent_offset - offset) {
+		dev_err(&dev->dev, "EA Entry Size (%d) does not match length read (%d)\n",
+			ent_size, ent_offset - offset);
+		goto out;
+	}
+
+	res->start = start;
+	res->end = end;
+	res->flags = flags;
+
+	if (bei <= PCI_EA_BEI_BAR5)
+		dev_dbg(&dev->dev, "BAR %d: %pR (from Enhanced Allocation, properties %#02x)\n",
+			   bei, res, prop);
+	else if (bei == PCI_EA_BEI_ROM)
+		dev_dbg(&dev->dev, "ROM: %pR (from Enhanced Allocation, properties %#02x)\n",
+			   res, prop);
+	else if (bei >= PCI_EA_BEI_VF_BAR0 && bei <= PCI_EA_BEI_VF_BAR5)
+		dev_dbg(&dev->dev, "VF BAR %d: %pR (from Enhanced Allocation, properties %#02x)\n",
+			   bei - PCI_EA_BEI_VF_BAR0, res, prop);
+	else
+		dev_dbg(&dev->dev, "BEI %d res: %pR (from Enhanced Allocation, properties %#02x)\n",
+			   bei, res, prop);
+
+out:
+	return offset + ent_size;
+}
+
+/* Enhanced Allocation Initialization */
+static void pci_ea_init(struct pci_dev *dev)
+{
+	int ea;
+	u8 num_ent;
+	int offset;
+	int i;
+
+	/* find PCI EA capability in list */
+	ea = pci_find_capability(dev, PCI_CAP_ID_EA);
+	if (!ea)
+		return;
+
+	/* determine the number of entries */
+	pci_bus_read_config_byte(dev->bus, dev->devfn, ea + PCI_EA_NUM_ENT,
+					&num_ent);
+	num_ent &= PCI_EA_NUM_ENT_MASK;
+
+	offset = ea + PCI_EA_FIRST_ENT;
+
+	/* Skip DWORD 2 for type 1 functions */
+	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE)
+		offset += 4;
+
+	/* parse each EA entry */
+	for (i = 0; i < num_ent; ++i)
+		offset = pci_ea_read(dev, offset);
+}
 
 static void setup_device(struct pci_dev *dev, int max_bar)
 {
@@ -250,6 +434,8 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			bar++;
 		}
 	}
+
+	pci_ea_init(dev);
 
 	pci_fixup_device(pci_fixup_header, dev);
 
@@ -367,6 +553,38 @@ pci_of_match_device(struct device *parent, unsigned int devfn)
 	return NULL;
 }
 
+/**
+ * pcie_flr - initiate a PCIe function level reset
+ * @dev:	device to reset
+ *
+ * Initiate a function level reset on @dev.
+ */
+int pci_flr(struct pci_dev *pdev)
+{
+	u16 val;
+	int pcie_off;
+	u32 cap;
+
+	/* look for PCI Express Capability */
+	pcie_off = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+	if (!pcie_off)
+		return -ENOENT;
+
+	/* check FLR capability */
+	pci_read_config_dword(pdev, pcie_off + PCI_EXP_DEVCAP, &cap);
+	if (!(cap & PCI_EXP_DEVCAP_FLR))
+		return -ENOENT;
+
+	pci_read_config_word(pdev, pcie_off + PCI_EXP_DEVCTL, &val);
+	val |= PCI_EXP_DEVCTL_BCR_FLR;
+	pci_write_config_word(pdev, pcie_off + PCI_EXP_DEVCTL, val);
+
+	/* wait 100ms, per PCI spec */
+	mdelay(100);
+
+	return 0;
+}
+
 static unsigned int pci_scan_bus(struct pci_bus *bus)
 {
 	struct pci_dev *dev;
@@ -428,7 +646,7 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 		pr_debug("%02x:%02x [%04x:%04x]\n", bus->number, dev->devfn,
 		    dev->vendor, dev->device);
 
-		switch (hdr_type & 0x7f) {
+		switch (hdr_type & PCI_HEADER_TYPE_MASK) {
 		case PCI_HEADER_TYPE_NORMAL:
 			if (class == PCI_CLASS_BRIDGE_PCI)
 				goto bad;
@@ -642,7 +860,7 @@ u8 pci_find_capability(struct pci_dev *dev, int cap)
 {
 	u8 pos;
 
-	pos = __pci_bus_find_cap_start(dev->bus, dev->devfn, dev->hdr_type);
+	pos = __pci_bus_find_cap_start(dev->bus, dev->devfn, dev->hdr_type & PCI_HEADER_TYPE_MASK);
 	if (pos)
 		pos = __pci_find_next_cap(dev->bus, dev->devfn, pos, cap);
 

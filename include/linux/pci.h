@@ -201,10 +201,6 @@ struct pci_driver {
 
 #define	to_pci_driver(drv) container_of(drv, struct pci_driver, driver)
 
-/* these helpers provide future and backwards compatibility
- * for accessing popular PCI BAR info */
-#define pci_resource_start(dev, bar)    ((dev)->resource[(bar)].start)
-
 /**
  * DEFINE_PCI_DEVICE_TABLE - macro used to describe a pci device table
  * @_table: device table name
@@ -332,6 +328,8 @@ u8 pci_find_next_capability(struct pci_dev *dev, u8 pos, int cap);
 u8 pci_find_capability(struct pci_dev *dev, int cap);
 
 extern void __iomem *pci_iomap(struct pci_dev *dev, int bar);
+
+int pci_flr(struct pci_dev *pdev);
 
 /*
  * The world is not perfect and supplies us with broken PCI devices.

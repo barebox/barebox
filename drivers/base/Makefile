@@ -7,3 +7,4 @@ obj-y	+= regmap/
 
 obj-$(CONFIG_PM_GENERIC_DOMAINS) += power.o
 obj-$(CONFIG_FEATURE_CONTROLLER) += featctrl.o
+obj-$(CONFIG_SOC_BUS) += soc.o

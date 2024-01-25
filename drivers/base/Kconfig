@@ -6,4 +6,7 @@ config PM_GENERIC_DOMAINS
 config FEATURE_CONTROLLER
 	bool "Feature controller support" if COMPILE_TEST || SANDBOX
 
+config SOC_BUS
+	bool
+
 source "drivers/base/regmap/Kconfig"

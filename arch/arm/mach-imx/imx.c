@@ -95,6 +95,10 @@ static int imx_init(void)
 			return 0;
 	}
 
+	/*
+	 * Don't add new SoCs to this list, instead use the new
+	 * soc framework (see soc-imx8m.c).
+	 */
 	if (cpu_is_mx1())
 		ret = imx1_init();
 	else if (cpu_is_mx21())
@@ -118,13 +122,13 @@ static int imx_init(void)
 	else if (cpu_is_mx7())
 		ret = imx7_init();
 	else if (cpu_is_mx8mm())
-		ret = imx8mm_init();
+		ret = 0;
 	else if (cpu_is_mx8mn())
-		ret = imx8mn_init();
+		ret = 0;
 	else if (cpu_is_mx8mp())
-		ret = imx8mp_init();
+		ret = 0;
 	else if (cpu_is_mx8mq())
-		ret = imx8mq_init();
+		ret = 0;
 	else if (cpu_is_mx93())
 		ret = imx93_init();
 	else if (cpu_is_vf610())

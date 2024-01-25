@@ -2,28 +2,16 @@
 
 #include <init.h>
 #include <common.h>
-#include <asm/optee.h>
 #include <linux/sizes.h>
 #include <io.h>
-#include <pm_domain.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
-#include <asm-generic/memory_layout.h>
 #include <mach/imx/generic.h>
-#include <mach/imx/revision.h>
-#include <mach/imx/imx8mq.h>
 #include <mach/imx/imx8m-ccm-regs.h>
-#include <mach/imx/reset-reason.h>
-#include <mach/imx/ocotp.h>
-#include <mach/imx/imx8mp-regs.h>
-#include <mach/imx/imx8mq-regs.h>
-#include <mach/imx/scratch.h>
-#include <mach/imx/tzasc.h>
 #include <soc/imx8m/clk-early.h>
-#include <tee/optee.h>
 
+#include <linux/bitfield.h>
 #include <linux/iopoll.h>
-#include <linux/arm-smccc.h>
 
 #define IMX_SIP_BUILDINFO			0xC2000003
 #define IMX_SIP_BUILDINFO_GET_COMMITHASH	0x00
@@ -49,129 +37,6 @@ void imx8m_ccgr_clock_disable(int index)
 
 	writel(IMX8M_CCM_CCGR_SETTINGn_NEEDED(0),
 	       ccm + IMX8M_CCM_CCGRn_CLR(index));
-}
-
-u64 imx8m_uid(void)
-{
-	return imx_ocotp_read_uid(IOMEM(MX8M_OCOTP_BASE_ADDR));
-}
-
-static int imx8m_init(const char *cputypestr)
-{
-	void __iomem *src = IOMEM(MX8M_SRC_BASE_ADDR);
-
-	genpd_activate();
-
-	/*
-	 * Reset reasons seem to be identical to that of i.MX7
-	 */
-	imx_set_reset_reason(src + IMX7_SRC_SRSR, imx7_reset_reasons);
-	pr_info("%s unique ID: %llx\n", cputypestr, imx8m_uid());
-
-	if (IS_ENABLED(CONFIG_PBL_OPTEE) && tzc380_is_enabled()) {
-		static struct of_optee_fixup_data optee_fixup_data = {
-			.shm_size = OPTEE_SHM_SIZE,
-			.method = "smc",
-		};
-
-		optee_set_membase(imx_scratch_get_optee_hdr());
-		of_optee_fixup(of_get_root_node(), &optee_fixup_data);
-		of_register_fixup(of_optee_fixup, &optee_fixup_data);
-	}
-
-	return 0;
-}
-
-int imx8mm_init(void)
-{
-	void __iomem *anatop = IOMEM(MX8M_ANATOP_BASE_ADDR);
-	uint32_t type = FIELD_GET(DIGPROG_MAJOR,
-				  readl(anatop + MX8MM_ANATOP_DIGPROG));
-	const char *cputypestr;
-
-	imx8mm_boot_save_loc();
-
-	switch (type) {
-	case IMX8M_CPUTYPE_IMX8MM:
-		cputypestr = "i.MX8MM";
-		break;
-	default:
-		cputypestr = "unknown i.MX8M";
-		break;
-	};
-
-	imx_set_silicon_revision(cputypestr, imx8mm_cpu_revision());
-
-	return imx8m_init(cputypestr);
-}
-
-int imx8mn_init(void)
-{
-	void __iomem *anatop = IOMEM(MX8M_ANATOP_BASE_ADDR);
-	uint32_t type = FIELD_GET(DIGPROG_MAJOR,
-				  readl(anatop + MX8MN_ANATOP_DIGPROG));
-	const char *cputypestr;
-
-	imx8mn_boot_save_loc();
-
-	switch (type) {
-	case IMX8M_CPUTYPE_IMX8MN:
-		cputypestr = "i.MX8MN";
-		break;
-	default:
-		cputypestr = "unknown i.MX8M";
-		break;
-	};
-
-	imx_set_silicon_revision(cputypestr, imx8mn_cpu_revision());
-
-	return imx8m_init(cputypestr);
-}
-
-int imx8mp_init(void)
-{
-	void __iomem *anatop = IOMEM(MX8MP_ANATOP_BASE_ADDR);
-	uint32_t type = FIELD_GET(DIGPROG_MAJOR,
-				  readl(anatop + MX8MP_ANATOP_DIGPROG));
-	const char *cputypestr;
-
-	imx8mp_boot_save_loc();
-
-	switch (type) {
-	case IMX8M_CPUTYPE_IMX8MP:
-		cputypestr = "i.MX8MP";
-		break;
-	default:
-		cputypestr = "unknown i.MX8M";
-		break;
-	};
-
-	imx_set_silicon_revision(cputypestr, imx8mp_cpu_revision());
-
-	return imx8m_init(cputypestr);
-}
-
-int imx8mq_init(void)
-{
-	void __iomem *anatop = IOMEM(MX8M_ANATOP_BASE_ADDR);
-	uint32_t type = FIELD_GET(DIGPROG_MAJOR,
-				  readl(anatop + MX8MQ_ANATOP_DIGPROG));
-	const char *cputypestr;
-
-	imx8mq_boot_save_loc();
-
-	switch (type) {
-	case IMX8M_CPUTYPE_IMX8MQ:
-		cputypestr = "i.MX8MQ";
-		break;
-	default:
-		cputypestr = "unknown i.MX8M";
-		break;
-	};
-
-	imx_set_silicon_revision(cputypestr, imx8mq_cpu_revision());
-
-	return imx8m_init(cputypestr);
 }
 
 #define INTPLL_DIV20_CLKE_MASK                  BIT(27)

@@ -68,6 +68,8 @@ SECTIONS
     PROVIDE (etext = .);
     _sdata = .;
 
+   .barebox_imd : { BAREBOX_IMD }
+
    .rodata    :
    {
     *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.rodata*)))

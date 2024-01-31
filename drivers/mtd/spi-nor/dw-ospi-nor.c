@@ -637,7 +637,7 @@ static void dw_spi_write(struct spi_nor *nor, loff_t to,
 	struct dw_spi_nor *dw_spi = nor->priv;
 
 	*retlen = 0;
-	dev_dbg(dw_spi->dev, "write %ld bytes at @0x%llx\n", len, to);
+	dev_dbg(dw_spi->dev, "write %zu bytes at @0x%llx\n", len, to);
 
 	if (dw_spi_is_enhanced(nor->write_proto)) {
 		if (dw_spi_prep_enhanced(nor, nor->write_proto, SPI_TMOD_TO))
@@ -673,7 +673,7 @@ static int dw_spi_read(struct spi_nor *nor, loff_t from,
 	size_t chunk;
 
 	*retlen = 0;
-	dev_dbg(nor->dev, "read %ld bytes from @0x%llx\n", len, from);
+	dev_dbg(nor->dev, "read %zu bytes from @0x%llx\n", len, from);
 
 	if (enhanced)
 		ret = dw_spi_prep_enhanced(nor, nor->read_proto, SPI_TMOD_RO);

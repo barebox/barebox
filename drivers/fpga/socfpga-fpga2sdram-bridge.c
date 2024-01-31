@@ -106,8 +106,11 @@ static int alt_fpga_bridge_probe(struct device *dev)
 	if (!priv)
 		return -ENOMEM;
 
-	/* enable all ports for now */
-	priv->mask = ALT_SDR_CTL_FPGAPORTRST_PORTRSTN_MSK;
+	priv->mask = readl(SOCFPGA_SYSMGR_ADDR + SYSMGR_ISWGRP_HANDOFF3);
+	if (!priv->mask) {
+		/* enable all ports if we don't know better */
+		priv->mask = ALT_SDR_CTL_FPGAPORTRST_PORTRSTN_MSK;
+	}
 
 	priv->dev = dev;
 

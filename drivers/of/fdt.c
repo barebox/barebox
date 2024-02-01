@@ -14,6 +14,7 @@
 #include <memory.h>
 #include <linux/sizes.h>
 #include <linux/ctype.h>
+#include <linux/log2.h>
 #include <linux/overflow.h>
 #include <linux/string_helpers.h>
 #include <linux/err.h>
@@ -399,6 +400,9 @@ static int fdt_ensure_space(struct fdt *fdt, int dtsize)
 	if (fdt->dt_size - fdt->dt_nextofs < 1024 + dtsize) {
 		previous = fdt->dt;
 		new_size = fdt->dt_size * 2;
+
+		if (new_size <= dtsize)
+			new_size = roundup_pow_of_two(fdt->dt_size + dtsize);
 
 		fdt->dt = memalign_realloc(previous, fdt->dt_size, new_size);
 		if (!fdt->dt) {

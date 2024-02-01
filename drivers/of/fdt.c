@@ -375,24 +375,38 @@ static void *memalign_realloc(void *orig, size_t oldsize, size_t newsize)
 
 static int fdt_ensure_space(struct fdt *fdt, int dtsize)
 {
+	size_t new_size;
+	void *previous;
+
 	/*
 	 * We assume strings and names have a maximum length of 1024
 	 * whereas properties can be longer. We allocate new memory
 	 * if we have less than 1024 bytes (+ the property size left.
 	 */
 	if (fdt->str_size - fdt->str_nextofs < 1024) {
-		fdt->strings = realloc(fdt->strings, fdt->str_size * 2);
-		if (!fdt->strings)
+		previous = fdt->strings;
+		new_size = fdt->str_size * 2;
+
+		fdt->strings = realloc(previous, new_size);
+		if (!fdt->strings) {
+			free(previous);
 			return -ENOMEM;
-		fdt->str_size *= 2;
+		}
+
+		fdt->str_size = new_size;
 	}
 
 	if (fdt->dt_size - fdt->dt_nextofs < 1024 + dtsize) {
-		fdt->dt = memalign_realloc(fdt->dt, fdt->dt_size,
-				fdt->dt_size * 2);
-		if (!fdt->dt)
+		previous = fdt->dt;
+		new_size = fdt->dt_size * 2;
+
+		fdt->dt = memalign_realloc(previous, fdt->dt_size, new_size);
+		if (!fdt->dt) {
+			free(previous);
 			return -ENOMEM;
-		fdt->dt_size *= 2;
+		}
+
+		fdt->dt_size = new_size;
 	}
 
 	return 0;

@@ -846,7 +846,6 @@ struct param_mac {
 };
 
 int string_to_ethaddr(const char *str, u8 enetaddr[6]);
-void ethaddr_to_string(const u8 enetaddr[6], char *str);
 
 static inline struct param_mac *to_param_mac(struct param_d *p)
 {
@@ -894,7 +893,7 @@ static const char *param_mac_get(struct device *dev, struct param_d *p)
 			return NULL;
 	}
 
-	ethaddr_to_string(pm->mac, p->value);
+	sprintf(p->value, "%pM", pm->mac);
 
 	return p->value;
 }

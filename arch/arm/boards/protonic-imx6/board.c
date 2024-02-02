@@ -200,10 +200,7 @@ static int prt_imx6_set_mac(struct prt_imx6_priv *priv,
 		return 0;
 
 	if (!is_valid_ether_addr(&rfid->mac[0])) {
-		unsigned char ethaddr_str[sizeof("xx:xx:xx:xx:xx:xx")];
-
-		ethaddr_to_string(&rfid->mac[0], ethaddr_str);
-		dev_err(dev, "bad MAC addr: %s\n", ethaddr_str);
+		dev_err(dev, "bad MAC addr: %pM\n", &rfid->mac[0]);
 
 		return -EILSEQ;
 	}

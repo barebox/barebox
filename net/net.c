@@ -418,17 +418,13 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 	}
 
 	if (!is_valid_ether_addr(edev->ethaddr)) {
-		char str[sizeof("xx:xx:xx:xx:xx:xx")];
-
 		ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
 		if (ret)
 			random_ether_addr(edev->ethaddr);
 
-		ethaddr_to_string(edev->ethaddr, str);
-
-		dev_warn(&edev->dev, "No MAC address set. Using %s %s\n",
+		dev_warn(&edev->dev, "No MAC address set. Using %s %pM\n",
 			 ret == 1 ? "address computed from unique ID" : "random address",
-			 str);
+			 edev->ethaddr);
 		eth_set_ethaddr(edev, edev->ethaddr);
 	}
 

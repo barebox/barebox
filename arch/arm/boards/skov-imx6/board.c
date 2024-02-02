@@ -30,10 +30,7 @@ static int eth_of_fixup_node(struct device_node *root, const char *node_path,
 	int ret;
 
 	if (!is_valid_ether_addr(ethaddr)) {
-		unsigned char ethaddr_str[sizeof("xx:xx:xx:xx:xx:xx")];
-
-		ethaddr_to_string(ethaddr, ethaddr_str);
-		dev_err(skov_priv->dev, "The mac-address %s is invalid.\n", ethaddr_str);
+		dev_err(skov_priv->dev, "The mac-address %pM is invalid.\n", ethaddr);
 		return -EINVAL;
 	}
 

@@ -267,6 +267,26 @@ static char *symbol_string(char *buf, const char *end, const void *ptr, int fiel
 }
 
 static noinline_for_stack
+char *mac_address_string(char *buf, const char *end, const u8 *addr, int field_width,
+		      int precision, int flags, const char *fmt)
+{
+	char mac_addr[sizeof("xx:xx:xx:xx:xx:xx")];
+	char *p = mac_addr;
+	int i;
+	char separator = ':';
+
+	for (i = 0; i < 6; i++) {
+		p = hex_byte_pack(p, addr[i]);
+
+		if (i != 5)
+			*p++ = separator;
+	}
+	*p = '\0';
+
+	return string(buf, end, mac_addr, field_width, precision, flags);
+}
+
+static noinline_for_stack
 char *ip4_addr_string(char *buf, const char *end, const u8 *addr, int field_width,
 		      int precision, int flags, const char *fmt)
 {
@@ -469,6 +489,8 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
  *       correctness of the format string and va_list arguments.
  * - 'a[pd]' For address types [p] phys_addr_t, [d] dma_addr_t and derivatives
  *           (default assumed to be phys_addr_t, passed by reference)
+ * - 'M' For a 6-byte MAC address, it prints the address in the
+ *       usual colon-separated hex notation
  *
  * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
  * function pointers are really function descriptors, which contain a
@@ -515,6 +537,9 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 	case 'J':
 		if (fmt[1] == 'P' && IS_ENABLED(CONFIG_JSMN))
 			return jsonpath_string(buf, end, ptr, field_width, precision, flags, fmt);
+        case 'M':
+		/* Colon separated: 00:01:02:03:04:05 */
+		return mac_address_string(buf, end, ptr, field_width, precision, flags, fmt);
 	}
 
 	return raw_pointer(buf, end, ptr, field_width, precision, flags);

@@ -19,6 +19,7 @@
 #include <pinctrl.h>
 #include <of_gpio.h>
 #include <of_device.h>
+#include <pbl/i2c.h>
 
 #include <io.h>
 #include <i2c/i2c.h>
@@ -93,6 +94,7 @@ enum lpi2c_imx_pincfg {
 
 struct lpi2c_imx_struct {
 	struct i2c_adapter	adapter;
+	struct pbl_i2c		pbl_i2c;
 	int			num_clks;
 	struct clk_bulk_data	*clks;
 	void __iomem		*base;
@@ -455,6 +457,36 @@ disable:
 	return (result < 0) ? result : num;
 }
 
+#ifdef __PBL__
+
+static int lpi2c_pbl_imx_xfer(struct pbl_i2c *lpi2c, struct i2c_msg *msgs, int num)
+{
+	struct lpi2c_imx_struct *lpi2c_imx = container_of(lpi2c, struct lpi2c_imx_struct, pbl_i2c);
+
+	return lpi2c_imx_xfer(&lpi2c_imx->adapter, msgs, num);
+}
+
+struct pbl_i2c *imx93_i2c_early_init(void __iomem *regs)
+{
+	static struct lpi2c_imx_struct lpi2c;
+	u32 temp;
+
+	lpi2c.base = regs;
+
+	temp = readl(lpi2c.base + LPI2C_PARAM);
+	printf("%s: 0x%08x\n", __func__, temp);
+	lpi2c.txfifosize = 1 << (temp & 0x0f);
+	lpi2c.rxfifosize = 1 << ((temp >> 8) & 0x0f);
+	lpi2c.bitrate = 100000;
+	lpi2c.clk_rate = 24000000;
+
+	lpi2c.pbl_i2c.xfer = lpi2c_pbl_imx_xfer;
+
+	return &lpi2c.pbl_i2c;
+}
+
+#else
+
 static const struct of_device_id lpi2c_imx_of_match[] = {
 	{ .compatible = "fsl,imx7ulp-lpi2c" },
 	{ },
@@ -516,6 +548,8 @@ static struct driver lpi2c_imx_driver = {
         .of_compatible = DRV_OF_COMPAT(lpi2c_imx_of_match),
 };
 coredevice_platform_driver(lpi2c_imx_driver);
+
+#endif
 
 MODULE_AUTHOR("Gao Pan <pandy.gao@nxp.com>");
 MODULE_DESCRIPTION("I2C adapter driver for LPI2C bus");

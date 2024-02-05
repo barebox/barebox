@@ -116,7 +116,7 @@ static void lpi2c_imx_intctrl(struct lpi2c_imx_struct *lpi2c_imx,
 static int lpi2c_imx_bus_busy(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	unsigned int temp;
-	u64 start = get_time_ns();
+	unsigned int timeout = 500000;
 
 	while (1) {
 		temp = readl(lpi2c_imx->base + LPI2C_MSR);
@@ -130,7 +130,8 @@ static int lpi2c_imx_bus_busy(struct lpi2c_imx_struct *lpi2c_imx)
 		if (temp & (MSR_BBF | MSR_MBF))
 			break;
 
-		if (is_timeout(start, 500 * MSECOND)) {
+		udelay(1);
+		if (!timeout--) {
 			dev_dbg(&lpi2c_imx->adapter.dev, "bus not work\n");
 			return -ETIMEDOUT;
 		}
@@ -177,7 +178,7 @@ static int lpi2c_imx_start(struct lpi2c_imx_struct *lpi2c_imx,
 static void lpi2c_imx_stop(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	unsigned int temp;
-	u64 start = get_time_ns();
+	unsigned int timeout = 500000;
 
 	writel(GEN_STOP << 8, lpi2c_imx->base + LPI2C_MTDR);
 
@@ -186,7 +187,8 @@ static void lpi2c_imx_stop(struct lpi2c_imx_struct *lpi2c_imx)
 		if (temp & MSR_SDF)
 			break;
 
-		if (is_timeout(start, 500 * MSECOND)) {
+		udelay(1);
+		if (!timeout--) {
 			dev_dbg(&lpi2c_imx->adapter.dev, "stop timeout\n");
 			break;
 		}
@@ -284,7 +286,7 @@ static int lpi2c_imx_master_disable(struct lpi2c_imx_struct *lpi2c_imx)
 static int lpi2c_imx_txfifo_empty(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	u32 txcnt;
-	u64 start = get_time_ns();
+	unsigned int timeout = 500000;
 
 	do {
 		txcnt = readl(lpi2c_imx->base + LPI2C_MFSR) & 0xff;
@@ -294,7 +296,8 @@ static int lpi2c_imx_txfifo_empty(struct lpi2c_imx_struct *lpi2c_imx)
 			return -EIO;
 		}
 
-		if (is_timeout(start, 500 * MSECOND)) {
+		udelay(1);
+		if (!timeout--) {
 			dev_dbg(&lpi2c_imx->adapter.dev, "txfifo empty timeout\n");
 			return -ETIMEDOUT;
 		}
@@ -326,12 +329,13 @@ static void lpi2c_imx_set_rx_watermark(struct lpi2c_imx_struct *lpi2c_imx)
 static int lpi2c_imx_write_txfifo(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	unsigned int data, remaining;
-	uint64_t start = get_time_ns();
+	unsigned int timeout = 100000;;
 
 	do {
 		u32 cnt = readl(lpi2c_imx->base + LPI2C_MFSR) & 0xff;
 		if (cnt == lpi2c_imx->txfifosize) {
-			if (is_timeout(start, 100 * MSECOND))
+			udelay(1);
+			if (!timeout--)
 				return -EIO;
 			continue;
 		}
@@ -349,12 +353,13 @@ static int lpi2c_imx_read_rxfifo(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	unsigned int remaining;
 	unsigned int data;
-	uint64_t start = get_time_ns();
+	unsigned int timeout = 100000;;
 
 	do {
 		data = readl(lpi2c_imx->base + LPI2C_MRDR);
 		if (data & MRDR_RXEMPTY) {
-			if (is_timeout(start, 100 * MSECOND))
+			udelay(1);
+			if (!timeout--)
 				return -EIO;
 			continue;
 		}

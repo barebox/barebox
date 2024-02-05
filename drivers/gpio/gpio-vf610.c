@@ -177,7 +177,7 @@ static int vf610_gpio_probe(struct device *dev)
 	port->need_pinctrl = devtype->need_pinctrl;
 
 	port->pinctrl_base = be32_to_cpu(gpio_ranges[PINCTRL_BASE]);
-	port->chip.ngpio   = be32_to_cpu(gpio_ranges[COUNT]);
+	port->chip.ngpio   = 32;
 
 	/*
 	 * Some old bindings have two register ranges. When we have two ranges

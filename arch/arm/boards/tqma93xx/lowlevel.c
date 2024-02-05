@@ -15,7 +15,7 @@
 extern char __dtb_z_imx93_tqma9352_mba93xxca_start[];
 extern struct dram_timing_info tqma93xxca_dram_timing;
 
-static noinline void tqma9352_mba93xxca_continue(void)
+static noinline void tqma93xx_continue(void)
 {
 	void *base = IOMEM(MX9_UART1_BASE_ADDR);
 	void *muxbase = IOMEM(MX9_IOMUXC_BASE_ADDR);
@@ -34,7 +34,7 @@ static noinline void tqma9352_mba93xxca_continue(void)
 	imx93_barebox_entry(__dtb_z_imx93_tqma9352_mba93xxca_start);
 }
 
-ENTRY_FUNCTION(start_imx93_tqma9352_mba93xxca, r0, r1, r2)
+ENTRY_FUNCTION(start_imx93_tqma93xx, r0, r1, r2)
 {
 	if (current_el() == 3)
 		imx93_cpu_lowlevel_init();
@@ -42,5 +42,5 @@ ENTRY_FUNCTION(start_imx93_tqma9352_mba93xxca, r0, r1, r2)
 	relocate_to_current_adr();
 	setup_c();
 
-	tqma9352_mba93xxca_continue();
+	tqma93xx_continue();
 }

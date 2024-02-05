@@ -732,8 +732,8 @@ config MACH_ZII_IMX8MQ_DEV
 
 comment "i.MX93 boards"
 
-config MACH_TQ_MBA9XXXCA
-	bool "TQ i.MX93 on MBa9xxxCA Board"
+config MACH_TQMA93XX
+	bool "TQ i.MX93 on TQMA93XX Board"
 	select ARCH_IMX93
 	select IMX9_DRAM
 	select FIRMWARE_IMX93_ATF

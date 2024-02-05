@@ -200,4 +200,4 @@ obj-$(CONFIG_MACH_RADXA_ROCK3)			+= radxa-rock3/
 obj-$(CONFIG_MACH_RADXA_ROCK5)			+= radxa-rock5/
 obj-$(CONFIG_MACH_VARISCITE_DT8MCUSTOMBOARD_IMX8MP)	+= variscite-dt8mcustomboard-imx8mp/
 obj-$(CONFIG_MACH_RADXA_CM3)			+= radxa-cm3/
-obj-$(CONFIG_MACH_TQ_MBA9XXXCA)			+= tqmba9xxxca/
+obj-$(CONFIG_MACH_TQMA93XX)			+= tqma93xx/

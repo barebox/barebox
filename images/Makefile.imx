@@ -509,6 +509,6 @@ cmd_imx9img = $(objtree)/scripts/imx9image -soc IMX9 -c -ap $< a55 0x2049A000 -o
 $(obj)/%.imx9img: $(obj)/% FORCE
 	$(call if_changed,imx9img)
 
-pblb-$(CONFIG_MACH_TQ_MBA9XXXCA) += start_imx93_tqma9352_mba93xxca
-FILE_barebox-tqmba9xxxca.img = start_imx93_tqma9352_mba93xxca.pblb.imx9img
-image-$(CONFIG_MACH_TQ_MBA9XXXCA) += barebox-tqmba9xxxca.img
+pblb-$(CONFIG_MACH_TQMA93XX) += start_imx93_tqma93xx
+FILE_barebox-tqma93xx.img = start_imx93_tqma93xx.pblb.imx9img
+image-$(CONFIG_MACH_TQMA93XX) += barebox-tqma93xx.img

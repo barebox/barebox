@@ -104,6 +104,7 @@ struct lpi2c_imx_struct {
 	unsigned int		txfifosize;
 	unsigned int		rxfifosize;
 	enum lpi2c_imx_mode	mode;
+	unsigned long		clk_rate;
 };
 
 static void lpi2c_imx_intctrl(struct lpi2c_imx_struct *lpi2c_imx,
@@ -197,15 +198,11 @@ static void lpi2c_imx_stop(struct lpi2c_imx_struct *lpi2c_imx)
 static int lpi2c_imx_config(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	u8 prescale, filt, sethold, datavd;
-	unsigned int clk_rate, clk_cycle, clkhi, clklo;
+	unsigned int clk_cycle, clkhi, clklo;
 	enum lpi2c_imx_pincfg pincfg;
 	unsigned int temp;
 
 	lpi2c_imx_set_mode(lpi2c_imx);
-
-	clk_rate = clk_get_rate(lpi2c_imx->clks[0].clk);
-	if (!clk_rate)
-		return -EINVAL;
 
 	if (lpi2c_imx->mode == HS || lpi2c_imx->mode == ULTRA_FAST)
 		filt = 0;
@@ -213,7 +210,7 @@ static int lpi2c_imx_config(struct lpi2c_imx_struct *lpi2c_imx)
 		filt = 2;
 
 	for (prescale = 0; prescale <= 7; prescale++) {
-		clk_cycle = clk_rate / ((1 << prescale) * lpi2c_imx->bitrate)
+		clk_cycle = lpi2c_imx->clk_rate / ((1 << prescale) * lpi2c_imx->bitrate)
 			    - 3 - (filt >> 1);
 		clkhi = DIV_ROUND_UP(clk_cycle, I2C_CLK_RATIO + 1);
 		clklo = clk_cycle - clkhi;
@@ -492,6 +489,8 @@ static int lpi2c_imx_probe(struct device *dev)
 	ret = clk_bulk_enable(lpi2c_imx->num_clks, lpi2c_imx->clks);
 	if (ret)
 		return ret;
+
+	lpi2c_imx->clk_rate = clk_get_rate(lpi2c_imx->clks[0].clk);
 
 	temp = readl(lpi2c_imx->base + LPI2C_PARAM);
 	lpi2c_imx->txfifosize = 1 << (temp & 0x0f);

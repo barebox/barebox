@@ -179,7 +179,9 @@ static void __noreturn watchdog_restart_handle(struct restart_handler *this)
 
 	BUG_ON(ret);
 	mdelay(2000);
-	__builtin_unreachable();
+
+	pr_emerg("Watchdog failed to reset the machine\n");
+	hang();
 }
 
 static struct restart_handler restart_handler = {

@@ -736,6 +736,9 @@ config MACH_TQMA93XX
 	bool "TQ i.MX93 on TQMA93XX Board"
 	select ARCH_IMX93
 	select IMX9_DRAM
+	select BOARD_TQ
+	select I2C
+	select I2C_IMX_LPI2C
 	select FIRMWARE_IMX93_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 

@@ -9,6 +9,15 @@
 	};
 };
 
+&lpi2c1 {
+	pca9451a: pmic@25 {
+		compatible = "nxp,pca9451a";
+		reg = <0x25>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pca9451>;
+	};
+};
+
 &usbotg1 {
 	status = "okay";
 };

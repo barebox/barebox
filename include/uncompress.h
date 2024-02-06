@@ -2,11 +2,11 @@
 #ifndef __UNCOMPRESS_H
 #define __UNCOMPRESS_H
 
-int uncompress(unsigned char *inbuf, int len,
-	   int(*fill)(void*, unsigned int),
-	   int(*flush)(void*, unsigned int),
+int uncompress(unsigned char *inbuf, long len,
+	   long(*fill)(void*, unsigned long),
+	   long(*flush)(void*, unsigned long),
 	   unsigned char *output,
-	   int *pos,
+	   long *pos,
 	   void(*error_fn)(char *x));
 
 int uncompress_fd_to_fd(int infd, int outfd,

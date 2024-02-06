@@ -218,23 +218,23 @@ EXPORT_SYMBOL(uimage_close);
 
 static int uimage_fd;
 
-static int uimage_fill(void *buf, unsigned int len)
+static long uimage_fill(void *buf, unsigned long len)
 {
 	return read_full(uimage_fd, buf, len);
 }
 
-static int uncompress_copy(unsigned char *inbuf_unused, int len,
-		int(*fill)(void*, unsigned int),
-		int(*flush)(void*, unsigned int),
+static int uncompress_copy(unsigned char *inbuf_unused, long len,
+		long(*fill)(void*, unsigned long),
+		long(*flush)(void*, unsigned long),
 		unsigned char *outbuf_unused,
-		int *pos,
+		long *pos,
 		void(*error_fn)(char *x))
 {
 	int ret;
 	void *buf = xmalloc(PAGE_SIZE);
 
 	while (len) {
-		int now = min(len, PAGE_SIZE);
+		int now = min_t(long, len, PAGE_SIZE);
 		ret = fill(buf, now);
 		if (ret < 0)
 			goto err;
@@ -295,17 +295,17 @@ EXPORT_SYMBOL(uimage_verify);
  * Load a uimage, flushing output to flush function
  */
 int uimage_load(struct uimage_handle *handle, unsigned int image_no,
-		int(*flush)(void*, unsigned int))
+		long(*flush)(void*, unsigned long))
 {
 	image_header_t *hdr = &handle->header;
 	struct uimage_handle_data *iha;
 	int ret;
 	loff_t off;
-	int (*uncompress_fn)(unsigned char *inbuf, int len,
-		    int(*fill)(void*, unsigned int),
-	            int(*flush)(void*, unsigned int),
+	int (*uncompress_fn)(unsigned char *inbuf, long len,
+		    long(*fill)(void*, unsigned long),
+	            long(*flush)(void*, unsigned long),
 		    unsigned char *output,
-	            int *pos,
+	            long *pos,
 		    void(*error)(char *x));
 
 	if (image_no >= handle->nb_data_entries)
@@ -336,7 +336,7 @@ static void *uimage_buf;
 static size_t uimage_size;
 static struct resource *uimage_resource;
 
-static int uimage_sdram_flush(void *buf, unsigned int len)
+static long uimage_sdram_flush(void *buf, unsigned long len)
 {
 	if (uimage_size + len > resource_size(uimage_resource)) {
 		resource_size_t start = uimage_resource->start;

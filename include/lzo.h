@@ -47,10 +47,10 @@ STATIC int lzo1x_decompress_safe(const unsigned char *src, size_t src_len,
 #define LZO_E_NOT_YET_IMPLEMENTED	(-9)
 #define LZO_E_INVALID_ARGUMENT		(-10)
 
-STATIC int decompress_unlzo(u8 *input, int in_len,
-		int (*fill) (void *, unsigned int),
-		int (*flush) (void *, unsigned int),
-		u8 *output, int *posp,
+STATIC int decompress_unlzo(u8 *input, long in_len,
+		long (*fill) (void *, unsigned long),
+		long (*flush) (void *, unsigned long),
+		u8 *output, long *posp,
 		void (*error) (char *x));
 
 #endif

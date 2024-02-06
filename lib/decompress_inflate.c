@@ -32,17 +32,17 @@
 
 #define GZIP_IOBUF_SIZE (16*1024)
 
-static int  nofill(void *buffer, unsigned int len)
+static long nofill(void *buffer, unsigned long len)
 {
 	return -1;
 }
 
 /* Included from initramfs et al code */
-int  gunzip(unsigned char *buf, int len,
-		       int(*fill)(void*, unsigned int),
-		       int(*flush)(void*, unsigned int),
+int  gunzip(unsigned char *buf, long len,
+		       long(*fill)(void*, unsigned long),
+		       long(*flush)(void*, unsigned long),
 		       unsigned char *out_buf,
-		       int *pos,
+		       long *pos,
 		       void(*error)(char *x)) {
 	u8 *zbuf;
 	struct z_stream_s *strm;

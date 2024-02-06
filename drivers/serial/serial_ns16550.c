@@ -40,6 +40,9 @@ struct ns16550_priv {
 	void (*write_reg)(struct ns16550_priv *, uint8_t val, unsigned offset);
 	uint8_t (*read_reg)(struct ns16550_priv *, unsigned offset);
 	const char *access_type;
+
+	bool rs485_mode;
+	bool rs485_rts_active_low;
 };
 
 struct ns16550_drvdata {
@@ -265,9 +268,31 @@ static void rpi_init_port(struct console_device *cdev)
  */
 static void ns16550_putc(struct console_device *cdev, char c)
 {
-	/* Loop Doing Nothing */
-	while ((ns16550_read(cdev, lsr) & LSR_THRE) == 0) ;
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+
+	/* wait until FIFO can accept at least one byte */
+	while ((ns16550_read(cdev, lsr) & (LSR_THRE)) != (LSR_THRE))
+		;
+
+	if (priv->rs485_mode) {
+		if (priv->rs485_rts_active_low)
+			ns16550_write(cdev, MCR_RTS, mcr);
+		else
+			ns16550_write(cdev, 0, mcr);
+	}
+
 	ns16550_write(cdev, c, thr);
+
+	if (priv->rs485_mode) {
+		/* wait until FIFO is cleared*/
+		while ((ns16550_read(cdev, lsr) & (LSR_EMPTY)) != (LSR_EMPTY))
+			;
+
+		if (priv->rs485_rts_active_low)
+			ns16550_write(cdev, 0, mcr);
+		else
+			ns16550_write(cdev, MCR_RTS, mcr);
+	}
 }
 
 /**
@@ -321,6 +346,10 @@ static void ns16550_probe_dt(struct device *dev, struct ns16550_priv *priv)
 		priv->mmiobase += offset;
 	of_property_read_u32(np, "reg-shift", &priv->plat.shift);
 	of_property_read_u32(np, "reg-io-width", &width);
+	priv->rs485_rts_active_low =
+		of_property_read_bool(np, "rs485-rts-active-low");
+	priv->rs485_mode =
+		of_property_read_bool(np, "linux,rs485-enabled-at-boot-time");
 
 	switch (width) {
 	case 1:

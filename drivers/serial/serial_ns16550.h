@@ -73,6 +73,9 @@
 #define LSR_TEMT	0x40	/* Xmitter empty */
 #define LSR_ERR		0x80	/* Error */
 
+/* Transmitter FIFO completely empty */
+#define LSR_EMPTY	(LSR_THRE | LSR_TEMT)
+
 /* useful defaults for LCR */
 #define LCR_8N1		0x03
 

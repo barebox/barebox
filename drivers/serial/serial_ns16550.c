@@ -43,6 +43,7 @@ struct ns16550_priv {
 
 	bool rs485_mode;
 	bool rs485_rts_active_low;
+	bool rs485_rx_during_tx;
 };
 
 struct ns16550_drvdata {
@@ -279,6 +280,9 @@ static void ns16550_putc(struct console_device *cdev, char c)
 			ns16550_write(cdev, MCR_RTS, mcr);
 		else
 			ns16550_write(cdev, 0, mcr);
+
+		if (!priv->rs485_rx_during_tx)
+			ns16550_write(cdev, CNTL_TXEN, cntl);
 	}
 
 	ns16550_write(cdev, c, thr);
@@ -292,6 +296,9 @@ static void ns16550_putc(struct console_device *cdev, char c)
 			ns16550_write(cdev, 0, mcr);
 		else
 			ns16550_write(cdev, MCR_RTS, mcr);
+
+		if (!priv->rs485_rx_during_tx)
+			ns16550_write(cdev, CNTL_TXEN | CNTL_RXEN, cntl);
 	}
 }
 
@@ -350,6 +357,8 @@ static void ns16550_probe_dt(struct device *dev, struct ns16550_priv *priv)
 		of_property_read_bool(np, "rs485-rts-active-low");
 	priv->rs485_mode =
 		of_property_read_bool(np, "linux,rs485-enabled-at-boot-time");
+	priv->rs485_rx_during_tx =
+		of_property_read_bool(np, "rs485-rx-during-tx");
 
 	switch (width) {
 	case 1:

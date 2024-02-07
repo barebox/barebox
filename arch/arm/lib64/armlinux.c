@@ -55,7 +55,7 @@ static int do_bootm_barebox(struct image_data *data)
 	if (ret)
 		goto out;
 
-	barebox = start;
+	barebox = PAGE_ALIGN(start);
 
 	ret = bootm_load_os(data, barebox);
 	if (ret)

@@ -360,11 +360,7 @@ int bbu_mmcboot_handler(struct bbu_handler *handler, struct bbu_data *data,
 	if (ret < 0)
 		goto out;
 
-	/*
-	 * This flag can be set in the chained handler or by
-	 * bbu_mmcboot_handler's caller
-	 */
-	if ((_data.flags | data->flags) & BBU_FLAG_MMC_BOOT_ACK) {
+	if (handler->flags & BBU_HANDLER_FLAG_MMC_BOOT_ACK) {
 		ret = asprintf(&bootackvar, "%s.boot_ack", devname);
 		if (ret < 0)
 			goto out;
@@ -381,6 +377,38 @@ out:
 	free(bootackvar);
 	free(devicefile);
 	free(bootpartvar);
+
+	return ret;
+}
+
+static int bbu_internal_mmcboot_update(struct bbu_handler *handler,
+				       struct bbu_data *data)
+{
+	int ret;
+
+	ret = bbu_mmcboot_handler(handler, data, bbu_std_file_handler);
+	if (ret == -ENOENT)
+		pr_err("Couldn't read the value of .boot parameter\n");
+
+	return ret;
+}
+
+int bbu_mmcboot_register_handler(const char *name,
+				 const char *devicefile,
+				 unsigned long flags)
+{
+	struct bbu_handler *handler;
+	int ret;
+
+	handler = xzalloc(sizeof(*handler));
+	handler->devicefile = devicefile;
+	handler->name = name;
+	handler->handler = bbu_internal_mmcboot_update;
+	handler->flags = flags;
+
+	ret = bbu_register_handler(handler);
+	if (ret)
+		free(handler);
 
 	return ret;
 }

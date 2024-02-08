@@ -10,7 +10,6 @@
 struct bbu_data {
 #define BBU_FLAG_FORCE	(1 << 0)
 #define BBU_FLAG_YES	(1 << 1)
-#define BBU_FLAG_MMC_BOOT_ACK	(1 << 2)
 	unsigned long flags;
 	int force;
 	const void *image;
@@ -27,6 +26,7 @@ struct bbu_handler {
 	struct list_head list;
 #define BBU_HANDLER_FLAG_DEFAULT	(1 << 0)
 #define BBU_HANDLER_CAN_REFRESH		(1 << 1)
+#define BBU_HANDLER_FLAG_MMC_BOOT_ACK	(1 << 16)
 	/*
 	 * The lower 16bit are generic flags, the upper 16bit are reserved
 	 * for handler specific flags.
@@ -66,6 +66,10 @@ int bbu_register_std_file_update(const char *name, unsigned long flags,
 
 void bbu_append_handlers_to_file_list(struct file_list *files);
 
+int bbu_mmcboot_register_handler(const char *name,
+				 const char *devicefile,
+				 unsigned long flags);
+
 #else
 
 static inline int bbu_register_handler(struct bbu_handler *unused)
@@ -82,6 +86,13 @@ static inline int bbu_register_std_file_update(const char *name, unsigned long f
 static inline void bbu_append_handlers_to_file_list(struct file_list *files)
 {
 	/* none could be registered, so nothing to do */
+}
+
+static inline int bbu_mmcboot_register_handler(const char *name,
+					       const char *devicefile,
+					       unsigned long flags)
+{
+	return -ENOSYS;
 }
 
 #endif

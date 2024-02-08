@@ -129,7 +129,7 @@ static int stm32mp_bbu_mmc_fip_handler(struct bbu_handler *handler,
 
 	pr_debug("Handling %s\n", file_type_to_string(filetype));
 
-	data->flags |= BBU_FLAG_MMC_BOOT_ACK;
+	handler->flags |= BBU_HANDLER_FLAG_MMC_BOOT_ACK;
 
 	ret = bbu_mmcboot_handler(handler, data, stm32mp_bbu_mmc_update);
 	if (ret == -ENOENT) {

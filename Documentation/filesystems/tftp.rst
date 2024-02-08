@@ -22,7 +22,7 @@ In addition to the TFTP filesystem implementation, barebox does also have a
 :ref:`tftp command <command_tftp>`.
 
 RFC 7440 "windowsize" support
-=============================
+-----------------------------
 
 barebox supports the tftp windowsize option for downloading files.  It
 is not implemented for uploads.

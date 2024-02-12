@@ -39,7 +39,7 @@ static inline struct at91_sdhci *to_priv(struct sdhci *sdhci)
 void at91_sdhci_host_capability(struct at91_sdhci *host,
 				unsigned *voltages)
 {
-	u16 caps;
+	u32 caps;
 
 	caps = sdhci_read32(&host->sdhci, SDHCI_CAPABILITIES);
 

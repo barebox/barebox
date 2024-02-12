@@ -275,11 +275,11 @@ static int imx6_ocotp_prepare(struct ocotp_priv *priv)
 
 static int imx6_fuse_read_addr(struct ocotp_priv *priv, u32 addr, u32 *pdata)
 {
+	const u32 bm_ctrl_error = priv->data->ctrl->bm_error;
+	const u32 bm_ctrl_addr = priv->data->ctrl->bm_addr;
+	const u32 bm_ctrl_wr_unlock = priv->data->ctrl->bm_wr_unlock;
 	u32 ctrl_reg;
 	int ret;
-	u32 bm_ctrl_error = priv->data->ctrl->bm_error;
-	u32 bm_ctrl_addr = priv->data->ctrl->bm_addr;
-	u32 bm_ctrl_wr_unlock = priv->data->ctrl->bm_wr_unlock;
 
 	writel(bm_ctrl_error, priv->base + OCOTP_CTRL_CLR);
 
@@ -304,13 +304,13 @@ static int imx6_fuse_read_addr(struct ocotp_priv *priv, u32 addr, u32 *pdata)
 
 static int imx7_fuse_read_addr(struct ocotp_priv *priv, u32 index, u32 *pdata)
 {
+	const u32 bm_ctrl_error = priv->data->ctrl->bm_error;
+	const u32 bm_ctrl_addr = priv->data->ctrl->bm_addr;
+	const u32 bm_ctrl_wr_unlock = priv->data->ctrl->bm_wr_unlock;
 	u32 ctrl_reg;
 	u32 bank_addr;
 	u16 word;
 	int ret;
-	u32 bm_ctrl_error = priv->data->ctrl->bm_error;
-	u32 bm_ctrl_addr = priv->data->ctrl->bm_addr;
-	u32 bm_ctrl_wr_unlock = priv->data->ctrl->bm_wr_unlock;
 
 	word = index & 0x3;
 	bank_addr = index >> 2;
@@ -391,10 +391,10 @@ static int imx_ocotp_reg_read(void *ctx, unsigned int reg, unsigned int *val)
 
 static void imx_ocotp_clear_unlock(struct ocotp_priv *priv, u32 index)
 {
+	const u32 bm_ctrl_error = priv->data->ctrl->bm_error;
+	const u32 bm_ctrl_addr = priv->data->ctrl->bm_addr;
+	const u32 bm_ctrl_wr_unlock = priv->data->ctrl->bm_wr_unlock;
 	u32 ctrl_reg;
-	u32 bm_ctrl_error = priv->data->ctrl->bm_error;
-	u32 bm_ctrl_addr = priv->data->ctrl->bm_addr;
-	u32 bm_ctrl_wr_unlock = priv->data->ctrl->bm_wr_unlock;
 
 	writel(bm_ctrl_error, priv->base + OCOTP_CTRL_CLR);
 
@@ -408,8 +408,8 @@ static void imx_ocotp_clear_unlock(struct ocotp_priv *priv, u32 index)
 
 static int imx6_fuse_blow_addr(struct ocotp_priv *priv, u32 index, u32 value)
 {
+	const u32 bm_ctrl_error = priv->data->ctrl->bm_error;
 	int ret;
-	u32 bm_ctrl_error = priv->data->ctrl->bm_error;
 
 	imx_ocotp_clear_unlock(priv, index);
 
@@ -474,7 +474,7 @@ static int imx7_fuse_blow_addr(struct ocotp_priv *priv, u32 index, u32 value)
 
 static int imx6_ocotp_reload_shadow(struct ocotp_priv *priv)
 {
-	u32 bm_ctrl_reload_shadows = priv->data->ctrl->bm_reload_shadows;
+	const u32 bm_ctrl_reload_shadows = priv->data->ctrl->bm_reload_shadows;
 
 	dev_info(&priv->dev, "reloading shadow registers...\n");
 	writel(bm_ctrl_reload_shadows, priv->base + OCOTP_CTRL_SET);
@@ -486,8 +486,8 @@ static int imx6_ocotp_reload_shadow(struct ocotp_priv *priv)
 static int imx6_ocotp_blow_one_u32(struct ocotp_priv *priv, u32 index, u32 data,
 			    u32 *pfused_value)
 {
+	const u32 bm_ctrl_error = priv->data->ctrl->bm_error;
 	int ret;
-	u32 bm_ctrl_error = priv->data->ctrl->bm_error;
 
 	ret = imx6_ocotp_prepare(priv);
 	if (ret) {

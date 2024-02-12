@@ -147,9 +147,11 @@ struct hab_header {
 typedef enum hab_status hab_loader_callback_fn(void **start, size_t *bytes, const void *boot_data);
 typedef void hab_image_entry_fn(void);
 
-/* This table is constructed from the NXP manual "High Assurance Boot Version 4
- * Application Programming Interface Reference Manual", section 4.5 ROM vector
- * table. Revision 1.4 */
+/*
+ * This table is constructed from the NXP manual "High Assurance Boot
+ * Version 4 Application Programming Interface Reference Manual",
+ * section 4.5 ROM vector table. Revision 1.4
+ */
 struct habv4_rvt {
 	struct hab_header header;
 	enum hab_status (*entry)(void);
@@ -169,9 +171,11 @@ struct habv4_rvt {
 
 #define FSL_SIP_HAB 0xC2000007
 
-/* These values correspondent to the jump table found in the upstream TF-A
- * version 2.10 `imx_hab_handler`, not all HAB rom functions are supported yet.
- * */
+/*
+ * These values correspondent to the jump table found in the upstream
+ * TF-A version 2.10 `imx_hab_handler`, not all HAB rom functions are
+ * supported yet.
+ */
 enum hab_sip_cmd {
 	FSL_SIP_HAB_AUTHENTICATE = 0x00,
 	FSL_SIP_HAB_ENTRY = 0x01,

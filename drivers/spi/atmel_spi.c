@@ -378,7 +378,7 @@ static void atmel_get_caps(struct atmel_spi *as)
 	unsigned int version;
 
 	version = atmel_get_version(as);
-	dev_info(as->master.dev, "version: 0x%x\n", version);
+	dev_dbg(as->master.dev, "version: 0x%x\n", version);
 
 	as->caps.is_spi2 = version > 0x121;
 }

@@ -20,7 +20,6 @@
 #include <mach/imx/generic.h>
 #include <mach/imx/imx8mq.h>
 
-#define HABV4_RVT_IMX28 0xffff8af8
 #define HABV4_RVT_IMX6_OLD 0x00000094
 #define HABV4_RVT_IMX6_NEW 0x00000098
 #define HABV4_RVT_IMX6UL 0x00000100
@@ -720,25 +719,3 @@ static int init_imx6_hab_get_status(void)
  * faulting.
  */
 postmmu_initcall(init_imx6_hab_get_status);
-
-int imx28_hab_get_status(void)
-{
-	const struct habv4_rvt *rvt = (void *)HABV4_RVT_IMX28;
-
-	return habv4_get_status(rvt);
-}
-
-static int init_imx28_hab_get_status(void)
-{
-	if (!cpu_is_mx28())
-		/* can happen in multi-image builds and is not an error */
-		return 0;
-
-
-	/* nobody will check the return value if there were HAB errors, but the
-	 * initcall will fail spectaculously with a strange error message. */
-	imx28_hab_get_status();
-	return 0;
-}
-/* i.MX28 ROM code can be run after MMU setup to make use of caching */
-postmmu_initcall(init_imx28_hab_get_status);

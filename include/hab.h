@@ -21,14 +21,9 @@ enum habv4_state {
 };
 
 #ifdef CONFIG_HABV4
-int imx28_hab_get_status(void);
 int imx6_hab_get_status(void);
 int habv4_get_state(void);
 #else
-static inline int imx28_hab_get_status(void)
-{
-	return -EPERM;
-}
 static inline int imx6_hab_get_status(void)
 {
 	return -EPERM;

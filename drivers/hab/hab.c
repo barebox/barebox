@@ -13,6 +13,7 @@
 #include <mach/imx/imx25-fusemap.h>
 #include <mach/imx/ocotp.h>
 #include <mach/imx/imx6-fusemap.h>
+#include <mach/imx/ele.h>
 
 #include "hab.h"
 
@@ -238,6 +239,104 @@ static struct imx_hab_ops imx8m_hab_ops_ocotp = {
 	.print_status = imx8m_hab_print_status,
 };
 
+static int imx_ahab_write_srk_hash(const u8 *__newsrk, unsigned flags)
+{
+	u32 *newsrk = (u32 *)__newsrk;
+	u32 resp;
+	int ret, i;
+
+	if (!(flags & IMX_SRK_HASH_WRITE_PERMANENT)) {
+		pr_err("Cannot write fuses temporarily\n");
+		return -EPERM;
+	}
+
+	for (i = 0; i < 32 / sizeof(u32); i++) {
+		ret = ele_write_fuse(0x80 + i, newsrk[i], false, &resp);
+		if (ret)
+			pr_err("Writing fuse index 0x%02x failed with %d, response 0x%08x\n",
+			       i, ret, resp);
+	}
+
+	return 0;
+}
+
+static int imx_ahab_read_srk_hash(u8 *__srk)
+{
+	u32 *srk = (u32 *)__srk;
+	u32 resp;
+	int ret, i;
+
+	for (i = 0; i < SRK_HASH_SIZE / sizeof(uint32_t); i++) {
+		ret = ele_read_common_fuse(0x80 + i, &srk[i], &resp);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
+}
+
+static int imx_ahab_permanent_write_enable(int enable)
+{
+	return 0;
+}
+
+static int imx_ahab_lockdown_device(unsigned flags)
+{
+	unsigned int lc;
+	int ret;
+
+	if (!(flags & IMX_SRK_HASH_WRITE_PERMANENT)) {
+		pr_err("Cannot write fuses temporarily\n");
+		return -EPERM;
+	}
+
+	lc = imx93_ahab_read_lifecycle();
+	if (lc == ELE_LIFECYCLE_OEM_CLOSED) {
+		pr_info("already OEM closed\n");
+		return 0;
+	}
+
+	if (lc != ELE_LIFECYCLE_OEM_OPEN) {
+		pr_err("Current lifecycle is NOT OEM open, can't move to OEM closed\n");
+		return -EPERM;
+	}
+
+	ret = ele_forward_lifecycle(ELE_LIFECYCLE_OEM_CLOSED, NULL);
+	if (ret) {
+		printf("failed to forward lifecycle to OEM closed\n");
+		return ret;
+	}
+
+	printf("Change to OEM closed successfully\n");
+
+	return 0;
+}
+
+static int imx_ahab_device_locked_down(void)
+{
+	return imx93_ahab_read_lifecycle() != ELE_LIFECYCLE_OEM_OPEN;
+}
+
+static int imx_ahab_print_status(void)
+{
+	int ret;
+
+	ret = ele_print_events();
+	if (ret)
+		pr_err("Cannot read ELE events: %pe\n", ERR_PTR(ret));
+
+	return ret;
+}
+
+static struct imx_hab_ops imx93_ahab_ops = {
+	.write_srk_hash = imx_ahab_write_srk_hash,
+	.read_srk_hash =  imx_ahab_read_srk_hash,
+	.lockdown_device = imx_ahab_lockdown_device,
+	.device_locked_down = imx_ahab_device_locked_down,
+	.permanent_write_enable = imx_ahab_permanent_write_enable,
+	.print_status = imx_ahab_print_status,
+};
+
 static struct imx_hab_ops *imx_get_hab_ops(void)
 {
 	static struct imx_hab_ops *ops;
@@ -251,6 +350,8 @@ static struct imx_hab_ops *imx_get_hab_ops(void)
 		ops = &imx6_hab_ops_ocotp;
 	else if (IS_ENABLED(CONFIG_HABV4) && cpu_is_mx8m())
 		ops = &imx8m_hab_ops_ocotp;
+	else if (IS_ENABLED(CONFIG_AHAB) && cpu_is_mx93())
+		ops = &imx93_ahab_ops;
 	else
 		return NULL;
 

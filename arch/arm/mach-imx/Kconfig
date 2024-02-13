@@ -177,6 +177,7 @@ config ARCH_IMX8MQ
 	bool
 
 config ARCH_IMX9
+	select AHAB
 	bool
 
 config ARCH_IMX93
@@ -783,6 +784,10 @@ config IMX_SAVE_BOOTROM_LOG
 
 config HAB
 	bool
+
+config AHAB
+	bool
+	select HAB
 
 config HABV4
 	tristate "HABv4 support"

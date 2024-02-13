@@ -220,7 +220,7 @@ static void atmci_setup_data(struct atmel_mci *host, struct mci_data *data)
 
 	host->data = data;
 
-	dev_dbg(host->hw_dev, "atmel_setup_data: nob=%d blksz=%d\n",
+	dev_vdbg(host->hw_dev, "atmel_setup_data: nob=%d blksz=%d\n",
 		nob, blksz);
 
 	atmci_writel(host, ATMCI_BLKR, ATMCI_BCNT(nob)

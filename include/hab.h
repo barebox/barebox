@@ -21,25 +21,11 @@ enum habv4_state {
 };
 
 #ifdef CONFIG_HABV4
-int imx6_hab_get_status(void);
 int habv4_get_state(void);
 #else
-static inline int imx6_hab_get_status(void)
-{
-	return -EPERM;
-}
 static inline int habv4_get_state(void)
 {
 	return -ENOSYS;
-}
-#endif
-
-#ifdef CONFIG_HABV3
-int imx25_hab_get_status(void);
-#else
-static inline int imx25_hab_get_status(void)
-{
-	return -EPERM;
 }
 #endif
 
@@ -63,5 +49,6 @@ int imx_hab_write_srk_hash_file(const char *filename, unsigned flags);
 int imx_hab_read_srk_hash(void *buf);
 int imx_hab_lockdown_device(unsigned flags);
 int imx_hab_device_locked_down(void);
+int imx_hab_print_status(void);
 
 #endif /* __HABV4_H */

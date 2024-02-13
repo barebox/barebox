@@ -20,6 +20,8 @@
 #include <mach/imx/generic.h>
 #include <mach/imx/imx8mq.h>
 
+#include "hab.h"
+
 #define HABV4_RVT_IMX6_OLD 0x00000094
 #define HABV4_RVT_IMX6_NEW 0x00000098
 #define HABV4_RVT_IMX6UL 0x00000100
@@ -646,7 +648,7 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 	return -EPERM;
 }
 
-int imx6_hab_get_status(void)
+static int imx6_hab_get_status(void)
 {
 	const struct habv4_rvt *rvt;
 
@@ -670,41 +672,19 @@ int imx6_hab_get_status(void)
 	return -EINVAL;
 }
 
-static int imx8m_hab_get_status(void)
+int imx8m_hab_print_status(void)
 {
-	return habv4_get_status(&hab_smc_ops);
-}
-
-static int init_imx8m_hab_get_status(void)
-{
-	if (!cpu_is_mx8m())
-		/* can happen in multi-image builds and is not an error */
-		return 0;
-
 	pr_info("ROM version: 0x%x\n", hab_sip_get_version());
 
-	/*
-	 * Nobody will check the return value if there were HAB errors, but the
-	 * initcall will fail spectaculously with a strange error message.
-	 */
-	imx8m_hab_get_status();
+	habv4_get_status(&hab_smc_ops);
 
 	return 0;
 }
-postmmu_initcall(init_imx8m_hab_get_status);
 
-static int init_imx6_hab_get_status(void)
+int imx6_hab_print_status(void)
 {
-	if (!cpu_is_mx6())
-		/* can happen in multi-image builds and is not an error */
-		return 0;
-
 	remap_range(0x0, SZ_1M, MAP_CACHED);
 
-	/*
-	 * Nobody will check the return value if there were HAB errors, but the
-	 * initcall will fail spectaculously with a strange error message.
-	 */
 	imx6_hab_get_status();
 
 	zero_page_faulting();
@@ -712,10 +692,3 @@ static int init_imx6_hab_get_status(void)
 
 	return 0;
 }
-
-/*
- * Need to run before MMU setup because i.MX6 ROM code is mapped near 0x0,
- * which will no longer be accessible when the MMU sets the zero page to
- * faulting.
- */
-postmmu_initcall(init_imx6_hab_get_status);

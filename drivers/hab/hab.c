@@ -14,6 +14,8 @@
 #include <mach/imx/ocotp.h>
 #include <mach/imx/imx6-fusemap.h>
 
+#include "hab.h"
+
 bool imx_hab_srk_hash_valid(const void *buf)
 {
 	const u8 *srk = buf;
@@ -206,6 +208,7 @@ struct imx_hab_ops {
 	int (*permanent_write_enable)(int enable);
 	int (*lockdown_device)(void);
 	int (*device_locked_down)(void);
+	int (*print_status)(void);
 };
 
 static struct imx_hab_ops imx_hab_ops_iim = {
@@ -214,6 +217,7 @@ static struct imx_hab_ops imx_hab_ops_iim = {
 	.lockdown_device = imx_hab_lockdown_device_iim,
 	.device_locked_down = imx_hab_device_locked_down_iim,
 	.permanent_write_enable = imx_hab_permanent_write_enable_iim,
+	.print_status = imx25_hab_print_status,
 };
 
 static struct imx_hab_ops imx6_hab_ops_ocotp = {
@@ -222,6 +226,7 @@ static struct imx_hab_ops imx6_hab_ops_ocotp = {
 	.lockdown_device = imx6_hab_lockdown_device_ocotp,
 	.device_locked_down = imx6_hab_device_locked_down_ocotp,
 	.permanent_write_enable = imx_hab_permanent_write_enable_ocotp,
+	.print_status = imx6_hab_print_status,
 };
 
 static struct imx_hab_ops imx8m_hab_ops_ocotp = {
@@ -230,6 +235,7 @@ static struct imx_hab_ops imx8m_hab_ops_ocotp = {
 	.lockdown_device = imx8m_hab_lockdown_device_ocotp,
 	.device_locked_down = imx8m_hab_device_locked_down_ocotp,
 	.permanent_write_enable = imx_hab_permanent_write_enable_ocotp,
+	.print_status = imx8m_hab_print_status,
 };
 
 static struct imx_hab_ops *imx_get_hab_ops(void)
@@ -383,3 +389,21 @@ int imx_hab_device_locked_down(void)
 
 	return ops->device_locked_down();
 }
+
+int imx_hab_print_status(void)
+{
+	struct imx_hab_ops *ops = imx_get_hab_ops();
+
+	if (!ops)
+		return -ENOSYS;
+
+	return ops->print_status();
+}
+
+static int init_imx_hab_print_status(void)
+{
+	imx_hab_print_status();
+
+	return 0;
+}
+postmmu_initcall(init_imx_hab_print_status);

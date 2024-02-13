@@ -132,6 +132,18 @@ struct ele_get_info_data {
 	u32 state;
 };
 
+enum ele_lifecycle {
+	ELE_LIFECYCLE_BLANK = 0x1,
+	ELE_LIFECYCLE_FAB = 0x2,
+	ELE_LIFECYCLE_NXP_PROVISIONED = 0x4,
+	ELE_LIFECYCLE_OEM_OPEN = 0x8,
+	ELE_LIFECYCLE_OEM_CLOSED = 0x20,
+	ELE_LIFECYCLE_FIELD_RETURN_OEM = 0x40,
+	ELE_LIFECYCLE_FIELD_RETURN_NXP = 0x80,
+	ELE_LIFECYCLE_OEM_LOCKED = 0x100,
+	ELE_LIFECYCLE_BRICKED = 0x200,
+};
+
 #define ELE_INFO_SOC_REV	GENMASK(31, 24)
 
 int ele_call(struct ele_msg *msg, bool get_response);
@@ -140,7 +152,13 @@ int ele_read_common_fuse(u16 fuse_id, u32 *fuse_word, u32 *response);
 int ele_release_rdc(u8 core_id, u8 xrdc, u32 *response);
 int ele_read_shadow_fuse(u16 fuse_id, u32 *fuse_word, u32 *response);
 int ele_get_info(struct ele_get_info_data *info);
+int ele_write_fuse(u16 fuse_id, u32 fuse_val, bool lock, u32 *response);
+int ele_authenticate_container(unsigned long addr, u32 *response);
+int ele_release_container(u32 *response);
+int ele_forward_lifecycle(enum ele_lifecycle lc, u32 *response);
+int ele_print_events(void);
 
 int imx93_ele_load_fw(void *bl33);
+unsigned int imx93_ahab_read_lifecycle(void);
 
 #endif

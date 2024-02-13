@@ -437,7 +437,7 @@ void atmci_get_cap(struct atmel_mci *host)
 	version = atmci_readl(host, ATMCI_VERSION) & 0x00000fff;
 	host->version = version;
 
-	dev_info(host->hw_dev, "version: 0x%x\n", version);
+	dev_dbg(host->hw_dev, "version: 0x%x\n", version);
 
 	host->caps.has_cfg_reg = 0;
 	host->caps.has_highspeed = 0;

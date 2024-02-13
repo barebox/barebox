@@ -96,7 +96,7 @@ static int imx_hab_permanent_write_enable_iim(int enable)
 	return imx_iim_permanent_write(enable);
 }
 
-static int imx_hab_lockdown_device_iim(void)
+static int imx_hab_lockdown_device_iim(unsigned flags)
 {
 	return imx_iim_write_field(IMX25_IIM_HAB_TYPE, 3);
 }
@@ -152,7 +152,7 @@ static int imx_hab_permanent_write_enable_ocotp(int enable)
 	return imx_ocotp_permanent_write(enable);
 }
 
-static int imx6_hab_lockdown_device_ocotp(void)
+static int imx6_hab_lockdown_device_ocotp(unsigned flags)
 {
 	int ret;
 
@@ -163,7 +163,7 @@ static int imx6_hab_lockdown_device_ocotp(void)
 	return imx_ocotp_write_field(OCOTP_SEC_CONFIG_1, 1);
 }
 
-static int imx8m_hab_lockdown_device_ocotp(void)
+static int imx8m_hab_lockdown_device_ocotp(unsigned flags)
 {
 	int ret;
 
@@ -206,7 +206,7 @@ struct imx_hab_ops {
 	int (*write_srk_hash)(const u8 *srk, unsigned flags);
 	int (*read_srk_hash)(u8 *srk);
 	int (*permanent_write_enable)(int enable);
-	int (*lockdown_device)(void);
+	int (*lockdown_device)(unsigned flags);
 	int (*device_locked_down)(void);
 	int (*print_status)(void);
 };
@@ -372,7 +372,7 @@ int imx_hab_lockdown_device(unsigned flags)
 			return ret;
 	}
 
-	ret = ops->lockdown_device();
+	ret = ops->lockdown_device(flags);
 
 	if (flags & IMX_SRK_HASH_WRITE_PERMANENT)
 		ops->permanent_write_enable(0);

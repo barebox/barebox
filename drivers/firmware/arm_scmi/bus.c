@@ -206,15 +206,10 @@ static int scmi_dev_probe(struct device *dev)
 	return scmi_drv->probe(scmi_dev);
 }
 
-static void scmi_dev_remove(struct device *dev)
-{
-}
-
 struct bus_type scmi_bus_type = {
 	.name =	"scmi_protocol",
 	.match = scmi_dev_match,
 	.probe = scmi_dev_probe,
-	.remove = scmi_dev_remove,
 };
 EXPORT_SYMBOL_GPL(scmi_bus_type);
 

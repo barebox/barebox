@@ -280,7 +280,7 @@ int unregister_device(struct device *old_dev)
 	dev_remove_parameters(old_dev);
 
 	if (old_dev->driver)
-		old_dev->bus->remove(old_dev);
+		device_remove(old_dev);
 
 	list_for_each_entry_safe(alias, at, &device_alias_list, list) {
 		if(alias->dev == old_dev)
@@ -432,7 +432,7 @@ void unregister_driver(struct driver *drv)
 
 	bus_for_each_device(drv->bus, dev) {
 		if (dev->driver == drv) {
-			drv->bus->remove(dev);
+			device_remove(dev);
 			dev->driver = NULL;
 			list_del(&dev->active);
 			INIT_LIST_HEAD(&dev->active);
@@ -641,19 +641,27 @@ int dev_add_alias(struct device *dev, const char *fmt, ...)
 }
 EXPORT_SYMBOL_GPL(dev_add_alias);
 
+bool device_remove(struct device *dev)
+{
+	if (dev->bus && dev->bus->remove)
+		dev->bus->remove(dev);
+	else if (dev->driver->remove)
+		dev->driver->remove(dev);
+	else
+		return false; /* nothing to do */
+
+	return true;
+}
+EXPORT_SYMBOL_GPL(device_remove);
+
 static void devices_shutdown(void)
 {
 	struct device *dev;
-	int depth = 0;
 
 	list_for_each_entry(dev, &active_device_list, active) {
-		if (dev->bus->remove) {
-			depth++;
-			pr_report_probe("%*sremove-> %s\n", depth * 4, "", dev_name(dev));
-			dev->bus->remove(dev);
-			dev->driver = NULL;
-			depth--;
-		}
+		if (device_remove(dev))
+			pr_report_probe("%*sremove-> %s\n", 1 * 4, "", dev_name(dev));
+		dev->driver = NULL;
 	}
 }
 devshutdown_exitcall(devices_shutdown);

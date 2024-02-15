@@ -166,6 +166,16 @@ int register_device(struct device *);
  */
 int device_probe(struct device *dev);
 
+/**
+ * device_remove - Remove a device from its bus and driver
+ *
+ * @dev: Device
+ *
+ * Returns true if there was any bus or driver specific removal
+ * code that was executed and false if the function was a no-op.
+ */
+bool device_remove(struct device *dev);
+
 /* detect devices attached to this device (cards, disks,...) */
 int device_detect(struct device *dev);
 int device_detect_by_name(const char *devname);

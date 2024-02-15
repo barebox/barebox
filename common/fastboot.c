@@ -195,16 +195,21 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 	return 0;
 }
 
-void fastboot_generic_free(struct fastboot *fb)
+static void fastboot_free_variables(struct list_head *list)
 {
 	struct fb_variable *var, *tmp;
 
-	list_for_each_entry_safe(var, tmp, &fb->variables, list) {
+	list_for_each_entry_safe(var, tmp, list, list) {
 		free(var->name);
 		free(var->value);
 		list_del(&var->list);
 		free(var);
 	}
+}
+
+void fastboot_generic_free(struct fastboot *fb)
+{
+	fastboot_free_variables(&fb->variables);
 
 	free(fb->tempname);
 

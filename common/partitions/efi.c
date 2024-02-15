@@ -440,11 +440,8 @@ static void efi_partition(void *buf, struct block_device *blk,
 	int nb_part;
 	struct partition *pentry;
 
-	if (!find_valid_gpt(buf, blk, &gpt, &ptes) || !gpt || !ptes) {
-		kfree(gpt);
-		kfree(ptes);
-		return;
-	}
+	if (!find_valid_gpt(buf, blk, &gpt, &ptes) || !gpt || !ptes)
+		goto out;
 
 	snprintf(blk->cdev.diskuuid, sizeof(blk->cdev.diskuuid), "%pUl", &gpt->disk_guid);
 	dev_add_param_string_fixed(blk->dev, "guid", blk->cdev.diskuuid);
@@ -474,6 +471,9 @@ static void efi_partition(void *buf, struct block_device *blk,
 		pentry->typeuuid = ptes[i].partition_type_guid;
 		pd->used_entries++;
 	}
+out:
+	kfree(gpt);
+	kfree(ptes);
 }
 
 static struct partition_parser efi_partition_parser = {

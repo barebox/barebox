@@ -80,7 +80,7 @@ static struct fb_variable *fb_addvar(struct fastboot *fb, struct list_head *list
 	return var;
 }
 
-static int fastboot_add_partition_variables(struct fastboot *fb,
+static int fastboot_add_partition_variables(struct fastboot *fb, struct list_head *list,
 		struct file_list_entry *fentry)
 {
 	struct stat s;
@@ -152,9 +152,9 @@ out:
 	if (ret)
 		return ret;
 
-	var = fb_addvar(fb, &fb->variables, "partition-size:%s", fentry->name);
+	var = fb_addvar(fb, list, "partition-size:%s", fentry->name);
 	fb_setvar(var, "%08zx", size);
-	var = fb_addvar(fb, &fb->variables, "partition-type:%s", fentry->name);
+	var = fb_addvar(fb, list, "partition-type:%s", fentry->name);
 	fb_setvar(var, "%s", type);
 
 	return ret;
@@ -162,8 +162,6 @@ out:
 
 int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 {
-	int ret;
-	struct file_list_entry *fentry;
 	struct fb_variable *var;
 
 	INIT_LIST_HEAD(&fb->variables);
@@ -185,12 +183,6 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 		fb->files = file_list_new();
 	if (export_bbu)
 		bbu_append_handlers_to_file_list(fb->files);
-
-	file_list_for_each_entry(fb->files, fentry) {
-		ret = fastboot_add_partition_variables(fb, fentry);
-		if (ret)
-			return ret;
-	}
 
 	return 0;
 }
@@ -305,26 +297,51 @@ static int strcmp_l1(const char *s1, const char *s2)
 static void cb_getvar(struct fastboot *fb, const char *cmd)
 {
 	struct fb_variable *var;
+	LIST_HEAD(partition_list);
+	struct file_list_entry *fentry;
+
+	file_list_for_each_entry(fb->files, fentry) {
+		int ret;
+
+		ret = fastboot_add_partition_variables(fb, &partition_list, fentry);
+		if (ret) {
+			pr_warn("Failed to add partition variables: %pe", ERR_PTR(ret));
+			return;
+		}
+	}
 
 	pr_debug("getvar: \"%s\"\n", cmd);
 
 	if (!strcmp_l1(cmd, "all")) {
-		list_for_each_entry(var, &fb->variables, list) {
+		list_for_each_entry(var, &fb->variables, list)
 			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
 					  var->name, var->value);
-		}
+
+		list_for_each_entry(var, &partition_list, list)
+			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
+					  var->name, var->value);
+
 		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
-		return;
+		goto out;
 	}
 
 	list_for_each_entry(var, &fb->variables, list) {
 		if (!strcmp(cmd, var->name)) {
 			fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, var->value);
-			return;
+			goto out;
+		}
+	}
+
+	list_for_each_entry(var, &partition_list, list) {
+		if (!strcmp(cmd, var->name)) {
+			fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, var->value);
+			goto out;
 		}
 	}
 
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
+out:
+	fastboot_free_variables(&partition_list);
 }
 
 int fastboot_handle_download_data(struct fastboot *fb, const void *buffer,

@@ -10,6 +10,7 @@
 
 #define CONTROL0_HISPEED	(1 << 2)
 #define CONTROL0_4DATA		(1 << 1)
+#define CONTROL0_8DATA		(1 << 5)
 
 #define CONTROL1_DATARST	(1 << 26)
 #define CONTROL1_CMDRST		(1 << 25)

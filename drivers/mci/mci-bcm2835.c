@@ -225,6 +225,13 @@ static void bcm2835_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 			SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL);
 
 	switch (ios->bus_width) {
+	case MMC_BUS_WIDTH_8:
+		sdhci_write32(&host->sdhci,
+				SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,
+				(current_val & ~CONTROL0_4DATA) | CONTROL0_8DATA);
+		host->bus_width = 2;
+		dev_dbg(host->hw_dev, "Changing bus width to 8\n");
+		break;
 	case MMC_BUS_WIDTH_4:
 		sdhci_write32(&host->sdhci,
 				SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,

@@ -114,8 +114,6 @@ static int devfs_open(struct device *_dev, FILE *f, const char *filename)
 			return ret;
 	}
 
-	cdev->open++;
-
 	return 0;
 }
 
@@ -129,8 +127,6 @@ static int devfs_close(struct device *_dev, FILE *f)
 		if (ret)
 			return ret;
 	}
-
-	cdev->open--;
 
 	return 0;
 }

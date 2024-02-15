@@ -24,5 +24,6 @@ struct partition_entry {
 } __attribute__ ((packed));
 
 extern int parse_partition_table(struct block_device*);
+int reparse_partition_table(struct block_device *blk);
 
 #endif /* DISKS_H */

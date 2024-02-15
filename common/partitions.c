@@ -154,6 +154,26 @@ on_error:
 	return rc;
 }
 
+int reparse_partition_table(struct block_device *blk)
+{
+	struct cdev *cdev = &blk->cdev;
+	struct cdev *c, *tmp;
+
+	list_for_each_entry(c, &cdev->partitions, partition_entry) {
+		if (c->open) {
+			pr_warn("%s is busy, will continue to use old partition table\n", c->name);
+			return -EBUSY;
+		}
+	}
+
+	list_for_each_entry_safe(c, tmp, &cdev->partitions, partition_entry) {
+		if (c->flags & DEVFS_PARTITION_FROM_TABLE)
+			cdevfs_del_partition(c);
+	}
+
+	return parse_partition_table(blk);
+}
+
 int partition_parser_register(struct partition_parser *p)
 {
 	list_add_tail(&p->list, &partition_parser_list);

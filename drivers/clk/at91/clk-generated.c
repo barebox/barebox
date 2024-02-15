@@ -6,35 +6,55 @@
  * Based on clk-programmable & clk-peripheral drivers by Boris BREZILLON.
  */
 
-#include <common.h>
-#include <clock.h>
-#include <io.h>
-#include <linux/list.h>
-#include <linux/clk.h>
+#include <linux/bitfield.h>
+#include <linux/printk.h>
+#include <linux/clk-provider.h>
+#include <linux/clkdev.h>
 #include <linux/clk/at91_pmc.h>
+#include <of.h>
 #include <mfd/syscon.h>
 #include <linux/regmap.h>
-#include <linux/bitfield.h>
 
 #include "pmc.h"
 
 #define GENERATED_MAX_DIV	255
 
-#define GCK_INDEX_DT_AUDIO_PLL	5
-
 struct clk_generated {
 	struct clk_hw hw;
 	struct regmap *regmap;
 	struct clk_range range;
+	spinlock_t *lock;
+	u32 *mux_table;
 	u32 id;
 	u32 gckdiv;
 	const struct clk_pcr_layout *layout;
+	struct at91_clk_pms pms;
 	u8 parent_id;
-	bool audio_pll_allowed;
+	int chg_pid;
 };
 
-#define to_clk_generated(_hw) \
-	container_of(_hw, struct clk_generated, hw)
+#define to_clk_generated(hw) \
+	container_of(hw, struct clk_generated, hw)
+
+static int clk_generated_set(struct clk_generated *gck, int status)
+{
+	unsigned long flags;
+	unsigned int enable = status ? AT91_PMC_PCR_GCKEN : 0;
+
+	spin_lock_irqsave(gck->lock, flags);
+	regmap_write(gck->regmap, gck->layout->offset,
+		     (gck->id & gck->layout->pid_mask));
+	regmap_update_bits(gck->regmap, gck->layout->offset,
+			   AT91_PMC_PCR_GCKDIV_MASK | gck->layout->gckcss_mask |
+			   gck->layout->cmd | enable,
+			   field_prep(gck->layout->gckcss_mask, gck->parent_id) |
+			   gck->layout->cmd |
+			   FIELD_PREP(AT91_PMC_PCR_GCKDIV_MASK, gck->gckdiv) |
+			   enable);
+	spin_unlock_irqrestore(gck->lock, flags);
+
+	return 0;
+}
 
 static int clk_generated_enable(struct clk_hw *hw)
 {
@@ -43,39 +63,38 @@ static int clk_generated_enable(struct clk_hw *hw)
 	pr_debug("GCLK: %s, gckdiv = %d, parent id = %d\n",
 		 __func__, gck->gckdiv, gck->parent_id);
 
-	regmap_write(gck->regmap, gck->layout->offset,
-		     (gck->id & gck->layout->pid_mask));
-	regmap_update_bits(gck->regmap, gck->layout->offset,
-			   AT91_PMC_PCR_GCKDIV_MASK | gck->layout->gckcss_mask |
-			   gck->layout->cmd | AT91_PMC_PCR_GCKEN,
-			   field_prep(gck->layout->gckcss_mask, gck->parent_id) |
-			   gck->layout->cmd |
-			   FIELD_PREP(AT91_PMC_PCR_GCKDIV_MASK, gck->gckdiv) |
-			   AT91_PMC_PCR_GCKEN);
+	clk_generated_set(gck, 1);
+
 	return 0;
 }
 
 static void clk_generated_disable(struct clk_hw *hw)
 {
 	struct clk_generated *gck = to_clk_generated(hw);
+	unsigned long flags;
 
+	spin_lock_irqsave(gck->lock, flags);
 	regmap_write(gck->regmap, gck->layout->offset,
 		     (gck->id & gck->layout->pid_mask));
 	regmap_update_bits(gck->regmap, gck->layout->offset,
 			   gck->layout->cmd | AT91_PMC_PCR_GCKEN,
 			   gck->layout->cmd);
+	spin_unlock_irqrestore(gck->lock, flags);
 }
 
 static int clk_generated_is_enabled(struct clk_hw *hw)
 {
 	struct clk_generated *gck = to_clk_generated(hw);
+	unsigned long flags;
 	unsigned int status;
 
+	spin_lock_irqsave(gck->lock, flags);
 	regmap_write(gck->regmap, gck->layout->offset,
 		     (gck->id & gck->layout->pid_mask));
 	regmap_read(gck->regmap, gck->layout->offset, &status);
+	spin_unlock_irqrestore(gck->lock, flags);
 
-	return status & AT91_PMC_PCR_GCKEN ? 1 : 0;
+	return !!(status & AT91_PMC_PCR_GCKEN);
 }
 
 static unsigned long
@@ -95,7 +114,11 @@ static int clk_generated_set_parent(struct clk_hw *hw, u8 index)
 	if (index >= clk_hw_get_num_parents(hw))
 		return -EINVAL;
 
-	gck->parent_id = index;
+	if (gck->mux_table)
+		gck->parent_id = clk_mux_index_to_val(gck->mux_table, 0, index);
+	else
+		gck->parent_id = index;
+
 	return 0;
 }
 
@@ -150,54 +173,59 @@ static const struct clk_ops generated_ops = {
 static void clk_generated_startup(struct clk_generated *gck)
 {
 	u32 tmp;
+	unsigned long flags;
 
+	spin_lock_irqsave(gck->lock, flags);
 	regmap_write(gck->regmap, gck->layout->offset,
 		     (gck->id & gck->layout->pid_mask));
 	regmap_read(gck->regmap, gck->layout->offset, &tmp);
+	spin_unlock_irqrestore(gck->lock, flags);
 
 	gck->parent_id = field_get(gck->layout->gckcss_mask, tmp);
 	gck->gckdiv = FIELD_GET(AT91_PMC_PCR_GCKDIV_MASK, tmp);
 }
 
-struct clk * __init
-at91_clk_register_generated(struct regmap *regmap,
+struct clk_hw * __init
+at91_clk_register_generated(struct regmap *regmap, spinlock_t *lock,
 			    const struct clk_pcr_layout *layout,
 			    const char *name, const char **parent_names,
-			    u8 num_parents, u8 id, bool pll_audio,
-			    const struct clk_range *range)
+			    u32 *mux_table, u8 num_parents, u8 id,
+			    const struct clk_range *range,
+			    int chg_pid)
 {
-	size_t parents_array_size;
 	struct clk_generated *gck;
-	struct clk *clk;
+	struct clk_init_data init;
+	struct clk_hw *hw;
 	int ret;
 
 	gck = kzalloc(sizeof(*gck), GFP_KERNEL);
 	if (!gck)
 		return ERR_PTR(-ENOMEM);
 
+	init.name = name;
+	init.ops = &generated_ops;
+	init.parent_names = parent_names;
+	init.num_parents = num_parents;
+	init.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE;
+	if (chg_pid >= 0)
+		init.flags |= CLK_SET_RATE_PARENT;
+
 	gck->id = id;
-	gck->hw.clk.name = name;
-	gck->hw.clk.ops = &generated_ops;
-
-	parents_array_size = num_parents * sizeof(gck->hw.clk.parent_names[0]);
-	gck->hw.clk.parent_names = xmemdup(parent_names, parents_array_size);
-	gck->hw.clk.num_parents = num_parents;
-
-	/* gck->hw.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE | CLK_SET_PARENT; */
+	gck->hw.init = &init;
 	gck->regmap = regmap;
+	gck->lock = lock;
 	gck->range = *range;
-	gck->audio_pll_allowed = pll_audio;
+	gck->chg_pid = chg_pid;
 	gck->layout = layout;
+	gck->mux_table = mux_table;
 
 	clk_generated_startup(gck);
-	clk = &gck->hw.clk;
-	ret = bclk_register(&gck->hw.clk);
+	hw = &gck->hw;
+	ret = clk_hw_register(NULL, &gck->hw);
 	if (ret) {
 		kfree(gck);
-		clk = ERR_PTR(ret);
-	} else {
-		pmc_register_id(id);
+		hw = ERR_PTR(ret);
 	}
 
-	return clk;
+	return hw;
 }

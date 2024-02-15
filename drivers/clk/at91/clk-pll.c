@@ -3,12 +3,10 @@
  *  Copyright (C) 2013 Boris BREZILLON <b.brezillon@overkiz.com>
  */
 
-#include <common.h>
-#include <clock.h>
-#include <of.h>
-#include <linux/list.h>
-#include <linux/clk.h>
+#include <linux/clk-provider.h>
+#include <linux/clkdev.h>
 #include <linux/clk/at91_pmc.h>
+#include <of.h>
 #include <mfd/syscon.h>
 #include <linux/regmap.h>
 
@@ -31,7 +29,7 @@
 #define PLL_OUT_SHIFT		14
 #define PLL_MAX_ID		1
 
-#define to_clk_pll(_hw) container_of(_hw, struct clk_pll, hw)
+#define to_clk_pll(hw) container_of(hw, struct clk_pll, hw)
 
 struct clk_pll {
 	struct clk_hw hw;
@@ -42,7 +40,7 @@ struct clk_pll {
 	u16 mul;
 	const struct clk_pll_layout *layout;
 	const struct clk_pll_characteristics *characteristics;
-	const char *parent;
+	struct at91_clk_pms pms;
 };
 
 static inline bool clk_pll_ready(struct regmap *regmap, int id)
@@ -54,7 +52,7 @@ static inline bool clk_pll_ready(struct regmap *regmap, int id)
 	return status & PLL_STATUS_MASK(id) ? 1 : 0;
 }
 
-static int clk_pll_enable(struct clk_hw *hw)
+static int clk_pll_prepare(struct clk_hw *hw)
 {
 	struct clk_pll *pll = to_clk_pll(hw);
 	struct regmap *regmap = pll->regmap;
@@ -83,33 +81,33 @@ static int clk_pll_enable(struct clk_hw *hw)
 		out = characteristics->out[pll->range];
 
 	if (characteristics->icpll)
-		regmap_write_bits(regmap, AT91_PMC_PLLICPR, PLL_ICPR_MASK(id),
+		regmap_update_bits(regmap, AT91_PMC_PLLICPR, PLL_ICPR_MASK(id),
 			characteristics->icpll[pll->range] << PLL_ICPR_SHIFT(id));
 
-	regmap_write_bits(regmap, offset, layout->pllr_mask,
-			  pll->div | (PLL_MAX_COUNT << PLL_COUNT_SHIFT) |
-			  (out << PLL_OUT_SHIFT) |
-			  ((pll->mul & layout->mul_mask) << layout->mul_shift));
+	regmap_update_bits(regmap, offset, layout->pllr_mask,
+			pll->div | (PLL_MAX_COUNT << PLL_COUNT_SHIFT) |
+			(out << PLL_OUT_SHIFT) |
+			((pll->mul & layout->mul_mask) << layout->mul_shift));
 
 	while (!clk_pll_ready(regmap, pll->id))
-		barrier();
+		cpu_relax();
 
 	return 0;
 }
 
-static int clk_pll_is_enabled(struct clk_hw *hw)
+static int clk_pll_is_prepared(struct clk_hw *hw)
 {
 	struct clk_pll *pll = to_clk_pll(hw);
 
 	return clk_pll_ready(pll->regmap, pll->id);
 }
 
-static void clk_pll_disable(struct clk_hw *hw)
+static void clk_pll_unprepare(struct clk_hw *hw)
 {
 	struct clk_pll *pll = to_clk_pll(hw);
 	unsigned int mask = pll->layout->pllr_mask;
 
-	regmap_write_bits(pll->regmap, PLL_REG(pll->id), mask, ~mask);
+	regmap_update_bits(pll->regmap, PLL_REG(pll->id), mask, ~mask);
 }
 
 static unsigned long clk_pll_recalc_rate(struct clk_hw *hw,
@@ -234,7 +232,7 @@ static long clk_pll_get_best_div_mul(struct clk_pll *pll, unsigned long rate,
 }
 
 static long clk_pll_round_rate(struct clk_hw *hw, unsigned long rate,
-			       unsigned long *parent_rate)
+					unsigned long *parent_rate)
 {
 	struct clk_pll *pll = to_clk_pll(hw);
 
@@ -264,21 +262,23 @@ static int clk_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 }
 
 static const struct clk_ops pll_ops = {
-	.enable = clk_pll_enable,
-	.disable = clk_pll_disable,
-	.is_enabled = clk_pll_is_enabled,
+	.enable = clk_pll_prepare,
+	.disable = clk_pll_unprepare,
+	.is_enabled = clk_pll_is_prepared,
 	.recalc_rate = clk_pll_recalc_rate,
 	.round_rate = clk_pll_round_rate,
 	.set_rate = clk_pll_set_rate,
 };
 
-struct clk * __init
+struct clk_hw * __init
 at91_clk_register_pll(struct regmap *regmap, const char *name,
 		      const char *parent_name, u8 id,
 		      const struct clk_pll_layout *layout,
 		      const struct clk_pll_characteristics *characteristics)
 {
 	struct clk_pll *pll;
+	struct clk_hw *hw;
+	struct clk_init_data init;
 	int offset = PLL_REG(id);
 	unsigned int pllr;
 	int ret;
@@ -286,17 +286,18 @@ at91_clk_register_pll(struct regmap *regmap, const char *name,
 	if (id > PLL_MAX_ID)
 		return ERR_PTR(-EINVAL);
 
-	pll = xzalloc(sizeof(*pll));
+	pll = kzalloc(sizeof(*pll), GFP_KERNEL);
+	if (!pll)
+		return ERR_PTR(-ENOMEM);
 
-	pll->parent = parent_name;
-	pll->hw.clk.name = name;
-	pll->hw.clk.ops = &pll_ops;
-	pll->hw.clk.parent_names = &pll->parent;
-	pll->hw.clk.num_parents = 1;
-
-	/* init.flags = CLK_SET_RATE_GATE; */
+	init.name = name;
+	init.ops = &pll_ops;
+	init.parent_names = &parent_name;
+	init.num_parents = 1;
+	init.flags = CLK_SET_RATE_GATE;
 
 	pll->id = id;
+	pll->hw.init = &init;
 	pll->layout = layout;
 	pll->characteristics = characteristics;
 	pll->regmap = regmap;
@@ -304,13 +305,14 @@ at91_clk_register_pll(struct regmap *regmap, const char *name,
 	pll->div = PLL_DIV(pllr);
 	pll->mul = PLL_MUL(pllr, layout);
 
-	ret = bclk_register(&pll->hw.clk);
+	hw = &pll->hw;
+	ret = clk_hw_register(NULL, &pll->hw);
 	if (ret) {
 		kfree(pll);
-		return ERR_PTR(ret);
+		hw = ERR_PTR(ret);
 	}
 
-	return &pll->hw.clk;
+	return hw;
 }
 
 

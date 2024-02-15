@@ -386,6 +386,7 @@ static inline struct clk_hw *clk_to_clk_hw(const struct clk *clk)
 {
 	return container_of_safe(clk, struct clk_hw, clk);
 }
+#define __clk_get_hw(clk) clk_to_clk_hw(clk)
 
 struct clk_div_table {
 	unsigned int	val;
@@ -1027,6 +1028,21 @@ static inline void clk_bulk_disable(int num_clks,
 				    struct clk_bulk_data *clks) {}
 
 #endif
+
+/**
+ * clk_hw_register_fixed_rate_with_accuracy - register fixed-rate clock with
+ * the clock framework
+ * @dev: device that is registering this clock
+ * @name: name of this clock
+ * @parent_name: name of clock's parent
+ * @flags: framework-specific flags
+ * @fixed_rate: non-adjustable clock rate
+ * @fixed_accuracy: non-adjustable clock accuracy (ignored)
+ */
+#define clk_hw_register_fixed_rate_with_accuracy(dev, name, parent_name,      \
+						 flags, fixed_rate,	      \
+						 fixed_accuracy)	      \
+	clk_hw_register_fixed_rate((dev), (name), (parent_name), (flags), (fixed_rate))
 
 #define clk_bulk_prepare_enable clk_bulk_enable
 #define clk_bulk_disable_unprepare clk_bulk_disable

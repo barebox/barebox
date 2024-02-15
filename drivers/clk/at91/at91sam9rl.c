@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-only
-
-#include <driver.h>
-#include <linux/regmap.h>
-#include <stdio.h>
+#include <linux/clk-provider.h>
 #include <mfd/syscon.h>
-
-#include <linux/clk.h>
 #include <linux/slab.h>
-#include <linux/types.h>
+#include <stdio.h>
 
 #include <dt-bindings/clock/at91.h>
 
 #include "pmc.h"
+
+static DEFINE_SPINLOCK(sam9rl_mck_lock);
 
 static const struct clk_master_characteristics sam9rl_mck_characteristics = {
 	.output = { .min = 0, .max = 94000000 },
@@ -75,7 +72,7 @@ static void __init at91sam9rl_pmc_setup(struct device_node *np)
 	struct pmc_data *at91sam9rl_pmc;
 	const char *parent_names[6];
 	struct regmap *regmap;
-	struct clk *hw;
+	struct clk_hw *hw;
 	int i;
 
 	i = of_property_match_string(np, "clock-names", "slow_clk");
@@ -123,9 +120,19 @@ static void __init at91sam9rl_pmc_setup(struct device_node *np)
 	parent_names[1] = "mainck";
 	parent_names[2] = "pllack";
 	parent_names[3] = "utmick";
-	hw = at91_clk_register_master(regmap, "masterck", 4, parent_names,
-				      &at91rm9200_master_layout,
-				      &sam9rl_mck_characteristics);
+	hw = at91_clk_register_master_pres(regmap, "masterck_pres", 4,
+					   parent_names,
+					   &at91rm9200_master_layout,
+					   &sam9rl_mck_characteristics,
+					   &sam9rl_mck_lock);
+	if (IS_ERR(hw))
+		goto err_free;
+
+	hw = at91_clk_register_master_div(regmap, "masterck_div",
+					  "masterck_pres",
+					  &at91rm9200_master_layout,
+					  &sam9rl_mck_characteristics,
+					  &sam9rl_mck_lock, CLK_SET_RATE_GATE);
 	if (IS_ERR(hw))
 		goto err_free;
 
@@ -135,15 +142,16 @@ static void __init at91sam9rl_pmc_setup(struct device_node *np)
 	parent_names[1] = "mainck";
 	parent_names[2] = "pllack";
 	parent_names[3] = "utmick";
-	parent_names[4] = "masterck";
+	parent_names[4] = "masterck_div";
 	for (i = 0; i < 2; i++) {
-		char *name;
+		char name[6];
 
-		name = xasprintf("prog%d", i);
+		snprintf(name, sizeof(name), "prog%d", i);
 
 		hw = at91_clk_register_programmable(regmap, name,
 						    parent_names, 5, i,
-						    &at91rm9200_programmable_layout);
+						    &at91rm9200_programmable_layout,
+						    NULL);
 		if (IS_ERR(hw))
 			goto err_free;
 
@@ -153,7 +161,7 @@ static void __init at91sam9rl_pmc_setup(struct device_node *np)
 	for (i = 0; i < ARRAY_SIZE(at91sam9rl_systemck); i++) {
 		hw = at91_clk_register_system(regmap, at91sam9rl_systemck[i].n,
 					      at91sam9rl_systemck[i].p,
-					      at91sam9rl_systemck[i].id);
+					      at91sam9rl_systemck[i].id, 0);
 		if (IS_ERR(hw))
 			goto err_free;
 
@@ -163,7 +171,7 @@ static void __init at91sam9rl_pmc_setup(struct device_node *np)
 	for (i = 0; i < ARRAY_SIZE(at91sam9rl_periphck); i++) {
 		hw = at91_clk_register_peripheral(regmap,
 						  at91sam9rl_periphck[i].n,
-						  "masterck",
+						  "masterck_div",
 						  at91sam9rl_periphck[i].id);
 		if (IS_ERR(hw))
 			goto err_free;
@@ -171,11 +179,12 @@ static void __init at91sam9rl_pmc_setup(struct device_node *np)
 		at91sam9rl_pmc->phws[at91sam9rl_periphck[i].id] = hw;
 	}
 
-	of_clk_add_provider(np, of_clk_hw_pmc_get, at91sam9rl_pmc);
+	of_clk_add_hw_provider(np, of_clk_hw_pmc_get, at91sam9rl_pmc);
 
 	return;
 
 err_free:
 	kfree(at91sam9rl_pmc);
 }
-CLK_OF_DECLARE_DRIVER(at91sam9rl_pmc, "atmel,at91sam9rl-pmc", at91sam9rl_pmc_setup);
+
+CLK_OF_DECLARE(at91sam9rl_pmc, "atmel,at91sam9rl-pmc", at91sam9rl_pmc_setup);

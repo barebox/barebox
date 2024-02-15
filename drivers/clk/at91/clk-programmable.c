@@ -3,13 +3,10 @@
  *  Copyright (C) 2013 Boris BREZILLON <b.brezillon@overkiz.com>
  */
 
-#include <common.h>
-#include <clock.h>
-#include <io.h>
-#include <linux/list.h>
-#include <linux/clk.h>
+#include <linux/clk-provider.h>
+#include <linux/clkdev.h>
 #include <linux/clk/at91_pmc.h>
-#include <linux/overflow.h>
+#include <of.h>
 #include <mfd/syscon.h>
 #include <linux/regmap.h>
 
@@ -24,12 +21,13 @@
 struct clk_programmable {
 	struct clk_hw hw;
 	struct regmap *regmap;
+	u32 *mux_table;
 	u8 id;
 	const struct clk_programmable_layout *layout;
-	const char *parent_names[];
+	struct at91_clk_pms pms;
 };
 
-#define to_clk_programmable(_hw) container_of(_hw, struct clk_programmable, hw)
+#define to_clk_programmable(hw) container_of(hw, struct clk_programmable, hw)
 
 static unsigned long clk_programmable_recalc_rate(struct clk_hw *hw,
 						  unsigned long parent_rate)
@@ -59,6 +57,9 @@ static int clk_programmable_set_parent(struct clk_hw *hw, u8 index)
 	if (layout->have_slck_mck)
 		mask |= AT91_PMC_CSSMCK_MCK;
 
+	if (prog->mux_table)
+		pckr = clk_mux_index_to_val(prog->mux_table, 0, index);
+
 	if (index > layout->css_mask) {
 		if (index > PROG_MAX_RM9200_CSS && !layout->have_slck_mck)
 			return -EINVAL;
@@ -66,7 +67,7 @@ static int clk_programmable_set_parent(struct clk_hw *hw, u8 index)
 		pckr |= AT91_PMC_CSSMCK_MCK;
 	}
 
-	regmap_write_bits(prog->regmap, AT91_PMC_PCKR(prog->id), mask, pckr);
+	regmap_update_bits(prog->regmap, AT91_PMC_PCKR(prog->id), mask, pckr);
 
 	return 0;
 }
@@ -84,6 +85,9 @@ static int clk_programmable_get_parent(struct clk_hw *hw)
 
 	if (layout->have_slck_mck && (pckr & AT91_PMC_CSSMCK_MCK) && !ret)
 		ret = PROG_MAX_RM9200_CSS + 1;
+
+	if (prog->mux_table)
+		ret = clk_mux_val_to_index(&prog->hw, prog->mux_table, 0, ret);
 
 	return ret;
 }
@@ -114,9 +118,9 @@ static int clk_programmable_set_rate(struct clk_hw *hw, unsigned long rate,
 			return -EINVAL;
 	}
 
-	regmap_write_bits(prog->regmap, AT91_PMC_PCKR(prog->id),
-			  layout->pres_mask << layout->pres_shift,
-			  shift << layout->pres_shift);
+	regmap_update_bits(prog->regmap, AT91_PMC_PCKR(prog->id),
+			   layout->pres_mask << layout->pres_shift,
+			   shift << layout->pres_shift);
 
 	return 0;
 }
@@ -128,43 +132,45 @@ static const struct clk_ops programmable_ops = {
 	.set_rate = clk_programmable_set_rate,
 };
 
-struct clk * __init
+struct clk_hw * __init
 at91_clk_register_programmable(struct regmap *regmap,
 			       const char *name, const char **parent_names,
 			       u8 num_parents, u8 id,
-			       const struct clk_programmable_layout *layout)
+			       const struct clk_programmable_layout *layout,
+			       u32 *mux_table)
 {
 	struct clk_programmable *prog;
+	struct clk_hw *hw;
+	struct clk_init_data init;
 	int ret;
 
 	if (id > PROG_ID_MAX)
 		return ERR_PTR(-EINVAL);
 
-	prog = kzalloc(struct_size(prog, parent_names, num_parents), GFP_KERNEL);
+	prog = kzalloc(sizeof(*prog), GFP_KERNEL);
 	if (!prog)
 		return ERR_PTR(-ENOMEM);
 
-	prog->hw.clk.name = name;
-	prog->hw.clk.ops = &programmable_ops;
-	memcpy(prog->parent_names, parent_names,
-	       num_parents * sizeof(prog->parent_names[0]));
-	prog->hw.clk.parent_names = &prog->parent_names[0];
-	prog->hw.clk.num_parents = num_parents;
-	/* init.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE; */
+	init.name = name;
+	init.ops = &programmable_ops;
+	init.parent_names = parent_names;
+	init.num_parents = num_parents;
+	init.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE;
 
 	prog->id = id;
 	prog->layout = layout;
+	prog->hw.init = &init;
 	prog->regmap = regmap;
+	prog->mux_table = mux_table;
 
-	ret = bclk_register(&prog->hw.clk);
+	hw = &prog->hw;
+	ret = clk_hw_register(NULL, &prog->hw);
 	if (ret) {
 		kfree(prog);
-		return ERR_PTR(ret);
+		hw = ERR_PTR(ret);
 	}
 
-	pmc_register_pck(id);
-
-	return &prog->hw.clk;
+	return hw;
 }
 
 const struct clk_programmable_layout at91rm9200_programmable_layout = {

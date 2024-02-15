@@ -5,19 +5,12 @@
  *  Copyright (C) 2013 Boris BREZILLON <b.brezillon@overkiz.com>
  */
 
-#include <common.h>
+#include <linux/clk-provider.h>
+#include <linux/clkdev.h>
 #include <clock.h>
 #include <of.h>
 #include <of_address.h>
-#include <io.h>
-#include <linux/list.h>
-#include <linux/clk.h>
-#include <linux/clk/at91_pmc.h>
-#include <linux/overflow.h>
-#include <mfd/syscon.h>
-#include <linux/regmap.h>
-
-
+#include <linux/io.h>
 
 #define SLOW_CLOCK_FREQ		32768
 #define SLOWCK_SW_CYCLES	5
@@ -38,10 +31,9 @@ struct clk_slow_osc {
 	void __iomem *sckcr;
 	const struct clk_slow_bits *bits;
 	unsigned long startup_usec;
-	const char *parent_name;
 };
 
-#define to_clk_slow_osc(_hw) container_of(_hw, struct clk_slow_osc, hw)
+#define to_clk_slow_osc(hw) container_of(hw, struct clk_slow_osc, hw)
 
 struct clk_sama5d4_slow_osc {
 	struct clk_hw hw;
@@ -49,33 +41,31 @@ struct clk_sama5d4_slow_osc {
 	const struct clk_slow_bits *bits;
 	unsigned long startup_usec;
 	bool prepared;
-	const char *parent_name;
 };
 
-#define to_clk_sama5d4_slow_osc(_hw) container_of(_hw, struct clk_sama5d4_slow_osc, hw)
+#define to_clk_sama5d4_slow_osc(hw) container_of(hw, struct clk_sama5d4_slow_osc, hw)
 
 struct clk_slow_rc_osc {
 	struct clk_hw hw;
 	void __iomem *sckcr;
 	const struct clk_slow_bits *bits;
 	unsigned long frequency;
+	unsigned long accuracy;
 	unsigned long startup_usec;
-	const char *parent_name;
 };
 
-#define to_clk_slow_rc_osc(_hw) container_of(_hw, struct clk_slow_rc_osc, hw)
+#define to_clk_slow_rc_osc(hw) container_of(hw, struct clk_slow_rc_osc, hw)
 
 struct clk_sam9x5_slow {
 	struct clk_hw hw;
 	void __iomem *sckcr;
 	const struct clk_slow_bits *bits;
 	u8 parent;
-	const char *parent_names[];
 };
 
-#define to_clk_sam9x5_slow(_hw) container_of(_hw, struct clk_sam9x5_slow, hw)
+#define to_clk_sam9x5_slow(hw) container_of(hw, struct clk_sam9x5_slow, hw)
 
-static int clk_slow_osc_enable(struct clk_hw *hw)
+static int clk_slow_osc_prepare(struct clk_hw *hw)
 {
 	struct clk_slow_osc *osc = to_clk_slow_osc(hw);
 	void __iomem *sckcr = osc->sckcr;
@@ -91,7 +81,7 @@ static int clk_slow_osc_enable(struct clk_hw *hw)
 	return 0;
 }
 
-static void clk_slow_osc_disable(struct clk_hw *hw)
+static void clk_slow_osc_unprepare(struct clk_hw *hw)
 {
 	struct clk_slow_osc *osc = to_clk_slow_osc(hw);
 	void __iomem *sckcr = osc->sckcr;
@@ -103,7 +93,7 @@ static void clk_slow_osc_disable(struct clk_hw *hw)
 	writel(tmp & ~osc->bits->cr_osc32en, sckcr);
 }
 
-static int clk_slow_osc_is_enabled(struct clk_hw *hw)
+static int clk_slow_osc_is_prepared(struct clk_hw *hw)
 {
 	struct clk_slow_osc *osc = to_clk_slow_osc(hw);
 	void __iomem *sckcr = osc->sckcr;
@@ -116,12 +106,12 @@ static int clk_slow_osc_is_enabled(struct clk_hw *hw)
 }
 
 static const struct clk_ops slow_osc_ops = {
-	.enable = clk_slow_osc_enable,
-	.disable = clk_slow_osc_disable,
-	.is_enabled = clk_slow_osc_is_enabled,
+	.enable = clk_slow_osc_prepare,
+	.disable = clk_slow_osc_unprepare,
+	.is_enabled = clk_slow_osc_is_prepared,
 };
 
-static struct clk * __init
+static struct clk_hw * __init
 at91_clk_register_slow_osc(void __iomem *sckcr,
 			   const char *name,
 			   const char *parent_name,
@@ -129,21 +119,25 @@ at91_clk_register_slow_osc(void __iomem *sckcr,
 			   bool bypass,
 			   const struct clk_slow_bits *bits)
 {
-	int ret;
 	struct clk_slow_osc *osc;
+	struct clk_hw *hw;
+	struct clk_init_data init;
+	int ret;
 
 	if (!sckcr || !name || !parent_name)
 		return ERR_PTR(-EINVAL);
 
-	osc = xzalloc(sizeof(*osc));
+	osc = kzalloc(sizeof(*osc), GFP_KERNEL);
+	if (!osc)
+		return ERR_PTR(-ENOMEM);
 
-	osc->hw.clk.name = name;
-	osc->hw.clk.ops = &slow_osc_ops;
-	osc->parent_name = parent_name;
-	osc->hw.clk.parent_names = &osc->parent_name;
-	osc->hw.clk.num_parents = 1;
-	/* osc->clk.flags = CLK_IGNORE_UNUSED; */
+	init.name = name;
+	init.ops = &slow_osc_ops;
+	init.parent_names = &parent_name;
+	init.num_parents = 1;
+	init.flags = CLK_IGNORE_UNUSED;
 
+	osc->hw.init = &init;
 	osc->sckcr = sckcr;
 	osc->startup_usec = startup;
 	osc->bits = bits;
@@ -152,20 +146,21 @@ at91_clk_register_slow_osc(void __iomem *sckcr,
 		writel((readl(sckcr) & ~osc->bits->cr_osc32en) |
 					osc->bits->cr_osc32byp, sckcr);
 
-	ret = bclk_register(&osc->hw.clk);
+	hw = &osc->hw;
+	ret = clk_hw_register(NULL, &osc->hw);
 	if (ret) {
 		kfree(osc);
-		return ERR_PTR(ret);
+		hw = ERR_PTR(ret);
 	}
 
-	return &osc->hw.clk;
+	return hw;
 }
 
-static void at91_clk_unregister_slow_osc(struct clk *clk)
+static void at91_clk_unregister_slow_osc(struct clk_hw *hw)
 {
-	struct clk_slow_osc *osc = to_clk_slow_osc(clk_to_clk_hw(clk));
+	struct clk_slow_osc *osc = to_clk_slow_osc(hw);
 
-	clk_unregister(clk);
+	clk_hw_unregister(hw);
 	kfree(osc);
 }
 
@@ -177,7 +172,7 @@ static unsigned long clk_slow_rc_osc_recalc_rate(struct clk_hw *hw,
 	return osc->frequency;
 }
 
-static int clk_slow_rc_osc_enable(struct clk_hw *hw)
+static int clk_slow_rc_osc_prepare(struct clk_hw *hw)
 {
 	struct clk_slow_rc_osc *osc = to_clk_slow_rc_osc(hw);
 	void __iomem *sckcr = osc->sckcr;
@@ -189,7 +184,7 @@ static int clk_slow_rc_osc_enable(struct clk_hw *hw)
 	return 0;
 }
 
-static void clk_slow_rc_osc_disable(struct clk_hw *hw)
+static void clk_slow_rc_osc_unprepare(struct clk_hw *hw)
 {
 	struct clk_slow_rc_osc *osc = to_clk_slow_rc_osc(hw);
 	void __iomem *sckcr = osc->sckcr;
@@ -197,7 +192,7 @@ static void clk_slow_rc_osc_disable(struct clk_hw *hw)
 	writel(readl(sckcr) & ~osc->bits->cr_rcen, sckcr);
 }
 
-static int clk_slow_rc_osc_is_enabled(struct clk_hw *hw)
+static int clk_slow_rc_osc_is_prepared(struct clk_hw *hw)
 {
 	struct clk_slow_rc_osc *osc = to_clk_slow_rc_osc(hw);
 
@@ -205,13 +200,13 @@ static int clk_slow_rc_osc_is_enabled(struct clk_hw *hw)
 }
 
 static const struct clk_ops slow_rc_osc_ops = {
-	.enable = clk_slow_rc_osc_enable,
-	.disable = clk_slow_rc_osc_disable,
-	.is_enabled = clk_slow_rc_osc_is_enabled,
+	.enable = clk_slow_rc_osc_prepare,
+	.disable = clk_slow_rc_osc_unprepare,
+	.is_enabled = clk_slow_rc_osc_is_prepared,
 	.recalc_rate = clk_slow_rc_osc_recalc_rate,
 };
 
-static struct clk * __init
+static struct clk_hw * __init
 at91_clk_register_slow_rc_osc(void __iomem *sckcr,
 			      const char *name,
 			      unsigned long frequency,
@@ -220,37 +215,45 @@ at91_clk_register_slow_rc_osc(void __iomem *sckcr,
 			      const struct clk_slow_bits *bits)
 {
 	struct clk_slow_rc_osc *osc;
+	struct clk_hw *hw;
+	struct clk_init_data init;
 	int ret;
 
 	if (!sckcr || !name)
 		return ERR_PTR(-EINVAL);
 
-	osc = xzalloc(sizeof(*osc));
-	osc->hw.clk.name = name;
-	osc->hw.clk.ops = &slow_rc_osc_ops;
-	osc->hw.clk.parent_names = NULL;
-	osc->hw.clk.num_parents = 0;
-	/* init.flags = CLK_IGNORE_UNUSED; */
+	osc = kzalloc(sizeof(*osc), GFP_KERNEL);
+	if (!osc)
+		return ERR_PTR(-ENOMEM);
 
+	init.name = name;
+	init.ops = &slow_rc_osc_ops;
+	init.parent_names = NULL;
+	init.num_parents = 0;
+	init.flags = CLK_IGNORE_UNUSED;
+
+	osc->hw.init = &init;
 	osc->sckcr = sckcr;
 	osc->bits = bits;
 	osc->frequency = frequency;
+	osc->accuracy = accuracy;
 	osc->startup_usec = startup;
 
-	ret = bclk_register(&osc->hw.clk);
+	hw = &osc->hw;
+	ret = clk_hw_register(NULL, &osc->hw);
 	if (ret) {
 		kfree(osc);
-		return ERR_PTR(ret);
+		hw = ERR_PTR(ret);
 	}
 
-	return &osc->hw.clk;
+	return hw;
 }
 
-static void at91_clk_unregister_slow_rc_osc(struct clk *clk)
+static void at91_clk_unregister_slow_rc_osc(struct clk_hw *hw)
 {
-	struct clk_slow_rc_osc *osc = to_clk_slow_rc_osc(clk_to_clk_hw(clk));
+	struct clk_slow_rc_osc *osc = to_clk_slow_rc_osc(hw);
 
-	clk_unregister(clk);
+	clk_hw_unregister(hw);
 	kfree(osc);
 }
 
@@ -293,7 +296,7 @@ static const struct clk_ops sam9x5_slow_ops = {
 	.get_parent = clk_sam9x5_slow_get_parent,
 };
 
-static struct clk * __init
+static struct clk_hw * __init
 at91_clk_register_sam9x5_slow(void __iomem *sckcr,
 			      const char *name,
 			      const char **parent_names,
@@ -301,37 +304,43 @@ at91_clk_register_sam9x5_slow(void __iomem *sckcr,
 			      const struct clk_slow_bits *bits)
 {
 	struct clk_sam9x5_slow *slowck;
+	struct clk_hw *hw;
+	struct clk_init_data init;
 	int ret;
 
 	if (!sckcr || !name || !parent_names || !num_parents)
 		return ERR_PTR(-EINVAL);
 
-	slowck = xzalloc(struct_size(slowck, parent_names, num_parents));
-	slowck->hw.clk.name = name;
-	slowck->hw.clk.ops = &sam9x5_slow_ops;
+	slowck = kzalloc(sizeof(*slowck), GFP_KERNEL);
+	if (!slowck)
+		return ERR_PTR(-ENOMEM);
 
-	memcpy(slowck->parent_names, parent_names,
-	       num_parents * sizeof(slowck->parent_names[0]));
-	slowck->hw.clk.parent_names = slowck->parent_names;
-	slowck->hw.clk.num_parents = num_parents;
+	init.name = name;
+	init.ops = &sam9x5_slow_ops;
+	init.parent_names = parent_names;
+	init.num_parents = num_parents;
+	init.flags = 0;
+
+	slowck->hw.init = &init;
 	slowck->sckcr = sckcr;
 	slowck->bits = bits;
 	slowck->parent = !!(readl(sckcr) & slowck->bits->cr_oscsel);
 
-	ret = bclk_register(&slowck->hw.clk);
+	hw = &slowck->hw;
+	ret = clk_hw_register(NULL, &slowck->hw);
 	if (ret) {
 		kfree(slowck);
-		return ERR_PTR(ret);
+		hw = ERR_PTR(ret);
 	}
 
-	return &slowck->hw.clk;
+	return hw;
 }
 
-static void at91_clk_unregister_sam9x5_slow(struct clk *clk)
+static void at91_clk_unregister_sam9x5_slow(struct clk_hw *hw)
 {
-	struct clk_sam9x5_slow *slowck = to_clk_sam9x5_slow(clk_to_clk_hw(clk));
+	struct clk_sam9x5_slow *slowck = to_clk_sam9x5_slow(hw);
 
-	clk_unregister(clk);
+	clk_hw_unregister(hw);
 	kfree(slowck);
 }
 
@@ -343,7 +352,7 @@ static void __init at91sam9x5_sckc_register(struct device_node *np,
 	void __iomem *regbase = of_iomap(np, 0);
 	struct device_node *child = NULL;
 	const char *xtal_name;
-	struct clk *slow_rc, *slow_osc, *slowck;
+	struct clk_hw *slow_rc, *slow_osc, *slowck;
 	bool bypass;
 	int ret;
 
@@ -386,10 +395,10 @@ static void __init at91sam9x5_sckc_register(struct device_node *np,
 
 	/* DT backward compatibility */
 	if (child)
-		ret = of_clk_add_provider(child, of_clk_src_simple_get,
+		ret = of_clk_add_hw_provider(child, of_clk_hw_simple_get,
 					     slowck);
 	else
-		ret = of_clk_add_provider(np, of_clk_src_simple_get, slowck);
+		ret = of_clk_add_hw_provider(np, of_clk_hw_simple_get, slowck);
 
 	if (WARN_ON(ret))
 		goto unregister_slowck;
@@ -434,8 +443,8 @@ static const struct clk_slow_bits at91sam9x60_bits = {
 static void __init of_sam9x60_sckc_setup(struct device_node *np)
 {
 	void __iomem *regbase = of_iomap(np, 0);
-	struct clk_onecell_data *clk_data;
-	struct clk *slow_rc, *slow_osc;
+	struct clk_hw_onecell_data *clk_data;
+	struct clk_hw *slow_rc, *slow_osc;
 	const char *xtal_name;
 	const char *parent_names[2] = { "slow_rc_osc", "slow_osc" };
 	bool bypass;
@@ -444,8 +453,9 @@ static void __init of_sam9x60_sckc_setup(struct device_node *np)
 	if (!regbase)
 		return;
 
-	slow_rc = clk_register_fixed_rate(parent_names[0], NULL, 0,
-					  32768);
+	slow_rc = clk_hw_register_fixed_rate_with_accuracy(NULL, parent_names[0],
+							   NULL, 0, 32768,
+							   93750000);
 	if (IS_ERR(slow_rc))
 		return;
 
@@ -460,52 +470,45 @@ static void __init of_sam9x60_sckc_setup(struct device_node *np)
 	if (IS_ERR(slow_osc))
 		goto unregister_slow_rc;
 
-	clk_data = kzalloc(sizeof(*clk_data), GFP_KERNEL);
+	clk_data = kzalloc(struct_size(clk_data, hws, 2), GFP_KERNEL);
 	if (!clk_data)
 		goto unregister_slow_osc;
 
 	/* MD_SLCK and TD_SLCK. */
-	clk_data->clk_num = 2;
-	clk_data->clks = kcalloc(clk_data->clk_num,
-				 sizeof(*clk_data->clks), GFP_KERNEL);
-	if (!clk_data->clks)
+	clk_data->num = 2;
+	clk_data->hws[0] = clk_hw_register_fixed_rate(NULL, "md_slck",
+						      parent_names[0],
+						      0, 32768);
+	if (IS_ERR(clk_data->hws[0]))
 		goto clk_data_free;
 
-	clk_data->clks[0] = clk_register_fixed_rate("md_slck",
-						   parent_names[0],
-						   0, 32768);
-	if (IS_ERR(clk_data->clks[0]))
-		goto clks_free;
-
-	clk_data->clks[1] = at91_clk_register_sam9x5_slow(regbase, "td_slck",
+	clk_data->hws[1] = at91_clk_register_sam9x5_slow(regbase, "td_slck",
 							 parent_names, 2,
 							 &at91sam9x60_bits);
-	if (IS_ERR(clk_data->clks[1]))
+	if (IS_ERR(clk_data->hws[1]))
 		goto unregister_md_slck;
 
-	ret = of_clk_add_provider(np, of_clk_src_onecell_get, clk_data);
+	ret = of_clk_add_hw_provider(np, of_clk_hw_onecell_get, clk_data);
 	if (WARN_ON(ret))
 		goto unregister_td_slck;
 
 	return;
 
 unregister_td_slck:
-	at91_clk_unregister_sam9x5_slow(clk_data->clks[1]);
+	at91_clk_unregister_sam9x5_slow(clk_data->hws[1]);
 unregister_md_slck:
-	clk_unregister(clk_data->clks[0]);
-clks_free:
-	kfree(clk_data->clks);
+	clk_hw_unregister(clk_data->hws[0]);
 clk_data_free:
 	kfree(clk_data);
 unregister_slow_osc:
 	at91_clk_unregister_slow_osc(slow_osc);
 unregister_slow_rc:
-	clk_unregister(slow_rc);
+	clk_hw_unregister(slow_rc);
 }
 CLK_OF_DECLARE(sam9x60_clk_sckc, "microchip,sam9x60-sckc",
 	       of_sam9x60_sckc_setup);
 
-static int clk_sama5d4_slow_osc_enable(struct clk_hw *hw)
+static int clk_sama5d4_slow_osc_prepare(struct clk_hw *hw)
 {
 	struct clk_sama5d4_slow_osc *osc = to_clk_sama5d4_slow_osc(hw);
 
@@ -514,7 +517,7 @@ static int clk_sama5d4_slow_osc_enable(struct clk_hw *hw)
 
 	/*
 	 * Assume that if it has already been selected (for example by the
-	 * bootloader), enough time has aready passed.
+	 * bootloader), enough time has already passed.
 	 */
 	if ((readl(osc->sckcr) & osc->bits->cr_oscsel)) {
 		osc->prepared = true;
@@ -527,7 +530,7 @@ static int clk_sama5d4_slow_osc_enable(struct clk_hw *hw)
 	return 0;
 }
 
-static int clk_sama5d4_slow_osc_is_enabled(struct clk_hw *hw)
+static int clk_sama5d4_slow_osc_is_prepared(struct clk_hw *hw)
 {
 	struct clk_sama5d4_slow_osc *osc = to_clk_sama5d4_slow_osc(hw);
 
@@ -535,8 +538,8 @@ static int clk_sama5d4_slow_osc_is_enabled(struct clk_hw *hw)
 }
 
 static const struct clk_ops sama5d4_slow_osc_ops = {
-	.enable = clk_sama5d4_slow_osc_enable,
-	.is_enabled = clk_sama5d4_slow_osc_is_enabled,
+	.enable = clk_sama5d4_slow_osc_prepare,
+	.is_enabled = clk_sama5d4_slow_osc_is_prepared,
 };
 
 static const struct clk_slow_bits at91sama5d4_bits = {
@@ -546,32 +549,41 @@ static const struct clk_slow_bits at91sama5d4_bits = {
 static void __init of_sama5d4_sckc_setup(struct device_node *np)
 {
 	void __iomem *regbase = of_iomap(np, 0);
-	struct clk *slow_rc, *slowck;
+	struct clk_hw *slow_rc, *slowck;
 	struct clk_sama5d4_slow_osc *osc;
+	struct clk_init_data init;
+	const char *xtal_name;
 	const char *parent_names[2] = { "slow_rc_osc", "slow_osc" };
 	int ret;
 
 	if (!regbase)
 		return;
 
-	slow_rc = clk_fixed(parent_names[0], 32768);
+	slow_rc = clk_hw_register_fixed_rate_with_accuracy(NULL,
+							   parent_names[0],
+							   NULL, 0, 32768,
+							   250000000);
 	if (IS_ERR(slow_rc))
 		return;
 
-	osc = xzalloc(sizeof(*osc));
-	osc->parent_name = of_clk_get_parent_name(np, 0);
-	osc->hw.clk.name = parent_names[1];
-	osc->hw.clk.ops = &sama5d4_slow_osc_ops;
-	osc->hw.clk.parent_names = &osc->parent_name;
-	osc->hw.clk.num_parents = 1;
+	xtal_name = of_clk_get_parent_name(np, 0);
 
-	/* osc->clk.flags = CLK_IGNORE_UNUSED; */
+	osc = kzalloc(sizeof(*osc), GFP_KERNEL);
+	if (!osc)
+		goto unregister_slow_rc;
 
+	init.name = parent_names[1];
+	init.ops = &sama5d4_slow_osc_ops;
+	init.parent_names = &xtal_name;
+	init.num_parents = 1;
+	init.flags = CLK_IGNORE_UNUSED;
+
+	osc->hw.init = &init;
 	osc->sckcr = regbase;
 	osc->startup_usec = 1200000;
 	osc->bits = &at91sama5d4_bits;
 
-	ret = bclk_register(&osc->hw.clk);
+	ret = clk_hw_register(NULL, &osc->hw);
 	if (ret)
 		goto free_slow_osc_data;
 
@@ -581,7 +593,7 @@ static void __init of_sama5d4_sckc_setup(struct device_node *np)
 	if (IS_ERR(slowck))
 		goto unregister_slow_osc;
 
-	ret = of_clk_add_provider(np, of_clk_src_simple_get, slowck);
+	ret = of_clk_add_hw_provider(np, of_clk_hw_simple_get, slowck);
 	if (WARN_ON(ret))
 		goto unregister_slowck;
 
@@ -590,10 +602,11 @@ static void __init of_sama5d4_sckc_setup(struct device_node *np)
 unregister_slowck:
 	at91_clk_unregister_sam9x5_slow(slowck);
 unregister_slow_osc:
-	clk_unregister(&osc->hw.clk);
+	clk_hw_unregister(&osc->hw);
 free_slow_osc_data:
 	kfree(osc);
-	clk_unregister(slow_rc);
+unregister_slow_rc:
+	clk_hw_unregister(slow_rc);
 }
 CLK_OF_DECLARE(sama5d4_clk_sckc, "atmel,sama5d4-sckc",
 	       of_sama5d4_sckc_setup);

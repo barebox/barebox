@@ -7,13 +7,13 @@
  * Alexandre Belloni <alexandre.belloni@free-electrons.com>
  */
 
-#include <common.h>
-#include <clock.h>
-#include <linux/list.h>
-#include <linux/clk.h>
+#include <linux/clk-provider.h>
+#include <linux/clkdev.h>
 #include <linux/clk/at91_pmc.h>
+#include <of.h>
 #include <linux/regmap.h>
-
+#include <mfd/syscon.h>
+#include <linux/printk.h>
 
 #include "pmc.h"
 
@@ -22,10 +22,9 @@
 struct clk_sama5d4_h32mx {
 	struct clk_hw hw;
 	struct regmap *regmap;
-	const char *parent;
 };
 
-#define to_clk_sama5d4_h32mx(_hw) container_of(_hw, struct clk_sama5d4_h32mx, hw)
+#define to_clk_sama5d4_h32mx(hw) container_of(hw, struct clk_sama5d4_h32mx, hw)
 
 static unsigned long clk_sama5d4_h32mx_recalc_rate(struct clk_hw *hw,
 						 unsigned long parent_rate)
@@ -83,31 +82,32 @@ static const struct clk_ops h32mx_ops = {
 	.set_rate = clk_sama5d4_h32mx_set_rate,
 };
 
-struct clk * __init
+struct clk_hw * __init
 at91_clk_register_h32mx(struct regmap *regmap, const char *name,
 			const char *parent_name)
 {
 	struct clk_sama5d4_h32mx *h32mxclk;
+	struct clk_init_data init;
 	int ret;
 
 	h32mxclk = kzalloc(sizeof(*h32mxclk), GFP_KERNEL);
 	if (!h32mxclk)
 		return ERR_PTR(-ENOMEM);
 
-	h32mxclk->parent = parent_name;
-	h32mxclk->hw.clk.name = name;
-	h32mxclk->hw.clk.ops = &h32mx_ops;
-	h32mxclk->hw.clk.parent_names = &h32mxclk->parent;
-	h32mxclk->hw.clk.num_parents = 1;
-	/* h32mxclk.hw.flags = CLK_SET_RATE_GATE; */
+	init.name = name;
+	init.ops = &h32mx_ops;
+	init.parent_names = parent_name ? &parent_name : NULL;
+	init.num_parents = parent_name ? 1 : 0;
+	init.flags = CLK_SET_RATE_GATE;
 
+	h32mxclk->hw.init = &init;
 	h32mxclk->regmap = regmap;
 
-	ret = bclk_register(&h32mxclk->hw.clk);
+	ret = clk_hw_register(NULL, &h32mxclk->hw);
 	if (ret) {
 		kfree(h32mxclk);
 		return ERR_PTR(ret);
 	}
 
-	return &h32mxclk->hw.clk;
+	return &h32mxclk->hw;
 }

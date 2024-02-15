@@ -6,15 +6,11 @@
  *
  */
 
-#include <common.h>
-#include <clock.h>
+#include <linux/clk-provider.h>
 #include <of.h>
-#include <linux/list.h>
-#include <linux/clk.h>
-#include <linux/clk/at91_pmc.h>
-#include <linux/overflow.h>
 #include <mfd/syscon.h>
 #include <linux/regmap.h>
+#include <linux/slab.h>
 
 #include <soc/at91/atmel-sfr.h>
 
@@ -24,10 +20,9 @@ struct clk_i2s_mux {
 	struct clk_hw hw;
 	struct regmap *regmap;
 	u8 bus_id;
-	const char *parent_names[];
 };
 
-#define to_clk_i2s_mux(_hw) container_of(_hw, struct clk_i2s_mux, hw)
+#define to_clk_i2s_mux(hw) container_of(hw, struct clk_i2s_mux, hw)
 
 static int clk_i2s_mux_get_parent(struct clk_hw *hw)
 {
@@ -48,39 +43,37 @@ static int clk_i2s_mux_set_parent(struct clk_hw *hw, u8 index)
 }
 
 static const struct clk_ops clk_i2s_mux_ops = {
-	.set_rate = clk_parent_set_rate,
-	.round_rate = clk_parent_round_rate,
 	.get_parent = clk_i2s_mux_get_parent,
 	.set_parent = clk_i2s_mux_set_parent,
 };
 
-struct clk * __init
+struct clk_hw * __init
 at91_clk_i2s_mux_register(struct regmap *regmap, const char *name,
 			  const char * const *parent_names,
 			  unsigned int num_parents, u8 bus_id)
 {
+	struct clk_init_data init = {};
 	struct clk_i2s_mux *i2s_ck;
 	int ret;
 
-	i2s_ck = kzalloc(struct_size(i2s_ck, parent_names, num_parents), GFP_KERNEL);
+	i2s_ck = kzalloc(sizeof(*i2s_ck), GFP_KERNEL);
 	if (!i2s_ck)
 		return ERR_PTR(-ENOMEM);
 
-	i2s_ck->hw.clk.name = name;
-	i2s_ck->hw.clk.ops = &clk_i2s_mux_ops;
-	memcpy(i2s_ck->parent_names, parent_names,
-	       num_parents * sizeof(i2s_ck->parent_names[0]));
-	i2s_ck->hw.clk.parent_names = &i2s_ck->parent_names[0];
-	i2s_ck->hw.clk.num_parents = num_parents;
+	init.name = name;
+	init.ops = &clk_i2s_mux_ops;
+	init.parent_names = parent_names;
+	init.num_parents = num_parents;
 
+	i2s_ck->hw.init = &init;
 	i2s_ck->bus_id = bus_id;
 	i2s_ck->regmap = regmap;
 
-	ret = bclk_register(&i2s_ck->hw.clk);
+	ret = clk_hw_register(NULL, &i2s_ck->hw);
 	if (ret) {
 		kfree(i2s_ck);
 		return ERR_PTR(ret);
 	}
 
-	return &i2s_ck->hw.clk;
+	return &i2s_ck->hw;
 }

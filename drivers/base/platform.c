@@ -22,12 +22,6 @@ static int platform_probe(struct device *dev)
 	return dev->driver->probe(dev);
 }
 
-static void platform_remove(struct device *dev)
-{
-	if (dev->driver->remove)
-		dev->driver->remove(dev);
-}
-
 int platform_driver_register(struct driver *drv)
 {
 	drv->bus = &platform_bus;
@@ -46,7 +40,6 @@ struct bus_type platform_bus = {
 	.name = "platform",
 	.match = device_match,
 	.probe = platform_probe,
-	.remove = platform_remove,
 };
 
 static int platform_init(void)

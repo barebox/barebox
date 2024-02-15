@@ -210,17 +210,10 @@ static int acpi_bus_probe(struct device *dev)
 	return dev->driver->probe(dev);
 }
 
-static void acpi_bus_remove(struct device *dev)
-{
-	if (dev->driver->remove)
-		dev->driver->remove(dev);
-}
-
 struct bus_type acpi_bus = {
 	.name = "acpi",
 	.match = acpi_bus_match,
 	.probe = acpi_bus_probe,
-	.remove = acpi_bus_remove,
 };
 
 static int efi_acpi_probe(void)

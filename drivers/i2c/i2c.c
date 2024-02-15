@@ -748,17 +748,10 @@ static int i2c_probe(struct device *dev)
 	return dev->driver->probe(dev);
 }
 
-static void i2c_remove(struct device *dev)
-{
-	if (dev->driver->remove)
-		dev->driver->remove(dev);
-}
-
 struct bus_type i2c_bus = {
 	.name = "i2c",
 	.match = device_match_of_modalias,
 	.probe = i2c_probe,
-	.remove = i2c_remove,
 };
 
 static int i2c_bus_init(void)

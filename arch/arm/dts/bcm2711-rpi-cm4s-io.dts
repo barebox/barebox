@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0
+
+#include "bcm2711-rpi-cm4-io.dts"
+
+&{/memory@0} {
+	reg = <0x0 0x0 0x0>;
+};
+
+/ {
+	compatible = "raspberrypi,4-compute-module-s", "brcm,bcm2711";
+	model = "Raspberry Pi Compute Module 4S IO Board";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&uart1 {
+	/delete-property/ clock-frequency;
+};

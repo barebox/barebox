@@ -73,6 +73,7 @@ extern char __dtb_z_bcm2837_rpi_cm3_start[];
 extern char __dtb_z_bcm2711_rpi_4_start[];
 extern char __dtb_z_bcm2711_rpi_400_start[];
 extern char __dtb_z_bcm2711_rpi_cm4_io_start[];
+extern char __dtb_z_bcm2711_rpi_cm4s_io_start[];
 
 RPI_ENTRY_FUNCTION(start_raspberry_pi1, SZ_128M, fdt)
 {
@@ -139,6 +140,8 @@ static void *rpi_get_board_fdt(int rev)
 		return DT_IF_ENABLED(__dtb_z_bcm2711_rpi_400_start, CONFIG_MACH_RPI4);
 	case BCM2711_BOARD_REV_CM4:
 		return DT_IF_ENABLED(__dtb_z_bcm2711_rpi_cm4_io_start, CONFIG_MACH_RPI4);
+	case BCM2711_BOARD_REV_CM4_S:
+		return DT_IF_ENABLED(__dtb_z_bcm2711_rpi_cm4s_io_start, CONFIG_MACH_RPI4);
 	}
 
 	return NULL;

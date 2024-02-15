@@ -875,6 +875,10 @@ static inline void clk_unregister(struct clk *clk)
 {
 }
 
+static inline void clk_hw_unregister(struct clk_hw *hw)
+{
+}
+
 #ifdef CONFIG_COMMON_CLK
 
 /**

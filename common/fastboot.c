@@ -66,7 +66,7 @@ static void fb_setvar(struct fb_variable *var, const char *fmt, ...)
 	va_end(ap);
 }
 
-static struct fb_variable *fb_addvar(struct fastboot *fb, const char *fmt, ...)
+static struct fb_variable *fb_addvar(struct fastboot *fb, struct list_head *list, const char *fmt, ...)
 {
 	struct fb_variable *var = xzalloc(sizeof(*var));
 	va_list ap;
@@ -75,7 +75,7 @@ static struct fb_variable *fb_addvar(struct fastboot *fb, const char *fmt, ...)
 	var->name = bvasprintf(fmt, ap);
 	va_end(ap);
 
-	list_add_tail(&var->list, &fb->variables);
+	list_add_tail(&var->list, list);
 
 	return var;
 }
@@ -152,9 +152,9 @@ out:
 	if (ret)
 		return ret;
 
-	var = fb_addvar(fb, "partition-size:%s", fentry->name);
+	var = fb_addvar(fb, &fb->variables, "partition-size:%s", fentry->name);
 	fb_setvar(var, "%08zx", size);
-	var = fb_addvar(fb, "partition-type:%s", fentry->name);
+	var = fb_addvar(fb, &fb->variables, "partition-type:%s", fentry->name);
 	fb_setvar(var, "%s", type);
 
 	return ret;
@@ -168,12 +168,12 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 
 	INIT_LIST_HEAD(&fb->variables);
 
-	var = fb_addvar(fb, "version");
+	var = fb_addvar(fb, &fb->variables, "version");
 	fb_setvar(var, "0.4");
-	var = fb_addvar(fb, "bootloader-version");
+	var = fb_addvar(fb, &fb->variables, "bootloader-version");
 	fb_setvar(var, release_string);
 	if (IS_ENABLED(CONFIG_FASTBOOT_SPARSE)) {
-		var = fb_addvar(fb, "max-download-size");
+		var = fb_addvar(fb, &fb->variables, "max-download-size");
 		fb_setvar(var, "%u", fastboot_max_download_size);
 	}
 

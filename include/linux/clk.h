@@ -240,6 +240,11 @@ static inline void clk_put(struct clk *clk)
 #define CLK_GATE_SET_TO_DISABLE	(1 << 0)
 #define CLK_GATE_HIWORD_MASK	(1 << 1)
 
+/* Ignored sanity checking flags */
+#define CLK_SET_RATE_GATE	0 /* must be gated across rate change */
+#define CLK_SET_PARENT_GATE	0 /* must be gated across re-parent */
+
+
 /**
  * struct clk_ops -  Callback operations for hardware clocks; these are to
  * be provided by the clock implementation, and will be called by drivers

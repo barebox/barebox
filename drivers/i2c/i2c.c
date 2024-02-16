@@ -593,7 +593,7 @@ struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
 
 	ret = of_device_ensure_probed(node);
 	if (ret)
-		return ERR_PTR(ret);
+		return NULL;
 
 	for_each_i2c_adapter(adap)
 		if (adap->dev.of_node == node)

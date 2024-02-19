@@ -559,6 +559,7 @@ static __maybe_unused struct partition_desc *efi_partition_create_table(struct b
 
 static guid_t partition_linux_data_guid = PARTITION_LINUX_DATA_GUID;
 static guid_t partition_basic_data_guid = PARTITION_BASIC_DATA_GUID;
+static guid_t partition_barebox_env_guid = PARTITION_BAREBOX_ENVIRONMENT_GUID;
 
 static const guid_t *fs_type_to_guid(const char *fstype)
 {
@@ -572,6 +573,8 @@ static const guid_t *fs_type_to_guid(const char *fstype)
 		return &partition_basic_data_guid;
 	if (!strcmp(fstype, "fat32"))
 		return &partition_basic_data_guid;
+	if (!strcmp(fstype, "bbenv"))
+		return &partition_barebox_env_guid;
 
 	return NULL;
 }

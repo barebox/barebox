@@ -491,10 +491,8 @@ int of_device_ensure_probed(struct device_node *np)
 		return 0;
 
 	dev = of_device_create_on_demand(np);
-	if (!dev)
+	if (IS_ERR_OR_NULL(dev))
 		return -ENODEV;
-	if (IS_ERR(dev))
-		return PTR_ERR(dev);
 
 	/*
 	 * The deep-probe mechanism relies on the fact that all necessary

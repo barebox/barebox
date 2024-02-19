@@ -477,8 +477,8 @@ int usb_new_device(struct usb_device *dev)
 	/* we set the default configuration here */
 	err = usb_set_configuration(dev, dev->config.desc.bConfigurationValue);
 	if (err) {
-		dev_err(&dev->dev, "Setting default configuration failed with: %s\n" \
-			"len %d, status %lX\n", strerror(-err),
+		dev_err(&dev->dev, "Setting default configuration failed with: %pe\n" \
+			"len %d, status %lX\n", ERR_PTR(err),
 		       dev->act_len, dev->status);
 		goto err_out;
 	}
@@ -502,7 +502,7 @@ int usb_new_device(struct usb_device *dev)
 
 	err = register_device(&dev->dev);
 	if (err) {
-		dev_err(&dev->dev, "Failed to register device: %s\n", strerror(-err));
+		dev_err(&dev->dev, "Failed to register device: %pe\n", ERR_PTR(err));
 		goto err_out;
 	}
 

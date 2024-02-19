@@ -464,8 +464,7 @@ int xhci_alloc_virt_device(struct xhci_ctrl *ctrl, unsigned int slot_id)
 		return -EEXIST;
 	}
 
-	ctrl->devs[slot_id] = (struct xhci_virt_device *)
-					malloc(sizeof(struct xhci_virt_device));
+	ctrl->devs[slot_id] = malloc(sizeof(struct xhci_virt_device));
 
 	if (!ctrl->devs[slot_id]) {
 		dev_err(ctrl->dev, "Failed to allocate virtual device\n");

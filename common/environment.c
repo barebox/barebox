@@ -48,15 +48,20 @@ struct action_data {
 
 #define TMPDIR "/.defaultenv"
 
-static char *default_environment_path = "/dev/env0";
+static char *default_environment_path;
 
-void default_environment_path_set(char *path)
+void default_environment_path_set(const char *path)
 {
-	default_environment_path = path;
+	free(default_environment_path);
+
+	default_environment_path = xstrdup(path);
 }
 
-char *default_environment_path_get(void)
+const char *default_environment_path_get(void)
 {
+	if (!default_environment_path)
+		default_environment_path = xstrdup("/dev/env0");
+
 	return default_environment_path;
 }
 

@@ -105,14 +105,14 @@ int envfs_load_from_buf(void *buf, int len, const char *dir, unsigned flags);
 
 /* defaults to /dev/env0 */
 #ifdef CONFIG_ENV_HANDLING
-void default_environment_path_set(char *path);
-char *default_environment_path_get(void);
+void default_environment_path_set(const char *path);
+const char *default_environment_path_get(void);
 #else
-static inline void default_environment_path_set(char *path)
+static inline void default_environment_path_set(const char *path)
 {
 }
 
-static inline char *default_environment_path_get(void)
+static inline const char *default_environment_path_get(void)
 {
 	return NULL;
 }

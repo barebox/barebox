@@ -438,7 +438,7 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 	int i = 0;
 	int nb_part;
 	struct partition *pentry;
-	struct partition_desc *pd;
+	struct partition_desc *pd = NULL;
 
 	if (!find_valid_gpt(buf, blk, &gpt, &ptes) || !gpt || !ptes)
 		goto out;
@@ -457,6 +457,7 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 	}
 
 	pd = xzalloc(sizeof(*pd));
+	INIT_LIST_HEAD(&pd->partitions);
 
 	for (i = 0; i < nb_part; i++) {
 		if (!is_pte_valid(&ptes[i], last_lba(blk))) {
@@ -464,14 +465,15 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 			continue;
 		}
 
-		pentry = &pd->parts[pd->used_entries];
+		pentry = xzalloc(sizeof(*pentry));
 		pentry->first_sec = le64_to_cpu(ptes[i].starting_lba);
 		pentry->size = le64_to_cpu(ptes[i].ending_lba) - pentry->first_sec;
 		pentry->size++;
 		part_set_efi_name(&ptes[i], pentry->name);
 		snprintf(pentry->partuuid, sizeof(pentry->partuuid), "%pUl", &ptes[i].unique_partition_guid);
 		pentry->typeuuid = ptes[i].partition_type_guid;
-		pd->used_entries++;
+		pentry->num = i;
+		list_add_tail(&pentry->list, &pd->partitions);
 	}
 out:
 	kfree(gpt);
@@ -482,6 +484,11 @@ out:
 
 static void efi_partition_free(struct partition_desc *pd)
 {
+	struct partition *part, *tmp;
+
+	list_for_each_entry_safe(part, tmp, &pd->partitions, list)
+		free(part);
+
 	free(pd);
 }
 

@@ -24,11 +24,12 @@ struct partition {
 		u8 dos_partition_type;
 		guid_t typeuuid;
 	};
+	struct list_head list;
+	int num;
 };
 
 struct partition_desc {
-	int used_entries;
-	struct partition parts[MAX_PARTITION];
+	struct list_head partitions;
 };
 
 struct partition_parser {

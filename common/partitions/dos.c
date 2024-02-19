@@ -113,10 +113,10 @@ static void dos_extended_partition(struct block_device *blk, struct partition_de
 	uint32_t ebr_sector = partition->first_sec;
 	struct partition_entry *table = (struct partition_entry *)&buf[0x1be];
 	unsigned partno = 5;
+	struct partition *pentry;
 
-	while (pd->used_entries < ARRAY_SIZE(pd->parts)) {
+	while (1) {
 		int rc, i;
-		int n = pd->used_entries;
 
 		dev_dbg(blk->dev, "expect EBR in sector %x\n", ebr_sector);
 
@@ -139,15 +139,19 @@ static void dos_extended_partition(struct block_device *blk, struct partition_de
 			}
 		/* /sanity checks */
 
+		pentry = xzalloc(sizeof(*pentry));
+
 		/* the first entry defines the extended partition */
-		pd->parts[n].first_sec = ebr_sector +
+		pentry->first_sec = ebr_sector +
 			get_unaligned_le32(&table[0].partition_start);
-		pd->parts[n].size = get_unaligned_le32(&table[0].partition_size);
-		pd->parts[n].dos_partition_type = table[0].type;
+		pentry->size = get_unaligned_le32(&table[0].partition_size);
+		pentry->dos_partition_type = table[0].type;
+		pentry->num = partno;
 		if (signature)
-			sprintf(pd->parts[n].partuuid, "%08x-%02u",
+			sprintf(pentry->partuuid, "%08x-%02u",
 				signature, partno);
-		pd->used_entries++;
+
+		list_add_tail(&pentry->list, &pd->partitions);
 		partno++;
 
 		/* the second entry defines the start of the next ebr if != 0 */
@@ -174,7 +178,7 @@ out:
 static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 {
 	struct partition_entry *table;
-	struct partition pentry;
+	struct partition *pentry;
 	struct partition *extended_partition = NULL;
 	uint8_t *buffer = buf;
 	int i;
@@ -190,33 +194,30 @@ static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 	table = (struct partition_entry *)&buffer[446];
 
 	pd = xzalloc(sizeof(*pd));
+	INIT_LIST_HEAD(&pd->partitions);
 
 	for (i = 0; i < 4; i++) {
-		int n;
+		uint64_t first_sec = get_unaligned_le32(&table[i].partition_start);
 
-		pentry.first_sec = get_unaligned_le32(&table[i].partition_start);
-		pentry.size = get_unaligned_le32(&table[i].partition_size);
-		pentry.dos_partition_type = table[i].type;
-
-		if (pentry.first_sec == 0) {
+		if (first_sec == 0) {
 			dev_dbg(blk->dev, "Skipping empty partition %d\n", i);
 			continue;
 		}
 
-		n = pd->used_entries;
-		pd->parts[n].first_sec = pentry.first_sec;
-		pd->parts[n].size = pentry.size;
-		pd->parts[n].dos_partition_type = pentry.dos_partition_type;
-		if (signature)
-			sprintf(pd->parts[n].partuuid, "%08x-%02d",
-					signature, i + 1);
-		pd->used_entries++;
+		pentry = xzalloc(sizeof(*pentry));
 
-		if (is_extended_partition(&pentry)) {
-			pd->parts[n].size = 2;
+		pentry->first_sec = first_sec;
+		pentry->size = get_unaligned_le32(&table[i].partition_size);
+		pentry->dos_partition_type = table[i].type;
+
+		if (signature)
+			sprintf(pentry->partuuid, "%08x-%02d", signature, i + 1);
+
+		if (is_extended_partition(pentry)) {
+			pentry->size = 2;
 
 			if (!extended_partition)
-				extended_partition = &pd->parts[n];
+				extended_partition = pentry;
 			else
 				/*
 				 * An DOS MBR must only contain a single
@@ -225,6 +226,8 @@ static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 				 */
 				dev_warn(blk->dev, "Skipping additional extended partition\n");
 		}
+
+		list_add_tail(&pentry->list, &pd->partitions);
 	}
 
 	if (extended_partition)
@@ -252,6 +255,11 @@ static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 
 static void dos_partition_free(struct partition_desc *pd)
 {
+	struct partition *part, *tmp;
+
+	list_for_each_entry_safe(part, tmp, &pd->partitions, list)
+		free(part);
+
 	free(pd);
 }
 

@@ -27,8 +27,7 @@ static LIST_HEAD(partition_parser_list);
  * @param no Partition number
  * @return 0 on success
  */
-static int register_one_partition(struct block_device *blk,
-					struct partition *part, int no)
+static int register_one_partition(struct block_device *blk, struct partition *part)
 {
 	char *partition_name;
 	int ret;
@@ -38,7 +37,7 @@ static int register_one_partition(struct block_device *blk,
 		.size = part->size * SECTOR_SIZE,
 	};
 
-	partition_name = basprintf("%s.%d", blk->cdev.name, no);
+	partition_name = basprintf("%s.%d", blk->cdev.name, part->num);
 	if (!partition_name)
 		return -ENOMEM;
 
@@ -117,6 +116,7 @@ int parse_partition_table(struct block_device *blk)
 	int i;
 	int rc = 0;
 	struct partition_parser *parser;
+	struct partition *part;
 	uint8_t *buf;
 
 	buf = malloc(2 * SECTOR_SIZE);
@@ -135,12 +135,12 @@ int parse_partition_table(struct block_device *blk)
 	if (!pdesc)
 		goto on_error;
 
-	if (!pdesc->used_entries)
+	if (list_empty(&pdesc->partitions))
 		goto on_error;
 
 	/* at least one partition description found */
-	for (i = 0; i < pdesc->used_entries; i++) {
-		rc = register_one_partition(blk, &pdesc->parts[i], i);
+	list_for_each_entry(part, &pdesc->partitions, list) {
+		rc = register_one_partition(blk, part);
 		if (rc != 0)
 			dev_err(blk->dev,
 				"Failed to register partition %d on %s (%d)\n",

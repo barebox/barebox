@@ -1223,6 +1223,7 @@ struct xhci_ctrl {
 	struct xhci_erst_entry entry[ERST_NUM_SEGS];
 	struct xhci_scratchpad *scratchpad;
 	struct xhci_virt_device *devs[MAX_HC_SLOTS];
+	struct usb_hub_descriptor hub_desc;
 	void *bounce_buffer;
 	int rootdev;
 };

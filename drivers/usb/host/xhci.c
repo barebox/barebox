@@ -30,7 +30,7 @@
 
 #include "xhci.h"
 
-static struct descriptor {
+static const struct descriptor {
 	struct usb_hub_descriptor hub;
 	struct usb_device_descriptor device;
 	struct usb_config_descriptor config;
@@ -861,7 +861,7 @@ static int xhci_submit_root(struct usb_device *udev, unsigned long pipe,
 {
 	uint8_t tmpbuf[4];
 	u16 typeReq;
-	void *srcptr = NULL;
+	const void *srcptr = NULL;
 	int len, srclen;
 	uint32_t reg;
 	volatile uint32_t *status_reg;
@@ -929,7 +929,7 @@ static int xhci_submit_root(struct usb_device *udev, unsigned long pipe,
 		case USB_DT_HUB:
 		case USB_DT_SS_HUB:
 			dev_dbg(&udev->dev, "USB_DT_HUB config\n");
-			srcptr = &descriptor.hub;
+			srcptr = &ctrl->hub_desc;
 			srclen = 0x8;
 			break;
 		default:
@@ -1188,20 +1188,23 @@ static int xhci_lowlevel_init(struct xhci_ctrl *ctrl)
 	/* initializing xhci data structures */
 	if (xhci_mem_init(ctrl, hccr, hcor) < 0)
 		return -ENOMEM;
+	ctrl->hub_desc = descriptor.hub;
 
 	reg = xhci_readl(&hccr->cr_hcsparams1);
-	descriptor.hub.bNbrPorts = HCS_MAX_PORTS(reg);
+	ctrl->hub_desc.bNbrPorts = HCS_MAX_PORTS(reg);
+
+	dev_dbg(ctrl->dev, "Register 0x%x NbrPorts %d\n", reg, ctrl->hub_desc.bNbrPorts);
 
 	/* Port Indicators */
 	reg = xhci_readl(&hccr->cr_hccparams);
 	if (HCS_INDICATOR(reg))
-		put_unaligned(get_unaligned(&descriptor.hub.wHubCharacteristics)
-				| 0x80, &descriptor.hub.wHubCharacteristics);
+		put_unaligned(get_unaligned(&ctrl->hub_desc.wHubCharacteristics)
+				| 0x80, &ctrl->hub_desc.wHubCharacteristics);
 
 	/* Port Power Control */
 	if (HCC_PPC(reg))
-		put_unaligned(get_unaligned(&descriptor.hub.wHubCharacteristics)
-				| 0x01, &descriptor.hub.wHubCharacteristics);
+		put_unaligned(get_unaligned(&ctrl->hub_desc.wHubCharacteristics)
+				| 0x01, &ctrl->hub_desc.wHubCharacteristics);
 
 	if (xhci_start(ctrl)) {
 		xhci_reset(ctrl);

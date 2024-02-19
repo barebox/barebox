@@ -43,12 +43,8 @@ static int nvmem_reboot_mode_probe(struct device *dev)
 	int ret;
 
 	cell = nvmem_cell_get(dev, "reboot-mode");
-	if (IS_ERR(cell)) {
-		ret = PTR_ERR(cell);
-		if (ret != -EPROBE_DEFER)
-			dev_err(dev, "failed to get the nvmem cell reboot-mode: %pe\n", cell);
-		return ret;
-	}
+	if (IS_ERR(cell))
+		return dev_errp_probe(dev, cell, "getting nvmem cell 'reboot-mode'\n");
 
 	nvmem_rbm = xzalloc(sizeof(*nvmem_rbm));
 

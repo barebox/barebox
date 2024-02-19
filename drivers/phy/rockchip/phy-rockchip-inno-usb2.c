@@ -385,7 +385,7 @@ static int rockchip_usb2phy_probe(struct device *dev)
 	const struct rockchip_usb2phy_cfg *phy_cfgs;
 	struct rockchip_usb2phy *rphy;
 	u32 reg, index;
-	int ret, port = 0;
+	int port = 0;
 	struct device_node *child, *np = dev->of_node;
 	struct resource *iores;
 
@@ -453,13 +453,8 @@ static int rockchip_usb2phy_probe(struct device *dev)
 		of_platform_device_dummy_drv(phydev);
 
 		phy = phy_create(phydev, child, &rockchip_usb2phy_ops);
-		if (IS_ERR(phy)) {
-			ret = PTR_ERR(phy);
-			if (ret != -EPROBE_DEFER)
-				dev_err(dev, "failed to create phy%d: %d\n",
-					port, ret);
-			return ret;
-		}
+		if (IS_ERR(phy))
+			return dev_errp_probe(dev, phy, "creating phy%d\n", port);
 
 		p = xzalloc(sizeof(*p));
 

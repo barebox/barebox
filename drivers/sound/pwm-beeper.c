@@ -61,13 +61,8 @@ static int pwm_beeper_probe(struct device *dev)
 	dev->priv = beeper;
 
 	beeper->pwm = of_pwm_request(dev->of_node, NULL);
-	if (IS_ERR(beeper->pwm)) {
-		error = PTR_ERR(beeper->pwm);
-		if (error != -EPROBE_DEFER)
-			dev_err(dev, "Failed to request PWM device: %d\n",
-				error);
-		return error;
-	}
+	if (IS_ERR(beeper->pwm))
+		return dev_errp_probe(dev, beeper->pwm, "requesting PWM device\n");
 
 	/* Sync up PWM state and ensure it is off. */
 	pwm_init_state(beeper->pwm, &state);
@@ -80,13 +75,8 @@ static int pwm_beeper_probe(struct device *dev)
 	}
 
 	beeper->amplifier = regulator_get(dev, "amp");
-	if (IS_ERR(beeper->amplifier)) {
-		error = PTR_ERR(beeper->amplifier);
-		if (error != -EPROBE_DEFER)
-			dev_err(dev, "Failed to get 'amp' regulator: %d\n",
-				error);
-		return error;
-	}
+	if (IS_ERR(beeper->amplifier))
+		return dev_errp_probe(dev, beeper->amplifier, "getting 'amp' regulator\n");
 
 	error = of_property_read_u32(dev->of_node, "beeper-hz",
 				     &bell_frequency);

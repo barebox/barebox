@@ -55,10 +55,8 @@ static int w1_gpio_probe_dt(struct device *dev)
 
 	gpio = of_get_gpio(np, 0);
 	if (!gpio_is_valid(gpio)) {
-		if (gpio != -EPROBE_DEFER)
-			dev_err(dev,
-				"Failed to parse gpio property for data pin (%d)\n",
-				gpio);
+		gpio = dev_err_probe(dev, gpio < 0 ? gpio : -EINVAL,
+				     "parsing gpio property for data pin\n");
 
 		goto free_pdata;
 	}

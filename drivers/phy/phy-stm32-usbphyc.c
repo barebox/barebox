@@ -693,10 +693,7 @@ static int stm32_usbphyc_probe(struct device *dev)
 
 		phy = phy_create(phydev, child, &stm32_usbphyc_phy_ops);
 		if (IS_ERR(phy)) {
-			ret = PTR_ERR(phy);
-			if (ret != -EPROBE_DEFER)
-				dev_err(dev, "failed to create phy%d: %d\n",
-					port, ret);
+			ret = dev_errp_probe(dev, phy, "creating phy%d\n", port);
 			goto clk_disable;
 		}
 

@@ -1108,9 +1108,7 @@ fail2:
 	musb_platform_exit(musb);
 
 fail1:
-	if (status != -EPROBE_DEFER)
-		dev_err(musb->controller,
-			"musb_init_controller failed with status %d\n", status);
+	dev_err_probe(musb->controller, status, "musb_init_controller failed\n");
 
 	musb_free(musb);
 

@@ -19,6 +19,7 @@ config PARTITION_DISK_EFI
 	depends on PARTITION_DISK
 	select CRC32
 	select PRINTF_UUID
+	select PARTITION_DISK_DOS if PARTITION_MANIPULATION
 	bool "EFI: GPT partition support"
 	help
 	  Add support to handle partitions in GUID Partition Table style.

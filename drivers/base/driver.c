@@ -129,12 +129,14 @@ int device_probe(struct device *dev)
 	list_add(&dev->active, &active_device_list);
 
 	ret = dev->bus->probe(dev);
-	if (ret == 0)
-		goto out;
 
-	if (ret == -EPROBE_DEFER) {
-		list_del(&dev->active);
-		list_add(&dev->active, &deferred);
+	depth--;
+
+	switch (ret) {
+	case 0:
+		return 0;
+	case -EPROBE_DEFER:
+		list_move(&dev->active, &deferred);
 
 		/*
 		 * -EPROBE_DEFER should never appear on a deep-probe machine so
@@ -144,19 +146,20 @@ int device_probe(struct device *dev)
 			dev_err(dev, "probe deferred\n");
 		else
 			dev_dbg(dev, "probe deferred\n");
-		goto out;
+
+		return -EPROBE_DEFER;
+	case -ENODEV:
+	case -ENXIO:
+		dev_dbg(dev, "probe failed: %pe\n", ERR_PTR(ret));
+		break;
+	default:
+		dev_err(dev, "probe failed: %pe\n", ERR_PTR(ret));
+		break;
+
 	}
 
-	list_del(&dev->active);
-	INIT_LIST_HEAD(&dev->active);
+	list_del_init(&dev->active);
 
-	if (ret == -ENODEV || ret == -ENXIO)
-		dev_dbg(dev, "probe failed: %s\n", strerror(-ret));
-	else
-		dev_err(dev, "probe failed: %s\n", strerror(-ret));
-
-out:
-	depth--;
 	return ret;
 }
 

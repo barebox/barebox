@@ -461,6 +461,14 @@ union xhci_trb *xhci_wait_for_event(struct xhci_ctrl *ctrl, trb_type expected,
 			BUG_ON(GET_COMP_CODE(
 				le32_to_cpu(event->generic.field[2])) !=
 								COMP_SUCCESS);
+		else
+			dev_dbg(ctrl->dev, "Unexpected XHCI event TRB, skipping... "
+				"(%08x %08x %08x %08x)\n",
+				le32_to_cpu(event->generic.field[0]),
+				le32_to_cpu(event->generic.field[1]),
+				le32_to_cpu(event->generic.field[2]),
+				le32_to_cpu(event->generic.field[3]));
+
 		xhci_acknowledge_event(ctrl);
 	} while (!is_timeout_non_interruptible(start, timeout_ms * MSECOND));
 

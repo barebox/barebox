@@ -151,6 +151,8 @@ static int xhci_start(struct xhci_ctrl *ctrl)
 	u32 temp;
 	int ret;
 
+	dev_dbg(ctrl->dev, "Starting the controller\n");
+
 	temp = xhci_readl(&hcor->or_usbcmd);
 	temp |= (CMD_RUN);
 	xhci_writel(&hcor->or_usbcmd, temp);
@@ -1088,8 +1090,10 @@ unknown:
 static int _xhci_submit_int_msg(struct usb_device *udev, unsigned long pipe,
 				void *buffer, int length, int interval)
 {
-	if (usb_pipetype(pipe) != PIPE_INTERRUPT)
+	if (usb_pipetype(pipe) != PIPE_INTERRUPT) {
+		dev_err(&udev->dev, "non-interrupt pipe (type=%lu)", usb_pipetype(pipe));
 		return -EINVAL;
+	}
 
 	/*
 	 * xHCI uses normal TRBs for both bulk and interrupt. When the
@@ -1112,8 +1116,10 @@ static int _xhci_submit_int_msg(struct usb_device *udev, unsigned long pipe,
 static int _xhci_submit_bulk_msg(struct usb_device *udev, unsigned long pipe,
 				 void *buffer, int length, int timeout_ms)
 {
-	if (usb_pipetype(pipe) != PIPE_BULK)
+	if (usb_pipetype(pipe) != PIPE_BULK) {
+		dev_err(&udev->dev, "non-bulk pipe (type=%lu)", usb_pipetype(pipe));
 		return -EINVAL;
+	}
 
 	return xhci_bulk_tx(udev, pipe, length, buffer, timeout_ms);
 }
@@ -1137,8 +1143,10 @@ static int _xhci_submit_control_msg(struct usb_device *udev, unsigned long pipe,
 	struct xhci_ctrl *ctrl = xhci_get_ctrl(udev);
 	int ret = 0;
 
-	if (usb_pipetype(pipe) != PIPE_CONTROL)
+	if (usb_pipetype(pipe) != PIPE_CONTROL) {
+		dev_err(&udev->dev, "non-control pipe (type=%lu)", usb_pipetype(pipe));
 		return -EINVAL;
+	}
 
 	if (usb_pipedevice(pipe) == ctrl->rootdev)
 		return xhci_submit_root(udev, pipe, buffer, setup);
@@ -1217,6 +1225,8 @@ static int xhci_lowlevel_stop(struct xhci_ctrl *ctrl)
 	u32 temp;
 
 	xhci_reset(ctrl);
+
+	dev_dbg(ctrl->dev, "Disabling event ring interrupts\n");
 
 	temp = xhci_readl(&ctrl->hcor->or_usbsts);
 	xhci_writel(&ctrl->hcor->or_usbsts, temp & ~STS_EINT);

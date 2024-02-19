@@ -26,6 +26,9 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <libfile.h>
+#include <block.h>
+#include <efi/partition.h>
+#include <bootsource.h>
 #else
 #define EXPORT_SYMBOL(x)
 #endif
@@ -57,9 +60,72 @@ void default_environment_path_set(const char *path)
 	default_environment_path = xstrdup(path);
 }
 
+static guid_t partition_barebox_env_guid = PARTITION_BAREBOX_ENVIRONMENT_GUID;
+
+/*
+ * default_environment_path_search - look for environment partition
+ *
+ * This searches for a barebox environment partition on block devices. barebox
+ * environment partitions are recognized by the guid
+ * 6c3737f2-07f8-45d1-ad45-15d260aab24d. The device barebox itself has booted
+ * from is preferred over other devices.
+ *
+ * @return: The cdev providing the environment of found, NULL otherwise
+ */
+static struct cdev *default_environment_path_search(void)
+{
+	struct cdev *part;
+	struct device_node *boot_node;
+	int max_score = 0;
+	struct cdev *env_cdev = NULL;
+	struct block_device *blk;
+
+	if (!IS_ENABLED(CONFIG_BLOCK))
+		return NULL;
+
+	boot_node = bootsource_of_node_get(NULL);
+
+	if (boot_node) {
+		struct device *dev;
+
+		dev = of_find_device_by_node(boot_node);
+		if (dev)
+			device_detect(dev);
+	}
+
+	for_each_block_device(blk) {
+		int score = 0;
+
+		part = cdev_find_child_by_gpt_typeuuid(&blk->cdev,
+						       &partition_barebox_env_guid);
+		if (IS_ERR(part))
+			continue;
+
+		score++;
+
+		if (boot_node && boot_node == blk->cdev.device_node)
+			score++;
+
+		if (score > max_score) {
+			max_score = score;
+			env_cdev = part;
+		}
+	}
+
+	return env_cdev;
+}
+
 const char *default_environment_path_get(void)
 {
-	if (!default_environment_path)
+	struct cdev *cdev;
+
+	if (default_environment_path)
+		return default_environment_path;
+
+	cdev = default_environment_path_search();
+	if (cdev)
+		default_environment_path = basprintf("/dev/%s", cdev->name);
+	else
 		default_environment_path = xstrdup("/dev/env0");
 
 	return default_environment_path;

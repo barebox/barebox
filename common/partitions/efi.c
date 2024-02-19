@@ -22,6 +22,16 @@
 #include <efi/partition.h>
 #include "parser.h"
 
+struct efi_partition_desc {
+	struct partition_desc pd; /* must be first */
+	gpt_header gpt;
+};
+
+struct efi_partition {
+	struct partition part; /* must be first */
+	gpt_entry pte;
+};
+
 static const int force_gpt = IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_NO_FORCE);
 
 /**
@@ -437,8 +447,9 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 	gpt_entry *ptes = NULL;
 	int i = 0;
 	int nb_part;
+	struct efi_partition *epart;
 	struct partition *pentry;
-	struct partition_desc *pd = NULL;
+	struct efi_partition_desc *epd = NULL;
 
 	if (!find_valid_gpt(buf, blk, &gpt, &ptes) || !gpt || !ptes)
 		goto out;
@@ -456,8 +467,9 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 		nb_part = MAX_PARTITION;
 	}
 
-	pd = xzalloc(sizeof(*pd));
-	INIT_LIST_HEAD(&pd->partitions);
+	epd = xzalloc(sizeof(*epd));
+	INIT_LIST_HEAD(&epd->pd.partitions);
+	epd->gpt = *gpt;
 
 	for (i = 0; i < nb_part; i++) {
 		if (!is_pte_valid(&ptes[i], last_lba(blk))) {
@@ -465,7 +477,8 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 			continue;
 		}
 
-		pentry = xzalloc(sizeof(*pentry));
+		epart = xzalloc(sizeof(*epart));
+		pentry = &epart->part;
 		pentry->first_sec = le64_to_cpu(ptes[i].starting_lba);
 		pentry->size = le64_to_cpu(ptes[i].ending_lba) - pentry->first_sec;
 		pentry->size++;
@@ -473,13 +486,13 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 		snprintf(pentry->partuuid, sizeof(pentry->partuuid), "%pUl", &ptes[i].unique_partition_guid);
 		pentry->typeuuid = ptes[i].partition_type_guid;
 		pentry->num = i;
-		list_add_tail(&pentry->list, &pd->partitions);
+		list_add_tail(&pentry->list, &epd->pd.partitions);
 	}
 out:
 	kfree(gpt);
 	kfree(ptes);
 
-	return pd;
+	return &epd->pd;
 }
 
 static void efi_partition_free(struct partition_desc *pd)

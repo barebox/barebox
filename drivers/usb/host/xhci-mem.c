@@ -573,7 +573,7 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 
 		trb_64 = 0;
 		trb_64 = (uintptr_t)seg->trbs;
-		xhci_writeq(&entry->seg_addr, trb_64);
+		entry->seg_addr = cpu_to_le64(trb_64);
 		entry->seg_size = cpu_to_le32(TRBS_PER_SEGMENT);
 		entry->rsvd = 0;
 		seg = seg->next;

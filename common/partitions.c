@@ -102,6 +102,133 @@ static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
 	return NULL;
 }
 
+struct partition_desc *partition_table_new(struct block_device *blk, const char *type)
+{
+	struct partition_desc *pdesc;
+	struct partition_parser *parser;
+
+	list_for_each_entry(parser, &partition_parser_list, list) {
+		if (!strcmp(parser->name, type))
+			goto found;
+	}
+
+	pr_err("Cannot find partition parser \"%s\"\n", type);
+
+	return ERR_PTR(-ENOSYS);
+
+found:
+	pdesc = parser->create(blk);
+	if (IS_ERR(pdesc))
+		return ERR_CAST(pdesc);
+
+	pdesc->parser = parser;
+
+	return pdesc;
+}
+
+struct partition_desc *partition_table_read(struct block_device *blk)
+{
+	struct partition_parser *parser;
+	struct partition_desc *pdesc = NULL;
+	uint8_t *buf;
+	int ret;
+
+	buf = malloc(2 * SECTOR_SIZE);
+
+	ret = block_read(blk, buf, 0, 2);
+	if (ret != 0) {
+		dev_err(blk->dev, "Cannot read MBR/partition table: %pe\n", ERR_PTR(ret));
+		goto err;
+	}
+
+	parser = partition_parser_get_by_filetype(buf);
+	if (!parser)
+		goto err;
+
+	pdesc = parser->parse(buf, blk);
+	pdesc->parser = parser;
+err:
+	free(buf);
+
+	return pdesc;
+}
+
+int partition_table_write(struct partition_desc *pdesc)
+{
+	if (!pdesc->parser->write)
+		return -ENOSYS;
+
+	return pdesc->parser->write(pdesc);
+}
+
+static bool overlap(uint64_t s1, uint64_t e1, uint64_t s2, uint64_t e2)
+{
+	if (e1 < s2)
+		return false;
+	if (s1 > e2)
+		return false;
+	return true;
+}
+
+int partition_create(struct partition_desc *pdesc, const char *name,
+		     const char *fs_type, uint64_t lba_start, uint64_t lba_end)
+{
+	struct partition *part;
+
+	if (!pdesc->parser->mkpart)
+		return -ENOSYS;
+
+	if (lba_end < lba_start) {
+		pr_err("lba_end < lba_start: %llu < %llu\n", lba_end, lba_start);
+		return -EINVAL;
+	}
+
+	if (lba_end >= pdesc->blk->num_blocks) {
+		pr_err("lba_end exceeds device: %llu >= %llu\n", lba_end, pdesc->blk->num_blocks);
+		return -EINVAL;
+	}
+
+	list_for_each_entry(part, &pdesc->partitions, list) {
+		if (overlap(part->first_sec,
+				part->first_sec + part->size - 1,
+				lba_start, lba_end)) {
+			pr_err("new partition %llu-%llu overlaps with partition %s (%llu-%llu)\n",
+			       lba_start, lba_end, part->name, part->first_sec,
+				part->first_sec + part->size - 1);
+			return -EINVAL;
+		}
+	}
+
+	return pdesc->parser->mkpart(pdesc, name, fs_type, lba_start, lba_end);
+}
+
+int partition_remove(struct partition_desc *pdesc, int num)
+{
+	struct partition *part;
+
+	if (!pdesc->parser->rmpart)
+		return -ENOSYS;
+
+	list_for_each_entry(part, &pdesc->partitions, list) {
+		if (part->num == num)
+			return pdesc->parser->rmpart(pdesc, part);
+	}
+
+	pr_err("Partition %d doesn't exist\n", num);
+	return -ENOENT;
+}
+
+void partition_table_free(struct partition_desc *pdesc)
+{
+	pdesc->parser->partition_free(pdesc);
+}
+
+void partition_desc_init(struct partition_desc *pd, struct block_device *blk)
+{
+	pd->blk = blk;
+	INIT_LIST_HEAD(&pd->partitions);
+}
+
 /**
  * Try to collect partition information on the given block device
  * @param blk Block device to examine
@@ -111,31 +238,14 @@ static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
  */
 int parse_partition_table(struct block_device *blk)
 {
-	struct partition_desc *pdesc = NULL;
 	int i;
 	int rc = 0;
-	struct partition_parser *parser;
 	struct partition *part;
-	uint8_t *buf;
+	struct partition_desc *pdesc;
 
-	buf = malloc(2 * SECTOR_SIZE);
-
-	rc = block_read(blk, buf, 0, 2);
-	if (rc != 0) {
-		dev_err(blk->dev, "Cannot read MBR/partition table: %pe\n", ERR_PTR(rc));
-		goto on_error;
-	}
-
-	parser = partition_parser_get_by_filetype(buf);
-	if (!parser)
-		goto on_error;
-
-	pdesc = parser->parse(buf, blk);
+	pdesc = partition_table_read(blk);
 	if (!pdesc)
-		goto on_error;
-
-	if (list_empty(&pdesc->partitions))
-		goto on_error;
+		return 0;
 
 	/* at least one partition description found */
 	list_for_each_entry(part, &pdesc->partitions, list) {
@@ -148,10 +258,8 @@ int parse_partition_table(struct block_device *blk)
 			rc = 0;
 	}
 
-on_error:
-	free(buf);
-	if (pdesc)
-		parser->partition_free(pdesc);
+	partition_table_free(pdesc);
+
 	return rc;
 }
 

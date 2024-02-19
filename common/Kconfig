@@ -841,6 +841,9 @@ config PARTITION
 	bool
 	prompt "Enable Partitions"
 
+config PARTITION_MANIPULATION
+	bool
+
 source "common/partitions/Kconfig"
 
 config ENV_HANDLING

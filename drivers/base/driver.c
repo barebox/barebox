@@ -106,6 +106,15 @@ int get_free_deviceid(const char *name_template)
 	};
 }
 
+static void dev_report_permanent_probe_deferral(struct device *dev)
+{
+	if (dev->deferred_probe_reason)
+		dev_err(dev, "probe permanently deferred (%s)\n",
+			dev->deferred_probe_reason);
+	else
+		dev_err(dev, "probe permanently deferred\n");
+}
+
 int device_probe(struct device *dev)
 {
 	static int depth = 0;
@@ -136,17 +145,18 @@ int device_probe(struct device *dev)
 	case 0:
 		return 0;
 	case -EPROBE_DEFER:
-		list_move(&dev->active, &deferred);
-
 		/*
 		 * -EPROBE_DEFER should never appear on a deep-probe machine so
 		 * inform the user immediately.
 		 */
-		if (deep_probe_is_supported())
-			dev_err(dev, "probe deferred\n");
-		else
-			dev_dbg(dev, "probe deferred\n");
+		if (deep_probe_is_supported()) {
+			dev_report_permanent_probe_deferral(dev);
+			break;
+		}
 
+		list_move(&dev->active, &deferred);
+
+		dev_dbg(dev, "probe deferred\n");
 		return -EPROBE_DEFER;
 	case -ENODEV:
 	case -ENXIO:
@@ -155,7 +165,6 @@ int device_probe(struct device *dev)
 	default:
 		dev_err(dev, "probe failed: %pe\n", ERR_PTR(ret));
 		break;
-
 	}
 
 	list_del_init(&dev->active);
@@ -382,13 +391,9 @@ static int device_probe_deferred(void)
 		}
 	} while (success);
 
-	list_for_each_entry(dev, &deferred, active) {
-		if (dev->deferred_probe_reason)
-			dev_err(dev, "probe permanently deferred (%s)\n",
-				dev->deferred_probe_reason);
-		else
-			dev_err(dev, "probe permanently deferred\n");
-	}
+	list_for_each_entry(dev, &deferred, active)
+		dev_report_permanent_probe_deferral(dev);
+
 	return 0;
 }
 late_initcall(device_probe_deferred);

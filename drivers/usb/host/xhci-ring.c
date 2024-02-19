@@ -25,6 +25,24 @@
 
 #include "xhci.h"
 
+/*
+ * Returns zero if the TRB isn't in this segment, otherwise it returns the DMA
+ * address of the TRB.
+ */
+dma_addr_t xhci_trb_virt_to_dma(struct xhci_segment *seg,
+				union xhci_trb *trb)
+{
+	unsigned long segment_offset;
+
+	BUG_ON(!seg || !trb || trb < seg->trbs);
+
+	/* offset in TRBs */
+	segment_offset = trb - seg->trbs;
+	BUG_ON(segment_offset >= TRBS_PER_SEGMENT);
+
+	return seg->dma + (segment_offset * sizeof(*trb));
+}
+
 /**
  * Is this TRB a link TRB or was the last TRB the last TRB in this event ring
  * segment?  I.e. would the updated event TRB pointer step off the end of the
@@ -181,12 +199,11 @@ static void inc_deq(struct xhci_ctrl *ctrl, struct xhci_ring *ring)
  * @param trb_fields	pointer to trb field array containing TRB contents
  * @return pointer to the enqueued trb
  */
-static struct xhci_generic_trb *queue_trb(struct xhci_ctrl *ctrl,
-					  struct xhci_ring *ring,
-					  bool more_trbs_coming,
-					  unsigned int *trb_fields)
+static dma_addr_t queue_trb(struct xhci_ctrl *ctrl, struct xhci_ring *ring,
+			    bool more_trbs_coming, unsigned int *trb_fields)
 {
 	struct xhci_generic_trb *trb;
+	dma_addr_t addr;
 	int i;
 
 	trb = &ring->enqueue->generic;
@@ -196,9 +213,11 @@ static struct xhci_generic_trb *queue_trb(struct xhci_ctrl *ctrl,
 
 	xhci_flush_cache((uintptr_t)trb, sizeof(struct xhci_generic_trb));
 
+	addr = xhci_trb_virt_to_dma(ring->enq_seg, (union xhci_trb *)trb);
+
 	inc_enq(ctrl, ring, more_trbs_coming);
 
-	return trb;
+	return addr;
 }
 
 /**
@@ -273,16 +292,15 @@ static int prepare_ring(struct xhci_ctrl *ctrl, struct xhci_ring *ep_ring,
  * @param cmd		Command type to enqueue
  * @return none
  */
-void xhci_queue_command(struct xhci_ctrl *ctrl, u8 *ptr, u32 slot_id,
+void xhci_queue_command(struct xhci_ctrl *ctrl, dma_addr_t addr, u32 slot_id,
 			u32 ep_index, trb_type cmd)
 {
 	u32 fields[4];
-	u64 val_64 = (uintptr_t)ptr;
 
 	BUG_ON(prepare_ring(ctrl, ctrl->cmd_ring, EP_STATE_RUNNING));
 
-	fields[0] = lower_32_bits(val_64);
-	fields[1] = upper_32_bits(val_64);
+	fields[0] = lower_32_bits(addr);
+	fields[1] = upper_32_bits(addr);
 	fields[2] = 0;
 	fields[3] = TRB_TYPE(cmd) | SLOT_ID_FOR_TRB(slot_id) |
 		    ctrl->cmd_ring->cycle_state;
@@ -396,12 +414,15 @@ static void giveback_first_trb(struct usb_device *udev, int ep_index,
  */
 void xhci_acknowledge_event(struct xhci_ctrl *ctrl)
 {
+	dma_addr_t deq;
+
 	/* Advance our dequeue pointer to the next event */
 	inc_deq(ctrl, ctrl->event_ring);
 
 	/* Inform the hardware */
-	xhci_writeq(&ctrl->ir_set->erst_dequeue,
-		(uintptr_t)ctrl->event_ring->dequeue | ERST_EHB);
+	deq = xhci_trb_virt_to_dma(ctrl->event_ring->deq_seg,
+				   ctrl->event_ring->dequeue);
+	xhci_writeq(&ctrl->ir_set->erst_dequeue, deq | ERST_EHB);
 }
 
 /**
@@ -492,9 +513,10 @@ static void abort_td(struct usb_device *udev, int ep_index)
 	struct xhci_ctrl *ctrl = xhci_get_ctrl(udev);
 	struct xhci_ring *ring =  ctrl->devs[udev->slot_id]->eps[ep_index].ring;
 	union xhci_trb *event;
+	dma_addr_t addr;
 	u32 field;
 
-	xhci_queue_command(ctrl, NULL, udev->slot_id, ep_index, TRB_STOP_RING);
+	xhci_queue_command(ctrl, 0, udev->slot_id, ep_index, TRB_STOP_RING);
 
 	event = xhci_wait_for_event(ctrl, TRB_TRANSFER, XHCI_TIMEOUT_DEFAULT);
 	field = le32_to_cpu(event->trans_event.flags);
@@ -510,8 +532,9 @@ static void abort_td(struct usb_device *udev, int ep_index)
 		event->event_cmd.status)) != COMP_SUCCESS);
 	xhci_acknowledge_event(ctrl);
 
-	xhci_queue_command(ctrl, (void *)((uintptr_t)ring->enqueue |
-		ring->cycle_state), udev->slot_id, ep_index, TRB_SET_DEQ);
+	addr = xhci_trb_virt_to_dma(ring->enq_seg, ring->enqueue);
+	addr |= ring->cycle_state;
+	xhci_queue_command(ctrl, addr, udev->slot_id, ep_index, TRB_SET_DEQ);
 	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
 	BUG_ON(TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags))
 		!= udev->slot_id || GET_COMP_CODE(le32_to_cpu(

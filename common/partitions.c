@@ -15,8 +15,7 @@
 #include <disks.h>
 #include <filetype.h>
 #include <linux/err.h>
-
-#include "partitions/parser.h"
+#include <partitions.h>
 
 static LIST_HEAD(partition_parser_list);
 

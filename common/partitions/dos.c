@@ -17,8 +17,7 @@
 #include <init.h>
 #include <asm/unaligned.h>
 #include <linux/err.h>
-
-#include "parser.h"
+#include <partitions.h>
 
 
 enum {

@@ -20,7 +20,7 @@
 #include <linux/ctype.h>
 
 #include <efi/partition.h>
-#include "parser.h"
+#include <partitions.h>
 
 struct efi_partition_desc {
 	struct partition_desc pd; /* must be first */

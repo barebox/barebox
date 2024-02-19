@@ -670,6 +670,9 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 
 	first_trb = true;
 
+	/* flush the buffer before use */
+	xhci_flush_cache((uintptr_t)buffer, length);
+
 	/* Queue the first TRB, even if it's zero-length */
 	do {
 		u32 remainder = 0;
@@ -913,6 +916,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 		trb_fields[2] = length_field;
 		trb_fields[3] = field | ep_ring->cycle_state;
 
+		xhci_flush_cache((uintptr_t)buffer, length);
 		queue_trb(ctrl, ep_ring, true, trb_fields);
 	}
 

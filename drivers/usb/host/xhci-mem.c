@@ -498,7 +498,7 @@ int xhci_alloc_virt_device(struct xhci_ctrl *ctrl, unsigned int slot_id)
 	byte_64 = (uintptr_t)(virt_dev->out_ctx->bytes);
 
 	/* Point to output device context in dcbaa. */
-	ctrl->dcbaa->dev_context_ptrs[slot_id] = byte_64;
+	ctrl->dcbaa->dev_context_ptrs[slot_id] = cpu_to_le64(byte_64);
 
 	xhci_flush_cache((uintptr_t)&ctrl->dcbaa->dev_context_ptrs[slot_id],
 			 sizeof(__le64));
@@ -777,7 +777,7 @@ void xhci_setup_addressable_virt_dev(struct xhci_ctrl *ctrl,
 
 	dev_dbg(&udev->dev, "route string 0x%x\n", route);
 
-	slot_ctx->dev_info |= route;
+	slot_ctx->dev_info |= cpu_to_le32(route);
 
 	switch (speed) {
 	case USB_SPEED_SUPER:

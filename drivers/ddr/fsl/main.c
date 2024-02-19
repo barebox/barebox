@@ -97,7 +97,7 @@ static unsigned long long step_assign_addresses_linear(struct fsl_ddr_info *pinf
 static unsigned long long step_assign_addresses_interleaved(struct fsl_ddr_info *pinfo,
 							    unsigned long long current_mem_base)
 {
-	unsigned long long total_mem, total_ctlr_mem;
+	unsigned long long total_mem = 0, total_ctlr_mem;
 	unsigned long long rank_density, ctlr_density = 0;
 	int i;
 

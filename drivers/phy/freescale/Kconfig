@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-only
+
 config PHY_FSL_IMX8MQ_USB
-	bool "Freescale i.MX8M USB3 PHY"
-	default ARCH_IMX8MQ
+	bool "Freescale i.MX8MQ/P USB3 PHY"
+	default ARCH_IMX8MQ || ARCH_IMX8MP
+	help
+	  Enable this to add support for the USB PHY found on
+	  the i.MX8M Quad and Plus.
 

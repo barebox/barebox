@@ -190,36 +190,38 @@ static void dos_partition(void *buf, struct block_device *blk,
 	table = (struct partition_entry *)&buffer[446];
 
 	for (i = 0; i < 4; i++) {
+		int n;
+
 		pentry.first_sec = get_unaligned_le32(&table[i].partition_start);
 		pentry.size = get_unaligned_le32(&table[i].partition_size);
 		pentry.dos_partition_type = table[i].type;
 
-		if (pentry.first_sec != 0) {
-			int n = pd->used_entries;
-			pd->parts[n].first_sec = pentry.first_sec;
-			pd->parts[n].size = pentry.size;
-			pd->parts[n].dos_partition_type = pentry.dos_partition_type;
-			if (signature)
-				sprintf(pd->parts[n].partuuid, "%08x-%02d",
-						signature, i + 1);
-			pd->used_entries++;
-
-			if (is_extended_partition(&pentry)) {
-				pd->parts[n].size = 2;
-
-				if (!extended_partition)
-					extended_partition = &pd->parts[n];
-				else
-					/*
-					 * An DOS MBR must only contain a single
-					 * extended partition. Just ignore all
-					 * but the first.
-					 */
-					dev_warn(blk->dev, "Skipping additional extended partition\n");
-			}
-
-		} else {
+		if (pentry.first_sec == 0) {
 			dev_dbg(blk->dev, "Skipping empty partition %d\n", i);
+			continue;
+		}
+
+		n = pd->used_entries;
+		pd->parts[n].first_sec = pentry.first_sec;
+		pd->parts[n].size = pentry.size;
+		pd->parts[n].dos_partition_type = pentry.dos_partition_type;
+		if (signature)
+			sprintf(pd->parts[n].partuuid, "%08x-%02d",
+					signature, i + 1);
+		pd->used_entries++;
+
+		if (is_extended_partition(&pentry)) {
+			pd->parts[n].size = 2;
+
+			if (!extended_partition)
+				extended_partition = &pd->parts[n];
+			else
+				/*
+				 * An DOS MBR must only contain a single
+				 * extended partition. Just ignore all
+				 * but the first.
+				 */
+				dev_warn(blk->dev, "Skipping additional extended partition\n");
 		}
 	}
 

@@ -431,14 +431,14 @@ static void part_set_efi_name(gpt_entry *pte, char *dest)
 	dest[i] = 0;
 }
 
-static void efi_partition(void *buf, struct block_device *blk,
-			  struct partition_desc *pd)
+static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 {
 	gpt_header *gpt = NULL;
 	gpt_entry *ptes = NULL;
 	int i = 0;
 	int nb_part;
 	struct partition *pentry;
+	struct partition_desc *pd;
 
 	if (!find_valid_gpt(buf, blk, &gpt, &ptes) || !gpt || !ptes)
 		goto out;
@@ -455,6 +455,8 @@ static void efi_partition(void *buf, struct block_device *blk,
 			 nb_part, MAX_PARTITION);
 		nb_part = MAX_PARTITION;
 	}
+
+	pd = xzalloc(sizeof(*pd));
 
 	for (i = 0; i < nb_part; i++) {
 		if (!is_pte_valid(&ptes[i], last_lba(blk))) {
@@ -474,10 +476,18 @@ static void efi_partition(void *buf, struct block_device *blk,
 out:
 	kfree(gpt);
 	kfree(ptes);
+
+	return pd;
+}
+
+static void efi_partition_free(struct partition_desc *pd)
+{
+	free(pd);
 }
 
 static struct partition_parser efi_partition_parser = {
 	.parse = efi_partition,
+	.partition_free = efi_partition_free,
 	.type = filetype_gpt,
 };
 

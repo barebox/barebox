@@ -32,7 +32,8 @@ struct partition_desc {
 };
 
 struct partition_parser {
-	void (*parse)(void *buf, struct block_device *blk, struct partition_desc *pd);
+	struct partition_desc *(*parse)(void *buf, struct block_device *blk);
+	void (*partition_free)(struct partition_desc *pd);
 	enum filetype type;
 
 	struct list_head list;

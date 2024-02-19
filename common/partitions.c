@@ -113,13 +113,12 @@ static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
  */
 int parse_partition_table(struct block_device *blk)
 {
-	struct partition_desc *pdesc;
+	struct partition_desc *pdesc = NULL;
 	int i;
 	int rc = 0;
 	struct partition_parser *parser;
 	uint8_t *buf;
 
-	pdesc = xzalloc(sizeof(*pdesc));
 	buf = malloc(2 * SECTOR_SIZE);
 
 	rc = block_read(blk, buf, 0, 2);
@@ -132,7 +131,9 @@ int parse_partition_table(struct block_device *blk)
 	if (!parser)
 		goto on_error;
 
-	parser->parse(buf, blk, pdesc);
+	pdesc = parser->parse(buf, blk);
+	if (!pdesc)
+		goto on_error;
 
 	if (!pdesc->used_entries)
 		goto on_error;
@@ -150,7 +151,8 @@ int parse_partition_table(struct block_device *blk)
 
 on_error:
 	free(buf);
-	free(pdesc);
+	if (pdesc)
+		parser->partition_free(pdesc);
 	return rc;
 }
 

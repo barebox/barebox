@@ -171,8 +171,7 @@ out:
  * It seems at least on ARM this routine cannot use temp. stack space for the
  * sector. So, keep the malloc/free.
  */
-static void dos_partition(void *buf, struct block_device *blk,
-			  struct partition_desc *pd)
+static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 {
 	struct partition_entry *table;
 	struct partition pentry;
@@ -181,6 +180,7 @@ static void dos_partition(void *buf, struct block_device *blk,
 	int i;
 	struct disk_signature_priv *dsp;
 	uint32_t signature = get_unaligned_le32(buf + 0x1b8);
+	struct partition_desc *pd;
 
 	if (signature)
 		sprintf(blk->cdev.diskuuid, "%08x", signature);
@@ -188,6 +188,8 @@ static void dos_partition(void *buf, struct block_device *blk,
 	blk->cdev.flags |= DEVFS_IS_MBR_PARTITIONED;
 
 	table = (struct partition_entry *)&buffer[446];
+
+	pd = xzalloc(sizeof(*pd));
 
 	for (i = 0; i < 4; i++) {
 		int n;
@@ -244,10 +246,18 @@ static void dos_partition(void *buf, struct block_device *blk,
 	dev_add_param_uint32(blk->dev, "nt_signature",
 			dos_set_disk_signature, dos_get_disk_signature,
 			&dsp->signature, "%08x", dsp);
+
+	return pd;
+}
+
+static void dos_partition_free(struct partition_desc *pd)
+{
+	free(pd);
 }
 
 static struct partition_parser dos = {
 	.parse = dos_partition,
+	.partition_free = dos_partition_free,
 	.type = filetype_mbr,
 };
 

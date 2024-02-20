@@ -40,10 +40,6 @@ feat: &ocotp {
 	barebox,feature-controller;
 };
 
-&pgc_mipi_phy1 {
-	barebox,feature-gates = <&feat IMX8M_FEAT_MIPI_DSI>;
-};
-
 &pgc_gpu2d {
 	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
 };
@@ -56,20 +52,12 @@ feat: &ocotp {
 	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
 };
 
-&pgc_mipi_phy2 {
-	barebox,feature-gates = <&feat IMX8M_FEAT_MIPI_DSI>;
-};
-
 &mipi_dsi {
 	barebox,feature-gates = <&feat IMX8M_FEAT_MIPI_DSI>;
 };
 
 &lcdif1 {
 	barebox,feature-gates = <&feat IMX8M_FEAT_MIPI_DSI>;
-};
-
-&pgc_ispdwp {
-	barebox,feature-gates = <&feat IMX8M_FEAT_ISP>;
 };
 
 &gpu3d {

@@ -56,9 +56,13 @@ FILE_barebox-groboards-sama5d27-giantboard-xload-mmc.img = start_sama5d27_giantb
 MAX_PBL_IMAGE_SIZE_start_sama5d27_giantboard_xload_mmc = 0xffff
 image-$(CONFIG_MACH_SAMA5D27_GIANTBOARD) += barebox-groboards-sama5d27-giantboard-xload-mmc.img
 
+pblb-$(CONFIG_MACH_SKOV_ARM9CPU) += start_skov_arm9cpu_xload_mmc
+FILE_barebox-skov-arm9cpu-xload-mmc.img = start_skov_arm9cpu_xload_mmc.pblb
+MAX_PBL_MEMORY_SIZE_start_skov_arm9cpu = 0x12000
+image-$(CONFIG_MACH_SKOV_ARM9CPU) += barebox-skov-arm9cpu-xload-mmc.img
+
 pblb-$(CONFIG_MACH_SKOV_ARM9CPU) += start_skov_arm9cpu
 FILE_barebox-skov-arm9cpu.img = start_skov_arm9cpu.pblb
-MAX_PBL_MEMORY_SIZE_start_skov_arm9cpu = 0x12000
 image-$(CONFIG_MACH_SKOV_ARM9CPU) += barebox-skov-arm9cpu.img
 
 pblb-$(CONFIG_MACH_SAMA5D4_WIFX) += start_sama5d4_wifx_l1

@@ -6,6 +6,7 @@
 #include <asm/common.h>
 #include <mach/at91/sama5d3.h>
 #include <mach/at91/sama5d4.h>
+#include <mach/at91/at91sam9261.h>
 
 #ifdef CONFIG_AT91_LOAD_BAREBOX_SRAM
 #define AT91_EXV6	".word _barebox_image_size\n"
@@ -67,6 +68,10 @@ static __always_inline void __barebox_at91_head(void)
 
 #define SAMA5D4_ENTRY_FUNCTION(name, r4)					\
 	SAMA5_ENTRY_FUNCTION(name, SAMA5D4_SRAM_BASE + SAMA5D4_SRAM_SIZE, r4)
+
+#define SAM9_ENTRY_FUNCTION(name)	\
+	ENTRY_FUNCTION_WITHSTACK_HEAD(name, AT91SAM9261_SRAM_BASE + AT91SAM9261_SRAM_SIZE, \
+				      __barebox_at91_head, r0, r1, r2)
 
 #define AT91_ENTRY_FUNCTION(fn, r0, r1, r2)					\
 	ENTRY_FUNCTION_WITHSTACK_HEAD(fn, 0, __barebox_at91_head, r0, r1, r2)

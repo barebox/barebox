@@ -7,7 +7,7 @@
 #include <mach/at91/at91_wdt.h>
 #include <mach/at91/sam92_ll.h>
 
-static void sam9263_pmc_init(const struct sam92_pmc_config *config)
+static void sam9263_pmc_init(u32 plla, u32 pllb)
 {
 	unsigned flags = AT91_PMC_LL_AT91SAM9263;
 	u32 mckr_settings;
@@ -15,11 +15,7 @@ static void sam9263_pmc_init(const struct sam92_pmc_config *config)
 	at91_pmc_init(IOMEM(AT91SAM926X_BASE_PMC), flags);
 
 	/* Setting PLL A and divider A */
-	at91_pmc_cfg_plla(IOMEM(AT91SAM926X_BASE_PMC),
-			  AT91_PMC_MUL_(config->mula) |
-			  AT91_PMC_OUT_2 |		// 190 to 240 MHz
-			  config->diva,			// Divider
-			  flags);
+	at91_pmc_cfg_plla(IOMEM(AT91SAM926X_BASE_PMC), plla, flags);
 
 	/* Selection of Master Clock and Processor Clock */
 	mckr_settings = AT91_PMC_PRES_1 | AT91SAM9_PMC_MDIV_2 | AT91_PMC_PDIV_1;
@@ -31,6 +27,9 @@ static void sam9263_pmc_init(const struct sam92_pmc_config *config)
 	/* Switch MCK on PLLA output */
 	at91_pmc_cfg_mck(IOMEM(AT91SAM926X_BASE_PMC),
 			 AT91_PMC_CSS_PLLA | mckr_settings, flags);
+
+	if (pllb)
+		at91_pmc_cfg_pllb(IOMEM(AT91SAM926X_BASE_PMC), pllb, flags);
 }
 
 static inline void matrix_wr(unsigned int offset, const unsigned int value)
@@ -199,10 +198,10 @@ static void sam9263_rstc_init(void)
 	writel(AT91_RSTC_KEY | AT91_RSTC_URSTEN, IOMEM(AT91SAM926X_BASE_RSTC + AT91_RSTC_MR));
 }
 
-void sam9263_lowlevel_init(const struct sam92_pmc_config *config)
+void sam9263_lowlevel_init(u32 plla, u32 pllb)
 {
 	at91_wdt_disable(IOMEM(AT91SAM9263_BASE_WDT));
-	sam9263_pmc_init(config);
+	sam9263_pmc_init(plla, pllb);
 	sam9263_matrix_init();
 	sam9263_rstc_init();
 }

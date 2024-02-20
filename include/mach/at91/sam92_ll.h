@@ -15,12 +15,7 @@
 #include <mach/at91/early_udelay.h>
 #include <mach/at91/iomux.h>
 
-struct sam92_pmc_config {
-	unsigned int diva;
-	unsigned int mula;
-};
-
-void sam9263_lowlevel_init(const struct sam92_pmc_config *config);
+void sam9263_lowlevel_init(u32 plla, u32 pllb);
 
 static inline void sam92_pmc_enable_periph_clock(int clk)
 {

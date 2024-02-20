@@ -157,6 +157,17 @@ void at91_pmc_cfg_plla(void __iomem *pmc_base, u32 pmc_pllar,
 		;
 }
 
+void at91_pmc_cfg_pllb(void __iomem *pmc_base, u32 pmc_pllbr,
+		       unsigned int __always_unused flags)
+{
+	/* Always disable PLL before configuring it */
+	at91_pmc_write(AT91_CKGR_PLLBR, 0);
+	at91_pmc_write(AT91_CKGR_PLLBR, pmc_pllbr);
+
+	while (!(at91_pmc_read(AT91_PMC_SR) & AT91_PMC_LOCKB))
+		;
+}
+
 void at91_pmc_cfg_mck(void __iomem *pmc_base, u32 pmc_mckr, unsigned int flags)
 {
 	u32 tmp;

@@ -56,6 +56,8 @@ static int mem;
  */
 static int skov_arm9_probe(struct device *dev)
 {
+	barebox_set_hostname("skov-arm9cpu");
+
 	add_generic_device("at91sam9-smc", 0, NULL, AT91SAM9263_BASE_SMC0, 0x200,
 			   IORESOURCE_MEM, NULL);
 	add_generic_device("at91sam9-smc", 1, NULL, AT91SAM9263_BASE_SMC1, 0x200,

@@ -16,11 +16,6 @@
 
 	chosen {
 		stdout-path = "serial0:115200n8";
-
-		environment {
-			compatible = "barebox,environment";
-			device-path = &environment_nor;
-		};
 	};
 
 	flash: nor_flash@10000000 {
@@ -36,12 +31,12 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
-			barebox@0 {
+			u-boot@0 {
 				label = "bootloader";
 				reg = <0x00000 0x80000>;
 			};
 
-			environment_nor: env@80000 {
+			env@80000 {
 				label = "environment";
 				reg = <0x80000 0x20000>;
 			};

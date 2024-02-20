@@ -151,6 +151,7 @@ static int atmci_probe(struct device *hw_dev)
 
 	clk_enable(host->clk);
 	atmci_writel(host, ATMCI_CR, ATMCI_CR_SWRST);
+	atmci_writel(host, ATMCI_CR, ATMCI_CR_PWSDIS);
 	atmci_writel(host, ATMCI_IDR, ~0UL);
 	host->bus_hz = clk_get_rate(host->clk);
 	clk_disable(host->clk);

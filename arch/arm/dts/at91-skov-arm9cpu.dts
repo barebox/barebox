@@ -16,6 +16,12 @@
 
 	chosen {
 		stdout-path = "serial0:115200n8";
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &mmc1;
+			file-path = "barebox.env";
+		};
 	};
 
 	flash: nor_flash@10000000 {

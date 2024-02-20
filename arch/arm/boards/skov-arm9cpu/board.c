@@ -7,6 +7,7 @@
 #include <envfs.h>
 #include <init.h>
 #include <gpio.h>
+#include <bootsource.h>
 
 #include <linux/sizes.h>
 
@@ -69,6 +70,13 @@ static int skov_arm9_probe(struct device *dev)
 	mem = at91_get_sdram_size(IOMEM(AT91SAM9263_BASE_SDRAMC0));
 	mem = mem / SZ_1M;
 	globalvar_add_simple_int("board.mem", &mem, "%u");
+
+	/*
+	 * NOR first stage bootloader is at91bootstrap, so if we find traces
+	 * of barebox in on-chip SRAM, it must mean we have booted from SD
+	 */
+	if (is_barebox_arm_head((void *)AT91SAM9263_SRAM0_BASE))
+		bootsource_set_raw(BOOTSOURCE_MMC, BOOTSOURCE_INSTANCE_UNKNOWN);
 
 	return 0;
 }

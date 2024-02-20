@@ -22,6 +22,7 @@ void imx8mm_boot_save_loc(void);
 void imx8mn_boot_save_loc(void);
 void imx8mp_boot_save_loc(void);
 void imx8mq_boot_save_loc(void);
+void imx93_bootsource(void);
 
 void imx25_get_boot_source(enum bootsource *src, int *instance);
 void imx27_get_boot_source(enum bootsource *src, int *instance);

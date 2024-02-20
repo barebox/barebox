@@ -172,6 +172,7 @@ int imx93_init(void)
 {
 	imx93_type();
 	imx93_set_arm_clock();
+	imx93_bootsource();
 
 	if (IS_ENABLED(CONFIG_PBL_OPTEE)) {
 		static struct of_optee_fixup_data optee_fixup_data = {

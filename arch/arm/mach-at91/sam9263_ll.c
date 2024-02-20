@@ -10,6 +10,7 @@
 static void sam9263_pmc_init(const struct sam92_pmc_config *config)
 {
 	unsigned flags = AT91_PMC_LL_AT91SAM9263;
+	u32 mckr_settings;
 
 	at91_pmc_init(IOMEM(AT91SAM926X_BASE_PMC), flags);
 
@@ -21,22 +22,15 @@ static void sam9263_pmc_init(const struct sam92_pmc_config *config)
 			  flags);
 
 	/* Selection of Master Clock and Processor Clock */
+	mckr_settings = AT91_PMC_PRES_1 | AT91SAM9_PMC_MDIV_2 | AT91_PMC_PDIV_1;
 
 	/* PCK = PLLA = 2 * MCK */
 	at91_pmc_cfg_mck(IOMEM(AT91SAM926X_BASE_PMC),
-			 AT91_PMC_CSS_SLOW
-			 | AT91_PMC_PRES_1
-			 | AT91SAM9_PMC_MDIV_2
-			 | AT91_PMC_PDIV_1,
-			 flags);
+			 AT91_PMC_CSS_SLOW | mckr_settings, flags);
 
 	/* Switch MCK on PLLA output */
 	at91_pmc_cfg_mck(IOMEM(AT91SAM926X_BASE_PMC),
-			 AT91_PMC_CSS_PLLA
-			 | AT91_PMC_PRES_1
-			 | AT91SAM9_PMC_MDIV_2
-			 | AT91_PMC_PDIV_1,
-			 flags);
+			 AT91_PMC_CSS_PLLA | mckr_settings, flags);
 }
 
 static inline void matrix_wr(unsigned int offset, const unsigned int value)

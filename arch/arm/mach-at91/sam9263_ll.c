@@ -11,9 +11,6 @@ static void sam9263_pmc_init(const struct sam92_pmc_config *config)
 {
 	at91_pmc_init(IOMEM(AT91SAM926X_BASE_PMC), 0);
 
-	/* Initialize PLL charge pump, must be done before PLLAR/PLLBR */
-	at91_pmc_init_pll(IOMEM(AT91SAM926X_BASE_PMC), AT91SAM9_PMC_ICPPLLA | AT91SAM9_PMC_ICPPLLB);
-
 	/* Setting PLL A and divider A */
 	at91_pmc_cfg_plla(IOMEM(AT91SAM926X_BASE_PMC),
 			  AT91_PMC_MUL_(config->mula) |

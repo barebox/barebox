@@ -69,6 +69,6 @@ static __always_inline void __barebox_at91_head(void)
 	SAMA5_ENTRY_FUNCTION(name, SAMA5D4_SRAM_BASE + SAMA5D4_SRAM_SIZE, r4)
 
 #define AT91_ENTRY_FUNCTION(fn, r0, r1, r2)					\
-	ENTRY_FUNCTION_HEAD(fn, __barebox_at91_head, r0, r1, r2)
+	ENTRY_FUNCTION_WITHSTACK_HEAD(fn, 0, __barebox_at91_head, r0, r1, r2)
 
 #endif

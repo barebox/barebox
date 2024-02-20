@@ -3,10 +3,10 @@
 
 #include <linux/sizes.h>
 
-#include <asm/barebox-arm.h>
 
 #include <mach/at91/at91sam926x_board_init.h>
 #include <mach/at91/at91sam9263_matrix.h>
+#include <mach/at91/barebox-arm.h>
 
 #define MASTER_PLL_MUL		171
 #define MASTER_PLL_DIV		14
@@ -114,7 +114,7 @@ static void __bare_init skov_arm9cpu_init(void *fdt)
 
 extern char __dtb_at91_skov_arm9cpu_start[];
 
-ENTRY_FUNCTION(start_skov_arm9cpu, r0, r1, r2)
+AT91_ENTRY_FUNCTION(start_skov_arm9cpu, r0, r1, r2)
 {
 	void *fdt;
 

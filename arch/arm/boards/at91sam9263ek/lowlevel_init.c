@@ -6,8 +6,7 @@
 
 #include <linux/sizes.h>
 
-#include <asm/barebox-arm.h>
-
+#include <mach/at91/barebox-arm.h>
 #include <mach/at91/at91sam926x_board_init.h>
 #include <mach/at91/at91sam9263_matrix.h>
 
@@ -117,7 +116,7 @@ static void __bare_init at91sam9263ek_init(void *fdt)
 
 extern char __dtb_z_at91sam9263ek_start[];
 
-ENTRY_FUNCTION(start_at91sam9263ek, r0, r1, r2)
+AT91_ENTRY_FUNCTION(start_at91sam9263ek, r0, r1, r2)
 {
 	void *fdt;
 

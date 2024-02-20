@@ -3,14 +3,13 @@
 #include <common.h>
 #include <linux/sizes.h>
 #include <mach/at91/at91_ddrsdrc.h>
-#include <asm/barebox-arm-head.h>
-#include <asm/barebox-arm.h>
+#include <mach/at91/barebox-arm.h>
 #include <io.h>
 #include <debug_ll.h>
 
 extern char __dtb_z_at91sam9x5ek_start[];
 
-ENTRY_FUNCTION(start_at91sam9x5ek, r0, r1, r2)
+AT91_ENTRY_FUNCTION(start_at91sam9x5ek, r0, r1, r2)
 {
 	void *fdt;
 

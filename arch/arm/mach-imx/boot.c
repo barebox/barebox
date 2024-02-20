@@ -34,7 +34,7 @@ imx_boot_save_loc(void (*get_boot_source)(enum bootsource *, int *))
 
 	get_boot_source(&src, &instance);
 
-	bootsource_set_raw(src, instance);
+	bootsource_set(src, instance);
 }
 
 
@@ -319,7 +319,7 @@ void imx53_boot_save_loc(void)
 
 	imx53_get_boot_source(&src, &instance);
 
-	bootsource_set_raw(src, instance);
+	bootsource_set(src, instance);
 }
 
 #define IMX6_SRC_SBMR1	0x04

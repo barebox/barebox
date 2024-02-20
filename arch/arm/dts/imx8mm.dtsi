@@ -9,6 +9,9 @@
 		pwm1 = &pwm2;
 		pwm2 = &pwm3;
 		pwm3 = &pwm4;
+		barebox,bootsource-mmc0 = &usdhc1;
+		barebox,bootsource-mmc1 = &usdhc2;
+		barebox,bootsource-mmc2 = &usdhc3;
 	};
 };
 

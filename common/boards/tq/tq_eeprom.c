@@ -118,13 +118,13 @@ static void tq_read_string(const char *src, char *dst, int len)
 	dst[i] = '\0';
 }
 
-struct tq_eeprom *pbl_tq_read_eeprom(struct pbl_i2c *i2c, u8 addr)
+struct tq_eeprom *pbl_tq_read_eeprom(struct pbl_i2c *i2c, u8 addr, u32 eeprom_addr)
 {
 	struct tq_eeprom_data raw;
 	static struct tq_eeprom eeprom;
 	int ret;
 
-	ret = eeprom_read(i2c, addr, 0, &raw, sizeof(raw));
+	ret = eeprom_read(i2c, addr, eeprom_addr, &raw, sizeof(raw));
 	if (ret)
 		return NULL;
 

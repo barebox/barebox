@@ -28,7 +28,7 @@ static int tqma93xx_get_formfactor(void)
 
 	i2c = imx93_i2c_early_init(IOMEM(MX9_I2C1_BASE_ADDR));
 
-	eeprom = pbl_tq_read_eeprom(i2c, 0x53);
+	eeprom = pbl_tq_read_eeprom(i2c, 0x53, 0);
 	if (!eeprom)
 		return VARD_FORMFACTOR_TYPE_CONNECTOR;
 

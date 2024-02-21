@@ -2,6 +2,7 @@
 #ifndef __GPIO_H
 #define __GPIO_H
 
+#include <slice.h>
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/iopoll.h>
@@ -156,6 +157,12 @@ static inline int gpio_array_to_id(const struct gpio *array, size_t num, u32 *va
 {
 	return -EINVAL;
 }
+
+static inline bool gpio_slice_acquired(unsigned gpio)
+{
+	return false;
+}
+
 #else
 int gpio_request(unsigned gpio, const char *label);
 int gpio_find_by_name(const char *name);
@@ -165,6 +172,7 @@ int gpio_request_one(unsigned gpio, unsigned long flags, const char *label);
 int gpio_request_array(const struct gpio *array, size_t num);
 void gpio_free_array(const struct gpio *array, size_t num);
 int gpio_array_to_id(const struct gpio *array, size_t num, u32 *val);
+bool gpio_slice_acquired(unsigned gpio);
 #endif
 
 struct gpio_chip;
@@ -213,8 +221,15 @@ struct gpio_chip {
 
 	struct gpio_ops *ops;
 
+	struct slice slice;
+
 	struct list_head list;
 };
+
+static inline struct slice *gpiochip_slice(struct gpio_chip *chip)
+{
+	return &chip->slice;
+}
 
 int gpiochip_add(struct gpio_chip *chip);
 void gpiochip_remove(struct gpio_chip *chip);

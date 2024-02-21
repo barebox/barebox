@@ -172,6 +172,16 @@ int gpio_request(unsigned gpio, const char *label)
 	return gpiodesc_request(desc, label);
 }
 
+bool gpio_slice_acquired(unsigned gpio)
+{
+	struct gpio_desc *desc = gpio_to_desc(gpio);
+
+	if (!desc)
+		return false;
+
+	return slice_acquired(&desc->chip->slice);
+}
+
 static void gpiodesc_free(struct gpio_desc *desc)
 {
 	if (!desc->requested)
@@ -1013,6 +1023,7 @@ int gpiochip_add(struct gpio_chip *chip)
 			return -ENOSPC;
 	}
 
+	slice_init(&chip->slice, dev_name(chip->dev));
 
 	list_add_tail(&chip->list, &chip_list);
 

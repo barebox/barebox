@@ -940,6 +940,12 @@ static struct image_handler xz_bootm_handler = {
 	.filetype = filetype_xz_compressed,
 };
 
+static struct image_handler zstd_bootm_handler = {
+	.name = "ZSTD compressed file",
+	.bootm = do_bootm_compressed,
+	.filetype = filetype_zstd_compressed,
+};
+
 static int bootm_init(void)
 {
 	globalvar_add_simple("bootm.image", NULL);
@@ -974,6 +980,8 @@ static int bootm_init(void)
 		register_image_handler(&lz4_bootm_handler);
 	if (IS_ENABLED(CONFIG_XZ_DECOMPRESS))
 		register_image_handler(&xz_bootm_handler);
+	if (IS_ENABLED(CONFIG_ZSTD_DECOMPRESS))
+		register_image_handler(&zstd_bootm_handler);
 
 	return 0;
 }

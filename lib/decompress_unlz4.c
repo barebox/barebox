@@ -38,10 +38,10 @@
 #define LZ4_DEFAULT_UNCOMPRESSED_CHUNK_SIZE (8 << 20)
 #define ARCHIVE_MAGICNUMBER 0x184C2102
 
-static inline int unlz4(u8 *input, int in_len,
-				int (*fill) (void *, unsigned int),
-				int (*flush) (void *, unsigned int),
-				u8 *output, int *posp,
+static inline int unlz4(u8 *input, long in_len,
+				long (*fill) (void *, unsigned long),
+				long (*flush) (void *, unsigned long),
+				u8 *output, long *posp,
 				void (*error) (char *x))
 {
 	int ret = -1;
@@ -180,11 +180,11 @@ exit_0:
 	return ret;
 }
 
-STATIC int decompress_unlz4(unsigned char *buf, int in_len,
-			      int(*fill)(void*, unsigned int),
-			      int(*flush)(void*, unsigned int),
+STATIC int decompress_unlz4(unsigned char *buf, long in_len,
+			      long(*fill)(void*, unsigned long),
+			      long(*flush)(void*, unsigned long),
 			      unsigned char *output,
-			      int *posp,
+			      long *posp,
 			      void(*error)(char *x)
 	)
 {

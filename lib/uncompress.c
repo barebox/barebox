@@ -20,6 +20,7 @@
 #include <lzo.h>
 #include <linux/xz.h>
 #include <linux/decompress/unlz4.h>
+#include <linux/decompress/unzstd.h>
 #include <errno.h>
 #include <filetype.h>
 #include <malloc.h>
@@ -27,18 +28,18 @@
 #include <libfile.h>
 
 static void *uncompress_buf;
-static unsigned int uncompress_size;
+static unsigned long uncompress_size;
 
 void uncompress_err_stdout(char *x)
 {
 	printf("%s\n", x);
 }
 
-static int (*uncompress_fill_fn)(void*, unsigned int);
+static long (*uncompress_fill_fn)(void*, unsigned long);
 
-static int uncompress_fill(void *buf, unsigned int len)
+static long uncompress_fill(void *buf, unsigned long len)
 {
-	int total = 0;
+	long total = 0;
 
 	if (uncompress_size) {
 		int now = min(len, uncompress_size);
@@ -60,19 +61,19 @@ static int uncompress_fill(void *buf, unsigned int len)
 	return total;
 }
 
-int uncompress(unsigned char *inbuf, int len,
-	   int(*fill)(void*, unsigned int),
-	   int(*flush)(void*, unsigned int),
+int uncompress(unsigned char *inbuf, long len,
+	   long(*fill)(void*, unsigned long),
+	   long(*flush)(void*, unsigned long),
 	   unsigned char *output,
-	   int *pos,
+	   long *pos,
 	   void(*error_fn)(char *x))
 {
 	enum filetype ft;
-	int (*compfn)(unsigned char *inbuf, int len,
-            int(*fill)(void*, unsigned int),
-            int(*flush)(void*, unsigned int),
+	int (*compfn)(unsigned char *inbuf, long len,
+            long(*fill)(void*, unsigned long),
+            long(*flush)(void*, unsigned long),
             unsigned char *output,
-            int *pos,
+            long *pos,
             void(*error)(char *x));
 	int ret;
 	char *err;
@@ -95,6 +96,8 @@ int uncompress(unsigned char *inbuf, int len,
 
 		ft = file_detect_type(uncompress_buf, 32);
 	}
+
+	pr_debug("Filetype detected: %s\n", file_type_to_string(ft));
 
 	switch (ft) {
 #ifdef CONFIG_BZLIB
@@ -122,6 +125,11 @@ int uncompress(unsigned char *inbuf, int len,
 		compfn = decompress_unxz;
 		break;
 #endif
+#ifdef CONFIG_ZSTD_DECOMPRESS
+	case filetype_zstd_compressed:
+		compfn = unzstd;
+		break;
+#endif
 	default:
 		err = basprintf("cannot handle filetype %s",
 				  file_type_to_string(ft));
@@ -141,12 +149,12 @@ err:
 
 static int uncompress_infd, uncompress_outfd;
 
-static int fill_fd(void *buf, unsigned int len)
+static long fill_fd(void *buf, unsigned long len)
 {
 	return read_full(uncompress_infd, buf, len);
 }
 
-static int flush_fd(void *buf, unsigned int len)
+static long flush_fd(void *buf, unsigned long len)
 {
 	return write(uncompress_outfd, buf, len);
 }

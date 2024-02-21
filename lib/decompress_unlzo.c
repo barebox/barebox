@@ -109,10 +109,10 @@ static inline int parse_header(u8 *input, int *skip, int in_len)
 	return 1;
 }
 
-int decompress_unlzo(u8 *input, int in_len,
-				int (*fill) (void *, unsigned int),
-				int (*flush) (void *, unsigned int),
-				u8 *output, int *posp,
+int decompress_unlzo(u8 *input, long in_len,
+				long (*fill) (void *, unsigned long),
+				long (*flush) (void *, unsigned long),
+				u8 *output, long *posp,
 				void (*error) (char *x))
 {
 	u8 r = 0;

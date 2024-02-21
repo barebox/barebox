@@ -300,7 +300,7 @@ struct uimage_handle *uimage_open(const char *filename);
 void uimage_close(struct uimage_handle *handle);
 int uimage_verify(struct uimage_handle *handle);
 int uimage_load(struct uimage_handle *handle, unsigned int image_no,
-		int(*flush)(void*, unsigned int));
+		long(*flush)(void*, unsigned long));
 void uimage_print_contents(struct uimage_handle *handle);
 ssize_t uimage_get_size(struct uimage_handle *handle, unsigned int image_no);
 struct resource *uimage_load_to_sdram(struct uimage_handle *handle,

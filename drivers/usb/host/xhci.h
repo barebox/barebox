@@ -16,7 +16,7 @@
 #ifndef HOST_XHCI_H_
 #define HOST_XHCI_H_
 
-#include <asm/types.h>
+#include <linux/types.h>
 #include <io.h>
 #include <io-64-nonatomic-lo-hi.h>
 #include <linux/list.h>
@@ -490,6 +490,7 @@ struct xhci_container_ctx {
 
 	int size;
 	u8 *bytes;
+	dma_addr_t dma;
 };
 
 /**
@@ -691,6 +692,8 @@ struct xhci_input_control_ctx {
 struct xhci_device_context_array {
 	/* 64-bit device addresses; we only write 32-bit addresses */
 	__le64			dev_context_ptrs[MAX_HC_SLOTS];
+	/* private xHCD pointers */
+	dma_addr_t	dma;
 };
 /* TODO: write function to set the 64-bit device DMA address */
 /*
@@ -903,6 +906,8 @@ union xhci_trb {
 
 /* TRB type IDs */
 typedef enum {
+	/* reserved, used as a software sentinel */
+	TRB_NONE = 0,
 	/* bulk, interrupt, isoc scatter/gather, and control data stage */
 	TRB_NORMAL = 1,
 	/* setup stage for control transfers */
@@ -1003,6 +1008,7 @@ struct xhci_segment {
 	union xhci_trb		*trbs;
 	/* private to HCD */
 	struct xhci_segment	*next;
+	dma_addr_t		dma;
 };
 
 struct xhci_ring {
@@ -1031,11 +1037,14 @@ struct xhci_erst_entry {
 struct xhci_erst {
 	struct xhci_erst_entry	*entries;
 	unsigned int		num_entries;
+	/* xhci->event_ring keeps track of segment dma addresses */
+	dma_addr_t		erst_dma_addr;
 	/* Num entries the ERST can contain */
 	unsigned int		erst_size;
 };
 
 struct xhci_scratchpad {
+	void *scratchpad;
 	u64 *sp_array;
 };
 
@@ -1216,6 +1225,7 @@ struct xhci_ctrl {
 	struct xhci_erst_entry entry[ERST_NUM_SEGS];
 	struct xhci_scratchpad *scratchpad;
 	struct xhci_virt_device *devs[MAX_HC_SLOTS];
+	struct usb_hub_descriptor hub_desc;
 	void *bounce_buffer;
 	int rootdev;
 };
@@ -1225,7 +1235,7 @@ static inline struct xhci_ctrl *to_xhci(struct usb_host *host)
 	return container_of(host, struct xhci_ctrl, host);
 }
 
-unsigned long trb_addr(struct xhci_segment *seg, union xhci_trb *trb);
+dma_addr_t xhci_trb_virt_to_dma(struct xhci_segment *seg, union xhci_trb *trb);
 struct xhci_input_control_ctx
 		*xhci_get_input_control_ctx(struct xhci_container_ctx *ctx);
 struct xhci_slot_ctx *xhci_get_slot_ctx(struct xhci_ctrl *ctrl,
@@ -1242,7 +1252,7 @@ void xhci_slot_copy(struct xhci_ctrl *ctrl,
 		    struct xhci_container_ctx *out_ctx);
 void xhci_setup_addressable_virt_dev(struct xhci_ctrl *ctrl,
 				     struct usb_device *udev, int hop_portnr);
-void xhci_queue_command(struct xhci_ctrl *ctrl, u8 *ptr,
+void xhci_queue_command(struct xhci_ctrl *ctrl, dma_addr_t addr,
 			u32 slot_id, u32 ep_index, trb_type cmd);
 void xhci_acknowledge_event(struct xhci_ctrl *ctrl);
 #define XHCI_TIMEOUT_DEFAULT 5000

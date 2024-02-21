@@ -25,6 +25,24 @@
 
 #include "xhci.h"
 
+/*
+ * Returns zero if the TRB isn't in this segment, otherwise it returns the DMA
+ * address of the TRB.
+ */
+dma_addr_t xhci_trb_virt_to_dma(struct xhci_segment *seg,
+				union xhci_trb *trb)
+{
+	unsigned long segment_offset;
+
+	BUG_ON(!seg || !trb || trb < seg->trbs);
+
+	/* offset in TRBs */
+	segment_offset = trb - seg->trbs;
+	BUG_ON(segment_offset >= TRBS_PER_SEGMENT);
+
+	return seg->dma + (segment_offset * sizeof(*trb));
+}
+
 /**
  * Is this TRB a link TRB or was the last TRB the last TRB in this event ring
  * segment?  I.e. would the updated event TRB pointer step off the end of the
@@ -181,12 +199,11 @@ static void inc_deq(struct xhci_ctrl *ctrl, struct xhci_ring *ring)
  * @param trb_fields	pointer to trb field array containing TRB contents
  * @return pointer to the enqueued trb
  */
-static struct xhci_generic_trb *queue_trb(struct xhci_ctrl *ctrl,
-					  struct xhci_ring *ring,
-					  bool more_trbs_coming,
-					  unsigned int *trb_fields)
+static dma_addr_t queue_trb(struct xhci_ctrl *ctrl, struct xhci_ring *ring,
+			    bool more_trbs_coming, unsigned int *trb_fields)
 {
 	struct xhci_generic_trb *trb;
+	dma_addr_t addr;
 	int i;
 
 	trb = &ring->enqueue->generic;
@@ -196,9 +213,11 @@ static struct xhci_generic_trb *queue_trb(struct xhci_ctrl *ctrl,
 
 	xhci_flush_cache((uintptr_t)trb, sizeof(struct xhci_generic_trb));
 
+	addr = xhci_trb_virt_to_dma(ring->enq_seg, (union xhci_trb *)trb);
+
 	inc_enq(ctrl, ring, more_trbs_coming);
 
-	return trb;
+	return addr;
 }
 
 /**
@@ -273,16 +292,15 @@ static int prepare_ring(struct xhci_ctrl *ctrl, struct xhci_ring *ep_ring,
  * @param cmd		Command type to enqueue
  * @return none
  */
-void xhci_queue_command(struct xhci_ctrl *ctrl, u8 *ptr, u32 slot_id,
+void xhci_queue_command(struct xhci_ctrl *ctrl, dma_addr_t addr, u32 slot_id,
 			u32 ep_index, trb_type cmd)
 {
 	u32 fields[4];
-	u64 val_64 = (uintptr_t)ptr;
 
 	BUG_ON(prepare_ring(ctrl, ctrl->cmd_ring, EP_STATE_RUNNING));
 
-	fields[0] = lower_32_bits(val_64);
-	fields[1] = upper_32_bits(val_64);
+	fields[0] = lower_32_bits(addr);
+	fields[1] = upper_32_bits(addr);
 	fields[2] = 0;
 	fields[3] = TRB_TYPE(cmd) | SLOT_ID_FOR_TRB(slot_id) |
 		    ctrl->cmd_ring->cycle_state;
@@ -396,12 +414,15 @@ static void giveback_first_trb(struct usb_device *udev, int ep_index,
  */
 void xhci_acknowledge_event(struct xhci_ctrl *ctrl)
 {
+	dma_addr_t deq;
+
 	/* Advance our dequeue pointer to the next event */
 	inc_deq(ctrl, ctrl->event_ring);
 
 	/* Inform the hardware */
-	xhci_writeq(&ctrl->ir_set->erst_dequeue,
-		(uintptr_t)ctrl->event_ring->dequeue | ERST_EHB);
+	deq = xhci_trb_virt_to_dma(ctrl->event_ring->deq_seg,
+				   ctrl->event_ring->dequeue);
+	xhci_writeq(&ctrl->ir_set->erst_dequeue, deq | ERST_EHB);
 }
 
 /**
@@ -449,7 +470,8 @@ union xhci_trb *xhci_wait_for_event(struct xhci_ctrl *ctrl, trb_type expected,
 			continue;
 
 		type = TRB_FIELD_TO_TYPE(le32_to_cpu(event->event_cmd.flags));
-		if (type == expected)
+		if (type == expected ||
+		    (expected == TRB_NONE && type != TRB_PORT_STATUS))
 			return event;
 
 		if (type == TRB_PORT_STATUS)
@@ -461,14 +483,59 @@ union xhci_trb *xhci_wait_for_event(struct xhci_ctrl *ctrl, trb_type expected,
 			BUG_ON(GET_COMP_CODE(
 				le32_to_cpu(event->generic.field[2])) !=
 								COMP_SUCCESS);
+		else
+			dev_dbg(ctrl->dev, "Unexpected XHCI event TRB, skipping... "
+				"(%08x %08x %08x %08x)\n",
+				le32_to_cpu(event->generic.field[0]),
+				le32_to_cpu(event->generic.field[1]),
+				le32_to_cpu(event->generic.field[2]),
+				le32_to_cpu(event->generic.field[3]));
+
 		xhci_acknowledge_event(ctrl);
 	} while (!is_timeout_non_interruptible(start, timeout_ms * MSECOND));
 
 	if (expected == TRB_TRANSFER)
 		return NULL;
 
-	dev_err(ctrl->dev, "XHCI timeout on event type %d... cannot recover.\n", expected);
-	BUG();
+	dev_warn(ctrl->dev, "XHCI timeout on event type %d...\n", expected);
+
+	return NULL;
+}
+
+/*
+ * Send reset endpoint command for given endpoint. This recovers from a
+ * halted endpoint (e.g. due to a stall error).
+ */
+static void reset_ep(struct usb_device *udev, int ep_index, unsigned int timeout_ms)
+{
+	struct xhci_ctrl *ctrl = xhci_get_ctrl(udev);
+	struct xhci_ring *ring =  ctrl->devs[udev->slot_id]->eps[ep_index].ring;
+	union xhci_trb *event;
+	u64 addr;
+	u32 field;
+
+	dev_info(&udev->dev, "Resetting EP %d...\n", ep_index);
+
+	xhci_queue_command(ctrl, 0, udev->slot_id, ep_index, TRB_RESET_EP);
+	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, timeout_ms);
+	if (!event)
+		return;
+
+	field = le32_to_cpu(event->trans_event.flags);
+	BUG_ON(TRB_TO_SLOT_ID(field) != udev->slot_id);
+	xhci_acknowledge_event(ctrl);
+
+	addr = xhci_trb_virt_to_dma(ring->enq_seg,
+		(void *)((uintptr_t)ring->enqueue | ring->cycle_state));
+	xhci_queue_command(ctrl, addr, udev->slot_id, ep_index, TRB_SET_DEQ);
+	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, timeout_ms);
+	if (!event)
+		return;
+
+	BUG_ON(TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags))
+		!= udev->slot_id || GET_COMP_CODE(le32_to_cpu(
+		event->event_cmd.status)) != COMP_SUCCESS);
+	xhci_acknowledge_event(ctrl);
 }
 
 /*
@@ -484,27 +551,49 @@ static void abort_td(struct usb_device *udev, int ep_index)
 	struct xhci_ctrl *ctrl = xhci_get_ctrl(udev);
 	struct xhci_ring *ring =  ctrl->devs[udev->slot_id]->eps[ep_index].ring;
 	union xhci_trb *event;
+	xhci_comp_code comp;
+	trb_type type;
+	dma_addr_t addr;
 	u32 field;
 
-	xhci_queue_command(ctrl, NULL, udev->slot_id, ep_index, TRB_STOP_RING);
+	xhci_queue_command(ctrl, 0, udev->slot_id, ep_index, TRB_STOP_RING);
 
-	event = xhci_wait_for_event(ctrl, TRB_TRANSFER, XHCI_TIMEOUT_DEFAULT);
-	field = le32_to_cpu(event->trans_event.flags);
-	BUG_ON(TRB_TO_SLOT_ID(field) != udev->slot_id);
-	BUG_ON(TRB_TO_EP_INDEX(field) != ep_index);
-	BUG_ON(GET_COMP_CODE(le32_to_cpu(event->trans_event.transfer_len
-		!= COMP_STOP)));
+	event = xhci_wait_for_event(ctrl, TRB_NONE, XHCI_TIMEOUT_DEFAULT);
+	if (!event)
+		return;
+
+	type = TRB_FIELD_TO_TYPE(le32_to_cpu(event->event_cmd.flags));
+	if (type == TRB_TRANSFER) {
+		field = le32_to_cpu(event->trans_event.flags);
+		BUG_ON(TRB_TO_SLOT_ID(field) != udev->slot_id);
+		BUG_ON(TRB_TO_EP_INDEX(field) != ep_index);
+		BUG_ON(GET_COMP_CODE(le32_to_cpu(event->trans_event.transfer_len
+			!= COMP_STOP)));
+		xhci_acknowledge_event(ctrl);
+
+		event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
+		if (!event)
+			return;
+		type = TRB_FIELD_TO_TYPE(le32_to_cpu(event->event_cmd.flags));
+
+	} else {
+		dev_warn(ctrl->dev, "abort_td: Expected a TRB_TRANSFER TRB first\n");
+	}
+
+	comp = GET_COMP_CODE(le32_to_cpu(event->event_cmd.status));
+	BUG_ON(type != TRB_COMPLETION ||
+		TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags))
+		!= udev->slot_id || (comp != COMP_SUCCESS && comp
+		!= COMP_CTX_STATE));
 	xhci_acknowledge_event(ctrl);
 
+	addr = xhci_trb_virt_to_dma(ring->enq_seg, ring->enqueue);
+	addr |= ring->cycle_state;
+	xhci_queue_command(ctrl, addr, udev->slot_id, ep_index, TRB_SET_DEQ);
 	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
-	BUG_ON(TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags))
-		!= udev->slot_id || GET_COMP_CODE(le32_to_cpu(
-		event->event_cmd.status)) != COMP_SUCCESS);
-	xhci_acknowledge_event(ctrl);
+	if (!event)
+		return;
 
-	xhci_queue_command(ctrl, (void *)((uintptr_t)ring->enqueue |
-		ring->cycle_state), udev->slot_id, ep_index, TRB_SET_DEQ);
-	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
 	BUG_ON(TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags))
 		!= udev->slot_id || GET_COMP_CODE(le32_to_cpu(
 		event->event_cmd.status)) != COMP_SUCCESS);
@@ -607,6 +696,14 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 
 	ep_ctx = xhci_get_ep_ctx(ctrl, virt_dev->out_ctx, ep_index);
 
+	/*
+	 * If the endpoint was halted due to a prior error, resume it before
+	 * the next transfer. It is the responsibility of the upper layer to
+	 * have dealt with whatever caused the error.
+	 */
+	if ((le32_to_cpu(ep_ctx->ep_info) & EP_STATE_MASK) == EP_STATE_HALTED)
+		reset_ep(udev, ep_index, timeout_ms);
+
 	ring = virt_dev->eps[ep_index].ring;
 	/*
 	 * How much data is (potentially) left before the 64KB boundary?
@@ -662,6 +759,9 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 
 	first_trb = true;
 
+	/* flush the buffer before use */
+	xhci_flush_cache((uintptr_t)buffer, length);
+
 	/* Queue the first TRB, even if it's zero-length */
 	do {
 		u32 remainder = 0;
@@ -698,15 +798,14 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 							   maxpacketsize,
 							   num_trbs - 1);
 
-		length_field = ((trb_buff_len & TRB_LEN_MASK) |
+		length_field = (TRB_LEN(trb_buff_len) |
 				remainder |
-				((0 & TRB_INTR_TARGET_MASK) <<
-				TRB_INTR_TARGET_SHIFT));
+				TRB_INTR_TARGET(0));
 
 		trb_fields[0] = lower_32_bits(addr);
 		trb_fields[1] = upper_32_bits(addr);
 		trb_fields[2] = length_field;
-		trb_fields[3] = field | (TRB_NORMAL << TRB_TYPE_SHIFT);
+		trb_fields[3] = field | TRB_TYPE(TRB_NORMAL);
 
 		queue_trb(ctrl, ring, (num_trbs > 1), trb_fields);
 
@@ -842,7 +941,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 	/* Queue setup TRB - see section 6.4.1.2.1 */
 	/* FIXME better way to translate setup_packet into two u32 fields? */
 	field = 0;
-	field |= TRB_IDT | (TRB_SETUP << TRB_TYPE_SHIFT);
+	field |= TRB_IDT | TRB_TYPE(TRB_SETUP);
 	if (start_cycle == 0)
 		field |= 0x1;
 
@@ -850,9 +949,9 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 	if (HC_VERSION(xhci_readl(&ctrl->hccr->cr_capbase)) >= 0x100) {
 		if (length > 0) {
 			if (req->requesttype & USB_DIR_IN)
-				field |= (TRB_DATA_IN << TRB_TX_TYPE_SHIFT);
+				field |= TRB_TX_TYPE(TRB_DATA_IN);
 			else
-				field |= (TRB_DATA_OUT << TRB_TX_TYPE_SHIFT);
+				field |= TRB_TX_TYPE(TRB_DATA_OUT);
 		}
 	}
 
@@ -868,8 +967,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 	trb_fields[1] = le16_to_cpu(req->index) |
 			le16_to_cpu(req->length) << 16;
 	/* TRB_LEN | (TRB_INTR_TARGET) */
-	trb_fields[2] = (8 | ((0 & TRB_INTR_TARGET_MASK) <<
-			TRB_INTR_TARGET_SHIFT));
+	trb_fields[2] = (TRB_LEN(8) | TRB_INTR_TARGET(0));
 	/* Immediate data in pointer */
 	trb_fields[3] = field;
 	queue_trb(ctrl, ep_ring, true, trb_fields);
@@ -879,15 +977,15 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 	/* If there's data, queue data TRBs */
 	/* Only set interrupt on short packet for IN endpoints */
 	if (usb_pipein(pipe))
-		field = TRB_ISP | (TRB_DATA << TRB_TYPE_SHIFT);
+		field = TRB_ISP | TRB_TYPE(TRB_DATA);
 	else
-		field = (TRB_DATA << TRB_TYPE_SHIFT);
+		field = TRB_TYPE(TRB_DATA);
 
-	length_field = (length & TRB_LEN_MASK) | xhci_td_remainder(length) |
+	length_field = TRB_LEN(length) | xhci_td_remainder(length) |
 			((0 & TRB_INTR_TARGET_MASK) << TRB_INTR_TARGET_SHIFT);
 	dev_dbg(&udev->dev, "length_field = %d, length = %d,"
 		"xhci_td_remainder(length) = %d , TRB_INTR_TARGET(0) = %d\n",
-		length_field, (length & TRB_LEN_MASK),
+		length_field, TRB_LEN(length),
 		xhci_td_remainder(length), 0);
 
 	if (req->requesttype & USB_DIR_IN)
@@ -905,6 +1003,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 		trb_fields[2] = length_field;
 		trb_fields[3] = field | ep_ring->cycle_state;
 
+		xhci_flush_cache((uintptr_t)buffer, length);
 		queue_trb(ctrl, ep_ring, true, trb_fields);
 	}
 
@@ -922,11 +1021,10 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 
 	trb_fields[0] = 0;
 	trb_fields[1] = 0;
-	trb_fields[2] = ((0 & TRB_INTR_TARGET_MASK) << TRB_INTR_TARGET_SHIFT);
+	trb_fields[2] = TRB_INTR_TARGET(0);
 		/* Event on completion */
 	trb_fields[3] = field | TRB_IOC |
-			(TRB_STATUS << TRB_TYPE_SHIFT) |
-			ep_ring->cycle_state;
+			TRB_TYPE(TRB_STATUS) | ep_ring->cycle_state;
 
 	queue_trb(ctrl, ep_ring, false, trb_fields);
 
@@ -947,6 +1045,10 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 
 	record_transfer_result(udev, event, length);
 	xhci_acknowledge_event(ctrl);
+	if (udev->status == USB_ST_STALLED) {
+		reset_ep(udev, ep_index, timeout_ms);
+		return -EPIPE;
+	}
 
 	/* Invalidate buffer to make it available to usb-core */
 	if (length > 0)

@@ -82,11 +82,11 @@ static void xhci_free(struct xhci_ctrl *ctrl, void *ptr)
  * @param size	size of memory to be allocated
  * @return allocates the memory and returns the aligned pointer
  */
-static void *xhci_malloc(struct xhci_ctrl *ctrl, unsigned int size)
+static void *xhci_malloc(struct xhci_ctrl *ctrl, unsigned int size, dma_addr_t *dma_addr)
 {
 	void *ptr;
 
-	ptr = dma_alloc_coherent(size, DMA_ADDRESS_BROKEN);
+	ptr = dma_alloc_coherent(size, dma_addr);
 	if (!ptr)
 		return NULL;
 
@@ -145,7 +145,7 @@ static void xhci_scratchpad_free(struct xhci_ctrl *ctrl)
 
 	ctrl->dcbaa->dev_context_ptrs[0] = 0;
 
-	xhci_free(ctrl, (void *)(uintptr_t)ctrl->scratchpad->sp_array[0]);
+	xhci_free(ctrl, ctrl->scratchpad->scratchpad);
 	xhci_free(ctrl, ctrl->scratchpad->sp_array);
 	free(ctrl->scratchpad);
 	ctrl->scratchpad = NULL;
@@ -234,14 +234,13 @@ static void xhci_link_segments(struct xhci_segment *prev,
 				struct xhci_segment *next, bool link_trbs)
 {
 	u32 val;
-	u64 val_64 = 0;
 
 	if (!prev || !next)
 		return;
 	prev->next = next;
 	if (link_trbs) {
-		val_64 = (uintptr_t)next->trbs;
-		prev->trbs[TRBS_PER_SEGMENT-1].link.segment_ptr = val_64;
+		prev->trbs[TRBS_PER_SEGMENT-1].link.segment_ptr =
+			cpu_to_le64(next->dma);
 
 		/*
 		 * Set the last TRB in the segment to
@@ -249,8 +248,7 @@ static void xhci_link_segments(struct xhci_segment *prev,
 		 */
 		val = le32_to_cpu(prev->trbs[TRBS_PER_SEGMENT-1].link.control);
 		val &= ~TRB_TYPE_BITMASK;
-		val |= (TRB_LINK << TRB_TYPE_SHIFT);
-
+		val |= TRB_TYPE(TRB_LINK);
 		prev->trbs[TRBS_PER_SEGMENT-1].link.control = cpu_to_le32(val);
 	}
 }
@@ -295,7 +293,7 @@ static struct xhci_segment *xhci_segment_alloc(struct xhci_ctrl *ctrl)
 
 	seg = xzalloc(sizeof(*seg));
 
-	seg->trbs = xhci_malloc(ctrl, SEGMENT_SIZE);
+	seg->trbs = xhci_malloc(ctrl, SEGMENT_SIZE, &seg->dma);
 
 	return seg;
 }
@@ -365,6 +363,7 @@ static int xhci_scratchpad_alloc(struct xhci_ctrl *ctrl)
 	struct xhci_hccr *hccr = ctrl->hccr;
 	struct xhci_hcor *hcor = ctrl->hcor;
 	struct xhci_scratchpad *scratchpad;
+	dma_addr_t val_64;
 	int num_sp;
 	uint32_t page_size;
 	void *buf;
@@ -379,11 +378,11 @@ static int xhci_scratchpad_alloc(struct xhci_ctrl *ctrl)
 		goto fail_sp;
 	ctrl->scratchpad = scratchpad;
 
-	scratchpad->sp_array = xhci_malloc(ctrl, num_sp * sizeof(u64));
+	scratchpad->sp_array = xhci_malloc(ctrl, num_sp * sizeof(u64), &val_64);
 	if (!scratchpad->sp_array)
 		goto fail_sp2;
-	ctrl->dcbaa->dev_context_ptrs[0] =
-		cpu_to_le64((uintptr_t)scratchpad->sp_array);
+
+	ctrl->dcbaa->dev_context_ptrs[0] = cpu_to_le64(val_64);
 
 	xhci_flush_cache((uintptr_t)&ctrl->dcbaa->dev_context_ptrs[0],
 		sizeof(ctrl->dcbaa->dev_context_ptrs[0]));
@@ -397,16 +396,20 @@ static int xhci_scratchpad_alloc(struct xhci_ctrl *ctrl)
 	BUG_ON(i == 16);
 
 	page_size = 1 << (i + 12);
-	buf = xhci_malloc(ctrl, num_sp * page_size);
+	buf = xhci_malloc(ctrl, num_sp * page_size, &val_64);
 	if (!buf)
 		goto fail_sp3;
 
 	xhci_flush_cache((uintptr_t)buf, num_sp * page_size);
 
+	scratchpad->scratchpad = buf;
 	for (i = 0; i < num_sp; i++) {
-		uintptr_t ptr = (uintptr_t)buf + i * page_size;
-		scratchpad->sp_array[i] = cpu_to_le64(ptr);
+		scratchpad->sp_array[i] = cpu_to_le64(val_64);
+		val_64 += page_size;
 	}
+
+	xhci_flush_cache((uintptr_t)scratchpad->sp_array,
+			 sizeof(u64) * num_sp);
 
 	return 0;
 
@@ -438,11 +441,11 @@ static struct xhci_container_ctx
 	BUG_ON((type != XHCI_CTX_TYPE_DEVICE) && (type != XHCI_CTX_TYPE_INPUT));
 	ctx->type = type;
 	ctx->size = (MAX_EP_CTX_NUM + 1) *
-			CTX_SIZE(readl(&ctrl->hccr->cr_hccparams));
+			CTX_SIZE(xhci_readl(&ctrl->hccr->cr_hccparams));
 	if (type == XHCI_CTX_TYPE_INPUT)
-		ctx->size += CTX_SIZE(readl(&ctrl->hccr->cr_hccparams));
+		ctx->size += CTX_SIZE(xhci_readl(&ctrl->hccr->cr_hccparams));
 
-	ctx->bytes = xhci_malloc(ctrl, ctx->size);
+	ctx->bytes = xhci_malloc(ctrl, ctx->size, &ctx->dma);
 
 	return ctx;
 }
@@ -464,8 +467,7 @@ int xhci_alloc_virt_device(struct xhci_ctrl *ctrl, unsigned int slot_id)
 		return -EEXIST;
 	}
 
-	ctrl->devs[slot_id] = (struct xhci_virt_device *)
-					malloc(sizeof(struct xhci_virt_device));
+	ctrl->devs[slot_id] = malloc(sizeof(struct xhci_virt_device));
 
 	if (!ctrl->devs[slot_id]) {
 		dev_err(ctrl->dev, "Failed to allocate virtual device\n");
@@ -494,10 +496,10 @@ int xhci_alloc_virt_device(struct xhci_ctrl *ctrl, unsigned int slot_id)
 	/* Allocate endpoint 0 ring */
 	virt_dev->eps[0].ring = xhci_ring_alloc(ctrl, 1, true);
 
-	byte_64 = (uintptr_t)(virt_dev->out_ctx->bytes);
+	byte_64 = virt_dev->out_ctx->dma;
 
 	/* Point to output device context in dcbaa. */
-	ctrl->dcbaa->dev_context_ptrs[slot_id] = byte_64;
+	ctrl->dcbaa->dev_context_ptrs[slot_id] = cpu_to_le64(byte_64);
 
 	xhci_flush_cache((uintptr_t)&ctrl->dcbaa->dev_context_ptrs[slot_id],
 			 sizeof(__le64));
@@ -516,29 +518,27 @@ int xhci_alloc_virt_device(struct xhci_ctrl *ctrl, unsigned int slot_id)
 int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 					struct xhci_hcor *hcor)
 {
+	dma_addr_t dma;
 	uint64_t val_64;
 	uint64_t trb_64;
 	uint32_t val;
-	unsigned long deq;
+	uint64_t deq;
 	int i;
 	struct xhci_segment *seg;
 
 	/* DCBAA initialization */
-	ctrl->dcbaa = xhci_malloc(ctrl, sizeof(*ctrl->dcbaa));
-	if (!ctrl->dcbaa) {
-		dev_err(ctrl->dev, "unable to allocate DCBA\n");
-		return -ENOMEM;
-	}
+	ctrl->dcbaa = xhci_malloc(ctrl, sizeof(struct xhci_device_context_array),
+				  &dma);
+	ctrl->dcbaa->dma = dma;
 
-	val_64 = (uintptr_t)ctrl->dcbaa;
 	/* Set the pointer in DCBAA register */
-	xhci_writeq(&hcor->or_dcbaap, val_64);
+	xhci_writeq(&hcor->or_dcbaap, dma);
 
 	/* Command ring control pointer register initialization */
 	ctrl->cmd_ring = xhci_ring_alloc(ctrl, 1, true);
 
 	/* Set the address in the Command Ring Control register */
-	trb_64 = (uintptr_t)ctrl->cmd_ring->first_seg->trbs;
+	trb_64 = ctrl->cmd_ring->first_seg->dma;
 	val_64 = xhci_readq(&hcor->or_crcr);
 	val_64 = (val_64 & (u64) CMD_RING_RSVD_BITS) |
 		(trb_64 & (u64) ~CMD_RING_RSVD_BITS) |
@@ -560,8 +560,8 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 
 	/* Event ring does not maintain link TRB */
 	ctrl->event_ring = xhci_ring_alloc(ctrl, ERST_NUM_SEGS, false);
-	ctrl->erst.entries =
-		xhci_malloc(ctrl, sizeof(struct xhci_erst_entry) * ERST_NUM_SEGS);
+	ctrl->erst.entries = xhci_malloc(ctrl, sizeof(struct xhci_erst_entry) *
+					 ERST_NUM_SEGS, &ctrl->erst.erst_dma_addr);
 
 	ctrl->erst.num_entries = ERST_NUM_SEGS;
 
@@ -570,9 +570,8 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 			val++) {
 		struct xhci_erst_entry *entry = &ctrl->erst.entries[val];
 
-		trb_64 = 0;
-		trb_64 = (uintptr_t)seg->trbs;
-		xhci_writeq(&entry->seg_addr, trb_64);
+		trb_64 = seg->dma;
+		entry->seg_addr = cpu_to_le64(trb_64);
 		entry->seg_size = cpu_to_le32(TRBS_PER_SEGMENT);
 		entry->rsvd = 0;
 		seg = seg->next;
@@ -580,7 +579,8 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 	xhci_flush_cache((uintptr_t)ctrl->erst.entries,
 			 ERST_NUM_SEGS * sizeof(struct xhci_erst_entry));
 
-	deq = (unsigned long)ctrl->event_ring->dequeue;
+	deq = xhci_trb_virt_to_dma(ctrl->event_ring->deq_seg,
+				   ctrl->event_ring->dequeue);
 
 	/* Update HC event ring dequeue pointer */
 	xhci_writeq(&ctrl->ir_set->erst_dequeue,
@@ -595,7 +595,7 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
 	/* this is the event ring segment table pointer */
 	val_64 = xhci_readq(&ctrl->ir_set->erst_base);
 	val_64 &= ERST_PTR_MASK;
-	val_64 |= ((uintptr_t)(ctrl->erst.entries) & ~ERST_PTR_MASK);
+	val_64 |= ctrl->erst.erst_dma_addr & ~ERST_PTR_MASK;
 
 	xhci_writeq(&ctrl->ir_set->erst_base, val_64);
 
@@ -645,7 +645,7 @@ struct xhci_slot_ctx *xhci_get_slot_ctx(struct xhci_ctrl *ctrl,
 		return (struct xhci_slot_ctx *)ctx->bytes;
 
 	return (struct xhci_slot_ctx *)
-		(ctx->bytes + CTX_SIZE(readl(&ctrl->hccr->cr_hccparams)));
+		(ctx->bytes + CTX_SIZE(xhci_readl(&ctrl->hccr->cr_hccparams)));
 }
 
 /**
@@ -667,7 +667,7 @@ struct xhci_ep_ctx *xhci_get_ep_ctx(struct xhci_ctrl *ctrl,
 
 	return (struct xhci_ep_ctx *)
 		(ctx->bytes +
-		(ep_index * CTX_SIZE(readl(&ctrl->hccr->cr_hccparams))));
+		(ep_index * CTX_SIZE(xhci_readl(&ctrl->hccr->cr_hccparams))));
 }
 
 /**
@@ -776,7 +776,7 @@ void xhci_setup_addressable_virt_dev(struct xhci_ctrl *ctrl,
 
 	dev_dbg(&udev->dev, "route string 0x%x\n", route);
 
-	slot_ctx->dev_info |= route;
+	slot_ctx->dev_info |= cpu_to_le32(route);
 
 	switch (speed) {
 	case USB_SPEED_SUPER:
@@ -824,25 +824,22 @@ void xhci_setup_addressable_virt_dev(struct xhci_ctrl *ctrl,
 
 	/* Step 4 - ring already allocated */
 	/* Step 5 */
-	ep0_ctx->ep_info2 = cpu_to_le32(CTRL_EP << EP_TYPE_SHIFT);
+	ep0_ctx->ep_info2 = cpu_to_le32(EP_TYPE(CTRL_EP));
 	dev_dbg(&udev->dev, "SPEED = %d\n", speed);
 
 	switch (speed) {
 	case USB_SPEED_SUPER:
-		ep0_ctx->ep_info2 |= cpu_to_le32(((512 & MAX_PACKET_MASK) <<
-					MAX_PACKET_SHIFT));
+		ep0_ctx->ep_info2 |= cpu_to_le32(MAX_PACKET(512));
 		dev_dbg(&udev->dev, "Setting Packet size = 512bytes\n");
 		break;
 	case USB_SPEED_HIGH:
 	/* USB core guesses at a 64-byte max packet first for FS devices */
 	case USB_SPEED_FULL:
-		ep0_ctx->ep_info2 |= cpu_to_le32(((64 & MAX_PACKET_MASK) <<
-					MAX_PACKET_SHIFT));
+		ep0_ctx->ep_info2 |= cpu_to_le32(MAX_PACKET(64));
 		dev_dbg(&udev->dev, "Setting Packet size = 64bytes\n");
 		break;
 	case USB_SPEED_LOW:
-		ep0_ctx->ep_info2 |= cpu_to_le32(((8 & MAX_PACKET_MASK) <<
-					MAX_PACKET_SHIFT));
+		ep0_ctx->ep_info2 |= cpu_to_le32(MAX_PACKET(8));
 		dev_dbg(&udev->dev, "Setting Packet size = 8bytes\n");
 		break;
 	default:
@@ -851,11 +848,9 @@ void xhci_setup_addressable_virt_dev(struct xhci_ctrl *ctrl,
 	}
 
 	/* EP 0 can handle "burst" sizes of 1, so Max Burst Size field is 0 */
-	ep0_ctx->ep_info2 |=
-			cpu_to_le32(((0 & MAX_BURST_MASK) << MAX_BURST_SHIFT) |
-			((3 & ERROR_COUNT_MASK) << ERROR_COUNT_SHIFT));
+	ep0_ctx->ep_info2 |= cpu_to_le32(MAX_BURST(0) | ERROR_COUNT(3));
 
-	trb_64 = (uintptr_t)virt_dev->eps[0].ring->first_seg->trbs;
+	trb_64 = virt_dev->eps[0].ring->first_seg->dma;
 	ep0_ctx->deq = cpu_to_le64(trb_64 | virt_dev->eps[0].ring->cycle_state);
 
 	/*

@@ -1,13 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
-
-#include <driver.h>
-#include <linux/regmap.h>
-#include <stdio.h>
+#include <linux/clk-provider.h>
 #include <mfd/syscon.h>
-
-#include <linux/clk.h>
 #include <linux/slab.h>
-#include <linux/types.h>
+#include <stdio.h>
 
 #include <dt-bindings/clock/at91.h>
 
@@ -37,6 +32,8 @@ struct at91sam926x_data {
 	u8 num_progck;
 	bool has_slck;
 };
+
+static DEFINE_SPINLOCK(at91sam9260_mck_lock);
 
 static const struct clk_master_characteristics sam9260_mck_characteristics = {
 	.output = { .min = 0, .max = 105000000 },
@@ -224,8 +221,8 @@ static const struct sck at91sam9261_systemck[] = {
 	{ .n = "pck1",  .p = "prog1",    .id = 9 },
 	{ .n = "pck2",  .p = "prog2",    .id = 10 },
 	{ .n = "pck3",  .p = "prog3",    .id = 11 },
-	{ .n = "hclk0", .p = "masterck", .id = 16 },
-	{ .n = "hclk1", .p = "masterck", .id = 17 },
+	{ .n = "hclk0", .p = "masterck_div", .id = 16 },
+	{ .n = "hclk1", .p = "masterck_div", .id = 17 },
 };
 
 static const struct pck at91sam9261_periphck[] = {
@@ -339,7 +336,7 @@ static void __init at91sam926x_pmc_setup(struct device_node *np,
 	const char *parent_names[6];
 	const char *slck_name;
 	struct regmap *regmap;
-	struct clk *hw;
+	struct clk_hw *hw;
 	int i;
 	bool bypass;
 
@@ -379,7 +376,10 @@ static void __init at91sam926x_pmc_setup(struct device_node *np,
 	at91sam9260_pmc->chws[PMC_MAIN] = hw;
 
 	if (data->has_slck) {
-		hw = clk_fixed("slow_rc_osc", 32768);
+		hw = clk_hw_register_fixed_rate_with_accuracy(NULL,
+							      "slow_rc_osc",
+							      NULL, 0, 32768,
+							      50000000);
 		if (IS_ERR(hw))
 			goto err_free;
 
@@ -416,9 +416,20 @@ static void __init at91sam926x_pmc_setup(struct device_node *np,
 	parent_names[1] = "mainck";
 	parent_names[2] = "pllack";
 	parent_names[3] = "pllbck";
-	hw = at91_clk_register_master(regmap, "masterck", 4, parent_names,
-				      &at91rm9200_master_layout,
-				      data->mck_characteristics);
+	hw = at91_clk_register_master_pres(regmap, "masterck_pres", 4,
+					   parent_names,
+					   &at91rm9200_master_layout,
+					   data->mck_characteristics,
+					   &at91sam9260_mck_lock);
+	if (IS_ERR(hw))
+		goto err_free;
+
+	hw = at91_clk_register_master_div(regmap, "masterck_div",
+					  "masterck_pres",
+					  &at91rm9200_master_layout,
+					  data->mck_characteristics,
+					  &at91sam9260_mck_lock,
+					  CLK_SET_RATE_GATE);
 	if (IS_ERR(hw))
 		goto err_free;
 
@@ -433,13 +444,14 @@ static void __init at91sam926x_pmc_setup(struct device_node *np,
 	parent_names[2] = "pllack";
 	parent_names[3] = "pllbck";
 	for (i = 0; i < data->num_progck; i++) {
-		char *name;
+		char name[6];
 
-		name = xasprintf("prog%d", i);
+		snprintf(name, sizeof(name), "prog%d", i);
 
 		hw = at91_clk_register_programmable(regmap, name,
 						    parent_names, 4, i,
-						    &at91rm9200_programmable_layout);
+						    &at91rm9200_programmable_layout,
+						    NULL);
 		if (IS_ERR(hw))
 			goto err_free;
 
@@ -449,7 +461,7 @@ static void __init at91sam926x_pmc_setup(struct device_node *np,
 	for (i = 0; i < data->num_sck; i++) {
 		hw = at91_clk_register_system(regmap, data->sck[i].n,
 					      data->sck[i].p,
-					      data->sck[i].id);
+					      data->sck[i].id, 0);
 		if (IS_ERR(hw))
 			goto err_free;
 
@@ -459,7 +471,7 @@ static void __init at91sam926x_pmc_setup(struct device_node *np,
 	for (i = 0; i < data->num_pck; i++) {
 		hw = at91_clk_register_peripheral(regmap,
 						  data->pck[i].n,
-						  "masterck",
+						  "masterck_div",
 						  data->pck[i].id);
 		if (IS_ERR(hw))
 			goto err_free;
@@ -467,7 +479,7 @@ static void __init at91sam926x_pmc_setup(struct device_node *np,
 		at91sam9260_pmc->phws[data->pck[i].id] = hw;
 	}
 
-	of_clk_add_provider(np, of_clk_hw_pmc_get, at91sam9260_pmc);
+	of_clk_add_hw_provider(np, of_clk_hw_pmc_get, at91sam9260_pmc);
 
 	return;
 
@@ -479,26 +491,26 @@ static void __init at91sam9260_pmc_setup(struct device_node *np)
 {
 	at91sam926x_pmc_setup(np, &at91sam9260_data);
 }
-CLK_OF_DECLARE_DRIVER(at91sam9260_pmc, "atmel,at91sam9260-pmc",
-		      at91sam9260_pmc_setup);
+
+CLK_OF_DECLARE(at91sam9260_pmc, "atmel,at91sam9260-pmc", at91sam9260_pmc_setup);
 
 static void __init at91sam9261_pmc_setup(struct device_node *np)
 {
 	at91sam926x_pmc_setup(np, &at91sam9261_data);
 }
-CLK_OF_DECLARE_DRIVER(at91sam9261_pmc, "atmel,at91sam9261-pmc",
-		      at91sam9261_pmc_setup);
+
+CLK_OF_DECLARE(at91sam9261_pmc, "atmel,at91sam9261-pmc", at91sam9261_pmc_setup);
 
 static void __init at91sam9263_pmc_setup(struct device_node *np)
 {
 	at91sam926x_pmc_setup(np, &at91sam9263_data);
 }
-CLK_OF_DECLARE_DRIVER(at91sam9263_pmc, "atmel,at91sam9263-pmc",
-		      at91sam9263_pmc_setup);
+
+CLK_OF_DECLARE(at91sam9263_pmc, "atmel,at91sam9263-pmc", at91sam9263_pmc_setup);
 
 static void __init at91sam9g20_pmc_setup(struct device_node *np)
 {
 	at91sam926x_pmc_setup(np, &at91sam9g20_data);
 }
-CLK_OF_DECLARE_DRIVER(at91sam9g20_pmc, "atmel,at91sam9g20-pmc",
-		      at91sam9g20_pmc_setup);
+
+CLK_OF_DECLARE(at91sam9g20_pmc, "atmel,at91sam9g20-pmc", at91sam9g20_pmc_setup);

@@ -77,10 +77,14 @@ config SOC_AT91SAM9
 	select HAVE_AT91_UTMI
 	select PINCTRL_AT91
 
+config SOC_SAM_V7
+	select CPU_V7
+	bool
+
 config SOC_SAMA5
 	bool
 	select HAVE_AT91SAM9_RST
-	select CPU_V7
+	select SOC_SAM_V7
 
 config SOC_SAMA5_MULTI
 	def_bool SOC_SAMA5 && AT91_MULTI_BOARDS
@@ -133,6 +137,15 @@ config SOC_SAM9X60
 	select HAVE_AT91_GENERATED_CLK
 	select HAVE_AT91_SAM9X60_PLL
 	select PINCTRL_AT91
+
+config SOC_SAMA7G5
+	bool
+	select HAVE_AT91_GENERATED_CLK
+	select HAVE_AT91_SAM9X60_PLL
+	select HAVE_AT91_UTMI
+	select SOC_SAM_V7
+	help
+	  Select this if you are using one of Microchip's SAMA7G5 family SoC.
 
 config ARCH_TEXT_BASE
 	hex

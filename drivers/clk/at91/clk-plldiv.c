@@ -3,23 +3,20 @@
  *  Copyright (C) 2013 Boris BREZILLON <b.brezillon@overkiz.com>
  */
 
-#include <common.h>
-#include <clock.h>
-#include <of.h>
-#include <linux/list.h>
-#include <linux/clk.h>
+#include <linux/clk-provider.h>
+#include <linux/clkdev.h>
 #include <linux/clk/at91_pmc.h>
+#include <of.h>
 #include <mfd/syscon.h>
 #include <linux/regmap.h>
 
 #include "pmc.h"
 
-#define to_clk_plldiv(_hw) container_of(_hw, struct clk_plldiv, hw)
+#define to_clk_plldiv(hw) container_of(hw, struct clk_plldiv, hw)
 
 struct clk_plldiv {
 	struct clk_hw hw;
 	struct regmap *regmap;
-	const char *parent;
 };
 
 static unsigned long clk_plldiv_recalc_rate(struct clk_hw *hw,
@@ -37,7 +34,7 @@ static unsigned long clk_plldiv_recalc_rate(struct clk_hw *hw,
 }
 
 static long clk_plldiv_round_rate(struct clk_hw *hw, unsigned long rate,
-				  unsigned long *parent_rate)
+					unsigned long *parent_rate)
 {
 	unsigned long div;
 
@@ -61,8 +58,8 @@ static int clk_plldiv_set_rate(struct clk_hw *hw, unsigned long rate,
 	if ((parent_rate != rate) && (parent_rate / 2 != rate))
 		return -EINVAL;
 
-	regmap_write_bits(plldiv->regmap, AT91_PMC_MCKR, AT91_PMC_PLLADIV2,
-			  parent_rate != rate ? AT91_PMC_PLLADIV2 : 0);
+	regmap_update_bits(plldiv->regmap, AT91_PMC_MCKR, AT91_PMC_PLLADIV2,
+			   parent_rate != rate ? AT91_PMC_PLLADIV2 : 0);
 
 	return 0;
 }
@@ -73,33 +70,34 @@ static const struct clk_ops plldiv_ops = {
 	.set_rate = clk_plldiv_set_rate,
 };
 
-struct clk * __init
+struct clk_hw * __init
 at91_clk_register_plldiv(struct regmap *regmap, const char *name,
 			 const char *parent_name)
 {
-	int ret;
 	struct clk_plldiv *plldiv;
+	struct clk_hw *hw;
+	struct clk_init_data init;
+	int ret;
 
-	plldiv = xzalloc(sizeof(*plldiv));
+	plldiv = kzalloc(sizeof(*plldiv), GFP_KERNEL);
+	if (!plldiv)
+		return ERR_PTR(-ENOMEM);
 
-	plldiv->hw.clk.name = name;
-	plldiv->hw.clk.ops  = &plldiv_ops;
+	init.name = name;
+	init.ops = &plldiv_ops;
+	init.parent_names = parent_name ? &parent_name : NULL;
+	init.num_parents = parent_name ? 1 : 0;
+	init.flags = CLK_SET_RATE_GATE;
 
-	if (parent_name) {
-		plldiv->parent = parent_name;
-		plldiv->hw.clk.parent_names = &plldiv->parent;
-		plldiv->hw.clk.num_parents = 1;
-	}
-
-	/* init.flags = CLK_SET_RATE_GATE; */
-
+	plldiv->hw.init = &init;
 	plldiv->regmap = regmap;
 
-	ret = bclk_register(&plldiv->hw.clk);
+	hw = &plldiv->hw;
+	ret = clk_hw_register(NULL, &plldiv->hw);
 	if (ret) {
 		kfree(plldiv);
-		return ERR_PTR(ret);
+		hw = ERR_PTR(ret);
 	}
 
-	return &plldiv->hw.clk;
+	return hw;
 }

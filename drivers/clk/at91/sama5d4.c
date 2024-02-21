@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-only
-
-#include <driver.h>
-#include <linux/regmap.h>
-#include <stdio.h>
+#include <linux/clk-provider.h>
 #include <mfd/syscon.h>
-
-#include <linux/clk.h>
 #include <linux/slab.h>
-#include <linux/types.h>
+#include <stdio.h>
 
 #include <dt-bindings/clock/at91.h>
 
 #include "pmc.h"
+
+static DEFINE_SPINLOCK(mck_lock);
 
 static const struct clk_master_characteristics mck_characteristics = {
 	.output = { .min = 125000000, .max = 200000000 },
@@ -43,16 +40,21 @@ static const struct clk_pcr_layout sama5d4_pcr_layout = {
 static const struct {
 	char *n;
 	char *p;
+	unsigned long flags;
 	u8 id;
 } sama5d4_systemck[] = {
-	{ .n = "ddrck", .p = "masterck", .id = 2 },
-	{ .n = "lcdck", .p = "masterck", .id = 3 },
-	{ .n = "smdck", .p = "smdclk",   .id = 4 },
-	{ .n = "uhpck", .p = "usbck",    .id = 6 },
-	{ .n = "udpck", .p = "usbck",    .id = 7 },
-	{ .n = "pck0",  .p = "prog0",    .id = 8 },
-	{ .n = "pck1",  .p = "prog1",    .id = 9 },
-	{ .n = "pck2",  .p = "prog2",    .id = 10 },
+	/*
+	 * ddrck feeds DDR controller and is enabled by bootloader thus we need
+	 * to keep it enabled in case there is no Linux consumer for it.
+	 */
+	{ .n = "ddrck", .p = "masterck_div", .id = 2, .flags = CLK_IS_CRITICAL },
+	{ .n = "lcdck", .p = "masterck_div", .id = 3 },
+	{ .n = "smdck", .p = "smdclk",       .id = 4 },
+	{ .n = "uhpck", .p = "usbck",        .id = 6 },
+	{ .n = "udpck", .p = "usbck",        .id = 7 },
+	{ .n = "pck0",  .p = "prog0",        .id = 8 },
+	{ .n = "pck1",  .p = "prog1",        .id = 9 },
+	{ .n = "pck2",  .p = "prog2",        .id = 10 },
 };
 
 static const struct {
@@ -107,12 +109,17 @@ static const struct {
 
 static const struct {
 	char *n;
+	unsigned long flags;
 	u8 id;
 } sama5d4_periphck[] = {
 	{ .n = "dma0_clk", .id = 8 },
 	{ .n = "cpkcc_clk", .id = 10 },
 	{ .n = "aesb_clk", .id = 13 },
-	{ .n = "mpddr_clk", .id = 16 },
+	/*
+	 * mpddr_clk feeds DDR controller and is enabled by bootloader thus we
+	 * need to keep it enabled in case there is no Linux consumer for it.
+	 */
+	{ .n = "mpddr_clk", .id = 16, .flags = CLK_IS_CRITICAL },
 	{ .n = "matrix0_clk", .id = 18 },
 	{ .n = "vdec_clk", .id = 19 },
 	{ .n = "dma1_clk", .id = 50 },
@@ -127,7 +134,7 @@ static void __init sama5d4_pmc_setup(struct device_node *np)
 	struct pmc_data *sama5d4_pmc;
 	const char *parent_names[5];
 	struct regmap *regmap;
-	struct clk *hw;
+	struct clk_hw *hw;
 	int i;
 	bool bypass;
 
@@ -191,15 +198,24 @@ static void __init sama5d4_pmc_setup(struct device_node *np)
 	parent_names[1] = "mainck";
 	parent_names[2] = "plladivck";
 	parent_names[3] = "utmick";
-	hw = at91_clk_register_master(regmap, "masterck", 4, parent_names,
-				      &at91sam9x5_master_layout,
-				      &mck_characteristics);
+	hw = at91_clk_register_master_pres(regmap, "masterck_pres", 4,
+					   parent_names,
+					   &at91sam9x5_master_layout,
+					   &mck_characteristics, &mck_lock);
+	if (IS_ERR(hw))
+		goto err_free;
+
+	hw = at91_clk_register_master_div(regmap, "masterck_div",
+					  "masterck_pres",
+					  &at91sam9x5_master_layout,
+					  &mck_characteristics, &mck_lock,
+					  CLK_SET_RATE_GATE);
 	if (IS_ERR(hw))
 		goto err_free;
 
 	sama5d4_pmc->chws[PMC_MCK] = hw;
 
-	hw = at91_clk_register_h32mx(regmap, "h32mxck", "masterck");
+	hw = at91_clk_register_h32mx(regmap, "h32mxck", "masterck_div");
 	if (IS_ERR(hw))
 		goto err_free;
 
@@ -221,15 +237,16 @@ static void __init sama5d4_pmc_setup(struct device_node *np)
 	parent_names[1] = "mainck";
 	parent_names[2] = "plladivck";
 	parent_names[3] = "utmick";
-	parent_names[4] = "masterck";
+	parent_names[4] = "masterck_div";
 	for (i = 0; i < 3; i++) {
-		char *name;
+		char name[6];
 
-		name = xasprintf("prog%d", i);
+		snprintf(name, sizeof(name), "prog%d", i);
 
 		hw = at91_clk_register_programmable(regmap, name,
 						    parent_names, 5, i,
-						    &at91sam9x5_programmable_layout);
+						    &at91sam9x5_programmable_layout,
+						    NULL);
 		if (IS_ERR(hw))
 			goto err_free;
 
@@ -239,7 +256,8 @@ static void __init sama5d4_pmc_setup(struct device_node *np)
 	for (i = 0; i < ARRAY_SIZE(sama5d4_systemck); i++) {
 		hw = at91_clk_register_system(regmap, sama5d4_systemck[i].n,
 					      sama5d4_systemck[i].p,
-					      sama5d4_systemck[i].id);
+					      sama5d4_systemck[i].id,
+					      sama5d4_systemck[i].flags);
 		if (IS_ERR(hw))
 			goto err_free;
 
@@ -247,12 +265,13 @@ static void __init sama5d4_pmc_setup(struct device_node *np)
 	}
 
 	for (i = 0; i < ARRAY_SIZE(sama5d4_periphck); i++) {
-		hw = at91_clk_register_sam9x5_peripheral(regmap,
+		hw = at91_clk_register_sam9x5_peripheral(regmap, &pmc_pcr_lock,
 							 &sama5d4_pcr_layout,
 							 sama5d4_periphck[i].n,
-							 "masterck",
+							 "masterck_div",
 							 sama5d4_periphck[i].id,
-							 &range);
+							 &range, INT_MIN,
+							 sama5d4_periphck[i].flags);
 		if (IS_ERR(hw))
 			goto err_free;
 
@@ -260,23 +279,24 @@ static void __init sama5d4_pmc_setup(struct device_node *np)
 	}
 
 	for (i = 0; i < ARRAY_SIZE(sama5d4_periph32ck); i++) {
-		hw = at91_clk_register_sam9x5_peripheral(regmap,
+		hw = at91_clk_register_sam9x5_peripheral(regmap, &pmc_pcr_lock,
 							 &sama5d4_pcr_layout,
 							 sama5d4_periph32ck[i].n,
 							 "h32mxck",
 							 sama5d4_periph32ck[i].id,
-							 &range);
+							 &range, INT_MIN, 0);
 		if (IS_ERR(hw))
 			goto err_free;
 
 		sama5d4_pmc->phws[sama5d4_periph32ck[i].id] = hw;
 	}
 
-	of_clk_add_provider(np, of_clk_hw_pmc_get, sama5d4_pmc);
+	of_clk_add_hw_provider(np, of_clk_hw_pmc_get, sama5d4_pmc);
 
 	return;
 
 err_free:
 	kfree(sama5d4_pmc);
 }
-CLK_OF_DECLARE_DRIVER(sama5d4_pmc, "atmel,sama5d4-pmc", sama5d4_pmc_setup);
+
+CLK_OF_DECLARE(sama5d4_pmc, "atmel,sama5d4-pmc", sama5d4_pmc_setup);

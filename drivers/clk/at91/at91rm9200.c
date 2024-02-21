@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-only
-//
-#include <driver.h>
-#include <linux/regmap.h>
-#include <stdio.h>
+#include <linux/clk-provider.h>
 #include <mfd/syscon.h>
-
-#include <linux/clk.h>
 #include <linux/slab.h>
-#include <linux/types.h>
+#include <stdio.h>
 
 #include <dt-bindings/clock/at91.h>
 
 #include "pmc.h"
+
+static DEFINE_SPINLOCK(rm9200_mck_lock);
 
 struct sck {
 	char *n;
@@ -44,7 +41,7 @@ static const struct clk_pll_characteristics rm9200_pll_characteristics = {
 };
 
 static const struct sck at91rm9200_systemck[] = {
-	{ .n = "udpck", .p = "usbck",    .id = 2 },
+	{ .n = "udpck", .p = "usbck",    .id = 1 },
 	{ .n = "uhpck", .p = "usbck",    .id = 4 },
 	{ .n = "pck0",  .p = "prog0",    .id = 8 },
 	{ .n = "pck1",  .p = "prog1",    .id = 9 },
@@ -85,7 +82,7 @@ static void __init at91rm9200_pmc_setup(struct device_node *np)
 	u32 usb_div[] = { 1, 2, 0, 0 };
 	const char *parent_names[6];
 	struct regmap *regmap;
-	struct clk *hw;
+	struct clk_hw *hw;
 	int i;
 	bool bypass;
 
@@ -143,9 +140,19 @@ static void __init at91rm9200_pmc_setup(struct device_node *np)
 	parent_names[1] = "mainck";
 	parent_names[2] = "pllack";
 	parent_names[3] = "pllbck";
-	hw = at91_clk_register_master(regmap, "masterck", 4, parent_names,
-				      &at91rm9200_master_layout,
-				      &rm9200_mck_characteristics);
+	hw = at91_clk_register_master_pres(regmap, "masterck_pres", 4,
+					   parent_names,
+					   &at91rm9200_master_layout,
+					   &rm9200_mck_characteristics,
+					   &rm9200_mck_lock);
+	if (IS_ERR(hw))
+		goto err_free;
+
+	hw = at91_clk_register_master_div(regmap, "masterck_div",
+					  "masterck_pres",
+					  &at91rm9200_master_layout,
+					  &rm9200_mck_characteristics,
+					  &rm9200_mck_lock, CLK_SET_RATE_GATE);
 	if (IS_ERR(hw))
 		goto err_free;
 
@@ -160,11 +167,14 @@ static void __init at91rm9200_pmc_setup(struct device_node *np)
 	parent_names[2] = "pllack";
 	parent_names[3] = "pllbck";
 	for (i = 0; i < 4; i++) {
-		char *name = xasprintf("prog%d", i);
+		char name[6];
+
+		snprintf(name, sizeof(name), "prog%d", i);
 
 		hw = at91_clk_register_programmable(regmap, name,
 						    parent_names, 4, i,
-						    &at91rm9200_programmable_layout);
+						    &at91rm9200_programmable_layout,
+						    NULL);
 		if (IS_ERR(hw))
 			goto err_free;
 
@@ -174,7 +184,7 @@ static void __init at91rm9200_pmc_setup(struct device_node *np)
 	for (i = 0; i < ARRAY_SIZE(at91rm9200_systemck); i++) {
 		hw = at91_clk_register_system(regmap, at91rm9200_systemck[i].n,
 					      at91rm9200_systemck[i].p,
-					      at91rm9200_systemck[i].id);
+					      at91rm9200_systemck[i].id, 0);
 		if (IS_ERR(hw))
 			goto err_free;
 
@@ -184,7 +194,7 @@ static void __init at91rm9200_pmc_setup(struct device_node *np)
 	for (i = 0; i < ARRAY_SIZE(at91rm9200_periphck); i++) {
 		hw = at91_clk_register_peripheral(regmap,
 						  at91rm9200_periphck[i].n,
-						  "masterck",
+						  "masterck_div",
 						  at91rm9200_periphck[i].id);
 		if (IS_ERR(hw))
 			goto err_free;
@@ -192,7 +202,7 @@ static void __init at91rm9200_pmc_setup(struct device_node *np)
 		at91rm9200_pmc->phws[at91rm9200_periphck[i].id] = hw;
 	}
 
-	of_clk_add_provider(np, of_clk_hw_pmc_get, at91rm9200_pmc);
+	of_clk_add_hw_provider(np, of_clk_hw_pmc_get, at91rm9200_pmc);
 
 	return;
 
@@ -205,5 +215,4 @@ err_free:
  * deferring properly. Once this is fixed, this can be switched to a platform
  * driver.
  */
-CLK_OF_DECLARE_DRIVER(at91rm9200_pmc, "atmel,at91rm9200-pmc",
-		      at91rm9200_pmc_setup);
+CLK_OF_DECLARE(at91rm9200_pmc, "atmel,at91rm9200-pmc", at91rm9200_pmc_setup);

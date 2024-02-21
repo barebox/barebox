@@ -390,8 +390,6 @@ Miscellaneous Linux porting advice:
   * ``usleep`` and co.: use ``[mud]elay``
   * ``jiffies``: use ``get_time_ns()``
   * ``time_before``: use ``!is_timeout()``
-  * ``clk_hw_register_fixed_rate_with_accuracy``: use ``clk_hw_register_fixed_rate`` without accuracy
-  * ``CLK_SET_RATE_GATE`` can be ignored
   * ``clk_prepare``: is for the non-atomic code preparing for clk enablement. Merge it into ``clk_enable``
 
 ***************************

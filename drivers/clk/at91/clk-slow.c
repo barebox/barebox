@@ -5,13 +5,10 @@
  *  Copyright (C) 2013 Boris BREZILLON <b.brezillon@overkiz.com>
  */
 
-#include <common.h>
-#include <clock.h>
-#include <io.h>
-#include <linux/list.h>
-#include <linux/clk.h>
+#include <linux/clk-provider.h>
+#include <linux/clkdev.h>
 #include <linux/clk/at91_pmc.h>
-#include <linux/overflow.h>
+#include <of.h>
 #include <mfd/syscon.h>
 #include <linux/regmap.h>
 
@@ -20,10 +17,9 @@
 struct clk_sam9260_slow {
 	struct clk_hw hw;
 	struct regmap *regmap;
-	const char *parent_names[];
 };
 
-#define to_clk_sam9260_slow(_hw) container_of(_hw, struct clk_sam9260_slow, hw)
+#define to_clk_sam9260_slow(hw) container_of(hw, struct clk_sam9260_slow, hw)
 
 static int clk_sam9260_slow_get_parent(struct clk_hw *hw)
 {
@@ -39,13 +35,15 @@ static const struct clk_ops sam9260_slow_ops = {
 	.get_parent = clk_sam9260_slow_get_parent,
 };
 
-struct clk * __init
+struct clk_hw * __init
 at91_clk_register_sam9260_slow(struct regmap *regmap,
 			       const char *name,
 			       const char **parent_names,
 			       int num_parents)
 {
 	struct clk_sam9260_slow *slowck;
+	struct clk_hw *hw;
+	struct clk_init_data init;
 	int ret;
 
 	if (!name)
@@ -54,20 +52,25 @@ at91_clk_register_sam9260_slow(struct regmap *regmap,
 	if (!parent_names || !num_parents)
 		return ERR_PTR(-EINVAL);
 
-	slowck = xzalloc(struct_size(slowck, parent_names, num_parents));
-	slowck->hw.clk.name = name;
-	slowck->hw.clk.ops = &sam9260_slow_ops;
-	memcpy(slowck->parent_names, parent_names,
-	       num_parents * sizeof(slowck->parent_names[0]));
-	slowck->hw.clk.parent_names = slowck->parent_names;
-	slowck->hw.clk.num_parents = num_parents;
+	slowck = kzalloc(sizeof(*slowck), GFP_KERNEL);
+	if (!slowck)
+		return ERR_PTR(-ENOMEM);
+
+	init.name = name;
+	init.ops = &sam9260_slow_ops;
+	init.parent_names = parent_names;
+	init.num_parents = num_parents;
+	init.flags = 0;
+
+	slowck->hw.init = &init;
 	slowck->regmap = regmap;
 
-	ret = bclk_register(&slowck->hw.clk);
+	hw = &slowck->hw;
+	ret = clk_hw_register(NULL, &slowck->hw);
 	if (ret) {
 		kfree(slowck);
-		return ERR_PTR(ret);
+		hw = ERR_PTR(ret);
 	}
 
-	return &slowck->hw.clk;
+	return hw;
 }

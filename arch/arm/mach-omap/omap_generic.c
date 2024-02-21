@@ -180,6 +180,7 @@ static int omap_env_init(void)
 								partname);
 	default_environment_path_set(envpath);
 
+	free(envpath);
 out:
 	free(partname);
 

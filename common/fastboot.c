@@ -66,7 +66,7 @@ static void fb_setvar(struct fb_variable *var, const char *fmt, ...)
 	va_end(ap);
 }
 
-static struct fb_variable *fb_addvar(struct fastboot *fb, const char *fmt, ...)
+static struct fb_variable *fb_addvar(struct fastboot *fb, struct list_head *list, const char *fmt, ...)
 {
 	struct fb_variable *var = xzalloc(sizeof(*var));
 	va_list ap;
@@ -75,12 +75,12 @@ static struct fb_variable *fb_addvar(struct fastboot *fb, const char *fmt, ...)
 	var->name = bvasprintf(fmt, ap);
 	va_end(ap);
 
-	list_add_tail(&var->list, &fb->variables);
+	list_add_tail(&var->list, list);
 
 	return var;
 }
 
-static int fastboot_add_partition_variables(struct fastboot *fb,
+static int fastboot_add_partition_variables(struct fastboot *fb, struct list_head *list,
 		struct file_list_entry *fentry)
 {
 	struct stat s;
@@ -152,9 +152,9 @@ out:
 	if (ret)
 		return ret;
 
-	var = fb_addvar(fb, "partition-size:%s", fentry->name);
+	var = fb_addvar(fb, list, "partition-size:%s", fentry->name);
 	fb_setvar(var, "%08zx", size);
-	var = fb_addvar(fb, "partition-type:%s", fentry->name);
+	var = fb_addvar(fb, list, "partition-type:%s", fentry->name);
 	fb_setvar(var, "%s", type);
 
 	return ret;
@@ -162,18 +162,16 @@ out:
 
 int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 {
-	int ret;
-	struct file_list_entry *fentry;
 	struct fb_variable *var;
 
 	INIT_LIST_HEAD(&fb->variables);
 
-	var = fb_addvar(fb, "version");
+	var = fb_addvar(fb, &fb->variables, "version");
 	fb_setvar(var, "0.4");
-	var = fb_addvar(fb, "bootloader-version");
+	var = fb_addvar(fb, &fb->variables, "bootloader-version");
 	fb_setvar(var, release_string);
 	if (IS_ENABLED(CONFIG_FASTBOOT_SPARSE)) {
-		var = fb_addvar(fb, "max-download-size");
+		var = fb_addvar(fb, &fb->variables, "max-download-size");
 		fb_setvar(var, "%u", fastboot_max_download_size);
 	}
 
@@ -186,25 +184,24 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 	if (export_bbu)
 		bbu_append_handlers_to_file_list(fb->files);
 
-	file_list_for_each_entry(fb->files, fentry) {
-		ret = fastboot_add_partition_variables(fb, fentry);
-		if (ret)
-			return ret;
-	}
-
 	return 0;
 }
 
-void fastboot_generic_free(struct fastboot *fb)
+static void fastboot_free_variables(struct list_head *list)
 {
 	struct fb_variable *var, *tmp;
 
-	list_for_each_entry_safe(var, tmp, &fb->variables, list) {
+	list_for_each_entry_safe(var, tmp, list, list) {
 		free(var->name);
 		free(var->value);
 		list_del(&var->list);
 		free(var);
 	}
+}
+
+void fastboot_generic_free(struct fastboot *fb)
+{
+	fastboot_free_variables(&fb->variables);
 
 	free(fb->tempname);
 
@@ -300,26 +297,51 @@ static int strcmp_l1(const char *s1, const char *s2)
 static void cb_getvar(struct fastboot *fb, const char *cmd)
 {
 	struct fb_variable *var;
+	LIST_HEAD(partition_list);
+	struct file_list_entry *fentry;
+
+	file_list_for_each_entry(fb->files, fentry) {
+		int ret;
+
+		ret = fastboot_add_partition_variables(fb, &partition_list, fentry);
+		if (ret) {
+			pr_warn("Failed to add partition variables: %pe", ERR_PTR(ret));
+			return;
+		}
+	}
 
 	pr_debug("getvar: \"%s\"\n", cmd);
 
 	if (!strcmp_l1(cmd, "all")) {
-		list_for_each_entry(var, &fb->variables, list) {
+		list_for_each_entry(var, &fb->variables, list)
 			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
 					  var->name, var->value);
-		}
+
+		list_for_each_entry(var, &partition_list, list)
+			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
+					  var->name, var->value);
+
 		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
-		return;
+		goto out;
 	}
 
 	list_for_each_entry(var, &fb->variables, list) {
 		if (!strcmp(cmd, var->name)) {
 			fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, var->value);
-			return;
+			goto out;
+		}
+	}
+
+	list_for_each_entry(var, &partition_list, list) {
+		if (!strcmp(cmd, var->name)) {
+			fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, var->value);
+			goto out;
 		}
 	}
 
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
+out:
+	fastboot_free_variables(&partition_list);
 }
 
 int fastboot_handle_download_data(struct fastboot *fb, const void *buffer,

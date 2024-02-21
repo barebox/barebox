@@ -284,6 +284,17 @@ static ssize_t block_op_write(struct cdev *cdev, const void *buf, size_t count,
 	blkcnt_t blocks;
 	int ret;
 
+	/*
+	 * When the offset that is written to is within the first two
+	 * LBAs then the partition table has changed, reparse the partition
+	 * table at close time in this case. A GPT covers more space than
+	 * only the first two LBAs, but a CRC of the remaining pieces is
+	 * written to LBA1, so LBA1 must change as well when the partioning
+	 * is changed.
+	 */
+	if (offset < 2 * SECTOR_SIZE)
+		blk->need_reparse = true;
+
 	if (offset & mask) {
 		size_t now = BLOCKSIZE(blk) - (offset & mask);
 		void *iobuf = block_get(blk, block);
@@ -341,7 +352,19 @@ static int block_op_flush(struct cdev *cdev)
 	return writebuffer_flush(blk);
 }
 
-static int block_op_close(struct cdev *cdev) __alias(block_op_flush);
+static int block_op_close(struct cdev *cdev)
+{
+	struct block_device *blk = cdev->priv;
+
+	block_op_flush(cdev);
+
+	if (blk->need_reparse) {
+		reparse_partition_table(blk);
+		blk->need_reparse = false;
+	}
+
+	return 0;
+}
 
 static int block_op_discard_range(struct cdev *cdev, loff_t count, loff_t offset)
 {

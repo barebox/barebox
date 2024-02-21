@@ -124,14 +124,10 @@ void of_print_cmdline(struct device_node *root)
 static int of_fixup_bootargs_bootsource(struct device_node *root,
 					struct device_node *chosen)
 {
-	char *alias_name = bootsource_get_alias_name();
 	struct device_node *bootsource;
 	int ret = 0;
 
-	if (!alias_name)
-		return 0;
-
-	bootsource = of_find_node_by_alias(root, alias_name);
+	bootsource = bootsource_of_node_get(root);
 	/*
 	 * If kernel DTB doesn't have the appropriate alias set up,
 	 * give up and exit early. No error is reported.
@@ -140,7 +136,6 @@ static int of_fixup_bootargs_bootsource(struct device_node *root,
 		ret = of_set_property(chosen, "bootsource", bootsource->full_name,
 				      strlen(bootsource->full_name) + 1, true);
 
-	free(alias_name);
 	return ret;
 }
 

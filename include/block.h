@@ -33,6 +33,8 @@ struct block_device {
 	struct list_head idle_blocks;
 
 	struct cdev cdev;
+
+	bool need_reparse;
 };
 
 extern struct list_head block_device_list;

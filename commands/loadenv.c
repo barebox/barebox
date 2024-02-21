@@ -18,7 +18,8 @@
 
 static int do_loadenv(int argc, char *argv[])
 {
-	char *filename = NULL, *dirname;
+	const char *filename = NULL;
+	char *dirname;
 	unsigned flags = 0;
 	int opt, ret;
 	int scrub = 0;

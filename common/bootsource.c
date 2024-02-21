@@ -108,6 +108,22 @@ char *bootsource_get_alias_name(void)
 	return basprintf("%s%d", stem, bootsource_instance);
 }
 
+struct device_node *bootsource_of_node_get(struct device_node *root)
+{
+	struct device_node *np;
+	char *alias_name;
+
+	alias_name = bootsource_get_alias_name();
+	if (!alias_name)
+		return NULL;
+
+	np = of_find_node_by_alias(root, alias_name);
+
+	free(alias_name);
+
+	return np;
+}
+
 void bootsource_set_alias_name(const char *name)
 {
 	bootsource_alias_name = name;

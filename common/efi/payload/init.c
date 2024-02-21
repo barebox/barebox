@@ -258,6 +258,7 @@ static int efi_init(void)
 
 	env = xasprintf("/efivars/barebox-env-%pUl", &efi_barebox_vendor_guid);
 	default_environment_path_set(env);
+	free(env);
 
 	return 0;
 }

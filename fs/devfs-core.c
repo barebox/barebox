@@ -175,8 +175,15 @@ int cdev_find_free_index(const char *basename)
 
 int cdev_open(struct cdev *cdev, unsigned long flags)
 {
-	if (cdev->ops->open)
-		return cdev->ops->open(cdev, flags);
+	int ret;
+
+	if (cdev->ops->open) {
+		ret = cdev->ops->open(cdev, flags);
+		if (ret)
+			return ret;
+	}
+
+	cdev->open++;
 
 	return 0;
 }
@@ -221,6 +228,8 @@ void cdev_close(struct cdev *cdev)
 {
 	if (cdev->ops->close)
 		cdev->ops->close(cdev);
+
+	cdev->open--;
 }
 
 ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)

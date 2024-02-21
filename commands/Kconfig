@@ -655,6 +655,27 @@ config CMD_MOUNT
 		  -o OPTIONS	set file system OPTIONS
 		  -v		verbose
 
+config CMD_PARTED
+	tristate
+	depends on PARTITION
+	select PARTITION_MANIPULATION
+	prompt "parted"
+	help
+	  parted - edit partition tables
+
+	  Usage: parted <device> [command [options...]...]
+
+	  parted is a partition manipulation program with a behaviour similar to
+	  GNU Parted
+
+	  commands:
+	         print           print partitions
+	         mklabel <type>  create a new partition table
+	         rm <num>        remove a partition
+	         mkpart <name> <fstype> <start> <end>    create a new partition
+	         unit <unit>     change display/input units
+	         refresh         refresh a partition table
+
 config CMD_UBI
 	tristate
 	default y if MTD_UBI

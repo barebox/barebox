@@ -15,8 +15,7 @@
 #include <disks.h>
 #include <filetype.h>
 #include <linux/err.h>
-
-#include "partitions/parser.h"
+#include <partitions.h>
 
 static LIST_HEAD(partition_parser_list);
 
@@ -27,8 +26,7 @@ static LIST_HEAD(partition_parser_list);
  * @param no Partition number
  * @return 0 on success
  */
-static int register_one_partition(struct block_device *blk,
-					struct partition *part, int no)
+static int register_one_partition(struct block_device *blk, struct partition *part)
 {
 	char *partition_name;
 	int ret;
@@ -38,7 +36,7 @@ static int register_one_partition(struct block_device *blk,
 		.size = part->size * SECTOR_SIZE,
 	};
 
-	partition_name = basprintf("%s.%d", blk->cdev.name, no);
+	partition_name = basprintf("%s.%d", blk->cdev.name, part->num);
 	if (!partition_name)
 		return -ENOMEM;
 
@@ -104,6 +102,133 @@ static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
 	return NULL;
 }
 
+struct partition_desc *partition_table_new(struct block_device *blk, const char *type)
+{
+	struct partition_desc *pdesc;
+	struct partition_parser *parser;
+
+	list_for_each_entry(parser, &partition_parser_list, list) {
+		if (!strcmp(parser->name, type))
+			goto found;
+	}
+
+	pr_err("Cannot find partition parser \"%s\"\n", type);
+
+	return ERR_PTR(-ENOSYS);
+
+found:
+	pdesc = parser->create(blk);
+	if (IS_ERR(pdesc))
+		return ERR_CAST(pdesc);
+
+	pdesc->parser = parser;
+
+	return pdesc;
+}
+
+struct partition_desc *partition_table_read(struct block_device *blk)
+{
+	struct partition_parser *parser;
+	struct partition_desc *pdesc = NULL;
+	uint8_t *buf;
+	int ret;
+
+	buf = malloc(2 * SECTOR_SIZE);
+
+	ret = block_read(blk, buf, 0, 2);
+	if (ret != 0) {
+		dev_err(blk->dev, "Cannot read MBR/partition table: %pe\n", ERR_PTR(ret));
+		goto err;
+	}
+
+	parser = partition_parser_get_by_filetype(buf);
+	if (!parser)
+		goto err;
+
+	pdesc = parser->parse(buf, blk);
+	pdesc->parser = parser;
+err:
+	free(buf);
+
+	return pdesc;
+}
+
+int partition_table_write(struct partition_desc *pdesc)
+{
+	if (!pdesc->parser->write)
+		return -ENOSYS;
+
+	return pdesc->parser->write(pdesc);
+}
+
+static bool overlap(uint64_t s1, uint64_t e1, uint64_t s2, uint64_t e2)
+{
+	if (e1 < s2)
+		return false;
+	if (s1 > e2)
+		return false;
+	return true;
+}
+
+int partition_create(struct partition_desc *pdesc, const char *name,
+		     const char *fs_type, uint64_t lba_start, uint64_t lba_end)
+{
+	struct partition *part;
+
+	if (!pdesc->parser->mkpart)
+		return -ENOSYS;
+
+	if (lba_end < lba_start) {
+		pr_err("lba_end < lba_start: %llu < %llu\n", lba_end, lba_start);
+		return -EINVAL;
+	}
+
+	if (lba_end >= pdesc->blk->num_blocks) {
+		pr_err("lba_end exceeds device: %llu >= %llu\n", lba_end, pdesc->blk->num_blocks);
+		return -EINVAL;
+	}
+
+	list_for_each_entry(part, &pdesc->partitions, list) {
+		if (overlap(part->first_sec,
+				part->first_sec + part->size - 1,
+				lba_start, lba_end)) {
+			pr_err("new partition %llu-%llu overlaps with partition %s (%llu-%llu)\n",
+			       lba_start, lba_end, part->name, part->first_sec,
+				part->first_sec + part->size - 1);
+			return -EINVAL;
+		}
+	}
+
+	return pdesc->parser->mkpart(pdesc, name, fs_type, lba_start, lba_end);
+}
+
+int partition_remove(struct partition_desc *pdesc, int num)
+{
+	struct partition *part;
+
+	if (!pdesc->parser->rmpart)
+		return -ENOSYS;
+
+	list_for_each_entry(part, &pdesc->partitions, list) {
+		if (part->num == num)
+			return pdesc->parser->rmpart(pdesc, part);
+	}
+
+	pr_err("Partition %d doesn't exist\n", num);
+	return -ENOENT;
+}
+
+void partition_table_free(struct partition_desc *pdesc)
+{
+	pdesc->parser->partition_free(pdesc);
+}
+
+void partition_desc_init(struct partition_desc *pd, struct block_device *blk)
+{
+	pd->blk = blk;
+	INIT_LIST_HEAD(&pd->partitions);
+}
+
 /**
  * Try to collect partition information on the given block device
  * @param blk Block device to examine
@@ -113,33 +238,18 @@ static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
  */
 int parse_partition_table(struct block_device *blk)
 {
-	struct partition_desc *pdesc;
 	int i;
 	int rc = 0;
-	struct partition_parser *parser;
-	uint8_t *buf;
+	struct partition *part;
+	struct partition_desc *pdesc;
 
-	pdesc = xzalloc(sizeof(*pdesc));
-	buf = malloc(2 * SECTOR_SIZE);
-
-	rc = block_read(blk, buf, 0, 2);
-	if (rc != 0) {
-		dev_err(blk->dev, "Cannot read MBR/partition table: %pe\n", ERR_PTR(rc));
-		goto on_error;
-	}
-
-	parser = partition_parser_get_by_filetype(buf);
-	if (!parser)
-		goto on_error;
-
-	parser->parse(buf, blk, pdesc);
-
-	if (!pdesc->used_entries)
-		goto on_error;
+	pdesc = partition_table_read(blk);
+	if (!pdesc)
+		return 0;
 
 	/* at least one partition description found */
-	for (i = 0; i < pdesc->used_entries; i++) {
-		rc = register_one_partition(blk, &pdesc->parts[i], i);
+	list_for_each_entry(part, &pdesc->partitions, list) {
+		rc = register_one_partition(blk, part);
 		if (rc != 0)
 			dev_err(blk->dev,
 				"Failed to register partition %d on %s (%d)\n",
@@ -148,10 +258,29 @@ int parse_partition_table(struct block_device *blk)
 			rc = 0;
 	}
 
-on_error:
-	free(buf);
-	free(pdesc);
+	partition_table_free(pdesc);
+
 	return rc;
+}
+
+int reparse_partition_table(struct block_device *blk)
+{
+	struct cdev *cdev = &blk->cdev;
+	struct cdev *c, *tmp;
+
+	list_for_each_entry(c, &cdev->partitions, partition_entry) {
+		if (c->open) {
+			pr_warn("%s is busy, will continue to use old partition table\n", c->name);
+			return -EBUSY;
+		}
+	}
+
+	list_for_each_entry_safe(c, tmp, &cdev->partitions, partition_entry) {
+		if (c->flags & DEVFS_PARTITION_FROM_TABLE)
+			cdevfs_del_partition(c);
+	}
+
+	return parse_partition_table(blk);
 }
 
 int partition_parser_register(struct partition_parser *p)

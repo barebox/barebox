@@ -40,7 +40,10 @@ static int mba6ulx_probe(struct device *dev)
 }
 
 static const struct of_device_id mba6ulx_of_match[] = {
-	{ .compatible = "tq,mba6ulx" },
+	{ .compatible = "tq,imx6ul-tqma6ul2l" },
+	{ .compatible = "tq,imx6ul-tqma6ul2" },
+	{ .compatible = "tq,imx6ull-tqma6ull2" },
+	{ .compatible = "tq,imx6ull-tqma6ull2l" },
 	{ /* sentinel */ },
 };
 MODULE_DEVICE_TABLE(of, mba6ulx_of_match);
@@ -51,3 +54,5 @@ static struct driver mba6ulx_board_driver = {
 	.of_compatible = mba6ulx_of_match,
 };
 device_platform_driver(mba6ulx_board_driver);
+
+BAREBOX_DEEP_PROBE_ENABLE(mba6ulx_of_match);

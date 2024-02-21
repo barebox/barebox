@@ -500,6 +500,8 @@ config MACH_TQMA6UL
 	bool "TQ tqma6ul on mba6ulx"
 	select ARCH_IMX6UL
 	select ARM_USE_COMPRESSED_DTB
+	select BOARD_TQ
+	select I2C_IMX_EARLY
 
 config MACH_VARISCITE_MX6
 	bool "Variscite i.MX6 Quad SOM"

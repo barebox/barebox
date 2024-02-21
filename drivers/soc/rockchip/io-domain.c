@@ -172,9 +172,7 @@ static int rockchip_iodomain_probe(struct device *dev)
 			/* If a supply wasn't specified, that's OK */
 			if (ret == -ENODEV)
 				continue;
-			else if (ret != -EPROBE_DEFER)
-				dev_err(dev, "couldn't get regulator %s\n",
-					supply_name);
+			dev_err_probe(dev, ret, "getting regulator\n");
 			goto out;
 		}
 

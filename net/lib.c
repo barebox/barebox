@@ -37,13 +37,6 @@ int string_to_ethaddr(const char *str, u8 enetaddr[ETH_ALEN])
 	return 0;
 }
 
-void ethaddr_to_string(const u8 enetaddr[ETH_ALEN], char *str)
-{
-	sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x",
-		 enetaddr[0], enetaddr[1], enetaddr[2], enetaddr[3],
-		 enetaddr[4], enetaddr[5]);
-}
-
 int string_to_ip(const char *s, IPaddr_t *ip)
 {
 	IPaddr_t addr = 0;

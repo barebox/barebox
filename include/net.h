@@ -358,7 +358,6 @@ IPaddr_t getenv_ip(const char *name);
 int setenv_ip(const char *name, IPaddr_t ip);
 
 int string_to_ethaddr(const char *str, u8 enetaddr[6]);
-void ethaddr_to_string(const u8 enetaddr[6], char *str);
 
 #ifdef CONFIG_NET_RESOLV
 int resolv(const char *host, IPaddr_t *ip);

@@ -36,6 +36,7 @@
 #define lsr		5
 #define msr		6
 #define scr		7
+#define cntl	8
 
 #define thr		rbr
 #define iir		fcr
@@ -72,6 +73,12 @@
 #define LSR_THRE	0x20	/* Xmit holding register empty */
 #define LSR_TEMT	0x40	/* Xmitter empty */
 #define LSR_ERR		0x80	/* Error */
+
+/* Transmitter FIFO completely empty */
+#define LSR_EMPTY	(LSR_THRE | LSR_TEMT)
+
+#define CNTL_RXEN	0x01
+#define CNTL_TXEN	0x02
 
 /* useful defaults for LCR */
 #define LCR_8N1		0x03

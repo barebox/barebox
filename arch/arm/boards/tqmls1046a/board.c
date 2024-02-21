@@ -17,7 +17,7 @@ static int tqmls1046a_mem_init(void)
 {
 	int ret;
 
-	if (!of_machine_is_compatible("tqc,tqmls1046a"))
+	if (!of_machine_is_compatible("tq,ls1046a-tqmls1046a"))
 		return 0;
 
 	arm_add_mem_device("ram0", 0x80000000, SZ_2G);
@@ -36,7 +36,7 @@ static int tqmls1046a_postcore_init(void)
 	enum bootsource bootsource;
 	unsigned long sd_bbu_flags = 0, qspi_bbu_flags = 0;
 
-	if (!of_machine_is_compatible("tqc,tqmls1046a"))
+	if (!of_machine_is_compatible("tq,ls1046a-tqmls1046a"))
 		return 0;
 
 	defaultenv_append_directory(defaultenv_tqmls1046a);

@@ -468,7 +468,7 @@ static struct device *of_device_create_on_demand(struct device_node *np)
 	else
 		dev = of_platform_device_create(np, parent_dev);
 
-	return dev ? : ERR_PTR(-ENODEV);
+	return dev ? : ERR_PTR(-EPROBE_DEFER);
 }
 
 /**
@@ -480,7 +480,7 @@ static struct device *of_device_create_on_demand(struct device_node *np)
  * it.
  *
  * Return: %0 on success
- *	   %-ENODEV if either the device can't be populated, the driver is
+ *	   %-EPROBE_DEFER if either the device can't be populated, the driver is
  *	     missing or the driver probe returns an error.
  */
 int of_device_ensure_probed(struct device_node *np)
@@ -491,10 +491,8 @@ int of_device_ensure_probed(struct device_node *np)
 		return 0;
 
 	dev = of_device_create_on_demand(np);
-	if (!dev)
-		return -ENODEV;
-	if (IS_ERR(dev))
-		return PTR_ERR(dev);
+	if (IS_ERR_OR_NULL(dev))
+		return -EPROBE_DEFER;
 
 	/*
 	 * The deep-probe mechanism relies on the fact that all necessary
@@ -504,7 +502,7 @@ int of_device_ensure_probed(struct device_node *np)
 	 * requirements are fulfilled if 'dev->driver' is not NULL.
 	 */
 	if (!dev->driver)
-		return -ENODEV;
+		return -EPROBE_DEFER;
 
 	return 0;
 }
@@ -519,7 +517,7 @@ EXPORT_SYMBOL_GPL(of_device_ensure_probed);
  * populated and probed if found.
  *
  * Return: %0 on success
- *	   %-ENODEV if either the device can't be populated, the driver is
+ *	   %-EPROBE_DEFER if either the device can't be populated, the driver is
  *	     missing or the driver probe returns an error
  *	   %-EINVAL if alias can't be found
  */
@@ -547,7 +545,7 @@ EXPORT_SYMBOL_GPL(of_device_ensure_probed_by_alias);
  * probes devices which match @ids.
  *
  * Return: %0 on success
- *	   %-ENODEV if either the device wasn't found, can't be populated,
+ *	   %-EPROBE_DEFER if either the device wasn't found, can't be populated,
  *	     the driver is missing or the driver probe returns an error
  */
 int of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids)
@@ -580,7 +578,7 @@ EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_dev_id);
  * devices which matches @property_name.
  *
  * Return: %0 on success
- *	   %-ENODEV if either the device wasn't found, can't be populated,
+ *	   %-EPROBE_DEFER if either the device wasn't found, can't be populated,
  *	     the driver is missing or the driver probe returns an error
  */
 int of_devices_ensure_probed_by_property(const char *property_name)

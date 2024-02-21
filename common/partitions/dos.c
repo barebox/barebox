@@ -144,9 +144,7 @@ static void dos_extended_partition(struct block_device *blk, struct partition_de
 			get_unaligned_le32(&table[0].partition_start);
 		pd->parts[n].size = get_unaligned_le32(&table[0].partition_size);
 		pd->parts[n].dos_partition_type = table[0].type;
-		if (signature)
-			sprintf(pd->parts[n].partuuid, "%08x-%02u",
-				signature, partno);
+		sprintf(pd->parts[n].partuuid, "%08x-%02u", signature, partno);
 		pd->used_entries++;
 		partno++;
 
@@ -182,8 +180,7 @@ static void dos_partition(void *buf, struct block_device *blk,
 	struct disk_signature_priv *dsp;
 	uint32_t signature = get_unaligned_le32(buf + 0x1b8);
 
-	if (signature)
-		sprintf(blk->cdev.diskuuid, "%08x", signature);
+	sprintf(blk->cdev.diskuuid, "%08x", signature);
 
 	blk->cdev.flags |= DEVFS_IS_MBR_PARTITIONED;
 
@@ -199,9 +196,7 @@ static void dos_partition(void *buf, struct block_device *blk,
 			pd->parts[n].first_sec = pentry.first_sec;
 			pd->parts[n].size = pentry.size;
 			pd->parts[n].dos_partition_type = pentry.dos_partition_type;
-			if (signature)
-				sprintf(pd->parts[n].partuuid, "%08x-%02d",
-						signature, i + 1);
+			sprintf(pd->parts[n].partuuid, "%08x-%02d", signature, i + 1);
 			pd->used_entries++;
 
 			if (is_extended_partition(&pentry)) {

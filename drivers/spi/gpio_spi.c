@@ -136,12 +136,9 @@ static int gpio_spi_of_probe(struct device *dev)
 		return 0;
 
 	sck = of_get_named_gpio(np, "gpio-sck", 0);
-	if (sck == -EPROBE_DEFER)
-		return sck;
-	if (!gpio_is_valid(sck)) {
-		dev_err(dev, "missing mandatory SCK gpio\n");
-		return sck;
-	}
+	if (!gpio_is_valid(sck))
+		return dev_err_probe(dev, sck < 0 ? sck : -EINVAL,
+				     "missing mandatory SCK gpio\n");
 
 	pdata = xzalloc(sizeof(*pdata));
 	pdata->sck = sck;

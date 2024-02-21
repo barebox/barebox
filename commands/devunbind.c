@@ -20,9 +20,14 @@ static int do_devunbind(int argc, char *argv[])
 			break;
 		case 'l':
 			list_for_each_entry(dev, &active_device_list, active) {
+				void *rm_dev;
+
 				BUG_ON(!dev->driver);
-				if (dev->bus->remove)
-					printf("%pS(%s, %s)\n", dev->bus->remove,
+
+				rm_dev = dev->bus->remove ?: dev->driver->remove;
+
+				if (rm_dev)
+					printf("%pS(%s, %s)\n", rm_dev,
 					       dev->driver->name, dev_name(dev));
 			}
 			return 0;
@@ -47,13 +52,12 @@ static int do_devunbind(int argc, char *argv[])
 			continue;
 		}
 
-		if (!dev->driver || !dev->bus->remove) {
-			printf("skipping unbound %s\n", argv[i]);
+		if (!device_remove(dev)) {
+			printf("no remove callback registered for %s\n", argv[i]);
 			ret = COMMAND_ERROR;
 			continue;
 		}
 
-		dev->bus->remove(dev);
 		dev->driver = NULL;
 		list_del(&dev->active);
 	}

@@ -321,14 +321,8 @@ static int rockchip_combphy_parse_dt(struct device *dev,
 			    true);
 
 	priv->phy_rst = reset_control_get(dev, NULL);
-	if (IS_ERR(priv->phy_rst)) {
-		ret = PTR_ERR(priv->phy_rst);
-
-		if (ret != -EPROBE_DEFER)
-			dev_warn(dev, "failed to get phy reset\n");
-
-		return ret;
-	}
+	if (IS_ERR(priv->phy_rst))
+		return dev_errp_probe(dev, priv->phy_rst, "getting phy reset\n");
 
 	return reset_control_assert(priv->phy_rst);
 }

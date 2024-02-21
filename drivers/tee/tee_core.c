@@ -775,17 +775,10 @@ static int tee_bus_probe(struct device *dev)
 	return dev->driver->probe(dev);
 }
 
-static void tee_bus_remove(struct device *dev)
-{
-	if (dev->driver->remove)
-		dev->driver->remove(dev);
-}
-
 struct bus_type tee_bus_type = {
 	.name		= "tee",
 	.match		= tee_client_device_match,
 	.probe		= tee_bus_probe,
-	.remove		= tee_bus_remove,
 };
 EXPORT_SYMBOL_GPL(tee_bus_type);
 

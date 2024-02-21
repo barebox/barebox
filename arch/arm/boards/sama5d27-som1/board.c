@@ -5,6 +5,7 @@
 #include <init.h>
 #include <asm/memory.h>
 #include <bbu.h>
+#include <envfs.h>
 #include <bootsource.h>
 #include <of.h>
 
@@ -30,6 +31,9 @@ static int ek_device_init(void)
 				     filetype_arm_barebox);
 	bbu_register_std_file_update("microSD", flags_usd, "/mnt/mmc1.0/barebox.bin",
 				     filetype_arm_barebox);
+
+	defaultenv_append_directory(defaultenv_sama5d27_som1);
+
 	return 0;
 }
 device_initcall(ek_device_init);

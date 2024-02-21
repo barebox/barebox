@@ -55,11 +55,8 @@ int eth_set_ethaddr(struct eth_device *edev, const char *ethaddr)
 
 static void register_preset_mac_address(struct eth_device *edev, const char *ethaddr)
 {
-	unsigned char ethaddr_str[sizeof("xx:xx:xx:xx:xx:xx")];
-
 	if (is_valid_ether_addr(ethaddr)) {
-		ethaddr_to_string(ethaddr, ethaddr_str);
-		dev_info(&edev->dev, "got preset MAC address: %s\n", ethaddr_str);
+		dev_info(&edev->dev, "got preset MAC address: %pM\n", ethaddr);
 		eth_set_ethaddr(edev, ethaddr);
 	}
 }
@@ -557,7 +554,6 @@ void eth_open_all(void)
 
 static int populate_ethaddr(void)
 {
-	char str[sizeof("xx:xx:xx:xx:xx:xx")];
 	struct eth_device *edev;
 	bool generated = false;
 	int ret;
@@ -575,11 +571,12 @@ static int populate_ethaddr(void)
 		if (ret)
 			continue;
 
-		ethaddr_to_string(edev->ethaddr, str);
 		if (generated)
-			dev_notice(&edev->dev, "Generated MAC address from unique id: %s\n", str);
+			dev_notice(&edev->dev, "Generated MAC address from unique id: %pM\n",
+				   edev->ethaddr);
 		else
-			dev_info(&edev->dev, "Got preset MAC address from NVMEM: %s\n", str);
+			dev_info(&edev->dev, "Got preset MAC address from NVMEM: %pM\n",
+				 edev->ethaddr);
 		eth_set_ethaddr(edev, edev->ethaddr);
 	}
 

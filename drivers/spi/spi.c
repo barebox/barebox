@@ -417,17 +417,10 @@ static int spi_probe(struct device *dev)
 	return dev->driver->probe(dev);
 }
 
-static void spi_remove(struct device *dev)
-{
-	if (dev->driver->remove)
-		dev->driver->remove(dev);
-}
-
 struct bus_type spi_bus = {
 	.name = "spi",
 	.match = device_match_of_modalias,
 	.probe = spi_probe,
-	.remove = spi_remove,
 };
 
 static int spi_bus_init(void)

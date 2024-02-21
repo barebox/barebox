@@ -358,7 +358,7 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 	if (!of_property_read_u32(phy_node, "reg", &addr)) {
 		of_device_ensure_probed(phy_node->parent);
 		for_each_mii_bus(bus) {
-			if (bus->parent->of_node == phy_node->parent) {
+			if (bus->dev.of_node == phy_node->parent) {
 				struct phy_device *phy = mdiobus_scan(bus, addr);
 				if (!IS_ERR(phy))
 					return phy;

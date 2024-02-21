@@ -19,6 +19,7 @@
 #include <pinctrl.h>
 #include <of_gpio.h>
 #include <of_device.h>
+#include <pbl/i2c.h>
 
 #include <io.h>
 #include <i2c/i2c.h>
@@ -93,6 +94,7 @@ enum lpi2c_imx_pincfg {
 
 struct lpi2c_imx_struct {
 	struct i2c_adapter	adapter;
+	struct pbl_i2c		pbl_i2c;
 	int			num_clks;
 	struct clk_bulk_data	*clks;
 	void __iomem		*base;
@@ -104,6 +106,7 @@ struct lpi2c_imx_struct {
 	unsigned int		txfifosize;
 	unsigned int		rxfifosize;
 	enum lpi2c_imx_mode	mode;
+	unsigned long		clk_rate;
 };
 
 static void lpi2c_imx_intctrl(struct lpi2c_imx_struct *lpi2c_imx,
@@ -115,7 +118,7 @@ static void lpi2c_imx_intctrl(struct lpi2c_imx_struct *lpi2c_imx,
 static int lpi2c_imx_bus_busy(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	unsigned int temp;
-	u64 start = get_time_ns();
+	unsigned int timeout = 500000;
 
 	while (1) {
 		temp = readl(lpi2c_imx->base + LPI2C_MSR);
@@ -129,7 +132,8 @@ static int lpi2c_imx_bus_busy(struct lpi2c_imx_struct *lpi2c_imx)
 		if (temp & (MSR_BBF | MSR_MBF))
 			break;
 
-		if (is_timeout(start, 500 * MSECOND)) {
+		udelay(1);
+		if (!timeout--) {
 			dev_dbg(&lpi2c_imx->adapter.dev, "bus not work\n");
 			return -ETIMEDOUT;
 		}
@@ -176,7 +180,7 @@ static int lpi2c_imx_start(struct lpi2c_imx_struct *lpi2c_imx,
 static void lpi2c_imx_stop(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	unsigned int temp;
-	u64 start = get_time_ns();
+	unsigned int timeout = 500000;
 
 	writel(GEN_STOP << 8, lpi2c_imx->base + LPI2C_MTDR);
 
@@ -185,7 +189,8 @@ static void lpi2c_imx_stop(struct lpi2c_imx_struct *lpi2c_imx)
 		if (temp & MSR_SDF)
 			break;
 
-		if (is_timeout(start, 500 * MSECOND)) {
+		udelay(1);
+		if (!timeout--) {
 			dev_dbg(&lpi2c_imx->adapter.dev, "stop timeout\n");
 			break;
 		}
@@ -197,15 +202,11 @@ static void lpi2c_imx_stop(struct lpi2c_imx_struct *lpi2c_imx)
 static int lpi2c_imx_config(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	u8 prescale, filt, sethold, datavd;
-	unsigned int clk_rate, clk_cycle, clkhi, clklo;
+	unsigned int clk_cycle, clkhi, clklo;
 	enum lpi2c_imx_pincfg pincfg;
 	unsigned int temp;
 
 	lpi2c_imx_set_mode(lpi2c_imx);
-
-	clk_rate = clk_get_rate(lpi2c_imx->clks[0].clk);
-	if (!clk_rate)
-		return -EINVAL;
 
 	if (lpi2c_imx->mode == HS || lpi2c_imx->mode == ULTRA_FAST)
 		filt = 0;
@@ -213,7 +214,7 @@ static int lpi2c_imx_config(struct lpi2c_imx_struct *lpi2c_imx)
 		filt = 2;
 
 	for (prescale = 0; prescale <= 7; prescale++) {
-		clk_cycle = clk_rate / ((1 << prescale) * lpi2c_imx->bitrate)
+		clk_cycle = lpi2c_imx->clk_rate / ((1 << prescale) * lpi2c_imx->bitrate)
 			    - 3 - (filt >> 1);
 		clkhi = DIV_ROUND_UP(clk_cycle, I2C_CLK_RATIO + 1);
 		clklo = clk_cycle - clkhi;
@@ -287,7 +288,7 @@ static int lpi2c_imx_master_disable(struct lpi2c_imx_struct *lpi2c_imx)
 static int lpi2c_imx_txfifo_empty(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	u32 txcnt;
-	u64 start = get_time_ns();
+	unsigned int timeout = 500000;
 
 	do {
 		txcnt = readl(lpi2c_imx->base + LPI2C_MFSR) & 0xff;
@@ -297,7 +298,8 @@ static int lpi2c_imx_txfifo_empty(struct lpi2c_imx_struct *lpi2c_imx)
 			return -EIO;
 		}
 
-		if (is_timeout(start, 500 * MSECOND)) {
+		udelay(1);
+		if (!timeout--) {
 			dev_dbg(&lpi2c_imx->adapter.dev, "txfifo empty timeout\n");
 			return -ETIMEDOUT;
 		}
@@ -329,12 +331,13 @@ static void lpi2c_imx_set_rx_watermark(struct lpi2c_imx_struct *lpi2c_imx)
 static int lpi2c_imx_write_txfifo(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	unsigned int data, remaining;
-	uint64_t start = get_time_ns();
+	unsigned int timeout = 100000;;
 
 	do {
 		u32 cnt = readl(lpi2c_imx->base + LPI2C_MFSR) & 0xff;
 		if (cnt == lpi2c_imx->txfifosize) {
-			if (is_timeout(start, 100 * MSECOND))
+			udelay(1);
+			if (!timeout--)
 				return -EIO;
 			continue;
 		}
@@ -352,12 +355,13 @@ static int lpi2c_imx_read_rxfifo(struct lpi2c_imx_struct *lpi2c_imx)
 {
 	unsigned int remaining;
 	unsigned int data;
-	uint64_t start = get_time_ns();
+	unsigned int timeout = 100000;;
 
 	do {
 		data = readl(lpi2c_imx->base + LPI2C_MRDR);
 		if (data & MRDR_RXEMPTY) {
-			if (is_timeout(start, 100 * MSECOND))
+			udelay(1);
+			if (!timeout--)
 				return -EIO;
 			continue;
 		}
@@ -453,6 +457,36 @@ disable:
 	return (result < 0) ? result : num;
 }
 
+#ifdef __PBL__
+
+static int lpi2c_pbl_imx_xfer(struct pbl_i2c *lpi2c, struct i2c_msg *msgs, int num)
+{
+	struct lpi2c_imx_struct *lpi2c_imx = container_of(lpi2c, struct lpi2c_imx_struct, pbl_i2c);
+
+	return lpi2c_imx_xfer(&lpi2c_imx->adapter, msgs, num);
+}
+
+struct pbl_i2c *imx93_i2c_early_init(void __iomem *regs)
+{
+	static struct lpi2c_imx_struct lpi2c;
+	u32 temp;
+
+	lpi2c.base = regs;
+
+	temp = readl(lpi2c.base + LPI2C_PARAM);
+	printf("%s: 0x%08x\n", __func__, temp);
+	lpi2c.txfifosize = 1 << (temp & 0x0f);
+	lpi2c.rxfifosize = 1 << ((temp >> 8) & 0x0f);
+	lpi2c.bitrate = 100000;
+	lpi2c.clk_rate = 24000000;
+
+	lpi2c.pbl_i2c.xfer = lpi2c_pbl_imx_xfer;
+
+	return &lpi2c.pbl_i2c;
+}
+
+#else
+
 static const struct of_device_id lpi2c_imx_of_match[] = {
 	{ .compatible = "fsl,imx7ulp-lpi2c" },
 	{ },
@@ -493,6 +527,8 @@ static int lpi2c_imx_probe(struct device *dev)
 	if (ret)
 		return ret;
 
+	lpi2c_imx->clk_rate = clk_get_rate(lpi2c_imx->clks[0].clk);
+
 	temp = readl(lpi2c_imx->base + LPI2C_PARAM);
 	lpi2c_imx->txfifosize = 1 << (temp & 0x0f);
 	lpi2c_imx->rxfifosize = 1 << ((temp >> 8) & 0x0f);
@@ -512,6 +548,8 @@ static struct driver lpi2c_imx_driver = {
         .of_compatible = DRV_OF_COMPAT(lpi2c_imx_of_match),
 };
 coredevice_platform_driver(lpi2c_imx_driver);
+
+#endif
 
 MODULE_AUTHOR("Gao Pan <pandy.gao@nxp.com>");
 MODULE_DESCRIPTION("I2C adapter driver for LPI2C bus");

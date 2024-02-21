@@ -20,7 +20,8 @@
 #include <mach/imx/generic.h>
 #include <mach/imx/imx8mq.h>
 
-#define HABV4_RVT_IMX28 0xffff8af8
+#include "hab.h"
+
 #define HABV4_RVT_IMX6_OLD 0x00000094
 #define HABV4_RVT_IMX6_NEW 0x00000098
 #define HABV4_RVT_IMX6UL 0x00000100
@@ -147,9 +148,11 @@ struct hab_header {
 typedef enum hab_status hab_loader_callback_fn(void **start, size_t *bytes, const void *boot_data);
 typedef void hab_image_entry_fn(void);
 
-/* This table is constructed from the NXP manual "High Assurance Boot Version 4
- * Application Programming Interface Reference Manual", section 4.5 ROM vector
- * table. Revision 1.4 */
+/*
+ * This table is constructed from the NXP manual "High Assurance Boot
+ * Version 4 Application Programming Interface Reference Manual",
+ * section 4.5 ROM vector table. Revision 1.4
+ */
 struct habv4_rvt {
 	struct hab_header header;
 	enum hab_status (*entry)(void);
@@ -169,9 +172,11 @@ struct habv4_rvt {
 
 #define FSL_SIP_HAB 0xC2000007
 
-/* These values correspondent to the jump table found in the upstream TF-A
- * version 2.10 `imx_hab_handler`, not all HAB rom functions are supported yet.
- * */
+/*
+ * These values correspondent to the jump table found in the upstream
+ * TF-A version 2.10 `imx_hab_handler`, not all HAB rom functions are
+ * supported yet.
+ */
 enum hab_sip_cmd {
 	FSL_SIP_HAB_AUTHENTICATE = 0x00,
 	FSL_SIP_HAB_ENTRY = 0x01,
@@ -643,7 +648,7 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 	return -EPERM;
 }
 
-int imx6_hab_get_status(void)
+static int imx6_hab_get_status(void)
 {
 	const struct habv4_rvt *rvt;
 
@@ -667,41 +672,19 @@ int imx6_hab_get_status(void)
 	return -EINVAL;
 }
 
-static int imx8m_hab_get_status(void)
+int imx8m_hab_print_status(void)
 {
-	return habv4_get_status(&hab_smc_ops);
-}
-
-static int init_imx8m_hab_get_status(void)
-{
-	if (!cpu_is_mx8m())
-		/* can happen in multi-image builds and is not an error */
-		return 0;
-
 	pr_info("ROM version: 0x%x\n", hab_sip_get_version());
 
-	/*
-	 * Nobody will check the return value if there were HAB errors, but the
-	 * initcall will fail spectaculously with a strange error message.
-	 */
-	imx8m_hab_get_status();
+	habv4_get_status(&hab_smc_ops);
 
 	return 0;
 }
-postmmu_initcall(init_imx8m_hab_get_status);
 
-static int init_imx6_hab_get_status(void)
+int imx6_hab_print_status(void)
 {
-	if (!cpu_is_mx6())
-		/* can happen in multi-image builds and is not an error */
-		return 0;
-
 	remap_range(0x0, SZ_1M, MAP_CACHED);
 
-	/*
-	 * Nobody will check the return value if there were HAB errors, but the
-	 * initcall will fail spectaculously with a strange error message.
-	 */
 	imx6_hab_get_status();
 
 	zero_page_faulting();
@@ -709,32 +692,3 @@ static int init_imx6_hab_get_status(void)
 
 	return 0;
 }
-
-/*
- * Need to run before MMU setup because i.MX6 ROM code is mapped near 0x0,
- * which will no longer be accessible when the MMU sets the zero page to
- * faulting.
- */
-postmmu_initcall(init_imx6_hab_get_status);
-
-int imx28_hab_get_status(void)
-{
-	const struct habv4_rvt *rvt = (void *)HABV4_RVT_IMX28;
-
-	return habv4_get_status(rvt);
-}
-
-static int init_imx28_hab_get_status(void)
-{
-	if (!cpu_is_mx28())
-		/* can happen in multi-image builds and is not an error */
-		return 0;
-
-
-	/* nobody will check the return value if there were HAB errors, but the
-	 * initcall will fail spectaculously with a strange error message. */
-	imx28_hab_get_status();
-	return 0;
-}
-/* i.MX28 ROM code can be run after MMU setup to make use of caching */
-postmmu_initcall(init_imx28_hab_get_status);

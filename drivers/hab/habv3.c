@@ -69,11 +69,7 @@ static int imx_habv3_get_status(uint32_t status)
 	return -EPERM;
 }
 
-int imx25_hab_get_status(void)
+int imx25_hab_print_status(void)
 {
-	if (!cpu_is_mx25())
-		return 0;
-
 	return imx_habv3_get_status(readl(IOMEM(0x780018d4)));
 }
-postmmu_initcall(imx25_hab_get_status);

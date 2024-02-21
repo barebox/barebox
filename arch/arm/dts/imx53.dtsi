@@ -3,5 +3,9 @@
 		pwm0 = &pwm1;
 		pwm1 = &pwm2;
 		ipu0 = &ipu;
+		barebox,bootsource-mmc0 = &esdhc1;
+		barebox,bootsource-mmc1 = &esdhc2;
+		barebox,bootsource-mmc2 = &esdhc3;
+		barebox,bootsource-mmc3 = &esdhc4;
 	};
 };

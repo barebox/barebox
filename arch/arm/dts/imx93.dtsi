@@ -1,4 +1,10 @@
 /{
+	aliases {
+		barebox,bootsource-mmc0 = &usdhc1;
+		barebox,bootsource-mmc1 = &usdhc2;
+		barebox,bootsource-mmc2 = &usdhc3;
+	};
+
 	soc@0 {
 		usbphynop1: usbphynop1 {
 			compatible = "usb-nop-xceiv";

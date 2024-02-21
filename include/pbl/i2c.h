@@ -18,6 +18,7 @@ static inline int pbl_i2c_xfer(struct pbl_i2c *i2c,
 struct pbl_i2c *imx8m_i2c_early_init(void __iomem *regs);
 struct pbl_i2c *imx6_i2c_early_init(void __iomem *regs);
 struct pbl_i2c *ls1046_i2c_init(void __iomem *regs);
+struct pbl_i2c *imx93_i2c_early_init(void __iomem *regs);
 
 static inline int i2c_dev_probe(struct pbl_i2c *i2c, int addr, bool onebyte)
 {

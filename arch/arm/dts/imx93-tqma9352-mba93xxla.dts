@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
 
-#include <arm64/freescale/imx93-tqma9352-mba93xxca.dts>
+#include <arm64/freescale/imx93-tqma9352-mba93xxla.dts>
 #include "imx93.dtsi"
 #include "imx93-tqma93xx.dtsi"

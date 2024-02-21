@@ -5,6 +5,11 @@
  */
 
 / {
+	aliases {
+		barebox,bootsource-mmc0 = &usdhc1;
+		barebox,bootsource-mmc1 = &usdhc2;
+	};
+
 	remoteproc_cm4: remoteproc-cm4 {
 		compatible = "fsl,imx8mq-cm4";
 		clocks = <&clk IMX8MQ_CLK_M4_CORE>;

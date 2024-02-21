@@ -5,7 +5,7 @@
 #include <common.h>
 #include <pbl/i2c.h>
 
-static inline void eeprom_read(struct pbl_i2c *i2c, u16 client_addr, u32 addr, void *buf, u16 count)
+static inline int eeprom_read(struct pbl_i2c *i2c, u16 client_addr, u32 addr, void *buf, u16 count)
 {
 	u8 msgbuf[2];
 	struct i2c_msg msg[] = {
@@ -27,8 +27,15 @@ static inline void eeprom_read(struct pbl_i2c *i2c, u16 client_addr, u32 addr, v
 	msg[0].len = i;
 
 	ret = pbl_i2c_xfer(i2c, msg, ARRAY_SIZE(msg));
-	if (ret != ARRAY_SIZE(msg))
+	if (ret < 0)
+		return ret;
+
+	if (ret != ARRAY_SIZE(msg)) {
 		pr_err("Failed to read from eeprom@%x: %d\n", client_addr, ret);
+		return -EIO;
+	}
+
+	return 0;
 }
 
 #endif

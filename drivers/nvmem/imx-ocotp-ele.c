@@ -9,6 +9,10 @@
 #include <linux/nvmem-provider.h>
 #include <linux/regmap.h>
 #include <mach/imx/ele.h>
+#include <machine_id.h>
+
+#define UNIQUE_ID_NUM 4
+#define OCOTP_UNIQUE_ID(n) (0xc0 + (n) * 4)
 
 enum fuse_type {
 	FUSE_FSB = 1,
@@ -113,7 +117,20 @@ static int imx_ocotp_cell_pp(void *context, const char *id, unsigned int offset,
 
 static struct regmap_bus imx_ocotp_regmap_bus = {
 	.reg_read = imx_ocotp_reg_read,
-};      
+};
+
+static void imx_ocotp_set_unique_machine_id(struct imx_ocotp_priv *priv)
+{
+	uint32_t unique_id_parts[UNIQUE_ID_NUM];
+	int i;
+
+	for (i = 0; i < UNIQUE_ID_NUM; i++)
+		if (imx_ocotp_reg_read(priv, OCOTP_UNIQUE_ID(i),
+					 &unique_id_parts[i]))
+			return;
+
+	machine_id_set_hashable(unique_id_parts, sizeof(unique_id_parts));
+}
 
 static int imx_ele_ocotp_probe(struct device *dev)
 {
@@ -144,6 +161,9 @@ static int imx_ele_ocotp_probe(struct device *dev)
 	priv->map = regmap_init(dev, &imx_ocotp_regmap_bus, priv, &priv->map_config);
 	if (IS_ERR(priv->map))
 		return PTR_ERR(priv->map);
+
+	if (IS_ENABLED(CONFIG_MACHINE_ID))
+		imx_ocotp_set_unique_machine_id(priv);
 
 	nvmem = nvmem_regmap_register_with_pp(priv->map, "imx-ocotp",
 					      imx_ocotp_cell_pp);

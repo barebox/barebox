@@ -2,6 +2,7 @@
 /*
  * Copyright (C) 2021 Rouven Czerwinski, Pengutronix
  */
+#define pr_fmt(fmt) "tqma6ul: " fmt
 
 #include <common.h>
 #include <bootsource.h>

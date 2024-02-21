@@ -41,6 +41,13 @@ static void gpio_key_poller(void *data)
 	int i, val;
 
 	for (i = 0; i < gk->nbuttons; i++) {
+		gb = &gk->buttons[i];
+
+		if (gpio_slice_acquired(gb->gpio))
+			goto out;
+	}
+
+	for (i = 0; i < gk->nbuttons; i++) {
 
 		gb = &gk->buttons[i];
 		val = gpio_get_value(gb->gpio);
@@ -58,7 +65,7 @@ static void gpio_key_poller(void *data)
 			gb->previous_state = val;
 		}
 	}
-
+out:
 	poller_call_async(&gk->poller, 10 * MSECOND, gpio_key_poller, gk);
 }
 

@@ -75,7 +75,7 @@ void tq_vard_show(const struct tq_vard *vard)
 	       (tq_vard_has_eeprom(vard) ? 'y' : 'n'));
 
 	if (tq_vard_has_eeprom(vard))
-		printf("EEPROM\ttype %u, %lu KiB, page %lu\n",
+		printf("EEPROM\ttype %u, %lu KiB, page %zu\n",
 		       (unsigned int)(vard->eepromtype & VARD_EETYPE_MASK_MFR) >> 4,
 		       (unsigned long)(tq_vard_eepromsize(vard) / (SZ_1K)),
 		       tq_vard_eeprom_pgsize(vard));

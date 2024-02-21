@@ -11,10 +11,18 @@
 #include <mach/imx/bbu.h>
 #include <of.h>
 #include <string.h>
+#include <linux/clk.h>
 
 static int mba6ulx_probe(struct device *dev)
 {
 	int flags;
+	struct clk *clk;
+
+	clk = clk_lookup("enet_ref_125m");
+	if (IS_ERR(clk))
+		pr_err("Cannot find enet_ref_125m: %pe\n", clk);
+	else
+		clk_enable(clk);
 
 	/* the bootloader is stored in one of the two boot partitions */
 	flags = bootsource_get_instance() == 0 ? BBU_HANDLER_FLAG_DEFAULT : 0;

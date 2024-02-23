@@ -15,6 +15,9 @@
 #include <asm/cache.h>
 #include <pbl/i2c.h>
 #include <boards/tq/tq_eeprom.h>
+#include <tee/optee.h>
+
+#include "tqma6ulx.h"
 
 extern char __dtb_z_imx6ul_tqma6ul2_mba6ulx_start[];
 extern char __dtb_z_imx6ul_tqma6ul2l_mba6ulx_start[];
@@ -63,13 +66,32 @@ out:
 	return fdt;
 }
 
-static void noinline start_mba6ulx(void)
+static void noinline start_mba6ulx(u32 r0)
 {
 	void *fdt;
+	int tee_size;
+	void *tee;
 
 	setup_uart();
 
 	fdt = read_eeprom();
+
+	/* Enable normal/secure r/w for TZC380 region0 */
+	writel(0xf0000000, 0x021D0108);
+
+	/*
+	 * Chainloading barebox will pass a device tree within the RAM in r0,
+	 * skip OP-TEE early loading in this case
+	 */
+	if (IS_ENABLED(CONFIG_FIRMWARE_TQMA6UL_OPTEE) &&
+	    !(r0 > MX6_MMDC_P0_BASE_ADDR &&
+	      r0 < MX6_MMDC_P0_BASE_ADDR + SZ_256M)) {
+		get_builtin_firmware(mba6ul_optee_bin, &tee, &tee_size);
+
+		memset((void *)OPTEE_OVERLAY_LOCATION, 0, 0x1000);
+
+		start_optee_early(NULL, tee);
+	}
 
 	imx6ul_barebox_entry(fdt);
 }
@@ -90,5 +112,5 @@ ENTRY_FUNCTION(start_imx6ul_mba6ulx, r0, r1, r2)
 	setup_c();
 	barrier();
 
-	start_mba6ulx();
+	start_mba6ulx(r0);
 }

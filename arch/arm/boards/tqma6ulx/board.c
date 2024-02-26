@@ -84,7 +84,7 @@ static int mba6ulx_probe(struct device *dev)
 	imx6_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", flags);
 
 	flags = bootsource_get_instance() == 0 ? BBU_HANDLER_FLAG_DEFAULT : 0;
-	imx6_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc0", flags);
+	imx6_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc0", flags);
 
 	if (bootsource_get_instance() == 0)
 		of_device_enable_path("/chosen/environment-sd");

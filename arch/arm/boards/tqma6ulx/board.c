@@ -80,11 +80,11 @@ static int mba6ulx_probe(struct device *dev)
 		clk_enable(clk);
 
 	/* the bootloader is stored in one of the two boot partitions */
-	flags = bootsource_get_instance() == 0 ? BBU_HANDLER_FLAG_DEFAULT : 0;
-	imx6_bbu_internal_mmc_register_handler("SD", "/dev/mmc0.barebox", flags);
-
 	flags = bootsource_get_instance() == 1 ? BBU_HANDLER_FLAG_DEFAULT : 0;
-	imx6_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc1", flags);
+	imx6_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", flags);
+
+	flags = bootsource_get_instance() == 0 ? BBU_HANDLER_FLAG_DEFAULT : 0;
+	imx6_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc0", flags);
 
 	if (bootsource_get_instance() == 0)
 		of_device_enable_path("/chosen/environment-sd");

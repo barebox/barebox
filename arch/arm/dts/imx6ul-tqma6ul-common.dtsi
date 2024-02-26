@@ -4,6 +4,8 @@
  * Author: Rouven Czerwinski
  */
 
+#include "imx6ul.dtsi"
+
 / {
 	chosen {
 		environment-sd {

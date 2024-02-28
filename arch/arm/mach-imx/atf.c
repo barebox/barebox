@@ -158,7 +158,7 @@ __noreturn void __imx8mm_load_and_start_image_via_tfa(void *bl33)
 		size_t bl32_size;
 		void *bl32_image;
 
-		imx8mm_tzc380_init();
+		imx8m_tzc380_init();
 		get_builtin_firmware_ext(imx8mm_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
@@ -229,7 +229,7 @@ __noreturn void __imx8mp_load_and_start_image_via_tfa(void *bl33)
 		size_t bl32_size;
 		void *bl32_image;
 
-		imx8mp_tzc380_init();
+		imx8m_tzc380_init();
 		get_builtin_firmware_ext(imx8mp_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
@@ -301,7 +301,7 @@ __noreturn void __imx8mn_load_and_start_image_via_tfa(void *bl33)
 		size_t bl32_size;
 		void *bl32_image;
 
-		imx8mn_tzc380_init();
+		imx8m_tzc380_init();
 		get_builtin_firmware_ext(imx8mn_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
@@ -366,7 +366,7 @@ __noreturn void __imx8mq_load_and_start_image_via_tfa(void *bl33)
 		size_t bl32_size;
 		void *bl32_image;
 
-		imx8mq_tzc380_init();
+		imx8m_tzc380_init();
 		get_builtin_firmware_ext(imx8mq_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);

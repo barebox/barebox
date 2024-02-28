@@ -35,6 +35,7 @@ int setenv(const char *, const char *);
 int pr_setenv(const char *, const char *fmt, ...)  __attribute__ ((format(__printf__, 2, 3)));
 void export_env_ull(const char *name, unsigned long long val);
 int getenv_ull(const char *name, unsigned long long *val);
+int getenv_ullx(const char *name, unsigned long long *val);
 int getenv_ul(const char *name, unsigned long *val);
 int getenv_uint(const char *name, unsigned int *val);
 int getenv_bool(const char *var, int *val);
@@ -59,6 +60,11 @@ static inline __attribute__ ((format(__printf__, 2, 3))) int pr_setenv(
 static inline void export_env_ull(const char *name, unsigned long long val) {}
 
 static inline int getenv_ull(const char *name, unsigned long long *val)
+{
+	return -EINVAL;
+}
+
+static inline int getenv_ullx(const char *name, unsigned long long *val)
 {
 	return -EINVAL;
 }

@@ -770,15 +770,9 @@ static int tee_client_device_match(struct device *dev,
 	return -1;
 }
 
-static int tee_bus_probe(struct device *dev)
-{
-	return dev->driver->probe(dev);
-}
-
 struct bus_type tee_bus_type = {
 	.name		= "tee",
 	.match		= tee_client_device_match,
-	.probe		= tee_bus_probe,
 };
 EXPORT_SYMBOL_GPL(tee_bus_type);
 

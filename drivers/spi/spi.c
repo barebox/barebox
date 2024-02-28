@@ -412,15 +412,9 @@ int spi_write_then_read(struct spi_device *spi,
 }
 EXPORT_SYMBOL(spi_write_then_read);
 
-static int spi_probe(struct device *dev)
-{
-	return dev->driver->probe(dev);
-}
-
 struct bus_type spi_bus = {
 	.name = "spi",
 	.match = device_match_of_modalias,
-	.probe = spi_probe,
 };
 
 static int spi_bus_init(void)

@@ -87,6 +87,4 @@ static inline int imx8mq_cpu_revision(void)
 	return revision;
 }
 
-u64 imx8m_uid(void);
-
 #endif /* __MACH_IMX8_H */

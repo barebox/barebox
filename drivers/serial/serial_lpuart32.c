@@ -44,6 +44,17 @@ static void lpuart32_disable(struct lpuart32 *lpuart32)
 	writel(0, lpuart32->base + LPUART32_UARTCTRL);
 }
 
+/* Test whether a character is in the RX buffer */
+static int lpuart32_serial_tstc(struct console_device *cdev)
+{
+	struct lpuart32 *lpuart32 = cdev_to_lpuart32(cdev);
+
+	if (readl(lpuart32->base + LPUART32_UARTSTAT) & LPUART32_UARTSTAT_OR)
+		writel(LPUART32_UARTSTAT_OR, lpuart32->base + LPUART32_UARTSTAT);
+
+	return readl(lpuart32->base + LPUART32_UARTSTAT) & LPUART32_UARTSTAT_RDRF;
+}
+
 static int lpuart32_serial_setbaudrate(struct console_device *cdev,
 				     int baudrate)
 {
@@ -69,7 +80,7 @@ static int lpuart32_serial_getc(struct console_device *cdev)
 {
 	struct lpuart32 *lpuart32 = cdev_to_lpuart32(cdev);
 
-	while (!(readl(lpuart32->base + LPUART32_UARTSTAT) & LPUART32_UARTSTAT_RDRF));
+	while (!lpuart32_serial_tstc(cdev));
 
 	return readl(lpuart32->base + LPUART32_UARTDATA) & 0xff;
 }
@@ -79,14 +90,6 @@ static void lpuart32_serial_putc(struct console_device *cdev, char c)
 	struct lpuart32 *lpuart32 = cdev_to_lpuart32(cdev);
 
 	lpuart32_putc(lpuart32->base, c);
-}
-
-/* Test whether a character is in the RX buffer */
-static int lpuart32_serial_tstc(struct console_device *cdev)
-{
-	struct lpuart32 *lpuart32 = cdev_to_lpuart32(cdev);
-
-	return readl(lpuart32->base + LPUART32_UARTSTAT) & LPUART32_UARTSTAT_RDRF;
 }
 
 static void lpuart32_serial_flush(struct console_device *cdev)

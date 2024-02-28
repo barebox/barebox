@@ -14,8 +14,8 @@ int optee_verify_header(const struct optee_header *hdr)
 		return -EINVAL;
 
 	if (hdr->magic != OPTEE_MAGIC) {
-		pr_err("Invalid header magic 0x%08x, expected 0x%08x\n",
-			   hdr->magic, OPTEE_MAGIC);
+		pr_debug("Invalid header magic 0x%08x, expected 0x%08x\n",
+			 hdr->magic, OPTEE_MAGIC);
 		return -EINVAL;
 	}
 

@@ -83,6 +83,11 @@ void imx93_cpu_lowlevel_init(void);
 
 extern unsigned int __imx_cpu_type;
 
+static __always_inline void imx_set_cpu_type(unsigned int cpu_type)
+{
+	__imx_cpu_type = cpu_type;
+}
+
 #ifdef CONFIG_ARCH_IMX1
 # ifdef imx_cpu_type
 #  undef imx_cpu_type

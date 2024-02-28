@@ -616,6 +616,20 @@ int usb_rescan(void)
 
 	pr_info("%d USB Device(s) found\n", dev_count);
 
+	if (IS_ENABLED(CONFIG_USB_OTGDEV)) {
+		unsigned int skipped_otg = 0;
+		struct device *dev;
+
+		bus_for_each_device(&otg_bus_type, dev) {
+			if (otg_device_get_mode(dev) == USB_DR_MODE_OTG)
+				skipped_otg++;
+		}
+
+		if (skipped_otg)
+			pr_notice("%u unconfigured OTG controller(s) were not scanned\n",
+				  skipped_otg);
+	}
+
 	return dev_count;
 }
 

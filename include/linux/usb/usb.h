@@ -480,6 +480,8 @@ enum usb_device_speed of_usb_get_maximum_speed(struct device_node *np,
 int usb_register_otg_device(struct device *parent,
 			    int (*set_mode)(void *ctx, enum usb_dr_mode mode), void *ctx);
 
+int otg_device_get_mode(struct device *dev);
+
 extern struct bus_type otg_bus_type;
 
 extern struct list_head usb_device_list;

@@ -62,6 +62,18 @@ struct bus_type otg_bus_type = {
 	.name = "usbotg" /* "otg" is already taken for the alias */
 };
 
+int otg_device_get_mode(struct device *dev)
+{
+	struct otg_mode *otg;
+
+	if (dev->bus != &otg_bus_type)
+		return -ENODEV;
+
+	otg = dev->priv;
+
+	return otg->cur_mode;
+}
+
 int usb_register_otg_device(struct device *parent,
 			    int (*set_mode)(void *ctx, enum usb_dr_mode mode), void *ctx)
 {

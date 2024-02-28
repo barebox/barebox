@@ -63,6 +63,10 @@ static struct device otg_device = {
 	.id = DEVICE_ID_SINGLE,
 };
 
+struct bus_type otg_bus_type = {
+	.name = "usbotg" /* "otg" is already taken for the alias */
+};
+
 int usb_register_otg_device(struct device *parent,
 			    int (*set_mode)(void *ctx, enum usb_dr_mode mode), void *ctx)
 {
@@ -72,6 +76,7 @@ int usb_register_otg_device(struct device *parent,
 	otg = xzalloc(sizeof(*otg));
 	otg->dev.priv = otg;
 	otg->dev.parent = parent;
+	otg->dev.bus = &otg_bus_type;
 	otg->dev.id = DEVICE_ID_DYNAMIC;
 	dev_set_name(&otg->dev, "otg");
 
@@ -90,3 +95,9 @@ int usb_register_otg_device(struct device *parent,
 
 	return register_otg_device(&otg->dev, otg);
 }
+
+static int otg_bus_init(void)
+{
+	return bus_register(&otg_bus_type);
+}
+pure_initcall(otg_bus_init);

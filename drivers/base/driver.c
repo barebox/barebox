@@ -221,7 +221,7 @@ static int match(struct driver *drv, struct device *dev)
 
 	dev->driver = drv;
 
-	if (dev->bus->match(dev, drv))
+	if (dev->bus->match && dev->bus->match(dev, drv))
 		goto err_out;
 	ret = device_probe(dev);
 	if (ret)

@@ -315,12 +315,17 @@ static int dwcmshc_probe(struct device *dev)
 	mci->send_cmd = dwcmshc_mci_send_cmd;
 	mci->card_present = dwcmshc_mci_card_present;
 
-	mci_of_parse(&host->mci);
-
 	sdhci_setup_host(&host->sdhci);
 
 	mci->max_req_size = 0x8000;
+	/*
+	 * Let's first initialize f_max to the DT clock freq
+	 * Then mci_of_parse can override if with the content
+	 * of the 'max-frequency' DT property if it is present.
+	 * Then we can finish by computing the f_min.
+	 */
 	mci->f_max = clk_get_rate(clk);
+	mci_of_parse(&host->mci);
 	mci->f_min = mci->f_max / SDHCI_MAX_DIV_SPEC_300;
 
 	dev->priv = host;

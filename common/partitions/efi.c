@@ -504,7 +504,7 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 		part_set_efi_name(&ptes[i], pentry->name);
 		snprintf(pentry->partuuid, sizeof(pentry->partuuid), "%pUl", &ptes[i].unique_partition_guid);
 		pentry->typeuuid = ptes[i].partition_type_guid;
-		pentry->num = i + 1;
+		pentry->num = i;
 		list_add_tail(&pentry->list, &epd->pd.partitions);
 	}
 out:

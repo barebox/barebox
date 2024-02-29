@@ -317,8 +317,6 @@ static int dwcmshc_probe(struct device *dev)
 
 	mci_of_parse(&host->mci);
 
-	/* Enable host_version4 */
-	sdhci_enable_v4_mode(&host->sdhci);
 	sdhci_setup_host(&host->sdhci);
 
 	mci->max_req_size = 0x8000;

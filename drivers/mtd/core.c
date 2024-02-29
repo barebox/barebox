@@ -599,7 +599,10 @@ static int mtd_detect(struct device *dev)
 	enum filetype filetype;
 	int npebs = mtd_div_by_eb(mtd->size, mtd);
 
-	npebs = max(npebs, 64);
+	/* No point in looking for UBI on a partition that's too small */
+	npebs = min(npebs, 64);
+	if (npebs < 5)
+		return 0;
 
 	/*
 	 * Do not try to attach an UBI device if this device has partitions

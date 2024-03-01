@@ -238,6 +238,8 @@ $(call build_imx_habv4img, CONFIG_MACH_SABRESD, start_imx6q_sabresd, freescale-m
 
 $(call build_imx_habv4img, CONFIG_MACH_SABRESD, start_imx6qp_sabresd, freescale-mx6-sabresd/flash-header-mx6qp-sabresd, freescale-imx6qp-sabresd)
 
+$(call build_imx_habv4img, CONFIG_MACH_SABRESD, start_imx6dl_sabresd, freescale-mx6-sabresd/flash-header-mx6dl-sabresd, freescale-imx6dl-sabresd)
+
 $(call build_imx_habv4img, CONFIG_MACH_UDOO_NEO, start_imx6sx_udoo_neo, udoo-neo/flash-header-mx6sx-udoo-neo_full, udoo-neo)
 
 $(call build_imx_habv4img, CONFIG_MACH_FREESCALE_IMX6SX_SABRESDB, start_imx6sx_sabresdb, freescale-mx6sx-sabresdb/flash-header-mx6sx-sabresdb, freescale-imx6sx-sabresdb)

@@ -474,7 +474,6 @@ struct pbl_i2c *imx93_i2c_early_init(void __iomem *regs)
 	lpi2c.base = regs;
 
 	temp = readl(lpi2c.base + LPI2C_PARAM);
-	printf("%s: 0x%08x\n", __func__, temp);
 	lpi2c.txfifosize = 1 << (temp & 0x0f);
 	lpi2c.rxfifosize = 1 << ((temp >> 8) & 0x0f);
 	lpi2c.bitrate = 100000;

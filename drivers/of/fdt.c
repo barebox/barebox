@@ -43,9 +43,9 @@ static inline uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, int 
 	return dt;
 }
 
-static inline char *dt_string(struct fdt_header *f, char *strstart, uint32_t ofs)
+static inline const char *dt_string(struct fdt_header *f, const char *strstart, uint32_t ofs)
 {
-	char *str;
+	const char *str;
 
 	if (ofs > f->size_dt_strings)
 		return NULL;
@@ -115,6 +115,44 @@ static int of_unflatten_reservemap(struct device_node *root,
 	return 0;
 }
 
+static int fdt_parse_header(const struct fdt_header *fdt, size_t fdt_size,
+			  struct fdt_header *out)
+{
+	if (fdt_size < sizeof(struct fdt_header))
+		return -EINVAL;
+
+	if (fdt->magic != cpu_to_fdt32(FDT_MAGIC)) {
+		pr_err("bad magic: 0x%08x\n", fdt32_to_cpu(fdt->magic));
+		return -EINVAL;
+	}
+
+	if (fdt->version != cpu_to_fdt32(17)) {
+		pr_err("bad dt version: 0x%08x\n", fdt32_to_cpu(fdt->version));
+		return -EINVAL;
+	}
+
+	out->totalsize = fdt32_to_cpu(fdt->totalsize);
+	out->off_dt_struct = fdt32_to_cpu(fdt->off_dt_struct);
+	out->size_dt_struct = fdt32_to_cpu(fdt->size_dt_struct);
+	out->off_dt_strings = fdt32_to_cpu(fdt->off_dt_strings);
+	out->size_dt_strings = fdt32_to_cpu(fdt->size_dt_strings);
+
+	if (out->totalsize > fdt_size)
+		return -EINVAL;
+
+	if (size_add(out->off_dt_struct, out->size_dt_struct) > out->totalsize) {
+		pr_err("unflatten: dt size exceeds total size\n");
+		return -ESPIPE;
+	}
+
+	if (size_add(out->off_dt_strings, out->size_dt_strings) > out->totalsize) {
+		pr_err("unflatten: string size exceeds total size\n");
+		return -ESPIPE;
+	}
+
+	return 0;
+}
+
 /**
  * of_unflatten_dtb - unflatten a dtb binary blob
  * @infdt - the fdt blob to unflatten
@@ -140,37 +178,9 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 	unsigned int maxlen;
 	const struct fdt_header *fdt = infdt;
 
-	if (size < sizeof(struct fdt_header))
-		return ERR_PTR(-EINVAL);
-
-	if (fdt->magic != cpu_to_fdt32(FDT_MAGIC)) {
-		pr_err("bad magic: 0x%08x\n", fdt32_to_cpu(fdt->magic));
-		return ERR_PTR(-EINVAL);
-	}
-
-	if (fdt->version != cpu_to_fdt32(17)) {
-		pr_err("bad dt version: 0x%08x\n", fdt32_to_cpu(fdt->version));
-		return ERR_PTR(-EINVAL);
-	}
-
-	f.totalsize = fdt32_to_cpu(fdt->totalsize);
-	f.off_dt_struct = fdt32_to_cpu(fdt->off_dt_struct);
-	f.size_dt_struct = fdt32_to_cpu(fdt->size_dt_struct);
-	f.off_dt_strings = fdt32_to_cpu(fdt->off_dt_strings);
-	f.size_dt_strings = fdt32_to_cpu(fdt->size_dt_strings);
-
-	if (f.totalsize > size)
-		return ERR_PTR(-EINVAL);
-
-	if (size_add(f.off_dt_struct, f.size_dt_struct) > f.totalsize) {
-		pr_err("unflatten: dt size exceeds total size\n");
-		return ERR_PTR(-ESPIPE);
-	}
-
-	if (size_add(f.off_dt_strings, f.size_dt_strings) > f.totalsize) {
-		pr_err("unflatten: string size exceeds total size\n");
-		return ERR_PTR(-ESPIPE);
-	}
+	ret = fdt_parse_header(infdt, size, &f);
+	if (ret < 0)
+		return ERR_PTR(ret);
 
 	dt_struct = f.off_dt_struct;
 	dt_strings = (void *)fdt + f.off_dt_strings;

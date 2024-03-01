@@ -73,7 +73,7 @@ endif #ARM_SCMI_PROTOCOL
 config ARM_SCMI_POWER_DOMAIN
 	tristate "SCMI power domain driver"
 	depends on ARM_SCMI_PROTOCOL || (COMPILE_TEST && OF)
-	default y
+	default ARM_SCMI_PROTOCOL
 	select PM_GENERIC_DOMAINS
 	help
 	  This enables support for the SCMI power domains which can be

@@ -427,7 +427,9 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 	const char *devicetree;
 	const char *abspath;
 	int ret;
-	struct device_node *root = NULL, *barebox_root;
+	struct device_node *barebox_root;
+	size_t size;
+	void *fdt;
 	const char *compat;
 	char *filename;
 
@@ -455,25 +457,23 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 
 	filename = basprintf("%s/%s", abspath, devicetree);
 
-	root = of_read_file(filename);
-	if (IS_ERR(root)) {
+	fdt = read_file(filename, &size);
+	if (!fdt) {
 		ret = false;
-		root = NULL;
 		goto out;
 	}
 
-	if (of_device_is_compatible(root, compat)) {
+	if (fdt_machine_is_compatible(fdt, size, compat)) {
 		ret = true;
 		goto out;
 	}
 
-	pr_info("ignoring entry with incompatible devicetree \"%s\"\n",
-			(char *)of_get_property(root, "compatible", NULL));
+	pr_info("ignoring entry with incompatible devicetree: %s\n", devicetree);
 
 	ret = false;
 
 out:
-	of_delete_node(root);
+	free(fdt);
 	free(filename);
 
 	return ret;

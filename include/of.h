@@ -64,6 +64,9 @@ void of_clean_reserve_map(void);
 void fdt_add_reserve_map(void *fdt);
 void fdt_print_reserve_map(const void *fdt);
 
+int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, const char *compat);
+
+
 struct device;
 struct driver;
 struct resource;

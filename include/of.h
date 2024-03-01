@@ -1219,6 +1219,11 @@ static inline int of_property_write_u64(struct device_node *np,
 	return of_property_write_u64_array(np, propname, &value, 1);
 }
 
+static inline void of_delete_property_by_name(struct device_node *np, const char *name)
+{
+	of_delete_property(of_find_property(np, name, NULL));
+}
+
 extern const struct of_device_id of_default_bus_match_table[];
 
 int of_device_enable(struct device_node *node);

@@ -715,7 +715,8 @@ static int fit_config_verify_signature(struct fit_handle *handle, struct device_
 	return ret;
 }
 
-static int fit_find_compatible_unit(struct device_node *conf_node,
+static int fit_find_compatible_unit(struct fit_handle *handle,
+				    struct device_node *conf_node,
 				    const char **unit)
 {
 	struct device_node *child = NULL;
@@ -734,6 +735,40 @@ static int fit_find_compatible_unit(struct device_node *conf_node,
 
 	for_each_child_of_node(conf_node, child) {
 		int score = of_device_is_compatible(child, machine);
+
+		if (!score && !of_property_present(child, "compatible") &&
+		    of_property_present(child, "fdt")) {
+			struct device_node *image;
+			const char *unit = "fdt";
+			int data_len;
+			const void *data;
+			int ret;
+
+			ret = fit_get_image(handle, child, &unit, &image);
+			if (ret)
+				goto next;
+
+			data = of_get_property(image, "data", &data_len);
+			if (!data) {
+				ret = -EINVAL;
+				goto next;
+			}
+
+			ret = fit_handle_decompression(image, "fdt", &data, &data_len);
+			if (ret) {
+				ret = -EILSEQ;
+				goto next;
+			}
+
+			score = fdt_machine_is_compatible(data, data_len, machine);
+
+			of_delete_property_by_name(image, "uncompressed-data");
+next:
+			if (ret)
+				pr_warn("skipping malformed configuration: %pOF (%pe)\n",
+					child, ERR_PTR(ret));
+		}
+
 		if (score > best_score) {
 			best_score = score;
 			*unit = child->name;
@@ -779,7 +814,7 @@ void *fit_open_configuration(struct fit_handle *handle, const char *name)
 	if (name) {
 		unit = name;
 	} else {
-		ret = fit_find_compatible_unit(conf_node, &unit);
+		ret = fit_find_compatible_unit(handle, conf_node, &unit);
 		if (ret) {
 			pr_info("Couldn't get a valid configuration. Aborting.\n");
 			return ERR_PTR(ret);

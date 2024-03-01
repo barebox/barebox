@@ -1045,14 +1045,15 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 
 	record_transfer_result(udev, event, length);
 	xhci_acknowledge_event(ctrl);
-	if (udev->status == USB_ST_STALLED) {
-		reset_ep(udev, ep_index, timeout_ms);
-		return -EPIPE;
-	}
 
 	/* Invalidate buffer to make it available to usb-core */
 	if (length > 0)
 		dma_unmap_single(ctrl->host.hw_dev, map, length, direction);
+
+	if (udev->status == USB_ST_STALLED) {
+		reset_ep(udev, ep_index, timeout_ms);
+		return -EPIPE;
+	}
 
 	if (GET_COMP_CODE(le32_to_cpu(event->trans_event.transfer_len))
 			== COMP_SHORT_TX) {

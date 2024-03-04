@@ -90,28 +90,22 @@ int dev_set_param(struct device *dev, const char *name, const char *val)
 	struct param_d *param;
 	int ret;
 
-	if (!dev) {
-		errno = ENODEV;
-		return -ENODEV;
-	}
+	if (!dev)
+		return errno_set(-ENODEV);
 
 	param = get_param_by_name(dev, name);
 
-	if (!param) {
-		errno = EINVAL;
-		return -EINVAL;
-	}
+	if (!param)
+		return errno_set(-EINVAL);
 
-	if (param->flags & PARAM_FLAG_RO) {
-		errno = EACCES;
-		return -EACCES;
-	}
+	if (param->flags & PARAM_FLAG_RO)
+		return errno_set(-EACCES);
 
 	ret = param->set(dev, param, val);
 	if (ret)
-		errno = -ret;
+		return errno_set(ret);
 
-	return ret;
+	return 0;
 }
 
 /**

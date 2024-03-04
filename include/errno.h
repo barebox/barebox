@@ -10,4 +10,11 @@ extern int errno;
 void perror(const char *s);
 const char *strerror(int errnum);
 
+static inline int errno_set(int err)
+{
+	if (err < 0)
+		errno = -err;
+	return err;
+}
+
 #endif /* __ERRNO_H */

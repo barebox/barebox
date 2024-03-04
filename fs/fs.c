@@ -365,10 +365,8 @@ int ftruncate(int fd, loff_t length)
 		return 0;
 
 	ret = fsdev_truncate(&f->fsdev->dev, f, length);
-	if (ret) {
-		errno = -ret;
-		return ret;
-	}
+	if (ret)
+		return errno_set(ret);
 
 	f->size = length;
 	f->f_inode->i_size = f->size;
@@ -391,9 +389,8 @@ int ioctl(int fd, int request, void *buf)
 		ret = fsdrv->ioctl(&f->fsdev->dev, f, request, buf);
 	else
 		ret = -ENOSYS;
-	if (ret)
-		errno = -ret;
-	return ret;
+
+	return errno_set(ret);
 }
 
 static ssize_t __read(FILE *f, void *buf, size_t count)
@@ -419,9 +416,7 @@ static ssize_t __read(FILE *f, void *buf, size_t count)
 
 	ret = fsdrv->read(&f->fsdev->dev, f, buf, count);
 out:
-	if (ret < 0)
-		errno = -ret;
-	return ret;
+	return errno_set(ret);
 }
 
 ssize_t pread(int fd, void *buf, size_t count, loff_t offset)
@@ -490,9 +485,7 @@ static ssize_t __write(FILE *f, const void *buf, size_t count)
 	}
 	ret = fsdrv->write(&f->fsdev->dev, f, buf, count);
 out:
-	if (ret < 0)
-		errno = -ret;
-	return ret;
+	return errno_set(ret);
 }
 
 ssize_t pwrite(int fd, const void *buf, size_t count, loff_t offset)
@@ -544,10 +537,7 @@ int flush(int fd)
 	else
 		ret = 0;
 
-	if (ret)
-		errno = -ret;
-
-	return ret;
+	return errno_set(ret);
 }
 
 loff_t lseek(int fd, loff_t offset, int whence)
@@ -597,8 +587,7 @@ loff_t lseek(int fd, loff_t offset, int whence)
 	return pos;
 
 out:
-	if (ret)
-		errno = -ret;
+	errno_set(ret);
 
 	return -1;
 }
@@ -629,10 +618,7 @@ int erase(int fd, loff_t count, loff_t offset)
 	else
 		ret = -ENOSYS;
 
-	if (ret)
-		errno = -ret;
-
-	return ret;
+	return errno_set(ret);
 }
 EXPORT_SYMBOL(erase);
 
@@ -659,10 +645,7 @@ int protect(int fd, size_t count, loff_t offset, int prot)
 	else
 		ret = -ENOSYS;
 
-	if (ret)
-		errno = -ret;
-
-	return ret;
+	return errno_set(ret);
 }
 EXPORT_SYMBOL(protect);
 
@@ -689,10 +672,7 @@ int discard_range(int fd, loff_t count, loff_t offset)
 	else
 		ret = -ENOSYS;
 
-	if (ret)
-		errno = -ret;
-
-	return ret;
+	return errno_set(ret);
 }
 
 int protect_file(const char *file, int prot)
@@ -730,9 +710,7 @@ void *memmap(int fd, int flags)
 	else
 		ret = -EINVAL;
 
-	if (ret)
-		errno = -ret;
-
+	errno_set(ret);
 	return retp;
 }
 EXPORT_SYMBOL(memmap);
@@ -756,10 +734,7 @@ int close(int fd)
 
 	put_file(f);
 
-	if (ret)
-		errno = -ret;
-
-	return ret;
+	return errno_set(ret);
 }
 EXPORT_SYMBOL(close);
 
@@ -2464,10 +2439,7 @@ int mkdir (const char *pathname, mode_t mode)
 	dput(dentry);
 	path_put(&path);
 out:
-	if (error)
-		errno = -error;
-
-	return error;
+	return errno_set(error);
 }
 EXPORT_SYMBOL(mkdir);
 
@@ -2519,10 +2491,7 @@ out:
 	path_put(&path);
 	putname(name);
 
-	if (error)
-		errno = -error;
-
-	return error;
+	return errno_set(error);
 }
 EXPORT_SYMBOL(rmdir);
 
@@ -2676,10 +2645,7 @@ int open(const char *pathname, int flags, ...)
 out:
 	put_file(f);
 out1:
-
-	if (error)
-		errno = -error;
-	return error;
+	return errno_set(error);
 }
 EXPORT_SYMBOL(open);
 
@@ -2717,9 +2683,7 @@ int unlink(const char *pathname)
 out_put:
 	path_put(&path);
 out:
-	if (ret)
-		errno = -ret;
-	return ret;
+	return errno_set(ret);
 }
 EXPORT_SYMBOL(unlink);
 
@@ -2746,10 +2710,7 @@ int symlink(const char *pathname, const char *newpath)
 
 	error = vfs_symlink(path.dentry->d_inode, dentry, pathname);
 out:
-	if (error)
-		errno = -error;
-
-	return error;
+	return errno_set(error);
 }
 EXPORT_SYMBOL(symlink);
 
@@ -2819,7 +2780,7 @@ out_release:
 out_put:
 	path_put(&path);
 out:
-	errno = -ret;
+	errno_set(ret);
 
 	return NULL;
 }
@@ -2827,10 +2788,8 @@ EXPORT_SYMBOL(opendir);
 
 int closedir(DIR *dir)
 {
-	if (!dir) {
-		errno = EBADF;
-		return -EBADF;
-	}
+	if (!dir)
+		return errno_set(-EBADF);
 
 	release_dir(dir);
 
@@ -2876,10 +2835,7 @@ int readlink(const char *pathname, char *buf, size_t bufsiz)
 out_put:
 	path_put(&path);
 out:
-	if (ret)
-		errno = -ret;
-
-	return ret;
+	return errno_set(ret);
 }
 EXPORT_SYMBOL(readlink);
 
@@ -2909,10 +2865,7 @@ static int stat_filename(const char *filename, struct stat *s, unsigned int flag
 out_put:
 	path_put(&path);
 out:
-	if (ret)
-		errno = -ret;
-
-	return ret;
+	return errno_set(ret);
 }
 
 int stat(const char *filename, struct stat *s)
@@ -3000,9 +2953,7 @@ char *canonicalize_path(const char *pathname)
 
 	res = dpath(path.dentry, d_root);
 out:
-	if (ret)
-		errno = -ret;
-
+	errno_set(ret);
 	return res;
 }
 
@@ -3036,10 +2987,7 @@ int chdir(const char *pathname)
 	ret = 0;
 
 out:
-	if (ret)
-		errno = -ret;
-
-	return ret;
+	return errno_set(ret);
 }
 EXPORT_SYMBOL(chdir);
 
@@ -3234,9 +3182,7 @@ err_register:
 out:
 	path_put(&path);
 
-	errno = -ret;
-
-	return ret;
+	return errno_set(ret);
 }
 EXPORT_SYMBOL(mount);
 
@@ -3273,10 +3219,8 @@ int umount(const char *pathname)
 		}
 	}
 
-	if (!fsdev) {
-		errno = EFAULT;
-		return -EFAULT;
-	}
+	if (!fsdev)
+		return errno_set(-EFAULT);
 
 	return fsdev_umount(fsdev);
 }

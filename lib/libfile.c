@@ -33,10 +33,8 @@ int pwrite_full(int fd, const void *buf, size_t size, loff_t offset)
 
 	while (size) {
 		now = pwrite(fd, buf, size, offset);
-		if (now == 0) {
-			errno = ENOSPC;
-			return -errno;
-		}
+		if (now == 0)
+			return errno_set(-ENOSPC);
 		if (now < 0)
 			return now;
 		size -= now;
@@ -61,10 +59,8 @@ int write_full(int fd, const void *buf, size_t size)
 
 	while (size) {
 		now = write(fd, buf, size);
-		if (now == 0) {
-			errno = ENOSPC;
-			return -errno;
-		}
+		if (now == 0)
+			return errno_set(-ENOSPC);
 		if (now < 0)
 			return now;
 		size -= now;
@@ -240,8 +236,7 @@ again:
 	/* ensure wchar_t nul termination */
 	buf = calloc(ALIGN(read_size, 2) + 2, 1);
 	if (!buf) {
-		ret = -ENOMEM;
-		errno = ENOMEM;
+		ret = errno_set(-ENOMEM);
 		goto err_out;
 	}
 

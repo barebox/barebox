@@ -303,6 +303,8 @@ enum efi_reset_type {
 #define EFI_RUNTIME_SERVICES_SIGNATURE ((u64)0x5652453544e5552ULL)
 #define EFI_RUNTIME_SERVICES_REVISION  0x00010000
 
+struct efi_capsule_header;
+
 struct efi_runtime_services {
 	struct efi_table_hdr hdr;
 	efi_status_t (EFIAPI *get_time)(struct efi_time *time,
@@ -317,16 +319,21 @@ struct efi_runtime_services {
 				       struct efi_memory_desc *virtmap);
 	efi_status_t (*convert_pointer)(unsigned long dbg, void **address);
 	efi_status_t (EFIAPI *get_variable)(efi_char16_t *variable_name, const efi_guid_t *vendor,
-			u32 *Attributes, unsigned long *data_size, void *data);
-	efi_status_t (EFIAPI *get_next_variable)(unsigned long *variable_name_size,
-			s16 *variable_name, efi_guid_t *vendor);
-	efi_status_t (EFIAPI *set_variable)(s16 *variable_name, efi_guid_t *vendor,
-			u32 Attributes, unsigned long data_size, void *data);
+			u32 *Attributes, size_t *data_size, void *data);
+	efi_status_t (EFIAPI *get_next_variable)(size_t *variable_name_size,
+			efi_char16_t *variable_name, efi_guid_t *vendor);
+	efi_status_t (EFIAPI *set_variable)(efi_char16_t *variable_name, const efi_guid_t *vendor,
+			u32 Attributes, size_t data_size, const void *data);
 	efi_status_t (EFIAPI *get_next_high_mono_count)(uint32_t *high_count);
 	void (EFIAPI *reset_system)(enum efi_reset_type reset_type, efi_status_t reset_status,
-			unsigned long data_size, void *reset_data);
-	void *update_capsule;
-	void *query_capsule_caps;
+			size_t data_size, void *reset_data);
+	efi_status_t (EFIAPI *update_capsule)(struct efi_capsule_header **capsule_header_array,
+					      size_t capsule_count,
+					      u64 scatter_gather_list);
+	efi_status_t (EFIAPI *query_capsule_caps)(struct efi_capsule_header **capsule_header_array,
+						  size_t capsule_count,
+						  u64 *maximum_capsule_size,
+						  u32 *reset_type);
 	void *query_variable_info;
 };
 
@@ -688,29 +695,58 @@ struct efi_loaded_image {
 #define EFI_FILE_ARCHIVE        0x0000000000000020
 #define EFI_FILE_VALID_ATTR     0x0000000000000037
 
+struct efi_file_io_token {
+	struct efi_event *event;
+	efi_status_t status;
+	size_t buffer_size;
+	void *buffer;
+};
+
 #define EFI_FILE_HANDLE_REVISION         0x00010000
+#define EFI_FILE_HANDLE_REVISION2        0x00020000
+#define EFI_FILE_HANDLE_LATEST_REVISION  EFI_FILE_PROTOCOL_REVISION2
 struct efi_file_handle {
 	uint64_t Revision;
 	efi_status_t(EFIAPI *open)(struct efi_file_handle *File,
-			struct efi_file_handle **NewHandle, s16 *FileName,
+			struct efi_file_handle **NewHandle, efi_char16_t *FileName,
 			uint64_t OpenMode, uint64_t Attributes);
 	efi_status_t(EFIAPI *close)(struct efi_file_handle *File);
 	efi_status_t(EFIAPI *delete)(struct efi_file_handle *File);
-	efi_status_t(EFIAPI *read)(struct efi_file_handle *File, unsigned long *BufferSize,
+	efi_status_t(EFIAPI *read)(struct efi_file_handle *File, size_t *BufferSize,
 			void *Buffer);
 	efi_status_t(EFIAPI *write)(struct efi_file_handle *File,
-			unsigned long *BufferSize, void *Buffer);
+			size_t *BufferSize, void *Buffer);
 	efi_status_t(EFIAPI *get_position)(struct efi_file_handle *File,
 			uint64_t *Position);
 	efi_status_t(EFIAPI *set_position)(struct efi_file_handle *File,
 			uint64_t Position);
 	efi_status_t(EFIAPI *get_info)(struct efi_file_handle *File,
-			efi_guid_t *InformationType, unsigned long *BufferSize,
+			const efi_guid_t *InformationType, size_t *BufferSize,
 			void *Buffer);
 	efi_status_t(EFIAPI *set_info)(struct efi_file_handle *File,
-			efi_guid_t *InformationType, unsigned long BufferSize,
+			const efi_guid_t *InformationType, size_t BufferSize,
 			void *Buffer);
 	efi_status_t(EFIAPI *flush)(struct efi_file_handle *File);
+	efi_status_t (EFIAPI *open_ex)(struct efi_file_handle *this,
+			struct efi_file_handle **new_handle,
+			u16 *file_name, u64 open_mode, u64 attributes,
+			struct efi_file_io_token *token);
+	efi_status_t (EFIAPI *read_ex)(struct efi_file_handle *this,
+			struct efi_file_io_token *token);
+	efi_status_t (EFIAPI *write_ex)(struct efi_file_handle *this,
+			struct efi_file_io_token *token);
+	efi_status_t (EFIAPI *flush_ex)(struct efi_file_handle *this,
+			struct efi_file_io_token *token);
+};
+
+#define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION 0x00010000
+
+struct efi_load_file_protocol {
+	efi_status_t (EFIAPI *load_file)(struct efi_load_file_protocol *this,
+					 struct efi_device_path *file_path,
+					 bool boot_policy,
+					 size_t *buffer_size,
+					 void *buffer);
 };
 
 #define EFI_FILE_IO_INTERFACE_REVISION   0x00010000
@@ -722,6 +758,12 @@ struct efi_file_io_interface {
 			struct efi_file_handle **Root);
 };
 
+struct efi_simple_file_system_protocol {
+	u64 Revision;
+	efi_status_t (EFIAPI *open_volume)(struct efi_simple_file_system_protocol *this,
+			struct efi_file_handle **root);
+};
+
 struct efi_file_info {
 	uint64_t Size;
 	uint64_t FileSize;
@@ -730,7 +772,16 @@ struct efi_file_info {
 	struct efi_time LastAccessTime;
 	struct efi_time ModificationTime;
 	uint64_t Attribute;
-	s16 FileName[1];
+	efi_char16_t FileName[];
+};
+
+struct efi_file_system_info {
+	u64 size;
+	u8 read_only;
+	u64 volume_size;
+	u64 free_space;
+	u32 block_size;
+	efi_char16_t volume_label[];
 };
 
 __attribute__((noreturn)) void efi_main(efi_handle_t, struct efi_system_table *);

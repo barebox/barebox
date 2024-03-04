@@ -5,30 +5,38 @@
 #include <clock.h>
 #include <linux/math64.h>
 #include <malloc.h>
+#include <getopt.h>
 
 static int do_time(int argc, char *argv[])
 {
-	int i;
+	int i, opt;
 	unsigned char *buf;
 	u64 start, end, diff64;
 	bool nanoseconds = false;
 	int len = 1; /* '\0' */
 
-	if (argc < 2)
+	while ((opt = getopt(argc, argv, "+n")) > 0) {
+		switch (opt) {
+		case 'n':
+			nanoseconds = true;
+			break;
+		default:
+			return COMMAND_ERROR_USAGE;
+		}
+	}
+
+	argv += optind;
+	argc -= optind;
+
+	if (argc < 1)
 		return COMMAND_ERROR_USAGE;
 
-	for (i = 1; i < argc; i++)
+	for (i = 0; i < argc; i++)
 		len += strlen(argv[i]) + 1;
 
 	buf = xzalloc(len);
 
-	i = 1;
-	if (!strcmp(argv[i], "-n")) {
-		nanoseconds = true;
-		i++;
-	}
-
-	for (; i < argc; i++) {
+	for (i = 0; i < argc; i++) {
 		strcat(buf, argv[i]);
 		strcat(buf, " ");
 	}

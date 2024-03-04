@@ -5,10 +5,10 @@
 #include <efi.h>
 #include <efi/efi-util.h>
 
-extern efi_system_table_t *efi_sys_table;
+extern struct efi_system_table *efi_sys_table;
 extern efi_handle_t efi_parent_image;
 extern struct efi_device_path *efi_device_path;
-extern efi_loaded_image_t *efi_loaded_image;
+extern struct efi_loaded_image *efi_loaded_image;
 
 void *efi_get_variable(char *name, efi_guid_t *vendor, int *var_size);
 

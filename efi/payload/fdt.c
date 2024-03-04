@@ -10,7 +10,7 @@
 
 static int efi_fdt_probe(void)
 {
-	efi_config_table_t *ect;
+	struct efi_config_table *ect;
 
 	for_each_efi_config_table(ect) {
 		struct fdt_header *oftree;

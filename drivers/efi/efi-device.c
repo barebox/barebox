@@ -347,7 +347,7 @@ struct bus_type efi_bus = {
 
 static void efi_businfo(struct device *dev)
 {
-	efi_config_table_t *t;
+	struct efi_config_table *t;
 	int i = 0;
 
 	printf("Tables:\n");

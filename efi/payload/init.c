@@ -40,12 +40,12 @@
 #include <bbu.h>
 #include <generated/utsrelease.h>
 
-efi_runtime_services_t *RT;
-efi_boot_services_t *BS;
-efi_system_table_t *efi_sys_table;
+struct efi_runtime_services *RT;
+struct efi_boot_services *BS;
+struct efi_system_table *efi_sys_table;
 efi_handle_t efi_parent_image;
 struct efi_device_path *efi_device_path;
-efi_loaded_image_t *efi_loaded_image;
+struct efi_loaded_image *efi_loaded_image;
 
 void *efi_get_variable(char *name, efi_guid_t *vendor, int *var_size)
 {
@@ -270,7 +270,7 @@ device_initcall(efi_init);
 /**
  * efi-main - Entry point for EFI images
  */
-void efi_main(efi_handle_t image, efi_system_table_t *sys_table)
+void efi_main(efi_handle_t image, struct efi_system_table *sys_table)
 {
 	efi_physical_addr_t mem;
 	size_t memsize;

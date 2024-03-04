@@ -194,36 +194,36 @@ struct i2_o_device_path {
 #define MSG_MAC_ADDR_DP                 0x0b
 struct mac_addr_device_path {
 	struct efi_device_path header;
-	efi_mac_address mac_address;
+	struct efi_mac_address mac_address;
 	u8 if_type;
 };
 
 #define MSG_IPv4_DP                     0x0c
 struct ipv4_device_path {
 	struct efi_device_path header;
-	efi_ipv4_address local_ip_address;
-	efi_ipv4_address remote_ip_address;
+	struct efi_ipv4_address local_ip_address;
+	struct efi_ipv4_address remote_ip_address;
 	u16 local_port;
 	u16 remote_port;
 	u16 Protocol;
 	bool static_ip_address;
 	/* new from UEFI version 2, code must check length field in header */
-	efi_ipv4_address gateway_ip_address;
-	efi_ipv4_address subnet_mask;
+	struct efi_ipv4_address gateway_ip_address;
+	struct efi_ipv4_address subnet_mask;
 };
 
 #define MSG_IPv6_DP                     0x0d
 struct ipv6_device_path {
 	struct efi_device_path header;
-	efi_ipv6_address local_ip_address;
-	efi_ipv6_address remote_ip_address;
+	struct efi_ipv6_address local_ip_address;
+	struct efi_ipv6_address remote_ip_address;
 	u16 local_port;
 	u16 remote_port;
 	u16 Protocol;
 	bool IPAddress_origin;
 	/* new from UEFI version 2, code must check length field in header */
 	u8 prefix_length;
-	efi_ipv6_address gateway_ip_address;
+	struct efi_ipv6_address gateway_ip_address;
 };
 
 /**

@@ -334,14 +334,14 @@ dev_path_mac_addr(struct string *str, void *dev_path)
 }
 
 static void
-cat_print_iPv4(struct string *str, efi_ipv4_address * address)
+cat_print_iPv4(struct string *str, struct efi_ipv4_address * address)
 {
 	cprintf(str, "%d.%d.%d.%d", address->Addr[0], address->Addr[1],
 		address->Addr[2], address->Addr[3]);
 }
 
 static bool
-is_not_null_iPv4(efi_ipv4_address * address)
+is_not_null_iPv4(struct efi_ipv4_address * address)
 {
 	u8 val;
 
@@ -405,7 +405,7 @@ dev_path_iPv4(struct string *str, void *dev_path)
 
 #define cat_print_iPv6_ADD( x , y ) ( ( (u16) ( x ) ) << 8 | ( y ) )
 static void
-cat_print_ipv6(struct string *str, efi_ipv6_address * address)
+cat_print_ipv6(struct string *str, struct efi_ipv6_address * address)
 {
 	cprintf(str, "%x:%x:%x:%x:%x:%x:%x:%x",
 		cat_print_iPv6_ADD(address->Addr[0], address->Addr[1]),

@@ -92,13 +92,13 @@ typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 /*
  * Generic EFI table header
  */
-typedef	struct {
+struct efi_table_hdr {
 	u64 signature;
 	u32 revision;
 	u32 headersize;
 	u32 crc32;
 	u32 reserved;
-} efi_table_hdr_t;
+};
 
 /*
  * Memory map descriptor:
@@ -165,7 +165,7 @@ typedef int (*efi_freemem_callback_t) (u64 start, u64 end, void *arg);
 #define EFI_TIME_IN_DAYLIGHT     0x2
 #define EFI_UNSPECIFIED_TIMEZONE 0x07ff
 
-typedef struct {
+struct efi_time {
 	u16 year;
 	u8 month;
 	u8 day;
@@ -177,13 +177,13 @@ typedef struct {
 	s16 timezone;
 	u8 daylight;
 	u8 pad2;
-} efi_time_t;
+};
 
-typedef struct {
+struct efi_time_cap {
 	u32 resolution;
 	u32 accuracy;
 	u8 sets_to_zero;
-} efi_time_cap_t;
+};
 
 enum efi_locate_search_type {
 	ALL_HANDLES,
@@ -198,17 +198,17 @@ struct efi_open_protocol_information_entry {
 	u32 open_count;
 };
 
-typedef enum {
+enum efi_timer_delay {
 	EFI_TIMER_CANCEL = 0,
 	EFI_TIMER_PERIODIC = 1,
 	EFI_TIMER_RELATIVE = 2
-} efi_timer_delay_t;
+};
 
 /*
  * EFI Boot Services table
  */
-typedef struct {
-	efi_table_hdr_t hdr;
+struct efi_boot_services {
+	struct efi_table_hdr hdr;
 	void *raise_tpl;
 	void *restore_tpl;
 	efi_status_t (EFIAPI *allocate_pages)(int, int, unsigned long,
@@ -232,7 +232,7 @@ typedef struct {
 	efi_status_t(EFIAPI *create_event)(u32 type , unsigned long tpl,
 			void (*fn) (void *event, void *ctx),
 			void *ctx, void **event);
-	efi_status_t(EFIAPI *set_timer)(void *event, efi_timer_delay_t type, uint64_t time);
+	efi_status_t(EFIAPI *set_timer)(void *event, enum efi_timer_delay type, uint64_t time);
 	efi_status_t(EFIAPI *wait_for_event)(unsigned long number_of_events, void *event,
 			unsigned long *index);
 	void *signal_event;
@@ -298,18 +298,18 @@ typedef struct {
 	void *copy_mem;
 	void *set_mem;
 	void *create_event_ex;
-} efi_boot_services_t;
+};
 
-extern efi_boot_services_t *BS;
+extern struct efi_boot_services *BS;
 
 /*
  * Types and defines for EFI ResetSystem
  */
-typedef enum {
+enum efi_reset_type {
 	EFI_RESET_COLD = 0,
 	EFI_RESET_WARM = 1,
 	EFI_RESET_SHUTDOWN = 2
-} efi_reset_type_t;
+};
 
 /*
  * EFI Runtime Services table
@@ -317,8 +317,8 @@ typedef enum {
 #define EFI_RUNTIME_SERVICES_SIGNATURE ((u64)0x5652453544e5552ULL)
 #define EFI_RUNTIME_SERVICES_REVISION  0x00010000
 
-typedef struct {
-	efi_table_hdr_t hdr;
+struct efi_runtime_services {
+	struct efi_table_hdr hdr;
 	void *get_time;
 	void *set_time;
 	void *get_wakeup_time;
@@ -332,14 +332,14 @@ typedef struct {
 	efi_status_t (EFIAPI *set_variable)(s16 *variable_name, efi_guid_t *vendor,
 			u32 Attributes, unsigned long data_size, void *data);
 	void *get_next_high_mono_count;
-	void (EFIAPI *reset_system)(efi_reset_type_t reset_type, efi_status_t reset_status,
+	void (EFIAPI *reset_system)(enum efi_reset_type reset_type, efi_status_t reset_status,
 			unsigned long data_size, void *reset_data);
 	void *update_capsule;
 	void *query_capsule_caps;
 	void *query_variable_info;
-} efi_runtime_services_t;
+};
 
-extern efi_runtime_services_t *RT;
+extern struct efi_runtime_services *RT;
 
 /*
  *  EFI Configuration Table and GUID definitions
@@ -554,10 +554,10 @@ extern efi_guid_t efi_barebox_vendor_guid;
 extern efi_guid_t efi_systemd_vendor_guid;
 extern efi_guid_t efi_fdt_guid;
 
-typedef struct {
+struct efi_config_table {
 	efi_guid_t guid;
-	unsigned long table;
-} efi_config_table_t;
+	void * table;
+};
 
 #define for_each_efi_config_table(t) \
 	for (t = efi_sys_table->tables; \
@@ -573,8 +573,8 @@ typedef struct {
 #define EFI_1_10_SYSTEM_TABLE_REVISION  ((1 << 16) | (10))
 #define EFI_1_02_SYSTEM_TABLE_REVISION  ((1 << 16) | (02))
 
-typedef struct {
-	efi_table_hdr_t hdr;
+struct efi_system_table {
+	struct efi_table_hdr hdr;
 	unsigned long fw_vendor;	/* physical addr of CHAR16 vendor string */
 	u32 fw_revision;
 	unsigned long con_in_handle;
@@ -583,16 +583,16 @@ typedef struct {
 	struct efi_simple_text_output_protocol *con_out;
 	unsigned long stderr_handle;
 	unsigned long std_err;
-	efi_runtime_services_t *runtime;
-	efi_boot_services_t *boottime;
+	struct efi_runtime_services *runtime;
+	struct efi_boot_services *boottime;
 	unsigned long nr_tables;
-	efi_config_table_t *tables;
-} efi_system_table_t;
+	struct efi_config_table *tables;
+};
 
-typedef struct {
+struct efi_loaded_image {
 	u32 revision;
 	void *parent_handle;
-	efi_system_table_t *system_table;
+	struct efi_system_table *system_table;
 	void *device_handle;
 	void *file_path;
 	void *reserved;
@@ -603,7 +603,7 @@ typedef struct {
 	unsigned int image_code_type;
 	unsigned int image_data_type;
 	unsigned long unload;
-} efi_loaded_image_t;
+};
 
 static inline int
 efi_guidcmp (efi_guid_t left, efi_guid_t right)
@@ -611,7 +611,7 @@ efi_guidcmp (efi_guid_t left, efi_guid_t right)
 	return memcmp(&left, &right, sizeof (efi_guid_t));
 }
 
-__attribute__((noreturn)) void efi_main(efi_handle_t, efi_system_table_t *);
+__attribute__((noreturn)) void efi_main(efi_handle_t, struct efi_system_table *);
 
 /*
  * Variable Attributes
@@ -683,23 +683,23 @@ struct efi_simple_input_interface {
 	void *wait_for_key;
 };
 
-typedef struct {
+struct efi_mac_address {
 	uint8_t Addr[32];
-} efi_mac_address;
+};
 
-typedef struct {
+struct efi_ipv4_address {
 	uint8_t Addr[4];
-} efi_ipv4_address;
+};
 
-typedef struct {
+struct efi_ipv6_address {
 	uint8_t Addr[16];
-} efi_ipv6_address;
+};
 
-typedef union {
+union efi_ip_address {
 	uint32_t Addr[4];
-	efi_ipv4_address v4;
-	efi_ipv6_address v6;
-} efi_ip_address;
+	struct efi_ipv4_address v4;
+	struct efi_ipv6_address v6;
+};
 
 struct efi_device_path *device_path_from_handle(efi_handle_t Handle);
 char *device_path_to_str(struct efi_device_path *dev_path);

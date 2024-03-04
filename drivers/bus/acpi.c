@@ -149,7 +149,7 @@ static struct device *acpi_add_device(struct bus_type *bus,
 
 static int acpi_register_devices(struct bus_type *bus)
 {
-	efi_config_table_t *table = bus->dev->priv;
+	struct efi_config_table *table = bus->dev->priv;
 	struct acpi_rsdp *rsdp;
 	struct acpi_rsdt *root;
 	size_t entry_count;
@@ -218,7 +218,7 @@ struct bus_type acpi_bus = {
 
 static int efi_acpi_probe(void)
 {
-	efi_config_table_t *ect, *table = NULL;
+	struct efi_config_table *ect, *table = NULL;
 
 	for_each_efi_config_table(ect) {
 		/* take ACPI < 2 table only if no ACPI 2.0 is available */

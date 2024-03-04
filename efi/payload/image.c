@@ -121,7 +121,7 @@ static void efi_free_file(void *_mem, size_t size)
 		BS->free_pages(mem, DIV_ROUND_UP(size, EFI_PAGE_SIZE));
 }
 
-static int efi_load_image(const char *file, efi_loaded_image_t **loaded_image,
+static int efi_load_image(const char *file, struct efi_loaded_image **loaded_image,
 		efi_handle_t *h)
 {
 	void *exe;
@@ -158,7 +158,7 @@ out:
 static int efi_execute_image(const char *file)
 {
 	efi_handle_t handle;
-	efi_loaded_image_t *loaded_image;
+	struct efi_loaded_image *loaded_image;
 	efi_status_t efiret;
 	struct linux_kernel_header *image_header;
 	const char *options;
@@ -204,7 +204,7 @@ static int efi_execute_image(const char *file)
 }
 
 #ifdef __x86_64__
-typedef void(*handover_fn)(void *image, efi_system_table_t *table,
+typedef void(*handover_fn)(void *image, struct efi_system_table *table,
 		struct linux_kernel_header *header);
 
 static inline void linux_efi_handover(efi_handle_t handle,
@@ -239,7 +239,7 @@ static int do_bootm_efi(struct image_data *data)
 	efi_handle_t handle;
 	int ret;
 	const char *options;
-	efi_loaded_image_t *loaded_image;
+	struct efi_loaded_image *loaded_image;
 	struct linux_kernel_header *image_header, *boot_header;
 
 	ret = efi_load_image(data->os_file, &loaded_image, &handle);

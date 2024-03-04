@@ -84,9 +84,9 @@ struct efi_file_info {
 	uint64_t Size;
 	uint64_t FileSize;
 	uint64_t PhysicalSize;
-	efi_time_t CreateTime;
-	efi_time_t LastAccessTime;
-	efi_time_t ModificationTime;
+	struct efi_time CreateTime;
+	struct efi_time LastAccessTime;
+	struct efi_time ModificationTime;
 	uint64_t Attribute;
 	s16 FileName[1];
 };

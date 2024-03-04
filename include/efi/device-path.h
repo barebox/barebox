@@ -387,4 +387,14 @@ struct bbs_bbs_device_path {
 #define BBS_TYPE_DEV                    0x80
 #define BBS_TYPE_UNKNOWN                0x_fF
 
+
+#define EFI_DP_TYPE_MASK			0x7f
+#define EFI_DP_TYPE_UNPACKED			0x80
+
+#define END_DEVICE_PATH_TYPE			0x7f
+
+#define END_ENTIRE_DEVICE_PATH_SUBTYPE		0xff
+#define END_INSTANCE_DEVICE_PATH_SUBTYPE	0x01
+#define END_DEVICE_PATH_LENGTH			(sizeof(struct efi_device_path))
+
 #endif /* __EFI_DEVICE_PATH_H */

@@ -43,18 +43,6 @@ char *cprintf(struct string *str, const char *fmt, ...)
 #define MIN_ALIGNMENT_SIZE  8	/* FIXME: X86_64 specific */
 #define ALIGN_SIZE(a)   ((a % MIN_ALIGNMENT_SIZE) ? MIN_ALIGNMENT_SIZE - (a % MIN_ALIGNMENT_SIZE) : 0)
 
-#define EFI_DP_TYPE_MASK			0x7f
-#define EFI_DP_TYPE_UNPACKED			0x80
-
-#define END_DEVICE_PATH_TYPE			0x7f
-
-#define END_ENTIRE_DEVICE_PATH_SUBTYPE		0xff
-#define END_INSTANCE_DEVICE_PATH_SUBTYPE	0x01
-#define END_DEVICE_PATH_LENGTH			(sizeof(struct efi_device_path))
-
-#define DP_IS_END_TYPE(a)
-#define DP_IS_END_SUBTYPE(a)        ( ((a)->sub_type == END_ENTIRE_DEVICE_PATH_SUBTYPE )
-
 #define device_path_type(a)           ( ((a)->type) & EFI_DP_TYPE_MASK )
 #define next_device_path_node(a)       ( (const struct efi_device_path *) ( ((u8 *) (a)) + (a)->length))
 #define is_device_path_end_type(a)      ( device_path_type(a) == END_DEVICE_PATH_TYPE )

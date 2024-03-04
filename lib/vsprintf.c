@@ -472,8 +472,6 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
  *
  * Right now we handle:
  *
- * - 'I' [4] for IPv4 addresses printed in the usual way
- *       IPv4 uses dot-separated decimal without leading 0's (1.2.3.4)
  * - 'S' For symbolic direct pointers
  * - 'U' For a 16 byte UUID/GUID, it prints the UUID/GUID in the form
  *       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -493,12 +491,18 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
  *       correctness of the format string and va_list arguments.
  * - 'a[pd]' For address types [p] phys_addr_t, [d] dma_addr_t and derivatives
  *           (default assumed to be phys_addr_t, passed by reference)
+ * - 'I' [4] for IPv4 addresses printed in the usual way
+ *       IPv4 uses dot-separated decimal without leading 0's (1.2.3.4)
+ * - 'e' For formatting error pointers as string descriptions
+ * - 'OF' For a device tree node
+ * - 'h[CDN]' For a variable-length buffer, it prints it as a hex string with
+ *            a certain separator (' ' by default):
+ *              C colon
+ *              D dash
+ *              N no separator
+ * - 'JP' For a JSON path
  * - 'M' For a 6-byte MAC address, it prints the address in the
  *       usual colon-separated hex notation
- *
- * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
- * function pointers are really function descriptors, which contain a
- * pointer to the real address.
  */
 static char *pointer(const char *fmt, char *buf, const char *end, const void *ptr,
 		     int field_width, int precision, int flags)
@@ -573,10 +577,11 @@ static char *errno_string(char *buf, const char *end, int field_width, int preci
  * @fmt: The format string to use
  * @args: Arguments for the format string
  *
- * This function follows C99 vsnprintf, but has some extensions:
- * %pS output the name of a text symbol
- * %pF output the name of a function pointer
- * %pR output the address range in a struct resource
+ * This function generally follows C99 vsnprintf, but has some
+ * extensions and a few limitations:
+ *
+ *  - ``%n`` is unsupported
+ *  - ``%p*`` is handled by pointer()
  *
  * The return value is the number of characters which would
  * be generated for the given input, excluding the trailing

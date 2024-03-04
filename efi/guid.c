@@ -6,6 +6,8 @@
 
 efi_guid_t efi_file_info_id = EFI_FILE_INFO_GUID;
 efi_guid_t efi_simple_file_system_protocol_guid = EFI_SIMPLE_FILE_SYSTEM_GUID;
+efi_guid_t efi_file_system_info_guid = EFI_FILE_SYSTEM_INFO_GUID;
+efi_guid_t efi_system_volume_label_id = EFI_FILE_SYSTEM_VOLUME_LABEL_ID;
 efi_guid_t efi_device_path_protocol_guid = EFI_DEVICE_PATH_PROTOCOL_GUID;
 efi_guid_t efi_loaded_image_protocol_guid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
 efi_guid_t efi_unknown_device_guid = EFI_UNKNOWN_DEVICE_GUID;
@@ -16,6 +18,32 @@ efi_guid_t efi_rng_protocol_guid = EFI_RNG_PROTOCOL_GUID;
 efi_guid_t efi_barebox_vendor_guid = EFI_BAREBOX_VENDOR_GUID;
 efi_guid_t efi_systemd_vendor_guid = EFI_SYSTEMD_VENDOR_GUID;
 efi_guid_t efi_fdt_guid = EFI_DEVICE_TREE_GUID;
+efi_guid_t efi_loaded_image_device_path_guid =
+		EFI_LOADED_IMAGE_DEVICE_PATH_PROTOCOL_GUID;
+const efi_guid_t efi_device_path_to_text_protocol_guid =
+		EFI_DEVICE_PATH_TO_TEXT_PROTOCOL_GUID;
+const efi_guid_t efi_dt_fixup_protocol_guid = EFI_DT_FIXUP_PROTOCOL_GUID;
+/* GUID of the EFI_DRIVER_BINDING_PROTOCOL */
+const efi_guid_t efi_driver_binding_protocol_guid = EFI_DRIVER_BINDING_PROTOCOL_GUID;
+
+/* event group ExitBootServices() invoked */
+const efi_guid_t efi_guid_event_group_exit_boot_services =
+			EFI_EVENT_GROUP_EXIT_BOOT_SERVICES;
+/* event group SetVirtualAddressMap() invoked */
+const efi_guid_t efi_guid_event_group_virtual_address_change =
+			EFI_EVENT_GROUP_VIRTUAL_ADDRESS_CHANGE;
+/* event group memory map changed */
+const efi_guid_t efi_guid_event_group_memory_map_change =
+			EFI_EVENT_GROUP_MEMORY_MAP_CHANGE;
+/* event group boot manager about to boot */
+const efi_guid_t efi_guid_event_group_ready_to_boot = EFI_EVENT_GROUP_READY_TO_BOOT;
+/* event group ResetSystem() invoked (before ExitBootServices) */
+const efi_guid_t efi_guid_event_group_reset_system = EFI_EVENT_GROUP_RESET_SYSTEM;
+/* GUIDs of the Load File and Load File2 protocols */
+const efi_guid_t efi_load_file_protocol_guid = EFI_LOAD_FILE_PROTOCOL_GUID;
+const efi_guid_t efi_load_file2_protocol_guid = EFI_LOAD_FILE2_PROTOCOL_GUID;
+const efi_guid_t efi_device_path_utilities_protocol_guid =
+	EFI_DEVICE_PATH_UTILITIES_PROTOCOL_GUID;
 
 #define EFI_GUID_STRING(guid, short, long) do {	\
 	if (!efi_guidcmp(guid, *g))		\
@@ -42,14 +70,19 @@ const char *efi_guid_string(efi_guid_t *g)
 	EFI_GUID_STRING(EFI_PCI_IO_PROTOCOL_GUID, "PCI IO Protocol", "EFI 1.1 PCI IO Protocol");
 	EFI_GUID_STRING(EFI_USB_IO_PROTOCOL_GUID, "USB IO Protocol", "EFI 1.0 USB IO Protocol");
 	EFI_GUID_STRING(EFI_FILE_INFO_GUID, "File Info", "EFI File Info");
+	EFI_GUID_STRING(EFI_FILE_SYSTEM_INFO_GUID, "Filesystem Info", "EFI FileSystem Info");
+	EFI_GUID_STRING(EFI_FILE_SYSTEM_VOLUME_LABEL_ID, "Filesystem Volume Label ID", "EFI FileSystem Volume Label ID");
 	EFI_GUID_STRING(EFI_SIMPLE_FILE_SYSTEM_GUID, "Filesystem", "EFI 1.0 Simple FileSystem");
 	EFI_GUID_STRING(EFI_DEVICE_TREE_GUID, "Device Tree", "EFI Device Tree GUID");
 	EFI_GUID_STRING(EFI_DEVICE_PATH_PROTOCOL_GUID, "Device Path Protocol", "EFI 1.0 Device Path protocol");
+	EFI_GUID_STRING(EFI_DEVICE_PATH_TO_TEXT_PROTOCOL_GUID, "Device Path To Text Protocol", "EFI Device Path To Text Protocol");
+	EFI_GUID_STRING(EFI_DEVICE_PATH_UTILITIES_PROTOCOL_GUID, "Device Path Utilities Protocol", "EFI Device Path Utilities Protocol");
 	EFI_GUID_STRING(EFI_SIMPLE_NETWORK_PROTOCOL_GUID, "Simple Network Protocol", "EFI 1.0 Simple Network Protocol");
 	EFI_GUID_STRING(EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID, "Filesystem Protocol", "EFI 1.0 Simple FileSystem Protocol");
 	EFI_GUID_STRING(EFI_UNKNOWN_DEVICE_GUID, "Efi Unknown Device", "Efi Unknown Device GUID");
 	EFI_GUID_STRING(EFI_BLOCK_IO_PROTOCOL_GUID, "BlockIo Protocol", "EFI 1.0 Block IO protocol");
-
+	EFI_GUID_STRING(EFI_RNG_PROTOCOL_GUID, "RNG Protocol", "EFI RNG protocol");
+	EFI_GUID_STRING(EFI_LOADED_IMAGE_DEVICE_PATH_PROTOCOL_GUID, "Loaded Image Device Path Protocol", "EFI LoadedImageDevicePath Protocol");
 	EFI_GUID_STRING(EFI_FIRMWARE_VOLUME2_PROTOCOL_GUID, "FirmwareVolume2Protocol", "Efi FirmwareVolume2Protocol");
 	EFI_GUID_STRING(EFI_FIRMWARE_VOLUME_BLOCK_PROTOCOL_GUID, "FirmwareVolumeBlock Protocol", "Firmware Volume Block protocol");
 	EFI_GUID_STRING(EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_GUID, "PciRootBridgeIo Protocol", "EFI 1.1 Pci Root Bridge IO Protocol");

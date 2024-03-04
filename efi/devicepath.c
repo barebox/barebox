@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include <efi.h>
+#include <efi/efi-util.h>
 #include <malloc.h>
 #include <string.h>
 #include <wchar.h>

@@ -2,7 +2,7 @@
 #ifndef EFI_STDIO_H_
 #define EFI_STDIO_H_
 
-#include <efi.h>
+#include <efi/types.h>
 
 struct efi_simple_text_input_ex_protocol;
 
@@ -14,6 +14,11 @@ typedef efi_status_t (EFIAPI *efi_input_reset_ex)(
 struct efi_key_state {
 	u32 shift_state;
 	u8 toggle_state;
+};
+
+struct efi_input_key {
+	u16 scan_code;
+	s16 unicode_char;
 };
 
 struct efi_key_data {

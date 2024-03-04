@@ -2,6 +2,10 @@
 #ifndef __EFI_EFI_DEVICE_H
 #define __EFI_EFI_DEVICE_H
 
+#include <efi/types.h>
+#include <efi/efi-util.h>
+#include <driver.h>
+
 struct efi_device {
 	struct device dev;
 	efi_guid_t *guids;

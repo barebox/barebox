@@ -1,6 +1,8 @@
 #ifndef __EFI_DEVICE_PATH_H
 #define __EFI_DEVICE_PATH_H
 
+#include <efi/types.h>
+
 /*
  * Hardware Device Path (UEFI 2.4 specification, version 2.4 § 9.3.2.)
  */

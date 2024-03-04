@@ -2,8 +2,11 @@
 #ifndef __EFI_PAYLOAD_H
 #define __EFI_PAYLOAD_H
 
-#include <efi.h>
+#include <efi/types.h>
 #include <efi/efi-util.h>
+
+struct efi_system_table;
+struct efi_loaded_image;
 
 extern struct efi_system_table *efi_sys_table;
 extern efi_handle_t efi_parent_image;
@@ -14,6 +17,7 @@ void *efi_get_variable(char *name, efi_guid_t *vendor, int *var_size);
 
 static inline void *efi_get_global_var(char *name, int *var_size)
 {
+	extern efi_guid_t efi_global_variable_guid;
 	return efi_get_variable(name, &efi_global_variable_guid, var_size);
 }
 

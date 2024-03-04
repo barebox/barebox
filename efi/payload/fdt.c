@@ -5,6 +5,7 @@
 #include <common.h>
 #include <init.h>
 #include <libfile.h>
+#include <efi.h>
 #include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 

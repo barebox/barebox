@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <efi/efi-util.h>
+#include <efi.h>
 #include <errno.h>
 
 const char *efi_strerror(efi_status_t err)

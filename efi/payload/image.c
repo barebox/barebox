@@ -261,7 +261,10 @@ static int do_bootm_efi(struct image_data *data)
 	memset(boot_header, 0, 0x4000);
 	memcpy(boot_header, image_header, sizeof(*image_header));
 
-	boot_header->type_of_loader = 0xff;
+	/* Refer to Linux kernel commit a27e292b8a54
+	 * ("Documentation/x86/boot: Reserve type_of_loader=13 for barebox")
+	 */
+	boot_header->type_of_loader = 0x13;
 
 	if (data->initrd_file) {
 		tmp = read_file(data->initrd_file, &size);

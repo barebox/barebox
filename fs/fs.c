@@ -1502,7 +1502,6 @@ void d_add(struct dentry *dentry, struct inode *inode)
 }
 
 static bool d_same_name(const struct dentry *dentry,
-			const struct dentry *parent,
 			const struct qstr *name)
 {
 	if (dentry->d_name.len != name->len)
@@ -1511,17 +1510,16 @@ static bool d_same_name(const struct dentry *dentry,
 	return strncmp(dentry->d_name.name, name->name, name->len) == 0;
 }
 
-static struct dentry *d_lookup(const struct dentry *parent, const struct qstr *name)
+static struct dentry *d_lookup(struct dentry *parent, const struct qstr *name)
 {
 	struct dentry *dentry;
 
+	if (d_same_name(parent, name))
+		return dget(parent);
+
 	list_for_each_entry(dentry, &parent->d_subdirs, d_child) {
-		if (!d_same_name(dentry, parent, name))
-			continue;
-
-		dget(dentry);
-
-		return dentry;
+		if (d_same_name(dentry, name))
+			return dget(dentry);
 	}
 
 	return NULL;

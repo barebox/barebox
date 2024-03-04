@@ -2708,15 +2708,39 @@ out:
 }
 EXPORT_SYMBOL(symlink);
 
-static void release_dir(DIR *d)
+static void __release_dir(DIR *d)
 {
 	struct readdir_entry *entry, *tmp;
 
 	list_for_each_entry_safe(entry, tmp, &d->entries, list) {
 		free(entry);
 	}
+}
 
-	free(d);
+static int __opendir(DIR *d)
+{
+	int ret;
+	struct file file = {};
+	struct path *path = &d->path;
+	struct dentry *dir = path->dentry;
+	struct readdir_callback rd = {
+		.ctx = {
+			.actor = fillonedir,
+		},
+	};
+
+	file.f_path.dentry = dir;
+	file.f_inode = d_inode(dir);
+	file.f_op = dir->d_inode->i_fop;
+
+	INIT_LIST_HEAD(&d->entries);
+	rd.dir = d;
+
+	ret = file.f_op->iterate(&file, &rd.ctx);
+	if (ret)
+		__release_dir(d);
+
+	return ret;
 }
 
 DIR *opendir(const char *pathname)
@@ -2724,14 +2748,8 @@ DIR *opendir(const char *pathname)
 	int ret;
 	struct dentry *dir;
 	struct inode *inode;
-	struct file file = {};
 	DIR *d;
 	struct path path = {};
-	struct readdir_callback rd = {
-		.ctx = {
-			.actor = fillonedir,
-		},
-	};
 
 	ret = filename_lookup(getname(pathname),
 			      LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
@@ -2752,24 +2770,17 @@ DIR *opendir(const char *pathname)
 		goto out_put;
 	}
 
-	file.f_path.dentry = dir;
-	file.f_inode = d_inode(dir);
-	file.f_op = dir->d_inode->i_fop;
-
 	d = xzalloc(sizeof(*d));
 	d->path = path;
 
-	INIT_LIST_HEAD(&d->entries);
-	rd.dir = d;
-
-	ret = file.f_op->iterate(&file, &rd.ctx);
+	ret = __opendir(d);
 	if (ret)
-		goto out_release;
+		goto out_free;
 
 	return d;
 
-out_release:
-	release_dir(d);
+out_free:
+	free(d);
 out_put:
 	path_put(&path);
 out:
@@ -2785,7 +2796,8 @@ int closedir(DIR *dir)
 		return errno_set(-EBADF);
 
 	path_put(&dir->path);
-	release_dir(dir);
+	__release_dir(dir);
+	free(dir);
 
 	return 0;
 }

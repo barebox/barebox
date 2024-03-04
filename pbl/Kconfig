@@ -46,6 +46,13 @@ config PBL_RELOCATABLE
 	  This option only influences the PBL image. See RELOCATABLE to also make
 	  the real image relocatable.
 
+config PBL_FULLY_PIC
+	bool "fully position-independent pbl image"
+	depends on PBL_RELOCATABLE && ARM
+	help
+	  Compared to CONFIG_PBL_RELOCATABLE, this image has no relocations in
+	  the code sections.
+
 config PBL_VERIFY_PIGGY
 	depends on ARM
 	bool "Verify barebox proper hash before decompression" if COMPILE_TEST

@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# The stub may be linked into the kernel proper or into a separate boot binary,
+# but in either case, it executes before the kernel does (with MMU disabled) so
+# things like ftrace and stack-protector are likely to cause trouble if left
+# enabled, even if doing so doesn't break the build.
+#
+picflags-$(CONFIG_X86_64)	:= -mcmodel=small
+picflags-$(CONFIG_X86)		+= -fPIC -fno-asynchronous-unwind-tables
+
+ifeq ($(CONFIG_ARM),y)
+picflags-$(CONFIG_CPU_32)	:= -fpic -mno-single-pic-base
+picflags-$(CONFIG_CPU_64)	:= -fpie
+endif
+
+picflags-y			+= -include $(srctree)/include/linux/hidden.h \
+				   -D__fully_pic__ \
+				   -D__NO_FORTIFY \
+				   -ffreestanding \
+				   -fno-stack-protector \
+				   $(call cc-option,-fno-addrsig) \
+				   -D__DISABLE_EXPORTS

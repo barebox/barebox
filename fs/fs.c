@@ -1024,7 +1024,7 @@ int unreaddir(DIR *dir, const struct dirent *d)
 
 	entry = xzalloc(sizeof(*entry));
 	entry->d = *d;
-	list_add_tail(&entry->list, &dir->entries);
+	list_add(&entry->list, &dir->entries);
 
 	return 0;
 }

@@ -328,6 +328,9 @@ static int efi_postcore_init(void)
 	loaded_image_dp = device_path_from_handle(efi_loaded_image->device_handle);
 	pr_debug("loaded-image: %pD\n", loaded_image_dp);
 
+	if (!loaded_image_dp)
+		return -EINVAL;
+
 	uuid = device_path_to_partuuid(loaded_image_dp);
 	if (uuid) {
 		wchar_t *uuid16 = xstrdup_char_to_wchar(uuid);

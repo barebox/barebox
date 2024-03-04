@@ -324,8 +324,6 @@ struct efi_device_path_file_path {
 	s16 path_name[];
 };
 
-#define SIZE_OF_FILEPATH_DEVICE_PATH offsetof(FILEPATH_DEVICE_PATH,path_name)
-
 #define DEVICE_PATH_SUB_TYPE_MEDIA_PROTOCOL               0x05
 struct efi_device_path_media_protocol {
 	struct efi_device_path header;

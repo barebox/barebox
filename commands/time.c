@@ -10,7 +10,7 @@
 static int do_time(int argc, char *argv[])
 {
 	int i, opt;
-	unsigned char *buf;
+	unsigned char *buf, *p;
 	u64 start, end, diff64;
 	bool nanoseconds = false;
 	int len = 1; /* '\0' */
@@ -34,12 +34,14 @@ static int do_time(int argc, char *argv[])
 	for (i = 0; i < argc; i++)
 		len += strlen(argv[i]) + 1;
 
-	buf = xzalloc(len);
+	p = buf = xmalloc(len);
 
-	for (i = 0; i < argc; i++) {
-		strcat(buf, argv[i]);
-		strcat(buf, " ");
+	for (i = 0; i < argc - 1; i++) {
+		p = stpcpy(p, argv[i]);
+		p = mempcpy(p, " ", strlen(" "));
 	}
+
+	stpcpy(p, argv[i]);
 
 	start = get_time_ns();
 

@@ -20,6 +20,7 @@
 #include <kallsyms.h>
 #include <wchar.h>
 #include <of.h>
+#include <efi.h>
 
 #include <common.h>
 #include <pbl.h>
@@ -368,6 +369,15 @@ char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
 	return string(buf, end, uuid, field_width, precision, flags);
 }
 
+static char *device_path_string(char *buf, const char *end, const struct efi_device_path *dp,
+				int field_width, int precision, int flags)
+{
+	if (!dp)
+		return string(buf, end, NULL, field_width, precision, flags);
+
+	return buf + device_path_to_str_buf(dp, buf, end - buf);
+}
+
 static noinline_for_stack
 char *hex_string(char *buf, const char *end, const u8 *addr, int field_width,
 		 int precision, int flags, const char *fmt)
@@ -470,7 +480,7 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
  * by an extra set of alphanumeric characters that are extended format
  * specifiers.
  *
- * Right now we handle:
+ * Right now we handle following Linux-compatible format specifiers:
  *
  * - 'S' For symbolic direct pointers
  * - 'U' For a 16 byte UUID/GUID, it prints the UUID/GUID in the form
@@ -503,6 +513,10 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
  * - 'JP' For a JSON path
  * - 'M' For a 6-byte MAC address, it prints the address in the
  *       usual colon-separated hex notation
+ *
+ * Additionally, we support following barebox-specific format specifiers:
+ *
+ * - 'D' For EFI device paths
  */
 static char *pointer(const char *fmt, char *buf, const char *end, const void *ptr,
 		     int field_width, int precision, int flags)
@@ -548,6 +562,10 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
         case 'M':
 		/* Colon separated: 00:01:02:03:04:05 */
 		return mac_address_string(buf, end, ptr, field_width, precision, flags, fmt);
+	case 'D':
+		if (IS_ENABLED(CONFIG_EFI_DEVICEPATH))
+			return device_path_string(buf, end, ptr, field_width, precision, flags);
+		break;
 	}
 
 	return raw_pointer(buf, end, ptr, field_width, precision, flags);

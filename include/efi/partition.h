@@ -101,8 +101,10 @@ typedef struct _gpt_header {
 
 typedef struct _gpt_entry_attributes {
 	u64 required_to_function:1;
-	u64 reserved:47;
-        u64 type_guid_specific:16;
+	u64 no_block_io_protocol:1;
+	u64 legacy_bios_bootable:1;
+	u64 reserved:45;
+	u64 type_guid_specific:16;
 } __attribute__ ((packed)) gpt_entry_attributes;
 
 #define GPT_PARTNAME_MAX_SIZE	(72 / sizeof (wchar_t))

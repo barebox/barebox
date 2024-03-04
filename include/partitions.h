@@ -26,6 +26,8 @@ struct partition {
 	};
 	struct list_head list;
 	int num;
+	unsigned int flags;
+	unsigned int typeflags;
 };
 
 struct partition_parser;

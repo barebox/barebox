@@ -189,6 +189,15 @@ out:
 	return;
 }
 
+static void extract_flags(const struct partition_entry *p,
+			  struct partition *pentry)
+{
+	if (p->boot_indicator == 0x80)
+		pentry->flags |= DEVFS_PARTITION_BOOTABLE_LEGACY;
+	if (p->type == 0xef)
+		pentry->flags |= DEVFS_PARTITION_BOOTABLE_ESP;
+}
+
 /**
  * Check if a DOS like partition describes this block device
  * @param blk Block device to register to
@@ -237,6 +246,7 @@ static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 		pentry->first_sec = first_sec;
 		pentry->size = get_unaligned_le32(&table[i].partition_size);
 		pentry->dos_partition_type = table[i].type;
+		extract_flags(&table[i], pentry);
 		pentry->num = i;
 
 		sprintf(pentry->partuuid, "%08x-%02d", signature, i + 1);

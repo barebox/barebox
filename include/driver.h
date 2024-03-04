@@ -565,6 +565,7 @@ struct cdev {
 	loff_t offset;
 	loff_t size;
 	unsigned int flags;
+	u16 typeflags; /* GPT type-specific attributes */
 	int open;
 	struct mtd_info *mtd;
 	struct cdev *link;
@@ -637,6 +638,10 @@ extern struct list_head cdev_list;
 #define DEVFS_PARTITION_FROM_TABLE	(1U << 6)
 #define DEVFS_IS_MBR_PARTITIONED	(1U << 7)
 #define DEVFS_IS_GPT_PARTITIONED	(1U << 8)
+#define DEVFS_PARTITION_REQUIRED	(1U << 9)
+#define DEVFS_PARTITION_NO_EXPORT	(1U << 10)
+#define DEVFS_PARTITION_BOOTABLE_LEGACY	(1U << 11)
+#define DEVFS_PARTITION_BOOTABLE_ESP	(1U << 12)
 
 static inline bool cdev_is_mbr_partitioned(const struct cdev *master)
 {

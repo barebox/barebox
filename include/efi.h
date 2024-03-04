@@ -52,6 +52,14 @@
 #define EFI_INVALID_LANGUAGE            (32 | EFI_ERROR_MASK)
 #define EFI_COMPROMISED_DATA            (33 | EFI_ERROR_MASK)
 
+#define EFI_WARN_UNKNOWN_GLYPH		1
+#define EFI_WARN_DELETE_FAILURE		2
+#define EFI_WARN_WRITE_FAILURE		3
+#define EFI_WARN_BUFFER_TOO_SMALL	4
+#define EFI_WARN_STALE_DATA		5
+#define EFI_WARN_FILE_SYSTEM		6
+#define EFI_WARN_RESET_REQUIRED		7
+
 #define EFI_ERROR(a)	(((signed long) a) < 0)
 
 /*

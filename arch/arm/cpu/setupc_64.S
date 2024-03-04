@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
 #include <linux/linkage.h>
+#include <asm/assembler.h>
 #include <asm/sections.h>
 
 .section .text.setupc
@@ -10,9 +11,9 @@
  */
 ENTRY(setup_c)
 	mov	x15, x30
-	ldr	x0, =__bss_start
+	adr_l	x0, __bss_start
 	mov	x1, #0
-	ldr	x2, =__bss_stop
+	adr_l	x2, __bss_stop
 	sub	x2, x2, x0
 	bl	__memset		/* clear bss */
 	mov	x30, x15
@@ -29,12 +30,12 @@ ENDPROC(setup_c)
 					/* x0: target address */
 #ifdef __PBL__
 ENTRY(relocate_to_adr_full)
-	ldr	x2, =__image_end
+	adr_l	x2, __image_end
 	b	1f
 #endif
 
 ENTRY(relocate_to_adr)
-	ldr	x2, =__bss_start
+	adr_l	x2, __bss_start
 	b	1f
 
 1:
@@ -45,18 +46,13 @@ ENTRY(relocate_to_adr)
 
 	mov	x21, x0
 
-	bl	get_runtime_offset
-	mov	x5, x0
-
-	ldr	x0, =_text
-	mov	x20, x0
-
-	add	x1, x0, x5		/* x1: from address */
+	adr_l	x1, _text
+	mov	x20, x1
 
 	cmp	x1, x21			/* already at correct address? */
 	beq	1f			/* yes, skip copy to new address */
 
-	sub	x2, x2, x0		/* x2: size */
+	sub	x2, x2, x1		/* x2: size */
 	mov	x0, x21			/* x0: target */
 
 	/* adjust return address */
@@ -70,7 +66,7 @@ ENTRY(relocate_to_adr)
 	mov	x0,#0
 	ic	ivau, x0	/* flush icache */
 
-	ldr	x0,=1f
+	adr_l	x0, 1f
 	sub	x0, x0, x20
 	add	x0, x0, x21
 	br	x0			/* jump to relocated address */

@@ -76,6 +76,51 @@ struct linux_kernel_header {
 	uint32_t handover_offset;	/** */
 } __attribute__ ((packed));
 
+static void *efi_read_file(const char *file, size_t *size)
+{
+	efi_physical_addr_t mem;
+	efi_status_t efiret;
+	struct stat s;
+	char *buf;
+	ssize_t ret;
+
+	buf = read_file(file, size);
+	if (buf || errno != ENOMEM)
+		return buf;
+
+	ret = stat(file, &s);
+	if (ret)
+		return NULL;
+
+	efiret = BS->allocate_pages(EFI_ALLOCATE_ANY_PAGES,
+				    EFI_LOADER_CODE,
+				    DIV_ROUND_UP(s.st_size, EFI_PAGE_SIZE),
+				    &mem);
+	if (EFI_ERROR(efiret)) {
+		errno = efi_errno(efiret);
+		return NULL;
+	}
+
+	buf = (void *)mem;
+
+	ret = read_file_into_buf(file, buf, s.st_size);
+	if (ret < 0)
+		return NULL;
+
+	*size = ret;
+	return buf;
+}
+
+static void efi_free_file(void *_mem, size_t size)
+{
+	efi_physical_addr_t mem = (efi_physical_addr_t)_mem;
+
+	if (mem_malloc_start() <= mem && mem < mem_malloc_end())
+		free(_mem);
+	else
+		BS->free_pages(mem, DIV_ROUND_UP(size, EFI_PAGE_SIZE));
+}
+
 static int efi_load_image(const char *file, efi_loaded_image_t **loaded_image,
 		efi_handle_t *h)
 {
@@ -84,7 +129,7 @@ static int efi_load_image(const char *file, efi_loaded_image_t **loaded_image,
 	efi_handle_t handle;
 	efi_status_t efiret = EFI_SUCCESS;
 
-	exe = read_file(file, &size);
+	exe = efi_read_file(file, &size);
 	if (!exe)
 		return -errno;
 
@@ -106,7 +151,7 @@ static int efi_load_image(const char *file, efi_loaded_image_t **loaded_image,
 
 	*h = handle;
 out:
-	free(exe);
+	efi_free_file(exe, size);
 	return -efi_errno(efiret);
 }
 

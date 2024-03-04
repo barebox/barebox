@@ -31,7 +31,7 @@ static int do_readlink(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	if (canonicalize) {
-		char *buf = canonicalize_path(argv[optind]);
+		char *buf = canonicalize_path(AT_FDCWD, argv[optind]);
 		struct stat s;
 
 		if (!buf)

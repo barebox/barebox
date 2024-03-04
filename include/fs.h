@@ -150,7 +150,7 @@ char *mkmodestr(unsigned long mode, char *str);
 void stat_print(const char *filename, const struct stat *st);
 void cdev_print(const struct cdev *cdev);
 
-char *canonicalize_path(const char *pathname);
+char *canonicalize_path(int dirfd, const char *pathname);
 
 char *get_mounted_path(const char *path);
 

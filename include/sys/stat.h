@@ -5,7 +5,13 @@
 
 #include <linux/types.h>
 #include <linux/stat.h>
+#include <fcntl.h>
 
-int mkdir (const char *pathname, mode_t mode);
+int mkdirat(int dirfd, const char *pathname, mode_t mode);
+
+static inline int mkdir(const char *pathname, mode_t mode)
+{
+	return mkdirat(AT_FDCWD, pathname, mode);
+}
 
 #endif /* __STAT_H */

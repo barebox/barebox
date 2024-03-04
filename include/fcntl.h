@@ -4,6 +4,13 @@
 
 #include <linux/types.h>
 
+#define AT_FDCWD		-100    /* Special value used to indicate
+                                           openat should use the current
+                                           working directory. */
+
+#define AT_REMOVEDIR		0x200   /* Remove directory instead of
+                                           unlinking file.  */
+
 /* open/fcntl - O_SYNC is only implemented on blocks devices and on files
    located on an ext2 file system */
 #define O_ACCMODE	00000003
@@ -28,7 +35,12 @@
 #define O_RWSIZE_4	004000000
 #define O_RWSIZE_8	010000000
 
-int open(const char *pathname, int flags, ...);
+int openat(int dirfd, const char *pathname, int flags);
+
+static inline int open(const char *pathname, int flags, ...)
+{
+	return openat(AT_FDCWD, pathname, flags);
+}
 
 static inline int creat(const char *pathname, mode_t mode)
 {

@@ -168,8 +168,36 @@ static void test_strverscmp(void)
 	strverscmp_assert_one("", "", 0);
 }
 
+static void __expect_streq(const char *func, int line,
+			   char *is, const char *expect, bool free_is)
+{
+	total_tests++;
+	if (strcmp(is, expect)) {
+		failed_tests++;
+		printf("%s:%d: got %s, but %s expected\n", func, line, is, expect);
+	}
+
+	if (free_is)
+		free(is);
+}
+
+#define expect_dynstreq(args...) \
+	__expect_streq(__func__, __LINE__, args, true)
+
+static void test_strjoin(void)
+{
+	char *strs[] = { "ayy", "bee", "cee" };
+
+	expect_dynstreq(strjoin("",    strs, ARRAY_SIZE(strs)), "ayybeecee");
+	expect_dynstreq(strjoin(" ",   strs, ARRAY_SIZE(strs)), "ayy bee cee");
+	expect_dynstreq(strjoin(", ",  strs, ARRAY_SIZE(strs)), "ayy, bee, cee");
+	expect_dynstreq(strjoin(" ",   strs, 1),                "ayy");
+	expect_dynstreq(strjoin(" ",   NULL, 0),                "");
+}
+
 static void test_string(void)
 {
 	test_strverscmp();
+	test_strjoin();
 }
 bselftest(parser, test_string);

@@ -177,7 +177,7 @@ struct device_logical_unit_device_path {
 	u8 Lun;			/* Logical Unit Number */
 };
 
-#define MSG_USB_CLASS_DP                0x0_f
+#define MSG_USB_CLASS_DP                0x0f
 struct usb_class_device_path {
 	struct efi_device_path header;
 	u16 vendor_id;
@@ -385,7 +385,7 @@ struct bbs_bbs_device_path {
 #define BBS_TYPE_USB                    0x05
 #define BBS_TYPE_EMBEDDED_NETWORK       0x06
 #define BBS_TYPE_DEV                    0x80
-#define BBS_TYPE_UNKNOWN                0x_fF
+#define BBS_TYPE_UNKNOWN                0xff
 
 
 #define EFI_DP_TYPE_MASK			0x7f

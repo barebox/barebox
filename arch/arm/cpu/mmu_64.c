@@ -314,6 +314,9 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 	u64 optee_membase;
 	unsigned long ttb = arm_mem_ttb(membase + memsize);
 
+	if (get_cr() & CR_M)
+		return;
+
 	pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
 
 	el = current_el();

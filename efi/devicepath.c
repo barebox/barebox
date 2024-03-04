@@ -536,13 +536,13 @@ dev_path_media_protocol(struct string *str, const void *dev_path)
 }
 
 static void
-dev_path_bss_bss(struct string *str, const void *dev_path)
+dev_path_bbs_bbs(struct string *str, const void *dev_path)
 {
-	const struct efi_device_path_bbs_bbs *Bss;
+	const struct efi_device_path_bbs_bbs *bbs;
 	char *type;
 
-	Bss = dev_path;
-	switch (Bss->device_type) {
+	bbs = dev_path;
+	switch (bbs->device_type) {
 	case BBS_TYPE_FLOPPY:
 		type = "Floppy";
 		break;
@@ -569,7 +569,7 @@ dev_path_bss_bss(struct string *str, const void *dev_path)
 		break;
 	}
 
-	cprintf(str, "Bss-%s(%s)", type, Bss->String);
+	cprintf(str, "BBS(%s,%s)", type, bbs->String);
 }
 
 static void
@@ -666,7 +666,7 @@ struct {
 	DEVICE_PATH_TYPE_MEDIA_DEVICE, DEVICE_PATH_SUB_TYPE_VENDOR_PATH, dev_path_vendor}, {
 	DEVICE_PATH_TYPE_MEDIA_DEVICE, DEVICE_PATH_SUB_TYPE_FILE_PATH, dev_path_file_path}, {
 	DEVICE_PATH_TYPE_MEDIA_DEVICE, DEVICE_PATH_SUB_TYPE_MEDIA_PROTOCOL, dev_path_media_protocol}, {
-	DEVICE_PATH_TYPE_BBS_DEVICE, DEVICE_PATH_SUB_TYPE_BBS_BBS, dev_path_bss_bss}, {
+	DEVICE_PATH_TYPE_BBS_DEVICE, DEVICE_PATH_SUB_TYPE_BBS_BBS, dev_path_bbs_bbs}, {
 	DEVICE_PATH_TYPE_END, DEVICE_PATH_SUB_TYPE_INSTANCE_END,
 		    dev_path_end_instance}, {
 	0, 0, NULL}

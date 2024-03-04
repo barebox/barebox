@@ -386,28 +386,31 @@ postcore_initcall(efi_postcore_init);
 
 static int efi_late_init(void)
 {
-	char *state_desc;
+	const char *state_desc = "/boot/EFI/barebox/state.dtb";
+	struct device_node *state_root = NULL;
+	size_t size;
+	void *fdt;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_STATE))
 		return 0;
 
-	state_desc = xasprintf("/boot/EFI/barebox/state.dtb");
+	fdt = read_file(state_desc, &size);
+	if (!fdt) {
+		pr_info("unable to read %s: %m\n", state_desc);
+		return 0;
+	}
 
-	if (state_desc) {
-		struct device_node *root = NULL;
+	state_root = of_unflatten_dtb(fdt, size);
+	if (!IS_ERR(state_root)) {
 		struct device_node *np = NULL;
 		struct state *state;
 
-		root = of_read_file(state_desc);
-		if (IS_ERR(root))
-			return PTR_ERR(root);
-
-		ret = barebox_register_of(root);
+		ret = barebox_register_of(state_root);
 		if (ret)
 			pr_warn("Failed to register device-tree: %pe\n", ERR_PTR(ret));
 
-		np = of_find_node_by_alias(root, "state");
+		np = of_find_node_by_alias(state_root, "state");
 
 		state = state_new_from_node(np, false);
 		if (IS_ERR(state))

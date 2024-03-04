@@ -8,16 +8,16 @@
 #include <common.h>
 #include <command.h>
 #include <efi.h>
-#include <efi/efi-device.h>
 #include <efi/efi-mode.h>
+#include <efi/efi-device.h>
 
-static void efi_devpath(efi_handle_t handle)
+static void efi_devpath(struct efi_boot_services *bs, efi_handle_t handle)
 {
 	efi_status_t efiret;
 	void *devpath;
 	char *dev_path_str;
 
-	efiret = BS->open_protocol(handle, &efi_device_path_protocol_guid,
+	efiret = bs->open_protocol(handle, &efi_device_path_protocol_guid,
 				   &devpath, NULL, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	if (EFI_ERROR(efiret))
 		return;
@@ -29,7 +29,7 @@ static void efi_devpath(efi_handle_t handle)
 	}
 }
 
-static void efi_dump(efi_handle_t *handles, unsigned long handle_count)
+static void efi_dump(struct efi_boot_services *bs, efi_handle_t *handles, unsigned long handle_count)
 {
 	int i, j;
 	unsigned long num_guids;
@@ -41,12 +41,12 @@ static void efi_dump(efi_handle_t *handles, unsigned long handle_count)
 	for (i = 0; i < handle_count; i++) {
 		printf("handle-%p\n", handles[i]);
 
-		BS->protocols_per_handle(handles[i], &guids, &num_guids);
+		bs->protocols_per_handle(handles[i], &guids, &num_guids);
 		printf("  Protocols:\n");
 		for (j = 0; j < num_guids; j++)
 			printf("  %d: %pUl: %s\n", j, guids[j],
 					efi_guid_string(guids[j]));
-		efi_devpath(handles[i]);
+		efi_devpath(bs, handles[i]);
 	}
 	printf("\n");
 }
@@ -70,7 +70,7 @@ static unsigned char to_digit(unsigned char c)
 			dest |= to_digit(*src) << __i;			\
 	} while (0)
 
-static int do_efi_protocol_dump(int argc, char **argv)
+static int do_efi_protocol_dump(struct efi_boot_services *bs, int argc, char **argv)
 {
 	unsigned long handle_count = 0;
 	efi_handle_t *handles = NULL;
@@ -145,9 +145,9 @@ static int do_efi_protocol_dump(int argc, char **argv)
 	printf("Searching for:\n");
 	printf("  %pUl: %s\n", &guid, efi_guid_string(&guid));
 
-	ret = __efi_locate_handle(BS, BY_PROTOCOL, &guid, NULL, &handle_count, &handles);
+	ret = __efi_locate_handle(bs, BY_PROTOCOL, &guid, NULL, &handle_count, &handles);
 	if (!ret)
-		efi_dump(handles, handle_count);
+		efi_dump(bs, handles, handle_count);
 
 	return 0;
 }
@@ -156,14 +156,21 @@ static int do_efi_handle_dump(int argc, char *argv[])
 {
 	unsigned long handle_count = 0;
 	efi_handle_t *handles = NULL;
+	struct efi_boot_services *bs;
 	int ret;
 
-	if (argc > 1)
-		return do_efi_protocol_dump(--argc, ++argv);
+	bs = efi_get_boot_services();
+	if (!bs) {
+		printf("EFI not yet initialized\n");
+		return COMMAND_ERROR;
+	}
 
-	ret = __efi_locate_handle(BS, ALL_HANDLES, NULL, NULL, &handle_count, &handles);
+	if (argc > 1)
+		return do_efi_protocol_dump(bs, --argc, ++argv);
+
+	ret = __efi_locate_handle(bs, ALL_HANDLES, NULL, NULL, &handle_count, &handles);
 	if (!ret)
-		efi_dump(handles, handle_count);
+		efi_dump(bs, handles, handle_count);
 
 	return 0;
 }

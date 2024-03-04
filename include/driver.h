@@ -578,6 +578,17 @@ struct cdev {
 	};
 };
 
+static inline struct device_node *cdev_of_node(const struct cdev *cdev)
+{
+	return IS_ENABLED(CONFIG_OFDEVICE) ? cdev->device_node : NULL;
+}
+
+static inline void cdev_set_of_node(struct cdev *cdev, struct device_node *np)
+{
+	if (IS_ENABLED(CONFIG_OFDEVICE))
+		cdev->device_node = np;
+}
+
 int devfs_create(struct cdev *);
 int devfs_create_link(struct cdev *, const char *name);
 int devfs_remove(struct cdev *);

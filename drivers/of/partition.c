@@ -95,7 +95,7 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 	if (!node)
 		return -EINVAL;
 
-	cdev->device_node = node;
+	cdev_set_of_node(cdev, node);
 
 	subnode = of_get_child_by_name(node, "partitions");
 	if (subnode) {
@@ -276,21 +276,21 @@ int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
 static int of_partition_fixup(struct device_node *root, void *ctx)
 {
 	struct cdev *cdev = ctx;
-	struct device_node *np;
+	struct device_node *cdev_np, *np;
 	char *name;
 
-	if (!cdev->device_node)
+	cdev_np = cdev_of_node(cdev);
+	if (!cdev_np)
 		return -EINVAL;
 
 	if (list_empty(&cdev->partitions))
 		return 0;
 
-	name = of_get_reproducible_name(cdev->device_node);
+	name = of_get_reproducible_name(cdev_np);
 	np = of_find_node_by_reproducible_name(root, name);
 	free(name);
 	if (!np) {
-		dev_err(cdev->dev, "Cannot find nodepath %pOF, cannot fixup\n",
-				cdev->device_node);
+		dev_err(cdev->dev, "Cannot find nodepath %pOF, cannot fixup\n", cdev_np);
 		return -EINVAL;
 	}
 

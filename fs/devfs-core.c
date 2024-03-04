@@ -91,7 +91,7 @@ struct cdev *cdev_by_device_node(struct device_node *node)
 		return NULL;
 
 	for_each_cdev(cdev) {
-		if (cdev->device_node == node)
+		if (cdev_of_node(cdev) == node)
 			return cdev_readlink(cdev);
 	}
 	return NULL;

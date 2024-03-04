@@ -153,7 +153,7 @@ static int hf_probe(struct device *dev)
 
 	cdev = is_blockdev ? &priv->blk.cdev : &priv->cdev;
 
-	cdev->device_node = np;
+	cdev_set_of_node(cdev, np);
 
 	if (is_blockdev) {
 		cdev->name = np->name;

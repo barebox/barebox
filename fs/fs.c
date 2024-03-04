@@ -3038,7 +3038,7 @@ static char *get_linux_mmcblkdev(const struct cdev *root_cdev)
 	if (!cdevm || !cdev_is_mci_main_part_dev(cdevm))
 		return NULL;
 
-	id = of_alias_get_id(cdevm->device_node, "mmc");
+	id = of_alias_get_id(cdev_of_node(cdevm), "mmc");
 	if (id < 0)
 		return NULL;
 

@@ -353,16 +353,40 @@ config RELOCATABLE
 	  allowing it to relocate to the end of the available RAM. This
 	  way you have the whole memory in a single piece.
 
-config PANIC_HANG
-	bool "hang the system in case of a fatal error"
-	help
-	  This option enables stop of the system in case of a
-	  fatal error, so that you have to reset it manually.
-	  This is probably NOT a good idea for an embedded
-	  system where you want the system to reboot
-	  automatically as fast as possible, but it may be
-	  useful during development since you can try to debug
-	  the conditions that lead to the situation.
+choice
+	prompt "Configure action on fatal error"
+	default PANIC_RESET
+
+	config PANIC_POWEROFF
+		bool "power off the system"
+		help
+		  This option shuts down the system in case of a
+		  fatal error, so that you have to power it on manually.
+		  This is probably NOT a good idea for an embedded
+		  system where you want the system to reboot
+		  automatically as fast as possible, but it may be
+		  useful in emulation, because the system returns
+		  to parent shell immediately.
+
+	config PANIC_HANG
+		bool "hang the system"
+		help
+		  This option enables stop of the system in case of a
+		  fatal error, so that you have to reset it manually.
+		  This is probably NOT a good idea for an embedded
+		  system where you want the system to reboot
+		  automatically as fast as possible, but it may be
+		  useful during development since you can try to debug
+		  the conditions that lead to the situation.
+
+	config PANIC_RESET
+		bool "reset the system"
+		help
+		  This option enables reset of the system in case of a
+		  fatal error, so you don't have to reset it manually.
+		  This is the recommended configuration in production.
+
+endchoice
 
 config PROMPT
 	string

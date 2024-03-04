@@ -24,6 +24,7 @@
 #define O_DIRECTORY	00200000	/* must be a directory */
 #define O_NOFOLLOW	00400000	/* don't follow links */
 #define O_PATH		02000000	/* open as path */
+#define O_CHROOT	04000000	/* dirfd: stay within filesystem root */
 #define __O_TMPFILE	020000000
 
 #define O_TMPFILE       (__O_TMPFILE | O_DIRECTORY)

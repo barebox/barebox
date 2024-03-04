@@ -2166,9 +2166,17 @@ OK:
 	}
 }
 
+static bool file_has_flag(FILE *f, unsigned flag)
+{
+	if (IS_ERR_OR_NULL(f))
+		return false;
+	return (f->flags & flag) == flag;
+}
+
 static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 {
 	const char *s = nd->name->name;
+	bool chroot = false;
 	FILE *f = NULL;
 
 	nd->last_type = LAST_ROOT; /* if there are only slashes... */
@@ -2181,10 +2189,12 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 	/* We don't check for error here yet, as POSIX allows checking
 	 * whether paths are absolute with openat(-1, path, O_PATH)
 	 */
-	if (dirfd != AT_FDCWD)
+	if (dirfd != AT_FDCWD) {
 		f = fd_to_file(dirfd, true);
+		chroot = file_has_flag(f, O_CHROOT);
+	}
 
-	if (*s == '/') {
+	if (*s == '/' && !chroot) {
 		get_root(&nd->path);
 	} else if (dirfd == AT_FDCWD) {
 		get_pwd(&nd->path);
@@ -2195,6 +2205,11 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 		nd->path.mnt = &f->fsdev->vfsmount;
 		nd->path.dentry = f->dentry;
 		follow_mount(&nd->path);
+
+		if (*s == '/')
+			nd->path.dentry = nd->path.mnt->mnt_root;
+		if (chroot)
+			nd->d_root = nd->path.mnt->mnt_root;
 	}
 
 	return s;

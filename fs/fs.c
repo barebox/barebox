@@ -101,6 +101,10 @@ void cdev_print(const struct cdev *cdev)
 			printf(" gpt-partitioned");
 		if (cdev->mtd)
 			printf(" mtd");
+		if (cdev->flags & DEVFS_PARTITION_BOOTABLE_ESP)
+			printf(" boot-esp");
+		if (cdev->flags & DEVFS_PARTITION_BOOTABLE_LEGACY)
+			printf(" boot-legacy");
 		printf(" )");
 	}
 	printf("\n");

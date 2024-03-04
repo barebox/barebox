@@ -267,51 +267,6 @@ static int efi_init(void)
 }
 device_efi_initcall(efi_init);
 
-/**
- * efi-main - Entry point for EFI images
- */
-void efi_main(efi_handle_t image, struct efi_system_table *sys_table)
-{
-	efi_physical_addr_t mem;
-	size_t memsize;
-	efi_status_t efiret;
-
-#ifdef DEBUG
-	sys_table->con_out->output_string(sys_table->con_out, L"barebox\n");
-#endif
-
-	BS = sys_table->boottime;
-
-	efi_parent_image = image;
-	efi_sys_table = sys_table;
-	RT = sys_table->runtime;
-
-	efiret = BS->open_protocol(efi_parent_image, &efi_loaded_image_protocol_guid,
-			(void **)&efi_loaded_image,
-			efi_parent_image, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
-	if (!EFI_ERROR(efiret))
-		BS->handle_protocol(efi_loaded_image->device_handle,
-				&efi_device_path_protocol_guid, (void **)&efi_device_path);
-
-	mem = IS_ENABLED(CONFIG_X86) ? 0x3fffffff : ~0ULL;
-	for (memsize = SZ_256M; memsize >= SZ_8M; memsize /= 2) {
-		efiret  = BS->allocate_pages(EFI_ALLOCATE_MAX_ADDRESS,
-					     EFI_LOADER_DATA,
-					     memsize/PAGE_SIZE, &mem);
-		if (!EFI_ERROR(efiret))
-			break;
-		if (efiret != EFI_OUT_OF_RESOURCES)
-			panic("failed to allocate malloc pool: %s\n",
-			      efi_strerror(efiret));
-	}
-	if (EFI_ERROR(efiret))
-		panic("failed to allocate malloc pool: %s\n",
-		      efi_strerror(efiret));
-	mem_malloc_init((void *)mem, (void *)mem + memsize - 1);
-
-	start_barebox();
-}
-
 static int efi_core_init(void)
 {
 	struct device *dev;

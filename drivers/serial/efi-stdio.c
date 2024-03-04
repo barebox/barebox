@@ -20,7 +20,7 @@
 
 struct efi_console_priv {
 	struct efi_simple_text_output_protocol *out;
-	struct efi_simple_input_interface *in;
+	struct efi_simple_text_input_protocol *in;
 	struct efi_simple_text_input_ex_protocol *inex;
 	struct console_device cdev;
 	u16 efi_console_buffer[CONFIG_CBSIZE + 1];

@@ -602,7 +602,7 @@ struct efi_system_table {
 	unsigned long fw_vendor;	/* physical addr of CHAR16 vendor string */
 	u32 fw_revision;
 	efi_handle_t con_in_handle;
-	struct efi_simple_input_interface *con_in;
+	struct efi_simple_text_input_protocol *con_in;
 	efi_handle_t con_out_handle;
 	struct efi_simple_text_output_protocol *con_out;
 	efi_handle_t stderr_handle;
@@ -711,12 +711,12 @@ struct efi_simple_text_output_protocol {
 
 struct efi_input_key;
 
-struct efi_simple_input_interface {
-	efi_status_t(EFIAPI *reset)(struct efi_simple_input_interface *this,
+struct efi_simple_text_input_protocol {
+	efi_status_t(EFIAPI *reset)(struct efi_simple_text_input_protocol *this,
 			bool ExtendedVerification);
-	efi_status_t(EFIAPI *read_key_stroke)(struct efi_simple_input_interface *this,
+	efi_status_t(EFIAPI *read_key_stroke)(struct efi_simple_text_input_protocol *this,
 			struct efi_input_key *key);
-	void *wait_for_key;
+	struct efi_event *wait_for_key;
 };
 
 struct efi_device_path *device_path_from_handle(efi_handle_t Handle);

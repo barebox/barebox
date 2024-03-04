@@ -462,7 +462,7 @@ static int efi_init_devices(void)
 
 	return 0;
 }
-core_initcall(efi_init_devices);
+core_efi_initcall(efi_init_devices);
 
 void efi_pause_devices(void)
 {

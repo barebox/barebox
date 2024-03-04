@@ -332,4 +332,4 @@ static int efi_register_image_handler(void)
 
 	return 0;
 }
-late_initcall(efi_register_image_handler);
+late_efi_initcall(efi_register_image_handler);

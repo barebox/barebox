@@ -41,4 +41,4 @@ static int efi_fdt_probe(void)
 
 	return 0;
 }
-late_initcall(efi_fdt_probe);
+late_efi_initcall(efi_fdt_probe);

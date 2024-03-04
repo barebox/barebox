@@ -205,7 +205,7 @@ static int misc_init(void)
 
 	return 0;
 }
-late_initcall(misc_init);
+late_efi_initcall(misc_init);
 
 static struct NS16550_plat ns16550_plat = {
 	.clock = 115200 * 16,
@@ -223,7 +223,7 @@ static int efi_console_init(void)
 
 	return 0;
 }
-console_initcall(efi_console_init);
+console_efi_initcall(efi_console_init);
 
 static void __noreturn efi_restart_system(struct restart_handler *rst)
 {
@@ -247,7 +247,7 @@ static int restart_register_feature(void)
 
 	return 0;
 }
-coredevice_initcall(restart_register_feature);
+coredevice_efi_initcall(restart_register_feature);
 
 extern char image_base[];
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
@@ -265,7 +265,7 @@ static int efi_init(void)
 
 	return 0;
 }
-device_initcall(efi_init);
+device_efi_initcall(efi_init);
 
 /**
  * efi-main - Entry point for EFI images
@@ -325,7 +325,7 @@ static int efi_core_init(void)
 	dev = device_alloc("efi-wdt", DEVICE_ID_SINGLE);
 	return platform_device_register(dev);
 }
-core_initcall(efi_core_init);
+core_efi_initcall(efi_core_init);
 
 /* Features of the loader, i.e. systemd-boot, barebox (imported from systemd) */
 #define EFI_LOADER_FEATURE_CONFIG_TIMEOUT          (1LL << 0)
@@ -385,7 +385,7 @@ static int efi_postcore_init(void)
 
 	return 0;
 }
-postcore_initcall(efi_postcore_init);
+postcore_efi_initcall(efi_postcore_init);
 
 static int efi_late_init(void)
 {
@@ -434,10 +434,13 @@ static int efi_late_init(void)
 
 	return 0;
 }
-late_initcall(efi_late_init);
+late_efi_initcall(efi_late_init);
 
 static int do_efiexit(int argc, char *argv[])
 {
+	if (!BS)
+		return -ENOSYS;
+
 	console_flush();
 
 	if (!streq_ptr(argv[1], "-f"))

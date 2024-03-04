@@ -38,6 +38,7 @@
 #include <watchdog.h>
 #include <glob.h>
 #include <net.h>
+#include <efi/efi-mode.h>
 #include <bselftest.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
@@ -54,7 +55,7 @@ static int mount_root(void)
 	mkdir("/tmp", 0);
 	mount("none", "devfs", "/dev", NULL);
 
-	if (IS_ENABLED(CONFIG_FS_EFIVARFS)) {
+	if (IS_ENABLED(CONFIG_FS_EFIVARFS) && efi_is_payload()) {
 		mkdir("/efivars", 0);
 		mount("none", "efivarfs", "/efivars", NULL);
 	}

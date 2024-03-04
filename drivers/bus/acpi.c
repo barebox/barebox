@@ -239,4 +239,4 @@ static int efi_acpi_probe(void)
 	acpi_bus.dev->priv = table;
 	return acpi_register_devices(&acpi_bus);
 }
-postcore_initcall(efi_acpi_probe);
+postcore_efi_initcall(efi_acpi_probe);

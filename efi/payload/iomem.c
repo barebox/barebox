@@ -7,6 +7,7 @@
 #include <init.h>
 #include <efi.h>
 #include <efi/efi-payload.h>
+#include <efi/efi-init.h>
 #include <memory.h>
 #include <linux/sizes.h>
 
@@ -175,4 +176,4 @@ out:
 	free(mmap_buf);
 	return ret;
 }
-mem_initcall(efi_barebox_populate_mmap);
+mem_efi_initcall(efi_barebox_populate_mmap);

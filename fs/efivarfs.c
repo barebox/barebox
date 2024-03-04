@@ -371,4 +371,4 @@ static int efivarfs_init(void)
 	return register_fs_driver(&efivarfs_driver);
 }
 
-coredevice_initcall(efivarfs_init);
+coredevice_efi_initcall(efivarfs_init);

@@ -207,7 +207,7 @@ dev_path_vendor(struct string *str, const void *dev_path)
 		break;
 	}
 
-	cprintf(str, "Ven%s(%pU", type, &Vendor->Guid);
+	cprintf(str, "Ven%s(%pUl", type, &Vendor->Guid);
 	if (efi_guidcmp(Vendor->Guid, efi_unknown_device_guid) == 0) {
 		/* GUID used by EFI to enumerate an EDD 1.1 device */
 		unknown_dev_path =
@@ -301,7 +301,7 @@ dev_path1394(struct string *str, const void *dev_path)
 	const struct f1394_device_path *F1394;
 
 	F1394 = dev_path;
-	cprintf(str, "1394(%pU)", &F1394->Guid);
+	cprintf(str, "1394(%pUl)", &F1394->Guid);
 }
 
 static void
@@ -464,7 +464,7 @@ dev_path_infini_band(struct string *str, const void *dev_path)
 	const struct infiniband_device_path *infini_band;
 
 	infini_band = dev_path;
-	cprintf(str, "Infiniband(0x%x,%pU,0x%llx,0x%llx,0x%llx)",
+	cprintf(str, "Infiniband(0x%x,%pUl,0x%llx,0x%llx,0x%llx)",
 		infini_band->resource_flags, &infini_band->port_gid,
 		infini_band->service_id, infini_band->target_port_id,
 		infini_band->device_id);
@@ -553,10 +553,7 @@ dev_path_hard_drive(struct string *str, const void *dev_path)
 		    );
 		break;
 	case SIGNATURE_TYPE_GUID:
-		cprintf(str, "HD(Part%d,Sig%pU)",
-			hd->partition_number,
-			(efi_guid_t *) & (hd->signature[0])
-		    );
+		cprintf(str, "HD(Part%d,Sig%pUl)", hd->partition_number, (guid_t *)hd->signature);
 		break;
 	default:
 		cprintf(str, "HD(Part%d,mbr_type=%02x,sig_type=%02x)",
@@ -595,7 +592,7 @@ dev_path_media_protocol(struct string *str, const void *dev_path)
 	const struct media_protocol_device_path *media_prot;
 
 	media_prot = dev_path;
-	cprintf(str, "%pU", &media_prot->Protocol);
+	cprintf(str, "%pUl", &media_prot->Protocol);
 }
 
 static void

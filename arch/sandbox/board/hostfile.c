@@ -161,6 +161,7 @@ static int hf_probe(struct device *dev)
 		priv->blk.ops = &hf_blk_ops;
 		priv->blk.blockbits = SECTOR_SHIFT;
 		priv->blk.num_blocks = reg[1] / SECTOR_SIZE;
+		priv->blk.type = BLK_TYPE_VIRTUAL;
 
 		err = blockdevice_register(&priv->blk);
 		if (err)

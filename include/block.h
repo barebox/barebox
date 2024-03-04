@@ -17,11 +17,25 @@ struct block_device_ops {
 
 struct chunk;
 
+enum blk_type {
+	BLK_TYPE_UNSPEC = 0,
+	BLK_TYPE_USB,
+	BLK_TYPE_SD,
+	BLK_TYPE_AHCI,
+	BLK_TYPE_IDE,
+	BLK_TYPE_NVME,
+	BLK_TYPE_VIRTUAL,
+	BLK_TYPE_MMC,
+};
+
+const char *blk_type_str(enum blk_type);
+
 struct block_device {
 	struct device *dev;
 	struct list_head list;
 	struct block_device_ops *ops;
-	int blockbits;
+	u8 blockbits;
+	u8 type; /* holds enum blk_type */
 	blkcnt_t num_blocks;
 	int rdbufsize;
 	int blkmask;

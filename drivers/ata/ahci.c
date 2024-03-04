@@ -624,6 +624,7 @@ int ahci_add_host(struct ahci_device *ahci)
 		ahci_port->ata.dev = ahci->dev;
 		ahci_port->port_mmio = ahci_port_base(ahci->mmio_base, i);
 		ahci_port->ata.ops = &ahci_ops;
+		ahci_port->ata.ahci = true;
 		ata_port_register(&ahci_port->ata);
 	}
 

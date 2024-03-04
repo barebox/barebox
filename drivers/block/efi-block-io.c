@@ -179,6 +179,7 @@ static int efi_bio_probe(struct efi_device *efidev)
 	priv->blk.num_blocks = media->last_block + 1;
 	priv->blk.ops = &efi_bio_ops;
 	priv->blk.dev = &efidev->dev;
+	priv->blk.type = BLK_TYPE_VIRTUAL;
 
 	priv->media_id = media->media_id;
 

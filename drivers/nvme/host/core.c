@@ -361,6 +361,7 @@ static void nvme_alloc_ns(struct nvme_ctrl *ctrl, unsigned nsid)
 
 	ns->blk.dev = ctrl->dev;
 	ns->blk.ops = &nvme_block_device_ops;
+	ns->blk.type = BLK_TYPE_NVME;
 	ns->blk.cdev.name = strdup(disk_name);
 
 	__nvme_revalidate_disk(&ns->blk, id);

@@ -601,6 +601,7 @@ common-y		:= common/ drivers/ commands/ lib/ crypto/ net/ fs/ firmware/
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
 
+common-$(CONFIG_EFI)	+= efi/
 common-y		+= test/
 
 ifdef need-config

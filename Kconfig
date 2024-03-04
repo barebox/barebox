@@ -11,6 +11,7 @@ source "scripts/Kconfig.include"
 source "arch/Kconfig"
 
 source "common/Kconfig"
+source "efi/Kconfig"
 source "commands/Kconfig"
 source "net/Kconfig"
 source "drivers/Kconfig"

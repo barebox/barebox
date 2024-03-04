@@ -37,6 +37,12 @@ static struct image_handler aarch64_linux_handler = {
         .filetype = filetype_arm64_linux_image,
 };
 
+static struct image_handler aarch64_linux_efi_handler = {
+        .name = "ARM aarch64 Linux/EFI image",
+        .bootm = do_bootm_linux,
+        .filetype = filetype_arm64_efi_linux_image,
+};
+
 static struct image_handler aarch64_fit_handler = {
 	.name = "FIT image",
 	.bootm = do_bootm_linux,
@@ -83,6 +89,7 @@ static struct image_handler aarch64_barebox_handler = {
 
 static int aarch64_register_image_handler(void)
 {
+	register_image_handler(&aarch64_linux_efi_handler);
 	register_image_handler(&aarch64_linux_handler);
 	register_image_handler(&aarch64_barebox_handler);
 

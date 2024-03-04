@@ -63,7 +63,9 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_kwbimage_v1] = { "MVEBU kwbimage (v1)", "kwb1" },
 	[filetype_android_sparse] = { "Android sparse image", "sparse" },
 	[filetype_arm64_linux_image] = { "ARM aarch64 Linux image", "aarch64-linux" },
+	[filetype_arm64_efi_linux_image] = { "ARM aarch64 Linux/EFI image", "aarch64-efi-linux" },
 	[filetype_riscv_linux_image] = { "RISC-V Linux image", "riscv-linux" },
+	[filetype_riscv_efi_linux_image] = { "RISC-V Linux/EFI image", "riscv-efi-linux" },
 	[filetype_riscv_barebox_image] = { "RISC-V barebox image", "riscv-barebox" },
 	[filetype_elf] = { "ELF", "elf" },
 	[filetype_imx_image_v1] = { "i.MX image (v1)", "imx-image-v1" },
@@ -251,6 +253,11 @@ enum filetype file_detect_partition_table(const void *_buf, size_t bufsize)
 	return filetype_unknown;
 }
 
+static bool is_dos_exe(const u8 *buf8)
+{
+	return buf8[0] == 'M' && buf8[1] == 'Z';
+}
+
 #define CH_TOC_section_name     0x14
 
 enum filetype file_detect_type(const void *_buf, size_t bufsize)
@@ -313,9 +320,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (buf[0] == be32_to_cpu(0x534F4659))
 		return filetype_bpk;
 	if (le32_to_cpu(buf[14]) == 0x644d5241)
-		return filetype_arm64_linux_image;
+		return is_dos_exe(buf8) ? filetype_arm64_efi_linux_image : filetype_arm64_linux_image;
 	if (le32_to_cpu(buf[14]) == 0x05435352)
-		return filetype_riscv_linux_image;
+		return is_dos_exe(buf8) ? filetype_riscv_efi_linux_image : filetype_riscv_linux_image;
 	if (le32_to_cpu(buf[14]) == 0x56435352 && !memcmp(&buf[12], "barebox", 8))
 		return filetype_riscv_barebox_image;
 	if (strncmp(buf8, "RKNS", 4) == 0)
@@ -373,7 +380,7 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (buf[9] == 0x016f2818 || buf[9] == 0x18286f01)
 		return filetype_arm_zimage;
 
-	if (buf8[0] == 'M' && buf8[1] == 'Z')
+	if (is_dos_exe(buf8))
 		return filetype_exe;
 
 	if (bufsize < 256)

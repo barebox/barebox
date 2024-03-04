@@ -36,6 +36,12 @@ static struct image_handler riscv_linux_handler = {
         .filetype = filetype_riscv_linux_image,
 };
 
+static struct image_handler riscv_linux_efi_handler = {
+        .name = "RISC-V Linux/EFI image",
+        .bootm = do_bootm_linux,
+        .filetype = filetype_riscv_efi_linux_image,
+};
+
 static struct image_handler riscv_fit_handler = {
 	.name = "FIT image",
 	.bootm = do_bootm_linux,
@@ -51,6 +57,7 @@ static struct image_handler riscv_barebox_handler = {
 static int riscv_register_image_handler(void)
 {
 	register_image_handler(&riscv_linux_handler);
+	register_image_handler(&riscv_linux_efi_handler);
 	register_image_handler(&riscv_barebox_handler);
 
 	if (IS_ENABLED(CONFIG_FITIMAGE))

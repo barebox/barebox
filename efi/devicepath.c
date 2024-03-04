@@ -40,15 +40,11 @@ char *cprintf(struct string *str, const char *fmt, ...)
 	return NULL;
 }
 
-#define MIN_ALIGNMENT_SIZE  8	/* FIXME: X86_64 specific */
-#define ALIGN_SIZE(a)   ((a % MIN_ALIGNMENT_SIZE) ? MIN_ALIGNMENT_SIZE - (a % MIN_ALIGNMENT_SIZE) : 0)
-
 #define device_path_type(a)           ( ((a)->type) & DEVICE_PATH_TYPE_MASK )
 #define next_device_path_node(a)       ( (const struct efi_device_path *) ( ((u8 *) (a)) + (a)->length))
 #define is_device_path_end_type(a)      ( device_path_type(a) == DEVICE_PATH_TYPE_END )
 #define is_device_path_end_sub_type(a)   ( (a)->sub_type == DEVICE_PATH_SUB_TYPE_END )
 #define is_device_path_end(a)          ( is_device_path_end_type(a) && is_device_path_end_sub_type(a) )
-#define is_device_path_unpacked(a)     ( (a)->type & DEVICE_PATH_TYPE_UNPACKED )
 
 #define set_device_path_end_node(a)  {                      \
             (a)->type = DEVICE_PATH_TYPE_END;           \
@@ -88,50 +84,6 @@ device_path_from_handle(efi_handle_t Handle)
 	}
 
 	return NULL;
-}
-
-static struct efi_device_path *
-unpack_device_path(const struct efi_device_path *dev_path)
-{
-	const struct efi_device_path *Src;
-	struct efi_device_path *Dest, *new_path;
-	unsigned long Size;
-
-	/* Walk device path and round sizes to valid boundaries */
-
-	Src = dev_path;
-	Size = 0;
-	for (;;) {
-		Size += Src->length;
-		Size += ALIGN_SIZE(Size);
-
-		if (is_device_path_end(Src)) {
-			break;
-		}
-
-		Src = next_device_path_node(Src);
-	}
-
-	new_path = xzalloc(Size);
-
-	Src = dev_path;
-	Dest = new_path;
-	for (;;) {
-		Size = Src->length;
-		memcpy(Dest, Src, Size);
-		Size += ALIGN_SIZE(Size);
-		Dest->length = Size;
-		Dest->type |= DEVICE_PATH_TYPE_UNPACKED;
-		Dest =
-		    (struct efi_device_path *) (((u8 *) Dest) + Size);
-
-		if (is_device_path_end(Src))
-			break;
-
-		Src = next_device_path_node(Src);
-	}
-
-	return new_path;
 }
 
 static void
@@ -727,8 +679,6 @@ static void __device_path_to_str(struct string *str,
 	void (*dump_node) (struct string *, const void *);
 	int i;
 
-	dev_path = unpack_device_path(dev_path);
-
 	dev_path_node = dev_path;
 	while (!is_device_path_end(dev_path_node)) {
 		dump_node = NULL;
@@ -804,7 +754,6 @@ u8 device_path_to_type(const struct efi_device_path *dev_path)
 {
 	const struct efi_device_path *dev_path_next;
 
-	dev_path = unpack_device_path(dev_path);
 	dev_path_next = next_device_path_node(dev_path);
 
 	while (!is_device_path_end(dev_path_next)) {
@@ -819,7 +768,6 @@ u8 device_path_to_subtype(const struct efi_device_path *dev_path)
 {
 	const struct efi_device_path *dev_path_next;
 
-	dev_path = unpack_device_path(dev_path);
 	dev_path_next = next_device_path_node(dev_path);
 
 	while (!is_device_path_end(dev_path_next)) {
@@ -851,8 +799,6 @@ device_path_next_compatible_node(const struct efi_device_path *dev_path,
 
 char *device_path_to_partuuid(const struct efi_device_path *dev_path)
 {
-	dev_path = unpack_device_path(dev_path);
-
 	while ((dev_path = device_path_next_compatible_node(dev_path,
 				 DEVICE_PATH_TYPE_MEDIA_DEVICE, DEVICE_PATH_SUB_TYPE_HARD_DRIVE_PATH))) {
 		struct efi_device_path_hard_drive_path *hd =
@@ -871,8 +817,6 @@ char *device_path_to_filepath(const struct efi_device_path *dev_path)
 {
 	struct efi_device_path_file_path *fp = NULL;
 	char *path;
-
-	dev_path = unpack_device_path(dev_path);
 
 	while ((dev_path = device_path_next_compatible_node(dev_path,
 				 DEVICE_PATH_TYPE_MEDIA_DEVICE, DEVICE_PATH_SUB_TYPE_FILE_PATH))) {

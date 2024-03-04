@@ -880,6 +880,7 @@ struct efi_simple_text_input_protocol {
 
 const struct efi_device_path *device_path_from_handle(efi_handle_t handle);
 char *device_path_to_str(const struct efi_device_path *dev_path);
+size_t device_path_to_str_buf(const struct efi_device_path *dev_path, char buf[], size_t size);
 u8 device_path_to_type(const struct efi_device_path *dev_path);
 u8 device_path_to_subtype(const struct efi_device_path *dev_path);
 char *device_path_to_partuuid(const struct efi_device_path *dev_path);

@@ -6,11 +6,13 @@
 #include <malloc.h>
 #include <string.h>
 #include <wchar.h>
+#include <linux/overflow.h>
 #include <efi/device-path.h>
 
 struct string {
 	char *str;
-	int len;
+	unsigned allocated;
+	unsigned used;
 };
 
 char *cprintf(struct string *str, const char *fmt, ...)
@@ -18,17 +20,22 @@ char *cprintf(struct string *str, const char *fmt, ...)
 
 char *cprintf(struct string *str, const char *fmt, ...)
 {
+	void *buf = str->str;
+	unsigned bufsize = 0;
 	va_list args;
 	int len;
 
+	if (str->str) {
+		buf += str->used;
+		if (check_sub_overflow(str->allocated, str->used, &bufsize))
+			bufsize = 0;
+	}
+
 	va_start(args, fmt);
-	if (str->str)
-		len = vsprintf(str->str + str->len, fmt, args);
-	else
-		len = vsnprintf(NULL, 0, fmt, args);
+	len = vsnprintf(buf, bufsize, fmt, args);
 	va_end(args);
 
-	str->len += len;
+	str->used += len;
 
 	return NULL;
 }
@@ -717,8 +724,8 @@ struct {
 	0, 0, NULL}
 };
 
-static int __device_path_to_str(struct string *str,
-				const struct efi_device_path *dev_path)
+static void __device_path_to_str(struct string *str,
+				 const struct efi_device_path *dev_path)
 {
 	const struct efi_device_path *dev_path_node;
 	void (*dump_node) (struct string *, const void *);
@@ -743,32 +750,58 @@ static int __device_path_to_str(struct string *str,
 		if (!dump_node)
 			dump_node = dev_path_node_unknown;
 
-		if (str->len && dump_node != dev_path_end_instance)
+		if (str->used && dump_node != dev_path_end_instance)
 			cprintf(str, "/");
 
 		dump_node(str, dev_path_node);
 
 		dev_path_node = next_device_path_node(dev_path_node);
 	}
-
-	return 0;
 }
 
+/**
+ * device_path_to_str_buf() - formats a device path into a preallocated buffer
+ *
+ * @dev_path:	The EFI device path to format
+ * @buf:	The buffer to format into or optionally NULL if @len is zero
+ * @len:	The number of bytes that may be written into @buf
+ * Return:	total number of bytes that are required to store the formatted
+ *		result, excluding the terminating NUL byte, which is always
+ *		written.
+ */
+size_t device_path_to_str_buf(const struct efi_device_path *dev_path,
+			      char *buf, size_t len)
+{
+	struct string str = {
+		.str = buf,
+		.allocated = len,
+	};
+
+	__device_path_to_str(&str, dev_path);
+
+	return str.used;
+}
+
+/**
+ * device_path_to_str() - formats a device path into a newly allocated buffer
+ *
+ * @dev_path:	The EFI device path to format
+ * Return:	A pointer to the nul-terminated formatted device path.
+ */
 char *device_path_to_str(const struct efi_device_path *dev_path)
 {
-	struct string str = {};
+	void *buf;
+	size_t size;
 
-	__device_path_to_str(&str, dev_path);
+	size = device_path_to_str_buf(dev_path, NULL, 0);
 
-	str.str = malloc(str.len + 1);
-	if (!str.str)
+	buf = malloc(size + 1);
+	if (!buf)
 		return NULL;
 
-	str.len = 0;
+	device_path_to_str_buf(dev_path, buf, size + 1);
 
-	__device_path_to_str(&str, dev_path);
-
-	return str.str;
+	return buf;
 }
 
 u8 device_path_to_type(const struct efi_device_path *dev_path)

@@ -18,15 +18,12 @@ efi_physical_addr_t efi_earlymem_alloc(const struct efi_system_table *sys_table,
 		efiret  = bs->allocate_pages(EFI_ALLOCATE_MAX_ADDRESS,
 					     EFI_LOADER_DATA,
 					     *memsize/PAGE_SIZE, &mem);
-		if (!EFI_ERROR(efiret))
+		if (!EFI_ERROR(efiret) || efiret != EFI_OUT_OF_RESOURCES)
 			break;
-		if (efiret != EFI_OUT_OF_RESOURCES)
-			panic("failed to allocate malloc pool: %s\n",
-			      efi_strerror(efiret));
 	}
 	if (EFI_ERROR(efiret))
-		panic("failed to allocate malloc pool: %s\n",
-		      efi_strerror(efiret));
+		panic("failed to allocate %zu byte memory pool: 0x%lx\n",
+		      *memsize, efiret);
 
 	return mem;
 }

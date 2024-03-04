@@ -69,8 +69,6 @@ static int do_efi_protocol_dump(struct efi_boot_services *bs, int argc, char **a
 	/* Format 220e73b6-6bdb-4413-8405-b974b108619a */
 	if (argc == 1) {
 		ret = guid_parse(argv[0], &guid);
-		if (ret)
-			return ret;
 	} else if (argc == 11) {
 		u32 a;
 		u16 b, c;
@@ -80,21 +78,25 @@ static int do_efi_protocol_dump(struct efi_boot_services *bs, int argc, char **a
 		 *   or
 		 *	0x220e73b6 0x6bdb 0x14413 0x84 0x05 0xb9 0x74 0xb1 0x08 0x61 0x9a
 		 */
-		a = simple_strtoul(argv[0], NULL, 16);
-		b = simple_strtoul(argv[1], NULL, 16);
-		c = simple_strtoul(argv[2], NULL, 16);
-		d0 = simple_strtoul(argv[3], NULL, 16);
-		d1 = simple_strtoul(argv[4], NULL, 16);
-		d2 = simple_strtoul(argv[5], NULL, 16);
-		d3 = simple_strtoul(argv[6], NULL, 16);
-		d4 = simple_strtoul(argv[7], NULL, 16);
-		d5 = simple_strtoul(argv[8], NULL, 16);
-		d6 = simple_strtoul(argv[9], NULL, 16);
-		d7 = simple_strtoul(argv[10], NULL, 16);
-		guid = EFI_GUID(a, b, c, d0, d1, d2, d3, d4, d5, d6, d7);
+		ret =        kstrtou32(argv[0], 16, &a);
+		ret = ret ?: kstrtou16(argv[1], 16, &b);
+		ret = ret ?: kstrtou16(argv[2], 16, &c);
+		ret = ret ?: kstrtou8(argv[3],  16, &d0);
+		ret = ret ?: kstrtou8(argv[4],  16, &d1);
+		ret = ret ?: kstrtou8(argv[5],  16, &d2);
+		ret = ret ?: kstrtou8(argv[6],  16, &d3);
+		ret = ret ?: kstrtou8(argv[7],  16, &d4);
+		ret = ret ?: kstrtou8(argv[8],  16, &d5);
+		ret = ret ?: kstrtou8(argv[9],  16, &d6);
+		ret = ret ?: kstrtou8(argv[10], 16, &d7);
+		if (!ret)
+			guid = EFI_GUID(a, b, c, d0, d1, d2, d3, d4, d5, d6, d7);
 	} else {
-		return -EINVAL;
+		ret = -EINVAL;
 	}
+
+	if (ret)
+		return ret;
 
 	printf("Searching for:\n");
 	printf("  %pUl: %s\n", &guid, efi_guid_string(&guid));

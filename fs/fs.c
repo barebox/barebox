@@ -890,10 +890,18 @@ const char *fs_detect(const char *filename, const char *fsoptions)
 
 	parseopt_b(fsoptions, "loop", &loop);
 	parseopt_llu_suffix(fsoptions, "offset", &offset);
-	if (loop)
+
+	if (loop) {
 		ret = file_name_detect_type_offset(filename, offset, &type);
-	else
-		ret = cdev_detect_type(filename, &type);
+	} else {
+		struct cdev *cdev = cdev_open_by_name(filename, O_RDONLY);
+		if (cdev) {
+			ret = cdev_detect_type(cdev, &type);
+			cdev_close(cdev);
+		} else {
+			ret = -ENOENT;
+		}
+	}
 
 	if (ret || type == filetype_unknown)
 		return NULL;

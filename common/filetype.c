@@ -456,20 +456,14 @@ int file_name_detect_type(const char *filename, enum filetype *type)
 	return file_name_detect_type_offset(filename, 0, type);
 }
 
-int cdev_detect_type(const char *name, enum filetype *type)
+int cdev_detect_type(struct cdev *cdev, enum filetype *type)
 {
 	int ret;
-	struct cdev *cdev;
 	void *buf;
-
-	cdev = cdev_open_by_name(name, O_RDONLY);
-	if (!cdev)
-		return -ENOENT;
 
 	if (cdev->filetype != filetype_unknown) {
 		*type = cdev->filetype;
-		ret = 0;
-		goto cdev_close;
+		return 0;
 	}
 
 	buf = xzalloc(FILE_TYPE_SAFE_BUFSIZE);
@@ -482,8 +476,6 @@ int cdev_detect_type(const char *name, enum filetype *type)
 
 err_out:
 	free(buf);
-cdev_close:
-	cdev_close(cdev);
 	return ret;
 }
 

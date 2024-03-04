@@ -601,11 +601,11 @@ struct efi_system_table {
 	struct efi_table_hdr hdr;
 	unsigned long fw_vendor;	/* physical addr of CHAR16 vendor string */
 	u32 fw_revision;
-	unsigned long con_in_handle;
+	efi_handle_t con_in_handle;
 	struct efi_simple_input_interface *con_in;
-	unsigned long con_out_handle;
+	efi_handle_t con_out_handle;
 	struct efi_simple_text_output_protocol *con_out;
-	unsigned long stderr_handle;
+	efi_handle_t stderr_handle;
 	unsigned long std_err;
 	struct efi_runtime_services *runtime;
 	struct efi_boot_services *boottime;
@@ -615,9 +615,9 @@ struct efi_system_table {
 
 struct efi_loaded_image {
 	u32 revision;
-	void *parent_handle;
+	efi_handle_t parent_handle;
 	struct efi_system_table *system_table;
-	void *device_handle;
+	efi_handle_t device_handle;
 	void *file_path;
 	void *reserved;
 	u32 load_options_size;

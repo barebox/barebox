@@ -430,7 +430,7 @@ static int efi_console_probe(struct device *dev)
 	if (!priv->inputbuffer)
 		return -ENOMEM;
 
-	efiret = BS->open_protocol((void *)efi_sys_table->con_in_handle,
+	efiret = BS->open_protocol(efi_sys_table->con_in_handle,
 			     &inex_guid,
 			     (void **)&inex,
 			     efi_parent_image,

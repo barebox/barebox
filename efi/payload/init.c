@@ -215,8 +215,9 @@ static int efi_console_init(void)
 
 	add_generic_device("efi-stdio", DEVICE_ID_SINGLE, NULL, 0 , 0, 0, NULL);
 
-	add_ns16550_device(0, 0x3f8, 0x10, IORESOURCE_IO | IORESOURCE_MEM_8BIT,
-				&ns16550_plat);
+	if (IS_ENABLED(CONFIG_X86))
+		add_ns16550_device(0, 0x3f8, 0x10, IORESOURCE_IO | IORESOURCE_MEM_8BIT,
+					&ns16550_plat);
 
 	return 0;
 }

@@ -170,7 +170,7 @@ dev_path_mem_map(struct string *str, const void *dev_path)
 	const struct memmap_device_path *mem_map;
 
 	mem_map = dev_path;
-	cprintf(str, "mem_map(%d,0x%llx,0x%llx)",
+	cprintf(str, "MemoryMapped(0x%x,0x%llx,0x%llx)",
 		mem_map->memory_type,
 		mem_map->starting_address, mem_map->ending_address);
 }

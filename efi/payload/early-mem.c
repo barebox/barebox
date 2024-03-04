@@ -4,7 +4,6 @@
 #include <linux/sizes.h>
 #include <efi.h>
 #include <efi/efi-payload.h>
-#include <linux/pagemap.h>
 
 efi_physical_addr_t efi_earlymem_alloc(const struct efi_system_table *sys_table,
 				       size_t *memsize)
@@ -17,7 +16,7 @@ efi_physical_addr_t efi_earlymem_alloc(const struct efi_system_table *sys_table,
 	for (*memsize = SZ_256M; *memsize >= SZ_8M; *memsize /= 2) {
 		efiret  = bs->allocate_pages(EFI_ALLOCATE_MAX_ADDRESS,
 					     EFI_LOADER_DATA,
-					     *memsize/PAGE_SIZE, &mem);
+					     *memsize / EFI_PAGE_SIZE, &mem);
 		if (!EFI_ERROR(efiret) || efiret != EFI_OUT_OF_RESOURCES)
 			break;
 	}

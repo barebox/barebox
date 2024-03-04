@@ -11,20 +11,23 @@
 #include <efi/efi-mode.h>
 #include <efi/efi-device.h>
 
-static void efi_devpath(struct efi_boot_services *bs, efi_handle_t handle)
+static void efi_devpath(struct efi_boot_services *bs,
+			efi_handle_t handle,
+			const efi_guid_t *guid,
+			const char *desc)
 {
 	efi_status_t efiret;
 	void *devpath;
 	char *dev_path_str;
 
-	efiret = bs->open_protocol(handle, &efi_device_path_protocol_guid,
-				   &devpath, NULL, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+	efiret = bs->open_protocol(handle, guid, &devpath, NULL, NULL,
+				   EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	if (EFI_ERROR(efiret))
 		return;
 
 	dev_path_str = device_path_to_str(devpath);
 	if (dev_path_str) {
-		printf("  Devpath: \n  %s\n", dev_path_str);
+		printf("  %s: \n  %s\n", desc, dev_path_str);
 		free(dev_path_str);
 	}
 }
@@ -46,7 +49,11 @@ static void efi_dump(struct efi_boot_services *bs, efi_handle_t *handles, unsign
 		for (j = 0; j < num_guids; j++)
 			printf("  %d: %pUl: %s\n", j, guids[j],
 					efi_guid_string(guids[j]));
-		efi_devpath(bs, handles[i]);
+
+		efi_devpath(bs, handles[i], &efi_device_path_protocol_guid,
+			    "Devpath");
+		efi_devpath(bs, handles[i], &efi_loaded_image_device_path_guid,
+			    "Image Devpath");
 	}
 	printf("\n");
 }

@@ -590,6 +590,11 @@ static inline void cdev_set_of_node(struct cdev *cdev, struct device_node *np)
 		cdev->device_node = np;
 }
 
+static inline const char *cdev_name(struct cdev *cdev)
+{
+	return cdev ? cdev->name : NULL;
+}
+
 int devfs_create(struct cdev *);
 int devfs_create_link(struct cdev *, const char *name);
 int devfs_remove(struct cdev *);

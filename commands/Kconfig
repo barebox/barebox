@@ -655,6 +655,21 @@ config CMD_MOUNT
 		  -o OPTIONS	set file system OPTIONS
 		  -v		verbose
 
+config CMD_FINDMNT
+	tristate
+	prompt "findmnt"
+	help
+	  Find a file system
+
+	  Usage: findmnt [ DEVICE | -T FILE ]
+
+	  findmnt will list all mounted filesystems or search
+	  for a filesystem when given the mountpoint or the
+	  source device as an argument
+
+	  Options:
+		-T		mount target file path
+
 config CMD_PARTED
 	tristate
 	depends on PARTITION

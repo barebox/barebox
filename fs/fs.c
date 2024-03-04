@@ -130,8 +130,6 @@ void cdev_print(const struct cdev *cdev)
 }
 EXPORT_SYMBOL(cdev_print);
 
-static struct fs_device *get_fsdevice_by_path(int dirfd, const char *path);
-
 void stat_print(const char *filename, const struct stat *st)
 {
 	int dirfd = AT_FDCWD;
@@ -2383,7 +2381,7 @@ static int filename_lookup(int dirfd, struct filename *name, unsigned flags,
 	return err;
 }
 
-static struct fs_device *get_fsdevice_by_path(int dirfd, const char *pathname)
+struct fs_device *get_fsdevice_by_path(int dirfd, const char *pathname)
 {
 	struct fs_device *fsdev;
 	struct path path;

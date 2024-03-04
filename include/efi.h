@@ -117,7 +117,8 @@ enum efi_memory_type {
 #define EFI_MEMORY_DESCRIPTOR_VERSION	1
 
 #define EFI_PAGE_SHIFT		12
-#define EFI_PAGE_SIZE		(1UL << EFI_PAGE_SHIFT)
+#define EFI_PAGE_SIZE		(1ULL << EFI_PAGE_SHIFT)
+#define EFI_PAGE_MASK		(EFI_PAGE_SIZE - 1)
 
 /*
  * Allocation types for calls to boottime->allocate_pages.

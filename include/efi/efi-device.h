@@ -63,4 +63,13 @@ static inline bool efi_device_has_guid(struct efi_device *efidev, efi_guid_t gui
 	return false;
 }
 
+enum efi_locate_search_type;
+
+int __efi_locate_handle(struct efi_boot_services *bs,
+		enum efi_locate_search_type search_type,
+		efi_guid_t *protocol,
+		void *search_key,
+		unsigned long *no_handles,
+		efi_handle_t **buffer);
+
 #endif /* __EFI_EFI_DEVICE_H */

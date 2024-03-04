@@ -123,6 +123,14 @@ config CMD_DRVINFO
 	help
 	  List compiled-in device drivers and the devices they support.
 
+config CMD_EFI_HANDLE_DUMP
+	tristate
+	default y
+	depends on EFI
+	prompt "efi_handle_dump"
+	help
+	  Dump information on EFI handles
+
 config CMD_HELP
 	tristate
 	default y

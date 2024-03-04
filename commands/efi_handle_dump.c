@@ -8,6 +8,7 @@
 #include <common.h>
 #include <command.h>
 #include <efi.h>
+#include <linux/uuid.h>
 #include <efi/efi-mode.h>
 #include <efi/efi-device.h>
 
@@ -58,75 +59,22 @@ static void efi_dump(struct efi_boot_services *bs, efi_handle_t *handles, unsign
 	printf("\n");
 }
 
-static unsigned char to_digit(unsigned char c)
-{
-	if (c >= '0' && c <= '9')
-		c -= '0';
-	else if (c >= 'A' && c <= 'F')
-		c -= 'A' - 10;
-	else
-		c -= 'a' - 10;
-
-	return c;
-}
-
-#define read_xbit(src, dest, bit) 					\
-	do {								\
-		int __i;						\
-		for (__i = (bit - 4); __i >= 0; __i -= 4, src++)	\
-			dest |= to_digit(*src) << __i;			\
-	} while (0)
-
 static int do_efi_protocol_dump(struct efi_boot_services *bs, int argc, char **argv)
 {
 	unsigned long handle_count = 0;
 	efi_handle_t *handles = NULL;
 	int ret;
 	efi_guid_t guid;
-	u32 a = 0;
-	u16 b = 0;
-	u16 c = 0;
-	u8 d0 = 0;
-	u8 d1 = 0;
-	u8 d2 = 0;
-	u8 d3 = 0;
-	u8 d4 = 0;
-	u8 d5 = 0;
-	u8 d6 = 0;
-	u8 d7 = 0;
 
 	/* Format 220e73b6-6bdb-4413-8405-b974b108619a */
 	if (argc == 1) {
-		char *s = argv[0];
-		int len = strlen(s);
-
-		if (len != 36)
-			return -EINVAL;
-
-		read_xbit(s, a, 32);
-		if (*s != '-')
-			return -EINVAL;
-		s++;
-		read_xbit(s, b, 16);
-		if (*s != '-')
-			return -EINVAL;
-		s++;
-		read_xbit(s, c, 16);
-		if (*s != '-')
-			return -EINVAL;
-		s++;
-		read_xbit(s, d0, 8);
-		read_xbit(s, d1, 8);
-		if (*s != '-')
-			return -EINVAL;
-		s++;
-		read_xbit(s, d2, 8);
-		read_xbit(s, d3, 8);
-		read_xbit(s, d4, 8);
-		read_xbit(s, d5, 8);
-		read_xbit(s, d6, 8);
-		read_xbit(s, d7, 8);
+		ret = guid_parse(argv[0], &guid);
+		if (ret)
+			return ret;
 	} else if (argc == 11) {
+		u32 a;
+		u16 b, c;
+		u8 d0, d1, d2, d3, d4, d5, d6, d7;
 		/* Format :
 		 *	220e73b6 6bdb 4413 84 05 b9 74 b1 08 61 9a
 		 *   or
@@ -143,11 +91,10 @@ static int do_efi_protocol_dump(struct efi_boot_services *bs, int argc, char **a
 		d5 = simple_strtoul(argv[8], NULL, 16);
 		d6 = simple_strtoul(argv[9], NULL, 16);
 		d7 = simple_strtoul(argv[10], NULL, 16);
+		guid = EFI_GUID(a, b, c, d0, d1, d2, d3, d4, d5, d6, d7);
 	} else {
 		return -EINVAL;
 	}
-
-	guid = EFI_GUID(a, b, c, d0, d1, d2, d3, d4, d5, d6, d7);
 
 	printf("Searching for:\n");
 	printf("  %pUl: %s\n", &guid, efi_guid_string(&guid));

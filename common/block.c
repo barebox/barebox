@@ -13,8 +13,6 @@
 #include <dma.h>
 #include <file-list.h>
 
-#define BLOCKSIZE(blk)	(1 << blk->blockbits)
-
 LIST_HEAD(block_device_list);
 
 /* a chunk of contiguous data */

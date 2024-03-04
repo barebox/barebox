@@ -878,11 +878,11 @@ struct efi_simple_text_input_protocol {
 	struct efi_event *wait_for_key;
 };
 
-struct efi_device_path *device_path_from_handle(efi_handle_t Handle);
-char *device_path_to_str(struct efi_device_path *dev_path);
-u8 device_path_to_type(struct efi_device_path *dev_path);
-u8 device_path_to_subtype(struct efi_device_path *dev_path);
-char *device_path_to_partuuid(struct efi_device_path *dev_path);
+const struct efi_device_path *device_path_from_handle(efi_handle_t handle);
+char *device_path_to_str(const struct efi_device_path *dev_path);
+u8 device_path_to_type(const struct efi_device_path *dev_path);
+u8 device_path_to_subtype(const struct efi_device_path *dev_path);
+char *device_path_to_partuuid(const struct efi_device_path *dev_path);
 
 const char *efi_guid_string(efi_guid_t *g);
 

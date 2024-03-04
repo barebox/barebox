@@ -49,7 +49,7 @@ char *cprintf(struct string *str, const char *fmt, ...)
 #define DP_IS_END_SUBTYPE(a)        ( ((a)->sub_type == END_ENTIRE_DEVICE_PATH_SUBTYPE )
 
 #define device_path_type(a)           ( ((a)->type) & EFI_DP_TYPE_MASK )
-#define next_device_path_node(a)       ( (struct efi_device_path *) ( ((u8 *) (a)) + (a)->length))
+#define next_device_path_node(a)       ( (const struct efi_device_path *) ( ((u8 *) (a)) + (a)->length))
 #define is_device_path_end_type(a)      ( device_path_type(a) == END_DEVICE_PATH_TYPE )
 #define is_device_path_end_sub_type(a)   ( (a)->sub_type == END_ENTIRE_DEVICE_PATH_SUBTYPE )
 #define is_device_path_end(a)          ( is_device_path_end_type(a) && is_device_path_end_sub_type(a) )
@@ -61,23 +61,23 @@ char *cprintf(struct string *str, const char *fmt, ...)
             (a)->length = sizeof(struct efi_device_path);   \
             }
 
-struct efi_device_path end_device_path = {
+const struct efi_device_path end_device_path = {
 	.type = END_DEVICE_PATH_TYPE,
 	.sub_type = END_ENTIRE_DEVICE_PATH_SUBTYPE,
 	.length = END_DEVICE_PATH_LENGTH,
 };
 
-struct efi_device_path end_instance_device_path = {
+const struct efi_device_path end_instance_device_path = {
 	.type = END_DEVICE_PATH_TYPE,
 	.sub_type = END_INSTANCE_DEVICE_PATH_SUBTYPE,
 	.length = END_DEVICE_PATH_LENGTH,
 };
 
-struct efi_device_path *
+const struct efi_device_path *
 device_path_from_handle(efi_handle_t Handle)
 {
 	efi_status_t Status;
-	struct efi_device_path *device_path;
+	const struct efi_device_path *device_path;
 
 	Status = BS->handle_protocol(Handle, &efi_device_path_protocol_guid,
 				(void *) &device_path);
@@ -132,27 +132,27 @@ unpack_device_path(const struct efi_device_path *dev_path)
 }
 
 static void
-dev_path_pci(struct string *str, void *dev_path)
+dev_path_pci(struct string *str, const void *dev_path)
 {
-	struct pci_device_path *Pci;
+	const struct pci_device_path *Pci;
 
 	Pci = dev_path;
 	cprintf(str, "Pci(0x%x,0x%x)", Pci->Device, Pci->Function);
 }
 
 static void
-dev_path_pccard(struct string *str, void *dev_path)
+dev_path_pccard(struct string *str, const void *dev_path)
 {
-	struct pccard_device_path *Pccard;
+	const struct pccard_device_path *Pccard;
 
 	Pccard = dev_path;
 	cprintf(str, "Pccard(0x%x)", Pccard->function_number);
 }
 
 static void
-dev_path_mem_map(struct string *str, void *dev_path)
+dev_path_mem_map(struct string *str, const void *dev_path)
 {
-	struct memmap_device_path *mem_map;
+	const struct memmap_device_path *mem_map;
 
 	mem_map = dev_path;
 	cprintf(str, "mem_map(%d,0x%llx,0x%llx)",
@@ -161,18 +161,18 @@ dev_path_mem_map(struct string *str, void *dev_path)
 }
 
 static void
-dev_path_controller(struct string *str, void *dev_path)
+dev_path_controller(struct string *str, const void *dev_path)
 {
-	struct controller_device_path *Controller;
+	const struct controller_device_path *Controller;
 
 	Controller = dev_path;
 	cprintf(str, "Ctrl(%d)", Controller->Controller);
 }
 
 static void
-dev_path_vendor(struct string *str, void *dev_path)
+dev_path_vendor(struct string *str, const void *dev_path)
 {
-	struct vendor_device_path *Vendor;
+	const struct vendor_device_path *Vendor;
 	char *type;
 	struct unknown_device_vendor_device_path *unknown_dev_path;
 
@@ -207,9 +207,9 @@ dev_path_vendor(struct string *str, void *dev_path)
   type: 2 (ACPI Device Path) sub_type: 1 (ACPI Device Path)
  */
 static void
-dev_path_acpi(struct string *str, void *dev_path)
+dev_path_acpi(struct string *str, const void *dev_path)
 {
-	struct acpi_hid_device_path *Acpi;
+	const struct acpi_hid_device_path *Acpi;
 
 	Acpi = dev_path;
 	if ((Acpi->HID & PNP_EISA_ID_MASK) == PNP_EISA_ID_CONST) {
@@ -250,9 +250,9 @@ dev_path_acpi(struct string *str, void *dev_path)
 }
 
 static void
-dev_path_atapi(struct string *str, void *dev_path)
+dev_path_atapi(struct string *str, const void *dev_path)
 {
-	struct atapi_device_path *Atapi;
+	const struct atapi_device_path *Atapi;
 
 	Atapi = dev_path;
 	cprintf(str, "Ata(%s,%s)",
@@ -261,18 +261,18 @@ dev_path_atapi(struct string *str, void *dev_path)
 }
 
 static void
-dev_path_scsi(struct string *str, void *dev_path)
+dev_path_scsi(struct string *str, const void *dev_path)
 {
-	struct scsi_device_path *Scsi;
+	const struct scsi_device_path *Scsi;
 
 	Scsi = dev_path;
 	cprintf(str, "Scsi(%d,%d)", Scsi->Pun, Scsi->Lun);
 }
 
 static void
-dev_path_fibre(struct string *str, void *dev_path)
+dev_path_fibre(struct string *str, const void *dev_path)
 {
-	struct fibrechannel_device_path *Fibre;
+	const struct fibrechannel_device_path *Fibre;
 
 	Fibre = dev_path;
 	cprintf(str, "Fibre%s(0x%016llx,0x%016llx)",
@@ -281,36 +281,36 @@ dev_path_fibre(struct string *str, void *dev_path)
 }
 
 static void
-dev_path1394(struct string *str, void *dev_path)
+dev_path1394(struct string *str, const void *dev_path)
 {
-	struct f1394_device_path *F1394;
+	const struct f1394_device_path *F1394;
 
 	F1394 = dev_path;
 	cprintf(str, "1394(%pU)", &F1394->Guid);
 }
 
 static void
-dev_path_usb(struct string *str, void *dev_path)
+dev_path_usb(struct string *str, const void *dev_path)
 {
-	struct usb_device_path *Usb;
+	const struct usb_device_path *Usb;
 
 	Usb = dev_path;
 	cprintf(str, "Usb(0x%x,0x%x)", Usb->Port, Usb->Endpoint);
 }
 
 static void
-dev_path_i2_o(struct string *str, void *dev_path)
+dev_path_i2_o(struct string *str, const void *dev_path)
 {
-	struct i2_o_device_path *i2_o;
+	const struct i2_o_device_path *i2_o;
 
 	i2_o = dev_path;
 	cprintf(str, "i2_o(0x%X)", i2_o->Tid);
 }
 
 static void
-dev_path_mac_addr(struct string *str, void *dev_path)
+dev_path_mac_addr(struct string *str, const void *dev_path)
 {
-	struct mac_addr_device_path *MAC;
+	const struct mac_addr_device_path *MAC;
 	unsigned long hw_address_size;
 	unsigned long Index;
 
@@ -335,14 +335,14 @@ dev_path_mac_addr(struct string *str, void *dev_path)
 }
 
 static void
-cat_print_iPv4(struct string *str, struct efi_ipv4_address * address)
+cat_print_iPv4(struct string *str, const struct efi_ipv4_address * address)
 {
 	cprintf(str, "%d.%d.%d.%d", address->Addr[0], address->Addr[1],
 		address->Addr[2], address->Addr[3]);
 }
 
 static bool
-is_not_null_iPv4(struct efi_ipv4_address * address)
+is_not_null_iPv4(const struct efi_ipv4_address * address)
 {
 	u8 val;
 
@@ -364,9 +364,9 @@ cat_print_network_protocol(struct string *str, u16 Proto)
 }
 
 static void
-dev_path_iPv4(struct string *str, void *dev_path)
+dev_path_iPv4(struct string *str, const void *dev_path)
 {
-	struct ipv4_device_path *ip;
+	const struct ipv4_device_path *ip;
 	bool show;
 
 	ip = dev_path;
@@ -406,7 +406,7 @@ dev_path_iPv4(struct string *str, void *dev_path)
 
 #define cat_print_iPv6_ADD( x , y ) ( ( (u16) ( x ) ) << 8 | ( y ) )
 static void
-cat_print_ipv6(struct string *str, struct efi_ipv6_address * address)
+cat_print_ipv6(struct string *str, const struct efi_ipv6_address * address)
 {
 	cprintf(str, "%x:%x:%x:%x:%x:%x:%x:%x",
 		cat_print_iPv6_ADD(address->Addr[0], address->Addr[1]),
@@ -420,9 +420,9 @@ cat_print_ipv6(struct string *str, struct efi_ipv6_address * address)
 }
 
 static void
-dev_path_iPv6(struct string *str, void *dev_path)
+dev_path_iPv6(struct string *str, const void *dev_path)
 {
-	struct ipv6_device_path *ip;
+	const struct ipv6_device_path *ip;
 
 	ip = dev_path;
 	cprintf(str, "IPv6(");
@@ -444,9 +444,9 @@ dev_path_iPv6(struct string *str, void *dev_path)
 }
 
 static void
-dev_path_infini_band(struct string *str, void *dev_path)
+dev_path_infini_band(struct string *str, const void *dev_path)
 {
-	struct infiniband_device_path *infini_band;
+	const struct infiniband_device_path *infini_band;
 
 	infini_band = dev_path;
 	cprintf(str, "Infiniband(0x%x,%pU,0x%llx,0x%llx,0x%llx)",
@@ -456,9 +456,9 @@ dev_path_infini_band(struct string *str, void *dev_path)
 }
 
 static void
-dev_path_uart(struct string *str, void *dev_path)
+dev_path_uart(struct string *str, const void *dev_path)
 {
-	struct uart_device_path *Uart;
+	const struct uart_device_path *Uart;
 	s8 Parity;
 
 	Uart = dev_path;
@@ -516,9 +516,9 @@ dev_path_uart(struct string *str, void *dev_path)
 }
 
 static void
-dev_path_sata(struct string *str, void *dev_path)
+dev_path_sata(struct string *str, const void *dev_path)
 {
-	struct sata_device_path *sata;
+	const struct sata_device_path *sata;
 
 	sata = dev_path;
 	cprintf(str, "Sata(0x%x,0x%x,0x%x)", sata->HBAPort_number,
@@ -526,9 +526,9 @@ dev_path_sata(struct string *str, void *dev_path)
 }
 
 static void
-dev_path_hard_drive(struct string *str, void *dev_path)
+dev_path_hard_drive(struct string *str, const void *dev_path)
 {
-	struct harddrive_device_path *hd;
+	const struct harddrive_device_path *hd;
 
 	hd = dev_path;
 	switch (hd->signature_type) {
@@ -551,18 +551,18 @@ dev_path_hard_drive(struct string *str, void *dev_path)
 }
 
 static void
-dev_path_cdrom(struct string *str, void *dev_path)
+dev_path_cdrom(struct string *str, const void *dev_path)
 {
-	struct cdrom_device_path *cd;
+	const struct cdrom_device_path *cd;
 
 	cd = dev_path;
 	cprintf(str, "CDROM(0x%x)", cd->boot_entry);
 }
 
 static void
-dev_path_file_path(struct string *str, void *dev_path)
+dev_path_file_path(struct string *str, const void *dev_path)
 {
-	struct filepath_device_path *Fp;
+	const struct filepath_device_path *Fp;
 	char *dst;
 
 	Fp = dev_path;
@@ -575,18 +575,18 @@ dev_path_file_path(struct string *str, void *dev_path)
 }
 
 static void
-dev_path_media_protocol(struct string *str, void *dev_path)
+dev_path_media_protocol(struct string *str, const void *dev_path)
 {
-	struct media_protocol_device_path *media_prot;
+	const struct media_protocol_device_path *media_prot;
 
 	media_prot = dev_path;
 	cprintf(str, "%pU", &media_prot->Protocol);
 }
 
 static void
-dev_path_bss_bss(struct string *str, void *dev_path)
+dev_path_bss_bss(struct string *str, const void *dev_path)
 {
-	struct bbs_bbs_device_path *Bss;
+	const struct bbs_bbs_device_path *Bss;
 	char *type;
 
 	Bss = dev_path;
@@ -618,7 +618,7 @@ dev_path_bss_bss(struct string *str, void *dev_path)
 }
 
 static void
-dev_path_end_instance(struct string *str, void *dev_path)
+dev_path_end_instance(struct string *str, const void *dev_path)
 {
 	cprintf(str, ",");
 }
@@ -629,10 +629,10 @@ dev_path_end_instance(struct string *str, void *dev_path)
  */
 
 static void
-dev_path_node_unknown(struct string *str, void *dev_path)
+dev_path_node_unknown(struct string *str, const void *dev_path)
 {
-	struct efi_device_path *Path;
-	u8 *value;
+	const struct efi_device_path *Path;
+	const u8 *value;
 	int length, index;
 	Path = dev_path;
 	value = dev_path;
@@ -684,7 +684,7 @@ dev_path_node_unknown(struct string *str, void *dev_path)
 struct {
 	u8 type;
 	u8 sub_type;
-	void (*Function) (struct string *, void *);
+	void (*Function) (struct string *, const void *);
 } dev_path_table[] = {
 	{
 	HARDWARE_DEVICE_PATH, HW_PCI_DP, dev_path_pci}, {
@@ -717,10 +717,11 @@ struct {
 	0, 0, NULL}
 };
 
-static int __device_path_to_str(struct string *str, struct efi_device_path *dev_path)
+static int __device_path_to_str(struct string *str,
+				const struct efi_device_path *dev_path)
 {
-	struct efi_device_path *dev_path_node;
-	void (*dump_node) (struct string *, void *);
+	const struct efi_device_path *dev_path_node;
+	void (*dump_node) (struct string *, const void *);
 	int i;
 
 	dev_path = unpack_device_path(dev_path);
@@ -753,7 +754,7 @@ static int __device_path_to_str(struct string *str, struct efi_device_path *dev_
 	return 0;
 }
 
-char *device_path_to_str(struct efi_device_path *dev_path)
+char *device_path_to_str(const struct efi_device_path *dev_path)
 {
 	struct string str = {};
 
@@ -770,9 +771,9 @@ char *device_path_to_str(struct efi_device_path *dev_path)
 	return str.str;
 }
 
-u8 device_path_to_type(struct efi_device_path *dev_path)
+u8 device_path_to_type(const struct efi_device_path *dev_path)
 {
-	struct efi_device_path *dev_path_next;
+	const struct efi_device_path *dev_path_next;
 
 	dev_path = unpack_device_path(dev_path);
 	dev_path_next = next_device_path_node(dev_path);
@@ -785,9 +786,9 @@ u8 device_path_to_type(struct efi_device_path *dev_path)
 	return device_path_type(dev_path);
 }
 
-u8 device_path_to_subtype(struct efi_device_path *dev_path)
+u8 device_path_to_subtype(const struct efi_device_path *dev_path)
 {
-	struct efi_device_path *dev_path_next;
+	const struct efi_device_path *dev_path_next;
 
 	dev_path = unpack_device_path(dev_path);
 	dev_path_next = next_device_path_node(dev_path);
@@ -800,9 +801,10 @@ u8 device_path_to_subtype(struct efi_device_path *dev_path)
 	return dev_path->sub_type;
 }
 
-char *device_path_to_partuuid(struct efi_device_path *dev_path)
+
+char *device_path_to_partuuid(const struct efi_device_path *dev_path)
 {
-	struct efi_device_path *dev_path_node;
+	const struct efi_device_path *dev_path_node;
 	struct harddrive_device_path *hd;
 	char *str = NULL;;
 

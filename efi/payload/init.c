@@ -300,7 +300,10 @@ core_efi_initcall(efi_core_init);
 
 static int efi_postcore_init(void)
 {
-	char *uuid;
+	const struct efi_device_path *parent_image_dp, *loaded_image_dp;
+	char *bbu_path = "/boot/" CONFIG_EFI_PAYLOAD_DEFAULT_PATH;
+
+	char *filepath, *uuid;
 	static const uint64_t loader_features =
 		EFI_LOADER_FEATURE_DEVICETREE;
 
@@ -322,8 +325,10 @@ static int efi_postcore_init(void)
 	efi_set_variable_uint64_le("LoaderFeatures", &efi_systemd_vendor_guid,
 				   loader_features);
 
-	uuid = device_path_to_partuuid(device_path_from_handle(
-				       efi_loaded_image->device_handle));
+	loaded_image_dp = device_path_from_handle(efi_loaded_image->device_handle);
+	pr_debug("loaded-image: %pD\n", loaded_image_dp);
+
+	uuid = device_path_to_partuuid(loaded_image_dp);
 	if (uuid) {
 		wchar_t *uuid16 = xstrdup_char_to_wchar(uuid);
 		efi_set_variable("LoaderDevicePartUUID",
@@ -335,8 +340,16 @@ static int efi_postcore_init(void)
 		free(uuid16);
 	}
 
-	bbu_register_std_file_update("fat", 0,	"/boot/EFI/BOOT/BOOTx64.EFI",
-				     filetype_exe);
+	parent_image_dp = device_path_from_handle(efi_parent_image);
+	pr_debug("parent-image: %pD\n", parent_image_dp);
+
+	filepath = device_path_to_filepath(parent_image_dp);
+	if (filepath) {
+		bbu_path = basprintf("/boot/%s", filepath);
+		free(filepath);
+	}
+
+	bbu_register_std_file_update("fat", 0, bbu_path, filetype_exe);
 
 	return 0;
 }

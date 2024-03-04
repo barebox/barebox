@@ -83,15 +83,23 @@ const struct efi_device_path end_instance_device_path = {
 const struct efi_device_path *
 device_path_from_handle(efi_handle_t Handle)
 {
+	const efi_guid_t *const protocols[] = {
+		&efi_loaded_image_device_path_guid,
+		&efi_device_path_protocol_guid,
+		NULL
+	};
+	const efi_guid_t * const*proto;
 	efi_status_t Status;
-	const struct efi_device_path *device_path;
 
-	Status = BS->handle_protocol(Handle, &efi_device_path_protocol_guid,
-				(void *) &device_path);
-	if (EFI_ERROR(Status))
-		device_path = NULL;
+	for (proto = protocols; *proto; proto++) {
+		const struct efi_device_path *device_path;
 
-	return device_path;
+		Status = BS->handle_protocol(Handle, *proto, (void *) &device_path);
+		if (!EFI_ERROR(Status) && device_path)
+			return device_path;
+	}
+
+	return NULL;
 }
 
 static struct efi_device_path *
@@ -871,3 +879,22 @@ char *device_path_to_partuuid(const struct efi_device_path *dev_path)
 	return NULL;
 }
 
+char *device_path_to_filepath(const struct efi_device_path *dev_path)
+{
+	struct filepath_device_path *fp = NULL;
+	char *path;
+
+	dev_path = unpack_device_path(dev_path);
+
+	while ((dev_path = device_path_next_compatible_node(dev_path,
+				 MEDIA_DEVICE_PATH, MEDIA_FILEPATH_DP))) {
+		fp = container_of(dev_path, struct filepath_device_path, header);
+		dev_path = next_device_path_node(&fp->header);
+	}
+
+	path = strdup_wchar_to_char(fp->path_name);
+	if (!path)
+		return NULL;
+
+	return strreplace(path, '\\', '/');
+}

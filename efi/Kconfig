@@ -35,4 +35,14 @@ config EFI_GUID
 config EFI_DEVICEPATH
 	bool
 
+config EFI_PAYLOAD_DEFAULT_PATH
+	string
+	default "EFI/BOOT/BOOTARM.EFI"		if CPU_32
+	default "EFI/BOOT/BOOTAA64.EFI"		if CPU_64
+	default "EFI/BOOT/BOOTIA32.EFI"		if X86_32
+	default "EFI/BOOT/BOOTx64.EFI"		if X86_64
+	default "EFI/BOOT/BOOTRISCV32.EFI"	if ARCH_RV32I
+	default "EFI/BOOT/BOOTRISCV64.EFI"	if ARCH_RV64I
+	default "EFI/BOOT/BAREBOX.EFI"
+
 endmenu

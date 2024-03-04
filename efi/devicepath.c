@@ -801,33 +801,40 @@ u8 device_path_to_subtype(const struct efi_device_path *dev_path)
 	return dev_path->sub_type;
 }
 
+static const struct efi_device_path *
+device_path_next_compatible_node(const struct efi_device_path *dev_path,
+				 u8 type, u8 subtype)
+{
+	for (; !is_device_path_end(dev_path);
+	     dev_path = next_device_path_node(dev_path)) {
+
+		if (device_path_type(dev_path) != type)
+			continue;
+
+		if (dev_path->sub_type != subtype)
+			continue;
+
+		return dev_path;
+	}
+
+	return NULL;
+}
 
 char *device_path_to_partuuid(const struct efi_device_path *dev_path)
 {
-	const struct efi_device_path *dev_path_node;
-	struct harddrive_device_path *hd;
-	char *str = NULL;;
-
 	dev_path = unpack_device_path(dev_path);
 
-	for (dev_path_node = dev_path; !is_device_path_end(dev_path_node);
-	     dev_path_node = next_device_path_node(dev_path_node)) {
-
-		if (device_path_type(dev_path_node) != MEDIA_DEVICE_PATH)
-			continue;
-
-		if (dev_path_node->sub_type != MEDIA_HARDDRIVE_DP)
-			continue;
-
-		hd = (struct harddrive_device_path *)dev_path_node;
+	while ((dev_path = device_path_next_compatible_node(dev_path,
+				 MEDIA_DEVICE_PATH, MEDIA_HARDDRIVE_DP))) {
+		struct harddrive_device_path *hd =
+			(struct harddrive_device_path *)dev_path;
 
 		if (hd->signature_type != SIGNATURE_TYPE_GUID)
 			continue;
 
-		str = xasprintf("%pUl", (efi_guid_t *)&(hd->signature[0]));
-		break;
+		return xasprintf("%pUl", (efi_guid_t *)&(hd->signature[0]));
 	}
 
-	return str;
+	return NULL;
 }
 

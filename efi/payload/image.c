@@ -155,12 +155,26 @@ out:
 	return -efi_errno(efiret);
 }
 
-static int efi_execute_image(const char *file)
+static bool is_linux_image(enum filetype filetype, const void *base)
+{
+	const struct linux_kernel_header *hdr = base;
+
+	if (IS_ENABLED(CONFIG_X86) &&
+	    hdr->boot_flag == 0xAA55 && hdr->header == 0x53726448)
+		return true;
+
+	if (IS_ENABLED(CONFIG_CPU_V8) &&
+	    filetype == filetype_arm64_efi_linux_image)
+		return true;
+
+	return false;
+}
+
+static int efi_execute_image(enum filetype filetype, const char *file)
 {
 	efi_handle_t handle;
 	struct efi_loaded_image *loaded_image;
 	efi_status_t efiret;
-	struct linux_kernel_header *image_header;
 	const char *options;
 	bool is_driver;
 	int ret;
@@ -172,9 +186,7 @@ static int efi_execute_image(const char *file)
 	is_driver = (loaded_image->image_code_type == EFI_BOOT_SERVICES_CODE) ||
 		(loaded_image->image_code_type == EFI_RUNTIME_SERVICES_CODE);
 
-	image_header = (struct linux_kernel_header *)loaded_image->image_base;
-	if (image_header->boot_flag == 0xAA55 &&
-	    image_header->header == 0x53726448) {
+	if (is_linux_image(filetype, loaded_image->image_base)) {
 		pr_debug("Linux kernel detected. Adding bootargs.");
 		options = linux_bootargs_get();
 		pr_info("add linux options '%s'\n", options);
@@ -317,7 +329,7 @@ static struct image_handler efi_handle_tr = {
 
 static int efi_execute(struct binfmt_hook *b, char *file, int argc, char **argv)
 {
-	return efi_execute_image(file);
+	return efi_execute_image(b->type, file);
 }
 
 static struct binfmt_hook binfmt_efi_hook = {
@@ -325,10 +337,18 @@ static struct binfmt_hook binfmt_efi_hook = {
 	.hook = efi_execute,
 };
 
+static struct binfmt_hook binfmt_arm64_efi_hook = {
+	.type = filetype_arm64_efi_linux_image,
+	.hook = efi_execute,
+};
+
 static int efi_register_image_handler(void)
 {
 	register_image_handler(&efi_handle_tr);
 	binfmt_register(&binfmt_efi_hook);
+
+	if (IS_ENABLED(CONFIG_CPU_V8))
+		binfmt_register(&binfmt_arm64_efi_hook);
 
 	return 0;
 }

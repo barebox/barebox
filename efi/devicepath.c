@@ -624,6 +624,9 @@ dev_path_bss_bss(struct string *str, const void *dev_path)
 	case BBS_TYPE_EMBEDDED_NETWORK:
 		type = "Net";
 		break;
+	case BBS_TYPE_DEV:
+		type = "Dev";
+		break;
 	default:
 		type = "?";
 		break;

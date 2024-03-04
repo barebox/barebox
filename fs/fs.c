@@ -1631,6 +1631,7 @@ struct filename {
 
 static void set_nameidata(struct nameidata *p, struct filename *name)
 {
+	p->last = slash_name;
 	p->stack = p->internal;
 	p->name = name;
 	p->total_link_count = 0;

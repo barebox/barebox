@@ -1028,3 +1028,24 @@ char *strjoin(const char *separator, char **arr, size_t arrlen)
 	return buf;
 }
 EXPORT_SYMBOL(strjoin);
+
+/**
+ * strreplace - Replace all occurrences of character in string.
+ * @str: The string to operate on.
+ * @old: The character being replaced.
+ * @new: The character @old is replaced with.
+ *
+ * Replaces the each @old character with a @new one in the given string @str.
+ *
+ * Return: pointer to the string @str itself.
+ */
+char *strreplace(char *str, char old, char new)
+{
+	char *s = str;
+
+	for (; *s; ++s)
+		if (*s == old)
+			*s = new;
+	return str;
+}
+EXPORT_SYMBOL(strreplace);

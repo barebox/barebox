@@ -32,6 +32,7 @@ config DRIVER_VIDEO_ATMEL_HLCD
 config DRIVER_VIDEO_EFI_GOP
 	bool "EFI Graphics Output Protocol (GOP)"
 	depends on EFI_PAYLOAD
+	depends on X86
 
 config DRIVER_VIDEO_IMX
 	bool "i.MX framebuffer driver"

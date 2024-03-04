@@ -1696,9 +1696,7 @@ static int follow_automount(struct path *path, struct nameidata *nd,
 	 * as being automount points.  These will need the attentions
 	 * of the daemon to instantiate them before they can be used.
 	 */
-	if (!(nd->flags & (LOOKUP_PARENT | LOOKUP_DIRECTORY |
-			LOOKUP_OPEN | LOOKUP_CREATE | LOOKUP_AUTOMOUNT)) &&
-			path->dentry->d_inode)
+	if (!(nd->flags & (LOOKUP_PARENT | LOOKUP_DIRECTORY)) && path->dentry->d_inode)
 		return -EISDIR;
 
 	return automount_mount(path->dentry);
@@ -2278,12 +2276,6 @@ static struct dentry *filename_create(struct filename *name,
 	int error;
 	bool is_dir = (lookup_flags & LOOKUP_DIRECTORY);
 
-	/*
-	 * Note that only LOOKUP_REVAL and LOOKUP_DIRECTORY matter here. Any
-	 * other flags passed in are ignored!
-	 */
-	lookup_flags &= LOOKUP_REVAL;
-
 	name = filename_parentat(name, 0, path, &last, &type);
 	if (IS_ERR(name))
 		return ERR_CAST(name);
@@ -2298,7 +2290,6 @@ static struct dentry *filename_create(struct filename *name,
 	/*
 	 * Do the final lookup.
 	 */
-	lookup_flags |= LOOKUP_CREATE | LOOKUP_EXCL;
 	dentry = __lookup_hash(&last, path->dentry, lookup_flags);
 	if (IS_ERR(dentry))
 		goto unlock;

@@ -217,8 +217,8 @@ static inline void linux_efi_handover(efi_handle_t handle,
 	handover(handle, efi_sys_table, header);
 }
 #else
-typedef void(*handover_fn)(VOID *image, EFI_SYSTEM_TABLE *table,
-		struct SetupHeader *setup) __attribute__((regparm(0)));
+typedef void(*handover_fn)(void *image, struct efi_system_table *table,
+		struct linux_kernel_header *setup);
 
 static inline void linux_efi_handover(efi_handle_t handle,
 		struct linux_kernel_header *header)

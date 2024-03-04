@@ -33,7 +33,7 @@ typedef guid_t efi_guid_t __aligned(__alignof__(u32));
   (c) & 0xff, ((c) >> 8) & 0xff, \
   (d0), (d1), (d2), (d3), (d4), (d5), (d6), (d7) }})
 
-#ifdef CONFIG_EFI_PAYLOAD
+#ifdef __x86_64__
 #define EFIAPI __attribute__((ms_abi))
 #else
 #define EFIAPI

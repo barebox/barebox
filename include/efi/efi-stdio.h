@@ -42,7 +42,7 @@ typedef efi_status_t (EFIAPI *efi_key_notify_function)(
 
 typedef efi_status_t (EFIAPI *efi_register_keystroke_notify)(
 	struct efi_simple_text_input_ex_protocol *this,
-	struct efi_key_data keydata,
+	struct efi_key_data *keydata,
 	efi_key_notify_function key_notification_function,
 	void **notify_handle
 );

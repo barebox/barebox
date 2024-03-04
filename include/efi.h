@@ -674,6 +674,65 @@ struct efi_loaded_image {
 	efi_status_t (EFIAPI *unload)(efi_handle_t image_handle);
 };
 
+/* Open modes */
+#define EFI_FILE_MODE_READ      0x0000000000000001
+#define EFI_FILE_MODE_WRITE     0x0000000000000002
+#define EFI_FILE_MODE_CREATE    0x8000000000000000
+
+/* File attributes */
+#define EFI_FILE_READ_ONLY      0x0000000000000001
+#define EFI_FILE_HIDDEN         0x0000000000000002
+#define EFI_FILE_SYSTEM         0x0000000000000004
+#define EFI_FILE_RESERVIED      0x0000000000000008
+#define EFI_FILE_DIRECTORY      0x0000000000000010
+#define EFI_FILE_ARCHIVE        0x0000000000000020
+#define EFI_FILE_VALID_ATTR     0x0000000000000037
+
+#define EFI_FILE_HANDLE_REVISION         0x00010000
+struct efi_file_handle {
+	uint64_t Revision;
+	efi_status_t(EFIAPI *open)(struct efi_file_handle *File,
+			struct efi_file_handle **NewHandle, s16 *FileName,
+			uint64_t OpenMode, uint64_t Attributes);
+	efi_status_t(EFIAPI *close)(struct efi_file_handle *File);
+	efi_status_t(EFIAPI *delete)(struct efi_file_handle *File);
+	efi_status_t(EFIAPI *read)(struct efi_file_handle *File, unsigned long *BufferSize,
+			void *Buffer);
+	efi_status_t(EFIAPI *write)(struct efi_file_handle *File,
+			unsigned long *BufferSize, void *Buffer);
+	efi_status_t(EFIAPI *get_position)(struct efi_file_handle *File,
+			uint64_t *Position);
+	efi_status_t(EFIAPI *set_position)(struct efi_file_handle *File,
+			uint64_t Position);
+	efi_status_t(EFIAPI *get_info)(struct efi_file_handle *File,
+			efi_guid_t *InformationType, unsigned long *BufferSize,
+			void *Buffer);
+	efi_status_t(EFIAPI *set_info)(struct efi_file_handle *File,
+			efi_guid_t *InformationType, unsigned long BufferSize,
+			void *Buffer);
+	efi_status_t(EFIAPI *flush)(struct efi_file_handle *File);
+};
+
+#define EFI_FILE_IO_INTERFACE_REVISION   0x00010000
+
+struct efi_file_io_interface {
+	uint64_t Revision;
+	efi_status_t(EFIAPI *open_volume)(
+			struct efi_file_io_interface *This,
+			struct efi_file_handle **Root);
+};
+
+struct efi_file_info {
+	uint64_t Size;
+	uint64_t FileSize;
+	uint64_t PhysicalSize;
+	struct efi_time CreateTime;
+	struct efi_time LastAccessTime;
+	struct efi_time ModificationTime;
+	uint64_t Attribute;
+	s16 FileName[1];
+};
+
 __attribute__((noreturn)) void efi_main(efi_handle_t, struct efi_system_table *);
 
 /*

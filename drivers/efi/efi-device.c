@@ -404,9 +404,6 @@ static void efi_set_bootsource(void)
 
 	efi_handle_t efi_parent;
 
-	if (!efi_loaded_image->parent_handle)
-		goto out;
-
 	efi_parent = efi_find_parent(efi_loaded_image->device_handle);
 
 	if (!efi_parent)

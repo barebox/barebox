@@ -2199,6 +2199,15 @@ config CMD_FIRMWARELOAD
 	  Provides the "firmwareload" command which deals with devices which need
 	  firmware to work. It is also used to upload firmware to FPGA devices.
 
+config CMD_KALLSYMS
+	depends on KALLSYMS
+	bool
+	prompt "kallsyms"
+	help
+	  query kallsyms table
+
+	  Usage: kallsyns [SYMBOL | ADDRESS]
+
 config CMD_KEYSTORE
 	depends on CRYPTO_KEYSTORE
 	bool

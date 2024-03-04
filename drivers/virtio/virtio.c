@@ -289,6 +289,7 @@ int register_virtio_device(struct virtio_device *dev)
 	dev->dev.bus = &virtio_bus;
 	dev->dev.id = DEVICE_ID_DYNAMIC;
 	dev->dev.name = "virtio";
+	dev->dev.device_node = dev_of_node(dev->dev.parent);
 
 	spin_lock_init(&dev->config_lock);
 	dev->config_enabled = false;

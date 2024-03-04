@@ -2324,6 +2324,8 @@ static int filename_lookup(struct filename *name, unsigned flags,
 	set_nameidata(&nd, name);
 
 	s = path_init(&nd, flags);
+	if (IS_ERR(s))
+		return PTR_ERR(s);
 
 	while (!(err = link_path_walk(s, &nd)) && ((err = lookup_last(&nd)) > 0)) {
 		s = trailing_symlink(&nd);
@@ -2529,6 +2531,8 @@ int open(const char *pathname, int flags, ...)
 	set_nameidata(&nd, filename);
 
 	s = path_init(&nd, LOOKUP_FOLLOW);
+	if (IS_ERR(s))
+		return PTR_ERR(s);
 
 	while (1) {
 		error = link_path_walk(s, &nd);

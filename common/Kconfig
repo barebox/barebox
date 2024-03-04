@@ -623,6 +623,9 @@ config BOOTM_AIMAGE
 	help
 	  Support using Android Images.
 
+config PE
+	bool "PE/COFF Support" if COMPILE_TEST
+
 config ELF
 	bool "ELF Support" if COMPILE_TEST
 

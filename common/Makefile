@@ -13,6 +13,7 @@ obj-pbl-y			+= memsize.o
 obj-y				+= resource.o
 obj-pbl-y			+= bootsource.o
 obj-$(CONFIG_ELF)		+= elf.o
+obj-$(CONFIG_PE)		+= pe.o
 obj-y				+= restart.o
 obj-y				+= poweroff.o
 obj-y				+= slice.o

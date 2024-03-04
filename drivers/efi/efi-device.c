@@ -53,7 +53,7 @@ static int efi_locate_handle(enum efi_locate_search_type search_type,
 	return 0;
 }
 
-static struct efi_device *efi_find_device(efi_handle_t *handle)
+static struct efi_device *efi_find_device(efi_handle_t handle)
 {
 	struct device *dev;
 	struct efi_device *efidev;
@@ -80,10 +80,10 @@ static void efi_devinfo(struct device *dev)
 					efi_guid_string(&efidev->guids[i]));
 }
 
-static efi_handle_t *efi_find_parent(efi_handle_t *handle)
+static efi_handle_t efi_find_parent(efi_handle_t handle)
 {
 	unsigned long handle_count = 0;
-        efi_handle_t *handles = NULL, *parent;
+	efi_handle_t *handles = NULL, parent;
 	unsigned long num_guids;
 	efi_guid_t **guids;
 	int ret, i, j, k;
@@ -134,7 +134,7 @@ out:
 	return parent;
 }
 
-static struct efi_device *efi_add_device(efi_handle_t *handle, efi_guid_t **guids,
+static struct efi_device *efi_add_device(efi_handle_t handle, efi_guid_t **guids,
 		int num_guids)
 {
 	struct efi_device *efidev;
@@ -238,7 +238,7 @@ static int efi_register_device(struct efi_device *efidev)
 void efi_register_devices(void)
 {
 	unsigned long handle_count = 0;
-        efi_handle_t *handles = NULL;
+	efi_handle_t *handles = NULL;
 	unsigned long num_guids;
 	efi_guid_t **guids;
 	int ret, i;
@@ -402,7 +402,7 @@ static void efi_set_bootsource(void)
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
 
-	efi_handle_t *efi_parent;
+	efi_handle_t efi_parent;
 
 	if (!efi_loaded_image->parent_handle)
 		goto out;

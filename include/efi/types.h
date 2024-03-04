@@ -9,7 +9,9 @@
 typedef unsigned long efi_status_t;
 typedef u16 efi_char16_t;		/* UNICODE character */
 typedef u64 efi_physical_addr_t;
-typedef void *efi_handle_t;
+
+struct efi_object;
+typedef struct efi_object *efi_handle_t;
 
 /*
  * The UEFI spec and EDK2 reference implementation both define EFI_GUID as

@@ -38,4 +38,12 @@ static inline struct barebox_boarddata *boarddata_create(void *adr, u32 machine)
 
 const struct barebox_boarddata *barebox_get_boarddata(void);
 
+static inline bool barebox_boarddata_is_machine(const struct barebox_boarddata *bd,
+						u32 machine)
+{
+	if (!bd || bd->magic != BAREBOX_BOARDDATA_MAGIC)
+		return false;
+	return bd->machine == machine;
+}
+
 #endif	/* _BAREBOX_BOARDDATA_H_ */

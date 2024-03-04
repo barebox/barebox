@@ -329,6 +329,10 @@ char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
 	const u8 *index = be;
 	bool uc = false;
 
+	/* If addr == NULL output the string '<NULL>' */
+	if (!addr)
+		return string(buf, end, NULL, field_width, precision, flags);
+
 	switch (*(++fmt)) {
 	case 'L':
 		uc = true;		/* fall-through */

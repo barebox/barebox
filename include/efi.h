@@ -16,7 +16,7 @@
 #include <linux/types.h>
 #include <linux/uuid.h>
 
-#ifdef CONFIG_EFI_BOOTUP
+#ifdef CONFIG_EFI_PAYLOAD
 #define EFIAPI __attribute__((ms_abi))
 #else
 #define EFIAPI

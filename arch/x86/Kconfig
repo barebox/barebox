@@ -46,5 +46,5 @@ config MACH_EFI_GENERIC
 
 config X86_EFI
 	def_bool y
-	select EFI_BOOTUP
+	select EFI_PAYLOAD
 	select CLOCKSOURCE_EFI_X86

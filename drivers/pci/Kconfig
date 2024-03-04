@@ -64,7 +64,7 @@ config PCI_ROCKCHIP
 
 config PCI_EFI
 	bool "EFI PCI protocol"
-	depends on EFI_BOOTUP
+	depends on EFI_PAYLOAD
 	select PCI
 
 config PCI_ECAM_GENERIC

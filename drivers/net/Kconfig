@@ -285,7 +285,7 @@ config DRIVER_NET_TAP
 
 config DRIVER_NET_EFI_SNP
 	bool "EFI SNP ethernet driver"
-	depends on EFI_BOOTUP
+	depends on EFI_PAYLOAD
 
 config DRIVER_NET_VIRTIO
 	bool "virtio net driver"

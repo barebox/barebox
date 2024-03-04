@@ -2,7 +2,7 @@
 
 menu "EFI (Extensible Firmware Interface) Support"
 
-config EFI_BOOTUP
+config EFI_PAYLOAD
 	bool
 	select EFI
 	select EFI_GUID

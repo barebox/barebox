@@ -69,6 +69,7 @@ EXPORT_SYMBOL(mkmodestr);
 
 void cdev_print(const struct cdev *cdev)
 {
+	struct device_node *np;
 	int nbytes;
 
 	if (cdev->dev || cdev->master || cdev->partname) {
@@ -118,6 +119,10 @@ void cdev_print(const struct cdev *cdev)
 
 	if (nbytes)
 		printf("\n");
+
+	np = cdev_of_node(cdev);
+	if (np)
+		printf("DT node: %pOF\n", np);
 }
 EXPORT_SYMBOL(cdev_print);
 

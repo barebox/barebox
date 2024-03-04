@@ -2643,6 +2643,20 @@ out1:
 }
 EXPORT_SYMBOL(open);
 
+static const char *fd_getpath(int fd)
+{
+	FILE *f;
+
+	if (fd < 0)
+		return ERR_PTR(errno_set(fd));
+
+	f = fd_to_file(fd);
+	if (IS_ERR(f))
+		return ERR_CAST(f);
+
+	return f->path;
+}
+
 int unlink(const char *pathname)
 {
 	int ret;
@@ -2710,9 +2724,11 @@ EXPORT_SYMBOL(symlink);
 
 static void __release_dir(DIR *d)
 {
-	struct readdir_entry *entry, *tmp;
+	while (!list_empty(&d->entries)) {
+		struct readdir_entry *entry =
+			list_first_entry(&d->entries, struct readdir_entry, list);
 
-	list_for_each_entry_safe(entry, tmp, &d->entries, list) {
+		list_del(&entry->list);
 		free(entry);
 	}
 }
@@ -2772,6 +2788,7 @@ DIR *opendir(const char *pathname)
 
 	d = xzalloc(sizeof(*d));
 	d->path = path;
+	d->fd = -ENOENT;
 
 	ret = __opendir(d);
 	if (ret)
@@ -2790,6 +2807,27 @@ out:
 }
 EXPORT_SYMBOL(opendir);
 
+DIR *fdopendir(int fd)
+{
+	const char *path;
+	DIR *dir;
+
+	path = fd_getpath(fd);
+	if (IS_ERR(path))
+		return NULL;
+
+	dir = opendir(path);
+	if (!dir)
+		return NULL;
+
+	/* we intentionally don't increment the reference count,
+	 * as POSIX specifies that fd ownership is transferred
+	 */
+	dir->fd = fd;
+	return dir;
+}
+EXPORT_SYMBOL(fdopendir);
+
 int closedir(DIR *dir)
 {
 	if (!dir)
@@ -2797,11 +2835,24 @@ int closedir(DIR *dir)
 
 	path_put(&dir->path);
 	__release_dir(dir);
+	if (dir->fd >= 0)
+		close(dir->fd);
 	free(dir);
 
 	return 0;
 }
 EXPORT_SYMBOL(closedir);
+
+int rewinddir(DIR *dir)
+{
+	if (!dir)
+		return errno_set(-EBADF);
+
+	__release_dir(dir);
+
+	return __opendir(dir);
+}
+EXPORT_SYMBOL(rewinddir);
 
 int readlink(const char *pathname, char *buf, size_t bufsiz)
 {

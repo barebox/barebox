@@ -14,13 +14,16 @@ typedef struct dir {
 	struct fs_driver *fsdrv;
 	struct dirent d;
 	void *priv; /* private data for the fs driver */
+	int fd;
 	struct path path;
 	struct list_head entries;
 } DIR;
 
 DIR *opendir(const char *pathname);
+DIR *fdopendir(int fd);
 struct dirent *readdir(DIR *dir);
 int unreaddir(DIR *dir, const struct dirent *d);
+int rewinddir(DIR *dir);
 int closedir(DIR *dir);
 
 #endif /* __DIRENT_H */

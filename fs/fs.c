@@ -349,12 +349,6 @@ static int create(struct dentry *dir, struct dentry *dentry)
 	return inode->i_op->create(inode, dentry, S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
-int creat(const char *pathname, mode_t mode)
-{
-	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC);
-}
-EXPORT_SYMBOL(creat);
-
 static int fsdev_truncate(struct device *dev, FILE *f, loff_t length)
 {
 	struct fs_driver *fsdrv = f->fsdev->driver;

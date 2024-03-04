@@ -29,6 +29,10 @@
 #define O_RWSIZE_8	010000000
 
 int open(const char *pathname, int flags, ...);
-int creat(const char *pathname, mode_t mode);
+
+static inline int creat(const char *pathname, mode_t mode)
+{
+	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC);
+}
 
 #endif /* __FCNTL_H */

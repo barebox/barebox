@@ -79,9 +79,9 @@ static int xlate_keypress(struct efi_input_key *k)
 	return k->unicode_char & 0xff;
 }
 
-static void efi_wait_single_event(void *event)
+static void efi_wait_single_event(struct efi_event *event)
 {
-	unsigned long index;
+	size_t index;
 
 	/* wait until key is pressed */
 	BS->wait_for_event(1, &event, &index);

@@ -18,7 +18,7 @@ struct efi_key_state {
 
 struct efi_input_key {
 	u16 scan_code;
-	s16 unicode_char;
+	efi_char16_t unicode_char;
 };
 
 struct efi_key_data {
@@ -55,7 +55,7 @@ typedef efi_status_t (EFIAPI *efi_unregister_keystroke_notify)(
 struct efi_simple_text_input_ex_protocol {
 	efi_input_reset_ex reset;
 	efi_input_read_key_ex read_key_stroke_ex;
-	void *wait_for_key_ex;
+	struct efi_event *wait_for_key_ex;
 	efi_set_state set_state;
 	efi_register_keystroke_notify register_key_notify;
 	efi_unregister_keystroke_notify unregister_key_notify;

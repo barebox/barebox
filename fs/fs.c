@@ -1605,21 +1605,16 @@ enum {WALK_FOLLOW = 1, WALK_MORE = 2};
 struct nameidata {
 	struct path	path;
 	struct qstr	last;
-	struct inode	*inode; /* path.dentry.d_inode */
 	unsigned int	flags;
-	unsigned	seq, m_seq;
 	int		last_type;
 	unsigned	depth;
 	int		total_link_count;
 	struct saved {
 		struct path link;
 		const char *name;
-		unsigned seq;
 	} *stack, internal[EMBEDDED_LEVELS];
 	struct filename	*name;
-	struct nameidata *saved;
 	struct inode	*link_inode;
-	unsigned	root_seq;
 };
 
 struct filename {
@@ -1879,8 +1874,6 @@ static int follow_dotdot(struct nameidata *nd)
 
 	follow_mount(&nd->path);
 
-	nd->inode = nd->path.dentry->d_inode;
-
 	return 0;
 }
 
@@ -1961,7 +1954,6 @@ static inline int step_into(struct nameidata *nd, struct path *path,
 	   !(flags & WALK_FOLLOW || nd->flags & LOOKUP_FOLLOW)) {
 		/* not a symlink or should not follow */
 		path_to_nameidata(path, nd);
-		nd->inode = inode;
 		return 0;
 	}
 
@@ -2185,7 +2177,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 		return s;
 	} else {
 		get_pwd(&nd->path);
-		nd->inode = nd->path.dentry->d_inode;
 		return s;
 	}
 

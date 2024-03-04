@@ -87,7 +87,7 @@ static int efi_read_key(struct efi_console_priv *priv, bool wait)
 
 	/* wait until key is pressed */
 	if (wait)
-		BS->wait_for_event(1, priv->in->wait_for_key, &index);
+		BS->wait_for_event(1, &priv->in->wait_for_key, &index);
 
 	if (priv->inex) {
 		efiret = priv->inex->read_key_stroke_ex(priv->inex, &kd);

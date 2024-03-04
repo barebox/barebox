@@ -9,6 +9,8 @@
 #define DEBUG
 #endif
 
+#define pr_fmt(fmt) "efi-init: " fmt
+
 #include <linux/linkage.h>
 #include <common.h>
 #include <linux/sizes.h>
@@ -395,6 +397,11 @@ static int efi_late_init(void)
 
 	if (!IS_ENABLED(CONFIG_STATE))
 		return 0;
+
+	if (!get_mounted_path("/boot")) {
+		pr_warn("boot device couldn't be determined\n");
+		return 0;
+	}
 
 	fdt = read_file(state_desc, &size);
 	if (!fdt) {

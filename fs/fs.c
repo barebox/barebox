@@ -2757,6 +2757,7 @@ DIR *opendir(const char *pathname)
 	file.f_op = dir->d_inode->i_fop;
 
 	d = xzalloc(sizeof(*d));
+	d->path = path;
 
 	INIT_LIST_HEAD(&d->entries);
 	rd.dir = d;
@@ -2764,8 +2765,6 @@ DIR *opendir(const char *pathname)
 	ret = file.f_op->iterate(&file, &rd.ctx);
 	if (ret)
 		goto out_release;
-
-	path_put(&path);
 
 	return d;
 
@@ -2785,6 +2784,7 @@ int closedir(DIR *dir)
 	if (!dir)
 		return errno_set(-EBADF);
 
+	path_put(&dir->path);
 	release_dir(dir);
 
 	return 0;

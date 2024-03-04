@@ -1000,3 +1000,31 @@ char *parse_assignment(char *str)
 
 	return value;
 }
+
+char *strjoin(const char *separator, char **arr, size_t arrlen)
+{
+	size_t separatorlen;
+	int len = 1; /* '\0' */
+	char *buf, *p;
+	int i;
+
+	separatorlen = strlen(separator);
+
+	for (i = 0; i < arrlen; i++)
+		len += strlen(arr[i]) + separatorlen;
+
+	if (!arrlen)
+		return xzalloc(1);
+
+	p = buf = xmalloc(len);
+
+	for (i = 0; i < arrlen - 1; i++) {
+		p = stpcpy(p, arr[i]);
+		p = mempcpy(p, separator, separatorlen);
+	}
+
+	stpcpy(p, arr[i]);
+
+	return buf;
+}
+EXPORT_SYMBOL(strjoin);

@@ -21,6 +21,8 @@ char *parse_assignment(char *str);
 
 int strverscmp(const char *a, const char *b);
 
+char *strjoin(const char *separator, char **array, size_t len);
+
 static inline int strcmp_ptr(const char *a, const char *b)
 {
 	return a && b ? strcmp(a, b) : compare3(a, b);

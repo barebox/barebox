@@ -1623,6 +1623,7 @@ struct nameidata {
 	} *stack, internal[EMBEDDED_LEVELS];
 	struct filename	*name;
 	struct inode	*link_inode;
+	struct dentry   *d_root;
 };
 
 struct filename {
@@ -1635,6 +1636,7 @@ static void set_nameidata(struct nameidata *p, struct filename *name)
 	p->stack = p->internal;
 	p->name = name;
 	p->total_link_count = 0;
+	p->d_root = d_root;
 }
 
 static void path_get(const struct path *path)
@@ -1820,16 +1822,16 @@ static int lookup_fast(struct nameidata *nd, struct path *path)
  * Return 1 if we went up a level and 0 if we were already at the
  * root.
  */
-static int follow_up(struct path *path)
+static int follow_up(struct nameidata *nd)
 {
-	struct vfsmount *parent, *mnt = path->mnt;
+	struct path *path = &nd->path;
+	struct vfsmount *mnt = path->mnt;
 	struct dentry *mountpoint;
 
-	parent = mnt->parent;
-	if (parent == mnt)
+	if (nd->d_root == path->dentry)
 		return 0;
 
-	mntget(parent);
+	mntget(mnt->parent);
 	mountpoint = dget(mnt->mountpoint);
 	dput(path->dentry);
 	path->dentry = mountpoint;
@@ -1871,7 +1873,7 @@ static int follow_dotdot(struct nameidata *nd)
 			break;
 		}
 
-		if (!follow_up(&nd->path))
+		if (!follow_up(nd))
 			break;
 	}
 

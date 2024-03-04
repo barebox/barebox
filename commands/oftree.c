@@ -76,10 +76,8 @@ static int do_oftree(int argc, char *argv[])
 
 	if (load) {
 		root = of_read_file(load);
-		if (IS_ERR(root)) {
-			printf("Cannot open %s: %pe\n", load, root);
+		if (IS_ERR(root))
 			return PTR_ERR(root);
-		}
 
 		ret = of_set_root_node(root);
 		if (ret) {

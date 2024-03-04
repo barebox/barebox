@@ -36,10 +36,8 @@ static int do_of_overlay(int argc, char *argv[])
 	}
 
 	overlay = of_read_file(argv[optind]);
-	if (IS_ERR(overlay)) {
-		printf("Cannot open %s: %pe\n", argv[optind], overlay);
+	if (IS_ERR(overlay))
 		return PTR_ERR(overlay);
-	}
 
 	if (live_tree) {
 		ret = of_overlay_apply_tree(of_get_root_node(), overlay);

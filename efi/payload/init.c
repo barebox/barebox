@@ -400,10 +400,8 @@ static int efi_late_init(void)
 		struct state *state;
 
 		root = of_read_file(state_desc);
-		if (IS_ERR(root)) {
-			printf("Cannot open %s: %pe\n", state_desc, root);
+		if (IS_ERR(root))
 			return PTR_ERR(root);
-		}
 
 		ret = barebox_register_of(root);
 		if (ret)

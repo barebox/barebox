@@ -1651,11 +1651,6 @@ static inline void get_root(struct path *root)
 
 static inline void get_pwd(struct path *pwd)
 {
-	if (!cwd_dentry) {
-		cwd_dentry = d_root;
-		cwd_mnt = mnt_root;
-	}
-
 	pwd->dentry = cwd_dentry;
 	pwd->mnt = cwd_mnt;
 
@@ -3211,6 +3206,9 @@ int mount(const char *device, const char *fsname, const char *pathname,
 		fsdev->vfsmount.mountpoint = d_root;
 		fsdev->vfsmount.parent = &fsdev->vfsmount;
 		fsdev->path = xstrdup("/");
+
+		cwd_dentry = d_root;
+		cwd_mnt = mnt_root;
 	}
 
 	fsdev->vfsmount.mnt_root = fsdev->sb.s_root;

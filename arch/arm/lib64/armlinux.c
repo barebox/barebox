@@ -5,6 +5,7 @@
 #include <memory.h>
 #include <init.h>
 #include <bootm.h>
+#include <efi/efi-mode.h>
 
 static int do_bootm_linux(struct image_data *data)
 {
@@ -89,6 +90,9 @@ static struct image_handler aarch64_barebox_handler = {
 
 static int aarch64_register_image_handler(void)
 {
+	if (efi_is_payload())
+		return 0;
+
 	register_image_handler(&aarch64_linux_efi_handler);
 	register_image_handler(&aarch64_linux_handler);
 	register_image_handler(&aarch64_barebox_handler);

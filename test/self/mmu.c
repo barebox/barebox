@@ -9,6 +9,7 @@
 #include <abort.h>
 #include <zero_page.h>
 #include <linux/sizes.h>
+#include <efi/efi-mode.h>
 #include <memory.h>
 
 #define TEST_BUFFER_SIZE		SZ_1M
@@ -258,6 +259,12 @@ static void test_zero_page(void)
 
 static void test_mmu(void)
 {
+	if (efi_is_payload()) {
+		pr_info("MMU was not initialized by us\n");
+		skipped_tests += 23;
+		return;
+	}
+
 	test_zero_page();
 	test_remap();
 }

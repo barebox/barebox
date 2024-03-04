@@ -2,8 +2,12 @@
 
 menu "EFI (Extensible Firmware Interface) Support"
 
-config EFI_PAYLOAD
+config HAVE_EFI_PAYLOAD
 	bool
+
+config EFI_PAYLOAD
+	bool "Build as EFI payload" if COMPILE_TEST
+	depends on HAVE_EFI_PAYLOAD
 	select EFI
 	select EFI_GUID
 	select EFI_DEVICEPATH
@@ -15,6 +19,13 @@ config EFI_PAYLOAD
 
 config EFI
 	bool
+
+config HAVE_EFI_STUB
+	bool
+
+config EFI_STUB
+	def_bool EFI_PAYLOAD
+	depends on HAVE_EFI_STUB
 
 config EFI_GUID
 	bool

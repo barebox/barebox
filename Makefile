@@ -734,7 +734,11 @@ images: barebox.bin FORCE
 images/%.s: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=images $@
 
-ifdef CONFIG_PBL_IMAGE
+ifdef CONFIG_EFI_STUB
+all: barebox.bin images barebox.efi
+barebox.efi: FORCE
+	$(Q)ln -fsn images/barebox-dt-2nd.img $@
+else ifdef CONFIG_PBL_IMAGE
 all: barebox.bin images
 else
 all: barebox-flash-image barebox-flash-images

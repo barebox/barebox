@@ -7,3 +7,5 @@ bbenv-y += env-efi
 obj-$(CONFIG_CMD_IOMEM) += iomem.o
 obj-pbl-$(CONFIG_EFI_PAYLOAD) += early-mem.o
 obj-$(CONFIG_EFI_PAYLOAD) += entry-single.o
+pbl-$(CONFIG_EFI_STUB) += entry-multi.o
+obj-$(CONFIG_EFI_STUB) += boarddata.o

@@ -42,3 +42,6 @@ void NAKED __noreturn barebox_arm_entry(unsigned long membase,
 	__barebox_arm_entry(membase, memsize, boarddata,
 			    arm_mem_stack_top(membase + memsize));
 }
+
+void __noreturn barebox_pbl_entry(ulong, ulong, void *)
+	__alias(barebox_arm_entry);

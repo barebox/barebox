@@ -142,8 +142,7 @@ out:
 
 static int efi_barebox_populate_mmap(void)
 {
-	void *desc;
-	u8 *mmap_buf = NULL;
+	void *mmap_buf = NULL, *desc;
 	efi_status_t efiret;
 	size_t mmap_size;
 	size_t mapkey;
@@ -169,7 +168,7 @@ static int efi_barebox_populate_mmap(void)
 		goto out;
 	}
 
-	for (desc = mmap_buf; (u8 *)desc < mmap_buf + mmap_size; desc += descsz)
+	for (desc = mmap_buf; desc < mmap_buf + mmap_size; desc += descsz)
 		efi_parse_mmap(desc, __is_defined(DEBUG));
 
 out:

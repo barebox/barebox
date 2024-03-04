@@ -177,7 +177,7 @@ static int efi_execute_image(const char *file)
 	    image_header->header == 0x53726448) {
 		pr_debug("Linux kernel detected. Adding bootargs.");
 		options = linux_bootargs_get();
-		pr_err("add linux options '%s'\n", options);
+		pr_info("add linux options '%s'\n", options);
 		if (options) {
 			loaded_image->load_options = xstrdup_char_to_wchar(options);
 			loaded_image->load_options_size =

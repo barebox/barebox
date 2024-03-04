@@ -293,7 +293,7 @@ void efi_main(efi_handle_t image, struct efi_system_table *sys_table)
 		BS->handle_protocol(efi_loaded_image->device_handle,
 				&efi_device_path_protocol_guid, (void **)&efi_device_path);
 
-	mem = 0x3fffffff;
+	mem = IS_ENABLED(CONFIG_X86) ? 0x3fffffff : ~0ULL;
 	for (memsize = SZ_256M; memsize >= SZ_8M; memsize /= 2) {
 		efiret  = BS->allocate_pages(EFI_ALLOCATE_MAX_ADDRESS,
 					     EFI_LOADER_DATA,

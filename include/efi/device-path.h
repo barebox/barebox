@@ -65,7 +65,7 @@ struct efi_device_path_expanded_acpi {
 	u32 HID;
 	u32 UID;
 	u32 CID;
-	u8 hid_str[1];
+	u8 hid_str[];
 };
 
 #define DEVICE_PATH_SUB_TYPE_ACPI_ADR_DEVICE 3
@@ -164,7 +164,7 @@ struct efi_device_path_usb_wwid {
 	u16 interface_number;
 	u16 vendor_id;
 	u16 product_id;
-	s16 serial_number[1];	/* UTF-16 characters of the USB serial number */
+	s16 serial_number[];	/* UTF-16 characters of the USB serial number */
 };
 
 /**
@@ -321,7 +321,7 @@ struct efi_device_path_cdrom_path {
 #define DEVICE_PATH_SUB_TYPE_FILE_PATH               0x04
 struct efi_device_path_file_path {
 	struct efi_device_path header;
-	s16 path_name[1];
+	s16 path_name[];
 };
 
 #define SIZE_OF_FILEPATH_DEVICE_PATH offsetof(FILEPATH_DEVICE_PATH,path_name)
@@ -374,7 +374,7 @@ struct efi_device_path_bbs_bbs {
 	struct efi_device_path header;
 	u16 device_type;
 	u16 status_flag;
-	s8 String[1];
+	s8 String[];
 };
 
 /* device_type definitions - from BBS specification */

@@ -192,10 +192,11 @@ static int efi_register_device(struct efi_device *efidev)
 	 * of the main MAC messaging device. Don't register these in barebox as
 	 * they would show up as duplicate ethernet devices.
 	 */
-	if (device_path_to_type(efidev->devpath) == MESSAGING_DEVICE_PATH) {
+	if (device_path_to_type(efidev->devpath) == DEVICE_PATH_TYPE_MESSAGING_DEVICE) {
 		u8 subtype = device_path_to_subtype(efidev->devpath);
 
-		if (subtype == MSG_IPv4_DP || subtype == MSG_IPv6_DP)
+		if (subtype == DEVICE_PATH_SUB_TYPE_MSG_IPv4 ||
+		    subtype == DEVICE_PATH_SUB_TYPE_MSG_IPv6)
 			return -EINVAL;
 	}
 

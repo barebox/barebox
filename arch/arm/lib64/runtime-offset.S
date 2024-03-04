@@ -11,10 +11,12 @@
  */
 ENTRY(get_runtime_offset)
 	adr x0, _text
-	ldr x1, linkadr
+	ldr_l x1, linkadr
 	subs x0, x0, x1
 	ret
+ENDPROC(get_runtime_offset)
 
+.section ".data.runtime_offset","a"
 .align 3
 linkadr:
 /*
@@ -24,4 +26,3 @@ linkadr:
  * use _text here since that is 0x0 and is correct without relocation.
  */
 .quad _text
-ENDPROC(get_runtime_offset)

@@ -86,7 +86,7 @@ static int efi_load_image(const char *file, efi_loaded_image_t **loaded_image,
 
 	exe = read_file(file, &size);
 	if (!exe)
-		return -EINVAL;
+		return -errno;
 
 	efiret = BS->load_image(false, efi_parent_image, efi_device_path, exe, size,
 			&handle);

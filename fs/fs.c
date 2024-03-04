@@ -130,9 +130,8 @@ void cdev_print(const struct cdev *cdev)
 }
 EXPORT_SYMBOL(cdev_print);
 
-void stat_print(const char *filename, const struct stat *st)
+void stat_print(int dirfd, const char *filename, const struct stat *st)
 {
-	int dirfd = AT_FDCWD;
 	struct block_device *bdev = NULL;
 	struct fs_device *fdev;
 	struct cdev *cdev = NULL;
@@ -177,7 +176,7 @@ void stat_print(const char *filename, const struct stat *st)
 		char realname[PATH_MAX] = {};
 		int ret;
 
-		ret = readlink(filename, realname, PATH_MAX - 1);
+		ret = readlinkat(dirfd, filename, realname, PATH_MAX - 1);
 		if (ret)
 			printf(" -> <readlink error %pe>", ERR_PTR(ret));
 		else

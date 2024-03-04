@@ -325,10 +325,14 @@ static void put_file(FILE *f)
 	dput(f->dentry);
 }
 
-static FILE *fd_to_file(int fd)
+static FILE *fd_to_file(int fd, bool o_path_ok)
 {
 	if (fd < 0 || fd >= MAX_FILES || !files[fd].in_use) {
 		errno = EBADF;
+		return ERR_PTR(-errno);
+	}
+	if (!o_path_ok && (files[fd].flags & O_PATH)) {
+		errno = EINVAL;
 		return ERR_PTR(-errno);
 	}
 
@@ -359,7 +363,7 @@ static int fsdev_truncate(struct device *dev, FILE *f, loff_t length)
 
 int ftruncate(int fd, loff_t length)
 {
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -381,7 +385,7 @@ int ftruncate(int fd, loff_t length)
 int ioctl(int fd, int request, void *buf)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -426,7 +430,7 @@ out:
 ssize_t pread(int fd, void *buf, size_t count, loff_t offset)
 {
 	loff_t pos;
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -443,7 +447,7 @@ EXPORT_SYMBOL(pread);
 
 ssize_t read(int fd, void *buf, size_t count)
 {
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -495,7 +499,7 @@ out:
 ssize_t pwrite(int fd, const void *buf, size_t count, loff_t offset)
 {
 	loff_t pos;
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -512,7 +516,7 @@ EXPORT_SYMBOL(pwrite);
 
 ssize_t write(int fd, const void *buf, size_t count)
 {
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -529,7 +533,7 @@ EXPORT_SYMBOL(write);
 int flush(int fd)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -547,7 +551,7 @@ int flush(int fd)
 loff_t lseek(int fd, loff_t offset, int whence)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	loff_t pos;
 	int ret;
 
@@ -600,7 +604,7 @@ EXPORT_SYMBOL(lseek);
 int erase(int fd, loff_t count, loff_t offset)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -629,7 +633,7 @@ EXPORT_SYMBOL(erase);
 int protect(int fd, size_t count, loff_t offset, int prot)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -656,7 +660,7 @@ EXPORT_SYMBOL(protect);
 int discard_range(int fd, loff_t count, loff_t offset)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -697,7 +701,7 @@ int protect_file(const char *file, int prot)
 void *memmap(int fd, int flags)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, false);
 	void *retp = MAP_FAILED;
 	int ret;
 
@@ -721,20 +725,23 @@ EXPORT_SYMBOL(memmap);
 
 int close(int fd)
 {
-	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, true);
 	int ret = 0;
 
 	if (IS_ERR(f))
 		return -errno;
 
-	fsdrv = f->fsdev->driver;
+	if (!(f->flags & O_PATH)) {
+		struct fs_driver *fsdrv;
 
-	if (fsdrv != ramfs_driver)
-		assert_command_context();
+		fsdrv = f->fsdev->driver;
 
-	if (fsdrv->close)
-		ret = fsdrv->close(&f->fsdev->dev, f);
+		if (fsdrv != ramfs_driver)
+			assert_command_context();
+
+		if (fsdrv->close)
+			ret = fsdrv->close(&f->fsdev->dev, f);
+	}
 
 	put_file(f);
 
@@ -1056,7 +1063,7 @@ static void stat_inode(struct inode *inode, struct stat *s)
 
 int fstat(int fd, struct stat *s)
 {
-	FILE *f = fd_to_file(fd);
+	FILE *f = fd_to_file(fd, true);
 
 	if (IS_ERR(f))
 		return -errno;
@@ -2173,7 +2180,7 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 	 * whether paths are absolute with openat(-1, path, O_PATH)
 	 */
 	if (dirfd != AT_FDCWD)
-		f = fd_to_file(dirfd);
+		f = fd_to_file(dirfd, true);
 
 	if (*s == '/') {
 		get_root(&nd->path);
@@ -2590,7 +2597,7 @@ int openat(int dirfd, const char *pathname, int flags)
 			error = -ENOENT;
 			goto out1;
 		}
-	} else {
+	} else if (!(flags & O_PATH)) {
 		if (d_is_dir(dentry) && !dentry_is_tftp(dentry)) {
 			error = -EISDIR;
 			goto out1;
@@ -2616,6 +2623,9 @@ int openat(int dirfd, const char *pathname, int flags)
 	fsdrv = fsdev->driver;
 
 	f->fsdev = fsdev;
+
+	if (flags & O_PATH)
+		return f->no;
 
 	if (fsdrv->open) {
 		char *pathname = dpath(dentry, fsdev->vfsmount.mnt_root);
@@ -2653,7 +2663,7 @@ static const char *fd_getpath(int fd)
 	if (fd < 0)
 		return ERR_PTR(errno_set(fd));
 
-	f = fd_to_file(fd);
+	f = fd_to_file(fd, true);
 	if (IS_ERR(f))
 		return ERR_CAST(f);
 

@@ -76,7 +76,7 @@ static unsigned dmesg_get_levels(const char *__args)
 
 static int do_dmesg(int argc, char *argv[])
 {
-	int opt, i;
+	int opt, ret, i;
 	int delete_buf = 0, emit = 0;
 	unsigned flags = 0, levels = 0;
 	char *set = NULL;
@@ -148,7 +148,9 @@ static int do_dmesg(int argc, char *argv[])
 		return 0;
 	}
 
-	log_print(flags, levels);
+	ret = log_print(flags, levels);
+	if (ret)
+		return 1;
 
 	if (delete_buf)
 		log_clean(10);

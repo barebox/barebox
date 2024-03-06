@@ -208,7 +208,7 @@ int log_writefile(const char *filepath)
 	return ret < 0 ? ret : nbytes;
 }
 
-void log_print(unsigned flags, unsigned levels)
+int log_print(unsigned flags, unsigned levels)
 {
 	struct log_entry *log;
 	unsigned long last = 0;
@@ -219,6 +219,8 @@ void log_print(unsigned flags, unsigned levels)
 
 		if (levels && !(levels & (1 << log->level)))
 			continue;
+		if (ctrlc())
+			return -EINTR;
 
 		if (!(flags & (BAREBOX_LOG_PRINT_RAW | BAREBOX_LOG_PRINT_TIME
 			       | BAREBOX_LOG_DIFF_TIME)))
@@ -247,6 +249,8 @@ void log_print(unsigned flags, unsigned levels)
 
 		printf("%s", log->msg);
 	}
+
+	return 0;
 }
 
 int printf(const char *fmt, ...)

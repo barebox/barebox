@@ -1295,6 +1295,7 @@ static int mci_mmc_select_hs_ddr(struct mci *mci)
 	if (ret < 0)
 		return mci_mmc_try_bus_width(mci, host->bus_width, MMC_TIMING_MMC_HS);
 
+	/* Block length is fixed to 512 bytes while in DDR mode */
 	mci->read_bl_len = SECTOR_SIZE;
 	mci->write_bl_len = SECTOR_SIZE;
 

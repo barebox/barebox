@@ -12,6 +12,7 @@ struct dma_debug_entry {
 	dma_addr_t       dev_addr;
 	size_t           size;
 	int              direction;
+	bool             dev_owned;
 };
 
 static const char *dir2name[] = {
@@ -121,6 +122,7 @@ void debug_dma_map(struct device *dev, void *addr,
 	entry->dev_addr = dev_addr;
 	entry->size = size;
 	entry->direction = direction;
+	entry->dev_owned = true;
 
 	list_add(&entry->list, &dma_mappings);
 
@@ -159,9 +161,17 @@ void debug_dma_sync_single_for_cpu(struct device *dev,
 	struct dma_debug_entry *entry;
 
 	entry = dma_debug_entry_find(dev, dma_handle, size);
-	if (!entry)
+	if (!entry) {
 		dma_dev_warn(dev, "sync for CPU of never-mapped %s buffer 0x%llx+0x%zx!\n",
 			     dir2name[direction], (u64)dma_handle, size);
+		return;
+	}
+
+	if (!entry->dev_owned)
+		dma_dev_warn(dev, "unexpected sync for CPU of already CPU-mapped %s buffer 0x%llx+0x%zx!\n",
+			     dir2name[direction], (u64)dma_handle, size);
+
+	entry->dev_owned = false;
 }
 
 void debug_dma_sync_single_for_device(struct device *dev,
@@ -177,7 +187,15 @@ void debug_dma_sync_single_for_device(struct device *dev,
 	 * corruption
 	 */
 	entry = dma_debug_entry_find(dev, dma_handle, size);
-	if (!entry)
+	if (!entry) {
 		dma_dev_warn(dev, "Syncing for device of never-mapped %s buffer 0x%llx+0x%zx!\n",
 			     dir2name[direction], (u64)dma_handle, size);
+		return;
+	}
+
+	if (entry->dev_owned)
+		dma_dev_warn(dev, "unexpected sync for device of already device-mapped %s buffer 0x%llx+0x%zx!\n",
+			     dir2name[direction], (u64)dma_handle, size);
+
+	entry->dev_owned = true;
 }

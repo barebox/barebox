@@ -614,32 +614,32 @@ enum {
 	IMX8MM_PAD_I2C1_SDA_ENET1_MDIO                                =  IOMUX_PAD(0x0480, 0x0218, 1, 0x04C0, 2, 0),
 	IMX8MM_PAD_I2C1_SDA_GPIO5_IO15                                =  IOMUX_PAD(0x0480, 0x0218, 5, 0x0000, 0, 0),
 
-	IMX8MM_PAD_I2C2_SCL_I2C2_SCL                                  =  IOMUX_PAD(0x0484, 0x021C, 0, 0x0000, 0, 0),
+	IMX8MM_PAD_I2C2_SCL_I2C2_SCL                                  =  IOMUX_PAD(0x0484, 0x021C, 0 | IOMUX_CONFIG_SION, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C2_SCL_ENET1_1588_EVENT1_IN                      =  IOMUX_PAD(0x0484, 0x021C, 1, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C2_SCL_USDHC3_CD_B                               =  IOMUX_PAD(0x0484, 0x021C, 2, 0x0544, 1, 0),
 	IMX8MM_PAD_I2C2_SCL_GPIO5_IO16                                =  IOMUX_PAD(0x0484, 0x021C, 5, 0x0000, 0, 0),
 
-	IMX8MM_PAD_I2C2_SDA_I2C2_SDA                                  =  IOMUX_PAD(0x0488, 0x0220, 0, 0x0000, 0, 0),
+	IMX8MM_PAD_I2C2_SDA_I2C2_SDA                                  =  IOMUX_PAD(0x0488, 0x0220, 0 | IOMUX_CONFIG_SION, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C2_SDA_ENET1_1588_EVENT1_OUT                     =  IOMUX_PAD(0x0488, 0x0220, 1, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C2_SDA_USDHC3_WP                                 =  IOMUX_PAD(0x0488, 0x0220, 2, 0x0548, 1, 0),
 	IMX8MM_PAD_I2C2_SDA_GPIO5_IO17                                =  IOMUX_PAD(0x0488, 0x0220, 5, 0x0000, 0, 0),
 
-	IMX8MM_PAD_I2C3_SCL_I2C3_SCL                                  =  IOMUX_PAD(0x048C, 0x0224, 0, 0x0000, 0, 0),
+	IMX8MM_PAD_I2C3_SCL_I2C3_SCL                                  =  IOMUX_PAD(0x048C, 0x0224, 0 | IOMUX_CONFIG_SION, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C3_SCL_PWM4_OUT                                  =  IOMUX_PAD(0x048C, 0x0224, 1, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C3_SCL_GPT2_CLK                                  =  IOMUX_PAD(0x048C, 0x0224, 2, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C3_SCL_GPIO5_IO18                                =  IOMUX_PAD(0x048C, 0x0224, 5, 0x0000, 0, 0),
 
-	IMX8MM_PAD_I2C3_SDA_I2C3_SDA                                  =  IOMUX_PAD(0x0490, 0x0228, 0, 0x0000, 0, 0),
+	IMX8MM_PAD_I2C3_SDA_I2C3_SDA                                  =  IOMUX_PAD(0x0490, 0x0228, 0 | IOMUX_CONFIG_SION, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C3_SDA_PWM3_OUT                                  =  IOMUX_PAD(0x0490, 0x0228, 1, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C3_SDA_GPT3_CLK                                  =  IOMUX_PAD(0x0490, 0x0228, 2, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C3_SDA_GPIO5_IO19                                =  IOMUX_PAD(0x0490, 0x0228, 5, 0x0000, 0, 0),
 
-	IMX8MM_PAD_I2C4_SCL_I2C4_SCL                                  =  IOMUX_PAD(0x0494, 0x022C, 0, 0x0000, 0, 0),
+	IMX8MM_PAD_I2C4_SCL_I2C4_SCL                                  =  IOMUX_PAD(0x0494, 0x022C, 0 | IOMUX_CONFIG_SION, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C4_SCL_PWM2_OUT                                  =  IOMUX_PAD(0x0494, 0x022C, 1, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C4_SCL_PCIE1_CLKREQ_B                            =  IOMUX_PAD(0x0494, 0x022C, 2, 0x0524, 0, 0),
 	IMX8MM_PAD_I2C4_SCL_GPIO5_IO20                                =  IOMUX_PAD(0x0494, 0x022C, 5, 0x0000, 0, 0),
 
-	IMX8MM_PAD_I2C4_SDA_I2C4_SDA                                  =  IOMUX_PAD(0x0498, 0x0230, 0, 0x0000, 0, 0),
+	IMX8MM_PAD_I2C4_SDA_I2C4_SDA                                  =  IOMUX_PAD(0x0498, 0x0230, 0 | IOMUX_CONFIG_SION, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C4_SDA_PWM1_OUT                                  =  IOMUX_PAD(0x0498, 0x0230, 1, 0x0000, 0, 0),
 	IMX8MM_PAD_I2C4_SDA_GPIO5_IO21                                =  IOMUX_PAD(0x0498, 0x0230, 5, 0x0000, 0, 0),
 

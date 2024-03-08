@@ -147,6 +147,7 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 {
 	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
 	u32 mask, command, xfer;
+	dma_addr_t dma;
 	int ret;
 
 	ret = sdhci_wait_idle(&host->sdhci, cmd);
@@ -156,13 +157,14 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
 
 	mask = SDHCI_INT_CMD_COMPLETE;
-	if (data && data->flags == MMC_DATA_READ)
-		mask |= SDHCI_INT_DATA_AVAIL;
 	if (cmd->resp_type & MMC_RSP_BUSY)
 		mask |= SDHCI_INT_XFER_COMPLETE;
 
-	sdhci_set_cmd_xfer_mode(&host->sdhci,
-				cmd, data, false, &command, &xfer);
+	sdhci_setup_data_dma(&host->sdhci, data, &dma);
+
+	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data,
+				dma == SDHCI_NO_DMA ? false : true,
+				&command, &xfer);
 
 	sdhci_write8(&host->sdhci, SDHCI_TIMEOUT_CONTROL, TIMEOUT_VAL);
 	if (data) {
@@ -174,15 +176,15 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
 	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
 
-	ret = sdhci_wait_for_done(&host->sdhci, mask);
+	ret = sdhci_wait_for_done(&host->sdhci, SDHCI_INT_CMD_COMPLETE);
 	if (ret)
 		goto error;
 
 	sdhci_read_response(&host->sdhci, cmd);
-	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, mask);
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);
 
 	if (data)
-		ret = sdhci_transfer_data_pio(&host->sdhci, data);
+		ret = sdhci_transfer_data_dma(&host->sdhci, data, dma);
 
 error:
 	if (ret) {

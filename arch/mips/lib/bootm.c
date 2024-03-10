@@ -16,11 +16,20 @@
 
 static int do_bootm_barebox(struct image_data *data)
 {
-	void (*barebox)(void);
+	void (*barebox)(int, void *);
+	void *fdt = NULL;
 
 	barebox = read_file(data->os_file, NULL);
 	if (!barebox)
 		return -EINVAL;
+
+	if (data->oftree_file) {
+		fdt = bootm_get_devicetree(data);
+		if (IS_ERR(fdt)) {
+			pr_err("Failed to load dtb\n");
+			return PTR_ERR(fdt);
+		}
+	}
 
 	if (data->dryrun) {
 		free(barebox);
@@ -29,7 +38,7 @@ static int do_bootm_barebox(struct image_data *data)
 
 	shutdown_barebox();
 
-	barebox();
+	barebox(-2, fdt);
 
 	restart_machine();
 }

@@ -594,6 +594,20 @@ if 64BIT
 
 comment "i.MX8M boards"
 
+config MACH_CONGATEC_QMX8P_SOM
+	bool
+	select ARCH_IMX8MP
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MP_ATF
+	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
+	select IMX8M_DRAM
+	select I2C_IMX_EARLY
+
+config MACH_KOENIGBAUER_ALPHAJET
+	bool "Koenig+Bauer AlphaJet"
+	select MACH_CONGATEC_QMX8P_SOM
+
 config MACH_INNOCOMM_WB15
 	bool "InnoComm WB15 (i.MX8MM) EVK"
 	select ARCH_IMX8MM

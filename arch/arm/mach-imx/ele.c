@@ -227,6 +227,16 @@ int imx93_ele_load_fw(void *bl33)
 	return 0;
 }
 
+/*
+ * ele_read_common_fuse - read a fuse
+ * @fuse_id: The fuse to read (in 32bit word number)
+ * fuse_word: The value read from the fuse
+ * @response: on return contains the response from ELE
+ *
+ * This reads the shadow value of the fuse @fuse_id.
+ *
+ * Return: 0 when the ELE call succeeds, negative error code otherwise
+ */
 int ele_read_common_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 {
 	struct ele_msg msg;
@@ -248,6 +258,16 @@ int ele_read_common_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 	return ret;
 }
 
+/*
+ * ele_read_shadow_fuse - read a fuse
+ * @fuse_id: The fuse to read (in 32bit word number)
+ * fuse_word: The value read from the fuse
+ * @response: on return contains the response from ELE
+ *
+ * This reads the shadow value of the fuse @fuse_id.
+ *
+ * Return: 0 when the ELE call succeeds, negative error code otherwise
+ */
 int ele_read_shadow_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 {
 	struct ele_msg msg;
@@ -271,7 +291,7 @@ int ele_read_shadow_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 
 /*
  * ele_write_fuse - write a fuse
- * @fuse_id: The fuse to write to
+ * @fuse_id: The fuse to write to (in 32bit word number)
  * @fuse_val: The value to write to the fuse
  * @lock: lock fuse after writing
  * @response: on return contains the response from ELE

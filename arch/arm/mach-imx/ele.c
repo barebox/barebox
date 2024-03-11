@@ -326,6 +326,39 @@ int ele_write_fuse(u16 fuse_id, u32 fuse_val, bool lock, u32 *response)
 }
 
 /*
+ * ele_write_shadow_fuse - write a fuse
+ * @fuse_id: The fuse to write to
+ * @fuse_val: The value to write to the fuse
+ * @lock: lock fuse after writing
+ * @response: on return contains the response from ELE
+ *
+ * This writes the 32bit given in @fuse_val to the fuses at @fuse_id. This is
+ * a permanent change, be careful.
+ *
+ * Return: 0 when the ELE call succeeds, negative error code otherwise
+ */
+int ele_write_shadow_fuse(u16 fuse_id, u32 fuse_val, u32 *response)
+{
+	struct ele_msg msg;
+	int ret;
+
+	msg.version = ELE_VERSION;
+	msg.tag = ELE_CMD_TAG;
+	msg.size = 3;
+	msg.command = ELE_WRITE_SHADOW_REQ;
+	msg.data[0] = fuse_id;
+
+	msg.data[1] = fuse_val;
+
+	ret = imx9_s3mua_call(&msg);
+
+	if (response)
+		*response = msg.data[0];
+
+	return ret;
+}
+
+/*
  * ele_forward_lifecycle - forward lifecycle
  * @lc: The lifecycle value to forward to
  * @response: on return contains the response from ELE

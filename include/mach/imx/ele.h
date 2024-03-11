@@ -45,6 +45,7 @@
 #define ELE_ATTEST_REQ (0xDB)
 #define ELE_RELEASE_PATCH_REQ (0xDC)
 #define ELE_OTP_SEQ_SWITH_REQ (0xDD)
+#define ELE_WRITE_SHADOW_REQ (0xF2)
 #define ELE_READ_SHADOW_REQ (0xF3)
 
 /* ELE failure indications */
@@ -152,6 +153,7 @@ int ele_call(struct ele_msg *msg);
 int ele_read_common_fuse(u16 fuse_id, u32 *fuse_word, u32 *response);
 int ele_release_rdc(u8 core_id, u8 xrdc, u32 *response);
 int ele_read_shadow_fuse(u16 fuse_id, u32 *fuse_word, u32 *response);
+int ele_write_shadow_fuse(u16 fuse_id, u32 fuse_val, u32 *response);
 int ele_get_info(struct ele_get_info_data *info);
 int ele_write_fuse(u16 fuse_id, u32 fuse_val, bool lock, u32 *response);
 int ele_authenticate_container(unsigned long addr, u32 *response);

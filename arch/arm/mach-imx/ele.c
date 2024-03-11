@@ -167,6 +167,23 @@ int ele_get_info(struct ele_get_info_data *info)
 	return ret;
 }
 
+static int ele_get_start_trng(void)
+{
+	struct ele_msg msg = {
+		.version = ELE_VERSION,
+		.tag = ELE_CMD_TAG,
+		.size = 1,
+		.command = ELE_START_RNG,
+	};
+	int ret;
+
+	ret = ele_call(&msg);
+	if (ret)
+		pr_err("Could not start TRNG, response 0x%x\n", msg.data[0]);
+
+	return ret;
+}
+
 int imx93_ele_load_fw(void *bl33)
 {
 	struct ele_get_info_data info = {};
@@ -205,6 +222,9 @@ int imx93_ele_load_fw(void *bl33)
 	if (ret)
 		pr_err("Could not start ELE firmware: ret %d, response 0x%x\n",
 			ret, msg.data[0]);
+
+	if (rev >= 0xa1)
+		ele_get_start_trng();
 
 	return 0;
 }

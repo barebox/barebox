@@ -248,8 +248,6 @@ int ele_read_common_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 	return ret;
 }
 
-#define ELE_READ_SHADOW_REQ 0xf3
-
 int ele_read_shadow_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 {
 	struct ele_msg msg;

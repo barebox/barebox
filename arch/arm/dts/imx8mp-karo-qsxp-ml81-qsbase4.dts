@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2020 Lothar Waßmann <LW@KARO-electronics.de>
+ *
+ */
+
+/dts-v1/;
+
+#include "imx8mp-karo-qsxp-ml81.dtsi"
+
+/ {
+	model = "Ka-Ro electronics QSXP-ML81-QSBASE4 (NXP i.MX8MP) Board";
+	compatible = "karo,imx8mp-qsxp-ml81-qsbase4", "karo,imx8mp-qsxp-ml81", "fsl,imx8mp";
+};
+
+&eqos {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&pinctrl_eqos>;
+	pinctrl-1 = <&pinctrl_eqos_sleep>;
+	phy-connection-type = "rgmii-id";
+	phy-handle = <&ethphy1>;
+	phy-supply = <&ldo5_reg>;
+	status = "okay";
+
+	mdio {
+		compatible = "snps,dwmac-mdio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy1: ethernet-phy@7 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <7>;
+			reset-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <100>;
+			reset-deassert-us = <250000>;
+		};
+	};
+};
+
+&iomuxc {
+	pinctrl_eqos: eqosgrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SAI2_RXC__GPIO4_IO22 0x140					/* PHY reset */
+			MX8MP_IOMUXC_ENET_MDC__ENET_QOS_MDC 0x142
+			MX8MP_IOMUXC_ENET_MDIO__ENET_QOS_MDIO 0x142
+			MX8MP_IOMUXC_ENET_TXC__CCM_ENET_QOS_CLOCK_GENERATE_TX_CLK 0x40000016
+			MX8MP_IOMUXC_ENET_TD0__ENET_QOS_RGMII_TD0 0x016
+			MX8MP_IOMUXC_ENET_TD1__ENET_QOS_RGMII_TD1 0x016
+			MX8MP_IOMUXC_ENET_TD2__ENET_QOS_RGMII_TD2 0x016
+			MX8MP_IOMUXC_ENET_TD3__ENET_QOS_RGMII_TD3 0x016
+			MX8MP_IOMUXC_ENET_TX_CTL__ENET_QOS_RGMII_TX_CTL 0x016
+			MX8MP_IOMUXC_ENET_RD0__ENET_QOS_RGMII_RD0 0x110				/* MODE0 */
+			MX8MP_IOMUXC_ENET_RD1__ENET_QOS_RGMII_RD1 0x150				/* MODE1 */
+			MX8MP_IOMUXC_ENET_RD2__ENET_QOS_RGMII_RD2 0x150				/* MODE2 */
+			MX8MP_IOMUXC_ENET_RD3__ENET_QOS_RGMII_RD3 0x150				/* MODE3 */
+			MX8MP_IOMUXC_ENET_RXC__CCM_ENET_QOS_CLOCK_GENERATE_RX_CLK 0x156		/* PHYAD2 */
+			MX8MP_IOMUXC_ENET_RX_CTL__ENET_QOS_RGMII_RX_CTL 0x000			/* CLK125_EN */
+			MX8MP_IOMUXC_GPIO1_IO00__CCM_ENET_PHY_REF_CLK_ROOT 0x110		/* LED_MODE */
+		>;
+	};
+
+	pinctrl_eqos_sleep: eqos-sleep-grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SAI2_RXC__GPIO4_IO22 0x120
+			MX8MP_IOMUXC_ENET_MDC__GPIO1_IO16 0x120
+			MX8MP_IOMUXC_ENET_MDIO__GPIO1_IO17 0x120
+			MX8MP_IOMUXC_ENET_TXC__GPIO1_IO23 0x120
+			MX8MP_IOMUXC_ENET_TD0__GPIO1_IO21 0x120
+			MX8MP_IOMUXC_ENET_TD1__GPIO1_IO20 0x120
+			MX8MP_IOMUXC_ENET_TD2__GPIO1_IO19 0x120
+			MX8MP_IOMUXC_ENET_TD3__GPIO1_IO18 0x120
+			MX8MP_IOMUXC_ENET_TX_CTL__GPIO1_IO22 0x120
+			MX8MP_IOMUXC_ENET_RD0__GPIO1_IO26 0x120
+			MX8MP_IOMUXC_ENET_RD1__GPIO1_IO27 0x120
+			MX8MP_IOMUXC_ENET_RD2__GPIO1_IO28 0x120
+			MX8MP_IOMUXC_ENET_RD3__GPIO1_IO29 0x120
+			MX8MP_IOMUXC_ENET_RXC__GPIO1_IO25 0x120
+			MX8MP_IOMUXC_ENET_RX_CTL__GPIO1_IO24 0x120
+			MX8MP_IOMUXC_GPIO1_IO00__GPIO1_IO00 0x120
+		>;
+	};
+};

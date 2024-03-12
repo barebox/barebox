@@ -22,6 +22,7 @@
 #include <linux/regmap.h>
 #include <regulator.h>
 #include <linux/err.h>
+#include <machine_id.h>
 
 #include <mach/imx/iim.h>
 #include <mach/imx/imx51-regs.h>
@@ -503,6 +504,25 @@ static int imx_iim_probe(struct device *dev)
 
 	dev_add_param_bool(&iim->dev, "explicit_sense_enable",
 			NULL, NULL, &iim->sense_enable, NULL);
+
+	/* Maybe this is too strict? This might also work on i.MX31 and i.MX35 */
+	if (IS_ENABLED(CONFIG_MACHINE_ID) &&
+	    of_device_is_compatible(dev->of_node, "fsl,imx25-iim")) {
+		char uid[8];
+
+		for (i = 0; i < 8; ++i) {
+			unsigned int value;
+
+			ret = imx_iim_read_field(IMX25_IIM_UID(i), &value);
+			if (ret)
+				break;
+
+			uid[i] = value;
+		}
+
+		if (!ret)
+			machine_id_set_hashable(uid, 8);
+	}
 
 	return 0;
 }

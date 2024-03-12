@@ -92,6 +92,8 @@ void cdev_print(const struct cdev *cdev)
 			printf(" of-partition");
 		if (cdev->flags & DEVFS_PARTITION_FROM_TABLE)
 			printf(" table-partition");
+		if (cdev->flags & DEVFS_PARTITION_FOR_FIXUP)
+			printf(" fixup");
 		if (cdev->flags & DEVFS_IS_MCI_MAIN_PART_DEV)
 			printf(" mci-main-partition");
 		if (cdev->flags & DEVFS_IS_MBR_PARTITIONED)

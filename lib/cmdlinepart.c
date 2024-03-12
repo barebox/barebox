@@ -29,7 +29,7 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 	loff_t size;
 	char *end;
 	char buf[PATH_MAX] = {};
-	unsigned long flags = 0;
+	unsigned long flags = DEVFS_PARTITION_FOR_FIXUP;
 	struct cdev *cdev;
 
 	memset(buf, 0, PATH_MAX);

@@ -74,7 +74,7 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	}
 
 	new->device_node = node;
-	new->flags |= DEVFS_PARTITION_FROM_OF;
+	new->flags |= DEVFS_PARTITION_FROM_OF | DEVFS_PARTITION_FOR_FIXUP;
 
 	if (IS_ENABLED(CONFIG_NVMEM) && of_device_is_compatible(node, "nvmem-cells")) {
 		struct nvmem_device *nvmem = nvmem_partition_register(new);
@@ -178,7 +178,7 @@ int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
 		return 0;
 
 	list_for_each_entry(partcdev, &cdev->partitions, partition_entry) {
-		if (!(partcdev->flags & DEVFS_PARTITION_FROM_OF))
+		if (!(partcdev->flags & DEVFS_PARTITION_FOR_FIXUP))
 			continue;
 		n_parts++;
 	}
@@ -229,7 +229,7 @@ int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
 		u8 tmp[16 * 16]; /* Up to 64-bit address + 64-bit size */
 		loff_t partoffset;
 
-		if (!(partcdev->flags & DEVFS_PARTITION_FROM_OF))
+		if (!(partcdev->flags & DEVFS_PARTITION_FOR_FIXUP))
 			continue;
 
 		if (partcdev->mtd)

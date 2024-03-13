@@ -174,8 +174,7 @@ static int imx_ele_ocotp_probe(struct device *dev)
 }
 
 static struct ocotp_map_entry imx93_entries[] = {
-	{ 12, 40, FUSE_FSB },
-	{ 24, 11, FUSE_ELE },
+	{ 0, 52, FUSE_FSB },
 	{ 63, 1, FUSE_ELE},
 	{ 128, 16, FUSE_ELE },
 	{ 182, 1, FUSE_ELE },

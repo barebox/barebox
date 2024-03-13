@@ -54,7 +54,6 @@ config HW_RANDOM_EFI
 config HW_RANDOM_OPTEE
 	tristate "OP-TEE based Random Number Generator support"
 	depends on OPTEE
-	default HW_RANDOM
 	help
 	  This driver provides support for OP-TEE based Random Number
 	  Generator on ARM SoCs where hardware entropy sources are not

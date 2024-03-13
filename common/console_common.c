@@ -144,7 +144,7 @@ int dev_printf(int level, const struct device *dev, const char *format, ...)
 	if (!IS_ENABLED(CONFIG_LOGBUF) && level > barebox_loglevel)
 		return 0;
 
-	if (dev->driver && dev->driver->name)
+	if (dev && dev->driver && dev->driver->name)
 		ret += snprintf(printbuffer, size, "%s ", dev->driver->name);
 
 	ret += snprintf(printbuffer + ret, size - ret, "%s: ", dev_name(dev));

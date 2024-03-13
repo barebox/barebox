@@ -46,6 +46,7 @@ struct enc28j60_net {
 	/* store MAC address here while hardware is in the reset state */
 	u8 hwaddr[ETH_ALEN];
 	struct mii_bus miibus;
+	void *rx_buffer;
 };
 
 /*
@@ -793,9 +794,9 @@ static void enc28j60_hw_rx(struct eth_device *edev)
 		/* copy the packet from the receive buffer */
 		enc28j60_mem_read(priv,
 			rx_packet_start(priv->next_pk_ptr),
-			len, NetRxPackets[0]);
+			len, priv->rx_buffer);
 
-		net_receive(edev, NetRxPackets[0], len);
+		net_receive(edev, priv->rx_buffer, len);
 	}
 
 	/*
@@ -931,6 +932,7 @@ static int enc28j60_probe(struct device *dev)
 	priv = xzalloc(sizeof(*priv));
 
 	priv->spi = (struct spi_device *)dev->type_data;
+	priv->rx_buffer = net_alloc_packet();
 
 	edev = &priv->edev;
 	edev->priv = priv;

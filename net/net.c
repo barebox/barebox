@@ -789,12 +789,33 @@ out:
 	return ret;
 }
 
-static int net_init(void)
+void net_free_packets(void **packets, unsigned count)
 {
+	while (count-- > 0)
+		net_free_packet(packets[count]);
+}
+
+int net_alloc_packets(void **packets, int count)
+{
+	void *packet;
 	int i;
 
-	for (i = 0; i < PKTBUFSRX; i++)
-		NetRxPackets[i] = net_alloc_packet();
+	for (i = 0; i < count; i++) {
+		packet = net_alloc_packet();
+		if (!packet)
+			goto free;
+		packets[i] = packet;
+	}
+
+	return 0;
+free:
+	net_free_packets(packets, i);
+	return -ENOMEM;
+}
+
+static int net_init(void)
+{
+	net_alloc_packets((void **)NetRxPackets, PKTBUFSRX);
 
 	globalvar_add_simple_ip("net.nameserver", &net_nameserver);
 	globalvar_add_simple_string("net.domainname", &net_domainname);

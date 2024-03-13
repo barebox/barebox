@@ -551,6 +551,14 @@ static inline char *net_alloc_packet(void)
 	return dma_alloc(PKTSIZE);
 }
 
+static inline void net_free_packet(char *pkt)
+{
+	return dma_free(pkt);
+}
+
+int net_alloc_packets(void **packets, int count);
+void net_free_packets(void **packets, unsigned count);
+
 struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
 		rx_handler_f *handler, void *ctx);
 

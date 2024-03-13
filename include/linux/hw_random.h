@@ -33,6 +33,7 @@ struct hwrng {
 	struct cdev cdev;
 	struct device *dev;
 	void *buf;
+	unsigned long priv;
 };
 
 /* Register a new Hardware Random Number Generator driver. */

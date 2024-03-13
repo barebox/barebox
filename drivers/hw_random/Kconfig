@@ -59,4 +59,11 @@ config HW_RANDOM_OPTEE
 	  Generator on ARM SoCs where hardware entropy sources are not
 	  accessible to normal world (barebox and e.g. Linux after it).
 
+config HW_RANDOM_ATMEL
+	tristate "Atmel Random Number Generator support"
+	depends on ARCH_AT91 || COMPILE_TEST
+	help
+	  This driver provides barebox support for the Random Number
+	  Generator hardware found on Atmel AT91 devices.
+
 endif

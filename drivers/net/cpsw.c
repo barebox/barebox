@@ -215,6 +215,8 @@ struct cpsw_priv {
 	unsigned int			slave_size;
 	unsigned int			sliver_ofs;
 
+	void				*rx_buffer[PKTBUFSRX - 2];
+
 	struct cpdma_desc		*descs;
 	struct cpdma_desc		*desc_free;
 	struct cpdma_chan		rx_chan, tx_chan;
@@ -980,7 +982,7 @@ static int cpsw_setup(struct device *dev)
 
 	/* submit rx descs */
 	for (i = 0; i < PKTBUFSRX - 2; i++) {
-		ret = cpdma_submit(priv, &priv->rx_chan, NetRxPackets[i],
+		ret = cpdma_submit(priv, &priv->rx_chan, priv->rx_buffer[i],
 				   PKTSIZE, 0);
 		if (ret < 0) {
 			dev_err(dev, "error %d submitting rx desc\n", ret);
@@ -1349,6 +1351,10 @@ static int cpsw_probe(struct device *dev)
 
 	priv = xzalloc(sizeof(*priv));
 	priv->dev = dev;
+
+	ret = net_alloc_packets(priv->rx_buffer, ARRAY_SIZE(priv->rx_buffer));
+	if (ret)
+		goto out;
 
 	if (dev->of_node) {
 		ret = cpsw_probe_dt(priv);

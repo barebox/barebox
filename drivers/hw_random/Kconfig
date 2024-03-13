@@ -73,4 +73,11 @@ config HW_RANDOM_BCM2835
 	  This driver provides barebox support for the Random Number
 	  Generator hardware found on the Broadcom BCM2835 SoCs.
 
+config HW_RANDOM_IPROC_RNG200
+	tristate "Broadcom iProc/STB RNG200 support"
+	depends on ARCH_BCM283X || COMPILE_TEST
+	help
+	  This driver provides barebox support for the RNG200
+	  hardware found on the BCM2711.
+
 endif

@@ -177,7 +177,7 @@ static int ele_get_start_trng(void)
 	};
 	int ret;
 
-	ret = ele_call(&msg);
+	ret = ele_call(&msg, true);
 	if (ret)
 		pr_err("Could not start TRNG, response 0x%x\n", msg.data[0]);
 

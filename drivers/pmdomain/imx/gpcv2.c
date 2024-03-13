@@ -326,12 +326,16 @@ static int imx_pgc_power_up(struct generic_pm_domain *genpd)
 	u32 reg_val, pgc;
 	int ret;
 
-	if (!IS_ERR(domain->regulator)) {
+	if (!IS_ERR(domain->regulator))
 		ret = regulator_enable(domain->regulator);
-		if (ret) {
-			dev_err(domain->dev, "failed to enable regulator\n");
-			return ret;
-		}
+	else if (PTR_ERR(domain->regulator) == -ENOENT)
+		ret = -ENOENT;
+	else
+		ret = 0;
+
+	if (ret) {
+		dev_err(domain->dev, "failed to enable regulator\n");
+		return ret;
 	}
 
 	/* Enable reset clocks for all devices in the domain */
@@ -1145,9 +1149,21 @@ static int imx_pgc_domain_probe(struct device *dev)
 
 	domain->regulator = regulator_get(domain->dev, "power");
 	if (IS_ERR(domain->regulator)) {
-		if (PTR_ERR(domain->regulator) != -ENODEV)
+		/* On i.MX8M, we usually set up PMIC in early board code once
+		 * and don't do dynamic voltage regulation in barebox.
+		 * This means, even with deferred probe we will never succeed.
+		 * Instead, let's just print an info message and continue
+		 *
+		 * If you actually require access to a regulator here that has
+		 * a driver, enable deep probe for your board.
+		 */
+		if (PTR_ERR(domain->regulator) == -EPROBE_DEFER) {
+			dev_info(domain->dev, "Failed to get domain's regulator (ignored)\n");
+			domain->regulator = ERR_PTR(-ENOENT);
+		} else if (PTR_ERR(domain->regulator) != -ENODEV) {
 			return dev_err_probe(domain->dev, PTR_ERR(domain->regulator),
 					     "Failed to get domain's regulator\n");
+		}
 	} else if (domain->voltage) {
 		regulator_set_voltage(domain->regulator,
 				      domain->voltage, domain->voltage);

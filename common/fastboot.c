@@ -955,6 +955,11 @@ bool get_fastboot_bbu(void)
 	return fastboot_bbu;
 }
 
+void set_fastboot_bbu(unsigned int enable)
+{
+	fastboot_bbu = enable;
+}
+
 struct file_list *get_fastboot_partitions(void)
 {
 	if (fastboot_partitions && *fastboot_partitions)

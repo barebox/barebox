@@ -320,7 +320,7 @@ void imx8mq_load_bl33(void *bl33)
 	enum bootsource src;
 	int instance;
 
-	imx8mn_get_boot_source(&src, &instance);
+	imx8mq_get_boot_source(&src, &instance);
 	switch (src) {
 	case BOOTSOURCE_MMC:
 		imx8m_esdhc_load_image(instance, bl33);

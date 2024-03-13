@@ -44,10 +44,10 @@ static ssize_t rng_dev_read(struct cdev *cdev, void *buf, size_t size,
 	while (count) {
 		int max = min(count, (size_t)RNG_BUFFER_SIZE);
 		len = hwrng_get_data(rng, rng->buf, max, true);
-		if (len < 0) {
-			cur = len;
-			break;
-		}
+		if (len < 0)
+			return len;
+		if (!len && ctrlc())
+			return cur;
 
 		memcpy(buf + cur, rng->buf, len);
 

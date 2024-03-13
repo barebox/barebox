@@ -52,4 +52,9 @@ static inline int hwrng_get_data(struct hwrng *rng, void *buffer, size_t size, i
 
 void hwrng_unregister(struct hwrng *rng);
 
+static inline long hwrng_yield(struct hwrng *rng)
+{
+	return 0;
+}
+
 #endif /* LINUX_HWRANDOM_H_ */

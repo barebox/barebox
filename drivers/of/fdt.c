@@ -730,6 +730,17 @@ int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, con
 			dt_struct = dt_struct_advance(&f, dt_struct,
 					sizeof(struct fdt_node_header) + 1);
 
+			/*
+			 * Quoting Device Tree Specification v0.4 §5.4.2:
+			 *
+			 *   [T]his process requires that all property definitions for
+			 *   a particular node precede any subnode definitions for that
+			 *   node. Although the structure would not be ambiguous if
+			 *   properties and subnodes were intermingled, the code needed
+			 *   to process a flat tree is simplified by this requirement.
+			 *
+			 * So let's make use of this simplification.
+			 */
 			expect = FDT_PROP;
 			break;
 

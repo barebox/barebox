@@ -265,6 +265,11 @@ struct gfar_phy {
 	struct mii_bus miibus;
 };
 
+/* 2 seems to be the minimum number of TX descriptors to make it work. */
+#define TX_BUF_CNT 	2
+#define RX_BUF_CNT 	PKTBUFSRX
+#define BUF_ALIGN	8
+
 struct gfar_private {
 	struct eth_device edev;
 	void __iomem *regs;
@@ -282,5 +287,6 @@ struct gfar_private {
 	uint link;
 	uint duplexity;
 	uint speed;
+	void *rx_buffer[PKTBUFSRX];
 };
 #endif /* __GIANFAR_H */

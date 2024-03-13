@@ -34,6 +34,11 @@ struct bootm_data {
 	 * value of global.machine_id to Kernel.
 	 */
 	bool provide_machine_id;
+	/*
+	 * provide_hostname - if true, try to add systemd.hostname= with value
+	 * of global.hostname to Kernel.
+	 */
+	bool provide_hostname;
 	unsigned long initrd_address;
 	unsigned long os_address;
 	unsigned long os_entry;

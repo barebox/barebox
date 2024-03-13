@@ -158,7 +158,7 @@ static bool barebox_valid_ldh_char(char c)
 	       (c >= '0' && c <= '9') || c == '-';
 }
 
-static bool barebox_hostname_is_valid(const char *s)
+bool barebox_hostname_is_valid(const char *s)
 {
 	unsigned int n_dots = 0;
 	const char *p;

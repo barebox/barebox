@@ -127,6 +127,7 @@ void barebox_set_model(const char *);
 const char *barebox_get_hostname(void);
 void barebox_set_hostname(const char *);
 void barebox_set_hostname_no_overwrite(const char *);
+bool barebox_hostname_is_valid(const char *s);
 
 const char *barebox_get_serial_number(void);
 void barebox_set_serial_number(const char *);

@@ -44,6 +44,7 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 static int bootm_appendroot;
 static int bootm_earlycon;
 static int bootm_provide_machine_id;
+static int bootm_provide_hostname;
 static int bootm_verbosity;
 
 void bootm_data_init_defaults(struct bootm_data *data)
@@ -61,6 +62,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->verify = bootm_get_verify_mode();
 	data->appendroot = bootm_appendroot;
 	data->provide_machine_id = bootm_provide_machine_id;
+	data->provide_hostname = bootm_provide_hostname;
 	data->verbose = bootm_verbosity;
 }
 
@@ -797,6 +799,27 @@ int bootm_boot(struct bootm_data *bootm_data)
 		free(machine_id_bootarg);
 	}
 
+	if (bootm_data->provide_hostname) {
+		const char *hostname = getenv_nonempty("global.hostname");
+		char *hostname_bootarg;
+
+		if (!hostname) {
+			pr_err("Providing hostname is enabled but no hostname is set\n");
+			ret = -EINVAL;
+			goto err_out;
+		}
+
+		if (!barebox_hostname_is_valid(hostname)) {
+			pr_err("Provided hostname is not compatible to systemd hostname requirements\n");
+			ret = -EINVAL;
+			goto err_out;
+		}
+
+		hostname_bootarg = basprintf("systemd.hostname=%s", hostname);
+		globalvar_add_simple("linux.bootargs.hostname", hostname_bootarg);
+		free(hostname_bootarg);
+	}
+
 	pr_info("\nLoading %s '%s'", file_type_to_string(os_type),
 		data->os_file);
 	if (os_type == filetype_uimage &&
@@ -956,6 +979,7 @@ static int bootm_init(void)
 	globalvar_add_simple_bool("bootm.appendroot", &bootm_appendroot);
 	globalvar_add_simple_bool("bootm.earlycon", &bootm_earlycon);
 	globalvar_add_simple_bool("bootm.provide_machine_id", &bootm_provide_machine_id);
+	globalvar_add_simple_bool("bootm.provide_hostname", &bootm_provide_hostname);
 	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
 		globalvar_add_simple("bootm.initrd", NULL);
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
@@ -1000,3 +1024,4 @@ BAREBOX_MAGICVAR(global.bootm.earlycon, "Add earlycon option to Kernel for early
 BAREBOX_MAGICVAR(global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from (default, device can be overridden via global.bootm.root_dev)");
 BAREBOX_MAGICVAR(global.bootm.root_dev, "bootm default root device (overrides default device in global.bootm.appendroot)");
 BAREBOX_MAGICVAR(global.bootm.provide_machine_id, "If true, append systemd.machine_id=$global.machine_id to Kernel command line");
+BAREBOX_MAGICVAR(global.bootm.provide_hostname, "If true, append systemd.hostname=$global.hostname to Kernel command line");

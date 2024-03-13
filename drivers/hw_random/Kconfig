@@ -12,7 +12,7 @@ config HWRNG_MXC_RNGC
 	tristate "Freescale i.MX RNGC Random Number Generator"
 	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX53 || COMPILE_TEST
 	help
-	  This driver provides kernel-side support for the Random Number
+	  This driver provides barebox support for the Random Number
 	  Generator hardware found on some Freescale i.MX processors.
 
 config HWRNG_STM32
@@ -56,8 +56,8 @@ config HW_RANDOM_OPTEE
 	depends on OPTEE
 	default HW_RANDOM
 	help
-	  This  driver provides support for OP-TEE based Random Number
+	  This driver provides support for OP-TEE based Random Number
 	  Generator on ARM SoCs where hardware entropy sources are not
-	  accessible to normal world (Linux).
+	  accessible to normal world (barebox and e.g. Linux after it).
 
 endif

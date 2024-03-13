@@ -44,6 +44,7 @@ int bootentry_register_provider(int (*fn)(struct bootentries *bootentries, const
 
 struct watchdog;
 
+void boot_set_default(const char *boot_default);
 void boot_set_watchdog_timeout(unsigned int timeout);
 struct watchdog *boot_get_enabled_watchdog(void);
 struct bootentries *bootentries_alloc(void);

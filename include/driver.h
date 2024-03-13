@@ -289,6 +289,10 @@ struct resource *dev_request_mem_resource(struct device *dev, int num);
 struct resource *dev_request_mem_resource_by_name(struct device *dev,
 						  const char *name);
 
+void __iomem *dev_platform_get_and_ioremap_resource(struct device *dev,
+						    int num,
+						    struct resource **out_res);
+
 /*
  * exlusively request register base 'num' for a device
  * will return NULL on error

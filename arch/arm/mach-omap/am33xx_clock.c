@@ -169,6 +169,11 @@ void am33xx_enable_per_clocks(void)
 	__raw_writel(PRCM_MOD_EN, CM_WKUP_ADC_TSC_CLKCTRL);
 	while (__raw_readl(CM_WKUP_ADC_TSC_CLKCTRL) != PRCM_MOD_EN);
 
+	if (IS_ENABLED(CONFIG_HW_RANDOM_OMAP)) {
+		__raw_writel(PRCM_MOD_EN, CM_PER_RNG_CLKCTRL);
+		while ((__raw_readl(CM_PER_RNG_CLKCTRL) & 0x30000) != 0x0);
+	}
+
 	clkdcoldo = __raw_readl(CM_CLKDCOLDO_DPLL_PER);
 	clkdcoldo = clkdcoldo | 0x100;
 	__raw_writel(clkdcoldo, CM_CLKDCOLDO_DPLL_PER);

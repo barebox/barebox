@@ -94,4 +94,12 @@ config HW_RANDOM_ROCKCHIP
 	  This driver provides barebox support for the Random Number
 	  Generator hardware found on Rockchip cpus.
 
+config HW_RANDOM_OMAP
+	tristate "OMAP Random Number Generator support"
+	depends on ARCH_OMAP || ARCH_K3 || COMPILE_TEST
+	help
+	  This driver provides barebox support for the Random Number
+	  Generator hardware found on OMAP2/3/4/5, AM33xx/AM43xx
+	  multimedia processors, and Marvell Armada 7k/8k SoCs.
+
 endif

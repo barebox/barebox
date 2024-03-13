@@ -29,7 +29,6 @@
 #include <linux/ctype.h>
 #include <linux/err.h>
 
-unsigned char *NetRxPackets[PKTBUFSRX]; /* Receive packets		*/
 static unsigned int net_ip_id;
 
 char *net_server;
@@ -815,8 +814,6 @@ free:
 
 static int net_init(void)
 {
-	net_alloc_packets((void **)NetRxPackets, PKTBUFSRX);
-
 	globalvar_add_simple_ip("net.nameserver", &net_nameserver);
 	globalvar_add_simple_string("net.domainname", &net_domainname);
 	globalvar_add_simple_string("net.server", &net_server);

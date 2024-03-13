@@ -249,8 +249,6 @@ struct icmphdr {
  * (big endian).
  */
 
-extern unsigned char *NetRxPackets[PKTBUFSRX];/* Receive packets		*/
-
 void net_set_ip(struct eth_device *edev, IPaddr_t ip);
 void net_set_serverip(IPaddr_t ip);
 const char *net_get_server(void);

@@ -80,4 +80,11 @@ config HW_RANDOM_IPROC_RNG200
 	  This driver provides barebox support for the RNG200
 	  hardware found on the BCM2711.
 
+config HW_RANDOM_ROCKCHIP
+	tristate "Rockchip Random Number Generator support"
+	depends on ARCH_ROCKCHIP || COMPILE_TEST
+	help
+	  This driver provides barebox support for the Random Number
+	  Generator hardware found on Rockchip cpus.
+
 endif

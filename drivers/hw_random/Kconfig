@@ -8,6 +8,13 @@ menuconfig HWRNG
 
 if HWRNG
 
+config HW_RANDOM_TIMERIOMEM
+	tristate "Timer IOMEM HW Random Number Generator support"
+	help
+	  This driver provides barebox support for a generic Random
+	  Number Generator used by reading a 'dumb' iomem address that
+	  is to be read no faster than, for example, once a second.
+
 config HWRNG_MXC_RNGC
 	tristate "Freescale i.MX RNGC Random Number Generator"
 	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX53 || COMPILE_TEST

@@ -22,7 +22,7 @@ void barebox_banner (void)
 	printf("\n\n");
 	pr_info("%s\n", version_string);
 	if (strlen(buildsystem_version_string) > 0)
-		pr_info("Buildsystem version: %s", buildsystem_version_string);
+		pr_info("Buildsystem version: %s\n", buildsystem_version_string);
 	printf("\n\n");
 	pr_info("Board: %s\n", barebox_get_model());
 }

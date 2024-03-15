@@ -743,15 +743,9 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 }
 EXPORT_SYMBOL(i2c_add_numbered_adapter);
 
-static int i2c_probe(struct device *dev)
-{
-	return dev->driver->probe(dev);
-}
-
 struct bus_type i2c_bus = {
 	.name = "i2c",
 	.match = device_match_of_modalias,
-	.probe = i2c_probe,
 };
 
 static int i2c_bus_init(void)

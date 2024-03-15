@@ -58,20 +58,33 @@ static int register_otg_device(struct device *dev, struct otg_mode *otg)
 	return PTR_ERR_OR_ZERO(param_mode);
 }
 
-static struct device otg_device = {
-	.name = "otg",
-	.id = DEVICE_ID_SINGLE,
+struct bus_type otg_bus_type = {
+	.name = "usbotg" /* "otg" is already taken for the alias */
 };
+
+int otg_device_get_mode(struct device *dev)
+{
+	struct otg_mode *otg;
+
+	if (dev->bus != &otg_bus_type)
+		return -ENODEV;
+
+	otg = dev->priv;
+
+	return otg->cur_mode;
+}
 
 int usb_register_otg_device(struct device *parent,
 			    int (*set_mode)(void *ctx, enum usb_dr_mode mode), void *ctx)
 {
+	bool first_otg = list_empty(&otg_bus_type.device_list);
 	int ret;
 	struct otg_mode *otg;
 
 	otg = xzalloc(sizeof(*otg));
 	otg->dev.priv = otg;
 	otg->dev.parent = parent;
+	otg->dev.bus = &otg_bus_type;
 	otg->dev.id = DEVICE_ID_DYNAMIC;
 	dev_set_name(&otg->dev, "otg");
 
@@ -80,13 +93,19 @@ int usb_register_otg_device(struct device *parent,
 	otg->set_mode_callback = set_mode;
 	otg->ctx = ctx;
 
-	/* register otg.mode as an alias of otg0.mode */
-	if (otg_device.parent == NULL) {
-		otg_device.parent = parent;
-		ret = register_otg_device(&otg_device, otg);
-		if (ret)
-			return ret;
-	}
+	ret = register_otg_device(&otg->dev, otg);
+	if (ret)
+		return ret;
 
-	return register_otg_device(&otg->dev, otg);
+	/* register otg.mode as an alias of otg0.mode */
+	if (first_otg)
+		dev_add_alias(&otg->dev, "otg");
+
+	return 0;
 }
+
+static int otg_bus_init(void)
+{
+	return bus_register(&otg_bus_type);
+}
+pure_initcall(otg_bus_init);

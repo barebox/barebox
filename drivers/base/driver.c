@@ -137,7 +137,12 @@ int device_probe(struct device *dev)
 
 	list_add(&dev->active, &active_device_list);
 
-	ret = dev->bus->probe(dev);
+	if (dev->bus->probe)
+		ret = dev->bus->probe(dev);
+	else if (dev->driver->probe)
+		ret = dev->driver->probe(dev);
+	else
+		ret = 0;
 
 	depth--;
 
@@ -221,7 +226,7 @@ static int match(struct driver *drv, struct device *dev)
 
 	dev->driver = drv;
 
-	if (dev->bus->match(dev, drv))
+	if (dev->bus->match && dev->bus->match(dev, drv))
 		goto err_out;
 	ret = device_probe(dev);
 	if (ret)

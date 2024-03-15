@@ -205,15 +205,9 @@ static int acpi_bus_match(struct device *dev, struct driver *drv)
 	return acpi_sigcmp(acpidrv->signature, sdt->signature);
 }
 
-static int acpi_bus_probe(struct device *dev)
-{
-	return dev->driver->probe(dev);
-}
-
 struct bus_type acpi_bus = {
 	.name = "acpi",
 	.match = acpi_bus_match,
-	.probe = acpi_bus_probe,
 };
 
 static int efi_acpi_probe(void)

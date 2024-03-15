@@ -475,6 +475,8 @@ static int pca953x_probe(struct device *dev)
 	if (ret)
 		return ret;
 
+	slice_depends_on(gpiochip_slice(&chip->gpio_chip), i2c_client_slice(client));
+
 	if (pdata && pdata->setup) {
 		ret = pdata->setup(client, chip->gpio_chip.base,
 				chip->gpio_chip.ngpio, pdata->context);

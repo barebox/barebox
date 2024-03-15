@@ -14,12 +14,14 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <magicvar.h>
+#include <memory.h>
 #include <of.h>
 #include <password.h>
 #include <clock.h>
 #include <malloc.h>
 #include <linux/pstore.h>
 #include <linux/math64.h>
+#include <linux/sizes.h>
 #include <linux/overflow.h>
 
 #ifndef CONFIG_CONSOLE_NONE
@@ -37,7 +39,7 @@ int barebox_loglevel = CONFIG_DEFAULT_LOGLEVEL;
 
 LIST_HEAD(barebox_logbuf);
 static int barebox_logbuf_num_messages;
-static int barebox_log_max_messages = 1000;
+static int barebox_log_max_messages;
 
 static void log_del(struct log_entry *log)
 {
@@ -173,15 +175,18 @@ bool console_allow_color(void)
 
 static int console_common_init(void)
 {
-	if (IS_ENABLED(CONFIG_LOGBUF))
+	if (IS_ENABLED(CONFIG_LOGBUF)) {
+		barebox_log_max_messages
+			= clamp(mem_malloc_size() / SZ_32K, 1000UL, 100000UL);
 		globalvar_add_simple_int("log_max_messages",
 				&barebox_log_max_messages, "%d");
+	}
 
 	globalvar_add_simple_bool("allow_color", &__console_allow_color);
 
 	return globalvar_add_simple_int("loglevel", &barebox_loglevel, "%d");
 }
-device_initcall(console_common_init);
+core_initcall(console_common_init);
 
 int log_writefile(const char *filepath)
 {
@@ -203,7 +208,7 @@ int log_writefile(const char *filepath)
 	return ret < 0 ? ret : nbytes;
 }
 
-void log_print(unsigned flags, unsigned levels)
+int log_print(unsigned flags, unsigned levels)
 {
 	struct log_entry *log;
 	unsigned long last = 0;
@@ -214,6 +219,8 @@ void log_print(unsigned flags, unsigned levels)
 
 		if (levels && !(levels & (1 << log->level)))
 			continue;
+		if (ctrlc())
+			return -EINTR;
 
 		if (!(flags & (BAREBOX_LOG_PRINT_RAW | BAREBOX_LOG_PRINT_TIME
 			       | BAREBOX_LOG_DIFF_TIME)))
@@ -242,6 +249,8 @@ void log_print(unsigned flags, unsigned levels)
 
 		printf("%s", log->msg);
 	}
+
+	return 0;
 }
 
 int printf(const char *fmt, ...)

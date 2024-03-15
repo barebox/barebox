@@ -277,8 +277,11 @@ static int __console_puts(struct console_device *cdev, const char *s,
 	size_t i;
 
 	for (i = 0; i < nbytes; i++) {
-		if (*s == '\n')
+		if (*s == '\n') {
 			cdev->putc(cdev, '\r');
+			if (IS_ENABLED(CONFIG_CONSOLE_FLUSH_LINE_BREAK) && cdev->flush)
+				cdev->flush(cdev);
+		}
 
 		cdev->putc(cdev, *s);
 		s++;

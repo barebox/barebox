@@ -29,22 +29,23 @@ struct gpio_keys {
 	struct gpio_key *buttons;
 	int nbuttons;
 
-	struct poller_struct poller;
+	struct poller_async poller;
 	struct input_device input;
 	struct device *dev;
 };
 
-static inline struct gpio_keys *
-poller_to_gk_pdata(struct poller_struct *poller)
+static void gpio_key_poller(void *data)
 {
-	return container_of(poller, struct gpio_keys, poller);
-}
-
-static void gpio_key_poller(struct poller_struct *poller)
-{
-	struct gpio_keys *gk = poller_to_gk_pdata(poller);
+	struct gpio_keys *gk = data;
 	struct gpio_key *gb;
 	int i, val;
+
+	for (i = 0; i < gk->nbuttons; i++) {
+		gb = &gk->buttons[i];
+
+		if (gpio_slice_acquired(gb->gpio))
+			goto out;
+	}
 
 	for (i = 0; i < gk->nbuttons; i++) {
 
@@ -64,6 +65,8 @@ static void gpio_key_poller(struct poller_struct *poller)
 			gb->previous_state = val;
 		}
 	}
+out:
+	poller_call_async(&gk->poller, 10 * MSECOND, gpio_key_poller, gk);
 }
 
 static int gpio_keys_probe_pdata(struct gpio_keys *gk, struct device *dev)
@@ -159,15 +162,15 @@ static int __init gpio_keys_probe(struct device *dev)
 		gk->buttons[i].previous_state = gk->buttons[i].active_low;
 	}
 
-	gk->poller.func = gpio_key_poller;
-
 	ret = input_device_register(&gk->input);
 	if (ret)
 		return ret;
 
-	ret = poller_register(&gk->poller, dev_name(dev));
+	ret = poller_async_register(&gk->poller, dev_name(dev));
 	if (ret)
 		return ret;
+
+	poller_call_async(&gk->poller, 10 * MSECOND, gpio_key_poller, gk);
 
 	return 0;
 }

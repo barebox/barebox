@@ -840,6 +840,16 @@ config CONSOLE_ALLOW_COLOR
 	  compile time default for colored console output. After boot it
 	  can be controlled using global.allow_color.
 
+config CONSOLE_FLUSH_LINE_BREAK
+	bool "Flush consoles on new line" if COMPILE_TEST
+	help
+	  Many serial drivers configure and use hardware FIFOs as not to
+	  delay the boot. When debuging some king of bugs, such as clock
+	  issues that hang the SoC, this can falsify debugging output,
+	  because the UART doesn't output a submitted message fully, before
+	  the SoC hangs. This option will flush serial FIFOs when processing
+	  the new line feed characters.
+
 config CONSOLE_DISABLE_INPUT
 	prompt "Disable input on all consoles by default (non-interactive)"
 	def_bool CONSOLE_NONE
@@ -1705,6 +1715,7 @@ config DEBUG_AT91_UART_BASE
 
 config DEBUG_INITCALLS
 	bool "Trace initcalls"
+	select CONSOLE_FLUSH_LINE_BREAK
 	help
 	  If enabled this will print initcall traces.
 
@@ -1719,6 +1730,7 @@ config DEBUG_PBL
 
 config DEBUG_PROBES
 	bool "Trace driver probes/removes"
+	select CONSOLE_FLUSH_LINE_BREAK
 	help
 	  If enabled this will log driver probe and remove traces. If DEBUG_LL is enabled,
 	  probes will be printed even before registering consoles. If it's disabled, they

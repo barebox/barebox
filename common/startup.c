@@ -175,7 +175,8 @@ enum autoboot_state do_autoboot_countdown(void)
 	if (autoboot_state != AUTOBOOT_UNKNOWN)
 		return autoboot_state;
 
-	if (!console_get_first_active()) {
+	if (!console_get_first_active() &&
+	    global_autoboot_state != AUTOBOOT_ABORT) {
 		printf("\nNon-interactive console, booting system\n");
 		return autoboot_state = AUTOBOOT_BOOT;
 	}

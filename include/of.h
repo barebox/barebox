@@ -64,6 +64,9 @@ void of_clean_reserve_map(void);
 void fdt_add_reserve_map(void *fdt);
 void fdt_print_reserve_map(const void *fdt);
 
+int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, const char *compat);
+
+
 struct device;
 struct driver;
 struct resource;
@@ -1221,6 +1224,11 @@ static inline int of_property_write_u64(struct device_node *np,
 					u64 value)
 {
 	return of_property_write_u64_array(np, propname, &value, 1);
+}
+
+static inline void of_delete_property_by_name(struct device_node *np, const char *name)
+{
+	of_delete_property(of_find_property(np, name, NULL));
 }
 
 extern const struct of_device_id of_default_bus_match_table[];

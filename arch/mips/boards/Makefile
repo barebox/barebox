@@ -13,3 +13,5 @@ obj-$(CONFIG_BOARD_QEMU_MALTA) += qemu-malta/
 obj-$(CONFIG_BOARD_RZX50) += ritmix-rzx50/
 obj-$(CONFIG_BOARD_TPLINK_MR3020) += tplink-mr3020/
 obj-$(CONFIG_BOARD_TPLINK_WDR4300) += tplink-wdr4300/
+
+pbl-$(CONFIG_BOARD_MIPS_GENERIC_DT) += board-dt-2nd.o

@@ -249,8 +249,6 @@ struct icmphdr {
  * (big endian).
  */
 
-extern unsigned char *NetRxPackets[PKTBUFSRX];/* Receive packets		*/
-
 void net_set_ip(struct eth_device *edev, IPaddr_t ip);
 void net_set_serverip(IPaddr_t ip);
 const char *net_get_server(void);
@@ -550,6 +548,14 @@ static inline char *net_alloc_packet(void)
 {
 	return dma_alloc(PKTSIZE);
 }
+
+static inline void net_free_packet(char *pkt)
+{
+	return dma_free(pkt);
+}
+
+int net_alloc_packets(void **packets, int count);
+void net_free_packets(void **packets, unsigned count);
 
 struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
 		rx_handler_f *handler, void *ctx);

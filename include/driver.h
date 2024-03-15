@@ -651,6 +651,7 @@ extern struct list_head cdev_list;
 #define DEVFS_PARTITION_NO_EXPORT	(1U << 10)
 #define DEVFS_PARTITION_BOOTABLE_LEGACY	(1U << 11)
 #define DEVFS_PARTITION_BOOTABLE_ESP	(1U << 12)
+#define DEVFS_PARTITION_FOR_FIXUP	(1U << 13)
 
 static inline bool cdev_is_mbr_partitioned(const struct cdev *master)
 {

@@ -115,11 +115,18 @@ struct watchdog *boot_get_enabled_watchdog(void)
 }
 
 static char *global_boot_default;
+
+void boot_set_default(const char *boot_default)
+{
+	free(global_boot_default);
+	global_boot_default = xstrdup(boot_default);
+}
+
 static char *global_user;
 
 static int init_boot(void)
 {
-	global_boot_default = xstrdup("net");
+	global_boot_default = global_boot_default ? : xstrdup("net");
 	globalvar_add_simple_string("boot.default", &global_boot_default);
 	globalvar_add_simple_int("boot.watchdog_timeout",
 				 &boot_watchdog_timeout, "%u");

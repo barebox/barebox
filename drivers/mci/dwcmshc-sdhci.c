@@ -9,11 +9,16 @@
 #include <dma.h>
 #include <malloc.h>
 #include <mci.h>
+#include <of_device.h>
 #include <linux/err.h>
 #include <linux/clk.h>
 
 #include "sdhci.h"
 
+#define tx_delay_static_cfg(delay)      (delay << 5)
+#define tx_tuning_clk_sel(delay)        (delay)
+
+#define DWCMSHC_GPIO_OUT  0x34 /* offset from vendor specific area */
 #define CARD_STATUS_MASK (0x1e00)
 #define CARD_STATUS_TRAN (4 << 9)
 
@@ -22,6 +27,12 @@ static int do_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_dat
 struct dwcmshc_host {
 	struct mci_host mci;
 	struct sdhci sdhci;
+	int vendor_specific_area;
+	const struct dwcmshc_callbacks *cb;
+};
+
+struct dwcmshc_callbacks {
+	void (*init)(struct mci_host *mci, struct device *dev);
 };
 
 static inline struct dwcmshc_host *priv_from_mci_host(struct mci_host *h)
@@ -252,6 +263,9 @@ static int dwcmshc_mci_init(struct mci_host *mci, struct device *dev)
 	dev_dbg(host->mci.hw_dev, "host version4: %s\n",
 		ctrl2 & SDHCI_CTRL_V4_MODE ? "enabled" : "disabled");
 
+	if (host->cb && host->cb->init)
+		host->cb->init(mci, dev);
+
 	return 0;
 }
 
@@ -283,6 +297,8 @@ static void dwcmshc_set_dma_mask(struct device *dev)
 
 static int dwcmshc_probe(struct device *dev)
 {
+	const struct dwcmshc_callbacks *dwcmshc_cb =
+			of_device_get_match_data(dev);
 	struct dwcmshc_host *host;
 	struct resource *iores;
 	struct mci_host *mci;
@@ -308,6 +324,7 @@ static int dwcmshc_probe(struct device *dev)
 	host->sdhci.base = IOMEM(iores->start);
 	host->sdhci.mci = mci;
 	host->sdhci.max_clk = clk_get_rate(clk);
+	host->cb = dwcmshc_cb;
 
 	mci->hw_dev = dev;
 	mci->init = dwcmshc_mci_init;
@@ -315,14 +332,17 @@ static int dwcmshc_probe(struct device *dev)
 	mci->send_cmd = dwcmshc_mci_send_cmd;
 	mci->card_present = dwcmshc_mci_card_present;
 
-	mci_of_parse(&host->mci);
-
-	/* Enable host_version4 */
-	sdhci_enable_v4_mode(&host->sdhci);
 	sdhci_setup_host(&host->sdhci);
 
 	mci->max_req_size = 0x8000;
+	/*
+	 * Let's first initialize f_max to the DT clock freq
+	 * Then mci_of_parse can override if with the content
+	 * of the 'max-frequency' DT property if it is present.
+	 * Then we can finish by computing the f_min.
+	 */
 	mci->f_max = clk_get_rate(clk);
+	mci_of_parse(&host->mci);
 	mci->f_min = mci->f_max / SDHCI_MAX_DIV_SPEC_300;
 
 	dev->priv = host;
@@ -332,6 +352,10 @@ static int dwcmshc_probe(struct device *dev)
 
 	dev_dbg(host->mci.hw_dev, "host controller version: %u\n",
 		host->sdhci.version);
+
+	host->vendor_specific_area = sdhci_read32(&host->sdhci,
+						   SDHCI_P_VENDOR_SPEC_AREA);
+	host->vendor_specific_area &= SDHCI_P_VENDOR_SPEC_AREA_MASK;
 
 	ret = mci_register(&host->mci);
 	if (ret)
@@ -350,8 +374,23 @@ err_mem_req:
 	return ret;
 }
 
+static void dwcmshc_coolidgev2_init(struct mci_host *mci, struct device *dev)
+{
+	struct dwcmshc_host *host = priv_from_mci_host(mci);
+
+	/* configure TX delay to set correct setup/hold for Coolidge V2 */
+	sdhci_write32(&host->sdhci,
+		      host->vendor_specific_area + DWCMSHC_GPIO_OUT,
+		      tx_delay_static_cfg(0xf) | tx_tuning_clk_sel(4));
+}
+
+struct dwcmshc_callbacks kalray_coolidgev2_callbacks = {
+	.init = dwcmshc_coolidgev2_init,
+};
+
 static struct of_device_id dwcmshc_dt_ids[] = {
 	{ .compatible = "snps,dwcmshc-sdhci", },
+	{ .compatible = "kalray,coolidge-v2-dwcmshc-sdhci", .data = &kalray_coolidgev2_callbacks },
 	{ }
 };
 

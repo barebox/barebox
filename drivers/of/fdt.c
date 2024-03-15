@@ -43,9 +43,9 @@ static inline uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, int 
 	return dt;
 }
 
-static inline char *dt_string(struct fdt_header *f, char *strstart, uint32_t ofs)
+static inline const char *dt_string(struct fdt_header *f, const char *strstart, uint32_t ofs)
 {
-	char *str;
+	const char *str;
 
 	if (ofs > f->size_dt_strings)
 		return NULL;
@@ -115,6 +115,44 @@ static int of_unflatten_reservemap(struct device_node *root,
 	return 0;
 }
 
+static int fdt_parse_header(const struct fdt_header *fdt, size_t fdt_size,
+			  struct fdt_header *out)
+{
+	if (fdt_size < sizeof(struct fdt_header))
+		return -EINVAL;
+
+	if (fdt->magic != cpu_to_fdt32(FDT_MAGIC)) {
+		pr_err("bad magic: 0x%08x\n", fdt32_to_cpu(fdt->magic));
+		return -EINVAL;
+	}
+
+	if (fdt->version != cpu_to_fdt32(17)) {
+		pr_err("bad dt version: 0x%08x\n", fdt32_to_cpu(fdt->version));
+		return -EINVAL;
+	}
+
+	out->totalsize = fdt32_to_cpu(fdt->totalsize);
+	out->off_dt_struct = fdt32_to_cpu(fdt->off_dt_struct);
+	out->size_dt_struct = fdt32_to_cpu(fdt->size_dt_struct);
+	out->off_dt_strings = fdt32_to_cpu(fdt->off_dt_strings);
+	out->size_dt_strings = fdt32_to_cpu(fdt->size_dt_strings);
+
+	if (out->totalsize > fdt_size)
+		return -EINVAL;
+
+	if (size_add(out->off_dt_struct, out->size_dt_struct) > out->totalsize) {
+		pr_err("unflatten: dt size exceeds total size\n");
+		return -ESPIPE;
+	}
+
+	if (size_add(out->off_dt_strings, out->size_dt_strings) > out->totalsize) {
+		pr_err("unflatten: string size exceeds total size\n");
+		return -ESPIPE;
+	}
+
+	return 0;
+}
+
 /**
  * of_unflatten_dtb - unflatten a dtb binary blob
  * @infdt - the fdt blob to unflatten
@@ -140,37 +178,9 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 	unsigned int maxlen;
 	const struct fdt_header *fdt = infdt;
 
-	if (size < sizeof(struct fdt_header))
-		return ERR_PTR(-EINVAL);
-
-	if (fdt->magic != cpu_to_fdt32(FDT_MAGIC)) {
-		pr_err("bad magic: 0x%08x\n", fdt32_to_cpu(fdt->magic));
-		return ERR_PTR(-EINVAL);
-	}
-
-	if (fdt->version != cpu_to_fdt32(17)) {
-		pr_err("bad dt version: 0x%08x\n", fdt32_to_cpu(fdt->version));
-		return ERR_PTR(-EINVAL);
-	}
-
-	f.totalsize = fdt32_to_cpu(fdt->totalsize);
-	f.off_dt_struct = fdt32_to_cpu(fdt->off_dt_struct);
-	f.size_dt_struct = fdt32_to_cpu(fdt->size_dt_struct);
-	f.off_dt_strings = fdt32_to_cpu(fdt->off_dt_strings);
-	f.size_dt_strings = fdt32_to_cpu(fdt->size_dt_strings);
-
-	if (f.totalsize > size)
-		return ERR_PTR(-EINVAL);
-
-	if (size_add(f.off_dt_struct, f.size_dt_struct) > f.totalsize) {
-		pr_err("unflatten: dt size exceeds total size\n");
-		return ERR_PTR(-ESPIPE);
-	}
-
-	if (size_add(f.off_dt_strings, f.size_dt_strings) > f.totalsize) {
-		pr_err("unflatten: string size exceeds total size\n");
-		return ERR_PTR(-ESPIPE);
-	}
+	ret = fdt_parse_header(infdt, size, &f);
+	if (ret < 0)
+		return ERR_PTR(ret);
 
 	dt_struct = f.off_dt_struct;
 	dt_strings = (void *)fdt + f.off_dt_strings;
@@ -657,4 +667,110 @@ void fdt_print_reserve_map(const void *__fdt)
 		if (n == OF_MAX_RESERVE_MAP)
 			return;
 	}
+}
+
+static int fdt_string_is_compatible(const char *haystack, int haystack_len,
+				    const char *needle, int needle_len)
+{
+	const char *p;
+	int index = 0;
+
+	while (haystack_len >= needle_len) {
+		if (memcmp(needle, haystack, needle_len + 1) == 0)
+			return OF_DEVICE_COMPATIBLE_MAX_SCORE - (index << 2);
+
+		p = memchr(haystack, '\0', haystack_len);
+		if (!p)
+			return 0;
+		haystack_len -= (p - haystack) + 1;
+		haystack = p + 1;
+		index++;
+	}
+
+	return 0;
+}
+
+int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, const char *compat)
+{
+	uint32_t tag;
+	const struct fdt_property *fdt_prop;
+	const char *name;
+	uint32_t dt_struct;
+	const struct fdt_node_header *fnh;
+	const void *dt_strings;
+	struct fdt_header f;
+	int ret, len;
+	int expect = FDT_BEGIN_NODE;
+	int compat_len = strlen(compat);
+
+	ret = fdt_parse_header(fdt, fdt_size, &f);
+	if (ret < 0)
+		return 0;
+
+	dt_struct = f.off_dt_struct;
+	dt_strings = (const void *)fdt + f.off_dt_strings;
+
+	while (1) {
+		const __be32 *tagp = (const void *)fdt + dt_struct;
+		if (!dt_ptr_ok(fdt, tagp))
+			return 0;
+
+		tag = be32_to_cpu(*tagp);
+		if (tag != FDT_NOP && tag != expect)
+			return 0;
+
+		switch (tag) {
+		case FDT_BEGIN_NODE:
+			fnh = (const void *)fdt + dt_struct;
+
+			/* The root node must have an empty name */
+			if (fnh->name[0] != '\0')
+				return 0;
+
+			dt_struct = dt_struct_advance(&f, dt_struct,
+					sizeof(struct fdt_node_header) + 1);
+
+			/*
+			 * Quoting Device Tree Specification v0.4 §5.4.2:
+			 *
+			 *   [T]his process requires that all property definitions for
+			 *   a particular node precede any subnode definitions for that
+			 *   node. Although the structure would not be ambiguous if
+			 *   properties and subnodes were intermingled, the code needed
+			 *   to process a flat tree is simplified by this requirement.
+			 *
+			 * So let's make use of this simplification.
+			 */
+			expect = FDT_PROP;
+			break;
+
+		case FDT_PROP:
+			fdt_prop = (const void *)fdt + dt_struct;
+			len = fdt32_to_cpu(fdt_prop->len);
+
+			name = dt_string(&f, dt_strings, fdt32_to_cpu(fdt_prop->nameoff));
+			if (!name)
+				return 0;
+
+			if (strcmp(name, "compatible")) {
+				dt_struct = dt_struct_advance(&f, dt_struct,
+							      sizeof(struct fdt_property) + len);
+				break;
+			}
+
+			return fdt_string_is_compatible(fdt_prop->data, len, compat, compat_len);
+
+		case FDT_NOP:
+			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE);
+			break;
+
+		default:
+			return 0;
+		}
+
+		if (!dt_struct)
+			return 0;
+	}
+
+	return 0;
 }

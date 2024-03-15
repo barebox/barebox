@@ -215,6 +215,8 @@ struct cpsw_priv {
 	unsigned int			slave_size;
 	unsigned int			sliver_ofs;
 
+	void				*rx_buffer[PKTBUFSRX - 2];
+
 	struct cpdma_desc		*descs;
 	struct cpdma_desc		*desc_free;
 	struct cpdma_chan		rx_chan, tx_chan;
@@ -802,7 +804,8 @@ static void cpdma_desc_free(struct cpsw_priv *priv, struct cpdma_desc *desc)
 }
 
 static int cpdma_submit(struct cpsw_priv *priv, struct cpdma_chan *chan,
-			void *buffer, int len, int port)
+			void *sw_buffer, dma_addr_t hw_buffer,
+			int len, int port)
 {
 	struct cpdma_desc *desc, *prev;
 	u32 mode;
@@ -821,10 +824,10 @@ static int cpdma_submit(struct cpsw_priv *priv, struct cpdma_chan *chan,
 			(port << CPDMA_FROM_TO_PORT_SHIFT);
 
 	writel(0, &desc->hw_next);
-	writel((u32)buffer, &desc->hw_buffer);
+	writel(hw_buffer, &desc->hw_buffer);
 	writel(len, &desc->hw_len);
 	writel(mode | len, &desc->hw_mode);
-	writel((u32)buffer, &desc->sw_buffer);
+	writel((u32)sw_buffer, &desc->sw_buffer);
 	writel((u32)len, &desc->sw_len);
 
 	if (!chan->head) {
@@ -851,7 +854,7 @@ done:
 }
 
 static int cpdma_process(struct cpsw_slave *slave, struct cpdma_chan *chan,
-			 void **buffer, int *len)
+			 void **buffer, dma_addr_t *dma, int *len)
 {
 	struct cpdma_desc *desc = chan->head;
 	struct cpsw_priv *priv = slave->cpsw;
@@ -865,6 +868,8 @@ static int cpdma_process(struct cpsw_slave *slave, struct cpdma_chan *chan,
 	if (len)
 		*len = status & 0x7ff;
 
+	if (dma)
+		*dma = readl(&desc->hw_buffer);
 	if (buffer)
 		*buffer = (void *)readl(&desc->sw_buffer);
 
@@ -980,8 +985,15 @@ static int cpsw_setup(struct device *dev)
 
 	/* submit rx descs */
 	for (i = 0; i < PKTBUFSRX - 2; i++) {
-		ret = cpdma_submit(priv, &priv->rx_chan, NetRxPackets[i],
-				   PKTSIZE, 0);
+		void *buffer = priv->rx_buffer[i];
+		unsigned len = PKTSIZE;
+		dma_addr_t dma;
+
+		dma = dma_map_single(priv->dev, buffer, len, DMA_FROM_DEVICE);
+		if (dma_mapping_error(priv->dev, dma))
+			return -EFAULT;
+
+		ret = cpdma_submit(priv, &priv->rx_chan, buffer, dma, len, 0);
 		if (ret < 0) {
 			dev_err(dev, "error %d submitting rx desc\n", ret);
 			break;
@@ -1012,20 +1024,21 @@ static int cpsw_send(struct eth_device *edev, void *packet, int length)
 {
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
-	void *buffer;
-	int ret, len;
+	dma_addr_t dma;
+	int ret;
 
 	dev_dbg(&slave->dev, "* %s slave %d\n", __func__, slave->slave_num);
 
 	/* first reap completed packets */
-	while (cpdma_process(slave, &priv->tx_chan, &buffer, &len) >= 0);
+	while (cpdma_process(slave, &priv->tx_chan, NULL, NULL, NULL) >= 0)
+		;
 
 	dev_dbg(&slave->dev, "%s: %i bytes @ 0x%p\n", __func__, length, packet);
 
-	dma_sync_single_for_device(priv->dev, (unsigned long)packet, length, DMA_TO_DEVICE);
-	ret = cpdma_submit(priv, &priv->tx_chan, packet,
+	dma = dma_map_single(priv->dev, packet, length, DMA_TO_DEVICE);
+	ret = cpdma_submit(priv, &priv->tx_chan, packet, dma,
 			   length, BIT(slave->slave_num));
-	dma_sync_single_for_cpu(priv->dev, (unsigned long)packet, length, DMA_TO_DEVICE);
+	dma_unmap_single(priv->dev, dma, length, DMA_TO_DEVICE);
 
 	return ret;
 }
@@ -1034,16 +1047,15 @@ static int cpsw_recv(struct eth_device *edev)
 {
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
+	dma_addr_t dma;
 	void *buffer;
 	int len;
 
-	while (cpdma_process(slave, &priv->rx_chan, &buffer, &len) >= 0) {
-		dma_sync_single_for_cpu(priv->dev, (unsigned long)buffer, len,
-				DMA_FROM_DEVICE);
+	while (cpdma_process(slave, &priv->rx_chan, &buffer, &dma, &len) >= 0) {
+		dma_sync_single_for_cpu(priv->dev, dma, len, DMA_FROM_DEVICE);
 		net_receive(edev, buffer, len);
-		dma_sync_single_for_device(priv->dev, (unsigned long)buffer, len,
-				DMA_FROM_DEVICE);
-		cpdma_submit(priv, &priv->rx_chan, buffer, PKTSIZE, 0);
+		dma_sync_single_for_device(priv->dev, dma, len, DMA_FROM_DEVICE);
+		cpdma_submit(priv, &priv->rx_chan, buffer, dma, PKTSIZE, 0);
 	}
 
 	return 0;
@@ -1349,6 +1361,10 @@ static int cpsw_probe(struct device *dev)
 
 	priv = xzalloc(sizeof(*priv));
 	priv->dev = dev;
+
+	ret = net_alloc_packets(priv->rx_buffer, ARRAY_SIZE(priv->rx_buffer));
+	if (ret)
+		goto out;
 
 	if (dev->of_node) {
 		ret = cpsw_probe_dt(priv);

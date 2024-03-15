@@ -21,11 +21,6 @@
 #include <linux/err.h>
 #include "gianfar.h"
 
-/* 2 seems to be the minimum number of TX descriptors to make it work. */
-#define TX_BUF_CNT 	2
-#define RX_BUF_CNT 	PKTBUFSRX
-#define BUF_ALIGN	8
-
 /*
  * Initialize required registers to appropriate values, zeroing
  * those we don't care about (unless zero is bad, in which case,
@@ -199,7 +194,7 @@ static int gfar_open(struct eth_device *edev)
 	for (ix = 0; ix < RX_BUF_CNT; ix++) {
 		out_be16(&priv->rxbd[ix].status, RXBD_EMPTY);
 		out_be16(&priv->rxbd[ix].length, 0);
-		out_be32(&priv->rxbd[ix].bufPtr, (uint) NetRxPackets[ix]);
+		out_be32(&priv->rxbd[ix].bufPtr, (uint) priv->rx_buffer[ix]);
 	}
 	out_be16(&priv->rxbd[RX_BUF_CNT - 1].status, RXBD_EMPTY | RXBD_WRAP);
 
@@ -407,7 +402,7 @@ static int gfar_recv(struct eth_device *edev)
 	/* Send the packet up if there were no errors */
 	status = in_be16(&priv->rxbd[priv->rxidx].status);
 	if (!(status & RXBD_STATS))
-		net_receive(edev, NetRxPackets[priv->rxidx], length - 4);
+		net_receive(edev, priv->rx_buffer[priv->rxidx], length - 4);
 	else
 		dev_err(dev, "Got error %x\n", status & RXBD_STATS);
 
@@ -471,8 +466,13 @@ static int gfar_probe(struct device *dev)
 	size_t size;
 	char devname[16];
 	char *p;
+	int ret;
 
 	priv = xzalloc(sizeof(struct gfar_private));
+
+	ret = net_alloc_packets(priv->rx_buffer, ARRAY_SIZE(priv->rx_buffer));
+	if (ret)
+		return ret;
 
 	edev = &priv->edev;
 

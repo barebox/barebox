@@ -264,6 +264,40 @@ struct ddr3_spd_eeprom {
 			/* 69-76 RC1,3,5...15 (MS Nibble) / RC0,2,4...14 (LS Nibble) */
 			unsigned char rcw[8];
 		} registered;
+		struct {
+			/* 60 (Load Reduced) Module Nominal Height */
+			unsigned char mod_height;
+			/* 61 (Load Reduced) Module Maximum Thickness */
+			unsigned char mod_thickness;
+			/* 62 (Load Reduced) Reference Raw Card Used */
+			unsigned char ref_raw_card;
+			/* 63 Module Attributes */
+			unsigned char modu_attr;
+			/* 64 Memory Buffer Revision ID */
+			unsigned char buf_rev_id;
+			/* 65 Memory Buffer Manufacturer ID Code, Least Significant Byte */
+			unsigned char buf_id_lo;
+			/* 66 Memory Buffer Manufacturer ID Code, Most Significant Byte */
+			unsigned char buf_id_hi;
+			/* 67-89 FxRCy and MR1,2 Registers */
+			unsigned char fxrcy_mr1_2[23];
+			/* 90 Minimum Module Delay Time for 1.5 V */
+			unsigned char min_delay_1_5;
+			/* 91 Maximum Module Delay Time for 1.5 V */
+			unsigned char max_delay_1_5;
+			/* 92 Minimum Module Delay Time for 1.35 V */
+			unsigned char min_delay_1_35;
+			/* 93 Maximum Module Delay Time for 1.35 V */
+			unsigned char max_delay_1_35;
+			/* 94 Minimum Module Delay Time for 1.25 V */
+			unsigned char min_delay_1_25;
+			/* 95 Maximum Module Delay Time for 1.25 V */
+			unsigned char max_delay_1_25;
+			/* 96-101 Reserved */
+			unsigned char reserved[6];
+			/* 102-116 Memory Buffer Personality Bytes */
+			unsigned char mem_buf_personality[15];
+		} loadreduced;
 		unsigned char uc[57]; /* 60-116 Module-Specific Section */
 	} mod_section;
 

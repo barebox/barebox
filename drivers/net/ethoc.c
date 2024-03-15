@@ -178,6 +178,8 @@ struct ethoc {
 	u32 cur_rx;
 
 	struct mii_bus miibus;
+
+	void *rx_buffer[PKTBUFSRX];
 };
 
 /**
@@ -266,7 +268,7 @@ static int ethoc_init_ring(struct ethoc *dev)
 		if (i == dev->num_rx - 1)
 			bd.stat |= RX_BD_WRAP;
 
-		bd.addr = (u32)NetRxPackets[i];
+		bd.addr = (u32)dev->rx_buffer[i];
 		ethoc_write_bd(dev, dev->num_tx + i, &bd);
 
 		flush_dcache_range(bd.addr, bd.addr + PKTSIZE);
@@ -534,12 +536,18 @@ static int ethoc_probe(struct device *dev)
 	struct resource *iores;
 	struct eth_device *edev;
 	struct ethoc *priv;
+	int ret;
 
 	edev = xzalloc(sizeof(struct eth_device) +
 		       sizeof(struct ethoc));
 	edev->priv = (struct ethoc *)(edev + 1);
 
 	priv = edev->priv;
+
+	ret = net_alloc_packets(priv->rx_buffer, ARRAY_SIZE(priv->rx_buffer));
+	if (ret)
+		return ret;
+
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);

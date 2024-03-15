@@ -319,6 +319,16 @@ config 64BIT
 
 endchoice
 
+config BOARD_MIPS_GENERIC_DT
+	select BOARD_GENERIC_DT
+	depends on OFDEVICE
+	bool "Build generic MIPS device tree 2nd stage image"
+	help
+	  This enables compilation of a generic image that can be started 2nd
+	  stage from barebox or from qemu. It picks up a device tree passed
+	  in a1 like the Kernel does.
+	  The image will be called images/barebox-dt-2nd.img
+
 menu "MIPS specific settings"
 
 config CMD_MIPS_CPUINFO

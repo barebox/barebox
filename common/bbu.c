@@ -95,17 +95,23 @@ out:
 int bbu_confirm(struct bbu_data *data)
 {
 	int key;
+	const char *prompt;
+
+	if (data->flags & BBU_FLAG_YES)
+		prompt = ".";
+	else
+		prompt = " (y/n)?";
+
+	if (data->imagefile)
+		printf("update barebox on %s from %s using handler %s%s\n",
+			data->devicefile, data->imagefile,
+			data->handler_name, prompt);
+	else
+		printf("Refresh barebox on %s using handler %s%s\n",
+			data->devicefile, data->handler_name, prompt);
 
 	if (data->flags & BBU_FLAG_YES)
 		return 0;
-
-	if (data->imagefile)
-		printf("update barebox from %s using handler %s to %s (y/n)?\n",
-			data->imagefile, data->handler_name,
-			data->devicefile);
-	else
-		printf("Refresh barebox on %s using handler %s (y/n)?\n",
-			data->devicefile, data->handler_name);
 
 	key = read_key();
 

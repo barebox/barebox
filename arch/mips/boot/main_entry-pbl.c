@@ -11,6 +11,7 @@
 #include <asm/sections.h>
 #include <asm-generic/memory_layout.h>
 #include <debug_ll.h>
+#include <asm/unaligned.h>
 
 extern void *input_data;
 extern void *input_data_end;
@@ -45,6 +46,9 @@ void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end,
 	barebox_uncompress(&input_data, piggy_len);
 
 	fdt_len = (unsigned long)fdt_end - (unsigned long)fdt;
+	if (!fdt_len) {
+		fdt_len = get_unaligned_be32((void *)((unsigned long)fdt + 4));
+	}
 	fdt_new = (void *)PAGE_ALIGN_DOWN(TEXT_BASE - MALLOC_SIZE - STACK_SIZE - fdt_len);
 	memcpy(fdt_new, fdt, fdt_len);
 

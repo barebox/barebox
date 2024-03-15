@@ -33,6 +33,7 @@ struct hwrng {
 	struct cdev cdev;
 	struct device *dev;
 	void *buf;
+	unsigned long priv;
 };
 
 /* Register a new Hardware Random Number Generator driver. */
@@ -50,5 +51,10 @@ static inline int hwrng_get_data(struct hwrng *rng, void *buffer, size_t size, i
 #endif
 
 void hwrng_unregister(struct hwrng *rng);
+
+static inline long hwrng_yield(struct hwrng *rng)
+{
+	return 0;
+}
 
 #endif /* LINUX_HWRANDOM_H_ */

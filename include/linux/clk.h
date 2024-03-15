@@ -1098,6 +1098,39 @@ static inline struct clk *clk_get_enabled(struct device *dev, const char *id)
 }
 
 /**
+ * clk_get_optional_enabled - clk_get_optional() +
+ *                            clk_prepare_enable()
+ * @dev: device for clock "consumer"
+ * @id: clock consumer ID
+ *
+ * Return: a struct clk corresponding to the clock producer, or
+ * valid IS_ERR() condition containing errno.  The implementation
+ * uses @dev and @id to determine the clock consumer, and thereby
+ * the clock producer.  If no such clk is found, it returns NULL
+ * which serves as a dummy clk.  That's the only difference compared
+ * to clk_get_enabled().
+ *
+ * The returned clk (if valid) is enabled.
+ */
+static inline struct clk *clk_get_optional_enabled(struct device *dev, const char *id)
+{
+	struct clk *clk;
+	int ret;
+
+	clk = clk_get_optional(dev, id);
+	if (IS_ERR_OR_NULL(clk))
+		return clk;
+
+	ret = clk_enable(clk);
+	if (ret) {
+		clk_put(clk);
+		return ERR_PTR(ret);
+	}
+
+	return clk;
+}
+
+/**
  * clk_get_if_available - get clock, ignoring known unavailable clock controller
  * @dev: device for clock "consumer"
  * @id: clock consumer ID

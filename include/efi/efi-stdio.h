@@ -2,7 +2,7 @@
 #ifndef EFI_STDIO_H_
 #define EFI_STDIO_H_
 
-#include <efi.h>
+#include <efi/types.h>
 
 struct efi_simple_text_input_ex_protocol;
 
@@ -14,6 +14,11 @@ typedef efi_status_t (EFIAPI *efi_input_reset_ex)(
 struct efi_key_state {
 	u32 shift_state;
 	u8 toggle_state;
+};
+
+struct efi_input_key {
+	u16 scan_code;
+	efi_char16_t unicode_char;
 };
 
 struct efi_key_data {
@@ -37,7 +42,7 @@ typedef efi_status_t (EFIAPI *efi_key_notify_function)(
 
 typedef efi_status_t (EFIAPI *efi_register_keystroke_notify)(
 	struct efi_simple_text_input_ex_protocol *this,
-	struct efi_key_data keydata,
+	struct efi_key_data *keydata,
 	efi_key_notify_function key_notification_function,
 	void **notify_handle
 );
@@ -50,7 +55,7 @@ typedef efi_status_t (EFIAPI *efi_unregister_keystroke_notify)(
 struct efi_simple_text_input_ex_protocol {
 	efi_input_reset_ex reset;
 	efi_input_read_key_ex read_key_stroke_ex;
-	void *wait_for_key_ex;
+	struct efi_event *wait_for_key_ex;
 	efi_set_state set_state;
 	efi_register_keystroke_notify register_key_notify;
 	efi_unregister_keystroke_notify unregister_key_notify;

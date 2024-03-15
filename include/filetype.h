@@ -44,7 +44,9 @@ enum filetype {
 	filetype_kwbimage_v1,
 	filetype_android_sparse,
 	filetype_arm64_linux_image,
+	filetype_arm64_efi_linux_image,
 	filetype_riscv_linux_image,
+	filetype_riscv_efi_linux_image,
 	filetype_riscv_barebox_image,
 	filetype_elf,
 	filetype_imx_image_v1,
@@ -66,13 +68,15 @@ enum filetype {
 
 #define FILE_TYPE_SAFE_BUFSIZE		2048
 
+struct cdev;
+
 const char *file_type_to_string(enum filetype f);
 const char *file_type_to_short_string(enum filetype f);
 enum filetype file_detect_partition_table(const void *_buf, size_t bufsize);
 enum filetype file_detect_type(const void *_buf, size_t bufsize);
 int file_name_detect_type(const char *filename, enum filetype *type);
 int file_name_detect_type_offset(const char *filename, loff_t pos, enum filetype *type);
-int cdev_detect_type(const char *name, enum filetype *type);
+int cdev_detect_type(struct cdev *cdev, enum filetype *type);
 enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec);
 int is_fat_boot_sector(const void *_buf);
 bool filetype_is_barebox_image(enum filetype ft);

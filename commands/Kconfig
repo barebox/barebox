@@ -123,6 +123,14 @@ config CMD_DRVINFO
 	help
 	  List compiled-in device drivers and the devices they support.
 
+config CMD_EFI_HANDLE_DUMP
+	tristate
+	default y
+	depends on EFI
+	prompt "efi_handle_dump"
+	help
+	  Dump information on EFI handles
+
 config CMD_HELP
 	tristate
 	default y
@@ -655,6 +663,21 @@ config CMD_MOUNT
 		  -o OPTIONS	set file system OPTIONS
 		  -v		verbose
 
+config CMD_FINDMNT
+	tristate
+	prompt "findmnt"
+	help
+	  Find a file system
+
+	  Usage: findmnt [ DEVICE | -T FILE ]
+
+	  findmnt will list all mounted filesystems or search
+	  for a filesystem when given the mountpoint or the
+	  source device as an argument
+
+	  Options:
+		-T		mount target file path
+
 config CMD_PARTED
 	tristate
 	depends on PARTITION
@@ -996,12 +1019,14 @@ config CMD_STAT
 	help
 	  Display file status
 
-	  Usage: stat [-L] [FILEDIR...]
+	  Usage: stat [-LcC] [FILEDIR...]
 
 	  Display status information about the specified files or directories.
 
 	  Options:
-		  -L	follow symlinks
+		  -L		follow symlinks
+		  -c DIR	lookup file relative to directory DIR
+		  -C DIR	change root to DIR before file lookup
 
 config CMD_MD5SUM
 	tristate
@@ -2198,6 +2223,15 @@ config CMD_FIRMWARELOAD
 	help
 	  Provides the "firmwareload" command which deals with devices which need
 	  firmware to work. It is also used to upload firmware to FPGA devices.
+
+config CMD_KALLSYMS
+	depends on KALLSYMS
+	bool
+	prompt "kallsyms"
+	help
+	  query kallsyms table
+
+	  Usage: kallsyns [SYMBOL | ADDRESS]
 
 config CMD_KEYSTORE
 	depends on CRYPTO_KEYSTORE

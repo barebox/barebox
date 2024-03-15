@@ -1,2 +1,3 @@
 # SPDX-License-Identifier: GPL-2.0-only
-obj-y += efi-device.o
+obj-y += efi-handle.o
+obj-$(CONFIG_EFI_PAYLOAD) += efi-device.o

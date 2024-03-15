@@ -68,10 +68,8 @@ static int do_of_display_timings(int argc, char *argv[])
 	/* Check if external dtb given */
 	if (dtbfile) {
 		root = of_read_file(dtbfile);
-		if (IS_ERR(root)) {
-			printf("Cannot open %s: %pe\n", dtbfile, root);
+		if (IS_ERR(root))
 			return PTR_ERR(root);
-		}
 	} else {
 		root = of_get_root_node();
 	}

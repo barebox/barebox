@@ -181,9 +181,9 @@ struct device_node *of_find_node_by_devpath(struct device_node *root, const char
 		part_size = cdev->size;
 		pr_debug("%s path %s: is a partition with offset 0x%08llx, size 0x%08llx\n",
 			 __func__, path, part_offset, part_size);
-		np = cdev->master->device_node;
+		np = cdev_of_node(cdev->master);
 	} else {
-		np = cdev->device_node;
+		np = cdev_of_node(cdev);
 	}
 
 	/*

@@ -11,6 +11,7 @@
 #include <init.h>
 #include <asm/system.h>
 #include <asm/esr.h>
+#include <efi/efi-mode.h>
 
 /* Avoid missing prototype warning, called from assembly */
 void do_bad_sync (struct pt_regs *pt_regs);
@@ -204,6 +205,9 @@ static int aarch64_init_vectors(void)
 {
 	unsigned int el;
 
+	if (efi_is_payload())
+		return 0;
+
 	el = current_el();
 	switch (el) {
 	case 3:
@@ -221,4 +225,4 @@ static int aarch64_init_vectors(void)
 
 	return 0;
 }
-pure_initcall(aarch64_init_vectors);
+core_initcall(aarch64_init_vectors);

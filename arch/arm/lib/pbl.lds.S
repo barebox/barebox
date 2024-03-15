@@ -3,8 +3,27 @@
 
 #include <linux/sizes.h>
 #include <asm/barebox.lds.h>
+#include <asm/memory.h>
 #include <asm-generic/memory_layout.h>
 #include <asm-generic/pointer.h>
+#include <asm/memory.h>
+
+/*
+ * The size of the PE/COFF section that covers the barebox image, which
+ * runs from _stext to _edata, must be a round multiple of the PE/COFF
+ * FileAlignment, which we set to its minimum value of 0x200. '_stext'
+ * itself must be 4 KB aligned, because that's what the adrp instructions
+ * expects, so padding out _edata to a 0x200 aligned boundary should be
+ * sufficient.
+ */
+PECOFF_FILE_ALIGNMENT = 0x200;
+
+#ifdef CONFIG_EFI_STUB
+#define PECOFF_EDATA_PADDING   \
+       .pecoff_edata_padding : { BYTE(0); . = ALIGN(PECOFF_FILE_ALIGNMENT); }
+#else
+#define PECOFF_EDATA_PADDING
+#endif
 
 #ifdef CONFIG_PBL_RELOCATABLE
 #define BASE	0x0
@@ -62,7 +81,9 @@ SECTIONS
 
 	.barebox_imd : { BAREBOX_IMD }
 
+	. = ALIGN(PBL_SEGMENT_ALIGN);
 	_etext = .;			/* End of text and rodata section */
+	_sdata = .;
 
 	. = ALIGN(4);
 	.data : { *(.data*) }
@@ -108,6 +129,16 @@ SECTIONS
 		*(.pblext.*)
 	}
 	__pblext_end = .;
+
+	PECOFF_EDATA_PADDING
+
+	__pecoff_data_rawsize = ABSOLUTE(. - _etext);
+
+	/* .bss is dwarfed by piggydata size, so we just handle .bss
+	 * as normal PE data
+	 */
+
+	__pecoff_data_size = ABSOLUTE(. - _etext);
 
 	.image_end : { KEEP(*(.__image_end)) }
 

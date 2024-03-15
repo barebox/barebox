@@ -20,7 +20,7 @@
 
 struct efi_console_priv {
 	struct efi_simple_text_output_protocol *out;
-	struct efi_simple_input_interface *in;
+	struct efi_simple_text_input_protocol *in;
 	struct efi_simple_text_input_ex_protocol *inex;
 	struct console_device cdev;
 	u16 efi_console_buffer[CONFIG_CBSIZE + 1];
@@ -79,17 +79,23 @@ static int xlate_keypress(struct efi_input_key *k)
 	return k->unicode_char & 0xff;
 }
 
+static void efi_wait_single_event(struct efi_event *event)
+{
+	size_t index;
+
+	/* wait until key is pressed */
+	BS->wait_for_event(1, &event, &index);
+}
+
 static int efi_read_key(struct efi_console_priv *priv, bool wait)
 {
-	unsigned long index;
 	efi_status_t efiret;
 	struct efi_key_data kd;
 
-	/* wait until key is pressed */
-	if (wait)
-		BS->wait_for_event(1, priv->in->wait_for_key, &index);
-
 	if (priv->inex) {
+		if (wait)
+			efi_wait_single_event(priv->inex->wait_for_key_ex);
+
 		efiret = priv->inex->read_key_stroke_ex(priv->inex, &kd);
 
 		if (efiret == EFI_NOT_READY)
@@ -117,6 +123,9 @@ static int efi_read_key(struct efi_console_priv *priv, bool wait)
 			dev_dbg(priv->cdev.dev, "Falling back to simple_text_input_protocol\n");
 		}
 	}
+
+	if (wait)
+		efi_wait_single_event(priv->in->wait_for_key);
 
 	efiret = priv->in->read_key_stroke(priv->in, &kd.key);
 
@@ -430,7 +439,7 @@ static int efi_console_probe(struct device *dev)
 	if (!priv->inputbuffer)
 		return -ENOMEM;
 
-	efiret = BS->open_protocol((void *)efi_sys_table->con_in_handle,
+	efiret = BS->open_protocol(efi_sys_table->con_in_handle,
 			     &inex_guid,
 			     (void **)&inex,
 			     efi_parent_image,

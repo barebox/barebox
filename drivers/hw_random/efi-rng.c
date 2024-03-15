@@ -3,7 +3,7 @@
 #include <driver.h>
 #include <init.h>
 #include <linux/hw_random.h>
-#include <efi/efi-util.h>
+#include <efi.h>
 #include <efi/efi-device.h>
 
 struct efi_rng_priv {

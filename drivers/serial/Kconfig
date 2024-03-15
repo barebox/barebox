@@ -31,7 +31,7 @@ config DRIVER_SERIAL_AR933X
 
 config DRIVER_SERIAL_EFI
 	bool "EFI serial"
-	depends on EFI_BOOTUP
+	depends on EFI_PAYLOAD
 
 config DRIVER_SERIAL_IMX
 	depends on ARCH_IMX
@@ -58,7 +58,7 @@ config DRIVER_SERIAL_LINUX_CONSOLE
 	bool "linux console driver"
 
 config DRIVER_SERIAL_EFI_STDIO
-	depends on EFI_BOOTUP
+	depends on EFI_PAYLOAD
 	bool "EFI stdio driver"
 
 config DRIVER_SERIAL_MPC5XXX

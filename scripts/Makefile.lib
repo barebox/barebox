@@ -170,6 +170,11 @@ _stackp_flags_pbl-$(CONFIG_PBL_STACKPROTECTOR_ALL)     := -fstack-protector-all
 
 _c_flags += $(if $(part-of-pbl),$(_stackp_flags_pbl-y),$(_stackp_flags-y))
 
+ifeq ($(CONFIG_PBL_FULLY_PIC),y)
+include scripts/Makefile.pic
+PBL_CPPFLAGS	+= $(picflags-y)
+endif
+
 # If building barebox in a separate objtree expand all occurrences
 # of -Idir to -I$(srctree)/dir except for absolute paths (starting with '/').
 

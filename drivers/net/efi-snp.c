@@ -69,10 +69,10 @@ struct efi_simple_network_mode {
 	uint32_t ReceiveFilterSetting;
 	uint32_t MaxMCastFilterCount;
 	uint32_t MCastFilterCount;
-	efi_mac_address MCastFilter[MAX_MCAST_FILTER_CNT];
-	efi_mac_address CurrentAddress;
-	efi_mac_address BroadcastAddress;
-	efi_mac_address PermanentAddress;
+	struct efi_mac_address MCastFilter[MAX_MCAST_FILTER_CNT];
+	struct efi_mac_address CurrentAddress;
+	struct efi_mac_address BroadcastAddress;
+	struct efi_mac_address PermanentAddress;
 	uint8_t IfType;
         bool MacAddressChangeable;
 	bool MultipleTxSupported;
@@ -92,14 +92,14 @@ struct efi_simple_network {
 	efi_status_t (EFIAPI *shutdown) (struct efi_simple_network *This);
 	efi_status_t (EFIAPI *receive_filters) (struct efi_simple_network *This,
 			uint32_t Enable, uint32_t Disable, bool ResetMCastFilter,
-			unsigned long MCastFilterCnt, efi_mac_address *MCastFilter);
+			unsigned long MCastFilterCnt, struct efi_mac_address *MCastFilter);
 	efi_status_t (EFIAPI *station_address) (struct efi_simple_network *This,
-			bool Reset, efi_mac_address *New);
+			bool Reset, struct efi_mac_address *New);
 	efi_status_t (EFIAPI *statistics) (struct efi_simple_network *This,
 			bool Reset, unsigned long *StatisticsSize,
 			struct efi_network_statistics *StatisticsTable);
 	efi_status_t (EFIAPI *mcast_ip_to_mac) (struct efi_simple_network *This,
-			bool IPv6, efi_ip_address *IP, efi_mac_address *MAC);
+			bool IPv6, union efi_ip_address *IP, struct efi_mac_address *MAC);
 	efi_status_t (EFIAPI *nvdata) (struct efi_simple_network *This,
 			bool ReadWrite, unsigned long Offset, unsigned long BufferSize,
 			void *Buffer);
@@ -107,11 +107,11 @@ struct efi_simple_network {
 			uint32_t *InterruptStatus, void **TxBuf);
 	efi_status_t (EFIAPI *transmit) (struct efi_simple_network *This,
 			unsigned long HeaderSize, unsigned long BufferSize, void *Buffer,
-			efi_mac_address *SrcAddr, efi_mac_address *DestAddr,
+			struct efi_mac_address *SrcAddr, struct efi_mac_address *DestAddr,
 			uint16_t *Protocol);
 	efi_status_t (EFIAPI *receive) (struct efi_simple_network *This,
 			unsigned long *HeaderSize, unsigned long *BufferSize, void *Buffer,
-			efi_mac_address *SrcAddr, efi_mac_address *DestAddr, uint16_t *Protocol);
+			struct efi_mac_address *SrcAddr, struct efi_mac_address *DestAddr, uint16_t *Protocol);
 	void *WaitForPacket;
 	struct efi_simple_network_mode *Mode;
 };
@@ -220,7 +220,7 @@ static int efi_snp_eth_open(struct eth_device *edev)
 	}
 
 	efiret = priv->snp->station_address(priv->snp, false,
-			(efi_mac_address *)priv->snp->Mode->PermanentAddress.Addr );
+			(struct efi_mac_address *)priv->snp->Mode->PermanentAddress.Addr );
 	if (EFI_ERROR(efiret)) {
 		dev_err(priv->dev, "failed to set MAC address: %s\n",
 				efi_strerror(efiret));

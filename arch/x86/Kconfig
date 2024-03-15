@@ -6,6 +6,7 @@ config X86
 	select HAS_DMA
 	select GENERIC_FIND_NEXT_BIT
 	select ARCH_DMA_DEFAULT_COHERENT
+	select HAVE_EFI_PAYLOAD
 	default y
 
 config ARCH_TEXT_BASE
@@ -46,5 +47,5 @@ config MACH_EFI_GENERIC
 
 config X86_EFI
 	def_bool y
-	select EFI_BOOTUP
+	select EFI_PAYLOAD
 	select CLOCKSOURCE_EFI_X86

@@ -13,6 +13,7 @@
 #include <led.h>
 #include <of.h>
 #include <restart.h>
+#include <poweroff.h>
 #include <linux/stringify.h>
 
 int errno;
@@ -226,12 +227,15 @@ static void __noreturn do_panic(bool stacktrace, const char *fmt, va_list ap)
 
 	led_trigger(LED_TRIGGER_PANIC, TRIGGER_ENABLE);
 
-	if (IS_ENABLED(CONFIG_PANIC_HANG)) {
+	if (IS_ENABLED(CONFIG_PANIC_HANG))
 		hang();
-	} else {
-		udelay(100000);	/* allow messages to go out */
+
+	udelay(100000);	/* allow messages to go out */
+
+	if (IS_ENABLED(CONFIG_PANIC_POWEROFF))
+		poweroff_machine();
+	else
 		restart_machine();
-	}
 }
 
 void __noreturn panic(const char *fmt, ...)

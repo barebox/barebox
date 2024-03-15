@@ -99,11 +99,13 @@ static int virtio_blk_probe(struct virtio_device *vdev)
 
 	devnum = cdev_find_free_index("virtioblk");
 	priv->blk.cdev.name = xasprintf("virtioblk%d", devnum);
+	cdev_set_of_node(&priv->blk.cdev, vdev->dev.device_node);
 	priv->blk.dev = &vdev->dev;
 	priv->blk.blockbits = SECTOR_SHIFT;
 	virtio_cread(vdev, struct virtio_blk_config, capacity, &cap);
 	priv->blk.num_blocks = cap;
 	priv->blk.ops = &virtio_blk_ops;
+	priv->blk.type = BLK_TYPE_VIRTUAL;
 
 	return blockdevice_register(&priv->blk);
 }

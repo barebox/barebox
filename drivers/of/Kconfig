@@ -5,7 +5,7 @@ config OFTREE
 
 config OFTREE_MEM_GENERIC
 	depends on OFTREE
-	depends on PPC || ARM || EFI_BOOTUP || OPENRISC || SANDBOX || RISCV || KVX
+	depends on PPC || ARM || EFI_PAYLOAD || OPENRISC || SANDBOX || RISCV || KVX
 	def_bool y
 
 config DTC

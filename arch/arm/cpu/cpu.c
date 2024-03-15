@@ -17,6 +17,7 @@
 #include <asm/cputype.h>
 #include <asm/cache.h>
 #include <asm/ptrace.h>
+#include <efi/efi-mode.h>
 
 /**
  * Enable processor's instruction cache
@@ -82,6 +83,8 @@ static void disable_interrupts(void)
  */
 static void arch_shutdown(void)
 {
+	if (efi_is_payload())
+		return;
 
 #ifdef CONFIG_MMU
 	mmu_disable();
@@ -96,6 +99,9 @@ extern unsigned long arm_stack_top;
 
 static int arm_request_stack(void)
 {
+	if (efi_is_payload())
+		return 0;
+
 	if (!request_sdram_region("stack", arm_stack_top - STACK_SIZE, STACK_SIZE))
 		pr_err("Error: Cannot request SDRAM region for stack\n");
 

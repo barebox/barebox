@@ -13,6 +13,7 @@
 #include <memory.h>
 #include <zero_page.h>
 #include "mmu-common.h"
+#include <efi/efi-mode.h>
 
 void arch_sync_dma_for_cpu(void *vaddr, size_t size,
 			   enum dma_data_direction dir)
@@ -67,6 +68,9 @@ void zero_page_faulting(void)
 
 static int mmu_init(void)
 {
+	if (efi_is_payload())
+		return 0;
+
 	if (list_empty(&memory_banks)) {
 		resource_size_t start;
 		int ret;

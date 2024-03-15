@@ -69,7 +69,7 @@ config FS_NFS
 	prompt "nfs support"
 
 config FS_EFI
-	depends on EFI_BOOTUP
+	depends on EFI_PAYLOAD
 	select FS_LEGACY
 	bool
 	prompt "EFI filesystem support"
@@ -78,7 +78,7 @@ config FS_EFI
 	  by the EFI Firmware via the EFI Simple File System Protocol.
 
 config FS_EFIVARFS
-	depends on EFI_BOOTUP
+	depends on EFI_PAYLOAD
 	select FS_LEGACY
 	bool
 	prompt "EFI variable filesystem support (efivarfs)"

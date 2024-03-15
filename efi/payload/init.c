@@ -9,6 +9,8 @@
 #define DEBUG
 #endif
 
+#define pr_fmt(fmt) "efi-init: " fmt
+
 #include <linux/linkage.h>
 #include <common.h>
 #include <linux/sizes.h>
@@ -38,12 +40,12 @@
 #include <bbu.h>
 #include <generated/utsrelease.h>
 
-efi_runtime_services_t *RT;
-efi_boot_services_t *BS;
-efi_system_table_t *efi_sys_table;
+struct efi_runtime_services *RT;
+struct efi_boot_services *BS;
+struct efi_system_table *efi_sys_table;
 efi_handle_t efi_parent_image;
 struct efi_device_path *efi_device_path;
-efi_loaded_image_t *efi_loaded_image;
+struct efi_loaded_image *efi_loaded_image;
 
 void *efi_get_variable(char *name, efi_guid_t *vendor, int *var_size)
 {
@@ -203,7 +205,7 @@ static int misc_init(void)
 
 	return 0;
 }
-late_initcall(misc_init);
+late_efi_initcall(misc_init);
 
 static struct NS16550_plat ns16550_plat = {
 	.clock = 115200 * 16,
@@ -215,12 +217,13 @@ static int efi_console_init(void)
 
 	add_generic_device("efi-stdio", DEVICE_ID_SINGLE, NULL, 0 , 0, 0, NULL);
 
-	add_ns16550_device(0, 0x3f8, 0x10, IORESOURCE_IO | IORESOURCE_MEM_8BIT,
-				&ns16550_plat);
+	if (IS_ENABLED(CONFIG_X86))
+		add_ns16550_device(0, 0x3f8, 0x10, IORESOURCE_IO | IORESOURCE_MEM_8BIT,
+					&ns16550_plat);
 
 	return 0;
 }
-console_initcall(efi_console_init);
+console_efi_initcall(efi_console_init);
 
 static void __noreturn efi_restart_system(struct restart_handler *rst)
 {
@@ -244,7 +247,7 @@ static int restart_register_feature(void)
 
 	return 0;
 }
-coredevice_initcall(restart_register_feature);
+coredevice_efi_initcall(restart_register_feature);
 
 extern char image_base[];
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
@@ -262,52 +265,7 @@ static int efi_init(void)
 
 	return 0;
 }
-device_initcall(efi_init);
-
-/**
- * efi-main - Entry point for EFI images
- */
-void efi_main(efi_handle_t image, efi_system_table_t *sys_table)
-{
-	efi_physical_addr_t mem;
-	size_t memsize;
-	efi_status_t efiret;
-
-#ifdef DEBUG
-	sys_table->con_out->output_string(sys_table->con_out, L"barebox\n");
-#endif
-
-	BS = sys_table->boottime;
-
-	efi_parent_image = image;
-	efi_sys_table = sys_table;
-	RT = sys_table->runtime;
-
-	efiret = BS->open_protocol(efi_parent_image, &efi_loaded_image_protocol_guid,
-			(void **)&efi_loaded_image,
-			efi_parent_image, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
-	if (!EFI_ERROR(efiret))
-		BS->handle_protocol(efi_loaded_image->device_handle,
-				&efi_device_path_protocol_guid, (void **)&efi_device_path);
-
-	mem = 0x3fffffff;
-	for (memsize = SZ_256M; memsize >= SZ_8M; memsize /= 2) {
-		efiret  = BS->allocate_pages(EFI_ALLOCATE_MAX_ADDRESS,
-					     EFI_LOADER_DATA,
-					     memsize/PAGE_SIZE, &mem);
-		if (!EFI_ERROR(efiret))
-			break;
-		if (efiret != EFI_OUT_OF_RESOURCES)
-			panic("failed to allocate malloc pool: %s\n",
-			      efi_strerror(efiret));
-	}
-	if (EFI_ERROR(efiret))
-		panic("failed to allocate malloc pool: %s\n",
-		      efi_strerror(efiret));
-	mem_malloc_init((void *)mem, (void *)mem + memsize - 1);
-
-	start_barebox();
-}
+device_efi_initcall(efi_init);
 
 static int efi_core_init(void)
 {
@@ -322,7 +280,7 @@ static int efi_core_init(void)
 	dev = device_alloc("efi-wdt", DEVICE_ID_SINGLE);
 	return platform_device_register(dev);
 }
-core_initcall(efi_core_init);
+core_efi_initcall(efi_core_init);
 
 /* Features of the loader, i.e. systemd-boot, barebox (imported from systemd) */
 #define EFI_LOADER_FEATURE_CONFIG_TIMEOUT          (1LL << 0)
@@ -342,7 +300,10 @@ core_initcall(efi_core_init);
 
 static int efi_postcore_init(void)
 {
-	char *uuid;
+	const struct efi_device_path *parent_image_dp, *loaded_image_dp;
+	char *bbu_path = "/boot/" CONFIG_EFI_PAYLOAD_DEFAULT_PATH;
+
+	char *filepath, *uuid;
 	static const uint64_t loader_features =
 		EFI_LOADER_FEATURE_DEVICETREE;
 
@@ -364,8 +325,13 @@ static int efi_postcore_init(void)
 	efi_set_variable_uint64_le("LoaderFeatures", &efi_systemd_vendor_guid,
 				   loader_features);
 
-	uuid = device_path_to_partuuid(device_path_from_handle(
-				       efi_loaded_image->device_handle));
+	loaded_image_dp = device_path_from_handle(efi_loaded_image->device_handle);
+	pr_debug("loaded-image: %pD\n", loaded_image_dp);
+
+	if (!loaded_image_dp)
+		return -EINVAL;
+
+	uuid = device_path_to_partuuid(loaded_image_dp);
 	if (uuid) {
 		wchar_t *uuid16 = xstrdup_char_to_wchar(uuid);
 		efi_set_variable("LoaderDevicePartUUID",
@@ -377,39 +343,53 @@ static int efi_postcore_init(void)
 		free(uuid16);
 	}
 
-	bbu_register_std_file_update("fat", 0,	"/boot/EFI/BOOT/BOOTx64.EFI",
-				     filetype_exe);
+	parent_image_dp = device_path_from_handle(efi_parent_image);
+	pr_debug("parent-image: %pD\n", parent_image_dp);
+
+	filepath = device_path_to_filepath(parent_image_dp);
+	if (filepath) {
+		bbu_path = basprintf("/boot/%s", filepath);
+		free(filepath);
+	}
+
+	bbu_register_std_file_update("fat", 0, bbu_path, filetype_exe);
 
 	return 0;
 }
-postcore_initcall(efi_postcore_init);
+postcore_efi_initcall(efi_postcore_init);
 
 static int efi_late_init(void)
 {
-	char *state_desc;
+	const char *state_desc = "/boot/EFI/barebox/state.dtb";
+	struct device_node *state_root = NULL;
+	size_t size;
+	void *fdt;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_STATE))
 		return 0;
 
-	state_desc = xasprintf("/boot/EFI/barebox/state.dtb");
+	if (!get_mounted_path("/boot")) {
+		pr_warn("boot device couldn't be determined\n");
+		return 0;
+	}
 
-	if (state_desc) {
-		struct device_node *root = NULL;
+	fdt = read_file(state_desc, &size);
+	if (!fdt) {
+		pr_info("unable to read %s: %m\n", state_desc);
+		return 0;
+	}
+
+	state_root = of_unflatten_dtb(fdt, size);
+	if (!IS_ERR(state_root)) {
 		struct device_node *np = NULL;
 		struct state *state;
 
-		root = of_read_file(state_desc);
-		if (IS_ERR(root)) {
-			printf("Cannot open %s: %pe\n", state_desc, root);
-			return PTR_ERR(root);
-		}
-
-		ret = barebox_register_of(root);
+		ret = barebox_register_of(state_root);
 		if (ret)
 			pr_warn("Failed to register device-tree: %pe\n", ERR_PTR(ret));
 
-		np = of_find_node_by_alias(root, "state");
+		np = of_find_node_by_alias(state_root, "state");
 
 		state = state_new_from_node(np, false);
 		if (IS_ERR(state))
@@ -425,20 +405,30 @@ static int efi_late_init(void)
 
 	return 0;
 }
-late_initcall(efi_late_init);
+late_efi_initcall(efi_late_init);
 
 static int do_efiexit(int argc, char *argv[])
 {
+	if (!BS)
+		return -ENOSYS;
+
+	console_flush();
+
+	if (!streq_ptr(argv[1], "-f"))
+		shutdown_barebox();
+
 	return BS->exit(efi_parent_image, EFI_SUCCESS, 0, NULL);
 }
 
 BAREBOX_CMD_HELP_START(efiexit)
-BAREBOX_CMD_HELP_TEXT("Leave barebox and return to the calling EFI process\n")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-f",  "force exit, don't call barebox shutdown")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(efiexit)
 	.cmd = do_efiexit,
-	BAREBOX_CMD_DESC("Usage: efiexit")
+	BAREBOX_CMD_DESC("Leave barebox and return to the calling EFI process")
+	BAREBOX_CMD_OPTS("[-flrw]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_efiexit_help)
 BAREBOX_CMD_END

@@ -9,6 +9,7 @@ config ARM
 	select HAVE_ARCH_KASAN
 	select ARCH_HAS_SJLJ
 	select ARM_OPTIMZED_STRING_FUNCTIONS if KASAN
+	select HAVE_EFI_STUB
 	default y
 
 config ARM_LINUX

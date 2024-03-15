@@ -42,11 +42,11 @@ config CLOCKSOURCE_DUMMY_RATE
 
 config CLOCKSOURCE_EFI
 	bool "Generic EFI Driver"
-	depends on EFI_BOOTUP
+	depends on EFI_PAYLOAD
 
 config CLOCKSOURCE_EFI_X86
 	bool "EFI X86 HW driver"
-	depends on EFI_BOOTUP && X86
+	depends on EFI_PAYLOAD && X86
 
 config CLOCKSOURCE_KVX
 	bool "KVX core timer clocksource"

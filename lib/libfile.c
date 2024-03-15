@@ -33,10 +33,8 @@ int pwrite_full(int fd, const void *buf, size_t size, loff_t offset)
 
 	while (size) {
 		now = pwrite(fd, buf, size, offset);
-		if (now == 0) {
-			errno = ENOSPC;
-			return -errno;
-		}
+		if (now == 0)
+			return errno_set(-ENOSPC);
 		if (now < 0)
 			return now;
 		size -= now;
@@ -61,10 +59,8 @@ int write_full(int fd, const void *buf, size_t size)
 
 	while (size) {
 		now = write(fd, buf, size);
-		if (now == 0) {
-			errno = ENOSPC;
-			return -errno;
-		}
+		if (now == 0)
+			return errno_set(-ENOSPC);
 		if (now < 0)
 			return now;
 		size -= now;
@@ -191,6 +187,33 @@ out:
 EXPORT_SYMBOL_GPL(read_file_line);
 
 /**
+ * read_file_into_buf - read a file to an external buffer
+ * @filename:  The filename to read
+ * @buf:       The buffer to read into
+ * @size:      The buffer size
+ *
+ * This function reads a file to an external buffer. At maximum @size
+ * bytes are read.
+ *
+ * Return: number of bytes read, or negative error code.
+ */
+ssize_t read_file_into_buf(const char *filename, void *buf, size_t size)
+{
+	int fd;
+	ssize_t ret;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0)
+		return fd;
+
+	ret = read_full(fd, buf, size);
+
+	close(fd);
+
+	return ret;
+}
+
+/**
  * read_file_2 - read a file to an allocated buffer
  * @filename:  The filename to read
  * @size:      After successful return contains the size of the file
@@ -212,11 +235,10 @@ EXPORT_SYMBOL_GPL(read_file_line);
 int read_file_2(const char *filename, size_t *size, void **outbuf,
 		loff_t max_size)
 {
-	int fd;
 	struct stat s;
 	void *buf = NULL;
 	const char *tmpfile = "/.read_file_tmp";
-	int ret;
+	ssize_t ret;
 	loff_t read_size;
 
 again:
@@ -240,22 +262,13 @@ again:
 	/* ensure wchar_t nul termination */
 	buf = calloc(ALIGN(read_size, 2) + 2, 1);
 	if (!buf) {
-		ret = -ENOMEM;
-		errno = ENOMEM;
+		ret = errno_set(-ENOMEM);
 		goto err_out;
 	}
 
-	fd = open(filename, O_RDONLY);
-	if (fd < 0) {
-		ret = fd;
-		goto err_out;
-	}
-
-	ret = read_full(fd, buf, read_size);
+	ret = read_file_into_buf(filename, buf, read_size);
 	if (ret < 0)
-		goto err_out1;
-
-	close(fd);
+		goto err_out;
 
 	if (size)
 		*size = ret;
@@ -270,8 +283,6 @@ again:
 
 	return 0;
 
-err_out1:
-	close(fd);
 err_out:
 	free(buf);
 

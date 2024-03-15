@@ -9,7 +9,7 @@ config VIRTIO_BLK
 config EFI_BLK
 	bool "EFI block I/O driver"
 	default y
-	depends on EFI_BOOTUP
+	depends on EFI_PAYLOAD
 
 config EFI_BLK_SEPARATE_USBDISK
 	bool "rename USB devices to /dev/usbdiskX"

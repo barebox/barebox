@@ -444,6 +444,23 @@ static void part_set_efi_name(gpt_entry *pte, char *dest)
 	dest[i] = 0;
 }
 
+static void extract_flags(const gpt_entry *p, struct partition *pentry)
+{
+	static const guid_t system_guid = PARTITION_SYSTEM_GUID;
+
+	if (p->attributes.required_to_function)
+		pentry->flags |= DEVFS_PARTITION_REQUIRED;
+	if (p->attributes.no_block_io_protocol)
+		pentry->flags |= DEVFS_PARTITION_NO_EXPORT;
+	if (p->attributes.legacy_bios_bootable)
+		pentry->flags |= DEVFS_PARTITION_BOOTABLE_LEGACY;
+
+	if (guid_equal(&p->partition_type_guid, &system_guid))
+		pentry->flags |=  DEVFS_PARTITION_BOOTABLE_ESP;
+
+	pentry->typeflags = p->attributes.type_guid_specific;
+}
+
 static void part_get_efi_name(gpt_entry *pte, const char *src)
 {
 	int i;
@@ -498,6 +515,7 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 		epart = xzalloc(sizeof(*epart));
 		epart->pte = &ptes[i];
 		pentry = &epart->part;
+		extract_flags(&ptes[i], pentry);
 		pentry->first_sec = le64_to_cpu(ptes[i].starting_lba);
 		pentry->size = le64_to_cpu(ptes[i].ending_lba) - pentry->first_sec;
 		pentry->size++;

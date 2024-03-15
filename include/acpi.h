@@ -9,6 +9,7 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <driver.h>
+#include <efi/efi-init.h>
 
 /* Names within the namespace are 4 bytes long */
 
@@ -130,7 +131,7 @@ static inline struct acpi_driver *to_acpi_driver(struct driver *drv)
 }
 
 #define device_acpi_driver(drv)	\
-	register_driver_macro(device, acpi, drv)
+	register_efi_driver_macro(device, acpi, drv)
 
 static inline int acpi_driver_register(struct acpi_driver *acpidrv)
 {

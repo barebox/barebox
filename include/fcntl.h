@@ -4,6 +4,13 @@
 
 #include <linux/types.h>
 
+#define AT_FDCWD		-100    /* Special value used to indicate
+                                           openat should use the current
+                                           working directory. */
+
+#define AT_REMOVEDIR		0x200   /* Remove directory instead of
+                                           unlinking file.  */
+
 /* open/fcntl - O_SYNC is only implemented on blocks devices and on files
    located on an ext2 file system */
 #define O_ACCMODE	00000003
@@ -16,9 +23,6 @@
 #define O_APPEND	00002000
 #define O_DIRECTORY	00200000	/* must be a directory */
 #define O_NOFOLLOW	00400000	/* don't follow links */
-#define __O_TMPFILE	020000000
-
-#define O_TMPFILE       (__O_TMPFILE | O_DIRECTORY)
 
 /* barebox additional flags */
 #define O_RWSIZE_MASK	017000000
@@ -28,7 +32,22 @@
 #define O_RWSIZE_4	004000000
 #define O_RWSIZE_8	010000000
 
-int open(const char *pathname, int flags, ...);
-int creat(const char *pathname, mode_t mode);
+#define __O_TMPFILE	020000000
+#define O_PATH		040000000	/* open as path */
+#define O_CHROOT	0100000000	/* dirfd: stay within filesystem root */
+
+#define O_TMPFILE       (__O_TMPFILE | O_DIRECTORY)
+
+int openat(int dirfd, const char *pathname, int flags);
+
+static inline int open(const char *pathname, int flags, ...)
+{
+	return openat(AT_FDCWD, pathname, flags);
+}
+
+static inline int creat(const char *pathname, mode_t mode)
+{
+	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC);
+}
 
 #endif /* __FCNTL_H */

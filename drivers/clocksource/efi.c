@@ -12,14 +12,14 @@
 #include <linux/err.h>
 
 static uint64_t ticks = 1;
-static void *efi_cs_evt;
+static struct efi_event *efi_cs_evt;
 
 static uint64_t efi_cs_read(void)
 {
 	return ticks;
 }
 
-static void efi_cs_inc(void *event, void *ctx)
+static void efi_cs_inc(struct efi_event *event, void *ctx)
 {
 	ticks++;
 }

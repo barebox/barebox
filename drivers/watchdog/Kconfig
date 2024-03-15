@@ -31,7 +31,7 @@ config WATCHDOG_AT91SAM9
 
 config WATCHDOG_EFI
 	bool "Generic EFI Watchdog Driver"
-	depends on EFI_BOOTUP
+	depends on EFI_PAYLOAD
 	help
 	  Add support for the EFI watchdog.
 

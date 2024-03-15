@@ -19,14 +19,13 @@ static struct device_node *get_tree(const char *filename, struct device_node *ro
 
 	if (!strcmp(filename, "-")) {
 		node = of_dup(root) ?: ERR_PTR(-ENOENT);
+		if (IS_ERR(node))
+			printf("Cannot duplicate live tree: %pe\n", node);
 	} else if (!strcmp(filename, "+")) {
 		return NULL;
 	} else {
 		node = of_read_file(filename);
 	}
-
-	if (IS_ERR(node))
-		printf("Cannot read %s: %pe\n", filename, node);
 
 	return node;
 }

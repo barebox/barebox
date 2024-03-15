@@ -2,7 +2,7 @@
 obj-y	+= base/
 obj-y	+= block/
 obj-$(CONFIG_ARM_AMBA) += amba/
-obj-$(CONFIG_EFI_BOOTUP) += efi/
+obj-$(CONFIG_EFI_PAYLOAD) += efi/
 obj-y	+= net/
 obj-y	+= serial/
 obj-y	+= mtd/

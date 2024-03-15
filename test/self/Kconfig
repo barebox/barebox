@@ -34,6 +34,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_OF_MANIPULATION
 	select SELFTEST_ENVIRONMENT_VARIABLES if ENVIRONMENT_VARIABLES
 	select SELFTEST_FS_RAMFS if FS_RAMFS
+	select SELFTEST_DIRFD if FS_RAMFS && FS_DEVFS
 	select SELFTEST_TFTP if FS_TFTP
 	select SELFTEST_JSON if JSMN
 	select SELFTEST_JWT if JWT
@@ -72,6 +73,10 @@ config SELFTEST_ENVIRONMENT_VARIABLES
 config SELFTEST_FS_RAMFS
 	bool "ramfs selftest"
 	depends on FS_RAMFS
+
+config SELFTEST_DIRFD
+	bool "dirfd selftest"
+	depends on FS_RAMFS && FS_DEVFS
 
 config SELFTEST_JSON
 	bool "JSON selftest"

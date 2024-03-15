@@ -29,7 +29,7 @@ config MVEBU_MBUS
 config ACPI
 	bool "Advanced Configuration and Power Interface (ACPI)"
 	default y
-	depends on EFI_BOOTUP
+	depends on EFI_PAYLOAD
 	help
 	  Driver needed for supporting drivers probed from ACPI tables.
 	  The root SDT is found via UEFI.

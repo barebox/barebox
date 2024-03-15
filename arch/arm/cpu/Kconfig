@@ -21,6 +21,7 @@ config CPU_64
 	select HAS_DMA
 	select ARCH_WANT_FRAME_POINTERS
 	select ARCH_HAS_ZERO_PAGE
+	select HAVE_EFI_PAYLOAD
 
 # Select CPU types depending on the architecture selected. This selects
 # which CPUs we support in the kernel image, and the compiler instruction

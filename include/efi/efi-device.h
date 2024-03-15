@@ -2,6 +2,11 @@
 #ifndef __EFI_EFI_DEVICE_H
 #define __EFI_EFI_DEVICE_H
 
+#include <efi/types.h>
+#include <efi/efi-util.h>
+#include <driver.h>
+#include <efi/efi-init.h>
+
 struct efi_device {
 	struct device dev;
 	efi_guid_t *guids;
@@ -33,11 +38,6 @@ static inline struct efi_driver *to_efi_driver(struct driver *drv)
 	return container_of(drv, struct efi_driver, driver);
 }
 
-#define device_efi_driver(drv)	\
-	register_driver_macro(device, efi, drv)
-
-#define fs_efi_driver(drv)	\
-	register_driver_macro(fs, efi, drv)
 static inline int efi_driver_register(struct efi_driver *efidrv)
 {
 	efidrv->driver.bus = &efi_bus;
@@ -62,5 +62,14 @@ static inline bool efi_device_has_guid(struct efi_device *efidev, efi_guid_t gui
 
 	return false;
 }
+
+enum efi_locate_search_type;
+
+int __efi_locate_handle(struct efi_boot_services *bs,
+		enum efi_locate_search_type search_type,
+		efi_guid_t *protocol,
+		void *search_key,
+		unsigned long *no_handles,
+		efi_handle_t **buffer);
 
 #endif /* __EFI_EFI_DEVICE_H */

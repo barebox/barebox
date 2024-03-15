@@ -13,8 +13,6 @@
 #include <dma.h>
 #include <file-list.h>
 
-#define BLOCKSIZE(blk)	(1 << blk->blockbits)
-
 LIST_HEAD(block_device_list);
 
 /* a chunk of contiguous data */
@@ -496,4 +494,28 @@ unsigned file_list_add_blockdevs(struct file_list *files)
 	}
 
 	return count;
+}
+
+const char *blk_type_str(enum blk_type type)
+{
+	switch (type) {
+	case BLK_TYPE_UNSPEC:
+		return "unspecified";
+	case BLK_TYPE_SD:
+		return "SD";
+	case BLK_TYPE_MMC:
+		return "MMC";
+	case BLK_TYPE_VIRTUAL:
+		return "virtual";
+	case BLK_TYPE_IDE:
+		return "IDE";
+	case BLK_TYPE_AHCI:
+		return "AHCI";
+	case BLK_TYPE_USB:
+		return "USB";
+	case BLK_TYPE_NVME:
+		return "NVMe";
+	default:
+		return "unknown";
+	}
 }

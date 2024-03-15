@@ -134,8 +134,9 @@ struct ata_port {
 	void *drvdata;
 	struct block_device blk;
 	uint16_t *id;
-	int lba48;
-	int initialized;
+	bool lba48;
+	bool initialized;
+	bool ahci;
 	int probe;
 };
 

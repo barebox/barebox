@@ -115,6 +115,7 @@ extern char * skip_spaces(const char *);
 extern char *strim(char *);
 
 void *memchr_inv(const void *start, int c, size_t bytes);
+char *strreplace(char *str, char old, char new);
 
 /**
  * memzero_explicit - Fill a region of memory (e.g. sensitive

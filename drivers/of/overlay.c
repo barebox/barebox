@@ -315,10 +315,8 @@ int of_overlay_apply_file(struct device_node *root, const char *filename,
 		return 0;
 
 	ovl = of_read_file(filename);
-	if (IS_ERR(ovl)) {
-		pr_err("Failed to unflatten %s: %pe\n", filename, ovl);
+	if (IS_ERR(ovl))
 		return PTR_ERR(ovl);
-	}
 
 	if (filter && !of_overlay_matches_filter(NULL, ovl))
 		return 0;

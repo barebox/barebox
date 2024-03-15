@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+menu "EFI (Extensible Firmware Interface) Support"
+
+config HAVE_EFI_PAYLOAD
+	bool
+
+config EFI_PAYLOAD
+	bool "Build as EFI payload" if COMPILE_TEST
+	depends on HAVE_EFI_PAYLOAD
+	select EFI
+	select EFI_GUID
+	select EFI_DEVICEPATH
+	select PRINTF_UUID
+	select PRINTF_WCHAR
+	select BLOCK
+	select PARTITION_DISK
+	select HW_HAS_PCI
+
+config EFI
+	bool
+
+config HAVE_EFI_STUB
+	bool
+
+config EFI_STUB
+	def_bool EFI_PAYLOAD
+	depends on HAVE_EFI_STUB
+
+config EFI_GUID
+	bool
+	help
+	  With this option a table of EFI guids is compiled in.
+
+config EFI_DEVICEPATH
+	bool
+
+config EFI_PAYLOAD_DEFAULT_PATH
+	string
+	default "EFI/BOOT/BOOTARM.EFI"		if CPU_32
+	default "EFI/BOOT/BOOTAA64.EFI"		if CPU_64
+	default "EFI/BOOT/BOOTIA32.EFI"		if X86_32
+	default "EFI/BOOT/BOOTx64.EFI"		if X86_64
+	default "EFI/BOOT/BOOTRISCV32.EFI"	if ARCH_RV32I
+	default "EFI/BOOT/BOOTRISCV64.EFI"	if ARCH_RV64I
+	default "EFI/BOOT/BAREBOX.EFI"
+
+endmenu

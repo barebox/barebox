@@ -5,12 +5,13 @@
 #include <common.h>
 #include <init.h>
 #include <libfile.h>
+#include <efi.h>
 #include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 
 static int efi_fdt_probe(void)
 {
-	efi_config_table_t *ect;
+	struct efi_config_table *ect;
 
 	for_each_efi_config_table(ect) {
 		struct fdt_header *oftree;
@@ -40,4 +41,4 @@ static int efi_fdt_probe(void)
 
 	return 0;
 }
-late_initcall(efi_fdt_probe);
+late_efi_initcall(efi_fdt_probe);

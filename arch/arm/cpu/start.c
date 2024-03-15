@@ -43,14 +43,18 @@ static bool blob_is_arm_boarddata(const void *blob)
 	return bd->magic == BAREBOX_ARM_BOARDDATA_MAGIC;
 }
 
+const struct barebox_boarddata *barebox_get_boarddata(void)
+{
+	if (!barebox_boarddata || !blob_is_arm_boarddata(barebox_boarddata))
+		return NULL;
+
+	return barebox_boarddata;
+}
+
 u32 barebox_arm_machine(void)
 {
-	if (barebox_boarddata && blob_is_arm_boarddata(barebox_boarddata)) {
-		const struct barebox_arm_boarddata *bd = barebox_boarddata;
-		return bd->machine;
-	} else {
-		return 0;
-	}
+	const struct barebox_boarddata *bd = barebox_get_boarddata();
+	return bd ? bd->machine : 0;
 }
 
 void *barebox_arm_boot_dtb(void)

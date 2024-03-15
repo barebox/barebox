@@ -55,4 +55,4 @@ static inline void __barebox_mvebu_head(void)
 }
 
 #define ENTRY_FUNCTION_MVEBU(name, arg0, arg1, arg2) \
-	ENTRY_FUNCTION_HEAD(name, __barebox_mvebu_head, arg0, arg1, arg2)
+	ENTRY_FUNCTION_WITHSTACK_HEAD(name, 0, __barebox_mvebu_head, arg0, arg1, arg2)

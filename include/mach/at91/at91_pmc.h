@@ -63,8 +63,10 @@
 #define	AT91_CKGR_PLLAR		0x28			/* PLL A Register */
 #define	AT91_CKGR_PLLBR		0x2c			/* PLL B Register */
 #define		AT91_PMC_DIV		(0xff  <<  0)		/* Divider */
+#define			AT91_PMC_DIV_(n)	(((n) << 0) & AT91_PMC_DIV)
 #define			AT91_PMC_DIV_BYPASS	(1 << 0)		/* Divider bypass */
 #define		AT91_PMC_PLLCOUNT	(0x3f  <<  8)		/* PLL Counter */
+#define			AT91_PMC_PLLCOUNT_(n)	(((n) << 8) & AT91_PMC_PLLCOUNT)
 #define		AT91_PMC_OUT		(3     << 14)		/* PLL Clock Frequency Range */
 #define			AT91_PMC_OUT_0		(0 << 14)
 #define			AT91_PMC_OUT_1		(1 << 14)

@@ -149,7 +149,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 
 void __barebox_arm64_head(ulong x0, ulong x1, ulong x2);
 
-#define ENTRY_FUNCTION_WITHSTACK(name, stack_top, arg0, arg1, arg2)	\
+#define ENTRY_FUNCTION_WITHSTACK_HEAD(name, stack_top, head, arg0, arg1, arg2)	\
 	void name(ulong r0, ulong r1, ulong r2);			\
 									\
 	static void __##name(ulong, ulong, ulong);			\
@@ -159,20 +159,24 @@ void __barebox_arm64_head(ulong x0, ulong x1, ulong x2);
 		{							\
 			static __section(.pbl_board_stack_top_##name)	\
 				const ulong __stack_top = (stack_top);	\
-			__keep_symbolref(__barebox_arm64_head);		\
+			__keep_symbolref(head);				\
 			__keep_symbolref(__stack_top);			\
 			__##name(r0, r1, r2);				\
 		}							\
 		static void noinline __##name				\
 			(ulong arg0, ulong arg1, ulong arg2)
 
+#define ENTRY_FUNCTION_WITHSTACK(name, stack_top, arg0, arg1, arg2)	\
+	ENTRY_FUNCTION_WITHSTACK_HEAD(name, stack_top,			\
+			      __barebox_arm64_head, arg0, arg1, arg2)
+
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
 	ENTRY_FUNCTION_WITHSTACK(name, 0, arg0, arg1, arg2)
 
 #else
-#define ENTRY_FUNCTION_WITHSTACK(name, stack_top, arg0, arg1, arg2)	\
+#define ENTRY_FUNCTION_WITHSTACK_HEAD(name, stack_top, head, arg0, arg1, arg2)	\
 	static void ____##name(ulong, ulong, ulong);			\
-	ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
+	__ENTRY_FUNCTION_HEAD(name, head, arg0, arg1, arg2)		\
 	{								\
 		if (stack_top)						\
 			arm_setup_stack(stack_top);			\
@@ -181,7 +185,7 @@ void __barebox_arm64_head(ulong x0, ulong x1, ulong x2);
 	static void noinline ____##name					\
 		(ulong arg0, ulong arg1, ulong arg2)
 
-#define ENTRY_FUNCTION_HEAD(name, head, arg0, arg1, arg2)		\
+#define __ENTRY_FUNCTION_HEAD(name, head, arg0, arg1, arg2)		\
 	void name(ulong r0, ulong r1, ulong r2);			\
 									\
 	static void __##name(ulong, ulong, ulong);			\
@@ -196,7 +200,11 @@ void __barebox_arm64_head(ulong x0, ulong x1, ulong x2);
 		(ulong arg0, ulong arg1, ulong arg2)
 
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)		\
-		ENTRY_FUNCTION_HEAD(name, __barebox_arm_head, arg0, arg1, arg2)
+	__ENTRY_FUNCTION_HEAD(name, __barebox_arm_head, arg0, arg1, arg2)
+
+#define ENTRY_FUNCTION_WITHSTACK(name, stack_top, arg0, arg1, arg2)	\
+	ENTRY_FUNCTION_WITHSTACK_HEAD(name, stack_top, \
+			      __barebox_arm_head, arg0, arg1, arg2)
 #endif
 
 /*

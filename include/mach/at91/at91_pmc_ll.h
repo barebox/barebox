@@ -45,6 +45,7 @@
 void at91_pmc_init(void __iomem *pmc_base, unsigned int flags);
 void at91_pmc_cfg_mck(void __iomem *pmc_base, u32 pmc_mckr, unsigned int flags);
 void at91_pmc_cfg_plla(void __iomem *pmc_base, u32 pmc_pllar, unsigned int flags);
+void at91_pmc_cfg_pllb(void __iomem *pmc_base, u32 pmc_pllbr, unsigned int flags);
 
 int at91_pmc_enable_generic_clock(void __iomem *pmc_base, void __iomem *sfr_base,
 				  unsigned int periph_id,

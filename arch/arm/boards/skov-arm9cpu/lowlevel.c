@@ -1,127 +1,133 @@
 // SPDX-License-Identifier: GPL-2.0
-// PDX-FileCopyrightText: 2018 Sam Ravnborg <sam@ravnborg.org>
-
-#include <linux/sizes.h>
-
-#include <asm/barebox-arm.h>
+// SPDX-FileCopyrightText: 2022 Sam Ravnborg <sam@ravnborg.org>
 
 #include <mach/at91/at91sam926x_board_init.h>
 #include <mach/at91/at91sam9263_matrix.h>
+#include <mach/at91/sam92_ll.h>
+#include <mach/at91/xload.h>
+#include <mach/at91/barebox-arm.h>
+#include <linux/build_bug.h>
 
-#define MASTER_PLL_MUL		171
-#define MASTER_PLL_DIV		14
+/* MCK = 20 MHz */
+#define MAIN_CLOCK	200000000
+#define MASTER_CLOCK	(MAIN_CLOCK / 2)	/* PMC_MCKR divides by 2 */
 
-static void __bare_init skovarm9cpu_board_config(struct at91sam926x_board_cfg *cfg)
+#define PLLA_SETTINGS	(AT91_PMC_PLLA_WR_ERRATA | AT91_PMC_MUL_(49) | AT91_PMC_OUT_2 | \
+			 AT91_PMC_PLLCOUNT_(48) | AT91_PMC_DIV_(4))
+static_assert(PLLA_SETTINGS == 0x2031B004);
+
+#define PLLB_SETTINGS	(AT91_PMC_USBDIV_2 | AT91_PMC_MUL_(5) | AT91_PMC_OUT_0 | \
+			 AT91_PMC_PLLCOUNT_(48) | AT91_PMC_DIV_BYPASS)
+static_assert(PLLB_SETTINGS == 0x10053001);
+
+/*
+ * Check if target is 64 or 128 MB and adjust AT91_SDRAMC_CR
+ * accordingly.
+ * Size      Start      Size(hex)
+ * 64 MB  => 0x20000000 0x4000000
+ * 128 MB => 0x20000000 0x8000000
+ *
+ * If 64 MiB RAM with NC_10 set, then we see holes in the memory, which
+ * is how we detect if memory is 64 or 128 MiB
+ */
+static int check_if_128mb(void)
 {
-	/* Disable Watchdog */
-	cfg->wdt_mr =
-		AT91_WDT_WDIDLEHLT | AT91_WDT_WDDBGHLT |
-		AT91_WDT_WDV |
-		AT91_WDT_WDDIS |
-		AT91_WDT_WDD;
+	unsigned int *test_adr = (unsigned int *)AT91_CHIPSELECT_1;
+	unsigned int test_val = 0xdeadbee0;
+	unsigned int *p;
+	int i;
 
-	/* define PDC[31:16] as DATA[31:16] */
-	cfg->ebi_pio_pdr = 0xFFFF0000;
-	/* no pull-up for D[31:16] */
-	cfg->ebi_pio_ppudr = 0xFFFF0000;
-	/* EBI0_CSA, CS1 SDRAM, CS3 NAND Flash, 3.3V memories */
-	cfg->ebi_csa =
-		AT91SAM9263_MATRIX_EBI0_DBPUC | AT91SAM9263_MATRIX_EBI0_VDDIOMSEL_3_3V |
-		AT91SAM9263_MATRIX_EBI0_CS1A_SDRAMC;
+	/* Fill up memory with a known pattern */
+	p = test_adr;
+	for (i = 0; i < 0xb00; i++)
+		*p++ = test_val + i;
 
-	cfg->smc_cs = 0;
-	cfg->smc_mode =
-		AT91_SMC_READMODE | AT91_SMC_WRITEMODE |
-		AT91_SMC_DBW_16 |
-		AT91_SMC_TDFMODE |
-		AT91_SMC_TDF_(6);
-	cfg->smc_cycle =
-		AT91_SMC_NWECYCLE_(22) | AT91_SMC_NRDCYCLE_(22);
-	cfg->smc_pulse =
-		AT91_SMC_NWEPULSE_(11) | AT91_SMC_NCS_WRPULSE_(11) |
-		AT91_SMC_NRDPULSE_(11) | AT91_SMC_NCS_RDPULSE_(11);
-	cfg->smc_setup =
-		AT91_SMC_NWESETUP_(10) | AT91_SMC_NCS_WRSETUP_(10) |
-		AT91_SMC_NRDSETUP_(10) | AT91_SMC_NCS_RDSETUP_(10);
+	/*
+	 * Check that we can read back the values just written
+	 * If one or more fails, we have only 64 MB
+	 */
+	p = test_adr;
+	for (i = 0; i < 0xb00; i++)
+		if (*p++ != (test_val + i))
+			return false;
 
-	cfg->pmc_mor =
-		AT91_PMC_MOSCEN |
-		(255 << 8);		/* Main Oscillator Start-up Time */
-	cfg->pmc_pllar =
-		AT91_PMC_PLLA_WR_ERRATA | /* Bit 29 must be 1 when prog */
-		AT91_PMC_OUT |
-		AT91_PMC_PLLCOUNT |	/* PLL Counter */
-		(2 << 28) |		/* PLL Clock Frequency Range */
-		((MASTER_PLL_MUL - 1) << 16) | (MASTER_PLL_DIV);
-	/* PCK/2 = MCK Master Clock from PLLA */
-	cfg->pmc_mckr1 =
-		AT91_PMC_CSS_SLOW |
-		AT91_PMC_PRES_1 |
-		AT91SAM9_PMC_MDIV_2 |
-		AT91_PMC_PDIV_1;
-	/* PCK/2 = MCK Master Clock from PLLA */
-	cfg->pmc_mckr2 =
-		AT91_PMC_CSS_PLLA |
-		AT91_PMC_PRES_1 |
-		AT91SAM9_PMC_MDIV_2 |
-		AT91_PMC_PDIV_1;
-
-	/* SDRAM */
-	/* SDRAMC_TR - Refresh Timer register */
-	cfg->sdrc_tr1 = 0x13C;
-	/* SDRAMC_CR - Configuration register*/
-	cfg->sdrc_cr =
-		AT91_SDRAMC_NC_10 |	/* Assume 128MiB */
-		AT91_SDRAMC_NR_13 |
-		AT91_SDRAMC_NB_4 |
-		AT91_SDRAMC_CAS_3 |
-		AT91_SDRAMC_DBW_32 |
-		(1 <<  8) |		/* Write Recovery Delay */
-		(7 << 12) |		/* Row Cycle Delay */
-		(2 << 16) |		/* Row Precharge Delay */
-		(2 << 20) |		/* Row to Column Delay */
-		(5 << 24) |		/* Active to Precharge Delay */
-		(1 << 28);		/* Exit Self Refresh to Active Delay */
-
-	/* Memory Device Register -> SDRAM */
-	cfg->sdrc_mdr = AT91_SDRAMC_MD_SDRAM;
-	/* SDRAM_TR */
-	cfg->sdrc_tr2 = 1200;
-
-	/* user reset enable */
-	cfg->rstc_rmr =
-		AT91_RSTC_KEY |
-		AT91_RSTC_PROCRST |
-		AT91_RSTC_RSTTYP_WAKEUP |
-		AT91_RSTC_RSTTYP_WATCHDOG;
+	return true;
 }
 
-static void __bare_init skov_arm9cpu_init(void *fdt)
+static void sam9263_sdramc_init(void)
 {
-	struct at91sam926x_board_cfg cfg;
+	void __iomem *piod = IOMEM(AT91SAM9263_BASE_PIOD);
+	static struct at91sam9_sdramc_config config = {
+		.sdramc = IOMEM(AT91SAM9263_BASE_SDRAMC0),
+		.mr = 0,
+		.tr = (MASTER_CLOCK * 7) / 1000000, // TODO 140 versus 0x13c (316)?
+		.cr = AT91_SDRAMC_NC_10 | AT91_SDRAMC_NR_13 | AT91_SDRAMC_CAS_2
+		      | AT91_SDRAMC_NB_4 | AT91_SDRAMC_DBW_32
+		      | AT91_SDRAMC_TWR_2 | AT91_SDRAMC_TRC_7
+		      | AT91_SDRAMC_TRP_2 | AT91_SDRAMC_TRCD_2
+		      | AT91_SDRAMC_TRAS_5 | AT91_SDRAMC_TXSR_8,
+		.lpr = 0,
+		.mdr = AT91_SDRAMC_MD_SDRAM,
+	};
 
-	cfg.pio = IOMEM(AT91SAM9263_BASE_PIOD);
-	cfg.sdramc = IOMEM(AT91SAM9263_BASE_SDRAMC0);
-	cfg.ebi_pio_is_peripha = true;
-	cfg.matrix_csa = IOMEM(AT91SAM9263_BASE_MATRIX + AT91SAM9263_MATRIX_EBI0CSA);
+	/* Define PD[31:16] as DATA[31:16] */
+	at91_mux_gpio_disable(piod, GENMASK(31, 16));
+	/* No pull-up for D[31:16] */
+	at91_mux_set_pullup(piod, GENMASK(31, 16), false);
+	/* PD16 to PD31 are pheripheral A */
+	at91_mux_set_A_periph(piod, GENMASK(31, 16));
 
-	skovarm9cpu_board_config(&cfg);
-	at91sam9263_board_init(&cfg);
+	/* EBI0_CSA, CS1 SDRAM, 3.3V memories */
+	setbits_le32(IOMEM(AT91SAM9263_BASE_MATRIX + AT91SAM9263_MATRIX_EBI0CSA),
+	       AT91SAM9263_MATRIX_EBI0_VDDIOMSEL_3_3V | AT91SAM9263_MATRIX_EBI0_CS1A_SDRAMC);
 
-	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(cfg.sdramc),
-			  fdt);
+	at91sam9_sdramc_initialize(&config, AT91SAM9263_BASE_EBI0_CS1);
+
+	if (!check_if_128mb()) {
+		/* Change number of columns to 9 for 64MB ram. */
+		/* Other parameters does not need to be changed due to chip size. */
+
+		pr_debug("64M variant detected\n");
+
+		/* Clear NC bits */
+		config.cr &= ~AT91_SDRAMC_NC;
+		config.cr |= AT91_SDRAMC_NC_9;
+		at91sam9_sdramc_initialize(&config, AT91SAM9263_BASE_EBI0_CS1);
+	}
+}
+
+static noinline void continue_skov_arm9cpu_xload_mmc(void)
+{
+	sam9263_lowlevel_init(PLLA_SETTINGS, PLLB_SETTINGS);
+	sam92_dbgu_setup_ll(MASTER_CLOCK);
+
+	sam92_udelay_init(MASTER_CLOCK);
+	sam9263_sdramc_init();
+	sam9263_atmci_start_image(1, MASTER_CLOCK, 0);
+}
+
+SAM9_ENTRY_FUNCTION(start_skov_arm9cpu_xload_mmc)
+{
+	/* Configure system so we are less constrained */
+	arm_cpu_lowlevel_init();
+	relocate_to_current_adr();
+	setup_c();
+
+	continue_skov_arm9cpu_xload_mmc();
 }
 
 extern char __dtb_at91_skov_arm9cpu_start[];
 
-ENTRY_FUNCTION(start_skov_arm9cpu, r0, r1, r2)
+AT91_ENTRY_FUNCTION(start_skov_arm9cpu, r0, r1, r2)
 {
 	void *fdt;
 
+	/*
+	 * We may be running after at91bootstrap, so redo the initialization to
+	 * be sure, everything is as we expect it.
+	 */
 	arm_cpu_lowlevel_init();
 
-	arm_setup_stack(AT91SAM9263_SRAM0_BASE + AT91SAM9263_SRAM0_SIZE);
 	fdt = __dtb_at91_skov_arm9cpu_start + get_runtime_offset();
-
-	skov_arm9cpu_init(fdt);
+	barebox_arm_entry(AT91_CHIPSELECT_1, at91sam9263_get_sdram_size(0), fdt);
 }

@@ -68,7 +68,17 @@ static void atmci_set_clk_rate(struct atmel_mci *host,
 				 clock_min, host->bus_hz / (2 * 256));
 			clkdiv = 255;
 		}
-		host->mode_reg = ATMCI_MR_CLKDIV(clkdiv);
+
+		/*
+		 * Older Atmels without CLKODD have the block length
+		 * in the upper 16 bits of both MCI_MR and MCI_BLKR
+		 *
+		 * To avoid intermittent zeroing of the block length,
+		 * just hardcode 512 here and have atmci_setup_data()
+		 * change it as necessary.
+		 */
+
+		host->mode_reg = ATMCI_MR_CLKDIV(clkdiv) | ATMCI_BLKLEN(512);
 	}
 
 	dev_dbg(host->hw_dev, "atmel_set_clk_rate: clkIn=%ld clkIos=%d divider=%d\n",

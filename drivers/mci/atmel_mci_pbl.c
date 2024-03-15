@@ -106,6 +106,7 @@ int at91_mci_bio_init(struct pbl_bio *bio, void __iomem *base,
 	else
 		host->sdc_reg = ATMCI_SDCSEL_SLOT_A;
 
+	atmci_writel(host, ATMCI_CR, ATMCI_CR_PWSDIS);
 	atmci_writel(host, ATMCI_DTOR, 0x7f);
 
 	atmci_common_set_ios(host, &ios);

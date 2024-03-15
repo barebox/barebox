@@ -75,7 +75,7 @@ void tq_vard_show(const struct tq_vard *vard)
 	       (tq_vard_has_eeprom(vard) ? 'y' : 'n'));
 
 	if (tq_vard_has_eeprom(vard))
-		printf("EEPROM\ttype %u, %lu KiB, page %lu\n",
+		printf("EEPROM\ttype %u, %lu KiB, page %zu\n",
 		       (unsigned int)(vard->eepromtype & VARD_EETYPE_MASK_MFR) >> 4,
 		       (unsigned long)(tq_vard_eepromsize(vard) / (SZ_1K)),
 		       tq_vard_eeprom_pgsize(vard));
@@ -118,13 +118,13 @@ static void tq_read_string(const char *src, char *dst, int len)
 	dst[i] = '\0';
 }
 
-struct tq_eeprom *pbl_tq_read_eeprom(struct pbl_i2c *i2c, u8 addr)
+struct tq_eeprom *pbl_tq_read_eeprom(struct pbl_i2c *i2c, u8 addr, u32 eeprom_addr)
 {
 	struct tq_eeprom_data raw;
 	static struct tq_eeprom eeprom;
 	int ret;
 
-	ret = eeprom_read(i2c, addr, 0, &raw, sizeof(raw));
+	ret = eeprom_read(i2c, addr, eeprom_addr, &raw, sizeof(raw));
 	if (ret)
 		return NULL;
 

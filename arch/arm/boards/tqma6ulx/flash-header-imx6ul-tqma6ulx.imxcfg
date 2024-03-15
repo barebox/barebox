@@ -99,4 +99,7 @@ wm 32 0x021B0004 0x0002552D	/* MMDC0_MDPDC now SDCTL power down enabled */
 wm 32 0x021B0404 0x00011006	/* MMDC0_MAPSR ADOPT power down enabled */
 wm 32 0x021B001C 0x00000000	/* MMDC0_MDSCR, clear this register (especially the configuration bit as initialization is complete) */
 
+/* Disable TZASC bypass */
+wm 32 0x020E4024 0x00000001
+
 #include <mach/imx/habv4-imx6-gencsf.h>

@@ -148,6 +148,7 @@ __noreturn void __imx8mm_load_and_start_image_via_tfa(void *bl33)
 	size_t bl31_size;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
+	imx_set_cpu_type(IMX_CPU_IMX8MM);
 	imx8mm_init_scratch_space();
 	imx8m_save_bootrom_log();
 	imx8mm_load_bl33(bl33);
@@ -157,7 +158,7 @@ __noreturn void __imx8mm_load_and_start_image_via_tfa(void *bl33)
 		size_t bl32_size;
 		void *bl32_image;
 
-		imx8mm_tzc380_init();
+		imx8m_tzc380_init();
 		get_builtin_firmware_ext(imx8mm_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
@@ -218,6 +219,7 @@ __noreturn void __imx8mp_load_and_start_image_via_tfa(void *bl33)
 	size_t bl31_size;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
+	imx_set_cpu_type(IMX_CPU_IMX8MP);
 	imx8mp_init_scratch_space();
 	imx8m_save_bootrom_log();
 	imx8mp_load_bl33(bl33);
@@ -227,7 +229,7 @@ __noreturn void __imx8mp_load_and_start_image_via_tfa(void *bl33)
 		size_t bl32_size;
 		void *bl32_image;
 
-		imx8mp_tzc380_init();
+		imx8m_tzc380_init();
 		get_builtin_firmware_ext(imx8mp_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
@@ -289,6 +291,7 @@ __noreturn void __imx8mn_load_and_start_image_via_tfa(void *bl33)
 	size_t bl31_size;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(16);
 
+	imx_set_cpu_type(IMX_CPU_IMX8MN);
 	imx8mn_init_scratch_space();
 	imx8m_save_bootrom_log();
 	imx8mn_load_bl33(bl33);
@@ -298,7 +301,7 @@ __noreturn void __imx8mn_load_and_start_image_via_tfa(void *bl33)
 		size_t bl32_size;
 		void *bl32_image;
 
-		imx8mn_tzc380_init();
+		imx8m_tzc380_init();
 		get_builtin_firmware_ext(imx8mn_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
@@ -353,6 +356,7 @@ __noreturn void __imx8mq_load_and_start_image_via_tfa(void *bl33)
 	size_t bl31_size;
 	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
+	imx_set_cpu_type(IMX_CPU_IMX8MQ);
 	imx8mq_init_scratch_space();
 	imx8m_save_bootrom_log();
 	imx8mq_load_bl33(bl33);
@@ -362,7 +366,7 @@ __noreturn void __imx8mq_load_and_start_image_via_tfa(void *bl33)
 		size_t bl32_size;
 		void *bl32_image;
 
-		imx8mq_tzc380_init();
+		imx8m_tzc380_init();
 		get_builtin_firmware_ext(imx8mq_bl32_bin,
 				bl33, &bl32_image,
 				&bl32_size);
@@ -388,6 +392,7 @@ void __noreturn imx93_load_and_start_image_via_tfa(void)
 	void *bl33 = (void *)MX93_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX9_DDR_CSD1_BASE_ADDR + imx9_ddrc_sdram_size();
 
+	imx_set_cpu_type(IMX_CPU_IMX93);
 	imx93_init_scratch_space(true);
 
 	/*

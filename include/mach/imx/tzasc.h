@@ -6,11 +6,7 @@
 #include <linux/types.h>
 #include <asm/system.h>
 
-void imx8mq_tzc380_init(void);
-void imx8mm_tzc380_init(void);
-void imx8mn_tzc380_init(void);
-void imx8mp_tzc380_init(void);
-
-bool tzc380_is_enabled(void);
+void imx8m_tzc380_init(void);
+bool imx8m_tzc380_is_enabled(void);
 
 #endif

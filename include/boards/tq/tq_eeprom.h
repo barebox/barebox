@@ -191,6 +191,6 @@ struct tq_eeprom {
 
 struct pbl_i2c;
 
-struct tq_eeprom *pbl_tq_read_eeprom(struct pbl_i2c *i2c, u8 addr);
+struct tq_eeprom *pbl_tq_read_eeprom(struct pbl_i2c *i2c, u8 addr, u32 eeprom_addr);
 
 #endif

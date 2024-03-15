@@ -54,3 +54,19 @@ ENTRY_FUNCTION(start_imx6qp_sabresd, r0, r1, r2)
 
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }
+
+extern char __dtb_imx6dl_sabresd_start[];
+
+ENTRY_FUNCTION(start_imx6dl_sabresd, r0, r1, r2)
+{
+	void *fdt;
+
+	imx6_cpu_lowlevel_init();
+
+	if (IS_ENABLED(CONFIG_DEBUG_LL))
+		setup_uart();
+
+	fdt = __dtb_imx6dl_sabresd_start + get_runtime_offset();
+
+	barebox_arm_entry(0x10000000, SZ_1G, fdt);
+}

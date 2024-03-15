@@ -10,11 +10,14 @@
 #include <mach/imx/atf.h>
 #include <mach/imx/imx8m-regs.h>
 #include <mach/imx/xload.h>
+#include <mach/imx/generic.h>
 #include <asm/barebox-arm.h>
 #include <zero_page.h>
 #include <memory.h>
 #include <init.h>
 #include <pbl.h>
+#include <mmu.h>
+#include <bootsource.h>
 
 #define BOOTROM_INFO_VERSION		0x1
 #define BOOTROM_INFO_BOOT_DEVICE	0x2
@@ -97,6 +100,41 @@ int imx8mp_romapi_load_image(void *bl33)
 int imx8mn_romapi_load_image(void *bl33)
 {
 	return imx8mp_romapi_load_image(bl33);
+}
+
+static int imx_romapi_boot_device(struct rom_api *rom_api)
+{
+	uint32_t boot_device_type, boot_instance, boot_device;
+	enum bootsource bootsource = BOOTSOURCE_UNKNOWN;
+	int ret;
+
+	ret = imx_bootrom_query(rom_api, BOOTROM_INFO_BOOT_DEVICE, &boot_device);
+	if (ret)
+		return ret;
+
+	boot_device_type = FIELD_GET(BOOTROM_BOOT_DEVICE_INTERFACE, boot_device);
+	boot_instance = FIELD_GET(BOOTROM_BOOT_DEVICE_INSTANCE, boot_device);
+
+	switch (boot_device_type) {
+	case BT_DEV_TYPE_MMC:
+	case BT_DEV_TYPE_SD:
+		bootsource = BOOTSOURCE_MMC;
+		break;
+	case BT_DEV_TYPE_NAND:
+		bootsource = BOOTSOURCE_NAND;
+		break;
+	case BT_DEV_TYPE_FLEXSPINOR:
+	case BT_DEV_TYPE_SPI_NOR:
+		bootsource = BOOTSOURCE_SPI_NOR;
+		break;
+	case BT_DEV_TYPE_USB:
+		bootsource = BOOTSOURCE_USB;
+		break;
+	}
+
+	bootsource_set(bootsource, boot_instance);
+
+	return 0;
 }
 
 static int imx_romapi_boot_device_seekable(struct rom_api *rom_api)
@@ -241,4 +279,33 @@ void imx8m_save_bootrom_log(void)
 	}
 
 	imx8m_scratch_save_bootrom_log(rom_log);
+}
+
+#define IMX93_BOOT_ROM_BASE 0x1000
+#define IMX93_BOOT_ROM_END (0x40000 - 1)
+
+void imx93_bootsource(void)
+{
+	struct rom_api *rom_api = (void *)0x1980;
+	struct resource rom = {
+		.start = IMX93_BOOT_ROM_BASE,
+		.end = IMX93_BOOT_ROM_END,
+	};
+	struct resource *r;
+	int ret;
+
+	r = request_iomem_region("Boot ROM",  rom.start, rom.end);
+	if (IS_ERR(r)) {
+		ret = PTR_ERR(r);
+		goto out;
+	}
+
+	arch_remap_range((void *)rom.start, rom.start, resource_size(&rom), MAP_CACHED);
+
+	OPTIMIZER_HIDE_VAR(rom_api);
+
+	ret = imx_romapi_boot_device(rom_api);
+out:
+	if (ret)
+		pr_err("Failed to get bootsource: %pe\n", ERR_PTR(ret));
 }

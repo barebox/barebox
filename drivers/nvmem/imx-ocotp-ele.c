@@ -41,6 +41,7 @@ struct imx_ocotp_priv {
 	void __iomem *base;
 	const struct ocotp_devtype_data *data;
 	struct regmap_config map_config;
+	int permanent_write_enable;
 };
 
 static enum fuse_type imx_ocotp_fuse_type(struct imx_ocotp_priv *priv, u32 index)
@@ -92,6 +93,22 @@ static int imx_ocotp_reg_read(void *context, unsigned int offset, unsigned int *
 	return 0;
 };
 
+static int imx_ocotp_reg_write(void *context, unsigned int offset, unsigned int val)
+{
+	struct imx_ocotp_priv *priv = context;
+	u32 index;
+	int ret;
+
+	index = offset >> 2;
+
+	if (priv->permanent_write_enable)
+		ret = ele_write_fuse(index, val, false, NULL);
+	else
+		ret = ele_write_shadow_fuse(index, val, NULL);
+
+	return ret;
+}
+
 static int imx_ocotp_cell_pp(void *context, const char *id, unsigned int offset,
 			     void *data, size_t bytes)
 {
@@ -116,6 +133,7 @@ static int imx_ocotp_cell_pp(void *context, const char *id, unsigned int offset,
 }
 
 static struct regmap_bus imx_ocotp_regmap_bus = {
+	.reg_write = imx_ocotp_reg_write,
 	.reg_read = imx_ocotp_reg_read,
 };
 
@@ -132,6 +150,18 @@ static void imx_ocotp_set_unique_machine_id(struct imx_ocotp_priv *priv)
 	machine_id_set_hashable(unique_id_parts, sizeof(unique_id_parts));
 }
 
+static int permanent_write_enable_set(struct param_d *param, void *ctx)
+{
+	struct imx_ocotp_priv *priv = ctx;
+
+	if (priv->permanent_write_enable) {
+		dev_warn(priv->dev, "Enabling permanent write on fuses.\n");
+		dev_warn(priv->dev, "Writing fuses may damage your device. Be careful!\n");
+	}
+
+	return 0;
+}
+
 static int imx_ele_ocotp_probe(struct device *dev)
 {
 	struct imx_ocotp_priv *priv;
@@ -141,6 +171,7 @@ static int imx_ele_ocotp_probe(struct device *dev)
 	int ret;
 
 	priv = xzalloc(sizeof(*priv));
+	priv->dev = dev;
 
 	ret = dev_get_drvdata(dev, (const void **)&data);
 	if (ret)
@@ -165,10 +196,13 @@ static int imx_ele_ocotp_probe(struct device *dev)
 	if (IS_ENABLED(CONFIG_MACHINE_ID))
 		imx_ocotp_set_unique_machine_id(priv);
 
-	nvmem = nvmem_regmap_register_with_pp(priv->map, "imx-ocotp",
+	nvmem = nvmem_regmap_register_with_pp(priv->map, "imx_ocotp",
 					      imx_ocotp_cell_pp);
 	if (IS_ERR(nvmem))
 		return PTR_ERR(nvmem);
+
+	dev_add_param_bool(nvmem_device_get_device(nvmem), "permanent_write_enable",
+			permanent_write_enable_set, NULL, &priv->permanent_write_enable, priv);
 
 	return 0;
 }

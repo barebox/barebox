@@ -1,0 +1,6 @@
+/ {
+	aliases {
+		barebox,bootsource-mmc0 = &usdhc1;
+		barebox,bootsource-mmc1 = &usdhc2;
+	};
+};

@@ -343,18 +343,29 @@ const char *getenv_nonempty(const char *var)
 }
 EXPORT_SYMBOL(getenv_nonempty);
 
-int getenv_ull(const char *var , unsigned long long *val)
+static int getenv_ull_base(const char *var, int base, unsigned long long *val)
 {
 	const char *valstr = getenv(var);
 
 	if (!valstr || !*valstr)
 		return -EINVAL;
 
-	*val = simple_strtoull(valstr, NULL, 0);
+	*val = simple_strtoull(valstr, NULL, base);
 
 	return 0;
 }
+
+int getenv_ull(const char *var , unsigned long long *val)
+{
+	return getenv_ull_base(var, 0, val);
+}
 EXPORT_SYMBOL(getenv_ull);
+
+int getenv_ullx(const char *var , unsigned long long *val)
+{
+	return getenv_ull_base(var, 16, val);
+}
+EXPORT_SYMBOL(getenv_ullx);
 
 int getenv_ul(const char *var , unsigned long *val)
 {

@@ -10,6 +10,13 @@
 #include <errno.h>
 #include <soc/imx8m/ddr.h>
 
+/*
+ * We deprecate ddrphy_trained_csr(_num) for board code, so we can set it
+ * ourselves here
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 void ddrphy_trained_csr_save(struct dram_controller *dram, struct dram_cfg_param *ddrphy_csr,
 			     unsigned int num)
 {

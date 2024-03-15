@@ -858,3 +858,9 @@ int nvmem_cell_read_variable_le_u32(struct device *dev, const char *cell_id,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(nvmem_cell_read_variable_le_u32);
+
+struct device *nvmem_device_get_device(struct nvmem_device *nvmem)
+{
+	return &nvmem->dev;
+}
+EXPORT_SYMBOL_GPL(nvmem_device_get_device);

@@ -55,7 +55,8 @@ static int ar8031_phy_fixup(struct phy_device *dev)
 static int sabresd_devices_init(void)
 {
 	if (!of_machine_is_compatible("fsl,imx6q-sabresd") &&
-	    !of_machine_is_compatible("fsl,imx6qp-sabresd"))
+	    !of_machine_is_compatible("fsl,imx6qp-sabresd") &&
+	    !of_machine_is_compatible("fsl,imx6dl-sabresd"))
 		return 0;
 
 	armlinux_set_architecture(3980);
@@ -68,7 +69,8 @@ device_initcall(sabresd_devices_init);
 static int sabresd_coredevices_init(void)
 {
 	if (!of_machine_is_compatible("fsl,imx6q-sabresd") &&
-	    !of_machine_is_compatible("fsl,imx6qp-sabresd"))
+	    !of_machine_is_compatible("fsl,imx6qp-sabresd") &&
+	    !of_machine_is_compatible("fsl,imx6dl-sabresd"))
 		return 0;
 
 	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK,

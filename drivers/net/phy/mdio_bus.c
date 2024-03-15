@@ -316,18 +316,14 @@ int mdiobus_register(struct mii_bus *bus)
 
 	pr_info("%s: probed\n", dev_name(&bus->dev));
 
+	if (!bus->dev.of_node)
+		bus->dev.of_node = bus->parent->of_node;
+
 	if (bus->dev.of_node) {
 		bus->dev.of_node->dev = &bus->dev;
 
 		/* Register PHY's as child node to mdio node */
 		of_mdiobus_register(bus, bus->dev.of_node);
-	}
-	else if (bus->parent->of_node) {
-		/*
-		 * Register PHY's as child node to the ethernet node,
-		 * if there was no mdio node
-		 */
-		of_mdiobus_register(bus, bus->parent->of_node);
 	}
 
 	return 0;

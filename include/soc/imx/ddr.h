@@ -54,6 +54,10 @@ struct dram_fsp_msg {
 	unsigned int fsp_cfg_num;
 };
 
+#define __deprecated_dram_timing_info \
+	__attribute__((deprecated("board-specific data here is ignored in favor of the defaults." \
+				  " You can probably remove the array")))
+
 struct dram_timing_info {
 	/* umctl2 config */
 	struct dram_cfg_param *ddrc_cfg;
@@ -68,8 +72,8 @@ struct dram_timing_info {
 	struct dram_fsp_msg *fsp_msg;
 	unsigned int fsp_msg_num;
 	/* ddr phy trained CSR */
-	struct dram_cfg_param *ddrphy_trained_csr;
-	unsigned int ddrphy_trained_csr_num;
+	struct dram_cfg_param *ddrphy_trained_csr __deprecated_dram_timing_info;
+	unsigned int ddrphy_trained_csr_num __deprecated_dram_timing_info;
 	/* ddr phy PIE */
 	struct dram_cfg_param *ddrphy_pie;
 	unsigned int ddrphy_pie_num;

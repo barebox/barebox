@@ -238,6 +238,8 @@ $(call build_imx_habv4img, CONFIG_MACH_SABRESD, start_imx6q_sabresd, freescale-m
 
 $(call build_imx_habv4img, CONFIG_MACH_SABRESD, start_imx6qp_sabresd, freescale-mx6-sabresd/flash-header-mx6qp-sabresd, freescale-imx6qp-sabresd)
 
+$(call build_imx_habv4img, CONFIG_MACH_SABRESD, start_imx6dl_sabresd, freescale-mx6-sabresd/flash-header-mx6dl-sabresd, freescale-imx6dl-sabresd)
+
 $(call build_imx_habv4img, CONFIG_MACH_UDOO_NEO, start_imx6sx_udoo_neo, udoo-neo/flash-header-mx6sx-udoo-neo_full, udoo-neo)
 
 $(call build_imx_habv4img, CONFIG_MACH_FREESCALE_IMX6SX_SABRESDB, start_imx6sx_sabresdb, freescale-mx6sx-sabresdb/flash-header-mx6sx-sabresdb, freescale-imx6sx-sabresdb)
@@ -469,6 +471,10 @@ $(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MN_EVK, start_nxp_imx8mn_evk, n
 
 # ----------------------- i.MX8mp based boards --------------------------
 $(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MP_EVK, start_nxp_imx8mp_evk, nxp-imx8mp-evk/flash-header-imx8mp-evk, nxp-imx8mp-evk)
+
+$(call build_imx8m_habv4img, CONFIG_MACH_KOENIGBAUER_ALPHAJET, start_koenigbauer_alphajet, congatec-qmx8p/flash-header-congatec-qmx8p, koenigbauer-alphajet)
+
+$(call build_imx8m_habv4img, CONFIG_MACH_KARO_QSXP_ML81, start_karo_qsxp_ml81, karo-qsxp-ml81/flash-header-karo-qsxp-ml81, karo-qsxp-ml81)
 
 $(call build_imx8m_habv4img, CONFIG_MACH_SKOV_IMX8MP, start_skov_imx8mp, skov-imx8mp/flash-header-skov-imx8mp, skov-imx8mp)
 

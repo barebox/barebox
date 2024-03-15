@@ -1,0 +1,4 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+
+#include <arm/nxp/imx/imx6ull-tqma6ull2-mba6ulx.dts>
+#include "imx6ul-tqma6ul-common.dtsi"

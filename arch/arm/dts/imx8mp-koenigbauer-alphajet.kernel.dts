@@ -1,0 +1,90 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+// SPDX-FileCopyrightText: 2023 Pengutronix
+
+/dts-v1/;
+
+#include "imx8mp-congatec-qmx8p.kernel.dtsi"
+
+/ {
+	model = "Koenig+Bauer Alphajet";
+	compatible = "koenigbauer,alphajet", "congatec,qmxp8p", "fsl,imx8mp";
+
+	display {
+		compatible = "innolux,g101ice-l01";
+		backlight = <&lvds0_backlight>;
+		power-supply = <&reg_lfp_vdd>;
+
+		port {
+			panel_in_lvds0: endpoint {
+				remote-endpoint = <&ldb_lvds_ch0>;
+			};
+		};
+	};
+};
+
+&eqos { /* baseboard connects to on-SoM PHY */
+	status = "okay";
+};
+
+&gpu2d {
+	status = "okay";
+};
+
+&gpu3d {
+	status = "okay";
+};
+
+&lcdif2 {
+	/* pin IMX8MP_VIDEO_PLL1 to provide bitclock needed by LVDS panel */
+	assigned-clock-rates = <0>, <995400000>;
+	status = "okay";
+};
+
+&lvds0_backlight {
+	status = "okay";
+};
+
+&lvds_bridge {
+	status = "okay";
+
+	ports {
+		port@1 {
+			ldb_lvds_ch0: endpoint {
+				remote-endpoint = <&panel_in_lvds0>;
+			};
+		};
+	};
+};
+
+&pcie {
+	status = "okay";
+};
+
+&pcie_phy {
+	status = "okay";
+};
+
+&pwm2 { /* PWM Backlight */
+	status = "okay";
+};
+
+&uart1 { /* Baseboard UART0 */
+	/delete-property/ uart-has-rtscts; /* not connected on baseboard */
+	status = "okay";
+};
+
+&usb_dwc3_0 { /* Baseboard J13 – Top Connector */
+	/* FIXME: overcurrent pin is handled via TUSB8041 (which one?) */
+	status = "okay";
+};
+
+&usdhc1 { /* Baseboard J8 - µSD Card slot */
+	status = "okay";
+	/delete-property/ cd-gpios; /* no CD is tied to GND on baseboard */
+	/delete-property/ wp-gpios; /* no WP is tied to GND on baseboard */
+	broken-cd;                  /* do not wait for CD interrupt */
+};
+
+&usdhc2 { /* on-SoM µSD Card slot is not used */
+	status = "disabled";
+};

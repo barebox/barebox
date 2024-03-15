@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+// SPDX-FileCopyrightText: 2019 NXP
+// SPDX-FileCopyrightText: 2022 congatec GmbH
+// SPDX-FileCopyrightText: 2023 Pengutronix
+
+&w25q64fw { /* FlexSPI NOR Flash */
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "boot";
+		reg = <0x0000000 0x400000>;
+	};
+
+	partition@400000 {
+		label = "failsafe";
+		reg = <0x400000 0x3e0000>;
+	};
+
+	partition@7e0000 {
+		label = "reserved";
+		reg = <0x7e0000 0x20000>;
+		read-only;
+	};
+};

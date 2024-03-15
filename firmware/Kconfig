@@ -85,6 +85,11 @@ config FIRMWARE_IMX93_OPTEE
 	  CONFIG_EXTRA_FIRMWARE_DIR/mx93a1-ahab-container.img. You can obtain it from
 	  https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-ele-imx-0.1.0.bin
 
+config FIRMWARE_TQMA6UL_OPTEE
+	bool
+	depends on MACH_TQMA6UL && PBL_OPTEE
+	default y
+
 config FIRMWARE_CCBV2_OPTEE
 	bool
 	depends on MACH_WEBASTO_CCBV2 && PBL_OPTEE

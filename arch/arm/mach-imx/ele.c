@@ -116,7 +116,7 @@ static int mu_write(void __iomem *base, struct ele_msg *msg)
 	return 0;
 }
 
-static int imx9_s3mua_call(struct ele_msg *msg, bool get_response)
+static int imx9_s3mua_call(struct ele_msg *msg)
 {
 	void __iomem *s3mua = IOMEM(MX9_S3MUA_BASE_ADDR);
 	u32 result;
@@ -126,11 +126,9 @@ static int imx9_s3mua_call(struct ele_msg *msg, bool get_response)
 	if (ret)
 		return ret;
 
-	if (get_response) {
-		ret = mu_read(s3mua, msg);
-		if (ret)
-			return ret;
-	}
+	ret = mu_read(s3mua, msg);
+	if (ret)
+		return ret;
 
 	result = msg->data[0];
 	if ((result & 0xff) == 0xd6)
@@ -139,9 +137,9 @@ static int imx9_s3mua_call(struct ele_msg *msg, bool get_response)
 	return -EIO;
 }
 
-int ele_call(struct ele_msg *msg, bool get_response)
+int ele_call(struct ele_msg *msg)
 {
-	return imx9_s3mua_call(msg, get_response);
+	return imx9_s3mua_call(msg);
 }
 
 int ele_get_info(struct ele_get_info_data *info)
@@ -159,7 +157,7 @@ int ele_get_info(struct ele_get_info_data *info)
 	};
 	int ret;
 
-	ret = ele_call(&msg, true);
+	ret = ele_call(&msg);
 	if (ret)
 		pr_err("Could not get ELE info: ret %d, response 0x%x\n",
 			ret, msg.data[0]);
@@ -177,7 +175,7 @@ static int ele_get_start_trng(void)
 	};
 	int ret;
 
-	ret = ele_call(&msg, true);
+	ret = ele_call(&msg);
 	if (ret)
 		pr_err("Could not start TRNG, response 0x%x\n", msg.data[0]);
 
@@ -218,7 +216,7 @@ int imx93_ele_load_fw(void *bl33)
 	/* Actual address of the container header */
 	msg.data[2] = lower_32_bits((unsigned long)firmware);
 
-	ret = ele_call(&msg, true);
+	ret = ele_call(&msg);
 	if (ret)
 		pr_err("Could not start ELE firmware: ret %d, response 0x%x\n",
 			ret, msg.data[0]);
@@ -229,6 +227,16 @@ int imx93_ele_load_fw(void *bl33)
 	return 0;
 }
 
+/*
+ * ele_read_common_fuse - read a fuse
+ * @fuse_id: The fuse to read (in 32bit word number)
+ * fuse_word: The value read from the fuse
+ * @response: on return contains the response from ELE
+ *
+ * This reads the shadow value of the fuse @fuse_id.
+ *
+ * Return: 0 when the ELE call succeeds, negative error code otherwise
+ */
 int ele_read_common_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 {
 	struct ele_msg msg;
@@ -240,7 +248,7 @@ int ele_read_common_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 	msg.command = ELE_READ_FUSE_REQ;
 	msg.data[0] = fuse_id;
 
-	ret = imx9_s3mua_call(&msg, true);
+	ret = imx9_s3mua_call(&msg);
 
 	if (response)
 		*response = msg.data[0];
@@ -250,8 +258,16 @@ int ele_read_common_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 	return ret;
 }
 
-#define ELE_READ_SHADOW_REQ 0xf3
-
+/*
+ * ele_read_shadow_fuse - read a fuse
+ * @fuse_id: The fuse to read (in 32bit word number)
+ * fuse_word: The value read from the fuse
+ * @response: on return contains the response from ELE
+ *
+ * This reads the shadow value of the fuse @fuse_id.
+ *
+ * Return: 0 when the ELE call succeeds, negative error code otherwise
+ */
 int ele_read_shadow_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 {
 	struct ele_msg msg;
@@ -263,7 +279,7 @@ int ele_read_shadow_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 	msg.command = ELE_READ_SHADOW_REQ;
 	msg.data[0] = fuse_id;
 
-	ret = imx9_s3mua_call(&msg, true);
+	ret = imx9_s3mua_call(&msg);
 
 	if (response)
 		*response = msg.data[0];
@@ -275,7 +291,7 @@ int ele_read_shadow_fuse(u16 fuse_id, u32 *fuse_word, u32 *response)
 
 /*
  * ele_write_fuse - write a fuse
- * @fuse_id: The fuse to write to
+ * @fuse_id: The fuse to write to (in 32bit word number)
  * @fuse_val: The value to write to the fuse
  * @lock: lock fuse after writing
  * @response: on return contains the response from ELE
@@ -301,7 +317,40 @@ int ele_write_fuse(u16 fuse_id, u32 fuse_val, bool lock, u32 *response)
 
 	msg.data[1] = fuse_val;
 
-	ret = imx9_s3mua_call(&msg, true);
+	ret = imx9_s3mua_call(&msg);
+
+	if (response)
+		*response = msg.data[0];
+
+	return ret;
+}
+
+/*
+ * ele_write_shadow_fuse - write a fuse
+ * @fuse_id: The fuse to write to
+ * @fuse_val: The value to write to the fuse
+ * @lock: lock fuse after writing
+ * @response: on return contains the response from ELE
+ *
+ * This writes the 32bit given in @fuse_val to the fuses at @fuse_id. This is
+ * a permanent change, be careful.
+ *
+ * Return: 0 when the ELE call succeeds, negative error code otherwise
+ */
+int ele_write_shadow_fuse(u16 fuse_id, u32 fuse_val, u32 *response)
+{
+	struct ele_msg msg;
+	int ret;
+
+	msg.version = ELE_VERSION;
+	msg.tag = ELE_CMD_TAG;
+	msg.size = 3;
+	msg.command = ELE_WRITE_SHADOW_REQ;
+	msg.data[0] = fuse_id;
+
+	msg.data[1] = fuse_val;
+
+	ret = imx9_s3mua_call(&msg);
 
 	if (response)
 		*response = msg.data[0];
@@ -332,7 +381,7 @@ int ele_forward_lifecycle(enum ele_lifecycle lc, u32 *response)
 	msg.command = ELE_FWD_LIFECYCLE_UP_REQ;
 	msg.data[0] = lc;
 
-	ret = imx9_s3mua_call(&msg, true);
+	ret = imx9_s3mua_call(&msg);
 
 	if (response)
 		*response = msg.data[0];
@@ -362,7 +411,7 @@ int ele_authenticate_container(unsigned long addr, u32 *response)
 	msg.data[0] = upper_32_bits(addr);
 	msg.data[1] = lower_32_bits(addr);
 
-	ret = imx9_s3mua_call(&msg, true);
+	ret = imx9_s3mua_call(&msg);
 
 	if (response)
 		*response = msg.data[0];
@@ -389,7 +438,7 @@ int ele_release_container(u32 *response)
 	msg.size = 1;
 	msg.command = ELE_RELEASE_CONTAINER_REQ;
 
-	ret = imx9_s3mua_call(&msg, true);
+	ret = imx9_s3mua_call(&msg);
 
 	if (response)
 		*response = msg.data[0];
@@ -424,7 +473,7 @@ int ele_release_rdc(u8 core_id, u8 xrdc, u32 *response)
 		return -EINVAL;
 	}
 
-	ret = ele_call(&msg, true);
+	ret = ele_call(&msg);
 	if (ret)
 		pr_err("%s: ret %d, core id %u, response 0x%x\n",
 			__func__, ret, core_id, msg.data[0]);
@@ -591,7 +640,7 @@ static int ahab_get_events(u32 *events)
 	msg.size = 1;
 	msg.command = ELE_GET_EVENTS_REQ;
 
-	ret = imx9_s3mua_call(&msg, true);
+	ret = imx9_s3mua_call(&msg);
 	if (ret) {
 		pr_err("%s: ret %d, response 0x%x\n", __func__, ret, msg.data[0]);
 

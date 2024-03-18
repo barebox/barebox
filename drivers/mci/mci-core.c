@@ -683,7 +683,7 @@ static int mmc_change_freq(struct mci *mci)
 
 	cardtype = mci->ext_csd[EXT_CSD_DEVICE_TYPE] & EXT_CSD_CARD_TYPE_MASK;
 
-	err = mci_switch(mci, EXT_CSD_HS_TIMING, 1);
+	err = mci_switch(mci, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
 
 	if (err) {
 		dev_dbg(&mci->dev, "MMC frequency changing failed: %d\n", err);

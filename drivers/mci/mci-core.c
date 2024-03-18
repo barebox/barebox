@@ -2033,7 +2033,7 @@ static int mci_card_probe(struct mci *mci)
 		goto on_error;
 	}
 
-	if (!host->no_sdio) {
+	if (!(host->caps2 & MMC_CAP2_NO_SDIO)) {
 		rc = sdio_send_op_cond(mci);
 		if (!rc) {
 			mci->ready_for_use = true;
@@ -2044,11 +2044,11 @@ static int mci_card_probe(struct mci *mci)
 	}
 
 	/* Check if this card can handle the "SD Card Physical Layer Specification 2.0" */
-	if (!host->no_sd) {
+	if (!(host->caps2 & MMC_CAP2_NO_SD)) {
 		rc = sd_send_if_cond(mci);
 		rc = sd_send_op_cond(mci);
 	}
-	if (host->no_sd || rc == -ETIMEDOUT) {
+	if ((host->caps2 & MMC_CAP2_NO_SD) || rc == -ETIMEDOUT) {
 		/* If SD card initialization was skipped or if it timed out,
 		 * we check for an MMC card */
 		dev_dbg(&mci->dev, "Card seems to be a MultiMediaCard\n");
@@ -2255,7 +2255,7 @@ int mci_register(struct mci_host *host)
 	if (IS_ENABLED(CONFIG_MCI_STARTUP))
 		mci_card_probe(mci);
 
-	if (!host->no_sd && dev_of_node(host->hw_dev))
+	if (!(host->caps2 & MMC_CAP2_NO_SD) && dev_of_node(host->hw_dev))
 		of_register_fixup(of_broken_cd_fixup, host);
 
 	list_add_tail(&mci->list, &mci_list);
@@ -2326,9 +2326,33 @@ void mci_of_parse_node(struct mci_host *host,
 
 	host->broken_cd = of_property_read_bool(np, "broken-cd");
 	host->non_removable = of_property_read_bool(np, "non-removable");
-	host->no_sd = of_property_read_bool(np, "no-sd");
-	host->no_sdio = of_property_read_bool(np, "no-sdio");
 	host->disable_wp = of_property_read_bool(np, "disable-wp");
+
+	if (of_property_read_bool(np, "full-pwr-cycle"))
+		host->caps2 |= MMC_CAP2_FULL_PWR_CYCLE;
+	if (of_property_read_bool(np, "full-pwr-cycle-in-suspend"))
+		host->caps2 |= MMC_CAP2_FULL_PWR_CYCLE_IN_SUSPEND;
+	if (of_property_read_bool(np, "no-sdio"))
+		host->caps2 |= MMC_CAP2_NO_SDIO;
+	if (of_property_read_bool(np, "no-sd"))
+		host->caps2 |= MMC_CAP2_NO_SD;
+	if (of_property_read_bool(np, "no-mmc"))
+		host->caps2 |= MMC_CAP2_NO_MMC;
+	if (IS_ENABLED(CONFIG_MCI_TUNING)) {
+		if (of_property_read_bool(np, "mmc-hs200-1_8v"))
+			host->caps2 |= MMC_CAP2_HS200_1_8V_SDR;
+		if (of_property_read_bool(np, "mmc-hs200-1_2v"))
+			host->caps2 |= MMC_CAP2_HS200_1_2V_SDR;
+		if (of_property_read_bool(np, "mmc-hs400-1_8v"))
+			host->caps2 |= MMC_CAP2_HS400_1_8V | MMC_CAP2_HS200_1_8V_SDR;
+		if (of_property_read_bool(np, "mmc-hs400-1_2v"))
+			host->caps2 |= MMC_CAP2_HS400_1_2V | MMC_CAP2_HS200_1_2V_SDR;
+		if (of_property_read_bool(np, "mmc-hs400-enhanced-strobe"))
+			host->caps2 |= MMC_CAP2_HS400_ES;
+		if (of_property_read_bool(np, "no-mmc-hs400"))
+			host->caps2 &= ~(MMC_CAP2_HS400_1_8V | MMC_CAP2_HS400_1_2V |
+					 MMC_CAP2_HS400_ES);
+	}
 }
 
 void mci_of_parse(struct mci_host *host)

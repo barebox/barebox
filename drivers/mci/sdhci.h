@@ -28,9 +28,11 @@
 #define SDHCI_TRANSFER_MODE					0x0c
 #define  SDHCI_MULTIPLE_BLOCKS			BIT(5)
 #define  SDHCI_DATA_TO_HOST			BIT(4)
+#define  SDHCI_TRNS_AUTO_CMD12			BIT(3)
 #define  SDHCI_BLOCK_COUNT_EN			BIT(1)
 #define  SDHCI_DMA_EN				BIT(0)
 #define SDHCI_COMMAND						0x0e
+#define  SDHCI_MAKE_CMD(c, f) 			(((c & 0xff) << 8) | (f & 0xff))
 #define  SDHCI_CMD_INDEX(c)			(((c) & 0x3f) << 8)
 #define  SDHCI_COMMAND_CMDTYP_SUSPEND		(1 << 6)
 #define  SDHCI_COMMAND_CMDTYP_RESUME		(2 << 6)
@@ -121,6 +123,15 @@
 #define SDHCI_SIGNAL_ENABLE					0x38
 #define SDHCI_ACMD12_ERR__HOST_CONTROL2				0x3C
 #define SDHCI_HOST_CONTROL2					0x3E
+#define  SDHCI_CTRL_UHS_MASK			GENMASK(3, 0)
+#define   SDHCI_CTRL_UHS_SDR12			0x0
+#define   SDHCI_CTRL_UHS_SDR25			0x1
+#define   SDHCI_CTRL_UHS_SDR50			0x2
+#define   SDHCI_CTRL_UHS_SDR104			0x3
+#define   SDHCI_CTRL_UHS_DDR50			0x4
+#define   SDHCI_CTRL_HS400			0x5 /* Non-standard */
+#define  SDHCI_CTRL_EXEC_TUNING			BIT(6)
+#define  SDHCI_CTRL_TUNED_CLK			BIT(7)
 #define  SDHCI_CTRL_64BIT_ADDR			BIT(13)
 #define  SDHCI_CTRL_V4_MODE			BIT(12)
 #define SDHCI_CAPABILITIES					0x40
@@ -227,12 +238,27 @@ struct sdhci {
 #define SDHCI_QUIRK_MISSING_CAPS		BIT(27)
 	unsigned int quirks2;
 #define SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN	BIT(15)
+#define SDHCI_QUIRK2_ISSUE_CMD_DAT_RESET_TOGETHER	BIT(19)
 	u32 caps;	/* CAPABILITY_0 */
 	u32 caps1;	/* CAPABILITY_1 */
 	bool read_caps;	/* Capability flags have been read */
 	u32 sdma_boundary;
 
+	unsigned int		tuning_count;	/* Timer count for re-tuning */
+	unsigned int		tuning_mode;	/* Re-tuning mode supported by host */
+	unsigned int		tuning_err;	/* Error code for re-tuning */
+#define SDHCI_TUNING_MODE_1	0
+#define SDHCI_TUNING_MODE_2	1
+#define SDHCI_TUNING_MODE_3	2
+	/* Delay (ms) between tuning commands */
+	int			tuning_delay;
+	int			tuning_loop_count;
+	int			tuning_old_ier;
+	int			tuning_old_sig;
+
 	struct mci_host	*mci;
+
+	int (*platform_execute_tuning)(struct mci_host *host, u32 opcode);
 };
 
 static inline u32 sdhci_read32(struct sdhci *host, int reg)
@@ -284,6 +310,7 @@ static inline void sdhci_write8(struct sdhci *host, int reg, u32 val)
 }
 
 #define SDHCI_NO_DMA DMA_ERROR_CODE
+int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode);
 int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd);
 int sdhci_wait_for_done(struct sdhci *host, u32 mask);
 void sdhci_read_response(struct sdhci *host, struct mci_cmd *cmd);

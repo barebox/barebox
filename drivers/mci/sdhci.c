@@ -9,6 +9,227 @@
 
 #include "sdhci.h"
 
+#define MAX_TUNING_LOOP 40
+#define  SDHCI_MAKE_BLKSZ(dma, blksz) (((dma & 0x7) << 12) | (blksz & 0xFFF))
+
+enum sdhci_reset_reason {
+	SDHCI_RESET_FOR_INIT,
+	SDHCI_RESET_FOR_REQUEST_ERROR,
+	SDHCI_RESET_FOR_REQUEST_ERROR_DATA_ONLY,
+	SDHCI_RESET_FOR_TUNING_ABORT,
+	SDHCI_RESET_FOR_CARD_REMOVED,
+	SDHCI_RESET_FOR_CQE_RECOVERY,
+};
+
+static void sdhci_reset_for_reason(struct sdhci *host, enum sdhci_reset_reason reason)
+{
+	if (host->quirks2 & SDHCI_QUIRK2_ISSUE_CMD_DAT_RESET_TOGETHER) {
+		sdhci_reset(host, SDHCI_RESET_CMD | SDHCI_RESET_DATA);
+		return;
+	}
+
+	switch (reason) {
+	case SDHCI_RESET_FOR_INIT:
+		sdhci_reset(host, SDHCI_RESET_CMD | SDHCI_RESET_DATA);
+		break;
+	case SDHCI_RESET_FOR_REQUEST_ERROR:
+	case SDHCI_RESET_FOR_TUNING_ABORT:
+	case SDHCI_RESET_FOR_CARD_REMOVED:
+	case SDHCI_RESET_FOR_CQE_RECOVERY:
+		sdhci_reset(host, SDHCI_RESET_CMD);
+		sdhci_reset(host, SDHCI_RESET_DATA);
+		break;
+	case SDHCI_RESET_FOR_REQUEST_ERROR_DATA_ONLY:
+		sdhci_reset(host, SDHCI_RESET_DATA);
+		break;
+	}
+}
+
+#define sdhci_reset_for(h, r) sdhci_reset_for_reason((h), SDHCI_RESET_FOR_##r)
+
+static int sdhci_send_command_retry(struct sdhci *host, struct mci_cmd *cmd)
+{
+	int timeout = 10;
+
+	while ((sdhci_read32(host, SDHCI_PRESENT_STATE) & SDHCI_CMD_INHIBIT_CMD)) {
+		if (!timeout--)
+			return -ETIMEDOUT;
+
+		mdelay(1);
+	}
+
+	return host->mci->send_cmd(host->mci, cmd, NULL);
+}
+
+/*
+ * We use sdhci_send_tuning() because mmc_send_tuning() is not a good fit. SDHCI
+ * tuning command does not have a data payload (or rather the hardware does it
+ * automatically) so mmc_send_tuning() will return -EIO. Also the tuning command
+ * interrupt setup is different to other commands and there is no timeout
+ * interrupt so special handling is needed.
+ */
+static int sdhci_send_tuning(struct sdhci *host, u32 opcode)
+{
+	struct mci_cmd cmd = {};
+	int ret;
+
+	cmd.cmdidx = opcode;
+	cmd.resp_type = MMC_RSP_R1 | MMC_CMD_ADTC;
+
+	/*
+	 * In response to CMD19, the card sends 64 bytes of tuning
+	 * block to the Host Controller. So we set the block size
+	 * to 64 here.
+	 */
+	if (cmd.cmdidx == MMC_SEND_TUNING_BLOCK_HS200 &&
+	    host->mci->bus_width == MMC_BUS_WIDTH_8) {
+		sdhci_write16(host, SDHCI_BLOCK_SIZE, SDHCI_MAKE_BLKSZ(7, 128));
+	} else {
+		sdhci_write16(host, SDHCI_BLOCK_SIZE, SDHCI_MAKE_BLKSZ(7, 64));
+	}
+
+	ret = sdhci_send_command_retry(host, &cmd);
+
+	return ret;
+}
+
+static void sdhci_end_tuning(struct sdhci *host)
+{
+	sdhci_write32(host, SDHCI_INT_ENABLE, host->tuning_old_ier);
+	sdhci_write32(host, SDHCI_SIGNAL_ENABLE, host->tuning_old_sig);
+}
+
+static void sdhci_start_tuning(struct sdhci *host)
+{
+	u16 ctrl;
+
+	ctrl = sdhci_read16(host, SDHCI_HOST_CONTROL2);
+	ctrl |= SDHCI_CTRL_EXEC_TUNING;
+	sdhci_write16(host, SDHCI_HOST_CONTROL2, ctrl);
+
+	mdelay(1);
+
+	host->tuning_old_ier = sdhci_read32(host, SDHCI_INT_ENABLE);
+	host->tuning_old_sig = sdhci_read32(host, SDHCI_SIGNAL_ENABLE);
+
+	sdhci_write32(host, SDHCI_INT_ENABLE, SDHCI_INT_DATA_AVAIL);
+	sdhci_write32(host, SDHCI_SIGNAL_ENABLE, SDHCI_INT_DATA_AVAIL);
+}
+
+static void sdhci_reset_tuning(struct sdhci *host)
+{
+	u16 ctrl;
+
+	ctrl = sdhci_read16(host, SDHCI_HOST_CONTROL2);
+	ctrl &= ~SDHCI_CTRL_TUNED_CLK;
+	ctrl &= ~SDHCI_CTRL_EXEC_TUNING;
+	sdhci_write16(host, SDHCI_HOST_CONTROL2, ctrl);
+}
+
+static void sdhci_abort_tuning(struct sdhci *host, u32 opcode)
+{
+	sdhci_reset_tuning(host);
+
+	sdhci_reset_for(host, TUNING_ABORT);
+
+	sdhci_end_tuning(host);
+
+	mci_send_abort_tuning(host->mci->mci, opcode);
+}
+
+static int __sdhci_execute_tuning(struct sdhci *host, u32 opcode)
+{
+	int i;
+	int ret;
+
+	/*
+	 * Issue opcode repeatedly till Execute Tuning is set to 0 or the number
+	 * of loops reaches tuning loop count.
+	 * Some controllers are known to always require 40 iterations.
+	 */
+	for (i = 0; i < host->tuning_loop_count; i++) {
+		u16 ctrl;
+
+		ret = sdhci_send_tuning(host, opcode);
+		if (ret) {
+			sdhci_abort_tuning(host, opcode);
+			return -ETIMEDOUT;
+		}
+
+		/* Spec does not require a delay between tuning cycles */
+		if (host->tuning_delay > 0)
+			mdelay(host->tuning_delay);
+
+		ctrl = sdhci_read16(host, SDHCI_HOST_CONTROL2);
+		if (!(ctrl & SDHCI_CTRL_EXEC_TUNING)) {
+			if (ctrl & SDHCI_CTRL_TUNED_CLK) {
+				return 0; /* Success! */
+			}
+			break;
+		}
+
+	}
+
+	dev_dbg(&host->mci->mci->dev, "Tuning timeout, falling back to fixed sampling clock\n");
+	sdhci_reset_tuning(host);
+	return -EAGAIN;
+}
+
+int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode)
+{
+	struct mci_host *host = sdhci->mci;
+	int err = 0;
+	unsigned int tuning_count = 0;
+
+	if (sdhci->tuning_mode == SDHCI_TUNING_MODE_1)
+		tuning_count = sdhci->tuning_count;
+
+	/*
+	 * The Host Controller needs tuning in case of SDR104 and DDR50
+	 * mode, and for SDR50 mode when Use Tuning for SDR50 is set in
+	 * the Capabilities register.
+	 * If the Host Controller supports the HS200 mode then the
+	 * tuning function has to be executed.
+	 */
+	switch (host->timing) {
+	/* HS400 tuning is done in HS200 mode */
+	case MMC_TIMING_MMC_HS400:
+		err = -EINVAL;
+		goto out;
+
+	case MMC_TIMING_MMC_HS200:
+		break;
+
+	case MMC_TIMING_UHS_SDR104:
+	case MMC_TIMING_UHS_DDR50:
+		break;
+
+	case MMC_TIMING_UHS_SDR50:
+		fallthrough;
+
+	default:
+		goto out;
+	}
+
+	if (sdhci->platform_execute_tuning) {
+		err = sdhci->platform_execute_tuning(host, opcode);
+		goto out;
+	}
+
+	if (sdhci->tuning_delay < 0)
+		sdhci->tuning_delay = opcode == MMC_SEND_TUNING_BLOCK;
+
+	sdhci_start_tuning(sdhci);
+
+	sdhci->tuning_err = __sdhci_execute_tuning(sdhci, opcode);
+
+	sdhci_end_tuning(sdhci);
+out:
+
+	return err;
+}
+EXPORT_SYMBOL_GPL(sdhci_execute_tuning);
+
 void sdhci_read_response(struct sdhci *sdhci, struct mci_cmd *cmd)
 {
 	if (cmd->resp_type & MMC_RSP_136) {
@@ -50,7 +271,12 @@ void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
 
 	*command |= SDHCI_CMD_INDEX(cmd->cmdidx);
 
-	if (data) {
+	if (cmd->cmdidx == MMC_SEND_TUNING_BLOCK ||
+	    cmd->cmdidx == MMC_SEND_TUNING_BLOCK_HS200) {
+		*command |= SDHCI_DATA_PRESENT;
+		*xfer = SDHCI_DATA_TO_HOST;
+
+	} else if (data) {
 		*command |= SDHCI_DATA_PRESENT;
 
 		*xfer |= SDHCI_BLOCK_COUNT_EN;
@@ -110,6 +336,31 @@ void sdhci_set_bus_width(struct sdhci *host, int width)
 	}
 	sdhci_write8(host, SDHCI_HOST_CONTROL, ctrl);
 }
+
+static void sdhci_set_uhs_signaling(struct sdhci *host, unsigned timing)
+{
+	u16 ctrl_2;
+
+	ctrl_2 = sdhci_read16(host, SDHCI_HOST_CONTROL2);
+	/* Select Bus Speed Mode for host */
+	ctrl_2 &= ~SDHCI_CTRL_UHS_MASK;
+	if ((timing == MMC_TIMING_MMC_HS200) ||
+	    (timing == MMC_TIMING_UHS_SDR104))
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR104;
+	else if (timing == MMC_TIMING_UHS_SDR12)
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
+	else if (timing == MMC_TIMING_UHS_SDR25)
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
+	else if (timing == MMC_TIMING_UHS_SDR50)
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR50;
+	else if ((timing == MMC_TIMING_UHS_DDR50) ||
+		 (timing == MMC_TIMING_MMC_DDR52))
+		ctrl_2 |= SDHCI_CTRL_UHS_DDR50;
+	else if (timing == MMC_TIMING_MMC_HS400)
+		ctrl_2 |= SDHCI_CTRL_HS400; /* Non-standard */
+	sdhci_write16(host, SDHCI_HOST_CONTROL2, ctrl_2);
+}
+EXPORT_SYMBOL_GPL(sdhci_set_uhs_signaling);
 
 static inline bool sdhci_can_64bit_dma(struct sdhci *host)
 {
@@ -567,6 +818,8 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 
 	host->mci->clock = 0;
 
+	sdhci_set_uhs_signaling(host, host->mci->timing);
+
 	sdhci_wait_idle(host, NULL);
 
 	sdhci_write16(host, SDHCI_CLOCK_CONTROL, 0);
@@ -694,6 +947,26 @@ int sdhci_setup_host(struct sdhci *host)
 
 	if (sdhci_can_64bit_dma(host))
 		host->flags |= SDHCI_USE_64_BIT_DMA;
+
+	if ((mci->caps2 & (MMC_CAP2_HS200_1_8V_SDR | MMC_CAP2_HS400_1_8V)))
+		host->flags |= SDHCI_SIGNALING_180;
+
+	host->tuning_delay = -1;
+	host->tuning_loop_count = MAX_TUNING_LOOP;
+
+	/* Initial value for re-tuning timer count */
+	host->tuning_count = FIELD_GET(SDHCI_RETUNING_TIMER_COUNT_MASK,
+				       host->caps1);
+
+	/*
+	 * In case Re-tuning Timer is not disabled, the actual value of
+	 * re-tuning timer will be 2 ^ (n - 1).
+	 */
+	if (host->tuning_count)
+		host->tuning_count = 1 << (host->tuning_count - 1);
+
+	/* Re-tuning mode supported by the Host Controller */
+	host->tuning_mode = FIELD_GET(SDHCI_RETUNING_MODE_MASK, host->caps1);
 
 	return 0;
 }

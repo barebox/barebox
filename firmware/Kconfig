@@ -77,7 +77,7 @@ config FIRMWARE_IMX93_OPTEE
 	bool "install OP-TEE on i.MX93 boards"
 	depends on FIRMWARE_IMX93_ATF && PBL_OPTEE
 	help
-	  This enables OP-TEE loading and starting on i.MX8MQ. Place the OP-TEE binary
+	  This enables OP-TEE loading and starting on i.MX93. Place the OP-TEE binary
 	  in CONFIG_EXTRA_FIRMWARE_DIR/imx93-bl32.bin. When this option is enabled then
 	  the TF-A binary will be used from CONFIG_EXTRA_FIRMWARE_DIR/imx93-bl31.bin-optee.
 	  Additionally OP-TEE requires a RAM firmware loaded into the ELE. This is expected

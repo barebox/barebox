@@ -82,6 +82,8 @@
 #define MMC_CMD_SET_BLOCKLEN		16
 #define MMC_CMD_READ_SINGLE_BLOCK	17
 #define MMC_CMD_READ_MULTIPLE_BLOCK	18
+#define MMC_SEND_TUNING_BLOCK		19   /* adtc R1  */
+#define MMC_SEND_TUNING_BLOCK_HS200	21   /* adtc R1  */
 #define MMC_CMD_WRITE_SINGLE_BLOCK	24
 #define MMC_CMD_WRITE_MULTIPLE_BLOCK	25
 #define MMC_CMD_APP_CMD			55
@@ -293,8 +295,8 @@
 #define EXT_CSD_CARD_TYPE_MASK		0x3f
 #define EXT_CSD_CARD_TYPE_26		(1<<0)	/* Card can run at 26MHz */
 #define EXT_CSD_CARD_TYPE_52		(1<<1)	/* Card can run at 52MHz */
-#define EXT_CSD_CARD_TYPE_HS		(EXT_CSD_CARD_TYPE_HS_26 |	\
-					 EXT_CSD_CARD_TYPE_HS_52)
+#define EXT_CSD_CARD_TYPE_HS		(EXT_CSD_CARD_TYPE_26 |	\
+					 EXT_CSD_CARD_TYPE_52)
 #define EXT_CSD_CARD_TYPE_DDR_1_8V	(1<<2)	/* Card can run at 52MHz */
 						/* DDR mode @1.8V or 3V I/O */
 #define EXT_CSD_CARD_TYPE_DDR_1_2V	(1<<3)	/* Card can run at 52MHz */
@@ -329,6 +331,12 @@
 #define EXT_CSD_DDR_BUS_WIDTH_4	5	/* Card is in 4 bit DDR mode */
 #define EXT_CSD_DDR_BUS_WIDTH_8	6	/* Card is in 8 bit DDR mode */
 #define EXT_CSD_DDR_FLAG	BIT(2)	/* Flag for DDR mode */
+
+#define EXT_CSD_TIMING_BC	0	/* Backwards compatility */
+#define EXT_CSD_TIMING_HS	1	/* High speed */
+#define EXT_CSD_TIMING_HS200	2	/* HS200 */
+#define EXT_CSD_TIMING_HS400	3	/* HS400 */
+#define EXT_CSD_DRV_STR_SHIFT	4	/* Driver Strength shift */
 
 #define R1_ILLEGAL_COMMAND		(1 << 22)
 #define R1_STATUS(x)			(x & 0xFFF9A000)
@@ -504,6 +512,8 @@ struct mci_host {
 	unsigned actual_clock;
 	enum mci_bus_width bus_width;	/**< used data bus width to the card */
 	enum mci_timing timing;	/**< used timing specification to the card */
+	unsigned hs_max_dtr;
+	unsigned hs200_max_dtr;
 	unsigned max_req_size;
 	unsigned dsr_val;	/**< optional dsr value */
 	int use_dsr;		/**< optional dsr usage flag */
@@ -522,6 +532,8 @@ struct mci_host {
 	int (*card_present)(struct mci_host *);
 	/** check if a card is write protected */
 	int (*card_write_protected)(struct mci_host *);
+	/* The tuning command opcode value is different for SD and eMMC cards */
+	int (*execute_tuning)(struct mci_host *, u32);
 };
 
 #define MMC_NUM_BOOT_PARTITION	2
@@ -587,6 +599,7 @@ void mci_of_parse_node(struct mci_host *host, struct device_node *np);
 int mci_detect_card(struct mci_host *);
 int mci_send_ext_csd(struct mci *mci, char *ext_csd);
 int mci_switch(struct mci *mci, unsigned index, unsigned value);
+int mci_switch_status(struct mci *mci, bool crc_err_fatal);
 u8 *mci_get_ext_csd(struct mci *mci);
 
 static inline int mmc_host_is_spi(struct mci_host *host)
@@ -602,6 +615,31 @@ struct mci *mci_get_device_by_name(const char *name);
 static inline struct mci *mci_get_device_by_devpath(const char *devpath)
 {
 	return mci_get_device_by_name(devpath_to_name(devpath));
+}
+
+#define MMC_HIGH_26_MAX_DTR	26000000
+#define MMC_HIGH_52_MAX_DTR	52000000
+#define MMC_HIGH_DDR_MAX_DTR	52000000
+#define MMC_HS200_MAX_DTR	200000000
+
+static inline int mmc_card_hs(struct mci *mci)
+{
+	return mci->host->timing == MMC_TIMING_SD_HS ||
+		mci->host->timing == MMC_TIMING_MMC_HS;
+}
+
+/*
+ * Execute tuning sequence to seek the proper bus operating
+ * conditions for HS200 and HS400, which sends CMD21 to the device.
+ */
+int mmc_hs200_tuning(struct mci *mci);
+int mci_execute_tuning(struct mci *mci);
+int mci_send_abort_tuning(struct mci *mci, u32 opcode);
+int mmc_select_timing(struct mci *mci);
+
+static inline bool mmc_card_hs200(struct mci *mci)
+{
+	return mci->host->timing == MMC_TIMING_MMC_HS200;
 }
 
 #endif /* _MCI_H_ */

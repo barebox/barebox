@@ -12,6 +12,13 @@ if MCI
 
 comment "--- Feature list ---"
 
+config MCI_TUNING
+	bool "EXPERIMENTAL - support MMC tuning for higher speeds"
+	help
+	  Say 'y' here if supporting drivers should do tuning to support
+	  higher clock speeds than 52 MHz SDR. MMC only; SD-Card max
+	  frequency is 50MHz SDR at present.
+
 config MCI_STARTUP
 	bool "Force probe on system start"
 	help

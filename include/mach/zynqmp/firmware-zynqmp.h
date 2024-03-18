@@ -27,6 +27,10 @@
 
 #define ZYNQMP_PCAP_STATUS_FPGA_DONE	BIT(3)
 
+/* ZynqMP SD tap delay tuning */
+#define SD_ITAPDLY	0xFF180314
+#define SD_OTAPDLYSEL	0xFF180318
+
 enum pm_ioctl_id {
 	IOCTL_GET_RPU_OPER_MODE = 0,
 	IOCTL_SET_RPU_OPER_MODE = 1,
@@ -80,6 +84,22 @@ struct zynqmp_pm_query_data {
 	u32 arg3;
 };
 
+enum pm_node_id {
+	NODE_SD_0 = 39,
+	NODE_SD_1 = 40,
+};
+
+enum tap_delay_type {
+	PM_TAPDELAY_INPUT = 0,
+	PM_TAPDELAY_OUTPUT = 1,
+};
+
+enum dll_reset_type {
+	PM_DLL_RESET_ASSERT = 0,
+	PM_DLL_RESET_RELEASE = 1,
+	PM_DLL_RESET_PULSE = 2,
+};
+
 struct zynqmp_eemi_ops {
 	int (*get_api_version)(u32 *version);
 	int (*query_data)(struct zynqmp_pm_query_data qdata, u32 *out);
@@ -98,6 +118,9 @@ struct zynqmp_eemi_ops {
 };
 
 const struct zynqmp_eemi_ops *zynqmp_pm_get_eemi_ops(void);
+
+int zynqmp_pm_set_sd_tapdelay(u32 node_id, u32 type, u32 value);
+int zynqmp_pm_sd_dll_reset(u32 node_id, u32 type);
 
 int zynqmp_pm_write_ggs(u32 index, u32 value);
 int zynqmp_pm_read_ggs(u32 index, u32 *value);

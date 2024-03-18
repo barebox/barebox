@@ -37,6 +37,12 @@ struct arasan_sdhci_host {
 /* Controller does not have CD wired and will not function normally without */
 #define SDHCI_ARASAN_QUIRK_FORCE_CDTEST		BIT(0)
 #define SDHCI_ARASAN_QUIRK_NO_1_8_V		BIT(1)
+/*
+ * Some of the Arasan variations might not have timing requirements
+ * met at 25MHz for Default Speed mode, those controllers work at
+ * 19MHz instead
+ */
+#define SDHCI_ARASAN_QUIRK_CLOCK_25_BROKEN	BIT(2)
 };
 
 static inline
@@ -110,13 +116,30 @@ static int arasan_sdhci_init(struct mci_host *mci, struct device *dev)
 	return 0;
 }
 
+static void arasan_sdhci_set_clock(struct mci_host *mci, unsigned int clock)
+{
+	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
+
+	if (host->quirks & SDHCI_ARASAN_QUIRK_CLOCK_25_BROKEN) {
+		/*
+		 * Some of the Arasan variations might not have timing
+		 * requirements met at 25MHz for Default Speed mode,
+		 * those controllers work at 19MHz instead.
+		 */
+		if (clock == 25000000)
+			clock = (25000000 * 19) / 25;
+	}
+
+	sdhci_set_clock(&host->sdhci, clock, host->sdhci.max_clk);
+}
+
 static void arasan_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
 	u16 val;
 
 	if (ios->clock)
-		sdhci_set_clock(&host->sdhci, ios->clock, host->sdhci.max_clk);
+		arasan_sdhci_set_clock(mci, ios->clock);
 
 	sdhci_set_bus_width(&host->sdhci, ios->bus_width);
 
@@ -244,6 +267,9 @@ static int arasan_sdhci_probe(struct device *dev)
 
 	if (of_property_read_bool(np, "no-1-8-v"))
 		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_NO_1_8_V;
+
+	if (of_device_is_compatible(np, "xlnx,zynqmp-8.9a"))
+		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_CLOCK_25_BROKEN;
 
 	arasan_sdhci->sdhci.base = IOMEM(iores->start);
 	arasan_sdhci->sdhci.mci = mci;

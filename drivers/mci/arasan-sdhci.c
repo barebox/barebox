@@ -128,6 +128,46 @@ static int arasan_sdhci_reset(struct arasan_sdhci_host *host, u8 mask)
 	return 0;
 }
 
+static void arasan_zynqmp_dll_reset(struct arasan_sdhci_host *host, u32 deviceid)
+{
+	u16 clk;
+
+	clk = sdhci_read16(&host->sdhci, SDHCI_CLOCK_CONTROL);
+	clk &= ~(SDHCI_CLOCK_CARD_EN | SDHCI_CLOCK_INT_EN);
+	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, clk);
+
+	/* Issue DLL Reset */
+	zynqmp_pm_sd_dll_reset(deviceid, PM_DLL_RESET_PULSE);
+
+	clk = sdhci_read16(&host->sdhci, SDHCI_CLOCK_CONTROL);
+
+	sdhci_enable_clk(&host->sdhci, clk);
+}
+
+static int arasan_zynqmp_execute_tuning(struct mci_host *mci, u32 opcode)
+{
+	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
+	struct clk_hw *hw = &host->clk_data.sdcardclk_hw;
+	const char *clk_name = clk_hw_get_name(hw);
+	u32 device_id = !strcmp(clk_name, "clk_out_sd0") ? NODE_SD_0 :
+							   NODE_SD_1;
+	int err;
+
+	/* ZynqMP SD controller does not perform auto tuning in DDR50 mode */
+	if (mci->timing == MMC_TIMING_UHS_DDR50)
+		return 0;
+
+	arasan_zynqmp_dll_reset(host, device_id);
+
+	err = sdhci_execute_tuning(&host->sdhci, opcode);
+	if (err)
+		return err;
+
+	arasan_zynqmp_dll_reset(host, device_id);
+
+	return 0;
+}
+
 static int arasan_sdhci_init(struct mci_host *mci, struct device *dev)
 {
 	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
@@ -228,14 +268,19 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 				&command, &xfer);
 
 	sdhci_write8(&host->sdhci, SDHCI_TIMEOUT_CONTROL, TIMEOUT_VAL);
-	if (data) {
+	if (xfer)
 		sdhci_write16(&host->sdhci, SDHCI_TRANSFER_MODE, xfer);
+	if (data) {
 		sdhci_write16(&host->sdhci, SDHCI_BLOCK_SIZE,
 			      SDHCI_DMA_BOUNDARY_512K | SDHCI_TRANSFER_BLOCK_SIZE(data->blocksize));
 		sdhci_write16(&host->sdhci, SDHCI_BLOCK_COUNT, data->blocks);
 	}
 	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
 	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
+
+	/* CMD19/21 generate _only_ Buffer Read Ready interrupt */
+	if (cmd->cmdidx == MMC_SEND_TUNING_BLOCK || cmd->cmdidx == MMC_SEND_TUNING_BLOCK_HS200)
+		mask = SDHCI_INT_DATA_AVAIL;
 
 	ret = sdhci_wait_for_done(&host->sdhci, mask);
 	if (ret)
@@ -701,8 +746,11 @@ static int arasan_sdhci_probe(struct device *dev)
 	if (of_property_read_bool(np, "no-1-8-v"))
 		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_NO_1_8_V;
 
-	if (of_device_is_compatible(np, "xlnx,zynqmp-8.9a"))
+	if (of_device_is_compatible(np, "xlnx,zynqmp-8.9a")) {
+		if (IS_ENABLED(CONFIG_MCI_TUNING))
+			mci->execute_tuning = arasan_zynqmp_execute_tuning;
 		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_CLOCK_25_BROKEN;
+	}
 
 	arasan_sdhci->sdhci.base = IOMEM(iores->start);
 	arasan_sdhci->sdhci.mci = mci;
@@ -713,7 +761,15 @@ static int arasan_sdhci_probe(struct device *dev)
 	mci->card_write_protected = arasan_sdhci_card_write_protected;
 	mci->hw_dev = dev;
 
-	mci->f_max = clk_get_rate(clk_xin);
+	/*
+	 * clk_rates on ZynqMP are rounded wrong. For HS200 clk_get_rate retunrs
+	 * 199999998 instead of 200000000
+	 */
+	if (of_device_is_compatible(np, "xlnx,zynqmp-8.9a"))
+		mci->f_max = 200000000;
+	else
+		mci->f_max = clk_get_rate(clk_xin);
+
 	mci->f_min = 50000000 / 256;
 
 	arasan_sdhci_register_sdclk(&arasan_sdhci->clk_data, clk_xin, dev);

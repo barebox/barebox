@@ -311,7 +311,8 @@ static inline void sdhci_write8(struct sdhci *host, int reg, u32 val)
 
 #define SDHCI_NO_DMA DMA_ERROR_CODE
 int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode);
-int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd);
+int sdhci_wait_idle_data(struct sdhci *host, struct mci_cmd *cmd);
+int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *data);
 int sdhci_wait_for_done(struct sdhci *host, u32 mask);
 void sdhci_read_response(struct sdhci *host, struct mci_cmd *cmd);
 void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,

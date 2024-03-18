@@ -98,7 +98,7 @@ int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
 	int status;
 	int ret;
 
-	ret = sdhci_wait_idle(&host->sdhci, cmd);
+	ret = sdhci_wait_idle_data(&host->sdhci, cmd);
 	if (ret)
 		return ret;
 
@@ -188,7 +188,7 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 	u32 caps, caps_clk_mult;
 	int ret;
 
-	ret = sdhci_wait_idle(&host->sdhci, NULL);
+	ret = sdhci_wait_idle_data(&host->sdhci, NULL);
 	if (ret)
 		return ret;
 

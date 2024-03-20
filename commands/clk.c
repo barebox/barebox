@@ -67,7 +67,7 @@ static int do_clk_set_rate(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(clk_set_rate)
-BAREBOX_CMD_HELP_TEXT("Set clock CLK to RATE")
+BAREBOX_CMD_HELP_TEXT("Set clock CLK rate to HZ")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(clk_set_rate)

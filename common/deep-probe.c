@@ -7,18 +7,18 @@
 #include <of.h>
 
 enum deep_probe_state {
-	DEEP_PROBE_UNKONWN = -1,
+	DEEP_PROBE_UNKNOWN = -1,
 	DEEP_PROBE_NOT_SUPPORTED,
 	DEEP_PROBE_SUPPORTED
 };
 
-static enum deep_probe_state boardstate = DEEP_PROBE_UNKONWN;
+static enum deep_probe_state boardstate = DEEP_PROBE_UNKNOWN;
 
 bool deep_probe_is_supported(void)
 {
 	struct deep_probe_entry *board;
 
-	if (boardstate > DEEP_PROBE_UNKONWN)
+	if (boardstate > DEEP_PROBE_UNKNOWN)
 		return boardstate;
 
 	/* determine boardstate */

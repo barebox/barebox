@@ -90,6 +90,21 @@ static struct device_node *of_get_next_dma_parent(const struct device_node *np)
 	return args.np;
 }
 
+static enum dev_dma_coherence of_dma_get_coherence(struct device_node *node)
+{
+	if (IS_ENABLED(CONFIG_OF_DMA_COHERENCY)) {
+		while (node) {
+			if (of_property_read_bool(node, "dma-coherent"))
+				return DEV_DMA_COHERENT;
+			if (of_property_read_bool(node, "dma-noncoherent"))
+				return DEV_DMA_NON_COHERENT;
+			node = of_get_next_dma_parent(node);
+		}
+	}
+
+	return DEV_DMA_COHERENCE_DEFAULT;
+}
+
 /**
  * of_dma_is_coherent - Check if device is coherent
  * @np:	device node
@@ -101,17 +116,14 @@ static struct device_node *of_get_next_dma_parent(const struct device_node *np)
  */
 bool of_dma_is_coherent(struct device_node *node)
 {
-	if (IS_ENABLED(CONFIG_OF_DMA_COHERENCY)) {
-		while (node) {
-			if (of_property_read_bool(node, "dma-coherent"))
-				return true;
-			if (of_property_read_bool(node, "dma-noncoherent"))
-				return false;
-			node = of_get_next_dma_parent(node);
-		}
+	switch (of_dma_get_coherence(node)) {
+	case DEV_DMA_COHERENT:
+		return true;
+	case DEV_DMA_NON_COHERENT:
+		return false;
+	case DEV_DMA_COHERENCE_DEFAULT:
+		return IS_ENABLED(CONFIG_ARCH_DMA_DEFAULT_COHERENT);
 	}
-
-	return IS_ENABLED(CONFIG_ARCH_DMA_DEFAULT_COHERENT);
 }
 EXPORT_SYMBOL_GPL(of_dma_is_coherent);
 
@@ -129,7 +141,7 @@ static void of_dma_configure(struct device *dev, struct device_node *np)
 	}
 
 	dev->dma_offset = offset;
-	dev->dma_coherent = of_dma_is_coherent(np);
+	dev->dma_coherent = of_dma_get_coherence(np);
 }
 
 /**

@@ -158,7 +158,6 @@ struct pcie_port {
 	u64			io_mod_base;
 	phys_addr_t		io_bus_addr;
 	u32			io_size;
-	u64			mem_base;
 	u64			mem_mod_base;
 	phys_addr_t		mem_bus_addr;
 	u32			mem_size;

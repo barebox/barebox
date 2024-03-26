@@ -152,8 +152,6 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	if (!pci->dbi_base)
 		pci->dbi_base = IOMEM(pp->cfg.start);
 
-	pp->mem_base = pp->mem.start;
-
 	if (!pp->va_cfg0_base)
 		pp->va_cfg0_base = IOMEM((unsigned long)pp->cfg0_base);
 

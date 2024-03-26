@@ -154,6 +154,8 @@ static int pcibios_init(void)
 {
 	resource_size_t start, end, map, start1, end1, map1, mask;
 
+	pci_controller_init(&gt64120_controller);
+
 	/*
 	 * Due to a bug in the Galileo system controller, we need
 	 * to setup the PCI BAR for the Galileo internal registers.

@@ -42,6 +42,10 @@ static void pci_bus_register_devices(struct pci_bus *bus)
 		pci_bus_register_devices(child_bus);
 }
 
+void pci_controller_init(struct pci_controller *hose)
+{
+}
+
 void register_pci_controller(struct pci_controller *hose)
 {
 	struct pci_bus *bus;

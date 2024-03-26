@@ -1167,7 +1167,6 @@ static int tegra_pcie_enable(struct tegra_pcie *pcie)
 		tegra_pcie_port_free(port);
 	}
 
-	pcie->pci.parent = pcie->dev;
 	pcie->pci.pci_ops = &tegra_pcie_ops;
 	pcie->pci.mem_resource = &pcie->mem;
 	pcie->pci.mem_pref_resource = &pcie->prefetch;
@@ -1240,6 +1239,9 @@ static int tegra_pcie_probe(struct device *dev)
 	pcie = kzalloc(sizeof(*pcie), GFP_KERNEL);
 	if (!pcie)
 		return -ENOMEM;
+
+	pcie->pci.parent = pcie->dev;
+	pci_controller_init(&pcie->pci);
 
 	INIT_LIST_HEAD(&pcie->buses);
 	INIT_LIST_HEAD(&pcie->ports);

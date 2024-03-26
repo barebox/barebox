@@ -80,6 +80,9 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	const __be32 *addrp;
 	int index, ret;
 
+	pp->pci.parent = dev;
+	pci_controller_init(&pp->pci);
+
 	/* Find the address cell size and the number of cells in order to get
 	 * the untranslated address.
 	 */
@@ -156,7 +159,6 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 			return ret;
 	}
 
-	pp->pci.parent = dev;
 	pp->pci.pci_ops = &dw_pcie_ops;
 	pp->pci.set_busno = dw_pcie_set_local_bus_nr;
 	pp->pci.mem_resource = &pp->mem;

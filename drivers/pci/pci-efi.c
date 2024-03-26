@@ -277,6 +277,9 @@ static int efi_pci_probe(struct efi_device *efidev)
 
 	priv = xzalloc(sizeof(*priv));
 
+	priv->pci.parent = &efidev->dev;
+	pci_controller_init(&priv->pci);
+
 	BS->handle_protocol(efidev->handle, &EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_GUID,
 			(void **)&priv->protocol);
 	if (!priv->protocol)
@@ -310,7 +313,6 @@ static int efi_pci_probe(struct efi_device *efidev)
 		}
 	}
 
-	priv->pci.parent = &efidev->dev;
 	priv->pci.pci_ops = &efi_pci_ops;
 
 	INIT_LIST_HEAD(&priv->children);

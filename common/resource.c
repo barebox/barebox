@@ -10,6 +10,7 @@
 #include <init.h>
 #include <linux/ioport.h>
 #include <linux/err.h>
+#include <linux/resource_ext.h>
 #include <asm/io.h>
 
 static int init_resource(struct resource *res, const char *name)
@@ -164,3 +165,18 @@ struct resource *request_ioport_region(const char *name,
 
 	return res;
 }
+
+struct resource_entry *resource_list_create_entry(struct resource *res,
+						  size_t extra_size)
+{
+	struct resource_entry *entry;
+
+	entry = kzalloc(sizeof(*entry) + extra_size, GFP_KERNEL);
+	if (entry) {
+		INIT_LIST_HEAD(&entry->node);
+		entry->res = res ? res : &entry->__res;
+	}
+
+	return entry;
+}
+EXPORT_SYMBOL(resource_list_create_entry);

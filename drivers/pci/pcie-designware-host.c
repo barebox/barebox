@@ -100,6 +100,7 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 		pp->cfg1_mod_base = pp->cfg0_mod_base + pp->cfg0_size;
 	} else {
 		dev_err(dev, "Missing *config* reg space\n");
+		return -ENODEV;
 	}
 
 	if (of_pci_range_parser_init(&parser, np)) {
@@ -134,23 +135,10 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 			pp->mem_mod_base = of_read_number(parser.range -
 							  parser.np + na, ns);
 		}
-		if (restype == 0) {
-			of_pci_range_to_resource(&range, np, &pp->cfg);
-			pp->cfg0_size = resource_size(&pp->cfg) >> 1;
-			pp->cfg1_size = resource_size(&pp->cfg) >> 1;
-			pp->cfg0_base = pp->cfg.start;
-			pp->cfg1_base = pp->cfg.start + pp->cfg0_size;
-
-			/* Find the untranslated configuration space address */
-			pp->cfg0_mod_base = of_read_number(parser.range -
-							   parser.np + na, ns);
-			pp->cfg1_mod_base = pp->cfg0_mod_base +
-					    pp->cfg0_size;
-		}
 	}
 
 	if (!pci->dbi_base)
-		pci->dbi_base = IOMEM(pp->cfg.start);
+		pci->dbi_base = IOMEM(cfg_res->start);
 
 	if (!pp->va_cfg0_base)
 		pp->va_cfg0_base = IOMEM((unsigned long)pp->cfg0_base);

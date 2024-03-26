@@ -44,6 +44,7 @@ static void pci_bus_register_devices(struct pci_bus *bus)
 
 void pci_controller_init(struct pci_controller *hose)
 {
+	INIT_LIST_HEAD(&hose->windows);
 }
 
 void register_pci_controller(struct pci_controller *hose)
@@ -401,6 +402,9 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			 size);
 
 		if (pcibios_assign_all_busses()) {
+			struct resource res;
+			struct pci_bus_region region;
+
 			if (ALIGN(*last_addr, size) + size >
 			    dev->bus->resource[busres]->end) {
 				pr_debug("BAR does not fit within bus %s res\n", kind);
@@ -408,11 +412,18 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			}
 
 			*last_addr = ALIGN(*last_addr, size);
+
+			res.flags = flags;
+			res.start = *last_addr;
+			res.end = res.start + size - 1;
+
+			pcibios_resource_to_bus(dev->bus, &region, &res);
+
 			pci_write_config_dword(dev, pci_base_address_0,
-					       lower_32_bits(*last_addr));
+					       lower_32_bits(region.start));
 			if (mask & PCI_BASE_ADDRESS_MEM_TYPE_64)
 				pci_write_config_dword(dev, pci_base_address_1,
-						       upper_32_bits(*last_addr));
+						       upper_32_bits(region.start));
 			start = *last_addr;
 			*last_addr += size;
 		} else {

@@ -25,6 +25,7 @@
 #include <linux/ioport.h>
 #include <linux/list.h>
 #include <linux/compiler.h>
+#include <linux/resource_ext.h>
 #include <driver.h>
 #include <errno.h>
 #include <io.h>
@@ -184,6 +185,8 @@ struct pci_controller {
 	struct resource *io_resource;
 	unsigned long io_offset;
 	unsigned long io_map_base;
+
+	struct list_head windows;	/* resource_entry */
 
 	unsigned int index;
 
@@ -394,5 +397,22 @@ static inline const struct pci_device_id *pci_match_id(const struct pci_device_i
 							 struct pci_dev *dev)
 { return NULL; }
 #endif
+
+/* drivers/pci/bus.c */
+void pci_add_resource_offset(struct list_head *resources, struct resource *res,
+			     resource_size_t offset);
+void pci_add_resource(struct list_head *resources, struct resource *res);
+
+struct pci_controller *pci_find_host_bridge(struct pci_bus *bus);
+
+struct pci_bus_region {
+	u64 start;
+	u64 end;
+};
+
+void pcibios_resource_to_bus(struct pci_bus *bus, struct pci_bus_region *region,
+			     struct resource *res);
+void pcibios_bus_to_resource(struct pci_bus *bus, struct resource *res,
+			     struct pci_bus_region *region);
 
 #endif /* LINUX_PCI_H */

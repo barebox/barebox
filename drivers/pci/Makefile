@@ -2,7 +2,7 @@
 #
 # Makefile for the PCI bus specific drivers.
 #
-obj-y		+= pci.o bus.o pci_iomap.o
+obj-y		+= pci.o bus.o pci_iomap.o host-bridge.o
 
 ccflags-$(CONFIG_PCI_DEBUG) := -DDEBUG
 

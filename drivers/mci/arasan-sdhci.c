@@ -772,7 +772,8 @@ static int arasan_sdhci_probe(struct device *dev)
 
 	mci->f_min = 50000000 / 256;
 
-	arasan_sdhci_register_sdclk(&arasan_sdhci->clk_data, clk_xin, dev);
+	if (IS_ENABLED(CONFIG_ARCH_ZYNQMP))
+		arasan_sdhci_register_sdclk(&arasan_sdhci->clk_data, clk_xin, dev);
 
 	arasan_dt_parse_clk_phases(dev, &arasan_sdhci->clk_data);
 

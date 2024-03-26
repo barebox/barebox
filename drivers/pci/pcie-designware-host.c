@@ -30,7 +30,6 @@
 #include <abort.h>
 
 static const struct pci_ops dw_pcie_ops;
-static unsigned long global_io_offset;
 
 static int dw_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
 			       u32 *val)
@@ -116,11 +115,7 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 		unsigned long restype = range.flags & IORESOURCE_TYPE_BITS;
 
 		if (restype == IORESOURCE_IO) {
-			of_pci_range_to_resource(&range, np, &pp->io);
-			pp->io.name = "I/O";
-			pp->io.start = range.pci_addr + global_io_offset;
-			pp->io.end =  range.pci_addr + range.size + global_io_offset - 1;
-			pp->io_size = resource_size(&pp->io);
+			pp->io_size = range.size;
 			pp->io_bus_addr = range.pci_addr;
 			pp->io_base = range.cpu_addr;
 
@@ -129,9 +124,7 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 							 parser.np + na, ns);
 		}
 		if (restype == IORESOURCE_MEM) {
-			of_pci_range_to_resource(&range, np, &pp->mem);
-			pp->mem.name = "MEM";
-			pp->mem_size = resource_size(&pp->mem);
+			pp->mem_size = range.size;
 			pp->mem_bus_addr = range.pci_addr;
 
 			/* Find the untranslated MEM space address */
@@ -161,8 +154,6 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 
 	pp->pci.pci_ops = &dw_pcie_ops;
 	pp->pci.set_busno = dw_pcie_set_local_bus_nr;
-	pp->pci.mem_resource = &pp->mem;
-	pp->pci.io_resource = &pp->io;
 
 	register_pci_controller(&pp->pci);
 

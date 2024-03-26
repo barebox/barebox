@@ -72,9 +72,9 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
 	struct device *dev = pci->dev;
 	struct device_node *np = dev->of_node;
-	struct of_pci_range range;
 	struct of_pci_range_parser parser;
 	struct resource *cfg_res;
+	struct resource_entry *window;
 	int ret;
 
 	pp->pci.parent = dev;
@@ -96,19 +96,18 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 		return -EINVAL;
 	}
 
-	/* Get the I/O and memory ranges from DT */
-	for_each_of_pci_range(&parser, &range) {
-		unsigned long restype = range.flags & IORESOURCE_TYPE_BITS;
-
-		if (restype == IORESOURCE_IO) {
-			pp->io_size = range.size;
-			pp->io_bus_addr = range.pci_addr;
-			pp->io_base = range.cpu_addr;
-		}
-		if (restype == IORESOURCE_MEM) {
-			pp->mem_size = range.size;
-			pp->mem_bus_addr = range.pci_addr;
-			pp->mem_base = range.cpu_addr;
+	resource_list_for_each_entry(window, &pp->pci.windows) {
+		switch (resource_type(window->res)) {
+		case IORESOURCE_IO:
+			pp->io_size = resource_size(window->res);
+			pp->io_bus_addr = window->res->start - window->offset;
+			pp->io_base = window->res->start;
+			break;
+		case IORESOURCE_MEM:
+			pp->mem_size = resource_size(window->res);
+			pp->mem_bus_addr = window->res->start - window->offset;
+			pp->mem_base = window->res->start;
+			break;
 		}
 	}
 

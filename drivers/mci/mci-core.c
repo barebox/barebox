@@ -1431,8 +1431,6 @@ static int mmc_select_hs200(struct mci *mci)
 	/* find out maximum bus width and then try DDR if supported */
 	err = mci_mmc_select_bus_width(mci);
 	if (err > 0) {
-		u32 status;
-
 		/* TODO  actually set drive strength instead of 0. Currently unsupported. */
 		val = EXT_CSD_TIMING_HS200 | 0 << EXT_CSD_DRV_STR_SHIFT;
 		err = mci_switch(mci, EXT_CSD_HS_TIMING, val);
@@ -1452,7 +1450,7 @@ static int mmc_select_hs200(struct mci *mci)
 		mci_set_ios(mci);
 		mci_set_clock(mci, mci->host->hs_max_dtr);
 
-		err = mci_switch_status(mci, &status);
+		err = mci_switch_status(mci, true);
 
 		/*
 		 * mmc_select_timing() assumes timing has not changed if

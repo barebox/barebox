@@ -48,7 +48,6 @@ void register_pci_controller(struct pci_controller *hose)
 
 	bus = pci_alloc_bus();
 	hose->bus = bus;
-	bus->parent = hose->parent;
 	bus->host = hose;
 	bus->resource[PCI_BUS_RESOURCE_MEM] = hose->mem_resource;
 	bus->resource[PCI_BUS_RESOURCE_MEM_PREF] = hose->mem_pref_resource;
@@ -599,6 +598,8 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 	max = bus->secondary;
 
 	for (devfn = 0; devfn < 0xff; ++devfn) {
+		struct device *parent;
+
 		if (PCI_FUNC(devfn) && !is_multi) {
 			/* not a multi-function device */
 			continue;
@@ -618,8 +619,9 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 		dev->devfn = devfn;
 		dev->vendor = l & 0xffff;
 		dev->device = (l >> 16) & 0xffff;
-		dev->dev.parent = bus->parent;
-		dev->dev.of_node = pci_of_match_device(bus->parent, devfn);
+		parent = bus->self ? &bus->self->dev : bus->host->parent;
+		dev->dev.parent = parent;
+		dev->dev.of_node = pci_of_match_device(parent, devfn);
 		if (dev->dev.of_node)
 			pr_debug("found DT node %pOF for device %04x:%04x\n",
 				 dev->dev.of_node,
@@ -668,7 +670,7 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 			child_bus->resource[PCI_BUS_RESOURCE_IO] =
 				bus->resource[PCI_BUS_RESOURCE_IO];
 
-			child_bus->parent = &dev->dev;
+			child_bus->self = dev;
 
 			if (pcibios_assign_all_busses()) {
 				child_bus->number = bus_index++;

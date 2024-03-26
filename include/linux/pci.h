@@ -139,9 +139,10 @@ enum {
 	PCI_BUS_RESOURCE_MEM_PREF = 2,
 	PCI_BUS_RESOURCE_BUSN = 3,
 };
+
 struct pci_bus {
 	struct pci_controller *host;	/* associated host controller */
-	struct device *parent;
+	struct pci_dev *self;
 	struct pci_bus *parent_bus;	/* parent bus */
 	struct list_head node;		/* node in list of buses */
 	struct list_head children;	/* list of child buses */

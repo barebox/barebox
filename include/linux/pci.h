@@ -148,7 +148,6 @@ struct pci_bus {
 	struct list_head node;		/* node in list of buses */
 	struct list_head children;	/* list of child buses */
 	struct list_head devices;	/* list of devices on this bus */
-	struct resource *resource[PCI_BRIDGE_RESOURCE_NUM];
 
 	unsigned char	number;		/* bus number */
 	unsigned char	primary;	/* number of primary bridge */

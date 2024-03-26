@@ -54,27 +54,24 @@ void register_pci_controller(struct pci_controller *hose)
 	bus = pci_alloc_bus();
 	hose->bus = bus;
 	bus->host = hose;
-	bus->resource[PCI_BUS_RESOURCE_MEM] = hose->mem_resource;
-	bus->resource[PCI_BUS_RESOURCE_MEM_PREF] = hose->mem_pref_resource;
-	bus->resource[PCI_BUS_RESOURCE_IO] = hose->io_resource;
 
 	if (pcibios_assign_all_busses()) {
 		bus->number = bus_index++;
 		if (hose->set_busno)
 			hose->set_busno(hose, bus->number);
 
-		if (bus->resource[PCI_BUS_RESOURCE_MEM])
-			last_mem = bus->resource[PCI_BUS_RESOURCE_MEM]->start;
+		if (hose->mem_resource)
+			last_mem = hose->mem_resource->start;
 		else
 			last_mem = 0;
 
-		if (bus->resource[PCI_BUS_RESOURCE_MEM_PREF])
-			last_mem_pref = bus->resource[PCI_BUS_RESOURCE_MEM_PREF]->start;
+		if (hose->mem_pref_resource)
+			last_mem_pref = hose->mem_pref_resource->start;
 		else
 			last_mem_pref = 0;
 
-		if (bus->resource[PCI_BUS_RESOURCE_IO])
-			last_io = bus->resource[PCI_BUS_RESOURCE_IO]->start;
+		if (hose->io_resource)
+			last_io = hose->io_resource->start;
 		else
 			last_io = 0;
 	}
@@ -360,7 +357,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		u32 orig, mask, size;
 		unsigned long flags;
 		const char *kind;
-		int busres;
+		struct resource *busres;
 
 		pci_read_config_dword(dev, pci_base_address_0, &orig);
 		pci_write_config_dword(dev, pci_base_address_0, 0xfffffffe);
@@ -377,20 +374,20 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			flags     = IORESOURCE_IO;
 			kind      = "IO";
 			last_addr = &last_io;
-			busres    = PCI_BUS_RESOURCE_IO;
+			busres    = dev->bus->host->io_resource;
 		} else if ((mask & PCI_BASE_ADDRESS_MEM_PREFETCH) &&
 		           last_mem_pref) /* prefetchable MEM */ {
 			size      = pci_size(orig, mask, 0xfffffff0);
 			flags     = IORESOURCE_MEM | IORESOURCE_PREFETCH;
 			kind      = "P-MEM";
 			last_addr = &last_mem_pref;
-			busres    = PCI_BUS_RESOURCE_MEM_PREF;
+			busres    = dev->bus->host->mem_pref_resource;;
 		} else { /* non-prefetch MEM */
 			size      = pci_size(orig, mask, 0xfffffff0);
 			flags     = IORESOURCE_MEM;
 			kind      = "NP-MEM";
 			last_addr = &last_mem;
-			busres    = PCI_BUS_RESOURCE_MEM;
+			busres    = dev->bus->host->mem_resource;
 		}
 
 		if (!size) {
@@ -405,8 +402,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			struct resource res;
 			struct pci_bus_region region;
 
-			if (ALIGN(*last_addr, size) + size >
-			    dev->bus->resource[busres]->end) {
+			if (ALIGN(*last_addr, size) + size > busres->end) {
 				pr_debug("BAR does not fit within bus %s res\n", kind);
 				return;
 			}
@@ -678,12 +674,6 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 			/* inherit parent properties */
 			child_bus->host = bus->host;
 			child_bus->parent = bus;
-			child_bus->resource[PCI_BUS_RESOURCE_MEM] =
-				bus->resource[PCI_BUS_RESOURCE_MEM];
-			child_bus->resource[PCI_BUS_RESOURCE_MEM_PREF] =
-				bus->resource[PCI_BUS_RESOURCE_MEM_PREF];
-			child_bus->resource[PCI_BUS_RESOURCE_IO] =
-				bus->resource[PCI_BUS_RESOURCE_IO];
 
 			child_bus->self = dev;
 

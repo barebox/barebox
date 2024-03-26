@@ -662,7 +662,7 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 			child_bus = pci_alloc_bus();
 			/* inherit parent properties */
 			child_bus->host = bus->host;
-			child_bus->parent_bus = bus;
+			child_bus->parent = bus;
 			child_bus->resource[PCI_BUS_RESOURCE_MEM] =
 				bus->resource[PCI_BUS_RESOURCE_MEM];
 			child_bus->resource[PCI_BUS_RESOURCE_MEM_PREF] =

@@ -2058,8 +2058,8 @@ static void mci_info(struct device *dev)
 		mci->csd[2], mci->csd[3]);
 	printf("  Max. transfer speed: %u Hz\n", mci->tran_speed);
 	mci_print_caps(mci->card_caps);
-	printf("  Manufacturer ID: %02X\n", extract_mid(mci));
-	printf("  OEM/Application ID: %04X\n", extract_oid(mci));
+	printf("  Manufacturer ID: 0x%02X\n", extract_mid(mci));
+	printf("  OEM/Application ID: 0x%04X\n", extract_oid(mci));
 	printf("  Product name: '%c%c%c%c%c'\n", mci->cid[0] & 0xff,
 		(mci->cid[1] >> 24), (mci->cid[1] >> 16) & 0xff,
 		(mci->cid[1] >> 8) & 0xff, mci->cid[1] & 0xff);

@@ -414,4 +414,14 @@ void pcibios_resource_to_bus(struct pci_bus *bus, struct pci_bus_region *region,
 void pcibios_bus_to_resource(struct pci_bus *bus, struct resource *res,
 			     struct pci_bus_region *region);
 
+/* drivers/pci/of.c */
+#ifdef CONFIG_OFDEVICE
+int of_pci_bridge_init(struct device *dev, struct pci_controller *bridge);
+#else
+static inline int of_pci_bridge_init(struct device *dev, struct pci_controller *bridge)
+{
+	return 0;
+}
+#endif
+
 #endif /* LINUX_PCI_H */

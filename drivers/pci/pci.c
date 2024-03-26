@@ -45,6 +45,8 @@ static void pci_bus_register_devices(struct pci_bus *bus)
 void pci_controller_init(struct pci_controller *hose)
 {
 	INIT_LIST_HEAD(&hose->windows);
+
+	of_pci_bridge_init(hose->parent, hose);
 }
 
 void register_pci_controller(struct pci_controller *hose)

@@ -122,6 +122,8 @@ static int rockchip_pcie_start_link(struct dw_pcie *pci)
 	mdelay(100);
 	gpiod_set_value(rockchip->rst_gpio, 1);
 
+	dw_pcie_wait_for_link(pci);
+
 	return 0;
 }
 

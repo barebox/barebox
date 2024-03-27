@@ -53,7 +53,16 @@ static int onboard_hub_power_on(struct onboard_hub *hub)
 
 static int onboard_hub_probe(struct device *dev)
 {
+	struct device_node *peer_node;
+	struct device *peer_dev;
 	struct onboard_hub *hub;
+
+	peer_node = of_parse_phandle(dev->of_node, "peer-hub", 0);
+	if (peer_node) {
+		peer_dev = of_find_device_by_node(peer_node);
+		if (peer_dev && peer_dev->priv)
+			return 0;
+	}
 
 	hub = xzalloc(sizeof(*hub));
 
@@ -71,6 +80,7 @@ static int onboard_hub_probe(struct device *dev)
 				     "failed to get reset GPIO\n");
 
 	hub->dev = dev;
+	dev->priv = hub;
 
 	return onboard_hub_power_on(hub);
 }

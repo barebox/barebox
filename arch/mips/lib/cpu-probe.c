@@ -17,7 +17,7 @@
 #include <asm-generic/memory_layout.h>
 #include <init.h>
 
-const char *__cpu_name;
+const char *__cpu_name = "unknown";
 struct cpuinfo_mips cpu_data[1];
 
 static char unknown_isa[] = KERN_ERR \

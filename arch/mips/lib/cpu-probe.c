@@ -102,14 +102,71 @@ static inline void cpu_probe_mips(struct cpuinfo_mips *c)
 {
 	decode_configs(c);
 	switch (c->processor_id & 0xff00) {
+	case PRID_IMP_QEMU_GENERIC:
+		c->cputype = CPU_QEMU_GENERIC;
+		__cpu_name = "MIPS GENERIC QEMU";
+		break;
+	case PRID_IMP_4KC:
+		c->cputype = CPU_4KC;
+		__cpu_name = "MIPS 4Kc";
+		break;
+	case PRID_IMP_4KEC:
+	case PRID_IMP_4KECR2:
+		c->cputype = CPU_4KEC;
+		__cpu_name = "MIPS 4KEc";
+		break;
+	case PRID_IMP_4KSC:
+	case PRID_IMP_4KSD:
+		c->cputype = CPU_4KSC;
+		__cpu_name = "MIPS 4KSc";
+		break;
+	case PRID_IMP_5KC:
+		c->cputype = CPU_5KC;
+		__cpu_name = "MIPS 5Kc";
+		break;
+	case PRID_IMP_5KE:
+		c->cputype = CPU_5KE;
+		__cpu_name = "MIPS 5KE";
+		break;
+	case PRID_IMP_20KC:
+		c->cputype = CPU_20KC;
+		__cpu_name = "MIPS 20Kc";
+		break;
 	case PRID_IMP_24K:
-	case PRID_IMP_24KE:
 		c->cputype = CPU_24K;
 		__cpu_name = "MIPS 24Kc";
+		break;
+	case PRID_IMP_24KE:
+		c->cputype = CPU_24K;
+		__cpu_name = "MIPS 24KEc";
+		break;
+	case PRID_IMP_25KF:
+		c->cputype = CPU_25KF;
+		__cpu_name = "MIPS 25Kc";
+		break;
+	case PRID_IMP_34K:
+		c->cputype = CPU_34K;
+		__cpu_name = "MIPS 34Kc";
 		break;
 	case PRID_IMP_74K:
 		c->cputype = CPU_74K;
 		__cpu_name = "MIPS 74Kc";
+		break;
+	case PRID_IMP_M14KC:
+		c->cputype = CPU_M14KC;
+		__cpu_name = "MIPS M14Kc";
+		break;
+	case PRID_IMP_M14KEC:
+		c->cputype = CPU_M14KEC;
+		__cpu_name = "MIPS M14KEc";
+		break;
+	case PRID_IMP_1004K:
+		c->cputype = CPU_1004K;
+		__cpu_name = "MIPS 1004Kc";
+		break;
+	case PRID_IMP_1074K:
+		c->cputype = CPU_1074K;
+		__cpu_name = "MIPS 1074Kc";
 		break;
 	}
 }

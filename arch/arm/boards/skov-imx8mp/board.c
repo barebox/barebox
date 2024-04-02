@@ -83,6 +83,9 @@ static const struct board_description imx8mp_variants[] = {
 		.dts_compatible_hdmi = "skov,imx8mp-skov-revb-hdmi",
 		.flags = SKOV_IMX8MP_HAS_HDMI,
 	},
+	[2] = {
+		.dts_compatible = "skov,imx8mp-skov-revc-bd500",
+	},
 };
 
 static const struct board_description imx8mp_basic_variant = {

@@ -185,13 +185,13 @@ barebox to a new board, for new users who are only interested in
 trying it out: The browser runs Tinyemu, a virtual machine in which
 barebox executes as if on real hardware and the user can manipulate the
 (virtual) hardware from the barebox shell and learn about barebox
-conveniences: barebox.org/jsbarebox/
+conveniences: barebox.org/demo/
 
 The project is about streamlining this demo: CPU usage currently is
 quite high and teaching barebox to idle the CPU (as we do on sandbox)
 didn't help. This needs to be analyzed with the profiling tools
 provided with modern browsers. The remainder of the project can then
-focus on improving the jsbarebox tutorial. e.g. by adding new
+focus on improving the tutorial inside the demo. e.g. by adding new
 peripherals to the virtual machine.
 
 Expected outcome is snappier and less CPU-intensive barebox demo.

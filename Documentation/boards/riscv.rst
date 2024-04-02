@@ -58,7 +58,7 @@ To activate add::
 
 into the config file.
 
-See https://barebox.org/jsbarebox/?graphic=1 for a live example.
+See https://barebox.org/demo/?graphic=1 for a live example.
 
 BeagleV
 -------

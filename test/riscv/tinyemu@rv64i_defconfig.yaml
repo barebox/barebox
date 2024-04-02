@@ -13,7 +13,7 @@ targets:
       - virtio-mmio
     runner:
       download:
-        bbl64.bin: https://barebox.org/jsbarebox/bbl64.bin
+        bbl64.bin: https://barebox.org/demo/bbl64.bin
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
 tools:

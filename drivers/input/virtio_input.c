@@ -216,6 +216,7 @@ static int virtinput_probe(struct virtio_device *vdev)
 
 	virtio_device_ready(vdev);
 
+	vi->idev.parent = &vdev->dev;
 	err = input_device_register(&vi->idev);
 	if (err)
 		goto err_input_register;

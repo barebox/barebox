@@ -162,6 +162,7 @@ static int __init gpio_keys_probe(struct device *dev)
 		gk->buttons[i].previous_state = gk->buttons[i].active_low;
 	}
 
+	gk->input.parent = dev;
 	ret = input_device_register(&gk->input);
 	if (ret)
 		return ret;

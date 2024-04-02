@@ -410,6 +410,7 @@ static int __init imx_keypad_probe(struct device *dev)
 	if (ret)
 		return ret;
 
+	keypad->input.parent = dev;
 	ret = input_device_register(&keypad->input);
 	if (ret)
 		return ret;

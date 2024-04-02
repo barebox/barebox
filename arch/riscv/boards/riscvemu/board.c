@@ -33,7 +33,7 @@ static void __noreturn riscvemu_restart(struct restart_handler *rst)
 	priv->restart(riscv_hartid(), barebox_riscv_boot_dtb());
 }
 
-extern char __dtb_overlay_of_sram_start[];
+extern char __dtbo_riscvemu_sram_start[];
 
 static int riscvemu_probe(struct device *dev)
 {
@@ -42,7 +42,7 @@ static int riscvemu_probe(struct device *dev)
 	struct riscvemu_priv *priv;
 	u64 start;
 
-	overlay = of_unflatten_dtb(__dtb_overlay_of_sram_start, INT_MAX);
+	overlay = of_unflatten_dtb(__dtbo_riscvemu_sram_start, INT_MAX);
 	of_overlay_apply_tree(dev->of_node, overlay);
 	/* of_probe() will happen later at of_populate_initcall */
 

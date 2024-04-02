@@ -724,6 +724,10 @@ static const struct usb_device_id products[] = {
 	USB_DEVICE(0x0df6, 0x0072),
 	.driver_info = &sitecom_info,
 }, {
+	/* Sitecom USB 3.0 to Gigabit Adapter */
+	USB_DEVICE(0x0df6, 0x0056),
+	.driver_info = &sitecom_info,
+}, {
 	/* Samsung USB Ethernet Adapter */
 	USB_DEVICE(0x04e8, 0xa100),
 	.driver_info = &samsung_info,
@@ -734,6 +738,10 @@ static const struct usb_device_id products[] = {
 }, {
 	/* Belkin B2B128 USB 3.0 Hub + Gigabit Ethernet Adapter */
 	USB_DEVICE(0x050d, 0x0128),
+	.driver_info = &belkin_info,
+}, {
+	/* Belkin Gigabit Ethernet Adapter */
+	USB_DEVICE(0x050d, 0x5055),
 	.driver_info = &belkin_info,
 },
 	{ },

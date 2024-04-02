@@ -124,6 +124,8 @@ bool of_dma_is_coherent(struct device_node *node)
 	case DEV_DMA_COHERENCE_DEFAULT:
 		return IS_ENABLED(CONFIG_ARCH_DMA_DEFAULT_COHERENT);
 	}
+
+	BUG();
 }
 EXPORT_SYMBOL_GPL(of_dma_is_coherent);
 

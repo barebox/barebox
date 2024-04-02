@@ -85,6 +85,10 @@ static const struct board_description imx8mp_variants[] = {
 	},
 };
 
+static const struct board_description imx8mp_basic_variant = {
+	.dts_compatible = "skov,imx8mp-skov-basic",
+};
+
 static int skov_imx8mp_fixup(struct device_node *root, void *data)
 {
 	struct device_node *chosen = of_create_node(root, "/chosen");
@@ -171,11 +175,11 @@ static int skov_imx8mp_init_variant(struct skov_imx8mp_priv *priv)
 	priv->variant_id = v;
 
 	if (v >= ARRAY_SIZE(imx8mp_variants)) {
-		dev_err(dev, "Invalid variant %u\n", v);
-		return -EINVAL;
+		dev_warn(dev, "Unsupported variant %u. Fall back to basic variant\n", v);
+		variant = &imx8mp_basic_variant;
+	} else {
+		variant = &imx8mp_variants[v];
 	}
-
-	variant = &imx8mp_variants[v];
 
 	if (variant->flags & SKOV_IMX8MP_HAS_HDMI) {
 		ret = skov_imx8mp_get_hdmi(dev);

@@ -31,7 +31,6 @@ struct gpio_keys {
 
 	struct poller_async poller;
 	struct input_device input;
-	struct device *dev;
 };
 
 static void gpio_key_poller(void *data)
@@ -60,7 +59,7 @@ static void gpio_key_poller(void *data)
 
 			gb->debounce_start = get_time_ns();
 			input_report_key_event(&gk->input, gb->code, pressed);
-			dev_dbg(gk->dev, "%s gpio(%d) as %d\n",
+			dev_dbg(gk->input.parent, "%s gpio(%d) as %d\n",
 				pressed ? "pressed" : "released", gb->gpio, gb->code);
 			gb->previous_state = val;
 		}
@@ -140,8 +139,6 @@ static int __init gpio_keys_probe(struct device *dev)
 	struct gpio_keys *gk;
 
 	gk = xzalloc(sizeof(*gk));
-
-	gk->dev = dev;
 
 	if (dev->of_node)
 		ret = gpio_keys_probe_dt(gk, dev);

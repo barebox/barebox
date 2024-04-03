@@ -192,20 +192,34 @@ static void imx8mp_hsio_blk_ctrl_power_off(struct imx8mp_blk_ctrl *bc,
 	}
 }
 
-static int imx8mp_hsio_enable_usb_clk(struct imx8mp_blk_ctrl *bc)
+static int imx8mp_hsio_propagate_adb_handshake(struct imx8mp_blk_ctrl *bc)
 {
 	int ret;
 	struct clk_bulk_data *usb_clk = bc->domains[IMX8MP_HSIOBLK_PD_USB].clks;
 	int num_clks = bc->domains[IMX8MP_HSIOBLK_PD_USB].data->num_clks;
+	static int once;
 
+	if (once)
+		return 0;
+
+	/*
+	 * enable USB clock for a moment for the power-on ADB handshake
+	 * to proceed
+	 */
 	ret = clk_bulk_prepare_enable(num_clks, usb_clk);
 	if (ret)
 		return ret;
 
 	regmap_set_bits(bc->regmap, GPR_REG0, USB_CLOCK_MODULE_EN);
 
-	return 0;
+	udelay(5);
 
+	regmap_clear_bits(bc->regmap, GPR_REG0, USB_CLOCK_MODULE_EN);
+	clk_bulk_disable_unprepare(num_clks, usb_clk);
+
+	once++;
+
+	return 0;
 }
 
 static const struct imx8mp_blk_ctrl_domain_data imx8mp_hsio_domain_data[] = {
@@ -251,15 +265,17 @@ static int imx8mp_blk_ctrl_power_on(struct generic_pm_domain *genpd)
 	struct imx8mp_blk_ctrl *bc = domain->bc;
 	int ret;
 
-	ret = imx8mp_hsio_enable_usb_clk(bc);
-	if (ret)
-		return ret;
-
 	/* make sure bus domain is awake */
 	ret = pm_runtime_resume_and_get_genpd(bc->bus_power_dev);
 	if (ret < 0) {
 		dev_err(bc->dev, "failed to power up bus domain\n");
 		return ret;
+	}
+
+	ret = imx8mp_hsio_propagate_adb_handshake(bc);
+	if (ret) {
+		dev_err(bc->dev, "failed to propagate adb handshake\n");
+		goto bus_put;
 	}
 
 	/* enable upstream clocks */

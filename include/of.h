@@ -240,11 +240,22 @@ extern int of_property_read_u32_array(const struct device_node *np,
 				      size_t sz);
 extern int of_property_read_u64(const struct device_node *np,
 				const char *propname, u64 *out_value);
-
+extern int of_property_read_variable_u8_array(const struct device_node *np,
+					      const char *propname, u8 *out_values,
+					      size_t sz_min, size_t sz_max);
+extern int of_property_read_variable_u16_array(const struct device_node *np,
+					       const char *propname, u16 *out_values,
+					       size_t sz_min, size_t sz_max);
+extern int of_property_read_variable_u32_array(const struct device_node *np,
+					       const char *propname,
+					       u32 *out_values,
+					       size_t sz_min,
+					       size_t sz_max);
 extern int of_property_read_variable_u64_array(const struct device_node *np,
 					const char *propname,
 					u64 *out_values,
-					size_t sz);
+					size_t sz_min,
+					size_t sz_max);
 
 extern int of_property_read_string(struct device_node *np,
 				   const char *propname,
@@ -669,10 +680,34 @@ static inline int of_property_read_u64(const struct device_node *np,
 	return -ENOSYS;
 }
 
+static inline  int of_property_read_variable_u8_array(const struct device_node *np,
+					      const char *propname, u8 *out_values,
+					      size_t sz_min, size_t sz_max)
+{
+	return -ENOSYS;
+}
+
+static inline  int of_property_read_variable_u16_array(const struct device_node *np,
+					       const char *propname, u16 *out_values,
+					       size_t sz_min, size_t sz_max)
+{
+	return -ENOSYS;
+}
+
+static inline  int of_property_read_variable_u32_array(const struct device_node *np,
+					       const char *propname,
+					       u32 *out_values,
+					       size_t sz_min,
+					       size_t sz_max)
+{
+	return -ENOSYS;
+}
+
 static inline int of_property_read_variable_u64_array(const struct device_node *np,
 					const char *propname,
 					u64 *out_values,
-					size_t sz)
+					size_t sz_min,
+					size_t sz_max)
 {
 	return -ENOSYS;
 }
@@ -1166,7 +1201,7 @@ static inline int of_property_read_u64_array(const struct device_node *np,
 					     u64 *out_values, size_t sz)
 {
 	int ret = of_property_read_variable_u64_array(np, propname, out_values,
-						      sz);
+						      sz, 0);
 	if (ret >= 0)
 		return 0;
 	else

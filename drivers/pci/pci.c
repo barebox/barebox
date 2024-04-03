@@ -406,7 +406,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 
 			if (ALIGN(*last_addr, size) + size > busres->end) {
 				pr_debug("BAR does not fit within bus %s res\n", kind);
-				return;
+				continue;
 			}
 
 			*last_addr = ALIGN(*last_addr, size);

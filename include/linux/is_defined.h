@@ -34,4 +34,10 @@
 #define ___is_defined(val)		____is_defined(__ARG_PLACEHOLDER_##val)
 #define ____is_defined(arg1_or_junk)	__take_second_arg(arg1_or_junk 1, 0)
 
+#define __if_defined(x, a, b)		___if_defined(__is_defined(x), a, b)
+#define ___if_defined(val, a, b)	____if_defined(val, a, b)
+#define ____if_defined(val, a, b)	____if_defined_##val(a, b)
+#define ____if_defined_1(a, b)		a
+#define ____if_defined_0(a, b)		b
+
 #endif

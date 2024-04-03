@@ -13,3 +13,8 @@ config PHY_ROCKCHIP_NANENG_COMBO_PHY
 	  Enable this to support the Rockchip PCIe/USB3.0/SATA/QSGMII
 	  combo PHY with NaNeng IP block.
 
+config PHY_ROCKCHIP_SNPS_PCIE3
+	bool "Rockchip Snps PCIe3 PHY Driver"
+	depends on ARCH_ROCKCHIP || COMPILE_TEST
+	help
+	  Enable this to support the Rockchip snps PCIe3 PHY.

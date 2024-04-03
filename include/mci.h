@@ -564,7 +564,7 @@ struct mci {
 	unsigned scr[2];
 	unsigned csd[4];	/**< card's "card specific data register" */
 	unsigned cid[4];	/**< card's "card identification register" */
-	unsigned short rca;	/* FIXME */
+	unsigned short rca;	/**< relative card address */
 	bool sdio;              /**< card is a SDIO card */
 	bool high_capacity;	/**< high capacity card is connected (OCR -> OCR_HCS) */
 	unsigned tran_speed;	/**< Maximum transfer speed */

@@ -192,6 +192,7 @@ static int rpi_env_init(void)
 	int ret;
 
 	device_detect_by_name("mci0");
+	device_detect_by_name("mci1");
 
 	diskdev = "/dev/disk0.0";
 	ret = stat(diskdev, &s);

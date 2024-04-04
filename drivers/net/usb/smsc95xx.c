@@ -7,6 +7,7 @@
 #include <net.h>
 #include <linux/usb/usb.h>
 #include <linux/usb/usbnet.h>
+#include <asm/unaligned.h>
 #include <malloc.h>
 #include <asm/byteorder.h>
 #include <errno.h>
@@ -757,8 +758,7 @@ static int smsc95xx_rx_fixup(struct usbnet *dev, void *buf, int len)
 		unsigned char *packet;
 		u16 size;
 
-		memcpy(&header, buf, sizeof(header));
-		le32_to_cpus(&header);
+		header = get_unaligned_le32(buf);
 		buf += 4 + NET_IP_ALIGN;
 		len -= 4 + NET_IP_ALIGN;
 		packet = buf;
@@ -816,13 +816,11 @@ static int smsc95xx_tx_fixup(struct usbnet *dev,
 {
 	u32 tx_cmd_a, tx_cmd_b;
 
-	tx_cmd_a = (u32)(len) | TX_CMD_A_FIRST_SEG_ | TX_CMD_A_LAST_SEG_;
-	cpu_to_le32s(&tx_cmd_a);
-	memcpy(nbuf, &tx_cmd_a, 4);
+	tx_cmd_b = (u32)len;
+	tx_cmd_a = tx_cmd_b | TX_CMD_A_FIRST_SEG_ | TX_CMD_A_LAST_SEG_;
 
-	tx_cmd_b = (u32)(len);
-	cpu_to_le32s(&tx_cmd_b);
-	memcpy(nbuf + 4, &tx_cmd_b, 4);
+	put_unaligned_le32(tx_cmd_a, nbuf);
+	put_unaligned_le32(tx_cmd_b, nbuf + 4);
 
 	memcpy(nbuf + 8, buf, len);
 

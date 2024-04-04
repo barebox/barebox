@@ -7,6 +7,10 @@
 #include "stm32mp151.dtsi"
 
 / {
+	aliases {
+		state = &state;
+	};
+
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";
@@ -21,6 +25,16 @@
 		};
 	};
 
+	state: state {
+		compatible = "barebox,state";
+		magic = <0x778ec0f4>;
+		/* backend is fixed up by board code */
+		backend-type = "raw";
+		backend-storage-type = "direct";
+		backend-stridesize = <0x40>;
+
+		#include "bootstate.dtsi"
+	};
 };
 
 &panel {

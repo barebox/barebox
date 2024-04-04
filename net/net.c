@@ -686,7 +686,7 @@ static int ping_reply(struct eth_device *edev, unsigned char *pkt, int len)
 {
 	struct ethernet *et = (struct ethernet *)pkt;
 	struct icmphdr *icmp;
-	struct iphdr *ip = (struct iphdr *)(pkt + ETHER_HDR_SIZE);
+	struct iphdr *ip;
 	unsigned char *packet;
 	int ret;
 
@@ -695,6 +695,10 @@ static int ping_reply(struct eth_device *edev, unsigned char *pkt, int len)
 	et->et_protlen = htons(PROT_IP);
 
 	icmp = net_eth_to_icmphdr(pkt);
+
+	ip = ip_verify_size(pkt, &len);
+	if (!ip)
+		return -EILSEQ;
 
 	icmp->type = ICMP_ECHO_REPLY;
 	icmp->checksum = 0;

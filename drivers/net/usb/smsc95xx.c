@@ -24,8 +24,6 @@
 #define MAX_SINGLE_PACKET_SIZE		(2048)
 #define LAN95XX_EEPROM_MAGIC		(0x9500)
 #define EEPROM_MAC_OFFSET		(0x01)
-#define DEFAULT_TX_CSUM_ENABLE		(1)
-#define DEFAULT_RX_CSUM_ENABLE		(1)
 #define SMSC95XX_INTERNAL_PHY_ID	(1)
 #define SMSC95XX_TX_OVERHEAD		(8)
 #define SMSC95XX_TX_OVERHEAD_CSUM	(12)
@@ -46,8 +44,6 @@
 
 struct smsc95xx_priv {
 	u32 mac_cr;
-	int use_tx_csum;
-	int use_rx_csum;
 };
 
 static int turbo_mode = 0;
@@ -320,10 +316,9 @@ static void smsc95xx_set_multicast(struct usbnet *dev)
 	smsc95xx_write_reg(dev, MAC_CR, pdata->mac_cr);
 }
 
-/* Enable or disable Tx & Rx checksum offload engines */
-static int smsc95xx_set_csums(struct usbnet *dev)
+/* Disable Tx & Rx IP checksum offload engines */
+static int smsc95xx_disable_csums(struct usbnet *dev)
 {
-	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
 	u32 read_buf;
 	int ret = smsc95xx_read_reg(dev, COE_CR, &read_buf);
 	if (ret < 0) {
@@ -331,15 +326,8 @@ static int smsc95xx_set_csums(struct usbnet *dev)
 		return ret;
 	}
 
-	if (pdata->use_tx_csum)
-		read_buf |= Tx_COE_EN_;
-	else
-		read_buf &= ~Tx_COE_EN_;
-
-	if (pdata->use_rx_csum)
-		read_buf |= Rx_COE_EN_;
-	else
-		read_buf &= ~Rx_COE_EN_;
+	read_buf &= ~Tx_COE_EN_;
+	read_buf &= ~Rx_COE_EN_;
 
 	ret = smsc95xx_write_reg(dev, COE_CR, read_buf);
 	if (ret < 0) {
@@ -670,7 +658,13 @@ static int smsc95xx_reset(struct usbnet *dev)
 		return ret;
 	}
 
-	ret = smsc95xx_set_csums(dev);
+	/*
+	 * barebox network stack doesn't care for hardware checksum offloading,
+	 * so this enabling them doesn't help and indeed introduces breakage:
+	 * The driver will be unaware of the two byte COE trailer and thus packet
+	 * sizes reported will be 2 bytes more than what was actually transmitted.
+	 */
+	ret = smsc95xx_disable_csums(dev);
 	if (ret < 0) {
 		netdev_warn(dev->net, "Failed to set csum offload: %d\n", ret);
 		return ret;
@@ -723,9 +717,6 @@ static int smsc95xx_bind(struct usbnet *dev)
 		netdev_warn(dev->net, "Unable to allocate struct smsc95xx_priv\n");
 		return -ENOMEM;
 	}
-
-	pdata->use_tx_csum = DEFAULT_TX_CSUM_ENABLE;
-	pdata->use_rx_csum = DEFAULT_RX_CSUM_ENABLE;
 
 	/* Init all registers */
 	ret = smsc95xx_reset(dev);
@@ -810,15 +801,7 @@ static int smsc95xx_rx_fixup(struct usbnet *dev, void *buf, int len)
 
 	return 1;
 }
-#if 0
-static u32 smsc95xx_calc_csum_preamble(struct sk_buff *skb)
-{
-	int len = skb->data - skb->head;
-	u16 high_16 = (u16)(skb->csum_offset + skb->csum_start - len);
-	u16 low_16 = (u16)(skb->csum_start - len);
-	return (high_16 << 16) | low_16;
-}
-#endif
+
 static int smsc95xx_tx_fixup(struct usbnet *dev,
                                 void *buf, int len,
                                 void *nbuf, int *nlen)

@@ -715,9 +715,9 @@ static int ping_reply(struct eth_device *edev, unsigned char *pkt, int len)
 	if (!packet)
 		return 0;
 
-	memcpy(packet, pkt, ETHER_HDR_SIZE + len);
+	memcpy(packet, pkt, len);
 
-	ret = eth_send(edev, packet, ETHER_HDR_SIZE + len);
+	ret = eth_send(edev, packet, len);
 
 	net_free_packet(packet);
 

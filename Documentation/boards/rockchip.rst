@@ -61,6 +61,7 @@ Supported Boards
 - Pine64 Quartz64 Model A
 - Radxa ROCK3 Model A
 - Radxa CM3 (RK3566) IO Board
+- Protonic MECSBC
 
 The steps described in the following target the RK3568 and the RK3568 EVB but
 generally apply to both SoCs and all boards.

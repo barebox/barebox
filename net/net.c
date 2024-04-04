@@ -705,7 +705,8 @@ static int ping_reply(struct eth_device *edev, unsigned char *pkt, int len)
 	icmp->checksum = ~net_checksum((unsigned char *)icmp,
 				       len - sizeof(struct iphdr) - ETHER_HDR_SIZE);
 	ip->check = 0;
-	ip->frag_off = 0;
+	ip->frag_off = htons(0x4000);
+	ip->ttl = 255;
 	net_copy_ip((void *)&ip->daddr, &ip->saddr);
 	net_copy_ip((void *)&ip->saddr, &edev->ipaddr);
 	ip->check = ~net_checksum((unsigned char *)ip, sizeof(struct iphdr));

@@ -465,7 +465,7 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 
 	return con;
 out:
-	free(con->packet);
+	net_free_packet(con->packet);
 	free(con);
 	return ERR_PTR(ret);
 }
@@ -510,7 +510,7 @@ struct net_connection *net_icmp_new(IPaddr_t dest, rx_handler_f *handler,
 void net_unregister(struct net_connection *con)
 {
 	list_del(&con->list);
-	free(con->packet);
+	net_free_packet(con->packet);
 	free(con);
 }
 
@@ -564,7 +564,7 @@ static int net_answer_arp(struct eth_device *edev, unsigned char *pkt, int len)
 		return 0;
 	memcpy(packet, pkt, ETHER_HDR_SIZE + ARP_HDR_SIZE);
 	ret = eth_send(edev, packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
-	free(packet);
+	net_free_packet(packet);
 
 	return ret;
 }
@@ -677,7 +677,7 @@ static int ping_reply(struct eth_device *edev, unsigned char *pkt, int len)
 
 	ret = eth_send(edev, packet, ETHER_HDR_SIZE + len);
 
-	free(packet);
+	net_free_packet(packet);
 
 	return ret;
 }

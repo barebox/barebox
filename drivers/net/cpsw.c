@@ -51,10 +51,12 @@
 #define CPDMA_DESC_EOP		BIT(30)
 #define CPDMA_DESC_OWNER	BIT(29)
 #define CPDMA_DESC_EOQ		BIT(28)
+#define CPDMA_DESC_PASS_CRC	BIT(26)
 #define CPDMA_DESC_TO_PORT_EN	BIT(20)
 #define CPDMA_FROM_TO_PORT_SHIFT	16
 #define CPDMA_RX_SOURCE_PORT(__status__)	\
 	(((__status__) >> CPDMA_FROM_TO_PORT_SHIFT) & 0x7)
+#define CPDMA_DESC_CRC_LEN	4
 
 #define SLIVER_SIZE		0x40
 
@@ -865,8 +867,11 @@ static int cpdma_process(struct cpsw_slave *slave, struct cpdma_chan *chan,
 
 	status = readl(&desc->hw_mode);
 
-	if (len)
+	if (len) {
 		*len = status & 0x7ff;
+		if (status & CPDMA_DESC_PASS_CRC)
+			*len -= CPDMA_DESC_CRC_LEN;
+	}
 
 	if (dma)
 		*dma = readl(&desc->hw_buffer);

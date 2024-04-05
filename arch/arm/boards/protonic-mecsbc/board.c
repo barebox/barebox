@@ -90,6 +90,24 @@ static void mecsbc_process_adc(struct device *dev)
 	pr_info("VIN = %d V\n", mecsbc_get_vin_mv() / 1000);
 }
 
+static int mecsbc_sd_of_fixup(struct device_node *root, void *context)
+{
+	struct device *dev = context;
+	struct device_node *np;
+
+	dev_info(dev, "Fixing up /regulator-sd\n");
+
+	np = of_find_node_by_path_from(root, "/regulator-sd");
+	if (!np) {
+		dev_err(dev, "Cannot find /regulator-sd node\n");
+		return 0;
+	}
+
+	of_property_write_u32(np, "regulator-min-microvolt", 3300000);
+
+	return 0;
+}
+
 static int mecsbc_of_fixup_hwrev(struct device *dev)
 {
 	const char *compat;
@@ -102,6 +120,9 @@ static int mecsbc_of_fixup_hwrev(struct device *dev)
 	barebox_set_of_machine_compatible(buf);
 
 	free(buf);
+
+	if (mecsbc_data.hw_id == 0 && mecsbc_data.hw_rev == 0)
+		of_register_fixup(mecsbc_sd_of_fixup, dev);
 
 	return 0;
 }

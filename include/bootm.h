@@ -152,6 +152,8 @@ int bootm_get_os_size(struct image_data *data);
 enum bootm_verify bootm_get_verify_mode(void);
 void bootm_set_verify_mode(enum bootm_verify mode);
 
+bool bootm_signed_images_are_forced(void);
+
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 
 void *booti_load_image(struct image_data *data, phys_addr_t *oftree);

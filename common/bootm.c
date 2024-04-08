@@ -87,6 +87,13 @@ static const char * const bootm_verify_names[] = {
 	[BOOTM_VERIFY_SIGNATURE] = "signature",
 };
 
+static bool force_signed_images = IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES);
+
+bool bootm_signed_images_are_forced(void)
+{
+	return force_signed_images;
+}
+
 static int uimage_part_num(const char *partname)
 {
 	if (!partname)
@@ -694,7 +701,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		goto err_out;
 	}
 
-	if (IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES)) {
+	if (bootm_signed_images_are_forced()) {
 		data->verify = BOOTM_VERIFY_SIGNATURE;
 
 		/*
@@ -985,7 +992,7 @@ static int bootm_init(void)
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
 	}
 
-	if (IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES))
+	if (bootm_signed_images_are_forced())
 		bootm_verify_mode = BOOTM_VERIFY_SIGNATURE;
 
 	globalvar_add_simple_int("bootm.verbose", &bootm_verbosity, "%u");

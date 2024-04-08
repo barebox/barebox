@@ -484,10 +484,10 @@ void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 	nbytes = data->blocks * data->blocksize;
 
 	if (data->flags & MMC_DATA_READ)
-		*dma = dma_map_single(dev, (void *)data->src, nbytes,
+		*dma = dma_map_single(dev, data->dest, nbytes,
 				      DMA_FROM_DEVICE);
 	else
-		*dma = dma_map_single(dev, data->dest, nbytes,
+		*dma = dma_map_single(dev, (void *)data->src, nbytes,
 				      DMA_TO_DEVICE);
 
 	if (dma_mapping_error(dev, *dma)) {

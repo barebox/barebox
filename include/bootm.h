@@ -153,6 +153,7 @@ enum bootm_verify bootm_get_verify_mode(void);
 void bootm_set_verify_mode(enum bootm_verify mode);
 
 bool bootm_signed_images_are_forced(void);
+void bootm_force_signed_images(void);
 
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 

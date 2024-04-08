@@ -89,6 +89,22 @@ static const char * const bootm_verify_names[] = {
 
 static bool force_signed_images = IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES);
 
+void bootm_force_signed_images(void)
+{
+	static unsigned int verify_mode = 0;
+
+	if (force_signed_images)
+		return;
+
+	/* recreate bootm.verify with a single enumeration as option */
+	globalvar_remove("bootm.verify");
+	globalvar_add_simple_enum("bootm.verify", &verify_mode,
+				  &bootm_verify_names[BOOTM_VERIFY_SIGNATURE], 1);
+
+	bootm_verify_mode = BOOTM_VERIFY_SIGNATURE;
+	force_signed_images = true;
+}
+
 bool bootm_signed_images_are_forced(void)
 {
 	return force_signed_images;

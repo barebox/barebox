@@ -65,6 +65,8 @@ struct arasan_sdhci_host {
 	struct mci_host		mci;
 	struct sdhci		sdhci;
 	unsigned int		quirks; /* Arasan deviations from spec */
+	const struct clk_ops	*sdcardclk_ops;
+	const struct clk_ops	*sampleclk_ops;
 	struct sdhci_arasan_clk_data clk_data;
 /* Controller does not have CD wired and will not function normally without */
 #define SDHCI_ARASAN_QUIRK_FORCE_CDTEST		BIT(0)
@@ -402,8 +404,8 @@ static int arasan_zynqmp_sampleclk_set_phase(struct clk_hw *hw, int degrees)
 	return ret;
 }
 
-static unsigned long arasan_zynqmp_sampleclk_recalc_rate(struct clk_hw *hw,
-							 unsigned long parent_rate)
+static unsigned long arasan_sampleclk_recalc_rate(struct clk_hw *hw,
+						  unsigned long parent_rate)
 {
 	struct sdhci_arasan_clk_data *clk_data =
 		container_of(hw, struct sdhci_arasan_clk_data, sdcardclk_hw);
@@ -474,8 +476,8 @@ static int arasan_zynqmp_sdcardclk_set_phase(struct clk_hw *hw, int degrees)
 	return ret;
 }
 
-static unsigned long arasan_zynqmp_sdcardclk_recalc_rate(struct clk_hw *hw,
-							 unsigned long parent_rate)
+static unsigned long arasan_sdcardclk_recalc_rate(struct clk_hw *hw,
+						  unsigned long parent_rate)
 {
 	struct sdhci_arasan_clk_data *clk_data =
 		container_of(hw, struct sdhci_arasan_clk_data, sdcardclk_hw);
@@ -486,13 +488,21 @@ static unsigned long arasan_zynqmp_sdcardclk_recalc_rate(struct clk_hw *hw,
 	return host->actual_clock;
 };
 
-static const struct clk_ops clk_sampleclk_ops = {
-	.recalc_rate = arasan_zynqmp_sampleclk_recalc_rate,
+static const struct clk_ops arasan_sampleclk_ops = {
+	.recalc_rate = arasan_sampleclk_recalc_rate,
+};
+
+static const struct clk_ops arasan_sdcardclk_ops = {
+	.recalc_rate = arasan_sdcardclk_recalc_rate,
+};
+
+static const struct clk_ops zynqmp_sampleclk_ops = {
+	.recalc_rate = arasan_sampleclk_recalc_rate,
 	.set_phase = arasan_zynqmp_sampleclk_set_phase,
 };
 
-static const struct clk_ops clk_sdcardclk_ops = {
-	.recalc_rate = arasan_zynqmp_sdcardclk_recalc_rate,
+static const struct clk_ops zynqmp_sdcardclk_ops = {
+	.recalc_rate = arasan_sdcardclk_recalc_rate,
 	.set_phase = arasan_zynqmp_sdcardclk_set_phase,
 };
 
@@ -510,10 +520,11 @@ static const struct clk_ops clk_sdcardclk_ops = {
  * Return: 0 on success and error value on error
  */
 static int
-arasan_sdhci_register_sampleclk(struct sdhci_arasan_clk_data *clk_data,
+arasan_sdhci_register_sampleclk(struct arasan_sdhci_host *sdhci_arasan,
 				struct clk *clk_xin,
 				struct device *dev)
 {
+	struct sdhci_arasan_clk_data *clk_data = &sdhci_arasan->clk_data;
 	struct device_node *np = dev->of_node;
 	struct clk_init_data sampleclk_init = {};
 	const char *clk_name;
@@ -529,7 +540,7 @@ arasan_sdhci_register_sampleclk(struct sdhci_arasan_clk_data *clk_data,
 	clk_name = __clk_get_name(clk_xin);
 	sampleclk_init.parent_names = &clk_name;
 	sampleclk_init.num_parents = 1;
-	sampleclk_init.ops = &clk_sampleclk_ops;
+	sampleclk_init.ops = sdhci_arasan->sampleclk_ops;
 
 	clk_data->sampleclk_hw.init = &sampleclk_init;
 	clk_data->sampleclk = clk_register(dev, &clk_data->sampleclk_hw);
@@ -559,10 +570,11 @@ arasan_sdhci_register_sampleclk(struct sdhci_arasan_clk_data *clk_data,
  * Return: 0 on success and error value on error
  */
 static int
-arasan_sdhci_register_sdcardclk(struct sdhci_arasan_clk_data *clk_data,
+arasan_sdhci_register_sdcardclk(struct arasan_sdhci_host *sdhci_arasan,
 				struct clk *clk_xin,
 				struct device *dev)
 {
+	struct sdhci_arasan_clk_data *clk_data = &sdhci_arasan->clk_data;
 	struct device_node *np = dev->of_node;
 	struct clk_init_data sdcardclk_init = {};
 	const char *clk_name;
@@ -577,7 +589,7 @@ arasan_sdhci_register_sdcardclk(struct sdhci_arasan_clk_data *clk_data,
 
 	clk_name = __clk_get_name(clk_xin);
 	sdcardclk_init.parent_names = &clk_name;
-	sdcardclk_init.ops = &clk_sdcardclk_ops;
+	sdcardclk_init.ops = sdhci_arasan->sdcardclk_ops;
 	sdcardclk_init.num_parents = 1;
 
 	clk_data->sdcardclk_hw.init = &sdcardclk_init;
@@ -615,7 +627,7 @@ arasan_sdhci_register_sdcardclk(struct sdhci_arasan_clk_data *clk_data,
  *
  * Return: 0 on success and error value on error
  */
-static int arasan_sdhci_register_sdclk(struct sdhci_arasan_clk_data *sdhci_arasan,
+static int arasan_sdhci_register_sdclk(struct arasan_sdhci_host *sdhci_arasan,
 				       struct clk *clk_xin,
 				       struct device *dev)
 {
@@ -772,8 +784,15 @@ static int arasan_sdhci_probe(struct device *dev)
 
 	mci->f_min = 50000000 / 256;
 
-	if (IS_ENABLED(CONFIG_ARCH_ZYNQMP))
-		arasan_sdhci_register_sdclk(&arasan_sdhci->clk_data, clk_xin, dev);
+	if (of_device_is_compatible(np, "xlnx,zynqmp-8.9a")) {
+		arasan_sdhci->sdcardclk_ops = &zynqmp_sdcardclk_ops;
+		arasan_sdhci->sampleclk_ops = &zynqmp_sampleclk_ops;
+	} else {
+		arasan_sdhci->sdcardclk_ops = &arasan_sdcardclk_ops;
+		arasan_sdhci->sampleclk_ops = &arasan_sampleclk_ops;
+	}
+
+	arasan_sdhci_register_sdclk(arasan_sdhci, clk_xin, dev);
 
 	arasan_dt_parse_clk_phases(dev, &arasan_sdhci->clk_data);
 

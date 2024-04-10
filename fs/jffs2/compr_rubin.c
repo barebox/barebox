@@ -8,7 +8,7 @@
  * Created by Arjan van de Ven <arjanv@redhat.com>
  */
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+#define pr_fmt(fmt) "jffs2: " fmt
 
 #include <linux/string.h>
 #include <linux/types.h>

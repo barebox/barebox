@@ -24,7 +24,6 @@
 #include <mach/imx/spi.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/iomux-mx51.h>
-#include <mach/imx/devices-imx51.h>
 #include <mach/imx/revision.h>
 
 #define MX51_CCM_CACRR 0x10

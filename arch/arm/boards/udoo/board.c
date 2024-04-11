@@ -20,7 +20,6 @@
 #include <net.h>
 #include <linux/micrel_phy.h>
 #include <mach/imx/imx6.h>
-#include <mach/imx/devices-imx6.h>
 #include <mach/imx/iomux-mx6.h>
 #include <spi/spi.h>
 #include <mach/imx/spi.h>

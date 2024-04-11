@@ -19,8 +19,8 @@
 #include <mach/imx/iomux-mx25.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/iim.h>
+#include <platform_data/imxfb.h>
 #include <linux/err.h>
-#include <mach/imx/devices-imx25.h>
 #include <mach/imx/bbu.h>
 #include <asm/mmu.h>
 
@@ -164,8 +164,8 @@ static int tx25_init_fb(void)
 	mxc_iomux_v3_setup_multiple_pads(tx25_lcdc_gpios,
 			ARRAY_SIZE(tx25_lcdc_gpios));
 
-	imx25_add_fb(&tx25_fb_data);
-
+	add_generic_device("imxfb", -1, NULL, (resource_size_t)MX25_LCDC_BASE_ADDR, 0x1000,
+			   IORESOURCE_MEM, &tx25_fb_data);
 	return 0;
 }
 device_initcall(tx25_init_fb);

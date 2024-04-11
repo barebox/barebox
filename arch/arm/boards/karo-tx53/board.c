@@ -18,7 +18,6 @@
 
 #include <mach/imx/imx53-regs.h>
 #include <mach/imx/iomux-mx53.h>
-#include <mach/imx/devices-imx53.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/imx-nand.h>
 #include <mach/imx/iim.h>

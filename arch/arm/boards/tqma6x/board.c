@@ -12,13 +12,13 @@
 #include <of.h>
 
 #include <linux/mdio.h>
+#include <linux/phy.h>
 #include <linux/micrel_phy.h>
 #include <mfd/stmpe-i2c.h>
 
 #include <asm/armlinux.h>
 #include <asm/io.h>
 
-#include <mach/imx/devices-imx6.h>
 #include <mach/imx/imx6-regs.h>
 #include <mach/imx/iomux-mx6.h>
 #include <mach/imx/generic.h>

@@ -23,7 +23,6 @@
 #include <linux/usb/ulpi.h>
 #include <mach/imx/bbu.h>
 #include <mach/imx/iomux-mx27.h>
-#include <mach/imx/devices-imx27.h>
 
 #if defined(CONFIG_USB) && defined(CONFIG_USB_ULPI)
 static void pca100_usb_register(void)

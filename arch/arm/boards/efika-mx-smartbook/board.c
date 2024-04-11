@@ -19,7 +19,6 @@
 
 #include <asm/armlinux.h>
 
-#include <mach/imx/devices-imx51.h>
 #include <mach/imx/imx51-regs.h>
 #include <mach/imx/iomux-mx51.h>
 #include <mach/imx/revision.h>

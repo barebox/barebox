@@ -11,7 +11,6 @@
 #include <notifier.h>
 #include <linux/sizes.h>
 #include <envfs.h>
-#include <mach/imx/devices-imx27.h>
 #include <mach/imx/imx-pll.h>
 #include <mach/imx/imx27-regs.h>
 #include <platform_data/imxfb.h>
@@ -106,7 +105,8 @@ static int pcm038_init(void)
 	for (i = 0; i < ARRAY_SIZE(pcm038_pins); i++)
 		imx27_gpio_mode(pcm038_pins[i]);
 
-	imx27_add_fb(&pcm038_fb_data);
+	add_generic_device("imxfb", -1, NULL, (resource_size_t)MX27_LCDC_BASE_ADDR, 0x1000,
+			   IORESOURCE_MEM, &pcm038_fb_data);
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_NAND:

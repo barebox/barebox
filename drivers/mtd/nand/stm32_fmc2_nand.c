@@ -7,7 +7,7 @@
 #include <common.h>
 #include <init.h>
 #include <of_address.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/bitfield.h>
 #include <linux/clk.h>
 #include <linux/gpio/consumer.h>
@@ -551,7 +551,7 @@ static int stm32_fmc2_nfc_bch_correct(struct nand_chip *chip, u8 *dat,
 		return -ETIMEDOUT;
 	}
 
-	regmap_bulk_read(nfc->regmap, FMC2_BCHDSR0, ecc_sta, 5);
+	regmap_bulk_read(nfc->regmap, FMC2_BCHDSR0, ecc_sta, ARRAY_SIZE(ecc_sta));
 
 	stm32_fmc2_nfc_set_ecc(nfc, false);
 

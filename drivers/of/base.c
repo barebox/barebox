@@ -853,7 +853,7 @@ int of_property_count_elems_of_size(const struct device_node *np,
 
 	if (!prop)
 		return -EINVAL;
-	if (!prop->value)
+	if (!of_property_get_value(prop))
 		return -ENODATA;
 
 	if (prop->length % elem_size != 0) {
@@ -2009,9 +2009,9 @@ int of_property_read_string_helper(const struct device_node *np,
 
 	if (!prop)
 		return -EINVAL;
-	if (!prop->value)
+	p = of_property_get_value(prop);
+	if (!p)
 		return -ENODATA;
-	p = prop->value;
 	end = p + prop->length;
 
 	for (i = 0; p < end && (!out_strs || i < skip + sz); i++, p += l) {

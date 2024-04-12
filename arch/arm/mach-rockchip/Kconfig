@@ -109,6 +109,15 @@ config MACH_RADXA_CM3
 	help
 	  Say Y here if you are using a Radxa CM3
 
+config MACH_WOLFVISION_PF5
+	select ARCH_RK3568
+	select AIODEV
+	select BOARD_WOLFVISION
+	select ROCKCHIP_SARADC
+	bool "WolfVision PF5 mainboard"
+	help
+	  Say Y here if you are using a WolfVision PF5 mainboard
+
 endif
 
 comment "select board features:"

@@ -10,6 +10,10 @@
 #include <linux/basic_mmio_gpio.h>
 #include <mach/rockchip/rockchip.h>
 
+#define GPIO_TYPE_V1		(0)           /* GPIO Version ID reserved */
+#define GPIO_TYPE_V2		(0x01000C2B)  /* GPIO Version ID 0x01000C2B */
+#define GPIO_TYPE_V2_1		(0x0101157C)  /* GPIO Version ID 0x0101157C */
+
 struct rockchip_gpiochip {
 	struct device			*dev;
 	void __iomem			*reg_base;
@@ -131,6 +135,7 @@ static int rockchip_gpio_probe(struct device *dev)
 	struct gpio_chip *gpio;
 	struct resource *res;
 	void __iomem *reg_base;
+	u32 id, gpio_type;
 	int ret;
 
 	rgc = xzalloc(sizeof(*rgc));
@@ -153,7 +158,13 @@ static int rockchip_gpio_probe(struct device *dev)
 
 	reg_base = rgc->reg_base;
 
-	if (rockchip_soc() == 3568) {
+	id = readl(reg_base + 0x78);
+	if (id == GPIO_TYPE_V2 || id == GPIO_TYPE_V2_1)
+		gpio_type = GPIO_TYPE_V2;
+	else
+		gpio_type = GPIO_TYPE_V1;
+
+	if (gpio_type >= GPIO_TYPE_V2) {
 		gpio->ngpio = 32;
 		gpio->dev = dev;
 		gpio->ops = &rockchip_gpio_ops;
@@ -175,6 +186,9 @@ static int rockchip_gpio_probe(struct device *dev)
 		dev_err(dev, "failed to register gpio_chip:: %d\n", ret);
 		return ret;
 	}
+
+	dev_dbg(dev, "registered GPIOv%d-compatible bank\n",
+		gpio_type == GPIO_TYPE_V1 ? 1 : 2);
 
 	return 0;
 }

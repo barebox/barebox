@@ -63,8 +63,8 @@ static int rockchip_bbu_mmc_handler(struct bbu_handler *handler,
 	space = cdev_unallocated_space(cdev_by_name(cdevname));
 
 	if (space < IMG_OFFSET_0 + data->len) {
-		pr_err("Unallocated space on %s is too small for one image\n",
-		       data->devicefile);
+		pr_err("Unallocated space on %s (%lld) is too small for one image\n",
+		       data->devicefile, space);
 		return -ENOSPC;
 	}
 

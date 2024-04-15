@@ -97,6 +97,9 @@ int pwmchip_add(struct pwm_chip *chip, struct device *dev)
 	struct param_d *p;
 	int ret;
 
+	if (!chip->devname)
+		return -EINVAL;
+
 	if (_find_pwm(chip->devname))
 		return -EBUSY;
 

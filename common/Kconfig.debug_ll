@@ -1,0 +1,430 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config HAS_DEBUG_LL
+	bool
+
+config DEBUG_LL
+	bool
+	depends on HAS_DEBUG_LL
+	prompt "Low level debug messages (read help)"
+	help
+	  Enable this to get low level debug messages during barebox
+	  initialization. This is helpful if you are debugging code that
+	  executes before the console is initialized.
+
+	  This requires SoC specific support. Most SoCs require the
+	  debug UART to be initialized by a debugger or first stage
+	  bootloader.
+
+	  Note that selecting this option will limit barebox to a single
+	  UART definition, as specified below under "low-level debugging
+	  port". Attempting to boot the resulting image on a different
+	  platform *will not work*, so this option should not be enabled
+	  for builds that are intended to be portable.
+
+config DEBUG_IMX_UART
+	bool
+
+config DEBUG_ROCKCHIP_UART
+	bool
+
+config DEBUG_OMAP_UART
+	bool
+
+config DEBUG_BCM283X_UART
+	bool
+
+choice
+	prompt "Kernel low-level debugging port"
+	depends on DEBUG_LL
+
+config DEBUG_IMX1_UART
+	bool "i.MX1 Debug UART"
+	depends on ARCH_IMX1
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX1.
+
+config DEBUG_IMX21_UART
+	bool "i.MX21 Debug UART"
+	depends on ARCH_IMX21
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX21.
+
+config DEBUG_IMX25_UART
+	bool "i.MX25 Debug UART"
+	depends on ARCH_IMX25
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX25.
+
+config DEBUG_IMX27_UART
+	bool "i.MX27 Debug UART"
+	depends on ARCH_IMX27
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX27.
+
+config DEBUG_IMX31_UART
+	bool "i.MX31 Debug UART"
+	depends on ARCH_IMX31
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX31.
+
+config DEBUG_IMX35_UART
+	bool "i.MX35 Debug UART"
+	depends on ARCH_IMX35
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX35.
+
+config DEBUG_IMX50_UART
+	bool "i.MX50 Debug UART"
+	depends on ARCH_IMX50
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX50.
+
+config DEBUG_IMX51_UART
+	bool "i.MX51 Debug UART"
+	depends on ARCH_IMX51
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX51.
+
+config DEBUG_IMX53_UART
+	bool "i.MX53 Debug UART"
+	depends on ARCH_IMX53
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX53.
+
+config DEBUG_IMX6Q_UART
+	bool "i.MX6Q Debug UART"
+	depends on ARCH_IMX6
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX6Q.
+
+config DEBUG_IMX7D_UART
+	bool "i.MX7D Debug UART"
+	depends on ARCH_IMX7
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on i.MX7D.
+
+config DEBUG_IMX8M_UART
+	bool "i.MX8M Debug UART"
+	depends on ARCH_IMX8M
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on i.MX8M*.
+
+config DEBUG_IMX9_UART
+	bool "i.MX9 Debug UART"
+	depends on ARCH_IMX93
+	select DEBUG_IMX_UART
+
+config DEBUG_VEXPRESS_UART
+	bool "Vexpress Debug UART"
+	depends on ARCH_VEXPRESS
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on Vexpress.
+
+config DEBUG_VF610_UART
+	bool "VF610 Debug UART"
+	depends on ARCH_VF610
+	select DEBUG_IMX_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on VF610.
+
+config DEBUG_OMAP3_UART
+	bool "OMAP3 Debug UART"
+	depends on ARCH_OMAP3
+	select DEBUG_OMAP_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on OMAP3.
+
+config DEBUG_OMAP4_UART
+	bool "OMAP4 Debug UART"
+	depends on ARCH_OMAP4
+	select DEBUG_OMAP_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on OMAP4.
+
+config DEBUG_AM33XX_UART
+	bool "AM33XX Debug UART"
+	depends on ARCH_AM33XX
+	select DEBUG_OMAP_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on AM33XX.
+
+config DEBUG_ROCKCHIP_RK3188_UART
+	bool "RK3188 Debug UART"
+	depends on ARCH_RK3188
+	select DEBUG_ROCKCHIP_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on RK3188.
+
+config DEBUG_ROCKCHIP_RK3288_UART
+	bool "RK3288 Debug UART"
+	depends on ARCH_RK3288
+	select DEBUG_ROCKCHIP_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on RK3288.
+
+config DEBUG_ROCKCHIP_RK3568_UART
+	bool "RK3568 Debug UART"
+	depends on ARCH_RK3568
+	select DEBUG_ROCKCHIP_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on RK3568.
+
+config DEBUG_ROCKCHIP_RK3588_UART
+	bool "RK3588 Debug UART"
+	depends on ARCH_RK3588
+	select DEBUG_ROCKCHIP_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on RK3588.
+
+config DEBUG_ROCKCHIP_RK3399_UART
+	bool "RK3399 Debug UART"
+	depends on ARCH_RK3399
+	select DEBUG_ROCKCHIP_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on RK3399.
+
+config DEBUG_SOCFPGA_UART0
+	bool "Use SOCFPGA UART0 for low-level debug"
+	depends on ARCH_SOCFPGA
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on SOCFPGA(Cyclone 5 and Arria 5) based platforms.
+
+config DEBUG_SOCFPGA_UART1
+	bool "Use SOCFPGA UART1 for low-level debug"
+	depends on ARCH_SOCFPGA
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on SOCFPGA(Arria 10) based platforms.
+
+config DEBUG_STM32MP_UART
+	bool "Use STM32MP UART4 for low-level debug"
+	depends on ARCH_STM32
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on STM32MP.
+
+config DEBUG_RPI1_UART
+	bool "RaspberryPi 1 PL011 UART"
+	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
+	help
+	  Say Y here if you want low-level debugging support on
+	  RaspberryPi 1 boards.
+
+config DEBUG_AT91_UART
+	bool "AT91 Debug UART"
+	depends on ARCH_AT91
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on AT91 based platforms.
+
+config DEBUG_RPI2_3_UART
+	bool "RaspberryPi 2/3 PL011 UART"
+	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
+	help
+	  Say Y here if you want low-level debugging support on
+	  RaspberryPi 2 and 3 boards.
+
+config DEBUG_RPI3_MINI_UART
+	bool "RaspberryPi 3 mini UART"
+	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
+	help
+	  Say Y here if you want low-level debugging support on
+	  RaspberryPi 3 board mini UART.
+
+config DEBUG_RPI4_MINI_UART
+	bool "RaspberryPi 4 mini UART"
+	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
+	help
+	  Say Y here if you want low-level debugging support on
+	  RaspberryPi 4 board mini UART.
+
+config DEBUG_ZYNQMP_UART
+	bool "Zynqmp Debug UART"
+	depends on ARCH_ZYNQMP
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on Zynqmp.
+
+config DEBUG_ERIZO
+	bool "Erizo ns16550 port"
+	depends on SOC_ERIZO
+	select DEBUG_LL_NS16550
+
+config DEBUG_STARFIVE
+	bool "Starfive ns16550 serial0 port"
+	depends on SOC_STARFIVE
+	select DEBUG_LL_NS16550
+
+config DEBUG_RISCV_VIRT
+	bool "RISC-V Virt ns16550 port"
+	depends on SOC_VIRT
+	select DEBUG_LL_NS16550
+
+config DEBUG_RISCVEMU_HTIF
+	bool "riscvemu HTIF port"
+	depends on SOC_VIRT
+	help
+	  When run without graphics support, tinyemu will expose access
+	  to the Virt I/O console as HTIF blocking console device as well.
+	  This is useful for low level debugging before Virt I/O DMA is
+	  initialized.
+
+config DEBUG_SIFIVE
+	bool "SiFive serial0 port"
+	depends on SOC_SIFIVE
+
+config DEBUG_LITEX
+	bool "LiteX serial port"
+	depends on SOC_LITEX
+
+config DEBUG_SUN20I
+	bool "Allwinner Sun20i ns16550 serial0 port"
+	depends on SOC_ALLWINNER_SUN20I
+	select DEBUG_LL_NS16550
+
+config DEBUG_AM62X_UART
+	bool "Texas Instruments AM62X debug UART"
+	depends on ARCH_K3
+
+config DEBUG_QEMU_ARM64_VIRT
+	bool "QEMU ARM64 Virt PL011 console"
+	depends on ARCH_ARM64_VIRT
+
+endchoice
+
+config DEBUG_LL_NS16550
+	bool
+	help
+	  Selected by RISC-V platforms that use ns16550 for debug_ll
+
+config DEBUG_IMX_UART_PORT
+	int "i.MX Debug UART Port Selection" if DEBUG_IMX1_UART || \
+						DEBUG_IMX21_UART || \
+						DEBUG_IMX25_UART || \
+						DEBUG_IMX27_UART || \
+						DEBUG_IMX31_UART || \
+						DEBUG_IMX35_UART || \
+						DEBUG_IMX51_UART || \
+						DEBUG_IMX53_UART || \
+						DEBUG_IMX6Q_UART || \
+						DEBUG_IMX7D_UART || \
+						DEBUG_IMX8M_UART || \
+						DEBUG_IMX9_UART || \
+						DEBUG_VF610_UART
+	default 1
+	depends on ARCH_IMX
+	help
+	  Choose UART port on which kernel low-level debug messages
+	  should be output.
+
+config DEBUG_K3_UART_PORT
+	int "K3 Debug UART Port Selection" if DEBUG_AM62X_UART
+	default 0
+	depends on ARCH_K3
+	help
+	  Choose UART port on which kernel low-level debug messages
+	  should be output. Possible values are:
+	  AM62x: 0 - 6
+
+config DEBUG_OMAP_UART_PORT
+	int "OMAP Debug UART Port Selection" if DEBUG_OMAP3_UART || \
+						DEBUG_OMAP4_UART || \
+						DEBUG_AM33XX_UART || \
+						DEBUG_AM62X_UART
+	default 1
+	depends on ARCH_OMAP
+	help
+	  Choose UART port on which kernel low-level debug messages
+	  should be output. Possible values are:
+	  OMAP3: 1 - 3
+	  OMAP4: 1 - 3
+	  AM33XX: 0 - 2
+
+config DEBUG_ROCKCHIP_UART_PORT
+	int "RK3xxx UART debug port" if DEBUG_ROCKCHIP_RK3188_UART || \
+				DEBUG_ROCKCHIP_RK3288_UART || \
+				DEBUG_ROCKCHIP_RK3568_UART || \
+				DEBUG_ROCKCHIP_RK3588_UART || \
+				DEBUG_ROCKCHIP_RK3399_UART
+	default 2
+	depends on ARCH_ROCKCHIP
+	help
+	  Choose UART port on which kernel low-level debug messages
+	  should be output.
+
+config DEBUG_SOCFPGA_UART_PHYS_ADDR
+	hex "Physical base address of debug UART" if DEBUG_LL
+	default 0xffc02000 if DEBUG_SOCFPGA_UART0
+	default 0xffc02100 if DEBUG_SOCFPGA_UART1
+	depends on ARCH_SOCFPGA
+
+config DEBUG_SOCFPGA_UART_CLOCK
+	int "SoCFPGA UART debug clock" if DEBUG_LL
+	default 100000000 if ARCH_SOCFPGA_CYCLONE5
+	default  50000000 if ARCH_SOCFPGA_ARRIA10
+	depends on ARCH_SOCFPGA
+	help
+	  Choose UART root clock.
+
+
+config DEBUG_LAYERSCAPE_UART_PORT
+	int "Layerscape UART port selection"
+	depends on ARCH_LAYERSCAPE
+	default 1
+	help
+	  Select the UART port number used for early debugging here. Port
+	  numbers start counting from 1.
+
+config DEBUG_AT91_UART_BASE
+	hex "AT91 Debug UART Port Selection" if DEBUG_AT91_UART
+	default 0xfffff200 if SOC_AT91RM9200  || SOC_AT91SAM9260 \
+	                   || SOC_AT91SAM9261 || SOC_AT91SAM9X5  \
+			   || SOC_AT91SAM9N12
+	default 0xffffee00 if SOC_AT91SAM9263 || SOC_AT91SAM9G45 || SOC_SAMA5D3
+	default 0xfc069000 if SOC_SAMA5D4
+	default 0xf8020000 if SOC_SAMA5D2
+	default 0xfffff200
+	depends on ARCH_AT91
+	help
+	  Specify UART port base address on which barebox low-level
+	  debug messages should be output.

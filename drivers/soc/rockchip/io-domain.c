@@ -165,7 +165,7 @@ static int rockchip_iodomain_probe(struct device *dev)
 		if (!supply_name)
 			continue;
 
-		reg = regulator_get(dev, supply_name);
+		reg = regulator_get_optional(dev, supply_name);
 		if (IS_ERR(reg)) {
 			ret = PTR_ERR(reg);
 

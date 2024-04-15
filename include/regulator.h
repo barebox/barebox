@@ -3,6 +3,7 @@
 #define __REGULATOR_H
 
 #include <linux/bitops.h>
+#include <linux/err.h>
 
 struct device;
 
@@ -283,5 +284,12 @@ static inline int regulator_get_voltage(struct regulator *regulator)
 }
 
 #endif
+
+static inline struct regulator *regulator_get_optional(struct device *dev,
+						       const char *id)
+{
+	return regulator_get(dev, id) ?: ERR_PTR(-ENODEV);
+}
+
 
 #endif /* __REGULATOR_H */

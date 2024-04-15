@@ -15,10 +15,10 @@
 
 static bool is_equal_state(struct pwm_state *state1, struct pwm_state *state2)
 {
-	return (state1->period_ns == state2->period_ns)
-		&& (state1->duty_ns == state2->duty_ns)
+	return (state1->period == state2->period)
+		&& (state1->duty_cycle == state2->duty_cycle)
 		&& (state1->polarity == state2->polarity)
-		&& (state1->p_enable == state2->p_enable);
+		&& (state1->enabled == state2->enabled);
 }
 
 static int do_pwm_cmd(int argc, char *argv[])
@@ -109,12 +109,12 @@ static int do_pwm_cmd(int argc, char *argv[])
 	/* argc will be at least 3 with a valid devname */
 	if (verbose || (argc <= 3)) {
 		printf("pwm params for '%s':\n", devname);
-		printf("  period   : %u (ns)\n", state.period_ns);
-		printf("  duty     : %u (ns)\n", state.duty_ns);
-		printf("  enabled  : %d\n", state.p_enable);
+		printf("  period   : %u (ns)\n", state.period);
+		printf("  duty     : %u (ns)\n", state.duty_cycle);
+		printf("  enabled  : %d\n", state.enabled);
 		printf("  polarity : %s\n", state.polarity == 0 ? "Normal" : "Inverted");
-		if (state.period_ns)
-			printf("  freq     : %lu (Hz)\n", HZ_FROM_NANOSECONDS(state.period_ns));
+		if (state.period)
+			printf("  freq     : %lu (Hz)\n", HZ_FROM_NANOSECONDS(state.period));
 		else
 			printf("  freq     : -\n");
 
@@ -122,7 +122,7 @@ static int do_pwm_cmd(int argc, char *argv[])
 		return 0;
 	}
 
-	if ((state.period_ns == 0) && (freq < 0) && (period < 0)) {
+	if ((state.period == 0) && (freq < 0) && (period < 0)) {
 		printf(" need to know some timing info: freq or period\n");
 		pwm_free(pwm);
 		return COMMAND_ERROR;
@@ -135,24 +135,24 @@ static int do_pwm_cmd(int argc, char *argv[])
 
 	/* period */
 	if (freq > 0) {
-		state.p_enable = true;
-		state.period_ns = HZ_TO_NANOSECONDS(freq);
+		state.enabled = true;
+		state.period = HZ_TO_NANOSECONDS(freq);
 		if (use_default_width && (width < 0)) {
 			width = 50;
 		}
 	} else if (period > 0) {
-		state.p_enable = true;
-		state.period_ns = period;
+		state.enabled = true;
+		state.period = period;
 	}
 
 	/* duty */
 	if (width >= 0) {
 		pwm_set_relative_duty_cycle(&state, width, 100);
 	} else if (duty >= 0) {
-		state.duty_ns = duty;
+		state.duty_cycle = duty;
 	}
 
-	if (state.duty_ns > state.period_ns) {
+	if (state.duty_cycle > state.period) {
 		printf(" duty_ns must not be greater than period_ns\n");
 	}
 
@@ -167,7 +167,7 @@ static int do_pwm_cmd(int argc, char *argv[])
 	 * output (eg if duty => 0) and stopping in one command
 	 */
 	if (stop > 0) {
-		state.p_enable = false;
+		state.enabled = false;
 		error = pwm_apply_state(pwm, &state);
 		if (error < 0)
 			printf(" error while stopping: %d\n", error);

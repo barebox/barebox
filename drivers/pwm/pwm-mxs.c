@@ -55,9 +55,9 @@ static int mxs_pwm_apply(struct pwm_chip *chip,
 	unsigned long long c;
 	bool enabled;
 
-	enabled = chip->state.p_enable;
+	enabled = chip->state.enabled;
 
-	if (enabled && !state->p_enable) {
+	if (enabled && !state->enabled) {
 		writel(1 << mxs->chip.id, mxs->mxs->base + PWM_CTRL + CLR);
 		return 0;
 	}
@@ -65,7 +65,7 @@ static int mxs_pwm_apply(struct pwm_chip *chip,
 	rate = clk_get_rate(mxs->mxs->clk);
 	while (1) {
 		c = rate / cdiv[div];
-		c = c * state->period_ns;
+		c = c * state->period;
 		do_div(c, 1000000000);
 		if (c < PERIOD_PERIOD_MAX)
 			break;
@@ -75,8 +75,8 @@ static int mxs_pwm_apply(struct pwm_chip *chip,
 	}
 
 	period_cycles = c;
-	c *= state->duty_ns;
-	do_div(c, state->period_ns);
+	c *= state->duty_cycle;
+	do_div(c, state->period);
 	duty_cycles = c;
 
 	writel(duty_cycles << 16,
@@ -85,7 +85,7 @@ static int mxs_pwm_apply(struct pwm_chip *chip,
 	       PERIOD_INACTIVE_LOW | PERIOD_CDIV(div),
 			mxs->mxs->base + PWM_PERIOD0 + mxs->chip.id * 0x20);
 
-	if (!enabled && state->p_enable)
+	if (!enabled && state->enabled)
 		writel(1 << mxs->chip.id, mxs->mxs->base + PWM_CTRL + SET);
 
 	return 0;

@@ -162,7 +162,7 @@ static int imx_pwm_config_v2(struct pwm_chip *chip,
 
 	writel(cr, imx->mmio_base + MX3_PWMCR);
 
-	if (!chip->state.p_enable)
+	if (!chip->state.enabled)
 		imx_pwm_clk_disable_v2(imx);
 
 	return 0;
@@ -199,18 +199,18 @@ static int imx_pwm_apply(struct pwm_chip *chip,
 	bool enabled;
 	int ret;
 
-	enabled = chip->state.p_enable;
+	enabled = chip->state.enabled;
 
-	if (enabled && !state->p_enable) {
+	if (enabled && !state->enabled) {
 		imx->set_enable(chip, false);
 		return 0;
 	}
 
-	ret = imx->config(chip, state->duty_ns, state->period_ns);
+	ret = imx->config(chip, state->duty_cycle, state->period);
 	if (ret)
 		return ret;
 
-	if (!enabled && state->p_enable)
+	if (!enabled && state->enabled)
 		imx->set_enable(chip, true);
 
 	return 0;

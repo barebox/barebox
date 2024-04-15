@@ -12,16 +12,16 @@ struct device;
 
 /*
  * struct pwm_state - state of a PWM channel
- * @period_ns: PWM period (in nanoseconds)
- * @duty_ns: PWM duty cycle (in nanoseconds)
+ * @period: PWM period (in nanoseconds)
+ * @duty_cycle: PWM duty cycle (in nanoseconds)
  * @polarity: PWM polarity
- * @p_enable: PWM enabled status
+ * @enabled: PWM enabled status
  */
 struct pwm_state {
-	unsigned int period_ns;
-	unsigned int duty_ns;
+	unsigned int period;
+	unsigned int duty_cycle;
 	unsigned int polarity;
-	unsigned int p_enable;
+	unsigned int enabled;
 };
 
 void pwm_print(void);
@@ -91,9 +91,9 @@ pwm_set_relative_duty_cycle(struct pwm_state *state, unsigned int duty_cycle,
 	if (!scale || duty_cycle > scale)
 		return -EINVAL;
 
-	state->duty_ns = DIV_ROUND_CLOSEST_ULL((u64)duty_cycle *
-					       state->period_ns,
-					       scale);
+	state->duty_cycle = DIV_ROUND_CLOSEST_ULL((u64)duty_cycle *
+						  state->period,
+						  scale);
 
 	return 0;
 }

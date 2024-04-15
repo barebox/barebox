@@ -76,7 +76,7 @@ static int set_enable(struct param_d *p, void *priv)
 {
 	struct pwm_device *pwm = priv;
 
-	if (pwm->params.p_enable)
+	if (pwm->params.enabled)
 		pwm_enable(pwm);
 	else
 		pwm_disable(pwm);
@@ -118,17 +118,17 @@ int pwmchip_add(struct pwm_chip *chip)
 	list_add_tail(&pwm->node, &pwm_list);
 
 	p = dev_add_param_uint32(&pwm->dev, "duty_ns", apply_params,
-			NULL, &pwm->params.duty_ns, "%u", pwm);
+			NULL, &pwm->params.duty_cycle, "%u", pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
 	p = dev_add_param_uint32(&pwm->dev, "period_ns", apply_params,
-			NULL, &pwm->params.period_ns, "%u", pwm);
+			NULL, &pwm->params.period, "%u", pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
 	p = dev_add_param_bool(&pwm->dev, "enable", set_enable,
-			NULL, &pwm->params.p_enable, pwm);
+			NULL, &pwm->params.enabled, pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
@@ -309,9 +309,9 @@ void pwm_init_state(const struct pwm_device *pwm,
 	/* Then fill it with the reference config */
 	pwm_get_args(pwm, &args);
 
-	state->period_ns = args.period_ns;
+	state->period = args.period_ns;
 	state->polarity = args.polarity;
-	state->duty_ns = 0;
+	state->duty_cycle = 0;
 }
 EXPORT_SYMBOL_GPL(pwm_init_state);
 
@@ -320,10 +320,10 @@ int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *state)
 	struct pwm_chip *chip = pwm->chip;
 	int ret = -EINVAL;
 
-	if (state->period_ns == 0)
+	if (state->period == 0)
 		goto err;
 
-	if (state->duty_ns > state->period_ns)
+	if (state->duty_cycle > state->period)
 		goto err;
 
 	ret = chip->ops->apply(chip, pwm, state);
@@ -346,18 +346,18 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
 		return -EINVAL;
 
 	pwm_get_state(pwm, &state);
-	if (state.duty_ns == duty_ns && state.period_ns == period_ns)
+	if (state.duty_cycle == duty_ns && state.period == period_ns)
 		return 0;
 
-	state.duty_ns = duty_ns;
-	state.period_ns = period_ns;
+	state.duty_cycle = duty_ns;
+	state.period = period_ns;
 	return pwm_apply_state(pwm, &state);
 }
 EXPORT_SYMBOL_GPL(pwm_config);
 
 unsigned int pwm_get_period(struct pwm_device *pwm)
 {
-	return pwm->chip->state.period_ns;
+	return pwm->chip->state.period;
 }
 
 /*
@@ -368,10 +368,10 @@ int pwm_enable(struct pwm_device *pwm)
 	struct pwm_state state;
 
 	pwm_get_state(pwm, &state);
-	if (state.p_enable)
+	if (state.enabled)
 		return 0;
 
-	state.p_enable = true;
+	state.enabled = true;
 	return pwm_apply_state(pwm, &state);
 }
 EXPORT_SYMBOL_GPL(pwm_enable);
@@ -384,10 +384,10 @@ void pwm_disable(struct pwm_device *pwm)
 	struct pwm_state state;
 
 	pwm_get_state(pwm, &state);
-	if (!state.p_enable)
+	if (!state.enabled)
 		return;
 
-	state.p_enable = false;
+	state.enabled = false;
 	pwm_apply_state(pwm, &state);
 }
 EXPORT_SYMBOL_GPL(pwm_disable);

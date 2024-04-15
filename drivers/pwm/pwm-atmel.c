@@ -194,7 +194,7 @@ static int atmel_pwm_calculate_cprd_and_pres(struct pwm_chip *chip,
 					     unsigned long *cprd, u32 *pres)
 {
 	struct atmel_pwm_chip *atmel_pwm = to_atmel_pwm_chip(chip);
-	unsigned long long cycles = state->period_ns;
+	unsigned long long cycles = state->period;
 	int shift;
 
 	/* Calculate the period cycles and prescale value */
@@ -227,7 +227,7 @@ static void atmel_pwm_calculate_cdty(const struct pwm_state *state,
 				     unsigned long clkrate, unsigned long cprd,
 				     u32 pres, unsigned long *cdty)
 {
-	unsigned long long cycles = state->duty_ns;
+	unsigned long long cycles = state->duty_cycle;
 
 	cycles *= clkrate;
 	do_div(cycles, NSEC_PER_SEC);
@@ -298,12 +298,12 @@ static int atmel_pwm_apply(struct pwm_chip *chip,
 
 	cstate = chip->state;
 
-	if (state->p_enable) {
+	if (state->enabled) {
 		unsigned long clkrate = clk_get_rate(atmel_pwm->clk);
 
-		if (cstate.p_enable &&
+		if (cstate.enabled &&
 		    cstate.polarity == state->polarity &&
-		    cstate.period_ns == state->period_ns) {
+		    cstate.period == state->period) {
 			u32 cmr = atmel_pwm_ch_readl(atmel_pwm, chip->id, PWM_CMR);
 
 			cprd = atmel_pwm_ch_readl(atmel_pwm, chip->id,
@@ -325,7 +325,7 @@ static int atmel_pwm_apply(struct pwm_chip *chip,
 
 		atmel_pwm_calculate_cdty(state, clkrate, cprd, pres, &cdty);
 
-		if (cstate.p_enable) {
+		if (cstate.enabled) {
 			atmel_pwm_disable(chip, false);
 		} else {
 			ret = clk_enable(atmel_pwm->clk);
@@ -345,7 +345,7 @@ static int atmel_pwm_apply(struct pwm_chip *chip,
 		atmel_pwm_ch_writel(atmel_pwm, chip->id, PWM_CMR, val);
 		atmel_pwm_set_cprd_cdty(chip, cprd, cdty);
 		atmel_pwm_writel(atmel_pwm, PWM_ENA, 1 << chip->id);
-	} else if (cstate.p_enable) {
+	} else if (cstate.enabled) {
 		atmel_pwm_disable(chip, true);
 	}
 

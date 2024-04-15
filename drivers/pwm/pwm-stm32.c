@@ -206,9 +206,9 @@ static int stm32_pwm_apply(struct pwm_chip *chip,
 	struct stm32_pwm *priv = to_stm32_pwm_dev(chip);
 	int ret;
 
-	enabled = chip->state.p_enable;
+	enabled = chip->state.enabled;
 
-	if (enabled && !state->p_enable) {
+	if (enabled && !state->enabled) {
 		stm32_pwm_disable(priv, chip->id);
 		return 0;
 	}
@@ -217,11 +217,11 @@ static int stm32_pwm_apply(struct pwm_chip *chip,
 		stm32_pwm_set_polarity(priv, chip->id, state->polarity);
 
 	ret = stm32_pwm_config(priv, chip->id,
-			       state->duty_ns, state->period_ns);
+			       state->duty_cycle, state->period);
 	if (ret)
 		return ret;
 
-	if (!enabled && state->p_enable)
+	if (!enabled && state->enabled)
 		ret = stm32_pwm_enable(priv, chip->id);
 
 	return ret;

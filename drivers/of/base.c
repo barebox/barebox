@@ -2346,6 +2346,9 @@ struct property *of_copy_property(const struct device_node *src,
 	if (!prop)
 		return NULL;
 
+	if (of_property_present(dst, propname))
+		return ERR_PTR(-EEXIST);
+
 	return of_new_property(dst, propname,
 			       of_property_get_value(prop), prop->length);
 }

@@ -1434,6 +1434,8 @@ static int mmc_select_hs200(struct mci *mci)
 		/* TODO  actually set drive strength instead of 0. Currently unsupported. */
 		val = EXT_CSD_TIMING_HS200 | 0 << EXT_CSD_DRV_STR_SHIFT;
 		err = mci_switch(mci, EXT_CSD_HS_TIMING, val);
+		if (err == -EIO)
+			return -EBADMSG;
 		if (err)
 			goto err;
 

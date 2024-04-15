@@ -244,7 +244,7 @@ struct pwm_device *of_pwm_request(struct device_node *np, const char *con_id)
 	pwm->args.polarity = PWM_POLARITY_NORMAL;
 
 	if (args.args_count > 2 && args.args[2] & PWM_POLARITY_INVERTED)
-		pwm->args.polarity = PWM_POLARITY_INVERTED;
+		pwm->args.polarity = PWM_POLARITY_INVERSED;
 
 	ret = __pwm_request(pwm);
 	if (ret)

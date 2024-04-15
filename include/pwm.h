@@ -8,7 +8,19 @@
 struct pwm_device;
 struct device;
 
-#define	PWM_POLARITY_NORMAL	0
+/**
+ * enum pwm_polarity - polarity of a PWM signal
+ * @PWM_POLARITY_NORMAL: a high signal for the duration of the duty-
+ * cycle, followed by a low signal for the remainder of the pulse
+ * period
+ * @PWM_POLARITY_INVERSED: a low signal for the duration of the duty-
+ * cycle, followed by a high signal for the remainder of the pulse
+ * period
+ */
+enum pwm_polarity {
+	PWM_POLARITY_NORMAL,
+	PWM_POLARITY_INVERSED,
+};
 
 /*
  * struct pwm_state - state of a PWM channel

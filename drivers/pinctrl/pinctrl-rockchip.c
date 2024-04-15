@@ -2173,6 +2173,11 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
 				ret = 3;
 		}
 
+		if (ret < 0) {
+			dev_err(dev, "unsupported pull setting %d\n", pull);
+			return ret;
+		}
+
 		/* enable the write to the equivalent lower bits */
 		data = ((1 << RK3188_PULL_BITS_PER_PIN) - 1) << (bit + 16);
 		rmask = data | (data >> 16);

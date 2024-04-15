@@ -146,6 +146,9 @@ struct partition_desc *partition_table_read(struct block_device *blk)
 		goto err;
 
 	pdesc = parser->parse(buf, blk);
+	if (!pdesc)
+		goto err;
+
 	pdesc->parser = parser;
 err:
 	free(buf);

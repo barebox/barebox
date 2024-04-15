@@ -482,10 +482,10 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 	int nb_part;
 	struct efi_partition *epart;
 	struct partition *pentry;
-	struct efi_partition_desc *epd = NULL;
+	struct efi_partition_desc *epd;
 
 	if (!find_valid_gpt(buf, blk, &gpt, &ptes) || !gpt || !ptes)
-		goto out;
+		return NULL;
 
 	snprintf(blk->cdev.diskuuid, sizeof(blk->cdev.diskuuid), "%pUl", &gpt->disk_guid);
 	dev_add_param_string_fixed(blk->dev, "guid", blk->cdev.diskuuid);
@@ -525,7 +525,6 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 		pentry->num = i;
 		list_add_tail(&pentry->list, &epd->pd.partitions);
 	}
-out:
 
 	return &epd->pd;
 }

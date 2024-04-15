@@ -156,8 +156,6 @@ on top of a block device which caches blocks previously read from the
 hardware driver, often by means of DMA. There are a number of improvements
 possible to increase throughput of barebox I/O:
 
-    - Support for higher MMC speed modes: The maximum currently supported
-      is 50/52 MHz and no DDR.
     - More efficient erase: Communication protocols like Android Fastboot
       encode large blocks of zeros specially. MMCs with erase-to-zero
       capability could perform such erases in the background instead

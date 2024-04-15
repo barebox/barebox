@@ -91,7 +91,7 @@ static int set_enable(struct param_d *p, void *priv)
  * register a new pwm. pwm->devname must be initialized, usually
  * from dev_name(dev) from the hardware driver.
  */
-int pwmchip_add(struct pwm_chip *chip, struct device *dev)
+int pwmchip_add(struct pwm_chip *chip)
 {
 	struct pwm_device *pwm;
 	struct param_d *p;
@@ -105,11 +105,11 @@ int pwmchip_add(struct pwm_chip *chip, struct device *dev)
 
 	pwm = xzalloc(sizeof(*pwm));
 	pwm->chip = chip;
-	pwm->hwdev = dev;
+	pwm->hwdev = chip->dev;
 
 	dev_set_name(&pwm->dev, chip->devname);
 	pwm->dev.id = DEVICE_ID_SINGLE;
-	pwm->dev.parent = dev;
+	pwm->dev.parent = chip->dev;
 
 	ret = register_device(&pwm->dev);
 	if (ret)

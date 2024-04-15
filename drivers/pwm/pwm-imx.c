@@ -267,6 +267,7 @@ static int imx_pwm_probe(struct device *dev)
 		return PTR_ERR(iores);
 	imx->mmio_base = IOMEM(iores->start);
 
+	imx->chip.dev = dev;
 	imx->chip.ops = &imx_pwm_ops;
 	if (dev->of_node) {
 		imx->chip.devname = of_alias_get(dev->of_node);
@@ -280,7 +281,7 @@ static int imx_pwm_probe(struct device *dev)
 	imx->config = data->config;
 	imx->set_enable = data->set_enable;
 
-	return pwmchip_add(&imx->chip, dev);;
+	return pwmchip_add(&imx->chip);
 }
 
 static struct driver imx_pwm_driver = {

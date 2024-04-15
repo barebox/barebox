@@ -128,12 +128,14 @@ struct pwm_ops {
 
 /**
  * struct pwm_chip - abstract a PWM
+ * @dev: device providing the PWMs
  * @id: The id of this pwm
  * @devname: unique identifier for this pwm
  * @ops: The callbacks for this PWM
  * @state: current state of the PWM
  */
 struct pwm_chip {
+	struct device		*dev;
 	int			id;
 	const char		*devname;
 	const struct pwm_ops	*ops;
@@ -141,7 +143,7 @@ struct pwm_chip {
 	struct pwm_state	state;
 };
 
-int pwmchip_add(struct pwm_chip *chip, struct device *dev);
+int pwmchip_add(struct pwm_chip *chip);
 int pwmchip_remove(struct pwm_chip *chip);
 
 #endif /* __PWM_H */

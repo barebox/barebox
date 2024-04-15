@@ -377,8 +377,9 @@ static int stm32_pwm_probe(struct device *dev)
 
 		chip->ops = &stm32pwm_ops;
 		chip->id = i;
+		chip->dev = dev;
 
-		ret = pwmchip_add(chip, dev);
+		ret = pwmchip_add(chip);
 		if (ret < 0) {
 			dev_err(dev, "failed to add pwm chip %d\n", ret);
 			return ret;

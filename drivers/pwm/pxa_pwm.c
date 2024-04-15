@@ -141,9 +141,10 @@ static int pxa_pwm_probe(struct device *dev)
 		return PTR_ERR(iores);
 	chip->iobase = IOMEM(iores->start);
 	chip->id = dev->id;
+	chip->chip.dev = dev;
 	dev->priv = chip;
 
-	return pwmchip_add(&chip->chip, dev);
+	return pwmchip_add(&chip->chip);
 }
 
 static struct driver pxa_pwm_driver = {

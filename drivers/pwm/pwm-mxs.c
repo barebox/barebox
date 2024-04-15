@@ -130,9 +130,10 @@ static int mxs_pwm_probe(struct device *dev)
 		mxspwm->chip.ops = &mxs_pwm_ops;
 		mxspwm->chip.devname = basprintf("pwm%d", i);
 		mxspwm->chip.id = i;
+		mxspwm->chip.dev = dev;
 		mxspwm->mxs = mxs;
 
-		ret = pwmchip_add(&mxspwm->chip, dev);
+		ret = pwmchip_add(&mxspwm->chip);
 		if (ret < 0) {
 			dev_err(dev, "failed to add pwm chip %d\n", ret);
 			return ret;

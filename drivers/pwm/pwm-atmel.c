@@ -453,7 +453,8 @@ static int atmel_pwm_probe(struct device *dev)
 
 		chip->ops = &atmel_pwm_ops;
 		chip->id = i;
-		ret = pwmchip_add(chip, dev);
+		chip->dev = dev;
+		ret = pwmchip_add(chip);
 		if (ret) {
 			dev_err(dev, "failed to add pwm chip %d\n", ret);
 			return ret;

@@ -45,6 +45,8 @@ struct gpio_descs {
 	DECLARE_FLEX_ARRAY(struct gpio_desc *, desc);
 };
 
+bool gpiod_slice_acquired(struct gpio_desc *);
+
 #if defined(CONFIG_OFDEVICE) && defined(CONFIG_GPIOLIB)
 
 /* returned gpio descriptor can be passed to any normal gpio_* function */

@@ -77,7 +77,9 @@ static void pxa_pwm_disable(struct pxa_pwm_chip *pxa_pwm)
  * duty_ns      = 10^9 * (PRESCALE + 1) * DC / PWM_CLK_RATE
  * PWM_CLK_RATE = 13 MHz
  */
-static int pxa_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
+static int pxa_pwm_apply(struct pwm_chip *chip,
+			 struct pwm_device *pwm,
+			 const struct pwm_state *state)
 {
 	unsigned long long c;
 	unsigned long period_cycles, prescale, pv, dc;

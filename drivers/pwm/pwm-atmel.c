@@ -286,7 +286,9 @@ static void atmel_pwm_disable(struct pwm_chip *chip, bool disable_clk)
 		clk_disable(atmel_pwm->clk);
 }
 
-static int atmel_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
+static int atmel_pwm_apply(struct pwm_chip *chip,
+			   struct pwm_device *pwm,
+			   const struct pwm_state *state)
 {
 	struct atmel_pwm_chip *atmel_pwm = to_atmel_pwm_chip(chip);
 	struct pwm_state cstate;

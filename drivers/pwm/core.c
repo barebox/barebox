@@ -326,7 +326,7 @@ int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *state)
 	if (state->duty_ns > state->period_ns)
 		goto err;
 
-	ret = chip->ops->apply(chip, state);
+	ret = chip->ops->apply(chip, pwm, state);
 err:
 	if (ret == 0)
 		chip->state = *state;

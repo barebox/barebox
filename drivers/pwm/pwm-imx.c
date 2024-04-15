@@ -191,7 +191,9 @@ static void imx_pwm_set_enable_v2(struct pwm_chip *chip, bool enable)
 		imx_pwm_clk_disable_v2(imx);
 }
 
-static int imx_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
+static int imx_pwm_apply(struct pwm_chip *chip,
+			 struct pwm_device *pwm,
+			 const struct pwm_state *state)
 {
 	struct imx_chip *imx = to_imx_chip(chip);
 	bool enabled;

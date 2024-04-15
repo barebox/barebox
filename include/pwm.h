@@ -123,7 +123,8 @@ int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *state);
 struct pwm_ops {
 	int (*request)(struct pwm_chip *chip);
 	void (*free)(struct pwm_chip *chip);
-	int (*apply)(struct pwm_chip *chip, const struct pwm_state *state);
+	int (*apply)(struct pwm_chip *chip, struct pwm_device *pwm,
+		     const struct pwm_state *state);
 };
 
 /**

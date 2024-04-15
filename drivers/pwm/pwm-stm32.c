@@ -198,7 +198,9 @@ static void stm32_pwm_disable(struct stm32_pwm *priv, unsigned ch)
 	clk_disable(priv->clk);
 }
 
-static int stm32_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
+static int stm32_pwm_apply(struct pwm_chip *chip,
+			   struct pwm_device *pwm,
+			   const struct pwm_state *state)
 {
 	bool enabled;
 	struct stm32_pwm *priv = to_stm32_pwm_dev(chip);

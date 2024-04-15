@@ -44,7 +44,9 @@ struct mxs_pwm {
 
 #define to_mxs_pwm_chip(_chip) container_of(_chip, struct mxs_pwm_chip, chip)
 
-static int mxs_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
+static int mxs_pwm_apply(struct pwm_chip *chip,
+			 struct pwm_device *pwm,
+			 const struct pwm_state *state)
 {
 	struct mxs_pwm_chip *mxs = to_mxs_pwm_chip(chip);
 	int div = 0;

@@ -269,17 +269,6 @@ int jffs2_do_fill_super(struct super_block *sb, int silent)
 
 	c = JFFS2_SB_INFO(sb);
 
-#ifndef CONFIG_JFFS2_FS_WRITEBUFFER
-	if (c->mtd->type == MTD_NANDFLASH) {
-		pr_err("Cannot operate on NAND flash unless jffs2 NAND support is compiled in");
-		return -EINVAL;
-	}
-	if (c->mtd->type == MTD_DATAFLASH) {
-		pr_err("Cannot operate on DataFlash unless jffs2 DataFlash support is compiled in");
-		return -EINVAL;
-	}
-#endif
-
 	c->flash_size = c->mtd->size;
 	c->sector_size = c->mtd->erasesize;
 	blocks = c->flash_size / c->sector_size;

@@ -20,7 +20,7 @@ config FS_JFFS2_COMPRESSION_OPTIONS
 	  compression modules, if any, are enabled in JFFS2. Removing
 	  compressors can mean you cannot read existing file systems,
 	  and enabling experimental compressors can mean that you
-	  write a file system which cannot be read by a standard kernel.
+	  write a file system which cannot be read by the bootloader.
 
 	  If unsure, you should _definitely_ say 'N'.
 
@@ -30,6 +30,8 @@ config FS_JFFS2_COMPRESSION_ZLIB
 	bool
 	select ZLIB
 	prompt "ZLIB compression support"
+	help
+	  Enable zlib, if compression type 0x06 is missed at run-time.
 
 config FS_JFFS2_COMPRESSION_LZO
 	bool

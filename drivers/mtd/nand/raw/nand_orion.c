@@ -117,7 +117,8 @@ static int orion_nand_probe(struct device *dev)
 	chip->legacy.IO_ADDR_R = chip->legacy.IO_ADDR_W = io_base;
 	chip->legacy.cmd_ctrl = orion_nand_cmd_ctrl;
 	chip->legacy.read_buf = orion_nand_read_buf;
-	chip->ecc.mode = NAND_ECC_SOFT;
+	chip->ecc.engine_type = NAND_ECC_ENGINE_TYPE_SOFT;
+	chip->ecc.algo = NAND_ECC_ALGO_HAMMING;
 
 	WARN(width > 16, "%d bit bus width out of range", width);
 	if (width == 16)

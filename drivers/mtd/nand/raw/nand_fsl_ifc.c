@@ -300,7 +300,7 @@ static void fsl_ifc_cmdfunc(struct nand_chip *chip, uint32_t command,
 		ctrl->read_bytes = mtd->writesize + mtd->oobsize;
 		ctrl->index += column;
 
-		if (chip->ecc.mode == NAND_ECC_HW)
+		if (chip->ecc.engine_type == NAND_ECC_ENGINE_TYPE_ON_HOST)
 			ctrl->eccread = 1;
 
 		fsl_ifc_do_read(chip, 0, mtd);
@@ -322,7 +322,7 @@ static void fsl_ifc_cmdfunc(struct nand_chip *chip, uint32_t command,
 		return;
 
 	case NAND_CMD_RNDOUT:
-		if (chip->ecc.mode == NAND_ECC_HW)
+		if (chip->ecc.engine_type == NAND_ECC_ENGINE_TYPE_ON_HOST)
 			break;
 		ifc_out32(ctrl->rregs + FSL_IFC_NAND_BC, 0);
 		set_addr(mtd, column, -1, 0);
@@ -960,10 +960,10 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
 
 	/* Must also set CSOR_NAND_ECC_ENC_EN if DEC_EN set */
 	if (csor & CSOR_NAND_ECC_DEC_EN) {
-		nand->ecc.mode = NAND_ECC_HW;
+		nand->ecc.engine_type = NAND_ECC_ENGINE_TYPE_ON_HOST;
 		mtd_set_ooblayout(mtd, &fsl_ifc_ooblayout_ops);
 	} else {
-		nand->ecc.mode = NAND_ECC_SOFT;
+		nand->ecc.engine_type = NAND_ECC_ENGINE_TYPE_SOFT;
 		nand->ecc.algo = NAND_ECC_ALGO_HAMMING;
 	}
 

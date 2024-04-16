@@ -21,7 +21,6 @@ static const char *nand_ecc_modes[] = {
 	[NAND_ECC_HW]		= "hw",
 	[NAND_ECC_HW_SYNDROME]	= "hw_syndrome",
 	[NAND_ECC_ON_DIE]	= "on-die",
-	[NAND_ECC_HW_OOB_FIRST]	= "hw_oob_first",
 	[NAND_ECC_SOFT_BCH]	= "soft_bch",
 };
 

@@ -1054,7 +1054,7 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 		nand->ecc.write_page = NULL;
 		nand->ecc.read_oob = NULL;
 		nand->ecc.write_oob = NULL;
-		nand->ecc.mode = NAND_ECC_HW;
+		nand->ecc.engine_type = NAND_ECC_ENGINE_TYPE_ON_HOST;
 		nand->options &= ~NAND_SUBPAGE_READ;
 	}
 
@@ -1138,7 +1138,8 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 		break;
 	case OMAP_ECC_SOFT:
 		minfo->ecclayout = NULL;
-		nand->ecc.mode = NAND_ECC_SOFT;
+		nand->ecc.engine_type = NAND_ECC_ENGINE_TYPE_SOFT;
+		nand->ecc.algo = NAND_ECC_ALGO_HAMMING;
 		oinfo->nand.ecc.strength = 1;
 		break;
 	default:

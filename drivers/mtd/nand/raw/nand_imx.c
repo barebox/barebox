@@ -436,9 +436,6 @@ static void imx_nand_enable_hwecc_v1_v2(struct nand_chip *chip, bool enable)
 	struct imx_nand_host *host = chip->priv;
 	uint16_t config1;
 
-	if (chip->ecc.mode != NAND_ECC_HW)
-		return;
-
 	config1 = readw(host->regs + NFC_V1_V2_CONFIG1);
 
 	if (enable)
@@ -454,9 +451,6 @@ static void imx_nand_enable_hwecc_v3(struct nand_chip *chip, bool enable)
 {
 	struct imx_nand_host *host = chip->priv;
 	uint32_t config2;
-
-	if (chip->ecc.mode != NAND_ECC_HW)
-		return;
 
 	config2 = readl(NFC_V3_CONFIG2);
 
@@ -1378,13 +1372,11 @@ static int __init imxnd_probe(struct device *dev)
 			host->correct = imx_nand_correct_data_v1;
 		else
 			host->correct = imx_nand_correct_data_v2_v3;
-		this->ecc.mode = NAND_ECC_HW;
 		this->ecc.size = 512;
 		this->ecc.read_page_raw = imx_nand_read_page_raw;
 		this->ecc.read_page = imx_nand_read_page;
 	} else {
 		this->ecc.size = 512;
-		this->ecc.mode = NAND_ECC_SOFT;
 	}
 
 	mtd_set_ecclayout(mtd, oob_smallpage);
@@ -1433,9 +1425,6 @@ static int __init imxnd_probe(struct device *dev)
 		if (nfc_is_v21())
 			writew(NFC_V2_SPAS_SPARESIZE(16), host->regs + NFC_V2_SPAS);
 	}
-
-	if (this->ecc.mode == NAND_ECC_HW)
-		this->ecc.strength = host->eccsize;
 
 	/* second phase scan */
 	if (nand_scan_tail(this)) {

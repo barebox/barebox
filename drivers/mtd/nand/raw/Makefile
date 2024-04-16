@@ -1,7 +1,6 @@
 # Generic NAND options
 
 obj-$(CONFIG_MTD_RAW_NAND)		+= nand_ecc.o
-obj-$(CONFIG_MTD_NAND_ECC_SW_BCH)	+= nand_bch.o
 obj-$(CONFIG_MTD_RAW_NAND)		+= nand_ids.o
 obj-$(CONFIG_MTD_RAW_NAND)		+= nand_base.o  nand_timings.o
 obj-$(CONFIG_MTD_RAW_NAND)		+= nand_legacy.o nand_onfi.o nand_amd.o

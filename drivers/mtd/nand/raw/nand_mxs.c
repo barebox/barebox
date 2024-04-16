@@ -2242,7 +2242,7 @@ static int mxs_nand_probe(struct device *dev)
 	chip->ecc.read_oob	= mxs_nand_ecc_read_oob;
 	chip->ecc.write_oob	= mxs_nand_ecc_write_oob;
 
-	chip->ecc.mode		= NAND_ECC_HW;
+	chip->ecc.engine_type = NAND_ECC_ENGINE_TYPE_ON_HOST;
 
 	/* first scan to find the device and get the page size */
 	err = nand_scan_ident(chip, 4, NULL);

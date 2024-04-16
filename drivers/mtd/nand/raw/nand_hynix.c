@@ -7,6 +7,7 @@
  */
 
 #include <linux/sizes.h>
+#include <linux/slab.h>
 
 #include "internals.h"
 
@@ -30,7 +31,6 @@ struct hynix_read_retry {
 
 /**
  * struct hynix_nand - private Hynix NAND struct
- * @nand_technology: manufacturing process expressed in picometer
  * @read_retry: read-retry information
  */
 struct hynix_nand {
@@ -494,34 +494,36 @@ static void hynix_nand_extract_oobsize(struct nand_chip *chip,
 static void hynix_nand_extract_ecc_requirements(struct nand_chip *chip,
 						bool valid_jedecid)
 {
+	struct nand_device *base = &chip->base;
+	struct nand_ecc_props requirements = {};
 	u8 ecc_level = (chip->id.data[4] >> 4) & 0x7;
 
 	if (valid_jedecid) {
 		/* Reference: H27UCG8T2E datasheet */
-		chip->base.ecc.requirements.step_size = 1024;
+		requirements.step_size = 1024;
 
 		switch (ecc_level) {
 		case 0:
-			chip->base.ecc.requirements.step_size = 0;
-			chip->base.ecc.requirements.strength = 0;
+			requirements.step_size = 0;
+			requirements.strength = 0;
 			break;
 		case 1:
-			chip->base.ecc.requirements.strength = 4;
+			requirements.strength = 4;
 			break;
 		case 2:
-			chip->base.ecc.requirements.strength = 24;
+			requirements.strength = 24;
 			break;
 		case 3:
-			chip->base.ecc.requirements.strength = 32;
+			requirements.strength = 32;
 			break;
 		case 4:
-			chip->base.ecc.requirements.strength = 40;
+			requirements.strength = 40;
 			break;
 		case 5:
-			chip->base.ecc.requirements.strength = 50;
+			requirements.strength = 50;
 			break;
 		case 6:
-			chip->base.ecc.requirements.strength = 60;
+			requirements.strength = 60;
 			break;
 		default:
 			/*
@@ -542,14 +544,14 @@ static void hynix_nand_extract_ecc_requirements(struct nand_chip *chip,
 		if (nand_tech < 3) {
 			/* > 26nm, reference: H27UBG8T2A datasheet */
 			if (ecc_level < 5) {
-				chip->base.ecc.requirements.step_size = 512;
-				chip->base.ecc.requirements.strength = 1 << ecc_level;
+				requirements.step_size = 512;
+				requirements.strength = 1 << ecc_level;
 			} else if (ecc_level < 7) {
 				if (ecc_level == 5)
-					chip->base.ecc.requirements.step_size = 2048;
+					requirements.step_size = 2048;
 				else
-					chip->base.ecc.requirements.step_size = 1024;
-				chip->base.ecc.requirements.strength = 24;
+					requirements.step_size = 1024;
+				requirements.strength = 24;
 			} else {
 				/*
 				 * We should never reach this case, but if that
@@ -562,18 +564,20 @@ static void hynix_nand_extract_ecc_requirements(struct nand_chip *chip,
 		} else {
 			/* <= 26nm, reference: H27UBG8T2B datasheet */
 			if (!ecc_level) {
-				chip->base.ecc.requirements.step_size = 0;
-				chip->base.ecc.requirements.strength = 0;
+				requirements.step_size = 0;
+				requirements.strength = 0;
 			} else if (ecc_level < 5) {
-				chip->base.ecc.requirements.step_size = 512;
-				chip->base.ecc.requirements.strength = 1 << (ecc_level - 1);
+				requirements.step_size = 512;
+				requirements.strength = 1 << (ecc_level - 1);
 			} else {
-				chip->base.ecc.requirements.step_size = 1024;
-				chip->base.ecc.requirements.strength = 24 +
+				requirements.step_size = 1024;
+				requirements.strength = 24 +
 							(8 * (ecc_level - 5));
 			}
 		}
 	}
+
+	nanddev_set_ecc_requirements(base, &requirements);
 }
 
 static void hynix_nand_extract_scrambling_requirements(struct nand_chip *chip,
@@ -709,8 +713,21 @@ static int hynix_nand_init(struct nand_chip *chip)
 	return ret;
 }
 
+static void hynix_fixup_onfi_param_page(struct nand_chip *chip,
+					struct nand_onfi_params *p)
+{
+	/*
+	 * Certain chips might report a 0 on sdr_timing_mode field
+	 * (bytes 129-130). This has been seen on H27U4G8F2GDA-BI.
+	 * According to ONFI specification, bit 0 of this field "shall be 1".
+	 * Forcibly set this bit.
+	 */
+	p->sdr_timing_modes |= cpu_to_le16(BIT(0));
+}
+
 const struct nand_manufacturer_ops hynix_nand_manuf_ops = {
 	.detect = hynix_nand_decode_id,
 	.init = hynix_nand_init,
 	.cleanup = hynix_nand_cleanup,
+	.fixup_onfi_param_page = hynix_fixup_onfi_param_page,
 };

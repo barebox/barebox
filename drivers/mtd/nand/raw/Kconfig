@@ -1,9 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0-only
-menuconfig MTD_RAW_NAND
-	default y
+
+config MTD_RAW_NAND
+	bool
+
+menuconfig NAND
 	bool "Raw/Parallel NAND Device Support"
 	select MTD_NAND_CORE
 	select MTD_NAND_ECC
+	select MTD_RAW_NAND
 	help
 	  This enables support for accessing all type of raw/parallel
 	  NAND flash devices. For further information see
@@ -14,12 +18,6 @@ if MTD_RAW_NAND
 config MTD_NAND_ECC_SOFT
 	bool
 	prompt "Support software ecc"
-
-config MTD_NAND_ECC_SW_BCH
-	select BCH
-	depends on MTD_NAND_ECC_SOFT
-	bool
-	prompt "Support software BCH ecc"
 
 config NAND_ECC_HW_SYNDROME
 	bool

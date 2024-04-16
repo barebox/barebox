@@ -246,6 +246,7 @@ static int imx27_ccm_probe(struct device *dev)
 	clkdev_add_physbase(clks[lcdc_ahb_gate], MX27_LCDC_BASE_ADDR, "ahb");
 	clkdev_add_physbase(clks[lcdc_ipg_gate], MX27_LCDC_BASE_ADDR, "ipg");
 	clkdev_add_physbase(clks[ipg], MX27_FEC_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[nfc_div], MX27_NFC_BASE_ADDR, NULL);
 
 	return 0;
 }

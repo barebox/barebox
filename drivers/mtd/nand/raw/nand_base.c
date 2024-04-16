@@ -4449,7 +4449,7 @@ static int nand_block_markgood(struct mtd_info *mtd, loff_t ofs)
  * @ofs: offset byte address
  * @len: number of bytes to lock (must be a multiple of block/page size)
  */
-static int nand_lock(struct mtd_info *mtd, loff_t ofs, size_t len)
+static int nand_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
 {
 	struct nand_chip *chip = mtd_to_nand(mtd);
 
@@ -4465,7 +4465,7 @@ static int nand_lock(struct mtd_info *mtd, loff_t ofs, size_t len)
  * @ofs: offset byte address
  * @len: number of bytes to unlock (must be a multiple of block/page size)
  */
-static int nand_unlock(struct mtd_info *mtd, loff_t ofs, size_t len)
+static int nand_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
 {
 	struct nand_chip *chip = mtd_to_nand(mtd);
 

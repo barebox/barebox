@@ -198,8 +198,8 @@ struct mtd_info {
 	void (*_sync) (struct mtd_info *mtd);
 
 	/* Chip-supported device locking */
-	int (*_lock) (struct mtd_info *mtd, loff_t ofs, size_t len);
-	int (*_unlock) (struct mtd_info *mtd, loff_t ofs, size_t len);
+	int (*_lock) (struct mtd_info *mtd, loff_t ofs, uint64_t len);
+	int (*_unlock) (struct mtd_info *mtd, loff_t ofs, uint64_t len);
 
 	/* Bad block management functions */
 	int (*_block_isbad) (struct mtd_info *mtd, loff_t ofs);

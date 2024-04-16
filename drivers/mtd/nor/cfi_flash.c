@@ -652,14 +652,14 @@ static int cfi_mtd_protect(struct flash_info *finfo, loff_t offset, size_t len, 
 	return 0;
 }
 
-static int cfi_mtd_lock(struct mtd_info *mtd, loff_t offset, size_t len)
+static int cfi_mtd_lock(struct mtd_info *mtd, loff_t offset, uint64_t len)
 {
 	struct flash_info *finfo = container_of(mtd, struct flash_info, mtd);
 
 	return cfi_mtd_protect(finfo, offset, len, 1);
 }
 
-static int cfi_mtd_unlock(struct mtd_info *mtd, loff_t offset, size_t len)
+static int cfi_mtd_unlock(struct mtd_info *mtd, loff_t offset, uint64_t len)
 {
 	struct flash_info *finfo = container_of(mtd, struct flash_info, mtd);
 

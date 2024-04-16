@@ -546,12 +546,12 @@ erase_err:
 	return ret;
 }
 
-static int spi_nor_lock(struct mtd_info *mtd, loff_t ofs, size_t len)
+static int spi_nor_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
 {
 	return 0;
 }
 
-static int spi_nor_unlock(struct mtd_info *mtd, loff_t ofs, size_t len)
+static int spi_nor_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
 {
 	struct spi_nor *nor = mtd_to_spi_nor(mtd);
 	uint8_t status;

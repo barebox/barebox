@@ -80,7 +80,7 @@ static int mtd_part_erase(struct mtd_info *mtd, struct erase_info *instr)
 	return ret;
 }
 
-static int mtd_part_lock(struct mtd_info *mtd, loff_t offset, size_t len)
+static int mtd_part_lock(struct mtd_info *mtd, loff_t offset, uint64_t len)
 {
 	if (!mtd->parent->_lock)
 		return -ENOSYS;
@@ -96,7 +96,7 @@ static int mtd_part_lock(struct mtd_info *mtd, loff_t offset, size_t len)
 	return mtd->parent->_lock(mtd->parent, offset, len);
 }
 
-static int mtd_part_unlock(struct mtd_info *mtd, loff_t offset, size_t len)
+static int mtd_part_unlock(struct mtd_info *mtd, loff_t offset, uint64_t len)
 {
 	if (!mtd->parent->_unlock)
 		return -ENOSYS;

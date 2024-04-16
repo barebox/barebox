@@ -74,9 +74,17 @@ struct jffs2_file {
 
 #define SECTOR_ADDR(x) ( (((unsigned long)(x) / c->sector_size) * c->sector_size) )
 
+/**
+ * Read data from memory and ignore any hints about bitflips in case of NAND
+ * memory (because we cannot repair them).
+ */
 static inline int jffs2_flash_read(struct jffs2_sb_info *c, loff_t ofs, size_t len, size_t *retlen, u_char *buf)
 {
-	return mtd_read((c)->mtd, ofs, len, retlen, buf);
+	int rc = mtd_read((c)->mtd, ofs, len, retlen, buf);
+	if (rc == -EUCLEAN)
+		return 0; // we are read-only, we cannot repair anything.
+
+	return rc;
 }
 
 /* support run-time speed-up while scanning NAND flashs */

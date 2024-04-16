@@ -221,6 +221,7 @@ static int imx27_ccm_probe(struct device *dev)
 	clks[per3_gate] = imx_clk_gate("per3_gate", "per3_div", base + CCM_PCCR1, 8);
 	clks[lcdc_ahb_gate] = imx_clk_gate("lcdc_ahb_gate", "ahb", base + CCM_PCCR1, 15);
 	clks[lcdc_ipg_gate] = imx_clk_gate("lcdc_ipg_gate", "ipg", base + CCM_PCCR0, 14);
+	clks[wdog_ipg_gate] = imx_clk_gate("wdog_ipg_gate", "ipg", base + CCM_PCCR1, 24);
 
 	clkdev_add_physbase(clks[per1_div], MX27_GPT1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per1_div], MX27_GPT2_BASE_ADDR, NULL);
@@ -247,6 +248,7 @@ static int imx27_ccm_probe(struct device *dev)
 	clkdev_add_physbase(clks[lcdc_ipg_gate], MX27_LCDC_BASE_ADDR, "ipg");
 	clkdev_add_physbase(clks[ipg], MX27_FEC_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[nfc_div], MX27_NFC_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[wdog_ipg_gate], MX27_WDOG_BASE_ADDR, NULL);
 
 	return 0;
 }

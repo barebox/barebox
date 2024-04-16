@@ -86,6 +86,7 @@ config BCH_CONST_PARAMS
 	bool
 
 config BCH
+	select BITREV
 	bool
 
 config BITREV

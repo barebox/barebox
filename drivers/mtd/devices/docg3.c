@@ -325,7 +325,7 @@ static int doc_ecc_bch_fix_data(struct docg3 *docg3, void *buf, u8 *hwecc)
 
 	for (i = 0; i < DOC_ECC_BCH_SIZE; i++)
 		ecc[i] = bitrev8(hwecc[i]);
-	numerrs = decode_bch(docg3_bch, NULL, DOC_ECC_BCH_COVERED_BYTES,
+	numerrs = bch_decode(docg3_bch, NULL, DOC_ECC_BCH_COVERED_BYTES,
 			     NULL, ecc, NULL, errorpos);
 	BUG_ON(numerrs == -EINVAL);
 	if (numerrs < 0)
@@ -1144,8 +1144,8 @@ static int __init docg3_probe(struct device *dev)
 	base = IOMEM(iores->start);
 
 	ret = -ENOMEM;
-	docg3_bch = init_bch(DOC_ECC_BCH_M, DOC_ECC_BCH_T,
-			     DOC_ECC_BCH_PRIMPOLY);
+	docg3_bch = bch_init(DOC_ECC_BCH_M, DOC_ECC_BCH_T,
+			     DOC_ECC_BCH_PRIMPOLY, false);
 	if (!docg3_bch)
 		goto nomem2;
 
@@ -1181,7 +1181,7 @@ notfound:
 	ret = -ENODEV;
 	dev_info(dev, "No supported DiskOnChip found\n");
 err_probe:
-	free_bch(docg3_bch);
+	bch_free(docg3_bch);
 nomem2:
 	return ret;
 }

@@ -79,7 +79,7 @@ static void encode_bch_ecc(void *buf, struct fcb_block *fcb, int eccbits)
 	int blocksize = 128;
 	int numblocks = 8;
 	int ecc_buf_size = (m * eccbits + 7) / 8;
-	struct bch_control *bch = init_bch(m, eccbits, 0);
+	struct bch_control *bch = bch_init(m, eccbits, 0, false);
 	uint8_t *ecc_buf = xmalloc(ecc_buf_size);
 	uint8_t *tmp_buf = xzalloc(blocksize * numblocks);
 	uint8_t *psrc, *pdst;
@@ -109,7 +109,7 @@ static void encode_bch_ecc(void *buf, struct fcb_block *fcb, int eccbits)
 		for (j = 0; j < blocksize; j++)
 			psrc[j] = reverse_bit(psrc[j]);
 
-		encode_bch(bch, psrc, blocksize, ecc_buf);
+		bch_encode(bch, psrc, blocksize, ecc_buf);
 
 		/* reverse ecc bit */
 		for (j = 0; j < ecc_buf_size; j++)
@@ -121,7 +121,7 @@ static void encode_bch_ecc(void *buf, struct fcb_block *fcb, int eccbits)
 
 	free(ecc_buf);
 	free(tmp_buf);
-	free_bch(bch);
+	bch_free(bch);
 }
 
 static struct fcb_block *fcb_decode_bch(void *rawpage, int eccbits)
@@ -130,7 +130,7 @@ static struct fcb_block *fcb_decode_bch(void *rawpage, int eccbits)
 	int blocksize = 128;
 	int numblocks = 8;
 	int ecc_buf_size = (m * eccbits + 7) / 8;
-	struct bch_control *bch = init_bch(m, eccbits, 0);
+	struct bch_control *bch = bch_init(m, eccbits, 0, false);
 	uint8_t *fcb = xmalloc(numblocks * blocksize);
 	uint8_t *ecc_buf = xmalloc(ecc_buf_size);
 	uint8_t *data_buf = xmalloc(blocksize);
@@ -152,7 +152,7 @@ static struct fcb_block *fcb_decode_bch(void *rawpage, int eccbits)
 		for (j = 0; j < ecc_buf_size; j++)
 			ecc_buf[j] = reverse_bit(psrc[j + blocksize]);
 
-		ret = decode_bch(bch, data_buf, blocksize, ecc_buf,
+		ret = bch_decode(bch, data_buf, blocksize, ecc_buf,
 				 NULL, NULL, errloc);
 
 		if (ret < 0) {
@@ -185,7 +185,7 @@ out:
 	free(data_buf);
 	free(ecc_buf);
 	free(errloc);
-	free_bch(bch);
+	bch_free(bch);
 
 	return (struct fcb_block *)fcb;
 }

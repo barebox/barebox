@@ -21,7 +21,6 @@ struct file_list_entry {
 
 struct file_list {
 	struct list_head list;
-	int num_entries;
 };
 
 struct file_list *file_list_parse(const char *str);
@@ -47,7 +46,7 @@ struct file_list_entry *file_list_entry_by_name(struct file_list *files, const c
 
 static inline bool file_list_empty(struct file_list *files)
 {
-	return !files || !files->num_entries;
+	return !files || list_empty(&files->list);
 }
 
 #endif /* __FILE_LIST */

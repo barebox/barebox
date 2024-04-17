@@ -1708,6 +1708,8 @@ static int mxcnd_probe(struct device *dev)
 	if (err)
 		goto escan;
 
+	this->options &= ~NAND_SUBPAGE_READ;
+
 	if ((this->bbt_options & NAND_BBT_USE_FLASH) &&
 	    this->bbt_td->pages[0] == -1 && this->bbt_md->pages[0] == -1) {
 		dev_info(dev, "no BBT found. creating one\n");

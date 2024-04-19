@@ -276,6 +276,9 @@ struct clk *imx_clk_cpu(const char *name, const char *parent_name,
 #define IMX_COMPOSITE_CORE      BIT(0)
 #define IMX_COMPOSITE_BUS       BIT(1)
 
+#define IMX_COMPOSITE_CLK_FLAGS_DEFAULT \
+	(CLK_SET_RATE_NO_REPARENT | CLK_OPS_PARENT_ENABLE)
+
 struct clk *imx8m_clk_composite_flags(const char *name,
 		const char * const *parent_names, int num_parents, void __iomem *reg,
 		u32 composite_flags,
@@ -285,13 +288,13 @@ struct clk *imx8m_clk_composite_flags(const char *name,
         imx8m_clk_hw_composite_flags(name, parent_names, \
                         ARRAY_SIZE(parent_names), reg, \
                         IMX_COMPOSITE_CORE, \
-                        CLK_SET_RATE_NO_REPARENT | CLK_OPS_PARENT_ENABLE)
+                        IMX_COMPOSITE_CLK_FLAGS_DEFAULT)
 
 #define imx8m_clk_hw_composite_bus(name, parent_names, reg)     \
         imx8m_clk_hw_composite_flags(name, parent_names, \
                         ARRAY_SIZE(parent_names), reg, \
                         IMX_COMPOSITE_BUS, \
-                        CLK_SET_RATE_NO_REPARENT | CLK_OPS_PARENT_ENABLE)
+                        IMX_COMPOSITE_CLK_FLAGS_DEFAULT)
 
 #define __imx8m_clk_composite(name, parent_names, reg, flags) \
 		imx8m_clk_composite_flags(name, parent_names, \

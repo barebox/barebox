@@ -158,40 +158,43 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 					u32 composite_flags,
 					unsigned long flags)
 {
-	struct clk *comp = ERR_PTR(-ENOMEM);
+	struct clk_hw *hw = ERR_PTR(-ENOMEM), *mux_hw;
+	struct clk_hw *div_hw, *gate_hw = NULL;
 	struct clk_divider *div = NULL;
 	struct clk_gate *gate = NULL;
 	struct clk_mux *mux = NULL;
+	const struct clk_ops *divider_ops;
 	const struct clk_ops *mux_ops;
 
 	mux = kzalloc(sizeof(*mux), GFP_KERNEL);
 	if (!mux)
 		goto fail;
 
+	mux_hw = &mux->hw;
 	mux->reg = reg;
 	mux->shift = PCG_PCS_SHIFT;
 	mux->width = PCG_PCS_WIDTH;
-	mux->hw.clk.ops = &clk_mux_ops;
 
 	div = kzalloc(sizeof(*div), GFP_KERNEL);
 	if (!div)
 		goto fail;
 
+	div_hw = &div->hw;
 	div->reg = reg;
 	if (composite_flags & IMX_COMPOSITE_CORE) {
 		div->shift = PCG_DIV_SHIFT;
 		div->width = PCG_CORE_DIV_WIDTH;
-		div->hw.clk.ops = &clk_divider_ops;
+		divider_ops = &clk_divider_ops;
 		mux_ops = &imx8m_clk_composite_mux_ops;
 	} else if (composite_flags & IMX_COMPOSITE_BUS) {
 		div->shift = PCG_PREDIV_SHIFT;
 		div->width = PCG_PREDIV_WIDTH;
-		div->hw.clk.ops = &imx8m_clk_composite_divider_ops;
+		divider_ops = &imx8m_clk_composite_divider_ops;
 		mux_ops = &imx8m_clk_composite_mux_ops;
 	} else {
 		div->shift = PCG_PREDIV_SHIFT;
 		div->width = PCG_PREDIV_WIDTH;
-		div->hw.clk.ops = &imx8m_clk_composite_divider_ops;
+		divider_ops = &imx8m_clk_composite_divider_ops;
 		mux_ops = &clk_mux_ops;
 	}
 
@@ -199,20 +202,21 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 	if (!gate)
 		goto fail;
 
+	gate_hw = &gate->hw;
 	gate->reg = reg;
 	gate->shift = PCG_CGC_SHIFT;
-	gate->hw.clk.ops = &clk_gate_ops;
 
-	comp = clk_register_composite(name, parent_names, num_parents,
-				      &mux->hw.clk, &div->hw.clk, &gate->hw.clk, flags);
-	if (IS_ERR(comp))
+	hw = clk_hw_register_composite(NULL, name, parent_names, num_parents,
+			mux_hw, mux_ops, div_hw,
+			divider_ops, gate_hw, &clk_gate_ops, flags);
+	if (IS_ERR(hw))
 		goto fail;
 
-	return comp;
+	return clk_hw_to_clk(hw);
 
 fail:
 	kfree(gate);
 	kfree(div);
 	kfree(mux);
-	return ERR_CAST(comp);
+	return ERR_CAST(hw);
 }

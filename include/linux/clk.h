@@ -709,6 +709,7 @@ static inline int clk_hw_register(struct device *dev, struct clk_hw *hw)
 struct clk *clk_lookup(const char *name);
 
 #define CLK_DUMP_VERBOSE	(1 << 0)
+#define CLK_DUMP_JSON		(1 << 1)
 void clk_dump(int flags);
 void clk_dump_one(struct clk *clk, int flags);
 

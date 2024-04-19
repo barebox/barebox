@@ -163,13 +163,13 @@ BAREBOX_CMD_END
 
 static int do_clk_dump(int argc, char *argv[])
 {
-	int opt, verbose = 0;
+	int opt, flags = 0;
 	struct clk *clk;
 
 	while ((opt = getopt(argc, argv, "v")) > 0) {
 		switch(opt) {
 		case 'v':
-			verbose = 1;
+			flags |= CLK_DUMP_VERBOSE;
 			break;
 		default:
 			return -EINVAL;
@@ -178,7 +178,7 @@ static int do_clk_dump(int argc, char *argv[])
 	}
 
 	if (optind == argc) {
-		clk_dump(verbose);
+		clk_dump(flags);
 		return COMMAND_SUCCESS;
 	}
 
@@ -186,7 +186,7 @@ static int do_clk_dump(int argc, char *argv[])
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
-	clk_dump_one(clk, verbose);
+	clk_dump_one(clk, flags);
 
 	return COMMAND_SUCCESS;
 }

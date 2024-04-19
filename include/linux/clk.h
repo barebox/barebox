@@ -708,8 +708,9 @@ static inline int clk_hw_register(struct device *dev, struct clk_hw *hw)
 
 struct clk *clk_lookup(const char *name);
 
-void clk_dump(int verbose);
-void clk_dump_one(struct clk *clk, int verbose);
+#define CLK_DUMP_VERBOSE	(1 << 0)
+void clk_dump(int flags);
+void clk_dump_one(struct clk *clk, int flags);
 
 struct clk *clk_register_composite(const char *name,
 			const char * const *parent_names, int num_parents,

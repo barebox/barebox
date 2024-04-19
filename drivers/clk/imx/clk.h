@@ -278,6 +278,8 @@ struct clk *imx_clk_cpu(const char *name, const char *parent_name,
 
 #define IMX_COMPOSITE_CLK_FLAGS_DEFAULT \
 	(CLK_SET_RATE_NO_REPARENT | CLK_OPS_PARENT_ENABLE)
+#define IMX_COMPOSITE_CLK_FLAGS_CRITICAL \
+	(IMX_COMPOSITE_CLK_FLAGS_DEFAULT | CLK_IS_CRITICAL)
 
 struct clk *imx8m_clk_composite_flags(const char *name,
 		const char * const *parent_names, int num_parents, void __iomem *reg,
@@ -295,6 +297,12 @@ struct clk *imx8m_clk_composite_flags(const char *name,
                         ARRAY_SIZE(parent_names), reg, \
                         IMX_COMPOSITE_BUS, \
                         IMX_COMPOSITE_CLK_FLAGS_DEFAULT)
+
+#define imx8m_clk_hw_composite_bus_critical(name, parent_names, reg)	\
+        imx8m_clk_hw_composite_flags(name, parent_names, \
+                        ARRAY_SIZE(parent_names), reg, \
+                        IMX_COMPOSITE_BUS, \
+                        IMX_COMPOSITE_CLK_FLAGS_CRITICAL)
 
 #define __imx8m_clk_composite(name, parent_names, reg, flags) \
 		imx8m_clk_composite_flags(name, parent_names, \
@@ -333,6 +341,7 @@ struct clk *imx93_clk_gate(struct device *dev, const char *name, const char *par
 #define imx_clk_hw_gate imx_clk_gate
 #define imx_clk_hw_fixed_factor imx_clk_fixed_factor
 #define imx_clk_hw_mux_flags imx_clk_mux_flags
+#define imx_clk_hw_divider imx_clk_divider
 #define imx_clk_hw_divider2 imx_clk_divider2
 #define imx_clk_hw_mux2_flags imx_clk_mux2_flags
 #define imx_clk_hw_gate4_flags imx_clk_gate4_flags
@@ -342,7 +351,8 @@ struct clk *imx93_clk_gate(struct device *dev, const char *name, const char *par
 #define imx8m_clk_hw_composite_flags imx8m_clk_composite_flags
 #define imx8m_clk_hw_composite imx8m_clk_composite
 #define imx8m_clk_hw_composite_critical imx8m_clk_composite_critical
-#define imx_clk_hw_gate2_shared2 imx_clk_gate2_shared2
+#define imx_clk_hw_gate2_shared2(name, parent, reg, shift, shared_count) \
+	({ (void)shared_count; imx_clk_gate2_shared2(name, parent, reg, shift); })
 #define imx_clk_hw_mux2 imx_clk_mux2
 
 #endif /* __IMX_CLK_H */

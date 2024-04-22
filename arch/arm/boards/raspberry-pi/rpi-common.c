@@ -376,6 +376,7 @@ static void rpi_vc_fdt_parse(struct device_node *root)
 	register_vc_property_fixup(root, "/reserved-memory/nvram@0", "reg");
 	register_vc_property_fixup(root, "/reserved-memory/nvram@0", "status");
 	register_vc_fixup(root, "/hat");
+	register_vc_property_fixup(root, "/emmc2bus", "dma-ranges");
 	register_vc_fixup(root, "/chosen/bootloader");
 	chosen = register_vc_fixup(root, "/chosen");
 	if (!chosen) {

@@ -545,12 +545,12 @@ u8 *mci_get_ext_csd(struct mci *mci)
 	u8 *ext_csd;
 	int ret;
 
-	ext_csd = xmalloc(512);
+	ext_csd = dma_alloc(512);
 
 	ret = mci_send_ext_csd(mci, ext_csd);
 	if (ret) {
 		printf("Failure to read EXT_CSD register\n");
-		free(ext_csd);
+		dma_free(ext_csd);
 		return ERR_PTR(-EIO);
 	}
 
@@ -666,7 +666,7 @@ static int mmc_change_freq(struct mci *mci)
 	char cardtype;
 	int err;
 
-	mci->ext_csd = xmalloc(512);
+	mci->ext_csd = dma_alloc(512);
 	mci->card_caps = 0;
 
 	/* Only version 4 supports high-speed */
@@ -1124,7 +1124,7 @@ static int mmc_compare_ext_csds(struct mci *mci, enum mci_bus_width bus_width)
 	if (bus_width == MMC_BUS_WIDTH_1)
 		return 0;
 
-	bw_ext_csd = xmalloc(512);
+	bw_ext_csd = dma_alloc(512);
 	err = mci_send_ext_csd(mci, bw_ext_csd);
 	if (err) {
 		dev_info(&mci->dev, "mci_send_ext_csd failed with %d\n", err);
@@ -1173,7 +1173,7 @@ static int mmc_compare_ext_csds(struct mci *mci, enum mci_bus_width bus_width)
 				0 : -EINVAL;
 
 out:
-	free(bw_ext_csd);
+	dma_free(bw_ext_csd);
 	return err;
 }
 
@@ -2220,7 +2220,7 @@ static int mci_get_partition_setting_completed(struct mci *mci)
 
 	ret = ext_csd[EXT_CSD_PARTITION_SETTING_COMPLETED];
 
-	free(ext_csd);
+	dma_free(ext_csd);
 
 	return ret;
 }

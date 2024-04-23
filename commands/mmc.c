@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
+#include <dma.h>
 
 static int mmc_enh_area_setmax(struct mci *mci, u8 *ext_csd)
 {
@@ -115,7 +116,7 @@ static int do_mmc_enh_area(int argc, char *argv[])
 	if (ret)
 		goto error;
 
-	free(ext_csd);
+	dma_free(ext_csd);
 
 	if (set_completed) {
 		ret = mmc_partitioning_complete(mci);
@@ -127,7 +128,7 @@ static int do_mmc_enh_area(int argc, char *argv[])
 	return COMMAND_SUCCESS;
 
 error:
-	free(ext_csd);
+	dma_free(ext_csd);
 	return COMMAND_ERROR;
 }
 
@@ -183,12 +184,12 @@ static int do_mmc_write_reliability(int argc, char *argv[])
 		}
 	}
 
-	free(ext_csd);
+	dma_free(ext_csd);
 
 	return COMMAND_SUCCESS;
 
 error:
-	free(ext_csd);
+	dma_free(ext_csd);
 	return COMMAND_ERROR;
 }
 

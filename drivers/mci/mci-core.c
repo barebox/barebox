@@ -1551,6 +1551,11 @@ static int mci_startup_mmc(struct mci *mci)
 
 		if (mmc_card_hs200(mci))
 			ret = mmc_hs200_tuning(mci);
+
+		if (ret) {
+			host->timing = MMC_TIMING_MMC_HS;
+			mci_switch(mci, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
+		}
 	}
 
 	if (ret || !IS_ENABLED(CONFIG_MCI_TUNING)) {

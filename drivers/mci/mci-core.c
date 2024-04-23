@@ -1566,7 +1566,7 @@ static int mci_startup_mmc(struct mci *mci)
 		}
 	}
 
-	return ret;
+	return ret >= MMC_BUS_WIDTH_1 ? 0 : ret;
 }
 
 /**

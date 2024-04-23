@@ -1349,8 +1349,14 @@ int mci_execute_tuning(struct mci *mci)
 	struct mci_host *host = mci->host;
 	u32 opcode;
 
-	if (!host->execute_tuning)
-		return 0;
+	if (!host->execute_tuning) {
+		/*
+		 * For us, implementing ->execute_tuning is mandatory to
+		 * support higher speed modes
+		 */
+		dev_warn(&mci->dev, "tuning failed: no host diver support\n");
+		return -EOPNOTSUPP;
+	}
 
 	/* Tuning is only supported for MMC / HS200 */
 	if (mmc_card_hs200(mci))

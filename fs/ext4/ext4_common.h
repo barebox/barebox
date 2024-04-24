@@ -36,15 +36,7 @@
 #include "ext4fs.h"
 #include "ext_common.h"
 
-static inline void *zalloc(size_t size)
-{
-	void *p = dma_alloc(size);
-
-	if (p)
-		memset(p, 0, size);
-
-	return p;
-}
+#define zalloc	dma_zalloc
 
 int ext4fs_read_inode(struct ext2_data *data, int ino,
 		      struct ext2_inode *inode);

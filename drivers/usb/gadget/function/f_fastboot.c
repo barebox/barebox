@@ -199,12 +199,11 @@ static struct usb_request *fastboot_alloc_request(struct usb_ep *ep)
 		return NULL;
 
 	req->length = EP_BUFFER_SIZE;
-	req->buf = dma_alloc(EP_BUFFER_SIZE);
+	req->buf = dma_zalloc(EP_BUFFER_SIZE);
 	if (!req->buf) {
 		usb_ep_free_request(ep, req);
 		return NULL;
 	}
-	memset(req->buf, 0, EP_BUFFER_SIZE);
 
 	return req;
 }

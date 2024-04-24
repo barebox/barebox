@@ -4,6 +4,7 @@
  */
 
 #include <dma.h>
+#include <linux/bug.h>
 #include <asm/io.h>
 
 void arch_sync_dma_for_cpu(void *vaddr, size_t size,

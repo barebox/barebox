@@ -4,7 +4,9 @@
 #ifndef __ASM_DMA_H
 #define __ASM_DMA_H
 
-#include <common.h>
+#include <linux/types.h>
+#include <linux/build_bug.h>
+#include <malloc.h>
 
 #define DMA_ALIGNMENT	64
 

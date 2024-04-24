@@ -2,7 +2,7 @@
 
 #include <common.h>
 #include <xfuncs.h>
-#include <asm/dma.h>
+#include <dma.h>
 #include <malloc.h>
 
 static void __dma_flush_range(dma_addr_t start, dma_addr_t end)

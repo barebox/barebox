@@ -10,7 +10,6 @@
 
 #include <linux/kernel.h>
 #include <linux/string.h>
-#include <driver.h>
 
 #define DMA_ALIGNMENT	64
 

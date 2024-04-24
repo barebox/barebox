@@ -4,6 +4,7 @@
 #define _LINUX_SLAB_H
 
 #include <malloc.h>
+#include <linux/overflow.h>
 #include <linux/string.h>
 
 #define SLAB_CONSISTENCY_CHECKS	0
@@ -98,7 +99,7 @@ static inline void *kzalloc(size_t size, gfp_t flags)
  */
 static inline void *kmalloc_array(size_t n, size_t size, gfp_t flags)
 {
-	return kmalloc(n * size, flags);
+	return kmalloc(size_mul(n, size), flags);
 }
 
 static inline void *kcalloc(size_t n, size_t size, gfp_t flags)

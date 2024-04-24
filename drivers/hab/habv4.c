@@ -12,6 +12,7 @@
 #include <init.h>
 #include <types.h>
 #include <mmu.h>
+#include <dma.h>
 #include <zero_page.h>
 #include <linux/sizes.h>
 #include <linux/arm-smccc.h>
@@ -581,7 +582,7 @@ static uint8_t *hab_get_event(const struct habv4_rvt *rvt, int index, size_t *le
 	if (err != HAB_STATUS_SUCCESS)
 		return NULL;
 
-	buf = malloc(*len);
+	buf = dma_alloc(*len);
 	if (!buf)
 		return NULL;
 

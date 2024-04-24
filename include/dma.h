@@ -21,10 +21,14 @@
 #define DMA_ALIGNMENT	32
 #endif
 
+#ifdef CONFIG_HAS_DMA
+void *dma_alloc(size_t size);
+#else
 static inline void *dma_alloc(size_t size)
 {
-	return xmemalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
+	return malloc(size);
 }
+#endif
 
 static inline void dma_free(void *mem)
 {

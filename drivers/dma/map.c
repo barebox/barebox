@@ -2,6 +2,11 @@
 #include <dma.h>
 #include "debug.h"
 
+void *dma_alloc(size_t size)
+{
+	return xmemalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
+}
+
 void dma_sync_single_for_cpu(struct device *dev, dma_addr_t address,
 			     size_t size, enum dma_data_direction dir)
 {

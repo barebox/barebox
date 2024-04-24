@@ -2,6 +2,7 @@
 
 #include <dma.h>
 #include <linux/list.h>
+#include <linux/printk.h>
 #include "debug.h"
 
 static LIST_HEAD(dma_mappings);

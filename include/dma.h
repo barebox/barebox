@@ -8,12 +8,12 @@
 
 #include <malloc.h>
 #include <xfuncs.h>
-#include <linux/kernel.h>
+#include <linux/align.h>
 
 #include <dma-dir.h>
 #include <asm/dma.h>
 #include <asm/io.h>
-#include <driver.h>
+#include <device.h>
 
 #define DMA_ADDRESS_BROKEN	NULL
 

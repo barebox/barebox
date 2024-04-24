@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 #include <dma.h>
+#include <driver.h>
 #include "debug.h"
 
 void *dma_alloc(size_t size)

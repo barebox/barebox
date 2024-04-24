@@ -3,7 +3,7 @@
 #ifndef _LINUX_PAGEMAP_H
 #define _LINUX_PAGEMAP_H
 
-#include <linux/kernel.h>
+#include <linux/align.h>
 
 /*
  * Copyright 1995 Linus Torvalds

@@ -107,11 +107,6 @@ static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
 	return dma_zalloc(size_mul(n, size));
 }
 
-static inline void *krealloc(void *ptr, size_t size, gfp_t flags)
-{
-	return realloc(ptr, size);
-}
-
 static inline char *kstrdup(const char *str, gfp_t flags)
 {
 	return strdup(str);

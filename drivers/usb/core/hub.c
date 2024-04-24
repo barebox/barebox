@@ -86,18 +86,25 @@ static int usb_get_hub_status(struct usb_device *dev, void *data)
 			data, sizeof(struct usb_hub_status), USB_CNTL_TIMEOUT);
 }
 
-static int usb_get_port_status(struct usb_device *dev, int port, void *data)
+static int usb_get_port_status(struct usb_device *dev, int port,
+			       struct usb_port_status *status)
 {
+	struct usb_port_status *data;
 	int ret;
+
+	data = dma_alloc(sizeof(*data));
+	if (!data)
+		return -ENOMEM;
 
 	ret = usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 			USB_REQ_GET_STATUS, USB_DIR_IN | USB_RT_PORT, 0, port,
 			data, sizeof(struct usb_hub_status), USB_CNTL_TIMEOUT);
 	if (ret < 0)
-		return ret;
+		goto out;
+
+	*status = *data;
 
 	if (!usb_hub_is_root_hub(dev) && usb_hub_is_superspeed(dev)) {
-		struct usb_port_status *status = data;
 		u16 tmp = status->wPortStatus & USB_SS_PORT_STAT_MASK;
 
 		if (status->wPortStatus & USB_SS_PORT_STAT_POWER)
@@ -109,6 +116,8 @@ static int usb_get_port_status(struct usb_device *dev, int port, void *data)
 		status->wPortStatus = tmp;
 	}
 
+out:
+	dma_free(data);
 	return ret;
 }
 

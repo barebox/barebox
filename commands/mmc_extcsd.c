@@ -2418,7 +2418,7 @@ static int do_mmc_extcsd(int argc, char *argv[])
 		retval = -ENOENT;
 		goto error;
 	}
-	dst = xmalloc(EXT_CSD_BLOCKSIZE);
+	dst = dma_alloc(EXT_CSD_BLOCKSIZE);
 
 	retval = mci_send_ext_csd(mci, dst);
 	if (retval != 0)
@@ -2473,7 +2473,7 @@ static int do_mmc_extcsd(int argc, char *argv[])
 			print_register_readable(dst, index);
 
 error_with_mem:
-	free(dst);
+	dma_free(dst);
 error:
 	return retval;
 }

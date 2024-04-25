@@ -43,6 +43,8 @@ choice
 
 config ARCH_MULTIARCH
 	select HAVE_PBL_MULTI_IMAGES
+	select OFTREE
+	select OFDEVICE
 	bool "Allow multiple archs to be selected"
 
 config ARCH_AT91
@@ -182,8 +184,6 @@ config ARCH_ARM64_VIRT
 	bool "ARM64 QEMU Virt board"
 	depends on 64BIT
 	select CPU_V8
-	select OFDEVICE
-	select OFTREE
 	select RELOCATABLE
 	select ARM_AMBA
 	select BOARD_ARM_VIRT
@@ -199,8 +199,6 @@ config ARCH_BCM283X
 	select ARM_AMBA
 	select HAS_DEBUG_LL
 	select RELOCATABLE
-	select OFTREE
-	select OFDEVICE
 
 config ARCH_IMX
 	bool "Freescale iMX-based"
@@ -229,8 +227,6 @@ config ARCH_LAYERSCAPE
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select HW_HAS_PCI
-	select OFTREE
-	select OFDEVICE
 	select ARM_USE_COMPRESSED_DTB
 	select OF_DMA_COHERENCY
 
@@ -251,7 +247,6 @@ config ARCH_ROCKCHIP
 	select GPIOLIB
 	select PINCTRL
 	select PINCTRL_ROCKCHIP
-	select OFTREE
 	select HAS_DEBUG_LL
 	imply GPIO_ROCKCHIP
 
@@ -288,8 +283,6 @@ config ARCH_VEXPRESS
 	select AMBA_SP804
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select OFTREE
-	select OFDEVICE
 	select RELOCATABLE
 
 config ARCH_ZYNQMP
@@ -301,8 +294,6 @@ config ARCH_ZYNQMP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select GPIOLIB
-	select OFDEVICE
-	select OFTREE
 	select RELOCATABLE
 	select HAS_MACB
 

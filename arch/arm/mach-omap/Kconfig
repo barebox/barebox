@@ -39,7 +39,6 @@ config ARCH_AM33XX
 	bool
 	select CPU_V7
 	select GENERIC_GPIO
-	select OFTREE
 	select CLOCKSOURCE_TI_DM
 	select ARM_USE_COMPRESSED_DTB
 	help

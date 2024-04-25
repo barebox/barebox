@@ -1,5 +1,0 @@
-#!/bin/sh
-
-global.bootm.image="/boot/zImage"
-#global.bootm.oftree="/boot/oftree"
-global.linux.bootargs.dyn.root="root=mmcblk0p2 rootfstype=ext3 rootwait"

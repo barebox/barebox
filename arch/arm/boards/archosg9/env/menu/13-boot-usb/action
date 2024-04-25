@@ -1,4 +1,0 @@
-#!/bin/sh
-boot_order usb_1
-echo "Rebooting over usb..."
-reset

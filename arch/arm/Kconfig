@@ -93,11 +93,6 @@ config ARCH_MXS
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
 
-config ARCH_OMAP_SINGLE
-	bool "TI OMAP"
-	depends on 32BIT
-	select ARCH_OMAP
-
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"
 	depends on 32BIT
@@ -191,7 +186,6 @@ config ARCH_OMAP_MULTI
 	bool "TI OMAP"
 	depends on 32BIT
 	depends on ARCH_MULTIARCH
-	select OMAP_MULTI_BOARDS
 	select ARCH_OMAP
 	select HAS_DEBUG_LL
 	select GPIOLIB

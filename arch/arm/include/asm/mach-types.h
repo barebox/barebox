@@ -185,18 +185,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_pm9263()	(0)
 #endif
 
-#ifdef CONFIG_MACH_OMAP3EVM
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_OMAP3EVM
-# endif
-# define machine_is_omap3evm()	(machine_arch_type == MACH_TYPE_OMAP3EVM)
-#else
-# define machine_is_omap3evm()	(0)
-#endif
-
 #ifdef CONFIG_MACH_OMAP3_BEAGLE
 # ifdef machine_arch_type
 #  undef machine_arch_type
@@ -425,18 +413,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_omap4_panda()	(0)
 #endif
 
-#ifdef CONFIG_MACH_PCAAL1
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_PCAAL1
-# endif
-# define machine_is_pcaal1()	(machine_arch_type == MACH_TYPE_PCAAL1)
-#else
-# define machine_is_pcaal1()	(0)
-#endif
-
 #ifdef CONFIG_MACH_ARMADA_XP_DB
 # ifdef machine_arch_type
 #  undef machine_arch_type
@@ -531,18 +507,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_vmx53()	(machine_arch_type == MACH_TYPE_VMX53)
 #else
 # define machine_is_vmx53()	(0)
-#endif
-
-#ifdef CONFIG_MACH_PCM049
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_PCM049
-# endif
-# define machine_is_pcm049()	(machine_arch_type == MACH_TYPE_PCM049)
-#else
-# define machine_is_pcm049()	(0)
 #endif
 
 #ifdef CONFIG_MACH_DSS11

@@ -1,6 +1,0 @@
-#!/bin/sh
-
-autoboot_timeout=3
-
-mtdparts="2048k@384k(barebox)ro,256k(barebox-logo),256k(barebox-logo2),128k(barebox-env),5120k(kernel),-(root)"
-bootargs="$bootargs mtdparts=docg3.0:$mtdparts ubi.mtd=5 rootfstype=ubifs root=ubi0:linux_root ro"

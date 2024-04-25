@@ -2,14 +2,6 @@
 
 if ARCH_PXA
 
-config ARCH_TEXT_BASE
-	hex
-	default 0xa0000000 if MACH_MIOA701
-	default 0xa3f00000 if MACH_PCM027
-	default 0xa3d00000 if MACH_LUBBOCK
-	default 0xa3d00000 if MACH_MAINSTONE
-	default 0x83f00000 if MACH_ZYLONITE
-
 # ----------------------------------------------------------
 
 config ARCH_PXA2XX
@@ -40,84 +32,5 @@ config ARCH_PXA3XX
 	bool "PXA3xx"
 
 endchoice
-
-# ----------------------------------------------------------
-
-if ARCH_PXA25X
-
-choice
-	prompt "PXA25x Board Type"
-	bool
-
-config MACH_LUBBOCK
-	bool "Lubbock board"
-	select PWM
-	help
-	  Say Y here if you are using a Lubbock board
-endchoice
-
-endif
-
-# ----------------------------------------------------------
-
-if ARCH_PXA27X
-
-choice
-	prompt "PXA27x Board Type"
-	bool
-
-config MACH_MAINSTONE
-	bool "Mainstone board"
-	select PWM
-	help
-	  Say Y here if you are using a Mainstone board
-config MACH_MIOA701
-	bool "Mitac Mio A701"
-	select PWM
-	select POLLER
-	help
-	  Say Y here if you are using a Mitac Mio A701 smartphone
-
-config MACH_PCM027
-	bool "Phytec phyCORE-PXA270"
-	help
-	  Say Y here if you are using a Phytec phyCORE PXA270
-	  board
-endchoice
-
-if MACH_MIOA701
-config BCH_CONST_M
-	int
-	default 14 if MACH_MIOA701
-config BCH_CONST_T
-	int
-	default 4 if MACH_MIOA701
-endif
-
-endif
-
-# ----------------------------------------------------------
-
-if ARCH_PXA3XX
-
-config MACH_ZYLONITE
-       bool
-
-choice
-	prompt "PXA3xx Board Type"
-
-config MACH_ZYLONITE_PXA310
-	bool "Zylonite board based on a PXA310 pxa SoC"
-	help
-	  Say Y here if you are using a Zylonite board, based
-	  on a PXA31x SoC.
-	select ARCH_PXA310
-	select MACH_ZYLONITE
-
-endchoice
-
-endif
-
-# ----------------------------------------------------------
 
 endif

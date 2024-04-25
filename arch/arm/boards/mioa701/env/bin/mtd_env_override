@@ -1,4 +1,0 @@
-#!/bin/sh
-
-loadenv /dev/mtd0.barebox-env
-exit $?

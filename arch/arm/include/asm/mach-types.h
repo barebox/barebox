@@ -77,18 +77,6 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_PCAAXS1              4526
 #define MACH_TYPE_PFLA03               4575
 
-#ifdef CONFIG_ARCH_LUBBOCK
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_LUBBOCK
-# endif
-# define machine_is_lubbock()	(machine_arch_type == MACH_TYPE_LUBBOCK)
-#else
-# define machine_is_lubbock()	(0)
-#endif
-
 #ifdef CONFIG_ARCH_VERSATILE_PB
 # ifdef machine_arch_type
 #  undef machine_arch_type
@@ -111,18 +99,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_csb337()	(machine_arch_type == MACH_TYPE_CSB337)
 #else
 # define machine_is_csb337()	(0)
-#endif
-
-#ifdef CONFIG_MACH_MAINSTONE
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_MAINSTONE
-# endif
-# define machine_is_mainstone()	(machine_arch_type == MACH_TYPE_MAINSTONE)
-#else
-# define machine_is_mainstone()	(0)
 #endif
 
 #ifdef CONFIG_MACH_NOMADIK
@@ -159,18 +135,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_at91rm9200ek()	(machine_arch_type == MACH_TYPE_AT91RM9200EK)
 #else
 # define machine_is_at91rm9200ek()	(0)
-#endif
-
-#ifdef CONFIG_MACH_PCM027
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_PCM027
-# endif
-# define machine_is_pcm027()	(machine_arch_type == MACH_TYPE_PCM027)
-#else
-# define machine_is_pcm027()	(0)
 #endif
 
 #ifdef CONFIG_MACH_AT91SAM9261EK
@@ -219,30 +183,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_at91sam9263ek()	(machine_arch_type == MACH_TYPE_AT91SAM9263EK)
 #else
 # define machine_is_at91sam9263ek()	(0)
-#endif
-
-#ifdef CONFIG_MACH_ZYLONITE
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_ZYLONITE
-# endif
-# define machine_is_zylonite()	(machine_arch_type == MACH_TYPE_ZYLONITE)
-#else
-# define machine_is_zylonite()	(0)
-#endif
-
-#ifdef CONFIG_MACH_MIOA701
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_MIOA701
-# endif
-# define machine_is_mioa701()	(machine_arch_type == MACH_TYPE_MIOA701)
-#else
-# define machine_is_mioa701()	(0)
 #endif
 
 #ifdef CONFIG_MACH_PM9263

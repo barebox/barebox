@@ -1,6 +1,0 @@
-#!/bin/sh
-
-mtdparts="512k(nor0.barebox),256k(nor0.bareboxenv),4M(nor0.kernel),-(nor0.root)"
-kernelname="physmap-flash.0"
-
-mtdparts-add -d nor0 -k ${kernelname} -p ${mtdparts}

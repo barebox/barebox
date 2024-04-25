@@ -1,6 +1,0 @@
-#!/bin/sh
-
-mtdparts="2048k@0(nor0.barebox)ro,256k(nor0.barebox-env),256k(nor0.barebox-logo),256k(nor0.barebox-logo2),5120k(nor0.kernel),-(nor0.root)"
-kernelname="application-flash"
-
-mtdparts-add -d nor0 -k ${kernelname} -p ${mtdparts}

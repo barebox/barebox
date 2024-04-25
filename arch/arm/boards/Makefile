@@ -19,7 +19,6 @@ obj-$(CONFIG_MACH_BEAGLE)			+= beagle/
 obj-$(CONFIG_MACH_BEAGLEBONE)			+= beaglebone/
 obj-$(CONFIG_MACH_BEAGLEPLAY)			+= beagleplay/
 obj-$(CONFIG_MACH_CALAO)			+= calao/
-obj-$(CONFIG_MACH_CANON_A1100)			+= canon-a1100/
 obj-$(CONFIG_MACH_CM_FX6)			+= cm-fx6/
 obj-$(CONFIG_MACH_NITROGEN6)			+= boundarydevices-nitrogen6/
 obj-$(CONFIG_MACH_NOVENA)			+= novena/

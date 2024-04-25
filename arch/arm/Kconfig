@@ -77,16 +77,6 @@ config ARCH_DAVINCI
 	select HAS_DEBUG_LL
 	select GPIOLIB
 
-config ARCH_DIGIC
-	bool "Canon DIGIC-based cameras"
-	depends on 32BIT
-	select CPU_ARM946E
-	select HAS_DEBUG_LL
-	select CLOCKSOURCE_DIGIC
-	select GPIOLIB
-	help
-	  Support for Canon's digital cameras that use the DIGIC4 chip.
-
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"
 	depends on 32BIT
@@ -285,7 +275,6 @@ source "arch/arm/mach-at91/Kconfig"
 source "arch/arm/mach-bcm283x/Kconfig"
 source "arch/arm/mach-clps711x/Kconfig"
 source "arch/arm/mach-davinci/Kconfig"
-source "arch/arm/mach-digic/Kconfig"
 source "arch/arm/mach-imx/Kconfig"
 source "arch/arm/mach-layerscape/Kconfig"
 source "arch/arm/mach-mxs/Kconfig"

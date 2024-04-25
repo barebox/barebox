@@ -54,8 +54,6 @@
 #include <mach/nomadik/debug_ll.h>
 #elif defined CONFIG_ARCH_MXS
 #include <mach/mxs/debug_ll.h>
-#elif defined CONFIG_ARCH_DIGIC
-#include <mach/digic/debug_ll.h>
 #elif defined CONFIG_ARCH_CLPS711X
 #include <mach/clps711x/debug_ll.h>
 #elif defined CONFIG_ARCH_AT91

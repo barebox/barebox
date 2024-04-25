@@ -48,8 +48,6 @@
 #include <mach/socfpga/debug_ll.h>
 #elif defined CONFIG_ARCH_PXA
 #include <mach/pxa/debug_ll.h>
-#elif defined CONFIG_ARCH_NOMADIK
-#include <mach/nomadik/debug_ll.h>
 #elif defined CONFIG_ARCH_MXS
 #include <mach/mxs/debug_ll.h>
 #elif defined CONFIG_ARCH_CLPS711X

@@ -93,15 +93,6 @@ config ARCH_MXS
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
 
-config ARCH_NOMADIK
-	bool "STMicroelectronics Nomadik"
-	depends on 32BIT
-	select CPU_ARM926T
-	select CLOCKSOURCE_NOMADIK
-	select HAVE_LEGACY_CLK
-	help
-	  Support for the Nomadik platform by ST-Ericsson
-
 config ARCH_OMAP_SINGLE
 	bool "TI OMAP"
 	depends on 32BIT
@@ -271,7 +262,6 @@ source "arch/arm/mach-imx/Kconfig"
 source "arch/arm/mach-layerscape/Kconfig"
 source "arch/arm/mach-mxs/Kconfig"
 source "arch/arm/mach-mvebu/Kconfig"
-source "arch/arm/mach-nomadik/Kconfig"
 source "arch/arm/mach-k3/Kconfig"
 source "arch/arm/mach-omap/Kconfig"
 source "arch/arm/mach-pxa/Kconfig"

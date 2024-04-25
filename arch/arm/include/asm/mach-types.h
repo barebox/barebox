@@ -101,18 +101,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_csb337()	(0)
 #endif
 
-#ifdef CONFIG_MACH_NOMADIK
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_NOMADIK
-# endif
-# define machine_is_nomadik()	(machine_arch_type == MACH_TYPE_NOMADIK)
-#else
-# define machine_is_nomadik()	(0)
-#endif
-
 #ifdef CONFIG_MACH_SCB9328
 # ifdef machine_arch_type
 #  undef machine_arch_type

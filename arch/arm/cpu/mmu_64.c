@@ -282,7 +282,7 @@ void mmu_disable(void)
 void dma_inv_range(void *ptr, size_t size)
 {
 	unsigned long start = (unsigned long)ptr;
-	unsigned long end = start + size;
+	unsigned long end = start + size - 1;
 
 	v8_inv_dcache_range(start, end);
 }
@@ -290,7 +290,7 @@ void dma_inv_range(void *ptr, size_t size)
 void dma_flush_range(void *ptr, size_t size)
 {
 	unsigned long start = (unsigned long)ptr;
-	unsigned long end = start + size;
+	unsigned long end = start + size - 1;
 
 	v8_flush_dcache_range(start, end);
 }

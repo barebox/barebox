@@ -42,7 +42,7 @@ struct barebox_arm_boarddata *barebox_arm_get_boarddata(void);
 
 #define barebox_arm_get_boarddata barebox_get_boarddata
 
-#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_ARM_EXCEPTIONS)
+#ifdef CONFIG_ARM_EXCEPTIONS
 void arm_fixup_vectors(void);
 #else
 static inline void arm_fixup_vectors(void)
@@ -157,14 +157,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 {
 	endmem = arm_mem_ramoops(endmem);
 
-	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
-		return ALIGN_DOWN(endmem - size, SZ_1M);
-	} else {
-		if (TEXT_BASE >= membase && TEXT_BASE < endmem)
-			return TEXT_BASE;
-		else
-			return endmem;
-	}
+	return ALIGN_DOWN(endmem - size, SZ_1M);
 }
 
 /*

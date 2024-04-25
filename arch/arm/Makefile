@@ -108,23 +108,11 @@ KBUILD_CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
 
 # Add cleanup flags
 KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS_barebox += --gc-sections
-LDFLAGS_pbl += --gc-sections
+LDFLAGS_barebox += --gc-sections -pie
+LDFLAGS_pbl += --gc-sections -pie
 
 # early code often runs at addresses we are not linked at
 KBUILD_CFLAGS_KERNEL += -fPIE
-
-ifdef CONFIG_RELOCATABLE
-LDFLAGS_barebox += -pie
-else
-LDFLAGS_barebox += -static
-endif
-
-ifdef CONFIG_PBL_RELOCATABLE
-LDFLAGS_pbl += -pie
-else
-LDFLAGS_pbl += -static
-endif
 
 KBUILD_BINARY := barebox.bin
 

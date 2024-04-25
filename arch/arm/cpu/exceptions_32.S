@@ -128,7 +128,7 @@ fiq:
 	bad_save_user_regs
 	bl 	do_fiq
 
-#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_ARM_EXCEPTIONS)
+#ifdef CONFIG_ARM_EXCEPTIONS
 /*
  * With relocatable binary support the runtime exception vectors do not match
  * the addresses in the binary. We have to fix them up during runtime

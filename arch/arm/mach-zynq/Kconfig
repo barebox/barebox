@@ -19,9 +19,6 @@ config ARCH_ZYNQ7000
 	select HAS_MACB
 	select OFTREE
 	select OFDEVICE
-	select RELOCATABLE
-
-
 
 menu "select Zynq boards to be built"
 

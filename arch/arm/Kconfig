@@ -4,7 +4,6 @@ config ARM
 	bool
 	select HAS_KALLSYMS
 	select HAS_CACHE
-	select HAVE_CONFIGURABLE_TEXT_BASE if !RELOCATABLE
 	select HAVE_IMAGE_COMPRESSION
 	select HAVE_ARCH_KASAN
 	select ARCH_HAS_SJLJ
@@ -12,6 +11,8 @@ config ARM
 	select HAVE_EFI_STUB
 	select HAVE_PBL_IMAGE
 	select HAVE_PBL_MULTI_IMAGES
+	select RELOCATABLE
+	select PBL_RELOCATABLE
 	default y
 
 config ARM_LINUX
@@ -67,7 +68,6 @@ config ARCH_CLPS711X
 	select GPIOLIB
 	select HAS_DEBUG_LL
 	select MFD_SYSCON
-	select RELOCATABLE
 
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"
@@ -115,7 +115,6 @@ config ARCH_TEGRA
 	select GPIO_TEGRA
 	select OFDEVICE
 	select OFTREE
-	select RELOCATABLE
 	select RESET_CONTROLLER
 	select PINCTRL
 
@@ -131,7 +130,6 @@ config ARCH_ARM64_VIRT
 	bool "ARM64 QEMU Virt board"
 	depends on 64BIT
 	select CPU_V8
-	select RELOCATABLE
 	select ARM_AMBA
 	select BOARD_ARM_VIRT
 	select HW_HAS_PCI
@@ -145,7 +143,6 @@ config ARCH_BCM283X
 	select CLOCKSOURCE_BCM283X
 	select ARM_AMBA
 	select HAS_DEBUG_LL
-	select RELOCATABLE
 
 config ARCH_IMX
 	bool "Freescale iMX-based"
@@ -154,7 +151,6 @@ config ARCH_IMX
 	select COMMON_CLK
 	select WATCHDOG_IMX_RESET_SOURCE
 	select HAS_DEBUG_LL
-	select RELOCATABLE
 
 config ARCH_K3
 	bool "Texas Instruments Inc. K3 multicore SoC architecture"
@@ -229,7 +225,6 @@ config ARCH_VEXPRESS
 	select AMBA_SP804
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select RELOCATABLE
 
 config ARCH_ZYNQMP
 	bool "Xilinx ZynqMP-based boards"
@@ -240,7 +235,6 @@ config ARCH_ZYNQMP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select GPIOLIB
-	select RELOCATABLE
 	select HAS_MACB
 
 source "arch/arm/cpu/Kconfig"

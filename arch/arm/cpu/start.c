@@ -158,8 +158,7 @@ __noreturn __prereloc void barebox_non_pbl_start(unsigned long membase,
 	if (IS_ENABLED(CONFIG_CPU_V7))
 		armv7_hyp_install();
 
-	if (IS_ENABLED(CONFIG_RELOCATABLE))
-		relocate_to_adr(barebox_base);
+	relocate_to_adr(barebox_base);
 
 	setup_c();
 

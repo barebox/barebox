@@ -43,26 +43,21 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	pg_start = runtime_address(input_data);
 	pg_end = runtime_address(input_data_end);
 
-	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE)) {
-		/*
-		 * If we run from inside the memory just relocate the binary
-		 * to the current address. Otherwise it may be a readonly location.
-		 * Copy and relocate to the start of the memory in this case.
-		 */
-		if (pc > membase && pc - membase < memsize)
-			relocate_to_current_adr();
-		else
-			relocate_to_adr(membase);
-	}
+	/*
+	 * If we run from inside the memory just relocate the binary
+	 * to the current address. Otherwise it may be a readonly location.
+	 * Copy and relocate to the start of the memory in this case.
+	 */
+	if (pc > membase && pc - membase < memsize)
+		relocate_to_current_adr();
+	else
+		relocate_to_adr(membase);
 
 	pg_len = pg_end - pg_start;
 	uncompressed_len = get_unaligned((const u32 *)(pg_start + pg_len - 4));
 
-	if (IS_ENABLED(CONFIG_RELOCATABLE))
-		barebox_base = arm_mem_barebox_image(membase, endmem,
-						     uncompressed_len + MAX_BSS_SIZE);
-	else
-		barebox_base = TEXT_BASE;
+	barebox_base = arm_mem_barebox_image(membase, endmem,
+					     uncompressed_len + MAX_BSS_SIZE);
 
 	setup_c();
 

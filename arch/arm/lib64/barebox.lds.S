@@ -8,11 +8,7 @@ OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(start)
 SECTIONS
 {
-#ifdef CONFIG_RELOCATABLE
 	. = 0x0;
-#else
-	. = TEXT_BASE;
-#endif
 
 	.image_start : { *(.__image_start) }
 

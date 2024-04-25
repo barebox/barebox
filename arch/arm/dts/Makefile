@@ -178,7 +178,6 @@ lwl-$(CONFIG_MACH_VARISCITE_SOM_MX7) += imx7d-gome-e143_01.dtb.o
 lwl-$(CONFIG_MACH_VERSATILEPB) += versatile-pb.dtb.o
 lwl-$(CONFIG_MACH_VEXPRESS) += vexpress-v2p-ca9.dtb.o
 lwl-$(CONFIG_MACH_VEXPRESS) += vexpress-v2p-ca15.dtb.o
-lwl-$(CONFIG_MACH_VIRT2REAL) += virt2real.dtb.o
 lwl-$(CONFIG_MACH_VSCOM_BALTOS) += am335x-baltos-minimal.dtb.o
 lwl-$(CONFIG_MACH_WARP7) += imx7s-warp.dtb.o
 lwl-$(CONFIG_MACH_VF610_TWR) += vf610-twr.dtb.o

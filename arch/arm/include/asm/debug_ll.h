@@ -36,8 +36,6 @@
 #include <debug_ll/pl011.h>
 #elif defined CONFIG_ARCH_MVEBU
 #include <mach/mvebu/debug_ll.h>
-#elif defined CONFIG_ARCH_DAVINCI
-#include <mach/davinci/debug_ll.h>
 #elif defined CONFIG_ARCH_ZYNQ
 #include <mach/zynq/debug_ll.h>
 #elif defined CONFIG_ARCH_VERSATILE

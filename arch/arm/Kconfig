@@ -70,13 +70,6 @@ config ARCH_CLPS711X
 	select MFD_SYSCON
 	select RELOCATABLE
 
-config ARCH_DAVINCI
-	bool "TI Davinci"
-	depends on 32BIT
-	select CPU_ARM926T
-	select HAS_DEBUG_LL
-	select GPIOLIB
-
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"
 	depends on 32BIT
@@ -274,7 +267,6 @@ source "arch/arm/cpu/Kconfig"
 source "arch/arm/mach-at91/Kconfig"
 source "arch/arm/mach-bcm283x/Kconfig"
 source "arch/arm/mach-clps711x/Kconfig"
-source "arch/arm/mach-davinci/Kconfig"
 source "arch/arm/mach-imx/Kconfig"
 source "arch/arm/mach-layerscape/Kconfig"
 source "arch/arm/mach-mxs/Kconfig"

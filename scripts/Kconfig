@@ -70,13 +70,6 @@ config OMAP_IMAGE
 	help
 	  This enables building the image creation tools for TI OMAP SoCs
 
-config DAVINCI_IMAGE
-	bool "Davinci image tool" if COMPILE_HOST_TOOLS
-	depends on ARCH_DAVINCI || COMPILE_HOST_TOOLS
-	default y if ARCH_DAVINCI
-	help
-	  This enables building the image creation tool for Davinci SoCs
-
 config MVEBU_HOSTTOOLS
 	bool "mvebu hosttools" if COMPILE_HOST_TOOLS
 	depends on ARCH_MVEBU || COMPILE_HOST_TOOLS

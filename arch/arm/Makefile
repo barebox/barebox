@@ -85,7 +85,6 @@ endif
 machine-$(CONFIG_ARCH_AT91)		+= at91
 machine-$(CONFIG_ARCH_BCM283X)		+= bcm283x
 machine-$(CONFIG_ARCH_CLPS711X)		+= clps711x
-machine-$(CONFIG_ARCH_DAVINCI)		+= davinci
 machine-$(CONFIG_ARCH_IMX)		+= imx
 machine-$(CONFIG_ARCH_K3)		+= k3
 machine-$(CONFIG_ARCH_LAYERSCAPE)	+= layerscape
@@ -138,18 +137,6 @@ MLO: $(KBUILD_BINARY)
 
 ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
 KBUILD_IMAGE := MLO
-endif
-
-quiet_cmd_davinci_ubl_image = UBL-IMG $@
-      cmd_davinci_ubl_image = set -e; \
-	 scripts/mkublheader $< > $@; \
-	 cat $< >> $@
-
-barebox.ubl: $(KBUILD_BINARY) FORCE
-	$(call if_changed,davinci_ubl_image)
-
-ifeq ($(CONFIG_ARCH_DAVINCI),y)
-KBUILD_IMAGE := barebox.ubl
 endif
 
 archclean:

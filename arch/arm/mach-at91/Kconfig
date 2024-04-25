@@ -147,14 +147,6 @@ config SOC_SAMA7G5
 	help
 	  Select this if you are using one of Microchip's SAMA7G5 family SoC.
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x73f00000 if SOC_AT91SAM9G45
-	default 0x26f00000 if SOC_AT91SAM9X5
-	default 0x20f00000 if SOC_AT91RM9200
-	default 0x21f00000 if MACH_ANIMEO_IP
-	default 0x23f00000
-
 config HAVE_NAND_ATMEL_BUSWIDTH_16
 	bool
 

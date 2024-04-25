@@ -2,10 +2,6 @@
 
 if ARCH_ZYNQ
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x0
-
 config ZYNQ_DEBUG_LL_UART_BASE
 	hex
 	default 0xe0001000 if MACH_ZEDBOARD

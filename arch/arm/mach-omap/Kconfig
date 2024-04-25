@@ -100,11 +100,6 @@ config BAREBOX_UPDATE_AM33XX_EMMC
 	help
 	  Say Y for barebox update eMMC handler.
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x80e80000 if MACH_OMAP343xSDP
-	default 0x80e80000 if MACH_BEAGLE
-
 config AM33XX_NET_BOOT
 	bool "enable AM335x network boot"
 	select ENVIRONMENT_VARIABLES
@@ -182,7 +177,6 @@ config MACH_VSCOM_BALTOS
 config MACH_WAGO_PFC_AM35XX
         bool "Wago PFC200 Fieldbus Controller"
         select ARCH_AM35XX
-        select HAVE_CONFIGURABLE_MEMORY_LAYOUT
         help
           Say Y here if you are using a the AM3505 based PFC200 controller
 

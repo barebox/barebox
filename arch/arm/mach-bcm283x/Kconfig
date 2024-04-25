@@ -2,10 +2,6 @@
 
 if ARCH_BCM283X
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x0
-
 config MACH_RPI_COMMON
 	bool
 	select ARM_USE_COMPRESSED_DTB

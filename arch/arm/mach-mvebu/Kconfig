@@ -2,13 +2,6 @@
 
 if ARCH_MVEBU
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x2000000 if ARCH_ARMADA_370
-	default 0x2000000 if ARCH_ARMADA_XP
-	default 0x2000000 if ARCH_DOVE
-	default 0x2000000 if ARCH_KIRKWOOD
-
 config ARCH_ARMADA_370
 	bool
 	select CPU_V7

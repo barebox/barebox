@@ -83,5 +83,5 @@ SECTIONS
 #endif
 
 	_end = .;
-	_barebox_image_size = __bss_start - TEXT_BASE;
+	_barebox_image_size = __bss_start;
 }

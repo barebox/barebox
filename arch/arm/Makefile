@@ -102,10 +102,6 @@ machine-$(CONFIG_ARCH_TEGRA)		+= tegra
 machine-$(CONFIG_ARCH_ZYNQ)		+= zynq
 machine-$(CONFIG_ARCH_ZYNQMP)		+= zynqmp
 
-TEXT_BASE = $(CONFIG_TEXT_BASE)
-
-KBUILD_CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
-
 # Add cleanup flags
 KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_barebox += --gc-sections -pie

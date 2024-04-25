@@ -3,11 +3,6 @@
 menu "Rockchip Features"
 	depends on ARCH_ROCKCHIP
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x68000000 if ARCH_RK3188
-	default 0x0
-
 config RK_TIMER
 	hex
 	default 1

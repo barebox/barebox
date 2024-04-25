@@ -2,8 +2,4 @@
 
 if MACH_VERSATILEPB
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x01000000
-
 endif

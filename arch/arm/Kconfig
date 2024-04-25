@@ -15,6 +15,10 @@ config ARM
 	select PBL_RELOCATABLE
 	default y
 
+config ARCH_TEXT_BASE
+	hex
+	default 0x00000000
+
 config ARM_LINUX
 	bool
 	default y
@@ -23,10 +27,6 @@ config ARM_LINUX
 config ARM_USE_COMPRESSED_DTB
        bool
        select USE_COMPRESSED_DTB
-
-config TEXT_BASE
-	hex
-	default 0x0
 
 menu "System Type"
 

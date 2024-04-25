@@ -224,11 +224,6 @@ __noreturn __prereloc void barebox_non_pbl_start(unsigned long membase,
 
 	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
 
-	if (IS_ENABLED(CONFIG_MMU) && !IS_ENABLED(CONFIG_PBL_IMAGE)) {
-		arm_early_mmu_cache_invalidate();
-		mmu_early_enable(membase, memsize);
-	}
-
 	if (IS_ENABLED(CONFIG_BOOTM_OPTEE))
 		of_add_reserve_entry(endmem - OPTEE_SIZE, endmem - 1);
 
@@ -236,17 +231,6 @@ __noreturn __prereloc void barebox_non_pbl_start(unsigned long membase,
 
 	start_barebox();
 }
-
-#ifndef CONFIG_PBL_IMAGE
-
-void start(void);
-
-void NAKED __section(.text_entry) start(void)
-{
-	barebox_arm_head();
-}
-
-#else
 
 void start(unsigned long membase, unsigned long memsize, void *boarddata);
 /*
@@ -258,4 +242,3 @@ void NAKED __prereloc __section(.text_entry) start(unsigned long membase,
 {
 	barebox_non_pbl_start(membase, memsize, boarddata);
 }
-#endif

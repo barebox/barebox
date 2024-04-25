@@ -123,7 +123,6 @@ config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"
 	depends on 32BIT
 	select HAS_DEBUG_LL
-	select PBL_IMAGE
 	select GPIOLIB
 
 endchoice

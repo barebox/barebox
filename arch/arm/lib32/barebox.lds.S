@@ -16,9 +16,6 @@ SECTIONS
 #endif
 	.image_start : { *(.__image_start) }
 
-#ifndef CONFIG_PBL_IMAGE
-	PRE_IMAGE
-#endif
 	. = ALIGN(4);
 
 	._text : { *(._text) }

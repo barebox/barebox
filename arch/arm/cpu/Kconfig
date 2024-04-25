@@ -10,14 +10,11 @@ config CPU_32
 	select HAS_MODULES
 	select HAVE_MOD_ARCH_SPECIFIC
 	select HAS_DMA
-	select HAVE_PBL_IMAGE
 	select ARCH_HAS_ZERO_PAGE
 
 config CPU_64
 	bool
 	select PHYS_ADDR_T_64BIT
-	select HAVE_PBL_IMAGE
-	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DMA
 	select ARCH_WANT_FRAME_POINTERS
 	select ARCH_HAS_ZERO_PAGE

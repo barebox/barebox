@@ -23,19 +23,6 @@
 
 #include "entry.h"
 
-#ifndef CONFIG_HAVE_PBL_MULTI_IMAGES
-
-void start_pbl(void);
-
-/*
- * First instructions in the pbl image
- */
-void __naked __section(.text_head_entry_start_single_pbl) start_pbl(void)
-{
-	barebox_arm_head();
-}
-#endif
-
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 

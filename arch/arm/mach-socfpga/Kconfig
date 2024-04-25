@@ -15,7 +15,6 @@ comment "Altera SoCFPGA System-on-Chip"
 config ARCH_SOCFPGA_CYCLONE5
 	bool
 	select CPU_V7
-	select HAVE_PBL_MULTI_IMAGES
 	select OFDEVICE if !ARCH_SOCFPGA_XLOAD
 	select OFTREE if !ARCH_SOCFPGA_XLOAD
 	select GPIOLIB if !ARCH_SOCFPGA_XLOAD
@@ -25,7 +24,6 @@ config ARCH_SOCFPGA_ARRIA10
 	select CPU_V7
 	select ARM_USE_COMPRESSED_DTB
 	select RESET_CONTROLLER
-	select HAVE_PBL_MULTI_IMAGES
 	select OFDEVICE
 	select OFTREE
 

@@ -10,6 +10,8 @@ config ARM
 	select ARCH_HAS_SJLJ
 	select ARM_OPTIMZED_STRING_FUNCTIONS if KASAN
 	select HAVE_EFI_STUB
+	select HAVE_PBL_IMAGE
+	select HAVE_PBL_MULTI_IMAGES
 	default y
 
 config ARM_LINUX
@@ -42,7 +44,6 @@ choice
 	prompt "ARM system type"
 
 config ARCH_MULTIARCH
-	select HAVE_PBL_MULTI_IMAGES
 	select OFTREE
 	select OFDEVICE
 	bool "Allow multiple archs to be selected"
@@ -52,7 +53,6 @@ config ARCH_AT91
 	depends on 32BIT
 	select GPIOLIB
 	select CLKDEV_LOOKUP
-	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
 	select HAVE_CLK
 	select COMMON_CLK_AT91 if COMMON_CLK_OF_PROVIDER
@@ -66,7 +66,6 @@ config ARCH_CLPS711X
 	select CPU_32v4T
 	select GPIOLIB
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
 	select MFD_SYSCON
 	select RELOCATABLE
 
@@ -77,7 +76,6 @@ config ARCH_MVEBU
 	select COMMON_CLK_OF_PROVIDER
 	select GPIOLIB
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
 	select HW_HAS_PCI
 	select MVEBU_MBUS
 	select OFTREE
@@ -91,7 +89,6 @@ config ARCH_MXS
 	select GENERIC_GPIO
 	select COMMON_CLK
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"
@@ -116,7 +113,6 @@ config ARCH_TEGRA
 	select COMMON_CLK_OF_PROVIDER
 	select GPIOLIB
 	select GPIO_TEGRA
-	select HAVE_PBL_MULTI_IMAGES
 	select OFDEVICE
 	select OFTREE
 	select RELOCATABLE
@@ -277,7 +273,6 @@ config BOARD_ARM_VIRT
 config BOARD_ARM_GENERIC_DT
 	select BOARD_GENERIC_DT
 	select ARM_AMBA
-	depends on HAVE_PBL_MULTI_IMAGES
 	depends on OFDEVICE
 	bool "Build generic ARM device tree 2nd stage image"
 	help

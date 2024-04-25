@@ -42,6 +42,7 @@ choice
 	prompt "ARM system type"
 
 config ARCH_MULTIARCH
+	select HAVE_PBL_MULTI_IMAGES
 	bool "Allow multiple archs to be selected"
 
 config ARCH_AT91
@@ -181,7 +182,6 @@ config ARCH_ARM64_VIRT
 	bool "ARM64 QEMU Virt board"
 	depends on 64BIT
 	select CPU_V8
-	select HAVE_PBL_MULTI_IMAGES
 	select OFDEVICE
 	select OFTREE
 	select RELOCATABLE
@@ -201,7 +201,6 @@ config ARCH_BCM283X
 	select RELOCATABLE
 	select OFTREE
 	select OFDEVICE
-	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_IMX
 	bool "Freescale iMX-based"
@@ -210,7 +209,6 @@ config ARCH_IMX
 	select COMMON_CLK
 	select WATCHDOG_IMX_RESET_SOURCE
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
 	select RELOCATABLE
 
 config ARCH_K3
@@ -219,7 +217,6 @@ config ARCH_K3
 	select CPU_V8
 	select GPIOLIB
 	select COMMON_CLK
-	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
 	select COMMON_CLK_OF_PROVIDER
 	select PM_GENERIC_DOMAINS
@@ -229,7 +226,6 @@ config ARCH_LAYERSCAPE
 	depends on ARCH_MULTIARCH
 	select GPIOLIB
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select HW_HAS_PCI
@@ -256,7 +252,6 @@ config ARCH_ROCKCHIP
 	select PINCTRL
 	select PINCTRL_ROCKCHIP
 	select OFTREE
-	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
 	imply GPIO_ROCKCHIP
 
@@ -265,7 +260,6 @@ config ARCH_STM32MP
 	depends on 32BIT
 	select ARCH_STM32
 	select CPU_V7
-	select HAVE_PBL_MULTI_IMAGES
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select HAS_DEBUG_LL
@@ -284,7 +278,6 @@ config ARCH_VERSATILE
 	select HAS_DEBUG_LL
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_VEXPRESS
 	bool "ARM Vexpress & virt boards"
@@ -298,14 +291,12 @@ config ARCH_VEXPRESS
 	select OFTREE
 	select OFDEVICE
 	select RELOCATABLE
-	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_ZYNQMP
 	bool "Xilinx ZynqMP-based boards"
 	depends on 64BIT
 	select CPU_V8
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
 	select ARM_SMCCC
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER

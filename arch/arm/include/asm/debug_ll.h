@@ -46,8 +46,6 @@
 #include <mach/layerscape/debug_ll.h>
 #elif defined CONFIG_ARCH_TEGRA
 #include <mach/tegra/debug_ll.h>
-#elif defined CONFIG_ARCH_UEMD
-#include <mach/uemd/debug_ll.h>
 #elif defined CONFIG_ARCH_SOCFPGA
 #include <mach/socfpga/debug_ll.h>
 #elif defined CONFIG_ARCH_PXA

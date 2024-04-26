@@ -8,7 +8,8 @@
 #ifndef __ASM_DMA_H
 #define __ASM_DMA_H
 
-#include <linux/kernel.h>
+#include <xfuncs.h>
+#include <linux/types.h>
 #include <linux/string.h>
 
 #define DMA_ALIGNMENT	64

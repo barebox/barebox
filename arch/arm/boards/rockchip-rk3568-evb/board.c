@@ -28,9 +28,8 @@ static int rk3568_evb_probe(struct device *dev)
 	else
 		of_device_enable_path("/chosen/environment-emmc");
 
-	rk3568_bbu_mmc_register("sd", 0, "/dev/mmc0");
-	rk3568_bbu_mmc_register("emmc", BBU_HANDLER_FLAG_DEFAULT,
-				"/dev/mmc1");
+	rockchip_bbu_mmc_register("sd", 0, "/dev/mmc0");
+	rockchip_bbu_mmc_register("emmc", BBU_HANDLER_FLAG_DEFAULT, "/dev/mmc1");
 
 	return 0;
 }

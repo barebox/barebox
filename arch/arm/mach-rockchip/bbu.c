@@ -36,8 +36,8 @@
  * leaves the previously written inactive image as a fallback in case writing the
  * first one gets interrupted.
  */
-static int rk3568_bbu_mmc_handler(struct bbu_handler *handler,
-				  struct bbu_data *data)
+static int rockchip_bbu_mmc_handler(struct bbu_handler *handler,
+				    struct bbu_data *data)
 {
 	enum filetype filetype;
 	int ret, fd, wr0, wr1;
@@ -63,9 +63,9 @@ static int rk3568_bbu_mmc_handler(struct bbu_handler *handler,
 	space = cdev_unallocated_space(cdev_by_name(cdevname));
 
 	if (space < IMG_OFFSET_0 + data->len) {
-		pr_err("Unallocated space on %s is too small for one image\n",
-		       data->devicefile);
-		return -ENOSPC;
+		if (!bbu_force(data, "Unallocated space on %s (%lld) is too small for one image\n",
+			       data->devicefile, space))
+			return -ENOSPC;
 	}
 
 	fd = open(data->devicefile, O_WRONLY);
@@ -113,8 +113,8 @@ err_close:
 	return ret;
 }
 
-int rk3568_bbu_mmc_register(const char *name, unsigned long flags,
-                const char *devicefile)
+int rockchip_bbu_mmc_register(const char *name, unsigned long flags,
+			      const char *devicefile)
 {
 	struct bbu_handler *handler;
 	int ret;
@@ -124,7 +124,7 @@ int rk3568_bbu_mmc_register(const char *name, unsigned long flags,
 	handler->flags = flags;
 	handler->devicefile = devicefile;
 	handler->name = name;
-	handler->handler = rk3568_bbu_mmc_handler;
+	handler->handler = rockchip_bbu_mmc_handler;
 
 	ret = bbu_register_handler(handler);
 	if (ret)

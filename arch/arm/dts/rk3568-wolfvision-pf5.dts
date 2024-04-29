@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+/*
+ * Device tree for the WolfVision PF5 mainboard.
+ *
+ * Copyright (C) 2024 WolfVision GmbH.
+ */
+
+/dts-v1/;
+#include "rk3568-wolfvision-pf5-upstream.dts"
+#include "rk356x.dtsi"
+#include "wolfvision-state.dtsi"
+
+/ {
+	aliases {
+		saradc = &saradc;
+	};
+
+	chosen: chosen {
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &environment_emmc;
+		};
+	};
+	/*
+	memory@a00000 {
+		device_type = "memory";
+		reg = <0x0 0x00a00000 0x0 0x7f600000>;
+	};
+	*/
+};
+
+&sdhci {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		environment_emmc: partition@408000 {
+			label = "barebox-environment";
+			reg = <0x0 0x408000 0x0 0x8000>;
+		};
+
+		barebox_state: partition@410000 {
+			reg = <0x0 0x410000 0x0 0x8000>;
+			label = "state";
+		};
+	};
+};

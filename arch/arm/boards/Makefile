@@ -204,3 +204,4 @@ obj-$(CONFIG_MACH_RADXA_ROCK5)			+= radxa-rock5/
 obj-$(CONFIG_MACH_VARISCITE_DT8MCUSTOMBOARD_IMX8MP)	+= variscite-dt8mcustomboard-imx8mp/
 obj-$(CONFIG_MACH_RADXA_CM3)			+= radxa-cm3/
 obj-$(CONFIG_MACH_TQMA93XX)			+= tqma93xx/
+obj-$(CONFIG_MACH_WOLFVISION_PF5)		+= wolfvision-pf5/

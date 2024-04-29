@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+/*
+ * Common state definition for WolfVision boards.
+ *
+ * Copyright (C) 2024 WolfVision GmbH.
+ */
+
+/ {
+	aliases {
+		state = &state;
+	};
+
+	state: state {
+		compatible = "barebox,state";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		backend-type = "raw";
+		backend = <&barebox_state>;
+		backend-stridesize = <1024>;
+		magic = <0xef784236>;
+
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			system1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@0 {
+					reg = <0x0 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+
+				priority@4 {
+					reg = <0x4 0x4>;
+					type = "uint32";
+					default = <21>;
+				};
+			};
+
+			system2 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@8 {
+					reg = <0x8 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+
+				priority@c {
+					reg = <0xc 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+			};
+
+			last_chosen@10 {
+				reg = <0x10 0x4>;
+				type = "uint32";
+			};
+		};
+
+		mac-address@14 {
+			reg = <0x14 0x6>;
+			type = "mac";
+		};
+	};
+};

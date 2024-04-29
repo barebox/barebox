@@ -465,7 +465,7 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 
 	return con;
 out:
-	free(con->packet);
+	net_free_packet(con->packet);
 	free(con);
 	return ERR_PTR(ret);
 }
@@ -510,7 +510,7 @@ struct net_connection *net_icmp_new(IPaddr_t dest, rx_handler_f *handler,
 void net_unregister(struct net_connection *con)
 {
 	list_del(&con->list);
-	free(con->packet);
+	net_free_packet(con->packet);
 	free(con);
 }
 
@@ -564,7 +564,7 @@ static int net_answer_arp(struct eth_device *edev, unsigned char *pkt, int len)
 		return 0;
 	memcpy(packet, pkt, ETHER_HDR_SIZE + ARP_HDR_SIZE);
 	ret = eth_send(edev, packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
-	free(packet);
+	net_free_packet(packet);
 
 	return ret;
 }
@@ -645,11 +645,48 @@ static int net_handle_udp(unsigned char *pkt, int len)
 	return -EINVAL;
 }
 
+static struct iphdr *ip_verify_size(unsigned char *pkt, int *total_len_nic)
+{
+	struct iphdr *ip = (struct iphdr *)(pkt + ETHER_HDR_SIZE);
+	int total_len_pkt;
+
+	total_len_pkt = ntohs(ip->tot_len) + ETHER_HDR_SIZE;
+
+	/* Only trust the packet's size if it's within bounds */
+	if (*total_len_nic < sizeof(struct ethernet) + sizeof(struct iphdr) ||
+	    *total_len_nic < total_len_pkt) {
+		net_bad_packet(pkt, *total_len_nic);
+		return NULL;
+	}
+
+#ifdef DEBUG
+	/* Hitting this warning means we have trailing bytes after the IP
+	 * payload that are not needed for padding.
+	 *
+	 * This may be an indication that the NIC driver is doing funny
+	 * offloading stuff it shouldn't, but can also mean that some sender
+	 * in the network likes to waste bit time for nought.
+	 *
+	 * We can't differentiate between the two, so we just print the
+	 * warning when DEBUG is defined, so developers may investigate the
+	 * reason without annoying users about something that might not even
+	 * be barebox's fault.
+	 */
+	if (WARN_ON_ONCE(*total_len_nic > total_len_pkt &&
+			 *total_len_nic > 64)) {
+		net_bad_packet(pkt, *total_len_nic);
+	}
+#endif
+
+	*total_len_nic = total_len_pkt;
+	return ip;
+}
+
 static int ping_reply(struct eth_device *edev, unsigned char *pkt, int len)
 {
 	struct ethernet *et = (struct ethernet *)pkt;
 	struct icmphdr *icmp;
-	struct iphdr *ip = (struct iphdr *)(pkt + ETHER_HDR_SIZE);
+	struct iphdr *ip;
 	unsigned char *packet;
 	int ret;
 
@@ -659,12 +696,17 @@ static int ping_reply(struct eth_device *edev, unsigned char *pkt, int len)
 
 	icmp = net_eth_to_icmphdr(pkt);
 
+	ip = ip_verify_size(pkt, &len);
+	if (!ip)
+		return -EILSEQ;
+
 	icmp->type = ICMP_ECHO_REPLY;
 	icmp->checksum = 0;
 	icmp->checksum = ~net_checksum((unsigned char *)icmp,
 				       len - sizeof(struct iphdr) - ETHER_HDR_SIZE);
 	ip->check = 0;
-	ip->frag_off = 0;
+	ip->frag_off = htons(0x4000);
+	ip->ttl = 255;
 	net_copy_ip((void *)&ip->daddr, &ip->saddr);
 	net_copy_ip((void *)&ip->saddr, &edev->ipaddr);
 	ip->check = ~net_checksum((unsigned char *)ip, sizeof(struct iphdr));
@@ -673,11 +715,11 @@ static int ping_reply(struct eth_device *edev, unsigned char *pkt, int len)
 	if (!packet)
 		return 0;
 
-	memcpy(packet, pkt, ETHER_HDR_SIZE + len);
+	memcpy(packet, pkt, len);
 
-	ret = eth_send(edev, packet, ETHER_HDR_SIZE + len);
+	ret = eth_send(edev, packet, len);
 
-	free(packet);
+	net_free_packet(packet);
 
 	return ret;
 }
@@ -709,10 +751,10 @@ static int net_handle_ip(struct eth_device *edev, unsigned char *pkt, int len)
 
 	pr_debug("%s\n", __func__);
 
-	if (len < sizeof(struct ethernet) + sizeof(struct iphdr) ||
-		len < ETHER_HDR_SIZE + ntohs(ip->tot_len)) {
+	ip = ip_verify_size(pkt, &len);
+	if (!ip) {
 		pr_debug("%s: bad len\n", __func__);
-		goto bad;
+		return 0;
 	}
 
 	if ((ip->hl_v & 0xf0) != 0x40)

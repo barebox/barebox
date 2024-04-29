@@ -7,6 +7,7 @@
 #include <net.h>
 #include <linux/usb/usb.h>
 #include <linux/usb/usbnet.h>
+#include <asm/unaligned.h>
 #include <malloc.h>
 #include <asm/byteorder.h>
 #include <errno.h>
@@ -23,8 +24,6 @@
 #define MAX_SINGLE_PACKET_SIZE		(2048)
 #define LAN95XX_EEPROM_MAGIC		(0x9500)
 #define EEPROM_MAC_OFFSET		(0x01)
-#define DEFAULT_TX_CSUM_ENABLE		(1)
-#define DEFAULT_RX_CSUM_ENABLE		(1)
 #define SMSC95XX_INTERNAL_PHY_ID	(1)
 #define SMSC95XX_TX_OVERHEAD		(8)
 #define SMSC95XX_TX_OVERHEAD_CSUM	(12)
@@ -45,8 +44,6 @@
 
 struct smsc95xx_priv {
 	u32 mac_cr;
-	int use_tx_csum;
-	int use_rx_csum;
 	__le32 *iobuf;
 };
 
@@ -322,10 +319,9 @@ static void smsc95xx_set_multicast(struct usbnet *dev)
 	smsc95xx_write_reg(dev, MAC_CR, pdata->mac_cr);
 }
 
-/* Enable or disable Tx & Rx checksum offload engines */
-static int smsc95xx_set_csums(struct usbnet *dev)
+/* Disable Tx & Rx IP checksum offload engines */
+static int smsc95xx_disable_csums(struct usbnet *dev)
 {
-	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
 	u32 read_buf;
 	int ret = smsc95xx_read_reg(dev, COE_CR, &read_buf);
 	if (ret < 0) {
@@ -333,15 +329,8 @@ static int smsc95xx_set_csums(struct usbnet *dev)
 		return ret;
 	}
 
-	if (pdata->use_tx_csum)
-		read_buf |= Tx_COE_EN_;
-	else
-		read_buf &= ~Tx_COE_EN_;
-
-	if (pdata->use_rx_csum)
-		read_buf |= Rx_COE_EN_;
-	else
-		read_buf &= ~Rx_COE_EN_;
+	read_buf &= ~Tx_COE_EN_;
+	read_buf &= ~Rx_COE_EN_;
 
 	ret = smsc95xx_write_reg(dev, COE_CR, read_buf);
 	if (ret < 0) {
@@ -672,7 +661,13 @@ static int smsc95xx_reset(struct usbnet *dev)
 		return ret;
 	}
 
-	ret = smsc95xx_set_csums(dev);
+	/*
+	 * barebox network stack doesn't care for hardware checksum offloading,
+	 * so this enabling them doesn't help and indeed introduces breakage:
+	 * The driver will be unaware of the two byte COE trailer and thus packet
+	 * sizes reported will be 2 bytes more than what was actually transmitted.
+	 */
+	ret = smsc95xx_disable_csums(dev);
 	if (ret < 0) {
 		netdev_warn(dev->net, "Failed to set csum offload: %d\n", ret);
 		return ret;
@@ -726,9 +721,6 @@ static int smsc95xx_bind(struct usbnet *dev)
 		return -ENOMEM;
 	}
 
-	pdata->use_tx_csum = DEFAULT_TX_CSUM_ENABLE;
-	pdata->use_rx_csum = DEFAULT_RX_CSUM_ENABLE;
-
 	pdata->iobuf = dma_alloc(4);
 
 	/* Init all registers */
@@ -762,8 +754,7 @@ static int smsc95xx_rx_fixup(struct usbnet *dev, void *buf, int len)
 		unsigned char *packet;
 		u16 size;
 
-		memcpy(&header, buf, sizeof(header));
-		le32_to_cpus(&header);
+		header = get_unaligned_le32(buf);
 		buf += 4 + NET_IP_ALIGN;
 		len -= 4 + NET_IP_ALIGN;
 		packet = buf;
@@ -771,6 +762,12 @@ static int smsc95xx_rx_fixup(struct usbnet *dev, void *buf, int len)
 		/* get the packet length */
 		size = (u16)((header & RX_STS_FL_) >> 16);
 		align_count = (4 - ((size + NET_IP_ALIGN) % 4)) % 4;
+
+		if (unlikely(size > len)) {
+			netif_dbg(dev, rx_err, dev->net,
+				  "size err header=0x%08x\n", header);
+			return 0;
+		}
 
 		if (header & RX_STS_ES_) {
 			netif_dbg(dev, rx_err, dev->net,
@@ -789,14 +786,17 @@ static int smsc95xx_rx_fixup(struct usbnet *dev, void *buf, int len)
 				return 1;
 			}
 
-			net_receive(&dev->edev, packet, len - 4);
+			net_receive(&dev->edev, packet, size - 4);
 		}
 
 		len -= size;
+		buf += size;
 
 		/* padding bytes before the next frame starts */
-		if (len)
+		if (len) {
 			len -= align_count;
+			buf += align_count;
+		}
 	}
 
 	if (len < 0) {
@@ -806,28 +806,18 @@ static int smsc95xx_rx_fixup(struct usbnet *dev, void *buf, int len)
 
 	return 1;
 }
-#if 0
-static u32 smsc95xx_calc_csum_preamble(struct sk_buff *skb)
-{
-	int len = skb->data - skb->head;
-	u16 high_16 = (u16)(skb->csum_offset + skb->csum_start - len);
-	u16 low_16 = (u16)(skb->csum_start - len);
-	return (high_16 << 16) | low_16;
-}
-#endif
+
 static int smsc95xx_tx_fixup(struct usbnet *dev,
                                 void *buf, int len,
                                 void *nbuf, int *nlen)
 {
 	u32 tx_cmd_a, tx_cmd_b;
 
-	tx_cmd_a = (u32)(len) | TX_CMD_A_FIRST_SEG_ | TX_CMD_A_LAST_SEG_;
-	cpu_to_le32s(&tx_cmd_a);
-	memcpy(nbuf, &tx_cmd_a, 4);
+	tx_cmd_b = (u32)len;
+	tx_cmd_a = tx_cmd_b | TX_CMD_A_FIRST_SEG_ | TX_CMD_A_LAST_SEG_;
 
-	tx_cmd_b = (u32)(len);
-	cpu_to_le32s(&tx_cmd_b);
-	memcpy(nbuf + 4, &tx_cmd_b, 4);
+	put_unaligned_le32(tx_cmd_a, nbuf);
+	put_unaligned_le32(tx_cmd_b, nbuf + 4);
 
 	memcpy(nbuf + 8, buf, len);
 

@@ -1,172 +1,40 @@
 # SPDX-License-Identifier: GPL-2.0-only
-menuconfig NAND
-	bool "NAND support"
-	help
-	  This enables support for accessing all type of NAND flash
-	  devices. For further information see
-	  <http://www.linux-mtd.infradead.org/doc/nand.html>.
 
-if NAND
+menu "NAND"
 
-config MTD_NAND_ECC_SOFT
+config MTD_NAND_CORE
 	bool
-	prompt "Support software ecc"
+
+source "drivers/mtd/nand/raw/Kconfig"
+
+menu "ECC engine support"
+
+config MTD_NAND_ECC
+	bool
+	select MTD_NAND_CORE
+
+config MTD_NAND_ECC_SW_HAMMING
+	bool "Software Hamming ECC engine"
+	default y if MTD_RAW_NAND
+	select MTD_NAND_ECC
+	help
+	  This enables support for software Hamming error
+	  correction. This correction can correct up to 1 bit error
+	  per chunk and detect up to 2 bit errors. While it used to be
+	  widely used with old parts, newer NAND chips usually require
+	  more strength correction and in this case BCH or RS will be
+	  preferred.
 
 config MTD_NAND_ECC_SW_BCH
+	bool "Software BCH ECC engine"
 	select BCH
-	depends on MTD_NAND_ECC_SOFT
-	bool
-	prompt "Support software BCH ecc"
-
-config NAND_ECC_HW_SYNDROME
-	bool
-	prompt "Support syndrome hardware ecc controllers"
-
-config NAND_ALLOW_ERASE_BAD
-	bool
-	depends on MTD_WRITE
-	prompt "Add device parameter to allow erasing bad blocks"
-	help
-	  This adds a 'erasebad' device parameter to nand devices. When set
-	  to '1' it will be allowed to erase bad blocks. This is a potientially
-	  dangerous operation, so if unsure say no to this option.
-
-config NAND_IMX
-	bool
-	prompt "i.MX21 to 53 NAND driver aka 'mxc', for NFC"
-	depends on ARCH_IMX
-	help
-	  Support for NAND flash on Freescale/NXP i.MX devices.  This is for the
-	  "MXC" series:  i.MX21/25/27/31/35/51/53.
-
-	  This is not for the "MXS" series i.MX processors (23 & 28), or i.MX6
-	  and later, which use the GPMI NAND controller from the MXS series.
-	  See the i.MX 'mxs' driver for those chips.
-
-config NAND_FSL_IFC
-	bool
-	prompt "FSL IFC NAND driver"
-	depends on ARCH_LAYERSCAPE
-	help
-	  Freescale IFC NAND driver for various chips.
-
-config NAND_MXS
-	bool
-	select STMP_DEVICE
-	prompt "i.MX23/28 & 6+ NAND driver aka 'mxs', for GPMI"
-	depends on MXS_APBH_DMA
-	help
-	  Support for NAND flash on Freescale/NXP i.MX devices.	 This is for the
-	  "MXS" series:  i.MX23/28 and all i.MX6 and later SoCs.
-
-	  This is not for the "MXC" series of i.MX processors in the i.MX21 to
-	  i.MX53 range.  See the i.MX "mxc" driver for those chips.
-
-config NAND_OMAP_GPMC
-	tristate "NAND Flash Support for GPMC based OMAP platforms"
-	depends on OMAP_GPMC
-	depends on BUS_OMAP_GPMC
-	help
-	  Support for NAND flash using GPMC. GPMC is a common memory
-	  interface found on Texas Instrument's OMAP platforms
-
-config MTD_NAND_OMAP_ELM
-	bool "Support for ELM (Error Location Module) on OMAP platforms"
-	depends on NAND_OMAP_GPMC || COMPILE_TEST
-	help
-	  This config enables the ELM hardware engine, which can be used to
-	  locate and correct errors when using BCH ECC scheme. This offloads
-	  the cpu from doing ECC error searching and correction. However some
-	  legacy OMAP families like OMAP2xxx, OMAP3xxx do not have ELM engine
-	  so this is optional for them.
-
-config NAND_ORION
-	bool
-	prompt "Marvell Orion NAND driver"
-	depends on (ARM && !CPU_32v4T) && (ARCH_KIRKWOOD || COMPILE_TEST)
-	help
-	  Support for the Orion NAND controller, present in Kirkwood SoCs.
-
-config NAND_MRVL_NFC
-	bool
-	prompt "Marvell PXA3xx NAND driver"
-	depends on ARCH_ARMADA_370 || ARCH_ARMADA_XP || ARCH_PXA3XX || COMPILE_TEST
-	help
-	  Support for the PXA3xx NAND controller, present in Armada 370/XP and
-	  PXA3xx SoCs.
-
-config NAND_STM32
-	bool "Support for NAND controller on STM32MP SoCs"
-	depends on ARCH_STM32MP || COMPILE_TEST
-	select STM32_FMC2_EBI if ARCH_STM32MP
-	select RESET_CONTROLLER if ARCH_STM32MP
-	select RESET_SIMPLE if ARCH_STM32MP
-	help
-	  Enables support for NAND Flash chips on SoCs containing the FMC2
-	  NAND controller. This controller is found on STM32MP SoCs.
-	  The controller supports a maximum 8k page size and supports
-	  a maximum 8-bit correction error per sector of 512 bytes.
-
-config NAND_ATMEL
-	bool
-	prompt "Atmel (AT91SAM9xxx) NAND driver"
-	select GENERIC_ALLOCATOR if OFDEVICE
-	depends on ARCH_AT91 || (OFDEVICE && COMPILE_TEST)
-
-config NAND_ATMEL_LEGACY
-	def_bool !AT91_MULTI_BOARDS || SOC_AT91SAM9
-	depends on NAND_ATMEL
-	help
-	  Select legacy driver for non-DT-enabled platforms
-	  and for the deprecated non-EBI binding.
-
-	  The deprecated binding is currently the only one
-	  support for AT91SAM9.
-
-config NAND_ATMEL_PMECC
-	bool
-	prompt "PMECC support"
-	depends on NAND_ATMEL_LEGACY
-	help
-	  Support for PMECC present on the SoC sam9x5 and sam9n12
-
-config MTD_NAND_ECC_SW_HAMMING_SMC
-	bool "NAND ECC Smart Media byte order"
+	select MTD_NAND_ECC
 	default n
 	help
-	  Software ECC according to the Smart Media Specification.
-	  The original Linux implementation had byte 0 and 1 swapped.
+	  This enables support for software BCH error correction. Binary BCH
+	  codes are more powerful and cpu intensive than traditional Hamming
+	  ECC codes. They are used with NAND devices requiring more than 1 bit
+	  of error correction.
 
-config MTD_NAND_NOMADIK
-	tristate "ST Nomadik 8815 NAND support"
-	depends on ARCH_NOMADIK
-	help
-	  Driver for the NAND flash controller on the Nomadik, with ECC.
-
-config MTD_NAND_DENALI
-        tristate "Support Denali NAND controller"
-        depends on HAS_DMA
-        help
-          Enable support for the Denali NAND controller.  This should be
-          combined with either the PCI or platform drivers to provide device
-          registration.
-
-config MTD_NAND_DENALI_DT
-        tristate "Support Denali NAND controller as a DT device"
-        depends on HAVE_CLK && MTD_NAND_DENALI
-        help
-          Enable the driver for NAND flash on platforms using a Denali NAND
-          controller as a DT device.
-
-if MTD_NAND_DENALI
-
-config MTD_NAND_DENALI_TIMING_MODE
-	int "Overrides default ONFI timing mode."
-	default -1
-	range -1 5
-	help
-	   -1 indicates use default timings
-
-endif
-
-endif
+endmenu
+endmenu

@@ -2011,7 +2011,7 @@ config CMD_LED
 config CMD_NAND
 	tristate
 	default y
-	depends on NAND
+	depends on MTD_RAW_NAND
 	prompt "nand"
 	help
 	  NAND flash handling
@@ -2027,7 +2027,7 @@ config CMD_NAND
 
 config CMD_NANDTEST
 	tristate
-	depends on NAND
+	depends on MTD_RAW_NAND
 	depends on PARTITION
 	prompt "nandtest"
 	help
@@ -2045,7 +2045,7 @@ config CMD_NANDTEST
 
 config CMD_NAND_BITFLIP
 	tristate
-	depends on NAND
+	depends on MTD_RAW_NAND
 	prompt "nand_bitflip"
 	help
 	  nand_bitflip - Create bitflips on Nand pages. This command is useful for testing

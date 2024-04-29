@@ -4,7 +4,7 @@
 
 struct nand_bb;
 
-#ifdef CONFIG_NAND
+#ifdef CONFIG_MTD_NAND_CORE
 int dev_add_bb_dev(const char *filename, const char *name);
 int dev_remove_bb_dev(const char *name);
 struct cdev *mtd_add_bb(struct mtd_info *mtd, const char *name);

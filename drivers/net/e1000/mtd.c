@@ -688,12 +688,12 @@ static int e1000_mtd_sr_rmw(struct mtd_info *mtd, u8 mask, u8 val)
  */
 #define SR_BPALL (SR_BP0 | SR_BP1 | SR_BP2)
 
-static int e1000_mtd_lock(struct mtd_info *mtd, loff_t ofs, size_t len)
+static int e1000_mtd_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
 {
 	return e1000_mtd_sr_rmw(mtd, SR_BPALL, SR_BPALL);
 }
 
-static int e1000_mtd_unlock(struct mtd_info *mtd, loff_t ofs, size_t len)
+static int e1000_mtd_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
 {
 	return e1000_mtd_sr_rmw(mtd, SR_BPALL, 0x0);
 }

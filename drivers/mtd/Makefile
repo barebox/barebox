@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-obj-$(CONFIG_NAND)			+= nand/
+obj-y					+= nand/
 obj-$(CONFIG_DRIVER_CFI)		+= nor/
 obj-$(CONFIG_MTD_SPI_NOR)		+= spi-nor/
 obj-$(CONFIG_MTD_UBI)			+= ubi/

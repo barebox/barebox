@@ -198,7 +198,7 @@ static int nomadik_nand_probe(struct device *dev)
 		return PTR_ERR(nand->legacy.IO_ADDR_W);
 	nand->legacy.cmd_ctrl = nomadik_cmd_ctrl;
 
-	nand->ecc.mode = NAND_ECC_HW;
+	nand->ecc.engine_type = NAND_ECC_ENGINE_TYPE_ON_HOST;
 	mtd_set_ecclayout(mtd, &nomadik_ecc_layout);
 	nand->ecc.calculate = nomadik_ecc512_calc;
 	nand->ecc.correct = nomadik_ecc512_correct;

@@ -4,6 +4,8 @@
 
 #ifndef __ASSEMBLY__
 
+#include <module.h>
+
 #define THIS_MODULE	0
 
 #if defined(CONFIG_MODULES) && !defined(__DISABLE_EXPORTS)

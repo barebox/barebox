@@ -932,7 +932,7 @@ static int pxa_ecc_strength1(struct mrvl_nand_host *host,
 		host->spare_size = 40;
 		host->ecc_size = 24;
 		host->ecc_bch = 0;
-		ecc->mode = NAND_ECC_HW;
+		ecc->engine_type = NAND_ECC_ENGINE_TYPE_ON_HOST;
 		ecc->size = 512;
 		ecc->strength = 1;
 		mtd_set_ecclayout(mtd, &ecc_layout_2KB_hwecc);
@@ -944,7 +944,7 @@ static int pxa_ecc_strength1(struct mrvl_nand_host *host,
 		host->spare_size = 8;
 		host->ecc_size = 8;
 		host->ecc_bch = 0;
-		ecc->mode = NAND_ECC_HW;
+		ecc->engine_type = NAND_ECC_ENGINE_TYPE_ON_HOST;
 		ecc->size = 512;
 		mtd_set_ecclayout(mtd, &ecc_layout_512B_hwecc);
 		ecc->strength = 1;
@@ -972,7 +972,7 @@ static int pxa_ecc_strength4(struct mrvl_nand_host *host,
 		host->spare_size = 32;
 		host->ecc_size = 32;
 		host->ecc_bch = 1;
-		ecc->mode = NAND_ECC_HW;
+		ecc->engine_type = NAND_ECC_ENGINE_TYPE_ON_HOST;
 		ecc->size = 2048;
 		mtd_set_ecclayout(mtd, &ecc_layout_2KB_bch4bit);
 		ecc->strength = 16;
@@ -984,7 +984,7 @@ static int pxa_ecc_strength4(struct mrvl_nand_host *host,
 		host->spare_size = 32;
 		host->ecc_size = 32;
 		host->ecc_bch = 1;
-		ecc->mode = NAND_ECC_HW;
+		ecc->engine_type = NAND_ECC_ENGINE_TYPE_ON_HOST;
 		ecc->size = 2048;
 		mtd_set_ecclayout(mtd, &ecc_layout_4KB_bch4bit);
 		ecc->strength = 16;
@@ -1012,7 +1012,7 @@ static int pxa_ecc_strength8(struct mrvl_nand_host *host,
 		host->spare_size = 0;
 		host->ecc_size = 32;
 		host->ecc_bch = 1;
-		ecc->mode = NAND_ECC_HW;
+		ecc->engine_type = NAND_ECC_ENGINE_TYPE_ON_HOST;
 		ecc->size = 1024;
 		mtd_set_ecclayout(mtd, &ecc_layout_4KB_bch8bit);
 		ecc->strength = 16;

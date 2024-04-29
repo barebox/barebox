@@ -294,7 +294,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 	}
 
 	if (IS_ENABLED(CONFIG_BOOTM_OPTEE)) {
-		if (data->tee_file && !IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES)) {
+		if (data->tee_file && !bootm_signed_images_are_forced()) {
 			ret = bootm_load_tee_from_file(data);
 			if (ret)
 				return ret;

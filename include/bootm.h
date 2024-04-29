@@ -34,6 +34,11 @@ struct bootm_data {
 	 * value of global.machine_id to Kernel.
 	 */
 	bool provide_machine_id;
+	/*
+	 * provide_hostname - if true, try to add systemd.hostname= with value
+	 * of global.hostname to Kernel.
+	 */
+	bool provide_hostname;
 	unsigned long initrd_address;
 	unsigned long os_address;
 	unsigned long os_entry;
@@ -146,6 +151,9 @@ int bootm_get_os_size(struct image_data *data);
 
 enum bootm_verify bootm_get_verify_mode(void);
 void bootm_set_verify_mode(enum bootm_verify mode);
+
+bool bootm_signed_images_are_forced(void);
+void bootm_force_signed_images(void);
 
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 

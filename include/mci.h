@@ -559,15 +559,14 @@ struct mci {
 	struct mci_host *host;		/**< the host for this card */
 	struct device dev;		/**< the device for our disk (mcix) */
 	unsigned version;
-	bool sdio;		/**< card is a SDIO card */
-	/** != 0 when a high capacity card is connected (OCR -> OCR_HCS) */
-	int high_capacity;
 	unsigned card_caps;	/**< Card's capabilities */
 	unsigned ocr;		/**< card's "operation condition register" */
 	unsigned scr[2];
 	unsigned csd[4];	/**< card's "card specific data register" */
 	unsigned cid[4];	/**< card's "card identification register" */
-	unsigned short rca;	/* FIXME */
+	unsigned short rca;	/**< relative card address */
+	bool sdio;              /**< card is a SDIO card */
+	bool high_capacity;	/**< high capacity card is connected (OCR -> OCR_HCS) */
 	unsigned tran_speed;	/**< Maximum transfer speed */
 	/** currently used data block length for read accesses */
 	unsigned read_bl_len;

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#define pr_fmt(fmt) "input: " fmt
+
 #include <common.h>
 #include <init.h>
 #include <kfifo.h>
@@ -32,6 +34,15 @@ void input_report_key_event(struct input_device *idev, unsigned int code, int va
 
 	if (code > KEY_MAX)
 		return;
+
+	/*
+	 * We don't use pr_debug here as we want to output the message
+	 * to the log, even if CONFIG_COMPILE_LOGLEVEL < MSG_DEBUG and
+	 * the DEBUG mcro wasn't defined for the file.
+	 */
+	if (IS_ENABLED(CONFIG_INPUT_EVBUG))
+		pr_print(MSG_DEBUG, "Event. Dev: %s, Type: %d, Code: %d, Value: %d\n",
+			 dev_name(idev->parent), EV_KEY, code, value);
 
 	if (value)
 		set_bit(code, idev->keys);

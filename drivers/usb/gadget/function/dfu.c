@@ -361,7 +361,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	struct usb_interface_descriptor *desc;
 	struct file_list_entry *fentry;
 	struct f_dfu *dfu = func_to_dfu(f);
-	int i;
+	int i, n_entries;
 	int			status;
 	struct usb_string	*us;
 
@@ -372,7 +372,9 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 		dfu_files = opts->files;
 	}
 
-	dfu_string_defs = xzalloc(sizeof(struct usb_string) * (dfu_files->num_entries + 2));
+	n_entries = list_count_nodes(&dfu_files->list);
+
+	dfu_string_defs = xzalloc(sizeof(struct usb_string) * (n_entries + 2));
 	dfu_string_defs[0].s = "Generic DFU";
 	i = 0;
 	file_list_for_each_entry(dfu_files, fentry) {
@@ -396,7 +398,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	dfu->dnreq->complete = dn_complete;
 	dfu->dnreq->zero = 0;
 
-	us = usb_gstrings_attach(cdev, dfu_strings, dfu_files->num_entries + 1);
+	us = usb_gstrings_attach(cdev, dfu_strings, n_entries + 1);
 	if (IS_ERR(us)) {
 		status = PTR_ERR(us);
 		goto out;
@@ -411,9 +413,9 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	if (status < 0)
 		goto out;
 
-	header = xzalloc(sizeof(void *) * (dfu_files->num_entries + 2));
-	desc = xzalloc(sizeof(struct usb_interface_descriptor) * dfu_files->num_entries);
-	for (i = 0; i < dfu_files->num_entries; i++) {
+	header = xzalloc(sizeof(void *) * (n_entries + 2));
+	desc = xzalloc(sizeof(struct usb_interface_descriptor) * n_entries);
+	for (i = 0; i < n_entries; i++) {
 		desc[i].bLength =		USB_DT_INTERFACE_SIZE;
 		desc[i].bDescriptorType =	USB_DT_INTERFACE;
 		desc[i].bNumEndpoints	=	0;

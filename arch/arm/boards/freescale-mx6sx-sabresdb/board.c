@@ -6,6 +6,7 @@
 #include <environment.h>
 #include <common.h>
 #include <linux/sizes.h>
+#include <linux/phy.h>
 #include <gpio.h>
 #include <init.h>
 #include <io.h>
@@ -15,7 +16,6 @@
 
 #include <asm/armlinux.h>
 
-#include <mach/imx/devices-imx6.h>
 #include <mach/imx/imx6-regs.h>
 #include <mach/imx/iomux-mx6.h>
 #include <mach/imx/generic.h>

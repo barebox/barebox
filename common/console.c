@@ -235,7 +235,7 @@ static void console_add_earlycon_param(struct console_device *cdev, unsigned bau
 	free(str);
 }
 
-static void console_set_stdoutpath(struct console_device *cdev, unsigned baudrate)
+void console_set_stdoutpath(struct console_device *cdev, unsigned baudrate)
 {
 	int id;
 	char *str;

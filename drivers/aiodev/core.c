@@ -73,6 +73,18 @@ int aiochannel_get_value(struct aiochannel *aiochan, int *value)
 }
 EXPORT_SYMBOL(aiochannel_get_value);
 
+int aiochannel_name_get_value(const char *chname, int *value)
+{
+	struct aiochannel *aio;
+
+	aio = aiochannel_by_name(chname);
+	if (IS_ERR(aio))
+		return PTR_ERR(aio);
+
+	return aiochannel_get_value(aio, value);
+}
+EXPORT_SYMBOL(aiochannel_name_get_value);
+
 int aiochannel_get_index(struct aiochannel *aiochan)
 {
 	return aiochan->index;

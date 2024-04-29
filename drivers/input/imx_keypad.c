@@ -72,7 +72,6 @@
 struct imx_keypad {
 	struct input_device input;
 	struct clk *clk;
-	struct device *dev;
 	void __iomem *mmio_base;
 
 	struct poller_struct poller;
@@ -199,10 +198,6 @@ static void imx_keypad_fire_events(struct imx_keypad *keypad,
 
 			input_report_key_event(&keypad->input, keypad->keycodes[code],
 					       matrix_volatile_state[col] & (1 << row));
-
-			dev_dbg(keypad->dev, "Event code: %d, val: %d",
-				keypad->keycodes[code],
-				matrix_volatile_state[col] & (1 << row));
 		}
 	}
 }
@@ -367,7 +362,6 @@ static int __init imx_keypad_probe(struct device *dev)
 
 	keypad = xzalloc(sizeof(struct imx_keypad));
 
-	keypad->dev = dev;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
@@ -410,6 +404,7 @@ static int __init imx_keypad_probe(struct device *dev)
 	if (ret)
 		return ret;
 
+	keypad->input.parent = dev;
 	ret = input_device_register(&keypad->input);
 	if (ret)
 		return ret;

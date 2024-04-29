@@ -1027,7 +1027,7 @@ static const char *clk_parent_name_by_index(struct clk *clk, u8 idx)
 	return "unknown";
 }
 
-static void dump_one(struct clk *clk, int verbose, int indent)
+static void dump_one_summary(struct clk *clk, int flags, int indent)
 {
 	int enabled = clk_is_enabled(clk);
 	const char *hwstat, *stat;
@@ -1045,7 +1045,7 @@ static void dump_one(struct clk *clk, int verbose, int indent)
 	       clk->enable_count,
 	       hwstat);
 
-	if (verbose) {
+	if (flags & CLK_DUMP_VERBOSE) {
 
 		if (clk->num_parents > 1) {
 			int i;
@@ -1057,33 +1057,72 @@ static void dump_one(struct clk *clk, int verbose, int indent)
 	}
 }
 
-static void dump_subtree(struct clk *clk, int verbose, int indent)
+static void dump_one_json(struct clk *clk, int flags, int indent)
+{
+	printf("\"%s\": { \"rate\": %lu,\"enable_count\": %d",
+	       clk->name,
+	       clk_get_rate(clk),
+	       clk->enable_count);
+}
+
+static void dump_one(struct clk *clk, int flags, int indent)
+{
+	if (flags & CLK_DUMP_JSON)
+		dump_one_json(clk, flags, indent);
+	else
+		dump_one_summary(clk, flags, indent);
+}
+
+static inline bool json_puts(const char *str, int flags)
+{
+	if (flags & CLK_DUMP_JSON) {
+		puts(str);
+		return true;
+	}
+
+	return false;
+}
+
+static void dump_subtree(struct clk *clk, int flags, int indent)
 {
 	struct clk *c;
 
-	dump_one(clk, verbose, indent);
+	dump_one(clk, flags, indent);
 
 	list_for_each_entry(c, &clks, list) {
 		struct clk *parent = clk_get_parent(c);
 
-		if (parent == clk)
-			dump_subtree(c, verbose, indent + 1);
+		if (parent == clk) {
+			json_puts(",", flags);
+			dump_subtree(c, flags, indent + 1);
+		}
 	}
+
+	json_puts("}", flags);
 }
 
-void clk_dump(int verbose)
+void clk_dump(int flags)
 {
+	bool first_node = true;
 	struct clk *c;
+
+	json_puts("{", flags);
 
 	list_for_each_entry(c, &clks, list) {
 		struct clk *parent = clk_get_parent(c);
 
-		if (IS_ERR_OR_NULL(parent))
-			dump_subtree(c, verbose, 0);
+		if (IS_ERR_OR_NULL(parent)) {
+			if (!first_node)
+				json_puts(",", flags);
+			first_node = false;
+			dump_subtree(c, flags, 0);
+		}
 	}
+
+	json_puts("}\n", flags);
 }
 
-static int clk_print_parent(struct clk *clk, int verbose)
+static int clk_print_parent(struct clk *clk, int flags)
 {
 	struct clk *c;
 	int indent;
@@ -1092,30 +1131,38 @@ static int clk_print_parent(struct clk *clk, int verbose)
 	if (IS_ERR_OR_NULL(c))
 		return 0;
 
-	indent = clk_print_parent(c, verbose);
+	indent = clk_print_parent(c, flags);
 
-	dump_one(c, verbose, indent);
+	dump_one(c, flags, indent);
 
 	return indent + 1;
 }
 
-void clk_dump_one(struct clk *clk, int verbose)
+void clk_dump_one(struct clk *clk, int flags)
 {
-	int indent;
+	int indent = 0;
 	struct clk *c;
 
-	indent = clk_print_parent(clk, verbose);
+	if (json_puts("{", flags)) {
+		dump_one(clk, flags, indent);
+	} else {
+		indent = clk_print_parent(clk, flags);
 
-	printf("\033[1m");
-	dump_one(clk, verbose, indent);
-	printf("\033[0m");
+		printf("\033[1m");
+		dump_one(clk, flags, indent);
+		printf("\033[0m");
+	}
 
 	list_for_each_entry(c, &clks, list) {
 		struct clk *parent = clk_get_parent(c);
 
-		if (parent == clk)
-			dump_subtree(c, verbose, indent + 1);
+		if (parent == clk) {
+			json_puts(",", flags);
+			dump_subtree(c, flags, indent + 1);
+		}
 	}
+
+	json_puts("}}\n", flags);
 }
 
 int clk_name_complete(struct string_list *sl, char *instr)

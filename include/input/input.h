@@ -14,6 +14,7 @@ struct input_event {
 
 struct input_device {
 	struct list_head list;
+	struct device *parent;
 	DECLARE_BITMAP(keys, KEY_CNT);
 };
 

@@ -666,6 +666,7 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 		goto out;
 	}
 
+	/* Check if board-code registered a vendor-specific handler */
 	if (fb->cmd_flash) {
 		ret = fb->cmd_flash(fb, fentry, fb->tempname, fb->download_size);
 		if (ret != FASTBOOT_CMD_FALLTHROUGH)
@@ -940,6 +941,7 @@ void fastboot_exec_cmd(struct fastboot *fb, const char *cmdbuf)
 	g_fb = fb;
 	fb->active = true;
 
+	/* Check if board-code registered a vendor-specific handler */
 	if (fb->cmd_exec) {
 		ret = fb->cmd_exec(fb, cmdbuf);
 		if (ret != FASTBOOT_CMD_FALLTHROUGH)

@@ -12,6 +12,17 @@ config INPUT
 config INPUT_MATRIXKMAP
 	bool
 
+config INPUT_EVBUG
+        bool "Event debugging"
+        help
+          Say Y here if you have a problem with the input subsystem and
+          want all events (keypresses), to be output to
+          the barebox log. While this is useful for debugging, it's also
+          a security threat - your keypresses include your passwords, of
+          course and could be visible to userspace if pstore is configured.
+
+          If unsure, say N.
+
 config KEYBOARD_GPIO
 	bool "GPIO Buttons"
 	depends on GENERIC_GPIO

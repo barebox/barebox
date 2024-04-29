@@ -60,6 +60,11 @@ struct rpi_priv {
 	const char *name;
 };
 
+struct rpi_property_fixup_data {
+    const struct device_node* vc_node;
+    const char *propname;
+};
+
 static void rpi_set_usbethaddr(void)
 {
 	u8 mac[ETH_ALEN];
@@ -192,6 +197,7 @@ static int rpi_env_init(void)
 	int ret;
 
 	device_detect_by_name("mci0");
+	device_detect_by_name("mci1");
 
 	diskdev = "/dev/disk0.0";
 	ret = stat(diskdev, &s);
@@ -301,6 +307,47 @@ static struct device_node *register_vc_fixup(struct device_node *root,
 	return ret;
 }
 
+static int rpi_vc_fdt_fixup_property(struct device_node *root, void *data)
+{
+	const struct rpi_property_fixup_data *fixup = data;
+	struct device_node *node;
+	struct property *prop;
+
+	node = of_create_node(root, fixup->vc_node->full_name);
+	if (!node)
+		return -ENOMEM;
+
+	prop = of_find_property(fixup->vc_node, fixup->propname, NULL);
+	if (!prop)
+		return -ENOENT;
+
+	return of_set_property(node, prop->name,
+						   of_property_get_value(prop), prop->length, 1);
+}
+
+static int register_vc_property_fixup(struct device_node *root,
+						 const char *path, const char *propname)
+{
+	struct device_node *node, *tmp;
+	struct rpi_property_fixup_data* fixup_data;
+
+	node = of_find_node_by_path_from(root, path);
+	if (node) {
+		tmp = of_dup(node);
+		tmp->full_name = xstrdup(node->full_name);
+		fixup_data = xzalloc(sizeof(*fixup_data));
+		fixup_data->vc_node = tmp;
+		fixup_data->propname = xstrdup(propname);
+
+		of_register_fixup(rpi_vc_fdt_fixup_property, fixup_data);
+	} else {
+		pr_info("no '%s' node found in vc fdt\n", path);
+		return -ENOENT;
+	}
+
+	return 0;
+}
+
 static u32 rpi_boot_mode, rpi_boot_part;
 /* Extract useful information from the VideoCore FDT we got.
  * Some parameters are defined here:
@@ -326,8 +373,10 @@ static void rpi_vc_fdt_parse(struct device_node *root)
 
 	register_vc_fixup(root, "/system");
 	register_vc_fixup(root, "/axi");
-	register_vc_fixup(root, "/reserved-memory");
+	register_vc_property_fixup(root, "/reserved-memory/nvram@0", "reg");
+	register_vc_property_fixup(root, "/reserved-memory/nvram@0", "status");
 	register_vc_fixup(root, "/hat");
+	register_vc_property_fixup(root, "/emmc2bus", "dma-ranges");
 	register_vc_fixup(root, "/chosen/bootloader");
 	chosen = register_vc_fixup(root, "/chosen");
 	if (!chosen) {

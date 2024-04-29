@@ -1049,3 +1049,9 @@ char *strreplace(char *str, char old, char new)
 	return str;
 }
 EXPORT_SYMBOL(strreplace);
+
+bool isempty(const char *s)
+{
+	return !s || s[0] == '\0';
+}
+EXPORT_SYMBOL(isempty);

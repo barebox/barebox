@@ -322,7 +322,11 @@ add_header_v2(const struct config_data *data, void *buf, uint32_t offset,
 	hdr->header.length	= htobe16(32);
 	hdr->header.version	= IVT_VERSION;
 
-	hdr->entry		= loadaddr + header_len;
+	/* IMX_CPU_IMX8MQ is a special case with fixed offset */
+	if (data->cpu_type == IMX_CPU_IMX8MQ)
+		hdr->entry	= loadaddr + HEADER_LEN;
+	else
+		hdr->entry	= loadaddr + header_len;
 	if (dcdsize)
 		hdr->dcd_ptr = loadaddr + offset + offsetof(struct imx_flash_header_v2, dcd_header);
 	if (create_usb_image) {
@@ -1019,6 +1023,7 @@ int main(int argc, char *argv[])
 					PLUGIN_HDMI_SIZE);
 
 			header_len += signed_hdmi_firmware_size;
+
 			barebox_image_size += signed_hdmi_firmware_size;
 
 			buf = realloc(buf, header_len);

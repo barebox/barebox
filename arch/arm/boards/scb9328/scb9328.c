@@ -13,7 +13,6 @@
 #include <fs.h>
 #include <envfs.h>
 #include <mach/imx/iomux-mx1.h>
-#include <mach/imx/devices-imx1.h>
 
 static int scb9328_devices_init(void)
 {

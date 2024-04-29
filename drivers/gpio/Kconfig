@@ -219,6 +219,12 @@ config GPIO_LATCH
 	  Say yes here to enable a driver for GPIO multiplexers based on latches
 	  connected to other GPIOs.
 
+config GPIO_INTEL
+	bool "Intel GPIO driver"
+	depends on X86 || COMPILE_TEST
+	help
+	  Say Y here to build support for the Intel GPIO driver.
+
 endmenu
 
 endif

@@ -31,6 +31,7 @@ static int of_fixup_regulator_supply_disable(struct device_node *root, void *pat
 
 static int mc1_probe(struct device *dev)
 {
+	struct device_node *state_node, *state_backend;
 	int flags;
 
 	flags = bootsource_get_instance() == 0 ? BBU_HANDLER_FLAG_DEFAULT : 0;
@@ -40,10 +41,18 @@ static int mc1_probe(struct device *dev)
 	stm32mp_bbu_mmc_register_handler("emmc", "/dev/mmc1.ssbl", flags);
 
 
-	if (bootsource_get_instance() == 0)
+	if (bootsource_get_instance() == 0) {
 		of_device_enable_path("/chosen/environment-sd");
-	else
+		state_backend = of_find_node_by_alias(NULL, "mmc0");
+	} else {
 		of_device_enable_path("/chosen/environment-emmc");
+		state_backend = of_find_node_by_alias(NULL, "mmc1");
+	}
+
+	state_node = of_find_node_by_alias(NULL, "state");
+	if (state_node)
+		of_property_write_u32(state_node, "backend",
+				      of_node_create_phandle(state_backend));
 
 	barebox_set_hostname("lxa-mc1");
 

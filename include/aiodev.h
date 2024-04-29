@@ -47,4 +47,13 @@ static inline const char *aiochannel_get_unit(struct aiochannel *aiochan)
 extern struct list_head aiodevices;
 #define for_each_aiodevice(aiodevice) list_for_each_entry(aiodevice, &aiodevices, list)
 
+#ifdef CONFIG_AIODEV
+int aiochannel_name_get_value(const char *chname, int *value);
+#else
+static inline int aiochannel_name_get_value(const char *chname, int *value)
+{
+	return -EOPNOTSUPP;
+}
+#endif
+
 #endif

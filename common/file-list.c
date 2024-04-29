@@ -194,8 +194,6 @@ struct file_list *file_list_parse(const char *str)
 			goto out;
 		}
 		str = endptr;
-
-		files->num_entries++;
 	}
 
 	return files;
@@ -244,11 +242,9 @@ struct file_list *file_list_dup(struct file_list *old)
 
 	new = file_list_new();
 
-	list_for_each_entry(old_entry, &old->list, list) {
+	list_for_each_entry(old_entry, &old->list, list)
 		(void)file_list_add_entry(new, old_entry->name, old_entry->filename,
 					  old_entry->flags); /* can't fail */
-		new->num_entries++;
-	}
 
 	return new;
 }

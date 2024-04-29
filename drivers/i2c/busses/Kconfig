@@ -89,4 +89,10 @@ config I2C_CADENCE
 	  Say Y here to include support for the Cadence I2C host controller found
 	  in Zynq UltraScale+ MPSoCs.
 
+config I2C_EFI
+	bool "EFI I2C Master driver"
+	depends on EFI_PAYLOAD
+	help
+	  Say Y here to include support for the EFI I2C Master driver.
+
 endmenu

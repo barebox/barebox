@@ -1,0 +1,153 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+menu "Debugging"
+
+config COMPILE_LOGLEVEL
+	int "compile loglevel"
+	default 6
+	help
+	  This defines the maximum loglevel compiled into the binary. Less important
+	  messages will be compiled away resulting in a smaller binary.
+
+	  0    system is unusable (emerg)
+	  1    action must be taken immediately (alert)
+	  2    critical conditions (crit)
+	  3    error conditions (err)
+	  4    warning conditions (warn)
+	  5    normal but significant condition (notice)
+	  6    informational (info)
+	  7    debug-level messages (debug)
+	  8    verbose debug messages (vdebug)
+
+config DEFAULT_LOGLEVEL
+	int "default loglevel"
+	default 7
+	help
+	  This defines the default runtime loglevel. It can be changed using the
+	  global.loglevel variable. Available logelevels are:
+
+	  0    system is unusable (emerg)
+	  1    action must be taken immediately (alert)
+	  2    critical conditions (crit)
+	  3    error conditions (err)
+	  4    warning conditions (warn)
+	  5    normal but significant condition (notice)
+	  6    informational (info)
+	  7    debug-level messages (debug)
+	  8    verbose debug messages (vdebug)
+
+source "common/Kconfig.debug_ll"
+
+config ARCH_WANT_FRAME_POINTERS
+	bool
+
+config FRAME_POINTER
+	bool "Compile barebox with frame pointers" if COMPILE_TEST
+	default y if ARCH_WANT_FRAME_POINTERS
+	help
+	  Selected by platforms that expect frame pointer usage, e.g.
+	  when stack unwinding is enabled. The resulting barebox image
+	  will be slightly larger and slower, but it can give precise
+	  debugging information when print stack traces.
+
+config DEBUG_INITCALLS
+	bool "Trace initcalls"
+	select CONSOLE_FLUSH_LINE_BREAK
+	help
+	  If enabled this will print initcall traces.
+
+config DEBUG_PBL
+	bool "Print PBL debugging information"
+	depends on PBL_CONSOLE
+	help
+	  If enabled this will enable all debug prints in the prebootloader.
+	  For this to work, a console needs to be configured in the
+	  board-specific entry point and configured for either DEBUG_LL
+	  or PBL_CONSOLE.
+
+config DEBUG_PROBES
+	bool "Trace driver probes/removes"
+	select CONSOLE_FLUSH_LINE_BREAK
+	help
+	  If enabled this will log driver probe and remove traces. If DEBUG_LL is enabled,
+	  probes will be printed even before registering consoles. If it's disabled, they
+	  will be collected in the log and written out once a console is active.
+
+	  Removes are written to the log and will be printed as long as consoles exist.
+	  Most consoles do not implement a remove callback to remain operable until
+	  the very end. Consoles using DMA, however, must be removed.
+
+config DMA_API_DEBUG
+	bool "Enable debugging of DMA-API usage"
+	depends on HAS_DMA
+	help
+	  Enable this option to debug the use of the DMA API by device drivers.
+	  With this option you will be able to detect common bugs in device
+	  drivers like double-freeing of DMA mappings or freeing mappings that
+	  were never allocated.
+
+	  This option causes a performance degradation.  Use only if you want to
+	  debug device drivers and dma interactions.
+
+	  If unsure, say N.
+
+config DEBUG_LIST
+	bool "Debug linked list manipulation"
+	help
+	  Enable this to turn on extended checks in the linked-list
+	  walking routines.
+
+	  If unsure, say N.
+
+config PBL_BREAK
+	bool "Execute software break on pbl start"
+	depends on ARM && (!CPU_32v4T && !ARCH_TEGRA)
+	help
+	  If enabled, barebox will be compiled with BKPT instruction
+	  on early pbl init. This option should be used only with JTAG debugger!
+
+config PRINTF_FULL
+	bool "Support all extended printf format specifiers"
+	help
+	  Adds support for lesser used format specifiers like UUIDs and
+	  hex strings. Code requiring them should select it directly,
+	  so this is mainly for debugging. If unsure, say no.
+
+source "lib/Kconfig.ubsan"
+source "lib/kasan/Kconfig"
+
+config ASAN
+	bool "ASAN: runtime memory debugger"
+	depends on HAVE_ARCH_ASAN
+	help
+	  Enables ASAN (AddressSANitizer) - runtime memory debugger,
+	  designed to find out-of-bounds accesses and use-after-free bugs.
+
+config COMPILE_TEST
+	bool "compile-test drivers of other platforms"
+	default n
+	help
+	  Some drivers can be compiled on a different platform than they are
+	  intended to be run on. Despite they cannot be used there due to
+	  missing HW support, developers still, opposing to users, might want
+	  to build such drivers to compile-test them.
+
+	  If you are a developer and want to build as much as currently possible,
+	  say Y here. If you are a user, say N here to avoid being prompted for
+	  inclusion of unrelated drivers.
+
+config WERROR
+	bool "Compile barebox with warnings as errors"
+	default COMPILE_TEST
+	help
+	  A barebox build should not cause any compiler warnings, and this
+	  enables the '-Werror' flags to enforce that rule by default.
+
+	  However, if you have a new (or very old) compiler with odd and
+	  unusual warnings, or you have some architecture with problems,
+	  you may need to disable this config option in order to
+	  successfully build barebox.
+
+	  If in doubt, say Y.
+
+endmenu

@@ -51,9 +51,25 @@
  * These are the PRID's for when 23:16 == PRID_COMP_MIPS
  */
 
+#define PRID_IMP_QEMU_GENERIC	0x0000
+#define PRID_IMP_4KC		0x8000
+#define PRID_IMP_5KC		0x8100
+#define PRID_IMP_20KC		0x8200
+#define PRID_IMP_4KEC		0x8400
+#define PRID_IMP_4KSC		0x8600
+#define PRID_IMP_25KF		0x8800
+#define PRID_IMP_5KE		0x8900
+#define PRID_IMP_4KECR2		0x9000
+#define PRID_IMP_4KEMPR2	0x9100
+#define PRID_IMP_4KSD		0x9200
 #define PRID_IMP_24K		0x9300
+#define PRID_IMP_34K		0x9500
 #define PRID_IMP_24KE		0x9600
 #define PRID_IMP_74K		0x9700
+#define PRID_IMP_1004K		0x9900
+#define PRID_IMP_1074K		0x9a00
+#define PRID_IMP_M14KC		0x9c00
+#define PRID_IMP_M14KEC		0x9e00
 
 /*
  * These are the PRID's for when 23:16 == PRID_COMP_BROADCOM
@@ -107,11 +123,15 @@ enum cpu_type_enum {
 	/*
 	 * MIPS32 class processors
 	 */
-	CPU_24K,
-	CPU_74K,
-	CPU_BMIPS3300,
-	CPU_JZRISC,
-	CPU_GS232,
+	CPU_4KC, CPU_4KEC, CPU_4KSC, CPU_24K, CPU_34K, CPU_1004K, CPU_74K,
+	CPU_M14KC, CPU_M14KEC, CPU_1074K, CPU_BMIPS3300, CPU_JZRISC, CPU_GS232,
+
+	/*
+	 * MIPS64 class processors
+	 */
+	CPU_5KC, CPU_5KE, CPU_20KC, CPU_25KF,
+
+	CPU_QEMU_GENERIC,
 
 	CPU_LAST
 };

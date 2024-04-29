@@ -14,6 +14,7 @@
 #include <of.h>
 #include <restart.h>
 #include <poweroff.h>
+#include <string.h>
 #include <linux/stringify.h>
 
 int errno;
@@ -147,6 +148,67 @@ static char *hostname;
 static char *serial_number;
 static char *of_machine_compatible;
 
+/* Note that HOST_NAME_MAX is 64 on Linux */
+#define BAREBOX_HOST_NAME_MAX	64
+
+static bool barebox_valid_ldh_char(char c)
+{
+	/* "LDH" -> "Letters, digits, hyphens", as per RFC 5890, Section 2.3.1 */
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+	       (c >= '0' && c <= '9') || c == '-';
+}
+
+bool barebox_hostname_is_valid(const char *s)
+{
+	unsigned int n_dots = 0;
+	const char *p;
+	bool dot, hyphen;
+
+	/*
+	 * Check if s looks like a valid hostname or FQDN. This does not do full
+	 * DNS validation, but only checks if the name is composed of allowed
+	 * characters and the length is not above the maximum allowed by Linux.
+	 * Doesn't accept empty hostnames, hostnames with leading dots, and
+	 * hostnames with multiple dots in a sequence. Doesn't allow hyphens at
+	 * the beginning or end of label.
+	 */
+	if (isempty(s))
+		return false;
+
+	for (p = s, dot = hyphen = true; *p; p++) {
+		if (*p == '.') {
+			if (dot || hyphen)
+				return false;
+
+			dot = true;
+			hyphen = false;
+			n_dots++;
+
+		} else if (*p == '-') {
+			if (dot)
+				return false;
+
+			dot = false;
+			hyphen = true;
+
+		} else {
+			if (!barebox_valid_ldh_char(*p))
+				return false;
+
+			dot = false;
+			hyphen = false;
+		}
+	}
+
+	if (dot || hyphen)
+		return false;
+
+	if (p - s > BAREBOX_HOST_NAME_MAX)
+		return false;
+
+	return true;
+}
+
 /*
  * The hostname is supposed to be the shortname of a board. It should
  * contain only lowercase letters, numbers, '-', '_'. No whitespaces
@@ -157,6 +219,10 @@ void barebox_set_hostname(const char *__hostname)
 	globalvar_add_simple_string("hostname", &hostname);
 
 	free(hostname);
+
+	if (!barebox_hostname_is_valid(__hostname))
+		pr_warn("Hostname is not valid, please fix it\n");
+
 	hostname = xstrdup(__hostname);
 }
 

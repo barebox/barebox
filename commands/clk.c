@@ -163,13 +163,16 @@ BAREBOX_CMD_END
 
 static int do_clk_dump(int argc, char *argv[])
 {
-	int opt, verbose = 0;
+	int opt, flags = 0;
 	struct clk *clk;
 
-	while ((opt = getopt(argc, argv, "v")) > 0) {
+	while ((opt = getopt(argc, argv, "vj")) > 0) {
 		switch(opt) {
 		case 'v':
-			verbose = 1;
+			flags |= CLK_DUMP_VERBOSE;
+			break;
+		case 'j':
+			flags |= CLK_DUMP_JSON;
 			break;
 		default:
 			return -EINVAL;
@@ -178,7 +181,7 @@ static int do_clk_dump(int argc, char *argv[])
 	}
 
 	if (optind == argc) {
-		clk_dump(verbose);
+		clk_dump(flags);
 		return COMMAND_SUCCESS;
 	}
 
@@ -186,7 +189,7 @@ static int do_clk_dump(int argc, char *argv[])
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
-	clk_dump_one(clk, verbose);
+	clk_dump_one(clk, flags);
 
 	return COMMAND_SUCCESS;
 }
@@ -194,12 +197,13 @@ static int do_clk_dump(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(clk_dump)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-v",  "verbose")
+BAREBOX_CMD_HELP_OPT ("-j",  "json output")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(clk_dump)
 	.cmd		= do_clk_dump,
 	BAREBOX_CMD_DESC("show information about registered clocks")
-	BAREBOX_CMD_OPTS("[-v] [clkname]")
+	BAREBOX_CMD_OPTS("[-vj] [clkname]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_clk_dump_help)
 	BAREBOX_CMD_COMPLETE(clk_name_complete)

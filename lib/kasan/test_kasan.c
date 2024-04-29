@@ -69,7 +69,7 @@ static noinline void malloc_oob_realloc_more(void)
 	size_t size1 = 17;
 	size_t size2 = 19;
 
-	pr_info("out-of-bounds after krealloc more\n");
+	pr_info("out-of-bounds after realloc more\n");
 	ptr1 = malloc(size1);
 	ptr2 = realloc(ptr1, size2);
 	if (!ptr1 || !ptr2) {
@@ -92,7 +92,7 @@ static noinline void malloc_oob_realloc_less(void)
 	size_t size1 = 17;
 	size_t size2 = 15;
 
-	pr_info("out-of-bounds after krealloc less\n");
+	pr_info("out-of-bounds after realloc less\n");
 	ptr1 = malloc(size1);
 	ptr2 = realloc(ptr1, size2);
 	if (!ptr1 || !ptr2) {

@@ -175,7 +175,7 @@ static int asix_read_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
 	dev_dbg(&dev->edev.dev, "asix_read_cmd() cmd=0x%02x value=0x%04x index=0x%04x size=%d\n",
 		cmd, value, index, size);
 
-	buf = malloc(size);
+	buf = dma_alloc(size);
 	if (!buf)
 		goto out;
 
@@ -193,7 +193,7 @@ static int asix_read_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
 		memcpy(data, buf, size);
 	else if (err >= 0)
 		err = -EINVAL;
-	free(buf);
+	dma_free(buf);
 
 out:
 	return err;
@@ -209,7 +209,7 @@ static int asix_write_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
 		cmd, value, index, size);
 
 	if (data) {
-		buf = malloc(size);
+		buf = dma_alloc(size);
 		if (!buf)
 			goto out;
 		memcpy(buf, data, size);
@@ -225,7 +225,7 @@ static int asix_write_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
 		buf,
 		size,
 		USB_CTRL_SET_TIMEOUT);
-	free(buf);
+	dma_free(buf);
 
 out:
 	return err;

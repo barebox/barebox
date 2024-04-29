@@ -1,7 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /* SPDX-FileCopyrightText: 2012 Marc Kleine-Budde <mkl@pengutronix.de> */
 
-#include <common.h>
+#include <linux/types.h>
+#include <linux/string.h>
+#include <xfuncs.h>
+#include <malloc.h>
 
 #define DMA_ALIGNMENT	64
 

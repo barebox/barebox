@@ -17,6 +17,4 @@ void dma_set_ops(const struct dma_ops *ops);
 
 #define DMA_ALIGNMENT 64
 
-#include <dma.h>
-
 #endif /* _ASM_DMA_MAPPING_H */

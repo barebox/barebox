@@ -910,7 +910,7 @@ static int macb_probe(struct device *dev)
 		macb->gem_q1_descs = dma_alloc_coherent(GEM_Q1_DESC_BYTES,
 				DMA_ADDRESS_BROKEN);
 
-	macb->rx_packet_buf = xmalloc(PKTSIZE);
+	macb->rx_packet_buf = net_alloc_packet();
 
 	macb_reset_hw(macb);
 	ncfgr = macb_mdc_clk_div(macb);
@@ -938,7 +938,7 @@ static void macb_remove(struct device *dev)
 
 	macb_halt(&macb->netdev);
 
-	free(macb->rx_packet_buf);
+	net_free_packet(macb->rx_packet_buf);
 }
 
 static const struct macb_config fu540_c000_config = {

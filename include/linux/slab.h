@@ -3,7 +3,8 @@
 #ifndef _LINUX_SLAB_H
 #define _LINUX_SLAB_H
 
-#include <malloc.h>
+#include <dma.h>
+#include <linux/overflow.h>
 #include <linux/string.h>
 
 #define SLAB_CONSISTENCY_CHECKS	0
@@ -32,7 +33,7 @@
 
 static inline void *kmalloc(size_t size, gfp_t flags)
 {
-	return malloc(size);
+	return dma_alloc(size);
 }
 
 struct kmem_cache {
@@ -58,12 +59,12 @@ struct kmem_cache *kmem_cache_create(const char *name, unsigned int size,
 
 static inline void kmem_cache_destroy(struct kmem_cache *cache)
 {
-	free(cache);
+	dma_free(cache);
 }
 
 static inline void kfree(const void *mem)
 {
-	free((void *)mem);
+	dma_free((void *)mem);
 }
 
 static inline void *kmem_cache_alloc(struct kmem_cache *cache, gfp_t flags)
@@ -87,7 +88,7 @@ static inline void kmem_cache_free(struct kmem_cache *cache, void *mem)
 
 static inline void *kzalloc(size_t size, gfp_t flags)
 {
-	return calloc(size, 1);
+	return dma_zalloc(size);
 }
 
 /**
@@ -98,17 +99,12 @@ static inline void *kzalloc(size_t size, gfp_t flags)
  */
 static inline void *kmalloc_array(size_t n, size_t size, gfp_t flags)
 {
-	return kmalloc(n * size, flags);
+	return kmalloc(size_mul(n, size), flags);
 }
 
 static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
 {
-	return calloc(n, size);
-}
-
-static inline void *krealloc(void *ptr, size_t size, gfp_t flags)
-{
-	return realloc(ptr, size);
+	return dma_zalloc(size_mul(n, size));
 }
 
 static inline char *kstrdup(const char *str, gfp_t flags)

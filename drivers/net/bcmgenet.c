@@ -356,12 +356,13 @@ static void rx_descs_init(struct bcmgenet_eth_priv *priv)
 	len_stat = (RX_BUF_LENGTH << DMA_BUFLENGTH_SHIFT) | DMA_OWN;
 
 	for (i = 0; i < RX_DESCS; i++) {
-		writel(lower_32_bits((uintptr_t)&rxbuffs[i * RX_BUF_LENGTH]),
-		       desc_base + i * DMA_DESC_SIZE + DMA_DESC_ADDRESS_LO);
-		writel(upper_32_bits((uintptr_t)&rxbuffs[i * RX_BUF_LENGTH]),
-		       desc_base + i * DMA_DESC_SIZE + DMA_DESC_ADDRESS_HI);
-		writel(len_stat,
-		       desc_base + i * DMA_DESC_SIZE + DMA_DESC_LENGTH_STATUS);
+		dma_addr_t dma_addr = dma_map_single(priv->dev, &rxbuffs[i * RX_BUF_LENGTH],
+			   RX_BUF_LENGTH, DMA_FROM_DEVICE);
+		void *desc = desc_base + i * DMA_DESC_SIZE;
+
+		writel(lower_32_bits(dma_addr), desc + DMA_DESC_ADDRESS_LO);
+		writel(upper_32_bits(dma_addr), desc + DMA_DESC_ADDRESS_HI);
+		writel(len_stat, desc + DMA_DESC_LENGTH_STATUS);
 	}
 }
 

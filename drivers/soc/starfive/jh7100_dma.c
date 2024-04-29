@@ -4,7 +4,7 @@
  */
 
 #include <common.h>
-#include <asm/dma.h>
+#include <dma.h>
 #include <soc/sifive/l2_cache.h>
 
 #define SDRAM_CACHED_BASE	0x80000000

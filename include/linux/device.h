@@ -12,13 +12,11 @@
 #define __devm_wrapper(fn, dev, ...) ({ BUG_ON(!dev); fn(__VA_ARGS__); })
 
 #define devm_kmalloc(...)		__devm_wrapper(kmalloc, __VA_ARGS__)
-#define devm_krealloc(...)		__devm_wrapper(krealloc, __VA_ARGS__)
 #define devm_kvasprintf(...)		__devm_wrapper(kvasprintf, __VA_ARGS__)
 #define devm_kasprintf(...)		__devm_wrapper(kasprintf, __VA_ARGS__)
 #define devm_kzalloc(...)		__devm_wrapper(kzalloc, __VA_ARGS__)
 #define devm_kmalloc_array(...)		__devm_wrapper(kmalloc_array, __VA_ARGS__)
 #define devm_kcalloc(...)		__devm_wrapper(kcalloc, __VA_ARGS__)
-#define devm_krealloc_array(...)	__devm_wrapper(krealloc_array, __VA_ARGS__)
 #define devm_kfree(...)			__devm_wrapper(kfree, __VA_ARGS__)
 #define devm_kstrdup(...)		__devm_wrapper(kstrdup, __VA_ARGS__)
 #define devm_kstrdup_const(...)		__devm_wrapper(kstrdup_const, __VA_ARGS__)

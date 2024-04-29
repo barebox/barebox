@@ -6,7 +6,8 @@
 #ifndef __ASM_DMA_H
 #define __ASM_DMA_H
 
-#include <common.h>
+#include <linux/pagemap.h>
+#include <linux/types.h>
 #include <malloc.h>
 #include <xfuncs.h>
 #include <asm/addrspace.h>

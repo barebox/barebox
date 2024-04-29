@@ -10,6 +10,7 @@
 #include <linux/container_of.h>
 #include <linux/instruction_pointer.h>
 #include <linux/minmax.h>
+#include <linux/align.h>
 
 /**
  * REPEAT_BYTE - repeat the value @x multiple times as an unsigned long value
@@ -18,14 +19,6 @@
  * NOTE: @x is not checked for > 0xff; larger values produce odd results.
  */
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
-
-#define ALIGN(x, a)		__ALIGN_MASK(x, (typeof(x))(a) - 1)
-#define ALIGN_DOWN(x, a)	ALIGN((x) - ((a) - 1), (a))
-#define __ALIGN_MASK(x, mask)	(((x) + (mask)) & ~(mask))
-#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
-#define PTR_ALIGN_DOWN(p, a)	((typeof(p))ALIGN_DOWN((unsigned long)(p), (a)))
-#define PTR_IS_ALIGNED(x, a)	IS_ALIGNED((unsigned long)(x), (a))
-#define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 #define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)

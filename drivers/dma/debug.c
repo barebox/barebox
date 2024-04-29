@@ -2,6 +2,7 @@
 
 #include <dma.h>
 #include <linux/list.h>
+#include <linux/printk.h>
 #include "debug.h"
 
 static LIST_HEAD(dma_mappings);
@@ -127,6 +128,10 @@ void debug_dma_map(struct device *dev, void *addr,
 	list_add(&entry->list, &dma_mappings);
 
 	dma_debug(entry, "allocated\n");
+
+	if (!IS_ALIGNED(dev_addr, DMA_ALIGNMENT))
+		dma_dev_warn(dev, "Mapping insufficiently aligned %s buffer 0x%llx+0x%zx: %u bytes required!\n",
+			     dir2name[direction], (u64)addr, size, DMA_ALIGNMENT);
 }
 
 void debug_dma_unmap(struct device *dev, dma_addr_t addr,

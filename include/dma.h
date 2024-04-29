@@ -8,12 +8,12 @@
 
 #include <malloc.h>
 #include <xfuncs.h>
-#include <linux/kernel.h>
+#include <linux/align.h>
 
 #include <dma-dir.h>
 #include <asm/dma.h>
 #include <asm/io.h>
-#include <driver.h>
+#include <device.h>
 
 #define DMA_ADDRESS_BROKEN	NULL
 
@@ -21,10 +21,20 @@
 #define DMA_ALIGNMENT	32
 #endif
 
+#ifdef CONFIG_HAS_DMA
+void *dma_alloc(size_t size);
+void *dma_zalloc(size_t size);
+#else
 static inline void *dma_alloc(size_t size)
 {
-	return xmemalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
+	return malloc(size);
 }
+
+static inline void *dma_zalloc(size_t size)
+{
+	return calloc(size, 1);
+}
+#endif
 
 static inline void dma_free(void *mem)
 {

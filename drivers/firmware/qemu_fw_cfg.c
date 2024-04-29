@@ -173,14 +173,24 @@ static ssize_t fw_cfg_write(struct cdev *cdev, const void *buf, size_t count,
 	struct fw_cfg *fw_cfg = to_fw_cfg(cdev);
 	struct device *dev = cdev->dev;
 	struct fw_cfg_dma __iomem *acc = fw_cfg->acc_virt;
+	void *dma_buf;
 	dma_addr_t mapping;
+	int ret = 0;
 
 	if (pos != 0)
 		return -EINVAL;
 
-	mapping = dma_map_single(dev, (void *)buf, count, DMA_TO_DEVICE);
-	if (dma_mapping_error(dev, mapping))
-		return -EFAULT;
+	dma_buf = dma_alloc(count);
+	if (!dma_buf)
+		return -ENOMEM;
+
+	memcpy(dma_buf, buf, count);
+
+	mapping = dma_map_single(dev, dma_buf, count, DMA_TO_DEVICE);
+	if (dma_mapping_error(dev, mapping)) {
+		ret = -EFAULT;
+		goto free_buf;
+	}
 
 	fw_cfg->next_read_offset = 0;
 
@@ -195,8 +205,10 @@ static ssize_t fw_cfg_write(struct cdev *cdev, const void *buf, size_t count,
 		;
 
 	dma_unmap_single(dev, mapping, count, DMA_FROM_DEVICE);
+free_buf:
+	dma_free(dma_buf);
 
-	return count;
+	return ret ?: count;
 }
 
 static struct cdev_operations fw_cfg_ops = {

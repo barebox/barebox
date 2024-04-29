@@ -47,23 +47,25 @@ struct smsc95xx_priv {
 	u32 mac_cr;
 	int use_tx_csum;
 	int use_rx_csum;
+	__le32 *iobuf;
 };
 
 static int turbo_mode = 0;
 
 static int smsc95xx_read_reg(struct usbnet *dev, u32 index, u32 *data)
 {
+	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
 	int ret;
 
 	ret = usb_control_msg(dev->udev, usb_rcvctrlpipe(dev->udev, 0),
 		USB_VENDOR_REQUEST_READ_REGISTER,
 		USB_DIR_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
-		00, index, data, 4, USB_CTRL_GET_TIMEOUT);
+		00, index, pdata->iobuf, 4, USB_CTRL_GET_TIMEOUT);
 
 	if (ret < 0)
 		netdev_warn(dev->net, "Failed to read register index 0x%08x\n", index);
-
-	le32_to_cpus(data);
+	else
+		*data = le32_to_cpup(pdata->iobuf);
 
 	debug("%s: 0x%08x 0x%08x\n", __func__, index, *data);
 
@@ -72,14 +74,15 @@ static int smsc95xx_read_reg(struct usbnet *dev, u32 index, u32 *data)
 
 static int smsc95xx_write_reg(struct usbnet *dev, u32 index, u32 data)
 {
+	struct smsc95xx_priv *pdata = (struct smsc95xx_priv *)(dev->data[0]);
 	int ret;
 
-	cpu_to_le32s(&data);
+	*pdata->iobuf = cpu_to_le32(data);
 
 	ret = usb_control_msg(dev->udev, usb_sndctrlpipe(dev->udev, 0),
 		USB_VENDOR_REQUEST_WRITE_REGISTER,
 		USB_DIR_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
-		00, index, &data, 4, USB_CTRL_SET_TIMEOUT);
+		00, index, pdata->iobuf, 4, USB_CTRL_SET_TIMEOUT);
 
 	if (ret < 0)
 		netdev_warn(dev->net, "Failed to write register index 0x%08x\n", index);
@@ -725,6 +728,8 @@ static int smsc95xx_bind(struct usbnet *dev)
 
 	pdata->use_tx_csum = DEFAULT_TX_CSUM_ENABLE;
 	pdata->use_rx_csum = DEFAULT_RX_CSUM_ENABLE;
+
+	pdata->iobuf = dma_alloc(4);
 
 	/* Init all registers */
 	ret = smsc95xx_reset(dev);

@@ -86,18 +86,25 @@ static int usb_get_hub_status(struct usb_device *dev, void *data)
 			data, sizeof(struct usb_hub_status), USB_CNTL_TIMEOUT);
 }
 
-static int usb_get_port_status(struct usb_device *dev, int port, void *data)
+static int usb_get_port_status(struct usb_device *dev, int port,
+			       struct usb_port_status *status)
 {
+	struct usb_port_status *data;
 	int ret;
+
+	data = dma_alloc(sizeof(*data));
+	if (!data)
+		return -ENOMEM;
 
 	ret = usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 			USB_REQ_GET_STATUS, USB_DIR_IN | USB_RT_PORT, 0, port,
 			data, sizeof(struct usb_hub_status), USB_CNTL_TIMEOUT);
 	if (ret < 0)
-		return ret;
+		goto out;
+
+	*status = *data;
 
 	if (!usb_hub_is_root_hub(dev) && usb_hub_is_superspeed(dev)) {
-		struct usb_port_status *status = data;
 		u16 tmp = status->wPortStatus & USB_SS_PORT_STAT_MASK;
 
 		if (status->wPortStatus & USB_SS_PORT_STAT_POWER)
@@ -109,6 +116,8 @@ static int usb_get_port_status(struct usb_device *dev, int port, void *data)
 		status->wPortStatus = tmp;
 	}
 
+out:
+	dma_free(data);
 	return ret;
 }
 
@@ -434,11 +443,15 @@ out:
 
 static int usb_hub_configure(struct usb_device *dev)
 {
-	unsigned char buffer[USB_BUFSIZ], *bitmap;
+	unsigned char *buffer, *bitmap;
 	struct usb_hub_descriptor *descriptor;
 	struct usb_hub_status *hubsts;
 	int i, ret;
 	struct usb_hub_device *hub;
+
+	buffer = dma_alloc(USB_BUFSIZ);
+	if (!buffer)
+		return -ENOMEM;
 
 	hub = xzalloc(sizeof (*hub));
 	dev->hub = hub;
@@ -448,7 +461,8 @@ static int usb_hub_configure(struct usb_device *dev)
 	if (usb_get_hub_descriptor(dev, buffer, 4) < 0) {
 		dev_dbg(&dev->dev, "%s: failed to get hub " \
 				   "descriptor, giving up %lX\n", __func__, dev->status);
-		return -1;
+		ret = -1;
+		goto out;
 	}
 	descriptor = (struct usb_hub_descriptor *)buffer;
 
@@ -458,13 +472,15 @@ static int usb_hub_configure(struct usb_device *dev)
 		dev_dbg(&dev->dev, "%s: failed to get hub " \
 				"descriptor - too long: %d\n", __func__,
 				descriptor->bLength);
-		return -1;
+		ret = -1;
+		goto out;
 	}
 
 	if (usb_get_hub_descriptor(dev, buffer, descriptor->bLength) < 0) {
 		dev_dbg(&dev->dev, "%s: failed to get hub " \
 				"descriptor 2nd giving up %lX\n", __func__, dev->status);
-		return -1;
+		ret = -1;
+		goto out;
 	}
 	memcpy((unsigned char *)&hub->desc, buffer, descriptor->bLength);
 	/* adjust 16bit values */
@@ -580,13 +596,15 @@ static int usb_hub_configure(struct usb_device *dev)
 	if (sizeof(struct usb_hub_status) > USB_BUFSIZ) {
 		dev_dbg(&dev->dev, "%s: failed to get Status - " \
 				"too long: %d\n", __func__, descriptor->bLength);
-		return -1;
+		ret = -1;
+		goto out;
 	}
 
 	if (usb_get_hub_status(dev, buffer) < 0) {
 		dev_dbg(&dev->dev, "%s: failed to get Status %lX\n", __func__,
 				dev->status);
-		return -1;
+		ret = -1;
+		goto out;
 	}
 
 	hubsts = (struct usb_hub_status *)buffer;
@@ -601,16 +619,12 @@ static int usb_hub_configure(struct usb_device *dev)
 		"" : "no ");
 
 	if (dev->host->update_hub_device) {
-		int ret;
-
 		ret = dev->host->update_hub_device(dev);
 		if (ret)
-			return ret;
+			goto out;
 	}
 
 	if (!usb_hub_is_root_hub(dev) && usb_hub_is_superspeed(dev)) {
-		int ret;
-
 		/*
 		* This request sets the value that the hub uses to
 		* determine the index into the 'route string index'
@@ -620,13 +634,16 @@ static int usb_hub_configure(struct usb_device *dev)
 		if (ret < 0) {
 			dev_dbg(&dev->dev, "failed to set hub depth (0x%08lx)\n",
 				dev->status);
-			return ret;
+			goto out;
 		}
 	}
 
 	usb_hub_power_on(hub);
 
-	return 0;
+	ret = 0;
+out:
+	dma_free(buffer);
+	return ret;
 }
 
 static int usb_hub_configure_ports(struct usb_device *dev)

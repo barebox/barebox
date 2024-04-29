@@ -209,9 +209,9 @@ static int transfer_chunk(struct dwc2 *dwc2, u8 hc,
 	if (ret < 0)
 		goto exit;
 
-	if (in)
-		xfer_len -= sub;
 	*actual_len = xfer_len;
+	if (in)
+		*actual_len -= sub;
 
 exit:
 	if (xfer_len)

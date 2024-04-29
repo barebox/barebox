@@ -27,14 +27,14 @@ static void led_pwm_set(struct led *led, unsigned int brightness)
 
 	pwm_get_state(pwmled->pwm, &state);
 
-	duty = state.period_ns * brightness;
+	duty = state.period * brightness;
         do_div(duty, max);
 
 	if (pwmled->active_low)
-		duty = state.period_ns - duty;
+		duty = state.period - duty;
 
-	state.p_enable = true;
-	state.duty_ns = duty;
+	state.enabled = true;
+	state.duty_cycle = duty;
 
 	pwm_apply_state(pwmled->pwm, &state);
 }

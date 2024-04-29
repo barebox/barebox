@@ -162,7 +162,7 @@ static int imx_pwm_config_v2(struct pwm_chip *chip,
 
 	writel(cr, imx->mmio_base + MX3_PWMCR);
 
-	if (!chip->state.p_enable)
+	if (!chip->state.enabled)
 		imx_pwm_clk_disable_v2(imx);
 
 	return 0;
@@ -191,24 +191,26 @@ static void imx_pwm_set_enable_v2(struct pwm_chip *chip, bool enable)
 		imx_pwm_clk_disable_v2(imx);
 }
 
-static int imx_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
+static int imx_pwm_apply(struct pwm_chip *chip,
+			 struct pwm_device *pwm,
+			 const struct pwm_state *state)
 {
 	struct imx_chip *imx = to_imx_chip(chip);
 	bool enabled;
 	int ret;
 
-	enabled = chip->state.p_enable;
+	enabled = chip->state.enabled;
 
-	if (enabled && !state->p_enable) {
+	if (enabled && !state->enabled) {
 		imx->set_enable(chip, false);
 		return 0;
 	}
 
-	ret = imx->config(chip, state->duty_ns, state->period_ns);
+	ret = imx->config(chip, state->duty_cycle, state->period);
 	if (ret)
 		return ret;
 
-	if (!enabled && state->p_enable)
+	if (!enabled && state->enabled)
 		imx->set_enable(chip, true);
 
 	return 0;
@@ -267,6 +269,7 @@ static int imx_pwm_probe(struct device *dev)
 		return PTR_ERR(iores);
 	imx->mmio_base = IOMEM(iores->start);
 
+	imx->chip.dev = dev;
 	imx->chip.ops = &imx_pwm_ops;
 	if (dev->of_node) {
 		imx->chip.devname = of_alias_get(dev->of_node);
@@ -280,7 +283,7 @@ static int imx_pwm_probe(struct device *dev)
 	imx->config = data->config;
 	imx->set_enable = data->set_enable;
 
-	return pwmchip_add(&imx->chip, dev);;
+	return pwmchip_add(&imx->chip);
 }
 
 static struct driver imx_pwm_driver = {

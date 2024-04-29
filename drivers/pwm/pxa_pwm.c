@@ -77,22 +77,24 @@ static void pxa_pwm_disable(struct pxa_pwm_chip *pxa_pwm)
  * duty_ns      = 10^9 * (PRESCALE + 1) * DC / PWM_CLK_RATE
  * PWM_CLK_RATE = 13 MHz
  */
-static int pxa_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
+static int pxa_pwm_apply(struct pwm_chip *chip,
+			 struct pwm_device *pwm,
+			 const struct pwm_state *state)
 {
 	unsigned long long c;
 	unsigned long period_cycles, prescale, pv, dc;
 	struct pxa_pwm_chip *pxa_pwm = to_pxa_pwm_chip(chip);
 	bool enabled;
 
-	enabled = chip->state.p_enable;
+	enabled = chip->state.enabled;
 
-	if (enabled && !state->p_enable) {
+	if (enabled && !state->enabled) {
 		pxa_pwm_disable(pxa_pwm);
 		return 0;
 	}
 
 	c = pxa_get_pwmclk();
-	c = c * state->period_ns;
+	c = c * state->period;
 	do_div(c, 1000000000);
 	period_cycles = c;
 
@@ -104,10 +106,10 @@ static int pxa_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
 	if (prescale > 63)
 		return -EINVAL;
 
-	if (state->duty_ns == state->period_ns)
+	if (state->duty_cycle == state->period)
 		dc = PWMDCR_FD;
 	else
-		dc = (pv + 1) * state->duty_ns / state->period_ns;
+		dc = (pv + 1) * state->duty_cycle / state->period;
 
 	/* NOTE: the clock to PWM has to be enabled first
 	 * before writing to the registers
@@ -116,7 +118,7 @@ static int pxa_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
 	writel(dc, pxa_pwm->iobase + PWMDCR);
 	writel(pv, pxa_pwm->iobase + PWMPCR);
 
-	if (!enabled && state->p_enable) {
+	if (!enabled && state->enabled) {
 		pxa_pwm_enable(pxa_pwm);
 		return 0;
 	}
@@ -141,9 +143,10 @@ static int pxa_pwm_probe(struct device *dev)
 		return PTR_ERR(iores);
 	chip->iobase = IOMEM(iores->start);
 	chip->id = dev->id;
+	chip->chip.dev = dev;
 	dev->priv = chip;
 
-	return pwmchip_add(&chip->chip, dev);
+	return pwmchip_add(&chip->chip);
 }
 
 static struct driver pxa_pwm_driver = {

@@ -42,4 +42,11 @@ config PWM_STM32
 	help
 	  This enables PWM support for STM32 MCUs and MPUs.
 
+config PWM_ROCKCHIP
+	tristate "Rockchip PWM support"
+	depends on ARCH_ROCKCHIP || COMPILE_TEST
+	help
+	  Generic PWM framework driver for the PWM controller found on
+	  Rockchip SoCs.
+
 endif

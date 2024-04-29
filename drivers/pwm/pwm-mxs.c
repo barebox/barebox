@@ -44,7 +44,9 @@ struct mxs_pwm {
 
 #define to_mxs_pwm_chip(_chip) container_of(_chip, struct mxs_pwm_chip, chip)
 
-static int mxs_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
+static int mxs_pwm_apply(struct pwm_chip *chip,
+			 struct pwm_device *pwm,
+			 const struct pwm_state *state)
 {
 	struct mxs_pwm_chip *mxs = to_mxs_pwm_chip(chip);
 	int div = 0;
@@ -53,9 +55,9 @@ static int mxs_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
 	unsigned long long c;
 	bool enabled;
 
-	enabled = chip->state.p_enable;
+	enabled = chip->state.enabled;
 
-	if (enabled && !state->p_enable) {
+	if (enabled && !state->enabled) {
 		writel(1 << mxs->chip.id, mxs->mxs->base + PWM_CTRL + CLR);
 		return 0;
 	}
@@ -63,7 +65,7 @@ static int mxs_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
 	rate = clk_get_rate(mxs->mxs->clk);
 	while (1) {
 		c = rate / cdiv[div];
-		c = c * state->period_ns;
+		c = c * state->period;
 		do_div(c, 1000000000);
 		if (c < PERIOD_PERIOD_MAX)
 			break;
@@ -73,8 +75,8 @@ static int mxs_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
 	}
 
 	period_cycles = c;
-	c *= state->duty_ns;
-	do_div(c, state->period_ns);
+	c *= state->duty_cycle;
+	do_div(c, state->period);
 	duty_cycles = c;
 
 	writel(duty_cycles << 16,
@@ -83,7 +85,7 @@ static int mxs_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
 	       PERIOD_INACTIVE_LOW | PERIOD_CDIV(div),
 			mxs->mxs->base + PWM_PERIOD0 + mxs->chip.id * 0x20);
 
-	if (!enabled && state->p_enable)
+	if (!enabled && state->enabled)
 		writel(1 << mxs->chip.id, mxs->mxs->base + PWM_CTRL + SET);
 
 	return 0;
@@ -130,9 +132,10 @@ static int mxs_pwm_probe(struct device *dev)
 		mxspwm->chip.ops = &mxs_pwm_ops;
 		mxspwm->chip.devname = basprintf("pwm%d", i);
 		mxspwm->chip.id = i;
+		mxspwm->chip.dev = dev;
 		mxspwm->mxs = mxs;
 
-		ret = pwmchip_add(&mxspwm->chip, dev);
+		ret = pwmchip_add(&mxspwm->chip);
 		if (ret < 0) {
 			dev_err(dev, "failed to add pwm chip %d\n", ret);
 			return ret;

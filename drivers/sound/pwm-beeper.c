@@ -31,8 +31,8 @@ static int pwm_beeper_beep(struct sound_card *card, unsigned freq, unsigned dura
 
 	pwm_get_state(beeper->pwm, &state);
 
-	state.p_enable = true;
-	state.period_ns = HZ_TO_NANOSECONDS(freq);
+	state.enabled = true;
+	state.period = HZ_TO_NANOSECONDS(freq);
 	pwm_set_relative_duty_cycle(&state, 50, 100);
 
 	error = pwm_apply_state(beeper->pwm, &state);
@@ -66,7 +66,7 @@ static int pwm_beeper_probe(struct device *dev)
 
 	/* Sync up PWM state and ensure it is off. */
 	pwm_init_state(beeper->pwm, &state);
-	state.p_enable = false;
+	state.enabled = false;
 	error = pwm_apply_state(beeper->pwm, &state);
 	if (error) {
 		dev_err(dev, "failed to apply initial PWM state: %d\n",

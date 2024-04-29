@@ -8,20 +8,32 @@
 struct pwm_device;
 struct device;
 
-#define	PWM_POLARITY_NORMAL	0
+/**
+ * enum pwm_polarity - polarity of a PWM signal
+ * @PWM_POLARITY_NORMAL: a high signal for the duration of the duty-
+ * cycle, followed by a low signal for the remainder of the pulse
+ * period
+ * @PWM_POLARITY_INVERSED: a low signal for the duration of the duty-
+ * cycle, followed by a high signal for the remainder of the pulse
+ * period
+ */
+enum pwm_polarity {
+	PWM_POLARITY_NORMAL,
+	PWM_POLARITY_INVERSED,
+};
 
 /*
  * struct pwm_state - state of a PWM channel
- * @period_ns: PWM period (in nanoseconds)
- * @duty_ns: PWM duty cycle (in nanoseconds)
+ * @period: PWM period (in nanoseconds)
+ * @duty_cycle: PWM duty cycle (in nanoseconds)
  * @polarity: PWM polarity
- * @p_enable: PWM enabled status
+ * @enabled: PWM enabled status
  */
 struct pwm_state {
-	unsigned int period_ns;
-	unsigned int duty_ns;
+	unsigned int period;
+	unsigned int duty_cycle;
 	unsigned int polarity;
-	unsigned int p_enable;
+	unsigned int enabled;
 };
 
 void pwm_print(void);
@@ -91,9 +103,9 @@ pwm_set_relative_duty_cycle(struct pwm_state *state, unsigned int duty_cycle,
 	if (!scale || duty_cycle > scale)
 		return -EINVAL;
 
-	state->duty_ns = DIV_ROUND_CLOSEST_ULL((u64)duty_cycle *
-					       state->period_ns,
-					       scale);
+	state->duty_cycle = DIV_ROUND_CLOSEST_ULL((u64)duty_cycle *
+						  state->period,
+						  scale);
 
 	return 0;
 }
@@ -123,17 +135,20 @@ int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *state);
 struct pwm_ops {
 	int (*request)(struct pwm_chip *chip);
 	void (*free)(struct pwm_chip *chip);
-	int (*apply)(struct pwm_chip *chip, const struct pwm_state *state);
+	int (*apply)(struct pwm_chip *chip, struct pwm_device *pwm,
+		     const struct pwm_state *state);
 };
 
 /**
  * struct pwm_chip - abstract a PWM
+ * @dev: device providing the PWMs
  * @id: The id of this pwm
  * @devname: unique identifier for this pwm
  * @ops: The callbacks for this PWM
  * @state: current state of the PWM
  */
 struct pwm_chip {
+	struct device		*dev;
 	int			id;
 	const char		*devname;
 	const struct pwm_ops	*ops;
@@ -141,7 +156,7 @@ struct pwm_chip {
 	struct pwm_state	state;
 };
 
-int pwmchip_add(struct pwm_chip *chip, struct device *dev);
+int pwmchip_add(struct pwm_chip *chip);
 int pwmchip_remove(struct pwm_chip *chip);
 
 #endif /* __PWM_H */

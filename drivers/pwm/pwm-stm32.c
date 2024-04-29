@@ -198,15 +198,17 @@ static void stm32_pwm_disable(struct stm32_pwm *priv, unsigned ch)
 	clk_disable(priv->clk);
 }
 
-static int stm32_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
+static int stm32_pwm_apply(struct pwm_chip *chip,
+			   struct pwm_device *pwm,
+			   const struct pwm_state *state)
 {
 	bool enabled;
 	struct stm32_pwm *priv = to_stm32_pwm_dev(chip);
 	int ret;
 
-	enabled = chip->state.p_enable;
+	enabled = chip->state.enabled;
 
-	if (enabled && !state->p_enable) {
+	if (enabled && !state->enabled) {
 		stm32_pwm_disable(priv, chip->id);
 		return 0;
 	}
@@ -215,11 +217,11 @@ static int stm32_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
 		stm32_pwm_set_polarity(priv, chip->id, state->polarity);
 
 	ret = stm32_pwm_config(priv, chip->id,
-			       state->duty_ns, state->period_ns);
+			       state->duty_cycle, state->period);
 	if (ret)
 		return ret;
 
-	if (!enabled && state->p_enable)
+	if (!enabled && state->enabled)
 		ret = stm32_pwm_enable(priv, chip->id);
 
 	return ret;
@@ -377,8 +379,9 @@ static int stm32_pwm_probe(struct device *dev)
 
 		chip->ops = &stm32pwm_ops;
 		chip->id = i;
+		chip->dev = dev;
 
-		ret = pwmchip_add(chip, dev);
+		ret = pwmchip_add(chip);
 		if (ret < 0) {
 			dev_err(dev, "failed to add pwm chip %d\n", ret);
 			return ret;

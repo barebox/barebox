@@ -7,7 +7,7 @@
  *
  * Created by David Woodhouse <dwmw2@infradead.org>
  */
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+#define pr_fmt(fmt) "jffs2: " fmt
 #include <common.h>
 #include <crc.h>
 #include <driver.h>
@@ -268,17 +268,6 @@ int jffs2_do_fill_super(struct super_block *sb, int silent)
 	size_t blocks;
 
 	c = JFFS2_SB_INFO(sb);
-
-#ifndef CONFIG_JFFS2_FS_WRITEBUFFER
-	if (c->mtd->type == MTD_NANDFLASH) {
-		pr_err("Cannot operate on NAND flash unless jffs2 NAND support is compiled in");
-		return -EINVAL;
-	}
-	if (c->mtd->type == MTD_DATAFLASH) {
-		pr_err("Cannot operate on DataFlash unless jffs2 DataFlash support is compiled in");
-		return -EINVAL;
-	}
-#endif
 
 	c->flash_size = c->mtd->size;
 	c->sector_size = c->mtd->erasesize;

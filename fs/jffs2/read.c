@@ -7,7 +7,7 @@
  * Created by David Woodhouse <dwmw2@infradead.org>
  */
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+#define pr_fmt(fmt) "jffs2: " fmt
 #include <common.h>
 #include <crc.h>
 #include <linux/kernel.h>

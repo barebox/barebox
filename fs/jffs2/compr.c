@@ -9,7 +9,7 @@
  *
  * Created by Arjan van de Ven <arjan@infradead.org>
  */
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+#define pr_fmt(fmt) "jffs2: " fmt
 #include <common.h>
 #include "compr.h"
 

@@ -7,7 +7,7 @@
  * Created by David Woodhouse <dwmw2@infradead.org>
  */
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+#define pr_fmt(fmt) "jffs2: " fmt
 #include <common.h>
 #include <crc.h>
 #include <linux/kernel.h>
@@ -47,12 +47,7 @@ static int jffs2_scan_dirent_node(struct jffs2_sb_info *c, struct jffs2_eraseblo
 static inline int min_free(struct jffs2_sb_info *c)
 {
 	uint32_t min = 2 * sizeof(struct jffs2_raw_inode);
-#ifdef CONFIG_JFFS2_FS_WRITEBUFFER
-	if (!jffs2_can_mark_obsolete(c) && min < c->wbuf_pagesize)
-		return c->wbuf_pagesize;
-#endif
 	return min;
-
 }
 
 static inline uint32_t EMPTY_SCAN_SIZE(uint32_t sector_size) {
@@ -229,20 +224,7 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 		c->dirty_size -= c->nextblock->dirty_size;
 		c->nextblock->dirty_size = 0;
 	}
-#ifdef CONFIG_JFFS2_FS_WRITEBUFFER
-	if (!jffs2_can_mark_obsolete(c) && c->wbuf_pagesize && c->nextblock && (c->nextblock->free_size % c->wbuf_pagesize)) {
-		/* If we're going to start writing into a block which already
-		   contains data, and the end of the data isn't page-aligned,
-		   skip a little and align it. */
 
-		uint32_t skip = c->nextblock->free_size % c->wbuf_pagesize;
-
-		jffs2_dbg(1, "%s(): Skipping %d bytes in nextblock to ensure page alignment\n",
-			  __func__, skip);
-		jffs2_prealloc_raw_node_refs(c, c->nextblock, 1);
-		jffs2_scan_dirty_space(c, c->nextblock, skip);
-	}
-#endif
 	if (c->nr_erasing_blocks) {
 		if ( !c->used_size && ((c->nr_free_blocks+empty_blocks+bad_blocks)!= c->nr_blocks || bad_blocks == c->nr_blocks) ) {
 			pr_notice("Cowardly refusing to erase blocks on filesystem with no valid JFFS2 nodes\n");
@@ -424,36 +406,10 @@ static int jffs2_scan_eraseblock (struct jffs2_sb_info *c, struct jffs2_eraseblo
 	int err;
 	int noise = 0;
 
-
-#ifdef CONFIG_JFFS2_FS_WRITEBUFFER
-	int cleanmarkerfound = 0;
-#endif
-
 	ofs = jeb->offset;
 	prevofs = jeb->offset - 1;
 
 	jffs2_dbg(1, "%s(): Scanning block at 0x%x\n", __func__, ofs);
-
-#ifdef CONFIG_JFFS2_FS_WRITEBUFFER
-	if (jffs2_cleanmarker_oob(c)) {
-		int ret;
-
-		if (mtd_block_isbad(c->mtd, jeb->offset))
-			return BLK_STATE_BADBLOCK;
-
-		ret = jffs2_check_nand_cleanmarker(c, jeb);
-		jffs2_dbg(2, "jffs_check_nand_cleanmarker returned %d\n", ret);
-
-		/* Even if it's not found, we still scan to see
-		   if the block is empty. We use this information
-		   to decide whether to erase it or not. */
-		switch (ret) {
-		case 0:		cleanmarkerfound = 1; break;
-		case 1: 	break;
-		default: 	return ret;
-		}
-	}
-#endif
 
 	if (jffs2_sum_active()) {
 		struct jffs2_sum_marker *sm;
@@ -548,19 +504,6 @@ full_scan:
 		ofs += 4;
 
 	if (ofs == max_ofs) {
-#ifdef CONFIG_JFFS2_FS_WRITEBUFFER
-		if (jffs2_cleanmarker_oob(c)) {
-			/* scan oob, take care of cleanmarker */
-			int ret = jffs2_check_oob_empty(c, jeb, cleanmarkerfound);
-			jffs2_dbg(2, "jffs2_check_oob_empty returned %d\n",
-				  ret);
-			switch (ret) {
-			case 0:		return cleanmarkerfound ? BLK_STATE_CLEANMARKER : BLK_STATE_ALLFF;
-			case 1: 	return BLK_STATE_ALLDIRTY;
-			default: 	return ret;
-			}
-		}
-#endif
 		jffs2_dbg(1, "Block at 0x%08x is empty (erased)\n",
 			  jeb->offset);
 		if (c->cleanmarker_size == 0)

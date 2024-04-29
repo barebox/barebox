@@ -560,7 +560,7 @@ static void ls_pcie_fixup(struct pci_dev *pcidev)
 	p = pcidev->bus;
 	while (p) {
 		base_bus_num = p->number;
-		p = p->parent_bus;
+		p = p->parent;
 	}
 
 	devid = (pcidev->bus->number - base_bus_num) << 8 | pcidev->devfn;

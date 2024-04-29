@@ -3,6 +3,29 @@
 #include <init.h>
 #include <driver.h>
 #include <linux/pci.h>
+#include <linux/resource_ext.h>
+
+void pci_add_resource_offset(struct list_head *resources, struct resource *res,
+			     resource_size_t offset)
+{
+	struct resource_entry *entry;
+
+	entry = resource_list_create_entry(res, 0);
+	if (!entry) {
+		pr_err("PCI: can't add host bridge window %pR\n", res);
+		return;
+	}
+	entry->offset = offset;
+
+	resource_list_add_tail(entry, resources);
+}
+EXPORT_SYMBOL(pci_add_resource_offset);
+
+void pci_add_resource(struct list_head *resources, struct resource *res)
+{
+	pci_add_resource_offset(resources, res, 0);
+}
+EXPORT_SYMBOL(pci_add_resource);
 
 /**
  * pci_match_one_device - Tell if a PCI device structure has a matching

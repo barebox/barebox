@@ -322,6 +322,9 @@ static struct mvebu_pcie *mvebu_pcie_port_probe(struct device *dev,
 	}
 
 	pcie = xzalloc(sizeof(*pcie));
+
+	pci_controller_init(&pcie->pci);
+
 	pcie->port = port;
 	pcie->lane = lane;
 	pcie->lane_mask = lane_mask;

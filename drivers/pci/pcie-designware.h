@@ -13,10 +13,6 @@
 
 #include <linux/bitfield.h>
 
-/* Parameters for the waiting for link up routine */
-#define LINK_WAIT_MAX_RETRIES		10
-#define LINK_WAIT_USLEEP_MAX		100000
-
 /* Parameters for the waiting for iATU enabled routine */
 #define LINK_WAIT_MAX_IATU_RETRIES     5
 #define LINK_WAIT_IATU_MAX             10000
@@ -147,22 +143,17 @@ struct dw_pcie_host_ops {
 struct pcie_port {
 	u8			root_bus_nr;
 	u64			cfg0_base;
-	u64			cfg0_mod_base;
 	void __iomem		*va_cfg0_base;
 	u32			cfg0_size;
 	u64			cfg1_base;
-	u64			cfg1_mod_base;
 	void __iomem		*va_cfg1_base;
 	u32			cfg1_size;
 	u64			io_base;
-	u64			io_mod_base;
 	phys_addr_t		io_bus_addr;
 	u32			io_size;
 	u64			mem_base;
-	u64			mem_mod_base;
 	phys_addr_t		mem_bus_addr;
 	u32			mem_size;
-	struct resource		cfg;
 	struct resource		io;
 	struct resource		mem;
 	struct resource		busn;

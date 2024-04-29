@@ -186,6 +186,8 @@ static int pcie_ecam_probe(struct device *dev)
 	ecam->pci.io_resource = &ecam->io;
 	ecam->pci.mem_pref_resource = &ecam->prefetch;
 
+	pci_controller_init(&ecam->pci);
+
 	ret = pcie_ecam_parse_dt(ecam);
 	if (ret)
 		return ret;

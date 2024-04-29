@@ -25,6 +25,7 @@
 #include <linux/ioport.h>
 #include <linux/list.h>
 #include <linux/compiler.h>
+#include <linux/resource_ext.h>
 #include <driver.h>
 #include <errno.h>
 #include <io.h>
@@ -139,14 +140,14 @@ enum {
 	PCI_BUS_RESOURCE_MEM_PREF = 2,
 	PCI_BUS_RESOURCE_BUSN = 3,
 };
+
 struct pci_bus {
 	struct pci_controller *host;	/* associated host controller */
-	struct device *parent;
-	struct pci_bus *parent_bus;	/* parent bus */
+	struct pci_dev *self;
+	struct pci_bus *parent;		/* Parent bus this bridge is on */
 	struct list_head node;		/* node in list of buses */
 	struct list_head children;	/* list of child buses */
 	struct list_head devices;	/* list of devices on this bus */
-	struct resource *resource[PCI_BRIDGE_RESOURCE_NUM];
 
 	unsigned char	number;		/* bus number */
 	unsigned char	primary;	/* number of primary bridge */
@@ -183,6 +184,8 @@ struct pci_controller {
 	struct resource *io_resource;
 	unsigned long io_offset;
 	unsigned long io_map_base;
+
+	struct list_head windows;	/* resource_entry */
 
 	unsigned int index;
 
@@ -277,6 +280,7 @@ int pci_register_device(struct pci_dev *pdev);
 
 extern struct list_head pci_root_buses; /* list of all known PCI buses */
 
+extern void pci_controller_init(struct pci_controller *hose);
 extern void register_pci_controller(struct pci_controller *hose);
 
 int pci_bus_read_config_byte(struct pci_bus *bus, unsigned int devfn,
@@ -391,6 +395,33 @@ const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
 static inline const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
 							 struct pci_dev *dev)
 { return NULL; }
+#endif
+
+/* drivers/pci/bus.c */
+void pci_add_resource_offset(struct list_head *resources, struct resource *res,
+			     resource_size_t offset);
+void pci_add_resource(struct list_head *resources, struct resource *res);
+
+struct pci_controller *pci_find_host_bridge(struct pci_bus *bus);
+
+struct pci_bus_region {
+	u64 start;
+	u64 end;
+};
+
+void pcibios_resource_to_bus(struct pci_bus *bus, struct pci_bus_region *region,
+			     struct resource *res);
+void pcibios_bus_to_resource(struct pci_bus *bus, struct resource *res,
+			     struct pci_bus_region *region);
+
+/* drivers/pci/of.c */
+#ifdef CONFIG_OFDEVICE
+int of_pci_bridge_init(struct device *dev, struct pci_controller *bridge);
+#else
+static inline int of_pci_bridge_init(struct device *dev, struct pci_controller *bridge)
+{
+	return 0;
+}
 #endif
 
 #endif /* LINUX_PCI_H */

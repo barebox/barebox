@@ -237,15 +237,17 @@ void dw_pcie_disable_atu(struct dw_pcie *pci, int index,
 
 int dw_pcie_wait_for_link(struct dw_pcie *pci)
 {
-	int retries;
+	u64 start = get_time_ns();
 
 	/* Check if the link is up or not */
-	for (retries = 0; retries < LINK_WAIT_MAX_RETRIES; retries++) {
+	while (1) {
 		if (dw_pcie_link_up(pci)) {
 			dev_dbg(pci->dev, "Link up\n");
 			return 0;
 		}
-		udelay(LINK_WAIT_USLEEP_MAX);
+
+		if (is_timeout(start, SECOND))
+			break;
 	}
 
 	dev_err(pci->dev, "Phy link never came up\n");

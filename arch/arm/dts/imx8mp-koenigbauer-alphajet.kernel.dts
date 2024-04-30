@@ -7,7 +7,7 @@
 
 / {
 	model = "Koenig+Bauer Alphajet";
-	compatible = "koenigbauer,alphajet", "congatec,qmxp8p", "fsl,imx8mp";
+	compatible = "koenigbauer,alphajet", "congatec,qmx8p", "fsl,imx8mp";
 
 	display {
 		compatible = "innolux,g101ice-l01";

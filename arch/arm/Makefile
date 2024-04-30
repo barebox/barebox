@@ -112,16 +112,6 @@ KBUILD_CFLAGS_KERNEL += -fPIE
 
 KBUILD_BINARY := barebox.bin
 
-quiet_cmd_mlo ?= IFT     $@
-	cmd_mlo ?= scripts/omap_signGP -o MLO -l $(TEXT_BASE) -c $<
-
-MLO: $(KBUILD_BINARY)
-	$(call if_changed,mlo)
-
-ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
-KBUILD_IMAGE := MLO
-endif
-
 archclean:
 	$(MAKE) $(clean)=$(pbl)
 

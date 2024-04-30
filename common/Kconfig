@@ -556,6 +556,7 @@ config ERRNO_MESSAGES
 config TIMESTAMP
 	bool
 	default y
+	depends on UIMAGE
 	select GREGORIAN_CALENDER
 	prompt "print timestamp information from uImages"
 	help

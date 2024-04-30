@@ -307,7 +307,6 @@ struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
 		int image_no, unsigned long load_address);
 void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 		size_t *size);
-struct resource *file_to_sdram(const char *filename, unsigned long adr);
 #define MAX_MULTI_IMAGE_COUNT 16
 
 struct uimage_handle {

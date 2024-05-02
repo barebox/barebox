@@ -11,7 +11,8 @@
 
 struct poller_struct {
 	void (*func)(struct poller_struct *poller);
-	int registered;
+	u16 registered:1;
+	u16 overtime;
 	struct list_head list;
 	char *name;
 };

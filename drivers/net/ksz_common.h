@@ -20,7 +20,7 @@ struct ksz_switch {
 
 static inline int ksz_read8(struct ksz_switch *priv, u32 reg, u8 *val)
 {
-	unsigned int value;
+	unsigned int value = 0;
 	int ret = regmap_read(priv->regmap[0], reg, &value);
 
 	*val = value;
@@ -29,7 +29,7 @@ static inline int ksz_read8(struct ksz_switch *priv, u32 reg, u8 *val)
 
 static inline int ksz_read16(struct ksz_switch *priv, u32 reg, u16 *val)
 {
-	unsigned int value;
+	unsigned int value = 0;
 	int ret = regmap_read(priv->regmap[1], reg, &value);
 
 	*val = value;
@@ -38,7 +38,7 @@ static inline int ksz_read16(struct ksz_switch *priv, u32 reg, u16 *val)
 
 static inline int ksz_read32(struct ksz_switch *priv, u32 reg, u32 *val)
 {
-	unsigned int value;
+	unsigned int value = 0;
 	int ret = regmap_read(priv->regmap[2], reg, &value);
 
 	*val = value;

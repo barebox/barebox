@@ -528,11 +528,12 @@ void led_trigger_network(enum led_trigger trigger)
 struct eth_device *of_find_eth_device_by_node(struct device_node *np)
 {
 	struct eth_device *edev;
-	int ret;
 
-	ret = of_device_ensure_probed(np);
-	if (ret)
-		return NULL;
+	/* There may multiple devices with the same device_node, e.g.
+	 * MII bus and Ethernet controller. Thus ignore errors and
+	 * walk the full list of registered network devices below
+	 */
+	(void)of_device_ensure_probed(np);
 
 	list_for_each_entry(edev, &netdev_list, list)
 		if (edev->parent->of_node == np)

@@ -29,12 +29,15 @@ static int ksz9477_phy_read16(struct dsa_switch *ds, int addr, int reg)
 {
 	struct device *dev = ds->dev;
 	struct ksz_switch *priv = dev_get_priv(dev);
-	u16 val = 0xffff;
+	int ret;
+	u16 val;
 
 	if (addr >= priv->phy_port_cnt)
-		return val;
+		return 0xffff;
 
-	ksz_pread16(priv, addr, 0x100 + (reg << 1), &val);
+	ret = ksz_pread16(priv, addr, 0x100 + (reg << 1), &val);
+	if (ret)
+		return ret;
 
 	return val;
 }
@@ -52,9 +55,8 @@ static int ksz9477_phy_write16(struct dsa_switch *ds, int addr, int reg,
 	/* No gigabit support.  Do not write to this register. */
 	if (!(priv->features & GBIT_SUPPORT) && reg == MII_CTRL1000)
 		return 0;
-	ksz_pwrite16(priv, addr, 0x100 + (reg << 1), val);
 
-	return 0;
+	return ksz_pwrite16(priv, addr, 0x100 + (reg << 1), val);
 }
 
 static int ksz9477_switch_detect(struct ksz_switch *priv)

@@ -433,8 +433,10 @@ static int microchip_switch_probe(struct device *dev)
 	if (IS_ERR(gpio)) {
 		dev_warn(dev, "Failed to get 'reset' GPIO (ignored)\n");
 	} else if (gpio) {
-		mdelay(1);
+		gpiod_set_value(gpio, true);
+		mdelay(10);
 		gpiod_set_value(gpio, false);
+		udelay(100);
 	}
 
 	ksz_reset_switch(dev->priv);

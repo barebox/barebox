@@ -472,12 +472,13 @@ int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val)
 
 static ssize_t phydev_read(struct cdev *cdev, void *_buf, size_t count, loff_t offset, ulong flags)
 {
-	int i = count;
+	int ret, i = count;
 	uint16_t *buf = _buf;
 	struct phy_device *phydev = cdev->priv;
 
 	while (i > 0) {
-		*buf = phy_read(phydev, offset / 2);
+		ret = phy_read(phydev, offset / 2);
+		*buf = ret >= 0 ? ret : 0xffff;
 		buf++;
 		i -= 2;
 		offset += 2;

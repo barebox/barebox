@@ -121,6 +121,10 @@ int ls1046a_ppa_init(resource_size_t ppa_start, resource_size_t ppa_size)
 	}
 
 	get_builtin_firmware(ppa_ls1046a_bin, &ppa_fw, &ppa_fw_size);
+	if (!ppa_fw_size) {
+		pr_err("PPA Firmware was not included in build\n");
+		return -ENOSYS;
+	}
 
 	if (el == 3) {
 		unsigned long cr;

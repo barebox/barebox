@@ -213,6 +213,10 @@ static int fman_upload_firmware(struct device *dev, struct fm_imem *fm_imem)
 	const struct qe_firmware *firmware;
 
 	get_builtin_firmware(fsl_fman_ucode_ls1046_r1_0_106_4_18_bin, &firmware, &size);
+	if (!size) {
+		dev_err(dev, "FMan Firmware was not included in build\n");
+		return -ENOSYS;
+	}
 
 	ret = qe_validate_firmware(firmware, size);
 	if (ret)

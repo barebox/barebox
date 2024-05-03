@@ -258,7 +258,6 @@ static void pbl_load_image(void)
 
 		read(in_fd, mem_buf + 0x1000, image_size);
 		pbl_size = 0x1000 + image_size;
-		printf("%s imagesize: %d\n", rcwfile, image_size);
 	} else {
 		exit(EXIT_FAILURE);
 	}
@@ -419,7 +418,7 @@ int main(int argc, char *argv[])
 	if (soc_type == SOC_TYPE_INVALID) {
 		fprintf(stderr, "Invalid CPU type %s. Valid types are:\n", cputypestr);
 		for (i = 0; i < ARRAY_SIZE(socs); i++)
-			printf("  %s\n", socs[i].name);
+			fprintf(stderr, "  %s\n", socs[i].name);
 
 		exit(EXIT_FAILURE);
 	}

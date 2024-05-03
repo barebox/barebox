@@ -56,8 +56,9 @@ void imx8m_ccgr_clock_disable(int index)
 #define IMX8MM_CCM_ANALOG_SYS_PLL2_GEN_CTRL	0x104
 #define IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL	0x114
 
-static void __imx8m_early_clock_init(unsigned long pll3_freq) /* and later */
+static void __imx8m_early_clock_init(int cpu_type)
 {
+	unsigned long pll3_freq;
 	void __iomem *ana = IOMEM(MX8M_ANATOP_BASE_ADDR);
 	void __iomem *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
 	u32 val;
@@ -99,6 +100,11 @@ static void __imx8m_early_clock_init(unsigned long pll3_freq) /* and later */
 				   IMX8M_CCM_TARGET_ROOTn_MUX(3));
 	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_GIC);
 
+	if (cpu_type == IMX_CPU_IMX8MN)
+		pll3_freq = 600000000UL;
+	else
+		pll3_freq = 750000000UL;
+
 	/* Configure SYS_PLL3 */
 	clk_pll1416x_early_set_rate(ana + IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL,
 				    pll3_freq, 25000000UL);
@@ -126,17 +132,17 @@ static void __imx8m_early_clock_init(unsigned long pll3_freq) /* and later */
 
 void imx8mm_early_clock_init(void)
 {
-	__imx8m_early_clock_init(750000000UL);
+	__imx8m_early_clock_init(IMX_CPU_IMX8MM);
 }
 
 void imx8mn_early_clock_init(void)
 {
-	__imx8m_early_clock_init(600000000UL);
+	__imx8m_early_clock_init(IMX_CPU_IMX8MN);
 }
 
 void imx8mp_early_clock_init(void)
 {
-	__imx8m_early_clock_init(750000000UL);
+	__imx8m_early_clock_init(IMX_CPU_IMX8MP);
 }
 
 

@@ -100,12 +100,15 @@ static void __imx8m_early_clock_init(int cpu_type)
 		INTPLL_DIV20_CLKE_MASK;
 	writel(val, ana + IMX8MM_CCM_ANALOG_SYS_PLL2_GEN_CTRL);
 
-	/* config GIC to sys_pll2_100m */
-	imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_GIC);
-	imx8m_clock_set_target_val(IMX8M_GIC_CLK_ROOT,
-				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-				   IMX8M_CCM_TARGET_ROOTn_MUX(3));
-	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_GIC);
+	if (cpu_type != IMX_CPU_IMX8MP) {
+		/* 8MP ROM already set GIC to 400Mhz, system_pll1_800m with div = 2 */
+		/* For everything else, config GIC to sys_pll2_100m */
+		imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_GIC);
+		imx8m_clock_set_target_val(IMX8M_GIC_CLK_ROOT,
+					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+					   IMX8M_CCM_TARGET_ROOTn_MUX(3));
+		imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_GIC);
+	}
 
 	if (cpu_type == IMX_CPU_IMX8MN || cpu_type == IMX_CPU_IMX8MP)
 		pll3_freq = 600000000UL;

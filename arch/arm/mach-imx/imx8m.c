@@ -77,6 +77,13 @@ static void __imx8m_early_clock_init(int cpu_type)
 
 	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_DDR1);
 
+	/*
+	 * The gate is not exported to clk tree, so configure them here.
+	 * According to ANAMIX SPEC
+	 * sys pll1 fixed at 800MHz
+	 * sys pll2 fixed at 1GHz
+	 * Here we only enable the outputs.
+	 */
 	val = readl(ana + IMX8MM_CCM_ANALOG_SYS_PLL1_GEN_CTRL);
 	val |= INTPLL_CLKE_MASK | INTPLL_DIV2_CLKE_MASK |
 		INTPLL_DIV3_CLKE_MASK | INTPLL_DIV4_CLKE_MASK |
@@ -100,7 +107,7 @@ static void __imx8m_early_clock_init(int cpu_type)
 				   IMX8M_CCM_TARGET_ROOTn_MUX(3));
 	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_GIC);
 
-	if (cpu_type == IMX_CPU_IMX8MN)
+	if (cpu_type == IMX_CPU_IMX8MN || cpu_type == IMX_CPU_IMX8MP)
 		pll3_freq = 600000000UL;
 	else
 		pll3_freq = 750000000UL;

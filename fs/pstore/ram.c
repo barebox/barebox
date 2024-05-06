@@ -478,7 +478,7 @@ static int ramoops_of_fixup(struct device_node *root, void *data)
 	int ret;
 
 	res.start = pdata->mem_address;
-	res.end = res.start + pdata->mem_size;
+	res.end = res.start + pdata->mem_size - 1;
 	res.name = "ramoops";
 
 	ret = of_fixup_reserved_memory(root, &res);

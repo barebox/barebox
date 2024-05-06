@@ -1575,6 +1575,23 @@ static int checkbad(struct mtd_info *mtd, loff_t ofs)
 		return ret;
 	}
 
+	/*
+	 * Automatically adding a BBT based on factory BBTs is only
+	 * sensible if the NAND is pristine. Abort if the first page
+	 * looks like a bootloader or UBI block.
+	 */
+	if (is_barebox_arm_head(buf)) {
+		dev_err(mtd->dev.parent,
+			"Flash seems to contain a barebox image, refusing to create BBT\n");
+		return -EINVAL;
+	}
+
+	if (!memcmp(buf, "UBI#", 4)) {
+		dev_err(mtd->dev.parent,
+			"Flash seems to contain a UBI, refusing to create BBT\n");
+		return -EINVAL;
+	}
+
 	if (buf[2000] != 0xff)
 		/* block considered bad */
 		return 1;

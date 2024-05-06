@@ -14,12 +14,14 @@
 
 #define pr_fmt(fmt) "persistent_ram: " fmt
 
+#include <linux/build_bug.h>
 #include <linux/err.h>
 #include <linux/kernel.h>
 #include <linux/list.h>
 #include <linux/rslib.h>
 #include <linux/pstore_ram.h>
 #include <linux/string.h>
+#include <linux/atomic.h>
 #include <stdio.h>
 #include <malloc.h>
 #include <memory.h>
@@ -27,21 +29,22 @@
 
 struct persistent_ram_buffer {
 	uint32_t sig;
-	resource_size_t start;
-	resource_size_t size;
-	uint8_t data[0];
+	atomic_t start;
+	atomic_t size;
+	uint8_t data[];
 };
+static_assert(sizeof(struct persistent_ram_buffer) == 12);
 
 #define PERSISTENT_RAM_SIG (0x43474244) /* DBGC */
 
 static inline size_t buffer_size(struct persistent_ram_zone *prz)
 {
-	return prz->buffer->size;
+	return atomic_read(&prz->buffer->size);
 }
 
 static inline size_t buffer_start(struct persistent_ram_zone *prz)
 {
-	return prz->buffer->start;
+	return atomic_read(&prz->buffer->start);
 }
 
 /* increase and wrap the start pointer, returning the old value */
@@ -50,11 +53,11 @@ static size_t buffer_start_add(struct persistent_ram_zone *prz, size_t a)
 	int old;
 	int new;
 
-	old = prz->buffer->start;
+	old = atomic_read(&prz->buffer->start);
 	new = old + a;
 	while (unlikely(new >= prz->buffer_size))
 		new -= prz->buffer_size;
-	prz->buffer->start = new;
+	atomic_set(&prz->buffer->start, new);
 
 	return old;
 }
@@ -65,14 +68,14 @@ static void buffer_size_add(struct persistent_ram_zone *prz, size_t a)
 	size_t old;
 	size_t new;
 
-	old = prz->buffer->size;
+	old = atomic_read(&prz->buffer->size);
 	if (old == prz->buffer_size)
 		return;
 
 	new = old + a;
 	if (new > prz->buffer_size)
 		new = prz->buffer_size;
-	prz->buffer->size = new;
+	atomic_set(&prz->buffer->size, new);
 }
 
 static void notrace persistent_ram_encode_rs8(struct persistent_ram_zone *prz,
@@ -331,8 +334,8 @@ void persistent_ram_free_old(struct persistent_ram_zone *prz)
 
 void persistent_ram_zap(struct persistent_ram_zone *prz)
 {
-	prz->buffer->start = 0;
-	prz->buffer->size = 0;
+	atomic_set(&prz->buffer->start, 0);
+	atomic_set(&prz->buffer->size, 0);
 	persistent_ram_update_header_ecc(prz);
 }
 

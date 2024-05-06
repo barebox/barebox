@@ -1569,8 +1569,11 @@ static int checkbad(struct mtd_info *mtd, loff_t ofs)
 	};
 
 	ret = mtd_read_oob(mtd, ofs, &ops);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(mtd->dev.parent, "Failed to read page at 0x%08x\n",
+			(unsigned int)ofs);
 		return ret;
+	}
 
 	if (buf[2000] != 0xff)
 		/* block considered bad */

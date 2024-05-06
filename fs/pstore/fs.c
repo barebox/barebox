@@ -148,7 +148,7 @@ static int pstore_open(struct device *dev, FILE *file, const char *filename)
 
 	d = pstore_get_by_name(head, filename);
 	if (!d)
-		return -EINVAL;
+		return -ENOENT;
 
 	file->size = d->size;
 	file->priv = d;
@@ -226,7 +226,7 @@ static int pstore_stat(struct device *dev, const char *filename,
 
 	d = pstore_get_by_name(&allpstore, filename);
 	if (!d)
-		return -EINVAL;
+		return -ENOENT;
 
 	s->st_size = d->size;
 	s->st_mode = S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO;

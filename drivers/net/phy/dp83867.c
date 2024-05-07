@@ -362,6 +362,8 @@ static int dp83867_of_init(struct phy_device *phydev)
 	return 0;
 }
 
+static int dp83867_phy_reset(struct phy_device *phydev); /* see below */
+
 static int dp83867_probe(struct phy_device *phydev)
 {
 	struct dp83867_private *dp83867;
@@ -369,6 +371,8 @@ static int dp83867_probe(struct phy_device *phydev)
 	dp83867 = xzalloc(sizeof(*dp83867));
 
 	phydev->priv = dp83867;
+
+	dp83867_phy_reset(phydev);
 
 	return dp83867_of_init(phydev);
 }
@@ -561,6 +565,20 @@ static int dp83867_config_init(struct phy_device *phydev)
 	}
 
 	return 0;
+}
+
+static int dp83867_phy_reset(struct phy_device *phydev)
+{
+	int err;
+
+	err = phy_write(phydev, DP83867_CTRL, DP83867_SW_RESTART);
+	if (err < 0)
+		return err;
+
+	udelay(20);
+
+	return phy_modify(phydev, MII_DP83867_PHYCTRL,
+			 DP83867_PHYCR_FORCE_LINK_GOOD, 0);
 }
 
 static struct phy_driver dp83867_driver[] = {

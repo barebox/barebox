@@ -494,6 +494,49 @@ static int nand_block_markbad_lowlevel(struct nand_chip *chip, loff_t ofs)
 }
 
 /**
+ * nand_block_markgood_lowlevel - mark a block good
+ * @mtd: MTD device structure
+ * @ofs: offset from device start
+ *
+ * We try operations in the following order:
+ *  (1) erase the affected block
+ *  (2) check bad block marker
+ *  (3) update the BBT
+ */
+static int nand_block_markgood_lowlevel(struct nand_chip *chip, loff_t ofs)
+{
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	bool allow_erasebad;
+	int ret;
+
+	if (!(chip->bbt_options & NAND_BBT_NO_OOB_BBM)) {
+		struct erase_info einfo;
+
+		/* Attempt erase possibly bad block */
+		allow_erasebad = mtd->allow_erasebad;
+		mtd->allow_erasebad = true;
+		memset(&einfo, 0, sizeof(einfo));
+		einfo.mtd = mtd;
+		einfo.addr = ofs;
+		einfo.len = 1 << chip->phys_erase_shift;
+		nand_erase_nand(chip, &einfo, 0);
+		mtd->allow_erasebad = allow_erasebad;
+	}
+
+	/* Mark block good in BBT */
+	if (chip->bbt) {
+		ret = nand_markgood_bbt(chip, ofs);
+		if (ret)
+			return ret;
+	}
+
+	if (mtd->ecc_stats.badblocks > 0)
+		mtd->ecc_stats.badblocks--;
+
+	return 0;
+}
+
+/**
  * nand_block_isreserved - [GENERIC] Check if a block is marked reserved.
  * @mtd: MTD device structure
  * @ofs: offset from device start
@@ -4622,6 +4665,26 @@ static int nand_block_markbad(struct mtd_info *mtd, loff_t ofs)
 }
 
 /**
+ * nand_block_markbad - [MTD Interface] Mark block at the given offset as bad
+ * @mtd: MTD device structure
+ * @ofs: offset relative to mtd start
+ */
+static int nand_block_markgood(struct mtd_info *mtd, loff_t ofs)
+{
+	int ret;
+
+	ret = nand_block_isbad(mtd, ofs);
+	if (ret < 0)
+		return ret;
+
+	if (!ret)
+		/* If it was good already, return success and do nothing */
+		return 0;
+
+	return nand_block_markgood_lowlevel(mtd_to_nand(mtd), ofs);
+}
+
+/**
  * nand_lock - [MTD Interface] Lock the NAND flash
  * @mtd: MTD device structure
  * @ofs: offset byte address
@@ -6211,6 +6274,7 @@ int nand_scan_tail(struct nand_chip *chip)
 	mtd->_block_isbad = nand_block_isbad;
 	mtd->_block_markbad = nand_block_markbad;
 	mtd->_max_bad_blocks = nanddev_mtd_max_bad_blocks;
+	mtd->_block_markgood = nand_block_markgood;
 
 	/*
 	 * Initialize bitflip_threshold to its default prior scan_bbt() call.

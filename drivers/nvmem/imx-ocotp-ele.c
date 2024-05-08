@@ -116,14 +116,10 @@ static int imx_ocotp_cell_pp(void *context, const char *id, unsigned int offset,
 	if (id && !strcmp(id, "mac-address")) {
 		u8 *buf = data;
 
-		if (offset == 0x4ec) {
+		if (offset == 0x4ec || offset == 0x4f2) {
 			swap(buf[0], buf[5]);
 			swap(buf[1], buf[4]);
 			swap(buf[2], buf[3]);
-		} else if (offset == 0x4f2) {
-			swap(buf[0], buf[1]);
-			swap(buf[2], buf[5]);
-			swap(buf[3], buf[4]);
 		} else {
 			return -EINVAL;
 		}

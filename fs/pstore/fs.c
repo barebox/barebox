@@ -182,6 +182,29 @@ static int pstore_lseek(struct device *dev, FILE *file, loff_t pos)
 	return 0;
 }
 
+static int pstore_unlink(struct device *dev, const char *filename)
+{
+	struct list_head *head = dev->priv;
+	struct pstore_private *d;
+	int ret;
+
+	d = pstore_get_by_name(head, filename);
+	if (!d)
+		return -ENOENT;
+
+	if (!d->psi->erase)
+		return -EPERM;
+
+	ret = d->psi->erase(d->type, d->id, d->count, d->psi);
+	if (ret)
+		return ret;
+
+	list_del(&d->list);
+	free(d);
+
+	return 0;
+}
+
 static DIR *pstore_opendir(struct device *dev, const char *pathname)
 {
 	DIR *dir;
@@ -256,6 +279,7 @@ static struct fs_driver pstore_driver = {
 	.close     = pstore_close,
 	.read      = pstore_read,
 	.lseek     = pstore_lseek,
+	.unlink    = pstore_unlink,
 	.opendir   = pstore_opendir,
 	.readdir   = pstore_readdir,
 	.closedir  = pstore_closedir,

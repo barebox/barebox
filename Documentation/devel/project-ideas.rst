@@ -194,7 +194,7 @@ peripherals to the virtual machine.
 
 Expected outcome is snappier and less CPU-intensive barebox demo.
 TinyEMU is extended, so the RISC-V machine is more like real
-hardware and tutorial is extended to make use of the new pripherals.
+hardware and tutorial is extended to make use of the new peripherals.
 
 This project does not require dedicated hardware. The development
 machine need only support a recent browser.

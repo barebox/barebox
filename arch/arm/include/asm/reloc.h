@@ -18,7 +18,8 @@ static inline __prereloc unsigned long global_variable_offset(void)
 	unsigned long text;
 
 	__asm__ __volatile__(
-		"adr    %0, _text\n"
+		"adrp   %0, _text\n"
+		"add    %0, %0, :lo12:_text\n"
 		: "=r" (text)
 		:
 		: "memory");

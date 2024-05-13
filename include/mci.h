@@ -446,7 +446,6 @@ static inline bool mci_timing_is_ddr(enum mci_timing timing)
 {
 	switch (timing) {
 	case MMC_TIMING_UHS_DDR50:
-	case MMC_TIMING_MMC_HS200:
 	case MMC_TIMING_MMC_DDR52:
 	case MMC_TIMING_MMC_HS400:
 		return true;

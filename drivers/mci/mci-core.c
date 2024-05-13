@@ -2363,6 +2363,7 @@ on_error:
 		host->clock = 0;	/* disable the MCI clock */
 		mci_set_ios(mci);
 		regulator_disable(host->supply);
+		mci->nr_parts = 0;
 	}
 
 	return rc;

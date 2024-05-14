@@ -1509,7 +1509,7 @@ EXPORT_SYMBOL_GPL(usb_string_ids_n);
 
 /*-------------------------------------------------------------------------*/
 
-static void composite_setup_complete(struct usb_ep *ep, struct usb_request *req)
+void composite_setup_complete(struct usb_ep *ep, struct usb_request *req)
 {
 	struct usb_composite_dev *cdev;
 
@@ -1554,6 +1554,11 @@ static int composite_ep0_queue(struct usb_composite_dev *cdev,
 	}
 
 	return ret;
+}
+
+int composite_queue_setup_request(struct usb_composite_dev *cdev)
+{
+	return composite_ep0_queue(cdev, cdev->req);
 }
 
 static int count_ext_compat(struct usb_configuration *c)

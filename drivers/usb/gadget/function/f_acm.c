@@ -309,6 +309,8 @@ static void acm_complete_set_line_coding(struct usb_ep *ep,
 	struct f_acm	*acm = ep->driver_data;
 	struct usb_composite_dev *cdev = acm->port.func.config->cdev;
 
+	composite_setup_complete(ep, req);
+
 	if (req->status != 0) {
 		DBG(cdev, "acm ttyGS%d completion, err %d\n",
 				acm->port_num, req->status);
@@ -406,7 +408,7 @@ invalid:
 			w_value, w_index, w_length);
 		req->zero = 0;
 		req->length = value;
-		value = usb_ep_queue(cdev->gadget->ep0, req);
+		value = composite_queue_setup_request(cdev);
 		if (value < 0)
 			ERROR(cdev, "acm response on ttyGS%d, err %d\n",
 					acm->port_num, value);

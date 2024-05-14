@@ -807,7 +807,7 @@ out:
 	if (value >= 0) {
 		req->zero = 0;
 		req->length = value;
-		value = usb_ep_queue(cdev->gadget->ep0, req);
+		value = composite_queue_setup_request(cdev);
 		if (value < 0)
 			ERROR(cdev, "dfu response on ttyGS%d, err %d\n",
 					dfu->port_num, value);

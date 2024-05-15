@@ -879,7 +879,15 @@ config PARTITION
 	prompt "Enable Partitions"
 
 config PARTITION_MANIPULATION
-	bool
+	bool "Runtime reparsing of partition table" if COMPILE_TEST
+	help
+	  Say y here to have barebox reparse the partition table automatically
+	  when it's rewritten. This is useful when using the parted command
+	  or when writing full disk images that change the existing partitions.
+
+	  Reparsing the partition table will delete existing partitions and thus
+	  may break users that don't do proper reference counting. For this
+	  reason, this option is currently disabled by default.
 
 source "common/partitions/Kconfig"
 

@@ -266,6 +266,7 @@ int parse_partition_table(struct block_device *blk)
 	return rc;
 }
 
+#ifdef CONFIG_PARTITION_MANIPULATION
 int reparse_partition_table(struct block_device *blk)
 {
 	struct cdev *cdev = &blk->cdev;
@@ -285,6 +286,7 @@ int reparse_partition_table(struct block_device *blk)
 
 	return parse_partition_table(blk);
 }
+#endif
 
 int partition_parser_register(struct partition_parser *p)
 {

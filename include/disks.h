@@ -3,6 +3,9 @@
 #ifndef DISKS_H
 #define DISKS_H
 
+#include <linux/types.h>
+#include <linux/errno.h>
+
 struct block_device;
 
 /** Size of one sector in bytes */
@@ -24,6 +27,14 @@ struct partition_entry {
 } __attribute__ ((packed));
 
 extern int parse_partition_table(struct block_device*);
+
+#ifdef CONFIG_PARTITION_MANIPULATION
 int reparse_partition_table(struct block_device *blk);
+#else
+static inline int reparse_partition_table(struct block_device *blk)
+{
+	return -ENOSYS;
+}
+#endif
 
 #endif /* DISKS_H */

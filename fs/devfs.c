@@ -102,33 +102,19 @@ static int devfs_open(struct device *_dev, FILE *f, const char *filename)
 	struct inode *inode = f->f_inode;
 	struct devfs_inode *node = container_of(inode, struct devfs_inode, inode);
 	struct cdev *cdev = node->cdev;
-	int ret;
 
 	f->size = cdev->flags & DEVFS_IS_CHARACTER_DEV ?
 			FILE_SIZE_STREAM : cdev->size;
 	f->priv = cdev;
 
-	if (cdev->ops->open) {
-		ret = cdev->ops->open(cdev, f->flags);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	return cdev_open(cdev, f->flags);
 }
 
 static int devfs_close(struct device *_dev, FILE *f)
 {
 	struct cdev *cdev = f->priv;
-	int ret;
 
-	if (cdev->ops->close) {
-		ret = cdev->ops->close(cdev);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	return cdev_close(cdev);
 }
 
 static int devfs_flush(struct device *_dev, FILE *f)

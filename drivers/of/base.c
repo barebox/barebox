@@ -2735,6 +2735,7 @@ static void of_platform_device_create_root(struct device_node *np)
 }
 
 static const struct of_device_id reserved_mem_matches[] = {
+	{ .compatible = "ramoops" },
 	{ .compatible = "nvmem-rmem" },
 	{}
 };

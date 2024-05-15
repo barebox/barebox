@@ -254,10 +254,16 @@ static void pbl_load_image(void)
 		buf32[3] = image_size;
 		buf32[4] = 0x80ff0000;
 		pbl_size += 20;
-		pmem_buf += 20;
 
-		read(in_fd, mem_buf + 0x1000, image_size);
-		pbl_size = 0x1000 + image_size;
+		if (pbl_size > 0x1000) {
+			fprintf(stderr, "Header exceeded maximum size of 4K\n");
+			exit(EXIT_FAILURE);
+		}
+
+		pmem_buf = mem_buf + 0x1000;
+		pbl_size = 0x1000;
+
+		pbl_fget(image_size, in_fd);
 	} else {
 		exit(EXIT_FAILURE);
 	}

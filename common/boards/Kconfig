@@ -17,3 +17,5 @@ config BOARD_TQ
 
 config BOARD_WOLFVISION
 	bool
+	select AIODEV
+	select ROCKCHIP_SARADC

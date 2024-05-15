@@ -4,6 +4,9 @@
  *
  * Copyright (C) 2024 WolfVision GmbH.
  */
+
+#define pr_fmt(fmt) "WolfVision PF5: " fmt
+
 #include <common.h>
 #include <deep-probe.h>
 #include <globalvar.h>

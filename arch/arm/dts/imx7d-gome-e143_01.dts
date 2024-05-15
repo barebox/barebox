@@ -50,7 +50,7 @@
 				priority@4 {
 					reg = <0x4 0x4>;
 					type = "uint32";
-					default = <10>;
+					default = <20>;
 				};
 			};
 
@@ -67,7 +67,7 @@
 				priority@c {
 					reg = <0xc 0x4>;
 					type = "uint32";
-					default = <20>;
+					default = <10>;
 				};
 			};
 

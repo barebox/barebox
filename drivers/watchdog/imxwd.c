@@ -33,6 +33,7 @@ struct imx_wd {
 	struct restart_handler restart_warm;
 	bool ext_reset;
 	bool bigendian;
+	bool suspend_in_lpm;
 };
 
 #define to_imx_wd(h) container_of(h, struct imx_wd, wd)
@@ -127,7 +128,8 @@ static int imx21_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 		val |= IMX21_WDOG_WCR_WDT;
 
 	/* Suspend timer in low power mode */
-	val |= IMX21_WDOG_WCR_WDZST;
+	if (priv->suspend_in_lpm)
+		val |= IMX21_WDOG_WCR_WDZST;
 
 	/*
 	 * set time and some write once bits first prior enabling the
@@ -273,6 +275,7 @@ static int imx_wd_probe(struct device *dev)
 
 	priv->ext_reset = of_property_read_bool(dev->of_node,
 						"fsl,ext-reset-output");
+	priv->suspend_in_lpm = !of_machine_is_compatible("fsl,imx27");
 
 	if (IS_ENABLED(CONFIG_WATCHDOG_IMX)) {
 		if (priv->ops->is_running) {

@@ -73,11 +73,30 @@ in the Barebox shell. The RAMOOPS area is listed as 'persistent ram':
     0x2fee4000 - 0x2fee7fff (size 0x00004000) ttb
     0x2fee8000 - 0x2feeffff (size 0x00008000) stack
 
-All pstore files that could be found are added to the /pstore directory. This is
-a read-only filesystem. If you disable the Kconfig option FS_PSTORE_RAMOOPS_RO,
-the RAMOOPS area is reset and its ECC recalculated. But that does not allow any
-writes from Barebox into that area.
-
 If the menu entry ``FS_PSTORE_CONSOLE`` is enabled, Barebox itself will add all
 its own console output to the *ramoops:console* part, which enables the regular
 userland later on to have access to the bootloaders output.
+
+All pstore files that could be found are added to the /pstore directory. This is
+a read-only filesystem with the only supported operation being unlinking:
+This resets (zaps) the RAMOOPS area and recalculates the ECC.
+
+Zapping is done automatically, if the menu entry ``FS_PSTORE_RAMOOPS_RO`` is
+disabled. In this case, only the barebox log will be available to the kernel
+and ramoops from previous boots will not survive.
+
+The usual setup is to not zap any buffers, i.e. ``CONFIG_FS_PSTORE_RAMOOPS_RO=y``
+and no manual unlinking of files in ``/pstore``.
+
+In Linux, the pstore file system is often mounted at ``/sys/fs/pstore``.
+This will often not contain older output as Linux frequently zaps ramoops
+buffers to conserve the limited space.
+
+To counteract this, userland needs to archive the pstore contents
+after booting into Linux and then clear pstore. Systemd has built-in support
+for this when compiled with ``-Dpstore=true``.
+
+Logs (including barebox log messages if enabled) will then be written to
+journal by default and are accessible via::
+
+  journalctl -b -o verbose -a -t systemd-pstore

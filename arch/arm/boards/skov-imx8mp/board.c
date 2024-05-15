@@ -186,10 +186,7 @@ static int skov_imx8mp_init_variant(struct skov_imx8mp_priv *priv)
 
 	if (variant->flags & SKOV_IMX8MP_HAS_HDMI) {
 		ret = skov_imx8mp_get_hdmi(dev);
-		if (ret < 0)
-			return ret;
-
-		if (ret)
+		if (ret == 1)
 			compatible = variant->dts_compatible_hdmi;
 		else
 			compatible = variant->dts_compatible;

@@ -20,7 +20,7 @@ int wolfvision_apply_overlay(const struct wv_overlay *overlay, char **files)
 {
 	int ret;
 
-	if (overlay->filename) {
+	if (overlay->filename && files) {
 		if (*files) {
 			char *old = *files;
 			*files = basprintf("%s %s", old, overlay->filename);
@@ -114,6 +114,9 @@ int wolfvision_rk3568_detect_hw(const struct wv_rk3568_extension *extensions,
 	ret = of_device_ensure_probed_by_alias("saradc");
 	if (ret)
 		return ret;
+
+	if (overlays && !*overlays)
+		*overlays = xstrdup("");
 
 	for (i = 0; i < num_extensions; i++) {
 		const struct wv_rk3568_extension *extension = &extensions[i];

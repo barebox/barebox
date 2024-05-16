@@ -43,6 +43,7 @@ static int rockchip_bbu_mmc_handler(struct bbu_handler *handler,
 	int ret, fd, wr0, wr1;
 	loff_t space;
 	const char *cdevname;
+	struct cdev *cdev;
 
 	filetype = file_detect_type(data->image, data->len);
 	if (filetype != filetype_rockchip_rkns_image) {
@@ -60,7 +61,12 @@ static int rockchip_bbu_mmc_handler(struct bbu_handler *handler,
 	if (ret)
 		return ret;
 
-	space = cdev_unallocated_space(cdev_by_name(cdevname));
+	cdev = cdev_open_by_name(cdevname, O_RDONLY);
+	if (!cdev)
+		return -ENOENT;
+
+	space = cdev_unallocated_space(cdev);
+	cdev_close(cdev);
 
 	if (space < IMG_OFFSET_0 + data->len) {
 		if (!bbu_force(data, "Unallocated space on %s (%lld) is too small for one image\n",

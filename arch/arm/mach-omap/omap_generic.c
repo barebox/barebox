@@ -157,13 +157,16 @@ static int omap_env_init(void)
 
 	device_detect_by_name(diskdev);
 	partname = basprintf("%s.0", diskdev);
-	cdev = cdev_by_name(partname);
+	cdev = cdev_open_by_name(partname, O_RDONLY);
 	if (cdev == NULL) {
 		pr_err("Failed to get device %s\n", partname);
 		goto out;
 	}
 
 	rootpath = cdev_mount_default(cdev, NULL);
+
+	cdev_close(cdev);
+
 	if (IS_ERR(rootpath)) {
 		pr_err("Failed to load environment: mount %s failed (%ld)\n",
 						cdev->name, PTR_ERR(rootpath));

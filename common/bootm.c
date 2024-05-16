@@ -760,7 +760,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 		if (bootm_data->root_dev) {
 			const char *root_dev_name = devpath_to_name(bootm_data->root_dev);
-			const struct cdev *root_cdev = cdev_by_name(root_dev_name);
+			struct cdev *root_cdev = cdev_open_by_name(root_dev_name, O_RDONLY);
 
 			rootarg = cdev_get_linux_rootarg(root_cdev);
 			if (!rootarg) {
@@ -773,6 +773,9 @@ int bootm_boot(struct bootm_data *bootm_data)
 					pr_err("%s doesn't have a PARTUUID, cannot set root= option\n",
 						root_dev_name);
 			}
+
+			if (root_cdev)
+				cdev_close(root_cdev);
 		} else {
 			rootarg = path_get_linux_rootarg(data->os_file);
 		}

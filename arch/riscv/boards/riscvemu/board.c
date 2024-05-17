@@ -38,12 +38,10 @@ extern char __dtbo_riscvemu_sram_start[];
 static int riscvemu_probe(struct device *dev)
 {
 	struct device_node *of_chosen;
-	struct device_node *overlay;
 	struct riscvemu_priv *priv;
 	u64 start;
 
-	overlay = of_unflatten_dtb(__dtbo_riscvemu_sram_start, INT_MAX);
-	of_overlay_apply_tree(dev->of_node, overlay);
+	of_overlay_apply_dtbo(dev->of_node, __dtbo_riscvemu_sram_start);
 	/* of_probe() will happen later at of_populate_initcall */
 
 	if (IS_ENABLED(CONFIG_CMD_TUTORIAL))

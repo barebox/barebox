@@ -334,6 +334,18 @@ int of_overlay_apply_file(struct device_node *root, const char *filename,
 	return ret;
 }
 
+int of_overlay_apply_dtbo(struct device_node *root, const void *dtbo)
+{
+	struct device_node *overlay;
+	int ret;
+
+	overlay = of_unflatten_dtb(dtbo, INT_MAX);
+	ret = of_overlay_apply_tree(root, overlay);
+	of_delete_node(overlay);
+
+	return ret;
+}
+
 static int of_overlay_fixup(struct device_node *root, void *data)
 {
 	struct device_node *overlay = data;

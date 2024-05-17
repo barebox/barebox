@@ -1311,6 +1311,8 @@ int of_overlay_apply_tree(struct device_node *root,
 			  struct device_node *overlay);
 int of_overlay_apply_file(struct device_node *root, const char *filename,
 			  bool filter);
+int of_overlay_apply_dtbo(struct device_node *root,
+			  const void *dtbo);
 int of_register_overlay(struct device_node *overlay);
 int of_process_overlay(struct device_node *root,
 		    struct device_node *overlay,
@@ -1338,6 +1340,12 @@ static inline int of_overlay_apply_tree(struct device_node *root,
 
 static inline int of_overlay_apply_file(struct device_node *root,
 					const char *filename, bool filter)
+{
+	return -ENOSYS;
+}
+
+static inline int of_overlay_apply_dtbo(struct device_node *root,
+					const void *dtbo)
 {
 	return -ENOSYS;
 }

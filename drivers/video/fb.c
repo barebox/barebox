@@ -9,7 +9,7 @@
 #include <fs.h>
 #include <init.h>
 
-static int fb_ioctl(struct cdev* cdev, int req, void *data)
+static int fb_ioctl(struct cdev* cdev, unsigned int req, void *data)
 {
 	struct fb_info *info = cdev->priv;
 	struct fb_info **fb;

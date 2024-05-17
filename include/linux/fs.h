@@ -471,7 +471,7 @@ struct file_operations {
 	int (*iterate) (struct file *, struct dir_context *);
 	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
 	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
-	int (*ioctl) (struct file *, int request, void *buf);
+	int (*ioctl) (struct file *, unsigned int request, void *buf);
 	int (*truncate) (struct file *, loff_t);
 };
 

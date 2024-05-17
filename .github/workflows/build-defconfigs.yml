@@ -39,6 +39,8 @@ jobs:
 
         ./test/generate-dummy-fw.sh
 
-        ./MAKEALL -O build-${{matrix.arch}} -k test/kconfig/disable_size_check.kconf \
-                -k test/kconfig/disable_target_tools.kconf \
-                -k test/kconfig/enable_werror.kconf '${{matrix.config}}'
+        ./MAKEALL -O build-${{matrix.arch}} \
+                -k common/boards/configs/disable_size_check.config \
+                -k common/boards/configs/disable_target_tools.config \
+                -k common/boards/configs/enable_werror.config \
+                '${{matrix.config}}'

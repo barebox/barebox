@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 CONTAINER=${CONTAINER:-ghcr.io/barebox/barebox/barebox-ci:latest}
-export KCONFIG_ADD="test/kconfig/disable_target_tools.kconf $KCONFIG_ADD"
+export KCONFIG_ADD="common/boards/configs/disable_target_tools.config $KCONFIG_ADD"
 
 while getopts "c:uh" opt; do
 	case "$opt" in

@@ -10,6 +10,7 @@
 #include <init.h>
 #include <linux/sizes.h>
 #include <pbl.h>
+#include <pbl/handoff-data.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
@@ -18,6 +19,7 @@
 #include <asm/cache.h>
 #include <asm/mmu.h>
 #include <asm/unaligned.h>
+#include <compressed-dtb.h>
 
 #include <debug_ll.h>
 
@@ -29,6 +31,24 @@ unsigned long free_mem_end_ptr;
 extern unsigned char input_data[];
 extern unsigned char input_data_end[];
 
+static void add_handoff_data(void *boarddata)
+{
+	if (!boarddata)
+		return;
+	if (blob_is_fdt(boarddata)) {
+		handoff_data_add(HANDOFF_DATA_INTERNAL_DT, boarddata,
+				 get_unaligned_be32(boarddata + 4));
+	} else if (blob_is_compressed_fdt(boarddata)) {
+		struct barebox_boarddata_compressed_dtb *bd = boarddata;
+
+		handoff_data_add(HANDOFF_DATA_INTERNAL_DT_Z, boarddata,
+				 bd->datalen + sizeof(*bd));
+	} else if (blob_is_arm_boarddata(boarddata)) {
+		handoff_data_add(HANDOFF_DATA_BOARDDATA, boarddata,
+				 sizeof(struct barebox_arm_boarddata));
+	}
+}
+
 void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 				  void *boarddata)
 {
@@ -38,6 +58,7 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	unsigned long barebox_base;
 	void *pg_start, *pg_end;
 	unsigned long pc = get_pc();
+	void *handoff_data;
 
 	/* piggy data is not relocated, so determine the bounds now */
 	pg_start = runtime_address(input_data);
@@ -56,15 +77,20 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	pg_len = pg_end - pg_start;
 	uncompressed_len = get_unaligned((const u32 *)(pg_start + pg_len - 4));
 
-	barebox_base = arm_mem_barebox_image(membase, endmem,
-					     uncompressed_len + MAX_BSS_SIZE);
-
 	setup_c();
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
 	if (IS_ENABLED(CONFIG_MMU))
 		mmu_early_enable(membase, memsize);
+
+	/* Add handoff data now, so arm_mem_barebox_image takes it into account */
+	add_handoff_data(boarddata);
+
+	barebox_base = arm_mem_barebox_image(membase, endmem,
+					     uncompressed_len, NULL);
+
+	handoff_data = (void *)barebox_base + uncompressed_len + MAX_BSS_SIZE;
 
 	free_mem_ptr = barebox_base - ARM_MEM_EARLY_MALLOC_SIZE;
 	free_mem_end_ptr = barebox_base;
@@ -73,6 +99,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 			pg_start, pg_len, barebox_base, uncompressed_len);
 
 	pbl_barebox_uncompress((void*)barebox_base, pg_start, pg_len);
+
+	handoff_data_move(handoff_data);
 
 	sync_caches_for_execution();
 
@@ -86,5 +114,5 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	if (IS_ENABLED(CONFIG_CPU_V7) && boot_cpu_mode() == HYP_MODE)
 		armv7_switch_to_hyp();
 
-	barebox(membase, memsize, boarddata);
+	barebox(membase, memsize, handoff_data);
 }

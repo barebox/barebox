@@ -84,8 +84,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	if (IS_ENABLED(CONFIG_MMU))
 		mmu_early_enable(membase, memsize);
 
-	free_mem_ptr = arm_mem_early_malloc(endmem);
-	free_mem_end_ptr = arm_mem_early_malloc_end(endmem);
+	free_mem_ptr = barebox_base - ARM_MEM_EARLY_MALLOC_SIZE;
+	free_mem_end_ptr = barebox_base;
 
 	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x)\n",
 			pg_start, pg_len, barebox_base, uncompressed_len);

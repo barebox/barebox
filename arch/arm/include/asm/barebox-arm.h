@@ -73,12 +73,10 @@ void *barebox_arm_boot_dtb(void);
  *                                   ↑
  *                       ARM_EARLY_PAGETABLE_SIZE
  *                                   ↓
- *  ------------ arm_mem_ttb() / arm_mem_early_malloc_end() ------------
- *                                   ↑                          ↑
- *                     CONFIG_FS_PSTORE_RAMOOPS_SIZE         SZ_128K
- *                     (depends on FS_PSTORE_RAMOOPS)           |
- *                                   |                          ↓
- *                                   | ------ arm_mem_early_malloc() ---
+ *  --------------------------- arm_mem_ttb() -------------------------
+ *                                   ↑
+ *                     CONFIG_FS_PSTORE_RAMOOPS_SIZE
+ *                     (depends on FS_PSTORE_RAMOOPS)
  *                                   ↓
  *  ------------------------- arm_mem_ramoops() ------------------------
  *                                   ↑
@@ -86,6 +84,10 @@ void *barebox_arm_boot_dtb(void);
  *                       + BSS) rounded to SZ_1M
  *                                   ↓
  *  ---------------------- arm_mem_barebox_image() ---------------------
+ *                                   ↑
+ *                                SZ_128K
+ *                                   ↓
+ *  ------------------------ arm_mem_early_malloc ----------------------
  */
 
 static inline unsigned long arm_mem_optee(unsigned long endmem)
@@ -121,15 +123,7 @@ static inline unsigned long arm_mem_ttb(unsigned long endmem)
 	return endmem;
 }
 
-static inline unsigned long arm_mem_early_malloc(unsigned long endmem)
-{
-	return arm_mem_ttb(endmem) - SZ_128K;
-}
-
-static inline unsigned long arm_mem_early_malloc_end(unsigned long endmem)
-{
-	return arm_mem_ttb(endmem);
-}
+#define ARM_MEM_EARLY_MALLOC_SIZE	SZ_128K
 
 static inline unsigned long arm_mem_ramoops(unsigned long endmem)
 {

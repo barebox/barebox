@@ -60,13 +60,11 @@ static inline int vprintf(const char *fmt, va_list args)
 	return 0;
 }
 
-#ifndef CONFIG_ARCH_HAS_CTRLC
 /* test if ctrl-c was pressed */
 static inline int ctrlc (void)
 {
 	return 0;
 }
-#endif /* CONFIG_ARCH_HAS_CTRLC */
 
 #endif
 

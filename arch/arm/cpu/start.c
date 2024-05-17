@@ -219,6 +219,8 @@ __noreturn __prereloc void barebox_non_pbl_start(unsigned long membase,
 	pr_debug("initializing malloc pool at 0x%08lx (size 0x%08lx)\n",
 			malloc_start, malloc_end - malloc_start);
 
+	register_barebox_area(barebox_base, endmem - barebox_base);
+
 	kasan_init(membase, memsize, malloc_start - (memsize >> KASAN_SHADOW_SCALE_SHIFT));
 
 	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);

@@ -650,7 +650,7 @@ config BOOTM_FITIMAGE
 	bool
 	prompt "FIT image support"
 	select FITIMAGE
-	depends on BOOTM && ARM
+	depends on BOOTM
 	help
 	  Support using Flattened Image Tree (FIT) images. FIT is an image
 	  format introduced by U-Boot. A FIT image contains one or multiple

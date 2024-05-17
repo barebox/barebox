@@ -71,7 +71,7 @@ static int of_reboot_mode_fixup(struct device_node *root, void *ctx)
 	return 0;
 }
 
-static int reboot_mode_add_globalvar(void)
+static __maybe_unused int reboot_mode_add_globalvar(void)
 {
 	struct reboot_mode_driver *reboot = __boot_mode;
 
@@ -83,8 +83,9 @@ static int reboot_mode_add_globalvar(void)
 
 	return reboot_mode_add_param(&global_device, "system.reboot_mode.", reboot);
 }
+#ifdef CONFIG_GLOBALVAR
 late_initcall(reboot_mode_add_globalvar);
-
+#endif
 
 static void reboot_mode_print(struct reboot_mode_driver *reboot,
 			      const char *prefix, const u32 *arr)

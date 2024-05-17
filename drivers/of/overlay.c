@@ -151,6 +151,7 @@ static int of_overlay_apply_symbols(struct device_node *root,
 		pr_debug("add symbol %s with new path %s\n",
 			 prop->name, new_path);
 		of_property_write_string(root_symbols, prop->name, new_path);
+		free(new_path);
 	}
 
 	return 0;

@@ -672,27 +672,6 @@ int device_match_of_modalias(struct device *dev, struct driver *drv);
 struct device *device_find_child(struct device *parent, void *data,
 				 int (*match)(struct device *dev, void *data));
 
-static inline struct device_node *dev_of_node(struct device *dev)
-{
-	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->of_node : NULL;
-}
-
-static inline bool dev_is_dma_coherent(struct device *dev)
-{
-	if (dev) {
-		switch (dev->dma_coherent) {
-		case DEV_DMA_NON_COHERENT:
-			return false;
-		case DEV_DMA_COHERENT:
-			return true;
-		case DEV_DMA_COHERENCE_DEFAULT:
-			break;
-		}
-	}
-
-	return IS_ENABLED(CONFIG_ARCH_DMA_DEFAULT_COHERENT);
-}
-
 static inline void *dev_get_priv(const struct device *dev)
 {
 	return dev->priv;

@@ -36,13 +36,6 @@ static unsigned long arm_membase;
 static void *barebox_boarddata;
 static unsigned long barebox_boarddata_size;
 
-static bool blob_is_arm_boarddata(const void *blob)
-{
-	const struct barebox_arm_boarddata *bd = blob;
-
-	return bd->magic == BAREBOX_ARM_BOARDDATA_MAGIC;
-}
-
 const struct barebox_boarddata *barebox_get_boarddata(void)
 {
 	if (!barebox_boarddata || !blob_is_arm_boarddata(barebox_boarddata))

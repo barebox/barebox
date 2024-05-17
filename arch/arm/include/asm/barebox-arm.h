@@ -32,6 +32,13 @@ void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, 
 #define barebox_arm_boarddata		barebox_boarddata
 #define BAREBOX_ARM_BOARDDATA_MAGIC	BAREBOX_BOARDDATA_MAGIC
 
+static inline bool blob_is_arm_boarddata(const void *blob)
+{
+	const struct barebox_arm_boarddata *bd = blob;
+
+	return bd->magic == BAREBOX_ARM_BOARDDATA_MAGIC;
+}
+
 u32 barebox_arm_machine(void);
 
 unsigned long arm_mem_ramoops_get(void);

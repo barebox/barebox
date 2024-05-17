@@ -79,7 +79,7 @@ void *barebox_arm_boot_dtb(void)
 
 	pr_debug("%s: using compressed_dtb\n", __func__);
 
-	dtb = malloc(compressed_dtb->datalen_uncompressed);
+	dtb = malloc(ALIGN(compressed_dtb->datalen_uncompressed, 4));
 	if (!dtb)
 		return NULL;
 

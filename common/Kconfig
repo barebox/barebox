@@ -921,8 +921,8 @@ config DEFAULT_ENVIRONMENT
 	  CONFIG_ENV_HANDLING is not enabled.
 
 choice
-	prompt "default compression for in-barebox binaries"
-	default DEFAULT_COMPRESSION_NONE if PBL_IMAGE
+	prompt "default compression for in-barebox binaries" if PBL_IMAGE
+	default DEFAULT_COMPRESSION_NONE
 	default DEFAULT_COMPRESSION_LZO if LZO_DECOMPRESS
 	default DEFAULT_COMPRESSION_XZ if XZ_DECOMPRESS
 	default DEFAULT_COMPRESSION_GZIP if ZLIB

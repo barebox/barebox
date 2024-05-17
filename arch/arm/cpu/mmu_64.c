@@ -219,7 +219,7 @@ static void create_guard_page(void)
 		return;
 
 	guard_page = arm_mem_guard_page_get();
-	request_sdram_region("guard page", guard_page, PAGE_SIZE);
+	request_barebox_region("guard page", guard_page, PAGE_SIZE);
 	remap_range((void *)guard_page, PAGE_SIZE, MAP_FAULT);
 
 	pr_debug("Created guard page\n");
@@ -233,7 +233,7 @@ void __mmu_init(bool mmu_on)
 	uint64_t *ttb = get_ttb();
 	struct memory_bank *bank;
 
-	if (!request_sdram_region("ttb", (unsigned long)ttb,
+	if (!request_barebox_region("ttb", (unsigned long)ttb,
 				  ARM_EARLY_PAGETABLE_SIZE))
 		/*
 		 * This can mean that:

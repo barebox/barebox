@@ -134,7 +134,7 @@ EXPORT_SYMBOL_GPL(arm_mem_membase_get);
 static int barebox_memory_areas_init(void)
 {
 	if(barebox_boarddata)
-		request_sdram_region("board data", (unsigned long)barebox_boarddata,
+		request_barebox_region("board data", (unsigned long)barebox_boarddata,
 				     barebox_boarddata_size);
 
 	if (IS_ENABLED(CONFIG_KASAN))

@@ -103,15 +103,15 @@ static int mem_malloc_resource(void)
 	request_sdram_region("malloc space",
 			malloc_start,
 			malloc_end - malloc_start + 1);
-	request_sdram_region("barebox code",
+	request_barebox_region("barebox code",
 			(unsigned long)&_stext,
 			(unsigned long)&_etext -
 			(unsigned long)&_stext);
-	request_sdram_region("barebox data",
+	request_barebox_region("barebox data",
 			(unsigned long)&_sdata,
 			(unsigned long)&_edata -
 			(unsigned long)&_sdata);
-	request_sdram_region("barebox bss",
+	request_barebox_region("barebox bss",
 			(unsigned long)&__bss_start,
 			(unsigned long)&__bss_stop -
 			(unsigned long)&__bss_start);

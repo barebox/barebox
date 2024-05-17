@@ -342,7 +342,7 @@ void persistent_ram_zap(struct persistent_ram_zone *prz)
 static int persistent_ram_buffer_map(phys_addr_t start, phys_addr_t size,
 		struct persistent_ram_zone *prz, int memtype)
 {
-	prz->res = request_sdram_region(prz->label ?: "ramoops", start, size);
+	prz->res = request_barebox_region(prz->label ?: "ramoops", start, size);
 	if (!prz->res)
 		return -ENOMEM;
 

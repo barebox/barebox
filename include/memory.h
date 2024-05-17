@@ -61,4 +61,10 @@ static inline u64 memory_sdram_size(unsigned int cols,
 	return (u64)banks * width << (rows + cols);
 }
 
+void register_barebox_area(resource_size_t start, resource_size_t size);
+
+struct resource *request_barebox_region(const char *name,
+					resource_size_t start,
+					resource_size_t size);
+
 #endif

@@ -31,6 +31,10 @@
 #include <mach/bcm283x/debug_ll.h>
 #endif
 
+#ifdef CONFIG_DEBUG_LAYERSCAPE_UART
+#include <mach/layerscape/debug_ll.h>
+#endif
+
 #ifdef CONFIG_DEBUG_QEMU_ARM64_VIRT
 #define DEBUG_LL_UART_ADDR		0x9000000
 #include <debug_ll/pl011.h>
@@ -42,8 +46,6 @@
 #include <mach/zynq/debug_ll.h>
 #elif defined CONFIG_ARCH_VERSATILE
 #include <mach/versatile/debug_ll.h>
-#elif defined CONFIG_ARCH_LAYERSCAPE
-#include <mach/layerscape/debug_ll.h>
 #elif defined CONFIG_ARCH_TEGRA
 #include <mach/tegra/debug_ll.h>
 #elif defined CONFIG_ARCH_UEMD

@@ -8,6 +8,8 @@
 #include <common.h>
 #include <clock.h>
 #include <debug_ll.h>
+#include <mach/layerscape/debug_ll.h>
+#include <debug_ll.h>
 #include <soc/fsl/fsl_ddr_sdram.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>

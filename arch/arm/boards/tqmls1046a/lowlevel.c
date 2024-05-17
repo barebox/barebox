@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 #include <common.h>
+#include <mach/layerscape/debug_ll.h>
 #include <debug_ll.h>
 #include <platform_data/mmc-esdhc-imx.h>
 #include <soc/fsl/fsl_ddr_sdram.h>

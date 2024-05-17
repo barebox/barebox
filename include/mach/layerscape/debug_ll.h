@@ -13,6 +13,8 @@
 #define __LSCH3_UART_BASE(num)	LSCH3_NS16550_COM##num
 #define LSCH3_UART_BASE(num) __LSCH3_UART_BASE(num)
 
+#ifdef CONFIG_DEBUG_LAYERSCAPE_UART
+
 static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)
 {
 	return readb(base + reg);
@@ -81,5 +83,17 @@ static inline void layerscape_uart_putc(void *base, int c)
 {
 	debug_ll_ns16550_putc(base, c);
 }
+
+#else
+
+static inline void ls1046a_uart_setup(void *base) { }
+static inline void ls1046a_debug_ll_init(void) { }
+static inline void ls1028a_uart_setup(void *base) { }
+static inline void ls1028a_debug_ll_init(void) { }
+static inline void ls102xa_uart_setup(void *base) { }
+static inline void ls102xa_debug_ll_init(void) { }
+static inline void layerscape_uart_putc(void *base, int c) { }
+
+#endif
 
 #endif /* __MACH_LAYERSCAPE_DEBUG_LL_H__ */

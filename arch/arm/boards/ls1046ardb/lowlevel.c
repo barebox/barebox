@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #include <common.h>
+#include <mach/layerscape/debug_ll.h>
 #include <debug_ll.h>
 #include <ddr_spd.h>
 #include <image-metadata.h>

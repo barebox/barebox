@@ -139,6 +139,13 @@ config DEBUG_IMX9_UART
 	depends on ARCH_IMX93
 	select DEBUG_IMX_UART
 
+config DEBUG_LAYERSCAPE_UART
+	bool "Layerscape Debug UART"
+	depends on ARCH_LAYERSCAPE
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on NXP Layerscape SoCs.
+
 config DEBUG_VEXPRESS_UART
 	bool "Vexpress Debug UART"
 	depends on ARCH_VEXPRESS
@@ -409,7 +416,7 @@ config DEBUG_SOCFPGA_UART_CLOCK
 
 config DEBUG_LAYERSCAPE_UART_PORT
 	int "Layerscape UART port selection"
-	depends on ARCH_LAYERSCAPE
+	depends on DEBUG_LAYERSCAPE_UART
 	default 1
 	help
 	  Select the UART port number used for early debugging here. Port

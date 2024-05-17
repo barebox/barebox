@@ -58,7 +58,7 @@ static int sdhci_send_command_retry(struct sdhci *host, struct mci_cmd *cmd)
 		mdelay(1);
 	}
 
-	return host->mci->send_cmd(host->mci, cmd, NULL);
+	return host->mci->ops.send_cmd(host->mci, cmd, NULL);
 }
 
 /*

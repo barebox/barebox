@@ -486,6 +486,12 @@ static int mxcmci_init(struct mci_host *mci, struct device *dev)
 	return 0;
 }
 
+static const struct mci_ops mxcmci_ops = {
+	.send_cmd = mxcmci_request,
+	.set_ios = mxcmci_set_ios,
+	.init = mxcmci_init,
+};
+
 static int mxcmci_probe(struct device *dev)
 {
 	struct resource *iores;
@@ -498,9 +504,7 @@ static int mxcmci_probe(struct device *dev)
 	if (IS_ERR(host->clk))
 		return PTR_ERR(host->clk);
 
-	host->mci.send_cmd = mxcmci_request;
-	host->mci.set_ios = mxcmci_set_ios;
-	host->mci.init = mxcmci_init;
+	host->mci.ops = mxcmci_ops;
 	host->mci.host_caps = MMC_CAP_4_BIT_DATA;
 	host->mci.hw_dev = dev;
 

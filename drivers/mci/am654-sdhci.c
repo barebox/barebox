@@ -539,6 +539,12 @@ static const struct regmap_config regmap_config = {
 	.max_register	= 0x400,
 };
 
+static const struct mci_ops am654_sdhci_ops = {
+	.send_cmd = am654_sdhci_send_cmd,
+	.set_ios = am654_sdhci_set_ios,
+	.init = am654_sdhci_init,
+};
+
 static int am654_sdhci_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
@@ -623,9 +629,7 @@ static int am654_sdhci_probe(struct device *dev)
 		}
 	}
 
-	mci->send_cmd = am654_sdhci_send_cmd;
-	mci->set_ios = am654_sdhci_set_ios;
-	mci->init = am654_sdhci_init;
+	mci->ops = am654_sdhci_ops;
 	mci->hw_dev = dev;
 
 	of_property_read_u32(np, "ti,strobe-sel", &plat->strb_sel);

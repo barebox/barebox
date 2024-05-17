@@ -568,6 +568,12 @@ static void mmc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	writel(readl(&mmc_base->sysctl) | CEN_ENABLE, &mmc_base->sysctl);
 }
 
+static const struct mci_ops omap_mmc_ops = {
+	.send_cmd = mmc_send_cmd,
+	.set_ios = mmc_set_ios,
+	.init = mmc_init_setup,
+};
+
 static int omap_mmc_probe(struct device *dev)
 {
 	struct resource *iores;
@@ -584,9 +590,7 @@ static int omap_mmc_probe(struct device *dev)
 	hsmmc = xzalloc(sizeof(*hsmmc));
 
 	hsmmc->dev = dev;
-	hsmmc->mci.send_cmd = mmc_send_cmd;
-	hsmmc->mci.set_ios = mmc_set_ios;
-	hsmmc->mci.init = mmc_init_setup;
+	hsmmc->mci.ops = omap_mmc_ops;
 	hsmmc->mci.host_caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SD_HIGHSPEED |
 		MMC_CAP_MMC_HIGHSPEED | MMC_CAP_8_BIT_DATA;
 	hsmmc->mci.hw_dev = dev;

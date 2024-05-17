@@ -295,6 +295,13 @@ static void dwcmshc_set_dma_mask(struct device *dev)
 		dma_set_mask(dev, DMA_BIT_MASK(32));
 }
 
+static const struct mci_ops dwcmshc_ops = {
+	.init = dwcmshc_mci_init,
+	.set_ios = dwcmshc_mci_set_ios,
+	.send_cmd = dwcmshc_mci_send_cmd,
+	.card_present = dwcmshc_mci_card_present,
+};
+
 static int dwcmshc_probe(struct device *dev)
 {
 	const struct dwcmshc_callbacks *dwcmshc_cb =
@@ -327,10 +334,7 @@ static int dwcmshc_probe(struct device *dev)
 	host->cb = dwcmshc_cb;
 
 	mci->hw_dev = dev;
-	mci->init = dwcmshc_mci_init;
-	mci->set_ios = dwcmshc_mci_set_ios;
-	mci->send_cmd = dwcmshc_mci_send_cmd;
-	mci->card_present = dwcmshc_mci_card_present;
+	mci->ops = dwcmshc_ops;
 
 	sdhci_setup_host(&host->sdhci);
 

@@ -99,6 +99,13 @@ static int at91_sdhci_card_present(struct mci_host *mci)
 	return at91_sdhci_is_card_inserted(&to_priv(mci)->host);
 }
 
+static const struct mci_ops at91_sdhci_mci_ops = {
+	.send_cmd = at91_sdhci_mci_send_cmd,
+	.set_ios = at91_sdhci_mci_set_ios,
+	.init = at91_sdhci_mci_init,
+	.card_present = at91_sdhci_card_present,
+};
+
 static int at91_sdhci_probe(struct device *dev)
 {
 	struct at91_sdhci_priv *priv;
@@ -145,12 +152,9 @@ static int at91_sdhci_probe(struct device *dev)
 		return priv->gck_rate;
 
 	priv->mci.hw_dev = dev;
-	priv->mci.send_cmd = at91_sdhci_mci_send_cmd;
-	priv->mci.set_ios = at91_sdhci_mci_set_ios;
-	priv->mci.init = at91_sdhci_mci_init;
+	priv->mci.ops = at91_sdhci_mci_ops;
 	priv->mci.f_max = priv->gck_rate;
 	priv->mci.f_min = ATMEL_SDHC_MIN_FREQ;
-	priv->mci.card_present = at91_sdhci_card_present;
 
 	at91_sdhci_set_mci_caps(priv);
 

@@ -368,6 +368,13 @@ static int spi_mci_card_present(struct mci_host *mci)
 	return ret == 0 ? 1 : 0;
 }
 
+static const struct mci_ops spi_mci_ops = {
+	.send_cmd = mmc_spi_request,
+	.set_ios = mmc_spi_set_ios,
+	.init = mmc_spi_init,
+	.card_present = spi_mci_card_present,
+};
+
 static int spi_mci_probe(struct device *dev)
 {
 	struct device_node	*np = dev_of_node(dev);
@@ -377,10 +384,7 @@ static int spi_mci_probe(struct device *dev)
 	int			status;
 
 	host = xzalloc(sizeof(*host));
-	host->mci.send_cmd = mmc_spi_request;
-	host->mci.set_ios = mmc_spi_set_ios;
-	host->mci.init = mmc_spi_init;
-	host->mci.card_present = spi_mci_card_present;
+	host->mci.ops = spi_mci_ops;
 	host->mci.hw_dev = dev;
 
 	/* MMC and SD specs only seem to care that sampling is on the

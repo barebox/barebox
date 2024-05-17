@@ -288,6 +288,13 @@ static int esdhc_init(struct mci_host *mci, struct device *dev)
 	return ret;
 }
 
+static const struct mci_ops fsl_esdhc_ops = {
+	.send_cmd = esdhc_send_cmd,
+	.set_ios = esdhc_set_ios,
+	.init = esdhc_init,
+	.card_present = esdhc_card_present,
+};
+
 static int fsl_esdhc_probe(struct device *dev)
 {
 	struct resource *iores;
@@ -337,10 +344,7 @@ static int fsl_esdhc_probe(struct device *dev)
 			mci->devname = pdata->devname;
 	}
 
-	host->mci.send_cmd = esdhc_send_cmd;
-	host->mci.set_ios = esdhc_set_ios;
-	host->mci.init = esdhc_init;
-	host->mci.card_present = esdhc_card_present;
+	host->mci.ops = fsl_esdhc_ops;
 	host->mci.hw_dev = dev;
 	host->sdhci.mci = &host->mci;
 

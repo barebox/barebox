@@ -547,6 +547,13 @@ static int dwmci_init(struct mci_host *mci, struct device *dev)
 	return 0;
 }
 
+static const struct mci_ops dw_mmc_ops = {
+	.send_cmd = dwmci_cmd,
+	.set_ios = dwmci_set_ios,
+	.init = dwmci_init,
+	.card_present = dwmci_card_present,
+};
+
 static int dw_mmc_probe(struct device *dev)
 {
 	struct reset_control	*rst;
@@ -589,10 +596,7 @@ static int dw_mmc_probe(struct device *dev)
 	if (!host->idmac)
 		return -ENOMEM;
 
-	host->mci.send_cmd = dwmci_cmd;
-	host->mci.set_ios = dwmci_set_ios;
-	host->mci.init = dwmci_init;
-	host->mci.card_present = dwmci_card_present;
+	host->mci.ops = dw_mmc_ops;
 	host->mci.hw_dev = dev;
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 	host->mci.host_caps = MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA;

@@ -288,6 +288,13 @@ error:
 	return ret;
 }
 
+static const struct mci_ops rk_sdhci_ops = {
+	.send_cmd = rk_sdhci_send_cmd,
+	.set_ios = rk_sdhci_set_ios,
+	.init = rk_sdhci_init,
+	.card_present = rk_sdhci_card_present,
+};
+
 static int rk_sdhci_probe(struct device *dev)
 {
 	struct rk_sdhci_host *host;
@@ -305,10 +312,7 @@ static int rk_sdhci_probe(struct device *dev)
 
 	host->sdhci.base = IOMEM(iores->start);
 	host->sdhci.mci = mci;
-	mci->send_cmd = rk_sdhci_send_cmd;
-	mci->set_ios = rk_sdhci_set_ios;
-	mci->init = rk_sdhci_init;
-	mci->card_present = rk_sdhci_card_present;
+	mci->ops = rk_sdhci_ops;
 	mci->hw_dev = dev;
 
 	host->clks[CLK_CORE].id = "core";

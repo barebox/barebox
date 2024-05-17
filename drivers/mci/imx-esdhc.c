@@ -18,7 +18,6 @@
 #include <io.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <platform_data/mmc-esdhc-imx.h>
 #include <gpio.h>
 #include <of_device.h>
 #include <mach/imx/generic.h>
@@ -195,27 +194,7 @@ static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 static int esdhc_card_present(struct mci_host *mci)
 {
-	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	struct esdhc_platform_data *pdata = host->dev->platform_data;
-	int ret;
-
-	if (!pdata)
-		return 1;
-
-	switch (pdata->cd_type) {
-	case ESDHC_CD_NONE:
-	case ESDHC_CD_PERMANENT:
-		return 1;
-	case ESDHC_CD_CONTROLLER:
-		return !(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_WRITE_PROTECT);
-	case ESDHC_CD_GPIO:
-		ret = gpio_direction_input(pdata->cd_gpio);
-		if (ret)
-			return ret;
-		return gpio_get_value(pdata->cd_gpio) ? 0 : 1;
-	}
-
-	return 0;
+	return 1;
 }
 
 static int esdhc_reset(struct fsl_esdhc_host *host)
@@ -302,7 +281,6 @@ static int fsl_esdhc_probe(struct device *dev)
 	struct mci_host *mci;
 	int ret;
 	unsigned long rate;
-	struct esdhc_platform_data *pdata = dev->platform_data;
 	const struct esdhc_soc_data *socdata;
 
 	ret = dev_get_drvdata(dev, (const void **)&socdata);
@@ -338,12 +316,6 @@ static int fsl_esdhc_probe(struct device *dev)
 
 	esdhc_populate_sdhci(host);
 
-	if (pdata) {
-		mci->host_caps = pdata->caps;
-		if (pdata->devname)
-			mci->devname = pdata->devname;
-	}
-
 	host->mci.ops = fsl_esdhc_ops;
 	host->mci.hw_dev = dev;
 	host->sdhci.mci = &host->mci;
@@ -360,10 +332,6 @@ static int fsl_esdhc_probe(struct device *dev)
 	if (host->mci.f_min < 200000)
 		host->mci.f_min = 200000;
 	host->mci.f_max = rate;
-	if (pdata) {
-		host->mci.use_dsr = pdata->use_dsr;
-		host->mci.dsr_val = pdata->dsr_val;
-	}
 
 	mci_of_parse(&host->mci);
 

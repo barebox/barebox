@@ -370,6 +370,7 @@ int nvvar_load(void)
 		if (ret)
 			pr_err("failed to create nv variable %s: %s\n",
 					n, strerror(-ret));
+		free(val);
 	}
 
 	closedir(dir);

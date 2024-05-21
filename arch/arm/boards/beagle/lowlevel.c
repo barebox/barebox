@@ -175,6 +175,9 @@ ENTRY_FUNCTION(start_omap3_beagleboard_sdram, bootinfo, r1, r2)
 {
 	omap3_save_bootinfo((void *)bootinfo);
 
+	relocate_to_current_adr();
+	setup_c();
+
 	beagle_board_init_sdram();
 }
 

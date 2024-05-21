@@ -71,7 +71,7 @@ int usbgadget_register(const struct usbgadget_funcs *funcs)
 
 	if (usb_multi_count_functions(opts) == 0) {
 		pr_warn("No functions to register\n");
-		ret = COMMAND_ERROR_USAGE;
+		ret = -EINVAL;
 		goto err;
 	}
 

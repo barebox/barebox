@@ -31,7 +31,7 @@ static int do_dfu(int argc, char *argv[])
 	funcs.dfu_opts = argv[optind];
 	ret = usbgadget_register(&funcs);
 	if (ret)
-		return ret;
+		return COMMAND_ERROR_USAGE;
 
 	command_slice_release();
 	while (!usb_dfu_detached()) {

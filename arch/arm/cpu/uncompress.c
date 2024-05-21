@@ -43,9 +43,6 @@ static void add_handoff_data(void *boarddata)
 
 		handoff_data_add(HANDOFF_DATA_INTERNAL_DT_Z, boarddata,
 				 bd->datalen + sizeof(*bd));
-	} else if (blob_is_arm_boarddata(boarddata)) {
-		handoff_data_add(HANDOFF_DATA_BOARDDATA, boarddata,
-				 sizeof(struct barebox_arm_boarddata));
 	}
 }
 

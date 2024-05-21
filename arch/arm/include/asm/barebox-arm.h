@@ -24,31 +24,25 @@
 #include <asm/sections.h>
 #include <asm/reloc.h>
 #include <linux/stringify.h>
-#include <boarddata.h>
+#include <pbl/handoff-data.h>
 
 #define ARM_EARLY_PAGETABLE_SIZE	SZ_64K
 
+#define handoff_add_arm_machine(machine)				\
+	do {								\
+		static unsigned int machine_number = machine;		\
+									\
+		handoff_data_add(HANDOFF_DATA_ARM_MACHINE,		\
+			&machine_number, sizeof(unsigned int));		\
+	} while (0);
+
 void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, void *boarddata);
-
-#define barebox_arm_boarddata		barebox_boarddata
-#define BAREBOX_ARM_BOARDDATA_MAGIC	BAREBOX_BOARDDATA_MAGIC
-
-static inline bool blob_is_arm_boarddata(const void *blob)
-{
-	const struct barebox_arm_boarddata *bd = blob;
-
-	return bd->magic == BAREBOX_ARM_BOARDDATA_MAGIC;
-}
 
 u32 barebox_arm_machine(void);
 
 unsigned long arm_mem_ramoops_get(void);
 unsigned long arm_mem_membase_get(void);
 unsigned long arm_mem_endmem_get(void);
-
-struct barebox_arm_boarddata *barebox_arm_get_boarddata(void);
-
-#define barebox_arm_get_boarddata barebox_get_boarddata
 
 #ifdef CONFIG_ARM_EXCEPTIONS
 void arm_fixup_vectors(void);

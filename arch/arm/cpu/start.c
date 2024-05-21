@@ -34,20 +34,18 @@ unsigned long arm_stack_top;
 static unsigned long arm_barebox_size;
 static unsigned long arm_endmem;
 static unsigned long arm_membase;
-static void *barebox_boarddata;
-static unsigned long barebox_boarddata_size;
-
-const struct barebox_boarddata *barebox_get_boarddata(void)
-{
-	size_t size;
-
-	return handoff_data_get_entry(HANDOFF_DATA_BOARDDATA, &size);
-}
 
 u32 barebox_arm_machine(void)
 {
-	const struct barebox_boarddata *bd = barebox_get_boarddata();
-	return bd ? bd->machine : 0;
+	size_t size;
+	unsigned int *machine;
+
+	machine = handoff_data_get_entry(HANDOFF_DATA_ARM_MACHINE, &size);
+
+	if (machine)
+		return *machine;
+
+	return 0;
 }
 
 void *barebox_arm_boot_dtb(void)
@@ -119,10 +117,6 @@ EXPORT_SYMBOL_GPL(arm_mem_membase_get);
 
 static int barebox_memory_areas_init(void)
 {
-	if(barebox_boarddata)
-		request_barebox_region("board data", (unsigned long)barebox_boarddata,
-				     barebox_boarddata_size);
-
 	if (IS_ENABLED(CONFIG_KASAN))
 		request_sdram_region("kasan shadow", kasan_shadow_base,
 				     mem_malloc_start() - kasan_shadow_base);

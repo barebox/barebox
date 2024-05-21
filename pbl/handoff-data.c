@@ -9,7 +9,7 @@ static struct handoff_data *handoff_data = (void *)-1;
 
 static struct handoff_data *handoff_data_get(void)
 {
-	static struct handoff_data __handoff_data;
+	static struct handoff_data __handoff_data __section(.data);
 
 	/*
 	 * Sometimes the PBL copies itself to some other location and is

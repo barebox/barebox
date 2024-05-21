@@ -24,15 +24,15 @@ struct handoff_data_entry {
 	unsigned int flags;
 };
 
-#define handoff_data_add_flags(_cookie, _data, _size, _flags)	\
-	do {							\
-		static struct handoff_data_entry hde;		\
-		hde.cookie = _cookie;				\
-		hde.data = _data;				\
-		hde.size = _size;				\
-		hde.flags = _flags;				\
-								\
-		handoff_data_add_entry(&hde);			\
+#define handoff_data_add_flags(_cookie, _data, _size, _flags)		\
+	do {								\
+		static struct handoff_data_entry hde __section(.data);	\
+		hde.cookie = _cookie;					\
+		hde.data = _data;					\
+		hde.size = _size;					\
+		hde.flags = _flags;					\
+									\
+		handoff_data_add_entry(&hde);				\
 	} while (0);
 
 #define handoff_data_add(_cookie, _data, _size)			\

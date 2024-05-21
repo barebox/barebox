@@ -3,12 +3,15 @@
 #define LINUX_PINCTRL_CONSUMER_H
 
 #include <linux/errno.h>
+#include <linux/err.h>
 
 struct device;
 struct device_node;
 
+struct pinctrl;
+
 #ifdef CONFIG_PINCTRL
-int pinctrl_select_state(struct device *dev, const char *state);
+struct pinctrl *pinctrl_get_select(struct device *dev, const char *state);
 int pinctrl_select_state_default(struct device *dev);
 int of_pinctrl_select_state(struct device_node *np, const char *state);
 int of_pinctrl_select_state_default(struct device_node *np);
@@ -17,9 +20,9 @@ int pinctrl_gpio_direction_output(unsigned int pin);
 int pinctrl_gpio_get_direction(unsigned pin);
 int pinctrl_single_probe(struct device *dev);
 #else
-static inline int pinctrl_select_state(struct device *dev, const char *state)
+static inline struct pinctrl *pinctrl_get_select(struct device *dev, const char *state)
 {
-	return -ENODEV;
+	return ERR_PTR(-ENODEV);
 }
 
 static inline int pinctrl_select_state_default(struct device *dev)
@@ -57,5 +60,7 @@ static inline int pinctrl_single_probe(struct device *dev)
 	return -ENOSYS;
 }
 #endif
+
+static inline void pinctrl_put(struct pinctrl *pinctrl) {}
 
 #endif /* LINUX_PINCTRL_CONSUMER_H */

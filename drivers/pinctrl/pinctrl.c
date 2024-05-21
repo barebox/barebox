@@ -161,20 +161,25 @@ int of_pinctrl_select_state_default(struct device_node *np)
 	return of_pinctrl_select_state(np, "default");
 }
 
-int pinctrl_select_state(struct device *dev, const char *name)
+struct pinctrl *pinctrl_get_select(struct device *dev, const char *name)
 {
 	struct device_node *np;
+	int ret;
 
 	np = dev->of_node;
 	if (!np)
-		return 0;
+		return ERR_PTR(-ENODEV);
 
-	return of_pinctrl_select_state(np, name);
+	ret = of_pinctrl_select_state(np, name);
+	if (ret)
+		return ERR_PTR(ret);
+
+	return (struct pinctrl *)np;
 }
 
 int pinctrl_select_state_default(struct device *dev)
 {
-	return pinctrl_select_state(dev, "default");
+	return PTR_ERR_OR_ZERO(pinctrl_get_select(dev, "default"));
 }
 
 int pinctrl_register(struct pinctrl_device *pdev)

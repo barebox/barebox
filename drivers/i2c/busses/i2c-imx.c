@@ -509,21 +509,25 @@ fail0:
 	return (result < 0) ? result : num;
 }
 
+static void i2c_fsl_pinctrl_select_state(struct i2c_adapter *adapter,
+					 const char *name)
+{
+	struct pinctrl *pinctrl;
+
+	pinctrl = pinctrl_get_select(adapter->dev.parent, name);
+	if (pinctrl)
+		pinctrl_put(pinctrl);
+	else
+		dev_err(adapter->dev.parent, "pinctrl failed: %pe\n", pinctrl);
+}
+
 static void i2c_fsl_prepare_recovery(struct i2c_adapter *adapter)
 {
-	int ret;
-
-	ret = pinctrl_select_state(adapter->dev.parent, "gpio");
-	if (ret)
-		dev_err(adapter->dev.parent, "pinctrl failed: %s\n", strerror(-ret));
+	i2c_fsl_pinctrl_select_state(adapter, "gpio");
 }
 static void i2c_fsl_unprepare_recovery(struct i2c_adapter *adapter)
 {
-	int ret;
-
-	ret = pinctrl_select_state(adapter->dev.parent, "default");
-	if (ret)
-		dev_err(adapter->dev.parent, "pinctrl failed: %s\n", strerror(-ret));
+	i2c_fsl_pinctrl_select_state(adapter, "default");
 }
 
 static void i2c_fsl_init_recovery(struct fsl_i2c_struct *i2c_fsl,

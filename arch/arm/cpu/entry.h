@@ -5,9 +5,11 @@
 
 #include <common.h>
 
+struct handoff_data;
+
 void __noreturn barebox_non_pbl_start(unsigned long membase,
 				      unsigned long memsize,
-				      void *boarddata);
+				      struct handoff_data *hd);
 
 void __noreturn barebox_pbl_start(unsigned long membase,
 				  unsigned long memsize,

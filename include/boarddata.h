@@ -15,10 +15,6 @@ struct barebox_boarddata {
 		      * that do not potientially clashes with registered machines,
 		      * i.e. use a number > 0x10000.
 		      */
-#ifdef CONFIG_EFI_STUB
-	void *image;
-	void *sys_table;
-#endif
 };
 
 /*

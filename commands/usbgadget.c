@@ -51,7 +51,7 @@ static int do_usbgadget(int argc, char *argv[])
 		}
 	}
 
-	ret = usbgadget_register(&funcs);
+	ret = usbgadget_prepare_register(&funcs);
 	return ret ? COMMAND_ERROR_USAGE : 0;
 }
 

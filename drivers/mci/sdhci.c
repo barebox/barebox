@@ -21,6 +21,11 @@ enum sdhci_reset_reason {
 	SDHCI_RESET_FOR_CQE_RECOVERY,
 };
 
+static inline struct device *sdhci_dev(struct sdhci *host)
+{
+	return host->mci ? host->mci->hw_dev : NULL;
+}
+
 static void sdhci_reset_for_reason(struct sdhci *host, enum sdhci_reset_reason reason)
 {
 	if (host->quirks2 & SDHCI_QUIRK2_ISSUE_CMD_DAT_RESET_TOGETHER) {
@@ -170,7 +175,7 @@ static int __sdhci_execute_tuning(struct sdhci *host, u32 opcode)
 
 	}
 
-	dev_dbg(host->mci->hw_dev, "Tuning timeout, falling back to fixed sampling clock\n");
+	dev_dbg(sdhci_dev(host), "Tuning timeout, falling back to fixed sampling clock\n");
 	sdhci_reset_tuning(host);
 	return -EAGAIN;
 }
@@ -416,13 +421,13 @@ int sdhci_wait_for_done(struct sdhci *sdhci, u32 mask)
 			return -ETIMEDOUT;
 
 		if (stat & SDHCI_INT_ERROR) {
-			dev_err(sdhci->mci->hw_dev, "SDHCI_INT_ERROR: 0x%08x\n",
+			dev_err(sdhci_dev(sdhci), "SDHCI_INT_ERROR: 0x%08x\n",
 				stat);
 			return -EPERM;
 		}
 
 		if (is_timeout(start, 1000 * MSECOND)) {
-			dev_err(sdhci->mci->hw_dev,
+			dev_err(sdhci_dev(sdhci),
 				"SDHCI timeout while waiting for done\n");
 			return -ETIMEDOUT;
 		}
@@ -470,7 +475,7 @@ static void sdhci_config_dma(struct sdhci *host)
 void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			  dma_addr_t *dma)
 {
-	struct device *dev = sdhci->mci->hw_dev;
+	struct device *dev = sdhci_dev(sdhci);
 	int nbytes;
 
 	if (!data)
@@ -502,7 +507,7 @@ void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			    dma_addr_t dma)
 {
-	struct device *dev = sdhci->mci->hw_dev;
+	struct device *dev = sdhci_dev(sdhci);
 	u64 start;
 	int nbytes;
 	u32 irqstat;
@@ -615,7 +620,7 @@ int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data)
 
 int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t dma)
 {
-	struct device *dev = sdhci->mci->hw_dev;
+	struct device *dev = sdhci_dev(sdhci);
 
 	if (!data)
 		return 0;
@@ -665,7 +670,7 @@ static u16 sdhci_get_preset_value(struct sdhci *host)
 		preset = sdhci_read16(host, SDHCI_PRESET_FOR_HS400);
 		break;
 	default:
-		dev_warn(host->mci->hw_dev, "Invalid UHS-I mode selected\n");
+		dev_warn(sdhci_dev(host), "Invalid UHS-I mode selected\n");
 		preset = sdhci_read16(host, SDHCI_PRESET_FOR_SDR12);
 		break;
 	}
@@ -778,7 +783,7 @@ void sdhci_enable_clk(struct sdhci *host, u16 clk)
 	while (!(sdhci_read16(host, SDHCI_CLOCK_CONTROL) &
 		SDHCI_CLOCK_INT_STABLE)) {
 		if (is_timeout(start, 150 * MSECOND)) {
-			dev_err(host->mci->hw_dev,
+			dev_err(sdhci_dev(host),
 					"SDHCI clock stable timeout\n");
 			return;
 		}
@@ -805,7 +810,7 @@ int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *da
 			!(sdhci_read32(host, SDHCI_PRESENT_STATE) & mask));
 
 	if (ret) {
-		dev_err(host->mci->hw_dev,
+		dev_err(sdhci_dev(host),
 				"SDHCI timeout while waiting for idle\n");
 		return -EBUSY;
 	}
@@ -827,7 +832,7 @@ int sdhci_wait_idle_data(struct sdhci *host, struct mci_cmd *cmd)
 			!(sdhci_read32(host, SDHCI_PRESENT_STATE) & mask));
 
 	if (ret) {
-		dev_err(host->mci->hw_dev,
+		dev_err(sdhci_dev(host),
 				"SDHCI timeout while waiting for idle\n");
 		return -EBUSY;
 	}
@@ -880,7 +885,7 @@ void __sdhci_read_caps(struct sdhci *host, const u16 *ver,
 	u16 v;
 	u64 dt_caps_mask = 0;
 	u64 dt_caps = 0;
-	struct device_node *np = host->mci->hw_dev->of_node;
+	struct device_node *np = dev_of_node(sdhci_dev(host));
 
 	BUG_ON(!host->mci); /* Call sdhci_setup_host() before using this */
 

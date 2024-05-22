@@ -170,7 +170,7 @@ static int __sdhci_execute_tuning(struct sdhci *host, u32 opcode)
 
 	}
 
-	dev_dbg(&host->mci->mci->dev, "Tuning timeout, falling back to fixed sampling clock\n");
+	dev_dbg(host->mci->hw_dev, "Tuning timeout, falling back to fixed sampling clock\n");
 	sdhci_reset_tuning(host);
 	return -EAGAIN;
 }

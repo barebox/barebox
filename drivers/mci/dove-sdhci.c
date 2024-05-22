@@ -271,6 +271,7 @@ static int dove_sdhci_probe(struct device *dev)
 
 	host = xzalloc(sizeof(*host));
 	host->sdhci.base = dev_request_mem_region(dev, 0);
+	host->sdhci.mci = &host->mci;
 	host->mci.max_req_size = 0x8000;
 	host->mci.hw_dev = dev;
 	host->mci.send_cmd = dove_sdhci_mci_send_cmd;

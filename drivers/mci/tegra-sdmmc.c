@@ -401,6 +401,7 @@ static int tegra_sdmmc_probe(struct device *dev)
 
 	host->sdhci.read32 = tegra_sdmmc_read32;
 	host->sdhci.write32 = tegra_sdmmc_write32;
+	host->sdhci.mci = mci;
 
 	mci->hw_dev = dev;
 	mci->f_max = 48000000;

@@ -139,6 +139,7 @@ static int at91_sdhci_probe(struct device *dev)
 						    "microchip,sdcal-inverted");
 
 	at91_sdhci_mmio_init(&priv->host, IOMEM(iores->start));
+	priv->host.sdhci.mci = &priv->mci;
 
 	priv->gck_rate = at91_sdhci_conf_clks(priv);
 	if (priv->gck_rate < 0)

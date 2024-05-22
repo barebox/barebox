@@ -54,7 +54,7 @@ BAREBOX_DEEP_PROBE_ENABLE(virt_of_match);
 static int virt_board_driver_init(void)
 {
 	struct device_node *root = of_get_root_node();
-	struct device_node *flash, *overlay, *pubkey;
+	struct device_node *flash, *pubkey;
 	const struct of_device_id *id;
 	void (*init)(void);
 
@@ -72,10 +72,8 @@ static int virt_board_driver_init(void)
 	 * configurations, where the first flash bank is secure-world only
 	 */
 	flash = of_find_node_by_path(PARTS_TARGET_PATH_STR);
-	if (flash && of_device_is_available(flash)) {
-		overlay = of_unflatten_dtb(__dtbo_qemu_virt_flash_start, INT_MAX);
-		of_overlay_apply_tree(root, overlay);
-	}
+	if (flash && of_device_is_available(flash))
+		of_overlay_apply_dtbo(root, __dtbo_qemu_virt_flash_start);
 
 	pubkey = of_unflatten_dtb(__dtb_fitimage_pubkey_start, INT_MAX);
 	of_merge_nodes(root, pubkey);

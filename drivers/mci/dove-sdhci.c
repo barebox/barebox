@@ -264,6 +264,12 @@ static void dove_sdhci_set_mci_caps(struct dove_sdhci *host)
 		host->mci.host_caps &= ~MMC_CAP_8_BIT_DATA;
 }
 
+static const struct mci_ops dove_sdhci_mci_ops = {
+	.send_cmd = dove_sdhci_mci_send_cmd,
+	.set_ios = dove_sdhci_mci_set_ios,
+	.init = dove_sdhci_mci_init,
+};
+
 static int dove_sdhci_probe(struct device *dev)
 {
 	struct dove_sdhci *host;
@@ -273,9 +279,7 @@ static int dove_sdhci_probe(struct device *dev)
 	host->sdhci.base = dev_request_mem_region(dev, 0);
 	host->mci.max_req_size = 0x8000;
 	host->mci.hw_dev = dev;
-	host->mci.send_cmd = dove_sdhci_mci_send_cmd;
-	host->mci.set_ios = dove_sdhci_mci_set_ios;
-	host->mci.init = dove_sdhci_mci_init;
+	host->mci.ops = dove_sdhci_mci_ops;
 	host->mci.f_max = 50000000;
 	host->mci.f_min = host->mci.f_max / 256;
 

@@ -4,6 +4,8 @@
 
 #include <linux/types.h>
 
+struct resource;
+
 int pread_full(int fd, void *buf, size_t size, loff_t offset);
 int pwrite_full(int fd, const void *buf, size_t size, loff_t offset);
 int write_full(int fd, const void *buf, size_t size);
@@ -40,5 +42,7 @@ int unlink_recursive(const char *path, char **failedpath);
 char *make_temp(const char *template);
 
 int cache_file(const char *path, char **newpath);
+
+struct resource *file_to_sdram(const char *filename, unsigned long adr);
 
 #endif /* __LIBFILE_H */

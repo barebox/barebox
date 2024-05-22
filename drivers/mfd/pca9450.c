@@ -52,7 +52,9 @@ static int pca9450_get_reset_source(struct device *dev, struct regmap *map)
 		type = RESET_EXT;
 		break;
 	default:
-		dev_warn(dev, "Could not determine reset reason.\n");
+		dev_warn(dev, "Unknown reset reason: 0x%02x\n", reg);
+		fallthrough;
+	case 0:
 		type = RESET_UKWN;
 	}
 

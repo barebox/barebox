@@ -213,6 +213,10 @@ static int fman_upload_firmware(struct device *dev, struct fm_imem *fm_imem)
 	const struct qe_firmware *firmware;
 
 	get_builtin_firmware(fsl_fman_ucode_ls1046_r1_0_106_4_18_bin, &firmware, &size);
+	if (!size) {
+		dev_err(dev, "FMan Firmware was not included in build\n");
+		return -ENOSYS;
+	}
 
 	ret = qe_validate_firmware(firmware, size);
 	if (ret)
@@ -615,9 +619,6 @@ static int fm_eth_rx_port_parameter_init(struct fm_eth *fm_eth)
 	if (!rx_bd_ring_base)
 		return -ENOMEM;
 
-	memset(rx_bd_ring_base, 0, sizeof(struct fm_port_bd)
-			* RX_BD_RING_SIZE);
-
 	/* alloc Rx buffer from main memory */
 	rx_buf_pool = dma_zalloc(MAX_RXBUF_LEN * RX_BD_RING_SIZE);
 
@@ -696,8 +697,6 @@ static int fm_eth_tx_port_parameter_init(struct fm_eth *fm_eth)
 	if (!tx_bd_ring_base)
 		return -ENOMEM;
 
-	memset(tx_bd_ring_base, 0, sizeof(struct fm_port_bd)
-			* TX_BD_RING_SIZE);
 	/* save it to fm_eth */
 	fm_eth->tx_bd_ring = tx_bd_ring_base;
 	fm_eth->cur_txbd_idx = 0;

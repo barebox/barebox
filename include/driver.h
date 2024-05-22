@@ -441,7 +441,7 @@ struct cdev_operations {
 	/*! Called in response of write to this device. Required */
 	ssize_t (*write)(struct cdev*, const void* buf, size_t count, loff_t offset, ulong flags);
 
-	int (*ioctl)(struct cdev*, int, void *);
+	int (*ioctl)(struct cdev*, unsigned int, void *);
 	int (*lseek)(struct cdev*, loff_t);
 	int (*open)(struct cdev*, unsigned long flags);
 	int (*close)(struct cdev*);
@@ -528,7 +528,7 @@ int cdev_close(struct cdev *cdev);
 int cdev_flush(struct cdev *cdev);
 ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
 ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
-int cdev_ioctl(struct cdev *cdev, int cmd, void *buf);
+int cdev_ioctl(struct cdev *cdev, unsigned int cmd, void *buf);
 int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset);
 int cdev_lseek(struct cdev*, loff_t);
 int cdev_protect(struct cdev*, size_t count, loff_t offset, int prot);
@@ -671,27 +671,6 @@ int device_match_of_modalias(struct device *dev, struct driver *drv);
 
 struct device *device_find_child(struct device *parent, void *data,
 				 int (*match)(struct device *dev, void *data));
-
-static inline struct device_node *dev_of_node(struct device *dev)
-{
-	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->of_node : NULL;
-}
-
-static inline bool dev_is_dma_coherent(struct device *dev)
-{
-	if (dev) {
-		switch (dev->dma_coherent) {
-		case DEV_DMA_NON_COHERENT:
-			return false;
-		case DEV_DMA_COHERENT:
-			return true;
-		case DEV_DMA_COHERENCE_DEFAULT:
-			break;
-		}
-	}
-
-	return IS_ENABLED(CONFIG_ARCH_DMA_DEFAULT_COHERENT);
-}
 
 static inline void *dev_get_priv(const struct device *dev)
 {

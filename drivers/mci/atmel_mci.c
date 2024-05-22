@@ -67,6 +67,13 @@ static int atmci_card_present(struct mci_host *mci)
 	return ret == 0 ? 1 : 0;
 }
 
+static const struct mci_ops atmci_ops = {
+	.send_cmd = atmci_send_cmd,
+	.set_ios = atmci_set_ios,
+	.init = atmci_reset,
+	.card_present = atmci_card_present,
+};
+
 static int atmci_probe(struct device *hw_dev)
 {
 	struct resource *iores;
@@ -76,10 +83,7 @@ static int atmci_probe(struct device *hw_dev)
 	int ret;
 
 	host = xzalloc(sizeof(*host));
-	host->mci.send_cmd = atmci_send_cmd;
-	host->mci.set_ios = atmci_set_ios;
-	host->mci.init = atmci_reset;
-	host->mci.card_present = atmci_card_present;
+	host->mci.ops = atmci_ops;
 	host->mci.hw_dev = hw_dev;
 	host->detect_pin = -EINVAL;
 

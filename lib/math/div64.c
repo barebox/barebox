@@ -21,6 +21,7 @@
 #include <linux/bitops.h>
 #include <module.h>
 #include <linux/kernel.h>
+#include <linux/ktime.h>
 #include <linux/math64.h>
 #include <linux/log2.h>
 
@@ -233,3 +234,32 @@ u64 mul_u64_u64_div_u64(u64 a, u64 b, u64 c)
 	return res + div64_u64(a * b, c);
 }
 #endif
+
+/*
+ * Functions for the union type storage format of ktime_t which are
+ * too large for inlining:
+ */
+#if BITS_PER_LONG < 64
+/*
+ * Divide a ktime value by a nanosecond value
+ */
+s64 __ktime_divns(const ktime_t kt, s64 div)
+{
+	int sft = 0;
+	s64 dclc;
+	u64 tmp;
+
+	dclc = ktime_to_ns(kt);
+	tmp = dclc < 0 ? -dclc : dclc;
+
+	/* Make sure the divisor is less than 2^32: */
+	while (div >> 32) {
+		sft++;
+		div >>= 1;
+	}
+	tmp >>= sft;
+	do_div(tmp, (u32) div);
+	return dclc < 0 ? -tmp : tmp;
+}
+EXPORT_SYMBOL_GPL(__ktime_divns);
+#endif /* BITS_PER_LONG >= 64 */

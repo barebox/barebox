@@ -31,11 +31,9 @@ static inline struct file_list *get_dfu_function(void)
 	return system_partitions_get_null();
 }
 
-int usbgadget_register(const struct usbgadget_funcs *funcs)
+struct f_multi_opts *usbgadget_prepare(const struct usbgadget_funcs *funcs)
 {
-	int ret;
 	int flags = funcs->flags;
-	struct device *dev;
 	struct f_multi_opts *opts;
 
 	opts = xzalloc(sizeof(*opts));
@@ -71,9 +69,17 @@ int usbgadget_register(const struct usbgadget_funcs *funcs)
 
 	if (usb_multi_count_functions(opts) == 0) {
 		pr_warn("No functions to register\n");
-		ret = COMMAND_ERROR_USAGE;
-		goto err;
+		usb_multi_opts_release(opts);
+		return ERR_PTR(-EINVAL);
 	}
+
+	return opts;
+}
+
+int usbgadget_register(struct f_multi_opts *opts)
+{
+	int ret;
+	struct device *dev;
 
 	/*
 	 * Creating a gadget with both DFU and Fastboot may not work.
@@ -90,11 +96,23 @@ int usbgadget_register(const struct usbgadget_funcs *funcs)
 
 	ret = usb_multi_register(opts);
 	if (ret)
-		goto err;
+		return ret;
 
 	return 0;
-err:
-	usb_multi_opts_release(opts);
+}
+
+int usbgadget_prepare_register(const struct usbgadget_funcs *funcs)
+{
+	struct f_multi_opts *opts;
+	int ret;
+
+	opts = usbgadget_prepare(funcs);
+	if (IS_ERR(opts))
+		return PTR_ERR(opts);
+
+	ret = usbgadget_register(opts);
+	if (ret)
+		usb_multi_opts_release(opts);
 
 	return ret;
 }
@@ -122,7 +140,7 @@ static int usbgadget_do_autostart(void)
 
 	funcs.flags |= USBGADGET_DFU | USBGADGET_FASTBOOT | USBGADGET_MASS_STORAGE;
 
-	err = usbgadget_register(&funcs);
+	err = usbgadget_prepare_register(&funcs);
 	if (!err)
 		started = true;
 

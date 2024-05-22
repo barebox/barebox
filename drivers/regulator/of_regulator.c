@@ -10,11 +10,6 @@
 #include <of.h>
 #include <linux/regulator/of_regulator.h>
 
-struct devm_of_regulator_matches {
-	struct of_regulator_match *matches;
-	unsigned int num_matches;
-};
-
 /**
  * of_regulator_match - extract multiple regulator init data from device tree.
  * @dev: device requesting the data
@@ -41,15 +36,9 @@ int of_regulator_match(struct device *dev, struct device_node *node,
 	unsigned int i;
 	const char *name;
 	struct device_node *child;
-	struct devm_of_regulator_matches *devm_matches;
 
 	if (!dev || !node)
 		return -EINVAL;
-
-	devm_matches = xzalloc(sizeof(struct devm_of_regulator_matches));
-
-	devm_matches->matches = matches;
-	devm_matches->num_matches = num_matches;
 
 	for (i = 0; i < num_matches; i++) {
 		struct of_regulator_match *match = &matches[i];

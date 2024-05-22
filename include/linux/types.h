@@ -26,6 +26,7 @@ typedef __kernel_key_t		key_t;
 typedef __kernel_suseconds_t	suseconds_t;
 typedef _Bool			bool;
 typedef unsigned long		uintptr_t;
+typedef long			intptr_t;
 
 #ifdef __KERNEL__
 typedef __kernel_uid32_t	uid_t;

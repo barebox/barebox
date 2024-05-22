@@ -29,9 +29,9 @@ static int do_dfu(int argc, char *argv[])
 
 	funcs.flags |= USBGADGET_DFU;
 	funcs.dfu_opts = argv[optind];
-	ret = usbgadget_register(&funcs);
+	ret = usbgadget_prepare_register(&funcs);
 	if (ret)
-		return ret;
+		return COMMAND_ERROR_USAGE;
 
 	command_slice_release();
 	while (!usb_dfu_detached()) {

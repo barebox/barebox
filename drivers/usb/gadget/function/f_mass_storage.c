@@ -2474,14 +2474,17 @@ static int fsg_common_init(struct fsg_common *common,
 		struct stat st;
 		int fd;
 
-		if (fentry->flags) {
-			pr_err("flags not supported\n");
-			rc = -ENOSYS;
-			goto close;
-		}
+		if (fentry->flags & ~FILE_LIST_FLAG_OPTIONAL)
+			pr_warn("some flags will be ignored\n");
 
 		fd = open(fentry->filename, flags);
 		if (fd < 0) {
+			if (fentry->flags & FILE_LIST_FLAG_OPTIONAL) {
+				pr_info("skipping unavailable optional partition %s\n",
+					fentry->filename);
+				continue;
+			}
+
 			pr_err("open('%s') failed: %pe\n",
 			       fentry->filename, ERR_PTR(fd));
 			rc = fd;

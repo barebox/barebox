@@ -20,6 +20,7 @@ static int do_usbgadget(int argc, char *argv[])
 {
 	struct usbgadget_funcs funcs = {};
 	int opt;
+	int ret;
 
 	while ((opt = getopt(argc, argv, "asdA::D::S::b")) > 0) {
 		switch (opt) {
@@ -50,8 +51,8 @@ static int do_usbgadget(int argc, char *argv[])
 		}
 	}
 
-
-	return usbgadget_register(&funcs);
+	ret = usbgadget_prepare_register(&funcs);
+	return ret ? COMMAND_ERROR_USAGE : 0;
 }
 
 BAREBOX_CMD_HELP_START(usbgadget)

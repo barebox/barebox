@@ -75,7 +75,7 @@ static void fw_cfg_io_cleanup(struct fw_cfg *fw_cfg)
 	release_region(fw_cfg->iores);
 }
 
-static int fw_cfg_ioctl(struct cdev *cdev, int request, void *buf)
+static int fw_cfg_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 {
 	struct fw_cfg *fw_cfg = to_fw_cfg(cdev);
 	int ret = 0;

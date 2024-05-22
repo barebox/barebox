@@ -528,6 +528,12 @@ static void mxs_mci_info(struct device *hw_dev)
 	printf("\n");
 }
 
+static const struct mci_ops mxs_mci_ops = {
+	.send_cmd = mxs_mci_request,
+	.set_ios = mxs_mci_set_ios,
+	.init = mxs_mci_initialize,
+};
+
 static int mxs_mci_probe(struct device *hw_dev)
 {
 	struct resource *iores;
@@ -541,9 +547,7 @@ static int mxs_mci_probe(struct device *hw_dev)
 
 	hw_dev->priv = mxs_mci;
 	host->hw_dev = hw_dev;
-	host->send_cmd = mxs_mci_request;
-	host->set_ios = mxs_mci_set_ios;
-	host->init = mxs_mci_initialize;
+	host->ops = mxs_mci_ops;
 	iores = dev_request_mem_resource(hw_dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);

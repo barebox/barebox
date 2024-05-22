@@ -467,6 +467,22 @@ struct mci_ios {
 };
 
 struct mci;
+struct mci_host;
+
+struct mci_ops {
+	/** init the host interface */
+	int (*init)(struct mci_host*, struct device*);
+	/** change host interface settings */
+	void (*set_ios)(struct mci_host*, struct mci_ios *);
+	/** handle a command */
+	int (*send_cmd)(struct mci_host*, struct mci_cmd*, struct mci_data*);
+	/** check if a card is inserted */
+	int (*card_present)(struct mci_host *);
+	/** check if a card is write protected */
+	int (*card_write_protected)(struct mci_host *);
+	/* The tuning command opcode value is different for SD and eMMC cards */
+	int (*execute_tuning)(struct mci_host *, u32);
+};
 
 /** host information */
 struct mci_host {
@@ -520,19 +536,7 @@ struct mci_host {
 	bool non_removable;	/**< device is non removable */
 	bool disable_wp;	/**< ignore write-protect detection logic */
 	struct regulator *supply;
-
-	/** init the host interface */
-	int (*init)(struct mci_host*, struct device*);
-	/** change host interface settings */
-	void (*set_ios)(struct mci_host*, struct mci_ios *);
-	/** handle a command */
-	int (*send_cmd)(struct mci_host*, struct mci_cmd*, struct mci_data*);
-	/** check if a card is inserted */
-	int (*card_present)(struct mci_host *);
-	/** check if a card is write protected */
-	int (*card_write_protected)(struct mci_host *);
-	/* The tuning command opcode value is different for SD and eMMC cards */
-	int (*execute_tuning)(struct mci_host *, u32);
+	struct mci_ops ops;
 };
 
 #define MMC_NUM_BOOT_PARTITION	2

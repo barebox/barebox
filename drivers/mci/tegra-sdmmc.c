@@ -374,6 +374,13 @@ static void tegra_sdmmc_parse_dt(struct tegra_sdmmc_host *host)
 	mci_of_parse(&host->mci);
 }
 
+static const struct mci_ops tegra_sdmmc_ops = {
+	.init = tegra_sdmmc_init,
+	.card_present = tegra_sdmmc_card_present,
+	.set_ios = tegra_sdmmc_set_ios,
+	.send_cmd = tegra_sdmmc_send_cmd,
+};
+
 static int tegra_sdmmc_probe(struct device *dev)
 {
 	struct resource *iores;
@@ -430,10 +437,7 @@ static int tegra_sdmmc_probe(struct device *dev)
 	udelay(2);
 	reset_control_deassert(host->reset);
 
-	mci->init = tegra_sdmmc_init;
-	mci->card_present = tegra_sdmmc_card_present;
-	mci->set_ios = tegra_sdmmc_set_ios;
-	mci->send_cmd = tegra_sdmmc_send_cmd;
+	mci->ops = tegra_sdmmc_ops;
 	mci->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
 	mci->host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED_52MHZ |
 	                  MMC_CAP_SD_HIGHSPEED;

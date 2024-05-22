@@ -28,10 +28,10 @@
 #define CHUNK_SIZE	(4096 * 2)
 
 struct ramfs_chunk {
-	char *data;
 	unsigned long ofs;
 	int size;
 	struct list_head list;
+	char data[];
 };
 
 struct ramfs_inode {
@@ -98,19 +98,14 @@ static struct inode *ramfs_get_inode(struct super_block *sb, const struct inode 
 
 static struct ramfs_chunk *ramfs_get_chunk(unsigned long size)
 {
-	struct ramfs_chunk *data = malloc(sizeof(struct ramfs_chunk));
-
-	if (!data)
-		return NULL;
+	struct ramfs_chunk *data;
 
 	if (size < MIN_SIZE)
 		size = MIN_SIZE;
 
-	data->data = calloc(size, 1);
-	if (!data->data) {
-		free(data);
+	data = calloc(struct_size(data, data, size), 1);
+	if (!data)
 		return NULL;
-	}
 
 	data->size = size;
 
@@ -119,7 +114,6 @@ static struct ramfs_chunk *ramfs_get_chunk(unsigned long size)
 
 static void ramfs_put_chunk(struct ramfs_chunk *data)
 {
-	free(data->data);
 	free(data);
 }
 

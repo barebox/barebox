@@ -71,6 +71,8 @@ static int nvmem_reboot_mode_probe(struct device *dev)
 	if (ret)
 		dev_err(dev, "can't register reboot mode\n");
 
+	free(magicbuf);
+
 	return ret;
 }
 

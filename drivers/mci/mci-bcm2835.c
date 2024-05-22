@@ -382,6 +382,7 @@ static int bcm2835_mci_probe(struct device *hw_dev)
 	host->hw_dev = hw_dev;
 	host->max_clock = clk_get_rate(clk);
 
+	host->sdhci.mci = &host->mci;
 	host->sdhci.read32 = bcm2835_sdhci_read32;
 	host->sdhci.write32 = bcm2835_sdhci_write32;
 

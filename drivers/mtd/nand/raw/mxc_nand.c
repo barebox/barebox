@@ -1528,42 +1528,75 @@ static const struct nand_controller_ops mxcnd_controller_ops = {
  * 512b data + 16b OOB +
  * 512b data + 16b OOB
  *
+ * So the mapping between original NAND addressing (as intended by the chip
+ * vendor) and interpretation when accessed via the i.MX NAND controller is as
+ * follows:
+ *
+ *       original       |        i.MX
+ * ---------------------+---------------------
+ * data 0x0000 - 0x0200 | data 0x0000 - 0x0200
+ * data 0x0200 - 0x0210 | oob  0x0000 - 0x0010
+ * data 0x0210 - 0x0410 | data 0x0200 - 0x0400
+ * data 0x0410 - 0x0420 | oob  0x0010 - 0x0020
+ * data 0x0420 - 0x0620 | data 0x0400 - 0x0600
+ * data 0x0620 - 0x0630 | oob  0x0020 - 0x0030
+ * data 0x0630 - 0x0800 | data 0x0600 - 0x07d0
+ * oob  0x0000 - 0x0030 | data 0x07d0 - 0x0800
+ * oob  0x0030 - 0x0040 | oob  0x0030 - 0x0040
+ *
  * This means that the factory provided bad block marker ends up
- * in the page data at offset 2000 instead of in the OOB data.
+ * in the page data at offset 2000 = 0x7d0 instead of in the OOB data.
  *
- * To preserve the factory bad block information we take the following
- * strategy:
- *
- * - If the NAND driver detects that no flash BBT is present on 2k NAND
- *   chips it will not create one because it would do so based on the wrong
- *   BBM position
- * - This command is used to create a flash BBT then.
+ * If the NAND driver detects that no flash BBT is present on a 2k NAND
+ * chip it will create one automatically in the assumption that the NAND is
+ * pristine (that is completely erased with only vendor BBMs in the OOB) to
+ * preserve factory bad block information.
  *
  * From this point on we can forget about the BBMs and rely completely
  * on the flash BBT.
- *
  */
-static int checkbad(struct nand_chip *chip, loff_t ofs)
+static int checkbad(struct mtd_info *mtd, loff_t ofs)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
 	int ret;
 	uint8_t buf[mtd->writesize + mtd->oobsize];
-	struct mtd_oob_ops ops;
-
-	ops.mode = MTD_OPS_RAW;
-	ops.ooboffs = 0;
-	ops.datbuf = buf;
-	ops.len = mtd->writesize;
-	ops.oobbuf = buf + mtd->writesize;
-	ops.ooblen = mtd->oobsize;
+	struct mtd_oob_ops ops = {
+		.mode = MTD_OPS_RAW,
+		.ooboffs = 0,
+		.datbuf = buf,
+		.len = mtd->writesize,
+		.oobbuf = buf + mtd->writesize,
+		.ooblen = mtd->oobsize,
+	};
 
 	ret = mtd_read_oob(mtd, ofs, &ops);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(mtd->dev.parent, "Failed to read page at 0x%08x\n",
+			(unsigned int)ofs);
 		return ret;
+	}
+
+	/*
+	 * Automatically adding a BBT based on factory BBTs is only
+	 * sensible if the NAND is pristine. Abort if the first page
+	 * looks like a bootloader or UBI block.
+	 */
+	if (is_barebox_arm_head(buf)) {
+		dev_err(mtd->dev.parent,
+			"Flash seems to contain a barebox image, refusing to create BBT\n");
+		return -EINVAL;
+	}
+
+	if (!memcmp(buf, "UBI#", 4)) {
+		dev_err(mtd->dev.parent,
+			"Flash seems to contain a UBI, refusing to create BBT\n");
+		return -EINVAL;
+	}
 
 	if (buf[2000] != 0xff)
+		/* block considered bad */
 		return 1;
 
+	/* block considered good */
 	return 0;
 }
 
@@ -1571,31 +1604,31 @@ static int imxnd_create_bbt(struct nand_chip *chip)
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	int len, i, numblocks, ret;
-	loff_t from = 0;
 	uint8_t *bbt;
 
-	len = mtd->size >> (chip->bbt_erase_shift + 2);
+	numblocks = mtd->size >> chip->bbt_erase_shift;
 
-	/* Allocate memory (2bit per block) and clear the memory bad block table */
+	/*
+	 * Allocate memory (2bit per block = 1 byte per 4 blocks) and clear the
+	 * memory bad block table
+	 */
+	len = (numblocks + 3) >> 2;
 	bbt = kzalloc(len, GFP_KERNEL);
 	if (!bbt)
 		return -ENOMEM;
 
-	numblocks = mtd->size >> (chip->bbt_erase_shift - 1);
+	for (i = 0; i < numblocks; ++i) {
+		loff_t ofs = i << chip->bbt_erase_shift;
 
-	for (i = 0; i < numblocks;) {
-		ret = checkbad(chip, from);
+		ret = checkbad(mtd, ofs);
 		if (ret < 0)
 			goto out;
 
 		if (ret) {
-			bbt[i >> 3] |= 0x03 << (i & 0x6);
+			bbt[i >> 2] |= 0x03 << (2 * (i & 0x3));
 			dev_info(mtd->dev.parent, "Bad eraseblock %d at 0x%08x\n",
-				 i >> 1, (unsigned int)from);
+				 i, (unsigned int)ofs);
 		}
-
-		i += 2;
-		from += (1 << chip->bbt_erase_shift);
 	}
 
 	chip->bbt_td->options |= NAND_BBT_CREATE;

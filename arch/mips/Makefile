@@ -2,6 +2,14 @@
 
 KBUILD_DEFCONFIG := qemu-malta_defconfig
 
+generated_configs += $(patsubst %, qemu-malta%_defconfig, el 64 64el)
+qemu-maltael_defconfig:
+	$(call merge_into_defconfig,qemu-malta_defconfig,le)
+qemu-malta64_defconfig:
+	$(call merge_into_defconfig,qemu-malta_defconfig,mips64)
+qemu-malta64el_defconfig:
+	$(call merge_into_defconfig,qemu-malta_defconfig,mips64 le)
+
 #
 # Select the object file format to substitute into the linker script.
 #

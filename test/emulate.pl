@@ -201,8 +201,8 @@ sub build {
 	}
     }
 
-    push @TUXMAKE_ARGS, "--kconfig-add=test/kconfig/base.cfg" if $kconfig_base || $kconfig_full;
-    push @TUXMAKE_ARGS, "--kconfig-add=test/kconfig/full.cfg" if $kconfig_full;
+    push @TUXMAKE_ARGS, "--kconfig-add=common/boards/configs/base.config" if $kconfig_base || $kconfig_full;
+    push @TUXMAKE_ARGS, "--kconfig-add=common/boards/configs/full.config" if $kconfig_full;
 
     for (@kconfig_add) {
 	push @TUXMAKE_ARGS, "--kconfig-add=$_";
@@ -511,19 +511,19 @@ Supported: null, podman-local, podman, docker, docker-local.
 
 =item B<--no-kconfig-base>
 
-Don't apply test/kconfig/base.cfg. This may lead to more tests being
+Don't apply common/boards/configs/base.config. This may lead to more tests being
 skipped.
 
 =item B<--kconfig-full>
 
-Applies test/kconfig/full.cfg on top of base.cfg. This enables as much as
+Applies common/boards/configs/full.config on top of base.config. This enables as much as
 possible to avoid skipping tests for disabled functionality.
 
 =item B<--kconfig-add>=%s, B<-K>=%s
 
 Extra kconfig fragments, merged on top of the defconfig and Kconfig
 fragments described by the YAML. In tree configuration fragment
-(e.g. `test/kconfig/virtio-pci.config`), path to local file, URL,
+(e.g. `common/boards/configs/virtio-pci.config`), path to local file, URL,
 `CONFIG_*=[y|m|n]`, or `# CONFIG_* is not set` are supported.
 Can be specified multiple times, and will be merged in the order given.
 

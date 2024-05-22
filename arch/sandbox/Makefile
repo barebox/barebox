@@ -2,6 +2,14 @@
 
 KBUILD_DEFCONFIG := sandbox_defconfig
 
+generated_configs += headless_defconfig noshell_defconfig lockdown_defconfig
+headless_defconfig:
+	$(call merge_into_defconfig,sandbox_defconfig,headless)
+noshell_defconfig:
+	$(call merge_into_defconfig,sandbox_defconfig,noshell)
+lockdown_defconfig:
+	$(call merge_into_defconfig,sandbox_defconfig,headless noshell)
+
 KBUILD_CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing -fvisibility=hidden
 
 

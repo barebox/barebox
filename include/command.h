@@ -15,6 +15,7 @@
 #include <linux/compiler_types.h>
 #include <linux/stddef.h>
 #include <string.h>
+#include <errno.h>
 
 #ifndef	__ASSEMBLY__
 
@@ -49,10 +50,17 @@ extern struct command * const __barebox_cmd_end[];
 
 
 /* common/command.c */
+#ifdef CONFIG_COMMAND_SUPPORT
 struct command *find_cmd(const char *cmd);
 int execute_command(int argc, char **argv);
 void barebox_cmd_usage(struct command *cmdtp);
 int run_command(const char *cmd);
+#else
+static inline struct command *find_cmd(const char *cmd) { return NULL; }
+static inline int execute_command(int argc, char **argv) { return -ENOSYS; }
+static inline void barebox_cmd_usage(struct command *cmdtp) {}
+static inline int run_command(const char *cmd) { return -ENOSYS; }
+#endif
 
 #define COMMAND_SUCCESS		0
 #define COMMAND_ERROR		1

@@ -35,10 +35,3 @@ static inline void __barebox_arm_head(void)
 		"2:\n"
 	);
 }
-static inline void barebox_arm_head(void)
-{
-	__barebox_arm_head();
-	__asm__ __volatile__ (
-		"b barebox_arm_reset_vector\n"
-	);
-}

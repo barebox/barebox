@@ -95,7 +95,7 @@ const struct optee_header *imx_scratch_get_optee_hdr(void)
 
 static int imx8m_reserve_scratch_area(void)
 {
-	return PTR_ERR_OR_ZERO(request_sdram_region("scratch area",
+	return PTR_ERR_OR_ZERO(request_barebox_region("scratch area",
 				    (ulong)arm_mem_scratch_get(),
 				    sizeof(struct imx_scratch_space)));
 }

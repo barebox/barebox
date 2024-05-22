@@ -28,7 +28,7 @@
 static int riscv_request_stack(void)
 {
 	extern unsigned long riscv_stack_top;
-	return PTR_ERR_OR_ZERO(request_sdram_region("stack", riscv_stack_top - STACK_SIZE, STACK_SIZE));
+	return PTR_ERR_OR_ZERO(request_barebox_region("stack", riscv_stack_top - STACK_SIZE, STACK_SIZE));
 }
 coredevice_initcall(riscv_request_stack);
 

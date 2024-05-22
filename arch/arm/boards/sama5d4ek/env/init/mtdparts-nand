@@ -1,6 +1,0 @@
-#!/bin/sh
-
-mtdparts="256k(at91bootstrap),512k(barebox)ro,256k(bareboxenv),256k(bareboxenv2),256k(spare),512k(oftree),6M(kernel),-(rootfs)"
-kernelname="atmel_nand"
-
-mtdparts-add -b -d nand0 -k ${kernelname} -p ${mtdparts}

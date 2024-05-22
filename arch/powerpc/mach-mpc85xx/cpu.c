@@ -96,7 +96,7 @@ phys_size_t fsl_get_effective_memsize(void)
 
 static int fsl_reserve_region(void)
 {
-	request_sdram_region("stack", _text_base - STACK_SIZE,
+	request_barebox_region("stack", _text_base - STACK_SIZE,
 			STACK_SIZE);
 	return 0;
 }

@@ -77,18 +77,6 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_PCAAXS1              4526
 #define MACH_TYPE_PFLA03               4575
 
-#ifdef CONFIG_ARCH_LUBBOCK
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_LUBBOCK
-# endif
-# define machine_is_lubbock()	(machine_arch_type == MACH_TYPE_LUBBOCK)
-#else
-# define machine_is_lubbock()	(0)
-#endif
-
 #ifdef CONFIG_ARCH_VERSATILE_PB
 # ifdef machine_arch_type
 #  undef machine_arch_type
@@ -113,66 +101,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_csb337()	(0)
 #endif
 
-#ifdef CONFIG_MACH_MAINSTONE
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_MAINSTONE
-# endif
-# define machine_is_mainstone()	(machine_arch_type == MACH_TYPE_MAINSTONE)
-#else
-# define machine_is_mainstone()	(0)
-#endif
-
-#ifdef CONFIG_MACH_NOMADIK
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_NOMADIK
-# endif
-# define machine_is_nomadik()	(machine_arch_type == MACH_TYPE_NOMADIK)
-#else
-# define machine_is_nomadik()	(0)
-#endif
-
-#ifdef CONFIG_MACH_EDB9312
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_EDB9312
-# endif
-# define machine_is_edb9312()	(machine_arch_type == MACH_TYPE_EDB9312)
-#else
-# define machine_is_edb9312()	(0)
-#endif
-
-#ifdef CONFIG_MACH_EDB9301
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_EDB9301
-# endif
-# define machine_is_edb9301()	(machine_arch_type == MACH_TYPE_EDB9301)
-#else
-# define machine_is_edb9301()	(0)
-#endif
-
-#ifdef CONFIG_MACH_EDB9315
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_EDB9315
-# endif
-# define machine_is_edb9315()	(machine_arch_type == MACH_TYPE_EDB9315)
-#else
-# define machine_is_edb9315()	(0)
-#endif
-
 #ifdef CONFIG_MACH_SCB9328
 # ifdef machine_arch_type
 #  undef machine_arch_type
@@ -185,30 +113,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_scb9328()	(0)
 #endif
 
-#ifdef CONFIG_MACH_EDB9302
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_EDB9302
-# endif
-# define machine_is_edb9302()	(machine_arch_type == MACH_TYPE_EDB9302)
-#else
-# define machine_is_edb9302()	(0)
-#endif
-
-#ifdef CONFIG_MACH_EDB9307
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_EDB9307
-# endif
-# define machine_is_edb9307()	(machine_arch_type == MACH_TYPE_EDB9307)
-#else
-# define machine_is_edb9307()	(0)
-#endif
-
 #ifdef CONFIG_MACH_AT91RM9200EK
 # ifdef machine_arch_type
 #  undef machine_arch_type
@@ -219,30 +123,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_at91rm9200ek()	(machine_arch_type == MACH_TYPE_AT91RM9200EK)
 #else
 # define machine_is_at91rm9200ek()	(0)
-#endif
-
-#ifdef CONFIG_MACH_PCM027
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_PCM027
-# endif
-# define machine_is_pcm027()	(machine_arch_type == MACH_TYPE_PCM027)
-#else
-# define machine_is_pcm027()	(0)
-#endif
-
-#ifdef CONFIG_MACH_EDB9315A
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_EDB9315A
-# endif
-# define machine_is_edb9315a()	(machine_arch_type == MACH_TYPE_EDB9315A)
-#else
-# define machine_is_edb9315a()	(0)
 #endif
 
 #ifdef CONFIG_MACH_AT91SAM9261EK
@@ -269,30 +149,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_at91sam9260ek()	(0)
 #endif
 
-#ifdef CONFIG_MACH_EDB9302A
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_EDB9302A
-# endif
-# define machine_is_edb9302a()	(machine_arch_type == MACH_TYPE_EDB9302A)
-#else
-# define machine_is_edb9302a()	(0)
-#endif
-
-#ifdef CONFIG_MACH_EDB9307A
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_EDB9307A
-# endif
-# define machine_is_edb9307a()	(machine_arch_type == MACH_TYPE_EDB9307A)
-#else
-# define machine_is_edb9307a()	(0)
-#endif
-
 #ifdef CONFIG_MACH_PM9261
 # ifdef machine_arch_type
 #  undef machine_arch_type
@@ -317,30 +173,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_at91sam9263ek()	(0)
 #endif
 
-#ifdef CONFIG_MACH_ZYLONITE
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_ZYLONITE
-# endif
-# define machine_is_zylonite()	(machine_arch_type == MACH_TYPE_ZYLONITE)
-#else
-# define machine_is_zylonite()	(0)
-#endif
-
-#ifdef CONFIG_MACH_MIOA701
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_MIOA701
-# endif
-# define machine_is_mioa701()	(machine_arch_type == MACH_TYPE_MIOA701)
-#else
-# define machine_is_mioa701()	(0)
-#endif
-
 #ifdef CONFIG_MACH_PM9263
 # ifdef machine_arch_type
 #  undef machine_arch_type
@@ -351,18 +183,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_pm9263()	(machine_arch_type == MACH_TYPE_PM9263)
 #else
 # define machine_is_pm9263()	(0)
-#endif
-
-#ifdef CONFIG_MACH_OMAP3EVM
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_OMAP3EVM
-# endif
-# define machine_is_omap3evm()	(machine_arch_type == MACH_TYPE_OMAP3EVM)
-#else
-# define machine_is_omap3evm()	(0)
 #endif
 
 #ifdef CONFIG_MACH_OMAP3_BEAGLE
@@ -593,18 +413,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_omap4_panda()	(0)
 #endif
 
-#ifdef CONFIG_MACH_PCAAL1
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_PCAAL1
-# endif
-# define machine_is_pcaal1()	(machine_arch_type == MACH_TYPE_PCAAL1)
-#else
-# define machine_is_pcaal1()	(0)
-#endif
-
 #ifdef CONFIG_MACH_ARMADA_XP_DB
 # ifdef machine_arch_type
 #  undef machine_arch_type
@@ -699,18 +507,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_vmx53()	(machine_arch_type == MACH_TYPE_VMX53)
 #else
 # define machine_is_vmx53()	(0)
-#endif
-
-#ifdef CONFIG_MACH_PCM049
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_PCM049
-# endif
-# define machine_is_pcm049()	(machine_arch_type == MACH_TYPE_PCM049)
-#else
-# define machine_is_pcm049()	(0)
 #endif
 
 #ifdef CONFIG_MACH_DSS11

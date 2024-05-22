@@ -147,14 +147,6 @@ config SOC_SAMA7G5
 	help
 	  Select this if you are using one of Microchip's SAMA7G5 family SoC.
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x73f00000 if SOC_AT91SAM9G45
-	default 0x26f00000 if SOC_AT91SAM9X5
-	default 0x20f00000 if SOC_AT91RM9200
-	default 0x21f00000 if MACH_ANIMEO_IP
-	default 0x23f00000
-
 config HAVE_NAND_ATMEL_BUSWIDTH_16
 	bool
 
@@ -543,33 +535,13 @@ endif
 
 # ----------------------------------------------------------
 
-if ARCH_SAMA5D3
-
-choice
-	prompt "SAMA5D3 Board Type"
-
-config MACH_SAMA5D3XEK
-	bool "Atmel SAMA5D3X Evaluation Kit"
-	help
-	  Select this if you are using Atmel's SAMA5D3X-EK Evaluation Kit.
-
-endchoice
-
-endif
-
-# ----------------------------------------------------------
-
 if ARCH_SAMA5D4
 
 choice
 	prompt "SAMA5D4 Board Type"
 
-config MACH_SAMA5D4EK
-	bool "Atmel SAMA5D4 Evaluation Kit"
-	help
-	  Select this if you are using Atmel's SAMA5D4-EK Evaluation Kit.
-
 config MACH_SAMA5D4_XPLAINED
+	depends on BROKEN
 	bool "Atmel SAMA5D4 XPLAINED ULTRA Evaluation Kit"
 	help
 	  Select this if you are using Atmel's SAMA5D4_XPLAINED ULTRA Evaluation Kit.

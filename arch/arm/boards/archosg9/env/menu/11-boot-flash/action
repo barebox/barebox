@@ -1,4 +1,0 @@
-#!/bin/sh
-boot_order mmc2_1
-echo "Rebooting into internal flash..."
-reset

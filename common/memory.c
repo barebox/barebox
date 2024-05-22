@@ -57,6 +57,40 @@ void mem_malloc_init(void *start, void *end)
 	mem_malloc_initialized = 1;
 }
 
+static struct resource *barebox_res;
+static resource_size_t barebox_start;
+static resource_size_t barebox_size;
+
+void register_barebox_area(resource_size_t start,
+			   resource_size_t size)
+{
+	barebox_start = start,
+	barebox_size = size;
+}
+
+static int mem_register_barebox(void)
+{
+	if (barebox_start && barebox_size)
+		barebox_res = request_sdram_region("barebox", barebox_start,
+						   barebox_size);
+	return 0;
+}
+postmem_initcall(mem_register_barebox);
+
+struct resource *request_barebox_region(const char *name,
+					resource_size_t start,
+					resource_size_t size)
+{
+	resource_size_t end = start + size - 1;
+
+	if (barebox_res && barebox_res->start <= start &&
+	    end <= barebox_res->end)
+		return __request_region(barebox_res, start, end,
+					name, IORESOURCE_MEM);
+
+	return request_sdram_region(name, start, size);
+}
+
 static int mem_malloc_resource(void)
 {
 #if !defined __SANDBOX__
@@ -69,15 +103,15 @@ static int mem_malloc_resource(void)
 	request_sdram_region("malloc space",
 			malloc_start,
 			malloc_end - malloc_start + 1);
-	request_sdram_region("barebox",
+	request_barebox_region("barebox code",
 			(unsigned long)&_stext,
 			(unsigned long)&_etext -
 			(unsigned long)&_stext);
-	request_sdram_region("barebox data",
+	request_barebox_region("barebox data",
 			(unsigned long)&_sdata,
 			(unsigned long)&_edata -
 			(unsigned long)&_sdata);
-	request_sdram_region("bss",
+	request_barebox_region("barebox bss",
 			(unsigned long)&__bss_start,
 			(unsigned long)&__bss_stop -
 			(unsigned long)&__bss_start);

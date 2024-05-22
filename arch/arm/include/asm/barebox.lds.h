@@ -1,9 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#if defined CONFIG_ARCH_EP93XX
-#include <mach/ep93xx/barebox.lds.h>
-#endif
-
 #ifdef CONFIG_CPU_32
 #define BAREBOX_OUTPUT_FORMAT	"elf32-littlearm", "elf32-littlearm", "elf32-littlearm"
 #define BAREBOX_OUTPUT_ARCH	"arm"

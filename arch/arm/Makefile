@@ -85,15 +85,11 @@ endif
 machine-$(CONFIG_ARCH_AT91)		+= at91
 machine-$(CONFIG_ARCH_BCM283X)		+= bcm283x
 machine-$(CONFIG_ARCH_CLPS711X)		+= clps711x
-machine-$(CONFIG_ARCH_DAVINCI)		+= davinci
-machine-$(CONFIG_ARCH_DIGIC)		+= digic
-machine-$(CONFIG_ARCH_EP93XX)		+= ep93xx
 machine-$(CONFIG_ARCH_IMX)		+= imx
 machine-$(CONFIG_ARCH_K3)		+= k3
 machine-$(CONFIG_ARCH_LAYERSCAPE)	+= layerscape
 machine-$(CONFIG_ARCH_MXS)		+= mxs
 machine-$(CONFIG_ARCH_MVEBU)		+= mvebu
-machine-$(CONFIG_ARCH_NOMADIK)		+= nomadik
 machine-$(CONFIG_ARCH_OMAP)		+= omap
 machine-$(CONFIG_ARCH_PXA)		+= pxa
 machine-$(CONFIG_ARCH_ROCKCHIP)		+= rockchip
@@ -103,67 +99,18 @@ machine-$(CONFIG_ARCH_STM32MP)		+= stm32mp
 machine-$(CONFIG_ARCH_VERSATILE)	+= versatile
 machine-$(CONFIG_ARCH_VEXPRESS)		+= vexpress
 machine-$(CONFIG_ARCH_TEGRA)		+= tegra
-machine-$(CONFIG_ARCH_UEMD)		+= uemd
 machine-$(CONFIG_ARCH_ZYNQ)		+= zynq
 machine-$(CONFIG_ARCH_ZYNQMP)		+= zynqmp
 
-TEXT_BASE = $(CONFIG_TEXT_BASE)
-
-KBUILD_CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
-
 # Add cleanup flags
 KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS_barebox += --gc-sections
-LDFLAGS_pbl += --gc-sections
+LDFLAGS_barebox += --gc-sections -pie
+LDFLAGS_pbl += --gc-sections -pie
 
 # early code often runs at addresses we are not linked at
 KBUILD_CFLAGS_KERNEL += -fPIE
 
-ifdef CONFIG_RELOCATABLE
-LDFLAGS_barebox += -pie
-else
-LDFLAGS_barebox += -static
-endif
-
-ifdef CONFIG_PBL_RELOCATABLE
-LDFLAGS_pbl += -pie
-else
-LDFLAGS_pbl += -static
-endif
-
 KBUILD_BINARY := barebox.bin
-
-quiet_cmd_mlo ?= IFT     $@
-	cmd_mlo ?= scripts/omap_signGP -o MLO -l $(TEXT_BASE) -c $<
-
-MLO: $(KBUILD_BINARY)
-	$(call if_changed,mlo)
-
-ifeq ($(CONFIG_OMAP_BUILD_IFT),y)
-KBUILD_IMAGE := MLO
-endif
-
-quiet_cmd_davinci_ubl_image = UBL-IMG $@
-      cmd_davinci_ubl_image = set -e; \
-	 scripts/mkublheader $< > $@; \
-	 cat $< >> $@
-
-barebox.ubl: $(KBUILD_BINARY) FORCE
-	$(call if_changed,davinci_ubl_image)
-
-ifeq ($(CONFIG_ARCH_DAVINCI),y)
-KBUILD_IMAGE := barebox.ubl
-endif
-
-quiet_cmd_canon_a1100_image = DD      $@
-      cmd_canon_a1100_image = scripts/canon-a1100-image $< $@ || \
-	echo "WARNING: Couldn't create Canon A1100 image due to previous errors."
-barebox.canon-a1100.bin: $(KBUILD_BINARY) FORCE
-	$(call if_changed,canon_a1100_image)
-
-ifeq ($(CONFIG_MACH_CANON_A1100),y)
-KBUILD_IMAGE := barebox.canon-a1100.bin
-endif
 
 archclean:
 	$(MAKE) $(clean)=$(pbl)

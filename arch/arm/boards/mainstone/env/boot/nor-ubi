@@ -1,5 +1,0 @@
-#!/bin/sh
-
-global.bootm.image="/dev/nor0.kernel"
-#global.bootm.oftree="/env/oftree"
-global.linux.bootargs.dyn.root="root=ubi0:linux_root ubi.mtd=nor0.root rootfstype=ubifs"

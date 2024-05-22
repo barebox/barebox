@@ -124,7 +124,6 @@ config ARCH_IMX6
 	select ARCH_HAS_IMX_GPT
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
-	select OFDEVICE
 	select COMMON_CLK_OF_PROVIDER
 	select HW_HAS_PCI
 
@@ -144,7 +143,6 @@ config ARCH_IMX7
 	bool
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
-	select OFTREE
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 	select ARCH_HAS_IMX_GPT
@@ -154,7 +152,6 @@ config ARCH_IMX8M
 	bool
 	select CPU_V8
 	select PINCTRL_IMX_IOMUX_V3
-	select OFTREE
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 	select HW_HAS_PCI
@@ -189,7 +186,6 @@ config ARCH_IMX93
 	select ARCH_IMX9
 	select CPU_V8
 	select PINCTRL_IMX_IOMUX_V3
-	select OFTREE
 	select COMMON_CLK_OF_PROVIDER
 	select ARM_USE_COMPRESSED_DTB
 	select ARCH_HAS_FEC_IMX
@@ -200,8 +196,6 @@ config ARCH_VF610
 	select ARCH_HAS_FEC_IMX
 	select CPU_V7
 	select PINCTRL
-	select OFDEVICE
-	select OFTREE
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select NVMEM
@@ -825,7 +819,6 @@ config HABV4
 	select NVMEM
 	select IMX_OCOTP
 	depends on ARCH_IMX6 || ARCH_IMX8M
-	depends on OFDEVICE
 	help
 	  High Assurance Boot, as found on i.MX28/i.MX6/i.MX8M.
 

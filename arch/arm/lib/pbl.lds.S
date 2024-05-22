@@ -25,12 +25,6 @@ PECOFF_FILE_ALIGNMENT = 0x200;
 #define PECOFF_EDATA_PADDING
 #endif
 
-#ifdef CONFIG_PBL_RELOCATABLE
-#define BASE	0x0
-#else
-#define BASE	(TEXT_BASE - SZ_2M)
-#endif
-
 #ifdef CONFIG_HABV4_QSPI
 #define HAB_CSF_LEN	0x4000
 #else
@@ -42,7 +36,7 @@ OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 
 SECTIONS
 {
-	. = BASE;
+	. = 0x0;
 
 	.image_start : { *(.__image_start) }
 
@@ -97,7 +91,7 @@ SECTIONS
 
 	BAREBOX_RELOCATION_TABLE
 
-	pbl_code_size =  . - BASE;
+	pbl_code_size =  .;
 
 	. = ALIGN(4);
 	.__bss_start :  { *(.__bss_start) }
@@ -105,7 +99,7 @@ SECTIONS
 	.__bss_stop :  { *(.__bss_stop) }
 	_end = .;
 
-	pbl_memory_size =  . - BASE;
+	pbl_memory_size =  .;
 
 #if defined(CONFIG_CPU_64) && defined(CONFIG_HABV4)
 	. = ALIGN(0x1000);
@@ -142,8 +136,8 @@ SECTIONS
 
 	.image_end : { KEEP(*(.__image_end)) }
 
-	pbl_image_size =  . - BASE;
+	pbl_image_size =  .;
 
-	_barebox_image_size = __image_end - BASE;
-	_barebox_pbl_size = __bss_start - BASE;
+	_barebox_image_size = __image_end;
+	_barebox_pbl_size = __bss_start;
 }

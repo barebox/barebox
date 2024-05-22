@@ -2,9 +2,6 @@
 
 if ARCH_VERSATILE
 
-config ARCH_TEXT_BASE
-	default 0x02000000
-
 config MACH_VERSATILEPB
 	bool
 	default y

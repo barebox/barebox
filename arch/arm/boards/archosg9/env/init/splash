@@ -1,5 +1,0 @@
-#!/bin/sh
-
-fb0.mode_name=g104x1
-splash -b0 /mnt/usb/barebox.png
-fb0.enable=1

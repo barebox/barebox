@@ -18,6 +18,7 @@
 #include <linux/pagemap.h>
 #include <linux/types.h>
 #include <linux/compiler.h>
+#include <pbl/handoff-data.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/common.h>
 #include <asm/sections.h>
@@ -32,6 +33,13 @@ void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, 
 #define barebox_arm_boarddata		barebox_boarddata
 #define BAREBOX_ARM_BOARDDATA_MAGIC	BAREBOX_BOARDDATA_MAGIC
 
+static inline bool blob_is_arm_boarddata(const void *blob)
+{
+	const struct barebox_arm_boarddata *bd = blob;
+
+	return bd->magic == BAREBOX_ARM_BOARDDATA_MAGIC;
+}
+
 u32 barebox_arm_machine(void);
 
 unsigned long arm_mem_ramoops_get(void);
@@ -42,7 +50,7 @@ struct barebox_arm_boarddata *barebox_arm_get_boarddata(void);
 
 #define barebox_arm_get_boarddata barebox_get_boarddata
 
-#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_ARM_EXCEPTIONS)
+#ifdef CONFIG_ARM_EXCEPTIONS
 void arm_fixup_vectors(void);
 #else
 static inline void arm_fixup_vectors(void)
@@ -151,20 +159,25 @@ static inline unsigned long arm_mem_guard_page_get(void)
 	return arm_mem_guard_page(arm_mem_endmem_get());
 }
 
+/*
+ * When using compressed images in conjunction with relocatable images
+ * the PBL code must pick a suitable place where to uncompress the barebox
+ * image. For doing this the PBL code must know the size of the final
+ * image including the BSS segment. The BSS size is unknown to the PBL
+ * code, so define a maximum BSS size here.
+ */
+#define MAX_BSS_SIZE SZ_1M
+
 static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 						  unsigned long endmem,
-						  unsigned long size)
+						  unsigned long uncompressed_len,
+						  const struct handoff_data *handoff_data)
 {
+	unsigned long size = uncompressed_len + MAX_BSS_SIZE + __handoff_data_size(handoff_data);
+
 	endmem = arm_mem_ramoops(endmem);
 
-	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
-		return ALIGN_DOWN(endmem - size, SZ_1M);
-	} else {
-		if (TEXT_BASE >= membase && TEXT_BASE < endmem)
-			return TEXT_BASE;
-		else
-			return endmem;
-	}
+	return ALIGN_DOWN(endmem - size, SZ_1M);
 }
 
 /*
@@ -236,15 +249,6 @@ void __barebox_arm64_head(ulong x0, ulong x1, ulong x2);
 	ENTRY_FUNCTION_WITHSTACK_HEAD(name, stack_top, \
 			      __barebox_arm_head, arg0, arg1, arg2)
 #endif
-
-/*
- * When using compressed images in conjunction with relocatable images
- * the PBL code must pick a suitable place where to uncompress the barebox
- * image. For doing this the PBL code must know the size of the final
- * image including the BSS segment. The BSS size is unknown to the PBL
- * code, so define a maximum BSS size here.
- */
-#define MAX_BSS_SIZE SZ_1M
 
 #define barebox_image_size (__image_end - __image_start)
 

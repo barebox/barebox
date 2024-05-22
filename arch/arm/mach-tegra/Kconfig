@@ -2,10 +2,6 @@
 
 if ARCH_TEGRA
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x0
-
 # ---------------------------------------------------------
 
 config ARCH_TEGRA_2x_SOC

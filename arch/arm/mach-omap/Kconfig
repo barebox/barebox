@@ -39,7 +39,6 @@ config ARCH_AM33XX
 	bool
 	select CPU_V7
 	select GENERIC_GPIO
-	select OFTREE
 	select CLOCKSOURCE_TI_DM
 	select ARM_USE_COMPRESSED_DTB
 	help
@@ -101,11 +100,6 @@ config BAREBOX_UPDATE_AM33XX_EMMC
 	help
 	  Say Y for barebox update eMMC handler.
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x80e80000 if MACH_OMAP343xSDP
-	default 0x80e80000 if MACH_BEAGLE
-
 config AM33XX_NET_BOOT
 	bool "enable AM335x network boot"
 	select ENVIRONMENT_VARIABLES
@@ -143,12 +137,6 @@ config OMAP_SERIALBOOT
 	help
 	  Say Y here if you want to load the 2nd stage barebox.bin with
 	  xmodem after booting from serial line.
-
-config OMAP_MULTI_BOARDS
-	bool "Allow multiple boards to be selected"
-	select HAVE_PBL_MULTI_IMAGES
-
-if OMAP_MULTI_BOARDS
 
 config MACH_AFI_GF
 	bool "af inventions GF"
@@ -189,105 +177,9 @@ config MACH_VSCOM_BALTOS
 config MACH_WAGO_PFC_AM35XX
         bool "Wago PFC200 Fieldbus Controller"
         select ARCH_AM35XX
-        select HAVE_PBL_MULTI_IMAGES
-        select HAVE_CONFIGURABLE_MEMORY_LAYOUT
         help
           Say Y here if you are using a the AM3505 based PFC200 controller
 
-endif
-
 source "arch/arm/boards/phytec-som-am335x/Kconfig"
-
-choice
-	prompt "Select OMAP board"
-	depends on !OMAP_MULTI_BOARDS
-
-config MACH_OMAP343xSDP
-	bool "Texas Instrument's SDP343x"
-	select ARCH_OMAP3
-	help
-	  Say Y here if you are using SDP343x platform
-
-config MACH_OMAP3EVM
-	bool "Texas Instrument's OMAP3 EVM"
-	select ARCH_OMAP3
-	help
-	  Say Y here if you are using OMAP3EVM
-
-config MACH_PANDA
-	bool "Texas Instrument's Panda Board"
-	select ARCH_OMAP4
-	help
-	  Say Y here if you are using OMAP4 Panda board
-
-config MACH_ARCHOSG9
-	bool "Archos G9 tablets"
-	select ARCH_OMAP4
-	help
-	  Say Y here if you are using OMAP4-based Archos G9 tablet
-
-config MACH_PCM049
-	bool "Phytec phyCORE pcm049"
-	select ARCH_OMAP4
-	help
-	  Say Y here if you are using Phytecs phyCORE pcm049 board
-	  based on OMAP4
-
-config MACH_PCAAL1
-	bool "Phytec phyCARD-A-L1"
-	select ARCH_OMAP3
-	help
-	  Say Y here if you are using a phyCARD-A-L1 PCA-A-L1
-
-config MACH_PCAAXL2
-	bool "Phytec phyCARD XL2"
-	select ARCH_OMAP4
-	help
-	  Say Y here if you are using a phyCARD-A-XL1 PCA-A-XL1
-
-endchoice
-
-if ARCH_OMAP
-
-choice
-	prompt "Select UART"
-	default OMAP_UART3
-	depends on MACH_OMAP3EVM
-
-	config OMAP_UART1
-		bool "Use UART1"
-		depends on ARCH_OMAP
-		help
-		  Say Y here if you would like to use UART1 as console.
-
-	config OMAP_UART3
-		bool "Use UART3"
-		depends on ARCH_OMAP
-		help
-		  Say Y here if you would like to use UART3 as console.
-
-endchoice
-
-endif
-
-if MACH_PCM049
-	choice
-	prompt "Select DDR2-RAM Size"
-
-	config 512MB_DDR2RAM
-		bool "512MB"
-	config 1024MB_DDR2RAM
-		bool "1024MB"
-
-	endchoice
-endif
-
-config MACH_OMAP_ADVANCED_MUX
-	bool "Enable advanced pin muxing"
-	depends on MACH_OMAP343xSDP
-	default n
-	help
-	  Say Y here if you would like to have complete pin muxing to be
-	  done at boot time
 
 endmenu

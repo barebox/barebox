@@ -25,7 +25,7 @@ static int do_devlookup(int argc, char *argv[])
 {
 	const char *variable = NULL, *devicefile, *paramname;
 	struct cdev *cdev;
-	int opt;
+	int opt, ret;
 
 	while ((opt = getopt(argc, argv, "v:")) > 0) {
 		switch(opt) {
@@ -43,7 +43,7 @@ static int do_devlookup(int argc, char *argv[])
 
 	devicefile = devpath_to_name(devicefile);
 
-	cdev = cdev_by_name(devicefile);
+	cdev = cdev_open_by_name(devicefile, O_RDONLY);
 	if (!cdev) {
 		printf("devlookup: cdev %s not found\n", devicefile);
 		return -ENOENT;
@@ -51,13 +51,18 @@ static int do_devlookup(int argc, char *argv[])
 
 	if (!cdev->dev) {
 		printf("devlookup: cdev %s not associated with a device\n", devicefile);
-		return -ENODEV;
+		ret = -ENODEV;
+		goto out;
 	}
 
 	if (paramname)
-		return report(variable, dev_get_param(cdev->dev, paramname));
+		ret = report(variable, dev_get_param(cdev->dev, paramname));
+	else
+		ret = report(variable, dev_name(cdev->dev));
+out:
+	cdev_close(cdev);
 
-	return report(variable, dev_name(cdev->dev));
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(devlookup)

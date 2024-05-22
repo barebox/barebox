@@ -52,22 +52,21 @@ static struct fsl_usb2_platform_data usb_pdata = {
  */
 static int register_persistent_environment(void)
 {
-	struct cdev *cdev;
+	struct cdev *cdev, *env;
 
 	/*
 	 * The imx23-olinuxino only has one MCI card socket.
 	 * So, we expect its name as "disk0".
 	 */
-	cdev = cdev_by_name("disk0");
+	cdev = cdev_open_by_name("disk0", O_RDONLY);
 	if (cdev == NULL) {
 		pr_err("No MCI card preset\n");
 		return -ENODEV;
 	}
-
-
+	cdev_close(cdev);
 
 	/* MCI card is present, also a useable partition on it? */
-	cdev = cdev_by_name("disk0.1");
+	cdev = cdev_open_by_name("disk0.1", O_RDONLY);
 	if (cdev == NULL) {
 		pr_err("No second partition available\n");
 		pr_info("Please create at least a second partition with"
@@ -76,8 +75,10 @@ static int register_persistent_environment(void)
 	}
 
 	/* use the full partition as our persistent environment storage */
-	cdev = devfs_add_partition("disk0.1", 0, cdev->size,
+	env = devfs_add_partition("disk0.1", 0, cdev->size,
 						DEVFS_PARTITION_FIXED, "env0");
+	cdev_close(cdev);
+
 	return PTR_ERR_OR_ZERO(cdev);
 }
 

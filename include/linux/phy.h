@@ -275,6 +275,11 @@ struct phy_driver {
 	const void *driver_data;
 	bool is_phy;
 
+	/**
+	 * @soft_reset: Called to issue a PHY software reset
+	 */
+	int (*soft_reset)(struct phy_device *phydev);
+
 	/*
 	 * Called to initialize the PHY,
 	 * including after a reset

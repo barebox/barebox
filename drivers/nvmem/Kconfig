@@ -91,10 +91,13 @@ config STM32_BSEC_WRITE
 	    mw -l -d /dev/stm32-bsec 0x000000e8+4 0x0000bc9a
 
 config STM32_BSEC_OPTEE_TA
-	def_bool STM32_BSEC && OPTEE
+	bool "Support BSEC access over OP-TEE TA"
+	depends on STM32_BSEC && OPTEE
+	default y
 	help
 	  Say y here to enable the accesses to STM32MP SoC OTPs by the OP-TEE
-	  trusted application STM32MP BSEC.
+	  trusted application STM32MP BSEC in addition to the older SMC SiP
+	  service.
 
 config KVX_OTP_NV
 	tristate "kalray KVX OTP Non volatile regs Support"

@@ -16,7 +16,6 @@
 #include <init.h>
 #include <io.h>
 #include <of.h>
-#include <restart.h>
 #include <watchdog.h>
 #include <linux/clk.h>
 #include <linux/err.h>
@@ -37,7 +36,6 @@
 
 struct dw_wdt {
 	void __iomem		*regs;
-	struct restart_handler	restart;
 	struct watchdog		wdd;
 	struct reset_control	*rst;
 	unsigned int		rate;
@@ -115,19 +113,6 @@ static int dw_wdt_set_timeout(struct watchdog *wdd, unsigned int top_s)
 	return 0;
 }
 
-static void __noreturn dw_wdt_restart_handle(struct restart_handler *rst)
-{
-	struct dw_wdt *dw_wdt;
-
-	dw_wdt = container_of(rst, struct dw_wdt, restart);
-
-	dw_wdt->wdd.set_timeout(&dw_wdt->wdd, -1);
-
-	mdelay(1000);
-
-	hang();
-}
-
 static int dw_wdt_drv_probe(struct device *dev)
 {
 	struct watchdog *wdd;
@@ -172,13 +157,6 @@ static int dw_wdt_drv_probe(struct device *dev)
 	ret = watchdog_register(wdd);
 	if (ret)
 		goto out_disable_clk;
-
-	dw_wdt->restart.name = "dw_wdt";
-	dw_wdt->restart.restart = dw_wdt_restart_handle;
-
-	ret = restart_handler_register(&dw_wdt->restart);
-	if (ret)
-		dev_warn(dev, "cannot register restart handler\n");
 
 	if (dw_wdt->rst)
 		reset_control_deassert(dw_wdt->rst);

@@ -58,7 +58,7 @@ static void test_ramfs(void)
 	char *content = NULL;
 	char *oldpwd = NULL;
 	DIR *dir = NULL;
-	const char *dname;
+	char *dname;
 	struct stat st;
 	int i, j, ret, fd;
 	struct dirent *d;
@@ -196,6 +196,8 @@ static void test_ramfs(void)
 			expect_success(memcmp(buf, ARRAY_AND_SIZE(hello)),
 				       "read_file() content");
 		}
+
+		free(buf);
 	}
 
 out:
@@ -209,5 +211,6 @@ out:
 
 	dir = opendir(dname);
 	expect_fail(dir ? 0 : -EISDIR, "opening removed directory");
+	free(dname);
 }
 bselftest(core, test_ramfs);

@@ -945,21 +945,22 @@ void fit_close(struct fit_handle *handle)
 	free(handle);
 }
 
-#ifdef CONFIG_SANDBOX
 static int do_bootm_sandbox_fit(struct image_data *data)
 {
 	struct fit_handle *handle;
+	void *config;
 	int ret;
-	void *kernel;
-	unsigned long kernel_size;
 
-	handle = fit_open(data->os_file, data->verbose);
+	handle = fit_open(data->os_file, data->verbose, BOOTM_VERIFY_NONE,
+			  FILESIZE_MAX);
 	if (IS_ERR(handle))
 		return PTR_ERR(handle);
 
-	ret = fit_open_configuration(handle, data->os_part);
-	if (ret)
+	config = fit_open_configuration(handle, data->os_part);
+	if (IS_ERR(config)) {
+		ret = PTR_ERR(config);
 		goto out;
+	}
 
 	ret = 0;
 out:
@@ -974,9 +975,10 @@ static struct image_handler sandbox_fit_handler = {
 	.filetype = filetype_oftree,
 };
 
-static int sandbox_fit_register(void)
+static __maybe_unused int sandbox_fit_register(void)
 {
 	return register_image_handler(&sandbox_fit_handler);
 }
+#ifdef CONFIG_SANDBOX
 late_initcall(sandbox_fit_register);
 #endif

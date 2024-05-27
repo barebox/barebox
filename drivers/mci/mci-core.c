@@ -71,7 +71,7 @@ static int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *d
 {
 	struct mci_host *host = mci->host;
 
-	return host->send_cmd(mci->host, cmd, data);
+	return host->ops.send_cmd(mci->host, cmd, data);
 }
 
 /**
@@ -895,7 +895,7 @@ static void mci_set_ios(struct mci *mci)
 		.timing = host->timing,
 	};
 
-	host->set_ios(host, &ios);
+	host->ops.set_ios(host, &ios);
 
 	host->actual_clock = host->clock;
 }
@@ -1349,7 +1349,7 @@ int mci_execute_tuning(struct mci *mci)
 	struct mci_host *host = mci->host;
 	u32 opcode;
 
-	if (!host->execute_tuning) {
+	if (!host->ops.execute_tuning) {
 		/*
 		 * For us, implementing ->execute_tuning is mandatory to
 		 * support higher speed modes
@@ -1364,7 +1364,7 @@ int mci_execute_tuning(struct mci *mci)
 	else
 		return 0;
 
-	return host->execute_tuning(host, opcode);
+	return host->ops.execute_tuning(host, opcode);
 }
 
 int mci_send_abort_tuning(struct mci *mci, u32 opcode)
@@ -1813,7 +1813,7 @@ static int __maybe_unused mci_sd_write(struct block_device *blk,
 	mci_blk_part_switch(part);
 
 	if (!host->disable_wp &&
-	    host->card_write_protected && host->card_write_protected(host)) {
+	    host->ops.card_write_protected && host->ops.card_write_protected(host)) {
 		dev_err(&mci->dev, "card write protected\n");
 		return -EPERM;
 	}
@@ -2247,7 +2247,7 @@ static int mci_card_probe(struct mci *mci)
 	int i, rc, disknum, ret;
 	bool has_bootpart = false;
 
-	if (host->card_present && !host->card_present(host) && !host->non_removable) {
+	if (host->ops.card_present && !host->ops.card_present(host) && !host->non_removable) {
 		if (!host->broken_cd) {
 			dev_err(&mci->dev, "no card inserted\n");
 			return -ENODEV;
@@ -2264,7 +2264,7 @@ static int mci_card_probe(struct mci *mci)
 	}
 
 	/* start with a host interface reset */
-	rc = (host->init)(host, &mci->dev);
+	rc = (host->ops.init)(host, &mci->dev);
 	if (rc) {
 		dev_err(&mci->dev, "Cannot reset the SD/MMC interface\n");
 		goto on_error;

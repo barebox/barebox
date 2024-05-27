@@ -151,6 +151,7 @@ static int of_overlay_apply_symbols(struct device_node *root,
 		pr_debug("add symbol %s with new path %s\n",
 			 prop->name, new_path);
 		of_property_write_string(root_symbols, prop->name, new_path);
+		free(new_path);
 	}
 
 	return 0;
@@ -330,6 +331,18 @@ int of_overlay_apply_file(struct device_node *root, const char *filename,
 		pr_info("Applied %s\n", filename);
 
 	of_delete_node(ovl);
+
+	return ret;
+}
+
+int of_overlay_apply_dtbo(struct device_node *root, const void *dtbo)
+{
+	struct device_node *overlay;
+	int ret;
+
+	overlay = of_unflatten_dtb(dtbo, INT_MAX);
+	ret = of_overlay_apply_tree(root, overlay);
+	of_delete_node(overlay);
 
 	return ret;
 }

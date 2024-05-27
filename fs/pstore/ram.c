@@ -685,21 +685,6 @@ static struct driver ramoops_driver = {
 
 static int __init ramoops_init(void)
 {
-	if (IS_ENABLED(CONFIG_OFTREE)) {
-		struct device_node *node;
-
-		node = of_get_root_node();
-		if (!node)
-			return 0;
-
-		node = of_get_child_by_name(node, "reserved-memory");
-		if (!node)
-			return 0;
-
-		for_each_matching_node(node, ramoops_dt_ids)
-			of_platform_device_create(node, NULL);
-	}
-
 	ramoops_register_dummy();
 	return platform_driver_register(&ramoops_driver);
 }

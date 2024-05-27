@@ -166,7 +166,6 @@ static struct device *dev;
 static void test_regulator(void)
 {
 	extern char __dtbo_test_regulator_start[];
-	struct device_node *overlay;
 	int ret;
 
 	if (!dev) {
@@ -174,10 +173,10 @@ static void test_regulator(void)
 		if (ret)
 			return;
 
-		overlay = of_unflatten_dtb(__dtbo_test_regulator_start, INT_MAX);
-		if (WARN_ON(IS_ERR(overlay)))
+		ret = of_overlay_apply_dtbo(of_get_root_node(), __dtbo_test_regulator_start);
+		if (WARN_ON(ret))
 			return;
-		of_overlay_apply_tree(of_get_root_node(), overlay);
+
 		of_probe();
 
 		dev = of_find_device_by_node_path("/regulator-self-test-pmic");

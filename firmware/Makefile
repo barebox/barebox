@@ -61,7 +61,7 @@ filechk_fwbin = { \
 	echo "_fw_$(FWSTR)_start:"				;\
 	echo "\#if $(FWNAME_EXISTS)"				;\
 	echo "    .incbin \"$(fwdir)/$(FWNAME)\""		;\
-	echo "\#else"						;\
+	echo "\#elif defined(__PBL__)"				;\
 	echo "ASM_PTR _fwname_$(FWSTR)"				;\
 	echo "\#endif"						;\
 	echo ".global _fw_$(FWSTR)_end"				;\
@@ -102,13 +102,25 @@ $(obj)/%.sum: FORCE
 
 clean-files += *.sha.bin *.sum
 
-# The .o files depend on the binaries directly; the .S files don't.
-$(patsubst %.gen.o,$(obj)/%.gen.o, $(obj-pbl-y)): $(obj)/%.gen.o: $(fwdir)/%
+# This dependency is used if missing firmware should fail the build immediately
+fwdep-required-y = $(fwdir)/%
+# This dependency expands to nothing if the file doesn't exist. This allows
+# delaying the firmware check:
+#
+#   - to final assembly of the PBL image for pbl-firmware
+#   - to runtime for firmware in barebox proper
+#
+# This way, we allow users to build defconfigs with multiple images without requiring
+# them to install all firmware for all platforms if only few are of interest.
+fwdep-required-n = $$(wildcard $(fwdir)/%)
 
-# The same for pbl:
 .SECONDEXPANSION:
-$(patsubst %.gen.o,$(obj)/%.gen.pbl.o, $(obj-pbl-y) $(pbl-y)): $(obj)/%.gen.pbl.o: $$(wildcard $(fwdir)/%)
-$(patsubst %.extgen.o,$(obj)/%.extgen.pbl.o, $(pbl-fwext-y)): $(obj)/%.extgen.pbl.o: $$(wildcard $(fwdir)/%)
+# The .o files depend on the binaries directly if available; the .S files don't.
+$(patsubst %.gen.o,$(obj)/%.gen.pbl.o, $(obj-pbl-y) $(pbl-y)): $(obj)/%.gen.pbl.o: $(fwdep-required-n)
+$(patsubst %.extgen.o,$(obj)/%.extgen.pbl.o, $(pbl-fwext-y)): $(obj)/%.extgen.pbl.o: $(fwdep-required-n)
+# For barebox proper, firmware existance is either checked here
+# or in driver code by checking whether size != 0
+$(patsubst %.gen.o,$(obj)/%.gen.o, $(obj-pbl-y)): $(obj)/%.gen.o: $(fwdep-required-$(CONFIG_MISSING_FIRMWARE_ERROR))
 
 pbl-y += $(pbl-fwext-y)
 

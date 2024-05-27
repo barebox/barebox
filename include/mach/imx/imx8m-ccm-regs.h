@@ -22,6 +22,7 @@
  * Applications Processor Reference Manual
  */
 #define IMX8M_ARM_A53_CLK_ROOT		0
+#define IMX8M_NOC_IO_CLK_ROOT           27
 #define IMX8M_DRAM_SEL_CFG		48
 #define IMX8M_DRAM_ALT_CLK_ROOT		64
 #define IMX8M_DRAM_APB_CLK_ROOT		65

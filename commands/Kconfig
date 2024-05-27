@@ -427,7 +427,6 @@ config CMD_BOOTM
 	default y
 	depends on BOOTM
 	select CRC32
-	select UIMAGE
 	select UNCOMPRESS
 	select FILETYPE
 	depends on GLOBALVAR

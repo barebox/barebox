@@ -1,4 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
+
+        .section .note.GNU-stack,"",%progbits
         .section .shasum,"a"
         .globl  sha_sum
 sha_sum:

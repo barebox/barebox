@@ -579,6 +579,12 @@ static void bcm2835_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	writel(hcfg, host->regs + SDHCFG);
 }
 
+static const struct mci_ops bcm2835_sdhost_ops = {
+	.init = bcm2835_sdhost_init,
+	.set_ios = bcm2835_set_ios,
+	.send_cmd = bcm2835_send_cmd,
+};
+
 static int bcm2835_sdhost_probe(struct device *dev)
 {
 	struct bcm2835_host *host;
@@ -606,9 +612,7 @@ static int bcm2835_sdhost_probe(struct device *dev)
 	mci->host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED_52MHZ |
 			  MMC_CAP_SD_HIGHSPEED;
 
-	mci->init = bcm2835_sdhost_init;
-	mci->set_ios = bcm2835_set_ios;
-	mci->send_cmd = bcm2835_send_cmd;
+	mci->ops = bcm2835_sdhost_ops;
 
 	mci_of_parse(mci);
 

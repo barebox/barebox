@@ -8,6 +8,8 @@
 #include <linux/linkage.h>
 #include <asm-generic/pointer.h>
 
+.section .note.GNU-stack,"",%progbits
+
 .text
 .align 8
 

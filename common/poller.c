@@ -3,6 +3,8 @@
  * Copyright (C) 2010 Marc Kleine-Budde <mkl@pengutronix.de>
  */
 
+#define pr_fmt(fmt) "poller: " fmt
+
 #include <common.h>
 #include <driver.h>
 #include <malloc.h>
@@ -10,6 +12,13 @@
 #include <param.h>
 #include <poller.h>
 #include <clock.h>
+#include <linux/ktime.h>
+
+/*
+ * Pollers are meant to poll and quickly execute actions.
+ * Exceeding the maximum runtime below triggers a one-time warning.
+ */
+#define POLLER_MAX_RUNTIME_MS	20
 
 static LIST_HEAD(poller_list);
 static int __poller_active;
@@ -116,8 +125,22 @@ void poller_call(void)
 
 	__poller_active = 1;
 
-	list_for_each_entry_safe(poller, tmp, &poller_list, list)
+	list_for_each_entry_safe(poller, tmp, &poller_list, list) {
+		ktime_t start = ktime_get();
+		s64 duration_ms;
+
 		poller->func(poller);
+
+		duration_ms = ktime_ms_delta(ktime_get(), start);
+		if (duration_ms > POLLER_MAX_RUNTIME_MS) {
+			if (!poller->overtime)
+				pr_warn("'%s' took unexpectedly long: %llums\n",
+					poller->name, duration_ms);
+
+			if (poller->overtime < U16_MAX)
+				poller->overtime++;
+		}
+	}
 
 	__poller_active = 0;
 }
@@ -155,8 +178,14 @@ static void poller_info(void)
 		return;
 	}
 
-	list_for_each_entry(poller, &poller_list, list)
-		printf("%s\n", poller->name);
+	list_for_each_entry(poller, &poller_list, list) {
+		printf("%s", poller->name);
+		if (poller->overtime)
+			printf(": overtime %s%u",
+			       poller->overtime == U16_MAX ? ">= " : "",
+			       poller->overtime);
+		printf("\n");
+	}
 }
 
 BAREBOX_CMD_HELP_START(poller)

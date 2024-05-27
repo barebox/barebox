@@ -364,65 +364,6 @@ static long uimage_sdram_flush(void *buf, unsigned long len)
 	return len;
 }
 
-#define BUFSIZ	(PAGE_SIZE * 32)
-
-struct resource *file_to_sdram(const char *filename, unsigned long adr)
-{
-	struct resource *res;
-	size_t size = BUFSIZ;
-	size_t ofs = 0;
-	ssize_t now;
-	int fd;
-
-	fd = open(filename, O_RDONLY);
-	if (fd < 0)
-		return NULL;
-
-	while (1) {
-		res = request_sdram_region("image", adr, size);
-		if (!res) {
-			printf("unable to request SDRAM 0x%08lx-0x%08lx\n",
-				adr, adr + size - 1);
-			goto out;
-		}
-
-		if (zero_page_contains(res->start + ofs)) {
-			void *tmp = malloc(BUFSIZ);
-			if (!tmp)
-				now = -ENOMEM;
-			else
-				now = read_full(fd, tmp, BUFSIZ);
-
-			if (now > 0)
-				zero_page_memcpy((void *)(res->start + ofs), tmp, now);
-			free(tmp);
-		} else {
-			now = read_full(fd, (void *)(res->start + ofs), BUFSIZ);
-		}
-
-		if (now < 0) {
-			release_sdram_region(res);
-			res = NULL;
-			goto out;
-		}
-
-		if (now < BUFSIZ) {
-			release_sdram_region(res);
-			res = request_sdram_region("image", adr, ofs + now);
-			goto out;
-		}
-
-		release_sdram_region(res);
-
-		ofs += BUFSIZ;
-		size += BUFSIZ;
-	}
-out:
-	close(fd);
-
-	return res;
-}
-
 /*
  * Load an uImage to a dynamically allocated sdram resource.
  * the resource must be freed afterwards with release_sdram_region

@@ -711,6 +711,14 @@ static void arasan_dt_parse_clk_phases(struct device *dev,
 				 "clk-phase-mmc-hs400");
 }
 
+static const struct mci_ops arasan_sdhci_ops = {
+	.send_cmd = arasan_sdhci_send_cmd,
+	.set_ios = arasan_sdhci_set_ios,
+	.init = arasan_sdhci_init,
+	.card_present = arasan_sdhci_card_present,
+	.card_write_protected = arasan_sdhci_card_write_protected,
+};
+
 static int arasan_sdhci_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
@@ -727,6 +735,11 @@ static int arasan_sdhci_probe(struct device *dev)
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
+
+	arasan_sdhci->sdhci.base = IOMEM(iores->start);
+	arasan_sdhci->sdhci.mci = mci;
+	mci->ops = arasan_sdhci_ops;
+	mci->hw_dev = dev;
 
 	clk_ahb = clk_get(dev, "clk_ahb");
 	if (IS_ERR(clk_ahb)) {
@@ -760,18 +773,9 @@ static int arasan_sdhci_probe(struct device *dev)
 
 	if (of_device_is_compatible(np, "xlnx,zynqmp-8.9a")) {
 		if (IS_ENABLED(CONFIG_MCI_TUNING))
-			mci->execute_tuning = arasan_zynqmp_execute_tuning;
+			mci->ops.execute_tuning = arasan_zynqmp_execute_tuning;
 		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_CLOCK_25_BROKEN;
 	}
-
-	arasan_sdhci->sdhci.base = IOMEM(iores->start);
-	arasan_sdhci->sdhci.mci = mci;
-	mci->send_cmd = arasan_sdhci_send_cmd;
-	mci->set_ios = arasan_sdhci_set_ios;
-	mci->init = arasan_sdhci_init;
-	mci->card_present = arasan_sdhci_card_present;
-	mci->card_write_protected = arasan_sdhci_card_write_protected;
-	mci->hw_dev = dev;
 
 	/*
 	 * clk_rates on ZynqMP are rounded wrong. For HS200 clk_get_rate retunrs

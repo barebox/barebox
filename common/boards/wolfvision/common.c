@@ -62,11 +62,7 @@ int wolfvision_register_ethaddr(void)
 	char mac[ETH_ALEN];
 	int ret;
 
-	ret = of_device_ensure_probed_by_alias("state");
-	if (ret)
-		return ret;
-
-	state = state_by_name("state");
+	state = state_by_alias("state");
 	if (!state)
 		return -ENOENT;
 

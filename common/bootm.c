@@ -117,6 +117,11 @@ static int uimage_part_num(const char *partname)
 	return simple_strtoul(partname, NULL, 0);
 }
 
+static inline bool image_is_uimage(struct image_data *data)
+{
+	return IS_ENABLED(CONFIG_BOOTM_UIMAGE) && data->os;
+}
+
 /*
  * bootm_load_os() - load OS to RAM
  *
@@ -154,7 +159,7 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 		return 0;
 	}
 
-	if (data->os) {
+	if (image_is_uimage(data)) {
 		int num;
 
 		num = uimage_part_num(data->os_part);
@@ -199,6 +204,9 @@ bool bootm_has_initrd(struct image_data *data)
 static int bootm_open_initrd_uimage(struct image_data *data)
 {
 	int ret;
+
+	if (!IS_ENABLED(CONFIG_BOOTM_UIMAGE))
+		return -ENOSYS;
 
 	if (strcmp(data->os_file, data->initrd_file)) {
 		data->initrd = uimage_open(data->initrd_file);
@@ -507,7 +515,7 @@ int bootm_get_os_size(struct image_data *data)
 
 	if (data->elf)
 		return elf_get_mem_size(data->elf);
-	if (data->os)
+	if (image_is_uimage(data))
 		return uimage_get_size(data->os, uimage_part_num(data->os_part));
 	if (data->os_fit)
 		return data->fit_kernel_size;
@@ -526,6 +534,9 @@ int bootm_get_os_size(struct image_data *data)
 static int bootm_open_os_uimage(struct image_data *data)
 {
 	int ret;
+
+	if (!IS_ENABLED(CONFIG_BOOTM_UIMAGE))
+		return -ENOSYS;
 
 	data->os = uimage_open(data->os_file);
 	if (!data->os)
@@ -886,10 +897,11 @@ err_out:
 		release_sdram_region(data->oftree_res);
 	if (data->tee_res)
 		release_sdram_region(data->tee_res);
-	if (data->initrd && data->initrd != data->os)
-		uimage_close(data->initrd);
-	if (data->os)
+	if (image_is_uimage(data)) {
+		if (data->initrd && data->initrd != data->os)
+			uimage_close(data->initrd);
 		uimage_close(data->os);
+	}
 	if (IS_ENABLED(CONFIG_ELF) && data->elf)
 		elf_close(data->elf);
 	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit)

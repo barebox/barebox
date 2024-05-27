@@ -481,6 +481,7 @@ static void ddrphy_init_set_dfi_clk(struct dram_controller *dram, unsigned int d
 
 int imx8m_ddr_init(struct dram_controller *dram, struct dram_timing_info *dram_timing)
 {
+	struct dram_timing_info *saved_timing;
 	unsigned long src_ddrc_rcr = MX8M_SRC_DDRC_RCR_ADDR;
 	unsigned int tmp, initial_drate, target_freq;
 	int ret;
@@ -643,6 +644,12 @@ int imx8m_ddr_init(struct dram_controller *dram, struct dram_timing_info *dram_t
 
 	/* save the dram timing config into memory */
 	dram_config_save(dram, dram_timing, IMX8M_SAVED_DRAM_TIMING_BASE);
+
+	saved_timing = (struct dram_timing_info *)IMX8M_SAVED_DRAM_TIMING_BASE;
+
+	/* There's no fsp_cfg for i.MX8, so we must close the gap again */
+	memmove(&saved_timing->fsp_config, &saved_timing->common_config,
+		sizeof(saved_timing->common_config));
 
 	return 0;
 }

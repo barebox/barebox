@@ -35,7 +35,9 @@ struct usbgadget_funcs {
 	const char *ums_opts;
 };
 
-int usbgadget_register(const struct usbgadget_funcs *funcs);
+struct f_multi_opts *usbgadget_prepare(const struct usbgadget_funcs *funcs);
+int usbgadget_register(struct f_multi_opts *opts);
+int usbgadget_prepare_register(const struct usbgadget_funcs *funcs);
 
 void usbgadget_autostart(bool enable);
 

@@ -549,6 +549,12 @@ static int mmci_of_parse(struct device_node *np,
 	return 0;
 }
 
+static const struct mci_ops mmci_ops = {
+	.send_cmd = mci_request,
+	.set_ios = mci_set_ios,
+	.init = mci_reset,
+};
+
 static int mmci_probe(struct amba_device *dev, const struct amba_id *id)
 {
 	struct device *hw_dev = &dev->dev;
@@ -573,9 +579,7 @@ static int mmci_probe(struct amba_device *dev, const struct amba_id *id)
 	host = xzalloc(sizeof(*host));
 
 	host->base = amba_get_mem_region(dev);
-	host->mci.send_cmd = mci_request;
-	host->mci.set_ios = mci_set_ios;
-	host->mci.init = mci_reset;
+	host->mci.ops = mmci_ops;
 	host->hw_dev = host->mci.hw_dev = hw_dev;
 
 	clk = clk_get(hw_dev, NULL);

@@ -40,7 +40,7 @@ static size_t ddr4_imem_2d_size;
 static const u16 *ddr4_dmem_2d;
 static size_t ddr4_dmem_2d_size;
 
-void ddr_get_firmware_ddr(void)
+void ddr_get_firmware_ddr4(void)
 {
 	get_builtin_firmware(ddr4_imem_1d_bin, &ddr4_imem_1d,
 			     &ddr4_imem_1d_size);

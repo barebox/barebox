@@ -556,6 +556,7 @@ config ERRNO_MESSAGES
 config TIMESTAMP
 	bool
 	default y
+	depends on UIMAGE
 	select GREGORIAN_CALENDER
 	prompt "print timestamp information from uImages"
 	help
@@ -564,7 +565,6 @@ config TIMESTAMP
 	  commands like bootm or uimage.
 
 menuconfig BOOTM
-	select UIMAGE
 	default y if COMMAND_SUPPORT
 	bool "bootm support"
 
@@ -608,10 +608,19 @@ config BOOTM_OFTREE
 
 	  -o DTS  specify device tree
 
+config BOOTM_UIMAGE
+	def_bool y
+	prompt "support the legacy uImage format"
+	select UIMAGE
+	depends on BOOTM
+	help
+	  Support using uImages. This format has been superseded
+	  by FIT images and is not as frequently used nowadays.
+
 config BOOTM_OFTREE_UIMAGE
 	bool
 	prompt "support passing device tree (oftree) uImages"
-	depends on BOOTM_OFTREE
+	depends on BOOTM_OFTREE && BOOTM_UIMAGE
 	help
 	  Support using oftree uImages. Without this only raw oftree
 	  blobs can be used.
@@ -641,7 +650,7 @@ config BOOTM_FITIMAGE
 	bool
 	prompt "FIT image support"
 	select FITIMAGE
-	depends on BOOTM && ARM
+	depends on BOOTM
 	help
 	  Support using Flattened Image Tree (FIT) images. FIT is an image
 	  format introduced by U-Boot. A FIT image contains one or multiple
@@ -912,8 +921,8 @@ config DEFAULT_ENVIRONMENT
 	  CONFIG_ENV_HANDLING is not enabled.
 
 choice
-	prompt "default compression for in-barebox binaries"
-	default DEFAULT_COMPRESSION_NONE if PBL_IMAGE
+	prompt "default compression for in-barebox binaries" if PBL_IMAGE
+	default DEFAULT_COMPRESSION_NONE
 	default DEFAULT_COMPRESSION_LZO if LZO_DECOMPRESS
 	default DEFAULT_COMPRESSION_XZ if XZ_DECOMPRESS
 	default DEFAULT_COMPRESSION_GZIP if ZLIB

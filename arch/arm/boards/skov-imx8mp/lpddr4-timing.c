@@ -15,29 +15,29 @@ static struct dram_cfg_param ddr_ddrc_cfg[] = {
 	{ 0x3d400030, 0x1 },
 	{ 0x3d400000, 0xa1080020 },
 	{ 0x3d400020, 0x1223 },
-	{ 0x3d400024, 0x16e3600 },
-	{ 0x3d400064, 0x5b00d2 },
+	{ 0x3d400024, 0x186a000 },
+	{ 0x3d400064, 0x6100e0 },
 	{ 0x3d400070, 0x7027f90 },
 	{ 0x3d400074, 0x790 },
-	{ 0x3d4000d0, 0xc00305ba },
-	{ 0x3d4000d4, 0x940000 },
+	{ 0x3d4000d0, 0xc003061c },
+	{ 0x3d4000d4, 0x9e0000 },
 	{ 0x3d4000dc, 0xd4002d },
 	{ 0x3d4000e0, 0x310000 },
 	{ 0x3d4000e8, 0x660048 },
 	{ 0x3d4000ec, 0x160048 },
-	{ 0x3d400100, 0x191e1920 },
-	{ 0x3d400104, 0x60630 },
-	{ 0x3d40010c, 0xb0b000 },
-	{ 0x3d400110, 0xe04080e },
+	{ 0x3d400100, 0x1a201b22 },
+	{ 0x3d400104, 0x60633 },
+	{ 0x3d40010c, 0xc0c000 },
+	{ 0x3d400110, 0xf04080f },
 	{ 0x3d400114, 0x2040c0c },
 	{ 0x3d400118, 0x1010007 },
 	{ 0x3d40011c, 0x402 },
 	{ 0x3d400130, 0x20600 },
 	{ 0x3d400134, 0xc100002 },
-	{ 0x3d400138, 0xd8 },
-	{ 0x3d400144, 0x96004b },
-	{ 0x3d400180, 0x2ee0017 },
-	{ 0x3d400184, 0x2605b8e },
+	{ 0x3d400138, 0xe6 },
+	{ 0x3d400144, 0xa00050 },
+	{ 0x3d400180, 0x3200018 },
+	{ 0x3d400184, 0x28061a8 },
 	{ 0x3d400188, 0x0 },
 	{ 0x3d400190, 0x497820a },
 	{ 0x3d400194, 0x80303 },
@@ -270,7 +270,7 @@ static struct dram_cfg_param ddr_ddrphy_cfg[] = {
 	{ 0x20018, 0x3 },
 	{ 0x20075, 0x4 },
 	{ 0x20050, 0x0 },
-	{ 0x20008, 0x2ee },
+	{ 0x20008, 0x320 },
 	{ 0x120008, 0x64 },
 	{ 0x220008, 0x19 },
 	{ 0x20088, 0x9 },
@@ -335,7 +335,7 @@ static struct dram_cfg_param ddr_ddrphy_cfg[] = {
 /* P0 message block paremeter for training firmware */
 static struct dram_cfg_param ddr_fsp0_cfg[] = {
 	{ 0xd0000, 0x0 },
-	{ 0x54003, 0xbb8 },
+	{ 0x54003, 0xc80 },
 	{ 0x54004, 0x2 },
 	{ 0x54005, 0x2228 },
 	{ 0x54006, 0x14 },
@@ -457,7 +457,7 @@ static struct dram_cfg_param ddr_fsp2_cfg[] = {
 /* P0 2D message block paremeter for training firmware */
 static struct dram_cfg_param ddr_fsp0_2d_cfg[] = {
 	{ 0xd0000, 0x0 },
-	{ 0x54003, 0xbb8 },
+	{ 0x54003, 0xc80 },
 	{ 0x54004, 0x2 },
 	{ 0x54005, 0x2228 },
 	{ 0x54006, 0x14 },
@@ -976,9 +976,9 @@ static struct dram_cfg_param ddr_phy_pie[] = {
 	{ 0x400d7, 0x20b },
 	{ 0x2003a, 0x2 },
 	{ 0x200be, 0x3 },
-	{ 0x2000b, 0x34b },
-	{ 0x2000c, 0xbb },
-	{ 0x2000d, 0x753 },
+	{ 0x2000b, 0x384 },
+	{ 0x2000c, 0xc8 },
+	{ 0x2000d, 0x7d0 },
 	{ 0x2000e, 0x2c },
 	{ 0x12000b, 0x70 },
 	{ 0x12000c, 0x19 },
@@ -1081,8 +1081,8 @@ static struct dram_cfg_param ddr_phy_pie[] = {
 
 static struct dram_fsp_msg ddr_dram_fsp_msg[] = {
 	{
-		/* P0 3000mts 1D */
-		.drate = 3000,
+		/* P0 3200mts 1D */
+		.drate = 3200,
 		.fw_type = FW_1D_IMAGE,
 		.fsp_cfg = ddr_fsp0_cfg,
 		.fsp_cfg_num = ARRAY_SIZE(ddr_fsp0_cfg),
@@ -1102,8 +1102,8 @@ static struct dram_fsp_msg ddr_dram_fsp_msg[] = {
 		.fsp_cfg_num = ARRAY_SIZE(ddr_fsp2_cfg),
 	},
 	{
-		/* P0 3000mts 2D */
-		.drate = 3000,
+		/* P0 3200mts 2D */
+		.drate = 3200,
 		.fw_type = FW_2D_IMAGE,
 		.fsp_cfg = ddr_fsp0_2d_cfg,
 		.fsp_cfg_num = ARRAY_SIZE(ddr_fsp0_2d_cfg),
@@ -1120,6 +1120,6 @@ struct dram_timing_info imx8mp_skov_dram_timing = {
 	.fsp_msg_num = ARRAY_SIZE(ddr_dram_fsp_msg),
 	.ddrphy_pie = ddr_phy_pie,
 	.ddrphy_pie_num = ARRAY_SIZE(ddr_phy_pie),
-	.fsp_table = { 3000, 400, 100, },
+	.fsp_table = { 3200, 400, 100, },
 };
 

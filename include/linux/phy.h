@@ -275,36 +275,43 @@ struct phy_driver {
 	const void *driver_data;
 	bool is_phy;
 
-	/*
-	 * Called to initialize the PHY,
+	/**
+	 * @soft_reset: Called to issue a PHY software reset
+	 */
+	int (*soft_reset)(struct phy_device *phydev);
+
+	/**
+	 * @config_init: Called to initialize the PHY,
 	 * including after a reset
 	 */
 	int (*config_init)(struct phy_device *phydev);
 
-	/*
-	 * Called during discovery.  Used to set
+	/**
+	 * @probe: Called during discovery.  Used to set
 	 * up device-specific structures, if any
 	 */
 	int (*probe)(struct phy_device *phydev);
 
-	/*
-	 * Configures the advertisement and resets
+	/**
+	 * @config_aneg: Configures the advertisement and resets
 	 * autonegotiation if phydev->autoneg is on,
 	 * forces the speed to the current settings in phydev
 	 * if phydev->autoneg is off
 	 */
 	int (*config_aneg)(struct phy_device *phydev);
 
-	/* Determines the auto negotiation result */
+	/** @aneg_done: Determines the auto negotiation result */
 	int (*aneg_done)(struct phy_device *phydev);
 
-	/* Determines the negotiated speed and duplex */
+	/** @read_status: Determines the negotiated speed and duplex */
 	int (*read_status)(struct phy_device *phydev);
 
-	/* Clears up any memory if needed */
+	/** @remove: Clears up any memory if needed */
 	void (*remove)(struct phy_device *phydev);
 
+	/** @read_page: Return the current PHY register page number */
 	int (*read_page)(struct phy_device *phydev);
+	/** @write_page: Set the current PHY register page number */
 	int (*write_page)(struct phy_device *phydev, int page);
 
 	struct driver	 drv;

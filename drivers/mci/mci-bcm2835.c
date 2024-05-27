@@ -353,6 +353,12 @@ static int bcm2835_mci_reset(struct mci_host *mci, struct device *mci_dev)
 	return 0;
 }
 
+static const struct mci_ops bcm2835_mci_ops = {
+	.send_cmd = bcm2835_mci_request,
+	.set_ios = bcm2835_mci_set_ios,
+	.init = bcm2835_mci_reset,
+};
+
 static int bcm2835_mci_probe(struct device *hw_dev)
 {
 	struct resource *iores;
@@ -375,9 +381,7 @@ static int bcm2835_mci_probe(struct device *hw_dev)
 	}
 
 	host = xzalloc(sizeof(*host));
-	host->mci.send_cmd = bcm2835_mci_request;
-	host->mci.set_ios = bcm2835_mci_set_ios;
-	host->mci.init = bcm2835_mci_reset;
+	host->mci.ops = bcm2835_mci_ops;
 	host->mci.hw_dev = hw_dev;
 	host->hw_dev = hw_dev;
 	host->max_clock = clk_get_rate(clk);

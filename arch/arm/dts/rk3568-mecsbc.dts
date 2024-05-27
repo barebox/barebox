@@ -98,17 +98,6 @@
 			compatible = "ramoops";
 		};
 	};
-
-	reserved-memory {
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
-
-		/* Address will be determined by the bootloader */
-		ramoops {
-			compatible = "ramoops";
-		};
-	};
 };
 
 &sdhci {

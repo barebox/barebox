@@ -261,7 +261,7 @@ int cdev_flush(struct cdev *cdev)
 	return cdev->ops->flush(cdev);
 }
 
-int cdev_ioctl(struct cdev *cdev, int request, void *buf)
+int cdev_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 {
 	if (!cdev->ops->ioctl)
 		return -EINVAL;

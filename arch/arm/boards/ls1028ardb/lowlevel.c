@@ -5,7 +5,6 @@
 #include <debug_ll.h>
 #include <ddr_spd.h>
 #include <image-metadata.h>
-#include <platform_data/mmc-esdhc-imx.h>
 #include <soc/fsl/fsl_ddr_sdram.h>
 #include <soc/fsl/immap_lsch2.h>
 #include <asm/barebox-arm-head.h>

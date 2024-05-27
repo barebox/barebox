@@ -328,6 +328,12 @@ static int pxamci_init(struct mci_host *mci, struct device *dev)
 	return 0;
 }
 
+static const struct mci_ops pxamci_ops = {
+	.init = pxamci_init,
+	.send_cmd = pxamci_request,
+	.set_ios = pxamci_set_ios,
+};
+
 static int pxamci_probe(struct device *dev)
 {
 	struct resource *iores;
@@ -341,9 +347,7 @@ static int pxamci_probe(struct device *dev)
 		return PTR_ERR(iores);
 	host->base = IOMEM(iores->start);
 
-	host->mci.init = pxamci_init;
-	host->mci.send_cmd = pxamci_request;
-	host->mci.set_ios = pxamci_set_ios;
+	host->mci.ops = pxamci_ops;
 	host->mci.host_caps = MMC_CAP_4_BIT_DATA;
 	host->mci.hw_dev = dev;
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;

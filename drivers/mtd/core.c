@@ -243,7 +243,7 @@ static int mtd_op_protect(struct cdev *cdev, size_t count, loff_t offset, int pr
 
 #endif /* CONFIG_MTD_WRITE */
 
-int mtd_ioctl(struct cdev *cdev, int request, void *buf)
+int mtd_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 {
 	int ret = 0;
 	struct mtd_info *mtd = cdev->priv;

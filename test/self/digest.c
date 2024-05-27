@@ -47,7 +47,7 @@ static void __test_digest(bool option,
 			  const char *algo, struct digest_test_case *t,
 			  const char *func, int line)
 {
-	unsigned char *output, *digest;
+	unsigned char *output = NULL, *digest = NULL;
 	struct digest *d;
 	int hash_len, digest_len;
 	u64 start;
@@ -103,8 +103,14 @@ static void __test_digest(bool option,
 		goto fail;
 	}
 
+	digest_free(d);
+	free(digest);
+	free(output);
 	return;
 fail:
+	digest_free(d);
+	free(digest);
+	free(output);
 	failed_tests++;
 }
 

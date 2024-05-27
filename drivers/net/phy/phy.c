@@ -1108,14 +1108,26 @@ int phy_init_hw(struct phy_device *phydev)
 	struct phy_driver *phydrv = to_phy_driver(phydev->dev.driver);
 	int ret;
 
-	if (!phydrv || !phydrv->config_init)
+	if (!phydrv)
 		return 0;
+
+	if (phydrv->soft_reset) {
+		ret = phydrv->soft_reset(phydev);
+		if (ret < 0)
+			return ret;
+	}
 
 	ret = phy_scan_fixups(phydev);
 	if (ret < 0)
 		return ret;
 
-	return phydrv->config_init(phydev);
+	if (phydrv->config_init) {
+		ret = phydrv->config_init(phydev);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
 }
 
 static struct phy_driver genphy_driver = {

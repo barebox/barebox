@@ -130,6 +130,9 @@ static struct pstore_private *pstore_get_by_name(struct list_head *head,
 	if (!name)
 		return NULL;
 
+	if (name[0] == '/')
+		name++;
+
 	list_for_each_entry(d, head, list) {
 		if (strcmp(d->name, name) == 0)
 			return d;
@@ -142,9 +145,6 @@ static int pstore_open(struct device *dev, FILE *file, const char *filename)
 {
 	struct list_head *head = dev->priv;
 	struct pstore_private *d;
-
-	if (filename[0] == '/')
-		filename++;
 
 	d = pstore_get_by_name(head, filename);
 	if (!d)
@@ -178,6 +178,29 @@ static int pstore_lseek(struct device *dev, FILE *file, loff_t pos)
 	struct pstore_private *d = file->priv;
 
 	d->pos = pos;
+
+	return 0;
+}
+
+static int pstore_unlink(struct device *dev, const char *filename)
+{
+	struct list_head *head = dev->priv;
+	struct pstore_private *d;
+	int ret;
+
+	d = pstore_get_by_name(head, filename);
+	if (!d)
+		return -ENOENT;
+
+	if (!d->psi->erase)
+		return -EPERM;
+
+	ret = d->psi->erase(d->type, d->id, d->count, d->psi);
+	if (ret)
+		return ret;
+
+	list_del(&d->list);
+	free(d);
 
 	return 0;
 }
@@ -221,9 +244,6 @@ static int pstore_stat(struct device *dev, const char *filename,
 {
 	struct pstore_private *d;
 
-	if (filename[0] == '/')
-		filename++;
-
 	d = pstore_get_by_name(&allpstore, filename);
 	if (!d)
 		return -ENOENT;
@@ -259,6 +279,7 @@ static struct fs_driver pstore_driver = {
 	.close     = pstore_close,
 	.read      = pstore_read,
 	.lseek     = pstore_lseek,
+	.unlink    = pstore_unlink,
 	.opendir   = pstore_opendir,
 	.readdir   = pstore_readdir,
 	.closedir  = pstore_closedir,

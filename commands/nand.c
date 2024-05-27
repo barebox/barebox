@@ -102,7 +102,7 @@ static int do_nand(int argc, char *argv[])
 
 	if (command == NAND_MARKBAD || command == NAND_MARKGOOD) {
 		const char *str;
-		int ctl;
+		unsigned int ctl;
 
 		if (command == NAND_MARKBAD) {
 			str = "bad";

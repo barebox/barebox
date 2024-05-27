@@ -33,7 +33,7 @@ static ssize_t sbu_write(struct cdev *cdev, const void *buf, size_t count, loff_
 	return cdev_write(sbu->rcdev, buf, count, offset, flags);
 }
 
-static int sbu_ioctl(struct cdev *cdev, int request, void *buf)
+static int sbu_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 {
 	struct sbu *sbu = cdev->priv;
 

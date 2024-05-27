@@ -71,7 +71,7 @@ static int do_findmnt(int argc, char *argv[])
 			const char *backingstore;
 			struct cdev *cdev;
 
-			cdev = cdev_by_name(devpath_to_name(device));
+			cdev = cdev_open_by_name(devpath_to_name(device), O_RDONLY);
 			if (!cdev)
 				continue;
 
@@ -82,6 +82,7 @@ static int do_findmnt(int argc, char *argv[])
 				print_header(&header_printed);
 				report_findmnt(target);
 			}
+			cdev_close(cdev);
 		}
 	}
 

@@ -57,8 +57,10 @@ jobs:
 
         ./test/generate-dummy-fw.sh
 
-        ./MAKEALL -O build-${{matrix.arch}} -k test/kconfig/enable_self_test.kconf \
-                -k test/kconfig/disable_target_tools.kconf ${{matrix.defconfig}}
+        ./MAKEALL -O build-${{matrix.arch}} \
+                -k common/boards/configs/enable_self_test.config \
+                -k common/boards/configs/disable_target_tools.config \
+                ${{matrix.defconfig}}
 
         if [ ${{matrix.arch}} = "riscv" ]; then
           cp /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin build-${{matrix.arch}}

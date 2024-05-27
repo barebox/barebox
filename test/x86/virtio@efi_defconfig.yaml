@@ -17,7 +17,7 @@ targets:
     runner:
       tuxmake_arch: x86_64
       kconfig_add:
-        - test/kconfig/virtio-pci.cfg
+        - common/boards/configs/virtio-pci.config
         - CONFIG_DRIVER_SERIAL_NS16550=y
         - CONFIG_CONSOLE_ACTIVATE_FIRST=y # avoid duplicate output
 images:

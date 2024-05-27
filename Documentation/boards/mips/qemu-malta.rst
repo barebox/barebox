@@ -1,6 +1,17 @@
 QEMU Malta
 ==========
 
+Building barebox for Qemu Malta:
+
+.. code-block:: sh
+
+  export ARCH=mips
+  make ARCH=mips qemu-malta_defconfig      # 32-bit, big-endian
+  make ARCH=mips qemu-maltael_defconfig    # 32-bit, little-endian
+  make ARCH=mips qemu-malta64_defconfig    # 64-bit, big-endian
+  make ARCH=mips qemu-malta64el_defconfig  # 64-bit, little-endian
+
+
 Big-endian mode
 ---------------
 

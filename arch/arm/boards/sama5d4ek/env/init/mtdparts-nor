@@ -1,6 +1,0 @@
-#!/bin/sh
-
-mtdparts="64k(bootstrap),64k(bareboxenv),512k(barebox),384k(oftree),-(kernel)"
-kernelname="m25p800"
-
-mtdparts-add -d m25p0 -k ${kernelname} -p ${mtdparts}

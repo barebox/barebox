@@ -9,12 +9,9 @@
 
 static noinline void continue_imx_entry(size_t size)
 {
-	static struct barebox_arm_boarddata boarddata = {
-		.magic = BAREBOX_ARM_BOARDDATA_MAGIC,
-		.machine = MACH_TYPE_MX23EVK,
-	};
+	handoff_add_arm_machine(MACH_TYPE_MX23EVK);
 
-	barebox_arm_entry(IMX_MEMORY_BASE, size, &boarddata);
+	barebox_arm_entry(IMX_MEMORY_BASE, size, NULL);
 }
 
 ENTRY_FUNCTION(start_imx23_evk, r0, r1, r2)

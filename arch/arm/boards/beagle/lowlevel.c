@@ -164,16 +164,17 @@ static void sdrc_init(void)
 
 static noinline int beagle_board_init_sdram(void)
 {
-	struct barebox_arm_boarddata *bd = (void *)OMAP3_SRAM_SCRATCH_SPACE + 0x10;
+	handoff_add_arm_machine(MACH_TYPE_OMAP3_BEAGLE);
 
-	boarddata_create(bd, MACH_TYPE_OMAP3_BEAGLE);
-
-	barebox_arm_entry(0x80000000, SZ_128M, bd);
+	barebox_arm_entry(0x80000000, SZ_128M, NULL);
 }
 
 ENTRY_FUNCTION(start_omap3_beagleboard_sdram, bootinfo, r1, r2)
 {
 	omap3_save_bootinfo((void *)bootinfo);
+
+	relocate_to_current_adr();
+	setup_c();
 
 	beagle_board_init_sdram();
 }
@@ -190,7 +191,6 @@ ENTRY_FUNCTION(start_omap3_beagleboard_sdram, bootinfo, r1, r2)
 static noinline int beagle_board_init(void)
 {
 	int in_sdram = omap3_running_in_sdram();
-	struct barebox_arm_boarddata bd;
 
 	if (!in_sdram)
 		omap3_core_init();
@@ -203,9 +203,9 @@ static noinline int beagle_board_init(void)
 	if (!in_sdram)
 		sdrc_init();
 
-	boarddata_create(&bd, MACH_TYPE_OMAP3_BEAGLE);
+	handoff_add_arm_machine(MACH_TYPE_OMAP3_BEAGLE);
 
-	barebox_arm_entry(0x80000000, SZ_128M, &bd);
+	barebox_arm_entry(0x80000000, SZ_128M, NULL);
 }
 
 ENTRY_FUNCTION(start_omap3_beagleboard_sram, bootinfo, r1, r2)

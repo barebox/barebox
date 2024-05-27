@@ -390,7 +390,7 @@ static void create_vector_table(unsigned long adr)
 	void *vectors;
 	u32 *pte;
 
-	vectors_sdram = request_sdram_region("vector table", adr, PAGE_SIZE);
+	vectors_sdram = request_barebox_region("vector table", adr, PAGE_SIZE);
 	if (vectors_sdram) {
 		/*
 		 * The vector table address is inside the SDRAM physical
@@ -486,7 +486,7 @@ static void create_guard_page(void)
 		return;
 
 	guard_page = arm_mem_guard_page_get();
-	request_sdram_region("guard page", guard_page, PAGE_SIZE);
+	request_barebox_region("guard page", guard_page, PAGE_SIZE);
 	remap_range((void *)guard_page, PAGE_SIZE, MAP_FAULT);
 
 	pr_debug("Created guard page\n");
@@ -535,8 +535,8 @@ void __mmu_init(bool mmu_on)
 	struct memory_bank *bank;
 	uint32_t *ttb = get_ttb();
 
-	if (!request_sdram_region("ttb", (unsigned long)ttb,
-				  ARM_EARLY_PAGETABLE_SIZE))
+	if (!request_barebox_region("ttb", (unsigned long)ttb,
+				    ARM_EARLY_PAGETABLE_SIZE))
 		/*
 		 * This can mean that:
 		 * - the early MMU code has put the ttb into a place

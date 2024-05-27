@@ -4,13 +4,20 @@ config ARM
 	bool
 	select HAS_KALLSYMS
 	select HAS_CACHE
-	select HAVE_CONFIGURABLE_TEXT_BASE if !RELOCATABLE
 	select HAVE_IMAGE_COMPRESSION
 	select HAVE_ARCH_KASAN
 	select ARCH_HAS_SJLJ
 	select ARM_OPTIMZED_STRING_FUNCTIONS if KASAN
 	select HAVE_EFI_STUB
+	select HAVE_PBL_IMAGE
+	select HAVE_PBL_MULTI_IMAGES
+	select RELOCATABLE
+	select PBL_RELOCATABLE
 	default y
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x00000000
 
 config ARM_LINUX
 	bool
@@ -20,10 +27,6 @@ config ARM_LINUX
 config ARM_USE_COMPRESSED_DTB
        bool
        select USE_COMPRESSED_DTB
-
-config TEXT_BASE
-	hex
-	default 0x0
 
 menu "System Type"
 
@@ -42,6 +45,8 @@ choice
 	prompt "ARM system type"
 
 config ARCH_MULTIARCH
+	select OFTREE
+	select OFDEVICE
 	bool "Allow multiple archs to be selected"
 
 config ARCH_AT91
@@ -49,7 +54,6 @@ config ARCH_AT91
 	depends on 32BIT
 	select GPIOLIB
 	select CLKDEV_LOOKUP
-	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
 	select HAVE_CLK
 	select COMMON_CLK_AT91 if COMMON_CLK_OF_PROVIDER
@@ -63,32 +67,7 @@ config ARCH_CLPS711X
 	select CPU_32v4T
 	select GPIOLIB
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
 	select MFD_SYSCON
-	select RELOCATABLE
-
-config ARCH_DAVINCI
-	bool "TI Davinci"
-	depends on 32BIT
-	select CPU_ARM926T
-	select HAS_DEBUG_LL
-	select GPIOLIB
-
-config ARCH_DIGIC
-	bool "Canon DIGIC-based cameras"
-	depends on 32BIT
-	select CPU_ARM946E
-	select HAS_DEBUG_LL
-	select CLOCKSOURCE_DIGIC
-	select GPIOLIB
-	help
-	  Support for Canon's digital cameras that use the DIGIC4 chip.
-
-config ARCH_EP93XX
-	bool "Cirrus Logic EP93xx"
-	depends on 32BIT
-	select CPU_ARM920T
-	select GENERIC_GPIO
 
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"
@@ -97,7 +76,6 @@ config ARCH_MVEBU
 	select COMMON_CLK_OF_PROVIDER
 	select GPIOLIB
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
 	select HW_HAS_PCI
 	select MVEBU_MBUS
 	select OFTREE
@@ -111,21 +89,6 @@ config ARCH_MXS
 	select GENERIC_GPIO
 	select COMMON_CLK
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
-
-config ARCH_NOMADIK
-	bool "STMicroelectronics Nomadik"
-	depends on 32BIT
-	select CPU_ARM926T
-	select CLOCKSOURCE_NOMADIK
-	select HAVE_LEGACY_CLK
-	help
-	  Support for the Nomadik platform by ST-Ericsson
-
-config ARCH_OMAP_SINGLE
-	bool "TI OMAP"
-	depends on 32BIT
-	select ARCH_OMAP
 
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"
@@ -150,29 +113,15 @@ config ARCH_TEGRA
 	select COMMON_CLK_OF_PROVIDER
 	select GPIOLIB
 	select GPIO_TEGRA
-	select HAVE_PBL_MULTI_IMAGES
 	select OFDEVICE
 	select OFTREE
-	select RELOCATABLE
 	select RESET_CONTROLLER
 	select PINCTRL
-
-config ARCH_UEMD
-	bool "RC Module UEMD Platform"
-	depends on 32BIT
-	select CPU_ARM1176
-	select COMMON_CLK
-	select COMMON_CLK_OF_PROVIDER
-	select OFDEVICE
-	select OFTREE
-	select CLOCKSOURCE_UEMD
-	select HAS_DEBUG_LL
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"
 	depends on 32BIT
 	select HAS_DEBUG_LL
-	select PBL_IMAGE
 	select GPIOLIB
 
 endchoice
@@ -181,10 +130,6 @@ config ARCH_ARM64_VIRT
 	bool "ARM64 QEMU Virt board"
 	depends on 64BIT
 	select CPU_V8
-	select HAVE_PBL_MULTI_IMAGES
-	select OFDEVICE
-	select OFTREE
-	select RELOCATABLE
 	select ARM_AMBA
 	select BOARD_ARM_VIRT
 	select HW_HAS_PCI
@@ -198,10 +143,6 @@ config ARCH_BCM283X
 	select CLOCKSOURCE_BCM283X
 	select ARM_AMBA
 	select HAS_DEBUG_LL
-	select RELOCATABLE
-	select OFTREE
-	select OFDEVICE
-	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_IMX
 	bool "Freescale iMX-based"
@@ -210,8 +151,6 @@ config ARCH_IMX
 	select COMMON_CLK
 	select WATCHDOG_IMX_RESET_SOURCE
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
-	select RELOCATABLE
 
 config ARCH_K3
 	bool "Texas Instruments Inc. K3 multicore SoC architecture"
@@ -219,7 +158,6 @@ config ARCH_K3
 	select CPU_V8
 	select GPIOLIB
 	select COMMON_CLK
-	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
 	select COMMON_CLK_OF_PROVIDER
 	select PM_GENERIC_DOMAINS
@@ -229,12 +167,9 @@ config ARCH_LAYERSCAPE
 	depends on ARCH_MULTIARCH
 	select GPIOLIB
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select HW_HAS_PCI
-	select OFTREE
-	select OFDEVICE
 	select ARM_USE_COMPRESSED_DTB
 	select OF_DMA_COHERENCY
 
@@ -242,7 +177,6 @@ config ARCH_OMAP_MULTI
 	bool "TI OMAP"
 	depends on 32BIT
 	depends on ARCH_MULTIARCH
-	select OMAP_MULTI_BOARDS
 	select ARCH_OMAP
 	select HAS_DEBUG_LL
 	select GPIOLIB
@@ -255,8 +189,6 @@ config ARCH_ROCKCHIP
 	select GPIOLIB
 	select PINCTRL
 	select PINCTRL_ROCKCHIP
-	select OFTREE
-	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
 	imply GPIO_ROCKCHIP
 
@@ -265,7 +197,6 @@ config ARCH_STM32MP
 	depends on 32BIT
 	select ARCH_STM32
 	select CPU_V7
-	select HAVE_PBL_MULTI_IMAGES
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select HAS_DEBUG_LL
@@ -284,7 +215,6 @@ config ARCH_VERSATILE
 	select HAS_DEBUG_LL
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_VEXPRESS
 	bool "ARM Vexpress & virt boards"
@@ -295,38 +225,26 @@ config ARCH_VEXPRESS
 	select AMBA_SP804
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select OFTREE
-	select OFDEVICE
-	select RELOCATABLE
-	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_ZYNQMP
 	bool "Xilinx ZynqMP-based boards"
 	depends on 64BIT
 	select CPU_V8
 	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
 	select ARM_SMCCC
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select GPIOLIB
-	select OFDEVICE
-	select OFTREE
-	select RELOCATABLE
 	select HAS_MACB
 
 source "arch/arm/cpu/Kconfig"
 source "arch/arm/mach-at91/Kconfig"
 source "arch/arm/mach-bcm283x/Kconfig"
 source "arch/arm/mach-clps711x/Kconfig"
-source "arch/arm/mach-davinci/Kconfig"
-source "arch/arm/mach-digic/Kconfig"
-source "arch/arm/mach-ep93xx/Kconfig"
 source "arch/arm/mach-imx/Kconfig"
 source "arch/arm/mach-layerscape/Kconfig"
 source "arch/arm/mach-mxs/Kconfig"
 source "arch/arm/mach-mvebu/Kconfig"
-source "arch/arm/mach-nomadik/Kconfig"
 source "arch/arm/mach-k3/Kconfig"
 source "arch/arm/mach-omap/Kconfig"
 source "arch/arm/mach-pxa/Kconfig"
@@ -336,7 +254,6 @@ source "arch/arm/mach-stm32mp/Kconfig"
 source "arch/arm/mach-versatile/Kconfig"
 source "arch/arm/mach-vexpress/Kconfig"
 source "arch/arm/mach-tegra/Kconfig"
-source "arch/arm/mach-uemd/Kconfig"
 source "arch/arm/mach-zynq/Kconfig"
 source "arch/arm/mach-zynqmp/Kconfig"
 
@@ -349,7 +266,6 @@ config BOARD_ARM_VIRT
 config BOARD_ARM_GENERIC_DT
 	select BOARD_GENERIC_DT
 	select ARM_AMBA
-	depends on HAVE_PBL_MULTI_IMAGES
 	depends on OFDEVICE
 	bool "Build generic ARM device tree 2nd stage image"
 	help

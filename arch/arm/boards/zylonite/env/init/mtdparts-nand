@@ -1,6 +1,0 @@
-#!/bin/sh
-
-mtdparts="128k@0(TIMH)ro,128k@128k(OBMI)ro,768k@256k(barebox),256k@1024k(barebox-env),12M@1280k(kernel),38016k@13568k(root)"
-kernelname="pxa3xx_nand-0"
-
-mtdparts-add -d nand0 -k ${kernelname} -p ${mtdparts}

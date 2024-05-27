@@ -1,3 +1,0 @@
-#!/bin/sh
-
-nor_parts="256k(barebox)ro,128k(env_boot),128k(env_boot.bak),1664k(kernel_1)${cfg_1_ro},6144k(rootfs_1)${cfg_1_ro},1664k(kernel_2)${cfg_2_ro},6144k(rootfs_2)${cfg_2_ro},128k(cfg_app),128k(cfg_app.bak)"

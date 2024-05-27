@@ -8,6 +8,11 @@
 struct efi_system_table;
 struct efi_loaded_image;
 
+struct barebox_efi_data {
+	void *image;
+	void *sys_table;
+};
+
 extern struct efi_system_table *efi_sys_table;
 extern efi_handle_t efi_parent_image;
 extern struct efi_device_path *efi_device_path;

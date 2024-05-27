@@ -8,25 +8,27 @@
 
 #include <efi/efi-payload.h>
 #include <efi.h>
-#include <boarddata.h>
 #include <memory.h>
 #include <linux/kernel.h>
 #include <linux/printk.h>
 #include <debug_ll.h>
 #include <init.h>
+#include <pbl/handoff-data.h>
 
 static int handle_efi_boarddata(void)
 {
-	const struct barebox_boarddata *bd = barebox_get_boarddata();
+	size_t size;
+	struct barebox_efi_data *efidata;
 	efi_status_t efiret;
 
-	if (!barebox_boarddata_is_machine(bd, BAREBOX_MACH_TYPE_EFI))
+	efidata = handoff_data_get_entry(HANDOFF_DATA_EFI, &size);
+	if (!efidata)
 		return 0;
 
 	barebox_add_memory_bank("ram0", mem_malloc_start(), mem_malloc_size());
 
-	efi_parent_image = bd->image;
-	efi_sys_table = bd->sys_table;
+	efi_parent_image = efidata->image;
+	efi_sys_table = efidata->sys_table;
 	BS = efi_sys_table->boottime;
 	RT = efi_sys_table->runtime;
 

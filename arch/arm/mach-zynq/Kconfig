@@ -2,10 +2,6 @@
 
 if ARCH_ZYNQ
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x0
-
 config ZYNQ_DEBUG_LL_UART_BASE
 	hex
 	default 0xe0001000 if MACH_ZEDBOARD
@@ -17,12 +13,8 @@ config ARCH_ZYNQ7000
 	select COMMON_CLK_OF_PROVIDER
 	select ARM_SMP_TWD
 	select HAS_MACB
-	select HAVE_PBL_MULTI_IMAGES
 	select OFTREE
 	select OFDEVICE
-	select RELOCATABLE
-
-
 
 menu "select Zynq boards to be built"
 

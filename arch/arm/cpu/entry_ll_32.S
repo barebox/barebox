@@ -19,9 +19,5 @@ ENTRY(__barebox_arm_entry)
 	mov	r0, r4
 	mov	r1, r5
 	mov	r2, r6
-#if IS_ENABLED(CONFIG_PBL_IMAGE)
 	b	barebox_pbl_start
-#else
-	b	barebox_non_pbl_start
-#endif
 ENDPROC(__barebox_arm_entry)

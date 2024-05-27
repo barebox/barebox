@@ -2,10 +2,6 @@
 
 if ARCH_VEXPRESS
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x0
-
 config MACH_VEXPRESS
 	bool "ARM Vexpress"
 

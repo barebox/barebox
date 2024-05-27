@@ -40,7 +40,7 @@ static int mpc5xxx_reserve_region(void)
 	struct resource *r;
 
 	/* keep this in sync with the assembler routines setting up the stack */
-	r = request_sdram_region("stack", _text_base - STACK_SIZE, STACK_SIZE);
+	r = request_barebox_region("stack", _text_base - STACK_SIZE, STACK_SIZE);
 	if (r == NULL) {
 		pr_err("Failed to request stack region at: 0x%08lx/0x%08lx\n",
 			_text_base - STACK_SIZE, _text_base - 1);

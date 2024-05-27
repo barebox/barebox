@@ -1,4 +1,0 @@
-#!/bin/sh
-boot_order mmc1
-echo "Rebooting into SD card..."
-reset

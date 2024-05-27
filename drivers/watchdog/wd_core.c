@@ -178,7 +178,8 @@ static void __noreturn watchdog_restart_handle(struct restart_handler *this)
 		ret = watchdog_set_timeout(wd, 1);
 
 	BUG_ON(ret);
-	mdelay(2000);
+
+	mdelay_non_interruptible(2000);
 
 	pr_emerg("Watchdog failed to reset the machine\n");
 	hang();

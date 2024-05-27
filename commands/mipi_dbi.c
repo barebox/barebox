@@ -79,7 +79,12 @@ static int do_mipi_dbi(int argc, char *argv[])
 	if (optind == argc && !write)
 		return mipi_dbi_command_show(dbi, cmd);
 
-	for (i = optind; i < argc; i++) {
+	if (argc > 6) {
+		printf("Error: can only write up to 4 byte at once!\n");
+		return -EOVERFLOW;
+	}
+
+	for (i = 0; i + optind < argc; i++) {
 		ret = kstrtou8(argv[optind + i], 16, &val[i]);
 		if (ret < 0)
 			return ret;

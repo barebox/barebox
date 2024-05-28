@@ -1988,7 +1988,7 @@ static void extract_prv(struct mci *mci, char prv[static 8])
  * Extract the product serial number from the CID
  * @param mci Instance data
  *
- * The 'PSN' is encoded in bit 55:24 in the CID
+ * The 'PSN' is encoded in bit 55:24 in the CID for SD cards and 47:16 for MMC cards
  */
 static unsigned extract_psn(struct mci *mci)
 {

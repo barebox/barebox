@@ -33,6 +33,9 @@ static inline bool streq_ptr(const char *a, const char *b)
 	return strcmp_ptr(a, b) == 0;
 }
 
-bool isempty(const char *s);
+static inline bool isempty(const char *s)
+{
+	return !s || s[0] == '\0';
+}
 
 #endif /* __STRING_H */

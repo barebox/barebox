@@ -459,7 +459,7 @@ static int smc911x_eth_rx(struct eth_device *edev)
 
 		smc911x_reg_write(priv, RX_CFG, 0);
 
-		tmplen = (pktlen + 2 + 3) / 4;
+		tmplen = (pktlen + 3) / 4;
 		while(tmplen--)
 			*data++ = smc911x_reg_read(priv, RX_DATA_FIFO);
 

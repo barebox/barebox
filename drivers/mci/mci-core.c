@@ -2030,6 +2030,20 @@ static unsigned extract_mdt_year(struct mci *mci)
 	return year;
 }
 
+/**
+ * Extract the manufacturing date from the CID
+ * @param mci Instance data
+ *
+ * The 'MDT' is encoded in bit 19:8 in the CID
+ */
+static void extract_mdt(struct mci *mci, char mdt[static 8])
+{
+	unsigned month = extract_mdt_month(mci);
+	unsigned year = extract_mdt_year(mci);
+
+	snprintf(mdt, 8, "%u.%u", year, month);
+}
+
 static const char *mci_timing_tostr(unsigned timing)
 {
 	switch (timing) {

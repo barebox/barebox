@@ -3738,6 +3738,9 @@ int nand_write_oob_std(struct nand_chip *chip, int page)
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
+
 	return nand_prog_page_op(chip, page, mtd->writesize, chip->oob_poi,
 				 mtd->oobsize);
 }
@@ -3756,6 +3759,9 @@ static int nand_write_oob_syndrome(struct nand_chip *chip, int page)
 	int eccsize = chip->ecc.size, length = mtd->oobsize;
 	int ret, i, len, pos, sndcmd = 0, steps = chip->ecc.steps;
 	const uint8_t *bufpoi = chip->oob_poi;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
 
 	/*
 	 * data-ecc-data-ecc ... ecc-oob
@@ -3959,6 +3965,9 @@ int nand_write_page_raw(struct nand_chip *chip, const uint8_t *buf,
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	int ret;
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
+
 	ret = nand_prog_page_begin_op(chip, page, 0, buf, mtd->writesize);
 	if (ret)
 		return ret;
@@ -3997,6 +4006,9 @@ int nand_monolithic_write_page_raw(struct nand_chip *chip, const u8 *buf,
 	unsigned int size = mtd->writesize;
 	u8 *write_buf = (u8 *)buf;
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
+
 	if (oob_required) {
 		size += mtd->oobsize;
 
@@ -4028,6 +4040,9 @@ static int nand_write_page_raw_syndrome(struct nand_chip *chip,
 	int eccbytes = chip->ecc.bytes;
 	uint8_t *oob = chip->oob_poi;
 	int steps, size, ret;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
 
 	ret = nand_prog_page_begin_op(chip, page, 0, NULL, 0);
 	if (ret)
@@ -4091,6 +4106,9 @@ static int nand_write_page_swecc(struct nand_chip *chip, const uint8_t *buf,
 	uint8_t *ecc_calc = chip->ecc.calc_buf;
 	const uint8_t *p = buf;
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
+
 	/* Software ECC calculation */
 	for (i = 0; eccsteps; eccsteps--, i += eccbytes, p += eccsize)
 		chip->ecc.calculate(chip, p, &ecc_calc[i]);
@@ -4119,6 +4137,9 @@ static int nand_write_page_hwecc(struct nand_chip *chip, const uint8_t *buf,
 	int eccsteps = chip->ecc.steps;
 	uint8_t *ecc_calc = chip->ecc.calc_buf;
 	const uint8_t *p = buf;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
 
 	ret = nand_prog_page_begin_op(chip, page, 0, NULL, 0);
 	if (ret)
@@ -4170,6 +4191,9 @@ static int nand_write_subpage_hwecc(struct nand_chip *chip, uint32_t offset,
 	uint32_t end_step   = (offset + data_len - 1) / ecc_size;
 	int oob_bytes       = mtd->oobsize / ecc_steps;
 	int step, ret;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
 
 	ret = nand_prog_page_begin_op(chip, page, 0, NULL, 0);
 	if (ret)
@@ -4238,6 +4262,9 @@ static int nand_write_page_syndrome(struct nand_chip *chip, const uint8_t *buf,
 	uint8_t *oob = chip->oob_poi;
 	int ret;
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
+
 	ret = nand_prog_page_begin_op(chip, page, 0, NULL, 0);
 	if (ret)
 		return ret;
@@ -4304,6 +4331,9 @@ static int nand_write_page(struct nand_chip *chip, uint32_t offset,
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	int status, subpage;
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
+
 	if (!(chip->options & NAND_NO_SUBPAGE_WRITE) &&
 		chip->ecc.write_subpage)
 		subpage = offset || (data_len < mtd->writesize);
@@ -4349,6 +4379,9 @@ static int nand_do_write_ops(struct nand_chip *chip, loff_t to,
 	uint8_t *buf = ops->datbuf;
 	int ret;
 	int oob_required = oob ? 1 : 0;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
 
 	ops->retlen = 0;
 	if (!writelen)
@@ -4467,6 +4500,9 @@ static int nand_write_oob(struct mtd_info *mtd, loff_t to,
 	struct nand_chip *chip = mtd_to_nand(mtd);
 	int ret = 0;
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
+
 	ops->retlen = 0;
 
 	nand_get_device(chip);
@@ -4500,6 +4536,9 @@ out:
  */
 static int nand_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
+
 	return nand_erase_nand(mtd_to_nand(mtd), instr, 0);
 }
 
@@ -4517,6 +4556,9 @@ int nand_erase_nand(struct nand_chip *chip, struct erase_info *instr,
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	int page, pages_per_block, ret, chipnr;
 	loff_t len;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
 
 	pr_debug("%s: start = 0x%012llx, len = %llu\n",
 			__func__, (unsigned long long)instr->addr,
@@ -4652,6 +4694,9 @@ static int nand_block_isbad(struct mtd_info *mtd, loff_t offs)
 static int nand_block_markbad(struct mtd_info *mtd, loff_t ofs)
 {
 	int ret;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
 
 	ret = nand_block_isbad(mtd, ofs);
 	if (ret) {

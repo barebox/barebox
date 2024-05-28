@@ -1962,9 +1962,9 @@ static unsigned extract_psn(struct mci *mci)
  * Extract the month of the manufacturing date from the CID
  * @param mci Instance data
  *
- * The 'MTD' is encoded in bit 19:8 in the CID, month in 11:8
+ * The 'MDT' is encoded in bit 19:8 in the CID, month in 11:8
  */
-static unsigned extract_mtd_month(struct mci *mci)
+static unsigned extract_mdt_month(struct mci *mci)
 {
 	if (IS_SD(mci))
 		return UNSTUFF_BITS(mci->cid, 8, 4);
@@ -1976,10 +1976,10 @@ static unsigned extract_mtd_month(struct mci *mci)
  * Extract the year of the manufacturing date from the CID
  * @param mci Instance data
  *
- * The 'MTD' is encoded in bit 19:8 in the CID, year in 19:12
+ * The 'MDT' is encoded in bit 19:8 in the CID, year in 19:12
  * An encoded 0 means the year 2000
  */
-static unsigned extract_mtd_year(struct mci *mci)
+static unsigned extract_mdt_year(struct mci *mci)
 {
 	unsigned year;
 	if (IS_SD(mci))
@@ -2077,8 +2077,8 @@ static void mci_info(struct device *dev)
 	printf("  Product revision: %u.%u\n", extract_prv(mci) >> 4,
 		extract_prv(mci) & 0xf);
 	printf("  Serial no: %0u\n", extract_psn(mci));
-	printf("  Manufacturing date: %u.%u\n", extract_mtd_month(mci),
-		extract_mtd_year(mci));
+	printf("  Manufacturing date: %u.%u\n", extract_mdt_month(mci),
+		extract_mdt_year(mci));
 }
 
 /**

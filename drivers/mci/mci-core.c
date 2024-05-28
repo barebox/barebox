@@ -1918,6 +1918,17 @@ static unsigned extract_mid(struct mci *mci)
 }
 
 /**
+ * Extract the CBX from the CID
+ * @param mci Instance data
+ *
+ * The 'CBX' is encoded in bit 113:112 in the CID and only present in MMC cards
+ */
+static unsigned extract_cbx(struct mci *mci)
+{
+	return UNSTUFF_BITS(mci->cid, 112, 2);
+}
+
+/**
  * Extract the OEM/Application ID from the CID
  * @param mci Instance data
  *

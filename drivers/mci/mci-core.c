@@ -2123,6 +2123,8 @@ static void mci_info(struct device *dev)
 	mci_print_caps(mci->card_caps);
 	printf("  Manufacturer ID: %s\n", dev_get_param(dev, "cid_mid"));
 	printf("  OEM/Application ID: %s\n", dev_get_param(dev, "cid_oid"));
+	if (!IS_SD(mci))
+		printf("  CBX: %s\n", dev_get_param(dev, "cid_cbx"));
 	printf("  Product name: '%s'\n", dev_get_param(dev, "cid_pnm"));
 	printf("  Product revision: %s\n", dev_get_param(dev, "cid_prv"));
 	printf("  Serial no: %s\n", dev_get_param(dev, "cid_psn"));
@@ -2135,6 +2137,8 @@ static void mci_parse_cid(struct mci *mci) {
 
 	dev_add_param_uint32_fixed(dev, "cid_mid", extract_mid(mci), "0x%02X");
 	dev_add_param_uint32_fixed(dev, "cid_oid", extract_oid(mci), "0x%04X");
+	if (!IS_SD(mci))
+		dev_add_param_uint32_fixed(dev, "cid_cbx", extract_cbx(mci), "%u");
 	extract_pnm(mci, buffer);
 	dev_add_param_string_fixed(dev, "cid_pnm", buffer);
 	extract_prv(mci, buffer);

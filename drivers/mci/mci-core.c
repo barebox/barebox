@@ -2119,16 +2119,29 @@ static void mci_info(struct device *dev)
 		mci->csd[2], mci->csd[3]);
 	printf("  Max. transfer speed: %u Hz\n", mci->tran_speed);
 	mci_print_caps(mci->card_caps);
-	printf("  Manufacturer ID: 0x%02X\n", extract_mid(mci));
-	printf("  OEM/Application ID: 0x%04X\n", extract_oid(mci));
-	printf("  Product name: '%c%c%c%c%c'\n", mci->cid[0] & 0xff,
-		(mci->cid[1] >> 24), (mci->cid[1] >> 16) & 0xff,
-		(mci->cid[1] >> 8) & 0xff, mci->cid[1] & 0xff);
-	printf("  Product revision: %u.%u\n", extract_prv(mci) >> 4,
-		extract_prv(mci) & 0xf);
-	printf("  Serial no: %0u\n", extract_psn(mci));
-	printf("  Manufacturing date: %u.%u\n", extract_mdt_month(mci),
-		extract_mdt_year(mci));
+	printf("  Manufacturer ID: %s\n", dev_get_param(dev, "cid_mid"));
+	printf("  OEM/Application ID: %s\n", dev_get_param(dev, "cid_oid"));
+	printf("  Product name: '%s'\n", dev_get_param(dev, "cid_pnm"));
+	printf("  Product revision: %s\n", dev_get_param(dev, "cid_prv"));
+	printf("  Serial no: %s\n", dev_get_param(dev, "cid_psn"));
+	printf("  Manufacturing date: %s\n", dev_get_param(dev, "cid_mdt"));
+}
+
+static void mci_parse_cid(struct mci *mci) {
+	struct device *dev = &mci->dev;
+	char buffer[8];
+	unsigned int prv;
+
+	dev_add_param_uint32_fixed(dev, "cid_mid", extract_mid(mci), "0x%02X");
+	dev_add_param_uint32_fixed(dev, "cid_oid", extract_oid(mci), "0x%04X");
+	extract_pnm(mci, buffer);
+	dev_add_param_string_fixed(dev, "cid_pnm", buffer);
+	prv = extract_prv(mci);
+	snprintf(buffer, sizeof(buffer), "%u.%u", (prv >> 4) & 0xf, prv & 0xf);
+	dev_add_param_string_fixed(dev, "cid_prv", buffer);
+	dev_add_param_uint32_fixed(dev, "cid_psn", extract_psn(mci), "%0u");
+	extract_mdt(mci, buffer);
+	dev_add_param_string_fixed(dev, "cid_mdt", buffer);
 }
 
 /**
@@ -2405,6 +2418,8 @@ static int mci_card_probe(struct mci *mci)
 		else
 			dev_add_param_bool_fixed(&mci->dev, "partitioning_completed", ret);
 	}
+
+	mci_parse_cid(mci);
 
 	dev_dbg(&mci->dev, "SD Card successfully added\n");
 

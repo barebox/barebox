@@ -38,4 +38,9 @@ static inline bool isempty(const char *s)
 	return !s || s[0] == '\0';
 }
 
+static inline const char *nonempty(const char *s)
+{
+	return isempty(s) ? NULL : s;
+}
+
 #endif /* __STRING_H */

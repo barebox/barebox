@@ -460,14 +460,16 @@ static int smc911x_eth_rx(struct eth_device *edev)
 		smc911x_reg_write(priv, RX_CFG, 0);
 
 		tmplen = (pktlen + 3) / 4;
-		while(tmplen--)
-			*data++ = smc911x_reg_read(priv, RX_DATA_FIFO);
 
-		if(status & RX_STS_ES)
-			dev_err(&edev->dev, "dropped bad packet. Status: 0x%08x\n",
-				status);
-		else
+		if (pktlen > PKTSIZE || (status & RX_STS_ES)) {
+			while (tmplen--)
+				smc911x_reg_read(priv, RX_DATA_FIFO);
+		} else {
+			while (tmplen--)
+				*data++ = smc911x_reg_read(priv, RX_DATA_FIFO);
+
 			net_receive(edev, priv->rx_buf, pktlen);
+		}
 	}
 
 	return 0;

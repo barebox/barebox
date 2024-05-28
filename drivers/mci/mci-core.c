@@ -1968,11 +1968,13 @@ static void extract_pnm(struct mci *mci, char pnm[static 7])
  * Extract the product revision from the CID
  * @param mci Instance data
  *
- * The 'PRV' is encoded in bit 63:56 in the CID
+ * The 'PRV' is encoded in bit 63:56 in the CID for SD cards and 55:48 for MMC cards
  */
-static unsigned extract_prv(struct mci *mci)
+static void extract_prv(struct mci *mci, char prv[static 8])
 {
-	return mci->cid[2] >> 24;
+	unsigned prv_bcd = IS_SD(mci) ? UNSTUFF_BITS(mci->cid, 56, 8) : UNSTUFF_BITS(mci->cid, 48, 8);
+
+	snprintf(prv, 8,"%u.%u", prv_bcd >> 4, prv_bcd & 0xf);
 }
 
 /**
@@ -2130,14 +2132,12 @@ static void mci_info(struct device *dev)
 static void mci_parse_cid(struct mci *mci) {
 	struct device *dev = &mci->dev;
 	char buffer[8];
-	unsigned int prv;
 
 	dev_add_param_uint32_fixed(dev, "cid_mid", extract_mid(mci), "0x%02X");
 	dev_add_param_uint32_fixed(dev, "cid_oid", extract_oid(mci), "0x%04X");
 	extract_pnm(mci, buffer);
 	dev_add_param_string_fixed(dev, "cid_pnm", buffer);
-	prv = extract_prv(mci);
-	snprintf(buffer, sizeof(buffer), "%u.%u", (prv >> 4) & 0xf, prv & 0xf);
+	extract_prv(mci, buffer);
 	dev_add_param_string_fixed(dev, "cid_prv", buffer);
 	dev_add_param_uint32_fixed(dev, "cid_psn", extract_psn(mci), "%0u");
 	extract_mdt(mci, buffer);

@@ -446,7 +446,7 @@ static void smc911x_eth_halt(struct eth_device *edev)
 //	smc911x_reset(edev);
 }
 
-static int smc911x_eth_rx(struct eth_device *edev)
+static void smc911x_eth_rx(struct eth_device *edev)
 {
 	struct smc911x_priv *priv = (struct smc911x_priv *)edev->priv;
 	u32 *data = priv->rx_buf;
@@ -471,8 +471,6 @@ static int smc911x_eth_rx(struct eth_device *edev)
 			net_receive(edev, priv->rx_buf, pktlen);
 		}
 	}
-
-	return 0;
 }
 
 static int smc911x_init_dev(struct eth_device *edev)

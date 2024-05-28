@@ -115,7 +115,7 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 	return ret;
 }
 
-static int usbnet_recv(struct eth_device *edev)
+static void usbnet_recv(struct eth_device *edev)
 {
 	struct usbnet		*dev = (struct usbnet*) edev->priv;
 	struct driver_info	*info = dev->driver_info;
@@ -127,16 +127,14 @@ static int usbnet_recv(struct eth_device *edev)
 
 	ret = usb_bulk_msg(dev->udev, dev->in, dev->rx_buf, len, &alen, 2);
 	if (ret)
-		return ret;
+		return;
 
 	if (alen) {
 		if (info->rx_fixup)
-			return info->rx_fixup(dev, dev->rx_buf, alen);
+			info->rx_fixup(dev, dev->rx_buf, alen);
 		else
 			net_receive(edev, dev->rx_buf, alen);
 	}
-
-        return 0;
 }
 
 static int usbnet_init(struct eth_device *edev)

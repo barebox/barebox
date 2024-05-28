@@ -489,7 +489,7 @@ static int enetc_send(struct eth_device *edev, void *packet, int length)
  * - clean up the descriptor
  * - move on and indicate to HW that the cleaned BD is available for Rx
  */
-static int enetc_recv(struct eth_device *edev)
+static void enetc_recv(struct eth_device *edev)
 {
 	struct enetc_priv *priv = edev->priv;
 	struct bd_ring *rxr = &priv->rx_bdr;
@@ -503,7 +503,7 @@ static int enetc_recv(struct eth_device *edev)
 
 	/* check if current BD is ready to be consumed */
 	if (!ENETC_RXBD_STATUS_R(status))
-		return 0;
+		return;
 
 	len = readw(&priv->enetc_rxbd[pi].r.buf_len);
 
@@ -523,8 +523,6 @@ static int enetc_recv(struct eth_device *edev)
 	dmb();
 	/* free up the slot in the ring for HW */
 	enetc_write_reg(rxr->cons_idx, ci);
-
-	return 0;
 }
 
 static int enetc_probe(struct pci_dev *pdev, const struct pci_device_id *id)

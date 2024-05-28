@@ -278,7 +278,7 @@ static int cs8900_send(struct eth_device *dev, void *eth_data,
 	return 0;
 }
 
-static int cs8900_recv(struct eth_device *dev)
+static void cs8900_recv(struct eth_device *dev)
 {
 	struct cs8900_priv *priv = (struct cs8900_priv *)dev->priv;
 	int len = 0;
@@ -289,7 +289,7 @@ static int cs8900_recv(struct eth_device *dev)
 	status = cs8900_ior(priv, PP_REG_RXEVENT);
 	if ((status & RXEVENT_RXOK) == 0) {
 		/* No packet received. */
-		return 0;
+		return;
 	}
 
 	status = readw(priv->regs + CS8900_RTDATA0);
@@ -303,8 +303,6 @@ static int cs8900_recv(struct eth_device *dev)
 		for (addr = (u16 *)priv->rx_buf, i = (len + 1) >> 1; i > 0; i--)
 			(void)readw(priv->regs + CS8900_RTDATA0);
 	}
-
-	return len;
 }
 
 static void cs8900_halt(struct eth_device *dev)

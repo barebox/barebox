@@ -207,19 +207,17 @@ static int dsa_port_send(struct eth_device *edev, void *packet, int length)
 	return eth_send_raw(ds->edev_master, tx_buf, full_length);
 }
 
-static int dsa_port_recv(struct eth_device *edev)
+static void dsa_port_recv(struct eth_device *edev)
 {
 	struct dsa_port *dp = edev->priv;
 	int length;
 
 	if (!dp->rx_buf_length)
-		return 0;
+		return;
 
 	net_receive(edev, dp->rx_buf, dp->rx_buf_length);
 	length = dp->rx_buf_length;
 	dp->rx_buf_length = 0;
-
-	return length;
 }
 
 static int dsa_ether_set_ethaddr(struct eth_device *edev,

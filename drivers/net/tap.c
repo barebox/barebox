@@ -26,7 +26,7 @@ static int tap_eth_send(struct eth_device *edev, void *packet, int length)
 	return 0;
 }
 
-static int tap_eth_rx(struct eth_device *edev)
+static void tap_eth_rx(struct eth_device *edev)
 {
 	struct tap_priv *priv = edev->priv;
 	int length;
@@ -35,8 +35,6 @@ static int tap_eth_rx(struct eth_device *edev)
 
 	if (length > 0)
 		net_receive(edev, priv->rx_buf, length);
-
-	return 0;
 }
 
 static int tap_eth_open(struct eth_device *edev)

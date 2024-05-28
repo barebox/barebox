@@ -731,14 +731,14 @@ static void ks8851_rx_frame(struct ks_net *ks)
 	}
 }
 
-static int ks8851_eth_rx(struct eth_device *edev)
+static void ks8851_eth_rx(struct eth_device *edev)
 {
 	struct ks_net *ks = (struct ks_net *)edev->priv;
 	struct device *dev = &edev->dev;
 	u16 frame_cnt;
 
 	if (!(ks_rdreg16(ks, KS_ISR) & IRQ_RXI))
-		return 0;
+		return;
 	ks_wrreg16(ks, KS_ISR, IRQ_RXI);
 
 	frame_cnt = RXFCTR_RXFC_GET(ks_rdreg16(ks, KS_RXFCTR));
@@ -747,8 +747,6 @@ static int ks8851_eth_rx(struct eth_device *edev)
 		dev_dbg(dev, "%s frame %d\n", __func__, frame_cnt);
 		ks8851_rx_frame(ks);
 	}
-
-	return 0;
 }
 
 static int ks8851_eth_send(struct eth_device *edev,

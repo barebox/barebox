@@ -38,7 +38,7 @@ struct eth_device {
 
 	int  (*open) (struct eth_device*);
 	int  (*send) (struct eth_device*, void *packet, int length);
-	int  (*recv) (struct eth_device*);
+	void (*recv) (struct eth_device*);
 	void (*halt) (struct eth_device*);
 	int  (*get_ethaddr) (struct eth_device*, u8 adr[6]);
 	int  (*set_ethaddr) (struct eth_device*, const unsigned char *adr);

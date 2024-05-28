@@ -205,14 +205,14 @@ static int at91_ether_send(struct eth_device *edev, void *packet, int length)
 	return 0;
 }
 
-static int at91_ether_rx(struct eth_device *edev)
+static void at91_ether_rx(struct eth_device *edev)
 {
 	struct ether_device *etdev = to_ether(edev);
 	int size;
 	struct rbf_t *rbfp = etdev->rbfp;
 
 	if (!(rbfp->addr & RBF_OWNER))
-		return 0;
+		return;
 
 	size = rbfp->size & RBF_SIZE;
 
@@ -230,8 +230,6 @@ static int at91_ether_rx(struct eth_device *edev)
 
 	at91_emac_write(AT91_EMAC_RSR,
 		at91_emac_read(AT91_EMAC_RSR) | AT91_EMAC_RSR_REC);
-
-	return size;
 }
 
 static void at91_ether_halt (struct eth_device *edev)

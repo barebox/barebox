@@ -3430,7 +3430,7 @@ static void e1000_configure_rx(struct e1000_hw *hw)
 	e1000_fill_rx(hw);
 }
 
-static int e1000_poll(struct eth_device *edev)
+static void e1000_poll(struct eth_device *edev)
 {
 	struct e1000_hw *hw = edev->priv;
 	struct e1000_rx_desc *rd = &hw->rx_base[hw->rx_last];
@@ -3446,10 +3446,7 @@ static int e1000_poll(struct eth_device *edev)
 		dma_sync_single_for_device(hw->dev, hw->packet_dma, len,
 					   DMA_FROM_DEVICE);
 		e1000_fill_rx(hw);
-		return 1;
 	}
-
-	return 0;
 }
 
 static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)

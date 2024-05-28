@@ -597,7 +597,7 @@ static int dm9k_validate_entry(struct dm9k *priv)
 	return 1; /* entry is valid */
 }
 
-static int dm9k_eth_rx(struct eth_device *edev)
+static void dm9k_eth_rx(struct eth_device *edev)
 {
 	struct dm9k *priv = (struct dm9k *)edev->priv;
 	struct device *dev = edev->parent;
@@ -605,12 +605,12 @@ static int dm9k_eth_rx(struct eth_device *edev)
 	bool p_valid;
 
 	if (dm9k_check_for_rx_packet(priv) == 0)
-		return 0;	/* no data present */
+		return;	/* no data present */
 
 	do {
 		if (!dm9k_validate_entry(priv)) {
 			dm9k_iow(priv, DM9K_ISR, ISR_PR); /* clear PR status latched in bit 0 */
-			return 0;
+			return;
 		}
 
 		/* assume this packet is valid */
@@ -649,7 +649,7 @@ static int dm9k_eth_rx(struct eth_device *edev)
 			dm9k_dump(priv->buswidth, priv->iodata, rx_len);
 			dm9k_reset(priv);
 			dm9k_enable(priv);
-			return 0;
+			return;
 		}
 
 		if (p_valid == true) {
@@ -657,14 +657,12 @@ static int dm9k_eth_rx(struct eth_device *edev)
 			dm9k_rd(priv->buswidth, priv->iodata, priv->pckt, rx_len);
 			dev_dbg(dev, "passing %u bytes packet to upper layer\n", rx_len);
 			net_receive(edev, priv->pckt, rx_len);
-			return 0;
+			return;
 		} else {
 			dev_dbg(dev, "Discarding packet\n");
 			dm9k_dump(priv->buswidth, priv->iodata, rx_len); /* discard packet */
 		}
 	} while (1);
-
-	return 0;
 }
 
 

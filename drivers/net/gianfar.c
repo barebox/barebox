@@ -387,7 +387,7 @@ static int gfar_send(struct eth_device *edev, void *packet, int length)
 	return 0;
 }
 
-static int gfar_recv(struct eth_device *edev)
+static void gfar_recv(struct eth_device *edev)
 {
 	struct gfar_private *priv = edev->priv;
 	struct device *dev = edev->parent;
@@ -395,7 +395,7 @@ static int gfar_recv(struct eth_device *edev)
 	uint16_t status, length;
 
 	if (in_be16(&priv->rxbd[priv->rxidx].status) & RXBD_EMPTY)
-		return 0;
+		return;
 
 	length = in_be16(&priv->rxbd[priv->rxidx].length);
 
@@ -420,8 +420,6 @@ static int gfar_recv(struct eth_device *edev)
 		out_be32(regs + GFAR_IEVENT_OFFSET, GFAR_IEVENT_BSY);
 		out_be32(regs + GFAR_RSTAT_OFFSET, GFAR_RSTAT_CLEAR_RHALT);
 	}
-
-	return 0;
 }
 
 /* Read a MII PHY register. */

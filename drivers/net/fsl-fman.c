@@ -882,7 +882,7 @@ static int fm_eth_send(struct eth_device *edev, void *buf, int len)
 	return ret;
 }
 
-static int fm_eth_recv(struct eth_device *edev)
+static void fm_eth_recv(struct eth_device *edev)
 {
 	struct fm_eth *fm_eth = to_fm_eth(edev);
 	struct fm_port_global_pram *pram;
@@ -891,7 +891,6 @@ static int fm_eth_recv(struct eth_device *edev)
 	u32 buf_lo, buf_hi;
 	u8 *data;
 	u16 offset_out;
-	int ret = 1;
 
 	pram = fm_eth->rx_pram;
 
@@ -919,7 +918,6 @@ static int fm_eth_recv(struct eth_device *edev)
 						DMA_FROM_DEVICE);
 		} else {
 			dev_err(&edev->dev, "Rx error\n");
-			ret = 0;
 		}
 
 		/* clear the RxBDs */
@@ -936,8 +934,6 @@ static int fm_eth_recv(struct eth_device *edev)
 			offset_out = 0;
 		muram_writew(&pram->rxqd.offset_out, offset_out);
 	}
-
-	return ret;
 }
 
 static void memac_init_mac(struct fm_eth *fm_eth)

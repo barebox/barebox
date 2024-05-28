@@ -1048,7 +1048,7 @@ static int cpsw_send(struct eth_device *edev, void *packet, int length)
 	return ret;
 }
 
-static int cpsw_recv(struct eth_device *edev)
+static void cpsw_recv(struct eth_device *edev)
 {
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
@@ -1062,8 +1062,6 @@ static int cpsw_recv(struct eth_device *edev)
 		dma_sync_single_for_device(priv->dev, dma, len, DMA_FROM_DEVICE);
 		cpdma_submit(priv, &priv->rx_chan, buffer, dma, PKTSIZE, 0);
 	}
-
-	return 0;
 }
 
 static void cpsw_slave_init_data(struct cpsw_slave *slave, int slave_num,

@@ -672,7 +672,7 @@ static void ks_setup(struct ks_net *ks)
 	ks_wrreg16(ks, KS_RXCR1, w);
 }  /*ks_setup */
 
-static int ks8851_rx_frame(struct ks_net *ks)
+static void ks8851_rx_frame(struct ks_net *ks)
 {
 	struct device *dev = &ks->edev.dev;
 	u16 RxStatus, RxLen = 0;
@@ -726,9 +726,9 @@ static int ks8851_rx_frame(struct ks_net *ks)
 			dev_dbg(dev, "frame too long\n");
 		if (RxStatus & RXFSHR_RXMR)
 			dev_dbg(dev, "MII symbol error\n");
-	} else
+	} else {
 		dev_err(dev, "other RxStatus error 0x%04x\n", RxStatus);
-	return 0;
+	}
 }
 
 static int ks8851_eth_rx(struct eth_device *edev)

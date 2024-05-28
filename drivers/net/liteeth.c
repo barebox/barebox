@@ -214,7 +214,7 @@ static int liteeth_eth_rx(struct eth_device *edev)
 {
 	struct liteeth *priv = edev->priv;
 	u8 rx_slot;
-	int len = 0;
+	int len;
 	u8 reg;
 
 	reg = litex_read8(priv->base + LITEETH_WRITER_EV_PENDING);
@@ -224,7 +224,6 @@ static int liteeth_eth_rx(struct eth_device *edev)
 
 	len = litex_read32(priv->base + LITEETH_WRITER_LENGTH);
 	if (len == 0 || len > PKTSIZE) {
-		len = 0;
 		dev_err(priv->dev, "%s: invalid len %d\n", __func__, len);
 		litex_write8(priv->base + LITEETH_WRITER_EV_PENDING, reg);
 		goto done;

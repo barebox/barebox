@@ -45,7 +45,17 @@ static void pca100_usb_register(void) { };
 
 static void pca100_usb_init(void)
 {
+	struct device_node *gpio_np;
 	u32 reg;
+	int ret;
+
+	gpio_np = of_find_node_by_name_address(NULL, "gpio@10015100");
+	if (!gpio_np)
+		return;
+
+	ret = of_device_ensure_probed(gpio_np);
+	if (ret)
+		return;
 
 	reg = readl(MX27_USB_OTG_BASE_ADDR + 0x600);
 	reg &= ~((3 << 21) | 1);
@@ -75,7 +85,7 @@ static void pca100_usb_init(void)
 	gpio_direction_output(GPIO_PORTB + 24, 1);
 }
 
-static int pca100_devices_init(void)
+static int pca100_probe(struct device *dev)
 {
 	int i;
 	unsigned int mode[] = {
@@ -106,9 +116,6 @@ static int pca100_devices_init(void)
 		PE25_PF_USBOTG_DATA7,
 	};
 
-	if (!of_machine_is_compatible("phytec,imx27-pca100"))
-		return 0;
-
 	barebox_set_model("Phytec phyCARD-i.MX27");
 	barebox_set_hostname("phycard-imx27");
 
@@ -128,4 +135,16 @@ static int pca100_devices_init(void)
 	return 0;
 }
 
-device_initcall(pca100_devices_init);
+static const struct of_device_id pca100_of_match[] = {
+	{ .compatible = "phytec,imx27-pca100" },
+	{ /* Sentinel */},
+};
+
+static struct driver pca100_driver = {
+	.name = "phytec-imx27-pca100",
+	.probe = pca100_probe,
+	.of_compatible = pca100_of_match,
+};
+postcore_platform_driver(pca100_driver);
+
+BAREBOX_DEEP_PROBE_ENABLE(pca100_of_match);

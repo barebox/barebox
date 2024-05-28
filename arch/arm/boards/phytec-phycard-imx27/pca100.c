@@ -24,30 +24,39 @@
 #include <mach/imx/bbu.h>
 #include <mach/imx/iomux-mx27.h>
 
-#if defined(CONFIG_USB) && defined(CONFIG_USB_ULPI)
-static void pca100_usb_register(void)
-{
-	mdelay(10);
-
-	gpio_direction_output(GPIO_PORTB + 24, 0);
-	gpio_direction_output(GPIO_PORTB + 23, 0);
-
-	mdelay(10);
-
-	ulpi_setup((void *)(MX27_USB_OTG_BASE_ADDR + 0x170), 1);
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX27_USB_OTG_BASE_ADDR, NULL);
-	ulpi_setup((void *)(MX27_USB_OTG_BASE_ADDR + 0x570), 1);
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX27_USB_OTG_BASE_ADDR + 0x400, NULL);
-}
-#else
-static void pca100_usb_register(void) { };
-#endif
-
 static void pca100_usb_init(void)
 {
 	struct device_node *gpio_np;
 	u32 reg;
 	int ret;
+	int i;
+	unsigned int mode[] = {
+		/* USB host 2 */
+		PA0_PF_USBH2_CLK,
+		PA1_PF_USBH2_DIR,
+		PA2_PF_USBH2_DATA7,
+		PA3_PF_USBH2_NXT,
+		PA4_PF_USBH2_STP,
+		PD19_AF_USBH2_DATA4,
+		PD20_AF_USBH2_DATA3,
+		PD21_AF_USBH2_DATA6,
+		PD22_AF_USBH2_DATA0,
+		PD23_AF_USBH2_DATA2,
+		PD24_AF_USBH2_DATA1,
+		PD26_AF_USBH2_DATA5,
+		PC7_PF_USBOTG_DATA5,
+		PC8_PF_USBOTG_DATA6,
+		PC9_PF_USBOTG_DATA0,
+		PC10_PF_USBOTG_DATA2,
+		PC11_PF_USBOTG_DATA1,
+		PC12_PF_USBOTG_DATA4,
+		PC13_PF_USBOTG_DATA3,
+		PE0_PF_USBOTG_NXT,
+		PE1_PF_USBOTG_STP,
+		PE2_PF_USBOTG_DIR,
+		PE24_PF_USBOTG_CLK,
+		PE25_PF_USBOTG_DATA7,
+	};
 
 	gpio_np = of_find_node_by_name_address(NULL, "gpio@10015100");
 	if (!gpio_np)
@@ -83,49 +92,24 @@ static void pca100_usb_init(void)
 	gpio_direction_output(GPIO_PORTB + 23, 1);
 	imx27_gpio_mode((GPIO_PORTB | 24) | GPIO_GPIO | GPIO_IN);
 	gpio_direction_output(GPIO_PORTB + 24, 1);
-}
-
-static int pca100_probe(struct device *dev)
-{
-	int i;
-	unsigned int mode[] = {
-		/* USB host 2 */
-		PA0_PF_USBH2_CLK,
-		PA1_PF_USBH2_DIR,
-		PA2_PF_USBH2_DATA7,
-		PA3_PF_USBH2_NXT,
-		PA4_PF_USBH2_STP,
-		PD19_AF_USBH2_DATA4,
-		PD20_AF_USBH2_DATA3,
-		PD21_AF_USBH2_DATA6,
-		PD22_AF_USBH2_DATA0,
-		PD23_AF_USBH2_DATA2,
-		PD24_AF_USBH2_DATA1,
-		PD26_AF_USBH2_DATA5,
-		PC7_PF_USBOTG_DATA5,
-		PC8_PF_USBOTG_DATA6,
-		PC9_PF_USBOTG_DATA0,
-		PC10_PF_USBOTG_DATA2,
-		PC11_PF_USBOTG_DATA1,
-		PC12_PF_USBOTG_DATA4,
-		PC13_PF_USBOTG_DATA3,
-		PE0_PF_USBOTG_NXT,
-		PE1_PF_USBOTG_STP,
-		PE2_PF_USBOTG_DIR,
-		PE24_PF_USBOTG_CLK,
-		PE25_PF_USBOTG_DATA7,
-	};
-
-	barebox_set_model("Phytec phyCARD-i.MX27");
-	barebox_set_hostname("phycard-imx27");
-
-	pca100_usb_init();
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx27_gpio_mode(mode[i]);
 
-	pca100_usb_register();
+	mdelay(10);
+
+	gpio_direction_output(GPIO_PORTB + 24, 0);
+	gpio_direction_output(GPIO_PORTB + 23, 0);
+
+}
+
+static int pca100_probe(struct device *dev)
+{
+	barebox_set_model("Phytec phyCARD-i.MX27");
+	barebox_set_hostname("phycard-imx27");
+
+	pca100_usb_init();
 
 	imx_bbu_external_nand_register_handler("nand", "/dev/nand0.boot",
 			BBU_HANDLER_FLAG_DEFAULT);

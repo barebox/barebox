@@ -619,7 +619,8 @@ static int gpmc_probe(struct device *dev)
 		if (!child->name)
 			continue;
 
-		if (!strncmp(child->name, "nand", 4))
+		if (IS_ENABLED(CONFIG_MTD_RAW_NAND) &&
+		    !strncmp(child->name, "nand", 4))
 			ret = gpmc_probe_nand_child(dev, child);
 		else if (strncmp(child->name, "ethernet", 8) == 0 ||
 				strncmp(child->name, "nor", 3) == 0 ||

@@ -1932,11 +1932,18 @@ static unsigned extract_cbx(struct mci *mci)
  * Extract the OEM/Application ID from the CID
  * @param mci Instance data
  *
- * The 'OID' is encoded in bit 119:104 in the CID
+ * The 'OID' is encoded in bit 119:104 in the CID for SD cards and 111:104 for
+ * MMC cards
  */
-static unsigned extract_oid(struct mci *mci)
+static void extract_oid(struct mci *mci, char oid[static 5])
 {
-	return (mci->cid[0] >> 8) & 0xffff;
+	if (IS_SD(mci)) {
+		// SD cards have a 2 character long OEM ID
+		snprintf(oid, 5, "%c%c", UNSTUFF_BITS(mci->cid, 112, 8), UNSTUFF_BITS(mci->cid, 104, 8));
+	} else {
+		// MMC cards have a 8-bit binary number as OEM ID
+		snprintf(oid, 5, "0x%02X", UNSTUFF_BITS(mci->cid, 104, 8));
+	}
 }
 
 /**
@@ -2136,7 +2143,8 @@ static void mci_parse_cid(struct mci *mci) {
 	char buffer[8];
 
 	dev_add_param_uint32_fixed(dev, "cid_mid", extract_mid(mci), "0x%02X");
-	dev_add_param_uint32_fixed(dev, "cid_oid", extract_oid(mci), "0x%04X");
+	extract_oid(mci, buffer);
+	dev_add_param_string_fixed(dev, "cid_oid", buffer);
 	if (!IS_SD(mci))
 		dev_add_param_uint32_fixed(dev, "cid_cbx", extract_cbx(mci), "%u");
 	extract_pnm(mci, buffer);

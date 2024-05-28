@@ -295,10 +295,14 @@ static int cs8900_recv(struct eth_device *dev)
 	status = readw(priv->regs + CS8900_RTDATA0);
 	len = readw(priv->regs + CS8900_RTDATA0);
 
-	for (addr = (u16 *)priv->rx_buf, i = (len + 1) >> 1; i > 0; i--)
-		*addr++ = readw(priv->regs + CS8900_RTDATA0);
-
-	net_receive(dev, priv->rx_buf, len);
+	if (len <= PKTSIZE) {
+		for (addr = (u16 *)priv->rx_buf, i = (len + 1) >> 1; i > 0; i--)
+			*addr++ = readw(priv->regs + CS8900_RTDATA0);
+		net_receive(dev, priv->rx_buf, len);
+	} else {
+		for (addr = (u16 *)priv->rx_buf, i = (len + 1) >> 1; i > 0; i--)
+			(void)readw(priv->regs + CS8900_RTDATA0);
+	}
 
 	return len;
 }

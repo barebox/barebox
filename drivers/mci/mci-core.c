@@ -1940,6 +1940,31 @@ static unsigned extract_oid(struct mci *mci)
 }
 
 /**
+ * Extract the product name from the CID
+ * @param mci Instance data
+ *
+ * The 'PNM' is encoded in bit 103:64 in the CID for SD cards and 103:56 for
+ * MMC cards
+ */
+static void extract_pnm(struct mci *mci, char pnm[static 7])
+{
+	pnm[0] = UNSTUFF_BITS(mci->cid, 96, 8);
+	pnm[1] = UNSTUFF_BITS(mci->cid, 88, 8);
+	pnm[2] = UNSTUFF_BITS(mci->cid, 80, 8);
+	pnm[3] = UNSTUFF_BITS(mci->cid, 72, 8);
+	pnm[4] = UNSTUFF_BITS(mci->cid, 64, 8);
+
+	if (IS_SD(mci)) {
+		// SD cards have a 5 character long product name
+		pnm[5] = '\0';
+	} else {
+		// MMC cards have a 6 character long product name
+		pnm[5] = UNSTUFF_BITS(mci->cid, 56, 8);
+		pnm[6] = '\0';
+	}
+}
+
+/**
  * Extract the product revision from the CID
  * @param mci Instance data
  *

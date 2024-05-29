@@ -319,6 +319,7 @@ static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,
 	bank->base = IOMEM(iores->start);
 
 	bank->chip.base = be32_to_cpu(gpio_ranges[PINCTRL_OFFSET]);
+	bank->chip.gpio_offset = be32_to_cpu(gpio_ranges[GPIOCTRL_OFFSET]);
 	bank->chip.ops  = &stm32_gpio_ops;
 	bank->chip.dev  = dev;
 

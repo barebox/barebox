@@ -2840,8 +2840,35 @@ static int sja1105_rcv(struct dsa_switch *ds, int *port, void *packet,
 	return 0;
 }
 
+static int sja1105_cpu_port_enable(struct dsa_port *dp, int port,
+				   struct phy_device *phy)
+{
+	struct device *dev = dp->ds->dev;
+	struct sja1105_private *priv = dev_get_priv(dev);
+	phy_interface_t phy_mode = phy->interface;
+	struct dsa_switch *ds = &priv->ds;
+	int cpu = ds->cpu_port;
+	int ret;
+
+	if (port != cpu)
+		return 0;
+
+	sja1105_set_speed(dp, port, phy->speed);
+
+	ret = sja1105_port_set_mode(dp, port, phy_mode);
+	if (ret)
+		return ret;
+
+	ret = sja1105_set_rgmii_delay(priv, port, phy_mode);
+	if (ret)
+		return ret;
+
+	return sja1105_static_config_reload(priv);
+}
+
 static const struct dsa_switch_ops sja1105_dsa_ops = {
 	.port_pre_enable	= sja1105_port_pre_enable,
+	.port_enable		= sja1105_cpu_port_enable,
 	.adjust_link		= sja1105_adjust_link,
 	.xmit			= sja1105_xmit,
 	.rcv			= sja1105_rcv,

@@ -83,7 +83,7 @@ static struct gpio_desc *gpio_to_desc(unsigned gpio)
 
 static unsigned gpiodesc_chip_offset(const struct gpio_desc *desc)
 {
-	return (desc - gpio_desc) - desc->chip->base;
+	return (desc - gpio_desc) - desc->chip->base + desc->chip->gpio_offset;
 }
 
 static int gpio_adjust_value(const struct gpio_desc *desc,
@@ -770,6 +770,8 @@ static int of_gpio_simple_xlate(struct gpio_chip *gc,
 				const struct of_phandle_args *gpiospec,
 				u32 *flags)
 {
+	int gpio = gpiospec->args[0] - gc->gpio_offset;
+
 	/*
 	 * We're discouraging gpio_cells < 2, since that way you'll have to
 	 * write your own xlate function (that will have to retrieve the GPIO
@@ -782,13 +784,13 @@ static int of_gpio_simple_xlate(struct gpio_chip *gc,
 	if (WARN_ON(gpiospec->args_count < gc->of_gpio_n_cells))
 		return -EINVAL;
 
-	if (gpiospec->args[0] >= gc->ngpio)
+	if (gpio < 0 || gpio >= gc->ngpio)
 		return -EINVAL;
 
 	if (flags)
 		*flags = gpiospec->args[1];
 
-	return gc->base + gpiospec->args[0];
+	return gc->base + gpio;
 }
 
 static int of_gpiochip_add(struct gpio_chip *chip)

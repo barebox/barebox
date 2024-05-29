@@ -330,7 +330,6 @@ static int stm32_spi_setup(struct spi_device *spi)
 	int ret;
 
 	stm32_spi_set_cs(spi, false);
-	stm32_spi_enable(priv);
 
 	stm32_spi_set_mode(priv, spi->mode);
 
@@ -346,7 +345,6 @@ static int stm32_spi_setup(struct spi_device *spi)
 		__func__, spi->mode, spi->bits_per_word,
 		spi->max_speed_hz);
 out:
-	stm32_spi_disable(priv);
 	return ret;
 }
 

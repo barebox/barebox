@@ -3,13 +3,14 @@
 // SPDX-FileCopyrightText: 2021 Oleksij Rempel, Pengutronix
 /dts-v1/;
 
-#include "stm32mp151-prtt1l.dtsi"
+#include <arm/st/stm32mp151a-prtt1c.dts>
+
+#include "stm32mp151.dtsi"
 
 / {
-	model = "Protonic PRTT1C";
-	compatible = "prt,prtt1c", "st,stm32mp151";
-
 	chosen {
+		stdout-path = "serial0:115200n8";
+
 		environment-sd {
 			compatible = "barebox,environment";
 			device-path = &sdmmc1, "partname:barebox-environment";
@@ -24,182 +25,7 @@
 	};
 
 	aliases {
-		mdio-gpio0 = &mdio0;
-	};
-
-	clock_ksz9031: clock-ksz9031 {
-		compatible = "fixed-clock";
-		#clock-cells = <0>;
-		clock-frequency = <25000000>;
-	};
-
-	mdio0: mdio {
-		compatible = "virtual,mdio-gpio";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		gpios = <&gpioc 1 GPIO_ACTIVE_HIGH
-			 &gpioa 2 GPIO_ACTIVE_HIGH>;
-
-		t1l0_phy: ethernet-phy@6 {
-			compatible = "ethernet-phy-id2000.0181";
-			reg = <6>;
-			interrupts-extended = <&gpioa 4 IRQ_TYPE_LEVEL_LOW>;
-			reset-gpios = <&gpioa 3 GPIO_ACTIVE_LOW>;
-		};
-
-		t1l1_phy: ethernet-phy@7 {
-			compatible = "ethernet-phy-id2000.0181";
-			reg = <7>;
-			interrupts-extended = <&gpiog 8 IRQ_TYPE_LEVEL_LOW>;
-			reset-gpios = <&gpiog 12 GPIO_ACTIVE_LOW>;
-		};
-
-		t1l2_phy: ethernet-phy@10 {
-			compatible = "ethernet-phy-id2000.0181";
-			reg = <10>;
-			interrupts-extended = <&gpiog 10 IRQ_TYPE_LEVEL_LOW>;
-			reset-gpios = <&gpiog 11 GPIO_ACTIVE_LOW>;
-		};
-
-		rj45_phy: ethernet-phy@2 {
-			reg = <2>;
-			interrupts-extended = <&gpiog 7 IRQ_TYPE_LEVEL_LOW>;
-			reset-gpios = <&gpiog 9 GPIO_ACTIVE_LOW>;
-			reset-assert-us = <10000>;
-			reset-deassert-us = <1000>;
-
-			clocks = <&clock_ksz9031>;
-		};
-	};
-
-	spi-gpio-0 {
-		compatible = "spi-gpio";
-		gpio-sck = <&gpioa 5 GPIO_ACTIVE_HIGH>;
-		gpio-mosi = <&gpiob 5 GPIO_ACTIVE_HIGH>;
-		gpio-miso = <&gpioa 6 GPIO_ACTIVE_HIGH>;
-		cs-gpios = <&gpioa 15 GPIO_ACTIVE_LOW>;
-		num-chipselects = <1>;
-
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		switch@0 {
-			compatible = "nxp,sja1105q";
-			reg = <0>;
-			spi-max-frequency = <4000000>;
-			spi-rx-delay-us = <1>;
-			spi-tx-delay-us = <1>;
-			spi-cpha;
-
-			reset-gpios = <&gpioe 6 GPIO_ACTIVE_LOW>;
-
-			ports {
-				#address-cells = <1>;
-				#size-cells = <0>;
-
-				port@0 {
-					reg = <0>;
-					label = "t1l0";
-					phy-mode = "rmii";
-					phy-handle = <&t1l0_phy>;
-				};
-
-				port@1 {
-					reg = <1>;
-					label = "t1l1";
-					phy-mode = "rmii";
-					phy-handle = <&t1l1_phy>;
-				};
-
-				port@2 {
-					reg = <2>;
-					phy-mode = "rmii";
-					label = "t1l2";
-					phy-handle = <&t1l2_phy>;
-				};
-
-				port@3 {
-					reg = <3>;
-					label = "rj45";
-					phy-handle = <&rj45_phy>;
-					phy-mode = "rgmii-id";
-				};
-
-				port@4 {
-					reg = <4>;
-					label = "cpu";
-					ethernet = <&ethernet0>;
-					phy-mode = "rmii";
-
-					fixed-link {
-						speed = <100>;
-						full-duplex;
-					};
-				};
-			};
-		};
-	};
-
-
-};
-
-&ethernet0 {
-	pinctrl-0 = <&ethernet0_rmii_pins_a>;
-	pinctrl-names = "default";
-	phy-mode = "rmii";
-	status = "okay";
-
-	fixed-link {
-		speed = <100>;
-		full-duplex;
-	};
-};
-
-&sdmmc2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&sdmmc2_b4_pins_a &sdmmc2_d47_pins_a>;
-	disable-wp;
-	disable-cd;
-	no-removable;
-	no-sd;
-	no-sdio;
-	no-1-8-v;
-	st,neg-edge;
-	bus-width = <8>;
-	vmmc-supply = <&v3v3>;
-	vqmmc-supply = <&v3v3>;
-	status = "okay";
-};
-
-&ethernet0_rmii_pins_a {
-	pins1 {
-		pinmux = <STM32_PINMUX('B', 12, AF11)>, /* ETH1_RMII_TXD0 */
-			 <STM32_PINMUX('B', 13, AF11)>, /* ETH1_RMII_TXD1 */
-			 <STM32_PINMUX('B', 11, AF11)>; /* ETH1_RMII_TX_EN */
-	};
-	pins2 {
-		pinmux = <STM32_PINMUX('C', 4, AF11)>,  /* ETH1_RMII_RXD0 */
-			 <STM32_PINMUX('C', 5, AF11)>,  /* ETH1_RMII_RXD1 */
-			 <STM32_PINMUX('A', 1, AF11)>,  /* ETH1_RMII_REF_CLK input */
-			 <STM32_PINMUX('A', 7, AF11)>;  /* ETH1_RMII_CRS_DV */
-	};
-};
-
-&sdmmc2_b4_pins_a {
-	pins1 {
-		pinmux = <STM32_PINMUX('B', 14, AF9)>, /* SDMMC2_D0 */
-			 <STM32_PINMUX('B', 7, AF10)>, /* SDMMC2_D1 */
-			 <STM32_PINMUX('B', 3, AF9)>, /* SDMMC2_D2 */
-			 <STM32_PINMUX('B', 4, AF9)>, /* SDMMC2_D3 */
-			 <STM32_PINMUX('G', 6, AF10)>; /* SDMMC2_CMD */
-	};
-};
-
-&sdmmc2_d47_pins_a {
-	pins {
-		pinmux = <STM32_PINMUX('A', 8, AF9)>, /* SDMMC2_D4 */
-			 <STM32_PINMUX('A', 9, AF10)>, /* SDMMC2_D5 */
-			 <STM32_PINMUX('C', 6, AF10)>, /* SDMMC2_D6 */
-			 <STM32_PINMUX('C', 7, AF10)>; /* SDMMC2_D7 */
+		serial0 = &uart4;
+		ethernet0 = &ethernet0;
 	};
 };

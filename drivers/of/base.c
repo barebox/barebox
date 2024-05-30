@@ -3416,7 +3416,7 @@ const char *of_get_machine_compatible(void)
 		return NULL;
 
 	p = strchr(name, ',');
-	return p ? p + 1 : name;
+	return nonempty(p ? p + 1 : name);
 }
 EXPORT_SYMBOL(of_get_machine_compatible);
 

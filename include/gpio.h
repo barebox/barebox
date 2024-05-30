@@ -208,6 +208,8 @@ struct gpio_chip {
 	struct device *dev;
 
 	int base;
+	/* GPIO controller specific GPIO offset */
+	int gpio_offset;
 	int ngpio;
 
 #if defined(CONFIG_OF_GPIO)

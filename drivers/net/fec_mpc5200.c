@@ -564,7 +564,7 @@ static int mpc5xxx_fec_send(struct eth_device *dev, void *eth_data,
 	return 0;
 }
 
-static int mpc5xxx_fec_recv(struct eth_device *dev)
+static void mpc5xxx_fec_recv(struct eth_device *dev)
 {
 	/*
 	 * This command pulls one frame from the card
@@ -586,7 +586,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 		/* BABT, Rx/Tx FIFO errors */
 		mpc5xxx_fec_halt(dev);
 		mpc5xxx_fec_init(dev);
-		return 0;
+		return;
 	}
 	if (ievent & FEC_IEVENT_HBERR) {
 		/* Heartbeat error */
@@ -635,7 +635,6 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	}
 
 	SDMA_CLEAR_IEVENT (FEC_RECV_TASK_NO);
-	return len;
 }
 
 static int mpc5xxx_fec_probe(struct device *dev)

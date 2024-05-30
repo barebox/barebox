@@ -529,7 +529,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
  * @param[in] dev Our ethernet device to handle
  * @return Length of packet read
  */
-static int fec_recv(struct eth_device *dev)
+static void fec_recv(struct eth_device *dev)
 {
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 	struct buffer_descriptor __iomem *rbd = &fec->rbd_base[fec->rbd_index];
@@ -549,7 +549,7 @@ static int fec_recv(struct eth_device *dev)
 		fec_halt(dev);
 		fec_init(dev);
 		dev_err(&dev->dev, "some error: 0x%08x\n", ievent);
-		return 0;
+		return;
 	}
 	if (!fec_is_imx28(fec)) {
 		if (ievent & FEC_IEVENT_HBERR) {
@@ -574,7 +574,7 @@ static int fec_recv(struct eth_device *dev)
 	bd_status = readw(&rbd->status);
 
 	if (bd_status & FEC_RBD_EMPTY)
-		return 0;
+		return;
 
 	if (bd_status & FEC_RBD_ERR) {
 		dev_warn(&dev->dev, "error frame: 0x%p 0x%08x\n",
@@ -613,8 +613,6 @@ static int fec_recv(struct eth_device *dev)
 	fec_rbd_clean(fec->rbd_index == (FEC_RBD_NUM - 1) ? 1 : 0, rbd);
 	fec_rx_task_enable(fec);
 	fec->rbd_index = (fec->rbd_index + 1) % FEC_RBD_NUM;
-
-	return len;
 }
 
 static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)

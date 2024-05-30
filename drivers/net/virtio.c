@@ -101,7 +101,7 @@ static int virtio_net_send(struct eth_device *edev, void *packet, int length)
 	return 0;
 }
 
-static int virtio_net_recv(struct eth_device *edev)
+static void virtio_net_recv(struct eth_device *edev)
 {
 	struct virtio_net_priv *priv = to_priv(edev);
 	struct virtio_sg sg;
@@ -111,7 +111,7 @@ static int virtio_net_recv(struct eth_device *edev)
 
 	sg.addr = virtqueue_get_buf(priv->rx_vq, &len);
 	if (!sg.addr)
-		return -EAGAIN;
+		return;
 
 	sg.length = VIRTIO_NET_RX_BUF_SIZE;
 
@@ -122,8 +122,6 @@ static int virtio_net_recv(struct eth_device *edev)
 
 	/* Put the buffer back to the rx ring */
 	virtqueue_add(priv->rx_vq, sgs, 0, 1);
-
-	return 0;
 }
 
 static void virtio_net_stop(struct eth_device *dev)

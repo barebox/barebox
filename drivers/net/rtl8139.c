@@ -497,7 +497,7 @@ static int rtl8139_eth_send(struct eth_device *edev, void *packet,
 	return 0;
 }
 
-static int rtl8139_eth_rx(struct eth_device *edev)
+static void rtl8139_eth_rx(struct eth_device *edev)
 {
 	struct rtl8139_priv *priv = edev->priv;
 	unsigned char *rx_ring = priv->rx_ring;
@@ -512,7 +512,7 @@ static int rtl8139_eth_rx(struct eth_device *edev)
 
 	if (RTL_R8(priv, ChipCmd) & RxBufEmpty) {
 		/* no data */
-		return 0;
+		return;
 	}
 
 	rx_status = le32_to_cpu(*(__le32 *) (rx_ring + ring_offset));
@@ -526,8 +526,6 @@ static int rtl8139_eth_rx(struct eth_device *edev)
 	RTL_W16(priv, RxBufPtr, (u16) (cur_rx - 16));
 
 	priv->cur_rx = cur_rx;
-
-	return pkt_size /* size */;
 }
 
 static int rtl8139_probe(struct pci_dev *pdev, const struct pci_device_id *id)

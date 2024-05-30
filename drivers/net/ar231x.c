@@ -193,7 +193,7 @@ static int ar231x_eth_open(struct eth_device *edev)
 			ar231x_adjust_link, 0, PHY_INTERFACE_MODE_MII);
 }
 
-static int ar231x_eth_recv(struct eth_device *edev)
+static void ar231x_eth_recv(struct eth_device *edev)
 {
 	struct ar231x_eth_priv *priv = edev->priv;
 
@@ -221,7 +221,6 @@ static int ar231x_eth_recv(struct eth_device *edev)
 		ar231x_flash_rxdsc(rxdsc);
 	}
 	priv->kill_rx_ring = 0;
-	return 0;
 }
 
 static int ar231x_eth_send(struct eth_device *edev, void *packet,

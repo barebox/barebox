@@ -210,24 +210,22 @@ drop:
 	return 0;
 }
 
-static int liteeth_eth_rx(struct eth_device *edev)
+static void liteeth_eth_rx(struct eth_device *edev)
 {
 	struct liteeth *priv = edev->priv;
 	u8 rx_slot;
-	int len = 0;
+	int len;
 	u8 reg;
 
 	reg = litex_read8(priv->base + LITEETH_WRITER_EV_PENDING);
-	if (!reg) {
-		goto done;
-	}
+	if (!reg)
+		return;
 
 	len = litex_read32(priv->base + LITEETH_WRITER_LENGTH);
-	if (len == 0 || len > 2048) {
-		len = 0;
+	if (len == 0 || len > PKTSIZE) {
 		dev_err(priv->dev, "%s: invalid len %d\n", __func__, len);
 		litex_write8(priv->base + LITEETH_WRITER_EV_PENDING, reg);
-		goto done;
+		return;
 	}
 
 	rx_slot = litex_read8(priv->base + LITEETH_WRITER_SLOT);
@@ -237,9 +235,6 @@ static int liteeth_eth_rx(struct eth_device *edev)
 	net_receive(edev, priv->rx_buf, len);
 
 	litex_write8(priv->base + LITEETH_WRITER_EV_PENDING, reg);
-
-done:
-	return len;
 }
 
 static void liteeth_eth_halt(struct eth_device *edev)

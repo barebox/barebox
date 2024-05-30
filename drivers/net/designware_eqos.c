@@ -741,7 +741,7 @@ static int eqos_send(struct eth_device *edev, void *packet, int length)
 	return ret;
 }
 
-static int eqos_recv(struct eth_device *edev)
+static void eqos_recv(struct eth_device *edev)
 {
 	struct eqos *eqos = edev->priv;
 	struct eqos_desc *rx_wbf_desc, *rx_rf_desc;
@@ -763,7 +763,7 @@ static int eqos_recv(struct eth_device *edev)
 	/* Write-Back Format RX descriptor */
 	rx_wbf_desc = &eqos->rx_descs[eqos->rx_currdescnum];
 	if (readl(&rx_wbf_desc->des3) & EQOS_DESC3_OWN)
-		return 0;
+		return;
 
 	dma = eqos->dma_rx_buf[eqos->rx_currdescnum];
 	frame = phys_to_virt(dma);
@@ -792,8 +792,6 @@ static int eqos_recv(struct eth_device *edev)
 
 	eqos->rx_currdescnum++;
 	eqos->rx_currdescnum %= EQOS_DESCRIPTORS_RX;
-
-	return 0;
 }
 
 static int eqos_init_resources(struct eqos *eqos)

@@ -34,11 +34,32 @@ static unsigned int ecc_stats[MAX_ECC_BITS];
 static unsigned int ecc_stats_over;
 static unsigned int ecc_failed_cnt;
 
+/* Helper for progression bar */
+static loff_t pb_len;
+static loff_t pb_start;
+
+static void pb_init(void)
+{
+	init_progression_bar(pb_len);
+}
+
+static void pb_update(const loff_t done)
+{
+	show_progress(done - pb_start);
+}
+
+static void pb_rewrite(const loff_t done)
+{
+	pb_init();
+	pb_update(done);
+}
+
+
 /*
  * Implementation of pwrite with lseek and write.
  */
 static ssize_t __pwrite(int fd, const void *buf,
-		size_t count, loff_t offset, loff_t length)
+		size_t count, loff_t offset)
 {
 	ssize_t ret;
 
@@ -50,8 +71,7 @@ static ssize_t __pwrite(int fd, const void *buf,
 			printf("\nMark block bad at 0x%08llx\n",
 					offset + memregion.offset);
 			ioctl(fd, MEMSETBADBLOCK, &offset);
-			init_progression_bar(length);
-			show_progress(offset);
+			pb_rewrite(offset);
 		}
 	}
 
@@ -59,7 +79,7 @@ static ssize_t __pwrite(int fd, const void *buf,
 	return ret;
 }
 
-static int _read_get_stats(loff_t ofs, unsigned char *buf, loff_t totallength)
+static int _read_get_stats(loff_t ofs, unsigned char *buf)
 {
 	int ret;
 
@@ -76,8 +96,7 @@ static int _read_get_stats(loff_t ofs, unsigned char *buf, loff_t totallength)
 		printf("\n %d bit(s) ECC corrected at page 0x%08llx\n",
 				newstats.corrected - oldstats.corrected,
 				ofs + memregion.offset);
-		init_progression_bar(totallength);
-		show_progress(ofs);
+		pb_rewrite(ofs);
 		if ((newstats.corrected-oldstats.corrected) >=
 				MAX_ECC_BITS) {
 			/* Increment ECC stats that
@@ -95,8 +114,7 @@ static int _read_get_stats(loff_t ofs, unsigned char *buf, loff_t totallength)
 	if (newstats.failed > oldstats.failed) {
 		printf("\nECC failed at page 0x%08llx\n",
 				ofs + memregion.offset);
-		init_progression_bar(totallength);
-		show_progress(ofs);
+		pb_rewrite(ofs);
 		oldstats.failed = newstats.failed;
 		ecc_failed_cnt++;
 	}
@@ -117,7 +135,7 @@ static int read_corrected(loff_t ofs, unsigned char *rbuf, loff_t length)
 
 	for (i = 0; i < meminfo.erasesize;
 			i += meminfo.writesize) {
-		ret = _read_get_stats(ofs + i, rbuf + i, length);
+		ret = _read_get_stats(ofs + i, rbuf + i);
 		if (ret)
 			return ret;
 	}
@@ -154,9 +172,9 @@ static int erase_and_write(loff_t ofs, unsigned char *data,
 			i += meminfo.writesize) {
 		/* Write data to given offset */
 		__pwrite(fd, data + i, meminfo.writesize,
-				ofs + i, length);
+				ofs + i);
 
-		ret = _read_get_stats(ofs + i, rbuf + i, length);
+		ret = _read_get_stats(ofs + i, rbuf + i);
 		if (ret)
 			return ret;
 	}
@@ -201,7 +219,7 @@ static void print_stats(int nr_passes, loff_t length)
 static int do_nandtest(int argc, char *argv[])
 {
 	int opt, do_nandtest_dev = -1, do_nandtest_ro = 0, ret = -1;
-	loff_t flash_offset = 0, test_ofs, length = 0;
+	loff_t flash_offset = 0, test_ofs, length = 0, flash_end = 0;
 	unsigned int nr_iterations = 1, iter;
 	unsigned char *wbuf, *rbuf;
 
@@ -315,6 +333,8 @@ static int do_nandtest(int argc, char *argv[])
 		goto err;
 	}
 
+	flash_end = length + flash_offset;
+
 	wbuf = malloc(meminfo.erasesize * 2);
 	if (!wbuf) {
 		printf("Could not allocate %d bytes for buffer\n",
@@ -323,20 +343,22 @@ static int do_nandtest(int argc, char *argv[])
 	}
 	rbuf = wbuf + meminfo.erasesize;
 
+	pb_start = flash_offset;
+	pb_len = length;
+
 	for (iter = 0; iter < nr_iterations; iter++) {
-		init_progression_bar(length);
-		for (test_ofs = 0;
-				test_ofs < length;
+		pb_init();
+		for (test_ofs = flash_offset;
+				test_ofs < flash_end;
 				test_ofs += meminfo.erasesize) {
-			show_progress(test_ofs);
+			pb_update(test_ofs);
 			srand(seed);
 			seed = rand();
 
 			if (ioctl(fd, MEMGETBADBLOCK, &test_ofs)) {
 				printf("\nBad block at 0x%08llx\n",
 						test_ofs + memregion.offset);
-				init_progression_bar(length);
-				show_progress(test_ofs);
+				pb_rewrite(test_ofs);
 				continue;
 			}
 			if (do_nandtest_ro) {
@@ -349,7 +371,7 @@ static int do_nandtest(int argc, char *argv[])
 			if (ret < 0)
 				goto err2;
 		}
-		show_progress(test_ofs);
+		pb_update(test_ofs);
 		printf("\nFinished pass %d successfully\n", iter + 1);
 	}
 

@@ -66,7 +66,9 @@ static void log_debug(char *fmt, ...)
 	va_end(va);
 }
 
-static libusb_device_handle *rk_usb_open(libusb_context *ctx, uint16_t vendor, uint16_t product)
+static libusb_device_handle *rk_usb_open(libusb_context *ctx,
+					 uint16_t vendor, uint16_t vmask,
+					 uint16_t product, uint16_t pmask)
 {
 	libusb_device **devlist;
 	libusb_device_handle *handle;
@@ -74,8 +76,8 @@ static libusb_device_handle *rk_usb_open(libusb_context *ctx, uint16_t vendor, u
 	ssize_t count, i;
 	int ret;
 
-	log_info("scanning for USB device matching %04hx:%04hx...\n",
-		 vendor, product);
+	log_info("scanning for USB device matching %04hx/%04hx:%04hx/%04hx...\n",
+		 vendor, vmask, product, pmask);
 
 	while (1) {
 		if ((count = libusb_get_device_list(ctx, &devlist)) < 0) {
@@ -93,11 +95,11 @@ static libusb_device_handle *rk_usb_open(libusb_context *ctx, uint16_t vendor, u
 				return NULL;
 			}
 
-			if (desc.idVendor != vendor)
+			if ((desc.idVendor & vmask) != (vendor & vmask))
 				continue;
 
 			if (product) {
-				if (desc.idProduct != product)
+				if ((desc.idProduct & pmask) != (product & pmask))
 					continue;
 				goto found;
 			}
@@ -113,7 +115,8 @@ found:
 	ret = libusb_open(devlist[i], &handle);
 	if (ret < 0) {
 		log_error("failed to open USB device %04hx:%04hx: %s\n",
-				vendor, product, libusb_error_name(ret));
+				desc.idVendor, desc.idProduct,
+				libusb_error_name(ret));
 		libusb_free_device_list(devlist, 1);
 		return NULL;
 	}
@@ -124,7 +127,8 @@ found:
 		return NULL;
 	}
 
-	log_info("successfully opened %04hx:%04hx\n", vendor, product);
+	log_info("successfully opened %04hx:%04hx\n",
+		 desc.idVendor, desc.idProduct);
 
 	return handle;
 }
@@ -231,7 +235,7 @@ static int upload_image(const char *filename)
 		return ret;
 	}
 
-	dev = rk_usb_open(ctx, 0x2207, 0x350a);
+	dev = rk_usb_open(ctx, 0x2207, 0xffff, 0x350a, 0xfffe);
 	if (!dev) {
 		libusb_exit(ctx);
 		return 1;

@@ -35,7 +35,7 @@ static unsigned long barebox_boarddata_size;
 void *barebox_riscv_boot_dtb(void)
 {
 	void *dtb;
-	int ret;
+	int ret = 0;
 	struct barebox_boarddata_compressed_dtb *compressed_dtb;
 	static void *boot_dtb;
 
@@ -58,8 +58,13 @@ void *barebox_riscv_boot_dtb(void)
 	if (!dtb)
 		return NULL;
 
-	ret = uncompress(compressed_dtb->data, compressed_dtb->datalen,
-			 NULL, NULL, dtb, NULL, NULL);
+	if (IS_ENABLED(CONFIG_IMAGE_COMPRESSION_NONE))
+		memcpy(dtb, compressed_dtb->data,
+		       compressed_dtb->datalen_uncompressed);
+	else
+		ret = uncompress(compressed_dtb->data, compressed_dtb->datalen,
+				 NULL, NULL, dtb, NULL, NULL);
+
 	if (ret) {
 		pr_err("uncompressing dtb failed\n");
 		free(dtb);

@@ -52,6 +52,8 @@ static inline void debug_ll_write_reg(void __iomem *base, int reg, uint8_t val)
 	writeb(val, base + (reg << 2));
 }
 
+#include <linux/bits.h>
+
 #define BCM2836_AUX_CLOCK_ENB		0x3f215004 /* BCM2835 AUX Clock enable register */
 #define BCM2836_AUX_CLOCK_EN_UART	BIT(0) /* Bit 0 enables the Miniuart */
 

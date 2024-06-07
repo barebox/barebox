@@ -7,17 +7,7 @@
 #ifndef __MACH_VEXPRESS_DEBUG_LL_H__
 #define   __MACH_VEXPRESS_DEBUG_LL_H__
 
-#include <linux/amba/serial.h>
-#include <io.h>
-
-#define DEBUG_LL_PHYS_BASE		0x10000000
-#define DEBUG_LL_PHYS_BASE_RS1		0x1c000000
-
-#ifdef MP
-#define DEBUG_LL_UART_ADDR DEBUG_LL_PHYS_BASE
-#else
-#define DEBUG_LL_UART_ADDR DEBUG_LL_PHYS_BASE_RS1
-#endif
+#define DEBUG_LL_UART_ADDR 0x1c090000
 
 #include <debug_ll/pl011.h>
 

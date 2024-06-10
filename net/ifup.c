@@ -136,7 +136,7 @@ static int source_env_network(struct eth_device *edev)
 		net_set_ip(edev, ipaddr);
 		net_set_netmask(edev, netmask);
 		if (gateway)
-			net_set_gateway(gateway);
+			net_set_gateway(edev, gateway);
 		if (serverip)
 			net_set_serverip(serverip);
 	}

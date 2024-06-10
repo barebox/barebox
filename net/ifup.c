@@ -133,8 +133,8 @@ static int source_env_network(struct eth_device *edev)
 		memcpy(edev->ethaddr, ethaddr, 6);
 
 	if (mode == ETH_MODE_STATIC) {
-		edev->ipaddr = ipaddr;
-		edev->netmask = netmask;
+		net_set_ip(edev, ipaddr);
+		net_set_netmask(edev, netmask);
 		if (gateway)
 			net_set_gateway(gateway);
 		if (serverip)

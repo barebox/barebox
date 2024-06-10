@@ -133,29 +133,39 @@ static void virtio_net_stop(struct eth_device *dev)
 	 */
 }
 
-static int virtio_net_write_hwaddr(struct eth_device *edev, const unsigned char *adr)
-{
-	struct virtio_net_priv *priv = to_priv(edev);
-	int i;
-
-	/*
-	 * v1.0 compliant device's MAC address is set through control channel,
-	 * which we don't support for now.
-	 */
-	if (virtio_has_feature(priv->vdev, VIRTIO_F_VERSION_1))
-		return -ENOSYS;
-
-	for (i = 0; i < 6; i++)
-		virtio_cwrite8(priv->vdev, offsetof(struct virtio_net_config, mac) + i, adr[i]);
-
-	return 0;
-}
-
 static int virtio_net_read_rom_hwaddr(struct eth_device *edev, unsigned char *adr)
 {
 	struct virtio_net_priv *priv = to_priv(edev);
 
 	virtio_cread_bytes(priv->vdev, offsetof(struct virtio_net_config, mac), adr, 6);
+
+	return 0;
+}
+
+static int virtio_net_write_hwaddr(struct eth_device *edev, const unsigned char *adr)
+{
+	struct virtio_net_priv *priv = to_priv(edev);
+	int i, ret;
+
+	/*
+	 * v1.0 compliant device's MAC address is set through control channel,
+	 * which we don't support for now.
+	 */
+	if (virtio_has_feature(priv->vdev, VIRTIO_F_VERSION_1)) {
+		char mac[6];
+
+		ret = virtio_net_read_rom_hwaddr(edev, mac);
+		if (ret)
+			return ret;
+
+		if (!memcmp(mac, adr, 5))
+			return 0;
+		else
+			return -ENOSYS;
+	}
+
+	for (i = 0; i < 6; i++)
+		virtio_cwrite8(priv->vdev, offsetof(struct virtio_net_config, mac) + i, adr[i]);
 
 	return 0;
 }

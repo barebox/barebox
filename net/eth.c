@@ -535,7 +535,7 @@ struct eth_device *of_find_eth_device_by_node(struct device_node *np)
 	 */
 	(void)of_device_ensure_probed(np);
 
-	list_for_each_entry(edev, &netdev_list, list)
+	for_each_netdev(edev)
 		if (edev->parent->of_node == np)
 			return edev;
 	return NULL;
@@ -546,7 +546,7 @@ void eth_open_all(void)
 {
 	struct eth_device *edev;
 
-	list_for_each_entry(edev, &netdev_list, list) {
+	for_each_netdev(edev) {
 		if (edev->global_mode == ETH_MODE_DISABLED)
 			continue;
 		eth_open(edev);
@@ -559,7 +559,7 @@ static int populate_ethaddr(void)
 	bool generated = false;
 	int ret;
 
-	list_for_each_entry(edev, &netdev_list, list) {
+	for_each_netdev(edev) {
 		if (!edev->parent || is_valid_ether_addr(edev->ethaddr))
 			continue;
 

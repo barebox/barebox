@@ -68,6 +68,12 @@ config CMD_BOOTROM
 
 	  bootrom [-la]
 
+config CMD_CLASS
+	tristate
+	prompt "class"
+	help
+	  Show information about registered device classes
+
 config CMD_DEVINFO
 	tristate
 	default y

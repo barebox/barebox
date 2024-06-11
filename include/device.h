@@ -76,6 +76,8 @@ struct device {
 
 	struct list_head cdevs;
 
+	struct list_head class_list;
+
 	const struct platform_device_id *id_entry;
 	union {
 		struct device_node *device_node;
@@ -101,6 +103,26 @@ struct device {
 	 */
 	char *deferred_probe_reason;
 };
+
+struct class {
+	const char *name;
+	struct list_head devices;
+	struct list_head list;
+};
+
+#define DEFINE_DEV_CLASS(_name, _classname)					\
+	struct class _name __ll_elem(.barebox_class_##_name) 			\
+	__aligned(__alignof__(struct class)) = {				\
+		.name = _classname,						\
+		.devices = LIST_HEAD_INIT(_name.devices),			\
+	}
+
+int class_add_device(struct class *class, struct device *dev);
+void class_remove_device(struct class *class, struct device *dev);
+
+extern struct list_head class_list;
+#define class_for_each_device(class, dev) list_for_each_entry((dev), &(class)->devices, class_list)
+#define class_for_each(class) list_for_each_entry((class), &class_list, list)
 
 struct device_alias {
 	struct device *dev;

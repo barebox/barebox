@@ -23,6 +23,8 @@ config EFI
 config HAVE_EFI_STUB
 	bool
 
+if EFI
+
 config EFI_STUB
 	def_bool EFI_PAYLOAD
 	depends on HAVE_EFI_STUB
@@ -44,5 +46,7 @@ config EFI_PAYLOAD_DEFAULT_PATH
 	default "EFI/BOOT/BOOTRISCV32.EFI"	if ARCH_RV32I
 	default "EFI/BOOT/BOOTRISCV64.EFI"	if ARCH_RV64I
 	default "EFI/BOOT/BAREBOX.EFI"
+
+endif
 
 endmenu

@@ -824,6 +824,9 @@ char *device_path_to_filepath(const struct efi_device_path *dev_path)
 		dev_path = next_device_path_node(&fp->header);
 	}
 
+	if (!fp)
+		return NULL;
+
 	path = strdup_wchar_to_char(fp->path_name);
 	if (!path)
 		return NULL;

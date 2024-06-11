@@ -7,8 +7,8 @@
 
 int semihosting_open(const char *fname, int flags);
 int semihosting_close(int fd);
-int semihosting_writec(char c);
-int semihosting_write0(const char *str);
+void semihosting_writec(char c);
+void semihosting_write0(const char *str);
 ssize_t semihosting_write(int fd, const void *buf, size_t count);
 ssize_t semihosting_read(int fd, void *buf, size_t count);
 int semihosting_readc(void);

@@ -91,15 +91,15 @@ int semihosting_close(int fd)
 }
 EXPORT_SYMBOL(semihosting_close);
 
-int semihosting_writec(char c)
+void semihosting_writec(char c)
 {
-	return semihosting_trap(SEMIHOSTING_SYS_WRITEC, &c);
+	(void)semihosting_trap(SEMIHOSTING_SYS_WRITEC, &c);
 }
 EXPORT_SYMBOL(semihosting_writec);
 
-int semihosting_write0(const char *str)
+void semihosting_write0(const char *str)
 {
-	return semihosting_trap(SEMIHOSTING_SYS_WRITE0, (void *)str);
+	(void)semihosting_trap(SEMIHOSTING_SYS_WRITE0, (void *)str);
 }
 EXPORT_SYMBOL(semihosting_write0);
 

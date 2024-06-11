@@ -151,4 +151,12 @@ config SERIAL_SBI
 	  Select this option if you are building barebox for a RISCV platform
 	  that implements a serial over SBI.
 
+config SERIAL_SEMIHOSTING
+	bool "Semihosting console"
+	depends on SEMIHOSTING
+	help
+	  Select this option if you want barebox to be able to output to
+	  the semihosting console implemented by a debugger or emulator.
+	  This console can not be read from.
+
 endmenu

@@ -25,3 +25,4 @@ obj-$(CONFIG_VIRTIO_CONSOLE)			+= virtio_console.o
 obj-$(CONFIG_SERIAL_SIFIVE)			+= serial_sifive.o
 obj-$(CONFIG_SERIAL_SBI)			+= serial_sbi.o
 obj-$(CONFIG_SOC_LITEX)				+= serial_litex.o
+obj-$(CONFIG_SERIAL_SEMIHOSTING)		+= serial_semihosting.o

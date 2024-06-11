@@ -41,9 +41,9 @@ enum {
 	SEMIHOSTING_SYS_SYSTEM	= 0x12,
 };
 
-uint32_t semihosting_trap(uint32_t sysnum, void *addr);
+long semihosting_trap(ulong sysnum, void *addr);
 
-static uint32_t semihosting_flags_to_mode(int flags)
+static ulong semihosting_flags_to_mode(int flags)
 {
 	static const int semihosting_open_modeflags[12] = {
 		O_RDONLY,
@@ -72,11 +72,11 @@ static uint32_t semihosting_flags_to_mode(int flags)
 int semihosting_open(const char *fname, int flags)
 {
 	struct __packed {
-		uint32_t fname;
-		uint32_t mode;
-		uint32_t len;
+		ulong fname;
+		ulong mode;
+		ulong len;
 	} open = {
-		.fname = (uint32_t)fname,
+		.fname = virt_to_phys(fname),
 		.len = strlen(fname),
 		.mode = semihosting_flags_to_mode(flags),
 	};
@@ -104,16 +104,16 @@ int semihosting_write0(const char *str)
 EXPORT_SYMBOL(semihosting_write0);
 
 struct __packed semihosting_file_io {
-	uint32_t fd;
-	uint32_t memp;
-	uint32_t len;
+	ulong fd;
+	ulong memp;
+	ulong len;
 };
 
 ssize_t semihosting_write(int fd, const void *buf, size_t count)
 {
 	struct semihosting_file_io write = {
 		.fd = fd,
-		.memp = (uint32_t)buf,
+		.memp = virt_to_phys(buf),
 		.len = count,
 	};
 
@@ -125,7 +125,7 @@ ssize_t semihosting_read(int fd, void *buf, size_t count)
 {
 	struct semihosting_file_io read = {
 		.fd = fd,
-		.memp = (uint32_t)buf,
+		.memp = virt_to_phys(buf),
 		.len = count,
 	};
 
@@ -145,11 +145,11 @@ int semihosting_isatty(int fd)
 }
 EXPORT_SYMBOL(semihosting_isatty);
 
-int semihosting_seek(int fd, loff_t pos)
+off_t semihosting_seek(int fd, off_t pos)
 {
 	struct __packed {
-		uint32_t fd;
-		uint32_t pos;
+		ulong fd;
+		ulong pos;
 	} seek = {
 		.fd = fd,
 		.pos = pos,
@@ -158,8 +158,7 @@ int semihosting_seek(int fd, loff_t pos)
 	return semihosting_trap(SEMIHOSTING_SYS_SEEK, &seek);
 }
 EXPORT_SYMBOL(semihosting_seek);
-
-int semihosting_flen(int fd)
+off_t semihosting_flen(int fd)
 {
 	return semihosting_trap(SEMIHOSTING_SYS_FLEN, &fd);
 }
@@ -168,10 +167,10 @@ EXPORT_SYMBOL(semihosting_flen);
 int semihosting_remove(const char *fname)
 {
 	struct __packed {
-		uint32_t fname;
-		uint32_t fname_length;
+		ulong fname;
+		ulong fname_length;
 	} remove = {
-		.fname = (uint32_t)fname,
+		.fname = virt_to_phys(fname),
 		.fname_length = strlen(fname),
 	};
 
@@ -182,14 +181,14 @@ EXPORT_SYMBOL(semihosting_remove);
 int semihosting_rename(const char *fname1, const char *fname2)
 {
 	struct __packed {
-		uint32_t fname1;
-		uint32_t fname1_length;
-		uint32_t fname2;
-		uint32_t fname2_length;
+		ulong fname1;
+		ulong fname1_length;
+		ulong fname2;
+		ulong fname2_length;
 	} rename = {
-		.fname1 = (uint32_t)fname1,
+		.fname1 = virt_to_phys(fname1),
 		.fname1_length = strlen(fname1),
-		.fname2 = (uint32_t)fname2,
+		.fname2 = virt_to_phys(fname2),
 		.fname2_length = strlen(fname2),
 	};
 
@@ -207,10 +206,10 @@ EXPORT_SYMBOL(semihosting_errno);
 int semihosting_system(const char *command)
 {
 	struct __packed {
-		uint32_t cmd;
-		uint32_t cmd_len;
+		ulong cmd;
+		ulong cmd_len;
 	} system = {
-		.cmd = (uint32_t)command,
+		.cmd = virt_to_phys(command),
 		.cmd_len = strlen(command),
 	};
 

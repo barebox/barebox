@@ -26,7 +26,7 @@
 
 static int file_to_fd(const FILE *f)
 {
-	return (int)f->priv;
+	return (int)(uintptr_t)f->priv;
 }
 
 static int smhfs_create(struct device __always_unused *dev,
@@ -72,7 +72,7 @@ static int smhfs_open(struct device __always_unused *dev,
 	if (fd < 0)
 		goto error;
 
-	file->priv = (void *)fd;
+	file->priv = (void *)(uintptr_t)fd;
 	file->size = semihosting_flen(fd);
 	if (file->size < 0)
 		goto error;

@@ -337,6 +337,19 @@ config DEBUG_QEMU_ARM64_VIRT
 	bool "QEMU ARM64 Virt PL011 console"
 	depends on ARCH_ARM64_VIRT
 
+config DEBUG_SEMIHOSTING
+	bool "Semihosting console"
+	depends on SEMIHOSTING
+	help
+	  Semihosting enables code to use the I/O facilities on a
+	  host debugger/emulator through a simple supervisor call.
+	  The host debugger or emulator must have semihosting enabled
+	  for the supervisor call to be trapped, otherwise barebox
+	  will crash.
+
+	  Say Y here if you want low-level debugging support
+	  using semihosting writec.
+
 endchoice
 
 config DEBUG_LL_NS16550

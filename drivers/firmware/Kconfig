@@ -3,6 +3,7 @@ menu "Firmware Drivers"
 
 config SEMIHOSTING
 	bool
+	select HAS_DEBUG_LL
 
 config FIRMWARE_ALTERA_SERIAL
 	bool "Altera SPI programming"

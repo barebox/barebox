@@ -39,9 +39,13 @@ size_t wcsnlen(const wchar_t * s, size_t count)
 
 wchar_t *strdup_wchar(const wchar_t *src)
 {
-	int len = wcslen(src);
+	int len;
 	wchar_t *tmp, *dst;
 
+	if (!src)
+		return NULL;
+
+	len = wcslen(src);
 	if (!(dst = malloc((len + 1) * sizeof(wchar_t))))
 		return NULL;
 
@@ -97,8 +101,9 @@ wchar_t *strcpy_char_to_wchar(wchar_t *dst, const char *src)
 
 wchar_t *strdup_char_to_wchar(const char *src)
 {
-	wchar_t *dst = malloc((strlen(src) + 1) * sizeof(wchar_t));
+	wchar_t *dst;
 
+	dst = src ? malloc((strlen(src) + 1) * sizeof(wchar_t)) : NULL;
 	if (!dst)
 		return NULL;
 
@@ -109,8 +114,9 @@ wchar_t *strdup_char_to_wchar(const char *src)
 
 char *strdup_wchar_to_char(const wchar_t *src)
 {
-	char *dst = malloc((wcslen(src) + 1));
+	char *dst;
 
+	dst = src ? malloc((wcslen(src) + 1)) : NULL;
 	if (!dst)
 		return NULL;
 

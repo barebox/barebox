@@ -43,6 +43,12 @@ enum {
 
 long semihosting_trap(ulong sysnum, void *addr);
 
+static long semihosting_call(ulong sysnum, void *addr)
+{
+	long ret = semihosting_trap(sysnum, addr);
+	return ret >= 0 ? ret : -semihosting_errno();
+}
+
 static ulong semihosting_flags_to_mode(int flags)
 {
 	static const int semihosting_open_modeflags[12] = {
@@ -81,13 +87,13 @@ int semihosting_open(const char *fname, int flags)
 		.mode = semihosting_flags_to_mode(flags),
 	};
 
-	return semihosting_trap(SEMIHOSTING_SYS_OPEN, &open);
+	return semihosting_call(SEMIHOSTING_SYS_OPEN, &open);
 }
 EXPORT_SYMBOL(semihosting_open);
 
 int semihosting_close(int fd)
 {
-	return semihosting_trap(SEMIHOSTING_SYS_CLOSE, &fd);
+	return semihosting_call(SEMIHOSTING_SYS_CLOSE, &fd);
 }
 EXPORT_SYMBOL(semihosting_close);
 
@@ -111,37 +117,43 @@ struct __packed semihosting_file_io {
 
 ssize_t semihosting_write(int fd, const void *buf, size_t count)
 {
+	ssize_t ret;
 	struct semihosting_file_io write = {
 		.fd = fd,
 		.memp = virt_to_phys(buf),
 		.len = count,
 	};
 
-	return semihosting_trap(SEMIHOSTING_SYS_WRITE, &write);
+	ret = semihosting_call(SEMIHOSTING_SYS_WRITE, &write);
+
+	return ret >= 0 ? count - ret : ret;
 }
 EXPORT_SYMBOL(semihosting_write);
 
 ssize_t semihosting_read(int fd, void *buf, size_t count)
 {
+	ssize_t ret;
 	struct semihosting_file_io read = {
 		.fd = fd,
 		.memp = virt_to_phys(buf),
 		.len = count,
 	};
 
-	return semihosting_trap(SEMIHOSTING_SYS_READ, &read);
+	ret = semihosting_call(SEMIHOSTING_SYS_READ, &read);
+
+	return ret >= 0 ? count - ret : ret;
 }
 EXPORT_SYMBOL(semihosting_read);
 
 int semihosting_readc(void)
 {
-	return semihosting_trap(SEMIHOSTING_SYS_READC, NULL);
+	return semihosting_call(SEMIHOSTING_SYS_READC, NULL);
 }
 EXPORT_SYMBOL(semihosting_readc);
 
 int semihosting_isatty(int fd)
 {
-	return semihosting_trap(SEMIHOSTING_SYS_ISATTY, &fd);
+	return semihosting_call(SEMIHOSTING_SYS_ISATTY, &fd);
 }
 EXPORT_SYMBOL(semihosting_isatty);
 
@@ -155,12 +167,12 @@ off_t semihosting_seek(int fd, off_t pos)
 		.pos = pos,
 	};
 
-	return semihosting_trap(SEMIHOSTING_SYS_SEEK, &seek);
+	return semihosting_call(SEMIHOSTING_SYS_SEEK, &seek);
 }
 EXPORT_SYMBOL(semihosting_seek);
 off_t semihosting_flen(int fd)
 {
-	return semihosting_trap(SEMIHOSTING_SYS_FLEN, &fd);
+	return semihosting_call(SEMIHOSTING_SYS_FLEN, &fd);
 }
 EXPORT_SYMBOL(semihosting_flen);
 
@@ -174,7 +186,7 @@ int semihosting_remove(const char *fname)
 		.fname_length = strlen(fname),
 	};
 
-	return semihosting_trap(SEMIHOSTING_SYS_REMOVE, &remove);
+	return semihosting_call(SEMIHOSTING_SYS_REMOVE, &remove);
 }
 EXPORT_SYMBOL(semihosting_remove);
 
@@ -192,13 +204,13 @@ int semihosting_rename(const char *fname1, const char *fname2)
 		.fname2_length = strlen(fname2),
 	};
 
-	return semihosting_trap(SEMIHOSTING_SYS_RENAME, &rename);
+	return semihosting_call(SEMIHOSTING_SYS_RENAME, &rename);
 }
 EXPORT_SYMBOL(semihosting_rename);
 
 int semihosting_errno(void)
 {
-	return semihosting_trap(SEMIHOSTING_SYS_ERRNO, NULL);
+	return semihosting_call(SEMIHOSTING_SYS_ERRNO, NULL);
 }
 EXPORT_SYMBOL(semihosting_errno);
 
@@ -213,6 +225,6 @@ int semihosting_system(const char *command)
 		.cmd_len = strlen(command),
 	};
 
-	return semihosting_trap(SEMIHOSTING_SYS_SYSTEM, &system);
+	return semihosting_call(SEMIHOSTING_SYS_SYSTEM, &system);
 }
 EXPORT_SYMBOL(semihosting_system);

@@ -29,6 +29,9 @@ static int legacy_iterate(struct file *file, struct dir_context *ctx)
 	pathname = dpath(dentry, fsdev->vfsmount.mnt_root);
 
 	d = fsdev->driver->opendir(&fsdev->dev, pathname);
+	if (!d)
+		goto out;
+
 	while (1) {
 		dirent = fsdev->driver->readdir(&fsdev->dev, d);
 		if (!dirent)
@@ -38,7 +41,7 @@ static int legacy_iterate(struct file *file, struct dir_context *ctx)
 	}
 
 	fsdev->driver->closedir(&fsdev->dev, d);
-
+out:
 	free(pathname);
 
 	return 0;
@@ -55,10 +58,14 @@ static struct dentry *legacy_lookup(struct inode *dir, struct dentry *dentry,
 	int ret;
 
 	pathname = dpath(dentry, fsdev->vfsmount.mnt_root);
+	if (!pathname)
+		return NULL;
 
 	ret = fsdev->driver->stat(&fsdev->dev, pathname, &s);
 	if (!ret) {
 		inode = legacy_get_inode(sb, dir, s.st_mode);
+		if (!inode)
+			return NULL;
 
 		inode->i_size = s.st_size;
 		inode->i_mode = s.st_mode;

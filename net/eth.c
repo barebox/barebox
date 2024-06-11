@@ -21,7 +21,7 @@
 #include <linux/ctype.h>
 #include <linux/stat.h>
 
-LIST_HEAD(netdev_list);
+DEFINE_DEV_CLASS(eth_class, "eth");
 
 struct eth_ethaddr {
 	struct list_head list;
@@ -445,7 +445,7 @@ int eth_register(struct eth_device *edev)
 	if (edev->init)
 		edev->init(edev);
 
-	list_add_tail(&edev->list, &netdev_list);
+	class_add_device(&eth_class, &edev->dev);
 
 	ret = eth_get_registered_ethaddr(edev, ethaddr);
 	if (!ret)
@@ -512,11 +512,12 @@ void eth_unregister(struct eth_device *edev)
 	if (IS_ENABLED(CONFIG_OFDEVICE))
 		free(edev->nodepath);
 
+	class_remove_device(&eth_class, &edev->dev);
+
 	free(edev->devname);
 
 	unregister_device(&edev->dev);
 	slice_exit(&edev->slice);
-	list_del(&edev->list);
 }
 
 void led_trigger_network(enum led_trigger trigger)

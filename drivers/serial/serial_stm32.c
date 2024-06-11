@@ -167,14 +167,14 @@ static int stm32_serial_probe(struct device *dev)
 
 	stm32->clk = clk_get_for_console(dev, NULL);
 	if (IS_ERR(stm32->clk)) {
-		ret = PTR_ERR(stm32->clk);
-		dev_err(dev, "Failed to get UART clock %d\n", ret);
+		ret = dev_err_probe(dev, PTR_ERR(stm32->clk),
+				    "Failed to get UART clock\n");
 		goto io_release;
 	}
 
 	ret = clk_enable(stm32->clk);
 	if (ret) {
-		dev_err(dev, "Failed to enable UART clock %d\n", ret);
+		dev_err_probe(dev, ret, "Failed to enable UART clock\n");
 		goto io_release;
 	}
 

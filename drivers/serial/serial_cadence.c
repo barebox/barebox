@@ -190,13 +190,13 @@ static int cadence_serial_probe(struct device *dev)
 	cdev = &priv->cdev;
 	dev->priv = priv;
 
-	priv->clk = clk_get(dev, NULL);
+	priv->clk = clk_get_for_console(dev, NULL);
 	if (IS_ERR(priv->clk)) {
 		ret = -ENODEV;
 		goto err_free;
 	}
 
-	if (devtype->mode & CADENCE_MODE_CLK_REF_DIV)
+	if (priv->clk && (devtype->mode & CADENCE_MODE_CLK_REF_DIV))
 		clk_set_rate(priv->clk, clk_get_rate(priv->clk) / 8);
 
 	iores = dev_request_mem_resource(dev, 0);
@@ -211,13 +211,16 @@ static int cadence_serial_probe(struct device *dev)
 	cdev->putc = cadence_serial_putc;
 	cdev->getc = cadence_serial_getc;
 	cdev->flush = cadence_serial_flush;
-	cdev->setbrg = cadence_serial_setbaudrate;
+	cdev->setbrg = priv->clk ? cadence_serial_setbaudrate : NULL;
 
 	cadence_serial_init_port(cdev);
 
 	console_register(cdev);
-	priv->notify.notifier_call = cadence_clocksource_clock_change;
-	clock_register_client(&priv->notify);
+
+	if (priv->clk) {
+		priv->notify.notifier_call = cadence_clocksource_clock_change;
+		clock_register_client(&priv->notify);
+	}
 
 	return 0;
 

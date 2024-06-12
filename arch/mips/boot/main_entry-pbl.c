@@ -21,15 +21,6 @@ unsigned long free_mem_end_ptr;
 
 void pbl_main_entry(void *fdt, void *fdt_end, u32 ram_size);
 
-static void barebox_uncompress(void *compressed_start, unsigned int len)
-{
-	/* set 128 KiB at the end of the MALLOC_BASE for early malloc */
-	free_mem_ptr = TEXT_BASE - SZ_128K;
-	free_mem_end_ptr = free_mem_ptr + SZ_128K;
-
-	pbl_barebox_uncompress((void*)TEXT_BASE, compressed_start, len);
-}
-
 void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end,
 					   u32 ram_size)
 {
@@ -42,8 +33,13 @@ void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end,
 	/* clear bss */
 	memset(__bss_start, 0, __bss_stop - __bss_start);
 
+	/* set 128 KiB at the end of the MALLOC_BASE for early malloc */
+	free_mem_ptr = TEXT_BASE - SZ_128K;
+	free_mem_end_ptr = free_mem_ptr + SZ_128K;
+
 	piggy_len = (unsigned long)&input_data_end - (unsigned long)&input_data;
-	barebox_uncompress(&input_data, piggy_len);
+
+	pbl_barebox_uncompress((void *)TEXT_BASE, &input_data, piggy_len);
 
 	fdt_len = (unsigned long)fdt_end - (unsigned long)fdt;
 	if (!fdt_len) {

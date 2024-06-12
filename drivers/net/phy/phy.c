@@ -171,6 +171,8 @@ struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id)
 	phydev->pause = phydev->asym_pause = 0;
 	phydev->autoneg = AUTONEG_ENABLE;
 
+	phydev->polling_interval = PHY_POLL_INTERVAL;
+
 	phydev->addr = addr;
 	phydev->phy_id = phy_id;
 

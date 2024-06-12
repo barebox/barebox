@@ -204,7 +204,7 @@ static int eth_carrier_check(struct eth_device *edev, bool may_wait)
 		return 0;
 
 	if (!edev->last_link_check ||
-	    is_timeout(edev->last_link_check, 5 * SECOND))
+	    is_timeout(edev->last_link_check, edev->phydev->polling_interval))
 		eth_carrier_poll_once(edev);
 
 	if (may_wait && !edev->phydev->link) {

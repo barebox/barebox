@@ -118,6 +118,7 @@ typedef enum {
 #define PHY_INIT_TIMEOUT	100000
 #define PHY_FORCE_TIMEOUT	10
 #define PHY_AN_TIMEOUT		10
+#define PHY_POLL_INTERVAL	(5 * SECOND)
 
 #define PHY_MAX_ADDR	32
 
@@ -247,6 +248,8 @@ struct phy_device {
 	void (*adjust_link)(struct eth_device *dev);
 
 	struct cdev cdev;
+
+	uint64_t polling_interval;
 };
 #define to_phy_device(d) container_of(d, struct phy_device, dev)
 

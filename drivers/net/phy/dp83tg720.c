@@ -5,6 +5,7 @@
 #include <common.h>
 #include <linux/mdio.h>
 #include <linux/phy.h>
+#include <stdlib.h>
 
 #define DP83TG720S_PHY_ID			0x2000a284
 
@@ -20,6 +21,8 @@
 
 #define DP83TG720S_PHY_RESET			0x1f
 #define DP83TG720S_HW_RESET			BIT(15)
+
+#define DP83TG720S_POLL_TIMEOUT_MS		100
 
 static int dp83tg720_config_rgmii_delay(struct phy_device *phydev)
 {
@@ -72,6 +75,12 @@ static int dp83tg720_read_status(struct phy_device *phydev)
 {
 	u16 phy_sts;
 
+	/* Randomize the polling interval to avoid reset synchronization with
+	 * the link partner.  The polling interval is set to 150ms +/- 50ms.
+	 */
+	phydev->polling_interval = (DP83TG720S_POLL_TIMEOUT_MS +
+				    (rand() % 10) * 10) * MSECOND;
+
 	phy_sts = phy_read(phydev, DP83TG720S_MII_REG_10);
 	phydev->link = !!(phy_sts & DP83TG720S_LINK_STATUS);
 	if (!phydev->link) {
@@ -92,12 +101,20 @@ static int dp83tg720_read_status(struct phy_device *phydev)
 	return 0;
 }
 
+static int dp83tg720_probe(struct phy_device *phydev)
+{
+	phydev->polling_interval = DP83TG720S_POLL_TIMEOUT_MS * MSECOND;
+
+	return 0;
+}
+
 static struct phy_driver dp83tg720_driver[] = {
 	{
 		PHY_ID_MATCH_MODEL(DP83TG720S_PHY_ID),
 		.drv.name	= "TI DP83TG720S",
 		.read_status	= dp83tg720_read_status,
 		.config_init	= dp83tg720_phy_init,
+		.probe		= dp83tg720_probe,
 	}
 };
 device_phy_drivers(dp83tg720_driver);

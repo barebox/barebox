@@ -24,6 +24,11 @@
 
 #define DP83TG720S_POLL_TIMEOUT_MS		100
 
+#define DP83TG720S_LPS_CFG3			0x18c
+/* Power modes are documented as bitfields but used as values */
+/* Power Mode 0 is Normal mode */
+#define DP83TG720S_LPS_CFG3_PWR_MODE_0		BIT(0)
+
 static int dp83tg720_config_rgmii_delay(struct phy_device *phydev)
 {
 	u16 rgmii_delay_mask;
@@ -57,6 +62,8 @@ static int dp83tg720_config_rgmii_delay(struct phy_device *phydev)
 
 static int dp83tg720_phy_init(struct phy_device *phydev)
 {
+	int ret = 0;
+
 	/* HW reset is needed to recover link if previous link was lost. SW
 	 * reset is not enough.
 	 */
@@ -65,10 +72,23 @@ static int dp83tg720_phy_init(struct phy_device *phydev)
 	phydev->supported = SUPPORTED_1000baseT_Full;
 	phydev->advertising = SUPPORTED_1000baseT_Full;
 
-	if (phy_interface_is_rgmii(phydev))
-		return dp83tg720_config_rgmii_delay(phydev);
+	/* According to the "DP83TG720R-Q1 1000BASE-T1 Automotive Ethernet PHY
+	 * datasheet (Rev. C)" - "T6.2 Post reset stabilization-time prior to
+	 * MDC preamble for register access is 1ms."
+	 */
+	mdelay(1);
 
-	return 0;
+	if (phy_interface_is_rgmii(phydev)) {
+		ret = dp83tg720_config_rgmii_delay(phydev);
+		if (ret)
+			return ret;
+	}
+
+	/* In case the PHY is bootstrapped in managed mode, we need to
+	 * wake it.
+	 */
+	return phy_write_mmd(phydev, MDIO_MMD_VEND2, DP83TG720S_LPS_CFG3,
+			     DP83TG720S_LPS_CFG3_PWR_MODE_0);
 }
 
 static int dp83tg720_read_status(struct phy_device *phydev)

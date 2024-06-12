@@ -35,7 +35,7 @@ void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end,
 {
 	u32 piggy_len, fdt_len;
 	void *fdt_new;
-	void (*barebox)(void *fdt, u32 fdt_len, u32 ram_size);
+	void (*barebox)(void *fdt, u32 ram_size);
 
 	puts_ll("pbl_main_entry()\n");
 
@@ -53,5 +53,5 @@ void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end,
 	memcpy(fdt_new, fdt, fdt_len);
 
 	barebox = (void *)TEXT_BASE;
-	barebox(fdt_new, fdt_len, ram_size);
+	barebox(fdt_new, ram_size);
 }

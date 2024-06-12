@@ -40,8 +40,8 @@
 #include <linux/sizes.h>
 #include <asm-generic/memory_layout.h>
 
-void main_entry(void *fdt, u32 fdt_size);
-void __noreturn relocate_code(void *fdt, u32 fdt_size, u32 relocaddr);
+void main_entry(void *fdt);
+void __noreturn relocate_code(void *fdt, u32 relocaddr);
 
 /**
  * read_uint() - Read an unsigned integer from the buffer
@@ -106,7 +106,7 @@ static void apply_reloc(unsigned int type, void *addr, long off)
 	}
 }
 
-void __noreturn relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
+void __noreturn relocate_code(void *fdt, u32 ram_size)
 {
 	unsigned long addr, length, bss_len, relocaddr, new_stack;
 	uint8_t *buf;
@@ -156,13 +156,11 @@ void __noreturn relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 
 	 __asm__ __volatile__ (
 			"move	$a0, %0\n"
-		"	move	$a1, %1\n"
 		"	move	$31, $0\n"
-		"	move	$sp, %2\n"
-		"	jr	%3\n"
+		"	move	$sp, %1\n"
+		"	jr	%2\n"
 		: /* no outputs */
 		: "r"(fdt),
-		  "r"(fdt_size),
 		  "r"(new_stack),
 		  "r"((unsigned long)main_entry + off));
 

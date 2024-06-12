@@ -61,7 +61,7 @@ sdram_configured:
 	stack_setup;
 
 	lw	a0, 0;
-	la	v0, pbl_main_entry;
+	la	v0, barebox_pbl_start;
 	jal	v0;
 	 nop;
 

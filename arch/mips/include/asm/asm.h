@@ -97,7 +97,7 @@ EXPORT(symbol)						\
 	PTR_LA	a0, __dtb_ ## dtb##_start;		\
 	PTR_LA	a1, __dtb_ ## dtb##_end;		\
 	PTR_LI	a2, ram_size;				\
-	PTR_LA	v0, pbl_main_entry;			\
+	PTR_LA	v0, barebox_pbl_start;			\
 	jal	v0;					\
 	 nop;						\
 							\

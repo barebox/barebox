@@ -1070,8 +1070,12 @@ static void mci_extract_block_lengths_from_csd(struct mci *mci)
 {
 	mci->read_bl_len = 1 << UNSTUFF_BITS(mci->csd, 80, 4);
 
+	/* Quoting Physical Layer Simplified Specification Version 9.10:
+	 * Note that in an SD Memory Card the WRITE_BL_LEN is always
+	 * equal to READ_BL_LEN.
+	 */
 	if (IS_SD(mci))
-		mci->write_bl_len = mci->read_bl_len;	/* FIXME why? */
+		mci->write_bl_len = mci->read_bl_len;
 	else
 		mci->write_bl_len = 1 << ((mci->csd[3] >> 22) & 0xf);
 

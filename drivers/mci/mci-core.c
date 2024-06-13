@@ -936,15 +936,15 @@ static void mci_set_bus_width(struct mci *mci, enum mci_bus_width width)
 /**
  * Extract card's version from its CSD
  * @param mci MCI instance
- * @return 0 on success
  */
 static void mci_detect_version_from_csd(struct mci *mci)
 {
 	int version;
 
 	if (mci->version == MMC_VERSION_UNKNOWN) {
-		/* the version is coded in the bits 127:126 (left aligned) */
-		version = (mci->csd[0] >> 26) & 0xf;	/* FIXME why other width? */
+		/* this should only apply to MMC card, JESD84-B51 defines
+		 * bits 125:122 as SPEC_VER (reserved bits in CSD) */
+		version = (mci->csd[0] >> 26) & 0xf;
 
 		switch (version) {
 		case 0:

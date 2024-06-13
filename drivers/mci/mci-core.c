@@ -1623,7 +1623,7 @@ static int mci_startup(struct mci *mci)
 
 	/*
 	 * For MMC cards, set the Relative Address.
-	 * For SD cards, get the Relatvie Address.
+	 * For SD cards, get the Relative Address.
 	 * This also puts the cards into Standby State
 	 */
 	if (!mmc_host_is_spi(host)) { /* cmd not supported in spi */
@@ -1659,7 +1659,7 @@ static int mci_startup(struct mci *mci)
 	mci_extract_block_lengths_from_csd(mci);
 	mci_extract_card_dsr_imp_from_csd(mci);
 
-	/* sanitiy? */
+	/* sanity? */
 	if (mci->read_bl_len > SECTOR_SIZE) {
 		mci->read_bl_len = SECTOR_SIZE;
 		dev_dbg(&mci->dev, "Limiting max. read block size down to %u\n",

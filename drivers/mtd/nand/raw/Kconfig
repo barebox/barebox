@@ -35,6 +35,9 @@ config NAND_ALLOW_ERASE_BAD
 config NAND_NEED_EXEC_OP
 	bool
 
+config NAND_NEED_ECC_PLACEMENT_INTERLEAVED
+	bool
+
 comment "Raw/parallel NAND flash controllers"
 
 config NAND_IMX
@@ -156,6 +159,7 @@ config MTD_NAND_DENALI
 	tristate "Support Denali NAND controller"
 	depends on HAS_DMA
 	select NAND_NEED_EXEC_OP
+	select NAND_NEED_ECC_PLACEMENT_INTERLEAVED
 	help
 	  Enable support for the Denali NAND controller.  This should be
 	  combined with either the PCI or platform drivers to provide device

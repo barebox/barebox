@@ -118,6 +118,11 @@ static inline bool nand_has_exec_op(struct nand_chip *chip)
 	    !chip->controller->ops->exec_op)
 		return false;
 
+	if (!IS_ENABLED(CONFIG_NAND_NEED_EXEC_OP)) {
+		pr_err("driver needs exec_op, but CONFIG_NAND_NEED_EXEC_OP is disabled\n");
+		return false;
+	}
+
 	return true;
 }
 

@@ -29,6 +29,10 @@
 /* Power Mode 0 is Normal mode */
 #define DP83TG720S_LPS_CFG3_PWR_MODE_0		BIT(0)
 
+struct dp83tg720_priv {
+	uint64_t last_reset;
+};
+
 static int dp83tg720_config_rgmii_delay(struct phy_device *phydev)
 {
 	u16 rgmii_delay_mask;
@@ -62,6 +66,7 @@ static int dp83tg720_config_rgmii_delay(struct phy_device *phydev)
 
 static int dp83tg720_phy_init(struct phy_device *phydev)
 {
+	struct dp83tg720_priv *priv = phydev->priv;
 	int ret = 0;
 
 	/* HW reset is needed to recover link if previous link was lost. SW
@@ -71,6 +76,12 @@ static int dp83tg720_phy_init(struct phy_device *phydev)
 
 	phydev->supported = SUPPORTED_1000baseT_Full;
 	phydev->advertising = SUPPORTED_1000baseT_Full;
+	priv->last_reset = get_time_ns();
+	/* Randomize the polling interval to avoid reset synchronization with
+	 * the link partner.  The polling interval is set to 150ms +/- 50ms.
+	 */
+	phydev->polling_interval = (DP83TG720S_POLL_TIMEOUT_MS +
+				    (rand() % 10) * 10) * MSECOND;
 
 	/* According to the "DP83TG720R-Q1 1000BASE-T1 Automotive Ethernet PHY
 	 * datasheet (Rev. C)" - "T6.2 Post reset stabilization-time prior to
@@ -93,13 +104,8 @@ static int dp83tg720_phy_init(struct phy_device *phydev)
 
 static int dp83tg720_read_status(struct phy_device *phydev)
 {
+	struct dp83tg720_priv *priv = phydev->priv;
 	u16 phy_sts;
-
-	/* Randomize the polling interval to avoid reset synchronization with
-	 * the link partner.  The polling interval is set to 150ms +/- 50ms.
-	 */
-	phydev->polling_interval = (DP83TG720S_POLL_TIMEOUT_MS +
-				    (rand() % 10) * 10) * MSECOND;
 
 	phy_sts = phy_read(phydev, DP83TG720S_MII_REG_10);
 	phydev->link = !!(phy_sts & DP83TG720S_LINK_STATUS);
@@ -111,18 +117,24 @@ static int dp83tg720_read_status(struct phy_device *phydev)
 		 * Implementation Guide", the PHY needs to be reset after a
 		 * link loss or if no link is created after at least 100ms.
 		 */
-		dp83tg720_phy_init(phydev);
-		return 0;
+		if (!priv->last_reset ||
+		    is_timeout(priv->last_reset, phydev->polling_interval))
+			dp83tg720_phy_init(phydev);
+	} else {
+		phydev->duplex = DUPLEX_FULL;
+		phydev->speed = SPEED_1000;
 	}
-
-	phydev->duplex = DUPLEX_FULL;
-	phydev->speed = SPEED_1000;
 
 	return 0;
 }
 
 static int dp83tg720_probe(struct phy_device *phydev)
 {
+	struct dp83tg720_priv *priv;
+
+	priv = xzalloc(sizeof(*priv));
+
+	phydev->priv = priv;
 	phydev->polling_interval = DP83TG720S_POLL_TIMEOUT_MS * MSECOND;
 
 	return 0;

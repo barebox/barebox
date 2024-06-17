@@ -17,8 +17,7 @@ struct arria10_pinmux_cfg;
 
 void arria10_init(struct arria10_mainpll_cfg *mainpll,
 		  struct arria10_perpll_cfg *perpll, uint32_t *pinmux);
-void arria10_finish_io(struct arria10_mainpll_cfg *mainpll,
-		       struct arria10_perpll_cfg *perpll, uint32_t *pinmux);
+void arria10_finish_io(uint32_t *pinmux);
 
 void socfpga_lowlevel_init(struct socfpga_cm_config *cm_config,
 			   struct socfpga_io_config *io_config);

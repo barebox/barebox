@@ -2515,7 +2515,6 @@ int mci_register(struct mci_host *host)
 {
 	struct mci *mci;
 	struct device *hw_dev;
-	struct param_d *param;
 	int ret;
 
 	mci = xzalloc(sizeof(*mci));
@@ -2560,23 +2559,11 @@ int mci_register(struct mci_host *host)
 
 	dev_info(hw_dev, "registered as %s\n", dev_name(&mci->dev));
 
-	param = dev_add_param_bool(&mci->dev, "probe", mci_set_probe, NULL,
-				   &mci->probe, mci);
+	dev_add_param_bool(&mci->dev, "probe", mci_set_probe, NULL,
+			   &mci->probe, mci);
 
-	if (IS_ERR(param) && PTR_ERR(param) != -ENOSYS) {
-		ret = PTR_ERR(param);
-		dev_dbg(&mci->dev, "Failed to add 'probe' parameter to the MCI device\n");
-		goto err_unregister;
-	}
-
-	param = dev_add_param_bool(&mci->dev, "broken_cd", NULL, NULL,
-				   &host->broken_cd, mci);
-
-	if (IS_ERR(param) && PTR_ERR(param) != -ENOSYS) {
-		ret = PTR_ERR(param);
-		dev_dbg(&mci->dev, "Failed to add 'broken_cd' parameter to the MCI device\n");
-		goto err_unregister;
-	}
+	dev_add_param_bool(&mci->dev, "broken_cd", NULL, NULL,
+			   &host->broken_cd, mci);
 
 	if (IS_ENABLED(CONFIG_MCI_INFO))
 		mci->dev.info = mci_info;
@@ -2592,8 +2579,6 @@ int mci_register(struct mci_host *host)
 
 	return 0;
 
-err_unregister:
-	unregister_device(&mci->dev);
 err_free:
 	free(mci);
 

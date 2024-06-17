@@ -5672,7 +5672,7 @@ static int nand_set_ecc_on_host_ops(struct nand_chip *chip)
 
 	case NAND_ECC_PLACEMENT_INTERLEAVED:
 		if (!IS_ENABLED(CONFIG_NAND_NEED_ECC_PLACEMENT_INTERLEAVED)) {
-			WARN(1, "CONFIG_NAND_NEED_ECC_PLACEMENT_INTERLEAVED is disabled\n"
+			WARN(1, "CONFIG_NAND_NEED_ECC_PLACEMENT_INTERLEAVED is disabled\n");
 			break;
 		}
 		if ((!ecc->calculate || !ecc->correct || !ecc->hwctl) &&

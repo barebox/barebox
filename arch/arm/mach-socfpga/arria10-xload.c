@@ -353,25 +353,25 @@ int arria10_prepare_mmc(int barebox_part, int rbf_part)
 	return 0;
 }
 
-static inline int __arria10_load_fpga(void *buf, uint32_t count, uint32_t size)
+static inline int __arria10_load_fpga(void *buf, uint32_t sector, uint32_t end)
 {
 	int ret;
 
-	arria10_read_blocks(buf, count + bitstream.first_sec, SZ_16K);
+	arria10_read_blocks(buf, sector + bitstream.first_sec, SZ_16K);
 
-	count += SZ_16K / SECTOR_SIZE;
+	sector += SZ_16K / SECTOR_SIZE;
 
 	ret = a10_fpga_init(buf);
 	if (ret)
 		return -EAGAIN;
 
-	while (count <= size) {
+	while (sector <= end) {
 		ret = a10_fpga_write(buf, SZ_16K);
 		if (ret == -ENOSPC)
 			break;
 
-		count += SZ_16K / SECTOR_SIZE;
-		ret = arria10_read_blocks(buf, count, SZ_16K);
+		sector += SZ_16K / SECTOR_SIZE;
+		ret = arria10_read_blocks(buf, sector, SZ_16K);
 	}
 
 	ret = a10_fpga_write_complete();
@@ -385,8 +385,8 @@ int arria10_load_fpga(int offset, int bitstream_size)
 {
 	int ret;
 	void *buf = (void *)0xffe00000 + SZ_256K - 256 - SZ_16K;
-	uint32_t count;
-	uint32_t size = bitstream_size / SECTOR_SIZE;
+	uint32_t sector_count;
+	uint32_t end_sector = (bitstream_size + offset) / SECTOR_SIZE;
 	uint32_t retryCount;
 
 	if (offset)
@@ -397,9 +397,10 @@ int arria10_load_fpga(int offset, int bitstream_size)
 	 * some margin and try up to 10 times
 	 */
 	for (retryCount = 0; retryCount < 10; ++retryCount) {
-		count = offset;
 
-		ret = __arria10_load_fpga(buf, count, size);
+		sector_count = offset;
+
+		ret = __arria10_load_fpga(buf, sector_count, end_sector);
 		if (!ret)
 			return 0;
 		else if (ret == -EAGAIN)

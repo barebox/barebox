@@ -74,6 +74,10 @@ static int arria10_generic_init(void)
 	pr_debug("Register restart handler\n");
 	restart_handler_register_fn("soc", arria10_restart_soc);
 
+	/* mark image in OCRAM as valid and finally disable the l4wd0 */
+	writel(ARRIA10_SYSMGR_ROM_INITSWSTATE_VALID, ARRIA10_SYSMGR_ROM_INITSWSTATE);
+	arria10_watchdog_disable();
+
 	return 0;
 }
 postcore_initcall(arria10_generic_init);

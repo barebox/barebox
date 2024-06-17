@@ -364,7 +364,7 @@ static inline int __arria10_load_fpga(void *buf, uint32_t sector, uint32_t end)
 
 	while (sector <= end) {
 		ret = a10_fpga_write(buf, SZ_16K);
-		if (ret == -ENOSPC)
+		if (ret)
 			break;
 
 		arria10_kick_l4wd0();
@@ -375,7 +375,7 @@ static inline int __arria10_load_fpga(void *buf, uint32_t sector, uint32_t end)
 	arria10_kick_l4wd0();
 	ret = a10_fpga_write_complete();
 	if (ret)
-		return -EAGAIN;
+		return ret;
 
 	return 0;
 }
@@ -391,6 +391,8 @@ int arria10_load_fpga(int offset, int bitstream_size)
 	if (offset)
 		offset = offset / SECTOR_SIZE;
 
+	writel(0x0, ARRIA10_SYSMGR_ROM_ISW7);
+
 	/* Up to 4 retries have been seen on the Enclustra Mercury AA1+ board, as
 	 * FPGA configuration is mandatory to be able to continue the boot, take
 	 * some margin and try up to 10 times
@@ -402,9 +404,13 @@ int arria10_load_fpga(int offset, int bitstream_size)
 		ret = __arria10_load_fpga(buf, sector_count, end_sector);
 		if (!ret)
 			return 0;
+		else if (ret == -EIO)
+			break;
 		else if (ret == -EAGAIN)
 			continue;
 	}
+
+	writel(0x64616544, ARRIA10_SYSMGR_ROM_ISW7);
 
 	hang();
 	return -EIO;

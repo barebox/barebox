@@ -21,4 +21,15 @@ ENDPROC(kvx_ ## __type ## _early_handler)
 exception_stub(debug)
 exception_stub(trap)
 exception_stub(interrupt)
-exception_stub(syscall)
+
+/**
+ * The only time this handle syscalls is when debug routines are not present
+ * (which can happen when booted without JTAG). For instance the "magic
+ * console" uses a syscall catched by the debug routine and if not handled
+ * barebox will crash.
+ */
+.section .exception.syscall, "ax", @progbits
+ENTRY(kvx_syscall_handler):
+	rfe
+	;;
+ENDPROC(kvx_syscall_handler)

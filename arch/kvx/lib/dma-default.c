@@ -7,6 +7,7 @@
 #include <asm/cache.h>
 #include <asm/sfr.h>
 #include <asm/sys_arch.h>
+#include <linux/bug.h>
 
 /*
  * The implementation of arch should follow the following rules:

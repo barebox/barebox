@@ -220,10 +220,8 @@ static int a10_fpga_init(void *buf)
 	/* wait for nstatus == 1 */
 	timeout = 1000000;
 	while ((socfpga_a10_fpga_read_stat() & mask) != mask) {
-		if (timeout-- < 0) {
-			writel(socfpga_a10_fpga_read_stat(), 0xFFD06238);
+		if (timeout-- < 0)
 			return -ETIMEDOUT;
-		}
 	}
 
 	stat = socfpga_a10_fpga_read_stat();

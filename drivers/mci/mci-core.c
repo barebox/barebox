@@ -2562,9 +2562,6 @@ int mci_register(struct mci_host *host)
 	dev_add_param_bool(&mci->dev, "probe", mci_set_probe, NULL,
 			   &mci->probe, mci);
 
-	dev_add_param_bool(&mci->dev, "broken_cd", NULL, NULL,
-			   &host->broken_cd, mci);
-
 	if (IS_ENABLED(CONFIG_MCI_INFO))
 		mci->dev.info = mci_info;
 
@@ -2572,8 +2569,12 @@ int mci_register(struct mci_host *host)
 	if (IS_ENABLED(CONFIG_MCI_STARTUP))
 		mci_card_probe(mci);
 
-	if (!(host->caps2 & MMC_CAP2_NO_SD) && dev_of_node(host->hw_dev))
+	if (!(host->caps2 & MMC_CAP2_NO_SD) && dev_of_node(host->hw_dev)) {
+		dev_add_param_bool(&mci->dev, "broken_cd", NULL, NULL,
+				   &host->broken_cd, mci);
+
 		of_register_fixup(of_broken_cd_fixup, host);
+	}
 
 	list_add_tail(&mci->list, &mci_list);
 

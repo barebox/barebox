@@ -50,10 +50,21 @@ ENTRY(kvx_start)
 	;;
 	/* Setup default processor status */
 	make $r25 = PS_WFXL_START_VALUE
+	/* Make sure there is no outstanding
+	 * load(s)/store(s) before dcache enable
+	 */
+	fence
 	;;
 	wfxl $ps, $r25
 	;;
+	/* Make sure icache starts clean */
+	i1inval
+	;;
+	barrier
+	;;
 	make $r25 = PCR_WFXM_START_VALUE
+	/* Make sure dcache starts clean */
+	d1inval
 	;;
 	wfxm $pcr, $r25
 	;;

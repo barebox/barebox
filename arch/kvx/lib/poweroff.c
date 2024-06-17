@@ -7,6 +7,8 @@
 #include <common.h>
 #include <poweroff.h>
 
+#include <asm/sfr.h>
+
 static void __noreturn kvx_poweroff(struct poweroff_handler *handler)
 {
 	register int status asm("r0") = 0;
@@ -14,9 +16,18 @@ static void __noreturn kvx_poweroff(struct poweroff_handler *handler)
 	shutdown_barebox();
 
 	asm volatile ("scall 0xfff\n\t;;"
-			: : "r"(status)
-			: "r1", "r2", "r3", "r4", "r5", "r6", "r7",
-							"r8", "memory");
+		      :: "r"(status)
+		       : "r1", "r2", "r3", "r4", "r5", "r6", "r7",
+		         "r8", "r9", "r10", "r11", "memory");
+
+	/* If the scall returns, power down the mppa with stop */
+	kvx_sfr_set_field(WS, WU2, 0);
+
+	asm volatile ("1: stop\n"
+		      ";;\n"
+		      "goto 1b\n"
+		      ";;\n");
+
 	hang();
 }
 

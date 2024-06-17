@@ -368,13 +368,10 @@ static inline int __arria10_load_fpga(void *buf, uint32_t count, uint32_t size)
 	while (count <= size) {
 		ret = a10_fpga_write(buf, SZ_16K);
 		if (ret == -ENOSPC)
-			return -EAGAIN;
+			break;
 
 		count += SZ_16K / SECTOR_SIZE;
 		ret = arria10_read_blocks(buf, count, SZ_16K);
-		// Reading failed, consider this a failed attempt to configure the FPGA and retry
-		if (ret)
-			return -EAGAIN;
 	}
 
 	ret = a10_fpga_write_complete();

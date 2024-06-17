@@ -8,7 +8,6 @@
 #include <asm/barebox.lds.h>
 
 OUTPUT_FORMAT("elf64-kvx")
-OUTPUT_ARCH("kvx:kv3-1:64")
 
 SECTIONS
 {

@@ -37,6 +37,17 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x110000000
 
+choice
+	prompt "KVX CPU variant"
+
+config ARCH_COOLIDGE_V1
+	bool "Coolidge V1 (KV3-1)"
+
+config ARCH_COOLIDGE_V2
+	bool "Coolidge V2 (KV3-2)"
+
+endchoice
+
 menu "Board configuration"
 
 config BUILTIN_DTB

@@ -57,15 +57,17 @@ static int a10_fpga_wait_for_condone(void)
 {
 	u32 reg, i;
 
-	for (i = 0; i < 0x1000000 ; i++) {
+	for (i = 0; i < 1000; i++) {
 		reg = socfpga_a10_fpga_read_stat();
 
 		if (reg & A10_FPGAMGR_IMGCFG_STAT_F2S_CONDONE_PIN)
 			return 0;
-		arria10_kick_l4wd0();
 
 		if ((reg & A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN) == 0)
 			return -EIO;
+
+		arria10_kick_l4wd0();
+		__udelay(1);
 	}
 
 	return -ETIMEDOUT;

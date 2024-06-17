@@ -46,6 +46,7 @@ static int a10_fpga_wait_for_condone(void)
 
 		if (reg & A10_FPGAMGR_IMGCFG_STAT_F2S_CONDONE_PIN)
 			return 0;
+		arria10_kick_l4wd0();
 
 		if ((reg & A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN) == 0)
 			return -EIO;
@@ -69,6 +70,7 @@ static void a10_fpga_generate_dclks(uint32_t count)
 	timeout = 10000000;
 
 	while (!readl(ARRIA10_FPGAMGRREGS_ADDR + A10_FPGAMGR_DCLKSTAT_OFST)) {
+		arria10_kick_l4wd0();
 		if (timeout-- < 0)
 			return;
 	}
@@ -357,10 +359,12 @@ static inline int __arria10_load_fpga(void *buf, uint32_t sector, uint32_t end)
 {
 	int ret;
 
+	arria10_kick_l4wd0();
 	arria10_read_blocks(buf, sector + bitstream.first_sec, SZ_16K);
 
 	sector += SZ_16K / SECTOR_SIZE;
 
+	arria10_kick_l4wd0();
 	ret = a10_fpga_init(buf);
 	if (ret)
 		return -EAGAIN;
@@ -370,10 +374,12 @@ static inline int __arria10_load_fpga(void *buf, uint32_t sector, uint32_t end)
 		if (ret == -ENOSPC)
 			break;
 
+		arria10_kick_l4wd0();
 		sector += SZ_16K / SECTOR_SIZE;
 		ret = arria10_read_blocks(buf, sector, SZ_16K);
 	}
 
+	arria10_kick_l4wd0();
 	ret = a10_fpga_write_complete();
 	if (ret)
 		return -EAGAIN;
@@ -437,6 +443,8 @@ void arria10_start_image(int offset)
 
 	/* mark image in OCRAM as valid */
 	writel(ARRIA10_SYSMGR_ROM_INITSWSTATE_VALID, ARRIA10_SYSMGR_ROM_INITSWSTATE);
+
+	arria10_watchdog_disable();
 
 	bb = buf;
 

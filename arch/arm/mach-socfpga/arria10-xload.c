@@ -437,6 +437,9 @@ void arria10_start_image(int offset)
 	if (ret)
 		hang();
 
+	/* mark image in OCRAM as valid */
+	writel(ARRIA10_SYSMGR_ROM_INITSWSTATE_VALID, ARRIA10_SYSMGR_ROM_INITSWSTATE);
+
 	bb = buf;
 
 	bb();

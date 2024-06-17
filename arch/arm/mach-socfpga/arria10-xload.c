@@ -16,6 +16,22 @@
 #include <mach/socfpga/generic.h>
 #include <linux/sizes.h>
 
+#define __wait_on_timeout(timeout, condition) \
+({								\
+	int __ret = 0;						\
+	int __timeout = timeout;				\
+								\
+	while ((condition)) {					\
+		if (__timeout-- < 0) {				\
+			__ret = -ETIMEDOUT;			\
+			break;					\
+		}						\
+		arria10_kick_l4wd0();                           \
+                __udelay(1);                                    \
+	}							\
+	__ret;							\
+})
+
 int a10_update_bits(unsigned int reg, unsigned int mask,
 		    unsigned int val)
 {
@@ -57,8 +73,6 @@ static int a10_fpga_wait_for_condone(void)
 
 static void a10_fpga_generate_dclks(uint32_t count)
 {
-	int32_t timeout;
-
 	/* Clear any existing DONE status. */
 	writel(A10_FPGAMGR_DCLKSTAT_DCLKDONE, ARRIA10_FPGAMGRREGS_ADDR +
 	       A10_FPGAMGR_DCLKSTAT_OFST);
@@ -67,13 +81,9 @@ static void a10_fpga_generate_dclks(uint32_t count)
 	writel(count, ARRIA10_FPGAMGRREGS_ADDR + A10_FPGAMGR_DCLKCNT_OFST);
 
 	/* wait till the dclkcnt done */
-	timeout = 10000000;
-
-	while (!readl(ARRIA10_FPGAMGRREGS_ADDR + A10_FPGAMGR_DCLKSTAT_OFST)) {
-		arria10_kick_l4wd0();
-		if (timeout-- < 0)
-			return;
-	}
+	__wait_on_timeout(1000,
+			  !readl(ARRIA10_FPGAMGRREGS_ADDR +
+				 A10_FPGAMGR_DCLKSTAT_OFST));
 
 	/* Clear DONE status. */
 	writel(A10_FPGAMGR_DCLKSTAT_DCLKDONE, ARRIA10_FPGAMGRREGS_ADDR +
@@ -140,7 +150,6 @@ static int a10_fpga_init(void *buf)
 {
 	uint32_t stat, mask;
 	uint32_t val;
-	int timeout;
 
 	val = CFGWDTH_32 << A10_FPGAMGR_IMGCFG_CTL_02_CFGWIDTH_SHIFT;
 	a10_update_bits(A10_FPGAMGR_IMGCFG_CTL_02_OFST,
@@ -151,11 +160,7 @@ static int a10_fpga_init(void *buf)
 	mask = A10_FPGAMGR_IMGCFG_STAT_F2S_NCONFIG_PIN |
 		A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN;
 	/* Make sure no external devices are interfering */
-	timeout = 10000;
-	while ((socfpga_a10_fpga_read_stat() & mask) != mask) {
-		if (timeout-- < 0)
-			return -ETIMEDOUT;
-	}
+	__wait_on_timeout(100000, (socfpga_a10_fpga_read_stat() & mask) != mask);
 
 	/* S2F_NCE = 1 */
 	a10_update_bits(A10_FPGAMGR_IMGCFG_CTL_01_OFST,
@@ -195,22 +200,14 @@ static int a10_fpga_init(void *buf)
 	mask = A10_FPGAMGR_IMGCFG_STAT_F2S_NCONFIG_PIN |
 	       A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN;
 
-	timeout = 100000;
-	while ((socfpga_a10_fpga_read_stat() & mask) != mask) {
-		if (timeout-- < 0)
-			return -ETIMEDOUT;
-	}
+	__wait_on_timeout(100000, (socfpga_a10_fpga_read_stat() & mask) != mask);
 
 	/* reset the configuration */
 	a10_update_bits(A10_FPGAMGR_IMGCFG_CTL_00_OFST,
 			A10_FPGAMGR_IMGCFG_CTL_00_S2F_NCONFIG, 0);
 
-	timeout = 1000000;
-	while ((socfpga_a10_fpga_read_stat() &
-		       A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN) != 0) {
-		if (timeout-- < 0)
-			return -ETIMEDOUT;
-	}
+	mask = A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN;
+	__wait_on_timeout(100000, (socfpga_a10_fpga_read_stat() & mask) != 0);
 
 	a10_update_bits(A10_FPGAMGR_IMGCFG_CTL_00_OFST,
 			A10_FPGAMGR_IMGCFG_CTL_00_S2F_NCONFIG,
@@ -218,11 +215,7 @@ static int a10_fpga_init(void *buf)
 
 	mask = A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN;
 	/* wait for nstatus == 1 */
-	timeout = 1000000;
-	while ((socfpga_a10_fpga_read_stat() & mask) != mask) {
-		if (timeout-- < 0)
-			return -ETIMEDOUT;
-	}
+	__wait_on_timeout(100000, (socfpga_a10_fpga_read_stat() & mask) != mask);
 
 	stat = socfpga_a10_fpga_read_stat();
 	if ((stat & A10_FPGAMGR_IMGCFG_STAT_F2S_CONDONE_PIN) != 0)

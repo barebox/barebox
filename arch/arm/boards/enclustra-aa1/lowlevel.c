@@ -103,7 +103,6 @@ ENTRY_FUNCTION_WITHSTACK(start_socfpga_aa1_bringup, ARRIA10_STACKTOP, r0, r1, r2
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
 	arria10_cpu_lowlevel_init();
 
 	relocate_to_current_adr();

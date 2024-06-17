@@ -110,6 +110,8 @@ ENTRY_FUNCTION_WITHSTACK(start_socfpga_aa1_bringup, ARRIA10_STACKTOP, r0, r1, r2
 
 	arria10_init(&mainpll_cfg, &perpll_cfg, pinmux);
 
+	arria10_watchdog_disable();
+
 	/* wait for fpga_usermode */
 	a10_wait_for_usermode(0x1000000);
 

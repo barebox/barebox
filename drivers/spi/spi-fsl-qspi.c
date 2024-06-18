@@ -800,15 +800,13 @@ static int fsl_qspi_probe(struct device *dev)
 	spi_controller_set_devdata(ctlr, q);
 
 	/* find the resources */
-	res = dev_request_mem_resource(dev, 0);
-	q->iobase = IOMEM(res->start);
+	q->iobase = dev_request_mem_region(dev, 0);
 	if (IS_ERR(q->iobase)) {
 		ret = PTR_ERR(q->iobase);
 		goto err_put_ctrl;
 	}
 
-	res = dev_request_mem_resource(dev, 1);
-	q->ahb_addr = IOMEM(res->start);
+	q->ahb_addr = dev_platform_get_and_ioremap_resource(dev, 1, &res);
 	if (IS_ERR(q->ahb_addr)) {
 		ret = PTR_ERR(q->ahb_addr);
 		goto err_put_ctrl;

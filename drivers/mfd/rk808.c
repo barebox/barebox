@@ -362,7 +362,7 @@ static int rk808_probe(struct device *dev)
 		return ret;
 	}
 
-	rk808->poweroff.name = "stpmic1-poweroff";
+	rk808->poweroff.name = "rk808-poweroff";
 	rk808->poweroff.poweroff = rk808_poweroff;
 	rk808->poweroff.priority = 200;
 

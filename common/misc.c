@@ -296,7 +296,7 @@ static void __noreturn do_panic(bool stacktrace, const char *fmt, va_list ap)
 	if (IS_ENABLED(CONFIG_PANIC_HANG))
 		hang();
 
-	udelay(100000);	/* allow messages to go out */
+	mdelay_non_interruptible(100);	/* allow messages to go out */
 
 	if (IS_ENABLED(CONFIG_PANIC_POWEROFF))
 		poweroff_machine();

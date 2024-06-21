@@ -707,12 +707,11 @@ enum {
 	RK818_ID = 0x8180,
 };
 
-struct i2c_client;
 struct regmap;
 struct regmap_config;
 
 struct rk808 {
-	struct i2c_client		*i2c;
+	struct device			*dev;
 	struct regmap			*regmap;
 	long				variant;
 	const struct regmap_config	*regmap_cfg;

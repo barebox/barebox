@@ -12,7 +12,6 @@
 #include <driver.h>
 #include <gpio.h>
 #include <init.h>
-#include <i2c/i2c.h>
 #include <of_device.h>
 #include <linux/regmap.h>
 #include <linux/regulator/of_regulator.h>
@@ -770,7 +769,7 @@ static int rk808_regulator_register(struct rk808 *rk808, int id,
 				    struct of_regulator_match *match,
 				    struct rk_regulator_cfg *cfg)
 {
-	struct device *dev = &rk808->i2c->dev;
+	struct device *dev = rk808->dev;
 	int ret;
 
 	if (!match->of_node) {
@@ -935,7 +934,7 @@ static int rk808_regulator_probe(struct device *dev)
 		return -EINVAL;
 	}
 
-	ret = rk808_regulator_dt_parse(&rk808->i2c->dev, matches, nregulators);
+	ret = rk808_regulator_dt_parse(rk808->dev, matches, nregulators);
 	if (ret < 0)
 		return ret;
 

@@ -411,14 +411,8 @@ static int atmel_spi_probe(struct device *dev)
 		master->num_chipselect = of_gpio_count_csgpios(node);
 		as->cs_pins = xzalloc(sizeof(u32) * master->num_chipselect);
 
-		for (i = 0; i < master->num_chipselect; i++) {
+		for (i = 0; i < master->num_chipselect; i++)
 			as->cs_pins[i] = of_get_named_gpio(node, "cs-gpios", i);
-
-			if (!gpio_is_valid(as->cs_pins[i]))
-			    break;
-		}
-
-		master->num_chipselect = i;
 	}
 
 	as->clk = clk_get(dev, "spi_clk");
@@ -438,9 +432,11 @@ static int atmel_spi_probe(struct device *dev)
 	atmel_get_caps(as);
 
 	for (i = 0; i < master->num_chipselect; i++) {
-		ret = gpio_request(as->cs_pins[i], dev_name(dev));
-		if (ret)
-			goto out_gpio;
+		if (gpio_is_valid(as->cs_pins[i])) {
+			ret = gpio_request(as->cs_pins[i], dev_name(dev));
+			if (ret)
+				goto out_gpio;
+		}
 	}
 
 	/* Initialize the hardware */

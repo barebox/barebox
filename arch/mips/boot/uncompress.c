@@ -19,14 +19,14 @@ extern void *input_data_end;
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
-void barebox_pbl_start(void *fdt, void *fdt_end, u32 ram_size);
+void barebox_pbl_start(void *fdt, void *fdt_end, unsigned long ram_size);
 
 void __section(.text_entry) barebox_pbl_start(void *fdt, void *fdt_end,
-					   u32 ram_size)
+					   unsigned long ram_size)
 {
 	u32 piggy_len, fdt_len;
 	void *fdt_new;
-	void (*barebox)(void *fdt, u32 ram_size);
+	void (*barebox)(void *fdt, unsigned long ram_size);
 
 	puts_ll("barebox_pbl_start()\n");
 

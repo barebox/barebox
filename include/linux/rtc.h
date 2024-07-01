@@ -15,6 +15,9 @@
 
 #include <common.h>
 #include <linux/types.h>
+#include <linux/errno.h>
+#include <linux/nvmem-provider.h>
+#include <rtc.h>
 
 extern int rtc_month_days(unsigned int month, unsigned int year);
 extern int rtc_valid_tm(struct rtc_time *tm);
@@ -45,5 +48,16 @@ static inline bool is_leap_year(unsigned int year)
 {
 	return (!(year % 4) && (year % 100)) || !(year % 400);
 }
+
+#ifdef CONFIG_NVMEM
+int rtc_nvmem_register(struct rtc_device *rtc,
+		       struct nvmem_config *nvmem_config);
+#else
+static inline int rtc_nvmem_register(struct rtc_device *rtc,
+				     struct nvmem_config *nvmem_config)
+{
+	return -ENOSYS;
+}
+#endif
 
 #endif /* _LINUX_RTC_H_ */

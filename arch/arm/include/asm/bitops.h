@@ -72,7 +72,7 @@ static inline int __test_and_change_bit(int nr, volatile void *addr)
 /*
  * This routine doesn't need to be atomic.
  */
-static inline int test_bit(int nr, const void * addr)
+static inline bool test_bit(int nr, const void * addr)
 {
     return ((unsigned char *) addr)[nr >> 3] & (1U << (nr & 7));
 }

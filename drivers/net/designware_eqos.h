@@ -14,6 +14,7 @@ struct eqos_ops {
 	int (*get_ethaddr)(struct eth_device *dev, unsigned char *mac);
 	int (*set_ethaddr)(struct eth_device *edev, const unsigned char *mac);
 	void (*adjust_link)(struct eth_device *edev);
+	void (*fix_reset)(struct eqos *, unsigned int *reg);
 	unsigned long (*get_csr_clk_rate)(struct eqos *);
 
 	bool enh_desc;

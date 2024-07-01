@@ -24,8 +24,11 @@
 #define MX93_GPR_ENET_QOS_INTF_SEL_RGMII	(0x1 << 1)
 #define MX93_GPR_ENET_QOS_CLK_GEN_EN		(0x1 << 0)
 
+#define RMII_RESET_SPEED			(0x3 << 14)
+
 struct eqos_imx_soc_data {
 	int (*set_interface_mode)(struct eqos *eqos);
+	void (*fix_soc_reset)(struct eqos *eqos, u32 *mac_regs);
 	bool mac_rgmii_txclk_auto_adj;
 };
 
@@ -80,6 +83,22 @@ static int eqos_set_txclk(struct eqos *eqos, int speed)
 		dev_err(priv->dev, "set TX clk rate %ld failed %d\n", rate, ret);
 
 	return ret;
+}
+
+static void eqos_fix_reset(struct eqos *eqos, u32 *reg)
+{
+	struct eqos_imx_priv *priv = eqos->priv;
+
+	if (priv->soc_data->fix_soc_reset)
+		priv->soc_data->fix_soc_reset(eqos, reg);
+}
+
+static void eqos_imx93_reset(struct eqos *eqos, u32 *mac_reg)
+{
+	if (eqos->interface == PHY_INTERFACE_MODE_RMII) {
+		udelay(200);
+		setbits_le32(mac_reg, RMII_RESET_SPEED);
+	}
 }
 
 static void eqos_adjust_link_imx(struct eth_device *edev)
@@ -184,6 +203,7 @@ static struct eqos_ops imx_ops = {
 	.set_ethaddr = eqos_set_ethaddr,
 	.adjust_link = eqos_adjust_link_imx,
 	.get_csr_clk_rate = eqos_get_csr_clk_rate_imx,
+	.fix_reset = eqos_fix_reset,
 
 	.clk_csr = EQOS_MDIO_ADDR_CR_250_300,
 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_DCB,
@@ -240,6 +260,7 @@ static void eqos_remove_imx(struct device *dev)
 
 static struct eqos_imx_soc_data imx93_soc_data = {
 	.set_interface_mode = eqos_imx93_set_interface_mode,
+	.fix_soc_reset = eqos_imx93_reset,
 	.mac_rgmii_txclk_auto_adj = true,
 };
 

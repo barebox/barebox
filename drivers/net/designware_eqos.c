@@ -431,6 +431,9 @@ static int eqos_start(struct eth_device *edev)
 	 */
 	setbits_le32(&eqos->dma_regs->mode, EQOS_DMA_MODE_SWR);
 
+	if (eqos->ops->fix_reset)
+		eqos->ops->fix_reset(eqos, &eqos->mac_regs->config);
+
 	ret = readl_poll_timeout(&eqos->dma_regs->mode, mode_set,
 				 !(mode_set & EQOS_DMA_MODE_SWR),
 				 100 * USEC_PER_MSEC);

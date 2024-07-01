@@ -1057,6 +1057,25 @@ struct gpio_chip *gpio_get_chip_by_dev(struct device *dev)
 	return NULL;
 }
 
+struct gpio_chip *of_gpio_get_chip_by_alias(const char *alias)
+{
+	struct gpio_chip *chip;
+	struct device_node *np;
+
+	np = of_find_node_by_alias(NULL, alias);
+	if (!np)
+		return NULL;
+
+	of_device_ensure_probed(np);
+
+	list_for_each_entry(chip, &chip_list, list) {
+		if (dev_of_node(chip->dev) == np)
+			return chip;
+	}
+
+	return NULL;
+}
+
 int gpio_get_num(struct device *dev, int gpio)
 {
 	struct gpio_chip *chip;

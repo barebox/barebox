@@ -20,6 +20,7 @@
 #include <of.h>
 #include <of_address.h>
 #include <pinctrl.h>
+#include <linux/pinctrl/pinconf-generic.h>
 #include <dt-bindings/pinctrl/rockchip.h>
 
 #include <linux/basic_mmio_gpio.h>
@@ -222,30 +223,23 @@
 #define RK3588_PIN_BANK_FLAGS(ID, PIN, LABEL, M, P)			\
 	PIN_BANK_IOMUX_FLAGS_PULL_FLAGS(ID, PIN, LABEL, M, M, M, M, P, P, P, P)
 
-enum {
-	RK_BIAS_DISABLE = 0,
-	RK_BIAS_PULL_UP,
-	RK_BIAS_PULL_DOWN,
-	RK_BIAS_BUS_HOLD,
-};
-
 static struct rockchip_pinctrl *to_rockchip_pinctrl(struct pinctrl_device *pdev)
 {
 	return container_of(pdev, struct rockchip_pinctrl, pctl_dev);
 }
 
-static int parse_bias_config(struct device_node *np)
+static enum pin_config_param parse_bias_config(struct device_node *np)
 {
 	u32 val;
  
 	if (of_property_read_u32(np, "bias-pull-up", &val) != -EINVAL)
-		return RK_BIAS_PULL_UP;
+		return PIN_CONFIG_BIAS_PULL_UP;
 	else if (of_property_read_u32(np, "bias-pull-down", &val) != -EINVAL)
-		return RK_BIAS_PULL_DOWN;
+		return PIN_CONFIG_BIAS_PULL_DOWN;
 	else if (of_property_read_u32(np, "bias-bus-hold", &val) != -EINVAL)
-		return RK_BIAS_BUS_HOLD;
+		return PIN_CONFIG_BIAS_BUS_HOLD;
 	else
-		return RK_BIAS_DISABLE;
+		return PIN_CONFIG_BIAS_DISABLE;
 }
 
 static struct rockchip_pin_bank *bank_num_to_bank(
@@ -2104,16 +2098,16 @@ config:
 
 static int rockchip_pull_list[PULL_TYPE_MAX][4] = {
 	{
-		RK_BIAS_DISABLE,
-		RK_BIAS_PULL_UP,
-		RK_BIAS_PULL_DOWN,
-		RK_BIAS_BUS_HOLD
+		PIN_CONFIG_BIAS_DISABLE,
+		PIN_CONFIG_BIAS_PULL_UP,
+		PIN_CONFIG_BIAS_PULL_DOWN,
+		PIN_CONFIG_BIAS_BUS_HOLD
 	},
 	{
-		RK_BIAS_DISABLE,
-		RK_BIAS_PULL_DOWN,
-		RK_BIAS_DISABLE,
-		RK_BIAS_PULL_UP
+		PIN_CONFIG_BIAS_DISABLE,
+		PIN_CONFIG_BIAS_PULL_DOWN,
+		PIN_CONFIG_BIAS_DISABLE,
+		PIN_CONFIG_BIAS_PULL_UP
 	},
 };
 
@@ -2142,7 +2136,7 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
 	case RK2928:
 	case RK3128:
 		data = BIT(bit + 16);
-		if (pull == RK_BIAS_DISABLE)
+		if (pull == PIN_CONFIG_BIAS_DISABLE)
 			data |= BIT(bit);
 		ret = regmap_write(regmap, reg, data);
 		break;
@@ -2169,7 +2163,7 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
 		 * where that pull up value becomes 3.
 		 */
 		if (ctrl->type == RK3568 && bank->bank_num == 0 && pin_num >= 27 && pin_num <= 30) {
-			if (ret == RK_BIAS_PULL_UP)
+			if (ret == 1)
 				ret = 3;
 		}
 

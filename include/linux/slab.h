@@ -6,6 +6,7 @@
 #include <dma.h>
 #include <linux/overflow.h>
 #include <linux/string.h>
+#include <linux/gfp.h>
 
 #define SLAB_CONSISTENCY_CHECKS	0
 #define SLAB_RED_ZONE		0
@@ -24,12 +25,6 @@
 #define SLAB_KASAN		0
 #define SLAB_RECLAIM_ACCOUNT	0
 #define SLAB_TEMPORARY		0
-
-/* unused in barebox, just bogus values */
-#define GFP_KERNEL	0
-#define GFP_NOFS	0
-#define GFP_USER	0
-#define __GFP_NOWARN	0
 
 static inline void *kmalloc(size_t size, gfp_t flags)
 {

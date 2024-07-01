@@ -242,6 +242,24 @@ static enum pin_config_param parse_bias_config(struct device_node *np)
 		return PIN_CONFIG_BIAS_DISABLE;
 }
 
+static unsigned long parse_gpio_direction(struct device_node *np)
+{
+	enum pin_config_param param = PIN_CONFIG_END;
+	u32 argument = 0;
+
+	if (of_property_read_bool(np, "input-enable")) {
+		param = PIN_CONFIG_INPUT_ENABLE;
+	} else if (of_property_read_bool(np, "output-low")) {
+		param = PIN_CONFIG_OUTPUT;
+		argument = 0;
+	} else if (of_property_read_bool(np, "output-high")) {
+		param = PIN_CONFIG_OUTPUT;
+		argument = 1;
+	}
+
+	return pinconf_to_config_packed(param, argument);
+}
+
 static struct rockchip_pin_bank *bank_num_to_bank(
 					struct rockchip_pinctrl *info,
 					unsigned num)
@@ -2396,6 +2414,39 @@ static int rockchip_set_schmitt(struct rockchip_pin_bank *bank,
 
 	return regmap_update_bits(regmap, reg, rmask, data);
 }
+
+static void rockchip_set_gpio(struct rockchip_pin_bank *bank,
+			      int pin_num, unsigned long config)
+{
+	enum pin_config_param param = pinconf_to_config_param(config);
+	struct gpio_chip *gpio;
+
+	if (param != PIN_CONFIG_OUTPUT && param != PIN_CONFIG_INPUT_ENABLE)
+		return;
+
+	gpio = of_gpio_get_chip_by_alias(bank->name);
+	if (!gpio) {
+		/* For simplicity, we don't implement rockchip_pinconf_defer_pin
+		 * like Linux and instead expect boards to be deep-probe enabled
+		 */
+		pr_warn("pinctrl config failed: GPIO controller '%s' not found\n",
+			bank->name);
+		return;
+	}
+
+	switch (param) {
+	case PIN_CONFIG_OUTPUT:
+		gpio->ops->direction_output(gpio, pin_num,
+					    pinconf_to_config_argument(config));
+		break;
+	case PIN_CONFIG_INPUT_ENABLE:
+		gpio->ops->direction_input(gpio, pin_num);
+		break;
+	default:
+		break;
+	}
+}
+
 static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 				      struct device_node *np)
 {
@@ -2434,6 +2485,7 @@ static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 		bank = bank_num_to_bank(info, bank_num);
 		rockchip_set_mux(bank, pin_num, func);
 		rockchip_set_pull(bank, pin_num, parse_bias_config(np_config));
+		rockchip_set_gpio(bank, pin_num, parse_gpio_direction(np_config));
 
 		ret = of_property_read_u32(np_config, "drive-strength", &drive_strength);
 		if (!ret)

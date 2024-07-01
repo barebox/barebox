@@ -94,7 +94,6 @@ static int set_enable(struct param_d *p, void *priv)
 int pwmchip_add(struct pwm_chip *chip)
 {
 	struct pwm_device *pwm;
-	struct param_d *p;
 	int ret;
 
 	if (!chip->devname)
@@ -117,24 +116,18 @@ int pwmchip_add(struct pwm_chip *chip)
 
 	list_add_tail(&pwm->node, &pwm_list);
 
-	p = dev_add_param_uint32(&pwm->dev, "duty_ns", apply_params,
-			NULL, &pwm->params.duty_cycle, "%u", pwm);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
+	dev_add_param_uint32(&pwm->dev, "duty_ns", apply_params,
+			     NULL, &pwm->params.duty_cycle, "%u", pwm);
 
-	p = dev_add_param_uint32(&pwm->dev, "period_ns", apply_params,
-			NULL, &pwm->params.period, "%u", pwm);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
+	dev_add_param_uint32(&pwm->dev, "period_ns", apply_params,
+			     NULL, &pwm->params.period, "%u", pwm);
 
-	p = dev_add_param_bool(&pwm->dev, "enable", set_enable,
-			NULL, &pwm->params.enabled, pwm);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
+	dev_add_param_bool(&pwm->dev, "enable", set_enable,
+			   NULL, &pwm->params.enabled, pwm);
 
-	p = dev_add_param_bool(&pwm->dev, "inverted", apply_params,
-			       NULL, &pwm->params.polarity, pwm);
-	return PTR_ERR_OR_ZERO(p);
+	dev_add_param_bool(&pwm->dev, "inverted", apply_params,
+			   NULL, &pwm->params.polarity, pwm);
+	return 0;
 }
 EXPORT_SYMBOL_GPL(pwmchip_add);
 

@@ -230,13 +230,11 @@ static struct rockchip_pinctrl *to_rockchip_pinctrl(struct pinctrl_device *pdev)
 
 static enum pin_config_param parse_bias_config(struct device_node *np)
 {
-	u32 val;
- 
-	if (of_property_read_u32(np, "bias-pull-up", &val) != -EINVAL)
+	if (of_property_read_bool(np, "bias-pull-up"))
 		return PIN_CONFIG_BIAS_PULL_UP;
-	else if (of_property_read_u32(np, "bias-pull-down", &val) != -EINVAL)
+	else if (of_property_read_bool(np, "bias-pull-down"))
 		return PIN_CONFIG_BIAS_PULL_DOWN;
-	else if (of_property_read_u32(np, "bias-bus-hold", &val) != -EINVAL)
+	else if (of_property_read_bool(np, "bias-bus-hold"))
 		return PIN_CONFIG_BIAS_BUS_HOLD;
 	else
 		return PIN_CONFIG_BIAS_DISABLE;

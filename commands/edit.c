@@ -13,6 +13,7 @@
 #include <xfuncs.h>
 #include <linux/stat.h>
 #include <console.h>
+#include <term.h>
 
 #define TABSPACE 8
 
@@ -39,11 +40,6 @@ static struct line *curline;	/* line where the cursor is */
 
 static struct line *scrline;	/* the first line on screen */
 static int scrcol = 0;		/* the first column on screen */
-
-static void pos(int x, int y)
-{
-	printf("\x1b[%d;%dH", y + 2, x + 1);
-}
 
 static char *screenline(char *line, int *pos)
 {
@@ -95,10 +91,10 @@ static int setpos(char *line, int position)
 static void refresh_line(struct line *line, int ypos)
 {
 	char *str = screenline(line->data, NULL) + scrcol;
-	pos(0, ypos);
+	term_setpos(0, ypos);
 	str[screenwidth] = 0;
 	printf("%s\x1b[K", str);
-	pos(cursx, cursy);
+	term_setpos(cursx, cursy);
 }
 
 /*
@@ -119,7 +115,7 @@ static void refresh(int full)
 			if (scrline->next == lastscrline) {
 				printf("\x1b[1T");
 				refresh_line(scrline, 0);
-				pos(0, screenheight);
+				term_setpos(0, screenheight);
 				printf("%*s", screenwidth, "");
 				return;
 			}
@@ -149,7 +145,7 @@ static void refresh(int full)
 
 	i++;
 	while (i < screenheight) {
-		pos(0, i++);
+		term_setpos(0, i++);
 		printf("~");
 	}
 }
@@ -346,68 +342,11 @@ static void merge_line(struct line *line)
 
 #define ESC "\033"
 
-static void getwinsize(void)
-{
-	int n;
-	char *endp;
-	struct console_device *cdev;
-	const char esc[] = ESC "7" ESC "[r" ESC "[999;999H" ESC "[6n";
-	char buf[64];
-
-	screenwidth = screenheight = 256;
-
-	for_each_console(cdev) {
-		int width, height;
-		uint64_t start;
-
-		if (!(cdev->f_active & CONSOLE_STDIN))
-			continue;
-		if (!(cdev->f_active & CONSOLE_STDOUT))
-			continue;
-
-		memset(buf, 0, sizeof(buf));
-
-		cdev->puts(cdev, esc, sizeof(esc));
-
-		n = 0;
-
-		start = get_time_ns();
-
-		while (1) {
-			if (is_timeout(start, 100 * MSECOND))
-				break;
-
-			if (!cdev->tstc(cdev))
-				continue;
-
-			buf[n] = cdev->getc(cdev);
-
-			if (buf[n] == 'R')
-				break;
-
-			n++;
-		}
-
-		if (buf[0] != 27)
-			continue;
-		if (buf[1] != '[')
-			continue;
-
-		height = simple_strtoul(buf + 2, &endp, 10);
-		width = simple_strtoul(endp + 1, NULL, 10);
-
-		screenwidth = min(screenwidth, width);
-		screenheight = min(screenheight, height);
-	}
-
-	pos(0, 0);
-}
-
 static void statusbar(const char *str)
 {
-	pos(0, screenheight+1);
+	term_setpos(0, screenheight+1);
 	printf("%*c\r%s", screenwidth, ' ', str);
-	pos(cursx, cursy);
+	term_setpos(cursx, cursy);
 }
 
 static int read_modal_key(bool is_modal)
@@ -563,7 +502,7 @@ static int do_edit(int argc, char *argv[])
 	/* check if we are not called as "edit" */
 	if (*argv[0] != 'e') {
 		smartscroll = 1;
-		getwinsize();
+		term_getsize(&screenwidth, &screenheight);
 
 		/* check if we are called as "vi" */
 		if (*argv[0] == 'v')
@@ -597,12 +536,12 @@ static int do_edit(int argc, char *argv[])
 
 	printf("\x1b[2J");
 
-	pos(0, -1);
+	term_setpos(0, -1);
 
 	if (is_vi) {
 		screenheight -= 2;
 		printf("\x1b[7m%*c\x1b[0m", screenwidth , ' ');
-		pos(0, screenheight-1);
+		term_setpos(0, screenheight-1);
 		printf("\x1b[7m%*c\x1b[0m", screenwidth , ' ');
 		printf("\r\x1b[7m%-25s\x1b[0m", argv[1]);
 	} else {
@@ -613,7 +552,7 @@ static int do_edit(int argc, char *argv[])
 	if (smartscroll)
 		printf("\x1b[2;%dr", screenheight);
 
-	pos(0, 0);
+	term_setpos(0, 0);
 
 	screenheight--; /* status line */
 
@@ -652,7 +591,7 @@ static int do_edit(int argc, char *argv[])
 
 		lastscrcol  = scrcol;
 		lastscrline = scrline;
-		pos(cursx, cursy);
+		term_setpos(cursx, cursy);
 
 again:
 		c = read_modal_key(is_vi);

@@ -59,7 +59,7 @@ void *barebox_arm_boot_dtb(void);
  *                                   ↑
  *	        OPTEE_SIZE (depends on CONFIG_OPTEE_SIZE)
  *                                   ↓
- *  ------------------------- arm_mem_optee() -------------------------
+ *  ---------- arm_mem_optee() / arm_mem_barebox_image_end() ----------
  *                                   ↑
  *                                 SZ_32K
  *                                   ↓
@@ -95,6 +95,11 @@ void *barebox_arm_boot_dtb(void);
 static inline unsigned long arm_mem_optee(unsigned long endmem)
 {
 	return endmem - OPTEE_SIZE;
+}
+
+static inline unsigned long arm_mem_barebox_image_end(unsigned long endmem)
+{
+	return arm_mem_optee(endmem);
 }
 
 static inline unsigned long arm_mem_scratch(unsigned long endmem)

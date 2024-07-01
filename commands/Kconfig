@@ -2411,6 +2411,12 @@ config CMD_TIME
 	  Note: This command depends on COMMAND being interruptible,
 	  otherwise the timer may overrun resulting in incorrect results
 
+config CMD_WATCH
+	bool "watch"
+	help
+	  watch is used to execute a command periodically, showing
+	  output to the screen.
+
 config CMD_UPTIME
 	bool "uptime"
 	help

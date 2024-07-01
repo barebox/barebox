@@ -205,7 +205,12 @@ SW1 on the DK boards sets boot mode as follows::
 
 DK-1/DK-2
 ^^^^^^^^^
-Boot mode on the DK board is set as follows::
+Boot mode on the DK board is set via a dual DIP switch on the backside of the PCB
+(under the HDMI port).
+
+If the board is set up, so the HDMI side looks up and the micro-USB side is to
+the left and the backside with the DIP-Switch is to the user, it can be configured
+as follows:
 
        +-------+
  BOOT2 | O O-- |

@@ -8,6 +8,8 @@
 
 #include <linux/clk.h>
 
+struct clk_div_table;
+
 long divider_round_rate_parent(struct clk_hw *hw, struct clk_hw *parent,
 			       unsigned long rate, unsigned long *prate,
 			       const struct clk_div_table *table,

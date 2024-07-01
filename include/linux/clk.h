@@ -187,6 +187,12 @@ static inline struct clk *clk_get_parent(struct clk *clk)
 	return NULL;
 }
 
+static inline struct clk_hw *clk_hw_get_parent(struct clk_hw *hw)
+
+{
+	return NULL;
+}
+
 static inline int clk_hw_get_parent_index(struct clk_hw *hw)
 {
 	return -EINVAL;

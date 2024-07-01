@@ -2358,6 +2358,42 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
 	return ctrl;
 }
 
+static int rockchip_set_schmitt(struct rockchip_pin_bank *bank,
+				int pin_num, int enable)
+{
+	struct rockchip_pinctrl *info = bank->drvdata;
+	struct rockchip_pin_ctrl *ctrl = info->ctrl;
+	struct device *dev = info->dev;
+	struct regmap *regmap;
+	int reg, ret;
+	u8 bit;
+	u32 data, rmask;
+
+	if (!info->ctrl->schmitt_calc_reg)
+		return -ENOTSUPP;
+
+	dev_dbg(dev, "setting input schmitt of GPIO%d-%d to %d\n",
+		bank->bank_num, pin_num, enable);
+
+	ret = ctrl->schmitt_calc_reg(bank, pin_num, &regmap, &reg, &bit);
+	if (ret)
+		return ret;
+
+	/* enable the write to the equivalent lower bits */
+	switch (ctrl->type) {
+	case RK3568:
+		data = ((1 << RK3568_SCHMITT_BITS_PER_PIN) - 1) << (bit + 16);
+		rmask = data | (data >> 16);
+		data |= ((enable ? 0x2 : 0x1) << bit);
+		break;
+	default:
+		data = BIT(bit + 16) | (enable << bit);
+		rmask = BIT(bit + 16) | BIT(bit);
+		break;
+	}
+
+	return regmap_update_bits(regmap, reg, rmask, data);
+}
 static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 				      struct device_node *np)
 {
@@ -2400,6 +2436,10 @@ static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 		ret = of_property_read_u32(np_config, "drive-strength", &drive_strength);
 		if (!ret)
 			rockchip_set_drive_perpin(bank, pin_num, drive_strength);
+		if (of_property_read_bool(np_config, "input-schmitt-enable"))
+			rockchip_set_schmitt(bank, pin_num, true);
+		if (of_property_read_bool(np_config, "input-schmitt-disable"))
+			rockchip_set_schmitt(bank, pin_num, false);
 	}
 
 	return 0;

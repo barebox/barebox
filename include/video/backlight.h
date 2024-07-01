@@ -16,7 +16,7 @@ struct backlight_device {
 	struct device_node *node;
 };
 
-int backlight_set_brightness(struct backlight_device *, int brightness);
+int backlight_set_brightness(struct backlight_device *, unsigned brightness);
 int backlight_set_brightness_default(struct backlight_device *);
 int backlight_register(struct backlight_device *);
 struct backlight_device *of_backlight_find(struct device_node *node);
@@ -24,7 +24,7 @@ struct backlight_device *of_backlight_find(struct device_node *node);
 struct backlight_device ;
 
 static inline int
-backlight_set_brightness(struct backlight_device *dev, int brightness)
+backlight_set_brightness(struct backlight_device *dev, unsigned brightness)
 {
 	return 0;
 }

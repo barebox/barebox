@@ -6,7 +6,7 @@
 
 static LIST_HEAD(backlights);
 
-int backlight_set_brightness(struct backlight_device *bl, int brightness)
+int backlight_set_brightness(struct backlight_device *bl, unsigned brightness)
 {
 	int ret, step, i, num_steps;
 
@@ -80,9 +80,9 @@ int backlight_register(struct backlight_device *bl)
 		return ret;
 
 	dev_add_param_uint32(&bl->dev, "brightness", backlight_brightness_set,
-			NULL, &bl->brightness, "%d", bl);
+			NULL, &bl->brightness, "%u", bl);
 	dev_add_param_uint32(&bl->dev, "slew_time_ms", NULL, NULL,
-			     &bl->slew_time_ms, "%d", NULL);
+			     &bl->slew_time_ms, "%u", NULL);
 
 	list_add_tail(&bl->list, &backlights);
 

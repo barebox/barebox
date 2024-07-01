@@ -236,6 +236,8 @@ static enum pin_config_param parse_bias_config(struct device_node *np)
 		return PIN_CONFIG_BIAS_PULL_DOWN;
 	else if (of_property_read_bool(np, "bias-bus-hold"))
 		return PIN_CONFIG_BIAS_BUS_HOLD;
+	else if (of_property_read_bool(np, "bias-pull-pin-default"))
+		return PIN_CONFIG_BIAS_PULL_PIN_DEFAULT;
 	else
 		return PIN_CONFIG_BIAS_DISABLE;
 }

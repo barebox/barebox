@@ -3,6 +3,7 @@
  */
 
 #include <arm/nxp/imx/imx27-phytec-phycard-s-rdk.dts>
+#include "imx27-phytec-phycard-s-som.dtsi"
 
 / {
 	chosen {

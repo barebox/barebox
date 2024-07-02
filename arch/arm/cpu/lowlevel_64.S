@@ -10,8 +10,8 @@ ENTRY(arm_cpu_lowlevel_init)
 	switch_el x1, 3f, 2f, 1f
 
 3:
-	mov	x0, #1			/* Non-Secure EL0/1 */
-	orr	x0, x0, #(1 << 10)	/* 64-bit EL2 */
+	mrs	x0, scr_el3
+	orr	x0, x0, #0xf		/* SCR_EL3.NS|IRQ|FIQ|EA */
 	msr	scr_el3, x0
 	msr	cptr_el3, xzr
 

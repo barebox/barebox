@@ -6,6 +6,7 @@
 #include <asm/errata.h>
 #include <linux/types.h>
 #include <linux/bitops.h>
+#include <mach/imx/errata.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/imx7-regs.h>
 #include <mach/imx/imx8mq-regs.h>
@@ -75,17 +76,26 @@ void imx8mm_cpu_lowlevel_init(void)
 	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_SCTR);
 
 	imx8m_cpu_lowlevel_init();
+
+	erratum_050350_imx8m();
 }
 
 void imx8mn_cpu_lowlevel_init(void)
 	__alias(imx8mm_cpu_lowlevel_init);
 
 void imx8mp_cpu_lowlevel_init(void)
-	__alias(imx8mm_cpu_lowlevel_init);
+{
+	/* ungate system counter */
+	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_SCTR);
+
+	imx8m_cpu_lowlevel_init();
+}
 
 void imx8mq_cpu_lowlevel_init(void)
 {
 	imx8m_cpu_lowlevel_init();
+
+	erratum_050350_imx8m();
 }
 
 #define CCM_AUTHEN_TZ_NS	BIT(9)

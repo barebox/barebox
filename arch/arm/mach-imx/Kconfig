@@ -82,6 +82,7 @@ config ARCH_IMX27
 	select ARCH_HAS_FEC_IMX
 	select ARCH_HAS_IMX_GPT
 	select PINCTRL_IMX_IOMUX_V1
+	select COMMON_CLK_OF_PROVIDER
 
 config ARCH_IMX31
 	select CPU_V6

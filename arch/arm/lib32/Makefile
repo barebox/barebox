@@ -23,7 +23,6 @@ pbl-y	+= runtime-offset.o
 obj-$(CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS)	+= memcpy.o
 obj-$(CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS)	+= memset.o
 obj-$(CONFIG_ARM_UNWIND) += unwind.o
-obj-$(CONFIG_ARM_SEMIHOSTING) += semihosting-trap.o semihosting.o
 obj-$(CONFIG_MODULES) += module.o
 obj-$(CONFIG_ARM_MODULE_PLTS) += module-plts.o
 extra-y += barebox.lds

@@ -17,7 +17,7 @@
 extern void exception_vec(void);
 extern void exception_vec_end(void);
 
-void main_entry(void *fdt, u32 fdt_size);
+void main_entry(void *fdt);
 
 static void trap_init(void)
 {
@@ -36,7 +36,6 @@ static void trap_init(void)
 }
 
 extern void *glob_fdt;
-extern u32 glob_fdt_size;
 extern unsigned long mips_stack_top;
 
 /**
@@ -44,7 +43,7 @@ extern unsigned long mips_stack_top;
  *
  * @note The C environment isn't initialized yet
  */
-void __bare_init main_entry(void *fdt, u32 fdt_size)
+void __bare_init main_entry(void *fdt)
 {
 	unsigned long malloc_start, malloc_end;
 	/* clear the BSS first */
@@ -68,7 +67,6 @@ void __bare_init main_entry(void *fdt, u32 fdt_size)
 	mips_stack_top = malloc_start;
 
 	glob_fdt = fdt;
-	glob_fdt_size = fdt_size;
 
 	start_barebox();
 }

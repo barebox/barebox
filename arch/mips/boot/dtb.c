@@ -12,7 +12,6 @@
 #include <asm/addrspace.h>
 
 void *glob_fdt;
-u32 glob_fdt_size;
 
 int of_add_memory_bank(struct device_node *node, bool dump, int r,
 		u64 base, u64 size)

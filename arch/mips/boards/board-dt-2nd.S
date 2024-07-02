@@ -20,12 +20,12 @@ ENTRY_FUNCTION(start_dt_2nd)
 
 	stack_setup
 
-	/* pbl_main_entry() computes fdt_len by itself
+	/* barebox_pbl_start() computes fdt_len by itself
 	 * if fdt == fdt_end */
 	move	a0, v1 /* fdt */
 	move	a1, v1 /* fdt_end */
 	PTR_LI	a2, SZ_256M /* ram_size */
-	PTR_LA	v0, pbl_main_entry
+	PTR_LA	v0, barebox_pbl_start
 	jal	v0
 	 nop
 

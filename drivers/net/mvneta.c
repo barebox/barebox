@@ -423,30 +423,28 @@ static int mvneta_send(struct eth_device *edev, void *data, int len)
 	return 0;
 }
 
-static int mvneta_recv(struct eth_device *edev)
+static void mvneta_recv(struct eth_device *edev)
 {
 	struct mvneta_port *priv = edev->priv;
 	struct rxdesc *rxdesc = &priv->rxdesc[priv->curr_rxdesc];
-	int ret, pending;
+	int pending;
 	u32 cmd_sts;
 
 	/* wait for received packet */
 	pending = mvneta_pending_rx(priv);
 	if (!pending)
-		return 0;
+		return;
 
 	/* drop malicious packets */
 	cmd_sts = readl(&rxdesc->cmd_sts);
 	if ((cmd_sts & MVNETA_RXD_FIRST_LAST_DESC) !=
 	    MVNETA_RXD_FIRST_LAST_DESC) {
 		dev_err(&edev->dev, "rx packet spread on multiple descriptors\n");
-		ret = -EIO;
 		goto recv_err;
 	}
 
 	if (cmd_sts & MVNETA_RXD_ERR_SUMMARY) {
 		dev_err(&edev->dev, "receive error\n");
-		ret = -EIO;
 		goto recv_err;
 	}
 
@@ -457,7 +455,6 @@ static int mvneta_recv(struct eth_device *edev)
 	/* received packet is padded with two null bytes (Marvell header) */
 	net_receive(edev, (void *)(rxdesc->buf_phys_addr + MVNETA_MH_SIZE),
 			  rxdesc->data_size - MVNETA_MH_SIZE);
-	ret = 0;
 
 	dma_sync_single_for_device(&priv->dev, (unsigned long)rxdesc->buf_phys_addr,
 				   ALIGN(PKTSIZE, 8), DMA_FROM_DEVICE);
@@ -474,7 +471,6 @@ recv_err:
 	/* Descriptor processed and refilled */
 	writel(1 | 1 << MVNETA_RXQ_ADD_NON_OCCUPIED_SHIFT,
 	       priv->reg + MVNETA_RXQ_STATUS_UPDATE_REG(0));
-	return ret;
 }
 
 static int mvneta_set_ethaddr(struct eth_device *edev, const unsigned char *mac)

@@ -171,7 +171,7 @@ static void reclaim_rx_buffers(struct macb_device *macb,
 	macb->rx_tail = new_tail;
 }
 
-static int gem_recv(struct eth_device *edev)
+static void gem_recv(struct eth_device *edev)
 {
 	struct macb_device *macb = edev->priv;
 	dma_addr_t buffer;
@@ -180,7 +180,7 @@ static int gem_recv(struct eth_device *edev)
 
 	for (;;) {
 		if (!(readl(&macb->rx_ring[macb->rx_tail].addr) & MACB_BIT(RX_USED)))
-			return -1;
+			return;
 
 		status = readl(&macb->rx_ring[macb->rx_tail].ctrl);
 		length = MACB_BFEXT(RX_FRMLEN, status);
@@ -196,11 +196,9 @@ static int gem_recv(struct eth_device *edev)
 		if (macb->rx_tail >= macb->rx_ring_size)
 			macb->rx_tail = 0;
 	}
-
-	return 0;
 }
 
-static int macb_recv(struct eth_device *edev)
+static void macb_recv(struct eth_device *edev)
 {
 	struct macb_device *macb = edev->priv;
 	unsigned int rx_tail = macb->rx_tail;
@@ -211,7 +209,7 @@ static int macb_recv(struct eth_device *edev)
 
 	for (;;) {
 		if (!(readl(&macb->rx_ring[rx_tail].addr) & MACB_BIT(RX_USED)))
-			return -1;
+			return;
 
 		status = readl(&macb->rx_ring[rx_tail].ctrl);
 		if (status & MACB_BIT(RX_SOF)) {
@@ -257,8 +255,6 @@ static int macb_recv(struct eth_device *edev)
 			}
 		}
 	}
-
-	return 0;
 }
 
 static int macb_set_tx_clk(struct macb_device *macb, int speed)

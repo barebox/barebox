@@ -204,7 +204,7 @@ static int eth_carrier_check(struct eth_device *edev, bool may_wait)
 		return 0;
 
 	if (!edev->last_link_check ||
-	    is_timeout(edev->last_link_check, 5 * SECOND))
+	    is_timeout(edev->last_link_check, edev->phydev->polling_interval))
 		eth_carrier_poll_once(edev);
 
 	if (may_wait && !edev->phydev->link) {
@@ -393,6 +393,33 @@ static const char * const eth_mode_names[] = {
 	[ETH_MODE_DISABLED] = "disabled",
 };
 
+static int eth_param_set_ip(struct param_d *p, void *priv)
+{
+	struct eth_device *edev = priv;
+
+	net_set_ip(edev, edev->ipaddr);
+
+	return 0;
+}
+
+static int eth_param_set_gw(struct param_d *p, void *priv)
+{
+	struct eth_device *edev = priv;
+
+	net_set_gateway(edev, net_get_gateway());
+
+	return 0;
+}
+
+static int eth_param_set_nm(struct param_d *p, void *priv)
+{
+	struct eth_device *edev = priv;
+
+	net_set_netmask(edev, edev->netmask);
+
+	return 0;
+}
+
 int eth_register(struct eth_device *edev)
 {
 	struct device *dev = &edev->dev;
@@ -428,10 +455,10 @@ int eth_register(struct eth_device *edev)
 
 	edev->devname = xstrdup(dev_name(&edev->dev));
 
-	dev_add_param_ip(dev, "ipaddr", NULL, NULL, &edev->ipaddr, edev);
+	dev_add_param_ip(dev, "ipaddr", eth_param_set_ip, NULL, &edev->ipaddr, edev);
 	dev_add_param_string(dev, "serverip", NULL, NULL, &net_server, edev);
-	dev_add_param_ip(dev, "gateway", NULL, NULL, &net_gateway, edev);
-	dev_add_param_ip(dev, "netmask", NULL, NULL, &edev->netmask, edev);
+	dev_add_param_ip(dev, "gateway", eth_param_set_gw, NULL, &net_gateway, edev);
+	dev_add_param_ip(dev, "netmask", eth_param_set_nm, NULL, &edev->netmask, edev);
 	dev_add_param_mac(dev, "ethaddr", eth_param_set_ethaddr, NULL,
 			edev->ethaddr, edev);
 	edev->bootarg = xstrdup("");

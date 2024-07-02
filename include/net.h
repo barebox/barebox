@@ -38,7 +38,7 @@ struct eth_device {
 
 	int  (*open) (struct eth_device*);
 	int  (*send) (struct eth_device*, void *packet, int length);
-	int  (*recv) (struct eth_device*);
+	void (*recv) (struct eth_device*);
 	void (*halt) (struct eth_device*);
 	int  (*get_ethaddr) (struct eth_device*, u8 adr[6]);
 	int  (*set_ethaddr) (struct eth_device*, const unsigned char *adr);
@@ -252,7 +252,7 @@ void net_set_serverip(IPaddr_t ip);
 const char *net_get_server(void);
 void net_set_serverip_empty(IPaddr_t ip);
 void net_set_netmask(struct eth_device *edev, IPaddr_t ip);
-void net_set_gateway(IPaddr_t ip);
+void net_set_gateway(struct eth_device *edev, IPaddr_t ip);
 void net_set_nameserver(IPaddr_t ip);
 void net_set_domainname(const char *name);
 IPaddr_t net_get_ip(struct eth_device *edev);

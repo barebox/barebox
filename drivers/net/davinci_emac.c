@@ -457,21 +457,19 @@ static int davinci_emac_send(struct eth_device *edev, void *packet, int length)
 /*
  * This function handles receipt of a packet from the network
  */
-static int davinci_emac_recv(struct eth_device *edev)
+static void davinci_emac_recv(struct eth_device *edev)
 {
 	struct davinci_emac_priv *priv = edev->priv;
 	void __iomem *rx_curr_desc, *curr_desc, *tail_desc;
 	unsigned char *pkt;
-	int status, len, ret = -1;
+	int status, len;
 
 	dev_dbg(priv->dev, "+ emac_recv\n");
 
 	rx_curr_desc = priv->emac_rx_active_head;
 	status = readl(rx_curr_desc + EMAC_DESC_PKT_FLAG_LEN);
-	if (status & EMAC_CPPI_OWNERSHIP_BIT) {
-		ret = 0;
+	if (status & EMAC_CPPI_OWNERSHIP_BIT)
 		goto out;
-	}
 
 	if (status & EMAC_CPPI_RX_ERROR_FRAME) {
 		/* Error in packet - discard it and requeue desc */
@@ -483,7 +481,6 @@ static int davinci_emac_recv(struct eth_device *edev)
 		dma_sync_single_for_cpu(priv->dev, (unsigned long)pkt, len, DMA_FROM_DEVICE);
 		net_receive(edev, pkt, len);
 		dma_sync_single_for_device(priv->dev, (unsigned long)pkt, len, DMA_FROM_DEVICE);
-		ret = len;
 	}
 
 	/* Ack received packet descriptor */
@@ -529,8 +526,6 @@ static int davinci_emac_recv(struct eth_device *edev)
 
 out:
 	dev_dbg(priv->dev, "- emac_recv\n");
-
-	return ret;
 }
 
 static int davinci_emac_probe(struct device *dev)

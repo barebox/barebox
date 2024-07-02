@@ -353,7 +353,7 @@ void net_set_netmask(struct eth_device *edev, IPaddr_t nm)
 	edev->netmask = nm;
 }
 
-void net_set_gateway(IPaddr_t gw)
+void net_set_gateway(struct eth_device *edev, IPaddr_t gw)
 {
 	net_gateway = gw;
 }

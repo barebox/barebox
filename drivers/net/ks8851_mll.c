@@ -421,6 +421,23 @@ static inline void ks_inblk(struct ks_net *ks, u16 *wptr, u32 len)
 }
 
 /**
+ * ks_discardblk - read a block of data from QMU discarding the data
+ * @ks: The chip state
+ * @len: length in byte to read
+ *
+ * This discards a block of data, used when a packet is longer than our receive
+ * buffer. I don't know if it is necessary to discard the data like this, but
+ * it is the easy way out to fix the behaviour with too large packets without
+ * risking regressions.
+ */
+static inline void ks_discardblk(struct ks_net *ks, u32 len)
+{
+	len >>= 1;
+	while (len--)
+		(void)readw(ks->hw_addr);
+}
+
+/**
  * ks_outblk - write data to QMU.
  * @ks: The chip information
  * @wptr: buffer address
@@ -655,7 +672,7 @@ static void ks_setup(struct ks_net *ks)
 	ks_wrreg16(ks, KS_RXCR1, w);
 }  /*ks_setup */
 
-static int ks8851_rx_frame(struct ks_net *ks)
+static void ks8851_rx_frame(struct ks_net *ks)
 {
 	struct device *dev = &ks->edev.dev;
 	u16 RxStatus, RxLen = 0;
@@ -676,16 +693,23 @@ static int ks8851_rx_frame(struct ks_net *ks)
 
 	tmp_rxqcr = ks_rdreg16(ks, KS_RXQCR);
 	ks_wrreg16(ks, KS_RXQCR, tmp_rxqcr | RXQCR_SDA);
-	/* read 2 bytes for dummy, 2 for status, 2 for len*/
-	ks_inblk(ks, ks->rx_buf, 2 + 2 + 2);
-	ks_inblk(ks, ks->rx_buf, ALIGN(RxLen, 4));
+	if (RxLen <= PKTSIZE) {
+		/* read 2 bytes for dummy, 2 for status, 2 for len*/
+		ks_inblk(ks, ks->rx_buf, 2 + 2 + 2);
+		ks_inblk(ks, ks->rx_buf, ALIGN(RxLen, 4));
+	} else {
+		ks_discardblk(ks, 2 + 2 + 2 + ALIGN(RxLen, 4));
+	}
+
 	ks_wrreg16(ks, KS_RXQCR, tmp_rxqcr);
 
 	if (RxStatus & RXFSHR_RXFV) {
 		/* Pass to upper layer */
-		dev_dbg(dev, "passing packet to upper layer\n\n");
-		net_receive(&ks->edev, ks->rx_buf, RxLen);
-		return RxLen;
+		if (RxLen <= PKTSIZE) {
+			dev_dbg(dev, "passing packet to upper layer\n\n");
+			net_receive(&ks->edev, ks->rx_buf, RxLen);
+		}
+		return;
 	} else if (RxStatus & RXFSHR_ERR) {
 		dev_err(dev, "RxStatus error 0x%04x\n", RxStatus & RXFSHR_ERR);
 		if (RxStatus & RXFSHR_RXICMPFCS)
@@ -702,19 +726,19 @@ static int ks8851_rx_frame(struct ks_net *ks)
 			dev_dbg(dev, "frame too long\n");
 		if (RxStatus & RXFSHR_RXMR)
 			dev_dbg(dev, "MII symbol error\n");
-	} else
+	} else {
 		dev_err(dev, "other RxStatus error 0x%04x\n", RxStatus);
-	return 0;
+	}
 }
 
-static int ks8851_eth_rx(struct eth_device *edev)
+static void ks8851_eth_rx(struct eth_device *edev)
 {
 	struct ks_net *ks = (struct ks_net *)edev->priv;
 	struct device *dev = &edev->dev;
 	u16 frame_cnt;
 
 	if (!(ks_rdreg16(ks, KS_ISR) & IRQ_RXI))
-		return 0;
+		return;
 	ks_wrreg16(ks, KS_ISR, IRQ_RXI);
 
 	frame_cnt = RXFCTR_RXFC_GET(ks_rdreg16(ks, KS_RXFCTR));
@@ -723,8 +747,6 @@ static int ks8851_eth_rx(struct eth_device *edev)
 		dev_dbg(dev, "%s frame %d\n", __func__, frame_cnt);
 		ks8851_rx_frame(ks);
 	}
-
-	return 0;
 }
 
 static int ks8851_eth_send(struct eth_device *edev,

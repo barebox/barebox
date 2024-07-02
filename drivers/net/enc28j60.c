@@ -846,7 +846,7 @@ static void enc28j60_check_link_status(struct eth_device *edev)
 	}
 }
 
-static int enc28j60_eth_rx(struct eth_device *edev)
+static void enc28j60_eth_rx(struct eth_device *edev)
 {
 	struct enc28j60_net *priv = edev->priv;
 	int pk_counter;
@@ -864,8 +864,6 @@ static int enc28j60_eth_rx(struct eth_device *edev)
 
 	while (pk_counter-- > 0)
 		enc28j60_hw_rx(edev);
-
-	return 0;
 }
 
 static int enc28j60_init_dev(struct eth_device *edev)

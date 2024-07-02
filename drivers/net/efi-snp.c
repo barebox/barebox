@@ -158,7 +158,7 @@ static int efi_snp_eth_send(struct eth_device *edev, void *packet, int length)
 	return -ETIMEDOUT;
 }
 
-static int efi_snp_eth_rx(struct eth_device *edev)
+static void efi_snp_eth_rx(struct eth_device *edev)
 {
 	struct efi_snp_priv *priv = to_priv(edev);
 	long bufsize = PKTSIZE;
@@ -166,16 +166,14 @@ static int efi_snp_eth_rx(struct eth_device *edev)
 
 	efiret = priv->snp->receive(priv->snp, NULL, &bufsize, priv->rx_buf, NULL, NULL, NULL);
 	if (efiret == EFI_NOT_READY)
-		return 0;
+		return;
 
 	if (EFI_ERROR(efiret)) {
 		dev_err(priv->dev, "failed to receive: %s\n", efi_strerror(efiret));
-		return -efi_errno(efiret);
+		return;
 	}
 
 	net_receive(edev, priv->rx_buf, bufsize);
-
-	return 0;
 }
 
 static efi_guid_t snp_guid = EFI_SIMPLE_NETWORK_PROTOCOL_GUID;

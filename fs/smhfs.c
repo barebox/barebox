@@ -26,7 +26,7 @@
 
 static int file_to_fd(const FILE *f)
 {
-	return (int)f->priv;
+	return (int)(uintptr_t)f->priv;
 }
 
 static int smhfs_create(struct device __always_unused *dev,
@@ -48,10 +48,7 @@ static int smhfs_rm(struct device __always_unused *dev,
 	/* Get rid of leading '/' */
 	pathname = &pathname[1];
 
-	if (semihosting_remove(pathname) != 0)
-		return -semihosting_errno();
-	else
-		return 0;
+	return semihosting_remove(pathname);
 }
 
 static int smhfs_truncate(struct device __always_unused *dev,
@@ -70,52 +67,40 @@ static int smhfs_open(struct device __always_unused *dev,
 
 	fd = semihosting_open(filename, file->flags);
 	if (fd < 0)
-		goto error;
+		return fd;
 
-	file->priv = (void *)fd;
+	file->priv = (void *)(uintptr_t)fd;
 	file->size = semihosting_flen(fd);
 	if (file->size < 0)
-		goto error;
+		return file->size;
 
 	return 0;
-error:
-	return -semihosting_errno();
 }
 
 static int smhfs_close(struct device __always_unused *dev,
 		       FILE *f)
 {
-	if (semihosting_close(file_to_fd(f)))
-		return -semihosting_errno();
-	else
-		return 0;
+	return semihosting_close(file_to_fd(f));
 }
 
 static int smhfs_write(struct device __always_unused *dev,
 		       FILE *f, const void *inbuf, size_t insize)
 {
-	if (semihosting_write(file_to_fd(f), inbuf, insize))
-		return -semihosting_errno();
-	else
-		return insize;
+	long ret = semihosting_write(file_to_fd(f), inbuf, insize);
+	return ret < 0 ? ret : insize;
 }
 
 static int smhfs_read(struct device __always_unused *dev,
 		      FILE *f, void *buf, size_t insize)
 {
-	if (!semihosting_read(file_to_fd(f), buf, insize))
-		return insize;
-	else
-		return -semihosting_errno();
+	long ret = semihosting_read(file_to_fd(f), buf, insize);
+	return ret < 0 ? ret : insize;
 }
 
 static int smhfs_lseek(struct device __always_unused *dev,
 			  FILE *f, loff_t pos)
 {
-	if (semihosting_seek(file_to_fd(f), pos))
-		return -semihosting_errno();
-
-	return 0;
+	return semihosting_seek(file_to_fd(f), pos);
 }
 
 static DIR* smhfs_opendir(struct device __always_unused *dev,

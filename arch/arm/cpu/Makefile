@@ -23,6 +23,8 @@ obj-pbl-y += setupc_$(S64_32).o cache_$(S64_32).o
 
 obj-$(CONFIG_ARM_PSCI_CLIENT) += psci-client.o
 
+obj-$(CONFIG_ARM_SEMIHOSTING) += semihosting-trap_$(S64_32).o
+
 #
 # Any variants can be called as start-armxyz.S
 #

@@ -113,7 +113,7 @@ config FS_UIMAGEFS
 	prompt "uImage FS support"
 
 config FS_SMHFS
-	depends on ARM_SEMIHOSTING
+	depends on SEMIHOSTING
 	select FS_LEGACY
 	bool
 	prompt "Semihosting FS support"

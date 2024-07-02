@@ -2,7 +2,7 @@
 /* SPDX-FileCopyrightText: 2015 Zodiac Inflight Innovations */
 
 /*
- * semihosting-trap.S -- Assembly code needed to make a semihosting call
+ * semihosting-trap_32.S -- Assembly code needed to make a semihosting call
  *
  * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
  */

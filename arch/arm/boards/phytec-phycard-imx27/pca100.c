@@ -24,59 +24,11 @@
 #include <mach/imx/bbu.h>
 #include <mach/imx/iomux-mx27.h>
 
-#if defined(CONFIG_USB) && defined(CONFIG_USB_ULPI)
-static void pca100_usb_register(void)
-{
-	mdelay(10);
-
-	gpio_direction_output(GPIO_PORTB + 24, 0);
-	gpio_direction_output(GPIO_PORTB + 23, 0);
-
-	mdelay(10);
-
-	ulpi_setup((void *)(MX27_USB_OTG_BASE_ADDR + 0x170), 1);
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX27_USB_OTG_BASE_ADDR, NULL);
-	ulpi_setup((void *)(MX27_USB_OTG_BASE_ADDR + 0x570), 1);
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX27_USB_OTG_BASE_ADDR + 0x400, NULL);
-}
-#else
-static void pca100_usb_register(void) { };
-#endif
-
 static void pca100_usb_init(void)
 {
+	struct device_node *gpio_np;
 	u32 reg;
-
-	reg = readl(MX27_USB_OTG_BASE_ADDR + 0x600);
-	reg &= ~((3 << 21) | 1);
-	reg |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 11) | (1 << 20);
-	writel(reg, MX27_USB_OTG_BASE_ADDR + 0x600);
-
-	/*
-	 * switch usbotg and usbh2 to ulpi mode. Do this *before*
-	 * the iomux setup to prevent funny hardware bugs from
-	 * triggering. Also, do this even when USB support is
-	 * disabled to give Linux USB support a good start.
-	 */
-	reg = readl(MX27_USB_OTG_BASE_ADDR + 0x584);
-	reg &= ~(3 << 30);
-	reg |= 2 << 30;
-	writel(reg, MX27_USB_OTG_BASE_ADDR + 0x584);
-
-	reg = readl(MX27_USB_OTG_BASE_ADDR + 0x184);
-	reg &= ~(3 << 30);
-	reg |= 2 << 30;
-	writel(reg, MX27_USB_OTG_BASE_ADDR + 0x184);
-
-	/* disable the usb phys */
-	imx27_gpio_mode((GPIO_PORTB | 23) | GPIO_GPIO | GPIO_IN);
-	gpio_direction_output(GPIO_PORTB + 23, 1);
-	imx27_gpio_mode((GPIO_PORTB | 24) | GPIO_GPIO | GPIO_IN);
-	gpio_direction_output(GPIO_PORTB + 24, 1);
-}
-
-static int pca100_devices_init(void)
-{
+	int ret;
 	int i;
 	unsigned int mode[] = {
 		/* USB host 2 */
@@ -106,19 +58,58 @@ static int pca100_devices_init(void)
 		PE25_PF_USBOTG_DATA7,
 	};
 
-	if (!of_machine_is_compatible("phytec,imx27-pca100"))
-		return 0;
+	gpio_np = of_find_node_by_name_address(NULL, "gpio@10015100");
+	if (!gpio_np)
+		return;
 
-	barebox_set_model("Phytec phyCARD-i.MX27");
-	barebox_set_hostname("phycard-imx27");
+	ret = of_device_ensure_probed(gpio_np);
+	if (ret)
+		return;
 
-	pca100_usb_init();
+	reg = readl(MX27_USB_OTG_BASE_ADDR + 0x600);
+	reg &= ~((3 << 21) | 1);
+	reg |= (1 << 5) | (1 << 16) | (1 << 19) | (1 << 11) | (1 << 20);
+	writel(reg, MX27_USB_OTG_BASE_ADDR + 0x600);
+
+	/*
+	 * switch usbotg and usbh2 to ulpi mode. Do this *before*
+	 * the iomux setup to prevent funny hardware bugs from
+	 * triggering. Also, do this even when USB support is
+	 * disabled to give Linux USB support a good start.
+	 */
+	reg = readl(MX27_USB_OTG_BASE_ADDR + 0x584);
+	reg &= ~(3 << 30);
+	reg |= 2 << 30;
+	writel(reg, MX27_USB_OTG_BASE_ADDR + 0x584);
+
+	reg = readl(MX27_USB_OTG_BASE_ADDR + 0x184);
+	reg &= ~(3 << 30);
+	reg |= 2 << 30;
+	writel(reg, MX27_USB_OTG_BASE_ADDR + 0x184);
+
+	/* disable the usb phys */
+	imx27_gpio_mode((GPIO_PORTB | 23) | GPIO_GPIO | GPIO_IN);
+	gpio_direction_output(GPIO_PORTB + 23, 1);
+	imx27_gpio_mode((GPIO_PORTB | 24) | GPIO_GPIO | GPIO_IN);
+	gpio_direction_output(GPIO_PORTB + 24, 1);
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx27_gpio_mode(mode[i]);
 
-	pca100_usb_register();
+	mdelay(10);
+
+	gpio_direction_output(GPIO_PORTB + 24, 0);
+	gpio_direction_output(GPIO_PORTB + 23, 0);
+
+}
+
+static int pca100_probe(struct device *dev)
+{
+	barebox_set_model("Phytec phyCARD-i.MX27");
+	barebox_set_hostname("phycard-imx27");
+
+	pca100_usb_init();
 
 	imx_bbu_external_nand_register_handler("nand", "/dev/nand0.boot",
 			BBU_HANDLER_FLAG_DEFAULT);
@@ -128,4 +119,16 @@ static int pca100_devices_init(void)
 	return 0;
 }
 
-device_initcall(pca100_devices_init);
+static const struct of_device_id pca100_of_match[] = {
+	{ .compatible = "phytec,imx27-pca100" },
+	{ /* Sentinel */},
+};
+
+static struct driver pca100_driver = {
+	.name = "phytec-imx27-pca100",
+	.probe = pca100_probe,
+	.of_compatible = pca100_of_match,
+};
+postcore_platform_driver(pca100_driver);
+
+BAREBOX_DEEP_PROBE_ENABLE(pca100_of_match);

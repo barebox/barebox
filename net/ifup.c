@@ -358,7 +358,7 @@ int ifup_all(unsigned flags)
 	closedir(dir);
 
 	if ((flags & IFUP_FLAG_FORCE) || net_ifup_force_detect ||
-	    list_empty(&netdev_list))
+	    list_empty(&eth_class.devices))
 		device_detect_all();
 
 	/*

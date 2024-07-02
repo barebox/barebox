@@ -8,9 +8,11 @@
 #include <linux/err.h>
 #include <rtc.h>
 #include <linux/rtc.h>
+#include <device.h>
 
-LIST_HEAD(rtc_list);
-EXPORT_SYMBOL(rtc_list);
+#define for_each_rtc(rtc) list_for_each_entry(rtc, &rtc_class.devices, class_dev.class_list)
+
+DEFINE_DEV_CLASS(rtc_class, "rtc");
 
 struct rtc_device *rtc_lookup(const char *name)
 {
@@ -19,7 +21,7 @@ struct rtc_device *rtc_lookup(const char *name)
 	if (!name)
 		return ERR_PTR(-ENODEV);
 
-	list_for_each_entry(r, &rtc_list, list) {
+	for_each_rtc(r) {
 		if (!strcmp(dev_name(&r->class_dev), name))
 			return r;
 	}
@@ -62,7 +64,7 @@ int rtc_register(struct rtc_device *rtcdev)
 		dev->parent = rtcdev->dev;
 	platform_device_register(dev);
 
-	list_add_tail(&rtcdev->list, &rtc_list);
+	class_add_device(&rtc_class, &rtcdev->class_dev);
 
 	return 0;
 }

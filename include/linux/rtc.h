@@ -26,7 +26,6 @@ struct rtc_class_ops;
 struct rtc_device {
 	struct device *dev;
 	struct device class_dev;
-	struct list_head list;
 
 	const struct rtc_class_ops *ops;
 };

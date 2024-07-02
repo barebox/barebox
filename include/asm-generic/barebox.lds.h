@@ -70,6 +70,12 @@
 	KEEP(*(SORT_BY_NAME(.barebox_magicvar*)))	\
 	__barebox_magicvar_end = .;
 
+#define BAREBOX_CLASSES				\
+	STRUCT_ALIGN();				\
+	__barebox_class_start = .;		\
+	KEEP(*(SORT_BY_NAME(.barebox_class*)))	\
+	__barebox_class_end = .;
+
 #define BAREBOX_CLK_TABLE			\
 	STRUCT_ALIGN();				\
 	__clk_of_table_start = .;		\
@@ -138,6 +144,7 @@
 	BAREBOX_SYMS				\
 	KERNEL_CTORS()				\
 	BAREBOX_MAGICVARS			\
+	BAREBOX_CLASSES				\
 	BAREBOX_CLK_TABLE			\
 	BAREBOX_DTB				\
 	BAREBOX_RSA_KEYS			\

@@ -11,7 +11,9 @@
 #include <watchdog.h>
 #include <restart.h>
 
-static LIST_HEAD(watchdog_list);
+#define for_each_watchdog(wd) list_for_each_entry(wd, &watchdog_class.devices, dev.class_list)
+
+DEFINE_DEV_CLASS(watchdog_class, "watchdog");
 
 static const char *watchdog_name(struct watchdog *wd)
 {
@@ -267,7 +269,7 @@ int watchdog_register(struct watchdog *wd)
 			dev_warn(&wd->dev, "failed to register restart handler\n");
 	}
 
-	list_add_tail(&wd->list, &watchdog_list);
+	class_add_device(&watchdog_class, &wd->dev);
 
 	pr_debug("registering watchdog %s with priority %d\n", watchdog_name(wd),
 			wd->priority);
@@ -287,7 +289,7 @@ int watchdog_deregister(struct watchdog *wd)
 		poller_async_unregister(&wd->poller);
 	}
 
-	unregister_device(&wd->dev);
+	class_remove_device(&watchdog_class, &wd->dev);
 	list_del(&wd->list);
 
 	return 0;
@@ -299,7 +301,7 @@ struct watchdog *watchdog_get_default(void)
 	struct watchdog *tmp, *wd = NULL;
 	int priority = 0;
 
-	list_for_each_entry(tmp, &watchdog_list, list) {
+	for_each_watchdog(tmp) {
 		if (tmp->priority > priority) {
 			priority = tmp->priority;
 			wd = tmp;
@@ -336,7 +338,7 @@ struct watchdog *watchdog_get_by_name(const char *name)
 	if (!dev)
 		return NULL;
 
-	list_for_each_entry(tmp, &watchdog_list, list) {
+	for_each_watchdog(tmp) {
 		if (dev == tmp->hwdev || dev == &tmp->dev)
 			return tmp;
 	}
@@ -350,7 +352,7 @@ int watchdog_inhibit_all(void)
 	struct watchdog *wd;
 	int ret = 0;
 
-	list_for_each_entry(wd, &watchdog_list, list) {
+	for_each_watchdog(wd) {
 		int err;
 		if (!wd->priority || watchdog_hw_running(wd) == false)
 			continue;

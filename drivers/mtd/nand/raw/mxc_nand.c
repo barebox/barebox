@@ -759,8 +759,7 @@ static int mxc_nand_write_page_ecc(struct nand_chip *chip, const uint8_t *buf,
 	struct mxc_nand_host *host = nand_get_controller_data(chip);
 	int ret;
 
-	if (oob_required)
-		copy_spare(mtd, false, chip->oob_poi);
+	copy_spare(mtd, false, chip->oob_poi);
 
 	host->devtype_data->enable_hwecc(chip, true);
 
@@ -776,8 +775,7 @@ static int mxc_nand_write_page_raw(struct nand_chip *chip, const uint8_t *buf,
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 
-	if (oob_required)
-		copy_spare(mtd, false, chip->oob_poi);
+	copy_spare(mtd, false, chip->oob_poi);
 
 	return nand_prog_page_op(chip, page, 0, buf, mtd->writesize);
 }

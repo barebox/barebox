@@ -936,15 +936,15 @@ static void mci_set_bus_width(struct mci *mci, enum mci_bus_width width)
 /**
  * Extract card's version from its CSD
  * @param mci MCI instance
- * @return 0 on success
  */
 static void mci_detect_version_from_csd(struct mci *mci)
 {
 	int version;
 
 	if (mci->version == MMC_VERSION_UNKNOWN) {
-		/* the version is coded in the bits 127:126 (left aligned) */
-		version = (mci->csd[0] >> 26) & 0xf;	/* FIXME why other width? */
+		/* this should only apply to MMC card, JESD84-B51 defines
+		 * bits 125:122 as SPEC_VER (reserved bits in CSD) */
+		version = (mci->csd[0] >> 26) & 0xf;
 
 		switch (version) {
 		case 0:
@@ -1070,8 +1070,12 @@ static void mci_extract_block_lengths_from_csd(struct mci *mci)
 {
 	mci->read_bl_len = 1 << UNSTUFF_BITS(mci->csd, 80, 4);
 
+	/* Quoting Physical Layer Simplified Specification Version 9.10:
+	 * Note that in an SD Memory Card the WRITE_BL_LEN is always
+	 * equal to READ_BL_LEN.
+	 */
 	if (IS_SD(mci))
-		mci->write_bl_len = mci->read_bl_len;	/* FIXME why? */
+		mci->write_bl_len = mci->read_bl_len;
 	else
 		mci->write_bl_len = 1 << ((mci->csd[3] >> 22) & 0xf);
 
@@ -1619,7 +1623,7 @@ static int mci_startup(struct mci *mci)
 
 	/*
 	 * For MMC cards, set the Relative Address.
-	 * For SD cards, get the Relatvie Address.
+	 * For SD cards, get the Relative Address.
 	 * This also puts the cards into Standby State
 	 */
 	if (!mmc_host_is_spi(host)) { /* cmd not supported in spi */
@@ -1655,7 +1659,7 @@ static int mci_startup(struct mci *mci)
 	mci_extract_block_lengths_from_csd(mci);
 	mci_extract_card_dsr_imp_from_csd(mci);
 
-	/* sanitiy? */
+	/* sanity? */
 	if (mci->read_bl_len > SECTOR_SIZE) {
 		mci->read_bl_len = SECTOR_SIZE;
 		dev_dbg(&mci->dev, "Limiting max. read block size down to %u\n",
@@ -1918,32 +1922,77 @@ static unsigned extract_mid(struct mci *mci)
 }
 
 /**
+ * Extract the CBX from the CID
+ * @param mci Instance data
+ *
+ * The 'CBX' is encoded in bit 113:112 in the CID and only present in MMC cards
+ */
+static unsigned extract_cbx(struct mci *mci)
+{
+	return UNSTUFF_BITS(mci->cid, 112, 2);
+}
+
+/**
  * Extract the OEM/Application ID from the CID
  * @param mci Instance data
  *
- * The 'OID' is encoded in bit 119:104 in the CID
+ * The 'OID' is encoded in bit 119:104 in the CID for SD cards and 111:104 for
+ * MMC cards
  */
-static unsigned extract_oid(struct mci *mci)
+static void extract_oid(struct mci *mci, char oid[static 5])
 {
-	return (mci->cid[0] >> 8) & 0xffff;
+	if (IS_SD(mci)) {
+		// SD cards have a 2 character long OEM ID
+		snprintf(oid, 5, "%c%c", UNSTUFF_BITS(mci->cid, 112, 8), UNSTUFF_BITS(mci->cid, 104, 8));
+	} else {
+		// MMC cards have a 8-bit binary number as OEM ID
+		snprintf(oid, 5, "0x%02X", UNSTUFF_BITS(mci->cid, 104, 8));
+	}
+}
+
+/**
+ * Extract the product name from the CID
+ * @param mci Instance data
+ *
+ * The 'PNM' is encoded in bit 103:64 in the CID for SD cards and 103:56 for
+ * MMC cards
+ */
+static void extract_pnm(struct mci *mci, char pnm[static 7])
+{
+	pnm[0] = UNSTUFF_BITS(mci->cid, 96, 8);
+	pnm[1] = UNSTUFF_BITS(mci->cid, 88, 8);
+	pnm[2] = UNSTUFF_BITS(mci->cid, 80, 8);
+	pnm[3] = UNSTUFF_BITS(mci->cid, 72, 8);
+	pnm[4] = UNSTUFF_BITS(mci->cid, 64, 8);
+
+	if (IS_SD(mci)) {
+		// SD cards have a 5 character long product name
+		pnm[5] = '\0';
+	} else {
+		// MMC cards have a 6 character long product name
+		pnm[5] = UNSTUFF_BITS(mci->cid, 56, 8);
+		pnm[6] = '\0';
+	}
 }
 
 /**
  * Extract the product revision from the CID
  * @param mci Instance data
  *
- * The 'PRV' is encoded in bit 63:56 in the CID
+ * The 'PRV' is encoded in bit 63:56 in the CID for SD cards and 55:48 for MMC cards
  */
-static unsigned extract_prv(struct mci *mci)
+static void extract_prv(struct mci *mci, char prv[static 8])
 {
-	return mci->cid[2] >> 24;
+	unsigned prv_bcd = IS_SD(mci) ? UNSTUFF_BITS(mci->cid, 56, 8) : UNSTUFF_BITS(mci->cid, 48, 8);
+
+	snprintf(prv, 8,"%u.%u", prv_bcd >> 4, prv_bcd & 0xf);
 }
 
 /**
  * Extract the product serial number from the CID
  * @param mci Instance data
  *
- * The 'PSN' is encoded in bit 55:24 in the CID
+ * The 'PSN' is encoded in bit 55:24 in the CID for SD cards and 47:16 for MMC cards
  */
 static unsigned extract_psn(struct mci *mci)
 {
@@ -1962,9 +2011,9 @@ static unsigned extract_psn(struct mci *mci)
  * Extract the month of the manufacturing date from the CID
  * @param mci Instance data
  *
- * The 'MTD' is encoded in bit 19:8 in the CID, month in 11:8
+ * The 'MDT' is encoded in bit 19:8 in the CID, month in 11:8
  */
-static unsigned extract_mtd_month(struct mci *mci)
+static unsigned extract_mdt_month(struct mci *mci)
 {
 	if (IS_SD(mci))
 		return UNSTUFF_BITS(mci->cid, 8, 4);
@@ -1976,10 +2025,10 @@ static unsigned extract_mtd_month(struct mci *mci)
  * Extract the year of the manufacturing date from the CID
  * @param mci Instance data
  *
- * The 'MTD' is encoded in bit 19:8 in the CID, year in 19:12
+ * The 'MDT' is encoded in bit 19:8 in the CID, year in 19:12
  * An encoded 0 means the year 2000
  */
-static unsigned extract_mtd_year(struct mci *mci)
+static unsigned extract_mdt_year(struct mci *mci)
 {
 	unsigned year;
 	if (IS_SD(mci))
@@ -1992,6 +2041,20 @@ static unsigned extract_mtd_year(struct mci *mci)
 			year += 16;
 	}
 	return year;
+}
+
+/**
+ * Extract the manufacturing date from the CID
+ * @param mci Instance data
+ *
+ * The 'MDT' is encoded in bit 19:8 in the CID
+ */
+static void extract_mdt(struct mci *mci, char mdt[static 8])
+{
+	unsigned month = extract_mdt_month(mci);
+	unsigned year = extract_mdt_year(mci);
+
+	snprintf(mdt, 8, "%u.%u", year, month);
 }
 
 static const char *mci_timing_tostr(unsigned timing)
@@ -2069,16 +2132,32 @@ static void mci_info(struct device *dev)
 		mci->csd[2], mci->csd[3]);
 	printf("  Max. transfer speed: %u Hz\n", mci->tran_speed);
 	mci_print_caps(mci->card_caps);
-	printf("  Manufacturer ID: 0x%02X\n", extract_mid(mci));
-	printf("  OEM/Application ID: 0x%04X\n", extract_oid(mci));
-	printf("  Product name: '%c%c%c%c%c'\n", mci->cid[0] & 0xff,
-		(mci->cid[1] >> 24), (mci->cid[1] >> 16) & 0xff,
-		(mci->cid[1] >> 8) & 0xff, mci->cid[1] & 0xff);
-	printf("  Product revision: %u.%u\n", extract_prv(mci) >> 4,
-		extract_prv(mci) & 0xf);
-	printf("  Serial no: %0u\n", extract_psn(mci));
-	printf("  Manufacturing date: %u.%u\n", extract_mtd_month(mci),
-		extract_mtd_year(mci));
+	printf("  Manufacturer ID: %s\n", dev_get_param(dev, "cid_mid"));
+	printf("  OEM/Application ID: %s\n", dev_get_param(dev, "cid_oid"));
+	if (!IS_SD(mci))
+		printf("  CBX: %s\n", dev_get_param(dev, "cid_cbx"));
+	printf("  Product name: '%s'\n", dev_get_param(dev, "cid_pnm"));
+	printf("  Product revision: %s\n", dev_get_param(dev, "cid_prv"));
+	printf("  Serial no: %s\n", dev_get_param(dev, "cid_psn"));
+	printf("  Manufacturing date: %s\n", dev_get_param(dev, "cid_mdt"));
+}
+
+static void mci_parse_cid(struct mci *mci) {
+	struct device *dev = &mci->dev;
+	char buffer[8];
+
+	dev_add_param_uint32_fixed(dev, "cid_mid", extract_mid(mci), "0x%02X");
+	extract_oid(mci, buffer);
+	dev_add_param_string_fixed(dev, "cid_oid", buffer);
+	if (!IS_SD(mci))
+		dev_add_param_uint32_fixed(dev, "cid_cbx", extract_cbx(mci), "%u");
+	extract_pnm(mci, buffer);
+	dev_add_param_string_fixed(dev, "cid_pnm", buffer);
+	extract_prv(mci, buffer);
+	dev_add_param_string_fixed(dev, "cid_prv", buffer);
+	dev_add_param_uint32_fixed(dev, "cid_psn", extract_psn(mci), "%0u");
+	extract_mdt(mci, buffer);
+	dev_add_param_string_fixed(dev, "cid_mdt", buffer);
 }
 
 /**
@@ -2354,6 +2433,8 @@ static int mci_card_probe(struct mci *mci)
 			dev_add_param_bool_fixed(&mci->dev, "partitioning_completed", ret);
 	}
 
+	mci_parse_cid(mci);
+
 	dev_dbg(&mci->dev, "SD Card successfully added\n");
 
 on_error:
@@ -2432,7 +2513,6 @@ int mci_register(struct mci_host *host)
 {
 	struct mci *mci;
 	struct device *hw_dev;
-	struct param_d *param;
 	int ret;
 
 	mci = xzalloc(sizeof(*mci));
@@ -2477,23 +2557,8 @@ int mci_register(struct mci_host *host)
 
 	dev_info(hw_dev, "registered as %s\n", dev_name(&mci->dev));
 
-	param = dev_add_param_bool(&mci->dev, "probe", mci_set_probe, NULL,
-				   &mci->probe, mci);
-
-	if (IS_ERR(param) && PTR_ERR(param) != -ENOSYS) {
-		ret = PTR_ERR(param);
-		dev_dbg(&mci->dev, "Failed to add 'probe' parameter to the MCI device\n");
-		goto err_unregister;
-	}
-
-	param = dev_add_param_bool(&mci->dev, "broken_cd", NULL, NULL,
-				   &host->broken_cd, mci);
-
-	if (IS_ERR(param) && PTR_ERR(param) != -ENOSYS) {
-		ret = PTR_ERR(param);
-		dev_dbg(&mci->dev, "Failed to add 'broken_cd' parameter to the MCI device\n");
-		goto err_unregister;
-	}
+	dev_add_param_bool(&mci->dev, "probe", mci_set_probe, NULL,
+			   &mci->probe, mci);
 
 	if (IS_ENABLED(CONFIG_MCI_INFO))
 		mci->dev.info = mci_info;
@@ -2502,15 +2567,17 @@ int mci_register(struct mci_host *host)
 	if (IS_ENABLED(CONFIG_MCI_STARTUP))
 		mci_card_probe(mci);
 
-	if (!(host->caps2 & MMC_CAP2_NO_SD) && dev_of_node(host->hw_dev))
+	if (!(host->caps2 & MMC_CAP2_NO_SD) && dev_of_node(host->hw_dev)) {
+		dev_add_param_bool(&mci->dev, "broken_cd", NULL, NULL,
+				   &host->broken_cd, mci);
+
 		of_register_fixup(of_broken_cd_fixup, host);
+	}
 
 	list_add_tail(&mci->list, &mci_list);
 
 	return 0;
 
-err_unregister:
-	unregister_device(&mci->dev);
 err_free:
 	free(mci);
 

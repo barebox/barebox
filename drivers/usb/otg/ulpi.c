@@ -134,8 +134,11 @@ struct ulpi_info {
 
 /* ULPI hardcoded IDs, used for probing */
 static struct ulpi_info ulpi_ids[] = {
-	ULPI_INFO(ULPI_ID(0x04cc, 0x1504), "NXP ISP150x"),
+	ULPI_INFO(ULPI_ID(0x04cc, 0x1504), "NXP ISP1504"),
 	ULPI_INFO(ULPI_ID(0x0424, 0x0006), "SMSC USB331x"),
+	ULPI_INFO(ULPI_ID(0x0424, 0x0007), "SMSC USB3320"),
+	ULPI_INFO(ULPI_ID(0x0424, 0x0009), "SMSC USB334x"),
+	ULPI_INFO(ULPI_ID(0x0451, 0x1507), "TI TUSB1210"),
 };
 
 static int ulpi_read_id(void __iomem *view, int *vid, int *pid)

@@ -446,7 +446,7 @@ static int usb_hub_configure(struct usb_device *dev)
 	unsigned char *buffer, *bitmap;
 	struct usb_hub_descriptor *descriptor;
 	struct usb_hub_status *hubsts;
-	int i, ret;
+	int i, length, ret;
 	struct usb_hub_device *hub;
 
 	buffer = dma_alloc(USB_BUFSIZ);
@@ -466,23 +466,15 @@ static int usb_hub_configure(struct usb_device *dev)
 	}
 	descriptor = (struct usb_hub_descriptor *)buffer;
 
-	/* silence compiler warning if USB_BUFSIZ is > 256 [= sizeof(char)] */
-	i = descriptor->bLength;
-	if (i > USB_BUFSIZ) {
-		dev_dbg(&dev->dev, "%s: failed to get hub " \
-				"descriptor - too long: %d\n", __func__,
-				descriptor->bLength);
-		ret = -1;
-		goto out;
-	}
+	length = min_t(int, descriptor->bLength, sizeof(struct usb_hub_descriptor));
 
-	if (usb_get_hub_descriptor(dev, buffer, descriptor->bLength) < 0) {
+	if (usb_get_hub_descriptor(dev, buffer, length) < 0) {
 		dev_dbg(&dev->dev, "%s: failed to get hub " \
 				"descriptor 2nd giving up %lX\n", __func__, dev->status);
 		ret = -1;
 		goto out;
 	}
-	memcpy((unsigned char *)&hub->desc, buffer, descriptor->bLength);
+	memcpy((unsigned char *)&hub->desc, buffer, length);
 	/* adjust 16bit values */
 	hub->desc.wHubCharacteristics =
 				le16_to_cpu(descriptor->wHubCharacteristics);

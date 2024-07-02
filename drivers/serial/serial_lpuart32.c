@@ -119,7 +119,7 @@ static int lpuart32_serial_probe(struct device *dev)
 	}
 	lpuart32->base = IOMEM(lpuart32->io->start) + devtype->reg_offs;
 
-	lpuart32->clk = clk_get(dev, NULL);
+	lpuart32->clk = clk_get_for_console(dev, NULL);
 	if (IS_ERR(lpuart32->clk)) {
 		ret = PTR_ERR(lpuart32->clk);
 		dev_err(dev, "Failed to get UART clock %d\n", ret);
@@ -137,7 +137,7 @@ static int lpuart32_serial_probe(struct device *dev)
 	cdev->putc   = lpuart32_serial_putc;
 	cdev->getc   = lpuart32_serial_getc;
 	cdev->flush  = lpuart32_serial_flush;
-	cdev->setbrg = lpuart32_serial_setbaudrate;
+	cdev->setbrg = lpuart32->clk ? lpuart32_serial_setbaudrate : NULL;
 
 	if (dev->of_node) {
 		devname = of_alias_get(dev->of_node);
@@ -151,7 +151,8 @@ static int lpuart32_serial_probe(struct device *dev)
 	cdev->linux_earlycon_name = "lpuart";
 	cdev->phys_base = lpuart32->base;
 
-	lpuart32_setup(lpuart32->base, clk_get_rate(lpuart32->clk));
+	if (lpuart32->clk)
+		lpuart32_setup(lpuart32->base, clk_get_rate(lpuart32->clk));
 
 	ret = console_register(cdev);
 	if (!ret)

@@ -2338,15 +2338,13 @@ static int mci_card_probe(struct mci *mci)
 	}
 
 	if (has_bootpart) {
-		mci->param_boot =
-			dev_add_param_enum(&mci->dev, "boot", mci_set_boot,
-					   NULL, &mci->bootpart, mci_boot_names,
-					   ARRAY_SIZE(mci_boot_names), mci);
+		dev_add_param_enum(&mci->dev, "boot", mci_set_boot,
+				   NULL, &mci->bootpart, mci_boot_names,
+				   ARRAY_SIZE(mci_boot_names), mci);
 
-		mci->param_boot_ack =
-			dev_add_param_bool(&mci->dev, "boot_ack",
-					   mci_set_boot_ack, NULL,
-					   &mci->boot_ack_enable, mci);
+		dev_add_param_bool(&mci->dev, "boot_ack",
+				   mci_set_boot_ack, NULL,
+				   &mci->boot_ack_enable, mci);
 
 		ret = mci_get_partition_setting_completed(mci);
 		if (ret < 0)

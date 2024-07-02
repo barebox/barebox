@@ -43,10 +43,10 @@ config MACH_STM32MP15X_EV1
 
 config MACH_PROTONIC_STM32MP1
 	select ARCH_STM32MP157
-	bool "Protonic PRTT1L family of boards"
+	bool "Protonic PRTT1L/MECIOx/MECT1S family of boards"
 	help
-	  Builds all barebox-prtt1*.stm32 that can be deployed as SSBL
-	  on the respective PRTT1L family board
+	  Builds all barebox-*.stm32 that can be deployed as SSBL
+	  on the respective PRTT1L/MECIOx/MECT1S family board
 
 config MACH_PHYTEC_PHYCORE_STM32MP1
 	select ARCH_STM32MP157

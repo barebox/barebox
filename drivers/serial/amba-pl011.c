@@ -188,7 +188,7 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 	}
 
 	uart = xzalloc(sizeof(struct amba_uart_port));
-	uart->clk = clk_get(&dev->dev, NULL);
+	uart->clk = clk_get_for_console(&dev->dev, NULL);
 	uart->base = amba_get_mem_region(dev);
 	uart->vendor = (void*)id->data;
 
@@ -200,7 +200,7 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 	cdev->tstc = pl011_tstc;
 	cdev->putc = pl011_putc;
 	cdev->getc = pl011_getc;
-	cdev->setbrg = pl011_setbaudrate;
+	cdev->setbrg = uart->clk ? pl011_setbaudrate : NULL;
 	cdev->linux_console_name = "ttyAMA";
 	cdev->linux_earlycon_name = "pl011";
 	cdev->phys_base = uart->base;

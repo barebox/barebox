@@ -157,18 +157,18 @@ static int ar933x_serial_probe(struct device *dev)
 
 	dev->priv = priv;
 
-	cdev->dev = dev;
-	cdev->tstc = ar933x_serial_tstc;
-	cdev->putc = ar933x_serial_putc;
-	cdev->getc = ar933x_serial_getc;
-	cdev->setbrg = ar933x_serial_setbaudrate;
-	cdev->linux_console_name = "ttyATH";
-
-	priv->clk = clk_get(dev, NULL);
+	priv->clk = clk_get_for_console(dev, NULL);
 	if (IS_ERR(priv->clk)) {
 		dev_err(dev, "unable to get UART clock\n");
 		return PTR_ERR(priv->clk);
 	}
+
+	cdev->dev = dev;
+	cdev->tstc = ar933x_serial_tstc;
+	cdev->putc = ar933x_serial_putc;
+	cdev->getc = ar933x_serial_getc;
+	cdev->setbrg = priv->clk ? ar933x_serial_setbaudrate : NULL;
+	cdev->linux_console_name = "ttyATH";
 
 	uart_cs = (AR933X_UART_CS_IF_MODE_DCE << AR933X_UART_CS_IF_MODE_S)
 		| AR933X_UART_CS_TX_READY_ORIDE

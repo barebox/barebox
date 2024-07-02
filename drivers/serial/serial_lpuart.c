@@ -131,7 +131,7 @@ static int lpuart_serial_probe(struct device *dev)
 	}
 	lpuart->base = IOMEM(lpuart->io->start);
 
-	lpuart->clk = clk_get(dev, NULL);
+	lpuart->clk = clk_get_for_console(dev, NULL);
 	if (IS_ERR(lpuart->clk)) {
 		ret = PTR_ERR(lpuart->clk);
 		dev_err(dev, "Failed to get UART clock %d\n", ret);
@@ -149,7 +149,7 @@ static int lpuart_serial_probe(struct device *dev)
 	cdev->putc   = lpuart_serial_putc;
 	cdev->getc   = lpuart_serial_getc;
 	cdev->flush  = lpuart_serial_flush;
-	cdev->setbrg = lpuart_serial_setbaudrate;
+	cdev->setbrg = lpuart->clk ? lpuart_serial_setbaudrate : NULL;
 
 	if (dev->of_node) {
 		devname = of_alias_get(dev->of_node);
@@ -163,12 +163,15 @@ static int lpuart_serial_probe(struct device *dev)
 	cdev->linux_earlycon_name = "lpuart";
 	cdev->phys_base = lpuart->base;
 
-	lpuart_setup(lpuart->base, clk_get_rate(lpuart->clk));
+	if (lpuart->clk)
+		lpuart_setup(lpuart->base, clk_get_rate(lpuart->clk));
 
 	ret = console_register(cdev);
 	if (!ret) {
-		lpuart->notify.notifier_call = lpuart_clocksource_clock_change;
-		clock_register_client(&lpuart->notify);
+		if (lpuart->clk) {
+			lpuart->notify.notifier_call = lpuart_clocksource_clock_change;
+			clock_register_client(&lpuart->notify);
+		}
 
 		return 0;
 	}

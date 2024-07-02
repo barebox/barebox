@@ -330,7 +330,7 @@ static int rk808_probe(struct device *dev)
 		return -EINVAL;
 	}
 
-	rk808->i2c = client;
+	rk808->dev = &client->dev;
 	i2c_set_clientdata(client, rk808);
 
 	rk808->regmap = regmap_init_i2c_smbus(client, rk808->regmap_cfg);

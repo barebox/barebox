@@ -62,6 +62,9 @@ int phy_update_status(struct phy_device *phydev)
 	    phydev->link == oldlink)
 		return 0;
 
+	if (!phydev->link && !oldlink)
+		return 0;
+
 	if (phydev->adjust_link)
 		phydev->adjust_link(edev);
 

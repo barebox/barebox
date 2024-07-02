@@ -38,4 +38,11 @@
 #define PM_RSTS_HADSR_SET \
 	(PM_RSTS_HADSRQ_SET | PM_RSTS_HADSRF_SET | PM_RSTS_HADSRH_SET)
 
+/*
+ * The Raspberry Pi firmware uses the RSTS register to know which partition
+ * to boot from. The partition value is spread into bits 0, 2, 4, 6, 8, 10.
+ * Partition 63 is a special partition used by the firmware to indicate halt.
+ */
+#define PM_RSTS_RASPBERRYPI_HALT	0x555
+
 #endif

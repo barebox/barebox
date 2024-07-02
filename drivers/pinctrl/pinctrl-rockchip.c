@@ -20,6 +20,7 @@
 #include <of.h>
 #include <of_address.h>
 #include <pinctrl.h>
+#include <linux/pinctrl/pinconf-generic.h>
 #include <dt-bindings/pinctrl/rockchip.h>
 
 #include <linux/basic_mmio_gpio.h>
@@ -222,30 +223,41 @@
 #define RK3588_PIN_BANK_FLAGS(ID, PIN, LABEL, M, P)			\
 	PIN_BANK_IOMUX_FLAGS_PULL_FLAGS(ID, PIN, LABEL, M, M, M, M, P, P, P, P)
 
-enum {
-	RK_BIAS_DISABLE = 0,
-	RK_BIAS_PULL_UP,
-	RK_BIAS_PULL_DOWN,
-	RK_BIAS_BUS_HOLD,
-};
-
 static struct rockchip_pinctrl *to_rockchip_pinctrl(struct pinctrl_device *pdev)
 {
 	return container_of(pdev, struct rockchip_pinctrl, pctl_dev);
 }
 
-static int parse_bias_config(struct device_node *np)
+static enum pin_config_param parse_bias_config(struct device_node *np)
 {
-	u32 val;
- 
-	if (of_property_read_u32(np, "bias-pull-up", &val) != -EINVAL)
-		return RK_BIAS_PULL_UP;
-	else if (of_property_read_u32(np, "bias-pull-down", &val) != -EINVAL)
-		return RK_BIAS_PULL_DOWN;
-	else if (of_property_read_u32(np, "bias-bus-hold", &val) != -EINVAL)
-		return RK_BIAS_BUS_HOLD;
+	if (of_property_read_bool(np, "bias-pull-up"))
+		return PIN_CONFIG_BIAS_PULL_UP;
+	else if (of_property_read_bool(np, "bias-pull-down"))
+		return PIN_CONFIG_BIAS_PULL_DOWN;
+	else if (of_property_read_bool(np, "bias-bus-hold"))
+		return PIN_CONFIG_BIAS_BUS_HOLD;
+	else if (of_property_read_bool(np, "bias-pull-pin-default"))
+		return PIN_CONFIG_BIAS_PULL_PIN_DEFAULT;
 	else
-		return RK_BIAS_DISABLE;
+		return PIN_CONFIG_BIAS_DISABLE;
+}
+
+static unsigned long parse_gpio_direction(struct device_node *np)
+{
+	enum pin_config_param param = PIN_CONFIG_END;
+	u32 argument = 0;
+
+	if (of_property_read_bool(np, "input-enable")) {
+		param = PIN_CONFIG_INPUT_ENABLE;
+	} else if (of_property_read_bool(np, "output-low")) {
+		param = PIN_CONFIG_OUTPUT;
+		argument = 0;
+	} else if (of_property_read_bool(np, "output-high")) {
+		param = PIN_CONFIG_OUTPUT;
+		argument = 1;
+	}
+
+	return pinconf_to_config_packed(param, argument);
 }
 
 static struct rockchip_pin_bank *bank_num_to_bank(
@@ -2104,16 +2116,16 @@ config:
 
 static int rockchip_pull_list[PULL_TYPE_MAX][4] = {
 	{
-		RK_BIAS_DISABLE,
-		RK_BIAS_PULL_UP,
-		RK_BIAS_PULL_DOWN,
-		RK_BIAS_BUS_HOLD
+		PIN_CONFIG_BIAS_DISABLE,
+		PIN_CONFIG_BIAS_PULL_UP,
+		PIN_CONFIG_BIAS_PULL_DOWN,
+		PIN_CONFIG_BIAS_BUS_HOLD
 	},
 	{
-		RK_BIAS_DISABLE,
-		RK_BIAS_PULL_DOWN,
-		RK_BIAS_DISABLE,
-		RK_BIAS_PULL_UP
+		PIN_CONFIG_BIAS_DISABLE,
+		PIN_CONFIG_BIAS_PULL_DOWN,
+		PIN_CONFIG_BIAS_DISABLE,
+		PIN_CONFIG_BIAS_PULL_UP
 	},
 };
 
@@ -2142,7 +2154,7 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
 	case RK2928:
 	case RK3128:
 		data = BIT(bit + 16);
-		if (pull == RK_BIAS_DISABLE)
+		if (pull == PIN_CONFIG_BIAS_DISABLE)
 			data |= BIT(bit);
 		ret = regmap_write(regmap, reg, data);
 		break;
@@ -2169,7 +2181,7 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
 		 * where that pull up value becomes 3.
 		 */
 		if (ctrl->type == RK3568 && bank->bank_num == 0 && pin_num >= 27 && pin_num <= 30) {
-			if (ret == RK_BIAS_PULL_UP)
+			if (ret == 1)
 				ret = 3;
 		}
 
@@ -2366,6 +2378,75 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
 	return ctrl;
 }
 
+static int rockchip_set_schmitt(struct rockchip_pin_bank *bank,
+				int pin_num, int enable)
+{
+	struct rockchip_pinctrl *info = bank->drvdata;
+	struct rockchip_pin_ctrl *ctrl = info->ctrl;
+	struct device *dev = info->dev;
+	struct regmap *regmap;
+	int reg, ret;
+	u8 bit;
+	u32 data, rmask;
+
+	if (!info->ctrl->schmitt_calc_reg)
+		return -ENOTSUPP;
+
+	dev_dbg(dev, "setting input schmitt of GPIO%d-%d to %d\n",
+		bank->bank_num, pin_num, enable);
+
+	ret = ctrl->schmitt_calc_reg(bank, pin_num, &regmap, &reg, &bit);
+	if (ret)
+		return ret;
+
+	/* enable the write to the equivalent lower bits */
+	switch (ctrl->type) {
+	case RK3568:
+		data = ((1 << RK3568_SCHMITT_BITS_PER_PIN) - 1) << (bit + 16);
+		rmask = data | (data >> 16);
+		data |= ((enable ? 0x2 : 0x1) << bit);
+		break;
+	default:
+		data = BIT(bit + 16) | (enable << bit);
+		rmask = BIT(bit + 16) | BIT(bit);
+		break;
+	}
+
+	return regmap_update_bits(regmap, reg, rmask, data);
+}
+
+static void rockchip_set_gpio(struct rockchip_pin_bank *bank,
+			      int pin_num, unsigned long config)
+{
+	enum pin_config_param param = pinconf_to_config_param(config);
+	struct gpio_chip *gpio;
+
+	if (param != PIN_CONFIG_OUTPUT && param != PIN_CONFIG_INPUT_ENABLE)
+		return;
+
+	gpio = of_gpio_get_chip_by_alias(bank->name);
+	if (!gpio) {
+		/* For simplicity, we don't implement rockchip_pinconf_defer_pin
+		 * like Linux and instead expect boards to be deep-probe enabled
+		 */
+		pr_warn("pinctrl config failed: GPIO controller '%s' not found\n",
+			bank->name);
+		return;
+	}
+
+	switch (param) {
+	case PIN_CONFIG_OUTPUT:
+		gpio->ops->direction_output(gpio, pin_num,
+					    pinconf_to_config_argument(config));
+		break;
+	case PIN_CONFIG_INPUT_ENABLE:
+		gpio->ops->direction_input(gpio, pin_num);
+		break;
+	default:
+		break;
+	}
+}
+
 static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 				      struct device_node *np)
 {
@@ -2404,10 +2485,15 @@ static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 		bank = bank_num_to_bank(info, bank_num);
 		rockchip_set_mux(bank, pin_num, func);
 		rockchip_set_pull(bank, pin_num, parse_bias_config(np_config));
+		rockchip_set_gpio(bank, pin_num, parse_gpio_direction(np_config));
 
 		ret = of_property_read_u32(np_config, "drive-strength", &drive_strength);
 		if (!ret)
 			rockchip_set_drive_perpin(bank, pin_num, drive_strength);
+		if (of_property_read_bool(np_config, "input-schmitt-enable"))
+			rockchip_set_schmitt(bank, pin_num, true);
+		if (of_property_read_bool(np_config, "input-schmitt-disable"))
+			rockchip_set_schmitt(bank, pin_num, false);
 	}
 
 	return 0;

@@ -137,7 +137,7 @@ static int clps711x_probe(struct device *dev)
 
 	s = xzalloc(sizeof(struct clps711x_uart));
 
-	s->uart_clk = clk_get(dev, NULL);
+	s->uart_clk = clk_get_for_console(dev, NULL);
 	if (IS_ERR(s->uart_clk)) {
 		err = PTR_ERR(s->uart_clk);
 		goto out_err;
@@ -162,7 +162,7 @@ static int clps711x_probe(struct device *dev)
 	s->cdev.putc	= clps711x_putc;
 	s->cdev.getc	= clps711x_getc;
 	s->cdev.flush	= clps711x_flush;
-	s->cdev.setbrg	= clps711x_setbaudrate;
+	s->cdev.setbrg	= s->uart_clk ? clps711x_setbaudrate : NULL;
 	s->cdev.linux_console_name = "ttyCL";
 
 	devname = of_alias_get(dev->of_node);

@@ -702,7 +702,6 @@ static int e1000_register_invm(struct e1000_hw *hw)
 {
 	int ret;
 	u16 word;
-	struct param_d *p;
 
 	if (e1000_eeprom_valid(hw)) {
 		ret = e1000_read_eeprom(hw, 0x0a, 1, &word);
@@ -732,15 +731,10 @@ static int e1000_register_invm(struct e1000_hw *hw)
 		return ret;
 	}
 
-	p = dev_add_param_int(&hw->invm.dev, "lock", e1000_invm_set_lock,
+	dev_add_param_int(&hw->invm.dev, "lock", e1000_invm_set_lock,
 			      NULL, &hw->invm.line, "%u", hw);
-	if (IS_ERR(p)) {
-		unregister_device(&hw->invm.dev);
-		devfs_remove(&hw->invm.cdev);
-		ret = PTR_ERR(p);
-	}
 
-	return ret;
+	return 0;
 }
 
 /*

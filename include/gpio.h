@@ -36,6 +36,7 @@ void gpio_set_active(unsigned gpio, bool state);
 int gpio_is_active(unsigned gpio);
 int gpio_direction_active(unsigned gpio, bool state);
 struct gpio_chip *gpio_get_chip_by_dev(struct device *);
+struct gpio_chip *of_gpio_get_chip_by_alias(const char *alias);
 
 /**
  * gpio_poll_timeout_us - Poll till GPIO reaches requested active state
@@ -65,6 +66,11 @@ static inline int gpio_direction_active(unsigned gpio, int value)
 }
 
 static inline struct gpio_chip *gpio_get_chip_by_dev(struct device *dev)
+{
+	return NULL;
+}
+
+static inline struct gpio_chip *of_gpio_get_chip_by_alias(const char *alias)
 {
 	return NULL;
 }
@@ -208,6 +214,8 @@ struct gpio_chip {
 	struct device *dev;
 
 	int base;
+	/* GPIO controller specific GPIO offset */
+	int gpio_offset;
 	int ngpio;
 
 #if defined(CONFIG_OF_GPIO)

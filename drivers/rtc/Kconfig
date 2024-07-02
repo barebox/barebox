@@ -18,6 +18,14 @@ menuconfig RTC_CLASS
 
 if RTC_CLASS
 
+config RTC_NVMEM
+	bool "RTC non volatile storage support" if COMPILE_TEST
+	depends on NVMEM
+	default y
+	help
+	  Say yes here to add support for the non volatile (often battery
+	  backed) storage present on RTCs.
+
 comment "I2C RTC drivers"
 	depends on I2C
 
@@ -36,6 +44,12 @@ config RTC_DRV_DS1307
 
 config RTC_DRV_ABRACON
 	tristate "Abracon RTCs"
+
+config RTC_DRV_PCF85063
+	tristate "NXP PCF85063"
+	select REGMAP_I2C
+	help
+	  If you say yes here you get support for the PCF85063 RTC chip
 
 config RTC_DRV_PCF85363
 	tristate "NXP PCF85363"

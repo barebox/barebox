@@ -357,9 +357,14 @@ size of a partition).
 
 .. important:: The ``direct`` storage backend needs 8 bytes of additional space
    per *state* variable set for its meta data. Keep this in mind when calculating
-   the stridesize. For example, if your variable set needs 8 bytes, the ``raw``
-   header needs 16 bytes and the ``direct`` storage backend additionally 8 bytes.
-   The full space for one *state* variable set is now 8 + 16 + 8 = 32 bytes.
+   the stridesize. For example, the bootchooser boot state needs 20 bytes for
+   its variables. The ``raw`` header adds 16 bytes and the ``direct`` storage
+   backend adds a further 8 bytes.
+   The full space for one *state* variable set (minimum stride size) is thus
+   20 + 16 + 8 = 44 bytes.
+   The minimum size for the backend partition is then 44 * 3 = 132 bytes.
+   It's a good idea though to increase stride size beyond the minimum to leave
+   some free space for in-place addition of new variables in future.
 
 Circular Storage Backend Redundancy
 ###################################

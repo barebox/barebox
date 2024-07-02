@@ -6,6 +6,7 @@
 #include <common.h>
 #include <command.h>
 #include <libfile.h>
+#include <globalvar.h>
 #include <getopt.h>
 #include <malloc.h>
 #include <errno.h>
@@ -20,6 +21,7 @@ static void print_handlers_list(void)
 
 static int do_barebox_update(int argc, char *argv[])
 {
+	char *pathbuf = NULL;
 	int opt, ret, repair = 0;
 	struct bbu_data data = {};
 	struct bbu_handler *handler;
@@ -82,19 +84,29 @@ static int do_barebox_update(int argc, char *argv[])
 
 	if (argc - optind > 0) {
 		data.imagefile = argv[optind];
-
-		image = read_file(data.imagefile, &data.len);
-		if (!image)
-			return -errno;
-		data.image = image;
-	} else {
-		if (!repair)
+	} else if (!repair) {
+		if (!IS_ENABLED(CONFIG_FS_TFTP))
 			return COMMAND_ERROR_USAGE;
+
+		pathbuf = xasprintf("/mnt/tftp/%s-barebox-%s",
+				    globalvar_get("user"), globalvar_get("hostname"));
+		data.imagefile = pathbuf;
+	}
+
+	if (data.imagefile) {
+		image = read_file(data.imagefile, &data.len);
+		if (!image) {
+			ret = -errno;
+			goto out;
+		}
+		data.image = image;
 	}
 
 	ret = barebox_update(&data, handler);
 
 	free(image);
+out:
+	free(pathbuf);
 
 	return ret;
 }

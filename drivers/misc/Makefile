@@ -7,6 +7,7 @@ obj-$(CONFIG_JTAG)		+= jtag.o
 obj-$(CONFIG_SRAM)		+= sram.o
 obj-$(CONFIG_STATE_DRV)		+= state.o
 obj-$(CONFIG_DEV_MEM)		+= mem.o
+obj-$(CONFIG_DEV_PORT)		+= port.o
 obj-$(CONFIG_UBOOTVAR)		+= ubootvar.o
 obj-$(CONFIG_STARFIVE_PWRSEQ)	+= starfive-pwrseq.o
 obj-$(CONFIG_STORAGE_BY_UUID)	+= storage-by-uuid.o

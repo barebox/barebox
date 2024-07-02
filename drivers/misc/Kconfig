@@ -24,6 +24,10 @@ config STATE_DRV
 config DEV_MEM
         bool "Generic memory I/O device (/dev/mem)"
 
+config DEV_PORT
+	bool "Generic port I/O device (/dev/port)"
+	depends on X86 || SANDBOX || COMPILE_TEST
+
 config UBOOTVAR
 	bool "U-Boot environment storage"
 	depends on OFTREE

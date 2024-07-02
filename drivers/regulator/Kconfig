@@ -17,6 +17,17 @@ config REGULATOR_BCM283X
 	depends on ARCH_BCM283X
 	default y
 
+config REGULATOR_FAN53555
+	bool "Fairchild FAN53555 Regulator"
+	depends on I2C
+	depends on OFDEVICE
+	help
+	  This driver supports Fairchild FAN53555 Digitally Programmable
+	  TinyBuck Regulator. The FAN53555 is a step-down switching voltage
+	  regulator that delivers a digitally programmable output from an
+	  input voltage supply of 2.5V to 5.5V. The output voltage is
+	  programmed through an I2C interface.
+
 config REGULATOR_PFUZE
 	bool "Freescale PFUZE100/200/3000 regulator driver"
 	depends on I2C

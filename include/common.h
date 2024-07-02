@@ -20,6 +20,7 @@
 #include <asm/common.h>
 #include <asm/io.h>
 #include <linux/printk.h>
+#include <barebox-info.h>
 
 /*
  * sanity check. The Linux Kernel defines only one of __LITTLE_ENDIAN and
@@ -112,27 +113,5 @@ int memcpy_parse_options(int argc, char *argv[], int *sourcefd,
 			 int *destfd, loff_t *count,
 			 int rwsize, int destmode);
 #define RW_BUF_SIZE	(unsigned)4096
-
-extern const char version_string[];
-extern const char release_string[];
-extern const char buildsystem_version_string[];
-#ifdef CONFIG_BANNER
-void barebox_banner(void);
-#else
-static inline void barebox_banner(void) {}
-#endif
-
-const char *barebox_get_model(void);
-void barebox_set_model(const char *);
-const char *barebox_get_hostname(void);
-void barebox_set_hostname(const char *);
-void barebox_set_hostname_no_overwrite(const char *);
-bool barebox_hostname_is_valid(const char *s);
-
-const char *barebox_get_serial_number(void);
-void barebox_set_serial_number(const char *);
-
-void barebox_set_of_machine_compatible(const char *);
-const char *barebox_get_of_machine_compatible(void);
 
 #endif	/* __COMMON_H_ */

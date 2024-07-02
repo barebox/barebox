@@ -231,15 +231,16 @@ struct device *of_platform_device_create(struct device_node *np,
 	np->dev = dev;
 
 	ret = platform_device_register(dev);
-	if (!ret)
-		return dev;
+	if (ret) {
+		np->dev = NULL;
+		free_device(dev);
+		if (num_reg)
+			free(res);
+		return NULL;
+	}
 
-	np->dev = NULL;
 
-	free_device(dev);
-	if (num_reg)
-		free(res);
-	return NULL;
+	return dev;
 }
 
 struct driver dummy_driver = {

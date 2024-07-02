@@ -2713,6 +2713,55 @@ unsupported:
 	return 0;
 }
 
+static int sja1105_set_rgmii_delay(struct sja1105_private *priv, int port,
+				   phy_interface_t phy_mode)
+{
+	if (phy_mode == PHY_INTERFACE_MODE_RGMII_RXID ||
+	    phy_mode == PHY_INTERFACE_MODE_RGMII_ID)
+		priv->rgmii_rx_delay[port] = true;
+
+	if (phy_mode == PHY_INTERFACE_MODE_RGMII_TXID ||
+	    phy_mode == PHY_INTERFACE_MODE_RGMII_ID)
+		priv->rgmii_tx_delay[port] = true;
+
+	if ((priv->rgmii_rx_delay[port] ||
+	     priv->rgmii_tx_delay[port]) &&
+	     !priv->dcfg->setup_rgmii_delay) {
+		dev_err(priv->dev, "Chip does not support internal RGMII delays\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static void sja1105_set_speed(struct dsa_port *dp, int port, int speed)
+{
+	struct device *dev = dp->ds->dev;
+	struct sja1105_private *priv = dev_get_priv(dev);
+	struct sja1105_xmii_params_entry *mii;
+	struct sja1105_mac_config_entry *mac;
+
+	mii = priv->static_config.tables[BLK_IDX_XMII_PARAMS].entries;
+	mac = priv->static_config.tables[BLK_IDX_MAC_CONFIG].entries;
+
+	if (mii->xmii_mode[port] == XMII_MODE_SGMII) {
+		mac[port].speed =
+			priv->dcfg->port_speed[SJA1105_SPEED_1000MBPS];
+		priv->xpcs_cfg[port].speed = speed;
+	} else if (speed == SPEED_1000) {
+		mac[port].speed =
+			priv->dcfg->port_speed[SJA1105_SPEED_1000MBPS];
+	} else if (speed == SPEED_100) {
+		mac[port].speed =
+			priv->dcfg->port_speed[SJA1105_SPEED_100MBPS];
+	} else if (speed == SPEED_10) {
+		mac[port].speed =
+			priv->dcfg->port_speed[SJA1105_SPEED_10MBPS];
+	} else {
+		mac[port].speed = priv->dcfg->port_speed[SJA1105_SPEED_AUTO];
+	}
+}
+
 static int sja1105_port_pre_enable(struct dsa_port *dp, int port,
 				   phy_interface_t phy_mode)
 {
@@ -2734,13 +2783,10 @@ static void sja1105_adjust_link(struct eth_device *edev)
 	struct sja1105_private *priv = dev_get_priv(dev);
 	struct phy_device *phy = dp->edev.phydev;
 	phy_interface_t phy_mode = phy->interface;
-	struct sja1105_xmii_params_entry *mii;
-	struct sja1105_mac_config_entry *mac;
 	int port = dp->index;
 	int ret;
 
-	mii = priv->static_config.tables[BLK_IDX_XMII_PARAMS].entries;
-	mac = priv->static_config.tables[BLK_IDX_MAC_CONFIG].entries;
+	sja1105_set_speed(dp, port, phy->speed);
 
 	ret = sja1105_port_set_mode(dp, port, phy_mode);
 	if (ret)
@@ -2748,38 +2794,9 @@ static void sja1105_adjust_link(struct eth_device *edev)
 
 	/* Let the PHY handle the RGMII delays, if present. */
 	if (phy->phy_id == 0) {
-		if (phy_mode == PHY_INTERFACE_MODE_RGMII_RXID ||
-		    phy_mode == PHY_INTERFACE_MODE_RGMII_ID)
-			priv->rgmii_rx_delay[port] = true;
-
-		if (phy_mode == PHY_INTERFACE_MODE_RGMII_TXID ||
-		    phy_mode == PHY_INTERFACE_MODE_RGMII_ID)
-			priv->rgmii_tx_delay[port] = true;
-
-		if ((priv->rgmii_rx_delay[port] ||
-		     priv->rgmii_tx_delay[port]) &&
-		     !priv->dcfg->setup_rgmii_delay) {
-			dev_err(priv->dev, "Chip does not support internal RGMII delays\n");
-			return;
-		}
-	}
-
-	if (mii->xmii_mode[port] == XMII_MODE_SGMII) {
-		mac[port].speed =
-			priv->dcfg->port_speed[SJA1105_SPEED_1000MBPS];
-		priv->xpcs_cfg[port].speed = phy->speed;
-	} else if (phy->speed == SPEED_1000) {
-		mac[port].speed =
-			priv->dcfg->port_speed[SJA1105_SPEED_1000MBPS];
-	} else if (phy->speed == SPEED_100) {
-		mac[port].speed =
-			priv->dcfg->port_speed[SJA1105_SPEED_100MBPS];
-	} else if (phy->speed == SPEED_10) {
-		mac[port].speed =
-			priv->dcfg->port_speed[SJA1105_SPEED_10MBPS];
-	} else {
-		mac[port].speed = priv->dcfg->port_speed[SJA1105_SPEED_AUTO];
-		return;
+		ret = sja1105_set_rgmii_delay(priv, port, phy_mode);
+		if (ret)
+			goto error;
 	}
 
 	ret = sja1105_static_config_reload(priv);
@@ -2823,8 +2840,35 @@ static int sja1105_rcv(struct dsa_switch *ds, int *port, void *packet,
 	return 0;
 }
 
+static int sja1105_cpu_port_enable(struct dsa_port *dp, int port,
+				   struct phy_device *phy)
+{
+	struct device *dev = dp->ds->dev;
+	struct sja1105_private *priv = dev_get_priv(dev);
+	phy_interface_t phy_mode = phy->interface;
+	struct dsa_switch *ds = &priv->ds;
+	int cpu = ds->cpu_port;
+	int ret;
+
+	if (port != cpu)
+		return 0;
+
+	sja1105_set_speed(dp, port, phy->speed);
+
+	ret = sja1105_port_set_mode(dp, port, phy_mode);
+	if (ret)
+		return ret;
+
+	ret = sja1105_set_rgmii_delay(priv, port, phy_mode);
+	if (ret)
+		return ret;
+
+	return sja1105_static_config_reload(priv);
+}
+
 static const struct dsa_switch_ops sja1105_dsa_ops = {
 	.port_pre_enable	= sja1105_port_pre_enable,
+	.port_enable		= sja1105_cpu_port_enable,
 	.adjust_link		= sja1105_adjust_link,
 	.xmit			= sja1105_xmit,
 	.rcv			= sja1105_rcv,

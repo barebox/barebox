@@ -207,7 +207,7 @@ static int persistent_ram_init_ecc(struct persistent_ram_zone *prz,
 	prz->rs_decoder = init_rs(prz->ecc_info.symsize, prz->ecc_info.poly,
 				  0, 1, prz->ecc_info.ecc_size);
 	if (prz->rs_decoder == NULL) {
-		pr_info("init_rs failed\n");
+		pr_err("init_rs failed\n");
 		return -EINVAL;
 	}
 

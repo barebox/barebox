@@ -78,3 +78,60 @@ long long simple_strtoll(const char *cp, char **endp, unsigned int base)
 	return simple_strtoull(cp, endp, base);
 }
 EXPORT_SYMBOL(simple_strtoll);
+
+static unsigned int simple_strtouint(const char *cp, char **endp, unsigned int base)
+{
+	unsigned int ret;
+
+	ret = simple_strtoull(cp, endp, base);
+	if (ret != (unsigned int)ret) {
+		if (endp)
+			*endp = (char *)cp;
+		return  0;
+	}
+
+	return ret;
+}
+
+s64 simple_strtofract(const char *cp, char **endp, u32 division)
+{
+	char *end = (char *)cp;
+	s64 integer, fract, scale, result = 0;
+	int fract_len = 0, sign = 1;
+
+	switch (*cp) {
+	case '-':
+		sign = -1;
+		fallthrough;
+	case '+':
+		cp++;
+	}
+
+	if (!isdigit(*cp))
+		goto out;
+
+	integer = simple_strtouint(cp, &end, 10);
+	if (end == cp)
+		goto out;
+
+	if (*end == '.' || *end == ',') {
+		cp = end + 1;
+		fract = simple_strtouint(cp, &end, 10);
+		fract_len = end - cp;
+	}
+
+	result = integer * division;
+
+	scale = 1;
+	for (int i = 0; i < fract_len; i++)
+		scale *= 10;
+	if (fract_len > 0)
+		result += div64_u64(fract * division, scale);
+
+out:
+	if (endp)
+		*endp = end;
+
+	return sign * result;
+}
+EXPORT_SYMBOL(simple_strtofract);

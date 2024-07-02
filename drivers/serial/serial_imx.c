@@ -92,7 +92,7 @@ static int imx_serial_init_port(struct console_device *cdev)
 	writel(val, regs + UFCR);
 
 
-	if (priv->devtype->onems)
+	if (priv->clk && priv->devtype->onems)
 		writel(imx_serial_reffreq(priv) / 1000, regs + priv->devtype->onems);
 
 	/* Enable FIFOs */
@@ -216,7 +216,7 @@ static int imx_serial_probe(struct device *dev)
 	cdev = &priv->cdev;
 	dev->priv = priv;
 
-	priv->clk = clk_get(dev, "per");
+	priv->clk = clk_get_for_console(dev, "per");
 	if (IS_ERR(priv->clk)) {
 		ret = PTR_ERR(priv->clk);
 		goto err_free;
@@ -232,7 +232,7 @@ static int imx_serial_probe(struct device *dev)
 	cdev->putc = imx_serial_putc;
 	cdev->getc = imx_serial_getc;
 	cdev->flush = imx_serial_flush;
-	cdev->setbrg = imx_serial_setbaudrate;
+	cdev->setbrg = priv->clk ? imx_serial_setbaudrate : NULL;
 	cdev->linux_console_name = "ttymxc";
 	cdev->linux_earlycon_name = "ec_imx6q";
 	cdev->phys_base = priv->regs;
@@ -259,8 +259,11 @@ static int imx_serial_probe(struct device *dev)
 	writel(val, priv->regs + UCR1);
 
 	console_register(cdev);
-	priv->notify.notifier_call = imx_clocksource_clock_change;
-	clock_register_client(&priv->notify);
+
+	if (priv->clk) {
+		priv->notify.notifier_call = imx_clocksource_clock_change;
+		clock_register_client(&priv->notify);
+	}
 
 	return 0;
 

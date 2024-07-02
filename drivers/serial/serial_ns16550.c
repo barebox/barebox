@@ -525,7 +525,7 @@ static int ns16550_probe(struct device *dev)
 		priv->plat.clock = devtype->clk_default;
 
 	if (!priv->plat.clock) {
-		priv->clk = clk_get(dev, NULL);
+		priv->clk = clk_get_for_console(dev, NULL);
 		if (IS_ERR(priv->clk)) {
 			ret = PTR_ERR(priv->clk);
 			dev_err(dev, "failed to get clk (%d)\n", ret);
@@ -537,18 +537,15 @@ static int ns16550_probe(struct device *dev)
 		priv->plat.clock = clk_get_rate(priv->clk);
 	}
 
-	if (priv->plat.clock == 0) {
-		dev_err(dev, "no valid clockrate\n");
-		ret = -EINVAL;
-		goto clk_disable;
-	}
+	if (priv->plat.clock == 0)
+		dev_warn(dev, "no valid clockrate\n");
 
 	cdev = &priv->cdev;
 	cdev->dev = dev;
 	cdev->tstc = ns16550_tstc;
 	cdev->putc = ns16550_putc;
 	cdev->getc = ns16550_getc;
-	cdev->setbrg = ns16550_setbaudrate;
+	cdev->setbrg = priv->plat.clock ? ns16550_setbaudrate : NULL;
 	cdev->flush = ns16550_flush;
 	cdev->linux_console_name = devtype->linux_console_name;
 	cdev->linux_earlycon_name = basprintf("%s,%s", devtype->linux_earlycon_name,

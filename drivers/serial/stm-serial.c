@@ -138,17 +138,7 @@ static int stm_serial_probe(struct device *dev)
 	struct console_device *cdev;
 
 	priv = xzalloc(sizeof *priv);
-
 	cdev = &priv->cdev;
-
-	cdev->tstc = stm_serial_tstc;
-	cdev->putc = stm_serial_putc;
-	cdev->getc = stm_serial_getc;
-	cdev->flush = stm_serial_flush;
-	cdev->setbrg = stm_serial_setbaudrate;
-	cdev->dev = dev;
-	cdev->linux_console_name = "ttyAMA";
-	cdev->linux_earlycon_name = "pl011";
 
 	dev->priv = priv;
 	iores = dev_request_mem_resource(dev, 0);
@@ -156,9 +146,18 @@ static int stm_serial_probe(struct device *dev)
 		return PTR_ERR(iores);
 	priv->base = IOMEM(iores->start);
 	cdev->phys_base = priv->base;
-	priv->clk = clk_get(dev, NULL);
+	priv->clk = clk_get_for_console(dev, NULL);
 	if (IS_ERR(priv->clk))
 		return PTR_ERR(priv->clk);
+
+	cdev->tstc = stm_serial_tstc;
+	cdev->putc = stm_serial_putc;
+	cdev->getc = stm_serial_getc;
+	cdev->flush = stm_serial_flush;
+	cdev->setbrg = priv->clk ? stm_serial_setbaudrate : NULL;
+	cdev->dev = dev;
+	cdev->linux_console_name = "ttyAMA";
+	cdev->linux_earlycon_name = "pl011";
 
 	stm_serial_init_port(priv);
 	stm_serial_setbaudrate(cdev, CONFIG_BAUDRATE);
@@ -167,8 +166,11 @@ static int stm_serial_probe(struct device *dev)
 	writel(TXE | RXE | UARTEN, priv->base + UARTDBGCR);
 
 	console_register(cdev);
-	priv->notify.notifier_call = stm_clocksource_clock_change;
-	clock_register_client(&priv->notify);
+
+	if (priv->clk) {
+		priv->notify.notifier_call = stm_clocksource_clock_change;
+		clock_register_client(&priv->notify);
+	}
 
 	return 0;
 }

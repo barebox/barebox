@@ -173,24 +173,25 @@ static int auart_serial_probe(struct device *dev)
 	struct console_device *cdev;
 
 	priv = xzalloc(sizeof *priv);
-	cdev = &priv->cdev;
-
-	cdev->tstc = auart_serial_tstc;
-	cdev->putc = auart_serial_putc;
-	cdev->getc = auart_serial_getc;
-	cdev->flush = auart_serial_flush;
-	cdev->setbrg = auart_serial_setbaudrate;
-	cdev->dev = dev;
-	cdev->linux_console_name = "ttyAPP";
 
 	dev->priv = priv;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	priv->base = IOMEM(iores->start);
-	priv->clk = clk_get(dev, NULL);
+	priv->clk = clk_get_for_console(dev, NULL);
 	if (IS_ERR(priv->clk))
 		return PTR_ERR(priv->clk);
+
+	cdev = &priv->cdev;
+
+	cdev->tstc = auart_serial_tstc;
+	cdev->putc = auart_serial_putc;
+	cdev->getc = auart_serial_getc;
+	cdev->flush = auart_serial_flush;
+	cdev->setbrg = priv->clk ? auart_serial_setbaudrate : NULL;
+	cdev->dev = dev;
+	cdev->linux_console_name = "ttyAPP";
 
 	auart_serial_init_port(priv);
 
@@ -203,8 +204,11 @@ static int auart_serial_probe(struct device *dev)
 	       priv->base + HW_UARTAPP_CTRL2_SET);
 
 	console_register(cdev);
-	priv->notify.notifier_call = auart_clocksource_clock_change;
-	clock_register_client(&priv->notify);
+
+	if (priv->clk) {
+		priv->notify.notifier_call = auart_clocksource_clock_change;
+		clock_register_client(&priv->notify);
+	}
 
 	return 0;
 }

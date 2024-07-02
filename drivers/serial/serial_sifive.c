@@ -121,21 +121,19 @@ static int sifive_serial_probe(struct device *dev)
 	struct sifive_serial_priv *priv;
 	struct resource *iores;
 	struct clk *clk;
-	u32 freq;
+	u32 freq = 0;
 	int ret;
 
-	clk = clk_get(dev, NULL);
-	if (!IS_ERR(clk)) {
+	clk = clk_get_for_console(dev, NULL);
+	if (!IS_ERR_OR_NULL(clk)) {
 		freq = clk_get_rate(clk);
 	} else {
 		dev_dbg(dev, "failed to get clock. Fallback to device tree.\n");
 
 		ret = of_property_read_u32(dev->of_node, "clock-frequency",
 					   &freq);
-		if (ret) {
+		if (ret)
 			dev_warn(dev, "unknown clock frequency\n");
-			return ret;
-		}
 	}
 
 	iores = dev_request_mem_resource(dev, 0);
@@ -152,7 +150,7 @@ static int sifive_serial_probe(struct device *dev)
 	priv->cdev.getc = sifive_serial_getc;
 	priv->cdev.tstc = sifive_serial_tstc;
 	priv->cdev.flush = sifive_serial_flush;
-	priv->cdev.setbrg = sifive_serial_setbrg,
+	priv->cdev.setbrg = freq ? sifive_serial_setbrg : 0,
 
 	sifive_serial_init(priv->regs);
 

@@ -183,7 +183,6 @@ int fpga_bridge_register(struct device *dev, const char *name,
 			 const struct fpga_bridge_ops *br_ops, void *priv)
 {
 	struct fpga_bridge *bridge;
-	struct param_d *p;
 	int ret = 0;
 
 	if (!name || !strlen(name)) {
@@ -213,10 +212,8 @@ int fpga_bridge_register(struct device *dev, const char *name,
 	dev->priv = bridge;
 
 	bridge->enable = 0;
-	p = dev_add_param_bool(&bridge->dev, "enable", set_enable,
-			       NULL, &bridge->enable, bridge);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
+	dev_add_param_bool(&bridge->dev, "enable", set_enable,
+			   NULL, &bridge->enable, bridge);
 
 	of_platform_populate(dev->of_node, NULL, dev);
 

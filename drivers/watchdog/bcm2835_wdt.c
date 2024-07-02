@@ -8,6 +8,7 @@
 #include <init.h>
 #include <io.h>
 #include <restart.h>
+#include <poweroff.h>
 #include <watchdog.h>
 
 #include <soc/bcm283x/wdt.h>
@@ -23,6 +24,7 @@ struct bcm2835_wd {
 	void __iomem *base;
 	struct device *dev;
 	struct restart_handler restart;
+	struct poweroff_handler poweroff;
 };
 
 #define RESET_TIMEOUT 10
@@ -39,6 +41,20 @@ static void __noreturn bcm2835_restart_soc(struct restart_handler *rst)
 	writel(PM_PASSWORD | rstc, priv->base + PM_RSTC);
 
 	hang();
+}
+
+static void __noreturn bcm2835_poweroff_soc(struct poweroff_handler *poweroff)
+{
+	struct bcm2835_wd *priv = container_of(poweroff, struct bcm2835_wd, poweroff);
+	uint32_t val;
+
+	shutdown_barebox();
+
+	val = readl_relaxed(priv->base + PM_RSTS);
+	val |= PM_PASSWORD | PM_RSTS_RASPBERRYPI_HALT;
+	writel_relaxed(val, priv->base + PM_RSTS);
+
+	bcm2835_restart_soc(&priv->restart);
 }
 
 static int bcm2835_wd_set_timeout(struct watchdog *wd, unsigned timeout)
@@ -85,6 +101,11 @@ static int bcm2835_wd_probe(struct device *dev)
 			return ret;
 		}
 	}
+
+	priv->poweroff.name = "bcm2835_wd";
+	priv->poweroff.poweroff = bcm2835_poweroff_soc;
+
+	poweroff_handler_register(&priv->poweroff);
 
 	priv->restart.name = "bcm2835_wd";
 	priv->restart.restart = bcm2835_restart_soc;

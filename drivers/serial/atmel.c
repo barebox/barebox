@@ -382,16 +382,14 @@ static int atmel_serial_set_mode(struct console_device *cdev, enum console_mode 
  * are always 8 data bits, no parity, 1 stop bit, no start bits.
  *
  */
-static int atmel_serial_init_port(struct console_device *cdev)
+static int atmel_serial_init_port(struct device *dev,
+				  struct atmel_uart_port *uart)
 {
-	struct device *dev = cdev->dev;
-	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
-
 	uart->base = dev_request_mem_region_err_null(dev, 0);
 	if (!uart->base)
 		return -ENOENT;
 
-	uart->clk = clk_get(dev, "usart");
+	uart->clk = clk_get_for_console(dev, "usart");
 	if (IS_ERR(uart->clk)) {
 		dev_err(dev, "Failed to get 'usart' clock\n");
 		return PTR_ERR(uart->clk);
@@ -419,19 +417,20 @@ static int atmel_serial_probe(struct device *dev)
 	int ret;
 
 	uart = xzalloc(sizeof(struct atmel_uart_port));
+
+	ret = atmel_serial_init_port(dev, uart);
+	if (ret)
+		return ret;
+
 	cdev = &uart->uart;
 	cdev->dev = dev;
 	cdev->tstc = atmel_serial_tstc;
 	cdev->putc = atmel_serial_putc;
 	cdev->getc = atmel_serial_getc;
-	cdev->setbrg = atmel_serial_setbaudrate;
+	cdev->setbrg = uart->clk ? atmel_serial_setbaudrate : NULL;
 	cdev->set_mode = atmel_serial_set_mode;
 	cdev->linux_console_name = "ttyAT";
 	cdev->linux_earlycon_name = "atmel_serial";
-
-	ret = atmel_serial_init_port(cdev);
-	if (ret)
-		return ret;
 
 	cdev->phys_base = uart->base;
 

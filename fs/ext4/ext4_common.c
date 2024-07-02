@@ -369,13 +369,18 @@ char *ext4fs_read_symlink(struct ext2fs_node *node)
 	char *symlink;
 	struct ext2fs_node *diro = node;
 	int status, ret;
+	size_t alloc_size;
 
 	if (!diro->inode_read) {
 		ret = ext4fs_read_inode(diro->data, diro->ino, &diro->inode);
 		if (ret)
 			return NULL;
 	}
-	symlink = zalloc(le32_to_cpu(diro->inode.size) + 1);
+
+	if (__builtin_add_overflow(le32_to_cpu(diro->inode.size), 1, &alloc_size))
+		return NULL;
+
+	symlink = zalloc(alloc_size);
 	if (!symlink)
 		return 0;
 

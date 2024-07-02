@@ -16,6 +16,22 @@
 #include <mach/socfpga/generic.h>
 #include <linux/sizes.h>
 
+#define __wait_on_timeout(timeout, condition) \
+({								\
+	int __ret = 0;						\
+	int __timeout = timeout;				\
+								\
+	while ((condition)) {					\
+		if (__timeout-- < 0) {				\
+			__ret = -ETIMEDOUT;			\
+			break;					\
+		}						\
+		arria10_kick_l4wd0();                           \
+                __udelay(1);                                    \
+	}							\
+	__ret;							\
+})
+
 int a10_update_bits(unsigned int reg, unsigned int mask,
 		    unsigned int val)
 {
@@ -41,7 +57,7 @@ static int a10_fpga_wait_for_condone(void)
 {
 	u32 reg, i;
 
-	for (i = 0; i < 0x1000000 ; i++) {
+	for (i = 0; i < 1000; i++) {
 		reg = socfpga_a10_fpga_read_stat();
 
 		if (reg & A10_FPGAMGR_IMGCFG_STAT_F2S_CONDONE_PIN)
@@ -49,6 +65,9 @@ static int a10_fpga_wait_for_condone(void)
 
 		if ((reg & A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN) == 0)
 			return -EIO;
+
+		arria10_kick_l4wd0();
+		__udelay(1);
 	}
 
 	return -ETIMEDOUT;
@@ -56,8 +75,6 @@ static int a10_fpga_wait_for_condone(void)
 
 static void a10_fpga_generate_dclks(uint32_t count)
 {
-	int32_t timeout;
-
 	/* Clear any existing DONE status. */
 	writel(A10_FPGAMGR_DCLKSTAT_DCLKDONE, ARRIA10_FPGAMGRREGS_ADDR +
 	       A10_FPGAMGR_DCLKSTAT_OFST);
@@ -66,12 +83,9 @@ static void a10_fpga_generate_dclks(uint32_t count)
 	writel(count, ARRIA10_FPGAMGRREGS_ADDR + A10_FPGAMGR_DCLKCNT_OFST);
 
 	/* wait till the dclkcnt done */
-	timeout = 10000000;
-
-	while (!readl(ARRIA10_FPGAMGRREGS_ADDR + A10_FPGAMGR_DCLKSTAT_OFST)) {
-		if (timeout-- < 0)
-			return;
-	}
+	__wait_on_timeout(1000,
+			  !readl(ARRIA10_FPGAMGRREGS_ADDR +
+				 A10_FPGAMGR_DCLKSTAT_OFST));
 
 	/* Clear DONE status. */
 	writel(A10_FPGAMGR_DCLKSTAT_DCLKDONE, ARRIA10_FPGAMGRREGS_ADDR +
@@ -138,7 +152,6 @@ static int a10_fpga_init(void *buf)
 {
 	uint32_t stat, mask;
 	uint32_t val;
-	int timeout;
 
 	val = CFGWDTH_32 << A10_FPGAMGR_IMGCFG_CTL_02_CFGWIDTH_SHIFT;
 	a10_update_bits(A10_FPGAMGR_IMGCFG_CTL_02_OFST,
@@ -149,11 +162,7 @@ static int a10_fpga_init(void *buf)
 	mask = A10_FPGAMGR_IMGCFG_STAT_F2S_NCONFIG_PIN |
 		A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN;
 	/* Make sure no external devices are interfering */
-	timeout = 10000;
-	while ((socfpga_a10_fpga_read_stat() & mask) != mask) {
-		if (timeout-- < 0)
-			return -ETIMEDOUT;
-	}
+	__wait_on_timeout(100000, (socfpga_a10_fpga_read_stat() & mask) != mask);
 
 	/* S2F_NCE = 1 */
 	a10_update_bits(A10_FPGAMGR_IMGCFG_CTL_01_OFST,
@@ -193,22 +202,14 @@ static int a10_fpga_init(void *buf)
 	mask = A10_FPGAMGR_IMGCFG_STAT_F2S_NCONFIG_PIN |
 	       A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN;
 
-	timeout = 100000;
-	while ((socfpga_a10_fpga_read_stat() & mask) != mask) {
-		if (timeout-- < 0)
-			return -ETIMEDOUT;
-	}
+	__wait_on_timeout(100000, (socfpga_a10_fpga_read_stat() & mask) != mask);
 
 	/* reset the configuration */
 	a10_update_bits(A10_FPGAMGR_IMGCFG_CTL_00_OFST,
 			A10_FPGAMGR_IMGCFG_CTL_00_S2F_NCONFIG, 0);
 
-	timeout = 1000000;
-	while ((socfpga_a10_fpga_read_stat() &
-		       A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN) != 0) {
-		if (timeout-- < 0)
-			return -ETIMEDOUT;
-	}
+	mask = A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN;
+	__wait_on_timeout(100000, (socfpga_a10_fpga_read_stat() & mask) != 0);
 
 	a10_update_bits(A10_FPGAMGR_IMGCFG_CTL_00_OFST,
 			A10_FPGAMGR_IMGCFG_CTL_00_S2F_NCONFIG,
@@ -216,13 +217,7 @@ static int a10_fpga_init(void *buf)
 
 	mask = A10_FPGAMGR_IMGCFG_STAT_F2S_NSTATUS_PIN;
 	/* wait for nstatus == 1 */
-	timeout = 1000000;
-	while ((socfpga_a10_fpga_read_stat() & mask) != mask) {
-		if (timeout-- < 0) {
-			writel(socfpga_a10_fpga_read_stat(), 0xFFD06238);
-			return -ETIMEDOUT;
-		}
-	}
+	__wait_on_timeout(100000, (socfpga_a10_fpga_read_stat() & mask) != mask);
 
 	stat = socfpga_a10_fpga_read_stat();
 	if ((stat & A10_FPGAMGR_IMGCFG_STAT_F2S_CONDONE_PIN) != 0)
@@ -353,33 +348,34 @@ int arria10_prepare_mmc(int barebox_part, int rbf_part)
 	return 0;
 }
 
-static inline int __arria10_load_fpga(void *buf, uint32_t count, uint32_t size)
+static inline int __arria10_load_fpga(void *buf, uint32_t sector, uint32_t end)
 {
 	int ret;
 
-	arria10_read_blocks(buf, count + bitstream.first_sec, SZ_16K);
+	arria10_kick_l4wd0();
+	arria10_read_blocks(buf, sector + bitstream.first_sec, SZ_16K);
 
-	count += SZ_16K / SECTOR_SIZE;
+	sector += SZ_16K / SECTOR_SIZE;
 
+	arria10_kick_l4wd0();
 	ret = a10_fpga_init(buf);
 	if (ret)
 		return -EAGAIN;
 
-	while (count <= size) {
+	while (sector <= end) {
 		ret = a10_fpga_write(buf, SZ_16K);
-		if (ret == -ENOSPC)
-			return -EAGAIN;
-
-		count += SZ_16K / SECTOR_SIZE;
-		ret = arria10_read_blocks(buf, count, SZ_16K);
-		// Reading failed, consider this a failed attempt to configure the FPGA and retry
 		if (ret)
-			return -EAGAIN;
+			break;
+
+		arria10_kick_l4wd0();
+		sector += SZ_16K / SECTOR_SIZE;
+		ret = arria10_read_blocks(buf, sector, SZ_16K);
 	}
 
+	arria10_kick_l4wd0();
 	ret = a10_fpga_write_complete();
 	if (ret)
-		return -EAGAIN;
+		return ret;
 
 	return 0;
 }
@@ -388,26 +384,33 @@ int arria10_load_fpga(int offset, int bitstream_size)
 {
 	int ret;
 	void *buf = (void *)0xffe00000 + SZ_256K - 256 - SZ_16K;
-	uint32_t count;
-	uint32_t size = bitstream_size / SECTOR_SIZE;
+	uint32_t sector_count;
+	uint32_t end_sector = (bitstream_size + offset) / SECTOR_SIZE;
 	uint32_t retryCount;
 
 	if (offset)
 		offset = offset / SECTOR_SIZE;
+
+	writel(0x0, ARRIA10_SYSMGR_ROM_ISW7);
 
 	/* Up to 4 retries have been seen on the Enclustra Mercury AA1+ board, as
 	 * FPGA configuration is mandatory to be able to continue the boot, take
 	 * some margin and try up to 10 times
 	 */
 	for (retryCount = 0; retryCount < 10; ++retryCount) {
-		count = offset;
 
-		ret = __arria10_load_fpga(buf, count, size);
+		sector_count = offset;
+
+		ret = __arria10_load_fpga(buf, sector_count, end_sector);
 		if (!ret)
 			return 0;
+		else if (ret == -EIO)
+			break;
 		else if (ret == -EAGAIN)
 			continue;
 	}
+
+	writel(0x64616544, ARRIA10_SYSMGR_ROM_ISW7);
 
 	hang();
 	return -EIO;
@@ -436,6 +439,11 @@ void arria10_start_image(int offset)
 	ret = arria10_read_blocks(buf, start, ALIGN(size, SECTOR_SIZE));
 	if (ret)
 		hang();
+
+	/* mark image in OCRAM as valid */
+	writel(ARRIA10_SYSMGR_ROM_INITSWSTATE_VALID, ARRIA10_SYSMGR_ROM_INITSWSTATE);
+
+	arria10_watchdog_disable();
 
 	bb = buf;
 

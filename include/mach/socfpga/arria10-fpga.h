@@ -20,6 +20,7 @@
 #define	__A10_FPGAMGR_H__
 
 #include <linux/bitops.h>
+#include <mach/socfpga/generic.h>
 #include <mach/socfpga/arria10-regs.h>
 
 #define A10_FPGAMGR_DCLKCNT_OFST				0x08

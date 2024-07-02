@@ -74,7 +74,7 @@ ENTRY_FUNCTION_WITHSTACK(start_socfpga_achilles_xload, ARRIA10_STACKTOP, r0, r1,
 
 	arria10_load_fpga(bitstream, SZ_64M);
 
-	arria10_finish_io(&mainpll_cfg, &perpll_cfg, pinmux);
+	arria10_finish_io(pinmux);
 
 	arria10_ddr_calibration_sequence();
 
@@ -105,7 +105,7 @@ ENTRY_FUNCTION_WITHSTACK(start_socfpga_achilles_bringup, ARRIA10_STACKTOP, r0, r
 	/* wait for fpga_usermode */
 	a10_wait_for_usermode(0x1000000);
 
-	arria10_finish_io(&mainpll_cfg, &perpll_cfg, pinmux);
+	arria10_finish_io(pinmux);
 
 	arria10_ddr_calibration_sequence();
 

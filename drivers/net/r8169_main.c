@@ -3007,7 +3007,7 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 	return ret;
 }
 
-static int rtl8169_eth_rx(struct eth_device *edev)
+static void rtl8169_eth_rx(struct eth_device *edev)
 {
 	struct rtl8169_private *tp = edev->priv;
 	struct device *dev = &tp->pci_dev->dev;
@@ -3042,16 +3042,11 @@ static int rtl8169_eth_rx(struct eth_device *edev)
 		}
 
 		tp->cur_rx++;
-
-		return pkt_size;
-
 	} else {
 		status = RTL_R8(tp, IntrStatus);
 		RTL_W8(tp, IntrStatus, status & ~(TxErr | RxErr | SYSErr));
 		udelay(100);	/* wait */
 	}
-
-	return 0;
 }
 
 static int rtl8169_get_ethaddr(struct eth_device *edev, unsigned char *mac_addr)

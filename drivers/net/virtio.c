@@ -101,7 +101,7 @@ static int virtio_net_send(struct eth_device *edev, void *packet, int length)
 	return 0;
 }
 
-static int virtio_net_recv(struct eth_device *edev)
+static void virtio_net_recv(struct eth_device *edev)
 {
 	struct virtio_net_priv *priv = to_priv(edev);
 	struct virtio_sg sg;
@@ -111,7 +111,7 @@ static int virtio_net_recv(struct eth_device *edev)
 
 	sg.addr = virtqueue_get_buf(priv->rx_vq, &len);
 	if (!sg.addr)
-		return -EAGAIN;
+		return;
 
 	sg.length = VIRTIO_NET_RX_BUF_SIZE;
 
@@ -122,8 +122,6 @@ static int virtio_net_recv(struct eth_device *edev)
 
 	/* Put the buffer back to the rx ring */
 	virtqueue_add(priv->rx_vq, sgs, 0, 1);
-
-	return 0;
 }
 
 static void virtio_net_stop(struct eth_device *dev)
@@ -135,29 +133,39 @@ static void virtio_net_stop(struct eth_device *dev)
 	 */
 }
 
-static int virtio_net_write_hwaddr(struct eth_device *edev, const unsigned char *adr)
-{
-	struct virtio_net_priv *priv = to_priv(edev);
-	int i;
-
-	/*
-	 * v1.0 compliant device's MAC address is set through control channel,
-	 * which we don't support for now.
-	 */
-	if (virtio_has_feature(priv->vdev, VIRTIO_F_VERSION_1))
-		return -ENOSYS;
-
-	for (i = 0; i < 6; i++)
-		virtio_cwrite8(priv->vdev, offsetof(struct virtio_net_config, mac) + i, adr[i]);
-
-	return 0;
-}
-
 static int virtio_net_read_rom_hwaddr(struct eth_device *edev, unsigned char *adr)
 {
 	struct virtio_net_priv *priv = to_priv(edev);
 
 	virtio_cread_bytes(priv->vdev, offsetof(struct virtio_net_config, mac), adr, 6);
+
+	return 0;
+}
+
+static int virtio_net_write_hwaddr(struct eth_device *edev, const unsigned char *adr)
+{
+	struct virtio_net_priv *priv = to_priv(edev);
+	int i, ret;
+
+	/*
+	 * v1.0 compliant device's MAC address is set through control channel,
+	 * which we don't support for now.
+	 */
+	if (virtio_has_feature(priv->vdev, VIRTIO_F_VERSION_1)) {
+		char mac[6];
+
+		ret = virtio_net_read_rom_hwaddr(edev, mac);
+		if (ret)
+			return ret;
+
+		if (!memcmp(mac, adr, 5))
+			return 0;
+		else
+			return -ENOSYS;
+	}
+
+	for (i = 0; i < 6; i++)
+		virtio_cwrite8(priv->vdev, offsetof(struct virtio_net_config, mac) + i, adr[i]);
 
 	return 0;
 }

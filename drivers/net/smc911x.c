@@ -446,7 +446,7 @@ static void smc911x_eth_halt(struct eth_device *edev)
 //	smc911x_reset(edev);
 }
 
-static int smc911x_eth_rx(struct eth_device *edev)
+static void smc911x_eth_rx(struct eth_device *edev)
 {
 	struct smc911x_priv *priv = (struct smc911x_priv *)edev->priv;
 	u32 *data = priv->rx_buf;
@@ -459,18 +459,18 @@ static int smc911x_eth_rx(struct eth_device *edev)
 
 		smc911x_reg_write(priv, RX_CFG, 0);
 
-		tmplen = (pktlen + 2 + 3) / 4;
-		while(tmplen--)
-			*data++ = smc911x_reg_read(priv, RX_DATA_FIFO);
+		tmplen = (pktlen + 3) / 4;
 
-		if(status & RX_STS_ES)
-			dev_err(&edev->dev, "dropped bad packet. Status: 0x%08x\n",
-				status);
-		else
+		if (pktlen > PKTSIZE || (status & RX_STS_ES)) {
+			while (tmplen--)
+				smc911x_reg_read(priv, RX_DATA_FIFO);
+		} else {
+			while (tmplen--)
+				*data++ = smc911x_reg_read(priv, RX_DATA_FIFO);
+
 			net_receive(edev, priv->rx_buf, pktlen);
+		}
 	}
-
-	return 0;
 }
 
 static int smc911x_init_dev(struct eth_device *edev)

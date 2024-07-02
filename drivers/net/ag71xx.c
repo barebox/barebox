@@ -384,7 +384,7 @@ static void ag71xx_ether_halt(struct eth_device *edev)
 	}
 }
 
-static int ag71xx_ether_rx(struct eth_device *edev)
+static void ag71xx_ether_rx(struct eth_device *edev)
 {
 	struct ag71xx *priv = edev->priv;
 	ag7240_desc_t *f;
@@ -418,8 +418,6 @@ static int ag71xx_ether_rx(struct eth_device *edev)
 		ag71xx_wr(priv, AG71XX_REG_RX_DESC, virt_to_phys(f));
 		ag71xx_wr(priv, AG71XX_REG_RX_CTRL, RX_CTRL_RXE);
 	}
-
-	return work_done;
 }
 
 static int ag71xx_ether_send(struct eth_device *edev, void *packet, int length)

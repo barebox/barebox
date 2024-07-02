@@ -574,7 +574,7 @@ int dhcp_set_result(struct eth_device *edev, struct dhcp_result *res)
 
 	net_set_ip(edev, res->ip);
 	net_set_netmask(edev, res->netmask);
-	net_set_gateway(res->gateway);
+	net_set_gateway(edev, res->gateway);
 	net_set_nameserver(res->nameserver);
 
 	set_res(&global_dhcp_bootfile, res->bootfile);

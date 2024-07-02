@@ -259,30 +259,27 @@ static int port_send(struct eth_device *edev, void *data, int len)
 	return 0;
 }
 
-static int port_recv(struct eth_device *edev)
+static void port_recv(struct eth_device *edev)
 {
 	struct port_priv *port = edev->priv;
 	struct rxdesc *rxdesc = port->current_rxdesc;
 	u32 cmd_sts;
-	int ret = 0;
 
 	/* wait for received packet */
 	if (readl(&rxdesc->cmd_sts) & RXDESC_OWNED_BY_DMA)
-		return 0;
+		return;
 
 	/* drop malicious packets */
 	cmd_sts = readl(&rxdesc->cmd_sts);
 	if ((cmd_sts & (RXDESC_FIRST | RXDESC_LAST)) !=
 	    (RXDESC_FIRST | RXDESC_LAST)) {
 		dev_err(&edev->dev, "rx packet spread on multiple descriptors\n");
-		ret = -EIO;
 		goto recv_err;
 	}
 
 	if (cmd_sts & RXDESC_ERROR) {
 		dev_err(&edev->dev, "receive error %d\n",
 			(cmd_sts & RXDESC_ERROR_MASK) >> RXDESC_ERROR_SHIFT);
-		ret = -EIO;
 		goto recv_err;
 	}
 
@@ -296,16 +293,12 @@ static int port_recv(struct eth_device *edev)
 	dma_sync_single_for_device(&port->dev, (unsigned long)rxdesc->buf_ptr,
 				   ALIGN(PKTSIZE, 8), DMA_FROM_DEVICE);
 
-	ret = 0;
-
 recv_err:
 	/* reset this and get next rx descriptor*/
 	rxdesc->byte_cnt = 0;
 	rxdesc->buf_size = ALIGN(PKTSIZE, 8);
 	rxdesc->cmd_sts = RXDESC_OWNED_BY_DMA;
 	writel((u32)rxdesc->nxtdesc, &port->current_rxdesc);
-
-	return ret;
 }
 
 static int port_set_ethaddr(struct eth_device *edev, const unsigned char *mac)

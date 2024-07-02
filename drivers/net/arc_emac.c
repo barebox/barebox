@@ -264,7 +264,7 @@ static int arc_emac_send(struct eth_device *edev, void *data, int length)
 	return 0;
 }
 
-static int arc_emac_recv(struct eth_device *edev)
+static void arc_emac_recv(struct eth_device *edev)
 {
 	struct arc_emac_priv *priv = edev->priv;
 	unsigned int work_done;
@@ -307,8 +307,6 @@ static int arc_emac_recv(struct eth_device *edev)
 
 		rxbd->info = cpu_to_le32(FOR_EMAC | PKTSIZE);
 	}
-
-	return work_done;
 }
 
 static void arc_emac_halt(struct eth_device *edev)

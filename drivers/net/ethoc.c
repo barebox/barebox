@@ -341,7 +341,7 @@ static unsigned int ethoc_update_rx_stats(struct eth_device *edev,
 	return ret;
 }
 
-static int ethoc_rx(struct eth_device *edev, int limit)
+static void ethoc_rx(struct eth_device *edev, int limit)
 {
 	struct ethoc *priv = edev->priv;
 	int count;
@@ -381,18 +381,14 @@ static int ethoc_rx(struct eth_device *edev, int limit)
 		if (++priv->cur_rx == priv->num_rx)
 			priv->cur_rx = 0;
 	}
-
-	return count;
 }
 
-static int ethoc_recv_packet(struct eth_device *edev)
+static void ethoc_recv_packet(struct eth_device *edev)
 {
 	struct ethoc *priv = edev->priv;
 
 	if (ethoc_read(priv, INT_SOURCE) & INT_MASK_RX)
-		return ethoc_rx(edev, PKTBUFSRX);
-
-	return 0;
+		ethoc_rx(edev, PKTBUFSRX);
 }
 
 static int ethoc_init_dev(struct eth_device *edev)

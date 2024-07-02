@@ -320,7 +320,7 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 	return 0;
 }
 
-static int dwc_ether_rx(struct eth_device *dev)
+static void dwc_ether_rx(struct eth_device *dev)
 {
 	struct dw_eth_dev *priv = dev->priv;
 	u32 desc_num = priv->rx_currdescnum;
@@ -328,11 +328,10 @@ static int dwc_ether_rx(struct eth_device *dev)
 
 	u32 status = desc_p->txrx_status;
 	int length = 0;
-	int ret = 0;
 
 	/* Check  if the owner is the CPU */
 	if (status & DESC_RXSTS_OWNBYDMA)
-		return 0;
+		return;
 
 	if ((status & (DESC_RXSTS_ERROR | DESC_RXSTS_DAFILTERFAIL |
 		       DESC_RXSTS_SAFILTERFAIL)) ||
@@ -353,7 +352,6 @@ static int dwc_ether_rx(struct eth_device *dev)
 				   DESC_RXSTS_RXWATCHDOG |
 				   DESC_RXSTS_RXMIIERROR |
 				   DESC_RXSTS_RXCRC));
-		ret = -EIO;
 	} else {
 		length = (status & DESC_RXSTS_FRMLENMSK) >>
 			 DESC_RXSTS_FRMLENSHFT;
@@ -363,7 +361,6 @@ static int dwc_ether_rx(struct eth_device *dev)
 		net_receive(dev, dmamac_addr(desc_p), length);
 		dma_sync_single_for_device(dev->parent, desc_p->dmamac_addr,
 					   length, DMA_FROM_DEVICE);
-		ret = length;
 	}
 
 	/*
@@ -377,8 +374,6 @@ static int dwc_ether_rx(struct eth_device *dev)
 		desc_num = 0;
 
 	priv->rx_currdescnum = desc_num;
-
-	return ret;
 }
 
 static void dwc_ether_halt (struct eth_device *dev)

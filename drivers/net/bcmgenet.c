@@ -309,7 +309,7 @@ static int bcmgenet_gmac_eth_send(struct eth_device *edev, void *packet, int len
 	return 0;
 }
 
-static int bcmgenet_gmac_eth_recv(struct eth_device *edev)
+static void bcmgenet_gmac_eth_recv(struct eth_device *edev)
 {
 	struct bcmgenet_eth_priv *priv = edev->priv;
 	void *desc_base = priv->mac_reg + GENET_RX_OFF + priv->rx_index * DMA_DESC_SIZE;
@@ -318,7 +318,7 @@ static int bcmgenet_gmac_eth_recv(struct eth_device *edev)
 	dma_addr_t addr;
 
 	if (prod_index == priv->c_index)
-		return -EAGAIN;
+		return;
 
 	length = readl(desc_base + DMA_DESC_LENGTH_STATUS);
 	length = (length >> DMA_BUFLENGTH_SHIFT) & DMA_BUFLENGTH_MASK;
@@ -343,8 +343,6 @@ static int bcmgenet_gmac_eth_recv(struct eth_device *edev)
 	/* Forward our descriptor pointer, wrapping around if needed. */
 	if (++priv->rx_index >= RX_DESCS)
 		priv->rx_index = 0;
-
-	return 0;
 }
 
 static void rx_descs_init(struct bcmgenet_eth_priv *priv)

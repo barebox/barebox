@@ -311,11 +311,10 @@ static void ep93xx_eth_halt(struct eth_device *edev)
  * Copy a frame of data from the MAC into the protocol layer for further
  * processing.
  */
-static int ep93xx_eth_rcv_packet(struct eth_device *edev)
+static void ep93xx_eth_rcv_packet(struct eth_device *edev)
 {
 	struct ep93xx_eth_priv *priv = ep93xx_get_priv(edev);
 	struct mac_regs *regs = ep93xx_get_regs(edev);
-	int ret = -1;
 
 	pr_debug("+ep93xx_eth_rcv_packet\n");
 
@@ -334,8 +333,6 @@ static int ep93xx_eth_rcv_packet(struct eth_device *edev)
 				RX_STATUS_FRAME_LEN(priv->rx_sq.current));
 			pr_debug("reporting %d bytes...\n",
 				RX_STATUS_FRAME_LEN(priv->rx_sq.current));
-
-			ret = 0;
 
 		} else {
 			/* Do we have an erroneous packet? */
@@ -370,13 +367,9 @@ static int ep93xx_eth_rcv_packet(struct eth_device *edev)
 		 */
 		writel(1, &regs->rxdqenq);
 		writel(1, &regs->rxstsqenq);
-	} else {
-		ret = 0;
 	}
 
 	pr_debug("-ep93xx_eth_rcv_packet %d\n", ret);
-
-	return ret;
 }
 
 /**

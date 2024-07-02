@@ -1256,7 +1256,7 @@ static void smc91c111_eth_halt(struct eth_device *edev)
 	SMC_outb(priv, TCR_CLEAR, TCR_REG);
 }
 
-static int smc91c111_eth_rx(struct eth_device *edev)
+static void smc91c111_eth_rx(struct eth_device *edev)
 {
 	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
 	int	packet_number;
@@ -1275,7 +1275,7 @@ static int smc91c111_eth_rx(struct eth_device *edev)
 	packet_number = SMC_inw(priv, RXFIFO_REG);
 
 	if (packet_number & RXFIFO_REMPTY)
-		return 0;
+		return;
 
 	/*  start reading from the start of the packet */
 	SMC_outw(priv, PTR_READ | PTR_RCV | PTR_AUTOINC, PTR_REG );
@@ -1345,10 +1345,7 @@ static int smc91c111_eth_rx(struct eth_device *edev)
 	if (!is_error) {
 		/* Pass the packet up to the protocol layers. */
 		net_receive(edev, priv->rx_buf, packet_length);
-		return 0;
 	}
-
-	return -EINVAL;
 }
 
 static int smc91c111_get_ethaddr(struct eth_device *edev, unsigned char *m)

@@ -3,6 +3,8 @@
 #ifndef __MACH_SOCFPGA_GENERIC_H
 #define __MACH_SOCFPGA_GENERIC_H
 
+#include <mach/socfpga/arria10-regs.h>
+#include <mach/socfpga/arria10-reset-manager.h>
 #include <linux/types.h>
 
 struct socfpga_cm_config;
@@ -15,8 +17,7 @@ struct arria10_pinmux_cfg;
 
 void arria10_init(struct arria10_mainpll_cfg *mainpll,
 		  struct arria10_perpll_cfg *perpll, uint32_t *pinmux);
-void arria10_finish_io(struct arria10_mainpll_cfg *mainpll,
-		       struct arria10_perpll_cfg *perpll, uint32_t *pinmux);
+void arria10_finish_io(uint32_t *pinmux);
 
 void socfpga_lowlevel_init(struct socfpga_cm_config *cm_config,
 			   struct socfpga_io_config *io_config);
@@ -57,6 +58,15 @@ int arria10_device_init(struct arria10_mainpll_cfg *mainpll,
 			struct arria10_perpll_cfg *perpll,
 			uint32_t *pinmux);
 enum bootsource arria10_get_bootsource(void);
+static inline void arria10_kick_l4wd0(void)
+{
+	writel(0x76, ARRIA10_L4WD0_ADDR + 0xc);
+}
+static inline void arria10_watchdog_disable(void)
+{
+	setbits_le32(ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER1MODRST,
+		     ARRIA10_RSTMGR_PER1MODRST_WATCHDOG0);
+}
 #else
 static inline void socfpga_arria10_mmc_init(void)
 {
@@ -85,6 +95,8 @@ static inline int arria10_device_init(struct arria10_mainpll_cfg *mainpll,
 {
 	return 0;
 }
+static inline void arria10_kick_l4wd0(void) {}
+static inline void arria10_watchdog_disable(void) {}
 #endif
 
 static inline void __udelay(unsigned us)

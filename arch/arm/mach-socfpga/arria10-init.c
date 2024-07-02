@@ -127,9 +127,7 @@ static void arria10_mask_ecc_errors(void)
 	writel(0x0007FFFF, ARRIA10_SYSMGR_ADDR + 0x94);
 }
 
-void arria10_finish_io(struct arria10_mainpll_cfg *mainpll,
-		       struct arria10_perpll_cfg *perpll,
-		       uint32_t *pinmux)
+void arria10_finish_io(uint32_t *pinmux)
 {
 	int i;
 

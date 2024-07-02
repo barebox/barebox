@@ -33,8 +33,12 @@ void arria10_reset_peripherals(void)
 	}
 
 	/* disable all components except the ECC_OCP and bootsource */
-	writel(0xffffffff, ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER1MODRST);
 	writel(~mask, ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER0MODRST);
+
+	mask = ARRIA10_RSTMGR_PER1MODRST_WATCHDOG0 |
+	       ARRIA10_RSTMGR_PER1MODRST_L4SYSTIMER0;
+	/* disable all components except L4 watchdog */
+	writel(~mask, ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER1MODRST);
 
 	mask = 0xffffffff;
 
@@ -65,8 +69,7 @@ void arria10_reset_deassert_dedicated_peripherals(void)
 
 	clrbits_le32(ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER0MODRST, mask);
 
-	mask = ARRIA10_RSTMGR_PER1MODRST_L4SYSTIMER0 |
-	       ARRIA10_RSTMGR_PER1MODRST_UART1 |
+	mask = ARRIA10_RSTMGR_PER1MODRST_UART1 |
 	       ARRIA10_RSTMGR_PER1MODRST_UART0;
 
 	clrbits_le32(ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER1MODRST, mask);

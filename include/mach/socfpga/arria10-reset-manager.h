@@ -40,6 +40,37 @@
 #define ARRIA10_RSTMGR_HMCGPOUT		0x78
 #define ARRIA10_RSTMGR_HMCGPIN		0x7c
 
+/* Built-in HPS POR voltage detector triggered a cold reset. */
+#define ARRIA10_RSTMGR_STAT_PORHPSVOLTRST	BIT(0)
+/* Built-in FPGA POR voltage detector triggered a cold reset. */
+#define ARRIA10_RSTMGR_STAT_PORFPGAVOLTRST	BIT(1)
+/* nPOR pin triggered a col reset (por_pin_req = 1) */
+#define ARRIA10_RSTMGR_STAT_NPORPINRST		BIT(2)
+/* FPGA core triggered a cold reset (f2s_cold_rst_req = 1) */
+#define ARRIA10_RSTMGR_STAT_FPGACOLDRST		BIT(3)
+/* FPGA entered CONFIG_IO mode and triggered a cold reset */
+#define ARRIA10_RSTMGR_STAT_CONFIGIOCOLDRST	BIT(4)
+/* Software wrote CTRL.SWCOLDRSTREQ to 1 and triggered a cold reset */
+#define ARRIA10_RSTMGR_STAT_SWCOLDRST		BIT(5)
+/* nRST pin triggered a hardware sequenced warm reset */
+#define ARRIA10_RSTMGR_STAT_NRSTPINRST		BIT(8)
+/* FPGA core triggered a hardware sequenced warm reset */
+#define ARRIA10_RSTMGR_STAT_FPGAWARMRST		BIT(9)
+/* Software wrote CTRL.SWWARMRSTREQ to 1 and triggered a hardware sequenced warm reset. */
+#define ARRIA10_RSTMGR_STAT_SWWARMRST		BIT(10)
+/* MPU watchdog 0 triggered a hardware sequenced warm reset */
+#define ARRIA10_RSTMGR_STAT_MPUWD0WARMRST	BIT(11)
+/* MPU watchdog 1 triggered a hardware sequenced warm reset */
+#define ARRIA10_RSTMGR_STAT_MPUWD1WARMRST	BIT(12)
+/* L4 watchdog 0 triggered a hardware sequenced warm reset */
+#define ARRIA10_RSTMGR_STAT_L4WD0WARMRST	BIT(13)
+/* L4 watchdog 1 triggered a hardware sequenced warm reset */
+#define ARRIA10_RSTMGR_STAT_L4WD1WARMRST	BIT(14)
+/* FPGA triggered debug reset */
+#define ARRIA10_RSTMGR_STAT_FPGADBGRST		BIT(16)
+/* DAP triggered debug reset */
+#define ARRIA10_RSTMGR_STAT_CDBGRST		BIT(17)
+
 #define ARRIA10_RSTMGR_CTL_SWWARMRSTREQ		BIT(1)
 #define ARRIA10_RSTMGR_PER0MODRST_EMAC0		BIT(0)
 #define ARRIA10_RSTMGR_PER0MODRST_EMAC1		BIT(1)

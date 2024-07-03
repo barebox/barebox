@@ -80,15 +80,19 @@
 				compatible = "nvmem-cells";
 				reg = <0x300 0x100>;
 				label = "nvmem";
-				#address-cells = <1>;
-				#size-cells = <1>;
 
-				reset_source: reset-source@0 {
-					reg = <0x0 0x1>;
-				};
+				nvmem-layout {
+					compatible = "fixed-layout";
+					#address-cells = <1>;
+					#size-cells = <1>;
 
-				reboot_mode: reboot-mode@1 {
-					reg = <0x1 0x4>;
+					reset_source: reset-source@0 {
+						reg = <0x0 0x1>;
+					};
+
+					reboot_mode: reboot-mode@1 {
+						reg = <0x1 0x4>;
+					};
 				};
 			};
 

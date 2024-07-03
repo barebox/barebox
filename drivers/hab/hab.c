@@ -128,7 +128,7 @@ static int imx_hab_read_srk_hash_ocotp(u8 *__srk)
 	return 0;
 }
 
-static int imx_hab_write_srk_hash_ocotp(const u8 *__newsrk, unsigned flags)
+static int imx_hab_write_srk_hash_ocotp(const u8 *__newsrk)
 {
 	u32 *newsrk = (u32 *)__newsrk;
 	int ret, i;
@@ -139,8 +139,36 @@ static int imx_hab_write_srk_hash_ocotp(const u8 *__newsrk, unsigned flags)
 			return ret;
 	}
 
+	return 0;
+}
+
+static int imx6_hab_write_srk_hash_ocotp(const u8 *newsrk, unsigned flags)
+{
+	int ret;
+
+	ret = imx_hab_write_srk_hash_ocotp(newsrk);
+	if (ret)
+		return ret;
+
 	if (flags & IMX_SRK_HASH_WRITE_LOCK) {
 		ret = imx_ocotp_write_field(OCOTP_SRK_LOCK, 1);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
+}
+
+static int imx8m_hab_write_srk_hash_ocotp(const u8 *newsrk, unsigned flags)
+{
+	int ret;
+
+	ret = imx_hab_write_srk_hash_ocotp(newsrk);
+	if (ret)
+		return ret;
+
+	if (flags & IMX_SRK_HASH_WRITE_LOCK) {
+		ret = imx_ocotp_write_field(MX8M_OCOTP_SRK_LOCK, 1);
 		if (ret < 0)
 			return ret;
 	}
@@ -222,7 +250,7 @@ static struct imx_hab_ops imx_hab_ops_iim = {
 };
 
 static struct imx_hab_ops imx6_hab_ops_ocotp = {
-	.write_srk_hash = imx_hab_write_srk_hash_ocotp,
+	.write_srk_hash = imx6_hab_write_srk_hash_ocotp,
 	.read_srk_hash =  imx_hab_read_srk_hash_ocotp,
 	.lockdown_device = imx6_hab_lockdown_device_ocotp,
 	.device_locked_down = imx6_hab_device_locked_down_ocotp,
@@ -231,7 +259,7 @@ static struct imx_hab_ops imx6_hab_ops_ocotp = {
 };
 
 static struct imx_hab_ops imx8m_hab_ops_ocotp = {
-	.write_srk_hash = imx_hab_write_srk_hash_ocotp,
+	.write_srk_hash = imx8m_hab_write_srk_hash_ocotp,
 	.read_srk_hash =  imx_hab_read_srk_hash_ocotp,
 	.lockdown_device = imx8m_hab_lockdown_device_ocotp,
 	.device_locked_down = imx8m_hab_device_locked_down_ocotp,

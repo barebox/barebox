@@ -309,9 +309,9 @@ static LIST_HEAD(globalvar_deprecated_list);
  *
  * This function is a helper for globalvars that are renamed from one
  * release to another. when a variable @oldname is found in the persistent
- * environment a warning is issued and its value is written to @newname.
+ * environment, a warning is issued and its value is written to @newname.
  *
- * Note that when both @oldname and @newname contain values then the values
+ * Note that when both @oldname and @newname contain values, then the values
  * existing in @newname are overwritten.
  */
 void globalvar_alias_deprecated(const char *oldname, const char *newname)

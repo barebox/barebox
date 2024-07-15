@@ -333,11 +333,11 @@ static int imx_ahab_lockdown_device(unsigned flags)
 
 	ret = ele_forward_lifecycle(ELE_LIFECYCLE_OEM_CLOSED, NULL);
 	if (ret) {
-		printf("failed to forward lifecycle to OEM closed\n");
+		pr_err("failed to forward lifecycle to OEM closed: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 
-	printf("Change to OEM closed successfully\n");
+	pr_info("Change to OEM closed successfully\n");
 
 	return 0;
 }

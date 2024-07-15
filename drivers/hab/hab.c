@@ -278,7 +278,7 @@ static int imx_ahab_write_srk_hash(const u8 *__newsrk, unsigned flags)
 		return -EPERM;
 	}
 
-	for (i = 0; i < 32 / sizeof(u32); i++) {
+	for (i = 0; i < SRK_HASH_SIZE / sizeof(u32); i++) {
 		ret = ele_write_fuse(0x80 + i, newsrk[i], false, &resp);
 		if (ret) {
 			pr_err("Writing fuse index 0x%02x failed with %d, response 0x%08x\n",
@@ -296,7 +296,7 @@ static int imx_ahab_read_srk_hash(u8 *__srk)
 	u32 resp;
 	int ret, i;
 
-	for (i = 0; i < SRK_HASH_SIZE / sizeof(uint32_t); i++) {
+	for (i = 0; i < SRK_HASH_SIZE / sizeof(u32); i++) {
 		ret = ele_read_common_fuse(0x80 + i, &srk[i], &resp);
 		if (ret < 0)
 			return ret;

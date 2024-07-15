@@ -280,9 +280,11 @@ static int imx_ahab_write_srk_hash(const u8 *__newsrk, unsigned flags)
 
 	for (i = 0; i < 32 / sizeof(u32); i++) {
 		ret = ele_write_fuse(0x80 + i, newsrk[i], false, &resp);
-		if (ret)
+		if (ret) {
 			pr_err("Writing fuse index 0x%02x failed with %d, response 0x%08x\n",
 			       i, ret, resp);
+			return ret;
+		}
 	}
 
 	return 0;

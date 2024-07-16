@@ -7,6 +7,8 @@
 #define DEVICE_H
 
 #include <linux/types.h>
+#include <linux/list.h>
+#include <init.h>
 
 enum dev_dma_coherence {
 	DEV_DMA_COHERENCE_DEFAULT = 0,
@@ -110,12 +112,18 @@ struct class {
 	struct list_head list;
 };
 
-#define DEFINE_DEV_CLASS(_name, _classname)					\
-	struct class _name __ll_elem(.barebox_class_##_name) 			\
-	__aligned(__alignof__(struct class)) = {				\
-		.name = _classname,						\
-		.devices = LIST_HEAD_INIT(_name.devices),			\
-	}
+void class_register(struct class *class);
+
+#define DEFINE_DEV_CLASS(_name, _classname)			\
+	struct class _name = {					\
+		.name = _classname,				\
+		.devices = LIST_HEAD_INIT(_name.devices),	\
+	};							\
+	static int register_##_name(void) {			\
+		class_register(&_name);				\
+		return 0;					\
+	}							\
+	pure_initcall(register_##_name);
 
 int class_add_device(struct class *class, struct device *dev);
 void class_remove_device(struct class *class, struct device *dev);

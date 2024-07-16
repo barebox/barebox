@@ -6,6 +6,7 @@
 #include <elf.h>
 #include <linux/compiler.h>
 #include <linux/export.h>
+#include <linux/module.h>
 #include <linux/list.h>
 
 #define MODULE_NAME_LEN (64 - sizeof(unsigned long))

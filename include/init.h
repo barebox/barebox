@@ -36,10 +36,10 @@ typedef void (*exitcall_t)(void);
 #ifndef __ASSEMBLY__
 
 #define __define_initcall(fn,id) \
-	static initcall_t __initcall_##fn##id __ll_elem(.initcall.##id) = fn
+	static const initcall_t __initcall_##fn##id __ll_elem(.initcall.##id) = fn
 
 #define __define_exitcall(fn,id) \
-	static exitcall_t __exitcall_##fn##id __ll_elem(.exitcall.##id) = fn
+	static const exitcall_t __exitcall_##fn##id __ll_elem(.exitcall.##id) = fn
 
 
 /*

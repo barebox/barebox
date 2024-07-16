@@ -119,15 +119,6 @@ static void watchdog_register_poller(struct watchdog *wd)
 			   NULL, &wd->poller_enable, wd);
 }
 
-static int watchdog_register_dev(struct watchdog *wd, const char *name, int id)
-{
-	wd->dev.parent = wd->hwdev;
-	wd->dev.id = id;
-	dev_set_name(&wd->dev, name);
-
-	return register_device(&wd->dev);
-}
-
 /**
  * dev_get_watchdog_priority() - get a device's desired watchdog priority
  * @dev:	The device, which device_node to read the property from
@@ -187,18 +178,10 @@ static struct restart_handler restart_handler = {
 
 int watchdog_register(struct watchdog *wd)
 {
-	const char *alias = NULL;
-	int ret = 0;
+	int ret;
 
-	if (wd->hwdev)
-		alias = of_alias_get(wd->hwdev->of_node);
-
-	if (alias)
-		ret = watchdog_register_dev(wd, alias, DEVICE_ID_SINGLE);
-
-	if (!alias || ret)
-		ret = watchdog_register_dev(wd, "wdog", DEVICE_ID_DYNAMIC);
-
+	wd->dev.parent = wd->hwdev;
+	ret = class_register_device(&watchdog_class, &wd->dev, "wdog");
 	if (ret)
 		return ret;
 
@@ -238,8 +221,6 @@ int watchdog_register(struct watchdog *wd)
 		if (ret)
 			dev_warn(&wd->dev, "failed to register restart handler\n");
 	}
-
-	class_add_device(&watchdog_class, &wd->dev);
 
 	pr_debug("registering watchdog %s with priority %d\n", watchdog_name(wd),
 			wd->priority);

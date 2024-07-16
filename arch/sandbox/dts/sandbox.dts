@@ -55,6 +55,12 @@
 		};
 	};
 
+	io-ports {
+		compatible = "barebox,sandbox-ioport-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+	};
+
 	stickypage: stickypage {
 		compatible = "barebox,stickypage", "syscon";
 		reg = <0 0 0 4096>;

@@ -15,9 +15,6 @@
 
 #include "ti_sci.h"
 
-/* List of all TI SCI devices active in system */
-static LIST_HEAD(ti_sci_list);
-
 /**
  * struct ti_sci_xfer - Structure representing a message flow
  * @tx_message:	Transmit message

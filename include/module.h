@@ -8,10 +8,6 @@
 #include <linux/export.h>
 #include <linux/list.h>
 
-#ifndef MODULE_SYMBOL_PREFIX
-#define MODULE_SYMBOL_PREFIX
-#endif
-
 #define MODULE_NAME_LEN (64 - sizeof(unsigned long))
 
 /* These are either module local, or the kernel's dummy ones. */

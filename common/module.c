@@ -187,10 +187,10 @@ static void register_module_cmds(Elf32_Shdr *sechdrs, const char *strtab, unsign
 	sym = (void *)sechdrs[symindex].sh_addr;
 
 	for (i = 0; i < numsyms; i++) {
-		if (strcmp(strtab + sym[i].st_name, MODULE_SYMBOL_PREFIX "__barebox_cmd_start") == 0)
+		if (strcmp(strtab + sym[i].st_name, "__barebox_cmd_start") == 0)
 			cmd_start = (struct command * const *)sym[i].st_value;
 
-		if (strcmp(strtab + sym[i].st_name, MODULE_SYMBOL_PREFIX "__barebox_cmd_end") == 0)
+		if (strcmp(strtab + sym[i].st_name, "__barebox_cmd_end") == 0)
 			cmd_end = (struct command * const *)sym[i].st_value;
 	}
 

@@ -151,7 +151,7 @@ static int port_init(void)
 	if (ret)
 		return ret;
 
-	pr_notice("I/O port base %p\n", PCI_IOBASE);
+	pr_debug("I/O port base %p\n", PCI_IOBASE);
 
 	return platform_driver_register(&port_drv);
 }

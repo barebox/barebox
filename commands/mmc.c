@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
+#include <linux/kernel.h>
 #include <dma.h>
 
 static int mmc_enh_area_setmax(struct mci *mci, u8 *ext_csd)

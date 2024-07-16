@@ -2,6 +2,7 @@
 #include <linux/clk-provider.h>
 #include <mfd/syscon.h>
 #include <linux/slab.h>
+#include <linux/kernel.h>
 #include <stdio.h>
 
 #include <dt-bindings/clock/at91.h>

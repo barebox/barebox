@@ -11,6 +11,7 @@
 #include <getopt.h>
 #include <clock.h>
 #include <slice.h>
+#include <linux/kernel.h>
 
 static int bthread_time(void)
 {

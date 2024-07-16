@@ -6,6 +6,7 @@
  */
 
 #include <dt-bindings/reset/rockchip,rk3588-cru.h>
+#include <linux/kernel.h>
 #include "clk.h"
 
 /* 0xFD7C0000 + 0x0A00 */

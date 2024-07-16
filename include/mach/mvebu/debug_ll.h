@@ -5,6 +5,7 @@
 #define __MACH_MVEBU_DEBUG_LL_H__
 
 #include <io.h>
+#include <linux/bits.h>
 
 #define UART_BASE	0xf1012000
 #define UARTn_BASE(n)	(UART_BASE + ((n) * 0x100))

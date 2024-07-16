@@ -6,6 +6,8 @@
 
 #include <errno.h>
 #include <linux/idr.h>
+#include <malloc.h>
+#include <linux/minmax.h>
 
 struct idr *__idr_find(struct idr *head, int lookup_id)
 {

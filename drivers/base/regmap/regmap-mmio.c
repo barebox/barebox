@@ -7,6 +7,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <io.h>
+#include <malloc.h>
 #include <linux/regmap.h>
 
 #include "internal.h"
@@ -272,7 +273,7 @@ static struct regmap_mmio_context *regmap_mmio_gen_context(struct device *dev,
 	return ctx;
 
 err_free:
-	kfree(ctx);
+	free(ctx);
 
 	return ERR_PTR(ret);
 }
@@ -293,7 +294,7 @@ struct regmap *regmap_init_mmio_clk(struct device *dev,
 
 		clk = clk_get(dev, clk_id);
 		if (IS_ERR(clk)) {
-			kfree(ctx);
+			free(ctx);
 			return ERR_CAST(clk);
 		}
 

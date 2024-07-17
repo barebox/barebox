@@ -69,14 +69,14 @@ static int of_reservemap_num_entries(const struct fdt_header *fdt)
 
 	r = (void *)fdt + be32_to_cpu(fdt->off_mem_rsvmap);
 
-	while (dt_ptr_ok(fdt, r) && r->size) {
+	while (dt_ptr_ok(fdt, r) && n < OF_MAX_RESERVE_MAP) {
+		if (!r->size)
+			return n;
 		n++;
 		r++;
-		if (n == OF_MAX_RESERVE_MAP)
-			return -EINVAL;
 	}
 
-	return r->size == 0 ? n : -ESPIPE;
+	return n == OF_MAX_RESERVE_MAP ? -EINVAL : -ESPIPE;
 }
 
 /**

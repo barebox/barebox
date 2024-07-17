@@ -80,6 +80,7 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: always()
       with:
+        check_name: "Test Results (${{matrix.defconfig}})"
         files: ./*.tests.xml
 
     - name: Publish Labgrid Log Results

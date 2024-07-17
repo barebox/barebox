@@ -31,6 +31,7 @@
 #include <linux/pagemap.h>
 #include <linux/magic.h>
 #include <linux/bitops.h>
+#include <linux/sizes.h>
 
 #include "page_actor.h"
 #include "squashfs_fs.h"
@@ -168,6 +169,12 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
 	 */
 	if (PAGE_CACHE_SIZE > msblk->block_size) {
 		ERROR("Page size > filesystem block size (%d).  This is "
+			"currently not supported!\n", msblk->block_size);
+		goto failed_mount;
+	}
+
+	if (msblk->block_size != SZ_128K) {
+		ERROR("filesystem block size (%d) != 128K.  This is "
 			"currently not supported!\n", msblk->block_size);
 		goto failed_mount;
 	}

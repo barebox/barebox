@@ -347,12 +347,23 @@ static int read_blocklist(struct inode *inode, int index, u64 *block)
 	return squashfs_block_size(size);
 }
 
+static int squashfs_fill_page(char *dest, struct squashfs_cache_entry *buffer,
+			      int offset, int avail)
+{
+	int copied;
+
+	copied = squashfs_copy_data(dest, buffer, offset, avail);
+	memset(dest + avail, 0, PAGE_CACHE_SIZE - avail);
+
+	return copied == avail ? 0 : -EILSEQ;
+}
+
 /* Copy data into page cache  */
-void squashfs_copy_cache(struct page *page, struct squashfs_cache_entry *buffer,
+int squashfs_copy_cache(struct page *page, struct squashfs_cache_entry *buffer,
 	int bytes, int offset)
 {
-	int i;
 	struct squashfs_page *sq_page = squashfs_page(page);
+	int ret, i;
 
 	/*
 	 * Loop copying datablock into pages.  As the datablock likely covers
@@ -366,10 +377,14 @@ void squashfs_copy_cache(struct page *page, struct squashfs_cache_entry *buffer,
 
 		TRACE("bytes %d, i %d, available_bytes %d\n", bytes, i, avail);
 
-		squashfs_copy_data(sq_page->buf[i], buffer, offset, avail);
-		memset(sq_page->buf[i] + avail, 0, PAGE_CACHE_SIZE - avail);
+		ret = squashfs_fill_page(sq_page->buf[i], buffer, offset, avail);
+		if (ret)
+			return ret;
+
 		sq_page->idx++;
 	}
+
+	return 0;
 }
 
 /* Read datablock stored packed inside a fragment (tail-end packed block) */

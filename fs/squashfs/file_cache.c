@@ -24,11 +24,12 @@ int squashfs_readpage_block(struct page *page, u64 block, int bsize)
 		block, bsize);
 	int res = buffer->error;
 
+	if (!res)
+		res = squashfs_copy_cache(page, buffer, buffer->length, 0);
+
 	if (res)
 		ERROR("Unable to read page, block %llx, size %x\n", block,
 			bsize);
-	else
-		squashfs_copy_cache(page, buffer, buffer->length, 0);
 
 	squashfs_cache_put(buffer);
 	return res;

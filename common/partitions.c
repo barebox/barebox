@@ -241,7 +241,7 @@ void partition_desc_init(struct partition_desc *pd, struct block_device *blk)
  */
 int parse_partition_table(struct block_device *blk)
 {
-	int i;
+	int i = 0;
 	int rc = 0;
 	struct partition *part;
 	struct partition_desc *pdesc;
@@ -259,6 +259,8 @@ int parse_partition_table(struct block_device *blk)
 				i, blk->cdev.name, rc);
 		if (rc != -ENODEV)
 			rc = 0;
+
+		i++;
 	}
 
 	partition_table_free(pdesc);

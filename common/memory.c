@@ -84,9 +84,12 @@ struct resource *request_barebox_region(const char *name,
 	resource_size_t end = start + size - 1;
 
 	if (barebox_res && barebox_res->start <= start &&
-	    end <= barebox_res->end)
-		return __request_region(barebox_res, start, end,
-					name, IORESOURCE_MEM);
+	    end <= barebox_res->end) {
+		struct resource *iores;
+		iores = __request_region(barebox_res, start, end,
+					 name, IORESOURCE_MEM);
+		return !IS_ERR(iores) ? iores : NULL;
+	}
 
 	return request_sdram_region(name, start, size);
 }

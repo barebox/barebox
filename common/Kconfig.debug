@@ -99,6 +99,14 @@ config DEBUG_LIST
 
 	  If unsure, say N.
 
+config DEBUG_RESOURCES
+	bool "Debug resource reservation"
+	help
+	  Enable this to bump verbosity of the resource reservation code
+	  from debug log level to info.
+
+	  If unsure, say N.
+
 config PBL_BREAK
 	bool "Execute software break on pbl start"
 	depends on ARM && (!CPU_32v4T && !ARCH_TEGRA)

@@ -439,6 +439,8 @@ out:
 
 void rsa_key_free(struct rsa_public_key *key)
 {
+	list_del(&key->list);
+
 	free(key->modulus);
 	free(key->rr);
 	free(key);

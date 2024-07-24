@@ -4,6 +4,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <memory.h>
+#include <linux/overflow.h>
 #include <linux/build_bug.h>
 
 #include <stdio.h>
@@ -1739,7 +1740,7 @@ void *calloc(size_t n, size_t elem_size)
 {
 	mchunkptr p;
 	INTERNAL_SIZE_T csz;
-	INTERNAL_SIZE_T sz = n * elem_size;
+	INTERNAL_SIZE_T sz = size_mul(n, elem_size);
 	void *mem;
 
 	/* check if expand_top called, in which case don't need to clear */

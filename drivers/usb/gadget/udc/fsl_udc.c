@@ -197,8 +197,7 @@ static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
 		dma_free_coherent(curr_td, 0, sizeof(struct ep_td_struct));
 	}
 
-	dma_sync_single_for_cpu(udc->gadget.dev.parent, (unsigned long)req->req.buf,
-				req->req.length, DMA_BIDIRECTIONAL);
+	usb_gadget_unmap_request(&udc->gadget, &req->req, ep_is_in(ep));
 
 	if (status && (status != -ESHUTDOWN))
 		VDBG("complete %s req %p stat %d len %u/%u",
@@ -861,7 +860,7 @@ fsl_ep_queue(struct usb_ep *_ep, struct usb_request *_req)
 	struct fsl_ep *ep = container_of(_ep, struct fsl_ep, ep);
 	struct fsl_req *req = container_of(_req, struct fsl_req, req);
 	struct fsl_udc *udc;
-	int is_iso = 0;
+	int ret, is_iso = 0;
 
 	/* catch various bogus parameters */
 	if (!_req || !req->req.complete || !req->req.buf
@@ -885,8 +884,9 @@ fsl_ep_queue(struct usb_ep *_ep, struct usb_request *_req)
 
 	req->ep = ep;
 
-	dma_sync_single_for_device(udc->gadget.dev.parent, (unsigned long)req->req.buf,
-				   req->req.length, DMA_BIDIRECTIONAL);
+	ret = usb_gadget_map_request(&ep->udc->gadget, &req->req, ep_is_in(ep));
+	if (ret)
+		return ret;
 
 	req->req.status = -EINPROGRESS;
 	req->req.actual = 0;

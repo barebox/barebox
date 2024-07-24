@@ -131,7 +131,7 @@ void debug_dma_map(struct device *dev, void *addr,
 
 	if (!IS_ALIGNED(dev_addr, DMA_ALIGNMENT))
 		dma_dev_warn(dev, "Mapping insufficiently aligned %s buffer 0x%llx+0x%zx: %u bytes required!\n",
-			     dir2name[direction], (u64)addr, size, DMA_ALIGNMENT);
+			     dir2name[direction], (u64)dev_addr, size, DMA_ALIGNMENT);
 }
 
 void debug_dma_unmap(struct device *dev, dma_addr_t addr,

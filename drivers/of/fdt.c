@@ -32,11 +32,12 @@ static inline bool __dt_ptr_ok(const struct fdt_header *fdt, const void *p,
 }
 #define dt_ptr_ok(fdt, p) __dt_ptr_ok(fdt, p, sizeof(*(p)), __alignof__(*(p)))
 
-static inline uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, int size)
+static inline uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, uint32_t size)
 {
-	dt += size;
-	dt = ALIGN(dt, 4);
+	if (check_add_overflow(dt, size, &dt))
+		return 0;
 
+	dt = ALIGN(dt, 4);
 	if (dt > f->off_dt_struct + f->size_dt_struct)
 		return 0;
 
@@ -165,7 +166,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 {
 	const void *nodep;	/* property node pointer */
 	uint32_t tag;		/* tag */
-	int  len;		/* length of the property */
+	uint32_t len;		/* length of the property */
 	const struct fdt_property *fdt_prop;
 	const char *pathp, *name;
 	struct device_node *root, *node = NULL;

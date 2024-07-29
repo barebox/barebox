@@ -448,7 +448,7 @@ tee_ioctl_close_session(struct tee_context *ctx,
 	return ctx->teedev->desc->ops->close_session(ctx, arg.session);
 }
 
-static int tee_ioctl(struct cdev *cdev, int cmd, void *arg)
+static int tee_ioctl(struct cdev *cdev, unsigned int cmd, void *arg)
 {
 	struct tee_context *ctx = cdev->priv;
 	void __user *uarg = (void __user *)arg;

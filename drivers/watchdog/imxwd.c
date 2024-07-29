@@ -307,6 +307,7 @@ static int imx_wd_probe(struct device *dev)
 	priv->restart.name = "imxwd";
 	priv->restart.restart = imxwd_force_soc_reset;
 	priv->restart.priority = RESTART_DEFAULT_PRIORITY;
+	priv->restart.dev = &priv->wd.dev;
 
 	restart_handler_register(&priv->restart);
 

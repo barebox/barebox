@@ -2435,7 +2435,7 @@ static int mci_card_probe(struct mci *mci)
 
 	mci_parse_cid(mci);
 
-	dev_dbg(&mci->dev, "SD Card successfully added\n");
+	dev_dbg(&mci->dev, "Card successfully added\n");
 
 on_error:
 	if (rc != 0) {

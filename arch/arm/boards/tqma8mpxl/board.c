@@ -35,8 +35,7 @@ static int tqma8mpxl_probe(struct device *dev)
 }
 
 static const struct of_device_id tqma8mpxl_of_match[] = {
-	{ .compatible = "tq,imx8mp-tqma8mpdl-mba8mpxl"},
-	{ .compatible = "tq,imx8mp-tqma8mpql-mba8mpxl"},
+	{ .compatible = "tq,imx8mp-tqma8mpql" },
 	{ /* sentinel */ },
 };
 BAREBOX_DEEP_PROBE_ENABLE(tqma8mpxl_of_match);

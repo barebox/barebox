@@ -818,9 +818,10 @@ config CONSOLE_ACTIVATE_FIRST
 	bool
 	prompt "activate first console on startup"
 	help
-	  Normally on startup all consoles are disabled, so you won't
-	  see anything from barebox starting. Enabling this option
-	  enables the first console.
+	  Select this to activate the first registered console.
+	  On many systems, devices are probed in no strict order,
+	  so you probably should say n here if you are probing
+	  from device tree and have more than one console.
 
 config CONSOLE_ACTIVATE_ALL
 	bool
@@ -830,6 +831,10 @@ config CONSOLE_ACTIVATE_ALL
 	  you will get output and a prompt on all consoles simultaneously.
 	  Only the first registered console will have the full startup
 	  log though.
+
+	  If you have consoles that aren't meant for barebox log output
+	  (e.g. a connected MCU), you will want to say n here and use
+	  CONFIG_ACTIVATE_ALL_FALLBACK or CONFIG_CONSOLE_ACTIVATE_NONE instead.
 
 config CONSOLE_ACTIVATE_ALL_FALLBACK
 	bool
@@ -852,9 +857,10 @@ config CONSOLE_ACTIVATE_NONE
 	prompt "leave all consoles disabled"
 	bool
 	help
-	  Leave all consoles disabled on startup. Board code or environment
-	  is responsible for enabling a console. Otherwise you'll get a working
-	  barebox, you just won't see anything.
+	  Leave all consoles disabled on startup. Board code, environment
+	  or the device tree /chosen/stdout-path property will be responsible
+	  for enabling a console. Otherwise you'll get a working barebox,
+	  you just won't see anything.
 
 endchoice
 

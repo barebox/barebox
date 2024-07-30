@@ -450,6 +450,35 @@ int console_unregister(struct console_device *cdev)
 }
 EXPORT_SYMBOL(console_unregister);
 
+static __maybe_unused int console_activate_all_fallback(void)
+{
+	int activate = CONSOLE_STDIOE;
+	struct console_device *cdev;
+
+	for_each_console(cdev) {
+		if (cdev->f_active & (CONSOLE_STDOUT | CONSOLE_STDERR))
+			return 0;
+	}
+
+	if (IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT))
+		activate &= ~CONSOLE_STDIN;
+
+	for_each_console(cdev)
+		console_set_active(cdev, activate);
+
+	/*
+	 * This is last resort, so the user is not kept in the dark.
+	 * Writing to all consoles is a bad idea as the devices at the
+	 * other side might get confused by it, thus the error log level.
+	 */
+	pr_err("No consoles were activated. Activating all consoles as fallback!\n");
+
+	return 0;
+}
+#ifdef CONFIG_CONSOLE_ACTIVATE_ALL_FALLBACK
+postenvironment_initcall(console_activate_all_fallback);
+#endif
+
 static int getc_raw(void)
 {
 	struct console_device *cdev;

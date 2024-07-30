@@ -812,7 +812,7 @@ endchoice
 choice
 	prompt "Console activation strategy"
 	depends on CONSOLE_FULL
-	default CONSOLE_ACTIVATE_FIRST
+	default CONSOLE_ACTIVATE_ALL_FALLBACK
 
 config CONSOLE_ACTIVATE_FIRST
 	bool
@@ -830,6 +830,23 @@ config CONSOLE_ACTIVATE_ALL
 	  you will get output and a prompt on all consoles simultaneously.
 	  Only the first registered console will have the full startup
 	  log though.
+
+config CONSOLE_ACTIVATE_ALL_FALLBACK
+	bool
+	prompt "activate all consoles as fallback"
+	help
+	  This option is similar to CONFIG_CONSOLE_ACTIVATE_NONE in that it
+	  leaves consoles disabled on startup. If by the end of barebox
+	  startup, no consoles have been activated via board code, device
+	  tree or environment, barebox will enable all registered consoles
+	  as fallback, so the user has a chance to see output.
+
+	  This will be indicated by a fat error, so the user knows that
+	  the configuration needs to be fixed. If you don't see any
+	  output at all, consider trying again after enabling
+	  CONFIG_CONSOLE_ACTIVATE_ALL, so consoles are activated immediately
+	  at registration time and/or with CONFIG_DEBUG_LL, so barebox output
+	  is written even before console drivers were registered.
 
 config CONSOLE_ACTIVATE_NONE
 	prompt "leave all consoles disabled"

@@ -1801,8 +1801,8 @@ static int mci_blk_part_switch(struct mci_part *part)
  *
  * This routine expects the buffer has the correct size to read all data!
  */
-static int __maybe_unused mci_sd_write(struct block_device *blk,
-				const void *buffer, sector_t block, blkcnt_t num_blocks)
+static int mci_sd_write(struct block_device *blk,
+			const void *buffer, sector_t block, blkcnt_t num_blocks)
 {
 	struct mci_part *part = container_of(blk, struct mci_part, blk);
 	struct mci *mci = part->mci;
@@ -2179,9 +2179,7 @@ static int mci_check_if_already_initialized(struct mci *mci)
 
 static struct block_device_ops mci_ops = {
 	.read = mci_sd_read,
-#ifdef CONFIG_BLOCK_WRITE
-	.write = mci_sd_write,
-#endif
+	.write = IS_ENABLED(CONFIG_MCI_WRITE) ? mci_sd_write : NULL,
 };
 
 static int mci_set_boot(struct param_d *param, void *priv)

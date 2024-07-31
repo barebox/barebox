@@ -31,6 +31,24 @@ static int writebuffer_io_len(struct block_device *blk, struct chunk *chunk)
 	return min_t(blkcnt_t, blk->rdbufsize, blk->num_blocks - chunk->block_start);
 }
 
+static int chunk_flush(struct block_device *blk, struct chunk *chunk)
+{
+	int ret;
+
+	if (!chunk->dirty)
+		return 0;
+
+	ret = blk->ops->write(blk, chunk->data,
+			      chunk->block_start,
+			      writebuffer_io_len(blk, chunk));
+	if (ret < 0)
+		return ret;
+
+	chunk->dirty = 0;
+
+	return 0;
+}
+
 /*
  * Write all dirty chunks back to the device
  */
@@ -43,15 +61,9 @@ static int writebuffer_flush(struct block_device *blk)
 		return 0;
 
 	list_for_each_entry(chunk, &blk->buffered_blocks, list) {
-		if (chunk->dirty) {
-			ret = blk->ops->write(blk, chunk->data,
-					      chunk->block_start,
-					      writebuffer_io_len(blk, chunk));
-			if (ret < 0)
-				return ret;
-
-			chunk->dirty = 0;
-		}
+		ret = chunk_flush(blk, chunk);
+		if (ret < 0)
+			return ret;
 	}
 
 	if (blk->ops->flush)
@@ -112,15 +124,9 @@ static struct chunk *get_chunk(struct block_device *blk)
 	if (list_empty(&blk->idle_blocks)) {
 		/* use last entry which is the most unused */
 		chunk = list_last_entry(&blk->buffered_blocks, struct chunk, list);
-		if (chunk->dirty) {
-			ret = blk->ops->write(blk, chunk->data,
-					      chunk->block_start,
-					      writebuffer_io_len(blk, chunk));
-			if (ret < 0)
-				return ERR_PTR(ret);
-
-			chunk->dirty = 0;
-		}
+		ret = chunk_flush(blk, chunk);
+		if (ret < 0)
+			return ERR_PTR(ret);
 	} else {
 		chunk = list_first_entry(&blk->idle_blocks, struct chunk, list);
 	}

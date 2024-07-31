@@ -32,18 +32,39 @@ static int writebuffer_io_len(struct block_device *blk, struct chunk *chunk)
 	return min_t(blkcnt_t, blk->rdbufsize, blk->num_blocks - chunk->block_start);
 }
 
+#ifdef CONFIG_BLOCK_STATS
+static void blk_stats_record_read(struct block_device *blk, blkcnt_t count)
+{
+	blk->stats.read_sectors += count;
+}
+static void blk_stats_record_write(struct block_device *blk, blkcnt_t count)
+{
+	blk->stats.write_sectors += count;
+}
+static void blk_stats_record_erase(struct block_device *blk, blkcnt_t count)
+{
+	blk->stats.erase_sectors += count;
+}
+#else
+static void blk_stats_record_read(struct block_device *blk, blkcnt_t count) { }
+static void blk_stats_record_write(struct block_device *blk, blkcnt_t count) { }
+static void blk_stats_record_erase(struct block_device *blk, blkcnt_t count) { }
+#endif
+
 static int chunk_flush(struct block_device *blk, struct chunk *chunk)
 {
+	size_t len;
 	int ret;
 
 	if (!chunk->dirty)
 		return 0;
 
-	ret = blk->ops->write(blk, chunk->data,
-			      chunk->block_start,
-			      writebuffer_io_len(blk, chunk));
+	len = writebuffer_io_len(blk, chunk);
+	ret = blk->ops->write(blk, chunk->data, chunk->block_start, len);
 	if (ret < 0)
 		return ret;
+
+	blk_stats_record_write(blk, len);
 
 	chunk->dirty = 0;
 
@@ -145,6 +166,7 @@ static struct chunk *get_chunk(struct block_device *blk)
 static int block_cache(struct block_device *blk, sector_t block)
 {
 	struct chunk *chunk;
+	size_t len;
 	int ret;
 
 	chunk = get_chunk(blk);
@@ -156,20 +178,22 @@ static int block_cache(struct block_device *blk, sector_t block)
 	dev_dbg(blk->dev, "%s: %llu to %d\n", __func__, chunk->block_start,
 		chunk->num);
 
+	len = writebuffer_io_len(blk, chunk);
 	if (chunk->block_start * BLOCKSIZE(blk) >= blk->discard_start &&
-	    chunk->block_start * BLOCKSIZE(blk) + writebuffer_io_len(blk, chunk)
+	    chunk->block_start * BLOCKSIZE(blk) + len
 	    <= blk->discard_start + blk->discard_size) {
-		memset(chunk->data, 0, writebuffer_io_len(blk, chunk));
+		memset(chunk->data, 0, len);
 		list_add(&chunk->list, &blk->buffered_blocks);
 		return 0;
 	}
 
-	ret = blk->ops->read(blk, chunk->data, chunk->block_start,
-			     writebuffer_io_len(blk, chunk));
+	ret = blk->ops->read(blk, chunk->data, chunk->block_start, len);
 	if (ret) {
 		list_add_tail(&chunk->list, &blk->idle_blocks);
 		return ret;
 	}
+
+	blk_stats_record_read(blk, len);
 	list_add(&chunk->list, &blk->buffered_blocks);
 
 	return 0;
@@ -402,7 +426,13 @@ static __maybe_unused int block_op_erase(struct cdev *cdev, loff_t count, loff_t
 		}
 	}
 
-	return blk->ops->erase(blk, offset, count);
+	ret = blk->ops->erase(blk, offset, count);
+	if (ret)
+		return ret;
+
+	blk_stats_record_erase(blk, count);
+
+	return 0;
 }
 
 static struct cdev_operations block_ops = {

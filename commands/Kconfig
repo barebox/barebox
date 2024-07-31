@@ -1871,6 +1871,20 @@ config CMD_DETECT
 		  -e	bail out if one device fails to detect
 		  -a	detect all devices
 
+config CMD_SYNC
+	tristate
+	prompt "sync"
+	help
+	  sync - flush cached writes
+
+	  Usage: sync DEVICE
+
+	  Synchronize cached writes to persistent storage of DEVICE
+	  immediately instead of waiting for block device to be closed,
+	  cache eviction or the regular barebox exit.
+
+	  This command is mainly useful for benchmarking.
+
 config CMD_FLASH
 	tristate
 	prompt "erase, protect and unprotect"

@@ -361,22 +361,31 @@ EXPORT_SYMBOL(of_console_get_by_alias);
 
 #endif /* !CONFIG_CONSOLE_NONE */
 
-int dprintf(int file, const char *fmt, ...)
+int vdprintf(int file, const char *fmt, va_list args)
 {
-	va_list args;
 	char printbuffer[CFG_PBSIZE];
-
-	va_start(args, fmt);
 
 	/*
 	 * For this to work, printbuffer must be larger than
 	 * anything we ever want to print.
 	 */
 	vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
-	va_end(args);
 
 	/* Print the string */
 	return dputs(file, printbuffer);
+}
+EXPORT_SYMBOL(vdprintf);
+
+int dprintf(int file, const char *fmt, ...)
+{
+	va_list args;
+	int i;
+
+	va_start(args, fmt);
+	i = vdprintf(file, fmt, args);
+	va_end(args);
+
+	return i;
 }
 EXPORT_SYMBOL(dprintf);
 

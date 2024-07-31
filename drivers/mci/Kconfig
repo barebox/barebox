@@ -40,6 +40,11 @@ config MCI_WRITE
 	default y
 	select DISK_WRITE
 
+config MCI_ERASE
+	bool "Support erasing MCI cards"
+	depends on MCI_WRITE
+	default y
+
 config MCI_MMC_BOOT_PARTITIONS
 	bool "support MMC boot partitions"
 	help

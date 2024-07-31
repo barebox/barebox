@@ -616,6 +616,12 @@ struct mci_part {
 #define MMC_BLK_DATA_AREA_RPMB	(1<<3)
 };
 
+struct sd_ssr {
+	unsigned int au;                /* In sectors */
+	unsigned int erase_timeout;     /* In milliseconds */
+	unsigned int erase_offset;      /* In milliseconds */
+};
+
 /** MMC/SD and interface instance information */
 struct mci {
 	struct mci_host *host;		/**< the host for this card */
@@ -629,16 +635,20 @@ struct mci {
 	unsigned short rca;	/**< relative card address */
 	u8 sdio:1;              /**< card is a SDIO card */
 	u8 high_capacity:1;	/**< high capacity card is connected (OCR -> OCR_HCS) */
+	u8 can_trim:1;		/**< high capacity card is connected (OCR -> OCR_HCS) */
+	u8 erased_byte;
 	unsigned tran_speed;	/**< Maximum transfer speed */
 	/** currently used data block length for read accesses */
 	unsigned read_bl_len;
 	/** currently used data block length for write accesses */
 	unsigned write_bl_len;
+	unsigned erase_grp_size;
 	uint64_t capacity;	/**< Card's data capacity in bytes */
 	int ready_for_use;	/** true if already probed */
 	int dsr_imp;		/**< DSR implementation state from CSD */
 	u8 *ext_csd;
 	int probe;
+	struct sd_ssr ssr;
 	int bootpart;
 	int boot_ack_enable;
 

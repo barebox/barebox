@@ -25,6 +25,7 @@
 #include <linux/fs.h>
 #include <linux/mtd/mtd.h>
 #include <unistd.h>
+#include <range.h>
 #include <fs.h>
 
 LIST_HEAD(cdev_list);
@@ -433,22 +434,6 @@ int devfs_remove(struct cdev *cdev)
 	return 0;
 }
 
-static bool region_identical(loff_t starta, loff_t lena,
-			     loff_t startb, loff_t lenb)
-{
-	return starta == startb && lena == lenb;
-}
-
-static bool region_overlap(loff_t starta, loff_t lena,
-			   loff_t startb, loff_t lenb)
-{
-	if (starta + lena <= startb)
-		return 0;
-	if (startb + lenb <= starta)
-		return 0;
-	return 1;
-}
-
 /**
  * check_overlap() - check overlap with existing partitions
  * @cdev: parent cdev
@@ -482,7 +467,7 @@ static struct cdev *check_overlap(struct cdev *cdev, const char *name, loff_t of
 			goto identical;
 		}
 
-		if (region_overlap(cpart_offset, cpart->size, offset, size)) {
+		if (region_overlap_size(cpart_offset, cpart->size, offset, size)) {
 			ret = -EINVAL;
 			goto conflict;
 		}

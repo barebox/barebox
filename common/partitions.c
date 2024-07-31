@@ -16,6 +16,7 @@
 #include <filetype.h>
 #include <linux/err.h>
 #include <partitions.h>
+#include <range.h>
 
 static LIST_HEAD(partition_parser_list);
 
@@ -164,15 +165,6 @@ int partition_table_write(struct partition_desc *pdesc)
 	return pdesc->parser->write(pdesc);
 }
 
-static bool overlap(uint64_t s1, uint64_t e1, uint64_t s2, uint64_t e2)
-{
-	if (e1 < s2)
-		return false;
-	if (s1 > e2)
-		return false;
-	return true;
-}
-
 int partition_create(struct partition_desc *pdesc, const char *name,
 		     const char *fs_type, uint64_t lba_start, uint64_t lba_end)
 {
@@ -192,9 +184,9 @@ int partition_create(struct partition_desc *pdesc, const char *name,
 	}
 
 	list_for_each_entry(part, &pdesc->partitions, list) {
-		if (overlap(part->first_sec,
-				part->first_sec + part->size - 1,
-				lba_start, lba_end)) {
+		if (region_overlap_end(part->first_sec,
+				       part->first_sec + part->size - 1,
+				       lba_start, lba_end)) {
 			pr_err("new partition %llu-%llu overlaps with partition %s (%llu-%llu)\n",
 			       lba_start, lba_end, part->name, part->first_sec,
 				part->first_sec + part->size - 1);

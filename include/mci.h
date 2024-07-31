@@ -568,8 +568,8 @@ struct mci {
 	unsigned csd[4];	/**< card's "card specific data register" */
 	unsigned cid[4];	/**< card's "card identification register" */
 	unsigned short rca;	/**< relative card address */
-	bool sdio;              /**< card is a SDIO card */
-	bool high_capacity;	/**< high capacity card is connected (OCR -> OCR_HCS) */
+	u8 sdio:1;              /**< card is a SDIO card */
+	u8 high_capacity:1;	/**< high capacity card is connected (OCR -> OCR_HCS) */
 	unsigned tran_speed;	/**< Maximum transfer speed */
 	/** currently used data block length for read accesses */
 	unsigned read_bl_len;

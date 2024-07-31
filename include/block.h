@@ -31,6 +31,12 @@ enum blk_type {
 
 const char *blk_type_str(enum blk_type);
 
+struct block_device_stats {
+	blkcnt_t read_sectors;
+	blkcnt_t write_sectors;
+	blkcnt_t erase_sectors;
+};
+
 struct block_device {
 	struct device *dev;
 	struct list_head list;
@@ -50,6 +56,10 @@ struct block_device {
 	struct cdev cdev;
 
 	bool need_reparse;
+
+#ifdef CONFIG_BLOCK_STATS
+	struct block_device_stats stats;
+#endif
 };
 
 #define BLOCKSIZE(blk)	(1u << (blk)->blockbits)

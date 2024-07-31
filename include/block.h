@@ -12,6 +12,7 @@ struct file_list;
 struct block_device_ops {
 	int (*read)(struct block_device *, void *buf, sector_t block, blkcnt_t num_blocks);
 	int (*write)(struct block_device *, const void *buf, sector_t block, blkcnt_t num_blocks);
+	int (*erase)(struct block_device *blk, sector_t block, blkcnt_t num_blocks);
 	int (*flush)(struct block_device *);
 };
 

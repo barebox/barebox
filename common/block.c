@@ -11,6 +11,7 @@
 #include <linux/err.h>
 #include <linux/list.h>
 #include <dma.h>
+#include <range.h>
 #include <file-list.h>
 
 LIST_HEAD(block_device_list);
@@ -380,10 +381,35 @@ static int block_op_discard_range(struct cdev *cdev, loff_t count, loff_t offset
 	return 0;
 }
 
+static __maybe_unused int block_op_erase(struct cdev *cdev, loff_t count, loff_t offset)
+{
+	struct block_device *blk = cdev->priv;
+	struct chunk *chunk, *tmp;
+	int ret;
+
+	if (!blk->ops->erase)
+		return -EOPNOTSUPP;
+
+	count >>= blk->blockbits;
+	offset >>= blk->blockbits;
+
+	list_for_each_entry_safe(chunk, tmp, &blk->buffered_blocks, list) {
+		if (region_overlap_size(offset, count, chunk->block_start, blk->rdbufsize)) {
+			ret = chunk_flush(blk, chunk);
+			if (ret < 0)
+				return ret;
+			list_move(&chunk->list, &blk->idle_blocks);
+		}
+	}
+
+	return blk->ops->erase(blk, offset, count);
+}
+
 static struct cdev_operations block_ops = {
 	.read	= block_op_read,
 #ifdef CONFIG_BLOCK_WRITE
 	.write	= block_op_write,
+	.erase = block_op_erase,
 #endif
 	.close	= block_op_close,
 	.flush	= block_op_flush,
@@ -428,6 +454,14 @@ int blockdevice_register(struct block_device *blk)
 		chunk->num = i;
 		list_add_tail(&chunk->list, &blk->idle_blocks);
 	}
+
+	/* TODO: We currently set this to ignore ERASE_TO_FLASH, but it could
+	 * be useful to propagate the enum erase_type down into the erase
+	 * callbacks and then map ERASE_TO_FLASH here to a discard operation.
+	 * Before doing that though, we need to optimize the hardware drivers
+	 * (currently eMMC) to erase bigger regions at once
+	 */
+	blk->cdev.flags |= DEVFS_WRITE_AUTOERASE;
 
 	ret = devfs_create(&blk->cdev);
 	if (ret)

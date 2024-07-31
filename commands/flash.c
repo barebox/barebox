@@ -43,7 +43,7 @@ static int do_flerase(int argc, char *argv[])
 		goto out;
 	}
 
-	if (erase(fd, size, start)) {
+	if (erase(fd, size, start, ERASE_TO_CLEAR)) {
 		perror("erase");
 		ret = 1;
 	}

@@ -509,6 +509,7 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 	loff_t _end = end ? *end : 0;
 	static struct cdev *new;
 	struct cdev *overlap;
+	unsigned inherited_flags = 0;
 
 	if (cdev_by_name(partinfo->name))
 		return ERR_PTR(-EEXIST);
@@ -551,11 +552,14 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 		return overlap;
 	}
 
+	/* Filter flags that we want to pass along to children */
+	inherited_flags |= cdev->flags & DEVFS_WRITE_AUTOERASE;
+
 	if (IS_ENABLED(CONFIG_MTD) && cdev->mtd) {
 		struct mtd_info *mtd;
 
 		mtd = mtd_add_partition(cdev->mtd, offset, size,
-				partinfo->flags, partinfo->name);
+				partinfo->flags | inherited_flags, partinfo->name);
 		if (IS_ERR(mtd))
 			return (void *)mtd;
 
@@ -571,6 +575,7 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 	new->priv = cdev->priv;
 	new->size = size;
 	new->offset = cdev->offset + offset;
+	new->flags = inherited_flags;
 
 	new->dev = cdev->dev;
 	new->master = cdev;

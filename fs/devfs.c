@@ -61,12 +61,15 @@ static int devfs_lseek(struct device *_dev, FILE *f, loff_t pos)
 }
 
 static int devfs_erase(struct device *_dev, FILE *f, loff_t count,
-		       loff_t offset)
+		       loff_t offset, enum erase_type type)
 {
 	struct cdev *cdev = f->priv;
 
 	if (cdev->flags & DEVFS_PARTITION_READONLY)
 		return -EPERM;
+
+	if ((type == ERASE_TO_WRITE) && (cdev->flags & DEVFS_WRITE_AUTOERASE))
+		return 0;
 
 	if (count + offset > cdev->size)
 		count = cdev->size - offset;

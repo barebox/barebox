@@ -108,7 +108,7 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	if (imx_bbu_erase_required(imx_handler)) {
 		pr_debug("%s: erasing %s from 0x%08x to 0x%08x\n", __func__,
 				devicefile, offset, image_len);
-		ret = erase(fd, image_len, offset);
+		ret = erase(fd, image_len, offset, ERASE_TO_WRITE);
 		if (ret) {
 			pr_err("erasing %s failed with %s\n", devicefile,
 					strerror(-ret));
@@ -340,7 +340,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 
 		pr_debug("writing %d bytes at 0x%08llx\n", now, offset);
 
-		ret = erase(fd, blocksize, offset);
+		ret = erase(fd, blocksize, offset, ERASE_TO_WRITE);
 		if (ret)
 			goto out;
 

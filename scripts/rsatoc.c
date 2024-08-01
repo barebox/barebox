@@ -5,6 +5,7 @@
  * This tool converts an RSA key given as file or PKCS#11
  * URI to a C struct suitable to compile with barebox.
  */
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <stdio.h>
 #include <string.h>
 #include <time.h>

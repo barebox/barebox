@@ -331,7 +331,7 @@ int console_register(struct console_device *newcdev)
 	struct device_node *serdev_node = console_is_serdev_node(newcdev);
 	struct device *dev = &newcdev->class_dev;
 	int activate = 0, ret;
-	unsigned baudrate = CONFIG_BAUDRATE;
+	unsigned of_baudrate = 0, baudrate = CONFIG_BAUDRATE;
 
 	if (!serdev_node && initialized == CONSOLE_UNINITIALIZED)
 		console_init_early();
@@ -366,6 +366,11 @@ int console_register(struct console_device *newcdev)
 		activate = CONSOLE_STDIOE;
 		console_set_stdoutpath(newcdev, baudrate);
 	}
+
+	/* Honour the previous baudrate if it is set to a non-zero value */
+	of_property_read_u32(dev->of_node, "current-speed", &of_baudrate);
+	if (of_baudrate)
+		baudrate = of_baudrate;
 
 	console_add_earlycon_param(newcdev, baudrate);
 

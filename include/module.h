@@ -6,11 +6,8 @@
 #include <elf.h>
 #include <linux/compiler.h>
 #include <linux/export.h>
+#include <linux/module.h>
 #include <linux/list.h>
-
-#ifndef MODULE_SYMBOL_PREFIX
-#define MODULE_SYMBOL_PREFIX
-#endif
 
 #define MODULE_NAME_LEN (64 - sizeof(unsigned long))
 

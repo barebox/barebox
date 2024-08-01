@@ -3,6 +3,7 @@
 #include <module.h>
 #include <linux/types.h>
 #include <asm/unaligned.h>
+#include <linux/align.h>
 #include <io.h>
 
 /*

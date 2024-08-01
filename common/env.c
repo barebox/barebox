@@ -255,11 +255,19 @@ int setenv(const char *_name, const char *value)
 	char *name = strdup(_name);
 	int ret = 0;
 	struct list_head *list;
+	const char *dot;
 
-	if (strchr(name, '.')) {
+	dot = strchr(name, '.');
+	if (dot) {
 		ret = dev_setenv(name, value);
-		if (ret)
-			eprintf("Cannot set parameter %s: %s\n", name, strerror(-ret));
+		if (IS_ENABLED(CONFIG_LONGHELP) && ret == -ENODEV &&
+		    (strstarts(name, "nv.") || strstarts(name, "global."))) {
+			eprintf("Parameter not found. Did you mean to create it with: %.*s %s='%s' ?\n",
+				(int)(dot - name), name, dot + 1, value);
+		} else if (ret) {
+			eprintf("Cannot set parameter %s: %pe\n", name, ERR_PTR(ret));
+		}
+
 		goto out;
 	}
 

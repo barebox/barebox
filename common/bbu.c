@@ -55,8 +55,8 @@ void bbu_append_handlers_to_file_list(struct file_list *files)
 		if (stat(devpath, &s) == 0) {
 			append_bbu_entry(handler->name, devpath, files);
 		} else {
-			pr_info("Skipping unavailable handler bbu-%s\n",
-				handler->name);
+			pr_info("Skipping handler bbu-%s: %s unavailable\n",
+				handler->name, devpath);
 		}
 
 		free(devpath);

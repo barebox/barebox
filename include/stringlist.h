@@ -3,6 +3,7 @@
 #define __STRINGLIST_H
 
 #include <linux/list.h>
+#include <malloc.h>
 
 struct string_list {
 	struct list_head list;

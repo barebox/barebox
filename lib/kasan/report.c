@@ -116,20 +116,16 @@ static void print_shadow_for_address(const void *addr)
 
 	for (i = -SHADOW_ROWS_AROUND_ADDR; i <= SHADOW_ROWS_AROUND_ADDR; i++) {
 		const void *kaddr = kasan_shadow_to_mem(shadow_row);
-		char buffer[4 + (BITS_PER_LONG/8)*2];
 		char shadow_buf[SHADOW_BYTES_PER_ROW];
 
-		snprintf(buffer, sizeof(buffer),
-			(i == 0) ? ">%px: " : " %px: ", kaddr);
 		/*
 		 * We should not pass a shadow pointer to generic
 		 * function, because generic functions may try to
 		 * access kasan mapping for the passed address.
 		 */
 		memcpy(shadow_buf, shadow_row, SHADOW_BYTES_PER_ROW);
-		print_hex_dump(KERN_ERR, buffer,
-			DUMP_PREFIX_NONE, SHADOW_BYTES_PER_ROW, 1,
-			shadow_buf, SHADOW_BYTES_PER_ROW, 0);
+		eprintf("%c%px: %*ph\n", (i == 0) ? '>' : ' ', kaddr,
+			SHADOW_BYTES_PER_ROW, shadow_buf);
 
 		if (row_is_guilty(shadow_row, shadow))
 			eprintf("%*c\n",

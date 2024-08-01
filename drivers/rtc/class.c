@@ -18,11 +18,8 @@ struct rtc_device *rtc_lookup(const char *name)
 {
 	struct rtc_device *r;
 
-	if (!name)
-		return ERR_PTR(-ENODEV);
-
 	for_each_rtc(r) {
-		if (!strcmp(dev_name(&r->class_dev), name))
+		if (!name || !strcmp(dev_name(&r->class_dev), name))
 			return r;
 	}
 

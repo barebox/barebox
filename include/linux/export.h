@@ -4,8 +4,6 @@
 
 #ifndef __ASSEMBLY__
 
-#include <module.h>
-
 #define THIS_MODULE	0
 
 #if defined(CONFIG_MODULES) && !defined(__DISABLE_EXPORTS)
@@ -21,7 +19,7 @@ struct kernel_symbol
 	extern typeof(sym) sym;					\
 	static const char __ustrtab_##sym[]			\
 	__ll_elem(__usymtab_strings)				\
-	= MODULE_SYMBOL_PREFIX #sym;                    	\
+	= #sym;                    	\
 	static const struct kernel_symbol __usymtab_##sym	\
 	__ll_elem(__usymtab)					\
 	= { (unsigned long)&sym, __ustrtab_##sym }

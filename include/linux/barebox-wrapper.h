@@ -4,6 +4,7 @@
 #include <malloc.h>
 #include <xfuncs.h>
 #include <linux/slab.h>
+#include <linux/module.h>
 #include <printk.h>
 
 #define vmalloc(len)		malloc(len)
@@ -13,17 +14,6 @@ static inline void vfree(const void *addr)
 {
 	free((void *)addr);
 }
-
-#define __init
-
-#define MODULE_AUTHOR(x)
-#define MODULE_DESCRIPTION(x)
-#define MODULE_LICENSE(x)
-#define MODULE_VERSION(x)
-#define MODULE_ALIAS(x)
-#define MODULE_DEVICE_TABLE(bus, table)
-#define MODULE_ALIAS_DSA_TAG_DRIVER(drv)
-#define MODULE_ALIAS_CRYPTO(alias)
 
 #define __user
 #define __init

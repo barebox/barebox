@@ -16,7 +16,9 @@
 #include <init.h>
 #include <soc/sifive/l2_cache.h>
 #include <asm/barrier.h>
+#include <linux/align.h>
 #include <linux/bitops.h>
+#include <linux/bug.h>
 
 #define SIFIVE_L2_DIRECCFIX_LOW 0x100
 #define SIFIVE_L2_DIRECCFIX_HIGH 0x104

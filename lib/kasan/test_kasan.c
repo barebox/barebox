@@ -394,6 +394,8 @@ static noinline void kasan_bitops(void)
 	if (!bits)
 		return;
 
+	OPTIMIZER_HIDE_VAR(bits);
+
 	/*
 	 * Below calls try to access bit within allocated memory; however, the
 	 * below accesses are still out-of-bounds, since bitops are defined to

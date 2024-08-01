@@ -39,6 +39,15 @@
 # define unlikely(x)		__builtin_expect(!!(x), 0)
 #endif
 
+#ifndef __returns_nonnull
+# define __returns_nonnull
+#endif
+
+# define __alloc_size(x, ...)
+# define __realloc_size(x, ...)
+# define __xalloc_size(args...)		__returns_nonnull __alloc_size(args)
+# define __xrealloc_size(args...)	__returns_nonnull __realloc_size(args)
+
 #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
 
 #include <linux/types.h>

@@ -11,6 +11,7 @@
 #include <mfd/syscon.h>
 #include <linux/regmap.h>
 #include <linux/printk.h>
+#include <linux/kernel.h>
 
 #include "pmc.h"
 

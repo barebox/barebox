@@ -82,8 +82,12 @@ struct restart_handler *restart_handler_get_by_name(const char *name, int flags)
 	unsigned int priority = 0;
 
 	list_for_each_entry(tmp, &restart_handler_list, list) {
-		if (name && tmp->name && strcmp(name, tmp->name))
-			continue;
+		if (name) {
+			if ((tmp->name && strcmp(name, tmp->name)) &&
+			    (tmp->dev && strcmp(name, dev_name(tmp->dev))))
+				continue;
+		}
+
 		if (flags && (tmp->flags & flags) != flags)
 			continue;
 		if (tmp->priority > priority) {
@@ -120,7 +124,8 @@ void restart_handlers_print(void)
 	struct restart_handler *tmp;
 
 	list_for_each_entry(tmp, &restart_handler_list, list) {
-		printf("%-20s %6d ", tmp->name, tmp->priority);
+		printf("%-20s %-20s %6d ",
+		       tmp->name, tmp->dev ? dev_name(tmp->dev) : "", tmp->priority);
 		if (tmp->flags & RESTART_FLAG_WARM_BOOTROM)
 			putchar('W');
 		putchar('\n');

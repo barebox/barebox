@@ -116,7 +116,8 @@ static int imx21_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 {
 	u16 val;
 
-	dev_dbg(priv->dev, "%s: %d\n", __func__, timeout);
+	dev_dbg(priv->dev, "%s: %d extrst=%u suspend=%u\n",
+		__func__, timeout, priv->ext_reset, priv->suspend_in_lpm);
 
 	if (timeout == 0) /* bit 2 (WDE) cannot be set to 0 again */
 		return -ENOSYS;
@@ -306,6 +307,7 @@ static int imx_wd_probe(struct device *dev)
 	priv->restart.name = "imxwd";
 	priv->restart.restart = imxwd_force_soc_reset;
 	priv->restart.priority = RESTART_DEFAULT_PRIORITY;
+	priv->restart.dev = &priv->wd.dev;
 
 	restart_handler_register(&priv->restart);
 

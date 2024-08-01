@@ -815,15 +815,16 @@ endchoice
 choice
 	prompt "Console activation strategy"
 	depends on CONSOLE_FULL
-	default CONSOLE_ACTIVATE_FIRST
+	default CONSOLE_ACTIVATE_ALL_FALLBACK
 
 config CONSOLE_ACTIVATE_FIRST
 	bool
 	prompt "activate first console on startup"
 	help
-	  Normally on startup all consoles are disabled, so you won't
-	  see anything from barebox starting. Enabling this option
-	  enables the first console.
+	  Select this to activate the first registered console.
+	  On many systems, devices are probed in no strict order,
+	  so you probably should say n here if you are probing
+	  from device tree and have more than one console.
 
 config CONSOLE_ACTIVATE_ALL
 	bool
@@ -834,13 +835,35 @@ config CONSOLE_ACTIVATE_ALL
 	  Only the first registered console will have the full startup
 	  log though.
 
+	  If you have consoles that aren't meant for barebox log output
+	  (e.g. a connected MCU), you will want to say n here and use
+	  CONFIG_ACTIVATE_ALL_FALLBACK or CONFIG_CONSOLE_ACTIVATE_NONE instead.
+
+config CONSOLE_ACTIVATE_ALL_FALLBACK
+	bool
+	prompt "activate all consoles as fallback"
+	help
+	  This option is similar to CONFIG_CONSOLE_ACTIVATE_NONE in that it
+	  leaves consoles disabled on startup. If by the end of barebox
+	  startup, no consoles have been activated via board code, device
+	  tree or environment, barebox will enable all registered consoles
+	  as fallback, so the user has a chance to see output.
+
+	  This will be indicated by a fat error, so the user knows that
+	  the configuration needs to be fixed. If you don't see any
+	  output at all, consider trying again after enabling
+	  CONFIG_CONSOLE_ACTIVATE_ALL, so consoles are activated immediately
+	  at registration time and/or with CONFIG_DEBUG_LL, so barebox output
+	  is written even before console drivers were registered.
+
 config CONSOLE_ACTIVATE_NONE
 	prompt "leave all consoles disabled"
 	bool
 	help
-	  Leave all consoles disabled on startup. Board code or environment
-	  is responsible for enabling a console. Otherwise you'll get a working
-	  barebox, you just won't see anything.
+	  Leave all consoles disabled on startup. Board code, environment
+	  or the device tree /chosen/stdout-path property will be responsible
+	  for enabling a console. Otherwise you'll get a working barebox,
+	  you just won't see anything.
 
 endchoice
 

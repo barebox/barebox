@@ -92,6 +92,10 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	free_mem_ptr = barebox_base - ARM_MEM_EARLY_MALLOC_SIZE;
 	free_mem_end_ptr = barebox_base;
 
+#ifdef DEBUG
+	print_pbl_mem_layout(membase, endmem, barebox_base);
+#endif
+
 	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x)\n",
 			pg_start, pg_len, barebox_base, uncompressed_len);
 

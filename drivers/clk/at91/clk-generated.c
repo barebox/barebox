@@ -14,6 +14,7 @@
 #include <of.h>
 #include <mfd/syscon.h>
 #include <linux/regmap.h>
+#include <linux/kernel.h>
 
 #include "pmc.h"
 

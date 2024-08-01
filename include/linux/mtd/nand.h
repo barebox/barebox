@@ -11,6 +11,7 @@
 #define __LINUX_MTD_NAND_H
 
 #include <linux/mtd/mtd.h>
+#include <linux/minmax.h>
 
 struct nand_device;
 

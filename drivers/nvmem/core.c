@@ -400,6 +400,8 @@ struct nvmem_cell *of_nvmem_cell_get(struct device_node *np,
 		return ERR_PTR(-EINVAL);
 
 	nvmem_np = of_get_parent(cell_np);
+	if (nvmem_np && of_device_is_compatible(nvmem_np, "fixed-layout"))
+		nvmem_np = of_get_parent(nvmem_np);
 	if (!nvmem_np)
 		return ERR_PTR(-EINVAL);
 

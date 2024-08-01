@@ -517,6 +517,18 @@ static int ramoops_of_fixup(struct device_node *root, void *data)
 	return 0;
 }
 
+static void ramoops_devinfo(struct device *dev)
+{
+	struct ramoops_context *cxt = &oops_cxt;
+
+	printf("ramoops layout:\n");
+	printf("  record-size = %zu\n", cxt->record_size);
+	printf("  console-size = %zu\n", cxt->console_size);
+	printf("  ftrace-size = %zu\n", cxt->ftrace_size);
+	printf("  pmsg-size = %zu\n", cxt->pmsg_size);
+	printf("  ecc-size = %u\n", cxt->ecc_info.ecc_size);
+}
+
 static int ramoops_probe(struct device *dev)
 {
 	struct ramoops_platform_data *pdata = dummy_data;
@@ -628,6 +640,10 @@ static int ramoops_probe(struct device *dev)
 	} else {
 		of_register_fixup(ramoops_of_fixup, pdata);
 	}
+
+	device_add_resource(dev, "mem", pdata->mem_address, pdata->mem_size,
+			    IORESOURCE_MEM);
+	dev->info = ramoops_devinfo;
 
 	return 0;
 

@@ -196,7 +196,7 @@ int mc13xxx_adc_probe(struct device *dev, struct mc13xxx *mc_dev)
 
 	mc13xxx_adc->mc_dev = mc_dev;
 	mc13xxx_adc->aiodev.num_channels = chans;
-	mc13xxx_adc->aiochan = xmalloc(mc13xxx_adc->aiodev.num_channels *
+	mc13xxx_adc->aiochan = xzalloc(mc13xxx_adc->aiodev.num_channels *
 			sizeof(*mc13xxx_adc->aiochan));
 	mc13xxx_adc->aiodev.hwdev = dev;
 	mc13xxx_adc->aiodev.channels =

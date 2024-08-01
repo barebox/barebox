@@ -156,3 +156,32 @@ int boot_cpu_mode(void)
 {
 	return __boot_cpu_mode;
 }
+
+void print_pbl_mem_layout(ulong membase, ulong endmem, ulong barebox_base)
+{
+	printf("endmem                = 0x%08lx\n", endmem);
+	if (OPTEE_SIZE)
+		printf("arm_mem_optee         = 0x%08lx+0x%08x\n", arm_mem_optee(endmem),
+		       OPTEE_SIZE);
+	printf("arm_mem_scratch       = 0x%08lx+0x%08lx\n",
+	       arm_mem_scratch(endmem),
+	       arm_mem_barebox_image_end(endmem) - arm_mem_scratch(endmem));
+	printf("arm_mem_stack         = 0x%08lx+0x%08x\n",
+	       arm_mem_stack(endmem), STACK_SIZE);
+	if (IS_ENABLED(CONFIG_STACK_GUARD_PAGE))
+		printf("arm_mem_guard_page    = 0x%08lx+0x%08x\n",
+		       arm_mem_guard_page(endmem), PAGE_SIZE);
+	printf("arm_mem_ttb           = 0x%08lx+0x%08x\n",
+	       arm_mem_ttb(endmem), ARM_EARLY_PAGETABLE_SIZE);
+#ifdef CONFIG_FS_PSTORE_RAMOOPS
+	printf("arm_mem_ramoops       = 0x%08lx+0x%08x\n",
+	       arm_mem_ramoops(endmem), CONFIG_FS_PSTORE_RAMOOPS_SIZE);
+#endif
+	printf("arm_mem_barebox_image = 0x%08lx+0x%08lx\n",
+	       barebox_base, arm_mem_barebox_image_end(endmem) - barebox_base);
+	printf("arm_mem_early_malloc  = 0x%08lx+0x%08x\n",
+	       barebox_base - ARM_MEM_EARLY_MALLOC_SIZE, ARM_MEM_EARLY_MALLOC_SIZE);
+	printf("membase               = 0x%08lx+0x%08lx\n",
+	       membase, endmem - membase);
+}
+

@@ -19,6 +19,8 @@
 #include <linux/nvmem-provider.h>
 #include <rtc.h>
 
+struct rtc_time;
+
 extern int rtc_month_days(unsigned int month, unsigned int year);
 extern int rtc_valid_tm(struct rtc_time *tm);
 extern int rtc_tm_to_time(struct rtc_time *tm, unsigned long *time);
@@ -40,8 +42,19 @@ struct rtc_class_ops {
 
 extern int rtc_register(struct rtc_device *rtcdev);
 
+#ifdef CONFIG_RTC_CLASS
 extern int rtc_read_time(struct rtc_device *rtc, struct rtc_time *tm);
 extern int rtc_set_time(struct rtc_device *rtc, struct rtc_time *tm);
+#else
+static inline int rtc_read_time(struct rtc_device *rtc, struct rtc_time *tm)
+{
+	return -ENOSYS;
+}
+static inline int rtc_set_time(struct rtc_device *rtc, struct rtc_time *tm)
+{
+	return -ENOSYS;
+}
+#endif
 
 static inline bool is_leap_year(unsigned int year)
 {

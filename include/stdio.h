@@ -95,14 +95,22 @@ static inline void putchar(char c)
  * FILE based functions
  */
 
-/* stderr */
+#ifdef __PBL__
+#define eprintf			printf
+#define veprintf		vprintf
+#define eputchar		putchar
+#else
 #define eprintf(fmt,args...)	dprintf(STDERR_FILENO, fmt ,##args)
+#define veprintf(fmt,args)	vdprintf(STDERR_FILENO, fmt, args)
+#define eputchar(ch)		dputc(STDERR_FILENO, ch)
+#endif
 
 #define STDIN_FILENO		0
 #define STDOUT_FILENO		1
 #define STDERR_FILENO		2
 #define MAX_FILES	128
 
+int vdprintf(int fd, const char *fmt, va_list args) ;
 int dprintf(int file, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
 int dputs(int file, const char *s);
 int dputc(int file, const char c);

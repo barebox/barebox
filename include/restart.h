@@ -21,6 +21,7 @@ struct restart_handler {
 	int flags;
 	struct device_node *of_node;
 	const char *name;
+	struct device *dev;
 	struct list_head list;
 };
 

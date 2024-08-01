@@ -255,6 +255,17 @@ config CMD_REGINFO
 	help
 	  Print register information.
 
+config CMD_BLKSTATS
+	bool
+	depends on BLOCK
+	select BLOCK_STATS
+	prompt "blkstats command"
+	help
+	  The blkstats displays statistics about a block devices' number of
+	  sectors read, written and erased. This should only be needed for
+	  development. Saying y here will start to collect these statistics
+	  and enable a command for querying them.
+
 config CMD_REGULATOR
 	bool
 	depends on REGULATOR
@@ -1870,6 +1881,20 @@ config CMD_DETECT
 		  -l	list detectable devices
 		  -e	bail out if one device fails to detect
 		  -a	detect all devices
+
+config CMD_SYNC
+	tristate
+	prompt "sync"
+	help
+	  sync - flush cached writes
+
+	  Usage: sync DEVICE
+
+	  Synchronize cached writes to persistent storage of DEVICE
+	  immediately instead of waiting for block device to be closed,
+	  cache eviction or the regular barebox exit.
+
+	  This command is mainly useful for benchmarking.
 
 config CMD_FLASH
 	tristate

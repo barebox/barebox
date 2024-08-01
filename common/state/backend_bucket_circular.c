@@ -220,7 +220,7 @@ static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *cir
 static int state_mtd_peb_erase(struct state_backend_storage_bucket_circular *circ)
 {
 	return erase(circ->fd, circ->mtd->erasesize,
-		     (off_t)circ->eraseblock * circ->mtd->erasesize);
+		     (off_t)circ->eraseblock * circ->mtd->erasesize, ERASE_TO_WRITE);
 }
 #endif
 

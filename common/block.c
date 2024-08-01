@@ -11,6 +11,7 @@
 #include <linux/err.h>
 #include <linux/list.h>
 #include <dma.h>
+#include <range.h>
 #include <file-list.h>
 
 LIST_HEAD(block_device_list);
@@ -31,6 +32,45 @@ static int writebuffer_io_len(struct block_device *blk, struct chunk *chunk)
 	return min_t(blkcnt_t, blk->rdbufsize, blk->num_blocks - chunk->block_start);
 }
 
+#ifdef CONFIG_BLOCK_STATS
+static void blk_stats_record_read(struct block_device *blk, blkcnt_t count)
+{
+	blk->stats.read_sectors += count;
+}
+static void blk_stats_record_write(struct block_device *blk, blkcnt_t count)
+{
+	blk->stats.write_sectors += count;
+}
+static void blk_stats_record_erase(struct block_device *blk, blkcnt_t count)
+{
+	blk->stats.erase_sectors += count;
+}
+#else
+static void blk_stats_record_read(struct block_device *blk, blkcnt_t count) { }
+static void blk_stats_record_write(struct block_device *blk, blkcnt_t count) { }
+static void blk_stats_record_erase(struct block_device *blk, blkcnt_t count) { }
+#endif
+
+static int chunk_flush(struct block_device *blk, struct chunk *chunk)
+{
+	size_t len;
+	int ret;
+
+	if (!chunk->dirty)
+		return 0;
+
+	len = writebuffer_io_len(blk, chunk);
+	ret = blk->ops->write(blk, chunk->data, chunk->block_start, len);
+	if (ret < 0)
+		return ret;
+
+	blk_stats_record_write(blk, len);
+
+	chunk->dirty = 0;
+
+	return 0;
+}
+
 /*
  * Write all dirty chunks back to the device
  */
@@ -43,15 +83,9 @@ static int writebuffer_flush(struct block_device *blk)
 		return 0;
 
 	list_for_each_entry(chunk, &blk->buffered_blocks, list) {
-		if (chunk->dirty) {
-			ret = blk->ops->write(blk, chunk->data,
-					      chunk->block_start,
-					      writebuffer_io_len(blk, chunk));
-			if (ret < 0)
-				return ret;
-
-			chunk->dirty = 0;
-		}
+		ret = chunk_flush(blk, chunk);
+		if (ret < 0)
+			return ret;
 	}
 
 	if (blk->ops->flush)
@@ -112,15 +146,9 @@ static struct chunk *get_chunk(struct block_device *blk)
 	if (list_empty(&blk->idle_blocks)) {
 		/* use last entry which is the most unused */
 		chunk = list_last_entry(&blk->buffered_blocks, struct chunk, list);
-		if (chunk->dirty) {
-			ret = blk->ops->write(blk, chunk->data,
-					      chunk->block_start,
-					      writebuffer_io_len(blk, chunk));
-			if (ret < 0)
-				return ERR_PTR(ret);
-
-			chunk->dirty = 0;
-		}
+		ret = chunk_flush(blk, chunk);
+		if (ret < 0)
+			return ERR_PTR(ret);
 	} else {
 		chunk = list_first_entry(&blk->idle_blocks, struct chunk, list);
 	}
@@ -138,6 +166,7 @@ static struct chunk *get_chunk(struct block_device *blk)
 static int block_cache(struct block_device *blk, sector_t block)
 {
 	struct chunk *chunk;
+	size_t len;
 	int ret;
 
 	chunk = get_chunk(blk);
@@ -149,20 +178,22 @@ static int block_cache(struct block_device *blk, sector_t block)
 	dev_dbg(blk->dev, "%s: %llu to %d\n", __func__, chunk->block_start,
 		chunk->num);
 
+	len = writebuffer_io_len(blk, chunk);
 	if (chunk->block_start * BLOCKSIZE(blk) >= blk->discard_start &&
-	    chunk->block_start * BLOCKSIZE(blk) + writebuffer_io_len(blk, chunk)
+	    chunk->block_start * BLOCKSIZE(blk) + len
 	    <= blk->discard_start + blk->discard_size) {
-		memset(chunk->data, 0, writebuffer_io_len(blk, chunk));
+		memset(chunk->data, 0, len);
 		list_add(&chunk->list, &blk->buffered_blocks);
 		return 0;
 	}
 
-	ret = blk->ops->read(blk, chunk->data, chunk->block_start,
-			     writebuffer_io_len(blk, chunk));
+	ret = blk->ops->read(blk, chunk->data, chunk->block_start, len);
 	if (ret) {
 		list_add_tail(&chunk->list, &blk->idle_blocks);
 		return ret;
 	}
+
+	blk_stats_record_read(blk, len);
 	list_add(&chunk->list, &blk->buffered_blocks);
 
 	return 0;
@@ -374,10 +405,41 @@ static int block_op_discard_range(struct cdev *cdev, loff_t count, loff_t offset
 	return 0;
 }
 
+static __maybe_unused int block_op_erase(struct cdev *cdev, loff_t count, loff_t offset)
+{
+	struct block_device *blk = cdev->priv;
+	struct chunk *chunk, *tmp;
+	int ret;
+
+	if (!blk->ops->erase)
+		return -EOPNOTSUPP;
+
+	count >>= blk->blockbits;
+	offset >>= blk->blockbits;
+
+	list_for_each_entry_safe(chunk, tmp, &blk->buffered_blocks, list) {
+		if (region_overlap_size(offset, count, chunk->block_start, blk->rdbufsize)) {
+			ret = chunk_flush(blk, chunk);
+			if (ret < 0)
+				return ret;
+			list_move(&chunk->list, &blk->idle_blocks);
+		}
+	}
+
+	ret = blk->ops->erase(blk, offset, count);
+	if (ret)
+		return ret;
+
+	blk_stats_record_erase(blk, count);
+
+	return 0;
+}
+
 static struct cdev_operations block_ops = {
 	.read	= block_op_read,
 #ifdef CONFIG_BLOCK_WRITE
 	.write	= block_op_write,
+	.erase = block_op_erase,
 #endif
 	.close	= block_op_close,
 	.flush	= block_op_flush,
@@ -422,6 +484,14 @@ int blockdevice_register(struct block_device *blk)
 		chunk->num = i;
 		list_add_tail(&chunk->list, &blk->idle_blocks);
 	}
+
+	/* TODO: We currently set this to ignore ERASE_TO_FLASH, but it could
+	 * be useful to propagate the enum erase_type down into the erase
+	 * callbacks and then map ERASE_TO_FLASH here to a discard operation.
+	 * Before doing that though, we need to optimize the hardware drivers
+	 * (currently eMMC) to erase bigger regions at once
+	 */
+	blk->cdev.flags |= DEVFS_WRITE_AUTOERASE;
 
 	ret = devfs_create(&blk->cdev);
 	if (ret)

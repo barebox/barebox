@@ -153,7 +153,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 
 		debug("writing %d bytes at 0x%08llx\n", now, nand_offset);
 
-		ret = erase(fd, blocksize, nand_offset);
+		ret = erase(fd, blocksize, nand_offset, ERASE_TO_WRITE);
 		if (ret)
 			goto out;
 

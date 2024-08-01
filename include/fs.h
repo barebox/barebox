@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <driver.h>
 #include <filetype.h>
+#include <linux/bits.h>
 #include <linux/fs.h>
 #include <linux/string.h>
 #include <linux/limits.h>
@@ -38,6 +39,27 @@ typedef struct filep {
 
 #define FS_DRIVER_NO_DEV	1
 
+/**
+ * enum erase_type - Type of erase operation
+ * @ERASE_TO_WRITE: Conduct low-level erase operation to prepare for a write
+ *                  to all or part of the erased regions. This is required
+ *                  for raw flashes, but can be omitted by flashes behind
+ *                  a FTL that autoerases on write (e.g. eMMCs)
+ * @ERASE_TO_CLEAR: Force an erase of the region. When read afterwards,
+ *		    A fixed pattern should result, usually either all-zeroes
+ *		    or all-ones depending on storage technology.
+ *
+ * Many managed flashes provide an erase operation, which need not be used
+ * for regular writes, but is provided nonetheless for efficient clearing
+ * of large regions of storage to a fixed bit pattern. The erase type allows
+ * users to specify _why_ the erase operation is done, so the driver or
+ * the core code can choose the most optimal operation.
+ */
+enum erase_type {
+	ERASE_TO_WRITE,
+	ERASE_TO_CLEAR
+};
+
 struct fs_driver {
 	int (*probe) (struct device *dev);
 
@@ -58,7 +80,7 @@ struct fs_driver {
 
 	int (*ioctl)(struct device *dev, FILE *f, unsigned int request, void *buf);
 	int (*erase)(struct device *dev, FILE *f, loff_t count,
-			loff_t offset);
+			loff_t offset, enum erase_type type);
 	int (*protect)(struct device *dev, FILE *f, size_t count,
 			loff_t offset, int prot);
 	int (*discard_range)(struct device *dev, FILE *f, loff_t count,
@@ -127,7 +149,7 @@ int umount_by_cdev(struct cdev *cdev);
 
 /* not-so-standard functions */
 #define ERASE_SIZE_ALL	((loff_t) - 1)
-int erase(int fd, loff_t count, loff_t offset);
+int erase(int fd, loff_t count, loff_t offset, enum erase_type type);
 int protect(int fd, size_t count, loff_t offset, int prot);
 int discard_range(int fd, loff_t count, loff_t offset);
 int protect_file(const char *file, int prot);

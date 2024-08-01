@@ -453,7 +453,7 @@ int bbu_std_file_handler(struct bbu_handler *handler,
 		goto err_close;
 	}
 
-	ret = erase(fd, data->len, 0);
+	ret = erase(fd, data->len, 0, ERASE_TO_WRITE);
 	if (ret && ret != -ENOSYS) {
 		printf("erasing %s failed with %s\n", data->devicefile,
 				strerror(-ret));

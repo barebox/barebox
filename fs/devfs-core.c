@@ -25,6 +25,7 @@
 #include <linux/fs.h>
 #include <linux/mtd/mtd.h>
 #include <unistd.h>
+#include <range.h>
 #include <fs.h>
 
 LIST_HEAD(cdev_list);
@@ -433,22 +434,6 @@ int devfs_remove(struct cdev *cdev)
 	return 0;
 }
 
-static bool region_identical(loff_t starta, loff_t lena,
-			     loff_t startb, loff_t lenb)
-{
-	return starta == startb && lena == lenb;
-}
-
-static bool region_overlap(loff_t starta, loff_t lena,
-			   loff_t startb, loff_t lenb)
-{
-	if (starta + lena <= startb)
-		return 0;
-	if (startb + lenb <= starta)
-		return 0;
-	return 1;
-}
-
 /**
  * check_overlap() - check overlap with existing partitions
  * @cdev: parent cdev
@@ -482,7 +467,7 @@ static struct cdev *check_overlap(struct cdev *cdev, const char *name, loff_t of
 			goto identical;
 		}
 
-		if (region_overlap(cpart_offset, cpart->size, offset, size)) {
+		if (region_overlap_size(cpart_offset, cpart->size, offset, size)) {
 			ret = -EINVAL;
 			goto conflict;
 		}
@@ -509,6 +494,7 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 	loff_t _end = end ? *end : 0;
 	static struct cdev *new;
 	struct cdev *overlap;
+	unsigned inherited_flags = 0;
 
 	if (cdev_by_name(partinfo->name))
 		return ERR_PTR(-EEXIST);
@@ -551,11 +537,14 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 		return overlap;
 	}
 
+	/* Filter flags that we want to pass along to children */
+	inherited_flags |= cdev->flags & DEVFS_WRITE_AUTOERASE;
+
 	if (IS_ENABLED(CONFIG_MTD) && cdev->mtd) {
 		struct mtd_info *mtd;
 
 		mtd = mtd_add_partition(cdev->mtd, offset, size,
-				partinfo->flags, partinfo->name);
+				partinfo->flags | inherited_flags, partinfo->name);
 		if (IS_ERR(mtd))
 			return (void *)mtd;
 
@@ -571,6 +560,7 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 	new->priv = cdev->priv;
 	new->size = size;
 	new->offset = cdev->offset + offset;
+	new->flags = inherited_flags;
 
 	new->dev = cdev->dev;
 	new->master = cdev;

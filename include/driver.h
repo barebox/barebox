@@ -561,6 +561,19 @@ extern struct list_head cdev_list;
 #define DEVFS_PARTITION_BOOTABLE_LEGACY	(1U << 11)
 #define DEVFS_PARTITION_BOOTABLE_ESP	(1U << 12)
 #define DEVFS_PARTITION_FOR_FIXUP	(1U << 13)
+#define DEVFS_WRITE_AUTOERASE		(1U << 14)
+
+/**
+ * cdev_write_requires_erase - Check whether writes must be done to erased blocks
+ * @cdev: pointer to cdev structure
+ *
+ * This function checks if the erase operation is required, so a subsequent
+ * write operation can write all bits.
+ */
+static inline bool cdev_write_requires_erase(const struct cdev *cdev)
+{
+	return !(cdev->flags & DEVFS_WRITE_AUTOERASE);
+}
 
 static inline bool cdev_is_mbr_partitioned(const struct cdev *master)
 {

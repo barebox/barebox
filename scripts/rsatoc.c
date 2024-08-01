@@ -289,12 +289,6 @@ static int rsa_engine_init(ENGINE **pe)
 		}
 	}
 
-	if (!ENGINE_set_default_RSA(e)) {
-		fprintf(stderr, "Couldn't set engine as default for RSA\n");
-		ret = -1;
-		goto err_set_rsa;
-	}
-
 	*pe = e;
 
 	return 0;

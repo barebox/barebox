@@ -14,6 +14,7 @@ targets:
       BareboxTestStrategy: {}
     features:
       - virtio-mmio
+      - network
     runner:
       tuxmake_arch: arm64
 images:

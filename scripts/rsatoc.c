@@ -89,19 +89,68 @@ err_cert:
 	return ret;
 }
 
+static int engine_init(ENGINE **pe)
+{
+	ENGINE *e;
+	int ret;
+	const char *key_pass = getenv("KBUILD_SIGN_PIN");
+
+	ENGINE_load_builtin_engines();
+
+	e = ENGINE_by_id("pkcs11");
+	if (!e) {
+		fprintf(stderr, "Engine isn't available\n");
+		ret = -1;
+		goto err_engine_by_id;
+	}
+
+	if (!ENGINE_init(e)) {
+		fprintf(stderr, "Couldn't initialize engine\n");
+		ret = -1;
+		goto err_engine_init;
+	}
+
+	if (key_pass) {
+		if (!ENGINE_ctrl_cmd_string(e, "PIN", key_pass, 0)) {
+			fprintf(stderr, "Cannot set PKCS#11 PIN\n");
+			goto err_set_rsa;
+		}
+	}
+
+	*pe = e;
+
+	return 0;
+
+err_set_rsa:
+	ENGINE_finish(e);
+err_engine_init:
+	ENGINE_free(e);
+err_engine_by_id:
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || \
+	(defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x02070000fL)
+	ENGINE_cleanup();
+#endif
+	return ret;
+}
+
 /**
  * engine_get_pub_key() - read a public key from given engine
  *
  * @keydir:	Key prefix
  * @name	Name of key
- * @engine	Engine to use
  * @key		Returns key object, or NULL on failure
  * @return 0 if ok, -ve on error (in which case *rsap will be set to NULL)
  */
-static int engine_get_pub_key(const char *key_id,
-				  ENGINE *engine, EVP_PKEY **key)
+static int engine_get_pub_key(const char *key_id, EVP_PKEY **key)
 {
-	*key = ENGINE_load_public_key(engine, key_id, NULL, NULL);
+	ENGINE *e;
+	int ret;
+
+	ret = engine_init(&e);
+	if (ret)
+		return ret;
+
+	*key = ENGINE_load_public_key(e, key_id, NULL, NULL);
 	if (!*key)
 		return openssl_error("Failure loading public key from engine");
 
@@ -238,50 +287,6 @@ static int rsa_get_params(EVP_PKEY *key, uint64_t *exponent, uint32_t *n0_invp,
 	return ret;
 }
 
-static int rsa_engine_init(ENGINE **pe)
-{
-	ENGINE *e;
-	int ret;
-	const char *key_pass = getenv("KBUILD_SIGN_PIN");
-
-	ENGINE_load_builtin_engines();
-
-	e = ENGINE_by_id("pkcs11");
-	if (!e) {
-		fprintf(stderr, "Engine isn't available\n");
-		ret = -1;
-		goto err_engine_by_id;
-	}
-
-	if (!ENGINE_init(e)) {
-		fprintf(stderr, "Couldn't initialize engine\n");
-		ret = -1;
-		goto err_engine_init;
-	}
-
-	if (key_pass) {
-		if (!ENGINE_ctrl_cmd_string(e, "PIN", key_pass, 0)) {
-			fprintf(stderr, "Cannot set PKCS#11 PIN\n");
-			goto err_set_rsa;
-		}
-	}
-
-	*pe = e;
-
-	return 0;
-
-err_set_rsa:
-	ENGINE_finish(e);
-err_engine_init:
-	ENGINE_free(e);
-err_engine_by_id:
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || \
-	(defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x02070000fL)
-	ENGINE_cleanup();
-#endif
-	return ret;
-}
-
 static FILE *outfilep;
 
 static int print_bignum(BIGNUM *num, int num_bits)
@@ -362,7 +367,6 @@ static int gen_key(const char *keyname, const char *path)
 	int ret;
 	int bits;
 	EVP_PKEY *key;
-	ENGINE *e = NULL;
 	char *tmp, *key_name_c;
 
 	tmp = key_name_c = strdup(keyname);
@@ -384,10 +388,7 @@ static int gen_key(const char *keyname, const char *path)
 	}
 
 	if (!strncmp(path, "pkcs11:", 7)) {
-		ret = rsa_engine_init(&e);
-		if (ret)
-			exit(1);
-		ret = engine_get_pub_key(path, e, &key);
+		ret = engine_get_pub_key(path, &key);
 		if (ret)
 			exit(1);
 	} else {

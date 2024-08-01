@@ -18,6 +18,7 @@
 #include <openssl/ssl.h>
 #include <openssl/evp.h>
 #include <openssl/engine.h>
+#include <openssl/core_names.h>
 
 static int dts, standalone;
 
@@ -160,16 +161,17 @@ static int engine_get_pub_key(const char *key_id, EVP_PKEY **key)
 /*
  * rsa_get_exponent(): - Get the public exponent from an RSA key
  */
-static int rsa_get_exponent(RSA *key, uint64_t *e)
+static int rsa_get_exponent(EVP_PKEY *key, uint64_t *e)
 {
 	int ret;
 	BIGNUM *bn_te = NULL;
-	const BIGNUM *key_e;
+	BIGNUM *key_e = NULL;
 	uint64_t te;
 
-	bn_te = NULL;
+	ret = EVP_PKEY_get_bn_param(key, OSSL_PKEY_PARAM_RSA_E, &key_e);
+	if (!ret)
+		return -EINVAL;
 
-	RSA_get0_key(key, NULL, &key_e, NULL);
 	if (BN_num_bits(key_e) > 64) {
 		ret = -EINVAL;
 		goto cleanup;
@@ -206,6 +208,7 @@ static int rsa_get_exponent(RSA *key, uint64_t *e)
 cleanup:
 	if (bn_te)
 		BN_free(bn_te);
+	BN_free(key_e);
 
 	return ret;
 }
@@ -216,19 +219,11 @@ cleanup:
 static int rsa_get_params(EVP_PKEY *key, uint64_t *exponent, uint32_t *n0_invp,
 			  BIGNUM **modulusp, BIGNUM **r_squaredp)
 {
-	RSA *rsa;
 	BIGNUM *big1, *big2, *big32, *big2_32;
 	BIGNUM *n, *r, *r_squared, *tmp;
-	const BIGNUM *key_n;
+	BIGNUM *key_n = NULL;
 	BN_CTX *bn_ctx = BN_CTX_new();
 	int ret;
-
-	/* Convert to a RSA_style key. */
-	rsa = EVP_PKEY_get1_RSA(key);
-	if (!rsa) {
-		openssl_error("Couldn't convert to a RSA style key");
-		return -EINVAL;
-	}
 
 	/* Initialize BIGNUMs */
 	big1 = BN_new();
@@ -245,11 +240,14 @@ static int rsa_get_params(EVP_PKEY *key, uint64_t *exponent, uint32_t *n0_invp,
 		return -ENOMEM;
 	}
 
-	ret = rsa_get_exponent(rsa, exponent);
+	ret = rsa_get_exponent(key, exponent);
 	if (ret)
 		goto cleanup;
 
-	RSA_get0_key(rsa, &key_n, NULL, NULL);
+	ret = EVP_PKEY_get_bn_param(key, OSSL_PKEY_PARAM_RSA_N, &key_n);
+	if (!ret)
+		return -EINVAL;
+
 	if (!BN_copy(n, key_n) || !BN_set_word(big1, 1L) ||
 	    !BN_set_word(big2, 2L) || !BN_set_word(big32, 32L)) {
 		ret = -EINVAL;

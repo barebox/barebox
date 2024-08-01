@@ -5,6 +5,6 @@
 
 #include "arm/marvell/kirkwood-guruplug-server-plus.dts"
 
-&{/gpio-leds/health-r} {
+&{/gpio-leds/led-health-r} {
 	barebox,default-trigger = "heartbeat";
 };

@@ -125,9 +125,9 @@ $(patsubst %.gen.o,$(obj)/%.gen.o, $(obj-pbl-y)): $(obj)/%.gen.o: $(fwdep-requir
 pbl-y += $(pbl-fwext-y)
 
 targets := $(patsubst $(obj)/%,%, \
-                                $(shell find $(obj) -name \*.gen.S 2>/dev/null))
+	                        $(shell find $(obj) -name \*.gen.S 2>/dev/null))
 targets += $(patsubst $(obj)/%,%, \
-                                $(shell find $(obj) -name \*.extgen.S 2>/dev/null))
+	                        $(shell find $(obj) -name \*.extgen.S 2>/dev/null))
 
 # just to build a built-in.o. Otherwise compilation fails when no
 # firmware is built.

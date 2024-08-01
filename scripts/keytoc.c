@@ -59,7 +59,7 @@ static int pem_get_pub_key(const char *path, EVP_PKEY **pkey)
 	*pkey = NULL;
 	f = fopen(path, "r");
 	if (!f) {
-		fprintf(stderr, "Couldn't open certificate: '%s': %s\n",
+		fprintf(stderr, "Couldn't open certificate '%s': %s\n",
 			path, strerror(errno));
 		return -EACCES;
 	}
@@ -67,10 +67,11 @@ static int pem_get_pub_key(const char *path, EVP_PKEY **pkey)
 	/* Read the certificate */
 	cert = NULL;
 	if (!PEM_read_X509(f, &cert, NULL, NULL)) {
+		/* Can't open certificate, maybe it's a pubkey */
 		rewind(f);
 		key = PEM_read_PUBKEY(f, NULL, NULL, NULL);
 		if (!key) {
-			openssl_error("Couldn't read certificate");
+			openssl_error("Couldn't read certificate/pubkey %s\n", path);
 			ret = -EINVAL;
 			goto err_cert;
 		}
@@ -78,7 +79,7 @@ static int pem_get_pub_key(const char *path, EVP_PKEY **pkey)
 		/* Get the public key from the certificate. */
 		key = X509_get_pubkey(cert);
 		if (!key) {
-			openssl_error("Couldn't read public key\n");
+			openssl_error("Couldn't read public key from certificate\n");
 			ret = -EINVAL;
 			goto err_pubkey;
 		}

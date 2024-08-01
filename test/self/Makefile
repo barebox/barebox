@@ -22,7 +22,7 @@ obj-$(CONFIG_SELFTEST_IDR) += idr.o
 ifdef REGENERATE_RSATOC
 
 $(obj)/jwt_test.pem.c_shipped: $(src)/jwt_test.pem FORCE
-	$(call if_changed,rsa_keys,$(basename $(target-stem)):$<,-s)
+	$(call if_changed,public_keys,$(basename $(target-stem)):$<,-s)
 
 endif
 

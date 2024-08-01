@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later WITH LicenseRef-OpenSSL-exception
 /*
- * rsatoc - utility to convert an RSA key to a C struct
+ * keytoc - utility to convert a public key to a C struct
  *
- * This tool converts an RSA key given as file or PKCS#11
+ * This tool converts an public key given as file or PKCS#11
  * URI to a C struct suitable to compile with barebox.
  */
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

@@ -163,15 +163,12 @@ static int engine_get_pub_key(const char *key_id, EVP_PKEY **key)
 static int rsa_get_exponent(RSA *key, uint64_t *e)
 {
 	int ret;
-	BIGNUM *bn_te;
+	BIGNUM *bn_te = NULL;
 	const BIGNUM *key_e;
 	uint64_t te;
 
 	ret = -EINVAL;
 	bn_te = NULL;
-
-	if (!e)
-		goto cleanup;
 
 	RSA_get0_key(key, NULL, &key_e, NULL);
 	if (BN_num_bits(key_e) > 64)

@@ -27,11 +27,14 @@
 
 static int dts, standalone;
 
-static int openssl_error(const char *msg)
+static int openssl_error(const char *fmt, ...)
 {
+	va_list va;
 	unsigned long sslErr = ERR_get_error();
 
-	fprintf(stderr, "%s", msg);
+	va_start(va, fmt);
+	vfprintf(stderr, fmt, va);
+	va_end(va);
 	fprintf(stderr, ": %s\n",
 		ERR_error_string(sslErr, 0));
 

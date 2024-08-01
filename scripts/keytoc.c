@@ -4,6 +4,9 @@
  *
  * This tool converts an public key given as file or PKCS#11
  * URI to a C struct suitable to compile with barebox.
+ *
+ * TODO: Find a better way for reimport_key()
+ *
  */
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <stdio.h>
@@ -19,6 +22,8 @@
 #include <openssl/evp.h>
 #include <openssl/engine.h>
 #include <openssl/core_names.h>
+#include <openssl/param_build.h>
+#include <openssl/store.h>
 
 static int dts, standalone;
 
@@ -376,43 +381,130 @@ static int print_bignum(BIGNUM *num, int num_bits)
 	return 0;
 }
 
-static int gen_key(const char *keyname, const char *path)
+/*
+ * When imported from a HSM the key doesn't have the EC point parameters,
+ * only the pubkey itself exists. Exporting the pubkey and creating a new
+ * pkey from it resolves this. This can likely (hopefully) be improved, but
+ * I don't have an idea how.
+ */
+static EVP_PKEY *reimport_key(EVP_PKEY *pkey)
+{
+	char group[128] = {};
+	size_t outlen;
+	OSSL_PARAM *params;
+	OSSL_PARAM_BLD *param_bld = NULL;
+	unsigned char pub[128] = {};
+	size_t len;
+	EVP_PKEY *pkey_out = NULL;
+	EVP_PKEY_CTX *pkey_ctx;
+	int ret;
+
+	ret = EVP_PKEY_get_utf8_string_param(pkey, "group", group, sizeof(group), &outlen);
+	if (!ret)
+		return NULL;
+
+	ret = EVP_PKEY_get_octet_string_param(pkey, OSSL_PKEY_PARAM_PUB_KEY,
+					      pub, sizeof(pub), &len);
+	if (ret <= 0)
+		return NULL;
+
+	param_bld = OSSL_PARAM_BLD_new();
+	if (!param_bld)
+		return NULL;
+
+	ret = OSSL_PARAM_BLD_push_utf8_string(param_bld, "group", group, 0);
+	if (ret <= 0)
+		return NULL;
+
+	ret = OSSL_PARAM_BLD_push_octet_string(param_bld, "pub", pub, len);
+	if (ret <= 0)
+		return NULL;
+
+	params = OSSL_PARAM_BLD_to_param(param_bld);
+	if (!params)
+		return NULL;
+
+	pkey_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+	if (!pkey_ctx)
+		return NULL;
+
+	ret = EVP_PKEY_fromdata_init(pkey_ctx);
+	if (ret <= 0)
+		return NULL;
+
+	ret = EVP_PKEY_fromdata(pkey_ctx, &pkey_out, EVP_PKEY_PUBLIC_KEY, params);
+	if (ret <= 0)
+		return NULL;
+
+	return pkey_out;
+}
+
+static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_name_c)
+{
+	char group[128];
+	size_t outlen;
+	int ret, bits;
+	BIGNUM *key_x = NULL, *key_y = NULL;
+
+	key = reimport_key(key);
+	if (!key)
+		return -EINVAL;
+
+	ret = EVP_PKEY_get_int_param(key, "bits", &bits);
+	if (!ret)
+		return -EINVAL;
+	ret = EVP_PKEY_get_utf8_string_param(key, "group", group, sizeof(group), &outlen);
+	if (!ret)
+		return -EINVAL;
+
+	ret = EVP_PKEY_get_bn_param(key, OSSL_PKEY_PARAM_EC_PUB_X, &key_x);
+	if (!ret)
+		return -EINVAL;
+
+	ret = EVP_PKEY_get_bn_param(key, OSSL_PKEY_PARAM_EC_PUB_Y, &key_y);
+	if (!ret)
+		return -EINVAL;
+
+	if (dts) {
+		fprintf(outfilep, "\t\tkey-%s {\n", key_name_c);
+		fprintf(outfilep, "\t\t\tecdsa,x-point = <");
+		print_bignum(key_x, bits);
+		fprintf(outfilep, ">;\n");
+		fprintf(outfilep, "\t\t\tecdsa,y-point = <");
+		print_bignum(key_y, bits);
+		fprintf(outfilep, ">;\n");
+		fprintf(outfilep, "\t\t\tecdsa,curve = \"%s\";\n", group);
+		fprintf(outfilep, "\t\t};\n");
+	} else {
+		fprintf(outfilep, "\nstatic uint32_t %s_x[] = {", key_name_c);
+		print_bignum(key_x, bits);
+		fprintf(outfilep, "\n};\n\n");
+
+		fprintf(outfilep, "static uint32_t %s_y[] = {", key_name_c);
+		print_bignum(key_y, bits);
+		fprintf(outfilep, "\n};\n\n");
+
+		fprintf(outfilep, "static struct ecdsa_public_key %s = {\n", key_name_c);
+
+		fprintf(outfilep, "\t.curve_name = \"%s\",\n", group);
+		fprintf(outfilep, "\t.x = %s_x,\n", key_name_c);
+		fprintf(outfilep, "\t.y = %s_y,\n", key_name_c);
+		fprintf(outfilep, "};\n");
+		if (!standalone)
+			fprintf(outfilep, "\nstruct ecdsa_public_key *%s_ecdsa_p __attribute__((section(\".ecdsa_keys.rodata.%s\"))) = &%s;\n",
+				key_name_c, key_name_c, key_name_c);
+	}
+
+	return 0;
+}
+
+static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name_c)
 {
 	BIGNUM *modulus, *r_squared;
 	uint64_t exponent = 0;
 	uint32_t n0_inv;
-	int ret;
 	int bits;
-	EVP_PKEY *key;
-	char *tmp, *key_name_c;
-
-	tmp = key_name_c = strdup(keyname);
-
-	while (*tmp) {
-		if (*tmp == '-')
-			*tmp = '_';
-		tmp++;
-	}
-
-	if (!strncmp(path, "__ENV__", 7)) {
-		const char *var = getenv(path + 7);
-		if (!var) {
-			fprintf(stderr,
-				"environment variable \"%s\" is empty\n", path + 7);
-			exit(1);
-		}
-		path = var;
-	}
-
-	if (!strncmp(path, "pkcs11:", 7)) {
-		ret = engine_get_pub_key(path, &key);
-		if (ret)
-			exit(1);
-	} else {
-		ret = pem_get_pub_key(path, &key);
-		if (ret)
-			exit(1);
-	}
+	int ret;
 
 	ret = rsa_get_params(key, &exponent, &n0_inv, &modulus, &r_squared);
 	if (ret)
@@ -456,13 +548,54 @@ static int gen_key(const char *keyname, const char *path)
 		fprintf(outfilep, "\t.modulus = %s_modulus,\n", key_name_c);
 		fprintf(outfilep, "\t.rr = %s_rr,\n", key_name_c);
 		fprintf(outfilep, "\t.exponent = 0x%0lx,\n", exponent);
-		fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", keyname);
+		fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
 		fprintf(outfilep, "};\n");
 
 		if (!standalone)
 			fprintf(outfilep, "\nstruct rsa_public_key *%sp __attribute__((section(\".rsa_keys.rodata.%s\"))) = &%s;\n",
 				key_name_c, key_name_c, key_name_c);
 	}
+
+	return 0;
+}
+
+static int gen_key(const char *keyname, const char *path)
+{
+	int ret;
+	EVP_PKEY *key;
+	char *tmp, *key_name_c;
+
+	tmp = key_name_c = strdup(keyname);
+
+	while (*tmp) {
+		if (*tmp == '-')
+			*tmp = '_';
+		tmp++;
+	}
+
+	if (!strncmp(path, "__ENV__", 7)) {
+		const char *var = getenv(path + 7);
+		if (!var) {
+			fprintf(stderr,
+				"environment variable \"%s\" is empty\n", path + 7);
+			exit(1);
+		}
+		path = var;
+	}
+
+	if (!strncmp(path, "pkcs11:", 7)) {
+		ret = engine_get_pub_key(path, &key);
+		if (ret)
+			exit(1);
+	} else {
+		ret = pem_get_pub_key(path, &key);
+		if (ret)
+			exit(1);
+	}
+
+	ret = gen_key_ecdsa(key, keyname, key_name_c);
+	if (ret)
+		ret = gen_key_rsa(key, keyname, key_name_c);
 
 	return 0;
 }
@@ -514,6 +647,7 @@ int main(int argc, char *argv[])
 		else
 			fprintf(outfilep, "\tsignature {\n");
 	} else if (standalone) {
+		fprintf(outfilep, "#include <ecdsa.h>\n");
 		fprintf(outfilep, "#include <rsa.h>\n");
 	}
 

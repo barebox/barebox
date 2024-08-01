@@ -21,7 +21,7 @@
 
 static int dts, standalone;
 
-static int rsa_err(const char *msg)
+static int openssl_error(const char *msg)
 {
 	unsigned long sslErr = ERR_get_error();
 
@@ -61,7 +61,7 @@ static int pem_get_pub_key(const char *path, EVP_PKEY **pkey)
 		rewind(f);
 		key = PEM_read_PUBKEY(f, NULL, NULL, NULL);
 		if (!key) {
-			rsa_err("Couldn't read certificate");
+			openssl_error("Couldn't read certificate");
 			ret = -EINVAL;
 			goto err_cert;
 		}
@@ -69,7 +69,7 @@ static int pem_get_pub_key(const char *path, EVP_PKEY **pkey)
 		/* Get the public key from the certificate. */
 		key = X509_get_pubkey(cert);
 		if (!key) {
-			rsa_err("Couldn't read public key\n");
+			openssl_error("Couldn't read public key\n");
 			ret = -EINVAL;
 			goto err_pubkey;
 		}
@@ -103,7 +103,7 @@ static int engine_get_pub_key(const char *key_id,
 {
 	*key = ENGINE_load_public_key(engine, key_id, NULL, NULL);
 	if (!*key)
-		return rsa_err("Failure loading public key from engine");
+		return openssl_error("Failure loading public key from engine");
 
 	return 0;
 }
@@ -173,7 +173,7 @@ static int rsa_get_params(EVP_PKEY *key, uint64_t *exponent, uint32_t *n0_invp,
 	/* Convert to a RSA_style key. */
 	rsa = EVP_PKEY_get1_RSA(key);
 	if (!rsa) {
-		rsa_err("Couldn't convert to a RSA style key");
+		openssl_error("Couldn't convert to a RSA style key");
 		return -EINVAL;
 	}
 

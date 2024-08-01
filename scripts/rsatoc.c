@@ -167,12 +167,13 @@ static int rsa_get_exponent(RSA *key, uint64_t *e)
 	const BIGNUM *key_e;
 	uint64_t te;
 
-	ret = -EINVAL;
 	bn_te = NULL;
 
 	RSA_get0_key(key, NULL, &key_e, NULL);
-	if (BN_num_bits(key_e) > 64)
+	if (BN_num_bits(key_e) > 64) {
+		ret = -EINVAL;
 		goto cleanup;
+	}
 
 	*e = BN_get_word(key_e);
 
@@ -182,14 +183,20 @@ static int rsa_get_exponent(RSA *key, uint64_t *e)
 	}
 
 	bn_te = BN_dup(key_e);
-	if (!bn_te)
+	if (!bn_te) {
+		ret = -EINVAL;
 		goto cleanup;
+	}
 
-	if (!BN_rshift(bn_te, bn_te, 32))
+	if (!BN_rshift(bn_te, bn_te, 32)) {
+		ret = -EINVAL;
 		goto cleanup;
+	}
 
-	if (!BN_mask_bits(bn_te, 32))
+	if (!BN_mask_bits(bn_te, 32)) {
+		ret = -EINVAL;
 		goto cleanup;
+	}
 
 	te = BN_get_word(bn_te);
 	te <<= 32;
@@ -214,7 +221,7 @@ static int rsa_get_params(EVP_PKEY *key, uint64_t *exponent, uint32_t *n0_invp,
 	BIGNUM *n, *r, *r_squared, *tmp;
 	const BIGNUM *key_n;
 	BN_CTX *bn_ctx = BN_CTX_new();
-	int ret = 0;
+	int ret;
 
 	/* Convert to a RSA_style key. */
 	rsa = EVP_PKEY_get1_RSA(key);
@@ -238,38 +245,53 @@ static int rsa_get_params(EVP_PKEY *key, uint64_t *exponent, uint32_t *n0_invp,
 		return -ENOMEM;
 	}
 
-	if (0 != rsa_get_exponent(rsa, exponent))
-		ret = -1;
+	ret = rsa_get_exponent(rsa, exponent);
+	if (ret)
+		goto cleanup;
 
 	RSA_get0_key(rsa, &key_n, NULL, NULL);
 	if (!BN_copy(n, key_n) || !BN_set_word(big1, 1L) ||
-	    !BN_set_word(big2, 2L) || !BN_set_word(big32, 32L))
-		ret = -1;
+	    !BN_set_word(big2, 2L) || !BN_set_word(big32, 32L)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
 
 	/* big2_32 = 2^32 */
-	if (!BN_exp(big2_32, big2, big32, bn_ctx))
-		ret = -1;
+	if (!BN_exp(big2_32, big2, big32, bn_ctx)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
 
 	/* Calculate n0_inv = -1 / n[0] mod 2^32 */
 	if (!BN_mod_inverse(tmp, n, big2_32, bn_ctx) ||
-	    !BN_sub(tmp, big2_32, tmp))
-		ret = -1;
+	    !BN_sub(tmp, big2_32, tmp)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
+
 	*n0_invp = BN_get_word(tmp);
 
 	/* Calculate R = 2^(# of key bits) */
 	if (!BN_set_word(tmp, BN_num_bits(n)) ||
-	    !BN_exp(r, big2, tmp, bn_ctx))
-		ret = -1;
+	    !BN_exp(r, big2, tmp, bn_ctx)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
 
 	/* Calculate r_squared = R^2 mod n */
 	if (!BN_copy(r_squared, r) ||
 	    !BN_mul(tmp, r_squared, r, bn_ctx) ||
-	    !BN_mod(r_squared, tmp, n, bn_ctx))
-		ret = -1;
+	    !BN_mod(r_squared, tmp, n, bn_ctx)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
 
 	*modulusp = n;
 	*r_squaredp = r_squared;
 
+	ret = 0;
+
+cleanup:
 	BN_free(big1);
 	BN_free(big2);
 	BN_free(big32);

@@ -33,25 +33,24 @@ static int rsa_err(const char *msg)
 }
 
 /**
- * rsa_pem_get_pub_key() - read a public key from a .crt file
+ * pem_get_pub_key() - read a public key from a .crt file
  *
  * @keydir:	Directory containins the key
  * @name	Name of key file (will have a .crt extension)
- * @rsap	Returns RSA object, or NULL on failure
+ * @key		Returns key object, or NULL on failure
  * @return 0 if ok, -ve on error (in which case *rsap will be set to NULL)
  */
-static int rsa_pem_get_pub_key(const char *path, RSA **rsap)
+static int pem_get_pub_key(const char *path, EVP_PKEY **pkey)
 {
 	EVP_PKEY *key;
 	X509 *cert;
-	RSA *rsa;
 	FILE *f;
 	int ret;
 
-	*rsap = NULL;
+	*pkey = NULL;
 	f = fopen(path, "r");
 	if (!f) {
-		fprintf(stderr, "Couldn't open RSA certificate: '%s': %s\n",
+		fprintf(stderr, "Couldn't open certificate: '%s': %s\n",
 			path, strerror(errno));
 		return -EACCES;
 	}
@@ -76,22 +75,13 @@ static int rsa_pem_get_pub_key(const char *path, RSA **rsap)
 		}
 	}
 
-	/* Convert to a RSA_style key. */
-	rsa = EVP_PKEY_get1_RSA(key);
-	if (!rsa) {
-		rsa_err("Couldn't convert to a RSA style key");
-		ret = -EINVAL;
-		goto err_rsa;
-	}
 	fclose(f);
-	EVP_PKEY_free(key);
 	X509_free(cert);
-	*rsap = rsa;
+
+	*pkey = key;
 
 	return 0;
 
-err_rsa:
-	EVP_PKEY_free(key);
 err_pubkey:
 	X509_free(cert);
 err_cert:
@@ -100,43 +90,22 @@ err_cert:
 }
 
 /**
- * rsa_engine_get_pub_key() - read a public key from given engine
+ * engine_get_pub_key() - read a public key from given engine
  *
  * @keydir:	Key prefix
  * @name	Name of key
  * @engine	Engine to use
- * @rsap	Returns RSA object, or NULL on failure
+ * @key		Returns key object, or NULL on failure
  * @return 0 if ok, -ve on error (in which case *rsap will be set to NULL)
  */
-static int rsa_engine_get_pub_key(const char *key_id,
-				  ENGINE *engine, RSA **rsap)
+static int engine_get_pub_key(const char *key_id,
+				  ENGINE *engine, EVP_PKEY **key)
 {
-	EVP_PKEY *key;
-	RSA *rsa;
-	int ret;
-
-	*rsap = NULL;
-
-	key = ENGINE_load_public_key(engine, key_id, NULL, NULL);
-	if (!key)
+	*key = ENGINE_load_public_key(engine, key_id, NULL, NULL);
+	if (!*key)
 		return rsa_err("Failure loading public key from engine");
 
-	/* Convert to a RSA_style key. */
-	rsa = EVP_PKEY_get1_RSA(key);
-	if (!rsa) {
-		rsa_err("Couldn't convert to a RSA style key");
-		ret = -EINVAL;
-		goto err_rsa;
-	}
-
-	EVP_PKEY_free(key);
-	*rsap = rsa;
-
 	return 0;
-
-err_rsa:
-	EVP_PKEY_free(key);
-	return ret;
 }
 
 /*
@@ -191,14 +160,22 @@ cleanup:
 /*
  * rsa_get_params(): - Get the important parameters of an RSA public key
  */
-static int rsa_get_params(RSA *key, uint64_t *exponent, uint32_t *n0_invp,
+static int rsa_get_params(EVP_PKEY *key, uint64_t *exponent, uint32_t *n0_invp,
 			  BIGNUM **modulusp, BIGNUM **r_squaredp)
 {
+	RSA *rsa;
 	BIGNUM *big1, *big2, *big32, *big2_32;
 	BIGNUM *n, *r, *r_squared, *tmp;
 	const BIGNUM *key_n;
 	BN_CTX *bn_ctx = BN_CTX_new();
 	int ret = 0;
+
+	/* Convert to a RSA_style key. */
+	rsa = EVP_PKEY_get1_RSA(key);
+	if (!rsa) {
+		rsa_err("Couldn't convert to a RSA style key");
+		return -EINVAL;
+	}
 
 	/* Initialize BIGNUMs */
 	big1 = BN_new();
@@ -215,10 +192,10 @@ static int rsa_get_params(RSA *key, uint64_t *exponent, uint32_t *n0_invp,
 		return -ENOMEM;
 	}
 
-	if (0 != rsa_get_exponent(key, exponent))
+	if (0 != rsa_get_exponent(rsa, exponent))
 		ret = -1;
 
-	RSA_get0_key(key, &key_n, NULL, NULL);
+	RSA_get0_key(rsa, &key_n, NULL, NULL);
 	if (!BN_copy(n, key_n) || !BN_set_word(big1, 1L) ||
 	    !BN_set_word(big2, 2L) || !BN_set_word(big32, 32L))
 		ret = -1;
@@ -384,7 +361,7 @@ static int gen_key(const char *keyname, const char *path)
 	uint32_t n0_inv;
 	int ret;
 	int bits;
-	RSA *rsa;
+	EVP_PKEY *key;
 	ENGINE *e = NULL;
 	char *tmp, *key_name_c;
 
@@ -410,16 +387,16 @@ static int gen_key(const char *keyname, const char *path)
 		ret = rsa_engine_init(&e);
 		if (ret)
 			exit(1);
-		ret = rsa_engine_get_pub_key(path, e, &rsa);
+		ret = engine_get_pub_key(path, e, &key);
 		if (ret)
 			exit(1);
 	} else {
-		ret = rsa_pem_get_pub_key(path, &rsa);
+		ret = pem_get_pub_key(path, &key);
 		if (ret)
 			exit(1);
 	}
 
-	ret = rsa_get_params(rsa, &exponent, &n0_inv, &modulus, &r_squared);
+	ret = rsa_get_params(key, &exponent, &n0_inv, &modulus, &r_squared);
 	if (ret)
 		return ret;
 

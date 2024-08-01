@@ -17,4 +17,4 @@ config ARCH_HAS_CTRLC
 # by default.
 #
 config ARCH_DMA_DEFAULT_COHERENT
-        bool
+	bool

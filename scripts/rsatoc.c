@@ -470,7 +470,7 @@ static int gen_key(const char *keyname, const char *path)
 int main(int argc, char *argv[])
 {
 	char *path, *keyname;
-	int i, opt;
+	int i, opt, ret;
 	char *outfile = NULL;
 
 	outfilep = stdout;
@@ -541,7 +541,9 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		gen_key(keyname, path);
+		ret = gen_key(keyname, path);
+		if (ret)
+			exit(1);
 	}
 
 	if (dts) {

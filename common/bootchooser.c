@@ -388,6 +388,13 @@ struct bootchooser *bootchooser_get(void)
 		}
 	} else {
 		bc->state_prefix = xstrdup("nv.bootchooser");
+
+		/* NV is available as a fallback, but shouldn't be used in
+		 * production, because it's not power-fail safe.
+		 *
+		 * Thus warn the user about their configuration.
+		 */
+		pr_warn("using non-redundant NV instead of barebox-state\n");
 	}
 
 	INIT_LIST_HEAD(&bc->targets);

@@ -5,6 +5,7 @@
 #include <tee/optee.h>
 #include <linux/printk.h>
 #include <linux/errno.h>
+#include <linux/limits.h>
 
 static u64 optee_membase = U64_MAX;
 

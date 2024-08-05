@@ -903,7 +903,7 @@ static int xhci_submit_root(struct usb_device *udev, unsigned long pipe,
 		case USB_DT_CONFIG:
 			dev_dbg(&udev->dev, "USB_DT_CONFIG config\n");
 			srcptr = &descriptor.config;
-			srclen = 0x19;
+			srclen = 0x1f;
 			break;
 		case USB_DT_STRING:
 			dev_dbg(&udev->dev, "USB_DT_STRING config\n");

@@ -68,7 +68,7 @@ struct param_d *dev_add_param_enum(struct device *dev, const char *name,
 				   int (*set)(struct param_d *p, void *priv),
 				   int (*get)(struct param_d *p, void *priv),
 				   int *value, const char * const *names,
-				   int max, void *priv);
+				   int num_names, void *priv);
 
 struct param_d *dev_add_param_tristate(struct device *dev, const char *name,
 				       int (*set)(struct param_d *p, void *priv),
@@ -83,7 +83,7 @@ struct param_d *dev_add_param_bitmask(struct device *dev, const char *name,
 				      int (*set)(struct param_d *p, void *priv),
 				      int (*get)(struct param_d *p, void *priv),
 				      unsigned long *value,
-				      const char * const *names, int max,
+				      const char * const *names, int num_names,
 				      void *priv);
 
 struct param_d *dev_add_param_ip(struct device *dev, const char *name,
@@ -164,7 +164,7 @@ static inline struct param_d *dev_add_param_enum(struct device *dev,
 						 int (*get)(struct param_d *p, void *priv),
 						 int *value,
 						 const char * const *names,
-						 int max, void *priv)
+						 int num_names, void *priv)
 
 {
 	return NULL;
@@ -176,7 +176,7 @@ static inline struct param_d *dev_add_param_bitmask(struct device *dev,
 						    int (*get)(struct param_d *p, void *priv),
 						    unsigned long *value,
 						    const char * const *names,
-						    int max, void *priv)
+						    int num_names, void *priv)
 {
 	return NULL;
 }
@@ -350,20 +350,20 @@ static inline struct param_d *dev_add_param_enum_ro(struct device *dev,
 						    const char *name,
 						    int *value,
 						    const char * const *names,
-						    int max)
+						    int num_names)
 {
 	return dev_add_param_enum(dev, name, param_set_readonly, NULL,
-				  value, names, max, NULL);
+				  value, names, num_names, NULL);
 }
 
 static inline struct param_d *dev_add_param_bitmask_ro(struct device *dev,
 						       const char *name,
 						       unsigned long *value,
 						       const char * const *names,
-						       int max)
+						       int num_names)
 {
 	return dev_add_param_bitmask(dev, name, param_set_readonly, NULL,
-				     value, names, max, NULL);
+				     value, names, num_names, NULL);
 }
 
 /*

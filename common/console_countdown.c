@@ -13,8 +13,10 @@
 
 static bool console_countdown_timeout_abort;
 
-void console_countdown_abort(void)
+void console_countdown_abort(const char *reason)
 {
+	if (reason)
+		pr_info("\nCount down aborted by %s\n", reason);
 	console_countdown_timeout_abort = true;
 }
 

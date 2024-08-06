@@ -9,6 +9,6 @@
 #define CONSOLE_COUNTDOWN_EXTERN (1 << 5)
 
 int console_countdown(int timeout_s, unsigned flags, const char *keys, char *out_key);
-void console_countdown_abort(void);
+void console_countdown_abort(const char *reason);
 
 #endif /* __CONSOLE_COUNTDOWN_H */

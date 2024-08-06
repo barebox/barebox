@@ -1432,6 +1432,18 @@ void free(void *mem)
 		frontlink(p, sz, idx, bck, fwd);
 }
 
+size_t malloc_usable_size(void *mem)
+{
+	mchunkptr p;
+	size_t size;
+
+	if (!mem)
+		return 0;
+
+	p = mem2chunk(mem);
+	return chunksize(p);
+}
+
 /*
   Realloc algorithm:
 

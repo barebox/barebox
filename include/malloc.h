@@ -6,6 +6,7 @@
 #include <types.h>
 
 void *malloc(size_t) __alloc_size(1);
+size_t malloc_usable_size(void *);
 void free(void *);
 void *realloc(void *, size_t) __realloc_size(2);
 void *memalign(size_t, size_t) __alloc_size(2);

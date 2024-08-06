@@ -23,6 +23,7 @@ lds-y   := $(BOARD)/barebox.lds
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 KBUILD_CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
 		-Dmalloc_stats=barebox_malloc_stats -Dmemalign=barebox_memalign \
+		-Dmalloc_usable_size=barebox_malloc_usable_size \
 		-Dfree=barebox_free -Drealloc=barebox_realloc \
 		-Dread=barebox_read -Dwrite=barebox_write \
 		-Dopen=barebox_open -Dclose=barebox_close \

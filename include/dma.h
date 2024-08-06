@@ -41,6 +41,11 @@ static inline void dma_free(void *mem)
 	free(mem);
 }
 
+static inline void dma_free_sensitive(void *mem)
+{
+	free_sensitive(mem);
+}
+
 #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
 
 #define DMA_MASK_NONE	0x0ULL

@@ -62,6 +62,11 @@ static inline void kfree(const void *mem)
 	dma_free((void *)mem);
 }
 
+static inline void kfree_sensitive(const void *objp)
+{
+	dma_free_sensitive((void *)objp);
+}
+
 static inline void *kmem_cache_alloc(struct kmem_cache *cache, gfp_t flags)
 {
 	void *mem = kmalloc(cache->size, flags);

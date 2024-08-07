@@ -202,7 +202,7 @@ static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node,
 	list_for_each_entry_from(data, &node->data, list) {
 		if (data->ofs + data->size > pos) {
 			*ofs = pos - data->ofs;
-			*len = data->ofs + data->size - pos;
+			*len = data->size - *ofs;
 
 			node->current_chunk = data;
 

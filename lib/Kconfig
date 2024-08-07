@@ -45,22 +45,22 @@ config XZ_DECOMPRESS
 	select XZ_DEC_ARM64
 
 config XZ_DEC_X86
-        bool
+	bool
 
 config XZ_DEC_POWERPC
-        bool
+	bool
 
 config XZ_DEC_IA64
-        bool
+	bool
 
 config XZ_DEC_ARM
-        bool
+	bool
 
 config XZ_DEC_ARMTHUMB
-        bool
+	bool
 
 config XZ_DEC_SPARC
-        bool
+	bool
 
 config XZ_DEC_ARM64
 	bool
@@ -152,7 +152,7 @@ config CRC_CCITT
 	  functions require M here.
 
 config CRC8
-        bool "CRC8 function"
+	bool "CRC8 function"
 	help
 	  This option provides CRC8 function. Drivers may select this
 	  when they need to do cyclic redundancy check according CRC8
@@ -204,7 +204,7 @@ config GENERIC_LIB_MULDI3
 	bool
 
 config NLS
-        bool "Native language support"
+	bool "Native language support"
 
 config BLOBGEN
 	select BASE64

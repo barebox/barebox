@@ -64,9 +64,24 @@ static inline void puts_ll(const char * str)
 	}
 }
 
+static inline void putws_ll(const unsigned short * wstr)
+{
+	while (*wstr) {
+		if (*wstr == L'\n')
+			putc_ll('\r');
+
+		putc_ll(*wstr);
+		wstr++;
+	}
+}
+
 #else
 
 static inline void putc_ll(char value)
+{
+}
+
+static inline void putws_ll(const unsigned short * wstr)
 {
 }
 

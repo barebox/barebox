@@ -76,12 +76,12 @@ void show_regs(struct pt_regs *regs)
 {
 	int i;
 
-	printf("elr: %016lx lr : %016lx\n", regs->elr, regs->regs[30]);
+	eprintf("elr: %016lx lr : %016lx\n", regs->elr, regs->regs[30]);
 
 	for (i = 0; i < 29; i += 2)
-		printf("x%-2d: %016lx x%-2d: %016lx\n",
+		eprintf("x%-2d: %016lx x%-2d: %016lx\n",
 			i, regs->regs[i], i + 1, regs->regs[i + 1]);
-	printf("\n");
+	eprintf("\n");
 }
 
 static void __noreturn do_exception(struct pt_regs *pt_regs)
@@ -101,7 +101,7 @@ static void __noreturn do_exception(struct pt_regs *pt_regs)
  */
 void do_fiq(struct pt_regs *pt_regs)
 {
-	printf ("fast interrupt request\n");
+	eprintf("fast interrupt request\n");
 	do_exception(pt_regs);
 }
 
@@ -113,31 +113,31 @@ void do_fiq(struct pt_regs *pt_regs)
  */
 void do_irq(struct pt_regs *pt_regs)
 {
-	printf ("interrupt request\n");
+	eprintf("interrupt request\n");
 	do_exception(pt_regs);
 }
 
 void do_bad_sync(struct pt_regs *pt_regs)
 {
-	printf("bad sync\n");
+	eprintf("bad sync\n");
 	do_exception(pt_regs);
 }
 
 void do_bad_irq(struct pt_regs *pt_regs)
 {
-	printf("bad irq\n");
+	eprintf("bad irq\n");
 	do_exception(pt_regs);
 }
 
 void do_bad_fiq(struct pt_regs *pt_regs)
 {
-	printf("bad fiq\n");
+	eprintf("bad fiq\n");
 	do_exception(pt_regs);
 }
 
 void do_bad_error(struct pt_regs *pt_regs)
 {
-	printf("bad error\n");
+	eprintf("bad error\n");
 	do_exception(pt_regs);
 }
 
@@ -174,15 +174,15 @@ void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 		extra = data_abort_reason(far);
 	}
 
-	printf("%s%s exception (ESR 0x%08x) at 0x%016lx\n", extra ?: "",
-	       esr_get_class_string(esr), esr, far);
+	eprintf("%s%s exception (ESR 0x%08x) at 0x%016lx\n", extra ?: "",
+		esr_get_class_string(esr), esr, far);
 	do_exception(pt_regs);
 }
 
 
 void do_error(struct pt_regs *pt_regs)
 {
-	printf("error exception\n");
+	eprintf("error exception\n");
 	do_exception(pt_regs);
 }
 

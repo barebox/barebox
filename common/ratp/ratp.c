@@ -501,7 +501,7 @@ int barebox_ratp(struct console_device *cdev)
 
 	ctx->poller_registered = true;
 
-	console_countdown_abort();
+	console_countdown_abort("RATP");
 
 	console_set_active(&ctx->ratp_console, CONSOLE_STDOUT | CONSOLE_STDERR |
 			CONSOLE_STDIN);

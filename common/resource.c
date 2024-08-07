@@ -13,6 +13,12 @@
 #include <linux/resource_ext.h>
 #include <asm/io.h>
 
+#ifdef CONFIG_DEBUG_RESOURCES
+#define res_dbg(args...)	pr_info(args)
+#else
+#define res_dbg(args...)	pr_debug(args)
+#endif
+
 static int init_resource(struct resource *res, const char *name)
 {
 	INIT_LIST_HEAD(&res->children);
@@ -35,8 +41,7 @@ struct resource *__request_region(struct resource *parent,
 	struct resource *r, *new;
 
 	if (end < start) {
-		debug("%s: request region 0x%08llx:0x%08llx: end < start\n",
-				__func__,
+		res_dbg("request region(0x%08llx:0x%08llx): end < start\n",
 				(unsigned long long)start,
 				(unsigned long long)end);
 		return ERR_PTR(-EINVAL);
@@ -44,8 +49,7 @@ struct resource *__request_region(struct resource *parent,
 
 	/* outside parent resource? */
 	if (start < parent->start || end > parent->end) {
-		debug("%s: 0x%08llx:0x%08llx outside parent resource 0x%08llx:0x%08llx\n",
-				__func__,
+		res_dbg("request region(0x%08llx:0x%08llx): outside parent resource 0x%08llx:0x%08llx\n",
 				(unsigned long long)start,
 				(unsigned long long)end,
 				(unsigned long long)parent->start,
@@ -62,8 +66,7 @@ struct resource *__request_region(struct resource *parent,
 			goto ok;
 		if (start > r->end)
 			continue;
-		debug("%s: 0x%08llx:0x%08llx (%s) conflicts with 0x%08llx:0x%08llx (%s)\n",
-				__func__,
+		res_dbg("request region(0x%08llx:0x%08llx): %s conflicts with 0x%08llx:0x%08llx (%s)\n",
 				(unsigned long long)start,
 				(unsigned long long)end,
 				name,
@@ -74,7 +77,7 @@ struct resource *__request_region(struct resource *parent,
 	}
 
 ok:
-	debug("%s ok: 0x%08llx:0x%08llx flags=0x%x\n", __func__,
+	res_dbg("request region(0x%08llx:0x%08llx): success flags=0x%x\n",
 			(unsigned long long)start,
 			(unsigned long long)end, flags);
 

@@ -236,5 +236,5 @@ clean-files := *.pbl *.pblb *.elf *.map start_*.imximg *.img barebox.z start_*.k
 	start_*.kwbuartimg *.socfpgaimg *.mlo *.t20img *.t20img.cfg *.t30img \
 	*.t30img.cfg *.t124img *.t124img.cfg *.mlospi *.mlo *.mxsbs *.mxssd *.rkimg \
 	start_*.simximg start_*.usimximg start_*.pimximg start_*.psimximg *.zynqimg \
-        *.image *.swapped *.missing-firmware
+	*.image *.swapped *.missing-firmware
 clean-files += pbl.lds

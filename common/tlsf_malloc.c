@@ -38,6 +38,17 @@ void free(void *mem)
 }
 EXPORT_SYMBOL(free);
 
+size_t malloc_usable_size(void *mem)
+{
+	size_t size;
+
+	if (!mem)
+		return 0;
+
+	return tlsf_block_size(mem);
+}
+EXPORT_SYMBOL(malloc_usable_size);
+
 void *realloc(void *oldmem, size_t bytes)
 {
 	void *mem = tlsf_realloc(tlsf_mem_pool, oldmem, bytes);

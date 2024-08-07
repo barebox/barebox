@@ -30,6 +30,11 @@ void free(void *ptr)
 {
 }
 
+size_t malloc_usable_size(void *mem)
+{
+	BUG();
+}
+
 void *realloc(void *ptr, size_t size)
 {
 	BUG();

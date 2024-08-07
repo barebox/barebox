@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: © 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+
+#include <linux/kstrtox.h>
+#include <linux/minmax.h>
 #include <console.h>
 #include <term.h>
 

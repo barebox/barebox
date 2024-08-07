@@ -146,8 +146,12 @@ EXPORT_SYMBOL(xasprintf);
 
 wchar_t *xstrdup_wchar(const wchar_t *s)
 {
-	wchar_t *p = strdup_wchar(s);
+	wchar_t *p;
 
+	if (!s)
+		return NULL;
+
+	p = strdup_wchar(s);
 	if (!p)
 		enomem_panic((wcslen(s) + 1) * sizeof(wchar_t));
 
@@ -157,8 +161,12 @@ EXPORT_SYMBOL(xstrdup_wchar);
 
 wchar_t *xstrdup_char_to_wchar(const char *s)
 {
-	wchar_t *p = strdup_char_to_wchar(s);
+	wchar_t *p;
 
+	if (!s)
+		return NULL;
+
+	p = strdup_char_to_wchar(s);
 	if (!p)
 		enomem_panic((strlen(s) + 1) * sizeof(wchar_t));
 
@@ -168,8 +176,12 @@ EXPORT_SYMBOL(xstrdup_char_to_wchar);
 
 char *xstrdup_wchar_to_char(const wchar_t *s)
 {
-	char *p = strdup_wchar_to_char(s);
+	char *p;
 
+	if (!s)
+		return NULL;
+
+	p = strdup_wchar_to_char(s);
 	if (!p)
 		enomem_panic((wcslen(s) + 1) * sizeof(wchar_t));
 

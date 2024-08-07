@@ -10,6 +10,7 @@
 #include <linux/ioport.h>
 #include <linux/uuid.h>
 #include <linux/printk.h>
+#include <linux/module.h>
 #include <device.h>
 #include <of.h>
 #include <init.h>

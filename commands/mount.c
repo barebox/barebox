@@ -35,7 +35,10 @@ static int do_mount(int argc, char *argv[])
 		}
 	}
 
-	if (argc == optind) {
+	argv += optind;
+	argc -= optind;
+
+	if (argc == 0) {
 		struct fs_device *fsdev;
 
 		for_each_fs_device(fsdev) {
@@ -56,9 +59,9 @@ static int do_mount(int argc, char *argv[])
 		return 0;
 	}
 
-	devstr = argv[optind];
+	devstr = argv[0];
 
-	if (argc == optind + 1) {
+	if (argc == 1) {
 		struct cdev *cdev;
 		const char *path;
 
@@ -79,17 +82,17 @@ static int do_mount(int argc, char *argv[])
 		return 0;
 	}
 
-	if (argc < optind + 2)
+	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	if (argc == optind + 3) {
+	if (argc == 3) {
 		/*
 		 * Old behaviour: mount <dev> <type> <mountpoint>
 		 */
-		type = argv[optind + 1];
-		mountpoint = argv[optind + 2];
+		type = argv[1];
+		mountpoint = argv[2];
 	} else {
-		mountpoint = argv[optind + 1];
+		mountpoint = argv[1];
 	}
 
 	return mount(devstr, type, mountpoint, fsoptions);

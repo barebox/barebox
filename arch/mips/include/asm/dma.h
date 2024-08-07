@@ -8,6 +8,7 @@
 
 #include <linux/pagemap.h>
 #include <linux/types.h>
+#include <linux/minmax.h>
 #include <malloc.h>
 #include <xfuncs.h>
 #include <asm/addrspace.h>

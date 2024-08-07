@@ -157,6 +157,12 @@ struct ftrace_likely_data {
 # define __no_stack_protector
 #endif
 
+#if __has_attribute(__returns_nonnull__)
+#define __returns_nonnull		__attribute__((__returns_nonnull__))
+#else
+#define __returns_nonnull
+#endif
+
 #endif /* __KERNEL__ */
 
 #endif /* __ASSEMBLY__ */
@@ -211,6 +217,9 @@ struct ftrace_likely_data {
 # define __alloc_size(x, ...)	__malloc
 # define __realloc_size(x, ...)
 #endif
+
+# define __xalloc_size(args...)		__returns_nonnull __alloc_size(args)
+# define __xrealloc_size(args...)	__returns_nonnull __realloc_size(args)
 
 /* Are two types/vars the same type (ignoring qualifiers)? */
 #define __same_type(a, b) __builtin_types_compatible_p(typeof(a), typeof(b))

@@ -206,7 +206,7 @@ static int rockchip_dmc_probe(struct device *dev)
 		memsize += rockchip_sdram_size(sys_rega, sys_regb);
 	}
 
-	dev_info(dev, "Detected memory size: %pa\n", &memsize);
+	dev_info(dev, "Detected memory size: 0x%08llx\n", (u64)memsize);
 
 	/* lowest 10M are shaved off for secure world firmware */
 	membase = 0xa00000;

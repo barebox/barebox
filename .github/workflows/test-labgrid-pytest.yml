@@ -49,7 +49,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Build
       run: |
@@ -80,12 +80,13 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: always()
       with:
+        check_name: "Test Results (${{matrix.defconfig}})"
         files: ./*.tests.xml
 
     - name: Publish Labgrid Log Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: Console Logs
+        name: console-log-${{matrix.defconfig}}
         path: log/
         if-no-files-found: error

@@ -42,21 +42,21 @@ void show_regs (struct pt_regs *regs)
 
 	flags = condition_codes (regs);
 
-	printf ("pc : [<%08lx>]    lr : [<%08lx>]\n"
+	eprintf("pc : [<%08lx>]    lr : [<%08lx>]\n"
 		"sp : %08lx  ip : %08lx  fp : %08lx\n",
 		instruction_pointer (regs),
 		regs->ARM_lr, regs->ARM_sp, regs->ARM_ip, regs->ARM_fp);
-	printf ("r10: %08lx  r9 : %08lx  r8 : %08lx\n",
+	eprintf("r10: %08lx  r9 : %08lx  r8 : %08lx\n",
 		regs->ARM_r10, regs->ARM_r9, regs->ARM_r8);
-	printf ("r7 : %08lx  r6 : %08lx  r5 : %08lx  r4 : %08lx\n",
+	eprintf("r7 : %08lx  r6 : %08lx  r5 : %08lx  r4 : %08lx\n",
 		regs->ARM_r7, regs->ARM_r6, regs->ARM_r5, regs->ARM_r4);
-	printf ("r3 : %08lx  r2 : %08lx  r1 : %08lx  r0 : %08lx\n",
+	eprintf("r3 : %08lx  r2 : %08lx  r1 : %08lx  r0 : %08lx\n",
 		regs->ARM_r3, regs->ARM_r2, regs->ARM_r1, regs->ARM_r0);
-	printf ("Flags: %c%c%c%c",
+	eprintf("Flags: %c%c%c%c",
 		flags & PSR_N_BIT ? 'N' : 'n',
 		flags & PSR_Z_BIT ? 'Z' : 'z',
 		flags & PSR_C_BIT ? 'C' : 'c', flags & PSR_V_BIT ? 'V' : 'v');
-	printf ("  IRQs %s  FIQs %s  Mode %s%s\n",
+	eprintf("  IRQs %s  FIQs %s  Mode %s%s\n",
 		interrupts_enabled (regs) ? "on" : "off",
 		fast_interrupts_enabled (regs) ? "on" : "off",
 		processor_modes[processor_mode (regs)],
@@ -79,7 +79,7 @@ static void __noreturn do_exception(struct pt_regs *pt_regs)
  */
 void do_undefined_instruction (struct pt_regs *pt_regs)
 {
-	printf ("undefined instruction\n");
+	eprintf("undefined instruction\n");
 	do_exception(pt_regs);
 }
 
@@ -92,7 +92,7 @@ void do_undefined_instruction (struct pt_regs *pt_regs)
  */
 void do_software_interrupt (struct pt_regs *pt_regs)
 {
-	printf ("software interrupt\n");
+	eprintf("software interrupt\n");
 	do_exception(pt_regs);
 }
 
@@ -104,7 +104,7 @@ void do_software_interrupt (struct pt_regs *pt_regs)
  */
 void do_prefetch_abort (struct pt_regs *pt_regs)
 {
-	printf ("prefetch abort\n");
+	eprintf("prefetch abort\n");
 	do_exception(pt_regs);
 }
 
@@ -136,8 +136,8 @@ void do_data_abort (struct pt_regs *pt_regs)
 
 	asm volatile ("mrc     p15, 0, %0, c6, c0, 0" : "=r" (far) : : "cc");
 
-	printf("unable to handle %s at address 0x%08x\n",
-	       data_abort_reason(far), far);
+	eprintf("unable to handle %s at address 0x%08x\n",
+		data_abort_reason(far), far);
 
 	do_exception(pt_regs);
 }
@@ -150,7 +150,7 @@ void do_data_abort (struct pt_regs *pt_regs)
  */
 void do_fiq (struct pt_regs *pt_regs)
 {
-	printf ("fast interrupt request\n");
+	eprintf("fast interrupt request\n");
 	do_exception(pt_regs);
 }
 
@@ -162,7 +162,7 @@ void do_fiq (struct pt_regs *pt_regs)
  */
 void do_irq (struct pt_regs *pt_regs)
 {
-	printf ("interrupt request\n");
+	eprintf("interrupt request\n");
 	do_exception(pt_regs);
 }
 

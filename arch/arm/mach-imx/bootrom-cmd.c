@@ -8,6 +8,7 @@
 #include <linux/bitfield.h>
 #include <mach/imx/imx8m-regs.h>
 #include <mach/imx/romapi.h>
+#include <linux/kernel.h>
 
 /* i.MX7 and later ID field is swapped compared to i.MX6 */
 #define ROM_EVENT_FORMAT_V0_RES	GENMASK(31, 24)

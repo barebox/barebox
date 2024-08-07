@@ -91,6 +91,7 @@ void *barebox_arm_boot_dtb(void);
  *                                   ↓
  *  ------------------------ arm_mem_early_malloc ----------------------
  */
+void print_pbl_mem_layout(ulong membase, ulong endmem, ulong barebox_base);
 
 static inline unsigned long arm_mem_optee(unsigned long endmem)
 {

@@ -718,7 +718,7 @@ struct param_d *dev_add_param_bitmask(struct device *dev, const char *name,
 				      int (*set)(struct param_d *p, void *priv),
 				      int (*get)(struct param_d *p, void *priv),
 				      unsigned long *value,
-				      const char * const *names, int max,
+				      const char * const *names, int num_names,
 				      void *priv)
 {
 	struct param_bitmask *pb;
@@ -731,7 +731,7 @@ struct param_d *dev_add_param_bitmask(struct device *dev, const char *name,
 	pb->set = set;
 	pb->get = get;
 	pb->names = names;
-	pb->num_names = max;
+	pb->num_names = num_names;
 	p = &pb->param;
 	p->driver_priv = priv;
 	p->type = PARAM_TYPE_BITMASK;

@@ -331,7 +331,7 @@ int console_register(struct console_device *newcdev)
 	struct device_node *serdev_node = console_is_serdev_node(newcdev);
 	struct device *dev = &newcdev->class_dev;
 	int activate = 0, ret;
-	unsigned baudrate = CONFIG_BAUDRATE;
+	unsigned of_baudrate = 0, baudrate = CONFIG_BAUDRATE;
 
 	if (!serdev_node && initialized == CONSOLE_UNINITIALIZED)
 		console_init_early();
@@ -366,6 +366,11 @@ int console_register(struct console_device *newcdev)
 		activate = CONSOLE_STDIOE;
 		console_set_stdoutpath(newcdev, baudrate);
 	}
+
+	/* Honour the previous baudrate if it is set to a non-zero value */
+	of_property_read_u32(dev->of_node, "current-speed", &of_baudrate);
+	if (of_baudrate)
+		baudrate = of_baudrate;
 
 	console_add_earlycon_param(newcdev, baudrate);
 
@@ -449,6 +454,35 @@ int console_unregister(struct console_device *cdev)
 	return status;
 }
 EXPORT_SYMBOL(console_unregister);
+
+static __maybe_unused int console_activate_all_fallback(void)
+{
+	int activate = CONSOLE_STDIOE;
+	struct console_device *cdev;
+
+	for_each_console(cdev) {
+		if (cdev->f_active & (CONSOLE_STDOUT | CONSOLE_STDERR))
+			return 0;
+	}
+
+	if (IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT))
+		activate &= ~CONSOLE_STDIN;
+
+	for_each_console(cdev)
+		console_set_active(cdev, activate);
+
+	/*
+	 * This is last resort, so the user is not kept in the dark.
+	 * Writing to all consoles is a bad idea as the devices at the
+	 * other side might get confused by it, thus the error log level.
+	 */
+	pr_err("No consoles were activated. Activating all consoles as fallback!\n");
+
+	return 0;
+}
+#ifdef CONFIG_CONSOLE_ACTIVATE_ALL_FALLBACK
+postenvironment_initcall(console_activate_all_fallback);
+#endif
 
 static int getc_raw(void)
 {

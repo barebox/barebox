@@ -55,6 +55,41 @@
 		};
 	};
 
+	io-ports {
+		compatible = "barebox,sandbox-ioport-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		pinctrl@0 {
+			compatible = "pinctrl-single";
+			/* Proxy 0 addressing */
+			reg = <0x0 0x0 0x0 0x4>;
+			#pinctrl-cells = <1>;
+			pinctrl-single,register-width = <8>;
+			pinctrl-single,function-mask = <0x0000000f>;
+
+			pinctrl_sound_default: sound-default-pins {
+				pinctrl-single,pins = <0x00	0x01>;
+			};
+
+			pinctrl_sound_sleep: sound-sleep-pins {
+				pinctrl-single,pins = <0x00	0x02>;
+			};
+
+			pinctrl_led_default: led-default-pins {
+				pinctrl-single,pins = <0x01	0x01>;
+			};
+
+			pinctrl_led_sleep: led-sleep-pins {
+				pinctrl-single,pins = <0x01	0x02>;
+			};
+
+			pinctrl_unknown_default: unknown-default-pins {
+				pinctrl-single,pins = <0x02	0x01>;
+			};
+		};
+	};
+
 	stickypage: stickypage {
 		compatible = "barebox,stickypage", "syscon";
 		reg = <0 0 0 4096>;
@@ -80,15 +115,19 @@
 				compatible = "nvmem-cells";
 				reg = <0x300 0x100>;
 				label = "nvmem";
-				#address-cells = <1>;
-				#size-cells = <1>;
 
-				reset_source: reset-source@0 {
-					reg = <0x0 0x1>;
-				};
+				nvmem-layout {
+					compatible = "fixed-layout";
+					#address-cells = <1>;
+					#size-cells = <1>;
 
-				reboot_mode: reboot-mode@1 {
-					reg = <0x1 0x4>;
+					reset_source: reset-source@0 {
+						reg = <0x0 0x1>;
+					};
+
+					reboot_mode: reboot-mode@1 {
+						reg = <0x1 0x4>;
+					};
 				};
 			};
 
@@ -118,9 +157,21 @@
 
 	sound {
 		compatible = "barebox,sandbox-sound";
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&pinctrl_sound_default>;
+		pinctrl-1 = <&pinctrl_sound_sleep>;
+	};
+
+	unknown-device {
+		compatible = "barebox,unknown-device";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_unknown_default>;
 	};
 
 	led {
 		compatible = "barebox,sandbox-led";
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&pinctrl_led_default>;
+		pinctrl-1 = <&pinctrl_led_sleep>;
 	};
 };

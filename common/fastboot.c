@@ -812,7 +812,7 @@ static void fb_run_command(struct fastboot *fb, const char *cmdbuf,
 	const struct cmd_dispatch_info *cmd;
 	int i;
 
-	console_countdown_abort();
+	console_countdown_abort("fastboot");
 
 	for (i = 0; i < num_commands; i++) {
 		cmd = &cmds[i];

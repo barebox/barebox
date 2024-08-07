@@ -7,7 +7,9 @@
 #include <getopt.h>
 #include <command.h>
 #include <complete.h>
+#include <memory.h>
 #include <asm/system.h>
+#include <asm/barebox-arm.h>
 
 #define CPU_ARCH_UNKNOWN	0
 #define CPU_ARCH_ARMv3		1
@@ -54,8 +56,13 @@ static int do_cpuinfo(int argc, char *argv[])
 	int opt, i;
 	int cpu_arch;
 
-	while ((opt = getopt(argc, argv, "s")) > 0) {
+	while ((opt = getopt(argc, argv, "sm")) > 0) {
 		switch (opt) {
+		case 'm':
+			print_pbl_mem_layout(arm_mem_membase_get(),
+					     arm_mem_endmem_get(),
+					     mem_malloc_end() + 1);
+			return 0;
 		case 's':
 			if (!IS_ENABLED(CONFIG_ARCH_HAS_STACK_DUMP))
 				return -ENOSYS;
@@ -277,12 +284,13 @@ static int do_cpuinfo(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(cpuinfo)
 BAREBOX_CMD_HELP_TEXT("Shows misc info about CPU")
 BAREBOX_CMD_HELP_OPT ("-s", "print call stack info (if supported)")
+BAREBOX_CMD_HELP_OPT ("-m", "print PBL memory layout")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(cpuinfo)
 	.cmd            = do_cpuinfo,
 	BAREBOX_CMD_DESC("show info about CPU")
-	BAREBOX_CMD_OPTS("[-s]")
+	BAREBOX_CMD_OPTS("[-sm]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 	BAREBOX_CMD_HELP(cmd_cpuinfo_help)

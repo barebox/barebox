@@ -10,6 +10,8 @@
 #ifndef _RTC_H_
 #define _RTC_H_
 
+#include <linux/err.h>
+
 /*
  * The struct used to pass data from the generic interface code to
  * the hardware dependend low-level code ande vice versa. Identical
@@ -40,7 +42,15 @@ void to_tm (int, struct rtc_time *);
 unsigned long mktime (unsigned int, unsigned int, unsigned int,
 		      unsigned int, unsigned int, unsigned int);
 
+struct rtc_device;
+#ifdef CONFIG_RTC_CLASS
 extern struct rtc_device *rtc_lookup(const char *name);
+#else
+static inline struct rtc_device *rtc_lookup(const char *name)
+{
+	return ERR_PTR(-ENODEV);
+}
+#endif
 
 const char *time_str(struct rtc_time *tm);
 

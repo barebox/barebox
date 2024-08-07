@@ -604,17 +604,17 @@ quiet_cmd_stm32_image = STM32-IMG $@
 quiet_cmd_b64dec = B64DEC  $@
       cmd_b64dec = base64 -d $< > $@
 
-# rsa_keys
+# public_keys
 # ---------------------------------------------------------------------------
 # Build a header file containing a rsa public key.
 #
 # The keys can change without the build system noticing, so we always
-# have to call rsatoc. To avoid unnecessary rebuilds of barebox compare
-# its output to the last rsatoc output. Only if it differs overwrite the
+# have to call keytoc. To avoid unnecessary rebuilds of barebox compare
+# its output to the last keytoc output. Only if it differs overwrite the
 # target file.
-quiet_cmd_rsa_keys = RSAKEY  $@
-cmd_rsa_keys = \
-	$(objtree)/scripts/rsatoc -o $@.tmp "$(2)" $(3) &&		\
+quiet_cmd_public_keys = KEY     $@
+cmd_public_keys = \
+	$(objtree)/scripts/keytoc -o $@.tmp "$(2)" $(3) &&		\
 	if cmp -s $@.tmp $@; then					\
 		rm $@.tmp;						\
 	else								\

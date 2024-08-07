@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later WITH LicenseRef-OpenSSL-exception
 /*
- * rsatoc - utility to convert an RSA key to a C struct
+ * keytoc - utility to convert a public key to a C struct
  *
- * This tool converts an RSA key given as file or PKCS#11
+ * This tool converts an public key given as file or PKCS#11
  * URI to a C struct suitable to compile with barebox.
+ *
+ * TODO: Find a better way for reimport_key()
+ *
  */
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -17,14 +21,20 @@
 #include <openssl/ssl.h>
 #include <openssl/evp.h>
 #include <openssl/engine.h>
+#include <openssl/core_names.h>
+#include <openssl/param_build.h>
+#include <openssl/store.h>
 
 static int dts, standalone;
 
-static int rsa_err(const char *msg)
+static int openssl_error(const char *fmt, ...)
 {
+	va_list va;
 	unsigned long sslErr = ERR_get_error();
 
-	fprintf(stderr, "%s", msg);
+	va_start(va, fmt);
+	vfprintf(stderr, fmt, va);
+	va_end(va);
 	fprintf(stderr, ": %s\n",
 		ERR_error_string(sslErr, 0));
 
@@ -32,25 +42,24 @@ static int rsa_err(const char *msg)
 }
 
 /**
- * rsa_pem_get_pub_key() - read a public key from a .crt file
+ * pem_get_pub_key() - read a public key from a .crt file
  *
  * @keydir:	Directory containins the key
  * @name	Name of key file (will have a .crt extension)
- * @rsap	Returns RSA object, or NULL on failure
+ * @key		Returns key object, or NULL on failure
  * @return 0 if ok, -ve on error (in which case *rsap will be set to NULL)
  */
-static int rsa_pem_get_pub_key(const char *path, RSA **rsap)
+static int pem_get_pub_key(const char *path, EVP_PKEY **pkey)
 {
 	EVP_PKEY *key;
 	X509 *cert;
-	RSA *rsa;
 	FILE *f;
 	int ret;
 
-	*rsap = NULL;
+	*pkey = NULL;
 	f = fopen(path, "r");
 	if (!f) {
-		fprintf(stderr, "Couldn't open RSA certificate: '%s': %s\n",
+		fprintf(stderr, "Couldn't open certificate '%s': %s\n",
 			path, strerror(errno));
 		return -EACCES;
 	}
@@ -58,10 +67,11 @@ static int rsa_pem_get_pub_key(const char *path, RSA **rsap)
 	/* Read the certificate */
 	cert = NULL;
 	if (!PEM_read_X509(f, &cert, NULL, NULL)) {
+		/* Can't open certificate, maybe it's a pubkey */
 		rewind(f);
 		key = PEM_read_PUBKEY(f, NULL, NULL, NULL);
 		if (!key) {
-			rsa_err("Couldn't read certificate");
+			openssl_error("Couldn't read certificate/pubkey %s\n", path);
 			ret = -EINVAL;
 			goto err_cert;
 		}
@@ -69,28 +79,19 @@ static int rsa_pem_get_pub_key(const char *path, RSA **rsap)
 		/* Get the public key from the certificate. */
 		key = X509_get_pubkey(cert);
 		if (!key) {
-			rsa_err("Couldn't read public key\n");
+			openssl_error("Couldn't read public key from certificate\n");
 			ret = -EINVAL;
 			goto err_pubkey;
 		}
 	}
 
-	/* Convert to a RSA_style key. */
-	rsa = EVP_PKEY_get1_RSA(key);
-	if (!rsa) {
-		rsa_err("Couldn't convert to a RSA style key");
-		ret = -EINVAL;
-		goto err_rsa;
-	}
 	fclose(f);
-	EVP_PKEY_free(key);
 	X509_free(cert);
-	*rsap = rsa;
+
+	*pkey = key;
 
 	return 0;
 
-err_rsa:
-	EVP_PKEY_free(key);
 err_pubkey:
 	X509_free(cert);
 err_cert:
@@ -98,169 +99,7 @@ err_cert:
 	return ret;
 }
 
-/**
- * rsa_engine_get_pub_key() - read a public key from given engine
- *
- * @keydir:	Key prefix
- * @name	Name of key
- * @engine	Engine to use
- * @rsap	Returns RSA object, or NULL on failure
- * @return 0 if ok, -ve on error (in which case *rsap will be set to NULL)
- */
-static int rsa_engine_get_pub_key(const char *key_id,
-				  ENGINE *engine, RSA **rsap)
-{
-	EVP_PKEY *key;
-	RSA *rsa;
-	int ret;
-
-	*rsap = NULL;
-
-	key = ENGINE_load_public_key(engine, key_id, NULL, NULL);
-	if (!key)
-		return rsa_err("Failure loading public key from engine");
-
-	/* Convert to a RSA_style key. */
-	rsa = EVP_PKEY_get1_RSA(key);
-	if (!rsa) {
-		rsa_err("Couldn't convert to a RSA style key");
-		ret = -EINVAL;
-		goto err_rsa;
-	}
-
-	EVP_PKEY_free(key);
-	*rsap = rsa;
-
-	return 0;
-
-err_rsa:
-	EVP_PKEY_free(key);
-	return ret;
-}
-
-/*
- * rsa_get_exponent(): - Get the public exponent from an RSA key
- */
-static int rsa_get_exponent(RSA *key, uint64_t *e)
-{
-	int ret;
-	BIGNUM *bn_te;
-	const BIGNUM *key_e;
-	uint64_t te;
-
-	ret = -EINVAL;
-	bn_te = NULL;
-
-	if (!e)
-		goto cleanup;
-
-	RSA_get0_key(key, NULL, &key_e, NULL);
-	if (BN_num_bits(key_e) > 64)
-		goto cleanup;
-
-	*e = BN_get_word(key_e);
-
-	if (BN_num_bits(key_e) < 33) {
-		ret = 0;
-		goto cleanup;
-	}
-
-	bn_te = BN_dup(key_e);
-	if (!bn_te)
-		goto cleanup;
-
-	if (!BN_rshift(bn_te, bn_te, 32))
-		goto cleanup;
-
-	if (!BN_mask_bits(bn_te, 32))
-		goto cleanup;
-
-	te = BN_get_word(bn_te);
-	te <<= 32;
-	*e |= te;
-	ret = 0;
-
-cleanup:
-	if (bn_te)
-		BN_free(bn_te);
-
-	return ret;
-}
-
-/*
- * rsa_get_params(): - Get the important parameters of an RSA public key
- */
-static int rsa_get_params(RSA *key, uint64_t *exponent, uint32_t *n0_invp,
-			  BIGNUM **modulusp, BIGNUM **r_squaredp)
-{
-	BIGNUM *big1, *big2, *big32, *big2_32;
-	BIGNUM *n, *r, *r_squared, *tmp;
-	const BIGNUM *key_n;
-	BN_CTX *bn_ctx = BN_CTX_new();
-	int ret = 0;
-
-	/* Initialize BIGNUMs */
-	big1 = BN_new();
-	big2 = BN_new();
-	big32 = BN_new();
-	r = BN_new();
-	r_squared = BN_new();
-	tmp = BN_new();
-	big2_32 = BN_new();
-	n = BN_new();
-	if (!big1 || !big2 || !big32 || !r || !r_squared || !tmp || !big2_32 ||
-	    !n) {
-		fprintf(stderr, "Out of memory (bignum)\n");
-		return -ENOMEM;
-	}
-
-	if (0 != rsa_get_exponent(key, exponent))
-		ret = -1;
-
-	RSA_get0_key(key, &key_n, NULL, NULL);
-	if (!BN_copy(n, key_n) || !BN_set_word(big1, 1L) ||
-	    !BN_set_word(big2, 2L) || !BN_set_word(big32, 32L))
-		ret = -1;
-
-	/* big2_32 = 2^32 */
-	if (!BN_exp(big2_32, big2, big32, bn_ctx))
-		ret = -1;
-
-	/* Calculate n0_inv = -1 / n[0] mod 2^32 */
-	if (!BN_mod_inverse(tmp, n, big2_32, bn_ctx) ||
-	    !BN_sub(tmp, big2_32, tmp))
-		ret = -1;
-	*n0_invp = BN_get_word(tmp);
-
-	/* Calculate R = 2^(# of key bits) */
-	if (!BN_set_word(tmp, BN_num_bits(n)) ||
-	    !BN_exp(r, big2, tmp, bn_ctx))
-		ret = -1;
-
-	/* Calculate r_squared = R^2 mod n */
-	if (!BN_copy(r_squared, r) ||
-	    !BN_mul(tmp, r_squared, r, bn_ctx) ||
-	    !BN_mod(r_squared, tmp, n, bn_ctx))
-		ret = -1;
-
-	*modulusp = n;
-	*r_squaredp = r_squared;
-
-	BN_free(big1);
-	BN_free(big2);
-	BN_free(big32);
-	BN_free(r);
-	BN_free(tmp);
-	BN_free(big2_32);
-	if (ret) {
-		fprintf(stderr, "Bignum operations failed\n");
-		return -ENOMEM;
-	}
-
-	return ret;
-}
-
-static int rsa_engine_init(ENGINE **pe)
+static int engine_init(ENGINE **pe)
 {
 	ENGINE *e;
 	int ret;
@@ -288,12 +127,6 @@ static int rsa_engine_init(ENGINE **pe)
 		}
 	}
 
-	if (!ENGINE_set_default_RSA(e)) {
-		fprintf(stderr, "Couldn't set engine as default for RSA\n");
-		ret = -1;
-		goto err_set_rsa;
-	}
-
 	*pe = e;
 
 	return 0;
@@ -307,6 +140,176 @@ err_engine_by_id:
 	(defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x02070000fL)
 	ENGINE_cleanup();
 #endif
+	return ret;
+}
+
+/**
+ * engine_get_pub_key() - read a public key from given engine
+ *
+ * @keydir:	Key prefix
+ * @name	Name of key
+ * @key		Returns key object, or NULL on failure
+ * @return 0 if ok, -ve on error (in which case *rsap will be set to NULL)
+ */
+static int engine_get_pub_key(const char *key_id, EVP_PKEY **key)
+{
+	ENGINE *e;
+	int ret;
+
+	ret = engine_init(&e);
+	if (ret)
+		return ret;
+
+	*key = ENGINE_load_public_key(e, key_id, NULL, NULL);
+	if (!*key)
+		return openssl_error("Failure loading public key from engine");
+
+	return 0;
+}
+
+/*
+ * rsa_get_exponent(): - Get the public exponent from an RSA key
+ */
+static int rsa_get_exponent(EVP_PKEY *key, uint64_t *e)
+{
+	int ret;
+	BIGNUM *bn_te = NULL;
+	BIGNUM *key_e = NULL;
+	uint64_t te;
+
+	ret = EVP_PKEY_get_bn_param(key, OSSL_PKEY_PARAM_RSA_E, &key_e);
+	if (!ret)
+		return -EINVAL;
+
+	if (BN_num_bits(key_e) > 64) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
+
+	*e = BN_get_word(key_e);
+
+	if (BN_num_bits(key_e) < 33) {
+		ret = 0;
+		goto cleanup;
+	}
+
+	bn_te = BN_dup(key_e);
+	if (!bn_te) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
+
+	if (!BN_rshift(bn_te, bn_te, 32)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
+
+	if (!BN_mask_bits(bn_te, 32)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
+
+	te = BN_get_word(bn_te);
+	te <<= 32;
+	*e |= te;
+	ret = 0;
+
+cleanup:
+	if (bn_te)
+		BN_free(bn_te);
+	BN_free(key_e);
+
+	return ret;
+}
+
+/*
+ * rsa_get_params(): - Get the important parameters of an RSA public key
+ */
+static int rsa_get_params(EVP_PKEY *key, uint64_t *exponent, uint32_t *n0_invp,
+			  BIGNUM **modulusp, BIGNUM **r_squaredp)
+{
+	BIGNUM *big1, *big2, *big32, *big2_32;
+	BIGNUM *n, *r, *r_squared, *tmp;
+	BIGNUM *key_n = NULL;
+	BN_CTX *bn_ctx = BN_CTX_new();
+	int ret;
+
+	/* Initialize BIGNUMs */
+	big1 = BN_new();
+	big2 = BN_new();
+	big32 = BN_new();
+	r = BN_new();
+	r_squared = BN_new();
+	tmp = BN_new();
+	big2_32 = BN_new();
+	n = BN_new();
+	if (!big1 || !big2 || !big32 || !r || !r_squared || !tmp || !big2_32 ||
+	    !n) {
+		fprintf(stderr, "Out of memory (bignum)\n");
+		return -ENOMEM;
+	}
+
+	ret = rsa_get_exponent(key, exponent);
+	if (ret)
+		goto cleanup;
+
+	ret = EVP_PKEY_get_bn_param(key, OSSL_PKEY_PARAM_RSA_N, &key_n);
+	if (!ret)
+		return -EINVAL;
+
+	if (!BN_copy(n, key_n) || !BN_set_word(big1, 1L) ||
+	    !BN_set_word(big2, 2L) || !BN_set_word(big32, 32L)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
+
+	/* big2_32 = 2^32 */
+	if (!BN_exp(big2_32, big2, big32, bn_ctx)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
+
+	/* Calculate n0_inv = -1 / n[0] mod 2^32 */
+	if (!BN_mod_inverse(tmp, n, big2_32, bn_ctx) ||
+	    !BN_sub(tmp, big2_32, tmp)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
+
+	*n0_invp = BN_get_word(tmp);
+
+	/* Calculate R = 2^(# of key bits) */
+	if (!BN_set_word(tmp, BN_num_bits(n)) ||
+	    !BN_exp(r, big2, tmp, bn_ctx)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
+
+	/* Calculate r_squared = R^2 mod n */
+	if (!BN_copy(r_squared, r) ||
+	    !BN_mul(tmp, r_squared, r, bn_ctx) ||
+	    !BN_mod(r_squared, tmp, n, bn_ctx)) {
+		ret = -EINVAL;
+		goto cleanup;
+	}
+
+	*modulusp = n;
+	*r_squaredp = r_squared;
+
+	ret = 0;
+
+cleanup:
+	BN_free(big1);
+	BN_free(big2);
+	BN_free(big32);
+	BN_free(r);
+	BN_free(tmp);
+	BN_free(big2_32);
+	if (ret) {
+		fprintf(stderr, "Bignum operations failed\n");
+		return -ENOMEM;
+	}
+
 	return ret;
 }
 
@@ -382,49 +385,132 @@ static int print_bignum(BIGNUM *num, int num_bits)
 	return 0;
 }
 
-static int gen_key(const char *keyname, const char *path)
+/*
+ * When imported from a HSM the key doesn't have the EC point parameters,
+ * only the pubkey itself exists. Exporting the pubkey and creating a new
+ * pkey from it resolves this. This can likely (hopefully) be improved, but
+ * I don't have an idea how.
+ */
+static EVP_PKEY *reimport_key(EVP_PKEY *pkey)
+{
+	char group[128] = {};
+	size_t outlen;
+	OSSL_PARAM *params;
+	OSSL_PARAM_BLD *param_bld = NULL;
+	unsigned char pub[128] = {};
+	size_t len;
+	EVP_PKEY *pkey_out = NULL;
+	EVP_PKEY_CTX *pkey_ctx;
+	int ret;
+
+	ret = EVP_PKEY_get_utf8_string_param(pkey, "group", group, sizeof(group), &outlen);
+	if (!ret)
+		return NULL;
+
+	ret = EVP_PKEY_get_octet_string_param(pkey, OSSL_PKEY_PARAM_PUB_KEY,
+					      pub, sizeof(pub), &len);
+	if (ret <= 0)
+		return NULL;
+
+	param_bld = OSSL_PARAM_BLD_new();
+	if (!param_bld)
+		return NULL;
+
+	ret = OSSL_PARAM_BLD_push_utf8_string(param_bld, "group", group, 0);
+	if (ret <= 0)
+		return NULL;
+
+	ret = OSSL_PARAM_BLD_push_octet_string(param_bld, "pub", pub, len);
+	if (ret <= 0)
+		return NULL;
+
+	params = OSSL_PARAM_BLD_to_param(param_bld);
+	if (!params)
+		return NULL;
+
+	pkey_ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+	if (!pkey_ctx)
+		return NULL;
+
+	ret = EVP_PKEY_fromdata_init(pkey_ctx);
+	if (ret <= 0)
+		return NULL;
+
+	ret = EVP_PKEY_fromdata(pkey_ctx, &pkey_out, EVP_PKEY_PUBLIC_KEY, params);
+	if (ret <= 0)
+		return NULL;
+
+	return pkey_out;
+}
+
+static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_name_c)
+{
+	char group[128];
+	size_t outlen;
+	int ret, bits;
+	BIGNUM *key_x = NULL, *key_y = NULL;
+
+	key = reimport_key(key);
+	if (!key)
+		return -EINVAL;
+
+	ret = EVP_PKEY_get_int_param(key, "bits", &bits);
+	if (!ret)
+		return -EINVAL;
+	ret = EVP_PKEY_get_utf8_string_param(key, "group", group, sizeof(group), &outlen);
+	if (!ret)
+		return -EINVAL;
+
+	ret = EVP_PKEY_get_bn_param(key, OSSL_PKEY_PARAM_EC_PUB_X, &key_x);
+	if (!ret)
+		return -EINVAL;
+
+	ret = EVP_PKEY_get_bn_param(key, OSSL_PKEY_PARAM_EC_PUB_Y, &key_y);
+	if (!ret)
+		return -EINVAL;
+
+	if (dts) {
+		fprintf(outfilep, "\t\tkey-%s {\n", key_name_c);
+		fprintf(outfilep, "\t\t\tecdsa,x-point = <");
+		print_bignum(key_x, bits);
+		fprintf(outfilep, ">;\n");
+		fprintf(outfilep, "\t\t\tecdsa,y-point = <");
+		print_bignum(key_y, bits);
+		fprintf(outfilep, ">;\n");
+		fprintf(outfilep, "\t\t\tecdsa,curve = \"%s\";\n", group);
+		fprintf(outfilep, "\t\t};\n");
+	} else {
+		fprintf(outfilep, "\nstatic uint32_t %s_x[] = {", key_name_c);
+		print_bignum(key_x, bits);
+		fprintf(outfilep, "\n};\n\n");
+
+		fprintf(outfilep, "static uint32_t %s_y[] = {", key_name_c);
+		print_bignum(key_y, bits);
+		fprintf(outfilep, "\n};\n\n");
+
+		fprintf(outfilep, "static struct ecdsa_public_key %s = {\n", key_name_c);
+
+		fprintf(outfilep, "\t.curve_name = \"%s\",\n", group);
+		fprintf(outfilep, "\t.x = %s_x,\n", key_name_c);
+		fprintf(outfilep, "\t.y = %s_y,\n", key_name_c);
+		fprintf(outfilep, "};\n");
+		if (!standalone)
+			fprintf(outfilep, "\nstruct ecdsa_public_key *%s_ecdsa_p __attribute__((section(\".ecdsa_keys.rodata.%s\"))) = &%s;\n",
+				key_name_c, key_name_c, key_name_c);
+	}
+
+	return 0;
+}
+
+static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name_c)
 {
 	BIGNUM *modulus, *r_squared;
 	uint64_t exponent = 0;
 	uint32_t n0_inv;
-	int ret;
 	int bits;
-	RSA *rsa;
-	ENGINE *e = NULL;
-	char *tmp, *key_name_c;
+	int ret;
 
-	tmp = key_name_c = strdup(keyname);
-
-	while (*tmp) {
-		if (*tmp == '-')
-			*tmp = '_';
-		tmp++;
-	}
-
-	if (!strncmp(path, "__ENV__", 7)) {
-		const char *var = getenv(path + 7);
-		if (!var) {
-			fprintf(stderr,
-				"environment variable \"%s\" is empty\n", path + 7);
-			exit(1);
-		}
-		path = var;
-	}
-
-	if (!strncmp(path, "pkcs11:", 7)) {
-		ret = rsa_engine_init(&e);
-		if (ret)
-			exit(1);
-		ret = rsa_engine_get_pub_key(path, e, &rsa);
-		if (ret)
-			exit(1);
-	} else {
-		ret = rsa_pem_get_pub_key(path, &rsa);
-		if (ret)
-			exit(1);
-	}
-
-	ret = rsa_get_params(rsa, &exponent, &n0_inv, &modulus, &r_squared);
+	ret = rsa_get_params(key, &exponent, &n0_inv, &modulus, &r_squared);
 	if (ret)
 		return ret;
 
@@ -466,7 +552,7 @@ static int gen_key(const char *keyname, const char *path)
 		fprintf(outfilep, "\t.modulus = %s_modulus,\n", key_name_c);
 		fprintf(outfilep, "\t.rr = %s_rr,\n", key_name_c);
 		fprintf(outfilep, "\t.exponent = 0x%0lx,\n", exponent);
-		fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", keyname);
+		fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
 		fprintf(outfilep, "};\n");
 
 		if (!standalone)
@@ -477,10 +563,51 @@ static int gen_key(const char *keyname, const char *path)
 	return 0;
 }
 
+static int gen_key(const char *keyname, const char *path)
+{
+	int ret;
+	EVP_PKEY *key;
+	char *tmp, *key_name_c;
+
+	tmp = key_name_c = strdup(keyname);
+
+	while (*tmp) {
+		if (*tmp == '-')
+			*tmp = '_';
+		tmp++;
+	}
+
+	if (!strncmp(path, "__ENV__", 7)) {
+		const char *var = getenv(path + 7);
+		if (!var) {
+			fprintf(stderr,
+				"environment variable \"%s\" is empty\n", path + 7);
+			exit(1);
+		}
+		path = var;
+	}
+
+	if (!strncmp(path, "pkcs11:", 7)) {
+		ret = engine_get_pub_key(path, &key);
+		if (ret)
+			exit(1);
+	} else {
+		ret = pem_get_pub_key(path, &key);
+		if (ret)
+			exit(1);
+	}
+
+	ret = gen_key_ecdsa(key, keyname, key_name_c);
+	if (ret)
+		ret = gen_key_rsa(key, keyname, key_name_c);
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	char *path, *keyname;
-	int i, opt;
+	int i, opt, ret;
 	char *outfile = NULL;
 
 	outfilep = stdout;
@@ -524,6 +651,7 @@ int main(int argc, char *argv[])
 		else
 			fprintf(outfilep, "\tsignature {\n");
 	} else if (standalone) {
+		fprintf(outfilep, "#include <ecdsa.h>\n");
 		fprintf(outfilep, "#include <rsa.h>\n");
 	}
 
@@ -551,7 +679,9 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		gen_key(keyname, path);
+		ret = gen_key(keyname, path);
+		if (ret)
+			exit(1);
 	}
 
 	if (dts) {

@@ -600,7 +600,7 @@ out:
 }
 EXPORT_SYMBOL(lseek);
 
-int erase(int fd, loff_t count, loff_t offset)
+int erase(int fd, loff_t count, loff_t offset, enum erase_type type)
 {
 	struct fs_driver *fsdrv;
 	FILE *f = fd_to_file(fd, false);
@@ -621,7 +621,7 @@ int erase(int fd, loff_t count, loff_t offset)
 		assert_command_context();
 
 	if (fsdrv->erase)
-		ret = fsdrv->erase(&f->fsdev->dev, f, count, offset);
+		ret = fsdrv->erase(&f->fsdev->dev, f, count, offset, type);
 	else
 		ret = -ENOSYS;
 

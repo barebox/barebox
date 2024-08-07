@@ -208,7 +208,7 @@ static void dfu_do_write(struct dfu_work *dw)
 
 	if (prog_erase && (dfu_written + wlen) > dfu_erased) {
 		size = roundup(wlen, dfu_mtdinfo.erasesize);
-		ret = erase(dfufd, size, dfu_erased);
+		ret = erase(dfufd, size, dfu_erased, ERASE_TO_WRITE);
 		dfu_erased += size;
 		if (ret && ret != -ENOSYS) {
 			perror("erase");
@@ -333,7 +333,7 @@ static void dfu_do_copy(struct dfu_work *dw)
 		return;
 	}
 
-	ret = erase(fd, ERASE_SIZE_ALL, 0);
+	ret = erase(fd, ERASE_SIZE_ALL, 0, ERASE_TO_WRITE);
 	close(fd);
 	if (ret && ret != -ENOSYS) {
 		perror("erase");

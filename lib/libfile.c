@@ -412,7 +412,7 @@ int write_file_flash(const char *filename, const void *buf, size_t size)
 	if (fd < 0)
 		return fd;
 
-	ret = erase(fd, size, 0);
+	ret = erase(fd, size, 0, ERASE_TO_WRITE);
 	if (ret < 0)
 		goto out_close;
 

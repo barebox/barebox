@@ -1435,7 +1435,6 @@ void free(void *mem)
 size_t malloc_usable_size(void *mem)
 {
 	mchunkptr p;
-	size_t size;
 
 	if (!mem)
 		return 0;

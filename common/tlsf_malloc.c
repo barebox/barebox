@@ -40,8 +40,6 @@ EXPORT_SYMBOL(free);
 
 size_t malloc_usable_size(void *mem)
 {
-	size_t size;
-
 	if (!mem)
 		return 0;
 

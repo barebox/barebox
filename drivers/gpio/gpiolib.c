@@ -8,6 +8,7 @@
 #include <gpio.h>
 #include <of_gpio.h>
 #include <linux/gpio/consumer.h>
+#include <linux/pinctrl/pinconf-generic.h>
 #include <linux/overflow.h>
 #include <errno.h>
 #include <malloc.h>
@@ -437,6 +438,61 @@ int gpio_direction_output(unsigned gpio, int value)
 }
 EXPORT_SYMBOL(gpio_direction_output);
 
+static int gpio_set_config_with_argument(struct gpio_desc *desc,
+					 enum pin_config_param mode,
+					 u32 argument)
+{
+	unsigned long config;
+
+	config = pinconf_to_config_packed(mode, argument);
+	return gpio_do_set_config(desc->chip, gpiodesc_chip_offset(desc), config);
+}
+
+static int gpio_set_config_with_argument_optional(struct gpio_desc *desc,
+						  enum pin_config_param mode,
+						  u32 argument)
+{
+	int ret;
+
+	ret = gpio_set_config_with_argument(desc, mode, argument);
+	if (ret != -ENOTSUPP)
+		return ret;
+	return 0;
+}
+
+static int gpio_set_config(struct gpio_desc *desc, enum pin_config_param mode)
+{
+	return gpio_set_config_with_argument(desc, mode, 0);
+}
+
+static int gpio_set_bias(struct gpio_desc *desc)
+{
+	enum pin_config_param bias;
+	unsigned int arg;
+
+	if (desc->flags & OF_GPIO_PULL_DISABLE)
+		bias = PIN_CONFIG_BIAS_DISABLE;
+	else if (desc->flags & OF_GPIO_PULL_UP)
+		bias = PIN_CONFIG_BIAS_PULL_UP;
+	else if (desc->flags & OF_GPIO_PULL_DOWN)
+		bias = PIN_CONFIG_BIAS_PULL_DOWN;
+	else
+		return 0;
+
+	switch (bias) {
+	case PIN_CONFIG_BIAS_PULL_DOWN:
+	case PIN_CONFIG_BIAS_PULL_UP:
+		arg = 1;
+		break;
+
+	default:
+		arg = 0;
+		break;
+	}
+
+	return gpio_set_config_with_argument_optional(desc, bias, arg);
+}
+
 /**
  * gpiod_direction_output - set the GPIO direction to output
  * @desc:	GPIO to set to output
@@ -451,7 +507,35 @@ EXPORT_SYMBOL(gpio_direction_output);
  */
 int gpiod_direction_output(struct gpio_desc *desc, int value)
 {
+	int ret;
+
 	VALIDATE_DESC(desc);
+
+	if (IS_ENABLED(CONFIG_GPIO_PINCONF)) {
+		if (desc->flags & (OF_GPIO_OPEN_DRAIN | OF_GPIO_SINGLE_ENDED)) {
+			/* First see if we can enable open drain in hardware */
+			ret = gpio_set_config(desc, PIN_CONFIG_DRIVE_OPEN_DRAIN);
+			if (!ret)
+				goto set_output_value;
+			/* Emulate open drain by not actively driving the line high */
+			if (value)
+				return gpiod_direction_input(desc);
+		} else if (desc->flags & OF_GPIO_SINGLE_ENDED) {
+			ret = gpio_set_config(desc, PIN_CONFIG_DRIVE_OPEN_SOURCE);
+			if (!ret)
+				goto set_output_value;
+			/* Emulate open source by not actively driving the line low */
+			if (!value)
+				return gpiod_direction_input(desc);
+		} else {
+			gpio_set_config(desc, PIN_CONFIG_DRIVE_PUSH_PULL);
+		}
+
+set_output_value:
+		ret = gpio_set_bias(desc);
+		if (ret)
+			return ret;
+	}
 
 	return gpiod_direction_output_raw(desc, gpio_adjust_value(desc, value));
 }
@@ -478,13 +562,19 @@ EXPORT_SYMBOL(gpio_direction_active);
  */
 int gpiod_direction_input(struct gpio_desc *desc)
 {
+	int ret;
+
 	VALIDATE_DESC(desc);
 
 	if (!desc->chip->ops->direction_input)
 		return -ENOSYS;
 
-	return desc->chip->ops->direction_input(desc->chip,
-					      gpiodesc_chip_offset(desc));
+	ret = desc->chip->ops->direction_input(desc->chip,
+					       gpiodesc_chip_offset(desc));
+	if (ret == 0 && IS_ENABLED(CONFIG_GPIO_PINCONF))
+		ret = gpio_set_bias(desc);
+
+	return ret;
 }
 EXPORT_SYMBOL(gpiod_direction_input);
 

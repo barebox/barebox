@@ -7,6 +7,7 @@
 #include <linux/list.h>
 #include <linux/iopoll.h>
 #include <linux/bitops.h>
+#include <linux/bug.h>
 
 #ifdef CONFIG_GENERIC_GPIO
 void gpio_set_value(unsigned gpio, int value);
@@ -30,6 +31,8 @@ static inline int gpio_direction_input(unsigned gpio)
 	return -EINVAL;
 }
 #endif
+
+struct device;
 
 #ifdef CONFIG_GPIOLIB
 void gpio_set_active(unsigned gpio, bool state);

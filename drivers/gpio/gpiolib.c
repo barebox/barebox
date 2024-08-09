@@ -504,8 +504,20 @@ int gpio_direction_input(unsigned gpio)
 }
 EXPORT_SYMBOL(gpio_direction_input);
 
-static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long flags,
-				const char *label)
+/**
+ * gpiodesc_request_one - request GPIO descriptor
+ * @desc: GPIO descriptor
+ * @lflags: OF lookup flags for this GPIO or 0 if default
+ * such as GPIOF_ACTIVE_LOW
+ * @dflags: descriptor request flags (GPIOF_*) for this GPIO or 0 if default
+ *
+ * Function is used to request a GPIO descriptor and configure it for use.
+ *
+ * Returns:
+ * 0 on success and a negative error code otherwise.
+ */
+static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long lflags,
+				unsigned long dflags, const char *label)
 {
 	int err;
 
@@ -513,16 +525,17 @@ static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long flags,
 	 * Not all of the flags below are mulit-bit, but, for the sake
 	 * of consistency, the code is written as if all of them were.
 	 */
-	const bool active_low  = (flags & GPIOF_ACTIVE_LOW) == GPIOF_ACTIVE_LOW;
-	const bool dir_in      = (flags & GPIOF_DIR_IN) == GPIOF_DIR_IN;
-	const bool logical     = (flags & GPIOF_LOGICAL) == GPIOF_LOGICAL;
-	const bool init_active = (flags & GPIOF_INIT_ACTIVE) == GPIOF_INIT_ACTIVE;
-	const bool init_high   = (flags & GPIOF_INIT_HIGH) == GPIOF_INIT_HIGH;
+	const bool active_low  = (dflags & GPIOF_ACTIVE_LOW) == GPIOF_ACTIVE_LOW;
+	const bool dir_in      = (dflags & GPIOF_DIR_IN) == GPIOF_DIR_IN;
+	const bool logical     = (dflags & GPIOF_LOGICAL) == GPIOF_LOGICAL;
+	const bool init_active = (dflags & GPIOF_INIT_ACTIVE) == GPIOF_INIT_ACTIVE;
+	const bool init_high   = (dflags & GPIOF_INIT_HIGH) == GPIOF_INIT_HIGH;
 
 	err = gpiodesc_request(desc, label);
 	if (err)
 		return err;
 
+	desc->flags |= lflags;
 	if (active_low)
 		desc->flags |= OF_GPIO_ACTIVE_LOW;
 
@@ -552,7 +565,7 @@ int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 	if (!desc)
 		return -ENODEV;
 
-	return gpiodesc_request_one(desc, flags, label);
+	return gpiodesc_request_one(desc, 0, flags, label);
 }
 EXPORT_SYMBOL_GPL(gpio_request_one);
 
@@ -656,7 +669,7 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 {
 	struct device_node *chip_np = chip->dev->of_node;
 	unsigned long flags = 0;
-	u32 gpio_cells, gpio_num, gpio_flags;
+	u32 gpio_cells, gpio_num, of_flags;
 	int ret;
 	const char *name = NULL;
 
@@ -677,12 +690,9 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 		return ret;
 
 	ret = of_property_read_u32_index(np, "gpios", idx * gpio_cells + 1,
-					 &gpio_flags);
+					 &of_flags);
 	if (ret)
 		return ret;
-
-	if (gpio_flags & OF_GPIO_ACTIVE_LOW)
-		flags |= GPIOF_ACTIVE_LOW;
 
 	/*
 	 * Note that, in order to be compatible with Linux, the code
@@ -711,7 +721,7 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 		name = np->name;
 
 	return gpiodesc_request_one(gpiochip_get_desc(chip, gpio_num),
-				    flags, name);
+				    of_flags, flags, name);
 }
 
 static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
@@ -901,7 +911,7 @@ static struct property *of_find_gpio_property(struct device_node *np,
 struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 			struct device_node *np,
 			const char *con_id, int index,
-			enum gpiod_flags flags,
+			enum gpiod_flags dflags,
 			const char *label)
 {
 	struct gpio_desc *desc = NULL;
@@ -925,9 +935,6 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 
 	desc = gpio_to_desc(gpio);
 
-	if (of_flags & OF_GPIO_ACTIVE_LOW)
-		flags |= GPIOF_ACTIVE_LOW;
-
 	buf = NULL;
 
 	if (!label) {
@@ -937,7 +944,7 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 			label = dev_name(dev);
 	}
 
-	ret = gpiodesc_request_one(desc, flags, label);
+	ret = gpiodesc_request_one(desc, of_flags, dflags, label);
 	free(buf);
 
 	return ret ? ERR_PTR(ret): desc;

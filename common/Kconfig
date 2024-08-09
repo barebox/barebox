@@ -573,8 +573,8 @@ menuconfig BOOTM
 
 config BOOTM_SHOW_TYPE
 	bool
-	depends on BOOTM
-	prompt "show image information"
+	depends on BOOTM && UIMAGE
+	prompt "show uImage information"
 	help
 	  Displays some tags from the uImage:
 

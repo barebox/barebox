@@ -69,6 +69,8 @@ static inline struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 
 #ifdef CONFIG_GPIOLIB
 
+int gpiod_set_config(struct gpio_desc *desc, unsigned long config);
+
 int gpiod_direction_input(struct gpio_desc *desc);
 
 int gpiod_direction_output_raw(struct gpio_desc *desc, int value);
@@ -96,6 +98,13 @@ int gpiod_set_array_value(unsigned int array_size,
 			  unsigned long *value_bitmap);
 
 #else
+
+static inline int gpiod_set_config(struct gpio_desc *desc, unsigned long config)
+{
+	/* GPIO can never have been requested */
+	WARN_ON(desc);
+	return 0;
+}
 
 static inline int gpiod_direction_input(struct gpio_desc *desc)
 {

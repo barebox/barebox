@@ -10,6 +10,20 @@ menu "GPIO"
 config GPIO_GENERIC
 	bool
 
+config HAVE_GPIO_PINCONF
+	bool
+	help
+	  This is selected by drivers who implement struct gpio_ops::set_config
+
+config GPIO_PINCONF
+	bool "support for configuring GPIO lines directly" if COMPILE_TEST
+	help
+	  This option enables compilation and use of the optional
+	  struct gpio_ops::set_config callback. Drivers that export
+	  it allow configuring bias and other configuration directly
+	  on the GPIO line without having to interact directly with
+	  the pinctrl subsystem.
+
 config GPIO_DIGIC
 	bool "GPIO support for Canon DIGIC"
 	depends on ARCH_DIGIC || COMPILE_TEST

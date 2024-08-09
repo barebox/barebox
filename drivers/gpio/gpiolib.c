@@ -238,6 +238,34 @@ void gpiod_put_array(struct gpio_descs *descs)
 }
 EXPORT_SYMBOL_GPL(gpiod_put_array);
 
+static int gpio_do_set_config(struct gpio_chip *gc, unsigned int offset,
+			      unsigned long config)
+{
+	if (!IS_ENABLED(CONFIG_GPIO_PINCONF))
+		return -ENOSYS;
+	if (!gc->ops->set_config)
+		return -ENOTSUPP;
+
+	return gc->ops->set_config(gc, offset, config);
+}
+
+/**
+ * gpiod_set_config - sets @config for a GPIO
+ * @desc: descriptor of the GPIO for which to set the configuration
+ * @config: Same packed config format as generic pinconf
+ *
+ * Returns:
+ * 0 on success, %-ENOTSUPP if the controller doesn't support setting the
+ * configuration.
+ */
+int gpiod_set_config(struct gpio_desc *desc, unsigned long config)
+{
+	VALIDATE_DESC(desc);
+
+	return gpio_do_set_config(desc->chip, gpiodesc_chip_offset(desc), config);
+}
+EXPORT_SYMBOL_GPL(gpiod_set_config);
+
 /**
  * gpiod_set_raw_value() - assign a gpio's raw value
  * @desc: gpio whose value will be assigned

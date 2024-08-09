@@ -370,7 +370,8 @@ static int efi_late_init(void)
 		return 0;
 
 	if (!get_mounted_path("/boot")) {
-		pr_warn("boot device couldn't be determined\n");
+		pr_warn("boot device couldn't be determined%s\n",
+			IS_ENABLED(CONFIG_FS_EFI) ? " without CONFIG_FS_EFI" : "");
 		return 0;
 	}
 

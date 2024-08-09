@@ -8,10 +8,8 @@
 picflags-$(CONFIG_X86_64)	:= -mcmodel=small
 picflags-$(CONFIG_X86)		+= -fPIC -fno-asynchronous-unwind-tables
 
-ifeq ($(CONFIG_ARM),y)
-picflags-$(CONFIG_CPU_32)	:= -fpic -mno-single-pic-base
-picflags-$(CONFIG_CPU_64)	:= -fpie
-endif
+picflags-$(CONFIG_ARM32)	:= -fpic -mno-single-pic-base
+picflags-$(CONFIG_ARM64)	:= -fpie
 
 picflags-y			+= -include $(srctree)/include/linux/hidden.h \
 				   -D__fully_pic__ \

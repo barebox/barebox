@@ -131,7 +131,7 @@
 #	define XZ_DEC_POWERPC
 #endif
 #ifdef CONFIG_ARM
-#	ifdef CONFIG_CPU_64
+#	ifdef CONFIG_ARM64
 #		define XZ_DEC_ARM64
 #	elif defined CONFIG_THUMB2_BAREBOX
 #		define XZ_DEC_ARMTHUMB

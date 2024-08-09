@@ -206,7 +206,7 @@ static void test_digests(void)
 	test_digest_md5("generic");
 
 	test_digests_sha12("generic");
-	if (IS_ENABLED(CONFIG_CPU_32))
+	if (IS_ENABLED(CONFIG_ARM32))
 		test_digests_sha12("asm");
 
 	test_digests_sha35("generic");

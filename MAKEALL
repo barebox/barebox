@@ -97,7 +97,7 @@ do_build_target() {
 	${MAKE} ${target} &>/dev/null
 
 	if [ ${arch} = "arm" ]; then
-		grep -q "CONFIG_CPU_64=y" ${BUILDDIR}/.config
+		grep -q "CONFIG_ARM64=y" ${BUILDDIR}/.config
 		if [ $? = 0 ]; then
 			arch=arm64
 		fi

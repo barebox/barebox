@@ -642,6 +642,24 @@ static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long lflags,
 	return err;
 }
 
+struct gpio_desc *gpiod_request_one(unsigned gpio,
+				    unsigned long flags, const char *label)
+{
+	struct gpio_desc *desc = gpio_to_desc(gpio);
+	int ret;
+
+	if (!desc)
+		return ERR_PTR(-ENODEV);
+
+	ret = gpiodesc_request_one(desc, 0, flags, label);
+	if (ret)
+		return ERR_PTR(ret);
+
+	return desc;
+}
+EXPORT_SYMBOL_GPL(gpio_request_one);
+
+
 /**
  * gpio_request_one - request a single GPIO with initial configuration
  * @gpio:	the GPIO number
@@ -650,14 +668,10 @@ static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long lflags,
  */
 int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 {
-	struct gpio_desc *desc = gpio_to_desc(gpio);
-
-	if (!desc)
-		return -ENODEV;
-
-	return gpiodesc_request_one(desc, 0, flags, label);
+	return PTR_ERR_OR_ZERO(gpiod_request_one(gpio, flags, label));
 }
 EXPORT_SYMBOL_GPL(gpio_request_one);
+
 
 /**
  * gpio_request_array - request multiple GPIOs in a single call

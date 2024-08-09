@@ -97,6 +97,9 @@ int gpiod_set_array_value(unsigned int array_size,
 			  struct gpio_array *array_info,
 			  unsigned long *value_bitmap);
 
+struct gpio_desc *gpiod_request_one(unsigned gpio,
+				    unsigned long flags, const char *label);
+
 #else
 
 static inline int gpiod_set_config(struct gpio_desc *desc, unsigned long config)
@@ -184,6 +187,13 @@ static inline int gpiod_set_array_value(unsigned int array_size,
 	/* GPIO can never have been requested */
 	WARN_ON(desc_array);
 	return 0;
+}
+
+static inline
+struct gpio_desc *gpiod_request_one(unsigned gpio,
+				    unsigned long flags, const char *label)
+{
+	return ERR_PTR(-ENODEV);
 }
 
 #endif

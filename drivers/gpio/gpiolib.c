@@ -1018,8 +1018,7 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 	if (!pp)
 		return ERR_PTR(-ENOENT);
 
-	gpio = of_get_named_gpio_flags(dev->device_node, pp->name,
-				       index, &of_flags);
+	gpio = of_get_named_gpio_flags(np, pp->name, index, &of_flags);
 	if (!gpio_is_valid(gpio))
 		return ERR_PTR(gpio < 0 ? gpio : -EINVAL);
 

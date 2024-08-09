@@ -312,7 +312,7 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 
 	pr_debug("getvar: \"%s\"\n", cmd);
 
-	if (!strcmp_l1(cmd, "all")) {
+	if (!strcmp(cmd, "all")) {
 		list_for_each_entry(var, &fb->variables, list)
 			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
 					  var->name, var->value);

@@ -103,6 +103,7 @@ config PINCTRL_VF610
 config PINCTRL_STM32
 	bool "STM32 pinctrl support" if  COMPILE_TEST
 	default y if ARCH_STM32
+	select HAVE_GPIO_PINCONF
 	help
 	  Pinmux and GPIO controller found on STM32 family
 endif

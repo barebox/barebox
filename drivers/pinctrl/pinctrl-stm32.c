@@ -15,6 +15,7 @@
 #include <hwspinlock.h>
 #include <malloc.h>
 #include <linux/clk.h>
+#include <linux/pinctrl/pinconf-generic.h>
 #include <soc/stm32/gpio.h>
 
 #define STM32_PIN_NO(x) ((x) << 8)
@@ -258,12 +259,52 @@ static int stm32_gpio_direction_output(struct gpio_chip *chip,
 	return 0;
 }
 
+static int stm32_gpio_set_config(struct gpio_chip *chip,
+				 unsigned int gpio, unsigned long config)
+{
+	struct stm32_gpio_bank *bank = to_stm32_gpio_bank(chip);
+	enum pin_config_param param;
+	u32 arg;
+
+	param = pinconf_to_config_param(config);
+	arg = pinconf_to_config_argument(config);
+
+	switch (param) {
+	case PIN_CONFIG_DRIVE_PUSH_PULL:
+		__stm32_pmx_set_output_type(bank->base, gpio, STM32_PIN_OUT_PUSHPULL);
+		break;
+	case PIN_CONFIG_DRIVE_OPEN_DRAIN:
+		__stm32_pmx_set_output_type(bank->base, gpio, STM32_PIN_OUT_OPENDRAIN);
+		break;
+	case PIN_CONFIG_SLEW_RATE:
+		__stm32_pmx_set_speed(bank->base, gpio, arg);
+		break;
+	case PIN_CONFIG_BIAS_DISABLE:
+		__stm32_pmx_set_bias(bank->base, gpio, STM32_PIN_NO_BIAS);
+		break;
+	case PIN_CONFIG_BIAS_PULL_UP:
+		__stm32_pmx_set_bias(bank->base, gpio, STM32_PIN_PULL_UP);
+		break;
+	case PIN_CONFIG_BIAS_PULL_DOWN:
+		__stm32_pmx_set_bias(bank->base, gpio, STM32_PIN_PULL_DOWN);
+		break;
+	case PIN_CONFIG_OUTPUT:
+		__stm32_pmx_gpio_output(bank->base, gpio, arg);
+		break;
+	default:
+		return -ENOTSUPP;
+	}
+
+	return 0;
+}
+
 static struct gpio_ops stm32_gpio_ops = {
 	.direction_input = stm32_gpio_direction_input,
 	.direction_output = stm32_gpio_direction_output,
 	.get_direction = stm32_gpio_get_direction,
 	.get = stm32_gpio_get,
 	.set = stm32_gpio_set,
+	.set_config = IS_ENABLED(CONFIG_GPIO_PINCONF) ? stm32_gpio_set_config : NULL,
 };
 
 static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,

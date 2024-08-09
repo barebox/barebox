@@ -90,6 +90,11 @@ static unsigned gpiodesc_chip_offset(const struct gpio_desc *desc)
 	return (desc - gpio_desc) - desc->chip->base + desc->chip->gpio_offset;
 }
 
+static __maybe_unused struct gpio_desc *gpiochip_get_desc(struct gpio_chip *chip, int gpio)
+{
+	return gpio_desc + chip->base + gpio - chip->gpio_offset;
+}
+
 static int gpiod_is_active_low(const struct gpio_desc *desc)
 {
 	return desc->flags & OF_GPIO_ACTIVE_LOW;
@@ -643,6 +648,7 @@ static int gpiochip_find_base(int ngpio)
 	return base;
 }
 
+
 #ifdef CONFIG_OF_GPIO
 
 static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
@@ -651,7 +657,7 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 	struct device_node *chip_np = chip->dev->of_node;
 	unsigned long flags = 0;
 	u32 gpio_cells, gpio_num, gpio_flags;
-	int ret, gpio;
+	int ret;
 	const char *name = NULL;
 
 	ret = of_property_read_u32(chip_np, "#gpio-cells", &gpio_cells);
@@ -677,16 +683,6 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 
 	if (gpio_flags & OF_GPIO_ACTIVE_LOW)
 		flags |= GPIOF_ACTIVE_LOW;
-
-	gpio = gpio_get_num(chip->dev, gpio_num);
-	if (gpio == -EPROBE_DEFER)
-		return gpio;
-
-	if (gpio < 0) {
-		dev_err(chip->dev, "unable to get gpio %u\n", gpio_num);
-		return gpio;
-	}
-
 
 	/*
 	 * Note that, in order to be compatible with Linux, the code
@@ -714,7 +710,8 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 	if (ret < 0)
 		name = np->name;
 
-	return gpio_request_one(gpio, flags, name);
+	return gpiodesc_request_one(gpiochip_get_desc(chip, gpio_num),
+				    flags, name);
 }
 
 static int of_gpiochip_scan_hogs(struct gpio_chip *chip)

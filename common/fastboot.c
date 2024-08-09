@@ -794,6 +794,11 @@ static void cb_erase(struct fastboot *fb, const char *cmd)
 		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 }
 
+static bool fastboot_cmd_should_abort(const char *cmdbuf)
+{
+	return !strstarts(cmdbuf, "getvar:");
+}
+
 struct cmd_dispatch_info {
 	char *cmd;
 	void (*cb)(struct fastboot *fb, const char *opt);
@@ -805,7 +810,8 @@ static void fb_run_command(struct fastboot *fb, const char *cmdbuf,
 	const struct cmd_dispatch_info *cmd;
 	int i;
 
-	console_countdown_abort("fastboot");
+	if (fastboot_cmd_should_abort(cmdbuf))
+		console_countdown_abort("fastboot");
 
 	for (i = 0; i < num_commands; i++) {
 		size_t cmdlen;

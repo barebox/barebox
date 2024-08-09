@@ -8,6 +8,7 @@ config HAVE_EFI_PAYLOAD
 config EFI_PAYLOAD
 	bool "Build as EFI payload" if COMPILE_TEST
 	depends on HAVE_EFI_PAYLOAD
+	select PBL_FULLY_PIC if ARM64
 	select EFI
 	select EFI_GUID
 	select EFI_DEVICEPATH

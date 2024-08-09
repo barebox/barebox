@@ -287,13 +287,6 @@ static void cb_reboot(struct fastboot *fb, const char *cmd)
 	restart_machine();
 }
 
-static int strcmp_l1(const char *s1, const char *s2)
-{
-	if (!s1 || !s2)
-		return -1;
-	return strncmp(s1, s2, strlen(s1));
-}
-
 static void cb_getvar(struct fastboot *fb, const char *cmd)
 {
 	struct fb_variable *var;
@@ -815,10 +808,13 @@ static void fb_run_command(struct fastboot *fb, const char *cmdbuf,
 	console_countdown_abort("fastboot");
 
 	for (i = 0; i < num_commands; i++) {
+		size_t cmdlen;
+
 		cmd = &cmds[i];
 
-		if (!strcmp_l1(cmd->cmd, cmdbuf)) {
-			cmd->cb(fb, cmdbuf + strlen(cmd->cmd));
+		cmdlen = str_has_prefix(cmdbuf, cmd->cmd);
+		if (cmdlen) {
+			cmd->cb(fb, cmdbuf + cmdlen);
 
 			return;
 		}

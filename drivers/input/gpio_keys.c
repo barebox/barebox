@@ -112,10 +112,13 @@ static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device *dev)
 	gk->buttons = xzalloc(gk->nbuttons * sizeof(*gk->buttons));
 
 	for_each_child_of_node(np, npkey) {
+		const char *label = NULL;
 		struct gpio_desc *gpio;
 		uint32_t keycode;
 
-		gpio = dev_gpiod_get(dev, npkey, "gpios", GPIOD_IN, NULL);
+		of_property_read_string(npkey, "label", &label);
+
+		gpio = dev_gpiod_get(dev, npkey, NULL, GPIOD_IN, label);
 		if (IS_ERR(gpio)) {
 			pr_err("gpio_keys: gpio #%d can not be requested\n", i);
 			return PTR_ERR(gpio);

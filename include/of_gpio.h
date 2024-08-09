@@ -17,6 +17,7 @@
  */
 enum of_gpio_flags {
 	OF_GPIO_ACTIVE_LOW = 0x1,
+	OF_GPIO_REQUESTED = 0x80000000, /* internal use */
 };
 
 #ifdef CONFIG_OF_GPIO

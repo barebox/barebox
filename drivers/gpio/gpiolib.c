@@ -16,10 +16,9 @@ static LIST_HEAD(chip_list);
 
 struct gpio_desc {
 	struct gpio_chip *chip;
-	bool requested;
-	bool active_low;
 	char *label;
 	const char *name;
+	u32 flags; /* OR-d enum of_gpio_flags */
 };
 
 /*
@@ -62,9 +61,14 @@ static int gpio_desc_alloc(void)
 }
 pure_initcall(gpio_desc_alloc);
 
+static inline bool gpiod_is_requested(struct gpio_desc *desc)
+{
+	return desc->flags & OF_GPIO_REQUESTED;
+}
+
 static int gpio_ensure_requested(struct gpio_desc *desc, int gpio)
 {
-	if (desc->requested)
+	if (gpiod_is_requested(desc))
 		return 0;
 
 	return gpio_request(gpio, "gpio");
@@ -86,20 +90,28 @@ static unsigned gpiodesc_chip_offset(const struct gpio_desc *desc)
 	return (desc - gpio_desc) - desc->chip->base + desc->chip->gpio_offset;
 }
 
+static int gpiod_is_active_low(const struct gpio_desc *desc)
+{
+	return desc->flags & OF_GPIO_ACTIVE_LOW;
+}
+
 static int gpio_adjust_value(const struct gpio_desc *desc,
 			     int value)
 {
 	if (value < 0)
 		return value;
 
-	return !!value ^ desc->active_low;
+	if (gpiod_is_active_low(desc))
+		value = !value;
+
+	return (bool)value;
 }
 
 static int gpiodesc_request(struct gpio_desc *desc, const char *label)
 {
 	int ret;
 
-	if (desc->requested) {
+	if (gpiod_is_requested(desc)) {
 		ret = -EBUSY;
 		goto done;
 	}
@@ -113,8 +125,7 @@ static int gpiodesc_request(struct gpio_desc *desc, const char *label)
 			goto done;
 	}
 
-	desc->requested = true;
-	desc->active_low = false;
+	desc->flags = OF_GPIO_REQUESTED;
 	desc->label = xstrdup(label);
 
 done:
@@ -132,7 +143,7 @@ int gpio_find_by_label(const char *label)
 	for (i = 0; i < ARCH_NR_GPIOS; i++) {
 		struct gpio_desc *info = &gpio_desc[i];
 
-		if (!info->requested || !info->chip || !info->label)
+		if (!gpiod_is_requested(info) || !info->chip || !info->label)
 			continue;
 
 		if (!strcmp(info->label, label))
@@ -189,14 +200,13 @@ bool gpio_slice_acquired(unsigned gpio)
 
 static void gpiodesc_free(struct gpio_desc *desc)
 {
-	if (!desc->requested)
+	if (!gpiod_is_requested(desc))
 		return;
 
 	if (desc->chip->ops->free)
 		desc->chip->ops->free(desc->chip, gpiodesc_chip_offset(desc));
 
-	desc->requested = false;
-	desc->active_low = false;
+	desc->flags = 0;
 	free(desc->label);
 	desc->label = NULL;
 }
@@ -508,7 +518,8 @@ static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long flags,
 	if (err)
 		return err;
 
-	desc->active_low = active_low;
+	if (active_low)
+		desc->flags |= OF_GPIO_ACTIVE_LOW;
 
 	if (dir_in)
 		err = gpiod_direction_input(desc);
@@ -1148,6 +1159,7 @@ static int do_gpiolib(int argc, char *argv[])
 
 	for (i = 0; i < ARCH_NR_GPIOS; i++) {
 		struct gpio_desc *desc = &gpio_desc[i];
+		bool requested, active_low;
 		int val = -1, dir = -1;
 		int idx;
 
@@ -1173,10 +1185,13 @@ static int do_gpiolib(int argc, char *argv[])
 		if (desc->chip->ops->get)
 			val = desc->chip->ops->get(desc->chip, idx);
 
+		requested  = gpiod_is_requested(desc);
+		active_low = gpiod_is_active_low(desc);
+
 		printf("  GPIO %4d: %-3s %-3s %-9s %-20s %-20s\n", chip ? idx : i,
 			(dir < 0) ? "unk" : ((dir == GPIOF_DIR_IN) ? "in" : "out"),
 			(val < 0) ? "unk" : ((val == 0) ? "lo" : "hi"),
-		        desc->requested ? (desc->active_low ? "active low" : "true") : "false",
+		        requested ? (active_low ? "active low" : "true") : "false",
 			desc->name ? desc->name : "",
 			desc->label ? desc->label : "");
 	}

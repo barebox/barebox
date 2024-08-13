@@ -340,12 +340,12 @@ sub emulate {
 
 	    vsystem($temu{temu_bin}, "tinyemu.cfg", @OPTS) == 0
 		or die "Error running emulator: $?\n";
-    } elsif (defined $target{drivers}{NativeExecutableDriver}) {
-	    my %exec = %{$target{drivers}{NativeExecutableDriver}};
+    } elsif (defined $target{drivers}{ExternalConsoleDriver}) {
+	    my %exec = %{$target{drivers}{ExternalConsoleDriver}};
 
 	    pushd($args{builddir}) if $tuxmake;
 
-	    vsystem($exec{command}, @OPTS) == 0 or die "Error running emulator: $?\n";
+	    vsystem($exec{cmd}, @OPTS) == 0 or die "Error running emulator: $?\n";
     }
 
     popd() if $tuxmake;

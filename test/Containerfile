@@ -75,7 +75,7 @@ RUN echo barebox ALL=NOPASSWD: ALL > /etc/sudoers.d/barebox
 
 # install labgrid
 RUN cd /tmp && \
-    git clone --depth 1 -b v23.0 https://github.com/labgrid-project/labgrid && \
+    git clone --depth 1 -b v24.0 https://github.com/labgrid-project/labgrid && \
     cd labgrid && \
     pip3 install --break-system-packages . && \
     ln -s $(which pytest) /usr/local/bin/labgrid-pytest;

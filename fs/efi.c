@@ -360,7 +360,7 @@ static int efifs_stat(struct device *dev, const char *filename,
 	s->st_size = info->FileSize;
 	s->st_mode = 00555;
 
-	if (!info->Attribute & EFI_FILE_READ_ONLY)
+	if (!(info->Attribute & EFI_FILE_READ_ONLY))
 		s->st_mode |= 00222;
 
 	if (info->Attribute & EFI_FILE_DIRECTORY)

@@ -92,11 +92,3 @@ const struct optee_header *imx_scratch_get_optee_hdr(void)
 
 	return &scratch->optee_hdr;
 }
-
-static int imx8m_reserve_scratch_area(void)
-{
-	return request_barebox_region("scratch area",
-				      (ulong)arm_mem_scratch_get(),
-				      sizeof(struct imx_scratch_space)) ? 0 : -EINVAL;
-}
-device_initcall(imx8m_reserve_scratch_area);

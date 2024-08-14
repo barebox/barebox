@@ -22,7 +22,7 @@ static int machines[] = {
 #elif defined(__arm__)
 	IMAGE_FILE_MACHINE_ARM,
 	IMAGE_FILE_MACHINE_THUMB,
-	IMAGE_FILE_MACHINE_ARMNT,
+	IMAGE_FILE_MACHINE_ARMV7,
 #endif
 
 #if defined(__x86_64__)

@@ -7,8 +7,8 @@
  * Early debugging functions for the NS16550
  * This file needs register access functions declared as:
  *
- * uint8_t debug_ll_read_reg(int reg);
- * void debug_ll_write_reg(int reg, uint8_t val);
+ * uint8_t debug_ll_read_reg(void __iomem *base, int reg);
+ * void debug_ll_write_reg(void __iomem *base, int reg, uint8_t val);
  */
 #define NS16550_THR	0x0
 #define NS16550_RBR	0x0

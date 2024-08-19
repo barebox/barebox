@@ -114,7 +114,7 @@ static unsigned int efi_i2c_msg_op_cnt(const struct efi_i2c_priv *i2c_priv,
 
 	max_len = efi_i2c_max_len(i2c_priv, msg);
 
-	return (msg->len + max_len - 1) / max_len;
+	return ((u64)msg->len + max_len - 1) / max_len;
 }
 
 static unsigned int efi_i2c_req_op_cnt(

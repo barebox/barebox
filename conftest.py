@@ -1,7 +1,7 @@
 import pytest
 import os
 import argparse
-from .py import helper
+from test.py import helper
 
 
 @pytest.fixture(scope='function')

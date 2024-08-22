@@ -14,9 +14,6 @@ targets:
       BareboxTestStrategy: {}
     features:
       - virtio-pci
-    runner:
-      kconfig_add:
-        - CONFIG_CPU_LITTLE_ENDIAN=y
 images:
   barebox-qemu-malta.img.swapped: !template "$LG_BUILDDIR/images/barebox-qemu-malta.img.swapped"
 imports:

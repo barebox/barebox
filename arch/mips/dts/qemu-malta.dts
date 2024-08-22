@@ -8,6 +8,8 @@
 	#size-cells = <1>;
 
 	chosen {
+		stdout-path = &uart0;
+
 		environment {
 			compatible = "barebox,environment";
 			device-path = &env_nor;

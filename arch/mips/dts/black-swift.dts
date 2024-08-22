@@ -13,6 +13,10 @@
 		spiflash = &spiflash;
 	};
 
+	chosen {
+		stdout-path = &uart;
+	};
+
 	memory@0 {
 		device_type = "memory";
 		reg = <0x00000000 0x4000000>;

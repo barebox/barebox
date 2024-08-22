@@ -281,20 +281,20 @@ then
 	REGEX="*"
 fi
 
-if [ ! "${ARCH}" ] || [ ! -d arch/${ARCH} ]
-then
-	do_build_all
-	if [ $? -eq 0 ]
-	then
-		echo "You need to specify the ARCH or CROSS_COMPILE_<arch> or CROSS_COMPILE_<target> in your config file"
-		usage
-		exit 1
-	fi
-	exit 0
-fi
-
 if [ $# -eq 0 ]
 then
+	if [ ! "${ARCH}" ] || [ ! -d arch/${ARCH} ]
+	then
+		do_build_all
+		if [ $? -eq 0 ]
+		then
+			echo "You need to specify the ARCH or CROSS_COMPILE_<arch> or CROSS_COMPILE_<target> in your config file"
+			usage
+			exit 1
+		fi
+		exit 0
+	fi
+
 	do_build ${ARCH} "${REGEX}"
 else
 	for i in $*; do

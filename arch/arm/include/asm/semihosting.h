@@ -27,8 +27,8 @@ static inline void semihosting_putc(void *unused, int c)
 		"push {%0}\n"
 		"mov r1, sp\n"
 		"mov r0, #0x03\n"
-	 ARM(	"bkpt #0x123456\n")
-	 THUMB(	"bkpt #0xAB\n")
+	 ARM(	"svc #0x123456\n")
+	 THUMB(	"svc #0xAB\n")
 		"pop {%0}\n"
 		: /* No outputs */
 		: "r" (c)

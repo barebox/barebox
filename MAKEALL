@@ -8,7 +8,7 @@ warnings_list=""
 nb_errors=0
 errors_list=""
 nb_defconfigs=0
-ret=0
+exitcode=0
 
 time_start=$(date +%s)
 
@@ -72,7 +72,7 @@ stats() {
 	fi
 	echo "----------------------------------------------------------"
 
-	exit ${ret}
+	exit ${exitcode}
 }
 
 check_pipe_status() {
@@ -89,6 +89,7 @@ do_build_target() {
 	local target_time_start=$(date +%s)
 	local log_report="${LOGDIR}/${target}/report.log"
 	local log_err="${LOGDIR}/${target}/errors.log"
+	local err=0
 
 	[ "$INCREMENTAL" != "1" ] && rm -rf "${BUILDDIR}"
 	mkdir -p "${LOGDIR}/${target}"
@@ -148,12 +149,14 @@ do_build_target() {
 			printf "FAILED \n" | tee -a "${log_report}"
 			nb_errors=$((nb_errors + 1))
 			errors_list="${errors_list} ${target}"
-			ret=1
+			err=1
+			exitcode=1
 		fi
 	else
 		printf "FAILED \n" | tee -a "${log_report}"
 		printf "Compile: ------ \n" | tee -a "${log_report}"
-		ret=1
+		err=1
+		exitcode=1
 	fi
 
 	if [ -s "${log_err}" ] ; then
@@ -168,6 +171,8 @@ do_build_target() {
 	target_time_stop=$(date +%s)
 	target_time_diff=$((${target_time_stop} - ${target_time_start}))
 	printf "Compiled in %4is\n" ${target_time_diff} | tee -a "${log_report}"
+
+	return $err
 }
 
 do_build() {

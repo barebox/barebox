@@ -44,10 +44,11 @@ void input_report_key_event(struct input_device *idev, unsigned int code, int va
 		pr_print(MSG_DEBUG, "Event. Dev: %s, Type: %d, Code: %d, Value: %d\n",
 			 dev_name(idev->parent), EV_KEY, code, value);
 
+	/* Only report depressed keys, if we registered them being pressed */
 	if (value)
 		set_bit(code, idev->keys);
-	else
-		clear_bit(code, idev->keys);
+	else if (!test_and_clear_bit(code, idev->keys))
+		return;
 
 	event.code = code;
 	event.value = value;

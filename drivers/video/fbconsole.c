@@ -117,7 +117,7 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	int bpp = priv->fb->bits_per_pixel >> 3;
 	void *adr;
 	int i;
-	const char *inbuf;
+	const uint8_t *inbuf;
 	int line_length;
 	u32 color, bgcolor;
 	struct rgb *rgb;
@@ -142,21 +142,30 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	bgcolor = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
 
 	for (i = 0; i < priv->font->height; i++) {
-		uint8_t t = inbuf[i];
+		uint8_t mask = 0x80;
 		int j;
 
 		adr = buf + line_length * (priv->margin.top + y * priv->font->height + i) +
 		      (priv->margin.left + x * priv->font->width) * bpp;
 
 		for (j = 0; j < priv->font->width; j++) {
-			if (t & 0x80)
+			if (!mask) {
+				inbuf++;
+				mask = 0x80;
+			}
+
+			if (*inbuf & mask)
 				gu_set_pixel(priv->fb, adr, color);
 			else
 				gu_set_pixel(priv->fb, adr, bgcolor);
 
 			adr += priv->fb->bits_per_pixel >> 3;
-			t <<= 1;
+			mask >>= 1;
+
 		}
+
+		inbuf++;
+		mask = 0x80;
 	}
 }
 

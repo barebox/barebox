@@ -651,7 +651,15 @@ static void mci_part_add(struct mci *mci, uint64_t size,
                         unsigned int part_cfg, char *name, char *partname, int idx, bool ro,
                         int area_type)
 {
-	struct mci_part *part = &mci->part[mci->nr_parts];
+	struct mci_part *part;
+
+	if (mci->nr_parts == MMC_NUM_PHY_PARTITION) {
+		dev_err(&mci->dev, "Out of physical partitions, cannot create partition %s\n",
+			name);
+		return;
+	}
+
+	part = &mci->part[mci->nr_parts];
 
 	part->mci = mci;
 	part->size = size;

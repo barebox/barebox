@@ -14,12 +14,14 @@
 
 #ifndef ELF_ARCH
 
-#ifdef CONFIG_32BIT
+#define EM_MIPS		 8	/* MIPS R3000 (officially, big-endian only) */
 
 /*
  * This is used to ensure we don't load something for the wrong architecture.
  */
-#define elf_check_arch(hdr)						\
+#define elf_check_arch(x) ((x)->e_machine == EM_MIPS)
+
+#ifdef CONFIG_32BIT
 /*
  * These are used to set parameters in the core dumps.
  */

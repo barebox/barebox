@@ -213,7 +213,14 @@ void debug_dma_sync_single_for_cpu(struct device *dev,
 
 	cpu_addr = dma_debug_entry_cpu_addr(entry, dma_handle);
 	if (cpu_addr) {
-		kasan_unpoison_shadow(cpu_addr, DMA_KASAN_ALIGN(size));
+		size_t kasan_size = DMA_KASAN_ALIGN(size);
+
+		if (kasan_is_poisoned_shadow(cpu_addr, kasan_size) == 0) {
+			dma_dev_warn(dev, "unexpected sync for CPU of already CPU-mapped %s buffer 0x%llx+0x%zx!\n",
+				     dir2name[direction], (u64)dma_handle, size);
+		} else {
+			kasan_unpoison_shadow(cpu_addr, kasan_size);
+		}
 	}
 }
 
@@ -239,6 +246,15 @@ void debug_dma_sync_single_for_device(struct device *dev,
 
 	cpu_addr = dma_debug_entry_cpu_addr(entry, dma_handle);
 	if (cpu_addr) {
-		kasan_poison_shadow(cpu_addr, DMA_KASAN_ALIGN(size), KASAN_DMA_DEV_MAPPED);
+		size_t kasan_size = DMA_KASAN_ALIGN(size);
+
+		/* explicit == 1 check as function may return negative value on error */
+		if (kasan_is_poisoned_shadow(cpu_addr, kasan_size) == 1) {
+			dma_dev_warn(dev, "unexpected sync for device of already device-mapped %s buffer 0x%llx+0x%zx!\n",
+				     dir2name[direction], (u64)dma_handle, size);
+		} else {
+			kasan_poison_shadow(cpu_addr, kasan_size, KASAN_DMA_DEV_MAPPED);
+		}
+
 	}
 }

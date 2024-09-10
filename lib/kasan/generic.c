@@ -177,6 +177,43 @@ static __always_inline bool check_memory_region_inline(unsigned long addr,
 	return !kasan_report(addr, size, write, ret_ip);
 }
 
+int kasan_is_poisoned_shadow(const void *_addr, size_t size)
+{
+	unsigned long addr = (unsigned long)_addr;
+	unsigned long ret;
+
+	if (!kasan_initialized)
+		return -1;
+
+	if (addr < kasan_shadow_start)
+		return -1;
+
+	if (addr > kasan_shadowed_end)
+		return -1;
+
+	if (unlikely(size == 0))
+		return -1;
+
+	if (unlikely(addr + size < addr))
+		return -1;
+
+	if (addr < kasan_shadow_base)
+		return -1;
+
+	ret = memory_is_nonzero(kasan_mem_to_shadow((void *)addr),
+			kasan_mem_to_shadow((void *)addr + size - 1) + 1);
+
+	if (unlikely(ret)) {
+		unsigned long last_byte = addr + size - 1;
+		s8 *last_shadow = (s8 *)kasan_mem_to_shadow((void *)last_byte);
+
+		if (unlikely(ret != (unsigned long)last_shadow ||
+			((long)(last_byte & KASAN_SHADOW_MASK) >= *last_shadow)))
+			return 1;
+	}
+	return 0;
+}
+
 void kasan_init(unsigned long membase, unsigned long memsize,
 		unsigned long shadow_base)
 {

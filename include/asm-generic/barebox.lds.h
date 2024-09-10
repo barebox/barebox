@@ -171,3 +171,8 @@ CONFIG_ARCH_BAREBOX_MAX_PBL_SIZE < CONFIG_BAREBOX_MAX_PBL_SIZE
 	ASSERT(_barebox_pbl_size < MAX_PBL_SIZE, "Barebox pbl size > ") \
 	ASSERT(_barebox_pbl_size < MAX_PBL_SIZE, __stringify(MAX_PBL_SIZE)) \
 
+#if defined(__GNUC__) && __GNUC__ >= 11
+#define READONLY READONLY
+#else
+#define READONLY
+#endif

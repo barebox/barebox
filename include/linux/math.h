@@ -81,4 +81,6 @@
 		(__x < 0) ? -__x : __x;         \
 	})
 
+unsigned long int_sqrt(unsigned long);
+
 #endif

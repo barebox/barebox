@@ -11,8 +11,8 @@
  *
  */
 
-#include <common.h>
-#include <int_sqrt.h>
+#include <linux/math.h>
+#include <linux/export.h>
 
 /**
  * int_sqrt - rough approximation to sqrt

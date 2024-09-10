@@ -76,7 +76,6 @@ obj-$(CONFIG_RATP)	+= ratp.o
 obj-$(CONFIG_DEBUG_LIST) += list_debug.o
 obj-y			+= list_sort.o
 obj-y			+= refcount.o
-obj-y			+= int_sqrt.o
 obj-y			+= parseopt.o
 obj-y			+= clz_ctz.o
 obj-$(CONFIG_CRC_CCITT) += crc-ccitt.o

@@ -25,7 +25,7 @@
 #define KASAN_KMALLOC_FREETRACK 0xFA  /* object was freed and has free track set */
 
 #define KASAN_GLOBAL_REDZONE    0xF9  /* redzone for global variable */
-#define KASAN_VMALLOC_INVALID   0xF8  /* unallocated space in vmapped page */
+#define KASAN_DMA_DEV_MAPPED    0xF8  /* DMA-mapped buffer currently owned by device */
 
 /*
  * Stack redzone shadow values

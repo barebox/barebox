@@ -3,6 +3,7 @@
 #define __STDLIB_H
 
 #include <types.h>
+#include <malloc.h>
 
 #define RAND_MAX 32767
 

@@ -552,8 +552,10 @@ static int rpi_devices_probe(struct device *dev)
 	priv->hw_id = ret;
 
 	dcfg = rpi_get_dcfg(priv);
-	if (IS_ERR(dcfg))
+	if (IS_ERR(dcfg)) {
+		ret = PTR_ERR(dcfg);
 		goto free_priv;
+	}
 
 	/* construct short recognizable host name */
 	name = of_device_get_match_compatible(priv->dev);

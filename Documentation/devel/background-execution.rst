@@ -131,12 +131,14 @@ executed nothing else happens. This means that when fastboot flashes an image
 in a workqueue then barebox won't react to any key presses on the command line.
 The usage of the interfaces described in this document is not yet very
 widespread in barebox. The interfaces are used in the places where we need
-them, but there are other places which do not use them but should. For example
-using a LED driven by a I2C GPIO exander used as hearbeat LED won't work
-properly currently. Consider the I2C driver accesses an unrelated I2C device,
+them, but there are other places which do not use them but should.
+
+For example using a LED driven by a I2C GPIO expander used as hearbeat LED
+used to not work properly before addition of slices.
+Consider the I2C driver accesses an unrelated I2C device,
 like an EEPROM. After having initiated the transfer the driver polls for the
 transfer being completed using a ``is_timeout()`` loop. The call to
 ``is_timeout()`` then calls into the registered pollers from which one accesses
 the same I2C bus whose driver is just polling for completion of another
-transfer. With this the I2C driver is in an undefined state and will likely not
-work anymore.
+transfer. Without slices, this left the I2C driver in an undefined state,
+where it would likely not work anymore.

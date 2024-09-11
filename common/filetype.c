@@ -189,7 +189,7 @@ int is_fat_boot_sector(const void *sect)
 			 */
 			if (slot == 1 && is_fat_with_no_mbr(sect))
 				return 1;
-			 else
+			else
 				return -EINVAL;
 		}
 	}

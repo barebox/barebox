@@ -43,6 +43,27 @@
 		clock-frequency = <50000000>;
 	};
 
+	serial1: serial@90000100 {
+		compatible = "ns16550a";
+		reg = <0x90000100 0x100>;
+		interrupts = <2>;
+		clock-frequency = <50000000>;
+	};
+
+	serial2: serial@90000200 {
+		compatible = "ns16550a";
+		reg = <0x90000200 0x100>;
+		interrupts = <2>;
+		clock-frequency = <50000000>;
+	};
+
+	serial3: serial@90000300 {
+		compatible = "ns16550a";
+		reg = <0x90000300 0x100>;
+		interrupts = <2>;
+		clock-frequency = <50000000>;
+	};
+
 	enet0: ethoc@92000000 {
 		compatible = "opencores,ethoc";
 		reg = <0x92000000 0x100>;

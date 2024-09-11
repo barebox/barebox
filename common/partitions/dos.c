@@ -134,7 +134,7 @@ static void dos_extended_partition(struct block_device *blk, struct dos_partitio
 	while (1) {
 		int rc, i;
 
-		dev_dbg(blk->dev, "expect EBR in sector %x\n", ebr_sector);
+		dev_dbg(blk->dev, "expect EBR in sector 0x%x\n", ebr_sector);
 
 		rc = block_read(blk, buf, ebr_sector, 1);
 		if (rc != 0) {
@@ -144,7 +144,7 @@ static void dos_extended_partition(struct block_device *blk, struct dos_partitio
 
 		/* sanity checks */
 		if (buf[0x1fe] != 0x55 || buf[0x1ff] != 0xaa) {
-			dev_err(blk->dev, "sector %x doesn't contain an EBR signature\n", ebr_sector);
+			dev_err(blk->dev, "sector 0x%x doesn't contain an EBR signature\n", ebr_sector);
 			goto out;
 		}
 

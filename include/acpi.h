@@ -115,7 +115,7 @@ struct __packed acpi_sdt { /* system description table header */
 
 struct __packed acpi_rsdt { /* system description table header */
 	struct acpi_sdt	sdt;
-	struct acpi_sdt	* __aligned(8) entries[];
+	struct acpi_sdt	*__aligned(sizeof(void *)) entries[];
 };
 
 struct acpi_driver {

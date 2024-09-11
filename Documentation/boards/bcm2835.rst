@@ -29,8 +29,8 @@ over SD or Ethernet on the Raspberry Pi 4.
      ``barebox.img``.
 
      For 64-bit, only ``images/barebox-raspberry-pi.img`` will be created, which is usable
-     for both Raspberry Pi 3 and Raspberry Pi 4 in 64-bit mode. No support for the Raspberry
-     Pi 5 has been contributed yet.
+     for both Raspberry Pi 3 and Raspberry Pi 4 in 64-bit mode (``arm_64bit`` in ``config.txt``).
+     No support for the Raspberry Pi 5 has been contributed yet.
 
      The ``images/barebox-raspberry-pi.img`` is expected to be the sole image for 32-bit
      also in the future. It contains the device trees of all supported (and enabled) variants

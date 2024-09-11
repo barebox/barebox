@@ -8,11 +8,12 @@
 #include <net.h>
 #include <linux/phy.h>
 #include <linux/pci.h>
-#include <io.h>
+#include <linux/io.h>
 #include <linux/mdio.h>
 #include <asm/system.h>
 #include <of_net.h>
 #include <asm/unaligned.h>
+#include <io-64-nonatomic-lo-hi.h>
 
 #include "fsl_enetc.h"
 
@@ -197,7 +198,7 @@ static void enetc_start_pcs(struct eth_device *edev)
  * LS1028A is the only part with IERB at this time and there are plans to
  * change its structure, keep this LS1028A specific for now.
  */
-#define LS1028A_IERB_BASE		0x1f0800000ULL
+#define LS1028A_IERB_BASE		IOMEM(0x1f0800000ULL)
 #define LS1028A_IERB_PSIPMAR0(pf, vf)	(LS1028A_IERB_BASE + 0x8000 \
 					 + (pf) * 0x100 + (vf) * 8)
 #define LS1028A_IERB_PSIPMAR1(pf, vf)	(LS1028A_IERB_PSIPMAR0(pf, vf) + 4)
@@ -283,7 +284,6 @@ static void enetc_setup_tx_bdr(struct eth_device *edev)
 {
 	struct enetc_priv *priv = edev->priv;
 	struct bd_ring *tx_bdr = &priv->tx_bdr;
-	u64 tx_bd_add = (u64)priv->enetc_txbd_phys;
 
 	/* used later to advance to the next Tx BD */
 	tx_bdr->bd_count = ENETC_BD_CNT;
@@ -296,9 +296,9 @@ static void enetc_setup_tx_bdr(struct eth_device *edev)
 
 	/* set Tx BD address */
 	enetc_bdr_write(priv, TX, ENETC_TX_BDR_ID, ENETC_TBBAR0,
-			lower_32_bits(tx_bd_add));
+			lower_32_bits(priv->enetc_txbd_phys));
 	enetc_bdr_write(priv, TX, ENETC_TX_BDR_ID, ENETC_TBBAR1,
-			upper_32_bits(tx_bd_add));
+			upper_32_bits(priv->enetc_txbd_phys));
 	/* set Tx 8 BD count */
 	enetc_bdr_write(priv, TX, ENETC_TX_BDR_ID, ENETC_TBLENR,
 			tx_bdr->bd_count);
@@ -323,7 +323,6 @@ static void enetc_setup_rx_bdr(struct eth_device *edev)
 {
 	struct enetc_priv *priv = edev->priv;
 	struct bd_ring *rx_bdr = &priv->rx_bdr;
-	u64 rx_bd_add = (u64)priv->enetc_rxbd_phys;
 	int i;
 
 	/* used later to advance to the next BD produced by ENETC HW */
@@ -337,9 +336,9 @@ static void enetc_setup_rx_bdr(struct eth_device *edev)
 
 	/* set Rx BD address */
 	enetc_bdr_write(priv, RX, ENETC_RX_BDR_ID, ENETC_RBBAR0,
-			lower_32_bits(rx_bd_add));
+			lower_32_bits(priv->enetc_rxbd_phys));
 	enetc_bdr_write(priv, RX, ENETC_RX_BDR_ID, ENETC_RBBAR1,
-			upper_32_bits(rx_bd_add));
+			upper_32_bits(priv->enetc_rxbd_phys));
 	/* set Rx BD count (multiple of 8) */
 	enetc_bdr_write(priv, RX, ENETC_RX_BDR_ID, ENETC_RBLENR,
 			rx_bdr->bd_count);
@@ -448,8 +447,8 @@ static int enetc_send(struct eth_device *edev, void *packet, int length)
 		return -ETIMEDOUT;
 	}
 
-	dev_vdbg(&edev->dev, "TxBD[%d]send: pkt_len=%d, buff @0x%x%08x\n", pi, length,
-		  upper_32_bits((u64)packet), lower_32_bits((u64)packet));
+	dev_vdbg(&edev->dev, "TxBD[%d]send: pkt_len=%d, buff @%p\n", pi, length,
+		  packet);
 
 	dma = dma_map_single(priv->dev, packet, length, DMA_TO_DEVICE);
 

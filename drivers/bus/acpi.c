@@ -174,10 +174,12 @@ static int acpi_register_devices(struct bus_type *bus)
 		sig = "RSDT";
 		root = (struct acpi_rsdt *)(unsigned long)rsdp->rsdt_addr;
 		entry_count = (root->sdt.len - sizeof(struct acpi_rsdt)) / sizeof(u32);
-	} else {
+	} else if (sizeof(void *) == 8) {
 		sig = "XSDT";
-		root = (struct acpi_rsdt *)((struct acpi2_rsdp *)rsdp)->xsdt_addr;
+		root = (struct acpi_rsdt *)(uintptr_t)((struct acpi2_rsdp *)rsdp)->xsdt_addr;
 		entry_count = (root->sdt.len - sizeof(struct acpi_rsdt)) / sizeof(u64);
+	} else {
+		return -EIO;
 	}
 
 	if (acpi_sigcmp(sig, root->sdt.signature)) {

@@ -196,6 +196,8 @@ static int rpi_env_init(void)
 	const char *diskdev;
 	int ret;
 
+	defaultenv_append_directory(defaultenv_rpi);
+
 	device_detect_by_name("mci0");
 	device_detect_by_name("mci1");
 
@@ -217,8 +219,6 @@ static int rpi_env_init(void)
 		printf("failed to mount %s\n", diskdev);
 		return 0;
 	}
-
-	defaultenv_append_directory(defaultenv_rpi);
 
 	default_environment_path_set("/boot/barebox.env");
 

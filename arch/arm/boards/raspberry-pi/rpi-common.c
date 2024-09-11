@@ -301,7 +301,7 @@ static struct device_node *register_vc_fixup(struct device_node *root,
 		tmp->full_name = xstrdup(ret->full_name);
 		of_register_fixup(rpi_vc_fdt_fixup, tmp);
 	} else {
-		pr_info("no '%s' node found in vc fdt\n", path);
+		pr_debug("no '%s' node found in vc fdt\n", path);
 	}
 
 	return ret;
@@ -341,7 +341,7 @@ static int register_vc_property_fixup(struct device_node *root,
 
 		of_register_fixup(rpi_vc_fdt_fixup_property, fixup_data);
 	} else {
-		pr_info("no '%s' node found in vc fdt\n", path);
+		pr_debug("no '%s' node found in vc fdt\n", path);
 		return -ENOENT;
 	}
 

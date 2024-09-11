@@ -7,6 +7,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <jsmn.h>
+#include <linux/overflow.h>
+#include <malloc.h>
 
 /**
  * Allocates a fresh unused token from the token pool.
@@ -391,7 +393,7 @@ JSMN_API jsmntok_t *jsmn_parse_alloc(const char *js, const size_t len,
 
 	token_count = ret;
 
-	tokens = kmalloc_array(token_count, sizeof(jsmntok_t), GFP_KERNEL);
+	tokens = malloc(size_mul(token_count, sizeof(jsmntok_t)));
 	if (!tokens)
 		return NULL;
 

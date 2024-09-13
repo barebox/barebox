@@ -76,15 +76,15 @@ int public_key_verify(const struct public_key *key, const uint8_t *sig,
 	return -ENOKEY;
 }
 
-extern const struct public_key * const __public_keys_start;
-extern const struct public_key * const __public_keys_end;
+extern const struct public_key __public_keys_start[];
+extern const struct public_key __public_keys_end[];
 
 static int init_public_keys(void)
 {
-	const struct public_key * const *iter;
+	const struct public_key *iter;
 
-	for (iter = &__public_keys_start; iter != &__public_keys_end; iter++) {
-		struct public_key *key = public_key_dup(*iter);
+	for (iter = __public_keys_start; iter != __public_keys_end; iter++) {
+		struct public_key *key = public_key_dup(iter);
 
 		if (!key)
 			continue;

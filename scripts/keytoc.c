@@ -315,12 +315,12 @@ cleanup:
 
 static FILE *outfilep;
 
-static int print_bignum(BIGNUM *num, int num_bits)
+static int print_bignum(BIGNUM *num, int num_bits, int width)
 {
 	BIGNUM *tmp, *big2, *big32, *big2_32;
 	BN_CTX *ctx;
 	int i;
-	uint32_t *arr;
+	uint64_t *arr;
 
 	tmp = BN_new();
 	big2 = BN_new();
@@ -345,34 +345,34 @@ static int print_bignum(BIGNUM *num, int num_bits)
 		return -ENOMEM;
 	}
 	BN_set_word(big2, 2L);
-	BN_set_word(big32, 32L);
-	BN_exp(big2_32, big2, big32, ctx); /* B = 2^32 */
+	BN_set_word(big32, width);
+	BN_exp(big2_32, big2, big32, ctx); /* B = 2^width */
 
-	arr = malloc(num_bits / 32 * sizeof(uint32_t));
+	arr = malloc(num_bits / width * sizeof(*arr));
 
-	for (i = 0; i < num_bits / 32; i++) {
+	for (i = 0; i < num_bits / width; i++) {
 		BN_mod(tmp, num, big2_32, ctx); /* n = N mod B */
 		arr[i] = BN_get_word(tmp);
-		BN_rshift(num, num, 32); /*  N = N/B */
+		BN_rshift(num, num, width); /*  N = N/B */
 	}
 
 	if (dts) {
-		for (i = 0; i < num_bits / 32; i++) {
+		for (i = 0; i < num_bits / width; i++) {
 			if (i % 4)
 				fprintf(outfilep, " ");
 			else
 				fprintf(outfilep, "\n\t\t\t\t");
-			fprintf(outfilep, "0x%08x", arr[num_bits / 32 - 1 - i]);
-			BN_rshift(num, num, 32); /*  N = N/B */
+			fprintf(outfilep, "0x%0*jx", width / 4, arr[num_bits / width - 1 - i]);
+			BN_rshift(num, num, width); /*  N = N/B */
 		}
 	} else {
-		for (i = 0; i < num_bits / 32; i++) {
+		for (i = 0; i < num_bits / width; i++) {
 			if (i % 4)
 				fprintf(outfilep, " ");
 			else
 				fprintf(outfilep, "\n\t");
-			fprintf(outfilep, "0x%08x,", arr[i]);
-			BN_rshift(num, num, 32); /*  N = N/B */
+			fprintf(outfilep, "0x%0*jx,", width / 4, arr[i]);
+			BN_rshift(num, num, width); /*  N = N/B */
 		}
 	}
 
@@ -473,12 +473,12 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 		fprintf(stderr, "ERROR: generating a dts snippet for ECDSA keys is not yet supported\n");
 		return -EOPNOTSUPP;
 	} else {
-		fprintf(outfilep, "\nstatic uint32_t %s_x[] = {", key_name_c);
-		print_bignum(key_x, bits);
+		fprintf(outfilep, "\nstatic uint64_t %s_x[] = {", key_name_c);
+		print_bignum(key_x, bits, 64);
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static uint32_t %s_y[] = {", key_name_c);
-		print_bignum(key_y, bits);
+		fprintf(outfilep, "static uint64_t %s_y[] = {", key_name_c);
+		print_bignum(key_y, bits, 64);
 		fprintf(outfilep, "\n};\n\n");
 
 		fprintf(outfilep, "static struct ecdsa_public_key %s = {\n", key_name_c);
@@ -512,10 +512,10 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 	if (dts) {
 		fprintf(outfilep, "\t\tkey-%s {\n", key_name_c);
 		fprintf(outfilep, "\t\t\trsa,r-squared = <");
-		print_bignum(r_squared, bits);
+		print_bignum(r_squared, bits, 32);
 		fprintf(outfilep, ">;\n");
 		fprintf(outfilep, "\t\t\trsa,modulus= <");
-		print_bignum(modulus, bits);
+		print_bignum(modulus, bits, 32);
 		fprintf(outfilep, ">;\n");
 		fprintf(outfilep, "\t\t\trsa,exponent = <0x%0lx 0x%lx>;\n",
 			(exponent >> 32) & 0xffffffff,
@@ -526,11 +526,11 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 		fprintf(outfilep, "\t\t};\n");
 	} else {
 		fprintf(outfilep, "\nstatic uint32_t %s_modulus[] = {", key_name_c);
-		print_bignum(modulus, bits);
+		print_bignum(modulus, bits, 32);
 		fprintf(outfilep, "\n};\n\n");
 
 		fprintf(outfilep, "static uint32_t %s_rr[] = {", key_name_c);
-		print_bignum(r_squared, bits);
+		print_bignum(r_squared, bits, 32);
 		fprintf(outfilep, "\n};\n\n");
 
 		if (standalone) {

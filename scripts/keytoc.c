@@ -470,15 +470,8 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 		return -EINVAL;
 
 	if (dts) {
-		fprintf(outfilep, "\t\tkey-%s {\n", key_name_c);
-		fprintf(outfilep, "\t\t\tecdsa,x-point = <");
-		print_bignum(key_x, bits);
-		fprintf(outfilep, ">;\n");
-		fprintf(outfilep, "\t\t\tecdsa,y-point = <");
-		print_bignum(key_y, bits);
-		fprintf(outfilep, ">;\n");
-		fprintf(outfilep, "\t\t\tecdsa,curve = \"%s\";\n", group);
-		fprintf(outfilep, "\t\t};\n");
+		fprintf(stderr, "ERROR: generating a dts snippet for ECDSA keys is not yet supported\n");
+		return -EOPNOTSUPP;
 	} else {
 		fprintf(outfilep, "\nstatic uint32_t %s_x[] = {", key_name_c);
 		print_bignum(key_x, bits);
@@ -598,6 +591,9 @@ static int gen_key(const char *keyname, const char *path)
 	}
 
 	ret = gen_key_ecdsa(key, keyname, key_name_c);
+	if (ret == -EOPNOTSUPP)
+		return ret;
+
 	if (ret)
 		ret = gen_key_rsa(key, keyname, key_name_c);
 

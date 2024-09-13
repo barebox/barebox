@@ -62,4 +62,20 @@ const struct rsa_public_key *rsa_key_next(const struct rsa_public_key *prev);
 
 #define for_each_rsa_key(key) \
 		for (key = rsa_key_next(NULL); key; key = rsa_key_next(key))
+
+#ifdef CONFIG_CRYPTO_RSA
+int rsa_key_add(struct rsa_public_key *key);
+struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key);
+#else
+static inline int rsa_key_add(struct rsa_public_key *key)
+{
+	return -ENOSYS;
+}
+
+static inline struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
+{
+	return NULL;
+}
+#endif
+
 #endif

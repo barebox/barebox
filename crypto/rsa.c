@@ -469,7 +469,7 @@ const struct rsa_public_key *rsa_get_key(const char *name)
 	return NULL;
 }
 
-static int rsa_key_add(struct rsa_public_key *key)
+int rsa_key_add(struct rsa_public_key *key)
 {
 	if (rsa_get_key(key->key_name_hint))
 		return -EEXIST;
@@ -479,7 +479,7 @@ static int rsa_key_add(struct rsa_public_key *key)
 	return 0;
 }
 
-static struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
+struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
 {
 	struct rsa_public_key *new;
 
@@ -489,9 +489,6 @@ static struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
 
 	return new;
 }
-
-extern const struct rsa_public_key * const __rsa_keys_start;
-extern const struct rsa_public_key * const __rsa_keys_end;
 
 static void rsa_init_keys_of(void)
 {
@@ -523,25 +520,9 @@ static void rsa_init_keys_of(void)
 
 static int rsa_init_keys(void)
 {
-	const struct rsa_public_key * const *iter;
-	struct rsa_public_key *key;
-	int ret;
-
-	for (iter = &__rsa_keys_start; iter != &__rsa_keys_end; iter++) {
-		key = rsa_key_dup(*iter);
-		ret = rsa_key_add(key);
-		if (ret)
-			pr_err("Cannot add rsa key %s: %s\n",
-			       key->key_name_hint, strerror(-ret));
-	}
-
 	rsa_init_keys_of();
 
 	return 0;
 }
 
 device_initcall(rsa_init_keys);
-
-#ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS
-#include "rsa-keys.h"
-#endif

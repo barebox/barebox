@@ -18,17 +18,19 @@ obj-y	+= memneq.o
 obj-$(CONFIG_CRYPTO_PBKDF2)	+= pbkdf2.o
 obj-$(CONFIG_CRYPTO_RSA)	+= rsa.o
 obj-$(CONFIG_CRYPTO_KEYSTORE)	+= keystore.o
+obj-$(CONFIG_CRYPTO_BUILTIN_KEYS)      += public-keys.o
 
 obj-$(CONFIG_JWT)		+= jwt.o
 
-extra-$(CONFIG_CRYPTO_RSA_BUILTIN_KEYS) += rsa-keys.h
+extra-$(CONFIG_CRYPTO_BUILTIN_KEYS) += public-keys.h
 
-ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS
+ifdef CONFIG_CRYPTO_BUILTIN_KEYS
 
-$(obj)/rsa.o: $(obj)/rsa-keys.h
+$(obj)/public-keys.o: $(obj)/public-keys.h
 
-CONFIG_CRYPTO_RSA_KEY := $(CONFIG_CRYPTO_RSA_KEY:"%"=%)
+CONFIG_CRYPTO_PUBLIC_KEYS := $(CONFIG_CRYPTO_PUBLIC_KEYS:"%"=%)
 
-$(obj)/rsa-keys.h: FORCE
-	$(call cmd,public_keys,$(CONFIG_CRYPTO_RSA_KEY))
+$(obj)/public-keys.h: FORCE
+	$(call cmd,public_keys,$(CONFIG_CRYPTO_PUBLIC_KEYS))
+
 endif

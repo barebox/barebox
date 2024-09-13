@@ -118,14 +118,13 @@ config CRYPTO_PBKDF2
 config CRYPTO_RSA
 	bool
 
-config CRYPTO_RSA_BUILTIN_KEYS
-	bool
-	default y if CRYPTO_RSA_KEY != ""
+config CRYPTO_BUILTIN_KEYS
+	bool "builtin keys"
 	select KEYTOC
 
-config CRYPTO_RSA_KEY
-	depends on CRYPTO_RSA
-	string "RSA key to compile in"
+config CRYPTO_PUBLIC_KEYS
+	depends on CRYPTO_BUILTIN_KEYS
+	string "public keys to compile in"
 	help
 	  This option should be a filename of a PEM-formatted file containing
 	  X.509 certificates to be included into barebox. If the string starts

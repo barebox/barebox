@@ -9,6 +9,7 @@
  *
  */
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -602,9 +603,9 @@ static int gen_key(const char *keyname, const char *path)
 
 int main(int argc, char *argv[])
 {
-	char *path, *keyname;
 	int i, opt, ret;
 	char *outfile = NULL;
+	int keynum = 1;
 
 	outfilep = stdout;
 
@@ -652,21 +653,33 @@ int main(int argc, char *argv[])
 	}
 
 	for (i = optind; i < argc; i++) {
-		keyname = argv[i];
+		char *keyspec = argv[i];
+		char *keyname = NULL;
+		char *path, *freep = NULL;
 
-		path = strchr(keyname, ':');
-		if (!path) {
-			fprintf(stderr,
-				"keys must be given as <key_name_hint>:<crt>\n");
-			exit(1);
+		if (!strncmp(keyspec, "pkcs11:", 7)) {
+			path = keyspec;
+		} else {
+			path = strchr(keyspec, ':');
+			if (path) {
+				*path = 0;
+				path++;
+				keyname = keyspec;
+			} else {
+				path = keyspec;
+			}
 		}
 
-		*path = 0;
-		path++;
+		if (!keyname) {
+			asprintf(&freep, "key_%d", keynum++);
+			keyname = freep;
+		}
 
 		ret = gen_key(keyname, path);
 		if (ret)
 			exit(1);
+
+		free(freep);
 	}
 
 	if (dts) {

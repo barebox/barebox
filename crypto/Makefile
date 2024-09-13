@@ -34,5 +34,5 @@ RSA_DEP := $(CONFIG_CRYPTO_RSA_KEY)
 endif
 
 $(obj)/rsa-keys.h: $(RSA_DEP) FORCE
-	$(call cmd,public_keys,$(CONFIG_CRYPTO_RSA_KEY_NAME_HINT):$(if $(RSA_DEP),$<,$(CONFIG_CRYPTO_RSA_KEY)))
+	$(call cmd,public_keys,$(CONFIG_CRYPTO_RSA_KEY_NAME_HINT):$(CONFIG_CRYPTO_RSA_KEY))
 endif

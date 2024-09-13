@@ -5,31 +5,91 @@
 #include <crypto/public_key.h>
 #include <rsa.h>
 
+static LIST_HEAD(public_keys);
+
+const struct public_key *public_key_next(const struct public_key *prev)
+{
+	prev = list_prepare_entry(prev, &public_keys, list);
+	list_for_each_entry_continue(prev, &public_keys, list)
+		return prev;
+
+	return NULL;
+}
+
+const struct public_key *public_key_get(const char *name)
+{
+	const struct public_key *key;
+
+	list_for_each_entry(key, &public_keys, list) {
+		if (!strcmp(key->key_name_hint, name))
+			return key;
+	}
+
+	return NULL;
+}
+
+int public_key_add(struct public_key *key)
+{
+	if (public_key_get(key->key_name_hint))
+		return -EEXIST;
+
+	list_add_tail(&key->list, &public_keys);
+
+	return 0;
+}
+
+static struct public_key *public_key_dup(const struct public_key *key)
+{
+	struct public_key *k = xzalloc(sizeof(*k));
+
+	k->type = key->type;
+	if (key->key_name_hint)
+		k->key_name_hint = xstrdup(key->key_name_hint);
+
+	switch (key->type) {
+	case PUBLIC_KEY_TYPE_RSA:
+		k->rsa = rsa_key_dup(key->rsa);
+		if (!k->rsa)
+			goto err;
+		break;
+	default:
+		goto err;
+	}
+
+	return k;
+err:
+	free(k->key_name_hint);
+	free(k);
+
+	return NULL;
+}
+
+int public_key_verify(const struct public_key *key, const uint8_t *sig,
+		      const uint32_t sig_len, const uint8_t *hash,
+		      enum hash_algo algo)
+{
+	switch (key->type) {
+	case PUBLIC_KEY_TYPE_RSA:
+		return rsa_verify(key->rsa, sig, sig_len, hash, algo);
+	}
+
+	return -ENOKEY;
+}
+
 extern const struct public_key * const __public_keys_start;
 extern const struct public_key * const __public_keys_end;
 
 static int init_public_keys(void)
 {
 	const struct public_key * const *iter;
-	int ret;
 
 	for (iter = &__public_keys_start; iter != &__public_keys_end; iter++) {
-		struct rsa_public_key *rsa_key;
+		struct public_key *key = public_key_dup(*iter);
 
-		switch ((*iter)->type) {
-		case PUBLIC_KEY_TYPE_RSA:
-			rsa_key = rsa_key_dup((*iter)->rsa);
-			if (!rsa_key)
-				continue;
+		if (!key)
+			continue;
 
-			ret = rsa_key_add(rsa_key);
-			if (ret)
-				pr_err("Cannot add rsa key: %pe\n", ERR_PTR(ret));
-			break;
-		default:
-			pr_err("Ignoring unknown key type %u\n", (*iter)->type);
-		}
-
+		public_key_add(key);
 	}
 
 	return 0;

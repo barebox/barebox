@@ -491,6 +491,7 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 		if (!standalone) {
 			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", key_name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_ECDSA,\n");
+			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
 			fprintf(outfilep, "\t.ecdsa = &%s,\n", key_name_c);
 			fprintf(outfilep, "};");
 			fprintf(outfilep, "\nstruct public_key *%s_ecdsa_p __attribute__((section(\".public_keys.rodata.%s\"))) = &%s_public_key;\n",
@@ -551,12 +552,12 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 		fprintf(outfilep, "\t.modulus = %s_modulus,\n", key_name_c);
 		fprintf(outfilep, "\t.rr = %s_rr,\n", key_name_c);
 		fprintf(outfilep, "\t.exponent = 0x%0lx,\n", exponent);
-		fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
 		fprintf(outfilep, "};\n");
 
 		if (!standalone) {
 			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", key_name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_RSA,\n");
+			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
 			fprintf(outfilep, "\t.rsa = &%s,\n", key_name_c);
 			fprintf(outfilep, "};");
 			fprintf(outfilep, "\nstruct public_key *%sp __attribute__((section(\".public_keys.rodata.%s\"))) = &%s_public_key;\n",

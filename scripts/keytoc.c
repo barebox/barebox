@@ -664,17 +664,6 @@ int main(int argc, char *argv[])
 		*path = 0;
 		path++;
 
-		if (!strncmp(path, "__ENV__", 7)) {
-			const char *orig_path = path;
-
-			path = getenv(orig_path + 7);
-			if (!path) {
-				fprintf(stderr, "%s doesn't contain a path\n",
-					orig_path + 7);
-				exit(1);
-			}
-		}
-
 		ret = gen_key(keyname, path);
 		if (ret)
 			exit(1);

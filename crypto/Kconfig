@@ -148,4 +148,7 @@ config JWT
 	select BASE64
 	select CRYPTO_RSA
 
+config CRYPTO_ECC
+	bool
+
 endmenu

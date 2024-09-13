@@ -19,6 +19,7 @@ obj-$(CONFIG_CRYPTO_PBKDF2)	+= pbkdf2.o
 obj-$(CONFIG_CRYPTO_RSA)	+= rsa.o
 obj-$(CONFIG_CRYPTO_KEYSTORE)	+= keystore.o
 obj-$(CONFIG_CRYPTO_BUILTIN_KEYS)      += public-keys.o
+obj-$(CONFIG_CRYPTO_ECC)	+= ecc.o
 
 obj-$(CONFIG_JWT)		+= jwt.o
 

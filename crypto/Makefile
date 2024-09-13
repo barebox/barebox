@@ -30,5 +30,5 @@ $(obj)/rsa.o: $(obj)/rsa-keys.h
 CONFIG_CRYPTO_RSA_KEY := $(CONFIG_CRYPTO_RSA_KEY:"%"=%)
 
 $(obj)/rsa-keys.h: FORCE
-	$(call cmd,public_keys,$(CONFIG_CRYPTO_RSA_KEY_NAME_HINT):$(CONFIG_CRYPTO_RSA_KEY))
+	$(call cmd,public_keys,$(CONFIG_CRYPTO_RSA_KEY))
 endif

@@ -31,6 +31,15 @@ struct rsa_public_key {
 	uint64_t exponent;	/* public exponent */
 };
 
+/* This is the maximum signature length that we support, in bits */
+#define RSA_MAX_SIG_BITS	4096
+
+struct device_node;
+
+struct public_key *rsa_of_read_key(struct device_node *node);
+void rsa_key_free(struct rsa_public_key *key);
+
+#ifdef CONFIG_CRYPTO_RSA
 /**
  * rsa_verify() - Verify a signature against some data
  *
@@ -47,17 +56,15 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 			  const uint32_t sig_len, const uint8_t *hash,
 			  enum hash_algo algo);
 
-/* This is the maximum signature length that we support, in bits */
-#define RSA_MAX_SIG_BITS	4096
-
-struct device_node;
-
-struct public_key *rsa_of_read_key(struct device_node *node);
-void rsa_key_free(struct rsa_public_key *key);
-
-#ifdef CONFIG_CRYPTO_RSA
 struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key);
 #else
+static inline int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
+			  const uint32_t sig_len, const uint8_t *hash,
+			  enum hash_algo algo)
+{
+	return -ENOSYS;
+}
+
 static inline struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
 {
 	return NULL;

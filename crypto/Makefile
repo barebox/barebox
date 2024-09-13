@@ -29,10 +29,6 @@ $(obj)/rsa.o: $(obj)/rsa-keys.h
 
 CONFIG_CRYPTO_RSA_KEY := $(CONFIG_CRYPTO_RSA_KEY:"%"=%)
 
-ifneq ($(filter-out pkcs11:% __ENV__%, $(CONFIG_CRYPTO_RSA_KEY)),)
-RSA_DEP := $(CONFIG_CRYPTO_RSA_KEY)
-endif
-
-$(obj)/rsa-keys.h: $(RSA_DEP) FORCE
+$(obj)/rsa-keys.h: FORCE
 	$(call cmd,public_keys,$(CONFIG_CRYPTO_RSA_KEY_NAME_HINT):$(CONFIG_CRYPTO_RSA_KEY))
 endif

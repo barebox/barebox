@@ -597,7 +597,7 @@ static int gen_key(const char *keyname, const char *path)
 	if (ret)
 		ret = gen_key_rsa(key, keyname, key_name_c);
 
-	return 0;
+	return ret;
 }
 
 int main(int argc, char *argv[])

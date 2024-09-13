@@ -126,11 +126,12 @@ config CRYPTO_PUBLIC_KEYS
 	depends on CRYPTO_BUILTIN_KEYS
 	string "public keys to compile in"
 	help
-	  This option should be a filename of a PEM-formatted file containing
-	  X.509 certificates to be included into barebox. If the string starts
-	  with "pkcs11:" it is interpreted as a PKCS#11 URI rather than a file.
-	  If the string starts with a <hint>: prefix, <hint> is used as a key
-	  name hint to find a key without iterating over all keys.
+	  This option should be a space separated list of filenames of
+	  PEM-formatted files containing X.509 certificates to be included into
+	  barebox. If an entry starts with "pkcs11:" it is interpreted as a
+	  PKCS#11 URI rather than a file. If an entry starts with a <hint>:
+	  prefix, <hint> is used as a key name hint to find a key without
+	  iterating over all keys.
 
 	  This avoids the mkimage dependency of CONFIG_BOOTM_FITIMAGE_PUBKEY
 	  at the cost of an openssl build-time dependency.

@@ -28,7 +28,8 @@ ifdef CONFIG_CRYPTO_BUILTIN_KEYS
 
 $(obj)/public-keys.o: $(obj)/public-keys.h
 
-CONFIG_CRYPTO_PUBLIC_KEYS := $(CONFIG_CRYPTO_PUBLIC_KEYS:"%"=%)
+CONFIG_CRYPTO_PUBLIC_KEYS := $(shell echo $(CONFIG_CRYPTO_PUBLIC_KEYS))
+CONFIG_CRYPTO_PUBLIC_KEYS := $(foreach d,$(CONFIG_CRYPTO_PUBLIC_KEYS),"$(d)")
 
 $(obj)/public-keys.h: FORCE
 	$(call cmd,public_keys,$(CONFIG_CRYPTO_PUBLIC_KEYS))

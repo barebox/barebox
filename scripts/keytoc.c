@@ -655,7 +655,7 @@ int main(int argc, char *argv[])
 		else
 			fprintf(outfilep, "\tsignature {\n");
 	} else if (standalone) {
-		fprintf(outfilep, "#include <ecdsa.h>\n");
+		fprintf(outfilep, "#include <crypto/ecdsa.h>\n");
 		fprintf(outfilep, "#include <crypto/rsa.h>\n");
 	}
 

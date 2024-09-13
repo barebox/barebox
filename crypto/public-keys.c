@@ -4,6 +4,7 @@
 #include <common.h>
 #include <crypto/public_key.h>
 #include <crypto/rsa.h>
+#include <crypto/ecdsa.h>
 
 static LIST_HEAD(public_keys);
 
@@ -52,6 +53,11 @@ static struct public_key *public_key_dup(const struct public_key *key)
 		if (!k->rsa)
 			goto err;
 		break;
+	case PUBLIC_KEY_TYPE_ECDSA:
+		k->ecdsa = ecdsa_key_dup(key->ecdsa);
+		if (!k->ecdsa)
+			goto err;
+		break;
 	default:
 		goto err;
 	}
@@ -71,6 +77,8 @@ int public_key_verify(const struct public_key *key, const uint8_t *sig,
 	switch (key->type) {
 	case PUBLIC_KEY_TYPE_RSA:
 		return rsa_verify(key->rsa, sig, sig_len, hash, algo);
+	case PUBLIC_KEY_TYPE_ECDSA:
+		return ecdsa_verify(key->ecdsa, sig, sig_len, hash);
 	}
 
 	return -ENOKEY;

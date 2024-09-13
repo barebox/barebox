@@ -20,6 +20,7 @@ obj-$(CONFIG_CRYPTO_RSA)	+= rsa.o
 obj-$(CONFIG_CRYPTO_KEYSTORE)	+= keystore.o
 obj-$(CONFIG_CRYPTO_BUILTIN_KEYS)      += public-keys.o
 obj-$(CONFIG_CRYPTO_ECC)	+= ecc.o
+obj-$(CONFIG_CRYPTO_ECDSA) 	+= ecdsa.o
 
 obj-$(CONFIG_JWT)		+= jwt.o
 

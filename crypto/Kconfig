@@ -151,4 +151,8 @@ config JWT
 config CRYPTO_ECC
 	bool
 
+config CRYPTO_ECDSA
+	bool "ECDSA support"
+	select CRYPTO_ECC
+
 endmenu

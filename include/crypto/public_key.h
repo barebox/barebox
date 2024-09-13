@@ -6,12 +6,13 @@
 struct rsa_public_key;
 struct ecdsa_public_key;
 
-enum pulic_key_type {
+enum public_key_type {
 	PUBLIC_KEY_TYPE_RSA,
+	PUBLIC_KEY_TYPE_ECDSA,
 };
 
 struct public_key {
-	enum pulic_key_type type;
+	enum public_key_type type;
 	struct list_head list;
 	char *key_name_hint;
 

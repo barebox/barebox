@@ -15,6 +15,12 @@ config ARM
 	select PBL_RELOCATABLE
 	default y
 
+config ARM32
+	def_bool CPU_32
+
+config ARM64
+	def_bool CPU_64
+
 config ARCH_TEXT_BASE
 	hex
 	default 0x00000000
@@ -395,9 +401,16 @@ config ARM_SECURE_MONITOR
 config ARM_PSCI_OF
 	bool
 
+config HAS_PSCI_PROVIDER
+	bool
+	help
+	  Selected by platforms that implement PSCI inside barebox.
+	  This is uncommon as barebox is usually PSCI client on systems
+	  with PSCI with the provider being ARM Trusted Firmware.
+
 config ARM_PSCI
-	bool "enable Power State Coordination Interface (PSCI) support"
-	depends on CPU_V7
+	bool "Provide Power State Coordination Interface (PSCI) support"
+	depends on HAS_PSCI_PROVIDER
 	select ARM_SECURE_MONITOR
 	select ARM_PSCI_OF
 	help

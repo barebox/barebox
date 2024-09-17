@@ -7,8 +7,11 @@ nb_warnings=0
 warnings_list=""
 nb_errors=0
 errors_list=""
+test_errors_list=""
 nb_defconfigs=0
-ret=0
+nb_tests=0
+nb_tests_failed=0
+exitcode=0
 
 time_start=$(date +%s)
 
@@ -61,18 +64,24 @@ stats() {
 	echo ""
 	echo "--------------------- SUMMARY ----------------------------"
 	echo "defconfigs compiled: ${nb_defconfigs}"
-	time_stop=$(date +%s)
-	time_diff=$((${time_stop} - ${time_start}))
-	printf "compiled in %4is\n" ${time_diff}
 	if [ ${nb_errors} -gt 0 ] ; then
-		echo "defconfigs with errors: ${nb_errors} (${errors_list} )"
+		echo -e "\tdefconfigs with errors:   ${nb_errors} (${errors_list} )"
 	fi
 	if [ ${nb_warnings} -gt 0 ] ; then
-		echo "defconfigs with warnings: ${nb_warnings} (${warnings_list} )"
+		echo -e "\tdefconfigs with warnings: ${nb_warnings} (${warnings_list} )"
 	fi
+	if [ ${nb_tests} -gt 0 ]; then
+		echo "defconfigs tested:   ${nb_tests}"
+		if [ "${nb_tests_failed}" -gt 0 ]; then
+			echo -e "\tdefconfigs with errors:   ${nb_tests_failed} (${test_errors_list} )"
+		fi
+	fi
+	time_stop=$(date +%s)
+	time_diff=$((${time_stop} - ${time_start}))
+	printf "Total time spent: %4is\n" ${time_diff}
 	echo "----------------------------------------------------------"
 
-	exit ${ret}
+	exit ${exitcode}
 }
 
 check_pipe_status() {
@@ -89,6 +98,7 @@ do_build_target() {
 	local target_time_start=$(date +%s)
 	local log_report="${LOGDIR}/${target}/report.log"
 	local log_err="${LOGDIR}/${target}/errors.log"
+	local err=0
 
 	[ "$INCREMENTAL" != "1" ] && rm -rf "${BUILDDIR}"
 	mkdir -p "${LOGDIR}/${target}"
@@ -97,7 +107,7 @@ do_build_target() {
 	${MAKE} ${target} &>/dev/null
 
 	if [ ${arch} = "arm" ]; then
-		grep -q "CONFIG_CPU_64=y" ${BUILDDIR}/.config
+		grep -q "CONFIG_ARM64=y" ${BUILDDIR}/.config
 		if [ $? = 0 ]; then
 			arch=arm64
 		fi
@@ -148,12 +158,14 @@ do_build_target() {
 			printf "FAILED \n" | tee -a "${log_report}"
 			nb_errors=$((nb_errors + 1))
 			errors_list="${errors_list} ${target}"
-			ret=1
+			err=1
+			exitcode=1
 		fi
 	else
 		printf "FAILED \n" | tee -a "${log_report}"
 		printf "Compile: ------ \n" | tee -a "${log_report}"
-		ret=1
+		err=1
+		exitcode=1
 	fi
 
 	if [ -s "${log_err}" ] ; then
@@ -168,6 +180,46 @@ do_build_target() {
 	target_time_stop=$(date +%s)
 	target_time_diff=$((${target_time_stop} - ${target_time_start}))
 	printf "Compiled in %4is\n" ${target_time_diff} | tee -a "${log_report}"
+
+	return $err
+}
+
+if command -v labgrid-pytest >/dev/null; then
+	alias pytest=labgrid-pytest
+fi
+
+do_test_target() {
+	local yaml=$1
+	local target=$2
+	shift 2
+	local target_time_start=$(date +%s)
+	local log_report="${LOGDIR}/${target}/report.log"
+	local err=0
+
+	LG_BUILDDIR=$BUILDDIR pytest --lg-env $yaml "$@" 2>&1 >> "${log_report}"
+
+	check_pipe_status
+	compile_result="$?"
+
+	printf "Test: " ${yaml} | tee -a "${log_report}"
+
+	if [ "$compile_result" = "0" ]; then
+		printf "OK     \n" | tee -a "${log_report}"
+	else
+		printf "FAILED \n" | tee -a "${log_report}"
+		nb_tests_failed=$((nb_tests_failed + 1))
+		test_errors_list="${test_errors_list} ${yaml}"
+		exitcode=1
+		err=1
+	fi
+
+	nb_tests=$((nb_tests + 1))
+
+	target_time_stop=$(date +%s)
+	target_time_diff=$((${target_time_stop} - ${target_time_start}))
+	printf "Tested in %4is\n" ${target_time_diff} | tee -a "${log_report}"
+
+	return $err
 }
 
 do_build() {
@@ -276,24 +328,67 @@ then
 	REGEX="*"
 fi
 
-if [ ! "${ARCH}" ] || [ ! -d arch/${ARCH} ]
-then
-	do_build_all
-	if [ $? -eq 0 ]
-	then
-		echo "You need to specify the ARCH or CROSS_COMPILE_<arch> or CROSS_COMPILE_<target> in your config file"
-		usage
-		exit 1
-	fi
-	exit 0
-fi
-
 if [ $# -eq 0 ]
 then
+	if [ ! "${ARCH}" ] || [ ! -d arch/${ARCH} ]
+	then
+		do_build_all
+		if [ $? -eq 0 ]
+		then
+			echo "You need to specify the ARCH or CROSS_COMPILE_<arch> or CROSS_COMPILE_<target> in your config file"
+			usage
+			exit 1
+		fi
+		exit 0
+	fi
+
 	do_build ${ARCH} "${REGEX}"
 else
+	declare -a configs=()
+	declare -a pytest_opts=()
 	for i in $*; do
-		do_build_target ${ARCH} $i
+		if [[ "$i" = "-"* ]] || [ ${#pytest_opts[@]} -gt 0 ]; then
+			pytest_opts+=($i)
+			continue;
+		fi
+
+		skip=0
+
+		# test/*/ may contain local symlinks, so resolve them
+		for j in "${configs[@]}"; do
+			if [ "$i" = "$j" ]; then
+				skip=1
+				break
+			fi
+
+			# drop duplicates, e.g. via globbing in directory with symlinks
+			if [[ $i =~ / && $j =~ / &&
+			   "$(readlink -f $i)" == "$(readlink -f $j)" ]]; then
+				skip=1
+				break
+			fi
+		done
+
+		if [ $skip = 1 ]; then
+			continue;
+		fi
+
+		configs+=($i)
+	done
+	for i in "${configs[@]}"; do
+		config=$i
+		if [[ $i =~ ^.*/([^/]+)/([^@]*@|)([^.]+).yaml$ ]]; then
+			arch=${BASH_REMATCH[1]}
+			defconfig=${BASH_REMATCH[3]}
+			do_build_target $arch $defconfig
+			if [ $? -eq 0 ]; then
+				do_test_target $config $defconfig "${pytest_opts[@]}"
+			else
+				echo "Skipping test due to failed build"
+			fi
+		else
+			do_build_target ${ARCH} $config
+		fi
 	done
 fi
 

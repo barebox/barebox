@@ -48,7 +48,7 @@ config PBL_RELOCATABLE
 
 config PBL_FULLY_PIC
 	bool "fully position-independent pbl image"
-	depends on PBL_RELOCATABLE && ARM && CPU_64
+	depends on PBL_RELOCATABLE && ARM64
 	help
 	  Compared to CONFIG_PBL_RELOCATABLE, this image has no relocations in
 	  the code sections.

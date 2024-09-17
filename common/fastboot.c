@@ -287,13 +287,6 @@ static void cb_reboot(struct fastboot *fb, const char *cmd)
 	restart_machine();
 }
 
-static int strcmp_l1(const char *s1, const char *s2)
-{
-	if (!s1 || !s2)
-		return -1;
-	return strncmp(s1, s2, strlen(s1));
-}
-
 static void cb_getvar(struct fastboot *fb, const char *cmd)
 {
 	struct fb_variable *var;
@@ -312,7 +305,7 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 
 	pr_debug("getvar: \"%s\"\n", cmd);
 
-	if (!strcmp_l1(cmd, "all")) {
+	if (!strcmp(cmd, "all")) {
 		list_for_each_entry(var, &fb->variables, list)
 			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
 					  var->name, var->value);
@@ -801,6 +794,11 @@ static void cb_erase(struct fastboot *fb, const char *cmd)
 		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 }
 
+static bool fastboot_cmd_should_abort(const char *cmdbuf)
+{
+	return !strstarts(cmdbuf, "getvar:");
+}
+
 struct cmd_dispatch_info {
 	char *cmd;
 	void (*cb)(struct fastboot *fb, const char *opt);
@@ -812,13 +810,17 @@ static void fb_run_command(struct fastboot *fb, const char *cmdbuf,
 	const struct cmd_dispatch_info *cmd;
 	int i;
 
-	console_countdown_abort("fastboot");
+	if (fastboot_cmd_should_abort(cmdbuf))
+		console_countdown_abort("fastboot");
 
 	for (i = 0; i < num_commands; i++) {
+		size_t cmdlen;
+
 		cmd = &cmds[i];
 
-		if (!strcmp_l1(cmd->cmd, cmdbuf)) {
-			cmd->cb(fb, cmdbuf + strlen(cmd->cmd));
+		cmdlen = str_has_prefix(cmdbuf, cmd->cmd);
+		if (cmdlen) {
+			cmd->cb(fb, cmdbuf + cmdlen);
 
 			return;
 		}

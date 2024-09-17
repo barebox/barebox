@@ -18,9 +18,9 @@ int notifier_chain_unregister(struct notifier_head *nh, struct notifier_block *n
 
 int notifier_call_chain(struct notifier_head *nh, unsigned long val, void *v)
 {
-	struct notifier_block *entry;
+	struct notifier_block *entry, *tmp;
 
-	list_for_each_entry(entry, &nh->blocks, list)
+	list_for_each_entry_safe(entry, tmp, &nh->blocks, list)
 		entry->notifier_call(entry, val, v);
 
 	return 0;

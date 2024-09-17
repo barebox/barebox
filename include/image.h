@@ -104,7 +104,7 @@ enum {
 #if defined(__PPC__)
 #define IH_ARCH IH_ARCH_PPC
 #elif defined(__ARM__)
-#ifdef CONFIG_CPU_64v8
+#ifdef CONFIG_ARM64
 #define IH_ARCH IH_ARCH_ARM64
 #else
 #define IH_ARCH IH_ARCH_ARM

@@ -8,6 +8,7 @@ config HAVE_EFI_PAYLOAD
 config EFI_PAYLOAD
 	bool "Build as EFI payload" if COMPILE_TEST
 	depends on HAVE_EFI_PAYLOAD
+	select PBL_FULLY_PIC if ARM64
 	select EFI
 	select EFI_GUID
 	select EFI_DEVICEPATH
@@ -39,8 +40,8 @@ config EFI_DEVICEPATH
 
 config EFI_PAYLOAD_DEFAULT_PATH
 	string
-	default "EFI/BOOT/BOOTARM.EFI"		if CPU_32
-	default "EFI/BOOT/BOOTAA64.EFI"		if CPU_64
+	default "EFI/BOOT/BOOTARM.EFI"		if ARM32
+	default "EFI/BOOT/BOOTAA64.EFI"		if ARM64
 	default "EFI/BOOT/BOOTIA32.EFI"		if X86_32
 	default "EFI/BOOT/BOOTx64.EFI"		if X86_64
 	default "EFI/BOOT/BOOTRISCV32.EFI"	if ARCH_RV32I

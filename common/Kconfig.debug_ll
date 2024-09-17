@@ -350,6 +350,10 @@ config DEBUG_SEMIHOSTING
 	  Say Y here if you want low-level debugging support
 	  using semihosting writec.
 
+config DEBUG_OPENRISC_NS16550
+	bool "OpenRISC NS16550 console"
+	depends on OPENRISC
+
 endchoice
 
 config DEBUG_LL_NS16550

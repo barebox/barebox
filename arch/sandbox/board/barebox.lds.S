@@ -5,7 +5,7 @@
 SECTIONS
 {
 	. = ALIGN(64);
-	.barebox_rodata : {
+	.barebox_rodata (READONLY) : {
 		RO_DATA_SECTION
 	}
 }

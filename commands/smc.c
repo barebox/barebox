@@ -111,7 +111,7 @@ static int do_smc(int argc, char *argv[])
 			printf("found psci version %ld.%ld\n", res.a0 >> 16, res.a0 & 0xffff);
 			break;
 		case 'c':
-			if (IS_ENABLED(CONFIG_CPU_64)) {
+			if (IS_ENABLED(CONFIG_ARM64)) {
 				printf("CPU bootstrap test not supported for ARMv8\n");
 				return COMMAND_ERROR;
 			}

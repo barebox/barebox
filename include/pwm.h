@@ -3,8 +3,10 @@
 #define __PWM_H
 
 #include <dt-bindings/pwm/pwm.h>
+#include <linux/math.h>
 #include <errno.h>
 
+struct device_node;
 struct pwm_device;
 struct device;
 

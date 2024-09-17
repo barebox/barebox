@@ -1,17 +1,28 @@
 import pytest
 import os
 import argparse
-from .py import helper
+from test.py import helper
 
+def transition_to_barebox(request, strategy):
+    try:
+        strategy.transition('barebox')
+    except Exception as e:
+        # If a normal strategy transition fails, there's no point in
+        # continuing the test. Let's print stderr and exit.
+        capmanager = request.config.pluginmanager.getplugin("capturemanager")
+        with capmanager.global_and_fixture_disabled():
+            _, stderr = capmanager.read_global_capture()
+            pytest.exit(f"{type(e).__name__}(\"{e}\"). Standard error:\n{stderr}",
+                        returncode=3)
 
 @pytest.fixture(scope='function')
-def barebox(strategy, target):
-    strategy.transition('barebox')
+def barebox(request, strategy, target):
+    transition_to_barebox(request, strategy)
     return target.get_driver('BareboxDriver')
 
 @pytest.fixture(scope="session")
-def barebox_config(strategy, target):
-    strategy.transition('barebox')
+def barebox_config(request, strategy, target):
+    transition_to_barebox(request, strategy)
     command = target.get_driver("BareboxDriver")
     return helper.get_config(command)
 

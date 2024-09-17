@@ -143,6 +143,7 @@ config ARCH_IMX6UL
 config ARCH_IMX7
 	bool
 	select CPU_V7
+	select HAS_PSCI_PROVIDER
 	select PINCTRL_IMX_IOMUX_V3
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX

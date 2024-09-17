@@ -196,6 +196,8 @@ static int rpi_env_init(void)
 	const char *diskdev;
 	int ret;
 
+	defaultenv_append_directory(defaultenv_rpi);
+
 	device_detect_by_name("mci0");
 	device_detect_by_name("mci1");
 
@@ -217,8 +219,6 @@ static int rpi_env_init(void)
 		printf("failed to mount %s\n", diskdev);
 		return 0;
 	}
-
-	defaultenv_append_directory(defaultenv_rpi);
 
 	default_environment_path_set("/boot/barebox.env");
 
@@ -301,7 +301,7 @@ static struct device_node *register_vc_fixup(struct device_node *root,
 		tmp->full_name = xstrdup(ret->full_name);
 		of_register_fixup(rpi_vc_fdt_fixup, tmp);
 	} else {
-		pr_info("no '%s' node found in vc fdt\n", path);
+		pr_debug("no '%s' node found in vc fdt\n", path);
 	}
 
 	return ret;
@@ -341,7 +341,7 @@ static int register_vc_property_fixup(struct device_node *root,
 
 		of_register_fixup(rpi_vc_fdt_fixup_property, fixup_data);
 	} else {
-		pr_info("no '%s' node found in vc fdt\n", path);
+		pr_debug("no '%s' node found in vc fdt\n", path);
 		return -ENOENT;
 	}
 
@@ -552,8 +552,10 @@ static int rpi_devices_probe(struct device *dev)
 	priv->hw_id = ret;
 
 	dcfg = rpi_get_dcfg(priv);
-	if (IS_ERR(dcfg))
+	if (IS_ERR(dcfg)) {
+		ret = PTR_ERR(dcfg);
 		goto free_priv;
+	}
 
 	/* construct short recognizable host name */
 	name = of_device_get_match_compatible(priv->dev);

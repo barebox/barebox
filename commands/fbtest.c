@@ -9,7 +9,7 @@
 #include <gui/graphic_utils.h>
 #include <gui/2d-primitives.h>
 #include <linux/gcd.h>
-#include <int_sqrt.h>
+#include <linux/math.h>
 
 static void fbtest_pattern_solid(struct screen *sc, u32 color)
 {

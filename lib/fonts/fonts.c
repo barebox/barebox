@@ -35,8 +35,7 @@ int find_font_index(const struct font_desc *font, int ch)
 {
 	int index;
 	if (font->index == NULL) {
-		index  = font->width + 7;
-		index /= 8;
+		index  = DIV_ROUND_UP(font->width, 8);
 		index *= font->height;
 		index *= ch;
 	} else {

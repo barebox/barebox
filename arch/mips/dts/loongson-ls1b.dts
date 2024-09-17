@@ -6,6 +6,10 @@
 	model = "Loongson Tech LS1B Demo Board";
 	compatible = "loongson,ls1b";
 
+	chosen {
+		stdout-path = &serial2;
+	};
+
 	oscillator: oscillator {
 			#clock-cells = <0>;
 			compatible = "fixed-clock";

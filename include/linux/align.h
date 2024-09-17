@@ -10,4 +10,15 @@
 #define PTR_IS_ALIGNED(x, a)	IS_ALIGNED((unsigned long)(x), (a))
 #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
 
+/*
+ * The STACK_ALIGN_ARRAY macro is used to allocate a buffer on the stack that
+ * meets a minimum alignment requirement.
+ *
+ * Note that the size parameter is the number of array elements to allocate,
+ * not the number of bytes.
+ */
+#define STACK_ALIGN_ARRAY(type, name, size, align)		\
+	char __##name[sizeof(type) * (size) + (align) - 1];	\
+	type *name = (type *)ALIGN((unsigned long)__##name, align)
+
 #endif

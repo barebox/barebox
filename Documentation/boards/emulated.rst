@@ -20,56 +20,65 @@ fix up the virtio mmio regions into the device tree and barebox will
 discover the devices automatically, analogously to what it does with
 VirtIO over PCI.
 
-test/emulate.pl
----------------
+labgrid
+-------
 
-The ``emulate.pl`` script shipped with barebox can be used to easily
-start VMs. It reads a number of YAML files in ``test/$ARCH``, which
-describe some virtualized targets that barebox is known to run on.
-
-Controlled by command line options, these targets are built with
-tuxmake if available and loaded into the emulator for either interactive
-use or for automated testing with Labgrid ``QEMUDriver``.
-
-.. _tuxmake: https://pypi.org/project/tuxmake/
-.. _Labgrid: https://labgrid.org
-
-Install dependencies for interactive use::
-
-  cpan YAML::XS # or use e.g. libyaml-libyaml-perl on Debian
-  pip3 install tuxmake # optional
+Labgrid is used to run the barebox test suite, both on real and emulated
+hardware. A number of YAML files located in ``test/$ARCH`` describe some
+of the virtualized targets that barebox is known to run on.
 
 Example usage::
 
-  # Switch to barebox source directory
-  cd barebox
+  # Run x86 VM runnig the EFI payload from efi_defconfig
+  pytest --lg-env test/x86/efi_defconfig.yaml --interactive
 
-  # emulate x86 VM runnig the EFI payload from efi_defconfig
-  ARCH=x86 ./test/emulate.pl efi_defconfig
+  # Run the test suite against the same
+  pytest --lg-env test/x86/efi_defconfig.yaml
 
-  # build all MIPS targets known to emulate.pl and exit
-  ARCH=mips ./test/emulate.pl --no-emulate
+The above assumes that barebox has already been built for the
+configuration and that labgrid is available. If barebox has been
+built out-of-tree, the build directory must be pointed at by
+``LG_BUILDDIR``, ``KBUILD_OUTPUT`` or a ``build`` symlink.
 
-The script can also be used with a precompiled barebox tree::
+Additional QEMU command-line options can be added by specifying
+them after the ``--qemu`` option::
 
-  # Switch to build directory
-  export KBUILD_OUTPUT=build
+  # appends -device ? to the command line. Add --dry-run to see the final result
+  pytest --lg-env test/riscv/rv64i_defconfig.yaml --interactive --qemu -device '?'
 
-  # run a barebox image built outside tuxmake on an ARM virt machine
-  ARCH=arm ./test/emulate.pl virt@multi_v7_defconfig --no-tuxmake
+Some of the QEMU options that are used more often also have explicit
+support in the test runner, so paravirtualized devices can be added
+more easily::
 
-  # run tests instead of starting emulator interactively
-  ARCH=arm ./test/emulate.pl virt@multi_v7_defconfig --no-tuxmake --test
+  # Run tests and pass a block device (here /dev/virtioblk0)
+  pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml --blk=rootfs.ext4
 
-``emulate.pl`` also has some knowledge on paravirtualized devices::
+For a complete listing of possible options run ``pytest --help``.
 
-  # Run target and pass a block device (here /dev/virtioblk0)
-  ARCH=riscv ./test/emulate.pl --blk=rootfs.ext4 rv64i_defconfig
+MAKEALL
+-------
 
-Needed command line options can be passed directly to the
-emulator/``pytest`` as well by placing them behind ``--``::
+The ``MAKEALL`` script is a wrapper around ``make`` to more easily build
+multiple configurations. It also accepts YAML Labgrid environment files
+as arguments, which will cause it to build and then run the tests::
 
-  # appends -device ? to the command line. Add -n to see the final result
-  ARCH=riscv ./test/emulate.pl rv64i_defconfig -- -device ?
+  ./MAKEALL test/mips/qemu-maltael_defconfig.yaml
 
-For a complete listing of options run ``./test/emulate.pl -h``.
+This expects ``CROSS_COMPILE`` (or ``CROSS_COMPILE_mips``) to have been
+set beforehand to point at an appropriate toolchain prefix.
+
+The barebox-ci container provides an easy way to run ``MAKEALL`` against
+all configurations supported by barebox, even if the host system
+lacks the appropriate toolchains::
+
+  # Run MAKEALL and possibly pytest in the container
+  alias MAKEALL="scripts/container.sh ./MAKEALL"
+
+  # Build a single configuration
+  MAKEALL test/mips/qemu-maltael_defconfig.yaml
+
+  # Build all configurations for an architecture, no test
+  MAKEALL -a riscv
+
+  # Build all mips platforms that can be tested
+  MAKEALL test/mips/*.yaml

@@ -5,18 +5,18 @@ CPP ?= cpp
 # Disable noisy checks by default
 ifeq ($(findstring 1,$(DTC_VERBOSE)),)
 DTC_FLAGS += -Wno-unit_address_vs_reg \
-	-Wno-unit_address_format \
-	-Wno-avoid_unnecessary_addr_size \
-	-Wno-alias_paths \
-	-Wno-graph_child_address \
-	-Wno-simple_bus_reg \
-	-Wno-unique_unit_address \
-	-Wno-pci_device_reg
+        -Wno-unit_address_format \
+        -Wno-avoid_unnecessary_addr_size \
+        -Wno-alias_paths \
+        -Wno-graph_child_address \
+        -Wno-simple_bus_reg \
+        -Wno-unique_unit_address \
+        -Wno-pci_device_reg
 endif
 
 ifneq ($(findstring 2,$(DTC_VERBOSE)),)
 DTC_FLAGS += -Wnode_name_chars_strict \
-	-Wproperty_name_chars_strict
+        -Wproperty_name_chars_strict
 endif
 
 MAKEFLAGS += -rR --no-print-directory
@@ -130,15 +130,15 @@ quiet_cmd_clean    = CLEAN   $(obj)
 dtc-tmp = $(subst $(comma),_,$(dot-target).dts.tmp)
 
 dtc_cpp_flags  = -Wp,-MD,$(depfile).pre.tmp -nostdinc		\
-	         -Iinclude -I$(src) -Isrc -Itestcase-data	\
-	         -undef -D__DTS__
+                 -Iinclude -I$(src) -Isrc -Itestcase-data	\
+                 -undef -D__DTS__
 
 quiet_cmd_dtc = DTC     $@
 cmd_dtc = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) $< ; \
-	$(DTC) -O dtb -o $@ -b 0 \
-	        -i $(src) $(DTC_FLAGS) \
-	        -d $(depfile).dtc.tmp $(dtc-tmp) ; \
-	cat $(depfile).pre.tmp $(depfile).dtc.tmp > $(depfile)
+        $(DTC) -O dtb -o $@ -b 0 \
+                -i $(src) $(DTC_FLAGS) \
+                -d $(depfile).dtc.tmp $(dtc-tmp) ; \
+        cat $(depfile).pre.tmp $(depfile).dtc.tmp > $(depfile)
 
 $(obj)/%.dtb: $(src)/%.dts FORCE
 	$(call if_changed_dep,dtc)
@@ -148,7 +148,7 @@ all_arch: $(ARCH_DTB)
 	@:
 
 RCS_FIND_IGNORE := \( -name SCCS -o -name BitKeeper -o -name .svn -o -name CVS \
-	           -o -name .pc -o -name .hg -o -name .git \) -prune -o
+                   -o -name .pc -o -name .hg -o -name .git \) -prune -o
 
 PHONY += clean_arch
 clean_arch: __clean-files = $(ARCH_DTB)

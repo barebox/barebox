@@ -25,7 +25,7 @@ config INPUT_EVBUG
 
 config KEYBOARD_GPIO
 	bool "GPIO Buttons"
-	depends on GENERIC_GPIO
+	depends on GPIOLIB
 	select POLLER
 	select INPUT
 	help

@@ -9,15 +9,12 @@
 #include <clock.h>
 #include <gpio_keys.h>
 #include <poller.h>
-#include <gpio.h>
-#include <of_gpio.h>
+#include <linux/gpio/consumer.h>
 #include <input/input.h>
 
 struct gpio_key {
+	struct gpio_desc *gpio;
 	int code;
-
-	int gpio;
-	int active_low;
 
 	int previous_state;
 
@@ -37,31 +34,29 @@ static void gpio_key_poller(void *data)
 {
 	struct gpio_keys *gk = data;
 	struct gpio_key *gb;
-	int i, val;
+	int i, pressed;
 
 	for (i = 0; i < gk->nbuttons; i++) {
 		gb = &gk->buttons[i];
 
-		if (gpio_slice_acquired(gb->gpio))
+		if (gpiod_slice_acquired(gb->gpio))
 			goto out;
 	}
 
 	for (i = 0; i < gk->nbuttons; i++) {
 
 		gb = &gk->buttons[i];
-		val = gpio_get_value(gb->gpio);
+		pressed = gpiod_get_value(gb->gpio);
 
 		if (!is_timeout(gb->debounce_start, gb->debounce_interval * MSECOND))
 			continue;
 
-		if (val != gb->previous_state) {
-			int pressed = val != gb->active_low;
-
+		if (pressed != gb->previous_state) {
 			gb->debounce_start = get_time_ns();
 			input_report_key_event(&gk->input, gb->code, pressed);
-			dev_dbg(gk->input.parent, "%s gpio(%d) as %d\n",
-				pressed ? "pressed" : "released", gb->gpio, gb->code);
-			gb->previous_state = val;
+			dev_dbg(gk->input.parent, "%s gpio #%d as %d\n",
+				pressed ? "pressed" : "released", i, gb->code);
+			gb->previous_state = pressed;
 		}
 	}
 out:
@@ -85,9 +80,20 @@ static int gpio_keys_probe_pdata(struct gpio_keys *gk, struct device *dev)
 	gk->nbuttons = pdata->nbuttons;
 
 	for (i = 0; i < gk->nbuttons; i++) {
-		gk->buttons[i].gpio = pdata->buttons[i].gpio;
+		struct gpio_desc *gpio;
+		ulong flags = GPIOF_DIR_IN;
+
+		if (pdata->buttons[i].active_low)
+			flags |= GPIOF_ACTIVE_LOW;
+
+		gpio = gpiod_request_one(pdata->buttons[i].gpio, flags, "gpio_keys");
+		if (IS_ERR(gpio)) {
+			pr_err("gpio_keys: gpio #%d can not be requested\n", i);
+			return PTR_ERR(gpio);
+		}
+
+		gk->buttons[i].gpio = gpio;
 		gk->buttons[i].code = pdata->buttons[i].code;
-		gk->buttons[i].active_low = pdata->buttons[i].active_low;
 		gk->buttons[i].debounce_interval = 20;
 	}
 
@@ -106,15 +112,19 @@ static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device *dev)
 	gk->buttons = xzalloc(gk->nbuttons * sizeof(*gk->buttons));
 
 	for_each_child_of_node(np, npkey) {
-		enum of_gpio_flags gpioflags;
+		const char *label = NULL;
+		struct gpio_desc *gpio;
 		uint32_t keycode;
 
-		gk->buttons[i].gpio = of_get_named_gpio_flags(npkey, "gpios", 0, &gpioflags);
-		if (gk->buttons[i].gpio < 0)
-			return gk->buttons[i].gpio;
+		of_property_read_string(npkey, "label", &label);
 
-		if (gpioflags & OF_GPIO_ACTIVE_LOW)
-			gk->buttons[i].active_low = 1;
+		gpio = dev_gpiod_get(dev, npkey, NULL, GPIOD_IN, label);
+		if (IS_ERR(gpio)) {
+			pr_err("gpio_keys: gpio #%d can not be requested\n", i);
+			return PTR_ERR(gpio);
+		}
+
+		gk->buttons[i].gpio = gpio;
 
 		ret = of_property_read_u32(npkey, "linux,code", &keycode);
 		if (ret)
@@ -135,29 +145,18 @@ static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device *dev)
 
 static int __init gpio_keys_probe(struct device *dev)
 {
-	int ret, i, gpio;
+	int ret;
 	struct gpio_keys *gk;
 
 	gk = xzalloc(sizeof(*gk));
 
-	if (dev->of_node)
+	if (dev_of_node(dev))
 		ret = gpio_keys_probe_dt(gk, dev);
 	else
 		ret = gpio_keys_probe_pdata(gk, dev);
 
 	if (ret)
 		return ret;
-
-	for (i = 0; i < gk->nbuttons; i++) {
-		gpio = gk->buttons[i].gpio;
-		ret = gpio_request(gpio, "gpio_keys");
-		if (ret) {
-			pr_err("gpio_keys: (%d) can not be requested\n", gpio);
-			return ret;
-		}
-		gpio_direction_input(gpio);
-		gk->buttons[i].previous_state = gk->buttons[i].active_low;
-	}
 
 	gk->input.parent = dev;
 	ret = input_device_register(&gk->input);

@@ -8,6 +8,7 @@
 #include <gpio.h>
 #include <of_gpio.h>
 #include <linux/gpio/consumer.h>
+#include <linux/pinctrl/pinconf-generic.h>
 #include <linux/overflow.h>
 #include <errno.h>
 #include <malloc.h>
@@ -16,10 +17,9 @@ static LIST_HEAD(chip_list);
 
 struct gpio_desc {
 	struct gpio_chip *chip;
-	bool requested;
-	bool active_low;
 	char *label;
 	const char *name;
+	u32 flags; /* OR-d enum of_gpio_flags */
 };
 
 /*
@@ -62,9 +62,14 @@ static int gpio_desc_alloc(void)
 }
 pure_initcall(gpio_desc_alloc);
 
+static inline bool gpiod_is_requested(struct gpio_desc *desc)
+{
+	return desc->flags & OF_GPIO_REQUESTED;
+}
+
 static int gpio_ensure_requested(struct gpio_desc *desc, int gpio)
 {
-	if (desc->requested)
+	if (gpiod_is_requested(desc))
 		return 0;
 
 	return gpio_request(gpio, "gpio");
@@ -86,20 +91,33 @@ static unsigned gpiodesc_chip_offset(const struct gpio_desc *desc)
 	return (desc - gpio_desc) - desc->chip->base + desc->chip->gpio_offset;
 }
 
+static __maybe_unused struct gpio_desc *gpiochip_get_desc(struct gpio_chip *chip, int gpio)
+{
+	return gpio_desc + chip->base + gpio - chip->gpio_offset;
+}
+
+static int gpiod_is_active_low(const struct gpio_desc *desc)
+{
+	return desc->flags & OF_GPIO_ACTIVE_LOW;
+}
+
 static int gpio_adjust_value(const struct gpio_desc *desc,
 			     int value)
 {
 	if (value < 0)
 		return value;
 
-	return !!value ^ desc->active_low;
+	if (gpiod_is_active_low(desc))
+		value = !value;
+
+	return (bool)value;
 }
 
 static int gpiodesc_request(struct gpio_desc *desc, const char *label)
 {
 	int ret;
 
-	if (desc->requested) {
+	if (gpiod_is_requested(desc)) {
 		ret = -EBUSY;
 		goto done;
 	}
@@ -113,8 +131,7 @@ static int gpiodesc_request(struct gpio_desc *desc, const char *label)
 			goto done;
 	}
 
-	desc->requested = true;
-	desc->active_low = false;
+	desc->flags = OF_GPIO_REQUESTED;
 	desc->label = xstrdup(label);
 
 done:
@@ -132,7 +149,7 @@ int gpio_find_by_label(const char *label)
 	for (i = 0; i < ARCH_NR_GPIOS; i++) {
 		struct gpio_desc *info = &gpio_desc[i];
 
-		if (!info->requested || !info->chip || !info->label)
+		if (!gpiod_is_requested(info) || !info->chip || !info->label)
 			continue;
 
 		if (!strcmp(info->label, label))
@@ -189,14 +206,13 @@ bool gpio_slice_acquired(unsigned gpio)
 
 static void gpiodesc_free(struct gpio_desc *desc)
 {
-	if (!desc->requested)
+	if (!gpiod_is_requested(desc))
 		return;
 
 	if (desc->chip->ops->free)
 		desc->chip->ops->free(desc->chip, gpiodesc_chip_offset(desc));
 
-	desc->requested = false;
-	desc->active_low = false;
+	desc->flags = 0;
 	free(desc->label);
 	desc->label = NULL;
 }
@@ -237,6 +253,34 @@ void gpiod_put_array(struct gpio_descs *descs)
 	kfree(descs);
 }
 EXPORT_SYMBOL_GPL(gpiod_put_array);
+
+static int gpio_do_set_config(struct gpio_chip *gc, unsigned int offset,
+			      unsigned long config)
+{
+	if (!IS_ENABLED(CONFIG_GPIO_PINCONF))
+		return -ENOSYS;
+	if (!gc->ops->set_config)
+		return -ENOTSUPP;
+
+	return gc->ops->set_config(gc, offset, config);
+}
+
+/**
+ * gpiod_set_config - sets @config for a GPIO
+ * @desc: descriptor of the GPIO for which to set the configuration
+ * @config: Same packed config format as generic pinconf
+ *
+ * Returns:
+ * 0 on success, %-ENOTSUPP if the controller doesn't support setting the
+ * configuration.
+ */
+int gpiod_set_config(struct gpio_desc *desc, unsigned long config)
+{
+	VALIDATE_DESC(desc);
+
+	return gpio_do_set_config(desc->chip, gpiodesc_chip_offset(desc), config);
+}
+EXPORT_SYMBOL_GPL(gpiod_set_config);
 
 /**
  * gpiod_set_raw_value() - assign a gpio's raw value
@@ -394,6 +438,61 @@ int gpio_direction_output(unsigned gpio, int value)
 }
 EXPORT_SYMBOL(gpio_direction_output);
 
+static int gpio_set_config_with_argument(struct gpio_desc *desc,
+					 enum pin_config_param mode,
+					 u32 argument)
+{
+	unsigned long config;
+
+	config = pinconf_to_config_packed(mode, argument);
+	return gpio_do_set_config(desc->chip, gpiodesc_chip_offset(desc), config);
+}
+
+static int gpio_set_config_with_argument_optional(struct gpio_desc *desc,
+						  enum pin_config_param mode,
+						  u32 argument)
+{
+	int ret;
+
+	ret = gpio_set_config_with_argument(desc, mode, argument);
+	if (ret != -ENOTSUPP)
+		return ret;
+	return 0;
+}
+
+static int gpio_set_config(struct gpio_desc *desc, enum pin_config_param mode)
+{
+	return gpio_set_config_with_argument(desc, mode, 0);
+}
+
+static int gpio_set_bias(struct gpio_desc *desc)
+{
+	enum pin_config_param bias;
+	unsigned int arg;
+
+	if (desc->flags & OF_GPIO_PULL_DISABLE)
+		bias = PIN_CONFIG_BIAS_DISABLE;
+	else if (desc->flags & OF_GPIO_PULL_UP)
+		bias = PIN_CONFIG_BIAS_PULL_UP;
+	else if (desc->flags & OF_GPIO_PULL_DOWN)
+		bias = PIN_CONFIG_BIAS_PULL_DOWN;
+	else
+		return 0;
+
+	switch (bias) {
+	case PIN_CONFIG_BIAS_PULL_DOWN:
+	case PIN_CONFIG_BIAS_PULL_UP:
+		arg = 1;
+		break;
+
+	default:
+		arg = 0;
+		break;
+	}
+
+	return gpio_set_config_with_argument_optional(desc, bias, arg);
+}
+
 /**
  * gpiod_direction_output - set the GPIO direction to output
  * @desc:	GPIO to set to output
@@ -408,7 +507,35 @@ EXPORT_SYMBOL(gpio_direction_output);
  */
 int gpiod_direction_output(struct gpio_desc *desc, int value)
 {
+	int ret;
+
 	VALIDATE_DESC(desc);
+
+	if (IS_ENABLED(CONFIG_GPIO_PINCONF)) {
+		if (desc->flags & (OF_GPIO_OPEN_DRAIN | OF_GPIO_SINGLE_ENDED)) {
+			/* First see if we can enable open drain in hardware */
+			ret = gpio_set_config(desc, PIN_CONFIG_DRIVE_OPEN_DRAIN);
+			if (!ret)
+				goto set_output_value;
+			/* Emulate open drain by not actively driving the line high */
+			if (value)
+				return gpiod_direction_input(desc);
+		} else if (desc->flags & OF_GPIO_SINGLE_ENDED) {
+			ret = gpio_set_config(desc, PIN_CONFIG_DRIVE_OPEN_SOURCE);
+			if (!ret)
+				goto set_output_value;
+			/* Emulate open source by not actively driving the line low */
+			if (!value)
+				return gpiod_direction_input(desc);
+		} else {
+			gpio_set_config(desc, PIN_CONFIG_DRIVE_PUSH_PULL);
+		}
+
+set_output_value:
+		ret = gpio_set_bias(desc);
+		if (ret)
+			return ret;
+	}
 
 	return gpiod_direction_output_raw(desc, gpio_adjust_value(desc, value));
 }
@@ -435,13 +562,19 @@ EXPORT_SYMBOL(gpio_direction_active);
  */
 int gpiod_direction_input(struct gpio_desc *desc)
 {
+	int ret;
+
 	VALIDATE_DESC(desc);
 
 	if (!desc->chip->ops->direction_input)
 		return -ENOSYS;
 
-	return desc->chip->ops->direction_input(desc->chip,
-					      gpiodesc_chip_offset(desc));
+	ret = desc->chip->ops->direction_input(desc->chip,
+					       gpiodesc_chip_offset(desc));
+	if (ret == 0 && IS_ENABLED(CONFIG_GPIO_PINCONF))
+		ret = gpio_set_bias(desc);
+
+	return ret;
 }
 EXPORT_SYMBOL(gpiod_direction_input);
 
@@ -461,8 +594,20 @@ int gpio_direction_input(unsigned gpio)
 }
 EXPORT_SYMBOL(gpio_direction_input);
 
-static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long flags,
-				const char *label)
+/**
+ * gpiodesc_request_one - request GPIO descriptor
+ * @desc: GPIO descriptor
+ * @lflags: OF lookup flags for this GPIO or 0 if default
+ * such as GPIOF_ACTIVE_LOW
+ * @dflags: descriptor request flags (GPIOF_*) for this GPIO or 0 if default
+ *
+ * Function is used to request a GPIO descriptor and configure it for use.
+ *
+ * Returns:
+ * 0 on success and a negative error code otherwise.
+ */
+static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long lflags,
+				unsigned long dflags, const char *label)
 {
 	int err;
 
@@ -470,17 +615,19 @@ static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long flags,
 	 * Not all of the flags below are mulit-bit, but, for the sake
 	 * of consistency, the code is written as if all of them were.
 	 */
-	const bool active_low  = (flags & GPIOF_ACTIVE_LOW) == GPIOF_ACTIVE_LOW;
-	const bool dir_in      = (flags & GPIOF_DIR_IN) == GPIOF_DIR_IN;
-	const bool logical     = (flags & GPIOF_LOGICAL) == GPIOF_LOGICAL;
-	const bool init_active = (flags & GPIOF_INIT_ACTIVE) == GPIOF_INIT_ACTIVE;
-	const bool init_high   = (flags & GPIOF_INIT_HIGH) == GPIOF_INIT_HIGH;
+	const bool active_low  = (dflags & GPIOF_ACTIVE_LOW) == GPIOF_ACTIVE_LOW;
+	const bool dir_in      = (dflags & GPIOF_DIR_IN) == GPIOF_DIR_IN;
+	const bool logical     = (dflags & GPIOF_LOGICAL) == GPIOF_LOGICAL;
+	const bool init_active = (dflags & GPIOF_INIT_ACTIVE) == GPIOF_INIT_ACTIVE;
+	const bool init_high   = (dflags & GPIOF_INIT_HIGH) == GPIOF_INIT_HIGH;
 
 	err = gpiodesc_request(desc, label);
 	if (err)
 		return err;
 
-	desc->active_low = active_low;
+	desc->flags |= lflags;
+	if (active_low)
+		desc->flags |= OF_GPIO_ACTIVE_LOW;
 
 	if (dir_in)
 		err = gpiod_direction_input(desc);
@@ -495,6 +642,24 @@ static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long flags,
 	return err;
 }
 
+struct gpio_desc *gpiod_request_one(unsigned gpio,
+				    unsigned long flags, const char *label)
+{
+	struct gpio_desc *desc = gpio_to_desc(gpio);
+	int ret;
+
+	if (!desc)
+		return ERR_PTR(-ENODEV);
+
+	ret = gpiodesc_request_one(desc, 0, flags, label);
+	if (ret)
+		return ERR_PTR(ret);
+
+	return desc;
+}
+EXPORT_SYMBOL_GPL(gpio_request_one);
+
+
 /**
  * gpio_request_one - request a single GPIO with initial configuration
  * @gpio:	the GPIO number
@@ -503,14 +668,10 @@ static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long flags,
  */
 int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 {
-	struct gpio_desc *desc = gpio_to_desc(gpio);
-
-	if (!desc)
-		return -ENODEV;
-
-	return gpiodesc_request_one(desc, flags, label);
+	return PTR_ERR_OR_ZERO(gpiod_request_one(gpio, flags, label));
 }
 EXPORT_SYMBOL_GPL(gpio_request_one);
+
 
 /**
  * gpio_request_array - request multiple GPIOs in a single call
@@ -604,6 +765,7 @@ static int gpiochip_find_base(int ngpio)
 	return base;
 }
 
+
 #ifdef CONFIG_OF_GPIO
 
 static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
@@ -611,8 +773,8 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 {
 	struct device_node *chip_np = chip->dev->of_node;
 	unsigned long flags = 0;
-	u32 gpio_cells, gpio_num, gpio_flags;
-	int ret, gpio;
+	u32 gpio_cells, gpio_num, of_flags;
+	int ret;
 	const char *name = NULL;
 
 	ret = of_property_read_u32(chip_np, "#gpio-cells", &gpio_cells);
@@ -632,22 +794,9 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 		return ret;
 
 	ret = of_property_read_u32_index(np, "gpios", idx * gpio_cells + 1,
-					 &gpio_flags);
+					 &of_flags);
 	if (ret)
 		return ret;
-
-	if (gpio_flags & OF_GPIO_ACTIVE_LOW)
-		flags |= GPIOF_ACTIVE_LOW;
-
-	gpio = gpio_get_num(chip->dev, gpio_num);
-	if (gpio == -EPROBE_DEFER)
-		return gpio;
-
-	if (gpio < 0) {
-		dev_err(chip->dev, "unable to get gpio %u\n", gpio_num);
-		return gpio;
-	}
-
 
 	/*
 	 * Note that, in order to be compatible with Linux, the code
@@ -675,7 +824,8 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 	if (ret < 0)
 		name = np->name;
 
-	return gpio_request_one(gpio, flags, name);
+	return gpiodesc_request_one(gpiochip_get_desc(chip, gpio_num),
+				    of_flags, flags, name);
 }
 
 static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
@@ -865,7 +1015,7 @@ static struct property *of_find_gpio_property(struct device_node *np,
 struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 			struct device_node *np,
 			const char *con_id, int index,
-			enum gpiod_flags flags,
+			enum gpiod_flags dflags,
 			const char *label)
 {
 	struct gpio_desc *desc = NULL;
@@ -882,15 +1032,11 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 	if (!pp)
 		return ERR_PTR(-ENOENT);
 
-	gpio = of_get_named_gpio_flags(dev->device_node, pp->name,
-				       index, &of_flags);
+	gpio = of_get_named_gpio_flags(np, pp->name, index, &of_flags);
 	if (!gpio_is_valid(gpio))
 		return ERR_PTR(gpio < 0 ? gpio : -EINVAL);
 
 	desc = gpio_to_desc(gpio);
-
-	if (of_flags & OF_GPIO_ACTIVE_LOW)
-		flags |= GPIOF_ACTIVE_LOW;
 
 	buf = NULL;
 
@@ -901,7 +1047,7 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 			label = dev_name(dev);
 	}
 
-	ret = gpiodesc_request_one(desc, flags, label);
+	ret = gpiodesc_request_one(desc, of_flags, dflags, label);
 	free(buf);
 
 	return ret ? ERR_PTR(ret): desc;
@@ -1120,6 +1266,7 @@ static int do_gpiolib(int argc, char *argv[])
 
 	for (i = 0; i < ARCH_NR_GPIOS; i++) {
 		struct gpio_desc *desc = &gpio_desc[i];
+		bool requested, active_low;
 		int val = -1, dir = -1;
 		int idx;
 
@@ -1145,10 +1292,13 @@ static int do_gpiolib(int argc, char *argv[])
 		if (desc->chip->ops->get)
 			val = desc->chip->ops->get(desc->chip, idx);
 
+		requested  = gpiod_is_requested(desc);
+		active_low = gpiod_is_active_low(desc);
+
 		printf("  GPIO %4d: %-3s %-3s %-9s %-20s %-20s\n", chip ? idx : i,
 			(dir < 0) ? "unk" : ((dir == GPIOF_DIR_IN) ? "in" : "out"),
 			(val < 0) ? "unk" : ((val == 0) ? "lo" : "hi"),
-		        desc->requested ? (desc->active_low ? "active low" : "true") : "false",
+		        requested ? (active_low ? "active low" : "true") : "false",
 			desc->name ? desc->name : "",
 			desc->label ? desc->label : "");
 	}

@@ -40,6 +40,21 @@ config OF_GPIO
 	depends on OFDEVICE
 	def_bool y
 
+config OF_GPIO_PINCONF
+	depends on OF_GPIO && HAVE_GPIO_PINCONF
+	select GPIO_PINCONF
+	bool "Enable support for extra GPIO pin configuration binding"
+	default y
+	help
+	  In addition to the normal pinctrl-names/pinctrl-X binding, there's
+	  also a binding to add flags like GPIO_OPEN_DRAIN or GPIO_PULL_UP
+	  OR-ed into the cell of the gpios property used for
+	  GPIO_ACTIVE_HIGH/LOW. This latter binding is optional and many
+	  drivers don't support it.
+
+	  If unsure and not size conscious, say y here to enable the
+	  extra binding.
+
 config OF_PCI
 	bool
 	depends on PCI

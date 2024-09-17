@@ -3,7 +3,7 @@ name: build images
 on: [push, pull_request]
 
 env:
-  ARCH: arm mips powerpc riscv sandbox x86 openrisc
+  ARCH: arm mips powerpc riscv sandbox x86 openrisc kvx
 
 jobs:
   defconfigs:

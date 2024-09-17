@@ -47,6 +47,10 @@ jobs:
             lgenv: 'test/riscv/qemu-virt64@rv64i_defconfig.yaml'
             defconfig: rv64i_defconfig
 
+          - ARCH: sandbox
+            lgenv: 'test/sandbox/sandbox_defconfig.yaml'
+            defconfig: sandbox_defconfig
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -68,7 +72,7 @@ jobs:
         export KBUILD_OUTPUT=build-${{matrix.arch}}
 
         for i in ${{matrix.lgenv}}; do
-          grep -wqe QEMUDriver: "$i" || continue
+          grep -wq '\(QEMUDriver\|ExternalConsoleDriver\):' "$i" || continue
 
           cfg=$(basename $i .yaml)
           echo "Testing $cfg"

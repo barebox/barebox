@@ -1,12 +1,15 @@
 targets:
   main:
     drivers:
-      NativeExecutableDriver: # not yet supported by labgrid, only for interactive use
-        command: ./barebox
-        image: barebox
+      ExternalConsoleDriver:
+        cmd: !template "$LG_BUILDDIR/barebox"
+      ExternalPowerDriver:
+        cmd_on: 'true'
+        cmd_off: 'true'
+      BareboxDriver:
+        prompt: "barebox@[^:]+:[^ ]+ "
+      BareboxTestStrategy: {}
     runner:
       tuxmake_arch: um
-images:
-  barebox: !template "$LG_BUILDDIR/barebox"
-tools:
-  qemu: /usr/local/bin/temu
+imports:
+  -  ../strategy.py

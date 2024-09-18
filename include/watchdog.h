@@ -28,7 +28,6 @@ struct watchdog {
 	uint64_t last_ping;
 	int seconds_to_expire;
 	struct poller_async poller;
-	struct list_head list;
 	int running; /* enum wdog_hw_running */
 };
 

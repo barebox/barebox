@@ -237,7 +237,6 @@ int watchdog_deregister(struct watchdog *wd)
 	}
 
 	class_remove_device(&watchdog_class, &wd->dev);
-	list_del(&wd->list);
 
 	return 0;
 }

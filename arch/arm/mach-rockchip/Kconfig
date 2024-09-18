@@ -116,6 +116,12 @@ config MACH_WOLFVISION_PF5
 	help
 	  Say Y here if you are using a WolfVision PF5 mainboard
 
+config MACH_XUNLONG_ORANGEPI_5_PLUS
+       select ARCH_RK3588
+       bool "Xunlong Orange Pi 5 Plus"
+       help
+         Say Y here if you are using a Xunlong Orange Pi 5 Plus
+
 endif
 
 comment "select board features:"

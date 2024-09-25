@@ -3271,11 +3271,14 @@ EXPORT_SYMBOL(of_graph_parse_endpoint);
  *
  * Return: A 'port' node pointer with refcount incremented.
  */
-struct device_node *of_graph_get_port_by_id(struct device_node *node, u32 id)
+struct device_node *of_graph_get_port_by_id(struct device_node *parent, u32 id)
 {
-	struct device_node *port;
+	struct device_node *port, *node = of_get_child_by_name(parent, "ports");
 
-	for_each_child_of_node(node, port) {
+	if (node)
+		parent = node;
+
+	for_each_child_of_node(parent, port) {
 		u32 port_id = 0;
 
 		if (strncmp(port->name, "port", 4) != 0)

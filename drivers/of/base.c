@@ -2139,7 +2139,7 @@ EXPORT_SYMBOL(of_get_compatible_child);
  *	@node:	parent node
  *	@name:	child name to look for.
  *
- *      This function looks for child node for given matching name
+ *      This function looks for child node for given matching full name
  *
  *	Returns a node pointer if found or NULL.
  */
@@ -2155,6 +2155,28 @@ struct device_node *of_get_child_by_name(const struct device_node *node,
 	return NULL;
 }
 EXPORT_SYMBOL(of_get_child_by_name);
+
+/**
+ *	of_get_child_by_name_stem - Find the child node by name for a given parent
+ *	@node:	parent node
+ *	@name:	child name to look for.
+ *
+ *      This function looks for child node for given matching name excluding the
+ *      unit address
+ *
+ *	Returns a node pointer if found or NULL.
+ */
+struct device_node *of_get_child_by_name_stem(const struct device_node *node,
+				const char *name)
+{
+	struct device_node *child;
+
+	for_each_child_of_node(node, child)
+		if (of_node_name_eq(child, name))
+			break;
+	return child;
+}
+EXPORT_SYMBOL(of_get_child_by_name_stem);
 
 /**
  * of_property_read_string_helper() - Utility helper for parsing string properties
@@ -3296,7 +3318,7 @@ struct device_node *of_graph_get_next_endpoint(const struct device_node *parent,
 		if (node)
 			parent = node;
 
-		port = of_get_child_by_name(parent, "port");
+		port = of_get_child_by_name_stem(parent, "port");
 		if (!port) {
 			pr_err("%s(): no port node found in %pOF\n",
 			       __func__, parent);

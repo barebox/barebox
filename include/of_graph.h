@@ -43,5 +43,9 @@ struct device_node *of_graph_get_remote_port_parent(
 					const struct device_node *node);
 struct device_node *of_graph_get_remote_port(const struct device_node *node);
 int of_graph_port_is_available(struct device_node *node);
+struct device_node *of_graph_get_remote_node(const struct device_node *node,
+					     u32 port, u32 endpoint);
+struct device_node *of_graph_get_endpoint_by_regs(
+	const struct device_node *parent, int port_reg, int reg);
 
 #endif /* __LINUX_OF_GRAPH_H */

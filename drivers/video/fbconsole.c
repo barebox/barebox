@@ -139,7 +139,7 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	color = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
 
 	rgb = &colors[bgcolor];
-	bgcolor = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
+	bgcolor = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0x0);
 
 	for (i = 0; i < priv->font->height; i++) {
 		uint8_t mask = 0x80;

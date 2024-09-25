@@ -2054,6 +2054,9 @@ EXPORT_SYMBOL(of_get_next_available_child);
 struct device_node *of_get_next_child(const struct device_node *node,
 	struct device_node *prev)
 {
+	if (prev)
+		node = prev->parent;
+
 	prev = list_prepare_entry(prev, &node->children, parent_list);
 	list_for_each_entry_continue(prev, &node->children, parent_list)
 		return prev;

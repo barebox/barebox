@@ -200,7 +200,7 @@ static void printchar(struct fbc_priv *priv, int c)
 		if (priv->x > 0) {
 			priv->x--;
 		} else if (priv->y > 0) {
-			priv->x = priv->cols;
+			priv->x = priv->cols - 1;
 			priv->y--;
 		}
 		break;
@@ -226,26 +226,26 @@ static void printchar(struct fbc_priv *priv, int c)
 				priv->font->width, priv->font->height);
 
 		priv->x++;
-		if (priv->x > priv->cols) {
+		if (priv->x >= priv->cols) {
 			priv->y++;
 			priv->x = 0;
 		}
 	}
 
-	if (priv->y > priv->rows) {
+	if (priv->y >= priv->rows) {
 		void *buf;
 		void *adr;
 		u32 line_length = priv->fb->line_length;
 		int line_height = line_length * priv->font->height;
 		int width = priv->fb->xres - priv->margin.left - priv->margin.right;
-		int height = (priv->rows + 1) * priv->font->height;
+		int height = priv->rows * priv->font->height;
 
 		buf = gui_screen_render_buffer(priv->sc);
 		adr = buf + priv->margin.top * line_length;
 
 		if (!priv->margin.left && !priv->margin.right) {
-			memcpy(adr, adr + line_height, line_height * priv->rows);
-			memset(adr + line_height * priv->rows, 0, line_height);
+			memcpy(adr, adr + line_height, line_height * (priv->rows - 1));
+			memset(adr + line_height * (priv->rows - 1), 0, line_height);
 		} else {
 			int bpp = priv->fb->bits_per_pixel >> 3;
 			int y;
@@ -264,7 +264,7 @@ static void printchar(struct fbc_priv *priv, int c)
 
 		gu_screen_blit_area(priv->sc, priv->margin.left, priv->margin.top,
 				width, height);
-		priv->y = priv->rows;
+		priv->y = priv->rows - 1;
 	}
 
 	show_cursor(priv, priv->x, priv->y);
@@ -364,10 +364,10 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		show_cursor(priv, priv->x, priv->y);
 
 		pos = simple_strtoul(priv->csi, &end, 10);
-		priv->y = clamp(pos - 1, 0, (int) priv->rows);
+		priv->y = clamp(pos - 1, 0, (int) priv->rows - 1);
 
 		pos = simple_strtoul(end + 1, NULL, 10);
-		priv->x = clamp(pos - 1, 0, (int) priv->cols);
+		priv->x = clamp(pos - 1, 0, (int) priv->cols - 1);
 
 		show_cursor(priv, priv->x, priv->y);
 	case 'K':
@@ -469,8 +469,8 @@ static int setup_font(struct fbc_priv *priv)
 
 	priv->font = font;
 
-	priv->rows = height / priv->font->height - 1;
-	priv->cols = width / priv->font->width - 1;
+	priv->rows = height / priv->font->height;
+	priv->cols = width / priv->font->width;
 
 	return 0;
 }
@@ -495,7 +495,7 @@ static int fbc_open(struct console_device *cdev)
 	priv->state = LIT;
 
 	dev_info(priv->cdev.dev, "framebuffer console %dx%d activated\n",
-		priv->cols + 1, priv->rows + 1);
+		priv->cols, priv->rows);
 
 	priv->active = true;
 

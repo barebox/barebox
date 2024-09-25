@@ -229,12 +229,18 @@ void gu_rgba_blend(struct fb_info *info, struct image *img, void* buf, int heigh
 	line_length = info->line_length;
 
 	for (y = 0; y < height; y++) {
+		if (y + starty >= info->yres)
+			break;
+
 		adr = buf + (y + starty) * line_length +
 				startx * (info->bits_per_pixel >> 3);
 		image = img->data + (y * img->width *img_byte_per_pixel);
 
 		for (x = 0; x < width; x++) {
 			uint8_t *pixel = image;
+
+			if (x + startx >= info->xres)
+				break;
 
 			if (is_rgba)
 				gu_set_rgba_pixel(info, adr, pixel[0], pixel[1],

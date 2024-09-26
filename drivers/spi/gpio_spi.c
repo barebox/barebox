@@ -177,7 +177,7 @@ static int gpio_spi_of_probe(struct device *dev)
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || dev->platform_data)
 		return 0;
 
-	sck = of_get_named_gpio(np, "gpio-sck", 0);
+	sck = of_get_named_gpio(np, "sck-gpios", 0);
 	if (!gpio_is_valid(sck))
 		return dev_err_probe(dev, sck < 0 ? sck : -EINVAL,
 				     "missing mandatory SCK gpio\n");
@@ -186,11 +186,11 @@ static int gpio_spi_of_probe(struct device *dev)
 	pdata->sck = sck;
 	pdata->num_cs = MAX_CHIPSELECT;
 
-	pdata->miso = of_get_named_gpio(np, "gpio-miso", 0);
+	pdata->miso = of_get_named_gpio(np, "miso-gpios", 0);
 	if (!gpio_is_valid(pdata->miso))
 		pdata->miso = SPI_GPIO_NO_MISO;
 
-	pdata->mosi = of_get_named_gpio(np, "gpio-mosi", 0);
+	pdata->mosi = of_get_named_gpio(np, "mosi-gpios", 0);
 	if (!gpio_is_valid(pdata->mosi))
 		pdata->mosi = SPI_GPIO_NO_MOSI;
 

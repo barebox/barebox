@@ -65,9 +65,9 @@
 
 	spi_gpio: spi-gpio-0 {
 		compatible = "spi-gpio";
-		gpio-sck = <&gpioi 1 GPIO_ACTIVE_HIGH>;
-		gpio-mosi = <&gpioi 3 GPIO_ACTIVE_HIGH>;
-		gpio-miso = <&gpioi 2 GPIO_ACTIVE_HIGH>;
+		sck-gpios = <&gpioi 1 GPIO_ACTIVE_HIGH>;
+		mosi-gpios = <&gpioi 3 GPIO_ACTIVE_HIGH>;
+		miso-gpios = <&gpioi 2 GPIO_ACTIVE_HIGH>;
 		cs-gpios = <&gpioj 3 GPIO_ACTIVE_LOW>;
 		num-chipselects = <1>;
 		#address-cells = <1>;

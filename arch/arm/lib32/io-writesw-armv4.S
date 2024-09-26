@@ -7,8 +7,6 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
-.syntax unified
-
 		.macro	outword, rd
 #ifndef __ARMEB__
 		strh	\rd, [r0]

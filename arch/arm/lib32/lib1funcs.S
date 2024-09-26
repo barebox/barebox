@@ -37,8 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include <asm/assembler.h>
 #include <asm/unwind.h>
 
-.syntax unified
-
 .macro ARM_DIV_BODY dividend, divisor, result, curbit
 
 #if __LINUX_ARM_ARCH__ >= 5

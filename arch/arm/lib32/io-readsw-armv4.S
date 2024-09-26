@@ -7,8 +7,6 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
-.syntax unified
-
 		.macro	pack, rd, hw1, hw2
 #ifndef __ARMEB__
 		orr	\rd, \hw1, \hw2, lsl #16

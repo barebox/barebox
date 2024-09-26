@@ -7,8 +7,6 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
-.syntax unified
-
 .section .text.__raw_writesl
 
 ENTRY(__raw_writesl)

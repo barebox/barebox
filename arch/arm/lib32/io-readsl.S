@@ -7,8 +7,6 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
-.syntax unified
-
 .section .text.__raw_readsl
 
 ENTRY(__raw_readsl)

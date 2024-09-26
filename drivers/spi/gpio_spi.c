@@ -48,7 +48,10 @@ static inline int getmiso(const struct spi_device *spi)
 	return !!gpio_get_value(priv->data->miso);
 }
 
-#define spidelay(nsecs) do { } while (0)
+static inline void spidelay(unsigned int nsecs)
+{
+	ndelay(nsecs);
+}
 
 #include "spi-bitbang-txrx.h"
 

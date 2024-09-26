@@ -165,6 +165,7 @@ static int gpio_spi_transfer(struct spi_device *spi, struct spi_message *msg)
 
 static int gpio_spi_setup(struct spi_device *spi)
 {
+	gpio_spi_set_cs(spi, 0);
 	return 0;
 }
 

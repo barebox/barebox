@@ -2,6 +2,7 @@
 
 #include <linux/linkage.h>
 #include <asm/sections.h>
+#include <asm/assembler.h>
 
 .section .text.setupc
 
@@ -32,7 +33,7 @@ ENTRY(setup_c)
 	bl	sync_caches_for_execution
 	sub	lr, r5, r4		/* adjust return address to new location */
 	pop	{r4, r5}
-	mov	pc, lr
+	ret	lr
 ENDPROC(setup_c)
 
 /*
@@ -76,13 +77,13 @@ ENTRY(relocate_to_adr)
 	ldr	r0,=1f
 	sub	r0, r0, r8
 	add	r0, r0, r6
-	mov	pc, r0			/* jump to relocated address */
+	ret	r0			/* jump to relocated address */
 1:
 	bl	relocate_to_current_adr	/* relocate binary */
 
 	mov	lr, r7
 
 	pop	{r3, r4, r5, r6, r7, r8}
-	mov	pc, lr
+	ret	lr
 
 ENDPROC(relocate_to_adr)

@@ -5,6 +5,7 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/secure.h>
 #include <asm/system.h>
+#include <asm/assembler.h>
 
 .arch_extension sec
 .arch_extension virt
@@ -147,7 +148,7 @@ secure_monitor:
 
 hyp_trap:
         mrs     lr, elr_hyp     @ for older asm: .byte 0x00, 0xe3, 0x0e, 0xe1
-        mov pc, lr                              @ do no switch modes, but
+        ret	lr                              @ do no switch modes, but
                                                 @ return to caller
 
 ENTRY(psci_cpu_entry)

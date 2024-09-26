@@ -2,6 +2,7 @@
 
 #include <linux/linkage.h>
 #include <init.h>
+#include <asm/assembler.h>
 
 #define CACHE_DLINESIZE 32
 
@@ -22,7 +23,7 @@ ENTRY(v5_mmu_cache_on)
 		mov	r0, #0
 		mcr	p15, 0, r0, c8, c7, 0	@ flush I,D TLBs
 #endif
-		mov	pc, r12
+		ret	r12
 ENDPROC(v5_mmu_cache_on)
 
 __common_mmu_cache_on:
@@ -43,7 +44,7 @@ ENTRY(v5_mmu_cache_off)
 		mcr	p15, 0, r0, c7, c7	@ invalidate whole cache v4
 		mcr	p15, 0, r0, c8, c7	@ invalidate whole TLB v4
 #endif
-		mov	pc, lr
+		ret	lr
 ENDPROC(v5_mmu_cache_off)
 
 .section .text.v5_mmu_cache_flush
@@ -52,7 +53,7 @@ ENTRY(v5_mmu_cache_flush)
 		bne	1b
 		mcr	p15, 0, r0, c7, c5, 0	@ flush I cache
 		mcr	p15, 0, r0, c7, c10, 4	@ drain WB
-		mov	pc, lr
+		ret	lr
 ENDPROC(v5_mmu_cache_flush)
 
 /*
@@ -80,7 +81,7 @@ ENTRY(v5_dma_inv_range)
 	cmp	r0, r1
 	blo	1b
 	mcr	p15, 0, r0, c7, c10, 4		@ drain WB
-	mov	pc, lr
+	ret	lr
 
 /*
  *	dma_clean_range(start, end)
@@ -100,7 +101,7 @@ ENTRY(v5_dma_clean_range)
 	cmp	r0, r1
 	blo	1b
 	mcr	p15, 0, r0, c7, c10, 4		@ drain WB
-	mov	pc, lr
+	ret	lr
 
 /*
  *	dma_flush_range(start, end)
@@ -118,5 +119,5 @@ ENTRY(v5_dma_flush_range)
 	cmp	r0, r1
 	blo	1b
 	mcr	p15, 0, r0, c7, c10, 4		@ drain WB
-	mov	pc, lr
+	ret	lr
 

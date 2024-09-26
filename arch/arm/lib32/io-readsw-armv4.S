@@ -1,11 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-/* SPDX-FileCopyrightText: 1995-2000 Russell King */
-
 /*
- * linux/arch/arm/lib/io-readsw-armv4.S
+ *  linux/arch/arm/lib/io-readsw-armv4.S
+ *
+ *  Copyright (C) 1995-2000 Russell King
  */
 #include <linux/linkage.h>
 #include <asm/assembler.h>
+
+.syntax unified
 
 		.macro	pack, rd, hw1, hw2
 #ifndef __ARMEB__
@@ -25,7 +27,7 @@
 
 ENTRY(__raw_readsw)
 		teq	r2, #0
-		moveq	pc, lr
+		reteq	lr
 		tst	r1, #3
 		bne	.Linsw_align
 
@@ -75,8 +77,8 @@ ENTRY(__raw_readsw)
 		pack	r3, r3, ip
 		str	r3, [r1], #4
 
-.Lno_insw_2:	ldrneh	r3, [r0]
-		strneh	r3, [r1]
+.Lno_insw_2:	ldrhne	r3, [r0]
+		strhne	r3, [r1]
 
 		ldmfd	sp!, {r4, r5, pc}
 
@@ -93,7 +95,7 @@ ENTRY(__raw_readsw)
 #endif
 
 .Linsw_noalign:	stmfd	sp!, {r4, lr}
-		ldrccb	ip, [r1, #-1]!
+		ldrbcc	ip, [r1, #-1]!
 		bcc	1f
 
 		ldrh	ip, [r0]
@@ -120,11 +122,11 @@ ENTRY(__raw_readsw)
 
 3:		tst	r2, #1
 		strb	ip, [r1], #1
-		ldrneh	ip, [r0]
+		ldrhne	ip, [r0]
    _BE_ONLY_(	movne	ip, ip, ror #8		)
-		strneb	ip, [r1], #1
+		strbne	ip, [r1], #1
    _LE_ONLY_(	movne	ip, ip, lsr #8		)
    _BE_ONLY_(	movne	ip, ip, lsr #24		)
-		strneb	ip, [r1]
+		strbne	ip, [r1]
 		ldmfd	sp!, {r4, pc}
 ENDPROC(__raw_readsw)

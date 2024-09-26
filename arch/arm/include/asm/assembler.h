@@ -67,6 +67,12 @@
 #define CALGN(code...)
 #endif
 
+#ifndef CONFIG_CPU_64
+/* the frame pointer used for stack unwinding */
+ARM(	fpreg	.req	r11	)
+THUMB(	fpreg	.req	r7	)
+#endif
+
 /*
  * Enable and disable interrupts
  */

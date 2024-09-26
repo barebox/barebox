@@ -78,7 +78,7 @@ static inline u32 gpio_spi_txrx_word(struct spi_device *spi, unsigned nsecs,
 		return bitbang_txrx_be_cpha0(spi, nsecs, cpol, word, bits);
 }
 
-static int gpio_spi_transfer_one(struct spi_device *spi, struct spi_transfer *t)
+static int gpio_spi_transfer_one_u8(struct spi_device *spi, struct spi_transfer *t)
 {
 	bool read = (t->rx_buf) ? true : false;
 	u32 word = 0;
@@ -87,12 +87,57 @@ static int gpio_spi_transfer_one(struct spi_device *spi, struct spi_transfer *t)
 	for (n = 0; n < t->len; n++) {
 		if (!read)
 			word = ((const u8 *)t->tx_buf)[n];
-		word = gpio_spi_txrx_word(spi, 0, word, 8);
+		word = gpio_spi_txrx_word(spi, 0, word, spi->bits_per_word);
 		if (read)
-			((u8 *)t->rx_buf)[n] = word & 0xff;
+			((u8 *)t->rx_buf)[n] = word;
 	}
 
 	return 0;
+}
+
+static int gpio_spi_transfer_one_u16(struct spi_device *spi, struct spi_transfer *t)
+{
+	bool read = (t->rx_buf) ? true : false;
+	u32 word = 0;
+	int n;
+
+	for (n = 0; n < t->len / 2; n++) {
+		if (!read)
+			word = ((const u16 *)t->tx_buf)[n];
+		word = gpio_spi_txrx_word(spi, 0, word, spi->bits_per_word);
+		if (read)
+			((u16 *)t->rx_buf)[n] = word;
+	}
+
+	return 0;
+}
+
+static int gpio_spi_transfer_one_u32(struct spi_device *spi, struct spi_transfer *t)
+{
+	bool read = (t->rx_buf) ? true : false;
+	u32 word = 0;
+	int n;
+
+	for (n = 0; n < t->len / 4; n++) {
+		if (!read)
+			word = ((const u32 *)t->tx_buf)[n];
+		word = gpio_spi_txrx_word(spi, 0, word, spi->bits_per_word);
+		if (read)
+			((u32 *)t->rx_buf)[n] = word;
+	}
+
+	return 0;
+}
+
+static int gpio_spi_transfer_one(struct spi_device *spi, struct spi_transfer *t)
+{
+	if (spi->bits_per_word <= 8)
+		return gpio_spi_transfer_one_u8(spi, t);
+	if (spi->bits_per_word <= 16)
+		return gpio_spi_transfer_one_u16(spi, t);
+	if (spi->bits_per_word <= 32)
+		return gpio_spi_transfer_one_u32(spi, t);
+	return -EINVAL;
 }
 
 static int gpio_spi_transfer(struct spi_device *spi, struct spi_message *msg)
@@ -120,12 +165,6 @@ static int gpio_spi_transfer(struct spi_device *spi, struct spi_message *msg)
 
 static int gpio_spi_setup(struct spi_device *spi)
 {
-	if (spi->bits_per_word != 8) {
-		dev_err(spi->master->dev, "master does not support %d bits per word\n",
-			spi->bits_per_word);
-		return -EINVAL;
-	}
-
 	return 0;
 }
 

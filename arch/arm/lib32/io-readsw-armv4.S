@@ -15,7 +15,7 @@
 #endif
 		.endm
 
-.section .text.readsw
+.section .text.__raw_readsw
 
 .Linsw_align:	movs	ip, r1, lsl #31
 		bne	.Linsw_noalign
@@ -23,7 +23,7 @@
 		sub	r2, r2, #1
 		strh	ip, [r1], #2
 
-ENTRY(readsw)
+ENTRY(__raw_readsw)
 		teq	r2, #0
 		moveq	pc, lr
 		tst	r1, #3
@@ -127,4 +127,4 @@ ENTRY(readsw)
    _BE_ONLY_(	movne	ip, ip, lsr #24		)
 		strneb	ip, [r1]
 		ldmfd	sp!, {r4, pc}
-ENDPROC(readsw)
+ENDPROC(__raw_readsw)

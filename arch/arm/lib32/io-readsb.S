@@ -7,7 +7,7 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
-.section .text.readsb
+.section .text.__raw_readsb
 
 .Linsb_align:	rsb	ip, ip, #4
 		cmp	ip, r2
@@ -22,7 +22,7 @@
 		subs	r2, r2, ip
 		bne	.Linsb_aligned
 
-ENTRY(readsb)
+ENTRY(__raw_readsb)
 		teq	r2, #0		@ do we have to check for the zero len?
 		moveq	pc, lr
 		ands	ip, r1, #3
@@ -119,4 +119,4 @@ ENTRY(readsb)
 		strgtb	r3, [r1]
 
 		ldmfd	sp!, {r4 - r6, pc}
-ENDPROC(readsb)
+ENDPROC(__raw_readsb)

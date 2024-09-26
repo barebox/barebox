@@ -7,9 +7,9 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
-.section .text.readsl
+.section .text.__raw_readsl
 
-ENTRY(readsl)
+ENTRY(__raw_readsl)
 		teq	r2, #0		@ do we have to check for the zero len?
 		moveq	pc, lr
 		ands	ip, r1, #3
@@ -75,4 +75,4 @@ ENTRY(readsl)
 8:		mov	r3, ip, get_byte_0
 		strb	r3, [r1, #0]
 		mov	pc, lr
-ENDPROC(readsl)
+ENDPROC(__raw_readsl)

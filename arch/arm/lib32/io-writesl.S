@@ -7,9 +7,9 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
-.section .text.writesl
+.section .text.__raw_writesl
 
-ENTRY(writesl)
+ENTRY(__raw_writesl)
 		teq	r2, #0		@ do we have to check for the zero len?
 		moveq	pc, lr
 		ands	ip, r1, #3
@@ -63,4 +63,4 @@ ENTRY(writesl)
 		str	ip, [r0]
 		bne	6b
 		mov	pc, lr
-ENDPROC(writesl)
+ENDPROC(__raw_writesl)

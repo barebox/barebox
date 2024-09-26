@@ -27,7 +27,7 @@
 #endif
 		.endm
 
-.section .text.writesb
+.section .text.__raw_writesb
 
 .Loutsb_align:	rsb	ip, ip, #4
 		cmp	ip, r2
@@ -42,7 +42,7 @@
 		subs	r2, r2, ip
 		bne	.Loutsb_aligned
 
-ENTRY(writesb)
+ENTRY(__raw_writesb)
 		teq	r2, #0		@ do we have to check for the zero len?
 		moveq	pc, lr
 		ands	ip, r1, #3
@@ -90,4 +90,4 @@ ENTRY(writesb)
 		strgtb	r3, [r0]
 
 		ldmfd	sp!, {r4, r5, pc}
-ENDPROC(writesb)
+ENDPROC(__raw_writesb)

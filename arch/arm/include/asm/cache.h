@@ -3,6 +3,13 @@
 #ifndef __ASM_CACHE_H
 #define __ASM_CACHE_H
 
+#ifdef CONFIG_CPU_64
+#define L1_CACHE_SHIFT		(6)
+#define L1_CACHE_BYTES		(1 << L1_CACHE_SHIFT)
+#endif
+
+#ifndef __ASSEMBLY__
+
 void v8_invalidate_icache_all(void);
 void v8_flush_dcache_all(void);
 void v8_invalidate_dcache_all(void);
@@ -25,5 +32,6 @@ void arm_early_mmu_cache_invalidate(void);
 void sync_caches_for_execution(void);
 
 #include <asm-generic/cache.h>
+#endif
 
 #endif

@@ -701,7 +701,6 @@ void *memmove(void * dest, const void *src, size_t count)
 void *__memmove(void * dest, const void *src, size_t count)
 	__alias(__default_memmove);
 #endif
-EXPORT_SYMBOL(memmove);
 
 #ifndef __HAVE_ARCH_MEMCMP
 /**

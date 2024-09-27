@@ -99,6 +99,16 @@ struct fb_rect {
 	u32 y2;
 };
 
+static inline int fb_rect_width(const struct fb_rect *r)
+{
+	return r->x2 - r->x1;
+}
+
+static inline int fb_rect_height(const struct fb_rect *r)
+{
+	return r->y2 - r->y1;
+}
+
 struct fb_ops {
 	/* set color register */
 	int (*fb_setcolreg)(unsigned regno, unsigned red, unsigned green,

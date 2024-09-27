@@ -14,7 +14,7 @@
 #include <asm/types.h>
 #include <asm/byteorder.h>
 #include <errno.h>
-#include <rsa.h>
+#include <crypto/rsa.h>
 #include <crypto/public_key.h>
 #include <asm/unaligned.h>
 

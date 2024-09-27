@@ -3,7 +3,7 @@
 
 #include <common.h>
 #include <crypto/public_key.h>
-#include <rsa.h>
+#include <crypto/rsa.h>
 
 static LIST_HEAD(public_keys);
 

@@ -46,13 +46,14 @@ static void kvx_soc_info_read_revision(void)
 	u8 car = kvx_sfr_field_val(pcr, PCR, CAR);
 	const char *car_str = "", *ver_str = "";
 
-	switch (car) {
+	switch (sv) {
 	case 0:
+	case 1:
 		car_str = "kv3";
 		break;
 	}
 
-	switch (sv) {
+	switch (car) {
 	case 0:
 		ver_str = "1";
 		break;

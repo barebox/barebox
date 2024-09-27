@@ -264,6 +264,15 @@ static void fb_info(struct device *dev)
 	printf("Available modes:\n");
 	fb_print_modes(&info->modes);
 	fb_print_modes(&info->edid_modes);
+	if (info->base_plane) {
+		printf("Type: overlay\n");
+		printf("base plane: %s\n", dev_name(&info->base_plane->dev));
+	} else {
+		printf("Type: primary\n");
+	}
+	printf("xres: %u\n", info->xres);
+	printf("yres: %u\n", info->yres);
+	printf("line_length: %u\n", info->line_length);
 }
 
 void *fb_get_screen_base(struct fb_info *info)

@@ -27,6 +27,8 @@ static struct vpl *of_find_vpl(struct device_node *node)
 {
 	struct vpl *vpl;
 
+	of_device_ensure_probed(node);
+
 	list_for_each_entry(vpl, &vpls, list)
 		if (vpl->node == node)
 			return vpl;

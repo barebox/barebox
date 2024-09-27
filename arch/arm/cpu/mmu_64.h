@@ -8,22 +8,19 @@
 #define UNCACHED_MEM    (PTE_BLOCK_MEMTYPE(MT_DEVICE_nGnRnE) | \
 			 PTE_BLOCK_OUTER_SHARE | \
 			 PTE_BLOCK_AF)
+#define MEM_ALLOC_WRITECOMBINE	(PTE_BLOCK_MEMTYPE(MT_NORMAL_NC) | \
+				 PTE_BLOCK_OUTER_SHARE | \
+				 PTE_BLOCK_AF)
 
-static inline unsigned long attrs_uncached_mem(void)
+static inline unsigned long attrs_xn(void)
 {
-	unsigned long attrs = UNCACHED_MEM;
-
 	switch (current_el()) {
 	case 3:
 	case 2:
-		attrs |= PTE_BLOCK_UXN;
-		break;
+		return PTE_BLOCK_UXN;
 	default:
-		attrs |= PTE_BLOCK_UXN | PTE_BLOCK_PXN;
-		break;
+		return PTE_BLOCK_UXN | PTE_BLOCK_PXN;
 	}
-
-	return attrs;
 }
 
 /*

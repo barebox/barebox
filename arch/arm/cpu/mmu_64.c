@@ -24,6 +24,8 @@
 
 #include "mmu_64.h"
 
+#define ARCH_MAP_WRITECOMBINE  ((unsigned)-1)
+
 static uint64_t *get_ttb(void)
 {
 	return (uint64_t *)get_ttbr(current_el());
@@ -172,9 +174,11 @@ static unsigned long get_pte_attrs(unsigned flags)
 	case MAP_CACHED:
 		return CACHED_MEM;
 	case MAP_UNCACHED:
-		return attrs_uncached_mem();
+		return attrs_xn() | UNCACHED_MEM;
 	case MAP_FAULT:
 		return 0x0;
+	case ARCH_MAP_WRITECOMBINE:
+		return attrs_xn() | MEM_ALLOC_WRITECOMBINE;
 	default:
 		return ~0UL;
 	}
@@ -293,6 +297,11 @@ void dma_flush_range(void *ptr, size_t size)
 	unsigned long end = start + size;
 
 	v8_flush_dcache_range(start, end);
+}
+
+void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
+{
+	return dma_alloc_map(size, dma_handle, ARCH_MAP_WRITECOMBINE);
 }
 
 static void init_range(size_t total_level0_tables)

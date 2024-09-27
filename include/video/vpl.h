@@ -11,6 +11,7 @@
 #define VPL_DISABLE		0x67660004
 #define VPL_GET_VIDEOMODES	0x67660005
 #define VPL_GET_BUS_FORMAT	0x67660006
+#define VPL_GET_DISPLAY_INFO	0x67660007
 
 struct vpl {
 	int (*ioctl)(struct vpl *, unsigned int port,

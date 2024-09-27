@@ -186,6 +186,14 @@ config DRIVER_VIDEO_PANEL_ILITEK_ILI9341
 	  QVGA (240x320) RGB panels. support serial & parallel rgb
 	  interface.
 
+config DRIVER_VIDEO_PANEL_SITRONIX_ST7789V
+	tristate "Sitronix ST7789V panel"
+	depends on OFTREE && SPI
+	select VIDEO_VPL
+	help
+	  Say Y here if you want to enable support for the Sitronix
+	  ST7789V controller for 240x320 LCD panels
+
 config DRIVER_VIDEO_PANEL_MIPI_DBI
 	tristate "DRM support for MIPI DBI compatible panels"
 	depends on OFTREE && SPI

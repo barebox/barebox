@@ -212,6 +212,45 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 #define regmap_bulk_write regmap_bulk_write
 int regmap_bulk_write(struct regmap *map, unsigned int reg,
 		     const void *val, size_t val_count);
+
+struct regmap_field;
+
+struct reg_field {
+	unsigned int reg;
+	unsigned int lsb;
+	unsigned int msb;
+	unsigned int id_size;
+	unsigned int id_offset;
+};
+
+#define REG_FIELD(_reg, _lsb, _msb) {           \
+				.reg = _reg,    \
+				.lsb = _lsb,    \
+				.msb = _msb,    \
+				}
+
+int regmap_field_bulk_alloc(struct regmap *regmap,
+			    struct regmap_field **rm_field,
+			    const struct reg_field *reg_field,
+			    int num_fields);
+
+int regmap_field_read(struct regmap_field *field, unsigned int *val);
+
+int regmap_update_bits_base(struct regmap *map, unsigned int reg,
+			    unsigned int mask, unsigned int val,
+			    bool *change, bool async, bool force);
+
+int regmap_field_update_bits_base(struct regmap_field *field,
+				  unsigned int mask, unsigned int val,
+				  bool *change, bool async, bool force);
+
+static inline int regmap_field_write(struct regmap_field *field,
+				     unsigned int val)
+{
+	return regmap_field_update_bits_base(field, ~0, val,
+					     NULL, false, false);
+}
+
 #endif
 
 int regmap_get_val_bytes(struct regmap *map);

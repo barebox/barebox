@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
+
+#define pr_fmt(fmt)     "fbconsole: " fmt
+
 #include <common.h>
 #include <errno.h>
 #include <malloc.h>
@@ -564,8 +567,23 @@ int register_fbconsole(struct fb_info *fb)
 	struct fbc_priv *priv;
 	struct console_device *cdev;
 	int ret;
+	const char *fbname;
 
 	priv = xzalloc(sizeof(*priv));
+
+	/*
+	 * fbconsoles are usually just numbered and happen to use the same
+	 * number as the fb they are registered on, so we have a nice match.
+	 * With overlays we can also have fb names like fb0_0 (for the first
+	 * overlay on fb0), and we want to have this name in the corresponding
+	 * fbconsole. Skip the "fb" though to keep the existing fbconsole name
+	 * for the non overlay framebuffers for compatibility.
+	 */
+	fbname = dev_name(&fb->dev);
+	if (strncmp(fbname, "fb", 2))
+		pr_notice("unexpected fb name %s\n", fbname);
+	else
+		fbname += 2;
 
 	priv->fb = fb;
 	priv->x = 0;
@@ -578,8 +596,8 @@ int register_fbconsole(struct fb_info *fb)
 	cdev->tstc = fbc_tstc;
 	cdev->putc = fbc_putc;
 	cdev->getc = fbc_getc;
-	cdev->devname = "fbconsole";
-	cdev->devid = DEVICE_ID_DYNAMIC;
+	cdev->devname = basprintf("fbconsole%s", fbname);
+	cdev->devid = DEVICE_ID_SINGLE;
 	cdev->open = fbc_open;
 	cdev->close = fbc_close;
 

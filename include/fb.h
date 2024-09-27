@@ -175,6 +175,9 @@ struct fb_info {
 					 * be created.
 					 */
 	int shadowfb;
+
+	struct fb_info *base_plane;
+	int n_overlays;
 };
 
 int of_get_display_timing(const struct device_node *np, const char *name,

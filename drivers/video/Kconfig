@@ -94,6 +94,7 @@ config DRIVER_VIDEO_BCM283X
 	help
 	  Add support for the BCM283X/VideoCore frame buffer device.
 
+source "drivers/video/rockchip/Kconfig"
 source "drivers/video/imx-ipu-v3/Kconfig"
 
 source "drivers/video/bochs/Kconfig"

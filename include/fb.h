@@ -35,6 +35,11 @@
 #define KHZ2PICOS(a) (1000000000UL/(a))
 
 enum display_flags {
+	DISPLAY_FLAGS_HSYNC_LOW		= BIT(0),
+	DISPLAY_FLAGS_HSYNC_HIGH	= BIT(1),
+	DISPLAY_FLAGS_VSYNC_LOW		= BIT(2),
+	DISPLAY_FLAGS_VSYNC_HIGH	= BIT(3),
+
 	/* data enable flag */
 	DISPLAY_FLAGS_DE_LOW		= BIT(4),
 	DISPLAY_FLAGS_DE_HIGH		= BIT(5),
@@ -42,6 +47,13 @@ enum display_flags {
 	DISPLAY_FLAGS_PIXDATA_POSEDGE	= BIT(6),
 	/* drive data on neg. edge */
 	DISPLAY_FLAGS_PIXDATA_NEGEDGE	= BIT(7),
+	DISPLAY_FLAGS_INTERLACED	= BIT(8),
+	DISPLAY_FLAGS_DOUBLESCAN	= BIT(9),
+	DISPLAY_FLAGS_DOUBLECLK		= BIT(10),
+	/* drive sync on pos. edge */
+	DISPLAY_FLAGS_SYNC_POSEDGE	= BIT(11),
+	/* drive sync on neg. edge */
+	DISPLAY_FLAGS_SYNC_NEGEDGE	= BIT(12),
 };
 
 struct fb_videomode {

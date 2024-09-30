@@ -27,9 +27,9 @@
  * importatnt revision information we move heartbeat
  * to PD21 and remove the original pb18 node
  */
-/delete-node/ &{/leds/pb18};
+/delete-node/ &{/leds/led-pb18};
 
-&{/leds/pd21} {
+&{/leds/led-pd21} {
 	linux,default-trigger = "heartbeat";
 };
 

@@ -196,7 +196,7 @@ config DRIVER_VIDEO_PANEL_SITRONIX_ST7789V
 	  ST7789V controller for 240x320 LCD panels
 
 config DRIVER_VIDEO_PANEL_MIPI_DBI
-	tristate "DRM support for MIPI DBI compatible panels"
+	tristate "MIPI DBI compatible panels"
 	depends on OFTREE && SPI
 	select DRIVER_VIDEO_MIPI_DBI
 	select FIRMWARE

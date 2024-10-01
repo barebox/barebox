@@ -1,0 +1,5 @@
+#include "imx6q-sabrelite.dts"
+
+&{/gpio-keys} {
+	status = "disabled";
+};

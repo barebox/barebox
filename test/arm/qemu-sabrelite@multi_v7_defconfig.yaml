@@ -15,6 +15,6 @@ targets:
       BareboxTestStrategy: {}
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
-  imx6q-sabreliste.dtb: !template "$LG_BUILDDIR/arch/arm/dts/imx6q-sabrelite.dtb"
+  imx6q-sabreliste.dtb: !template "$LG_BUILDDIR/arch/arm/dts/imx6q-sabrelite-qemu.dtb"
 imports:
   -  ../strategy.py

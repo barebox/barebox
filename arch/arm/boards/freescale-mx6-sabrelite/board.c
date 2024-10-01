@@ -117,10 +117,16 @@ static int sabrelite_ksz9021rn_setup(void)
 
 static void sabrelite_ehci_init(void)
 {
+	unsigned int vbus_gpio = IMX_GPIO_NR(7, 12);
+
+	gpio_request(vbus_gpio, "usb-vbus");
+
 	/* hub reset */
-	gpio_direction_output(IMX_GPIO_NR(7, 12), 0);
+	gpio_direction_output(vbus_gpio, 0);
 	udelay(2000);
-	gpio_set_value(IMX_GPIO_NR(7, 12), 1);
+	gpio_set_value(vbus_gpio, 1);
+
+	gpio_free(vbus_gpio);
 }
 
 static int sabrelite_probe(struct device *dev)

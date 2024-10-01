@@ -1228,9 +1228,20 @@ static void mci_extract_erase_group_size(struct mci *mci)
 		return;
 
 
-	if (IS_SD(mci) && UNSTUFF_BITS(mci->csd, 126, 2) != 0) {
-		/* For SD with csd_struct v1, erase group is always one sector */
-		mci->erase_grp_size = 1;
+	if (IS_SD(mci)) {
+		if (UNSTUFF_BITS(mci->csd, 126, 2) == 0) {
+			unsigned int write_blkbits = UNSTUFF_BITS(mci->csd, 22, 4);
+
+			if (UNSTUFF_BITS(mci->csd, 46, 1)) {
+				mci->erase_grp_size = 1;
+			} else if (write_blkbits >= 9) {
+				mci->erase_grp_size = UNSTUFF_BITS(mci->csd, 39, 7) + 1;
+				mci->erase_grp_size <<= write_blkbits - 9;
+			}
+		} else {
+			/* For SD with csd_struct v1, erase group is always one sector */
+			mci->erase_grp_size = 1;
+		}
 	} else {
 		if (mci->ext_csd[EXT_CSD_ERASE_GROUP_DEF] & 0x01) {
 			/* Read out group size from ext_csd */

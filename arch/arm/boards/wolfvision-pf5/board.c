@@ -15,15 +15,19 @@
 #include <boards/wolfvision/common.h>
 #include <mach/rockchip/bbu.h>
 
+#define PF5_DISPLAY_VZ_FILENAME "rk3568-wolfvision-pf5-display-vz.dtbo"
+#define PF5_DISPLAY_VZ_DATA __dtbo_rk3568_wolfvision_pf5_display_vz_start
 #define PF5_IO_EXPANDER_FILENAME "rk3568-wolfvision-pf5-io-expander.dtbo"
 #define PF5_IO_EXPANDER_DATA __dtbo_rk3568_wolfvision_pf5_io_expander_start
 
 enum {
 	PF5_HWID_CHANNEL_MAINBOARD = 1,
 	PF5_HWID_CHANNEL_MODULE = 2,
+	PF5_HWID_CHANNEL_DISPLAY = 3,
 };
 
 extern char PF5_IO_EXPANDER_DATA[];
+extern char PF5_DISPLAY_VZ_DATA[];
 
 static const struct wv_rk3568_extension pf5_extensions[] = {
 	{
@@ -43,6 +47,17 @@ static const struct wv_rk3568_extension pf5_extensions[] = {
 				.data = PF5_IO_EXPANDER_DATA,
 			},
 			[16] = { .name = "no", },
+		},
+	},
+	{
+		.adc_chan = PF5_HWID_CHANNEL_DISPLAY,
+		.name = "display",
+		.overlays = {
+			[0] = { .name = "Visualizer",
+				.filename = PF5_DISPLAY_VZ_FILENAME,
+				.data = PF5_DISPLAY_VZ_DATA,
+			},
+			[16] = { .name = "no" },
 		},
 	},
 };

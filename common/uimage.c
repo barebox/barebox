@@ -110,7 +110,7 @@ struct uimage_handle *uimage_open(const char *filename)
 
 	handle->copy = copy;
 
-	if (read(fd, header, sizeof(*header)) < 0) {
+	if (read_full(fd, header, sizeof(*header)) != sizeof(*header)) {
 		printf("could not read: %m\n");
 		goto err_out;
 	}
@@ -150,8 +150,8 @@ struct uimage_handle *uimage_open(const char *filename)
 		for (i = 0; i < MAX_MULTI_IMAGE_COUNT; i++) {
 			u32 size;
 
-			ret = read(fd, &size, sizeof(size));
-			if (ret < 0)
+			ret = read_full(fd, &size, sizeof(size));
+			if (ret != sizeof(size))
 				goto err_out;
 
 			if (!size)
@@ -435,8 +435,8 @@ void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 		goto out;
 	}
 
-	ret = read(handle->fd, ftbuf, 128);
-	if (ret < 0)
+	ret = read_full(handle->fd, ftbuf, 128);
+	if (ret != 128)
 		return NULL;
 
 	ft = file_detect_type(ftbuf, 128);
@@ -450,8 +450,8 @@ void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 	if (lseek(handle->fd, off, SEEK_SET) != off)
 		return NULL;
 
-	ret = read(handle->fd, &size, 4);
-	if (ret < 0)
+	ret = read_full(handle->fd, &size, 4);
+	if (ret != 4)
 		return NULL;
 
 	size = le32_to_cpu(size);

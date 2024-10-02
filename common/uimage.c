@@ -272,7 +272,9 @@ int uimage_verify(struct uimage_handle *handle)
 		ret = read(handle->fd, buf, now);
 		if (ret < 0)
 			goto err;
-		crc = crc32(crc, buf, now);
+		if (!ret)
+			break;
+		crc = crc32(crc, buf, ret);
 		len -= ret;
 	}
 

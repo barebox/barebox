@@ -5,7 +5,7 @@
 
 #include <linux/compiler.h>
 
-#ifndef CONFIG_CPU_64
+#ifdef CONFIG_ARM32
 /*
  * Generic IO read/write.  These perform native-endian accesses.  Note
  * that some architectures will want to re-define __raw_{read,write}w.
@@ -25,6 +25,9 @@ void __raw_readsl(const volatile void __iomem *addr, void *data, int longlen);
 #define writesb(p,d,l)		__raw_writesb(p,d,l)
 #define writesw(p,d,l)		__raw_writesw(p,d,l)
 #define writesl(p,d,l)		__raw_writesl(p,d,l)
+
+#elif defined(CONFIG_ARM64)
+#include <asm/io64.h>
 #endif
 
 #define	IO_SPACE_LIMIT	0

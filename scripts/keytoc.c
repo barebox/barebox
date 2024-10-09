@@ -123,6 +123,7 @@ static int engine_init(ENGINE **pe)
 
 	if (key_pass) {
 		if (!ENGINE_ctrl_cmd_string(e, "PIN", key_pass, 0)) {
+			ret = -1;
 			fprintf(stderr, "Cannot set PKCS#11 PIN\n");
 			goto err_set_rsa;
 		}

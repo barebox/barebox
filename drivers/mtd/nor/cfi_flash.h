@@ -260,7 +260,11 @@ static inline void flash_write32(u32 value, void *addr)
 
 static inline void flash_write64(u64 value, void *addr)
 {
-	memcpy((void *)addr, &value, 8);
+#if BITS_PER_LONG >= 64
+	__raw_writeq(value, addr);
+#else
+	memcpy_toio(addr, &value, 8);
+#endif
 }
 
 static inline u8 flash_read8(void *addr)
@@ -280,8 +284,13 @@ static inline u32 flash_read32(void *addr)
 
 static inline u64 flash_read64(void *addr)
 {
-	/* No architectures currently implement readq() */
-	return *(volatile u64 *)addr;
+	u64 value;
+#if BITS_PER_LONG >= 64
+	value = __raw_readq(addr);
+#else
+	memcpy_fromio(&value, addr, 8);
+#endif
+	return value;
 }
 
 /*

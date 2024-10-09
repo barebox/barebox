@@ -115,9 +115,16 @@ config CRYPTO_PBKDF2
 	select DIGEST_HMAC_GENERIC
 	bool
 
+config CRYPTO_ECC
+	bool
+
 config CRYPTO_RSA
 	bool "RSA support"
 	default y if FITIMAGE_SIGNATURE
+
+config CRYPTO_ECDSA
+	bool "ECDSA support"
+	select CRYPTO_ECC
 
 config CRYPTO_BUILTIN_KEYS
 	bool "builtin keys"
@@ -148,12 +155,5 @@ config JWT
 	select JSMN
 	select BASE64
 	select CRYPTO_RSA
-
-config CRYPTO_ECC
-	bool
-
-config CRYPTO_ECDSA
-	bool "ECDSA support"
-	select CRYPTO_ECC
 
 endmenu

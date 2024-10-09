@@ -133,7 +133,7 @@ static void decode_par(unsigned long par)
 {
 	u8 devmem_attr = BITS(63, 56, par);
 
-	if (par & 1) {
+	if (par & 1) { /* Faulting */
 		printf("  Translation aborted [9:8]: because of a fault in the %s%s\n",
 		       stage_fault[BITS(9, 9, par)],
 		       BITS(8, 8, par) ? " during a stage 1 translation table walk" : "");
@@ -141,30 +141,30 @@ static void decode_par(unsigned long par)
 		       decode_fault_status(BITS(6, 1, par)),
 		       decode_fault_status_level(BITS(6, 1, par)));
 		printf("  Failure [0]:                0x1\n");
-	} else {
-		if ((devmem_attr & 0xf0) && (devmem_attr & 0x0f)) {
+	} else { /* Successful */
+		if ((devmem_attr & 0xf0) && (devmem_attr & 0x0f)) { /* Normal Memory */
 			printf("  Outer mem. attr. [63:60]:   0x%02lx (%s)\n", BITS(63, 60, par),
 			       cache_attr[BITS(63, 60, par)]);
 			printf("  Inner mem. attr. [59:56]:   0x%02lx (%s)\n", BITS(59, 56, par),
 			       cache_attr[BITS(59, 56, par)]);
-		} else if ((devmem_attr & 0b11110010) == 0) {
+		} else if ((devmem_attr & 0b11110010) == 0) { /* Device Memory */
 			printf("  Memory attr. [63:56]:     0x%02x (%s)\n",
 			       devmem_attr, decode_devmem_attr(devmem_attr));
 			if (devmem_attr & 1)
 				printf("  (XS == 0 if FEAT_XS implemented)\n");
-		} else if (devmem_attr == 0b01000000) {
+		} else if (devmem_attr == 0b01000000) { /* FEAT_XS-specific */
 			printf("  Outer mem. attr. [63:56]:   0x%02lx (%s)\n", BITS(63, 56, par),
 			       "Non-Cacheable");
 			printf("  Inner mem. attr. [63:56]:   0x%02lx (%s)\n", BITS(63, 56, par),
 			       "Non-Cacheable");
 			printf("  (XS == 0 if FEAT_XS implemented)\n");
-		} else if (devmem_attr == 0b10100000) {
+		} else if (devmem_attr == 0b10100000) { /* FEAT_XS-specific */
 			printf("  Outer mem. attr. [63:56]:   0x%02lx (%s)\n", BITS(63, 56, par),
 			       "Write-Through, No Write-Allocate");
 			printf("  Inner mem. attr. [63:56]:   0x%02lx (%s)\n", BITS(63, 56, par),
 			       "Write-Through");
 			printf("  (XS == 0 if FEAT_XS implemented)\n");
-		} else if (devmem_attr == 0b11110000) {
+		} else if (devmem_attr == 0b11110000) {  /* FEAT_MTE2-specific */
 			printf("  Outer mem. attr. [63:56]:   0x%02lx (%s)\n", BITS(63, 56, par),
 			       "Write-Back");
 			printf("  Inner mem. attr. [63:56]:   0x%02lx (%s)\n", BITS(63, 56, par),

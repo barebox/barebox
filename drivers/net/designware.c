@@ -181,6 +181,10 @@ static int phy_resume(struct phy_device *phydev)
 {
 	int bmcr;
 
+	// Bus will be NULL if a fixed-link is used.
+	if (!phydev->bus)
+		return 0;
+
 	bmcr = phy_read(phydev, MII_BMCR);
 	if (bmcr < 0)
 		return bmcr;

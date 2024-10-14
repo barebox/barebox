@@ -5,6 +5,7 @@
  */
 
 #include <linux/bitfield.h>
+#include <linux/kernel.h>
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
 #include <linux/device.h>

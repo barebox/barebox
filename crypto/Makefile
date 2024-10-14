@@ -33,7 +33,13 @@ $(obj)/public-keys.o: $(obj)/public-keys.h
 CONFIG_CRYPTO_PUBLIC_KEYS := $(shell echo $(CONFIG_CRYPTO_PUBLIC_KEYS))
 CONFIG_CRYPTO_PUBLIC_KEYS := $(foreach d,$(CONFIG_CRYPTO_PUBLIC_KEYS),"$(d)")
 
+filechk_public_keys_dummy = echo
+
 $(obj)/public-keys.h: FORCE
+ifdef CONFIG_CRYPTO_PUBLIC_KEYS
 	$(call cmd,public_keys,$(CONFIG_CRYPTO_PUBLIC_KEYS))
+else
+	$(call filechk,public_keys_dummy)
+endif
 
 endif

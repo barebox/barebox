@@ -243,6 +243,7 @@ struct arm_smccc_quirk {
 	} state;
 };
 
+#ifdef CONFIG_ARM
 /**
  * __arm_smccc_smc() - make SMC calls
  * @a0-a7: arguments passed in registers 0 to 7
@@ -276,6 +277,22 @@ asmlinkage void __arm_smccc_hvc(unsigned long a0, unsigned long a1,
 			unsigned long a2, unsigned long a3, unsigned long a4,
 			unsigned long a5, unsigned long a6, unsigned long a7,
 			struct arm_smccc_res *res, struct arm_smccc_quirk *quirk);
+
+#else
+static inline void __arm_smccc_smc(unsigned long a0, unsigned long a1,
+			unsigned long a2, unsigned long a3, unsigned long a4,
+			unsigned long a5, unsigned long a6, unsigned long a7,
+			struct arm_smccc_res *res, struct arm_smccc_quirk *quirk)
+{
+}
+
+static inline void __arm_smccc_hvc(unsigned long a0, unsigned long a1,
+			unsigned long a2, unsigned long a3, unsigned long a4,
+			unsigned long a5, unsigned long a6, unsigned long a7,
+			struct arm_smccc_res *res, struct arm_smccc_quirk *quirk)
+{
+}
+#endif
 
 #define arm_smccc_smc(...) __arm_smccc_smc(__VA_ARGS__, NULL)
 
@@ -370,6 +387,7 @@ asmlinkage void __arm_smccc_hvc(unsigned long a0, unsigned long a1,
 	: "memory"
 #define __constraints(count)	___constraints(count)
 
+#ifdef CONFIG_ARM
 /*
  * We have an output list that is not necessarily used, and GCC feels
  * entitled to optimise the whole sequence away. "volatile" is what
@@ -388,6 +406,10 @@ asmlinkage void __arm_smccc_hvc(unsigned long a0, unsigned long a1,
 		if (___res)						\
 			*___res = (typeof(*___res)){r0, r1, r2, r3};	\
 	} while (0)
+
+#else
+#define __arm_smccc_1_1(...)	(void)0
+#endif
 
 /*
  * arm_smccc_1_1_smc() - make an SMCCC v1.1 compliant SMC call

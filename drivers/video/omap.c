@@ -113,7 +113,8 @@ static void omapfb_disable(struct fb_info *info)
 		/* free frame buffer; but only when screen is not
 		* preallocated */
 		if (info->screen_base)
-			dma_free_coherent(info->screen_base, 0, fbi->dma_size);
+			dma_free_coherent(DMA_DEVICE_BROKEN,
+					  info->screen_base, 0, fbi->dma_size);
 	}
 
 	info->screen_base = NULL;
@@ -257,13 +258,15 @@ static int omapfb_activate_var(struct fb_info *info)
 
 	/*Free old screen buf*/
 	if (!fbi->prealloc_screen.addr && info->screen_base)
-		dma_free_coherent(info->screen_base, 0, fbi->dma_size);
+		dma_free_coherent(DMA_DEVICE_BROKEN,
+				  info->screen_base, 0, fbi->dma_size);
 
 	fbi->dma_size = PAGE_ALIGN(size);
 
 	if (!fbi->prealloc_screen.addr) {
 		/* case 1: no preallocated screen */
-		info->screen_base = dma_alloc_coherent(size, DMA_ADDRESS_BROKEN);
+		info->screen_base = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+						       size, DMA_ADDRESS_BROKEN);
 	} else if (fbi->prealloc_screen.size < fbi->dma_size) {
 		/* case 2: preallocated screen, but too small */
 		dev_err(fbi->dev,

@@ -586,9 +586,9 @@ void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
+void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_handle)
 {
-	return dma_alloc_map(size, dma_handle, ARCH_MAP_WRITECOMBINE);
+	return dma_alloc_map(dev, size, dma_handle, ARCH_MAP_WRITECOMBINE);
 }
 
 void mmu_early_enable(unsigned long membase, unsigned long memsize)

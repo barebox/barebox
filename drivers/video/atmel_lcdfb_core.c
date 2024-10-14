@@ -194,7 +194,8 @@ static int atmel_lcdfb_alloc_video_memory(struct atmel_lcdfb_info *sinfo)
 		    * ((info->bits_per_pixel + 7) / 8));
 	smem_len = max(smem_len, sinfo->smem_len);
 
-	info->screen_base = dma_alloc_coherent(smem_len, DMA_ADDRESS_BROKEN);
+	info->screen_base = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					       smem_len, DMA_ADDRESS_BROKEN);
 
 	if (!info->screen_base)
 		return -ENOMEM;
@@ -477,7 +478,8 @@ int atmel_lcdc_register(struct device *dev, struct atmel_lcdfb_devdata *data)
 	atmel_lcdfb_start_clock(sinfo);
 
 	if (data->dma_desc_size)
-		sinfo->dma_desc = dma_alloc_coherent(data->dma_desc_size,
+		sinfo->dma_desc = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+						     data->dma_desc_size,
 						     DMA_ADDRESS_BROKEN);
 
 	info->dev.parent = dev;

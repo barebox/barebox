@@ -2881,14 +2881,16 @@ static void rtl8169_init_ring(struct rtl8169_private *tp)
 
 	tp->cur_rx = tp->cur_tx = 0;
 
-	tp->TxDescArray = dma_alloc_coherent(NUM_TX_DESC * sizeof(struct TxDesc),
-					   &tp->TxPhyAddr);
+	tp->TxDescArray = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					     NUM_TX_DESC * sizeof(struct TxDesc),
+					     &tp->TxPhyAddr);
 	tp->tx_buf = dma_alloc(NUM_TX_DESC * PKT_BUF_SIZE);
 	tp->tx_buf_phys = dma_map_single(edev->parent, tp->tx_buf,
 					   NUM_TX_DESC * PKT_BUF_SIZE, DMA_TO_DEVICE);
 
-	tp->RxDescArray = dma_alloc_coherent(NUM_RX_DESC * sizeof(struct RxDesc),
-					   &tp->RxPhyAddr);
+	tp->RxDescArray = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					     NUM_RX_DESC * sizeof(struct RxDesc),
+					     &tp->RxPhyAddr);
 	tp->rx_buf = dma_alloc(NUM_RX_DESC * PKT_BUF_SIZE);
 	tp->rx_buf_phys = dma_map_single(edev->parent, tp->rx_buf,
 					   NUM_RX_DESC * PKT_BUF_SIZE, DMA_FROM_DEVICE);
@@ -3097,13 +3099,15 @@ static void rtl8169_eth_halt(struct eth_device *edev)
 	dma_unmap_single(edev->parent, tp->tx_buf_phys, NUM_TX_DESC * PKT_BUF_SIZE,
 			 DMA_TO_DEVICE);
 	free(tp->tx_buf);
-	dma_free_coherent((void *)tp->TxDescArray, tp->TxPhyAddr,
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  (void *)tp->TxDescArray, tp->TxPhyAddr,
 			  NUM_TX_DESC * sizeof(struct TxDesc));
 
 	dma_unmap_single(edev->parent, tp->rx_buf_phys, NUM_RX_DESC * PKT_BUF_SIZE,
 			 DMA_FROM_DEVICE);
 	free(tp->rx_buf);
-	dma_free_coherent((void *)tp->RxDescArray, tp->RxPhyAddr,
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  (void *)tp->RxDescArray, tp->RxPhyAddr,
 			  NUM_RX_DESC * sizeof(struct RxDesc));
 }
 

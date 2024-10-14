@@ -4,9 +4,11 @@
 
 #include <linux/types.h>
 
+struct device;
+
 struct dma_ops {
-	void *(*alloc_coherent)(size_t size, dma_addr_t *dma_handle);
-	void (*free_coherent)(void *vaddr, dma_addr_t dma_handle, size_t size);
+	void *(*alloc_coherent)(struct device *dev, size_t size, dma_addr_t *dma_handle);
+	void (*free_coherent)(struct device *dev, void *vaddr, dma_addr_t dma_handle, size_t size);
 
 	void (*flush_range)(dma_addr_t start, dma_addr_t end);
 	void (*inv_range)(dma_addr_t start, dma_addr_t end);

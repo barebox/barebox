@@ -435,9 +435,11 @@ static int arc_emac_probe(struct device *dev)
 	miibus->parent = dev;
 
 	/* allocate rx/tx descriptors */
-	priv->rxbd = dma_alloc_coherent(RX_BD_NUM * sizeof(struct arc_emac_bd),
+	priv->rxbd = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					RX_BD_NUM * sizeof(struct arc_emac_bd),
 					DMA_ADDRESS_BROKEN);
-	priv->txbd = dma_alloc_coherent(TX_BD_NUM * sizeof(struct arc_emac_bd),
+	priv->txbd = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					TX_BD_NUM * sizeof(struct arc_emac_bd),
 					DMA_ADDRESS_BROKEN);
 	priv->rxbuf = dma_alloc(RX_BD_NUM * PKTSIZE);
 

@@ -486,14 +486,14 @@ struct dw_eth_dev *dwc_drv_probe(struct device *dev)
 
 	/* [tr]x_mac_descrtable_dev will be used by the [tr]x_dma_addr helpers */
 
-	priv->tx_mac_descrtable_cpu = dma_alloc_coherent(
+	priv->tx_mac_descrtable_cpu = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 		CONFIG_TX_DESCR_NUM * sizeof(struct dmamacdescr),
 		&priv->tx_mac_descrtable_dev);
 
 	if (!priv->tx_mac_descrtable_cpu)
 		return ERR_PTR(-EFAULT);
 
-	priv->rx_mac_descrtable_cpu = dma_alloc_coherent(
+	priv->rx_mac_descrtable_cpu = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 		CONFIG_RX_DESCR_NUM * sizeof(struct dmamacdescr),
 		&priv->rx_mac_descrtable_dev);
 

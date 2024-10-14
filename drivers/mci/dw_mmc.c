@@ -591,7 +591,8 @@ static int dw_mmc_probe(struct device *dev)
 		return PTR_ERR(iores);
 	host->ioaddr = IOMEM(iores->start);
 
-	host->idmac = dma_alloc_coherent(sizeof(*host->idmac) * DW_MMC_NUM_IDMACS,
+	host->idmac = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					 sizeof(*host->idmac) * DW_MMC_NUM_IDMACS,
 					 &host->idmac_dma);
 	if (!host->idmac)
 		return -ENOMEM;

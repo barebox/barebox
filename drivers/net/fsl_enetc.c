@@ -536,9 +536,11 @@ static int enetc_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	priv = xzalloc(sizeof(*priv));
 	priv->dev = dev;
 
-	priv->enetc_txbd = dma_alloc_coherent(sizeof(struct enetc_tx_bd) * ENETC_BD_CNT,
+	priv->enetc_txbd = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					      sizeof(struct enetc_tx_bd) * ENETC_BD_CNT,
 					      &priv->enetc_txbd_phys);
-	priv->enetc_rxbd = dma_alloc_coherent(sizeof(union enetc_rx_bd) * ENETC_BD_CNT,
+	priv->enetc_rxbd = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					      sizeof(union enetc_rx_bd) * ENETC_BD_CNT,
 					      &priv->enetc_rxbd_phys);
 
 	if (!priv->enetc_txbd || !priv->enetc_rxbd)

@@ -117,7 +117,7 @@ static int do_smc(int argc, char *argv[])
 			}
 
 			if (!context)
-				context = dma_alloc_coherent(sizeof(*context),
+				context = dma_alloc_coherent(DMA_DEVICE_BROKEN, sizeof(*context),
 							     DMA_ADDRESS_BROKEN);
 
 			if (!context) {

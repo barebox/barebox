@@ -174,7 +174,8 @@ static int ltdc_activate_var(struct fb_info *info)
 {
 	info->line_length = info->xres * (info->bits_per_pixel >> 3);
 
-	info->screen_base = dma_alloc_writecombine(info->line_length * info->yres,
+	info->screen_base = dma_alloc_writecombine(DMA_DEVICE_BROKEN,
+						   info->line_length * info->yres,
 						   DMA_ADDRESS_BROKEN);
 	if (!info->screen_base)
 		return -ENOMEM;

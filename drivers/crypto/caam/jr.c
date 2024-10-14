@@ -250,15 +250,18 @@ static int caam_jr_init(struct device *dev)
 	if (error)
 		return error;
 
-	jrp->inpring = dma_alloc_coherent(sizeof(*jrp->inpring) * JOBR_DEPTH,
+	jrp->inpring = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					  sizeof(*jrp->inpring) * JOBR_DEPTH,
 					  &dma_inpring);
 	if (!jrp->inpring)
 		return -ENOMEM;
 
-	jrp->outring = dma_alloc_coherent(sizeof(*jrp->outring) *
+	jrp->outring = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					  sizeof(*jrp->outring) *
 					  JOBR_DEPTH, &dma_outring);
 	if (!jrp->outring) {
-		dma_free_coherent(jrp->inpring, 0, sizeof(dma_addr_t) * JOBR_DEPTH);
+		dma_free_coherent(DMA_DEVICE_BROKEN,
+				  jrp->inpring, 0, sizeof(dma_addr_t) * JOBR_DEPTH);
 		dev_err(dev, "can't allocate job rings for %d\n", jrp->ridx);
 		return -ENOMEM;
 	}

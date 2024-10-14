@@ -227,7 +227,8 @@ static void dwc3_ref_clk_period(struct dwc3 *dwc)
 static void dwc3_free_one_event_buffer(struct dwc3 *dwc,
 		struct dwc3_event_buffer *evt)
 {
-	dma_free_coherent(evt->buf, evt->dma, evt->length);
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  evt->buf, evt->dma, evt->length);
 }
 
 /**
@@ -253,7 +254,8 @@ static struct dwc3_event_buffer *dwc3_alloc_one_event_buffer(struct dwc3 *dwc,
 	if (!evt->cache)
 		return ERR_PTR(-ENOMEM);
 
-	evt->buf	= dma_alloc_coherent(length, &evt->dma);
+	evt->buf	= dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					     length, &evt->dma);
 	if (!evt->buf)
 		return ERR_PTR(-ENOMEM);
 

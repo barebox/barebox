@@ -1336,7 +1336,7 @@ static int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 	const int size = NAND_MAX_PAGESIZE + NAND_MAX_OOBSIZE;
 
 	/* DMA buffers */
-	buf = dma_alloc_coherent(size, DMA_ADDRESS_BROKEN);
+	buf = dma_alloc_coherent(DMA_DEVICE_BROKEN, size, DMA_ADDRESS_BROKEN);
 	if (!buf) {
 		printf("MXS NAND: Error allocating DMA buffers\n");
 		return -ENOMEM;
@@ -1346,7 +1346,8 @@ static int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 	nand_info->oob_buf = buf + NAND_MAX_PAGESIZE;
 
 	/* Command buffers */
-	nand_info->cmd_buf = dma_alloc_coherent(MXS_NAND_COMMAND_BUFFER_SIZE,
+	nand_info->cmd_buf = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+						MXS_NAND_COMMAND_BUFFER_SIZE,
 						DMA_ADDRESS_BROKEN);
 	if (!nand_info->cmd_buf) {
 		free(buf);
@@ -1368,7 +1369,8 @@ static int mxs_nand_hw_init(struct mxs_nand_info *info)
 	int ret;
 	u32 val;
 
-	info->desc = dma_alloc_coherent(sizeof(struct mxs_dma_cmd) * MXS_NAND_DMA_DESCRIPTOR_COUNT,
+	info->desc = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+				   sizeof(struct mxs_dma_cmd) * MXS_NAND_DMA_DESCRIPTOR_COUNT,
 				   DMA_ADDRESS_BROKEN);
 	if (!info->desc)
 		return -ENOMEM;

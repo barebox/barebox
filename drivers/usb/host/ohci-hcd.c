@@ -1747,7 +1747,7 @@ static int ohci_init(struct usb_host *host)
 
 	info("%s\n", __func__);
 
-	ohci->ptd = dma_alloc_coherent(sizeof(struct td) * NUM_TD,
+	ohci->ptd = dma_alloc_coherent(DMA_DEVICE_BROKEN, sizeof(struct td) * NUM_TD,
 				       DMA_ADDRESS_BROKEN);
 	if (!ohci->ptd)
 		return -ENOMEM;
@@ -1791,12 +1791,12 @@ static int ohci_probe(struct device *dev)
 	host->submit_control_msg = submit_control_msg;
 	host->submit_bulk_msg = submit_bulk_msg;
 
-	ohci->hcca = dma_alloc_coherent(sizeof(*ohci->hcca),
+	ohci->hcca = dma_alloc_coherent(DMA_DEVICE_BROKEN, sizeof(*ohci->hcca),
 					DMA_ADDRESS_BROKEN);
 	if (!ohci->hcca)
 		return -ENOMEM;
 
-	ohci->ohci_dev = dma_alloc_coherent(sizeof(*ohci->ohci_dev),
+	ohci->ohci_dev = dma_alloc_coherent(DMA_DEVICE_BROKEN, sizeof(*ohci->ohci_dev),
 					    DMA_ADDRESS_BROKEN);
 	if (!ohci->ohci_dev)
 		return -ENOMEM;

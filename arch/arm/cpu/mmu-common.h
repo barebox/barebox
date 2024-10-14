@@ -9,9 +9,11 @@
 #include <linux/kernel.h>
 #include <linux/sizes.h>
 
+struct device;
+
 void dma_inv_range(void *ptr, size_t size);
 void dma_flush_range(void *ptr, size_t size);
-void *dma_alloc_map(size_t size, dma_addr_t *dma_handle, unsigned flags);
+void *dma_alloc_map(struct device *dev, size_t size, dma_addr_t *dma_handle, unsigned flags);
 void __mmu_init(bool mmu_on);
 
 static inline void arm_mmu_not_initialized_error(void)

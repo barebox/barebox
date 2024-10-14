@@ -9,7 +9,8 @@ static void __dma_flush_range(dma_addr_t start, dma_addr_t end)
 {
 }
 
-static void *__dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+static void *__dma_alloc_coherent(struct device *dev,
+				  size_t size, dma_addr_t *dma_handle)
 {
 	void *ret;
 
@@ -23,7 +24,8 @@ static void *__dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 	return ret;
 }
 
-static void __dma_free_coherent(void *vaddr, dma_addr_t dma_handle, size_t size)
+static void __dma_free_coherent(struct device *dev,
+				void *vaddr, dma_addr_t dma_handle, size_t size)
 {
 	free(vaddr);
 }
@@ -37,14 +39,16 @@ static const struct dma_ops coherent_dma_ops = {
 
 static const struct dma_ops *dma_ops = &coherent_dma_ops;
 
-void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+void *dma_alloc_coherent(struct device *dev,
+			 size_t size, dma_addr_t *dma_handle)
 {
-	return dma_ops->alloc_coherent(size, dma_handle);
+	return dma_ops->alloc_coherent(dev, size, dma_handle);
 }
 
-void dma_free_coherent(void *vaddr, dma_addr_t dma_handle, size_t size)
+void dma_free_coherent(struct device *dev,
+		       void *vaddr, dma_addr_t dma_handle, size_t size)
 {
-	dma_ops->free_coherent(vaddr, dma_handle, size);
+	dma_ops->free_coherent(dev, vaddr, dma_handle, size);
 }
 
 void dma_set_ops(const struct dma_ops *ops)

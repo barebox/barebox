@@ -315,9 +315,11 @@ static int at91_ether_probe(struct device *dev)
 	edev->halt = at91_ether_halt;
 	edev->get_ethaddr = at91_ether_get_ethaddr;
 	edev->set_ethaddr = at91_ether_set_ethaddr;
-	ether_dev->rbf_framebuf = dma_alloc_coherent(MAX_RX_DESCR * MAX_RBUFF_SZ,
+	ether_dev->rbf_framebuf = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+						     MAX_RX_DESCR * MAX_RBUFF_SZ,
 						     DMA_ADDRESS_BROKEN);
-	ether_dev->rbfdt = dma_alloc_coherent(sizeof(struct rbf_t) * MAX_RX_DESCR,
+	ether_dev->rbfdt = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					      sizeof(struct rbf_t) * MAX_RX_DESCR,
 					      DMA_ADDRESS_BROKEN);
 
 	ether_dev->phy_addr = pdata->phy_addr;

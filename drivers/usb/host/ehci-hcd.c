@@ -913,7 +913,7 @@ static int ehci_init(struct usb_host *host)
 		 * dma_alloc_coherent() allocates PAGE_SIZE aligned memory chunks.
 		 * PAGE_SIZE less then 4k will break this code.
 		 */
-		ehci->periodic_list = dma_alloc_coherent(1024 * 4,
+		ehci->periodic_list = dma_alloc_coherent(DMA_DEVICE_BROKEN, 1024 * 4,
 						&ehci->periodic_list_dma);
 	for (i = 0; i < 1024; i++) {
 		ehci->periodic_list[i] = cpu_to_hc32((unsigned long)ehci->periodic_queue_dma
@@ -1131,11 +1131,13 @@ static struct int_queue *ehci_create_int_queue(struct usb_device *dev,
 	result->elementsize = elementsize;
 	result->queuesize = queuesize;
 	result->pipe = pipe;
-	result->first = dma_alloc_coherent(sizeof(struct QH) * queuesize,
+	result->first = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					   sizeof(struct QH) * queuesize,
 					   &result->first_dma);
 	result->current = result->first;
 	result->last = result->first + queuesize - 1;
-	result->tds = dma_alloc_coherent(sizeof(struct qTD) * queuesize,
+	result->tds = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					 sizeof(struct qTD) * queuesize,
 					 &result->tds_dma);
 
 	for (i = 0; i < queuesize; i++) {
@@ -1210,9 +1212,11 @@ static struct int_queue *ehci_create_int_queue(struct usb_device *dev,
 	dev_dbg(&dev->dev, "Exit create_int_queue\n");
 	return result;
 fail3:
-	dma_free_coherent(result->tds, result->tds_dma,
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  result->tds, result->tds_dma,
 			  sizeof(struct qTD) * queuesize);
-	dma_free_coherent(result->first, result->first_dma,
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  result->first, result->first_dma,
 			  sizeof(struct QH) * queuesize);
 	free(result);
 	return NULL;
@@ -1288,8 +1292,10 @@ static int ehci_destroy_int_queue(struct usb_device *dev,
 	}
 
 out:
-	dma_free_coherent(queue->tds, 0, sizeof(struct qTD) * queue->queuesize);
-	dma_free_coherent(queue->first, 0, sizeof(struct QH) * queue->queuesize);
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  queue->tds, 0, sizeof(struct qTD) * queue->queuesize);
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  queue->first, 0, sizeof(struct QH) * queue->queuesize);
 	free(queue);
 	return result;
 }
@@ -1363,11 +1369,14 @@ struct ehci_host *ehci_register(struct device *dev, struct ehci_data *data)
 	ehci->init = data->init;
 	ehci->post_init = data->post_init;
 
-	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_QH,
+	ehci->qh_list = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					   sizeof(struct QH) * NUM_QH,
 					   &ehci->qh_list_dma);
-	ehci->periodic_queue = dma_alloc_coherent(sizeof(struct QH),
+	ehci->periodic_queue = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+						  sizeof(struct QH),
 						  &ehci->periodic_queue_dma);
-	ehci->td = dma_alloc_coherent(sizeof(struct qTD) * NUM_TD,
+	ehci->td = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+				      sizeof(struct qTD) * NUM_TD,
 				      &ehci->td_dma);
 
 	host->hw_dev = dev;

@@ -10,7 +10,8 @@
 #define SDRAM_CACHED_BASE	0x80000000
 #define SDRAM_UNCACHED_BASE	0x1000000000
 
-static inline void *jh7100_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+static inline void *jh7100_alloc_coherent(struct device *dev,
+					  size_t size, dma_addr_t *dma_handle)
 {
 	dma_addr_t cpu_base;
 	void *ret;
@@ -30,7 +31,8 @@ static inline void *jh7100_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 
 }
 
-static inline void jh7100_free_coherent(void *vaddr, dma_addr_t dma_handle, size_t size)
+static inline void jh7100_free_coherent(struct device *dev,
+					void *vaddr, dma_addr_t dma_handle, size_t size)
 {
 	free((void *)dma_handle);
 }

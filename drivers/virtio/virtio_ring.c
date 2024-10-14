@@ -339,7 +339,7 @@ static void *vring_alloc_queue(struct virtio_device *vdev,
 			       size_t size, dma_addr_t *dma_handle)
 {
 	if (vring_use_dma_api(vdev)) {
-		return dma_alloc_coherent(size, dma_handle);
+		return dma_alloc_coherent(DMA_DEVICE_BROKEN, size, dma_handle);
 	} else {
 		void *queue = memalign(PAGE_SIZE, PAGE_ALIGN(size));
 
@@ -371,7 +371,7 @@ static void vring_free_queue(struct virtio_device *vdev,
 			     size_t size, void *queue, dma_addr_t dma_handle)
 {
 	if (vring_use_dma_api(vdev))
-		dma_free_coherent(queue, dma_handle, size);
+		dma_free_coherent(DMA_DEVICE_BROKEN, queue, dma_handle, size);
 	else
 		free(queue);
 }

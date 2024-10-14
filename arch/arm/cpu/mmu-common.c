@@ -22,7 +22,8 @@ void arch_sync_dma_for_cpu(void *vaddr, size_t size,
 		dma_inv_range(vaddr, size);
 }
 
-void *dma_alloc_map(size_t size, dma_addr_t *dma_handle, unsigned flags)
+void *dma_alloc_map(struct device *dev,
+		    size_t size, dma_addr_t *dma_handle, unsigned flags)
 {
 	void *ret;
 
@@ -39,16 +40,18 @@ void *dma_alloc_map(size_t size, dma_addr_t *dma_handle, unsigned flags)
 	return ret;
 }
 
-void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+void *dma_alloc_coherent(struct device *dev,
+			 size_t size, dma_addr_t *dma_handle)
 {
 	/*
 	 * FIXME: This function needs a device argument to support non 1:1 mappings
 	 */
 
-	return dma_alloc_map(size, dma_handle, MAP_UNCACHED);
+	return dma_alloc_map(dev, size, dma_handle, MAP_UNCACHED);
 }
 
-void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
+void dma_free_coherent(struct device *dev,
+		       void *mem, dma_addr_t dma_handle, size_t size)
 {
 	size = PAGE_ALIGN(size);
 	remap_range(mem, size, MAP_CACHED);

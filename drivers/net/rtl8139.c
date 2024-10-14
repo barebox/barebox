@@ -382,8 +382,10 @@ static int rtl8139_eth_open(struct eth_device *edev)
 	struct rtl8139_priv *priv = edev->priv;
 	int ret;
 
-	priv->tx_bufs = dma_alloc_coherent(TX_BUF_TOT_LEN, &priv->tx_bufs_dma);
-	priv->rx_ring = dma_alloc_coherent(RX_BUF_TOT_LEN, &priv->rx_ring_dma);
+	priv->tx_bufs = dma_alloc_coherent(DMA_DEVICE_BROKEN, TX_BUF_TOT_LEN,
+					   &priv->tx_bufs_dma);
+	priv->rx_ring = dma_alloc_coherent(DMA_DEVICE_BROKEN, RX_BUF_TOT_LEN,
+					   &priv->rx_ring_dma);
 	priv->tx_flag = (TX_FIFO_THRESH << 11) & 0x003f0000;
 
 	rtl8139_init_ring(priv);
@@ -409,9 +411,11 @@ static void rtl8139_eth_halt(struct eth_device *edev)
 
 	pci_clear_master(priv->pci_dev);
 
-	dma_free_coherent((void *)priv->tx_bufs, priv->tx_bufs_dma,
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  (void *)priv->tx_bufs, priv->tx_bufs_dma,
 			  TX_BUF_TOT_LEN);
-	dma_free_coherent((void *)priv->rx_ring, priv->rx_ring_dma,
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  (void *)priv->rx_ring, priv->rx_ring_dma,
 			  RX_BUF_TOT_LEN);
 
 	/* Green! Put the chip in low-power mode. */

@@ -459,7 +459,8 @@ static int dwc3_alloc_trb_pool(struct dwc3_ep *dep)
 	if (dep->trb_pool)
 		return 0;
 
-	dep->trb_pool = dma_alloc_coherent(sizeof(struct dwc3_trb) * DWC3_TRB_NUM,
+	dep->trb_pool = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					   sizeof(struct dwc3_trb) * DWC3_TRB_NUM,
 					   &dep->trb_pool_dma);
 	if (!dep->trb_pool) {
 		dev_err(dep->dwc->dev, "failed to allocate trb pool for %s\n",
@@ -472,7 +473,8 @@ static int dwc3_alloc_trb_pool(struct dwc3_ep *dep)
 
 static void dwc3_free_trb_pool(struct dwc3_ep *dep)
 {
-	dma_free_coherent(dep->trb_pool, dep->trb_pool_dma,
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  dep->trb_pool, dep->trb_pool_dma,
 			  sizeof(struct dwc3_trb) * DWC3_TRB_NUM);
 
 	dep->trb_pool = NULL;
@@ -4142,7 +4144,8 @@ int dwc3_gadget_init(struct dwc3 *dwc)
 	int ret;
 	struct device *dev;
 
-	dwc->ep0_trb = dma_alloc_coherent(sizeof(*dwc->ep0_trb) * 2,
+	dwc->ep0_trb = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					  sizeof(*dwc->ep0_trb) * 2,
 					  &dwc->ep0_trb_addr);
 	if (!dwc->ep0_trb) {
 		dev_err(dwc->dev, "failed to allocate ep0 trb\n");
@@ -4156,7 +4159,8 @@ int dwc3_gadget_init(struct dwc3 *dwc)
 		goto err1;
 	}
 
-	dwc->bounce = dma_alloc_coherent(DWC3_BOUNCE_SIZE, &dwc->bounce_addr);
+	dwc->bounce = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					 DWC3_BOUNCE_SIZE, &dwc->bounce_addr);
 	if (!dwc->bounce) {
 		ret = -ENOMEM;
 		goto err2;
@@ -4232,13 +4236,15 @@ err4:
 	usb_put_gadget(dwc->gadget);
 	dwc->gadget = NULL;
 err3:
-	dma_free_coherent(dwc->bounce, dwc->bounce_addr, DWC3_BOUNCE_SIZE);
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  dwc->bounce, dwc->bounce_addr, DWC3_BOUNCE_SIZE);
 
 err2:
 	kfree(dwc->setup_buf);
 
 err1:
-	dma_free_coherent(dwc->ep0_trb, dwc->ep0_trb_addr, sizeof(*dwc->ep0_trb) * 2);
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  dwc->ep0_trb, dwc->ep0_trb_addr, sizeof(*dwc->ep0_trb) * 2);
 
 err0:
 	return ret;
@@ -4253,7 +4259,9 @@ void dwc3_gadget_exit(struct dwc3 *dwc)
 
 	usb_del_gadget_udc(dwc->gadget);
 	dwc3_gadget_free_endpoints(dwc);
-	dma_free_coherent(dwc->bounce, dwc->bounce_addr, DWC3_BOUNCE_SIZE);
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  dwc->bounce, dwc->bounce_addr, DWC3_BOUNCE_SIZE);
 	kfree(dwc->setup_buf);
-	dma_free_coherent(dwc->ep0_trb, dwc->ep0_trb_addr, sizeof(*dwc->ep0_trb) * 2);
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  dwc->ep0_trb, dwc->ep0_trb_addr, sizeof(*dwc->ep0_trb) * 2);
 }

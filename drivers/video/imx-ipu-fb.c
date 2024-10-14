@@ -1022,7 +1022,8 @@ static int imxfb_probe(struct device *dev)
 		remap_range(fbi->info.screen_base,
 			fbi->info.screen_size, MAP_UNCACHED);
 	} else {
-		fbi->info.screen_base = dma_alloc_coherent(fbi->info.screen_size,
+		fbi->info.screen_base = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+							   fbi->info.screen_size,
 							   DMA_ADDRESS_BROKEN);
 		if (!fbi->info.screen_base)
 			return -ENOMEM;

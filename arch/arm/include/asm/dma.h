@@ -8,9 +8,12 @@
 
 #define DMA_ALIGNMENT	64
 
+struct device;
+
 #ifndef CONFIG_MMU
 #define dma_alloc_coherent dma_alloc_coherent
-static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+static inline void *dma_alloc_coherent(struct device *dev,
+				       size_t size, dma_addr_t *dma_handle)
 {
 	void *ret = xmemalign(4096, size);
 	if (dma_handle)
@@ -22,13 +25,15 @@ static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 }
 
 #define dma_alloc_writecombine dma_alloc_writecombine
-static inline void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
+static inline void *dma_alloc_writecombine(struct device *dev,
+					   size_t size, dma_addr_t *dma_handle)
 {
-	return dma_alloc_coherent(size, dma_handle);
+	return dma_alloc_coherent(dev, size, dma_handle);
 }
 
 #define dma_free_coherent dma_free_coherent
-static inline void dma_free_coherent(void *mem, dma_addr_t dma_handle,
+static inline void dma_free_coherent(struct device *dev,
+				     void *mem, dma_addr_t dma_handle,
 				     size_t size)
 {
 	free(mem);

@@ -390,9 +390,9 @@ void dma_flush_range(void *ptr, size_t size)
 	v8_flush_dcache_range(start, end);
 }
 
-void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
+void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_handle)
 {
-	return dma_alloc_map(size, dma_handle, ARCH_MAP_WRITECOMBINE);
+	return dma_alloc_map(dev, size, dma_handle, ARCH_MAP_WRITECOMBINE);
 }
 
 static void init_range(size_t total_level0_tables)

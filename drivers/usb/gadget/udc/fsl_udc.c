@@ -194,7 +194,8 @@ static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
 		if (j != req->dtd_count - 1) {
 			next_td = curr_td->next_td_virt;
 		}
-		dma_free_coherent(curr_td, 0, sizeof(struct ep_td_struct));
+		dma_free_coherent(DMA_DEVICE_BROKEN,
+				  curr_td, 0, sizeof(struct ep_td_struct));
 	}
 
 	usb_gadget_unmap_request(&udc->gadget, &req->req, ep_is_in(ep));
@@ -767,8 +768,8 @@ static struct ep_td_struct *fsl_build_dtd(struct fsl_req *req,
 	length = min(req->req.length - req->req.actual,
 			(unsigned)EP_MAX_LENGTH_TRANSFER);
 
-	dtd = dma_alloc_coherent(sizeof(struct ep_td_struct),
-				 dma);
+	dtd = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+				 sizeof(struct ep_td_struct), dma);
 	if (dtd == NULL)
 		return dtd;
 
@@ -1696,7 +1697,8 @@ static int struct_udc_setup(struct fsl_udc *udc,
 		size &= ~(QH_ALIGNMENT - 1);
 	}
 
-	udc->ep_qh = dma_alloc_coherent(size, &udc->ep_qh_dma);
+	udc->ep_qh = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					size, &udc->ep_qh_dma);
 	if (!udc->ep_qh) {
 		ERR("malloc QHs for udc failed\n");
 		kfree(udc->eps);

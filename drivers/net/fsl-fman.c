@@ -614,8 +614,9 @@ static int fm_eth_rx_port_parameter_init(struct fm_eth *fm_eth)
 	muram_writew(&pram->mrblr, MAX_RXBUF_LOG2);
 
 	/* alloc Rx buffer descriptors from main memory */
-	rx_bd_ring_base = dma_alloc_coherent(sizeof(struct fm_port_bd)
-			* RX_BD_RING_SIZE, DMA_ADDRESS_BROKEN);
+	rx_bd_ring_base = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+			sizeof(struct fm_port_bd) * RX_BD_RING_SIZE,
+			DMA_ADDRESS_BROKEN);
 	if (!rx_bd_ring_base)
 		return -ENOMEM;
 
@@ -692,8 +693,9 @@ static int fm_eth_tx_port_parameter_init(struct fm_eth *fm_eth)
 	out_be32(&pram->txqd_ptr, pram_page_offset + 0x40);
 
 	/* alloc Tx buffer descriptors from main memory */
-	tx_bd_ring_base = dma_alloc_coherent(sizeof(struct fm_port_bd)
-			* TX_BD_RING_SIZE, DMA_ADDRESS_BROKEN);
+	tx_bd_ring_base = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+			sizeof(struct fm_port_bd) * TX_BD_RING_SIZE,
+			DMA_ADDRESS_BROKEN);
 	if (!tx_bd_ring_base)
 		return -ENOMEM;
 

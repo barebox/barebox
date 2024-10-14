@@ -863,7 +863,8 @@ static int fec_probe(struct device *dev)
 	 */
 #define FEC_XBD_SIZE ((2 + FEC_RBD_NUM) * sizeof(struct buffer_descriptor))
 
-	base = dma_alloc_coherent(FEC_XBD_SIZE, DMA_ADDRESS_BROKEN);
+	base = dma_alloc_coherent(DMA_DEVICE_BROKEN, FEC_XBD_SIZE,
+				  DMA_ADDRESS_BROKEN);
 	fec->rbd_base = base;
 	base += FEC_RBD_NUM * sizeof(struct buffer_descriptor);
 	fec->tbd_base = base;
@@ -908,7 +909,8 @@ unregister_eth:
 free_receive_packets:
 	fec_free_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 free_xbd:
-	dma_free_coherent(fec->rbd_base, 0, FEC_XBD_SIZE);
+	dma_free_coherent(DMA_DEVICE_BROKEN,
+			  fec->rbd_base, 0, FEC_XBD_SIZE);
 free_gpio:
 	if (gpio_is_valid(phy_reset))
 		gpio_free(phy_reset);

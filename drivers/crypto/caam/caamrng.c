@@ -209,7 +209,8 @@ static int caam_init_buf(struct caam_rng_ctx *ctx, int buf_id)
 	struct buf_data *bd = &ctx->bufs[buf_id];
 	int err;
 
-	bd->buf = dma_alloc_coherent(RN_BUF_SIZE, &bd->addr);
+	bd->buf = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+				     RN_BUF_SIZE, &bd->addr);
 
 	err = rng_create_job_desc(ctx, buf_id);
 	if (err)

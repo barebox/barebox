@@ -9,12 +9,15 @@
 #include <xfuncs.h>
 #include <malloc.h>
 
+struct device;
+
 /*
  * x86 is cache coherent, so we need not do anything special here
  */
 
 #define dma_alloc_coherent dma_alloc_coherent
-static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+static inline void *dma_alloc_coherent(struct device *dev,
+				       size_t size, dma_addr_t *dma_handle)
 {
 	void *ret = xmemalign(4096, size);
 	if (dma_handle)
@@ -26,7 +29,8 @@ static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 }
 
 #define dma_free_coherent dma_free_coherent
-static inline void dma_free_coherent(void *mem, dma_addr_t dma_handle,
+static inline void dma_free_coherent(struct device *dev,
+				     void *mem, dma_addr_t dma_handle,
 				     size_t size)
 {
 	free(mem);

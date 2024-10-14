@@ -83,10 +83,12 @@ static int ramfb_activate_var(struct fb_info *fbi)
 	struct ramfb *ramfb = fbi->priv;
 
 	if (fbi->screen_base)
-		dma_free_coherent(fbi->screen_base, ramfb->screen_dma, fbi->screen_size);
+		dma_free_coherent(DMA_DEVICE_BROKEN,
+				  fbi->screen_base, ramfb->screen_dma, fbi->screen_size);
 
 	fbi->screen_size = fbi->xres * fbi->yres * fbi->bits_per_pixel;
-	fbi->screen_base = dma_alloc_coherent(fbi->screen_size, &ramfb->screen_dma);
+	fbi->screen_base = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					      fbi->screen_size, &ramfb->screen_dma);
 
 	return 0;
 }

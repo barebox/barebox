@@ -10,8 +10,11 @@
 
 #define DMA_ALIGNMENT	64
 
+struct device;
+
 #define dma_alloc_coherent dma_alloc_coherent
-static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+static inline void *dma_alloc_coherent(struct device *dev,
+				       size_t size, dma_addr_t *dma_handle)
 {
 	BUILD_BUG_ON_MSG(1, "dma_alloc_coherent not supported: "
 			"MMU support is required to map uncached pages");
@@ -19,7 +22,8 @@ static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 }
 
 #define dma_free_coherent dma_free_coherent
-static inline void dma_free_coherent(void *mem, dma_addr_t dma_handle,
+static inline void dma_free_coherent(struct device *dev,
+				     void *mem, dma_addr_t dma_handle,
 				     size_t size)
 {
 	free(mem);

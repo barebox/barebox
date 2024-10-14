@@ -86,7 +86,7 @@ static void *xhci_malloc(struct xhci_ctrl *ctrl, unsigned int size, dma_addr_t *
 {
 	void *ptr;
 
-	ptr = dma_alloc_coherent(size, dma_addr);
+	ptr = dma_alloc_coherent(DMA_DEVICE_BROKEN, size, dma_addr);
 	if (!ptr)
 		return NULL;
 

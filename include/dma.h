@@ -16,6 +16,7 @@
 #include <device.h>
 
 #define DMA_ADDRESS_BROKEN	((dma_addr_t *)NULL)
+#define DMA_DEVICE_BROKEN	((struct device *)NULL)
 
 #ifndef DMA_ALIGNMENT
 #define DMA_ALIGNMENT	32
@@ -120,15 +121,15 @@ void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
 		      size_t size, enum dma_data_direction dir);
 
 #ifndef dma_alloc_coherent
-void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle);
+void *dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle);
 #endif
 
 #ifndef dma_free_coherent
-void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size);
+void dma_free_coherent(struct device *dev, void *mem, dma_addr_t dma_handle, size_t size);
 #endif
 
 #ifndef dma_alloc_writecombine
-void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle);
+void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_handle);
 #endif
 
 #endif /* __DMA_H */

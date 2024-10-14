@@ -402,9 +402,11 @@ static int port_probe(struct device *parent, struct port_priv *port)
 		return PTR_ERR(port->regs);
 
 	/* allocate rx/tx descriptors and buffers */
-	port->txdesc = dma_alloc_coherent(ALIGN(sizeof(*port->txdesc), 16),
+	port->txdesc = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					  ALIGN(sizeof(*port->txdesc), 16),
 					  DMA_ADDRESS_BROKEN);
-	port->rxdesc = dma_alloc_coherent(RX_RING_SIZE *
+	port->rxdesc = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+					  RX_RING_SIZE *
 					  ALIGN(sizeof(*port->rxdesc), 16),
 					  DMA_ADDRESS_BROKEN);
 	port->rxbuf = dma_alloc(RX_RING_SIZE * ALIGN(PKTSIZE, 8));

@@ -8,6 +8,7 @@
 #define __COMMON_H_	1
 
 #include <stdio.h>
+#include <barebox.h>
 #include <module.h>
 #include <config.h>
 #include <clock.h>
@@ -45,14 +46,6 @@
  */
 void reginfo(void);
 
-/* For use when unrelocated */
-static inline void __hang(void)
-{
-	while (1);
-}
-
-void __noreturn hang (void);
-
 char *size_human_readable(unsigned long long size);
 
 int	readline	(const char *prompt, char *buf, int len);
@@ -76,25 +69,6 @@ int parse_area_spec(const char *str, loff_t *start, loff_t *size);
 unsigned long strtoul_suffix(const char *str, char **endp, int base);
 unsigned long long strtoull_suffix(const char *str, char **endp, int base);
 
-/*
- * Function pointer to the main barebox function. Defaults
- * to run_shell() when a shell is enabled.
- */
-extern int (*barebox_main)(void);
-
-enum autoboot_state {
-	AUTOBOOT_COUNTDOWN,
-	AUTOBOOT_ABORT,
-	AUTOBOOT_MENU,
-	AUTOBOOT_BOOT,
-	AUTOBOOT_UNKNOWN,
-};
-
-void set_autoboot_state(enum autoboot_state autoboot);
-enum autoboot_state do_autoboot_countdown(void);
-
-void __noreturn start_barebox(void);
-void shutdown_barebox(void);
 int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		char **sourcefile, char **destfile, int *swab);
 int memcpy_parse_options(int argc, char *argv[], int *sourcefd,

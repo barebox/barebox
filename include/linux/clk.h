@@ -846,6 +846,12 @@ static inline struct clk *of_clk_get_by_name(struct device_node *np,
 {
 	return ERR_PTR(-ENOENT);
 }
+
+static inline struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec)
+{
+	return ERR_PTR(-ENOENT);
+}
+
 static inline unsigned int of_clk_get_parent_count(struct device_node *np)
 {
 	return 0;

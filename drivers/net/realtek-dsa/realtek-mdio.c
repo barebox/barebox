@@ -21,6 +21,7 @@
 
 #include <of_device.h>
 #include <linux/regmap.h>
+#include <linux/slab.h>
 #include <clock.h>
 #include <linux/gpio/consumer.h>
 #include <linux/printk.h>

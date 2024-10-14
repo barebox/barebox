@@ -13,6 +13,7 @@
  */
 
 #include <linux/bitops.h>
+#include <linux/kernel.h>
 #include <net.h>
 #include <linux/if_bridge.h>
 #include <linux/printk.h>

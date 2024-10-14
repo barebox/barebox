@@ -53,16 +53,6 @@ int	readline	(const char *prompt, char *buf, int len);
 /* common/memsize.c */
 long	get_ram_size  (volatile long *, long);
 
-/* common/console.c */
-int ctrlc(void);
-int arch_ctrlc(void);
-
-#ifdef CONFIG_CONSOLE_FULL
-void ctrlc_handled(void);
-#else
-static inline void ctrlc_handled(void) { }
-#endif
-
 int parse_area_spec(const char *str, loff_t *start, loff_t *size);
 
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */

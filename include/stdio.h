@@ -24,6 +24,10 @@ int vasprintf(char **strp, const char *fmt, va_list ap);
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 
+#ifdef CONFIG_ARCH_HAS_CTRLC
+int arch_ctrlc(void);
+#endif
+
 #ifndef CONFIG_CONSOLE_NONE
 /* stdin */
 int tstc(void);
@@ -35,6 +39,9 @@ int console_puts(unsigned int ch, const char *s);
 void console_flush(void);
 
 int vprintf(const char *fmt, va_list args);
+
+int ctrlc(void);
+void ctrlc_handled(void);
 #else
 static inline int tstc(void)
 {
@@ -64,6 +71,10 @@ static inline int vprintf(const char *fmt, va_list args)
 static inline int ctrlc (void)
 {
 	return 0;
+}
+
+static inline void ctrlc_handled(void)
+{
 }
 
 #endif

@@ -53,12 +53,6 @@ int	readline	(const char *prompt, char *buf, int len);
 /* common/memsize.c */
 long	get_ram_size  (volatile long *, long);
 
-int parse_area_spec(const char *str, loff_t *start, loff_t *size);
-
-/* Just like simple_strtoul(), but this one honors a K/M/G suffix */
-unsigned long strtoul_suffix(const char *str, char **endp, int base);
-unsigned long long strtoull_suffix(const char *str, char **endp, int base);
-
 int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		char **sourcefile, char **destfile, int *swab);
 int memcpy_parse_options(int argc, char *argv[], int *sourcefd,

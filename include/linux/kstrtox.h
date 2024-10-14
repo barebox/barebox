@@ -118,6 +118,12 @@ extern long simple_strtol(const char *,char **,unsigned int);
 extern unsigned long long simple_strtoull(const char *,char **,unsigned int);
 extern long long simple_strtoll(const char *,char **,unsigned int);
 
+/* Just like simple_strtoul(), but this one honors a K/M/G suffix */
+unsigned long strtoul_suffix(const char *str, char **endp, int base);
+unsigned long long strtoull_suffix(const char *str, char **endp, int base);
+
 extern s64 simple_strtofract(const char *cp, char **endp, u32 division);
+
+int parse_area_spec(const char *str, loff_t *start, loff_t *size);
 
 #endif

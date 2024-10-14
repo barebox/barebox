@@ -5,9 +5,9 @@
 SECTIONS
 {
 	. = ALIGN(64);
-	.barebox_rodata (READONLY) : {
+	.barebox_rodata () : {
 		RO_DATA_SECTION
 	}
 }
 
-INSERT BEFORE .rodata;
+INSERT BEFORE .data;

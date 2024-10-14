@@ -441,6 +441,9 @@ int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum)
 {
 	int ret;
 
+	if (!bus)
+		return -EIO;
+
 	slice_acquire(&bus->slice);
 
 	ret = bus->read(bus, addr, regnum);
@@ -460,6 +463,9 @@ int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum)
 int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val)
 {
 	int ret;
+
+	if (!bus)
+		return -EIO;
 
 	slice_acquire(&bus->slice);
 

@@ -8,6 +8,7 @@
 
 #include <module.h>
 #include <driver.h>
+#include <linux/kernel.h>
 #include <linux/usb/role.h>
 #include <linux/usb/typec.h>
 #include <linux/usb/typec_altmode.h>
@@ -141,7 +142,7 @@ struct typec_port *typec_register_port(struct device *parent,
 	const char *alias;
 	int ret;
 
-	port = kzalloc(sizeof(*port), GFP_KERNEL);
+	port = malloc(sizeof(*port));
 	if (!port)
 		return ERR_PTR(-ENOMEM);
 

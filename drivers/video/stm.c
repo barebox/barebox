@@ -325,7 +325,7 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 		remap_range(fbi->fixed_screen,
 				fbi->fixed_screen_size, MAP_UNCACHED);
 	} else {
-		fb_info->screen_base = dma_alloc_coherent(size, NULL);
+		fb_info->screen_base = dma_alloc_coherent(size, DMA_ADDRESS_BROKEN);
 		if (!fb_info->screen_base)
 			return -ENOMEM;
 		fbi->memory_size = size;

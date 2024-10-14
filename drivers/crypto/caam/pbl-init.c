@@ -457,7 +457,8 @@ int early_caam_init(struct caam_ctrl __iomem *_caam, bool is_imx)
 	if (IN_PBL)
 		g_jrdata = &pbl_jrdata;
 	else
-		g_jrdata = dma_alloc_coherent(sizeof(*g_jrdata), NULL);
+		g_jrdata = dma_alloc_coherent(sizeof(*g_jrdata),
+					      DMA_ADDRESS_BROKEN);
 
 	jr = IOMEM(caam) + 0x1000;
 	r4tst = &caam->r4tst[0];

@@ -28,10 +28,6 @@
  */
 void reginfo(void);
 
-char *size_human_readable(unsigned long long size);
-
-int	readline	(const char *prompt, char *buf, int len);
-
 /* common/memsize.c */
 long	get_ram_size  (volatile long *, long);
 

@@ -79,6 +79,9 @@ static inline void ctrlc_handled(void)
 
 #endif
 
+char *size_human_readable(unsigned long long size);
+int readline(const char *prompt, char *buf, int len);
+
 #if (!defined(__PBL__) && !defined(CONFIG_CONSOLE_NONE)) || \
 	(defined(__PBL__) && defined(CONFIG_PBL_CONSOLE))
 static inline int puts(const char *s)

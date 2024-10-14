@@ -11,6 +11,7 @@
 #include <linux/uaccess.h>
 #include <linux/sizes.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include "tee_private.h"
 
 static void tee_shm_release(struct tee_device *teedev, struct tee_shm *shm)

@@ -8,6 +8,8 @@
 #ifndef __GETOPT_H
 #define __GETOPT_H
 
+#include <linux/types.h>
+
 extern int opterr;
 extern int optind;
 extern int optopt;
@@ -43,5 +45,11 @@ struct getopt_context {
  */
 void getopt_context_store(struct getopt_context *ctx);
 void getopt_context_restore(struct getopt_context *ctx);
+
+int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
+		char **sourcefile, char **destfile, int *swab);
+int memcpy_parse_options(int argc, char *argv[], int *sourcefd,
+			 int *destfd, loff_t *count,
+			 int rwsize, int destmode);
 
 #endif /* __GETOPT_H */

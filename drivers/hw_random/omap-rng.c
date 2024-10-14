@@ -190,7 +190,7 @@ static int omap_rng_do_read(struct hwrng *rng, void *data, size_t max,
 	if (!present)
 		return 0;
 
-	max = min(max, priv->pdata->data_size);
+	max = min_t(size_t, max, priv->pdata->data_size);
 
 	memcpy_fromio(data, priv->base + priv->pdata->regs[RNG_OUTPUT_0_REG], max);
 

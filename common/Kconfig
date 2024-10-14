@@ -63,6 +63,7 @@ config FITIMAGE
 
 config FITIMAGE_SIGNATURE
 	bool
+	select CRYPTO_BUILTIN_KEYS
 
 config LOGBUF
 	bool

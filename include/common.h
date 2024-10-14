@@ -31,6 +31,4 @@ void reginfo(void);
 /* common/memsize.c */
 long	get_ram_size  (volatile long *, long);
 
-#define RW_BUF_SIZE	(unsigned)4096
-
 #endif	/* __COMMON_H_ */

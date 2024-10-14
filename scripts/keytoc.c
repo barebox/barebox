@@ -28,6 +28,12 @@
 
 static int dts, standalone;
 
+static void enomem_exit(const char *func)
+{
+	fprintf(stderr, "%s: Out of memory\n", func);
+	exit(2);
+}
+
 static int openssl_error(const char *fmt, ...)
 {
 	va_list va;
@@ -351,6 +357,8 @@ static int print_bignum(BIGNUM *num, int num_bits, int width)
 	BN_exp(big2_32, big2, big32, ctx); /* B = 2^width */
 
 	arr = malloc(num_bits / width * sizeof(*arr));
+	if (!arr)
+		enomem_exit("malloc");
 
 	for (i = 0; i < num_bits / width; i++) {
 		BN_mod(tmp, num, big2_32, ctx); /* n = N mod B */
@@ -679,7 +687,9 @@ int main(int argc, char *argv[])
 		}
 
 		if (!keyname) {
-			asprintf(&freep, "key_%d", keynum++);
+			ret = asprintf(&freep, "key_%d", keynum++);
+			if (ret < 0)
+				enomem_exit("asprintf");
 			keyname = freep;
 		}
 

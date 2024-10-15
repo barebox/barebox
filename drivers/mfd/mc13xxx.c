@@ -396,9 +396,7 @@ static __maybe_unused struct driver mc13xxx_i2c_driver = {
 	.of_compatible	= DRV_OF_COMPAT(mc13xxx_dt_ids),
 };
 
-#if IS_ENABLED(CONFIG_I2C)
 coredevice_i2c_driver(mc13xxx_i2c_driver);
-#endif
 
 static __maybe_unused struct driver mc13xxx_spi_driver = {
 	.name		= "mc13xxx-spi",
@@ -407,6 +405,4 @@ static __maybe_unused struct driver mc13xxx_spi_driver = {
 	.of_compatible	= DRV_OF_COMPAT(mc13xxx_dt_ids),
 };
 
-#if IS_ENABLED(CONFIG_SPI)
 coredevice_spi_driver(mc13xxx_spi_driver);
-#endif

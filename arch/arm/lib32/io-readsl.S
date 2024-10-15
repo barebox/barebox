@@ -1,17 +1,17 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-/* SPDX-FileCopyrightText: 1995-2000 Russell King */
-
 /*
- * linux/arch/arm/lib/io-readsl.S
+ *  linux/arch/arm/lib/io-readsl.S
+ *
+ *  Copyright (C) 1995-2000 Russell King
  */
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
-.section .text.readsl
+.section .text.__raw_readsl
 
-ENTRY(readsl)
+ENTRY(__raw_readsl)
 		teq	r2, #0		@ do we have to check for the zero len?
-		moveq	pc, lr
+		reteq	lr
 		ands	ip, r1, #3
 		bne	3f
 
@@ -29,10 +29,10 @@ ENTRY(readsl)
 2:		movs	r2, r2, lsl #31
 		ldrcs	r3, [r0, #0]
 		ldrcs	ip, [r0, #0]
-		stmcsia	r1!, {r3, ip}
+		stmiacs	r1!, {r3, ip}
 		ldrne	r3, [r0, #0]
 		strne	r3, [r1, #0]
-		mov	pc, lr
+		ret	lr
 
 3:		ldr	r3, [r0]
 		cmp	ip, #2
@@ -46,25 +46,25 @@ ENTRY(readsl)
 		strb	ip, [r1], #1
 
 4:		subs	r2, r2, #1
-		mov	ip, r3, pull #24
+		mov	ip, r3, lspull #24
 		ldrne	r3, [r0]
-		orrne	ip, ip, r3, push #8
+		orrne	ip, ip, r3, lspush #8
 		strne	ip, [r1], #4
 		bne	4b
 		b	8f
 
 5:		subs	r2, r2, #1
-		mov	ip, r3, pull #16
+		mov	ip, r3, lspull #16
 		ldrne	r3, [r0]
-		orrne	ip, ip, r3, push #16
+		orrne	ip, ip, r3, lspush #16
 		strne	ip, [r1], #4
 		bne	5b
 		b	7f
 
 6:		subs	r2, r2, #1
-		mov	ip, r3, pull #8
+		mov	ip, r3, lspull #8
 		ldrne	r3, [r0]
-		orrne	ip, ip, r3, push #24
+		orrne	ip, ip, r3, lspush #24
 		strne	ip, [r1], #4
 		bne	6b
 
@@ -74,5 +74,5 @@ ENTRY(readsl)
 		strb	r3, [r1, #1]
 8:		mov	r3, ip, get_byte_0
 		strb	r3, [r1, #0]
-		mov	pc, lr
-ENDPROC(readsl)
+		ret	lr
+ENDPROC(__raw_readsl)

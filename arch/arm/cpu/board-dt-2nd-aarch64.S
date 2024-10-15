@@ -22,7 +22,7 @@ ENTRY("start_dt_2nd")
 	.int   .Lpe_header_offset  /* reserved (PE-COFF offset) */
 	.asciz "barebox"	   /* unused for now */
 2:
-	adr x1, 0
+	adr x1, _text - .
 	mov sp, x1
 	/* Stack now grows into the 0x80000 image load offset specified
 	 * above. This is more than enough until FDT /memory is decoded.

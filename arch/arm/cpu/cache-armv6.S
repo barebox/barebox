@@ -2,6 +2,7 @@
 
 #include <linux/linkage.h>
 #include <init.h>
+#include <asm/assembler.h>
 
 #define HARVARD_CACHE
 #define CACHE_LINE_SIZE		32
@@ -24,7 +25,7 @@ ENTRY(v6_mmu_cache_on)
 		mov	r0, #0
 		mcr	p15, 0, r0, c8, c7, 0	@ flush I,D TLBs
 #endif
-		mov	pc, r12
+		ret	r12
 ENDPROC(v6_mmu_cache_on)
 
 __common_mmu_cache_on:
@@ -46,7 +47,7 @@ ENTRY(v6_mmu_cache_off)
 		mcr	p15, 0, r0, c7, c7	@ invalidate whole cache v4
 		mcr	p15, 0, r0, c8, c7	@ invalidate whole TLB v4
 #endif
-		mov	pc, lr
+		ret	lr
 
 .section .text.v6_mmu_cache_flush
 ENTRY(v6_mmu_cache_flush)
@@ -55,7 +56,7 @@ ENTRY(v6_mmu_cache_flush)
 		mcr	p15, 0, r1, c7, c5, 0	@ invalidate I+BTB
 		mcr	p15, 0, r1, c7, c15, 0	@ clean+invalidate unified
 		mcr	p15, 0, r1, c7, c10, 4	@ drain WB
-		mov	pc, lr
+		ret	lr
 ENDPROC(v6_mmu_cache_flush)
 
 /*
@@ -95,7 +96,7 @@ ENTRY(v6_dma_inv_range)
 	blo	1b
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c10, 4		@ drain write buffer
-	mov	pc, lr
+	ret	lr
 ENDPROC(v6_dma_inv_range)
 
 /*
@@ -117,7 +118,7 @@ ENTRY(v6_dma_clean_range)
 	blo	1b
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c10, 4		@ drain write buffer
-	mov	pc, lr
+	ret	lr
 ENDPROC(v6_dma_clean_range)
 
 /*
@@ -139,5 +140,5 @@ ENTRY(v6_dma_flush_range)
 	blo	1b
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c10, 4		@ drain write buffer
-	mov	pc, lr
+	ret	lr
 ENDPROC(v6_dma_flush_range)

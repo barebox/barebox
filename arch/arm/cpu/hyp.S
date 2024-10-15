@@ -4,6 +4,7 @@
 #include <asm/system.h>
 #include <asm/opcodes-virt.h>
 #include <init.h>
+#include <asm/assembler.h>
 
 .arch_extension sec
 .arch_extension virt
@@ -80,7 +81,7 @@ THUMB(	orr	r12, r12, #PSR_T_BIT	)
 	__ERET
 1:	msr	cpsr_c, r12
 2:
-	mov	pc, r2
+	ret	r2
 ENDPROC(armv7_hyp_install)
 
 ENTRY(armv7_switch_to_hyp)

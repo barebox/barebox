@@ -17,6 +17,8 @@ void *__nokasan_default_memset(void *, int, __kernel_size_t);
 void *__default_memcpy(void * dest,const void *src,size_t count);
 void *__nokasan_default_memcpy(void * dest,const void *src,size_t count);
 
+void *__default_memmove(void * dest,const void *src,size_t count);
+
 char *parse_assignment(char *str);
 
 int strverscmp(const char *a, const char *b);

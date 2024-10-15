@@ -1,10 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-/* SPDX-FileCopyrightText: 2013 ARM Ltd. */
-/* SPDX-FileCopyrightText: 2013 Linaro */
-
 /*
+ * Copyright (C) 2013 ARM Ltd.
+ * Copyright (C) 2013 Linaro.
+ *
  * This code is based on glibc cortex strings work originally authored by Linaro
- * and re-licensed under GPLv2 for the Linux kernel. The original code can
  * be found @
  *
  * http://bazaar.launchpad.net/~linaro-toolchain-dev/cortex-strings/trunk/
@@ -13,6 +12,7 @@
 
 #include <linux/linkage.h>
 #include <asm/assembler.h>
+#include <asm/cache.h>
 
 /*
  * Fill in the buffer with character c (alignment handled by the hardware)
@@ -42,8 +42,7 @@ dst		.req	x8
 tmp3w		.req	w9
 tmp3		.req	x9
 
-	.weak memset
-ENTRY(__arch_memset)
+SYM_FUNC_START(__pi_memset)
 	mov	dst, dstin	/* Preserve return value.  */
 	and	A_lw, val, #255
 	orr	A_lw, A_lw, A_lw, lsl #8
@@ -115,6 +114,7 @@ ENTRY(__arch_memset)
 	* Critical loop. Start at a new cache line boundary. Assuming
 	* 64 bytes per line, this ensures the entire loop is in one line.
 	*/
+	.p2align	L1_CACHE_SHIFT
 .Lnot_short:
 	sub	dst, dst, #16/* Pre-bias.  */
 	sub	count, count, #64
@@ -201,4 +201,8 @@ ENTRY(__arch_memset)
 	ands	count, count, zva_bits_x
 	b.ne	.Ltail_maybe_long
 	ret
-ENDPROC(__arch_memset)
+SYM_FUNC_END(__pi_memset)
+
+SYM_FUNC_ALIAS(__arch_memset, __pi_memset)
+
+SYM_FUNC_ALIAS_WEAK(memset, __pi_memset)

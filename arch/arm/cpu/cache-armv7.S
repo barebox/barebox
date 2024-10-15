@@ -2,6 +2,7 @@
 
 #include <linux/linkage.h>
 #include <init.h>
+#include <asm/assembler.h>
 
 .section .text.v7_mmu_cache_on
 ENTRY(v7_mmu_cache_on)
@@ -140,7 +141,7 @@ iflush:
 		mcr	p15, 0, r12, c7, c5, 0	@ invalidate I+BTB
 		dsb
 		isb
-		mov	pc, lr
+		ret	lr
 ENDPROC(__v7_mmu_cache_flush_invalidate)
 
 /*
@@ -182,7 +183,7 @@ ENTRY(v7_dma_inv_range)
 	cmp	r0, r1
 	blo	1b
 	dsb
-	mov	pc, lr
+	ret	lr
 ENDPROC(v7_dma_inv_range)
 
 /*
@@ -201,7 +202,7 @@ ENTRY(v7_dma_clean_range)
 	cmp	r0, r1
 	blo	1b
 	dsb
-	mov	pc, lr
+	ret	lr
 ENDPROC(v7_dma_clean_range)
 
 /*
@@ -220,5 +221,5 @@ ENTRY(v7_dma_flush_range)
 	cmp	r0, r1
 	blo	1b
 	dsb
-	mov	pc, lr
+	ret	lr
 ENDPROC(v7_dma_flush_range)

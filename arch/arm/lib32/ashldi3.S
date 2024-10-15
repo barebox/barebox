@@ -23,6 +23,7 @@ General Public License for more details.
 */
 
 #include <linux/linkage.h>
+#include <asm/assembler.h>
 
 #ifdef __ARMEB__
 #define al r1
@@ -44,7 +45,7 @@ ENTRY(__aeabi_llsl)
  THUMB(	lsrmi	r3, al, ip		)
  THUMB(	orrmi	ah, ah, r3		)
 	mov	al, al, lsl r2
-	mov	pc, lr
+	ret	lr
 
 ENDPROC(__ashldi3)
 ENDPROC(__aeabi_llsl)

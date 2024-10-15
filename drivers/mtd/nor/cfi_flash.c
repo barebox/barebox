@@ -892,7 +892,7 @@ static int cfi_mtd_read(struct mtd_info *mtd, loff_t from, size_t len,
 {
 	struct flash_info *info = container_of(mtd, struct flash_info, mtd);
 
-	memcpy(buf, info->base + from, len);
+	memcpy_fromio(buf, info->base + from, len);
 	*retlen = len;
 
 	return 0;

@@ -666,7 +666,6 @@ void *mempcpy(void *dest, const void *src, size_t count)
 }
 EXPORT_SYMBOL(mempcpy);
 
-#ifndef __HAVE_ARCH_MEMMOVE
 /**
  * memmove - Copy one area of memory to another
  * @dest: Where to copy to
@@ -675,7 +674,7 @@ EXPORT_SYMBOL(mempcpy);
  *
  * Unlike memcpy(), memmove() copes with overlapping areas.
  */
-void * memmove(void * dest,const void *src,size_t count)
+void *__default_memmove(void * dest,const void *src,size_t count)
 {
 	char *tmp, *s;
 
@@ -694,8 +693,14 @@ void * memmove(void * dest,const void *src,size_t count)
 
 	return dest;
 }
+EXPORT_SYMBOL(__default_memmove);
+
+#ifndef __HAVE_ARCH_MEMMOVE
+void *memmove(void * dest, const void *src, size_t count)
+	__alias(__default_memmove);
+void *__memmove(void * dest, const void *src, size_t count)
+	__alias(__default_memmove);
 #endif
-EXPORT_SYMBOL(memmove);
 
 #ifndef __HAVE_ARCH_MEMCMP
 /**

@@ -61,14 +61,12 @@ static uint64_t *alloc_pte(void)
 }
 #endif
 
-static __maybe_unused uint64_t *find_pte(uint64_t addr)
+static uint64_t *__find_pte(uint64_t *ttb, uint64_t addr, int *level)
 {
-	uint64_t *pte;
+	uint64_t *pte = ttb;
 	uint64_t block_shift;
 	uint64_t idx;
 	int i;
-
-	pte = get_ttb();
 
 	for (i = 0; i < 4; i++) {
 		block_shift = level2shift(i);
@@ -81,7 +79,15 @@ static __maybe_unused uint64_t *find_pte(uint64_t addr)
 			pte = (uint64_t *)(*pte & XLAT_ADDR_MASK);
 	}
 
+	if (level)
+		*level = i;
 	return pte;
+}
+
+/* This is currently unused, but useful for debugging */
+static __maybe_unused uint64_t *find_pte(uint64_t addr)
+{
+	return __find_pte(get_ttb(), addr, NULL);
 }
 
 #define MAX_PTE_ENTRIES 512
@@ -166,6 +172,91 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 	tlb_invalidate();
 }
 
+static size_t granule_size(int level)
+{
+	switch (level) {
+	default:
+	case 0:
+		return L0_XLAT_SIZE;
+	case 1:
+		return L1_XLAT_SIZE;
+	case 2:
+		return L2_XLAT_SIZE;
+	case 3:
+		return L3_XLAT_SIZE;
+	}
+}
+
+static bool pte_is_cacheable(uint64_t pte)
+{
+	return (pte & PTE_ATTRINDX_MASK) == PTE_ATTRINDX(MT_NORMAL);
+}
+
+/**
+ * flush_cacheable_pages - Flush only the cacheable pages in a region
+ * @start: Starting virtual address of the range.
+ * @end:   Ending virtual address of the range.
+ *
+ * This function walks the page table and flushes the data caches for the
+ * specified range only if the memory is marked as normal cacheable in the
+ * page tables. If a non-cacheable or non-normal page is encountered,
+ * it's skipped.
+ */
+static void flush_cacheable_pages(void *start, size_t size)
+{
+	u64 flush_start = ~0ULL, flush_end = ~0ULL;
+	u64 region_start, region_end;
+	size_t block_size;
+	u64 *ttb;
+
+	region_start = PAGE_ALIGN_DOWN((ulong)start);
+	region_end = PAGE_ALIGN(region_start + size);
+
+	ttb = get_ttb();
+
+	/*
+	 * TODO: This loop could be made more optimal by inlining the page walk,
+	 * so we need not restart address translation from the top every time.
+	 *
+	 * The hope is that with the page tables being cached and the
+	 * windows being remapped being small, the overhead compared to
+	 * actually flushing the ranges isn't too significant.
+	 */
+	for (u64 addr = region_start; addr < region_end; addr += block_size) {
+		int level;
+		u64 *pte = __find_pte(ttb, addr, &level);
+
+		block_size = granule_size(level);
+		
+		if (!pte || !pte_is_cacheable(*pte))
+			continue;
+
+		if (flush_end == addr) {
+			/*
+			 * While it's safe to flush the whole block_size,
+			 * it's unnecessary time waste to go beyond region_end.
+			 */
+			flush_end = min(flush_end + block_size, region_end);
+			continue;
+		}
+
+		/*
+		 * We don't have a previous contiguous flush area to append to.
+		 * If we recorded any area before, let's flush it now
+		 */
+		if (flush_start != ~0ULL)
+			v8_flush_dcache_range(flush_start, flush_end);
+
+		/* and start the new contiguous flush area with this page */
+		flush_start = addr;
+		flush_end = min(flush_start + block_size, region_end);
+	}
+
+	/* The previous loop won't flush the last cached range, so do it here */
+	if (flush_start != ~0ULL)
+		v8_flush_dcache_range(flush_start, flush_end);
+}
+
 static unsigned long get_pte_attrs(unsigned flags)
 {
 	switch (flags) {
@@ -197,10 +288,10 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsign
 	if (attrs == ~0UL)
 		return -EINVAL;
 
-	create_sections((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs);
+	if (flags != MAP_CACHED)
+		flush_cacheable_pages(virt_addr, size);
 
-	if (flags == MAP_UNCACHED)
-		dma_inv_range(virt_addr, size);
+	create_sections((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs);
 
 	return 0;
 }

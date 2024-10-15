@@ -14,7 +14,7 @@ ENTRY(get_runtime_offset)
 	ldr r1, linkadr
 	subs r0, r0, r1
 THUMB(	adds r0, r0, #1)
-	mov pc, lr
+	ret lr
 
 linkadr:
 .word get_runtime_offset

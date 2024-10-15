@@ -299,14 +299,81 @@ static struct virtqueue *__vring_new_virtqueue(unsigned int index,
 	return vq;
 }
 
-static void *vring_alloc_queue(size_t size, dma_addr_t *dma_handle)
+/*
+ * Modern virtio devices have feature bits to specify whether they need a
+ * quirk and bypass the IOMMU. If not there, just use the DMA API.
+ *
+ * If there, the interaction between virtio and DMA API is messy.
+ *
+ * On most systems with virtio, physical addresses match bus addresses,
+ * and it _shouldn't_ particularly matter whether we use the DMA API.
+ *
+ * However, barebox' dma_alloc_coherent doesn't yet take a device pointer
+ * as argument, so even for dma-coherent devices, the virtqueue is mapped
+ * uncached on ARM. This has considerable impact on the Virt I/O performance,
+ * so we really want to avoid using the DMA API if possible for the time being.
+ *
+ * On some systems, including Xen and any system with a physical device
+ * that speaks virtio behind a physical IOMMU, we must use the DMA API
+ * for virtio DMA to work at all.
+ *
+ * On other systems, including SPARC and PPC64, virtio-pci devices are
+ * enumerated as though they are behind an IOMMU, but the virtio host
+ * ignores the IOMMU, so we must either pretend that the IOMMU isn't
+ * there or somehow map everything as the identity.
+ *
+ * For the time being, we preserve historic behavior and bypass the DMA
+ * API.
+ *
+ * TODO: install a per-device DMA ops structure that does the right thing
+ * taking into account all the above quirks, and use the DMA API
+ * unconditionally on data path.
+ */
+
+static bool vring_use_dma_api(const struct virtio_device *vdev)
 {
-	return dma_alloc_coherent(size, dma_handle);
+	return !virtio_has_dma_quirk(vdev);
 }
 
-static void vring_free_queue(size_t size, void *queue, dma_addr_t dma_handle)
+static void *vring_alloc_queue(struct virtio_device *vdev,
+			       size_t size, dma_addr_t *dma_handle)
 {
-	dma_free_coherent(queue, dma_handle, size);
+	if (vring_use_dma_api(vdev)) {
+		return dma_alloc_coherent(size, dma_handle);
+	} else {
+		void *queue = memalign(PAGE_SIZE, PAGE_ALIGN(size));
+
+		if (queue) {
+			phys_addr_t phys_addr = virt_to_phys(queue);
+			*dma_handle = (dma_addr_t)phys_addr;
+
+			/*
+			 * Sanity check: make sure we dind't truncate
+			 * the address.  The only arches I can find that
+			 * have 64-bit phys_addr_t but 32-bit dma_addr_t
+			 * are certain non-highmem MIPS and x86
+			 * configurations, but these configurations
+			 * should never allocate physical pages above 32
+			 * bits, so this is fine.  Just in case, throw a
+			 * warning and abort if we end up with an
+			 * unrepresentable address.
+			 */
+			if (WARN_ON_ONCE(*dma_handle != phys_addr)) {
+				free(queue);
+				return NULL;
+			}
+		}
+		return queue;
+	}
+}
+
+static void vring_free_queue(struct virtio_device *vdev,
+			     size_t size, void *queue, dma_addr_t dma_handle)
+{
+	if (vring_use_dma_api(vdev))
+		dma_free_coherent(queue, dma_handle, size);
+	else
+		free(queue);
 }
 
 struct virtqueue *vring_create_virtqueue(unsigned int index, unsigned int num,
@@ -327,7 +394,7 @@ struct virtqueue *vring_create_virtqueue(unsigned int index, unsigned int num,
 
 	/* TODO: allocate each queue chunk individually */
 	for (; num && vring_size(num, vring_align) > PAGE_SIZE; num /= 2) {
-		queue = vring_alloc_queue(vring_size(num, vring_align), &dma_addr);
+		queue = vring_alloc_queue(vdev, vring_size(num, vring_align), &dma_addr);
 		if (queue)
 			break;
 	}
@@ -337,7 +404,7 @@ struct virtqueue *vring_create_virtqueue(unsigned int index, unsigned int num,
 
 	if (!queue) {
 		/* Try to get a single page. You are my only hope! */
-		queue = vring_alloc_queue(vring_size(num, vring_align), &dma_addr);
+		queue = vring_alloc_queue(vdev, vring_size(num, vring_align), &dma_addr);
 	}
 	if (!queue)
 		return NULL;
@@ -347,7 +414,7 @@ struct virtqueue *vring_create_virtqueue(unsigned int index, unsigned int num,
 
 	vq = __vring_new_virtqueue(index, vring, vdev);
 	if (!vq) {
-		vring_free_queue(queue_size_in_bytes, queue, dma_addr);
+		vring_free_queue(vdev, queue_size_in_bytes, queue, dma_addr);
 		return NULL;
 	}
 	vq_debug(vq, "created vring @ (virt=%p, phys=%pad) for vq with num %u\n",
@@ -361,7 +428,8 @@ struct virtqueue *vring_create_virtqueue(unsigned int index, unsigned int num,
 
 void vring_del_virtqueue(struct virtqueue *vq)
 {
-	vring_free_queue(vq->queue_size_in_bytes, vq->vring.desc, vq->queue_dma_addr);
+	vring_free_queue(vq->vdev, vq->queue_size_in_bytes,
+			 vq->vring.desc, vq->queue_dma_addr);
 	list_del(&vq->list);
 	free(vq);
 }

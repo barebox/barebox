@@ -119,8 +119,8 @@ config MFD_ATMEL_FLEXCOM
 
 config MFD_RK808
 	tristate "Rockchip RK805/RK808/RK809/RK817/RK818 Power Management Chip"
-	depends on I2C && OFDEVICE
-	select REGMAP_I2C
+	depends on (I2C || SPI) && OFDEVICE
+	select REGMAP_I2C if I2C
 	help
 	  If you say yes here you get support for the RK805, RK808, RK809,
 	  RK817 and RK818 Power Management chips.

@@ -15,7 +15,7 @@
 #include <asm/io.h>
 #include <device.h>
 
-#define DMA_ADDRESS_BROKEN	NULL
+#define DMA_ADDRESS_BROKEN	((dma_addr_t *)NULL)
 
 #ifndef DMA_ALIGNMENT
 #define DMA_ALIGNMENT	32

@@ -484,18 +484,20 @@ struct dw_eth_dev *dwc_drv_probe(struct device *dev)
 	dwc_version(dev, readl(&priv->mac_regs_p->version));
 	priv->dma_regs_p = base + DW_DMA_BASE_OFFSET;
 
+	/* [tr]x_mac_descrtable_dev will be used by the [tr]x_dma_addr helpers */
+
 	priv->tx_mac_descrtable_cpu = dma_alloc_coherent(
 		CONFIG_TX_DESCR_NUM * sizeof(struct dmamacdescr),
 		&priv->tx_mac_descrtable_dev);
 
-	if (dma_mapping_error(dev, priv->tx_mac_descrtable_dev))
+	if (!priv->tx_mac_descrtable_cpu)
 		return ERR_PTR(-EFAULT);
 
 	priv->rx_mac_descrtable_cpu = dma_alloc_coherent(
 		CONFIG_RX_DESCR_NUM * sizeof(struct dmamacdescr),
 		&priv->rx_mac_descrtable_dev);
 
-	if (dma_mapping_error(dev, priv->rx_mac_descrtable_dev))
+	if (!priv->rx_mac_descrtable_cpu)
 		return ERR_PTR(-EFAULT);
 
 	priv->txbuffs = dma_alloc(TX_TOTAL_BUFSIZE);

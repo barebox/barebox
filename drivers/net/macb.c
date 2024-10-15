@@ -71,6 +71,7 @@ struct macb_device {
 	struct macb_dma_desc	*tx_ring;
 	dma_addr_t		tx_ring_phys;
 	struct macb_dma_desc	*gem_q1_descs;
+	dma_addr_t		gem_q1_descs_phys;
 
 	int			rx_buffer_size;
 	int			rx_ring_size;
@@ -367,7 +368,7 @@ static int gmac_init_dummy_tx_queues(struct macb_device *macb)
 	       &macb->gem_q1_descs[0].ctrl);
 
 	for (i = 1; i < num_queues; i++)
-		gem_writel_queue_TBQP(macb, (ulong)macb->gem_q1_descs, i - 1);
+		gem_writel_queue_TBQP(macb, macb->gem_q1_descs_phys, i - 1);
 
 	return 0;
 }
@@ -388,7 +389,7 @@ static int macb_init(struct macb_device *macb)
 		return -EFAULT;
 
 	/* initialize DMA descriptors */
-	paddr = (ulong)macb->rx_buffer;
+	paddr = macb->rx_buffer_phys;
 	for (i = 0; i < macb->rx_ring_size; i++) {
 		writel(paddr, &macb->rx_ring[i].addr);
 		writel(0, &macb->rx_ring[i].ctrl);
@@ -406,8 +407,8 @@ static int macb_init(struct macb_device *macb)
 
 	macb_configure_dma(macb);
 
-	macb_writel(macb, RBQP, (ulong)macb->rx_ring);
-	macb_writel(macb, TBQP, (ulong)macb->tx_ring);
+	macb_writel(macb, RBQP, macb->rx_ring_phys);
+	macb_writel(macb, TBQP, macb->tx_ring_phys);
 
 	if (macb->is_gem && macb->gem_q1_descs) {
 		gmac_init_dummy_tx_queues(macb);
@@ -903,8 +904,8 @@ static int macb_probe(struct device *dev)
 	macb->tx_ring = dma_alloc_coherent(TX_RING_BYTES, &macb->tx_ring_phys);
 
 	if (macb->is_gem)
-		macb->gem_q1_descs = dma_alloc_coherent(GEM_Q1_DESC_BYTES,
-				DMA_ADDRESS_BROKEN);
+		macb->gem_q1_descs = dma_alloc_coherent(
+				GEM_Q1_DESC_BYTES, &macb->gem_q1_descs_phys);
 
 	macb->rx_packet_buf = net_alloc_packet();
 

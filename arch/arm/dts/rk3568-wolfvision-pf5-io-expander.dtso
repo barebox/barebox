@@ -8,4 +8,4 @@
 /dts-v1/;
 /plugin/;
 
-#include "rk3568-wolfvision-pf5-io-expander-upstream.dtso"
+#include <arm64/rockchip/rk3568-wolfvision-pf5-io-expander.dtso>

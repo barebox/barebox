@@ -48,8 +48,7 @@ int wolfvision_apply_overlay(const struct wv_overlay *overlay, char **files)
 			return ret;
 		}
 
-		of_clk_init();
-		of_probe();
+		return 1;
 	}
 
 	return 0;
@@ -106,6 +105,7 @@ int wolfvision_rk3568_detect_hw(const struct wv_rk3568_extension *extensions,
 				int num_extensions, char **overlays)
 {
 	int i, hwid, ret;
+	bool do_of_probe = false;
 
 	ret = of_device_ensure_probed_by_alias("saradc");
 	if (ret)
@@ -130,11 +130,18 @@ int wolfvision_rk3568_detect_hw(const struct wv_rk3568_extension *extensions,
 		if (overlay->name) {
 			pr_info("Detected %s %s\n", overlay->name,
 				extension->name);
-			wolfvision_apply_overlay(overlay, overlays);
+			ret = wolfvision_apply_overlay(overlay, overlays);
+			if (ret > 0)
+				do_of_probe = true;
 		} else {
 			pr_warning("Detected unknown %s HWID %d\n",
 				   extension->name, hwid);
 		}
+	}
+
+	if (do_of_probe) {
+		of_clk_init();
+		of_probe();
 	}
 
 	return 0;

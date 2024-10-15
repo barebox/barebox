@@ -3,8 +3,8 @@
  * Copyright (C) 2011 Freescale Semiconductor, Inc.
  */
 
-#ifndef __IMX_HDMI_H__
-#define __IMX_HDMI_H__
+#ifndef __DW_HDMI_H__
+#define __DW_HDMI_H__
 
 /* Identification Registers */
 #define HDMI_DESIGN_ID                          0x0000
@@ -158,6 +158,17 @@
 #define HDMI_FC_SPDDEVICEINF                    0x1062
 #define HDMI_FC_AUDSCONF                        0x1063
 #define HDMI_FC_AUDSSTAT                        0x1064
+#define HDMI_FC_AUDSV                           0x1065
+#define HDMI_FC_AUDSU                           0x1066
+#define HDMI_FC_AUDSCHNLS0                       0x1067
+#define HDMI_FC_AUDSCHNLS1                       0x1068
+#define HDMI_FC_AUDSCHNLS2                       0x1069
+#define HDMI_FC_AUDSCHNLS3                       0x106A
+#define HDMI_FC_AUDSCHNLS4                       0x106B
+#define HDMI_FC_AUDSCHNLS5                       0x106C
+#define HDMI_FC_AUDSCHNLS6                       0x106D
+#define HDMI_FC_AUDSCHNLS7                       0x106E
+#define HDMI_FC_AUDSCHNLS8                       0x106F
 #define HDMI_FC_DATACH0FILL                     0x1070
 #define HDMI_FC_DATACH1FILL                     0x1071
 #define HDMI_FC_DATACH2FILL                     0x1072
@@ -251,6 +262,8 @@
 #define HDMI_FC_MASK2                           0x10DA
 #define HDMI_FC_POL2                            0x10DB
 #define HDMI_FC_PRCONF                          0x10E0
+#define HDMI_FC_SCRAMBLER_CTRL                  0x10E1
+#define HDMI_FC_PACKET_TX_EN                    0x10E3
 
 #define HDMI_FC_GMD_STAT                        0x1100
 #define HDMI_FC_GMD_EN                          0x1101
@@ -285,6 +298,37 @@
 #define HDMI_FC_GMD_PB25                        0x111E
 #define HDMI_FC_GMD_PB26                        0x111F
 #define HDMI_FC_GMD_PB27                        0x1120
+
+#define HDMI_FC_DRM_UP                          0x1167
+#define HDMI_FC_DRM_HB0                         0x1168
+#define HDMI_FC_DRM_HB1                         0x1169
+#define HDMI_FC_DRM_PB0                         0x116A
+#define HDMI_FC_DRM_PB1                         0x116B
+#define HDMI_FC_DRM_PB2                         0x116C
+#define HDMI_FC_DRM_PB3                         0x116D
+#define HDMI_FC_DRM_PB4                         0x116E
+#define HDMI_FC_DRM_PB5                         0x116F
+#define HDMI_FC_DRM_PB6                         0x1170
+#define HDMI_FC_DRM_PB7                         0x1171
+#define HDMI_FC_DRM_PB8                         0x1172
+#define HDMI_FC_DRM_PB9                         0x1173
+#define HDMI_FC_DRM_PB10                        0x1174
+#define HDMI_FC_DRM_PB11                        0x1175
+#define HDMI_FC_DRM_PB12                        0x1176
+#define HDMI_FC_DRM_PB13                        0x1177
+#define HDMI_FC_DRM_PB14                        0x1178
+#define HDMI_FC_DRM_PB15                        0x1179
+#define HDMI_FC_DRM_PB16                        0x117A
+#define HDMI_FC_DRM_PB17                        0x117B
+#define HDMI_FC_DRM_PB18                        0x117C
+#define HDMI_FC_DRM_PB19                        0x117D
+#define HDMI_FC_DRM_PB20                        0x117E
+#define HDMI_FC_DRM_PB21                        0x117F
+#define HDMI_FC_DRM_PB22                        0x1180
+#define HDMI_FC_DRM_PB23                        0x1181
+#define HDMI_FC_DRM_PB24                        0x1182
+#define HDMI_FC_DRM_PB25                        0x1183
+#define HDMI_FC_DRM_PB26                        0x1184
 
 #define HDMI_FC_DBGFORCE                        0x1200
 #define HDMI_FC_DBGAUD0CH0                      0x1201
@@ -474,54 +518,9 @@
 #define HDMI_A_PRESETUP                         0x501A
 #define HDMI_A_SRM_BASE                         0x5020
 
-/* CEC Engine Registers */
-#define HDMI_CEC_CTRL                           0x7D00
-#define HDMI_CEC_STAT                           0x7D01
-#define HDMI_CEC_MASK                           0x7D02
-#define HDMI_CEC_POLARITY                       0x7D03
-#define HDMI_CEC_INT                            0x7D04
-#define HDMI_CEC_ADDR_L                         0x7D05
-#define HDMI_CEC_ADDR_H                         0x7D06
-#define HDMI_CEC_TX_CNT                         0x7D07
-#define HDMI_CEC_RX_CNT                         0x7D08
-#define HDMI_CEC_TX_DATA0                       0x7D10
-#define HDMI_CEC_TX_DATA1                       0x7D11
-#define HDMI_CEC_TX_DATA2                       0x7D12
-#define HDMI_CEC_TX_DATA3                       0x7D13
-#define HDMI_CEC_TX_DATA4                       0x7D14
-#define HDMI_CEC_TX_DATA5                       0x7D15
-#define HDMI_CEC_TX_DATA6                       0x7D16
-#define HDMI_CEC_TX_DATA7                       0x7D17
-#define HDMI_CEC_TX_DATA8                       0x7D18
-#define HDMI_CEC_TX_DATA9                       0x7D19
-#define HDMI_CEC_TX_DATA10                      0x7D1a
-#define HDMI_CEC_TX_DATA11                      0x7D1b
-#define HDMI_CEC_TX_DATA12                      0x7D1c
-#define HDMI_CEC_TX_DATA13                      0x7D1d
-#define HDMI_CEC_TX_DATA14                      0x7D1e
-#define HDMI_CEC_TX_DATA15                      0x7D1f
-#define HDMI_CEC_RX_DATA0                       0x7D20
-#define HDMI_CEC_RX_DATA1                       0x7D21
-#define HDMI_CEC_RX_DATA2                       0x7D22
-#define HDMI_CEC_RX_DATA3                       0x7D23
-#define HDMI_CEC_RX_DATA4                       0x7D24
-#define HDMI_CEC_RX_DATA5                       0x7D25
-#define HDMI_CEC_RX_DATA6                       0x7D26
-#define HDMI_CEC_RX_DATA7                       0x7D27
-#define HDMI_CEC_RX_DATA8                       0x7D28
-#define HDMI_CEC_RX_DATA9                       0x7D29
-#define HDMI_CEC_RX_DATA10                      0x7D2a
-#define HDMI_CEC_RX_DATA11                      0x7D2b
-#define HDMI_CEC_RX_DATA12                      0x7D2c
-#define HDMI_CEC_RX_DATA13                      0x7D2d
-#define HDMI_CEC_RX_DATA14                      0x7D2e
-#define HDMI_CEC_RX_DATA15                      0x7D2f
-#define HDMI_CEC_LOCK                           0x7D30
-#define HDMI_CEC_WKUPCTRL                       0x7D31
-
 /* I2C Master Registers (E-DDC) */
 #define HDMI_I2CM_SLAVE                         0x7E00
-#define HDMI_I2CMESS                            0x7E01
+#define HDMI_I2CM_ADDRESS                       0x7E01
 #define HDMI_I2CM_DATAO                         0x7E02
 #define HDMI_I2CM_DATAI                         0x7E03
 #define HDMI_I2CM_OPERATION                     0x7E04
@@ -541,6 +540,25 @@
 #define HDMI_I2CM_FS_SCL_LCNT_0_ADDR            0x7E12
 
 enum {
+/* PRODUCT_ID0 field values */
+	HDMI_PRODUCT_ID0_HDMI_TX = 0xa0,
+
+/* PRODUCT_ID1 field values */
+	HDMI_PRODUCT_ID1_HDCP = 0xc0,
+	HDMI_PRODUCT_ID1_HDMI_RX = 0x02,
+	HDMI_PRODUCT_ID1_HDMI_TX = 0x01,
+
+/* CONFIG0_ID field values */
+	HDMI_CONFIG0_I2S = 0x10,
+	HDMI_CONFIG0_CEC = 0x02,
+
+/* CONFIG1_ID field values */
+	HDMI_CONFIG1_AHB = 0x01,
+
+/* CONFIG3_ID field values */
+	HDMI_CONFIG3_AHBAUDDMA = 0x02,
+	HDMI_CONFIG3_GPAUD = 0x01,
+
 /* IH_FC_INT2 field values */
 	HDMI_IH_FC_INT2_OVERFLOW_MASK = 0x03,
 	HDMI_IH_FC_INT2_LOW_PRIORITY_OVERFLOW = 0x02,
@@ -558,6 +576,10 @@ enum {
 	HDMI_IH_PHY_STAT0_RX_SENSE0 = 0x4,
 	HDMI_IH_PHY_STAT0_TX_PHY_LOCK = 0x2,
 	HDMI_IH_PHY_STAT0_HPD = 0x1,
+
+/* IH_I2CM_STAT0 and IH_MUTE_I2CM_STAT0 field values */
+	HDMI_IH_I2CM_STAT0_DONE = 0x2,
+	HDMI_IH_I2CM_STAT0_ERROR = 0x1,
 
 /* IH_MUTE_I2CMPHY_STAT0 field values */
 	HDMI_IH_MUTE_I2CMPHY_STAT0_I2CMPHYDONE = 0x2,
@@ -763,6 +785,11 @@ enum {
 	HDMI_FC_PRCONF_OUTPUT_PR_FACTOR_MASK = 0x0F,
 	HDMI_FC_PRCONF_OUTPUT_PR_FACTOR_OFFSET = 0,
 
+/* FC_PACKET_TX_EN field values */
+	HDMI_FC_PACKET_TX_EN_DRM_MASK = 0x80,
+	HDMI_FC_PACKET_TX_EN_DRM_ENABLE = 0x80,
+	HDMI_FC_PACKET_TX_EN_DRM_DISABLE = 0x00,
+
 /* FC_AVICONF0-FC_AVICONF3 field values */
 	HDMI_FC_AVICONF0_PIX_FMT_MASK = 0x03,
 	HDMI_FC_AVICONF0_PIX_FMT_RGB = 0x00,
@@ -828,13 +855,20 @@ enum {
 	HDMI_FC_DBGFORCE_FORCEAUDIO = 0x10,
 	HDMI_FC_DBGFORCE_FORCEVIDEO = 0x1,
 
+/* FC_DATAUTO0 field values */
+	HDMI_FC_DATAUTO0_VSD_MASK = 0x08,
+	HDMI_FC_DATAUTO0_VSD_OFFSET = 3,
+
+/* FC_DATAUTO3 field values */
+	HDMI_FC_DATAUTO3_GCP_AUTO = 0x04,
+
 /* PHY_CONF0 field values */
 	HDMI_PHY_CONF0_PDZ_MASK = 0x80,
 	HDMI_PHY_CONF0_PDZ_OFFSET = 7,
 	HDMI_PHY_CONF0_ENTMDS_MASK = 0x40,
 	HDMI_PHY_CONF0_ENTMDS_OFFSET = 6,
-	HDMI_PHY_CONF0_SPARECTRL_MASK = 0x20,
-	HDMI_PHY_CONF0_SPARECTRL_OFFSET = 5,
+	HDMI_PHY_CONF0_SVSRET_MASK = 0x20,
+	HDMI_PHY_CONF0_SVSRET_OFFSET = 5,
 	HDMI_PHY_CONF0_GEN2_PDDQ_MASK = 0x10,
 	HDMI_PHY_CONF0_GEN2_PDDQ_OFFSET = 4,
 	HDMI_PHY_CONF0_GEN2_TXPWRON_MASK = 0x8,
@@ -880,6 +914,23 @@ enum {
 	HDMI_PHY_I2CM_CTLINT_ADDR_ARBITRATION_POL = 0x08,
 	HDMI_PHY_I2CM_CTLINT_ADDR_ARBITRATION_MASK = 0x04,
 
+/* AUD_CONF0 field values */
+	HDMI_AUD_CONF0_SW_RESET = 0x80,
+	HDMI_AUD_CONF0_I2S_SELECT = 0x20,
+	HDMI_AUD_CONF0_I2S_EN3 = 0x08,
+	HDMI_AUD_CONF0_I2S_EN2 = 0x04,
+	HDMI_AUD_CONF0_I2S_EN1 = 0x02,
+	HDMI_AUD_CONF0_I2S_EN0 = 0x01,
+
+/* AUD_CONF1 field values */
+	HDMI_AUD_CONF1_MODE_I2S = 0x00,
+	HDMI_AUD_CONF1_MODE_RIGHT_J = 0x20,
+	HDMI_AUD_CONF1_MODE_LEFT_J = 0x40,
+	HDMI_AUD_CONF1_MODE_BURST_1 = 0x60,
+	HDMI_AUD_CONF1_MODE_BURST_2 = 0x80,
+	HDMI_AUD_CONF1_WIDTH_16 = 0x10,
+	HDMI_AUD_CONF1_WIDTH_24 = 0x18,
+
 /* AUD_CTS3 field values */
 	HDMI_AUD_CTS3_N_SHIFT_OFFSET = 5,
 	HDMI_AUD_CTS3_N_SHIFT_MASK = 0xe0,
@@ -893,6 +944,12 @@ enum {
 	   from our part. Can't set it, will read as 0. */
 	HDMI_AUD_CTS3_CTS_MANUAL = 0x10,
 	HDMI_AUD_CTS3_AUDCTS19_16_MASK = 0x0f,
+
+/* HDMI_AUD_INPUTCLKFS field values */
+	HDMI_AUD_INPUTCLKFS_128FS = 0,
+	HDMI_AUD_INPUTCLKFS_256FS = 1,
+	HDMI_AUD_INPUTCLKFS_512FS = 2,
+	HDMI_AUD_INPUTCLKFS_64FS = 4,
 
 /* AHB_DMA_CONF0 field values */
 	HDMI_AHB_DMA_CONF0_SW_FIFO_RST_OFFSET = 7,
@@ -938,6 +995,7 @@ enum {
 	HDMI_MC_CLKDIS_PIXELCLK_DISABLE = 0x1,
 
 /* MC_SWRSTZ field values */
+	HDMI_MC_SWRSTZ_I2SSWRST_REQ = 0x08,
 	HDMI_MC_SWRSTZ_TMDSSWRST_REQ = 0x02,
 
 /* MC_FLOWCTRL field values */
@@ -946,8 +1004,7 @@ enum {
 	HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS = 0x0,
 
 /* MC_PHYRSTZ field values */
-	HDMI_MC_PHYRSTZ_ASSERT = 0x0,
-	HDMI_MC_PHYRSTZ_DEASSERT = 0x1,
+	HDMI_MC_PHYRSTZ_PHYRSTZ = 0x01,
 
 /* MC_HEACPHY_RST field values */
 	HDMI_MC_HEACPHY_RST_ASSERT = 0x1,
@@ -1025,5 +1082,87 @@ enum {
 	HDMI_A_VIDPOLCFG_HSYNCPOL_MASK = 0x2,
 	HDMI_A_VIDPOLCFG_HSYNCPOL_ACTIVE_HIGH = 0x2,
 	HDMI_A_VIDPOLCFG_HSYNCPOL_ACTIVE_LOW = 0x0,
+
+/* I2CM_OPERATION field values */
+	HDMI_I2CM_OPERATION_WRITE = 0x10,
+	HDMI_I2CM_OPERATION_READ_EXT = 0x2,
+	HDMI_I2CM_OPERATION_READ = 0x1,
+
+/* I2CM_INT field values */
+	HDMI_I2CM_INT_DONE_POL = 0x8,
+	HDMI_I2CM_INT_DONE_MASK = 0x4,
+
+/* I2CM_CTLINT field values */
+	HDMI_I2CM_CTLINT_NAC_POL = 0x80,
+	HDMI_I2CM_CTLINT_NAC_MASK = 0x40,
+	HDMI_I2CM_CTLINT_ARB_POL = 0x8,
+	HDMI_I2CM_CTLINT_ARB_MASK = 0x4,
 };
-#endif /* __IMX_HDMI_H__ */
+
+/*
+ * HDMI 3D TX PHY registers
+ */
+#define HDMI_3D_TX_PHY_PWRCTRL			0x00
+#define HDMI_3D_TX_PHY_SERDIVCTRL		0x01
+#define HDMI_3D_TX_PHY_SERCKCTRL		0x02
+#define HDMI_3D_TX_PHY_SERCKKILLCTRL		0x03
+#define HDMI_3D_TX_PHY_TXRESCTRL		0x04
+#define HDMI_3D_TX_PHY_CKCALCTRL		0x05
+#define HDMI_3D_TX_PHY_CPCE_CTRL		0x06
+#define HDMI_3D_TX_PHY_TXCLKMEASCTRL		0x07
+#define HDMI_3D_TX_PHY_TXMEASCTRL		0x08
+#define HDMI_3D_TX_PHY_CKSYMTXCTRL		0x09
+#define HDMI_3D_TX_PHY_CMPSEQCTRL		0x0a
+#define HDMI_3D_TX_PHY_CMPPWRCTRL		0x0b
+#define HDMI_3D_TX_PHY_CMPMODECTRL		0x0c
+#define HDMI_3D_TX_PHY_MEASCTRL			0x0d
+#define HDMI_3D_TX_PHY_VLEVCTRL			0x0e
+#define HDMI_3D_TX_PHY_D2ACTRL			0x0f
+#define HDMI_3D_TX_PHY_CURRCTRL			0x10
+#define HDMI_3D_TX_PHY_DRVANACTRL		0x11
+#define HDMI_3D_TX_PHY_PLLMEASCTRL		0x12
+#define HDMI_3D_TX_PHY_PLLPHBYCTRL		0x13
+#define HDMI_3D_TX_PHY_GRP_CTRL			0x14
+#define HDMI_3D_TX_PHY_GMPCTRL			0x15
+#define HDMI_3D_TX_PHY_MPLLMEASCTRL		0x16
+#define HDMI_3D_TX_PHY_MSM_CTRL			0x17
+#define HDMI_3D_TX_PHY_SCRPB_STATUS		0x18
+#define HDMI_3D_TX_PHY_TXTERM			0x19
+#define HDMI_3D_TX_PHY_PTRPT_ENBL		0x1a
+#define HDMI_3D_TX_PHY_PATTERNGEN		0x1b
+#define HDMI_3D_TX_PHY_SDCAP_MODE		0x1c
+#define HDMI_3D_TX_PHY_SCOPEMODE		0x1d
+#define HDMI_3D_TX_PHY_DIGTXMODE		0x1e
+#define HDMI_3D_TX_PHY_STR_STATUS		0x1f
+#define HDMI_3D_TX_PHY_SCOPECNT0		0x20
+#define HDMI_3D_TX_PHY_SCOPECNT1		0x21
+#define HDMI_3D_TX_PHY_SCOPECNT2		0x22
+#define HDMI_3D_TX_PHY_SCOPECNTCLK		0x23
+#define HDMI_3D_TX_PHY_SCOPESAMPLE		0x24
+#define HDMI_3D_TX_PHY_SCOPECNTMSB01		0x25
+#define HDMI_3D_TX_PHY_SCOPECNTMSB2CK		0x26
+
+/* HDMI_3D_TX_PHY_CKCALCTRL values */
+#define HDMI_3D_TX_PHY_CKCALCTRL_OVERRIDE		BIT(15)
+
+/* HDMI_3D_TX_PHY_MSM_CTRL values */
+#define HDMI_3D_TX_PHY_MSM_CTRL_MPLL_PH_SEL_CK		BIT(13)
+#define HDMI_3D_TX_PHY_MSM_CTRL_CKO_SEL_CLK_REF_MPLL	(0 << 1)
+#define HDMI_3D_TX_PHY_MSM_CTRL_CKO_SEL_OFF		(1 << 1)
+#define HDMI_3D_TX_PHY_MSM_CTRL_CKO_SEL_PCLK		(2 << 1)
+#define HDMI_3D_TX_PHY_MSM_CTRL_CKO_SEL_FB_CLK		(3 << 1)
+#define HDMI_3D_TX_PHY_MSM_CTRL_SCOPE_CK_SEL		BIT(0)
+
+/* HDMI_3D_TX_PHY_PTRPT_ENBL values */
+#define HDMI_3D_TX_PHY_PTRPT_ENBL_OVERRIDE		BIT(15)
+#define HDMI_3D_TX_PHY_PTRPT_ENBL_PG_SKIP_BIT2		BIT(8)
+#define HDMI_3D_TX_PHY_PTRPT_ENBL_PG_SKIP_BIT1		BIT(7)
+#define HDMI_3D_TX_PHY_PTRPT_ENBL_PG_SKIP_BIT0		BIT(6)
+#define HDMI_3D_TX_PHY_PTRPT_ENBL_CK_REF_ENB		BIT(5)
+#define HDMI_3D_TX_PHY_PTRPT_ENBL_RCAL_ENB		BIT(4)
+#define HDMI_3D_TX_PHY_PTRPT_ENBL_TX_CLK_ALIGN_ENB	BIT(3)
+#define HDMI_3D_TX_PHY_PTRPT_ENBL_TX_READY		BIT(2)
+#define HDMI_3D_TX_PHY_PTRPT_ENBL_CKO_WORD_ENB		BIT(1)
+#define HDMI_3D_TX_PHY_PTRPT_ENBL_REFCLK_ENB		BIT(0)
+
+#endif /* __DW_HDMI_H__ */

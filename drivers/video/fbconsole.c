@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
+
+#define pr_fmt(fmt)     "fbconsole: " fmt
+
 #include <common.h>
 #include <errno.h>
 #include <malloc.h>
@@ -13,6 +16,20 @@ enum state_t {
 	ESC,				/* Start of escape sequence */
 	CSI,				/* Reading arguments in "CSI Pn ;...*/
 	CSI_CNT,
+};
+
+enum fbconsole_rotation {
+	FBCONSOLE_ROTATE_0,
+	FBCONSOLE_ROTATE_90,
+	FBCONSOLE_ROTATE_180,
+	FBCONSOLE_ROTATE_270,
+};
+
+static const char * const rotation_names[] = {
+	[FBCONSOLE_ROTATE_0] = "0",
+	[FBCONSOLE_ROTATE_90] = "90",
+	[FBCONSOLE_ROTATE_180] = "180",
+	[FBCONSOLE_ROTATE_270] = "270",
 };
 
 struct fbc_priv {
@@ -35,6 +52,7 @@ struct fbc_priv {
 	unsigned int cols, rows;
 	unsigned int x, y; /* cursor position */
 
+	unsigned int rotation;
 	enum state_t state;
 
 	int color;
@@ -121,6 +139,10 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	int line_length;
 	u32 color, bgcolor;
 	struct rgb *rgb;
+	int xstep;
+	int ystep;
+	int startx;
+	int starty;
 
 	buf = gui_screen_render_buffer(priv->sc);
 
@@ -139,14 +161,45 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	color = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
 
 	rgb = &colors[bgcolor];
-	bgcolor = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
+	bgcolor = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0x0);
+
+	adr = buf;
+
+	switch (priv->rotation) {
+	case FBCONSOLE_ROTATE_0:
+		xstep = bpp;
+		ystep = line_length;
+		startx = x * priv->font->width;
+		starty = y * priv->font->height;
+		break;
+	case FBCONSOLE_ROTATE_90:
+		xstep = line_length;
+		ystep = -bpp;
+		startx = (priv->rows - y) * priv->font->height - 1;
+		starty = x * priv->font->width;
+		break;
+	case FBCONSOLE_ROTATE_180:
+		xstep = -bpp;
+		ystep = -line_length;
+		startx = (priv->cols - x) * priv->font->width - 1;
+		starty = (priv->rows - y) * priv->font->height - 1;
+		break;
+	case FBCONSOLE_ROTATE_270:
+		xstep = -line_length;
+		ystep = bpp;
+		startx = priv->font->height * y;
+		starty = (priv->cols - x) * priv->font->width - 1;
+		break;
+	default:
+		return;
+	}
+
+	adr += (priv->margin.left + startx) * bpp;
+	adr += (priv->margin.top + starty) * line_length;
 
 	for (i = 0; i < priv->font->height; i++) {
 		uint8_t mask = 0x80;
 		int j;
-
-		adr = buf + line_length * (priv->margin.top + y * priv->font->height + i) +
-		      (priv->margin.left + x * priv->font->width) * bpp;
 
 		for (j = 0; j < priv->font->width; j++) {
 			if (!mask) {
@@ -155,38 +208,225 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 			}
 
 			if (*inbuf & mask)
-				gu_set_pixel(priv->fb, adr, color);
+				gu_set_pixel(priv->fb, adr + j * xstep, color);
 			else
-				gu_set_pixel(priv->fb, adr, bgcolor);
+				gu_set_pixel(priv->fb, adr + j * xstep, bgcolor);
 
-			adr += priv->fb->bits_per_pixel >> 3;
 			mask >>= 1;
 
 		}
+
+		adr += ystep;
 
 		inbuf++;
 		mask = 0x80;
 	}
 }
 
+static void fb_blit_area(struct fbc_priv *priv, int x, int y)
+{
+	int startx, starty, width, height, fw, fh;
+	int mx, my;
+
+	mx = priv->margin.left;
+	my = priv->margin.top;
+
+	fw = priv->font->width;
+	fh = priv->font->height;
+
+	switch (priv->rotation) {
+	case FBCONSOLE_ROTATE_0:
+		startx = mx + x * fw;
+		starty = my + y * fh;
+		width = fw;
+		height = fh;
+		break;
+	case FBCONSOLE_ROTATE_90:
+		startx = mx + (priv->rows - y - 1) * fh;
+		starty = my + x * fw;
+		width = fh;
+		height = fw;
+		break;
+	case FBCONSOLE_ROTATE_180:
+		startx = mx + (priv->cols - x - 1) * fw;
+		starty = my + (priv->rows - y - 1) * fh;
+		width = fw;
+		height = fh;
+		break;
+	case FBCONSOLE_ROTATE_270:
+		startx = mx + y * fh;
+		starty = my + (priv->cols - x - 1) * fw;
+		width = fh;
+		height = fw;
+		break;
+	default:
+		return;
+	}
+
+	gu_screen_blit_area(priv->sc, startx, starty, width, height);
+}
+
 static void video_invertchar(struct fbc_priv *priv, int x, int y)
 {
+	int startx, starty, width, height, fw, fh;
 	void *buf;
 
 	buf = gui_screen_render_buffer(priv->sc);
+	buf += priv->margin.top * priv->fb->line_length;
+	buf += priv->margin.left * (priv->fb->bits_per_pixel >> 3);
 
-	gu_invert_area(priv->fb, buf, priv->margin.left + x * priv->font->width,
-			priv->margin.top + y * priv->font->height,
-			priv->font->width, priv->font->height);
-	gu_screen_blit_area(priv->sc, priv->margin.left + x * priv->font->width,
-			priv->margin.top + y * priv->font->height,
-			priv->font->width, priv->font->height);
+	fw = priv->font->width;
+	fh = priv->font->height;
+
+	switch (priv->rotation) {
+	case FBCONSOLE_ROTATE_0:
+		startx = x * fw;
+		starty = y * fh;
+		width = fw;
+		height = fh;
+		break;
+	case FBCONSOLE_ROTATE_90:
+		startx = (priv->rows - y - 1) * fh;
+		starty = x * fw;
+		width = fh;
+		height = fw;
+		break;
+	case FBCONSOLE_ROTATE_180:
+		startx = (priv->cols - x - 1) * fw;
+		starty = (priv->rows - y - 1) * fh;
+		width = fw;
+		height = fh;
+		break;
+	case FBCONSOLE_ROTATE_270:
+		startx = y * fh;
+		starty = (priv->cols - x - 1) * fw;
+		width = fh;
+		height = fw;
+		break;
+	default:
+		return;
+	}
+
+	gu_invert_area(priv->fb, buf, startx, starty, width, height);
+	fb_blit_area(priv, x, y);
 }
 
 static void show_cursor(struct fbc_priv *priv, int x, int y)
 {
 	if (!(priv->flags & HIDE_CURSOR))
 		video_invertchar(priv, x, y);
+}
+
+static void fb_scroll_up_0(struct fbc_priv *priv, void *adr, int width, int height)
+{
+	u32 line_length = priv->fb->line_length;
+	int line_height = line_length * priv->font->height;
+
+	if (!priv->margin.left && !priv->margin.right) {
+		memcpy(adr, adr + line_height, line_height * (priv->rows - 1));
+		memset(adr + line_height * (priv->rows - 1), 0, line_height);
+	} else {
+		int bpp = priv->fb->bits_per_pixel >> 3;
+		int y;
+
+		for (y = 0; y < height - priv->font->height; y++) {
+			memcpy(adr, adr + line_height, width * bpp);
+			adr += line_length;
+		}
+
+		for (y = height - priv->font->height; y < height; y++) {
+			memset(adr, 0, width * bpp);
+			adr += line_length;
+		}
+	}
+}
+
+static void fb_scroll_up_180(struct fbc_priv *priv, void *adr, int width, int height)
+{
+	u32 line_length = priv->fb->line_length;
+	int line_height = line_length * priv->font->height;
+
+	if (!priv->margin.left && !priv->margin.right) {
+		memmove(adr + line_height, adr, line_height * (priv->rows - 1));
+		memset(adr, 0, line_height);
+	} else {
+		int bpp = priv->fb->bits_per_pixel >> 3;
+		int y;
+
+		adr += (height - 1) * line_length;
+
+		for (y = height; y > priv->font->height; y--) {
+			memcpy(adr, adr - line_height, width * bpp);
+			adr -= line_length;
+		}
+
+		for (y = 0; y < priv->font->height; y++) {
+			memset(adr, 0, width * bpp);
+			adr -= line_length;
+		}
+	}
+}
+
+static void fb_scroll_up_90(struct fbc_priv *priv, void *adr, int width, int height)
+{
+	u32 line_length = priv->fb->line_length;
+	int bpp = priv->fb->bits_per_pixel >> 3;
+	int y;
+
+	for (y = 0; y < priv->cols * priv->font->width; y++) {
+		memmove(adr + priv->font->height * bpp,
+			adr,
+			(priv->rows - 1) * priv->font->height * bpp);
+		memset(adr, 0, priv->font->height * bpp);
+		adr += line_length;
+	}
+}
+
+static void fb_scroll_up_270(struct fbc_priv *priv, void *adr, int width, int height)
+{
+	u32 line_length = priv->fb->line_length;
+	int bpp = priv->fb->bits_per_pixel >> 3;
+	int y;
+
+	for (y = 0; y < priv->cols * priv->font->width; y++) {
+		memmove(adr,
+			adr + priv->font->height * bpp,
+			(priv->rows - 1) * priv->font->height * bpp);
+		memset(adr + priv->font->height * bpp * (priv->rows - 1),
+		       0x0,
+		       priv->font->height * bpp);
+		adr += line_length;
+	}
+}
+
+static void fb_scroll_up(struct fbc_priv *priv)
+{
+	int width = priv->fb->xres - priv->margin.left - priv->margin.right;
+	int height = priv->fb->yres - priv->margin.top - priv->margin.bottom;
+	int bpp = priv->fb->bits_per_pixel >> 3;
+	void *adr;
+
+	adr = gui_screen_render_buffer(priv->sc);
+	adr += priv->margin.top * priv->fb->line_length;
+	adr += priv->margin.left * bpp;
+
+	switch (priv->rotation) {
+	case FBCONSOLE_ROTATE_0:
+		fb_scroll_up_0(priv, adr, width, height);
+		break;
+	case FBCONSOLE_ROTATE_90:
+		fb_scroll_up_90(priv, adr, width, height);
+		break;
+	case FBCONSOLE_ROTATE_180:
+		fb_scroll_up_180(priv, adr, width, height);
+		break;
+	case FBCONSOLE_ROTATE_270:
+		fb_scroll_up_270(priv, adr, width, height);
+		break;
+	}
+
+	gu_screen_blit_area(priv->sc, priv->margin.left, priv->margin.top,
+			    width, height);
 }
 
 static void printchar(struct fbc_priv *priv, int c)
@@ -200,7 +440,7 @@ static void printchar(struct fbc_priv *priv, int c)
 		if (priv->x > 0) {
 			priv->x--;
 		} else if (priv->y > 0) {
-			priv->x = priv->cols;
+			priv->x = priv->cols - 1;
 			priv->y--;
 		}
 		break;
@@ -219,52 +459,18 @@ static void printchar(struct fbc_priv *priv, int c)
 
 	default:
 		drawchar(priv, priv->x, priv->y, c);
-
-		gu_screen_blit_area(priv->sc,
-				priv->margin.left + priv->x * priv->font->width,
-				priv->margin.top + priv->y * priv->font->height,
-				priv->font->width, priv->font->height);
+		fb_blit_area(priv, priv->x, priv->y);
 
 		priv->x++;
-		if (priv->x > priv->cols) {
+		if (priv->x >= priv->cols) {
 			priv->y++;
 			priv->x = 0;
 		}
 	}
 
-	if (priv->y > priv->rows) {
-		void *buf;
-		void *adr;
-		u32 line_length = priv->fb->line_length;
-		int line_height = line_length * priv->font->height;
-		int width = priv->fb->xres - priv->margin.left - priv->margin.right;
-		int height = (priv->rows + 1) * priv->font->height;
-
-		buf = gui_screen_render_buffer(priv->sc);
-		adr = buf + priv->margin.top * line_length;
-
-		if (!priv->margin.left && !priv->margin.right) {
-			memcpy(adr, adr + line_height, line_height * priv->rows);
-			memset(adr + line_height * priv->rows, 0, line_height);
-		} else {
-			int bpp = priv->fb->bits_per_pixel >> 3;
-			int y;
-
-			adr += priv->margin.left * bpp;
-
-			for (y = 0; y < height - priv->font->height; y++) {
-				memcpy(adr, adr + line_height, width * bpp);
-				adr += line_length;
-			}
-			for (y = height - priv->font->height; y < height; y++) {
-				memset(adr, 0, width * bpp);
-				adr += line_length;
-			}
-		}
-
-		gu_screen_blit_area(priv->sc, priv->margin.left, priv->margin.top,
-				width, height);
-		priv->y = priv->rows;
+	if (priv->y >= priv->rows) {
+		fb_scroll_up(priv);
+		priv->y = priv->rows - 1;
 	}
 
 	show_cursor(priv, priv->x, priv->y);
@@ -364,10 +570,10 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		show_cursor(priv, priv->x, priv->y);
 
 		pos = simple_strtoul(priv->csi, &end, 10);
-		priv->y = clamp(pos - 1, 0, (int) priv->rows);
+		priv->y = clamp(pos - 1, 0, (int) priv->rows - 1);
 
 		pos = simple_strtoul(end + 1, NULL, 10);
-		priv->x = clamp(pos - 1, 0, (int) priv->cols);
+		priv->x = clamp(pos - 1, 0, (int) priv->cols - 1);
 
 		show_cursor(priv, priv->x, priv->y);
 	case 'K':
@@ -469,8 +675,18 @@ static int setup_font(struct fbc_priv *priv)
 
 	priv->font = font;
 
-	priv->rows = height / priv->font->height - 1;
-	priv->cols = width / priv->font->width - 1;
+	switch (priv->rotation) {
+	case FBCONSOLE_ROTATE_0:
+	case FBCONSOLE_ROTATE_180:
+		priv->rows = height / priv->font->height;
+		priv->cols = width / priv->font->width;
+		break;
+	case FBCONSOLE_ROTATE_90:
+	case FBCONSOLE_ROTATE_270:
+		priv->rows = width / priv->font->height;
+		priv->cols = height / priv->font->width;
+		break;
+	}
 
 	return 0;
 }
@@ -495,7 +711,7 @@ static int fbc_open(struct console_device *cdev)
 	priv->state = LIT;
 
 	dev_info(priv->cdev.dev, "framebuffer console %dx%d activated\n",
-		priv->cols + 1, priv->rows + 1);
+		priv->cols, priv->rows);
 
 	priv->active = true;
 
@@ -559,13 +775,40 @@ static int set_margin(struct param_d *p, void *vpriv)
 	return 0;
 }
 
+static int set_rotation(struct param_d *p, void *vpriv)
+{
+	struct fbc_priv *priv = vpriv;
+
+	cls(priv);
+	priv->x = 0;
+	priv->y = 0;
+	setup_font(priv);
+
+	return 0;
+}
+
 int register_fbconsole(struct fb_info *fb)
 {
 	struct fbc_priv *priv;
 	struct console_device *cdev;
 	int ret;
+	const char *fbname;
 
 	priv = xzalloc(sizeof(*priv));
+
+	/*
+	 * fbconsoles are usually just numbered and happen to use the same
+	 * number as the fb they are registered on, so we have a nice match.
+	 * With overlays we can also have fb names like fb0_0 (for the first
+	 * overlay on fb0), and we want to have this name in the corresponding
+	 * fbconsole. Skip the "fb" though to keep the existing fbconsole name
+	 * for the non overlay framebuffers for compatibility.
+	 */
+	fbname = dev_name(&fb->dev);
+	if (strncmp(fbname, "fb", 2))
+		pr_notice("unexpected fb name %s\n", fbname);
+	else
+		fbname += 2;
 
 	priv->fb = fb;
 	priv->x = 0;
@@ -578,8 +821,8 @@ int register_fbconsole(struct fb_info *fb)
 	cdev->tstc = fbc_tstc;
 	cdev->putc = fbc_putc;
 	cdev->getc = fbc_getc;
-	cdev->devname = "fbconsole";
-	cdev->devid = DEVICE_ID_DYNAMIC;
+	cdev->devname = basprintf("fbconsole%s", fbname);
+	cdev->devid = DEVICE_ID_SINGLE;
 	cdev->open = fbc_open;
 	cdev->close = fbc_close;
 
@@ -603,6 +846,9 @@ int register_fbconsole(struct fb_info *fb)
 			NULL, &priv->margin.bottom, "%u", priv);
 	dev_add_param_uint32(&cdev->class_dev, "margin.right", set_margin,
 			NULL, &priv->margin.right, "%u", priv);
+	dev_add_param_enum(&cdev->class_dev, "rotation", set_rotation, NULL,
+                           &priv->rotation, rotation_names,
+                           ARRAY_SIZE(rotation_names), priv);
 
 	pr_info("registered as %s%d\n", cdev->class_dev.name, cdev->class_dev.id);
 

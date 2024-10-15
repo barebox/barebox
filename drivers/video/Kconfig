@@ -94,6 +94,7 @@ config DRIVER_VIDEO_BCM283X
 	help
 	  Add support for the BCM283X/VideoCore frame buffer device.
 
+source "drivers/video/rockchip/Kconfig"
 source "drivers/video/imx-ipu-v3/Kconfig"
 
 source "drivers/video/bochs/Kconfig"
@@ -186,8 +187,16 @@ config DRIVER_VIDEO_PANEL_ILITEK_ILI9341
 	  QVGA (240x320) RGB panels. support serial & parallel rgb
 	  interface.
 
+config DRIVER_VIDEO_PANEL_SITRONIX_ST7789V
+	tristate "Sitronix ST7789V panel"
+	depends on OFTREE && SPI
+	select VIDEO_VPL
+	help
+	  Say Y here if you want to enable support for the Sitronix
+	  ST7789V controller for 240x320 LCD panels
+
 config DRIVER_VIDEO_PANEL_MIPI_DBI
-	tristate "DRM support for MIPI DBI compatible panels"
+	tristate "MIPI DBI compatible panels"
 	depends on OFTREE && SPI
 	select DRIVER_VIDEO_MIPI_DBI
 	select FIRMWARE
@@ -197,5 +206,14 @@ config DRIVER_VIDEO_PANEL_MIPI_DBI
           panels. The controller command setup can be provided using a
           firmware file. For more information see
           https://github.com/notro/panel-mipi-dbi/wiki.
+
+config DRIVER_VIDEO_DW_HDMI
+	tristate "Designware HDMI support"
+	select VIDEO_VPL
+	select OFTREE
+	help
+	  Say Y here if you want to enable support for the Designware HDMI
+	  controller. To make use of this driver you need platform specific
+	  glue code to be selected as well.
 
 endif

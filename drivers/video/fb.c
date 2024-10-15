@@ -138,7 +138,7 @@ static int fb_enable_set(struct param_d *param, void *priv)
 {
 	struct fb_info *info = priv;
 
-	if (!info->mode)
+	if (!info->mode && !info->base_plane)
 		return -EINVAL;
 
 	if (info->p_enable)
@@ -264,6 +264,15 @@ static void fb_info(struct device *dev)
 	printf("Available modes:\n");
 	fb_print_modes(&info->modes);
 	fb_print_modes(&info->edid_modes);
+	if (info->base_plane) {
+		printf("Type: overlay\n");
+		printf("base plane: %s\n", dev_name(&info->base_plane->dev));
+	} else {
+		printf("Type: primary\n");
+	}
+	printf("xres: %u\n", info->xres);
+	printf("yres: %u\n", info->yres);
+	printf("line_length: %u\n", info->line_length);
 }
 
 void *fb_get_screen_base(struct fb_info *info)
@@ -284,7 +293,7 @@ static int fb_set_shadowfb(struct param_d *p, void *priv)
 
 int register_framebuffer(struct fb_info *info)
 {
-	int id = get_free_deviceid("fb");
+	int id;
 	struct device *dev;
 	int ret, num_modes, i;
 	const char **names;
@@ -304,7 +313,18 @@ int register_framebuffer(struct fb_info *info)
 		info->line_length = info->xres * (info->bits_per_pixel >> 3);
 
 	info->cdev.ops = &fb_ops;
-	info->cdev.name = basprintf("fb%d", id);
+	if (info->base_plane) {
+		int ovl_id = info->base_plane->n_overlays++;
+
+		info->cdev.name = basprintf("%s_%d", dev_name(&info->base_plane->dev), ovl_id);
+		dev->id = DEVICE_ID_SINGLE;
+		dev_set_name(dev, info->cdev.name);
+	} else {
+		id = get_free_deviceid("fb");
+		dev->id = id;
+		dev_set_name(dev, "fb");
+		info->cdev.name = basprintf("fb%d", id);
+	}
 	info->cdev.size = info->line_length * info->yres;
 	info->cdev.dev = dev;
 	info->cdev.priv = info;
@@ -315,10 +335,7 @@ int register_framebuffer(struct fb_info *info)
 	dev->num_resources = 1;
 
 	dev->priv = info;
-	dev->id = id;
 	dev->info = fb_info;
-
-	dev_set_name(dev, "fb");
 
 	ret = register_device(&info->dev);
 	if (ret)

@@ -187,24 +187,22 @@ void gu_set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
 	if (!a)
 		return;
 
-	if (a != 0xff) {
-		if (info->transp.length) {
-			px |= (a >> (8 - info->transp.length)) << info->transp.offset;
-		} else {
-			u8 sr = 0;
-			u8 sg = 0;
-			u8 sb = 0;
+	if (info->transp.length) {
+		px |= (a >> (8 - info->transp.length)) << info->transp.offset;
+	} else if (a != 0xff) {
+		u8 sr = 0;
+		u8 sg = 0;
+		u8 sb = 0;
 
-			get_rgb_pixel(info, adr, &sr, &sg, &sb);
+		get_rgb_pixel(info, adr, &sr, &sg, &sb);
 
-			r = alpha_mux(sr, r, a);
-			g = alpha_mux(sg, g, a);
-			b = alpha_mux(sb, b, a);
+		r = alpha_mux(sr, r, a);
+		g = alpha_mux(sg, g, a);
+		b = alpha_mux(sb, b, a);
 
-			gu_set_rgb_pixel(info, adr, r, g, b);
+		gu_set_rgb_pixel(info, adr, r, g, b);
 
-			return;
-		}
+		return;
 	}
 
 	px |= (r >> (8 - info->red.length)) << info->red.offset |
@@ -229,12 +227,18 @@ void gu_rgba_blend(struct fb_info *info, struct image *img, void* buf, int heigh
 	line_length = info->line_length;
 
 	for (y = 0; y < height; y++) {
+		if (y + starty >= info->yres)
+			break;
+
 		adr = buf + (y + starty) * line_length +
 				startx * (info->bits_per_pixel >> 3);
 		image = img->data + (y * img->width *img_byte_per_pixel);
 
 		for (x = 0; x < width; x++) {
 			uint8_t *pixel = image;
+
+			if (x + startx >= info->xres)
+				break;
 
 			if (is_rgba)
 				gu_set_rgba_pixel(info, adr, pixel[0], pixel[1],

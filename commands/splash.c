@@ -62,9 +62,13 @@ static int do_splash(int argc, char *argv[])
 
 	buf = gui_screen_render_buffer(sc);
 
-	if (do_bg)
-		gu_memset_pixel(sc->info, buf, bg_color,
-				sc->s.width * sc->s.height);
+	if (do_bg) {
+		int y;
+		for (y = 0; y < sc->s.height; y++) {
+			gu_memset_pixel(sc->info, buf + sc->info->line_length * y,
+					bg_color, sc->s.width);
+		}
+	}
 
 	ret = image_renderer_file(sc, &s, image_file);
 	if (ret > 0)

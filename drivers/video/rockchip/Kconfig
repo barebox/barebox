@@ -1,0 +1,18 @@
+config DRIVER_VIDEO_ROCKCHIP
+	bool "Rockchip framebuffer drivers"
+
+if DRIVER_VIDEO_ROCKCHIP
+
+config DRIVER_VIDEO_ROCKCHIP_VOP2
+        bool "Rockchip vop2 framebuffer driver"
+        select VIDEO_VPL
+        select OFTREE
+
+config DRIVER_VIDEO_ROCKCHIP_HDMI
+        bool "Rockchip HDMI driver"
+        select VIDEO_VPL
+        select OFTREE
+        select DRIVER_VIDEO_EDID
+        select DRIVER_VIDEO_DW_HDMI
+
+endif

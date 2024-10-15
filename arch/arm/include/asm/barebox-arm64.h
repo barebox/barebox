@@ -30,6 +30,6 @@
  * ENTRY_PROC_END - mark end of entry procedure
  */
 #define ENTRY_PROC_END(name) \
-	END(##name)
+	ENDPROC(##name)
 
 #endif /* _BAREBOX_ARM64_H_ */

@@ -12,6 +12,8 @@ targets:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'
       BareboxTestStrategy: {}
+    features:
+      - network
 images:
   barebox: !template "$LG_BUILDDIR/barebox"
 imports:

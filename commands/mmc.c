@@ -138,6 +138,7 @@ static int do_mmc_write_reliability(int argc, char *argv[])
 	const char *devpath;
 	struct mci *mci;
 	u8 *ext_csd;
+	int ret;
 
 	if (argc - optind != 1) {
 		printf("Usage: mmc write_reliability /dev/mmcX\n");
@@ -166,6 +167,15 @@ static int do_mmc_write_reliability(int argc, char *argv[])
 		goto error;
 	}
 
+	/* Some cards may have HS_CTRL_REL set as 0. This is obsolete
+	 * per-spec, but seems to indicate that write reliability was
+	 * factory-set. Therefore, just bail out early here
+	 */
+	if ((ext_csd[EXT_CSD_WR_REL_SET] & 0x1f) == 0x1f) {
+		printf("reliable write already set\n");
+		goto out;
+	}
+
 	if (!(ext_csd[EXT_CSD_WR_REL_PARAM] & EXT_CSD_HS_CTRL_REL)) {
 		printf("Device doesn't support WR_REL_SET writes\n");
 		goto error;
@@ -175,16 +185,13 @@ static int do_mmc_write_reliability(int argc, char *argv[])
 	 * Host has one opportunity to write all of the bits. Separate writes to
 	 * individual bits are not permitted so set all bits for now.
 	 */
-	if ((ext_csd[EXT_CSD_WR_REL_SET] & 0x1f) != 0x1f) {
-		int ret;
-
-		ret = mci_switch(mci, EXT_CSD_WR_REL_SET, 0x1f);
-		if (ret) {
-			printf("Failure to write to EXT_CSD_WR_REL_SET\n");
-			goto error;
-		}
+	ret = mci_switch(mci, EXT_CSD_WR_REL_SET, 0x1f);
+	if (ret) {
+		printf("Failure to write to EXT_CSD_WR_REL_SET\n");
+		goto error;
 	}
 
+out:
 	dma_free(ext_csd);
 
 	return COMMAND_SUCCESS;

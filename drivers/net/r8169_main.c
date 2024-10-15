@@ -1542,10 +1542,10 @@ static void rtl_set_rx_tx_desc_registers(struct rtl8169_private *tp)
 	 * register to be written before TxDescAddrLow to work.
 	 * Switching from MMIO to I/O access fixes the issue as well.
 	 */
-	RTL_W32(tp, TxDescStartAddrHigh, ((u64) tp->TxPhyAddr) >> 32);
-	RTL_W32(tp, TxDescStartAddrLow, ((u64) tp->TxPhyAddr) & DMA_BIT_MASK(32));
-	RTL_W32(tp, RxDescAddrHigh, ((u64) tp->RxPhyAddr) >> 32);
-	RTL_W32(tp, RxDescAddrLow, ((u64) tp->RxPhyAddr) & DMA_BIT_MASK(32));
+	RTL_W32(tp, TxDescStartAddrHigh, upper_32_bits(tp->TxPhyAddr));
+	RTL_W32(tp, TxDescStartAddrLow, lower_32_bits(tp->TxPhyAddr));
+	RTL_W32(tp, RxDescAddrHigh, upper_32_bits(tp->RxPhyAddr));
+	RTL_W32(tp, RxDescAddrLow, lower_32_bits(tp->RxPhyAddr));
 }
 
 static void rtl8169_set_magic_reg(struct rtl8169_private *tp)

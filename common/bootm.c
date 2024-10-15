@@ -761,8 +761,14 @@ int bootm_boot(struct bootm_data *bootm_data)
 	}
 
 	if (ret) {
-		pr_err("Loading %s image failed with: %pe\n",
-		       file_type_to_short_string(os_type), ERR_PTR(ret));
+		const char *os_type_str;
+
+		if (os_type == filetype_oftree)
+			os_type_str = "FIT";
+		else
+			os_type_str = file_type_to_short_string(os_type);
+
+		pr_err("Loading %s image failed with: %pe\n", os_type_str, ERR_PTR(ret));
 		goto err_out;
 	}
 

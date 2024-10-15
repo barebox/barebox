@@ -598,7 +598,7 @@ static int fit_handle_decompression(struct device_node *image,
 	ret = uncompress_buf_to_buf(*data, *data_len, &uc_data,
 				    fit_uncompress_error_fn);
 	if (ret < 0) {
-		pr_err("data couldn't be decompressed\n");
+		pr_err("%s data couldn't be decompressed\n", compression);
 		return ret;
 	}
 

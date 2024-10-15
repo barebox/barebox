@@ -131,7 +131,7 @@ int uncompress(unsigned char *inbuf, long len,
 		break;
 #endif
 	default:
-		err = basprintf("cannot handle filetype %s",
+		err = basprintf("unsupported compression filetype \"%s\"",
 				  file_type_to_string(ft));
 		error_fn(err);
 		free(err);

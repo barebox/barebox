@@ -163,7 +163,7 @@ static bool is_linux_image(enum filetype filetype, const void *base)
 	    hdr->boot_flag == 0xAA55 && hdr->header == 0x53726448)
 		return true;
 
-	if (IS_ENABLED(CONFIG_CPU_V8) &&
+	if (IS_ENABLED(CONFIG_ARM64) &&
 	    filetype == filetype_arm64_efi_linux_image)
 		return true;
 
@@ -367,11 +367,11 @@ static int efi_register_image_handler(void)
 	register_image_handler(&efi_handle_tr);
 	binfmt_register(&binfmt_efi_hook);
 
-	if (IS_ENABLED(CONFIG_CPU_V8))
-		binfmt_register(&binfmt_arm64_efi_hook);
-
 	if (IS_ENABLED(CONFIG_X86))
 		register_image_handler(&non_efi_handle_linux_x86);
+
+	if (IS_ENABLED(CONFIG_ARM64))
+		binfmt_register(&binfmt_arm64_efi_hook);
 
 	return 0;
 }

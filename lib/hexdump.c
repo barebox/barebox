@@ -11,6 +11,26 @@
 #include <linux/printk.h>
 #include <asm/unaligned.h>
 #include <pbl.h>
+#include <asm/byteorder.h>
+
+/*
+ * sanity check. The Linux Kernel defines only one of __LITTLE_ENDIAN and
+ * __BIG_ENDIAN. Endianess can then be tested with #ifdef __xx_ENDIAN. Userspace
+ * always defined both __LITTLE_ENDIAN and __BIG_ENDIAN and byteorder can then
+ * be tested with #if __BYTE_ORDER == __xx_ENDIAN.
+ *
+ * As we tend to use a lot of Kernel code in barebox we use the kernel way of
+ * determing the byte order. Make sure here that architecture code properly
+ * defines it.
+ * An additional benefit of placing this here is that this file is always built.
+ */
+#if defined __LITTLE_ENDIAN && defined __BIG_ENDIAN
+#error "both __LITTLE_ENDIAN and __BIG_ENDIAN are defined"
+#endif
+#if !defined __LITTLE_ENDIAN && !defined __BIG_ENDIAN
+#error "None of __LITTLE_ENDIAN and __BIG_ENDIAN are defined"
+#endif
+
 
 const char hex_asc[] = "0123456789abcdef";
 EXPORT_SYMBOL(hex_asc);

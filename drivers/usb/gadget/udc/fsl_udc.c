@@ -780,7 +780,7 @@ static struct ep_td_struct *fsl_build_dtd(struct fsl_req *req,
 
 	/* Init all of buffer page pointers */
 	buf = (unsigned long)req->req.buf;
-	if (buf > 0xffffffff) {
+	if (upper_32_bits(buf)) {
 		pr_err("Only 32bit supported\n");
 		return NULL;
 	}

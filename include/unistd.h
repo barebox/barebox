@@ -5,6 +5,8 @@
 #include <linux/types.h>
 #include <fcntl.h>
 
+#define RW_BUF_SIZE	(unsigned)4096
+
 struct stat;
 
 int unlinkat(int dirfd, const char *pathname, int flags);

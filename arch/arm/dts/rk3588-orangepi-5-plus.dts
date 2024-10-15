@@ -1,0 +1,77 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+/dts-v1/;
+
+#include <arm64/rockchip/rk3588-orangepi-5-plus.dts>
+#include "rk3588.dtsi"
+
+/ {
+	chosen: chosen {
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &environment_emmc;
+			status = "disabled";
+		};
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &environment_sd;
+			status = "disabled";
+		};
+	};
+};
+
+&sdhci {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		environment_emmc: partition@408000 {
+			label = "barebox-environment";
+			reg = <0x0 0x408000 0x0 0x8000>;
+		};
+	};
+};
+
+&sdmmc {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		environment_sd: partition@408000 {
+			label = "barebox-environment";
+			reg = <0x0 0x408000 0x0 0x8000>;
+		};
+	};
+};
+
+&pcie3x4 {
+	/* Does not work in barebox (missing phy driver) */
+	status = "disabled";
+};
+
+&pcie30phy {
+	status = "disabled";
+};
+
+&pcie2x1l0 {
+	/* Does not work in barebox */
+	status = "disabled";
+};
+
+&pcie2x1l1 {
+	/* Does not work in barebox */
+	status = "disabled";
+};
+
+&usb_host0_ehci {
+	/* Does not work in barebox (missing phy driver) */
+	status = "disabled";
+};
+
+&usb_host1_ehci {
+	/* Does not work in barebox (missing phy driver) */
+	status = "disabled";
+};

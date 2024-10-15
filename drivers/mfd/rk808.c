@@ -22,6 +22,7 @@
 #include <poweroff.h>
 #include <of.h>
 #include <linux/regmap.h>
+#include <spi/spi.h>
 
 struct rk808_reg_data {
 	int addr;
@@ -61,6 +62,12 @@ static const struct mfd_cell rk805s[] = {
 	{ .name = "rk805-pwrkey", },
 };
 
+static const struct mfd_cell rk806s[] = {
+	{ .name = "rk805-pinctrl", },
+	{ .name = "rk808-regulator", },
+	{ .name = "rk805-pwrkey", },
+};
+
 static const struct mfd_cell rk808s[] = {
 	{ .name = "rk808-clkout", },
 	{ .name = "rk808-regulator", },
@@ -92,6 +99,12 @@ static const struct rk808_reg_data rk805_pre_init_reg[] = {
 				 RK805_BUCK4_ILMAX_3500MA},
 	{RK805_BUCK4_CONFIG_REG, BUCK_ILMIN_MASK, BUCK_ILMIN_400MA},
 	{RK805_THERMAL_REG, TEMP_HOTDIE_MSK, TEMP115C},
+};
+
+static const struct rk808_reg_data rk806_pre_init_reg[] = {
+	{ RK806_GPIO_INT_CONFIG, RK806_INT_POL_MSK, RK806_INT_POL_L },
+	{ RK806_SYS_CFG3, RK806_SLAVE_RESTART_FUN_MSK, RK806_SLAVE_RESTART_FUN_EN },
+	{ RK806_SYS_OPTION, RK806_SYS_ENB2_2M_MSK, RK806_SYS_ENB2_2M_EN },
 };
 
 static const struct rk808_reg_data rk808_pre_init_reg[] = {
@@ -274,6 +287,12 @@ static int rk8xx_probe(struct device *dev, int variant, struct regmap *regmap)
 		cells = rk805s;
 		nr_cells = ARRAY_SIZE(rk805s);
 		break;
+	case RK806_ID:
+		pre_init_reg = rk806_pre_init_reg;
+		nr_pre_init_regs = ARRAY_SIZE(rk806_pre_init_reg);
+		cells = rk806s;
+		nr_cells = ARRAY_SIZE(rk806s);
+		break;
 	case RK808_ID:
 		pre_init_reg = rk808_pre_init_reg;
 		nr_pre_init_regs = ARRAY_SIZE(rk808_pre_init_reg);
@@ -399,6 +418,75 @@ static int rk808_probe(struct device *dev)
 	return rk8xx_probe(dev, variant, regmap);
 }
 
+#define RK806_ADDR_SIZE 2
+#define RK806_CMD_WITH_SIZE(CMD, VALUE_BYTES) \
+        (RK806_CMD_##CMD | RK806_CMD_CRC_DIS | (VALUE_BYTES - 1))
+
+static const struct regmap_config rk806_regmap_config_spi = {
+	.reg_bits = 16,
+	.val_bits = 8,
+	.max_register = RK806_BUCK_RSERVE_REG5,
+};
+
+static int rk806_spi_bus_write(void *context, const void *vdata, size_t count)
+{
+	struct device *dev = context;
+	struct spi_device *spi = to_spi_device(dev);
+	struct spi_transfer xfer[2] = { 0 };
+	/* data and thus count includes the register address */
+	size_t val_size = count - RK806_ADDR_SIZE;
+	char cmd;
+
+	if (val_size < 1 || val_size > (RK806_CMD_LEN_MSK + 1))
+		return -EINVAL;
+
+	cmd = RK806_CMD_WITH_SIZE(WRITE, val_size);
+
+	xfer[0].tx_buf = &cmd;
+	xfer[0].len = sizeof(cmd);
+	xfer[1].tx_buf = vdata;
+	xfer[1].len = count;
+
+	return spi_sync_transfer(spi, xfer, ARRAY_SIZE(xfer));
+}
+
+static int rk806_spi_bus_read(void *context, const void *vreg, size_t reg_size,
+			      void *val, size_t val_size)
+{
+	struct device *dev = context;
+	struct spi_device *spi = to_spi_device(dev);
+	char txbuf[3] = { 0 };
+
+	if (reg_size != RK806_ADDR_SIZE ||
+	    val_size < 1 || val_size > (RK806_CMD_LEN_MSK + 1))
+		return -EINVAL;
+
+	/* TX buffer contains command byte followed by two address bytes */
+	txbuf[0] = RK806_CMD_WITH_SIZE(READ, val_size);
+	memcpy(txbuf+1, vreg, reg_size);
+
+	return spi_write_then_read(spi, txbuf, sizeof(txbuf), val, val_size);
+}
+
+static const struct regmap_bus rk806_regmap_bus_spi = {
+	.write = rk806_spi_bus_write,
+	.read = rk806_spi_bus_read,
+	.reg_format_endian_default = REGMAP_ENDIAN_LITTLE,
+};
+
+static int rk808_probe_spi(struct device *dev)
+{
+	struct regmap *regmap;
+
+	regmap = regmap_init(dev, &rk806_regmap_bus_spi,
+				  dev, &rk806_regmap_config_spi);
+	if (IS_ERR(regmap))
+		return dev_err_probe(dev, PTR_ERR(regmap),
+				     "Failed to init regmap\n");
+
+	return rk8xx_probe(dev, RK806_ID, regmap);
+}
+
 static const struct of_device_id rk808_of_match[] = {
 	{ .compatible = "rockchip,rk805" },
 	{ .compatible = "rockchip,rk808" },
@@ -409,12 +497,25 @@ static const struct of_device_id rk808_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, rk808_of_match);
 
-static struct driver rk808_i2c_driver = {
+static __maybe_unused struct driver rk808_i2c_driver = {
 	.name = "rk808",
 	.of_compatible = rk808_of_match,
 	.probe    = rk808_probe,
 };
 coredevice_i2c_driver(rk808_i2c_driver);
+
+static const struct of_device_id rk808_spi_of_match[] = {
+	{ .compatible = "rockchip,rk806" },
+	{ },
+};
+MODULE_DEVICE_TABLE(of, rk808_of_match);
+
+static __maybe_unused struct driver rk808_spi_driver = {
+	.name = "rk808",
+	.of_compatible = rk808_spi_of_match,
+	.probe    = rk808_probe_spi,
+};
+coredevice_spi_driver(rk808_spi_driver);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Chris Zhong <zyw@rock-chips.com>");

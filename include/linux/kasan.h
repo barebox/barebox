@@ -25,7 +25,7 @@
 #define KASAN_KMALLOC_FREETRACK 0xFA  /* object was freed and has free track set */
 
 #define KASAN_GLOBAL_REDZONE    0xF9  /* redzone for global variable */
-#define KASAN_VMALLOC_INVALID   0xF8  /* unallocated space in vmapped page */
+#define KASAN_DMA_DEV_MAPPED    0xF8  /* DMA-mapped buffer currently owned by device */
 
 /*
  * Stack redzone shadow values
@@ -69,6 +69,7 @@ extern void kasan_disable_current(void);
 
 void kasan_poison_shadow(const void *address, size_t size, u8 value);
 void kasan_unpoison_shadow(const void *address, size_t size);
+int kasan_is_poisoned_shadow(const void *address, size_t size);
 
 bool kasan_save_enable_multi_shot(void);
 void kasan_restore_multi_shot(bool enabled);
@@ -77,6 +78,7 @@ void kasan_restore_multi_shot(bool enabled);
 
 static inline void kasan_poison_shadow(const void *address, size_t size, u8 value) {}
 static inline void kasan_unpoison_shadow(const void *address, size_t size) {}
+static inline int kasan_is_poisoned_shadow(const void *address, size_t size) { return -1; }
 
 static inline void kasan_enable_current(void) {}
 static inline void kasan_disable_current(void) {}

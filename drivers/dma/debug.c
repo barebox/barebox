@@ -3,7 +3,28 @@
 #include <dma.h>
 #include <linux/list.h>
 #include <linux/printk.h>
+#include <linux/align.h>
+#include <linux/kasan.h>
 #include "debug.h"
+
+/**
+ * DMA_KASAN_ALIGN() - Align to KASAN granule size
+ * @x:	value to be aligned
+ *
+ * kasan_unpoison_shadow will poison the bytes after it when the size
+ * is not a multiple of the granule size. We thus always align the sizes
+ * here. This allows unpoisoning a smaller buffer overlapping a bigger
+ * buffer previously unpoisoned without KASAN detecting an out-of-bounds
+ * memory access.
+ *
+ * A more accurate reflection of the hardware would be to align to
+ * DMA_ALIGNMENT. We intentionally don't do this here as choosing the lowest
+ * possible alignment allows us to catch more issues that may not pop up
+ * when testing on platforms with higher DMA_ALIGNMENT.
+ *
+ * @returns the value after alignment
+ */
+#define DMA_KASAN_ALIGN(x)	ALIGN(x, 1 << KASAN_SHADOW_SCALE_SHIFT)
 
 static LIST_HEAD(dma_mappings);
 
@@ -11,9 +32,9 @@ struct dma_debug_entry {
 	struct list_head list;
 	struct device    *dev;
 	dma_addr_t       dev_addr;
+	const void       *cpu_addr;
 	size_t           size;
 	int              direction;
-	bool             dev_owned;
 };
 
 static const char *dir2name[] = {
@@ -104,6 +125,17 @@ dma_debug_entry_find(struct device *dev, dma_addr_t dev_addr, size_t size)
 	return NULL;
 }
 
+static const void *dma_debug_entry_cpu_addr(struct dma_debug_entry *entry,
+				      dma_addr_t dma_handle)
+{
+	ptrdiff_t offset = dma_handle - entry->dev_addr;
+
+	if (offset < 0)
+		return NULL;
+
+	return entry->cpu_addr + offset;
+}
+
 void debug_dma_map(struct device *dev, void *addr,
 			  size_t size,
 			  int direction, dma_addr_t dev_addr)
@@ -121,9 +153,9 @@ void debug_dma_map(struct device *dev, void *addr,
 
 	entry->dev = dev;
 	entry->dev_addr = dev_addr;
+	entry->cpu_addr = addr;
 	entry->size = size;
 	entry->direction = direction;
-	entry->dev_owned = true;
 
 	list_add(&entry->list, &dma_mappings);
 
@@ -132,12 +164,15 @@ void debug_dma_map(struct device *dev, void *addr,
 	if (!IS_ALIGNED(dev_addr, DMA_ALIGNMENT))
 		dma_dev_warn(dev, "Mapping insufficiently aligned %s buffer 0x%llx+0x%zx: %u bytes required!\n",
 			     dir2name[direction], (u64)dev_addr, size, DMA_ALIGNMENT);
+
+	kasan_poison_shadow(addr, DMA_KASAN_ALIGN(size), KASAN_DMA_DEV_MAPPED);
 }
 
 void debug_dma_unmap(struct device *dev, dma_addr_t addr,
 		     size_t size, int direction)
 {
 	struct dma_debug_entry *entry;
+	const void *cpu_addr;
 
 	entry = dma_debug_entry_find(dev, addr, size);
 	if (!entry) {
@@ -155,6 +190,9 @@ void debug_dma_unmap(struct device *dev, dma_addr_t addr,
 			 dir2name[direction]);
 
 	dma_debug(entry, "deallocating\n");
+	cpu_addr = dma_debug_entry_cpu_addr(entry, addr);
+	if (cpu_addr)
+		kasan_unpoison_shadow(cpu_addr, DMA_KASAN_ALIGN(size));
 	list_del(&entry->list);
 	free(entry);
 }
@@ -164,6 +202,7 @@ void debug_dma_sync_single_for_cpu(struct device *dev,
 				   int direction)
 {
 	struct dma_debug_entry *entry;
+	const void *cpu_addr;
 
 	entry = dma_debug_entry_find(dev, dma_handle, size);
 	if (!entry) {
@@ -172,11 +211,17 @@ void debug_dma_sync_single_for_cpu(struct device *dev,
 		return;
 	}
 
-	if (!entry->dev_owned)
-		dma_dev_warn(dev, "unexpected sync for CPU of already CPU-mapped %s buffer 0x%llx+0x%zx!\n",
-			     dir2name[direction], (u64)dma_handle, size);
+	cpu_addr = dma_debug_entry_cpu_addr(entry, dma_handle);
+	if (cpu_addr) {
+		size_t kasan_size = DMA_KASAN_ALIGN(size);
 
-	entry->dev_owned = false;
+		if (kasan_is_poisoned_shadow(cpu_addr, kasan_size) == 0) {
+			dma_dev_warn(dev, "unexpected sync for CPU of already CPU-mapped %s buffer 0x%llx+0x%zx!\n",
+				     dir2name[direction], (u64)dma_handle, size);
+		} else {
+			kasan_unpoison_shadow(cpu_addr, kasan_size);
+		}
+	}
 }
 
 void debug_dma_sync_single_for_device(struct device *dev,
@@ -184,6 +229,7 @@ void debug_dma_sync_single_for_device(struct device *dev,
 				      size_t size, int direction)
 {
 	struct dma_debug_entry *entry;
+	const void *cpu_addr;
 
 	/*
 	 * If dma_map_single was omitted, CPU cache may contain dirty cache lines
@@ -198,9 +244,17 @@ void debug_dma_sync_single_for_device(struct device *dev,
 		return;
 	}
 
-	if (entry->dev_owned)
-		dma_dev_warn(dev, "unexpected sync for device of already device-mapped %s buffer 0x%llx+0x%zx!\n",
-			     dir2name[direction], (u64)dma_handle, size);
+	cpu_addr = dma_debug_entry_cpu_addr(entry, dma_handle);
+	if (cpu_addr) {
+		size_t kasan_size = DMA_KASAN_ALIGN(size);
 
-	entry->dev_owned = true;
+		/* explicit == 1 check as function may return negative value on error */
+		if (kasan_is_poisoned_shadow(cpu_addr, kasan_size) == 1) {
+			dma_dev_warn(dev, "unexpected sync for device of already device-mapped %s buffer 0x%llx+0x%zx!\n",
+				     dir2name[direction], (u64)dma_handle, size);
+		} else {
+			kasan_poison_shadow(cpu_addr, kasan_size, KASAN_DMA_DEV_MAPPED);
+		}
+
+	}
 }

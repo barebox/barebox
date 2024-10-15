@@ -90,12 +90,14 @@
  * one of the simpler chips.
  */
 
+#include <linux/kernel.h>
 #include <linux/bitfield.h>
 #include <linux/bitops.h>
 #include <linux/mutex.h>
 #include <linux/spinlock.h>
 #include <linux/printk.h>
 #include <linux/export.h>
+#include <linux/math.h>
 #include <linux/regmap.h>
 #include <net.h>
 #include <linux/if_bridge.h>

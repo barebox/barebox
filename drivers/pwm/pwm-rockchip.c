@@ -9,6 +9,7 @@
 #include <linux/clk.h>
 #include <linux/io.h>
 #include <module.h>
+#include <stdio.h>
 #include <of.h>
 #include <linux/device.h>
 #include <pwm.h>

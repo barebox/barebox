@@ -13,7 +13,6 @@
 #include <watchdog.h>
 #include <reset_source.h>
 #include <linux/clk.h>
-#include <asm/system.h>
 
 struct imxulp_socdata {
 	bool prescaler_enable;

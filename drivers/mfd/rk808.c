@@ -247,17 +247,14 @@ static void rk808_poweroff(struct poweroff_handler *handler)
 	hang();
 }
 
-static int rk808_probe(struct device *dev)
+static int rk8xx_probe(struct device *dev, int variant, struct regmap *regmap)
 {
-	struct i2c_client *client = to_i2c_client(dev);
 	struct device_node *np = dev->of_node;
 	struct rk808 *rk808;
 	const struct rk808_reg_data *pre_init_reg;
 	const struct mfd_cell *cells;
 	int nr_pre_init_regs;
 	int nr_cells;
-	int msb, lsb;
-	unsigned char pmic_id_msb, pmic_id_lsb;
 	int ret;
 	int i;
 
@@ -266,51 +263,24 @@ static int rk808_probe(struct device *dev)
 		return -ENOMEM;
 
 	dev->priv = rk808;
-
-	if (of_device_is_compatible(np, "rockchip,rk817") ||
-	    of_device_is_compatible(np, "rockchip,rk809")) {
-		pmic_id_msb = RK817_ID_MSB;
-		pmic_id_lsb = RK817_ID_LSB;
-	} else {
-		pmic_id_msb = RK808_ID_MSB;
-		pmic_id_lsb = RK808_ID_LSB;
-	}
-
-	/* Read chip variant */
-	msb = i2c_smbus_read_byte_data(client, pmic_id_msb);
-	if (msb < 0) {
-		dev_err(dev, "failed to read the chip id at 0x%x\n",
-			RK808_ID_MSB);
-		return msb;
-	}
-
-	lsb = i2c_smbus_read_byte_data(client, pmic_id_lsb);
-	if (lsb < 0) {
-		dev_err(dev, "failed to read the chip id at 0x%x\n",
-			RK808_ID_LSB);
-		return lsb;
-	}
-
-	rk808->variant = ((msb << 8) | lsb) & RK8XX_ID_MSK;
-	dev_info(dev, "chip id: 0x%x\n", (unsigned int)rk808->variant);
+	rk808->regmap = regmap;
+	rk808->dev = dev;
+	rk808->variant = variant;
 
 	switch (rk808->variant) {
 	case RK805_ID:
-		rk808->regmap_cfg = &rk805_regmap_config;
 		pre_init_reg = rk805_pre_init_reg;
 		nr_pre_init_regs = ARRAY_SIZE(rk805_pre_init_reg);
 		cells = rk805s;
 		nr_cells = ARRAY_SIZE(rk805s);
 		break;
 	case RK808_ID:
-		rk808->regmap_cfg = &rk808_regmap_config;
 		pre_init_reg = rk808_pre_init_reg;
 		nr_pre_init_regs = ARRAY_SIZE(rk808_pre_init_reg);
 		cells = rk808s;
 		nr_cells = ARRAY_SIZE(rk808s);
 		break;
 	case RK818_ID:
-		rk808->regmap_cfg = &rk818_regmap_config;
 		pre_init_reg = rk818_pre_init_reg;
 		nr_pre_init_regs = ARRAY_SIZE(rk818_pre_init_reg);
 		cells = rk818s;
@@ -318,7 +288,6 @@ static int rk808_probe(struct device *dev)
 		break;
 	case RK809_ID:
 	case RK817_ID:
-		rk808->regmap_cfg = &rk817_regmap_config;
 		pre_init_reg = rk817_pre_init_reg;
 		nr_pre_init_regs = ARRAY_SIZE(rk817_pre_init_reg);
 		cells = rk817s;
@@ -328,15 +297,6 @@ static int rk808_probe(struct device *dev)
 		dev_err(dev, "Unsupported RK8XX ID %lu\n",
 			rk808->variant);
 		return -EINVAL;
-	}
-
-	rk808->dev = &client->dev;
-	i2c_set_clientdata(client, rk808);
-
-	rk808->regmap = regmap_init_i2c_smbus(client, rk808->regmap_cfg);
-	if (IS_ERR(rk808->regmap)) {
-		dev_err(dev, "regmap initialization failed\n");
-		return PTR_ERR(rk808->regmap);
 	}
 
 	ret = regmap_register_cdev(rk808->regmap, NULL);
@@ -370,7 +330,73 @@ static int rk808_probe(struct device *dev)
 		rk808->poweroff.priority += 100;
 
 	poweroff_handler_register(&rk808->poweroff);
+
 	return 0;
+}
+
+static int rk808_probe(struct device *dev)
+{
+	struct device_node *np = dev->of_node;
+	struct i2c_client *client = to_i2c_client(dev);
+	int msb, lsb;
+	unsigned char pmic_id_msb, pmic_id_lsb;
+	struct regmap *regmap;
+	int variant;
+	const struct regmap_config *regmap_cfg;
+
+	if (of_device_is_compatible(np, "rockchip,rk817") ||
+	    of_device_is_compatible(np, "rockchip,rk809")) {
+		pmic_id_msb = RK817_ID_MSB;
+		pmic_id_lsb = RK817_ID_LSB;
+	} else {
+		pmic_id_msb = RK808_ID_MSB;
+		pmic_id_lsb = RK808_ID_LSB;
+	}
+
+	/* Read chip variant */
+	msb = i2c_smbus_read_byte_data(client, pmic_id_msb);
+	if (msb < 0) {
+		dev_err(dev, "failed to read the chip id at 0x%x\n",
+			RK808_ID_MSB);
+		return msb;
+	}
+
+	lsb = i2c_smbus_read_byte_data(client, pmic_id_lsb);
+	if (lsb < 0) {
+		dev_err(dev, "failed to read the chip id at 0x%x\n",
+			RK808_ID_LSB);
+		return lsb;
+	}
+
+	variant = ((msb << 8) | lsb) & RK8XX_ID_MSK;
+	dev_info(dev, "chip id: 0x%x\n", (unsigned int)variant);
+
+	switch (variant) {
+	case RK805_ID:
+		regmap_cfg = &rk805_regmap_config;
+		break;
+	case RK808_ID:
+		regmap_cfg = &rk808_regmap_config;
+		break;
+	case RK818_ID:
+		regmap_cfg = &rk818_regmap_config;
+		break;
+	case RK809_ID:
+	case RK817_ID:
+		regmap_cfg = &rk817_regmap_config;
+		break;
+	default:
+		dev_err(dev, "Unsupported RK8XX ID %u\n", variant);
+		return -EINVAL;
+	}
+
+	regmap = regmap_init_i2c_smbus(client, regmap_cfg);
+	if (IS_ERR(regmap)) {
+		dev_err(dev, "regmap initialization failed\n");
+		return PTR_ERR(regmap);
+	}
+
+	return rk8xx_probe(dev, variant, regmap);
 }
 
 static const struct of_device_id rk808_of_match[] = {

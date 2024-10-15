@@ -35,7 +35,12 @@ struct regulator_bulk_data {
  * structure contains the non-varying parts of the regulator
  * description.
  *
+ * @name: Identifying name for the regulator.
+ * @supply_name: Identifying the regulator supply
  * @supply_name: Identifying the supply of this regulator
+ * @of_match: Name used to identify regulator in DT.
+ * @regulators_node: Name of node containing regulator definitions in DT.
+ * @id: Numerical identifier for the regulator.
  *
  * @n_voltages: Number of selectors available for ops.list_voltage().
  * @ops: Regulator operations table.
@@ -62,7 +67,11 @@ struct regulator_bulk_data {
  */
 
 struct regulator_desc {
+	const char *name;
 	const char *supply_name;
+	const char *of_match;
+	const char *regulators_node;
+	int id;
 	unsigned n_voltages;
 	const struct regulator_ops *ops;
 
@@ -85,6 +94,28 @@ struct regulator_desc {
 	const unsigned int *volt_table;
 	int fixed_uV;
 	unsigned int off_on_delay;
+};
+
+/**
+ * struct regulator_config - Dynamic regulator descriptor
+ *
+ * Each regulator registered with the core is described with a
+ * structure of this type and a struct regulator_desc.  This structure
+ * contains the runtime variable parts of the regulator description.
+ *
+ * @dev: struct device for the regulator
+ * @init_data: platform provided init data, passed through by driver
+ * @driver_data: private regulator data
+ * @of_node: OpenFirmware node to parse for device tree bindings (may be
+ *           NULL).
+ * @regmap: regmap to use for core regmap helpers if dev_get_regmap() is
+ *          insufficient.
+ * @ena_gpiod: GPIO controlling regulator enable.
+ */
+struct regulator_config {
+	struct device *dev;
+	void *driver_data;
+	struct regmap *regmap;
 };
 
 struct regulator_dev {
@@ -157,6 +188,11 @@ static inline int of_regulator_register(struct regulator_dev *rd,
 }
 #endif
 int dev_regulator_register(struct regulator_dev *rd, const char *name);
+
+struct regulator_dev *
+regulator_register(struct device *dev,
+		   const struct regulator_desc *regulator_desc,
+		   const struct regulator_config *config);
 
 #define REGULATOR_PRINT_DEVS	BIT(0)
 void regulators_print(unsigned flags);

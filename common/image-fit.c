@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <linux/err.h>
 #include <stringlist.h>
-#include <rsa.h>
+#include <crypto/public_key.h>
 #include <uncompress.h>
 #include <image-fit.h>
 
@@ -253,10 +253,10 @@ static struct digest *fit_alloc_digest(struct device_node *sig_node,
 	return digest;
 }
 
-static int fit_check_rsa_signature(struct device_node *sig_node,
-				   enum hash_algo algo, void *hash)
+static int fit_check_signature(struct device_node *sig_node,
+			       enum hash_algo algo, void *hash)
 {
-	const struct rsa_public_key *key;
+	const struct public_key *key;
 	const char *key_name = NULL;
 	int sig_len;
 	const char *sig_value;
@@ -270,19 +270,19 @@ static int fit_check_rsa_signature(struct device_node *sig_node,
 
 	of_property_read_string(sig_node, "key-name-hint", &key_name);
 	if (key_name) {
-		key = rsa_get_key(key_name);
+		key = public_key_get(key_name);
 		if (key) {
-			ret = rsa_verify(key, sig_value, sig_len, hash, algo);
+			ret = public_key_verify(key, sig_value, sig_len, hash, algo);
 			if (!ret)
 				goto ok;
 		}
 	}
 
-	for_each_rsa_key(key) {
+	for_each_public_key(key) {
 		if (key_name && !strcmp(key->key_name_hint, key_name))
 			continue;
 
-		ret = rsa_verify(key, sig_value, sig_len, hash, algo);
+		ret = public_key_verify(key, sig_value, sig_len, hash, algo);
 		if (!ret)
 			goto ok;
 	}
@@ -341,7 +341,7 @@ static int fit_verify_signature(struct device_node *sig_node, const void *fit)
 	hash = xzalloc(digest_length(digest));
 	digest_final(digest, hash);
 
-	ret = fit_check_rsa_signature(sig_node, algo, hash);
+	ret = fit_check_signature(sig_node, algo, hash);
 	if (ret)
 		goto out_free_hash;
 
@@ -464,7 +464,7 @@ static int fit_image_verify_signature(struct fit_handle *handle,
 	hash = xzalloc(digest_length(digest));
 	digest_final(digest, hash);
 
-	ret = fit_check_rsa_signature(sig_node, algo, hash);
+	ret = fit_check_signature(sig_node, algo, hash);
 
 	free(hash);
 

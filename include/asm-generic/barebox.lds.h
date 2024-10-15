@@ -106,11 +106,11 @@
 #define BAREBOX_PCI_FIXUP
 #endif
 
-#define BAREBOX_RSA_KEYS			\
+#define BAREBOX_PUBLIC_KEYS			\
 	STRUCT_ALIGN();				\
-	__rsa_keys_start = .;			\
-	KEEP(*(.rsa_keys.rodata.*));		\
-	__rsa_keys_end = .;			\
+	__public_keys_start = .;		\
+	KEEP(*(.public_keys.rodata.*));		\
+	__public_keys_end = .;			\
 
 #define BAREBOX_DEEP_PROBE			\
 	STRUCT_ALIGN();				\
@@ -140,7 +140,7 @@
 	BAREBOX_MAGICVARS			\
 	BAREBOX_CLK_TABLE			\
 	BAREBOX_DTB				\
-	BAREBOX_RSA_KEYS			\
+	BAREBOX_PUBLIC_KEYS			\
 	BAREBOX_PCI_FIXUP			\
 	BAREBOX_DEEP_PROBE
 

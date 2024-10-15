@@ -115,31 +115,34 @@ config CRYPTO_PBKDF2
 	select DIGEST_HMAC_GENERIC
 	bool
 
-config CRYPTO_RSA
+config CRYPTO_ECC
 	bool
 
-config CRYPTO_RSA_BUILTIN_KEYS
-	bool
-	default y if CRYPTO_RSA_KEY != ""
+config CRYPTO_RSA
+	bool "RSA support"
+	default y if FITIMAGE_SIGNATURE
+
+config CRYPTO_ECDSA
+	bool "ECDSA support"
+	select CRYPTO_ECC
+
+config CRYPTO_BUILTIN_KEYS
+	bool "builtin keys"
 	select KEYTOC
 
-config CRYPTO_RSA_KEY
-	depends on CRYPTO_RSA
-	string "RSA key to compile in"
+config CRYPTO_PUBLIC_KEYS
+	depends on CRYPTO_BUILTIN_KEYS
+	string "public keys to compile in"
 	help
-	  This option should be a filename of a PEM-formatted file containing
-	  X.509 certificates to be included into barebox. If the string starts
-	  with "pkcs11:" it is interpreted as a PKCS#11 URI rather than a file.
+	  This option should be a space separated list of filenames of
+	  PEM-formatted files containing X.509 certificates to be included into
+	  barebox. If an entry starts with "pkcs11:" it is interpreted as a
+	  PKCS#11 URI rather than a file. If an entry starts with a <hint>:
+	  prefix, <hint> is used as a key name hint to find a key without
+	  iterating over all keys.
 
 	  This avoids the mkimage dependency of CONFIG_BOOTM_FITIMAGE_PUBKEY
 	  at the cost of an openssl build-time dependency.
-
-config CRYPTO_RSA_KEY_NAME_HINT
-	depends on CRYPTO_RSA
-	string "FIT image key name hint"
-	help
-	  In FIT images keys are identified by a key name hint string. Provide
-	  the key name hint here.
 
 config CRYPTO_KEYSTORE
 	bool "Keystore"

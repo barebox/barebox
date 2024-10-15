@@ -3,7 +3,7 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <common.h>
-#include <rsa.h>
+#include <crypto/rsa.h>
 #include <bselftest.h>
 #include <crypto/jwt.h>
 #include <console.h>

@@ -614,7 +614,7 @@ quiet_cmd_b64dec = B64DEC  $@
 # target file.
 quiet_cmd_public_keys = KEY     $@
 cmd_public_keys = \
-	$(objtree)/scripts/keytoc -o $@.tmp "$(2)" $(3) &&		\
+	$(objtree)/scripts/keytoc -o $@.tmp $(2) $(3) &&		\
 	if cmp -s $@.tmp $@; then					\
 		rm $@.tmp;						\
 	else								\

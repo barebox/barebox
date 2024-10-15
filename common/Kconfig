@@ -62,8 +62,8 @@ config FITIMAGE
 	select DIGEST
 
 config FITIMAGE_SIGNATURE
-	select CRYPTO_RSA
 	bool
+	select CRYPTO_BUILTIN_KEYS
 
 config LOGBUF
 	bool

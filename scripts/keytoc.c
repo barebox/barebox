@@ -9,6 +9,7 @@
  *
  */
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -26,6 +27,12 @@
 #include <openssl/store.h>
 
 static int dts, standalone;
+
+static void enomem_exit(const char *func)
+{
+	fprintf(stderr, "%s: Out of memory\n", func);
+	exit(2);
+}
 
 static int openssl_error(const char *fmt, ...)
 {
@@ -122,6 +129,7 @@ static int engine_init(ENGINE **pe)
 
 	if (key_pass) {
 		if (!ENGINE_ctrl_cmd_string(e, "PIN", key_pass, 0)) {
+			ret = -1;
 			fprintf(stderr, "Cannot set PKCS#11 PIN\n");
 			goto err_set_rsa;
 		}
@@ -315,12 +323,12 @@ cleanup:
 
 static FILE *outfilep;
 
-static int print_bignum(BIGNUM *num, int num_bits)
+static int print_bignum(BIGNUM *num, int num_bits, int width)
 {
 	BIGNUM *tmp, *big2, *big32, *big2_32;
 	BN_CTX *ctx;
 	int i;
-	uint32_t *arr;
+	uint64_t *arr;
 
 	tmp = BN_new();
 	big2 = BN_new();
@@ -345,34 +353,36 @@ static int print_bignum(BIGNUM *num, int num_bits)
 		return -ENOMEM;
 	}
 	BN_set_word(big2, 2L);
-	BN_set_word(big32, 32L);
-	BN_exp(big2_32, big2, big32, ctx); /* B = 2^32 */
+	BN_set_word(big32, width);
+	BN_exp(big2_32, big2, big32, ctx); /* B = 2^width */
 
-	arr = malloc(num_bits / 32 * sizeof(uint32_t));
+	arr = malloc(num_bits / width * sizeof(*arr));
+	if (!arr)
+		enomem_exit("malloc");
 
-	for (i = 0; i < num_bits / 32; i++) {
+	for (i = 0; i < num_bits / width; i++) {
 		BN_mod(tmp, num, big2_32, ctx); /* n = N mod B */
 		arr[i] = BN_get_word(tmp);
-		BN_rshift(num, num, 32); /*  N = N/B */
+		BN_rshift(num, num, width); /*  N = N/B */
 	}
 
 	if (dts) {
-		for (i = 0; i < num_bits / 32; i++) {
+		for (i = 0; i < num_bits / width; i++) {
 			if (i % 4)
 				fprintf(outfilep, " ");
 			else
 				fprintf(outfilep, "\n\t\t\t\t");
-			fprintf(outfilep, "0x%08x", arr[num_bits / 32 - 1 - i]);
-			BN_rshift(num, num, 32); /*  N = N/B */
+			fprintf(outfilep, "0x%0*jx", width / 4, arr[num_bits / width - 1 - i]);
+			BN_rshift(num, num, width); /*  N = N/B */
 		}
 	} else {
-		for (i = 0; i < num_bits / 32; i++) {
+		for (i = 0; i < num_bits / width; i++) {
 			if (i % 4)
 				fprintf(outfilep, " ");
 			else
 				fprintf(outfilep, "\n\t");
-			fprintf(outfilep, "0x%08x,", arr[i]);
-			BN_rshift(num, num, 32); /*  N = N/B */
+			fprintf(outfilep, "0x%0*jx,", width / 4, arr[i]);
+			BN_rshift(num, num, width); /*  N = N/B */
 		}
 	}
 
@@ -470,22 +480,15 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 		return -EINVAL;
 
 	if (dts) {
-		fprintf(outfilep, "\t\tkey-%s {\n", key_name_c);
-		fprintf(outfilep, "\t\t\tecdsa,x-point = <");
-		print_bignum(key_x, bits);
-		fprintf(outfilep, ">;\n");
-		fprintf(outfilep, "\t\t\tecdsa,y-point = <");
-		print_bignum(key_y, bits);
-		fprintf(outfilep, ">;\n");
-		fprintf(outfilep, "\t\t\tecdsa,curve = \"%s\";\n", group);
-		fprintf(outfilep, "\t\t};\n");
+		fprintf(stderr, "ERROR: generating a dts snippet for ECDSA keys is not yet supported\n");
+		return -EOPNOTSUPP;
 	} else {
-		fprintf(outfilep, "\nstatic uint32_t %s_x[] = {", key_name_c);
-		print_bignum(key_x, bits);
+		fprintf(outfilep, "\nstatic uint64_t %s_x[] = {", key_name_c);
+		print_bignum(key_x, bits, 64);
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static uint32_t %s_y[] = {", key_name_c);
-		print_bignum(key_y, bits);
+		fprintf(outfilep, "static uint64_t %s_y[] = {", key_name_c);
+		print_bignum(key_y, bits, 64);
 		fprintf(outfilep, "\n};\n\n");
 
 		fprintf(outfilep, "static struct ecdsa_public_key %s = {\n", key_name_c);
@@ -494,9 +497,13 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 		fprintf(outfilep, "\t.x = %s_x,\n", key_name_c);
 		fprintf(outfilep, "\t.y = %s_y,\n", key_name_c);
 		fprintf(outfilep, "};\n");
-		if (!standalone)
-			fprintf(outfilep, "\nstruct ecdsa_public_key *%s_ecdsa_p __attribute__((section(\".ecdsa_keys.rodata.%s\"))) = &%s;\n",
-				key_name_c, key_name_c, key_name_c);
+		if (!standalone) {
+			fprintf(outfilep, "\nstruct public_key __attribute__((section(\".public_keys.rodata.%s\"))) %s_public_key = {\n", key_name_c, key_name_c);
+			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_ECDSA,\n");
+			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
+			fprintf(outfilep, "\t.ecdsa = &%s,\n", key_name_c);
+			fprintf(outfilep, "};\n");
+		}
 	}
 
 	return 0;
@@ -519,10 +526,10 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 	if (dts) {
 		fprintf(outfilep, "\t\tkey-%s {\n", key_name_c);
 		fprintf(outfilep, "\t\t\trsa,r-squared = <");
-		print_bignum(r_squared, bits);
+		print_bignum(r_squared, bits, 32);
 		fprintf(outfilep, ">;\n");
 		fprintf(outfilep, "\t\t\trsa,modulus= <");
-		print_bignum(modulus, bits);
+		print_bignum(modulus, bits, 32);
 		fprintf(outfilep, ">;\n");
 		fprintf(outfilep, "\t\t\trsa,exponent = <0x%0lx 0x%lx>;\n",
 			(exponent >> 32) & 0xffffffff,
@@ -533,11 +540,11 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 		fprintf(outfilep, "\t\t};\n");
 	} else {
 		fprintf(outfilep, "\nstatic uint32_t %s_modulus[] = {", key_name_c);
-		print_bignum(modulus, bits);
+		print_bignum(modulus, bits, 32);
 		fprintf(outfilep, "\n};\n\n");
 
 		fprintf(outfilep, "static uint32_t %s_rr[] = {", key_name_c);
-		print_bignum(r_squared, bits);
+		print_bignum(r_squared, bits, 32);
 		fprintf(outfilep, "\n};\n\n");
 
 		if (standalone) {
@@ -552,12 +559,15 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 		fprintf(outfilep, "\t.modulus = %s_modulus,\n", key_name_c);
 		fprintf(outfilep, "\t.rr = %s_rr,\n", key_name_c);
 		fprintf(outfilep, "\t.exponent = 0x%0lx,\n", exponent);
-		fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
 		fprintf(outfilep, "};\n");
 
-		if (!standalone)
-			fprintf(outfilep, "\nstruct rsa_public_key *%sp __attribute__((section(\".rsa_keys.rodata.%s\"))) = &%s;\n",
-				key_name_c, key_name_c, key_name_c);
+		if (!standalone) {
+			fprintf(outfilep, "\nstruct public_key __attribute__((section(\".public_keys.rodata.%s\"))) %s_public_key = {\n", key_name_c, key_name_c);
+			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_RSA,\n");
+			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
+			fprintf(outfilep, "\t.rsa = &%s,\n", key_name_c);
+			fprintf(outfilep, "};\n");
+		}
 	}
 
 	return 0;
@@ -598,17 +608,20 @@ static int gen_key(const char *keyname, const char *path)
 	}
 
 	ret = gen_key_ecdsa(key, keyname, key_name_c);
+	if (ret == -EOPNOTSUPP)
+		return ret;
+
 	if (ret)
 		ret = gen_key_rsa(key, keyname, key_name_c);
 
-	return 0;
+	return ret;
 }
 
 int main(int argc, char *argv[])
 {
-	char *path, *keyname;
 	int i, opt, ret;
 	char *outfile = NULL;
+	int keynum = 1;
 
 	outfilep = stdout;
 
@@ -651,37 +664,40 @@ int main(int argc, char *argv[])
 		else
 			fprintf(outfilep, "\tsignature {\n");
 	} else if (standalone) {
-		fprintf(outfilep, "#include <ecdsa.h>\n");
-		fprintf(outfilep, "#include <rsa.h>\n");
+		fprintf(outfilep, "#include <crypto/ecdsa.h>\n");
+		fprintf(outfilep, "#include <crypto/rsa.h>\n");
 	}
 
 	for (i = optind; i < argc; i++) {
-		keyname = argv[i];
+		char *keyspec = argv[i];
+		char *keyname = NULL;
+		char *path, *freep = NULL;
 
-		path = strchr(keyname, ':');
-		if (!path) {
-			fprintf(stderr,
-				"keys must be given as <key_name_hint>:<crt>\n");
-			exit(1);
+		if (!strncmp(keyspec, "pkcs11:", 7)) {
+			path = keyspec;
+		} else {
+			path = strchr(keyspec, ':');
+			if (path) {
+				*path = 0;
+				path++;
+				keyname = keyspec;
+			} else {
+				path = keyspec;
+			}
 		}
 
-		*path = 0;
-		path++;
-
-		if (!strncmp(path, "__ENV__", 7)) {
-			const char *orig_path = path;
-
-			path = getenv(orig_path + 7);
-			if (!path) {
-				fprintf(stderr, "%s doesn't contain a path\n",
-					orig_path + 7);
-				exit(1);
-			}
+		if (!keyname) {
+			ret = asprintf(&freep, "key_%d", keynum++);
+			if (ret < 0)
+				enomem_exit("asprintf");
+			keyname = freep;
 		}
 
 		ret = gen_key(keyname, path);
 		if (ret)
 			exit(1);
+
+		free(freep);
 	}
 
 	if (dts) {

@@ -19,7 +19,7 @@ obj-$(CONFIG_SELFTEST_REGULATOR) += regulator.o test_regulator.dtbo.o
 obj-$(CONFIG_SELFTEST_TEST_COMMAND) += test_command.o
 obj-$(CONFIG_SELFTEST_IDR) += idr.o
 
-ifdef REGENERATE_RSATOC
+ifdef REGENERATE_KEYTOC
 
 $(obj)/jwt_test.pem.c_shipped: $(src)/jwt_test.pem FORCE
 	$(call if_changed,public_keys,$(basename $(target-stem)):$<,-s)

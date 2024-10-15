@@ -3,7 +3,7 @@
 #define pr_fmt(fmt) "jwt: " fmt
 
 #include <crypto/jwt.h>
-#include <rsa.h>
+#include <crypto/rsa.h>
 #include <errno.h>
 #include <linux/printk.h>
 #include <base64.h>

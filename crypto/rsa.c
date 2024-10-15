@@ -14,7 +14,8 @@
 #include <asm/types.h>
 #include <asm/byteorder.h>
 #include <errno.h>
-#include <rsa.h>
+#include <crypto/rsa.h>
+#include <crypto/public_key.h>
 #include <asm/unaligned.h>
 
 #define UINT64_MULT32(v, multby)  (((uint64_t)(v)) * ((uint32_t)(multby)))
@@ -380,106 +381,75 @@ static void rsa_convert_big_endian(uint32_t *dst, const uint32_t *src, int len)
 		dst[i] = fdt32_to_cpu(src[len - 1 - i]);
 }
 
-struct rsa_public_key *rsa_of_read_key(struct device_node *node)
+struct public_key *rsa_of_read_key(struct device_node *node)
 {
 	const void *modulus, *rr;
 	const uint64_t *public_exponent;
 	int length;
-	struct rsa_public_key *key;
+	struct public_key *key;
+	struct rsa_public_key *rsa;
 	int err;
 
 	if (strncmp(node->name, "key-", 4))
 		return ERR_PTR(-EINVAL);
 
 	key = xzalloc(sizeof(*key));
+	rsa = key->rsa = xzalloc(sizeof(*rsa));
 
 	key->key_name_hint = xstrdup(node->name + 4);
 
-	of_property_read_u32(node, "rsa,num-bits", &key->len);
-	of_property_read_u32(node, "rsa,n0-inverse", &key->n0inv);
+	of_property_read_u32(node, "rsa,num-bits", &rsa->len);
+	of_property_read_u32(node, "rsa,n0-inverse", &rsa->n0inv);
 
 	public_exponent = of_get_property(node, "rsa,exponent", &length);
 	if (!public_exponent || length < sizeof(*public_exponent))
-		key->exponent = RSA_DEFAULT_PUBEXP;
+		rsa->exponent = RSA_DEFAULT_PUBEXP;
 	else
-		key->exponent = fdt64_to_cpu(*public_exponent);
+		rsa->exponent = fdt64_to_cpu(*public_exponent);
 
 	modulus = of_get_property(node, "rsa,modulus", NULL);
 	rr = of_get_property(node, "rsa,r-squared", NULL);
 
-	if (!key->len || !modulus || !rr) {
+	if (!rsa->len || !modulus || !rr) {
 		pr_debug("%s: Missing RSA key info", __func__);
 		err = -EFAULT;
 		goto out;
 	}
 
 	/* Sanity check for stack size */
-	if (key->len > RSA_MAX_KEY_BITS || key->len < RSA_MIN_KEY_BITS) {
+	if (rsa->len > RSA_MAX_KEY_BITS || rsa->len < RSA_MIN_KEY_BITS) {
 		pr_debug("RSA key bits %u outside allowed range %d..%d\n",
-			 key->len, RSA_MIN_KEY_BITS, RSA_MAX_KEY_BITS);
+			 rsa->len, RSA_MIN_KEY_BITS, RSA_MAX_KEY_BITS);
 		err = -EFAULT;
 		goto out;
 	}
 
-	key->len /= sizeof(uint32_t) * 8;
+	rsa->len /= sizeof(uint32_t) * 8;
 
-	key->modulus = xzalloc(RSA_MAX_KEY_BITS / 8);
-	key->rr = xzalloc(RSA_MAX_KEY_BITS / 8);
+	rsa->modulus = xzalloc(RSA_MAX_KEY_BITS / 8);
+	rsa->rr = xzalloc(RSA_MAX_KEY_BITS / 8);
 
-	rsa_convert_big_endian(key->modulus, modulus, key->len);
-	rsa_convert_big_endian(key->rr, rr, key->len);
+	rsa_convert_big_endian(rsa->modulus, modulus, rsa->len);
+	rsa_convert_big_endian(rsa->rr, rr, rsa->len);
 
 	err = 0;
 out:
-	if (err)
+	if (err) {
 		free(key);
+		free(rsa);
+	}
 
 	return err ? ERR_PTR(err) : key;
 }
 
 void rsa_key_free(struct rsa_public_key *key)
 {
-	list_del(&key->list);
-
 	free(key->modulus);
 	free(key->rr);
 	free(key);
 }
 
-static LIST_HEAD(rsa_keys);
-
-const struct rsa_public_key *rsa_key_next(const struct rsa_public_key *prev)
-{
-	prev = list_prepare_entry(prev, &rsa_keys, list);
-	list_for_each_entry_continue(prev, &rsa_keys, list)
-		return prev;
-
-	return NULL;
-}
-
-const struct rsa_public_key *rsa_get_key(const char *name)
-{
-	const struct rsa_public_key *key;
-
-	list_for_each_entry(key, &rsa_keys, list) {
-		if (!strcmp(key->key_name_hint, name))
-			return key;
-	}
-
-	return NULL;
-}
-
-static int rsa_key_add(struct rsa_public_key *key)
-{
-	if (rsa_get_key(key->key_name_hint))
-		return -EEXIST;
-
-	list_add_tail(&key->list, &rsa_keys);
-
-	return 0;
-}
-
-static struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
+struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
 {
 	struct rsa_public_key *new;
 
@@ -490,13 +460,10 @@ static struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
 	return new;
 }
 
-extern const struct rsa_public_key * const __rsa_keys_start;
-extern const struct rsa_public_key * const __rsa_keys_end;
-
 static void rsa_init_keys_of(void)
 {
 	struct device_node *sigs, *sig;
-	struct rsa_public_key *key;
+	struct public_key *key;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_OFTREE))
@@ -514,34 +481,19 @@ static void rsa_init_keys_of(void)
 			continue;
 		}
 
-		ret = rsa_key_add(key);
+		ret = public_key_add(key);
 		if (ret)
 			pr_err("Cannot add rsa key %s: %s\n",
 				key->key_name_hint, strerror(-ret));
 	}
 }
 
-static int rsa_init_keys(void)
+static __maybe_unused int rsa_init_keys(void)
 {
-	const struct rsa_public_key * const *iter;
-	struct rsa_public_key *key;
-	int ret;
-
-	for (iter = &__rsa_keys_start; iter != &__rsa_keys_end; iter++) {
-		key = rsa_key_dup(*iter);
-		ret = rsa_key_add(key);
-		if (ret)
-			pr_err("Cannot add rsa key %s: %s\n",
-			       key->key_name_hint, strerror(-ret));
-	}
-
 	rsa_init_keys_of();
 
 	return 0;
 }
-
+#ifdef CONFIG_CRYPTO_BUILTIN_KEYS
 device_initcall(rsa_init_keys);
-
-#ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS
-#include "rsa-keys.h"
 #endif

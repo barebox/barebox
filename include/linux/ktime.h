@@ -21,6 +21,7 @@
 #ifndef _LINUX_KTIME_H
 #define _LINUX_KTIME_H
 
+#include <linux/math.h>
 #include <linux/time.h>
 #include <clock.h>
 #include <linux/bug.h>

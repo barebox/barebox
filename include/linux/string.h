@@ -6,6 +6,10 @@
 #include <linux/types.h>	/* for size_t */
 #include <linux/stddef.h>	/* for NULL */
 #include <linux/overflow.h>	/* for array_size */
+/*
+ * Include machine specific inline routines
+ */
+#include <asm/string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,26 +20,27 @@ extern char * strsep(char **,const char *);
 extern __kernel_size_t strspn(const char *,const char *);
 
 
+#ifndef strchr
 #define strchr(s, c) ({ \
 	(typeof(&(s)[0]))(_strchr((s), c)); \
 	})
+#endif
 
+#ifndef strrchr
 #define strrchr(s, c) ({ \
 	(typeof(&(s)[0]))(_strrchr((s), c)); \
 	})
+#endif
 
+#ifndef strstr
 #define strstr(s1, s2) ({ \
 	(typeof(&(s1)[0]))(_strstr((s1), (s2))); \
 	})
+#endif
 
 #ifndef __HAVE_ARCH_STRCHRNUL
 extern char * strchrnul(const char *,int);
 #endif
-
-/*
- * Include machine specific inline routines
- */
-#include <asm/string.h>
 
 #ifndef __HAVE_ARCH_STRCPY
 extern char * strcpy(char *,const char *);

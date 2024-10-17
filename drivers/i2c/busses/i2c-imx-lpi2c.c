@@ -330,7 +330,7 @@ static void lpi2c_imx_set_rx_watermark(struct lpi2c_imx_struct *lpi2c_imx)
 
 static int lpi2c_imx_write_txfifo(struct lpi2c_imx_struct *lpi2c_imx)
 {
-	unsigned int data, remaining;
+	unsigned int data, remaining = lpi2c_imx->msglen;
 	unsigned int timeout = 100000;;
 
 	do {
@@ -353,7 +353,7 @@ static int lpi2c_imx_write_txfifo(struct lpi2c_imx_struct *lpi2c_imx)
 
 static int lpi2c_imx_read_rxfifo(struct lpi2c_imx_struct *lpi2c_imx)
 {
-	unsigned int remaining;
+	unsigned int remaining = lpi2c_imx->msglen;
 	unsigned int data;
 	unsigned int timeout = 100000;;
 

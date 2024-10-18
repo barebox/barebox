@@ -374,9 +374,6 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (le32_to_cpu(buf[5]) == 0x504d5453)
 		return filetype_mxs_bootstream;
 
-	if (buf[16] == 0x31305341)
-		return filetype_socfpga_xload;
-
 	if (is_barebox_arm_head(_buf))
 		return filetype_arm_barebox;
 	if (buf[9] == 0x016f2818 || buf[9] == 0x18286f01)
@@ -387,6 +384,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (bufsize < 256)
 		return filetype_unknown;
+
+	if (buf[16] == 0x31305341)
+		return filetype_socfpga_xload;
 
 	if (strncmp(buf8, "STM\x32", 4) == 0) {
 		if (buf8[74] == 0x01) {

@@ -1634,8 +1634,9 @@ static int vop2_register_plane(struct vop2_video_port *vp, struct vop2_win *win)
 	win->dst.y2 = info->yres;
 
 	info->line_length = vp->line_length;
-	info->screen_base = dma_alloc_writecombine(vp->line_length * vp->max_yres,
-							&win->dma);
+	info->screen_base = dma_alloc_writecombine(DMA_DEVICE_BROKEN,
+						   vp->line_length * vp->max_yres,
+						   &win->dma);
 	if (!info->screen_base)
 		return -ENOMEM;
 

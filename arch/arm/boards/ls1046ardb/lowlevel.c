@@ -184,6 +184,20 @@ static struct fsl_ddr_info ls1046a_info = {
 	.c = ddrc,
 };
 
+static struct dram_regions_info dram_info = {
+	.num_dram_regions = 2,
+	.total_dram_size = SZ_8G,
+	.region = {
+		{
+			.addr = SZ_2G,
+			.size = SZ_2G,
+		}, {
+			.addr = SZ_32G + SZ_2G,
+			.size = SZ_4G + SZ_2G,
+		},
+	},
+};
+
 static noinline __noreturn void ls1046ardb_r_entry(void)
 {
 	unsigned long membase = LS1046A_DDR_SDRAM_BASE;
@@ -210,7 +224,7 @@ static noinline __noreturn void ls1046ardb_r_entry(void)
 
 	ls1046a_errata_post_ddr();
 
-	ls1046a_esdhc_start_image(NULL);
+	ls1046a_esdhc_start_image(&dram_info);
 
 err:
 	pr_err("Booting failed\n");

@@ -331,16 +331,16 @@ static noinline __noreturn void tqmls1046a_r_entry(bool is_8g)
 
 	ls1046a_errata_post_ddr();
 
-	ls1046a_xload_start_image(0, 0, 0);
+	ls1046a_xload_start_image();
 
 	pr_err("Booting failed\n");
 
 	while (1);
 }
 
-void tqmls1046a_entry(unsigned long r0, unsigned long r1, unsigned long r2);
+void tqmls1046a_entry(void);
 
-__noreturn void tqmls1046a_entry(unsigned long r0, unsigned long r1, unsigned long r2)
+__noreturn void tqmls1046a_entry(void)
 {
 	relocate_to_current_adr();
 	setup_c();
@@ -348,9 +348,9 @@ __noreturn void tqmls1046a_entry(unsigned long r0, unsigned long r1, unsigned lo
 	tqmls1046a_r_entry(false);
 }
 
-void tqmls1046a_8g_entry(unsigned long r0, unsigned long r1, unsigned long r2);
+void tqmls1046a_8g_entry(void);
 
-__noreturn void tqmls1046a_8g_entry(unsigned long r0, unsigned long r1, unsigned long r2)
+__noreturn void tqmls1046a_8g_entry(void)
 {
 	relocate_to_current_adr();
 	setup_c();

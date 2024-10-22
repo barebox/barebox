@@ -210,7 +210,7 @@ static noinline __noreturn void ls1046ardb_r_entry(void)
 
 	ls1046a_errata_post_ddr();
 
-	ls1046a_esdhc_start_image(0, 0, 0);
+	ls1046a_esdhc_start_image();
 
 err:
 	pr_err("Booting failed\n");
@@ -218,9 +218,9 @@ err:
 	while (1);
 }
 
-void ls1046ardb_entry(unsigned long r0, unsigned long r1, unsigned long r2);
+void ls1046ardb_entry(void);
 
-__noreturn void ls1046ardb_entry(unsigned long r0, unsigned long r1, unsigned long r2)
+__noreturn void ls1046ardb_entry(void)
 {
 	relocate_to_current_adr();
 	setup_c();

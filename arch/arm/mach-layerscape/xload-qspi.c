@@ -19,10 +19,9 @@ struct layerscape_base_addr {
 	void *qspi_mem_base;
 };
 
-static int layerscape_qspi_start_image(struct layerscape_base_addr *base,
-		unsigned long r0, unsigned long r1, unsigned long r2)
+static int layerscape_qspi_start_image(struct layerscape_base_addr *base)
 {
-	void (*barebox)(unsigned long, unsigned long, unsigned long) = base->membase;
+	void (*barebox)(void) = base->membase;
 
 	/* Switch controller into little endian mode */
 	out_be32(base->qspi_reg_base, 0x000f400c);
@@ -33,15 +32,14 @@ static int layerscape_qspi_start_image(struct layerscape_base_addr *base,
 
 	printf("Starting barebox\n");
 
-	barebox(r0, r1, r2);
+	barebox();
 
 	printf("failed\n");
 
 	return -EIO;
 }
 
-int ls1046a_qspi_start_image(unsigned long r0, unsigned long r1,
-					     unsigned long r2)
+int ls1046a_qspi_start_image(void)
 {
 	struct layerscape_base_addr base;
 
@@ -49,11 +47,10 @@ int ls1046a_qspi_start_image(unsigned long r0, unsigned long r1,
 	base.membase = IOMEM(LS1046A_DDR_SDRAM_BASE);
 	base.qspi_mem_base = IOMEM(0x40000000);
 
-	return layerscape_qspi_start_image(&base, r0, r1, r2);
+	return layerscape_qspi_start_image(&base);
 }
 
-int ls1021a_qspi_start_image(unsigned long r0, unsigned long r1,
-					     unsigned long r2)
+int ls1021a_qspi_start_image(void)
 {
 	struct layerscape_base_addr base;
 
@@ -61,5 +58,5 @@ int ls1021a_qspi_start_image(unsigned long r0, unsigned long r1,
 	base.membase = IOMEM(LS1021A_DDR_SDRAM_BASE);
 	base.qspi_mem_base = IOMEM(0x40000000);
 
-	return layerscape_qspi_start_image(&base, r0, r1, r2);
+	return layerscape_qspi_start_image(&base);
 }

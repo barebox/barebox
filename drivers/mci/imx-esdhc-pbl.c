@@ -352,7 +352,7 @@ static int layerscape_esdhc_load_image(struct fsl_esdhc_host *host, void *adr, u
  * Return: If successful, this function does not return. A negative error
  * code is returned when this function fails.
  */
-int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long r2)
+int ls1046a_esdhc_start_image(void)
 {
 	int ret;
 	struct esdhc_soc_data data = {
@@ -364,8 +364,7 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 	};
 	void *sdram = (void *)0x80000000;
 	unsigned long size = ALIGN(barebox_image_size + LS1046A_SD_IMAGE_OFFSET, 512);
-	void (*barebox)(unsigned long, unsigned long, unsigned long) =
-		(sdram + LS1046A_SD_IMAGE_OFFSET);
+	void (*barebox)(void) = (sdram + LS1046A_SD_IMAGE_OFFSET);
 
 	ret = layerscape_esdhc_load_image(&host, sdram, size, (8 << 8) | (3 << 4));
 	if (ret)
@@ -373,7 +372,7 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 
 	printf("Starting barebox\n");
 
-	barebox(r0, r1, r2);
+	barebox();
 
 	return -EINVAL;
 }
@@ -393,8 +392,7 @@ static int ls1028a_esdhc_start_image(void __iomem *base, struct dram_regions_inf
 	void *bl31_image;
 	struct bl2_to_bl31_params_mem_v2 *params;
 	unsigned long size = ALIGN(barebox_image_size + LS1046A_SD_IMAGE_OFFSET, 512);
-	void (*barebox)(unsigned long, unsigned long, unsigned long) =
-		(sdram + LS1046A_SD_IMAGE_OFFSET);
+	void (*barebox)(void) = (sdram + LS1046A_SD_IMAGE_OFFSET);
 	int ret;
 
 	ret = layerscape_esdhc_load_image(&host, sdram, size, 8 << 4);

@@ -173,6 +173,9 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 		goto fail;
 	}
 
+	if (le32_to_cpu((*gpt)->header_size) > bdev_logical_block_size(blk))
+		goto fail;
+
 	/* Check the GUID Partition Table CRC */
 	origcrc = le32_to_cpu((*gpt)->header_crc32);
 	(*gpt)->header_crc32 = 0;

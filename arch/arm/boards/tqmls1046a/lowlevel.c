@@ -300,15 +300,41 @@ out:
 	return variant;
 }
 
+static struct dram_regions_info dram_info_2g = {
+	.num_dram_regions = 1,
+	.total_dram_size = SZ_2G,
+	.region = {
+		{
+			.addr = SZ_2G,
+			.size = SZ_2G,
+		},
+	},
+};
+
+static struct dram_regions_info dram_info_8g = {
+	.num_dram_regions = 2,
+	.total_dram_size = SZ_8G,
+	.region = {
+		{
+			.addr = SZ_2G,
+			.size = SZ_2G,
+		}, {
+			.addr = SZ_32G + SZ_2G,
+			.size = SZ_4G + SZ_2G,
+		},
+	},
+};
+
 extern char __dtb_z_fsl_ls1046a_tqmls1046a_mbls10xxa_start[];
 
 static noinline __noreturn void tqmls1046a_r_entry(bool is_8g)
 {
 	unsigned long membase = LS1046A_DDR_SDRAM_BASE;
 	int board_variant = 0;
+	struct dram_regions_info *dram_info;
 
 	if (get_pc() >= membase)
-		barebox_arm_entry(membase, 0x80000000 - SZ_64M,
+		barebox_arm_entry(membase, 0x80000000 - SZ_128M,
 				  __dtb_z_fsl_ls1046a_tqmls1046a_mbls10xxa_start);
 
 	arm_cpu_lowlevel_init();
@@ -321,17 +347,19 @@ static noinline __noreturn void tqmls1046a_r_entry(bool is_8g)
 
 	if (is_8g) {
 		board_variant = tqmls1046a_get_variant();
+		dram_info = &dram_info_8g;
 		if (board_variant == TQ_VARIANT_TQMLS1046A_CA)
 			fsl_ddr_set_memctl_regs(&tqmls1046a_ddrc_8g_ca[0], 0, false);
 		else
 			fsl_ddr_set_memctl_regs(&tqmls1046a_ddrc_8g[0], 0, false);
 	} else {
+		dram_info = &dram_info_2g;
 		fsl_ddr_set_memctl_regs(&tqmls1046a_ddrc[0], 0, false);
 	}
 
 	ls1046a_errata_post_ddr();
 
-	ls1046a_xload_start_image(NULL);
+	ls1046a_xload_start_image(dram_info);
 
 	pr_err("Booting failed\n");
 

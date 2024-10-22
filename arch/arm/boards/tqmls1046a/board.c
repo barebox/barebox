@@ -15,9 +15,9 @@
 
 static void ls1046a_add_memory(void)
 {
+	struct resource *res;
 	u32 cs0_bnds;
 	u64 memsize, lower, upper;
-	int ret;
 
 	cs0_bnds = in_be32(LS1046A_DDRC_BASE);
 	switch (cs0_bnds) {
@@ -41,9 +41,9 @@ static void ls1046a_add_memory(void)
 		arm_add_mem_device("ram1", 0x880000000, upper);
 	}
 
-	ret = ls1046a_ppa_init(0x100000000 - SZ_64M, SZ_64M);
-	if (ret)
-		pr_err("Failed to initialize PPA firmware: %s\n", strerror(-ret));
+	res = reserve_sdram_region("tfa", 0xfbe00000, 0x4200000);
+
+	of_register_fixup(of_fixup_reserved_memory, res);
 }
 
 static int tqmls1046a_postcore_init(void)

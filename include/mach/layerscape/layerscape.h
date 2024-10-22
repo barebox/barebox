@@ -32,16 +32,6 @@ enum bootsource ls1021a_bootsource_get(void);
 #define LAYERSCAPE_SOC_LS1028A		1028
 #define LAYERSCAPE_SOC_LS1046A		1046
 
-#ifdef CONFIG_ARCH_LAYERSCAPE_PPA
-int ls1046a_ppa_init(resource_size_t ppa_start, resource_size_t ppa_size);
-#else
-static inline int ls1046a_ppa_init(resource_size_t ppa_start,
-				   resource_size_t ppa_size)
-{
-	return -ENOSYS;
-}
-#endif
-
 struct dram_region_info {
         uint64_t addr;
         uint64_t size;

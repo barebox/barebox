@@ -50,7 +50,7 @@ $(obj)/barebox-ls1046ardb-qspi.image: $(obj)/start_ls1046ardb.pblb \
 image-$(CONFIG_MACH_LS1046ARDB) += barebox-ls1046ardb-sd.image barebox-ls1046ardb-qspi.image \
 	barebox-ls1046ardb-emmc.image
 
-pblb-$(CONFIG_MACH_TQMLS1046A) += start_tqmls1046a
+pblb-$(CONFIG_MACH_TQMLS1046A) += start_tqmls1046a start_tqmls1046a_8g
 
 $(obj)/barebox-tqmls1046a-sd.image: $(obj)/start_tqmls1046a.pblb \
 		$(board)/tqmls1046a/tqmls1046a_rcw_sd_3333_5559.cfg \
@@ -62,8 +62,20 @@ $(obj)/barebox-tqmls1046a-qspi.image: $(obj)/start_tqmls1046a.pblb \
 		$(board)/tqmls1046a/tqmls1046a_pbi.cfg FORCE
 	$(call if_changed,lspbl_spi_image,ls1046a)
 
+$(obj)/barebox-tqmls1046a-8g-sd.image: $(obj)/start_tqmls1046a_8g.pblb \
+		$(board)/tqmls1046a/tqmls1046a_rcw_sd_3333_5559.cfg \
+		$(board)/tqmls1046a/tqmls1046a_pbi.cfg FORCE
+	$(call if_changed,lspbl_image,ls1046a)
+
+$(obj)/barebox-tqmls1046a-8g-qspi.image: $(obj)/start_tqmls1046a_8g.pblb \
+		$(board)/tqmls1046a/tqmls1046a_rcw_qspi_3333_5559.cfg \
+		$(board)/tqmls1046a/tqmls1046a_pbi.cfg FORCE
+	$(call if_changed,lspbl_spi_image,ls1046a)
+
 image-$(CONFIG_MACH_TQMLS1046A) += barebox-tqmls1046a-sd.image \
-	barebox-tqmls1046a-qspi.image
+	barebox-tqmls1046a-qspi.image \
+	barebox-tqmls1046a-8g-sd.image \
+	barebox-tqmls1046a-8g-qspi.image
 
 pblb-$(CONFIG_MACH_LS1021AIOT) += start_ls1021aiot
 

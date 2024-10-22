@@ -13,22 +13,38 @@
 #include <mach/layerscape/bbu.h>
 #include <mach/layerscape/layerscape.h>
 
-static int tqmls1046a_mem_init(void)
+static void ls1046a_add_memory(void)
 {
+	u32 cs0_bnds;
+	u64 memsize, lower, upper;
 	int ret;
 
-	if (!of_machine_is_compatible("tq,ls1046a-tqmls1046a"))
-		return 0;
+	cs0_bnds = in_be32(LS1046A_DDRC_BASE);
+	switch (cs0_bnds) {
+	case 0x1ff:
+		memsize = SZ_8G;
+		break;
+	case 0x7f:
+		memsize = SZ_2G;
+		break;
+	default:
+		pr_err("Unexpected cs0_bnds: 0x%08x\n", cs0_bnds);
+		memsize = SZ_2G;
+		break;
+	}
 
-	arm_add_mem_device("ram0", 0x80000000, SZ_2G);
+	lower = min_t(u64, memsize, SZ_2G);
+	arm_add_mem_device("ram0", 0x80000000, lower);
+
+	if (memsize > lower) {
+		upper = memsize - lower;
+		arm_add_mem_device("ram1", 0x880000000, upper);
+	}
 
 	ret = ls1046a_ppa_init(0x100000000 - SZ_64M, SZ_64M);
 	if (ret)
 		pr_err("Failed to initialize PPA firmware: %s\n", strerror(-ret));
-
-        return 0;
 }
-mem_initcall(tqmls1046a_mem_init);
 
 static int tqmls1046a_postcore_init(void)
 {
@@ -38,6 +54,8 @@ static int tqmls1046a_postcore_init(void)
 
 	if (!of_machine_is_compatible("tq,ls1046a-tqmls1046a"))
 		return 0;
+
+	ls1046a_add_memory();
 
 	defaultenv_append_directory(defaultenv_tqmls1046a);
 

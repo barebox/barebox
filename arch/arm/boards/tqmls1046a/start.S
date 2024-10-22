@@ -10,3 +10,8 @@ ENTRY_PROC(start_tqmls1046a)
 	b tqmls1046a_entry
 ENTRY_PROC_END(start_tqmls1046a)
 
+ENTRY_PROC(start_tqmls1046a_8g)
+	mov x3, #STACK_TOP
+	mov sp, x3
+	b tqmls1046a_8g_entry
+ENTRY_PROC_END(start_tqmls1046a_8g)

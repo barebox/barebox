@@ -5,7 +5,7 @@
 #include <mach/layerscape/layerscape.h>
 #include <mach/layerscape/xload.h>
 
-int ls1046a_xload_start_image(void)
+int ls1046a_xload_start_image(struct dram_regions_info *dram_info)
 {
 	enum bootsource src;
 
@@ -13,10 +13,10 @@ int ls1046a_xload_start_image(void)
 
 	switch (src) {
 	case BOOTSOURCE_SPI_NOR:
-		return ls1046a_qspi_start_image();
+		return ls1046a_qspi_start_image(dram_info);
 #if defined(CONFIG_MCI_IMX_ESDHC_PBL)
 	case BOOTSOURCE_MMC:
-		return ls1046a_esdhc_start_image();
+		return ls1046a_esdhc_start_image(dram_info);
 #endif
 	default:
 		pr_err("Unknown bootsource\n");

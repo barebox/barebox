@@ -14,3 +14,4 @@ lwl-$(CONFIG_ARCH_LS1021) += lowlevel-ls102xa.o
 obj-$(CONFIG_ARCH_LS1021) += restart.o ls102xa_stream_id.o
 
 lwl-$(CONFIG_ARCH_LS1028) += lowlevel-ls1028a.o
+pbl-$(CONFIG_FIRMWARE_LS1046A_ATF) += tfa.o

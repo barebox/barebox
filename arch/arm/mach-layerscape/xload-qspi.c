@@ -19,7 +19,8 @@ struct layerscape_base_addr {
 	void *qspi_mem_base;
 };
 
-static int layerscape_qspi_start_image(struct layerscape_base_addr *base)
+static int layerscape_qspi_start_image(struct layerscape_base_addr *base,
+				       struct dram_regions_info *dram_info)
 {
 	void (*barebox)(void) = base->membase;
 
@@ -27,6 +28,9 @@ static int layerscape_qspi_start_image(struct layerscape_base_addr *base)
 	out_be32(base->qspi_reg_base, 0x000f400c);
 
 	memcpy(base->membase, base->qspi_mem_base + BAREBOX_START, barebox_image_size);
+
+	if (IS_ENABLED(CONFIG_FIRMWARE_LS1046A_ATF))
+		ls1046_start_tfa(base->membase, dram_info);
 
 	sync_caches_for_execution();
 
@@ -39,7 +43,7 @@ static int layerscape_qspi_start_image(struct layerscape_base_addr *base)
 	return -EIO;
 }
 
-int ls1046a_qspi_start_image(void)
+int ls1046a_qspi_start_image(struct dram_regions_info *dram_info)
 {
 	struct layerscape_base_addr base;
 
@@ -47,7 +51,7 @@ int ls1046a_qspi_start_image(void)
 	base.membase = IOMEM(LS1046A_DDR_SDRAM_BASE);
 	base.qspi_mem_base = IOMEM(0x40000000);
 
-	return layerscape_qspi_start_image(&base);
+	return layerscape_qspi_start_image(&base, dram_info);
 }
 
 int ls1021a_qspi_start_image(void)
@@ -58,5 +62,5 @@ int ls1021a_qspi_start_image(void)
 	base.membase = IOMEM(LS1021A_DDR_SDRAM_BASE);
 	base.qspi_mem_base = IOMEM(0x40000000);
 
-	return layerscape_qspi_start_image(&base);
+	return layerscape_qspi_start_image(&base, NULL);
 }

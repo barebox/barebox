@@ -331,7 +331,7 @@ static noinline __noreturn void tqmls1046a_r_entry(bool is_8g)
 
 	ls1046a_errata_post_ddr();
 
-	ls1046a_xload_start_image();
+	ls1046a_xload_start_image(NULL);
 
 	pr_err("Booting failed\n");
 

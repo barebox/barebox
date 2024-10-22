@@ -98,4 +98,7 @@ config FIRMWARE_CCBV2_OPTEE
 config FIRMWARE_LS1028A_ATF
 	bool
 
+config FIRMWARE_LS1046A_ATF
+	bool
+
 endmenu

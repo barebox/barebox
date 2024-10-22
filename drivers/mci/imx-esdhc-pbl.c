@@ -352,7 +352,7 @@ static int layerscape_esdhc_load_image(struct fsl_esdhc_host *host, void *adr, u
  * Return: If successful, this function does not return. A negative error
  * code is returned when this function fails.
  */
-int ls1046a_esdhc_start_image(void)
+int ls1046a_esdhc_start_image(struct dram_regions_info *dram_info)
 {
 	int ret;
 	struct esdhc_soc_data data = {
@@ -369,6 +369,9 @@ int ls1046a_esdhc_start_image(void)
 	ret = layerscape_esdhc_load_image(&host, sdram, size, (8 << 8) | (3 << 4));
 	if (ret)
 		return ret;
+
+	if (IS_ENABLED(CONFIG_FIRMWARE_LS1046A_ATF))
+		ls1046_start_tfa(barebox, dram_info);
 
 	printf("Starting barebox\n");
 

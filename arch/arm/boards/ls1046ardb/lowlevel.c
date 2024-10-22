@@ -210,7 +210,7 @@ static noinline __noreturn void ls1046ardb_r_entry(void)
 
 	ls1046a_errata_post_ddr();
 
-	ls1046a_esdhc_start_image();
+	ls1046a_esdhc_start_image(NULL);
 
 err:
 	pr_err("Booting failed\n");

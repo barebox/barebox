@@ -48,6 +48,7 @@ FW_MVEBU_BINARY0="
 
 FW_NXP_LAYERSCAPE="
 	firmware/fsl_fman_ucode_ls1046_r1.0_106_4_18.bin
+	firmware/ls1046a-bl31.bin
 	firmware/ppa-ls1046a.bin
 "
 

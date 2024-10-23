@@ -184,16 +184,27 @@ static struct fsl_ddr_info ls1046a_info = {
 	.c = ddrc,
 };
 
-static noinline __noreturn void ls1046ardb_r_entry(unsigned long memsize)
+static struct dram_regions_info dram_info = {
+	.num_dram_regions = 2,
+	.total_dram_size = SZ_8G,
+	.region = {
+		{
+			.addr = SZ_2G,
+			.size = SZ_2G,
+		}, {
+			.addr = SZ_32G + SZ_2G,
+			.size = SZ_4G + SZ_2G,
+		},
+	},
+};
+
+static noinline __noreturn void ls1046ardb_r_entry(void)
 {
 	unsigned long membase = LS1046A_DDR_SDRAM_BASE;
 	struct pbl_i2c *i2c;
 	int ret;
 
 	if (get_pc() >= membase) {
-		if (memsize + membase >= 0x100000000)
-			memsize = 0x100000000 - membase;
-
 		barebox_arm_entry(membase, 0x80000000 - SZ_64M,
 				  __dtb_z_fsl_ls1046a_rdb_start);
 	}
@@ -209,11 +220,11 @@ static noinline __noreturn void ls1046ardb_r_entry(unsigned long memsize)
 		goto err;
 	}
 
-	memsize = fsl_ddr_sdram(&ls1046a_info, false);
+	fsl_ddr_sdram(&ls1046a_info, false);
 
 	ls1046a_errata_post_ddr();
 
-	ls1046a_esdhc_start_image(memsize, 0, 0);
+	ls1046a_esdhc_start_image(&dram_info);
 
 err:
 	pr_err("Booting failed\n");
@@ -221,12 +232,12 @@ err:
 	while (1);
 }
 
-void ls1046ardb_entry(unsigned long r0, unsigned long r1, unsigned long r2);
+void ls1046ardb_entry(void);
 
-__noreturn void ls1046ardb_entry(unsigned long r0, unsigned long r1, unsigned long r2)
+__noreturn void ls1046ardb_entry(void)
 {
 	relocate_to_current_adr();
 	setup_c();
 
-	ls1046ardb_r_entry(r0);
+	ls1046ardb_r_entry();
 }

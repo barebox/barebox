@@ -97,7 +97,7 @@ static noinline __noreturn void ls1021aiot_r_entry(void)
 
 	ls1021a_errata_post_ddr();
 
-	ls1021a_xload_start_image(SZ_1G, 0, 0);
+	ls1021a_xload_start_image();
 
 	pr_err("Booting failed\n");
 
@@ -105,10 +105,10 @@ static noinline __noreturn void ls1021aiot_r_entry(void)
 		;
 }
 
-void ls1021aiot_entry(unsigned long r0, unsigned long r1, unsigned long r2);
+void ls1021aiot_entry(void);
 
 __noreturn void
-ls1021aiot_entry(unsigned long r0, unsigned long r1, unsigned long r2)
+ls1021aiot_entry(void)
 {
 	relocate_to_current_adr();
 	setup_c();

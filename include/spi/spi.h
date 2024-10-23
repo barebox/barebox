@@ -115,6 +115,13 @@ static inline struct spi_device *to_spi_device(struct device *dev)
         return dev ? container_of(dev, struct spi_device, dev) : NULL;
 }
 
+static inline u8 spi_get_chipselect(const struct spi_device *spi, u8 idx)
+{
+	BUG_ON(idx != 0);
+
+	return spi->chip_select;
+}
+
 struct spi_message;
 
 /**

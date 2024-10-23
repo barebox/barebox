@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <console_countdown.h>
 #include <stdio.h>
+#include <readkey.h>
 
 static bool console_countdown_timeout_abort;
 
@@ -59,7 +60,7 @@ int console_countdown(int timeout_s, unsigned flags, const char *keys,
 					goto out;
 				if (flags & CONSOLE_COUNTDOWN_RETURN && (key == '\n' || key == '\r'))
 					goto out;
-				if (flags & CONSOLE_COUNTDOWN_CTRLC && key == 3)
+				if (flags & CONSOLE_COUNTDOWN_CTRLC && key == CTL_CH('c'))
 					goto out;
 			}
 			key = 0;

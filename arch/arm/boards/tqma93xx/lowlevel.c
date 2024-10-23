@@ -92,6 +92,8 @@ static noinline void tqma93xx_continue(void)
 	case VARD_FORMFACTOR_TYPE_CONNECTOR:
 		fdt = __dtb_z_imx93_tqma9352_mba93xxca_start;
 		break;
+	default:
+		__builtin_unreachable();
 	}
 
 	imx93_barebox_entry(fdt);

@@ -22,7 +22,7 @@
 
 #define LOT_ID_STR_LEN	8
 
-#define EWS_LOT_ID_MASK		0x1ffffffffffULL
+#define EWS_LOT_ID_MASK		0x3ffffffffffULL
 #define EWS_WAFER_ID_SHIFT	42
 #define EWS_WAFER_ID_MASK	0x1fULL
 
@@ -70,8 +70,8 @@ static void kvx_soc_info_read_revision(void)
 static int base38_decode(char *s, u64 val, int nb_char)
 {
 	int i;
-	const char *alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_?";
-	const int base = strlen(alphabet);
+	const char alphabet[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+	const int base = sizeof(alphabet);
 
 	if (s == NULL)
 		return -1;
@@ -102,7 +102,10 @@ static int kvx_read_mppa_id(struct device_node *socinfo)
 	}
 
 	ews_val = *cell_val64;
+#ifdef CONFIG_ARCH_COOLIDGE_V1
+	/* On kv3-1, 32b regs on traceability are written in reverse order */
 	ews_val = (ews_val >> 32) | (ews_val << 32);
+#endif
 	wafer_id = (ews_val >> EWS_WAFER_ID_SHIFT) & EWS_WAFER_ID_MASK;
 	base38_decode(lot_id, ews_val & EWS_LOT_ID_MASK, LOT_ID_STR_LEN);
 	free(cell_val64);
@@ -118,8 +121,7 @@ static int kvx_read_mppa_id(struct device_node *socinfo)
 	base38_decode(&com_ap, (ft_val >> FT_COM_AP_SHIFT) & FT_COM_AP_MASK, 1);
 	free(cell_val32);
 
-	kvx_mppa_id = basprintf("%sA-%d%c-%03d", lot_id, wafer_id, com_ap,
-			       device_id);
+	kvx_mppa_id = basprintf("%sA-%dE-%03d", lot_id, wafer_id, device_id);
 
 	globalvar_add_simple_string("kvx.mppa_id", &kvx_mppa_id);
 

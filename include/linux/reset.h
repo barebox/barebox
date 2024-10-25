@@ -13,7 +13,7 @@ int reset_control_reset(struct reset_control *rstc);
 int reset_control_assert(struct reset_control *rstc);
 int reset_control_deassert(struct reset_control *rstc);
 
-struct reset_control *reset_control_get(struct device *dev, const char *id);
+struct reset_control *__reset_control_get(struct device *dev, const char *id, bool optional);
 struct reset_control *of_reset_control_get(struct device_node *node,
 					   const char *id);
 void reset_control_put(struct reset_control *rstc);
@@ -57,7 +57,7 @@ of_reset_control_get(struct device_node *node, const char *id)
 }
 
 static inline struct reset_control *
-reset_control_get(struct device *dev, const char *id)
+__reset_control_get(struct device *dev, const char *id, bool optional)
 {
 	return NULL;
 }
@@ -96,8 +96,13 @@ static inline struct reset_control *reset_control_array_get(struct device *dev)
 static inline struct reset_control *reset_control_get_optional(struct device *dev,
 							       const char *id)
 {
-	struct reset_control *rstc = reset_control_get(dev, id);
-	return rstc == ERR_PTR(-ENOENT) ? NULL : rstc;
+	return __reset_control_get(dev, id, true);
+}
+
+static inline struct reset_control *reset_control_get(struct device *dev,
+						      const char *id)
+{
+	return __reset_control_get(dev, id, false);
 }
 
 #endif

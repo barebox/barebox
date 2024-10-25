@@ -306,7 +306,7 @@ static int bcm283x_i2c_probe(struct device *dev)
 	}
 
 	bcm_i2c->adapter.master_xfer = bcm283x_i2c_xfer;
-	bcm_i2c->adapter.nr = dev->id;
+	bcm_i2c->adapter.nr = -1;
 	bcm_i2c->adapter.dev.parent = dev;
 	bcm_i2c->adapter.dev.of_node = np;
 

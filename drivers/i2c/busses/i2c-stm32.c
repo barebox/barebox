@@ -941,7 +941,7 @@ static int __init stm32_i2c_probe(struct device *dev)
 
 	/* Setup stm32_i2c driver structure */
 	stm32_i2c->adapter.master_xfer = stm32_i2c_xfer;
-	stm32_i2c->adapter.nr = dev->id;
+	stm32_i2c->adapter.nr = -1;
 	stm32_i2c->adapter.dev.parent = dev;
 	stm32_i2c->adapter.dev.of_node = dev->of_node;
 

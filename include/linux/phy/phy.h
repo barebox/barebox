@@ -147,6 +147,9 @@ static inline void *phy_get_drvdata(struct phy *phy)
 	return phy->dev.priv;
 }
 
+struct phy *of_phy_simple_xlate(struct device *dev,
+				const struct of_phandle_args *args);
+
 #if IS_ENABLED(CONFIG_GENERIC_PHY)
 int phy_init(struct phy *phy);
 int phy_exit(struct phy *phy);

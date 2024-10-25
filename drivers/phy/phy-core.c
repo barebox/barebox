@@ -16,6 +16,10 @@
 static LIST_HEAD(phy_provider_list);
 static int phy_ida;
 
+#define for_each_phy(p) list_for_each_entry(p, &phy_class.devices, dev.class_list)
+
+DEFINE_DEV_CLASS(phy_class, "phy");
+
 /**
  * phy_create() - create a new phy
  * @dev: device that is creating the new phy
@@ -40,7 +44,6 @@ struct phy *phy_create(struct device *dev, struct device_node *node,
 
 	id = phy_ida++;
 
-	dev_set_name(&phy->dev, "phy");
 	phy->dev.id = id;
 	phy->dev.parent = dev;
 	phy->dev.of_node = node ?: dev->of_node;
@@ -57,7 +60,7 @@ struct phy *phy_create(struct device *dev, struct device_node *node,
 		phy->pwr = NULL;
 	}
 
-	ret = register_device(&phy->dev);
+	ret = class_register_device(&phy_class, &phy->dev, "phy");
 	if (ret)
 		goto free_ida;
 

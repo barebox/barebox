@@ -81,7 +81,7 @@ free_ida:
  */
 struct phy_provider *__of_phy_provider_register(struct device *dev,
 						struct phy * (*of_xlate)(struct device *dev,
-									 struct of_phandle_args *args))
+							const struct of_phandle_args *args))
 {
 	struct phy_provider *phy_provider;
 

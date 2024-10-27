@@ -13,6 +13,16 @@ static void sdl_perror(const char *what)
 	printf("SDL: Could not %s: %s.\n", what, SDL_GetError());
 }
 
+static void handle_sdl_events(void)
+{
+	SDL_Event event;
+
+	while (SDL_PollEvent(&event)) {
+		if (event.type == SDL_QUIT)
+			SDL_AtomicSet(&shutdown, true);
+	}
+}
+
 static struct sdl_fb_info info;
 static SDL_atomic_t shutdown;
 SDL_Window *window;
@@ -47,6 +57,7 @@ static int scanout(void *ptr)
 	while (!SDL_AtomicGet(&shutdown)) {
 		SDL_Delay(100);
 
+		handle_sdl_events();  /* Handle events like window close */
 		SDL_UpdateTexture(texture, NULL, buf, surface->pitch);
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, texture, NULL, NULL);

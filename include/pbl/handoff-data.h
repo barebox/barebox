@@ -28,6 +28,10 @@ struct handoff_data_entry {
 #define handoff_data_add_flags(_cookie, _data, _size, _flags)		\
 	do {								\
 		static struct handoff_data_entry hde __section(.data);	\
+									\
+		/* using static data, do not invoke multiple times */	\
+		BUG_ON(hde.cookie); 					\
+									\
 		hde.cookie = _cookie;					\
 		hde.data = _data;					\
 		hde.size = _size;					\

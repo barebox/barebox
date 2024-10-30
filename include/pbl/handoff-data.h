@@ -51,4 +51,6 @@ static inline size_t handoff_data_size(void)
 	return __handoff_data_size(NULL);
 }
 
+void handoff_data_add_dt(void *fdt);
+
 #endif /* __PBL_HANDOFF_DATA_H */

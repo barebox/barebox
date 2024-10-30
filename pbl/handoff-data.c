@@ -115,6 +115,7 @@ void handoff_data_move(void *dest)
 
 		newde->size = hde->size;
 		newde->cookie = hde->cookie;
+		newde->flags = hde->flags;
 		list_add_tail(&newde->list, &hdnew->entries);
 	}
 

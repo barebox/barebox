@@ -395,6 +395,8 @@ void __noreturn imx93_load_and_start_image_via_tfa(void)
 	imx_set_cpu_type(IMX_CPU_IMX93);
 	imx93_init_scratch_space(true);
 
+	imx93_romapi_load_image(bl33);
+
 	/*
 	 * On completion the TF-A will jump to MX93_ATF_BL33_BASE_ADDR
 	 * in EL2. Copy the image there, but replace the PBL part of

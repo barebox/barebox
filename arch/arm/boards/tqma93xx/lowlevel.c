@@ -81,7 +81,6 @@ static noinline void tqma93xx_continue(void)
 			break;
 		}
 
-		imx93_romapi_load_image();
 		imx93_load_and_start_image_via_tfa();
 	}
 

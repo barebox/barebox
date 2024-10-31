@@ -36,6 +36,28 @@ struct efi_partition {
 static const int force_gpt = IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_NO_FORCE);
 
 /**
+* compute_partitions_entries_size() - return the size of all partitions
+* @gpt: GPT header
+*
+* Description: return size of all partitions, 0 on error
+*
+* This is a helper function that compute the size of all partitions
+* by multiplying the size of a single partition by the number of partitions
+*/
+static u32 compute_partitions_entries_size(const gpt_header *gpt)
+{
+	u32 nb_parts, sz_parts, total_size;
+
+	nb_parts = min_t(u32, MAX_PARTITION, le32_to_cpu(gpt->num_partition_entries));
+	sz_parts = le32_to_cpu(gpt->sizeof_partition_entry);
+
+	if (check_mul_overflow(nb_parts, sz_parts, &total_size))
+		return 0;
+
+	return total_size;
+}
+
+/**
  * efi_crc32() - EFI version of crc32 function
  * @buf: buffer to calculate crc32 of
  * @len - length of buf
@@ -81,14 +103,12 @@ static u64 last_lba(struct block_device *bdev)
 static gpt_entry *alloc_read_gpt_entries(struct block_device *blk,
 					 gpt_header * pgpt_head)
 {
-	size_t count = 0;
+	u32 count = 0;
 	gpt_entry *pte = NULL;
 	unsigned long from, size;
 	int ret;
 
-	count = le32_to_cpu(pgpt_head->num_partition_entries) *
-		le32_to_cpu(pgpt_head->sizeof_partition_entry);
-
+	count = compute_partitions_entries_size(pgpt_head);
 	if (!count)
 		return NULL;
 
@@ -156,7 +176,7 @@ static gpt_header *alloc_read_gpt_header(struct block_device *blk,
 static int is_gpt_valid(struct block_device *blk, u64 lba,
 			gpt_header **gpt, gpt_entry **ptes)
 {
-	u32 crc, origcrc;
+	u32 crc, origcrc, count;
 	u64 lastlba;
 
 	if (!ptes)
@@ -215,10 +235,13 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 	if (!(*ptes = alloc_read_gpt_entries(blk, *gpt)))
 		goto fail;
 
+	/* Check the size of all partitions */
+	count = compute_partitions_entries_size(*gpt);
+	if (!count)
+		goto fail_ptes;
+
 	/* Check the GUID Partition Table Entry Array CRC */
-	crc = efi_crc32((const unsigned char *)*ptes,
-		le32_to_cpu((*gpt)->num_partition_entries) *
-		le32_to_cpu((*gpt)->sizeof_partition_entry));
+	crc = efi_crc32((const unsigned char *)*ptes, count);
 
 	if (crc != le32_to_cpu((*gpt)->partition_entry_array_crc32)) {
 		dev_dbg(blk->dev, "GUID Partitition Entry Array CRC check failed: 0x%08x 0x%08x\n",

@@ -158,7 +158,7 @@ int ele_get_info(struct ele_get_info_data *info);
 int ele_write_fuse(u16 fuse_id, u32 fuse_val, bool lock, u32 *response);
 int ele_authenticate_container(unsigned long addr, u32 *response);
 int ele_release_container(u32 *response);
-int ele_forward_lifecycle(enum ele_lifecycle lc, u32 *response);
+int ele_forward_lifecycle(u32 lc, u32 *response);
 int ele_print_events(void);
 
 int imx93_ele_load_fw(void *bl33);

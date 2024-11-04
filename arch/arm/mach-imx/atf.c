@@ -108,6 +108,8 @@ void imx8mm_load_bl33(void *bl33)
 		hang();
 	}
 
+	handoff_data_move(bl33 - ALIGN(handoff_data_size(), 0x1000));
+
 	/*
 	 * On completion the TF-A will jump to MX8M_ATF_BL33_BASE_ADDR
 	 * in EL2. Copy the image there, but replace the PBL part of
@@ -394,24 +396,7 @@ void __noreturn imx93_load_and_start_image_via_tfa(void)
 
 	imx_set_cpu_type(IMX_CPU_IMX93);
 	imx93_init_scratch_space(true);
-
 	imx93_romapi_load_image(bl33);
-
-	/*
-	 * On completion the TF-A will jump to MX93_ATF_BL33_BASE_ADDR
-	 * in EL2. Copy the image there, but replace the PBL part of
-	 * that image with ourselves. On a high assurance boot only the
-	 * currently running code is validated and contains the checksum
-	 * for the piggy data, so we need to ensure that we are running
-	 * the same code in DRAM.
-	 *
-	 * The second purpose of this memcpy is for USB booting. When booting
-	 * from USB the image comes in as a stream, so the PBL is transferred
-	 * only once. As we jump into the PBL again in SDRAM we need to copy
-	 * it there. The USB protocol transfers data in chunks of 1024 bytes,
-	 * so align the copy size up to the next 1KiB boundary.
-	 */
-	memcpy((void *)MX93_ATF_BL33_BASE_ADDR, __image_start, ALIGN(barebox_pbl_size, 1024));
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX93_OPTEE)) {
 		void *bl32 = (void *)arm_mem_optee(endmem);
@@ -432,6 +417,24 @@ void __noreturn imx93_load_and_start_image_via_tfa(void)
 	} else {
 		get_builtin_firmware(imx93_bl31_bin, &tfa, &tfa_size);
 	}
+
+	handoff_data_move(bl33 - ALIGN(handoff_data_size(), 0x1000));
+
+	/*
+	 * On completion the TF-A will jump to MX93_ATF_BL33_BASE_ADDR
+	 * in EL2. Copy the image there, but replace the PBL part of
+	 * that image with ourselves. On a high assurance boot only the
+	 * currently running code is validated and contains the checksum
+	 * for the piggy data, so we need to ensure that we are running
+	 * the same code in DRAM.
+	 *
+	 * The second purpose of this memcpy is for USB booting. When booting
+	 * from USB the image comes in as a stream, so the PBL is transferred
+	 * only once. As we jump into the PBL again in SDRAM we need to copy
+	 * it there. The USB protocol transfers data in chunks of 1024 bytes,
+	 * so align the copy size up to the next 1KiB boundary.
+	 */
+	memcpy((void *)MX93_ATF_BL33_BASE_ADDR, __image_start, ALIGN(barebox_pbl_size, 1024));
 
 	memcpy(bl31, tfa, tfa_size);
 

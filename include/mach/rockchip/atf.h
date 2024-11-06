@@ -8,10 +8,23 @@
 #define RK3568_DRAM_BOTTOM		0xa00000
 #define RK3588_DRAM_BOTTOM		0xa00000
 
-/* OP-TEE expects to be loaded here */
+/*
+ * The tee.bin image has an OP-TEE specific header that describes the
+ * initial load address and size. Unfortunately, the vendor blobs are in the
+ * tee-raw.bin format, which omits the header. We thus hardcode here the
+ * fallback addresses that should be used when barebox encounters
+ * tee-raw.bin instead of tee.bin.
+ */
 #define RK3399_OPTEE_LOAD_ADDRESS	0x200000
 #define RK3568_OPTEE_LOAD_ADDRESS	0x200000
 #define RK3588_OPTEE_LOAD_ADDRESS	0x200000
+
+/*
+ * Hopefully for future platforms, the vendor binaries would use the image
+ * with an OP-TEE header and we can just set the load address for new SoCs
+ * to below macro to enforce that only tee.bin is used.
+ */
+#define ROCKCHIP_OPTEE_HEADER_REQUIRED	0
 
 /*
  * board lowlevel code should relocate barebox here. This is where

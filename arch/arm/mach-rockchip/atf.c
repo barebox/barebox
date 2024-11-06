@@ -4,8 +4,10 @@
 #include <asm/system.h>
 #include <mach/rockchip/atf.h>
 #include <elf.h>
+#include <tee/optee.h>
 #include <asm/atf_common.h>
 #include <asm/barebox-arm.h>
+#include <asm-generic/memory_layout.h>
 #include <mach/rockchip/dmc.h>
 #include <mach/rockchip/rockchip.h>
 #include <mach/rockchip/bootrom.h>
@@ -13,6 +15,17 @@
 #include <mach/rockchip/rk3588-regs.h>
 
 struct rockchip_scratch_space *rk_scratch;
+
+static void rk_scratch_save_optee_hdr(const struct optee_header *hdr)
+{
+	if (!rk_scratch) {
+		pr_err("No scratch area initialized, skip saving optee-hdr");
+		return;
+	}
+
+	pr_debug("Saving optee-hdr to scratch area 0x%p\n", &rk_scratch->optee_hdr);
+	rk_scratch->optee_hdr = *hdr;
+}
 
 static unsigned long load_elf64_image_phdr(const void *elf)
 {
@@ -41,6 +54,59 @@ static unsigned long load_elf64_image_phdr(const void *elf)
 	return ehdr->e_entry;
 }
 
+static uintptr_t rk_load_optee(uintptr_t bl32, const void *bl32_image,
+			       size_t bl32_size)
+{
+	const struct optee_header *hdr = bl32_image;
+	struct optee_header dummy_hdr;
+
+	/* We already have ELF support for BL31, but adding it for BL32,
+	 * would require us to identify a range that fits all ELF
+	 * sections and fake a dummy OP-TEE header that describes it.
+	 * This is doable, but let's postpone that until there is an
+	 * actual user interested in this.
+	 */
+	BUG_ON(memcmp(bl32_image, ELFMAG, 4) == 0);
+
+	if (optee_verify_header(hdr) == 0) {
+		bl32_size -= sizeof(*hdr);
+		bl32_image += sizeof(*hdr);
+
+		bl32 = (u64)hdr->init_load_addr_hi << 32;
+		bl32 |= hdr->init_load_addr_lo;
+
+		pr_debug("optee: adjusting address to 0x%lx\n", bl32);
+	} else if (bl32 != ROCKCHIP_OPTEE_HEADER_REQUIRED) {
+		dummy_hdr.magic = OPTEE_MAGIC;
+		dummy_hdr.version = OPTEE_VERSION_V1;
+		dummy_hdr.arch = OPTEE_ARCH_ARM64;
+		dummy_hdr.flags = 0;
+		dummy_hdr.init_size = bl32_size;
+		dummy_hdr.init_load_addr_hi = upper_32_bits(bl32);
+		dummy_hdr.init_load_addr_lo = lower_32_bits(bl32);
+		dummy_hdr.init_mem_usage = 0;
+		dummy_hdr.paged_size = 0;
+
+		hdr = &dummy_hdr;
+
+		pr_debug("optee: assuming load address is 0x%lx\n", bl32);
+
+	} else {
+		/* If we have neither a header, nor a defined load address
+		 * there is really nothing we can do here.
+		 */
+		pr_err("optee: skipping. No header and no hardcoded load address\n");
+		return 0;
+	}
+
+	rk_scratch_save_optee_hdr(hdr);
+
+
+	memcpy((void *)bl32, bl32_image, bl32_size);
+
+	return bl32;
+}
+
 #define rockchip_atf_load_bl31(SOC, atf_bin, tee_bin, fdt) do {                 \
 	const void *bl31_elf, *optee;                                           \
 	unsigned long bl31;                                                     \
@@ -52,11 +118,9 @@ static unsigned long load_elf64_image_phdr(const void *elf)
 	bl31 = load_elf64_image_phdr(bl31_elf);                                 \
 										\
 	if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE)) {                           \
-		optee_load_address = SOC##_OPTEE_LOAD_ADDRESS;                  \
-										\
 		get_builtin_firmware(tee_bin, &optee, &optee_size);             \
-										\
-		memcpy((void *)optee_load_address, optee, optee_size);          \
+		optee_load_address = rk_load_optee(SOC##_OPTEE_LOAD_ADDRESS,	\
+						   optee, optee_size);		\
 	}                                                                       \
 										\
 	/* Setup an initial stack for EL2 */                                    \
@@ -106,6 +170,7 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 
+	optee_set_membase(rk_scratch_get_optee_hdr());
 	barebox_arm_entry(membase, endmem - membase, fdt);
 }
 
@@ -142,5 +207,6 @@ void __noreturn rk3588_barebox_entry(void *fdt)
                /* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
        }
 
+       optee_set_membase(rk_scratch_get_optee_hdr());
        barebox_arm_entry(membase, endmem - membase, fdt);
 }

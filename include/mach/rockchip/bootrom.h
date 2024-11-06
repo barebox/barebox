@@ -7,9 +7,12 @@
 #include <linux/string.h>
 #include <pbl.h>
 #include <asm/barebox-arm.h>
+#include <tee/optee.h>
+#include <pbl.h>
 
 struct rockchip_scratch_space {
 	u32 irom[16];
+	struct optee_header optee_hdr;
 };
 
 extern struct rockchip_scratch_space *rk_scratch;
@@ -29,5 +32,19 @@ void rockchip_parse_bootrom_iram(const void *iram);
 
 int rockchip_bootsource_get_active_slot(void);
 
+static inline const struct optee_header *rk_scratch_get_optee_hdr(void)
+{
+	struct rockchip_scratch_space *scratch;
+
+	if (IN_PBL)
+		scratch = rk_scratch;
+	else
+		scratch = (void *)arm_mem_scratch_get();
+
+	if (!scratch)
+		return ERR_PTR(-EINVAL);
+
+	return &scratch->optee_hdr;
+}
 
 #endif

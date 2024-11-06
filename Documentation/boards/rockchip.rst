@@ -86,10 +86,13 @@ With these barebox can be compiled as:
   make ARCH=arm rockchip_v8_defconfig
   make ARCH=arm
 
-**NOTE** I found the bl32 firmware non working for me as of 7d631e0d5b2d373b54d4533580d08fb9bd2eaad4 in the rkbin repository.
+.. note:: When compiling OP-TEE yourself, use the tee.bin image as it has
+  a header telling barebox where to load the image to.
+  Without the header, barebox will fallback to the hardcoded addresses expected
+  by the vendor blobs in the rkbin repository.
 
-**NOTE** The RK3566 and RK3568 seem to share the bl31 and bl32 firmware files,
-whereas the memory initialization blob is different.
+.. note:: The RK3566 and RK3568 seem to share the bl31 and bl32 firmware files,
+  whereas the memory initialization blob is different.
 
 Creating a bootable SD card
 ---------------------------

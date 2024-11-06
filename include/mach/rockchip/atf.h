@@ -14,10 +14,12 @@
  * tee-raw.bin format, which omits the header. We thus hardcode here the
  * fallback addresses that should be used when barebox encounters
  * tee-raw.bin instead of tee.bin.
+ *
+ * The values are taken from rkbin/RKTRUST/RK3*.ini: [BL32_OPTION] ADDR
  */
-#define RK3399_OPTEE_LOAD_ADDRESS	0x200000
-#define RK3568_OPTEE_LOAD_ADDRESS	0x200000
-#define RK3588_OPTEE_LOAD_ADDRESS	0x200000
+#define RK3399_OPTEE_LOAD_ADDRESS	0x8400000
+#define RK3568_OPTEE_LOAD_ADDRESS	0x8400000
+#define RK3588_OPTEE_LOAD_ADDRESS	0x8400000
 
 /*
  * Hopefully for future platforms, the vendor binaries would use the image

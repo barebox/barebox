@@ -12,6 +12,8 @@
 #include <mach/rockchip/rk3568-regs.h>
 #include <mach/rockchip/rk3588-regs.h>
 
+struct rockchip_scratch_space *rk_scratch;
+
 static unsigned long load_elf64_image_phdr(const void *elf)
 {
 	const Elf64_Ehdr *ehdr; /* Elf header structure pointer */
@@ -78,14 +80,16 @@ void rk3568_atf_load_bl31(void *fdt)
 
 void __noreturn rk3568_barebox_entry(void *fdt)
 {
-	unsigned long membase, memsize;
+	unsigned long membase, endmem;
 
 	membase = RK3568_DRAM_BOTTOM;
-	memsize = rk3568_ram0_size() - RK3568_DRAM_BOTTOM;
+	endmem = rk3568_ram0_size();
+
+	rk_scratch = (void *)arm_mem_scratch(endmem);
 
 	if (current_el() == 3) {
 		rk3568_lowlevel_init();
-		rockchip_store_bootrom_iram(membase, memsize, IOMEM(RK3568_IRAM_BASE));
+		rockchip_store_bootrom_iram(IOMEM(RK3568_IRAM_BASE));
 
 		/*
 		 * The downstream TF-A doesn't cope with our device tree when
@@ -102,7 +106,7 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 
-	barebox_arm_entry(membase, memsize, fdt);
+	barebox_arm_entry(membase, endmem - membase, fdt);
 }
 
 void rk3588_atf_load_bl31(void *fdt)
@@ -112,14 +116,16 @@ void rk3588_atf_load_bl31(void *fdt)
 
 void __noreturn rk3588_barebox_entry(void *fdt)
 {
-       unsigned long membase, memsize;
+       unsigned long membase, endmem;
 
        membase = RK3588_DRAM_BOTTOM;
-       memsize = rk3588_ram0_size() - RK3588_DRAM_BOTTOM;
+       endmem = rk3588_ram0_size();
+
+       rk_scratch = (void *)arm_mem_scratch(endmem);
 
        if (current_el() == 3) {
                rk3588_lowlevel_init();
-               rockchip_store_bootrom_iram(membase, memsize, IOMEM(RK3588_IRAM_BASE));
+               rockchip_store_bootrom_iram(IOMEM(RK3588_IRAM_BASE));
 
                /*
                 * The downstream TF-A doesn't cope with our device tree when
@@ -136,5 +142,5 @@ void __noreturn rk3588_barebox_entry(void *fdt)
                /* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
        }
 
-       barebox_arm_entry(membase, memsize, fdt);
+       barebox_arm_entry(membase, endmem - membase, fdt);
 }

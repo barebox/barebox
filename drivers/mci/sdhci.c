@@ -405,7 +405,7 @@ static void sdhci_set_sdma_addr(struct sdhci *host, dma_addr_t addr)
 /*
  * Use time in us as a busy counter timeout value
  */
-#define is_timeout(s, t)	((s)++ > ((t) / 1000))
+#define is_timeout(s, t)	((s)++ > ((t) >> 10))
 
 #endif
 
@@ -796,9 +796,11 @@ void sdhci_enable_clk(struct sdhci *host, u16 clk)
 int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *data)
 {
 	u32 mask;
+	unsigned timeout_ms;
 	int ret;
 
 	mask = SDHCI_CMD_INHIBIT_CMD;
+	timeout_ms = SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_MS;
 
 	if (data || (cmd && (cmd->resp_type & MMC_RSP_BUSY)))
 		mask |= SDHCI_CMD_INHIBIT_DATA;
@@ -806,7 +808,10 @@ int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *da
 	if (cmd && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 		mask &= ~SDHCI_CMD_INHIBIT_DATA;
 
-	ret = wait_on_timeout(10 * MSECOND,
+	if (cmd && cmd->busy_timeout != 0)
+		timeout_ms = cmd->busy_timeout;
+
+	ret = wait_on_timeout(timeout_ms * MSECOND,
 			!(sdhci_read32(host, SDHCI_PRESENT_STATE) & mask));
 
 	if (ret) {
@@ -821,14 +826,19 @@ int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *da
 int sdhci_wait_idle_data(struct sdhci *host, struct mci_cmd *cmd)
 {
 	u32 mask;
+	unsigned timeout_ms;
 	int ret;
 
 	mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
+	timeout_ms = SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_MS;
 
 	if (cmd && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 		mask &= ~SDHCI_CMD_INHIBIT_DATA;
 
-	ret = wait_on_timeout(10 * MSECOND,
+	if (cmd && cmd->busy_timeout != 0)
+		timeout_ms = cmd->busy_timeout;
+
+	ret = wait_on_timeout(timeout_ms * MSECOND,
 			!(sdhci_read32(host, SDHCI_PRESENT_STATE) & mask));
 
 	if (ret) {

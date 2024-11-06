@@ -49,7 +49,7 @@ static unsigned long load_elf64_image_phdr(const void *elf)
 										\
 	bl31 = load_elf64_image_phdr(bl31_elf);                                 \
 										\
-	if (IS_ENABLED(CONFIG_ARCH_##SOC##_OPTEE)) {                            \
+	if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE)) {                           \
 		optee_load_address = SOC##_OPTEE_LOAD_ADDRESS;                  \
 										\
 		get_builtin_firmware(tee_bin, &optee, &optee_size);             \
@@ -68,12 +68,12 @@ static unsigned long load_elf64_image_phdr(const void *elf)
 
 void rk3399_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3399, rk3399_bl31_bin, rk3399_op_tee_bin, fdt);
+	rockchip_atf_load_bl31(RK3399, rk3399_bl31_bin, rk3399_bl32_bin, fdt);
 }
 
 void rk3568_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3568, rk3568_bl31_bin, rk3568_op_tee_bin, fdt);
+	rockchip_atf_load_bl31(RK3568, rk3568_bl31_bin, rk3568_bl32_bin, fdt);
 }
 
 void __noreturn rk3568_barebox_entry(void *fdt)
@@ -107,7 +107,7 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 
 void rk3588_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3588, rk3588_bl31_bin, rk3588_op_tee_bin, fdt);
+	rockchip_atf_load_bl31(RK3588, rk3588_bl31_bin, rk3588_bl32_bin, fdt);
 }
 
 void __noreturn rk3588_barebox_entry(void *fdt)

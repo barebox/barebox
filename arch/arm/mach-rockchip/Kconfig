@@ -135,18 +135,12 @@ config ARCH_ROCKCHIP_ATF
 	  useful for debugging early startup, but for all other cases,
 	  say y here.
 
-config ARCH_RK3399_OPTEE
-	bool "Build rk3399 OP-TEE binary into barebox"
-	depends on ARCH_ROCKCHIP_ATF && ARCH_RK3399
+config ARCH_ROCKCHIP_OPTEE
+	bool "Build rockchip OP-TEE binary into barebox"
+	depends on ARCH_ROCKCHIP_ATF
+	select PBL_OPTEE
 	help
-	  With this option enabled the RK3399 OP-TEE binary is compiled
-	  into barebox and started along with the BL31 trusted firmware.
-
-config ARCH_RK3568_OPTEE
-	bool "Build rk3568 OP-TEE binary into barebox"
-	depends on ARCH_ROCKCHIP_ATF && ARCH_RK3568
-	help
-	  With this option enabled the RK3568 OP-TEE binary is compiled
+	  With this option enabled the OP-TEE binary is compiled
 	  into barebox and started along with the BL31 trusted firmware.
 
 endmenu

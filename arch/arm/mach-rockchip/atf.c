@@ -59,7 +59,7 @@ static unsigned long load_elf64_image_phdr(const void *elf)
 										\
 	/* Setup an initial stack for EL2 */                                    \
 	asm volatile("msr sp_el2, %0" : :                                       \
-			"r" (SOC##_BAREBOX_LOAD_ADDRESS - 16) :                 \
+			"r" ((ulong)SOC##_BAREBOX_LOAD_ADDRESS - 16) :		\
 			"cc");                                                  \
 										\
 	bl31_entry(bl31, optee_load_address,                                    \

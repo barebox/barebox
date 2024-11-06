@@ -5671,10 +5671,6 @@ static int nand_set_ecc_on_host_ops(struct nand_chip *chip)
 		fallthrough;
 
 	case NAND_ECC_PLACEMENT_INTERLEAVED:
-		if (!IS_ENABLED(CONFIG_NAND_NEED_ECC_PLACEMENT_INTERLEAVED)) {
-			WARN(1, "CONFIG_NAND_NEED_ECC_PLACEMENT_INTERLEAVED is disabled\n");
-			break;
-		}
 		if ((!ecc->calculate || !ecc->correct || !ecc->hwctl) &&
 		    (!ecc->read_page ||
 		     ecc->read_page == nand_read_page_hwecc ||
@@ -5683,19 +5679,24 @@ static int nand_set_ecc_on_host_ops(struct nand_chip *chip)
 			WARN(1, "No ECC functions supplied; hardware ECC not possible\n");
 			return -EINVAL;
 		}
-		/* Use standard syndrome read/write page function? */
-		if (!ecc->read_page)
-			ecc->read_page = nand_read_page_syndrome;
-		if (!ecc->write_page)
-			ecc->write_page = nand_write_page_syndrome;
-		if (!ecc->read_page_raw)
-			ecc->read_page_raw = nand_read_page_raw_syndrome;
-		if (!ecc->write_page_raw)
-			ecc->write_page_raw = nand_write_page_raw_syndrome;
-		if (!ecc->read_oob)
-			ecc->read_oob = nand_read_oob_syndrome;
-		if (!ecc->write_oob)
-			ecc->write_oob = nand_write_oob_syndrome;
+		if (IS_ENABLED(CONFIG_NAND_NEED_ECC_PLACEMENT_INTERLEAVED)) {
+			/* Use standard syndrome read/write page function? */
+			if (!ecc->read_page)
+				ecc->read_page = nand_read_page_syndrome;
+			if (!ecc->write_page)
+				ecc->write_page = nand_write_page_syndrome;
+			if (!ecc->read_page_raw)
+				ecc->read_page_raw = nand_read_page_raw_syndrome;
+			if (!ecc->write_page_raw)
+				ecc->write_page_raw = nand_write_page_raw_syndrome;
+			if (!ecc->read_oob)
+				ecc->read_oob = nand_read_oob_syndrome;
+			if (!ecc->write_oob)
+				ecc->write_oob = nand_write_oob_syndrome;
+		} else {
+			if (ecc->placement == NAND_ECC_PLACEMENT_INTERLEAVED)
+				WARN(1, "CONFIG_NAND_NEED_ECC_PLACEMENT_INTERLEAVED is disabled\n");
+		}
 		break;
 
 	default:

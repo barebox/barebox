@@ -512,7 +512,7 @@ static int stm32_sdmmc2_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	 * shall be send on cmd or data errors.
 	 */
 	if (ret && cmd->cmdidx != MMC_CMD_STOP_TRANSMISSION) {
-		struct mci_cmd stop_cmd;
+		struct mci_cmd stop_cmd = {};
 
 		stop_cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
 		stop_cmd.cmdarg = 0;

@@ -119,7 +119,7 @@ static void mci_setup_cmd(struct mci_cmd *p, unsigned cmd, unsigned arg, unsigne
  */
 static int mci_set_dsr(struct mci *mci)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 
 	mci_setup_cmd(&cmd, MMC_CMD_SET_DSR,
 			(mci->host->dsr_val >> 16) | 0xffff, MMC_RSP_NONE);
@@ -134,7 +134,7 @@ static int mci_set_dsr(struct mci *mci)
  */
 static int mci_set_blocklen(struct mci *mci, unsigned len)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 
 	if (mci->host->timing == MMC_TIMING_MMC_DDR52)
 		return 0;
@@ -148,7 +148,7 @@ static void *sector_buf;
 static int mci_send_status(struct mci *mci, unsigned int *status)
 {
 	struct mci_host *host = mci->host;
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	int ret;
 
 	/*
@@ -172,7 +172,7 @@ static int mci_send_status(struct mci *mci, unsigned int *status)
 static int mci_app_sd_status(struct mci *mci, __be32 *ssr)
 {
 	int err;
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	struct mci_data data;
 
 	cmd.cmdidx = MMC_CMD_APP_CMD;
@@ -272,7 +272,7 @@ static int mci_poll_until_ready(struct mci *mci, int timeout_ms)
 static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 	int blocks)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	struct mci_data data;
 	unsigned mmccmd;
 	int ret;
@@ -374,7 +374,7 @@ err_out:
 static int mci_read_block(struct mci *mci, void *dst, int blocknum,
 		int blocks)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	struct mci_data data;
 	int ret;
 	unsigned mmccmd;
@@ -411,7 +411,7 @@ static int mci_read_block(struct mci *mci, void *dst, int blocknum,
  */
 static int mci_go_idle(struct mci *mci)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	int err;
 
 	udelay(1000);
@@ -431,7 +431,7 @@ static int mci_go_idle(struct mci *mci)
 
 static int sdio_send_op_cond(struct mci *mci)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 
 	mci_setup_cmd(&cmd, SD_IO_SEND_OP_COND, 0, MMC_RSP_SPI_R4 | MMC_RSP_R4 | MMC_CMD_BCR);
 
@@ -446,7 +446,7 @@ static int sdio_send_op_cond(struct mci *mci)
 static int sd_send_op_cond(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	int timeout = 1000;
 	int err;
 	unsigned voltages;
@@ -521,7 +521,7 @@ static int sd_send_op_cond(struct mci *mci)
 static int mmc_send_op_cond(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	int timeout = 1000;
 	int err;
 
@@ -566,7 +566,7 @@ static int mmc_send_op_cond(struct mci *mci)
  */
 int mci_send_ext_csd(struct mci *mci, char *ext_csd)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	struct mci_data data;
 
 	/* Get the Card Status Register */
@@ -595,7 +595,7 @@ int mci_send_ext_csd(struct mci *mci, char *ext_csd)
 int mci_switch(struct mci *mci, unsigned index, unsigned value)
 {
 	unsigned int status;
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	int ret;
 
 	mci_setup_cmd(&cmd, MMC_CMD_SWITCH,
@@ -840,7 +840,7 @@ static int mmc_change_freq(struct mci *mci)
 static int sd_switch(struct mci *mci, unsigned mode, unsigned group,
 			unsigned value, uint8_t *resp)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	struct mci_data data;
 	unsigned arg;
 
@@ -909,7 +909,7 @@ out:
  */
 static int sd_change_freq(struct mci *mci)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	struct mci_data data;
 	struct mci_host *host = mci->host;
 	uint32_t *switch_status = sector_buf;
@@ -1387,7 +1387,7 @@ static char *mci_version_string(struct mci *mci)
 
 static int mci_startup_sd(struct mci *mci)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	int err;
 
 	if (mci_caps(mci) & MMC_CAP_4_BIT_DATA) {
@@ -1782,7 +1782,7 @@ static int mci_startup_mmc(struct mci *mci)
 static int mci_startup(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	int err;
 
 	if (IS_ENABLED(CONFIG_MMC_SPI_CRC_ON) && mmc_host_is_spi(host)) { /* enable CRC check for spi */
@@ -1924,7 +1924,7 @@ static int mci_startup(struct mci *mci)
 static int sd_send_if_cond(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	int err;
 
 	mci_setup_cmd(&cmd, SD_CMD_SEND_IF_COND,

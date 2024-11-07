@@ -933,6 +933,13 @@ int fsdev_open_cdev(struct fs_device *fsdev)
 			return ret;
 
 		fsdev->cdev = cdev_create_loop(fsdev->backingstore, O_RDWR, offset);
+		if (fsdev->cdev) {
+			ret = cdev_open(fsdev->cdev, O_RDWR);
+			if (ret) {
+				cdev_remove_loop(fsdev->cdev);
+				fsdev->cdev = NULL;
+			}
+		}
 	} else {
 		fsdev->cdev = cdev_open_by_name(fsdev->backingstore, O_RDWR);
 	}

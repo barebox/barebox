@@ -65,7 +65,7 @@ static long clk_composite_round_rate(struct clk_hw *hw, unsigned long rate,
 
 	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) &&
 	    mux_clk &&
-	    mux_clk->ops->set_rate)
+	    mux_clk->ops->round_rate)
 		return mux_clk->ops->round_rate(clk_to_clk_hw(mux_clk), rate, prate);
 
 	return *prate;

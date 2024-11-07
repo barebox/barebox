@@ -1577,6 +1577,7 @@ static struct dentry *lookup_dcache(const struct qstr *name,
 			if (!error)
 				d_invalidate(dentry);
 			dput(dentry);
+			dentry_kill(dentry);
 			return ERR_PTR(error);
 		}
 	}

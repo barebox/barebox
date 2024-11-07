@@ -1,6 +1,10 @@
 #ifndef __MAILBOX_H
 #define __MAILBOX_H
 
+#include <linux/list.h>
+
+struct of_phandle_args;
+
 struct mbox_chan {
 	struct mbox_controller *mbox;
 	struct device *dev;

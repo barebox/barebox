@@ -16,6 +16,10 @@ jobs:
 
         include:
           - ARCH: arm
+            lgenv: 'test/arm/*@multi_v5_v6_defconfig.yaml'
+            defconfig: multi_v5_v6_defconfig
+
+          - ARCH: arm
             lgenv: 'test/arm/*@multi_v7_defconfig.yaml'
             defconfig: multi_v7_defconfig
 

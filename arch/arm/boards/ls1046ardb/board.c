@@ -125,6 +125,9 @@ out:
 
 static int rdb_late_init(void)
 {
+	if (!of_machine_is_compatible("fsl,ls1046a-rdb"))
+		return 0;
+
 	nxp_nxid_read("/dev/eeprom", 256);
 
 	return 0;

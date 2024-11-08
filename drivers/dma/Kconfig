@@ -9,6 +9,9 @@ config DMADEVICES
 
 if DMADEVICES
 comment "DMA Devices"
+
+source "drivers/dma/ti/Kconfig"
+
 endif
 
 config MXS_APBH_DMA

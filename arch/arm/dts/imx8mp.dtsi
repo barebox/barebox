@@ -99,6 +99,10 @@ feat: &ocotp {
 	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
 };
 
+&npu {
+	barebox,feature-gates = <&feat IMX8M_FEAT_NPU>;
+};
+
 &pgc_mlmix {
 	barebox,feature-gates = <&feat IMX8M_FEAT_NPU>;
 };

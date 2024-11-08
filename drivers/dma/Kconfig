@@ -1,6 +1,16 @@
 # SPDX-License-Identifier: GPL-2.0-only
 menu "DMA support"
 
+config DMADEVICES
+	bool "DMA device support"
+	help
+	  Add support for DMA devices. DMA devices can do asynchronous data
+	  transfers without involving the host CPU.
+
+if DMADEVICES
+comment "DMA Devices"
+endif
+
 config MXS_APBH_DMA
 	tristate "MXS APBH DMA ENGINE"
 	depends on ARCH_IMX23 || ARCH_IMX28 || ARCH_IMX6 || ARCH_IMX7

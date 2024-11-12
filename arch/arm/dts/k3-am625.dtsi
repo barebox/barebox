@@ -1,4 +1,12 @@
 
+/ {
+	chosen {
+		barebox,bootsource-mmc0 = &sdhci0;
+		barebox,bootsource-mmc1 = &sdhci1;
+		barebox,bootsource-mmc2 = &sdhci2;
+	};
+};
+
 &phy_gmii_sel {
 	compatible = "ti,am654-phy-gmii-sel", "syscon";
 };

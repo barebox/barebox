@@ -3,6 +3,10 @@
 #include <io.h>
 #include <deep-probe.h>
 #include <init.h>
+#include <envfs.h>
+#include <fs.h>
+#include <xfuncs.h>
+#include <malloc.h>
 #include <pm_domain.h>
 #include <bootsource.h>
 #include <linux/bits.h>
@@ -173,3 +177,59 @@ static int am625_init(void)
 	return 0;
 }
 postcore_initcall(am625_init);
+
+#if defined(CONFIG_ENV_HANDLING)
+static int omap_env_init(void)
+{
+	char *partname, *cdevname, *envpath;
+	struct cdev *cdev;
+	const char *rootpath;
+	int instance;
+
+	if (!of_machine_is_compatible("ti,am625"))
+		return 0;
+
+	if (bootsource_get() != BOOTSOURCE_MMC)
+		return 0;
+
+	instance = bootsource_get_instance();
+
+	cdevname = xasprintf("mmc%d", instance);
+	partname = xasprintf("mmc%d.0", instance);
+
+	device_detect_by_name(cdevname);
+
+	cdev = cdev_open_by_name(partname, O_RDONLY);
+	if (!cdev) {
+		pr_err("Failed to get device %s\n", partname);
+		goto out;
+	}
+
+	rootpath = cdev_mount_default(cdev, NULL);
+
+	cdev_close(cdev);
+
+	if (IS_ERR(rootpath)) {
+		pr_err("Failed to load environment: mount %s failed (%ld)\n",
+						cdev->name, PTR_ERR(rootpath));
+		goto out;
+	}
+
+	symlink(rootpath, "/boot");
+
+	envpath = xasprintf("%s/barebox.env", rootpath);
+
+	pr_debug("Loading default env from %s on device %s\n",
+		 envpath, partname);
+
+	default_environment_path_set(envpath);
+
+	free(envpath);
+out:
+	free(partname);
+	free(cdevname);
+
+	return 0;
+}
+late_initcall(omap_env_init);
+#endif

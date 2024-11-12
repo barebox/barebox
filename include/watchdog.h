@@ -17,6 +17,7 @@ struct device_node;
 
 struct watchdog {
 	int (*set_timeout)(struct watchdog *, unsigned);
+	int (*ping)(struct watchdog *);
 	const char *name;
 	struct device *hwdev;
 	struct device dev;
@@ -49,6 +50,7 @@ struct watchdog *watchdog_get_default(void);
 struct watchdog *watchdog_get_by_name(const char *name);
 int watchdog_get_alias_id_from(struct watchdog *, struct device_node *);
 int watchdog_set_timeout(struct watchdog*, unsigned);
+int watchdog_ping(struct watchdog *);
 int watchdog_inhibit_all(void);
 #else
 static inline int watchdog_register(struct watchdog *w)
@@ -72,6 +74,11 @@ static inline struct watchdog *watchdog_get_by_name(const char *name)
 }
 
 static inline int watchdog_set_timeout(struct watchdog*w, unsigned t)
+{
+	return 0;
+}
+
+static inline int watchdog_ping(struct watchdog *w)
 {
 	return 0;
 }

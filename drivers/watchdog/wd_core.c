@@ -57,6 +57,29 @@ int watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 }
 EXPORT_SYMBOL(watchdog_set_timeout);
 
+int watchdog_ping(struct watchdog *wd)
+{
+	int ret;
+
+	if (!wd)
+		return -ENODEV;
+
+	if (!watchdog_hw_running(wd))
+		return 0;
+
+	if (wd->ping) {
+		ret = wd->ping(wd);
+		if (!ret)
+			wd->last_ping = get_time_ns();
+	} else {
+		if (!wd->timeout_cur)
+			wd->timeout_cur = wd->timeout_max;
+		ret = watchdog_set_timeout(wd, wd->timeout_cur);
+	}
+
+	return ret;
+}
+
 static int watchdog_set_priority(struct param_d *param, void *priv)
 {
 	struct watchdog *wd = priv;
@@ -78,11 +101,8 @@ static void watchdog_poller_cb(void *priv);
 
 static void watchdog_poller_start(struct watchdog *wd)
 {
-	unsigned int timeout_s;
+	watchdog_ping(wd);
 
-	timeout_s = wd->timeout_cur ?: wd->timeout_max;
-
-	watchdog_set_timeout(wd, timeout_s);
 	poller_call_async(&wd->poller, 500 * MSECOND,
 			watchdog_poller_cb, wd);
 

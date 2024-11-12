@@ -23,7 +23,6 @@ struct watchdog {
 	unsigned int priority;
 	unsigned int timeout_max;
 	unsigned int timeout_cur;
-	unsigned int poller_timeout_cur;
 	unsigned int poller_enable;
 	uint64_t last_ping;
 	int seconds_to_expire;

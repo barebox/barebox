@@ -110,8 +110,6 @@ static int cpsw_mdio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct cpsw_mdio_priv *priv;
-	uint64_t start;
-	uint32_t phy_mask;
 	int ret;
 
 	priv = xzalloc(sizeof(*priv));
@@ -136,33 +134,6 @@ static int cpsw_mdio_probe(struct device *dev)
 	 * FIXME: Use a clock to calculate the divider
 	 */
 	writel(0xff | CONTROL_ENABLE, &priv->mdio_regs->control);
-
-	/*
-	 * wait for scan logic to settle:
-	 * the scan time consists of (a) a large fixed component, and (b) a
-	 * small component that varies with the mii bus frequency.  These
-	 * were estimated using measurements at 1.1 and 2.2 MHz on tnetv107x
-	 * silicon.  Since the effect of (b) was found to be largely
-	 * negligible, we keep things simple here.
-	 */
-	udelay(2000);
-
-	start = get_time_ns();
-	while (1) {
-		phy_mask = readl(&priv->mdio_regs->alive);
-		if (phy_mask) {
-			dev_info(dev, "detected phy mask 0x%x\n", phy_mask);
-			phy_mask = ~phy_mask;
-			break;
-		}
-		if (is_timeout(start, 256 * MSECOND)) {
-			dev_err(dev, "no live phy, scanning all\n");
-			phy_mask = 0;
-			break;
-		}
-	}
-
-	priv->miibus.phy_mask = phy_mask;
 
 	ret = mdiobus_register(&priv->miibus);
 	if (ret)

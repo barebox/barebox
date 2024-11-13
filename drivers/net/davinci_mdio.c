@@ -7,6 +7,7 @@
 #include <clock.h>
 #include <xfuncs.h>
 #include <io.h>
+#include <linux/clk.h>
 
 #define PHY_REG_MASK		0x1f
 #define PHY_ID_MASK		0x1f
@@ -43,6 +44,7 @@ struct cpsw_mdio_priv {
 	struct device			*dev;
 	struct mii_bus			miibus;
 	struct cpsw_mdio_regs		*mdio_regs;
+	struct clk			*clk;
 };
 
 /* wait until hardware is ready for another user access */
@@ -106,6 +108,28 @@ static int cpsw_mdio_write(struct mii_bus *bus, int phy_id, int phy_reg, u16 val
 	return 0;
 }
 
+#define CONTROL_MAX_DIV 0xffff
+
+static void cpsw_mdio_init_clk(struct cpsw_mdio_priv *priv)
+{
+	u32 mdio_in, clk_div;
+	u32 bus_freq = 1000000;
+
+	of_property_read_u32(priv->dev->of_node, "bus_freq", &bus_freq);
+
+	priv->clk = clk_get_enabled(priv->dev, "fck");
+	if (IS_ERR(priv->clk))
+		mdio_in = 256000000;
+	else
+		mdio_in = clk_get_rate(priv->clk);
+
+	clk_div = (mdio_in / bus_freq) - 1;
+	if (clk_div > CONTROL_MAX_DIV)
+		clk_div = CONTROL_MAX_DIV;
+
+	writel(clk_div | CONTROL_ENABLE, &priv->mdio_regs->control);
+}
+
 static int cpsw_mdio_probe(struct device *dev)
 {
 	struct resource *iores;
@@ -129,12 +153,7 @@ static int cpsw_mdio_probe(struct device *dev)
 	priv->miibus.priv = priv;
 	priv->miibus.parent = dev;
 
-	/*
-	 * set enable and clock divider
-	 *
-	 * FIXME: Use a clock to calculate the divider
-	 */
-	writel(0xff | CONTROL_ENABLE, &priv->mdio_regs->control);
+	cpsw_mdio_init_clk(priv);
 
 	ret = mdiobus_register(&priv->miibus);
 	if (ret)

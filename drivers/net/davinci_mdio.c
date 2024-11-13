@@ -113,6 +113,7 @@ static int cpsw_mdio_probe(struct device *dev)
 	int ret;
 
 	priv = xzalloc(sizeof(*priv));
+	priv->dev = dev;
 
 	/* If we can't request I/O memory region, we'll assume parent did
 	 * it for us

@@ -31,6 +31,8 @@ struct bootchooser_target *bootchooser_target_first(struct bootchooser *bootchoo
 struct bootchooser_target *bootchooser_target_next(struct bootchooser *bootchooser,
 					       struct bootchooser_target *cur);
 
+int bootchooser_entry_boot(struct bootentry *entry, int verbose, int dryrun);
+
 #define bootchooser_for_each_target(bootchooser, target) \
 	for (target = bootchooser_target_first(bootchooser); target; \
 	     target = bootchooser_target_next(bootchooser, target))

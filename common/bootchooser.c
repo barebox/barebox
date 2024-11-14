@@ -868,7 +868,7 @@ int bootchooser_boot(struct bootchooser *bc)
 	return ret;
 }
 
-static int bootchooser_entry_boot(struct bootentry *entry, int verbose, int dryrun)
+int bootchooser_entry_boot(struct bootentry *entry, int verbose, int dryrun)
 {
 	struct bootchooser *bc;
 	int ret;

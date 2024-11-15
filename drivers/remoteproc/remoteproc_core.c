@@ -75,7 +75,7 @@ static int rproc_firmware_write_buf(struct firmware_handler *fh, const void *buf
 		return -ENOMEM;
 	}
 
-	memcpy(rproc->fw_buf + rproc->fw_buf_ofs, buf, size);
+	memcpy_toio(rproc->fw_buf + rproc->fw_buf_ofs, buf, size);
 	rproc->fw_buf_ofs += size;
 
 	return 0;

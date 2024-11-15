@@ -1,0 +1,2 @@
+config K3_DDRSS
+	bool

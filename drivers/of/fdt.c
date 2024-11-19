@@ -252,6 +252,11 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 
 		case FDT_PROP:
 			fdt_prop = infdt + dt_struct;
+			if (!dt_ptr_ok(fdt, fdt_prop)) {
+				ret = -ESPIPE;
+				goto err;
+			}
+
 			len = fdt32_to_cpu(fdt_prop->len);
 			nodep = fdt_prop->data;
 

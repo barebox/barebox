@@ -44,7 +44,7 @@
 					 | IMX6SX_SW_M4C_NON_SCLR_RST \
 					 | IMX6SX_SW_M4C_RST)
 
-#define IMX7D_RPROC_MEM_MAX		8
+#define IMX_RPROC_MEM_MAX		32
 
 /**
  * struct imx_rproc_mem - slim internal memory structure
@@ -84,7 +84,7 @@ struct imx_rproc {
 	struct regmap			*gpr;
 	struct rproc			*rproc;
 	const struct imx_rproc_dcfg	*dcfg;
-	struct imx_rproc_mem		mem[IMX7D_RPROC_MEM_MAX];
+	struct imx_rproc_mem		mem[IMX_RPROC_MEM_MAX];
 	struct clk			*clk;
 };
 
@@ -362,7 +362,7 @@ static void *imx_rproc_da_to_va(struct rproc *rproc, u64 da, int len)
 	if (imx_rproc_da_to_sys(priv, da, len, &sys))
 		return NULL;
 
-	for (i = 0; i < IMX7D_RPROC_MEM_MAX; i++) {
+	for (i = 0; i < IMX_RPROC_MEM_MAX; i++) {
 		if (sys >= priv->mem[i].sys_addr && sys + len <
 		    priv->mem[i].sys_addr +  priv->mem[i].size) {
 			unsigned int offset = sys - priv->mem[i].sys_addr;
@@ -398,7 +398,7 @@ static int imx_rproc_addr_init(struct imx_rproc *priv,
 		if (!(att->flags & ATT_OWN))
 			continue;
 
-		if (b >= IMX7D_RPROC_MEM_MAX)
+		if (b >= IMX_RPROC_MEM_MAX)
 			break;
 
 		res_cpu = request_iomem_region(dev_name(dev),
@@ -431,7 +431,7 @@ static int imx_rproc_addr_init(struct imx_rproc *priv,
 			return err;
 		}
 
-		if (b >= IMX7D_RPROC_MEM_MAX)
+		if (b >= IMX_RPROC_MEM_MAX)
 			break;
 
 		/*

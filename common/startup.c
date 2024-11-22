@@ -310,7 +310,7 @@ static int run_init(void)
 	if (autoboot == AUTOBOOT_BOOT)
 		run_command("boot");
 
-	if (IS_ENABLED(CONFIG_NET))
+	if (IS_ENABLED(CONFIG_NET) && !IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT))
 		eth_open_all();
 
 	if (autoboot == AUTOBOOT_MENU)

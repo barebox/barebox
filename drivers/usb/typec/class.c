@@ -142,7 +142,7 @@ struct typec_port *typec_register_port(struct device *parent,
 	const char *alias;
 	int ret;
 
-	port = malloc(sizeof(*port));
+	port = calloc(1, sizeof(*port));
 	if (!port)
 		return ERR_PTR(-ENOMEM);
 

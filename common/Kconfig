@@ -1289,9 +1289,6 @@ config DDR_SPD
 	bool
 	select CRC_ITU_T
 
-config HAVE_ARCH_ASAN
-	bool
-
 config ARCH_USE_SYM_ANNOTATIONS
 	bool
 	help

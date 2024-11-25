@@ -189,7 +189,7 @@ static int nv_set(struct device *dev, struct param_d *p, const char *name,
 	}
 
 	if (p) {
-		free(p->value);
+		free_const(p->value);
 		p->value = xstrdup(val);
 	}
 
@@ -246,7 +246,7 @@ static int __nvvar_add(const char *name, const char *value)
 		value = dev_get_param(&global_device, name);
 
 	if (value && p) {
-		free(p->value);
+		free_const(p->value);
 		p->value = xstrdup(value);
 	}
 

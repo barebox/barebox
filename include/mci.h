@@ -610,7 +610,7 @@ struct mci_part {
 	struct mci		*mci;
 	uint64_t		size;		/* partition size (in bytes) */
 	unsigned int		part_cfg;	/* partition type */
-	char			*name;
+	const char		*name;
 	int			idx;
 	unsigned int		area_type;
 #define MMC_BLK_DATA_AREA_MAIN	(1<<0)

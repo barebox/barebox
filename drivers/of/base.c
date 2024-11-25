@@ -2417,12 +2417,12 @@ struct device_node *of_new_node(struct device_node *parent, const char *name)
 	INIT_LIST_HEAD(&node->properties);
 
 	if (parent) {
-		node->name = xstrdup(name);
+		node->name = xstrdup_const(name);
 		node->full_name = basprintf("%pOF/%s",
 					      node->parent, name);
 		list_add(&node->list, &parent->list);
 	} else {
-		node->name = xstrdup("");
+		node->name = xstrdup_const("");
 		node->full_name = xstrdup("");
 		INIT_LIST_HEAD(&node->list);
 	}
@@ -2436,7 +2436,7 @@ struct property *__of_new_property(struct device_node *node, const char *name,
 	struct property *prop;
 
 	prop = xzalloc(sizeof(*prop));
-	prop->name = xstrdup(name);
+	prop->name = xstrdup_const(name);
 	prop->length = len;
 	prop->value = data;
 
@@ -2505,7 +2505,7 @@ void of_delete_property(struct property *pp)
 
 	list_del(&pp->list);
 
-	free(pp->name);
+	free_const(pp->name);
 	free(pp->value);
 	free(pp);
 }
@@ -2521,7 +2521,7 @@ struct property *of_rename_property(struct device_node *np,
 
 	of_property_write_bool(np, new_name, false);
 
-	free(pp->name);
+	free_const(pp->name);
 	pp->name = xstrdup(new_name);
 	return pp;
 }
@@ -2903,7 +2903,7 @@ void of_delete_node(struct device_node *node)
 		list_del(&node->list);
 	}
 
-	free(node->name);
+	free_const(node->name);
 	free(node->full_name);
 	free(node);
 }

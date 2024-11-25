@@ -138,7 +138,7 @@ static int kvx_read_board_sn(struct device_node *socinfo)
 		return PTR_ERR(cell);
 	}
 
-	sn = (char *)nvmem_cell_read(cell, &len);
+	sn = nvmem_cell_read(cell, &len);
 	nvmem_cell_put(cell);
 	if (IS_ERR(sn)) {
 		pr_debug("Fail to read board_sn\n");

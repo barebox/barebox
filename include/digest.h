@@ -40,8 +40,8 @@ enum hash_algo {
 };
 
 struct crypto_alg {
-	char *name;
-	char *driver_name;
+	const char *name;
+	const char *driver_name;
 	int priority;
 #define DIGEST_ALGO_NEED_KEY	(1 << 0)
 	unsigned int flags;

@@ -14,7 +14,7 @@ struct poller_struct {
 	u16 registered:1;
 	u16 overtime;
 	struct list_head list;
-	char *name;
+	const char *name;
 };
 
 int poller_register(struct poller_struct *poller, const char *name);

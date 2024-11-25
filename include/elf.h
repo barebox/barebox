@@ -406,7 +406,7 @@ struct elf_image {
 	void *low_addr;
 	void *high_addr;
 	void *hdr_buf;
-	char *filename;
+	const char *filename;
 };
 
 static inline size_t elf_get_mem_size(struct elf_image *elf)

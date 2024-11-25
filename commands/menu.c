@@ -128,7 +128,7 @@ static int do_menu_add(struct cmd_menu *cm)
 	if (!m)
 		goto free;
 
-	m->name = strdup(cm->menu);
+	m->name = strdup_const(cm->menu);
 	if (!m->name)
 		goto free;
 
@@ -216,9 +216,9 @@ static int do_menu_show(struct cmd_menu *cm)
 	if (cm->auto_select != -EINVAL) {
 		menu_set_auto_select(m, cm->auto_select);
 
-		free(m->auto_display);
+		free_const(m->auto_display);
 
-		m->auto_display = strdup(cm->description);
+		m->auto_display = strdup_const(cm->description);
 	}
 
 	return menu_show(m);

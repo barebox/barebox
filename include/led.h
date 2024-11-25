@@ -10,7 +10,7 @@
 struct led {
 	void (*set)(struct led *, unsigned int value);
 	int max_value;
-	char *name;
+	const char *name;
 	int num;
 	struct list_head list;
 

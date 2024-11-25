@@ -23,9 +23,6 @@ static struct bthread {
 	void *stack;
 	u32 stack_size;
 	struct list_head list;
-#ifdef CONFIG_ARCH_HAS_ASAN_FIBER_API
-	void *fake_stack_save;
-#endif
 	u8 awake :1;
 	u8 should_stop :1;
 	u8 should_clean :1;
@@ -41,21 +38,21 @@ struct bthread *current = &main_thread;
 /*
  * When using ASAN, it needs to be told when we switch stacks.
  */
-static void bthread_finish_switch_fiber(struct bthread *bthread)
+static void bthread_finish_switch_fiber(void *stack_save)
 {
-	finish_switch_fiber(bthread->fake_stack_save,
+	finish_switch_fiber(stack_save,
 			    &main_thread.stack, &main_thread.stack_size);
 }
 
-static void bthread_start_switch_fiber(struct bthread *to, bool terminate_old)
+static void bthread_start_switch_fiber(void **stack_save)
 {
-	start_switch_fiber(terminate_old ? &to->fake_stack_save : NULL,
-			   to->stack, to->stack_size);
+	start_switch_fiber(stack_save,
+			   current->stack, current->stack_size);
 }
 
 static void __noreturn bthread_trampoline(void)
 {
-	bthread_finish_switch_fiber(current);
+	bthread_finish_switch_fiber(NULL);
 
 	bthread_reschedule();
 
@@ -65,7 +62,7 @@ static void __noreturn bthread_trampoline(void)
 	current->has_stopped = true;
 
 	current = &main_thread;
-	bthread_start_switch_fiber(current, true);
+	bthread_start_switch_fiber(NULL);
 	longjmp(current->jmp_buf, 1);
 }
 
@@ -202,15 +199,15 @@ void bthread_reschedule(void)
 void bthread_schedule(struct bthread *to)
 {
 	struct bthread *from = current;
+	void *stack_save = NULL;
 	int ret;
-
-	bthread_start_switch_fiber(to, false);
 
 	ret = setjmp(from->jmp_buf);
 	if (ret == 0) {
 		current = to;
+		bthread_start_switch_fiber(&stack_save);
 		longjmp(to->jmp_buf, 1);
 	}
 
-	bthread_finish_switch_fiber(from);
+	bthread_finish_switch_fiber(stack_save);
 }

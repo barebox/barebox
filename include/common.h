@@ -23,11 +23,6 @@
 #include <linux/printk.h>
 #include <barebox-info.h>
 
-/*
- * Function Prototypes
- */
-void reginfo(void);
-
 /* common/memsize.c */
 long	get_ram_size  (volatile long *, long);
 

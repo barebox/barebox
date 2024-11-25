@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-config REGINFO
-	bool
-
 config COMMAND_SUPPORT
 	bool
 	depends on !SHELL_NONE
@@ -246,14 +243,6 @@ config CMD_ARM_MMUINFO
 	  Outer mem. attr. [3:2]:   0x0 (0b00 Non-cacheable)
 	  SuperSection [1]:         0x0
 	  Failure [0]:              0x0
-
-config CMD_REGINFO
-	depends on HAS_REGINFO
-	select REGINFO
-	tristate
-	prompt "reginfo"
-	help
-	  Print register information.
 
 config CMD_BLKSTATS
 	bool

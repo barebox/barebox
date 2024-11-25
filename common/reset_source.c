@@ -61,7 +61,7 @@ static void __reset_source_set(struct device *dev,
 	reset_source = st;
 	reset_source_priority = priority;
 	reset_source_instance = instance;
-	reset_source_device = NULL;
+	reset_source_device = dev;
 
 	pr_debug("Setting reset source to %s with priority %d\n",
 			reset_src_names[reset_source], priority);

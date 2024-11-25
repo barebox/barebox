@@ -23,7 +23,4 @@
 #include <linux/printk.h>
 #include <barebox-info.h>
 
-/* common/memsize.c */
-long	get_ram_size  (volatile long *, long);
-
 #endif	/* __COMMON_H_ */

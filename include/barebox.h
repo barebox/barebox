@@ -43,4 +43,6 @@ enum autoboot_state do_autoboot_countdown(void);
 void __noreturn start_barebox(void);
 void shutdown_barebox(void);
 
+long get_ram_size(volatile long *base, long size);
+
 #endif

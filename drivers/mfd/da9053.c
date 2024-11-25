@@ -224,7 +224,7 @@ static void da9053_detect_reset_source(struct da9053_priv *da9053)
 	else
 		return;
 
-	reset_source_set_device(da9053->dev, type);
+	reset_source_set_device(da9053->dev, type, 200);
 
 	ret = da9053_reg_write(da9053, DA9053_FAULTLOG_REG, val);
 	if (ret < 0)

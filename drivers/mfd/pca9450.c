@@ -58,7 +58,7 @@ static int pca9450_get_reset_source(struct device *dev, struct regmap *map)
 		type = RESET_UKWN;
 	}
 
-	reset_source_set_device(dev, type);
+	reset_source_set_device(dev, type, 200);
 
 	return 0;
 };

@@ -39,8 +39,8 @@ static inline int dev_printf(int level, const struct device *dev,
 }
 #endif
 
-#if (!defined(__PBL__) && !defined(CONFIG_CONSOLE_NONE)) || \
-	(defined(__PBL__) && defined(CONFIG_PBL_CONSOLE))
+#if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \
+	(IN_PBL && defined(CONFIG_PBL_CONSOLE))
 int pr_print(int level, const char *format, ...)
 	__attribute__ ((format(__printf__, 2, 3)));
 #else

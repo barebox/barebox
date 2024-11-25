@@ -82,8 +82,8 @@ static inline void ctrlc_handled(void)
 char *size_human_readable(unsigned long long size);
 int readline(const char *prompt, char *buf, int len);
 
-#if (!defined(__PBL__) && !defined(CONFIG_CONSOLE_NONE)) || \
-	(defined(__PBL__) && defined(CONFIG_PBL_CONSOLE))
+#if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \
+	(IN_PBL && defined(CONFIG_PBL_CONSOLE))
 static inline int puts(const char *s)
 {
 	return console_puts(CONSOLE_STDOUT, s);

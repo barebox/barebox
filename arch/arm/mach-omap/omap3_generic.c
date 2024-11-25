@@ -553,7 +553,7 @@ const struct gpmc_config omap3_nand_cfg = {
 	.size = GPMC_SIZE_16M,
 };
 
-#ifndef __PBL__
+#if IN_PROPER
 static int omap3_gpio_init(void)
 {
 	add_generic_device("omap-gpio", 0, NULL, OMAP3_GPIO1_BASE,

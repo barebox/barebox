@@ -19,6 +19,7 @@ config SANDBOX
 	select HAS_DEBUG_LL
 	select ARCH_DMA_DEFAULT_COHERENT
 	select ARCH_WANT_FRAME_POINTERS
+	select BAREBOX_CMDLINE
 	default y
 
 config ARCH_TEXT_BASE

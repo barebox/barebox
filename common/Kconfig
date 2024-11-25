@@ -406,6 +406,13 @@ config SIMPLE_READLINE
 	default y
 	depends on !CMDLINE_EDITING
 
+config BAREBOX_CMDLINE
+	bool
+	help
+	  Support a barebox command line when running virtualized.
+	  The commands are appended onto /cmdline, which is sourced
+	  after sourcing all init scripts.
+
 config CBSIZE
 	int
 	prompt "Buffer size for input from the Console"

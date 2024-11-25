@@ -30,6 +30,7 @@
 #include <magicvar.h>
 #include <linux/reboot-mode.h>
 #include <asm/sections.h>
+#include <libfile.h>
 #include <uncompress.h>
 #include <globalvar.h>
 #include <console_countdown.h>
@@ -240,7 +241,7 @@ postcore_initcall(register_autoboot_vars);
 
 static int run_init(void)
 {
-	const char *bmode;
+	const char *bmode, *cmdline;
 	bool env_bin_init_exists;
 	enum autoboot_state autoboot;
 	struct stat s;
@@ -287,6 +288,16 @@ static int run_init(void)
 		}
 
 		globfree(&g);
+	}
+
+	cmdline = barebox_cmdline_get();
+	if (cmdline) {
+		ret = write_file("/cmdline", cmdline, strlen(cmdline));
+		if (ret)
+			return ret;
+
+		console_ctrlc_allow();
+		run_command("source /cmdline");
 	}
 
 	/* source matching script in /env/bmode/ */

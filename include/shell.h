@@ -19,4 +19,13 @@ static inline char *shell_expand(char *str)
 }
 #endif
 
+#ifdef CONFIG_BAREBOX_CMDLINE
+const char *barebox_cmdline_get(void);
+#else
+static inline const char *barebox_cmdline_get(void)
+{
+	return NULL;
+}
+#endif
+
 #endif /* __SHELL_H__ */

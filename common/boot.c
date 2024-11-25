@@ -204,7 +204,7 @@ static int bootscript_create_entry(struct bootentries *bootentries, const char *
 	bs->entry.release = bootscript_entry_release;
 	bs->entry.boot = bootscript_boot;
 	bs->scriptpath = xstrdup(name);
-	bs->entry.title = xstrdup(basename(bs->scriptpath));
+	bs->entry.title = xstrdup(kbasename(bs->scriptpath));
 	bs->entry.description = basprintf("script: %s", name);
 	bootentries_add_entry(bootentries, &bs->entry);
 

@@ -57,6 +57,14 @@ config SANDBOX_REEXEC
 	  The normal reset handler hangs barebox. On Linux, barebox
 	  instead can exec itself to simulate a reset.
 
+config SANDBOX_SJLJ_ASM
+	bool "use setjmp/longjmp/initjmp implemented in assembly" if COMPILE_TEST
+	default y
+	help
+	  sandbox has a C implementation of initjmp, which can run afoul of code
+	  hardening measures like ASAN. The assembly version isn't immune to these
+	  issues, but it's easier to reason about than the sigaltstack hack.
+
 config SDL
 	bool
 

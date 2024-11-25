@@ -492,12 +492,20 @@ static int add_dtb(const char *file)
 	return -1;
 }
 
+static char *cmdline;
+
+const char *barebox_cmdline_get(void)
+{
+	return cmdline;
+}
+
 static void print_usage(const char*);
 
 static struct option long_options[] = {
 	{"help",     0, 0, 'h'},
 	{"malloc",   1, 0, 'm'},
 	{"image",    1, 0, 'i'},
+	{"command",  1, 0, 'c'},
 	{"env",      1, 0, 'e'},
 	{"dtb",      1, 0, 'd'},
 	{"stdout",   1, 0, 'O'},
@@ -508,7 +516,7 @@ static struct option long_options[] = {
 	{0, 0, 0, 0},
 };
 
-static const char optstring[] = "hm:i:e:d:O:I:B:x:y:";
+static const char optstring[] = "hm:i:c:e:d:O:I:B:x:y:";
 
 int main(int argc, char *argv[])
 {
@@ -516,6 +524,7 @@ int main(int argc, char *argv[])
 	int opt, ret, fd, fd2;
 	int malloc_size = CONFIG_MALLOC_SIZE;
 	int fdno = 0, envno = 0, option_index = 0;
+	char *new_cmdline;
 	char *aux;
 
 #ifdef CONFIG_ASAN
@@ -538,6 +547,12 @@ int main(int argc, char *argv[])
 			malloc_size = strtoul(optarg, NULL, 0);
 			break;
 		case 'i':
+			break;
+		case 'c':
+			if (asprintf(&new_cmdline, "%s%s\n", cmdline ?: "", optarg) < 0)
+				exit(1);
+			free(cmdline);
+			cmdline = new_cmdline;
 			break;
 		case 'e':
 			break;
@@ -669,6 +684,7 @@ static void print_usage(const char *prgname)
 "  -i, --image=<dev>=<file>\n"
 "                       Same as above, the files will show up as\n"
 "                       /dev/<dev>\n"
+"  -c, --command=<cmd>  Run extra command after init scripts\n"
 "  -e, --env=<file>     Map a file with an environment to barebox. With this \n"
 "                       option, files are mapped as /dev/env0 ... /dev/envx\n"
 "                       and thus are used as the default environment.\n"

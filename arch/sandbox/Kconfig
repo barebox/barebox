@@ -66,6 +66,13 @@ config SANDBOX_SJLJ_ASM
 	  hardening measures like ASAN. The assembly version isn't immune to these
 	  issues, but it's easier to reason about than the sigaltstack hack.
 
+config CMD_SANDBOX_CPUINFO
+	bool "cpuinfo command"
+	depends on COMMAND_SUPPORT
+	default y
+	help
+	  Say yes here to get a dummy cpuinfo command.
+
 config SDL
 	bool
 

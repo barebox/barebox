@@ -185,6 +185,11 @@ int linux_open(const char *filename, int readwrite)
 	return open(filename, (readwrite ? O_RDWR : O_RDONLY) | O_CLOEXEC);
 }
 
+int linux_close(int fd)
+{
+	return close(fd);
+}
+
 int linux_read(int fd, void *buf, size_t count)
 {
 	ssize_t ret;

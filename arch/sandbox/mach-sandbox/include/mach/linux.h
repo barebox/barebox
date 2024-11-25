@@ -15,6 +15,7 @@ int linux_register_device(const char *name, void *start, void *end);
 int tap_alloc(const char *dev);
 uint64_t linux_get_time(void);
 int linux_open(const char *filename, int readwrite);
+int linux_close(int fd);
 char *linux_get_stickypage_path(void);
 int linux_open_hostfile(struct hf_info *hf);
 int linux_read(int fd, void *buf, size_t count);

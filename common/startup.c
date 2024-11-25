@@ -318,16 +318,17 @@ static int run_init(void)
 	if (IS_ENABLED(CONFIG_NET))
 		eth_open_all();
 
-	if (autoboot == AUTOBOOT_MENU)
+	if (autoboot != AUTOBOOT_MENU) {
+		if (autoboot == AUTOBOOT_ABORT && autoboot == global_autoboot_state)
+			watchdog_inhibit_all();
+
+		run_shell();
+	}
+
+	while (1)
 		run_command(MENUFILE);
 
-	if (autoboot == AUTOBOOT_ABORT && autoboot == global_autoboot_state)
-		watchdog_inhibit_all();
-
-	run_shell();
-	run_command(MENUFILE);
-
-	return 0;
+	unreachable();
 }
 
 typedef void (*ctor_fn_t)(void);

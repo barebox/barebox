@@ -41,4 +41,6 @@ void longjmp(jmp_buf jmp, int ret) __attribute__((noreturn)) __sjlj_attr;
 
 int initjmp(jmp_buf jmp, void __attribute__((noreturn)) (*func)(void), void *stack_top) __sjlj_attr;
 
+#include <asm-generic/setjmp.h>
+
 #endif

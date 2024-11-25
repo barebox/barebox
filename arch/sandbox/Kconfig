@@ -42,6 +42,7 @@ config 64BIT
 	default CC_IS_64BIT
 	select ARCH_DMA_ADDR_T_64BIT
 	select PHYS_ADDR_T_64BIT
+	select ARCH_HAS_ASAN_FIBER_API if ASAN
 
 config 32BIT
 	def_bool !64BIT

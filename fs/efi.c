@@ -451,11 +451,13 @@ static int efifs_init(void)
 
 coredevice_initcall(efifs_init);
 
-static int index;
+static unsigned index;
 
 static int efi_fs_probe(struct efi_device *efidev)
 {
-	char *path, *device;
+	char buf[sizeof("/efi4294967295")];
+	const char *path;
+	char *device;
 	int ret;
 	struct efi_file_io_interface *volume;
 
@@ -463,10 +465,13 @@ static int efi_fs_probe(struct efi_device *efidev)
 		BS->handle_protocol(efi_loaded_image->device_handle,
 				&efi_simple_file_system_protocol_guid, (void*)&volume);
 
-	if (efi_loaded_image && efidev->protocol == volume)
-		path = xstrdup("/boot");
-	else
-		path = basprintf("/efi%d", index);
+	if (efi_loaded_image && efidev->protocol == volume) {
+		path = "/boot";
+	} else {
+		snprintf(buf, sizeof(buf), "/efi%u", index);
+		path = buf;
+	}
+
 	device = basprintf("%s", dev_name(&efidev->dev));
 
 	ret = make_directory(path);
@@ -483,7 +488,6 @@ static int efi_fs_probe(struct efi_device *efidev)
 
 	ret = 0;
 out:
-	free(path);
 	free(device);
 
 	return ret;

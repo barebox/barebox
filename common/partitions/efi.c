@@ -26,6 +26,7 @@ struct efi_partition_desc {
 	struct partition_desc pd;
 	gpt_header *gpt;
 	gpt_entry *ptes;
+	struct param_d *param_guid;
 };
 
 struct efi_partition {
@@ -487,9 +488,6 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 	if (!find_valid_gpt(buf, blk, &gpt, &ptes) || !gpt || !ptes)
 		return NULL;
 
-	snprintf(blk->cdev.diskuuid, sizeof(blk->cdev.diskuuid), "%pUl", &gpt->disk_guid);
-	dev_add_param_string_fixed(blk->dev, "guid", blk->cdev.diskuuid);
-
 	blk->cdev.flags |= DEVFS_IS_GPT_PARTITIONED;
 
 	nb_part = le32_to_cpu(gpt->num_partition_entries);
@@ -505,6 +503,10 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 
 	epd->gpt = gpt;
 	epd->ptes = ptes;
+
+	snprintf(blk->cdev.diskuuid, sizeof(blk->cdev.diskuuid), "%pUl", &gpt->disk_guid);
+	epd->param_guid = dev_add_param_string_fixed(blk->dev,
+						     "guid", blk->cdev.diskuuid);
 
 	for (i = 0; i < nb_part; i++) {
 		if (!is_pte_valid(&ptes[i], last_lba(blk))) {
@@ -540,6 +542,7 @@ static void efi_partition_free(struct partition_desc *pd)
 		free(epart);
 	}
 
+	dev_remove_param(epd->param_guid);
 	free(epd->ptes);
 	free(epd->gpt);
 	free(epd);

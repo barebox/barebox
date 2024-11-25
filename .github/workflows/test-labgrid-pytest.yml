@@ -59,7 +59,7 @@ jobs:
       run: |
         export ARCH=${{matrix.arch}}
 
-        ./MAKEALL -O build-${{matrix.arch}} \
+        ./MAKEALL -O build-${{matrix.arch}} -l "" -v 0 \
                 -k common/boards/configs/enable_self_test.config \
                 -k common/boards/configs/disable_target_tools.config \
                 ${{matrix.defconfig}}

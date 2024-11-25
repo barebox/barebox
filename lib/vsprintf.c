@@ -933,6 +933,10 @@ int vasprintf(char **strp, const char *fmt, va_list ap)
 	va_list aq;
 	char *p;
 
+	/* Silence -Wmaybe-uninitialized false positive */
+	if (IN_PBL)
+		return -1;
+
 	va_copy(aq, ap);
 	len = vsnprintf(NULL, 0, fmt, aq);
 	va_end(aq);

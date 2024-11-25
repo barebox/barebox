@@ -17,12 +17,32 @@ int sprintf(char *buf, const char *fmt, ...) __attribute__ ((format(__printf__, 
 int snprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
 int scnprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
 int vsprintf(char *buf, const char *fmt, va_list args);
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
+int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
+
+#if IN_PROPER || defined(CONFIG_PBL_CONSOLE)
 char *basprintf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
 int asprintf(char **strp, const char *fmt, ...)  __attribute__ ((format(__printf__, 2, 3)));
 char *bvasprintf(const char *fmt, va_list ap);
 int vasprintf(char **strp, const char *fmt, va_list ap);
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
-int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
+#else
+static inline char *basprintf(const char *fmt, ...)
+{
+	return NULL;
+}
+static inline int asprintf(char **strp, const char *fmt, ...)
+{
+	return -1;
+}
+static inline char *bvasprintf(const char *fmt, va_list ap)
+{
+	return NULL;
+}
+static inline int vasprintf(char **strp, const char *fmt, va_list ap)
+{
+	return -1;
+}
+#endif
 
 #ifdef CONFIG_ARCH_HAS_CTRLC
 int arch_ctrlc(void);

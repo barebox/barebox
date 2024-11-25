@@ -7,7 +7,6 @@ config SANDBOX
 	select OFTREE
 	select GPIOLIB
 	select ARCH_HAS_UBSAN_SANITIZE_ALL
-	select HAVE_ARCH_ASAN
 	select HAS_DMA
 	select BLOCK
 	select BLOCK_WRITE

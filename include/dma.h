@@ -42,6 +42,11 @@ static inline void dma_free(void *mem)
 	free(mem);
 }
 
+static inline void dma_free_const(const void *mem)
+{
+	free_const(mem);
+}
+
 static inline void dma_free_sensitive(void *mem)
 {
 	free_sensitive(mem);

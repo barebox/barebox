@@ -156,7 +156,7 @@ static int hf_probe(struct device *dev)
 	cdev_set_of_node(cdev, np);
 
 	if (is_blockdev) {
-		cdev->name = np->name;
+		cdev->name = strdup(np->name);
 		priv->blk.dev = dev;
 		priv->blk.ops = &hf_blk_ops;
 		priv->blk.blockbits = SECTOR_SHIFT;
@@ -169,7 +169,7 @@ static int hf_probe(struct device *dev)
 
 		dev_info(dev, "registered as block device\n");
 	} else {
-		cdev->name = np->name;
+		cdev->name = strdup(np->name);
 		cdev->dev = dev;
 		cdev->ops = &hf_cdev_ops;
 		cdev->size = reg[1];

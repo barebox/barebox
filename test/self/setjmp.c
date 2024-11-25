@@ -76,10 +76,15 @@ static void test_setjmp_loop(void)
 
 }
 
+static void *main_stack;
+static u32 main_stack_size;
+
 static void __noreturn initjmp_entry(void)
 {
 	volatile u32 arr[256];
 	int i;
+
+	finish_switch_fiber(NULL, &main_stack, &main_stack_size);
 
 	for (i = 0; i < ARRAY_SIZE(arr); i++)
 		writel(i, &arr[i]);
@@ -89,11 +94,13 @@ static void __noreturn initjmp_entry(void)
 	if (i == 0)
 		initjmp_entry();
 
+	start_switch_fiber(NULL, main_stack, main_stack_size);
 	longjmp(jbuf, 0x1337);
 }
 
 static void test_initjmp(void)
 {
+	void *fake_stack_save = NULL;
 	void *stack;
 	jmp_buf ijbuf;
 
@@ -114,10 +121,13 @@ static void test_initjmp(void)
 	case 0x1337:
 		break;
 	case 0:
+		start_switch_fiber(&fake_stack_save, stack, CONFIG_STACK_SIZE);
 		longjmp(ijbuf, 0x42);
 	default:
 		failed_tests++;
 	}
+
+	finish_switch_fiber(fake_stack_save, &main_stack, &main_stack_size);
 
 	free(stack);
 }

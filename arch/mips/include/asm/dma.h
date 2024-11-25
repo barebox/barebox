@@ -19,6 +19,8 @@
 #define DMA_ALIGNMENT	\
 	max(current_cpu_data.dcache.linesz, current_cpu_data.scache.linesz)
 
+#define ARCH_DMA_MINALIGN	128
+
 #define dma_alloc_coherent dma_alloc_coherent
 static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {

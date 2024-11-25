@@ -19,6 +19,14 @@ board-y := arch/sandbox/board
 BOARD	:= $(board-y)/
 lds-y   := $(BOARD)/barebox.lds
 
+HEADER_ARCH 	:= $(SUBARCH)
+HOST_DIR := arch/$(HEADER_ARCH)
+
+-include $(srctree)/$(HOST_DIR)/Makefile.um
+
+common-y += $(HOST_DIR)/um/
+
+KBUILD_CPPFLAGS += -I$(srctree)/$(HOST_DIR)/include
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 KBUILD_CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
@@ -48,6 +56,7 @@ machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 
 archprepare: maketools
+	$(Q)$(MAKE) $(build)=$(HOST_DIR)/um
 
 PHONY += maketools
 

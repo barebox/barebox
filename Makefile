@@ -846,7 +846,7 @@ quiet_cmd_sysmap = SYSMAP  System.map
 define rule_barebox__
 	$(if $(CONFIG_KALLSYMS),,+$(call cmd,barebox_version))
 	$(call cmd,barebox__)
-	$(Q)echo 'cmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
+	$(Q)echo 'savedcmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
 	$(call cmd,prelink__)
 	$(call cmd,sysmap)
 endef
@@ -893,7 +893,7 @@ cmd_ksym_ld = $(cmd_barebox__)
 define rule_ksym_ld
 	+$(call cmd,barebox_version)
 	$(call cmd,barebox__)
-	$(Q)echo 'cmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
+	$(Q)echo 'savedcmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
 endef
 
 # Generate .S file with all kernel symbols

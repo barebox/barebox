@@ -70,7 +70,7 @@
  *
  * It first generates a line
  *
- *   cmd_<target> = <cmdline>
+ *   savedcmd_<target> = <cmdline>
  *
  * and then basically copies the .<target>.d file to stdout, in the
  * process filtering out the dependency on autoconf.h and adding
@@ -94,34 +94,17 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
-#include <stdarg.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+
+#include <xalloc.h>
 
 static void usage(void)
 {
 	fprintf(stderr, "Usage: fixdep <depfile> <target> <cmdline>\n");
 	exit(1);
-}
-
-/*
- * In the intended usage of this program, the stdout is redirected to .*.cmd
- * files. The return value of printf() must be checked to catch any error,
- * e.g. "No space left on device".
- */
-static void xprintf(const char *format, ...)
-{
-	va_list ap;
-	int ret;
-
-	va_start(ap, format);
-	ret = vprintf(format, ap);
-	if (ret < 0) {
-		perror("fixdep");
-		exit(1);
-	}
-	va_end(ap);
 }
 
 struct item {
@@ -132,7 +115,7 @@ struct item {
 };
 
 #define HASHSZ 256
-static struct item *hashtab[HASHSZ];
+static struct item *config_hashtab[HASHSZ], *file_hashtab[HASHSZ];
 
 static unsigned int strhash(const char *str, unsigned int sz)
 {
@@ -145,31 +128,14 @@ static unsigned int strhash(const char *str, unsigned int sz)
 }
 
 /*
- * Lookup a value in the configuration string.
+ * Add a new value to the configuration string.
  */
-static int is_defined_config(const char *name, int len, unsigned int hash)
+static void add_to_hashtable(const char *name, int len, unsigned int hash,
+			     struct item *hashtab[])
 {
 	struct item *aux;
 
-	for (aux = hashtab[hash % HASHSZ]; aux; aux = aux->next) {
-		if (aux->hash == hash && aux->len == len &&
-		    memcmp(aux->name, name, len) == 0)
-			return 1;
-	}
-	return 0;
-}
-
-/*
- * Add a new value to the configuration string.
- */
-static void define_config(const char *name, int len, unsigned int hash)
-{
-	struct item *aux = malloc(sizeof(*aux) + len);
-
-	if (!aux) {
-		perror("fixdep:malloc");
-		exit(1);
-	}
+	aux = xmalloc(sizeof(*aux) + len);
 	memcpy(aux->name, name, len);
 	aux->len = len;
 	aux->hash = hash;
@@ -178,18 +144,35 @@ static void define_config(const char *name, int len, unsigned int hash)
 }
 
 /*
+ * Lookup a string in the hash table. If found, just return true.
+ * If not, add it to the hashtable and return false.
+ */
+static bool in_hashtable(const char *name, int len, struct item *hashtab[])
+{
+	struct item *aux;
+	unsigned int hash = strhash(name, len);
+
+	for (aux = hashtab[hash % HASHSZ]; aux; aux = aux->next) {
+		if (aux->hash == hash && aux->len == len &&
+		    memcmp(aux->name, name, len) == 0)
+			return true;
+	}
+
+	add_to_hashtable(name, len, hash, hashtab);
+
+	return false;
+}
+
+/*
  * Record the use of a CONFIG_* word.
  */
 static void use_config(const char *m, int slen)
 {
-	unsigned int hash = strhash(m, slen);
+	if (in_hashtable(m, slen, config_hashtab))
+		return;
 
-	if (is_defined_config(m, slen, hash))
-	    return;
-
-	define_config(m, slen, hash);
 	/* Print out a dependency path from a symbol name. */
-	xprintf("    $(wildcard include/config/%.*s) \\\n", slen, m);
+	printf("    $(wildcard include/config/%.*s) \\\n", slen, m);
 }
 
 /* test if s ends in sub */
@@ -244,11 +227,7 @@ static void *read_file(const char *filename)
 		perror(filename);
 		exit(2);
 	}
-	buf = malloc(st.st_size + 1);
-	if (!buf) {
-		perror("fixdep: malloc");
-		exit(2);
-	}
+	buf = xmalloc(st.st_size + 1);
 	if (read(fd, buf, st.st_size) != st.st_size) {
 		perror("fixdep: read");
 		exit(2);
@@ -262,8 +241,16 @@ static void *read_file(const char *filename)
 /* Ignore certain dependencies */
 static int is_ignored_file(const char *s, int len)
 {
-	return str_ends_with(s, len, "include/generated/autoconf.h") ||
-	       str_ends_with(s, len, "include/generated/autoksyms.h");
+	return str_ends_with(s, len, "include/generated/autoconf.h");
+}
+
+/* Do not parse these files */
+static int is_no_parse_file(const char *s, int len)
+{
+	/* rustc may list binary files in dep-info */
+	return str_ends_with(s, len, ".rlib") ||
+	       str_ends_with(s, len, ".rmeta") ||
+	       str_ends_with(s, len, ".so");
 }
 
 /*
@@ -271,75 +258,144 @@ static int is_ignored_file(const char *s, int len)
  * assignments are parsed not only by make, but also by the rather simple
  * parser in scripts/mod/sumversion.c.
  */
-static void parse_dep_file(char *m, const char *target)
+static void parse_dep_file(char *p, const char *target)
 {
-	char *p;
-	int is_last, is_target;
-	int saw_any_target = 0;
-	int is_first_dep = 0;
-	void *buf;
+	bool saw_any_target = false;
+	bool is_target = true;
+	bool is_source = false;
+	bool need_parse;
+	char *q, saved_c;
 
-	while (1) {
-		/* Skip any "white space" */
-		while (*m == ' ' || *m == '\\' || *m == '\n')
-			m++;
-
-		if (!*m)
-			break;
-
-		/* Find next "white space" */
-		p = m;
-		while (*p && *p != ' ' && *p != '\\' && *p != '\n')
-			p++;
-		is_last = (*p == '\0');
-		/* Is the token we found a target name? */
-		is_target = (*(p-1) == ':');
-		/* Don't write any target names into the dependency file */
-		if (is_target) {
-			/* The /next/ file is the first dependency */
-			is_first_dep = 1;
-		} else if (!is_ignored_file(m, p - m)) {
-			*p = '\0';
-
+	while (*p) {
+		/* handle some special characters first. */
+		switch (*p) {
+		case '#':
 			/*
-			 * Do not list the source file as dependency, so that
-			 * kbuild is not confused if a .c file is rewritten
-			 * into .S or vice versa. Storing it in source_* is
-			 * needed for modpost to compute srcversions.
+			 * skip comments.
+			 * rustc may emit comments to dep-info.
 			 */
-			if (is_first_dep) {
+			p++;
+			while (*p != '\0' && *p != '\n') {
 				/*
-				 * If processing the concatenation of multiple
-				 * dependency files, only process the first
-				 * target name, which will be the original
-				 * source name, and ignore any other target
-				 * names, which will be intermediate temporary
-				 * files.
+				 * escaped newlines continue the comment across
+				 * multiple lines.
 				 */
-				if (!saw_any_target) {
-					saw_any_target = 1;
-					xprintf("source_%s := %s\n\n",
-						target, m);
-					xprintf("deps_%s := \\\n", target);
+				if (*p == '\\')
+					p++;
+				p++;
+			}
+			continue;
+		case ' ':
+		case '\t':
+			/* skip whitespaces */
+			p++;
+			continue;
+		case '\\':
+			/*
+			 * backslash/newline combinations continue the
+			 * statement. Skip it just like a whitespace.
+			 */
+			if (*(p + 1) == '\n') {
+				p += 2;
+				continue;
+			}
+			break;
+		case '\n':
+			/*
+			 * Makefiles use a line-based syntax, where the newline
+			 * is the end of a statement. After seeing a newline,
+			 * we expect the next token is a target.
+			 */
+			p++;
+			is_target = true;
+			continue;
+		case ':':
+			/*
+			 * assume the first dependency after a colon as the
+			 * source file.
+			 */
+			p++;
+			is_target = false;
+			is_source = true;
+			continue;
+		}
+
+		/* find the end of the token */
+		q = p;
+		while (*q != ' ' && *q != '\t' && *q != '\n' && *q != '#' && *q != ':') {
+			if (*q == '\\') {
+				/*
+				 * backslash/newline combinations work like as
+				 * a whitespace, so this is the end of token.
+				 */
+				if (*(q + 1) == '\n')
+					break;
+
+				/* escaped special characters */
+				if (*(q + 1) == '#' || *(q + 1) == ':') {
+					memmove(p + 1, p, q - p);
+					p++;
 				}
-				is_first_dep = 0;
-			} else {
-				xprintf("  %s \\\n", m);
+
+				q++;
 			}
 
-			buf = read_file(m);
+			if (*q == '\0')
+				break;
+			q++;
+		}
+
+		/* Just discard the target */
+		if (is_target) {
+			p = q;
+			continue;
+		}
+
+		saved_c = *q;
+		*q = '\0';
+		need_parse = false;
+
+		/*
+		 * Do not list the source file as dependency, so that kbuild is
+		 * not confused if a .c file is rewritten into .S or vice versa.
+		 * Storing it in source_* is needed for modpost to compute
+		 * srcversions.
+		 */
+		if (is_source) {
+			/*
+			 * The DT build rule concatenates multiple dep files.
+			 * When processing them, only process the first source
+			 * name, which will be the original one, and ignore any
+			 * other source names, which will be intermediate
+			 * temporary files.
+			 *
+			 * rustc emits the same dependency list for each
+			 * emission type. It is enough to list the source name
+			 * just once.
+			 */
+			if (!saw_any_target) {
+				saw_any_target = true;
+				printf("source_%s := %s\n\n", target, p);
+				printf("deps_%s := \\\n", target);
+				need_parse = true;
+			}
+		} else if (!is_ignored_file(p, q - p) &&
+			   !in_hashtable(p, q - p, file_hashtab)) {
+			printf("  %s \\\n", p);
+			need_parse = true;
+		}
+
+		if (need_parse && !is_no_parse_file(p, q - p)) {
+			void *buf;
+
+			buf = read_file(p);
 			parse_config_file(buf);
 			free(buf);
 		}
 
-		if (is_last)
-			break;
-
-		/*
-		 * Start searching for next token immediately after the first
-		 * "whitespace" character that follows this token.
-		 */
-		m = p + 1;
+		is_source = false;
+		*q = saved_c;
+		p = q;
 	}
 
 	if (!saw_any_target) {
@@ -347,8 +403,8 @@ static void parse_dep_file(char *m, const char *target)
 		exit(1);
 	}
 
-	xprintf("\n%s: $(deps_%s)\n\n", target, target);
-	xprintf("$(deps_%s):\n", target);
+	printf("\n%s: $(deps_%s)\n\n", target, target);
+	printf("$(deps_%s):\n", target);
 }
 
 int main(int argc, char *argv[])
@@ -363,11 +419,22 @@ int main(int argc, char *argv[])
 	target = argv[2];
 	cmdline = argv[3];
 
-	xprintf("cmd_%s := %s\n\n", target, cmdline);
+	printf("savedcmd_%s := %s\n\n", target, cmdline);
 
 	buf = read_file(depfile);
 	parse_dep_file(buf, target);
 	free(buf);
+
+	fflush(stdout);
+
+	/*
+	 * In the intended usage, the stdout is redirected to .*.cmd files.
+	 * Call ferror() to catch errors such as "No space left on device".
+	 */
+	if (ferror(stdout)) {
+		fprintf(stderr, "fixdep: not all data was written to the output\n");
+		exit(1);
+	}
 
 	return 0;
 }

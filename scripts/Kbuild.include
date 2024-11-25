@@ -183,10 +183,14 @@ cmd = @set -e; $(echo-cmd) $(cmd_$(1))
 ifneq ($(KBUILD_NOCMDDEP),1)
 # Check if both commands are the same including their order. Result is empty
 # string if equal. User may override this check using make KBUILD_NOCMDDEP=1
-cmd-check = $(filter-out $(subst $(space),$(space_escape),$(strip $(cmd_$@))), \
+# If the target does not exist, the *.cmd file should not be included so
+# $(savedcmd_$@) gets empty. Then, target will be built even if $(newer-prereqs)
+# happens to become empty.
+cmd-check = $(filter-out $(subst $(space),$(space_escape),$(strip $(savedcmd_$@))), \
                          $(subst $(space),$(space_escape),$(strip $(cmd_$1))))
 else
-cmd-check = $(if $(strip $(cmd_$@)),,1)
+# We still need to detect missing targets.
+cmd-check = $(if $(strip $(savedcmd_$@)),,1)
 endif
 
 # Replace >$< with >$$< to preserve $ when reloading the .cmd file
@@ -198,19 +202,26 @@ endif
 make-cmd = $(call escsq,$(subst $(pound),$$(pound),$(subst $$,$$$$,$(cmd_$(1)))))
 
 # Find any prerequisites that are newer than target or that do not exist.
-# (This is not true for now; $? should contain any non-existent prerequisites,
-# but it does not work as expected when .SECONDARY is present. This seems a bug
-# of GNU Make.)
 # PHONY targets skipped in both cases.
+# If there is no prerequisite other than phony targets, $(newer-prereqs) becomes
+# empty even if the target does not exist. cmd-check saves this corner case.
 newer-prereqs = $(filter-out $(PHONY),$?)
 
+# It is a typical mistake to forget the FORCE prerequisite. Check it here so
+# no more breakage will slip in.
+check-FORCE = $(if $(filter FORCE, $^),,$(warning FORCE prerequisite is missing))
+
+if-changed-cond = $(newer-prereqs)$(cmd-check)$(check-FORCE)
+
 # Execute command if command has changed or prerequisite(s) are updated.
-if_changed = $(if $(newer-prereqs)$(cmd-check),                              \
+if_changed = $(if $(if-changed-cond),$(cmd_and_savecmd),@:)
+
+cmd_and_savecmd =                                                            \
 	$(cmd);                                                              \
-	printf '%s\n' 'cmd_$@ := $(make-cmd)' > $(dot-target).cmd, @:)
+	printf '%s\n' 'savedcmd_$@ := $(make-cmd)' > $(dot-target).cmd
 
 # Execute the command and also postprocess generated .d dependencies file.
-if_changed_dep = $(if $(newer-prereqs)$(cmd-check),$(cmd_and_fixdep),@:)
+if_changed_dep = $(if $(if-changed-cond),$(cmd_and_fixdep),@:)
 
 cmd_and_fixdep =                                                             \
 	$(cmd);                                                              \
@@ -220,7 +231,7 @@ cmd_and_fixdep =                                                             \
 # Usage: $(call if_changed_rule,foo)
 # Will check if $(cmd_foo) or any of the prerequisites changed,
 # and if so will execute $(rule_foo).
-if_changed_rule = $(if $(newer-prereqs)$(cmd-check),$(rule_$(1)),@:)
+if_changed_rule = $(if $(if-changed-cond),$(rule_$(1)),@:)
 
 ###
 # why - tell why a target got built
@@ -247,7 +258,7 @@ why =                                                                        \
         $(if $(wildcard $@),                                                 \
             $(if $(newer-prereqs),- due to: $(newer-prereqs),                \
                 $(if $(cmd-check),                                           \
-                    $(if $(cmd_$@),- due to command line change,             \
+                    $(if $(savedcmd_$@),- due to command line change,        \
                         $(if $(filter $@, $(targets)),                       \
                             - due to missing .cmd file,                      \
                             - due to $(notdir $@) not in $$(targets)         \

@@ -6,6 +6,7 @@
 #include <linux/compiler.h>
 #include <stdarg.h>
 #include <wchar.h>
+#include <malloc.h>
 
 void *xmalloc(size_t size) __xalloc_size(1);
 void *xrealloc(void *ptr, size_t size) __xrealloc_size(2);

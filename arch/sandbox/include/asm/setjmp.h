@@ -4,7 +4,7 @@
 #define __SETJMP_H_
 
 struct jmp_buf_data {
-	unsigned char opaque[512] __aligned(16);
+	unsigned char opaque[512] __attribute__((__aligned__(16)));
 };
 
 typedef struct jmp_buf_data jmp_buf[1];

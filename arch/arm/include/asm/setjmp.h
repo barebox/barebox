@@ -28,4 +28,6 @@ void longjmp(jmp_buf jmp, int ret) __attribute__((noreturn));
 
 int initjmp(jmp_buf jmp, void __attribute__((noreturn)) (*func)(void), void *stack_top);
 
+#include <asm-generic/setjmp.h>
+
 #endif /* _SETJMP_H_ */

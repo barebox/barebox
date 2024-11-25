@@ -15,10 +15,6 @@
 #include <asm/setjmp.h>
 #include <linux/overflow.h>
 
-#if defined CONFIG_ASAN && !defined CONFIG_32BIT
-#define HAVE_FIBER_SANITIZER
-#endif
-
 static struct bthread {
 	void (*threadfn)(void *);
 	void *data;
@@ -27,7 +23,7 @@ static struct bthread {
 	void *stack;
 	u32 stack_size;
 	struct list_head list;
-#ifdef HAVE_FIBER_SANITIZER
+#ifdef CONFIG_ARCH_HAS_ASAN_FIBER_API
 	void *fake_stack_save;
 #endif
 	u8 awake :1;
@@ -45,12 +41,22 @@ struct bthread *current = &main_thread;
 /*
  * When using ASAN, it needs to be told when we switch stacks.
  */
-static void start_switch_fiber(struct bthread *, bool terminate_old);
-static void finish_switch_fiber(struct bthread *);
+static void bthread_finish_switch_fiber(struct bthread *bthread)
+{
+	finish_switch_fiber(bthread->fake_stack_save,
+			    &main_thread.stack, &main_thread.stack_size);
+}
+
+static void bthread_start_switch_fiber(struct bthread *to, bool terminate_old)
+{
+	start_switch_fiber(terminate_old ? &to->fake_stack_save : NULL,
+			   to->stack, to->stack_size);
+}
 
 static void __noreturn bthread_trampoline(void)
 {
-	finish_switch_fiber(current);
+	bthread_finish_switch_fiber(current);
+
 	bthread_reschedule();
 
 	current->threadfn(current->data);
@@ -59,7 +65,7 @@ static void __noreturn bthread_trampoline(void)
 	current->has_stopped = true;
 
 	current = &main_thread;
-	start_switch_fiber(current, true);
+	bthread_start_switch_fiber(current, true);
 	longjmp(current->jmp_buf, 1);
 }
 
@@ -198,7 +204,7 @@ void bthread_schedule(struct bthread *to)
 	struct bthread *from = current;
 	int ret;
 
-	start_switch_fiber(to, false);
+	bthread_start_switch_fiber(to, false);
 
 	ret = setjmp(from->jmp_buf);
 	if (ret == 0) {
@@ -206,41 +212,5 @@ void bthread_schedule(struct bthread *to)
 		longjmp(to->jmp_buf, 1);
 	}
 
-	finish_switch_fiber(from);
+	bthread_finish_switch_fiber(from);
 }
-
-#ifdef HAVE_FIBER_SANITIZER
-
-void __sanitizer_start_switch_fiber(void **fake_stack_save, const void *bottom, size_t size);
-void __sanitizer_finish_switch_fiber(void *fake_stack_save, const void **bottom_old, size_t *size_old);
-
-static void finish_switch_fiber(struct bthread *bthread)
-{
-	const void *bottom_old;
-	size_t size_old;
-
-	__sanitizer_finish_switch_fiber(bthread->fake_stack_save, &bottom_old, &size_old);
-
-	if (!main_thread.stack) {
-		main_thread.stack = (void *)bottom_old;
-		main_thread.stack_size = size_old;
-	}
-}
-
-static void start_switch_fiber(struct bthread *to, bool terminate_old)
-{
-	__sanitizer_start_switch_fiber(terminate_old ? &to->fake_stack_save : NULL,
-				       to->stack, to->stack_size);
-}
-
-#else
-
-static void finish_switch_fiber(struct bthread *bthread)
-{
-}
-
-static void start_switch_fiber(struct bthread *to, bool terminate_old)
-{
-}
-
-#endif

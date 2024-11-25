@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0-only
+CLANG_FLAGS	+= -Wno-typdef-redefinition
+CLANG_FLAGS	+= -Werror=unknown-warning-option
+CLANG_FLAGS	+= -Werror=ignored-optimization-argument
+CLANG_FLAGS	+= -Werror=option-ignored
+CLANG_FLAGS	+= -Werror=unused-command-line-argument
+KBUILD_CPPFLAGS	+= $(CLANG_FLAGS)
+KBUILD_USERHOSTCFLAGS += $(CLANG_FLAGS)
+export CLANG_FLAGS

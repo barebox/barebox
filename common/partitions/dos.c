@@ -20,9 +20,16 @@
 #include <linux/err.h>
 #include <partitions.h>
 
+struct disk_signature_priv {
+	uint32_t signature;
+	struct block_device *blk;
+	struct param_d *param;
+};
+
 struct dos_partition_desc {
 	struct partition_desc pd;
 	uint32_t signature;
+	struct disk_signature_priv disksig;
 };
 
 struct dos_partition {
@@ -75,11 +82,6 @@ static int write_mbr(struct block_device *blk, void *buf)
 
 	return block_flush(blk);
 }
-
-struct disk_signature_priv {
-	uint32_t signature;
-	struct block_device *blk;
-};
 
 static int dos_set_disk_signature(struct param_d *p, void *_priv)
 {
@@ -273,7 +275,7 @@ static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 	if (extended_partition)
 		dos_extended_partition(blk, dpd, extended_partition, signature);
 
-	dsp = xzalloc(sizeof(*dsp));
+	dsp = &dpd->disksig;
 	dsp->blk = blk;
 
 	/*
@@ -286,7 +288,7 @@ static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 	 * signature and pp is a zero-filled hex representation of the 1-based
 	 * partition number.
 	 */
-	dev_add_param_uint32(blk->dev, "nt_signature",
+	dsp->param = dev_add_param_uint32(blk->dev, "nt_signature",
 			dos_set_disk_signature, dos_get_disk_signature,
 			&dsp->signature, "%08x", dsp);
 
@@ -295,6 +297,8 @@ static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 
 static void dos_partition_free(struct partition_desc *pd)
 {
+	struct dos_partition_desc *dpd
+		= container_of(pd, struct dos_partition_desc, pd);
 	struct partition *part, *tmp;
 
 	list_for_each_entry_safe(part, tmp, &pd->partitions, list) {
@@ -302,6 +306,8 @@ static void dos_partition_free(struct partition_desc *pd)
 
 		free(dpart);
 	}
+
+	dev_remove_param(dpd->disksig.param);
 
 	free(pd);
 }
@@ -414,12 +420,16 @@ create:
 	dpart = xzalloc(sizeof(*dpart));
 	part = &dpart->part;
 
-	if (start_lba > UINT_MAX)
+	if (start_lba > UINT_MAX) {
+		free(dpart);
 		return -ENOSPC;
+	}
 	size = end_lba - start_lba + 1;
 
-	if (size > UINT_MAX)
+	if (size > UINT_MAX) {
+		free(dpart);
 		return -ENOSPC;
+	}
 
 	dpart->type = fs_type_to_type(fs_type);
 

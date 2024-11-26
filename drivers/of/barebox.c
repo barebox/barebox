@@ -108,13 +108,9 @@ static int barebox_of_driver_init(void)
 		return 0;
 
 	node = of_find_node_by_path("/chosen");
-	if (!node)
-		return 0;
+	if (node)
+		of_platform_populate(node, of_default_bus_match_table, NULL);
 
-	of_platform_populate(node, of_default_bus_match_table, NULL);
-
-	platform_driver_register(&environment_driver);
-
-	return 0;
+	return platform_driver_register(&environment_driver);
 }
 late_initcall(barebox_of_driver_init);

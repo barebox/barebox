@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+%YAML 1.2
+---
+$id: http://barebox.org/schemas/nvmem/barebox,environment.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: barebox environment variables
+
+description: |
+  barebox uses its environment to store non-volatile variables, scripts
+  and arbitrary binary blobs.
+  By default, the built-in environment compiled into barebox is used, but
+  for development purposes, it's possible to override it at runtime.
+
+  Variables can not yet be defined as NVMEM device subnodes.
+
+maintainers:
+  - Ahmad Fatoum <a.fatoum@pengutronix.de>
+
+properties:
+  compatible:
+    const: barebox,environment
+
+  reg:
+    maxItems: 1
+
+required:
+  - compatible
+  - label
+  - reg
+
+allOf:
+  - $ref: partition.yaml#
+
+additionalProperties: false
+
+examples:
+  - |
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        partition@0 {
+            reg = <0x0 0x100000>;
+            label = "barebox";
+            read-only;
+        };
+
+        partition@100000 {
+            compatible = "barebox,environment";
+            label = "env";
+            reg = <0x100000 0x10000>;
+        };
+    };

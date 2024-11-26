@@ -15,27 +15,38 @@
 
 #define ENV_MNT_DIR "/boot"	/* If env on filesystem, where to mount */
 
-/* If dev describes a file on a fs, mount the fs and return a pointer
- * to the file's path.  Otherwise return an error code or NULL if the
- * device path should be used.
- * Does nothing in env in a file support isn't enabled.
- */
-static char *environment_check_mount(struct device *dev, const char *devpath)
+static char *environment_probe_1node_binding(struct device *dev)
+{
+	struct cdev *cdev;
+
+	cdev = cdev_by_device_node(dev->of_node);
+	if (!cdev)
+		return ERR_PTR(-EINVAL);
+
+	return basprintf("/dev/%s", cdev_name(cdev));
+}
+
+static char *environment_probe_2node_binding(struct device *dev)
 {
 	const char *filepath;
+	char *devpath;
 	int ret;
 
+	ret = of_find_path(dev->of_node, "device-path", &devpath,
+			   OF_FIND_PATH_FLAGS_BB);
+	if (ret)
+		goto out;
+
 	if (!IS_ENABLED(CONFIG_OF_BAREBOX_ENV_IN_FS))
-		return NULL;
+		return devpath;
 
 	ret = of_property_read_string(dev->of_node, "file-path", &filepath);
 	if (ret == -EINVAL) {
-		/* No file-path so just use device-path */
-		return NULL;
+		return devpath;
 	} else if (ret) {
 		/* file-path property exists, but has error */
 		dev_err(dev, "Problem with file-path property\n");
-		return ERR_PTR(ret);
+		goto out;
 	}
 
 	/* Get device env is on and mount it */
@@ -44,42 +55,34 @@ static char *environment_check_mount(struct device *dev, const char *devpath)
 	if (ret) {
 		dev_err(dev, "Failed to load environment: mount %s failed (%d)\n",
 			devpath, ret);
-		return ERR_PTR(ret);
+		goto out;
 	}
 
 	/* Set env to be in a file on the now mounted device */
 	dev_dbg(dev, "Loading default env from %s on device %s\n",
 		filepath, devpath);
 
-	return basprintf("%s/%s", ENV_MNT_DIR, filepath);
+out:
+	free(devpath);
+	return ret ? ERR_PTR(ret) : basprintf("%s/%s", ENV_MNT_DIR, filepath);
 }
 
 static int environment_probe(struct device *dev)
 {
-	char *devpath, *filepath;
-	int ret;
+	char *path;
 
-	ret = of_find_path(dev->of_node, "device-path", &devpath,
-			   OF_FIND_PATH_FLAGS_BB);
-	if (ret)
-		return ret;
-
-	/* Do we need to mount a fs and find env there? */
-	filepath = environment_check_mount(dev, devpath);
-	if (IS_ERR(filepath)) {
-		free(devpath);
-		return ret;
-	}
-
-	if (filepath)
-		free(devpath);
+	if (of_property_present(dev->of_node, "device-path"))
+		path = environment_probe_2node_binding(dev);
 	else
-		filepath = devpath;
+		path = environment_probe_1node_binding(dev);
 
-	dev_dbg(dev, "Setting default environment path to %s\n", filepath);
-	default_environment_path_set(filepath);
+	if (IS_ERR(path))
+		return PTR_ERR(path);
 
-	free(filepath);
+	dev_dbg(dev, "Setting default environment path to %s\n", path);
+	default_environment_path_set(path);
+
+	free(path);
 
 	return 0;
 }

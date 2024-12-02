@@ -96,7 +96,7 @@ Options:
   --show-types               show the specific message type in the output
   --max-line-length=n        set the maximum line length, if exceeded, warn
   --min-conf-desc-length=n   set the min description length, if shorter, warn
-  --root=PATH                PATH to the kernel tree root
+  --root=PATH                PATH to the barebox tree root
   --no-summary               suppress the per-file summary
   --mailback                 only produce a report in case of warnings/errors
   --summary-file             include the filename in summary
@@ -329,7 +329,7 @@ if ($tree) {
 	}
 
 	if (!defined $root) {
-		print "Must be run from the top-level dir. of a kernel tree\n";
+		print "Must be run from the top-level dir. of a barebox tree\n";
 		exit(2);
 	}
 }
@@ -1097,7 +1097,7 @@ sub top_of_kernel_tree {
 	my @tree_check = (
 		"arch", "commands", "common", "COPYING", "defaultenv",
 		"Documentation", "drivers", "fs", "include", "lib",
-		"MAKEALL", "Makefile", "net", "README", "scripts"
+		"MAKEALL", "Makefile", "net", "README.rst", "scripts"
 	);
 
 	foreach my $check (@tree_check) {

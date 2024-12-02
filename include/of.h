@@ -314,6 +314,14 @@ extern int of_alias_get_id_from(struct device_node *root, struct device_node *np
 extern const char *of_alias_get(struct device_node *np);
 extern int of_modalias_node(struct device_node *node, char *modalias, int len);
 
+extern const char *of_property_get_alias_from(struct device_node *root,
+					      const char *np_name, const char *propname,
+					      int index);
+
+extern const char *of_parse_phandle_and_get_alias_from(struct device_node *root,
+						       const char *np_name, const char *phandle_name,
+						       int index);
+
 extern struct device_node *of_get_root_node(void);
 extern int of_set_root_node(struct device_node *node);
 extern int barebox_register_of(struct device_node *root);
@@ -943,6 +951,20 @@ static inline int of_modalias_node(struct device_node *node, char *modalias,
 	return -ENOSYS;
 }
 
+static inline const char *of_property_get_alias_from(struct device_node *root,
+						     const char *np_name, const char *propname,
+						     int index)
+{
+	return NULL;
+}
+
+static inline const char *of_parse_phandle_and_get_alias_from(struct device_node *root,
+							      const char *np_name, const char *phandle_name,
+							      int index)
+{
+	return NULL;
+}
+
 static inline int of_platform_populate(struct device_node *root,
 				const struct of_device_id *matches,
 				struct device *parent)
@@ -1272,6 +1294,16 @@ static inline int of_property_write_u64(struct device_node *np,
 static inline void of_delete_property_by_name(struct device_node *np, const char *name)
 {
 	of_delete_property(of_find_property(np, name, NULL));
+}
+
+static inline const char *of_property_get_alias(const char *np_name, const char *propname)
+{
+	return of_property_get_alias_from(NULL, np_name, propname, 0);
+}
+
+static inline const char *of_parse_phandle_and_get_alias(const char *np_name, const char *phandle_name)
+{
+	return of_parse_phandle_and_get_alias_from(NULL, np_name, phandle_name, 0);
 }
 
 extern const struct of_device_id of_default_bus_match_table[];

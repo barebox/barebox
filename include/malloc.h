@@ -17,4 +17,14 @@ void *sbrk(ptrdiff_t increment);
 
 int mem_malloc_is_initialized(void);
 
+static inline bool want_init_on_alloc(void)
+{
+	return IS_ENABLED(CONFIG_INIT_ON_ALLOC_DEFAULT_ON);
+}
+
+static inline bool want_init_on_free(void)
+{
+	return IS_ENABLED(CONFIG_INIT_ON_FREE_DEFAULT_ON);
+}
+
 #endif /* __MALLOC_H */

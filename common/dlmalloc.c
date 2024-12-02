@@ -7,6 +7,7 @@
 #include <dlmalloc.h>
 #include <linux/overflow.h>
 #include <linux/build_bug.h>
+#include <linux/compiler.h>
 
 #include <stdio.h>
 #include <module.h>
@@ -1368,6 +1369,8 @@ void dlfree(void *mem)
 	p = mem2chunk(mem);
 	hd = p->size;
 
+	if (want_init_on_free())
+		memzero_explicit(mem, chunksize(p));
 
 	sz = hd & ~PREV_INUSE;
 	next = chunk_at_offset(p, sz);
@@ -1952,7 +1955,11 @@ History:
 */
 
 #ifdef CONFIG_MALLOC_DLMALLOC
+#ifdef CONFIG_INIT_ON_ALLOC_DEFAULT_ON
+void *malloc(size_t bytes) { return dlcalloc(1, bytes); }
+#else
 void *malloc(size_t) __alias(dlmalloc);
+#endif
 EXPORT_SYMBOL(malloc);
 void *calloc(size_t, size_t) __alias(dlcalloc);
 EXPORT_SYMBOL(calloc);

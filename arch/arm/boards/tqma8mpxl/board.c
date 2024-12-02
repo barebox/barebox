@@ -14,22 +14,31 @@
 #include <mach/imx/iomux-mx8mp.h>
 #include <gpio.h>
 #include <envfs.h>
+#include <string.h>
 
 static int tqma8mpxl_probe(struct device *dev)
 {
+	const char *emmc, *sd;
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;
 
-	if (bootsource_get() == BOOTSOURCE_MMC && bootsource_get_instance() == 1) {
+	sd = of_env_get_device_alias_by_path("/chosen/environment-sd");
+	emmc = of_env_get_device_alias_by_path("/chosen/environment-emmc");
+
+	if (streq_ptr(bootsource_get_alias_name(), sd)) {
 		of_device_enable_path("/chosen/environment-sd");
 		sd_bbu_flag = BBU_HANDLER_FLAG_DEFAULT;
-	} else {
+	} else if (emmc) {
 		of_device_enable_path("/chosen/environment-emmc");
 		emmc_bbu_flag = BBU_HANDLER_FLAG_DEFAULT;
 	}
 
-	imx8m_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", sd_bbu_flag);
-	imx8m_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc0", emmc_bbu_flag);
+	if (sd)
+		imx8m_bbu_internal_mmc_register_handler("SD",
+			basprintf("/dev/%s.barebox", sd), sd_bbu_flag);
+	if (emmc)
+		imx8m_bbu_internal_mmcboot_register_handler("eMMC",
+			basprintf("/dev/%s", emmc), emmc_bbu_flag);
 
 	return 0;
 }

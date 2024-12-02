@@ -2,6 +2,12 @@
 
 KBUILD_DEFCONFIG := multi_v8_defconfig
 
+generated_configs += am335x_mlo_sdmmc_defconfig am335x_mlo_rawflash_defconfig
+am335x_mlo_sdmmc_defconfig:
+	$(call merge_into_defconfig,am335x_mlo_defconfig,nomtd)
+am335x_mlo_rawflash_defconfig:
+	$(call merge_into_defconfig,am335x_mlo_defconfig,nomci)
+
 KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
 ifeq ($(CONFIG_CPU_64),y)

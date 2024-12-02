@@ -8,9 +8,15 @@ loader from the same medium.
 Building barebox
 ----------------
 
-The TI AM335x boards in barebox are covered by the ``am335x_mlo_defconfig``
-for the MLO and ``omap_defconfig`` for the regular barebox image. The
-resulting images will be placed under ``images/``:
+Booting with barebox on the TI AM335x is a two-stage process and unlike
+more recently added SoCs, requires building barebox twice, each time
+with a different defconfig:
+
+* ``omap_defconfig`` for the regular (second-stage) barebox image
+* For the MLO first-stage, either ``am335x_mlo_sdmmc_defconfig`` for
+  SD/eMMC or ``am335x_mlo_rawflash_defconfig`` for raw NOR/NAND.
+
+The resulting images will be placed under ``images/``:
 
 ::
 
@@ -29,6 +35,22 @@ resulting images will be placed under ``images/``:
   barebox-am33xx-phytec-phyflex.img
 
 Some boards come in different variants, make sure to pick the correct one.
+
+Size Constraints
+^^^^^^^^^^^^^^^^
+
+As the MLO needs to setup DRAM first, it must fit into the 109KiB
+of available on-Chip SRAM. Depending on the boards, drivers and general
+features enabled by your config, barebox may exceed this size resulting
+in an error message during build, e.g.::
+
+  images/start_am33xx_myirtech_sram.pblb size 111800 > maximum size 111616
+
+If you run into this issue, consider disabling some unneeded config options
+for the MLO via ``make menuconfig`` and try again.
+The ``am335x_mlo_sdmmc_defconfig`` and ``am335x_mlo_rawflash_defconfig``
+defconfigs do just that by disabling ``CONFIG_MTD`` and ``CONFIG_MCI``,
+respectively.
 
 Starting and updating barebox
 -----------------------------

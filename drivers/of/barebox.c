@@ -15,6 +15,11 @@
 
 #define ENV_MNT_DIR "/boot"	/* If env on filesystem, where to mount */
 
+const char *of_env_get_device_alias_by_path(const char *of_path)
+{
+	return of_property_get_alias(of_path, "device-path");
+}
+
 static char *environment_probe_1node_binding(struct device *dev)
 {
 	struct cdev *cdev;

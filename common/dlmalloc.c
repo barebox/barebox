@@ -4,6 +4,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <memory.h>
+#include <dlmalloc.h>
 #include <linux/overflow.h>
 #include <linux/build_bug.h>
 
@@ -34,38 +35,29 @@
 
   (Much fuller descriptions are contained in the program documentation below.)
 
-  malloc(size_t n);
+  dlmalloc(size_t n);
      Return a pointer to a newly allocated chunk of at least n bytes, or null
      if no space is available.
-  free(Void_t* p);
+  dlfree(Void_t* p);
      Release the chunk of memory pointed to by p, or no effect if p is null.
-  realloc(Void_t* p, size_t n);
+  dlrealloc(Void_t* p, size_t n);
      Return a pointer to a chunk of size n that contains the same data
      as does chunk p up to the minimum of (n, p's size) bytes, or null
      if no space is available. The returned pointer may or may not be
      the same as p. If p is null, equivalent to malloc.  Unless the
      #define REALLOC_ZERO_BYTES_FREES below is set, realloc with a
      size argument of zero (re)allocates a minimum-sized chunk.
-  memalign(size_t alignment, size_t n);
+  dlmemalign(size_t alignment, size_t n);
      Return a pointer to a newly allocated chunk of n bytes, aligned
      in accord with the alignment argument, which must be a power of
      two.
-  valloc(size_t n);
-     Equivalent to memalign(pagesize, n), where pagesize is the page
-     size of the system (or as near to this as can be figured out from
-     all the includes/defines below.)
-  pvalloc(size_t n);
-     Equivalent to valloc(minimum-page-that-holds(n)), that is,
-     round up n to nearest pagesize.
-  calloc(size_t unit, size_t quantity);
+  dlcalloc(size_t unit, size_t quantity);
      Returns a pointer to quantity * unit bytes, with all locations
      set to zero.
-  cfree(Void_t* p);
-     Equivalent to free(p).
   malloc_trim(size_t pad);
      Release all but pad bytes of freed top-most memory back
      to the system. Return 1 if successful, else 0.
-  malloc_usable_size(Void_t* p);
+  dlmalloc_usable_size(Void_t* p);
      Report the number usable allocated bytes associated with allocated
      chunk p. This may or may not report more bytes than were requested,
      due to alignment and minimum size constraints.
@@ -1083,7 +1075,7 @@ static void malloc_extend_top(INTERNAL_SIZE_T nb)
 				SIZE_SZ | PREV_INUSE;
 			/* If possible, release the rest. */
 			if (old_top_size >= MINSIZE)
-				free(chunk2mem (old_top));
+				dlfree(chunk2mem (old_top));
 		}
 	}
 
@@ -1152,7 +1144,7 @@ static void malloc_extend_top(INTERNAL_SIZE_T nb)
       chunk borders either a previously allocated and still in-use chunk,
       or the base of its memory arena.)
 */
-void *malloc(size_t bytes)
+void *dlmalloc(size_t bytes)
 {
 	mchunkptr victim;	/* inspected/selected chunk */
 	INTERNAL_SIZE_T victim_size;	/* its size */
@@ -1357,7 +1349,7 @@ void *malloc(size_t bytes)
 	  placed in corresponding bins. (This includes the case of
 	  consolidating with the current `last_remainder').
 */
-void free(void *mem)
+void dlfree(void *mem)
 {
 	mchunkptr p;		/* chunk corresponding to mem */
 	INTERNAL_SIZE_T hd;	/* its head field */
@@ -1432,7 +1424,7 @@ void free(void *mem)
 		frontlink(p, sz, idx, bck, fwd);
 }
 
-size_t malloc_usable_size(void *mem)
+size_t dlmalloc_usable_size(void *mem)
 {
 	mchunkptr p;
 
@@ -1474,7 +1466,7 @@ size_t malloc_usable_size(void *mem)
     and allowing it would also allow too many other incorrect
     usages of realloc to be sensible.
 */
-void *realloc(void *oldmem, size_t bytes)
+void *dlrealloc(void *oldmem, size_t bytes)
 {
 	INTERNAL_SIZE_T nb;	/* padded request size */
 
@@ -1499,7 +1491,7 @@ void *realloc(void *oldmem, size_t bytes)
 
 #ifdef REALLOC_ZERO_BYTES_FREES
 	if (bytes == 0) {
-		free(oldmem);
+		dlfree(oldmem);
 		return NULL;
 	}
 #endif
@@ -1511,7 +1503,7 @@ void *realloc(void *oldmem, size_t bytes)
 
 	/* realloc of null is supposed to be same as malloc */
 	if (!oldmem)
-		return malloc(bytes);
+		return dlmalloc(bytes);
 
 	newp = oldp = mem2chunk(oldmem);
 	newsize = oldsize = chunksize(oldp);
@@ -1608,7 +1600,7 @@ void *realloc(void *oldmem, size_t bytes)
 
 		/* Must allocate */
 
-		newmem = malloc(bytes);
+		newmem = dlmalloc(bytes);
 
 		if (!newmem)	/* propagate failure */
 			return NULL;
@@ -1624,7 +1616,7 @@ void *realloc(void *oldmem, size_t bytes)
 
 		/* Otherwise copy, free, and exit */
 		memcpy(newmem, oldmem, oldsize - SIZE_SZ);
-		free(oldmem);
+		dlfree(oldmem);
 		return newmem;
 	}
 
@@ -1637,7 +1629,7 @@ split:	/* split off extra room in old or expanded chunk */
 		set_head_size(newp, nb);
 		set_head(remainder, remainder_size | PREV_INUSE);
 		set_inuse_bit_at_offset(remainder, remainder_size);
-		free (chunk2mem(remainder)); /* let free() deal with it */
+		dlfree(chunk2mem(remainder)); /* let free() deal with it */
 	} else {
 		set_head_size(newp, newsize);
 		set_inuse_bit_at_offset(newp, newsize);
@@ -1661,7 +1653,7 @@ split:	/* split off extra room in old or expanded chunk */
 
     Overreliance on memalign is a sure way to fragment space.
 */
-void *memalign(size_t alignment, size_t bytes)
+void *dlmemalign(size_t alignment, size_t bytes)
 {
 	INTERNAL_SIZE_T nb;	/* padded  request size */
 	char *m;		/* memory returned by malloc call */
@@ -1681,7 +1673,7 @@ void *memalign(size_t alignment, size_t bytes)
 	/* If need less alignment than we give anyway, just relay to malloc */
 
 	if (alignment <= MALLOC_ALIGNMENT)
-		return malloc(bytes);
+		return dlmalloc(bytes);
 
 	/* Otherwise, ensure that it is at least a minimum chunk size */
 
@@ -1691,7 +1683,7 @@ void *memalign(size_t alignment, size_t bytes)
 	/* Call malloc with worst case padding to hit alignment. */
 
 	nb = request2size(bytes);
-	m = (char*)(malloc (nb + alignment + MINSIZE));
+	m = (char*)(dlmalloc(nb + alignment + MINSIZE));
 
 	if (!m)
 		return NULL;	/* propagate failure */
@@ -1724,7 +1716,7 @@ void *memalign(size_t alignment, size_t bytes)
 		set_head(newp, newsize | PREV_INUSE);
 		set_inuse_bit_at_offset(newp, newsize);
 		set_head_size(p, leadsize);
-		free(chunk2mem(p));
+		dlfree(chunk2mem(p));
 		p = newp;
 	}
 
@@ -1736,7 +1728,7 @@ void *memalign(size_t alignment, size_t bytes)
 		remainder = chunk_at_offset(p, nb);
 		set_head(remainder, remainder_size | PREV_INUSE);
 		set_head_size(p, nb);
-		free (chunk2mem(remainder));
+		dlfree(chunk2mem(remainder));
 	}
 
 	return chunk2mem(p);
@@ -1747,7 +1739,7 @@ void *memalign(size_t alignment, size_t bytes)
  * calloc calls malloc, then zeroes out the allocated chunk.
  *
  */
-void *calloc(size_t n, size_t elem_size)
+void *dlcalloc(size_t n, size_t elem_size)
 {
 	mchunkptr p;
 	INTERNAL_SIZE_T csz;
@@ -1763,7 +1755,7 @@ void *calloc(size_t n, size_t elem_size)
 		return NULL;
 	}
 
-	mem = malloc(sz);
+	mem = dlmalloc(sz);
 
 	if (!mem)
 		return NULL;
@@ -1959,7 +1951,17 @@ History:
 
 */
 
+#ifdef CONFIG_MALLOC_DLMALLOC
+void *malloc(size_t) __alias(dlmalloc);
 EXPORT_SYMBOL(malloc);
+void *calloc(size_t, size_t) __alias(dlcalloc);
 EXPORT_SYMBOL(calloc);
+void free(void *) __alias(dlfree);
 EXPORT_SYMBOL(free);
+void *realloc(void *, size_t) __alias(dlrealloc);
 EXPORT_SYMBOL(realloc);
+void *memalign(size_t, size_t) __alias(dlmemalign);
+EXPORT_SYMBOL(memalign);
+size_t malloc_usable_size(void *) __alias(dlmalloc_usable_size);
+EXPORT_SYMBOL(malloc_usable_size);
+#endif

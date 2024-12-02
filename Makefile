@@ -703,6 +703,9 @@ KBUILD_CFLAGS	+= $(CC_AUTO_VAR_INIT_ZERO_ENABLER)
 endif
 endif
 
+# Clear used registers at func exit (to reduce data lifetime and ROP gadgets).
+KBUILD_CFLAGS-$(CONFIG_ZERO_CALL_USED_REGS)	+= -fzero-call-used-regs=used-gpr
+
 KBUILD_CFLAGS-$(CONFIG_WERROR) += -Werror
 
 # This warning generated too much noise in a regular build.

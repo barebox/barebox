@@ -107,6 +107,28 @@ config INIT_ON_FREE_DEFAULT_ON
 	  wiped immediately, making live forensics or cold boot memory
 	  attacks unable to recover freed memory contents.
 
+config CC_HAS_ZERO_CALL_USED_REGS
+	def_bool $(cc-option,-fzero-call-used-regs=used-gpr)
+	# https://github.com/ClangBuiltLinux/linux/issues/1766
+	# https://github.com/llvm/llvm-project/issues/59242
+	depends on !CC_IS_CLANG || CLANG_VERSION > 150006
+
+config ZERO_CALL_USED_REGS
+	bool "Enable register zeroing on function exit"
+	depends on CC_HAS_ZERO_CALL_USED_REGS
+	help
+	  At the end of functions, always zero any caller-used register
+	  contents. This helps ensure that temporary values are not
+	  leaked beyond the function boundary. This means that register
+	  contents are less likely to be available for side channels
+	  and information exposures. Additionally, this helps reduce the
+	  number of useful ROP gadgets by about 20% (and removes compiler
+	  generated "write-what-where" gadgets) in the resulting kernel
+	  image. This has a less than 1% performance impact on most
+	  workloads. Image size growth depends on architecture, and should
+	  be evaluated for suitability. For example, x86_64 grows by less
+	  than 1%, and arm64 grows by about 5%.
+
 endmenu
 
 config STACK_GUARD_PAGE

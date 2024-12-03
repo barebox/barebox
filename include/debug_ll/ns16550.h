@@ -19,6 +19,7 @@
 #define NS16550_LCR	0x3
 #define NS16550_MCR	0x4
 #define NS16550_LSR	0x5
+#define NS16550_MDR	0x8	/* TI OMAP Mode register */
 
 #define NS16550_LCR_VAL		0x3 /* 8 data, 1 stop, no parity */
 #define NS16550_MCR_VAL		0x3 /* RTS/DTR */

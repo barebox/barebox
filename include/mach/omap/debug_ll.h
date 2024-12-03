@@ -57,6 +57,7 @@ static inline void omap_debug_ll_init(void)
 
 	divisor = debug_ll_ns16550_calc_divisor(48000000);
 	debug_ll_ns16550_init(base, divisor);
+	debug_ll_write_reg(base, NS16550_MDR, 0);
 }
 
 static inline void PUTC_LL(int c)

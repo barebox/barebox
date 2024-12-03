@@ -314,6 +314,7 @@ __build_one_by_one:
 else # !mixed-build
 
 include scripts/Kbuild.include
+include scripts/Makefile.compiler
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)

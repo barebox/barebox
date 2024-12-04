@@ -13,6 +13,10 @@ static void sdl_perror(const char *what)
 	printf("SDL: Could not %s: %s.\n", what, SDL_GetError());
 }
 
+static struct sdl_fb_info info;
+static SDL_atomic_t shutdown;
+SDL_Window *window;
+
 static void handle_sdl_events(void)
 {
 	SDL_Event event;
@@ -22,10 +26,6 @@ static void handle_sdl_events(void)
 			SDL_AtomicSet(&shutdown, true);
 	}
 }
-
-static struct sdl_fb_info info;
-static SDL_atomic_t shutdown;
-SDL_Window *window;
 
 static int scanout(void *ptr)
 {

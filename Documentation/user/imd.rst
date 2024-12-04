@@ -54,5 +54,7 @@ example is the Freescale i.MX28.
 IMD and barebox_update
 ----------------------
 
-The IMD informations could well be used to check if an image is suitable for updating
-barebox for a particular board. Support for such a check is planned but not yet implemented.
+The IMD information can be used to check if an image is suitable for updating
+barebox for a particular board. This is done by comparing the OF compatible
+of the running barebox image against the compatible tags in the barebox binary
+being installed.

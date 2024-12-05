@@ -22,10 +22,11 @@
 #include <asm/memory.h>
 #include <mach/omap/am33xx-silicon.h>
 #include <mach/omap/emif4.h>
+#include <mach/omap/generic.h>
 
 static int am33xx_scrm_probe(struct device *dev)
 {
-	return arm_add_mem_device("ram0", 0x80000000,
+	return arm_add_mem_device("ram0", OMAP_DRAM_ADDR_SPACE_START,
 				  emif4_sdram_size(IOMEM(AM33XX_EMIF4_BASE)));
 }
 

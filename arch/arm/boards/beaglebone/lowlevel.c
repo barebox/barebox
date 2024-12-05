@@ -136,7 +136,7 @@ static noinline int beaglebone_sram_init(void)
 	omap_debug_ll_init();
 	putc_ll('>');
 
-	barebox_arm_entry(0x80000000, sdram_size, fdt);
+	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, sdram_size, fdt);
 }
 
 ENTRY_FUNCTION(start_am33xx_beaglebone_sram, bootinfo, r1, r2)
@@ -168,5 +168,5 @@ ENTRY_FUNCTION(start_am33xx_beaglebone_sdram, r0, r1, r2)
 
 	fdt += get_runtime_offset();
 
-	barebox_arm_entry(0x80000000, sdram_size, fdt);
+	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, sdram_size, fdt);
 }

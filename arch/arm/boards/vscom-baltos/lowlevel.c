@@ -91,7 +91,7 @@ static noinline void baltos_sram_init(void)
 	/* Setup the PLLs and the clocks for the peripherals */
 	am33xx_pll_init(MPUPLL_M_600, DDRPLL_M_400);
 	am335x_sdram_init(0x18B, &ddr3_cmd_ctrl, &ddr3_regs, &ddr3_data);
-	sdram_size = get_ram_size((void *)0x80000000, (1024 << 20));
+	sdram_size = get_ram_size((void *)OMAP_DRAM_ADDR_SPACE_START, (1024 << 20));
 	if (sdram_size == SZ_256M)
 		am335x_sdram_init(0x18B, &ddr3_cmd_ctrl, &ddr3_regs_256mb,
 				&ddr3_data_256mb);

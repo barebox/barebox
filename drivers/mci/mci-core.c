@@ -2582,11 +2582,49 @@ static const char *mci_boot_names[] = {
 	"user",
 };
 
+static struct device_node *mci_get_partition_node(struct device_node *hwnode,
+						  unsigned int type,
+						  unsigned int index)
+{
+	struct device_node *np;
+	char partnodename[sizeof("bootx-partitions")];
+
+	if (index > 8)
+		return NULL;
+
+	switch (type) {
+	case MMC_BLK_DATA_AREA_BOOT:
+		sprintf(partnodename, "partitions-boot%u", index + 1);
+		break;
+	case MMC_BLK_DATA_AREA_MAIN:
+		return hwnode;
+	case MMC_BLK_DATA_AREA_GP:
+		sprintf(partnodename, "partitions-gp%u", index + 1);
+		break;
+	default:
+		return NULL;
+	}
+
+	np = of_get_child_by_name(hwnode, partnodename);
+	if (np)
+		return np;
+
+	if (type != MMC_BLK_DATA_AREA_BOOT)
+		return NULL;
+
+	/*
+	 * barebox historically understands "bootx-partitions" with x starting
+	 * at zero.
+	 */
+	sprintf(partnodename, "boot%u-partitions", index);
+
+	return of_get_child_by_name(hwnode, partnodename);
+}
+
 static int mci_register_partition(struct mci_part *part)
 {
 	struct mci *mci = part->mci;
 	struct mci_host *host = mci->host;
-	const char *partnodename = NULL;
 	struct device_node *np;
 	int rc;
 
@@ -2605,27 +2643,7 @@ static int mci_register_partition(struct mci_part *part)
 	}
 	dev_info(&mci->dev, "registered %s\n", part->blk.cdev.name);
 
-	np = host->hw_dev->of_node;
-
-	/* create partitions on demand */
-	switch (part->area_type) {
-	case MMC_BLK_DATA_AREA_BOOT:
-		if (part->idx == 0)
-			partnodename = "boot0-partitions";
-		else
-			partnodename = "boot1-partitions";
-
-		np = of_get_child_by_name(host->hw_dev->of_node,
-					  partnodename);
-		break;
-	case MMC_BLK_DATA_AREA_MAIN:
-		break;
-	case MMC_BLK_DATA_AREA_GP:
-		break;
-	default:
-		return 0;
-	}
-
+	np = mci_get_partition_node(host->hw_dev->of_node, part->area_type, part->idx);
 	if (np) {
 		of_parse_partitions(&part->blk.cdev, np);
 

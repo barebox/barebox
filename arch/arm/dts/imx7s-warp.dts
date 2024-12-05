@@ -21,7 +21,7 @@
 };
 
 &usdhc3 {
-	boot0-partitions {
+	partitions-boot1 {
 		compatible = "fixed-partitions";
 		#address-cells = <1>;
 		#size-cells = <1>;

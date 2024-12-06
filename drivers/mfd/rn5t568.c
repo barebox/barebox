@@ -33,6 +33,7 @@ static void rn5t568_restart(struct restart_handler *rst)
 static int rn5t568_reset_reason_detect(struct device *dev,
 				       struct regmap *regmap)
 {
+	enum reset_src_type type;
 	unsigned int reg;
 	int ret;
 
@@ -47,40 +48,38 @@ static int rn5t568_reset_reason_detect(struct device *dev,
 		return 0;
 	}
 
-	if (reg & RN5T568_PONHIS_ON_EXTINPON) {
-		reset_source_set_device(dev, RESET_POR);
-		return 0;
-	} else if (reg & RN5T568_PONHIS_ON_PWRONPON) {
-		reset_source_set_device(dev, RESET_POR);
-		return 0;
-	} else if (!(reg & RN5T568_PONHIS_ON_REPWRPON))
+	if (reg & (RN5T568_PONHIS_ON_EXTINPON | RN5T568_PONHIS_ON_PWRONPON)) {
+		type = RESET_POR;
+	} else if (!(reg & RN5T568_PONHIS_ON_REPWRPON)) {
 		return -EINVAL;
+	} else {
+		ret = regmap_read(regmap, RN5T568_POFFHIS, &reg);
+		if (ret)
+			return ret;
 
-	ret = regmap_read(regmap, RN5T568_POFFHIS, &reg);
-	if (ret)
-		return ret;
+		dev_dbg(dev, "Power-off history: %x\n", reg);
 
-	dev_dbg(dev, "Power-off history: %x\n", reg);
+		if (reg & RN5T568_POFFHIS_PWRONPOFF)
+			type = RESET_POR;
+		else if (reg & RN5T568_POFFHIS_TSHUTPOFF)
+			type = RESET_THERM;
+		else if (reg & RN5T568_POFFHIS_VINDETPOFF)
+			type = RESET_BROWNOUT;
+		else if (reg & RN5T568_POFFHIS_IODETPOFF)
+			type = RESET_UKWN;
+		else if (reg & RN5T568_POFFHIS_CPUPOFF)
+			type = RESET_RST;
+		else if (reg & RN5T568_POFFHIS_WDGPOFF)
+			type = RESET_WDG;
+		else if (reg & RN5T568_POFFHIS_DCLIMPOFF)
+			type = RESET_BROWNOUT;
+		else if (reg & RN5T568_POFFHIS_N_OEPOFF)
+			type = RESET_EXT;
+		else
+			return -EINVAL;
+	}
 
-	if (reg & RN5T568_POFFHIS_PWRONPOFF)
-		reset_source_set_device(dev, RESET_POR);
-	else if (reg & RN5T568_POFFHIS_TSHUTPOFF)
-		reset_source_set_device(dev, RESET_THERM);
-	else if (reg & RN5T568_POFFHIS_VINDETPOFF)
-		reset_source_set_device(dev, RESET_BROWNOUT);
-	else if (reg & RN5T568_POFFHIS_IODETPOFF)
-		reset_source_set_device(dev, RESET_UKWN);
-	else if (reg & RN5T568_POFFHIS_CPUPOFF)
-		reset_source_set_device(dev, RESET_RST);
-	else if (reg & RN5T568_POFFHIS_WDGPOFF)
-		reset_source_set_device(dev, RESET_WDG);
-	else if (reg & RN5T568_POFFHIS_DCLIMPOFF)
-		reset_source_set_device(dev, RESET_BROWNOUT);
-	else if (reg & RN5T568_POFFHIS_N_OEPOFF)
-		reset_source_set_device(dev, RESET_EXT);
-	else
-		return -EINVAL;
-
+	reset_source_set_device(dev, type);
 	return 0;
 }
 

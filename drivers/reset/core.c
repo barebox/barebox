@@ -359,7 +359,7 @@ gpio_reset_control_get(struct device *dev, const char *id)
  *
  * Use of id names is optional.
  */
-struct reset_control *reset_control_get(struct device *dev, const char *id)
+struct reset_control *__reset_control_get(struct device *dev, const char *id, bool optional)
 {
 	struct reset_control *rstc;
 
@@ -368,7 +368,7 @@ struct reset_control *reset_control_get(struct device *dev, const char *id)
 
 	rstc = of_reset_control_get(dev->of_node, id);
 	if (IS_ERR(rstc))
-		return ERR_CAST(rstc);
+		goto err;
 
 	/*
 	 * If there is no dedicated reset controller device, check if we have
@@ -377,7 +377,7 @@ struct reset_control *reset_control_get(struct device *dev, const char *id)
 	if (!rstc) {
 		rstc = gpio_reset_control_get(dev, id);
 		if (IS_ERR(rstc))
-			return ERR_CAST(rstc);
+			goto err;
 	}
 
 	if (!rstc)
@@ -386,6 +386,11 @@ struct reset_control *reset_control_get(struct device *dev, const char *id)
 	rstc->dev = dev;
 
 	return rstc;
+err:
+	if (optional && rstc == ERR_PTR(-ENOENT))
+		return NULL;
+
+	return ERR_CAST(rstc);
 }
 EXPORT_SYMBOL_GPL(reset_control_get);
 
@@ -478,6 +483,30 @@ err_rst:
 
 	return rstc;
 }
+
+int __reset_control_bulk_get(struct device *dev, int num_rstcs,
+			     struct reset_control_bulk_data *rstcs,
+			     bool optional)
+{
+	int ret, i;
+
+	for (i = 0; i < num_rstcs; i++) {
+		rstcs[i].rstc = __reset_control_get(dev, rstcs[i].id, optional);
+		if (IS_ERR(rstcs[i].rstc)) {
+			ret = PTR_ERR(rstcs[i].rstc);
+			goto err;
+		}
+	}
+
+	return 0;
+
+err:
+	while (i--)
+		reset_control_put(rstcs[i].rstc);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(__reset_control_bulk_get);
 
 int device_reset_all(struct device *dev)
 {

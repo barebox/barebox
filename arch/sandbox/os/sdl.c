@@ -17,6 +17,16 @@ static struct sdl_fb_info info;
 static SDL_atomic_t shutdown;
 SDL_Window *window;
 
+static void handle_sdl_events(void)
+{
+	SDL_Event event;
+
+	while (SDL_PollEvent(&event)) {
+		if (event.type == SDL_QUIT)
+			SDL_AtomicSet(&shutdown, true);
+	}
+}
+
 static int scanout(void *ptr)
 {
 	SDL_Renderer *renderer;
@@ -47,6 +57,7 @@ static int scanout(void *ptr)
 	while (!SDL_AtomicGet(&shutdown)) {
 		SDL_Delay(100);
 
+		handle_sdl_events();  /* Handle events like window close */
 		SDL_UpdateTexture(texture, NULL, buf, surface->pitch);
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, texture, NULL, NULL);

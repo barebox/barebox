@@ -287,8 +287,9 @@ config BOARD_ARM_GENERIC_DT_AARCH64
 	default y
 
 config AEABI
-	bool "Use the ARM EABI to compile barebox"
+	bool "Use the ARM EABI to compile barebox" if !CC_IS_CLANG
 	depends on !CPU_V8
+	default CC_IS_CLANG
 	help
 	  This option allows for barebox to be compiled using the latest
 	  ARM ABI (aka EABI).

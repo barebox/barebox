@@ -573,6 +573,42 @@ int regmap_field_bulk_alloc(struct regmap *regmap,
 	return 0;
 }
 
+/**
+ * regmap_multi_reg_write() - Write multiple registers to the device
+ *
+ * @map: Register map to write to
+ * @regs: Array of structures containing register,value to be written
+ * @num_regs: Number of registers to write
+ *
+ * Write multiple registers to the device where the set of register, value
+ * pairs are supplied in any order, possibly not all in a single range.
+ *
+ * The 'normal' block write mode will send ultimately send data on the
+ * target bus as R,V1,V2,V3,..,Vn where successively higher registers are
+ * addressed. However, this alternative block multi write mode will send
+ * the data as R1,V1,R2,V2,..,Rn,Vn on the target bus. The target device
+ * must of course support the mode.
+ *
+ * A value of zero will be returned on success, a negative errno will be
+ * returned in error cases.
+ */
+int regmap_multi_reg_write(struct regmap *map, const struct reg_sequence *regs,
+			   int num_regs)
+{
+	int i;
+	int ret;
+
+	for (i = 0; i < num_regs; i++) {
+		ret = regmap_write(map, regs[i].reg, regs[i].def);
+		if (ret != 0)
+			return ret;
+
+		if (regs[i].delay_us)
+			udelay(regs[i].delay_us);
+	}
+	return 0;
+}
+
 /*
  * regmap_register_cdev - register a devfs file for a regmap
  *

@@ -224,14 +224,14 @@ static int ramfs_read(struct device *_dev, FILE *f, void *buf, size_t insize)
 	unsigned long pos = f->pos;
 	int size = insize;
 
-	debug("%s: %p %zu @ %lld\n", __func__, node, insize, f->pos);
+	pr_vdebug("%s: %p %zu @ %lld\n", __func__, node, insize, f->pos);
 
 	while (size) {
 		data = ramfs_find_chunk(node, pos, &ofs, &len);
 		if (!data)
 			return -EINVAL;
 
-		debug("%s: pos: %lu ofs: %d len: %d\n", __func__, pos, ofs, len);
+		pr_vdebug("%s: pos: %lu ofs: %d len: %d\n", __func__, pos, ofs, len);
 
 		now = min(size, len);
 
@@ -255,14 +255,14 @@ static int ramfs_write(struct device *_dev, FILE *f, const void *buf,
 	unsigned long pos = f->pos;
 	int size = insize;
 
-	debug("%s: %p %zu @ %lld\n", __func__, node, insize, f->pos);
+	pr_vdebug("%s: %p %zu @ %lld\n", __func__, node, insize, f->pos);
 
 	while (size) {
 		data = ramfs_find_chunk(node, pos, &ofs, &len);
 		if (!data)
 			return -EINVAL;
 
-		debug("%s: pos: %lu ofs: %d len: %d\n", __func__, pos, ofs, len);
+		pr_vdebug("%s: pos: %lu ofs: %d len: %d\n", __func__, pos, ofs, len);
 
 		now = min(size, len);
 
@@ -363,7 +363,7 @@ static int ramfs_truncate(struct device *dev, FILE *f, loff_t size)
 	if (size > ULONG_MAX)
 		return -ENOSPC;
 
-	debug("%s: %p cur: %ld new: %lld alloc: %ld\n", __func__, node,
+	pr_vdebug("%s: %p cur: %ld new: %lld alloc: %ld\n", __func__, node,
 	       node->size, size, node->alloc_size);
 
 	if (size == node->size)

@@ -76,12 +76,6 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	new->device_node = node;
 	new->flags |= DEVFS_PARTITION_FROM_OF | DEVFS_PARTITION_FOR_FIXUP;
 
-	if (IS_ENABLED(CONFIG_NVMEM) && of_device_is_compatible(node, "nvmem-cells")) {
-		struct nvmem_device *nvmem = nvmem_partition_register(new);
-		if (IS_ERR(nvmem))
-			dev_warn(cdev->dev, "nvmem registeration failed: %pe\n", nvmem);
-	}
-
 out:
 	free(filename);
 
@@ -108,6 +102,8 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 		of_parse_partition(cdev, n);
 	}
 
+	if (subnode)
+		of_platform_populate(subnode, NULL, cdev->dev);
 	return 0;
 }
 
@@ -117,8 +113,6 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
  *      Unfortunately, there is no completely reliable way
  *      to differentiate partitions from devices prior to
  *      probing, because partitions may also have compatibles.
- *      We only handle nvmem-cells, so anything besides that
- *      is assumed to be a device that should be probed directly.
  *
  * Returns zero on success or a negative error code otherwise
  */
@@ -146,8 +140,7 @@ int of_partition_ensure_probed(struct device_node *np)
 	 }
 
 	/* Check if legacy partitions binding */
-	if (!of_property_present(np, "compatible") ||
-	    of_device_is_compatible(np, "nvmem-cells"))
+	if (!of_property_present(np, "compatible"))
 		return of_device_ensure_probed(parent);
 
 	/* Doesn't look like a partition, so let's probe directly */

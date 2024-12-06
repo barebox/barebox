@@ -654,7 +654,7 @@ static int tegra_i2c_probe(struct device *dev)
 
 	i2c_dev->adapter.master_xfer = tegra_i2c_xfer;
 	i2c_dev->adapter.dev.parent = dev;
-	i2c_dev->adapter.nr = dev->id;
+	i2c_dev->adapter.nr = -1;
 	i2c_dev->adapter.dev.of_node = dev->of_node;
 
 	ret = i2c_add_numbered_adapter(&i2c_dev->adapter);

@@ -1,2 +1,2 @@
 CompileFlags:
-  Remove: -mabi=lp64
+  Remove: [ -mabi=lp64, -fno-allow-store-data-races]

@@ -269,7 +269,7 @@ static const struct phy_ops sata_phy_ops = {
 };
 
 static struct phy *tegra_xusb_padctl_xlate(struct device *dev,
-					   struct of_phandle_args *args)
+					   const struct of_phandle_args *args)
 {
 	struct tegra_xusb_padctl *padctl = dev->priv;
 	unsigned int index = args->args[0];

@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-config REGINFO
-	bool
-
 config COMMAND_SUPPORT
 	bool
 	depends on !SHELL_NONE
@@ -247,14 +244,6 @@ config CMD_ARM_MMUINFO
 	  SuperSection [1]:         0x0
 	  Failure [0]:              0x0
 
-config CMD_REGINFO
-	depends on HAS_REGINFO
-	select REGINFO
-	tristate
-	prompt "reginfo"
-	help
-	  Print register information.
-
 config CMD_BLKSTATS
 	bool
 	depends on BLOCK
@@ -325,14 +314,17 @@ config CMD_MMC_EXTCSD
 	help
 	  Read or write the extended CSD register of a MMC device.
 
-	  Usage: mmc_extcsd dev [-r | -i index [-r | -v value -y]]
-
+	  Usage: mmc_extcsd dev [-r | -b | -B | -i index [-r | -v value [-y]]]
+	  
 	  Options:
 		  -i      field index of the register
 		  -r      print the register as raw data
 		  -v      value which will be written
 		  -y      don't request when writing to one time programmable fields
-		  __CAUTION__: this could damage the device!
+			  __CAUTION__: this could damage the device!
+		  -b      set bkops-enable (EXT_CSD_BKOPS_EN[163])
+		  -B      set bkops-enable and auto-enable (EXT_CSD_BKOPS_EN[163])
+			  __WARNING__: this is a write-once setting!
 
 config CMD_POLLER
 	tristate

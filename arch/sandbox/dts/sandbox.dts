@@ -12,13 +12,6 @@
 		state = &state;
 	};
 
-	chosen {
-		environment {
-			compatible = "barebox,environment";
-			device-path = &part_env;
-		};
-	};
-
 	memory {
 		device_type = "memory";
 		reg = <0 0 0 0>;
@@ -132,6 +125,7 @@
 			};
 
 			part_env: env@400 {
+				compatible = "barebox,environment";
 				reg = <0x400 0x800>;
 				label = "env";
 			};

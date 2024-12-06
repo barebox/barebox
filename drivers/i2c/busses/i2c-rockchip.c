@@ -432,7 +432,7 @@ static int rk_i2c_probe(struct device *dev)
 		return dev_err_probe(dev, PTR_ERR(i2c->clk), "Can't get bus clk\n");
 
 	i2c->adapter.master_xfer = rockchip_i2c_xfer;
-	i2c->adapter.nr = dev->id;
+	i2c->adapter.nr = -1;
 	i2c->adapter.dev.parent = dev;
 	i2c->adapter.dev.of_node = np;
 

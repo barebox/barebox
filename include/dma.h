@@ -22,6 +22,10 @@
 #define DMA_ALIGNMENT	32
 #endif
 
+#ifndef ARCH_DMA_MINALIGN
+#define ARCH_DMA_MINALIGN	DMA_ALIGNMENT
+#endif
+
 #ifdef CONFIG_HAS_DMA
 void *dma_alloc(size_t size);
 void *dma_zalloc(size_t size);

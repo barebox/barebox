@@ -270,7 +270,7 @@ static const struct phy_ops rochchip_combphy_ops = {
 };
 
 static struct phy *rockchip_combphy_xlate(struct device *dev,
-					  struct of_phandle_args *args)
+					  const struct of_phandle_args *args)
 {
 	struct rockchip_combphy_priv *priv = dev->priv;
 

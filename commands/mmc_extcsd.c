@@ -2379,7 +2379,7 @@ static int do_mmc_extcsd(int argc, char *argv[])
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	while ((opt = getopt(argc, argv, "i:v:yrb")) > 0)
+	while ((opt = getopt(argc, argv, "i:v:yrbB")) > 0)
 		switch (opt) {
 		case 'i':
 			index = simple_strtoul(optarg, NULL, 0);
@@ -2398,6 +2398,13 @@ static int do_mmc_extcsd(int argc, char *argv[])
 			set_bkops_en = 1;
 			index = EXT_CSD_BKOPS_EN;
 			value = BIT(0);
+			write_operation = 1;
+			always_write = 1;
+			break;
+		case 'B':
+			set_bkops_en = 1;
+			index = EXT_CSD_BKOPS_EN;
+			value = BIT(0) | BIT(1);
 			write_operation = 1;
 			always_write = 1;
 			break;
@@ -2431,13 +2438,15 @@ static int do_mmc_extcsd(int argc, char *argv[])
 	}
 
 	if (set_bkops_en) {
-		if (dst[index]) {
+		if (dst[index] == value) {
 			printf("Abort: EXT_CSD [%u] already set to %#02x!\n",
 			       index, dst[index]);
 			goto error_with_mem;
 		}
-		if (dst[EXT_CSD_REV] >= 7)
-			value |= BIT(1);	/* set AUTO_EN bit too */
+
+		if (value & BIT(1)) {
+			pr_notice("Enabling automatic background operations, this needs support from the OS.\n");
+		}
 	}
 
 	if (write_operation)
@@ -2486,13 +2495,14 @@ BAREBOX_CMD_HELP_OPT("-v", "value which will be written")
 BAREBOX_CMD_HELP_OPT("-y", "don't request when writing to one time programmable fields")
 BAREBOX_CMD_HELP_OPT("",   "__CAUTION__: this could damage the device!")
 BAREBOX_CMD_HELP_OPT("-b", "set bkops-enable (EXT_CSD_BKOPS_EN[163])")
+BAREBOX_CMD_HELP_OPT("-B", "set bkops-enable and auto-enable (EXT_CSD_BKOPS_EN[163])")
 BAREBOX_CMD_HELP_OPT("",   "__WARNING__: this is a write-once setting!")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(mmc_extcsd)
 	.cmd		= do_mmc_extcsd,
 	BAREBOX_CMD_DESC("Read/write the extended CSD register.")
-	BAREBOX_CMD_OPTS("dev [-r | -b | -i index [-r | -v value [-y]]]")
+	BAREBOX_CMD_OPTS("dev [-r | -b | -B | -i index [-r | -v value [-y]]]")
 	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_mmc_extcsd_help)
 BAREBOX_CMD_END

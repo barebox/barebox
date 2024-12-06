@@ -7,10 +7,6 @@ config ARCH_TEXT_BASE
 	default 0x00000000 if RELOCATABLE
 	default 0x01000000 if MACH_PHYCORE_MPC5200B_TINY
 
-config HAS_REGINFO
-	bool
-	default y if ARCH_MPC5200
-
 choice
 	prompt "Select your board"
 

@@ -277,6 +277,32 @@ static inline int regmap_clear_bits(struct regmap *map,
 size_t regmap_size_bytes(struct regmap *map);
 
 /**
+ * struct reg_sequence - An individual write from a sequence of writes.
+ *
+ * @reg: Register address.
+ * @def: Register value.
+ * @delay_us: Delay to be applied after the register write in microseconds
+ *
+ * Register/value pairs for sequences of writes with an optional delay in
+ * microseconds to be applied after each write.
+ */
+struct reg_sequence {
+	unsigned int reg;
+	unsigned int def;
+	unsigned int delay_us;
+};
+
+#define REG_SEQ(_reg, _def, _delay_us) {		\
+				.reg = _reg,		\
+				.def = _def,		\
+				.delay_us = _delay_us,	\
+				}
+#define REG_SEQ0(_reg, _def)	REG_SEQ(_reg, _def, 0)
+
+int regmap_multi_reg_write(struct regmap *map, const struct reg_sequence *regs,
+			   int num_regs);
+
+/**
  * regmap_read_poll_timeout - Poll until a condition is met or a timeout occurs
  *
  * @map: Regmap to read from

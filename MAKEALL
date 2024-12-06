@@ -12,6 +12,7 @@ nb_defconfigs=0
 nb_tests=0
 nb_tests_failed=0
 exitcode=0
+logdir="log"
 
 time_start=$(date +%s)
 
@@ -56,6 +57,7 @@ usage() {
 	echo "LOGDIR      -l      log dir"
 	echo "REGEX       -e      regex"
 	echo "KCONFIG_ADD -k      kconfig fragment"
+	echo "V           -v      verbosity"
 	echo "INCREMENTAL -i"
 	echo ""
 }
@@ -92,16 +94,36 @@ check_pipe_status() {
 	return 0
 }
 
+with_logs_collected() {
+	local log_report="${logdir}/${target}/report.log"
+	local log_err="${logdir}/${target}/errors.log"
+
+	if [ -n "${logdir}" ]; then
+		"$@" 2>&1 > "${log_report}" | tee "${log_err}"
+	else
+		"$@"
+	fi
+}
+
+report() {
+	local log_report="${logdir}/${target}/report.log"
+
+	if [ -n "${logdir}" ]; then
+		printf "$@" | tee -a "${log_report}"
+	else
+		printf "$@"
+	fi
+}
+
 do_build_target() {
 	local arch=$1
 	local target=$2
 	local target_time_start=$(date +%s)
-	local log_report="${LOGDIR}/${target}/report.log"
-	local log_err="${LOGDIR}/${target}/errors.log"
+	local log_err="${logdir}/${target}/errors.log"
 	local err=0
 
 	[ "$INCREMENTAL" != "1" ] && rm -rf "${BUILDDIR}"
-	mkdir -p "${LOGDIR}/${target}"
+	[ -n "$logdir" ] && mkdir -p "${logdir}/${target}"
 
 	MAKE="make -j${JOBS} ARCH=${arch} O=${BUILDDIR}"
 	${MAKE} ${target} &>/dev/null
@@ -127,59 +149,62 @@ do_build_target() {
 		fi
 	fi
 
-	printf "Building ${arch} ${target} \n" >&2 | tee -a "${log_report}"
-	MAKE="${MAKE} CROSS_COMPILE=${cross_compile}"
-	${MAKE} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
+	[ -z "$V" ] && silent_flag=-s
+
+	report "Building ${arch} ${target} \n" >&2
+	MAKE="${MAKE} $silent_flag CROSS_COMPILE=${cross_compile}"
+	with_logs_collected ${MAKE} ${target}
 	for i in ${KCONFIG_ADD}; do
-		./scripts/kconfig/merge_config.sh -m -O \
-			${BUILDDIR} ${BUILDDIR}/.config $i \
-			2>&1 > "${log_report}" | tee "${log_err}"
+		with_logs_collected ./scripts/kconfig/merge_config.sh -m -O \
+			${BUILDDIR} ${BUILDDIR}/.config $i
 	done
-	${MAKE} olddefconfig 2>&1 > "${log_report}" | tee "${log_err}"
+	with_logs_collected ${MAKE} $silent_flag olddefconfig
 
 	check_pipe_status
 	configure_result="$?"
 
-	printf "Configure: " | tee -a "${log_report}"
+	report "Configure: "
 
 	if [ "$configure_result" = "0" ]; then
-		printf "OK     \n" | tee -a "${log_report}"
+		report "OK     \n"
 
-		${MAKE} -s 2>&1 >> "${log_report}" | tee -a "${log_err}"
+		with_logs_collected ${MAKE} $silent_flag
 
 		check_pipe_status
 		compile_result="$?"
 
-		printf "Compile: " ${target} | tee -a "${log_report}"
+		report "Compile: " ${target}
 
 		if [ "$compile_result" = "0" ]; then
-			printf "OK     \n" | tee -a "${log_report}"
+			report "OK     \n"
 		else
-			printf "FAILED \n" | tee -a "${log_report}"
+			report "FAILED \n"
 			nb_errors=$((nb_errors + 1))
 			errors_list="${errors_list} ${target}"
 			err=1
 			exitcode=1
 		fi
 	else
-		printf "FAILED \n" | tee -a "${log_report}"
-		printf "Compile: ------ \n" | tee -a "${log_report}"
+		report "FAILED \n"
+		report "Compile: ------ \n"
 		err=1
 		exitcode=1
 	fi
 
-	if [ -s "${log_err}" ] ; then
-		nb_warnings=$((nb_warnings + 1))
-		warnings_list="${warnings_list} ${target}"
-	else
-		rm "${log_err}"
+	if [ -n "$logdir" ]; then
+		if [ -s "${log_err}" ] ; then
+			nb_warnings=$((nb_warnings + 1))
+			warnings_list="${warnings_list} ${target}"
+		else
+			rm "${log_err}"
+		fi
 	fi
 
 	nb_defconfigs=$((nb_defconfigs + 1))
 
 	target_time_stop=$(date +%s)
 	target_time_diff=$((${target_time_stop} - ${target_time_start}))
-	printf "Compiled in %4is\n" ${target_time_diff} | tee -a "${log_report}"
+	report "Compiled in %4is\n" ${target_time_diff}
 
 	return $err
 }
@@ -193,20 +218,19 @@ do_test_target() {
 	local target=$2
 	shift 2
 	local target_time_start=$(date +%s)
-	local log_report="${LOGDIR}/${target}/report.log"
 	local err=0
 
-	LG_BUILDDIR=$BUILDDIR pytest --lg-env $yaml "$@" 2>&1 >> "${log_report}"
+	LG_BUILDDIR=$BUILDDIR with_logs_collected pytest --lg-env $yaml "$@"
 
 	check_pipe_status
 	compile_result="$?"
 
-	printf "Test: " ${yaml} | tee -a "${log_report}"
+	report "Test: " ${yaml}
 
 	if [ "$compile_result" = "0" ]; then
-		printf "OK     \n" | tee -a "${log_report}"
+		report "OK     \n"
 	else
-		printf "FAILED \n" | tee -a "${log_report}"
+		report "FAILED \n"
 		nb_tests_failed=$((nb_tests_failed + 1))
 		test_errors_list="${test_errors_list} ${yaml}"
 		exitcode=1
@@ -217,7 +241,7 @@ do_test_target() {
 
 	target_time_stop=$(date +%s)
 	target_time_diff=$((${target_time_stop} - ${target_time_start}))
-	printf "Tested in %4is\n" ${target_time_diff} | tee -a "${log_report}"
+	report "Tested in %4is\n" ${target_time_diff}
 
 	return $err
 }
@@ -251,7 +275,7 @@ do_build_all() {
 	return $build_target
 }
 
-while getopts "hc:j:O:l:a:e:k:i" Option
+while getopts "hc:j:O:l:a:e:k:v:i" Option
 do
 case $Option in
 	a )
@@ -274,6 +298,9 @@ case $Option in
 		;;
 	k )
 		KCONFIG_ADD="${KCONFIG_ADD} ${OPTARG}"
+		;;
+	v )
+		export V=${OPTARG}
 		;;
 	i )
 		INCREMENTAL=1
@@ -299,9 +326,9 @@ if [ ! "${JOBS}" ] ; then
 	JOBS=$((${nb_cpu} * 2))
 fi
 
-if [ ! "${LOGDIR}" ]
+if [ -v LOGDIR ];
 then
-	LOGDIR="log"
+	logdir="$LOGDIR"
 fi
 
 if [ ! "${BUILDDIR}" ]
@@ -321,7 +348,10 @@ then
 	. "${CONFIG}"
 fi
 
-[ -d "${LOGDIR}" ] || mkdir ${LOGDIR} || exit 1
+if [ -n "$logdir" ] && [ ! -d "${logdir}" ]
+then
+	mkdir "${logdir}" || exit 1
+fi
 
 if [ ! "${REGEX}" ]
 then

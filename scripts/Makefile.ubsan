@@ -1,19 +1,22 @@
 # SPDX-License-Identifier: GPL-2.0
-ifdef CONFIG_UBSAN
-      CFLAGS_UBSAN += $(call cc-option, -fsanitize=shift)
-      CFLAGS_UBSAN += $(call cc-option, -fsanitize=integer-divide-by-zero)
-      CFLAGS_UBSAN += $(call cc-option, -fsanitize=unreachable)
-      CFLAGS_UBSAN += $(call cc-option, -fsanitize=signed-integer-overflow)
-      CFLAGS_UBSAN += $(call cc-option, -fsanitize=bounds)
-      CFLAGS_UBSAN += $(call cc-option, -fsanitize=object-size)
-      CFLAGS_UBSAN += $(call cc-option, -fsanitize=bool)
-      CFLAGS_UBSAN += $(call cc-option, -fsanitize=enum)
+ifdef CONFIG_UBSAN_STANDALONE
+      ubsan-cflags-y += $(call cc-option, -fsanitize=shift)
+      ubsan-cflags-y += $(call cc-option, -fsanitize=integer-divide-by-zero)
+      ubsan-cflags-y += $(call cc-option, -fsanitize=unreachable)
+      ubsan-cflags-y += $(call cc-option, -fsanitize=signed-integer-overflow)
+      ubsan-cflags-y += $(call cc-option, -fsanitize=bounds)
+      ubsan-cflags-y += $(call cc-option, -fsanitize=object-size)
+      ubsan-cflags-y += $(call cc-option, -fsanitize=bool)
+      ubsan-cflags-y += $(call cc-option, -fsanitize=enum)
 
-ifdef CONFIG_UBSAN_ALIGNMENT
-      CFLAGS_UBSAN += $(call cc-option, -fsanitize=alignment)
+      ubsan-cflags-$(CONFIG_UBSAN_ALIGNMENT) += $(call cc-option, -fsanitize=alignment)
+else
+      ubsan-cflags-y += -fsanitize=undefined
+      ubsan-cflags-$(if $(CONFIG_UBSAN_ALIGNMENT),,y) += $(call cc-option, -fno-sanitize=alignment)
 endif
 
-      # -fsanitize=* options makes GCC less smart than usual and
-      # increase number of 'maybe-uninitialized false-positives
-      CFLAGS_UBSAN += $(call cc-option, -Wno-maybe-uninitialized)
-endif
+# -fsanitize=* options makes GCC less smart than usual and
+# increase number of 'maybe-uninitialized false-positives
+ubsan-cflags-y += $(call cc-option, -Wno-maybe-uninitialized)
+
+export CFLAGS_UBSAN := $(ubsan-cflags-y)

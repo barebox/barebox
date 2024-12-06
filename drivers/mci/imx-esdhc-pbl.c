@@ -35,7 +35,7 @@ static u8 ext_csd[512] __aligned(64);
 
 static int esdhc_send_ext_csd(struct fsl_esdhc_host *host)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	struct mci_data data;
 
 	cmd.cmdidx = MMC_CMD_SEND_EXT_CSD;
@@ -67,7 +67,7 @@ static bool __maybe_unused esdhc_bootpart_active(struct fsl_esdhc_host *host)
 
 static int esdhc_read_blocks(struct fsl_esdhc_host *host, void *dst, size_t len)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	struct mci_data data;
 	u32 val;
 	int ret;

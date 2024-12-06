@@ -4,9 +4,11 @@
 #include <common.h>
 #include <config.h>
 #include <mach/mpc5xxx.h>
+#include <command.h>
+#include <complete.h>
 #include <asm/io.h>
 
-void reginfo(void)
+static int do_reginfo(int argc, char *argv[])
 {
 	puts ("\nMPC5200 registers\n");
 	printf ("MBAR=%08x\n", CFG_MBAR);
@@ -60,4 +62,13 @@ void reginfo(void)
 		in_be32((void*)MPC5XXX_SDRAM_CS0CFG));
 	printf ("\tSDRAMCS1: %08X\n",
 		in_be32((void*)MPC5XXX_SDRAM_CS1CFG));
+
+	return 0;
 }
+
+BAREBOX_CMD_START(reginfo)
+       .cmd            = do_reginfo,
+       BAREBOX_CMD_DESC("print MPC5200 register information")
+       BAREBOX_CMD_GROUP(CMD_GRP_INFO)
+       BAREBOX_CMD_COMPLETE(empty_complete)
+BAREBOX_CMD_END

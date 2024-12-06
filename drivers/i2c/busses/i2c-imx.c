@@ -592,7 +592,7 @@ static int __init i2c_fsl_probe(struct device *pdev)
 
 	/* Setup i2c_fsl driver structure */
 	i2c_fsl->adapter.master_xfer = i2c_fsl_xfer;
-	i2c_fsl->adapter.nr = pdev->id;
+	i2c_fsl->adapter.nr = -1;
 	i2c_fsl->adapter.dev.parent = pdev;
 	i2c_fsl->adapter.dev.of_node = pdev->of_node;
 	iores = dev_request_mem_resource(pdev, 0);

@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2009 Carlo Caione <carlo@carlocaione.org>
 
 #include <mach/bcm283x/mbox.h>
+#include <linux/printk.h>
 #include "lowlevel.h"
 
 struct msg_get_arm_mem {

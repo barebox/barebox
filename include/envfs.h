@@ -118,6 +118,16 @@ static inline const char *default_environment_path_get(void)
 }
 #endif
 
+#ifdef CONFIG_OF_BAREBOX_DRIVERS
+const char *of_env_get_device_alias_by_path(const char *of_path);
+#else
+static inline const char *of_env_get_device_alias_by_path(const char *of_path)
+{
+	return NULL;
+}
+#endif
+
+
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 void defaultenv_append(void *buf, unsigned int size, const char *name);
 int defaultenv_load(const char *dir, unsigned flags);

@@ -9,7 +9,9 @@
 #ifndef _BCM2835_MBOX_H
 #define _BCM2835_MBOX_H
 
-#include <common.h>
+#include <linux/align.h>
+#include <linux/types.h>
+#include <linux/string.h>
 
 #include <mach/bcm283x/platform.h>
 

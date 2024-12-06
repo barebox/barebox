@@ -52,7 +52,7 @@ static int do_abort_sequence(struct mci_host *mci, struct mci_cmd *current_cmd)
 {
 	int ret = 0;
 	struct dwcmshc_host *host = priv_from_mci_host(mci);
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	u64 start;
 
 	mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0, MMC_RSP_R1b);

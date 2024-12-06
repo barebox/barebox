@@ -109,7 +109,7 @@ static int imx_usbphy_notify_disconnect(struct usb_phy *phy,
 }
 
 static struct phy *imx_usbphy_xlate(struct device *dev,
-				    struct of_phandle_args *args)
+				    const struct of_phandle_args *args)
 {
 	struct imx_usbphy *imxphy = dev->priv;
 

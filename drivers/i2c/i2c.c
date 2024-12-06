@@ -705,10 +705,13 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	struct device *hw_dev;
 	int ret;
 
+	if (adapter->nr < 0 && adapter->dev.parent && adapter->dev.parent->of_node)
+		adapter->nr = of_alias_get_id(adapter->dev.parent->of_node, "i2c");
+
 	if (adapter->nr < 0) {
 		int nr;
 
-		for (nr = 0;; nr++)
+		for (nr = 32;; nr++)
 			if (!i2c_get_adapter(nr))
 				break;
 		adapter->nr = nr;

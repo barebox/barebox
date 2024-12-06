@@ -422,7 +422,7 @@ static int cdns_i2c_probe(struct device *dev)
 		return err;
 
 	i2c->adapter.master_xfer = cdns_i2c_xfer;
-	i2c->adapter.nr = dev->id;
+	i2c->adapter.nr = -1;
 	i2c->adapter.dev.parent = dev;
 	i2c->adapter.dev.of_node = np;
 

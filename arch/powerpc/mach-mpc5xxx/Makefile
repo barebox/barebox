@@ -8,4 +8,4 @@ obj-y				+= traps.o
 obj-y				+= time.o
 extra-y				+= start.o
 obj-$(CONFIG_MPC5200)		+= firmware_sc_task_bestcomm.impl.o
-obj-$(CONFIG_REGINFO)		+= reginfo.o
+obj-$(CONFIG_COMMAND_SUPPORT)	+= reginfo.o

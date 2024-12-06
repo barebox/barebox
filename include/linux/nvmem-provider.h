@@ -47,7 +47,6 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *cfg);
 struct nvmem_device *nvmem_regmap_register(struct regmap *regmap, const char *name);
 struct nvmem_device *nvmem_regmap_register_with_pp(struct regmap *regmap,
 		const char *name, nvmem_cell_post_process_t cell_post_process);
-struct nvmem_device *nvmem_partition_register(struct cdev *cdev);
 struct device *nvmem_device_get_device(struct nvmem_device *nvmem);
 
 #else
@@ -65,11 +64,6 @@ static inline struct nvmem_device *nvmem_regmap_register(struct regmap *regmap, 
 static inline struct nvmem_device *
 nvmem_regmap_register_with_pp(struct regmap *regmap, const char *name,
 			      nvmem_cell_post_process_t cell_post_process)
-{
-	return ERR_PTR(-ENOSYS);
-}
-
-static inline struct nvmem_device *nvmem_partition_register(struct cdev *cdev)
 {
 	return ERR_PTR(-ENOSYS);
 }

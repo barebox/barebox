@@ -178,7 +178,7 @@ static int dwmci_cmd(struct mci_cmd *cmd, struct mci_data *data)
 
 int arria10_read_blocks(void *dst, int blocknum, size_t len)
 {
-	struct mci_cmd cmd;
+	struct mci_cmd cmd = {};
 	struct mci_data data;
 	int ret;
 	int blocks;

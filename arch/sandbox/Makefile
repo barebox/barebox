@@ -62,6 +62,10 @@ endif
 ifeq ($(CONFIG_ASAN),y)
 KBUILD_CPPFLAGS += -fsanitize=address
 SANITIZER_LIBS += -fsanitize=address
+ifeq ($(CONFIG_CC_IS_CLANG),y)
+KBUILD_CPPFLAGS += -fno-sanitize-address-globals-dead-stripping
+BAREBOX_LDFLAGS += -fno-sanitize-address-globals-dead-stripping
+endif
 endif
 
 ifeq ($(CONFIG_UBSAN),y)

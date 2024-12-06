@@ -42,6 +42,7 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 }
 
 static int bootm_appendroot;
+static int bootm_dryrun;
 static int bootm_earlycon;
 static int bootm_provide_machine_id;
 static int bootm_provide_hostname;
@@ -64,6 +65,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->provide_machine_id = bootm_provide_machine_id;
 	data->provide_hostname = bootm_provide_hostname;
 	data->verbose = bootm_verbosity;
+	data->dryrun = bootm_dryrun;
 }
 
 static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_HASH;
@@ -1032,6 +1034,7 @@ static int bootm_init(void)
 	if (bootm_signed_images_are_forced())
 		bootm_verify_mode = BOOTM_VERIFY_SIGNATURE;
 
+	globalvar_add_simple_bool("bootm.dryrun", &bootm_dryrun);
 	globalvar_add_simple_int("bootm.verbose", &bootm_verbosity, "%u");
 
 	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
@@ -1062,6 +1065,7 @@ BAREBOX_MAGICVAR(global.bootm.initrd, "bootm default initrd");
 BAREBOX_MAGICVAR(global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
 BAREBOX_MAGICVAR(global.bootm.oftree, "bootm default oftree");
 BAREBOX_MAGICVAR(global.bootm.tee, "bootm default tee image");
+BAREBOX_MAGICVAR(global.bootm.dryrun, "bootm default dryrun level");
 BAREBOX_MAGICVAR(global.bootm.verify, "bootm default verify level");
 BAREBOX_MAGICVAR(global.bootm.verbose, "bootm default verbosity level (0=quiet)");
 BAREBOX_MAGICVAR(global.bootm.earlycon, "Add earlycon option to Kernel for early log output");

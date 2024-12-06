@@ -15,12 +15,9 @@
 /*
  * The STACK_ALIGN_ARRAY macro is used to allocate a buffer on the stack that
  * meets a minimum alignment requirement.
- *
- * Note that the size parameter is the number of array elements to allocate,
- * not the number of bytes.
- */
-#define STACK_ALIGN_ARRAY(type, name, size, align)		\
-	char __##name[sizeof(type) * (size) + (align) - 1];	\
-	type *name = (type *)ALIGN((unsigned long)__##name, align)
+  */
+#define STACK_ALIGN_ARRAY(type, name, nelems, align)		\
+	char __##name[sizeof(type) * (nelems) + (align) - 1];	\
+	type *name = (type *)ALIGN((uintptr_t)__##name, align)
 
 #endif

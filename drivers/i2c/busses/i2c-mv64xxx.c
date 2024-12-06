@@ -625,7 +625,7 @@ mv64xxx_i2c_probe(struct device *pd)
 
 	drv_data->adapter.master_xfer = mv64xxx_i2c_xfer;
 	drv_data->adapter.dev.parent = pd;
-	drv_data->adapter.nr = pd->id;
+	drv_data->adapter.nr = -1;
 	drv_data->adapter.dev.of_node = pd->of_node;
 
 	mv64xxx_i2c_hw_init(drv_data);

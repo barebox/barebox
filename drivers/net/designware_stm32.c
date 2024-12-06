@@ -8,10 +8,11 @@
 
 #include <common.h>
 #include <init.h>
-#include <net.h>
 #include <linux/clk.h>
-#include <mfd/syscon.h>
 #include <linux/regmap.h>
+#include <mfd/syscon.h>
+#include <net.h>
+#include <of_device.h>
 
 #include "designware_eqos.h"
 
@@ -44,13 +45,21 @@
 #define SYSCFG_MP1_ETH_MASK		GENMASK(23, 16)
 #define SYSCFG_PMCCLRR_OFFSET		0x40
 
+struct stm32_ops {
+	const struct eqos_ops *eqos_ops;
+	bool is_mp13;
+	u32 syscfg_clr_off;
+};
+
 struct eqos_stm32 {
 	struct clk_bulk_data *clks;
 	int num_clks;
 	struct regmap *regmap;
 	u32 mode_reg;
+	u32 mode_mask;
 	int eth_clk_sel_reg;
 	int eth_ref_clk_sel_reg;
+	const struct stm32_ops *ops;
 };
 
 static inline struct eqos_stm32 *to_stm32(struct eqos *eqos)
@@ -72,12 +81,20 @@ static unsigned long eqos_get_csr_clk_rate_stm32(struct eqos *eqos)
 
 static int eqos_set_mode_stm32(struct eqos_stm32 *priv, phy_interface_t interface)
 {
-	u32 val, reg = priv->mode_reg;
+	u32 reg = priv->mode_reg;
+	u32 val = 0;
 	int ret;
 
 	switch (interface) {
 	case PHY_INTERFACE_MODE_MII:
-		val = SYSCFG_PMCR_ETH_SEL_MII;
+		/*
+		 * STM32MP15xx supports both MII and GMII, STM32MP13xx MII only.
+		 * SYSCFG_PMCSETR ETH_SELMII is present only on STM32MP15xx and
+		 * acts as a selector between 0:GMII and 1:MII. As STM32MP13xx
+		 * supports only MII, ETH_SELMII is not present.
+		 */
+		if (!priv->ops->is_mp13)  /* Select MII mode on STM32MP15xx */
+			val |= SYSCFG_PMCR_ETH_SEL_MII;
 		break;
 	case PHY_INTERFACE_MODE_GMII:
 		val = SYSCFG_PMCR_ETH_SEL_GMII;
@@ -101,16 +118,16 @@ static int eqos_set_mode_stm32(struct eqos_stm32 *priv, phy_interface_t interfac
 		return -EINVAL;
 	}
 
+	/* Shift value at correct ethernet MAC offset in SYSCFG_PMCSETR */
+	val <<= ffs(priv->mode_mask) - ffs(SYSCFG_MP1_ETH_MASK);
+
 	/* Need to update PMCCLRR (clear register) */
-	ret = regmap_write(priv->regmap, reg + SYSCFG_PMCCLRR_OFFSET,
-			   SYSCFG_MP1_ETH_MASK);
+	ret = regmap_write(priv->regmap, priv->ops->syscfg_clr_off,
+			   priv->mode_mask);
 	if (ret)
-		return -EIO;
+		return ret;
 
-	/* Update PMCSETR (set register) */
-	regmap_update_bits(priv->regmap, reg, GENMASK(23, 16), val);
-
-	return 0;
+	return regmap_update_bits(priv->regmap, reg, priv->mode_mask, val);
 }
 
 static int eqos_init_stm32(struct device *dev, struct eqos *eqos)
@@ -142,6 +159,18 @@ static int eqos_init_stm32(struct device *dev, struct eqos *eqos)
 		return -EINVAL;
 	}
 
+	priv->mode_mask = SYSCFG_MP1_ETH_MASK;
+	ret = of_property_read_u32_index(np, "st,syscon", 2, &priv->mode_mask);
+	if (ret) {
+		if (priv->ops->is_mp13) {
+			dev_err(dev, "Sysconfig register mask must be set (%pe)\n",
+				ERR_PTR(ret));
+		} else {
+			dev_dbg(dev, "Warning sysconfig register mask not set (%pe)\n",
+				ERR_PTR(ret));
+		}
+	}
+
 	ret = eqos_set_mode_stm32(priv, eqos->interface);
 	if (ret)
 		dev_warn(dev, "Configuring syscfg failed: %s\n", strerror(-ret));
@@ -167,7 +196,18 @@ static int eqos_init_stm32(struct device *dev, struct eqos *eqos)
 	return clk_bulk_enable(priv->num_clks, priv->clks);
 }
 
-static struct eqos_ops stm32_ops = {
+static struct eqos_ops stm32mp13_ops = {
+	.init = eqos_init_stm32,
+	.get_ethaddr = eqos_get_ethaddr,
+	.set_ethaddr = eqos_set_ethaddr,
+	.adjust_link = eqos_adjust_link,
+	.get_csr_clk_rate = eqos_get_csr_clk_rate_stm32,
+
+	.clk_csr = EQOS_MDIO_ADDR_CR_250_300,
+	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_DCB,
+};
+
+static struct eqos_ops stm32mp15_ops = {
 	.init = eqos_init_stm32,
 	.get_ethaddr = eqos_get_ethaddr,
 	.set_ethaddr = eqos_set_ethaddr,
@@ -178,9 +218,34 @@ static struct eqos_ops stm32_ops = {
 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_AV,
 };
 
+static struct stm32_ops stm32mp13_dwmac_data = {
+	.eqos_ops = &stm32mp13_ops,
+	.syscfg_clr_off = 0x08,
+	.is_mp13 = true,
+};
+
+static struct stm32_ops stm32mp15_dwmac_data = {
+	.eqos_ops = &stm32mp15_ops,
+	.syscfg_clr_off = 0x44,
+	.is_mp13 = false,
+};
+
 static int eqos_probe_stm32(struct device *dev)
 {
-	return eqos_probe(dev, &stm32_ops, xzalloc(sizeof(struct eqos_stm32)));
+	const struct stm32_ops *data;
+	struct eqos_stm32 *priv;
+
+	priv = xzalloc(sizeof(*priv));
+	if (!priv)
+		return -ENOMEM;
+
+	data = of_device_get_match_data(dev);
+	if (!data)
+		return -EINVAL;
+
+	priv->ops = data;
+
+	return eqos_probe(dev, data->eqos_ops, priv);
 }
 
 static void eqos_remove_stm32(struct device *dev)
@@ -194,7 +259,8 @@ static void eqos_remove_stm32(struct device *dev)
 }
 
 static const struct of_device_id eqos_stm32_ids[] = {
-	{ .compatible = "st,stm32mp1-dwmac" },
+	{ .compatible = "st,stm32mp1-dwmac", .data = &stm32mp15_dwmac_data},
+	{ .compatible = "st,stm32mp13-dwmac", .data = &stm32mp13_dwmac_data},
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, eqos_stm32_ids);

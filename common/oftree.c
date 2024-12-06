@@ -139,6 +139,27 @@ static int of_fixup_bootargs_bootsource(struct device_node *root,
 	return ret;
 }
 
+static int of_fixup_bootargs_reset_source(struct device_node *root,
+					  struct device_node *chosen)
+{
+	struct device_node *np;
+	struct device *dev;
+	char *name;
+
+	dev = reset_source_get_device();
+	if (!dev || !dev->of_node)
+		return 0;
+
+	name = of_get_reproducible_name(dev->of_node);
+	np = of_find_node_by_reproducible_name(root, name);
+	free(name);
+
+	if (!np)
+		return 0;
+
+	return of_property_write_string(chosen, "reset-source-device", np->full_name);
+}
+
 static void watchdog_build_bootargs(struct watchdog *watchdog, struct device_node *root)
 {
 	int alias_id;
@@ -200,7 +221,6 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	struct device_node *node;
 	int err;
 	int instance = reset_source_get_instance();
-	struct device *dev;
 	const char *serialno;
 	const char *compat;
 
@@ -227,17 +247,9 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 		of_property_write_u32(node, "reset-source-instance", instance);
 
 
-	dev = reset_source_get_device();
-	if (dev && dev->of_node) {
-		phandle phandle;
-
-		phandle = of_node_create_phandle(dev->of_node);
-
-		err = of_property_write_u32(node,
-					    "reset-source-device", phandle);
-		if (err)
-			return err;
-	}
+	err = of_fixup_bootargs_reset_source(root, node);
+	if (err)
+		return err;
 
 	err = of_fixup_bootargs_bootsource(root, node);
 	if (err)

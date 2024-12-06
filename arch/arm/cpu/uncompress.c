@@ -31,21 +31,6 @@ unsigned long free_mem_end_ptr;
 extern unsigned char input_data[];
 extern unsigned char input_data_end[];
 
-static void add_handoff_data(void *boarddata)
-{
-	if (!boarddata)
-		return;
-	if (blob_is_fdt(boarddata)) {
-		handoff_data_add(HANDOFF_DATA_INTERNAL_DT, boarddata,
-				 get_unaligned_be32(boarddata + 4));
-	} else if (blob_is_compressed_fdt(boarddata)) {
-		struct barebox_boarddata_compressed_dtb *bd = boarddata;
-
-		handoff_data_add(HANDOFF_DATA_INTERNAL_DT_Z, boarddata,
-				 bd->datalen + sizeof(*bd));
-	}
-}
-
 void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 				  void *boarddata)
 {
@@ -82,7 +67,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 		mmu_early_enable(membase, memsize);
 
 	/* Add handoff data now, so arm_mem_barebox_image takes it into account */
-	add_handoff_data(boarddata);
+	if (boarddata)
+		handoff_data_add_dt(boarddata);
 
 	barebox_base = arm_mem_barebox_image(membase, endmem,
 					     uncompressed_len, NULL);

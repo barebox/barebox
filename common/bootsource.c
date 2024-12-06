@@ -158,7 +158,7 @@ int bootsource_of_alias_xlate(enum bootsource src, int instance)
 	struct device_node *np;
 	int alias_id;
 
-	if (!IS_ENABLED(CONFIG_OFDEVICE))
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || IN_PBL)
 		return BOOTSOURCE_INSTANCE_UNKNOWN;
 
 	if (src == BOOTSOURCE_UNKNOWN ||

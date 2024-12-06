@@ -251,7 +251,7 @@ static char *raw_pointer(char *buf, const char *end, const void *ptr, int field_
 	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
 }
 
-#ifndef __PBL__
+#if IN_PROPER
 static char *symbol_string(char *buf, const char *end, const void *ptr, int field_width,
 			   int precision, int flags)
 {
@@ -727,7 +727,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 				continue;
 
 			case 's':
-				if (IS_ENABLED(CONFIG_PRINTF_WCHAR) && !IN_PBL && qualifier == 'l')
+				if (IS_ENABLED(CONFIG_PRINTF_WCHAR) && IN_PROPER && qualifier == 'l')
 					str = wstring(str, end, va_arg(args, wchar_t *),
 						      field_width, precision, flags);
 				else
@@ -932,6 +932,10 @@ int vasprintf(char **strp, const char *fmt, va_list ap)
 	unsigned int len;
 	va_list aq;
 	char *p;
+
+	/* Silence -Wmaybe-uninitialized false positive */
+	if (IN_PBL)
+		return -1;
 
 	va_copy(aq, ap);
 	len = vsnprintf(NULL, 0, fmt, aq);

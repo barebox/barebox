@@ -16,8 +16,8 @@ struct device;
 #define KERN_DEBUG      ""   /* debug-level messages                 */
 #define KERN_CONT       ""
 
-#if (!defined(__PBL__) && !defined(CONFIG_CONSOLE_NONE)) || \
-	(defined(__PBL__) && defined(CONFIG_PBL_CONSOLE))
+#if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \
+	(IN_PBL && defined(CONFIG_PBL_CONSOLE))
 int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
 #else
 static int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));

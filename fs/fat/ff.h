@@ -17,7 +17,7 @@
 #ifndef _FATFS
 #define _FATFS	8237	/* Revision ID */
 
-#ifndef __PBL__
+#if IN_PROPER
 
 #ifdef CONFIG_FS_FAT_LFN
 #define FS_FAT_LFN 1

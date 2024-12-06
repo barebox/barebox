@@ -4,7 +4,7 @@
 
 #include <common.h>
 
-#if defined CONFIG_ARCH_HAS_ZERO_PAGE && defined CONFIG_MMU && !defined __PBL__
+#if defined CONFIG_ARCH_HAS_ZERO_PAGE && defined CONFIG_MMU && IN_PROPER
 
 /*
  * zero_page_faulting - fault when accessing the zero page

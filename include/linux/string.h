@@ -153,7 +153,14 @@ static inline const char *kbasename(const char *path)
 }
 #endif
 
+#if IN_PROPER
 void *memdup(const void *, size_t);
+#else
+static inline void *memdup(const void *buf, size_t size)
+{
+	return NULL;
+}
+#endif
 
 #define memdup_array(arr, count) memdup(arr, array_size(count, sizeof(*arr)));
 

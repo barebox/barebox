@@ -13,7 +13,7 @@ obj-$(CONFIG_DIGEST_SHA256_GENERIC)	+= sha2.o
 pbl-y					+= sha2.o digest.o
 obj-$(CONFIG_DIGEST_SHA384_GENERIC)	+= sha4.o
 obj-$(CONFIG_DIGEST_SHA512_GENERIC)	+= sha4.o
-obj-y	+= memneq.o
+obj-pbl-y	+= memneq.o
 
 obj-$(CONFIG_CRYPTO_PBKDF2)	+= pbkdf2.o
 obj-$(CONFIG_CRYPTO_RSA)	+= rsa.o

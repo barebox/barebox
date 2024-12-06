@@ -32,13 +32,13 @@
 #define read_poll_timeout(op, val, cond, timeout_us, args...)	\
 ({ \
 	uint64_t start = 0; \
-	if (!IN_PBL && (timeout_us) != 0) \
+	if (IN_PROPER && (timeout_us) != 0) \
 		start = get_time_ns(); \
 	for (;;) { \
 		(val) = op(args); \
 		if (cond) \
 			break; \
-		if (!IN_PBL && (timeout_us) != 0 && \
+		if (IN_PROPER && (timeout_us) != 0 && \
 		    is_timeout(start, ((timeout_us) * USECOND))) { \
 			(val) = op(args); \
 			break; \

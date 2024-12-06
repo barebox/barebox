@@ -32,7 +32,14 @@ int copy_recursive(const char *src, const char *dst);
 
 int compare_file(const char *f1, const char *f2);
 
+#if IN_PROPER
 int open_and_lseek(const char *filename, int mode, loff_t pos);
+#else
+static inline int open_and_lseek(const char *filename, int mode, loff_t pos)
+{
+	return -ENOSYS;
+}
+#endif
 
 /* Create a directory and its parents */
 int make_directory(const char *pathname);

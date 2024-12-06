@@ -6,12 +6,6 @@
 #ifndef __PBL_H__
 #define __PBL_H__
 
-#ifdef __PBL__
-#define IN_PBL	1
-#else
-#define IN_PBL	0
-#endif
-
 #ifndef __ASSEMBLY__
 
 #include <linux/types.h>

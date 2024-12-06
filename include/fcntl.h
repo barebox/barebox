@@ -3,6 +3,7 @@
 #define __FCNTL_H
 
 #include <linux/types.h>
+#include <errno.h>
 
 #define AT_FDCWD		-100    /* Special value used to indicate
                                            openat should use the current
@@ -38,7 +39,14 @@
 
 #define O_TMPFILE       (__O_TMPFILE | O_DIRECTORY)
 
+#if IN_PROPER
 int openat(int dirfd, const char *pathname, int flags);
+#else
+static inline int openat(int dirfd, const char *pathname, int flags, ...)
+{
+        return -ENOSYS;
+}
+#endif
 
 static inline int open(const char *pathname, int flags, ...)
 {

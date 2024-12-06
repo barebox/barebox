@@ -257,7 +257,7 @@ const u32 *imx8m_get_bootrom_log(void)
 		return (u32 *)rom_log_addr;
 	}
 
-	if (!IN_PBL)
+	if (IN_PROPER)
 		return imx8m_scratch_get_bootrom_log();
 
 	return NULL;

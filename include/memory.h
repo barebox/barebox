@@ -63,8 +63,18 @@ static inline u64 memory_sdram_size(unsigned int cols,
 
 void register_barebox_area(resource_size_t start, resource_size_t size);
 
+#if IN_PROPER
 struct resource *request_barebox_region(const char *name,
 					resource_size_t start,
 					resource_size_t size);
+#else
+static inline struct resource *request_barebox_region(const char *name,
+					resource_size_t start,
+					resource_size_t size)
+{
+
+		return ERR_PTR(-ENOSYS);
+}
+#endif
 
 #endif

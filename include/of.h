@@ -131,7 +131,7 @@ struct cdev;
 /* Maximum score returned by of_device_is_compatible() */
 #define OF_DEVICE_COMPATIBLE_MAX_SCORE	(INT_MAX / 2)
 
-#ifdef CONFIG_OFTREE
+#if IS_ENABLED(CONFIG_OFTREE) && IN_PROPER
 extern struct device_node *of_read_file(const char *filename);
 extern struct of_reserve_map *of_get_reserve_map(void);
 extern int of_bus_n_addr_cells(struct device_node *np);

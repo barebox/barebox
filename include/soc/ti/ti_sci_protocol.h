@@ -3,7 +3,7 @@
  * Texas Instruments System Control Interface Protocol
  * Based on include/linux/soc/ti/ti_sci_protocol.h from Linux.
  *
- * Copyright (C) 2018 Texas Instruments Incorporated - http://www.ti.com/
+ * Copyright (C) 2018 Texas Instruments Incorporated - https://www.ti.com/
  *	Nishanth Menon
  *	Lokesh Vutla <lokeshvutla@ti.com>
  */
@@ -652,6 +652,42 @@ struct ti_sci_resource {
 	struct ti_sci_resource_desc *desc;
 };
 
+#if IS_ENABLED(CONFIG_TI_SCI_PROTOCOL)
+
+const struct ti_sci_handle *ti_sci_get_handle_from_sysfw(struct device *dev);
 const struct ti_sci_handle *ti_sci_get_handle(struct device *dev);
+const struct ti_sci_handle *ti_sci_get_by_phandle(struct device *dev,
+						  const char *property);
+struct ti_sci_resource *
+devm_ti_sci_get_of_resource(const struct ti_sci_handle *handle,
+			    struct device *dev, u32 dev_id, char *of_prop);
+#else	/* CONFIG_TI_SCI_PROTOCOL */
+
+static inline
+const struct ti_sci_handle *ti_sci_get_handle_from_sysfw(struct device *dev)
+{
+	return ERR_PTR(-EINVAL);
+}
+
+static inline const struct ti_sci_handle *ti_sci_get_handle(struct device *dev)
+{
+	return ERR_PTR(-EINVAL);
+}
+
+static inline
+const struct ti_sci_handle *ti_sci_get_by_phandle(struct device *dev,
+						  const char *property)
+{
+	return ERR_PTR(-EINVAL);
+}
+
+static inline struct ti_sci_resource *
+devm_ti_sci_get_of_resource(const struct ti_sci_handle *handle,
+			    struct device *dev, u32 dev_id, char *of_prop)
+{
+	return ERR_PTR(-EINVAL);
+}
+
+#endif	/* CONFIG_TI_SCI_PROTOCOL */
 
 #endif	/* __TISCI_PROTOCOL_H */

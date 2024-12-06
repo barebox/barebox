@@ -24,3 +24,4 @@ obj-$(CONFIG_ITCO_WDT) += itco_wdt.o
 obj-$(CONFIG_STARFIVE_WDT) += starfive_wdt.o
 obj-$(CONFIG_WDAT_WDT) += wdat_wdt.o
 obj-$(CONFIG_CADENCE_WATCHDOG) += cadence_wdt.o
+obj-$(CONFIG_K3_RTI_WDT) += rti_wdt.o

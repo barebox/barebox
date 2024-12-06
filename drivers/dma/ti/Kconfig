@@ -1,0 +1,6 @@
+config TI_K3_UDMA
+        tristate "Texas Instruments UDMA support"
+        depends on ARCH_K3 || COMPILE_TEST
+        help
+          Enable support for the TI UDMA (Unified DMA) controller. This
+          DMA engine is used in AM65x and j721e.

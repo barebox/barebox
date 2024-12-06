@@ -126,6 +126,13 @@ config SPI_SIFIVE
 	help
 	  This exposes the SPI controller IP from SiFive.
 
+config SPI_ROCKCHIP
+	tristate "Rockchip SPI controller driver"
+	depends on ARCH_ROCKCHIP || COMPILE_TEST
+	help
+	  This selects a driver for Rockchip SPI controller found on many Rockchip
+	  SoCs.
+
 endif
 
 endmenu

@@ -17,3 +17,4 @@ obj-$(CONFIG_SPI_ZYNQ_QSPI) += zynq_qspi.o
 obj-$(CONFIG_SPI_NXP_FLEXSPI) += spi-nxp-fspi.o
 obj-$(CONFIG_DRIVER_SPI_STM32) += stm32_spi.o
 obj-$(CONFIG_SPI_SIFIVE) += spi-sifive.o
+obj-$(CONFIG_SPI_ROCKCHIP) += spi-rockchip.o

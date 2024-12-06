@@ -9,6 +9,7 @@
 #include <mach/layerscape/layerscape.h>
 #include <of.h>
 #include <of_address.h>
+#include <asm/system.h>
 
 int __layerscape_soc_type;
 
@@ -151,6 +152,37 @@ static void layerscape_usb_enable_snooping(void)
 	}
 }
 
+#define SEC_JR3_OFFSET 0x40000
+
+static int layerscape_of_psci_do_fixup(struct device_node *root, void *unused)
+{
+	struct device_node *np;
+
+#ifdef CONFIG_CPU_V8
+	if (current_el() == 3)
+		return 0;
+#endif
+
+	for_each_compatible_node_from(np, root, NULL, "fsl,sec-v4.0-job-ring") {
+		const void *reg;
+		int na = of_n_addr_cells(np);
+		u64 offset;
+
+		reg = of_get_property(np, "reg", NULL);
+		if (!reg)
+			continue;
+
+		offset = of_read_number(reg, na);
+		if (offset != SEC_JR3_OFFSET)
+			continue;
+
+		of_delete_node(np);
+		break;
+	}
+
+	return 0;
+}
+
 static int ls1046a_init(void)
 {
 	if (!cpu_is_ls1046a())
@@ -160,6 +192,8 @@ static int ls1046a_init(void)
 	ls1046a_setup_icids();
 	layerscape_register_pbl_image_handler();
 	layerscape_usb_enable_snooping();
+
+	of_register_fixup(layerscape_of_psci_do_fixup, NULL);
 
 	return 0;
 }

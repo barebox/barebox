@@ -7,7 +7,6 @@ config SANDBOX
 	select OFTREE
 	select GPIOLIB
 	select ARCH_HAS_UBSAN_SANITIZE_ALL
-	select HAVE_ARCH_ASAN
 	select HAS_DMA
 	select BLOCK
 	select BLOCK_WRITE
@@ -20,6 +19,7 @@ config SANDBOX
 	select HAS_DEBUG_LL
 	select ARCH_DMA_DEFAULT_COHERENT
 	select ARCH_WANT_FRAME_POINTERS
+	select BAREBOX_CMDLINE
 	default y
 
 config ARCH_TEXT_BASE
@@ -43,6 +43,7 @@ config 64BIT
 	default CC_IS_64BIT
 	select ARCH_DMA_ADDR_T_64BIT
 	select PHYS_ADDR_T_64BIT
+	select ARCH_HAS_ASAN_FIBER_API if ASAN
 
 config 32BIT
 	def_bool !64BIT
@@ -56,6 +57,21 @@ config SANDBOX_REEXEC
 	help
 	  The normal reset handler hangs barebox. On Linux, barebox
 	  instead can exec itself to simulate a reset.
+
+config SANDBOX_SJLJ_ASM
+	bool "use setjmp/longjmp/initjmp implemented in assembly" if COMPILE_TEST
+	default y
+	help
+	  sandbox has a C implementation of initjmp, which can run afoul of code
+	  hardening measures like ASAN. The assembly version isn't immune to these
+	  issues, but it's easier to reason about than the sigaltstack hack.
+
+config CMD_SANDBOX_CPUINFO
+	bool "cpuinfo command"
+	depends on COMMAND_SUPPORT
+	default y
+	help
+	  Say yes here to get a dummy cpuinfo command.
 
 config SDL
 	bool

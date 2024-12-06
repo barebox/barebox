@@ -78,7 +78,7 @@ static void coroutine_trampoline(int signal)
 	coroutine_bootstrap(tr_state.entry);
 }
 
-int initjmp(_jmp_buf jmp, void (*func)(void), void *stack_top)
+int __attribute__((weak)) initjmp(_jmp_buf jmp, void (*func)(void), void *stack_top)
 {
 	struct sigaction sa;
 	struct sigaction osa;
@@ -169,12 +169,12 @@ int initjmp(_jmp_buf jmp, void (*func)(void), void *stack_top)
 	return 0;
 }
 
-int  __attribute__((returns_twice)) barebox_setjmp(_jmp_buf jmp)
+int __attribute__((weak,returns_twice)) barebox_setjmp(_jmp_buf jmp)
 {
 	return sigsetjmp(jmp, 0);
 }
 
-void __attribute((noreturn)) barebox_longjmp(_jmp_buf jmp, int ret)
+void __attribute__((weak,noreturn)) barebox_longjmp(_jmp_buf jmp, int ret)
 {
 	siglongjmp(jmp, ret);
 }

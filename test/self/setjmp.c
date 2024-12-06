@@ -14,6 +14,29 @@
 
 BSELFTEST_GLOBALS();
 
+static jmp_buf jbuf;
+
+static void test_setjmp_simple(void)
+{
+	total_tests++;
+
+	pr_debug("%s: saving jmp_buf\n", __func__);
+
+	switch (setjmp(jbuf)) {
+	case 0:
+		break;
+	case 42:
+		pr_debug("%s: returned from longjmp\n", __func__);
+		return;
+	default:
+		printf("%s: unexpected value from setjmp\n", __func__);
+		failed_tests++;
+	}
+
+	pr_debug("%s: attempting longjmp\n", __func__);
+	longjmp(jbuf, 42);
+}
+
 static __noreturn void raise_longjmp(jmp_buf jbuf, int i, int n)
 {
 	while (i < n)
@@ -22,28 +45,8 @@ static __noreturn void raise_longjmp(jmp_buf jbuf, int i, int n)
 	longjmp(jbuf, n);
 }
 
-static jmp_buf jbuf;
-
-static void __noreturn initjmp_entry(void)
+static void test_setjmp_loop(void)
 {
-	volatile u32 arr[256];
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(arr); i++)
-		writel(i, &arr[i]);
-
-	/* ensure arr[] is allocated on stack */
-	OPTIMIZER_HIDE_VAR(i);
-	if (i == 0)
-		initjmp_entry();
-
-	longjmp(jbuf, 0x1337);
-}
-
-static void test_setjmp(void)
-{
-	void *stack;
-	jmp_buf ijbuf;
 	volatile int i;
 	int ret;
 
@@ -71,6 +74,36 @@ static void test_setjmp(void)
 		failed_tests++;
 	}
 
+}
+
+static void *main_stack;
+static u32 main_stack_size;
+
+static void __noreturn initjmp_entry(void)
+{
+	volatile u32 arr[256];
+	int i;
+
+	finish_switch_fiber(NULL, &main_stack, &main_stack_size);
+
+	for (i = 0; i < ARRAY_SIZE(arr); i++)
+		writel(i, &arr[i]);
+
+	/* ensure arr[] is allocated on stack */
+	OPTIMIZER_HIDE_VAR(i);
+	if (i == 0)
+		initjmp_entry();
+
+	start_switch_fiber(NULL, main_stack, main_stack_size);
+	longjmp(jbuf, 0x1337);
+}
+
+static void test_initjmp(void)
+{
+	void *fake_stack_save = NULL;
+	void *stack;
+	jmp_buf ijbuf;
+
 	stack = memalign(16, CONFIG_STACK_SIZE);
 	if (WARN_ON(!stack)) {
 		skipped_tests++;
@@ -88,11 +121,21 @@ static void test_setjmp(void)
 	case 0x1337:
 		break;
 	case 0:
+		start_switch_fiber(&fake_stack_save, stack, CONFIG_STACK_SIZE);
 		longjmp(ijbuf, 0x42);
 	default:
 		failed_tests++;
 	}
 
+	finish_switch_fiber(fake_stack_save, &main_stack, &main_stack_size);
+
 	free(stack);
+}
+
+static void test_setjmp(void)
+{
+	test_setjmp_simple();
+	test_setjmp_loop();
+	test_initjmp();
 }
 bselftest(core, test_setjmp);

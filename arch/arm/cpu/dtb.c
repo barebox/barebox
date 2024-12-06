@@ -18,13 +18,12 @@ static int of_arm_init(void)
 
 	/* See if we are provided a dtb in boarddata */
 	fdt = barebox_arm_boot_dtb();
-	if (fdt)
-		pr_debug("using boarddata provided DTB\n");
-
 	if (!fdt) {
 		pr_debug("No DTB found\n");
 		return 0;
 	}
+
+	pr_debug("using boarddata provided DTB\n");
 
 	return barebox_register_fdt(fdt);
 }

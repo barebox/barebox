@@ -343,7 +343,7 @@ void am33xx_config_sdram(const struct am33xx_emif_regs *regs)
 
 void __noreturn am335x_barebox_entry(void *boarddata)
 {
-	barebox_arm_entry(0x80000000,
+	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START,
 			  emif4_sdram_size(IOMEM(AM33XX_EMIF4_BASE)), boarddata);
 }
 

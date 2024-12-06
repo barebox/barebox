@@ -3,6 +3,8 @@
 #ifndef _MACH_GENERIC_H
 #define _MACH_GENERIC_H
 
+#define OMAP_DRAM_ADDR_SPACE_START	0x80000000
+
 /* I2C controller revisions */
 #define OMAP_I2C_OMAP1_REV_2            0x20
 

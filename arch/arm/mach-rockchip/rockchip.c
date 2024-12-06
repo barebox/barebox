@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <common.h>
 #include <init.h>
+#include <asm/optee.h>
+#include <asm-generic/memory_layout.h>
 #include <mach/rockchip/rockchip.h>
+#include <mach/rockchip/bootrom.h>
 
 static int __rockchip_soc;
 
@@ -26,6 +29,19 @@ int rockchip_soc(void)
 
 static int rockchip_init(void)
 {
+	const struct optee_header *hdr = rk_scratch_get_optee_hdr();
+
+	if (IS_ENABLED(CONFIG_PBL_OPTEE) && optee_verify_header(hdr) == 0) {
+		static struct of_optee_fixup_data optee_fixup_data = {
+			.shm_size = OPTEE_SHM_SIZE,
+			.method = "smc",
+		};
+
+		optee_set_membase(hdr);
+		of_optee_fixup(of_get_root_node(), &optee_fixup_data);
+		of_register_fixup(of_optee_fixup, &optee_fixup_data);
+	}
+
 	switch (rockchip_soc()) {
 	case 3188:
 		return rk3188_init();

@@ -19,6 +19,7 @@
 #include <asm/armlinux.h>
 #include <asm/mach-types.h>
 #include <mach/omap/am33xx-silicon.h>
+#include <mach/omap/generic.h>
 #include <mach/omap/sys_info.h>
 #include <mach/omap/syslib.h>
 #include <mach/omap/gpmc.h>
@@ -49,7 +50,8 @@ static int beaglebone_mem_init(void)
 	else
 		sdram_size = SZ_256M;
 
-	arm_add_mem_device("ram0", 0x80000000, sdram_size);
+	arm_add_mem_device("ram0", OMAP_DRAM_ADDR_SPACE_START, sdram_size);
+
 	return 0;
 }
 mem_initcall(beaglebone_mem_init);

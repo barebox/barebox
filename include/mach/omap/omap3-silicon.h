@@ -125,9 +125,6 @@
 
 #define DEVICE_MASK		((0x1 << 8)|(0x1 << 9)|(0x1 << 10))
 
-#define OMAP_SDRC_CS0		0x80000000
-#define OMAP_SDRC_CS1		0xA0000000
-
 /* PRM */
 #define OMAP3_PRM_RSTCTRL_RESET	0x04
 

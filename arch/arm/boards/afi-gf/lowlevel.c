@@ -230,7 +230,7 @@ static noinline int gf_sram_init(void)
 	omap_debug_ll_init();
 	putc_ll('>');
 
-	barebox_arm_entry(0x80000000, SZ_256M, fdt);
+	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, SZ_256M, fdt);
 }
 
 ENTRY_FUNCTION(start_am33xx_afi_gf_sram, bootinfo, r1, r2)
@@ -255,5 +255,5 @@ ENTRY_FUNCTION(start_am33xx_afi_gf_sdram, r0, r1, r2)
 
 	putc_ll('>');
 
-	barebox_arm_entry(0x80000000, SZ_256M, fdt);
+	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, SZ_256M, fdt);
 }

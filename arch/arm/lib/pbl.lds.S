@@ -61,9 +61,6 @@ SECTIONS
 	BAREBOX_BARE_INIT_SIZE
 	BAREBOX_PBL_SIZE
 
-	. = ALIGN(4);
-	.rodata : { *(.rodata*) }
-
 	. = ALIGN(ASM_SZPTR);
 	__pbl_board_stack_top = .;
 	.rodata.pbl_board_stack_top : {
@@ -72,6 +69,9 @@ SECTIONS
 		ASM_LD_PTR(0x00000000)
 	}
 	ASSERT(. - __pbl_board_stack_top <= 2 * ASM_SZPTR, "Only One PBL per Image allowed")
+
+	. = ALIGN(4);
+	.rodata : { *(.rodata*) }
 
 	.barebox_imd : { BAREBOX_IMD }
 

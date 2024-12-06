@@ -152,7 +152,7 @@ static noinline void physom_board_init(void *fdt, int sdram, int module_family)
 				&timing->data);
 
 		/* Find the ram size and set up the correct ram timings */
-		ramsize = get_ram_size((long *) 0x80000000, SZ_1G);
+		ramsize = get_ram_size((long *)OMAP_DRAM_ADDR_SPACE_START, SZ_1G);
 		timing = get_timings_by_size(module_family, ramsize);
 		if (!timing)
 			hang();

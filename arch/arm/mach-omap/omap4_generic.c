@@ -380,8 +380,8 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 	reset_phy(OMAP44XX_EMIF1_BASE);
 	reset_phy(OMAP44XX_EMIF2_BASE);
 
-	writel(0, 0x80000000);
-	writel(0, 0x80000080);
+	writel(0, OMAP_DRAM_ADDR_SPACE_START);
+	writel(0, OMAP_DRAM_ADDR_SPACE_START);
 }
 
 void omap4_power_i2c_send(u32 r)

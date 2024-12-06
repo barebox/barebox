@@ -24,11 +24,16 @@ fw-external-$(CONFIG_FIRMWARE_IMX93_OPTEE) += imx93-bl32.bin \
 					      mx93a0-ahab-container.img \
 					      mx93a1-ahab-container.img
 pbl-firmware-$(CONFIG_ARCH_RK3568) += rk3568-bl31.bin
-pbl-firmware-$(CONFIG_ARCH_RK3568_OPTEE) += rk3568-op-tee.bin
 pbl-firmware-$(CONFIG_ARCH_RK3588) += rk3588-bl31.bin
-pbl-firmware-$(CONFIG_ARCH_RK3588_OPTEE) += rk3588-op-tee.bin
 pbl-firmware-$(CONFIG_ARCH_RK3399) += rk3399-bl31.bin
-pbl-firmware-$(CONFIG_ARCH_RK3399_OPTEE) += rk3399-op-tee.bin
+ifeq ($(CONFIG_ARCH_ROCKCHIP_OPTEE),y)
+# We install BL31 & BL32 while already running in DRAM,
+# so fw-external is not needed
+pbl-firmware-$(CONFIG_ARCH_RK3568) += rk3568-bl32.bin
+pbl-firmware-$(CONFIG_ARCH_RK3588) += rk3588-bl32.bin
+pbl-firmware-$(CONFIG_ARCH_RK3399) += rk3399-bl32.bin
+endif
+
 firmware-$(CONFIG_DRIVER_NET_FSL_FMAN) += fsl_fman_ucode_ls1046_r1.0_106_4_18.bin
 
 firmware-$(CONFIG_ARCH_LAYERSCAPE_PPA) += ppa-ls1046a.bin

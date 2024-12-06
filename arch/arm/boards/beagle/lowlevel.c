@@ -166,7 +166,7 @@ static noinline int beagle_board_init_sdram(void)
 {
 	handoff_add_arm_machine(MACH_TYPE_OMAP3_BEAGLE);
 
-	barebox_arm_entry(0x80000000, SZ_128M, NULL);
+	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, SZ_128M, NULL);
 }
 
 ENTRY_FUNCTION(start_omap3_beagleboard_sdram, bootinfo, r1, r2)
@@ -205,7 +205,7 @@ static noinline int beagle_board_init(void)
 
 	handoff_add_arm_machine(MACH_TYPE_OMAP3_BEAGLE);
 
-	barebox_arm_entry(0x80000000, SZ_128M, NULL);
+	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, SZ_128M, NULL);
 }
 
 ENTRY_FUNCTION(start_omap3_beagleboard_sram, bootinfo, r1, r2)

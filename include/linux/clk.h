@@ -13,6 +13,7 @@
 #include <linux/err.h>
 #include <linux/spinlock.h>
 #include <linux/stringify.h>
+#include <linux/string.h>
 #include <linux/container_of.h>
 #include <deep-probe.h>
 #include <xfuncs.h>
@@ -690,7 +691,8 @@ static inline struct clk_hw *clk_hw_register_gate(struct device *dev,
 						  u8 clk_gate_flags,
 						  spinlock_t *lock)
 {
-	return clk_to_clk_hw(clk_register_gate(dev, xstrdup(name), xstrdup(parent_name),
+	return clk_to_clk_hw(clk_register_gate(dev, xstrdup_const(name),
+					       xstrdup_const(parent_name),
 					       flags, reg, bit_idx,
 					       clk_gate_flags, lock));
 }

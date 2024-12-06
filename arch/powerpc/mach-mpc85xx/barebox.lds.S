@@ -68,6 +68,7 @@ SECTIONS
     PROVIDE (etext = .);
     _sdata = .;
 
+    __start_rodata = .;
    .barebox_imd : { BAREBOX_IMD }
 
    .rodata    :
@@ -79,6 +80,7 @@ SECTIONS
   /* Read-write section, merged into data segment: */
   . = (. + 0x00FF) & 0xFFFFFF00;
 
+  __end_rodata = .;
   _erotext = .;
   PROVIDE (erotext = .);
   .reloc   :

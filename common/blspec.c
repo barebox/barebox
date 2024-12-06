@@ -186,8 +186,8 @@ static void blspec_entry_free(struct bootentry *be)
 	struct blspec_entry *entry = container_of(be, struct blspec_entry, entry);
 
 	of_delete_node(entry->node);
-	free(entry->configpath);
-	free(entry->rootpath);
+	free_const(entry->configpath);
+	free_const(entry->rootpath);
 	free(entry);
 }
 
@@ -517,8 +517,8 @@ int blspec_scan_file(struct bootentries *bootentries, const char *root,
 		return PTR_ERR(entry);
 
 	root = root ?: get_mounted_path(configname);
-	entry->rootpath = xstrdup(root);
-	entry->configpath = xstrdup(configname);
+	entry->rootpath = xstrdup_const(root);
+	entry->configpath = xstrdup_const(configname);
 	entry->cdev = get_cdev_by_mountpath(root);
 
 	if (!entry_is_of_compatible(entry)) {

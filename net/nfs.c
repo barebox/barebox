@@ -147,7 +147,7 @@ static int	nfs_state;
 #define STATE_READLINK_REQ		7
 #define STATE_DONE			8
 
-static char *nfs_filename;
+static const char *nfs_filename;
 static char *nfs_path;
 static char nfs_path_buff[2048];
 
@@ -322,7 +322,7 @@ static void nfs_readlink_req(void)
 /**************************************************************************
 NFS_LOOKUP - Lookup Pathname
 **************************************************************************/
-static void nfs_lookup_req(char *fname)
+static void nfs_lookup_req(const char *fname)
 {
 	uint32_t data[1024];
 	uint32_t *p;
@@ -621,7 +621,7 @@ static void nfs_handler(void *ctx, char *packet, unsigned len)
 
 		debug("Symlink --> %s\n", nfs_path);
 
-		nfs_filename = basename(nfs_path);
+		nfs_filename = kbasename(nfs_path);
 		nfs_path     = dirname(nfs_path);
 
 		nfs_state = STATE_MOUNT_REQ;
@@ -664,7 +664,7 @@ static void nfs_start(char *p)
 
 	strcpy(nfs_path, p);
 
-	nfs_filename = basename (nfs_path);
+	nfs_filename = kbasename (nfs_path);
 	nfs_path     = dirname (nfs_path);
 
 	printf("\nFilename '%s/%s'.\n", nfs_path, nfs_filename);

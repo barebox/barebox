@@ -15,7 +15,7 @@ enum slice_action {
 struct slice {
 	int acquired;
 	struct list_head deps;
-	char *name;
+	const char *name;
 	struct list_head list;
 };
 

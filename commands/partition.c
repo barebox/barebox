@@ -27,7 +27,7 @@
 
 static int do_addpart(int argc, char *argv[])
 {
-	char *devname;
+	const char *devname;
 	loff_t devsize;
 	struct stat s;
 	int opt;
@@ -50,7 +50,7 @@ static int do_addpart(int argc, char *argv[])
 	}
 	devsize = s.st_size;
 
-	devname = basename(argv[optind]);
+	devname = kbasename(argv[optind]);
 
 	return cmdlinepart_do_parse(devname, argv[optind + 1], devsize, flags);
 }
@@ -84,7 +84,7 @@ static int do_delpart(int argc, char *argv[])
 	int i, err;
 
 	for (i = 1; i < argc; i++) {
-		err = devfs_del_partition(basename(argv[i]));
+		err = devfs_del_partition(kbasename(argv[i]));
 		if (err) {
 			printf("cannot delete %s: %s\n", argv[i], strerror(-err));
 			break;

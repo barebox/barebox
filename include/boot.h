@@ -29,7 +29,7 @@ struct bootentries {
 struct bootentry {
 	struct list_head list;
 	struct menu_entry me;
-	char *title;
+	const char *title;
 	char *description;
 	int (*boot)(struct bootentry *entry, int verbose, int dryrun);
 	void (*release)(struct bootentry *entry);

@@ -489,7 +489,7 @@ int eth_register(struct eth_device *edev)
 
 	if (IS_ENABLED(CONFIG_OFDEVICE) && edev->parent &&
 			edev->parent->of_node)
-		edev->nodepath = xstrdup(edev->parent->of_node->full_name);
+		edev->nodepath = xstrdup_const(edev->parent->of_node->full_name);
 
 	return 0;
 }
@@ -537,7 +537,7 @@ void eth_unregister(struct eth_device *edev)
 	}
 
 	if (IS_ENABLED(CONFIG_OFDEVICE))
-		free(edev->nodepath);
+		free_const(edev->nodepath);
 
 	class_remove_device(&eth_class, &edev->dev);
 

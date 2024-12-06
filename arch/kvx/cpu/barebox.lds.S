@@ -45,13 +45,16 @@ SECTIONS
 		KEEP(*(.exception.syscall));
 	}
 
+	__start_rodata = .;
+
 	.rodata ALIGN(8) : {
 		*(.rodata*)
 		. = ALIGN(8);
 		RO_DATA_SECTION
 	}
 
-	_etext = .; /* End of text and rodata section */
+	__end_rodata = .;
+	_etext = .;
 
 	.data ALIGN(4): {
 		sdata = .;

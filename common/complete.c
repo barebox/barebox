@@ -43,9 +43,9 @@ static int file_complete(struct string_list *sl, char *instr,
 	DIR *dir;
 	struct dirent *d;
 	char tmp[PATH_MAX];
-	char *base;
+	const char *base;
 
-	base = basename(instr);
+	base = kbasename(instr);
 	dirn = dirn ?: dirname(path);
 
 	dir = opendir(dirn);
@@ -236,12 +236,12 @@ EXPORT_SYMBOL(devicetree_alias_complete);
 int devicetree_nodepath_complete(struct string_list *sl, char *instr)
 {
 	struct device_node *node, *child;
-	char *dirn, *base;
+	const char *dirn, *base;
 	char *path = strdup(instr);
 
 	if (*instr == '/') {
 		dirn = dirname(path);
-		base = basename(instr);
+		base = kbasename(instr);
 		node = of_find_node_by_path(dirn);
 		if (!node)
 			goto out;

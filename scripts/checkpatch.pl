@@ -469,7 +469,7 @@ our $logFunctions = qr{(?x:
 our $allocFunctions = qr{(?x:
 	(?:(?:devm_)?
 		(?:kv|k|v)[czm]alloc(?:_node|_array)? |
-		kstrdup(?:_const)? |
+		[kx]?strdup(?:_const)? |
 		kmemdup(?:_nul)?) |
 	(?:\w+)?alloc_skb(?:ip_align)? |
 				# dev_alloc_skb/netdev_alloc_skb, et al

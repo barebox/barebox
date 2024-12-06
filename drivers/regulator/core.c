@@ -257,7 +257,7 @@ static int __regulator_register(struct regulator_dev *rdev, const char *name)
 	list_add_tail(&rdev->list, &regulator_list);
 
 	if (name)
-		rdev->name = xstrdup(name);
+		rdev->name = xstrdup_const(name);
 
 	ret = regulator_init_voltage(rdev);
 	if (ret)
@@ -276,7 +276,7 @@ static int __regulator_register(struct regulator_dev *rdev, const char *name)
 	return 0;
 err:
 	list_del(&rdev->list);
-	free((char *)rdev->name);
+	free_const(rdev->name);
 
 	return ret;
 }

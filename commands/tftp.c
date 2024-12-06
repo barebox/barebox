@@ -18,7 +18,8 @@
 
 static int do_tftpb(int argc, char *argv[])
 {
-	char *source, *dest, *freep;
+	const char *source, *dest;
+	char *freep;
 	int opt;
 	int tftp_push = 0;
 	int port = -1;
@@ -50,7 +51,7 @@ static int do_tftpb(int argc, char *argv[])
 	source = argv[optind++];
 
 	if (argc == optind)
-		dest = basename(source);
+		dest = kbasename(source);
 	else
 		dest = argv[optind];
 

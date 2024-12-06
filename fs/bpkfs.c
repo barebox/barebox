@@ -132,7 +132,7 @@ static int bpkfs_open(struct device *dev, FILE *f, const char *filename)
 	struct bpkfs_handle *priv = dev->priv;
 	struct bpkfs_handle_data *d;
 	struct bpkfs_handle_hw *h;
-	char *dir, *file;
+	const char *dir, *file;
 	int ret = -EINVAL;
 	char *tmp = xstrdup(filename);
 	char *tmp2 = xstrdup(filename);
@@ -146,7 +146,7 @@ static int bpkfs_open(struct device *dev, FILE *f, const char *filename)
 	if (!h)
 		goto out;
 
-	file = basename(tmp2);
+	file = kbasename(tmp2);
 	d = bpkfs_data_get_by_name(h, file);
 	if (!d)
 		goto out;
@@ -284,7 +284,7 @@ static int bpkfs_stat(struct device *dev, const char *filename,
 	struct bpkfs_handle *priv = dev->priv;
 	struct bpkfs_handle_data *d;
 	struct bpkfs_handle_hw *h;
-	char *dir, *file;
+	const char *dir, *file;
 	int ret = -EINVAL;
 	char *tmp = xstrdup(filename);
 	char *tmp2 = xstrdup(filename);
@@ -311,7 +311,7 @@ static int bpkfs_stat(struct device *dev, const char *filename,
 	if (!h)
 		goto out;
 
-	file = basename(tmp2);
+	file = kbasename(tmp2);
 	d = bpkfs_data_get_by_name(h, file);
 	if (!d)
 		goto out;

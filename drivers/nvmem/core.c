@@ -150,7 +150,7 @@ static struct nvmem_cell *nvmem_find_cell(const char *cell_id)
 static void nvmem_cell_drop(struct nvmem_cell *cell)
 {
 	list_del(&cell->node);
-	kfree(cell->id);
+	kfree_const(cell->id);
 	kfree(cell);
 }
 
@@ -841,7 +841,7 @@ int nvmem_cell_read_variable_le_u32(struct device *dev, const char *cell_id,
 				    u32 *val)
 {
 	size_t len;
-	const u8 *buf;
+	u8 *buf;
 	int i;
 
 	len = sizeof(*val);

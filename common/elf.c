@@ -340,7 +340,7 @@ void elf_close(struct elf_image *elf)
 
 	if (elf->filename) {
 		free(elf->hdr_buf);
-		free(elf->filename);
+		free_const(elf->filename);
 	}
 
 	free(elf);

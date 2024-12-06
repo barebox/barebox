@@ -251,7 +251,7 @@ static struct state_variable *state_enum32_create(struct state *state,
 		ret = of_property_read_string_index(node, "names", i, &name);
 		if (ret)
 			goto out;
-		enum32->names[i] = xstrdup(name);
+		enum32->names[i] = xstrdup_const(name);
 	}
 
 	param = dev_add_param_enum(&state->dev, name, state_set_dirty,
@@ -265,7 +265,7 @@ static struct state_variable *state_enum32_create(struct state *state,
 	return &enum32->var;
 out:
 	for (i--; i >= 0; i--)
-		free((char *)enum32->names[i]);
+		free_const(enum32->names[i]);
 	free(enum32->names);
 	free(enum32);
 	return ERR_PTR(ret);

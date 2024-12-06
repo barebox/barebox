@@ -62,7 +62,7 @@ int restart_handler_register_fn(const char *name,
 
 	rst = xzalloc(sizeof(*rst));
 
-	rst->name = xstrdup(name);
+	rst->name = xstrdup_const(name);
 	rst->restart = restart_fn;
 
 	ret = restart_handler_register(rst);

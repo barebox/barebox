@@ -34,11 +34,11 @@ void menu_free(struct menu *m)
 
 	if (!m)
 		return;
-	free(m->name);
+	free_const(m->name);
 	for (i = 0; i < m->display_lines; i++)
-		free(m->display[i]);
+		free_const(m->display[i]);
 	free(m->display);
-	free(m->auto_display);
+	free_const(m->auto_display);
 
 	list_for_each_entry_safe(me, tmp, &m->entries, list)
 		menu_entry_free(me);
@@ -98,7 +98,7 @@ void menu_remove_entry(struct menu *m, struct menu_entry *me)
 }
 EXPORT_SYMBOL(menu_remove_entry);
 
-struct menu* menu_get_by_name(char *name)
+struct menu* menu_get_by_name(const char *name)
 {
 	struct menu* m;
 
@@ -387,7 +387,7 @@ void menu_action_exit(struct menu *m, struct menu_entry *me) {}
 EXPORT_SYMBOL(menu_action_exit);
 
 struct submenu {
-	char *submenu;
+	const char *submenu;
 	struct menu_entry entry;
 };
 
@@ -410,12 +410,14 @@ static void submenu_free(struct menu_entry *me)
 {
 	struct submenu *s = container_of(me, struct submenu, entry);
 
-	free(s->entry.display);
-	free(s->submenu);
+	free_const(s->entry.display);
+	free_const(s->submenu);
 	free(s);
 }
 
-struct menu_entry *menu_add_submenu(struct menu *parent, char *submenu, char *display)
+struct menu_entry *menu_add_submenu(struct menu *parent,
+				    const char *submenu,
+				    const char *display)
 {
 	struct submenu *s = calloc(1, sizeof(*s));
 	int ret;
@@ -423,10 +425,10 @@ struct menu_entry *menu_add_submenu(struct menu *parent, char *submenu, char *di
 	if (!s)
 		return ERR_PTR(-ENOMEM);
 
-	s->submenu = strdup(submenu);
+	s->submenu = strdup_const(submenu);
 	s->entry.action = menu_action_show;
 	s->entry.free = submenu_free;
-	s->entry.display = strdup(display);
+	s->entry.display = strdup_const(display);
 	if (!s->entry.display || !s->submenu) {
 		ret = -ENOMEM;
 		goto err_free;
@@ -445,7 +447,7 @@ err_free:
 EXPORT_SYMBOL(menu_add_submenu);
 
 struct action_entry {
-	char *command;
+	const char *command;
 	struct menu_entry entry;
 };
 
@@ -469,14 +471,14 @@ static void menu_command_free(struct menu_entry *me)
 {
 	struct action_entry *e = container_of(me, struct action_entry, entry);
 
-	free(e->entry.display);
-	free(e->command);
+	free_const(e->entry.display);
+	free_const(e->command);
 
 	free(e);
 }
 
-struct menu_entry *menu_add_command_entry(struct menu *m, char *display,
-					  char *command, menu_entry_type type)
+struct menu_entry *menu_add_command_entry(struct menu *m, const  char *display,
+					  const char *command, menu_entry_type type)
 {
 	struct action_entry *e = calloc(1, sizeof(*e));
 	int ret;
@@ -484,11 +486,11 @@ struct menu_entry *menu_add_command_entry(struct menu *m, char *display,
 	if (!e)
 		return ERR_PTR(-ENOMEM);
 
-	e->command = strdup(command);
+	e->command = strdup_const(command);
 	e->entry.action = menu_action_command;
 	e->entry.free = menu_command_free;
 	e->entry.type = type;
-	e->entry.display = strdup(display);
+	e->entry.display = strdup_const(display);
 
 	if (!e->entry.display || !e->command) {
 		ret = -ENOMEM;
@@ -555,7 +557,7 @@ void menu_add_title(struct menu *m, const char *display)
 	m->display_lines = lines;
 
 	for (src = tmp, i = 0; i < lines; i++) {
-		m->display[i] = xstrdup(src);
+		m->display[i] = xstrdup_const(src);
 		/* Go to the next line */
 		src += strlen(src) + 1;
 	}

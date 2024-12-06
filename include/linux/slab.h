@@ -59,8 +59,10 @@ static inline void kmem_cache_destroy(struct kmem_cache *cache)
 
 static inline void kfree(const void *mem)
 {
-	dma_free((void *)mem);
+	dma_free_const(mem);
 }
+
+#define kfree_const(ptr) dma_free_const(ptr)
 
 static inline void kfree_sensitive(const void *objp)
 {
@@ -112,7 +114,6 @@ static inline char *kstrdup(const char *str, gfp_t flags)
 	return strdup(str);
 }
 
-#define kstrdup_const(str, flags) strdup(str)
-#define kfree_const(ptr) kfree((void *)ptr)
+#define kstrdup_const(str, flags) strdup_const(str)
 
 #endif /* _LINUX_SLAB_H */

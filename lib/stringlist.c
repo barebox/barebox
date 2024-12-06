@@ -21,7 +21,7 @@ int string_list_add(struct string_list *sl, const char *str)
 	struct string_list *new;
 
 	new = xmalloc(sizeof(*new));
-	new->str = xstrdup(str);
+	new->str = xstrdup_const(str);
 
 	list_add_tail(&new->list, &sl->list);
 
@@ -56,7 +56,7 @@ int string_list_add_sorted(struct string_list *sl, const char *str)
 	struct string_list *new;
 
 	new = xmalloc(sizeof(*new));
-	new->str = xstrdup(str);
+	new->str = xstrdup_const(str);
 
 	list_add_sort(&new->list, &sl->list, string_list_compare);
 
@@ -79,7 +79,7 @@ int string_list_add_sort_uniq(struct string_list *sl, const char *str)
 	}
 
 	new = xmalloc(sizeof(*new));
-	new->str = xstrdup(str);
+	new->str = xstrdup_const(str);
 
 	list_add_tail(&new->list, &entry->list);
 

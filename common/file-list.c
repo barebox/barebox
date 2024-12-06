@@ -27,7 +27,9 @@ struct file_list_entry *file_list_entry_by_name(struct file_list *files, const c
 	return NULL;
 }
 
-static int __file_list_add_entry(struct file_list *files, char *name, char *filename,
+static int __file_list_add_entry(struct file_list *files,
+				 const char *name,
+				 const char *filename,
 				 unsigned long flags)
 {
 	struct file_list_entry *entry;
@@ -50,13 +52,15 @@ static int __file_list_add_entry(struct file_list *files, char *name, char *file
 int file_list_add_entry(struct file_list *files, const char *name, const char *filename,
 			unsigned long flags)
 {
-	return __file_list_add_entry(files, xstrdup(name), xstrdup(filename), flags);
+	return __file_list_add_entry(files,
+				     xstrdup_const(name), xstrdup_const(filename),
+				     flags);
 }
 
 int file_list_add_cdev_entry(struct file_list *files, struct cdev *cdev,
 			     unsigned long flags)
 {
-	return __file_list_add_entry(files, xstrdup(cdev->name),
+	return __file_list_add_entry(files, xstrdup_const(cdev->name),
 				     xasprintf("/dev/%s", cdev->name), flags);
 }
 
@@ -227,8 +231,8 @@ void file_list_free(struct file_list *files)
 		return;
 
 	list_for_each_entry_safe(entry, tmp, &files->list, list) {
-		free(entry->name);
-		free(entry->filename);
+		free_const(entry->name);
+		free_const(entry->filename);
 		free(entry);
 	}
 

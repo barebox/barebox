@@ -198,7 +198,7 @@ static LIST_HEAD(slices);
 void slice_init(struct slice *slice, const char *name)
 {
 	INIT_LIST_HEAD(&slice->deps);
-	slice->name = xstrdup(name);
+	slice->name = xstrdup_const(name);
 	list_add_tail(&slice->list, &slices);
 }
 
@@ -229,7 +229,7 @@ void slice_exit(struct slice *slice)
 		}
 	}
 
-	free(slice->name);
+	free_const(slice->name);
 }
 
 struct slice command_slice;

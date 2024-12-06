@@ -97,7 +97,7 @@ struct state_backend_storage {
 	uint32_t stridesize;
 	off_t offset;
 	size_t max_size;
-	char *path;
+	const char *path;
 
 	bool readonly;
 };

@@ -62,6 +62,7 @@ SECTIONS
 	BAREBOX_PBL_SIZE
 
 	. = ALIGN(ASM_SZPTR);
+	__start_rodata = .;
 	__pbl_board_stack_top = .;
 	.rodata.pbl_board_stack_top : {
 		*(.pbl_board_stack_top_*)
@@ -76,7 +77,8 @@ SECTIONS
 	.barebox_imd : { BAREBOX_IMD }
 
 	. = ALIGN(PBL_SEGMENT_ALIGN);
-	_etext = .;			/* End of text and rodata section */
+	__end_rodata = .;
+	_etext = .;
 	_sdata = .;
 
 	. = ALIGN(4);

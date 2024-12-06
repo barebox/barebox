@@ -13,8 +13,8 @@ struct cdev;
 #define FILE_LIST_FLAG_OPTIONAL (1 << 4)
 
 struct file_list_entry {
-	char *name;
-	char *filename;
+	const char *name;
+	const char *filename;
 	unsigned long flags;
 	struct list_head list;
 };

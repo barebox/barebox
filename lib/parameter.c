@@ -153,7 +153,7 @@ static int __dev_add_param(struct param_d *param, struct device *dev,
 	if (get_param_by_name(dev, name))
 		return -EEXIST;
 
-	param->name = strdup(name);
+	param->name = strdup_const(name);
 	if (!param->name)
 		return -ENOMEM;
 
@@ -1014,7 +1014,7 @@ void dev_remove_param(struct param_d *p)
 {
 	p->set(p->dev, p, NULL);
 	list_del(&p->list);
-	free(p->name);
+	free_const(p->name);
 	free(p);
 }
 
@@ -1030,7 +1030,7 @@ void dev_remove_parameters(struct device *dev)
 	list_for_each_entry_safe(p, n, &dev->parameters, list) {
 		p->set(dev, p, NULL);
 		list_del(&p->list);
-		free(p->name);
+		free_const(p->name);
 		free(p);
 	}
 }

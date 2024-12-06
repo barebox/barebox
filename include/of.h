@@ -20,7 +20,7 @@
 typedef u32 phandle;
 
 struct property {
-	char *name;
+	const char *name;
 	int length;
 	void *value;
 	const void *value_const;
@@ -28,7 +28,7 @@ struct property {
 };
 
 struct device_node {
-	char *name;
+	const char *name;
 	char *full_name;
 
 	struct list_head properties;
@@ -1340,7 +1340,7 @@ static inline struct device_node *of_find_root_node(struct device_node *node)
 struct of_overlay_filter {
 	bool (*filter_filename)(struct of_overlay_filter *, const char *filename);
 	bool (*filter_content)(struct of_overlay_filter *, struct device_node *);
-	char *name;
+	const char *name;
 	struct list_head list;
 };
 

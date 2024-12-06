@@ -10,8 +10,8 @@ struct blspec_entry {
 
 	struct device_node *node;
 	struct cdev *cdev;
-	char *rootpath;
-	char *configpath;
+	const char *rootpath;
+	const char *configpath;
 };
 
 int blspec_entry_var_set(struct blspec_entry *entry, const char *name,

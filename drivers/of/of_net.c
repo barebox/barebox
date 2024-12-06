@@ -82,7 +82,7 @@ static int of_get_mac_addr(struct device_node *np, const char *name, u8 *addr)
 int of_get_mac_addr_nvmem(struct device_node *np, u8 *addr)
 {
 	struct nvmem_cell *cell;
-	const void *mac;
+	void *mac;
 	size_t len;
 
 	if (!IS_ENABLED(CONFIG_NVMEM))

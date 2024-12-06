@@ -7,7 +7,7 @@
 
 struct string_list {
 	struct list_head list;
-	char *str;
+	const char *str;
 };
 
 int string_list_add(struct string_list *sl, const char *str);
@@ -29,7 +29,7 @@ static inline void string_list_free(struct string_list *sl)
 	struct string_list *entry, *safe;
 
 	list_for_each_entry_safe(entry, safe, &sl->list, list) {
-		free(entry->str);
+		free_const(entry->str);
 		free(entry);
 	}
 }

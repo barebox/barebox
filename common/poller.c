@@ -33,7 +33,7 @@ int poller_register(struct poller_struct *poller, const char *name)
 	if (poller->registered)
 		return -EBUSY;
 
-	poller->name = xstrdup(name);
+	poller->name = xstrdup_const(name);
 	list_add_tail(&poller->list, &poller_list);
 	poller->registered = 1;
 
@@ -48,7 +48,7 @@ int poller_unregister(struct poller_struct *poller)
 
 	list_del(&poller->list);
 	poller->registered = 0;
-	free(poller->name);
+	free_const(poller->name);
 
 	return 0;
 }

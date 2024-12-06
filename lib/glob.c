@@ -77,8 +77,7 @@ static int collated_compare(const void *a, const void *b)
 int glob(const char *pattern, int flags,
 		int (*errfunc) (const char *, int), glob_t *pglob)
 {
-	const char *filename;
-	char *dirname = NULL;
+	const char *filename, *dirname = NULL;
 	size_t dirlen;
 	int status;
 	int oldcount;
@@ -92,19 +91,23 @@ int glob(const char *pattern, int flags,
 	filename = strrchr(pattern, '/');
 	if (filename == NULL) {
 		filename = pattern;
-		dirname = strdup(".");
+		dirname = strdup_const(".");
 		dirlen = 0;
 	} else if (filename == pattern) {
 		/* "/pattern".  */
-		dirname = strdup("/");
+		dirname = strdup_const("/");
 		dirlen = 1;
 		++filename;
 	} else {
+		char *buf;
+
 		dirlen = filename - pattern;
-		dirname = (char *)xmalloc(dirlen + 1);
-		memcpy(dirname, pattern, dirlen);
-		dirname[dirlen] = '\0';
+		buf = (char *)xmalloc(dirlen + 1);
+		memcpy(buf, pattern, dirlen);
+		buf[dirlen] = '\0';
 		++filename;
+
+		dirname = buf;
 	}
 
 	if (filename[0] == '\0' && dirlen > 1) {
@@ -231,7 +234,7 @@ int glob(const char *pattern, int flags,
 #endif
 	status = 0;
 out:
-	free(dirname);
+	free_const(dirname);
 
 	return status;
 }

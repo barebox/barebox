@@ -10,8 +10,8 @@
 static LIST_HEAD(magicvars);
 
 struct magicvar_dyn {
-	char *name;
-	char *description;
+	const char *name;
+	const char *description;
 	struct list_head list;
 };
 
@@ -39,8 +39,8 @@ static struct magicvar_dyn *magicvar_find(const char *name)
 
 static void magicvar_remove(struct magicvar_dyn *md)
 {
-	free(md->name);
-	free(md->description);
+	free_const(md->name);
+	free_const(md->description);
 	list_del(&md->list);
 	free(md);
 }
@@ -62,8 +62,8 @@ static int magicvar_add(const char *name, const char *description)
 		magicvar_remove(md);
 
 	md = xzalloc(sizeof(*md));
-	md->name = xstrdup(name);
-	md->description = xstrdup(description);
+	md->name = xstrdup_const(name);
+	md->description = xstrdup_const(description);
 
 	list_add_sort(&md->list, &magicvars, compare);
 

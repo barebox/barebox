@@ -64,7 +64,7 @@ struct bootchooser_target {
 	int id;
 
 	/* spec */
-	char *name;
+	const char *name;
 	unsigned int default_attempts;
 	unsigned int default_priority;
 
@@ -228,7 +228,7 @@ static struct bootchooser_target *bootchooser_target_new(struct bootchooser *bc,
 	const char *val;
 	int ret;
 
-	target->name = xstrdup(name);
+	target->name = xstrdup_const(name);
 	target->prefix = basprintf("%s.%s", BOOTCHOOSER_PREFIX, name);
 	target->state_prefix = basprintf("%s.%s", bc->state_prefix, name);
 	target->default_attempts = global_default_attempts;
@@ -574,7 +574,7 @@ int bootchooser_put(struct bootchooser *bc)
 		free(target->boot);
 		free(target->prefix);
 		free(target->state_prefix);
-		free(target->name);
+		free_const(target->name);
 		free(target);
 	}
 

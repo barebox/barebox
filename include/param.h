@@ -32,7 +32,7 @@ struct param_d {
 	int (*set)(struct device *, struct param_d *param, const char *val);
 	void (*info)(struct param_d *param);
 	unsigned int flags;
-	char *name;
+	const char *name;
 	char *value;
 	struct device *dev;
 	void *driver_priv;

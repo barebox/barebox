@@ -18,7 +18,7 @@ typedef enum {
 
 struct menu_entry {
 	int num;
-	char *display;
+	const char *display;
 	void (*action)(struct menu *m, struct menu_entry *me);
 	void (*free)(struct menu_entry *me);
 	int non_re_ent;
@@ -33,14 +33,14 @@ struct menu_entry {
 };
 
 struct menu {
-	char *name;
+	const char *name;
 	/* Multiline title */
-	char **display;
+	const char **display;
 	/* Number of lines */
 	int display_lines;
 
 	int auto_select;
-	char *auto_display;
+	const char *auto_display;
 
 	struct list_head list;
 	struct list_head entries;
@@ -66,13 +66,17 @@ static inline struct menu* menu_alloc(void)
 	}
 	return m;
 }
-struct menu_entry *menu_add_submenu(struct menu *parent, char *submenu, char *display);
-struct menu_entry *menu_add_command_entry(struct menu *m, char *display,
-					  char *command, menu_entry_type type);
+struct menu_entry *menu_add_submenu(struct menu *parent,
+				    const char *submenu,
+				    const char *display);
+struct menu_entry *menu_add_command_entry(struct menu *m,
+					  const char *display,
+					  const char *command,
+					  menu_entry_type type);
 void menu_free(struct menu *m);
 int menu_add(struct menu* m);
 void menu_remove(struct menu *m);
-struct menu* menu_get_by_name(char *name);
+struct menu* menu_get_by_name(const char *name);
 int menu_show(struct menu *m);
 int menu_set_selected_entry(struct menu *m, struct menu_entry* me);
 int menu_set_selected(struct menu *m, int num);

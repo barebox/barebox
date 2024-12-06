@@ -89,6 +89,17 @@ config WATCHDOG_KVX
 	help
 	  Add support for the KVX core watchdog.
 
+config WATCHDOG_KVX_EARLY_INIT
+	bool "KVX Core watchdog early init"
+	depends on WATCHDOG_KVX
+	help
+	  Activate the watchdog with early initcall
+
+config WATCHDOG_KVX_EARLY_TIMEOUT
+	int "KVX Core watchdog early timeout in cycles"
+	depends on WATCHDOG_KVX_EARLY_INIT
+	default 100000000
+
 config WATCHDOG_BCM2835
 	bool "Watchdog for BCM283x SoCs"
 	depends on ARCH_BCM283X || COMPILE_TEST

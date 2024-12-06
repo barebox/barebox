@@ -91,3 +91,19 @@ static struct driver kvx_wdt_driver = {
 	.of_compatible	= DRV_OF_COMPAT(kvx_wdt_of_match),
 };
 device_platform_driver(kvx_wdt_driver);
+
+#ifdef CONFIG_WATCHDOG_KVX_EARLY_INIT
+static int kvx_wdt_early_init(void)
+{
+	/* Set Start watchdog counting */
+	kvx_sfr_set(WDV, CONFIG_WATCHDOG_KVX_EARLY_TIMEOUT);
+	kvx_sfr_set(WDR, 0);
+
+	/* Start watchdog counting */
+	kvx_sfr_set_field(TCR, WUI, 1);
+	kvx_sfr_set_field(TCR, WCE, 1);
+
+	return 0;
+}
+core_initcall(kvx_wdt_early_init);
+#endif

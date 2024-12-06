@@ -23,15 +23,8 @@
 	};
 };
 
-/*
- * The DSP reserved memory will collide with the Barebox malloc area for some
- * DRAM sizes, even though the DSP itself is disabled in most configurations.
- */
-/delete-node/ &dsp_reserved;
 &dsp {
 	barebox,feature-gates = <&feat IMX8M_FEAT_DSP>;
-	/delete-property/ memory-region;
-	status = "disabled";
 };
 
 &edacmc {

@@ -173,13 +173,12 @@ static int imx_romapi_boot_device_seekable(struct rom_api *rom_api)
 	return seekable;
 }
 
-int imx93_romapi_load_image(void)
+int imx93_romapi_load_image(void *adr)
 {
 	struct rom_api *rom_api = (void *)0x1980;
 	int ret;
 	int seekable;
 	uint32_t offset, image_offset;
-	void *bl33 = (void *)MX93_ATF_BL33_BASE_ADDR;
 	struct flash_header_v3 *fh;
 
 	OPTIMIZER_HIDE_VAR(rom_api);
@@ -190,7 +189,7 @@ int imx93_romapi_load_image(void)
 
 	if (!seekable) {
 		int align_size = ALIGN(barebox_pbl_size, 1024) - barebox_pbl_size;
-		void *pbl_size_aligned = bl33 + ALIGN(barebox_pbl_size, 1024);
+		void *pbl_size_aligned = adr + ALIGN(barebox_pbl_size, 1024);
 
 		/*
 		 * The USB protocol uploads in chunks of 1024 bytes. This means
@@ -209,11 +208,11 @@ int imx93_romapi_load_image(void)
 
 	pr_debug("%s: IVT offset on boot device: 0x%08x\n", __func__, offset);
 
-	ret = imx_romapi_load_seekable(rom_api, bl33, offset, 4096);
+	ret = imx_romapi_load_seekable(rom_api, adr, offset, 4096);
 	if (ret)
 		return ret;
 
-	fh = bl33;
+	fh = adr;
 
 	if (fh->tag != 0x87) {
 		pr_err("Invalid IVT header: 0x%02x, expected 0x87\n", fh->tag);
@@ -228,7 +227,7 @@ int imx93_romapi_load_image(void)
 	 * We assume the first image in the first container is the barebox image,
 	 * which is what the imx9image call in images/Makefile.imx generates.
 	 */
-	ret = imx_romapi_load_seekable(rom_api, bl33, offset + image_offset, barebox_image_size);
+	ret = imx_romapi_load_seekable(rom_api, adr, offset + image_offset, barebox_image_size);
 	if (ret)
 		return ret;
 

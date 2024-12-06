@@ -19,7 +19,7 @@
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";
-			device-path = &usdhc3, "partname:2";
+			device-path = &usdhc3, "partname:barebox-environment";
 			status = "disabled";
 		};
 

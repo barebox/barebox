@@ -70,6 +70,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_elf] = { "ELF", "elf" },
 	[filetype_imx_image_v1] = { "i.MX image (v1)", "imx-image-v1" },
 	[filetype_imx_image_v2] = { "i.MX image (v2)", "imx-image-v2" },
+	[filetype_imx_image_v3] = { "i.MX image (v3)", "imx-image-v3" },
 	[filetype_layerscape_image] = { "Layerscape image", "layerscape-PBL" },
 	[filetype_layerscape_qspi_image] = { "Layerscape QSPI image", "layerscape-qspi-PBL" },
 	[filetype_nxp_fspi_image] = { "NXP FlexSPI image", "nxp-fspi-image" },
@@ -431,6 +432,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (buf[8] == 0xAA995566 && buf[9] == 0x584C4E58)
 		return filetype_zynq_image;
+
+	if (buf8[0] == 0x0 && buf8[3] == 0x87)
+		return filetype_imx_image_v3;
 
 	return filetype_unknown;
 }

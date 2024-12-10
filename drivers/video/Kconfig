@@ -68,14 +68,6 @@ config DRIVER_VIDEO_STM32_LTDC
 	  Say 'Y' here to enable framebuffer and splash screen support for
 	  STM32 and STM32MP1.
 
-config DRIVER_VIDEO_OMAP
-	bool "OMAP framebuffer driver"
-	depends on ARCH_OMAP4 || COMPILE_TEST
-	help
-	  Add support for OMAP Display Controller. Currently this
-	  driver only supports OMAP4 SoCs in DISPC parallel mode on
-	  LCD2 (MIPI DPI).
-
 config DRIVER_VIDEO_SDL
 	bool "SDL framebuffer driver"
 	depends on SANDBOX

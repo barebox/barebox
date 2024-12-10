@@ -21,7 +21,8 @@ static int pfc200_mem_init(void)
 	if (!of_machine_is_compatible("ti,pfc200"))
 		return 0;
 
-	arm_add_mem_device("ram0", 0x80000000, SZ_256M);
+	arm_add_mem_device("ram0", OMAP_DRAM_ADDR_SPACE_START, SZ_256M);
+
 	return 0;
 }
 mem_initcall(pfc200_mem_init);

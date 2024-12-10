@@ -202,7 +202,7 @@ static noinline void pfc200_board_init(void)
 	if (!in_sdram)
 		am35xx_emif4_init(IOMEM(OMAP3_SDRC_BASE));
 
-	barebox_arm_entry(0x80000000, SZ_256M, NULL);
+	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, SZ_256M, NULL);
 }
 
 ENTRY_FUNCTION(start_am35xx_pfc_750_820x_sram, bootinfo, r1, r2)
@@ -227,5 +227,5 @@ ENTRY_FUNCTION(start_am35xx_pfc_750_820x_sdram, r0, r1, r2)
 
 	fdt += get_runtime_offset();
 
-	barebox_arm_entry(0x80000000, SZ_256M, fdt);
+	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, SZ_256M, fdt);
 }

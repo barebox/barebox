@@ -366,6 +366,9 @@ void mipi_dbi_fb_flush(struct fb_info *info)
 		dbidev->damage.y2 = info->yres;
 	}
 
+	if (!info->enabled)
+		return;
+
 	mipi_dbi_fb_dirty(dbidev, info, &dbidev->damage);
 }
 EXPORT_SYMBOL(mipi_dbi_fb_flush);

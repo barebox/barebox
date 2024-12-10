@@ -425,6 +425,8 @@
 	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
 	bus-width = <8>;
+	no-sd;
+	no-sdio;
 	non-removable;
 	status = "okay";
 };

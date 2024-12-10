@@ -38,7 +38,7 @@ enum boot_dev_type_e {
 /* Below functions only load and don't start the image */
 int imx8mp_romapi_load_image(void *bl33);
 int imx8mn_romapi_load_image(void *bl33);
-int imx93_romapi_load_image(void);
+int imx93_romapi_load_image(void *adr);
 
 /* only call after DRAM has been configured */
 void imx8m_save_bootrom_log(void);

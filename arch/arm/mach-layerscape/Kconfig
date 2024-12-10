@@ -2,18 +2,6 @@
 
 if ARCH_LAYERSCAPE
 
-config ARCH_LAYERSCAPE_PPA
-	bool "Include PPA firmware"
-	select ARM_PSCI_OF
-	select ARM_SMCCC
-	select FITIMAGE
-	help
-	  The "Primary Protected Application" (PPA) is a PSCI compliant firmware
-	  distributed by NXP. It is needed to start the secondary cores on
-	  Layerscape SoCs. Without it Linux will be started in EL3 and doesn't
-	  work properly. The precompiled firmware images can be found here:
-	  https://github.com/NXP/qoriq-ppa-binary
-
 config ARCH_LS1028
 	bool
 	select CPU_V8
@@ -24,6 +12,7 @@ config ARCH_LS1028
 config ARCH_LS1046
 	bool
 	select CPU_V8
+	select ARM_ATF
 	select SYS_SUPPORTS_64BIT_KERNEL
 
 if 64BIT
@@ -47,6 +36,7 @@ config MACH_TQMLS1046A
 	select MCI_IMX_ESDHC_PBL
 	select DDR_FSL
 	select DDR_FSL_DDR4
+	select FIRMWARE_LS1046A_ATF
 
 endif
 

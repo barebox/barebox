@@ -37,12 +37,21 @@ Flashing to the eMMC is possible likewise::
   In such a case, using eMMC and SD-Card at the same time is not possible.
   Boot from QSPI to flash the eMMC.
 
+Get and Build the Trusted Firmware A
+------------------------------------
+
+Get TF-A from https://github.com/ARM-software/arm-trusted-firmware.git and build with::
+
+  make PLAT=ls1046ardb
+  cp build/ls1046ardb/release/bl31.bin ${barebox_srctree}/firmware/ls1046a-bl31.bin
+
+Although the binary is for a specific board (LS1046A-RDB) it should work on any other
+board as well.
+
 Firmware Blobs
 --------------
 
 Network: `fsl_fman_ucode_ls1046_r1.0_106_4_18.bin <https://github.com/NXP/qoriq-fm-ucode/raw/integration/fsl_fman_ucode_ls1046_r1.0_106_4_18.bin>`_.
-
-PSCI Firmware: `ppa-ls1046a.bin <https://github.com/NXP/qoriq-ppa-binary/raw/integration/soc-ls1046/ppa.itb>`_.
 
 Layerscape boards
 -----------------

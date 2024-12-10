@@ -10,6 +10,127 @@ config BUG_ON_DATA_CORRUPTION
 
 	  If unsure, say N.
 
+menu "Memory initialization"
+
+config CC_HAS_AUTO_VAR_INIT_PATTERN
+	def_bool $(cc-option,-ftrivial-auto-var-init=pattern)
+
+config CC_HAS_AUTO_VAR_INIT_ZERO_BARE
+	def_bool $(cc-option,-ftrivial-auto-var-init=zero)
+
+config CC_HAS_AUTO_VAR_INIT_ZERO_ENABLER
+	# Clang 16 and later warn about using the -enable flag, but it
+	# is required before then.
+	def_bool $(cc-option,-ftrivial-auto-var-init=zero -enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang)
+	depends on !CC_HAS_AUTO_VAR_INIT_ZERO_BARE
+
+config CC_HAS_AUTO_VAR_INIT_ZERO
+	def_bool CC_HAS_AUTO_VAR_INIT_ZERO_BARE || CC_HAS_AUTO_VAR_INIT_ZERO_ENABLER
+
+choice
+	prompt "Initialize barebox stack variables at function entry"
+	default INIT_STACK_ALL_PATTERN if COMPILE_TEST && CC_HAS_AUTO_VAR_INIT_PATTERN
+	default INIT_STACK_ALL_ZERO if CC_HAS_AUTO_VAR_INIT_ZERO
+	default INIT_STACK_NONE
+	help
+	  This option enables initialization of stack variables at
+	  function entry time. This has the possibility to have the
+	  greatest coverage (since all functions can have their
+	  variables initialized), but the performance impact depends
+	  on the function calling complexity of a given workload's
+	  syscalls.
+
+	  This chooses the level of coverage over classes of potentially
+	  uninitialized variables. The selected class of variable will be
+	  initialized before use in a function.
+
+	config INIT_STACK_NONE
+		bool "no automatic stack variable initialization (weakest)"
+		help
+		  Disable automatic stack variable initialization.
+		  This leaves barebox vulnerable to the standard
+		  classes of uninitialized stack variable exploits
+		  and information exposures.
+
+	config INIT_STACK_ALL_PATTERN
+		bool "pattern-init everything (strongest)"
+		depends on CC_HAS_AUTO_VAR_INIT_PATTERN
+		help
+		  Initializes everything on the stack (including padding)
+		  with a specific debug value. This is intended to eliminate
+		  all classes of uninitialized stack variable exploits and
+		  information exposures, even variables that were warned about
+		  having been left uninitialized.
+
+		  Pattern initialization is known to provoke many existing bugs
+		  related to uninitialized locals, e.g. pointers receive
+		  non-NULL values, buffer sizes and indices are very big. The
+		  pattern is situation-specific; Clang on 64-bit uses 0xAA
+		  repeating for all types and padding except float and double
+		  which use 0xFF repeating (-NaN). Clang on 32-bit uses 0xFF
+		  repeating for all types and padding.
+
+	config INIT_STACK_ALL_ZERO
+		bool "zero-init everything (strongest and safest)"
+		depends on CC_HAS_AUTO_VAR_INIT_ZERO
+		help
+		  Initializes everything on the stack (including padding)
+		  with a zero value. This is intended to eliminate all
+		  classes of uninitialized stack variable exploits and
+		  information exposures, even variables that were warned
+		  about having been left uninitialized.
+
+		  Zero initialization provides safe defaults for strings
+		  (immediately NUL-terminated), pointers (NULL), indices
+		  (index 0), and sizes (0 length), so it is therefore more
+		  suitable as a production security mitigation than pattern
+		  initialization.
+
+endchoice
+
+config INIT_ON_ALLOC_DEFAULT_ON
+	bool "Enable heap memory zeroing on allocation by default"
+	depends on !MALLOC_LIBC
+	help
+	  When this is enabled, all allocator memory will be zeroed
+	  when allocated, eliminating many kinds of "uninitialized
+	  heap memory" flaws, especially heap content exposures.
+
+config INIT_ON_FREE_DEFAULT_ON
+	bool "Enable heap memory zeroing on free by default"
+	depends on !MALLOC_DUMMY && !MALLOC_LIBC
+	help
+	  When this is enabled, all allocator memory will be zeroed
+	  when freed, eliminating many kinds of "uninitialized heap memory"
+	  flaws, especially heap content exposures. The primary difference
+	  is that data lifetime in memory is reduced, as anything freed is
+	  wiped immediately, making live forensics or cold boot memory
+	  attacks unable to recover freed memory contents.
+
+config CC_HAS_ZERO_CALL_USED_REGS
+	def_bool $(cc-option,-fzero-call-used-regs=used-gpr)
+	# https://github.com/ClangBuiltLinux/linux/issues/1766
+	# https://github.com/llvm/llvm-project/issues/59242
+	depends on !CC_IS_CLANG || CLANG_VERSION > 150006
+
+config ZERO_CALL_USED_REGS
+	bool "Enable register zeroing on function exit"
+	depends on CC_HAS_ZERO_CALL_USED_REGS
+	help
+	  At the end of functions, always zero any caller-used register
+	  contents. This helps ensure that temporary values are not
+	  leaked beyond the function boundary. This means that register
+	  contents are less likely to be available for side channels
+	  and information exposures. Additionally, this helps reduce the
+	  number of useful ROP gadgets by about 20% (and removes compiler
+	  generated "write-what-where" gadgets) in the resulting kernel
+	  image. This has a less than 1% performance impact on most
+	  workloads. Image size growth depends on architecture, and should
+	  be evaluated for suitability. For example, x86_64 grows by less
+	  than 1%, and arm64 grows by about 5%.
+
+endmenu
+
 config STACK_GUARD_PAGE
 	bool "Place guard page to catch stack overflows"
 	depends on ARM && MMU

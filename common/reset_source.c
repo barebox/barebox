@@ -61,7 +61,7 @@ static void __reset_source_set(struct device *dev,
 	reset_source = st;
 	reset_source_priority = priority;
 	reset_source_instance = instance;
-	reset_source_device = NULL;
+	reset_source_device = dev;
 
 	pr_debug("Setting reset source to %s with priority %d\n",
 			reset_src_names[reset_source], priority);
@@ -74,10 +74,9 @@ void reset_source_set_prinst(enum reset_src_type st,
 }
 EXPORT_SYMBOL(reset_source_set_prinst);
 
-void reset_source_set_device(struct device *dev, enum reset_src_type st)
+void reset_source_set_device(struct device *dev, enum reset_src_type st,
+			     unsigned int priority)
 {
-	unsigned int priority = RESET_SOURCE_DEFAULT_PRIORITY;
-
 	of_property_read_u32(dev->of_node, "reset-source-priority", &priority);
 
 	__reset_source_set(dev, st, priority, -1);

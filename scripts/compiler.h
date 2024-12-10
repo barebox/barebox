@@ -6,6 +6,7 @@
 #define __COMPILER_H__
 
 #include <stddef.h>
+#include <xalloc.h>
 
 #if defined(__BEOS__)	 || \
     defined(__NetBSD__)  || \
@@ -166,24 +167,5 @@ typedef uint32_t __u32;
 	(void) (&_min1 == &_min2);              \
 	_min1 < _min2 ? _min1 : _min2; })
 #endif
-
-static inline void *xmalloc(size_t size)
-{
-	void *p = NULL;
-
-	if (!(p = malloc(size))) {
-		printf("ERROR: out of memory\n");
-		exit(1);
-	}
-
-	return p;
-}
-
-static inline void *xzalloc(size_t size)
-{
-	void *p = xmalloc(size);
-	memset(p, 0, size);
-	return p;
-}
 
 #endif

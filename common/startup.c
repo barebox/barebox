@@ -93,11 +93,7 @@ static int load_environment(void)
 }
 environment_initcall(load_environment);
 
-static int global_autoboot_abort_key;
-static const char * const global_autoboot_abort_keys[] = {
-	"any",
-	"ctrl-c",
-};
+static char *global_autoboot_abort_key;
 static int global_autoboot_timeout = 3;
 
 static const char * const global_autoboot_states[] = {
@@ -169,7 +165,7 @@ enum autoboot_state do_autoboot_countdown(void)
 	int ret;
 	struct stat s;
 	bool menu_exists;
-	char *abortkeys = NULL;
+	char abortkeys[3] = {};
 	unsigned char outkey;
 
 	if (autoboot_state != AUTOBOOT_UNKNOWN)
@@ -186,25 +182,20 @@ enum autoboot_state do_autoboot_countdown(void)
 
 	menu_exists = stat(MENUFILE, &s) == 0;
 
-	if (menu_exists) {
-		printf("\nHit m for menu or %s to stop autoboot: ",
-		       global_autoboot_abort_keys[global_autoboot_abort_key]);
-		abortkeys = "m";
-	} else {
-		printf("\nHit %s to stop autoboot: ",
-		       global_autoboot_abort_keys[global_autoboot_abort_key]);
-	}
+	if (menu_exists)
+		strcat(abortkeys, "m");
 
-	switch (global_autoboot_abort_key) {
-	case 0:
+	if (!global_autoboot_abort_key ||
+	    !strcmp(global_autoboot_abort_key, "any"))
 		flags |= CONSOLE_COUNTDOWN_ANYKEY;
-		break;
-	case 1:
+	else if (!strcmp(global_autoboot_abort_key, "ctrl-c"))
 		flags |= CONSOLE_COUNTDOWN_CTRLC;
-		break;
-	default:
-		break;
-	}
+	else
+		strcat(abortkeys, global_autoboot_abort_key);
+
+	printf("\nHit %s%s to stop autoboot: ",
+	       menu_exists ? "m for menu or " : "",
+	       global_autoboot_abort_key ? global_autoboot_abort_key : "any");
 
 	command_slice_release();
 	ret = console_countdown(global_autoboot_timeout, flags, abortkeys,
@@ -221,12 +212,26 @@ enum autoboot_state do_autoboot_countdown(void)
 	return autoboot_state;
 }
 
+static int autoboot_abort_key_set(struct param_d *p, void *priv)
+{
+	if (!strcmp(global_autoboot_abort_key, "any"))
+		return 0;
+	if (!strcmp(global_autoboot_abort_key, "ctrl-c"))
+		return 0;
+
+	if (strlen(global_autoboot_abort_key) != 1)
+		return -EINVAL;
+
+	return 0;
+}
+
 static int register_autoboot_vars(void)
 {
-	globalvar_add_simple_enum("autoboot_abort_key",
-				  &global_autoboot_abort_key,
-                                  global_autoboot_abort_keys,
-				  ARRAY_SIZE(global_autoboot_abort_keys));
+	globalvar_add_param_string("autoboot_abort_key",
+				   autoboot_abort_key_set,
+				   NULL,
+				   &global_autoboot_abort_key,
+				   NULL);
 	globalvar_add_simple_int("autoboot_timeout",
 				 &global_autoboot_timeout, "%u");
 	globalvar_add_simple_enum("autoboot",
@@ -313,16 +318,17 @@ static int run_init(void)
 	if (IS_ENABLED(CONFIG_NET) && !IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT))
 		eth_open_all();
 
-	if (autoboot == AUTOBOOT_MENU)
+	if (autoboot != AUTOBOOT_MENU) {
+		if (autoboot == AUTOBOOT_ABORT && autoboot == global_autoboot_state)
+			watchdog_inhibit_all();
+
+		run_shell();
+	}
+
+	while (1)
 		run_command(MENUFILE);
 
-	if (autoboot == AUTOBOOT_ABORT && autoboot == global_autoboot_state)
-		watchdog_inhibit_all();
-
-	run_shell();
-	run_command(MENUFILE);
-
-	return 0;
+	unreachable();
 }
 
 typedef void (*ctor_fn_t)(void);
@@ -402,6 +408,6 @@ void shutdown_barebox(void)
 BAREBOX_MAGICVAR(global.autoboot,
                  "Autoboot state. Possible values: countdown (default), abort, menu, boot");
 BAREBOX_MAGICVAR(global.autoboot_abort_key,
-                 "Which key allows to interrupt autoboot. Possible values: any, ctrl-c");
+                 "Which key allows to interrupt autoboot. Possible values: 'any', 'ctrl-c' or any other single ascii character.");
 BAREBOX_MAGICVAR(global.autoboot_timeout,
                  "Timeout before autoboot starts in seconds");

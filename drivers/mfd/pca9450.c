@@ -58,7 +58,7 @@ static int pca9450_get_reset_source(struct device *dev, struct regmap *map)
 		type = RESET_UKWN;
 	}
 
-	reset_source_set_device(dev, type);
+	reset_source_set_device(dev, type, 200);
 
 	return 0;
 };
@@ -114,6 +114,7 @@ static int __init pca9450_probe(struct device *dev)
 
 static __maybe_unused struct of_device_id pca9450_dt_ids[] = {
 	{ .compatible = "nxp,pca9450a" },
+	{ .compatible = "nxp,pca9450b" },
 	{ .compatible = "nxp,pca9450c" },
 	{ .compatible = "nxp,pca9451a" },
 	{ /* sentinel */ }

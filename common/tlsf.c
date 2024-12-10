@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <malloc.h>
 #include <tlsf.h>
 #include "tlsfbits.h"
 #include <linux/kasan.h>
@@ -615,6 +616,9 @@ static void* block_prepare_used(control_t* control, block_header_t* block,
 		kasan_poison_shadow(&block->size, size + 2 * sizeof(size_t),
 			    KASAN_KMALLOC_REDZONE);
 		kasan_unpoison_shadow(p, used);
+
+		if (want_init_on_alloc())
+			memzero_explicit(p, size);
 	}
 	return p;
 }
@@ -1023,6 +1027,8 @@ void tlsf_free(tlsf_t tlsf, void* ptr)
 		control_t* control = tlsf_cast(control_t*, tlsf);
 		block_header_t* block = block_from_ptr(ptr);
 		tlsf_assert(!block_is_free(block) && "block already marked as free");
+		if (want_init_on_free())
+			memzero_explicit(ptr, block_size(block));
 		kasan_poison_shadow(ptr, block_size(block), 0xff);
 		block_mark_as_free(block);
 		block = block_merge_prev(control, block);

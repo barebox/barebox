@@ -8,6 +8,10 @@
 #ifndef __ASM_DMA_H
 #define __ASM_DMA_H
 
-/* empty */
+/*
+ * Valid L1 data cache line sizes for the OpenRISC architecture are
+ * 16 and 32 bytes.
+ */
+#define DMA_ALIGNMENT       32
 
 #endif /* __ASM_DMA_H */

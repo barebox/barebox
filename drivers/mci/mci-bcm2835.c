@@ -128,6 +128,9 @@ static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 		block_data |= data->blocksize;
 	}
 
+	/* BCM2xxx SDHCI might take up to 100ms to complete a command */
+	cmd->busy_timeout = 100;
+
 	ret = sdhci_wait_idle_data(&host->sdhci, cmd);
 	if (ret)
 		return ret;

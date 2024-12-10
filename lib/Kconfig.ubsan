@@ -31,6 +31,9 @@ config UBSAN_NO_ALIGNMENT
 	  Disabling this option on architectures that support unaligned
 	  accesses may produce a lot of false positives.
 
+config UBSAN_STANDALONE
+	def_bool !SANDBOX
+
 config UBSAN_ALIGNMENT
 	def_bool !UBSAN_NO_ALIGNMENT
 

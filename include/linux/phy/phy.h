@@ -102,7 +102,7 @@ struct phy_provider {
 	struct device		*dev;
 	struct list_head	list;
 	struct phy * (*of_xlate)(struct device *dev,
-				 struct of_phandle_args *args);
+				 const struct of_phandle_args *args);
 };
 
 /**
@@ -147,6 +147,9 @@ static inline void *phy_get_drvdata(struct phy *phy)
 	return phy->dev.priv;
 }
 
+struct phy *of_phy_simple_xlate(struct device *dev,
+				const struct of_phandle_args *args);
+
 #if IS_ENABLED(CONFIG_GENERIC_PHY)
 int phy_init(struct phy *phy);
 int phy_exit(struct phy *phy);
@@ -174,7 +177,7 @@ struct phy *phy_create(struct device *dev, struct device_node *node,
 void phy_destroy(struct phy *phy);
 struct phy_provider *__of_phy_provider_register(struct device *dev,
 						struct phy * (*of_xlate)(struct device *dev,
-									 struct of_phandle_args *args));
+								const struct of_phandle_args *args));
 void of_phy_provider_unregister(struct phy_provider *phy_provider);
 struct usb_phy *phy_to_usbphy(struct phy *phy);
 struct phy *phy_get_by_index(struct device *dev, int index);

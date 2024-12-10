@@ -21,6 +21,7 @@ kernel-install-target
 bareboxcrc32-target
 bareboximd-target
 mk-am35xx-spi-image
+mkimage
 mxsimage
 mxsboot
 mxs-usb-loader

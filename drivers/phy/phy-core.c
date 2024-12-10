@@ -16,6 +16,10 @@
 static LIST_HEAD(phy_provider_list);
 static int phy_ida;
 
+#define for_each_phy(p) list_for_each_entry(p, &phy_class.devices, dev.class_list)
+
+DEFINE_DEV_CLASS(phy_class, "phy");
+
 /**
  * phy_create() - create a new phy
  * @dev: device that is creating the new phy
@@ -40,7 +44,6 @@ struct phy *phy_create(struct device *dev, struct device_node *node,
 
 	id = phy_ida++;
 
-	dev_set_name(&phy->dev, "phy");
 	phy->dev.id = id;
 	phy->dev.parent = dev;
 	phy->dev.of_node = node ?: dev->of_node;
@@ -57,7 +60,7 @@ struct phy *phy_create(struct device *dev, struct device_node *node,
 		phy->pwr = NULL;
 	}
 
-	ret = register_device(&phy->dev);
+	ret = class_register_device(&phy_class, &phy->dev, "phy");
 	if (ret)
 		goto free_ida;
 
@@ -81,7 +84,7 @@ free_ida:
  */
 struct phy_provider *__of_phy_provider_register(struct device *dev,
 						struct phy * (*of_xlate)(struct device *dev,
-									 struct of_phandle_args *args))
+							const struct of_phandle_args *args))
 {
 	struct phy_provider *phy_provider;
 
@@ -249,6 +252,31 @@ static struct phy_provider *of_phy_provider_lookup(struct device_node *node)
 	}
 
 	return ERR_PTR(-EPROBE_DEFER);
+}
+
+/**
+ * of_phy_simple_xlate() - returns the phy instance from phy provider
+ * @dev: the PHY provider device
+ * @args: of_phandle_args (not used here)
+ *
+ * Intended to be used by phy provider for the common case where #phy-cells is
+ * 0. For other cases where #phy-cells is greater than '0', the phy provider
+ * should provide a custom of_xlate function that reads the *args* and returns
+ * the appropriate phy.
+ */
+struct phy *of_phy_simple_xlate(struct device *dev,
+				const struct of_phandle_args *args)
+{
+	struct phy *phy;
+
+	for_each_phy(phy) {
+		if (args->np != phy->dev.of_node)
+			continue;
+
+		return phy;
+	}
+
+	return ERR_PTR(-ENODEV);
 }
 
 /**

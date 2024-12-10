@@ -72,27 +72,24 @@ const char *bootsource_get_alias_stem(enum bootsource src)
 /**
  * bootsource_get_alias_name() - Get the name of the bootsource alias
  *
- * This function will return newly allocated string containing name of
+ * This function will return a pointer to a static string containing name of
  * the alias that is expected to point to DTB node corresponding to
  * detected bootsource
  *
- * NOTE: Caller is expected to free() the string allocated by this
- * function
  */
-char *bootsource_get_alias_name(void)
+const char *bootsource_get_alias_name(void)
 {
+	static char buf[sizeof("i2c-eeprom-2147483647")];
 	const char *stem;
+	int ret;
 
 	/*
 	 * If alias name was overridden via
 	 * bootsource_set_alias_name() return that value without
 	 * asking any questions.
-	 *
-	 * Note that we have to strdup() the result to make it
-	 * free-able.
 	 */
 	if (bootsource_alias_name)
-		return strdup(bootsource_alias_name);
+		return bootsource_alias_name;
 
 	stem = bootsource_get_alias_stem(bootsource);
 	if (!stem)
@@ -105,21 +102,23 @@ char *bootsource_get_alias_name(void)
 	if (bootsource_instance == BOOTSOURCE_INSTANCE_UNKNOWN)
 		return NULL;
 
-	return basprintf("%s%d", stem, bootsource_instance);
+	ret = snprintf(buf, sizeof(buf), "%s%d", stem, bootsource_instance);
+	if (ret < 0 || ret >= sizeof(buf))
+		return NULL;
+
+	return buf;
 }
 
 struct device_node *bootsource_of_node_get(struct device_node *root)
 {
 	struct device_node *np;
-	char *alias_name;
+	const char *alias_name;
 
 	alias_name = bootsource_get_alias_name();
 	if (!alias_name)
 		return NULL;
 
 	np = of_find_node_by_alias(root, alias_name);
-
-	free(alias_name);
 
 	return np;
 }

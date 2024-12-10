@@ -18,6 +18,17 @@ void __noreturn hang (void);
  */
 extern int (*barebox_main)(void);
 
+/**
+ * enum autoboot_state - autoboot action after init
+ * @AUTOBOOT_COUNTDOWN: Count down to automatic boot action
+ * @AUTOBOOT_ABORT: Abort boot and drop to barebox shell
+ * AUTOBOOT_MENU: Show main menu directly
+ * @AUTOBOOT_BOOT: Boot right away without an interruptible countdown
+ * @AUTOBOOT_UNKNOWN: Boot right away without an interruptible countdown
+ *
+ * This enum descibes what action to take after barebox initialization
+ * has completed and it's time to boot.
+ */
 enum autoboot_state {
 	AUTOBOOT_COUNTDOWN,
 	AUTOBOOT_ABORT,
@@ -31,5 +42,7 @@ enum autoboot_state do_autoboot_countdown(void);
 
 void __noreturn start_barebox(void);
 void shutdown_barebox(void);
+
+long get_ram_size(volatile long *base, long size);
 
 #endif

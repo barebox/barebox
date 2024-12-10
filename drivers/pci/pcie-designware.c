@@ -250,7 +250,7 @@ int dw_pcie_wait_for_link(struct dw_pcie *pci)
 			break;
 	}
 
-	dev_err(pci->dev, "Phy link never came up\n");
+	dev_info(pci->dev, "Phy link never came up\n");
 
 	return -ETIMEDOUT;
 }

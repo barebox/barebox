@@ -318,6 +318,63 @@ const char *of_alias_get(struct device_node *np)
 }
 EXPORT_SYMBOL_GPL(of_alias_get);
 
+static const char *of_get_partition_device_alias(struct device_node *np)
+{
+	const char *alias;
+
+	alias = of_alias_get(np);
+	if (alias)
+		return alias;
+
+	np = of_get_parent(np);
+	if (np && of_device_is_compatible(np, "fixed-partitions"))
+		np = of_get_parent(np);
+
+	return of_alias_get(np);
+}
+
+const char *of_property_get_alias_from(struct device_node *root,
+				       const char *np_name, const char *propname,
+				       int index)
+{
+	struct device_node *node, *rnode;
+	const char *path;
+	int ret;
+
+	node = of_find_node_by_path_or_alias(root, np_name);
+	if (!node)
+		return NULL;
+
+	ret = of_property_read_string_index(node, propname, index, &path);
+	if (ret < 0)
+		return NULL;
+
+	rnode = of_find_node_by_path(path);
+	if (!rnode)
+		return NULL;
+
+	return of_get_partition_device_alias(rnode);
+}
+EXPORT_SYMBOL_GPL(of_property_get_alias_from);
+
+const char *of_parse_phandle_and_get_alias_from(struct device_node *root,
+						const char *np_name, const char *phandle_name,
+						int index)
+{
+	struct device_node *node, *rnode;
+
+	node = of_find_node_by_path_or_alias(root, np_name);
+	if (!node)
+		return NULL;
+
+	rnode = of_parse_phandle_from(node, root, phandle_name, index);
+	if (!rnode)
+		return NULL;
+
+	return of_get_partition_device_alias(rnode);
+}
+EXPORT_SYMBOL_GPL(of_parse_phandle_and_get_alias_from);
+
 /*
  * of_find_node_by_alias - Find a node given an alias name
  * @root:    the root node of the tree. If NULL, use internal tree

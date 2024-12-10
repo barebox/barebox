@@ -11,6 +11,7 @@
 #include <globalvar.h>
 #include <environment.h>
 #include <led.h>
+#include <linux/ctype.h>
 #include <of.h>
 #include <restart.h>
 #include <poweroff.h>
@@ -155,8 +156,7 @@ static char *of_machine_compatible;
 static bool barebox_valid_ldh_char(char c)
 {
 	/* "LDH" -> "Letters, digits, hyphens", as per RFC 5890, Section 2.3.1 */
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-	       (c >= '0' && c <= '9') || c == '-';
+	return isalnum(c) || c == '-';
 }
 
 bool barebox_hostname_is_valid(const char *s)

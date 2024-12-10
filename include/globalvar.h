@@ -157,4 +157,14 @@ static inline int globalvar_add_simple_bool(const char *name, int *value)
 	return globalvar_add_bool(name, NULL, value, NULL);
 }
 
+static inline struct param_d *globalvar_add_param_string(const char *name,
+				int (*set)(struct param_d *p, void *priv),
+				int (*get)(struct param_d *p, void *priv),
+				char **value, void *priv)
+{
+	return IS_ENABLED(CONFIG_GLOBALVAR) ?
+		dev_add_param_string(&global_device, name, set, get, value, priv) :
+		NULL;
+}
+
 #endif /* __GLOBALVAR_H */

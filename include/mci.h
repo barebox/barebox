@@ -471,6 +471,7 @@ struct mci_cmd {
 	unsigned cmdidx;	/**< Command to be sent to the SD/MMC card */
 	unsigned resp_type;	/**< Type of expected response, refer MMC_RSP_* macros */
 	unsigned cmdarg;	/**< Command's arguments */
+	unsigned busy_timeout;	/**< Busy timeout in ms */
 	unsigned response[4];	/**< card's response */
 };
 

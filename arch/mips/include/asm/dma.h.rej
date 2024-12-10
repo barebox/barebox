@@ -1,0 +1,11 @@
+--- arch/mips/include/asm/dma.h
++++ arch/mips/include/asm/dma.h
+@@ -19,6 +19,8 @@
+ #define DMA_ALIGNMENT	\
+ 	max(current_cpu_data.dcache.linesz, current_cpu_data.scache.linesz)
+ 
++#define ARCH_DMA_MINALIGN	128
++
+ struct device;
+ 
+ #define dma_alloc_coherent dma_alloc_coherent

@@ -257,7 +257,7 @@ static int rockchip_usb2phy_power_off(struct phy *phy)
 }
 
 static struct phy *rockchip_usb2phy_of_xlate(struct device *dev,
-					     struct of_phandle_args *args)
+					     const struct of_phandle_args *args)
 {
 	struct rockchip_usb2phy *rphy = dev->priv;
 	struct device_node *phynode = args->np;

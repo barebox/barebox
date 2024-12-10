@@ -47,7 +47,7 @@ config FS_TFTP_MAX_WINDOW_SIZE
 	int
 	prompt "maximum tftp window size (RFC 7440)"
 	depends on FS_TFTP
-	default 128
+	default 1
 	range 1 128
 	help
 	  The maximum allowed tftp "windowsize" (RFC 7440).  Higher

@@ -130,6 +130,16 @@ struct tftp_priv {
 	IPaddr_t server;
 };
 
+struct tftp_inode {
+	struct inode inode;
+	u64 time;
+};
+
+static struct tftp_inode *to_tftp_inode(struct inode *inode)
+{
+	return container_of(inode, struct tftp_inode, inode);
+}
+
 static inline bool is_block_before(uint16_t a, uint16_t b)
 {
 	return (int16_t)(b - a) > 0;
@@ -939,9 +949,13 @@ static struct inode *tftp_get_inode(struct super_block *sb, const struct inode *
                                      umode_t mode)
 {
 	struct inode *inode = new_inode(sb);
+	struct tftp_inode *node;
 
 	if (!inode)
 		return NULL;
+
+	node = to_tftp_inode(inode);
+	node->time = get_time_ns();
 
 	inode->i_ino = get_next_ino();
 	inode->i_mode = mode;
@@ -1015,7 +1029,47 @@ static const struct inode_operations tftp_dir_inode_operations =
 	.create = tftp_create,
 };
 
-static const struct super_operations tftp_ops;
+static struct inode *tftp_alloc_inode(struct super_block *sb)
+{
+	struct tftp_inode *node;
+
+	node = xzalloc(sizeof(*node));
+	if (!node)
+		return NULL;
+
+	return &node->inode;
+}
+
+static void tftp_destroy_inode(struct inode *inode)
+{
+	struct tftp_inode *node = to_tftp_inode(inode);
+
+	free(node);
+}
+
+static const struct super_operations tftp_ops = {
+	.alloc_inode = tftp_alloc_inode,
+	.destroy_inode = tftp_destroy_inode,
+};
+
+static int tftp_lookup_revalidate(struct dentry *dentry, unsigned int flags)
+{
+	struct tftp_inode *node;
+
+	if (!dentry->d_inode)
+		return 0;
+
+	node = to_tftp_inode(dentry->d_inode);
+
+	if (is_timeout(node->time, 2 * SECOND))
+		return 0;
+
+	return 1;
+}
+
+static const struct dentry_operations tftp_dentry_operations = {
+	.d_revalidate = tftp_lookup_revalidate,
+};
 
 static int tftp_probe(struct device *dev)
 {
@@ -1034,7 +1088,7 @@ static int tftp_probe(struct device *dev)
 	}
 
 	sb->s_op = &tftp_ops;
-	sb->s_d_op = &no_revalidate_d_ops;
+	sb->s_d_op = &tftp_dentry_operations;
 
 	inode = tftp_get_inode(sb, NULL, S_IFDIR);
 	sb->s_root = d_make_root(inode);

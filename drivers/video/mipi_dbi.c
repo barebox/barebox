@@ -307,8 +307,8 @@ EXPORT_SYMBOL(mipi_dbi_enable_flush);
 
 static void mipi_dbi_blank(struct mipi_dbi_dev *dbidev)
 {
-	u16 height = dbidev->mode.xres;
-	u16 width = dbidev->mode.yres;
+	u16 height = dbidev->mode.yres;
+	u16 width = dbidev->mode.xres;
 	struct mipi_dbi *dbi = &dbidev->dbi;
 	size_t len = width * height * 2;
 

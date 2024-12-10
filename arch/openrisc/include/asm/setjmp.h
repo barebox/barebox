@@ -14,4 +14,6 @@ int setjmp(jmp_buf jmp) __attribute__((returns_twice));
 void longjmp(jmp_buf jmp, int ret) __attribute__((noreturn));
 int initjmp(jmp_buf jmp, void __attribute__((noreturn)) (*func)(void), void *stack_top);
 
+#include <asm-generic/setjmp.h>
+
 #endif /* _OR1K_BITS_SETJMP_H */

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (C) 2019 Kalray Inc.
+ * Copyright (C) 2024 Kalray Inc.
  */
 
 #ifndef _ASM_KVX_PRIVILEGE_H
@@ -120,13 +120,35 @@
 #define DO_WFXL_OWN(__field, __pl) \
 	SFR_SET_VAL_WFXL(DO, __field, __pl)
 
-#define DO_WFXL_VALUE(__pl) (DO_WFXL_OWN(B0, __pl) | \
-			     DO_WFXL_OWN(B1, __pl) | \
-			     DO_WFXL_OWN(W0, __pl) | \
-			     DO_WFXL_OWN(W1, __pl))
+#if defined(CONFIG_ARCH_COOLIDGE_V1)
+#define DO_WFXL_VALUE(__pl)	(DO_WFXL_OWN(B0, __pl) | \
+				 DO_WFXL_OWN(B1, __pl) | \
+				 DO_WFXL_OWN(W0, __pl) | \
+				 DO_WFXL_OWN(W1, __pl))
 
-#define DO_WFXL_VALUE_PL_CUR_PLUS_1     DO_WFXL_VALUE(PL_CUR_PLUS_1)
-#define DO_WFXL_VALUE_PL_CUR            DO_WFXL_VALUE(PL_CUR)
+#define DO_WFXL_VALUE_PL_CUR_PLUS_1	DO_WFXL_VALUE(PL_CUR_PLUS_1)
+#elif defined(CONFIG_ARCH_COOLIDGE_V2)
+#define DO_WFXL_VALUE(__pl)	(DO_WFXL_OWN(B2, __pl) | \
+				 DO_WFXL_OWN(B3, __pl) | \
+				 DO_WFXL_OWN(W2, __pl) | \
+				 DO_WFXL_OWN(W3, __pl))
+
+#define DO_WFXL_VALUE_PL_CUR_PLUS_1	(DO_WFXL_VALUE(PL_CUR_PLUS_1) | \
+					 DO_WFXL_OWN(B0, PL_CUR_PLUS_1) | \
+					 DO_WFXL_OWN(B1, PL_CUR_PLUS_1) | \
+					 DO_WFXL_OWN(W0, PL_CUR_PLUS_1) | \
+					 DO_WFXL_OWN(W1, PL_CUR_PLUS_1) | \
+					 DO_WFXL_OWN(BI0, PL_CUR_PLUS_1) | \
+					 DO_WFXL_OWN(BI1, PL_CUR_PLUS_1) | \
+					 DO_WFXL_OWN(BI2, PL_CUR_PLUS_1) | \
+					 DO_WFXL_OWN(BI3, PL_CUR_PLUS_1))
+
+
+#else
+#error Unsupported arch
+#endif
+
+#define DO_WFXL_VALUE_PL_CUR		DO_WFXL_VALUE(PL_CUR)
 
 /**
  * Misc owner configuration
@@ -157,7 +179,21 @@
 #define MO_WFXM_OWN(__field, __pl) \
 	SFR_SET_VAL_WFXM(MO, __field, __pl)
 
+#if defined(CONFIG_ARCH_COOLIDGE_V1)
 #define MO_WFXM_VALUE(__pl)	(MO_WFXM_OWN(PMIT, __pl))
+#elif defined(CONFIG_ARCH_COOLIDGE_V2)
+#define MO_WFXM_VALUE(__pl)	(MO_WFXM_OWN(PMIT, __pl) | \
+				 MO_WFXM_OWN(COMM, __pl) | \
+				 MO_WFXM_OWN(TPCM, __pl) | \
+				 MO_WFXM_OWN(DISW, __pl) | \
+				 MO_WFXM_OWN(PM4, __pl) | \
+				 MO_WFXM_OWN(PM5, __pl) | \
+				 MO_WFXM_OWN(PM6, __pl) | \
+				 MO_WFXM_OWN(PM7, __pl) | \
+				 MO_WFXM_OWN(SRHPC, __pl))
+#else
+#error Unsupported arch
+#endif
 
 #define MO_WFXM_VALUE_PL_CUR_PLUS_1	MO_WFXM_VALUE(PL_CUR_PLUS_1)
 #define MO_WFXM_VALUE_PL_CUR		MO_WFXM_VALUE(PL_CUR)

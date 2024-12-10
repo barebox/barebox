@@ -40,7 +40,7 @@ struct console_device {
 	int (*open)(struct console_device *cdev);
 	int (*close)(struct console_device *cdev);
 
-	char *devname;
+	const char *devname;
 	int devid;
 
 	struct list_head list;

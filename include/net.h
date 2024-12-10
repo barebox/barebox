@@ -58,7 +58,7 @@ struct eth_device {
 	struct device dev;
 	char *devname;
 	struct device *parent;
-	char *nodepath;
+	const char *nodepath;
 
 	IPaddr_t ipaddr;
 	IPaddr_t netmask;

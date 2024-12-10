@@ -28,7 +28,7 @@ static void led_gpio_set(struct led *led, unsigned int value)
 int led_gpio_register(struct gpio_led *led)
 {
 	int ret;
-	char *name = led->led.name;
+	const char *name = led->led.name;
 
 	ret = gpio_request(led->gpio, name ? name : "led");
 	if (ret)
@@ -86,7 +86,7 @@ static void led_gpio_bicolor_set(struct led *led, unsigned int value)
 int led_gpio_bicolor_register(struct gpio_bicolor_led *led)
 {
 	int ret;
-	char *name = led->led.name;
+	const char *name = led->led.name;
 
 	ret = gpio_request(led->gpio_c0, name ? name : "led_c0");
 	if (ret)
@@ -146,7 +146,7 @@ static void led_gpio_rgb_set(struct led *led, unsigned int value)
 int led_gpio_rgb_register(struct gpio_rgb_led *led)
 {
 	int ret;
-	char *name = led->led.name;
+	const char *name = led->led.name;
 
 	ret = gpio_request(led->gpio_r, name ? name : "led_r");
 	if (ret)

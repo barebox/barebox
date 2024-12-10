@@ -187,8 +187,8 @@ static int of_parse_prop(struct device_node *root, char * const *newval, int cou
 }
 
 struct of_fixup_property_data {
-	char *path;
-	char *propname;
+	const char *path;
+	const char *propname;
 	void *data;
 	int len;
 };
@@ -219,8 +219,8 @@ static int do_of_property_set_fixup(const char *path, const char *propname,
 	struct of_fixup_property_data *fixup;
 
 	fixup = xzalloc(sizeof(*fixup));
-	fixup->path = xstrdup(path);
-	fixup->propname = xstrdup(propname);
+	fixup->path = xstrdup_const(path);
+	fixup->propname = xstrdup_const(propname);
 	fixup->data = data;
 	fixup->len = len;
 
@@ -232,8 +232,8 @@ static int do_of_property_delete_fixup(const char *path, const char *propname)
 	struct of_fixup_property_data *fixup;
 
 	fixup = xzalloc(sizeof(*fixup));
-	fixup->path = xstrdup(path);
-	fixup->propname = xstrdup(propname);
+	fixup->path = xstrdup_const(path);
+	fixup->propname = xstrdup_const(propname);
 	fixup->data = NULL;
 	fixup->len = 0;
 

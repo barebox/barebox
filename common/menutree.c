@@ -49,7 +49,7 @@ static void menutree_entry_free(struct menu_entry *me)
 	struct menutree *mt = container_of(me, struct menutree, me);
 
 	free(mt->action);
-	free(mt->me.display);
+	free_const(mt->me.display);
 	free(mt);
 }
 
@@ -153,7 +153,7 @@ int menutree(const char *path, int toplevel)
 
 	if (!toplevel) {
 		mt = xzalloc(sizeof(*mt));
-		mt->me.display = xstrdup("back");
+		mt->me.display = xstrdup_const("back");
 		mt->me.type = MENU_ENTRY_NORMAL;
 		mt->me.non_re_ent = 1;
 		mt->me.free = menutree_entry_free;

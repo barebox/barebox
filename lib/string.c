@@ -24,6 +24,7 @@
 #include <linux/ctype.h>
 #include <asm/word-at-a-time.h>
 #include <malloc.h>
+#include <asm-generic/sections.h>
 
 #ifndef __HAVE_ARCH_STRCASECMP
 int strcasecmp(const char *s1, const char *s2)
@@ -1054,6 +1055,33 @@ char *strjoin(const char *separator, char **arr, size_t arrlen)
 	return buf;
 }
 EXPORT_SYMBOL(strjoin);
+
+const char *xstrdup_const(const char *str)
+{
+	if (is_barebox_rodata((ulong)str))
+		return str;
+
+	return xstrdup(str);
+}
+EXPORT_SYMBOL(xstrdup_const);
+
+const char *strdup_const(const char *str)
+{
+	if (is_barebox_rodata((ulong)str))
+		return str;
+
+	return strdup(str);
+}
+EXPORT_SYMBOL(strdup_const);
+
+void free_const(const void *str)
+{
+	if (is_barebox_rodata((ulong)str))
+		return;
+
+	free((void *)str);
+}
+EXPORT_SYMBOL(free_const);
 
 /**
  * strreplace - Replace all occurrences of character in string.

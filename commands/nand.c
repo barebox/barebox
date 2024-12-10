@@ -71,7 +71,7 @@ static int do_nand(int argc, char *argv[])
 
 	if (command == NAND_ADD) {
 		while (optind < argc) {
-			if (dev_add_bb_dev(basename(argv[optind]), NULL))
+			if (dev_add_bb_dev(kbasename(argv[optind]), NULL))
 				return 1;
 
 			optind++;
@@ -82,7 +82,7 @@ static int do_nand(int argc, char *argv[])
 
 	if (command == NAND_DEL) {
 		while (optind < argc) {
-			if (dev_remove_bb_dev(basename(argv[optind])))
+			if (dev_remove_bb_dev(kbasename(argv[optind])))
 				return 1;
 			optind++;
 		}

@@ -44,17 +44,17 @@ void bootentries_free(struct bootentries *bootentries)
 
 	list_for_each_entry_safe(be, tmp, &bootentries->entries, list) {
 		list_del(&be->list);
-		free(be->title);
+		free_const(be->title);
 		free(be->description);
-		free(be->me.display);
+		free_const(be->me.display);
 		be->release(be);
 	}
 
 	if (bootentries->menu) {
 		int i;
 		for (i = 0; i < bootentries->menu->display_lines; i++)
-			free(bootentries->menu->display[i]);
-		free(bootentries->menu->display);
+			free_const(bootentries->menu->display[i]);
+		free_const(bootentries->menu->display);
 	}
 	free(bootentries->menu);
 	free(bootentries);
@@ -62,7 +62,7 @@ void bootentries_free(struct bootentries *bootentries)
 
 struct bootentry_script {
 	struct bootentry entry;
-	char *scriptpath;
+	const char *scriptpath;
 };
 
 /*
@@ -179,7 +179,7 @@ static void bootscript_entry_release(struct bootentry *entry)
 {
 	struct bootentry_script *bs = container_of(entry, struct bootentry_script, entry);
 
-	free(bs->scriptpath);
+	free_const(bs->scriptpath);
 	free(bs);
 }
 
@@ -203,8 +203,8 @@ static int bootscript_create_entry(struct bootentries *bootentries, const char *
 	bs->entry.me.type = MENU_ENTRY_NORMAL;
 	bs->entry.release = bootscript_entry_release;
 	bs->entry.boot = bootscript_boot;
-	bs->scriptpath = xstrdup(name);
-	bs->entry.title = xstrdup(basename(bs->scriptpath));
+	bs->scriptpath = xstrdup_const(name);
+	bs->entry.title = xstrdup_const(kbasename(bs->scriptpath));
 	bs->entry.description = basprintf("script: %s", name);
 	bootentries_add_entry(bootentries, &bs->entry);
 
@@ -305,18 +305,18 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 	}
 
 	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT) && !found) {
-		char *path;
+		const char *path;
 
 		if (*name != '/')
 			path = basprintf("/env/boot/%s", name);
 		else
-			path = xstrdup(name);
+			path = xstrdup_const(name);
 
 		ret = bootscript_scan_path(bootentries, path);
 		if (ret > 0)
 			found += ret;
 
-		free(path);
+		free_const(path);
 	}
 
 	return found;
@@ -339,7 +339,7 @@ void bootsources_menu(struct bootentries *bootentries,
 
 	bootentries_for_each_entry(bootentries, entry) {
 		if (!entry->me.display)
-			entry->me.display = xstrdup(entry->title);
+			entry->me.display = xstrdup_const(entry->title);
 		entry->me.action = bootsource_action;
 		menu_add_entry(bootentries->menu, &entry->me);
 

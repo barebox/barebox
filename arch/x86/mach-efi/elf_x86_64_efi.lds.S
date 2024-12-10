@@ -39,8 +39,10 @@ SECTIONS
 	_sdata = .;
 
 	.data : {
+		__start_rodata = .;
 		*(.rodata*)
 		RO_DATA_SECTION
+		__end_rodata = .;
 		*(.got.plt)
 		*(.got)
 		*(.data*)

@@ -428,8 +428,11 @@ int devfs_remove(struct cdev *cdev)
 	if (cdev_is_partition(cdev))
 		list_del(&cdev->partition_entry);
 
-	if (cdev->link)
+	if (cdev->link) {
+		free(cdev->name);
+		free(cdev->partname);
 		free(cdev);
+	}
 
 	return 0;
 }

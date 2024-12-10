@@ -93,6 +93,11 @@ extern __kernel_size_t strnlen(const char *,__kernel_size_t);
 #ifndef __HAVE_ARCH_STRDUP
 extern char * strdup(const char *);
 #endif
+
+extern void free_const(const void *x);
+extern const char *strdup_const(const char *s);
+const char *xstrdup_const(const char *s);
+
 #ifndef __HAVE_ARCH_STRNDUP
 extern char *strndup(const char *, size_t);
 #endif

@@ -32,6 +32,7 @@ SECTIONS
     *(.text*)
     *(.got1*)
     . = ALIGN(16);
+    __start_rodata = .;
     *(.rodata*)
     *(.rodata1*)
     *(.rodata.str1.4)
@@ -70,6 +71,7 @@ SECTIONS
 
   /* Read-write section, merged into data segment: */
   . = (. + 0x0FFF) & 0xFFFFF000;
+  __end_rodata = .;
   _etext = .;
   PROVIDE (erotext = .);
   _sdata = .;

@@ -386,7 +386,7 @@ int state_storage_init(struct state *state, const char *path,
 	storage->stridesize = stridesize;
 	storage->offset = offset;
 	storage->max_size = max_size;
-	storage->path = xstrdup(path);
+	storage->path = xstrdup_const(path);
 
 	if (IS_ENABLED(CONFIG_MTD))
 		ret = mtd_get_meminfo(path, &meminfo);
@@ -432,5 +432,5 @@ void state_storage_free(struct state_backend_storage *storage)
 		bucket->free(bucket);
 	}
 
-	free(storage->path);
+	free_const(storage->path);
 }

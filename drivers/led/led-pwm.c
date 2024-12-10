@@ -53,7 +53,7 @@ static int led_pwm_of_probe(struct device *dev)
 			continue;
 
 		pwmled = xzalloc(sizeof(*pwmled));
-		pwmled->led.name = xstrdup(child->name);
+		pwmled->led.name = xstrdup_const(child->name);
 		pwmled->pwm = pwm;
 
 		ret = of_property_read_u32(child, "max-brightness", &pwmled->led.max_value);

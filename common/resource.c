@@ -23,7 +23,7 @@ static int init_resource(struct resource *res, const char *name)
 {
 	INIT_LIST_HEAD(&res->children);
 	res->parent = NULL;
-	res->name = xstrdup(name);
+	res->name = xstrdup_const(name);
 
 	return 0;
 }
@@ -101,7 +101,7 @@ int release_region(struct resource *res)
 		return -EBUSY;
 
 	list_del(&res->sibling);
-	free((char *)res->name);
+	free_const(res->name);
 	free(res);
 
 	return 0;
@@ -122,8 +122,8 @@ int __merge_regions(const char *name,
 	else
 		resa->start = resb->start;
 
-	free((char *)resa->name);
-	resa->name = xstrdup(name);
+	free_const(resa->name);
+	resa->name = xstrdup_const(name);
 	release_region(resb);
 
 	return 0;

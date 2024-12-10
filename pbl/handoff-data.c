@@ -4,6 +4,8 @@
 #include <init.h>
 #include <linux/list.h>
 #include <memory.h>
+#include <fdt.h>
+#include <compressed-dtb.h>
 
 static struct handoff_data *handoff_data = (void *)-1;
 
@@ -113,6 +115,7 @@ void handoff_data_move(void *dest)
 
 		newde->size = hde->size;
 		newde->cookie = hde->cookie;
+		newde->flags = hde->flags;
 		list_add_tail(&newde->list, &hdnew->entries);
 	}
 
@@ -158,6 +161,19 @@ int handoff_data_show(void)
 	}
 
 	return 0;
+}
+
+void handoff_data_add_dt(void *fdt)
+{
+	if (blob_is_fdt(fdt)) {
+		handoff_data_add(HANDOFF_DATA_INTERNAL_DT, fdt,
+				 get_unaligned_be32(fdt + 4));
+	} else if (blob_is_compressed_fdt(fdt)) {
+		struct barebox_boarddata_compressed_dtb *bd = fdt;
+
+		handoff_data_add(HANDOFF_DATA_INTERNAL_DT_Z, fdt,
+				 bd->datalen + sizeof(*bd));
+	}
 }
 
 static const char *handoff_data_entry_name(struct handoff_data_entry *hde)

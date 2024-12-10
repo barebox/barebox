@@ -33,4 +33,12 @@
  */
 #define IS_ENABLED(option) __or(IS_BUILTIN(option), IS_MODULE(option))
 
+#ifdef __PBL__
+#define IN_PBL		1
+#define IN_PROPER	0
+#else
+#define IN_PBL		0
+#define IN_PROPER	1
+#endif
+
 #endif /* __LINUX_KCONFIG_H */

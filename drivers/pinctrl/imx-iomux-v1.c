@@ -115,7 +115,7 @@ void imx_gpio_mode(void __iomem *base, int gpio_mode)
 	}
 }
 
-#ifndef __PBL__
+#if IN_PROPER
 
 /*
  * MUX_ID format defines

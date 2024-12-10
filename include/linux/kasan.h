@@ -45,7 +45,7 @@
 extern unsigned long kasan_shadow_start;
 extern unsigned long kasan_shadow_base;
 
-#if defined(CONFIG_KASAN) && !defined(__PBL__)
+#if defined(CONFIG_KASAN) && IN_PROPER
 
 static inline void *kasan_mem_to_shadow(const void *addr)
 {

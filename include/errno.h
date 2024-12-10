@@ -7,8 +7,18 @@
 
 extern int errno;
 
+#if IN_PROPER
 void perror(const char *s);
 const char *strerror(int errnum);
+#else
+static inline void perror(const char *s)
+{
+}
+static inline const char *strerror(int errnum)
+{
+	return "unknown error";
+}
+#endif
 
 static inline int errno_set(int err)
 {

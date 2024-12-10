@@ -425,6 +425,43 @@ int dev_regulator_register(struct regulator_dev *rdev, const char *name)
 	return 0;
 }
 
+struct regulator_dev *
+regulator_register(struct device *dev,
+		   const struct regulator_desc *desc,
+		   const struct regulator_config *config)
+{
+	struct regulator_dev *rdev;
+	struct device_node *search, *child;
+	int ret;
+
+	rdev = xzalloc(sizeof(*rdev));
+
+	rdev->name = desc->name;
+	rdev->desc = desc;
+	rdev->regmap = config->regmap;
+	rdev->dev = dev;
+
+	if (desc->regulators_node)
+		search = of_get_child_by_name(dev->of_node,
+					      desc->regulators_node);
+	else
+		search = dev->of_node;
+
+	if (!search) {
+		dev_err(dev, "Failed to find regulator container node\n");
+		return NULL;
+	}
+
+	for_each_child_of_node(search, child) {
+		if (strcmp(desc->of_match, child->name))
+			continue;
+		ret = of_regulator_register(rdev, child);
+		break;
+	}
+
+	return rdev;
+}
+
 static struct regulator_dev *dev_regulator_get(struct device *dev,
 					       const char *supply)
 {

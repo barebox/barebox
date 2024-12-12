@@ -44,14 +44,6 @@
 			reg = <0x0a 0x10>;
 		};
 	};
-
-	rng: rng@fe388000 {
-		compatible = "rockchip,rk3568-rng", "rockchip,cryptov2-rng";
-		reg = <0x0 0xfe388000 0x0 0x2000>;
-		clocks = <&cru CLK_TRNG_NS>, <&cru HCLK_TRNG_NS>;
-		clock-names = "trng_clk", "trng_hclk";
-		resets = <&cru SRST_TRNG_NS>;
-	};
 };
 
 &pmugrf {

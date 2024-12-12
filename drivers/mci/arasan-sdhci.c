@@ -210,7 +210,7 @@ static void arasan_sdhci_set_clock(struct mci_host *mci, unsigned int clock)
 	clk_set_phase(clk_data->sdcardclk,
 		      clk_data->clk_phase_out[mci->mci->host->timing]);
 
-	sdhci_set_clock(&host->sdhci, clock, host->sdhci.max_clk);
+	sdhci_set_clock(&host->sdhci, clock, mci->f_max);
 }
 
 static void arasan_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)

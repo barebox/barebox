@@ -48,7 +48,7 @@ def get_controller(args):
 
 def handle_run(args):
     ctrl = get_controller(args)
-    ctrl.export(args.export.encode())
+    ctrl.export(args.export)
     res = ctrl.command(' '.join(args.arg))
     if res:
         res = 1
@@ -160,7 +160,7 @@ def handle_listen(args):
 def handle_console(args):
     queue = Queue()
     ctrl = get_controller(args)
-    ctrl.export(args.export.encode())
+    ctrl.export(args.export)
     ctrl.start(queue)
     ctrl.send_async_console(b'\r')
     cons = ConsoleInput(queue, exit=b'\x14')  # CTRL-T

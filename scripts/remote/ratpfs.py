@@ -60,6 +60,8 @@ class RatpFSPacket(object):
 class RatpFSServer(object):
     def __init__(self, path=None):
         if path:
+            if isinstance(path, str):
+                path = path.encode()
             assert isinstance(path, bytes)
             self.path = os.path.abspath(os.path.expanduser(path))
         else:

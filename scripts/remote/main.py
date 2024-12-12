@@ -71,7 +71,7 @@ def handle_getenv(args):
     if not value:
         res = 1
     else:
-        print(value)
+        print(value.decode())
         res = 0
     ctrl.close()
     return res
@@ -81,7 +81,7 @@ def handle_md(args):
     ctrl = get_controller(args)
     (res,data) = ctrl.md(args.path, args.address, args.size)
     if res == 0:
-        print(binascii.hexlify(data))
+        print(binascii.hexlify(data).decode())
     ctrl.close()
     return res
 

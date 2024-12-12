@@ -282,7 +282,7 @@ quiet_cmd_prelink__ = PRELINK $@
 endif
 
 quiet_cmd_prelink__ ?=
-      cmd_prelink__ ?=
+      cmd_prelink__ ?= :
 
 # Linking
 # ---------------------------------------------------------------------------

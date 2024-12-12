@@ -78,7 +78,7 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 	$(call if_changed,objcopy_bin,$(*F))
 	$(Q)$(OBJCOPY) -O binary --only-section=.missing_fw $< $@.missing-firmware
 	$(Q)[ -s $@.missing-firmware ] || rm -f $@.missing-firmware
-	$(call cmd,check_file_size,$@,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
+	$(call if_changed,check_file_size,$@,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
 
 #
 # For each start symbol create three variables containing the

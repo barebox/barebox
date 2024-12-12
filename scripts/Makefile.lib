@@ -531,7 +531,7 @@ quiet_cmd_check_file_size = CHKFILESIZE $2
 	then								\
 		echo "$@ size $$size > maximum size $$max_size" >&2;	\
 		exit 1 ;						\
-	fi;
+	fi
 
 quiet_cmd_imximage__S_dcd= DCD_S   $@
 cmd_imximage_S_dcd=						\

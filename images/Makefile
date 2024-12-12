@@ -100,15 +100,15 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 # code/memory/image for this PBL may get. Check these values.
 #
 	$(if $(MAX_PBL_CODE_SIZE_$*), \
-		$(call cmd,check_size, $(PBL_CODE_SIZE_$*), $(MAX_PBL_CODE_SIZE_$*)) \
+		$(call if_changed,check_size,$(PBL_CODE_SIZE_$*),$(MAX_PBL_CODE_SIZE_$*)) \
 	)
 
 	$(if $(MAX_PBL_MEMORY_SIZE_$*), \
-		$(call cmd,check_size, $(PBL_MEMORY_SIZE_$*), $(MAX_PBL_MEMORY_SIZE_$*)) \
+		$(call if_changed,check_size,$(PBL_MEMORY_SIZE_$*),$(MAX_PBL_MEMORY_SIZE_$*)) \
 	)
 
 	$(if $(MAX_PBL_IMAGE_SIZE_$*), \
-		$(call cmd,check_size, $(PBL_IMAGE_SIZE_$*), $(MAX_PBL_IMAGE_SIZE_$*)) \
+		$(call if_changed,check_size,$(PBL_IMAGE_SIZE_$*),$(MAX_PBL_IMAGE_SIZE_$*)) \
 	)
 
 $(obj)/%.s: $(obj)/% FORCE

@@ -520,7 +520,7 @@ quiet_cmd_check_size = CHKSIZE $2
 	then								\
 		echo "$@ size $$size > maximum size $$max_size" >&2;	\
 		exit 1 ;						\
-	fi;
+	fi
 
 # Check size of a file
 quiet_cmd_check_file_size = CHKFILESIZE $2

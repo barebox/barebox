@@ -76,8 +76,7 @@ $(obj)/%.elf: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(obj)/piggy.o $(obj)/sha_sum.o FOR
 
 $(obj)/%.pblb: $(obj)/%.pbl FORCE
 	$(call if_changed,objcopy_bin,$(*F))
-	$(Q)$(OBJCOPY) -O binary --only-section=.missing_fw $< $@.missing-firmware
-	$(Q)[ -s $@.missing-firmware ] || rm -f $@.missing-firmware
+	$(call if_changed,check_missing_fw,$@,$<)
 	$(call if_changed,check_file_size,$@,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
 
 #

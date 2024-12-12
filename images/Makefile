@@ -144,11 +144,13 @@ $(obj)/barebox.z: $(obj)/../barebox.bin FORCE
 
 missing_fw = $(strip $(wildcard $(obj)/$(FILE_$(@F)).missing-firmware $(basename $(obj)/$(FILE_$(@F))).missing-firmware))
 
+quiet_cmd_report_missing_fw = # no message as we collect info for later
+      cmd_report_missing_fw = $(if $2,cat $2 >$@.missing-firmware;$(cmd_delete),rm -f $@.missing-firmware;$(cmd_shipped))
+
 .SECONDEXPANSION:
-$(obj)/%.img: $(obj)/$$(FILE_$$(@F))
+$(obj)/%.img: $(obj)/$$(FILE_$$(@F)) FORCE
 	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
-	$(Q)$(if $(missing_fw),cat $(missing_fw) >$@.missing-firmware,rm -f $@.missing-firmware)
-	$(call if_changed,$(if $(missing_fw),delete,shipped))
+	$(call if_changed,report_missing_fw,$(missing_fw))
 
 board = $(srctree)/arch/$(SRCARCH)/boards
 objboard = $(objtree)/arch/$(SRCARCH)/boards

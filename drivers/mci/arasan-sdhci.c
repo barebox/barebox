@@ -70,7 +70,6 @@ struct arasan_sdhci_host {
 	struct sdhci_arasan_clk_data clk_data;
 /* Controller does not have CD wired and will not function normally without */
 #define SDHCI_ARASAN_QUIRK_FORCE_CDTEST		BIT(0)
-#define SDHCI_ARASAN_QUIRK_NO_1_8_V		BIT(1)
 /*
  * Some of the Arasan variations might not have timing requirements
  * met at 25MHz for Default Speed mode, those controllers work at
@@ -767,9 +766,6 @@ static int arasan_sdhci_probe(struct device *dev)
 
 	if (of_property_read_bool(np, "xlnx,fails-without-test-cd"))
 		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_FORCE_CDTEST;
-
-	if (of_property_read_bool(np, "no-1-8-v"))
-		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_NO_1_8_V;
 
 	if (of_device_is_compatible(np, "xlnx,zynqmp-8.9a")) {
 		if (IS_ENABLED(CONFIG_MCI_TUNING))

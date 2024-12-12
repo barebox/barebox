@@ -61,16 +61,18 @@ static int tap_probe(struct device *dev)
 {
 	struct eth_device *edev;
 	struct tap_priv *priv;
-	int ret = 0;
+	int ret;
 
 	priv = xzalloc(sizeof(struct tap_priv));
 	priv->name = "barebox";
 
-	priv->fd = tap_alloc(priv->name);
-	if (priv->fd < 0) {
-		ret = priv->fd;
+	ret = tap_alloc(priv->name);
+	if (ret == -EPERM)
+		ret = -ENODEV;
+	if (ret < 0)
 		goto out;
-	}
+
+	priv->fd = ret;
 
 	priv->rx_buf = xmalloc(PKTSIZE);
 

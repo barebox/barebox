@@ -478,8 +478,11 @@ void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 	struct device *dev = sdhci_dev(sdhci);
 	int nbytes;
 
-	if (!data)
+	if (!data) {
+		if (dma)
+			*dma = SDHCI_NO_DMA;
 		return;
+	}
 
 	sdhci_setup_data_pio(sdhci, data);
 

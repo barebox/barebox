@@ -301,7 +301,6 @@ ENTRY_FUNCTION_WITHSTACK(start_avnet_zedboard, 0xfffff000, r0, r1, r2)
 	writel((1<<7), 0xe000a208 );    // Output enable
 	writel((1<<7), 0xe000a040 );    // DATA Register
 
-	arm_cpu_lowlevel_init();
 	zynq_cpu_lowlevel_init();
 
 	avnet_zedboard_ps7_init();

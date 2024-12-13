@@ -38,10 +38,6 @@
 	};
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec 0x620>;
-};
-
 &clks {
 	fsl,pmic-stby-poweroff;
 };

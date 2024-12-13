@@ -12,6 +12,9 @@
 
 static int zedboard_console_init(void)
 {
+	if (!of_machine_is_compatible("avnet,zynq-zed"))
+		return 0;
+
 	barebox_set_hostname("zedboard");
 
 	return 0;

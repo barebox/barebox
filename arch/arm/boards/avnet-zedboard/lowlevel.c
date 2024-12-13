@@ -286,7 +286,7 @@ static void avnet_zedboard_pbl_console_init(void)
 	pr_debug("\nAvnet ZedBoard PBL\n");
 }
 
-ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
+ENTRY_FUNCTION_WITHSTACK(start_avnet_zedboard, 0xfffff000, r0, r1, r2)
 {
 
 	void *fdt = __dtb_z_zynq_zed_start + get_runtime_offset();

@@ -10,8 +10,4 @@ menuconfig TEE
 	  secure co-processor etc. See also:
 	  https://en.wikipedia.org/wiki/Trusted_execution_environment
 
-if TEE
-
 source "drivers/tee/optee/Kconfig"
-
-endif

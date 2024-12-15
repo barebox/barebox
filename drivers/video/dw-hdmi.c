@@ -433,6 +433,7 @@ static struct i2c_adapter *dw_hdmi_i2c_adapter(struct dw_hdmi *hdmi)
 
 	adap = &i2c->adap;
 	adap->dev.parent = hdmi->dev;
+	adap->dev.of_node = hdmi->dev->of_node;
 	adap->master_xfer = dw_hdmi_i2c_xfer;
 	adap->nr = -1;
 

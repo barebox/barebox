@@ -415,6 +415,7 @@ static int __spi_validate(struct spi_device *spi, struct spi_message *message)
 	message->spi = spi;
 
 	list_for_each_entry(xfer, &message->transfers, transfer_list) {
+		xfer->effective_speed_hz = 0;
 		if (!xfer->bits_per_word)
 			xfer->bits_per_word = spi->bits_per_word;
 

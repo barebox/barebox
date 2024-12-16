@@ -8,6 +8,7 @@
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/bitops.h>
+#include <linux/gpio/consumer.h>
 
 struct spi_controller_mem_ops;
 struct spi_message;
@@ -99,6 +100,7 @@ struct spi_device {
 	void			*controller_state;
 	void			*controller_data;
 	const char		*modalias;
+	struct gpio_desc	*cs_gpiod;	/* Chip select gpio desc */
 
 	/*
 	 * likely need more hooks for more protocol options affecting how
@@ -163,6 +165,12 @@ static inline void spi_set_ctldata(struct spi_device *spi, void *state)
  *	the device whose settings are being modified.
  * @transfer: adds a message to the controller's transfer queue.
  * @cleanup: frees controller-specific state
+ * @cs_gpiods: Array of GPIO descriptors to use as chip select lines; one per CS
+ *	number. Any individual value may be NULL for CS lines that
+ *	are not GPIOs (driven by the SPI controller itself).
+ * @use_gpio_descriptors: Turns on the code in the SPI core to parse and grab
+ *	GPIO descriptors. This will fill in @cs_gpiods and SPI devices will have
+ *	the cs_gpiod assigned if a GPIO line is found for the chipselect.
  * @list: link with the global spi_controller list
  *
  * Each SPI controller can communicate with one or more @spi_device
@@ -239,6 +247,10 @@ struct spi_controller {
 
 	/* called on release() to free memory provided by spi_controller */
 	void			(*cleanup)(struct spi_device *spi);
+
+	/* GPIO chip select */
+	struct gpio_desc	**cs_gpiods;
+	bool			use_gpio_descriptors;
 
 	struct list_head list;
 };

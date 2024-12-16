@@ -1223,6 +1223,25 @@ int gpiod_set_array_value(unsigned int array_size,
 }
 EXPORT_SYMBOL_GPL(gpiod_set_array_value);
 
+/**
+ * gpiod_set_consumer_name() - set the consumer name for the descriptor
+ * @desc: gpio to set the consumer name on
+ * @name: the new consumer name
+ *
+ * Returns:
+ * 0 on success, or negative errno on failure.
+ */
+int gpiod_set_consumer_name(struct gpio_desc *desc, const char *name)
+{
+	VALIDATE_DESC(desc);
+
+	free(desc->label);
+	desc->label = xstrdup(name);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(gpiod_set_consumer_name);
+
 int gpiochip_add(struct gpio_chip *chip)
 {
 	int i;

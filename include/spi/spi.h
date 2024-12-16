@@ -340,6 +340,9 @@ static inline size_t spi_max_transfer_size(struct spi_device *spi)
  * @len: size of rx and tx buffers (in bytes)
  * @speed_hz: Select a speed other then the device default for this
  *      transfer. If 0 the default (from @spi_device) is used.
+ * @effective_speed_hz: the effective SCK-speed that was used to
+ *      transfer this transfer. Set to 0 if the SPI bus driver does
+ *      not support it.
  * @bits_per_word: select a bits_per_word other then the device default
  *      for this transfer. If 0 the default (from @spi_device) is used.
  * @cs_change: affects chipselect after this transfer completes
@@ -408,6 +411,8 @@ struct spi_transfer {
 	u8		bits_per_word;
 	u16		delay_usecs;
 	u32		speed_hz;
+
+	u32		effective_speed_hz;
 
 	struct list_head transfer_list;
 };

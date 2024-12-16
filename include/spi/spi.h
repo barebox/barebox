@@ -13,6 +13,19 @@
 struct spi_controller_mem_ops;
 struct spi_message;
 
+/**
+ * struct spi_delay - SPI delay information
+ * @value: Value for the delay
+ * @unit: Unit for the delay
+ */
+struct spi_delay {
+#define SPI_DELAY_UNIT_USECS	0
+#define SPI_DELAY_UNIT_NSECS	1
+#define SPI_DELAY_UNIT_SCK	2
+	u16	value;
+	u8	unit;
+};
+
 struct spi_board_info {
 	char	*name;
 	int	max_speed_hz;
@@ -26,6 +39,11 @@ struct spi_board_info {
 	u8	bits_per_word;
 	void	*platform_data;
 	struct device_node *device_node;
+
+	/* CS delays */
+	struct spi_delay	cs_setup;
+	struct spi_delay	cs_hold;
+	struct spi_delay	cs_inactive;
 };
 
 /**
@@ -101,6 +119,10 @@ struct spi_device {
 	void			*controller_data;
 	const char		*modalias;
 	struct gpio_desc	*cs_gpiod;	/* Chip select gpio desc */
+	/* CS delays */
+	struct spi_delay	cs_setup;
+	struct spi_delay	cs_hold;
+	struct spi_delay	cs_inactive;
 
 	/*
 	 * likely need more hooks for more protocol options affecting how

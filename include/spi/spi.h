@@ -10,10 +10,11 @@
 #include <linux/bitops.h>
 
 struct spi_controller_mem_ops;
+struct spi_message;
 
 struct spi_board_info {
 	char	*name;
-	int 	max_speed_hz;
+	int	max_speed_hz;
 	int	bus_num;
 	int	chip_select;
 
@@ -121,8 +122,6 @@ static inline u8 spi_get_chipselect(const struct spi_device *spi, u8 idx)
 
 	return spi->chip_select;
 }
-
-struct spi_message;
 
 /**
  * struct spi_controller - interface to SPI master or slave controller
@@ -267,7 +266,7 @@ static inline size_t spi_max_transfer_size(struct spi_device *spi)
 	return min(tr_max, msg_max);
 }
 
-#define spi_master  			spi_controller
+#define spi_master			spi_controller
 #define spi_register_master(_ctrl)	spi_register_controller(_ctrl)
 
 /*---------------------------------------------------------------------------*/

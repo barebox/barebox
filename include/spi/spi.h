@@ -180,6 +180,7 @@ static inline void spi_set_ctldata(struct spi_device *spi, void *state)
  *	unsupported bits_per_word. If not set, this value is simply ignored,
  *	and it's up to the individual driver to perform any validation.
  * @max_speed_hz: Highest supported transfer speed
+ * @flags: other constraints relevant to this driver
  * @setup: updates the device mode and clocking records used by a
  *	device's SPI controller; protocol code may call this.  This
  *	must fail if an unrecognized or unsupported mode is requested.
@@ -241,6 +242,16 @@ struct spi_controller {
 
 	/* limits on transfer speed */
 	u32			max_speed_hz;
+
+	/* Other constraints relevant to this driver */
+	u16			flags;
+#define SPI_CONTROLLER_HALF_DUPLEX	BIT(0)	/* Can't do full duplex */
+#define SPI_CONTROLLER_NO_RX		BIT(1)	/* Can't do buffer read */
+#define SPI_CONTROLLER_NO_TX		BIT(2)	/* Can't do buffer write */
+#define SPI_CONTROLLER_MUST_RX		BIT(3)	/* Requires rx */
+#define SPI_CONTROLLER_MUST_TX		BIT(4)	/* Requires tx */
+#define SPI_CONTROLLER_GPIO_SS		BIT(5)	/* GPIO CS must select slave */
+#define SPI_CONTROLLER_SUSPENDED	BIT(6)	/* Currently suspended */
 
 	/* setup mode and clock, etc (spi driver may call many times) */
 	int			(*setup)(struct spi_device *spi);

@@ -321,6 +321,8 @@ static int __spi_validate(struct spi_device *spi, struct spi_message *message)
 	if (list_empty(&message->transfers))
 		return -EINVAL;
 
+	message->spi = spi;
+
 	list_for_each_entry(xfer, &message->transfers, transfer_list) {
 		if (!xfer->bits_per_word)
 			xfer->bits_per_word = spi->bits_per_word;
@@ -347,6 +349,7 @@ static int __spi_validate(struct spi_device *spi, struct spi_message *message)
 			return -EINVAL;
 	}
 
+	message->actual_length = 0;
 	message->status = -EINPROGRESS;
 
 	return 0;

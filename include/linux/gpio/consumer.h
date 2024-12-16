@@ -127,6 +127,8 @@ int gpiod_get_value(const struct gpio_desc *desc);
 
 void gpiod_put(struct gpio_desc *desc);
 
+int gpiod_set_consumer_name(struct gpio_desc *desc, const char *name);
+
 void gpiod_put_array(struct gpio_descs *descs);
 
 int gpiod_set_array_value(unsigned int array_size,
@@ -197,6 +199,14 @@ static inline void gpiod_put(struct gpio_desc *desc)
 {
 	/* GPIO can never have been requested */
 	WARN_ON(desc);
+}
+
+static inline int gpiod_set_consumer_name(struct gpio_desc *desc,
+					  const char *name)
+{
+	/* GPIO can never have been requested */
+	WARN_ON(desc);
+	return -EINVAL;
 }
 
 static inline void gpiod_put_array(struct gpio_descs *descs)

@@ -1,2 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-only
-# dummy file, do not delete
+
+config ASAN
+	bool "ASAN: runtime memory debugger"
+	help
+	  Enables ASAN (AddressSANitizer) - runtime memory debugger,
+	  designed to find out-of-bounds accesses and use-after-free bugs.
+
+	  This is the hosted implementation for sandbox as opposed to
+	  KASAN, which is the bare-metal implementation.

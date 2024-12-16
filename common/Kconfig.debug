@@ -124,16 +124,6 @@ config PRINTF_FULL
 source "lib/Kconfig.ubsan"
 source "lib/kasan/Kconfig"
 
-config ASAN
-	bool "ASAN: runtime memory debugger"
-	depends on SANDBOX
-	help
-	  Enables ASAN (AddressSANitizer) - runtime memory debugger,
-	  designed to find out-of-bounds accesses and use-after-free bugs.
-
-	  This is the hosted implementation for sandbox as opposed to
-	  KASAN, which is the bare-metal implementation.
-
 config COMPILE_TEST
 	bool "compile-test drivers of other platforms"
 	default n

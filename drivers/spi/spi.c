@@ -320,6 +320,183 @@ static int spi_get_gpio_descs(struct spi_controller *ctlr)
 	return 0;
 }
 
+static void _spi_transfer_delay_ns(u32 ns)
+{
+	if (!ns)
+		return;
+	if (ns <= NSEC_PER_USEC) {
+		ndelay(ns);
+	} else {
+		u32 us = DIV_ROUND_UP(ns, NSEC_PER_USEC);
+
+		udelay(us);
+	}
+}
+
+int spi_delay_to_ns(struct spi_delay *_delay, struct spi_transfer *xfer)
+{
+	u32 delay = _delay->value;
+	u32 unit = _delay->unit;
+	u32 hz;
+
+	if (!delay)
+		return 0;
+
+	switch (unit) {
+	case SPI_DELAY_UNIT_USECS:
+		delay *= NSEC_PER_USEC;
+		break;
+	case SPI_DELAY_UNIT_NSECS:
+		/* Nothing to do here */
+		break;
+	case SPI_DELAY_UNIT_SCK:
+		/* Clock cycles need to be obtained from spi_transfer */
+		if (!xfer)
+			return -EINVAL;
+		/*
+		 * If there is unknown effective speed, approximate it
+		 * by underestimating with half of the requested Hz.
+		 */
+		hz = xfer->effective_speed_hz ?: xfer->speed_hz / 2;
+		if (!hz)
+			return -EINVAL;
+
+		/* Convert delay to nanoseconds */
+		delay *= DIV_ROUND_UP(NSEC_PER_SEC, hz);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return delay;
+}
+EXPORT_SYMBOL_GPL(spi_delay_to_ns);
+
+int spi_delay_exec(struct spi_delay *_delay, struct spi_transfer *xfer)
+{
+	int delay;
+
+	if (!_delay)
+		return -EINVAL;
+
+	delay = spi_delay_to_ns(_delay, xfer);
+	if (delay < 0)
+		return delay;
+
+	_spi_transfer_delay_ns(delay);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(spi_delay_exec);
+
+static void spi_set_cs(struct spi_device *spi, bool enable)
+{
+        bool activate = enable;
+
+        if (spi->cs_gpiod && !activate)
+                spi_delay_exec(&spi->cs_hold, NULL);
+
+        if (spi->mode & SPI_CS_HIGH)
+                enable = !enable;
+
+        if (spi->cs_gpiod) {
+                if (!(spi->mode & SPI_NO_CS)) {
+			/* Polarity handled by GPIO library */
+			gpiod_set_value(spi->cs_gpiod, activate);
+                }
+                /* Some SPI masters need both GPIO CS & slave_select */
+                if ((spi->controller->flags & SPI_CONTROLLER_GPIO_SS) &&
+                    spi->controller->set_cs)
+                        spi->controller->set_cs(spi, !enable);
+        } else if (spi->controller->set_cs) {
+                spi->controller->set_cs(spi, !enable);
+        }
+
+        if (spi->cs_gpiod || !spi->controller->set_cs_timing) {
+                if (activate)
+                        spi_delay_exec(&spi->cs_setup, NULL);
+                else
+                        spi_delay_exec(&spi->cs_inactive, NULL);
+        }
+}
+
+/*
+ * spi_transfer_one_message - Default implementation of transfer()
+ *
+ * This is a standard implementation of transfer() for drivers which implement a
+ * transfer_one() operation. It provides standard handling of delays and chip
+ * select management.
+ *
+ */
+static int spi_transfer_one_message(struct spi_device *spi, struct spi_message *msg)
+{
+	struct spi_controller *ctlr = spi->controller;
+	struct spi_transfer *xfer;
+	bool keep_cs = false;
+	int ret = 0;
+
+	if (ctlr->prepare_message) {
+		ret = ctlr->prepare_message(ctlr, msg);
+		if (ret) {
+			dev_err(ctlr->dev, "failed to prepare message: %d\n",
+				ret);
+			msg->status = ret;
+			return ret;
+		}
+	}
+
+	spi_set_cs(msg->spi, true);
+
+	list_for_each_entry(xfer, &msg->transfers, transfer_list) {
+		if ((xfer->tx_buf || xfer->rx_buf) && xfer->len) {
+			ret = ctlr->transfer_one(ctlr, msg->spi, xfer);
+			if (ret < 0) {
+				dev_err(&msg->spi->dev,
+					"SPI transfer failed: %d\n", ret);
+				goto out;
+			}
+		} else {
+			if (xfer->len)
+				dev_err(&msg->spi->dev,
+					"Bufferless transfer has length %u\n",
+					xfer->len);
+		}
+
+		if (msg->status != -EINPROGRESS)
+			goto out;
+
+		/* TODO: Convert to new spi_delay API */
+		if (xfer->delay_usecs)
+			udelay(xfer->delay_usecs);
+
+		if (xfer->cs_change) {
+			if (list_is_last(&xfer->transfer_list,
+					 &msg->transfers)) {
+				keep_cs = true;
+			} else {
+				spi_set_cs(msg->spi, false);
+				/* TODO: Convert to new spi_delay API */
+				udelay(10);
+				spi_set_cs(msg->spi, true);
+			}
+		}
+
+		msg->actual_length += xfer->len;
+	}
+
+out:
+	if (ret != 0 || !keep_cs)
+		spi_set_cs(msg->spi, false);
+
+	if (msg->status == -EINPROGRESS)
+		msg->status = ret;
+
+	if (msg->status && ctlr->handle_err)
+		ctlr->handle_err(ctlr, msg);
+
+	return ret;
+}
+
 static int spi_controller_check_ops(struct spi_controller *ctlr)
 {
 	/*
@@ -332,7 +509,7 @@ static int spi_controller_check_ops(struct spi_controller *ctlr)
 	if (ctlr->mem_ops) {
 		if (!ctlr->mem_ops->exec_op)
 			return -EINVAL;
-	} else if (!ctlr->transfer) {
+	} else if (!ctlr->transfer && !ctlr->transfer_one) {
 		return -EINVAL;
 	}
 
@@ -374,6 +551,9 @@ int spi_register_controller(struct spi_controller *ctrl)
 	status = spi_controller_check_ops(ctrl);
 	if (status)
 		return status;
+
+	if (ctrl->transfer_one)
+		ctrl->transfer = spi_transfer_one_message;
 
 	slice_init(&ctrl->slice, dev_name(ctrl->dev));
 

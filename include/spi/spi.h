@@ -10,6 +10,8 @@
 #include <linux/bitops.h>
 #include <linux/gpio/consumer.h>
 
+struct spi_controller;
+struct spi_transfer;
 struct spi_controller_mem_ops;
 struct spi_message;
 
@@ -25,6 +27,9 @@ struct spi_delay {
 	u16	value;
 	u8	unit;
 };
+
+extern int spi_delay_to_ns(struct spi_delay *_delay, struct spi_transfer *xfer);
+extern int spi_delay_exec(struct spi_delay *_delay, struct spi_transfer *xfer);
 
 struct spi_board_info {
 	char	*name;
@@ -191,6 +196,26 @@ static inline void spi_set_ctldata(struct spi_device *spi, void *state)
  * delay interms of clock counts
  * @transfer: adds a message to the controller's transfer queue.
  * @cleanup: frees controller-specific state
+ * @set_cs: set the logic level of the chip select line.  May be called
+ *          from interrupt context.
+ * @prepare_message: set up the controller to transfer a single message,
+ *                   for example doing DMA mapping.  Called from threaded
+ *                   context.
+ * @transfer_one: transfer a single spi_transfer.
+ *
+ *                  - return 0 if the transfer is finished,
+ *                  - return 1 if the transfer is still in progress. When
+ *                    the driver is finished with this transfer it must
+ *                    call spi_finalize_current_transfer() so the subsystem
+ *                    can issue the next transfer. If the transfer fails, the
+ *                    driver must set the flag SPI_TRANS_FAIL_IO to
+ *                    spi_transfer->error first, before calling
+ *                    spi_finalize_current_transfer().
+ *                    Note: transfer_one and transfer_one_message are mutually
+ *                    exclusive; when both are set, the generic subsystem does
+ *                    not call your transfer_one callback.
+ * @handle_err: the subsystem calls the driver to handle an error that occurs
+ *		in the generic implementation of transfer_one_message().
  * @cs_gpiods: Array of GPIO descriptors to use as chip select lines; one per CS
  *	number. Any individual value may be NULL for CS lines that
  *	are not GPIOs (driven by the SPI controller itself).
@@ -292,6 +317,25 @@ struct spi_controller {
 
 	/* called on release() to free memory provided by spi_controller */
 	void			(*cleanup)(struct spi_device *spi);
+
+	/*
+	 * These hooks are for drivers that want to use the generic
+	 * controller transfer mechanism. If these are used, the
+	 * transfer() function above must NOT be specified by the driver.
+	 * Over time we expect SPI drivers to be phased over to this API.
+	 */
+	int (*prepare_message)(struct spi_controller *ctlr,
+			       struct spi_message *message);
+
+	/*
+	 * These hooks are for drivers that use a generic implementation
+	 * of transfer_one_message() provided by the core.
+	 */
+	void (*set_cs)(struct spi_device *spi, bool enable);
+	int (*transfer_one)(struct spi_controller *ctlr, struct spi_device *spi,
+			    struct spi_transfer *transfer);
+	void (*handle_err)(struct spi_controller *ctlr,
+			   struct spi_message *message);
 
 	/* GPIO chip select */
 	struct gpio_desc	**cs_gpiods;

@@ -35,6 +35,22 @@ static LIST_HEAD(board_list);
 static LIST_HEAD(spi_controller_list);
 
 /**
+ * spi_set_cs_timing - configure CS setup, hold, and inactive delays
+ * @spi: the device that requires specific CS timing configuration
+ *
+ * Return: zero on success, else a negative error code.
+ */
+static int spi_set_cs_timing(struct spi_device *spi)
+{
+	int status = 0;
+
+	if (spi->controller->set_cs_timing && !spi->cs_gpiod)
+		status = spi->controller->set_cs_timing(spi);
+
+	return status;
+}
+
+/**
  * spi_new_device - instantiate one new SPI device
  * @master: Controller to which device is connected
  * @chip: Describes the SPI device
@@ -100,6 +116,10 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 				proxy->dev.name, status);
 		goto fail;
 	}
+
+	status = spi_set_cs_timing(proxy);
+	if (status)
+		goto fail;
 
 	status = register_device(&proxy->dev);
 	if (status)

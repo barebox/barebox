@@ -22,6 +22,8 @@ struct gpio_desc {
 	u32 flags; /* OR-d enum of_gpio_flags */
 };
 
+#define gpiod_not_found(desc)           (IS_ERR(desc) && PTR_ERR(desc) == -ENOENT)
+
 /*
  * This descriptor validation needs to be inserted verbatim into each
  * function taking a descriptor, so we need to use a preprocessor
@@ -1052,6 +1054,66 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 
 	return ret ? ERR_PTR(ret): desc;
 }
+
+/**
+ * gpiod_get_index - obtain a GPIO from a multi-index GPIO function
+ * @dev:	GPIO consumer, can be NULL for system-global GPIOs
+ * @con_id:	function within the GPIO consumer
+ * @idx:	index of the GPIO to obtain in the consumer
+ * @flags:	optional GPIO initialization flags
+ *
+ * This variant of gpiod_get() allows to access GPIOs other than the first
+ * defined one for functions that define several GPIOs.
+ *
+ * Returns:
+ * A valid GPIO descriptor, -ENOENT if no GPIO has been assigned to the
+ * requested function and/or index, or another IS_ERR() code if an error
+ * occurred while trying to acquire the GPIO.
+ */
+struct gpio_desc *__must_check gpiod_get_index(struct device *dev,
+					       const char *con_id,
+					       unsigned int idx,
+					       enum gpiod_flags flags)
+{
+	struct device_node *np = dev_of_node(dev);
+	const char *devname = dev ? dev_name(dev) : "?";
+	const char *label = con_id ?: devname;
+
+	return dev_gpiod_get_index(dev, np, con_id, idx, flags, label);
+}
+EXPORT_SYMBOL_GPL(gpiod_get_index);
+
+/**
+ * gpiod_get_index_optional - obtain an optional GPIO from a multi-index GPIO
+ *                            function
+ * @dev: GPIO consumer, can be NULL for system-global GPIOs
+ * @con_id: function within the GPIO consumer
+ * @index: index of the GPIO to obtain in the consumer
+ * @flags: optional GPIO initialization flags
+ *
+ * This is equivalent to gpiod_get_index(), except that when no GPIO with the
+ * specified index was assigned to the requested function it will return NULL.
+ * This is convenient for drivers that need to handle optional GPIOs.
+ *
+ * Returns:
+ * A valid GPIO descriptor, NULL if no GPIO has been assigned to the
+ * requested function and/or index, or another IS_ERR() code if an error
+ * occurred while trying to acquire the GPIO.
+ */
+struct gpio_desc *__must_check gpiod_get_index_optional(struct device *dev,
+							const char *con_id,
+							unsigned int index,
+							enum gpiod_flags flags)
+{
+	struct gpio_desc *desc;
+
+	desc = gpiod_get_index(dev, con_id, index, flags);
+	if (gpiod_not_found(desc))
+		return NULL;
+
+	return desc;
+}
+EXPORT_SYMBOL_GPL(gpiod_get_index_optional);
 
 /**
  * gpiod_count - return the number of GPIOs associated with a device / function

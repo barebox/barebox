@@ -70,6 +70,9 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 		proxy->cs_gpiod = ctrl->cs_gpiods[chip->chip_select];
 	proxy->max_speed_hz = chip->max_speed_hz;
 	proxy->mode = chip->mode;
+	proxy->cs_setup = chip->cs_setup;
+	proxy->cs_hold = chip->cs_hold;
+	proxy->cs_inactive = chip->cs_inactive;
 	proxy->bits_per_word = chip->bits_per_word ? chip->bits_per_word : 8;
 	proxy->dev.platform_data = chip->platform_data;
 	proxy->dev.bus = &spi_bus;
@@ -111,6 +114,22 @@ fail:
 }
 EXPORT_SYMBOL(spi_new_device);
 
+static void of_spi_parse_dt_cs_delay(struct device_node *nc,
+				     struct spi_delay *delay, const char *prop)
+{
+	u32 value;
+
+	if (!of_property_read_u32(nc, prop, &value)) {
+		if (value > U16_MAX) {
+			delay->value = DIV_ROUND_UP(value, 1000);
+			delay->unit = SPI_DELAY_UNIT_USECS;
+		} else {
+			delay->value = value;
+			delay->unit = SPI_DELAY_UNIT_NSECS;
+		}
+	}
+}
+
 static void spi_of_register_slaves(struct spi_controller *ctrl)
 {
 	struct device_node *n;
@@ -145,6 +164,12 @@ static void spi_of_register_slaves(struct spi_controller *ctrl)
 			chip.mode |= SPI_3WIRE;
 		of_property_read_u32(n, "spi-max-frequency",
 				&chip.max_speed_hz);
+
+		/* Device CS delays */
+		of_spi_parse_dt_cs_delay(n, &chip.cs_setup, "spi-cs-setup-delay-ns");
+		of_spi_parse_dt_cs_delay(n, &chip.cs_hold, "spi-cs-hold-delay-ns");
+		of_spi_parse_dt_cs_delay(n, &chip.cs_inactive, "spi-cs-inactive-delay-ns");
+
 		reg = of_find_property(n, "reg", NULL);
 		if (!reg)
 			continue;

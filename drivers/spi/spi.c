@@ -8,6 +8,8 @@
  */
 
 #include <common.h>
+#include <linux/device.h>
+#include <linux/gpio/consumer.h>
 #include <linux/spi/spi-mem.h>
 #include <spi/spi.h>
 #include <xfuncs.h>
@@ -64,6 +66,8 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 	proxy = xzalloc(sizeof *proxy);
 	proxy->master = ctrl;
 	proxy->chip_select = chip->chip_select;
+	if (ctrl->cs_gpiods)
+		proxy->cs_gpiod = ctrl->cs_gpiods[chip->chip_select];
 	proxy->max_speed_hz = chip->max_speed_hz;
 	proxy->mode = chip->mode;
 	proxy->bits_per_word = chip->bits_per_word ? chip->bits_per_word : 8;
@@ -215,6 +219,62 @@ static void scan_boardinfo(struct spi_controller *ctrl)
 	}
 }
 
+/**
+ * spi_get_gpio_descs() - grab chip select GPIOs for the master
+ * @ctlr: The SPI master to grab GPIO descriptors for
+ */
+static int spi_get_gpio_descs(struct spi_controller *ctlr)
+{
+	int nb, i;
+	struct gpio_desc **cs;
+	struct device *dev = ctlr->dev;
+
+	nb = gpiod_count(dev, "cs");
+	if (nb < 0) {
+		/* No GPIOs at all is fine, else return the error */
+		if (nb == -ENOENT)
+			return 0;
+		return nb;
+	}
+
+	ctlr->num_chipselect = max_t(int, nb, ctlr->num_chipselect);
+
+	cs = devm_kcalloc(dev, ctlr->num_chipselect, sizeof(*cs),
+			  GFP_KERNEL);
+	if (!cs)
+		return -ENOMEM;
+	ctlr->cs_gpiods = cs;
+
+	for (i = 0; i < nb; i++) {
+		/*
+		 * Most chipselects are active low, the inverted
+		 * semantics are handled by special quirks in gpiolib,
+		 * so initializing them GPIOD_OUT_LOW here means
+		 * "unasserted", in most cases this will drive the physical
+		 * line high.
+		 */
+		cs[i] = gpiod_get_index_optional(dev, "cs", i, GPIOD_OUT_LOW);
+		if (IS_ERR(cs[i]))
+			return PTR_ERR(cs[i]);
+
+		if (cs[i]) {
+			/*
+			 * If we find a CS GPIO, name it after the device and
+			 * chip select line.
+			 */
+			char *gpioname;
+
+			gpioname = basprintf("%s CS%d", dev_name(dev), i);
+			if (!gpioname)
+				return -ENOMEM;
+			gpiod_set_consumer_name(cs[i], gpioname);
+			free(gpioname);
+		}
+	}
+
+	return 0;
+}
+
 static int spi_controller_check_ops(struct spi_controller *ctlr)
 {
 	/*
@@ -284,6 +344,12 @@ int spi_register_controller(struct spi_controller *ctrl)
 	/* convention:  dynamically assigned bus IDs count down from the max */
 	if (ctrl->bus_num < 0)
 		ctrl->bus_num = dyn_bus_id--;
+
+	if (ctrl->use_gpio_descriptors) {
+		status = spi_get_gpio_descs(ctrl);
+		if (status)
+			return status;
+	}
 
 	list_add_tail(&ctrl->list, &spi_controller_list);
 

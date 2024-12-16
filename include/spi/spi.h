@@ -123,6 +123,17 @@ static inline u8 spi_get_chipselect(const struct spi_device *spi, u8 idx)
 	return spi->chip_select;
 }
 
+/* ctldata is for the bus_controller driver's runtime state */
+static inline void *spi_get_ctldata(const struct spi_device *spi)
+{
+	return spi->controller_state;
+}
+
+static inline void spi_set_ctldata(struct spi_device *spi, void *state)
+{
+	spi->controller_state = state;
+}
+
 /**
  * struct spi_controller - interface to SPI master or slave controller
  * @dev: device interface to this driver

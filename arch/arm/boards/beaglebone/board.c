@@ -80,8 +80,18 @@ static int beaglebone_devices_init(void)
 
 	armlinux_set_architecture(MACH_TYPE_BEAGLEBONE);
 
-	/* Register update handler */
+	/* Register update handlers */
 	am33xx_bbu_emmc_mlo_register_handler("MLO.emmc", "/dev/mmc1");
+
+	bbu_register_std_file_update("MLO.fat.emmc", 0, "/mnt/mmc1.0/MLO",
+				     filetype_ch_image);
+	bbu_register_std_file_update("barebox.fat.emmc", 0, "/mnt/mmc1.0/barebox.bin",
+				     filetype_arm_barebox);
+
+	bbu_register_std_file_update("MLO.fat.sd", 0, "/mnt/mmc0.0/MLO",
+				     filetype_ch_image);
+	bbu_register_std_file_update("barebox.fat.sd", 0, "/mnt/mmc0.0/barebox.bin",
+				     filetype_arm_barebox);
 
 	if (IS_ENABLED(CONFIG_SHELL_NONE))
 		return am33xx_of_register_bootdevice();

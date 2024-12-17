@@ -433,9 +433,15 @@ static struct i2c_adapter *dw_hdmi_i2c_adapter(struct dw_hdmi *hdmi)
 
 	adap = &i2c->adap;
 	adap->dev.parent = hdmi->dev;
-	adap->dev.of_node = hdmi->dev->of_node;
 	adap->master_xfer = dw_hdmi_i2c_xfer;
-	adap->nr = -1;
+
+	/*
+	 * The binding doesn't support listing slaves as OF child nodes,
+	 * therefore we use the device tree node only to check if
+	 * there is an alias.
+	 */
+	adap->dev.of_node = NULL;
+	adap->nr = of_alias_get_id(hdmi->dev->of_node, "i2c");
 
 	i2c->rinfo.sda_gpio = of_get_named_gpio_flags(hdmi->dev->of_node,
 							  "sda-gpios", 0,

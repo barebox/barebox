@@ -12,6 +12,8 @@
 
 #include "clk.h"
 
+#define IMX93_CLK_END 207
+
 enum clk_sel {
 	LOW_SPEED_IO_SEL,
 	NON_IO_SEL,

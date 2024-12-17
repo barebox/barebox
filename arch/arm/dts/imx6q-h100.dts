@@ -50,10 +50,6 @@
 	};
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec 0x620>;
-};
-
 &usdhc2 {
 	#address-cells = <1>;
 	#size-cells = <1>;

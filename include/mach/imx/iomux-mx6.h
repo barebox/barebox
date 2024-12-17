@@ -332,6 +332,8 @@
 #define _MX6Q_PAD_EIM_D19__IPU2_CSI1_D_16                                      \
 		IOMUX_PAD(0x03B0, 0x009C, 3, 0x08C8, 0, 0)
 #define _MX6Q_PAD_EIM_D19__UART1_CTS                                           \
+		IOMUX_PAD(0x03B0, 0x009C, 4, 0x0000, 0, 0)
+#define _MX6Q_PAD_EIM_D19__UART1_RTS                                           \
 		IOMUX_PAD(0x03B0, 0x009C, 4, 0x091C, 0, 0)
 #define _MX6Q_PAD_EIM_D19__GPIO_3_19                                           \
 		IOMUX_PAD(0x03B0, 0x009C, 5, 0x0000, 0, 0)
@@ -3796,6 +3798,7 @@
 #define  MX6Q_PAD_EIM_D19__IPU1_DI0_PIN8                         (_MX6Q_PAD_EIM_D19__IPU1_DI0_PIN8 | MUX_PAD_CTRL(NO_PAD_CTRL))
 #define  MX6Q_PAD_EIM_D19__IPU2_CSI1_D_16                        (_MX6Q_PAD_EIM_D19__IPU2_CSI1_D_16 | MUX_PAD_CTRL(NO_PAD_CTRL))
 #define  MX6Q_PAD_EIM_D19__UART1_CTS                             (_MX6Q_PAD_EIM_D19__UART1_CTS | MUX_PAD_CTRL(MX6Q_UART_PAD_CTRL))
+#define  MX6Q_PAD_EIM_D19__UART1_RTS                             (_MX6Q_PAD_EIM_D19__UART1_RTS | MUX_PAD_CTRL(MX6Q_UART_PAD_CTRL))
 #define  MX6Q_PAD_EIM_D19__GPIO_3_19                             (_MX6Q_PAD_EIM_D19__GPIO_3_19 | MUX_PAD_CTRL(NO_PAD_CTRL))
 #define  MX6Q_PAD_EIM_D19__EPIT1_EPITO                           (_MX6Q_PAD_EIM_D19__EPIT1_EPITO | MUX_PAD_CTRL(NO_PAD_CTRL))
 #define  MX6Q_PAD_EIM_D19__PL301_MX6QPER1_HRESP                  (_MX6Q_PAD_EIM_D19__PL301_MX6QPER1_HRESP | MUX_PAD_CTRL(NO_PAD_CTRL))

@@ -1,0 +1,37 @@
+/*
+ * The code contained herein is licensed under the GNU General Public
+ * License version 2.
+ */
+
+#include <arm/nxp/imx/imx6dl-colibri-iris.dts>
+#include "imx6qdl.dtsi"
+
+/ {
+	chosen {
+		barebox-environment {
+			compatible = "barebox,environment";
+			device-path = &bbenv_emmc;
+		};
+	};
+};
+
+&usdhc3 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		bbenv_emmc: partition@e0000 {
+			label = "barebox-environment";
+			reg = <0 0xe0000 0 0x20000>;
+		};
+	};
+};
+
+&clks {
+	fsl,pmic-stby-poweroff;
+};
+
+&pmic {
+	fsl,pmic-stby-poweroff;
+};

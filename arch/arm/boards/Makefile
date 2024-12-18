@@ -34,6 +34,7 @@ obj-$(CONFIG_MACH_EFIKA_MX_SMARTBOOK)		+= efika-mx-smartbook/
 obj-$(CONFIG_MACH_EMBEDSKY_E9)			+= embedsky-e9/
 obj-$(CONFIG_MACH_EMBEST_MARSBOARD)		+= embest-marsboard/
 obj-$(CONFIG_MACH_EMBEST_RIOTBOARD)		+= embest-riotboard/
+obj-$(CONFIG_MACH_TORADEX_COLIBRI_IMX6)		+= toradex-colibri-imx6/
 obj-$(CONFIG_MACH_ELTEC_HIPERCAM)		+= eltec-hipercam/
 obj-y						+= freescale-mx51-babbage/
 obj-$(CONFIG_MACH_FREESCALE_MX53_LOCO)		+= freescale-mx53-qsb/

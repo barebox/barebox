@@ -56,6 +56,12 @@ static inline const char *dt_string(struct fdt_header *f, const char *strstart, 
 	return string_is_terminated(str, f->size_dt_strings - ofs) ? str : NULL;
 }
 
+static inline bool is_reserved_name(const char *name)
+{
+	/* We use the $ prefix for properties internal to barebox */
+	return *name == '$';
+}
+
 static int of_reservemap_num_entries(const struct fdt_header *fdt)
 {
 	/*
@@ -230,7 +236,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 				node = root;
 			} else {
 				/* Only the root node may have an empty name */
-				if (!*pathp) {
+				if (!*pathp || is_reserved_name(pathp)) {
 					ret = -EINVAL;
 					goto err;
 				}
@@ -266,7 +272,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 			nodep = fdt_prop->data;
 
 			name = dt_string(&f, dt_strings, fdt32_to_cpu(fdt_prop->nameoff));
-			if (!name || !node) {
+			if (!name || !node || is_reserved_name(name)) {
 				ret = -ESPIPE;
 				goto err;
 			}
@@ -475,6 +481,9 @@ static int __of_flatten_dtb(struct fdt *fdt, struct device_node *node, int is_ro
 	list_for_each_entry(p, &node->properties, list) {
 		struct fdt_property *fp;
 
+		if (is_reserved_name(p->name))
+			continue;
+
 		if (fdt_ensure_space(fdt, p->length) < 0)
 			return -ENOMEM;
 
@@ -489,6 +498,8 @@ static int __of_flatten_dtb(struct fdt *fdt, struct device_node *node, int is_ro
 	}
 
 	list_for_each_entry(n, &node->children, parent_list) {
+		if (is_reserved_name(n->name))
+			continue;
 		if (is_root && !strcmp(n->name, "memreserve"))
 			continue;
 

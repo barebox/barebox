@@ -92,7 +92,7 @@ static int of_reservemap_num_entries(const struct fdt_header *fdt)
  * @fdt - the flattened device tree blob
  *
  * This stores the memreserve entries from the dtb in a newly created
- * /memserve node in the unflattened device tree. The device tree
+ * /$memreserve node in the unflattened device tree. The device tree
  * flatten code moves the entries back to the /memreserve/ area in the
  * flattened tree.
  *
@@ -109,7 +109,7 @@ static int of_unflatten_reservemap(struct device_node *root,
 	if (n <= 0)
 		return n;
 
-	memreserve = of_new_node(root, "memreserve");
+	memreserve = of_new_node(root, "$memreserve");
 	if (!memreserve)
 		return -ENOMEM;
 
@@ -462,7 +462,7 @@ static inline int dt_add_string(struct fdt *fdt, const char *str)
 	return ret;
 }
 
-static int __of_flatten_dtb(struct fdt *fdt, struct device_node *node, int is_root)
+static int __of_flatten_dtb(struct fdt *fdt, struct device_node *node)
 {
 	struct property *p;
 	struct device_node *n;
@@ -500,10 +500,8 @@ static int __of_flatten_dtb(struct fdt *fdt, struct device_node *node, int is_ro
 	list_for_each_entry(n, &node->children, parent_list) {
 		if (is_reserved_name(n->name))
 			continue;
-		if (is_root && !strcmp(n->name, "memreserve"))
-			continue;
 
-		ret = __of_flatten_dtb(fdt, n, 0);
+		ret = __of_flatten_dtb(fdt, n);
 		if (ret)
 			return ret;
 	}
@@ -553,11 +551,11 @@ void *of_flatten_dtb(struct device_node *node)
 
 	fdt.dt_nextofs = ofs;
 
-	ret = __of_flatten_dtb(&fdt, node, 1);
+	ret = __of_flatten_dtb(&fdt, node);
 	if (ret)
 		goto out_free;
 
-	memreserve = of_find_node_by_name_address(node, "memreserve");
+	memreserve = of_find_node_by_name_address(node, "$memreserve");
 	if (memreserve) {
 		const void *entries = of_get_property(memreserve, "reg", &len);
 

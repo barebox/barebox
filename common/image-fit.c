@@ -576,6 +576,7 @@ static int fit_handle_decompression(struct device_node *image,
 				    int *data_len)
 {
 	const char *compression = NULL;
+	struct property *pp;
 	void *uc_data;
 	int ret;
 
@@ -595,18 +596,21 @@ static int fit_handle_decompression(struct device_node *image,
 		return -ENOSYS;
 	}
 
-	ret = uncompress_buf_to_buf(*data, *data_len, &uc_data,
-				    fit_uncompress_error_fn);
-	if (ret < 0) {
-		pr_err("%s data couldn't be decompressed\n", compression);
-		return ret;
+	pp = of_find_property(image, "$uncompressed-data", NULL);
+	if (!pp) {
+		ret = uncompress_buf_to_buf(*data, *data_len, &uc_data,
+					    fit_uncompress_error_fn);
+		if (ret < 0) {
+			pr_err("%s data couldn't be decompressed\n", compression);
+			return ret;
+		}
+
+		/* associate buffer with FIT, so it's not leaked */
+		pp = __of_new_property(image, "$uncompressed-data", uc_data, ret);
 	}
 
-	*data = uc_data;
-	*data_len = ret;
-
-	/* associate buffer with FIT, so it's not leaked */
-	__of_new_property(image, "uncompressed-data", uc_data, *data_len);
+	*data = of_property_get_value(pp);
+	*data_len = pp->length;
 
 	return 0;
 }
@@ -762,7 +766,6 @@ static int fit_find_compatible_unit(struct fit_handle *handle,
 
 			score = fdt_machine_is_compatible(data, data_len, machine);
 
-			of_delete_property_by_name(image, "uncompressed-data");
 next:
 			if (ret)
 				pr_warn("skipping malformed configuration: %pOF (%pe)\n",

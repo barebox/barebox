@@ -20,6 +20,7 @@
  * files here...
  */
 #define _GNU_SOURCE
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -45,6 +46,12 @@
  */
 #include <mach/linux.h>
 #include <mach/hostfile.h>
+
+#ifdef CONFIG_CONSOLE_NONE
+int __attribute__((unused)) barebox_loglevel;
+#else
+extern int barebox_loglevel;
+#endif
 
 #define DELETED_OFFSET (sizeof(" (deleted)") - 1)
 
@@ -506,6 +513,8 @@ const char *barebox_cmdline_get(void)
 
 static void print_usage(const char*);
 
+#define OPT_LOGLEVEL		(CHAR_MAX + 1)
+
 static struct option long_options[] = {
 	{"help",     0, 0, 'h'},
 	{"malloc",   1, 0, 'm'},
@@ -518,6 +527,9 @@ static struct option long_options[] = {
 	{"stdinout", 1, 0, 'B'},
 	{"xres",     1, 0, 'x'},
 	{"yres",     1, 0, 'y'},
+#ifndef CONFIG_CONSOLE_NONE
+	{"loglevel", 1, 0, OPT_LOGLEVEL},
+#endif
 	{0, 0, 0, 0},
 };
 
@@ -528,7 +540,7 @@ int main(int argc, char *argv[])
 	void *ram;
 	int opt, ret, fd, fd2;
 	int malloc_size = CONFIG_MALLOC_SIZE;
-	int fdno = 0, envno = 0, option_index = 0;
+	int loglevel = -1, fdno = 0, envno = 0, option_index = 0;
 	char *new_cmdline;
 	char *aux;
 
@@ -550,6 +562,9 @@ int main(int argc, char *argv[])
 			exit(0);
 		case 'm':
 			malloc_size = strtoul(optarg, NULL, 0);
+			break;
+		case OPT_LOGLEVEL:
+			loglevel = strtoul(optarg, NULL, 0);
 			break;
 		case 'i':
 			break;
@@ -665,6 +680,10 @@ int main(int argc, char *argv[])
 	barebox_register_console(fileno(stdin), fileno(stdout));
 
 	rawmode();
+
+	if (loglevel >= 0)
+		barebox_loglevel = loglevel;
+
 	start_barebox();
 
 	/* never reached */
@@ -705,7 +724,19 @@ static void print_usage(const char *prgname)
 "                       stdin and stdout. <filein> and <fileout> can be regular\n"
 "                       files or FIFOs.\n"
 "  -x, --xres=<res>     SDL width.\n"
-"  -y, --yres=<res>     SDL height.\n",
-	prgname
+"  -y, --yres=<res>     SDL height.\n"
+#ifndef CONFIG_CONSOLE_NONE
+"      --loglevel=<num> Default log level to use, where <num> is one of:\n"
+"			  0    system is unusable (emerg)\n"
+"			  1    action must be taken immediately (alert)\n"
+"			  2    critical conditions (crit)\n"
+"			  3    error conditions (err)\n"
+"			  4    warning conditions (warn)\n"
+"			  5    normal but significant condition (notice)\n"
+"			  6    informational (info)\n"
+"			  7    debug-level messages (debug)\n"
+"			  8    verbose debug messages (vdebug)\n"
+#endif
+	, prgname
 	);
 }

@@ -198,3 +198,29 @@ hardware and tutorial is extended to make use of the new peripherals.
 
 This project does not require dedicated hardware. The development
 machine need only support a recent browser.
+
+Add Sandbox SDL input support
+=============================
+
+Skills: C (Basics). Difficulty: Lowest
+
+barebox on real hardware has multiple possible input method: buttons,
+keypads and even USB keyboards allow controlling barebox beyond what
+a serial console provides.
+
+For virtualized targets, barebox has ``virtio_input`` support, which
+JSBarebox uses to move the DOOM guy around.
+
+For developing barebox, it's often useful to run barebox directly as
+userspace program by compiling it for the ``sandbox`` architecture.
+
+This mode of operation can already use SDL 2.0 for video and sound
+and it would be nice to extend it with input support.
+
+As SDL is handled in a separate thread, this means we need a thread-safe
+FIFO, where the SDL thread would queue input events and barebox would
+dequeue events on the other side as they are polled.
+
+As the code will have a SDL 2.0 dependency anyway, it should probably
+make use of SDL 2.0 mutex/condition variables API for serializing
+accesses to the FIFO.

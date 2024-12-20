@@ -52,7 +52,7 @@ static int of_reserved_mem_walk(void)
 		}
 	}
 
-	node = of_find_node_by_path("/memreserve");
+	node = of_find_node_by_path("/$memreserve");
 	reg = of_get_property(node, "reg", &ncells);
 	ncells /= sizeof(__be32);
 	if (reg) {

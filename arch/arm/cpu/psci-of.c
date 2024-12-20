@@ -7,6 +7,24 @@
 #include <asm/psci.h>
 #include <linux/arm-smccc.h>
 
+static struct device_node *find_or_create_psci_node(struct device_node *root)
+{
+	struct device_node *psci;
+	const char *compat[] = {
+		"arm,psci-0.2",
+		"arm,psci-1.0"
+	};
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(compat); i++) {
+		psci = of_find_compatible_node(root, NULL, compat[i]);
+		if (psci)
+			return psci;
+	}
+
+	return of_create_node(root, "/psci");
+}
+
 int of_psci_fixup(struct device_node *root, unsigned long psci_version,
 		  const char *method)
 {
@@ -14,10 +32,6 @@ int of_psci_fixup(struct device_node *root, unsigned long psci_version,
 	int ret;
 	const char *compat;
 	struct device_node *cpus, *cpu;
-
-	psci = of_create_node(root, "/psci");
-	if (!psci)
-		return -EINVAL;
 
 	if (psci_version >= ARM_PSCI_VER_1_0) {
 		compat = "arm,psci-1.0";
@@ -27,6 +41,10 @@ int of_psci_fixup(struct device_node *root, unsigned long psci_version,
 		pr_err("Unsupported PSCI version %ld\n", psci_version);
 		return -EINVAL;
 	}
+
+	psci = find_or_create_psci_node(root);
+	if (!psci)
+		return -EINVAL;
 
 	cpus = of_find_node_by_path_from(root, "/cpus");
 	if (!cpus) {

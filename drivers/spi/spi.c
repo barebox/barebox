@@ -8,6 +8,8 @@
  */
 
 #include <common.h>
+#include <linux/device.h>
+#include <linux/gpio/consumer.h>
 #include <linux/spi/spi-mem.h>
 #include <spi/spi.h>
 #include <xfuncs.h>
@@ -31,6 +33,22 @@ struct boardinfo {
 
 static LIST_HEAD(board_list);
 static LIST_HEAD(spi_controller_list);
+
+/**
+ * spi_set_cs_timing - configure CS setup, hold, and inactive delays
+ * @spi: the device that requires specific CS timing configuration
+ *
+ * Return: zero on success, else a negative error code.
+ */
+static int spi_set_cs_timing(struct spi_device *spi)
+{
+	int status = 0;
+
+	if (spi->controller->set_cs_timing && !spi->cs_gpiod)
+		status = spi->controller->set_cs_timing(spi);
+
+	return status;
+}
 
 /**
  * spi_new_device - instantiate one new SPI device
@@ -64,8 +82,13 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 	proxy = xzalloc(sizeof *proxy);
 	proxy->master = ctrl;
 	proxy->chip_select = chip->chip_select;
+	if (ctrl->cs_gpiods)
+		proxy->cs_gpiod = ctrl->cs_gpiods[chip->chip_select];
 	proxy->max_speed_hz = chip->max_speed_hz;
 	proxy->mode = chip->mode;
+	proxy->cs_setup = chip->cs_setup;
+	proxy->cs_hold = chip->cs_hold;
+	proxy->cs_inactive = chip->cs_inactive;
 	proxy->bits_per_word = chip->bits_per_word ? chip->bits_per_word : 8;
 	proxy->dev.platform_data = chip->platform_data;
 	proxy->dev.bus = &spi_bus;
@@ -94,6 +117,10 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 		goto fail;
 	}
 
+	status = spi_set_cs_timing(proxy);
+	if (status)
+		goto fail;
+
 	status = register_device(&proxy->dev);
 	if (status)
 		goto fail;
@@ -106,6 +133,22 @@ fail:
 	return NULL;
 }
 EXPORT_SYMBOL(spi_new_device);
+
+static void of_spi_parse_dt_cs_delay(struct device_node *nc,
+				     struct spi_delay *delay, const char *prop)
+{
+	u32 value;
+
+	if (!of_property_read_u32(nc, prop, &value)) {
+		if (value > U16_MAX) {
+			delay->value = DIV_ROUND_UP(value, 1000);
+			delay->unit = SPI_DELAY_UNIT_USECS;
+		} else {
+			delay->value = value;
+			delay->unit = SPI_DELAY_UNIT_NSECS;
+		}
+	}
+}
 
 static void spi_of_register_slaves(struct spi_controller *ctrl)
 {
@@ -141,6 +184,12 @@ static void spi_of_register_slaves(struct spi_controller *ctrl)
 			chip.mode |= SPI_3WIRE;
 		of_property_read_u32(n, "spi-max-frequency",
 				&chip.max_speed_hz);
+
+		/* Device CS delays */
+		of_spi_parse_dt_cs_delay(n, &chip.cs_setup, "spi-cs-setup-delay-ns");
+		of_spi_parse_dt_cs_delay(n, &chip.cs_hold, "spi-cs-hold-delay-ns");
+		of_spi_parse_dt_cs_delay(n, &chip.cs_inactive, "spi-cs-inactive-delay-ns");
+
 		reg = of_find_property(n, "reg", NULL);
 		if (!reg)
 			continue;
@@ -215,6 +264,239 @@ static void scan_boardinfo(struct spi_controller *ctrl)
 	}
 }
 
+/**
+ * spi_get_gpio_descs() - grab chip select GPIOs for the master
+ * @ctlr: The SPI master to grab GPIO descriptors for
+ */
+static int spi_get_gpio_descs(struct spi_controller *ctlr)
+{
+	int nb, i;
+	struct gpio_desc **cs;
+	struct device *dev = ctlr->dev;
+
+	nb = gpiod_count(dev, "cs");
+	if (nb < 0) {
+		/* No GPIOs at all is fine, else return the error */
+		if (nb == -ENOENT)
+			return 0;
+		return nb;
+	}
+
+	ctlr->num_chipselect = max_t(int, nb, ctlr->num_chipselect);
+
+	cs = devm_kcalloc(dev, ctlr->num_chipselect, sizeof(*cs),
+			  GFP_KERNEL);
+	if (!cs)
+		return -ENOMEM;
+	ctlr->cs_gpiods = cs;
+
+	for (i = 0; i < nb; i++) {
+		/*
+		 * Most chipselects are active low, the inverted
+		 * semantics are handled by special quirks in gpiolib,
+		 * so initializing them GPIOD_OUT_LOW here means
+		 * "unasserted", in most cases this will drive the physical
+		 * line high.
+		 */
+		cs[i] = gpiod_get_index_optional(dev, "cs", i, GPIOD_OUT_LOW);
+		if (IS_ERR(cs[i]))
+			return PTR_ERR(cs[i]);
+
+		if (cs[i]) {
+			/*
+			 * If we find a CS GPIO, name it after the device and
+			 * chip select line.
+			 */
+			char *gpioname;
+
+			gpioname = basprintf("%s CS%d", dev_name(dev), i);
+			if (!gpioname)
+				return -ENOMEM;
+			gpiod_set_consumer_name(cs[i], gpioname);
+			free(gpioname);
+		}
+	}
+
+	return 0;
+}
+
+static void _spi_transfer_delay_ns(u32 ns)
+{
+	if (!ns)
+		return;
+	if (ns <= NSEC_PER_USEC) {
+		ndelay(ns);
+	} else {
+		u32 us = DIV_ROUND_UP(ns, NSEC_PER_USEC);
+
+		udelay(us);
+	}
+}
+
+int spi_delay_to_ns(struct spi_delay *_delay, struct spi_transfer *xfer)
+{
+	u32 delay = _delay->value;
+	u32 unit = _delay->unit;
+	u32 hz;
+
+	if (!delay)
+		return 0;
+
+	switch (unit) {
+	case SPI_DELAY_UNIT_USECS:
+		delay *= NSEC_PER_USEC;
+		break;
+	case SPI_DELAY_UNIT_NSECS:
+		/* Nothing to do here */
+		break;
+	case SPI_DELAY_UNIT_SCK:
+		/* Clock cycles need to be obtained from spi_transfer */
+		if (!xfer)
+			return -EINVAL;
+		/*
+		 * If there is unknown effective speed, approximate it
+		 * by underestimating with half of the requested Hz.
+		 */
+		hz = xfer->effective_speed_hz ?: xfer->speed_hz / 2;
+		if (!hz)
+			return -EINVAL;
+
+		/* Convert delay to nanoseconds */
+		delay *= DIV_ROUND_UP(NSEC_PER_SEC, hz);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return delay;
+}
+EXPORT_SYMBOL_GPL(spi_delay_to_ns);
+
+int spi_delay_exec(struct spi_delay *_delay, struct spi_transfer *xfer)
+{
+	int delay;
+
+	if (!_delay)
+		return -EINVAL;
+
+	delay = spi_delay_to_ns(_delay, xfer);
+	if (delay < 0)
+		return delay;
+
+	_spi_transfer_delay_ns(delay);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(spi_delay_exec);
+
+static void spi_set_cs(struct spi_device *spi, bool enable)
+{
+        bool activate = enable;
+
+        if (spi->cs_gpiod && !activate)
+                spi_delay_exec(&spi->cs_hold, NULL);
+
+        if (spi->mode & SPI_CS_HIGH)
+                enable = !enable;
+
+        if (spi->cs_gpiod) {
+                if (!(spi->mode & SPI_NO_CS)) {
+			/* Polarity handled by GPIO library */
+			gpiod_set_value(spi->cs_gpiod, activate);
+                }
+                /* Some SPI masters need both GPIO CS & slave_select */
+                if ((spi->controller->flags & SPI_CONTROLLER_GPIO_SS) &&
+                    spi->controller->set_cs)
+                        spi->controller->set_cs(spi, !enable);
+        } else if (spi->controller->set_cs) {
+                spi->controller->set_cs(spi, !enable);
+        }
+
+        if (spi->cs_gpiod || !spi->controller->set_cs_timing) {
+                if (activate)
+                        spi_delay_exec(&spi->cs_setup, NULL);
+                else
+                        spi_delay_exec(&spi->cs_inactive, NULL);
+        }
+}
+
+/*
+ * spi_transfer_one_message - Default implementation of transfer()
+ *
+ * This is a standard implementation of transfer() for drivers which implement a
+ * transfer_one() operation. It provides standard handling of delays and chip
+ * select management.
+ *
+ */
+static int spi_transfer_one_message(struct spi_device *spi, struct spi_message *msg)
+{
+	struct spi_controller *ctlr = spi->controller;
+	struct spi_transfer *xfer;
+	bool keep_cs = false;
+	int ret = 0;
+
+	if (ctlr->prepare_message) {
+		ret = ctlr->prepare_message(ctlr, msg);
+		if (ret) {
+			dev_err(ctlr->dev, "failed to prepare message: %d\n",
+				ret);
+			msg->status = ret;
+			return ret;
+		}
+	}
+
+	spi_set_cs(msg->spi, true);
+
+	list_for_each_entry(xfer, &msg->transfers, transfer_list) {
+		if ((xfer->tx_buf || xfer->rx_buf) && xfer->len) {
+			ret = ctlr->transfer_one(ctlr, msg->spi, xfer);
+			if (ret < 0) {
+				dev_err(&msg->spi->dev,
+					"SPI transfer failed: %d\n", ret);
+				goto out;
+			}
+		} else {
+			if (xfer->len)
+				dev_err(&msg->spi->dev,
+					"Bufferless transfer has length %u\n",
+					xfer->len);
+		}
+
+		if (msg->status != -EINPROGRESS)
+			goto out;
+
+		/* TODO: Convert to new spi_delay API */
+		if (xfer->delay_usecs)
+			udelay(xfer->delay_usecs);
+
+		if (xfer->cs_change) {
+			if (list_is_last(&xfer->transfer_list,
+					 &msg->transfers)) {
+				keep_cs = true;
+			} else {
+				spi_set_cs(msg->spi, false);
+				/* TODO: Convert to new spi_delay API */
+				udelay(10);
+				spi_set_cs(msg->spi, true);
+			}
+		}
+
+		msg->actual_length += xfer->len;
+	}
+
+out:
+	if (ret != 0 || !keep_cs)
+		spi_set_cs(msg->spi, false);
+
+	if (msg->status == -EINPROGRESS)
+		msg->status = ret;
+
+	if (msg->status && ctlr->handle_err)
+		ctlr->handle_err(ctlr, msg);
+
+	return ret;
+}
+
 static int spi_controller_check_ops(struct spi_controller *ctlr)
 {
 	/*
@@ -227,7 +509,7 @@ static int spi_controller_check_ops(struct spi_controller *ctlr)
 	if (ctlr->mem_ops) {
 		if (!ctlr->mem_ops->exec_op)
 			return -EINVAL;
-	} else if (!ctlr->transfer) {
+	} else if (!ctlr->transfer && !ctlr->transfer_one) {
 		return -EINVAL;
 	}
 
@@ -270,6 +552,9 @@ int spi_register_controller(struct spi_controller *ctrl)
 	if (status)
 		return status;
 
+	if (ctrl->transfer_one)
+		ctrl->transfer = spi_transfer_one_message;
+
 	slice_init(&ctrl->slice, dev_name(ctrl->dev));
 
 	/* even if it's just one always-selected device, there must
@@ -284,6 +569,12 @@ int spi_register_controller(struct spi_controller *ctrl)
 	/* convention:  dynamically assigned bus IDs count down from the max */
 	if (ctrl->bus_num < 0)
 		ctrl->bus_num = dyn_bus_id--;
+
+	if (ctrl->use_gpio_descriptors) {
+		status = spi_get_gpio_descs(ctrl);
+		if (status)
+			return status;
+	}
 
 	list_add_tail(&ctrl->list, &spi_controller_list);
 
@@ -321,7 +612,10 @@ static int __spi_validate(struct spi_device *spi, struct spi_message *message)
 	if (list_empty(&message->transfers))
 		return -EINVAL;
 
+	message->spi = spi;
+
 	list_for_each_entry(xfer, &message->transfers, transfer_list) {
+		xfer->effective_speed_hz = 0;
 		if (!xfer->bits_per_word)
 			xfer->bits_per_word = spi->bits_per_word;
 
@@ -347,6 +641,7 @@ static int __spi_validate(struct spi_device *spi, struct spi_message *message)
 			return -EINVAL;
 	}
 
+	message->actual_length = 0;
 	message->status = -EINPROGRESS;
 
 	return 0;

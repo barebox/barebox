@@ -1,0 +1,6 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+/dts-v1/;
+
+#include <arm64/rockchip/rk3566-pinetab2-v2.0.dts>
+#include "rk3566-pinetab2.dtsi"

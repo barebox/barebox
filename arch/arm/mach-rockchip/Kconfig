@@ -79,6 +79,21 @@ config MACH_RK3568_BPI_R2PRO
 	help
 	  Say Y here if you are using a RK3568 Bananpi R2 Pro
 
+config MACH_PINE64_PINETAB2
+	select ARCH_RK3568
+	bool "Pine64 PineTab 2"
+	help
+	  Say Y here if you are using a Pine64 PineTab 2
+
+	  This will build Barebox for two revisions of PineTab 2:
+
+	  - v0.1: distributed to several OS developers for early OS bring
+	          up. Not many of them are available and was superseded
+	          by rev 2.0.
+
+	  - v2.0: distributed to consumers. Use this if you intend to ship
+	          Barebox to the general public.
+
 config MACH_PINE64_QUARTZ64
 	select ARCH_RK3568
 	bool "Pine64 Quartz64"

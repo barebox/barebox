@@ -40,10 +40,6 @@
 	};
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec 0x620>;
-};
-
 &usbh1 {
 	phy_type = "utmi";
 	dr_mode = "host";

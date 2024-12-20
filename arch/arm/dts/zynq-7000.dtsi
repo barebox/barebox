@@ -1,4 +1,11 @@
 
+/ {
+	aliases {
+		mmc0 = &sdhci0;
+		mmc1 = &sdhci1;
+	};
+};
+
 &amba {
 	qspi: spi@e000d000 {
 		compatible = "xlnx,zynq-qspi-1.0";

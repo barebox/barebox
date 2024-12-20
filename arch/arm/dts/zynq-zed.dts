@@ -4,7 +4,17 @@
 / {
 	chosen {
 		stdout-path = &uart1;
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &sdhci0, "partname:0";
+			file-path = "barebox.env";
+		};
 	};
+};
+
+&sdhci0 {
+	bus-width = <4>;
 };
 
 &qspi {

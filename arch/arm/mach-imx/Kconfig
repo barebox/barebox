@@ -389,6 +389,11 @@ config MACH_EMBEST_RIOTBOARD
 	select ARCH_IMX6
 	imply AT803X_PHY
 
+config MACH_TORADEX_COLIBRI_IMX6
+	bool "Toradex Colibri iMX6"
+	select ARCH_IMX6
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_SABRELITE
 	bool "Freescale i.MX6 Sabre Lite"
 	select ARCH_IMX6

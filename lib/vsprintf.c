@@ -510,12 +510,12 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
  *              C colon
  *              D dash
  *              N no separator
- * - 'JP' For a JSON path
  * - 'M' For a 6-byte MAC address, it prints the address in the
  *       usual colon-separated hex notation
  *
  * Additionally, we support following barebox-specific format specifiers:
  *
+ * - 'JP' For a JSON path
  * - 'D' For EFI device paths
  */
 static char *pointer(const char *fmt, char *buf, const char *end, const void *ptr,

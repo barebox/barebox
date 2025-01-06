@@ -185,11 +185,6 @@ config DRIVER_NET_ENC28J60_WRITEVERIFY
 	  Enable the verify after the buffer write useful for debugging purpose.
 	  If unsure, say N.
 
-config DRIVER_NET_EP93XX
-	bool "EP93xx Ethernet driver"
-	depends on ARCH_EP93XX
-	select PHYLIB
-
 config DRIVER_NET_ETHOC
 	bool "OpenCores ethernet MAC driver"
 	depends on OPENRISC

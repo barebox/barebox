@@ -90,13 +90,6 @@ config DRIVER_SERIAL_NS16550_PCI
 	help
 	  Enable this to get support for NS16550 UARTs connected over PCI
 
-config DRIVER_SERIAL_PL010
-	depends on ARCH_EP93XX
-	default y
-	bool "ARM AMBA PL010 support"
-	help
-	  Enable this to get support for AMBA PL010 based serial devices
-
 config DRIVER_SERIAL_PXA
 	bool "PXA serial driver"
 	depends on ARCH_PXA

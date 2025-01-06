@@ -128,7 +128,6 @@ struct vf610_adc {
 	void __iomem *regs;
 	struct clk *clk;
 	struct aiodevice aiodev;
-	void (*aiodev_info)(struct device *);
 
 	u32 vref_uv;
 	u32 value;
@@ -515,9 +514,6 @@ static void vf610_adc_devinfo(struct device *dev)
 {
 	struct vf610_adc *info = dev->parent->priv;
 
-	if (info->aiodev_info)
-		info->aiodev_info(dev);
-
 	pr_info("Sample Rate: %u\n", info->sample_freq_avail[info->adc_feature.sample_rate]);
 }
 
@@ -585,8 +581,7 @@ static int vf610_adc_probe(struct device *dev)
 		goto error_adc_buffer_init;
 	}
 
-	info->aiodev_info = aiodev->dev.info;
-	aiodev->dev.info = vf610_adc_devinfo;
+	devinfo_add(&aiodev->dev, vf610_adc_devinfo);
 
 	return 0;
 
@@ -602,6 +597,7 @@ static void vf610_adc_remove(struct device *dev)
 {
 	struct vf610_adc *info = dev->priv;
 
+	devinfo_del(dev, vf610_adc_devinfo);
 	regulator_disable(info->vref);
 	clk_disable(info->clk);
 }

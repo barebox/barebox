@@ -526,7 +526,7 @@ struct tee_device *tee_device_alloc(const struct tee_desc *teedesc,
 	teedev->dev.parent = dev;
 	teedev->dev.type_data = driver_data;
 	teedev->dev.priv = teedev;
-	teedev->dev.info = tee_devinfo;
+	devinfo_add(&teedev->dev, tee_devinfo);
 
 	rc = dev_set_name(&teedev->dev, "tee%s",
 			  teedesc->flags & TEE_DESC_PRIVILEGED ? "priv" : "");
@@ -557,6 +557,7 @@ EXPORT_SYMBOL_GPL(tee_device_alloc);
 
 void tee_device_release(struct tee_device *teedev)
 {
+	devinfo_del(&teedev->dev, tee_devinfo);
 	kfree(teedev);
 }
 

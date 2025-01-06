@@ -824,3 +824,53 @@ struct device *device_find_child(struct device *parent, void *data,
 	return NULL;
 }
 EXPORT_SYMBOL_GPL(device_find_child);
+
+#ifdef CONFIG_CMD_DEVINFO
+struct device_info_cb {
+	void  (*info) (struct device *);
+	struct list_head list;
+};
+
+static void devinfo_init(struct device *dev)
+{
+	/* We initialize on demand, because devinfo_add should be
+	 * callable even before device registration
+	 */
+	if (!dev->info_list.prev && !dev->info_list.next)
+		INIT_LIST_HEAD(&dev->info_list);
+}
+
+void devinfo_add(struct device *dev, void (*info)(struct device *))
+{
+	struct device_info_cb *cb = xmalloc(sizeof(*cb));
+
+	devinfo_init(dev);
+
+	cb->info = info;
+	list_add_tail(&cb->list, &dev->info_list);
+}
+
+void devinfo_del(struct device *dev, void (*info)(struct device *))
+{
+	struct device_info_cb *cb, *tmp;
+
+	devinfo_init(dev);
+
+	list_for_each_entry_safe(cb, tmp, &dev->info_list, list) {
+		if (cb->info == info) {
+			list_del(&cb->list);
+			free(cb);
+		}
+	}
+}
+
+void devinfo(struct device *dev)
+{
+	struct device_info_cb *cb;
+
+	devinfo_init(dev);
+
+	list_for_each_entry(cb, &dev->info_list, list)
+		cb->info(dev);
+}
+#endif

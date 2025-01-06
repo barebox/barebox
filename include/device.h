@@ -92,7 +92,9 @@ struct device {
 
 	unsigned long dma_offset;
 
-	void    (*info) (struct device *);
+#ifdef CONFIG_CMD_DEVINFO
+	struct list_head info_list;
+#endif
 	/*
 	 * For devices which take longer to probe this is called
 	 * when the driver should actually detect client devices
@@ -162,5 +164,15 @@ static inline bool dev_is_dma_coherent(struct device *dev)
 
 	return IS_ENABLED(CONFIG_ARCH_DMA_DEFAULT_COHERENT);
 }
+
+#ifdef CONFIG_CMD_DEVINFO
+void devinfo_add(struct device *dev, void (*info)(struct device *));
+void devinfo_del(struct device *dev, void (*info)(struct device *));
+void devinfo(struct device *dev);
+#else
+static inline void devinfo_add(struct device *dev, void (*info)(struct device *)) {}
+static inline void devinfo_del(struct device *dev, void (*info)(struct device *)) {}
+static inline void devinfo(struct device *dev) {}
+#endif
 
 #endif

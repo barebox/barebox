@@ -119,7 +119,7 @@ static int sifive_l2_probe(struct device *dev)
 
 	sifive_l2_enable_ways();
 
-	dev->info = sifive_l2_config_read;
+	devinfo_add(dev, sifive_l2_config_read);
 
 	return 0;
 }

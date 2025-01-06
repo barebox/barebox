@@ -82,8 +82,7 @@ static int do_devinfo(int argc, char *argv[])
 		if (dev->bus)
 			printf("Bus: %s\n", dev->bus->name);
 
-		if (dev->info)
-			dev->info(dev);
+		devinfo(dev);
 
 		if (dev->parent && (!dev->bus || dev->bus->dev != dev->parent))
 			printf("Parent: %s\n", dev_name(dev->parent));

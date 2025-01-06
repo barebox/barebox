@@ -64,7 +64,6 @@ struct optee_rng_private {
 	struct tee_shm *entropy_shm_pool;
 	struct hwrng optee_rng;
 	u16 quality;
-	void (*bus_devinfo)(struct device *);
 };
 
 #define to_optee_rng_private(r) \
@@ -198,9 +197,6 @@ static void optee_rng_devinfo(struct device *dev)
 {
 	printf("Data rate: %u\n", pvt_data.data_rate);
 	printf("Quality: %u\n", pvt_data.quality);
-
-	if (pvt_data.bus_devinfo)
-		pvt_data.bus_devinfo(dev);
 }
 
 static int optee_ctx_match(struct tee_ioctl_version_data *ver, const void *data)
@@ -250,8 +246,7 @@ static int optee_rng_probe(struct device *dev)
 	}
 
 	pvt_data.dev = dev;
-	pvt_data.bus_devinfo = dev->info;
-	dev->info = optee_rng_devinfo;
+	devinfo_add(dev, optee_rng_devinfo);
 
 	return 0;
 
@@ -265,6 +260,7 @@ out_ctx:
 
 static void optee_rng_remove(struct device *dev)
 {
+	devinfo_del(dev, optee_rng_devinfo);
 	hwrng_unregister(&pvt_data.optee_rng);
 
 	tee_shm_free(pvt_data.entropy_shm_pool);

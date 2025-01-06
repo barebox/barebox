@@ -329,7 +329,7 @@ static int ubootenv_probe(struct device *dev)
 		free(blob[!current]);
 	}
 
-	dev->info = ubootenv_info;
+	devinfo_add(dev, ubootenv_info);
 
 	return 0;
 out:

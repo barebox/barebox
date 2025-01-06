@@ -84,7 +84,6 @@ struct imx7d_adc {
 	void __iomem *regs;
 	struct clk *clk;
 	struct aiodevice aiodev;
-	void (*aiodev_info)(struct device *);
 
 	u32 vref_uv;
 	u32 pre_div_num;
@@ -350,9 +349,6 @@ static void imx7d_adc_devinfo(struct device *dev)
 {
 	struct imx7d_adc *info = dev->parent->priv;
 
-	if (info->aiodev_info)
-		info->aiodev_info(dev);
-
 	printf("Sample Rate: %u\n", imx7d_adc_get_sample_rate(info));
 }
 
@@ -403,8 +399,7 @@ static int imx7d_adc_probe(struct device *dev)
 	if (ret < 0)
 		return dev_err_probe(dev, ret, "Failed to register aiodev\n");
 
-	info->aiodev_info = aiodev->dev.info;
-	aiodev->dev.info = imx7d_adc_devinfo;
+	devinfo_add(&aiodev->dev, imx7d_adc_devinfo);
 
 	return 0;
 }
@@ -412,6 +407,8 @@ static int imx7d_adc_probe(struct device *dev)
 static void imx7d_adc_disable(struct device *dev)
 {
 	struct imx7d_adc *info = dev->priv;
+
+	devinfo_del(dev, imx7d_adc_devinfo);
 
 	imx7d_adc_power_down(info);
 

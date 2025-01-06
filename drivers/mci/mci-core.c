@@ -2944,7 +2944,7 @@ int mci_register(struct mci_host *host)
 			   &mci->probe, mci);
 
 	if (IS_ENABLED(CONFIG_MCI_INFO))
-		mci->dev.info = mci_info;
+		devinfo_add(&mci->dev, mci_info);
 
 	/* if enabled, probe the attached card immediately */
 	if (IS_ENABLED(CONFIG_MCI_STARTUP))

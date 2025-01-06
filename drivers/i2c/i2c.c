@@ -410,7 +410,7 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 		free(client);
 		return NULL;
 	}
-	client->dev.info = i2c_info;
+	devinfo_add(&client->dev, i2c_info);
 
 	if (chip->of_node)
 		chip->of_node->dev = &client->dev;

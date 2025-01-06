@@ -586,7 +586,7 @@ static int mxs_mci_probe(struct device *hw_dev)
 	if (IS_ENABLED(CONFIG_MCI_INFO)) {
 		mxs_mci->f_min = host->f_min;
 		mxs_mci->f_max = host->f_max;
-		hw_dev->info = mxs_mci_info;
+		devinfo_add(hw_dev, mxs_mci_info);
 	}
 
 	return mci_register(host);

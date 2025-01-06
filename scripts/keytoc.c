@@ -484,11 +484,17 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 		return -EOPNOTSUPP;
 	} else {
 		fprintf(outfilep, "\nstatic uint64_t %s_x[] = {", key_name_c);
-		print_bignum(key_x, bits, 64);
+		ret = print_bignum(key_x, bits, 64);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, "\n};\n\n");
 
 		fprintf(outfilep, "static uint64_t %s_y[] = {", key_name_c);
-		print_bignum(key_y, bits, 64);
+		ret = print_bignum(key_y, bits, 64);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, "\n};\n\n");
 
 		fprintf(outfilep, "static struct ecdsa_public_key %s = {\n", key_name_c);
@@ -526,10 +532,16 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 	if (dts) {
 		fprintf(outfilep, "\t\tkey-%s {\n", key_name_c);
 		fprintf(outfilep, "\t\t\trsa,r-squared = <");
-		print_bignum(r_squared, bits, 32);
+		ret = print_bignum(r_squared, bits, 32);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, ">;\n");
 		fprintf(outfilep, "\t\t\trsa,modulus= <");
-		print_bignum(modulus, bits, 32);
+		ret = print_bignum(modulus, bits, 32);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, ">;\n");
 		fprintf(outfilep, "\t\t\trsa,exponent = <0x%0lx 0x%lx>;\n",
 			(exponent >> 32) & 0xffffffff,
@@ -540,11 +552,17 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 		fprintf(outfilep, "\t\t};\n");
 	} else {
 		fprintf(outfilep, "\nstatic uint32_t %s_modulus[] = {", key_name_c);
-		print_bignum(modulus, bits, 32);
+		ret = print_bignum(modulus, bits, 32);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, "\n};\n\n");
 
 		fprintf(outfilep, "static uint32_t %s_rr[] = {", key_name_c);
-		print_bignum(r_squared, bits, 32);
+		ret = print_bignum(r_squared, bits, 32);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, "\n};\n\n");
 
 		if (standalone) {

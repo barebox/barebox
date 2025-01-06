@@ -115,14 +115,14 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 $(obj)/%.s: $(obj)/% FORCE
 	$(call if_changed,disasm)
 
-quiet_cmd_fit = FIT     $@
-cmd_fit = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
+quiet_cmd_itb = FIT.ITS $@
+cmd_itb = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
 	-D'$(subst -,_,$(*F))_dts=1' $(foreach f,$< $(2),-include '$(f)') /dev/null ; \
 	mkimage -f $(dtc-tmp) $@ -E \
 	cat $(depfile).pre $(depfile).dtc > $(depfile)
 
-$(obj)/%.fit: $(obj)/%.its FORCE
-	$(call if_changed,fit)
+$(obj)/%.itb: $(obj)/%.its FORCE
+	$(call if_changed,itb)
 
 $(obj)/piggy.o: $(obj)/barebox.z FORCE
 

@@ -159,13 +159,6 @@ int virtio_finalize_features(struct virtio_device *dev)
 }
 EXPORT_SYMBOL_GPL(virtio_finalize_features);
 
-int virtio_find_vqs(struct virtio_device *vdev, unsigned int nvqs,
-		    struct virtqueue *vqs[])
-{
-	return vdev->config->find_vqs(vdev, nvqs, vqs);
-}
-EXPORT_SYMBOL_GPL(virtio_find_vqs);
-
 static int virtio_dev_probe(struct device *_d)
 {
 	int err, i;

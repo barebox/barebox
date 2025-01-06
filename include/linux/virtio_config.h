@@ -246,8 +246,12 @@ static inline int virtio_set_config(struct virtio_device *vdev, unsigned int off
  * @vqs:	on success, includes new virtqueues
  * @return 0 if OK, -ve on error
  */
+static inline
 int virtio_find_vqs(struct virtio_device *vdev, unsigned int nvqs,
-		    struct virtqueue *vqs[]);
+		    struct virtqueue *vqs[])
+{
+	return vdev->config->find_vqs(vdev, nvqs, vqs);
+}
 
 /**
  * virtio_device_ready - enable vq use in probe function

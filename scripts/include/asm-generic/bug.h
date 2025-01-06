@@ -3,7 +3,7 @@
 #ifndef _ASM_GENERIC_BUG_H
 #define _ASM_GENERIC_BUG_H
 
-#include <printk.h>
+#include <printf.h>
 #include <stdlib.h>
 
 #define BUG() do { \

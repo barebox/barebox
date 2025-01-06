@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef __PRINTK_H
-#define __PRINTK_H
+#ifndef __PRINTF_H
+#define __PRINTF_H
 
 #include <linux/types.h>
 

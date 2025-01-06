@@ -4,7 +4,7 @@
 #define _ASM_GENERIC_BUG_H
 
 #include <linux/compiler.h>
-#include <printk.h>
+#include <printf.h>
 
 #define BUG() do { \
 	printf("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \

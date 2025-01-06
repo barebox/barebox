@@ -3,7 +3,7 @@
 #ifndef __ARM_MMU_COMMON_H
 #define __ARM_MMU_COMMON_H
 
-#include <printk.h>
+#include <printf.h>
 #include <linux/types.h>
 #include <linux/ioport.h>
 #include <linux/kernel.h>

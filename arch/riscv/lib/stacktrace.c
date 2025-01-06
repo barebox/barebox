@@ -8,7 +8,7 @@
  */
 
 #include <linux/kernel.h>
-#include <printk.h>
+#include <printf.h>
 #include <asm/unwind.h>
 #include <asm/ptrace.h>
 #include <asm-generic/memory_layout.h>

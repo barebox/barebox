@@ -4,7 +4,7 @@
 
 #include <stdarg.h>
 #include <console.h>
-#include <printk.h>
+#include <printf.h>
 
 /*
  * STDIO based functions (can always be used)

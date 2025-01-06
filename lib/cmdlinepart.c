@@ -77,6 +77,9 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 		end = (char *)(partstr + 2);
 	}
 
+	if (partition_flags & CMDLINEPART_FORCE)
+		flags |= DEVFS_PARTITION_CAN_OVERLAP;
+
 	if (endp)
 		*endp = end;
 

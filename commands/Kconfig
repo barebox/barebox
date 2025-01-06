@@ -612,7 +612,7 @@ config CMD_PARTITION
 	help
 	  addpart - add a partition description to a device
 
-	  Usage: addpart [-n] DEVICE PART
+	  Usage: addpart [-nf] DEVICE PART
 
 	  The size and the offset can be given in decimal (without any prefix) and
 	  in hex (prefixed with 0x). Both can have an optional suffix K, M or G.
@@ -622,6 +622,7 @@ config CMD_PARTITION
 
 	  Options:
 		  -n	do not use the device name as prefix of the partition name
+		  -f	force partition creation, even if it overlaps existing ones
 		  DEVICE	device being worked on
 		  PART	SIZE1[@OFFSET1](NAME1)[RO],SIZE2[@OFFSET2](NAME2)[RO],...
 

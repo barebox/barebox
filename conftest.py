@@ -45,6 +45,9 @@ def pytest_addoption(parser):
     parser.addoption('--dry-run', action='store_const', const='qemu_dry_run',
         dest='lg_initial_state',
         help=('(for debugging) skip tests and just print Qemu command line'))
+    parser.addoption('--dump-dtb', action='store_const', const='qemu_dump_dtb',
+        dest='lg_initial_state',
+        help=('(for debugging) skip tests and just dump the Qemu device tree'))
     parser.addoption('--rng', action='count', dest='qemu_rng',
         help=('instantiate Virt I/O random number generator'))
     parser.addoption('--console', action='count', dest='qemu_console', default=0,

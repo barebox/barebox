@@ -23,6 +23,7 @@ class Status(enum.Enum):
     barebox = 2
     qemu_dry_run = 3
     qemu_interactive = 4
+    qemu_dump_dtb = 5
 
 @target_factory.reg_driver
 @attr.s(eq=False)
@@ -72,7 +73,10 @@ class BareboxTestStrategy(Strategy):
     def force(self, state):
         self.transition(Status.off)  # pylint: disable=missing-kwoa
 
-        if state == "qemu_dry_run" or state == "qemu_interactive":
+        if state.startswith("qemu_"):
+            if state == "qemu_dump_dtb":
+                self.qemu.machine += f",dumpdtb={self.target.name}.dtb"
+
             cmd = self.qemu.get_qemu_base_args()
 
             cmd.append("-serial")
@@ -88,7 +92,7 @@ class BareboxTestStrategy(Strategy):
 
             pytest.exit('Interactive session terminated')
         else:
-            pytest.exit('Can only force to: qemu_dry_run, qemu_interactive')
+            pytest.exit('Can only force to: qemu_dry_run, qemu_interactive, qemu_dump_dtb')
 
     def append_qemu_args(self, *args):
         if self.qemu is None:

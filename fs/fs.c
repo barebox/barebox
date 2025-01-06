@@ -201,6 +201,8 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 
 	if (type)
 		printf("  %s%s", typeprefix, type);
+	else
+		printf("  unknown (mode=0%o)", st->st_mode);
 
 	fdev = get_fsdevice_by_path(dirfd, filename);
 

@@ -616,6 +616,10 @@ static int gen_key(const char *keyname, const char *path)
 	char *tmp, *key_name_c;
 
 	/* key name handling */
+	keyname = try_resolve_env(keyname);
+	if (!keyname)
+		exit(1);
+
 	tmp = key_name_c = strdup(keyname);
 
 	while (*tmp) {

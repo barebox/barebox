@@ -516,16 +516,20 @@ err:
 	return ret;
 }
 
+static const struct fs_legacy_ops uimagefs_ops = {
+	.opendir   = uimagefs_opendir,
+	.readdir   = uimagefs_readdir,
+	.closedir  = uimagefs_closedir,
+	.stat      = uimagefs_stat,
+};
+
 static struct fs_driver uimagefs_driver = {
 	.open      = uimagefs_open,
 	.close     = uimagefs_close,
 	.read      = uimagefs_read,
 	.lseek     = uimagefs_lseek,
-	.opendir   = uimagefs_opendir,
-	.readdir   = uimagefs_readdir,
-	.closedir  = uimagefs_closedir,
-	.stat      = uimagefs_stat,
 	.ioctl	   = uimagefs_ioctl,
+	.legacy_ops = &uimagefs_ops,
 	.flags     = 0,
 	.type = filetype_uimage,
 	.drv = {

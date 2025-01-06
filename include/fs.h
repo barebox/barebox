@@ -63,10 +63,6 @@ enum erase_type {
 struct fs_driver {
 	int (*probe) (struct device *dev);
 
-	/* create a file. The file is guaranteed to not exist */
-	int (*create)(struct device *dev, const char *pathname, mode_t mode);
-	int (*unlink)(struct device *dev, const char *pathname);
-
 	/* Truncate a file to given size */
 	int (*truncate)(struct device *dev, FILE *f, loff_t size);
 
@@ -88,17 +84,22 @@ struct fs_driver {
 
 	int (*memmap)(struct device *dev, FILE *f, void **map, int flags);
 
-	/* legacy */
-	int (*mkdir)(struct device *dev, const char *pathname);
-	int (*rmdir)(struct device *dev, const char *pathname);
-	int (*symlink)(struct device *dev, const char *pathname,
-		       const char *newpath);
-	int (*readlink)(struct device *dev, const char *pathname, char *name,
-			size_t size);
-	struct dir* (*opendir)(struct device *dev, const char *pathname);
-	struct dirent* (*readdir)(struct device *dev, struct dir *dir);
-	int (*closedir)(struct device *dev, DIR *dir);
-	int (*stat)(struct device *dev, const char *file, struct stat *stat);
+	const struct fs_legacy_ops {
+		/* create a file. The file is guaranteed to not exist */
+		int (*create)(struct device *dev, const char *pathname, mode_t mode);
+		int (*unlink)(struct device *dev, const char *pathname);
+
+		int (*mkdir)(struct device *dev, const char *pathname);
+		int (*rmdir)(struct device *dev, const char *pathname);
+		int (*symlink)(struct device *dev, const char *pathname,
+			       const char *newpath);
+		int (*readlink)(struct device *dev, const char *pathname, char *name,
+				size_t size);
+		struct dir* (*opendir)(struct device *dev, const char *pathname);
+		struct dirent* (*readdir)(struct device *dev, struct dir *dir);
+		int (*closedir)(struct device *dev, DIR *dir);
+		int (*stat)(struct device *dev, const char *file, struct stat *stat);
+	} *legacy_ops;
 
 	struct driver drv;
 

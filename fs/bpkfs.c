@@ -491,15 +491,19 @@ err:
 	return ret;
 }
 
+static const struct fs_legacy_ops bpkfs_ops = {
+	.opendir   = bpkfs_opendir,
+	.readdir   = bpkfs_readdir,
+	.closedir  = bpkfs_closedir,
+	.stat      = bpkfs_stat,
+};
+
 static struct fs_driver bpkfs_driver = {
 	.open      = bpkfs_open,
 	.close     = bpkfs_close,
 	.read      = bpkfs_read,
 	.lseek     = bpkfs_lseek,
-	.opendir   = bpkfs_opendir,
-	.readdir   = bpkfs_readdir,
-	.closedir  = bpkfs_closedir,
-	.stat      = bpkfs_stat,
+	.legacy_ops = &bpkfs_ops,
 	.flags     = 0,
 	.type = filetype_bpk,
 	.drv = {

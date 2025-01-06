@@ -188,9 +188,13 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 		typeprefix = "cdev link to ";
 	}
 
-	printf("\n");
+	printf("\nSize: ");
 
-	printf("  Size: %-20llu", st->st_size);
+	if (st->st_size == FILE_SIZE_STREAM)
+		printf("%-20s", "stream");
+	else
+		printf("%-20llu", st->st_size);
+
 	if (bdev)
 		printf("Blocks: %llu\tIO Block: %u\t",
 		       (u64)bdev->num_blocks, 1 << bdev->blockbits);

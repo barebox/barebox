@@ -515,6 +515,24 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 	return 0;
 }
 
+static const char *try_resolve_env(const char *input)
+{
+	const char *var;
+
+	if (strncmp(input, "__ENV__", 7))
+		return input;
+
+	var = getenv(input + 7);
+	if (!var || *var == '\0') {
+		fprintf(stderr,
+			"environment variable \"%s\" is not set or empty\n",
+			input + 7);
+		return NULL;
+	}
+
+	return var;
+}
+
 static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name_c)
 {
 	BIGNUM *modulus, *r_squared;
@@ -597,6 +615,7 @@ static int gen_key(const char *keyname, const char *path)
 	EVP_PKEY *key;
 	char *tmp, *key_name_c;
 
+	/* key name handling */
 	tmp = key_name_c = strdup(keyname);
 
 	while (*tmp) {
@@ -605,15 +624,10 @@ static int gen_key(const char *keyname, const char *path)
 		tmp++;
 	}
 
-	if (!strncmp(path, "__ENV__", 7)) {
-		const char *var = getenv(path + 7);
-		if (!var) {
-			fprintf(stderr,
-				"environment variable \"%s\" is empty\n", path + 7);
-			exit(1);
-		}
-		path = var;
-	}
+	/* path/URI handling */
+	path = try_resolve_env(path);
+	if (!path)
+		exit(1);
 
 	if (!strncmp(path, "pkcs11:", 7)) {
 		ret = engine_get_pub_key(path, &key);
@@ -625,6 +639,7 @@ static int gen_key(const char *keyname, const char *path)
 			exit(1);
 	}
 
+	/* generate built-in keys */
 	ret = gen_key_ecdsa(key, keyname, key_name_c);
 	if (ret == -EOPNOTSUPP)
 		return ret;

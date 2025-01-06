@@ -583,6 +583,7 @@ extern struct list_head cdev_list;
 #define DEVFS_PARTITION_BOOTABLE_ESP	(1U << 12)
 #define DEVFS_PARTITION_FOR_FIXUP	(1U << 13)
 #define DEVFS_WRITE_AUTOERASE		(1U << 14)
+#define DEVFS_PARTITION_CAN_OVERLAP	(1U << 15)
 
 /**
  * cdev_write_requires_erase - Check whether writes must be done to erased blocks

@@ -1152,7 +1152,7 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 		return ERR_PTR(ret);
 	}
 
-	return cdev_get_mount_path(cdev);
+	return cdev_get_mount_path(cdev) ?: ERR_PTR(-ENODEV);
 }
 
 /*

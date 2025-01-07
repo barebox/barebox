@@ -19,20 +19,6 @@ struct partition;
 struct node_d;
 struct stat;
 
-typedef struct filep {
-	struct fs_device *fsdev; /* The device this FILE belongs to              */
-	char *path;
-	loff_t f_pos;            /* current position in stream                   */
-#define FILE_SIZE_STREAM	((loff_t) -1)
-	ulong f_flags;          /* the O_* flags from open                      */
-
-	void *private_data;         /* private to the filesystem driver              */
-
-#define f_size f_inode->i_size
-	struct inode *f_inode;
-	struct path f_path;
-} FILE;
-
 #define FS_DRIVER_NO_DEV	1
 
 /**

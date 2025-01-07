@@ -220,8 +220,12 @@ struct file_system_type {
 	struct hlist_head fs_supers;
 };
 
-struct file {
+typedef struct file {
+	struct fs_device	*fsdev; /* The device this FILE belongs to */
+	char			*path;
 	struct path		f_path;
+#define FILE_SIZE_STREAM	((loff_t) -1)
+#define f_size f_inode->i_size
 	struct inode		*f_inode;	/* cached value */
 #define f_dentry	f_path.dentry
 #define f_vfsmnt	f_path.mnt
@@ -231,9 +235,9 @@ struct file {
 	unsigned int		f_uid, f_gid;
 
 	u64			f_version;
-	/* needed for tty driver, and maybe others */
+	/* private to the filesystem driver */
 	void			*private_data;
-};
+} FILE;
 
 struct super_operations {
 	struct inode *(*alloc_inode)(struct super_block *sb);

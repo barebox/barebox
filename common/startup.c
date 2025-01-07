@@ -336,10 +336,15 @@ static int run_init(void)
 		run_shell();
 	}
 
-	while (1)
+	do {
+		/*
+		 * Let's run the command once at least, so an error
+		 * message is printed if the file doesn't exist
+		 */
 		run_command(MENUFILE);
+	} while (stat(MENUFILE, &s) == 0);
 
-	unreachable();
+	hang();
 }
 
 typedef void (*ctor_fn_t)(void);

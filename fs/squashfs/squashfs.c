@@ -131,7 +131,7 @@ static void squashfs_remove(struct device *dev)
 	squashfs_put_super(sb);
 }
 
-static int squashfs_open(struct device *dev, FILE *file, const char *filename)
+static int squashfs_open(struct device *dev, struct file *file, const char *filename)
 {
 	struct inode *inode = file->f_inode;
 	struct squashfs_page *page;
@@ -164,7 +164,7 @@ error:
 	return -ENOMEM;
 }
 
-static int squashfs_close(struct device *dev, FILE *f)
+static int squashfs_close(struct device *dev, struct file *f)
 {
 	struct squashfs_page *page = f->private_data;
 	int i;
@@ -196,7 +196,7 @@ static int squashfs_read_buf(struct squashfs_page *page, int pos, void **buf)
 	return 0;
 }
 
-static int squashfs_read(struct device *_dev, FILE *f, void *buf,
+static int squashfs_read(struct device *_dev, struct file *f, void *buf,
 			 size_t insize)
 {
 	unsigned int size = insize;

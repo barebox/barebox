@@ -68,7 +68,7 @@ static struct uimagefs_handle_data *uimagefs_get_by_name(
 	return NULL;
 }
 
-static int uimagefs_open(struct device *dev, FILE *file, const char *filename)
+static int uimagefs_open(struct device *dev, struct file *file, const char *filename)
 {
 	struct uimagefs_handle *priv = dev->priv;
 	struct uimagefs_handle_data *d;
@@ -94,7 +94,7 @@ static int uimagefs_open(struct device *dev, FILE *file, const char *filename)
 	return 0;
 }
 
-static int uimagefs_close(struct device *dev, FILE *file)
+static int uimagefs_close(struct device *dev, struct file *file)
 {
 	struct uimagefs_handle_data *d = file->private_data;
 
@@ -103,7 +103,7 @@ static int uimagefs_close(struct device *dev, FILE *file)
 	return 0;
 }
 
-static int uimagefs_read(struct device *dev, FILE *file, void *buf,
+static int uimagefs_read(struct device *dev, struct file *file, void *buf,
 			 size_t insize)
 {
 	struct uimagefs_handle_data *d = file->private_data;
@@ -116,7 +116,7 @@ static int uimagefs_read(struct device *dev, FILE *file, void *buf,
 	}
 }
 
-static int uimagefs_lseek(struct device *dev, FILE *file, loff_t pos)
+static int uimagefs_lseek(struct device *dev, struct file *file, loff_t pos)
 {
 	struct uimagefs_handle_data *d = file->private_data;
 
@@ -181,7 +181,7 @@ static int uimagefs_stat(struct device *dev, const char *filename,
 	return 0;
 }
 
-static int uimagefs_ioctl(struct device *dev, FILE *f, unsigned int request, void *buf)
+static int uimagefs_ioctl(struct device *dev, struct file *f, unsigned int request, void *buf)
 {
 	struct uimagefs_handle *priv = dev->priv;
 

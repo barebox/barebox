@@ -125,7 +125,7 @@ static int fat_rmdir(struct device *dev, const char *pathname)
 	return 0;
 }
 
-static int fat_write(struct device *_dev, FILE *f, const void *buf,
+static int fat_write(struct device *_dev, struct file *f, const void *buf,
 		     size_t insize)
 {
 	FIL *f_file = f->private_data;
@@ -144,7 +144,7 @@ static int fat_write(struct device *_dev, FILE *f, const void *buf,
 	return outsize;
 }
 
-static int fat_truncate(struct device *dev, FILE *f, loff_t size)
+static int fat_truncate(struct device *dev, struct file *f, loff_t size)
 {
 	FIL *f_file = f->private_data;
 	unsigned long lastofs;
@@ -168,7 +168,7 @@ static int fat_truncate(struct device *dev, FILE *f, loff_t size)
 }
 #endif /* CONFIG_FS_FAT_WRITE */
 
-static int fat_open(struct device *dev, FILE *file, const char *filename)
+static int fat_open(struct device *dev, struct file *file, const char *filename)
 {
 	struct fat_priv *priv = dev->priv;
 	FIL *f_file;
@@ -210,7 +210,7 @@ static int fat_open(struct device *dev, FILE *file, const char *filename)
 	return 0;
 }
 
-static int fat_close(struct device *dev, FILE *f)
+static int fat_close(struct device *dev, struct file *f)
 {
 	struct fat_priv *priv = dev->priv;
 	FIL *f_file = f->private_data;
@@ -224,7 +224,7 @@ static int fat_close(struct device *dev, FILE *f)
 	return 0;
 }
 
-static int fat_read(struct device *_dev, FILE *f, void *buf, size_t insize)
+static int fat_read(struct device *_dev, struct file *f, void *buf, size_t insize)
 {
 	int ret;
 	FIL *f_file = f->private_data;
@@ -240,7 +240,7 @@ static int fat_read(struct device *_dev, FILE *f, void *buf, size_t insize)
 	return outsize;
 }
 
-static int fat_lseek(struct device *dev, FILE *f, loff_t pos)
+static int fat_lseek(struct device *dev, struct file *f, loff_t pos)
 {
 	FIL *f_file = f->private_data;
 	int ret;

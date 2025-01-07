@@ -188,7 +188,7 @@ static int tftp_window_cache_insert(struct tftp_cache *cache, uint16_t id,
 	return 0;
 }
 
-static int tftp_truncate(struct device *dev, FILE *f, loff_t size)
+static int tftp_truncate(struct device *dev, struct file *f, loff_t size)
 {
 	return 0;
 }
@@ -765,7 +765,7 @@ out:
 	return ERR_PTR(ret);
 }
 
-static int tftp_open(struct device *dev, FILE *file, const char *filename)
+static int tftp_open(struct device *dev, struct file *file, const char *filename)
 {
 	struct file_priv *priv;
 
@@ -818,14 +818,14 @@ static int tftp_do_close(struct file_priv *priv)
 	return 0;
 }
 
-static int tftp_close(struct device *dev, FILE *f)
+static int tftp_close(struct device *dev, struct file *f)
 {
 	struct file_priv *priv = f->private_data;
 
 	return tftp_do_close(priv);
 }
 
-static int tftp_write(struct device *_dev, FILE *f, const void *inbuf,
+static int tftp_write(struct device *_dev, struct file *f, const void *inbuf,
 		      size_t insize)
 {
 	struct file_priv *priv = f->private_data;
@@ -861,7 +861,7 @@ static int tftp_write(struct device *_dev, FILE *f, const void *inbuf,
 	return insize;
 }
 
-static int tftp_read(struct device *dev, FILE *f, void *buf, size_t insize)
+static int tftp_read(struct device *dev, struct file *f, void *buf, size_t insize)
 {
 	struct file_priv *priv = f->private_data;
 	size_t outsize = 0, now;
@@ -901,7 +901,7 @@ static int tftp_read(struct device *dev, FILE *f, void *buf, size_t insize)
 	return outsize;
 }
 
-static int tftp_lseek(struct device *dev, FILE *f, loff_t pos)
+static int tftp_lseek(struct device *dev, struct file *f, loff_t pos)
 {
 	/* We cannot seek backwards without reloading or caching the file */
 	loff_t f_pos = f->f_pos;

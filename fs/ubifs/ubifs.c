@@ -340,7 +340,7 @@ struct ubifs_file {
 	struct ubifs_data_node *dn;
 };
 
-static int ubifs_open(struct device *dev, FILE *file, const char *filename)
+static int ubifs_open(struct device *dev, struct file *file, const char *filename)
 {
 	struct inode *inode = file->f_inode;
 	struct ubifs_file *uf;
@@ -357,7 +357,7 @@ static int ubifs_open(struct device *dev, FILE *file, const char *filename)
 	return 0;
 }
 
-static int ubifs_close(struct device *dev, FILE *f)
+static int ubifs_close(struct device *dev, struct file *f)
 {
 	struct ubifs_file *uf = f->private_data;
 
@@ -383,7 +383,7 @@ static int ubifs_get_block(struct ubifs_file *uf, unsigned int pos)
 	return 0;
 }
 
-static int ubifs_read(struct device *_dev, FILE *f, void *buf, size_t insize)
+static int ubifs_read(struct device *_dev, struct file *f, void *buf, size_t insize)
 {
 	struct ubifs_file *uf = f->private_data;
 	unsigned int pos = f->f_pos;

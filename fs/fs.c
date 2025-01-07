@@ -215,7 +215,7 @@ static char *cwd;
 static struct dentry *cwd_dentry;
 static struct vfsmount *cwd_mnt;
 
-static FILE files[MAX_FILES];
+static struct file files[MAX_FILES];
 static struct dentry *d_root;
 static struct vfsmount *mnt_root;
 
@@ -298,13 +298,13 @@ char *get_mounted_path(const char *path)
 	return fdev->path;
 }
 
-static FILE *get_file(struct fs_device *fsdev)
+static struct file *get_file(struct fs_device *fsdev)
 {
 	int i;
 
 	for (i = 3; i < MAX_FILES; i++) {
 		if (!files[i].fsdev) {
-			memset(&files[i], 0, sizeof(FILE));
+			memset(&files[i], 0, sizeof(struct file));
 			files[i].fsdev = fsdev;
 			return &files[i];
 		}
@@ -312,7 +312,7 @@ static FILE *get_file(struct fs_device *fsdev)
 	return NULL;
 }
 
-static int file_to_fd(FILE *f)
+static int file_to_fd(struct file *f)
 {
 	int fd = f - files;
 	if (fd < 0 || fd >= ARRAY_SIZE(files))
@@ -320,7 +320,7 @@ static int file_to_fd(FILE *f)
 	return fd;
 }
 
-static void put_file(FILE *f)
+static void put_file(struct file *f)
 {
 	free(f->path);
 	f->path = NULL;
@@ -329,7 +329,7 @@ static void put_file(FILE *f)
 	dput(f->f_dentry);
 }
 
-static FILE *fd_to_file(int fd, bool o_path_ok)
+static struct file *fd_to_file(int fd, bool o_path_ok)
 {
 	if (fd < 0 || fd >= MAX_FILES || !files[fd].fsdev) {
 		errno = EBADF;
@@ -358,7 +358,7 @@ static int create(struct dentry *dir, struct dentry *dentry)
 	return inode->i_op->create(inode, dentry, S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
-static int fsdev_truncate(struct device *dev, FILE *f, loff_t length)
+static int fsdev_truncate(struct device *dev, struct file *f, loff_t length)
 {
 	struct fs_driver *fsdrv = f->fsdev->driver;
 
@@ -367,7 +367,7 @@ static int fsdev_truncate(struct device *dev, FILE *f, loff_t length)
 
 int ftruncate(int fd, loff_t length)
 {
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -388,7 +388,7 @@ int ftruncate(int fd, loff_t length)
 int ioctl(int fd, unsigned int request, void *buf)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -404,7 +404,7 @@ int ioctl(int fd, unsigned int request, void *buf)
 	return errno_set(ret);
 }
 
-static ssize_t __read(FILE *f, void *buf, size_t count)
+static ssize_t __read(struct file *f, void *buf, size_t count)
 {
 	struct fs_driver *fsdrv;
 	int ret;
@@ -433,7 +433,7 @@ out:
 ssize_t pread(int fd, void *buf, size_t count, loff_t offset)
 {
 	loff_t pos;
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -450,7 +450,7 @@ EXPORT_SYMBOL(pread);
 
 ssize_t read(int fd, void *buf, size_t count)
 {
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -464,7 +464,7 @@ ssize_t read(int fd, void *buf, size_t count)
 }
 EXPORT_SYMBOL(read);
 
-static ssize_t __write(FILE *f, const void *buf, size_t count)
+static ssize_t __write(struct file *f, const void *buf, size_t count)
 {
 	struct fs_driver *fsdrv;
 	int ret;
@@ -501,7 +501,7 @@ out:
 ssize_t pwrite(int fd, const void *buf, size_t count, loff_t offset)
 {
 	loff_t pos;
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -518,7 +518,7 @@ EXPORT_SYMBOL(pwrite);
 
 ssize_t write(int fd, const void *buf, size_t count)
 {
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -535,7 +535,7 @@ EXPORT_SYMBOL(write);
 int flush(int fd)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -553,7 +553,7 @@ int flush(int fd)
 loff_t lseek(int fd, loff_t offset, int whence)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	loff_t pos;
 	int ret;
 
@@ -606,7 +606,7 @@ EXPORT_SYMBOL(lseek);
 int erase(int fd, loff_t count, loff_t offset, enum erase_type type)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -635,7 +635,7 @@ EXPORT_SYMBOL(erase);
 int protect(int fd, size_t count, loff_t offset, int prot)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -662,7 +662,7 @@ EXPORT_SYMBOL(protect);
 int discard_range(int fd, loff_t count, loff_t offset)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
@@ -703,7 +703,7 @@ int protect_file(const char *file, int prot)
 void *memmap(int fd, int flags)
 {
 	struct fs_driver *fsdrv;
-	FILE *f = fd_to_file(fd, false);
+	struct file *f = fd_to_file(fd, false);
 	void *retp = MAP_FAILED;
 	int ret;
 
@@ -727,7 +727,7 @@ EXPORT_SYMBOL(memmap);
 
 int close(int fd)
 {
-	FILE *f = fd_to_file(fd, true);
+	struct file *f = fd_to_file(fd, true);
 	int ret = 0;
 
 	if (IS_ERR(f))
@@ -1080,7 +1080,7 @@ static void stat_inode(struct inode *inode, struct stat *s)
 
 int fstat(int fd, struct stat *s)
 {
-	FILE *f = fd_to_file(fd, true);
+	struct file *f = fd_to_file(fd, true);
 
 	if (IS_ERR(f))
 		return -errno;
@@ -2183,7 +2183,7 @@ OK:
 	}
 }
 
-static bool file_has_flag(FILE *f, unsigned flag)
+static bool file_has_flag(struct file *f, unsigned flag)
 {
 	if (IS_ERR_OR_NULL(f))
 		return false;
@@ -2194,7 +2194,7 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 {
 	const char *s = nd->name->name;
 	bool chroot = false;
-	FILE *f = NULL;
+	struct file *f = NULL;
 
 	nd->last_type = LAST_ROOT; /* if there are only slashes... */
 	nd->flags = flags | LOOKUP_JUMPED | LOOKUP_PARENT;
@@ -2536,7 +2536,7 @@ int openat(int dirfd, const char *pathname, int flags)
 	struct fs_device *fsdev;
 	struct fs_driver *fsdrv;
 	struct super_block *sb;
-	FILE *f;
+	struct file *f;
 	int error = 0;
 	struct inode *inode = NULL;
 	struct dentry *dentry = NULL;
@@ -2687,7 +2687,7 @@ EXPORT_SYMBOL(openat);
 
 static const char *fd_getpath(int fd)
 {
-	FILE *f;
+	struct file *f;
 
 	if (fd < 0)
 		return ERR_PTR(errno_set(fd));

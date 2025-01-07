@@ -50,25 +50,25 @@ struct fs_driver {
 	int (*unlink)(struct device *dev, const char *pathname);
 
 	/* Truncate a file to given size */
-	int (*truncate)(struct device *dev, FILE *f, loff_t size);
+	int (*truncate)(struct device *dev, struct file *f, loff_t size);
 
-	int (*open)(struct device *dev, FILE *f, const char *pathname);
-	int (*close)(struct device *dev, FILE *f);
-	int (*read)(struct device *dev, FILE *f, void *buf, size_t size);
-	int (*write)(struct device *dev, FILE *f, const void *buf,
+	int (*open)(struct device *dev, struct file *f, const char *pathname);
+	int (*close)(struct device *dev, struct file *f);
+	int (*read)(struct device *dev, struct file *f, void *buf, size_t size);
+	int (*write)(struct device *dev, struct file *f, const void *buf,
 		     size_t size);
-	int (*flush)(struct device *dev, FILE *f);
-	int (*lseek)(struct device *dev, FILE *f, loff_t pos);
+	int (*flush)(struct device *dev, struct file *f);
+	int (*lseek)(struct device *dev, struct file *f, loff_t pos);
 
-	int (*ioctl)(struct device *dev, FILE *f, unsigned int request, void *buf);
-	int (*erase)(struct device *dev, FILE *f, loff_t count,
+	int (*ioctl)(struct device *dev, struct file *f, unsigned int request, void *buf);
+	int (*erase)(struct device *dev, struct file *f, loff_t count,
 			loff_t offset, enum erase_type type);
-	int (*protect)(struct device *dev, FILE *f, size_t count,
+	int (*protect)(struct device *dev, struct file *f, size_t count,
 			loff_t offset, int prot);
-	int (*discard_range)(struct device *dev, FILE *f, loff_t count,
+	int (*discard_range)(struct device *dev, struct file *f, loff_t count,
 			     loff_t offset);
 
-	int (*memmap)(struct device *dev, FILE *f, void **map, int flags);
+	int (*memmap)(struct device *dev, struct file *f, void **map, int flags);
 
 	/* legacy */
 	int (*mkdir)(struct device *dev, const char *pathname);

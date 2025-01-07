@@ -77,7 +77,7 @@ static int ratpfs_rm(struct device __always_unused *dev,
 }
 
 static int ratpfs_truncate(struct device __always_unused *dev,
-			   FILE *f, loff_t size)
+			   struct file *f, loff_t size)
 {
 	int len_tx = 1 /* type */
 		+ 4 /* handle */
@@ -115,7 +115,7 @@ out:
 }
 
 static int ratpfs_open(struct device __always_unused *dev,
-		       FILE *file, const char *filename)
+		       struct file *file, const char *filename)
 {
 	int len_name = strlen(filename);
 	int len_tx = 1 /* type */
@@ -164,7 +164,7 @@ out:
 }
 
 static int ratpfs_close(struct device __always_unused *dev,
-			FILE *f)
+			struct file *f)
 {
 	int len_tx = 1 /* type */
 		+ 4 /* handle */;
@@ -199,7 +199,7 @@ out:
 }
 
 static int ratpfs_write(struct device __always_unused *dev,
-			FILE *f, const void *buf, size_t orig_size)
+			struct file *f, const void *buf, size_t orig_size)
 {
 	int size = min((int)orig_size, 4096);
 	int len_tx = 1 /* type */
@@ -242,7 +242,7 @@ out:
 }
 
 static int ratpfs_read(struct device __always_unused *dev,
-		       FILE *f, void *buf, size_t orig_size)
+		       struct file *f, void *buf, size_t orig_size)
 {
 	int size = min((int)orig_size, 4096);
 	int len_tx = 1 /* type */

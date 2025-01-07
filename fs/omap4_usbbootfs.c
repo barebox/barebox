@@ -61,7 +61,7 @@ static struct file_priv *omap4_usbbootfs_do_open(struct device *dev,
 	return priv;
 }
 
-static int omap4_usbbootfs_open(struct device *dev, FILE *file,
+static int omap4_usbbootfs_open(struct device *dev, struct file *file,
 				const char *filename)
 {
 	struct file_priv *priv;
@@ -87,13 +87,13 @@ static int omap4_usbbootfs_do_close(struct file_priv *priv)
 	return 0;
 }
 
-static int omap4_usbbootfs_close(struct device *dev, FILE *f)
+static int omap4_usbbootfs_close(struct device *dev, struct file *f)
 {
 	struct file_priv *priv = f->private_data;
 	return omap4_usbbootfs_do_close(priv);
 }
 
-static int omap4_usbbootfs_read(struct device *dev, FILE *f, void *buf,
+static int omap4_usbbootfs_read(struct device *dev, struct file *f, void *buf,
 				size_t size)
 {
 	struct file_priv *priv = f->private_data;

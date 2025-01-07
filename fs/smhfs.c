@@ -24,7 +24,7 @@
 #include <linux/stat.h>
 #include <asm/semihosting.h>
 
-static int file_to_fd(const FILE *f)
+static int file_to_fd(const struct file *f)
 {
 	return (int)(uintptr_t)f->private_data;
 }
@@ -52,14 +52,14 @@ static int smhfs_rm(struct device __always_unused *dev,
 }
 
 static int smhfs_truncate(struct device __always_unused *dev,
-			  FILE __always_unused *f,
+			  struct file __always_unused *f,
 			  loff_t __always_unused size)
 {
 	return 0;
 }
 
 static int smhfs_open(struct device __always_unused *dev,
-		      FILE *file, const char *filename)
+		      struct file *file, const char *filename)
 {
 	int fd;
 	/* Get rid of leading '/' */
@@ -78,27 +78,27 @@ static int smhfs_open(struct device __always_unused *dev,
 }
 
 static int smhfs_close(struct device __always_unused *dev,
-		       FILE *f)
+		       struct file *f)
 {
 	return semihosting_close(file_to_fd(f));
 }
 
 static int smhfs_write(struct device __always_unused *dev,
-		       FILE *f, const void *inbuf, size_t insize)
+		       struct file *f, const void *inbuf, size_t insize)
 {
 	long ret = semihosting_write(file_to_fd(f), inbuf, insize);
 	return ret < 0 ? ret : insize;
 }
 
 static int smhfs_read(struct device __always_unused *dev,
-		      FILE *f, void *buf, size_t insize)
+		      struct file *f, void *buf, size_t insize)
 {
 	long ret = semihosting_read(file_to_fd(f), buf, insize);
 	return ret < 0 ? ret : insize;
 }
 
 static int smhfs_lseek(struct device __always_unused *dev,
-			  FILE *f, loff_t pos)
+			  struct file *f, loff_t pos)
 {
 	return semihosting_seek(file_to_fd(f), pos);
 }
@@ -112,7 +112,7 @@ static DIR* smhfs_opendir(struct device __always_unused *dev,
 static int smhfs_stat(struct device __always_unused *dev,
 		      const char *filename, struct stat *s)
 {
-	FILE file;
+	struct file file;
 
 	if (smhfs_open(NULL, &file, filename) == 0) {
 		s->st_mode = S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO;

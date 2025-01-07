@@ -215,7 +215,7 @@ static char *cwd;
 static struct dentry *cwd_dentry;
 static struct vfsmount *cwd_mnt;
 
-static FILE *files;
+static FILE files[MAX_FILES];
 static struct dentry *d_root;
 static struct vfsmount *mnt_root;
 
@@ -225,8 +225,6 @@ static int init_fs(void)
 {
 	cwd = xzalloc(PATH_MAX);
 	*cwd = '/';
-
-	files = xzalloc(sizeof(FILE) * MAX_FILES);
 
 	return 0;
 }
@@ -308,11 +306,18 @@ static FILE *get_file(void)
 		if (!files[i].in_use) {
 			memset(&files[i], 0, sizeof(FILE));
 			files[i].in_use = 1;
-			files[i].no = i;
 			return &files[i];
 		}
 	}
 	return NULL;
+}
+
+static int file_to_fd(FILE *f)
+{
+	int fd = f - files;
+	if (fd < 0 || fd >= ARRAY_SIZE(files))
+		return -EBADFD;
+	return fd;
 }
 
 static void put_file(FILE *f)
@@ -2567,7 +2572,7 @@ int openat(int dirfd, const char *pathname, int flags)
 		f->size = 0;
 		f->fsdev = fsdev;
 
-		return f->no;
+		return file_to_fd(f);
 	}
 
 	filename = getname(pathname);
@@ -2656,7 +2661,7 @@ int openat(int dirfd, const char *pathname, int flags)
 	f->fsdev = fsdev;
 
 	if (flags & O_PATH)
-		return f->no;
+		return file_to_fd(f);
 
 	if (fsdrv->open) {
 		char *pathname = dpath(dentry, fsdev->vfsmount.mnt_root);
@@ -2678,7 +2683,7 @@ int openat(int dirfd, const char *pathname, int flags)
 	if (flags & O_APPEND)
 		f->pos = f->size;
 
-	return f->no;
+	return file_to_fd(f);
 
 out:
 	put_file(f);

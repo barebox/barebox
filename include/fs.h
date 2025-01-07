@@ -29,8 +29,6 @@ typedef struct filep {
 
 	void *priv;         /* private to the filesystem driver              */
 
-	/* private fields. Mapping between FILE and filedescriptor number     */
-	int no;
 	char in_use;
 
 	struct inode *f_inode;

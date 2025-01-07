@@ -10,6 +10,7 @@ if FS_FAT
 config FS_FAT_WRITE
 	bool
 	prompt "FAT write support"
+	select FS_WRITABLE
 	help
 	  Enable support for writing in FAT partitions.
 	  Note: This doesn't apply to FAT usage in barebox PBL.

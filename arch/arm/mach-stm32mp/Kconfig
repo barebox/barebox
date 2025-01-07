@@ -48,6 +48,13 @@ config MACH_PROTONIC_STM32MP1
 	  Builds all barebox-*.stm32 that can be deployed as SSBL
 	  on the respective PRTT1L/MECIOx/MECT1S family board
 
+config MACH_PROTONIC_STM32MP13
+	select ARCH_STM32MP13
+	bool "Protonic-Holland stm32mp13x based boards"
+	help
+	  Builds all barebox-*.stm32 that can be deployed as SSBL
+	  on the respective stm32mp13x board
+
 config MACH_PHYTEC_PHYCORE_STM32MP1
 	select ARCH_STM32MP157
 	bool "phyCORE-STM32MP1"

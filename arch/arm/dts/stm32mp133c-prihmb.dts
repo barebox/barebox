@@ -1,0 +1,86 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
+// SPDX-FileCopyrightText: 2024 Roan van Dijk, Protonic Holland
+/dts-v1/;
+
+#include "stm32mp133c-prihmb.dtsi"
+#include "stm32mp131.dtsi"
+
+#ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
+#include CONFIG_BOOTM_FITIMAGE_PUBKEY
+#endif
+
+/ {
+	aliases {
+		state = &state_emmc;
+	};
+
+	state_emmc: state {
+		magic = <0x72766467>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&state_backend_emmc>;
+		backend-stridesize = <0x400>;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			last_chosen {
+				reg = <0x0 0x4>;
+				type = "uint32";
+			};
+
+			system0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts {
+					reg = <0x50 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+
+				priority {
+					reg = <0x54 0x4>;
+					type = "uint32";
+					default = <21>;
+				};
+			};
+
+			system1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts {
+					reg = <0x100 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+
+				priority {
+					reg = <0x104 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+			};
+		};
+
+		priva-serial@1b0 {
+			reg = <0x1b0 0xa>;
+			type = "string";
+		};
+	};
+};
+
+&sdmmc2 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	state_backend_emmc: partition@c0000 {
+		label = "state";
+		reg = <0xf0000 0x10000>;
+	};
+};

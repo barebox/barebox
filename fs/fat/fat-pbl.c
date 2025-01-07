@@ -49,5 +49,5 @@ ssize_t pbl_fat_load(struct pbl_bio *bio, const char *filename, void *dest, size
 		return ret;
 	}
 
-	return f_size(&file) <= len ? nread : -ENOSPC;
+	return f_len(&file) <= len ? nread : -ENOSPC;
 }

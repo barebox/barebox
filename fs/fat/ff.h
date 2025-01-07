@@ -190,7 +190,7 @@ TCHAR* f_gets (TCHAR*, int, FIL*);			/* Get a string from the file */
 #define f_eof(fp) (((fp)->fptr == (fp)->fsize) ? 1 : 0)
 #define f_error(fp) (((fp)->flag & FA__ERROR) ? 1 : 0)
 #define f_tell(fp) ((fp)->fptr)
-#define f_size(fp) ((fp)->fsize)
+#define f_len(fp) ((fp)->fsize)
 
 /*--------------------------------------------------------------*/
 /* Additional user defined functions                            */

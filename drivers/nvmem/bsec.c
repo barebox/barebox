@@ -17,8 +17,7 @@
 #include <mach/stm32mp/bsec.h>
 #include <machine_id.h>
 #include <linux/nvmem-provider.h>
-
-#include "stm32-bsec-optee-ta.h"
+#include <soc/stm32/stm32-bsec-optee-ta.h>
 
 #define BSEC_OTP_SERIAL	13
 

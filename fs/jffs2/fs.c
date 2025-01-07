@@ -51,14 +51,14 @@ static int jffs2_open(struct device *dev, FILE *file, const char *filename)
 	jf->buf = xmalloc(JFFS2_BLOCK_SIZE);
 	jf->offset = -1;
 
-	file->priv = jf;
+	file->private_data = jf;
 
 	return 0;
 }
 
 static int jffs2_close(struct device *dev, FILE *f)
 {
-	struct jffs2_file *jf = f->priv;
+	struct jffs2_file *jf = f->private_data;
 
 	free(jf->buf);
 	free(jf);
@@ -89,17 +89,17 @@ static int jffs2_get_block(struct jffs2_file *jf, unsigned int pos)
 static int jffs2_read(struct device *_dev, FILE *f, void *buf,
 		      size_t insize)
 {
-	struct jffs2_file *jf = f->priv;
-	unsigned int pos = f->pos;
+	struct jffs2_file *jf = f->private_data;
+	unsigned int pos = f->f_pos;
 	unsigned int ofs;
 	unsigned int now;
 	unsigned int size = insize;
 	int ret;
 
 	/* Read till end of current block */
-	ofs = f->pos % JFFS2_BLOCK_SIZE;
+	ofs = f->f_pos % JFFS2_BLOCK_SIZE;
 	if (ofs) {
-		ret = jffs2_get_block(jf, f->pos - ofs); /* Align down block */
+		ret = jffs2_get_block(jf, f->f_pos - ofs); /* Align down block */
 		if (ret)
 			return ret;
 

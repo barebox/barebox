@@ -151,7 +151,7 @@ static int pstore_open(struct device *dev, FILE *file, const char *filename)
 		return -ENOENT;
 
 	file->size = d->size;
-	file->priv = d;
+	file->private_data = d;
 	d->pos = 0;
 
 	return 0;
@@ -165,7 +165,7 @@ static int pstore_close(struct device *dev, FILE *file)
 static int pstore_read(struct device *dev, FILE *file, void *buf,
 		       size_t insize)
 {
-	struct pstore_private *d = file->priv;
+	struct pstore_private *d = file->private_data;
 
 	memcpy(buf, &d->data[d->pos], insize);
 	d->pos += insize;
@@ -175,7 +175,7 @@ static int pstore_read(struct device *dev, FILE *file, void *buf,
 
 static int pstore_lseek(struct device *dev, FILE *file, loff_t pos)
 {
-	struct pstore_private *d = file->priv;
+	struct pstore_private *d = file->private_data;
 
 	d->pos = pos;
 

@@ -159,7 +159,7 @@ static int efivarfs_open(struct device *dev, FILE *f, const char *filename)
 	}
 
 	f->size = efile->size;
-	f->priv = efile;
+	f->private_data = efile;
 
 	return 0;
 
@@ -172,7 +172,7 @@ out:
 
 static int efivarfs_close(struct device *dev, FILE *f)
 {
-	struct efivars_file *efile = f->priv;
+	struct efivars_file *efile = f->private_data;
 
 	free(efile->buf);
 	free(efile);
@@ -183,9 +183,9 @@ static int efivarfs_close(struct device *dev, FILE *f)
 static int efivarfs_read(struct device *_dev, FILE *f, void *buf,
 			 size_t insize)
 {
-	struct efivars_file *efile = f->priv;
+	struct efivars_file *efile = f->private_data;
 
-	memcpy(buf, efile->buf + f->pos, insize);
+	memcpy(buf, efile->buf + f->f_pos, insize);
 
 	return insize;
 }
@@ -193,15 +193,15 @@ static int efivarfs_read(struct device *_dev, FILE *f, void *buf,
 static int efivarfs_write(struct device *_dev, FILE *f, const void *buf,
 			  size_t insize)
 {
-	struct efivars_file *efile = f->priv;
+	struct efivars_file *efile = f->private_data;
 	efi_status_t efiret;
 
-	if (efile->size < f->pos + insize) {
-		efile->buf = realloc(efile->buf, f->pos + insize);
-		efile->size = f->pos + insize;
+	if (efile->size < f->f_pos + insize) {
+		efile->buf = realloc(efile->buf, f->f_pos + insize);
+		efile->size = f->f_pos + insize;
 	}
 
-	memcpy(efile->buf + f->pos, buf, insize);
+	memcpy(efile->buf + f->f_pos, buf, insize);
 
 	efiret = RT->set_variable(efile->name, &efile->vendor,
 				  efile->attributes,
@@ -214,7 +214,7 @@ static int efivarfs_write(struct device *_dev, FILE *f, const void *buf,
 
 static int efivarfs_truncate(struct device *dev, FILE *f, loff_t size)
 {
-	struct efivars_file *efile = f->priv;
+	struct efivars_file *efile = f->private_data;
 	efi_status_t efiret;
 
 	efile->size = size;

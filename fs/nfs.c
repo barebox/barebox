@@ -1166,7 +1166,7 @@ static int nfs_open(struct device *dev, FILE *file, const char *filename)
 	priv = xzalloc(sizeof(*priv));
 	priv->fh = ninode->fh;
 	priv->npriv = npriv;
-	file->priv = priv;
+	file->private_data = priv;
 	file->size = inode->i_size;
 
 	priv->fifo = kfifo_alloc(1024);
@@ -1180,7 +1180,7 @@ static int nfs_open(struct device *dev, FILE *file, const char *filename)
 
 static int nfs_close(struct device *dev, FILE *file)
 {
-	struct file_priv *priv = file->priv;
+	struct file_priv *priv = file->private_data;
 
 	nfs_do_close(priv);
 
@@ -1195,13 +1195,13 @@ static int nfs_write(struct device *_dev, FILE *file, const void *inbuf,
 
 static int nfs_read(struct device *dev, FILE *file, void *buf, size_t insize)
 {
-	struct file_priv *priv = file->priv;
+	struct file_priv *priv = file->private_data;
 
 	if (insize > 1024)
 		insize = 1024;
 
 	if (insize && !kfifo_len(priv->fifo)) {
-		int ret = nfs_read_req(priv, file->pos, insize);
+		int ret = nfs_read_req(priv, file->f_pos, insize);
 		if (ret)
 			return ret;
 	}
@@ -1211,7 +1211,7 @@ static int nfs_read(struct device *dev, FILE *file, void *buf, size_t insize)
 
 static int nfs_lseek(struct device *dev, FILE *file, loff_t pos)
 {
-	struct file_priv *priv = file->priv;
+	struct file_priv *priv = file->private_data;
 
 	kfifo_reset(priv->fifo);
 

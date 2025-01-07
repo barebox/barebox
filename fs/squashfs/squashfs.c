@@ -151,7 +151,7 @@ static int squashfs_open(struct device *dev, FILE *file, const char *filename)
 	page->idx = 0;
 	page->real_page.inode = inode;
 	file->size = inode->i_size;
-	file->priv = page;
+	file->private_data = page;
 
 	return 0;
 
@@ -167,7 +167,7 @@ error:
 
 static int squashfs_close(struct device *dev, FILE *f)
 {
-	struct squashfs_page *page = f->priv;
+	struct squashfs_page *page = f->private_data;
 	int i;
 
 	for (i = 0; i < 32; i++)
@@ -201,11 +201,11 @@ static int squashfs_read(struct device *_dev, FILE *f, void *buf,
 			 size_t insize)
 {
 	unsigned int size = insize;
-	unsigned int pos = f->pos;
+	unsigned int pos = f->f_pos;
 	unsigned int ofs;
 	unsigned int now;
 	void *pagebuf;
-	struct squashfs_page *page = f->priv;
+	struct squashfs_page *page = f->private_data;
 
 	/* Read till end of current buffer page */
 	ofs = pos % PAGE_CACHE_SIZE;

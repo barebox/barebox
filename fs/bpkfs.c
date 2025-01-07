@@ -162,7 +162,7 @@ static int bpkfs_open(struct device *dev, FILE *f, const char *filename)
 	}
 
 	f->size = d->size;
-	f->priv = d;
+	f->private_data = d;
 	ret = 0;
 
 out:
@@ -173,7 +173,7 @@ out:
 
 static int bpkfs_close(struct device *dev, FILE *file)
 {
-	struct bpkfs_handle_data *d = file->priv;
+	struct bpkfs_handle_data *d = file->private_data;
 
 	close(d->fd);
 
@@ -183,7 +183,7 @@ static int bpkfs_close(struct device *dev, FILE *file)
 static int bpkfs_read(struct device *dev, FILE *file, void *buf,
 		      size_t insize)
 {
-	struct bpkfs_handle_data *d = file->priv;
+	struct bpkfs_handle_data *d = file->private_data;
 
 	if (bpkfs_is_crc_file(d)) {
 		memcpy(buf, &d->data[d->pos], insize);
@@ -195,7 +195,7 @@ static int bpkfs_read(struct device *dev, FILE *file, void *buf,
 
 static int bpkfs_lseek(struct device *dev, FILE *file, loff_t pos)
 {
-	struct bpkfs_handle_data *d = file->priv;
+	struct bpkfs_handle_data *d = file->private_data;
 
 	if (!bpkfs_is_crc_file(d))
 		lseek(d->fd, d->offset + pos, SEEK_SET);

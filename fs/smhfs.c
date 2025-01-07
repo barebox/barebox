@@ -26,7 +26,7 @@
 
 static int file_to_fd(const FILE *f)
 {
-	return (int)(uintptr_t)f->priv;
+	return (int)(uintptr_t)f->private_data;
 }
 
 static int smhfs_create(struct device __always_unused *dev,
@@ -65,11 +65,11 @@ static int smhfs_open(struct device __always_unused *dev,
 	/* Get rid of leading '/' */
 	filename = &filename[1];
 
-	fd = semihosting_open(filename, file->flags);
+	fd = semihosting_open(filename, file->f_flags);
 	if (fd < 0)
 		return fd;
 
-	file->priv = (void *)(uintptr_t)fd;
+	file->private_data = (void *)(uintptr_t)fd;
 	file->size = semihosting_flen(fd);
 	if (file->size < 0)
 		return file->size;

@@ -37,25 +37,25 @@ struct devfs_inode {
 
 static int devfs_read(struct device *_dev, FILE *f, void *buf, size_t size)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
-	return cdev_read(cdev, buf, size, f->pos, f->flags);
+	return cdev_read(cdev, buf, size, f->f_pos, f->f_flags);
 }
 
 static int devfs_write(struct device *_dev, FILE *f, const void *buf,
 		       size_t size)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
 	if (cdev->flags & DEVFS_PARTITION_READONLY)
 		return -EPERM;
 
-	return cdev_write(cdev, buf, size, f->pos, f->flags);
+	return cdev_write(cdev, buf, size, f->f_pos, f->f_flags);
 }
 
 static int devfs_lseek(struct device *_dev, FILE *f, loff_t pos)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
 	return cdev_lseek(cdev, pos);
 }
@@ -63,7 +63,7 @@ static int devfs_lseek(struct device *_dev, FILE *f, loff_t pos)
 static int devfs_erase(struct device *_dev, FILE *f, loff_t count,
 		       loff_t offset, enum erase_type type)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
 	if (cdev->flags & DEVFS_PARTITION_READONLY)
 		return -EPERM;
@@ -80,7 +80,7 @@ static int devfs_erase(struct device *_dev, FILE *f, loff_t count,
 static int devfs_protect(struct device *dev, FILE *f, size_t count,
 			 loff_t offset, int prot)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
 	return cdev_protect(cdev, count, offset, prot);
 }
@@ -88,14 +88,14 @@ static int devfs_protect(struct device *dev, FILE *f, size_t count,
 static int devfs_discard_range(struct device *dev, FILE *f, loff_t count,
 			       loff_t offset)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
 	return cdev_discard_range(cdev, count, offset);
 }
 
 static int devfs_memmap(struct device *_dev, FILE *f, void **map, int flags)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
 	return cdev_memmap(cdev, map, flags);
 }
@@ -108,35 +108,35 @@ static int devfs_open(struct device *_dev, FILE *f, const char *filename)
 
 	f->size = cdev->flags & DEVFS_IS_CHARACTER_DEV ?
 			FILE_SIZE_STREAM : cdev->size;
-	f->priv = cdev;
+	f->private_data = cdev;
 
-	return cdev_open(cdev, f->flags);
+	return cdev_open(cdev, f->f_flags);
 }
 
 static int devfs_close(struct device *_dev, FILE *f)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
 	return cdev_close(cdev);
 }
 
 static int devfs_flush(struct device *_dev, FILE *f)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
 	return cdev_flush(cdev);
 }
 
 static int devfs_ioctl(struct device *_dev, FILE *f, unsigned int request, void *buf)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
 	return cdev_ioctl(cdev, request, buf);
 }
 
 static int devfs_truncate(struct device *dev, FILE *f, loff_t size)
 {
-	struct cdev *cdev = f->priv;
+	struct cdev *cdev = f->private_data;
 
 	return cdev_truncate(cdev, size);
 }

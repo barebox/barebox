@@ -338,7 +338,7 @@ static int ubootvarfs_io(struct device *dev, FILE *f, void *buf,
 {
 	struct inode *inode = f->f_inode;
 	struct ubootvarfs_inode *node = inode_to_node(inode);
-	void *ptr = node->var->start + f->pos;
+	void *ptr = node->var->start + f->f_pos;
 
 	if (read)
 		memcpy(buf, ptr, insize);

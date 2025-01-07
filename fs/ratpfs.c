@@ -84,7 +84,7 @@ static int ratpfs_truncate(struct device __always_unused *dev,
 		+ 4 /* size */;
 	struct ratp_bb_pkt *pkt_tx = xzalloc(sizeof(*pkt_tx)+len_tx);
 	struct ratp_bb_pkt *pkt_rx = NULL;
-	struct ratpfs_file *rfile = f->priv;
+	struct ratpfs_file *rfile = f->private_data;
 	int ret;
 
 	pr_debug("%s: len_tx=%i handle=%i size=%i\n", __func__,
@@ -130,7 +130,7 @@ static int ratpfs_open(struct device __always_unused *dev,
 
 	pkt_tx->len = len_tx;
 	pkt_tx->data[0] = RATPFS_TYPE_OPEN_CALL;
-	put_unaligned_be32(file->flags, &pkt_tx->data[1]);
+	put_unaligned_be32(file->f_flags, &pkt_tx->data[1]);
 	memcpy(&pkt_tx->data[5], filename, len_name);
 
 	ret = barebox_ratp_fs_call(pkt_tx, &pkt_rx);
@@ -150,13 +150,13 @@ static int ratpfs_open(struct device __always_unused *dev,
 		ret = -get_unaligned_be32(&pkt_rx->data[5]); /* errno */
 		goto err;
 	}
-	file->priv = rfile;
+	file->private_data = rfile;
 	file->size = get_unaligned_be32(&pkt_rx->data[5]);
 
 	goto out;
 
 err:
-	file->priv = NULL;
+	file->private_data = NULL;
 	free(rfile);
 out:
 	free(pkt_rx);
@@ -170,7 +170,7 @@ static int ratpfs_close(struct device __always_unused *dev,
 		+ 4 /* handle */;
 	struct ratp_bb_pkt *pkt_tx = xzalloc(sizeof(*pkt_tx) + len_tx);
 	struct ratp_bb_pkt *pkt_rx = NULL;
-	struct ratpfs_file *rfile = f->priv;
+	struct ratpfs_file *rfile = f->private_data;
 	int ret;
 
 	pr_debug("%s: len_tx=%i handle=%i\n", __func__,
@@ -208,16 +208,16 @@ static int ratpfs_write(struct device __always_unused *dev,
 		+ size /* data */;
 	struct ratp_bb_pkt *pkt_tx = xzalloc(sizeof(*pkt_tx) + len_tx);
 	struct ratp_bb_pkt *pkt_rx = NULL;
-	struct ratpfs_file *rfile = f->priv;
+	struct ratpfs_file *rfile = f->private_data;
 	int ret;
 
 	pr_debug("%s: len_tx=%i handle=%i pos=%i size=%i\n", __func__,
-		 len_tx, rfile->handle, (int)f->pos, size);
+		 len_tx, rfile->handle, (int)f->f_pos, size);
 
 	pkt_tx->len = len_tx;
 	pkt_tx->data[0] = RATPFS_TYPE_WRITE_CALL;
 	put_unaligned_be32(rfile->handle, &pkt_tx->data[1]);
-	put_unaligned_be32(f->pos, &pkt_tx->data[5]);
+	put_unaligned_be32(f->f_pos, &pkt_tx->data[5]);
 	memcpy(&pkt_tx->data[9], buf, size);
 
 	ret = barebox_ratp_fs_call(pkt_tx, &pkt_rx);
@@ -251,16 +251,16 @@ static int ratpfs_read(struct device __always_unused *dev,
 		+ 4 /* size */;
 	struct ratp_bb_pkt *pkt_tx = xzalloc(sizeof(*pkt_tx) + len_tx);
 	struct ratp_bb_pkt *pkt_rx = NULL;
-	struct ratpfs_file *rfile = f->priv;
+	struct ratpfs_file *rfile = f->private_data;
 	int ret;
 
 	pr_debug("%s: len_tx=%i handle=%i pos=%i size=%i\n", __func__,
-		 len_tx, rfile->handle, (int)f->pos, size);
+		 len_tx, rfile->handle, (int)f->f_pos, size);
 
 	pkt_tx->len = len_tx;
 	pkt_tx->data[0] = RATPFS_TYPE_READ_CALL;
 	put_unaligned_be32(rfile->handle, &pkt_tx->data[1]);
-	put_unaligned_be32(f->pos, &pkt_tx->data[5]);
+	put_unaligned_be32(f->f_pos, &pkt_tx->data[5]);
 	put_unaligned_be32(size, &pkt_tx->data[9]);
 
 	ret = barebox_ratp_fs_call(pkt_tx, &pkt_rx);

@@ -128,7 +128,7 @@ static int fat_rmdir(struct device *dev, const char *pathname)
 static int fat_write(struct device *_dev, FILE *f, const void *buf,
 		     size_t insize)
 {
-	FIL *f_file = f->priv;
+	FIL *f_file = f->private_data;
 	int outsize;
 	int ret;
 
@@ -146,7 +146,7 @@ static int fat_write(struct device *_dev, FILE *f, const void *buf,
 
 static int fat_truncate(struct device *dev, FILE *f, loff_t size)
 {
-	FIL *f_file = f->priv;
+	FIL *f_file = f->private_data;
 	unsigned long lastofs;
 	int ret;
 
@@ -177,7 +177,7 @@ static int fat_open(struct device *dev, FILE *file, const char *filename)
 
 	f_file = xzalloc(sizeof(*f_file));
 
-	switch (file->flags & O_ACCMODE) {
+	switch (file->f_flags & O_ACCMODE) {
 	case O_RDONLY:
 		flags = FA_READ;
 		break;
@@ -195,7 +195,7 @@ static int fat_open(struct device *dev, FILE *file, const char *filename)
 		return -EINVAL;
 	}
 
-	if (file->flags & O_APPEND) {
+	if (file->f_flags & O_APPEND) {
 		ret = f_lseek(f_file, f_file->fsize);
 		if (ret) {
 			f_close(f_file);
@@ -204,7 +204,7 @@ static int fat_open(struct device *dev, FILE *file, const char *filename)
 		}
 	}
 
-	file->priv = f_file;
+	file->private_data = f_file;
 	file->size = f_file->fsize;
 
 	return 0;
@@ -213,7 +213,7 @@ static int fat_open(struct device *dev, FILE *file, const char *filename)
 static int fat_close(struct device *dev, FILE *f)
 {
 	struct fat_priv *priv = dev->priv;
-	FIL *f_file = f->priv;
+	FIL *f_file = f->private_data;
 
 	f_close(f_file);
 
@@ -227,7 +227,7 @@ static int fat_close(struct device *dev, FILE *f)
 static int fat_read(struct device *_dev, FILE *f, void *buf, size_t insize)
 {
 	int ret;
-	FIL *f_file = f->priv;
+	FIL *f_file = f->private_data;
 	int outsize;
 
 	ret = f_read(f_file, buf, insize, &outsize);
@@ -242,7 +242,7 @@ static int fat_read(struct device *_dev, FILE *f, void *buf, size_t insize)
 
 static int fat_lseek(struct device *dev, FILE *f, loff_t pos)
 {
-	FIL *f_file = f->priv;
+	FIL *f_file = f->private_data;
 	int ret;
 
 	ret = f_lseek(f_file, pos);

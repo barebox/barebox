@@ -326,7 +326,7 @@ static void put_file(FILE *f)
 	f->path = NULL;
 	f->fsdev = NULL;
 	iput(f->f_inode);
-	dput(f->dentry);
+	dput(f->f_dentry);
 }
 
 static FILE *fd_to_file(int fd, bool o_path_ok)
@@ -335,7 +335,7 @@ static FILE *fd_to_file(int fd, bool o_path_ok)
 		errno = EBADF;
 		return ERR_PTR(-errno);
 	}
-	if (!o_path_ok && (files[fd].flags & O_PATH)) {
+	if (!o_path_ok && (files[fd].f_flags & O_PATH)) {
 		errno = EINVAL;
 		return ERR_PTR(-errno);
 	}
@@ -410,7 +410,7 @@ static ssize_t __read(FILE *f, void *buf, size_t count)
 	struct fs_driver *fsdrv;
 	int ret;
 
-	if ((f->flags & O_ACCMODE) == O_WRONLY) {
+	if ((f->f_flags & O_ACCMODE) == O_WRONLY) {
 		ret = -EBADF;
 		goto out;
 	}
@@ -420,8 +420,8 @@ static ssize_t __read(FILE *f, void *buf, size_t count)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size)
-		count = f->size - f->pos;
+	if (f->size != FILE_SIZE_STREAM && f->f_pos + count > f->size)
+		count = f->size - f->f_pos;
 
 	if (!count)
 		return 0;
@@ -440,10 +440,10 @@ ssize_t pread(int fd, void *buf, size_t count, loff_t offset)
 	if (IS_ERR(f))
 		return -errno;
 
-	pos = f->pos;
-	f->pos = offset;
+	pos = f->f_pos;
+	f->f_pos = offset;
 	ret = __read(f, buf, count);
-	f->pos = pos;
+	f->f_pos = pos;
 
 	return ret;
 }
@@ -460,7 +460,7 @@ ssize_t read(int fd, void *buf, size_t count)
 	ret = __read(f, buf, count);
 
 	if (ret > 0)
-		f->pos += ret;
+		f->f_pos += ret;
 	return ret;
 }
 EXPORT_SYMBOL(read);
@@ -472,7 +472,7 @@ static ssize_t __write(FILE *f, const void *buf, size_t count)
 
 	fsdrv = f->fsdev->driver;
 
-	if ((f->flags & O_ACCMODE) == O_RDONLY || !fsdrv->write) {
+	if ((f->f_flags & O_ACCMODE) == O_RDONLY || !fsdrv->write) {
 		ret = -EBADF;
 		goto out;
 	}
@@ -480,18 +480,18 @@ static ssize_t __write(FILE *f, const void *buf, size_t count)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size) {
-		ret = fsdev_truncate(&f->fsdev->dev, f, f->pos + count);
+	if (f->size != FILE_SIZE_STREAM && f->f_pos + count > f->size) {
+		ret = fsdev_truncate(&f->fsdev->dev, f, f->f_pos + count);
 		if (ret) {
 			if (ret == -EPERM)
 				ret = -ENOSPC;
 			if (ret != -ENOSPC)
 				goto out;
-			count = f->size - f->pos;
+			count = f->size - f->f_pos;
 			if (!count)
 				goto out;
 		} else {
-			f->size = f->pos + count;
+			f->size = f->f_pos + count;
 			f->f_inode->i_size = f->size;
 		}
 	}
@@ -509,10 +509,10 @@ ssize_t pwrite(int fd, const void *buf, size_t count, loff_t offset)
 	if (IS_ERR(f))
 		return -errno;
 
-	pos = f->pos;
-	f->pos = offset;
+	pos = f->f_pos;
+	f->f_pos = offset;
 	ret = __write(f, buf, count);
-	f->pos = pos;
+	f->f_pos = pos;
 
 	return ret;
 }
@@ -529,7 +529,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 	ret = __write(f, buf, count);
 
 	if (ret > 0)
-		f->pos += ret;
+		f->f_pos += ret;
 	return ret;
 }
 EXPORT_SYMBOL(write);
@@ -574,7 +574,7 @@ loff_t lseek(int fd, loff_t offset, int whence)
 		pos = 0;
 		break;
 	case SEEK_CUR:
-		pos = f->pos;
+		pos = f->f_pos;
 		break;
 	case SEEK_END:
 		pos = f->size;
@@ -594,7 +594,7 @@ loff_t lseek(int fd, loff_t offset, int whence)
 			goto out;
 	}
 
-	f->pos = pos;
+	f->f_pos = pos;
 
 	return pos;
 
@@ -735,7 +735,7 @@ int close(int fd)
 	if (IS_ERR(f))
 		return -errno;
 
-	if (!(f->flags & O_PATH)) {
+	if (!(f->f_flags & O_PATH)) {
 		struct fs_driver *fsdrv;
 
 		fsdrv = f->fsdev->driver;
@@ -2189,7 +2189,7 @@ static bool file_has_flag(FILE *f, unsigned flag)
 {
 	if (IS_ERR_OR_NULL(f))
 		return false;
-	return (f->flags & flag) == flag;
+	return (f->f_flags & flag) == flag;
 }
 
 static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
@@ -2222,7 +2222,7 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 			return ERR_CAST(f);
 
 		nd->path.mnt = &f->fsdev->vfsmount;
-		nd->path.dentry = f->dentry;
+		nd->path.dentry = f->f_dentry;
 		follow_mount(&nd->path);
 
 		if (*s == '/')
@@ -2565,10 +2565,10 @@ int openat(int dirfd, const char *pathname, int flags)
 		}
 
 		f->path = NULL;
-		f->dentry = NULL;
+		f->f_dentry = NULL;
 		f->f_inode = new_inode(&fsdev->sb);
 		f->f_inode->i_mode = S_IFREG;
-		f->flags = flags;
+		f->f_flags = flags;
 		f->size = 0;
 
 		return file_to_fd(f);
@@ -2650,9 +2650,9 @@ int openat(int dirfd, const char *pathname, int flags)
 	}
 
 	f->path = dpath(dentry, d_root);
-	f->dentry = dentry;
+	f->f_dentry = dentry;
 	f->f_inode = iget(inode);
-	f->flags = flags;
+	f->f_flags = flags;
 	f->size = inode->i_size;
 
 	fsdrv = fsdev->driver;
@@ -2678,7 +2678,7 @@ int openat(int dirfd, const char *pathname, int flags)
 	}
 
 	if (flags & O_APPEND)
-		f->pos = f->size;
+		f->f_pos = f->size;
 
 	return file_to_fd(f);
 

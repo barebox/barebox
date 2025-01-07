@@ -22,16 +22,15 @@ struct stat;
 typedef struct filep {
 	struct fs_device *fsdev; /* The device this FILE belongs to              */
 	char *path;
-	loff_t pos;            /* current position in stream                   */
+	loff_t f_pos;            /* current position in stream                   */
 #define FILE_SIZE_STREAM	((loff_t) -1)
 	loff_t size;           /* The size of this inode                       */
-	ulong flags;          /* the O_* flags from open                      */
+	ulong f_flags;          /* the O_* flags from open                      */
 
-	void *priv;         /* private to the filesystem driver              */
-
+	void *private_data;         /* private to the filesystem driver              */
 
 	struct inode *f_inode;
-	struct dentry *dentry;
+	struct path f_path;
 } FILE;
 
 #define FS_DRIVER_NO_DEV	1

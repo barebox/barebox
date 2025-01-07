@@ -29,7 +29,6 @@ typedef struct filep {
 
 	void *priv;         /* private to the filesystem driver              */
 
-	char in_use;
 
 	struct inode *f_inode;
 	struct dentry *dentry;

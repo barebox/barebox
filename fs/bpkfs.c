@@ -161,7 +161,7 @@ static int bpkfs_open(struct device *dev, FILE *f, const char *filename)
 		lseek(d->fd, d->offset, SEEK_SET);
 	}
 
-	f->size = d->size;
+	f->f_size = d->size;
 	f->private_data = d;
 	ret = 0;
 

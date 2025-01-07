@@ -158,7 +158,7 @@ static int efivarfs_open(struct device *dev, FILE *f, const char *filename)
 		goto out;
 	}
 
-	f->size = efile->size;
+	f->f_size = efile->size;
 	f->private_data = efile;
 
 	return 0;
@@ -225,8 +225,6 @@ static int efivarfs_truncate(struct device *dev, FILE *f, loff_t size)
 				  efile->size ? efile->size : 1, efile->buf);
 	if (EFI_ERROR(efiret))
 		return -efi_errno(efiret);
-
-	f->size = efile->size;
 
 	return 0;
 }

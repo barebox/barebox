@@ -150,7 +150,7 @@ static int pstore_open(struct device *dev, FILE *file, const char *filename)
 	if (!d)
 		return -ENOENT;
 
-	file->size = d->size;
+	file->f_size = d->size;
 	file->private_data = d;
 	d->pos = 0;
 

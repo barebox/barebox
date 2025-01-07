@@ -373,15 +373,14 @@ int ftruncate(int fd, loff_t length)
 	if (IS_ERR(f))
 		return -errno;
 
-	if (f->size == FILE_SIZE_STREAM)
+	if (f->f_size == FILE_SIZE_STREAM)
 		return 0;
 
 	ret = fsdev_truncate(&f->fsdev->dev, f, length);
 	if (ret)
 		return errno_set(ret);
 
-	f->size = length;
-	f->f_inode->i_size = f->size;
+	f->f_size = length;
 
 	return 0;
 }
@@ -420,8 +419,8 @@ static ssize_t __read(FILE *f, void *buf, size_t count)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (f->size != FILE_SIZE_STREAM && f->f_pos + count > f->size)
-		count = f->size - f->f_pos;
+	if (f->f_size != FILE_SIZE_STREAM && f->f_pos + count > f->f_size)
+		count = f->f_size - f->f_pos;
 
 	if (!count)
 		return 0;
@@ -480,19 +479,18 @@ static ssize_t __write(FILE *f, const void *buf, size_t count)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (f->size != FILE_SIZE_STREAM && f->f_pos + count > f->size) {
+	if (f->f_size != FILE_SIZE_STREAM && f->f_pos + count > f->f_size) {
 		ret = fsdev_truncate(&f->fsdev->dev, f, f->f_pos + count);
 		if (ret) {
 			if (ret == -EPERM)
 				ret = -ENOSPC;
 			if (ret != -ENOSPC)
 				goto out;
-			count = f->size - f->f_pos;
+			count = f->f_size - f->f_pos;
 			if (!count)
 				goto out;
 		} else {
-			f->size = f->f_pos + count;
-			f->f_inode->i_size = f->size;
+			f->f_size = f->f_pos + count;
 		}
 	}
 	ret = fsdrv->write(&f->fsdev->dev, f, buf, count);
@@ -577,7 +575,7 @@ loff_t lseek(int fd, loff_t offset, int whence)
 		pos = f->f_pos;
 		break;
 	case SEEK_END:
-		pos = f->size;
+		pos = f->f_size;
 		break;
 	default:
 		goto out;
@@ -585,7 +583,7 @@ loff_t lseek(int fd, loff_t offset, int whence)
 
 	pos += offset;
 
-	if (f->size != FILE_SIZE_STREAM && (pos < 0 || pos > f->size))
+	if (f->f_size != FILE_SIZE_STREAM && (pos < 0 || pos > f->f_size))
 		goto out;
 
 	if (fsdrv->lseek) {
@@ -613,10 +611,10 @@ int erase(int fd, loff_t count, loff_t offset, enum erase_type type)
 
 	if (IS_ERR(f))
 		return -errno;
-	if (offset >= f->size)
+	if (offset >= f->f_size)
 		return 0;
-	if (count == ERASE_SIZE_ALL || count > f->size - offset)
-		count = f->size - offset;
+	if (count == ERASE_SIZE_ALL || count > f->f_size - offset)
+		count = f->f_size - offset;
 	if (count < 0)
 		return -EINVAL;
 
@@ -642,10 +640,10 @@ int protect(int fd, size_t count, loff_t offset, int prot)
 
 	if (IS_ERR(f))
 		return -errno;
-	if (offset >= f->size)
+	if (offset >= f->f_size)
 		return 0;
-	if (count > f->size - offset)
-		count = f->size - offset;
+	if (count > f->f_size - offset)
+		count = f->f_size - offset;
 
 	fsdrv = f->fsdev->driver;
 
@@ -669,10 +667,10 @@ int discard_range(int fd, loff_t count, loff_t offset)
 
 	if (IS_ERR(f))
 		return -errno;
-	if (offset >= f->size)
+	if (offset >= f->f_size)
 		return 0;
-	if (count > f->size - offset)
-		count = f->size - offset;
+	if (count > f->f_size - offset)
+		count = f->f_size - offset;
 
 	fsdrv = f->fsdev->driver;
 
@@ -2569,7 +2567,7 @@ int openat(int dirfd, const char *pathname, int flags)
 		f->f_inode = new_inode(&fsdev->sb);
 		f->f_inode->i_mode = S_IFREG;
 		f->f_flags = flags;
-		f->size = 0;
+		f->f_size = 0;
 
 		return file_to_fd(f);
 	}
@@ -2653,7 +2651,6 @@ int openat(int dirfd, const char *pathname, int flags)
 	f->f_dentry = dentry;
 	f->f_inode = iget(inode);
 	f->f_flags = flags;
-	f->size = inode->i_size;
 
 	fsdrv = fsdev->driver;
 
@@ -2671,14 +2668,13 @@ int openat(int dirfd, const char *pathname, int flags)
 
 	if (flags & O_TRUNC) {
 		error = fsdev_truncate(&fsdev->dev, f, 0);
-		f->size = 0;
-		inode->i_size = 0;
+		f->f_size = 0;
 		if (error)
 			goto out;
 	}
 
 	if (flags & O_APPEND)
-		f->f_pos = f->size;
+		f->f_pos = f->f_size;
 
 	return file_to_fd(f);
 

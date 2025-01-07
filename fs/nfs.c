@@ -1167,7 +1167,6 @@ static int nfs_open(struct device *dev, FILE *file, const char *filename)
 	priv->fh = ninode->fh;
 	priv->npriv = npriv;
 	file->private_data = priv;
-	file->size = inode->i_size;
 
 	priv->fifo = kfifo_alloc(1024);
 	if (!priv->fifo) {

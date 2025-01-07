@@ -178,7 +178,7 @@ static int efifs_open(struct device *dev, FILE *f, const char *filename)
 		goto out;
 	}
 
-	f->size = info->FileSize;
+	f->f_size = info->FileSize;
 
 	free(info);
 	f->private_data = ufile;

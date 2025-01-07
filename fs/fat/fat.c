@@ -205,7 +205,7 @@ static int fat_open(struct device *dev, FILE *file, const char *filename)
 	}
 
 	file->private_data = f_file;
-	file->size = f_file->fsize;
+	file->f_size = f_file->fsize;
 
 	return 0;
 }

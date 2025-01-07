@@ -106,7 +106,7 @@ static int devfs_open(struct device *_dev, FILE *f, const char *filename)
 	struct devfs_inode *node = container_of(inode, struct devfs_inode, inode);
 	struct cdev *cdev = node->cdev;
 
-	f->size = cdev->flags & DEVFS_IS_CHARACTER_DEV ?
+	f->f_size = cdev->flags & DEVFS_IS_CHARACTER_DEV ?
 			FILE_SIZE_STREAM : cdev->size;
 	f->private_data = cdev;
 

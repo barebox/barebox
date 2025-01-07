@@ -71,7 +71,7 @@ static int omap4_usbbootfs_open(struct device *dev, FILE *file,
 		return PTR_ERR(priv);
 
 	file->private_data = priv;
-	file->size = priv->size;
+	file->f_size = priv->size;
 
 	return 0;
 }

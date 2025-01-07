@@ -150,7 +150,6 @@ static int squashfs_open(struct device *dev, FILE *file, const char *filename)
 	page->data_block = 0;
 	page->idx = 0;
 	page->real_page.inode = inode;
-	file->size = inode->i_size;
 	file->private_data = page;
 
 	return 0;

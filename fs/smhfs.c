@@ -70,9 +70,9 @@ static int smhfs_open(struct device __always_unused *dev,
 		return fd;
 
 	file->private_data = (void *)(uintptr_t)fd;
-	file->size = semihosting_flen(fd);
-	if (file->size < 0)
-		return file->size;
+	file->f_size = semihosting_flen(fd);
+	if (file->f_size < 0)
+		return file->f_size;
 
 	return 0;
 }
@@ -116,7 +116,7 @@ static int smhfs_stat(struct device __always_unused *dev,
 
 	if (smhfs_open(NULL, &file, filename) == 0) {
 		s->st_mode = S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO;
-		s->st_size = file.size;
+		s->st_size = file.f_size;
 	}
 	smhfs_close(NULL, &file);
 

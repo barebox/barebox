@@ -352,7 +352,6 @@ static int ubifs_open(struct device *dev, FILE *file, const char *filename)
 	uf->dn = xzalloc(UBIFS_MAX_DATA_NODE_SZ);
 	uf->block = -1;
 
-	file->size = inode->i_size;
 	file->private_data = uf;
 
 	return 0;

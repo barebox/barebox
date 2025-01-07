@@ -24,11 +24,11 @@ typedef struct filep {
 	char *path;
 	loff_t f_pos;            /* current position in stream                   */
 #define FILE_SIZE_STREAM	((loff_t) -1)
-	loff_t size;           /* The size of this inode                       */
 	ulong f_flags;          /* the O_* flags from open                      */
 
 	void *private_data;         /* private to the filesystem driver              */
 
+#define f_size f_inode->i_size
 	struct inode *f_inode;
 	struct path f_path;
 } FILE;

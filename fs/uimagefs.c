@@ -88,7 +88,7 @@ static int uimagefs_open(struct device *dev, FILE *file, const char *filename)
 		lseek(d->fd, d->offset, SEEK_SET);
 	}
 
-	file->size = d->size;
+	file->f_size = d->size;
 	file->private_data = d;
 
 	return 0;

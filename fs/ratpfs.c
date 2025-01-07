@@ -151,7 +151,7 @@ static int ratpfs_open(struct device __always_unused *dev,
 		goto err;
 	}
 	file->private_data = rfile;
-	file->size = get_unaligned_be32(&pkt_rx->data[5]);
+	file->f_size = get_unaligned_be32(&pkt_rx->data[5]);
 
 	goto out;
 

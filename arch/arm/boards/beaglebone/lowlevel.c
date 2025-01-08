@@ -97,6 +97,13 @@ extern char __dtb_z_am335x_boneblack_start[];
 extern char __dtb_z_am335x_bone_common_start[];
 extern char __dtb_z_am335x_bone_start[];
 
+static void __udelay(int us)
+{
+	volatile int i;
+
+	for (i = 0; i < us; i++);
+}
+
 /**
  * @brief The basic entry point for board initialization.
  *
@@ -135,6 +142,13 @@ static noinline int beaglebone_sram_init(void)
 	am33xx_enable_uart0_pin_mux();
 	omap_debug_ll_init();
 	putc_ll('>');
+
+	/*
+	 * Some (~5%) Beaglebone Black received from SEEED in batches
+	 * after autumn 2024 require a delay to be able to warm start
+	 * after reset
+	 */
+	__udelay(3000);
 
 	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, sdram_size, fdt);
 }

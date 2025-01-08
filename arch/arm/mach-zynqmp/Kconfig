@@ -5,7 +5,6 @@ menu "ZynqMP Features"
 
 config MACH_XILINX_ZCU102
 	bool "Xilinx Zynq UltraScale+ MPSoC ZCU102"
-	select ARM_USE_COMPRESSED_DTB
 	help
 	  Say Y here if you are using the Xilinx Zynq UltraScale+ MPSoC ZCU102
 	  evaluation board.

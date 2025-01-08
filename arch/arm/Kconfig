@@ -13,6 +13,7 @@ config ARM
 	select HAVE_PBL_MULTI_IMAGES
 	select RELOCATABLE
 	select PBL_RELOCATABLE
+	select USE_COMPRESSED_DTB
 	default y
 
 config ARM32
@@ -29,10 +30,6 @@ config ARM_LINUX
 	bool
 	default y
 	depends on CMD_BOOTZ || CMD_BOOTU || BOOTM
-
-config ARM_USE_COMPRESSED_DTB
-       bool
-       select USE_COMPRESSED_DTB
 
 menu "System Type"
 
@@ -176,7 +173,6 @@ config ARCH_LAYERSCAPE
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select HW_HAS_PCI
-	select ARM_USE_COMPRESSED_DTB
 	select OF_DMA_COHERENCY
 
 config ARCH_OMAP_MULTI
@@ -210,7 +206,6 @@ config ARCH_STM32MP
 	select ARCH_HAS_RESET_CONTROLLER
 	select ARM_AMBA
 	select ARM_SMCCC
-	select ARM_USE_COMPRESSED_DTB
 
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"

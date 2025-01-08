@@ -20,7 +20,6 @@ menu "select Zynq boards to be built"
 
 config MACH_ZEDBOARD
 	bool "Avnet Zynq-7000 ZedBoard"
-	select ARM_USE_COMPRESSED_DTB
 	select ARCH_ZYNQ7000
 
 endmenu

@@ -1215,6 +1215,9 @@ static __maybe_unused struct of_device_id omap_i2c_dt_ids[] = {
 		.data = &omap3_data,
 	}, {
 		.compatible = "ti,omap4-i2c",
+	},  {
+		.compatible = "ti,am64-i2c",
+		.data = &omap4_data,
 	}, {
 		/* sentinel */
 	}

@@ -51,6 +51,44 @@ static inline int get_file_count(int i)
 	return i + 1;
 }
 
+struct test_tree_ctx {
+	unsigned nfiles;
+	unsigned ndirs;
+};
+
+static void test_tree(const char *path, struct test_tree_ctx *ctx)
+{
+	DIR *dir;
+	struct dirent *d;
+	char *oldwd;
+
+	dir = opendir(path);
+	if (!dir)
+		return;
+
+	oldwd = pushd(path);
+
+	while ((d = readdir(dir))) {
+		struct stat st;
+
+		if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
+			continue;
+
+		if (stat(d->d_name, &st))
+			continue;
+
+		if (S_ISDIR(st.st_mode))
+			ctx->ndirs++;
+		else if (S_ISREG(st.st_mode))
+			ctx->nfiles++;
+
+		test_tree(d->d_name, ctx);
+
+	}
+
+	popd(oldwd);
+}
+
 static void test_ramfs(void)
 {
 	int files[] = { 1, 3, 5, 7, 11, 13, 17 };
@@ -180,24 +218,34 @@ static void test_ramfs(void)
 	expect_success(i == 90 ? 0 : -EINVAL,
 		       "unexpected file count iterating directory: %u", i);
 
-	ret = make_directory("test/a/b/c/d/e/f/g/h/i/j/k/l");
+	ret = make_directory("test/a/b/c/d/d/f/g/h/i/j/k/l");
 	expect_success(ret, "make_directory()");
 
 	if (!ret) {
+		struct test_tree_ctx ctx = {};
 		const char hello[] = "hello";
 		char *buf;
 
-		ret = write_file("test/a/b/c/d/e/f/g/h/i/j/k/l/FILE",
+		ret = write_file("test/a/b/c/d/d/f/g/h/i/j/k/l/FILE",
 				 ARRAY_AND_SIZE(hello));
 		expect_success(ret, "write_file()");
 
-		buf = read_file("test/a/b/c/d/e/f/g/h/i/j/k/l/FILE", NULL);
+		buf = read_file("test/a/b/c/d/d/f/g/h/i/j/k/l/FILE", NULL);
 		if (expect_ptrok(buf, "read_file()")) {
 			expect_success(memcmp(buf, ARRAY_AND_SIZE(hello)),
 				       "read_file() content");
 		}
 
 		free(buf);
+
+		test_tree("test/", &ctx);
+
+		expect_success(ctx.nfiles == 1 ? 0 : -EINVAL,
+			       "wrong recursive opendir file count: %u",
+			       ctx.nfiles);
+		expect_success(ctx.ndirs == 12 ? 0 : -EINVAL,
+			       "wrong recursive opendir directory count: %u",
+			       ctx.ndirs);
 	}
 
 out:

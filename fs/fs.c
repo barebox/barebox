@@ -1530,9 +1530,6 @@ static struct dentry *d_lookup(struct dentry *parent, const struct qstr *name)
 {
 	struct dentry *dentry;
 
-	if (d_same_name(parent, name))
-		return dget(parent);
-
 	list_for_each_entry(dentry, &parent->d_subdirs, d_child) {
 		if (d_same_name(dentry, name))
 			return dget(dentry);

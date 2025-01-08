@@ -13,3 +13,4 @@ ifneq ($(filter y,$(CONFIG_USB_DWC3_GADGET) $(CONFIG_USB_DWC3_DUAL_ROLE)),)
 endif
 
 obj-$(CONFIG_USB_DWC3_OF_SIMPLE)	+= dwc3-of-simple.o
+obj-$(CONFIG_USB_DWC3_AM62)		+= dwc3-am62.o

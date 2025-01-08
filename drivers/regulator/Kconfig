@@ -58,6 +58,10 @@ config REGULATOR_STPMIC1
 	  an application processor as well as to external system
 	  peripherals such as DDR, Flash memories and system devices.
 
+config REGULATOR_TPS65219
+	tristate "TI TPS65219 Regulators"
+	depends on MFD_TPS65219
+
 config REGULATOR_ANATOP
 	tristate "Freescale i.MX on-chip ANATOP LDO regulators"
 	depends on MFD_SYSCON

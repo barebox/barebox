@@ -693,9 +693,9 @@ config BOOTM_FITIMAGE_SIGNATURE
 	help
 	  Support verifying signed FIT images. This requires FIT images
 	  as described in:
-	  http://git.denx.de/?p=u-boot.git;a=blob;f=doc/uImage.FIT/signature.txt
+	  https://docs.u-boot.org/en/stable/usage/fit/signature.html
 	  Additionally the barebox device tree needs a /signature node with the
-	  public key with which the image has been signed.
+	  public key needed to approve the image's signature.
 
 config BOOTM_FITIMAGE_PUBKEY_ENV
 	bool "Specify path to public key in environment"

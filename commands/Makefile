@@ -68,6 +68,7 @@ obj-$(CONFIG_CMD_DFU)		+= dfu.o
 obj-$(CONFIG_USB_GADGET_SERIAL)	+= usbserial.o
 obj-$(CONFIG_CMD_GPIO)		+= gpio.o
 obj-$(CONFIG_CMD_UNCOMPRESS)	+= uncompress.o
+obj-$(CONFIG_CMD_FIPTOOL)	+= fiptool.o
 obj-$(CONFIG_CMD_I2C)		+= i2c.o
 obj-$(CONFIG_CMD_SPI)		+= spi.o
 obj-$(CONFIG_CMD_PWM)		+= pwm.o

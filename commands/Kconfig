@@ -1163,6 +1163,24 @@ config CMD_SHA512SUM
 
 	  Calculate a SHA512 digest over a FILE or a memory area.
 
+config CMD_FIPTOOL
+	bool
+	select FIP
+	prompt "fiptool"
+	help
+	  Manipulate and inspect TF-A Firmware Image Packages.
+
+config CMD_FIPTOOL_WRITE
+	bool
+	depends on CMD_FIPTOOL
+	prompt "support create/update/remove subcommands to fiptool"
+	help
+	  Adds following subcommands that manipulate FIP files:
+
+	  fiptool create # Create a new FIP with the given images
+	  fiptool update # Update an existing FIP with the given images
+	  fiptool remove # Remove images from FIP
+
 config CMD_UNCOMPRESS
 	bool
 	select UNCOMPRESS

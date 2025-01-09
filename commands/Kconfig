@@ -2172,6 +2172,27 @@ config CMD_USBGADGET
 	depends on USB_GADGET
 	prompt "usbgadget"
 
+config CMD_DFU
+	bool
+	depends on USB_GADGET_DFU
+	prompt "dfu"
+	help
+	  This command can be used as an alternative to the usbgadget command.
+	  The downside of this command is that it blocks the shell until interrupted
+	  with CTRL-C and unlike the usbgadget command it cannot create multiple
+	  functions on the gadget.
+
+	  Turn's the USB host into DFU mode (Device Firmware Mode) and accepts
+	  a new firmware. The destination is described by DESC in the format
+
+	  DEVICE(NAME)[src]...
+
+	  Here '(' and ')' are literal characters. The '[' and ']' however denote
+	  one of the following optional modes:
+	  's': safe mode (download the complete image before flashing);
+	  'r': readback of the firmware is allowed;
+	  'c': the file will be created (for use with regular files).
+
 config CMD_WD
 	bool
 	depends on WATCHDOG

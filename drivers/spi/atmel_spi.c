@@ -402,7 +402,7 @@ static int atmel_spi_probe(struct device *dev)
 
 	master = &as->master;
 	master->dev = dev;
-	master->bus_num = dev->id;
+	master->bus_num = pdata ? dev->id : -1;
 
 	if (pdata) {
 		master->num_chipselect = pdata->num_chipselect;

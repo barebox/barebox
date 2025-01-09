@@ -500,6 +500,13 @@ static void part_get_efi_name(gpt_entry *pte, const char *src)
 	}
 }
 
+static void add_gpt_diskuuid_param(struct efi_partition_desc *epd,
+				   struct block_device *blk)
+{
+	epd->param_guid = dev_add_param_string_fixed(blk->dev,
+						     "guid", blk->cdev.diskuuid);
+}
+
 static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 {
 	gpt_header *gpt = NULL;
@@ -530,8 +537,7 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 	epd->ptes = ptes;
 
 	snprintf(blk->cdev.diskuuid, sizeof(blk->cdev.diskuuid), "%pUl", &gpt->disk_guid);
-	epd->param_guid = dev_add_param_string_fixed(blk->dev,
-						     "guid", blk->cdev.diskuuid);
+	add_gpt_diskuuid_param(epd, blk);
 
 	for (i = 0; i < nb_part; i++) {
 		if (!is_pte_valid(&ptes[i], last_lba(blk))) {
@@ -594,6 +600,8 @@ static __maybe_unused struct partition_desc *efi_partition_create_table(struct b
 	gpt->partition_entry_lba = cpu_to_le64(2);
 	gpt->num_partition_entries = cpu_to_le32(128);
 	gpt->sizeof_partition_entry = cpu_to_le32(sizeof(gpt_entry));
+
+	add_gpt_diskuuid_param(epd, blk);
 
 	pr_info("Created new disk label with GUID %pU\n", &gpt->disk_guid);
 

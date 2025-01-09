@@ -111,12 +111,6 @@ config UBIFORMAT
 	depends on MTD_UBI
 	default y
 
-config USBGADGET_START
-	bool
-	depends on CMD_USBGADGET || USB_GADGET_AUTOSTART
-	select ENVIRONMENT_VARIABLES
-	default y
-
 config BOOT
 	select GLOB
 	bool

@@ -200,6 +200,26 @@ static void extract_flags(const struct partition_entry *p,
 		pentry->flags |= DEVFS_PARTITION_BOOTABLE_ESP;
 }
 
+static void add_nt_signature_param(struct disk_signature_priv *dsp,
+				   struct block_device *blk)
+{
+	dsp->blk = blk;
+
+	/*
+	 * This parameter contains the NT disk signature. This allows to
+	 * to specify the Linux rootfs using the following syntax:
+	 *
+	 *   root=PARTUUID=ssssssss-pp
+	 *
+	 * where ssssssss is a zero-filled hex representation of the 32-bit
+	 * signature and pp is a zero-filled hex representation of the 1-based
+	 * partition number.
+	 */
+	dsp->param = dev_add_param_uint32(blk->dev, "nt_signature",
+			dos_set_disk_signature, dos_get_disk_signature,
+			&dsp->signature, "%08x", dsp);
+}
+
 /**
  * Check if a DOS like partition describes this block device
  * @param blk Block device to register to
@@ -216,7 +236,6 @@ static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 	struct partition *extended_partition = NULL;
 	uint8_t *buffer = buf;
 	int i;
-	struct disk_signature_priv *dsp;
 	uint32_t signature = get_unaligned_le32(buf + 0x1b8);
 	struct dos_partition_desc *dpd;
 
@@ -275,22 +294,7 @@ static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 	if (extended_partition)
 		dos_extended_partition(blk, dpd, extended_partition, signature);
 
-	dsp = &dpd->disksig;
-	dsp->blk = blk;
-
-	/*
-	 * This parameter contains the NT disk signature. This allows to
-	 * to specify the Linux rootfs using the following syntax:
-	 *
-	 *   root=PARTUUID=ssssssss-pp
-	 *
-	 * where ssssssss is a zero-filled hex representation of the 32-bit
-	 * signature and pp is a zero-filled hex representation of the 1-based
-	 * partition number.
-	 */
-	dsp->param = dev_add_param_uint32(blk->dev, "nt_signature",
-			dos_set_disk_signature, dos_get_disk_signature,
-			&dsp->signature, "%08x", dsp);
+	add_nt_signature_param(&dpd->disksig, blk);
 
 	return &dpd->pd;
 }
@@ -319,6 +323,8 @@ static __maybe_unused struct partition_desc *dos_partition_create_table(struct b
 	partition_desc_init(&dpd->pd, blk);
 
 	dpd->signature = random32();
+
+	add_nt_signature_param(&dpd->disksig, blk);
 
 	return &dpd->pd;
 }

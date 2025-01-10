@@ -18,6 +18,7 @@
 #include <linux/usb/fsl_usb2.h>
 #include <linux/err.h>
 #include <linux/phy/phy.h>
+#include <linux/usb/of.h>
 #include <linux/clk.h>
 
 #define MXC_EHCI_PORTSC_MASK ((0xf << 28) | (1 << 25))

@@ -6,6 +6,7 @@
 #include <common.h>
 #include <linux/usb/usb.h>
 #include <linux/usb/phy.h>
+#include <linux/usb/of.h>
 #include <of.h>
 
 static const char *usb_dr_modes[] = {

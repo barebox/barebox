@@ -17,6 +17,7 @@ config RISCV
 	select HAS_KALLSYMS
 	select RISCV_TIMER if RISCV_SBI
 	select HW_HAS_PCI
+	select HAVE_ARCH_BOARD_GENERIC_DT
 
 config ARCH_LINUX_NAME
 	string
@@ -70,15 +71,6 @@ config 64BIT
 	depends on CPU_SUPPORTS_64BIT_KERNEL
 	select ARCH_DMA_ADDR_T_64BIT
 	select PHYS_ADDR_T_64BIT
-
-config BOARD_RISCV_GENERIC_DT
-	select BOARD_GENERIC_DT
-	bool "Build generic RISC-V device tree 2nd stage image"
-	help
-	  This enables compilation of a generic image that can be started 2nd
-	  stage from barebox or from qemu. It picks up a device tree passed
-	  in a1 like the Kernel does, so it could be used anywhere where a Kernel
-	  image could be used. The image will be called images/barebox-dt-2nd.img
 
 menu "RISC-V specific settings"
 

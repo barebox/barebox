@@ -29,3 +29,21 @@ config ARCH_LINUX_NAME
 config ARCH_MKIMAGE_NAME
 	string
 	default "invalid"
+
+config HAVE_ARCH_BOARD_GENERIC_DT
+	bool
+
+menu "General architecture-dependent options"
+
+config BOARD_GENERIC_DT
+	depends on HAVE_ARCH_BOARD_GENERIC_DT
+	bool "Build generic device tree 2nd stage image"
+	default y
+	help
+	  This enables compilation of a generic image that can be started 2nd
+	  stage from qemu, barebox, or other bootloaders. It picks up a device
+	  tree passed by the Linux kernel's boot convention for the given
+	  architecture and thus can be used anywhere that a Kernel image could be used.
+	  The image will be called images/barebox-dt-2nd.img
+
+endmenu

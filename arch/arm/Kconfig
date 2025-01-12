@@ -13,6 +13,7 @@ config ARM
 	select HAVE_PBL_MULTI_IMAGES
 	select RELOCATABLE
 	select PBL_RELOCATABLE
+	select HAVE_ARCH_BOARD_GENERIC_DT if OFDEVICE
 	default y
 
 config ARCH_LINUX_NAME
@@ -274,15 +275,14 @@ source "arch/arm/mach-zynqmp/Kconfig"
 
 config BOARD_ARM_VIRT
 	bool
-	select BOARD_ARM_GENERIC_DT
+	select BOARD_GENERIC_DT
 	select BOARD_QEMU_VIRT
 	select OF_OVERLAY
 
 config BOARD_ARM_GENERIC_DT
-	select BOARD_GENERIC_DT
+	def_bool BOARD_GENERIC_DT
 	select ARM_AMBA
 	depends on OFDEVICE
-	bool "Build generic ARM device tree 2nd stage image"
 	help
 	  This enables compilation of a generic image that can be started 2nd
 	  stage from barebox or from qemu. It picks up a device tree passed

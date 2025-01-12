@@ -22,6 +22,10 @@ config SANDBOX
 	select BAREBOX_CMDLINE
 	default y
 
+config ARCH_LINUX_NAME
+	string
+	default "um"
+
 config ARCH_TEXT_BASE
 	hex
 	default 0x00000000

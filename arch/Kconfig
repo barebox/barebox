@@ -21,3 +21,11 @@ config ARCH_DMA_DEFAULT_COHERENT
 
 config ARCH_HAS_ASAN_FIBER_API
 	bool
+
+config ARCH_LINUX_NAME
+	string
+	default "$(SRCARCH)"
+
+config ARCH_MKIMAGE_NAME
+	string
+	default "invalid"

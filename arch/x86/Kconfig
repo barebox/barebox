@@ -9,6 +9,16 @@ config X86
 	select HAVE_EFI_PAYLOAD
 	default y
 
+config ARCH_LINUX_NAME
+	string
+	default "i386" if X86_32
+	default "x86_64" if X86_64
+
+config ARCH_MKIMAGE_NAME
+	string
+	default "x86" if X86_32
+	default "x86_64" if X86_64
+
 config ARCH_TEXT_BASE
 	hex
 	default 0x0

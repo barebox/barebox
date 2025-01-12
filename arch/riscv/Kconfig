@@ -18,6 +18,15 @@ config RISCV
 	select RISCV_TIMER if RISCV_SBI
 	select HW_HAS_PCI
 
+config ARCH_LINUX_NAME
+	string
+	default "riscv" if ARCH_RV32I
+	default "riscv64" if ARCH_RV64I
+
+config ARCH_MKIMAGE_NAME
+	string
+	default "riscv"
+
 config ARCH_TEXT_BASE
 	hex
 	default 0x0

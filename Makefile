@@ -1032,7 +1032,7 @@ include/config/kernel.release: FORCE
 # Carefully list dependencies so we do not try to build scripts twice
 # in parallel
 PHONY += scripts
-scripts: scripts_basic include/generated/utsrelease.h
+scripts: scripts_basic scripts_dtc include/generated/utsrelease.h
 	$(Q)$(MAKE) $(build)=$(@)
 
 # Things we need to do before we recursively start building the kernel
@@ -1120,6 +1120,10 @@ targets += $(all_dtbs)
 dtbs: $(all_dtbs)
 
 endif
+
+PHONY += scripts_dtc
+scripts_dtc: scripts_basic
+	$(Q)$(MAKE) $(build)=scripts/dtc
 
 # ---------------------------------------------------------------------------
 # Modules

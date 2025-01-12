@@ -311,6 +311,23 @@ quiet_cmd_sha256bin ?= SHA-BIN $@
 quiet_cmd_sha256sum ?= SHA     $@
       cmd_sha256sum ?= sha256sum $2 > $@
 
+# Flat Image Tree (FIT)
+# This allows for packaging of barebox and all devicetrees files, using
+# compression.
+# ---------------------------------------------------------------------------
+
+MAKE_FIT := $(srctree)/scripts/make_fit.py
+
+# Use this to override the compression algorithm of the DTBs
+FIT_COMPRESSION ?= none
+
+quiet_cmd_fit = FIT     $@
+      cmd_fit = $(MAKE_FIT) -o $@ --arch $(CONFIG_ARCH_MKIMAGE_NAME) --os linux \
+		--name 'barebox-$(KERNELRELEASE)' \
+		$(if $(findstring 1,$(KBUILD_VERBOSE)),-v) \
+		$(if $(FIT_DECOMPOSE_DTBS),--decompose-dtbs) \
+		--dtb-compress $(FIT_COMPRESSION) -k $< @$(word 2,$^)
+
 # Decompressor for barebox proper binary when using PBL
 # ---------------------------------------------------------------------------
 

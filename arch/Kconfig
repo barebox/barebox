@@ -46,4 +46,21 @@ config BOARD_GENERIC_DT
 	  architecture and thus can be used anywhere that a Kernel image could be used.
 	  The image will be called images/barebox-dt-2nd.img
 
+config BOARD_GENERIC_FIT
+	depends on BOARD_GENERIC_DT
+	bool "Build generic device tree 2nd stage FIT image"
+	help
+	  This enables compilation of a generic FIT image that combines
+	  barebox-dt-2nd.img as well as all enabled device trees.
+	  This single image is the bootable from coreboot, barebox, or any other
+	  bootloader capable of booting a Linux kernel out of FIT images.
+	  The image will be called images/barebox-$(CONFIG_ARCH_LINUX_NAME).fit
+
+	  The image can be built manually, even without enabling this option
+	  by running make barebox.fit, which will create a barebox.fit symlink
+	  pointing at the built image.
+
+	  Note that this option requires python3 and its libfdt module to be
+	  installed on the build host.
+
 endmenu

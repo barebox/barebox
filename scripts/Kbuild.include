@@ -61,6 +61,12 @@ escsq = $(subst $(squote),'\$(squote)',$1)
 stringify = $(squote)$(quote)$1$(quote)$(squote)
 
 ###
+# Remove the quotes in the argument
+define remove_quotes
+$(strip $(subst $(quote),,$(1)))
+endef
+
+###
 # The path to Kbuild or Makefile. Kbuild has precedence over Makefile.
 kbuild-file = $(or $(wildcard $(src)/Kbuild),$(src)/Makefile)
 

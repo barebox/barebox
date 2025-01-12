@@ -1005,6 +1005,9 @@ barebox: $(BAREBOX_LDS) $(BAREBOX_OBJS) $(kallsyms.o) FORCE
 	$(call if_changed_rule,barebox__)
 	$(Q)rm -f .old_version
 
+barebox.fit: images/barebox-$(CONFIG_ARCH_LINUX_NAME).fit
+	$(Q)ln -fsn $< $@
+
 barebox.srec: barebox
 	$(OBJCOPY) -O srec $< $@
 
@@ -1110,6 +1113,7 @@ include/generated/utsrelease.h: include/config/kernel.release FORCE
 
 ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/dts/),)
 dtstree := arch/$(SRCARCH)/dts
+export dtstree
 endif
 
 ifneq ($(dtstree),)
@@ -1319,6 +1323,7 @@ help:
 	@echo  '* barebox         - Build the barebox proper binary'
 ifdef CONFIG_PBL_IMAGE
 	@echo  '* images          - Build final prebootloader-prefixed images'
+	@echo  '* barebox.fit     - Build 2nd stage barebox with device trees FIT image'
 endif
 	@echo  '  dir/            - Build all files in dir and below'
 	@echo  '  dir/file.[ois]  - Build specified target only'

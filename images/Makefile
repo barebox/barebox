@@ -123,6 +123,10 @@ cmd_itb = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
 $(obj)/%.itb: $(obj)/%.its FORCE
 	$(call if_changed,itb)
 
+.SECONDEXPANSION:
+$(obj)/%.fit: $(obj)/$$(FILE_$$(@F)) $(dtstree)/dtbs-list FORCE
+	$(call if_changed,fit)
+
 $(obj)/piggy.o: $(obj)/barebox.z FORCE
 
 $(obj)/sha_sum.o: $(obj)/barebox.sha.bin FORCE
@@ -186,6 +190,11 @@ include $(srctree)/images/Makefile.k3
 pblb-$(CONFIG_BOARD_GENERIC_DT) += start_dt_2nd
 FILE_barebox-dt-2nd.img = start_dt_2nd.pblb
 image-$(CONFIG_BOARD_GENERIC_DT) += barebox-dt-2nd.img
+
+fit-image = barebox-$(call remove_quotes,$(CONFIG_ARCH_LINUX_NAME)).fit
+FILE_$(fit-image) = barebox-dt-2nd.img
+image-$(CONFIG_BOARD_GENERIC_FIT) += $(fit-image)
+targets += $(fit-name)
 
 ifdef CONFIG_ARM
 pblb-$(CONFIG_PBL_SINGLE_IMAGE) += start_pbl

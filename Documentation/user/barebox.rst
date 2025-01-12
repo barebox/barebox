@@ -215,20 +215,10 @@ For example:
   U-Boot: bootz $kernel_addr - $fdt_addr # On 32-bit ARM
   U-Boot: booti $kernel_addr - $fdt_addr # for other platforms
 
-Another option is to generate a FIT image containing the generic DT image and a
-matching device tree with ``mkimage``:
-
-.. code-block:: console
-
-  sh: mkimage --architecture arm \
-      --os linux \
-      --type kernel \
-      --fit auto \
-      --load-address $kernel_addr_r \
-      --compression none \
-      --image images/barebox-dt-2nd.img \
-      --device-tree arch/${ARCH}/dts/my-board.dtb \
-      barebox-dt-2nd.fit
+The barebox build can also generate a FIT image combining ``barebox-dt-2nd.img``
+and all enabled device trees. This image requires python3 and python3-libfdt
+and is thus only built by default if ``CONFIG_BOARD_GENERIC_FIT`` is enabled
+or the FIT image target is explicitly invoked: ``make barebox.fit``.
 
 This FIT image can then be loaded by U-Boot and executed just like a regular
 Linux kernel:
@@ -238,10 +228,9 @@ Linux kernel:
   U-Boot: tftp $fit_addr barebox-dt-2nd.fit
   U-Boot: bootm $fit_addr
 
-Make sure that the address in ``$fit_addr`` is different from the
-``$kernel_addr_r`` passed to ``mkimage`` as the load address of the Kernel
-image. Otherwise U-Boot may attempt to overwrite the FIT image with the barebox
-image contained within.
+The FIT image has a kernel type of ``kernel_noload``, instructing the bootloader
+to ignore the load address. The first stage bootloader must thus either support
+``kernel_noload`` or always ignore load addresses.
 
 For non-DT enabled-bootloaders or other architectures, often the normal barebox
 binaries can also be used as they are designed to be startable second stage

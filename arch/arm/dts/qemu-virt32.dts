@@ -1,0 +1,402 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/input/linux-event-codes.h>
+
+/dts-v1/;
+
+/ {
+	compatible = "linux,dummy-virt";
+	model = "linux,dummy-virt";
+	interrupt-parent = <&gic>;
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	psci {
+		compatible = "arm,psci-1.0", "arm,psci-0.2", "arm,psci";
+		method = "hvc";
+		migrate = <0x84000005>;
+		cpu_on = <0x84000003>;
+		cpu_off = <0x84000002>;
+		cpu_suspend = <0x84000001>;
+	};
+
+	memory@40000000 {
+		reg = <0x0 0x40000000 0x0 0x40000000>;
+		device_type = "memory";
+	};
+
+	flash@0 {
+		compatible = "cfi-flash";
+		reg = <0x0 0x0 0x0 0x4000000>, <0x0 0x4000000 0x0 0x4000000>;
+		bank-width = <4>;
+	};
+
+	clk_24mhz: apb-pclk {
+		compatible = "fixed-clock";
+		clock-frequency = <24000000>;
+		clock-output-names = "clk24mhz";
+		#clock-cells = <0>;
+	};
+
+	platform-bus@c000000 {
+		compatible = "qemu,platform", "simple-bus";
+		ranges = <0x0 0x0 0xc000000 0x2000000>;
+		interrupt-parent = <&gic>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+
+	fw-cfg@9020000 {
+		compatible = "qemu,fw-cfg-mmio";
+		reg = <0x0 0x9020000 0x0 0x18>;
+		dma-coherent;
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		poweroff {
+			gpios = <&gpio 3 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_POWER>;
+			label = "GPIO Key Poweroff";
+		};
+	};
+
+	gpio: pl061@9030000 {
+		compatible = "arm,pl061", "arm,primecell";
+		reg = <0x0 0x9030000 0x0 0x1000>;
+		clock-names = "apb_pclk";
+		clocks = <&clk_24mhz>;
+		interrupts = <GIC_SPI 0x07 IRQ_TYPE_LEVEL_HIGH>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	pcie@10000000 {
+		compatible = "pci-host-ecam-generic";
+		device_type = "pci";
+		interrupt-map-mask = <0x1800 0x0 0x0 0x07>;
+		interrupt-map = <0x0000 0 0 1 &gic 0 0 GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>,
+		                <0x0000 0 0 2 &gic 0 0 GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>,
+				<0x0000 0 0 3 &gic 0 0 GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>,
+				<0x0000 0 0 4 &gic 0 0 GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
+				<0x0800 0 0 1 &gic 0 0 GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>,
+				<0x0800 0 0 2 &gic 0 0 GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>,
+				<0x0800 0 0 3 &gic 0 0 GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
+				<0x0800 0 0 4 &gic 0 0 GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>,
+				<0x1000 0 0 1 &gic 0 0 GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>,
+				<0x1000 0 0 2 &gic 0 0 GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
+				<0x1000 0 0 3 &gic 0 0 GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>,
+				<0x1000 0 0 4 &gic 0 0 GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>,
+				<0x1800 0 0 1 &gic 0 0 GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>,
+				<0x1800 0 0 2 &gic 0 0 GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>,
+				<0x1800 0 0 3 &gic 0 0 GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>,
+				<0x1800 0 0 4 &gic 0 0 GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
+		#interrupt-cells = <1>;
+		ranges = <0x1000000 0    0          0    0x3eff0000 0    0x10000>,
+		         <0x2000000 0    0x10000000 0    0x10000000 0    0x2eff0000>,
+			 <0x3000000 0x80 0x0        0x80 0x0        0x80 0x0>;
+		reg = <0x40 0x10000000 0x0 0x10000000>;
+		msi-map = <0x0 &gic_its 0x0 0x10000>;
+		dma-coherent;
+		bus-range = <0 0xff>;
+		linux,pci-domain = <0>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+	};
+
+	pl031@9010000 {
+		compatible = "arm,pl031", "arm,primecell";
+		reg = <0x0 0x9010000 0x0 0x1000>;
+		clock-names = "apb_pclk";
+		clocks = <&clk_24mhz>;
+		interrupts = <GIC_SPI 0x02 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	uart0: pl011@9000000 {
+		compatible = "arm,pl011", "arm,primecell";
+		reg = <0x0 0x9000000 0x0 0x1000>;
+		clock-names = "uartclk", "apb_pclk";
+		clocks = <&clk_24mhz>, <&clk_24mhz>;
+		interrupts = <GIC_SPI 0x01 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	pmu {
+	};
+
+	gic: intc@8000000 {
+		compatible = "arm,cortex-a15-gic";
+		reg = <0x0 0x8000000 0x0 0x10000>, <0x0 0x8010000 0x0 0x10000>;
+		ranges;
+		interrupt-controller;
+		#interrupt-cells = <3>;
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		gic_its: v2m@8020000 {
+			compatible = "arm,gic-v2m-frame";
+			reg = <0x0 0x8020000 0x0 0x1000>;
+			msi-controller;
+		};
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			compatible = "arm,cortex-a7";
+			device_type = "cpu";
+			reg = <0>;
+		};
+
+		cpu-map {
+			socket0 {
+				cluster0 {
+					core0 {
+						cpu = <&cpu0>;
+					};
+				};
+			};
+		};
+	};
+
+	timer {
+		compatible = "arm,armv7-timer";
+		interrupts = <GIC_PPI 0x0d (GIC_CPU_MASK_RAW(1) | IRQ_TYPE_LEVEL_HIGH)>,
+		             <GIC_PPI 0x0e (GIC_CPU_MASK_RAW(1) | IRQ_TYPE_LEVEL_HIGH)>,
+		             <GIC_PPI 0x0b (GIC_CPU_MASK_RAW(1) | IRQ_TYPE_LEVEL_HIGH)>,
+			     <GIC_PPI 0x0a (GIC_CPU_MASK_RAW(1) | IRQ_TYPE_LEVEL_HIGH)>;
+		always-on;
+	};
+
+	virtio_mmio@a000000 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa000000 0x0 0x200>;
+		interrupts = <GIC_SPI 0x10 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a000200 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa000200 0x0 0x200>;
+		interrupts = <GIC_SPI 0x11 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a000400 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa000400 0x0 0x200>;
+		interrupts = <GIC_SPI 0x12 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a000600 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa000600 0x0 0x200>;
+		interrupts = <GIC_SPI 0x13 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a000800 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa000800 0x0 0x200>;
+		interrupts = <GIC_SPI 0x14 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a000a00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa000a00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x15 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a000c00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa000c00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x16 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a000e00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa000e00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x17 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a001000 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa001000 0x0 0x200>;
+		interrupts = <GIC_SPI 0x18 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a001200 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa001200 0x0 0x200>;
+		interrupts = <GIC_SPI 0x19 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a001400 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa001400 0x0 0x200>;
+		interrupts = <GIC_SPI 0x1a IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a001600 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa001600 0x0 0x200>;
+		interrupts = <GIC_SPI 0x1b IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a001800 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa001800 0x0 0x200>;
+		interrupts = <GIC_SPI 0x1c IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a001a00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa001a00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x1d IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a001c00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa001c00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x1e IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a001e00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa001e00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x1f IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a002000 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa002000 0x0 0x200>;
+		interrupts = <GIC_SPI 0x20 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a002200 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa002200 0x0 0x200>;
+		interrupts = <GIC_SPI 0x21 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a002400 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa002400 0x0 0x200>;
+		interrupts = <GIC_SPI 0x22 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a002600 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa002600 0x0 0x200>;
+		interrupts = <GIC_SPI 0x23 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a002800 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa002800 0x0 0x200>;
+		interrupts = <GIC_SPI 0x24 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a002a00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa002a00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x25 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a002c00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa002c00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x26 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a002e00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa002e00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x27 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a003000 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa003000 0x0 0x200>;
+		interrupts = <GIC_SPI 0x28 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a003200 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa003200 0x0 0x200>;
+		interrupts = <GIC_SPI 0x29 IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a003400 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa003400 0x0 0x200>;
+		interrupts = <GIC_SPI 0x2a IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a003600 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa003600 0x0 0x200>;
+		interrupts = <GIC_SPI 0x2b IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a003800 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa003800 0x0 0x200>;
+		interrupts = <GIC_SPI 0x2c IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a003a00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa003a00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x2d IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a003c00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa003c00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x2e IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+
+	virtio_mmio@a003e00 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0xa003e00 0x0 0x200>;
+		interrupts = <GIC_SPI 0x2f IRQ_TYPE_EDGE_RISING>;
+		dma-coherent;
+	};
+};

@@ -1114,10 +1114,22 @@ endif
 
 ifneq ($(dtstree),)
 
-PHONY += dtbs
-all_dtbs += $(patsubst $(srctree)/%.dts,$(objtree)/%.dtb,$(wildcard $(srctree)/$(dtstree)/*.dts))
-targets += $(all_dtbs)
-dtbs: $(all_dtbs)
+%.dtb: dtbs_prepare
+	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
+
+%.dtbo: dtbs_prepare
+	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
+
+PHONY += dtbs dtbs_prepare
+dtbs: dtbs_prepare
+	$(Q)$(MAKE) $(build)=$(dtstree) need-dtbslist=1
+
+dtbs_prepare: include/config/kernel.release scripts_dtc
+
+ifdef CONFIG_OFDEVICE
+images: dtbs
+images/%: dtbs
+endif
 
 endif
 
@@ -1322,7 +1334,7 @@ help:
 	@echo  ''
 	@$(if $(dtstree), \
 		echo '  Devicetree:'; \
-		echo '    * dtbs             - Build device tree blobs for all boards'; \
+		echo '    * dtbs             - Build device tree blobs for enabled boards'; \
 		echo '')
 	@$(if $(boards), \
 		$(foreach b, $(boards), \

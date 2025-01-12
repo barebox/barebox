@@ -33,7 +33,7 @@ usage() {
 	echo "The cross-compiler can be specify via"
 	echo "    CROSS_COMPILE               default"
 	echo "    CROSS_COMPILE_<arch>        arch default"
-	echo "    CROSS_COMPILE_<target>      defconfig specific"
+	echo "    CROSS_COMPILE_<defconfig>   defconfig specific"
 	echo ""
 	echo "it will be evaluated in the invert order"
 	echo ""
@@ -95,8 +95,8 @@ check_pipe_status() {
 }
 
 with_logs_collected() {
-	local log_report="${logdir}/${target}/report.log"
-	local log_err="${logdir}/${target}/errors.log"
+	local log_report="${logdir}/${defconfig}/report.log"
+	local log_err="${logdir}/${defconfig}/errors.log"
 
 	if [ -n "${logdir}" ]; then
 		"$@" 2>&1 > "${log_report}" | tee "${log_err}"
@@ -106,7 +106,7 @@ with_logs_collected() {
 }
 
 report() {
-	local log_report="${logdir}/${target}/report.log"
+	local log_report="${logdir}/${defconfig}/report.log"
 
 	if [ -n "${logdir}" ]; then
 		printf "$@" | tee -a "${log_report}"
@@ -115,18 +115,18 @@ report() {
 	fi
 }
 
-do_build_target() {
+do_build_defconfig() {
 	local arch=$1
-	local target=$2
-	local target_time_start=$(date +%s)
-	local log_err="${logdir}/${target}/errors.log"
+	local defconfig=$2
+	local step_time_start=$(date +%s)
+	local log_err="${logdir}/${defconfig}/errors.log"
 	local err=0
 
 	[ "$INCREMENTAL" != "1" ] && rm -rf "${BUILDDIR}"
-	[ -n "$logdir" ] && mkdir -p "${logdir}/${target}"
+	[ -n "$logdir" ] && mkdir -p "${logdir}/${defconfig}"
 
 	MAKE="make -j${JOBS} ARCH=${arch} O=${BUILDDIR}"
-	${MAKE} ${target} &>/dev/null
+	${MAKE} ${defconfig} &>/dev/null
 
 	if [ ${arch} = "arm" ]; then
 		grep -q "CONFIG_ARM64=y" ${BUILDDIR}/.config
@@ -135,7 +135,7 @@ do_build_target() {
 		fi
 	fi
 
-	tmp=$(echo "${target}" | tr - _)
+	tmp=$(echo "${defconfig}" | tr - _)
 
 	cross_compile=$(eval echo '$CROSS_COMPILE_'${tmp})
 	cross_compile_set=$(eval echo '${CROSS_COMPILE_'${tmp}'+set}')
@@ -151,9 +151,9 @@ do_build_target() {
 
 	[ -z "$V" ] && silent_flag=-s
 
-	report "Building ${arch} ${target} \n" >&2
+	report "Building ${arch} ${defconfig} \n" >&2
 	MAKE="${MAKE} $silent_flag CROSS_COMPILE=${cross_compile}"
-	with_logs_collected ${MAKE} ${target}
+	with_logs_collected ${MAKE} ${defconfig}
 	for i in ${KCONFIG_ADD}; do
 		with_logs_collected ./scripts/kconfig/merge_config.sh -m -O \
 			${BUILDDIR} ${BUILDDIR}/.config $i
@@ -173,14 +173,14 @@ do_build_target() {
 		check_pipe_status
 		compile_result="$?"
 
-		report "Compile: " ${target}
+		report "Compile: " ${defconfig}
 
 		if [ "$compile_result" = "0" ]; then
 			report "OK     \n"
 		else
 			report "FAILED \n"
 			nb_errors=$((nb_errors + 1))
-			errors_list="${errors_list} ${target}"
+			errors_list="${errors_list} ${defconfig}"
 			err=1
 			exitcode=1
 		fi
@@ -194,7 +194,7 @@ do_build_target() {
 	if [ -n "$logdir" ]; then
 		if [ -s "${log_err}" ] ; then
 			nb_warnings=$((nb_warnings + 1))
-			warnings_list="${warnings_list} ${target}"
+			warnings_list="${warnings_list} ${defconfig}"
 		else
 			rm "${log_err}"
 		fi
@@ -202,9 +202,9 @@ do_build_target() {
 
 	nb_defconfigs=$((nb_defconfigs + 1))
 
-	target_time_stop=$(date +%s)
-	target_time_diff=$((${target_time_stop} - ${target_time_start}))
-	report "Compiled in %4is\n" ${target_time_diff}
+	step_time_stop=$(date +%s)
+	step_time_diff=$((${step_time_stop} - ${step_time_start}))
+	report "Compiled in %4is\n" ${step_time_diff}
 
 	return $err
 }
@@ -213,11 +213,11 @@ if command -v labgrid-pytest >/dev/null; then
 	alias pytest=labgrid-pytest
 fi
 
-do_test_target() {
+do_test_defconfig() {
 	local yaml=$1
-	local target=$2
+	local defconfig=$2
 	shift 2
-	local target_time_start=$(date +%s)
+	local step_time_start=$(date +%s)
 	local err=0
 
 	LG_BUILDDIR=$BUILDDIR with_logs_collected pytest --lg-env $yaml "$@"
@@ -239,9 +239,9 @@ do_test_target() {
 
 	nb_tests=$((nb_tests + 1))
 
-	target_time_stop=$(date +%s)
-	target_time_diff=$((${target_time_stop} - ${target_time_start}))
-	report "Tested in %4is\n" ${target_time_diff}
+	step_time_stop=$(date +%s)
+	step_time_diff=$((${step_time_stop} - ${step_time_start}))
+	report "Tested in %4is\n" ${step_time_diff}
 
 	return $err
 }
@@ -252,14 +252,14 @@ do_build() {
 
 	configs=$(find arch/${arch}/configs -name "${regex}_defconfig" | sort)
 	for i in ${configs}; do
-		local target=$(basename $i)
+		local defconfig=$(basename $i)
 
-		do_build_target ${arch} ${target}
+		do_build_defconfig ${arch} ${defconfig}
 	done
 }
 
 do_build_all() {
-	local build_target=0
+	local nbuilds=0
 
 	for i in arch/*
 	do
@@ -268,11 +268,11 @@ do_build_all() {
 		if [ -d $i ]
 		then
 			do_build ${arch} "*"
-			build_target=$((build_target + 1))
+			nbuilds=$((nbuilds + 1))
 		fi
 	done
 
-	return $build_target
+	return $nbuilds
 }
 
 while getopts "hc:j:O:l:a:e:k:v:i" Option
@@ -365,7 +365,7 @@ then
 		do_build_all
 		if [ $? -eq 0 ]
 		then
-			echo "You need to specify the ARCH or CROSS_COMPILE_<arch> or CROSS_COMPILE_<target> in your config file"
+			echo "You need to specify the ARCH or CROSS_COMPILE_<arch> or CROSS_COMPILE_<defconfig> in your config file"
 			usage
 			exit 1
 		fi
@@ -410,14 +410,14 @@ else
 		if [[ $i =~ ^.*/([^/]+)/([^@]*@|)([^.]+).yaml$ ]]; then
 			arch=${BASH_REMATCH[1]}
 			defconfig=${BASH_REMATCH[3]}
-			do_build_target $arch $defconfig
+			do_build_defconfig $arch $defconfig
 			if [ $? -eq 0 ]; then
-				do_test_target $config $defconfig "${pytest_opts[@]}"
+				do_test_defconfig $config $defconfig "${pytest_opts[@]}"
 			else
 				echo "Skipping test due to failed build"
 			fi
 		else
-			do_build_target ${ARCH} $config
+			do_build_defconfig ${ARCH} $config
 		fi
 	done
 fi

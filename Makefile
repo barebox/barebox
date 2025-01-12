@@ -789,7 +789,7 @@ barebox-flash-images: $(KBUILD_IMAGE)
 
 images: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=images $@
-images/%.s: barebox.bin FORCE
+images/%: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=images $@
 
 ifdef CONFIG_EFI_STUB

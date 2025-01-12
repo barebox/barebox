@@ -1316,17 +1316,18 @@ help:
 	@echo  ''
 	@echo  'Other generic targets:'
 	@echo  '  all		  - Build all targets marked with [*]'
-	@echo  '* barebox           - Build the bare kernel'
+	@echo  '* barebox         - Build the barebox proper binary'
+ifdef CONFIG_PBL_IMAGE
+	@echo  '* images          - Build final prebootloader-prefixed images'
+endif
 	@echo  '  dir/            - Build all files in dir and below'
 	@echo  '  dir/file.[ois]  - Build specified target only'
 	@echo  '  dir/file.ko     - Build module including final link'
+	@echo  '  compile_commands.json'
+	@echo  '                  - Generate compilation database for IDEs/LSP'
 	@echo  '  tags/TAGS	  - Generate tags file for editors'
 	@echo  '  cscope	  - Generate cscope index'
 	@echo  '                    (default: $(INSTALL_HDR_PATH))'
-	@echo  ''
-	@echo  'Static analysers'
-	@echo  '  checkstack      - Generate a list of stack hogs'
-	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
 	@echo  ''
 	@echo  'Architecture specific targets ($(SRCARCH)):'
 	@$(if $(archhelp),$(archhelp),\

@@ -57,6 +57,7 @@ usage() {
 	echo "LOGDIR      -l      log dir"
 	echo "REGEX       -e      regex"
 	echo "KCONFIG_ADD -k      kconfig fragment"
+	echo "TARGET      -t      Makefile target"
 	echo "V           -v      verbosity"
 	echo "INCREMENTAL -i"
 	echo ""
@@ -168,7 +169,7 @@ do_build_defconfig() {
 	if [ "$configure_result" = "0" ]; then
 		report "OK     \n"
 
-		with_logs_collected ${MAKE} $silent_flag
+		with_logs_collected ${MAKE} $silent_flag ${TARGET}
 
 		check_pipe_status
 		compile_result="$?"
@@ -275,7 +276,7 @@ do_build_all() {
 	return $nbuilds
 }
 
-while getopts "hc:j:O:l:a:e:k:v:i" Option
+while getopts "hc:j:O:l:a:e:k:t:v:i" Option
 do
 case $Option in
 	a )
@@ -298,6 +299,9 @@ case $Option in
 		;;
 	k )
 		KCONFIG_ADD="${KCONFIG_ADD} ${OPTARG}"
+		;;
+	t )
+		TARGET="${TARGET} ${OPTARG}"
 		;;
 	v )
 		export V=${OPTARG}

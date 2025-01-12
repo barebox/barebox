@@ -36,6 +36,7 @@
 *.tab.[ch]
 binary.0
 Module.symvers
+dtbs-list
 *.dtb
 *.dtb.*
 *.dtbo

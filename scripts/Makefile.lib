@@ -533,6 +533,9 @@ quiet_cmd_check_file_size = CHKFILESIZE $2
 		exit 1 ;						\
 	fi;
 
+quiet_cmd_k3_cfg = K3CFG   $@
+      cmd_k3_cfg = $(srctree)/scripts/ti-board-config.py $@ $(filter-out FORCE,$^)
+
 quiet_cmd_imximage__S_dcd= DCD_S   $@
 cmd_imximage_S_dcd=						\
 (								\

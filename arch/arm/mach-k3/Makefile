@@ -1,5 +1,6 @@
 obj-y += common.o
 obj-pbl-$(CONFIG_MACH_K3_CORTEX_R5) += r5.o
+obj-pbl-y += ddrss.o
 
 extra-$(CONFIG_MACH_K3_CORTEX_R5) += combined-dm-cfg-am625.k3cfg combined-sysfw-cfg-am625.k3cfg
 

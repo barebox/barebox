@@ -171,6 +171,7 @@ static int am625_init(void)
 
 	am625_get_bootsource(&src, &instance);
 	bootsource_set(src, instance);
+	am625_register_dram();
 
 	genpd_activate();
 

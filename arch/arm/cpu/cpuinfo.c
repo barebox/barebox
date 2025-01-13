@@ -10,6 +10,7 @@
 #include <memory.h>
 #include <asm/system.h>
 #include <asm/barebox-arm.h>
+#include <asm/cputype.h>
 
 #define CPU_ARCH_UNKNOWN	0
 #define CPU_ARCH_ARMv3		1
@@ -22,16 +23,6 @@
 #define CPU_ARCH_ARMv6		8
 #define CPU_ARCH_ARMv7		9
 #define CPU_ARCH_ARMv8		10
-
-#define ARM_CPU_PART_CORTEX_A5	0xC050
-#define ARM_CPU_PART_CORTEX_A7	0xC070
-#define ARM_CPU_PART_CORTEX_A8	0xC080
-#define ARM_CPU_PART_CORTEX_A9	0xC090
-#define ARM_CPU_PART_CORTEX_A15	0xC0F0
-#define ARM_CPU_PART_CORTEX_A53	0xD030
-#define ARM_CPU_PART_CORTEX_A55	0xD050
-#define ARM_CPU_PART_CORTEX_A57	0xD070
-#define ARM_CPU_PART_CORTEX_A72	0xD080
 
 static void decode_cache(unsigned long size)
 {

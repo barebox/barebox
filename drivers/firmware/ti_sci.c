@@ -281,7 +281,7 @@ out:
  *
  * Return: 0 if all went fine, else return appropriate error.
  */
-static int ti_sci_cmd_get_revision(struct ti_sci_handle *handle)
+static __maybe_unused int ti_sci_cmd_get_revision(struct ti_sci_handle *handle)
 {
 	struct ti_sci_msg_resp_version *rev_info;
 	struct ti_sci_version_info *ver;
@@ -2654,68 +2654,9 @@ static void ti_sci_setup_ops(struct ti_sci_info *info)
 	fwl_ops->change_fwl_owner = ti_sci_cmd_change_fwl_owner;
 }
 
-/**
- * ti_sci_get_handle_from_sysfw() - Get the TI SCI handle of the SYSFW
- * @dev:	Pointer to the SYSFW device
- *
- * Return: pointer to handle if successful, else EINVAL if invalid conditions
- *         are encountered.
- */
-const
-struct ti_sci_handle *ti_sci_get_handle_from_sysfw(struct device *sci_dev)
-{
-	struct ti_sci_info *info;
-	int ret;
-
-	if (!sci_dev)
-		return ERR_PTR(-EINVAL);
-
-	info = dev_get_priv(sci_dev);
-	if (!info)
-		return ERR_PTR(-EINVAL);
-
-	ret = ti_sci_cmd_get_revision(&info->handle);
-	if (ret)
-		return ERR_PTR(-EINVAL);
-
-	return &info->handle;
-}
-
-/**
- * ti_sci_get_handle() - Get the TI SCI handle for a device
- * @dev:	Pointer to device for which we want SCI handle
- *
- * Return: pointer to handle if successful, else EINVAL if invalid conditions
- *         are encountered.
- */
-const struct ti_sci_handle *ti_sci_get_handle(struct device *dev)
-{
-	struct device *sci_dev;
-
-	if (!dev)
-		return ERR_PTR(-EINVAL);
-
-	sci_dev = dev->parent;
-
-	return ti_sci_get_handle_from_sysfw(sci_dev);
-}
-
-/**
- * ti_sci_get_by_phandle() - Get the TI SCI handle using DT phandle
- * @dev:	device node
- * @propname:	property name containing phandle on TISCI node
- *
- * Return: pointer to handle if successful, else appropriate error value.
- */
-const struct ti_sci_handle *ti_sci_get_by_phandle(struct device *dev,
-						  const char *property)
+static struct ti_sci_handle *ti_sci_get_by_node(struct device_node *np)
 {
 	struct ti_sci_info *entry, *info = NULL;
-	struct device_node *np;
-
-	np = of_parse_phandle(dev->of_node, property, 0);
-	if (!np)
-		return ERR_PTR(-EINVAL);
 
 	of_device_ensure_probed(np);
 
@@ -2729,6 +2670,48 @@ const struct ti_sci_handle *ti_sci_get_by_phandle(struct device *dev,
 		return ERR_PTR(-ENODEV);
 
 	return &info->handle;
+}
+
+/**
+ * ti_sci_get_handle() - Get the TI SCI handle for a device
+ * @dev:	Pointer to device for which we want SCI handle
+ *
+ * Return: pointer to handle if successful, else EINVAL if invalid conditions
+ *         are encountered.
+ */
+const struct ti_sci_handle *ti_sci_get_handle(struct device *dev)
+{
+	struct device_node *np;
+
+	if (dev) {
+		np = dev->parent->of_node;
+	} else {
+		np = of_find_compatible_node(NULL, NULL, "ti,k2g-sci");
+		if (!np)
+			return ERR_PTR(-ENODEV);
+	}
+
+	return ti_sci_get_by_node(np);
+}
+
+/**
+ * ti_sci_get_by_phandle() - Get the TI SCI handle using DT phandle
+ * @dev:	device node
+ * @propname:	property name containing phandle on TISCI node
+ *
+ * Return: pointer to handle if successful, else appropriate error value.
+ */
+const struct ti_sci_handle *ti_sci_get_by_phandle(struct device *dev,
+						  const char *property)
+{
+	struct device_node *np;
+
+	np = of_parse_phandle(dev->of_node, property, 0);
+	if (!np)
+		return ERR_PTR(-EINVAL);
+
+
+	return ti_sci_get_by_node(np);
 }
 
 /**

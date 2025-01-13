@@ -65,6 +65,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 
 	if (IS_ENABLED(CONFIG_MMU))
 		mmu_early_enable(membase, memsize);
+	else if (IS_ENABLED(CONFIG_ARMV7R_MPU))
+		set_cr(get_cr() | CR_C);
 
 	/* Add handoff data now, so arm_mem_barebox_image takes it into account */
 	if (boarddata)

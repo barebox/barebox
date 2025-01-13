@@ -52,6 +52,8 @@ int icache_status(void)
 	return (get_cr () & CR_I) != 0;
 }
 
+#ifndef __PBL__
+
 /*
  * SoC like the ux500 have the l2x0 always enable
  * with or without MMU enable
@@ -108,3 +110,4 @@ static int arm_request_stack(void)
 	return 0;
 }
 coredevice_initcall(arm_request_stack);
+#endif

@@ -31,6 +31,12 @@ config STM32_REMOTEPROC
 
 	  It's safe to say N here.
 
+config REMOTEPROC_TI_K3_ARM64
+	bool
+
+config REMOTEPROC_K3_SYSTEM_CONTROLLER
+	bool
+
 endif # REMOTEPROC
 
 endmenu

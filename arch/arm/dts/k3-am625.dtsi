@@ -11,3 +11,18 @@
 	compatible = "ti,am654-phy-gmii-sel", "syscon";
 };
 
+&main_rti1 {
+	status = "disabled";
+};
+
+&main_rti2 {
+	status = "disabled";
+};
+
+&main_rti3 {
+	status = "disabled";
+};
+
+&main_rti15 {
+	status = "disabled";
+};

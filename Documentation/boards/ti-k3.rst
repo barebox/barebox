@@ -1,0 +1,79 @@
+TI K3 based boards
+==================
+
+The TI K3 is a line of 64-bit ARM SoCs.
+
+The boot process of the TI K3 SoCs is a two step process. The first stage boot loader
+is loaded by the ROM code and executed on a Cortex-R5 processor. The code on this
+processor is responsible for setting up the initial clocks, power domains and DRAM.
+It then loads the binaries for the A53 cores into DRAM and starts the A53 core. From
+this point on the Cortex-R5 processor is used as a system controller which controls
+clocks and power domains of the SoC.
+
+Prerequisites
+-------------
+
+There are several binary blobs required for building barebox for TI K3 SoCs. Find them
+in git://git.ti.com/processor-firmware/ti-linux-firmware.git. The repository is assumed
+to be checked out at ``$TI_LINUX_FIRMWARE``. The K3 SoCs boot from a FAT partition on
+SD/eMMC cards. During the next steps the files are copied to ``$TI_BOOT``. This is assumed
+to be an empty directory. After the build process copy its contents to a FAT filesystem
+on an SD/eMMC card.
+
+The Cortex-R5 is a 32-bit processors whereas the Cortex-A53 are 64-bit processors, so
+both 32-bit and 64-bit toolchains are needed::
+
+  export CROSS_COMPILE_32=arm-linux-gnueabihf-
+  export CROSS_COMPILE_64=aarch64-v8a-linux-gnu-
+
+Building barebox for the Cortex-R5 processor
+--------------------------------------------
+
+The following assumes barebox is built for a BeaglePlay board. The exact filenames
+need to be adjusted for other boards.
+
+There's a single ``k3-r5_defconfig`` for all K3 boards. This builds the boot images
+for the Cortex-R5 processors::
+
+  cp $TI_LINUX_FIRMWARE/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-gp.bin firmware/
+  export ARCH=arm CROSS_COMPILE=$CROSS_COMPILE_32
+  make k3-r5_defconfig
+  make
+  cp images/barebox-beagleplay-r5.img $TI_BOOT/tiboot3.bin
+
+Building barebox for the Cortex-A53 processors
+----------------------------------------------
+
+The BeaglePlay image is built as part of the ``multi_v8_defconfig``::
+
+  export ARCH=arm CROSS_COMPILE=CROSS_COMPILE_64
+  make multi_v8_defconfig
+  make
+  cp images/barebox-beagleplay.img $TI_BOOT/barebox.bin
+
+Building TF-A
+-------------
+
+The Arm Trusted Firmware is built from https://github.com/ARM-software/arm-trusted-firmware.git::
+
+  make CROSS_COMPILE=$CROSS_COMPILE_64 ARCH=aarch64 PLAT=k3 SPD=opteed \
+        TARGET_BOARD=lite
+  cp build/k3/lite/release/bl31.bin $TI_BOOT/bl31.bin
+
+Bulding OP-TEE
+--------------
+
+OP-TEE is built from https://github.com/OP-TEE/optee_os.git::
+
+  make CROSS_COMPILE64=$CC64 CFG_ARM64_core=y CFG_WITH_SOFTWARE_PRNG=y \
+        PLATFORM=k3-am62x
+  cp out/arm-plat-k3/core/tee-raw.bin $TI_BOOT/optee.bin
+
+Copying ti-dm.bin
+-----------------
+
+The ``ti-dm.bin`` binary is part of ti-linux-firmware.git, this needs to be
+copied to the eMMC/SD as well::
+
+  cp $TI_LINUX_FIRMWARE/ti-dm/am62xx/ipc_echo_testb_mcu1_0_release_strip.xer5f $TI_BOOT/ti-dm.bin
+

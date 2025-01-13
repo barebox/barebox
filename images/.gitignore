@@ -39,3 +39,4 @@ barebox.sum
 *.imx9img
 *.fit
 *.missing-firmware
+*.k3img

@@ -3,6 +3,8 @@
 # barebox image generation Makefile for K3 images
 #
 
+ifdef CONFIG_MACH_K3_CORTEX_A
+
 pblb-$(CONFIG_MACH_BEAGLEPLAY) += start_beagleplay
 FILE_barebox-beagleplay.img = start_beagleplay.pblb
 image-$(CONFIG_MACH_BEAGLEPLAY) += barebox-beagleplay.img
@@ -11,3 +13,29 @@ $(obj)/k3-am625-beagleplay.fit: $(obj)/barebox-beagleplay.img
 FILE_barebox-beagleplay-fit.img = k3-am625-beagleplay.fit
 image-$(CONFIG_MACH_BEAGLEPLAY) += barebox-beagleplay-fit.img
 
+endif
+
+ifdef CONFIG_MACH_K3_CORTEX_R5
+
+SYSFWDATA_am625=$(objtree)/arch/arm/mach-k3/combined-sysfw-cfg-am625.k3cfg
+DMDATA_am625=$(objtree)/arch/arm/mach-k3/combined-dm-cfg-am625.k3cfg
+SYSFW_am625_hs_fs=$(srctree)/firmware/ti-fs-firmware-am62x-hs-fs-enc.bin
+SYSFW_am625_gp=$(srctree)/firmware/ti-fs-firmware-am62x-hs-fs-enc.bin
+INNERDATA_am625=$(srctree)/firmware/ti-fs-firmware-am62x-hs-fs-cert.bin
+KEY_custmpk=$(srctree)/arch/arm/mach-k3/custMpk.pem
+KEY_degenerate=$(srctree)/arch/arm/mach-k3/ti-degenerate-key.pem
+
+endif
+
+quiet_cmd_k3_image = K3IMG   $@
+      cmd_k3_image = \
+		if [ -n "$(INNERDATA_$(@F))" ]; then				\
+			inner="--innerdata $(INNERDATA_$(@F))";			\
+		fi;								\
+										\
+		$(srctree)/scripts/k3img --sysfw $(SYSFW_$(@F))			\
+		--sysfwdata $(SYSFWDATA_$(@F)) --dmdata $(DMDATA_$(@F))		\
+		--key $(KEY_$(@F)) $$inner --sbl $< --out $@
+
+$(obj)/%.k3img: $(obj)/% scripts/k3img FORCE
+	$(call if_changed,k3_image)

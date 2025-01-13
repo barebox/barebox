@@ -18,6 +18,7 @@ struct elf_section {
 	struct list_head list;
 	struct resource *r;
 	void *phdr;
+	bool is_iomem_region;
 };
 
 static int elf_request_region(struct elf_image *elf, resource_size_t start,
@@ -33,8 +34,12 @@ static int elf_request_region(struct elf_image *elf, resource_size_t start,
 
 	r_new = request_sdram_region("elf_section", start, size);
 	if (!r_new) {
-		pr_err("Failed to request region: %pa %pa\n", &start, &size);
-		return -EINVAL;
+		r_new = request_iomem_region("elf_section", start, size);
+		if (!r_new) {
+			pr_err("Failed to request region: %pa %pa\n", &start, &size);
+			return -EINVAL;
+		}
+		r->is_iomem_region = true;
 	}
 
 	r->r = r_new;
@@ -50,7 +55,10 @@ static void elf_release_regions(struct elf_image *elf)
 	struct elf_section *r, *r_tmp;
 
 	list_for_each_entry_safe(r, r_tmp, list, list) {
-		release_sdram_region(r->r);
+		if (r->is_iomem_region)
+			release_region(r->r);
+		else
+			release_sdram_region(r->r);
 		list_del(&r->list);
 		free(r);
 	}

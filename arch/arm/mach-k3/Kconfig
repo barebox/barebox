@@ -16,6 +16,7 @@ config MACH_K3_CORTEX_R5
 	select ELF
 	select K3_DDRSS
 	depends on 32BIT
+	select ARM_USE_COMPRESSED_DTB
 	default y
 
 config MACH_K3_CORTEX_A
@@ -23,6 +24,11 @@ config MACH_K3_CORTEX_A
 	select CPU_V8
 	depends on 64BIT
 	default y
+
+config MACH_AM625_SK
+	bool "TI AM625 SK"
+	help
+	  Say Y here if you are using a TI AM625 SK board
 
 config MACH_BEAGLEPLAY
 	bool "BeagleBoard BeaglePlay"

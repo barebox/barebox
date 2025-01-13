@@ -1,0 +1,9 @@
+/dts-v1/;
+
+#include <arm64/ti/k3-am625-sk.dts>
+#include "k3-am625.dtsi"
+
+/*
+ * DRAM size differs between board variants. Real size is read from DDRSS
+ */
+/delete-node/ &{/memory@80000000};

@@ -5,6 +5,7 @@
 
 ifdef CONFIG_MACH_K3_CORTEX_A
 
+## BeaglePlay ##
 pblb-$(CONFIG_MACH_BEAGLEPLAY) += start_beagleplay
 FILE_barebox-beagleplay.img = start_beagleplay.pblb
 image-$(CONFIG_MACH_BEAGLEPLAY) += barebox-beagleplay.img
@@ -24,6 +25,16 @@ SYSFW_am625_gp=$(srctree)/firmware/ti-fs-firmware-am62x-hs-fs-enc.bin
 INNERDATA_am625=$(srctree)/firmware/ti-fs-firmware-am62x-hs-fs-cert.bin
 KEY_custmpk=$(srctree)/arch/arm/mach-k3/custMpk.pem
 KEY_degenerate=$(srctree)/arch/arm/mach-k3/ti-degenerate-key.pem
+
+## BeaglePlay ##
+SYSFW_start_beagleplay_r5.pblb.k3img=$(SYSFW_am625_gp)
+SYSFWDATA_start_beagleplay_r5.pblb.k3img=$(SYSFWDATA_am625)
+DMDATA_start_beagleplay_r5.pblb.k3img=$(DMDATA_am625)
+KEY_start_beagleplay_r5.pblb.k3img=$(KEY_degenerate)
+
+pblb-$(CONFIG_MACH_BEAGLEPLAY) += start_beagleplay_r5
+FILE_barebox-beagleplay-r5.img = start_beagleplay_r5.pblb.k3img
+image-$(CONFIG_MACH_BEAGLEPLAY) += barebox-beagleplay-r5.img
 
 endif
 

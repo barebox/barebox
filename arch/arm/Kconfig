@@ -160,8 +160,6 @@ config ARCH_IMX
 
 config ARCH_K3
 	bool "Texas Instruments Inc. K3 multicore SoC architecture"
-	depends on 64BIT
-	select CPU_V8
 	select GPIOLIB
 	select COMMON_CLK
 	select HAS_DEBUG_LL

@@ -275,7 +275,7 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 				initrd_size);
 		if (!data->initrd_res) {
 			pr_err("unable to request SDRAM region for initrd at"
-					"0x%08llx-0x%08llx\n",
+					" 0x%08llx-0x%08llx\n",
 				(unsigned long long)load_address,
 				(unsigned long long)load_address + initrd_size - 1);
 			return -ENOMEM;
@@ -494,7 +494,7 @@ int bootm_load_devicetree(struct image_data *data, void *fdt,
 			fdt_size);
 	if (!data->oftree_res) {
 		pr_err("unable to request SDRAM region for device tree at"
-				"0x%08llx-0x%08llx\n",
+				" 0x%08llx-0x%08llx\n",
 			(unsigned long long)load_address,
 			(unsigned long long)load_address + fdt_size - 1);
 		return -ENOMEM;

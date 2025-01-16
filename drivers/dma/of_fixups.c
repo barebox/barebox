@@ -16,7 +16,8 @@ static int of_dma_coherent_fixup(struct device_node *root, void *data)
 	else
 		coherency = DEV_DMA_COHERENCE_DEFAULT;
 
-	soc_kernel = of_find_node_by_path_from(root, soc_bb->full_name);
+	soc_kernel = of_find_node_by_path_from(root,
+		       *soc_bb->full_name ? soc_bb->full_name : "/");
 	if (!soc_kernel)
 		return -ENOENT;
 

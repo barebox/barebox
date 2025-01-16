@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <common.h>
+#include <nvme/types.h>
 
 #include "nvme.h"
 
@@ -62,6 +63,72 @@ nvme_set_features(struct nvme_ctrl *dev, unsigned fid, unsigned dword11,
 	if (ret >= 0 && result)
 		*result = le32_to_cpu(res.u32);
 	return ret;
+}
+
+static int
+nvme_sanitize_poll_log(struct nvme_ctrl *ctrl)
+{
+	struct nvme_sanitize_log_page *sanitize_log;
+	int log_size = sizeof(*sanitize_log);
+	uint64_t start = get_time_ns();
+	struct nvme_command c = { 0 };
+	uint32_t numd = (log_size >> 2) - 1;
+	uint16_t numdl = numd & 0xffff;
+	int ret;
+
+	sanitize_log = kmalloc(log_size, GFP_KERNEL);
+	if (!sanitize_log)
+		return -ENOMEM;
+
+	memset(sanitize_log, 0, log_size);
+
+	c.common.opcode = nvme_admin_get_log_page;
+	c.common.cdw10[0] = (numdl << 16) | NVME_LOG_LID_SANITIZE;
+	/* Poll the sanitize log for operation completion */
+	do {
+		ret = nvme_submit_sync_cmd(ctrl, &c, sanitize_log, log_size);
+		if (ret) {
+			dev_err(ctrl->dev, "Retrieving log failed\n");
+			goto out;
+		}
+
+		if ((sanitize_log->sstat & 0x3) == 3) {
+			dev_err(ctrl->dev, "Erase failed\n");
+			ret = -EIO;
+			goto out;
+		} else if (sanitize_log->sstat & 1) {
+			ret = 0;
+			goto out;
+		}
+		sanitize_log->sstat = 0;
+
+		mdelay(1000);
+	} while (!is_timeout(start, 30 * SECOND));
+	ret = -ETIME;
+out:
+	if (sanitize_log)
+		free(sanitize_log);
+	return ret;
+}
+
+/* Perform a low level block erase of the whole NVME device */
+static int
+nvme_sanitize_nvm(struct nvme_ctrl *ctrl)
+{
+	struct nvme_command c = { 0 };
+	int ret;
+
+	/* Input arguments based on what the kernel sets up for the cmd */
+	c.common.opcode = nvme_admin_sanitize_nvm;
+	c.common.cdw10[0] = NVME_SANITIZE_SANACT_START_BLOCK_ERASE;
+	ret = nvme_submit_sync_cmd(ctrl, &c, NULL, 0);
+	if (ret) {
+		dev_err(ctrl->dev,
+			"Failed to trigger the sanitize block erase command\n");
+		return -EINVAL;
+	}
+
+	return nvme_sanitize_poll_log(ctrl);
 }
 
 int nvme_set_queue_count(struct nvme_ctrl *ctrl, int *count)
@@ -324,11 +391,26 @@ static int __maybe_unused nvme_block_device_flush(struct block_device *blk)
 				      0, 0, NVME_QID_IO);
 }
 
+static int __maybe_unused
+nvme_block_device_erase(struct block_device *blk, sector_t block,
+			blkcnt_t num_blocks)
+{
+	struct nvme_ns *ns = to_nvme_ns(blk);
+
+	if (block != 0 || num_blocks != blk->num_blocks) {
+		dev_err(ns->ctrl->dev, "The whole device must be erased\n");
+		return -ENOSYS;
+	}
+
+	return nvme_sanitize_nvm(ns->ctrl);
+}
+
 static struct block_device_ops nvme_block_device_ops = {
 	.read = nvme_block_device_read,
 #ifdef CONFIG_BLOCK_WRITE
 	.write = nvme_block_device_write,
 	.flush = nvme_block_device_flush,
+	.erase = nvme_block_device_erase,
 #endif
 };
 

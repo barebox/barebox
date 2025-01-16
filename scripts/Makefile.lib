@@ -550,7 +550,7 @@ cmd_imximage_S_dcd=						\
 overwrite-hab-env = $(shell set -e; \
       test -n "$(CONFIG_HAB_CERTS_ENV)"; \
       test -n "$$$(1)"; \
-      echo -D$(1)=\\\"$(shell echo $$$(1))\\\")
+      echo -D$(1)=\''"$($(1))"'\')
 
 overwrite-fit-env = $(shell set -e; \
       test -n "$(CONFIG_BOOTM_FITIMAGE_PUBKEY_ENV)"; \

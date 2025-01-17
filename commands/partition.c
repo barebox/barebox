@@ -33,10 +33,13 @@ static int do_addpart(int argc, char *argv[])
 	int opt;
 	unsigned int flags = CMDLINEPART_ADD_DEVNAME;
 
-	while ((opt = getopt(argc, argv, "n")) > 0) {
+	while ((opt = getopt(argc, argv, "nf")) > 0) {
 		switch (opt) {
 		case 'n':
 			flags &= ~CMDLINEPART_ADD_DEVNAME;
+			break;
+		case 'f':
+			flags |= CMDLINEPART_FORCE;
 			break;
 		}
 	}
@@ -59,6 +62,7 @@ BAREBOX_CMD_HELP_START(addpart)
 
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-n", "do not use the device name as prefix of the partition name")
+BAREBOX_CMD_HELP_OPT ("-f", "force partition creation, even if it overlaps existing ones")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Create partitions on device DEVICE using the partition description")
 BAREBOX_CMD_HELP_TEXT("from PART.")
@@ -74,7 +78,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(addpart)
 	.cmd = do_addpart,
 	BAREBOX_CMD_DESC("add a partition description to a device")
-	BAREBOX_CMD_OPTS("[-n] DEVICE PART")
+	BAREBOX_CMD_OPTS("[-nf] DEVICE PART")
 	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_addpart_help)
 BAREBOX_CMD_END

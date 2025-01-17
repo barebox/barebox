@@ -24,7 +24,6 @@ struct efi_bio_priv {
 	struct device *dev;
 	struct block_device blk;
 	u32 media_id;
-	void (*efi_info)(struct device *);
 };
 
 static int efi_bio_read(struct block_device *blk, void *buffer, sector_t block,
@@ -93,7 +92,7 @@ static void efi_bio_print_info(struct device *dev)
 	printf("  last_block: 0x%016llx\n", media->last_block);
 
 	if (revision < EFI_BLOCK_IO_PROTOCOL_REVISION2)
-		goto out;
+		return;
 
 	printf("  lowest_aligned_lba: 0x%08llx\n",
 			media->lowest_aligned_lba);
@@ -101,14 +100,10 @@ static void efi_bio_print_info(struct device *dev)
 			media->logical_blocks_per_physical_block);
 
 	if (revision < EFI_BLOCK_IO_PROTOCOL_REVISION3)
-		goto out;
+		return;
 
 	printf("  optimal_transfer_length_granularity: 0x%08x\n",
 			media->optimal_transfer_length_granularity);
-
-out:
-	if (priv->efi_info)
-		priv->efi_info(dev);
 }
 
 static bool is_bio_usbdev(struct efi_device *efidev)
@@ -132,8 +127,7 @@ static int efi_bio_probe(struct efi_device *efidev)
 		return -ENODEV;
 
 	dev->priv = priv;
-	priv->efi_info = dev->info;
-	dev->info = efi_bio_print_info;
+	devinfo_add(dev, efi_bio_print_info);
 
 	media = priv->protocol->media;
 	if (__is_defined(DEBUG))

@@ -656,7 +656,7 @@ static int ahci_probe(struct device *dev)
 	ahci->dev = dev;
 	ahci->mmio_base = regs;
 	dev->priv = ahci;
-	dev->info = ahci_info;
+	devinfo_add(dev, ahci_info);
 
 	ret = ahci_add_host(ahci);
 	if (ret)

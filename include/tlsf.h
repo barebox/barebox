@@ -42,7 +42,7 @@
 extern "C" {
 #endif
 
-#include <printk.h>
+#include <printf.h>
 #include <linux/bug.h>
 
 #define tlsf_assert(expr) do {                              \

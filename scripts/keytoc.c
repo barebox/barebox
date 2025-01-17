@@ -484,11 +484,17 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 		return -EOPNOTSUPP;
 	} else {
 		fprintf(outfilep, "\nstatic uint64_t %s_x[] = {", key_name_c);
-		print_bignum(key_x, bits, 64);
+		ret = print_bignum(key_x, bits, 64);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, "\n};\n\n");
 
 		fprintf(outfilep, "static uint64_t %s_y[] = {", key_name_c);
-		print_bignum(key_y, bits, 64);
+		ret = print_bignum(key_y, bits, 64);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, "\n};\n\n");
 
 		fprintf(outfilep, "static struct ecdsa_public_key %s = {\n", key_name_c);
@@ -509,6 +515,24 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 	return 0;
 }
 
+static const char *try_resolve_env(const char *input)
+{
+	const char *var;
+
+	if (strncmp(input, "__ENV__", 7))
+		return input;
+
+	var = getenv(input + 7);
+	if (!var || *var == '\0') {
+		fprintf(stderr,
+			"environment variable \"%s\" is not set or empty\n",
+			input + 7);
+		return NULL;
+	}
+
+	return var;
+}
+
 static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name_c)
 {
 	BIGNUM *modulus, *r_squared;
@@ -526,10 +550,16 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 	if (dts) {
 		fprintf(outfilep, "\t\tkey-%s {\n", key_name_c);
 		fprintf(outfilep, "\t\t\trsa,r-squared = <");
-		print_bignum(r_squared, bits, 32);
+		ret = print_bignum(r_squared, bits, 32);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, ">;\n");
 		fprintf(outfilep, "\t\t\trsa,modulus= <");
-		print_bignum(modulus, bits, 32);
+		ret = print_bignum(modulus, bits, 32);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, ">;\n");
 		fprintf(outfilep, "\t\t\trsa,exponent = <0x%0lx 0x%lx>;\n",
 			(exponent >> 32) & 0xffffffff,
@@ -540,11 +570,17 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 		fprintf(outfilep, "\t\t};\n");
 	} else {
 		fprintf(outfilep, "\nstatic uint32_t %s_modulus[] = {", key_name_c);
-		print_bignum(modulus, bits, 32);
+		ret = print_bignum(modulus, bits, 32);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, "\n};\n\n");
 
 		fprintf(outfilep, "static uint32_t %s_rr[] = {", key_name_c);
-		print_bignum(r_squared, bits, 32);
+		ret = print_bignum(r_squared, bits, 32);
+		if (ret)
+			return ret;
+
 		fprintf(outfilep, "\n};\n\n");
 
 		if (standalone) {
@@ -579,6 +615,11 @@ static int gen_key(const char *keyname, const char *path)
 	EVP_PKEY *key;
 	char *tmp, *key_name_c;
 
+	/* key name handling */
+	keyname = try_resolve_env(keyname);
+	if (!keyname)
+		exit(1);
+
 	tmp = key_name_c = strdup(keyname);
 
 	while (*tmp) {
@@ -587,15 +628,10 @@ static int gen_key(const char *keyname, const char *path)
 		tmp++;
 	}
 
-	if (!strncmp(path, "__ENV__", 7)) {
-		const char *var = getenv(path + 7);
-		if (!var) {
-			fprintf(stderr,
-				"environment variable \"%s\" is empty\n", path + 7);
-			exit(1);
-		}
-		path = var;
-	}
+	/* path/URI handling */
+	path = try_resolve_env(path);
+	if (!path)
+		exit(1);
 
 	if (!strncmp(path, "pkcs11:", 7)) {
 		ret = engine_get_pub_key(path, &key);
@@ -607,6 +643,7 @@ static int gen_key(const char *keyname, const char *path)
 			exit(1);
 	}
 
+	/* generate built-in keys */
 	ret = gen_key_ecdsa(key, keyname, key_name_c);
 	if (ret == -EOPNOTSUPP)
 		return ret;

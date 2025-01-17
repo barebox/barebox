@@ -37,6 +37,7 @@ barebox.sum
 *.swapped
 *.rkimg
 *.imx9img
+*.itb
 *.fit
 *.missing-firmware
 *.k3img

@@ -140,7 +140,7 @@ static struct device *acpi_add_device(struct bus_type *bus,
 	dev->bus = bus;
 	dev->parent = bus->dev;
 	dev->id = DEVICE_ID_DYNAMIC;
-	dev->info = acpi_devinfo;
+	devinfo_add(dev, acpi_devinfo);
 
 	dev_set_name(dev, "acpi-%.4s", signature);
 

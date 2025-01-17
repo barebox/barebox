@@ -373,11 +373,7 @@ static void fat_remove(struct device *dev)
 	free(dev->priv);
 }
 
-static struct fs_driver fat_driver = {
-	.open      = fat_open,
-	.close     = fat_close,
-	.read      = fat_read,
-	.lseek     = fat_lseek,
+static const struct fs_legacy_ops fat_ops = {
 	.opendir   = fat_opendir,
 	.readdir   = fat_readdir,
 	.closedir  = fat_closedir,
@@ -387,9 +383,19 @@ static struct fs_driver fat_driver = {
 	.unlink    = fat_unlink,
 	.mkdir     = fat_mkdir,
 	.rmdir     = fat_rmdir,
+#endif
+};
+
+static struct fs_driver fat_driver = {
+	.open      = fat_open,
+	.close     = fat_close,
+	.read      = fat_read,
+	.lseek     = fat_lseek,
+#ifdef CONFIG_FS_FAT_WRITE
 	.write     = fat_write,
 	.truncate  = fat_truncate,
 #endif
+	.legacy_ops = &fat_ops,
 	.type = filetype_fat,
 	.flags     = 0,
 	.drv = {

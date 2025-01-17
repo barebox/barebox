@@ -42,13 +42,14 @@ static char *environment_probe_2node_binding(struct device *dev)
 	if (ret)
 		goto out;
 
-	if (!IS_ENABLED(CONFIG_OF_BAREBOX_ENV_IN_FS))
+	if (!of_property_present(dev->of_node, "file-path"))
 		return devpath;
 
+	if (!IS_ENABLED(CONFIG_OF_BAREBOX_ENV_IN_FS))
+		return ERR_PTR(-ENOENT);
+
 	ret = of_property_read_string(dev->of_node, "file-path", &filepath);
-	if (ret == -EINVAL) {
-		return devpath;
-	} else if (ret) {
+	if (ret) {
 		/* file-path property exists, but has error */
 		dev_err(dev, "Problem with file-path property\n");
 		goto out;

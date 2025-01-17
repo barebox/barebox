@@ -39,16 +39,6 @@ config MTD_M25P80
 	  if you want to specify device partitioning or to use a device which
 	  doesn't support the JEDEC ID instruction.
 
-config MTD_SST25L
-	tristate "Support SST25L (non JEDEC) SPI Flash chips"
-	depends on MTD_M25P80
-	help
-	  This enables access to the non JEDEC SST25L SPI flash chips, used
-	  for program and data storage.
-
-	  Set up your spi devices with the right board-specific platform data,
-	  if you want to specify device partitioning.
-
 config MTD_DOCG3
 	bool "M-Systems Disk-On-Chip G3"
 	select BCH

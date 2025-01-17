@@ -11,10 +11,15 @@
 #include <linux/usb/usb.h>
 #include <linux/usb/usb_defs.h>
 #include <linux/usb/ehci.h>
+#include <linux/usb/phy.h>
+#include <linux/usb/of.h>
 #include <errno.h>
 #include <io.h>
 
 #include "ehci.h"
+
+#define EHCI_INSNREG(index)			((index) * 4 + 0x90)
+#define EHCI_INSNREG08_HSIC_EN			BIT(2)
 
 struct atmel_ehci_priv {
 	struct ehci_host *ehci;
@@ -93,6 +98,9 @@ static int atmel_ehci_probe(struct device *dev)
 		return PTR_ERR(ehci);
 
 	atehci->ehci = ehci;
+
+	if (of_usb_get_phy_mode(dev->of_node, NULL) == USBPHY_INTERFACE_MODE_HSIC)
+		writel(EHCI_INSNREG08_HSIC_EN, data.hccr + EHCI_INSNREG(8));
 
 	return 0;
 }

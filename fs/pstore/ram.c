@@ -643,7 +643,7 @@ static int ramoops_probe(struct device *dev)
 
 	device_add_resource(dev, "mem", pdata->mem_address, pdata->mem_size,
 			    IORESOURCE_MEM);
-	dev->info = ramoops_devinfo;
+	devinfo_add(dev, ramoops_devinfo);
 
 	return 0;
 

@@ -148,7 +148,7 @@ static struct efi_device *efi_add_device(efi_handle_t handle, efi_guid_t **guids
 	efidev->handle = handle;
 	efidev->dev.bus = &efi_bus;
 	efidev->dev.id = DEVICE_ID_SINGLE;
-	efidev->dev.info = efi_devinfo;
+	devinfo_add(&efidev->dev, efi_devinfo);
 	efidev->devpath = devpath;
 
 	dev_set_name(&efidev->dev, "handle-%p", handle);
@@ -429,7 +429,7 @@ static int efi_init_devices(void)
 	dev_add_param_bool_fixed(efi_bus.dev, "secure_mode",
 				 secure_boot & setup_mode);
 
-	efi_bus.dev->info = efi_businfo;
+	devinfo_add(efi_bus.dev, efi_businfo);
 
 	efi_register_devices();
 

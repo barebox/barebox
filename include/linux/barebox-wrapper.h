@@ -5,7 +5,7 @@
 #include <xfuncs.h>
 #include <linux/slab.h>
 #include <linux/module.h>
-#include <printk.h>
+#include <printf.h>
 
 #define vmalloc(len)		malloc(len)
 #define __vmalloc(len, mode, pgsz)	malloc(len)

@@ -345,18 +345,22 @@ static void efivarfs_remove(struct device *dev)
 	free(priv);
 }
 
-static struct fs_driver efivarfs_driver = {
+static const struct fs_legacy_ops efivarfs_ops = {
 	.create    = efivars_create,
 	.unlink    = efivars_unlink,
+	.opendir   = efivarfs_opendir,
+	.readdir   = efivarfs_readdir,
+	.closedir  = efivarfs_closedir,
+	.stat      = efivarfs_stat,
+};
+
+static struct fs_driver efivarfs_driver = {
 	.open      = efivarfs_open,
 	.close     = efivarfs_close,
 	.read      = efivarfs_read,
 	.write     = efivarfs_write,
 	.truncate  = efivarfs_truncate,
-	.opendir   = efivarfs_opendir,
-	.readdir   = efivarfs_readdir,
-	.closedir  = efivarfs_closedir,
-	.stat      = efivarfs_stat,
+	.legacy_ops = &efivarfs_ops,
 	.drv = {
 		.probe  = efivarfs_probe,
 		.remove = efivarfs_remove,

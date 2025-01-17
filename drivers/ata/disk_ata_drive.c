@@ -323,7 +323,7 @@ int ata_port_register(struct ata_port *port)
 	}
 
 	port->class_dev.parent = port->dev;
-	port->class_dev.info   = ata_info;
+	devinfo_add(&port->class_dev, ata_info);
 	port->class_dev.detect = ata_detect;
 
 	ret = register_device(&port->class_dev);

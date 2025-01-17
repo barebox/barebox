@@ -164,11 +164,6 @@ static int ramfs_symlink(struct inode *dir, struct dentry *dentry,
 	return 0;
 }
 
-static int ramfs_unlink(struct inode *dir, struct dentry *dentry)
-{
-	return simple_unlink(dir, dentry);
-}
-
 static const char *ramfs_get_link(struct dentry *dentry, struct inode *inode)
 {
 	return inode->i_link;
@@ -185,7 +180,7 @@ static const struct inode_operations ramfs_dir_inode_operations =
 	.symlink = ramfs_symlink,
 	.mkdir = ramfs_mkdir,
 	.rmdir = simple_rmdir,
-	.unlink = ramfs_unlink,
+	.unlink = simple_unlink,
 	.create = ramfs_create,
 };
 

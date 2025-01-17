@@ -420,15 +420,9 @@ static void efifs_remove(struct device *dev)
 	free(dev->priv);
 }
 
-static struct fs_driver efifs_driver = {
+static const struct fs_legacy_ops efifs_ops = {
 	.create    = efifs_create,
 	.unlink    = efifs_unlink,
-	.open      = efifs_open,
-	.close     = efifs_close,
-	.truncate  = efifs_truncate,
-	.read      = efifs_read,
-	.write     = efifs_write,
-	.lseek     = efifs_lseek,
 	.mkdir     = efifs_mkdir,
 	.rmdir     = efifs_rmdir,
 	.opendir   = efifs_opendir,
@@ -437,6 +431,16 @@ static struct fs_driver efifs_driver = {
 	.stat      = efifs_stat,
 	.symlink   = efifs_symlink,
 	.readlink  = efifs_readlink,
+};
+
+static struct fs_driver efifs_driver = {
+	.open      = efifs_open,
+	.close     = efifs_close,
+	.truncate  = efifs_truncate,
+	.read      = efifs_read,
+	.write     = efifs_write,
+	.lseek     = efifs_lseek,
+	.legacy_ops = &efifs_ops,
 	.drv = {
 		.probe  = efifs_probe,
 		.remove = efifs_remove,

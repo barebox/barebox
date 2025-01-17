@@ -3,7 +3,7 @@
 #include <command.h>
 #include <errno.h>
 #include <getopt.h>
-#include <printk.h>
+#include <printf.h>
 #include <linux/bitops.h>
 #include <linux/bitfield.h>
 #include <mach/imx/imx8m-regs.h>

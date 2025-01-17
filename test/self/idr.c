@@ -2,7 +2,7 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <printk.h>
+#include <printf.h>
 #include <linux/idr.h>
 #include <bselftest.h>
 

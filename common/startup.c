@@ -368,15 +368,14 @@ static void do_ctors(void)
 #endif
 }
 
-int (*barebox_main)(void);
+int (*barebox_main)(void)
+	= !IS_ENABLED(CONFIG_SHELL_NONE) &&
+           IS_ENABLED(CONFIG_COMMAND_SUPPORT) ? run_init : NULL;
 
 void __noreturn start_barebox(void)
 {
 	initcall_t *initcall;
 	int result;
-
-	if (!IS_ENABLED(CONFIG_SHELL_NONE) && IS_ENABLED(CONFIG_COMMAND_SUPPORT))
-		barebox_main = run_init;
 
 	do_ctors();
 

@@ -456,7 +456,7 @@ static int cs8900_probe(struct device *dev)
 	edev->set_ethaddr = cs8900_set_ethaddr;
 	edev->parent = dev;
 
-	dev->info = cs8900_info;
+	devinfo_add(dev, cs8900_info);
 
 	eth_register(edev);
 	return 0;

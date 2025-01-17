@@ -176,7 +176,7 @@ static int atmci_probe(struct device *hw_dev)
 		host->sdc_reg = ATMCI_SDCSEL_SLOT_A;
 
 	if (IS_ENABLED(CONFIG_MCI_INFO))
-		hw_dev->info = atmci_info;
+		devinfo_add(hw_dev, atmci_info);
 
 	mci_register(&host->mci);
 

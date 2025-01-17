@@ -4,7 +4,7 @@
 
 #include <linux/list.h>
 #include <linux/err.h>
-#include <printk.h>
+#include <printf.h>
 #include <stdarg.h>
 
 #define MSG_EMERG      0    /* system is unusable */

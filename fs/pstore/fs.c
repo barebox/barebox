@@ -274,17 +274,21 @@ static int pstore_probe(struct device *dev)
 	return 0;
 }
 
-static struct fs_driver pstore_driver = {
-	.open      = pstore_open,
-	.close     = pstore_close,
-	.read      = pstore_read,
-	.lseek     = pstore_lseek,
+static const struct fs_legacy_ops pstore_ops = {
 	.unlink    = pstore_unlink,
 	.opendir   = pstore_opendir,
 	.readdir   = pstore_readdir,
 	.closedir  = pstore_closedir,
 	.stat      = pstore_stat,
+};
+
+static struct fs_driver pstore_driver = {
+	.open      = pstore_open,
+	.close     = pstore_close,
+	.read      = pstore_read,
+	.lseek     = pstore_lseek,
 	.flags     = FS_DRIVER_NO_DEV,
+	.legacy_ops = &pstore_ops,
 	.type = filetype_uimage,
 	.drv = {
 		.probe  = pstore_probe,

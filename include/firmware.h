@@ -7,7 +7,7 @@
 #define FIRMWARE_H
 
 #include <pbl.h>
-#include <printk.h>
+#include <printf.h>
 #include <types.h>
 #include <driver.h>
 #include <debug_ll.h>

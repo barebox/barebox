@@ -188,15 +188,21 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 		typeprefix = "cdev link to ";
 	}
 
-	printf("\n");
+	printf("\nSize: ");
 
-	printf("  Size: %-20llu", st->st_size);
+	if (st->st_size == FILE_SIZE_STREAM)
+		printf("%-20s", "stream");
+	else
+		printf("%-20llu", st->st_size);
+
 	if (bdev)
 		printf("Blocks: %llu\tIO Block: %u\t",
 		       (u64)bdev->num_blocks, 1 << bdev->blockbits);
 
 	if (type)
 		printf("  %s%s", typeprefix, type);
+	else
+		printf("  unknown (mode=0%o)", st->st_mode);
 
 	fdev = get_fsdevice_by_path(dirfd, filename);
 
@@ -1155,7 +1161,7 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 		return ERR_PTR(ret);
 	}
 
-	return cdev_get_mount_path(cdev);
+	return cdev_get_mount_path(cdev) ?: ERR_PTR(-ENODEV);
 }
 
 /*

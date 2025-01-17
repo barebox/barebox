@@ -147,7 +147,7 @@ static int hf_probe(struct device *dev)
 	if (priv->fd < 0)
 		return is_featctrl ? 0 : priv->fd;
 
-	dev->info = hf_info;
+	devinfo_add(dev, hf_info);
 
 	is_blockdev = of_property_read_bool(np, "barebox,blockdev");
 

@@ -357,6 +357,9 @@ int spi_sync(struct spi_device *spi, struct spi_message *message)
 	int status;
 	int ret;
 
+	if (!spi->controller->transfer)
+		return -ENOTSUPP;
+
 	status = __spi_validate(spi, message);
 	if (status != 0)
 		return status;

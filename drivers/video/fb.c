@@ -335,7 +335,7 @@ int register_framebuffer(struct fb_info *info)
 	dev->num_resources = 1;
 
 	dev->priv = info;
-	dev->info = fb_info;
+	devinfo_add(dev, fb_info);
 
 	ret = register_device(&info->dev);
 	if (ret)

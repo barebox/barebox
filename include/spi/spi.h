@@ -8,12 +8,32 @@
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/bitops.h>
+#include <linux/gpio/consumer.h>
 
+struct spi_controller;
+struct spi_transfer;
 struct spi_controller_mem_ops;
+struct spi_message;
+
+/**
+ * struct spi_delay - SPI delay information
+ * @value: Value for the delay
+ * @unit: Unit for the delay
+ */
+struct spi_delay {
+#define SPI_DELAY_UNIT_USECS	0
+#define SPI_DELAY_UNIT_NSECS	1
+#define SPI_DELAY_UNIT_SCK	2
+	u16	value;
+	u8	unit;
+};
+
+extern int spi_delay_to_ns(struct spi_delay *_delay, struct spi_transfer *xfer);
+extern int spi_delay_exec(struct spi_delay *_delay, struct spi_transfer *xfer);
 
 struct spi_board_info {
 	char	*name;
-	int 	max_speed_hz;
+	int	max_speed_hz;
 	int	bus_num;
 	int	chip_select;
 
@@ -24,6 +44,11 @@ struct spi_board_info {
 	u8	bits_per_word;
 	void	*platform_data;
 	struct device_node *device_node;
+
+	/* CS delays */
+	struct spi_delay	cs_setup;
+	struct spi_delay	cs_hold;
+	struct spi_delay	cs_inactive;
 };
 
 /**
@@ -98,6 +123,11 @@ struct spi_device {
 	void			*controller_state;
 	void			*controller_data;
 	const char		*modalias;
+	struct gpio_desc	*cs_gpiod;	/* Chip select gpio desc */
+	/* CS delays */
+	struct spi_delay	cs_setup;
+	struct spi_delay	cs_hold;
+	struct spi_delay	cs_inactive;
 
 	/*
 	 * likely need more hooks for more protocol options affecting how
@@ -122,7 +152,16 @@ static inline u8 spi_get_chipselect(const struct spi_device *spi, u8 idx)
 	return spi->chip_select;
 }
 
-struct spi_message;
+/* ctldata is for the bus_controller driver's runtime state */
+static inline void *spi_get_ctldata(const struct spi_device *spi)
+{
+	return spi->controller_state;
+}
+
+static inline void spi_set_ctldata(struct spi_device *spi, void *state)
+{
+	spi->controller_state = state;
+}
 
 /**
  * struct spi_controller - interface to SPI master or slave controller
@@ -146,13 +185,43 @@ struct spi_message;
  *	unsupported bits_per_word. If not set, this value is simply ignored,
  *	and it's up to the individual driver to perform any validation.
  * @max_speed_hz: Highest supported transfer speed
+ * @flags: other constraints relevant to this driver
  * @setup: updates the device mode and clocking records used by a
  *	device's SPI controller; protocol code may call this.  This
  *	must fail if an unrecognized or unsupported mode is requested.
  *	It's always safe to call this unless transfers are pending on
  *	the device whose settings are being modified.
+ * @set_cs_timing: optional hook for SPI devices to request SPI master
+ * controller for configuring specific CS setup time, hold time and inactive
+ * delay interms of clock counts
  * @transfer: adds a message to the controller's transfer queue.
  * @cleanup: frees controller-specific state
+ * @set_cs: set the logic level of the chip select line.  May be called
+ *          from interrupt context.
+ * @prepare_message: set up the controller to transfer a single message,
+ *                   for example doing DMA mapping.  Called from threaded
+ *                   context.
+ * @transfer_one: transfer a single spi_transfer.
+ *
+ *                  - return 0 if the transfer is finished,
+ *                  - return 1 if the transfer is still in progress. When
+ *                    the driver is finished with this transfer it must
+ *                    call spi_finalize_current_transfer() so the subsystem
+ *                    can issue the next transfer. If the transfer fails, the
+ *                    driver must set the flag SPI_TRANS_FAIL_IO to
+ *                    spi_transfer->error first, before calling
+ *                    spi_finalize_current_transfer().
+ *                    Note: transfer_one and transfer_one_message are mutually
+ *                    exclusive; when both are set, the generic subsystem does
+ *                    not call your transfer_one callback.
+ * @handle_err: the subsystem calls the driver to handle an error that occurs
+ *		in the generic implementation of transfer_one_message().
+ * @cs_gpiods: Array of GPIO descriptors to use as chip select lines; one per CS
+ *	number. Any individual value may be NULL for CS lines that
+ *	are not GPIOs (driven by the SPI controller itself).
+ * @use_gpio_descriptors: Turns on the code in the SPI core to parse and grab
+ *	GPIO descriptors. This will fill in @cs_gpiods and SPI devices will have
+ *	the cs_gpiod assigned if a GPIO line is found for the chipselect.
  * @list: link with the global spi_controller list
  *
  * Each SPI controller can communicate with one or more @spi_device
@@ -202,8 +271,27 @@ struct spi_controller {
 	/* limits on transfer speed */
 	u32			max_speed_hz;
 
+	/* Other constraints relevant to this driver */
+	u16			flags;
+#define SPI_CONTROLLER_HALF_DUPLEX	BIT(0)	/* Can't do full duplex */
+#define SPI_CONTROLLER_NO_RX		BIT(1)	/* Can't do buffer read */
+#define SPI_CONTROLLER_NO_TX		BIT(2)	/* Can't do buffer write */
+#define SPI_CONTROLLER_MUST_RX		BIT(3)	/* Requires rx */
+#define SPI_CONTROLLER_MUST_TX		BIT(4)	/* Requires tx */
+#define SPI_CONTROLLER_GPIO_SS		BIT(5)	/* GPIO CS must select slave */
+#define SPI_CONTROLLER_SUSPENDED	BIT(6)	/* Currently suspended */
+
 	/* setup mode and clock, etc (spi driver may call many times) */
 	int			(*setup)(struct spi_device *spi);
+
+	/*
+	 * set_cs_timing() method is for SPI controllers that supports
+	 * configuring CS timing.
+	 *
+	 * This hook allows SPI client drivers to request SPI controllers
+	 * to configure specific CS timing through spi_set_cs_timing().
+	 */
+	int (*set_cs_timing)(struct spi_device *spi);
 
 	/* bidirectional bulk transfers
 	 *
@@ -229,6 +317,29 @@ struct spi_controller {
 
 	/* called on release() to free memory provided by spi_controller */
 	void			(*cleanup)(struct spi_device *spi);
+
+	/*
+	 * These hooks are for drivers that want to use the generic
+	 * controller transfer mechanism. If these are used, the
+	 * transfer() function above must NOT be specified by the driver.
+	 * Over time we expect SPI drivers to be phased over to this API.
+	 */
+	int (*prepare_message)(struct spi_controller *ctlr,
+			       struct spi_message *message);
+
+	/*
+	 * These hooks are for drivers that use a generic implementation
+	 * of transfer_one_message() provided by the core.
+	 */
+	void (*set_cs)(struct spi_device *spi, bool enable);
+	int (*transfer_one)(struct spi_controller *ctlr, struct spi_device *spi,
+			    struct spi_transfer *transfer);
+	void (*handle_err)(struct spi_controller *ctlr,
+			   struct spi_message *message);
+
+	/* GPIO chip select */
+	struct gpio_desc	**cs_gpiods;
+	bool			use_gpio_descriptors;
 
 	struct list_head list;
 };
@@ -267,7 +378,7 @@ static inline size_t spi_max_transfer_size(struct spi_device *spi)
 	return min(tr_max, msg_max);
 }
 
-#define spi_master  			spi_controller
+#define spi_master			spi_controller
 #define spi_register_master(_ctrl)	spi_register_controller(_ctrl)
 
 /*---------------------------------------------------------------------------*/
@@ -296,6 +407,9 @@ static inline size_t spi_max_transfer_size(struct spi_device *spi)
  * @len: size of rx and tx buffers (in bytes)
  * @speed_hz: Select a speed other then the device default for this
  *      transfer. If 0 the default (from @spi_device) is used.
+ * @effective_speed_hz: the effective SCK-speed that was used to
+ *      transfer this transfer. Set to 0 if the SPI bus driver does
+ *      not support it.
  * @bits_per_word: select a bits_per_word other then the device default
  *      for this transfer. If 0 the default (from @spi_device) is used.
  * @cs_change: affects chipselect after this transfer completes
@@ -364,6 +478,8 @@ struct spi_transfer {
 	u8		bits_per_word;
 	u16		delay_usecs;
 	u32		speed_hz;
+
+	u32		effective_speed_hz;
 
 	struct list_head transfer_list;
 };

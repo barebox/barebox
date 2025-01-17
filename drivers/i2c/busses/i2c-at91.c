@@ -276,7 +276,7 @@ static int at91_twi_wait_completion(struct at91_twi_dev *dev)
 
 		dev->transfer_status |= status;
 
-	} while (!(at91_twi_read(dev, AT91_TWI_SR) & AT91_TWI_TXCOMP));
+	} while (!(status & AT91_TWI_TXCOMP));
 
 	at91_disable_twi_interrupts(dev);
 

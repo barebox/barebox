@@ -51,10 +51,6 @@
 	compatible = "solidrun,hummingboard2/dl", "fsl,imx6dl";
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec 0x620>;
-};
-
 &usdhc3 {
 	#address-cells = <1>;
 	#size-cells = <1>;

@@ -4,7 +4,6 @@ if ARCH_BCM283X
 
 config MACH_RPI_COMMON
 	bool
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_RPI_AARCH_32_64
 	select MACH_RPI_COMMON

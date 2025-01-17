@@ -6,8 +6,7 @@
  */
 
 #include <linux/tee_drv.h>
-
-#include "stm32-bsec-optee-ta.h"
+#include <soc/stm32/stm32-bsec-optee-ta.h>
 
 /*
  * Read OTP memory

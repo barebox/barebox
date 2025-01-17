@@ -298,6 +298,9 @@ $(call build_imx_habv4img, CONFIG_MACH_EMBEST_MARSBOARD, start_imx6q_marsboard, 
 
 $(call build_imx_habv4img, CONFIG_MACH_EMBEST_RIOTBOARD, start_imx6s_riotboard, embest-riotboard/flash-header-embest-riotboard, embest-imx6s-riotboard)
 
+$(call build_imx_habv4img, CONFIG_MACH_TORADEX_COLIBRI_IMX6, start_imx6dl_colibri_iris, toradex-colibri-imx6/flash-header-colibri-imx6dl, toradex-imx6dl-colibri-iris)
+$(call build_imx_habv4img, CONFIG_MACH_TORADEX_COLIBRI_IMX6,  start_imx6s_colibri_iris,  toradex-colibri-imx6/flash-header-colibri-imx6s,  toradex-imx6s-colibri-iris)
+
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycard_imx6q_1gib, phytec-som-imx6/flash-header-phytec-pcaaxl3-1gib, phytec-phycard-imx6q-1gib)
 
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycard_imx6q_1gib_1bank, phytec-som-imx6/flash-header-phytec-pcaaxl3-1gib-1bank, phytec-phycard-imx6q-1gib-1bank)

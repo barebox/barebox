@@ -22,7 +22,7 @@
 
 static int atmel_flexcom_probe(struct device *dev)
 {
-	struct resource *res;
+	void __iomem *base;
 	struct clk *clk;
 	u32 opmode;
 	int err;
@@ -35,17 +35,13 @@ static int atmel_flexcom_probe(struct device *dev)
 	if (opmode < ATMEL_FLEXCOM_MODE_USART || opmode > ATMEL_FLEXCOM_MODE_TWI)
 		return -EINVAL;
 
-	res = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(res))
-		return PTR_ERR(res);
+	base = dev_platform_get_and_ioremap_resource(dev, 0, NULL);
+	if (IS_ERR(base))
+		return dev_err_probe(dev, PTR_ERR(base), "Could not get memory region\n");
 
-	clk = clk_get(dev, NULL);
+	clk = clk_get_enabled(dev, NULL);
 	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
-	err = clk_enable(clk);
-	if (err)
-		return err;
+		return dev_err_probe(dev, PTR_ERR(clk), "Can't get clk\n");
 
 	/*
 	 * Set the Operating Mode in the Mode Register: only the selected device
@@ -53,7 +49,7 @@ static int atmel_flexcom_probe(struct device *dev)
 	 * inaccessible and are read as zero. Also the external I/O lines of the
 	 * Flexcom are muxed to reach the selected device.
 	 */
-	writel(FLEX_MR_OPMODE(opmode), IOMEM(res->start) + FLEX_MR);
+	writel(FLEX_MR_OPMODE(opmode), base + FLEX_MR);
 
 	clk_disable(clk);
 

@@ -12,10 +12,13 @@
 
 enum {
 	DDR4 = 0,
-	DDR3 = 0x3,
-	LPDDR2 = 0x5,
-	LPDDR3 = 0x6,
-	LPDDR4 = 0x7,
+	DDR3 = 3,
+	LPDDR2 = 5,
+	LPDDR3 = 6,
+	LPDDR4 = 7,
+	LPDDR4X = 8,
+	LPDDR5 = 9,
+	DDR5 = 10,
 	UNUSED = 0xFF
 };
 

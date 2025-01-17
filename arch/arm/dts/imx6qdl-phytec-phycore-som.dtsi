@@ -107,10 +107,6 @@
 	};
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec 0x620>;
-};
-
 &usdhc4 {
 	partitions {
 		compatible = "fixed-partitions";

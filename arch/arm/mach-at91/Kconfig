@@ -92,7 +92,6 @@ config SOC_SAMA5_MULTI
 config SOC_SAMA5D2
 	bool
 	select SOC_SAMA5
-	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
 	select HAVE_AT91_H32MX
 	select HAVE_AT91_UTMI
@@ -556,7 +555,6 @@ endif
 
 config AT91_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
-	select ARM_USE_COMPRESSED_DTB
 
 if AT91_MULTI_BOARDS
 

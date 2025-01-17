@@ -276,21 +276,14 @@ static void avnet_zedboard_ps7_init(void)
 
 static void avnet_zedboard_pbl_console_init(void)
 {
-	relocate_to_current_adr();
-	setup_c();
-	barrier();
-
 	cadence_uart_init((void *)ZYNQ_UART1_BASE_ADDR);
 	pbl_set_putc(cadence_uart_putc, (void *)ZYNQ_UART1_BASE_ADDR);
 
 	pr_debug("\nAvnet ZedBoard PBL\n");
 }
 
-ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
+ENTRY_FUNCTION_WITHSTACK(start_avnet_zedboard, 0xfffff000, r0, r1, r2)
 {
-
-	void *fdt = __dtb_z_zynq_zed_start + get_runtime_offset();
-
 	/* MIO_07 in GPIO Mode 3.3V VIO, can be uncomented because it is the default value */
 	writel(0x0000DF0D, ZYNQ_SLCR_UNLOCK);
 	writel(0x00000600, 0xF800071C );
@@ -301,13 +294,16 @@ ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 	writel((1<<7), 0xe000a208 );    // Output enable
 	writel((1<<7), 0xe000a040 );    // DATA Register
 
-	arm_cpu_lowlevel_init();
 	zynq_cpu_lowlevel_init();
 
 	avnet_zedboard_ps7_init();
 
+	relocate_to_current_adr();
+	setup_c();
+	barrier();
+
 	if (IS_ENABLED(CONFIG_PBL_CONSOLE))
 		avnet_zedboard_pbl_console_init();
 
-	barebox_arm_entry(0, SZ_512M, fdt);
+	barebox_arm_entry(0, SZ_512M, __dtb_z_zynq_zed_start);
 }

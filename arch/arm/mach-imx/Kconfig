@@ -159,7 +159,6 @@ config ARCH_IMX8M
 	select HW_HAS_PCI
 	select IMX8M_DRAM
 	select PBL_VERIFY_PIGGY if HABV4
-	select ARM_USE_COMPRESSED_DTB
 	select SOC_BUS
 	imply FSL_CAAM_RNG_PBL_INIT if HAVE_OPTEE
 
@@ -189,7 +188,6 @@ config ARCH_IMX93
 	select CPU_V8
 	select PINCTRL_IMX_IOMUX_V3
 	select COMMON_CLK_OF_PROVIDER
-	select ARM_USE_COMPRESSED_DTB
 	select ARCH_HAS_FEC_IMX
 
 config ARCH_VF610
@@ -337,14 +335,12 @@ config MACH_ZII_RDU1
 	select MACH_FREESCALE_MX51_PDK_POWER
 	select CRC8
 	select MACH_ZII_COMMON
-	select ARM_USE_COMPRESSED_DTB
 
 comment "i.MX6 boards"
 
 config MACH_ADVANTECH_ROM_742X
 	bool "Advantech ROM 742X"
 	select ARCH_IMX6
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_NITROGEN6
 	bool "BoundaryDevices Nitrogen6 boards"
@@ -367,7 +363,6 @@ config MACH_DIGI_CCIMX6ULSBCPRO
 	bool "Digi Internal CC-IMX6UL SBC Pro"
 	select ARCH_IMX6
 	select ARCH_IMX6UL
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_ELTEC_HIPERCAM
 	bool "ELTEC HiPerCam"
@@ -382,12 +377,16 @@ config MACH_EMBEDSKY_E9
 config MACH_EMBEST_MARSBOARD
 	bool "Embest MarSboard"
 	select ARCH_IMX6
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_EMBEST_RIOTBOARD
 	bool "Embest RIoTboard"
 	select ARCH_IMX6
 	imply AT803X_PHY
+
+config MACH_TORADEX_COLIBRI_IMX6
+	bool "Toradex Colibri iMX6"
+	select ARCH_IMX6
+	select ARM_USE_COMPRESSED_DTB
 
 config MACH_SABRELITE
 	bool "Freescale i.MX6 Sabre Lite"
@@ -440,7 +439,6 @@ config MACH_KONTRON_SAMX6I
 config MACH_NOVENA
 	bool "Kosagi Novena board"
 	select ARCH_IMX6
-	select ARM_USE_COMPRESSED_DTB
 	select DDR_SPD
 	select I2C_IMX_EARLY
 	select MCI_IMX_ESDHC_PBL
@@ -461,13 +459,11 @@ config MACH_PROTONIC_IMX6
 	bool "Protonic-Holland i.MX6 based boards"
 	select ARCH_IMX6
 	select ARCH_IMX6UL
-	select ARM_USE_COMPRESSED_DTB
 	select IMX_OCOTP
 
 config MACH_SKOV_IMX6
 	bool "Skov IMX6"
 	select ARCH_IMX6
-	select ARM_USE_COMPRESSED_DTB
 	select MCI_IMX_ESDHC_PBL
 	select DSA
 	select DRIVER_NET_KSZ8873
@@ -480,12 +476,10 @@ config MACH_TECHNEXION_PICO_HOBBIT
 	bool "Technexion Pico Hobbit"
 	select ARCH_IMX6
 	select ARCH_IMX6UL
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_TECHNEXION_WANDBOARD
 	bool "Technexion Wandboard"
 	select ARCH_IMX6
-	select ARM_USE_COMPRESSED_DTB
 	select MCI_IMX_ESDHC_PBL
 
 config MACH_TQMA6X
@@ -495,7 +489,6 @@ config MACH_TQMA6X
 config MACH_TQMA6UL
 	bool "TQ tqma6ul on mba6ulx"
 	select ARCH_IMX6UL
-	select ARM_USE_COMPRESSED_DTB
 	select BOARD_TQ
 	select I2C_IMX_EARLY
 
@@ -508,7 +501,6 @@ config MACH_VARISCITE_MX6
 config MACH_WEBASTO_CCBV2
 	bool "Webasto Common Communication Board V2"
 	select ARCH_IMX6UL
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_GK802
 	bool "Zealz GK802 Mini PC"
@@ -519,20 +511,17 @@ config MACH_ZII_RDU2
 	select ARCH_IMX6
 	select MCI_IMX_ESDHC_PBL
 	select MACH_ZII_COMMON
-	select ARM_USE_COMPRESSED_DTB
 
 comment "i.MX7 boards"
 
 config MACH_MEERKAT96
 	bool "96Boards: i.MX7 Meerkat96"
 	select ARCH_IMX7
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_AC_SXB
 	bool "Atlas Copco: SXB board"
 	select ARCH_IMX7
 	select MCI_IMX_ESDHC_PBL
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_WARP7
 	bool "NXP i.MX7: element 14 WaRP7 Board"
@@ -557,7 +546,6 @@ config MACH_PHYTEC_PHYCORE_IMX7
 config MACH_VARISCITE_SOM_MX7
 	bool "Variscite VAR-SOM-MX7"
 	select ARCH_IMX7
-	select ARM_USE_COMPRESSED_DTB
 	help
 	  Support for boards that use a Variscite SOM-MX7, like:
 	  - Gossen Metrawatt e143_01
@@ -565,12 +553,10 @@ config MACH_VARISCITE_SOM_MX7
 config MACH_ZII_IMX7D_DEV
 	bool "ZII i.MX7D based devices"
 	select ARCH_IMX7
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_KAMSTRUP_MX7_CONCENTRATOR
 	bool "Kamstrup i.MX7 Concentrator"
 	select ARCH_IMX7
-	select ARM_USE_COMPRESSED_DTB
 
 comment "VF610 boards"
 
@@ -582,7 +568,6 @@ config MACH_ZII_VF610_DEV
 	bool "ZII VF610 Dev Family"
 	select ARCH_VF610
 	select MACH_ZII_COMMON
-	select ARM_USE_COMPRESSED_DTB
 
 endif
 

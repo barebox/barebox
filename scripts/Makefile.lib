@@ -285,7 +285,7 @@ quiet_cmd_prelink__ = PRELINK $@
 endif
 
 quiet_cmd_prelink__ ?=
-      cmd_prelink__ ?=
+      cmd_prelink__ ?= :
 
 # Linking
 # ---------------------------------------------------------------------------
@@ -523,7 +523,7 @@ quiet_cmd_check_size = CHKSIZE $2
 	then								\
 		echo "$@ size $$size > maximum size $$max_size" >&2;	\
 		exit 1 ;						\
-	fi;
+	fi
 
 # Check size of a file
 quiet_cmd_check_file_size = CHKFILESIZE $2
@@ -534,7 +534,13 @@ quiet_cmd_check_file_size = CHKFILESIZE $2
 	then								\
 		echo "$@ size $$size > maximum size $$max_size" >&2;	\
 		exit 1 ;						\
-	fi;
+	fi
+
+# Check for missing firmware
+quiet_cmd_check_missing_fw = # no message as we collect info for later
+      cmd_check_missing_fw = set -e;						    \
+	$(OBJCOPY) -O binary --only-section=.missing_fw	$3 $2.missing-firmware;	    \
+	[ -s $2.missing-firmware ] || rm -f $2.missing-firmware
 
 quiet_cmd_imximage__S_dcd= DCD_S   $@
 cmd_imximage_S_dcd=						\

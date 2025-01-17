@@ -25,6 +25,7 @@
 #include <uncompress.h>
 #include <compressed-dtb.h>
 #include <malloc.h>
+#include <asm/armv7r-mpu.h>
 
 #include <debug_ll.h>
 
@@ -152,6 +153,12 @@ __noreturn __prereloc void barebox_non_pbl_start(unsigned long membase,
 	arm_stack_top = arm_mem_stack_top(endmem);
 	arm_barebox_size = barebox_image_size + MAX_BSS_SIZE;
 	malloc_end = barebox_base;
+
+	if (IS_ENABLED(CONFIG_ARMV7R_MPU)) {
+		malloc_end = ALIGN_DOWN(malloc_end - SZ_8M, SZ_8M);
+
+		armv7r_mpu_init_coherent(malloc_end, REGION_8MB);
+	}
 
 	/*
 	 * Maximum malloc space is the Kconfig value if given

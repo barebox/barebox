@@ -117,4 +117,15 @@ static inline int cpu_is_xsc3(void)
 #define	cpu_is_xscale()	1
 #endif
 
+#define ARM_CPU_PART_CORTEX_A5  0xC050
+#define ARM_CPU_PART_CORTEX_A7  0xC070
+#define ARM_CPU_PART_CORTEX_A8  0xC080
+#define ARM_CPU_PART_CORTEX_A9  0xC090
+#define ARM_CPU_PART_CORTEX_A15 0xC0F0
+#define ARM_CPU_PART_CORTEX_A53 0xD030
+#define ARM_CPU_PART_CORTEX_A55 0xD050
+#define ARM_CPU_PART_CORTEX_A57 0xD070
+#define ARM_CPU_PART_CORTEX_A72 0xD080
+#define ARM_CPU_PART_CORTEX_R5  0xc150
+
 #endif

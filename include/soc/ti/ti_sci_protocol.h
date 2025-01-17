@@ -654,7 +654,6 @@ struct ti_sci_resource {
 
 #if IS_ENABLED(CONFIG_TI_SCI_PROTOCOL)
 
-const struct ti_sci_handle *ti_sci_get_handle_from_sysfw(struct device *dev);
 const struct ti_sci_handle *ti_sci_get_handle(struct device *dev);
 const struct ti_sci_handle *ti_sci_get_by_phandle(struct device *dev,
 						  const char *property);
@@ -662,12 +661,6 @@ struct ti_sci_resource *
 devm_ti_sci_get_of_resource(const struct ti_sci_handle *handle,
 			    struct device *dev, u32 dev_id, char *of_prop);
 #else	/* CONFIG_TI_SCI_PROTOCOL */
-
-static inline
-const struct ti_sci_handle *ti_sci_get_handle_from_sysfw(struct device *dev)
-{
-	return ERR_PTR(-EINVAL);
-}
 
 static inline const struct ti_sci_handle *ti_sci_get_handle(struct device *dev)
 {

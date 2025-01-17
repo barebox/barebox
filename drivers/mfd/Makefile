@@ -26,3 +26,4 @@ obj-$(CONFIG_MFD_AXP20X_I2C)	+= axp20x-i2c.o axp20x.o
 obj-$(CONFIG_MFD_ATMEL_SMC)	+= atmel-smc.o
 obj-$(CONFIG_MFD_ROHM_BD718XX)	+= rohm-bd718x7.o
 obj-$(CONFIG_MFD_PCA9450)	+= pca9450.o
+obj-$(CONFIG_MFD_TPS65219)	+= tps65219.o

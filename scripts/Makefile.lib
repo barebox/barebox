@@ -542,6 +542,9 @@ quiet_cmd_check_missing_fw = # no message as we collect info for later
 	$(OBJCOPY) -O binary --only-section=.missing_fw	$3 $2.missing-firmware;	    \
 	[ -s $2.missing-firmware ] || rm -f $2.missing-firmware
 
+quiet_cmd_k3_cfg = K3CFG   $@
+      cmd_k3_cfg = $(srctree)/scripts/ti-board-config.py $@ $(filter-out FORCE,$^)
+
 quiet_cmd_imximage__S_dcd= DCD_S   $@
 cmd_imximage_S_dcd=						\
 (								\

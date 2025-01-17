@@ -41,6 +41,11 @@ config MFD_SYSCON
 	help
 	  Select this option to enable accessing system control registers
 
+config MFD_TPS65219
+	bool "TPS65219 driver"
+	depends on I2C
+	select REGMAP_I2C
+
 config MFD_TWLCORE
 	bool
 

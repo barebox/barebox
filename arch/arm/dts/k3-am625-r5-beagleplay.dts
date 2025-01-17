@@ -1,0 +1,4 @@
+/dts-v1/;
+
+#include "k3-am625-beagleplay.dts"
+#include "k3-am625-r5.dtsi"

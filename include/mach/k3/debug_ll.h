@@ -2,6 +2,26 @@
 #define __MACH_K3_DEBUG_LL_H__
 #include <io.h>
 
+static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)
+{
+	return readb(base + (reg << 2));
+}
+
+static inline void debug_ll_write_reg(void __iomem *base, int reg, uint8_t val)
+{
+	writeb(val, base + (reg << 2));
+}
+
+#include <debug_ll/ns16550.h>
+
+static inline void k3_debug_ll_init(void __iomem *base)
+{
+	debug_ll_ns16550_init(base, 26);
+
+	debug_ll_write_reg(base, 8, 0x07);
+	debug_ll_write_reg(base, 8, 0x00);
+}
+
 #define AM62X_UART_UART0_BASE	0x02800000
 #define AM62X_UART_UART1_BASE	0x02810000
 #define AM62X_UART_UART2_BASE	0x02820000
@@ -15,18 +35,6 @@
 
 #define __K3_UART_BASE(soc, num) soc##_UART##num##_BASE
 #define K3_UART_BASE(soc, num) __K3_UART_BASE(soc, num)
-
-static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)
-{
-	return readb(base + (reg << 2));
-}
-
-static inline void debug_ll_write_reg(void __iomem *base, int reg, uint8_t val)
-{
-	writeb(val, base + (reg << 2));
-}
-
-#include <debug_ll/ns16550.h>
 
 static inline void debug_ll_init(void)
 {

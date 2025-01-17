@@ -19,8 +19,25 @@
 #include <asm/system_info.h>
 #include <debug_ll.h>
 #include <asm/sections.h>
+#include <asm/cputype.h>
 
 #define __exceptions_size (__exceptions_stop - __exceptions_start)
+
+static bool has_vbar(void)
+{
+	u32 mainid;
+
+	__asm__ __volatile__(
+		"mrc    p15, 0, %0, c0, c0, 0   @ read control reg\n"
+		: "=r" (mainid)
+		:
+		: "memory");
+
+	if ((mainid & 0xfff0) == ARM_CPU_PART_CORTEX_R5)
+		return false;
+
+	return true;
+}
 
 static int nommu_v7_vectors_init(void)
 {
@@ -28,6 +45,9 @@ static int nommu_v7_vectors_init(void)
 	u32 cr;
 
 	if (cpu_architecture() < CPU_ARCH_ARMv7)
+		return 0;
+
+	if (!has_vbar())
 		return 0;
 
 	/*

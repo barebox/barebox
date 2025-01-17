@@ -48,4 +48,14 @@ config USB_DWC3_OF_SIMPLE
 	 Currently supports Xilinx and Qualcomm DWC USB3 IP.
 	 Say 'Y' or 'M' if you have one such device.
 
+config USB_DWC3_AM62
+	tristate "Texas Instruments AM62 Platforms"
+	depends on ARCH_K3 || COMPILE_TEST
+	default USB_DWC3
+	help
+	  Support TI's AM62 platforms with DesignWare Core USB3 IP.
+	  The Designware Core USB3 IP is programmed to operate in
+	  in USB 2.0 mode only.
+	  Say 'Y' or 'M' here if you have one such device
+
 endif

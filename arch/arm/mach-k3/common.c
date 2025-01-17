@@ -137,11 +137,11 @@ static void k3_get_primary_bootsource(u32 devstat, enum bootsource *src, int *in
 	}
 }
 
-#define K3_BOOT_PARAM_TABLE_INDEX_OCRAM		IOMEM(0x7000F290)
+#define AM625_BOOT_PARAM_TABLE_INDEX_OCRAM		IOMEM(0x43c3f290)
 
 static void k3_get_bootsource(u32 devstat, enum bootsource *src, int *instance)
 {
-	u32 bootmode = readl(K3_BOOT_PARAM_TABLE_INDEX_OCRAM);
+	u32 bootmode = readl(AM625_BOOT_PARAM_TABLE_INDEX_OCRAM);
 
 	if (bootmode == K3_PRIMARY_BOOTMODE)
 		k3_get_primary_bootsource(devstat, src, instance);
@@ -171,6 +171,7 @@ static int am625_init(void)
 
 	am625_get_bootsource(&src, &instance);
 	bootsource_set(src, instance);
+	am625_register_dram();
 
 	genpd_activate();
 
@@ -178,7 +179,6 @@ static int am625_init(void)
 }
 postcore_initcall(am625_init);
 
-#if defined(CONFIG_ENV_HANDLING)
 static int omap_env_init(void)
 {
 	char *partname, *cdevname, *envpath;
@@ -217,14 +217,17 @@ static int omap_env_init(void)
 
 	symlink(rootpath, "/boot");
 
-	envpath = xasprintf("%s/barebox.env", rootpath);
+	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
+		envpath = xasprintf("%s/barebox.env", rootpath);
 
-	pr_debug("Loading default env from %s on device %s\n",
-		 envpath, partname);
+		pr_debug("Loading default env from %s on device %s\n",
+			 envpath, partname);
 
-	default_environment_path_set(envpath);
+		default_environment_path_set(envpath);
 
-	free(envpath);
+		free(envpath);
+	}
+
 out:
 	free(partname);
 	free(cdevname);
@@ -232,4 +235,3 @@ out:
 	return 0;
 }
 late_initcall(omap_env_init);
-#endif

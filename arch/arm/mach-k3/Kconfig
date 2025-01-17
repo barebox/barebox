@@ -3,6 +3,33 @@
 menu "K3 boards"
         depends on ARCH_K3
 
+config MACH_K3_CORTEX_R5
+	bool
+	select CPU_V7
+	select CLOCKSOURCE_TI_DM
+	select REMOTEPROC
+	select REMOTEPROC_TI_K3_ARM64
+	select REMOTEPROC_K3_SYSTEM_CONTROLLER
+	select PM_GENERIC_DOMAINS
+	select TI_K3_PM_DOMAINS
+	select ARMV7R_MPU
+	select ELF
+	select K3_DDRSS
+	depends on 32BIT
+	select ARM_USE_COMPRESSED_DTB
+	default y
+
+config MACH_K3_CORTEX_A
+	bool
+	select CPU_V8
+	depends on 64BIT
+	default y
+
+config MACH_AM625_SK
+	bool "TI AM625 SK"
+	help
+	  Say Y here if you are using a TI AM625 SK board
+
 config MACH_BEAGLEPLAY
 	bool "BeagleBoard BeaglePlay"
 	help

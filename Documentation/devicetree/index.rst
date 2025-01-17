@@ -120,7 +120,7 @@ from the `Device-Tree Compiler`_ project.
 .. _Device-Tree Compiler: https://git.kernel.org/pub/scm/utils/dtc/dtc.git
 
 These utilities are built as part of the barebox build process. Additionally,
-libfdt is compiled once more as part of the ``CONFIG_BOARD_ARM_GENERIC_DT``
+libfdt is compiled once more as part of the ``CONFIG_BOARD_GENERIC_DT``
 if selected.
 
 Steps to update ``scripts/dtc``:
@@ -129,7 +129,7 @@ Steps to update ``scripts/dtc``:
   directory of your barebox ``git-checkout``.
 * Run ``scripts/dtc/update-dtc-source.sh`` from the top-level barebox directory.
 * Wait till ``dtc`` build, test, install and commit conclude.
-* Compile-test with ``CONFIG_BOARD_ARM_GENERIC_DT=y``.
+* Compile-test with ``CONFIG_BOARD_GENERIC_DT=y``.
 * If ``scripts/dtc/Makefile`` or barebox include file changes are necessary,
   apply them manually in a commit preceding the ``dtc`` update.
 

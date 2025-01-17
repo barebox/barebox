@@ -222,6 +222,9 @@ lwl-$(CONFIG_MACH_XILINX_ZCU102) += zynqmp-zcu102-revA.dtb.o zynqmp-zcu102-revB.
 lwl-$(CONFIG_MACH_XILINX_ZCU104) += zynqmp-zcu104-revA.dtb.o
 lwl-$(CONFIG_MACH_XILINX_ZCU106) += zynqmp-zcu106-revA.dtb.o
 
+lwl-$(CONFIG_MACH_VIRT) += qemu-virt32.dtb.o
+lwl-$(CONFIG_ARCH_ARM64_VIRT) += qemu-virt64.dtb.o
+
 lwl-$(CONFIG_MACH_ZII_IMX7D_DEV) += imx7d-zii-rpu2.dtb.o imx7d-zii-rmu2.dtb.o
 lwl-$(CONFIG_MACH_WAGO_PFC_AM35XX) += am35xx-pfc-750_820x.dtb.o
 lwl-$(CONFIG_MACH_LS1028ARDB) += fsl-ls1028a-rdb.dtb.o

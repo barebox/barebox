@@ -11,6 +11,14 @@ config PPC
 	select ARCH_HAS_SJLJ
 	default y
 
+config ARCH_LINUX_NAME
+	string
+	default "ppc"
+
+config ARCH_MKIMAGE_NAME
+	string
+	default "powerpc"
+
 choice
 	prompt "Processor type"
 

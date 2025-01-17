@@ -35,6 +35,9 @@ else
 obj-y		+= $(lwl-y)
 endif
 
+dtb- 		+= $(patsubst %.dtb.o,%.dtb,$(filter %.dtb.o,$(pbl-)  $(lwl-)))
+dtb-y		+= $(patsubst %.dtb.o,%.dtb,$(filter %.dtb.o,$(pbl-y) $(lwl-y)))
+
 obj-y		+= $(obj-pbl-y)
 pbl-y		+= $(obj-pbl-y)
 

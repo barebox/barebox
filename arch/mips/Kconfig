@@ -14,6 +14,15 @@ config MIPS
 	select ELF
 	default y
 
+config ARCH_LINUX_NAME
+	string
+	default "mips64" if CPU_SUPPORTS_64BIT_KERNEL
+	default "mips"
+
+config ARCH_MKIMAGE_NAME
+	string
+	default ARCH_LINUX_NAME
+
 config SYS_SUPPORTS_BIG_ENDIAN
 	bool
 

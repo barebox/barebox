@@ -3,6 +3,17 @@ config OFTREE
 	select DTC
 	bool
 
+config OF_ALL_DTBS
+	bool "Build all Device Tree Blobs"
+	depends on OFTREE && COMPILE_TEST
+	select DTC
+	help
+	  This option builds all possible Device Tree Blobs (DTBs) for the
+	  current architecture.
+
+	  If unsure, say N here, but this option is safe to enable.
+
+
 config OFTREE_MEM_GENERIC
 	depends on OFTREE
 	depends on PPC || ARM || EFI_PAYLOAD || OPENRISC || SANDBOX || RISCV || KVX

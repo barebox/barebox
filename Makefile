@@ -789,7 +789,7 @@ barebox-flash-images: $(KBUILD_IMAGE)
 
 images: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=images $@
-images/%.s: barebox.bin FORCE
+images/%: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=images $@
 
 ifdef CONFIG_EFI_STUB
@@ -1032,7 +1032,7 @@ include/config/kernel.release: FORCE
 # Carefully list dependencies so we do not try to build scripts twice
 # in parallel
 PHONY += scripts
-scripts: scripts_basic include/generated/utsrelease.h
+scripts: scripts_basic scripts_dtc include/generated/utsrelease.h
 	$(Q)$(MAKE) $(build)=$(@)
 
 # Things we need to do before we recursively start building the kernel
@@ -1114,12 +1114,28 @@ endif
 
 ifneq ($(dtstree),)
 
-PHONY += dtbs
-all_dtbs += $(patsubst $(srctree)/%.dts,$(objtree)/%.dtb,$(wildcard $(srctree)/$(dtstree)/*.dts))
-targets += $(all_dtbs)
-dtbs: $(all_dtbs)
+%.dtb: dtbs_prepare
+	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
+
+%.dtbo: dtbs_prepare
+	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
+
+PHONY += dtbs dtbs_prepare
+dtbs: dtbs_prepare
+	$(Q)$(MAKE) $(build)=$(dtstree) need-dtbslist=1
+
+dtbs_prepare: include/config/kernel.release scripts_dtc
+
+ifdef CONFIG_OFDEVICE
+images: dtbs
+images/%: dtbs
+endif
 
 endif
+
+PHONY += scripts_dtc
+scripts_dtc: scripts_basic
+	$(Q)$(MAKE) $(build)=scripts/dtc
 
 # ---------------------------------------------------------------------------
 # Modules
@@ -1238,6 +1254,7 @@ clean: archclean $(clean-dirs)
 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
 		-o -name '*lex.c' -o -name '.tab.[ch]' \
+		-o -name 'dtbs-list' \
 		-o -name '*.symtypes' -o -name '*.bbenv.*' -o -name "*.bbenv" \) \
 		-type f -print | xargs rm -f
 
@@ -1299,17 +1316,18 @@ help:
 	@echo  ''
 	@echo  'Other generic targets:'
 	@echo  '  all		  - Build all targets marked with [*]'
-	@echo  '* barebox           - Build the bare kernel'
+	@echo  '* barebox         - Build the barebox proper binary'
+ifdef CONFIG_PBL_IMAGE
+	@echo  '* images          - Build final prebootloader-prefixed images'
+endif
 	@echo  '  dir/            - Build all files in dir and below'
 	@echo  '  dir/file.[ois]  - Build specified target only'
 	@echo  '  dir/file.ko     - Build module including final link'
+	@echo  '  compile_commands.json'
+	@echo  '                  - Generate compilation database for IDEs/LSP'
 	@echo  '  tags/TAGS	  - Generate tags file for editors'
 	@echo  '  cscope	  - Generate cscope index'
 	@echo  '                    (default: $(INSTALL_HDR_PATH))'
-	@echo  ''
-	@echo  'Static analysers'
-	@echo  '  checkstack      - Generate a list of stack hogs'
-	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
 	@echo  ''
 	@echo  'Architecture specific targets ($(SRCARCH)):'
 	@$(if $(archhelp),$(archhelp),\
@@ -1317,7 +1335,7 @@ help:
 	@echo  ''
 	@$(if $(dtstree), \
 		echo '  Devicetree:'; \
-		echo '    * dtbs             - Build device tree blobs for all boards'; \
+		echo '    * dtbs             - Build device tree blobs for enabled boards'; \
 		echo '')
 	@$(if $(boards), \
 		$(foreach b, $(boards), \

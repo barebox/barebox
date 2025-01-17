@@ -10,6 +10,10 @@ config OPENRISC
 	select HAS_DEBUG_LL
 	default y
 
+config ARCH_MKIMAGE_NAME
+	string
+	default "or1k"
+
 # not used
 config ARCH_TEXT_BASE
 	hex

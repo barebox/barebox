@@ -62,8 +62,7 @@ userccflags += -I $(srctree)/$(src)/include -isystem $(srctree)/scripts/include
 
 subdir-y			+= mod
 subdir-y			+= imx
-subdir-$(CONFIG_DTC)		+= dtc
 subdir-$(CONFIG_ARCH_TEGRA)	+= tegra
 
 # Let clean descend into subdirs
-subdir-	+= basic kconfig
+subdir-	+= basic dtc kconfig

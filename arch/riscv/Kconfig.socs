@@ -18,7 +18,7 @@ config BOARD_ERIZO_GENERIC
 config SOC_VIRT
 	bool "QEMU Virt Machine"
 	select RISCV_S_MODE
-	select BOARD_RISCV_GENERIC_DT
+	select BOARD_GENERIC_DT
 	select HAS_CACHE
 	select HAS_DEBUG_LL
 	help

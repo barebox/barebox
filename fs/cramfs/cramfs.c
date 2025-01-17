@@ -162,9 +162,9 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 	return outsize;
 }
 
-static int cramfs_read(struct device *_dev, FILE *f, void *buf, size_t size)
+static int cramfs_read(struct device *_dev, struct file *f, void *buf, size_t size)
 {
-	return cramfs_read_file(f->f_inode, f->pos, buf, size);
+	return cramfs_read_file(f->f_inode, f->f_pos, buf, size);
 }
 
 #if 0

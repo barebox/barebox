@@ -333,12 +333,12 @@ static const struct super_operations ubootvarfs_ops = {
 	.destroy_inode = ubootvarfs_destroy_inode,
 };
 
-static int ubootvarfs_io(struct device *dev, FILE *f, void *buf,
+static int ubootvarfs_io(struct device *dev, struct file *f, void *buf,
 			 size_t insize, bool read)
 {
 	struct inode *inode = f->f_inode;
 	struct ubootvarfs_inode *node = inode_to_node(inode);
-	void *ptr = node->var->start + f->pos;
+	void *ptr = node->var->start + f->f_pos;
 
 	if (read)
 		memcpy(buf, ptr, insize);
@@ -348,19 +348,19 @@ static int ubootvarfs_io(struct device *dev, FILE *f, void *buf,
 	return insize;
 }
 
-static int ubootvarfs_read(struct device *dev, FILE *f, void *buf,
+static int ubootvarfs_read(struct device *dev, struct file *f, void *buf,
 			   size_t insize)
 {
 	return ubootvarfs_io(dev, f, buf, insize, true);
 }
 
-static int ubootvarfs_write(struct device *dev, FILE *f, const void *buf,
+static int ubootvarfs_write(struct device *dev, struct file *f, const void *buf,
 			    size_t insize)
 {
 	return ubootvarfs_io(dev, f, (void *)buf, insize, false);
 }
 
-static int ubootvarfs_truncate(struct device *dev, FILE *f, loff_t size)
+static int ubootvarfs_truncate(struct device *dev, struct file *f, loff_t size)
 {
 	struct inode *inode = f->f_inode;
 	struct ubootvarfs_inode *node = inode_to_node(inode);

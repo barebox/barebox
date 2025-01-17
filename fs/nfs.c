@@ -1065,7 +1065,7 @@ static void nfs_handler(void *ctx, char *p, unsigned len)
 	list_add_tail(&packet->list, &npriv->packets);
 }
 
-static int nfs_truncate(struct device *dev, FILE *f, loff_t size)
+static int nfs_truncate(struct device *dev, struct file *f, loff_t size)
 {
 	return -ENOSYS;
 }
@@ -1156,7 +1156,7 @@ static const char *nfs_get_link(struct dentry *dentry, struct inode *inode)
 	return inode->i_link;
 }
 
-static int nfs_open(struct device *dev, FILE *file, const char *filename)
+static int nfs_open(struct device *dev, struct file *file, const char *filename)
 {
 	struct inode *inode = file->f_inode;
 	struct nfs_inode *ninode = nfsi(inode);
@@ -1166,8 +1166,7 @@ static int nfs_open(struct device *dev, FILE *file, const char *filename)
 	priv = xzalloc(sizeof(*priv));
 	priv->fh = ninode->fh;
 	priv->npriv = npriv;
-	file->priv = priv;
-	file->size = inode->i_size;
+	file->private_data = priv;
 
 	priv->fifo = kfifo_alloc(1024);
 	if (!priv->fifo) {
@@ -1178,30 +1177,30 @@ static int nfs_open(struct device *dev, FILE *file, const char *filename)
 	return 0;
 }
 
-static int nfs_close(struct device *dev, FILE *file)
+static int nfs_close(struct device *dev, struct file *file)
 {
-	struct file_priv *priv = file->priv;
+	struct file_priv *priv = file->private_data;
 
 	nfs_do_close(priv);
 
 	return 0;
 }
 
-static int nfs_write(struct device *_dev, FILE *file, const void *inbuf,
+static int nfs_write(struct device *_dev, struct file *file, const void *inbuf,
 		     size_t insize)
 {
 	return -ENOSYS;
 }
 
-static int nfs_read(struct device *dev, FILE *file, void *buf, size_t insize)
+static int nfs_read(struct device *dev, struct file *file, void *buf, size_t insize)
 {
-	struct file_priv *priv = file->priv;
+	struct file_priv *priv = file->private_data;
 
 	if (insize > 1024)
 		insize = 1024;
 
 	if (insize && !kfifo_len(priv->fifo)) {
-		int ret = nfs_read_req(priv, file->pos, insize);
+		int ret = nfs_read_req(priv, file->f_pos, insize);
 		if (ret)
 			return ret;
 	}
@@ -1209,9 +1208,9 @@ static int nfs_read(struct device *dev, FILE *file, void *buf, size_t insize)
 	return kfifo_get(priv->fifo, buf, insize);
 }
 
-static int nfs_lseek(struct device *dev, FILE *file, loff_t pos)
+static int nfs_lseek(struct device *dev, struct file *file, loff_t pos)
 {
-	struct file_priv *priv = file->priv;
+	struct file_priv *priv = file->private_data;
 
 	kfifo_reset(priv->fifo);
 

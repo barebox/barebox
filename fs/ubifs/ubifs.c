@@ -340,7 +340,7 @@ struct ubifs_file {
 	struct ubifs_data_node *dn;
 };
 
-static int ubifs_open(struct device *dev, FILE *file, const char *filename)
+static int ubifs_open(struct device *dev, struct file *file, const char *filename)
 {
 	struct inode *inode = file->f_inode;
 	struct ubifs_file *uf;
@@ -352,15 +352,14 @@ static int ubifs_open(struct device *dev, FILE *file, const char *filename)
 	uf->dn = xzalloc(UBIFS_MAX_DATA_NODE_SZ);
 	uf->block = -1;
 
-	file->size = inode->i_size;
-	file->priv = uf;
+	file->private_data = uf;
 
 	return 0;
 }
 
-static int ubifs_close(struct device *dev, FILE *f)
+static int ubifs_close(struct device *dev, struct file *f)
 {
-	struct ubifs_file *uf = f->priv;
+	struct ubifs_file *uf = f->private_data;
 
 	free(uf->buf);
 	free(uf->dn);
@@ -384,17 +383,17 @@ static int ubifs_get_block(struct ubifs_file *uf, unsigned int pos)
 	return 0;
 }
 
-static int ubifs_read(struct device *_dev, FILE *f, void *buf, size_t insize)
+static int ubifs_read(struct device *_dev, struct file *f, void *buf, size_t insize)
 {
-	struct ubifs_file *uf = f->priv;
-	unsigned int pos = f->pos;
+	struct ubifs_file *uf = f->private_data;
+	unsigned int pos = f->f_pos;
 	unsigned int ofs;
 	unsigned int now;
 	unsigned int size = insize;
 	int ret;
 
 	/* Read till end of current block */
-	ofs = f->pos % UBIFS_BLOCK_SIZE;
+	ofs = f->f_pos % UBIFS_BLOCK_SIZE;
 	if (ofs) {
 		ret = ubifs_get_block(uf, pos);
 		if (ret)

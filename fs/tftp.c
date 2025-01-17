@@ -188,7 +188,7 @@ static int tftp_window_cache_insert(struct tftp_cache *cache, uint16_t id,
 	return 0;
 }
 
-static int tftp_truncate(struct device *dev, FILE *f, loff_t size)
+static int tftp_truncate(struct device *dev, struct file *f, loff_t size)
 {
 	return 0;
 }
@@ -765,15 +765,15 @@ out:
 	return ERR_PTR(ret);
 }
 
-static int tftp_open(struct device *dev, FILE *file, const char *filename)
+static int tftp_open(struct device *dev, struct file *file, const char *filename)
 {
 	struct file_priv *priv;
 
-	priv = tftp_do_open(dev, file->flags, file->dentry, false);
+	priv = tftp_do_open(dev, file->f_flags, file->f_dentry, false);
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 
-	file->priv = priv;
+	file->private_data = priv;
 
 	return 0;
 }
@@ -818,17 +818,17 @@ static int tftp_do_close(struct file_priv *priv)
 	return 0;
 }
 
-static int tftp_close(struct device *dev, FILE *f)
+static int tftp_close(struct device *dev, struct file *f)
 {
-	struct file_priv *priv = f->priv;
+	struct file_priv *priv = f->private_data;
 
 	return tftp_do_close(priv);
 }
 
-static int tftp_write(struct device *_dev, FILE *f, const void *inbuf,
+static int tftp_write(struct device *_dev, struct file *f, const void *inbuf,
 		      size_t insize)
 {
-	struct file_priv *priv = f->priv;
+	struct file_priv *priv = f->private_data;
 	size_t size, now;
 	int ret;
 
@@ -861,9 +861,9 @@ static int tftp_write(struct device *_dev, FILE *f, const void *inbuf,
 	return insize;
 }
 
-static int tftp_read(struct device *dev, FILE *f, void *buf, size_t insize)
+static int tftp_read(struct device *dev, struct file *f, void *buf, size_t insize)
 {
-	struct file_priv *priv = f->priv;
+	struct file_priv *priv = f->private_data;
 	size_t outsize = 0, now;
 	int ret = 0;
 
@@ -901,10 +901,10 @@ static int tftp_read(struct device *dev, FILE *f, void *buf, size_t insize)
 	return outsize;
 }
 
-static int tftp_lseek(struct device *dev, FILE *f, loff_t pos)
+static int tftp_lseek(struct device *dev, struct file *f, loff_t pos)
 {
 	/* We cannot seek backwards without reloading or caching the file */
-	loff_t f_pos = f->pos;
+	loff_t f_pos = f->f_pos;
 
 	if (pos >= f_pos) {
 		int ret = 0;
@@ -931,7 +931,7 @@ out_free:
 			 * Update f->pos even if the overall request
 			 * failed since we can't move backwards
 			 */
-			f->pos = f_pos;
+			f->f_pos = f_pos;
 			return ret;
 		}
 

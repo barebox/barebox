@@ -21,7 +21,7 @@
 
 #include <param.h>
 
-struct filep;
+struct file;
 struct bus_type;
 struct generic_pm_domain;
 
@@ -353,12 +353,12 @@ ssize_t mem_copy(struct device *dev, void *dst, const void *src,
 int generic_memmap_ro(struct cdev *dev, void **map, int flags);
 int generic_memmap_rw(struct cdev *dev, void **map, int flags);
 
-static inline int dev_open_default(struct device *dev, struct filep *f)
+static inline int dev_open_default(struct device *dev, struct file *f)
 {
 	return 0;
 }
 
-static inline int dev_close_default(struct device *dev, struct filep *f)
+static inline int dev_close_default(struct device *dev, struct file *f)
 {
 	return 0;
 }

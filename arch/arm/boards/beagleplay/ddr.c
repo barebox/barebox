@@ -578,6 +578,9 @@ static struct k3_ddr_initdata initdata = {
 	.ctl_regs = &ctl_regs,
 	.pi_regs = &pi_regs,
 	.phy_regs = &phy_regs,
+	.freq0 = 25000000,
+	.freq1 = 400000000,
+	.freq2 = 400000000,
 };
 
 void beagleplay_ddr_init(void)

@@ -287,7 +287,7 @@ int file_list_detect_all(const struct file_list *files)
 	int i = 0;
 
 	list_for_each_entry(fentry, &files->list, list) {
-		if (stat(fentry->filename, &s))
+		if (!stat(fentry->filename, &s))
 			continue;
 		if (device_detect_by_name(devpath_to_name(fentry->filename)) == 0)
 			i++;

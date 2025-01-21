@@ -9,18 +9,30 @@
 #include <common.h>
 #include <aiodev.h>
 #include <regulator.h>
+#include <linux/bitfield.h>
 #include <linux/clk.h>
 #include <linux/reset.h>
 
-#define SARADC_DATA	       0x00
+/* v1 registers */
+#define SARADC_DATA	    		0x00
+#define SARADC_CTRL			0x08
+#	define SARADC_CTRL_IRQ_STATUS	(1 << 6)
+#	define SARADC_CTRL_IRQ_ENABLE	(1 << 5)
+#	define SARADC_CTRL_POWER_CTRL	(1 << 3)
+#define SARADC_CTRL_CHN_MASK		0x07
+#define SARADC_DLY_PU_SOC		0x0c
 
-#define SARADC_CTRL	       0x08
-#define SARADC_CTRL_IRQ_STATUS (1 << 6)
-#define SARADC_CTRL_IRQ_ENABLE (1 << 5)
-#define SARADC_CTRL_POWER_CTRL (1 << 3)
-#define SARADC_CTRL_CHN_MASK   0x07
-
-#define SARADC_DLY_PU_SOC      0x0c
+/* v2 registers */
+#define SARADC2_CONV_CON		0x000
+#	define SARADC2_CONV_CHANNELS	GENMASK(3, 0)
+#	define SARADC2_START		BIT(4)
+#	define SARADC2_SINGLE_MODE	BIT(5)
+#define SARADC_T_PD_SOC			0x004
+#define SARADC_T_DAS_SOC		0x00c
+#define SARADC2_END_INT_EN		0x104
+#	define SARADC2_EN_END_INT	BIT(0)
+#define SARADC2_END_INT_ST		0x110
+#define SARADC2_DATA_BASE		0x120
 
 #define SARADC_TIMEOUT_NS      (100 * MSECOND)
 
@@ -72,9 +84,7 @@ static void rockchip_saradc_init_v1(struct rockchip_saradc_data *data)
 static int rockchip_saradc_read_v1(struct aiochannel *chan, int *val)
 {
 	struct rockchip_saradc_data *data;
-	u32 value = 0;
-	u32 control = 0;
-	u32 mask;
+	u32 value, control, mask;
 	u64 start;
 
 	data = container_of(chan->aiodev, struct rockchip_saradc_data, aiodev);
@@ -97,6 +107,46 @@ static int rockchip_saradc_read_v1(struct aiochannel *chan, int *val)
 	mask = (1 << data->config->num_bits) - 1;
 	value = rockchip_saradc_reg_rd(data, SARADC_DATA) & mask;
 	rockchip_saradc_reg_wr(data, 0, SARADC_CTRL);
+
+	*val = (value * data->ref_voltage_mv) / mask;
+
+	return 0;
+}
+
+static int rockchip_saradc_read_v2(struct aiochannel *chan, int *val)
+{
+	struct rockchip_saradc_data *data;
+	u32 value, status, mask;
+	u64 start;
+
+	data = container_of(chan->aiodev, struct rockchip_saradc_data, aiodev);
+
+	rockchip_saradc_reset_controller(data->reset);
+
+	rockchip_saradc_reg_wr(data, 0xc, SARADC_T_DAS_SOC);
+	rockchip_saradc_reg_wr(data, 0x20, SARADC_T_PD_SOC);
+	value = FIELD_PREP(SARADC2_EN_END_INT, 1);
+	value |= SARADC2_EN_END_INT << 16;
+	rockchip_saradc_reg_wr(data, value, SARADC2_END_INT_EN);
+	value = FIELD_PREP(SARADC2_START, 1) |
+		FIELD_PREP(SARADC2_SINGLE_MODE, 1) |
+		FIELD_PREP(SARADC2_CONV_CHANNELS, chan->index);
+	value |= (SARADC2_START | SARADC2_SINGLE_MODE | SARADC2_CONV_CHANNELS) << 16;
+	rockchip_saradc_reg_wr(data, value, SARADC2_CONV_CON);
+
+	start = get_time_ns();
+	do {
+		status = rockchip_saradc_reg_rd(data, SARADC2_END_INT_ST);
+
+		if (is_timeout(start, SARADC_TIMEOUT_NS))
+			return -ETIMEDOUT;
+	} while (!(status & SARADC2_EN_END_INT));
+
+	mask = (1 << data->config->num_bits) - 1;
+	value = rockchip_saradc_reg_rd(data, SARADC2_DATA_BASE + chan->index * 4);
+	value &= mask;
+
+	rockchip_saradc_reg_wr(data, SARADC2_EN_END_INT, SARADC2_END_INT_ST);
 
 	*val = (value * data->ref_voltage_mv) / mask;
 
@@ -213,8 +263,15 @@ static const struct rockchip_saradc_cfg rk3568_saradc_cfg = {
 	.read = rockchip_saradc_read_v1,
 };
 
+static const struct rockchip_saradc_cfg rk3588_saradc_cfg = {
+	.num_bits = 12,
+	.num_channels = 8,
+	.read = rockchip_saradc_read_v2,
+};
+
 static const struct of_device_id of_rockchip_saradc_match[] = {
 	{ .compatible = "rockchip,rk3568-saradc", .data = &rk3568_saradc_cfg },
+	{ .compatible = "rockchip,rk3588-saradc", .data = &rk3588_saradc_cfg },
 	{ /* end */ }
 };
 MODULE_DEVICE_TABLE(of, of_rockchip_saradc_match);

@@ -8,8 +8,9 @@
 
 #include <common.h>
 #include <aiodev.h>
-#include <linux/clk.h>
 #include <regulator.h>
+#include <linux/clk.h>
+#include <linux/reset.h>
 
 #define SARADC_DATA	       0x00
 
@@ -37,6 +38,7 @@ struct rockchip_saradc_data {
 	struct clk *pclk;
 	struct aiodevice aiodev;
 	struct aiochannel *channels;
+	struct reset_control *reset;
 };
 
 static inline void rockchip_saradc_reg_wr(struct rockchip_saradc_data *data,
@@ -49,6 +51,13 @@ static inline u32 rockchip_saradc_reg_rd(struct rockchip_saradc_data *data,
 					 u32 reg)
 {
 	return readl(data->base + reg);
+}
+
+static void rockchip_saradc_reset_controller(struct reset_control *reset)
+{
+	reset_control_assert(reset);
+	udelay(20);
+	reset_control_deassert(reset);
 }
 
 static int rockchip_saradc_read(struct aiochannel *chan, int *val)
@@ -163,14 +172,22 @@ static int rockchip_saradc_probe(struct device *dev)
 
 	rockchip_saradc_reg_wr(data, 0, SARADC_CTRL);
 
+	data->reset = reset_control_get(dev, "saradc-apb");
+	if (IS_ERR(data->reset))
+		data->reset = NULL;
+
 	ret = aiodevice_register(&data->aiodev);
 	if (ret)
 		goto fail_channels;
 
+	rockchip_saradc_reset_controller(data->reset);
+
 	dev_info(dev, "registered as %s\n", dev_name(&data->aiodev.dev));
+
 	return 0;
 
 fail_channels:
+	reset_control_put(data->reset);
 	kfree(data->channels);
 	kfree(data->aiodev.channels);
 

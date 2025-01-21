@@ -24,9 +24,13 @@
 
 #define SARADC_TIMEOUT_NS      (100 * MSECOND)
 
+struct rockchip_saradc_data;
+
 struct rockchip_saradc_cfg {
 	unsigned int num_bits;
 	unsigned int num_channels;
+	void (*init)(struct rockchip_saradc_data *data);
+	int (*read)(struct aiochannel *chan, int *val);
 };
 
 struct rockchip_saradc_data {
@@ -60,7 +64,12 @@ static void rockchip_saradc_reset_controller(struct reset_control *reset)
 	reset_control_deassert(reset);
 }
 
-static int rockchip_saradc_read(struct aiochannel *chan, int *val)
+static void rockchip_saradc_init_v1(struct rockchip_saradc_data *data)
+{
+	rockchip_saradc_reg_wr(data, 0, SARADC_CTRL);
+};
+
+static int rockchip_saradc_read_v1(struct aiochannel *chan, int *val)
 {
 	struct rockchip_saradc_data *data;
 	u32 value = 0;
@@ -103,7 +112,7 @@ static int rockchip_saradc_probe(struct device *dev)
 
 	data->config = device_get_match_data(dev);
 	data->aiodev.hwdev = dev;
-	data->aiodev.read = rockchip_saradc_read;
+	data->aiodev.read = data->config->read;
 
 	data->base = dev_request_mem_region(dev, 0);
 	if (IS_ERR(data->base)) {
@@ -170,7 +179,8 @@ static int rockchip_saradc_probe(struct device *dev)
 		data->channels[i].unit = "mV";
 	}
 
-	rockchip_saradc_reg_wr(data, 0, SARADC_CTRL);
+	if (data->config->init)
+		 data->config->init(data);
 
 	data->reset = reset_control_get(dev, "saradc-apb");
 	if (IS_ERR(data->reset))
@@ -199,6 +209,8 @@ fail_data:
 static const struct rockchip_saradc_cfg rk3568_saradc_cfg = {
 	.num_bits = 10,
 	.num_channels = 8,
+	.init = rockchip_saradc_init_v1,
+	.read = rockchip_saradc_read_v1,
 };
 
 static const struct of_device_id of_rockchip_saradc_match[] = {

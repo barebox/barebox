@@ -16,7 +16,7 @@ static bool console_countdown_timeout_abort;
 
 void console_countdown_abort(const char *reason)
 {
-	if (reason)
+	if (reason && !console_countdown_timeout_abort)
 		pr_info("\nCount down aborted by %s\n", reason);
 	console_countdown_timeout_abort = true;
 }

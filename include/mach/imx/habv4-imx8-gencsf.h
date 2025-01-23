@@ -36,6 +36,12 @@ hab [Unlock]
 hab Engine = CAAM
 hab Features = RNG, MID
 
+#if defined(CONFIG_HABV4_CSF_SRK_REVOKE_UNLOCK)
+hab [Unlock]
+hab Engine = OCOTP
+hab Features = SRK REVOKE
+#endif
+
 hab [Install Key]
 /* verification key index in key store (0, 2...4) */
 hab Verification index = 0

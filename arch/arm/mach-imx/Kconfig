@@ -815,6 +815,14 @@ config HABV4_QSPI
 	help
 	  Enable this option to build signed QSPI/FlexSPI images.
 
+config HABV4_CSF_SRK_REVOKE_UNLOCK
+	depends on HABV4
+	bool "Unlock SRK revocation"
+	help
+	  Enable this option to instruct the HAB code to not lock
+	  the SRK_REVOKE_LOCK sticky bit. This is required for key
+	  revocation. Don't enable this if you are unsure.
+
 config HAB_CERTS_ENV
 	depends on HAB
 	bool "Specify certificates in environment"

@@ -149,6 +149,17 @@ config LOCALVERSION_AUTO
 
 	  which is done within the script "scripts/setlocalversion".)
 
+config INSECURE
+	bool "enable convenient defaults that are unsuitable for secure-booting systems"
+	default y
+	help
+	  Say n here when barebox is part of a secure boot chain and you
+	  want to disable defaults that may compromise the boot chain.
+
+	  This option is a moving target. Currently it:
+
+	    - changes the default of global.env.autoprobe to 1
+
 config BANNER
 	bool "display banner"
 	default y

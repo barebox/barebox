@@ -29,6 +29,7 @@
 #include <block.h>
 #include <efi/partition.h>
 #include <bootsource.h>
+#include <magicvar.h>
 #else
 #define EXPORT_SYMBOL(x)
 #endif
@@ -51,6 +52,7 @@ struct action_data {
 
 #define TMPDIR "/.defaultenv"
 
+static int global_env_autoprobe = IS_ENABLED(CONFIG_INSECURE);
 static char *default_environment_path;
 
 void default_environment_path_set(const char *path)
@@ -80,7 +82,7 @@ static struct cdev *default_environment_path_search(void)
 	struct cdev *env_cdev = NULL;
 	struct block_device *blk;
 
-	if (!IS_ENABLED(CONFIG_BLOCK))
+	if (!IS_ENABLED(CONFIG_BLOCK) || !global_env_autoprobe)
 		return NULL;
 
 	boot_node = bootsource_of_node_get(NULL);
@@ -526,3 +528,14 @@ out:
 
 	return ret;
 }
+
+#ifdef __BAREBOX__
+static int register_env_vars(void)
+{
+	globalvar_add_simple_bool("env.autoprobe", &global_env_autoprobe);
+	return 0;
+}
+postcore_initcall(register_env_vars);
+BAREBOX_MAGICVAR(global.env.autoprobe,
+                 "Automatically probe known block devices for environment");
+#endif

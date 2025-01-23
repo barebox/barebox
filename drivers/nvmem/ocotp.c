@@ -91,6 +91,7 @@
 #define OCOTP_TIMING_WAIT		GENMASK(27, 22)
 
 #define OCOTP_SW_STICKY_SRK_REVOKE_LOCK		BIT(1)
+#define OCOTP_SW_STICKY_FIELD_RETURN_LOCK	BIT(2)
 
 #define OCOTP_READ_CTRL_READ_FUSE	BIT(1)
 
@@ -152,6 +153,7 @@ struct imx_ocotp_data {
 	int (*fuse_blow)(struct ocotp_priv *priv, u32 addr, u32 value);
 	bool (*srk_revoke_locked)(struct ocotp_priv *priv);
 	void (*lock_srk_revoke)(struct ocotp_priv *priv);
+	bool (*field_return_locked)(struct ocotp_priv *priv);
 	u8  mac_offsets[MAX_MAC_OFFSETS];
 	u8  mac_offsets_num;
 	struct imx8m_featctrl_data *feat;
@@ -290,6 +292,11 @@ static void imx8m_lock_srk_revoke(struct ocotp_priv *priv)
 	val = readl(priv->base + OCOTP_SW_STICKY);
 	val |= OCOTP_SW_STICKY_SRK_REVOKE_LOCK;
 	writel(val, priv->base + OCOTP_SW_STICKY);
+}
+
+static bool imx8m_field_return_locked(struct ocotp_priv *priv)
+{
+	return readl(priv->base + OCOTP_SW_STICKY) & OCOTP_SW_STICKY_FIELD_RETURN_LOCK;
 }
 
 static int imx6_fuse_read_addr(struct ocotp_priv *priv, u32 addr, u32 *pdata)
@@ -674,6 +681,20 @@ int imx_ocotp_lock_srk_revoke(void)
 	return -ENOSYS;
 }
 
+int imx_ocotp_field_return_locked(void)
+{
+	int ret;
+
+	ret = imx_ocotp_ensure_probed();
+	if (ret)
+		return ret;
+
+	if (imx_ocotp->data->field_return_locked)
+		return imx_ocotp->data->field_return_locked(imx_ocotp);
+
+	return -ENOSYS;
+}
+
 static void imx_ocotp_format_mac(u8 *dst, const u8 *src,
 				 enum imx_ocotp_format_mac_direction dir)
 {
@@ -1036,6 +1057,7 @@ static struct imx_ocotp_data imx8mp_ocotp_data = {
 	.fuse_read = imx6_fuse_read_addr,
 	.srk_revoke_locked = imx8m_srk_revoke_locked,
 	.lock_srk_revoke = imx8m_lock_srk_revoke,
+	.field_return_locked = imx8m_field_return_locked,
 	.ctrl = &ocotp_ctrl_reg_8mp,
 };
 
@@ -1067,6 +1089,7 @@ static struct imx_ocotp_data imx8mm_ocotp_data = {
 	.fuse_read = imx6_fuse_read_addr,
 	.srk_revoke_locked = imx8m_srk_revoke_locked,
 	.lock_srk_revoke = imx8m_lock_srk_revoke,
+	.field_return_locked = imx8m_field_return_locked,
 	.feat = &imx8mm_featctrl_data,
 	.ctrl = &ocotp_ctrl_reg_default,
 };
@@ -1087,6 +1110,7 @@ static struct imx_ocotp_data imx8mn_ocotp_data = {
 	.fuse_read = imx6_fuse_read_addr,
 	.srk_revoke_locked = imx8m_srk_revoke_locked,
 	.lock_srk_revoke = imx8m_lock_srk_revoke,
+	.field_return_locked = imx8m_field_return_locked,
 	.feat = &imx8mn_featctrl_data,
 	.ctrl = &ocotp_ctrl_reg_default,
 };

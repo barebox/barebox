@@ -200,11 +200,15 @@ static int imx8m_hab_lockdown_device_ocotp(unsigned flags)
 	if (ret < 0)
 		return ret;
 
-	/* Only i.MX8MQ requires fusing of DIR_BT_DIS */
-	if (!cpu_is_mx8mq())
-		return ret;
+	/* Lock upper 64bit of the 128bit UNIQUE_ID eFuse field on i.MX8MP */
+	if (cpu_is_mx8mp())
+		return imx_ocotp_write_field(MX8MP_OCOTP_GP5_LOCK, 0b11);
 
-	return imx_ocotp_write_field(MX8MQ_OCOTP_DIR_BT_DIS, 1);
+	/* Only i.MX8MQ requires fusing of DIR_BT_DIS */
+	if (cpu_is_mx8mq())
+		return imx_ocotp_write_field(MX8MQ_OCOTP_DIR_BT_DIS, 1);
+
+	return 0;
 }
 
 static int imx6_hab_device_locked_down_ocotp(void)

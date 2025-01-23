@@ -42,6 +42,13 @@ hab Engine = OCOTP
 hab Features = SRK REVOKE
 #endif
 
+#if defined(CONFIG_HABV4_CSF_UNLOCK_FIELD_RETURN)
+hab [Unlock]
+hab Engine = OCOTP
+hab Features = FIELD RETURN
+hab UID = HABV4_CSF_UNLOCK_UID
+#endif
+
 hab [Install Key]
 /* verification key index in key store (0, 2...4) */
 hab Verification index = 0

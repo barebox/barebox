@@ -823,6 +823,16 @@ config HABV4_CSF_SRK_REVOKE_UNLOCK
 	  the SRK_REVOKE_LOCK sticky bit. This is required for key
 	  revocation. Don't enable this if you are unsure.
 
+config HABV4_CSF_UNLOCK_FIELD_RETURN
+	depends on HABV4
+	bool "Unlock field return"
+	help
+	  Enable this option to instruct the HAB code to not lock
+	  the FIELD_RETURN_LOCK sticky bit. This is required to be
+	  able to fuse the FIELD_RETURN fuse. It is also required
+	  that the CONFIG_HABV4_CSF_UNLOCK_UID is set correct as
+	  well.
+
 config HAB_CERTS_ENV
 	depends on HAB
 	bool "Specify certificates in environment"
@@ -843,6 +853,7 @@ config HAB_CERTS_ENV
 
 	  CONFIG_HABV4_TABLE_BIN
 	  CONFIG_HABV4_CSF_CRT_PEM
+	  CONFIG_HABV4_CSF_UNLOCK_UID
 	  CONFIG_HABV4_IMG_CRT_PEM
 
 config HABV4_SRK_INDEX
@@ -876,6 +887,21 @@ config HABV4_CSF_CRT_PEM
 
 	  This file will be inserted into the Command Sequence File
 	  (CSF) when using the CSF template that comes with barebox.
+
+config HABV4_CSF_UNLOCK_UID
+	depends on HABV4 && HABV4_CSF_UNLOCK_FIELD_RETURN
+	string "CSF Unlock UID"
+	help
+	  Device specific 64-bit UID Required to unlock the field-return
+          feature. This value must match the per device UNIQUE_ID fuses.
+
+	  The below example shows the expected format. The UNIQUE_ID is
+	  queried by Linux via:
+            - cat /sys/devices/soc0/serial_number
+	      7766554433221100
+
+	  So this value have to be set:
+	    - 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77
 
 config HABV4_IMG_CRT_PEM
 	string "Path to IMG certificate"

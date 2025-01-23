@@ -231,6 +231,27 @@ static int imx8m_hab_device_locked_down_ocotp(void)
 	return v;
 }
 
+static int imx8m_hab_revoke_key_ocotp(unsigned key_idx)
+{
+	int ret;
+
+	/* Prohibit revocation of last possible key */
+	if (key_idx >= 4)
+		return -EINVAL;
+
+	ret = imx_ocotp_srk_revoke_locked();
+	if (ret < 0)
+		return ret;
+
+	/* Return -EINVAL in case the SRK_REVOKE write is locked */
+	if (ret == 1)
+		return -EINVAL;
+
+	ret = imx_ocotp_write_field(MX8M_OCOTP_SRK_REVOKE, BIT(key_idx));
+
+	return ret;
+}
+
 struct imx_hab_ops {
 	int (*write_srk_hash)(const u8 *srk, unsigned flags);
 	int (*read_srk_hash)(u8 *srk);
@@ -238,6 +259,7 @@ struct imx_hab_ops {
 	int (*lockdown_device)(unsigned flags);
 	int (*device_locked_down)(void);
 	int (*print_status)(void);
+	int (*revoke_key)(unsigned key_idx);
 };
 
 static struct imx_hab_ops imx_hab_ops_iim = {
@@ -265,6 +287,7 @@ static struct imx_hab_ops imx8m_hab_ops_ocotp = {
 	.device_locked_down = imx8m_hab_device_locked_down_ocotp,
 	.permanent_write_enable = imx_hab_permanent_write_enable_ocotp,
 	.print_status = imx8m_hab_print_status,
+	.revoke_key = imx8m_hab_revoke_key_ocotp,
 };
 
 static int imx_ahab_write_srk_hash(const u8 *__newsrk, unsigned flags)
@@ -538,3 +561,25 @@ static int init_imx_hab_print_status(void)
 	return 0;
 }
 postmmu_initcall(init_imx_hab_print_status);
+
+int imx_hab_revoke_key(unsigned key_idx, bool permanent)
+{
+	struct imx_hab_ops *ops = imx_get_hab_ops();
+	int ret;
+
+	if (!ops || !ops->revoke_key)
+		return -ENOSYS;
+
+	if (permanent) {
+		ret = ops->permanent_write_enable(1);
+		if (ret)
+			return ret;
+	}
+
+	ret = ops->revoke_key(key_idx);
+
+	if (permanent)
+		ops->permanent_write_enable(0);
+
+	return ret;
+}

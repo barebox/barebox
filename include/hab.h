@@ -51,5 +51,6 @@ int imx_hab_read_srk_hash(void *buf);
 int imx_hab_lockdown_device(unsigned flags);
 int imx_hab_device_locked_down(void);
 int imx_hab_print_status(void);
+int imx_hab_revoke_key(unsigned key_idx, bool permanent);
 
 #endif /* __HABV4_H */

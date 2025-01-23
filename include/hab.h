@@ -7,6 +7,7 @@
 #define __HABV4_H
 
 #include <errno.h>
+#include <linux/bits.h>
 
 /* State definitions */
 enum habv4_state {
@@ -32,15 +33,15 @@ static inline int habv4_get_state(void)
 #define SRK_HASH_SIZE	32
 
 /* Force writing of key, even when a key is already written */
-#define IMX_SRK_HASH_FORCE		(1 << 0)
+#define IMX_SRK_HASH_FORCE		BIT(0)
 /* Permanently write fuses, without this flag only the shadow registers
  * are written.
  */
-#define IMX_SRK_HASH_WRITE_PERMANENT	(1 << 1)
+#define IMX_SRK_HASH_WRITE_PERMANENT	BIT(1)
 /* When writing the super root key hash, also burn the write protection
  * fuses so that the key hash can not be modified.
  */
-#define IMX_SRK_HASH_WRITE_LOCK		(1 << 2)
+#define IMX_SRK_HASH_WRITE_LOCK		BIT(2)
 
 bool imx_hab_srk_hash_valid(const void *buf);
 int imx_hab_write_srk_hash(const void *buf, unsigned flags);

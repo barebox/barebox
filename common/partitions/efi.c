@@ -375,7 +375,7 @@ compare_gpts(struct device *dev, gpt_header *pgpt, gpt_header *agpt,
 	}
 
 	if (error_found)
-		dev_warn(dev, "GPT: Use GNU Parted to correct GPT errors.\n");
+		dev_warn(dev, "GPT: Use parted to correct GPT errors.\n");
 	return;
 }
 

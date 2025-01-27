@@ -9,6 +9,14 @@
 #include <mach/imx/imx6.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 
+/*
+ * The upstream device tree shuffles around the eMMC/SD indices, so the
+ * board code here takes care to use the numbering of the SoC reference
+ * manual
+ */
+#define COLIBRI_MMC_INSTANCE_SD		0
+#define COLIBRI_MMC_INSTANCE_EMMC	2
+
 static void eth_init(void)
 {
 	void __iomem *iomux = IOMEM(MX6_IOMUXC_BASE_ADDR);
@@ -22,9 +30,19 @@ static void eth_init(void)
 
 static int colibri_imx6_probe(struct device *dev)
 {
-	imx6_bbu_internal_mmcboot_register_handler("emmc", "/dev/mmc0",
-			BBU_HANDLER_FLAG_DEFAULT);
-	imx6_bbu_internal_mmc_register_handler("sd", "/dev/mmc1", 0);
+	int emmc_alias, sd_alias;
+
+	emmc_alias = bootsource_of_alias_xlate(BOOTSOURCE_MMC, COLIBRI_MMC_INSTANCE_EMMC);
+	if (emmc_alias >= 0)
+		imx6_bbu_internal_mmcboot_register_handler("emmc",
+							   basprintf("/dev/mmc%u", emmc_alias),
+							   BBU_HANDLER_FLAG_DEFAULT);
+
+	sd_alias = bootsource_of_alias_xlate(BOOTSOURCE_MMC, COLIBRI_MMC_INSTANCE_SD);
+	if (sd_alias >= 0)
+		imx6_bbu_internal_mmc_register_handler("sd",
+						       basprintf("/dev/mmc%u", sd_alias),
+						       0);
 
 	barebox_set_hostname("colibri-imx6");
 

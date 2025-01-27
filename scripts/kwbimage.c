@@ -30,7 +30,6 @@
  * headers in v1 images
  */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/types.h>

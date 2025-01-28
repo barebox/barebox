@@ -132,7 +132,7 @@ static int macb_send(struct eth_device *edev, void *packet,
 	start = get_time_ns();
 	ret = -ETIMEDOUT;
 	do {
-		ctrl = readl(&macb->tx_ring[0].ctrl);
+		ctrl = readl(&macb->tx_ring[tx_head].ctrl);
 		if (ctrl & MACB_BIT(TX_USED)) {
 			ret = 0;
 			break;

@@ -200,9 +200,11 @@ int imx93_ele_load_fw(void *bl33)
 	rev = FIELD_GET(ELE_INFO_SOC_REV, info.soc);
 
 	switch (rev) {
+#ifdef CONFIG_FIRMWARE_IMX93_OPTEE_A0
 	case 0xa0:
 		get_builtin_firmware_ext(mx93a0_ahab_container_img, bl33, &firmware, &size);
 		break;
+#endif
 	case 0xa1:
 		get_builtin_firmware_ext(mx93a1_ahab_container_img, bl33, &firmware, &size);
 		break;

@@ -15,6 +15,46 @@
 #include <linux/sizes.h>
 #include <barebox.h>
 
+#define RTC_BASE_ADDRESS		0x2b1f0000
+#define K3RTC_KICK0_UNLOCK_VALUE	0x83e70b13
+#define K3RTC_KICK1_UNLOCK_VALUE	0x95a4f1e0
+#define REG_K3RTC_S_CNT_LSW		0x18
+#define REG_K3RTC_KICK0			0x70
+#define REG_K3RTC_KICK1			0x74
+
+/*
+ * RTC Erratum i2327 Workaround for Silicon Revision 1
+ *
+ * Due to a bug in initial synchronization out of cold power on,
+ * IRQ status can get locked infinitely if we do not unlock RTC
+ *
+ * This workaround *must* be applied within 1 second of power on,
+ * So, this is closest point to be able to guarantee the max
+ * timing.
+ *
+ * https://www.ti.com/lit/er/sprz487c/sprz487c.pdf
+ */
+static void rtc_erratumi2327_init(void)
+{
+	void __iomem *rtc_base = IOMEM(RTC_BASE_ADDRESS);
+	u32 counter;
+
+	/*
+	 * If counter has gone past 1, nothing we can do, leave
+	 * system locked! This is the only way we know if RTC
+	 * can be used for all practical purposes.
+	 */
+	counter = readl(rtc_base + REG_K3RTC_S_CNT_LSW);
+	if (counter > 1)
+		return;
+	/*
+	 * Need to set this up at the very start
+	 * MUST BE DONE under 1 second of boot.
+	 */
+	writel(K3RTC_KICK0_UNLOCK_VALUE, rtc_base + REG_K3RTC_KICK0);
+	writel(K3RTC_KICK1_UNLOCK_VALUE, rtc_base + REG_K3RTC_KICK1);
+}
+
 #define CTRLMMR_LOCK_KICK0_UNLOCK_VAL	0x68ef3490
 #define CTRLMMR_LOCK_KICK1_UNLOCK_VAL	0xd172bc5a
 #define CTRLMMR_LOCK_KICK0		0x1008
@@ -38,6 +78,8 @@ static void mmr_unlock(uintptr_t base, u32 partition)
 
 void k3_ctrl_mmr_unlock(void)
 {
+	rtc_erratumi2327_init();
+
 	/* Unlock all WKUP_CTRL_MMR0 module registers */
 	mmr_unlock(WKUP_CTRL_MMR0_BASE, 0);
 	mmr_unlock(WKUP_CTRL_MMR0_BASE, 1);

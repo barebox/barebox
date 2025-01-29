@@ -5,6 +5,7 @@
 #include <init.h>
 #include <envfs.h>
 #include <fs.h>
+#include <stdio.h>
 #include <xfuncs.h>
 #include <malloc.h>
 #include <pm_domain.h>
@@ -161,6 +162,53 @@ void am625_get_bootsource(enum bootsource *src, int *instance)
 	k3_get_bootsource(devstat, src, instance);
 }
 
+static void of_delete_node_path(struct device_node *root, const char *path)
+{
+	struct device_node *np;
+
+	np = of_find_node_by_path_from(root, path);
+	of_delete_node(np);
+}
+
+#define CTRLMMR_WKUP_JTAG_DEVICE_ID	(AM625_WKUP_CTRL_MMR0_BASE + 0x18)
+
+#define JTAG_DEV_CORE_NR		GENMASK(21, 19)
+#define JTAG_DEV_GPU			BIT(18)
+#define JTAG_DEV_FEATURES		GENMASK(17, 13)
+#define JTAG_DEV_FEATURE_NO_PRU		0x4
+
+static int am625_of_fixup(struct device_node *root, void *unused)
+{
+	u32 full_devid = readl(CTRLMMR_WKUP_JTAG_DEVICE_ID);
+	u32 feature_mask = FIELD_GET(JTAG_DEV_FEATURES, full_devid);
+	int num_cores = FIELD_GET(JTAG_DEV_CORE_NR, full_devid);
+	bool has_gpu = full_devid & JTAG_DEV_GPU;
+	bool has_pru = !(feature_mask & JTAG_DEV_FEATURE_NO_PRU);
+	char path[32];
+	int i;
+
+        for (i = num_cores; i < 4; i++) {
+		snprintf(path, sizeof(path), "/cpus/cpu@%d", i);
+		of_delete_node_path(root, path);
+
+		snprintf(path, sizeof(path), "/cpus/cpu-map/cluster0/core%d", i);
+		of_delete_node_path(root, path);
+
+		snprintf(path, sizeof(path), "/bus@f0000/watchdog@e0%d0000", i);
+		of_delete_node_path(root, path);
+	}
+
+        if (!has_gpu) {
+		of_delete_node_path(root, "/bus@f0000/gpu@fd00000");
+		of_delete_node_path(root, "/bus@f0000/watchdog@e0f0000");
+	}
+
+	if (!has_pru)
+		of_delete_node_path(root, "/bus@f0000/pruss@30040000");
+
+	return 0;
+}
+
 static int am625_init(void)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
@@ -174,6 +222,8 @@ static int am625_init(void)
 	am625_register_dram();
 
 	genpd_activate();
+
+	of_register_fixup(am625_of_fixup, NULL);
 
 	return 0;
 }

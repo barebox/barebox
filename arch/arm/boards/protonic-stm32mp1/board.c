@@ -4,21 +4,39 @@
 
 #include <bootsource.h>
 #include <common.h>
+#include <deep-probe.h>
+#include <gpio.h>
 #include <init.h>
+#include <linux/bitfield.h>
 #include <mach/stm32mp/bbu.h>
 #include <mach/stm32mp/bsec.h>
 #include <of_device.h>
-#include <deep-probe.h>
+#include <soc/stm32/gpio.h>
 #include <soc/stm32/stm32-bsec-optee-ta.h>
 
 /* board specific flags */
+/* PRT_STM32_NO_SHIFT_REG: Board does not have a shift register,
+ * this register is used to read board ID and hardware revision, and
+ * expected to be on all new boards.
+ */
+#define PRT_STM32_NO_SHIFT_REG		BIT(3)
 #define PRT_STM32_BOOTSRC_SD		BIT(2)
 #define PRT_STM32_BOOTSRC_EMMC		BIT(1)
 #define PRT_STM32_BOOTSRC_SPI_NOR	BIT(0)
 
+#define PRT_STM32_GPIO_HWID_PL_N	13 /* PA13 */
+#define PRT_STM32_GPIO_HWID_CP		14 /* PA14 */
+#define PRT_STM32_GPIO_HWID_Q7		45 /* PC13 */
+
 /* board specific serial number length is 10 characters without '\0' */
 #define PRT_STM32_SERIAL_LEN		10
 #define PRT_STM32_SERIAL_OFFSET		58
+
+#define PRT_STM32_REVISION_ID_MASK	GENMASK(2, 0)
+#define PRT_STM32_BOARD_ID_MASK		GENMASK(7, 3)
+
+/* defines for 74HC165BQ 8-bit parallel-in/serial out shift register */
+#define PRT_STM32_SHIFT_REG_SIZE	8
 
 struct prt_stm32_machine_data {
 	u32 flags;
@@ -113,6 +131,105 @@ exit_pta_read:
 	return ret;
 }
 
+static int prt_stm32_init_shift_reg(struct device *dev)
+{
+	int ret;
+
+	ret = gpio_direction_output(PRT_STM32_GPIO_HWID_PL_N, 1);
+	if (ret)
+		goto error_out;
+
+	ret = gpio_direction_output(PRT_STM32_GPIO_HWID_CP, 1);
+	if (ret)
+		goto error_out;
+
+	ret = gpio_direction_input(PRT_STM32_GPIO_HWID_Q7);
+	if (ret)
+		goto error_out;
+
+	__stm32_pmx_set_output_type((void __iomem *)0x50002000, 13,
+					       STM32_PIN_OUT_PUSHPULL);
+	__stm32_pmx_set_output_type((void __iomem *)0x50002000, 14,
+					       STM32_PIN_OUT_PUSHPULL);
+
+	return 0;
+
+error_out:
+	dev_err(dev, "Failed to init shift register: %pe\n", ERR_PTR(ret));
+	return ret;
+}
+
+static int prt_stm32_of_fixup_hwrev(struct device *dev, uint8_t bid,
+				    uint8_t rid)
+{
+	const char *compat;
+	char *buf;
+
+	compat = of_device_get_match_compatible(dev);
+
+	buf = xasprintf("%s-m%u-r%u", compat, bid, rid);
+	barebox_set_of_machine_compatible(buf);
+
+	free(buf);
+
+	return 0;
+}
+
+/**
+ * prt_stm32_read_shift_reg - Reads board ID and hardware revision
+ * @dev: The device structure for logging and potential device-specific
+ *       operations.
+ *
+ * This function reads an 8-bit value from a 74HC165BQ parallel-in/serial-out
+ * shift register to extract the board ID and hardware revision.
+ *
+ * GPIO pins used:
+ * - PRT_STM32_GPIO_HWID_PL_N: Controls the latch operation.
+ * - PRT_STM32_GPIO_HWID_CP: Controls the clock pulses for shifting data.
+ * - PRT_STM32_GPIO_HWID_Q7: Reads the serial data output from the shift
+ *   register.
+ */
+static void prt_stm32_read_shift_reg(struct device *dev)
+{
+	uint8_t rid, bid;
+	uint8_t data = 0;
+	int i;
+
+	/* Initial state. PL (Parallel Load) is set in inactive state */
+	gpio_set_value(PRT_STM32_GPIO_HWID_PL_N, 1);
+	gpio_set_value(PRT_STM32_GPIO_HWID_CP, 0);
+	mdelay(1);
+
+	/* Activate PL to latch parallel interface */
+	gpio_set_value(PRT_STM32_GPIO_HWID_PL_N, 0);
+	/* Wait for the data to be stable. Works for me type of delay */
+	mdelay(1);
+	/* Deactivate PL */
+	gpio_set_value(PRT_STM32_GPIO_HWID_PL_N, 1);
+
+	/* Read data from the shift register using serial interface */
+	for (i = PRT_STM32_SHIFT_REG_SIZE - 1; i >= 0; i--) {
+		/* Shift the data */
+		data += (gpio_get_value(PRT_STM32_GPIO_HWID_Q7) << i);
+
+		/* Toggle the clock line */
+		gpio_set_value(PRT_STM32_GPIO_HWID_CP, 1);
+		mdelay(1);
+		gpio_set_value(PRT_STM32_GPIO_HWID_CP, 0);
+	}
+
+	rid = FIELD_GET(PRT_STM32_REVISION_ID_MASK, data);
+	bid = FIELD_GET(PRT_STM32_BOARD_ID_MASK, data);
+
+	pr_info("  Board ID:    %d\n", bid);
+	pr_info("  HW revision: %d\n", rid);
+	prt_stm32_of_fixup_hwrev(dev, bid, rid);
+
+	/* PL and CP pins are shared with LEDs. Make sure LEDs are turned off */
+	gpio_set_value(PRT_STM32_GPIO_HWID_PL_N, 1);
+	gpio_set_value(PRT_STM32_GPIO_HWID_CP, 1);
+}
+
 static int prt_stm32_probe(struct device *dev)
 {
 	const struct prt_stm32_machine_data *dcfg;
@@ -126,6 +243,11 @@ static int prt_stm32_probe(struct device *dev)
 	}
 
 	prt_stm32_read_serial(dev);
+
+	if (!(dcfg->flags & PRT_STM32_NO_SHIFT_REG)) {
+		prt_stm32_init_shift_reg(dev);
+		prt_stm32_read_shift_reg(dev);
+	}
 
 	for (i = 0; i < ARRAY_SIZE(prt_stm32_boot_devs); i++) {
 		const struct prt_stm32_boot_dev *bd = &prt_stm32_boot_devs[i];
@@ -167,19 +289,21 @@ exit_get_dcfg:
 }
 
 static const struct prt_stm32_machine_data prt_stm32_prtt1a = {
-	.flags = PRT_STM32_BOOTSRC_SD | PRT_STM32_BOOTSRC_SPI_NOR,
+	.flags = PRT_STM32_BOOTSRC_SD | PRT_STM32_BOOTSRC_SPI_NOR |
+		 PRT_STM32_NO_SHIFT_REG,
 };
 
 static const struct prt_stm32_machine_data prt_stm32_prtt1c = {
-	.flags = PRT_STM32_BOOTSRC_SD | PRT_STM32_BOOTSRC_EMMC,
+	.flags = PRT_STM32_BOOTSRC_SD | PRT_STM32_BOOTSRC_EMMC |
+		 PRT_STM32_NO_SHIFT_REG,
 };
 
 static const struct prt_stm32_machine_data prt_stm32_mecio1 = {
-	.flags = PRT_STM32_BOOTSRC_SPI_NOR,
+	.flags = PRT_STM32_BOOTSRC_SPI_NOR | PRT_STM32_NO_SHIFT_REG,
 };
 
 static const struct prt_stm32_machine_data prt_stm32_mect1s = {
-	.flags = PRT_STM32_BOOTSRC_SPI_NOR,
+	.flags = PRT_STM32_BOOTSRC_SPI_NOR | PRT_STM32_NO_SHIFT_REG,
 };
 
 static const struct prt_stm32_machine_data prt_stm32_plyaqm = {

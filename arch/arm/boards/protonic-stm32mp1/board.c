@@ -121,12 +121,17 @@ static const struct prt_stm32_machine_data prt_stm32_mect1s = {
 	.flags = PRT_STM32_BOOTSRC_SPI_NOR,
 };
 
+static const struct prt_stm32_machine_data prt_stm32_plyaqm = {
+	.flags = PRT_STM32_BOOTSRC_SD | PRT_STM32_BOOTSRC_EMMC,
+};
+
 static const struct of_device_id prt_stm32_of_match[] = {
 	{ .compatible = "prt,prtt1a", .data = &prt_stm32_prtt1a },
 	{ .compatible = "prt,prtt1c", .data = &prt_stm32_prtt1c },
 	{ .compatible = "prt,prtt1s", .data = &prt_stm32_prtt1a },
 	{ .compatible = "prt,mecio1", .data = &prt_stm32_mecio1 },
 	{ .compatible = "prt,mect1s", .data = &prt_stm32_mect1s },
+	{ .compatible = "ply,plyaqm", .data = &prt_stm32_plyaqm },
 	{ /* sentinel */ },
 };
 BAREBOX_DEEP_PROBE_ENABLE(prt_stm32_of_match);

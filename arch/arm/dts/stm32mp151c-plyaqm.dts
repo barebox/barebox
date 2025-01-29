@@ -1,0 +1,125 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
+/dts-v1/;
+
+#include "stm32mp151c-plyaqm.dtsi"
+#include "stm32mp151.dtsi"
+
+#ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
+#include CONFIG_BOOTM_FITIMAGE_PUBKEY
+#endif
+
+/ {
+	aliases {
+		state = &state_emmc;
+	};
+
+	chosen {
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &sdmmc2, "partname:barebox-environment";
+			status = "disabled";
+		};
+	};
+
+	state_emmc: state {
+		magic = <0x72766467>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&state_backend_emmc>;
+		backend-stridesize = <0x400>;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			last_chosen {
+				reg = <0x0 0x4>;
+				type = "uint32";
+			};
+
+			system0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts {
+					reg = <0x50 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+
+				priority {
+					reg = <0x54 0x4>;
+					type = "uint32";
+					default = <21>;
+				};
+			};
+
+			system1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts {
+					reg = <0x100 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+
+				priority {
+					reg = <0x104 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+			};
+		};
+	};
+};
+
+&sdmmc1 {
+	status = "disabled";
+};
+
+&sdmmc2 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	bb_env: partition@40000 {
+		label = "barebox-environment";
+		reg = <0x40000 0x80000>;
+	};
+
+	state_backend_emmc: partition@c0000 {
+		label = "state";
+		reg = <0xf0000 0x10000>;
+	};
+};
+
+&sdmmc3 {
+	status = "disabled";
+};
+
+&uart7 {
+	status = "disabled";
+};
+
+&spi2 {
+	status = "disabled";
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+&i2c6 {
+	status = "disabled";
+};
+
+&i2s1 {
+	status = "disabled";
+};
+
+&timers5 {
+	status = "disabled";
+};

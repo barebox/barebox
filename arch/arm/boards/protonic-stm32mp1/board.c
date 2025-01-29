@@ -6,13 +6,19 @@
 #include <common.h>
 #include <init.h>
 #include <mach/stm32mp/bbu.h>
+#include <mach/stm32mp/bsec.h>
 #include <of_device.h>
 #include <deep-probe.h>
+#include <soc/stm32/stm32-bsec-optee-ta.h>
 
 /* board specific flags */
 #define PRT_STM32_BOOTSRC_SD		BIT(2)
 #define PRT_STM32_BOOTSRC_EMMC		BIT(1)
 #define PRT_STM32_BOOTSRC_SPI_NOR	BIT(0)
+
+/* board specific serial number length is 10 characters without '\0' */
+#define PRT_STM32_SERIAL_LEN		10
+#define PRT_STM32_SERIAL_OFFSET		58
 
 struct prt_stm32_machine_data {
 	u32 flags;
@@ -54,6 +60,59 @@ static const struct prt_stm32_boot_dev prt_stm32_boot_devs[] = {
 	},
 };
 
+static int prt_stm32_set_serial(struct device *dev, char *serial)
+{
+	dev_info(dev, "Serial number: %s\n", serial);
+	barebox_set_serial_number(serial);
+
+	return 0;
+}
+
+static int prt_stm32_read_serial(struct device *dev)
+{
+	/* including first 2 non-serial bytes */
+	char raw_serial[PRT_STM32_SERIAL_LEN + 2];
+	/* board specific serial number + one char for '\0' */
+	char serial[PRT_STM32_SERIAL_LEN + 1];
+	struct tee_context *ctx;
+	int ret;
+
+	/* the ctx pointer will be set in the stm32_bsec_optee_ta_open */
+	ret = stm32_bsec_optee_ta_open(&ctx);
+	if (ret) {
+		dev_err(dev, "Failed to open BSEC TA: %pe\n", ERR_PTR(ret));
+		return ret;
+	}
+
+	ret = stm32_bsec_optee_ta_read(ctx, PRT_STM32_SERIAL_OFFSET * 4,
+				       &raw_serial, sizeof(raw_serial));
+	if (ret)
+		goto exit_pta_read;
+
+	/*
+	 * Shift the serial data left by 2 bytes to remove the non-serial data.
+	 * The serial number is stored across three 4-byte BSEC registers:
+	 *   - Register 58 (4 bytes): Only the lower 16 bits contain serial data.
+	 *   - Register 59 (4 bytes): Fully part of the serial number.
+	 *   - Register 60 (4 bytes): Fully part of the serial number.
+	 * Since we read all three registers as a continuous block (12 bytes),
+	 * the first 2 bytes of Register 58 contain irrelevant data and must
+	 * be discarded.
+	 */
+	memmove(serial, raw_serial + 2, sizeof(serial) - 1);
+
+	serial[PRT_STM32_SERIAL_LEN] = 0;
+
+	stm32_bsec_optee_ta_close(&ctx);
+
+	return prt_stm32_set_serial(dev, serial);
+
+exit_pta_read:
+	stm32_bsec_optee_ta_close(&ctx);
+	dev_err(dev, "Failed to read serial: %pe\n", ERR_PTR(ret));
+	return ret;
+}
+
 static int prt_stm32_probe(struct device *dev)
 {
 	const struct prt_stm32_machine_data *dcfg;
@@ -65,6 +124,8 @@ static int prt_stm32_probe(struct device *dev)
 		ret = -EINVAL;
 		goto exit_get_dcfg;
 	}
+
+	prt_stm32_read_serial(dev);
 
 	for (i = 0; i < ARRAY_SIZE(prt_stm32_boot_devs); i++) {
 		const struct prt_stm32_boot_dev *bd = &prt_stm32_boot_devs[i];

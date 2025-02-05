@@ -34,7 +34,7 @@ static char *environment_probe_1node_binding(struct device *dev)
 static char *environment_probe_2node_binding(struct device *dev)
 {
 	const char *filepath;
-	char *devpath;
+	char *devpath = NULL;
 	int ret;
 
 	ret = of_find_path(dev->of_node, "device-path", &devpath,

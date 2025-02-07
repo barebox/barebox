@@ -209,6 +209,17 @@ static int am625_of_fixup(struct device_node *root, void *unused)
 	return 0;
 }
 
+#define CTRLMMR_MCU_RST_CTRL	IOMEM(0x04518170)
+#define RST_CTRL_ESM_ERROR_RST_EN_Z_MASK BIT(17)
+
+static void am625_enable_mcu_esm_reset(void)
+{
+	/* activate reset of main by ESMO */
+	u32 stat = readl(CTRLMMR_MCU_RST_CTRL);
+	stat &= ~RST_CTRL_ESM_ERROR_RST_EN_Z_MASK;
+	writel(stat, CTRLMMR_MCU_RST_CTRL);
+}
+
 static int am625_init(void)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
@@ -224,6 +235,8 @@ static int am625_init(void)
 	genpd_activate();
 
 	of_register_fixup(am625_of_fixup, NULL);
+
+	am625_enable_mcu_esm_reset();
 
 	return 0;
 }

@@ -651,8 +651,8 @@ static __maybe_unused int efi_partition_mkpart(struct partition_desc *pd,
 	}
 
 	if (end_lba >= last_lba(pd->blk) - 33) {
-		pr_err("invalid end LBA %lld, maximum is %lld\n", start_lba,
-		       last_lba(pd->blk) - 33);
+		pr_err("invalid end LBA %lld, maximum is %lld\n", end_lba,
+		       last_lba(pd->blk) - 34);
 		return -EINVAL;
 	}
 

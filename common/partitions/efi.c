@@ -758,6 +758,7 @@ static __maybe_unused int efi_partition_write(struct partition_desc *pd)
 		le32_to_cpu(gpt->sizeof_partition_entry);
 
 	gpt->my_lba = cpu_to_le64(1);
+	gpt->alternate_lba = cpu_to_le64(last_lba(blk));
 	gpt->partition_entry_array_crc32 = cpu_to_le32(efi_crc32(
 			(const unsigned char *)epd->ptes, count));
 	gpt->header_crc32 = 0;

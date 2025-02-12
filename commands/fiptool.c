@@ -73,7 +73,7 @@ static int info_cmd(struct fip_state *fip, int argc, char *argv[])
 	pr_verbose("toc_header[flags]: 0x%llX\n",
 	    (unsigned long long)toc_header.flags);
 
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
+	fip_for_each_desc(fip, desc) {
 		struct fip_image *image = desc->image;
 
 		if (image == NULL)
@@ -409,7 +409,7 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 		}
 
 	/* Unpack all specified images. */
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
+	fip_for_each_desc(fip, desc) {
 		char file[PATH_MAX];
 		struct fip_image *image = desc->image;
 
@@ -517,7 +517,7 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 	if (ret)
 		return ret;
 
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
+	fip_for_each_desc(fip, desc) {
 		if (desc->action != DO_REMOVE)
 			continue;
 
@@ -548,7 +548,7 @@ static cmd_t cmds[] = {
 static int do_fiptool(int argc, char *argv[])
 {
 	int i, opt, ret = 0;
-	struct fip_state fip = {};
+	struct fip_state *fip = fip_new();
 
 	/*
 	 * Set POSIX mode so getopt stops at the first non-option
@@ -557,7 +557,7 @@ static int do_fiptool(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "+v")) > 0) {
 		switch (opt) {
 		case 'v':
-			fip.verbose = 1;
+			fip->verbose = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -569,14 +569,14 @@ static int do_fiptool(int argc, char *argv[])
 	if (argc == 0)
 		return COMMAND_ERROR_USAGE;
 
-	fill_image_descs(&fip);
+	fill_image_descs(fip);
 	for (i = 0; i < ARRAY_SIZE(cmds); i++) {
 		if (strcmp(cmds[i].name, argv[0]) == 0) {
 			struct getopt_context gc;
 
 			getopt_context_store(&gc);
 
-			ret = cmds[i].handler(&fip, argc, argv);
+			ret = cmds[i].handler(fip, argc, argv);
 
 			getopt_context_restore(&gc);
 			break;
@@ -585,7 +585,7 @@ static int do_fiptool(int argc, char *argv[])
 
 	if (i == ARRAY_SIZE(cmds))
 		return COMMAND_ERROR_USAGE;
-	free_image_descs(&fip);
+	fip_free(fip);
 	return ret;
 }
 

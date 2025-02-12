@@ -8,6 +8,7 @@
 
 #include <linux/uuid.h>
 #include <fip.h>
+#include <linux/list.h>
 
 enum {
 	DO_UNSPEC = 0,
@@ -23,7 +24,7 @@ struct fip_image_desc {
 	int                action;
 	char              *action_arg;
 	struct fip_image  *image;
-	struct fip_image_desc *next;
+	struct list_head  list;
 };
 
 struct fip_image {
@@ -32,7 +33,7 @@ struct fip_image {
 };
 
 struct fip_state {
-	struct fip_image_desc *image_desc_head;
+	struct list_head descs;
 	size_t nr_image_descs;
 	int verbose;
 };
@@ -45,6 +46,9 @@ struct fip_state {
 	} \
 } while (0)
 
+struct fip_state *fip_new(void);
+void fip_free(struct fip_state *fip);
+
 struct fip_image_desc *new_image_desc(const uuid_t *uuid,
 			     const char *name, const char *cmdline_name);
 
@@ -54,8 +58,6 @@ void set_image_desc_action(struct fip_image_desc *desc, int action,
 void free_image_desc(struct fip_image_desc *desc);
 
 void add_image_desc(struct fip_state *fip, struct fip_image_desc *desc);
-
-void free_image_descs(struct fip_state *fip);
 
 void fill_image_descs(struct fip_state *fip);
 
@@ -83,5 +85,11 @@ typedef struct toc_entry {
 
 extern toc_entry_t toc_entries[];
 extern toc_entry_t plat_def_toc_entries[];
+
+#define fip_for_each_desc(fip, e) \
+        list_for_each_entry(e, &(fip)->descs, list)
+
+#define fip_for_each_desc_safe(fip, e, tmp) \
+        list_for_each_entry_safe(e, tmp, &(fip)->descs, list)
 
 #endif /* FIPTOOL_H */

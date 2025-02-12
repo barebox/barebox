@@ -66,27 +66,33 @@ void free_image_desc(struct fip_image_desc *desc)
 
 void add_image_desc(struct fip_state *fip, struct fip_image_desc *desc)
 {
-	struct fip_image_desc **p = &fip->image_desc_head;
-
-	while (*p)
-		p = &(*p)->next;
-
-	ASSERT(*p == NULL);
-	*p = desc;
+	list_add_tail(&desc->list, &fip->descs);
 	fip->nr_image_descs++;
 }
 
-void free_image_descs(struct fip_state *fip)
+struct fip_state *fip_new(void)
 {
-	struct fip_image_desc *desc = fip->image_desc_head, *tmp;
+	struct fip_state *fip;
 
-	while (desc != NULL) {
-		tmp = desc->next;
+	fip = xzalloc(sizeof(*fip));
+
+	INIT_LIST_HEAD(&fip->descs);
+
+	return fip;
+}
+
+void fip_free(struct fip_state *fip)
+{
+	struct fip_image_desc *desc, *tmp;
+
+	fip_for_each_desc_safe(fip, desc, tmp) {
 		free_image_desc(desc);
-		desc = tmp;
 		fip->nr_image_descs--;
 	}
+
 	ASSERT(fip->nr_image_descs == 0);
+
+	free(fip);
 }
 
 void fill_image_descs(struct fip_state *fip)
@@ -120,7 +126,7 @@ struct fip_image_desc *lookup_image_desc_from_uuid(struct fip_state *fip,
 {
 	struct fip_image_desc *desc;
 
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next)
+	fip_for_each_desc(fip, desc)
 		if (memcmp(&desc->uuid, uuid, sizeof(uuid_t)) == 0)
 			return desc;
 	return NULL;
@@ -135,7 +141,7 @@ struct fip_image_desc *lookup_image_desc_from_opt(struct fip_state *fip, char **
 	eq = strchrnul(*arg, '=');
 	len = eq - *arg;
 
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
+	fip_for_each_desc(fip, desc) {
 		if (strncmp(desc->cmdline_name, *arg, len) == 0) {
 			if (*eq)
 				*arg = eq + 1;
@@ -305,7 +311,7 @@ int pack_images(struct fip_state *fip,
 	uint64_t entry_offset, buf_size, payload_size = 0, pad_size;
 	size_t nr_images = 0;
 
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next)
+	fip_for_each_desc(fip, desc)
 		if (desc->image != NULL)
 			nr_images++;
 
@@ -324,7 +330,7 @@ int pack_images(struct fip_state *fip,
 	toc_entry = (fip_toc_entry_t *)(toc_header + 1);
 
 	entry_offset = buf_size;
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
+	fip_for_each_desc(fip, desc) {
 		struct fip_image *image = desc->image;
 
 		if (image == NULL || (image->toc_e.size == 0ULL))
@@ -360,7 +366,7 @@ int pack_images(struct fip_state *fip,
 
 	pr_verbose("Payload size: %llu bytes\n", payload_size);
 
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
+	fip_for_each_desc(fip, desc) {
 		struct fip_image *image = desc->image;
 
 		if (image == NULL)
@@ -399,7 +405,7 @@ int update_fip(struct fip_state *fip)
 	struct fip_image_desc *desc;
 
 	/* Add or replace images in the FIP file. */
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
+	fip_for_each_desc(fip, desc) {
 		struct fip_image *image;
 
 		if (desc->action != DO_PACK)

@@ -30,12 +30,14 @@ struct fip_image_desc {
 struct fip_image {
 	struct fip_toc_entry toc_e;
 	void                *buffer;
+	bool                 buf_no_free;
 };
 
 struct fip_state {
 	struct list_head descs;
 	size_t nr_image_descs;
 	int verbose;
+	void *buffer;
 };
 
 #define pr_verbose(...) do { \
@@ -91,5 +93,7 @@ extern toc_entry_t plat_def_toc_entries[];
 
 #define fip_for_each_desc_safe(fip, e, tmp) \
         list_for_each_entry_safe(e, tmp, &(fip)->descs, list)
+
+struct fip_state *fip_image_open(const char *filename, size_t offset);
 
 #endif /* FIPTOOL_H */

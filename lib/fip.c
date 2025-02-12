@@ -58,7 +58,8 @@ void fip_free_image_desc(struct fip_image_desc *desc)
 	free(desc->cmdline_name);
 	free(desc->action_arg);
 	if (desc->image) {
-		free(desc->image->buffer);
+		if (!desc->image->buf_no_free)
+			free(desc->image->buffer);
 		free(desc->image);
 	}
 	free(desc);
@@ -92,6 +93,7 @@ void fip_free(struct fip_state *fip)
 
 	ASSERT(fip->nr_image_descs == 0);
 
+	free(fip->buffer);
 	free(fip);
 }
 
@@ -429,4 +431,132 @@ int fip_update(struct fip_state *fip)
 	}
 
 	return 0;
+}
+
+/*
+ * fip_image_open - open a FIP image for readonly access
+ * @filename: The filename of the FIP image
+ * @offset: The offset of the FIP image in the file
+ *
+ * This opens a FIP image for readonly access. This is an alternative
+ * implementation for fip_parse() with these differences:
+ * - suitable for reading FIP images from raw partitions. This function
+ *   only reads the FIP image, even when the partition is bigger than the
+ *   image
+ * - Allows to specify an offset within the partition where the FIP image
+ *   starts
+ * - Do not memdup the images from the full FIP image
+ *
+ * This function is for easy readonly access to the images within the FIP
+ * image. Do not call any of the above FIP manipulation functions other than
+ * fip_free() on an image opened with this function.
+ */
+struct fip_state *fip_image_open(const char *filename, size_t offset)
+{
+	fip_toc_header_t toc_header;
+	int ret;
+	int fd;
+	struct fip_state *fip_state;
+	LIST_HEAD(entries);
+	size_t fip_headers_size, total = 0;
+	struct fip_image_desc *desc;
+	off_t pos;
+	int n_entries = 0;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0)
+		return ERR_PTR(fd);
+
+	fip_state = fip_new();
+
+	pos = lseek(fd, offset, SEEK_SET);
+	if (pos != offset) {
+		ret = -EINVAL;
+		goto err;
+	}
+
+	ret = read_full(fd, &toc_header, sizeof(toc_header));
+	if (ret < 0)
+		goto err;
+
+	if (ret < sizeof(toc_header)) {
+		ret = -ENODATA;
+		goto err;
+	}
+
+	if (toc_header.name != TOC_HEADER_NAME) {
+		pr_err("%s is not a FIP file: unknown magic = 0x%08x\n",
+		       filename, toc_header.name);
+		ret = -EINVAL;
+		goto err;
+	}
+
+	/* read all toc entries */
+	while (1) {
+		struct fip_image_desc *desc = xzalloc(sizeof(*desc));
+		struct fip_image *image = xzalloc(sizeof(*image));
+		struct fip_toc_entry *toc_entry = &image->toc_e;
+
+		desc->image = image;
+
+		ret = read_full(fd, toc_entry, sizeof(*toc_entry));
+		if (ret < 0)
+			goto err;
+		if (ret < sizeof(*toc_entry)) {
+			ret = -ENODATA;
+			goto err;
+		}
+
+		list_add_tail(&desc->list, &fip_state->descs);
+
+		pr_debug("Read TOC entry %pU %llu %llu\n", &toc_entry->uuid,
+			 toc_entry->offset_address, toc_entry->size);
+
+		/* Found the ToC terminator, we are done. */
+		if (uuid_is_null(&toc_entry->uuid))
+			break;
+	}
+
+	/* determine buffer size */
+	fip_for_each_desc(fip_state, desc) {
+		uint64_t this_end = desc->image->toc_e.offset_address + desc->image->toc_e.size;
+
+		if (this_end > total)
+			total = this_end;
+		n_entries++;
+	}
+
+	fip_headers_size = n_entries * sizeof(struct fip_toc_entry) + sizeof(fip_toc_header_t);
+
+	total -= fip_headers_size;
+
+	fip_state->buffer = malloc(total);
+	if (!fip_state->buffer) {
+		ret = -ENOMEM;
+		goto err;
+	}
+
+	ret = read_full(fd, fip_state->buffer, total);
+	if (ret < 0)
+		goto err;
+
+	if (ret < total) {
+		ret = -ENODATA;
+		goto err;
+	}
+
+	close(fd);
+
+	fip_for_each_desc(fip_state, desc) {
+		desc->image->buffer = fip_state->buffer +
+			desc->image->toc_e.offset_address - fip_headers_size;
+		desc->image->buf_no_free = true;
+	}
+
+	return fip_state;
+err:
+	close(fd);
+	fip_free(fip_state);
+
+	return ERR_PTR(ret);
 }

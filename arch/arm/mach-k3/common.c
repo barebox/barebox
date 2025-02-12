@@ -170,6 +170,26 @@ static void of_delete_node_path(struct device_node *root, const char *path)
 	of_delete_node(np);
 }
 
+#define MCU_CTRL_MMR0_BASE			0x04500000
+#define MCU_CTRL_LFXOSC_CTRL			(MCU_CTRL_MMR0_BASE + 0x8038)
+#define MCU_CTRL_LFXOSC_32K_DISABLE_VAL		BIT(7)
+#define MCU_CTRL_DEVICE_CLKOUT_LFOSC_SELECT_VAL	(0x3)
+#define MCU_CTRL_DEVICE_CLKOUT_32K_CTRL		(MCU_CTRL_MMR0_BASE + 0x8058)
+
+void am625_enable_32k_crystal(void)
+{
+	u32 val;
+
+	/* Enable 32k crystal */
+	val = readl(MCU_CTRL_LFXOSC_CTRL);
+	val &= ~(MCU_CTRL_LFXOSC_32K_DISABLE_VAL);
+	writel(val, MCU_CTRL_LFXOSC_CTRL);
+
+	/* select 32k clock from LFOSC0 */
+	writel(MCU_CTRL_DEVICE_CLKOUT_LFOSC_SELECT_VAL,
+	       MCU_CTRL_DEVICE_CLKOUT_32K_CTRL);
+}
+
 #define CTRLMMR_WKUP_JTAG_DEVICE_ID	(AM625_WKUP_CTRL_MMR0_BASE + 0x18)
 
 #define JTAG_DEV_CORE_NR		GENMASK(21, 19)

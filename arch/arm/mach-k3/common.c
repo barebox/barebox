@@ -162,6 +162,19 @@ void am625_get_bootsource(enum bootsource *src, int *instance)
 	k3_get_bootsource(devstat, src, instance);
 }
 
+bool k3_boot_is_emmc(void)
+{
+	u32 bootmode = readl(AM625_BOOT_PARAM_TABLE_INDEX_OCRAM);
+	u32 devstat = readl(AM625_CTRLMMR_MAIN_DEVSTAT);
+
+	if (bootmode != K3_PRIMARY_BOOTMODE)
+		return false;
+	if (FIELD_GET(MAIN_DEVSTAT_PRIMARY_BOOTMODE, devstat) != BOOT_DEVICE_EMMC)
+		return false;
+
+	return true;
+}
+
 static void of_delete_node_path(struct device_node *root, const char *path)
 {
 	struct device_node *np;

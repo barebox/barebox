@@ -26,10 +26,10 @@
 #include <fip.h>
 #include <fiptool.h>
 
-image_desc_t *new_image_desc(const uuid_t *uuid,
+struct fip_image_desc *new_image_desc(const uuid_t *uuid,
 			     const char *name, const char *cmdline_name)
 {
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 
 	desc = xzalloc(sizeof(*desc));
 	memcpy(&desc->uuid, uuid, sizeof(uuid_t));
@@ -39,7 +39,7 @@ image_desc_t *new_image_desc(const uuid_t *uuid,
 	return desc;
 }
 
-void set_image_desc_action(image_desc_t *desc, int action,
+void set_image_desc_action(struct fip_image_desc *desc, int action,
     const char *arg)
 {
 	ASSERT(desc != NULL);
@@ -52,7 +52,7 @@ void set_image_desc_action(image_desc_t *desc, int action,
 		desc->action_arg = xstrdup(arg);
 }
 
-void free_image_desc(image_desc_t *desc)
+void free_image_desc(struct fip_image_desc *desc)
 {
 	free(desc->name);
 	free(desc->cmdline_name);
@@ -64,9 +64,9 @@ void free_image_desc(image_desc_t *desc)
 	free(desc);
 }
 
-void add_image_desc(struct fip_state *fip, image_desc_t *desc)
+void add_image_desc(struct fip_state *fip, struct fip_image_desc *desc)
 {
-	image_desc_t **p = &fip->image_desc_head;
+	struct fip_image_desc **p = &fip->image_desc_head;
 
 	while (*p)
 		p = &(*p)->next;
@@ -78,7 +78,7 @@ void add_image_desc(struct fip_state *fip, image_desc_t *desc)
 
 void free_image_descs(struct fip_state *fip)
 {
-	image_desc_t *desc = fip->image_desc_head, *tmp;
+	struct fip_image_desc *desc = fip->image_desc_head, *tmp;
 
 	while (desc != NULL) {
 		tmp = desc->next;
@@ -96,7 +96,7 @@ void fill_image_descs(struct fip_state *fip)
 	for (toc_entry = toc_entries;
 	     toc_entry->cmdline_name != NULL;
 	     toc_entry++) {
-		image_desc_t *desc;
+		struct fip_image_desc *desc;
 
 		desc = new_image_desc(&toc_entry->uuid,
 		    toc_entry->name,
@@ -106,7 +106,7 @@ void fill_image_descs(struct fip_state *fip)
 	for (toc_entry = plat_def_toc_entries;
 	     toc_entry->cmdline_name != NULL;
 	     toc_entry++) {
-		image_desc_t *desc;
+		struct fip_image_desc *desc;
 
 		desc = new_image_desc(&toc_entry->uuid,
 		    toc_entry->name,
@@ -115,10 +115,10 @@ void fill_image_descs(struct fip_state *fip)
 	}
 }
 
-image_desc_t *lookup_image_desc_from_uuid(struct fip_state *fip,
+struct fip_image_desc *lookup_image_desc_from_uuid(struct fip_state *fip,
 						 const uuid_t *uuid)
 {
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 
 	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next)
 		if (memcmp(&desc->uuid, uuid, sizeof(uuid_t)) == 0)
@@ -126,10 +126,10 @@ image_desc_t *lookup_image_desc_from_uuid(struct fip_state *fip,
 	return NULL;
 }
 
-image_desc_t *lookup_image_desc_from_opt(struct fip_state *fip, char **arg)
+struct fip_image_desc *lookup_image_desc_from_opt(struct fip_state *fip, char **arg)
 {
 	int len = 0;
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 	char *eq;
 
 	eq = strchrnul(*arg, '=');
@@ -200,8 +200,8 @@ int parse_fip(struct fip_state *fip,
 
 	/* Walk through each ToC entry in the file. */
 	while ((char *)toc_entry + sizeof(*toc_entry) - 1 < bufend) {
-		image_t *image;
-		image_desc_t *desc;
+		struct fip_image *image;
+		struct fip_image_desc *desc;
 
 		/* Found the ToC terminator, we are done. */
 		if (memcmp(&toc_entry->uuid, &uuid_null, sizeof(uuid_t)) == 0) {
@@ -260,10 +260,10 @@ int parse_fip(struct fip_state *fip,
 	return 0;
 }
 
-static image_t *read_image_from_file(const uuid_t *uuid, const char *filename)
+static struct fip_image *read_image_from_file(const uuid_t *uuid, const char *filename)
 {
 	struct stat st;
-	image_t *image;
+	struct fip_image *image;
 	int fd;
 
 	ASSERT(uuid != NULL);
@@ -298,7 +298,7 @@ int pack_images(struct fip_state *fip,
 		uint64_t toc_flags, unsigned long align)
 {
 	int fd;
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 	fip_toc_header_t *toc_header;
 	fip_toc_entry_t *toc_entry;
 	char *buf;
@@ -325,7 +325,7 @@ int pack_images(struct fip_state *fip,
 
 	entry_offset = buf_size;
 	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
-		image_t *image = desc->image;
+		struct fip_image *image = desc->image;
 
 		if (image == NULL || (image->toc_e.size == 0ULL))
 			continue;
@@ -361,7 +361,7 @@ int pack_images(struct fip_state *fip,
 	pr_verbose("Payload size: %llu bytes\n", payload_size);
 
 	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
-		image_t *image = desc->image;
+		struct fip_image *image = desc->image;
 
 		if (image == NULL)
 			continue;
@@ -396,11 +396,11 @@ int pack_images(struct fip_state *fip,
  */
 int update_fip(struct fip_state *fip)
 {
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 
 	/* Add or replace images in the FIP file. */
 	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
-		image_t *image;
+		struct fip_image *image;
 
 		if (desc->action != DO_PACK)
 			continue;

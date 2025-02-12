@@ -31,7 +31,7 @@ typedef struct cmd {
 } cmd_t;
 
 
-static int write_image_to_file(const image_t *image, const char *filename)
+static int write_image_to_file(const struct fip_image *image, const char *filename)
 {
 	int fd;
 
@@ -53,7 +53,7 @@ static int write_image_to_file(const image_t *image, const char *filename)
 
 static int info_cmd(struct fip_state *fip, int argc, char *argv[])
 {
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 	fip_toc_header_t toc_header;
 	int ret;
 
@@ -74,7 +74,7 @@ static int info_cmd(struct fip_state *fip, int argc, char *argv[])
 	    (unsigned long long)toc_header.flags);
 
 	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
-		image_t *image = desc->image;
+		struct fip_image *image = desc->image;
 
 		if (image == NULL)
 			continue;
@@ -193,7 +193,7 @@ static __maybe_unused int create_cmd(struct fip_state *fip, int argc, char *argv
 	while ((opt = getopt(argc, argv, "e:p:a:b:")) > 0) {
 		switch (opt) {
 		case 'e': {
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			desc = lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
@@ -214,7 +214,7 @@ static __maybe_unused int create_cmd(struct fip_state *fip, int argc, char *argv
 			char name[UUID_STRING_LEN + 1];
 			char filename[PATH_MAX] = { 0 };
 			uuid_t uuid = uuid_null;
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
@@ -264,7 +264,7 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 	while ((opt = getopt(argc, argv, "e:p:b:a:o:")) > 0) {
 		switch (opt) {
 		case 'e': {
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			desc = lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
@@ -281,7 +281,7 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 			char name[UUID_STRING_LEN + 1];
 			char filename[PATH_MAX] = { 0 };
 			uuid_t uuid = uuid_null;
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
@@ -339,7 +339,7 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 {
 	char outdir[PATH_MAX] = { 0 };
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 	int fflag = 0;
 	int unpack_all = 1;
 	int ret, opt;
@@ -350,7 +350,7 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "e:b:fo:")) > 0) {
 		switch (opt) {
 		case 'e': {
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			desc = lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
@@ -363,7 +363,7 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 			char name[UUID_STRING_LEN + 1];
 			char filename[PATH_MAX] = { 0 };
 			uuid_t uuid = uuid_null;
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
@@ -411,7 +411,7 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 	/* Unpack all specified images. */
 	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
 		char file[PATH_MAX];
-		image_t *image = desc->image;
+		struct fip_image *image = desc->image;
 
 		if (!unpack_all && desc->action != DO_UNPACK)
 			continue;
@@ -447,7 +447,7 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 {
 	char outfile[PATH_MAX] = { 0 };
 	fip_toc_header_t toc_header;
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 	long align = 1;
 	int ret, opt, fflag = 0;
 
@@ -457,7 +457,7 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 	while ((opt = getopt(argc, argv, "e:a:b:fo:")) > 0) {
 		switch (opt) {
 		case 'e': {
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			desc = lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
@@ -473,7 +473,7 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 		case 'b': {
 			char name[UUID_STRING_LEN + 1], filename[PATH_MAX];
 			uuid_t uuid = uuid_null;
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));

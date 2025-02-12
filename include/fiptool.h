@@ -16,23 +16,23 @@ enum {
 	DO_REMOVE = 3
 };
 
-typedef struct image_desc {
+struct fip_image_desc {
 	uuid_t             uuid;
 	char              *name;
 	char              *cmdline_name;
 	int                action;
 	char              *action_arg;
-	struct image      *image;
-	struct image_desc *next;
-} image_desc_t;
+	struct fip_image  *image;
+	struct fip_image_desc *next;
+};
 
-typedef struct image {
+struct fip_image {
 	struct fip_toc_entry toc_e;
 	void                *buffer;
-} image_t;
+};
 
 struct fip_state {
-	image_desc_t *image_desc_head;
+	struct fip_image_desc *image_desc_head;
 	size_t nr_image_descs;
 	int verbose;
 };
@@ -45,24 +45,24 @@ struct fip_state {
 	} \
 } while (0)
 
-image_desc_t *new_image_desc(const uuid_t *uuid,
+struct fip_image_desc *new_image_desc(const uuid_t *uuid,
 			     const char *name, const char *cmdline_name);
 
-void set_image_desc_action(image_desc_t *desc, int action,
+void set_image_desc_action(struct fip_image_desc *desc, int action,
     const char *arg);
 
-void free_image_desc(image_desc_t *desc);
+void free_image_desc(struct fip_image_desc *desc);
 
-void add_image_desc(struct fip_state *fip, image_desc_t *desc);
+void add_image_desc(struct fip_state *fip, struct fip_image_desc *desc);
 
 void free_image_descs(struct fip_state *fip);
 
 void fill_image_descs(struct fip_state *fip);
 
-image_desc_t *lookup_image_desc_from_uuid(struct fip_state *fip,
+struct fip_image_desc *lookup_image_desc_from_uuid(struct fip_state *fip,
 						 const uuid_t *uuid);
 
-image_desc_t *lookup_image_desc_from_opt(struct fip_state *fip, char **arg);
+struct fip_image_desc *lookup_image_desc_from_opt(struct fip_state *fip, char **arg);
 
 int parse_fip(struct fip_state *fip,
 		     const char *filename, fip_toc_header_t *toc_header_out);

@@ -288,6 +288,9 @@ static int omap_env_init(void)
 	if (bootsource_get() != BOOTSOURCE_MMC)
 		return 0;
 
+	if (k3_boot_is_emmc())
+		return 0;
+
 	instance = bootsource_get_instance();
 
 	cdevname = xasprintf("mmc%d", instance);

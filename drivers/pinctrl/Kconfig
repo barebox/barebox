@@ -106,6 +106,8 @@ config PINCTRL_STM32
 	select HAVE_GPIO_PINCONF
 	help
 	  Pinmux and GPIO controller found on STM32 family
+
+source "drivers/pinctrl/sunxi/Kconfig"
 endif
 
 endmenu

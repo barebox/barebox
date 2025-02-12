@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-2.0-only
+if ARCH_SUNXI
+
+config PINCTRL_SUNXI
+	bool
+	select GPIOLIB
+
+config PINCTRL_SUN50I_A64
+	bool "Support for Allwinner A64 PIO"
+	default ARCH_SUNXI
+	select PINCTRL_SUNXI
+
+endif

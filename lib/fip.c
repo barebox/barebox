@@ -26,7 +26,7 @@
 #include <fip.h>
 #include <fiptool.h>
 
-struct fip_image_desc *new_image_desc(const uuid_t *uuid,
+struct fip_image_desc *fip_new_image_desc(const uuid_t *uuid,
 			     const char *name, const char *cmdline_name)
 {
 	struct fip_image_desc *desc;
@@ -39,7 +39,7 @@ struct fip_image_desc *new_image_desc(const uuid_t *uuid,
 	return desc;
 }
 
-void set_image_desc_action(struct fip_image_desc *desc, int action,
+void fip_set_image_desc_action(struct fip_image_desc *desc, int action,
     const char *arg)
 {
 	ASSERT(desc != NULL);
@@ -52,7 +52,7 @@ void set_image_desc_action(struct fip_image_desc *desc, int action,
 		desc->action_arg = xstrdup(arg);
 }
 
-void free_image_desc(struct fip_image_desc *desc)
+void fip_free_image_desc(struct fip_image_desc *desc)
 {
 	free(desc->name);
 	free(desc->cmdline_name);
@@ -64,7 +64,7 @@ void free_image_desc(struct fip_image_desc *desc)
 	free(desc);
 }
 
-void add_image_desc(struct fip_state *fip, struct fip_image_desc *desc)
+void fip_add_image_desc(struct fip_state *fip, struct fip_image_desc *desc)
 {
 	list_add_tail(&desc->list, &fip->descs);
 	fip->nr_image_descs++;
@@ -86,7 +86,7 @@ void fip_free(struct fip_state *fip)
 	struct fip_image_desc *desc, *tmp;
 
 	fip_for_each_desc_safe(fip, desc, tmp) {
-		free_image_desc(desc);
+		fip_free_image_desc(desc);
 		fip->nr_image_descs--;
 	}
 
@@ -95,7 +95,7 @@ void fip_free(struct fip_state *fip)
 	free(fip);
 }
 
-void fill_image_descs(struct fip_state *fip)
+void fip_fill_image_descs(struct fip_state *fip)
 {
 	toc_entry_t *toc_entry;
 
@@ -104,24 +104,24 @@ void fill_image_descs(struct fip_state *fip)
 	     toc_entry++) {
 		struct fip_image_desc *desc;
 
-		desc = new_image_desc(&toc_entry->uuid,
+		desc = fip_new_image_desc(&toc_entry->uuid,
 		    toc_entry->name,
 		    toc_entry->cmdline_name);
-		add_image_desc(fip, desc);
+		fip_add_image_desc(fip, desc);
 	}
 	for (toc_entry = plat_def_toc_entries;
 	     toc_entry->cmdline_name != NULL;
 	     toc_entry++) {
 		struct fip_image_desc *desc;
 
-		desc = new_image_desc(&toc_entry->uuid,
+		desc = fip_new_image_desc(&toc_entry->uuid,
 		    toc_entry->name,
 		    toc_entry->cmdline_name);
-		add_image_desc(fip, desc);
+		fip_add_image_desc(fip, desc);
 	}
 }
 
-struct fip_image_desc *lookup_image_desc_from_uuid(struct fip_state *fip,
+struct fip_image_desc *fip_lookup_image_desc_from_uuid(struct fip_state *fip,
 						 const uuid_t *uuid)
 {
 	struct fip_image_desc *desc;
@@ -132,7 +132,7 @@ struct fip_image_desc *lookup_image_desc_from_uuid(struct fip_state *fip,
 	return NULL;
 }
 
-struct fip_image_desc *lookup_image_desc_from_opt(struct fip_state *fip, char **arg)
+struct fip_image_desc *fip_lookup_image_desc_from_opt(struct fip_state *fip, char **arg)
 {
 	int len = 0;
 	struct fip_image_desc *desc;
@@ -153,7 +153,7 @@ struct fip_image_desc *lookup_image_desc_from_opt(struct fip_state *fip, char **
 	return NULL;
 }
 
-int parse_fip(struct fip_state *fip,
+int fip_parse(struct fip_state *fip,
 		     const char *filename, fip_toc_header_t *toc_header_out)
 {
 	struct stat st;
@@ -238,17 +238,17 @@ int parse_fip(struct fip_state *fip,
 		    toc_entry->size);
 
 		/* If this is an unknown image, create a descriptor for it. */
-		desc = lookup_image_desc_from_uuid(fip, &toc_entry->uuid);
+		desc = fip_lookup_image_desc_from_uuid(fip, &toc_entry->uuid);
 		if (desc == NULL) {
 			char name[UUID_STRING_LEN + 1], filename[PATH_MAX];
 
 			snprintf(name, sizeof(name), "%pU", &toc_entry->uuid);
 			snprintf(filename, sizeof(filename), "%s%s",
 			    name, ".bin");
-			desc = new_image_desc(&toc_entry->uuid, name, "blob");
+			desc = fip_new_image_desc(&toc_entry->uuid, name, "blob");
 			desc->action = DO_UNPACK;
 			desc->action_arg = xstrdup(filename);
-			add_image_desc(fip, desc);
+			fip_add_image_desc(fip, desc);
 		}
 
 		ASSERT(desc->image == NULL);
@@ -266,7 +266,7 @@ int parse_fip(struct fip_state *fip,
 	return 0;
 }
 
-static struct fip_image *read_image_from_file(const uuid_t *uuid, const char *filename)
+static struct fip_image *fip_read_image_from_file(const uuid_t *uuid, const char *filename)
 {
 	struct stat st;
 	struct fip_image *image;
@@ -299,7 +299,7 @@ static struct fip_image *read_image_from_file(const uuid_t *uuid, const char *fi
 	return image;
 }
 
-int pack_images(struct fip_state *fip,
+int fip_pack_images(struct fip_state *fip,
 		const char *filename,
 		uint64_t toc_flags, unsigned long align)
 {
@@ -400,7 +400,7 @@ int pack_images(struct fip_state *fip,
  * in update_fip() creating the new FIP file from scratch because the
  * internal image table is not populated.
  */
-int update_fip(struct fip_state *fip)
+int fip_update(struct fip_state *fip)
 {
 	struct fip_image_desc *desc;
 
@@ -411,7 +411,7 @@ int update_fip(struct fip_state *fip)
 		if (desc->action != DO_PACK)
 			continue;
 
-		image = read_image_from_file(&desc->uuid,
+		image = fip_read_image_from_file(&desc->uuid,
 		    desc->action_arg);
 		if (!image)
 			return -1;

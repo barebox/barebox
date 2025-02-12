@@ -49,31 +49,31 @@ struct fip_state {
 struct fip_state *fip_new(void);
 void fip_free(struct fip_state *fip);
 
-struct fip_image_desc *new_image_desc(const uuid_t *uuid,
+struct fip_image_desc *fip_new_image_desc(const uuid_t *uuid,
 			     const char *name, const char *cmdline_name);
 
-void set_image_desc_action(struct fip_image_desc *desc, int action,
+void fip_set_image_desc_action(struct fip_image_desc *desc, int action,
     const char *arg);
 
-void free_image_desc(struct fip_image_desc *desc);
+void fip_free_image_desc(struct fip_image_desc *desc);
 
-void add_image_desc(struct fip_state *fip, struct fip_image_desc *desc);
+void fip_add_image_desc(struct fip_state *fip, struct fip_image_desc *desc);
 
-void fill_image_descs(struct fip_state *fip);
+void fip_fill_image_descs(struct fip_state *fip);
 
-struct fip_image_desc *lookup_image_desc_from_uuid(struct fip_state *fip,
+struct fip_image_desc *fip_lookup_image_desc_from_uuid(struct fip_state *fip,
 						 const uuid_t *uuid);
 
-struct fip_image_desc *lookup_image_desc_from_opt(struct fip_state *fip, char **arg);
+struct fip_image_desc *fip_lookup_image_desc_from_opt(struct fip_state *fip, char **arg);
 
-int parse_fip(struct fip_state *fip,
+int fip_parse(struct fip_state *fip,
 		     const char *filename, fip_toc_header_t *toc_header_out);
 
-int pack_images(struct fip_state *fip,
+int fip_pack_images(struct fip_state *fip,
 		const char *filename,
 		uint64_t toc_flags, unsigned long align);
 
-int update_fip(struct fip_state *fip);
+int fip_update(struct fip_state *fip);
 
 #define TOC_HEADER_SERIAL_NUMBER 0x12345678
 

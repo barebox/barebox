@@ -62,7 +62,7 @@ static int info_cmd(struct fip_state *fip, int argc, char *argv[])
 
 	argc--, argv++;
 
-	ret = parse_fip(fip, argv[0], &toc_header);
+	ret = fip_parse(fip, argv[0], &toc_header);
 	if (ret)
 		return ret;
 
@@ -195,10 +195,10 @@ static __maybe_unused int create_cmd(struct fip_state *fip, int argc, char *argv
 		case 'e': {
 			struct fip_image_desc *desc;
 
-			desc = lookup_image_desc_from_opt(fip, &optarg);
+			desc = fip_lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
 				return COMMAND_ERROR;
-			set_image_desc_action(desc, DO_PACK, optarg);
+			fip_set_image_desc_action(desc, DO_PACK, optarg);
 			break;
 		}
 		case 'p':
@@ -222,13 +222,13 @@ static __maybe_unused int create_cmd(struct fip_state *fip, int argc, char *argv
 			if (uuid_is_null(&uuid) || filename[0] == '\0')
 				return COMMAND_ERROR_USAGE;
 
-			desc = lookup_image_desc_from_uuid(fip, &uuid);
+			desc = fip_lookup_image_desc_from_uuid(fip, &uuid);
 			if (desc == NULL) {
 				snprintf(name, sizeof(name), "%pU", &uuid);
-				desc = new_image_desc(&uuid, name, "blob");
-				add_image_desc(fip, desc);
+				desc = fip_new_image_desc(&uuid, name, "blob");
+				fip_add_image_desc(fip, desc);
 			}
-			set_image_desc_action(desc, DO_PACK, filename);
+			fip_set_image_desc_action(desc, DO_PACK, filename);
 			break;
 		}
 		default:
@@ -241,10 +241,10 @@ static __maybe_unused int create_cmd(struct fip_state *fip, int argc, char *argv
 	if (argc == 0)
 		return COMMAND_ERROR_USAGE;
 
-	if (update_fip(fip))
+	if (fip_update(fip))
 		return COMMAND_ERROR;
 
-	return pack_images(fip, argv[0], toc_flags, align);
+	return fip_pack_images(fip, argv[0], toc_flags, align);
 }
 
 
@@ -265,10 +265,10 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 		case 'e': {
 			struct fip_image_desc *desc;
 
-			desc = lookup_image_desc_from_opt(fip, &optarg);
+			desc = fip_lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
 				return COMMAND_ERROR;
-			set_image_desc_action(desc, DO_PACK, optarg);
+			fip_set_image_desc_action(desc, DO_PACK, optarg);
 			break;
 		}
 		case 'p':
@@ -289,13 +289,13 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 			    filename[0] == '\0')
 				return COMMAND_ERROR_USAGE;
 
-			desc = lookup_image_desc_from_uuid(fip, &uuid);
+			desc = fip_lookup_image_desc_from_uuid(fip, &uuid);
 			if (desc == NULL) {
 				snprintf(name, sizeof(name), "%pU", &uuid);
-				desc = new_image_desc(&uuid, name, "blob");
-				add_image_desc(fip, desc);
+				desc = fip_new_image_desc(&uuid, name, "blob");
+				fip_add_image_desc(fip, desc);
 			}
-			set_image_desc_action(desc, DO_PACK, filename);
+			fip_set_image_desc_action(desc, DO_PACK, filename);
 			break;
 		}
 		case 'a':
@@ -320,7 +320,7 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 		snprintf(outfile, sizeof(outfile), "%s", argv[0]);
 
 	if (file_exists(argv[0])) {
-		ret = parse_fip(fip, argv[0], &toc_header);
+		ret = fip_parse(fip, argv[0], &toc_header);
 		if (ret)
 			return ret;
 	}
@@ -329,10 +329,10 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 		toc_header.flags &= ~(0xffffULL << 32);
 	toc_flags = (toc_header.flags |= toc_flags);
 
-	if (update_fip(fip))
+	if (fip_update(fip))
 		return COMMAND_ERROR;
 
-	return pack_images(fip, outfile, toc_flags, align);
+	return fip_pack_images(fip, outfile, toc_flags, align);
 }
 
 static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
@@ -351,10 +351,10 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 		case 'e': {
 			struct fip_image_desc *desc;
 
-			desc = lookup_image_desc_from_opt(fip, &optarg);
+			desc = fip_lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
 				return COMMAND_ERROR;
-			set_image_desc_action(desc, DO_UNPACK, optarg);
+			fip_set_image_desc_action(desc, DO_UNPACK, optarg);
 			unpack_all = 0;
 			break;
 		}
@@ -370,13 +370,13 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 			if (uuid_is_null(&uuid) || filename[0] == '\0')
 				return COMMAND_ERROR_USAGE;
 
-			desc = lookup_image_desc_from_uuid(fip, &uuid);
+			desc = fip_lookup_image_desc_from_uuid(fip, &uuid);
 			if (desc == NULL) {
 				snprintf(name, sizeof(name), "%pU", &uuid);
-				desc = new_image_desc(&uuid, name, "blob");
-				add_image_desc(fip, desc);
+				desc = fip_new_image_desc(&uuid, name, "blob");
+				fip_add_image_desc(fip, desc);
 			}
-			set_image_desc_action(desc, DO_UNPACK, filename);
+			fip_set_image_desc_action(desc, DO_UNPACK, filename);
 			unpack_all = 0;
 			break;
 		}
@@ -396,7 +396,7 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 	if (argc == 0)
 		return COMMAND_ERROR_USAGE;
 
-	ret = parse_fip(fip, argv[0], NULL);
+	ret = fip_parse(fip, argv[0], NULL);
 	if (ret)
 		return ret;
 
@@ -457,10 +457,10 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 		case 'e': {
 			struct fip_image_desc *desc;
 
-			desc = lookup_image_desc_from_opt(fip, &optarg);
+			desc = fip_lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
 				return COMMAND_ERROR;
-			set_image_desc_action(desc, DO_REMOVE, NULL);
+			fip_set_image_desc_action(desc, DO_REMOVE, NULL);
 			break;
 		}
 		case 'a':
@@ -479,13 +479,13 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 			if (uuid_is_null(&uuid))
 				return COMMAND_ERROR_USAGE;
 
-			desc = lookup_image_desc_from_uuid(fip, &uuid);
+			desc = fip_lookup_image_desc_from_uuid(fip, &uuid);
 			if (desc == NULL) {
 				snprintf(name, sizeof(name), "%pU", &uuid);
-				desc = new_image_desc(&uuid, name, "blob");
-				add_image_desc(fip, desc);
+				desc = fip_new_image_desc(&uuid, name, "blob");
+				fip_add_image_desc(fip, desc);
 			}
-			set_image_desc_action(desc, DO_REMOVE, NULL);
+			fip_set_image_desc_action(desc, DO_REMOVE, NULL);
 			break;
 		}
 		case 'f':
@@ -511,7 +511,7 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 	if (outfile[0] == '\0')
 		snprintf(outfile, sizeof(outfile), "%s", argv[0]);
 
-	ret = parse_fip(fip, argv[0], &toc_header);
+	ret = fip_parse(fip, argv[0], &toc_header);
 	if (ret)
 		return ret;
 
@@ -528,7 +528,7 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 		}
 	}
 
-	return pack_images(fip, outfile, toc_header.flags, align);
+	return fip_pack_images(fip, outfile, toc_header.flags, align);
 }
 
 /* Available subcommands. */
@@ -567,7 +567,7 @@ static int do_fiptool(int argc, char *argv[])
 	if (argc == 0)
 		return COMMAND_ERROR_USAGE;
 
-	fill_image_descs(fip);
+	fip_fill_image_descs(fip);
 	for (i = 0; i < ARRAY_SIZE(cmds); i++) {
 		if (strcmp(cmds[i].name, argv[0]) == 0) {
 			struct getopt_context gc;

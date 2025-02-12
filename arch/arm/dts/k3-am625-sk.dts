@@ -7,3 +7,7 @@
  * DRAM size differs between board variants. Real size is read from DDRSS
  */
 /delete-node/ &{/memory@80000000};
+
+&sdhci0 {
+	max-frequency = <26000000>;
+};

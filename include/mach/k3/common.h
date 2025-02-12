@@ -16,4 +16,17 @@ void am625_enable_32k_crystal(void);
 
 #define K3_EMMC_BOOTPART_TIBOOT3_BIN_SIZE	SZ_1M
 
+#ifdef CONFIG_BAREBOX_UPDATE
+int k3_bbu_emmc_register(const char *name,
+			 const char *devicefile,
+			 unsigned long flags);
+#else
+static inline int k3_bbu_emmc_register(const char *name,
+				       const char *devicefile,
+				       unsigned long flags)
+{
+	return 0;
+}
+#endif
+
 #endif /* __MACH_K3_COMMON_H */

@@ -219,8 +219,7 @@ static __maybe_unused int create_cmd(struct fip_state *fip, int argc, char *argv
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
 
-			if (memcmp(&uuid, &uuid_null, sizeof(uuid_t)) == 0 ||
-			    filename[0] == '\0')
+			if (uuid_is_null(&uuid) || filename[0] == '\0')
 				return COMMAND_ERROR_USAGE;
 
 			desc = lookup_image_desc_from_uuid(fip, &uuid);
@@ -286,7 +285,7 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
 
-			if (memcmp(&uuid, &uuid_null, sizeof(uuid_t)) == 0 ||
+			if (uuid_is_null(&uuid) ||
 			    filename[0] == '\0')
 				return COMMAND_ERROR_USAGE;
 
@@ -368,8 +367,7 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
 
-			if (memcmp(&uuid, &uuid_null, sizeof(uuid_t)) == 0 ||
-			    filename[0] == '\0')
+			if (uuid_is_null(&uuid) || filename[0] == '\0')
 				return COMMAND_ERROR_USAGE;
 
 			desc = lookup_image_desc_from_uuid(fip, &uuid);
@@ -478,7 +476,7 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
 
-			if (memcmp(&uuid, &uuid_null, sizeof(uuid_t)) == 0)
+			if (uuid_is_null(&uuid))
 				return COMMAND_ERROR_USAGE;
 
 			desc = lookup_image_desc_from_uuid(fip, &uuid);

@@ -127,7 +127,7 @@ struct fip_image_desc *lookup_image_desc_from_uuid(struct fip_state *fip,
 	struct fip_image_desc *desc;
 
 	fip_for_each_desc(fip, desc)
-		if (memcmp(&desc->uuid, uuid, sizeof(uuid_t)) == 0)
+		if (uuid_equal(&desc->uuid, uuid))
 			return desc;
 	return NULL;
 }
@@ -210,7 +210,7 @@ int parse_fip(struct fip_state *fip,
 		struct fip_image_desc *desc;
 
 		/* Found the ToC terminator, we are done. */
-		if (memcmp(&toc_entry->uuid, &uuid_null, sizeof(uuid_t)) == 0) {
+		if (uuid_is_null(&toc_entry->uuid)) {
 			terminated = 1;
 			break;
 		}

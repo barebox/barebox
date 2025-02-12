@@ -24,11 +24,11 @@
 #include <fip.h>
 #include <fiptool.h>
 
-typedef struct cmd {
+struct cmd {
 	char              *name;
 	int              (*handler)(struct fip_state *fip, int, char **);
 	void             (*usage)(int);
-} cmd_t;
+};
 
 
 static int write_image_to_file(const struct fip_image *image, const char *filename)
@@ -532,7 +532,7 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 }
 
 /* Available subcommands. */
-static cmd_t cmds[] = {
+static struct cmd cmds[] = {
 	{ .name = "info",    .handler = info_cmd,    },
 	{ .name = "uuid",    .handler = uuid_cmd,    },
 	{ .name = "unpack",  .handler = unpack_cmd,  },

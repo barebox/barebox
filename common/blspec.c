@@ -81,12 +81,8 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 		.dryrun = dryrun,
 	};
 
-	globalvar_set("bootm.image", "");
-	globalvar_set("bootm.oftree", "");
-	globalvar_set("bootm.initrd", "");
-
 	bootm_data_init_defaults(&data);
-
+	data.os_file = data.oftree_file = data.initrd_file = NULL;
 	data.verbose = max(verbose, data.verbose);
 
 	devicetree = blspec_entry_var_get(entry, "devicetree");

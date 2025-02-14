@@ -570,18 +570,29 @@ static void fit_uncompress_error_fn(char *x)
 	pr_err("%s\n", x);
 }
 
+static const char *get_compression_type(struct device_node *image)
+{
+	const char *compression = NULL;
+
+	of_property_read_string(image, "compression", &compression);
+	if (!compression || !strcmp(compression, "none"))
+		return NULL;
+
+	return compression;
+}
+
 static int fit_handle_decompression(struct device_node *image,
 				    const char *type,
 				    const void **data,
 				    int *data_len)
 {
-	const char *compression = NULL;
+	const char *compression;
 	struct property *pp;
 	void *uc_data;
 	int ret;
 
-	of_property_read_string(image, "compression", &compression);
-	if (!compression || !strcmp(compression, "none"))
+	compression = get_compression_type(image);
+	if (!compression)
 		return 0;
 
 	if (!strcmp(type, "ramdisk")) {
@@ -723,6 +734,7 @@ static int fit_fdt_is_compatible(struct fit_handle *handle,
 				 struct device_node *child,
 				 const char *machine)
 {
+	const char *reason = "malformed";
 	struct device_node *image;
 	const char *unit = "fdt";
 	int data_len;
@@ -742,14 +754,25 @@ static int fit_fdt_is_compatible(struct fit_handle *handle,
 	if (!data)
 		goto err;
 
-	ret = fit_handle_decompression(image, "fdt", &data, &data_len);
-	if (ret)
+	/* We have three options here:
+	 *
+	 * 1) Increase our attack surface by all supported compression algos
+	 * 2) Verify all configurations in the image as we search for best
+	 *    OF match score
+	 * 3) Blame the user and expect them to supply a compatible property
+	 *    in the configuration node if they want to compress their FDTs
+	 *
+	 * We go for option 3.
+	 */
+	if (get_compression_type(image)) {
+		reason = "compressed";
 		goto err;
+	}
 
 	return fdt_machine_is_compatible(data, data_len, machine);
 err:
-	pr_warn("skipping malformed configuration \"%pOF\"\n",
-		child);
+	pr_warn("skipping %s configuration \"%pOF\"\n",
+		reason, child);
 	return 0;
 }
 

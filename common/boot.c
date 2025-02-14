@@ -50,13 +50,14 @@ void bootentries_free(struct bootentries *bootentries)
 		be->release(be);
 	}
 
-	if (bootentries->menu) {
+	if (IS_ENABLED(CONFIG_MENU) && bootentries->menu) {
 		int i;
 		for (i = 0; i < bootentries->menu->display_lines; i++)
 			free_const(bootentries->menu->display[i]);
 		free_const(bootentries->menu->display);
+		free(bootentries->menu);
 	}
-	free(bootentries->menu);
+
 	free(bootentries);
 }
 

@@ -419,7 +419,6 @@ static void __maybe_unused cb_boot(struct fastboot *fb, const char *opt)
 
 	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Booting kernel..\n");
 
-	globalvar_set_match("linux.bootargs.dyn.", "");
 	globalvar_set("bootm.image", "");
 
 	data.os_file = fb->tempname;

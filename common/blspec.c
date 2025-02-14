@@ -81,7 +81,6 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 		.dryrun = dryrun,
 	};
 
-	globalvar_set_match("linux.bootargs.dyn.", "");
 	globalvar_set("bootm.image", "");
 	globalvar_set("bootm.oftree", "");
 	globalvar_set("bootm.initrd", "");

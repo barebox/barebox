@@ -82,7 +82,6 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	globalvar_add_simple("linux.bootargs.dyn.ip", NULL);
 	globalvar_add_simple("linux.bootargs.dyn.root", NULL);
-	globalvar_set_match("linux.bootargs.dyn.", "");
 
 	ret = run_command(bs->scriptpath);
 	if (ret) {
@@ -160,6 +159,8 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 	ret = be->boot(be, verbose, dryrun);
 	if (ret && ret != -ENOMEDIUM)
 		pr_err("Booting entry '%s' failed: %pe\n", be->title, ERR_PTR(ret));
+
+	globalvar_set_match("linux.bootargs.dyn.", "");
 
 	return ret;
 }

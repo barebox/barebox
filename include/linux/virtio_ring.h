@@ -10,6 +10,7 @@
 #define _LINUX_VIRTIO_RING_H
 
 #include <linux/virtio_types.h>
+#include <linux/scatterlist.h>
 
 /* This marks a buffer as continuing via the next field */
 #define VRING_DESC_F_NEXT		1
@@ -161,10 +162,8 @@ static inline int vring_need_event(__u16 event_idx, __u16 new_idx, __u16 old)
 	return (__u16)(new_idx - event_idx - 1) < (__u16)(new_idx - old);
 }
 
-struct virtio_sg;
-
 /**
- * virtqueue_add - expose buffers to other end
+ * virtqueue_add_sgs - expose buffers to other end
  *
  * @vq:		the struct virtqueue we're talking about
  * @sgs:	array of terminated scatterlists
@@ -177,8 +176,8 @@ struct virtio_sg;
  *
  * Returns zero or a negative error (ie. ENOSPC, ENOMEM, EIO).
  */
-int virtqueue_add(struct virtqueue *vq, struct virtio_sg *sgs[],
-		  unsigned int out_sgs, unsigned int in_sgs);
+int virtqueue_add_sgs(struct virtqueue *vq, struct scatterlist *sgs[],
+		      unsigned int out_sgs, unsigned int in_sgs);
 
 /**
  * virtqueue_add_outbuf - expose output buffers to other end
@@ -192,9 +191,9 @@ int virtqueue_add(struct virtqueue *vq, struct virtio_sg *sgs[],
  * Returns zero or a negative error (ie. ENOSPC, ENOMEM, EIO).
  */
 static inline int virtqueue_add_outbuf(struct virtqueue *vq,
-                                      struct virtio_sg *sg, unsigned int num)
+				       struct scatterlist *sg, unsigned int num)
 {
-	return virtqueue_add(vq, &sg, num, 0);
+	return virtqueue_add_sgs(vq, &sg, num, 0);
 }
 
 /**
@@ -209,9 +208,9 @@ static inline int virtqueue_add_outbuf(struct virtqueue *vq,
  * Returns zero or a negative error (ie. ENOSPC, ENOMEM, EIO).
  */
 static inline int virtqueue_add_inbuf(struct virtqueue *vq,
-                                     struct virtio_sg *sg, unsigned int num)
+				      struct scatterlist *sg, unsigned int num)
 {
-	return virtqueue_add(vq, &sg, 0, num);
+	return virtqueue_add_sgs(vq, &sg, 0, num);
 }
 
 /**
@@ -219,7 +218,7 @@ static inline int virtqueue_add_inbuf(struct virtqueue *vq,
  *
  * @vq:		the struct virtqueue
  *
- * After one or more virtqueue_add() calls, invoke this to kick
+ * After one or more virtqueue_add_sgs() calls, invoke this to kick
  * the other side.
  *
  * Caller must ensure we don't call this with other virtqueue

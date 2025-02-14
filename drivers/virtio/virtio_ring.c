@@ -29,10 +29,12 @@ static inline struct device *vring_dma_dev(const struct virtqueue *vq)
 
 /* Map one sg entry. */
 static dma_addr_t vring_map_one_sg(struct virtqueue *vq,
-				   struct virtio_sg *sg,
+				   struct scatterlist *sg,
 				   enum dma_data_direction direction)
 {
-	return dma_map_single(vring_dma_dev(vq), sg->addr, sg->length, direction);
+	return dma_map_single(vring_dma_dev(vq),
+			      sg->address, sg->length,
+			      direction);
 }
 
 static int vring_mapping_error(struct virtqueue *vq,
@@ -55,11 +57,12 @@ static void vring_unmap_one(struct virtqueue *vq,
 		       DMA_FROM_DEVICE : DMA_TO_DEVICE);
 }
 
-int virtqueue_add(struct virtqueue *vq, struct virtio_sg *sgs[],
-		  unsigned int out_sgs, unsigned int in_sgs)
+int virtqueue_add_sgs(struct virtqueue *vq, struct scatterlist *sgs[],
+		      unsigned int out_sgs, unsigned int in_sgs)
 {
 	struct vring_desc *desc;
 	unsigned int total_sg = out_sgs + in_sgs;
+	struct scatterlist *sg;
 	unsigned int i, err_idx, n, avail, descs_used, uninitialized_var(prev);
 	int head;
 
@@ -85,33 +88,37 @@ int virtqueue_add(struct virtqueue *vq, struct virtio_sg *sgs[],
 	}
 
 	for (n = 0; n < out_sgs; n++) {
-		struct virtio_sg *sg = sgs[n];
-		dma_addr_t addr = vring_map_one_sg(vq, sg, DMA_TO_DEVICE);
-		if (vring_mapping_error(vq, addr))
-			goto unmap_release;
+		for (sg = sgs[n]; sg; sg = sg_next(sg)) {
+			dma_addr_t addr = vring_map_one_sg(vq, sg, DMA_TO_DEVICE);
+			if (vring_mapping_error(vq, addr))
+				goto unmap_release;
 
+			desc[i].flags = cpu_to_virtio16(vq->vdev, VRING_DESC_F_NEXT);
+			desc[i].addr = cpu_to_virtio64(vq->vdev, addr);
+			desc[i].len = cpu_to_virtio32(vq->vdev, sg->length);
 
-		desc[i].flags = cpu_to_virtio16(vq->vdev, VRING_DESC_F_NEXT);
-		desc[i].addr = cpu_to_virtio64(vq->vdev, addr);
-		desc[i].len = cpu_to_virtio32(vq->vdev, sg->length);
-
-		prev = i;
-		i = virtio16_to_cpu(vq->vdev, desc[i].next);
+			prev = i;
+			i = virtio16_to_cpu(vq->vdev, desc[i].next);
+		}
 	}
+
 	for (; n < (out_sgs + in_sgs); n++) {
-		struct virtio_sg *sg = sgs[n];
-		dma_addr_t addr = vring_map_one_sg(vq, sg, DMA_FROM_DEVICE);
-		if (vring_mapping_error(vq, addr))
-			goto unmap_release;
+		for (sg = sgs[n]; sg; sg = sg_next(sg)) {
+			struct scatterlist *sg = sgs[n];
+			dma_addr_t addr = vring_map_one_sg(vq, sg, DMA_FROM_DEVICE);
+			if (vring_mapping_error(vq, addr))
+				goto unmap_release;
 
-		desc[i].flags = cpu_to_virtio16(vq->vdev, VRING_DESC_F_NEXT |
-						VRING_DESC_F_WRITE);
-		desc[i].addr = cpu_to_virtio64(vq->vdev, addr);
-		desc[i].len = cpu_to_virtio32(vq->vdev, sg->length);
+			desc[i].flags = cpu_to_virtio16(vq->vdev, VRING_DESC_F_NEXT |
+							VRING_DESC_F_WRITE);
+			desc[i].addr = cpu_to_virtio64(vq->vdev, addr);
+			desc[i].len = cpu_to_virtio32(vq->vdev, sg->length);
 
-		prev = i;
-		i = virtio16_to_cpu(vq->vdev, desc[i].next);
+			prev = i;
+			i = virtio16_to_cpu(vq->vdev, desc[i].next);
+		}
 	}
+
 	/* Last one doesn't continue */
 	desc[prev].flags &= cpu_to_virtio16(vq->vdev, ~VRING_DESC_F_NEXT);
 

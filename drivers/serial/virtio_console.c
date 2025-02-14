@@ -41,15 +41,15 @@ static void put_chars(struct virtio_console *virtcons, const char *buf, int coun
 {
 	struct virtqueue *out_vq = virtcons->out_vq;
 	unsigned int len;
-	struct virtio_sg *sgs[1] = {
-		&(struct virtio_sg) { .addr = (void *)buf, .length = count }
-	};
+	struct scatterlist sg;
+
+	sg_init_one(&sg, buf, count);
 
 	/*
 	 * add_buf wants a token to identify this buffer: we hand it
 	 * any non-NULL pointer, since there's only ever one buffer.
 	 */
-	if (virtqueue_add(out_vq, sgs, 1, 0) >= 0) {
+	if (virtqueue_add_outbuf(out_vq, &sg, 1) >= 0) {
 		/* Tell Host to go! */
 		virtqueue_kick(out_vq);
 		/* Chill out until it's done with the buffer. */
@@ -71,12 +71,12 @@ static void virtcons_putc(struct console_device *cdev, char c)
  */
 static void add_inbuf(struct virtio_console *virtcons)
 {
-	struct virtio_sg *sgs[1] = { &(struct virtio_sg) {
-		.addr = virtcons->inbuf, .length = sizeof(virtcons->inbuf) }
-	};
+	struct scatterlist sg;
+
+	sg_init_one(&sg, virtcons->inbuf, sizeof(virtcons->inbuf));
 
 	/* We should always be able to add one buffer to an empty queue. */
-	if (virtqueue_add(virtcons->in_vq, sgs, 0, 1) < 0)
+	if (virtqueue_add_inbuf(virtcons->in_vq, &sg, 1) < 0)
 		BUG();
 	virtqueue_kick(virtcons->in_vq);
 }

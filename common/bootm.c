@@ -213,14 +213,6 @@ static bool fitconfig_has_ramdisk(struct image_data *data)
 	return fit_has_image(data->os_fit, data->fit_config, "ramdisk");
 }
 
-bool bootm_has_initrd(struct image_data *data)
-{
-	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
-		return false;
-
-	return fitconfig_has_ramdisk(data) || data->initrd_file;
-}
-
 static int bootm_open_initrd_uimage(struct image_data *data)
 {
 	int ret;
@@ -262,19 +254,17 @@ static int bootm_open_initrd_uimage(struct image_data *data)
  *
  * Return: 0 on success, negative error code otherwise
  */
-int bootm_load_initrd(struct image_data *data, unsigned long load_address)
+const struct resource *
+bootm_load_initrd(struct image_data *data, unsigned long load_address)
 {
 	enum filetype type;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
-		return -ENOSYS;
-
-	if (!bootm_has_initrd(data))
-		return -EINVAL;
+		return NULL;
 
 	if (data->initrd_res)
-		return 0;
+		return data->initrd_res;
 
 	if (fitconfig_has_ramdisk(data)) {
 		const void *initrd;
@@ -285,7 +275,7 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		if (ret) {
 			pr_err("Cannot open ramdisk image in FIT image: %s\n",
 					strerror(-ret));
-			return ret;
+			return ERR_PTR(ret);
 		}
 		data->initrd_res = request_sdram_region("initrd",
 				load_address,
@@ -295,17 +285,20 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 					" 0x%08llx-0x%08llx\n",
 				(unsigned long long)load_address,
 				(unsigned long long)load_address + initrd_size - 1);
-			return -ENOMEM;
+			return ERR_PTR(-ENOMEM);
 		}
 		memcpy((void *)load_address, initrd, initrd_size);
 		pr_info("Loaded initrd from FIT image\n");
 		goto done1;
 	}
 
+	if (!data->initrd_file)
+		return NULL;
+
 	ret = file_name_detect_type(data->initrd_file, &type);
 	if (ret) {
 		pr_err("could not open initrd \"%s\": %s\n", data->initrd_file, strerror(-ret));
-		return ret;
+		return ERR_PTR(ret);
 	}
 
 	if (type == filetype_uimage) {
@@ -314,7 +307,7 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		if (ret) {
 			pr_err("loading initrd failed with %s\n",
 			       strerror(-ret));
-			return ret;
+			return ERR_PTR(ret);
 		}
 
 		num = uimage_part_num(data->initrd_part);
@@ -322,14 +315,14 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		data->initrd_res = uimage_load_to_sdram(data->initrd,
 			num, load_address);
 		if (!data->initrd_res)
-			return -ENOMEM;
+			return ERR_PTR(-ENOMEM);
 
 		goto done;
 	}
 
 	data->initrd_res = file_to_sdram(data->initrd_file, load_address);
 	if (!data->initrd_res)
-		return -ENOMEM;
+		return ERR_PTR(-ENOMEM);
 
 done:
 
@@ -343,7 +336,7 @@ done1:
 		&data->initrd_res->start,
 		&data->initrd_res->end);
 
-	return 0;
+	return data->initrd_res;
 }
 
 static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,

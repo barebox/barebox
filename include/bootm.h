@@ -142,8 +142,8 @@ void bootm_data_restore_defaults(const struct bootm_data *data);
 
 int bootm_load_os(struct image_data *data, unsigned long load_address);
 
-bool bootm_has_initrd(struct image_data *data);
-int bootm_load_initrd(struct image_data *data, unsigned long load_address);
+const struct resource *
+bootm_load_initrd(struct image_data *data, unsigned long load_address);
 
 void *bootm_get_devicetree(struct image_data *data);
 int bootm_load_devicetree(struct image_data *data, void *fdt,

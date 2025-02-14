@@ -161,6 +161,14 @@ This entry can be booted with ``boot mmc``. It can also be made the default by
 setting the ``global.boot.default`` variable to ``mmc`` and then calling
 ``boot`` without arguments.
 
+Especially for development, it can be useful to override only parts of
+the images used in a boot. To do so, set ``CONFIG_BOOT_OVERRIDE=y``
+and configure the overrides as arguments to the ``boot`` command::
+
+.. code-block:: sh
+
+  boot -o bootm.image=/mnt/tftp/oftree mmc
+
 .. _bootloader_spec:
 
 Boot Loader Specification

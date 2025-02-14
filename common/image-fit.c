@@ -719,6 +719,40 @@ static int fit_config_verify_signature(struct fit_handle *handle, struct device_
 	return ret;
 }
 
+static int fit_fdt_is_compatible(struct fit_handle *handle,
+				 struct device_node *child,
+				 const char *machine)
+{
+	struct device_node *image;
+	const char *unit = "fdt";
+	int data_len;
+	const void *data;
+	int ret;
+
+	if (of_property_present(child, "compatible"))
+		return 0;
+	if (!of_property_present(child, "fdt"))
+		return 0;
+
+	ret = fit_get_image(handle, child, &unit, &image);
+	if (ret)
+		goto err;
+
+	data = of_get_property(image, "data", &data_len);
+	if (!data)
+		goto err;
+
+	ret = fit_handle_decompression(image, "fdt", &data, &data_len);
+	if (ret)
+		goto err;
+
+	return fdt_machine_is_compatible(data, data_len, machine);
+err:
+	pr_warn("skipping malformed configuration \"%pOF\"\n",
+		child);
+	return 0;
+}
+
 static int fit_find_compatible_unit(struct fit_handle *handle,
 				    struct device_node *conf_node,
 				    const char **unit)
@@ -740,37 +774,8 @@ static int fit_find_compatible_unit(struct fit_handle *handle,
 	for_each_child_of_node(conf_node, child) {
 		int score = of_device_is_compatible(child, machine);
 
-		if (!score && !of_property_present(child, "compatible") &&
-		    of_property_present(child, "fdt")) {
-			struct device_node *image;
-			const char *unit = "fdt";
-			int data_len;
-			const void *data;
-			int ret;
-
-			ret = fit_get_image(handle, child, &unit, &image);
-			if (ret)
-				goto next;
-
-			data = of_get_property(image, "data", &data_len);
-			if (!data) {
-				ret = -EINVAL;
-				goto next;
-			}
-
-			ret = fit_handle_decompression(image, "fdt", &data, &data_len);
-			if (ret) {
-				ret = -EILSEQ;
-				goto next;
-			}
-
-			score = fdt_machine_is_compatible(data, data_len, machine);
-
-next:
-			if (ret)
-				pr_warn("skipping malformed configuration: %pOF (%pe)\n",
-					child, ERR_PTR(ret));
-		}
+		if (!score)
+			score = fit_fdt_is_compatible(handle, child, machine);
 
 		if (score > best_score) {
 			best_score = score;

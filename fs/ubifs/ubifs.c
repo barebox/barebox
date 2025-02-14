@@ -504,7 +504,6 @@ static void ubifs_remove(struct device *dev)
 static struct fs_driver ubifs_driver = {
 	.read      = ubifs_read,
 	.type = filetype_ubifs,
-	.flags     = 0,
 	.drv = {
 		.probe  = ubifs_probe,
 		.remove = ubifs_remove,

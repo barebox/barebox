@@ -312,7 +312,6 @@ static struct fs_driver devfs_driver = {
 	.protect   = devfs_protect,
 	.discard_range = devfs_discard_range,
 	.memmap    = devfs_memmap,
-	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.probe  = devfs_probe,
 		.remove = devfs_delete,

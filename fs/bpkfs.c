@@ -504,7 +504,6 @@ static struct fs_driver bpkfs_driver = {
 	.read      = bpkfs_read,
 	.lseek     = bpkfs_lseek,
 	.legacy_ops = &bpkfs_ops,
-	.flags     = 0,
 	.type = filetype_bpk,
 	.drv = {
 		.probe  = bpkfs_probe,

@@ -461,7 +461,6 @@ static void jffs2_remove(struct device *dev)
 static struct fs_driver jffs2_driver = {
 	.read = jffs2_read,
 	.type = filetype_jffs2,
-	.flags     = 0,
 	.drv = {
 		.probe  = jffs2_probe,
 		.remove = jffs2_remove,

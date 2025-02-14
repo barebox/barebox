@@ -530,7 +530,6 @@ static struct fs_driver uimagefs_driver = {
 	.lseek     = uimagefs_lseek,
 	.ioctl	   = uimagefs_ioctl,
 	.legacy_ops = &uimagefs_ops,
-	.flags     = 0,
 	.type = filetype_uimage,
 	.drv = {
 		.probe  = uimagefs_probe,

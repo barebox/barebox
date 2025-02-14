@@ -1542,7 +1542,6 @@ static struct fs_driver nfs_driver = {
 	.lseek     = nfs_lseek,
 	.write     = nfs_write,
 	.truncate  = nfs_truncate,
-	.flags     = 0,
 	.drv = {
 		.probe  = nfs_probe,
 		.remove = nfs_remove,

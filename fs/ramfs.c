@@ -444,7 +444,6 @@ static struct fs_driver ramfs_driver = {
 	.write     = ramfs_write,
 	.memmap    = ramfs_memmap,
 	.truncate  = ramfs_truncate,
-	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.probe  = ramfs_probe,
 		.remove = ramfs_remove,

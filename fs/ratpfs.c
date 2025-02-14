@@ -456,7 +456,6 @@ static struct fs_driver ratpfs_driver = {
 	.write     = ratpfs_write,
 	.truncate  = ratpfs_truncate,
 	.legacy_ops = &ratpfs_ops,
-	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.probe  = ratpfs_probe,
 		.remove = ratpfs_remove,

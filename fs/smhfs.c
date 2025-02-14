@@ -150,7 +150,6 @@ static struct fs_driver smhfs_driver = {
 	.write     = smhfs_write,
 	.truncate  = smhfs_truncate,
 	.legacy_ops = &smhfs_ops,
-	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.probe  = smhfs_probe,
 		.remove = smhfs_remove,

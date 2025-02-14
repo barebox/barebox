@@ -160,7 +160,6 @@ static const struct fs_legacy_ops omap4_usbbootfs_ops = {
 static struct fs_driver omap4_usbbootfs_driver = {
 	.read    = omap4_usbbootfs_read,
 	.legacy_ops = &omap4_usbbootfs_ops,
-	.flags	 = 0,
 	.drv = {
 		.probe	= omap4_usbbootfs_probe,
 		.remove	= omap4_usbbootfs_remove,

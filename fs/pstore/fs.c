@@ -287,7 +287,6 @@ static const struct fs_legacy_ops pstore_ops = {
 static struct fs_driver pstore_driver = {
 	.read      = pstore_read,
 	.lseek     = pstore_lseek,
-	.flags     = FS_DRIVER_NO_DEV,
 	.legacy_ops = &pstore_ops,
 	.type = filetype_uimage,
 	.drv = {

@@ -397,7 +397,6 @@ static struct fs_driver fat_driver = {
 #endif
 	.legacy_ops = &fat_ops,
 	.type = filetype_fat,
-	.flags     = 0,
 	.drv = {
 		.probe  = fat_probe,
 		.remove = fat_remove,

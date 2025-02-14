@@ -1115,7 +1115,6 @@ static struct fs_driver tftp_driver = {
 	.lseek     = tftp_lseek,
 	.write     = tftp_write,
 	.truncate  = tftp_truncate,
-	.flags     = 0,
 	.drv = {
 		.probe  = tftp_probe,
 		.remove = tftp_remove,

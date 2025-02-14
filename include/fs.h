@@ -19,8 +19,6 @@ struct partition;
 struct node_d;
 struct stat;
 
-#define FS_DRIVER_NO_DEV	1
-
 /**
  * enum erase_type - Type of erase operation
  * @ERASE_TO_WRITE: Conduct low-level erase operation to prepare for a write
@@ -86,8 +84,6 @@ struct fs_driver {
 	struct driver drv;
 
 	enum filetype type;
-
-	unsigned long flags;
 };
 
 #define dev_to_fs_device(d) container_of(d, struct fs_device, dev)

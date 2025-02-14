@@ -68,7 +68,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->dryrun = bootm_dryrun;
 }
 
-static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_HASH;
+static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_AVAILABLE;
 
 enum bootm_verify bootm_get_verify_mode(void)
 {

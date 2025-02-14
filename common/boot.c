@@ -73,12 +73,14 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	struct bootentry_script *bs = container_of(entry, struct bootentry_script, entry);
 	int ret;
 
-	struct bootm_data data = {};
+	struct bootm_data backup = {}, data = {};
 
 	if (dryrun == 1) {
 		printf("Would run %s\n", bs->scriptpath);
 		return 0;
 	}
+
+	bootm_data_init_defaults(&backup);
 
 	globalvar_add_simple("linux.bootargs.dyn.ip", NULL);
 	globalvar_add_simple("linux.bootargs.dyn.root", NULL);
@@ -86,7 +88,7 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	ret = run_command(bs->scriptpath);
 	if (ret) {
 		pr_err("Running script '%s' failed: %s\n", bs->scriptpath, strerror(-ret));
-		return ret;
+		goto out;
 	}
 
 	bootm_data_init_defaults(&data);
@@ -96,7 +98,10 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	if (dryrun >= 2)
 		data.dryrun = dryrun - 1;
 
-	return bootm_boot(&data);
+	ret = bootm_boot(&data);
+out:
+	bootm_data_restore_defaults(&backup);
+	return ret;
 }
 
 static unsigned int boot_watchdog_timeout;

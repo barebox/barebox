@@ -68,6 +68,23 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->dryrun = bootm_dryrun;
 }
 
+void bootm_data_restore_defaults(const struct bootm_data *data)
+{
+	globalvar_set("bootm.oftree", data->oftree_file);
+	globalvar_set("bootm.tee", data->tee_file);
+	globalvar_set("bootm.image", data->os_file);
+	pr_setenv("global.bootm.image.loadaddr", "0x%lx", data->os_address);
+	pr_setenv("global.bootm.initrd.loadaddr", "0x%lx", data->initrd_address);
+	globalvar_set("bootm.initrd", data->initrd_file);
+	globalvar_set("bootm.root_dev", data->root_dev);
+	bootm_set_verify_mode(data->verify);
+	bootm_appendroot = data->appendroot;
+	bootm_provide_machine_id = data->provide_machine_id;
+	bootm_provide_hostname = data->provide_hostname;
+	bootm_verbosity = data->verbose;
+	bootm_dryrun = data->dryrun;
+}
+
 static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_HASH;
 
 enum bootm_verify bootm_get_verify_mode(void)

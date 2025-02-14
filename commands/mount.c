@@ -9,14 +9,18 @@
 #include <errno.h>
 #include <getopt.h>
 #include <linux/err.h>
+#include <stringlist.h>
 
 static int do_mount(int argc, char *argv[])
 {
-	int opt, verbose = 0;
+	int ret = 0, opt, verbose = 0;
 	struct driver *drv;
 	const char *type = NULL;
 	const char *mountpoint, *devstr;
-	const char *fsoptions = NULL;
+	struct string_list fsoption_list;
+	char *fsoptions = NULL;
+
+	string_list_init(&fsoption_list);
 
 	while ((opt = getopt(argc, argv, "ao:t:v")) > 0) {
 		switch (opt) {
@@ -27,7 +31,7 @@ static int do_mount(int argc, char *argv[])
 			type = optarg;
 			break;
 		case 'o':
-			fsoptions = optarg;
+			string_list_add(&fsoption_list, optarg);
 			break;
 		case 'v':
 			verbose++;
@@ -56,10 +60,21 @@ static int do_mount(int argc, char *argv[])
 			}
 		}
 
-		return 0;
+		goto out;
+	}
+
+	if (argc == 0) {
+		ret = COMMAND_ERROR_USAGE;
+		goto out;
 	}
 
 	devstr = argv[0];
+
+	fsoptions = string_list_join(&fsoption_list, " ");
+	if (!fsoptions) {
+		ret = -ENOMEM;
+		goto out;
+	}
 
 	if (argc == 1) {
 		struct cdev *cdev;
@@ -70,8 +85,10 @@ static int do_mount(int argc, char *argv[])
 		device_detect_by_name(devstr);
 
 		cdev = cdev_by_name(devstr);
-		if (!cdev)
-			return -ENOENT;
+		if (!cdev) {
+			ret = -ENOENT;
+			goto out;
+		}
 
 		path = cdev_mount_default(cdev, fsoptions);
 		if (IS_ERR(path))
@@ -79,11 +96,8 @@ static int do_mount(int argc, char *argv[])
 
 		printf("mounted /dev/%s on %s\n", devstr, path);
 
-		return 0;
+		goto out;
 	}
-
-	if (argc < 2)
-		return COMMAND_ERROR_USAGE;
 
 	if (argc == 3) {
 		/*
@@ -95,7 +109,12 @@ static int do_mount(int argc, char *argv[])
 		mountpoint = argv[1];
 	}
 
-	return mount(devstr, type, mountpoint, fsoptions);
+	ret = mount(devstr, type, mountpoint, fsoptions);
+
+out:
+	free(fsoptions);
+	string_list_free(&fsoption_list);
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(mount)

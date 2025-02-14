@@ -26,7 +26,6 @@ static struct dentry *jffs2_lookup (struct inode *,struct dentry *,
 
 const struct file_operations jffs2_dir_operations =
 {
-	.read 	 = NULL,
 	.iterate = jffs2_readdir,
 };
 

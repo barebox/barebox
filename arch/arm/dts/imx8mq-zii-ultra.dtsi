@@ -70,6 +70,9 @@
 };
 
 &{uart2/mcu/eeprom@a4} {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
 	lru_part_number: lru-part-number@21 {
 		reg = <0x21 15>;
 		read-only;

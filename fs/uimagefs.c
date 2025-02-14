@@ -517,6 +517,8 @@ err:
 }
 
 static const struct fs_legacy_ops uimagefs_ops = {
+	.open      = uimagefs_open,
+	.close     = uimagefs_close,
 	.opendir   = uimagefs_opendir,
 	.readdir   = uimagefs_readdir,
 	.closedir  = uimagefs_closedir,
@@ -524,8 +526,6 @@ static const struct fs_legacy_ops uimagefs_ops = {
 };
 
 static struct fs_driver uimagefs_driver = {
-	.open      = uimagefs_open,
-	.close     = uimagefs_close,
 	.read      = uimagefs_read,
 	.lseek     = uimagefs_lseek,
 	.ioctl	   = uimagefs_ioctl,

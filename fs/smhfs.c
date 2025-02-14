@@ -134,6 +134,8 @@ static void smhfs_remove(struct device __always_unused *dev)
 }
 
 static const struct fs_legacy_ops smhfs_ops = {
+	.open      = smhfs_open,
+	.close     = smhfs_close,
 	.opendir   = smhfs_opendir,
 	.stat      = smhfs_stat,
 	.create    = smhfs_create,
@@ -143,8 +145,6 @@ static const struct fs_legacy_ops smhfs_ops = {
 };
 
 static struct fs_driver smhfs_driver = {
-	.open      = smhfs_open,
-	.close     = smhfs_close,
 	.read      = smhfs_read,
 	.lseek     = smhfs_lseek,
 	.write     = smhfs_write,

@@ -48,8 +48,6 @@ struct fs_driver {
 	/* Truncate a file to given size */
 	int (*truncate)(struct device *dev, struct file *f, loff_t size);
 
-	int (*open)(struct device *dev, struct file *f, const char *pathname);
-	int (*close)(struct device *dev, struct file *f);
 	int (*read)(struct device *dev, struct file *f, void *buf, size_t size);
 	int (*write)(struct device *dev, struct file *f, const void *buf,
 		     size_t size);
@@ -67,6 +65,8 @@ struct fs_driver {
 	int (*memmap)(struct device *dev, struct file *f, void **map, int flags);
 
 	const struct fs_legacy_ops {
+		int (*open)(struct device *dev, struct file *f, const char *pathname);
+		int (*close)(struct device *dev, struct file *f);
 		/* create a file. The file is guaranteed to not exist */
 		int (*create)(struct device *dev, const char *pathname, mode_t mode);
 		int (*unlink)(struct device *dev, const char *pathname);

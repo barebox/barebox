@@ -1156,9 +1156,8 @@ static const char *nfs_get_link(struct dentry *dentry, struct inode *inode)
 	return inode->i_link;
 }
 
-static int nfs_open(struct device *dev, struct file *file, const char *filename)
+static int nfs_open(struct inode *inode, struct file *file)
 {
-	struct inode *inode = file->f_inode;
 	struct nfs_inode *ninode = nfsi(inode);
 	struct nfs_priv *npriv = ninode->npriv;
 	struct file_priv *priv;
@@ -1177,7 +1176,7 @@ static int nfs_open(struct device *dev, struct file *file, const char *filename)
 	return 0;
 }
 
-static int nfs_close(struct device *dev, struct file *file)
+static int nfs_close(struct inode *inode, struct file *file)
 {
 	struct file_priv *priv = file->private_data;
 
@@ -1318,7 +1317,10 @@ static void nfs_destroy_inode(struct inode *inode)
 static const struct inode_operations nfs_file_inode_operations;
 static const struct file_operations nfs_dir_operations;
 static const struct inode_operations nfs_dir_inode_operations;
-static const struct file_operations nfs_file_operations;
+static const struct file_operations nfs_file_operations = {
+	.open      = nfs_open,
+	.release     = nfs_close,
+};
 static const struct inode_operations nfs_symlink_inode_operations = {
 	.get_link = nfs_get_link,
 };
@@ -1536,8 +1538,6 @@ static void nfs_remove(struct device *dev)
 }
 
 static struct fs_driver nfs_driver = {
-	.open      = nfs_open,
-	.close     = nfs_close,
 	.read      = nfs_read,
 	.lseek     = nfs_lseek,
 	.write     = nfs_write,

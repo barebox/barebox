@@ -100,9 +100,8 @@ static int devfs_memmap(struct device *_dev, struct file *f, void **map, int fla
 	return cdev_memmap(cdev, map, flags);
 }
 
-static int devfs_open(struct device *_dev, struct file *f, const char *filename)
+static int devfs_open(struct inode *inode, struct file *f)
 {
-	struct inode *inode = f->f_inode;
 	struct devfs_inode *node = container_of(inode, struct devfs_inode, inode);
 	struct cdev *cdev = node->cdev;
 
@@ -113,7 +112,7 @@ static int devfs_open(struct device *_dev, struct file *f, const char *filename)
 	return cdev_open(cdev, f->f_flags);
 }
 
-static int devfs_close(struct device *_dev, struct file *f)
+static int devfs_close(struct inode *inode, struct file *f)
 {
 	struct cdev *cdev = f->private_data;
 
@@ -176,7 +175,10 @@ static int devfs_iterate(struct file *file, struct dir_context *ctx)
 static const struct inode_operations devfs_file_inode_operations;
 static const struct file_operations devfs_dir_operations;
 static const struct inode_operations devfs_dir_inode_operations;
-static const struct file_operations devfs_file_operations;
+static const struct file_operations devfs_file_operations = {
+	.open = devfs_open,
+	.release = devfs_close,
+};
 
 static int devfs_lookup_revalidate(struct dentry *dentry, unsigned int flags)
 {
@@ -303,8 +305,6 @@ static struct fs_driver devfs_driver = {
 	.read      = devfs_read,
 	.write     = devfs_write,
 	.lseek     = devfs_lseek,
-	.open      = devfs_open,
-	.close     = devfs_close,
 	.flush     = devfs_flush,
 	.ioctl     = devfs_ioctl,
 	.truncate  = devfs_truncate,

@@ -131,9 +131,8 @@ static void squashfs_remove(struct device *dev)
 	squashfs_put_super(sb);
 }
 
-static int squashfs_open(struct device *dev, struct file *file, const char *filename)
+static int squashfs_open(struct inode *inode, struct file *file)
 {
-	struct inode *inode = file->f_inode;
 	struct squashfs_page *page;
 	int i;
 
@@ -142,7 +141,7 @@ static int squashfs_open(struct device *dev, struct file *file, const char *file
 	for (i = 0; i < 32; i++) {
 		page->buf[i] = malloc(PAGE_CACHE_SIZE);
 		if (page->buf[i] == NULL) {
-			dev_err(dev, "error allocation read buffer\n");
+			dev_err(&file->fsdev->dev, "error allocation read buffer\n");
 			goto error;
 		}
 	}
@@ -164,7 +163,7 @@ error:
 	return -ENOMEM;
 }
 
-static int squashfs_close(struct device *dev, struct file *f)
+static int squashfs_close(struct inode *inode, struct file *f)
 {
 	struct squashfs_page *page = f->private_data;
 	int i;
@@ -177,6 +176,11 @@ static int squashfs_close(struct device *dev, struct file *f)
 
 	return 0;
 }
+
+const struct file_operations squashfs_file_operations = {
+	.open = squashfs_open,
+	.release = squashfs_close,
+};
 
 static int squashfs_read_buf(struct squashfs_page *page, int pos, void **buf)
 {
@@ -251,8 +255,6 @@ struct squashfs_dir {
 };
 
 static struct fs_driver squashfs_driver = {
-	.open		= squashfs_open,
-	.close		= squashfs_close,
 	.read		= squashfs_read,
 	.type		= filetype_squashfs,
 	.drv = {

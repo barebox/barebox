@@ -275,6 +275,8 @@ static int pstore_probe(struct device *dev)
 }
 
 static const struct fs_legacy_ops pstore_ops = {
+	.open      = pstore_open,
+	.close     = pstore_close,
 	.unlink    = pstore_unlink,
 	.opendir   = pstore_opendir,
 	.readdir   = pstore_readdir,
@@ -283,8 +285,6 @@ static const struct fs_legacy_ops pstore_ops = {
 };
 
 static struct fs_driver pstore_driver = {
-	.open      = pstore_open,
-	.close     = pstore_close,
 	.read      = pstore_read,
 	.lseek     = pstore_lseek,
 	.flags     = FS_DRIVER_NO_DEV,

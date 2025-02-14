@@ -37,12 +37,10 @@ static inline void i_gid_write(struct inode *inode, gid_t gid)
 	inode->i_gid = gid;
 }
 
-const struct file_operations jffs2_file_operations;
 const struct inode_operations jffs2_file_inode_operations;
 
-static int jffs2_open(struct device *dev, struct file *file, const char *filename)
+static int jffs2_open(struct inode *inode, struct file *file)
 {
-	struct inode *inode = file->f_inode;
 	struct jffs2_file *jf;
 
 	jf = xzalloc(sizeof(*jf));
@@ -56,7 +54,7 @@ static int jffs2_open(struct device *dev, struct file *file, const char *filenam
 	return 0;
 }
 
-static int jffs2_close(struct device *dev, struct file *f)
+static int jffs2_close(struct inode *inode, struct file *f)
 {
 	struct jffs2_file *jf = f->private_data;
 
@@ -65,6 +63,11 @@ static int jffs2_close(struct device *dev, struct file *f)
 
 	return 0;
 }
+
+const struct file_operations jffs2_file_operations = {
+	.open = jffs2_open,
+	.release = jffs2_close,
+};
 
 static int jffs2_get_block(struct jffs2_file *jf, unsigned int pos)
 {
@@ -456,8 +459,6 @@ static void jffs2_remove(struct device *dev)
 
 
 static struct fs_driver jffs2_driver = {
-	.open = jffs2_open,
-	.close = jffs2_close,
 	.read = jffs2_read,
 	.type = filetype_jffs2,
 	.flags     = 0,

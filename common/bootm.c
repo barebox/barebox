@@ -188,19 +188,20 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	return -EINVAL;
 }
 
+static bool fitconfig_has_ramdisk(struct image_data *data)
+{
+	if (!IS_ENABLED(CONFIG_FITIMAGE) || !data->os_fit)
+		return false;
+
+	return fit_has_image(data->os_fit, data->fit_config, "ramdisk");
+}
+
 bool bootm_has_initrd(struct image_data *data)
 {
 	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
 		return false;
 
-	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit &&
-	    fit_has_image(data->os_fit, data->fit_config, "ramdisk"))
-		return true;
-
-	if (data->initrd_file)
-		return true;
-
-	return false;
+	return fitconfig_has_ramdisk(data) || data->initrd_file;
 }
 
 static int bootm_open_initrd_uimage(struct image_data *data)
@@ -258,8 +259,7 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 	if (data->initrd_res)
 		return 0;
 
-	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit &&
-	    fit_has_image(data->os_fit, data->fit_config, "ramdisk")) {
+	if (fitconfig_has_ramdisk(data)) {
 		const void *initrd;
 		unsigned long initrd_size;
 
@@ -371,6 +371,14 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 	return 0;
 }
 
+static bool fitconfig_has_fdt(struct image_data *data)
+{
+	if (!IS_ENABLED(CONFIG_FITIMAGE) || !data->os_fit)
+		return false;
+
+	return fit_has_image(data->os_fit, data->fit_config, "fdt");
+}
+
 /*
  * bootm_get_devicetree() - get devicetree
  *
@@ -391,8 +399,7 @@ void *bootm_get_devicetree(struct image_data *data)
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return ERR_PTR(-ENOSYS);
 
-	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit &&
-	    fit_has_image(data->os_fit, data->fit_config, "fdt")) {
+	if (fitconfig_has_fdt(data)) {
 		const void *of_tree;
 		unsigned long of_size;
 

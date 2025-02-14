@@ -49,7 +49,7 @@ static void put_chars(struct virtio_console *virtcons, const char *buf, int coun
 	 * add_buf wants a token to identify this buffer: we hand it
 	 * any non-NULL pointer, since there's only ever one buffer.
 	 */
-	if (virtqueue_add_outbuf(out_vq, &sg, 1) >= 0) {
+	if (virtqueue_add_outbuf(out_vq, &sg, 1, (void *)buf) >= 0) {
 		/* Tell Host to go! */
 		virtqueue_kick(out_vq);
 		/* Chill out until it's done with the buffer. */
@@ -76,7 +76,7 @@ static void add_inbuf(struct virtio_console *virtcons)
 	sg_init_one(&sg, virtcons->inbuf, sizeof(virtcons->inbuf));
 
 	/* We should always be able to add one buffer to an empty queue. */
-	if (virtqueue_add_inbuf(virtcons->in_vq, &sg, 1) < 0)
+	if (virtqueue_add_inbuf(virtcons->in_vq, &sg, 1, virtcons->inbuf) < 0)
 		BUG();
 	virtqueue_kick(virtcons->in_vq);
 }

@@ -41,7 +41,7 @@ static int virtio_rng_read(struct hwrng *hwrng, void *data, size_t len, bool wai
 	while (remaining) {
 		sg_init_one(&sg, buf, min(remaining, sizeof(buf)));
 
-		ret = virtqueue_add_inbuf(vi->rng_vq, &sg, 1);
+		ret = virtqueue_add_inbuf(vi->rng_vq, &sg, 1, buf);
 		if (ret)
 			return ret;
 

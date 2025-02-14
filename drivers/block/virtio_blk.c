@@ -49,7 +49,7 @@ static int virtio_blk_do_req(struct virtio_blk_priv *priv, void *buffer,
 	sg_init_one(&status_sg, &status, sizeof(status));
 	sgs[num_out + num_in++] = &status_sg;
 
-	ret = virtqueue_add_sgs(priv->vq, sgs, num_out, num_in);
+	ret = virtqueue_add_sgs(priv->vq, sgs, num_out, num_in, &out_hdr);
 	if (ret)
 		return ret;
 

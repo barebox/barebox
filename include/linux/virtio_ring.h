@@ -82,6 +82,10 @@ struct vring {
 	struct vring_used *used;
 };
 
+struct vring_desc_state_split {
+	void *data;			/* Data for callback. */
+};
+
 /**
  * virtqueue - a queue to register buffers for sending or receiving.
  *
@@ -96,6 +100,7 @@ struct vring {
  * @last_used_idx: last used index we've seen
  * @avail_flags_shadow: last written value to avail->flags
  * @avail_idx_shadow: last written value to avail->idx in guest byte order
+ * @desc_state: cookie data associated with descritptors
  */
 struct virtqueue {
 	struct list_head list;
@@ -111,6 +116,7 @@ struct virtqueue {
 	u16 avail_idx_shadow;
 	dma_addr_t queue_dma_addr;
 	size_t queue_size_in_bytes;
+	struct vring_desc_state_split desc_state[];
 };
 
 /*
@@ -170,6 +176,7 @@ static inline int vring_need_event(__u16 event_idx, __u16 new_idx, __u16 old)
  * @out_sgs:	the number of scatterlists readable by other side
  * @in_sgs:	the number of scatterlists which are writable
  *		(after readable ones)
+ * @data:	the token identifying the buffer.
  *
  * Caller must ensure we don't call this with other virtqueue operations
  * at the same time (except where noted).
@@ -177,13 +184,15 @@ static inline int vring_need_event(__u16 event_idx, __u16 new_idx, __u16 old)
  * Returns zero or a negative error (ie. ENOSPC, ENOMEM, EIO).
  */
 int virtqueue_add_sgs(struct virtqueue *vq, struct scatterlist *sgs[],
-		      unsigned int out_sgs, unsigned int in_sgs);
+		      unsigned int out_sgs, unsigned int in_sgs,
+		      void *data);
 
 /**
  * virtqueue_add_outbuf - expose output buffers to other end
  * @vq: the struct virtqueue we're talking about.
  * @sg: scatterlist (must be well-formed and terminated!)
  * @num: the number of entries in @sg readable by other side
+ * @data: the token identifying the buffer.
  *
  * Caller must ensure we don't call this with other virtqueue operations
  * at the same time (except where noted).
@@ -191,9 +200,10 @@ int virtqueue_add_sgs(struct virtqueue *vq, struct scatterlist *sgs[],
  * Returns zero or a negative error (ie. ENOSPC, ENOMEM, EIO).
  */
 static inline int virtqueue_add_outbuf(struct virtqueue *vq,
-				       struct scatterlist *sg, unsigned int num)
+				       struct scatterlist *sg, unsigned int num,
+				       void *data)
 {
-	return virtqueue_add_sgs(vq, &sg, num, 0);
+	return virtqueue_add_sgs(vq, &sg, num, 0, data);
 }
 
 /**
@@ -201,6 +211,7 @@ static inline int virtqueue_add_outbuf(struct virtqueue *vq,
  * @vq: the struct virtqueue we're talking about.
  * @sg: scatterlist (must be well-formed and terminated!)
  * @num: the number of entries in @sg writable by other side
+ * @data: the token identifying the buffer.
  *
  * Caller must ensure we don't call this with other virtqueue operations
  * at the same time (except where noted).
@@ -208,9 +219,10 @@ static inline int virtqueue_add_outbuf(struct virtqueue *vq,
  * Returns zero or a negative error (ie. ENOSPC, ENOMEM, EIO).
  */
 static inline int virtqueue_add_inbuf(struct virtqueue *vq,
-				      struct scatterlist *sg, unsigned int num)
+				      struct scatterlist *sg, unsigned int num,
+				      void *data)
 {
-	return virtqueue_add_sgs(vq, &sg, 0, num);
+	return virtqueue_add_sgs(vq, &sg, 0, num, data);
 }
 
 /**
@@ -240,7 +252,7 @@ void virtqueue_kick(struct virtqueue *vq);
  * Caller must ensure we don't call this with other virtqueue
  * operations at the same time (except where noted).
  *
- * Returns NULL if there are no used buffers, or the memory buffer
+ * Returns NULL if there are no used buffers, or the "data" token
  * handed to virtqueue_add_*().
  */
 void *virtqueue_get_buf(struct virtqueue *vq, unsigned int *len);

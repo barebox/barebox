@@ -1,9 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-BUILTIN_DTB := $(patsubst "%",%,$(CONFIG_BUILTIN_DTB_NAME))
-ifneq ($(BUILTIN_DTB),)
-obj-$(CONFIG_BUILTIN_DTB) += $(BUILTIN_DTB).dtb.o
-endif
+obj-$(CONFIG_BUILTIN_DTB) += $(CONFIG_BUILTIN_DTB_NAME).dtb.o
 
 pbl-$(CONFIG_BOARD_8DEVICES_LIMA) += qca4531-8devices-lima.dtb.o
 pbl-$(CONFIG_BOARD_BLACK_SWIFT) += black-swift.dtb.o

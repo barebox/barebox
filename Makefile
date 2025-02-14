@@ -1253,7 +1253,7 @@ export CPPFLAGS_barebox.lds += -C -U$(SRCARCH)
 
 # Create $(FIRMWARE_DIR) from $(CONFIG_EXTRA_FIRMWARE_DIR) -- if it doesn't have a
 # leading /, it's relative to $(srctree).
-FIRMWARE_DIR := $(subst $(quote),,$(CONFIG_EXTRA_FIRMWARE_DIR))
+FIRMWARE_DIR := $(CONFIG_EXTRA_FIRMWARE_DIR)
 FIRMWARE_DIR := $(addprefix $(srctree)/,$(filter-out /%,$(FIRMWARE_DIR)))$(filter /%,$(FIRMWARE_DIR))
 export FIRMWARE_DIR
 
@@ -1269,7 +1269,7 @@ remove-stale-files:
 labgrid-env := $(srctree)/test/$(SRCARCH)/$(CONFIG_NAME).yaml
 
 check:
-ifeq ($(CONFIG_NAME),"")
+ifeq ($(CONFIG_NAME),)
 	@echo "error: can't autoload labgrid env with CONFIG_NAME unset!" >&2
 	@exit 1
 endif

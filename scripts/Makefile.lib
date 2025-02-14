@@ -310,7 +310,7 @@ MAKE_FIT := $(srctree)/scripts/make_fit.py
 FIT_COMPRESSION ?= none
 
 quiet_cmd_fit = FIT     $@
-      cmd_fit = $(MAKE_FIT) -o $@ --arch $(CONFIG_ARCH_MKIMAGE_NAME) --os linux \
+      cmd_fit = $(MAKE_FIT) -o $@ --arch "$(CONFIG_ARCH_MKIMAGE_NAME)" --os linux \
 		--name 'barebox-$(KERNELRELEASE)' \
 		$(if $(findstring 1,$(KBUILD_VERBOSE)),-v) \
 		$(if $(FIT_DECOMPOSE_DTBS),--decompose-dtbs) \

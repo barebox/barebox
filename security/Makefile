@@ -14,7 +14,7 @@ obj-$(CONFIG_PASSWORD)		+= password.o
 #
 ifdef CONFIG_PASSWORD
 
-ifeq ($(CONFIG_PASSWORD_DEFAULT),"")
+ifeq ($(CONFIG_PASSWORD_DEFAULT),)
 define filechk_passwd
 	echo "static const char default_passwd[] = \"\";"
 endef
@@ -22,7 +22,7 @@ else
 define filechk_passwd
 (							\
 echo -n "static const char default_passwd[] = \"";	\
-cat $(shell find $(srctree) -name $(CONFIG_PASSWORD_DEFAULT) -type f) | tr -d '\n';\
+cat $(shell find $(srctree) -name "$(CONFIG_PASSWORD_DEFAULT)" -type f) | tr -d '\n';\
 echo "\";"						\
 )
 endef

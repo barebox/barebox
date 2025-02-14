@@ -204,7 +204,7 @@ pblb-$(CONFIG_BOARD_GENERIC_DT) += start_dt_2nd
 FILE_barebox-dt-2nd.img = start_dt_2nd.pblb
 image-$(CONFIG_BOARD_GENERIC_DT) += barebox-dt-2nd.img
 
-fit-image = barebox-$(call remove_quotes,$(CONFIG_ARCH_LINUX_NAME)).fit
+fit-image = barebox-$(CONFIG_ARCH_LINUX_NAME).fit
 FILE_$(fit-image) = barebox-dt-2nd.img
 image-$(CONFIG_BOARD_GENERIC_FIT) += $(fit-image)
 targets += $(fit-name)

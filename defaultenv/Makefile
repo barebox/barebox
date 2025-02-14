@@ -15,7 +15,7 @@ $(obj)/defaultenv.o: $(obj)/barebox_default_env.h
 # Generate a barebox envfs image.
 #
 quiet_cmd_env_default = ENV     $@
-cmd_env_default = $(srctree)/scripts/genenv $@ $(CONFIG_DEFAULT_ENVIRONMENT_PATH)
+cmd_env_default = $(srctree)/scripts/genenv $@ "$(CONFIG_DEFAULT_ENVIRONMENT_PATH)"
 
 # genenv is always called, but only generates output when the file actually
 # changes, so that the dependent targets are not unnecessarily rebuilt
@@ -31,7 +31,7 @@ $(obj)/barebox_default_env.h: $(obj)/barebox_default_env$(bbenv-suffix-y) FORCE
 	$(call if_changed,env_h)
 
 quiet_cmd_env_zero = ENVZ    $@
-cmd_env_zero = ($(objtree)/scripts/bareboxenv -z $(CONFIG_DEFAULT_ENVIRONMENT_PATH) $@)
+cmd_env_zero = ($(objtree)/scripts/bareboxenv -z "$(CONFIG_DEFAULT_ENVIRONMENT_PATH)" $@)
 
 $(obj)/barebox_zero_env: FORCE
 	$(call if_changed,env_zero)

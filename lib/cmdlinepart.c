@@ -30,6 +30,7 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 	char *end;
 	char buf[PATH_MAX] = {};
 	unsigned long flags = DEVFS_PARTITION_FOR_FIXUP;
+	size_t partname_len = 0;
 	struct cdev *cdev;
 
 	memset(buf, 0, PATH_MAX);
@@ -60,7 +61,8 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 		if ((partition_flags & CMDLINEPART_ADD_DEVNAME) &&
 				strncmp(devname, partstr, strlen(devname)))
 			sprintf(buf, "%s.", devname);
-		memcpy(buf + strlen(buf), partstr, end - partstr);
+		partname_len = end - partstr;
+		memcpy(buf + strlen(buf), partstr, partname_len);
 
 		end++;
 	}
@@ -84,6 +86,11 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 		*endp = end;
 
 	*retsize = size;
+
+	if (!partname_len) {
+		printf("partition name can't be empty\n");
+		return -EINVAL;
+	}
 
 	cdev = devfs_add_partition(devname, *offset, size, flags, buf);
 	if (IS_ERR(cdev)) {

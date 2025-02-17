@@ -1,4 +1,14 @@
 # SPDX-License-Identifier: GPL-2.0-only
+
+CLANG_TARGET_FLAGS_sandbox	:= $(shell $(CC) -print-target-triple)
+CLANG_TARGET_FLAGS		:= $(CLANG_TARGET_FLAGS_$(SRCARCH))
+
+ifeq ($(CLANG_TARGET_FLAGS),)
+$(error add '--target=' option to scripts/Makefile.clang)
+else
+CLANG_FLAGS	+= --target=$(CLANG_TARGET_FLAGS)
+endif
+
 CLANG_FLAGS	+= -Wno-typedef-redefinition
 CLANG_FLAGS	+= -Werror=unknown-warning-option
 CLANG_FLAGS	+= -Werror=ignored-optimization-argument

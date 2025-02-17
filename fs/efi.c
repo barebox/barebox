@@ -421,6 +421,8 @@ static void efifs_remove(struct device *dev)
 }
 
 static const struct fs_legacy_ops efifs_ops = {
+	.open      = efifs_open,
+	.close     = efifs_close,
 	.create    = efifs_create,
 	.unlink    = efifs_unlink,
 	.mkdir     = efifs_mkdir,
@@ -434,8 +436,6 @@ static const struct fs_legacy_ops efifs_ops = {
 };
 
 static struct fs_driver efifs_driver = {
-	.open      = efifs_open,
-	.close     = efifs_close,
 	.truncate  = efifs_truncate,
 	.read      = efifs_read,
 	.write     = efifs_write,

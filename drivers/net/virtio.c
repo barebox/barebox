@@ -46,18 +46,18 @@ static inline struct virtio_net_priv *to_priv(struct eth_device *edev)
 static int virtio_net_start(struct eth_device *edev)
 {
 	struct virtio_net_priv *priv = to_priv(edev);
-	struct virtio_sg sg;
-	struct virtio_sg *sgs[] = { &sg };
+	struct scatterlist sg;
 	int i;
 
 	if (!priv->rx_running) {
-		/* receive buffer length is always 1526 */
-		sg.length = VIRTIO_NET_RX_BUF_SIZE;
 
 		/* setup the receive buffer address */
 		for (i = 0; i < VIRTIO_NET_NUM_RX_BUFS; i++) {
-			sg.addr = priv->rx_buff[i];
-			virtqueue_add(priv->rx_vq, sgs, 0, 1);
+			/* receive buffer length is always 1526 */
+			sg.length = VIRTIO_NET_RX_BUF_SIZE;
+
+			sg_init_one(&sg, priv->rx_buff[i], VIRTIO_NET_RX_BUF_SIZE);
+			virtqueue_add_inbuf(priv->rx_vq, &sg, 1, priv->rx_buff[i]);
 		}
 
 		virtqueue_kick(priv->rx_vq);
@@ -72,22 +72,21 @@ static int virtio_net_start(struct eth_device *edev)
 static int virtio_net_send(struct eth_device *edev, void *packet, int length)
 {
 	struct virtio_net_priv *priv = to_priv(edev);
-	struct virtio_net_hdr_v1 hdr_v1;
-	struct virtio_net_hdr hdr;
-	struct virtio_sg hdr_sg;
-	struct virtio_sg data_sg = { packet, length };
-	struct virtio_sg *sgs[] = { &hdr_sg, &data_sg };
+	struct virtio_net_hdr_v1 hdr_v1 = {};
+	struct virtio_net_hdr hdr = {};
+	struct scatterlist sgs[2];
 	int ret;
 
+	sg_init_table(sgs, ARRAY_SIZE(sgs));
+
 	if (priv->net_hdr_len == sizeof(struct virtio_net_hdr))
-		hdr_sg.addr = &hdr;
+		sg_set_buf(&sgs[0], &hdr, priv->net_hdr_len);
 	else
-		hdr_sg.addr = &hdr_v1;
+		sg_set_buf(&sgs[0], &hdr_v1, priv->net_hdr_len);
 
-	hdr_sg.length = priv->net_hdr_len;
-	memset(hdr_sg.addr, 0, priv->net_hdr_len);
+	sg_set_buf(&sgs[1], packet, length);
 
-	ret = virtqueue_add(priv->tx_vq, sgs, 2, 0);
+	ret = virtqueue_add_outbuf(priv->tx_vq, sgs, ARRAY_SIZE(sgs), &sgs[0].address);
 	if (ret)
 		return ret;
 
@@ -104,24 +103,23 @@ static int virtio_net_send(struct eth_device *edev, void *packet, int length)
 static void virtio_net_recv(struct eth_device *edev)
 {
 	struct virtio_net_priv *priv = to_priv(edev);
-	struct virtio_sg sg;
-	struct virtio_sg *sgs[] = { &sg };
+	struct scatterlist sg;
 	unsigned int len;
-	void *buf;
+	void *buf, *addr;
 
-	sg.addr = virtqueue_get_buf(priv->rx_vq, &len);
-	if (!sg.addr)
+	addr = virtqueue_get_buf(priv->rx_vq, &len);
+	if (!addr)
 		return;
 
-	sg.length = VIRTIO_NET_RX_BUF_SIZE;
+	sg_init_one(&sg, addr, VIRTIO_NET_RX_BUF_SIZE);
 
-	buf = sg.addr + priv->net_hdr_len;
+	buf = sg.address + priv->net_hdr_len;
 	len -= priv->net_hdr_len;
 
 	net_receive(edev, buf, len);
 
 	/* Put the buffer back to the rx ring */
-	virtqueue_add(priv->rx_vq, sgs, 0, 1);
+	virtqueue_add_inbuf(priv->rx_vq, &sg, 1, addr);
 }
 
 static void virtio_net_stop(struct eth_device *dev)

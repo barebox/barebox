@@ -13,24 +13,6 @@ struct virtio_device_id {
 };
 #define VIRTIO_DEV_ANY_ID	0xffffffff
 
-/**
- * virtio scatter-gather struct
- *
- * @addr:		sg buffer address
- * @lengh:		sg buffer length
- */
-struct virtio_sg {
-	void *addr;
-	size_t length;
-};
-
-static inline void virtio_sg_init_one(struct virtio_sg *sg,
-				      void *addr, size_t length)
-{
-	sg[0].addr = addr;
-	sg[0].length = length;
-}
-
 struct virtio_config_ops;
 
 /**

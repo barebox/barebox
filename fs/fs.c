@@ -747,8 +747,8 @@ int close(int fd)
 		if (fsdrv != ramfs_driver)
 			assert_command_context();
 
-		if (fsdrv->close)
-			ret = fsdrv->close(&f->fsdev->dev, f);
+		if (f->f_inode->i_fop->release)
+			ret = f->f_inode->i_fop->release(f->f_inode, f);
 	}
 
 	put_file(f);
@@ -2660,11 +2660,8 @@ int openat(int dirfd, const char *pathname, int flags)
 	if (flags & O_PATH)
 		return file_to_fd(f);
 
-	if (fsdrv->open) {
-		char *pathname = dpath(dentry, fsdev->vfsmount.mnt_root);
-
-		error = fsdrv->open(&fsdev->dev, f, pathname);
-		free(pathname);
+	if (f->f_inode->i_fop->open) {
+		error = f->f_inode->i_fop->open(inode, f);
 		if (error)
 			goto out;
 	}

@@ -8,3 +8,4 @@ lwl-$(CONFIG_OFTREE) += \
 obj- += dummy.o
 
 clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts *.dtb.z
+clean-files += *.dtbo *.dtbo.S .*.dtso

@@ -26,6 +26,7 @@ obj-$(CONFIG_FIP)	+= fip.o tbbr_config.o
 obj-$(CONFIG_JSMN)	+= jsmn.o
 obj-$(CONFIG_BLOBGEN)	+= blobgen.o
 obj-y			+= stringlist.o
+obj-y			+= scatterlist.o
 obj-y			+= cmdlinepart.o
 obj-y			+= recursive_action.o
 obj-y			+= make_directory.o

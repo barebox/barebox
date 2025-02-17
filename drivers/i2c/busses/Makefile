@@ -12,5 +12,5 @@ obj-$(CONFIG_I2C_TEGRA)		+= i2c-tegra.o
 obj-$(CONFIG_I2C_VERSATILE)	+= i2c-versatile.o
 obj-$(CONFIG_I2C_DESIGNWARE)	+= i2c-designware.o
 obj-$(CONFIG_I2C_STM32)		+= i2c-stm32.o
-obj-$(CONFIG_I2C_RK3X)		+= i2c-rockchip.o
+obj-$(CONFIG_I2C_RK3X)		+= i2c-rk3x.o
 obj-$(CONFIG_I2C_CADENCE)	+= i2c-cadence.o

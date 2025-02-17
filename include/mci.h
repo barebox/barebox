@@ -647,6 +647,7 @@ struct mci {
 	/** currently used data block length for write accesses */
 	unsigned write_bl_len;
 	unsigned erase_grp_size;
+	unsigned pref_erase;	/**< preferred erase granularity in blocks */
 	uint64_t capacity;	/**< Card's data capacity in bytes */
 	int ready_for_use;	/** true if already probed */
 	int dsr_imp;		/**< DSR implementation state from CSD */

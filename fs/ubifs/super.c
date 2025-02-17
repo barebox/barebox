@@ -105,7 +105,10 @@ static int validate_inode(struct ubifs_info *c, const struct inode *inode)
 }
 
 const struct inode_operations ubifs_file_inode_operations;
-const struct file_operations ubifs_file_operations;
+const struct file_operations ubifs_file_operations = {
+	.open = ubifs_open,
+	.release = ubifs_close,
+};
 
 struct inode *ubifs_iget(struct super_block *sb, unsigned long inum)
 {

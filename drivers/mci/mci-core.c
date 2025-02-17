@@ -1218,11 +1218,24 @@ static void mci_extract_block_lengths_from_csd(struct mci *mci)
 }
 
 /**
- * Extract erase group size
+ * Configure erase group size
  * @param mci MCI instance
  */
-static void mci_extract_erase_group_size(struct mci *mci)
+static void mci_configure_erase_group_size(struct mci *mci)
 {
+	/* Enable ERASE_GRP_DEF. This bit is lost after a reset or power off.
+	 * This needs to happen even if we don't have erase support compiled-in.
+	 */
+	if (!IS_SD(mci) && mci->version >= MMC_VERSION_4_3) {
+		int err;
+
+		err = mci_switch(mci, EXT_CSD_ERASE_GROUP_DEF, 1);
+		if (err)
+			dev_warn(&mci->dev, "failed erase group switch\n");
+		else
+			mci->ext_csd[EXT_CSD_ERASE_GROUP_DEF] = 1;
+	}
+
 	if (!IS_ENABLED(CONFIG_MCI_ERASE) ||
 	    !(UNSTUFF_BITS(mci->csd, 84, 12) & CCC_ERASE))
 		return;
@@ -1774,6 +1787,70 @@ static int mci_startup_mmc(struct mci *mci)
 	return ret >= MMC_BUS_WIDTH_1 ? 0 : ret;
 }
 
+static void mci_init_erase(struct mci *card)
+{
+	if (!IS_ENABLED(CONFIG_MCI_ERASE))
+		return;
+
+	/* TODO: While it's possible to clear many erase groups at once
+	 * and it greatly improves throughput, drivers need adjustment:
+	 *
+	 * Many drivers hardcode a maximal wait time before aborting
+	 * the wait for R1b and returning -ETIMEDOUT. With long
+	 * erases/trims, we are bound to run into this timeout, so for now
+	 * we just split into sufficiently small erases that are unlikely
+	 * to trigger the timeout.
+	 *
+	 * What Linux does and what we should be doing in barebox is:
+	 *
+	 *  - add a struct mci_cmd::busy_timeout member that drivers should
+	 *    use instead of hardcoding their own timeout delay. The busy
+	 *    timeout length can be calculated by the MCI core after
+	 *    consulting the appropriate CSD/EXT_CSD/SSR registers.
+	 *
+	 *  - add a struct mci_host::max_busy_timeout member, where drivers
+	 *    can indicate the maximum timeout they are able to support.
+	 *    The MCI core will never set a busy_timeout that exceeds this
+	 *    value.
+	 *
+	 *  Example Samsung eMMC 8GTF4:
+	 *
+	 *    time erase /dev/mmc2.part_of_512m # 1024 trims
+	 *    time: 2849ms
+	 *
+	 *    time erase /dev/mmc2.part_of_512m # single trim
+	 *    time: 56ms
+	 */
+	if (IS_SD(card) && card->ssr.au) {
+		card->pref_erase = card->ssr.au;
+	} else if (card->erase_grp_size) {
+		unsigned int sz;
+
+		sz = card->capacity / SZ_1M;
+		if (sz < 128)
+			card->pref_erase = 512 * 1024 / 512;
+		else if (sz < 512)
+			card->pref_erase = 1024 * 1024 / 512;
+		else if (sz < 1024)
+			card->pref_erase = 2 * 1024 * 1024 / 512;
+		else
+			card->pref_erase = 4 * 1024 * 1024 / 512;
+		if (card->pref_erase < card->erase_grp_size)
+			card->pref_erase = card->erase_grp_size;
+		else {
+			sz = card->pref_erase % card->erase_grp_size;
+			if (sz)
+				card->pref_erase += card->erase_grp_size - sz;
+		}
+	} else {
+		card->pref_erase = 0;
+		return;
+	}
+
+	dev_add_param_uint32_fixed(&card->dev, "preferred_erase_size",
+				   card->pref_erase * 512, "%u");
+}
+
 /**
  * Scan the given host interfaces and detect connected MMC/SD cards
  * @param mci MCI instance
@@ -1890,7 +1967,7 @@ static int mci_startup(struct mci *mci)
 	dev_info(&mci->dev, "detected %s card version %s\n", IS_SD(mci) ? "SD" : "MMC",
 		mci_version_string(mci));
 	mci_extract_card_capacity_from_csd(mci);
-	mci_extract_erase_group_size(mci);
+	mci_configure_erase_group_size(mci);
 
 	if (IS_SD(mci))
 		err = mci_startup_sd(mci);
@@ -1902,6 +1979,8 @@ static int mci_startup(struct mci *mci)
 
 	/* we setup the blocklength only one times for all accesses to this media  */
 	err = mci_set_blocklen(mci, mci->read_bl_len);
+
+	mci_init_erase(mci);
 
 	mci_part_add(mci, mci->capacity, 0,
 			mci->cdevname, NULL, 0, true,
@@ -2080,7 +2159,7 @@ static int mci_sd_erase(struct block_device *blk, sector_t from,
 	struct mci *mci = part->mci;
 	sector_t i = 0;
 	unsigned arg;
-	sector_t blk_max, to = from + blkcnt;
+	sector_t to = from + blkcnt;
 	int rc;
 
 	mci_blk_part_switch(part);
@@ -2106,45 +2185,10 @@ static int mci_sd_erase(struct block_device *blk, sector_t from,
 	/* 'from' and 'to' are inclusive */
 	to -= 1;
 
-	/* TODO: While it's possible to clear many erase groups at once
-	 * and it greatly improves throughput, drivers need adjustment:
-	 *
-	 * Many drivers hardcode a maximal wait time before aborting
-	 * the wait for R1b and returning -ETIMEDOUT. With long
-	 * erases/trims, we are bound to run into this timeout, so for now
-	 * we just split into sufficiently small erases that are unlikely
-	 * to trigger the timeout.
-	 *
-	 * What Linux does and what we should be doing in barebox is:
-	 *
-	 *  - add a struct mci_cmd::busy_timeout member that drivers should
-	 *    use instead of hardcoding their own timeout delay. The busy
-	 *    timeout length can be calculated by the MCI core after
-	 *    consulting the appropriate CSD/EXT_CSD/SSR registers.
-	 *
-	 *  - add a struct mci_host::max_busy_timeout member, where drivers
-	 *    can indicate the maximum timeout they are able to support.
-	 *    The MCI core will never set a busy_timeout that exceeds this
-	 *    value.
-	 *
-	 *  Example Samsung eMMC 8GTF4:
-	 *
-	 *    time erase /dev/mmc2.part_of_512m # 1024 trims
-	 *    time: 2849ms
-	 *
-	 *    time erase /dev/mmc2.part_of_512m # single trim
-	 *    time: 56ms
-	 */
-
-	if (IS_SD(mci) && mci->ssr.au)
-		blk_max = mci->ssr.au;
-	else
-		blk_max = mci->erase_grp_size;
-
 	while (i < blkcnt) {
 		sector_t blk_r;
 
-		blk_r = min(blkcnt - i, blk_max);
+		blk_r = min_t(blkcnt_t, blkcnt - i, mci->pref_erase);
 
 		rc =  mci_block_erase(mci, from + i, blk_r, arg);
 		if (rc)

@@ -28,6 +28,7 @@
 #include <linux/stat.h>
 #include <envfs.h>
 #include <magicvar.h>
+#include <readkey.h>
 #include <linux/reboot-mode.h>
 #include <asm/sections.h>
 #include <libfile.h>
@@ -102,6 +103,7 @@ static int global_autoboot_timeout = 3;
 static const char * const global_autoboot_states[] = {
 	[AUTOBOOT_COUNTDOWN] = "countdown",
 	[AUTOBOOT_ABORT] = "abort",
+	[AUTOBOOT_HALT] = "halt",
 	[AUTOBOOT_MENU] = "menu",
 	[AUTOBOOT_BOOT] = "boot",
 };
@@ -175,7 +177,8 @@ enum autoboot_state do_autoboot_countdown(void)
 		return autoboot_state;
 
 	if (!console_get_first_active() &&
-	    global_autoboot_state != AUTOBOOT_ABORT) {
+	    global_autoboot_state != AUTOBOOT_ABORT &&
+	    global_autoboot_state != AUTOBOOT_HALT) {
 		printf("\nNon-interactive console, booting system\n");
 		return autoboot_state = AUTOBOOT_BOOT;
 	}
@@ -209,6 +212,8 @@ enum autoboot_state do_autoboot_countdown(void)
 		autoboot_state = AUTOBOOT_BOOT;
 	else if (menu_exists && outkey == 'm')
 		autoboot_state = AUTOBOOT_MENU;
+	else if (outkey == CTL_CH('d'))
+		autoboot_state = AUTOBOOT_HALT;
 	else
 		autoboot_state = AUTOBOOT_ABORT;
 
@@ -334,7 +339,8 @@ static int run_init(void)
 	if (autoboot == AUTOBOOT_BOOT)
 		run_command("boot");
 
-	if (IS_ENABLED(CONFIG_NET) && !IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT))
+	if (IS_ENABLED(CONFIG_NET) && !IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT) &&
+	    autoboot != AUTOBOOT_HALT)
 		eth_open_all();
 
 	if (autoboot != AUTOBOOT_MENU) {
@@ -429,7 +435,7 @@ void shutdown_barebox(void)
 }
 
 BAREBOX_MAGICVAR(global.autoboot,
-                 "Autoboot state. Possible values: countdown (default), abort, menu, boot");
+                 "Autoboot state. Possible values: countdown (default), abort, halt, menu, boot");
 BAREBOX_MAGICVAR(global.autoboot_abort_key,
                  "Which key allows to interrupt autoboot. Possible values: 'any', 'ctrl-c' or any other single ascii character.");
 BAREBOX_MAGICVAR(global.autoboot_timeout,

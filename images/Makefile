@@ -117,7 +117,7 @@ $(obj)/%.s: $(obj)/% FORCE
 quiet_cmd_itb = FIT.ITS $@
 cmd_itb = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
 	-D'$(subst -,_,$(*F))_dts=1' $(foreach f,$< $(2),-include '$(f)') /dev/null ; \
-	mkimage -f $(dtc-tmp) $@ -E \
+	$(MKIMAGE) -f $(dtc-tmp) $@ -E \
 	cat $(depfile).pre $(depfile).dtc > $(depfile)
 
 $(obj)/%.itb: $(obj)/%.its FORCE

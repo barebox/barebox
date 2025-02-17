@@ -440,7 +440,7 @@ int devfs_remove(struct cdev *cdev)
 /**
  * check_overlap() - check overlap with existing partitions
  * @cdev: parent cdev
- * @name: partition name for informational purposes on conflict
+ * @partinfo: partition information
  * @offset: offset of new partition to be added
  * @size: size of new partition to be added
  *
@@ -448,7 +448,9 @@ int devfs_remove(struct cdev *cdev)
  *         partition if and only if it's identical in offset and size
  *         to an existing partition. Otherwise, PTR_ERR(-EINVAL).
  */
-static struct cdev *check_overlap(struct cdev *cdev, const char *name, loff_t offset, loff_t size)
+static struct cdev *check_overlap(struct cdev *cdev,
+				  const struct devfs_partition *partinfo,
+				  loff_t offset, loff_t size)
 {
 	struct cdev *cpart;
 	loff_t cpart_offset;
@@ -471,6 +473,8 @@ static struct cdev *check_overlap(struct cdev *cdev, const char *name, loff_t of
 		}
 
 		if (region_overlap_size(cpart_offset, cpart->size, offset, size)) {
+			if (partinfo->flags & DEVFS_PARTITION_CAN_OVERLAP)
+				return NULL;
 			ret = -EINVAL;
 			goto conflict;
 		}
@@ -483,7 +487,7 @@ conflict:
 	__pr_printk(ret ? MSG_WARNING : MSG_DEBUG,
 		    "New partition %s (0x%08llx-0x%08llx) on %s "
 		    "%s with partition %s (0x%08llx-0x%08llx), not creating it\n",
-		    name, offset, offset + size - 1, cdev->name,
+		    partinfo->name, offset, offset + size - 1, cdev->name,
 		    ret ? "conflicts" : "identical",
 		    cpart->name, cpart_offset, cpart_offset + cpart->size - 1);
 
@@ -530,16 +534,14 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 		return ERR_PTR(-EINVAL);
 	}
 
-	if (!(partinfo->flags & DEVFS_PARTITION_CAN_OVERLAP)) {
-		overlap = check_overlap(cdev, partinfo->name, offset, size);
-		if (overlap) {
-			if (!IS_ERR(overlap)) {
-				/* only fails with -EEXIST, which is fine */
-				(void)devfs_create_link(overlap, partinfo->name);
-			}
-
-			return overlap;
+	overlap = check_overlap(cdev, partinfo, offset, size);
+	if (overlap) {
+		if (!IS_ERR(overlap)) {
+			/* only fails with -EEXIST, which is fine */
+			(void)devfs_create_link(overlap, partinfo->name);
 		}
+
+		return overlap;
 	}
 
 	/* Filter flags that we want to pass along to children */

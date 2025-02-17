@@ -1072,9 +1072,11 @@ config CMD_READLINK
 	help
 	  Read value of a symbolic link
 
-	  Usage: readlink [-f] FILE VARIABLE
+	  Usage: readlink [-f] FILE [VARIABLE]
 
-	  Read value of a symbolic link and store it into VARIABLE.
+	  Read value of a symbolic link or canonical file name
+	  The value is either stored it into the specified VARIABLE
+	  or printed.
 
 	  Options:
 		  -f	canonicalize by following first symlink

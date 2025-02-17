@@ -11,9 +11,19 @@
 #include <malloc.h>
 #include <getopt.h>
 
+static void output_result(const char *var, const char *val)
+{
+	if (var)
+		setenv(var, val);
+	else
+		printf("%s\n", val);
+
+}
+
 static int do_readlink(int argc, char *argv[])
 {
-	char realname[PATH_MAX];
+	const char *var;
+	char *path, realname[PATH_MAX];
 	int canonicalize = 0;
 	int opt;
 
@@ -27,35 +37,44 @@ static int do_readlink(int argc, char *argv[])
 		}
 	}
 
-	if (argc < optind + 2)
+	argv += optind;
+	argc -= optind;
+
+	if (argc == 0 || argc > 2)
 		return COMMAND_ERROR_USAGE;
 
+	path = argv[0];
+	var = argv[1];
+
 	if (canonicalize) {
-		char *buf = canonicalize_path(AT_FDCWD, argv[optind]);
+		char *buf = canonicalize_path(AT_FDCWD, path);
 		struct stat s;
 
 		if (!buf)
 			goto err;
-		if (stat(dirname(argv[optind]), &s) || !S_ISDIR(s.st_mode)) {
+		if (stat(dirname(path), &s) || !S_ISDIR(s.st_mode)) {
 			free(buf);
 			goto err;
 		}
-		setenv(argv[optind + 1], buf);
+		output_result(var, buf);
 		free(buf);
 	} else {
-		if (readlink(argv[optind], realname, PATH_MAX - 1) < 0)
+		if (readlink(path, realname, PATH_MAX - 1) < 0)
 			goto err;
-		setenv(argv[optind + 1], realname);
+		output_result(var, realname);
 	}
 
 	return 0;
 err:
-	unsetenv(argv[optind + 1]);
+	if (var)
+		unsetenv(var);
 	return 1;
 }
 
 BAREBOX_CMD_HELP_START(readlink)
-BAREBOX_CMD_HELP_TEXT("Read value of a symbolic link or canonical file name and store it into VARIABLE.")
+BAREBOX_CMD_HELP_TEXT("Read value of a symbolic link or canonical file name")
+BAREBOX_CMD_HELP_TEXT("The value is either stored it into the specified VARIABLE")
+BAREBOX_CMD_HELP_TEXT("or printed.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-f", "canonicalize by following symlinks;")
@@ -65,7 +84,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(readlink)
 	.cmd		= do_readlink,
 	BAREBOX_CMD_DESC("read value of a symbolic link or canonical file name")
-	BAREBOX_CMD_OPTS("[-f] FILE VARIABLE")
+	BAREBOX_CMD_OPTS("[-f] FILE [VARIABLE]")
 	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_readlink_help)
 BAREBOX_CMD_END

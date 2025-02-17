@@ -25,9 +25,9 @@ struct virtio_input {
 static void virtinput_queue_evtbuf(struct virtio_input *vi,
 				   struct virtio_input_event *evtbuf)
 {
-	struct virtio_sg sg[1];
-	virtio_sg_init_one(sg, evtbuf, sizeof(*evtbuf));
-	virtqueue_add_inbuf(vi->evt, sg, 1);
+	struct scatterlist sg;
+	sg_init_one(&sg, evtbuf, sizeof(*evtbuf));
+	virtqueue_add_inbuf(vi->evt, &sg, 1, evtbuf);
 }
 
 static int virtinput_recv_events(struct virtio_input *vi)
@@ -63,7 +63,7 @@ static int virtinput_send_status(struct sound_card *beeper, unsigned freq, unsig
 {
 	struct virtio_input *vi = container_of(beeper, struct virtio_input, beeper);
 	struct virtio_input_event *stsbuf;
-	struct virtio_sg sg[1];
+	struct scatterlist sg;
 	u16 code;
 	int rc;
 
@@ -76,9 +76,9 @@ static int virtinput_send_status(struct sound_card *beeper, unsigned freq, unsig
 	stsbuf->type  = cpu_to_le16(EV_SND);
 	stsbuf->code  = cpu_to_le16(code);
 	stsbuf->value = cpu_to_le32(freq);
-	virtio_sg_init_one(sg, stsbuf, sizeof(*stsbuf));
+	sg_init_one(&sg, stsbuf, sizeof(*stsbuf));
 
-	rc = virtqueue_add_outbuf(vi->sts, sg, 1);
+	rc = virtqueue_add_outbuf(vi->sts, &sg, 1, stsbuf);
 	virtqueue_kick(vi->sts);
 
 	if (rc != 0)

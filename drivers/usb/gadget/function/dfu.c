@@ -372,6 +372,8 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 		dfu_files = opts->files;
 	}
 
+	file_list_detect_all(dfu_files);
+
 	n_entries = list_count_nodes(&dfu_files->list);
 
 	dfu_string_defs = xzalloc(sizeof(struct usb_string) * (n_entries + 2));

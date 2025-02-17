@@ -34,6 +34,7 @@
 #include <byteorder.h>
 #include <globalvar.h>
 #include <parseopt.h>
+#include <magicvar.h>
 
 #define SUNRPC_PORT     111
 
@@ -1156,9 +1157,8 @@ static const char *nfs_get_link(struct dentry *dentry, struct inode *inode)
 	return inode->i_link;
 }
 
-static int nfs_open(struct device *dev, struct file *file, const char *filename)
+static int nfs_open(struct inode *inode, struct file *file)
 {
-	struct inode *inode = file->f_inode;
 	struct nfs_inode *ninode = nfsi(inode);
 	struct nfs_priv *npriv = ninode->npriv;
 	struct file_priv *priv;
@@ -1177,7 +1177,7 @@ static int nfs_open(struct device *dev, struct file *file, const char *filename)
 	return 0;
 }
 
-static int nfs_close(struct device *dev, struct file *file)
+static int nfs_close(struct inode *inode, struct file *file)
 {
 	struct file_priv *priv = file->private_data;
 
@@ -1318,7 +1318,10 @@ static void nfs_destroy_inode(struct inode *inode)
 static const struct inode_operations nfs_file_inode_operations;
 static const struct file_operations nfs_dir_operations;
 static const struct inode_operations nfs_dir_inode_operations;
-static const struct file_operations nfs_file_operations;
+static const struct file_operations nfs_file_operations = {
+	.open      = nfs_open,
+	.release     = nfs_close,
+};
 static const struct inode_operations nfs_symlink_inode_operations = {
 	.get_link = nfs_get_link,
 };
@@ -1390,6 +1393,7 @@ static const struct super_operations nfs_ops = {
 };
 
 static char *rootnfsopts;
+static int nfsport_default;
 
 static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device *fsdev)
 {
@@ -1467,30 +1471,41 @@ static int nfs_probe(struct device *dev)
 	/* Need a priviliged source port */
 	net_udp_bind(npriv->con, 1000);
 
-	parseopt_hu(fsdev->options, "mountport", &npriv->mount_port);
-	if (!npriv->mount_port) {
-		ret = rpc_lookup_req(npriv, PROG_MOUNT, 3);
-		if (ret < 0) {
-			printf("lookup mount port failed with %d\n", ret);
-			goto err2;
+	if (nfsport_default == 0) {
+		parseopt_hu(fsdev->options, "mountport", &npriv->mount_port);
+		if (!npriv->mount_port) {
+			ret = rpc_lookup_req(npriv, PROG_MOUNT, 3);
+			if (ret < 0) {
+				printf("lookup mount port failed with %d\n", ret);
+				goto err2;
+			}
+			npriv->mount_port = ret;
+		} else {
+			npriv->manual_mount_port = 1;
 		}
-		npriv->mount_port = ret;
-	} else {
-		npriv->manual_mount_port = 1;
-	}
-	debug("mount port: %hu\n", npriv->mount_port);
 
-	parseopt_hu(fsdev->options, "port", &npriv->nfs_port);
-	if (!npriv->nfs_port) {
-		ret = rpc_lookup_req(npriv, PROG_NFS, 3);
-		if (ret < 0) {
-			printf("lookup nfs port failed with %d\n", ret);
-			goto err2;
+		parseopt_hu(fsdev->options, "port", &npriv->nfs_port);
+		if (!npriv->nfs_port) {
+			ret = rpc_lookup_req(npriv, PROG_NFS, 3);
+			if (ret < 0) {
+				printf("lookup nfs port failed with %d\n", ret);
+				goto err2;
+			}
+			npriv->nfs_port = ret;
+		} else {
+			npriv->manual_nfs_port = 1;
 		}
-		npriv->nfs_port = ret;
 	} else {
-		npriv->manual_nfs_port = 1;
+		if (nfsport_default > U16_MAX) {
+			printf("invalid NFS port: %d\n", nfsport_default);
+			return -EINVAL;
+		}
+
+		npriv->mount_port = npriv->nfs_port = nfsport_default;
+		npriv->manual_nfs_port = npriv->manual_mount_port = 1;
 	}
+
+	debug("mount port: %hu\n", npriv->mount_port);
 	debug("nfs port: %d\n", npriv->nfs_port);
 
 	ret = nfs_mount_req(npriv);
@@ -1536,13 +1551,10 @@ static void nfs_remove(struct device *dev)
 }
 
 static struct fs_driver nfs_driver = {
-	.open      = nfs_open,
-	.close     = nfs_close,
 	.read      = nfs_read,
 	.lseek     = nfs_lseek,
 	.write     = nfs_write,
 	.truncate  = nfs_truncate,
-	.flags     = 0,
 	.drv = {
 		.probe  = nfs_probe,
 		.remove = nfs_remove,
@@ -1555,7 +1567,11 @@ static int nfs_init(void)
 	rootnfsopts = xstrdup("v3,tcp");
 
 	globalvar_add_simple_string("linux.rootnfsopts", &rootnfsopts);
+	globalvar_add_simple_int("net.nfsport", &nfsport_default, "%d");
 
 	return register_fs_driver(&nfs_driver);
 }
 coredevice_initcall(nfs_init);
+
+BAREBOX_MAGICVAR(global.net.nfsport,
+		 "Sets both NFS -o {port.mountport}= to the specified non-zero value");

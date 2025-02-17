@@ -11,6 +11,7 @@
 
 BCJ=
 LZMA2OPTS=
+XZ=${XZ:-xz}
 
 case $SRCARCH in
 	x86)            BCJ=--x86 ;;
@@ -26,7 +27,7 @@ fi
 
 # clear BCJ filter if unsupported
 if [ -n "${BCJ}" ]; then
-	xz -H | grep -q -- $BCJ || BCJ=
+	$XZ -H | grep -q -- $BCJ || BCJ=
 fi
 
-exec xz --check=crc32 $BCJ --lzma2=$LZMA2OPTS,dict=32MiB
+exec $XZ --check=crc32 $BCJ --lzma2=$LZMA2OPTS,dict=32MiB

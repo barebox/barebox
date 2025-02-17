@@ -151,16 +151,15 @@ static void omap4_usbbootfs_remove(struct device *dev)
 }
 
 static const struct fs_legacy_ops omap4_usbbootfs_ops = {
+	.open    = omap4_usbbootfs_open,
+	.close   = omap4_usbbootfs_close,
 	.opendir = omap4_usbbootfs_opendir,
 	.stat    = omap4_usbbootfs_stat,
 };
 
 static struct fs_driver omap4_usbbootfs_driver = {
-	.open    = omap4_usbbootfs_open,
-	.close   = omap4_usbbootfs_close,
 	.read    = omap4_usbbootfs_read,
 	.legacy_ops = &omap4_usbbootfs_ops,
-	.flags	 = 0,
 	.drv = {
 		.probe	= omap4_usbbootfs_probe,
 		.remove	= omap4_usbbootfs_remove,

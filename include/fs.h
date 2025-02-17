@@ -19,8 +19,6 @@ struct partition;
 struct node_d;
 struct stat;
 
-#define FS_DRIVER_NO_DEV	1
-
 /**
  * enum erase_type - Type of erase operation
  * @ERASE_TO_WRITE: Conduct low-level erase operation to prepare for a write
@@ -48,8 +46,6 @@ struct fs_driver {
 	/* Truncate a file to given size */
 	int (*truncate)(struct device *dev, struct file *f, loff_t size);
 
-	int (*open)(struct device *dev, struct file *f, const char *pathname);
-	int (*close)(struct device *dev, struct file *f);
 	int (*read)(struct device *dev, struct file *f, void *buf, size_t size);
 	int (*write)(struct device *dev, struct file *f, const void *buf,
 		     size_t size);
@@ -67,6 +63,8 @@ struct fs_driver {
 	int (*memmap)(struct device *dev, struct file *f, void **map, int flags);
 
 	const struct fs_legacy_ops {
+		int (*open)(struct device *dev, struct file *f, const char *pathname);
+		int (*close)(struct device *dev, struct file *f);
 		/* create a file. The file is guaranteed to not exist */
 		int (*create)(struct device *dev, const char *pathname, mode_t mode);
 		int (*unlink)(struct device *dev, const char *pathname);
@@ -86,8 +84,6 @@ struct fs_driver {
 	struct driver drv;
 
 	enum filetype type;
-
-	unsigned long flags;
 };
 
 #define dev_to_fs_device(d) container_of(d, struct fs_device, dev)

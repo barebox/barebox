@@ -492,6 +492,8 @@ err:
 }
 
 static const struct fs_legacy_ops bpkfs_ops = {
+	.open      = bpkfs_open,
+	.close     = bpkfs_close,
 	.opendir   = bpkfs_opendir,
 	.readdir   = bpkfs_readdir,
 	.closedir  = bpkfs_closedir,
@@ -499,12 +501,9 @@ static const struct fs_legacy_ops bpkfs_ops = {
 };
 
 static struct fs_driver bpkfs_driver = {
-	.open      = bpkfs_open,
-	.close     = bpkfs_close,
 	.read      = bpkfs_read,
 	.lseek     = bpkfs_lseek,
 	.legacy_ops = &bpkfs_ops,
-	.flags     = 0,
 	.type = filetype_bpk,
 	.drv = {
 		.probe  = bpkfs_probe,

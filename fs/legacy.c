@@ -78,6 +78,36 @@ static struct dentry *legacy_lookup(struct inode *dir, struct dentry *dentry,
 	return NULL;
 }
 
+static int legacy_open(struct inode *inode, struct file *file)
+{
+	struct super_block *sb = inode->i_sb;
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
+	const struct fs_legacy_ops *legacy_ops = fsdev->driver->legacy_ops;
+	char *pathname;
+	int error;
+
+	if (!legacy_ops->open)
+		return 0;
+
+	pathname = dpath(file->f_dentry, fsdev->vfsmount.mnt_root);
+	error = legacy_ops->open(&file->fsdev->dev, file, pathname);
+	free(pathname);
+
+	return error;
+}
+
+static int legacy_release(struct inode *inode, struct file *file)
+{
+	struct super_block *sb = inode->i_sb;
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
+	const struct fs_legacy_ops *legacy_ops = fsdev->driver->legacy_ops;
+
+	if (!legacy_ops->close)
+		return 0;
+
+	return legacy_ops->close(&file->fsdev->dev, file);
+}
+
 static int legacy_create(struct inode *dir, struct dentry *dentry, umode_t mode)
 {
 	struct super_block *sb = dir->i_sb;
@@ -280,6 +310,11 @@ static const struct inode_operations legacy_dir_inode_operations = {
 	.symlink = legacy_symlink,
 };
 
+static const struct file_operations legacy_file_operations = {
+	.open = legacy_open,
+	.release = legacy_release,
+};
+
 static const struct file_operations legacy_dir_operations = {
 	.iterate = legacy_iterate,
 };
@@ -306,6 +341,7 @@ static struct inode *legacy_get_inode(struct super_block *sb, const struct inode
 	case S_IFCHR:
 	case S_IFBLK:
 		inode->i_op = &legacy_file_inode_operations;
+		inode->i_fop = &legacy_file_operations;
 		break;
 	case S_IFDIR:
 		inode->i_op = &legacy_dir_inode_operations;

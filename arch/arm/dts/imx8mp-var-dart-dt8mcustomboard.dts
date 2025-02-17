@@ -356,9 +356,6 @@
 };
 
 &usdhc2 {
-	#address-cells = <2>;
-	#size-cells = <1>;
-
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
@@ -368,16 +365,20 @@
 	bus-width = <4>;
 	status = "okay";
 
-	partition@0 {
+	partitions {
 		compatible = "fixed-partitions";
-		label = "barebox";
-		reg = <0x00000000 0x00000000 0x000e0000>;
-	};
+		#size-cells = <2>;
+		#address-cells = <1>;
 
-	env_sd: partition@e0000 {
-		compatible = "fixed-partitions";
-		label = "barebox-environment";
-		reg = <0x00000000 0x000e0000 0x00020000>;
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x0 0xe0000>;
+		};
+
+		env_sd: partition@e0000 {
+			label = "barebox-environment";
+			reg = <0x0 0xe0000 0x20000>;
+		};
 	};
 };
 

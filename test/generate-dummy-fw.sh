@@ -51,6 +51,12 @@ FW_NXP_LAYERSCAPE="
 	firmware/ls1046a-bl31.bin
 "
 
+FW_K3="
+firmware/ti-fs-firmware-am62x-gp.bin
+firmware/ti-fs-firmware-am62x-hs-fs-cert.bin
+firmware/ti-fs-firmware-am62x-hs-fs-enc.bin
+"
+
 FW="
 	$FW_NXP_LPDDR4
 	$FW_NXP_DDR4
@@ -58,6 +64,7 @@ FW="
 	$FW_ROCKCHIP_SDRAM_INIT
 	$FW_MVEBU_BINARY0
 	$FW_NXP_LAYERSCAPE
+	$FW_K3
 "
 
 for i in $FW; do

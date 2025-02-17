@@ -18,6 +18,14 @@
 
 static unsigned int of_partition_binding;
 
+/**
+ * enum of_binding_name - Name of binding to use for OF partition fixup
+ * @MTD_OF_BINDING_NEW:		Fix up new-style partition bindings
+ *				with compatible = "fixed-partitions" container
+ * @MTD_OF_BINDING_LEGACY:	Fix up legacy partition bindings
+ *				directly into the parent node without container
+ * @MTD_OF_BINDING_DONTTOUCH:	Don't touch partition nodes at all - no fixups
+ */
 enum of_binding_name {
 	MTD_OF_BINDING_NEW,
 	MTD_OF_BINDING_LEGACY,
@@ -185,27 +193,25 @@ int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
 		n_cells = 1;
 
 	partnode = of_get_child_by_name(np, "partitions");
-	if (partnode) {
-		if (of_partition_binding == MTD_OF_BINDING_LEGACY) {
-			of_delete_node(partnode);
-			partnode = np;
-		}
-		delete_subnodes(partnode);
-	} else {
-		delete_subnodes(np);
 
-		if (of_partition_binding == MTD_OF_BINDING_LEGACY)
-			partnode = np;
-		else
-			partnode = of_new_node(np, "partitions");
-	}
-
-	if (of_partition_binding == MTD_OF_BINDING_NEW) {
+	switch (of_partition_binding) {
+	case MTD_OF_BINDING_LEGACY:
+		of_delete_node(partnode);
+		partnode = np;
+		break;
+	case MTD_OF_BINDING_NEW:
+		partnode = partnode ?: of_new_node(np, "partitions");
 		ret = of_property_write_string(partnode, "compatible",
 					       "fixed-partitions");
 		if (ret)
 			return ret;
+		break;
 	}
+
+	if (partnode)
+		delete_subnodes(partnode);
+	else
+		delete_subnodes(np);
 
 	ret = of_property_write_u32(partnode, "#size-cells", n_cells);
 	if (ret)

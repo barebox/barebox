@@ -173,6 +173,17 @@ config ARCH_K3
 	select COMMON_CLK_OF_PROVIDER
 	select PM_GENERIC_DOMAINS
 
+config ARCH_SUNXI
+	bool "Allwinner (sunxi) SoCs"
+	depends on ARCH_MULTIARCH
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select GPIOLIB
+	select OFDEVICE
+	select OFTREE
+	select PINCTRL
+
 config ARCH_LAYERSCAPE
 	bool "NXP Layerscape based"
 	depends on ARCH_MULTIARCH
@@ -259,6 +270,7 @@ source "arch/arm/mach-omap/Kconfig"
 source "arch/arm/mach-pxa/Kconfig"
 source "arch/arm/mach-rockchip/Kconfig"
 source "arch/arm/mach-socfpga/Kconfig"
+source "arch/arm/mach-sunxi/Kconfig"
 source "arch/arm/mach-stm32mp/Kconfig"
 source "arch/arm/mach-versatile/Kconfig"
 source "arch/arm/mach-vexpress/Kconfig"

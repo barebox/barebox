@@ -25,6 +25,7 @@ obj-$(CONFIG_ARCH_LAYERSCAPE)	+= clk-qoric.o
 obj-y				+= analogbits/
 obj-$(CONFIG_CLK_SIFIVE)	+= sifive/
 obj-$(CONFIG_SOC_STARFIVE)	+= starfive/
+obj-$(CONFIG_ARCH_SUNXI)	+= sunxi/
 obj-$(CONFIG_COMMON_CLK_STM32F)		+= clk-stm32f4.o
 obj-$(CONFIG_MACH_RPI_COMMON)	+= clk-rpi.o
 obj-y				+= bcm/

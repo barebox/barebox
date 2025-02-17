@@ -6,6 +6,7 @@
 #include <getopt.h>
 #include <malloc.h>
 #include <boot.h>
+#include <bootm.h>
 #include <complete.h>
 
 #include <linux/stat.h>
@@ -23,6 +24,42 @@ static char *next_word(void *context)
 	return strsep(context, " ");
 }
 
+static int boot_add_override(struct bootm_overrides *overrides, char *var)
+{
+	const char *val;
+
+	if (!IS_ENABLED(CONFIG_BOOT_OVERRIDE))
+		return -ENOSYS;
+
+	var += str_has_prefix(var, "global.");
+
+	val = parse_assignment(var);
+	if (!val) {
+		val = globalvar_get(var);
+		if (isempty(val))
+			val = NULL;
+	}
+
+	if (!strcmp(var, "bootm.image")) {
+		if (isempty(val))
+			return -EINVAL;
+		overrides->os_file = val;
+	} else if (!strcmp(var, "bootm.oftree")) {
+		overrides->oftree_file = val;
+	} else if (!strcmp(var, "bootm.initrd")) {
+		overrides->initrd_file = val;
+	} else {
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static inline bool boot_has_overrides(const struct bootm_overrides *overrides)
+{
+	return overrides->os_file || overrides->oftree_file || overrides->initrd_file;
+}
+
 static int do_boot(int argc, char *argv[])
 {
 	char *freep = NULL;
@@ -31,11 +68,12 @@ static int do_boot(int argc, char *argv[])
 	unsigned default_menu_entry = 0;
 	struct bootentries *entries;
 	struct bootentry *entry;
+	struct bootm_overrides overrides = {};
 	void *handle;
 	const char *name;
 	char *(*next)(void *);
 
-	while ((opt = getopt(argc, argv, "vldmM:t:w:")) > 0) {
+	while ((opt = getopt(argc, argv, "vldmM:t:w:o:")) > 0) {
 		switch (opt) {
 		case 'v':
 			verbose++;
@@ -65,6 +103,11 @@ static int do_boot(int argc, char *argv[])
 		case 'w':
 			boot_set_watchdog_timeout(simple_strtoul(optarg, NULL, 0));
 			break;
+		case 'o':
+			ret = boot_add_override(&overrides, optarg);
+			if (ret)
+				return ret;
+			break;
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
@@ -85,6 +128,8 @@ static int do_boot(int argc, char *argv[])
 	}
 
 	entries = bootentries_alloc();
+	if (boot_has_overrides(&overrides))
+		bootm_set_overrides(&overrides);
 
 	while ((name = next(&handle)) != NULL) {
 		if (!*name)
@@ -119,6 +164,8 @@ static int do_boot(int argc, char *argv[])
 
 	ret = 0;
 out:
+	if (boot_has_overrides(&overrides))
+		bootm_unset_overrides();
 	bootentries_free(entries);
 	free(freep);
 
@@ -150,6 +197,10 @@ BAREBOX_CMD_HELP_OPT ("-l","List available boot sources")
 BAREBOX_CMD_HELP_OPT ("-m","Show a menu with boot options")
 BAREBOX_CMD_HELP_OPT ("-M INDEX","Show a menu with boot options with entry INDEX preselected")
 BAREBOX_CMD_HELP_OPT ("-w SECS","Start watchdog with timeout SECS before booting")
+#ifdef CONFIG_BOOT_OVERRIDE
+BAREBOX_CMD_HELP_OPT ("-o VAR[=VAL]","override VAR (bootm.{image,oftree,initrd}) with VAL")
+BAREBOX_CMD_HELP_OPT ("            ","if VAL is not specified, the value of VAR is taken")
+#endif
 BAREBOX_CMD_HELP_OPT ("-t SECS","specify timeout in SECS")
 BAREBOX_CMD_HELP_END
 

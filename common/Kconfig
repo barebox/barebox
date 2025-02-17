@@ -599,6 +599,13 @@ menuconfig BOOTM
 	default y if COMMAND_SUPPORT
 	bool "bootm support"
 
+config BOOT_OVERRIDE
+	bool "Support partial override of boot entries"
+	depends on BOOTM
+	help
+	  Allow overriding of bootm image, oftree and initrd by passing
+	  -o as an argument to the boot command.
+
 config BOOTM_SHOW_TYPE
 	bool
 	depends on BOOTM && UIMAGE

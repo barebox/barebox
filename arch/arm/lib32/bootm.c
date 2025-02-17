@@ -241,6 +241,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 {
 	unsigned long kernel;
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
+	const struct resource *initrd_res;
 	void *tee;
 	enum arm_security_state state = bootm_arm_security_state();
 	void *fdt_load_address = NULL;
@@ -259,16 +260,13 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 		}
 	}
 
-	if (bootm_has_initrd(data)) {
-		ret = bootm_load_initrd(data, initrd_start);
-		if (ret)
-			return ret;
-	}
-
-	if (data->initrd_res) {
-		initrd_start = data->initrd_res->start;
-		initrd_end = data->initrd_res->end;
-		initrd_size = resource_size(data->initrd_res);
+	initrd_res = bootm_load_initrd(data, initrd_start);
+	if (IS_ERR(initrd_res)) {
+		return PTR_ERR(initrd_res);
+	} else if (initrd_res) {
+		initrd_start = initrd_res->start;
+		initrd_end = initrd_res->end;
+		initrd_size = resource_size(initrd_res);
 		free_mem = PAGE_ALIGN(initrd_end + 1);
 	}
 

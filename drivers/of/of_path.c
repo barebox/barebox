@@ -14,7 +14,9 @@
 
 bool of_node_is_fixed_partitions(const struct device_node *np)
 {
-	return of_device_is_compatible(np, "fixed-partitions");
+	return of_device_is_compatible(np, "fixed-partitions") ||
+		of_device_is_compatible(np, "barebox,fixed-partitions");
+
 }
 
 struct device *of_find_device_by_node_path(const char *path)

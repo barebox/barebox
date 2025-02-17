@@ -28,6 +28,7 @@ Contents:
    booting-linux
    bootchooser
    remote-control
+   security
    system-setup
    reset-reason
    system-reset

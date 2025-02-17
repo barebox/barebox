@@ -119,6 +119,8 @@ correspond directly to the boot fusemap settings.
 
 See the section on :ref:`Reboot modes<reboot_mode>` for general information.
 
+.. _hab:
+
 High Assurance Boot
 ^^^^^^^^^^^^^^^^^^^
 

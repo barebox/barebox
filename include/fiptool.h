@@ -38,6 +38,7 @@ struct fip_state {
 	size_t nr_image_descs;
 	int verbose;
 	void *buffer;
+	bool buf_no_free;
 };
 
 #define pr_verbose(...) do { \
@@ -67,6 +68,9 @@ struct fip_image_desc *fip_lookup_image_desc_from_uuid(struct fip_state *fip,
 						 const uuid_t *uuid);
 
 struct fip_image_desc *fip_lookup_image_desc_from_opt(struct fip_state *fip, char **arg);
+
+int fip_parse_buf(struct fip_state *fip, void *buf, size_t size,
+		  fip_toc_header_t *toc_header_out);
 
 int fip_parse(struct fip_state *fip,
 		     const char *filename, fip_toc_header_t *toc_header_out);

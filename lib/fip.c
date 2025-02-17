@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libfile.h>
+#include <fs.h>
 
 #include <fip.h>
 #include <fiptool.h>
@@ -93,7 +94,9 @@ void fip_free(struct fip_state *fip)
 
 	ASSERT(fip->nr_image_descs == 0);
 
-	free(fip->buffer);
+	if (!fip->buf_no_free)
+		free(fip->buffer);
+
 	free(fip);
 }
 
@@ -155,44 +158,20 @@ struct fip_image_desc *fip_lookup_image_desc_from_opt(struct fip_state *fip, cha
 	return NULL;
 }
 
-int fip_parse(struct fip_state *fip,
-		     const char *filename, fip_toc_header_t *toc_header_out)
+static int fip_do_parse_buf(struct fip_state *fip, void *buf, size_t size,
+			    fip_toc_header_t *toc_header_out)
 {
-	struct stat st;
-	int fd;
 	char *bufend;
 	fip_toc_header_t *toc_header;
 	fip_toc_entry_t *toc_entry;
 	int terminated = 0;
-	size_t st_size;
 
-	if (fip->buffer)
-		return -EBUSY;
+	fip->buffer = buf;
 
-	fd = open(filename, O_RDONLY);
-	if (fd < 0) {
-		pr_err("open %s: %m\n", filename);
-		return -errno;
-	}
+	bufend = fip->buffer + size;
 
-	if (fstat(fd, &st) == -1) {
-		pr_err("fstat %s: %m\n", filename);
-		return -errno;
-	}
-
-	st_size = st.st_size;
-
-	fip->buffer = xmalloc(st_size);
-	if (read_full(fd, fip->buffer, st_size) != st_size) {
-		pr_err("Failed to read %s: %m\n", filename);
-		return -errno;
-	}
-
-	bufend = fip->buffer + st_size;
-	close(fd);
-
-	if (st_size < sizeof(fip_toc_header_t)) {
-		pr_err("FIP %s is truncated\n", filename);
+	if (size < sizeof(fip_toc_header_t)) {
+		pr_err("FIP is truncated\n");
 		return -ENODATA;
 	}
 
@@ -200,8 +179,8 @@ int fip_parse(struct fip_state *fip,
 	toc_entry = (fip_toc_entry_t *)(toc_header + 1);
 
 	if (toc_header->name != TOC_HEADER_NAME) {
-		pr_err("%s is not a FIP file: unknown magic = 0x%08x\n",
-		       filename, toc_header->name);
+		pr_err("not a FIP file: unknown magic = 0x%08x\n",
+		       toc_header->name);
 		return -EINVAL;
 	}
 
@@ -230,13 +209,12 @@ int fip_parse(struct fip_state *fip,
 		image->buf_no_free = true;
 		/* Overflow checks before memory copy. */
 		if (toc_entry->size > (uint64_t)-1 - toc_entry->offset_address) {
-			pr_err("FIP %s is corrupted: entry size exceeds 64 bit address space\n",
-			       filename);
+			pr_err("FIP is corrupted: entry size exceeds 64 bit address space\n");
 			return -EINVAL;
 		}
-		if (toc_entry->size + toc_entry->offset_address > st_size) {
-			pr_err("FIP %s is corrupted: entry size (0x%llx) exceeds FIP file size (0x%zx)\n",
-				filename, toc_entry->size + toc_entry->offset_address, st_size);
+		if (toc_entry->size + toc_entry->offset_address > size) {
+			pr_err("FIP is corrupted: entry size (0x%llx) exceeds FIP file size (0x%zx)\n",
+				toc_entry->size + toc_entry->offset_address, size);
 			return -EINVAL;
 		}
 
@@ -261,12 +239,46 @@ int fip_parse(struct fip_state *fip,
 	}
 
 	if (terminated == 0) {
-		pr_err("FIP %s does not have a ToC terminator entry\n",
-		    filename);
+		pr_err("FIP does not have a ToC terminator entry\n");
 		return -EINVAL;
 	}
 
 	return 0;
+}
+
+int fip_parse_buf(struct fip_state *fip, void *buf, size_t size,
+			    fip_toc_header_t *toc_header_out)
+{
+	if (fip->buffer)
+		return -EBUSY;
+
+	fip->buf_no_free = true;
+
+	return fip_do_parse_buf(fip, buf, size, toc_header_out);
+}
+
+int fip_parse(struct fip_state *fip,
+		     const char *filename, fip_toc_header_t *toc_header_out)
+{
+	size_t size;
+	int ret;
+	void *buf;
+
+	if (fip->buffer)
+		return -EBUSY;
+
+	ret = read_file_2(filename, &size, &buf, FILESIZE_MAX);
+	if (ret) {
+		pr_err("open %s: %m\n", filename);
+		return ret;
+	}
+
+	ret = fip_parse_buf(fip, buf, size, toc_header_out);
+
+	if (ret)
+		free(buf);
+
+	return ret;
 }
 
 static struct fip_image *fip_read_image_from_file(const uuid_t *uuid, const char *filename)

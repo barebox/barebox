@@ -160,11 +160,14 @@ int fip_parse(struct fip_state *fip,
 {
 	struct stat st;
 	int fd;
-	char *buf, *bufend;
+	char *bufend;
 	fip_toc_header_t *toc_header;
 	fip_toc_entry_t *toc_entry;
 	int terminated = 0;
 	size_t st_size;
+
+	if (fip->buffer)
+		return -EBUSY;
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
@@ -179,13 +182,13 @@ int fip_parse(struct fip_state *fip,
 
 	st_size = st.st_size;
 
-	buf = xmalloc(st_size);
-	if (read_full(fd, buf, st_size) != st_size) {
+	fip->buffer = xmalloc(st_size);
+	if (read_full(fd, fip->buffer, st_size) != st_size) {
 		pr_err("Failed to read %s: %m\n", filename);
 		return -errno;
 	}
 
-	bufend = buf + st_size;
+	bufend = fip->buffer + st_size;
 	close(fd);
 
 	if (st_size < sizeof(fip_toc_header_t)) {
@@ -193,7 +196,7 @@ int fip_parse(struct fip_state *fip,
 		return -ENODATA;
 	}
 
-	toc_header = (fip_toc_header_t *)buf;
+	toc_header = (fip_toc_header_t *)fip->buffer;
 	toc_entry = (fip_toc_entry_t *)(toc_header + 1);
 
 	if (toc_header->name != TOC_HEADER_NAME) {
@@ -223,7 +226,8 @@ int fip_parse(struct fip_state *fip,
 		 */
 		image = xzalloc(sizeof(*image));
 		image->toc_e = *toc_entry;
-		image->buffer = xmalloc(toc_entry->size);
+		image->buffer = fip->buffer + toc_entry->offset_address;
+		image->buf_no_free = true;
 		/* Overflow checks before memory copy. */
 		if (toc_entry->size > (uint64_t)-1 - toc_entry->offset_address) {
 			pr_err("FIP %s is corrupted: entry size exceeds 64 bit address space\n",
@@ -235,9 +239,6 @@ int fip_parse(struct fip_state *fip,
 				filename, toc_entry->size + toc_entry->offset_address, st_size);
 			return -EINVAL;
 		}
-
-		memcpy(image->buffer, buf + toc_entry->offset_address,
-		    toc_entry->size);
 
 		/* If this is an unknown image, create a descriptor for it. */
 		desc = fip_lookup_image_desc_from_uuid(fip, &toc_entry->uuid);
@@ -264,7 +265,7 @@ int fip_parse(struct fip_state *fip,
 		    filename);
 		return -EINVAL;
 	}
-	free(buf);
+
 	return 0;
 }
 

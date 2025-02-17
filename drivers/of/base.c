@@ -351,7 +351,7 @@ static const char *of_get_partition_device_alias(struct device_node *np)
 		return alias;
 
 	np = of_get_parent(np);
-	if (np && of_device_is_compatible(np, "fixed-partitions"))
+	if (np && of_node_is_fixed_partitions(np))
 		np = of_get_parent(np);
 
 	return of_alias_get(np);
@@ -3271,10 +3271,8 @@ char *of_get_reproducible_name(struct device_node *node)
 	 * "fixed-partitions" compatible. We skip this extra subnode from the
 	 * reproducible name to get the same name for both bindings.
 	 */
-	if (node->parent &&
-	    of_device_is_compatible(node->parent, "fixed-partitions")) {
+	if (node->parent && of_node_is_fixed_partitions(node->parent))
 		node = node->parent;
-	}
 
 	offset = of_read_number(reg, na);
 

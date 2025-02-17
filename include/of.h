@@ -204,6 +204,7 @@ extern const char *of_get_machine_compatible(void);
 extern int of_machine_is_compatible(const char *compat);
 extern int of_device_is_compatible(const struct device_node *device,
 		const char *compat);
+extern bool of_node_is_fixed_partitions(const struct device_node *np);
 extern int of_device_is_available(const struct device_node *device);
 extern bool of_device_is_big_endian(const struct device_node *device);
 
@@ -914,6 +915,11 @@ static inline int of_device_is_compatible(const struct device_node *device,
 		const char *compat)
 {
 	return 0;
+}
+
+static inline bool of_node_is_fixed_partitions(const struct device_node *device)
+{
+	return false;
 }
 
 static inline int of_device_is_available(const struct device_node *device)

@@ -93,7 +93,7 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 
 	subnode = of_get_child_by_name(node, "partitions");
 	if (subnode) {
-		if (!of_device_is_compatible(subnode, "fixed-partitions"))
+		if (!of_node_is_fixed_partitions(subnode))
 			return -EINVAL;
 		node = subnode;
 	}
@@ -125,7 +125,7 @@ int of_partition_ensure_probed(struct device_node *np)
 		return -EINVAL;
 
 	/* Check if modern partitions binding */
-	if (of_device_is_compatible(parent, "fixed-partitions")) {
+	if (of_node_is_fixed_partitions(parent)) {
 		parent = of_get_parent(parent);
 
 		/*

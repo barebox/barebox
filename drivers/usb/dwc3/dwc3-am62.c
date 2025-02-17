@@ -7,6 +7,7 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/units.h>
 #include <of.h>
 #include <linux/clk.h>
 #include <linux/regmap.h>
@@ -203,7 +204,7 @@ static int dwc3_ti_probe(struct device *dev)
 
 	/* Calculate the rate code */
 	rate = clk_get_rate(am62->usb2_refclk);
-	rate /= 1000;	// To KHz
+	rate /= HZ_PER_KHZ;
 	for (i = 0; i < ARRAY_SIZE(dwc3_ti_rate_table); i++) {
 		if (dwc3_ti_rate_table[i] == rate)
 			break;

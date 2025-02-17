@@ -29,6 +29,12 @@ config PWM_IMX
 	help
 	  This enables PWM support for Freescale i.MX SoCs
 
+config PWM_TPM
+	bool "i.MX TPM Support"
+	depends on ARCH_IMX || COMPILE_TEST
+	help
+	  This enables PWM support for Freescale i.MX SoCs
+
 config PWM_MXS
 	bool "i.MXs PWM Support"
 	depends on ARCH_MXS

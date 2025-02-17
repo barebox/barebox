@@ -81,8 +81,15 @@ config FIRMWARE_IMX93_OPTEE
 	  in CONFIG_EXTRA_FIRMWARE_DIR/imx93-bl32.bin. When this option is enabled then
 	  the TF-A binary will be used from CONFIG_EXTRA_FIRMWARE_DIR/imx93-bl31.bin-optee.
 	  Additionally OP-TEE requires a RAM firmware loaded into the ELE. This is expected
-	  in CONFIG_EXTRA_FIRMWARE_DIR/mx93a0-ahab-container.img and
-	  CONFIG_EXTRA_FIRMWARE_DIR/mx93a1-ahab-container.img. You can obtain it from
+	  in CONFIG_EXTRA_FIRMWARE_DIR/mx93a1-ahab-container.img. You can obtain it from
+	  https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-ele-imx-0.1.1.bin
+
+config FIRMWARE_IMX93_OPTEE_A0
+	bool "install OP-TEE on i.MX93 older A0 revision boards"
+	depends on FIRMWARE_IMX93_OPTEE
+	help
+	  Additionally OP-TEE requires a RAM firmware loaded into the ELE. This is expected
+	  in CONFIG_EXTRA_FIRMWARE_DIR/mx93a0-ahab-container.img. You can obtain it from
 	  https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-ele-imx-0.1.0.bin
 
 config FIRMWARE_TQMA6UL_OPTEE

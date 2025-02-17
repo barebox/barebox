@@ -38,6 +38,7 @@ void __noreturn __imx8mp_load_and_start_image_via_tfa(void *bl33);
 void __noreturn __imx8mq_load_and_start_image_via_tfa(void *bl33);
 
 void __noreturn imx93_load_and_start_image_via_tfa(void);
+void __noreturn __imx93_load_and_start_image_via_tfa(void *bl33);
 
 int imx_load_image(ptrdiff_t address, ptrdiff_t entry, u32 offset,
 		   u32 ivt_offset, bool start, unsigned int alignment,

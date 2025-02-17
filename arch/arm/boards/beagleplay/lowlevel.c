@@ -10,27 +10,21 @@
 #include <compressed-dtb.h>
 #include <cache.h>
 #include <mach/k3/r5.h>
+#include <mach/k3/common.h>
 
 #include "ddr.h"
 
-/* Called from assembly */
-void beagleplay(void *dtb);
-
-static noinline void beagleplay_continue(void *dtb)
+static noinline void beagleplay_continue(void)
 {
-	unsigned long membase, memsize;
+	unsigned long membase = 0x80000000, memsize;
 	extern char __dtb_k3_am625_beagleplay_start[];
-	unsigned int size;
 
-	fdt_find_mem(__dtb_k3_am625_beagleplay_start, &membase, &memsize);
-
-	if (blob_is_valid_fdt_ptr(dtb, membase, memsize, &size))
-		handoff_data_add(HANDOFF_DATA_EXTERNAL_DT, dtb, size);
+	memsize = am625_sdram_size();
 
 	barebox_arm_entry(membase, memsize, __dtb_k3_am625_beagleplay_start);
 }
 
-void beagleplay(void *dtb)
+ENTRY_FUNCTION_WITHSTACK(start_beagleplay, 0x80800000, r0, r1, r2)
 {
 	putc_ll('>');
 
@@ -40,7 +34,7 @@ void beagleplay(void *dtb)
 
 	setup_c();
 
-	beagleplay_continue(dtb);
+	beagleplay_continue();
 }
 
 extern char __dtb_k3_am625_r5_beagleplay_start[];

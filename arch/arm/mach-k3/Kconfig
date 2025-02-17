@@ -15,6 +15,7 @@ config MACH_K3_CORTEX_R5
 	select ARMV7R_MPU
 	select ELF
 	select K3_DDRSS
+	select FIP
 	depends on 32BIT
 	select ARM_USE_COMPRESSED_DTB
 	default y

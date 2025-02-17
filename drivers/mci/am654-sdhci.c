@@ -594,6 +594,7 @@ static int am654_sdhci_probe(struct device *dev)
 	mci = &plat->mci;
 	mci->f_max = clk_get_rate(plat->clk);
 	mci->f_min = 50000000 / 256;
+	mci_of_parse_node(mci, np);
 
 	if (plat->soc_data->flags & DLL_PRESENT) {
 		ret = of_property_read_u32(np, "ti,trm-icp", &plat->trm_icp);

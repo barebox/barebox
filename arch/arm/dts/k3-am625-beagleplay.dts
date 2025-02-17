@@ -29,3 +29,7 @@
 		AM62X_IOPAD(0x0240, PIN_INPUT, 0) /* (D17) MMC1_SDCD */
 	>;
 };
+
+&sdhci0 {
+	max-frequency = <26000000>;
+};

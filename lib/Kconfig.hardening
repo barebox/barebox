@@ -1,5 +1,11 @@
 menu "Hardening options"
 
+if HAS_INSECURE_DEFAULTS
+comment "This barebox configuration has CONFIG_HAS_INSECURE_DEFAULTS=y indicating"
+comment "that some of the configured options have potentially insecure defaults."
+comment "Extra care needs to be in secure booted systems."
+endif
+
 config BUG_ON_DATA_CORRUPTION
 	bool "Trigger a BUG when data corruption is detected"
 	select DEBUG_LIST

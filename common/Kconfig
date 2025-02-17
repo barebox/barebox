@@ -149,9 +149,20 @@ config LOCALVERSION_AUTO
 
 	  which is done within the script "scripts/setlocalversion".)
 
+config HAS_INSECURE_DEFAULTS
+	bool
+	help
+	  This is selected by options that have potentially insecure defaults.
+	  Extra care needs to be taken when these options are not disabled
+	  in secure booted systems.
+
+	  Any option selecting this should include in its help text
+	  an explanation of the security considerations.
+
 config INSECURE
 	bool "enable convenient defaults that are unsuitable for secure-booting systems"
 	default y
+	select HAS_INSECURE_DEFAULTS
 	help
 	  Say n here when barebox is part of a secure boot chain and you
 	  want to disable defaults that may compromise the boot chain.
@@ -344,13 +355,17 @@ endchoice
 config MODULES
 	depends on HAS_MODULES
 	depends on EXPERIMENTAL
+	select HAS_INSECURE_DEFAULTS
 	bool "module support"
 	modules
 	help
 	  This option enables support for loadable modules via insmod. Module
 	  support is quite experimental at the moment. There is no convenient
 	  way to compile modules and the list of exported symbols to actually
-	  make use of modules is short to nonexistent
+	  make use of modules is short to nonexistent.
+
+	  As modules can't be signed, loading external modules is not
+	  recommended for secure systems.
 
 config HAVE_MOD_ARCH_SPECIFIC
 	bool
@@ -743,6 +758,15 @@ config BOOTM_FORCE_SIGNED_IMAGES
 	  are refused to boot. Effectively this means only FIT images can be booted
 	  since they are the only supported image type that support signing.
 
+config BOOTM_OPTIONAL_SIGNED_IMAGES
+	def_bool !BOOTM_FORCE_SIGNED_IMAGES
+	select HAS_INSECURE_DEFAULTS
+	help
+	  With this option enabled, barebox can be reconfigured to not verify signed
+	  images. It's the board code's responsibility to call the function
+	  bootm_force_signed_images() when secure booted to ensure that runtime
+	  reconfiguration is no longer possible.
+
 config BLSPEC
 	depends on FLEXIBLE_BOOTARGS
 	depends on !SHELL_NONE
@@ -957,6 +981,7 @@ source "common/partitions/Kconfig"
 
 config ENV_HANDLING
 	select CRC32
+	select HAS_INSECURE_DEFAULTS
 	bool "Support environment files storage"
 	default y if !SHELL_NONE
 	help
@@ -964,6 +989,17 @@ config ENV_HANDLING
 	  over reboots. The "saveenv" command will store all files under /env/ to
 	  the persistent environment, the "loadenv" command (also executed during
 	  startup) will bring them back. If unsure, say yes.
+
+	  As the environment is not cryptographically verified, an attacker with
+	  raw access to the environment storage may set any nv variable and
+	  inject shell scripts to be run by barebox.
+
+	  In general, secure systems should rely exclusively on the barebox
+	  built-in environment, disable the mutable environment and use the
+	  barebox-state framework for persisting a fixed set of variables.
+
+	  A safe use of the mutable environment may be possible if board code only
+	  mounts it after verifying a JSON Web Token that enables a debug mode.
 
 config DEFAULT_ENVIRONMENT
 	select CRC32
@@ -1264,14 +1300,20 @@ config OPTEE_SHM_SIZE
 config BOOTM_OPTEE
 	bool
 	prompt "support booting OP-TEE"
-	depends on BOOTM && ARM && 32BIT
+	depends on BOOTM && ARM32
 	select HAVE_OPTEE
+	select HAS_INSECURE_DEFAULTS
 	help
 	  OP-TEE is a trusted execution environment (TEE). With this option
 	  enabled barebox supports starting optee_os as part of the bootm command.
 	  Instead of the kernel bootm starts the optee_os binary which then starts
 	  the kernel in nonsecure mode. Pass the optee_os binary with the -t option
 	  or in the global.bootm.tee variable.
+
+	  This mode of late loading OP-TEE just before the kernel is deprecated
+	  in favor of early loading OP-TEE in the PBL (CONFIG_PBL_OPTEE).
+	  Early-loading greatly reduces the attack surface and is the only mode
+	  supported outside of ARMv7.
 
 config PBL_OPTEE
 	bool "Enable OP-TEE early start"
@@ -1300,9 +1342,10 @@ config FASTBOOT_SPARSE
 config FASTBOOT_CMD_OEM
 	bool
 	prompt "Enable OEM commands"
+	select HAS_INSECURE_DEFAULTS
 	help
 	  This option enables the fastboot "oem" group of commands. They allow to
-	  executing arbitrary barebox commands and may be disabled in secure
+	  executing arbitrary barebox commands and should be disabled in secure
 	  environments.
 
 endmenu

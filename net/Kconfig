@@ -31,8 +31,12 @@ config NET_NETCONSOLE
 	bool
 	depends on !CONSOLE_NONE
 	prompt "network console support"
+	select HAS_INSECURE_DEFAULTS
 	help
 	  This option adds support for a simple udp based network console.
+
+	  This console's communication is not encrypted and is thus not
+	  suitable for use in untrusted networks.
 
 config NET_RESOLV
 	bool

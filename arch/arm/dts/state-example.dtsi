@@ -106,7 +106,7 @@ backend_state_nor: &{ecspi3/flash@0/partitions/partition@120000} {
 
 &som_eeprom { /* On I2C1 */
 	partitions {
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 		#size-cells = <1>;
 		#address-cells = <1>;
 		backend_state_eeprom: state@400 {
@@ -118,7 +118,7 @@ backend_state_nor: &{ecspi3/flash@0/partitions/partition@120000} {
 
 &usdhc2 {
 	partitions {
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 		#size-cells = <1>;
 		#address-cells = <1>;
 		backend_state_usdhc: state@0x80000 {

@@ -22,7 +22,7 @@
 
 &usdhc3 {
 	partitions-boot1 {
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 		#address-cells = <1>;
 		#size-cells = <1>;
 

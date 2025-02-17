@@ -639,7 +639,7 @@ above:
 
 	&mmc1 {
 		partitions {
-			compatible = "fixed-partitions";
+			compatible = "barebox,fixed-partitions";
 			#address-cells = <1>;
 			#size-cells = <1>;
 			[…]
@@ -723,7 +723,7 @@ within the EEPROM.
 
 	eeprom@50 {
 		partitions {
-			compatible = "fixed-partitions";
+			compatible = "barebox,fixed-partitions";
 			#size-cells = <1>;
 			#address-cells = <1>;
 			backend_state_eeprom: eeprom_state_memory@400 {

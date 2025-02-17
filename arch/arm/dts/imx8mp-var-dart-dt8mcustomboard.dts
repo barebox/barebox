@@ -366,7 +366,7 @@
 	status = "okay";
 
 	partitions {
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 		#size-cells = <2>;
 		#address-cells = <1>;
 

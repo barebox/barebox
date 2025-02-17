@@ -1218,11 +1218,24 @@ static void mci_extract_block_lengths_from_csd(struct mci *mci)
 }
 
 /**
- * Extract erase group size
+ * Configure erase group size
  * @param mci MCI instance
  */
-static void mci_extract_erase_group_size(struct mci *mci)
+static void mci_configure_erase_group_size(struct mci *mci)
 {
+	/* Enable ERASE_GRP_DEF. This bit is lost after a reset or power off.
+	 * This needs to happen even if we don't have erase support compiled-in.
+	 */
+	if (!IS_SD(mci) && mci->version >= MMC_VERSION_4_3) {
+		int err;
+
+		err = mci_switch(mci, EXT_CSD_ERASE_GROUP_DEF, 1);
+		if (err)
+			dev_warn(&mci->dev, "failed erase group switch\n");
+		else
+			mci->ext_csd[EXT_CSD_ERASE_GROUP_DEF] = 1;
+	}
+
 	if (!IS_ENABLED(CONFIG_MCI_ERASE) ||
 	    !(UNSTUFF_BITS(mci->csd, 84, 12) & CCC_ERASE))
 		return;
@@ -1954,7 +1967,7 @@ static int mci_startup(struct mci *mci)
 	dev_info(&mci->dev, "detected %s card version %s\n", IS_SD(mci) ? "SD" : "MMC",
 		mci_version_string(mci));
 	mci_extract_card_capacity_from_csd(mci);
-	mci_extract_erase_group_size(mci);
+	mci_configure_erase_group_size(mci);
 
 	if (IS_SD(mci))
 		err = mci_startup_sd(mci);

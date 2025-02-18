@@ -10,7 +10,7 @@
 #define LPDDR4_IF_H
 
 #include <linux/types.h>
-#include <am64/lpddr4_am64_if.h>
+#include "am64/lpddr4_am64_if.h"
 
 typedef struct lpddr4_config_s lpddr4_config;
 typedef struct lpddr4_privatedata_s lpddr4_privatedata;

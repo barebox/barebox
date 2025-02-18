@@ -7,7 +7,7 @@
  */
 
 #include <linux/types.h>
-#include <am64/lpddr4_am64_ctl_regs_rw_masks.h>
+#include "am64/lpddr4_am64_ctl_regs_rw_masks.h"
 
 u32 g_lpddr4_ddr_controller_rw_mask[] = {
 	0x00000F01U,

@@ -15,10 +15,10 @@
 #include <linux/jffs2.h>
 #include "nodelist.h"
 
-struct jffs2_full_dirent *jffs2_alloc_full_dirent(int namesize)
+struct jffs2_full_dirent *jffs2_alloc_full_dirent(size_t namesize)
 {
 	struct jffs2_full_dirent *ret;
-	ret = kmalloc(sizeof(*ret) + namesize, GFP_KERNEL);
+	ret = kmalloc(struct_size(ret, name, namesize), GFP_KERNEL);
 	dbg_memalloc("%p\n", ret);
 	return ret;
 }

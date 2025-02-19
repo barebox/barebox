@@ -290,7 +290,7 @@ struct jffs2_full_dirent
 	uint32_t ino; /* == zero for unlink */
 	unsigned int nhash;
 	unsigned char type;
-	unsigned char name[0];
+	unsigned char name[];
 };
 
 /*
@@ -440,7 +440,7 @@ void jffs2_do_clear_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f);
 
 /* malloc.c */
 
-struct jffs2_full_dirent *jffs2_alloc_full_dirent(int namesize);
+struct jffs2_full_dirent *jffs2_alloc_full_dirent(size_t namesize);
 void jffs2_free_full_dirent(struct jffs2_full_dirent *);
 struct jffs2_full_dnode *jffs2_alloc_full_dnode(void);
 void jffs2_free_full_dnode(struct jffs2_full_dnode *dnode);

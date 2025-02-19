@@ -43,15 +43,19 @@
 static const char *squashfs_get_link(struct dentry *dentry, struct inode *inode)
 {
 	struct super_block *sb = inode->i_sb;
-	int index = 0;
 	u64 block = squashfs_i(inode)->start;
 	int offset = squashfs_i(inode)->offset;
-	int length = min_t(int, i_size_read(inode) - index, PAGE_SIZE);
+	size_t length;
 	int bytes;
 	unsigned char *symlink;
 
 	TRACE("Entered squashfs_symlink_readpage, start block "
 			"%llx, offset %x\n", block, offset);
+
+	if (i_size_read(inode) < 0)
+		return NULL;
+
+	length = min_t(loff_t, i_size_read(inode), PAGE_SIZE);
 
 	symlink = malloc(length + 1);
 	if (!symlink)

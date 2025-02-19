@@ -62,7 +62,7 @@ int pstore_mkfile(struct pstore_record *record)
 			return -EEXIST;
 	}
 
-	private = xzalloc(sizeof(*private) + size);
+	private = xzalloc(struct_size(private, data, size));
 	private->type = record->type;
 	private->id = record->id;
 	private->count = record->count;

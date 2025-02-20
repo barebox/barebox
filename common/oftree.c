@@ -172,7 +172,7 @@ static void watchdog_build_bootargs(struct watchdog *watchdog, struct device_nod
 	if (alias_id < 0)
 		return;
 
-	buf = basprintf("systemd.watchdog-device=/dev/watchdog%d", alias_id);
+	buf = basprintf("systemd.watchdog_device=/dev/watchdog%d", alias_id);
 	if (!buf)
 		return;
 

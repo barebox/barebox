@@ -60,10 +60,6 @@ rk-usb-loader-target-userldlibs += `$(CROSS_PKG_CONFIG) --libs libusb-1.0`
 
 userccflags += -I $(srctree)/$(src)/include -isystem $(srctree)/scripts/include
 
-# We need to explicitly set the macro to empty, otherwise it's defined to =1
-userccflags += -D_GNU_SOURCE=""
-KBUILD_HOSTCFLAGS += -D_GNU_SOURCE=""
-
 subdir-y			+= mod
 subdir-y			+= imx
 subdir-$(CONFIG_ARCH_TEGRA)	+= tegra

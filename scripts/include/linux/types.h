@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <fcntl.h>
 
 typedef uint64_t __u64;
 typedef int64_t __s64;

@@ -5,6 +5,9 @@
 #include <linux/compiler.h>
 #include <types.h>
 
+#define MALLOC_SHIFT_MAX	30
+#define MALLOC_MAX_SIZE		(1UL << MALLOC_SHIFT_MAX)
+
 #if IN_PROPER
 void *malloc(size_t) __alloc_size(1);
 size_t malloc_usable_size(void *);

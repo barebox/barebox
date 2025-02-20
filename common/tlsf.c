@@ -46,15 +46,7 @@ enum tlsf_private
 	** blocks below that size into the 0th first-level list.
 	*/
 
-#if defined (TLSF_64BIT)
-	/*
-	** TODO: We can increase this to support larger sizes, at the expense
-	** of more overhead in the TLSF structure.
-	*/
-	FL_INDEX_MAX = 32,
-#else
-	FL_INDEX_MAX = 30,
-#endif
+	FL_INDEX_MAX = MALLOC_SHIFT_MAX,
 	SL_INDEX_COUNT = (1 << SL_INDEX_COUNT_LOG2),
 	FL_INDEX_SHIFT = (SL_INDEX_COUNT_LOG2 + ALIGN_SIZE_LOG2),
 	FL_INDEX_COUNT = (FL_INDEX_MAX - FL_INDEX_SHIFT + 1),
@@ -824,15 +816,9 @@ pool_t tlsf_add_pool(tlsf_t tlsf, void* mem, size_t bytes)
 
 	if (pool_bytes < block_size_min || pool_bytes > block_size_max)
 	{
-#if defined (TLSF_64BIT)
-		printf("tlsf_add_pool: Memory size must be between 0x%x and 0x%x00 bytes.\n",
-			(unsigned int)(pool_overhead + block_size_min),
-			(unsigned int)((pool_overhead + block_size_max) / 256));
-#else
 		printf("tlsf_add_pool: Memory size must be between %u and %u bytes.\n",
 			(unsigned int)(pool_overhead + block_size_min),
 			(unsigned int)(pool_overhead + block_size_max));
-#endif
 		return 0;
 	}
 

@@ -1219,6 +1219,7 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	int used = 0;
 	int fw_orig_len = 0;
 	int used_refresh = 0, unused_refresh = 0;
+	const char *devname = handler->devicefile;
 
 	if (data->image) {
 		filetype = file_detect_type(data->image, data->len);
@@ -1230,7 +1231,12 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 			return -EINVAL;
 	}
 
-	bcb_cdev = cdev_by_name(handler->devicefile);
+	/* Support both boot /dev/nand0.barebox and boot nand0.barebox */
+	devname += str_has_prefix(devname, "/dev/");
+
+	device_detect_by_name(devname);
+
+	bcb_cdev = cdev_by_name(devname);
 	if (!bcb_cdev) {
 		pr_err("%s: No FCB device!\n", __func__);
 		return -ENODEV;
@@ -1432,7 +1438,8 @@ static void imx6_fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 	fcb->MetadataBytes = 10;
 }
 
-int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
+int imx6_bbu_nand_register_handler(const char *name,
+		const char *devicefile, unsigned long flags)
 {
 	struct imx_nand_fcb_bbu_handler *imx_handler;
 	struct bbu_handler *handler;
@@ -1451,7 +1458,7 @@ int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 	}
 
 	handler = &imx_handler->handler;
-	handler->devicefile = "nand0.barebox";
+	handler->devicefile = devicefile;
 	handler->name = name;
 	handler->flags = flags | BBU_HANDLER_CAN_REFRESH;
 	handler->handler = imx_bbu_nand_update;
@@ -1526,7 +1533,8 @@ static void imx28_fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 	fcb->EraseThreshold = readl(bch_regs + BCH_MODE);
 }
 
-int imx28_bbu_nand_register_handler(const char *name, unsigned long flags)
+int imx28_bbu_nand_register_handler(const char *name,
+		const char *devicefile, unsigned long flags)
 {
 	struct imx_nand_fcb_bbu_handler *imx_handler;
 	struct bbu_handler *handler;
@@ -1540,7 +1548,7 @@ int imx28_bbu_nand_register_handler(const char *name, unsigned long flags)
 	imx_handler->filetype = filetype_mxs_bootstream;
 
 	handler = &imx_handler->handler;
-	handler->devicefile = "nand0.barebox";
+	handler->devicefile = devicefile;
 	handler->name = name;
 	handler->flags = flags | BBU_HANDLER_CAN_REFRESH;
 	handler->handler = imx_bbu_nand_update;
@@ -1599,7 +1607,8 @@ static int imx7_fcb_write(struct mtd_info *mtd, int block, struct fcb_block *fcb
 	return mxs_nand_write_fcb_bch62(block, fcb, sizeof(*fcb));
 }
 
-int imx7_bbu_nand_register_handler(const char *name, unsigned long flags)
+int imx7_bbu_nand_register_handler(const char *name,
+				   const char *devicefile, unsigned long flags)
 {
 	struct imx_nand_fcb_bbu_handler *imx_handler;
 	struct bbu_handler *handler;
@@ -1612,7 +1621,7 @@ int imx7_bbu_nand_register_handler(const char *name, unsigned long flags)
 	imx_handler->filetype = filetype_arm_barebox;
 
 	handler = &imx_handler->handler;
-	handler->devicefile = "nand0.barebox";
+	handler->devicefile = devicefile;
 	handler->name = name;
 	handler->flags = flags | BBU_HANDLER_CAN_REFRESH;
 	handler->handler = imx_bbu_nand_update;

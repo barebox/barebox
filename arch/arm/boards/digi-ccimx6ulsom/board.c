@@ -11,7 +11,8 @@ static int digi_ccimx6ulsbcpro_device_init(void)
 	if (!of_machine_is_compatible("digi,ccimx6ulsbcpro"))
 		return 0;
 
-	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+	imx6_bbu_nand_register_handler("nand", "/dev/nand0.barebox",
+			BBU_HANDLER_FLAG_DEFAULT);
 
 	barebox_set_hostname("ccimx6ulsbcpro");
 

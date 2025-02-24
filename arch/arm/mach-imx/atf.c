@@ -387,11 +387,15 @@ __noreturn void __imx8mq_load_and_start_image_via_tfa(void *bl33)
 
 void __noreturn imx93_load_and_start_image_via_tfa(void)
 {
+	__imx93_load_and_start_image_via_tfa((void *)MX93_ATF_BL33_BASE_ADDR);
+}
+
+void __noreturn __imx93_load_and_start_image_via_tfa(void *bl33)
+{
 	unsigned long atf_dest = MX93_ATF_BL31_BASE_ADDR;
 	void __noreturn (*bl31)(void) = (void *)atf_dest;
 	const void *tfa;
 	size_t tfa_size;
-	void *bl33 = (void *)MX93_ATF_BL33_BASE_ADDR;
 	unsigned long endmem = MX9_DDR_CSD1_BASE_ADDR + imx9_ddrc_sdram_size();
 
 	imx_set_cpu_type(IMX_CPU_IMX93);
@@ -434,12 +438,12 @@ void __noreturn imx93_load_and_start_image_via_tfa(void)
 	 * it there. The USB protocol transfers data in chunks of 1024 bytes,
 	 * so align the copy size up to the next 1KiB boundary.
 	 */
-	memcpy((void *)MX93_ATF_BL33_BASE_ADDR, __image_start, ALIGN(barebox_pbl_size, 1024));
+	memcpy(bl33, __image_start, ALIGN(barebox_pbl_size, 1024));
 
 	memcpy(bl31, tfa, tfa_size);
 
 	asm volatile("msr sp_el2, %0" : :
-		     "r" (MX93_ATF_BL33_BASE_ADDR - 16) :
+		     "r" (bl33 - 16) :
 		     "cc");
 	bl31();
 	__builtin_unreachable();

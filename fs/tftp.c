@@ -765,11 +765,11 @@ out:
 	return ERR_PTR(ret);
 }
 
-static int tftp_open(struct device *dev, struct file *file, const char *filename)
+static int tftp_open(struct inode *inode, struct file *file)
 {
 	struct file_priv *priv;
 
-	priv = tftp_do_open(dev, file->f_flags, file->f_dentry, false);
+	priv = tftp_do_open(&file->fsdev->dev, file->f_flags, file->f_dentry, false);
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 
@@ -818,7 +818,7 @@ static int tftp_do_close(struct file_priv *priv)
 	return 0;
 }
 
-static int tftp_close(struct device *dev, struct file *f)
+static int tftp_close(struct inode *inode, struct file *f)
 {
 	struct file_priv *priv = f->private_data;
 
@@ -943,7 +943,10 @@ out_free:
 
 static const struct inode_operations tftp_file_inode_operations;
 static const struct inode_operations tftp_dir_inode_operations;
-static const struct file_operations tftp_file_operations;
+static const struct file_operations tftp_file_operations = {
+	.open = tftp_open,
+	.release = tftp_close,
+};
 
 static struct inode *tftp_get_inode(struct super_block *sb, const struct inode *dir,
                                      umode_t mode)
@@ -1108,13 +1111,10 @@ static void tftp_remove(struct device *dev)
 }
 
 static struct fs_driver tftp_driver = {
-	.open      = tftp_open,
-	.close     = tftp_close,
 	.read      = tftp_read,
 	.lseek     = tftp_lseek,
 	.write     = tftp_write,
 	.truncate  = tftp_truncate,
-	.flags     = 0,
 	.drv = {
 		.probe  = tftp_probe,
 		.remove = tftp_remove,

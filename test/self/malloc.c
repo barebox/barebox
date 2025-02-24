@@ -84,16 +84,17 @@ static void test_malloc(void)
 	p = expect_alloc_ok(malloc(1));
 	free(p);
 
-	if (mem_malloc_size) {
-		tmp = expect_alloc_fail(malloc(RELOC_HIDE(SIZE_MAX, 0)));
-		free(tmp);
+	p = expect_alloc_fail(malloc(RELOC_HIDE(SIZE_MAX, 0)));
+	free(p);
 
-		if (0xf0000000 > mem_malloc_size) {
-			tmp = expect_alloc_fail(malloc(RELOC_HIDE(0xf0000000, 0)));
-			free(tmp);
-		}
+	p = expect_alloc_fail(malloc(RELOC_HIDE(MALLOC_MAX_SIZE, 1)));
+	free(p);
+
+	if (mem_malloc_size) {
+		tmp = expect_alloc_fail(malloc(RELOC_HIDE(MALLOC_MAX_SIZE, -1)));
+		free(tmp);
 	} else {
-		skipped_tests += 2;
+		skipped_tests++;
 	}
 
 	free(realloc(NULL, 1));
@@ -110,16 +111,10 @@ static void test_malloc(void)
 		tmp = expect_alloc_fail(realloc(p, mem_malloc_size));
 		free(tmp);
 
-		if (0xf0000000 > mem_malloc_size) {
-			tmp = expect_alloc_fail(realloc(p, RELOC_HIDE(0xf0000000, 0)));
-			free(tmp);
-		}
-
-		tmp = expect_alloc_fail(realloc(p, RELOC_HIDE(SIZE_MAX, 0)));
+		tmp = expect_alloc_fail(realloc(p, RELOC_HIDE(MALLOC_MAX_SIZE, -1)));
 		free(tmp);
-
 	} else {
-		skipped_tests += 3;
+		skipped_tests += 2;
 	}
 
 	free(p);

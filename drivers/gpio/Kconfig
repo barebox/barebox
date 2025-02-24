@@ -177,6 +177,17 @@ config GPIO_ROCKCHIP
 	  Say yes here to include the driver for the GPIO controller found on
 	  Rockchip SoCs.
 
+config GPIO_SAMA5D2_PIOBU
+	bool "SAMA5D2 PIOBU GPIO support"
+	depends on MFD_SYSCON
+	depends on OF_GPIO
+	depends on ARCH_AT91 || COMPILE_TEST
+	help
+	  Say yes here to use the PIOBU pins as GPIOs.
+	  PIOBU pins on the SAMA5D2 can be used as GPIOs.
+	  The difference from regular GPIOs is that they
+	  maintain their value during backup/self-refresh.
+
 config GPIO_STMPE
 	depends on MFD_STMPE
 	bool "STMPE GPIO Expander"

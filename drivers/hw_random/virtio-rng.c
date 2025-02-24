@@ -32,19 +32,16 @@ static int virtio_rng_read(struct hwrng *hwrng, void *data, size_t len, bool wai
 {
 	int ret;
 	unsigned int rsize;
-	unsigned char buf[BUFFER_SIZE] __aligned(4);
+	unsigned char buf[BUFFER_SIZE] __aligned(8);
 	unsigned char *ptr = data;
-	struct virtio_sg sg;
-	struct virtio_sg *sgs[1];
+	struct scatterlist sg;
 	struct virtrng_info *vi = to_virtrng_info(hwrng);
 	size_t remaining = len;
 
 	while (remaining) {
-		sg.addr = buf;
-		sg.length = min(remaining, sizeof(buf));
-		sgs[0] = &sg;
+		sg_init_one(&sg, buf, min(remaining, sizeof(buf)));
 
-		ret = virtqueue_add(vi->rng_vq, sgs, 0, 1);
+		ret = virtqueue_add_inbuf(vi->rng_vq, &sg, 1, buf);
 		if (ret)
 			return ret;
 

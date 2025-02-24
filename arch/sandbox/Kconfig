@@ -40,6 +40,7 @@ config CC_IS_64BIT
 
 config CC_HAS_LINUX_I386_SUPPORT
 	def_bool $(cc-option,-m32) && $(ld-option,-m elf_i386)
+	depends on CC_IS_GCC
 
 config 64BIT
 	bool

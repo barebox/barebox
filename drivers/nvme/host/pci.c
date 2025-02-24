@@ -400,10 +400,12 @@ static int nvme_pci_submit_sync_cmd(struct nvme_ctrl *ctrl,
 		case nvme_admin_create_cq:
 		case nvme_admin_delete_sq:
 		case nvme_admin_delete_cq:
+		case nvme_admin_sanitize_nvm:
 		case nvme_admin_set_features:
 			dma_dir = DMA_TO_DEVICE;
 			break;
 		case nvme_admin_identify:
+		case nvme_admin_get_log_page:
 			dma_dir = DMA_FROM_DEVICE;
 			break;
 		default:

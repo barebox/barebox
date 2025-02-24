@@ -22,6 +22,8 @@ extern int (*barebox_main)(void);
  * enum autoboot_state - autoboot action after init
  * @AUTOBOOT_COUNTDOWN: Count down to automatic boot action
  * @AUTOBOOT_ABORT: Abort boot and drop to barebox shell
+ * @AUTOBOOT_HALT: Halt boot and drop to barebox shell, _without_ running
+ *                 any interactive hooks (e.g. bringing up network)
  * AUTOBOOT_MENU: Show main menu directly
  * @AUTOBOOT_BOOT: Boot right away without an interruptible countdown
  * @AUTOBOOT_UNKNOWN: Boot right away without an interruptible countdown
@@ -32,6 +34,7 @@ extern int (*barebox_main)(void);
 enum autoboot_state {
 	AUTOBOOT_COUNTDOWN,
 	AUTOBOOT_ABORT,
+	AUTOBOOT_HALT,
 	AUTOBOOT_MENU,
 	AUTOBOOT_BOOT,
 	AUTOBOOT_UNKNOWN,

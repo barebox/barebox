@@ -1246,7 +1246,7 @@ config SYSTEMD_OF_WATCHDOG
 	depends on WATCHDOG && OFTREE && FLEXIBLE_BOOTARGS
 	help
 	  Sets the linux.bootargs.dyn.watchdog global variable with a value of
-	  systemd.watchdog-device=/dev/WDOG if barebox succeeded in enabling
+	  systemd.watchdog_device=/dev/WDOG if barebox succeeded in enabling
 	  the watchdog WDOG prior to boot. WDOG is the alias of the watchdog
 	  in the kernel device tree. If the kernel is booted without a device
 	  tree or with one that lacks aliases, nothing is added.

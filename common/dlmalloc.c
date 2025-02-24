@@ -1162,7 +1162,7 @@ void *dlmalloc(size_t bytes)
 
 	INTERNAL_SIZE_T nb;
 
-	if ((long) bytes < 0) {
+	if (bytes > MALLOC_MAX_SIZE) {
 		errno = ENOMEM;
 		return NULL;
 	}
@@ -1499,7 +1499,7 @@ void *dlrealloc(void *oldmem, size_t bytes)
 	}
 #endif
 
-	if ((long)bytes < 0) {
+	if (bytes > MALLOC_MAX_SIZE) {
 		errno = ENOMEM;
 		return NULL;
 	}
@@ -1668,7 +1668,7 @@ void *dlmemalign(size_t alignment, size_t bytes)
 	mchunkptr remainder;	/* spare room at end to split off */
 	long remainder_size;	/* its size */
 
-	if ((long) bytes < 0) {
+	if (bytes > MALLOC_MAX_SIZE || alignment > MALLOC_MAX_SIZE) {
 		errno = ENOMEM;
 		return NULL;
 	}
@@ -1753,7 +1753,7 @@ void *dlcalloc(size_t n, size_t elem_size)
 	mchunkptr oldtop = top;
 	INTERNAL_SIZE_T oldtopsize = chunksize(top);
 
-	if ((long)n < 0) {
+	if (sz > MALLOC_MAX_SIZE) {
 		errno = ENOMEM;
 		return NULL;
 	}

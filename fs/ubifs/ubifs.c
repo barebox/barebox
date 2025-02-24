@@ -340,9 +340,8 @@ struct ubifs_file {
 	struct ubifs_data_node *dn;
 };
 
-static int ubifs_open(struct device *dev, struct file *file, const char *filename)
+int ubifs_open(struct inode *inode, struct file *file)
 {
-	struct inode *inode = file->f_inode;
 	struct ubifs_file *uf;
 
 	uf = xzalloc(sizeof(*uf));
@@ -357,7 +356,7 @@ static int ubifs_open(struct device *dev, struct file *file, const char *filenam
 	return 0;
 }
 
-static int ubifs_close(struct device *dev, struct file *f)
+int ubifs_close(struct inode *inode, struct file *f)
 {
 	struct ubifs_file *uf = f->private_data;
 
@@ -503,11 +502,8 @@ static void ubifs_remove(struct device *dev)
 }
 
 static struct fs_driver ubifs_driver = {
-	.open      = ubifs_open,
-	.close     = ubifs_close,
 	.read      = ubifs_read,
 	.type = filetype_ubifs,
-	.flags     = 0,
 	.drv = {
 		.probe  = ubifs_probe,
 		.remove = ubifs_remove,

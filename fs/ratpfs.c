@@ -439,6 +439,8 @@ static void ratpfs_remove(struct device __always_unused *dev)
 }
 
 static const struct fs_legacy_ops ratpfs_ops = {
+	.open      = ratpfs_open,
+	.close     = ratpfs_close,
 	.opendir   = ratpfs_opendir,
 	.readdir   = ratpfs_readdir,
 	.closedir  = ratpfs_closedir,
@@ -450,13 +452,10 @@ static const struct fs_legacy_ops ratpfs_ops = {
 };
 
 static struct fs_driver ratpfs_driver = {
-	.open      = ratpfs_open,
-	.close     = ratpfs_close,
 	.read      = ratpfs_read,
 	.write     = ratpfs_write,
 	.truncate  = ratpfs_truncate,
 	.legacy_ops = &ratpfs_ops,
-	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.probe  = ratpfs_probe,
 		.remove = ratpfs_remove,

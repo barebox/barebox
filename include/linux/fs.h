@@ -453,11 +453,13 @@ static inline int dir_emit_dots(struct file *file, struct dir_context *ctx)
 }
 
 struct file_operations {
+	int (*open) (struct inode *, struct file *);
+	int (*release) (struct inode *, struct file *);
 	int (*iterate) (struct file *, struct dir_context *);
-	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
-	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
-	int (*ioctl) (struct file *, unsigned int request, void *buf);
-	int (*truncate) (struct file *, loff_t);
+	/*
+	 * TODO: move the remaining callbacks in struct fs_driver
+	 * here with Linux semantics
+	 */
 };
 
 void drop_nlink(struct inode *inode);

@@ -12,6 +12,7 @@
 #include <fb.h>
 #include <gpio.h>
 #include <of_gpio.h>
+#include <regulator.h>
 #include <video/backlight.h>
 #include <video/vpl.h>
 #include <i2c/i2c.h>
@@ -25,6 +26,7 @@ struct simple_panel {
 	struct device_node *backlight_node;
 	struct backlight_device *backlight;
 	struct device_node *ddc_node;
+	struct regulator *power;
 	int enable_delay;
 };
 
@@ -41,6 +43,8 @@ static int simple_panel_enable(struct simple_panel *panel)
 			return -ENODEV;
 		}
 	}
+
+	regulator_enable(panel->power);
 
 	if (gpio_is_valid(panel->enable_gpio))
 		gpio_direction_output(panel->enable_gpio,
@@ -68,6 +72,8 @@ static int simple_panel_disable(struct simple_panel *panel)
 	if (gpio_is_valid(panel->enable_gpio))
 		gpio_direction_output(panel->enable_gpio,
 			!panel->enable_active_high);
+
+	regulator_disable(panel->power);
 
 	return 0;
 }
@@ -153,6 +159,10 @@ static int simple_panel_probe(struct device *dev)
 	of_property_read_u32(node, "enable-delay", &panel->enable_delay);
 
 	panel->backlight_node = of_parse_phandle(node, "backlight", 0);
+
+	panel->power = regulator_get(dev, "power");
+	if (IS_ERR(panel->power))
+		return dev_errp_probe(dev, panel->power, "Cannot find regulator\n");
 
 	ret = vpl_register(&panel->vpl);
 	if (ret)

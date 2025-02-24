@@ -15,7 +15,7 @@ config USB_DWC3
 if USB_DWC3
 
 choice
-	bool "DWC3 Mode Selection"
+	prompt "DWC3 Mode Selection"
 
 config USB_DWC3_HOST
 	bool "Host only mode"

@@ -65,6 +65,10 @@ static int tps65219_probe(struct device *dev)
 			return dev_err_probe(tps->dev, ret, "Failed to add power-button\n");
 	}
 
+	ret = regmap_register_cdev(tps->regmap, NULL);
+	if (ret)
+		return ret;
+
 	return 0;
 }
 

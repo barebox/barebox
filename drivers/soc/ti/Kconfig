@@ -1,0 +1,4 @@
+config K3_ESM
+	bool
+	depends on ARCH_K3 && MACH_K3_CORTEX_R5
+	default y

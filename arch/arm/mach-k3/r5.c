@@ -6,6 +6,7 @@
 #include <init.h>
 #include <libfile.h>
 #include <fs.h>
+#include <fip.h>
 #include <firmware.h>
 #include <linux/remoteproc.h>
 #include <soc/ti/ti_sci_protocol.h>
@@ -14,6 +15,51 @@
 #include <asm/cache.h>
 #include <linux/sizes.h>
 #include <barebox.h>
+#include <bootsource.h>
+#include <linux/usb/gadget-multi.h>
+#include <mach/k3/common.h>
+#include <mci.h>
+#include <fiptool.h>
+
+#define RTC_BASE_ADDRESS		0x2b1f0000
+#define K3RTC_KICK0_UNLOCK_VALUE	0x83e70b13
+#define K3RTC_KICK1_UNLOCK_VALUE	0x95a4f1e0
+#define REG_K3RTC_S_CNT_LSW		0x18
+#define REG_K3RTC_KICK0			0x70
+#define REG_K3RTC_KICK1			0x74
+
+/*
+ * RTC Erratum i2327 Workaround for Silicon Revision 1
+ *
+ * Due to a bug in initial synchronization out of cold power on,
+ * IRQ status can get locked infinitely if we do not unlock RTC
+ *
+ * This workaround *must* be applied within 1 second of power on,
+ * So, this is closest point to be able to guarantee the max
+ * timing.
+ *
+ * https://www.ti.com/lit/er/sprz487c/sprz487c.pdf
+ */
+static void rtc_erratumi2327_init(void)
+{
+	void __iomem *rtc_base = IOMEM(RTC_BASE_ADDRESS);
+	u32 counter;
+
+	/*
+	 * If counter has gone past 1, nothing we can do, leave
+	 * system locked! This is the only way we know if RTC
+	 * can be used for all practical purposes.
+	 */
+	counter = readl(rtc_base + REG_K3RTC_S_CNT_LSW);
+	if (counter > 1)
+		return;
+	/*
+	 * Need to set this up at the very start
+	 * MUST BE DONE under 1 second of boot.
+	 */
+	writel(K3RTC_KICK0_UNLOCK_VALUE, rtc_base + REG_K3RTC_KICK0);
+	writel(K3RTC_KICK1_UNLOCK_VALUE, rtc_base + REG_K3RTC_KICK1);
+}
 
 #define CTRLMMR_LOCK_KICK0_UNLOCK_VAL	0x68ef3490
 #define CTRLMMR_LOCK_KICK1_UNLOCK_VAL	0xd172bc5a
@@ -38,6 +84,8 @@ static void mmr_unlock(uintptr_t base, u32 partition)
 
 void k3_ctrl_mmr_unlock(void)
 {
+	rtc_erratumi2327_init();
+
 	/* Unlock all WKUP_CTRL_MMR0 module registers */
 	mmr_unlock(WKUP_CTRL_MMR0_BASE, 0);
 	mmr_unlock(WKUP_CTRL_MMR0_BASE, 1);
@@ -175,26 +223,221 @@ void am625_early_init(void)
 	ti_pd_wait(pd_base, 0);
 }
 
+#if IN_PROPER
+
 /*
  * The bl31 and optee binaries are relocatable, but these addresses
  * are hardcoded as reserved mem regions in the upstream device trees.
  */
-#define BL31_ADDRESS 0x9e780000
-#define OPTEE_ADDRESS 0x9e800000
+#define BL31_ADDRESS (void *)0x9e780000
+#define BL32_ADDRESS (void *)0x9e800000
+#define BAREBOX_ADDRESS (void *)0x80080000
+
+static void *k3_ti_dm;
+
+static bool have_bl31;
+static bool have_bl32;
+static bool have_bl33;
+
+static uuid_t uuid_bl31 = UUID_EL3_RUNTIME_FIRMWARE_BL31;
+static uuid_t uuid_ti_dm_fw = UUID_TI_DM_FW;
+static uuid_t uuid_bl33 = UUID_NON_TRUSTED_FIRMWARE_BL33;
+static uuid_t uuid_bl32 = UUID_SECURE_PAYLOAD_BL32;
+
+static int load_fip(const char *filename, off_t offset)
+{
+	struct fip_state *fip;
+	struct fip_image_desc *desc;
+
+	fip = fip_image_open(filename, offset);
+	if (IS_ERR(fip)) {
+		pr_err("Cannot open FIP image: %pe\n", fip);
+		return PTR_ERR(fip);
+	}
+
+	fip_for_each_desc(fip, desc) {
+		struct fip_toc_entry *toc_entry = &desc->image->toc_e;
+
+		if (uuid_equal(&toc_entry->uuid, &uuid_bl31)) {
+			memcpy(BL31_ADDRESS, desc->image->buffer, toc_entry->size);
+			have_bl31 = true;
+		}
+
+		if (uuid_equal(&toc_entry->uuid, &uuid_bl33)) {
+			memcpy(BAREBOX_ADDRESS, desc->image->buffer, toc_entry->size);
+			have_bl33 = true;
+		}
+
+		if (uuid_equal(&toc_entry->uuid, &uuid_bl32)) {
+			memcpy(BL32_ADDRESS, desc->image->buffer, toc_entry->size);
+			have_bl32 = true;
+		}
+
+		if (uuid_equal(&toc_entry->uuid, &uuid_ti_dm_fw)) {
+			k3_ti_dm = xmemdup(desc->image->buffer, toc_entry->size);
+		}
+	}
+
+	fip_free(fip);
+
+	return 0;
+}
+
+static void do_dfu(void)
+{
+	struct usbgadget_funcs funcs = {};
+	int ret;
+	struct stat s;
+	ssize_t size;
+
+	funcs.flags |= USBGADGET_DFU;
+	funcs.dfu_opts = "/optee.bin(optee)c,"
+			 "/bl31.bin(tfa)c,"
+			 "/ti-dm.bin(ti-dm)c,"
+			 "/barebox.bin(barebox)cs,"
+			 "/fip.img(fip)cs";
+
+	ret = usbgadget_prepare_register(&funcs);
+	if (ret)
+		goto err;
+
+	while (1) {
+		if (!have_bl32) {
+			size = read_file_into_buf("/optee.bin", BL32_ADDRESS, SZ_32M);
+			if (size > 0) {
+				printf("Downloaded OP-TEE\n");
+				have_bl32 = true;
+			}
+		}
+
+		if (!have_bl31) {
+			size = read_file_into_buf("/bl31.bin", BL31_ADDRESS, SZ_32M);
+			if (size > 0) {
+				printf("Downloaded TF-A\n");
+				have_bl31 = true;
+			}
+		}
+
+		if (!k3_ti_dm) {
+			ret = read_file_2("/ti-dm.bin", &size, &k3_ti_dm, FILESIZE_MAX);
+			if (!ret) {
+				printf("Downloaded TI-DM\n");
+			}
+		}
+
+		size = read_file_into_buf("/barebox.bin", BAREBOX_ADDRESS, SZ_32M);
+		if (size > 0) {
+			have_bl33 = true;
+			printf("Downloaded barebox image, DFU done\n");
+			break;
+		}
+
+		ret = stat("/fip.img", &s);
+		if (!ret) {
+			printf("Downloaded FIP image, DFU done\n");
+			load_fip("/fip.img", 0);
+			break;
+		}
+
+		command_slice_release();
+		mdelay(50);
+		command_slice_acquire();
+	};
+
+	return;
+
+err:
+	pr_err("DFU failed with: %pe\n", ERR_PTR(ret));
+}
+
+static int load_images(void)
+{
+	ssize_t size;
+	int err;
+
+	err = load_fip("/boot/k3.fip", 0);
+	if (!err)
+		return 0;
+
+	size = read_file_into_buf("/boot/optee.bin", BL32_ADDRESS, SZ_32M);
+	if (size < 0) {
+		if (size != -ENOENT) {
+			pr_err("Cannot load optee.bin: %pe\n", ERR_PTR(size));
+			return size;
+		}
+		pr_info("optee.bin not found, continue without\n");
+	} else {
+		pr_debug("Loaded optee.bin (size %u) to 0x%p\n", size, BL32_ADDRESS);
+	}
+
+	size = read_file_into_buf("/boot/barebox.bin", BAREBOX_ADDRESS, SZ_32M);
+	if (size < 0) {
+		pr_err("Cannot load barebox.bin: %pe\n", ERR_PTR(size));
+		return size;
+	}
+	pr_debug("Loaded barebox.bin (size %u) to 0x%p\n", size, BAREBOX_ADDRESS);
+
+	size = read_file_into_buf("/boot/bl31.bin", BL31_ADDRESS, SZ_32M);
+	if (size < 0) {
+		pr_err("Cannot load bl31.bin: %pe\n", ERR_PTR(size));
+		return size;
+	}
+	pr_debug("Loaded bl31.bin (size %u) to 0x%p\n", size, BL31_ADDRESS);
+
+	err = read_file_2("/boot/ti-dm.bin", &size, &k3_ti_dm, FILESIZE_MAX);
+	if (err) {
+		pr_err("Cannot load ti-dm.bin: %pe\n", ERR_PTR(err));
+		return err;
+	}
+	pr_debug("Loaded ti-dm.bin (size %u)\n", size);
+
+	return 0;
+}
+
+static int load_fip_emmc(void)
+{
+	int bootpart;
+	struct mci *mci;
+	char *fname;
+	const char *mmcdev = "mmc0";
+
+	device_detect_by_name(mmcdev);
+
+	mci = mci_get_device_by_name(mmcdev);
+	if (!mci)
+		return -EINVAL;
+
+	bootpart = mci->bootpart;
+
+	if (bootpart != 1 && bootpart != 2) {
+		pr_err("Unexpected bootpart value %d\n", bootpart);
+		bootpart = 1;
+	}
+
+	fname = xasprintf("/dev/%s.boot%d", mmcdev, bootpart - 1);
+
+	load_fip(fname, K3_EMMC_BOOTPART_TIBOOT3_BIN_SIZE);
+
+	free(fname);
+
+	return 0;
+}
 
 static int k3_r5_start_image(void)
 {
 	int err;
-	void *ti_dm_buf;
-	ssize_t size;
 	struct firmware fw;
 	const struct ti_sci_handle *ti_sci;
-	void *bl31 = (void *)BL31_ADDRESS;
-	void *barebox = (void *)0x80080000;
-	void *optee = (void *)OPTEE_ADDRESS;
 	struct elf_image *elf;
 	void __noreturn (*ti_dm)(void);
 	struct rproc *arm64_rproc;
+
+	if (IS_ENABLED(CONFIG_USB_GADGET_DFU) && bootsource_get() == BOOTSOURCE_SERIAL)
+		do_dfu();
+	else if (k3_boot_is_emmc())
+		load_fip_emmc();
+	else
+		load_images();
 
 	ti_sci = ti_sci_get_handle(NULL);
 	if (IS_ERR(ti_sci))
@@ -206,39 +449,7 @@ static int k3_r5_start_image(void)
 		return -EINVAL;
 	}
 
-	size = read_file_into_buf("/boot/optee.bin", optee, SZ_32M);
-	if (size < 0) {
-		if (size != -ENOENT) {
-			pr_err("Cannot load optee.bin: %pe\n", ERR_PTR(size));
-			return size;
-		}
-		pr_info("optee.bin not found, continue without\n");
-	} else {
-		pr_debug("Loaded optee.bin (size %u) to 0x%p\n", size, optee);
-	}
-
-	size = read_file_into_buf("/boot/barebox.bin", barebox, optee - barebox);
-	if (size < 0) {
-		pr_err("Cannot load barebox.bin: %pe\n", ERR_PTR(size));
-		return size;
-	}
-	pr_debug("Loaded barebox.bin (size %u) to 0x%p\n", size, barebox);
-
-	size = read_file_into_buf("/boot/bl31.bin", bl31, barebox - optee);
-	if (size < 0) {
-		pr_err("Cannot load bl31.bin: %pe\n", ERR_PTR(size));
-		return size;
-	}
-	pr_debug("Loaded bl31.bin (size %u) to 0x%p\n", size, bl31);
-
-	err = read_file_2("/boot/ti-dm.bin", &size, &ti_dm_buf, FILESIZE_MAX);
-	if (err) {
-		pr_err("Cannot load ti-dm.bin: %pe\n", ERR_PTR(err));
-		return err;
-	}
-	pr_debug("Loaded ti-dm.bin (size %u)\n", size);
-
-	elf = elf_open_binary(ti_dm_buf);
+	elf = elf_open_binary(k3_ti_dm);
 	if (IS_ERR(elf)) {
 		pr_err("Cannot open ELF image %pe\n", elf);
 		return PTR_ERR(elf);
@@ -250,9 +461,9 @@ static int k3_r5_start_image(void)
 		elf_close(elf);
 	}
 
-	free(ti_dm_buf);
+	free(k3_ti_dm);
 
-	fw.data = bl31;
+	fw.data = BL31_ADDRESS;
 
 	/* Release all the exclusive devices held by SPL before starting ATF */
 	pr_info("Starting TF-A on A53 core\n");
@@ -282,3 +493,4 @@ static int xload(void)
 	hang();
 }
 postenvironment_initcall(xload);
+#endif /* IN_PROPER */

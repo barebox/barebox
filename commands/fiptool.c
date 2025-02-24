@@ -24,14 +24,14 @@
 #include <fip.h>
 #include <fiptool.h>
 
-typedef struct cmd {
+struct cmd {
 	char              *name;
 	int              (*handler)(struct fip_state *fip, int, char **);
 	void             (*usage)(int);
-} cmd_t;
+};
 
 
-static int write_image_to_file(const image_t *image, const char *filename)
+static int write_image_to_file(const struct fip_image *image, const char *filename)
 {
 	int fd;
 
@@ -53,7 +53,7 @@ static int write_image_to_file(const image_t *image, const char *filename)
 
 static int info_cmd(struct fip_state *fip, int argc, char *argv[])
 {
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 	fip_toc_header_t toc_header;
 	int ret;
 
@@ -62,7 +62,7 @@ static int info_cmd(struct fip_state *fip, int argc, char *argv[])
 
 	argc--, argv++;
 
-	ret = parse_fip(fip, argv[0], &toc_header);
+	ret = fip_parse(fip, argv[0], &toc_header);
 	if (ret)
 		return ret;
 
@@ -73,8 +73,8 @@ static int info_cmd(struct fip_state *fip, int argc, char *argv[])
 	pr_verbose("toc_header[flags]: 0x%llX\n",
 	    (unsigned long long)toc_header.flags);
 
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
-		image_t *image = desc->image;
+	fip_for_each_desc(fip, desc) {
+		struct fip_image *image = desc->image;
 
 		if (image == NULL)
 			continue;
@@ -193,12 +193,12 @@ static __maybe_unused int create_cmd(struct fip_state *fip, int argc, char *argv
 	while ((opt = getopt(argc, argv, "e:p:a:b:")) > 0) {
 		switch (opt) {
 		case 'e': {
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
-			desc = lookup_image_desc_from_opt(fip, &optarg);
+			desc = fip_lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
 				return COMMAND_ERROR;
-			set_image_desc_action(desc, DO_PACK, optarg);
+			fip_set_image_desc_action(desc, DO_PACK, optarg);
 			break;
 		}
 		case 'p':
@@ -214,22 +214,21 @@ static __maybe_unused int create_cmd(struct fip_state *fip, int argc, char *argv
 			char name[UUID_STRING_LEN + 1];
 			char filename[PATH_MAX] = { 0 };
 			uuid_t uuid = uuid_null;
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
 
-			if (memcmp(&uuid, &uuid_null, sizeof(uuid_t)) == 0 ||
-			    filename[0] == '\0')
+			if (uuid_is_null(&uuid) || filename[0] == '\0')
 				return COMMAND_ERROR_USAGE;
 
-			desc = lookup_image_desc_from_uuid(fip, &uuid);
+			desc = fip_lookup_image_desc_from_uuid(fip, &uuid);
 			if (desc == NULL) {
 				snprintf(name, sizeof(name), "%pU", &uuid);
-				desc = new_image_desc(&uuid, name, "blob");
-				add_image_desc(fip, desc);
+				desc = fip_new_image_desc(&uuid, name, "blob");
+				fip_add_image_desc(fip, desc);
 			}
-			set_image_desc_action(desc, DO_PACK, filename);
+			fip_set_image_desc_action(desc, DO_PACK, filename);
 			break;
 		}
 		default:
@@ -242,10 +241,10 @@ static __maybe_unused int create_cmd(struct fip_state *fip, int argc, char *argv
 	if (argc == 0)
 		return COMMAND_ERROR_USAGE;
 
-	if (update_fip(fip))
+	if (fip_update(fip))
 		return COMMAND_ERROR;
 
-	return pack_images(fip, argv[0], toc_flags, align);
+	return fip_pack_images(fip, argv[0], toc_flags, align);
 }
 
 
@@ -264,12 +263,12 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 	while ((opt = getopt(argc, argv, "e:p:b:a:o:")) > 0) {
 		switch (opt) {
 		case 'e': {
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
-			desc = lookup_image_desc_from_opt(fip, &optarg);
+			desc = fip_lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
 				return COMMAND_ERROR;
-			set_image_desc_action(desc, DO_PACK, optarg);
+			fip_set_image_desc_action(desc, DO_PACK, optarg);
 			break;
 		}
 		case 'p':
@@ -281,22 +280,22 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 			char name[UUID_STRING_LEN + 1];
 			char filename[PATH_MAX] = { 0 };
 			uuid_t uuid = uuid_null;
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
 
-			if (memcmp(&uuid, &uuid_null, sizeof(uuid_t)) == 0 ||
+			if (uuid_is_null(&uuid) ||
 			    filename[0] == '\0')
 				return COMMAND_ERROR_USAGE;
 
-			desc = lookup_image_desc_from_uuid(fip, &uuid);
+			desc = fip_lookup_image_desc_from_uuid(fip, &uuid);
 			if (desc == NULL) {
 				snprintf(name, sizeof(name), "%pU", &uuid);
-				desc = new_image_desc(&uuid, name, "blob");
-				add_image_desc(fip, desc);
+				desc = fip_new_image_desc(&uuid, name, "blob");
+				fip_add_image_desc(fip, desc);
 			}
-			set_image_desc_action(desc, DO_PACK, filename);
+			fip_set_image_desc_action(desc, DO_PACK, filename);
 			break;
 		}
 		case 'a':
@@ -321,7 +320,7 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 		snprintf(outfile, sizeof(outfile), "%s", argv[0]);
 
 	if (file_exists(argv[0])) {
-		ret = parse_fip(fip, argv[0], &toc_header);
+		ret = fip_parse(fip, argv[0], &toc_header);
 		if (ret)
 			return ret;
 	}
@@ -330,16 +329,16 @@ static __maybe_unused int update_cmd(struct fip_state *fip, int argc, char *argv
 		toc_header.flags &= ~(0xffffULL << 32);
 	toc_flags = (toc_header.flags |= toc_flags);
 
-	if (update_fip(fip))
+	if (fip_update(fip))
 		return COMMAND_ERROR;
 
-	return pack_images(fip, outfile, toc_flags, align);
+	return fip_pack_images(fip, outfile, toc_flags, align);
 }
 
 static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 {
 	char outdir[PATH_MAX] = { 0 };
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 	int fflag = 0;
 	int unpack_all = 1;
 	int ret, opt;
@@ -350,12 +349,12 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "e:b:fo:")) > 0) {
 		switch (opt) {
 		case 'e': {
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
-			desc = lookup_image_desc_from_opt(fip, &optarg);
+			desc = fip_lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
 				return COMMAND_ERROR;
-			set_image_desc_action(desc, DO_UNPACK, optarg);
+			fip_set_image_desc_action(desc, DO_UNPACK, optarg);
 			unpack_all = 0;
 			break;
 		}
@@ -363,22 +362,21 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 			char name[UUID_STRING_LEN + 1];
 			char filename[PATH_MAX] = { 0 };
 			uuid_t uuid = uuid_null;
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
 
-			if (memcmp(&uuid, &uuid_null, sizeof(uuid_t)) == 0 ||
-			    filename[0] == '\0')
+			if (uuid_is_null(&uuid) || filename[0] == '\0')
 				return COMMAND_ERROR_USAGE;
 
-			desc = lookup_image_desc_from_uuid(fip, &uuid);
+			desc = fip_lookup_image_desc_from_uuid(fip, &uuid);
 			if (desc == NULL) {
 				snprintf(name, sizeof(name), "%pU", &uuid);
-				desc = new_image_desc(&uuid, name, "blob");
-				add_image_desc(fip, desc);
+				desc = fip_new_image_desc(&uuid, name, "blob");
+				fip_add_image_desc(fip, desc);
 			}
-			set_image_desc_action(desc, DO_UNPACK, filename);
+			fip_set_image_desc_action(desc, DO_UNPACK, filename);
 			unpack_all = 0;
 			break;
 		}
@@ -398,7 +396,7 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 	if (argc == 0)
 		return COMMAND_ERROR_USAGE;
 
-	ret = parse_fip(fip, argv[0], NULL);
+	ret = fip_parse(fip, argv[0], NULL);
 	if (ret)
 		return ret;
 
@@ -409,9 +407,9 @@ static int unpack_cmd(struct fip_state *fip, int argc, char *argv[])
 		}
 
 	/* Unpack all specified images. */
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
+	fip_for_each_desc(fip, desc) {
 		char file[PATH_MAX];
-		image_t *image = desc->image;
+		struct fip_image *image = desc->image;
 
 		if (!unpack_all && desc->action != DO_UNPACK)
 			continue;
@@ -447,7 +445,7 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 {
 	char outfile[PATH_MAX] = { 0 };
 	fip_toc_header_t toc_header;
-	image_desc_t *desc;
+	struct fip_image_desc *desc;
 	long align = 1;
 	int ret, opt, fflag = 0;
 
@@ -457,12 +455,12 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 	while ((opt = getopt(argc, argv, "e:a:b:fo:")) > 0) {
 		switch (opt) {
 		case 'e': {
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
-			desc = lookup_image_desc_from_opt(fip, &optarg);
+			desc = fip_lookup_image_desc_from_opt(fip, &optarg);
 			if (!desc)
 				return COMMAND_ERROR;
-			set_image_desc_action(desc, DO_REMOVE, NULL);
+			fip_set_image_desc_action(desc, DO_REMOVE, NULL);
 			break;
 		}
 		case 'a':
@@ -473,21 +471,21 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 		case 'b': {
 			char name[UUID_STRING_LEN + 1], filename[PATH_MAX];
 			uuid_t uuid = uuid_null;
-			image_desc_t *desc;
+			struct fip_image_desc *desc;
 
 			parse_blob_opt(optarg, &uuid,
 			    filename, sizeof(filename));
 
-			if (memcmp(&uuid, &uuid_null, sizeof(uuid_t)) == 0)
+			if (uuid_is_null(&uuid))
 				return COMMAND_ERROR_USAGE;
 
-			desc = lookup_image_desc_from_uuid(fip, &uuid);
+			desc = fip_lookup_image_desc_from_uuid(fip, &uuid);
 			if (desc == NULL) {
 				snprintf(name, sizeof(name), "%pU", &uuid);
-				desc = new_image_desc(&uuid, name, "blob");
-				add_image_desc(fip, desc);
+				desc = fip_new_image_desc(&uuid, name, "blob");
+				fip_add_image_desc(fip, desc);
 			}
-			set_image_desc_action(desc, DO_REMOVE, NULL);
+			fip_set_image_desc_action(desc, DO_REMOVE, NULL);
 			break;
 		}
 		case 'f':
@@ -513,11 +511,11 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 	if (outfile[0] == '\0')
 		snprintf(outfile, sizeof(outfile), "%s", argv[0]);
 
-	ret = parse_fip(fip, argv[0], &toc_header);
+	ret = fip_parse(fip, argv[0], &toc_header);
 	if (ret)
 		return ret;
 
-	for (desc = fip->image_desc_head; desc != NULL; desc = desc->next) {
+	fip_for_each_desc(fip, desc) {
 		if (desc->action != DO_REMOVE)
 			continue;
 
@@ -530,11 +528,11 @@ static __maybe_unused int remove_cmd(struct fip_state *fip, int argc, char *argv
 		}
 	}
 
-	return pack_images(fip, outfile, toc_header.flags, align);
+	return fip_pack_images(fip, outfile, toc_header.flags, align);
 }
 
 /* Available subcommands. */
-static cmd_t cmds[] = {
+static struct cmd cmds[] = {
 	{ .name = "info",    .handler = info_cmd,    },
 	{ .name = "uuid",    .handler = uuid_cmd,    },
 	{ .name = "unpack",  .handler = unpack_cmd,  },
@@ -548,7 +546,7 @@ static cmd_t cmds[] = {
 static int do_fiptool(int argc, char *argv[])
 {
 	int i, opt, ret = 0;
-	struct fip_state fip = {};
+	struct fip_state *fip = fip_new();
 
 	/*
 	 * Set POSIX mode so getopt stops at the first non-option
@@ -557,7 +555,7 @@ static int do_fiptool(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "+v")) > 0) {
 		switch (opt) {
 		case 'v':
-			fip.verbose = 1;
+			fip->verbose = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -569,14 +567,14 @@ static int do_fiptool(int argc, char *argv[])
 	if (argc == 0)
 		return COMMAND_ERROR_USAGE;
 
-	fill_image_descs(&fip);
+	fip_fill_image_descs(fip);
 	for (i = 0; i < ARRAY_SIZE(cmds); i++) {
 		if (strcmp(cmds[i].name, argv[0]) == 0) {
 			struct getopt_context gc;
 
 			getopt_context_store(&gc);
 
-			ret = cmds[i].handler(&fip, argc, argv);
+			ret = cmds[i].handler(fip, argc, argv);
 
 			getopt_context_restore(&gc);
 			break;
@@ -585,7 +583,7 @@ static int do_fiptool(int argc, char *argv[])
 
 	if (i == ARRAY_SIZE(cmds))
 		return COMMAND_ERROR_USAGE;
-	free_image_descs(&fip);
+	fip_free(fip);
 	return ret;
 }
 

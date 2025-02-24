@@ -14,14 +14,10 @@
 
 #include "ddr.h"
 
-/* Called from assembly */
-void am625_sk(void *dtb);
-
-static noinline void am625_sk_continue(void *dtb)
+static noinline void am625_sk_continue(void)
 {
 	unsigned long membase = 0x80000000, memsize;
 	extern char __dtb_z_k3_am625_sk_start[];
-	unsigned int size;
 
 	memsize = am625_sdram_size();
 
@@ -33,13 +29,10 @@ static noinline void am625_sk_continue(void *dtb)
 	if (memsize == SZ_512M)
 		memsize = SZ_512M - 0x04000000; /* substract space needed for TF-A, OP-TEE, ... */
 
-	if (blob_is_valid_fdt_ptr(dtb, membase, memsize, &size))
-		handoff_data_add(HANDOFF_DATA_EXTERNAL_DT, dtb, size);
-
 	barebox_arm_entry(membase, memsize, __dtb_z_k3_am625_sk_start);
 }
 
-void am625_sk(void *dtb)
+ENTRY_FUNCTION_WITHSTACK(start_am625_sk, 0x80800000, r0, r1, r2)
 {
 	putc_ll('>');
 
@@ -49,7 +42,7 @@ void am625_sk(void *dtb)
 
 	setup_c();
 
-	am625_sk_continue(dtb);
+	am625_sk_continue();
 }
 
 static noinline void am625_sk_r5_continue(void)

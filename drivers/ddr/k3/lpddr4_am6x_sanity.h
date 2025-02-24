@@ -11,10 +11,7 @@
 
 #include <errno.h>
 #include <linux/types.h>
-#include <lpddr4_if.h>
-#include <lpddr4_if.h>
-#include <lpddr4_if.h>
-#include <lpddr4_if.h>
+#include "lpddr4_if.h"
 
 static inline u32 lpddr4_intr_sanityfunction1(const lpddr4_privatedata *pd, const lpddr4_intr_ctlinterrupt intr, const bool *irqstatus);
 static inline u32 lpddr4_intr_sanityfunction2(const lpddr4_privatedata *pd, const lpddr4_intr_ctlinterrupt intr);

@@ -7,6 +7,7 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/units.h>
 #include <of.h>
 #include <linux/clk.h>
 #include <linux/regmap.h>
@@ -203,7 +204,7 @@ static int dwc3_ti_probe(struct device *dev)
 
 	/* Calculate the rate code */
 	rate = clk_get_rate(am62->usb2_refclk);
-	rate /= 1000;	// To KHz
+	rate /= HZ_PER_KHZ;
 	for (i = 0; i < ARRAY_SIZE(dwc3_ti_rate_table); i++) {
 		if (dwc3_ti_rate_table[i] == rate)
 			break;
@@ -240,16 +241,16 @@ static int dwc3_ti_probe(struct device *dev)
 
 	clk_prepare_enable(am62->usb2_refclk);
 
+	/* Set mode valid bit to indicate role is valid */
+	reg = dwc3_ti_readl(am62, USBSS_MODE_CONTROL);
+	reg |= USBSS_MODE_VALID;
+	dwc3_ti_writel(am62, USBSS_MODE_CONTROL, reg);
+
 	ret = of_platform_populate(node, NULL, dev);
 	if (ret) {
 		dev_err_probe(dev, ret, "failed to create dwc3 core\n");
 		goto err_pm_disable;
 	}
-
-	/* Set mode valid bit to indicate role is valid */
-	reg = dwc3_ti_readl(am62, USBSS_MODE_CONTROL);
-	reg |= USBSS_MODE_VALID;
-	dwc3_ti_writel(am62, USBSS_MODE_CONTROL, reg);
 
 	return 0;
 

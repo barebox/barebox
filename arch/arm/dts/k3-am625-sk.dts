@@ -3,7 +3,29 @@
 #include <arm64/ti/k3-am625-sk.dts>
 #include "k3-am625.dtsi"
 
+/ {
+	chosen {
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &env_emmc;
+			status = "disabled";
+		};
+	};
+};
+
 /*
  * DRAM size differs between board variants. Real size is read from DDRSS
  */
 /delete-node/ &{/memory@80000000};
+
+&sdhci0 {
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	max-frequency = <26000000>;
+
+	env_emmc: partition@e0000 {
+		label = "barebox-environment";
+		reg = <0x0 0xe0000 0x0 0x20000>;
+	};
+};

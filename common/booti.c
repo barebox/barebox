@@ -58,12 +58,12 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 
 	if (oftree) {
 		unsigned long devicetree;
+		const struct resource *initrd_res;
 
-		if (bootm_has_initrd(data)) {
-			ret = bootm_load_initrd(data, image_end);
-			if (ret)
-				return ERR_PTR(ret);
-
+		initrd_res = bootm_load_initrd(data, image_end);
+		if (IS_ERR(initrd_res)) {
+			return ERR_CAST(initrd_res);
+		} else if (initrd_res) {
 			image_end += resource_size(data->initrd_res);
 			image_end = PAGE_ALIGN(image_end);
 		}

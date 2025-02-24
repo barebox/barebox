@@ -54,6 +54,7 @@ static int do_boot_entry(struct image_data *data, boot_func_entry entry,
 
 static int do_boot_elf(struct image_data *data, struct elf_image *elf)
 {
+	const struct resource *initrd_res;
 	int ret;
 	void *fdt;
 	boot_func_entry entry;
@@ -61,21 +62,19 @@ static int do_boot_elf(struct image_data *data, struct elf_image *elf)
 
 	/* load initrd after the elf */
 	load_addr = PAGE_ALIGN((unsigned long) elf->high_addr);
-	if (bootm_has_initrd(data)) {
-		if (data->initrd_address != UIMAGE_INVALID_ADDRESS)
-			initrd_address = data->initrd_address;
-		else
-			initrd_address = load_addr;
+	if (data->initrd_address != UIMAGE_INVALID_ADDRESS)
+		initrd_address = data->initrd_address;
+	else
+		initrd_address = load_addr;
 
+	initrd_res = bootm_load_initrd(data, initrd_address);
+	if (IS_ERR(initrd_res)) {
+		printf("Failed to load initrd\n");
+		return PTR_ERR(initrd_res);
+	} else if (initrd_res) {
 		printf("Loading initrd at 0x%lx\n", initrd_address);
-		ret = bootm_load_initrd(data, initrd_address);
-		if (ret) {
-			printf("Failed to load initrd\n");
-			return ret;
-		}
-
 		if (data->initrd_address == UIMAGE_INVALID_ADDRESS) {
-			load_addr += resource_size(data->initrd_res);
+			load_addr += resource_size(initrd_res);
 			load_addr = PAGE_ALIGN(load_addr);
 		}
 	}

@@ -17,6 +17,8 @@
 
 static LIST_HEAD(handler_list);
 
+static __maybe_unused struct bootm_overrides bootm_overrides;
+
 int register_image_handler(struct image_handler *handler)
 {
 	list_add_tail(&handler->list, &handler_list);
@@ -66,6 +68,23 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->provide_hostname = bootm_provide_hostname;
 	data->verbose = bootm_verbosity;
 	data->dryrun = bootm_dryrun;
+}
+
+void bootm_data_restore_defaults(const struct bootm_data *data)
+{
+	globalvar_set("bootm.oftree", data->oftree_file);
+	globalvar_set("bootm.tee", data->tee_file);
+	globalvar_set("bootm.image", data->os_file);
+	pr_setenv("global.bootm.image.loadaddr", "0x%lx", data->os_address);
+	pr_setenv("global.bootm.initrd.loadaddr", "0x%lx", data->initrd_address);
+	globalvar_set("bootm.initrd", data->initrd_file);
+	globalvar_set("bootm.root_dev", data->root_dev);
+	bootm_set_verify_mode(data->verify);
+	bootm_appendroot = data->appendroot;
+	bootm_provide_machine_id = data->provide_machine_id;
+	bootm_provide_hostname = data->provide_hostname;
+	bootm_verbosity = data->verbose;
+	bootm_dryrun = data->dryrun;
 }
 
 static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_HASH;
@@ -124,6 +143,23 @@ static inline bool image_is_uimage(struct image_data *data)
 	return IS_ENABLED(CONFIG_BOOTM_UIMAGE) && data->os;
 }
 
+static bool bootm_get_override(char **oldpath, const char *newpath)
+{
+	if (!IS_ENABLED(CONFIG_BOOT_OVERRIDE))
+		return false;
+	if (bootm_signed_images_are_forced())
+		return false;
+	if (!newpath)
+		return false;
+
+	if (oldpath && !streq_ptr(*oldpath, newpath)) {
+		free(*oldpath);
+		*oldpath = *newpath ? xstrdup(newpath) : NULL;
+	}
+
+	return true;
+}
+
 /*
  * bootm_load_os() - load OS to RAM
  *
@@ -138,6 +174,12 @@ static inline bool image_is_uimage(struct image_data *data)
  */
 int bootm_load_os(struct image_data *data, unsigned long load_address)
 {
+	if (bootm_get_override(&data->os_file, bootm_overrides.os_file)) {
+		if (load_address == UIMAGE_INVALID_ADDRESS)
+			return -EINVAL;
+		goto os_file;
+	}
+
 	if (data->os_res)
 		return 0;
 
@@ -177,30 +219,23 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	if (IS_ENABLED(CONFIG_ELF) && data->elf)
 		return elf_load(data->elf);
 
-	if (data->os_file) {
-		data->os_res = file_to_sdram(data->os_file, load_address);
-		if (!data->os_res)
-			return -ENOMEM;
+os_file:
+	if (!data->os_file)
+		return -EINVAL;
 
-		return 0;
-	}
+	data->os_res = file_to_sdram(data->os_file, load_address);
+	if (!data->os_res)
+		return -ENOMEM;
 
-	return -EINVAL;
+	return 0;
 }
 
-bool bootm_has_initrd(struct image_data *data)
+static bool fitconfig_has_ramdisk(struct image_data *data)
 {
-	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
+	if (!IS_ENABLED(CONFIG_FITIMAGE) || !data->os_fit)
 		return false;
 
-	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit &&
-	    fit_has_image(data->os_fit, data->fit_config, "ramdisk"))
-		return true;
-
-	if (data->initrd_file)
-		return true;
-
-	return false;
+	return fit_has_image(data->os_fit, data->fit_config, "ramdisk");
 }
 
 static int bootm_open_initrd_uimage(struct image_data *data)
@@ -244,22 +279,22 @@ static int bootm_open_initrd_uimage(struct image_data *data)
  *
  * Return: 0 on success, negative error code otherwise
  */
-int bootm_load_initrd(struct image_data *data, unsigned long load_address)
+const struct resource *
+bootm_load_initrd(struct image_data *data, unsigned long load_address)
 {
 	enum filetype type;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
-		return -ENOSYS;
+		return NULL;
 
-	if (!bootm_has_initrd(data))
-		return -EINVAL;
+	if (bootm_get_override(&data->initrd_file, bootm_overrides.initrd_file))
+		goto initrd_file;
 
 	if (data->initrd_res)
-		return 0;
+		return data->initrd_res;
 
-	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit &&
-	    fit_has_image(data->os_fit, data->fit_config, "ramdisk")) {
+	if (fitconfig_has_ramdisk(data)) {
 		const void *initrd;
 		unsigned long initrd_size;
 
@@ -268,7 +303,7 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		if (ret) {
 			pr_err("Cannot open ramdisk image in FIT image: %s\n",
 					strerror(-ret));
-			return ret;
+			return ERR_PTR(ret);
 		}
 		data->initrd_res = request_sdram_region("initrd",
 				load_address,
@@ -278,17 +313,21 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 					" 0x%08llx-0x%08llx\n",
 				(unsigned long long)load_address,
 				(unsigned long long)load_address + initrd_size - 1);
-			return -ENOMEM;
+			return ERR_PTR(-ENOMEM);
 		}
 		memcpy((void *)load_address, initrd, initrd_size);
 		pr_info("Loaded initrd from FIT image\n");
 		goto done1;
 	}
 
+initrd_file:
+	if (!data->initrd_file)
+		return NULL;
+
 	ret = file_name_detect_type(data->initrd_file, &type);
 	if (ret) {
 		pr_err("could not open initrd \"%s\": %s\n", data->initrd_file, strerror(-ret));
-		return ret;
+		return ERR_PTR(ret);
 	}
 
 	if (type == filetype_uimage) {
@@ -297,7 +336,7 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		if (ret) {
 			pr_err("loading initrd failed with %s\n",
 			       strerror(-ret));
-			return ret;
+			return ERR_PTR(ret);
 		}
 
 		num = uimage_part_num(data->initrd_part);
@@ -305,14 +344,14 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		data->initrd_res = uimage_load_to_sdram(data->initrd,
 			num, load_address);
 		if (!data->initrd_res)
-			return -ENOMEM;
+			return ERR_PTR(-ENOMEM);
 
 		goto done;
 	}
 
 	data->initrd_res = file_to_sdram(data->initrd_file, load_address);
 	if (!data->initrd_res)
-		return -ENOMEM;
+		return ERR_PTR(-ENOMEM);
 
 done:
 
@@ -326,7 +365,7 @@ done1:
 		&data->initrd_res->start,
 		&data->initrd_res->end);
 
-	return 0;
+	return data->initrd_res;
 }
 
 static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
@@ -371,6 +410,14 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 	return 0;
 }
 
+static bool fitconfig_has_fdt(struct image_data *data)
+{
+	if (!IS_ENABLED(CONFIG_FITIMAGE) || !data->os_fit)
+		return false;
+
+	return fit_has_image(data->os_fit, data->fit_config, "fdt");
+}
+
 /*
  * bootm_get_devicetree() - get devicetree
  *
@@ -386,13 +433,17 @@ void *bootm_get_devicetree(struct image_data *data)
 {
 	enum filetype type;
 	struct fdt_header *oftree;
+	bool from_fit = false;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return ERR_PTR(-ENOSYS);
 
-	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit &&
-	    fit_has_image(data->os_fit, data->fit_config, "fdt")) {
+	from_fit = fitconfig_has_fdt(data);
+	if (bootm_get_override(&data->oftree_file, bootm_overrides.oftree_file))
+		from_fit = false;
+
+	if (from_fit) {
 		const void *of_tree;
 		unsigned long of_size;
 
@@ -513,24 +564,29 @@ int bootm_load_devicetree(struct image_data *data, void *fdt,
 
 int bootm_get_os_size(struct image_data *data)
 {
+	const char *os_file;
+	struct stat s;
 	int ret;
 
-	if (data->elf)
-		return elf_get_mem_size(data->elf);
-	if (image_is_uimage(data))
-		return uimage_get_size(data->os, uimage_part_num(data->os_part));
-	if (data->os_fit)
-		return data->fit_kernel_size;
-
-	if (data->os_file) {
-		struct stat s;
-		ret = stat(data->os_file, &s);
-		if (ret)
-			return ret;
-		return s.st_size;
+	if (bootm_get_override(NULL, bootm_overrides.os_file)) {
+		os_file = bootm_overrides.os_file;
+	} else {
+		if (data->elf)
+			return elf_get_mem_size(data->elf);
+		if (image_is_uimage(data))
+			return uimage_get_size(data->os, uimage_part_num(data->os_part));
+		if (data->os_fit)
+			return data->fit_kernel_size;
+		if (!data->os_file)
+			return -EINVAL;
+		os_file = data->os_file;
 	}
 
-	return -EINVAL;
+	ret = stat(os_file, &s);
+	if (ret)
+		return ret;
+
+	return s.st_size;
 }
 
 static int bootm_open_os_uimage(struct image_data *data)
@@ -892,6 +948,22 @@ int bootm_boot(struct bootm_data *bootm_data)
 		printf("Passing control to %s handler\n", handler->name);
 	}
 
+	if (bootm_get_override(&data->os_file, bootm_overrides.os_file)) {
+		if (data->os_res) {
+			release_sdram_region(data->os_res);
+			data->os_res = NULL;
+		}
+	}
+
+	bootm_get_override(&data->oftree_file, bootm_overrides.oftree_file);
+
+	if (bootm_get_override(&data->initrd_file, bootm_overrides.initrd_file)) {
+		if (data->initrd_res) {
+			release_sdram_region(data->initrd_res);
+			data->initrd_res = NULL;
+		}
+	}
+
 	ret = handler->bootm(data);
 	if (data->dryrun)
 		pr_info("Dryrun. Aborted\n");
@@ -928,6 +1000,13 @@ err_out:
 
 	return ret;
 }
+
+#ifdef CONFIG_BOOT_OVERRIDE
+void bootm_set_overrides(const struct bootm_overrides *overrides)
+{
+	bootm_overrides = *overrides;
+}
+#endif
 
 static int do_bootm_compressed(struct image_data *img_data)
 {

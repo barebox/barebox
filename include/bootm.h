@@ -138,11 +138,12 @@ static inline int bootm_verbose(struct image_data *data)
 #endif
 
 void bootm_data_init_defaults(struct bootm_data *data);
+void bootm_data_restore_defaults(const struct bootm_data *data);
 
 int bootm_load_os(struct image_data *data, unsigned long load_address);
 
-bool bootm_has_initrd(struct image_data *data);
-int bootm_load_initrd(struct image_data *data, unsigned long load_address);
+const struct resource *
+bootm_load_initrd(struct image_data *data, unsigned long load_address);
 
 void *bootm_get_devicetree(struct image_data *data);
 int bootm_load_devicetree(struct image_data *data, void *fdt,
@@ -158,5 +159,23 @@ void bootm_force_signed_images(void);
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 
 void *booti_load_image(struct image_data *data, phys_addr_t *oftree);
+
+struct bootm_overrides {
+	const char *os_file;
+	const char *oftree_file;
+	const char *initrd_file;
+};
+
+#ifdef CONFIG_BOOT_OVERRIDE
+void bootm_set_overrides(const struct bootm_overrides *overrides);
+#else
+static inline void bootm_set_overrides(const struct bootm_overrides *overrides) {}
+#endif
+
+static inline void bootm_unset_overrides(void)
+{
+	struct bootm_overrides overrides = {};
+	bootm_set_overrides(&overrides);
+}
 
 #endif /* __BOOTM_H */

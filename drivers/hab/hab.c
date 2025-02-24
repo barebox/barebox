@@ -200,11 +200,15 @@ static int imx8m_hab_lockdown_device_ocotp(unsigned flags)
 	if (ret < 0)
 		return ret;
 
-	/* Only i.MX8MQ requires fusing of DIR_BT_DIS */
-	if (!cpu_is_mx8mq())
-		return ret;
+	/* Lock upper 64bit of the 128bit UNIQUE_ID eFuse field on i.MX8MP */
+	if (cpu_is_mx8mp())
+		return imx_ocotp_write_field(MX8MP_OCOTP_GP5_LOCK, 0b11);
 
-	return imx_ocotp_write_field(MX8MQ_OCOTP_DIR_BT_DIS, 1);
+	/* Only i.MX8MQ requires fusing of DIR_BT_DIS */
+	if (cpu_is_mx8mq())
+		return imx_ocotp_write_field(MX8MQ_OCOTP_DIR_BT_DIS, 1);
+
+	return 0;
 }
 
 static int imx6_hab_device_locked_down_ocotp(void)
@@ -231,6 +235,44 @@ static int imx8m_hab_device_locked_down_ocotp(void)
 	return v;
 }
 
+static int imx8m_hab_revoke_key_ocotp(unsigned key_idx)
+{
+	int ret;
+
+	/* Prohibit revocation of last possible key */
+	if (key_idx >= 4)
+		return -EINVAL;
+
+	ret = imx_ocotp_srk_revoke_locked();
+	if (ret < 0)
+		return ret;
+
+	/* Return -EINVAL in case the SRK_REVOKE write is locked */
+	if (ret == 1)
+		return -EINVAL;
+
+	ret = imx_ocotp_write_field(MX8M_OCOTP_SRK_REVOKE, BIT(key_idx));
+
+	return ret;
+}
+
+static int imx8m_hab_field_return_ocotp(void)
+{
+	int ret;
+
+	ret = imx_ocotp_field_return_locked();
+	if (ret < 0)
+		return ret;
+
+	/* Return -EINVAL in case the FIELD_RETURN write is locked */
+	if (ret == 1)
+		return -EINVAL;
+
+	ret = imx_ocotp_write_field(MX8M_OCOTP_FIELD_RETURN, 1);
+
+	return ret;
+}
+
 struct imx_hab_ops {
 	int (*write_srk_hash)(const u8 *srk, unsigned flags);
 	int (*read_srk_hash)(u8 *srk);
@@ -238,6 +280,8 @@ struct imx_hab_ops {
 	int (*lockdown_device)(unsigned flags);
 	int (*device_locked_down)(void);
 	int (*print_status)(void);
+	int (*revoke_key)(unsigned key_idx);
+	int (*field_return)(void);
 };
 
 static struct imx_hab_ops imx_hab_ops_iim = {
@@ -265,6 +309,8 @@ static struct imx_hab_ops imx8m_hab_ops_ocotp = {
 	.device_locked_down = imx8m_hab_device_locked_down_ocotp,
 	.permanent_write_enable = imx_hab_permanent_write_enable_ocotp,
 	.print_status = imx8m_hab_print_status,
+	.revoke_key = imx8m_hab_revoke_key_ocotp,
+	.field_return = imx8m_hab_field_return_ocotp,
 };
 
 static int imx_ahab_write_srk_hash(const u8 *__newsrk, unsigned flags)
@@ -538,3 +584,47 @@ static int init_imx_hab_print_status(void)
 	return 0;
 }
 postmmu_initcall(init_imx_hab_print_status);
+
+int imx_hab_revoke_key(unsigned key_idx, bool permanent)
+{
+	struct imx_hab_ops *ops = imx_get_hab_ops();
+	int ret;
+
+	if (!ops || !ops->revoke_key)
+		return -ENOSYS;
+
+	if (permanent) {
+		ret = ops->permanent_write_enable(1);
+		if (ret)
+			return ret;
+	}
+
+	ret = ops->revoke_key(key_idx);
+
+	if (permanent)
+		ops->permanent_write_enable(0);
+
+	return ret;
+}
+
+int imx_hab_field_return(bool permanent)
+{
+	struct imx_hab_ops *ops = imx_get_hab_ops();
+	int ret;
+
+	if (!ops || !ops->field_return)
+		return -ENOSYS;
+
+	if (permanent) {
+		ret = ops->permanent_write_enable(1);
+		if (ret)
+			return ret;
+	}
+
+	ret = ops->field_return();
+
+	if (permanent)
+		ops->permanent_write_enable(0);
+
+	return ret;
+}

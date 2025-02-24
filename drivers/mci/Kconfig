@@ -92,6 +92,12 @@ config MCI_DW_PIO
 	help
 	  Use PIO mode (instead of IDMAC) in DW MMC driver.
 
+config MCI_SUNXI_SMHC
+	bool "Allwinner SD-MMC Memory Card Host Controller"
+	help
+	  Enable support for the Allwinner SD-MMC Memory Card Host Controller,
+	  this provides host support for SD and MMC interfaces, in PIO mode.
+
 config MCI_MXS
 	bool "i.MX23/i.MX28"
 	depends on ARCH_MXS

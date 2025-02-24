@@ -27,7 +27,7 @@
 
 &usdhc1 {
 	partitions {
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
                 #address-cells = <1>;
                 #size-cells = <1>;
 

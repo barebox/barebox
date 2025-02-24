@@ -16,13 +16,26 @@
 #include <init.h>
 #include <globalvar.h>
 
-static unsigned int of_partition_binding;
-
+/**
+ * enum of_binding_name - Name of binding to use for OF partition fixup
+ * @MTD_OF_BINDING_NEW:		Fix up new-style partition bindings
+ *				with compatible = "fixed-partitions" container
+ * @MTD_OF_BINDING_LEGACY:	Fix up legacy partition bindings
+ *				directly into the parent node without container
+ * @MTD_OF_BINDING_DONTTOUCH:	Don't touch partition nodes at all - no fixups
+ * @MTD_OF_BINDING_ADAPTIVE:	Do a new-style fixup with compatible being either:
+ *				- the same compatible as in the kernel DT if available
+ *				- "fixed-partitions" for MTD
+ *				- "barebox,fixed-partitions" otherwise
+ */
 enum of_binding_name {
 	MTD_OF_BINDING_NEW,
 	MTD_OF_BINDING_LEGACY,
 	MTD_OF_BINDING_DONTTOUCH,
+	MTD_OF_BINDING_ADAPTIVE,
 };
+
+static unsigned int of_partition_binding = MTD_OF_BINDING_ADAPTIVE;
 
 struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 {
@@ -93,7 +106,7 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 
 	subnode = of_get_child_by_name(node, "partitions");
 	if (subnode) {
-		if (!of_device_is_compatible(subnode, "fixed-partitions"))
+		if (!of_node_is_fixed_partitions(subnode))
 			return -EINVAL;
 		node = subnode;
 	}
@@ -125,7 +138,7 @@ int of_partition_ensure_probed(struct device_node *np)
 		return -EINVAL;
 
 	/* Check if modern partitions binding */
-	if (of_device_is_compatible(parent, "fixed-partitions")) {
+	if (of_node_is_fixed_partitions(parent)) {
 		parent = of_get_parent(parent);
 
 		/*
@@ -164,6 +177,7 @@ int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
 {
 	struct cdev *partcdev;
 	struct device_node *part, *partnode;
+	const char *compat = "fixed-partitions";
 	int ret;
 	int n_cells, n_parts = 0;
 
@@ -185,27 +199,31 @@ int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
 		n_cells = 1;
 
 	partnode = of_get_child_by_name(np, "partitions");
-	if (partnode) {
-		if (of_partition_binding == MTD_OF_BINDING_LEGACY) {
-			of_delete_node(partnode);
-			partnode = np;
-		}
-		delete_subnodes(partnode);
-	} else {
-		delete_subnodes(np);
 
-		if (of_partition_binding == MTD_OF_BINDING_LEGACY)
-			partnode = np;
-		else
-			partnode = of_new_node(np, "partitions");
-	}
-
-	if (of_partition_binding == MTD_OF_BINDING_NEW) {
-		ret = of_property_write_string(partnode, "compatible",
-					       "fixed-partitions");
+	switch (of_partition_binding) {
+	case MTD_OF_BINDING_LEGACY:
+		of_delete_node(partnode);
+		partnode = np;
+		break;
+	case MTD_OF_BINDING_ADAPTIVE:
+		/* If there's already a compatible property, leave it as-is */
+		if (of_property_present(partnode, "compatible"))
+			break;
+		if (!cdev->mtd)
+			compat = "barebox,fixed-partitions";
+		fallthrough;
+	case MTD_OF_BINDING_NEW:
+		partnode = partnode ?: of_new_node(np, "partitions");
+		ret = of_property_write_string(partnode, "compatible", compat);
 		if (ret)
 			return ret;
+		break;
 	}
+
+	if (partnode)
+		delete_subnodes(partnode);
+	else
+		delete_subnodes(np);
 
 	ret = of_property_write_u32(partnode, "#size-cells", n_cells);
 	if (ret)
@@ -296,7 +314,7 @@ int of_partitions_register_fixup(struct cdev *cdev)
 }
 
 static const char *of_binding_names[] = {
-	"new", "legacy", "donttouch"
+	"new", "legacy", "donttouch", "adaptive"
 };
 
 static int of_partition_init(void)

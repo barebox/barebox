@@ -3,9 +3,16 @@
 Representing flash partitions in devicetree
 ===========================================
 
-In addition to the upstream binding, another property is added:
+In addition to the upstream binding, barebox supports parsing OF partitions
+for EEPROMs and for SD/MMC as well. SD/MMC OF partitions in barebox are
+allowed to co-exist with GPT/MBR partitions as long as they don't overlap.
 
-Optional properties:
+This is different from the Linux behavior where OF partitions have precedence
+over GPT/MBR. For this reason, barebox also accepts the compatible
+``barebox,fixed-partitions``, which is handled inside barebox identically to
+``fixed-partitions``, but is ignored by Linux.
+
+Additionally, barebox supports an extra optional property:
 
 * ``partuuid``: The global partition UUID for this partition.
   For GPT partitions, the partuuid is the 16-byte GPT Partition UUID (e.g.
@@ -25,6 +32,9 @@ the partition table node is named appropriately:
 
 ``boot0-partitions`` and ``boot1-partitions`` are deprecated. Use ``partitions-boot1``
 and ``partitions-boot2`` instead which is supported under Linux as well.
+
+In addition to the upstream ``fixed-partitions`` compatible binding,
+barebox also supports a ``barebox,fixed-partitions`` binding.
 
 Examples:
 
@@ -51,6 +61,19 @@ Examples:
   		barebox@0 {
   			label = "barebox";
   			reg = <0x0 0x300000>;
+  		};
+  	};
+  };
+
+  sd {
+  	partitions {
+  		compatible = "barebox,fixed-partitions";
+  		#address-cells = <1>;
+  		#size-cells = <1>;
+
+  		barebox-env@1000 {
+  			label = "barebox-environment";
+  			reg = <0x1000 0x20000>;
   		};
   	};
   };

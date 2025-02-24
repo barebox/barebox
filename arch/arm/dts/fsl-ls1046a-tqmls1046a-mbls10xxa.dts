@@ -29,7 +29,7 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 
 		partition@1000 {
 			label = "barebox";

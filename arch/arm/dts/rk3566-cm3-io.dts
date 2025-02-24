@@ -25,7 +25,7 @@
 	no-sd;
 
 	partitions {
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 		#address-cells = <2>;
 		#size-cells = <2>;
 
@@ -38,7 +38,7 @@
 
 &sdmmc0 {
 	partitions {
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 		#address-cells = <2>;
 		#size-cells = <2>;
 

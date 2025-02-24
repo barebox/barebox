@@ -93,7 +93,7 @@
 &eeprom {
 	status = "okay";
 	partitions {
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 		#size-cells = <1>;
 		#address-cells = <1>;
 		backend_state_mac_eeprom: state@0 {

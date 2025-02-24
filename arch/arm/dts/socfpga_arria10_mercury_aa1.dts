@@ -44,7 +44,7 @@
 	no-sd;
 
 	partitions {
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 		#size-cells = <1>;
 		#address-cells = <1>;
 

@@ -12,6 +12,13 @@
 
 #include <linux/mtd/mtd.h>
 
+bool of_node_is_fixed_partitions(const struct device_node *np)
+{
+	return of_device_is_compatible(np, "fixed-partitions") ||
+		of_device_is_compatible(np, "barebox,fixed-partitions");
+
+}
+
 struct device *of_find_device_by_node_path(const char *path)
 {
 	struct device *dev;
@@ -55,7 +62,7 @@ static struct cdev *__of_cdev_find(struct device_node *node, const char *part)
 		const char *uuid;
 		struct device_node *devnode = node->parent;
 
-		if (of_device_is_compatible(devnode, "fixed-partitions")) {
+		if (of_node_is_fixed_partitions(devnode)) {
 			devnode = devnode->parent;
 
 			/* when partuuid is specified short-circuit the search for the cdev */

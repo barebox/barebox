@@ -83,7 +83,7 @@
 	partitions {
 		#address-cells = <1>;
 		#size-cells = <1>;
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 
 		/** original storage layout:
 		offset     size  label

@@ -69,7 +69,7 @@
 
 &eeprom {
 	partitions {
-		compatible = "fixed-partitions";
+		compatible = "barebox,fixed-partitions";
 		#size-cells = <1>;
 		#address-cells = <1>;
 		backend_update_eeprom: state@0 {

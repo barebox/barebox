@@ -172,7 +172,7 @@ static void dos_extended_partition(struct block_device *blk, struct dos_partitio
 		pentry->size = get_unaligned_le32(&table[0].partition_size);
 		pentry->dos_partition_type = table[0].type;
 		pentry->num = partno;
-		sprintf(pentry->partuuid, "%08x-%02u", signature, partno + 1);
+		sprintf(pentry->partuuid, "%08x-%02x", signature, partno + 1);
 
 		list_add_tail(&pentry->list, &dpd->pd.partitions);
 
@@ -270,7 +270,7 @@ static struct partition_desc *dos_partition(void *buf, struct block_device *blk)
 		extract_flags(&table[i], pentry);
 		pentry->num = i;
 
-		sprintf(pentry->partuuid, "%08x-%02d", signature, i + 1);
+		sprintf(pentry->partuuid, "%08x-%02x", signature, i + 1);
 		dpd->signature = signature;
 
 		if (is_extended_partition(pentry)) {

@@ -1370,7 +1370,7 @@ int main(int argc, char *argv[])
 			goto out;
 		}
 
-		append_option("root=PARTUUID=%08X-%02d", nt_disk_signature, root_partition_num);
+		append_option("root=PARTUUID=%08X-%02X", nt_disk_signature, root_partition_num);
 	}
 
 	if (list) {

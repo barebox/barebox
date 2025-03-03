@@ -244,12 +244,15 @@ static int emif_reset(void)
 
 	writel(CORE2SEQ_INT_REQ, DDR_REG_CORE2SEQ);
 
-	if (ddr_wait_bit(DDR_REG_SEQ2CORE, SEQ2CORE_INT_RESP_BIT, 0, 1000000)) {
+	ret = __wait_on_timeout(1000000, readl(DDR_REG_SEQ2CORE) &
+				SEQ2CORE_INT_RESP_BIT);
+	if (ret) {
 		printf("emif_reset failed to see interrupt acknowledge\n");
+		emif_clear();
 		return -2;
-	} else {
-		printf("emif_reset interrupt acknowledged\n");
 	}
+
+	__udelay(1000);
 
 	ret = emif_clear();
 	if (ret) {

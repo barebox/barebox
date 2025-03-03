@@ -79,7 +79,7 @@ static int rn5t568_reset_reason_detect(struct device *dev,
 			return -EINVAL;
 	}
 
-	reset_source_set_device(dev, type);
+	reset_source_set_device(dev, type, 200);
 	return 0;
 }
 

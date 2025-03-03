@@ -67,7 +67,7 @@ void *barebox_calloc(size_t n, size_t elem_size)
 	size_t product;
 	void *mem = NULL;
 
-	if (!__builtin_add_overflow(n, elem_size, &product) &&
+	if (!__builtin_mul_overflow(n, elem_size, &product) &&
 	    product <= BAREBOX_MALLOC_MAX_SIZE)
 		mem = calloc(n, elem_size);
 	if (!mem)

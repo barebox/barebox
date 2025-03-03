@@ -23,9 +23,6 @@
 #define ARRIA10_NIOS_OCT_DONE	BIT(7)
 #define ARRIA10_NIOS_OCT_ACK	7
 
-/* Engineering sample silicon */
-#define ARRIA10_ES_SILICON_VER	0x00010001
-
 #define DDR_REG_SEQ2CORE        0xFFD0507C
 #define DDR_REG_CORE2SEQ        0xFFD05078
 #define DDR_REG_GPOUT           0xFFD03010
@@ -100,118 +97,12 @@ static int is_sdram_cal_success(void)
 	return readl(ARRIA10_ECC_HMC_OCP_DDRCALSTAT);
 }
 
-static unsigned char ddr_get_bit(uint32_t ereg, unsigned char bit)
-{
-	unsigned int reg = readl(ereg);
-
-	return (reg & (1 << bit)) ? 1 : 0;
-}
-
-static unsigned char ddr_wait_bit(uint32_t ereg, uint32_t bit,
-				  uint32_t expected, uint32_t timeout_usec)
-{
-	unsigned int tmr;
-
-	for (tmr = 0; tmr < timeout_usec; tmr += 100) {
-		__udelay(100);
-		if (ddr_get_bit(ereg, bit) == expected)
-			return 0;
-	}
-
-	return 1;
-}
-
 static void ddr_delay(uint32_t delay)
 {
 	int tmr;
 
 	for (tmr = 0; tmr < delay; tmr++)
 		__udelay(1000);
-}
-
-/*
- * Diagram of OCT Workaround:
- *
- * EMIF Core                     HPS Processor              OCT FSM
- * =================================================================
- *
- * seq2core      ==============>
- * [0x?????????]   OCT Request   [0xFFD0507C]
- *
- * core2seq
- * [0x?????????] <==============
- *                 OCT Ready     [0xFFD05078]
- *
- *                               [0xFFD03010] ============> Request
- *                                             OCT Request
- *
- *                               [0xFFD03014] <============ Ready
- *                                              OCT Ready
- * Signal definitions:
- *
- * seq2core[7] - OCT calibration request (act-high)
- * core2seq[7] - Signals OCT FSM is ready (active high)
- * gpout[31]   - EMIF Reset override (active low)
- * gpout[30]   - OCT calibration request (act-high)
- * gpin[31]    - OCT calibration ready (act-high)
- */
-
-static int ddr_calibration_es_workaround(void)
-{
-	ddr_delay(500);
-	/* Step 1 - Initiating Reset Sequence */
-	clrbits_le32(DDR_REG_GPOUT, ARRIA10_EMIF_RST);
-	ddr_delay(10);
-
-	/* Step 2 - Clearing registers to EMIF core */
-	writel(0, DDR_REG_CORE2SEQ);	/*Clear the HPS->NIOS COM reg.*/
-
-	/* Step 3 - Clearing registers to OCT core */
-	clrbits_le32(DDR_REG_GPOUT, ARRIA10_OCT_CAL_REQ);
-	ddr_delay(5);
-
-	/* Step 4 - Taking EMIF out of reset */
-	setbits_le32(DDR_REG_GPOUT, ARRIA10_EMIF_RST);
-	ddr_delay(10);
-
-	/* Step 5 - Waiting for OCT circuitry to come out of reset */
-	if (ddr_wait_bit(DDR_REG_GPIN, ARRIA10_OCT_CAL_ACK, 1, 1000000))
-		return -1;
-
-	/* Step 6 - Allowing EMIF to proceed with OCT calibration */
-	setbits_le32(DDR_REG_CORE2SEQ, ARRIA10_NIOS_OCT_DONE);
-
-	/* Step 7 - Waiting for EMIF request */
-	if (ddr_wait_bit(DDR_REG_SEQ2CORE, ARRIA10_NIOS_OCT_ACK, 1, 2000000))
-		return -2;
-
-	/* Step 8 - Acknowledging EMIF OCT request */
-	clrbits_le32(DDR_REG_CORE2SEQ, ARRIA10_NIOS_OCT_DONE);
-
-	/* Step 9 - Waiting for EMIF response */
-	if (ddr_wait_bit(DDR_REG_SEQ2CORE, ARRIA10_NIOS_OCT_ACK, 0, 2000000))
-		return -3;
-
-	/* Step 10 - Triggering OCT Calibration */
-	setbits_le32(DDR_REG_GPOUT, ARRIA10_OCT_CAL_REQ);
-
-	/* Step 11 - Waiting for OCT response */
-	if (ddr_wait_bit(DDR_REG_GPIN, ARRIA10_OCT_CAL_ACK, 0, 1000))
-		return -4;
-
-	/* Step 12 - Clearing OCT Request bit */
-	clrbits_le32(DDR_REG_GPOUT, ARRIA10_OCT_CAL_REQ);
-
-	/* Step 13 - Waiting for OCT Engine */
-	if (ddr_wait_bit(DDR_REG_GPIN, ARRIA10_OCT_CAL_ACK, 1, 200000))
-		return -5;
-
-	/* Step 14 - Proceeding with EMIF calibration */
-	setbits_le32(DDR_REG_CORE2SEQ, ARRIA10_NIOS_OCT_DONE);
-
-	ddr_delay(100);
-
-	return 0;
 }
 
 static int emif_clear(void)
@@ -271,30 +162,18 @@ static int emif_reset(void)
 
 static int arria10_ddr_setup(void)
 {
-	int i, j, retcode, ddr_setup_complete = 0;
-	int chip_version = readl(ARRIA10_SYSMGR_SILICONID1);
+	int i, j, ddr_setup_complete = 0;
 
 	/* Try 3 times to do a calibration */
 	for (i = 0; (i < 3) && !ddr_setup_complete; i++) {
-		/* Only engineering sample needs calibration workaround */
-		if (ARRIA10_ES_SILICON_VER == chip_version) {
-			retcode = ddr_calibration_es_workaround();
-			if (retcode) {
-				printf("DDRCAL: Failure: %d\n", retcode);
-				continue;
-			}
-		}
-
 		/* A delay to wait for calibration bit to set */
 		for (j = 0; (j < 10) && !ddr_setup_complete; j++) {
 			ddr_delay(500);
 			ddr_setup_complete = is_sdram_cal_success();
 		}
 
-		if (!ddr_setup_complete &&
-			(ARRIA10_ES_SILICON_VER != chip_version)) {
+		if (!ddr_setup_complete)
 			emif_reset();
-		}
 	}
 
 	if (!ddr_setup_complete) {

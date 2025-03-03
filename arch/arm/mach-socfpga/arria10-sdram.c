@@ -91,20 +91,6 @@ static int match_ddr_conf(uint32_t ddr_conf)
 	return 0;
 }
 
-/* Check whether SDRAM is successfully Calibrated */
-static int is_sdram_cal_success(void)
-{
-	return readl(ARRIA10_ECC_HMC_OCP_DDRCALSTAT);
-}
-
-static void ddr_delay(uint32_t delay)
-{
-	int tmr;
-
-	for (tmr = 0; tmr < delay; tmr++)
-		__udelay(1000);
-}
-
 static int emif_clear(void)
 {
 	writel(0, DDR_REG_CORE2SEQ);
@@ -162,26 +148,24 @@ static int emif_reset(void)
 
 static int arria10_ddr_setup(void)
 {
-	int i, j, ddr_setup_complete = 0;
+	int i, ret = 0;
 
-	/* Try 3 times to do a calibration */
-	for (i = 0; (i < 3) && !ddr_setup_complete; i++) {
-		/* A delay to wait for calibration bit to set */
-		for (j = 0; (j < 10) && !ddr_setup_complete; j++) {
-			ddr_delay(500);
-			ddr_setup_complete = is_sdram_cal_success();
-		}
+	/* Try 32 times to do a calibration */
+	for (i = 0; i < 32; i++) {
+		ret = __wait_on_timeout(1000,
+				!(readl(ARRIA10_ECC_HMC_OCP_DDRCALSTAT)	&
+					BIT(0)));
+		if (!ret)
+			return 0;
 
-		if (!ddr_setup_complete)
-			emif_reset();
+		ret = emif_reset();
+		if (ret)
+			puts_ll("Error: arria10_ddr_setup: Failed to reset EMIF\n");
+
+		__udelay(500000);
 	}
 
-	if (!ddr_setup_complete) {
-		puts_ll("Error: Could Not Calibrate SDRAM\n");
-		return -1;
-	}
-
-	return 0;
+	return -ETIMEDOUT;
 }
 
 /* Function to startup the SDRAM*/

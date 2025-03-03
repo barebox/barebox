@@ -216,20 +216,14 @@ static int ddr_calibration_es_workaround(void)
 
 static int emif_clear(void)
 {
-	uint32_t s2c;
-	uint32_t i = DDR_MAX_TRIES;
-
 	writel(0, DDR_REG_CORE2SEQ);
-	do {
-		ddr_delay(50);
-		s2c = readl(DDR_REG_SEQ2CORE);
-	} while ((s2c & SEQ2CORE_MASK) && (--i > 0));
 
-	return !i;
+	return __wait_on_timeout(1000, readl(DDR_REG_SEQ2CORE) & SEQ2CORE_MASK);
 }
 static int emif_reset(void)
 {
 	uint32_t c2s, s2c;
+	int ret;
 
 	c2s = readl(DDR_REG_CORE2SEQ);
 	s2c = readl(DDR_REG_SEQ2CORE);
@@ -240,9 +234,12 @@ static int emif_reset(void)
 		readl(IO48_MMR_NIOS2_RESERVE2),
 		readl(IO48_MMR_DRAMSTS));
 
-	if ((s2c & SEQ2CORE_MASK) && emif_clear()) {
-		printf("failed emif_clear()\n");
-		return -1;
+	if (s2c & SEQ2CORE_MASK) {
+		ret = emif_clear();
+		if (ret) {
+			printf("failed emif_clear()\n");
+			return -1;
+		}
 	}
 
 	writel(CORE2SEQ_INT_REQ, DDR_REG_CORE2SEQ);
@@ -254,7 +251,8 @@ static int emif_reset(void)
 		printf("emif_reset interrupt acknowledged\n");
 	}
 
-	if (emif_clear()) {
+	ret = emif_clear();
+	if (ret) {
 		printf("emif_clear() failed\n");
 		return -3;
 	}

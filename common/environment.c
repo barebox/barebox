@@ -305,9 +305,10 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 	struct envfs_super *super;
 	int envfd, size, ret;
 	struct action_data data = {};
-	void *buf = NULL, *wbuf;
+	void *buf = NULL, *wbuf, *bufWithEfi;
 	struct envfs_entry *env;
 	const char *defenv_path = default_environment_path_get();
+	uint32_t magic;
 
 	if (!filename)
 		filename = defenv_path;
@@ -342,7 +343,9 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 		}
 	}
 
-	buf = xzalloc(size + sizeof(struct envfs_super));
+	bufWithEfi = xzalloc(size + sizeof(struct envfs_super) +
+			     4); // four byte efi attributes
+	buf = bufWithEfi + 4;
 	data.writep = buf + sizeof(struct envfs_super);
 
 	super = buf;
@@ -370,7 +373,7 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 	super->crc = ENVFS_32(crc32(0, buf + sizeof(struct envfs_super), size));
 	super->sb_crc = ENVFS_32(crc32(0, buf, sizeof(struct envfs_super) - 4));
 
-	envfd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+	envfd = open(filename, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 	if (envfd < 0) {
 		printf("could not open %s: %m\n", filename);
 		ret = -errno;
@@ -385,6 +388,34 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 		goto out;
 	}
 
+	wbuf = buf;
+
+	/* check if we writing efi vars */
+	ret = pread(envfd, &magic, sizeof(uint32_t),
+		    4); // four byte efi var attributes
+	if (ret == -1 && errno == ENOENT) {
+		// skip as file don't exist
+		goto skip_efi_read;
+	}
+	if (ret < sizeof(u_int32_t)) {
+		perror("read of destination file failed");
+		ret = -errno;
+		goto skip_efi_read;
+	}
+
+	if (ENVFS_32(magic) == ENVFS_MAGIC) {
+		pr_info("looks like we writing efi vars, keep attributes\n");
+		ret = pread(envfd, bufWithEfi, sizeof(uint32_t), 0);
+		if (ret < sizeof(uint32_t)) {
+			perror("read of efi attributes failed");
+			ret = -errno;
+			goto out;
+		}
+		size += sizeof(uint32_t);
+		wbuf = bufWithEfi;
+	}
+
+skip_efi_read:
 	ret = erase(envfd, ERASE_SIZE_ALL, 0, ERASE_TO_WRITE);
 
 	/* ENOSYS and EOPNOTSUPP aren't errors here, many devices don't need it */
@@ -394,8 +425,6 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 	}
 
 	size += sizeof(struct envfs_super);
-
-	wbuf = buf;
 
 	while (size) {
 		ssize_t now = write(envfd, wbuf, size);
@@ -425,7 +454,7 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 out:
 	close(envfd);
 out1:
-	free(buf);
+	free(bufWithEfi);
 #ifdef __BAREBOX__
 	unlink_recursive(TMPDIR, NULL);
 #endif
@@ -449,6 +478,7 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 	int envfd;
 	int ret = 0;
 	size_t size, rsize;
+	uint32_t magic;
 
 	if (!filename)
 		filename = default_environment_path_get();
@@ -464,6 +494,26 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 		if (errno == ENOENT)
 			printf("Maybe you have to create the partition.\n");
 		return -1;
+	}
+
+	/* check if we reading efi vars */
+	ret = pread(envfd, &magic, sizeof(uint32_t),
+		    4); // four byte efi var attributes
+	if (ret < sizeof(u_int32_t)) {
+		perror("read");
+		ret = -errno;
+		goto out;
+	}
+
+	if (ENVFS_32(magic) == ENVFS_MAGIC) {
+		pr_info("looks like we reading efi vars, skip attributes\n");
+		ret = read(envfd, &magic,
+			   sizeof(uint32_t)); // simply reuse the memory
+		if (ret < sizeof(uint32_t)) {
+			perror("read");
+			ret = -errno;
+			goto out;
+		}
 	}
 
 	/* read superblock */

@@ -1567,11 +1567,11 @@ static int nfs_init(void)
 	rootnfsopts = xstrdup("v3,tcp");
 
 	globalvar_add_simple_string("linux.rootnfsopts", &rootnfsopts);
-	globalvar_add_simple_int("net.nfsport", &nfsport_default, "%d");
+	globalvar_add_simple_int("nfs.port", &nfsport_default, "%d");
 
 	return register_fs_driver(&nfs_driver);
 }
 coredevice_initcall(nfs_init);
 
-BAREBOX_MAGICVAR(global.net.nfsport,
+BAREBOX_MAGICVAR(global.nfs.port,
 		 "Sets both NFS -o {port.mountport}= to the specified non-zero value");

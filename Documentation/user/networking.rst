@@ -150,9 +150,26 @@ or
 
   mount -t nfs 192.168.2.1:/export none /mnt
 
-**NOTE:** The execution of the mount command can often be hidden behind the
-:ref:`automount command <command_automount>`, to make mounting transparent to
-the user.
+.. _network_filesystems_automounts:
+
+Automounts
+^^^^^^^^^^
+
+For user convenience, the default ``automount`` init script runs
+the :ref:`automount command <command_automount>` to create automounts for
+both TFTP and NFS. On first access, an Ethernet interface will be brought
+up and file operations will be forwarded to a host specified by global
+variables:
+
+- ``/mnt/tftp``: will use ``$global.net.server`` as TFTP server
+
+- ``/mnt/nfs``: will use ``$global.net.server`` as NFS server
+  and ``/home/${global.user}/nfsroot/${global.hostname}`` as nfsroot.
+  By default, a RPC lookup will be conducted to determine mount and
+  NFS ports, but these can be overridden together using a user-specified
+  by means of ``global.nfs.port``. The latter is equivalent to specifying
+  ``-o port=$global.nfs.port,mountport=$global.nfs.port`` as argument
+  to the :ref:`mount command <command_mount>`.
 
 Network console
 ---------------

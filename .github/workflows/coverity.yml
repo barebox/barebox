@@ -1,0 +1,30 @@
+---
+# vi: ts=2 sw=2 et:
+# SPDX-License-Identifier: LGPL-2.1-or-later
+# based on systemds coverity workflow
+# https://github.com/systemd/systemd/blob/d5474f78b876c1f0/.github/workflows/coverity.yml
+name: Coverity
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/barebox/barebox/barebox-ci:latest
+      # allow mounting and devtmpfs in the container
+      options: --user=root --privileged -v /dev:/dev
+
+    env:
+      # Set in repo settings -> secrets -> actions
+      COVERITY_SCAN_TOKEN:              "${{ secrets.COVERITY_SCAN_TOKEN }}"
+      COVERITY_SCAN_NOTIFICATION_EMAIL: "${{ secrets.COVERITY_SCAN_NOTIFICATION_EMAIL }}"
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@v4
+      - name: Build & upload the results
+        run: .github/workflows/coverity.sh

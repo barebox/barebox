@@ -9,7 +9,6 @@
 #include <soc/imx9/ddr.h>
 #include <mach/imx/atf.h>
 #include <mach/imx/xload.h>
-#include <mach/imx/romapi.h>
 #include <mach/imx/esdctl.h>
 #include <pbl/i2c.h>
 #include <boards/tq/tq_eeprom.h>

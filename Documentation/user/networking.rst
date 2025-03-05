@@ -81,7 +81,7 @@ The :ref:`dhcp command <command_dhcp>` will change the settings based on the ans
 from the DHCP server.
 
 To make the network device settings persistent across reboots there is a nonvolatile
-variable (nvvar) for each of the varariables above. The network device specific variables
+variable (nvvar) for each of the variables above. The network device specific variables
 are:
 
 .. code-block:: sh

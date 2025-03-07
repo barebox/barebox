@@ -75,9 +75,9 @@ The build process needs three binary files which have to be copied from the
 
 .. code-block:: sh
 
-  cp $RKBIN/bin/rk35/rk3568_bl31_v1.34.elf firmware/rk3568-bl31.bin
-  cp $RKBIN/bin/rk35/rk3568_bl32_v2.08.bin firmware/rk3568-bl32.bin
-  cp $RKBIN/bin/rk35/rk3568_ddr_1560MHz_v1.13.bin arch/arm/boards/rockchip-rk3568-evb/sdram-init.bin
+  cp $RKBIN/bin/rk35/rk3568_bl31_v1.44.elf firmware/rk3568-bl31.bin
+  cp $RKBIN/bin/rk35/rk3568_bl32_v2.15.bin firmware/rk3568-bl32.bin
+  cp $RKBIN/bin/rk35/rk3568_ddr_1560MHz_v1.23.bin arch/arm/boards/rockchip-rk3568-evb/sdram-init.bin
 
 With these barebox can be compiled as:
 

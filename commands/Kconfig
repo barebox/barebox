@@ -638,7 +638,7 @@ config CMD_AUTOMOUNT
 	select FS_AUTOMOUNT
 	prompt "automount"
 	help
-	  Automount allows o automatically execute a script when a certain
+	  Automount allows to automatically execute a script when a certain
 	  directory is accessed for the first time. The script should then make
 	  this directory available (discover USB devices, bring network interface
 	  up and finally mount the filesystem).

@@ -106,6 +106,22 @@ static inline void __udelay(unsigned us)
 	for (i = 0; i < us * 3; i++);
 }
 
+#define __wait_on_timeout(timeout, condition) \
+({								\
+	int __ret = 0;						\
+	int __timeout = timeout;				\
+								\
+	while ((condition)) {					\
+		if (__timeout-- < 0) {				\
+			__ret = -ETIMEDOUT;			\
+			break;					\
+		}						\
+		arria10_kick_l4wd0();                           \
+		__udelay(1);                                    \
+	}							\
+	__ret;							\
+})
+
 struct socfpga_barebox_part {
 	unsigned int nor_offset;
 	unsigned int nor_size;

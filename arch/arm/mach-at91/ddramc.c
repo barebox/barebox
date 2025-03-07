@@ -22,6 +22,7 @@ static unsigned sama5_ramsize(void __iomem *base)
 void __noreturn sama5d2_barebox_entry(unsigned int r4, void *boarddata)
 {
 	__sama5d2_stashed_bootrom_r4 = r4;
+
 	barebox_arm_entry(SAMA5_DDRCS, sama5_ramsize(SAMA5D2_BASE_MPDDRC),
 			  boarddata);
 }
@@ -33,6 +34,7 @@ void __noreturn sama5d3_barebox_entry(unsigned int r4, void *boarddata)
 	barebox_arm_entry(SAMA5_DDRCS, at91sama5d3_get_ddram_size(),
 			  boarddata);
 }
+
 void __noreturn sama5d4_barebox_entry(unsigned int r4, void *boarddata)
 {
 	__sama5d4_stashed_bootrom_r4 = r4;
@@ -54,7 +56,7 @@ static int sama5_ddr_probe(struct device *dev)
 	return arm_add_mem_device("ram0", SAMA5_DDRCS, sama5_ramsize(base));
 }
 
-static struct of_device_id sama5_ddr_dt_ids[] = {
+static __maybe_unused struct of_device_id sama5_ddr_dt_ids[] = {
 	{ .compatible = "atmel,sama5d3-ddramc" },
 	{ /* sentinel */ }
 };
@@ -63,7 +65,6 @@ MODULE_DEVICE_TABLE(of, sama5_ddr_dt_ids);
 static struct driver sama5_ddr_driver = {
 	.name   = "sama5-ddramc",
 	.probe  = sama5_ddr_probe,
-	.of_compatible = sama5_ddr_dt_ids,
+	.of_compatible = DRV_OF_COMPAT(sama5_ddr_dt_ids),
 };
-
 mem_platform_driver(sama5_ddr_driver);

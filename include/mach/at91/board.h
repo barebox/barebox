@@ -31,8 +31,6 @@ struct at91_usbh_data {
 extern void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data);
 extern void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data);
 
-void atmel_nand_load_image(void *dest, int size, int pagesize, int blocksize);
-
  /* USB Device */
 struct at91_udc_data {
 	int	vbus_pin;		/* high == host powering us */

@@ -269,10 +269,6 @@ config ARCH_AT91SAM9N12
 	bool "AT91SAM9N12"
 	select SOC_AT91SAM9N12
 
-config ARCH_SAMA5D3
-	bool "SAMA5D3x"
-	select SOC_SAMA5D3
-
 config ARCH_SAMA5D4
 	bool "SAMA5D4"
 	select SOC_SAMA5D4
@@ -289,7 +285,6 @@ config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 	default 0xF000 if ARCH_AT91SAM9G45
 	default 0x6000 if ARCH_AT91SAM9X5
 	default 0x6000 if ARCH_AT91SAM9N12
-	default 0x6000 if ARCH_SAMA5D3
 	default 0xffffffff
 
 if ARCH_AT91RM9200

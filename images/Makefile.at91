@@ -16,7 +16,7 @@ FILE_barebox-microchip-ksz9477-evb.img = start_sama5d3_xplained_ung8071.pblb
 image-$(CONFIG_MACH_MICROCHIP_KSZ9477_EVB) += barebox-microchip-ksz9477-evb.img
 
 pblb-$(CONFIG_MACH_MICROCHIP_KSZ9477_EVB) += start_sama5d3_xplained_ung8071_xload_mmc
-MAX_PBL_IMAGE_SIZE_start_sama5d3_xplained_ung8071_xload_mmc = 0xffff
+MAX_PBL_IMAGE_SIZE_start_sama5d3_xplained_ung8071_xload_mmc = 0x10000
 FILE_barebox-microchip-ksz9477-evb-xload-mmc.img = start_sama5d3_xplained_ung8071_xload_mmc.pblb
 image-$(CONFIG_MACH_MICROCHIP_KSZ9477_EVB) += barebox-microchip-ksz9477-evb-xload-mmc.img
 
@@ -25,7 +25,7 @@ FILE_barebox-microchip-sama5d3-eds.img = start_microchip_sama5d3_eds.pblb
 image-$(CONFIG_MACH_MICROCHIP_SAMA5D3_EDS) += barebox-microchip-sama5d3-eds.img
 
 pblb-$(CONFIG_MACH_MICROCHIP_SAMA5D3_EDS) += start_microchip_sama5d3_eds_xload_mmc
-MAX_PBL_IMAGE_SIZE_start_microchip_sama5d3_eds_xload_mmc = 0xffff
+MAX_PBL_IMAGE_SIZE_start_microchip_sama5d3_eds_xload_mmc = 0x10000
 FILE_barebox-microchip-sama5d3-eds-xload-mmc.img = start_microchip_sama5d3_eds_xload_mmc.pblb
 image-$(CONFIG_MACH_MICROCHIP_SAMA5D3_EDS) += barebox-microchip-sama5d3-eds-xload-mmc.img
 
@@ -34,7 +34,7 @@ FILE_barebox-sama5d3-xplained.img = start_sama5d3_xplained.pblb
 image-$(CONFIG_MACH_SAMA5D3_XPLAINED) += barebox-sama5d3-xplained.img
 
 pblb-$(CONFIG_MACH_SAMA5D3_XPLAINED) += start_sama5d3_xplained_xload_mmc
-MAX_PBL_IMAGE_SIZE_start_sama5d3_xplained_xload_mmc = 0xffff
+MAX_PBL_IMAGE_SIZE_start_sama5d3_xplained_xload_mmc = 0x10000
 FILE_barebox-sama5d3-xplained-xload-mmc.img = start_sama5d3_xplained_xload_mmc.pblb
 image-$(CONFIG_MACH_SAMA5D3_XPLAINED) += barebox-sama5d3-xplained-xload-mmc.img
 
@@ -43,7 +43,7 @@ FILE_barebox-sama5d27-som1-ek.img = start_sama5d27_som1_ek.pblb
 image-$(CONFIG_MACH_SAMA5D27_SOM1) += barebox-sama5d27-som1-ek.img
 
 pblb-$(CONFIG_MACH_SAMA5D27_SOM1) += start_sama5d27_som1_ek_xload_mmc
-MAX_PBL_IMAGE_SIZE_start_sama5d27_som1_ek_xload_mmc = 0xffff
+MAX_PBL_IMAGE_SIZE_start_sama5d27_som1_ek_xload_mmc = 0x10000
 FILE_barebox-sama5d27-som1-ek-xload-mmc.img = start_sama5d27_som1_ek_xload_mmc.pblb
 image-$(CONFIG_MACH_SAMA5D27_SOM1) += barebox-sama5d27-som1-ek-xload-mmc.img
 

@@ -259,7 +259,9 @@ static int physom_imx6_probe(struct device *dev)
 		imx6_bbu_internal_mmcboot_register_handler("mmc1-boot",
 						"mmc1", 0);
 	} else {
-		imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+		imx6_bbu_nand_register_handler("nand",
+						"/dev/nand0.barebox",
+						BBU_HANDLER_FLAG_DEFAULT);
 	}
 
 	defaultenv_append_directory(defaultenv_physom_imx6);

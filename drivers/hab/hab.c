@@ -256,6 +256,12 @@ static int imx8m_hab_revoke_key_ocotp(unsigned key_idx)
 	return ret;
 }
 
+/*
+ * The fuse pattern for i.MX8M Plus is 0x28001401, but bit 2 is already set from factory.
+ * This means when field return is set, the fuse word value reads 0x28001405
+ */
+#define MX8MP_FIELD_RETURN_PATTERN	0x28001401
+
 static int imx8m_hab_field_return_ocotp(void)
 {
 	int ret;
@@ -268,7 +274,11 @@ static int imx8m_hab_field_return_ocotp(void)
 	if (ret == 1)
 		return -EINVAL;
 
-	ret = imx_ocotp_write_field(MX8M_OCOTP_FIELD_RETURN, 1);
+	if (cpu_is_mx8mp())
+		ret = imx_ocotp_write_field(MX8MP_OCOTP_FIELD_RETURN,
+					    MX8MP_FIELD_RETURN_PATTERN);
+	else
+		ret = imx_ocotp_write_field(MX8M_OCOTP_FIELD_RETURN, 1);
 
 	return ret;
 }

@@ -283,7 +283,7 @@ static int load_fip(const char *filename, off_t offset)
 	return 0;
 }
 
-static void do_dfu(void)
+static int do_dfu(void)
 {
 	struct usbgadget_funcs funcs = {};
 	int ret;
@@ -293,37 +293,24 @@ static void do_dfu(void)
 	funcs.dfu_opts = "/fip.img(fip)cs";
 
 	ret = usbgadget_prepare_register(&funcs);
-	if (ret)
-		goto err;
+	if (ret) {
+		pr_err("DFU failed with: %pe\n", ERR_PTR(ret));
+		return ret;
+	}
 
 	while (1) {
 		ret = stat("/fip.img", &s);
 		if (!ret) {
 			printf("Downloaded FIP image, DFU done\n");
-			load_fip("/fip.img", 0);
-			break;
+			ret = load_fip("/fip.img", 0);
+			if (!ret)
+				return 0;
 		}
 
 		command_slice_release();
 		mdelay(50);
 		command_slice_acquire();
 	};
-
-	return;
-
-err:
-	pr_err("DFU failed with: %pe\n", ERR_PTR(ret));
-}
-
-static int load_images(void)
-{
-	int err;
-
-	err = load_fip("/boot/k3.fip", 0);
-	if (!err)
-		return 0;
-
-	return 0;
 }
 
 static int load_fip_emmc(void)
@@ -332,6 +319,7 @@ static int load_fip_emmc(void)
 	struct mci *mci;
 	char *fname;
 	const char *mmcdev = "mmc0";
+	int ret;
 
 	device_detect_by_name(mmcdev);
 
@@ -348,16 +336,16 @@ static int load_fip_emmc(void)
 
 	fname = xasprintf("/dev/%s.boot%d", mmcdev, bootpart - 1);
 
-	load_fip(fname, K3_EMMC_BOOTPART_TIBOOT3_BIN_SIZE);
+	ret = load_fip(fname, K3_EMMC_BOOTPART_TIBOOT3_BIN_SIZE);
 
 	free(fname);
 
-	return 0;
+	return ret;
 }
 
 static int k3_r5_start_image(void)
 {
-	int err;
+	int ret;
 	struct firmware fw;
 	const struct ti_sci_handle *ti_sci;
 	struct elf_image *elf;
@@ -365,11 +353,28 @@ static int k3_r5_start_image(void)
 	struct rproc *arm64_rproc;
 
 	if (IS_ENABLED(CONFIG_USB_GADGET_DFU) && bootsource_get() == BOOTSOURCE_SERIAL)
-		do_dfu();
+		ret = do_dfu();
 	else if (k3_boot_is_emmc())
-		load_fip_emmc();
+		ret = load_fip_emmc();
 	else
-		load_images();
+		ret = load_fip("/boot/k3.fip", 0);
+
+	if (ret) {
+		pr_crit("Unable to load FIP image\n");
+		panic("Stop booting\n");
+	}
+
+	if (!have_bl31)
+		panic("No TFA found in FIP image\n");
+
+	if (!have_bl32)
+		pr_info("No OP-TEE found. Continuing without\n");
+
+	if (!have_bl33)
+		panic("No bl33 found in FIP image\n");
+
+	if (!k3_ti_dm)
+		panic("No ti-dm binary found\n");
 
 	ti_sci = ti_sci_get_handle(NULL);
 	if (IS_ERR(ti_sci))
@@ -387,9 +392,9 @@ static int k3_r5_start_image(void)
 		return PTR_ERR(elf);
 	}
 
-	err = elf_load(elf);
-	if (err) {
-		pr_err("Cannot load ELF image %pe\n", ERR_PTR(err));
+	ret = elf_load(elf);
+	if (ret) {
+		pr_err("Cannot load ELF image %pe\n", ERR_PTR(ret));
 		elf_close(elf);
 	}
 

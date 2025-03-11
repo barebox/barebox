@@ -248,11 +248,25 @@ static int load_fip(const char *filename, off_t offset)
 {
 	struct fip_state *fip;
 	struct fip_image_desc *desc;
+	unsigned char shasum[SHA256_DIGEST_SIZE];
+	int ret;
 
 	fip = fip_image_open(filename, offset);
 	if (IS_ERR(fip)) {
 		pr_err("Cannot open FIP image: %pe\n", fip);
 		return PTR_ERR(fip);
+	}
+
+	if (IS_ENABLED(CONFIG_FIRMWARE_VERIFY_NEXT_IMAGE)) {
+		ret = fip_sha256(fip, shasum);
+		if (ret) {
+			pr_err("Cannot calc fip sha256: %pe\n", ERR_PTR(ret));
+			return ret;
+		}
+
+		ret = firmware_next_image_check_sha256(shasum, true);
+		if (ret)
+			return ret;
 	}
 
 	fip_for_each_desc(fip, desc) {

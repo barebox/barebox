@@ -16,6 +16,7 @@ config MACH_K3_CORTEX_R5
 	select ELF
 	select K3_DDRSS
 	select FIP
+	select HAVE_FIRMWARE_VERIFY_NEXT_IMAGE
 	depends on 32BIT
 	select ARM_USE_COMPRESSED_DTB
 	default y

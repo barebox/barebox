@@ -34,6 +34,8 @@ pbl-firmware-$(CONFIG_ARCH_RK3588) += rk3588-bl32.bin
 pbl-firmware-$(CONFIG_ARCH_RK3399) += rk3399-bl32.bin
 endif
 
+firmware-$(CONFIG_FIRMWARE_NEXT_IMAGE) += next-image.bin
+
 firmware-$(CONFIG_DRIVER_NET_FSL_FMAN) += fsl_fman_ucode_ls1046_r1.0_106_4_18.bin
 
 fw-external-$(CONFIG_FIRMWARE_LS1028A_ATF) += ls1028a-bl31.bin

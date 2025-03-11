@@ -25,6 +25,7 @@
 #include <fs.h>
 #include <linux/kernel.h>
 #include <linux/list.h>
+#include <digest.h>
 
 #include <fip.h>
 #include <fiptool.h>
@@ -169,6 +170,7 @@ static int fip_do_parse_buf(struct fip_state *fip, void *buf, size_t size,
 	int terminated = 0;
 
 	fip->buffer = buf;
+	fip->bufsize = size;
 
 	bufend = fip->buffer + size;
 
@@ -579,7 +581,6 @@ struct fip_state *fip_image_open(const char *filename, size_t offset)
 	close(fd);
 
 	return fip_state;
-
 err:
 	list_for_each_entry_safe(toc_entry_list, tmp, &toc_entries, list)
 		free(toc_entry_list);
@@ -588,4 +589,24 @@ err:
 	fip_free(fip_state);
 
 	return ERR_PTR(ret);
+}
+
+int fip_sha256(struct fip_state *fip, char *hash)
+{
+	struct digest *d;
+	int ret;
+
+	d = digest_alloc_by_algo(HASH_ALGO_SHA256);
+	if (!d)
+		return -ENOSYS;
+
+	digest_init(d);
+
+	digest_update(d, fip->buffer, fip->bufsize);
+
+	ret = digest_final(d, hash);
+
+	digest_free(d);
+
+	return ret;
 }

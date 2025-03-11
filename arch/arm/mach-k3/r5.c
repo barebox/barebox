@@ -288,50 +288,15 @@ static void do_dfu(void)
 	struct usbgadget_funcs funcs = {};
 	int ret;
 	struct stat s;
-	ssize_t size;
 
 	funcs.flags |= USBGADGET_DFU;
-	funcs.dfu_opts = "/optee.bin(optee)c,"
-			 "/bl31.bin(tfa)c,"
-			 "/ti-dm.bin(ti-dm)c,"
-			 "/barebox.bin(barebox)cs,"
-			 "/fip.img(fip)cs";
+	funcs.dfu_opts = "/fip.img(fip)cs";
 
 	ret = usbgadget_prepare_register(&funcs);
 	if (ret)
 		goto err;
 
 	while (1) {
-		if (!have_bl32) {
-			size = read_file_into_buf("/optee.bin", BL32_ADDRESS, SZ_32M);
-			if (size > 0) {
-				printf("Downloaded OP-TEE\n");
-				have_bl32 = true;
-			}
-		}
-
-		if (!have_bl31) {
-			size = read_file_into_buf("/bl31.bin", BL31_ADDRESS, SZ_32M);
-			if (size > 0) {
-				printf("Downloaded TF-A\n");
-				have_bl31 = true;
-			}
-		}
-
-		if (!k3_ti_dm) {
-			ret = read_file_2("/ti-dm.bin", &size, &k3_ti_dm, FILESIZE_MAX);
-			if (!ret) {
-				printf("Downloaded TI-DM\n");
-			}
-		}
-
-		size = read_file_into_buf("/barebox.bin", BAREBOX_ADDRESS, SZ_32M);
-		if (size > 0) {
-			have_bl33 = true;
-			printf("Downloaded barebox image, DFU done\n");
-			break;
-		}
-
 		ret = stat("/fip.img", &s);
 		if (!ret) {
 			printf("Downloaded FIP image, DFU done\n");
@@ -352,44 +317,11 @@ err:
 
 static int load_images(void)
 {
-	ssize_t size;
 	int err;
 
 	err = load_fip("/boot/k3.fip", 0);
 	if (!err)
 		return 0;
-
-	size = read_file_into_buf("/boot/optee.bin", BL32_ADDRESS, SZ_32M);
-	if (size < 0) {
-		if (size != -ENOENT) {
-			pr_err("Cannot load optee.bin: %pe\n", ERR_PTR(size));
-			return size;
-		}
-		pr_info("optee.bin not found, continue without\n");
-	} else {
-		pr_debug("Loaded optee.bin (size %u) to 0x%p\n", size, BL32_ADDRESS);
-	}
-
-	size = read_file_into_buf("/boot/barebox.bin", BAREBOX_ADDRESS, SZ_32M);
-	if (size < 0) {
-		pr_err("Cannot load barebox.bin: %pe\n", ERR_PTR(size));
-		return size;
-	}
-	pr_debug("Loaded barebox.bin (size %u) to 0x%p\n", size, BAREBOX_ADDRESS);
-
-	size = read_file_into_buf("/boot/bl31.bin", BL31_ADDRESS, SZ_32M);
-	if (size < 0) {
-		pr_err("Cannot load bl31.bin: %pe\n", ERR_PTR(size));
-		return size;
-	}
-	pr_debug("Loaded bl31.bin (size %u) to 0x%p\n", size, BL31_ADDRESS);
-
-	err = read_file_2("/boot/ti-dm.bin", &size, &k3_ti_dm, FILESIZE_MAX);
-	if (err) {
-		pr_err("Cannot load ti-dm.bin: %pe\n", ERR_PTR(err));
-		return err;
-	}
-	pr_debug("Loaded ti-dm.bin (size %u)\n", size);
 
 	return 0;
 }

@@ -1,0 +1,126 @@
+#!/bin/bash
+
+set -e
+
+myname=${0##*/}
+
+usage() {
+	cat >&2 << EOL
+
+Sign an image suitable for authenticating with the K3 ROM API
+Usage:
+$myname options <INFILE>
+options:
+	--key <KEYFILE>	The key to sign the image with
+	--out <OUTFILE>	Write output to OUTFILE
+	--help		This help
+EOL
+	exit 1
+}
+
+TEMP=$(getopt -o '' --long 'out:,key:,help' -n 'k3img' -- "$@")
+
+if [ $? -ne 0 ]; then
+	echo 'Terminating...' >&2
+	exit 1
+fi
+
+# Note the quotes around "$TEMP": they are essential!
+eval set -- "$TEMP"
+unset TEMP
+
+while true; do
+        case "$1" in
+	'--out')
+		out="$2"
+		shift 2
+		continue
+	;;
+	'--key')
+		key="$2"
+		shift 2
+		continue
+	;;
+	'--help')
+		usage
+		continue
+	;;
+	'--')
+		shift
+		break
+	;;
+	*)
+		echo 'Internal error!' >&2
+		exit 1
+	;;
+	esac
+done
+
+if [ $# = 0 ]; then
+	echo "No input file given"
+	usage
+fi
+
+in=$1
+
+if [ -z "$out" ]; then
+	out=$in.cert
+fi
+
+if [ -z "$key" ]; then
+	echo "No key given (--key)"
+	exit 1
+fi
+
+filesha=$(sha512sum $in | sed 's/ .*//')
+filesize=$(stat -c%s $in)
+
+TMPDIR="$(mktemp -d)"
+trap 'rm -rf -- "$TMPDIR"' EXIT
+
+certcfg=${TMPDIR}/certcfg
+cert=${TMPDIR}/cert
+
+cat > $certcfg <<EndOfHereDocument
+[ req ]
+distinguished_name     = req_distinguished_name
+x509_extensions        = v3_ca
+prompt                 = no
+dirstring_type         = nobmp
+
+[ req_distinguished_name ]
+C                      = US
+ST                     = TX
+L                      = Dallas
+O                      = Texas Instruments Incorporated
+OU                     = Processors
+CN                     = TI Support
+emailAddress           = support@ti.com
+
+[ v3_ca ]
+basicConstraints       = CA:true
+1.3.6.1.4.1.294.1.3    = ASN1:SEQUENCE:swrv
+1.3.6.1.4.1.294.1.34   = ASN1:SEQUENCE:sysfw_image_integrity
+1.3.6.1.4.1.294.1.35   = ASN1:SEQUENCE:sysfw_image_load
+1.3.6.1.4.1.294.1.37   = ASN1:SEQUENCE:firewall
+
+[ swrv ]
+swrv = INTEGER:1
+
+[ sysfw_image_integrity ]
+shaType                = OID:2.16.840.1.101.3.4.2.3
+shaValue               = FORMAT:HEX,OCT:$filesha
+imageSize              = INTEGER:$filesize
+
+[ sysfw_image_load ]
+destAddr = FORMAT:HEX,OCT:00000000
+authInPlace = INTEGER:0x2
+
+[ firewall ]
+numFirewallRegions = INTEGER:0
+
+EndOfHereDocument
+
+openssl req -new -x509 -key $key -nodes -outform DER -out $cert -config $certcfg -sha512
+
+cat $cert $in > $out

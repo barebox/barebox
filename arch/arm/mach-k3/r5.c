@@ -244,6 +244,64 @@ static uuid_t uuid_ti_dm_fw = UUID_TI_DM_FW;
 static uuid_t uuid_bl33 = UUID_NON_TRUSTED_FIRMWARE_BL33;
 static uuid_t uuid_bl32 = UUID_SECURE_PAYLOAD_BL32;
 
+static struct fip_state *fip_image_load_auth(const char *filename, size_t offset)
+{
+	struct fip_state *fip = NULL;
+	int fd;
+	unsigned int maxsize = SZ_4M;
+	size_t size;
+	void *buf = NULL;
+	int ret;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0)
+		return ERR_PTR(-errno);
+
+	if (offset) {
+		loff_t pos;
+		pos = lseek(fd, offset, SEEK_SET);
+		if (pos < 0) {
+			ret = -errno;
+			goto err;
+		}
+	}
+
+	buf = xzalloc(maxsize);
+
+	/*
+	 * There is no easy way to determine the size of the certificates the ROM
+	 * takes as images, so the best we can do here is to assume a maximum size
+	 * and load this.
+	 */
+	ret = read_full(fd, buf, maxsize);
+	if (ret < 0)
+		goto err;
+
+	size = maxsize;
+
+	ret = k3_authenticate_image(&buf, &size);
+	if (ret) {
+		pr_err("Failed to authenticate %s\n", filename);
+		goto err;
+	}
+
+	fip = fip_new();
+	ret = fip_parse_buf(fip, buf, size, NULL);
+	if (ret)
+		goto err;
+
+	close(fd);
+
+	return fip;
+err:
+	if (fip)
+		fip_free(fip);
+	close(fd);
+	free(buf);
+
+	return ERR_PTR(ret);
+}
+
 static int load_fip(const char *filename, off_t offset)
 {
 	struct fip_state *fip;
@@ -251,7 +309,11 @@ static int load_fip(const char *filename, off_t offset)
 	unsigned char shasum[SHA256_DIGEST_SIZE];
 	int ret;
 
-	fip = fip_image_open(filename, offset);
+	if (IS_ENABLED(CONFIG_ARCH_K3_AUTHENTICATE_IMAGE))
+		fip = fip_image_load_auth(filename, offset);
+	else
+		fip = fip_image_open(filename, offset);
+
 	if (IS_ERR(fip)) {
 		pr_err("Cannot open FIP image: %pe\n", fip);
 		return PTR_ERR(fip);

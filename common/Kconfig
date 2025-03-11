@@ -768,6 +768,7 @@ config BOOTM_FORCE_SIGNED_IMAGES
 config BOOTM_OPTIONAL_SIGNED_IMAGES
 	def_bool !BOOTM_FORCE_SIGNED_IMAGES
 	select HAS_INSECURE_DEFAULTS
+	depends on BOOTM
 	help
 	  With this option enabled, barebox can be reconfigured to not verify signed
 	  images. It's the board code's responsibility to call the function

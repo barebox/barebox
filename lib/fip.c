@@ -275,7 +275,7 @@ int fip_parse(struct fip_state *fip,
 		return ret;
 	}
 
-	ret = fip_parse_buf(fip, buf, size, toc_header_out);
+	ret = fip_do_parse_buf(fip, buf, size, toc_header_out);
 
 	if (ret)
 		free(buf);

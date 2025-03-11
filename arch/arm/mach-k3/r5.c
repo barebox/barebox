@@ -319,6 +319,7 @@ static int do_dfu(void)
 			ret = load_fip("/fip.img", 0);
 			if (!ret)
 				return 0;
+			unlink("/fip.img");
 		}
 
 		command_slice_release();

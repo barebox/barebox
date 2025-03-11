@@ -37,4 +37,11 @@ config MACH_BEAGLEPLAY
 	help
 	  Say Y here if you are using a TI AM62x based BeaglePlay board
 
+config ARCH_K3_COMMAND_AUTHENTICATE
+	bool "k3_authenticate_image command"
+	depends on COMMAND_SUPPORT
+	help
+	  Add k3_authenticate_image command to test authenticating images
+	  against the K3 ROM API.
+
 endmenu

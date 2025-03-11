@@ -13,6 +13,7 @@ bool k3_boot_is_emmc(void);
 u64 am625_sdram_size(void);
 void am625_register_dram(void);
 void am625_enable_32k_crystal(void);
+int k3_authenticate_image(void **buf, size_t *size);
 
 #define K3_EMMC_BOOTPART_TIBOOT3_BIN_SIZE	SZ_1M
 

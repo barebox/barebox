@@ -56,6 +56,9 @@ struct dsa_switch_ops {
 	int (*phy_read)(struct dsa_switch *ds, int port, int regnum);
 	int (*phy_write)(struct dsa_switch *ds, int port, int regnum, u16 val);
 	void (*adjust_link)(struct eth_device *dev);
+
+	/* enable/disable forwarding between all ports on the switch */
+	int (*set_forwarding)(struct dsa_switch *ds, bool enable);
 };
 
 struct dsa_port {
@@ -84,6 +87,7 @@ struct dsa_switch {
 	struct mii_bus *slave_mii_bus;
 	u32 phys_mii_mask;
 	void *priv;
+	u32 forwarding_enable;
 };
 
 static inline struct dsa_port *dsa_to_port(struct dsa_switch *ds, int p)

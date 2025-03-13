@@ -424,15 +424,18 @@ static int transfer_first_stage(libusb_device_handle * handle, struct arg_state 
 
 static int transfer_other_files(libusb_device_handle *handle, struct arg_state *args)
 {
-	uint32_t *buffer = NULL;
-	int bufsize = 128 * sizeof (*buffer);
+	uint32_t *buffer;
+	int bufsize;
 	int numfailures = 0;	/* build in some reliablity */
 	int maxfailures = 3;
 	int transLen = 0;
 	int curfile = 1;	/* skip the first file */
 	size_t len;
 
-	buffer = calloc(bufsize, sizeof(unsigned char));
+	buffer = calloc(128, sizeof(*buffer));
+	if (!buffer)
+		goto fail;
+	bufsize = 128 * sizeof (*buffer);
 
 	/* handle the state machine for the X-Loader */
 	while (curfile < args->numfiles) {

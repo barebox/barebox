@@ -6,22 +6,13 @@
 #include <init.h>
 #include <linux/kernel.h>
 #include <environment.h>
-#include <mfd/pca9450.h>
 #include <deep-probe.h>
 #include <mach/imx/bbu.h>
 #include <linux/pinctrl/consumer.h>
 
-static void phycore_imx93_init_pmic(struct regmap *map)
-{
-	/* set WDOG_B_CFG to cold reset */
-	regmap_write(map, PCA9450_RESET_CTRL, 0xA1);
-}
-
 static int phycore_imx93_probe(struct device *dev)
 {
 	struct device_node *np;
-
-	pca9450_register_init_callback(phycore_imx93_init_pmic);
 
 	/*
 	 * The phy on the EQOS has its MDIO lines connected to the FEC. The phy

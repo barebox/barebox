@@ -338,6 +338,9 @@ static int fit_verify_signature(struct device_node *sig_node, const void *fit)
 
 	ret = fit_digest(fit, digest, &inc_nodes, &exc_props, hashed_strings_start,
 			 hashed_strings_size);
+	if (ret)
+		goto out_sl;
+
 	hash = xzalloc(digest_length(digest));
 	digest_final(digest, hash);
 

@@ -979,20 +979,3 @@ int asprintf(char **strp, const char *fmt, ...)
 	return len;
 }
 EXPORT_SYMBOL(asprintf);
-
-char *basprintf(const char *fmt, ...)
-{
-	va_list ap;
-	char *p;
-	int len;
-
-	va_start(ap, fmt);
-	len = vasprintf(&p, fmt, ap);
-	va_end(ap);
-
-	if (len < 0)
-		return NULL;
-
-	return p;
-}
-EXPORT_SYMBOL(basprintf);

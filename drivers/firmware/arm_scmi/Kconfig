@@ -58,6 +58,7 @@ config ARM_SCMI_TRANSPORT_OPTEE
 
 config ARM_SCMI_TRANSPORT_SMC
 	bool "SCMI transport based on SMC"
+	depends on ARM
 	select ARM_SMCCC
 	select ARM_SCMI_HAVE_TRANSPORT
 	select ARM_SCMI_HAVE_SHMEM

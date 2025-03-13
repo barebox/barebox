@@ -110,7 +110,7 @@ static int lm75_probe(struct device *dev)
 	int new, ret;
 	enum lm75_type kind;
 
-	kind = (enum lm75_type)device_get_match_data(dev);
+	kind = (enum lm75_type)(uintptr_t)device_get_match_data(dev);
 	if (kind == unknown)
 		return -ENODEV;
 

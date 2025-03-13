@@ -28,19 +28,6 @@
 # define FW_CFG_DMA_OFF 0x10
 #endif
 
-/* fw_cfg DMA commands */
-#define FW_CFG_DMA_CTL_ERROR   0x01
-#define FW_CFG_DMA_CTL_READ    0x02
-#define FW_CFG_DMA_CTL_SKIP    0x04
-#define FW_CFG_DMA_CTL_SELECT  0x08
-#define FW_CFG_DMA_CTL_WRITE   0x10
-
-struct fw_cfg_dma {
-	__be32 control;
-	__be32 length;
-	__be64 address;
-} __packed;
-
 /* fw_cfg device i/o register addresses */
 struct fw_cfg {
 	struct resource *iores;
@@ -51,7 +38,7 @@ struct fw_cfg {
 	loff_t next_read_offset;
 	u32 sel;
 	bool is_mmio;
-	struct fw_cfg_dma __iomem *acc_virt;
+	struct fw_cfg_dma_access __iomem *acc_virt;
 	dma_addr_t acc_dma;
 };
 
@@ -172,7 +159,7 @@ static ssize_t fw_cfg_write(struct cdev *cdev, const void *buf, size_t count,
 {
 	struct fw_cfg *fw_cfg = to_fw_cfg(cdev);
 	struct device *dev = cdev->dev;
-	struct fw_cfg_dma __iomem *acc = fw_cfg->acc_virt;
+	struct fw_cfg_dma_access __iomem *acc = fw_cfg->acc_virt;
 	void *dma_buf;
 	dma_addr_t mapping;
 	int ret = 0;

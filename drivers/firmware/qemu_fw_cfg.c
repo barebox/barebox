@@ -263,7 +263,7 @@ static int fw_cfg_probe(struct device *dev)
 	fw_cfg->acc_virt = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					      sizeof(*fw_cfg->acc_virt), &fw_cfg->acc_dma);
 
-	fw_cfg->cdev.name = basprintf("fw_cfg%d", cdev_find_free_index("fw_cfg"));
+	fw_cfg->cdev.name = "fw_cfg";
 	fw_cfg->cdev.flags = DEVFS_IS_CHARACTER_DEV;
 	fw_cfg->cdev.size = 0;
 	fw_cfg->cdev.ops = &fw_cfg_ops;

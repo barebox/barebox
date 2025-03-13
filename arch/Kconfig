@@ -62,5 +62,47 @@ config ARCH_DMA_DEFAULT_COHERENT
 config ARCH_HAS_ASAN_FIBER_API
 	bool
 
+config ARCH_HAS_STACK_DUMP
+	bool
+
+config ARCH_HAS_DATA_ABORT_MASK
+	bool
+
+config ARCH_HAS_ZERO_PAGE
+	bool
+
+config HAVE_EFFICIENT_UNALIGNED_ACCESS
+	bool
+
 config HAVE_ARCH_BOARD_GENERIC_DT
+	bool
+
+config HAVE_MOD_ARCH_SPECIFIC
+	bool
+	help
+	  The arch uses struct mod_arch_specific to store data.  Many arches
+	  just need a simple module loader without arch specific data - those
+	  should not enable this.
+
+config ARCH_HAS_SJLJ
+	bool
+	help
+	  Architecture has support implemented for setjmp()/longjmp()/initjmp()
+
+config ARCH_DMA_ADDR_T_64BIT
+	bool
+
+config ARCH_USE_SYM_ANNOTATIONS
+	bool
+	help
+	  This is selected by architectures that exclusively use the new SYM_
+	  macros in their assembly code and not the deprecated ENTRY/PROC.
+
+config HAS_DEBUG_LL
+	bool
+
+config HAVE_ARCH_KASAN
+	bool
+
+config ARCH_HAS_UBSAN_SANITIZE_ALL
 	bool

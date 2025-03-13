@@ -35,11 +35,6 @@ config HAS_DMA
 	  Drivers that depend on a DMA implementation can depend on this
 	  config, so that you don't get a compilation error.
 
-config ARCH_HAS_SJLJ
-	bool
-	help
-	  Architecture has support implemented for setjmp()/longjmp()/initjmp()
-
 config GENERIC_GPIO
 	bool
 
@@ -83,9 +78,6 @@ config MENUTREE
 	bool
 	select GLOB
 	select GLOB_SORT
-
-config ARCH_DMA_ADDR_T_64BIT
-	bool
 
 config BAREBOX_UPDATE_IMX_NAND_FCB
 	bool
@@ -358,13 +350,6 @@ config MODULES
 
 	  As modules can't be signed, loading external modules is not
 	  recommended for secure systems.
-
-config HAVE_MOD_ARCH_SPECIFIC
-	bool
-	help
-	  The arch uses struct mod_arch_specific to store data.  Many arches
-	  just need a simple module loader without arch specific data - those
-	  should not enable this.
 
 config KALLSYMS
 	depends on HAS_KALLSYMS
@@ -1359,9 +1344,3 @@ source "common/boards/Kconfig"
 config DDR_SPD
 	bool
 	select CRC_ITU_T
-
-config ARCH_USE_SYM_ANNOTATIONS
-	bool
-	help
-	  This is selected by architectures that exclusively use the new SYM_
-	  macros in their assembly code and not the deprecated ENTRY/PROC.

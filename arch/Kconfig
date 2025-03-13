@@ -9,19 +9,6 @@
 #
 source "arch/$(SRCARCH)/Kconfig"
 
-config ARCH_HAS_CTRLC
-	bool
-
-#
-# Select this option if the architecture assumes DMA devices are coherent
-# by default.
-#
-config ARCH_DMA_DEFAULT_COHERENT
-	bool
-
-config ARCH_HAS_ASAN_FIBER_API
-	bool
-
 config ARCH_LINUX_NAME
 	string
 	default "$(SRCARCH)"
@@ -29,9 +16,6 @@ config ARCH_LINUX_NAME
 config ARCH_MKIMAGE_NAME
 	string
 	default "invalid"
-
-config HAVE_ARCH_BOARD_GENERIC_DT
-	bool
 
 menu "General architecture-dependent options"
 
@@ -64,3 +48,19 @@ config BOARD_GENERIC_FIT
 	  installed on the build host.
 
 endmenu
+
+config ARCH_HAS_CTRLC
+	bool
+
+#
+# Select this option if the architecture assumes DMA devices are coherent
+# by default.
+#
+config ARCH_DMA_DEFAULT_COHERENT
+	bool
+
+config ARCH_HAS_ASAN_FIBER_API
+	bool
+
+config HAVE_ARCH_BOARD_GENERIC_DT
+	bool

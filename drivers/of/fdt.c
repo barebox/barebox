@@ -378,6 +378,9 @@ static void *memalign_realloc(void *orig, size_t oldsize, size_t newsize)
 	int align;
 	void *newbuf;
 
+	if (newsize > MALLOC_MAX_SIZE)
+		return NULL;
+
 	/*
 	 * ARM Linux uses a single 1MiB section (with 1MiB alignment)
 	 * for mapping the devicetree, so we are not allowed to cross

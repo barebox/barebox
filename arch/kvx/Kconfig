@@ -23,9 +23,6 @@ config KVX
 	select RESET_SOURCE
 	default y
 
-config PHYS_ADDR_T_64BIT
-	bool
-
 config 64BIT
 	bool
 	select ARCH_DMA_ADDR_T_64BIT

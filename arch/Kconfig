@@ -89,6 +89,10 @@ config ARCH_HAS_SJLJ
 	help
 	  Architecture has support implemented for setjmp()/longjmp()/initjmp()
 
+
+config PHYS_ADDR_T_64BIT
+	bool
+
 config ARCH_DMA_ADDR_T_64BIT
 	bool
 

@@ -32,9 +32,6 @@ config ARCH_TEXT_BASE
 
 menu "Sandbox specific settings"
 
-config PHYS_ADDR_T_64BIT
-	bool
-
 config CC_IS_64BIT
 	def_bool $(success,$(srctree)/scripts/gcc-64bitptr.sh $(CC))
 

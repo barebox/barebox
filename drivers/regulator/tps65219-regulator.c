@@ -10,6 +10,7 @@
 // "J Keerthy <j-keerthy@ti.com>"
 //
 
+#include <linux/kernel.h>
 #include <linux/mfd/tps65219.h>
 #include <of_device.h>
 #include <linux/regmap.h>

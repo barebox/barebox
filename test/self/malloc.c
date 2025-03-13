@@ -122,7 +122,8 @@ static void test_malloc(void)
 	p = expect_alloc_ok(malloc(0));
 	tmp = expect_alloc_ok(malloc(0));
 
-	__expect_cond(p != tmp, true, "allocate distinct 0-size buffers", __func__, __LINE__);
+	__expect_cond(p == tmp, true, "allocate equal 0-size buffers", __func__, __LINE__);
+	__expect_cond(p == ZERO_SIZE_PTR, true, "get ZERO_SIZE_PTR for 0-size buffers", __func__, __LINE__);
 
 	free(p);
 	free(tmp);

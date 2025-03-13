@@ -56,12 +56,9 @@ static int do_tftpb(int argc, char *argv[])
 		dest = argv[optind];
 
 	if (tftp_push)
-		dest = freep = basprintf("%s/%s", TFTP_MOUNT_PATH, dest);
+		dest = freep = xasprintf("%s/%s", TFTP_MOUNT_PATH, dest);
 	else
-		source = freep = basprintf("%s/%s", TFTP_MOUNT_PATH, source);
-
-	if (!freep)
-		return -ENOMEM;
+		source = freep = xasprintf("%s/%s", TFTP_MOUNT_PATH, source);
 
 	ret = make_directory(TFTP_MOUNT_PATH);
 	if (ret)

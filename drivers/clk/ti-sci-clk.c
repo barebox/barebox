@@ -247,9 +247,7 @@ static int _sci_clk_build(struct sci_clk_provider *provider,
 	int i;
 	int ret = 0;
 
-	name = basprintf("clk:%d:%d", sci_clk->dev_id, sci_clk->clk_id);
-	if (!name)
-		return -ENOMEM;
+	name = xasprintf("clk:%d:%d", sci_clk->dev_id, sci_clk->clk_id);
 
 	init.name = name;
 
@@ -274,13 +272,9 @@ static int _sci_clk_build(struct sci_clk_provider *provider,
 		for (i = 0; i < sci_clk->num_parents; i++) {
 			char *parent_name;
 
-			parent_name = basprintf("clk:%d:%d",
+			parent_name = xasprintf("clk:%d:%d",
 						sci_clk->dev_id,
 						sci_clk->clk_id + 1 + i);
-			if (!parent_name) {
-				ret = -ENOMEM;
-				goto err;
-			}
 			parent_names[i] = parent_name;
 		}
 		init.parent_names = (void *)parent_names;

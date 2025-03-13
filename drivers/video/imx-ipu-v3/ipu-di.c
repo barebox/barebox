@@ -729,9 +729,7 @@ int ipu_di_init(struct ipu_soc *ipu, struct device *dev, int id,
 	ipu_di_write(di, 0x10, DI_BS_CLKGEN0);
 
 	di->clk_di_pixel.parent_names = di->di_parent_names;
-	di->clk_name = basprintf("%s_di%d_pixel", dev_name(dev), id);
-	if (!di->clk_name)
-		return -ENOMEM;
+	di->clk_name = xasprintf("%s_di%d_pixel", dev_name(dev), id);
 
 	di->clk_di_pixel.ops = &clk_di_ops;
 	di->clk_di_pixel.num_parents = 2;

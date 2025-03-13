@@ -199,9 +199,7 @@ int cdev_fdopen(struct cdev *cdev, unsigned long flags)
 	if (IS_ERR(cdev))
 		return PTR_ERR(cdev);
 
-	path = basprintf("/dev/%s", cdev->name);
-	if (!path)
-		return -ENOMEM;
+	path = xasprintf("/dev/%s", cdev->name);
 
 	fd = open(path, flags);
 

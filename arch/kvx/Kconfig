@@ -14,7 +14,6 @@ config KVX
 	select FITIMAGE
 	select GENERIC_FIND_NEXT_BIT
 	select ARCH_HAS_SJLJ
-	select HAS_CACHE
 	select HAS_DMA
 	select LIBFDT
 	select MFD_SYSCON

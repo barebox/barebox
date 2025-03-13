@@ -3,7 +3,6 @@
 config OPENRISC
 	bool
 	select OFTREE
-	select HAS_CACHE
 	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	select GENERIC_FIND_NEXT_BIT
 	select ARCH_HAS_SJLJ

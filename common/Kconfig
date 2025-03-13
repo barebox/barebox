@@ -27,14 +27,6 @@ config HAS_KALLSYMS
 config HAS_MODULES
 	bool
 
-config HAS_CACHE
-	bool
-	help
-	  This allows you to run "make ARCH=sandbox allyesconfig".
-
-	  Drivers that depend on a cache implementation can depend on this
-	  config, so that you don't get a compilation error.
-
 config HAS_DMA
 	bool
 	help

@@ -368,6 +368,11 @@ ifeq ($(ARCH),um)
        SRCARCH := sandbox
 endif
 
+export cross_compiling :=
+ifneq ($(SRCARCH),$(SUBARCH))
+cross_compiling := 1
+endif
+
 KCONFIG_CONFIG	?= .config
 
 PKG_CONFIG ?= pkg-config

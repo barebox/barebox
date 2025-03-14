@@ -21,7 +21,6 @@
 #include <linux/bitmap.h>
 #include <driver.h>
 #include <linux/device.h>
-#include <soc/ti/ti_sci_protocol.h>
 
 #include "k3-udma-hwdef.h"
 #include "k3-psil-priv.h"

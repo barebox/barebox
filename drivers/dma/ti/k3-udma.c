@@ -2678,7 +2678,7 @@ static int k3_udma_probe(struct device *dev)
 		uc->config.mapped_channel_id = -1;
 		uc->config.default_flow_id = -1;
 		uc->config.dir = DMA_MEM_TO_MEM;
-		sprintf(uc->name, "UDMA chan%d\n", i);
+		snprintf(uc->name, sizeof(uc->name), "UDMA chan%d\n", i);
 		if (!i)
 			uc->in_use = true;
 	}

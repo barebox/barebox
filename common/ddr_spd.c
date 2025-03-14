@@ -927,10 +927,8 @@ static void ddr3_spd_print(uint8_t *record)
 	    && !((s->mdate[0] == 0x0) && (s->mdate[1] == 0x0)))
 		spd_print_manufacturing_date(s->mdate[0], s->mdate[1]);
 
-	if ((s->sernum[0] != s->sernum[1])
-	    && (s->sernum[0] != s->sernum[2])
-	    && (s->sernum[1] != s->sernum[3])
-	    && ((s->sernum[0] != 0xff) || (s->sernum[0] != 0x0)))
+	if (memcmp(s->sernum, "\xFF\xFF\xFF\xFF", 4) &&
+	    memcmp(s->sernum, "\x00\x00\x00\x00", 4))
 		printf("%-48s 0x%02X%02X%02X%02X\n", "Assembly Serial Number",
 		       s->sernum[0], s->sernum[1], s->sernum[2], s->sernum[3]);
 

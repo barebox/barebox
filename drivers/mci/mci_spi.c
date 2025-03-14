@@ -137,7 +137,7 @@ static uint mmc_spi_readdata(struct mmc_spi_host *host, void *xbuf,
 				uint32_t bcnt, uint32_t bsize)
 {
 	uint8_t *buf = xbuf;
-	uint8_t r1;
+	uint8_t r1 = R1_SPI_ERROR;
 	uint16_t crc;
 	int i;
 

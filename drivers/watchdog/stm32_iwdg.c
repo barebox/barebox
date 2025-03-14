@@ -62,6 +62,9 @@ static int stm32_iwdg_start(struct stm32_iwdg *wd, unsigned int timeout)
 
 	/* The prescaler is align on power of 2 and start at 2 ^ PR_SHIFT. */
 	presc = roundup_pow_of_two(presc);
+	if (!presc)
+		return -ERANGE;
+
 	iwdg_pr = presc <= 1 << PR_SHIFT ? 0 : ilog2(presc) - PR_SHIFT;
 	iwdg_rlr = ((timeout * wd->rate) / presc) - 1;
 

@@ -743,10 +743,10 @@ static unsigned long rk3588_calc_dclk(unsigned long child_clk, unsigned long max
  */
 static unsigned long rk3588_calc_cru_cfg(struct vop2_video_port *vp, int id,
 					 int *dclk_core_div, int *dclk_out_div,
-					 int *if_pixclk_div, int *if_dclk_div)
+					 int *if_pixclk_div, int *if_dclk_div,
+					 u32 crtc_clock)
 {
 	struct vop2 *vop2 = vp->vop2;
-	u32 crtc_clock = 0;
 	unsigned long v_pixclk = crtc_clock * 1000LL; /* video timing pixclk */
 	unsigned long dclk_core_rate = v_pixclk >> 2;
 	unsigned long dclk_rate = v_pixclk;
@@ -852,11 +852,11 @@ static unsigned long rk3588_set_intf_mux(struct vop2_video_port *vp, int id, u32
 					 unsigned int clock)
 {
 	struct vop2 *vop2 = vp->vop2;
-	int dclk_core_div, dclk_out_div, if_pixclk_div, if_dclk_div;
+	int dclk_core_div, dclk_out_div = 0, if_pixclk_div = 0, if_dclk_div = 0;
 	u32 die, dip, div, vp_clk_div, val;
 
 	clock = rk3588_calc_cru_cfg(vp, id, &dclk_core_div, &dclk_out_div,
-				    &if_pixclk_div, &if_dclk_div);
+				    &if_pixclk_div, &if_dclk_div, clock);
 	if (!clock)
 		return 0;
 

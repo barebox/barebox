@@ -37,7 +37,7 @@ static int strverscmp_assert_one(const char *lhs, const char *rhs, int expect)
 
 static int __strverscmp_assert(char *expr)
 {
-	const char *token, *tokens[3];
+	const char *token, *tokens[3] = { "", "", "" };
 	int expect = -42;
 	int i = 0;
 

@@ -5,9 +5,9 @@
  */
 #define pr_fmt(fmt) "udma: " fmt
 
-#include <asm/cache.h>
 #include <io.h>
 #include <malloc.h>
+#include <stdio.h>
 #include <linux/bitops.h>
 #include <linux/sizes.h>
 #include <linux/printk.h>

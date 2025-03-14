@@ -384,7 +384,7 @@ static int fan53555_regulator_probe(struct device *dev)
 
 	di = xzalloc(sizeof(*di));
 
-	di->vendor = (enum fan53555_vendor)device_get_match_data(dev);
+	di->vendor = (enum fan53555_vendor)(uintptr_t)device_get_match_data(dev);
 
 	di->rdev.desc = &di->rdesc;
 	di->rdev.dev = dev;

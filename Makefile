@@ -410,6 +410,8 @@ KBUILD_HOSTCXXFLAGS := -Wall -O2 $(HOST_LFS_CFLAGS) $(HOSTCXXFLAGS)
 KBUILD_HOSTLDFLAGS  := $(HOST_LFS_LDFLAGS) $(HOSTLDFLAGS)
 KBUILD_HOSTLDLIBS   := $(HOST_LFS_LIBS) $(HOSTLDLIBS)
 
+ENVCC		:= $(CC)
+
 # Make variables (CC, etc...)
 CPP		= $(CC) -E
 ifneq ($(LLVM),)
@@ -572,6 +574,13 @@ CC_VERSION_TEXT = $(subst $(pound),,$(shell LC_ALL=C $(CC) --version 2>/dev/null
 
 ifneq ($(findstring clang,$(CC_VERSION_TEXT)),)
 include $(srctree)/scripts/Makefile.clang
+endif
+
+# allow scan-build to override the used compiler
+ifneq ($(CCC_ANALYZER_HTML),)
+ifneq ($(ENVCC),)
+CC = $(ENVCC)
+endif
 endif
 
 ifdef config-build

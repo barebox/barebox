@@ -320,7 +320,8 @@ static int io_init(struct ubi_device *ubi, int max_beb_per1024)
 
 	ubi_assert(ubi->hdrs_min_io_size > 0);
 	ubi_assert(ubi->hdrs_min_io_size <= ubi->min_io_size);
-	ubi_assert(ubi->min_io_size % ubi->hdrs_min_io_size == 0);
+	ubi_assert(ubi->hdrs_min_io_size &&
+		   ubi->min_io_size % ubi->hdrs_min_io_size == 0);
 
 	ubi->max_write_size = ubi->mtd->writebufsize;
 	/*

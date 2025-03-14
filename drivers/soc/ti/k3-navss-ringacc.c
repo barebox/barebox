@@ -5,6 +5,7 @@
  * Copyright (C) 2018 Texas Instruments Incorporated - https://www.ti.com
  */
 
+#include <linux/kernel.h>
 #include <driver.h>
 #include <xfuncs.h>
 #include <soc/ti/k3-navss-ringacc.h>

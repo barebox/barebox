@@ -2,3 +2,14 @@ config K3_ESM
 	bool
 	depends on ARCH_K3 && MACH_K3_CORTEX_R5
 	default y
+
+config TI_K3_RINGACC
+	tristate "K3 Ring accelerator Sub System"
+	depends on ARCH_K3 || COMPILE_TEST
+	help
+	  Say y here to support the K3 Ring accelerator module.
+	  The Ring Accelerator (RINGACC or RA)  provides hardware acceleration
+	  to enable straightforward passing of work between a producer
+	  and a consumer. There is one RINGACC module per NAVSS on TI AM65x SoCs
+	  If unsure, say N.
+

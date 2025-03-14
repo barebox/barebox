@@ -269,10 +269,8 @@ static int ltdc_probe(struct device *dev)
 	hw->regs = IOMEM(iores->start);
 
 	hw->pclk = clk_get(dev, NULL);
-	if (IS_ERR(hw->pclk)) {
-		dev_err(dev, "peripheral clock get error %d\n", ret);
-		return PTR_ERR(hw->pclk);
-	}
+	if (IS_ERR(hw->pclk))
+		return dev_errp_probe(dev, hw->pclk, "peripheral clock get\n");
 
 	for_each_available_child_of_node(dev->of_node, np) {
 		struct ltdc_fb *priv;

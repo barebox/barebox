@@ -21,9 +21,9 @@ ifdef CONFIG_MACH_K3_CORTEX_R5
 
 SYSFWDATA_am625=$(objtree)/arch/arm/mach-k3/combined-sysfw-cfg-am625.k3cfg
 DMDATA_am625=$(objtree)/arch/arm/mach-k3/combined-dm-cfg-am625.k3cfg
-SYSFW_am625_hs_fs=$(srctree)/firmware/ti-fs-firmware-am62x-hs-fs-enc.bin
-SYSFW_am625_gp=$(srctree)/firmware/ti-fs-firmware-am62x-gp.bin
-INNERDATA_am625=$(srctree)/firmware/ti-fs-firmware-am62x-hs-fs-cert.bin
+SYSFW_am625_hs_fs=$(FIRMWARE_DIR)/ti-fs-firmware-am62x-hs-fs-enc.bin
+SYSFW_am625_gp=$(FIRMWARE_DIR)/ti-fs-firmware-am62x-gp.bin
+INNERDATA_am625=$(FIRMWARE_DIR)/ti-fs-firmware-am62x-hs-fs-cert.bin
 KEY_custmpk=$(srctree)/arch/arm/mach-k3/custMpk.pem
 KEY_degenerate=$(srctree)/arch/arm/mach-k3/ti-degenerate-key.pem
 

@@ -2,9 +2,6 @@
 
 comment "Processor Type"
 
-config PHYS_ADDR_T_64BIT
-	bool
-
 config CPU_32
 	bool
 	select HAS_MODULES

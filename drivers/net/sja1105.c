@@ -1230,11 +1230,13 @@ static int sja1105_init_mii_settings(struct sja1105_private *priv)
 	return 0;
 }
 
-static void sja1105_setup_tagging(struct sja1105_private *priv, int port)
+static void sja1105_setup_tagging(struct sja1105_private *priv, int port,
+				  bool forward_all)
 {
 	struct sja1105_vlan_lookup_entry *vlan;
 	struct dsa_switch *ds = &priv->ds;
 	int cpu = ds->cpu_port;
+	u8 vlan_mask;
 
 	/* The CPU port is implicitly configured by
 	 * configuring the front-panel ports
@@ -1246,8 +1248,16 @@ static void sja1105_setup_tagging(struct sja1105_private *priv, int port)
 
 	priv->pvid[port] = DSA_8021Q_DIR_TX | DSA_8021Q_PORT(port);
 
-	vlan[port].vmemb_port	= BIT(port) | BIT(cpu);
-	vlan[port].vlan_bc	= BIT(port) | BIT(cpu);
+	if (forward_all) {
+		/* All ports in the same VLAN */
+		vlan_mask = (1 << ds->num_ports) - 1;
+	} else {
+		/* Only allow port ↔ CPU communication */
+		vlan_mask = BIT(port) | BIT(cpu);
+	}
+
+	vlan[port].vmemb_port	= vlan_mask;
+	vlan[port].vlan_bc	= vlan_mask;
 	vlan[port].tag_port	= BIT(cpu);
 	vlan[port].vlanid	= priv->pvid[port];
 	vlan[port].type_entry	= SJA1110_VLAN_D_TAG;
@@ -1269,7 +1279,7 @@ static int sja1105_init_vlan(struct sja1105_private *priv)
 	table->entry_count = ds->num_ports;
 
 	for (port = 0; port < ds->num_ports; port++)
-		sja1105_setup_tagging(priv, port);
+		sja1105_setup_tagging(priv, port, false);
 
 	return 0;
 }
@@ -1283,33 +1293,47 @@ sja1105_port_allow_traffic(struct sja1105_l2_forwarding_entry *l2_fwd,
 	l2_fwd[from].fl_domain  |= BIT(to);
 }
 
-static int sja1105_init_l2_forwarding(struct sja1105_private *priv)
+static int sja1105_init_l2_forwarding(struct sja1105_private *priv,
+				      bool forward_all)
 {
 	struct sja1105_l2_forwarding_entry *l2fwd;
 	struct dsa_switch *ds = &priv->ds;
 	struct sja1105_table *table;
 	int cpu = ds->cpu_port;
-	int i;
+	int i, j;
 
 	table = &priv->static_config.tables[BLK_IDX_L2_FORWARDING];
 
-	table->entries = calloc(SJA1105_MAX_L2_FORWARDING_COUNT,
-				table->ops->unpacked_entry_size);
-	if (!table->entries)
-		return -ENOMEM;
+	if (!table->entries) {
+		table->entries = calloc(SJA1105_MAX_L2_FORWARDING_COUNT,
+					table->ops->unpacked_entry_size);
+		if (!table->entries)
+			return -ENOMEM;
+	}
 
 	table->entry_count = SJA1105_MAX_L2_FORWARDING_COUNT;
 
 	l2fwd = table->entries;
 
-	/* First 5 entries define the forwarding rules */
-	for (i = 0; i < ds->num_ports; i++) {
-		if (i == cpu)
-			continue;
-
-		sja1105_port_allow_traffic(l2fwd, i, cpu);
-		sja1105_port_allow_traffic(l2fwd, cpu, i);
+	if (forward_all) {
+		/* Forwarding mode: All ports can talk to each other */
+		for (i = 0; i < ds->num_ports; i++) {
+			for (j = 0; j < ds->num_ports; j++) {
+				if (i == j)
+					continue;
+				sja1105_port_allow_traffic(l2fwd, i, j);
+			}
+		}
+	} else {
+		/* Default mode: Each port only forwards to/from the CPU */
+		for (i = 0; i < ds->num_ports; i++) {
+			if (i == cpu)
+				continue;
+			sja1105_port_allow_traffic(l2fwd, i, cpu);
+			sja1105_port_allow_traffic(l2fwd, cpu, i);
+		}
 	}
+
 	/* Next 8 entries define VLAN PCP mapping from ingress to egress.
 	 * Leave them unpopulated (implicitly 0) but present.
 	 */
@@ -1490,7 +1514,7 @@ static int sja1105_static_config_init(struct sja1105_private *priv)
 	rc = sja1105_init_mii_settings(priv);
 	if (rc < 0)
 		return rc;
-	rc = sja1105_init_l2_forwarding(priv);
+	rc = sja1105_init_l2_forwarding(priv, false);
 	if (rc < 0)
 		return rc;
 	rc = sja1105_init_l2_forwarding_params(priv);
@@ -2866,12 +2890,29 @@ static int sja1105_cpu_port_enable(struct dsa_port *dp, int port,
 	return sja1105_static_config_reload(priv);
 }
 
+static int sja1105_set_forwarding(struct dsa_switch *ds, bool enable)
+{
+	struct device *dev = ds->dev;
+	struct sja1105_private *priv = dev_get_priv(dev);
+	int port, ret;
+
+	for (port = 0; port < ds->num_ports; port++)
+		sja1105_setup_tagging(priv, port, enable);
+
+	ret = sja1105_init_l2_forwarding(priv, enable);
+	if (ret)
+		return ret;
+
+	return sja1105_static_config_reload(priv);
+}
+
 static const struct dsa_switch_ops sja1105_dsa_ops = {
 	.port_pre_enable	= sja1105_port_pre_enable,
 	.port_enable		= sja1105_cpu_port_enable,
 	.adjust_link		= sja1105_adjust_link,
 	.xmit			= sja1105_xmit,
 	.rcv			= sja1105_rcv,
+	.set_forwarding		= sja1105_set_forwarding,
 };
 
 static int sja1105_init(struct sja1105_private *priv)

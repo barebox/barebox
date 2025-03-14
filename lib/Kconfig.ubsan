@@ -1,6 +1,4 @@
 # SPDX-License-Identifier: GPL-2.0-only
-config ARCH_HAS_UBSAN_SANITIZE_ALL
-	bool
 
 config UBSAN
 	bool "Undefined behaviour sanity checker"

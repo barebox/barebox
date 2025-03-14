@@ -36,9 +36,6 @@ config GENERIC_LINKER_SCRIPT
 	bool
 	default y
 
-config PHYS_ADDR_T_64BIT
-	bool
-
 config ARCH_TEXT_BASE
 	hex
 	default 0xa0800000

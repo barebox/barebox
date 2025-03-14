@@ -389,7 +389,7 @@
   returns a unique pointer for malloc(0), so does realloc(p, 0).
 */
 
-/*   #define REALLOC_ZERO_BYTES_FREES */
+#define REALLOC_ZERO_BYTES_FREES
 
 /*
   Define HAVE_MMAP to optionally make malloc() use mmap() to
@@ -1165,6 +1165,8 @@ void *dlmalloc(size_t bytes)
 	if (bytes > MALLOC_MAX_SIZE) {
 		errno = ENOMEM;
 		return NULL;
+	} else if (bytes == 0) {
+		return ZERO_SIZE_PTR;
 	}
 
 	nb = request2size(bytes); /* padded request size; */
@@ -1363,7 +1365,7 @@ void dlfree(void *mem)
 	mchunkptr fwd;		/* misc temp for linking */
 	int islr;		/* track whether merging with last_remainder */
 
-	if (!mem)		/* free(0) has no effect */
+	if (ZERO_OR_NULL_PTR(mem))		/* free(0) has no effect */
 		return;
 
 	p = mem2chunk(mem);
@@ -1431,7 +1433,7 @@ size_t dlmalloc_usable_size(void *mem)
 {
 	mchunkptr p;
 
-	if (!mem)
+	if (ZERO_OR_NULL_PTR(mem))
 		return 0;
 
 	p = mem2chunk(mem);
@@ -1495,7 +1497,7 @@ void *dlrealloc(void *oldmem, size_t bytes)
 #ifdef REALLOC_ZERO_BYTES_FREES
 	if (bytes == 0) {
 		dlfree(oldmem);
-		return NULL;
+		return ZERO_SIZE_PTR;
 	}
 #endif
 
@@ -1505,7 +1507,7 @@ void *dlrealloc(void *oldmem, size_t bytes)
 	}
 
 	/* realloc of null is supposed to be same as malloc */
-	if (!oldmem)
+	if (ZERO_OR_NULL_PTR(oldmem))
 		return dlmalloc(bytes);
 
 	newp = oldp = mem2chunk(oldmem);
@@ -1760,8 +1762,8 @@ void *dlcalloc(size_t n, size_t elem_size)
 
 	mem = dlmalloc(sz);
 
-	if (!mem)
-		return NULL;
+	if (ZERO_OR_NULL_PTR(mem))
+		return mem;
 	else {
 		p = mem2chunk(mem);
 

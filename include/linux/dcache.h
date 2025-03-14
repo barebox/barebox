@@ -80,7 +80,7 @@ struct dentry {
 	struct dcookie_struct *d_cookie; /* cookie, if any */
 #endif
 	int d_mounted;
-	unsigned char *name;		/* all names */
+	unsigned char name[];		/* all names */
 };
 
 struct dentry_operations {

@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-config HAVE_ARCH_KASAN
-	bool
-
 config CC_HAS_KASAN_GENERIC
 	def_bool $(cc-option, -fsanitize=kernel-address)
 

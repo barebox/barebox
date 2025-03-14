@@ -35,7 +35,9 @@ static char *environment_probe_2node_binding(struct device *dev)
 {
 	const char *filepath;
 	char *devpath = NULL;
+	const char *path = NULL;
 	int ret;
+	struct cdev *cdev;
 
 	ret = of_find_path(dev->of_node, "device-path", &devpath,
 			   OF_FIND_PATH_FLAGS_BB);
@@ -55,22 +57,31 @@ static char *environment_probe_2node_binding(struct device *dev)
 		goto out;
 	}
 
-	/* Get device env is on and mount it */
-	mkdir(ENV_MNT_DIR, 0777);
-	ret = mount(devpath, "fat", ENV_MNT_DIR, NULL);
-	if (ret) {
-		dev_err(dev, "Failed to load environment: mount %s failed (%d)\n",
-			devpath, ret);
+	cdev = cdev_by_name(kbasename(devpath));
+	if (!cdev) {
+		dev_err(dev, "Cannot find device for %s\n", devpath);
+		ret = -ENOENT;
 		goto out;
 	}
+
+	path = cdev_mount_default(cdev, NULL);
+	if (IS_ERR(path)) {
+		dev_err(dev, "Cannot mount %s\n", devpath);
+		ret = PTR_ERR(path);
+		goto out;
+	}
+
+	symlink(path, ENV_MNT_DIR);
 
 	/* Set env to be in a file on the now mounted device */
 	dev_dbg(dev, "Loading default env from %s on device %s\n",
 		filepath, devpath);
 
+	ret = 0;
+
 out:
 	free(devpath);
-	return ret ? ERR_PTR(ret) : basprintf("%s/%s", ENV_MNT_DIR, filepath);
+	return ret ? ERR_PTR(ret) : basprintf("%s/%s", path, filepath);
 }
 
 static int environment_probe(struct device *dev)

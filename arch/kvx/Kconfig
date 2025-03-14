@@ -14,7 +14,6 @@ config KVX
 	select FITIMAGE
 	select GENERIC_FIND_NEXT_BIT
 	select ARCH_HAS_SJLJ
-	select HAS_CACHE
 	select HAS_DMA
 	select LIBFDT
 	select MFD_SYSCON
@@ -23,9 +22,6 @@ config KVX
 	select PARTITION
 	select RESET_SOURCE
 	default y
-
-config PHYS_ADDR_T_64BIT
-	bool
 
 config 64BIT
 	bool

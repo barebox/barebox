@@ -17,12 +17,6 @@ extern tlsf_t tlsf_mem_pool;
 void *malloc(size_t bytes)
 {
 	void *mem;
-	/*
-	 * tlsf_malloc returns NULL for zero bytes, we instead want
-	 * to have a valid pointer.
-	 */
-	if (!bytes)
-		bytes = 1;
 
 	mem = tlsf_malloc(tlsf_mem_pool, bytes);
 	if (!mem)
@@ -40,9 +34,6 @@ EXPORT_SYMBOL(free);
 
 size_t malloc_usable_size(void *mem)
 {
-	if (!mem)
-		return 0;
-
 	return tlsf_block_size(mem);
 }
 EXPORT_SYMBOL(malloc_usable_size);

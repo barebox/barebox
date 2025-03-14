@@ -18,7 +18,7 @@ static void sdl_perror(const char *what)
 
 static struct sdl_fb_info info;
 static SDL_atomic_t shutdown;
-SDL_Window *window;
+static SDL_Window *window;
 
 static void handle_sdl_events(void)
 {

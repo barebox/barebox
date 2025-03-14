@@ -13,6 +13,8 @@
 #include <debug_ll.h>
 #include <linux/kernel.h>
 #include <asm/sections.h>
+#include <crypto/sha.h>
+#include <crypto.h>
 
 struct firmware {
 	size_t size;
@@ -112,5 +114,29 @@ static inline void firmware_ext_verify(const void *data_start, size_t data_size,
 
 #define get_builtin_firmware_ext(name, base, start, size)		\
 	__get_builtin_firmware(name, (long)base - (long)_text, start, size)
+
+static inline int firmware_next_image_check_sha256(const void *hash, bool verbose)
+{
+	extern char _fw_next_image_bin_sha_start[];
+	int hsize = SHA256_DIGEST_SIZE;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_FIRMWARE_NEXT_IMAGE))
+		return -EINVAL;
+
+	ret = crypto_memneq(hash, _fw_next_image_bin_sha_start, hsize);
+
+	if (verbose) {
+		if (ret) {
+			pr_err("next image hash mismatch!\n");
+			pr_err("expected: sha256=%*phN\n", hsize, _fw_next_image_bin_sha_start);
+			pr_err("found:    sha256=%*phN\n", hsize, hash);
+		} else {
+			pr_info("hash sha256=%*phN OK\n", hsize, _fw_next_image_bin_sha_start);
+		}
+	}
+
+	return ret;
+}
 
 #endif /* FIRMWARE_H */

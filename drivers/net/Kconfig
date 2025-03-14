@@ -68,6 +68,7 @@ config DRIVER_NET_DAVINCI_EMAC
 config DRIVER_NET_TI_K3_AM65_CPSW_NUSS
 	bool "TI K3 AM654x/J721E CPSW Ethernet driver"
 	depends on ARCH_K3 || COMPILE_TEST
+	depends on TI_K3_UDMA
 	select DRIVER_NET_TI_DAVINCI_MDIO
 	select PHYLIB
 	help

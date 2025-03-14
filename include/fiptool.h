@@ -38,6 +38,7 @@ struct fip_state {
 	size_t nr_image_descs;
 	int verbose;
 	void *buffer;
+	size_t bufsize;
 	bool buf_no_free;
 };
 
@@ -99,5 +100,7 @@ extern toc_entry_t plat_def_toc_entries[];
         list_for_each_entry_safe(e, tmp, &(fip)->descs, list)
 
 struct fip_state *fip_image_open(const char *filename, size_t offset);
+
+int fip_sha256(struct fip_state *fip, char *hash);
 
 #endif /* FIPTOOL_H */

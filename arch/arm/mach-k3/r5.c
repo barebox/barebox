@@ -244,15 +244,91 @@ static uuid_t uuid_ti_dm_fw = UUID_TI_DM_FW;
 static uuid_t uuid_bl33 = UUID_NON_TRUSTED_FIRMWARE_BL33;
 static uuid_t uuid_bl32 = UUID_SECURE_PAYLOAD_BL32;
 
+static struct fip_state *fip_image_load_auth(const char *filename, size_t offset)
+{
+	struct fip_state *fip = NULL;
+	int fd;
+	unsigned int maxsize = SZ_4M;
+	size_t size;
+	void *buf = NULL;
+	int ret;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0)
+		return ERR_PTR(-errno);
+
+	if (offset) {
+		loff_t pos;
+		pos = lseek(fd, offset, SEEK_SET);
+		if (pos < 0) {
+			ret = -errno;
+			goto err;
+		}
+	}
+
+	buf = xzalloc(maxsize);
+
+	/*
+	 * There is no easy way to determine the size of the certificates the ROM
+	 * takes as images, so the best we can do here is to assume a maximum size
+	 * and load this.
+	 */
+	ret = read_full(fd, buf, maxsize);
+	if (ret < 0)
+		goto err;
+
+	size = maxsize;
+
+	ret = k3_authenticate_image(&buf, &size);
+	if (ret) {
+		pr_err("Failed to authenticate %s\n", filename);
+		goto err;
+	}
+
+	fip = fip_new();
+	ret = fip_parse_buf(fip, buf, size, NULL);
+	if (ret)
+		goto err;
+
+	close(fd);
+
+	return fip;
+err:
+	if (fip)
+		fip_free(fip);
+	close(fd);
+	free(buf);
+
+	return ERR_PTR(ret);
+}
+
 static int load_fip(const char *filename, off_t offset)
 {
 	struct fip_state *fip;
 	struct fip_image_desc *desc;
+	unsigned char shasum[SHA256_DIGEST_SIZE];
+	int ret;
 
-	fip = fip_image_open(filename, offset);
+	if (IS_ENABLED(CONFIG_ARCH_K3_AUTHENTICATE_IMAGE))
+		fip = fip_image_load_auth(filename, offset);
+	else
+		fip = fip_image_open(filename, offset);
+
 	if (IS_ERR(fip)) {
 		pr_err("Cannot open FIP image: %pe\n", fip);
 		return PTR_ERR(fip);
+	}
+
+	if (IS_ENABLED(CONFIG_FIRMWARE_VERIFY_NEXT_IMAGE)) {
+		ret = fip_sha256(fip, shasum);
+		if (ret) {
+			pr_err("Cannot calc fip sha256: %pe\n", ERR_PTR(ret));
+			return ret;
+		}
+
+		ret = firmware_next_image_check_sha256(shasum, true);
+		if (ret)
+			return ret;
 	}
 
 	fip_for_each_desc(fip, desc) {
@@ -283,115 +359,35 @@ static int load_fip(const char *filename, off_t offset)
 	return 0;
 }
 
-static void do_dfu(void)
+static int do_dfu(void)
 {
 	struct usbgadget_funcs funcs = {};
 	int ret;
 	struct stat s;
-	ssize_t size;
 
 	funcs.flags |= USBGADGET_DFU;
-	funcs.dfu_opts = "/optee.bin(optee)c,"
-			 "/bl31.bin(tfa)c,"
-			 "/ti-dm.bin(ti-dm)c,"
-			 "/barebox.bin(barebox)cs,"
-			 "/fip.img(fip)cs";
+	funcs.dfu_opts = "/fip.img(fip)cs";
 
 	ret = usbgadget_prepare_register(&funcs);
-	if (ret)
-		goto err;
+	if (ret) {
+		pr_err("DFU failed with: %pe\n", ERR_PTR(ret));
+		return ret;
+	}
 
 	while (1) {
-		if (!have_bl32) {
-			size = read_file_into_buf("/optee.bin", BL32_ADDRESS, SZ_32M);
-			if (size > 0) {
-				printf("Downloaded OP-TEE\n");
-				have_bl32 = true;
-			}
-		}
-
-		if (!have_bl31) {
-			size = read_file_into_buf("/bl31.bin", BL31_ADDRESS, SZ_32M);
-			if (size > 0) {
-				printf("Downloaded TF-A\n");
-				have_bl31 = true;
-			}
-		}
-
-		if (!k3_ti_dm) {
-			ret = read_file_2("/ti-dm.bin", &size, &k3_ti_dm, FILESIZE_MAX);
-			if (!ret) {
-				printf("Downloaded TI-DM\n");
-			}
-		}
-
-		size = read_file_into_buf("/barebox.bin", BAREBOX_ADDRESS, SZ_32M);
-		if (size > 0) {
-			have_bl33 = true;
-			printf("Downloaded barebox image, DFU done\n");
-			break;
-		}
-
 		ret = stat("/fip.img", &s);
 		if (!ret) {
 			printf("Downloaded FIP image, DFU done\n");
-			load_fip("/fip.img", 0);
-			break;
+			ret = load_fip("/fip.img", 0);
+			if (!ret)
+				return 0;
+			unlink("/fip.img");
 		}
 
 		command_slice_release();
 		mdelay(50);
 		command_slice_acquire();
 	};
-
-	return;
-
-err:
-	pr_err("DFU failed with: %pe\n", ERR_PTR(ret));
-}
-
-static int load_images(void)
-{
-	ssize_t size;
-	int err;
-
-	err = load_fip("/boot/k3.fip", 0);
-	if (!err)
-		return 0;
-
-	size = read_file_into_buf("/boot/optee.bin", BL32_ADDRESS, SZ_32M);
-	if (size < 0) {
-		if (size != -ENOENT) {
-			pr_err("Cannot load optee.bin: %pe\n", ERR_PTR(size));
-			return size;
-		}
-		pr_info("optee.bin not found, continue without\n");
-	} else {
-		pr_debug("Loaded optee.bin (size %u) to 0x%p\n", size, BL32_ADDRESS);
-	}
-
-	size = read_file_into_buf("/boot/barebox.bin", BAREBOX_ADDRESS, SZ_32M);
-	if (size < 0) {
-		pr_err("Cannot load barebox.bin: %pe\n", ERR_PTR(size));
-		return size;
-	}
-	pr_debug("Loaded barebox.bin (size %u) to 0x%p\n", size, BAREBOX_ADDRESS);
-
-	size = read_file_into_buf("/boot/bl31.bin", BL31_ADDRESS, SZ_32M);
-	if (size < 0) {
-		pr_err("Cannot load bl31.bin: %pe\n", ERR_PTR(size));
-		return size;
-	}
-	pr_debug("Loaded bl31.bin (size %u) to 0x%p\n", size, BL31_ADDRESS);
-
-	err = read_file_2("/boot/ti-dm.bin", &size, &k3_ti_dm, FILESIZE_MAX);
-	if (err) {
-		pr_err("Cannot load ti-dm.bin: %pe\n", ERR_PTR(err));
-		return err;
-	}
-	pr_debug("Loaded ti-dm.bin (size %u)\n", size);
-
-	return 0;
 }
 
 static int load_fip_emmc(void)
@@ -400,6 +396,7 @@ static int load_fip_emmc(void)
 	struct mci *mci;
 	char *fname;
 	const char *mmcdev = "mmc0";
+	int ret;
 
 	device_detect_by_name(mmcdev);
 
@@ -416,16 +413,16 @@ static int load_fip_emmc(void)
 
 	fname = xasprintf("/dev/%s.boot%d", mmcdev, bootpart - 1);
 
-	load_fip(fname, K3_EMMC_BOOTPART_TIBOOT3_BIN_SIZE);
+	ret = load_fip(fname, K3_EMMC_BOOTPART_TIBOOT3_BIN_SIZE);
 
 	free(fname);
 
-	return 0;
+	return ret;
 }
 
 static int k3_r5_start_image(void)
 {
-	int err;
+	int ret;
 	struct firmware fw;
 	const struct ti_sci_handle *ti_sci;
 	struct elf_image *elf;
@@ -433,11 +430,28 @@ static int k3_r5_start_image(void)
 	struct rproc *arm64_rproc;
 
 	if (IS_ENABLED(CONFIG_USB_GADGET_DFU) && bootsource_get() == BOOTSOURCE_SERIAL)
-		do_dfu();
+		ret = do_dfu();
 	else if (k3_boot_is_emmc())
-		load_fip_emmc();
+		ret = load_fip_emmc();
 	else
-		load_images();
+		ret = load_fip("/boot/k3.fip", 0);
+
+	if (ret) {
+		pr_crit("Unable to load FIP image\n");
+		panic("Stop booting\n");
+	}
+
+	if (!have_bl31)
+		panic("No TFA found in FIP image\n");
+
+	if (!have_bl32)
+		pr_info("No OP-TEE found. Continuing without\n");
+
+	if (!have_bl33)
+		panic("No bl33 found in FIP image\n");
+
+	if (!k3_ti_dm)
+		panic("No ti-dm binary found\n");
 
 	ti_sci = ti_sci_get_handle(NULL);
 	if (IS_ERR(ti_sci))
@@ -455,9 +469,9 @@ static int k3_r5_start_image(void)
 		return PTR_ERR(elf);
 	}
 
-	err = elf_load(elf);
-	if (err) {
-		pr_err("Cannot load ELF image %pe\n", ERR_PTR(err));
+	ret = elf_load(elf);
+	if (ret) {
+		pr_err("Cannot load ELF image %pe\n", ERR_PTR(ret));
 		elf_close(elf);
 	}
 

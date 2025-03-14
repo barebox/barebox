@@ -108,4 +108,27 @@ config FIRMWARE_LS1028A_ATF
 config FIRMWARE_LS1046A_ATF
 	bool
 
+config HAVE_FIRMWARE_VERIFY_NEXT_IMAGE
+	bool
+
+config FIRMWARE_VERIFY_NEXT_IMAGE
+	depends on HAVE_FIRMWARE_VERIFY_NEXT_IMAGE
+	bool "verify next image to load"
+	help
+	  The boot process of some SoCs uses multiple stages where the first stage is
+	  a stripped down barebox loaded by the SoC's ROM and the next state is a full
+	  barebox loaded by the first stage. In a trusted boot scenario the next stage
+	  has to be verified by the first stage,
+
+	  This option allows to specify the next image to be loaded. Put the next stage
+	  image to firmware/next-image.bin. The next-image.bin won't be added to the
+	  barebox binary, but a sha256 hash of the image will be generated and compiled
+	  into the first stage which can be used to verify the next stage.
+
+	  Note that this option only enabled generation of the sha256 hash. Loading and
+	  starting the next stage is highly SoC dependent and it's the SoC code's
+	  responsibility to actually verify the hash and to only start successfully
+	  verified images. The function to check the next stage image hash is
+	  firmware_next_image_verify(), make sure your SoC code uses it.
+
 endmenu

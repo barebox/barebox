@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 TEMP=$(getopt -o '' --long 'sysfw:,sysfwdata:,dmdata:,out:,sbl:,key:,innerdata:' -n 'k3img' -- "$@")
 
 if [ $? -ne 0 ]; then
@@ -76,8 +78,11 @@ dmdatasize=$(stat -c%s $dmdata)
 
 total=$(($sblsize + $sysfwsize + $sysfwdatasize + $dmdatasize))
 
-certcfg=$(mktemp k3img.XXXXXXX)
-cert=$(mktemp k3img.XXXXXXX)
+TMPDIR="$(mktemp -d)"
+trap 'rm -rf -- "$TMPDIR"' EXIT
+
+certcfg=${TMPDIR}/certcfg
+cert=${TMPDIR}/cert
 
 num_comp=4
 

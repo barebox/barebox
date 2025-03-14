@@ -3,8 +3,11 @@
  * Copyright (c) 2021 Ahmad Fatoum
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <fcntl.h>
 #include <SDL.h>
 #include <mach/linux.h>
 

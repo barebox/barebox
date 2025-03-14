@@ -87,8 +87,10 @@ static ssize_t at25_ee_read(struct cdev *cdev,
 	switch (at25->addrlen) {
 	default:	/* case 3 */
 		*cp++ = offset >> 16;
+		fallthrough;
 	case 2:
 		*cp++ = offset >> 8;
+		fallthrough;
 	case 1:
 	case 0:	/* can't happen: for better codegen */
 		*cp++ = offset >> 0;
@@ -168,8 +170,10 @@ static ssize_t at25_ee_write(struct cdev *cdev,
 		switch (at25->addrlen) {
 		default:	/* case 3 */
 			*cp++ = offset >> 16;
+			fallthrough;
 		case 2:
 			*cp++ = offset >> 8;
+			fallthrough;
 		case 1:
 		case 0:	/* can't happen: for better codegen */
 			*cp++ = offset >> 0;

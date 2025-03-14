@@ -336,7 +336,8 @@ char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
 
 	switch (*(++fmt)) {
 	case 'L':
-		uc = true;		/* fall-through */
+		uc = true;
+		fallthrough;
 	case 'l':
 		index = le;
 		break;

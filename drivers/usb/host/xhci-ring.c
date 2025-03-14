@@ -609,7 +609,7 @@ static void record_transfer_result(struct usb_device *udev,
 	switch (GET_COMP_CODE(le32_to_cpu(event->trans_event.transfer_len))) {
 	case COMP_SUCCESS:
 		BUG_ON(udev->act_len != length);
-		/* fallthrough */
+		fallthrough;
 	case COMP_SHORT_TX:
 		udev->status = 0;
 		break;

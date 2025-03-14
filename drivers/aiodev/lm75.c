@@ -158,7 +158,6 @@ static int lm75_probe(struct device *dev)
 		data->resolution = 9;
 		break;
 	case mcp980x:
-		/* fall through */
 	case tmp100:
 	case tmp101:
 		set_mask |= 3 << 5;		/* 12-bit mode */

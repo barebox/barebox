@@ -245,7 +245,7 @@ static int am65_cpsw_gmii_sel_k3(struct am65_cpsw_port *port,
 		dev_warn(dev,
 			 "Unsupported PHY mode: %u. Defaulting to MII.\n",
 			 phy_mode);
-		/* fallthrough */
+		fallthrough;
 	case PHY_INTERFACE_MODE_MII:
 		mode = AM65_GMII_SEL_MODE_MII;
 		break;

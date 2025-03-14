@@ -3045,8 +3045,10 @@ void mci_of_parse_node(struct mci_host *host,
 		switch (bus_width) {
 		case 8:
 			host->host_caps |= MMC_CAP_8_BIT_DATA;
-		case 4: /* note fall through from above */
+			fallthrough;
+		case 4:
 			host->host_caps |= MMC_CAP_4_BIT_DATA;
+			fallthrough;
 		case 1:
 			break;
 		default:

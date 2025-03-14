@@ -150,11 +150,11 @@ static void mxs_boot_save_loc(void)
 	switch (mode & 0xf) {
 	case 0x0: src = BOOTSOURCE_USB; break;		/* "USB" */
 	case 0x1: src = BOOTSOURCE_I2C_EEPROM; break;	/* "I2C, master" */
-	case 0x3: instance = 1;	/* fallthrough */	/* "SSP SPI #2, master, NOR" */
+	case 0x3: instance = 1;	fallthrough;		/* "SSP SPI #2, master, NOR" */
 	case 0x2: src = BOOTSOURCE_SPI_NOR; break;	/* "SSP SPI #1, master, NOR" */
 	case 0x4: src = BOOTSOURCE_NAND; break;		/* "NAND" */
 	case 0x8: src = BOOTSOURCE_SPI_EEPROM; break;	/* "SSP SPI #3, master, EEPROM" */
-	case 0xa: instance = 1;	/* fallthrough */	/* "SSP SD/MMC #1" */
+	case 0xa: instance = 1;	fallthrough;		/* "SSP SD/MMC #1" */
 	case 0x9: src = BOOTSOURCE_MMC; break;		/* "SSP SD/MMC #0" */
 	}
 

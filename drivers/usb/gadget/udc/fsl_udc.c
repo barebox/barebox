@@ -250,7 +250,7 @@ static int dr_controller_setup(struct fsl_udc *udc)
 		break;
 	case FSL_USB2_PHY_UTMI_WIDE:
 		portctrl |= PORTSCX_PTW_16BIT;
-		/* fall through */
+		fallthrough;
 	case FSL_USB2_PHY_UTMI:
 		portctrl |= PORTSCX_PTS_UTMI;
 		break;

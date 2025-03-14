@@ -123,10 +123,3 @@ This is the reset vector and exception vectors. Must be the very first in the fi
 ``.text_bare_init*:``
 Everything in this section, and , is checked at link time.
 Size most be less than BAREBOX_MAX_BARE_INIT_SIZE / ARCH_BAREBOX_MAX_BARE_INIT_SIZE
-
-at91 specify the size of the two sections in exception vector 6 (see above),
-if CONFIG_AT91_LOAD_BAREBOX_SRAM is defined.
-I think this is because some at91 variants have only very limited SRAM size,
-and we copy only a minimal part to the SRAM. The remaining part is then
-executed in-place.
-For at91sam9263 we have a large SRAM so there is room for the full bootstrap binary.

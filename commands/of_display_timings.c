@@ -42,7 +42,7 @@ static int do_of_display_timings(int argc, char *argv[])
 	struct device_node *root = NULL;
 	struct device_node *display = NULL;
 	struct device_node *timings = NULL;
-	char *timingpath = NULL;
+	const char *timingpath = NULL;
 	char *dtbfile = NULL;
 
 	while ((opt = getopt(argc, argv, "sS:lf:")) > 0) {
@@ -57,8 +57,7 @@ static int do_of_display_timings(int argc, char *argv[])
 			selected = 1;
 			break;
 		case 'S':
-			timingpath = xzalloc(strlen(optarg) + 1);
-			strcpy(timingpath, optarg);
+			timingpath = optarg;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -108,7 +107,7 @@ static int do_of_display_timings(int argc, char *argv[])
 	}
 
 	if (timingpath)
-		of_register_fixup(of_display_timing, timingpath);
+		of_register_fixup(of_display_timing, xstrdup(timingpath));
 
 	return 0;
 }

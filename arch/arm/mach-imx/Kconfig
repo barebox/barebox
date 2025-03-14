@@ -746,6 +746,15 @@ config MACH_ZII_IMX8MQ_DEV
 
 comment "i.MX93 boards"
 
+config MACH_PHYTEC_PHYCORE_IMX93
+	bool "phyCORE i.MX93 SoM based devices"
+	select ARCH_IMX93
+	select IMX9_DRAM
+	select I2C
+	select I2C_IMX_LPI2C
+	select FIRMWARE_IMX93_ATF
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+
 config MACH_TQMA93XX
 	bool "TQ i.MX93 on TQMA93XX Board"
 	select ARCH_IMX93

@@ -103,6 +103,16 @@ static int __init pca9450_probe(struct device *dev)
 	/* Chip ID defined in bits [7:4] */
 	dev_info(dev, "PMIC Chip ID: 0x%x\n", (reg >> 4));
 
+	/* Enable WDOG_B, for cold reset by default */
+	if (of_property_read_bool(dev->of_node, "nxp,wdog_b-warm-reset"))
+		regmap_update_bits(regmap, PCA9450_RESET_CTRL,
+				   PCA9450_PMIC_RESET_WDOG_B_CFG_MASK,
+				   PCA9450_PMIC_RESET_WDOG_B_CFG_WARM);
+	else
+		regmap_update_bits(regmap, PCA9450_RESET_CTRL,
+				   PCA9450_PMIC_RESET_WDOG_B_CFG_MASK,
+				   PCA9450_PMIC_RESET_WDOG_B_CFG_COLD_LDO12);
+
 	if (pca9450_init_callback)
 		pca9450_init_callback(regmap);
 	pca9450_map = regmap;

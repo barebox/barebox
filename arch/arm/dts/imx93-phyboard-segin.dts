@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+
+#include <arm64/freescale/imx93-phyboard-segin.dts>
+#include "imx93.dtsi"
+#include "imx93-phyboard-segin-downstream.dtsi"
+
+/ {
+	chosen {
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &environment_emmc;
+		};
+	};
+};
+
+&usdhc1 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		environment_emmc: partition@80000 {
+			label = "barebox-environment";
+			reg = <0x0 0x80000 0x0 0x80000>;
+		};
+	};
+
+};

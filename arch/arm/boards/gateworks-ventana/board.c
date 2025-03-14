@@ -72,7 +72,9 @@ static int gw54xx_devices_init(void)
 	if (gsc_get_rev(&client) < 'E')
 		of_register_fixup(gw54xx_wdog_of_fixup, NULL);
 
-	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+	imx6_bbu_nand_register_handler("nand",
+			"/dev/nand0.barebox",
+			BBU_HANDLER_FLAG_DEFAULT);
 
 	barebox_set_hostname("gw54xx");
 

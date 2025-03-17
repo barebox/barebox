@@ -2417,7 +2417,7 @@ static void mci_info(struct device *dev)
 	struct mci_host *host = mci->host;
 	int bw;
 
-	if (mci->ready_for_use == 0) {
+	if (!mci->ready_for_use) {
 		printf(" No information available:\n  MCI card not probed yet\n");
 		return;
 	}
@@ -2497,23 +2497,6 @@ static void mci_parse_cid(struct mci *mci)
 	dev_add_param_uint32_fixed(dev, "cid_psn", mci->cid.serial, "%0u");
 	dev_add_param_uint32_fixed(dev, "cid_year", mci->cid.year, "%0u");
 	dev_add_param_uint32_fixed(dev, "cid_month", mci->cid.month, "%0u");
-}
-
-/**
- * Check if the MCI card is already probed
- * @param mci MCI device instance
- * @return 0 when not probed yet, -EPERM if already probed
- *
- * @a barebox cannot really cope with hot plugging. So, probing an attached
- * MCI card is a one time only job. If its already done, there is no way to
- * return.
- */
-static int mci_check_if_already_initialized(struct mci *mci)
-{
-	if (mci->ready_for_use != 0)
-		return -EPERM;
-
-	return 0;
 }
 
 static struct block_device_ops mci_ops = {
@@ -2760,7 +2743,7 @@ static int mci_card_probe(struct mci *mci)
 	}
 
 	dev_dbg(&mci->dev, "Card is up and running now, registering as a disk\n");
-	mci->ready_for_use = 1;	/* TODO now or later? */
+	mci->ready_for_use = true; /* TODO now or later? */
 
 	for (i = 0; i < mci->nr_parts; i++) {
 		struct mci_part *part = &mci->part[i];
@@ -2819,8 +2802,7 @@ static int mci_set_probe(struct param_d *param, void *priv)
 	if (!mci->probe)
 		return 0;
 
-	rc = mci_check_if_already_initialized(mci);
-	if (rc != 0)
+	if (mci->ready_for_use)
 		return 0;
 
 	rc = mci_card_probe(mci);
@@ -2832,10 +2814,7 @@ static int mci_set_probe(struct param_d *param, void *priv)
 
 int mci_detect_card(struct mci_host *host)
 {
-	int rc;
-
-	rc = mci_check_if_already_initialized(host->mci);
-	if (rc != 0)
+	if (host->mci->ready_for_use)
 		return 0;
 
 	return mci_card_probe(host->mci);

@@ -422,6 +422,19 @@ else
 		if [[ $i =~ ^.*/([^/]+)/([^@]*@|)([^.]+).yaml$ ]]; then
 			arch=${BASH_REMATCH[1]}
 			defconfig=${BASH_REMATCH[3]}
+
+			if grep -q "^\s\+kconfig_add:" $i; then
+				if command -v yq 2>&1 >/dev/null; then
+					KCONFIG_ADD="${KCONFIG_ADD} $(yq -M -r \
+					'.targets.main.runner.kconfig_add |
+					keys[] as $k | .[$k]' < $i)"
+				else
+					echo "WARNING: yq command not found in path" >&2
+					echo "WARNING: ignoring kconfig_add in $i" >&2
+					echo
+				fi
+			fi
+
 			do_build_defconfig $arch $defconfig
 			if [ $? -eq 0 ]; then
 				do_test_defconfig $config $defconfig "${pytest_opts[@]}"

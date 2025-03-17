@@ -56,7 +56,7 @@ static int rti_wdt_ping(struct watchdog *wdt)
 	halftime = wdt->timeout_cur / 2 + 1;
 
 	if (!is_timeout_non_interruptible(wdt->last_ping, halftime * SECOND))
-		return -EBUSY;
+		return 0;
 
 	writel(WDKEY_SEQ0, priv->regs + RTIWDKEY);
 	writel(WDKEY_SEQ1, priv->regs + RTIWDKEY);

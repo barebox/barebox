@@ -26,19 +26,19 @@
 
 #define MAX_BUFFER_NUMBER 0xffffffff
 
-#define UNSTUFF_BITS(resp,start,size)					\
-	({								\
-		const int __size = size;				\
-		const u32 __mask = (__size < 32 ? 1 << __size : 0) - 1;	\
-		const int __off = 3 - ((start) / 32);			\
-		const int __shft = (start) & 31;			\
-		u32 __res;						\
-									\
-		__res = resp[__off] >> __shft;				\
-		if (__size + __shft > 32)				\
-			__res |= resp[__off-1] << ((32 - __shft) % 32);	\
-		__res & __mask;						\
-	})
+static inline u32 unstuff_bits(const u32 *resp, int start, int size)
+{
+	const int __size = size;
+	const u32 __mask = (__size < 32 ? 1 << __size : 0) - 1;
+	const int __off = 3 - (start / 32);
+	const int __shft = start & 31;
+	u32 __res = resp[__off] >> __shft;
+
+	if (__size + __shft > 32)
+		__res |= resp[__off - 1] << ((32 - __shft) % 32);
+
+	return __res & __mask;
+}
 
 LIST_HEAD(mci_list);
 
@@ -1202,7 +1202,7 @@ static void mci_extract_max_tran_speed_from_csd(struct mci *mci)
  */
 static void mci_extract_block_lengths_from_csd(struct mci *mci)
 {
-	mci->read_bl_len = 1 << UNSTUFF_BITS(mci->csd, 80, 4);
+	mci->read_bl_len = 1 << unstuff_bits(mci->csd, 80, 4);
 
 	/* Quoting Physical Layer Simplified Specification Version 9.10:
 	 * Note that in an SD Memory Card the WRITE_BL_LEN is always
@@ -1237,18 +1237,18 @@ static void mci_configure_erase_group_size(struct mci *mci)
 	}
 
 	if (!IS_ENABLED(CONFIG_MCI_ERASE) ||
-	    !(UNSTUFF_BITS(mci->csd, 84, 12) & CCC_ERASE))
+	    !(unstuff_bits(mci->csd, 84, 12) & CCC_ERASE))
 		return;
 
 
 	if (IS_SD(mci)) {
-		if (UNSTUFF_BITS(mci->csd, 126, 2) == 0) {
-			unsigned int write_blkbits = UNSTUFF_BITS(mci->csd, 22, 4);
+		if (unstuff_bits(mci->csd, 126, 2) == 0) {
+			unsigned int write_blkbits = unstuff_bits(mci->csd, 22, 4);
 
-			if (UNSTUFF_BITS(mci->csd, 46, 1)) {
+			if (unstuff_bits(mci->csd, 46, 1)) {
 				mci->erase_grp_size = 1;
 			} else if (write_blkbits >= 9) {
-				mci->erase_grp_size = UNSTUFF_BITS(mci->csd, 39, 7) + 1;
+				mci->erase_grp_size = unstuff_bits(mci->csd, 39, 7) + 1;
 				mci->erase_grp_size <<= write_blkbits - 9;
 			}
 		} else {
@@ -1292,7 +1292,7 @@ static void mci_extract_card_capacity_from_csd(struct mci *mci)
 
 	if (mci->high_capacity) {
 		if (IS_SD(mci)) {
-			csize = UNSTUFF_BITS(mci->csd, 48, 22);
+			csize = unstuff_bits(mci->csd, 48, 22);
 			mci->capacity = (1 + csize) << 10;
 		} else {
 			mci->capacity = mci->ext_csd[EXT_CSD_SEC_COUNT] << 0 |
@@ -1301,12 +1301,12 @@ static void mci_extract_card_capacity_from_csd(struct mci *mci)
 				mci->ext_csd[EXT_CSD_SEC_COUNT + 3] << 24;
 		}
 	} else {
-		cmult = UNSTUFF_BITS(mci->csd, 47, 3);
-		csize = UNSTUFF_BITS(mci->csd, 62, 12);
+		cmult = unstuff_bits(mci->csd, 47, 3);
+		csize = unstuff_bits(mci->csd, 62, 12);
 		mci->capacity = (csize + 1) << (cmult + 2);
 	}
 
-	mci->capacity *= 1 << UNSTUFF_BITS(mci->csd, 80, 4);
+	mci->capacity *= 1 << unstuff_bits(mci->csd, 80, 4);
 	dev_dbg(&mci->dev, "Capacity: %u MiB\n", (unsigned)(mci->capacity >> 20));
 }
 
@@ -1316,7 +1316,7 @@ static void mci_extract_card_capacity_from_csd(struct mci *mci)
  */
 static void mci_extract_card_dsr_imp_from_csd(struct mci *mci)
 {
-	mci->dsr_imp = UNSTUFF_BITS(mci->csd, 76, 1);
+	mci->dsr_imp = unstuff_bits(mci->csd, 76, 1);
 }
 
 static int mmc_compare_ext_csds(struct mci *mci, enum mci_bus_width bus_width)
@@ -1883,10 +1883,10 @@ static int mci_startup(struct mci *mci)
 		return err;
 	}
 
-	memcpy(mci->cid, cmd.response, 16);
+	memcpy(mci->raw_cid, cmd.response, 16);
 
 	dev_dbg(&mci->dev, "Card's identification data is: %08X-%08X-%08X-%08X\n",
-		mci->cid[0], mci->cid[1], mci->cid[2], mci->cid[3]);
+		mci->raw_cid[0], mci->raw_cid[1], mci->raw_cid[2], mci->raw_cid[3]);
 
 	/*
 	 * For MMC cards, set the Relative Address.
@@ -2303,156 +2303,6 @@ static int mci_sd_read(struct block_device *blk, void *buffer, sector_t block,
 
 /* ------------------ attach to the device API --------------------------- */
 
-/**
- * Extract the Manufacturer ID from the CID
- * @param mci Instance data
- *
- * The 'MID' is encoded in bit 127:120 in the CID
- */
-static unsigned extract_mid(struct mci *mci)
-{
-	if (!IS_SD(mci) && mci->version <= MMC_VERSION_1_4)
-		return UNSTUFF_BITS(mci->cid, 104, 24);
-	else
-		return UNSTUFF_BITS(mci->cid, 120, 8);
-}
-
-/**
- * Extract the CBX from the CID
- * @param mci Instance data
- *
- * The 'CBX' is encoded in bit 113:112 in the CID and only present in MMC cards
- */
-static unsigned extract_cbx(struct mci *mci)
-{
-	return UNSTUFF_BITS(mci->cid, 112, 2);
-}
-
-/**
- * Extract the OEM/Application ID from the CID
- * @param mci Instance data
- *
- * The 'OID' is encoded in bit 119:104 in the CID for SD cards and 111:104 for
- * MMC cards
- */
-static void extract_oid(struct mci *mci, char oid[static 5])
-{
-	if (IS_SD(mci)) {
-		// SD cards have a 2 character long OEM ID
-		snprintf(oid, 5, "%c%c", UNSTUFF_BITS(mci->cid, 112, 8), UNSTUFF_BITS(mci->cid, 104, 8));
-	} else {
-		// MMC cards have a 8-bit binary number as OEM ID
-		snprintf(oid, 5, "0x%02X", UNSTUFF_BITS(mci->cid, 104, 8));
-	}
-}
-
-/**
- * Extract the product name from the CID
- * @param mci Instance data
- *
- * The 'PNM' is encoded in bit 103:64 in the CID for SD cards and 103:56 for
- * MMC cards
- */
-static void extract_pnm(struct mci *mci, char pnm[static 7])
-{
-	pnm[0] = UNSTUFF_BITS(mci->cid, 96, 8);
-	pnm[1] = UNSTUFF_BITS(mci->cid, 88, 8);
-	pnm[2] = UNSTUFF_BITS(mci->cid, 80, 8);
-	pnm[3] = UNSTUFF_BITS(mci->cid, 72, 8);
-	pnm[4] = UNSTUFF_BITS(mci->cid, 64, 8);
-
-	if (IS_SD(mci)) {
-		// SD cards have a 5 character long product name
-		pnm[5] = '\0';
-	} else {
-		// MMC cards have a 6 character long product name
-		pnm[5] = UNSTUFF_BITS(mci->cid, 56, 8);
-		pnm[6] = '\0';
-	}
-}
-
-/**
- * Extract the product revision from the CID
- * @param mci Instance data
- *
- * The 'PRV' is encoded in bit 63:56 in the CID for SD cards and 55:48 for MMC cards
- */
-static void extract_prv(struct mci *mci, char prv[static 8])
-{
-	unsigned prv_bcd = IS_SD(mci) ? UNSTUFF_BITS(mci->cid, 56, 8) : UNSTUFF_BITS(mci->cid, 48, 8);
-
-	snprintf(prv, 8,"%u.%u", prv_bcd >> 4, prv_bcd & 0xf);
-}
-
-/**
- * Extract the product serial number from the CID
- * @param mci Instance data
- *
- * The 'PSN' is encoded in bit 55:24 in the CID for SD cards and 47:16 for MMC cards
- */
-static unsigned extract_psn(struct mci *mci)
-{
-	if (IS_SD(mci)) {
-		return UNSTUFF_BITS(mci->csd, 24, 32);
-	} else {
-		if (mci->version > MMC_VERSION_1_4)
-			return UNSTUFF_BITS(mci->cid, 16, 32);
-		else
-			return UNSTUFF_BITS(mci->cid, 16, 24);
-	}
-
-}
-
-/**
- * Extract the month of the manufacturing date from the CID
- * @param mci Instance data
- *
- * The 'MDT' is encoded in bit 19:8 in the CID, month in 11:8
- */
-static unsigned extract_mdt_month(struct mci *mci)
-{
-	if (IS_SD(mci))
-		return UNSTUFF_BITS(mci->cid, 8, 4);
-	else
-		return UNSTUFF_BITS(mci->cid, 12, 4);
-}
-
-/**
- * Extract the year of the manufacturing date from the CID
- * @param mci Instance data
- *
- * The 'MDT' is encoded in bit 19:8 in the CID, year in 19:12
- * An encoded 0 means the year 2000
- */
-static unsigned extract_mdt_year(struct mci *mci)
-{
-	unsigned year;
-	if (IS_SD(mci))
-		year = UNSTUFF_BITS(mci->cid, 12, 8) + 2000;
-	else if (mci->version < MMC_VERSION_4_41)
-		return UNSTUFF_BITS(mci->cid, 8, 4) + 1997;
-	else {
-		year = UNSTUFF_BITS(mci->cid, 8, 4) + 1997;
-		if (year < 2010)
-			year += 16;
-	}
-	return year;
-}
-
-/**
- * Extract the manufacturing date from the CID
- * @param mci Instance data
- *
- * The 'MDT' is encoded in bit 19:8 in the CID
- */
-static void extract_mdt(struct mci *mci, char mdt[static 8])
-{
-	unsigned month = extract_mdt_month(mci);
-	unsigned year = extract_mdt_year(mci);
-
-	snprintf(mdt, 8, "%u.%u", year, month);
-}
-
 static const char *mci_timing_tostr(unsigned timing)
 {
 	switch (timing) {
@@ -2482,6 +2332,88 @@ static void mci_print_caps(unsigned caps)
 		caps & MMC_CAP_MMC_3_3V_DDR ? "ddr-3.3v " : "",
 		caps & MMC_CAP_MMC_1_8V_DDR ? "ddr-1.8v " : "",
 		caps & MMC_CAP_MMC_1_2V_DDR ? "ddr-1.2v " : "");
+}
+
+/*
+ * Given the decoded CSD structure, decode the raw CID to our CID structure.
+ */
+static int mci_mmc_decode_cid(struct mci *card)
+{
+	u32 *resp = card->raw_cid;
+	u32 mmca_vsn = unstuff_bits(card->csd, 122, 4);
+
+	/*
+	 * The selection of the format here is based upon published
+	 * specs from sandisk and from what people have reported.
+	 */
+	switch (mmca_vsn) {
+	case 0: /* MMC v1.0 - v1.2 */
+	case 1: /* MMC v1.4 */
+		card->cid.manfid	= unstuff_bits(resp, 104, 24);
+		card->cid.prod_name[0]	= unstuff_bits(resp, 96, 8);
+		card->cid.prod_name[1]	= unstuff_bits(resp, 88, 8);
+		card->cid.prod_name[2]	= unstuff_bits(resp, 80, 8);
+		card->cid.prod_name[3]	= unstuff_bits(resp, 72, 8);
+		card->cid.prod_name[4]	= unstuff_bits(resp, 64, 8);
+		card->cid.prod_name[5]	= unstuff_bits(resp, 56, 8);
+		card->cid.prod_name[6]	= unstuff_bits(resp, 48, 8);
+		card->cid.hwrev		= unstuff_bits(resp, 44, 4);
+		card->cid.fwrev		= unstuff_bits(resp, 40, 4);
+		card->cid.serial	= unstuff_bits(resp, 16, 24);
+		card->cid.month		= unstuff_bits(resp, 12, 4);
+		card->cid.year		= unstuff_bits(resp, 8, 4) + 1997;
+		break;
+
+	case 2: /* MMC v2.0 - v2.2 */
+	case 3: /* MMC v3.1 - v3.3 */
+	case 4: /* MMC v4 */
+		card->cid.manfid	= unstuff_bits(resp, 120, 8);
+		card->cid.oemid		= unstuff_bits(resp, 104, 16);
+		card->cid.prod_name[0]	= unstuff_bits(resp, 96, 8);
+		card->cid.prod_name[1]	= unstuff_bits(resp, 88, 8);
+		card->cid.prod_name[2]	= unstuff_bits(resp, 80, 8);
+		card->cid.prod_name[3]	= unstuff_bits(resp, 72, 8);
+		card->cid.prod_name[4]	= unstuff_bits(resp, 64, 8);
+		card->cid.prod_name[5]	= unstuff_bits(resp, 56, 8);
+		card->cid.prv		= unstuff_bits(resp, 48, 8);
+		card->cid.serial	= unstuff_bits(resp, 16, 32);
+		card->cid.month		= unstuff_bits(resp, 12, 4);
+		card->cid.year		= unstuff_bits(resp, 8, 4) + 1997;
+		break;
+
+	default:
+		dev_err(&card->dev, "card has unknown MMCA version %d\n", mmca_vsn);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+/*
+ * Given the decoded CSD structure, decode the raw CID to our CID structure.
+ */
+static void mci_sd_decode_cid(struct mci *card)
+{
+	u32 *resp = card->raw_cid;
+
+	/*
+	 * SD doesn't currently have a version field so we will
+	 * have to assume we can parse this.
+	 */
+	card->cid.manfid		= unstuff_bits(resp, 120, 8);
+	card->cid.oemid			= unstuff_bits(resp, 104, 16);
+	card->cid.prod_name[0]		= unstuff_bits(resp, 96, 8);
+	card->cid.prod_name[1]		= unstuff_bits(resp, 88, 8);
+	card->cid.prod_name[2]		= unstuff_bits(resp, 80, 8);
+	card->cid.prod_name[3]		= unstuff_bits(resp, 72, 8);
+	card->cid.prod_name[4]		= unstuff_bits(resp, 64, 8);
+	card->cid.hwrev			= unstuff_bits(resp, 60, 4);
+	card->cid.fwrev			= unstuff_bits(resp, 56, 4);
+	card->cid.serial		= unstuff_bits(resp, 24, 32);
+	card->cid.year			= unstuff_bits(resp, 12, 8);
+	card->cid.month			= unstuff_bits(resp, 8, 4);
+
+	card->cid.year += 2000; /* SD cards year offset */
 }
 
 /**
@@ -2536,38 +2468,44 @@ static void mci_info(struct device *dev)
 
 	if (mci->high_capacity)
 		printf("  High capacity card\n");
-	printf("   CID: %08X-%08X-%08X-%08X\n", mci->cid[0], mci->cid[1],
-		mci->cid[2], mci->cid[3]);
+	printf("   CID: %08X-%08X-%08X-%08X\n", mci->raw_cid[0], mci->raw_cid[1],
+		mci->raw_cid[2], mci->raw_cid[3]);
 	printf("   CSD: %08X-%08X-%08X-%08X\n", mci->csd[0], mci->csd[1],
 		mci->csd[2], mci->csd[3]);
 	printf("  Max. transfer speed: %u Hz\n", mci->tran_speed);
 	mci_print_caps(mci->card_caps);
-	printf("  Manufacturer ID: %s\n", dev_get_param(dev, "cid_mid"));
-	printf("  OEM/Application ID: %s\n", dev_get_param(dev, "cid_oid"));
-	if (!IS_SD(mci))
-		printf("  CBX: %s\n", dev_get_param(dev, "cid_cbx"));
-	printf("  Product name: '%s'\n", dev_get_param(dev, "cid_pnm"));
-	printf("  Product revision: %s\n", dev_get_param(dev, "cid_prv"));
-	printf("  Serial no: %s\n", dev_get_param(dev, "cid_psn"));
-	printf("  Manufacturing date: %s\n", dev_get_param(dev, "cid_mdt"));
+	printf("  Manufacturer ID: 0x%02x\n", mci->cid.manfid);
+	printf("  OEM/Application ID: 0x%04x\n", mci->cid.oemid);
+	printf("  Product name: '%s'\n", mci->cid.prod_name);
+	printf("  Hardware revision: 0x%02x\n", mci->cid.hwrev);
+	printf("  Firmware revision: 0x%02x\n", mci->cid.fwrev);
+	printf("  Serial no: %u\n", mci->cid.serial);
+	printf("  Manufacturing date: %u.%u\n", mci->cid.year, mci->cid.month);
 }
 
-static void mci_parse_cid(struct mci *mci) {
+static void mci_parse_cid(struct mci *mci)
+{
 	struct device *dev = &mci->dev;
-	char buffer[8];
 
-	dev_add_param_uint32_fixed(dev, "cid_mid", extract_mid(mci), "0x%02X");
-	extract_oid(mci, buffer);
-	dev_add_param_string_fixed(dev, "cid_oid", buffer);
-	if (!IS_SD(mci))
-		dev_add_param_uint32_fixed(dev, "cid_cbx", extract_cbx(mci), "%u");
-	extract_pnm(mci, buffer);
-	dev_add_param_string_fixed(dev, "cid_pnm", buffer);
-	extract_prv(mci, buffer);
-	dev_add_param_string_fixed(dev, "cid_prv", buffer);
-	dev_add_param_uint32_fixed(dev, "cid_psn", extract_psn(mci), "%0u");
-	extract_mdt(mci, buffer);
-	dev_add_param_string_fixed(dev, "cid_mdt", buffer);
+	if (IS_SD(mci))
+		mci_sd_decode_cid(mci);
+	else
+		mci_mmc_decode_cid(mci);
+
+	if (mci->ext_csd[EXT_CSD_REV] >= 5) {
+		/* Adjust production date as per JEDEC JESD84-B451 */
+		if (mci->cid.year < 2010)
+			mci->cid.year += 16;
+	}
+
+	dev_add_param_uint32_fixed(dev, "cid_mid", mci->cid.manfid, "0x%02X");
+	dev_add_param_uint32_fixed(dev, "cid_oid", mci->cid.oemid, "0x%04X");
+	dev_add_param_string_fixed(dev, "cid_pnm", mci->cid.prod_name);
+	dev_add_param_uint32_fixed(dev, "cid_hwrev", mci->cid.hwrev, "0x%02X");
+	dev_add_param_uint32_fixed(dev, "cid_fwrev", mci->cid.fwrev, "0x%02X");
+	dev_add_param_uint32_fixed(dev, "cid_psn", mci->cid.serial, "%0u");
+	dev_add_param_uint32_fixed(dev, "cid_year", mci->cid.year, "%0u");
+	dev_add_param_uint32_fixed(dev, "cid_month", mci->cid.month, "%0u");
 }
 
 /**

@@ -294,9 +294,6 @@ static int mmc_spi_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci
 done:
 	mmc_cs_off(host);
 	return ret;
-
-return  0;
-
 }
 
 static void mmc_spi_set_ios(struct mci_host *mci, struct mci_ios *ios)

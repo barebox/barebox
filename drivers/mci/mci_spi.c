@@ -440,7 +440,7 @@ static int spi_mci_probe(struct device *dev)
 		host->mci.devname = xstrdup(of_alias_get(np));
 		host->detect_pin = gpiod_get_optional(dev, NULL, GPIOD_IN);
 		if (IS_ERR(host->detect_pin))
-			dev_warn(dev, "Failed to get 'reset' GPIO (ignored)\n");
+			dev_warn(dev, "Failed to get card detect GPIO (ignored)\n");
 	}
 
 	mci_register(&host->mci);

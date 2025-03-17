@@ -437,7 +437,7 @@ static int spi_mci_probe(struct device *dev)
 	host->mci.host_caps = MMC_CAP_SPI;
 
 	if (np) {
-		host->mci.devname = xstrdup(of_alias_get(np));
+		mci_of_parse(&host->mci);
 		host->detect_pin = gpiod_get_optional(dev, NULL, GPIOD_IN);
 		if (IS_ERR(host->detect_pin))
 			dev_warn(dev, "Failed to get card detect GPIO (ignored)\n");

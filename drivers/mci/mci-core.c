@@ -260,59 +260,6 @@ static int mci_poll_until_ready(struct mci *mci, int timeout_ms)
 	return 0;
 }
 
-
-/**
- * Write one or several blocks of data to the card
- * @param mci_dev MCI instance
- * @param src Where to read from to write to the card
- * @param blocknum Block number to write
- * @param blocks Block count to write
- * @return Transaction status (0 on success)
- */
-static int mci_block_write(struct mci *mci, const void *src, int blocknum,
-	int blocks)
-{
-	struct mci_cmd cmd = {};
-	struct mci_data data;
-	unsigned mmccmd;
-	int ret;
-
-	/*
-	 * Quoting eMMC Spec v5.1 (JEDEC Standard No. 84-B51):
-	 * Due to legacy reasons, a Device may still treat CMD24/25 during
-	 * prg-state (while busy is active) as a legal or illegal command.
-	 * A host should not send CMD24/25 while the Device is in the prg
-	 * state and busy is active.
-	 */
-	ret = mci_poll_until_ready(mci, 1000 /* ms */);
-	if (ret && ret != -ENOSYS)
-		return ret;
-
-	if (blocks > 1)
-		mmccmd = MMC_CMD_WRITE_MULTIPLE_BLOCK;
-	else
-		mmccmd = MMC_CMD_WRITE_SINGLE_BLOCK;
-
-	mci_setup_cmd(&cmd,
-		mmccmd,
-		mci->high_capacity != 0 ? blocknum : blocknum * mci->write_bl_len,
-		MMC_RSP_R1);
-
-	data.src = src;
-	data.blocks = blocks;
-	data.blocksize = mci->write_bl_len;
-	data.flags = MMC_DATA_WRITE;
-
-	ret = mci_send_cmd(mci, &cmd, &data);
-
-	if (ret || blocks > 1) {
-		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0, MMC_RSP_R1b);
-		mci_send_cmd(mci, &cmd, NULL);
-        }
-
-	return ret;
-}
-
 /**
  * Erase one or several blocks of data to the card
  * @param mci_dev MCI instance
@@ -364,35 +311,51 @@ err_out:
 	return -EIO;
 }
 
-/**
- * Read one or several block(s) of data from the card
- * @param mci MCI instance
- * @param dst Where to store the data read from the card
- * @param blocknum Block number to read
- * @param blocks number of blocks to read
- */
-static int mci_read_block(struct mci *mci, void *dst, int blocknum,
+static int mci_do_block_op(struct mci *mci, const void *src, void *dst, int blocknum,
 		int blocks)
 {
 	struct mci_cmd cmd = {};
 	struct mci_data data;
 	int ret;
-	unsigned mmccmd;
+	unsigned mmccmd_multi_block, mmccmd_single_block, mmccmd;
+	unsigned int flags;
+
+	if (dst) {
+		mmccmd_multi_block = MMC_CMD_READ_MULTIPLE_BLOCK;
+		mmccmd_single_block = MMC_CMD_READ_SINGLE_BLOCK;
+		flags = MMC_DATA_READ;
+	} else {
+		/*
+		 * Quoting eMMC Spec v5.1 (JEDEC Standard No. 84-B51):
+		 * Due to legacy reasons, a Device may still treat CMD24/25 during
+		 * prg-state (while busy is active) as a legal or illegal command.
+		 * A host should not send CMD24/25 while the Device is in the prg
+		 * state and busy is active.
+		 */
+		ret = mci_poll_until_ready(mci, 1000 /* ms */);
+		if (ret && ret != -ENOSYS)
+			return ret;
+
+		mmccmd_multi_block = MMC_CMD_WRITE_MULTIPLE_BLOCK;
+		mmccmd_single_block = MMC_CMD_WRITE_SINGLE_BLOCK;
+		flags = MMC_DATA_WRITE;
+	}
 
 	if (blocks > 1)
-		mmccmd = MMC_CMD_READ_MULTIPLE_BLOCK;
+		mmccmd = mmccmd_multi_block;
 	else
-		mmccmd = MMC_CMD_READ_SINGLE_BLOCK;
+		mmccmd = mmccmd_single_block;
 
 	mci_setup_cmd(&cmd,
 		mmccmd,
 		mci->high_capacity != 0 ? blocknum : blocknum * mci->read_bl_len,
 		MMC_RSP_R1);
 
+	data.src = src;
 	data.dest = dst;
 	data.blocks = blocks;
 	data.blocksize = mci->read_bl_len;
-	data.flags = MMC_DATA_READ;
+	data.flags = flags;
 
 	ret = mci_send_cmd(mci, &cmd, &data);
 
@@ -401,7 +364,35 @@ static int mci_read_block(struct mci *mci, void *dst, int blocknum,
 			      IS_SD(mci) ? MMC_RSP_R1b : MMC_RSP_R1);
 		mci_send_cmd(mci, &cmd, NULL);
 	}
+
 	return ret;
+}
+
+/**
+ * Read one or several block(s) of data from the card
+ * @param mci MCI instance
+ * @param dst Where to store the data read from the card
+ * @param blocknum Block number to read
+ * @param blocks number of blocks to read
+ */
+static int mci_block_read(struct mci *mci, void *dst, int blocknum,
+		int blocks)
+{
+	return mci_do_block_op(mci, NULL, dst, blocknum, blocks);
+}
+
+/**
+ * Write one or several blocks of data to the card
+ * @param mci_dev MCI instance
+ * @param src Where to read from to write to the card
+ * @param blocknum Block number to write
+ * @param blocks Block count to write
+ * @return Transaction status (0 on success)
+ */
+static int mci_block_write(struct mci *mci, const void *src, int blocknum,
+	int blocks)
+{
+	return mci_do_block_op(mci, src, NULL, blocknum, blocks);
 }
 
 /**
@@ -2288,7 +2279,7 @@ static int mci_sd_read(struct block_device *blk, void *buffer, sector_t block,
 
 	while (num_blocks) {
 		read_block = min(num_blocks, max_req_block);
-		rc = mci_read_block(mci, buffer, block, read_block);
+		rc = mci_block_read(mci, buffer, block, read_block);
 		if (rc != 0) {
 			dev_dbg(&mci->dev, "Reading block %llu failed with %d\n", block, rc);
 			return rc;

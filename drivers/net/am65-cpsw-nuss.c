@@ -466,7 +466,6 @@ static void am65_cpsw_recv(struct eth_device *edev)
 	dma_addr_t pkt;
 	int ret;
 	u32 num, port_id;
-	bool valid = true;
 
 	if (!common->started)
 		return;
@@ -489,18 +488,17 @@ static void am65_cpsw_recv(struct eth_device *edev)
 	port_id = packet_data.src_tag;
 	if (port_id >= AM65_CPSW_CPSWNU_MAX_PORTS) {
 		dev_err(common->dev, "received pkt on invalid port_id %d\n", port_id);
-		valid = false;
+		goto out;
 	}
 
 	port = &common->ports[port_id];
 	if (!port->enabled) {
 		dev_err(common->dev, "received pkt on disabled port_id %d\n", port_id);
-		valid = false;
+		goto out;
 	}
 
-	if (valid)
-		net_receive(&port->edev, (void *)pkt, ret);
-
+	net_receive(&port->edev, (void *)pkt, ret);
+out:
 	num = common->rx_next % UDMA_RX_DESC_NUM;
 
 	dma_sync_single_for_device(common->dev, pkt, ret, DMA_FROM_DEVICE);

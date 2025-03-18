@@ -85,8 +85,20 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_zstd_compressed] = { "ZSTD compressed", "zstd" },
 };
 
+static const char *file_type_to_nr_string(enum filetype f)
+{
+	static char str[sizeof("4294967295")];
+
+	sprintf(str, "%u", (unsigned int)f);
+
+	return str;
+}
+
 const char *file_type_to_string(enum filetype f)
 {
+	if (!IS_ENABLED(CONFIG_FILETYPE_STRINGS))
+		return file_type_to_nr_string(f);
+
 	if (f < ARRAY_SIZE(filetype_str))
 		return filetype_str[f].name;
 
@@ -95,6 +107,9 @@ const char *file_type_to_string(enum filetype f)
 
 const char *file_type_to_short_string(enum filetype f)
 {
+	if (!IS_ENABLED(CONFIG_FILETYPE_STRINGS))
+		return file_type_to_nr_string(f);
+
 	if (f < ARRAY_SIZE(filetype_str))
 		return filetype_str[f].shortname;
 

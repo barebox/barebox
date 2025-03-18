@@ -74,29 +74,6 @@ void amba_device_put(struct amba_device *);
 int amba_device_add(struct amba_device *);
 int amba_device_register(struct amba_device *, struct resource *);
 
-struct amba_device *
-amba_aphb_device_add(struct device *parent, const char *name, int id,
-		     resource_size_t base, size_t size,
-		     void *pdata, unsigned int periphid);
-
-static inline struct amba_device *
-amba_apb_device_add(struct device *parent, const char *name, int id,
-		    resource_size_t base, size_t size,
-		    void *pdata, unsigned int periphid)
-{
-	return amba_aphb_device_add(parent, name, id, base, size, pdata,
-				    periphid);
-}
-
-static inline struct amba_device *
-amba_ahb_device_add(struct device *parent, const char *name, int id,
-		    resource_size_t base, size_t size,
-		    void *pdata, unsigned int periphid)
-{
-	return amba_aphb_device_add(parent, name, id, base, size, pdata,
-				    periphid);
-}
-
 static inline void __iomem *amba_get_mem_region(struct amba_device *dev)
 {
 	return dev->base;

@@ -162,27 +162,6 @@ int amba_device_add(struct amba_device *dev)
 	return ret;
 }
 
-struct amba_device *
-amba_aphb_device_add(struct device *parent, const char *name, int id,
-		     resource_size_t base, size_t size,
-		     void *pdata, unsigned int periphid)
-{
-	struct amba_device *dev;
-	int ret;
-
-	dev = amba_device_alloc(name, id, base, size);
-
-	dev->periphid = periphid;
-	dev->dev.platform_data = pdata;
-	dev->dev.parent = parent;
-
-	ret = amba_device_add(dev);
-	if (ret)
-		return ERR_PTR(ret);
-
-	return dev;
-}
-
 /**
  *	amba_device_alloc - allocate an AMBA device
  *	@name: sysfs name of the AMBA device

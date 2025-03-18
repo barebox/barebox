@@ -78,7 +78,8 @@ enum filetype file_detect_compression_type(const void *_buf, size_t bufsize);
 enum filetype file_detect_fs_type(const void *_buf, size_t bufsize);
 enum filetype file_detect_type(const void *_buf, size_t bufsize);
 int file_name_detect_type(const char *filename, enum filetype *type);
-int file_name_detect_type_offset(const char *filename, loff_t pos, enum filetype *type);
+int file_name_detect_type_offset(const char *filename, loff_t pos, enum filetype *type,
+				 enum filetype (*detect)(const void *buf, size_t bufsize));
 int cdev_detect_type(struct cdev *cdev, enum filetype *type);
 enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec);
 int is_fat_boot_sector(const void *_buf);

@@ -476,7 +476,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	return filetype_unknown;
 }
 
-int file_name_detect_type_offset(const char *filename, loff_t pos, enum filetype *type)
+int file_name_detect_type_offset(const char *filename, loff_t pos, enum filetype *type,
+				 enum filetype (*detect)(const void *buf, size_t bufsize))
 {
 	int fd, ret;
 	void *buf;
@@ -491,7 +492,7 @@ int file_name_detect_type_offset(const char *filename, loff_t pos, enum filetype
 	if (ret < 0)
 		goto err_out;
 
-	*type = file_detect_type(buf, ret);
+	*type = detect(buf, ret);
 
 	ret = 0;
 err_out:
@@ -503,7 +504,8 @@ err_out:
 
 int file_name_detect_type(const char *filename, enum filetype *type)
 {
-	return file_name_detect_type_offset(filename, 0, type);
+	return file_name_detect_type_offset(filename, 0, type,
+					    file_detect_type);
 }
 
 int cdev_detect_type(struct cdev *cdev, enum filetype *type)

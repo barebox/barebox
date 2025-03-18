@@ -198,6 +198,27 @@ int is_fat_boot_sector(const void *sect)
 	return 0;
 }
 
+static enum filetype file_detect_fs_fat(const void *_buf, size_t bufsize)
+{
+	const u8 *buf8 = _buf;
+
+	/*
+	 * Check record signature (always placed at offset 510 even if the
+	 * sector size is > 512)
+	 */
+	if (get_unaligned_le16(&buf8[BS_55AA]) != 0xAA55)
+		return filetype_unknown;
+
+	/* Check "FAT" string */
+	if ((get_unaligned_le32(&buf8[BS_FilSysType]) & 0xFFFFFF) == 0x544146)
+		return filetype_fat;
+
+	if ((get_unaligned_le32(&buf8[BS_FilSysType32]) & 0xFFFFFF) == 0x544146)
+		return filetype_fat;
+
+	return filetype_unknown;
+}
+
 enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec)
 {
 	/*
@@ -207,19 +228,8 @@ enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec)
 	if (bootsec)
 		*bootsec = 0;
 
-	/*
-	 * Check record signature (always placed at offset 510 even if the
-	 * sector size is > 512)
-	 */
-	if (get_unaligned_le16(&sector[BS_55AA]) != 0xAA55)
+	if (file_detect_fs_fat(sector, 512) != filetype_fat)
 		return filetype_unknown;
-
-	/* Check "FAT" string */
-	if ((get_unaligned_le32(&sector[BS_FilSysType]) & 0xFFFFFF) == 0x544146)
-		return filetype_fat;
-
-	if ((get_unaligned_le32(&sector[BS_FilSysType32]) & 0xFFFFFF) == 0x544146)
-		return filetype_fat;
 
 	if (bootsec)
 		/*
@@ -289,12 +299,31 @@ enum filetype file_detect_compression_type(const void *_buf, size_t bufsize)
 	return filetype_unknown;
 }
 
+enum filetype file_detect_fs_type(const void *_buf, size_t bufsize)
+{
+	const u32 *buf = _buf;
+	const u16 *buf16 = _buf;
+	const u8 *buf8 = _buf;
+
+	if (bufsize < 16)
+		return filetype_unknown;
+
+	if (buf8[0] == 'h' && buf8[1] == 's' && buf8[2] == 'q' &&
+			buf8[3] == 's')
+		return filetype_squashfs;
+	if (bufsize >= 1536 && buf16[512 + 28] == le16_to_cpu(0xef53))
+		return filetype_ext;
+	if (buf[0] == le32_to_cpu(0x06101831))
+		return filetype_ubifs;
+
+	return file_detect_fs_fat(_buf, bufsize);
+}
+
 enum filetype file_detect_type(const void *_buf, size_t bufsize)
 {
 	const u32 *buf = _buf;
 	const u64 *buf64 = _buf;
 	const u8 *buf8 = _buf;
-	const u16 *buf16 = _buf;
 	const struct imx_flash_header *imx_flash_header = _buf;
 	enum filetype type;
 
@@ -319,13 +348,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_uimage;
 	if (buf[0] == 0x23494255)
 		return filetype_ubi;
-	if (buf[0] == le32_to_cpu(0x06101831))
-		return filetype_ubifs;
 	if (buf[0] == 0x20031985)
 		return filetype_jffs2;
-	if (buf8[0] == 'h' && buf8[1] == 's' && buf8[2] == 'q' &&
-			buf8[3] == 's')
-		return filetype_squashfs;
 	if (buf[0] == be32_to_cpu(0xd00dfeed))
 		return filetype_oftree;
 	if (strncmp(buf8, "ANDROID!", 8) == 0)
@@ -422,9 +446,6 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	type = file_detect_partition_table(_buf, bufsize);
 	if (type != filetype_unknown)
 		return type;
-
-	if (bufsize >= 1536 && buf16[512 + 28] == le16_to_cpu(0xef53))
-		return filetype_ext;
 
 	if (strncmp(buf8 + CH_TOC_section_name, "CHSETTINGS", 10) == 0)
 		return filetype_ch_image;

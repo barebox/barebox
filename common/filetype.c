@@ -523,7 +523,7 @@ int cdev_detect_type(struct cdev *cdev, enum filetype *type)
 	if (ret < 0)
 		goto err_out;
 
-	*type = file_detect_type(buf, ret);
+	*type = file_detect_fs_type(buf, ret);
 	ret = 0;
 
 err_out:

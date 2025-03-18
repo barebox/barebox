@@ -65,7 +65,7 @@ static int register_one_partition(struct block_device *blk, struct partition *pa
 	ret = devfs_create_link(cdev, partition_name);
 	if (ret)
 		dev_warn(blk->dev, "Failed to create link from %s to %s\n",
-			 partition_name, blk->cdev.name);
+			 partition_name, cdev->name);
 	free(partition_name);
 
 	return 0;

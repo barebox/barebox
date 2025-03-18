@@ -79,7 +79,7 @@ int uncompress(unsigned char *inbuf, long len,
 	char *err;
 
 	if (inbuf) {
-		ft = file_detect_type(inbuf, len);
+		ft = file_detect_compression_type(inbuf, len);
 		uncompress_buf = NULL;
 		uncompress_size = 0;
 	} else {
@@ -94,7 +94,7 @@ int uncompress(unsigned char *inbuf, long len,
 		if (ret < 0)
 			goto err;
 
-		ft = file_detect_type(uncompress_buf, 32);
+		ft = file_detect_compression_type(uncompress_buf, 32);
 	}
 
 	pr_debug("Filetype detected: %s\n", file_type_to_string(ft));

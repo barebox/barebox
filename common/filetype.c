@@ -261,6 +261,34 @@ static bool is_dos_exe(const u8 *buf8)
 
 #define CH_TOC_section_name     0x14
 
+enum filetype file_detect_compression_type(const void *_buf, size_t bufsize)
+{
+	const u32 *buf = _buf;
+	const u8 *buf8 = _buf;
+
+	if (bufsize < 16)
+		return filetype_unknown;
+
+	if (buf8[0] == 0x89 && buf8[1] == 0x4c && buf8[2] == 0x5a &&
+			buf8[3] == 0x4f)
+		return filetype_lzo_compressed;
+	if (buf8[0] == 0x02 && buf8[1] == 0x21 && buf8[2] == 0x4c &&
+			buf8[3] == 0x18)
+		return filetype_lz4_compressed;
+	if (buf8[0] == 0x1f && buf8[1] == 0x8b && buf8[2] == 0x08)
+		return filetype_gzip;
+	if (buf8[0] == 'B' && buf8[1] == 'Z' && buf8[2] == 'h' &&
+			buf8[3] > '0' && buf8[3] <= '9')
+                return filetype_bzip2;
+	if (buf8[0] == 0xfd && buf8[1] == 0x37 && buf8[2] == 0x7a &&
+			buf8[3] == 0x58 && buf8[4] == 0x5a && buf8[5] == 0x00)
+		return filetype_xz_compressed;
+	if (le32_to_cpu(buf[0]) == le32_to_cpu(ZSTD_MAGICNUMBER))
+		return filetype_zstd_compressed;
+
+	return filetype_unknown;
+}
+
 enum filetype file_detect_type(const void *_buf, size_t bufsize)
 {
 	const u32 *buf = _buf;
@@ -278,17 +306,15 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (buf[0] == ENVFS_32(ENVFS_MAGIC))
 		return filetype_barebox_env;
 
+	type = file_detect_compression_type(_buf, bufsize);
+	if (type != filetype_unknown)
+		return type;
+
 	if (bufsize < 32)
 		return filetype_unknown;
 
 	if (strncmp(buf8, "BM", 2) == 0)
 		return filetype_bmp;
-	if (buf8[0] == 0x89 && buf8[1] == 0x4c && buf8[2] == 0x5a &&
-			buf8[3] == 0x4f)
-		return filetype_lzo_compressed;
-	if (buf8[0] == 0x02 && buf8[1] == 0x21 && buf8[2] == 0x4c &&
-			buf8[3] == 0x18)
-		return filetype_lz4_compressed;
 	if (buf[0] == be32_to_cpu(0x27051956))
 		return filetype_uimage;
 	if (buf[0] == 0x23494255)
@@ -297,14 +323,6 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_ubifs;
 	if (buf[0] == 0x20031985)
 		return filetype_jffs2;
-	if (buf8[0] == 0x1f && buf8[1] == 0x8b && buf8[2] == 0x08)
-		return filetype_gzip;
-	if (buf8[0] == 'B' && buf8[1] == 'Z' && buf8[2] == 'h' &&
-			buf8[3] > '0' && buf8[3] <= '9')
-                return filetype_bzip2;
-	if (buf8[0] == 0xfd && buf8[1] == 0x37 && buf8[2] == 0x7a &&
-			buf8[3] == 0x58 && buf8[4] == 0x5a && buf8[5] == 0x00)
-		return filetype_xz_compressed;
 	if (buf8[0] == 'h' && buf8[1] == 's' && buf8[2] == 'q' &&
 			buf8[3] == 's')
 		return filetype_squashfs;
@@ -325,8 +343,6 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_rockchip_rkns_image;
 	if (le32_to_cpu(buf[0]) == le32_to_cpu(0xaa640001))
 		return filetype_fip;
-	if (le32_to_cpu(buf[0]) == le32_to_cpu(ZSTD_MAGICNUMBER))
-		return filetype_zstd_compressed;
 
 	if ((buf8[0] == 0x5a || buf8[0] == 0x69 || buf8[0] == 0x78 ||
 	     buf8[0] == 0x8b || buf8[0] == 0x9c) &&

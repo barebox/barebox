@@ -54,7 +54,7 @@ static struct am33xx_emif_regs ddr3_regs = {
 	.sdram_ref_ctrl		= 0xc30,
 };
 
-extern char __dtb_z_am335x_myirtech_myd_start[];
+extern char __dtb_z_am335x_myirtech_myd_mlo_start[];
 
 ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 {
@@ -68,7 +68,7 @@ ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 	relocate_to_current_adr();
 	setup_c();
 
-	fdt = __dtb_z_am335x_myirtech_myd_start;
+	fdt = __dtb_z_am335x_myirtech_myd_mlo_start;
 
 	omap_watchdog_disable(IOMEM(AM33XX_WDT_BASE));
 
@@ -98,6 +98,8 @@ ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 
 	am335x_barebox_entry(fdt);
 }
+
+extern char __dtb_z_am335x_myirtech_myd_start[];
 
 ENTRY_FUNCTION(start_am33xx_myirtech_sdram, r0, r1, r2)
 {

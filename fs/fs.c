@@ -795,7 +795,6 @@ static void dentry_kill(struct dentry *dentry)
 		dput(dentry->d_parent);
 
 	list_del(&dentry->d_child);
-	free(dentry->name);
 	free(dentry);
 }
 
@@ -1428,15 +1427,11 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {
 	struct dentry *dentry;
 
-	dentry = xzalloc(sizeof(*dentry));
-	if (!dentry)
-		return NULL;
-
 	if (!name)
 		name = &slash_name;
 
-	dentry->name = malloc(name->len + 1);
-	if (!dentry->name)
+	dentry = xzalloc(struct_size(dentry, name, name->len + 1));
+	if (!dentry)
 		return NULL;
 
 	memcpy(dentry->name, name->name, name->len);
@@ -3007,9 +3002,9 @@ static char *__dpath(struct dentry *dentry, struct dentry *root)
 
 	ppath = __dpath(dentry->d_parent, root);
 	if (ppath)
-		res = basprintf("%s/%s", ppath, dentry->name);
+		res = basprintf("%s/%s", ppath, dentry->d_name.name);
 	else
-		res = basprintf("/%s", dentry->name);
+		res = basprintf("/%s", dentry->d_name.name);
 	free(ppath);
 
 	return res;

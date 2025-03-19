@@ -367,11 +367,7 @@ static int of_memory_fixup(struct device_node *root, void *unused)
 		int len = 0;
 
 		/* Create a /memory node for each bank */
-		memnode_name = basprintf("/memory@%lx", bank->start);
-		if (!memnode_name) {
-			err = -ENOMEM;
-			goto err_out;
-		}
+		memnode_name = xasprintf("/memory@%lx", bank->start);
 
 		memnode = of_create_node(root, memnode_name);
 		if (!memnode) {
@@ -402,7 +398,6 @@ static int of_memory_fixup(struct device_node *root, void *unused)
 
 err_free:
 	free(memnode_name);
-err_out:
 	return err;
 }
 

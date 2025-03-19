@@ -87,8 +87,10 @@ static ssize_t at25_ee_read(struct cdev *cdev,
 	switch (at25->addrlen) {
 	default:	/* case 3 */
 		*cp++ = offset >> 16;
+		fallthrough;
 	case 2:
 		*cp++ = offset >> 8;
+		fallthrough;
 	case 1:
 	case 0:	/* can't happen: for better codegen */
 		*cp++ = offset >> 0;
@@ -168,8 +170,10 @@ static ssize_t at25_ee_write(struct cdev *cdev,
 		switch (at25->addrlen) {
 		default:	/* case 3 */
 			*cp++ = offset >> 16;
+			fallthrough;
 		case 2:
 			*cp++ = offset >> 8;
+			fallthrough;
 		case 1:
 		case 0:	/* can't happen: for better codegen */
 			*cp++ = offset >> 0;
@@ -243,7 +247,7 @@ static int at25_np_to_chip(struct device *dev,
 		return -ENODEV;
 
 	memset(chip, 0, sizeof(*chip));
-	strncpy(chip->name, np->name, sizeof(chip->name));
+	strlcpy(chip->name, np->name, sizeof(chip->name));
 
 	if (of_property_read_u32(np, "size", &val) == 0 ||
 	    of_property_read_u32(np, "at25,byte-len", &val) == 0) {

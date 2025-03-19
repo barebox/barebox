@@ -172,9 +172,7 @@ static void watchdog_build_bootargs(struct watchdog *watchdog, struct device_nod
 	if (alias_id < 0)
 		return;
 
-	buf = basprintf("systemd.watchdog_device=/dev/watchdog%d", alias_id);
-	if (!buf)
-		return;
+	buf = xasprintf("systemd.watchdog_device=/dev/watchdog%d", alias_id);
 
 	globalvar_add_simple("linux.bootargs.dyn.watchdog", buf);
 	free(buf);
@@ -204,11 +202,8 @@ static int of_write_bootargs(struct device_node *node)
 		const char *oldstr;
 
 		ret = of_property_read_string(node, "bootargs", &oldstr);
-		if (!ret) {
-			str = buf = basprintf("%s %s", oldstr, str);
-			if (!buf)
-				return -ENOMEM;
-		}
+		if (!ret)
+			str = buf = xasprintf("%s %s", oldstr, str);
 	}
 
 	ret = of_property_write_string(node, "bootargs", str);

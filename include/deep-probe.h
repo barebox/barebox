@@ -19,8 +19,8 @@ static inline bool deep_probe_is_supported(void)
 }
 #endif
 
-extern struct deep_probe_entry __barebox_deep_probe_start;
-extern struct deep_probe_entry __barebox_deep_probe_end;
+extern struct deep_probe_entry __barebox_deep_probe_start[];
+extern struct deep_probe_entry __barebox_deep_probe_end[];
 
 #define __BAREBOX_DEEP_PROBE_ENABLE(_entry,_device_id)			\
 	static const struct deep_probe_entry _entry			\

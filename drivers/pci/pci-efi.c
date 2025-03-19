@@ -176,7 +176,7 @@ static u8 *acpi_parse_resource(u8 *next, struct resource *out)
 		case ACPI_RESOURCE_TYPFLAG_MEM_PREF:
 			name = "P-MEM";
 			flags |= IORESOURCE_PREFETCH;
-			/* fallthrough */
+			fallthrough;
 		case ACPI_RESOURCE_TYPFLAG_MEM_WC:
 		case ACPI_RESOURCE_TYPFLAG_MEM_CACHEABLE:
 			flags |= IORESOURCE_CACHEABLE;

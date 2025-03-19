@@ -28,6 +28,7 @@ menu "ARCH specific settings"
 config 64BIT
 	def_bool y if X86_EFI
 	select ARCH_DMA_ADDR_T_64BIT
+	select PHYS_ADDR_T_64BIT
 	help
 	  Say yes to build a 64-bit binary - formerly known as x86_64
 	  Say no to build a 32-bit binary - formerly known as i386.

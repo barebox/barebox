@@ -139,7 +139,7 @@ static int atmel_lcdfb_check_var(struct fb_info *info)
 	case 32:
 		info->transp.offset = 24;
 		info->transp.length = 8;
-		/* fall through */
+		fallthrough;
 	case 24:
 		if (sinfo->lcd_wiring_mode == ATMEL_LCDC_WIRING_RGB) {
 			/* RGB:888 mode */

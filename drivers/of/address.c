@@ -127,7 +127,7 @@ static unsigned int of_bus_pci_get_flags(const __be32 *addr)
 		break;
 	case 0x03: /* 64 bits */
 		flags |= IORESOURCE_MEM_64;
-		/* fallthrough */
+		fallthrough;
 	case 0x02: /* 32 bits */
 		flags |= IORESOURCE_MEM;
 		break;

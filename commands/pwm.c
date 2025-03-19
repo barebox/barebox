@@ -52,7 +52,7 @@ static int do_pwm_cmd(int argc, char *argv[])
 			/* convenience option for changing frequency without
 			 * having to specify duty width */
 			use_default_width = true;
-			/* fallthrough */
+			fallthrough;
 		case 'f':
 			freq = simple_strtol(optarg, NULL, 0);
 			break;

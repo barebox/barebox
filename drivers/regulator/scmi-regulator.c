@@ -236,9 +236,7 @@ static int scmi_regulator_common_init(struct scmi_regulator *sreg)
 		return -EOPNOTSUPP;
 	}
 
-	sdesc->name = basprintf("%s", vinfo->name);
-	if (!sdesc->name)
-		return -ENOMEM;
+	sdesc->name = xasprintf("%s", vinfo->name);
 
 	if (vinfo->segmented)
 		ret = scmi_config_linear_regulator_mappings(sreg, vinfo);

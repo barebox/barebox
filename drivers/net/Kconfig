@@ -189,7 +189,6 @@ config DRIVER_NET_ENC28J60_WRITEVERIFY
 config DRIVER_NET_ETHOC
 	bool "OpenCores ethernet MAC driver"
 	depends on OPENRISC
-	depends on HAS_CACHE
 	select PHYLIB
 	help
 	  This option enables support for the OpenCores 10/100 Mbps

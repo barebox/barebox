@@ -479,7 +479,7 @@ static int do_bootz_linux(struct image_data *data)
 	switch (header->magic) {
 	case swab32(ZIMAGE_MAGIC):
 		swap = 1;
-		/* fall through */
+		fallthrough;
 	case ZIMAGE_MAGIC:
 		break;
 	default:

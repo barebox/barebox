@@ -238,7 +238,7 @@ static const struct regulator_ops fan53555_regulator_ops = {
 
 static int fan53555_device_setup(struct fan53555_device_info *di)
 {
-	unsigned int mode_reg, mode_mask;
+	unsigned int mode_reg, mode_mask = 0;
 	int ret = 0;
 
 	/* Setup voltage control register */

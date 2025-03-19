@@ -389,17 +389,17 @@ static int read_modal_key(bool is_modal)
 	case 'a':
 		statusbar("-- INSERT --");
 		mode = MODE_INSERT;
-		/* fall through */
+		fallthrough;
 	case 'l':
 		return BB_KEY_RIGHT;
 	case 'O':
 		backlog[0] = '\n';
 		backlog[1] = BB_KEY_UP;
-		/* fall through */
+		fallthrough;
 	case 'I':
 		statusbar("-- INSERT --");
 		mode = MODE_INSERT;
-		/* fall through */
+		fallthrough;
 	case '^':
 	case '0':
 		return BB_KEY_HOME;
@@ -409,22 +409,22 @@ static int read_modal_key(bool is_modal)
 			break;
 		backlog[0] = CTL_CH('u');
 		backlog[1] = CTL_CH('u');
-		/* fall through */
+		fallthrough;
 	case CTL_CH('u'):
 		return BB_KEY_PAGEUP;
 	case 'G':
 		backlog[0] = CTL_CH('d');
 		backlog[1] = CTL_CH('d');
-		/* fall through */
+		fallthrough;
 	case CTL_CH('d'):
 		return BB_KEY_PAGEDOWN;
 	case 'o':
 		backlog[0] = '\n';
-		/* fall through */
+		fallthrough;
 	case 'A':
 		statusbar("-- INSERT --");
 		mode = MODE_INSERT;
-		/* fall through */
+		fallthrough;
 	case '$':
 		return BB_KEY_END;
 	case CTL_CH('c'):
@@ -453,6 +453,7 @@ static int read_modal_key(bool is_modal)
 			return CTL_CH('d');
 		if (c == 'Q')
 			return CTL_CH('c');
+		fallthrough;
 	default:
 		statusbar("ERROR: not implemented");
 		break;

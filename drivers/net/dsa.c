@@ -4,6 +4,7 @@
 #include <dma.h>
 #include <dsa.h>
 #include <of_net.h>
+#include <param.h>
 
 u32 dsa_user_ports(struct dsa_switch *ds)
 {
@@ -431,6 +432,13 @@ out_put_node:
 	return ret;
 }
 
+static int dsa_set_forwarding(struct param_d *p, void *priv)
+{
+	struct dsa_switch *ds = priv;
+
+	return ds->ops->set_forwarding(ds, ds->forwarding_enable);
+}
+
 int dsa_register_switch(struct dsa_switch *ds)
 {
 	int ret;
@@ -447,6 +455,10 @@ int dsa_register_switch(struct dsa_switch *ds)
 		dev_err(ds->dev, "No or too many ports are configured\n");
 		return -EINVAL;
 	}
+
+	if (ds->ops->set_forwarding)
+		dev_add_param_bool(ds->dev, "forwarding", dsa_set_forwarding,
+				   NULL, &ds->forwarding_enable, ds);
 
 	ret = dsa_switch_parse_ports_of(ds, ds->dev->of_node);
 	if (ret)

@@ -448,7 +448,7 @@ static int ti_k3_pm_domain_probe(struct device *dev)
 	priv->pd = pd;
 
 	for (i = 0; i < num_domains; i++, pd++) {
-		pd->genpd.name = basprintf("pd:%d", i);
+		pd->genpd.name = xasprintf("pd:%d", i);
 		pd->lpsc = &data->lpsc[i];
 		pd->genpd.power_off = ti_k3_pm_domain_off;
 		pd->genpd.power_on = ti_k3_pm_domain_on;

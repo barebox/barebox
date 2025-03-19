@@ -203,3 +203,77 @@ barebox:
 The netconsole can be used just like any other console. Note, however, that the
 simple console protocol is UDP based, so there is no guarantee about packet
 loss.
+
+DSA (Distributed Switch Architecture) Support in Barebox
+--------------------------------------------------------
+
+Barebox includes support for DSA (Distributed Switch Architecture), allowing
+for basic configuration and management of network switches within the
+bootloader.
+
+DSA enables network devices to use a switch framework where each port of the
+switch is treated as a separate network interface, while still allowing packet
+forwarding between ports when enabled.
+
+DSA Configuration
+^^^^^^^^^^^^^^^^^
+
+DSA switches are managed through device parameters, similar to network
+interfaces. Each switch is identified as a separate device, typically named
+``switch0`` or ``switch@00`` depending on the bus address.
+
+Global Forwarding Control
+"""""""""""""""""""""""""
+
+A parameter, ``forwarding``, allows configuring whether a switch operates
+in **isolated mode** (default) or **forwarding mode**:
+
+- **Isolated Mode** (default): Each port is treated as an independent interface,
+  with no forwarding between ports.
+
+- **Forwarding Mode**: The switch allows forwarding of packets between ports,
+  acting as a traditional non-managed switch.
+
+To check the current DSA switch settings, use:
+
+.. code-block:: sh
+
+  barebox:/ devinfo switch0
+  Parameters:
+    forwarding: 0 (type: bool)
+
+To enable forwarding mode:
+
+.. code-block:: sh
+
+  dev.switch0.forwarding=1
+
+To disable forwarding and revert to isolated mode:
+
+.. code-block:: sh
+
+  dev.switch0.forwarding=0
+
+Persisting Configuration
+""""""""""""""""""""""""
+
+To ensure that the forwarding mode setting persists across reboots,
+it can be stored as a nonvolatile (nv) variable:
+
+.. code-block:: sh
+
+  nv dev.switch0.forwarding=1
+
+This will configure the switch to always boot in forwarding mode.
+
+Integration with Network Interfaces
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each port of the DSA switch is exposed as an independent network interface in
+Barebox. However, when forwarding is enabled, packets can be forwarded between
+these interfaces without requiring intervention from the CPU.
+
+To configure network settings for individual ports, use standard network
+configuration variables (e.g., ``eth0.ipaddr``, ``eth0.mode``, etc.). These
+settings are applied per port and are independent of the global switch
+forwarding configuration.

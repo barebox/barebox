@@ -19,7 +19,7 @@ config SOC_VIRT
 	bool "QEMU Virt Machine"
 	select RISCV_S_MODE
 	select BOARD_GENERIC_DT
-	select HAS_CACHE
+	select RISCV_ICACHE
 	select HAS_DEBUG_LL
 	help
 	  Generates an image tht can be be booted by QEMU. The image is called
@@ -46,7 +46,7 @@ config BOARD_RISCVEMU
 
 config CPU_SIFIVE
 	bool
-	select HAS_CACHE
+	select RISCV_ICACHE
 
 config SOC_SIFIVE
 	bool "SiFive SoCs"
@@ -116,7 +116,7 @@ config SOC_ALLWINNER_SUN20I
 	bool "Allwinner Sun20i SoCs"
 	depends on ARCH_RV64I
 	select HAS_DEBUG_LL
-	select HAS_CACHE
+	select RISCV_ICACHE
 
 if SOC_ALLWINNER_SUN20I
 
@@ -129,6 +129,9 @@ config BOARD_ALLWINNER_D1
 endif
 
 comment "CPU features"
+
+config RISCV_ICACHE
+	bool
 
 config SIFIVE_L2
 	bool "SiFive L2 cache controller"

@@ -576,8 +576,7 @@ void console_putc(unsigned int ch, char c)
 	switch (init) {
 	case CONSOLE_UNINITIALIZED:
 		console_init_early();
-		/* fall through */
-
+		fallthrough;
 	case CONSOLE_INITIALIZED_BUFFER:
 		kfifo_putc(console_output_fifo, c);
 		if (c == '\n')

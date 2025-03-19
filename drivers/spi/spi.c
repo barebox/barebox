@@ -309,9 +309,7 @@ static int spi_get_gpio_descs(struct spi_controller *ctlr)
 			 */
 			char *gpioname;
 
-			gpioname = basprintf("%s CS%d", dev_name(dev), i);
-			if (!gpioname)
-				return -ENOMEM;
+			gpioname = xasprintf("%s CS%d", dev_name(dev), i);
 			gpiod_set_consumer_name(cs[i], gpioname);
 			free(gpioname);
 		}

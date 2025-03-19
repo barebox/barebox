@@ -213,18 +213,6 @@ config BLOBGEN
 	select BASE64
 	bool "include blob encode/decode support"
 
-config ARCH_HAS_STACK_DUMP
-	bool
-
-config ARCH_HAS_DATA_ABORT_MASK
-	bool
-
-config ARCH_HAS_ZERO_PAGE
-	bool
-
-config HAVE_EFFICIENT_UNALIGNED_ACCESS
-	bool
-
 config GENERIC_ALLOCATOR
 	bool
 	help

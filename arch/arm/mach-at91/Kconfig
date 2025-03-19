@@ -52,7 +52,7 @@ config HAVE_AT91_SDRAMC
 config HAVE_AT91_DDRAMC
 	bool
 
-config AT91_MCI_PBL
+config AT91_PBL
 	def_bool MCI_ATMEL_PBL || MCI_ATMEL_SDHCI_PBL
 
 # Select if board uses the common at91sam926x_board_init

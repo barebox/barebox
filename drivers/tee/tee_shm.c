@@ -242,9 +242,7 @@ int tee_shm_get_fd(struct tee_shm *shm)
 	if (shm->fd < 0) {
 		char *tmp;
 
-		tmp = basprintf("/dev/%s", shm->cdev.name);
-		if (!tmp)
-			return -ENOMEM;
+		tmp = xasprintf("/dev/%s", shm->cdev.name);
 
 		shm->fd = open(tmp, O_RDONLY);
 		free(tmp);

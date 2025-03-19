@@ -22,8 +22,8 @@ bool deep_probe_is_supported(void)
 		return boardstate;
 
 	/* determine boardstate */
-	for (board = &__barebox_deep_probe_start;
-	     board != &__barebox_deep_probe_end; board++) {
+	for (board = __barebox_deep_probe_start;
+	     board != __barebox_deep_probe_end; board++) {
 		const struct of_device_id *matches = board->device_id;
 
 		for (; matches->compatible; matches++) {

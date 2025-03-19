@@ -33,9 +33,7 @@ static int stm32mp_bbu_gpt_part_update(struct bbu_handler *handler,
 	struct stat st;
 	int ret;
 
-	gpt_data.devicefile = basprintf("%s.%s", gpt_data.devicefile, part);
-	if (!gpt_data.devicefile)
-		return -ENOMEM;
+	gpt_data.devicefile = xasprintf("%s.%s", gpt_data.devicefile, part);
 
 	pr_debug("Attempting %s update\n", gpt_data.devicefile);
 

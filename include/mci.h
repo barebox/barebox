@@ -347,6 +347,7 @@
  */
 #define EXT_CSD_PART_CONFIG_ACC_MASK	(0x7)
 #define EXT_CSD_PART_CONFIG_ACC_BOOT0	(0x1)
+#define EXT_CSD_PART_CONFIG_ACC_RPMB	(0x3)
 #define EXT_CSD_PART_CONFIG_ACC_GPP0	(0x4)
 
 #define EXT_CSD_CMD_SET_NORMAL		(1<<0)
@@ -606,9 +607,11 @@ struct mci_host {
 #define MMC_NUM_BOOT_PARTITION	2
 #define MMC_NUM_GP_PARTITION	4
 #define MMC_NUM_USER_PARTITION	1
+#define MMC_NUM_RPMB_PARTITION	1
 #define MMC_NUM_PHY_PARTITION	(MMC_NUM_BOOT_PARTITION + \
                                  MMC_NUM_GP_PARTITION + \
-                                 MMC_NUM_USER_PARTITION)
+                                 MMC_NUM_USER_PARTITION + \
+                                 MMC_NUM_RPMB_PARTITION)
 
 struct mci_part {
 	struct block_device	blk;		/**< the blockdevice for the card */
@@ -674,6 +677,8 @@ struct mci {
 	int boot_ack_enable;
 
 	struct mci_part part[MMC_NUM_PHY_PARTITION];
+	struct mci_part *rpmb_part;
+
 	int nr_parts;
 	char *cdevname;
 

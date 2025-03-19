@@ -671,6 +671,9 @@ static void mci_part_add(struct mci *mci, uint64_t size,
 	part->part_cfg = part_cfg;
 	part->idx = idx;
 
+	if (area_type == MMC_BLK_DATA_AREA_RPMB)
+		mci->rpmb_part = part;
+
 	if (area_type == MMC_BLK_DATA_AREA_MAIN) {
 		cdev_set_of_node(&part->blk.cdev, mci->host->hw_dev->of_node);
 		part->blk.cdev.flags |= DEVFS_IS_MCI_MAIN_PART_DEV;
@@ -820,6 +823,20 @@ static int mmc_change_freq(struct mci *mci)
 		mci->ext_csd_part_config = mci->ext_csd[EXT_CSD_PARTITION_CONFIG];
 		mci->bootpart = (mci->ext_csd_part_config >> 3) & 0x7;
 		mci->boot_ack_enable = (mci->ext_csd_part_config >> 6) & 0x1;
+	}
+
+	if (mci->ext_csd[EXT_CSD_REV] >= 5) {
+		if (mci->ext_csd[EXT_CSD_RPMB_SIZE_MULT]) {
+			char *name, *partname;
+
+			partname = basprintf("rpmb");
+			name = basprintf("%s.%s", mci->cdevname, partname);
+
+			mci_part_add(mci, mci->ext_csd[EXT_CSD_RPMB_SIZE_MULT] << 17,
+				EXT_CSD_PART_CONFIG_ACC_RPMB,
+				name, partname, 0, false,
+				MMC_BLK_DATA_AREA_RPMB);
+		}
 	}
 
 	if (IS_ENABLED(CONFIG_MCI_MMC_GPP_PARTITIONS))
@@ -2600,6 +2617,9 @@ static int mci_register_partition(struct mci_part *part)
 	part->blk.dev = &mci->dev;
 	part->blk.ops = &mci_ops;
 	part->blk.type = IS_SD(mci) ? BLK_TYPE_SD : BLK_TYPE_MMC;
+
+	if (part->area_type == MMC_BLK_DATA_AREA_RPMB)
+		return 0;
 
 	rc = blockdevice_register(&part->blk);
 	if (rc != 0) {

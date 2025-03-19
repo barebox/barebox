@@ -320,14 +320,14 @@ static int ti_k3_pm_domain_on(struct generic_pm_domain *domain)
 	struct ti_k3_pm_domain *pd = to_ti_k3_pd(domain);
 
 	return ti_lpsc_transition(pd->lpsc, MDSTAT_STATE_ENABLE);
-}       
-        
+}
+
 static int ti_k3_pm_domain_off(struct generic_pm_domain *domain)
-{       
+{
 	struct ti_k3_pm_domain *pd = to_ti_k3_pd(domain);
 
 	return ti_lpsc_transition(pd->lpsc, MDSTAT_STATE_SWRSTDISABLE);
-}       
+}
 
 static struct ti_psc am625_psc[] = {
 	[0] = { .id = 0, .base = (void *)0x04000000 },

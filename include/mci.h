@@ -626,6 +626,18 @@ struct sd_ssr {
 	unsigned int erase_offset;      /* In milliseconds */
 };
 
+struct mmc_cid {
+	unsigned int		manfid;
+	char			prod_name[8];
+	unsigned char		prv;
+	unsigned int		serial;
+	unsigned short		oemid;
+	unsigned short		year;
+	unsigned char		hwrev;
+	unsigned char		fwrev;
+	unsigned char		month;
+};
+
 /** MMC/SD and interface instance information */
 struct mci {
 	struct mci_host *host;		/**< the host for this card */
@@ -635,7 +647,7 @@ struct mci {
 	unsigned ocr;		/**< card's "operation condition register" */
 	unsigned scr[2];
 	unsigned csd[4];	/**< card's "card specific data register" */
-	unsigned cid[4];	/**< card's "card identification register" */
+	unsigned raw_cid[4];	/**< card's "card identification register" */
 	unsigned short rca;	/**< relative card address */
 	u8 sdio:1;              /**< card is a SDIO card */
 	u8 high_capacity:1;	/**< high capacity card is connected (OCR -> OCR_HCS) */
@@ -649,7 +661,7 @@ struct mci {
 	unsigned erase_grp_size;
 	unsigned pref_erase;	/**< preferred erase granularity in blocks */
 	uint64_t capacity;	/**< Card's data capacity in bytes */
-	int ready_for_use;	/** true if already probed */
+	bool ready_for_use;	/** true if already probed */
 	int dsr_imp;		/**< DSR implementation state from CSD */
 	u8 *ext_csd;
 	int probe;
@@ -663,6 +675,8 @@ struct mci {
 
 	struct mci_part *part_curr;
 	u8 ext_csd_part_config;
+
+	struct mmc_cid cid;
 
 	struct list_head list;     /* The list of all mci devices */
 };

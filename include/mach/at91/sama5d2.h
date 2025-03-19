@@ -305,16 +305,18 @@ static inline void __iomem *sama5d2_pio_map_bank(int bank, unsigned *id)
 
 static inline u32 sama5d2_bootcfg(void)
 {
-	u32 __iomem *bureg = SAMA5D2_BASE_SECURAM + 0x1400;
-	u32 bsc_cr = readl(SAMA5D2_BASE_SYSC + 0x54);
-	u32 __iomem *bootcfg;
+	u32 bsc_cr, bootcfg = readl(SAMA5D2_SFC_DR(16));
 
-	if (bsc_cr & SAMA5D2_BUREG_VALID)
-		bootcfg = &bureg[FIELD_GET(SAMA5D2_BUREG_INDEX, bsc_cr)];
-	else
-		bootcfg = SAMA5D2_SFC_DR(512 / 32);
+	if (bootcfg & SAMA5D2_DISABLE_BSC_CR)
+		return bootcfg;
 
-	return readl(bootcfg);
+	bsc_cr = readl(SAMA5D2_BASE_SYSC + 0x54);
+	if (bsc_cr & SAMA5D2_BUREG_VALID) {
+		u32 __iomem *bureg = SAMA5D2_BASE_SECURAM + 0x1400;
+		bootcfg = readl(&bureg[FIELD_GET(SAMA5D2_BUREG_INDEX, bsc_cr)]);
+	}
+
+	return bootcfg;
 }
 
 #endif

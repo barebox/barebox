@@ -4,17 +4,10 @@
 
 #include <asm/barebox-arm.h>
 #include <asm/common.h>
+#include <linux/compiler.h>
 #include <mach/at91/sama5d3.h>
 #include <mach/at91/sama5d4.h>
 #include <mach/at91/at91sam9261.h>
-
-#ifdef CONFIG_AT91_LOAD_BAREBOX_SRAM
-#define AT91_EXV6	".word _barebox_image_size\n"
-#else
-#define AT91_EXV6	".word _barebox_bare_init_size\n"
-#endif
-
-#include <linux/compiler.h>
 
 static __always_inline void __barebox_at91_head(void)
 {
@@ -27,7 +20,7 @@ static __always_inline void __barebox_at91_head(void)
 		"1: b 1b\n"
 		"1: b 1b\n"
 		"1: b 1b\n"
-		AT91_EXV6				/* image size to load by the bootrom */
+		".word _barebox_image_size\n"		/* image size to load by the bootrom */
 		"1: b 1b\n"
 		"1: b 1b\n"
 #endif

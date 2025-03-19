@@ -66,4 +66,8 @@ static inline int pca9450_register_init_callback(void(*callback)(struct regmap *
 }
 #endif
 
+#define PCA9450_PMIC_RESET_WDOG_B_CFG_MASK		0xc0
+#define PCA9450_PMIC_RESET_WDOG_B_CFG_WARM		0x40
+#define PCA9450_PMIC_RESET_WDOG_B_CFG_COLD_LDO12	0x80
+
 #endif

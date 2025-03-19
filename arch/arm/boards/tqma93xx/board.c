@@ -27,9 +27,6 @@ static void tqma93xx_init_pmic(struct regmap *map)
 
 	/* I2C_LT_EN*/
 	regmap_write(map, 0xa, 0x3);
-
-	/* set WDOG_B_CFG to cold reset */
-	regmap_write(map, PCA9450_RESET_CTRL, 0xA1);
 }
 
 static int tqma93xx_probe(struct device *dev)

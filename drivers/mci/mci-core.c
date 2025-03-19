@@ -68,7 +68,7 @@ static inline unsigned mci_caps(struct mci *mci)
  * @param data The data according to the command (can be NULL)
  * @return Driver's answer (0 on success)
  */
-static int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data)
+int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data)
 {
 	struct mci_host *host = mci->host;
 
@@ -2030,7 +2030,7 @@ static int sd_send_if_cond(struct mci *mci)
 /**
  * Switch between hardware MMC partitions on demand
  */
-static int mci_blk_part_switch(struct mci_part *part)
+int mci_blk_part_switch(struct mci_part *part)
 {
 	struct mci *mci = part->mci;
 	int ret;

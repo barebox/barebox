@@ -729,6 +729,8 @@ int mci_execute_tuning(struct mci *mci);
 int mci_send_abort_tuning(struct mci *mci, u32 opcode);
 int mmc_select_timing(struct mci *mci);
 int mci_set_blockcount(struct mci *mci, unsigned int cmdarg);
+int mci_blk_part_switch(struct mci_part *part);
+int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data);
 
 static inline bool mmc_card_hs200(struct mci *mci)
 {

@@ -19,10 +19,14 @@
  */
 static int sama5_bootsource_init(void)
 {
-	if (!of_machine_is_compatible("atmel,sama5"))
+	if (of_machine_is_compatible("atmel,sama5d2"))
+		at91_bootsource = __sama5d2_stashed_bootrom_r4;
+	else if (of_machine_is_compatible("atmel,sama5d3"))
+		at91_bootsource = __sama5d3_stashed_bootrom_r4;
+	else if (of_machine_is_compatible("atmel,sama5d4"))
+		at91_bootsource = __sama5d4_stashed_bootrom_r4;
+	else
 		return 0;
-
-	at91_bootsource = __sama5d2_stashed_bootrom_r4;
 
 	if (at91_bootsource)
 		bootsource_set_raw(sama5_bootsource(at91_bootsource),

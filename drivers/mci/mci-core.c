@@ -311,6 +311,15 @@ err_out:
 	return -EIO;
 }
 
+int mci_set_blockcount(struct mci *mci, unsigned int cmdarg)
+{
+	struct mci_cmd cmd = {};
+
+	mci_setup_cmd(&cmd, MMC_CMD_SET_BLOCK_COUNT, cmdarg, MMC_RSP_R1);
+
+	return mci_send_cmd(mci, &cmd, NULL);
+}
+
 static int mci_do_block_op(struct mci *mci, const void *src, void *dst, int blocknum,
 		int blocks)
 {

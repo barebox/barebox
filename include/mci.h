@@ -87,11 +87,15 @@
 #define MMC_CMD_READ_MULTIPLE_BLOCK	18
 #define MMC_SEND_TUNING_BLOCK		19   /* adtc R1  */
 #define MMC_SEND_TUNING_BLOCK_HS200	21   /* adtc R1  */
+#define MMC_CMD_SET_BLOCK_COUNT		23
 #define MMC_CMD_WRITE_SINGLE_BLOCK	24
 #define MMC_CMD_WRITE_MULTIPLE_BLOCK	25
 #define MMC_CMD_APP_CMD			55
 #define MMC_CMD_SPI_READ_OCR		58
 #define MMC_CMD_SPI_CRC_ON_OFF		59
+
+#define MMC_CMD23_ARG_BLOCKS	GENMASK(15, 0)
+#define MMC_CMD23_ARG_REL_WR	BIT(31)
 
   /* class 5 */
 #define MMC_ERASE_GROUP_START    35   /* ac   [31:0] data addr   R1  */
@@ -724,6 +728,7 @@ int mmc_hs200_tuning(struct mci *mci);
 int mci_execute_tuning(struct mci *mci);
 int mci_send_abort_tuning(struct mci *mci, u32 opcode);
 int mmc_select_timing(struct mci *mci);
+int mci_set_blockcount(struct mci *mci, unsigned int cmdarg);
 
 static inline bool mmc_card_hs200(struct mci *mci)
 {

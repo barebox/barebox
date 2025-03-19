@@ -98,19 +98,25 @@ static inline int bbu_mmcboot_register_handler(const char *name,
 #endif
 
 #if defined(CONFIG_BAREBOX_UPDATE_IMX_NAND_FCB)
-int imx6_bbu_nand_register_handler(const char *name, unsigned long flags);
-int imx7_bbu_nand_register_handler(const char *name, unsigned long flags);
-int imx28_bbu_nand_register_handler(const char *name, unsigned long flags);
+int imx6_bbu_nand_register_handler(const char *name, const char *devicefile, unsigned long flags);
+int imx7_bbu_nand_register_handler(const char *name, const char *devicefile, unsigned long flags);
+int imx28_bbu_nand_register_handler(const char *name, const char *devicefile, unsigned long flags);
 #else
-static inline int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
+static inline int imx6_bbu_nand_register_handler(const char *name,
+					       const char *devicefile,
+					       unsigned long flags)
 {
 	return -ENOSYS;
 }
-static inline int imx7_bbu_nand_register_handler(const char *name, unsigned long flags)
+static inline int imx7_bbu_nand_register_handler(const char *name,
+					       const char *devicefile,
+					       unsigned long flags)
 {
 	return -ENOSYS;
 }
-static inline int imx28_bbu_nand_register_handler(const char *name, unsigned long flags)
+static inline int imx28_bbu_nand_register_handler(const char *name,
+					       const char *devicefile,
+					       unsigned long flags)
 {
 	return -ENOSYS;
 }

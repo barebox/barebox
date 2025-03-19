@@ -1332,6 +1332,14 @@ config PBL_OPTEE
 	  Allows starting OP-TEE during lowlevel initialization of the PBL.
 	  Requires explicit support in the board's lowlevel file.
 
+config FILETYPE_STRING
+	bool "Print file types as strings"
+	default y
+	depends on FILETYPE
+	help
+	  Say yes here to include strings for filetypes in barebox. If disabled file
+	  types will be printed as numbers only.
+
 endmenu
 
 if FASTBOOT_BASE

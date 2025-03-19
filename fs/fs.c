@@ -903,7 +903,8 @@ const char *fs_detect(const char *filename, const char *fsoptions)
 	parseopt_llu_suffix(fsoptions, "offset", &offset);
 
 	if (loop) {
-		ret = file_name_detect_type_offset(filename, offset, &type);
+		ret = file_name_detect_type_offset(filename, offset, &type,
+						   file_detect_fs_type);
 	} else {
 		struct cdev *cdev = cdev_open_by_name(filename, O_RDONLY);
 		if (cdev) {

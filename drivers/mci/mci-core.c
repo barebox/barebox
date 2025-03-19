@@ -2052,7 +2052,9 @@ int mci_blk_part_switch(struct mci_part *part)
 	struct mci *mci = part->mci;
 	int ret;
 
-	if (!IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) && !IS_ENABLED(CONFIG_MCI_MMC_GPP_PARTITIONS))
+	if (!IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&
+	    !IS_ENABLED(CONFIG_MCI_MMC_GPP_PARTITIONS) &&
+	    !IS_ENABLED(CONFIG_MCI_MMC_RPMB))
 		return 0; /* no need */
 
 	if (mci->part_curr == part)
@@ -2953,7 +2955,6 @@ void mci_of_parse_node(struct mci_host *host,
 {
 	u32 bus_width;
 	u32 dsr_val;
-	const char *alias;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
@@ -2961,9 +2962,14 @@ void mci_of_parse_node(struct mci_host *host,
 	if (!host->hw_dev || !np)
 		return;
 
-	alias = of_alias_get(np);
-	if (alias)
-		host->devname = xstrdup(alias);
+	host->of_id = of_alias_get_id(np, "mmc");
+	if (host->of_id < 0)
+		host->of_id = of_alias_get_id(np->parent, "mmc");
+
+	if (host->of_id >= 0) {
+		host->devname = xasprintf("mmc%u", host->of_id);
+		host->of_id_valid = true;
+	}
 
 	/* "bus-width" is translated to MMC_CAP_*_BIT_DATA flags */
 	if (of_property_read_u32(np, "bus-width", &bus_width) < 0) {
@@ -3049,6 +3055,27 @@ struct mci *mci_get_device_by_name(const char *name)
 			continue;
 		if (!strcmp(mci->cdevname, name))
 			return mci;
+	}
+
+	return NULL;
+}
+
+struct mci *mci_get_rpmb_dev(unsigned int id)
+{
+	struct mci *mci;
+
+	list_for_each_entry(mci, &mci_list, list) {
+		if (mci->host->of_id != id)
+			continue;
+
+		mci_detect_card(mci->host);
+
+		if (!mci->rpmb_part) {
+			dev_err(&mci->dev, "requested MMC does not have a RPMB partition\n");
+			return NULL;
+		}
+
+		return mci;
 	}
 
 	return NULL;

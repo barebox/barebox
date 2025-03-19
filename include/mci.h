@@ -554,6 +554,8 @@ struct mci_host {
 	struct device *hw_dev;	/**< the host MCI hardware device */
 	struct mci *mci;
 	const char *devname;		/**< the devicename for the card, defaults to disk%d */
+	int of_id;
+	bool of_id_valid;
 	unsigned voltages;
 	unsigned host_caps;	/**< Host's interface capabilities, refer MMC_VDD_* */
 	unsigned caps2;		/* More host capabilities */
@@ -736,6 +738,9 @@ int mmc_select_timing(struct mci *mci);
 int mci_set_blockcount(struct mci *mci, unsigned int cmdarg);
 int mci_blk_part_switch(struct mci_part *part);
 int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data);
+struct mci *mci_get_rpmb_dev(unsigned int id);
+int mci_rpmb_route_frames(struct mci *mci, void *req, unsigned long reqlen,
+			  void *rsp, unsigned long rsplen);
 
 static inline bool mmc_card_hs200(struct mci *mci)
 {

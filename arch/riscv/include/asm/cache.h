@@ -21,7 +21,7 @@ static inline void thead_local_flush_icache_all(void)
 
 static inline void local_flush_icache_all(void)
 {
-#ifdef CONFIG_HAS_CACHE
+#ifdef CONFIG_RISCV_ICACHE
 	switch(riscv_vendor_id()) {
 	case THEAD_VENDOR_ID:
 		thead_local_flush_icache_all();

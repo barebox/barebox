@@ -219,6 +219,7 @@ static int mv88e6xxx_port_set_speed(struct mv88e6xxx_chip *chip, int port,
 		break;
 	case 10000:
 		/* all bits set, fall through... */
+		fallthrough;
 	case SPEED_UNFORCED:
 		ctrl = MV88E6XXX_PORT_MAC_CTL_SPEED_UNFORCED;
 		break;

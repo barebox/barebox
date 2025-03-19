@@ -1694,12 +1694,8 @@ static int atmel_nand_attach_chip(struct nand_chip *chip)
 		 * This way, mtd->name will be set by the core when
 		 * nand_set_flash_node() is called.
 		 */
-		mtd->name = basprintf("%s:nand.%d", dev_name(nc->dev),
+		mtd->name = xasprintf("%s:nand.%d", dev_name(nc->dev),
 				      nand->cs[0].id);
-		if (!mtd->name) {
-			dev_err(nc->dev, "Failed to allocate mtd->name\n");
-			return -ENOMEM;
-		}
 	}
 
 	return 0;

@@ -37,9 +37,7 @@ static int register_one_partition(struct block_device *blk, struct partition *pa
 		.size = part->size * SECTOR_SIZE,
 	};
 
-	partition_name = basprintf("%s.%d", blk->cdev.name, part->num);
-	if (!partition_name)
-		return -ENOMEM;
+	partition_name = xasprintf("%s.%d", blk->cdev.name, part->num);
 
 	partinfo.name = partition_name;
 

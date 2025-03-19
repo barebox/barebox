@@ -1397,6 +1397,14 @@ config CMD_TFTP
 	  Options:
 		  -p	push to TFTP server
 
+config CMD_IP
+	tristate
+	prompt "ip"
+	help
+	  This command provides information about network interfaces, similar
+	  to the Linux `ip addr show` command. It lists interface names, states
+	  (UP/DOWN), MAC addresses, and assigned IP addresses.
+
 config CMD_IP_ROUTE_GET
 	tristate
 	prompt "ip-route-get"

@@ -10,6 +10,7 @@
 #include <linux/amba/bus.h>
 #include <io.h>
 #include <init.h>
+#include <abort.h>
 
 #define to_amba_driver(d)	container_of(d, struct amba_driver, drv)
 
@@ -132,6 +133,9 @@ int amba_device_add(struct amba_device *dev)
 	if (ret == 0) {
 		u32 pid, cid;
 
+		if (IS_ENABLED(CONFIG_ARM_AMBA_DABT_MASK))
+			data_abort_mask();
+
 		/*
 		 * Read pid and cid based on size of resource
 		 * they are located at end of region
@@ -139,8 +143,14 @@ int amba_device_add(struct amba_device *dev)
 		pid = amba_device_get_pid(tmp, size);
 		cid = amba_device_get_cid(tmp, size);
 
-		if (cid == AMBA_CID)
+		if (IS_ENABLED(CONFIG_ARM_AMBA_DABT_MASK) && data_abort_unmask()) {
+			dev_err(amba_bustype.dev,
+				"data abort during MMIO read of PID/CID for %pOF\n",
+				dev->dev.of_node);
+			ret = -EFAULT;
+		} else if (cid == AMBA_CID) {
 			dev->periphid = pid;
+		}
 
 		if (!dev->periphid)
 			ret = -ENODEV;
@@ -160,27 +170,6 @@ int amba_device_add(struct amba_device *dev)
  err_release:
 	release_region(res);
 	return ret;
-}
-
-struct amba_device *
-amba_aphb_device_add(struct device *parent, const char *name, int id,
-		     resource_size_t base, size_t size,
-		     void *pdata, unsigned int periphid)
-{
-	struct amba_device *dev;
-	int ret;
-
-	dev = amba_device_alloc(name, id, base, size);
-
-	dev->periphid = periphid;
-	dev->dev.platform_data = pdata;
-	dev->dev.parent = parent;
-
-	ret = amba_device_add(dev);
-	if (ret)
-		return ERR_PTR(ret);
-
-	return dev;
 }
 
 /**

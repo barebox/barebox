@@ -59,9 +59,6 @@ config CPU_SUPPORTS_32BIT_KERNEL
 config CPU_SUPPORTS_64BIT_KERNEL
 	bool
 
-config PHYS_ADDR_T_64BIT
-	bool
-
 config 32BIT
 	bool
 	depends on CPU_SUPPORTS_32BIT_KERNEL

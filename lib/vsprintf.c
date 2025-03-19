@@ -336,7 +336,8 @@ char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
 
 	switch (*(++fmt)) {
 	case 'L':
-		uc = true;		/* fall-through */
+		uc = true;
+		fallthrough;
 	case 'l':
 		index = le;
 		break;
@@ -978,20 +979,3 @@ int asprintf(char **strp, const char *fmt, ...)
 	return len;
 }
 EXPORT_SYMBOL(asprintf);
-
-char *basprintf(const char *fmt, ...)
-{
-	va_list ap;
-	char *p;
-	int len;
-
-	va_start(ap, fmt);
-	len = vasprintf(&p, fmt, ap);
-	va_end(ap);
-
-	if (len < 0)
-		return NULL;
-
-	return p;
-}
-EXPORT_SYMBOL(basprintf);

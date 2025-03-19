@@ -191,7 +191,7 @@ static int do_bthread(int argc, char *argv[])
 			 */
 			list_add(&spawner->list, &spawners);
 
-			/* fallthrough */
+			fallthrough;
 		case 't':
 			time = true;
 		}

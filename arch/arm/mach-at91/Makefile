@@ -14,8 +14,7 @@ obj-$(CONFIG_BOOTM) += bootm-barebox.o
 obj-y += at91sam9_reset.o
 obj-pbl-$(CONFIG_HAVE_AT91_DDRAMC) += ddramc.o
 obj-pbl-$(CONFIG_HAVE_AT91_SDRAMC) += sdramc.o
-pbl-$(CONFIG_AT91_MCI_PBL) +=  xload-mmc.o
-pbl-$(CONFIG_AT91_MCI_PBL) +=  at91sam9_xload_mmc.o
+pbl-$(CONFIG_AT91_PBL) += at91sam9_xload_mmc.o xload.o
 
 obj-$(CONFIG_AT91SAM9_SMC) += sam9_smc.o
 obj-$(CONFIG_HAVE_AT91SAM9_RST) += at91sam9_rst.o

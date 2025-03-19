@@ -527,21 +527,13 @@ static int prt_imx6_bbu(struct prt_imx6_priv *priv)
 		emmc_flags = BBU_HANDLER_FLAG_DEFAULT;
 	}
 
-	devicefile = basprintf("/dev/mmc%d", dcfg->emmc_usdhc);
-	if (!devicefile) {
-		ret = -ENOMEM;
-		goto exit_bbu;
-	}
+	devicefile = xasprintf("/dev/mmc%d", dcfg->emmc_usdhc);
 	ret = imx6_bbu_internal_mmcboot_register_handler("eMMC", devicefile,
 						   emmc_flags);
 	if (ret)
 		goto exit_bbu;
 
-	devicefile = basprintf("/dev/mmc%d", dcfg->sd_usdhc);
-	if (!devicefile) {
-		ret = -ENOMEM;
-		goto exit_bbu;
-	}
+	devicefile = xasprintf("/dev/mmc%d", dcfg->sd_usdhc);
 
 	ret = imx6_bbu_internal_mmc_register_handler("SD", devicefile, 0);
 	if (ret)
@@ -778,11 +770,7 @@ static int prt_imx6_rfid_fixup(struct prt_imx6_priv *priv,
 	int ret;
 	u8 *tmp;
 
-	alias = basprintf("i2c%d", dcfg->i2c_adapter);
-	if (!alias) {
-		ret = -ENOMEM;
-		goto exit_error;
-	}
+	alias = xasprintf("i2c%d", dcfg->i2c_adapter);
 
 	i2c_node = of_find_node_by_alias(root, alias);
 	kfree(alias);
@@ -791,10 +779,7 @@ static int prt_imx6_rfid_fixup(struct prt_imx6_priv *priv,
 		return -ENODEV;
 	}
 
-	eeprom_node_name = basprintf("/eeprom@%x", dcfg->i2c_addr);
-	if (!eeprom_node_name) {
-		return -ENOMEM;
-	}
+	eeprom_node_name = xasprintf("/eeprom@%x", dcfg->i2c_addr);
 
 	node = of_create_node(i2c_node, eeprom_node_name);
 	if (!node) {
@@ -824,7 +809,6 @@ static int prt_imx6_rfid_fixup(struct prt_imx6_priv *priv,
 	return 0;
 free_eeprom:
 	kfree(eeprom_node_name);
-exit_error:
 	dev_err(priv->dev, "Failed to apply fixup: %pe\n", ERR_PTR(ret));
 	return ret;
 }

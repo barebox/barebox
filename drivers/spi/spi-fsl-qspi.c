@@ -743,8 +743,6 @@ static int fsl_qspi_setup(struct spi_device *spi)
 static const char *fsl_qspi_get_name(struct spi_mem *mem)
 {
 	struct fsl_qspi *q = spi_controller_get_devdata(mem->spi->controller);
-	struct device *dev = &mem->spi->dev;
-	const char *name;
 
 	/*
 	 * In order to keep mtdparts compatible with the old MTD driver at
@@ -754,13 +752,7 @@ static const char *fsl_qspi_get_name(struct spi_mem *mem)
 	if (of_get_available_child_count(q->dev->of_node) == 1)
 		return dev_name(q->dev);
 
-	name = basprintf("%s-%d", dev_name(q->dev), mem->spi->chip_select);
-	if (!name) {
-		dev_err(dev, "failed to get memory for custom flash name\n");
-		return ERR_PTR(-ENOMEM);
-	}
-
-	return name;
+	return xasprintf("%s-%d", dev_name(q->dev), mem->spi->chip_select);
 }
 
 static const struct spi_controller_mem_ops fsl_qspi_mem_ops = {

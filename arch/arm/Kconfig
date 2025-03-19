@@ -3,7 +3,6 @@
 config ARM
 	bool
 	select HAS_KALLSYMS
-	select HAS_CACHE
 	select HAVE_IMAGE_COMPRESSION
 	select HAVE_ARCH_KASAN
 	select ARCH_HAS_SJLJ
@@ -283,6 +282,7 @@ config BOARD_ARM_VIRT
 	select BOARD_GENERIC_DT
 	select BOARD_QEMU_VIRT
 	select OF_OVERLAY
+	select ARM_AMBA_DABT_MASK
 
 config BOARD_ARM_GENERIC_DT
 	def_bool BOARD_GENERIC_DT

@@ -34,15 +34,16 @@ static __always_inline void __barebox_at91_head(void)
 		".endr\n"
 		"2:\n"
 	);
+	pbl_barebox_break();
 }
 
 #define SAMA5_ENTRY_FUNCTION(name, stack_top, r4)				\
-	void name (u32 r0, u32 r1, u32 r2, u32 r3);				\
+	void name (u32 r0, u32 r1, u32 r2);					\
 										\
 	static void __##name(u32);						\
 										\
 	void __naked __section(.text_head_entry_##name)	name			\
-				(u32 r0, u32 r1, u32 r2, u32 r3)		\
+				(u32 r0, u32 r1, u32 r2)			\
 		{								\
 			register u32 r4 asm("r4");				\
 			__barebox_at91_head();					\
@@ -50,7 +51,7 @@ static __always_inline void __barebox_at91_head(void)
 				arm_setup_stack(stack_top);			\
 			__##name(r4);						\
 		}								\
-		static void noinline __##name(u32 r4)
+	static void noinline __##name(u32 r4)
 
 /* BootROM already initialized usable stack top */
 #define SAMA5D2_ENTRY_FUNCTION(name, r4)					\
@@ -62,7 +63,7 @@ static __always_inline void __barebox_at91_head(void)
 #define SAMA5D4_ENTRY_FUNCTION(name, r4)					\
 	SAMA5_ENTRY_FUNCTION(name, SAMA5D4_SRAM_BASE + SAMA5D4_SRAM_SIZE, r4)
 
-#define SAM9_ENTRY_FUNCTION(name)	\
+#define SAM9_ENTRY_FUNCTION(name)						\
 	ENTRY_FUNCTION_WITHSTACK_HEAD(name, AT91SAM9261_SRAM_BASE + AT91SAM9261_SRAM_SIZE, \
 				      __barebox_at91_head, r0, r1, r2)
 

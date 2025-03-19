@@ -156,9 +156,7 @@ static int ti_sci_pm_domain_probe(struct device *dev)
 
 				pd = xzalloc(sizeof(*pd));
 
-				pd->pd.name = basprintf("pd:%d", args.args[0]);
-				if (!pd->pd.name)
-					return -ENOMEM;
+				pd->pd.name = xasprintf("pd:%d", args.args[0]);
 
 				pd->pd.power_off = ti_sci_pd_power_off;
 				pd->pd.power_on = ti_sci_pd_power_on;

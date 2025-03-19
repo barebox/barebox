@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-config HAS_DEBUG_LL
-	bool
-
 config DEBUG_LL
 	bool
 	depends on HAS_DEBUG_LL

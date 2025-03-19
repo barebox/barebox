@@ -24,11 +24,11 @@ static int sdxc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_d
 {
 	struct sunxi_mmc_host *host = to_sunxi_mmc_host(mci);
 	struct device *dev = mci->hw_dev;
-	const char *why;
+	const char *why = "";
 	int ret;
 
 	ret = sunxi_mmc_send_cmd(host, cmd, data, &why);
-	if (ret && ret != -ETIMEDOUT)
+	if (ret && ret != -ETIMEDOUT && ret != -EINVAL)
 		dev_err(dev, "error %s CMD%d (%d)\n", why, cmd->cmdidx, ret);
 	if (ret == -ETIMEDOUT)
 		mdelay(1);

@@ -67,7 +67,7 @@ static int do_bootz(int argc, char *argv[])
 #ifdef CONFIG_BOOT_ENDIANNESS_SWITCH
 	case swab32(ZIMAGE_MAGIC):
 		swap = 1;
-		/* fall through */
+		fallthrough;
 #endif
 	case ZIMAGE_MAGIC:
 		break;

@@ -145,11 +145,9 @@ def finish_fit(fsw, entries):
             str: Compatible stringlist
     """
     fsw.end_node()
-    seq = 0
     with fsw.add_node('configurations'):
-        for model, compat, files in entries:
-            seq += 1
-            with fsw.add_node(f'conf-{seq}'):
+        for dtbname, model, compat, files in entries:
+            with fsw.add_node(f'conf-{dtbname}'):
                 fsw.property('compatible', bytes(compat))
                 fsw.property_string('description', model)
                 fsw.property('fdt', bytes(''.join(f'fdt-{x}\x00' for x in files), "ascii"))
@@ -266,6 +264,7 @@ def build_fit(args):
     fsw = libfdt.FdtSw()
     setup_fit(fsw, args.name)
     entries = []
+    dtbs_seen = set()
     fdts = {}
 
     # Handle the kernel
@@ -290,7 +289,13 @@ def build_fit(args):
 
         files_seq = [fdts[fn] for fn in files]
 
-        entries.append([model, compat, files_seq])
+        dtbname = os.path.basename(fname)
+        ndtbs_seen = len(dtbs_seen)
+        dtbs_seen.add(dtbname)
+        if len(dtbs_seen) == ndtbs_seen:
+            raise RuntimeError(f"Duplicate file name '{dtbname}' during FIT creation")
+
+        entries.append([dtbname, model, compat, files_seq])
 
     finish_fit(fsw, entries)
 

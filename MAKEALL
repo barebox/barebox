@@ -56,7 +56,7 @@ usage() {
 	echo "BUILDDIR    -O      build dir"
 	echo "LOGDIR      -l      log dir"
 	echo "REGEX       -e      regex"
-	echo "KCONFIG_ADD -k      kconfig fragment"
+	echo "KCONFIG_ADD -k      kconfig fragment or option"
 	echo "TARGET      -t      Makefile target"
 	echo "V           -v      verbosity"
 	echo "INCREMENTAL -i"
@@ -116,6 +116,11 @@ report() {
 	fi
 }
 
+merge_config() {
+	with_logs_collected ./scripts/kconfig/merge_config.sh -m -O \
+		${BUILDDIR} "$@"
+}
+
 do_build_defconfig() {
 	local arch=$1
 	local defconfig=$2
@@ -156,8 +161,11 @@ do_build_defconfig() {
 	MAKE="${MAKE} $silent_flag CROSS_COMPILE=${cross_compile}"
 	with_logs_collected ${MAKE} ${defconfig}
 	for i in ${KCONFIG_ADD}; do
-		with_logs_collected ./scripts/kconfig/merge_config.sh -m -O \
-			${BUILDDIR} ${BUILDDIR}/.config $i
+		if [[ $i =~ ^CONFIG_.*=.* ]]; then
+			merge_config ${BUILDDIR}/.config <(echo $i)
+		else
+			merge_config ${BUILDDIR}/.config $i
+		fi
 	done
 	with_logs_collected ${MAKE} $silent_flag olddefconfig
 
@@ -414,6 +422,19 @@ else
 		if [[ $i =~ ^.*/([^/]+)/([^@]*@|)([^.]+).yaml$ ]]; then
 			arch=${BASH_REMATCH[1]}
 			defconfig=${BASH_REMATCH[3]}
+
+			if grep -q "^\s\+kconfig_add:" $i; then
+				if command -v yq 2>&1 >/dev/null; then
+					KCONFIG_ADD="${KCONFIG_ADD} $(yq -M -r \
+					'.targets.main.runner.kconfig_add |
+					keys[] as $k | .[$k]' < $i)"
+				else
+					echo "WARNING: yq command not found in path" >&2
+					echo "WARNING: ignoring kconfig_add in $i" >&2
+					echo
+				fi
+			fi
+
 			do_build_defconfig $arch $defconfig
 			if [ $? -eq 0 ]; then
 				do_test_defconfig $config $defconfig "${pytest_opts[@]}"

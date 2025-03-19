@@ -3,8 +3,11 @@
  * Copyright (c) 2021 Ahmad Fatoum
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <fcntl.h>
 #include <SDL.h>
 #include <mach/linux.h>
 
@@ -15,7 +18,7 @@ static void sdl_perror(const char *what)
 
 static struct sdl_fb_info info;
 static SDL_atomic_t shutdown;
-SDL_Window *window;
+static SDL_Window *window;
 
 static void handle_sdl_events(void)
 {

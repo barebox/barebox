@@ -179,4 +179,14 @@ static inline void reg_pair_from_64(u32 *reg0, u32 *reg1, u64 val)
 /* Registration of the ABIs */
 int optee_smc_abi_register(void);
 
+#ifdef CONFIG_MCI_MMC_RPMB
+void optee_suppl_cmd_rpmb(struct tee_context *ctx, struct optee_msg_arg *arg);
+#else
+static inline void optee_suppl_cmd_rpmb(struct tee_context *ctx, struct optee_msg_arg *arg)
+{
+	pr_debug("OPTEE_MSG_RPC_CMD_RPMB not implemented\n");
+	arg->ret = TEEC_ERROR_NOT_IMPLEMENTED;
+}
+#endif
+
 #endif /*OPTEE_PRIVATE_H*/

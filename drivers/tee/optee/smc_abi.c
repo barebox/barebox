@@ -301,7 +301,7 @@ static int optee_shm_register(struct tee_context *ctx, struct tee_shm *shm)
 	struct tee_shm *shm_arg;
 	u64 *pages_list;
 	u64 ph_ptr;
-	int rc = 0;
+	int rc;
 
 	pages_list = optee_alloc_and_init_page_list(shm->kaddr, shm->size, &ph_ptr);
 	if (!pages_list)
@@ -314,7 +314,7 @@ static int optee_shm_register(struct tee_context *ctx, struct tee_shm *shm)
 	msg_arg = optee_get_msg_arg(ctx, 1, &shm_arg);
 	if (IS_ERR(msg_arg)) {
 		rc = PTR_ERR(msg_arg);
-		goto free_pages_list;
+		goto err_free;
 	}
 
 	msg_arg->num_params = 1;
@@ -326,11 +326,20 @@ static int optee_shm_register(struct tee_context *ctx, struct tee_shm *shm)
 	msg_arg->params->u.tmem.size = tee_shm_get_size(shm);
 
 	if (optee->ops->do_call_with_arg(ctx, msg_arg) ||
-	    msg_arg->ret != TEEC_SUCCESS)
+	    msg_arg->ret != TEEC_SUCCESS) {
 		rc = -EINVAL;
+		goto err_free_msg_arg;
+	}
 
 	optee_free_msg_arg(ctx, shm_arg);
-free_pages_list:
+
+	shm->pages_list = pages_list;
+
+	return 0;
+
+err_free_msg_arg:
+	optee_free_msg_arg(ctx, shm_arg);
+err_free:
 	free(pages_list);
 
 	return rc;
@@ -383,8 +392,7 @@ static int optee_shm_unregister(struct tee_context *ctx, struct tee_shm *shm)
  *
  * Result of RPC is written back into @param.
  */
-static void optee_handle_rpc(struct tee_context *ctx, struct optee_rpc_param *param,
-			     void *page_list)
+static void optee_handle_rpc(struct tee_context *ctx, struct optee_rpc_param *param)
 {
 	struct tee_device *teedev = ctx->teedev;
 	struct optee *optee = tee_get_drvdata(teedev);
@@ -448,7 +456,6 @@ static int optee_smc_do_call_with_arg(struct tee_context *ctx,
 {
 	struct optee *optee = tee_get_drvdata(ctx->teedev);
 	struct optee_rpc_param param = { .a0 = OPTEE_SMC_CALL_WITH_ARG };
-	void *page_list = NULL;
 
 	reg_pair_from_64(&param.a1, &param.a2, virt_to_phys(arg));
 	while (true) {
@@ -461,15 +468,12 @@ static int optee_smc_do_call_with_arg(struct tee_context *ctx,
 		optee->smc.invoke_fn(param.a0, param.a1, param.a2, param.a3,
 				     param.a4, param.a5, param.a6, param.a7, &res);
 
-		free(page_list);
-		page_list = NULL;
-
 		if (OPTEE_SMC_RETURN_IS_RPC(res.a0)) {
 			param.a0 = res.a0;
 			param.a1 = res.a1;
 			param.a2 = res.a2;
 			param.a3 = res.a3;
-			optee_handle_rpc(ctx, &param, &page_list);
+			optee_handle_rpc(ctx, &param);
 		} else {
 			return res.a0;
 		}

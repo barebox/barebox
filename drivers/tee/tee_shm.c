@@ -32,6 +32,7 @@ static void tee_shm_release(struct tee_device *teedev, struct tee_shm *shm)
 
 	teedev_ctx_put(shm->ctx);
 
+	kfree(shm->pages_list);
 	kfree(shm);
 
 	tee_device_put(teedev);

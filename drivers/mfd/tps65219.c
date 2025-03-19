@@ -12,6 +12,7 @@
 #include <linux/regmap.h>
 #include <linux/mfd/tps65219.h>
 #include <linux/device.h>
+#include <linux/kernel.h>
 
 static const struct mfd_cell tps65219_cells[] = {
 	{ .name = "tps65219-regulator", },

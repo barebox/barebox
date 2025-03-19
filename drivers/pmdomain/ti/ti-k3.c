@@ -9,6 +9,7 @@
 #define pr_fmt(fmt)     "ti-k3-pm-domain: " fmt
 
 #include <io.h>
+#include <stdio.h>
 #include <of_device.h>
 #include <malloc.h>
 #include <init.h>

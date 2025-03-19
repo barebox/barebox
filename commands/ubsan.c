@@ -43,7 +43,7 @@ static void test_ubsan_divrem_overflow(void)
 	volatile int val = 16;
 	volatile int val2 = 0;
 
-	OPTIMIZER_HIDE_VAR(&val2);
+	OPTIMIZER_HIDE_VAR(val2);
 
 	val /= val2;
 }

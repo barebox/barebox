@@ -77,6 +77,18 @@ config DRIVER_SERIAL_NS16550
 	help
 	  Enable this to get support for NS16550 based serial devices
 
+config DRIVER_SERIAL_NS16550_OMAP_TTYS
+	depends on ARCH_OMAP
+	bool "Use ttyS as console name for TI OMAP/AMxxx SoCs"
+	help
+	  Linux has two different drivers for the TI OMAP/AMxxx serial ports. One is
+	  based on the generic 8250 driver and activated with CONFIG_SERIAL_8250_OMAP.
+	  This one uses ttyS as console name. When CONFIG_SERIAL_8250_OMAP_TTYO_FIXUP
+	  is enabled, this driver takes ttyO as console name as well, but issues a warning
+	  during boot. The other driver is activated with CONFIG_SERIAL_OMAP and takes ttyO
+	  as console name. Say yes here to pass ttyS as console, otherwise ttyO will be
+	  used.
+
 config DRIVER_SERIAL_ATMEL
 	depends on ARCH_AT91
 	default y

@@ -23,6 +23,9 @@
 #include <string.h>
 #include <libfile.h>
 #include <fs.h>
+#include <linux/kernel.h>
+#include <linux/list.h>
+#include <digest.h>
 
 #include <fip.h>
 #include <fiptool.h>
@@ -167,6 +170,7 @@ static int fip_do_parse_buf(struct fip_state *fip, void *buf, size_t size,
 	int terminated = 0;
 
 	fip->buffer = buf;
+	fip->bufsize = size;
 
 	bufend = fip->buffer + size;
 
@@ -273,7 +277,7 @@ int fip_parse(struct fip_state *fip,
 		return ret;
 	}
 
-	ret = fip_parse_buf(fip, buf, size, toc_header_out);
+	ret = fip_do_parse_buf(fip, buf, size, toc_header_out);
 
 	if (ret)
 		free(buf);
@@ -446,23 +450,23 @@ int fip_update(struct fip_state *fip)
 	return 0;
 }
 
+struct toc_entry_list {
+	struct fip_toc_entry toc;
+	struct list_head list;
+};
+
 /*
- * fip_image_open - open a FIP image for readonly access
+ * fip_image_open - open a FIP image
  * @filename: The filename of the FIP image
  * @offset: The offset of the FIP image in the file
  *
- * This opens a FIP image for readonly access. This is an alternative
- * implementation for fip_parse() with these differences:
+ * This opens a FIP image. This is an alternative implementation for
+ * fip_parse() with these differences:
  * - suitable for reading FIP images from raw partitions. This function
  *   only reads the FIP image, even when the partition is bigger than the
  *   image
  * - Allows to specify an offset within the partition where the FIP image
  *   starts
- * - Do not memdup the images from the full FIP image
- *
- * This function is for easy readonly access to the images within the FIP
- * image. Do not call any of the above FIP manipulation functions other than
- * fip_free() on an image opened with this function.
  */
 struct fip_state *fip_image_open(const char *filename, size_t offset)
 {
@@ -470,11 +474,13 @@ struct fip_state *fip_image_open(const char *filename, size_t offset)
 	int ret;
 	int fd;
 	struct fip_state *fip_state;
-	LIST_HEAD(entries);
 	size_t fip_headers_size, total = 0;
-	struct fip_image_desc *desc;
 	off_t pos;
 	int n_entries = 0;
+	void *buf, *ptr;
+	struct fip_toc_entry *toc_entry;
+	struct toc_entry_list *toc_entry_list, *tmp;
+	LIST_HEAD(toc_entries);
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0)
@@ -506,11 +512,10 @@ struct fip_state *fip_image_open(const char *filename, size_t offset)
 
 	/* read all toc entries */
 	while (1) {
-		struct fip_image_desc *desc = xzalloc(sizeof(*desc));
-		struct fip_image *image = xzalloc(sizeof(*image));
-		struct fip_toc_entry *toc_entry = &image->toc_e;
+		uint64_t this_end;
 
-		desc->image = image;
+		toc_entry_list = xzalloc(sizeof(*toc_entry_list));
+		toc_entry = &toc_entry_list->toc;
 
 		ret = read_full(fd, toc_entry, sizeof(*toc_entry));
 		if (ret < 0)
@@ -520,56 +525,88 @@ struct fip_state *fip_image_open(const char *filename, size_t offset)
 			goto err;
 		}
 
-		list_add_tail(&desc->list, &fip_state->descs);
-
 		pr_debug("Read TOC entry %pU %llu %llu\n", &toc_entry->uuid,
 			 toc_entry->offset_address, toc_entry->size);
+
+		this_end = toc_entry->offset_address + toc_entry->size;
+
+		if (this_end > total)
+			total = this_end;
+
+		n_entries++;
+
+		list_add_tail(&toc_entry_list->list, &toc_entries);
 
 		/* Found the ToC terminator, we are done. */
 		if (uuid_is_null(&toc_entry->uuid))
 			break;
 	}
 
-	/* determine buffer size */
-	fip_for_each_desc(fip_state, desc) {
-		uint64_t this_end = desc->image->toc_e.offset_address + desc->image->toc_e.size;
-
-		if (this_end > total)
-			total = this_end;
-		n_entries++;
-	}
-
-	fip_headers_size = n_entries * sizeof(struct fip_toc_entry) + sizeof(fip_toc_header_t);
-
-	total -= fip_headers_size;
-
-	fip_state->buffer = malloc(total);
-	if (!fip_state->buffer) {
+	buf = malloc(total);
+	if (!buf) {
 		ret = -ENOMEM;
 		goto err;
 	}
 
-	ret = read_full(fd, fip_state->buffer, total);
+	ptr = buf;
+	fip_state->buffer = buf;
+
+	memcpy(ptr, &toc_header, sizeof(toc_header));
+	ptr += sizeof(toc_header);
+
+	list_for_each_entry_safe(toc_entry_list, tmp, &toc_entries, list) {
+		memcpy(ptr, &toc_entry_list->toc, sizeof(*toc_entry));
+		ptr += sizeof(*toc_entry);
+
+		list_del(&toc_entry_list->list);
+		free(toc_entry_list);
+	}
+
+	fip_headers_size = n_entries * sizeof(struct fip_toc_entry) + sizeof(fip_toc_header_t);
+
+	ret = read_full(fd, ptr, total - fip_headers_size);
+	ret = -EINVAL;
 	if (ret < 0)
 		goto err;
 
-	if (ret < total) {
+	if (ret < total - fip_headers_size) {
 		ret = -ENODATA;
 		goto err;
 	}
 
-	close(fd);
+	ret = fip_do_parse_buf(fip_state, buf, total, NULL);
+	if (ret)
+		goto err;
 
-	fip_for_each_desc(fip_state, desc) {
-		desc->image->buffer = fip_state->buffer +
-			desc->image->toc_e.offset_address - fip_headers_size;
-		desc->image->buf_no_free = true;
-	}
+	close(fd);
 
 	return fip_state;
 err:
+	list_for_each_entry_safe(toc_entry_list, tmp, &toc_entries, list)
+		free(toc_entry_list);
+
 	close(fd);
 	fip_free(fip_state);
 
 	return ERR_PTR(ret);
+}
+
+int fip_sha256(struct fip_state *fip, char *hash)
+{
+	struct digest *d;
+	int ret;
+
+	d = digest_alloc_by_algo(HASH_ALGO_SHA256);
+	if (!d)
+		return -ENOSYS;
+
+	digest_init(d);
+
+	digest_update(d, fip->buffer, fip->bufsize);
+
+	ret = digest_final(d, hash);
+
+	digest_free(d);
+
+	return ret;
 }

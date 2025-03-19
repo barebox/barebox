@@ -692,7 +692,7 @@ ssize_t nvmem_device_cell_read(struct nvmem_device *nvmem,
 {
 	struct nvmem_cell cell;
 	int rc;
-	ssize_t len;
+	ssize_t len = 0;
 
 	if (!nvmem)
 		return -EINVAL;

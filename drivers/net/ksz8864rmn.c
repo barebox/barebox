@@ -126,7 +126,7 @@ static int micrel_switch_probe(struct device *dev)
 {
 	struct micrel_switch_priv *priv;
 	int ret = 0;
-	enum ksz_type kind = (enum ksz_type)device_get_match_data(dev);
+	enum ksz_type kind = (enum ksz_type)(uintptr_t)device_get_match_data(dev);
 	uint8_t id;
 
 	if (kind == unknown)

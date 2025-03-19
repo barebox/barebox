@@ -301,6 +301,9 @@ int wrpll_configure_for_rate(struct wrpll_cfg *c, u32 target_rate,
 	c->divr = best_r - 1;
 	c->divf = best_f - 1;
 
+	if (!best_r)
+		return -ERANGE;
+
 	post_divr_freq = div_u64(parent_rate, best_r);
 
 	/* Pick the best PLL jitter filter */

@@ -13,7 +13,7 @@ static const char *const speed_names[] = {
 
 const char *usb_speed_string(enum usb_device_speed speed)
 {
-	if (speed < 0 || speed >= ARRAY_SIZE(speed_names))
+	if (speed >= ARRAY_SIZE(speed_names))
 		speed = USB_SPEED_UNKNOWN;
 	return speed_names[speed];
 }

@@ -1885,6 +1885,10 @@ static char * make_string(char ** inp)
 		if (p != inp[n])
 			free(p);
 	}
+
+	if (!str)
+		str = xzalloc(len);
+
 	len = strlen(str);
 	*(str + len) = '\n';
 	*(str + len + 1) = '\0';

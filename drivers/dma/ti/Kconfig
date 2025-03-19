@@ -1,6 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Texas Instruments DMA drivers
+#
+
 config TI_K3_UDMA
         tristate "Texas Instruments UDMA support"
         depends on ARCH_K3 || COMPILE_TEST
+        select TI_K3_RINGACC
         help
           Enable support for the TI UDMA (Unified DMA) controller. This
           DMA engine is used in AM65x and j721e.

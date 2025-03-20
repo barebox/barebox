@@ -111,7 +111,7 @@ static const struct xload_instance sama5d3_mci_instances[] = {
 	},
 };
 
-void __noreturn sama5d3_atmci_start_image(u32 boot_src, unsigned int clock,
+void __noreturn sama5d3_atmci_start_image(u32 r4, unsigned int clock,
 					  unsigned int slot)
 {
 	void *buf = (void *)SAMA5_DDRCS;
@@ -120,11 +120,11 @@ void __noreturn sama5d3_atmci_start_image(u32 boot_src, unsigned int clock,
 	const s8 *pin;
 	int ret;
 
-	ret = sama5_bootsource_instance(boot_src);
+	ret = sama5_bootsource_instance(r4);
 	if (ret > ARRAY_SIZE(sama5d3_mci_instances) - 1)
 		panic("Couldn't determine boot MCI instance\n");
 
-	instance = &sama5d3_mci_instances[boot_src];
+	instance = &sama5d3_mci_instances[r4];
 
 	sama5d3_pmc_enable_periph_clock(SAMA5D3_ID_PIOD);
 	for (pin = instance->pins; *pin >= 0; pin++) {
@@ -138,7 +138,7 @@ void __noreturn sama5d3_atmci_start_image(u32 boot_src, unsigned int clock,
 	if (ret)
 		goto out_panic;
 
-	at91_fat_start_image(&bio, buf, boot_src);
+	at91_fat_start_image(&bio, buf, r4);
 
 out_panic:
 	panic("FAT chainloading failed\n");

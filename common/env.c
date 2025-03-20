@@ -123,6 +123,21 @@ static const char *getenv_raw(struct list_head *l, const char *name)
 	return NULL;
 }
 
+static int getenv_raw_call(int (*fn)(struct variable_d *v, void *data),
+			   struct list_head *l, void *data)
+{
+	struct variable_d *v;
+	int ret;
+
+	list_for_each_entry(v, l, list) {
+		ret = fn(v, data);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
 static const char *dev_getenv(const char *name)
 {
 	const char *pos, *val, *dot, *varname;
@@ -178,6 +193,28 @@ const char *getenv(const char *name)
 	return NULL;
 }
 EXPORT_SYMBOL(getenv);
+
+int envvar_for_each(int (*fn)(struct variable_d *v, void *data), void *data)
+{
+	struct env_context *c;
+	int ret;
+
+	c = context;
+
+	ret = getenv_raw_call(fn, &c->local, data);
+	if (ret)
+		return ret;
+
+	while (c) {
+		ret = getenv_raw_call(fn, &c->global, data);
+		if (ret)
+			return ret;
+		c = c->parent;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(envvar_for_each);
 
 static int setenv_raw(struct list_head *l, const char *name, const char *value)
 {

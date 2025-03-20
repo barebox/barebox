@@ -1912,6 +1912,21 @@ config CMD_DETECT
 		  -e	bail out if one device fails to detect
 		  -a	detect all devices
 
+config CMD_TRUNCATE
+	tristate
+	prompt "truncate"
+	help
+
+	truncate [-c] -s [+]SIZE FILE...
+
+	truncate truncates files to a given size. If a file does
+	not exist, it is created unless told otherwise.
+	Options:
+	-c		Do not create files
+	-s [+]SIZE	truncate file to SIZE, or increase by +SIZE
+
+	This command is mainly useful for VFS development.
+
 config CMD_SYNC
 	tristate
 	prompt "sync"

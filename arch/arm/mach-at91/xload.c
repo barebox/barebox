@@ -20,7 +20,6 @@ struct xload_instance {
 
 static void at91_fat_start_image(struct pbl_bio *bio, void *buf, u32 r4)
 {
-	void __noreturn (*bb)(void);
 	int ret;
 
 	ret = pbl_fat_load(bio, "barebox.bin", buf, SZ_2M);
@@ -29,11 +28,9 @@ static void at91_fat_start_image(struct pbl_bio *bio, void *buf, u32 r4)
 		return;
 	}
 
-	bb = buf;
-
 	sync_caches_for_execution();
 
-	sama5_boot_xload(bb, r4);
+	sama5_boot_xload(buf, r4);
 }
 
 static const struct xload_instance sama5d2_mci_instances[] = {

@@ -49,4 +49,6 @@ and have ``FETCH_HEAD`` point at it::
 CI tests are executed by Github Actions can be used by forking
 `the project on Github <https://github.com/barebox/barebox>`.
 
-There's also an IRC channel: #barebox on Libera Chat
+There's also an IRC channel, which is
+`bridged to Matrix  <https://app.element.io/#/room/#barebox:matrix.org>`_:
+#barebox on Libera Chat.

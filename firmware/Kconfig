@@ -9,6 +9,8 @@ config EXTRA_FIRMWARE_DIR
 config MISSING_FIRMWARE_ERROR
 	bool "Fail the build when required firmware is missing"
 	default y
+	# This prevents firmware errors from breaking allyesconfig builds
+	depends on !COMPILE_TEST
 	help
 	  In-tree Defconfigs that enable multiple boards with different firmware
 	  binary requirements would say y here, so you don't need unrelated firmware

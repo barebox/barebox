@@ -366,6 +366,12 @@ int env_param_noeval_complete(struct string_list *sl, char *instr)
 }
 EXPORT_SYMBOL(env_param_noeval_complete);
 
+int env_param_plain_complete(struct string_list *sl, char *instr)
+{
+	return env_param_complete(sl, instr, 0);
+}
+EXPORT_SYMBOL(env_param_plain_complete);
+
 static int tab_pressed = 0;
 
 void complete_reset(void)

@@ -24,6 +24,7 @@ int devicetree_nodepath_complete(struct string_list *sl, char *instr);
 int devicetree_complete(struct string_list *sl, char *instr);
 int devicetree_file_complete(struct string_list *sl, char *instr);
 int env_param_noeval_complete(struct string_list *sl, char *instr);
+int env_param_plain_complete(struct string_list *sl, char *instr);
 int tutorial_complete(struct string_list *sl, char *instr);
 
 #endif /* __COMPLETE_ */

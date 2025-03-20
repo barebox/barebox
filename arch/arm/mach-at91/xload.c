@@ -40,12 +40,25 @@ static void at91_fat_start_image(struct pbl_bio *bio,
 
 static const struct xload_instance sama5d2_mci_instances[] = {
 	[0] = {
-		.base = SAMA5D2_BASE_SDHC0, .id = SAMA5D2_ID_SDMMC0, .periph = AT91_MUX_PERIPH_A,
-		.pins = { 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 13, 10, 11, 12, -1 }
+		.base = SAMA5D2_BASE_SDHC0,
+		.id = SAMA5D2_ID_SDMMC0,
+		.periph = AT91_MUX_PERIPH_A,
+		.pins = {
+			AT91_PIN_PA2, AT91_PIN_PA3, AT91_PIN_PA4, AT91_PIN_PA5,
+			AT91_PIN_PA6, AT91_PIN_PA7, AT91_PIN_PA8, AT91_PIN_PA9,
+			AT91_PIN_PA0, AT91_PIN_PA1, AT91_PIN_PA13, AT91_PIN_PA10,
+			AT91_PIN_PA11, AT91_PIN_PA12, -1
+		}
 	},
 	[1] = {
-		.base = SAMA5D2_BASE_SDHC1, .id = SAMA5D2_ID_SDMMC1, .periph = AT91_MUX_PERIPH_E,
-		.pins = { 18, 19, 20, 21, 22, 28, 30, -1 }
+		.base = SAMA5D2_BASE_SDHC1,
+		.id = SAMA5D2_ID_SDMMC1,
+		.periph = AT91_MUX_PERIPH_E,
+		.pins = {
+			AT91_PIN_PA18, AT91_PIN_PA19, AT91_PIN_PA20,
+			AT91_PIN_PA21, AT91_PIN_PA22, AT91_PIN_PA28,
+			AT91_PIN_PA30, -1
+		}
 	},
 };
 

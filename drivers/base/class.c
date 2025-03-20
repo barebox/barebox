@@ -48,14 +48,3 @@ int class_register_device(struct class *class,
 	class_add_device(class, class_dev);
 	return 0;
 }
-
-void class_unregister_device(struct device *class_dev)
-{
-	list_del(&class_dev->class_list);
-	unregister_device(class_dev);
-}
-
-void class_remove_device(struct class *class, struct device *dev)
-{
-	list_del(&dev->class_list);
-}

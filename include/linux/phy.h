@@ -115,6 +115,88 @@ typedef enum {
 	PHY_INTERFACE_MODE_MAX,
 } phy_interface_t;
 
+/**
+ * phy_modes - map phy_interface_t enum to device tree binding of phy-mode
+ * @interface: enum phy_interface_t value
+ *
+ * Description: maps enum &phy_interface_t defined in this file
+ * into the device tree binding of 'phy-mode', so that Ethernet
+ * device driver can get PHY interface from device tree.
+ */
+static inline const char *phy_modes(phy_interface_t interface)
+{
+	switch (interface) {
+	case PHY_INTERFACE_MODE_NA:
+		return "";
+	case PHY_INTERFACE_MODE_INTERNAL:
+		return "internal";
+	case PHY_INTERFACE_MODE_MII:
+		return "mii";
+	case PHY_INTERFACE_MODE_GMII:
+		return "gmii";
+	case PHY_INTERFACE_MODE_SGMII:
+		return "sgmii";
+	case PHY_INTERFACE_MODE_TBI:
+		return "tbi";
+	case PHY_INTERFACE_MODE_REVMII:
+		return "rev-mii";
+	case PHY_INTERFACE_MODE_RMII:
+		return "rmii";
+	case PHY_INTERFACE_MODE_REVRMII:
+		return "rev-rmii";
+	case PHY_INTERFACE_MODE_RGMII:
+		return "rgmii";
+	case PHY_INTERFACE_MODE_RGMII_ID:
+		return "rgmii-id";
+	case PHY_INTERFACE_MODE_RGMII_RXID:
+		return "rgmii-rxid";
+	case PHY_INTERFACE_MODE_RGMII_TXID:
+		return "rgmii-txid";
+	case PHY_INTERFACE_MODE_RTBI:
+		return "rtbi";
+	case PHY_INTERFACE_MODE_SMII:
+		return "smii";
+	case PHY_INTERFACE_MODE_XGMII:
+		return "xgmii";
+	case PHY_INTERFACE_MODE_XLGMII:
+		return "xlgmii";
+	case PHY_INTERFACE_MODE_MOCA:
+		return "moca";
+	case PHY_INTERFACE_MODE_PSGMII:
+		return "psgmii";
+	case PHY_INTERFACE_MODE_QSGMII:
+		return "qsgmii";
+	case PHY_INTERFACE_MODE_TRGMII:
+		return "trgmii";
+	case PHY_INTERFACE_MODE_1000BASEX:
+		return "1000base-x";
+	case PHY_INTERFACE_MODE_1000BASEKX:
+		return "1000base-kx";
+	case PHY_INTERFACE_MODE_2500BASEX:
+		return "2500base-x";
+	case PHY_INTERFACE_MODE_5GBASER:
+		return "5gbase-r";
+	case PHY_INTERFACE_MODE_RXAUI:
+		return "rxaui";
+	case PHY_INTERFACE_MODE_XAUI:
+		return "xaui";
+	case PHY_INTERFACE_MODE_10GBASER:
+		return "10gbase-r";
+	case PHY_INTERFACE_MODE_25GBASER:
+		return "25gbase-r";
+	case PHY_INTERFACE_MODE_USXGMII:
+		return "usxgmii";
+	case PHY_INTERFACE_MODE_10GKR:
+		return "10gbase-kr";
+	case PHY_INTERFACE_MODE_100BASEX:
+		return "100base-x";
+	case PHY_INTERFACE_MODE_QUSGMII:
+		return "qusgmii";
+	default:
+		return "unknown";
+	}
+}
+
 #define PHY_INIT_TIMEOUT	100000
 #define PHY_FORCE_TIMEOUT	10
 #define PHY_AN_TIMEOUT		10

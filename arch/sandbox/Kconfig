@@ -41,17 +41,23 @@ config CC_HAS_LINUX_I386_SUPPORT
 
 config 64BIT
 	bool
-	default n if SANDBOX_LINUX_I386
+	prompt "64-bit barebox" if CC_HAS_LINUX_I386_SUPPORT
 	default CC_IS_64BIT
 	select ARCH_DMA_ADDR_T_64BIT
 	select PHYS_ADDR_T_64BIT
 	select ARCH_HAS_ASAN_FIBER_API if ASAN
+	help
+	  Say n here if you want to build a 32-bit barebox, either
+	  to be more similar to a target platform or to reduce
+	  memory usage when fuzzing for example.
+
+	  If unsure, say y.
 
 config 32BIT
 	def_bool !64BIT
 
 config SANDBOX_LINUX_I386
-	bool "32-bit x86 barebox" if CC_HAS_LINUX_I386_SUPPORT
+	def_bool 32BIT && CC_HAS_LINUX_I386_SUPPORT
 
 config SANDBOX_REEXEC
 	prompt "exec(2) reset handler"

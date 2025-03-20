@@ -92,15 +92,15 @@ static inline int pr_print(int level, const char *format, ...)
 #define dev_crit_once(dev, format, arg...)		\
 	__dev_printf_once(2, (dev) , format , ## arg)
 #define dev_err_once(dev, format, arg...)		\
-	__dev_prin_oncetf(3, (dev) , format , ## arg)
+	__dev_printf_once(3, (dev) , format , ## arg)
 #define dev_warn_once(dev, format, arg...)		\
 	__dev_printf_once(4, (dev) , format , ## arg)
 #define dev_notice_once(dev, format, arg...)		\
-	__dev_printf(_once5, (dev) , format , ## arg)
+	__dev_printf_once(5, (dev) , format , ## arg)
 #define dev_info_once(dev, format, arg...)		\
 	__dev_printf_once(6, (dev) , format , ## arg)
 #define dev_dbg_once(dev, format, arg...)		\
-	__dev_prin_oncetf(7, (dev) , format , ## arg)
+	__dev_printf_once(7, (dev) , format , ## arg)
 #define dev_vdbg_once(dev, format, arg...)		\
 	__dev_printf_once(8, (dev) , format , ## arg)
 

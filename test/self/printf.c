@@ -179,6 +179,20 @@ test_string(void)
 	test("      1234", "%10.4s", "123456");
 }
 
+static void __init
+test_wstring(void)
+{
+	if (!IS_ENABLED(CONFIG_PRINTF_WCHAR))
+		return;
+
+	test("", "%ls%.0ls", L"", L"123");
+	test("ABCD|abc|123", "%ls|%.3ls|%.*ls", L"ABCD", L"abcdef", 3, L"123456");
+	test("1  |  2|3  |  4|5  ", "%-3ls|%3ls|%-*ls|%*ls|%*ls",
+	     L"1", L"2", 3, L"3", 3, L"4", -3, L"5");
+	test("1234      ", "%-10.4ls", L"123456");
+	test("      1234", "%10.4ls", L"123456");
+}
+
 #if BITS_PER_LONG == 64
 
 #define PTR_WIDTH 16
@@ -331,6 +345,7 @@ static void __init test_printf(void)
 	test_basic();
 	test_number();
 	test_string();
+	test_wstring();
 	test_pointer();
 	test_hexstr();
 	test_jsonpath();

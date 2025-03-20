@@ -9,10 +9,14 @@
 #include <complete.h>
 #include <xfuncs.h>
 #include <fs.h>
+#include <linux/bits.h>
 #include <linux/stat.h>
 #include <libgen.h>
 #include <command.h>
 #include <environment.h>
+
+#define DEVPARAM_COMPLETE_ASSIGNMENT	BIT(0)
+#define DEVPARAM_COMPLETE_DOLLAR	BIT(1)
 
 static bool is_valid_escape(const char *str)
 {
@@ -170,7 +174,8 @@ int device_complete(struct string_list *sl, char *instr)
 EXPORT_SYMBOL(device_complete);
 
 static int device_param_complete(struct device *dev, const char *devname,
-				 struct string_list *sl, char *instr, int eval)
+				 struct string_list *sl, char *instr,
+				 unsigned flags)
 {
 	struct param_d *param;
 
@@ -179,8 +184,8 @@ static int device_param_complete(struct device *dev, const char *devname,
 			continue;
 
 		string_list_add_asprintf(sl, "%s%s.%s%c",
-			eval ? "$" : "", devname, param->name,
-			eval ? ' ' : '=');
+			flags & DEVPARAM_COMPLETE_DOLLAR ? "$" : "", devname, param->name,
+			flags & DEVPARAM_COMPLETE_ASSIGNMENT ? '=' : ' ');
 	}
 
 	return 0;
@@ -292,21 +297,22 @@ int tutorial_complete(struct string_list *sl, char *instr)
 }
 EXPORT_SYMBOL(tutorial_complete);
 
-static int env_param_complete(struct string_list *sl, char *instr, int eval)
+static int env_param_complete(struct string_list *sl, char *instr, unsigned flags)
 {
 	struct device *dev;
 	struct variable_d *var;
 	struct env_context *c;
 	int len;
-	char end = '=', *pos, *dot;
+	char end = ' ', *pos, *dot;
 	char *begin = "";
 
 	if (!instr)
 		instr = "";
 
-	if (eval) {
+	if (flags & DEVPARAM_COMPLETE_DOLLAR) {
 		begin = "$";
-		end = ' ';
+	} else if (flags & DEVPARAM_COMPLETE_ASSIGNMENT) {
+		end = '=';
 	}
 
 	len = strlen(instr);
@@ -338,7 +344,7 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 		dev = get_device_by_name(devname);
 
 		if (dev)
-			device_param_complete(dev, devname, sl, dot + 1, eval);
+			device_param_complete(dev, devname, sl, dot + 1, flags);
 
 		free(devname);
 		pos = dot + 1;
@@ -348,7 +354,7 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 
 	for_each_device(dev) {
 		if (!strncmp(instr, dev_name(dev), len))
-			device_param_complete(dev, dev_name(dev), sl, "", eval);
+			device_param_complete(dev, dev_name(dev), sl, "", flags);
 	}
 
 	return 0;
@@ -356,7 +362,7 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 
 int env_param_noeval_complete(struct string_list *sl, char *instr)
 {
-	return env_param_complete(sl, instr, 0);
+	return env_param_complete(sl, instr, DEVPARAM_COMPLETE_ASSIGNMENT);
 }
 EXPORT_SYMBOL(env_param_noeval_complete);
 
@@ -415,7 +421,7 @@ static char* cmd_complete_lookup(struct string_list *sl, char *instr)
 
 end:
 	if (ret == COMPLETE_CONTINUE && *instr == '$')
-		env_param_complete(sl, instr + 1, 1);
+		env_param_complete(sl, instr + 1, DEVPARAM_COMPLETE_DOLLAR);
 
 	return res;
 }
@@ -457,10 +463,10 @@ int complete(char *instr, char **outstr)
 		} else {
 			command_complete(&sl, instr);
 			path_command_complete(&sl, instr);
-			env_param_complete(&sl, instr, 0);
+			env_param_complete(&sl, instr, DEVPARAM_COMPLETE_ASSIGNMENT);
 		}
 		if (*instr == '$')
-			env_param_complete(&sl, instr + 1, 1);
+			env_param_complete(&sl, instr + 1, DEVPARAM_COMPLETE_DOLLAR);
 	}
 
 	pos = strlen_escaped(instr);

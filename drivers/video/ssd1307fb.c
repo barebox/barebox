@@ -77,6 +77,7 @@ struct ssd1307fb_par {
 	struct spi_device *spi;
 	u32 height;
 	struct fb_info *info;
+	struct fb_videomode mode;
 	u32 page_offset;
 	u32 prechargep1;
 	u32 prechargep2;
@@ -594,6 +595,11 @@ static int ssd1307fb_probe(struct device *dev)
 	if (ret)
 		goto reset_oled_error;
 
+	par->mode.xres = par->width;
+	par->mode.yres = par->height;
+	par->mode.name = "default";
+
+	info->mode = &par->mode;
 	info->dev.parent = dev;
 	ret = register_framebuffer(info);
 	if (ret) {

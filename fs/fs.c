@@ -2656,20 +2656,6 @@ out1:
 }
 EXPORT_SYMBOL(openat);
 
-static const char *fd_getpath(int fd)
-{
-	struct file *f;
-
-	if (fd < 0)
-		return ERR_PTR(errno_set(fd));
-
-	f = fd_to_file(fd, true);
-	if (IS_ERR(f))
-		return ERR_CAST(f);
-
-	return f->path;
-}
-
 int unlinkat(int dirfd, const char *pathname, int flags)
 {
 	int ret;
@@ -2754,107 +2740,77 @@ static void __release_dir(DIR *d)
 static int __opendir(DIR *d)
 {
 	int ret;
-	struct file file = {};
-	struct path *path = &d->path;
-	struct dentry *dir = path->dentry;
+	struct file *file = fd_to_file(d->fd, true);
 	struct readdir_callback rd = {
 		.ctx = {
 			.actor = fillonedir,
 		},
 	};
 
-	file.f_path.dentry = dir;
-	file.f_inode = d_inode(dir);
-	file.f_op = dir->d_inode->i_fop;
-
 	INIT_LIST_HEAD(&d->entries);
 	rd.dir = d;
 
-	ret = file.f_op->iterate(&file, &rd.ctx);
+	ret = file->f_inode->i_fop->iterate(file, &rd.ctx);
 	if (ret)
 		__release_dir(d);
 
 	return ret;
 }
 
-DIR *opendir(const char *pathname)
-{
-	int ret;
-	struct dentry *dir;
-	struct inode *inode;
-	DIR *d;
-	struct path path = {};
-
-	ret = filename_lookup(AT_FDCWD, getname(pathname),
-			      LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
-	if (ret)
-		goto out;
-
-	dir = path.dentry;
-
-	if (d_is_negative(dir)) {
-		ret = -ENOENT;
-		goto out_put;
-	}
-
-	inode = d_inode(dir);
-
-	if (!S_ISDIR(inode->i_mode)) {
-		ret = -ENOTDIR;
-		goto out_put;
-	}
-
-	d = xzalloc(sizeof(*d));
-	d->path = path;
-	d->fd = -ENOENT;
-
-	ret = __opendir(d);
-	if (ret)
-		goto out_free;
-
-	return d;
-
-out_free:
-	free(d);
-out_put:
-	path_put(&path);
-out:
-	errno_set(ret);
-
-	return NULL;
-}
-EXPORT_SYMBOL(opendir);
-
 DIR *fdopendir(int fd)
 {
-	const char *path;
+	struct stat st;
 	DIR *dir;
+	int ret;
 
-	path = fd_getpath(fd);
-	if (IS_ERR(path))
+	ret = fstat(fd, &st);
+	if (ret)
 		return NULL;
 
-	dir = opendir(path);
-	if (!dir)
-		return NULL;
+	if (!S_ISDIR(st.st_mode)) {
+		ret = -ENOTDIR;
+		goto err;
+	}
+
+	dir = xzalloc(sizeof(*dir));
 
 	/* we intentionally don't increment the reference count,
 	 * as POSIX specifies that fd ownership is transferred
 	 */
 	dir->fd = fd;
+
+	ret = __opendir(dir);
+	if (ret)
+		goto err;
+
 	return dir;
+err:
+	errno_set(ret);
+	return NULL;
 }
 EXPORT_SYMBOL(fdopendir);
+
+DIR *opendir(const char *pathname)
+{
+	int fd;
+
+	fd = open(pathname, O_DIRECTORY);
+	if (fd < 0) {
+		errno_set(fd);
+		return NULL;
+	}
+
+	return fdopendir(fd);
+}
+EXPORT_SYMBOL(opendir);
 
 int closedir(DIR *dir)
 {
 	if (!dir)
 		return errno_set(-EBADF);
 
-	path_put(&dir->path);
 	__release_dir(dir);
-	if (dir->fd >= 0)
-		close(dir->fd);
+	close(dir->fd);
 	free(dir);
 
 	return 0;

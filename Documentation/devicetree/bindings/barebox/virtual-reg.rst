@@ -13,7 +13,7 @@ by subtracting ``virtual-reg`` from the first address in ``reg``.
 
 This is normally used to map I/O memory away from the zero page, so it
 can be used again to trap null pointer dereferences, while allowing
-full access to the device memory::
+full access to the device memory.
 
 .. code-block:: none
 

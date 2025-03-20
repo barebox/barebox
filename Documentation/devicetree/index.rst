@@ -143,6 +143,7 @@ Contents:
    :maxdepth: 1
 
    bindings/barebox/*
+   bindings/clocks/*
    bindings/firmware/*
    bindings/leds/*
    bindings/misc/*

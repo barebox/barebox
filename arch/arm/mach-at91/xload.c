@@ -18,14 +18,12 @@ struct xload_instance {
 	s8 pins[15];
 };
 
-static void at91_fat_start_image(struct pbl_bio *bio,
-				 void *buf, unsigned int len,
-				 u32 r4)
+static void at91_fat_start_image(struct pbl_bio *bio, void *buf, u32 r4)
 {
 	void __noreturn (*bb)(void);
 	int ret;
 
-	ret = pbl_fat_load(bio, "barebox.bin", buf, len);
+	ret = pbl_fat_load(bio, "barebox.bin", buf, SZ_2M);
 	if (ret < 0) {
 		pr_err("pbl_fat_load: error %d\n", ret);
 		return;
@@ -95,7 +93,7 @@ void __noreturn sama5d2_sdhci_start_image(u32 r4)
 
 	/* TODO: eMMC boot partition handling: they are not FAT-formatted */
 
-	at91_fat_start_image(&bio, buf, SZ_16M, r4);
+	at91_fat_start_image(&bio, buf, r4);
 
 out_panic:
 	panic("FAT chainloading failed\n");
@@ -131,7 +129,7 @@ void __noreturn sama5d3_atmci_start_image(u32 boot_src, unsigned int clock,
 	sama5d3_pmc_enable_periph_clock(SAMA5D3_ID_PIOD);
 	for (pin = instance->pins; *pin >= 0; pin++) {
 		at91_mux_pio3_pin(IOMEM(SAMA5D3_BASE_PIOD),
-					 pin_to_mask(*pin), instance->periph, 0);
+				  pin_to_mask(*pin), instance->periph, 0);
 	}
 
 	sama5d3_pmc_enable_periph_clock(instance->id);
@@ -140,7 +138,7 @@ void __noreturn sama5d3_atmci_start_image(u32 boot_src, unsigned int clock,
 	if (ret)
 		goto out_panic;
 
-	at91_fat_start_image(&bio, buf, SZ_16M, boot_src);
+	at91_fat_start_image(&bio, buf, boot_src);
 
 out_panic:
 	panic("FAT chainloading failed\n");

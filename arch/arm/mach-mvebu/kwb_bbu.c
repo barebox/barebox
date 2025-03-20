@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <bbu.h>
+#include <xfuncs.h>
 #include <libfile.h>
 #include <linux/printk.h>
 

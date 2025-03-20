@@ -16,12 +16,12 @@
 #endif
 #elif __SIZEOF_POINTER__ == 4
 #ifdef __ASSEMBLY__
-#define ASM_PTR		.word
+#define ASM_PTR		.long
 #define ASM_SZPTR	4
 #define ASM_LGPTR	2
 #define ASM_LD_PTR(x)	LONG(x)
 #else
-#define ASM_PTR		".word"
+#define ASM_PTR		".long"
 #define ASM_SZPTR	"4"
 #define ASM_LGPTR	"2"
 #endif

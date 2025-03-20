@@ -61,7 +61,7 @@ static const struct xload_instance sama5d2_mci_instances[] = {
  * sama5d2_sdhci_start_image - Load and start an image from FAT-formatted SDHCI
  * @r4: value of r4 passed by BootROM
  */
-void __noreturn sama5d2_sdhci_start_image(u32 r4)
+static void __noreturn sama5d2_sdhci_start_image(u32 r4)
 {
 	void *buf = (void *)SAMA5_DDRCS;
 	const struct xload_instance *instance;
@@ -94,6 +94,19 @@ void __noreturn sama5d2_sdhci_start_image(u32 r4)
 
 out_panic:
 	panic("FAT chainloading failed\n");
+}
+
+void __noreturn sama5d2_start_image(u32 r4)
+{
+	switch (sama5_bootsource(r4)) {
+	case BOOTSOURCE_MMC:
+		sama5d2_sdhci_start_image(r4);
+		break;
+	default:
+		break;
+	}
+
+	panic("Unsupported boot configuration!\n");
 }
 
 static const struct xload_instance sama5d3_mci_instances[] = {

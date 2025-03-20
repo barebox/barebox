@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <common.h>
+#include <filetype.h>
 #include <mach/at91/xload.h>
 #include <mach/at91/sama5_bootsource.h>
 #include <mach/at91/hardware.h>
@@ -96,11 +97,94 @@ out_panic:
 	panic("FAT chainloading failed\n");
 }
 
+static const struct xload_instance sama5d2_qspi_ioset1_instances[] = {
+	[0] = {
+		.base = SAMA5D2_BASE_QSPI0,
+		.id = SAMA5D2_ID_QSPI0,
+		.periph = AT91_MUX_PERIPH_B,
+		.pins = {
+			AT91_PIN_PA0, AT91_PIN_PA1, AT91_PIN_PA2,
+			AT91_PIN_PA3, AT91_PIN_PA4, AT91_PIN_PA5, -1
+		}
+	},
+	[1] = {
+		.base = SAMA5D2_BASE_QSPI1,
+		.id = SAMA5D2_ID_QSPI1,
+		.periph = AT91_MUX_PERIPH_B,
+		.pins = {
+			AT91_PIN_PA6, AT91_PIN_PA7, AT91_PIN_PA8,
+			AT91_PIN_PA9, AT91_PIN_PA10, AT91_PIN_PA11, -1
+		}
+	},
+};
+
+/**
+ * sama5d2_qspi_start_image - Start an image from QSPI NOR flash
+ * @r4: value of r4 passed by BootROM
+ */
+static void __noreturn sama5d2_qspi_start_image(u32 r4)
+{
+	void __iomem *mem, *dest = IOMEM(SAMA5_DDRCS);
+	const struct xload_instance *instance;
+	const s8 *pin;
+	u32 offs;
+	int ret;
+
+	ret = sama5_bootsource_instance(r4);
+	if (ret == 0)
+		mem = SAMA5D2_BASE_QSPI0_MEM;
+	else if (ret == 1)
+		mem = SAMA5D2_BASE_QSPI1_MEM;
+	else
+		panic("Couldn't determine boot QSPI instance\n");
+
+	instance = &sama5d2_qspi_ioset1_instances[ret];
+
+	sama5d2_pmc_enable_periph_clock(SAMA5D2_ID_PIOA);
+	for (pin = instance->pins; *pin >= 0; pin++)
+		at91_mux_pio4_set_periph(SAMA5D2_BASE_PIOA,
+					 BIT(*pin), instance->periph);
+
+	sama5d2_pmc_enable_periph_clock(instance->id);
+
+	/*
+	 * Since we booted from QSPI, we expect the QSPI registers to be
+	 * properly initialized already.
+	 * Let's just read the memory-mapped data.
+	 */
+
+	/* Find barebox pattern first */
+	for (offs = SZ_128K; offs <= SZ_1M; offs += SZ_128K) {
+		/* Fix cache coherency issue by reading each sector only once */
+		memcpy(dest, mem + offs, SZ_128K);
+
+		if (is_barebox_arm_head(dest)) {
+			u32 size = readl(dest + ARM_HEAD_SIZE_OFFSET);
+
+			pr_info("Image found at 0x%08x, size %u\n", offs, size);
+
+			/* Copy remaining barebox code */
+			if (size > SZ_128K)
+				memcpy(dest + SZ_128K, mem + offs + SZ_128K,
+				       size - SZ_128K);
+
+			sync_caches_for_execution();
+
+			sama5_boot_xload(dest, r4);
+		}
+	}
+
+	panic("No barebox image found!\n");
+}
+
 void __noreturn sama5d2_start_image(u32 r4)
 {
 	switch (sama5_bootsource(r4)) {
 	case BOOTSOURCE_MMC:
 		sama5d2_sdhci_start_image(r4);
+		break;
+	case BOOTSOURCE_SPI:
+		sama5d2_qspi_start_image(r4);
 		break;
 	default:
 		break;

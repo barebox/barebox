@@ -229,7 +229,8 @@ static char *wstring(char *buf, const char *end, const wchar_t *s, int field_wid
 		s = L"<NULL>";
 
 	len = wcsnlen(s, precision);
-	leading_spaces(buf, end, len, &field_width, flags);
+
+	buf = leading_spaces(buf, end, len, &field_width, flags);
 
 	for (i = 0; i < len; ++i) {
 		if (buf < end)

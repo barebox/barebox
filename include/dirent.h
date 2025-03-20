@@ -22,6 +22,7 @@ DIR *fdopendir(int fd);
 struct dirent *readdir(DIR *dir);
 int unreaddir(DIR *dir, const struct dirent *d);
 int rewinddir(DIR *dir);
+int countdir(DIR *dir);
 int closedir(DIR *dir);
 
 #endif /* __DIRENT_H */

@@ -1062,6 +1062,12 @@ int unreaddir(DIR *dir, const struct dirent *d)
 }
 EXPORT_SYMBOL(unreaddir);
 
+int countdir(DIR *dir)
+{
+	return list_count_nodes(&dir->entries);
+}
+EXPORT_SYMBOL(countdir);
+
 struct dirent *readdir(DIR *dir)
 {
 	struct readdir_entry *entry;

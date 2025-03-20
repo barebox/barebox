@@ -1021,6 +1021,15 @@ config CMD_LS
 		  -C	column format (opposite of long format)
 		  -R	list subdirectories recursively
 
+config CMD_TREE
+	tristate
+	default y
+	prompt "tree"
+	help
+	  list contents of directories in a tree-like format.
+
+	  Usage: tree [FILEDIR...]
+
 config CMD_STAT
 	tristate
 	prompt "stat"

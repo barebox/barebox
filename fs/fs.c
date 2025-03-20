@@ -337,16 +337,23 @@ static void put_file(struct file *f)
 
 static struct file *fd_to_file(int fd, bool o_path_ok)
 {
-	if (fd < 0 || fd >= MAX_FILES || !files[fd].fsdev) {
-		errno = EBADF;
-		return ERR_PTR(-errno);
-	}
-	if (!o_path_ok && (files[fd].f_flags & O_PATH)) {
-		errno = EINVAL;
-		return ERR_PTR(-errno);
+	int err = -EBADF;
+	unsigned flimits;
+
+	if (fd < 0 || fd >= MAX_FILES || !files[fd].fsdev)
+		goto err;
+
+	flimits = files[fd].f_flags & (O_PATH | O_DIRECTORY);
+	if (!o_path_ok && flimits) {
+		if (flimits & O_DIRECTORY)
+			err = -EBADF;
+		goto err;
 	}
 
 	return &files[fd];
+err:
+	errno = -err;
+	return ERR_PTR(err);
 }
 
 static int create(struct dentry *dir, struct dentry *dentry)
@@ -2541,7 +2548,7 @@ int openat(int dirfd, const char *pathname, int flags)
 	struct dentry *dentry = NULL;
 	struct path path;
 
-	if (flags & O_TMPFILE) {
+	if ((flags & O_TMPFILE) == O_TMPFILE) {
 		fsdev = get_fsdevice_by_path(dirfd, pathname);
 		if (!fsdev) {
 			errno = ENOENT;
@@ -2592,11 +2599,16 @@ int openat(int dirfd, const char *pathname, int flags)
 			error = -ENOENT;
 			goto out1;
 		}
-	} else if (!(flags & O_PATH)) {
-		if (d_is_dir(dentry) && !dentry_is_tftp(dentry)) {
+	} else if (d_is_dir(dentry)) {
+		if (!(flags & (O_PATH | O_DIRECTORY)) && !dentry_is_tftp(dentry)) {
 			error = -EISDIR;
 			goto out1;
 		}
+
+		flags |= O_DIRECTORY;
+	} else if (flags & O_DIRECTORY) {
+		error = -ENOTDIR;
+		goto out1;
 	}
 
 	inode = d_inode(dentry);

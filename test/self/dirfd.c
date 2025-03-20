@@ -99,8 +99,8 @@ static void test_dirfd(void)
 {
 	int fd;
 
-	fd = open("/", O_PATH);
-	if (expect(fd < 0, false, "open(/, O_PATH) = %d", fd))
+	fd = open("/", O_PATH | O_DIRECTORY);
+	if (expect(fd < 0, false, "open(/, O_PATH | O_DIRECTORY) = %d", fd))
 		close(fd);
 
 #define B(dot, dotdot, zero, dev) 0b##dev##zero##dotdot##dot
@@ -119,7 +119,7 @@ static void test_dirfd(void)
 	do_test_dirfd("AT_FDCWD", AT_FDCWD,
 		      B(110,110,000,111), B(111,110,111,000),
 		      B(110,110,000,111), B(110,110,000,111));
-	do_test_dirfd("/dev", open("/dev", O_PATH),
+	do_test_dirfd("/dev", open("/dev", O_PATH | O_DIRECTORY),
 		      B(111,110,111,000), B(111,110,111,000),
 		      B(110,110,000,111), B(110,110,000,111));
 	do_test_dirfd("/dev O_CHROOT", open("/dev", O_PATH | O_CHROOT),

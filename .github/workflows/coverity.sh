@@ -33,7 +33,7 @@ function run_coverity {
     tool_dir=$(find "$COVERITY_SCAN_TOOL_BASE" -type d -name 'cov-analysis*')
     results_archive="analysis-results.tgz"
 
-    version="$(make bareboxversion)-g{$GITHUB_SHA:0:10}"
+    version="$(make bareboxversion)-g${GITHUB_SHA:0:10}"
 
     make ARCH=sandbox sandbox_defconfig
     COVERITY_UNSUPPORTED=1 "$tool_dir/bin/cov-build" --dir "$results_dir" sh -c "make -j$(nproc) ARCH=sandbox"

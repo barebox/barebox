@@ -117,7 +117,7 @@ static void usage(char *prgname)
 int main(int argc, char *argv[])
 {
 	int opt;
-	int save = 0, load = 0, pad = 0, err = 0, fd;
+	int save = 0, load = 0, pad = 0, err = 0;
 	char *filename = NULL, *dirname = NULL;
 	unsigned envfs_flags = 0;
 	int verbose = 0;
@@ -154,15 +154,6 @@ int main(int argc, char *argv[])
 	if ((!load && !save) || (load && save) || !filename || !dirname) {
 		usage(argv[0]);
 		exit(1);
-	}
-
-	if (save) {
-		fd = open(filename, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-		if (fd < 0) {
-			perror("open");
-			exit(1);
-		}
-		close(fd);
 	}
 
 	if (save && pad) {

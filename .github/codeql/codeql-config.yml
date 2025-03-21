@@ -1,0 +1,8 @@
+paths-ignore:
+# These build-time scripts are taken from Linux and issues should
+# be reproduced and fixed/reported there
+ - 'scripts/kconfig/**'
+ - 'scripts/mod/**'
+# Only libfdt and not the device tree compiler itself is used
+# at runtime
+ - 'scripts/dtc/*.c'

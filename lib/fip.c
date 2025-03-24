@@ -565,7 +565,6 @@ struct fip_state *fip_image_open(const char *filename, size_t offset)
 	fip_headers_size = n_entries * sizeof(struct fip_toc_entry) + sizeof(fip_toc_header_t);
 
 	ret = read_full(fd, ptr, total - fip_headers_size);
-	ret = -EINVAL;
 	if (ret < 0)
 		goto err;
 

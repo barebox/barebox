@@ -2377,6 +2377,12 @@ static int mci_mmc_decode_cid(struct mci *card)
 		return -EINVAL;
 	}
 
+	if (card->version >= MMC_VERSION_4_41) {
+		/* Adjust production date as per JEDEC JESD84-B451 */
+		if (card->cid.year < 2010)
+			card->cid.year += 16;
+	}
+
 	return 0;
 }
 
@@ -2482,12 +2488,6 @@ static void mci_parse_cid(struct mci *mci)
 		mci_sd_decode_cid(mci);
 	else
 		mci_mmc_decode_cid(mci);
-
-	if (mci->ext_csd[EXT_CSD_REV] >= 5) {
-		/* Adjust production date as per JEDEC JESD84-B451 */
-		if (mci->cid.year < 2010)
-			mci->cid.year += 16;
-	}
 
 	dev_add_param_uint32_fixed(dev, "cid_mid", mci->cid.manfid, "0x%02X");
 	dev_add_param_uint32_fixed(dev, "cid_oid", mci->cid.oemid, "0x%04X");

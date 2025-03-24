@@ -243,8 +243,11 @@ enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec)
 	if (bootsec)
 		*bootsec = 0;
 
-	if (file_detect_fs_fat(sector, 512) != filetype_fat)
+	if (get_unaligned_le16(&sector[BS_55AA]) != 0xAA55)
 		return filetype_unknown;
+
+	if (file_detect_fs_fat(sector, 512) == filetype_fat)
+		return filetype_fat;
 
 	if (bootsec)
 		/*

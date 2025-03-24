@@ -351,8 +351,11 @@ static int mci_do_block_op(struct mci *mci, const void *src, void *dst, int bloc
 		mci->high_capacity != 0 ? blocknum : blocknum * mci->read_bl_len,
 		MMC_RSP_R1);
 
-	data.src = src;
-	data.dest = dst;
+	if (dst)
+		data.dest = dst;
+	else
+		data.src = src;
+
 	data.blocks = blocks;
 	data.blocksize = mci->read_bl_len;
 	data.flags = flags;

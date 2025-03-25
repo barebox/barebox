@@ -327,7 +327,7 @@ static unsigned int xhci_get_endpoint_interval(struct usb_device *udev,
 								  endpt_desc);
 			break;
 		}
-		/* Fall through - SS and HS isoc/int have same decoding */
+		fallthrough; /* SS and HS isoc/int have same decoding */
 
 	case USB_SPEED_SUPER:
 		if (usb_endpoint_xfer_int(endpt_desc) ||
@@ -343,6 +343,7 @@ static unsigned int xhci_get_endpoint_interval(struct usb_device *udev,
 								endpt_desc);
 			break;
 		}
+		fallthrough;
 		/*
 		 * Fall through for interrupt endpoint interval decoding
 		 * since it uses the same rules as low speed interrupt

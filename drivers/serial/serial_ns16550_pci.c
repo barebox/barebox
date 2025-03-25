@@ -561,12 +561,13 @@ pci_timedia_setup(struct serial_private *priv,
 		break;
 	case 3:
 		offset = board->uart_offset;
-		/* FALLTHROUGH */
+		fallthrough;
 	case 4: /* BAR 2 */
 	case 5: /* BAR 3 */
 	case 6: /* BAR 4 */
 	case 7: /* BAR 5 */
 		bar = idx - 2;
+		break;
 	}
 
 	return setup_port(priv, port, bar, offset, board->reg_shift);
@@ -592,6 +593,7 @@ titan_400l_800l_setup(struct serial_private *priv,
 	default:
 		bar = 4;
 		offset = (idx - 2) * board->uart_offset;
+		break;
 	}
 
 	return setup_port(priv, port, bar, offset, board->reg_shift);
@@ -745,7 +747,7 @@ static int pci_netmos_init(struct pci_dev *dev)
 			dev->subsystem_device == 0x0299)
 		return 0;
 
-	switch (dev->device) { /* FALLTHROUGH on all */
+	switch (dev->device) {
 	case PCI_DEVICE_ID_NETMOS_9904:
 	case PCI_DEVICE_ID_NETMOS_9912:
 	case PCI_DEVICE_ID_NETMOS_9922:
@@ -853,6 +855,7 @@ static int pci_ite887x_init(struct pci_dev *dev)
 	default:
 		moan_device("Unknown ITE887x", dev);
 		ret = -ENODEV;
+		break;
 	}
 
 	/* configure all serial ports */

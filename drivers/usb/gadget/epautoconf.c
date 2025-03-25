@@ -86,6 +86,7 @@ ep_matches (
 			case USB_ENDPOINT_XFER_ISOC:
 				if ('s' != tmp[2])	// != "-iso"
 					return 0;
+				break;
 			}
 		} else {
 			tmp = ep->name + strlen (ep->name);
@@ -134,7 +135,7 @@ ep_matches (
 		/* INT:  limit 64 bytes full speed, 1024 high/super speed */
 		if (!gadget_is_dualspeed(gadget) && max > 64)
 			return 0;
-		/* FALLTHROUGH */
+		fallthrough;
 
 	case USB_ENDPOINT_XFER_ISOC:
 		/* ISO:  limit 1023 bytes full speed, 1024 high/super speed */

@@ -461,7 +461,7 @@ static int xymodem_handle(struct xyz_ctxt *proto)
 			if (crc_tries++ > MAX_RETRIES_WITH_CRC)
 				proto->crc_mode = CRC_ADD8;
 			xy_putc(proto->cdev, invite);
-			/* Fall through */
+			fallthrough;
 		case PROTO_STATE_RECEIVE_BODY:
 			rc = xy_read_block(proto, &blk, 3 * SECOND);
 			if (rc > 0) {

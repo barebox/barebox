@@ -212,13 +212,13 @@ static int aarch64_init_vectors(void)
 	switch (el) {
 	case 3:
 		asm volatile("msr vbar_el3, %0" : : "r" (&vectors) : "cc");
-		/* Fall through */
+		fallthrough;
 	case 2:
 		asm volatile("msr vbar_el2, %0" : : "r" (&vectors) : "cc");
-		/* Fall through */
+		fallthrough;
 	case 1:
 		asm volatile("msr vbar_el1, %0" : : "r" (&vectors) : "cc");
-		/* Fall through */
+		fallthrough;
 	default:
 		break;
 	}

@@ -565,7 +565,8 @@ static int i2c_dw_probe(struct device *pdev)
 	default:
 		dev_warn(pdev, "requested bitrate (%d) is not supported.\n"
 			 " Falling back to 100kHz", bitrate);
-	case 100000:		/* FALLTHROUGH */
+		fallthrough;
+	case 100000:
 		ic_con = DW_IC_CON_SPEED_STD;
 		break;
 	}

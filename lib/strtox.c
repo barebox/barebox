@@ -105,6 +105,7 @@ s64 simple_strtofract(const char *cp, char **endp, u32 division)
 		fallthrough;
 	case '+':
 		cp++;
+		break;
 	}
 
 	if (!isdigit(*cp))

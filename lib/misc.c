@@ -37,12 +37,15 @@ unsigned long long strtoull_suffix(const char *str, char **endp, int base)
 	switch (*end) {
 	case 'G':
 		val *= 1024;
+		fallthrough;
 	case 'M':
 		val *= 1024;
+		fallthrough;
 	case 'k':
 	case 'K':
 		val *= 1024;
 		end++;
+		break;
 	default:
 		break;
 	}

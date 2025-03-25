@@ -316,6 +316,7 @@ static inline int set_4byte(struct spi_nor *nor, struct flash_info *info,
 	case CFI_MFR_ST: /* Micron, actually */
 		/* Some Micron need WREN command; all will accept it */
 		need_wren = true;
+		fallthrough;
 	case CFI_MFR_MACRONIX:
 	case 0xEF /* winbond */:
 		if (need_wren)

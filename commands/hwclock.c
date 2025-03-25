@@ -83,7 +83,7 @@ static int do_hwclock(int argc, char *argv[])
 	struct rtc_device *r;
 	struct rtc_time tm;
 	struct rtc_time stm;
-	char rtc_name[16] = "rtc0";
+	const char *rtc_name = "rtc0";
 	char *env_name = NULL;
 	int opt;
 	int set = 0;
@@ -95,7 +95,7 @@ static int do_hwclock(int argc, char *argv[])
 
 		switch (opt) {
 		case 'f':
-			strncpy(rtc_name, optarg, 16);
+			rtc_name = optarg;
 			break;
 		case 's':
 			memset(&stm, 0, sizeof(stm));

@@ -775,6 +775,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 
 			case 'x':
 				flags |= SMALL;
+				fallthrough;
 			case 'X':
 				base = 16;
 				break;
@@ -782,6 +783,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			case 'd':
 			case 'i':
 				flags |= SIGN;
+				fallthrough;
 			case 'u':
 				break;
 

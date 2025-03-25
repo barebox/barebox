@@ -21,9 +21,19 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#include <linux/if.h>
-#include <linux/if_tun.h>
+#include <net/if.h>
 #include <string.h>
+
+#ifdef __has_include
+#  if !__has_include(<linux/if_tun.h>)
+#    define IFF_TAP		0x0002
+#    define IFF_NO_PI	0x1000
+#    define TUNSETIFF	_IOW('T', 202, int)
+#  endif
+#endif
+#ifndef IFF_TAP
+#  include <linux/if_tun.h>
+#endif
 
 int tap_alloc(const char *dev)
 {

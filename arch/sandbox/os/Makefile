@@ -20,7 +20,8 @@ ifeq ($(CONFIG_SANDBOX_LINUX_I386),y)
 KBUILD_CFLAGS += -m32
 endif
 
-obj-y = common.o tap.o setjmp.o
+obj-y = common.o setjmp.o
+obj-$(CONFIG_DRIVER_NET_TAP) += tap.o
 obj-$(CONFIG_MALLOC_LIBC) += libc_malloc.o
 
 CFLAGS_sdl.o = $(shell $(PKG_CONFIG) sdl2 --cflags)

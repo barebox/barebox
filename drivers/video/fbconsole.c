@@ -576,6 +576,7 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		priv->x = clamp(pos - 1, 0, (int) priv->cols - 1);
 
 		show_cursor(priv, priv->x, priv->y);
+		break;
 	case 'K':
 		pos = simple_strtoul(priv->csi, &end, 10);
 		video_invertchar(priv, priv->x, priv->y);

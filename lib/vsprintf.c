@@ -561,6 +561,7 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 	case 'J':
 		if (fmt[1] == 'P' && IS_ENABLED(CONFIG_JSMN))
 			return jsonpath_string(buf, end, ptr, field_width, precision, flags, fmt);
+		break;
         case 'M':
 		/* Colon separated: 00:01:02:03:04:05 */
 		return mac_address_string(buf, end, ptr, field_width, precision, flags, fmt);

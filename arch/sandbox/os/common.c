@@ -39,7 +39,7 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <sys/ioctl.h>
-#include <linux/fs.h>
+#include <sys/mount.h>
 #include <sys/time.h>
 /*
  * ...except the ones needed to connect with barebox

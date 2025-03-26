@@ -101,9 +101,12 @@ with_logs_collected() {
 
 	if [ -n "${logdir}" ]; then
 		"$@" 2>&1 > "${log_report}" | tee "${log_err}"
+		check_pipe_status
 	else
 		"$@"
 	fi
+
+	return $?
 }
 
 report() {
@@ -169,7 +172,6 @@ do_build_defconfig() {
 	done
 	with_logs_collected ${MAKE} $silent_flag olddefconfig
 
-	check_pipe_status
 	configure_result="$?"
 
 	report "Configure: "
@@ -178,8 +180,6 @@ do_build_defconfig() {
 		report "OK     \n"
 
 		with_logs_collected ${MAKE} $silent_flag ${TARGET}
-
-		check_pipe_status
 		compile_result="$?"
 
 		report "Compile: " ${defconfig}
@@ -230,8 +230,6 @@ do_test_defconfig() {
 	local err=0
 
 	LG_BUILDDIR=$BUILDDIR with_logs_collected pytest --lg-env $yaml "$@"
-
-	check_pipe_status
 	compile_result="$?"
 
 	report "Test: " ${yaml}

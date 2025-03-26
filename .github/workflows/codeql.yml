@@ -37,7 +37,7 @@ jobs:
     - name: Build C Code
       shell: bash
       run: |
-        make ARCH=sandbox sandbox_defconfig
+        make ARCH=sandbox allyesconfig
         make -j$(nproc) ARCH=sandbox
 
     - name: Perform CodeQL Analysis

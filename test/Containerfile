@@ -65,12 +65,10 @@ RUN korg_crosstool_dl() { wget -nv -O - https://mirrors.edge.kernel.org/pub/tool
     korg_crosstool_dl x86_64 ${GCC_VERSION} powerpc-linux     && \
     korg_crosstool_dl x86_64 ${GCC_VERSION} riscv64-linux
 
-RUN wget -nv -O kvx.tgz https://github.com/kalray/build-scripts/releases/download/v5.0.0/gcc-kalray-kvx-ubuntu-22.04-v5.0.0.tar.gz
-
-RUN echo "d27b3d6e6246f5debffee0bb01e77eb133bd32c658782a68a779cf9fb4c436bc kvx.tgz" | \
-    sha256sum --check --status
-
-RUN tar -C /opt -xzf kvx.tgz && rm kvx.tgz
+RUN tgz_checksum_dl() { set -e; wget -nv -O archive.tgz "$1"; \
+                        echo "$2 archive.tgz" | sha256sum --check --status; tar -C /opt -xzf archive.tgz; rm archive.tgz; } && \
+    tgz_checksum_dl https://github.com/kalray/build-scripts/releases/download/v5.0.0/gcc-kalray-kvx-ubuntu-22.04-v5.0.0.tar.gz \
+                    d27b3d6e6246f5debffee0bb01e77eb133bd32c658782a68a779cf9fb4c436bc
 
 RUN wget -nv "https://github.com/qemu/qemu/blob/v5.2.0/pc-bios/opensbi-riscv32-generic-fw_dynamic.bin?raw=true" -O /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin
 

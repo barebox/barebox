@@ -10,7 +10,7 @@ LABEL Description="This image is for building and testing barebox inside a conta
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update and install things from apt now
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
 	bison \
 	build-essential \
 	coreutils \
@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
 	libgit2-dev \
 	libguestfs-tools \
 	liblz4-tool \
+	librsvg2-bin \
 	libseccomp-dev \
 	libssl-dev \
 	libtool \

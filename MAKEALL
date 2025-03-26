@@ -219,7 +219,9 @@ do_build_defconfig() {
 }
 
 if command -v labgrid-pytest >/dev/null; then
-	alias pytest=labgrid-pytest
+	pytest=labgrid-pytest
+else
+	pytest=pytest
 fi
 
 do_test_defconfig() {
@@ -229,7 +231,7 @@ do_test_defconfig() {
 	local step_time_start=$(date +%s)
 	local err=0
 
-	LG_BUILDDIR=$BUILDDIR with_logs_collected pytest --lg-env $yaml "$@"
+	LG_BUILDDIR=$BUILDDIR with_logs_collected $pytest --lg-env $yaml "$@"
 	compile_result="$?"
 
 	report "Test: " ${yaml}

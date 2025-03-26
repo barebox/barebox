@@ -114,11 +114,15 @@ static int smhfs_stat(struct device __always_unused *dev,
 {
 	struct file file;
 
+	file.f_inode = xzalloc(sizeof(*file.f_inode));
+
 	if (smhfs_open(NULL, &file, filename) == 0) {
 		s->st_mode = S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO;
 		s->st_size = file.f_size;
 	}
 	smhfs_close(NULL, &file);
+
+	free(file.f_inode);
 
 	return 0;
 }

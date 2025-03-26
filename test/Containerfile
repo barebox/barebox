@@ -58,6 +58,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	&& rm -rf /var/lib/apt/lists/*
 
 ENV GCC_VERSION=14.2.0
+ENV LLVM_VERSION=20
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	lsb-release software-properties-common gnupg \
+	&& wget https://apt.llvm.org/llvm.sh \
+	&& chmod +x llvm.sh && ./llvm.sh ${LLVM_VERSION} \
+	&& apt-get remove -y lsb-release software-properties-common gnupg \
+	&& apt-get autoremove -y --purge \
+	&& apt-get clean \
+	&& rm -rf llvm.sh /var/lib/apt/lists/*
 
 # Manually install the kernel.org Crosstool based toolchains
 RUN korg_crosstool_dl() { wget -nv -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/${1}/${2}/${1}-gcc-${2}-nolibc-${3}.tar.xz | tar -C /opt -xJ ; } && \
@@ -91,5 +101,10 @@ ENV CROSS_COMPILE_openrisc=/opt/gcc-${GCC_VERSION}-nolibc/or1k-linux/bin/or1k-li
 ENV CROSS_COMPILE_powerpc=/opt/gcc-${GCC_VERSION}-nolibc/powerpc-linux/bin/powerpc-linux-
 ENV CROSS_COMPILE_riscv=/opt/gcc-${GCC_VERSION}-nolibc/riscv64-linux/bin/riscv64-linux-
 ENV CROSS_COMPILE_kvx=/opt/gcc-kalray-kvx-v5.0.0/bin/kvx-elf-
+
+ENV CROSS_COMPILE_llvm=-${LLVM_VERSION}
+# Workaround for https://github.com/llvm/llvm-project/issues/112458
+RUN ln -Ts /usr/lib/llvm-${LLVM_VERSION}/lib/clang/${LLVM_VERSION}/lib/linux/ \
+           /usr/lib/llvm-${LLVM_VERSION}/lib/clang/${LLVM_VERSION}/lib/x86_64-pc-linux-gnu
 
 USER barebox:barebox

@@ -1,0 +1,17 @@
+targets:
+  main:
+    drivers:
+      ExternalConsoleDriver:
+        cmd: !template "$LG_BUILDDIR/barebox"
+      ExternalPowerDriver:
+        cmd_on: 'true'
+        cmd_off: 'true'
+      BareboxDriver:
+        prompt: "barebox@[^:]+:[^ ]+ "
+      BareboxTestStrategy: {}
+    runner:
+      kconfig_add:
+        - CONFIG_CONSOLE_DISABLE_INPUT=n
+        - CONFIG_MALLOC_LIBC=y # for ASAN integration
+imports:
+  -  ../strategy.py

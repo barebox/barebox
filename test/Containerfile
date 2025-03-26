@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	lzma-alone \
 	lzop \
 	mount \
+	musl-tools \
 	openssl \
 	pkg-config \
 	util-linux \

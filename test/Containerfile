@@ -77,11 +77,9 @@ RUN useradd -m -U barebox
 RUN echo barebox ALL=NOPASSWD: ALL > /etc/sudoers.d/barebox
 
 # install labgrid
-RUN cd /tmp && \
-    git clone --depth 1 -b v24.0 https://github.com/labgrid-project/labgrid && \
-    cd labgrid && \
-    pip3 install --break-system-packages . && \
-    ln -s $(which pytest) /usr/local/bin/labgrid-pytest;
+RUN pip3 install -q --no-cache-dir --break-system-packages \
+    git+https://github.com/labgrid-project/labgrid.git@v24.0 && \
+    ln -s $(which pytest) /usr/local/bin/labgrid-pytest
 
 ENV CROSS_COMPILE_arm=/opt/gcc-${GCC_VERSION}-nolibc/arm-linux-gnueabi/bin/arm-linux-gnueabi-
 ENV CROSS_COMPILE_arm64=/opt/gcc-${GCC_VERSION}-nolibc/aarch64-linux/bin/aarch64-linux-

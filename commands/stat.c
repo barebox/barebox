@@ -26,7 +26,7 @@ static int do_stat(int argc, char *argv[])
 			extra_flags |= O_CHROOT;
 			fallthrough;
 		case 'c':
-			dirfd = open(optarg, O_PATH | extra_flags);
+			dirfd = open(optarg, O_PATH | O_DIRECTORY | extra_flags);
 			if (dirfd < 0)
 				return dirfd;
 			break;

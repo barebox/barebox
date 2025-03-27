@@ -1,3 +1,5 @@
+.. _background_execution:
+
 Background execution in barebox
 ===============================
 

@@ -486,7 +486,8 @@ LINUXINCLUDE    := -Iinclude \
 		   -I$(objtree)/arch/$(SRCARCH)/include \
 		   $(USERINCLUDE)
 
-KBUILD_CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
+KBUILD_CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) \
+			  -fno-builtin -ffreestanding -Ulinux -Uunix
 
 KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common -fshort-wchar \

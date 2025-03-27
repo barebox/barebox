@@ -65,19 +65,20 @@ jobs:
 
     - name: Build
       run: |
+        export KBUILD_OUTPUT=build-${{matrix.arch}}-${{matrix.defconfig}}
         export ARCH=${{matrix.arch}}
 
-        ./MAKEALL -O build-${{matrix.arch}} -l "" -v 0 \
+        ./MAKEALL -O ${KBUILD_OUTPUT} -l "" -v 0 \
                 -k common/boards/configs/enable_self_test.config \
                 -k common/boards/configs/disable_target_tools.config \
                 ${{matrix.defconfig}}
 
         if [ ${{matrix.arch}} = "riscv" ]; then
-          cp /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin build-${{matrix.arch}}
+          cp /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin ${KBUILD_OUTPUT}/
         fi
     - name: labgrid-pytest
       run: |
-        export KBUILD_OUTPUT=build-${{matrix.arch}}
+        export KBUILD_OUTPUT=build-${{matrix.arch}}-${{matrix.defconfig}}
 
         for i in ${{matrix.lgenv}}; do
           grep -wq '\(QEMUDriver\|ExternalConsoleDriver\):' "$i" || continue

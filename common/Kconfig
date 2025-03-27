@@ -312,6 +312,7 @@ config EXPERIMENTAL
 
 choice
 	prompt "malloc implementation"
+	default MALLOC_TLSF
 
 config MALLOC_DLMALLOC
 	bool "dlmalloc"

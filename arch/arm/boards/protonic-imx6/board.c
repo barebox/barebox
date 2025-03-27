@@ -495,7 +495,7 @@ static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 	if (!priv->no_usb_check)
 		boot_targets = xasprintf("prt-usb %s", bootsrc);
 	else
-		boot_targets = xstrdup(bootsrc);
+		boot_targets = xasprintf("%s prt-usb", bootsrc);
 
 	ret = setenv("global.boot.default", boot_targets);
 	free(boot_targets);

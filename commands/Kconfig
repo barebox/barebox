@@ -286,6 +286,18 @@ config CMD_LSPCI
 	help
 	  The lspci command allows to list all PCI devices.
 
+config CMD_VARINFO
+	tristate
+	prompt "varinfo"
+	help
+	  Show information about variables
+
+	  varinfo VAR
+
+	  Shows information about the variable in its argument. This doesn't
+	  provide more information that what's available with devinfo, but
+	  it can be useful for devices with many parameters (e.g. global).
+
 config CMD_VERSION
 	tristate
 	default y

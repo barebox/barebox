@@ -68,6 +68,9 @@ config MCI_MMC_GPP_PARTITIONS
 	  Note: by default, 'MMC' devices have no 'general purpose partitions',
 	  it requires a special one-time configuration step to enable them.
 
+config MCI_MMC_RPMB
+	bool "Support eMMC replay protected memory block (RPMB)"
+
 comment "--- MCI host drivers ---"
 
 config MCI_DWC_MSHC

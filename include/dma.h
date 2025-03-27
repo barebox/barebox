@@ -141,4 +141,9 @@ void dma_free_coherent(struct device *dev, void *mem, dma_addr_t dma_handle, siz
 void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_handle);
 #endif
 
+static inline bool dma_map_buf_is_aligned(struct device *dev, const void *buf, size_t size)
+{
+	return PTR_IS_ALIGNED(buf, ARCH_DMA_MINALIGN) &&
+		IS_ALIGNED(size, ARCH_DMA_MINALIGN);
+}
 #endif /* __DMA_H */

@@ -81,6 +81,12 @@ config CMD_SANDBOX_CPUINFO
 	help
 	  Say yes here to get a dummy cpuinfo command.
 
+config HAVE_LIBSDL2
+	def_bool $(success,$(CROSS_PKG_CONFIG) --exists sdl2)
+
+config HAVE_LIBFTDI
+	def_bool $(success,$(CROSS_PKG_CONFIG) --exists libftdi1)
+
 config SDL
 	bool
 

@@ -229,7 +229,7 @@ config GPIO_STARFIVE
 
 config GPIO_LIBFTDI1
 	bool "libftdi1 driver"
-	depends on SANDBOX
+	depends on HAVE_LIBFTDI1
 
 config GPIO_ZYNQ
 	tristate "Xilinx Zynq GPIO support"

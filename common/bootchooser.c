@@ -381,7 +381,7 @@ struct bootchooser *bootchooser_get(void)
 			}
 			free(state_devname);
 		} else {
-			pr_err("State disabled, cannot use nv.state_prefix=%s\n",
+			pr_err("State disabled, cannot use nv.bootchooser.state_prefix=%s\n",
 			       state_prefix);
 			ret = -ENODEV;
 			goto err;

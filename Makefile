@@ -459,7 +459,7 @@ XZ		= xz
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise $(CF)
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
-CFLAGS_MODULE	=
+CFLAGS_MODULE	= -fshort-wchar
 AFLAGS_MODULE	=
 
 LDFLAGS_MODULE  = -T common/module.lds

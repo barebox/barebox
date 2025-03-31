@@ -46,11 +46,9 @@ static char *screenline(char *line, int *pos)
 	int i, outpos = 0;
 	static char lbuf[1024];
 
-	memset(lbuf, 0, 1024);
-
 	if (!line) {
-		lbuf[0] = '~';
-		return lbuf;
+		lbuf[outpos++] = '~';
+		goto out;
 	}
 
 	for (i = 0; outpos < sizeof(lbuf) - 1; i++) {
@@ -67,6 +65,8 @@ static char *screenline(char *line, int *pos)
 		lbuf[outpos++] = line[i];
 	}
 
+out:
+	lbuf[outpos] = 0;
 	return lbuf;
 }
 

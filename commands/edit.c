@@ -53,14 +53,14 @@ static char *screenline(char *line, int *pos)
 		return lbuf;
 	}
 
-	for (i = 0; outpos < 1024; i++) {
+	for (i = 0; outpos < sizeof(lbuf) - 1; i++) {
 		if (i == textx && pos)
 			*pos = outpos;
 		if (!line[i])
 			break;
 		if (line[i] == '\t') {
 			lbuf[outpos++] = ' ';
-			while (outpos % TABSPACE)
+			while (outpos < sizeof(lbuf) - 1 && outpos % TABSPACE)
 				lbuf[outpos++] = ' ';
 			continue;
 		}

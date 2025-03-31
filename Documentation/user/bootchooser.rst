@@ -31,9 +31,10 @@ or by e.g. setting ``boot.default`` to ``bootchooser``.
 Bootchooser Targets
 -------------------
 
-A *bootchooser* boot target represents one target that barebox can boot. It consists
-of a set of variables in the ``global.bootchooser.<targetname>`` namespace. The
-following configuration variables are needed to describe a *bootchooser* boot target:
+A *bootchooser* boot target represents one target that barebox can boot. The
+known targets are set in ``global.bootchooser.targets``. A target consists of a
+set of variables in the ``global.bootchooser.<targetname>`` namespace. The
+following configuration variables describe a *bootchooser* boot target:
 
 ``global.bootchooser.<targetname>.boot``
   This controls what barebox actually boots for this boot target. This string can
@@ -46,17 +47,6 @@ following configuration variables are needed to describe a *bootchooser* boot ta
 ``global.bootchooser.<targetname>.default_priority``
   The default priority of a boot target.
   Defaults to ``global.bootchooser.default_priority``, see below.
-
-
-Additionally the following run-time variables are needed. Unlike the configuration
-variables their values are automatically updated by the *bootchooser* algorithm:
-
-``global.bootchooser.<targetname>.priority``
-  The current ``priority`` of the boot target. Higher numbers have higher priorities.
-  A ``priority`` of 0 means the boot target is disabled and won't be started.
-``global.bootchooser.<targetname>.remaining_attempts``
-  The ``remaining_attempts`` counter. Only boot targets with a ``remaining_attempts``
-  counter > 0 are started.
 
 The *bootchooser* algorithm generally only starts boot targets that have a ``priority``
 > 0 and a ``remaining_attempts`` counter > 0.
@@ -164,11 +154,9 @@ options not specific to any boot target.
   :ref:`below <bootchooser,state_framework>`. Defaults to an empty string.
 ``global.bootchooser.targets``
   Space-separated list of boot targets that are used. For each entry in the list
-  a corresponding
-  set of ``global.bootchooser.<targetname>.<variablename>`` variables must exist.
+  a corresponding set of variables must exist in the chosen *bootchooser* storage
+  backend.
   Defaults to an empty string.
-``global.bootchooser.last_chosen``
-  *bootchooser* sets this to the boot target that was chosen on last boot (index).
 
 .. _bootchooser,setup_example:
 
@@ -540,6 +528,24 @@ instead of the NV run-time environment variables, we just set:
 .. note:: Its a good idea to keep the ``bootchooser.<targetname>.default_priority``
    and ``bootchooser.<targetname>.default_attempts`` values in sync with the
    corresponding default values in the devicetree.
+
+Using NV Run-Time Variable Data
+-------------------------------
+
+.. note:: Using NV variables as bootchooser's storage is only meant for
+   evluation purposes, not for production. It is not power-fail safe.
+
+The following run-time variables are needed. Unlike the configuration
+variables their values are automatically updated by the *bootchooser* algorithm:
+
+``nv.bootchooser.<targetname>.priority``
+  The current ``priority`` of the boot target. Higher numbers have higher priorities.
+  A ``priority`` of 0 means the boot target is disabled and won't be started.
+``nv.bootchooser.<targetname>.remaining_attempts``
+  The ``remaining_attempts`` counter. Only boot targets with a ``remaining_attempts``
+  counter > 0 are started.
+``nv.bootchooser.last_chosen``
+  *bootchooser* sets this to the boot target that was chosen on last boot (index).
 
 Updating systems
 ----------------

@@ -37,12 +37,15 @@ following configuration variables are needed to describe a *bootchooser* boot ta
 
 ``global.bootchooser.<targetname>.boot``
   This controls what barebox actually boots for this boot target. This string can
-  contain anything that the :ref:`boot <command_boot>` command understands.
+  contain anything that the :ref:`boot <command_boot>` command understands. If
+  unset, the boot script ``/env/boot/<targetname>`` is called.
 
 ``global.bootchooser.<targetname>.default_attempts``
   The default number of attempts that a boot target shall be tried before skipping it.
+  Defaults to ``bootchooser.default_attempts``, see below.
 ``global.bootchooser.<targetname>.default_priority``
   The default priority of a boot target.
+  Defaults to ``global.bootchooser.default_priority``, see below.
 
 
 Additionally the following run-time variables are needed. Unlike the configuration
@@ -125,20 +128,20 @@ options not specific to any boot target.
 
 ``global.bootchooser.disable_on_zero_attempts``
   Boolean flag. If set to 1, *bootchooser* disables a boot target (sets priority
-  to 0) whenever the remaining attempts counter reaches 0.
+  to 0) whenever the remaining attempts counter reaches 0. Defaults to 0.
 ``global.bootchooser.default_attempts``
   The default number of attempts that a boot target shall be tried before skipping
   it, used when not overwritten with the boot target specific variable of the same
-  name.
+  name. Defaults to 3.
 ``global.bootchooser.default_priority``
   The default priority of a boot target when not overwritten with the target
-  specific variable of the same name.
+  specific variable of the same name. Defaults to 1.
 ``global.bootchooser.reset_attempts``
   A space-separated list of conditions (checked during bootchooser start) that
   shall cause the ``remaining_attempts`` counters of all enabled targets to be
   reset. Possible values:
 
-  * empty: Counters will never be reset.
+  * empty: Counters will never be reset (default).
   * ``power-on``: If a power-on reset (``$global.system.reset="POR"``) is detected.
     Happens after a power cycle.
   * ``reset``: If a generic reset (``$global.system.reset="RST"``) is detected.
@@ -148,21 +151,22 @@ options not specific to any boot target.
   A space-separated list of conditions (checked during bootchooser start) that
   shall cause the ``priority``  of all boot targets to be reset. Possible values:
 
-  * empty: Priorities will never be reset.
+  * empty: Priorities will never be reset (default).
   * ``all-zero``: If all boot targets have zero ``priority``.
 ``global.bootchooser.retry``
   If set to 1, *bootchooser* retries booting until one succeeds or no more valid
   boot targets exist.
   Otherwise the ``boot`` command will return with an error after the first failed
-  boot target.
+  boot target. Defaults to 0.
 ``global.bootchooser.state_prefix``
   If set, this makes *bootchooser* use the *state* framework as backend for
   storing run-time data and defines the name of the state instance to use, see
-  :ref:`below <bootchooser,state_framework>`.
+  :ref:`below <bootchooser,state_framework>`. Defaults to an empty string.
 ``global.bootchooser.targets``
   Space-separated list of boot targets that are used. For each entry in the list
   a corresponding
   set of ``global.bootchooser.<targetname>.<variablename>`` variables must exist.
+  Defaults to an empty string.
 ``global.bootchooser.last_chosen``
   *bootchooser* sets this to the boot target that was chosen on last boot (index).
 

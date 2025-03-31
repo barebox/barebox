@@ -104,12 +104,12 @@ static int prt_stm32_read_serial(struct device *dev)
 
 	serial[PRT_STM32_SERIAL_LEN] = 0;
 
-	stm32_bsec_optee_ta_close(&ctx);
+	stm32_bsec_optee_ta_close(ctx);
 
 	return prt_stm32_set_serial(dev, serial);
 
 exit_pta_read:
-	stm32_bsec_optee_ta_close(&ctx);
+	stm32_bsec_optee_ta_close(ctx);
 	dev_err(dev, "Failed to read serial: %pe\n", ERR_PTR(ret));
 	return ret;
 }

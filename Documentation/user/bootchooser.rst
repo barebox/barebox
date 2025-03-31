@@ -258,13 +258,23 @@ anything higher than one.
 Scenario 1
 ##########
 
-- a system that shall always boot without user interaction
-- staying in the bootloader is not an option.
+System description:
+
+- System with multiple boot targets
+- One recovery system
+
+Requirements:
+
+- System shall always boot without user interaction.
+- Staying in the bootloader is not an option.
 
 In this scenario a boot target is started for the configured number of remaining
 attempts. If it cannot be started successfully, the next boot target is chosen.
-This repeats until no boot targets are left to start, then all remaining attempts
-are reset to their defaults and the first boot target is tried again.
+This repeats until no bootchooser boot targets are left to start, then the
+recovery system is booted.
+
+If all boot target's remaining attempts or priorities are 0 during bootchooser
+start, the procedure repeats.
 
 Settings
 ^^^^^^^^
@@ -285,19 +295,24 @@ Deployment
 Recovery
 ^^^^^^^^
 
-Recovery will only be called when all boot targets are not startable (That is,
-no valid kernel found or read failure). Once a boot target is startable (a
-valid kernel is found and started) *bootchooser* will never fall through to
-the recovery boot target.
+Recovery will only be called if none of the boot targets are startable.
+As long as one boot target is startable, *bootchooser* will never fall through
+to the recovery boot target.
+
+Could be a recovery system or barebox script.
 
 Scenario 2
 ##########
 
-- a system with multiple boot targets
-- one recovery system
+System description:
 
-A boot target that was booted three times without success shall never be booted
-again (except after update or user interaction).
+- A system with multiple boot targets
+- One recovery system
+
+Requirements:
+
+- Boot targets that were booted three times unsuccessfully shall never be booted
+  again (except after update or user interaction).
 
 Settings
 ^^^^^^^^
@@ -313,26 +328,27 @@ Deployment
 ^^^^^^^^^^
 
 #. barebox or flash robot fills all boot targets with valid systems.
-#. barebox or flash robot marks boot targets as good or *state* contains non zero
+#. barebox or flash robot marks boot targets as good or *state* contains non-zero
    defaults for the remaining_attempts/priorities.
 
 Recovery
 ^^^^^^^^
 
-Done by 'recovery' boot target which is booted after *bootchooser* falls
-through due to the lack of bootable targets. This boot target can be:
-
-- a system that will be booted as recovery.
-- a barebox script that will be started.
+Recovery system or barebox script to be started after *bootchooser* found no
+bootable targets.
 
 Scenario 3
 ##########
 
-- a system with multiple boot targets
-- one recovery system
-- a power cycle shall not be counted as failed boot.
+System description:
 
-Booting a boot target three times without success disables it.
+- A system with multiple boot targets
+- One recovery system
+
+Requirements:
+
+- All enabled boot targets shall be tried after a power-on reset.
+- Booting a boot target unsuccessfully three times shall disable it.
 
 Settings
 ^^^^^^^^
@@ -353,11 +369,8 @@ Deployment
 Recovery
 ^^^^^^^^
 
-Done by 'recovery' boot target which is booted after *bootchooser* falls
-through due to the lack of bootable targets. This target can be:
-
-- a system that will be booted as recovery.
-- a barebox script that will be started.
+Recovery system or barebox script to be started after *bootchooser* found no
+bootable targets.
 
 .. _bootchooser,state_framework:
 

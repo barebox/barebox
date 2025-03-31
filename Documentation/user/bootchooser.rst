@@ -83,23 +83,7 @@ no remaining attempts left.
 
 To prevent ending up in an unbootable system after a number of failed boot
 attempts, there is also a built-in mechanism to reset the counters to their defaults,
-controlled by the ``global.bootchooser.reset_attempts`` variable. It holds a
-list of space-separated flags. Possible values are:
-
-- empty: counters will never be reset
-- ``power-on``: When bootchooser starts and a power-on reset
-  (``$global.system.reset="POR"``) is detected, the ``remaining_attempts``
-  counters of all enabled targets are reset to their defaults.
-  This means after a power cycle all boot targets will be tried again for the configured number of retries.
-- ``reset``: When bootchooser starts and a generic reset
-  (``$global.system.reset="RST"``) is detected, the ``remaining_attempts``
-  counters of all enabled targets are reset to their defaults.
-  This means that, if the systems reports a generic restart, the
-  ``remaining_attempts`` counters of all enabled targets are reset to
-  their defaults.
-- ``all-zero``: When bootchooser starts and the ``remaining_attempts``
-  counters of all enabled targets are zero, the ``remaining_attempts``
-  counters of all enabled targets are reset to their defaults.
+controlled by the ``global.bootchooser.reset_attempts`` variable.
 
 If ``global.bootchooser.retry`` is enabled (set to ``1``), the bootchooser
 algorithm will iterate through all valid boot targets (and decrease their
@@ -150,7 +134,16 @@ options not specific to any boot target.
   The default priority of a boot target when not overwritten with the target
   specific variable of the same name.
 ``global.bootchooser.reset_attempts``
-  Already described in :ref:`Bootchooser Algorithm <bootchooser,algorithm>`
+  A space-separated list of conditions (checked during bootchooser start) that
+  shall cause the ``remaining_attempts`` counters of all enabled targets to be
+  reset. Possible values:
+
+  * empty: Counters will never be reset.
+  * ``power-on``: If a power-on reset (``$global.system.reset="POR"``) is detected.
+    Happens after a power cycle.
+  * ``reset``: If a generic reset (``$global.system.reset="RST"``) is detected.
+  * ``all-zero``: If the ``remaining_attempts`` counters of all enabled targets
+    are zero.
 ``global.bootchooser.reset_priorities``
   A space-separated list of events that cause *bootchooser* to reset the priorities of
   all boot targets. Possible values:

@@ -120,13 +120,12 @@ it can report this to bootchooser from Linux userspace using the
   barebox-state -n system_state -s bootstate.system1.remaining_attempts=3
   barebox-state -s system1.remaining_attempts=3
 
-If instead the bootchooser can detect a failed boot itself using the
-:ref:`reset reason <reset_reason>` (WDG), one can mark the boot successful
-using the barebox :ref:`bootchoser command <command_bootchooser>`::
+Alternatively barebox can be configured to mark the last boot successful based
+on the :ref:`reset reason <reset_reason>` (i.e. != WDG) using the
+:ref:`bootchooser command <command_bootchooser>`::
 
   bootchooser -s
 
-to mark the last boot successful.
 This will reset the ``remaining_attempts`` counter of the *last chosen* slot to
 its default value (``reset_attempts``).
 

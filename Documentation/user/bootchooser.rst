@@ -13,8 +13,9 @@ and implements an algorithm which selects the highest priority target to boot.
 
 Making *bootchooser* work requires a fixed set of configuration parameters
 and a storage backend for saving status information.
-Currently supported storage backends are either nv variables or the
-barebox *state* framework.
+Currently supported storage backends are either the barebox *state* framework
+or nv variables (fallback only, not meant for production, because it's not
+power-fail safe).
 
 *Bootchooser* itself is executed as a normal barebox boot target, i.e. one
 can start it via::

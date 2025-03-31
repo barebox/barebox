@@ -8,15 +8,15 @@ kernels and multiple root file systems. The *bootchooser* framework provides
 the building blocks to model different use cases without the need to start
 from scratch over and over again.
 
-The *bootchooser* works on abstract boot targets, each with a set of properties
+*Bootchooser* works on abstract boot targets, each with a set of properties
 and implements an algorithm which selects the highest priority target to boot.
 
-To make the *bootchooser* work requires a fixed set of configuration parameters
+Making *bootchooser* work requires a fixed set of configuration parameters
 and a storage backend for saving status information.
 Currently supported storage backends are either nv variables or the
 barebox *state* framework.
 
-The *Bootchooser* itself is executed as a normal barebox boot target, i.e. one
+*Bootchooser* itself is executed as a normal barebox boot target, i.e. one
 can start it via::
 
   boot bootchooser
@@ -24,7 +24,7 @@ can start it via::
 or by e.g. setting ``boot.default`` to ``bootchooser``.
 
 .. note:: As ``boot.default`` accepts multiple values, it can also be used to
-  specify a fallback boot target in case the bootchooser fails booting, e.g.
+  specify a fallback boot target in case bootchooser fails booting, e.g.
   ``bootchooser recovery``.
 
 Bootchooser Targets
@@ -88,17 +88,17 @@ controlled by the ``global.bootchooser.reset_attempts`` variable. It holds a
 list of space-separated flags. Possible values are:
 
 - empty: counters will never be reset
-- ``power-on``: When the bootchooser starts and a power-on reset
+- ``power-on``: When bootchooser starts and a power-on reset
   (``$global.system.reset="POR"``) is detected, the ``remaining_attempts``
   counters of all enabled targets are reset to their defaults.
   This means after a power cycle all boot targets will be tried again for the configured number of retries.
-- ``reset``: When the bootchooser starts and a generic reset
+- ``reset``: When bootchooser starts and a generic reset
   (``$global.system.reset="RST"``) is detected, the ``remaining_attempts``
   counters of all enabled targets are reset to their defaults.
   This means that, if the systems reports a generic restart, the
   ``remaining_attempts`` counters of all enabled targets are reset to
   their defaults.
-- ``all-zero``: When the bootchooser starts and the ``remaining_attempts``
+- ``all-zero``: When bootchooser starts and the ``remaining_attempts``
   counters of all enabled targets are zero, the ``remaining_attempts``
   counters of all enabled targets are reset to their defaults.
 
@@ -115,7 +115,7 @@ selection of the right boot target itself, it cannot decide if the system
 booted successfully on its own.
 
 In case only the booted system itself knows when it is in a good state,
-it can report this to the bootchooser from Linux userspace using the
+it can report this to bootchooser from Linux userspace using the
 *barebox-state* tool from the dt-utils_ package.::
 
   barebox-state [-n <state variable set>] -s [<prefix>.]<target>.remaining_attempts=<reset-value>
@@ -216,7 +216,7 @@ kernel with its corresponding devicetree via boot spec (refer to
 :ref:`Bootloader Spec <bootloader_spec>` for further details).
 
 Either device can be booted with the :ref:`boot <command_boot>` command command,
-and thus can be used by the *bootchooser* and we can start to configure the
+and thus can be used by *bootchooser* and we can start to configure the
 *bootchooser* variables.
 
 The following example shows how to initialize two boot targets, ``system1`` and
@@ -324,7 +324,7 @@ Deployment
 Recovery
 ^^^^^^^^
 
-Done by 'recovery' boot target which is booted after the *bootchooser* falls
+Done by 'recovery' boot target which is booted after *bootchooser* falls
 through due to the lack of bootable targets. This boot target can be:
 
 - a system that will be booted as recovery.
@@ -358,7 +358,7 @@ Deployment
 Recovery
 ^^^^^^^^
 
-Done by 'recovery' boot target which is booted after the *bootchooser* falls
+Done by 'recovery' boot target which is booted after *bootchooser* falls
 through due to the lack of bootable targets. This target can be:
 
 - a system that will be booted as recovery.
@@ -369,13 +369,13 @@ through due to the lack of bootable targets. This target can be:
 Using the *State* Framework as Backend for Run-Time Variable Data
 -----------------------------------------------------------------
 
-Usually the *bootchooser* modifies its data in global variables which are
+Usually *bootchooser* modifies its data in global variables which are
 connected to :ref:`non volatile variables <config_device>`.
 
 Alternatively the :ref:`state_framework` can be used for this data, which
 allows to store this data redundantly in some kind of persistent memory.
 
-In order to let the *bootchooser* use the *state* framework for its storage
+In order to let *bootchooser* use the *state* framework for its storage
 backend, configure the ``bootchooser.state_prefix`` variable with the *state*
 variable set instance name.
 
@@ -392,7 +392,7 @@ At barebox run-time this will result in a *state* variable set instance called
 *some_kind_of_state*. You can also store variables unrelated to *bootchooser* (a
 serial number, MAC address, …) in it.
 
-Extending this *state* variable set by information required by the *bootchooser*
+Extending this *state* variable set by information required by *bootchooser*
 is simply done by adding so called 'boot targets' and optionally one ``last_chosen``
 node. It then looks like:
 
@@ -463,11 +463,11 @@ used to setup the corresponding run-time environment variables in the
 
 .. important:: It is important to provide a ``default`` value for each variable
    for the case when the *state* variable set backend memory is uninitialized.
-   This is also true if default values through the *bootchooser's* environment
+   This is also true if default values through *bootchooser's* environment
    variables are defined (e.g. ``bootchooser.default_attempts``,
    ``bootchooser.default_priority`` and their corresponding boot target specific
-   variables). The former ones are forwarded to the *bootchooser* to make a
-   decision, the latter ones are used by the *bootchooser* to make a decision
+   variables). The former ones are forwarded to *bootchooser* to make a
+   decision, the latter ones are used by *bootchooser* to make a decision
    the next time.
 
 Example
@@ -550,7 +550,7 @@ regular *bootchooser* boot targets updating is done like:
 - Reboot.
 - If necessary update the now inactive, not yet updated boot target the same way.
 
-One way of updating systems is using RAUC_ which integrates well with the *bootchooser*
+One way of updating systems is using RAUC_ which integrates well with *bootchooser*
 in barebox.
 
 .. _RAUC: https://rauc.readthedocs.io/en/latest/

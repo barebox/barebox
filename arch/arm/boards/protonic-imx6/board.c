@@ -373,7 +373,7 @@ static int prt_imx6_usb_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	*second_word = 0;
 
-	if (strcmp(buf, priv->name)) {
+	if (strcmp(buf, priv->name) && strcmp(buf, "generic-imx6")) {
 		dev_err(dev, "Boot target for a different board! (got: %s expected: %s)\n",
 			buf, priv->name);
 		ret = -EINVAL;

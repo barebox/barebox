@@ -285,7 +285,7 @@ static const struct of_device_id prt_stm32_of_match[] = {
 BAREBOX_DEEP_PROBE_ENABLE(prt_stm32_of_match);
 
 static struct driver prt_stm32_board_driver = {
-	.name = "board-protonic-stm32",
+	.name = "board-protonic-stm32mp13",
 	.probe = prt_stm32_probe,
 	.of_compatible = prt_stm32_of_match,
 };

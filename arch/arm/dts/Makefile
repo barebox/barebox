@@ -118,7 +118,9 @@ lwl-$(CONFIG_MACH_PROTONIC_STM32MP1) += \
 	stm32mp151-mecio1.dtb.o \
 	stm32mp151-mect1s.dtb.o \
 	stm32mp151c-plyaqm.dtb.o
-lwl-$(CONFIG_MACH_PROTONIC_STM32MP13) += stm32mp133c-prihmb.dtb.o
+lwl-$(CONFIG_MACH_PROTONIC_STM32MP13) += \
+	stm32mp133c-mect1s.dtb.o \
+	stm32mp133c-prihmb.dtb.o
 lwl-$(CONFIG_MACH_RADXA_ROCK) += rk3188-radxarock.dtb.o
 lwl-$(CONFIG_MACH_RADXA_ROCK3) += rk3568-rock-3a.dtb.o
 lwl-$(CONFIG_MACH_RADXA_ROCK5) += rk3588-rock-5b.dtb.o

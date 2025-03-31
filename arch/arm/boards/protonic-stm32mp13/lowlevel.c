@@ -6,6 +6,7 @@
 #include <mach/stm32mp/entry.h>
 
 extern char __dtb_z_stm32mp133c_prihmb_start[];
+extern char __dtb_z_stm32mp133c_mect1s_start[];
 
 ENTRY_FUNCTION(start_stm32mp133c_prihmb, r0, r1, r2)
 {
@@ -17,6 +18,19 @@ ENTRY_FUNCTION(start_stm32mp133c_prihmb, r0, r1, r2)
 	putc_ll('>');
 
 	fdt = __dtb_z_stm32mp133c_prihmb_start + get_runtime_offset();
+
+	stm32mp1_barebox_entry(fdt);
+}
+
+ENTRY_FUNCTION(start_stm32mp133c_mect1s, r0, r1, r2)
+{
+	void *fdt;
+
+	stm32mp_cpu_lowlevel_init();
+
+	putc_ll('>');
+
+	fdt = __dtb_z_stm32mp133c_mect1s_start + get_runtime_offset();
 
 	stm32mp1_barebox_entry(fdt);
 }

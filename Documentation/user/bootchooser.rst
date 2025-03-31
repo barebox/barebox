@@ -145,11 +145,11 @@ options not specific to any boot target.
   * ``all-zero``: If the ``remaining_attempts`` counters of all enabled targets
     are zero.
 ``global.bootchooser.reset_priorities``
-  A space-separated list of events that cause *bootchooser* to reset the priorities of
-  all boot targets. Possible values:
+  A space-separated list of conditions (checked during bootchooser start) that
+  shall cause the ``priority``  of all boot targets to be reset. Possible values:
 
-  * empty: priorities will never be reset
-  * ``all-zero``: priorities will be reset when all targets have zero priority
+  * empty: Priorities will never be reset.
+  * ``all-zero``: If all boot targets have zero ``priority``.
 ``global.bootchooser.retry``
   If set to 1, *bootchooser* retries booting until one succeeds or no more valid
   boot targets exist.

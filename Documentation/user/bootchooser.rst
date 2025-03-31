@@ -70,9 +70,7 @@ means the boot target is disabled.
 
 When booting, *bootchooser* starts the boot target with the highest ``priority`` that
 has a non-zero ``remaining_attempts`` counter. With every start of a boot target the
-``remaining_attempts`` counter of this boot target is decremented by one. This means
-every boot target's ``remaining_attempts`` counter reaches zero sooner or later and
-the boot target won't be booted anymore.
+``remaining_attempts`` counter of this boot target is decremented by one.
 This behavior assures that one can retry booting a target a limited number of
 times to handle temporary issues (such as power outage) and optionally allows
 booting a fallback in case of a permanent failure.

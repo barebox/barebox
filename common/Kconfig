@@ -772,6 +772,17 @@ config FLEXIBLE_BOOTARGS
 	  to replace parts of the bootargs string without reconstructing it
 	  completely.
 
+config ROOTWAIT_BOOTARG
+	def_bool y
+	prompt "fixup 'rootwait' into kernel command-line when needed"
+	depends on FLEXIBLE_BOOTARGS
+	help
+	  Adds a rootwait= argument into the kernel command-line argument
+	  for boot media that requires it, like USB, SD/MMC or NFS.
+	  The duration chosen is controlled by the linux.rootwait
+	  parameter and defaults to 10 seconds. Setting the variable
+	  to 0 will wait indefinitely.
+
 config MMCBLKDEV_ROOTARG
 	bool
 	prompt "Support 'root=mmcblkXpN' cmdline appending"

@@ -75,6 +75,18 @@ int linux_bootargs_overwrite(const char *bootargs)
 	return 0;
 }
 
+char *linux_bootargs_append_rootwait(char *rootarg_old)
+{
+	char *rootarg = xasprintf("%s rootwait=%d",
+				  rootarg_old, linux_rootwait_secs);
+	free(rootarg_old);
+	return rootarg;
+}
+
+
 BAREBOX_MAGICVAR(global.linux.bootargs.*, "Linux bootargs variables");
 BAREBOX_MAGICVAR(global.linux.mtdparts.*, "Linux mtdparts variables");
 BAREBOX_MAGICVAR(global.linux.blkdevparts.*, "Linux blkdevparts variables");
+#ifdef CONFIG_ROOTWAIT_BOOTARG
+BAREBOX_MAGICVAR(global.linux.rootwait, "Argument (in seconds) for Linux rootwait= option if it's fixed up. A negative value waits indefinitely");
+#endif

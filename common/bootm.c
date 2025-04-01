@@ -1047,6 +1047,8 @@ static struct image_handler zstd_bootm_handler = {
 	.filetype = filetype_zstd_compressed,
 };
 
+int linux_rootwait_secs = 10;
+
 static int bootm_init(void)
 {
 	globalvar_add_simple("bootm.image", NULL);
@@ -1072,6 +1074,9 @@ static int bootm_init(void)
 	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
 				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));
 
+	if (IS_ENABLED(CONFIG_ROOTWAIT_BOOTARG))
+		globalvar_add_simple_int("linux.rootwait",
+					 &linux_rootwait_secs, "%d");
 
 	if (IS_ENABLED(CONFIG_BZLIB))
 		register_image_handler(&bzip2_bootm_handler);

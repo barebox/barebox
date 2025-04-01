@@ -2632,6 +2632,7 @@ static int mci_register_partition(struct mci_part *part)
 	part->blk.dev = &mci->dev;
 	part->blk.ops = &mci_ops;
 	part->blk.type = IS_SD(mci) ? BLK_TYPE_SD : BLK_TYPE_MMC;
+	part->blk.rootwait = true;
 
 	rc = blockdevice_register(&part->blk);
 	if (rc != 0) {

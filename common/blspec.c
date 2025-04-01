@@ -16,7 +16,6 @@
 #include <init.h>
 #include <bootm.h>
 #include <glob.h>
-#include <net.h>
 #include <fs.h>
 #include <of.h>
 #include <linux/stat.h>
@@ -303,111 +302,6 @@ static int blspec_have_entry(struct bootentries *bootentries, const char *path)
 	}
 
 	return 0;
-}
-
-/*
- * nfs_find_mountpath - Check if a given url is already mounted
- */
-static const char *nfs_find_mountpath(const char *nfshostpath)
-{
-	struct fs_device *fsdev;
-
-	for_each_fs_device(fsdev) {
-		if (fsdev->backingstore && !strcmp(fsdev->backingstore, nfshostpath))
-			return fsdev->path;
-	}
-
-	return NULL;
-}
-
-/*
- * parse_nfs_url - check for nfs:// style url
- *
- * Check if the passed string is a NFS url and if yes, mount the
- * NFS and return the path we have mounted to.
- */
-static char *parse_nfs_url(const char *url)
-{
-	char *sep, *str, *host, *port, *path;
-	char *mountpath = NULL, *hostpath = NULL, *options = NULL;
-	const char *prevpath;
-	IPaddr_t ip;
-	int ret;
-
-	if (!IS_ENABLED(CONFIG_FS_NFS))
-		return NULL;
-
-	if (strncmp(url, "nfs://", 6))
-		return NULL;
-
-	url += 6;
-
-	str = xstrdup(url);
-
-	host = str;
-
-	sep = strchr(str, '/');
-	if (!sep) {
-		ret = -EINVAL;
-		goto out;
-	}
-
-	*sep++ = 0;
-
-	path = sep;
-
-	port = strchr(host, ':');
-	if (port)
-		*port++ = 0;
-
-	ret = ifup_all(0);
-	if (ret) {
-		pr_err("Failed to bring up networking\n");
-		goto out;
-	}
-
-	ret = resolv(host, &ip);
-	if (ret) {
-		pr_err("Cannot resolve \"%s\": %s\n", host, strerror(-ret));
-		goto out;
-	}
-
-	hostpath = basprintf("%pI4:%s", &ip, path);
-
-	prevpath = nfs_find_mountpath(hostpath);
-
-	if (prevpath) {
-		mountpath = xstrdup(prevpath);
-	} else {
-		mountpath = basprintf("/mnt/nfs-%s-bootentries-%08x", host,
-					rand());
-		if (port)
-			options = basprintf("mountport=%s,port=%s", port,
-					      port);
-
-		ret = make_directory(mountpath);
-		if (ret)
-			goto out;
-
-		pr_debug("host: %s port: %s path: %s\n", host, port, path);
-		pr_debug("hostpath: %s mountpath: %s options: %s\n", hostpath, mountpath, options);
-
-		ret = mount(hostpath, "nfs", mountpath, options);
-		if (ret)
-			goto out;
-	}
-
-	ret = 0;
-
-out:
-	free(str);
-	free(hostpath);
-	free(options);
-
-	if (ret)
-		free(mountpath);
-
-	return ret ? NULL : mountpath;
 }
 
 /*
@@ -805,15 +699,10 @@ static int blspec_bootentry_generate(struct bootentries *bootentries,
 	if (ret > 0)
 		found += ret;
 
-	if (*name == '/' || !strncmp(name, "nfs://", 6)) {
-		char *nfspath = parse_nfs_url(name);
-
-		if (nfspath)
-			name = nfspath;
-
+	if (*name == '/') {
 		ret = stat(name, &s);
 		if (ret)
-			goto out;
+			return found;
 
 		if (S_ISDIR(s.st_mode))
 			ret = blspec_scan_directory(bootentries, name);
@@ -821,9 +710,6 @@ static int blspec_bootentry_generate(struct bootentries *bootentries,
 			ret = blspec_scan_file(bootentries, NULL, name);
 		if (ret > 0)
 			found += ret;
-
-out:
-		free(nfspath);
 	}
 
 	return found;

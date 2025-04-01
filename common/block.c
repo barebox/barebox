@@ -12,6 +12,7 @@
 #include <linux/list.h>
 #include <dma.h>
 #include <range.h>
+#include <bootargs.h>
 #include <file-list.h>
 
 LIST_HEAD(block_device_list);
@@ -609,5 +610,9 @@ char *cdev_get_linux_rootarg(const struct cdev *partcdev)
 	if (!rootarg && partcdev->partuuid[0] != 0)
 		rootarg = basprintf("root=PARTUUID=%s", partcdev->partuuid);
 
+	if (IS_ENABLED(CONFIG_ROOTWAIT_BOOTARG) && blk->rootwait)
+		rootarg = linux_bootargs_append_rootwait(rootarg);
+
 	return rootarg;
 }
+

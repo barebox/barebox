@@ -44,6 +44,7 @@ struct block_device {
 	struct block_device_ops *ops;
 	u8 blockbits;
 	u8 type; /* holds enum blk_type */
+	u8 rootwait:1;
 	blkcnt_t num_blocks;
 	int rdbufsize;
 	int blkmask;

@@ -74,6 +74,9 @@ config LOGBUF
 config STDDEV
 	bool
 
+config CDEV_ALIAS
+	bool
+
 config MENUTREE
 	bool
 	select GLOB
@@ -1194,6 +1197,17 @@ config BOOTCHOOSER
 	select ENVIRONMENT_VARIABLES
 	select OFTREE
 	select PARAMETER
+
+config BOOT_DEFAULTS
+	bool "default boot targets"
+	select BOOT
+	select CDEV_ALIAS
+	default BLSPEC && OFDEVICE
+	help
+	  Say y here to enable a number of default boot targets that
+	  determine at runtime what to do. An example is the bootsource
+	  target, which will expand to the device that barebox has
+	  booted from if that could be determined.
 
 config RESET_SOURCE
 	bool "detect Reset cause"

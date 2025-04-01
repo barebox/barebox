@@ -182,6 +182,9 @@ BAREBOX_CMD_HELP_TEXT("   - contains a loader/entries/ directory containing boot
 #ifdef CONFIG_BOOTCHOOSER
 BAREBOX_CMD_HELP_TEXT("- \"bootchooser\": boot with barebox bootchooser")
 #endif
+#ifdef CONFIG_BOOT_DEFAULTS
+BAREBOX_CMD_HELP_TEXT("- \"bootsource\": boot from the device barebox has been started from")
+#endif
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Multiple bootsources may be given which are probed in order until")
 BAREBOX_CMD_HELP_TEXT("one succeeds.")

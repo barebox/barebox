@@ -1007,6 +1007,11 @@ static inline struct device *of_device_enable_and_register_by_alias(
 	return NULL;
 }
 
+static inline struct cdev *of_cdev_find(struct device_node *node)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
 static inline int of_register_fixup(int (*fixup)(struct device_node *, void *),
 				void *context)
 {

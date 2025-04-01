@@ -14,6 +14,7 @@ struct block_device_ops {
 	int (*write)(struct block_device *, const void *buf, sector_t block, blkcnt_t num_blocks);
 	int (*erase)(struct block_device *blk, sector_t block, blkcnt_t num_blocks);
 	int (*flush)(struct block_device *);
+	char *(*get_rootarg)(struct block_device *blk, const struct cdev *partcdev);
 };
 
 struct chunk;
@@ -82,6 +83,7 @@ static inline int block_flush(struct block_device *blk)
 #ifdef CONFIG_BLOCK
 struct block_device *cdev_get_block_device(const struct cdev *cdev);
 unsigned file_list_add_blockdevs(struct file_list *files);
+char *cdev_get_linux_rootarg(const struct cdev *partcdev);
 #else
 static inline struct block_device *cdev_get_block_device(const struct cdev *cdev)
 {
@@ -90,6 +92,10 @@ static inline struct block_device *cdev_get_block_device(const struct cdev *cdev
 static inline unsigned file_list_add_blockdevs(struct file_list *files)
 {
 	return 0;
+}
+static inline char *cdev_get_linux_rootarg(const struct cdev *partcdev)
+{
+	return NULL;
 }
 #endif
 

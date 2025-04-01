@@ -95,8 +95,6 @@ void cdev_print(const struct cdev *cdev)
 			printf(" table-partition");
 		if (cdev->flags & DEVFS_PARTITION_FOR_FIXUP)
 			printf(" fixup");
-		if (cdev->flags & DEVFS_IS_MCI_MAIN_PART_DEV)
-			printf(" mci-main-partition");
 		if (cdev->flags & DEVFS_IS_MBR_PARTITIONED)
 			printf(" mbr-partitioned");
 		if (cdev->flags & DEVFS_IS_GPT_PARTITIONED)
@@ -3121,60 +3119,6 @@ int popd(char *oldcwd)
 	ret = chdir(oldcwd);
 	free(oldcwd);
 	return ret;
-}
-
-static bool cdev_partname_equal(const struct cdev *a,
-				const struct cdev *b)
-{
-	return a->partname && b->partname &&
-		!strcmp(a->partname, b->partname);
-}
-
-static char *get_linux_mmcblkdev(const struct cdev *root_cdev)
-{
-	struct cdev *cdevm = root_cdev->master, *cdev;
-	int id, partnum;
-
-	if (!IS_ENABLED(CONFIG_MMCBLKDEV_ROOTARG))
-		return NULL;
-	if (!cdevm || !cdev_is_mci_main_part_dev(cdevm))
-		return NULL;
-
-	id = of_alias_get_id(cdev_of_node(cdevm), "mmc");
-	if (id < 0)
-		return NULL;
-
-	partnum = 1; /* linux partitions are 1 based */
-	list_for_each_entry(cdev, &cdevm->partitions, partition_entry) {
-
-		/*
-		 * Partname is not guaranteed but this partition cdev is listed
-		 * in the partitions list so we need to count it instead of
-		 * skipping it.
-		 */
-		if (cdev_partname_equal(root_cdev, cdev))
-			return basprintf("root=/dev/mmcblk%dp%d", id, partnum);
-		partnum++;
-	}
-
-	return NULL;
-}
-
-char *cdev_get_linux_rootarg(const struct cdev *cdev)
-{
-	char *str;
-
-	if (!cdev)
-		return NULL;
-
-	str = get_linux_mmcblkdev(cdev);
-	if (str)
-		return str;
-
-	if (cdev->partuuid[0] != 0)
-		return basprintf("root=PARTUUID=%s", cdev->partuuid);
-
-	return NULL;
 }
 
 /*

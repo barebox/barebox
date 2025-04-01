@@ -589,3 +589,25 @@ const char *blk_type_str(enum blk_type type)
 		return "unknown";
 	}
 }
+
+char *cdev_get_linux_rootarg(const struct cdev *partcdev)
+{
+	const struct cdev *cdevm;
+	struct block_device *blk;
+	char *rootarg = NULL;
+
+	if (!partcdev)
+		return NULL;
+
+	cdevm = partcdev->master ?: partcdev;
+	blk = cdev_get_block_device(cdevm);
+	if (!blk)
+		return NULL;
+
+	if (blk->ops->get_rootarg)
+		rootarg = blk->ops->get_rootarg(blk, partcdev);
+	if (!rootarg && partcdev->partuuid[0] != 0)
+		rootarg = basprintf("root=PARTUUID=%s", partcdev->partuuid);
+
+	return rootarg;
+}

@@ -526,6 +526,19 @@ int cdev_open(struct cdev *, unsigned long flags);
 int cdev_fdopen(struct cdev *cdev, unsigned long flags);
 int cdev_close(struct cdev *cdev);
 int cdev_flush(struct cdev *cdev);
+
+typedef int (*cdev_alias_processor_t)(struct cdev *, void *data);
+
+#ifdef CONFIG_CDEV_ALIAS
+int cdev_alias_resolve_for_each(const char *name,
+				cdev_alias_processor_t, void *data);
+#else
+static inline int cdev_alias_resolve_for_each(const char *name,
+				cdev_alias_processor_t fn, void *data)
+{
+	return 0;
+}
+#endif
 #if IN_PROPER
 ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
 ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);

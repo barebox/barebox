@@ -16,6 +16,9 @@ struct bootscanner {
 	/** Invoked for when scanning a directory */
 	int (*scan_directory)(struct bootscanner *,
 			      struct bootentries *, const char *);
+	/** Invoked for when scanning a disk */
+	int (*scan_disk)(struct bootscanner *,
+			 struct bootentries *, struct cdev *);
 	/** Fallback: Invoked only when none of the above returned results */
 	int (*scan_device)(struct bootscanner *,
 			   struct bootentries *, struct device *);

@@ -565,35 +565,6 @@ static int blspec_scan_cdev(struct bootentries *bootentries, struct cdev *cdev)
 }
 
 /*
- * blspec_scan_devices - scan all devices for child cdevs
- *
- * Iterate over all devices and collect child their cdevs.
- * Returns the number of entries found or a negative error code if some unexpected
- * error occurred.
- */
-int blspec_scan_devices(struct bootentries *bootentries)
-{
-	struct device *dev;
-	struct block_device *bdev;
-	int ret, found = 0;
-
-	for_each_device(dev)
-		device_detect(dev);
-
-	for_each_block_device(bdev) {
-		struct cdev *cdev;
-
-		list_for_each_entry(cdev, &bdev->dev->cdevs, devices_list) {
-			ret = blspec_scan_cdev(bootentries, cdev);
-			if (ret > 0)
-				found += ret;
-		}
-	}
-
-	return found;
-}
-
-/*
  * blspec_scan_device - scan a device for child cdevs
  *
  * Given a device this functions scans over all child cdevs looking

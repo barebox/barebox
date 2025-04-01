@@ -17,10 +17,6 @@
 
 #ifdef __PBL__
 #define udelay early_udelay
-#undef  dev_err
-#define dev_err(d, ...)		pr_err(__VA_ARGS__)
-#undef  dev_warn
-#define dev_warn(d, ...)	pr_warn(__VA_ARGS__)
 #endif
 
 #include "atmel-sdhci.h"

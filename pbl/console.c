@@ -86,21 +86,6 @@ int pr_print(int level, const char *fmt, ...)
 	return i;
 }
 
-int dev_printf(int level, const struct device *dev, const char *fmt, ...)
-{
-	va_list args;
-	uint i;
-	char printbuffer[CFG_PBSIZE];
-
-	va_start(args, fmt);
-	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
-	va_end(args);
-
-	console_puts(CONSOLE_STDERR, printbuffer);
-
-	return i;
-}
-
 int ctrlc(void)
 {
 	return 0;

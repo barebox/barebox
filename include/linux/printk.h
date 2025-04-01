@@ -28,15 +28,11 @@
 /* debugging and troubleshooting/diagnostic helpers. */
 struct device;
 
-#ifndef CONFIG_CONSOLE_NONE
+#if !defined(CONFIG_CONSOLE_NONE) && IN_PROPER
 int dev_printf(int level, const struct device *dev, const char *format, ...)
 	__attribute__ ((format(__printf__, 3, 4)));
 #else
-static inline int dev_printf(int level, const struct device *dev,
-			     const char *format, ...)
-{
-	return 0;
-}
+#define dev_printf(level, dev, ...) pr_print(((void)dev, (level)), __VA_ARGS__)
 #endif
 
 #if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \

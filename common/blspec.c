@@ -556,15 +556,6 @@ static int blspec_scan_device(struct bootscanner *scanner,
 
 	pr_debug("%s: %s\n", __func__, dev_name(dev));
 
-	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
-		if (cdev_is_partition(cdev))
-			continue;
-
-		ret = blspec_scan_disk(scanner, bootentries, cdev);
-		if (ret)
-			return ret;
-	}
-
 	/* Try child devices */
 	device_for_each_child(dev, child) {
 		ret = blspec_scan_device(scanner, bootentries, child);
@@ -589,6 +580,7 @@ static struct bootscanner blspec_scanner = {
 	.name		= "blspec",
 	.scan_file	= blspec_scan_file,
 	.scan_directory	= blspec_scan_directory,
+	.scan_disk	= blspec_scan_disk,
 	.scan_device	= blspec_scan_device,
 };
 

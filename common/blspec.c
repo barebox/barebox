@@ -4,11 +4,7 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <firmware.h>
-#include <readkey.h>
-#include <common.h>
-#include <driver.h>
 #include <malloc.h>
-#include <block.h>
 #include <fcntl.h>
 #include <libfile.h>
 #include <libbb.h>
@@ -20,8 +16,9 @@
 #include <linux/stat.h>
 #include <linux/list.h>
 #include <linux/err.h>
-#include <mtd/ubi-user.h>
 #include <boot.h>
+
+#include <bootscan.h>
 
 struct blspec_entry {
 	struct bootentry entry;
@@ -31,8 +28,6 @@ struct blspec_entry {
 	const char *rootpath;
 	const char *configpath;
 };
-
-static int blspec_scan_device(struct bootentries *bootentries, struct device *dev);
 
 /*
  * blspec_entry_var_get - get the value of a variable
@@ -403,8 +398,8 @@ static bool entry_is_match_machine_id(struct blspec_entry *entry)
 	return ret;
 }
 
-static int blspec_scan_file(struct bootentries *bootentries, const char *root,
-			    const char *configname)
+static int __blspec_scan_file(struct bootentries *bootentries, const char *root,
+			      const char *configname)
 {
 	char *devname = NULL, *hwdevname = NULL;
 	struct blspec_entry *entry;
@@ -452,6 +447,16 @@ static int blspec_scan_file(struct bootentries *bootentries, const char *root,
 	return 1;
 }
 
+static int blspec_scan_file(struct bootscanner *scanner,
+			    struct bootentries *bootentries,
+			    const char *configname)
+{
+	if (!strends(configname, ".conf"))
+		return 0;
+
+	return __blspec_scan_file(bootentries, NULL, configname);
+}
+
 /*
  * blspec_scan_directory - scan over a directory
  *
@@ -459,7 +464,8 @@ static int blspec_scan_file(struct bootentries *bootentries, const char *root,
  *
  * returns the number of entries found or a negative error value otherwise.
  */
-static int blspec_scan_directory(struct bootentries *bootentries, const char *root)
+static int blspec_scan_directory(struct bootscanner *bootscanner,
+				 struct bootentries *bootentries, const char *root)
 {
 	glob_t globb;
 	char *abspath;
@@ -486,7 +492,7 @@ static int blspec_scan_directory(struct bootentries *bootentries, const char *ro
 		if (ret || !S_ISREG(s.st_mode))
 			continue;
 
-		ret = blspec_scan_file(bootentries, root, configname);
+		ret = __blspec_scan_file(bootentries, root, configname);
 		if (ret > 0)
 			found += ret;
 	}
@@ -500,108 +506,20 @@ err_out:
 	return ret;
 }
 
-/*
- * blspec_scan_ubi - scan over a cdev containing UBI volumes
- *
- * This function attaches a cdev as UBI devices and collects all bootentries
- * entries found in the UBI volumes
- *
- * returns the number of entries found or a negative error code if some unexpected
- * error occurred.
- */
-static int blspec_scan_ubi(struct bootentries *bootentries, struct cdev *cdev)
+static int blspec_scan_disk(struct bootscanner *scanner,
+			    struct bootentries *bootentries, struct cdev *cdev)
 {
-	struct device *child;
-	int ret, found = 0;
+	struct cdev *partcdev;
+	int ret;
 
-	pr_debug("%s: %s\n", __func__, cdev->name);
-
-	ret = ubi_attach_mtd_dev(cdev->mtd, UBI_DEV_NUM_AUTO, 0, 20);
-	if (ret && ret != -EEXIST)
-		return 0;
-
-	device_for_each_child(cdev->dev, child) {
-		ret = blspec_scan_device(bootentries, child);
-		if (ret > 0)
-			found += ret;
-	}
-
-	return found;
-}
-
-/*
- * blspec_scan_cdev - scan over a cdev
- *
- * Given a cdev this function mounts the filesystem and collects all bootentries
- * entries found under /bootentries/entries/.
- *
- * returns the number of entries found or a negative error code if some unexpected
- * error occurred.
- */
-static int blspec_scan_cdev(struct bootentries *bootentries, struct cdev *cdev)
-{
-	int ret, found = 0;
-	void *buf = xzalloc(512);
-	enum filetype type, filetype;
-	const char *rootpath;
-
-	pr_debug("%s: %s\n", __func__, cdev->name);
-
-	ret = cdev_read(cdev, buf, 512, 0, 0);
-	if (ret < 0) {
-		free(buf);
-		return ret;
-	}
-
-	type = file_detect_partition_table(buf, 512);
-	filetype = file_detect_type(buf, 512);
-	free(buf);
-
-	if (type == filetype_mbr || type == filetype_gpt)
-		return -EINVAL;
-
-	if (filetype == filetype_ubi && IS_ENABLED(CONFIG_MTD_UBI)) {
-		ret = blspec_scan_ubi(bootentries, cdev);
-		if (ret > 0)
-			found += ret;
-	}
-
-	rootpath = cdev_mount(cdev);
-	if (!IS_ERR(rootpath)) {
-		ret = blspec_scan_directory(bootentries, rootpath);
-		if (ret > 0)
-			found += ret;
-	}
-
-	return found;
-}
-
-/*
- * blspec_scan_device - scan a device for child cdevs
- *
- * Given a device this functions scans over all child cdevs looking
- * for bootentries entries.
- * Returns the number of entries found or a negative error code if some unexpected
- * error occurred.
- */
-static int blspec_scan_device(struct bootentries *bootentries, struct device *dev)
-{
-	struct device *child;
-	struct cdev *cdev;
-	int ret, found = 0;
-
-	pr_debug("%s: %s\n", __func__, dev_name(dev));
-
-	device_detect(dev);
-
-	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
+	for_each_cdev_partition(partcdev, cdev) {
 		/*
 		 * If the OS is installed on a disk with MBR disk label, and a
 		 * partition with the MBR type id of 0xEA already exists it
 		 * should be used as $BOOT
 		 */
-		if (cdev_is_mbr_partitioned(cdev->master) && cdev->dos_partition_type == 0xea) {
-			ret = blspec_scan_cdev(bootentries, cdev);
+		if (cdev_is_mbr_partitioned(cdev) && partcdev->dos_partition_type == 0xea) {
+			ret = boot_scan_cdev(scanner, bootentries, partcdev);
 			if (ret == 0)
 				ret = -ENOENT;
 
@@ -618,9 +536,38 @@ static int blspec_scan_device(struct bootentries *bootentries, struct device *de
 		 */
 	}
 
+	return 0;
+}
+
+/*
+ * blspec_scan_device - scan a device for child cdevs
+ *
+ * Given a device this functions scans over all child cdevs looking
+ * for bootentries entries.
+ * Returns the number of entries found or a negative error code if some unexpected
+ * error occurred.
+ */
+static int blspec_scan_device(struct bootscanner *scanner,
+			      struct bootentries *bootentries, struct device *dev)
+{
+	struct device *child;
+	struct cdev *cdev;
+	int ret, found = 0;
+
+	pr_debug("%s: %s\n", __func__, dev_name(dev));
+
+	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
+		if (cdev_is_partition(cdev))
+			continue;
+
+		ret = blspec_scan_disk(scanner, bootentries, cdev);
+		if (ret)
+			return ret;
+	}
+
 	/* Try child devices */
 	device_for_each_child(dev, child) {
-		ret = blspec_scan_device(bootentries, child);
+		ret = blspec_scan_device(scanner, bootentries, child);
 		if (ret > 0)
 			return ret;
 	}
@@ -630,7 +577,7 @@ static int blspec_scan_device(struct bootentries *bootentries, struct device *de
 	 * by the bootblspec spec).
 	 */
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
-		ret = blspec_scan_cdev(bootentries, cdev);
+		ret = boot_scan_cdev(scanner, bootentries, cdev);
 		if (ret > 0)
 			found += ret;
 	}
@@ -638,64 +585,17 @@ static int blspec_scan_device(struct bootentries *bootentries, struct device *de
 	return found;
 }
 
-/*
- * blspec_scan_devicename - scan a hardware device for child cdevs
- *
- * Given a name of a hardware device this functions scans over all child
- * cdevs looking for bootentries entries.
- * Returns the number of entries found or a negative error code if some unexpected
- * error occurred.
- */
-static int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
-{
-	struct device *dev;
-	struct cdev *cdev;
-
-	pr_debug("%s: %s\n", __func__, devname);
-
-	/* Support both boot /dev/disk0.rootfs and boot disk0.rootfs */
-	devname += str_has_prefix(devname, "/dev/");
-
-	device_detect_by_name(devname);
-
-	cdev = cdev_by_name(devname);
-	if (cdev) {
-		int ret = blspec_scan_cdev(bootentries, cdev);
-		if (ret > 0)
-			return ret;
-	}
-
-	dev = get_device_by_name(devname);
-	if (!dev)
-		return -ENODEV;
-
-	return blspec_scan_device(bootentries, dev);
-}
+static struct bootscanner blspec_scanner = {
+	.name		= "blspec",
+	.scan_file	= blspec_scan_file,
+	.scan_directory	= blspec_scan_directory,
+	.scan_device	= blspec_scan_device,
+};
 
 static int blspec_bootentry_generate(struct bootentries *bootentries,
 				     const char *name)
 {
-	struct stat s;
-	int ret, found = 0;
-
-	ret = blspec_scan_devicename(bootentries, name);
-	if (ret > 0)
-		found += ret;
-
-	if (*name == '/') {
-		ret = stat(name, &s);
-		if (ret)
-			return found;
-
-		if (S_ISDIR(s.st_mode))
-			ret = blspec_scan_directory(bootentries, name);
-		else if (S_ISREG(s.st_mode) && strends(name, ".conf"))
-			ret = blspec_scan_file(bootentries, NULL, name);
-		if (ret > 0)
-			found += ret;
-	}
-
-	return found;
+	return bootentry_scan_generate(&blspec_scanner, bootentries, name);
 }
 
 static struct bootentry_provider blspec_bootentry_provider = {

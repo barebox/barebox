@@ -271,20 +271,9 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
 
 static LIST_HEAD(bootentry_providers);
 
-struct bootentry_provider {
-	int (*fn)(struct bootentries *bootentries, const char *name);
-	struct list_head list;
-};
-
-int bootentry_register_provider(int (*fn)(struct bootentries *bootentries, const char *name))
+int bootentry_register_provider(struct bootentry_provider *p)
 {
-	struct bootentry_provider *p;
-
-	p = xzalloc(sizeof(*p));
-	p->fn = fn;
-
-	list_add_tail(&p->list, &bootentry_providers);
-
+	list_add(&p->list, &bootentry_providers);
 	return 0;
 }
 
@@ -310,7 +299,7 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 	int found = 0, ret;
 
 	list_for_each_entry(p, &bootentry_providers, list) {
-		ret = p->fn(bootentries, name);
+		ret = p->generate(bootentries, name);
 		if (ret > 0)
 			found += ret;
 	}

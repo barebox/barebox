@@ -14,10 +14,26 @@
 static int boot_scan_device(struct bootscanner *scanner,
 			    struct bootentries *bootentries, struct device *dev)
 {
+	struct cdev *cdev;
+	int ret;
 
 	pr_debug("%s(%s): %s\n", __func__, scanner->name, dev_name(dev));
 
 	device_detect(dev);
+
+	if (!scanner->scan_disk)
+		goto scan_device;
+
+	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
+		if (cdev_is_partition(cdev))
+			continue;
+
+		ret = scanner->scan_disk(scanner, bootentries, cdev);
+		if (ret)
+			return ret;
+	}
+
+scan_device:
 	return scanner->scan_device(scanner, bootentries, dev);
 }
 
@@ -38,7 +54,7 @@ static int boot_scan_ubi(struct bootscanner *scanner,
 
 	pr_debug("%s(%s): %s\n", __func__, scanner->name, cdev->name);
 
-	if (!scanner->scan_device)
+	if (!scanner->scan_disk && !scanner->scan_device)
 		return 0;
 
 	ret = ubi_attach_mtd_dev(cdev->mtd, UBI_DEV_NUM_AUTO, 0, 20);
@@ -83,8 +99,11 @@ int boot_scan_cdev(struct bootscanner *scanner,
 	filetype = file_detect_type(buf, 512);
 	free(buf);
 
-	if (type == filetype_mbr || type == filetype_gpt)
-		return -EINVAL;
+	if (type == filetype_mbr || type == filetype_gpt) {
+		if (!scanner->scan_disk || cdev_is_partition(cdev))
+			return -EINVAL;
+		return scanner->scan_disk(scanner, bootentries, cdev);
+	}
 
 	if (filetype == filetype_ubi && IS_ENABLED(CONFIG_MTD_UBI)) {
 		ret = boot_scan_ubi(scanner, bootentries, cdev);

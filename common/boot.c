@@ -134,7 +134,12 @@ static char *global_user;
 
 static int init_boot(void)
 {
-	global_boot_default = global_boot_default ? : xstrdup("net");
+	if (!global_boot_default)
+		global_boot_default = xstrdup(
+			IF_ENABLED(CONFIG_BOOT_DEFAULTS, "bootsource ")
+			"net"
+		);
+
 	globalvar_add_simple_string("boot.default", &global_boot_default);
 	globalvar_add_simple_int("boot.watchdog_timeout",
 				 &boot_watchdog_timeout, "%u");

@@ -7,7 +7,6 @@
 #include <readkey.h>
 #include <common.h>
 #include <driver.h>
-#include <blspec.h>
 #include <malloc.h>
 #include <block.h>
 #include <fcntl.h>
@@ -19,13 +18,39 @@
 #include <fs.h>
 #include <of.h>
 #include <linux/stat.h>
+#include <linux/list.h>
 #include <linux/err.h>
 #include <mtd/ubi-user.h>
+#include <boot.h>
+
+struct blspec_entry {
+	struct bootentry entry;
+
+	struct device_node *node;
+	struct cdev *cdev;
+	const char *rootpath;
+	const char *configpath;
+};
+
+static int blspec_scan_device(struct bootentries *bootentries, struct device *dev);
+
+/*
+ * blspec_entry_var_get - get the value of a variable
+ */
+static const char *blspec_entry_var_get(struct blspec_entry *entry, const char *name)
+{
+	const char *str;
+	int ret;
+
+	ret = of_property_read_string(entry->node, name, &str);
+
+	return ret ? NULL : str;
+}
 
 /*
  * blspec_entry_var_set - set a variable to a value
  */
-int blspec_entry_var_set(struct blspec_entry *entry, const char *name,
+static int blspec_entry_var_set(struct blspec_entry *entry, const char *name,
 		const char *val)
 {
 	return of_set_property(entry->node, name, val,
@@ -159,19 +184,6 @@ err_out:
 	free((char *)data.os_file);
 
 	return ret;
-}
-
-/*
- * blspec_entry_var_get - get the value of a variable
- */
-const char *blspec_entry_var_get(struct blspec_entry *entry, const char *name)
-{
-	const char *str;
-	int ret;
-
-	ret = of_property_read_string(entry->node, name, &str);
-
-	return ret ? NULL : str;
 }
 
 static void blspec_entry_free(struct bootentry *be)
@@ -391,8 +403,8 @@ static bool entry_is_match_machine_id(struct blspec_entry *entry)
 	return ret;
 }
 
-int blspec_scan_file(struct bootentries *bootentries, const char *root,
-		     const char *configname)
+static int blspec_scan_file(struct bootentries *bootentries, const char *root,
+			    const char *configname)
 {
 	char *devname = NULL, *hwdevname = NULL;
 	struct blspec_entry *entry;
@@ -447,7 +459,7 @@ int blspec_scan_file(struct bootentries *bootentries, const char *root,
  *
  * returns the number of entries found or a negative error value otherwise.
  */
-int blspec_scan_directory(struct bootentries *bootentries, const char *root)
+static int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 {
 	glob_t globb;
 	char *abspath;
@@ -572,7 +584,7 @@ static int blspec_scan_cdev(struct bootentries *bootentries, struct cdev *cdev)
  * Returns the number of entries found or a negative error code if some unexpected
  * error occurred.
  */
-int blspec_scan_device(struct bootentries *bootentries, struct device *dev)
+static int blspec_scan_device(struct bootentries *bootentries, struct device *dev)
 {
 	struct device *child;
 	struct cdev *cdev;
@@ -634,7 +646,7 @@ int blspec_scan_device(struct bootentries *bootentries, struct device *dev)
  * Returns the number of entries found or a negative error code if some unexpected
  * error occurred.
  */
-int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
+static int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
 {
 	struct device *dev;
 	struct cdev *cdev;

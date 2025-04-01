@@ -33,6 +33,12 @@
  */
 #define IS_ENABLED(option) __or(IS_BUILTIN(option), IS_MODULE(option))
 
+#define IF_ENABLED__0(args...)
+#define IF_ENABLED__1(args...)		args
+#define IF_ENABLED__(optval, args...)	IF_ENABLED__##optval(args)
+#define IF_ENABLED_(optval, args...)	IF_ENABLED__(optval, args)
+#define IF_ENABLED(option, args...)	IF_ENABLED_(IS_ENABLED(option), args)
+
 #ifdef __PBL__
 #define IN_PBL		1
 #define IN_PROPER	0

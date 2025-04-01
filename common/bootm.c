@@ -6,6 +6,7 @@
 #include <fs.h>
 #include <malloc.h>
 #include <memory.h>
+#include <block.h>
 #include <libfile.h>
 #include <image-fit.h>
 #include <globalvar.h>

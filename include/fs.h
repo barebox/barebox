@@ -175,7 +175,6 @@ void mount_all(void);
 
 void fsdev_set_linux_rootarg(struct fs_device *fsdev, const char *str);
 char *path_get_linux_rootarg(const char *path);
-char *cdev_get_linux_rootarg(const struct cdev *cdev);
 
 static inline const char *devpath_to_name(const char *devpath)
 {

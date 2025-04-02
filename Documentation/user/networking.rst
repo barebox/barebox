@@ -134,8 +134,7 @@ or:
 Network filesystems
 -------------------
 
-barebox supports NFS and TFTP both with commands (:ref:`nfs <command_nfs>` and
-:ref:`tftp <command_tftp>`) and as filesystem implementations; see
+barebox supports NFS and TFTP as filesystem implementations; see
 :ref:`filesystems_nfs` and :ref:`filesystems_tftp` for more information. After
 the network device has been brought up, a network filesystem can be mounted
 with:

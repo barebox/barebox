@@ -373,7 +373,8 @@ int pe_load(struct pe_image *pe)
 
 void pe_close(struct pe_image *pe)
 {
-	release_sdram_region(pe->code);
+	if (pe->code)
+		release_sdram_region(pe->code);
 	free(pe->bin);
 	free(pe);
 }

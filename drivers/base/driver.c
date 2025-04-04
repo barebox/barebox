@@ -265,6 +265,7 @@ int register_device(struct device *new_device)
 	INIT_LIST_HEAD(&new_device->parameters);
 	INIT_LIST_HEAD(&new_device->active);
 	INIT_LIST_HEAD(&new_device->bus_list);
+	INIT_LIST_HEAD(&new_device->class_list);
 
 	if (new_device->bus) {
 		if (!new_device->parent)
@@ -318,6 +319,7 @@ int unregister_device(struct device *old_dev)
 
 	list_del(&old_dev->list);
 	list_del(&old_dev->bus_list);
+	list_del(&old_dev->class_list);
 	list_del(&old_dev->active);
 
 	/* remove device from parents child list */

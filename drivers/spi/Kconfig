@@ -114,6 +114,14 @@ config SPI_ZYNQ_QSPI
 	  This enables support for the Zynq Quad SPI controller in master mode.
 	  This controller only supports SPI memory interface.
 
+config STM32_QSPI
+	bool "STM32F7 QSPI driver"
+	depends on ARCH_STM32 || COMPILE_TEST
+	help
+	  Enable the STM32F7 Quad-SPI (QSPI) driver. This driver can be
+	  used to access the SPI NOR flash chips on platforms embedding
+	  this ST IP core.
+
 config DRIVER_SPI_STM32
 	bool "STM32 SPI driver"
 	depends on ARCH_STM32MP || COMPILE_TEST

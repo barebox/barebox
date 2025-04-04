@@ -293,7 +293,7 @@ struct cdev *get_cdev_by_mountpath(const char *path)
 	return fsdev->cdev;
 }
 
-char *get_mounted_path(const char *path)
+const char *get_mounted_path(const char *path)
 {
 	struct fs_device *fdev;
 

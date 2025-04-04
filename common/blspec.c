@@ -98,16 +98,8 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 
 	data.os_file = basprintf("%s/%s", abspath, linuximage);
 
-	if (devicetree) {
-		if (!strcmp(devicetree, "none")) {
-			struct device_node *node = of_get_root_node();
-			if (node)
-				of_delete_node(node);
-		} else {
-			data.oftree_file = basprintf("%s/%s", abspath,
-						       devicetree);
-		}
-	}
+	if (devicetree)
+		data.oftree_file = basprintf("%s/%s", abspath, devicetree);
 
 	if (overlays)
 		of_register_fixup(blspec_overlay_fixup, entry);

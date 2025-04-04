@@ -15,6 +15,7 @@
  */
 
 #include <common.h>
+#include <envfs.h>
 #include <driver.h>
 #include <malloc.h>
 #include <mach/linux.h>
@@ -58,6 +59,8 @@ static int devices_init(struct device *dev)
 	platform_device_register(&sdl_device);
 
 	platform_device_register(&devrandom_device);
+
+	defaultenv_append_directory(defaultenv_sandbox);
 
 	return 0;
 }

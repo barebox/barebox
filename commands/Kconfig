@@ -690,7 +690,7 @@ config CMD_FINDMNT
 	help
 	  Find a file system
 
-	  Usage: findmnt [ DEVICE | -T FILE ]
+	  Usage: findmnt [ DEVICE | -T FILE ] [-v VARIABLE]
 
 	  findmnt will list all mounted filesystems or search
 	  for a filesystem when given the mountpoint or the
@@ -698,6 +698,7 @@ config CMD_FINDMNT
 
 	  Options:
 		-T		mount target file path
+		-v VARIABLE	export target to specified VARIABLE
 
 config CMD_PARTED
 	tristate

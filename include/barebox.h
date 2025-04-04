@@ -6,7 +6,7 @@
 #include <linux/compiler.h>
 
 /* For use when unrelocated */
-static inline void __hang(void)
+static inline __noreturn void __hang(void)
 {
 	while (1);
 }

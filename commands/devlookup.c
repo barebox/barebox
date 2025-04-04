@@ -9,18 +9,6 @@
 #include <linux/ctype.h>
 #include <environment.h>
 
-static int report(const char *variable, const char *val)
-{
-	if (!val)
-		return -(errno ?: EINVAL);
-
-	if (variable)
-		return setenv(variable, val);
-
-	printf("%s\n", val);
-	return 0;
-}
-
 static int do_devlookup(int argc, char *argv[])
 {
 	const char *variable = NULL, *devicefile, *paramname;
@@ -56,9 +44,9 @@ static int do_devlookup(int argc, char *argv[])
 	}
 
 	if (paramname)
-		ret = report(variable, dev_get_param(cdev->dev, paramname));
+		ret = cmd_export_val(variable, dev_get_param(cdev->dev, paramname));
 	else
-		ret = report(variable, dev_name(cdev->dev));
+		ret = cmd_export_val(variable, dev_name(cdev->dev));
 out:
 	cdev_close(cdev);
 

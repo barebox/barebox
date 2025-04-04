@@ -775,13 +775,13 @@ static int fs_probe(struct device *dev)
 
 	fsdev->driver = fsdrv;
 
-	list_add_tail(&fsdev->list, &fs_device_list);
-
 	if (IS_ENABLED(CONFIG_FS_LEGACY) && !fsdev->sb.s_root) {
 		ret = fs_init_legacy(fsdev);
 		if (ret)
 			return ret;
 	}
+
+	list_add_tail(&fsdev->list, &fs_device_list);
 
 	return 0;
 }

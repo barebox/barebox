@@ -175,12 +175,6 @@ static bool bootm_get_override(char **oldpath, const char *newpath)
  */
 int bootm_load_os(struct image_data *data, unsigned long load_address)
 {
-	if (bootm_get_override(&data->os_file, bootm_overrides.os_file)) {
-		if (load_address == UIMAGE_INVALID_ADDRESS)
-			return -EINVAL;
-		goto os_file;
-	}
-
 	if (data->os_res)
 		return 0;
 
@@ -220,7 +214,6 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	if (IS_ENABLED(CONFIG_ELF) && data->elf)
 		return elf_load(data->elf);
 
-os_file:
 	if (!data->os_file)
 		return -EINVAL;
 
@@ -569,19 +562,15 @@ int bootm_get_os_size(struct image_data *data)
 	struct stat s;
 	int ret;
 
-	if (bootm_get_override(NULL, bootm_overrides.os_file)) {
-		os_file = bootm_overrides.os_file;
-	} else {
-		if (data->elf)
-			return elf_get_mem_size(data->elf);
-		if (image_is_uimage(data))
-			return uimage_get_size(data->os, uimage_part_num(data->os_part));
-		if (data->os_fit)
-			return data->fit_kernel_size;
-		if (!data->os_file)
-			return -EINVAL;
-		os_file = data->os_file;
-	}
+	if (data->elf)
+		return elf_get_mem_size(data->elf);
+	if (image_is_uimage(data))
+		return uimage_get_size(data->os, uimage_part_num(data->os_part));
+	if (data->os_fit)
+		return data->fit_kernel_size;
+	if (!data->os_file)
+		return -EINVAL;
+	os_file = data->os_file;
 
 	ret = stat(os_file, &s);
 	if (ret)
@@ -947,13 +936,6 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (bootm_verbose(data)) {
 		bootm_print_info(data);
 		printf("Passing control to %s handler\n", handler->name);
-	}
-
-	if (bootm_get_override(&data->os_file, bootm_overrides.os_file)) {
-		if (data->os_res) {
-			release_sdram_region(data->os_res);
-			data->os_res = NULL;
-		}
 	}
 
 	bootm_get_override(&data->oftree_file, bootm_overrides.oftree_file);

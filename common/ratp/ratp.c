@@ -28,8 +28,7 @@
 #include <fs.h>
 #include <console_countdown.h>
 
-LIST_HEAD(ratp_command_list);
-EXPORT_SYMBOL(ratp_command_list);
+static LIST_HEAD(ratp_command_list);
 
 #define for_each_ratp_command(cmd) list_for_each_entry(cmd, &ratp_command_list, list)
 

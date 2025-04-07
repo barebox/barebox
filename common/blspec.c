@@ -77,11 +77,10 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	const char *overlays;
 	const char *appendroot;
 	char *old_fws, *fws;
-	struct bootm_data data = {
-		.dryrun = dryrun,
-	};
+	struct bootm_data data = {};
 
 	bootm_data_init_defaults(&data);
+	data.dryrun = max_t(int, dryrun, data.dryrun);
 	data.os_file = data.oftree_file = data.initrd_file = NULL;
 	data.verbose = max(verbose, data.verbose);
 

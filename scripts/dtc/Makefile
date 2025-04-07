@@ -16,16 +16,7 @@ fdtget-objs    += fdtget.o $(libfdt-objs) util.o
 # Source files need to get at the userspace version of libfdt_env.h to compile
 HOST_EXTRACFLAGS += -I$(src)/libfdt
 
-ifeq ($(wildcard /usr/include/yaml.h),)
-ifneq ($(CHECK_DTBS),)
-$(error dtc needs libyaml for DT schema validation support. \
-	Install the necessary libyaml development package.)
-endif
 HOST_EXTRACFLAGS += -DNO_YAML
-else
-dtc-objs	+= yamltree.o
-HOSTLDLIBS_dtc	:= -lyaml
-endif
 
 # Generated files need one more search path to include headers in source tree
 HOSTCFLAGS_dtc-lexer.lex.o := -I$(src)

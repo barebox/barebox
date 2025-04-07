@@ -714,6 +714,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	int ret;
 	enum filetype os_type;
 	size_t size;
+	const char *os_type_str;
 
 	if (!bootm_data->os_file) {
 		pr_err("no image given\n");
@@ -769,9 +770,13 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 	}
 
+	os_type_str = file_type_to_short_string(os_type);
+
 	switch (os_type) {
 	case filetype_oftree:
 		ret = bootm_open_fit(data);
+		os_type = file_detect_type(data->fit_kernel, data->fit_kernel_size);
+		os_type_str = "FIT";
 		break;
 	case filetype_uimage:
 		ret = bootm_open_os_uimage(data);
@@ -782,13 +787,6 @@ int bootm_boot(struct bootm_data *bootm_data)
 	}
 
 	if (ret) {
-		const char *os_type_str;
-
-		if (os_type == filetype_oftree)
-			os_type_str = "FIT";
-		else
-			os_type_str = file_type_to_short_string(os_type);
-
 		pr_err("Loading %s image failed with: %pe\n", os_type_str, ERR_PTR(ret));
 		goto err_out;
 	}

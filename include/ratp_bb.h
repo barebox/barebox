@@ -50,7 +50,6 @@ int  barebox_ratp_fs_mount(const char *path);
  */
 
 struct ratp_command {
-	struct list_head  list;
 	uint16_t          request_id;
 	uint16_t          response_id;
 	int		(*cmd)(const struct ratp_bb *req,
@@ -67,6 +66,6 @@ const struct ratp_command __barebox_ratp_cmd_##_name					\
 #define BAREBOX_RATP_CMD_END								\
 };
 
-int register_ratp_command(struct ratp_command *cmd);
+int register_ratp_command(const struct ratp_command *cmd);
 
 #endif /* __RATP_BB_H */

@@ -57,12 +57,7 @@ struct ratp_command {
 			       int req_len,
 			       struct ratp_bb **rsp,
 			       int *rsp_len);
-}
-#ifdef __x86_64__
-/* This is required because the linker will put symbols on a 64 bit alignment */
-__attribute__((aligned(64)))
-#endif
-;
+};
 
 #define BAREBOX_RATP_CMD_START(_name)							\
 extern const struct ratp_command __barebox_ratp_cmd_##_name;				\

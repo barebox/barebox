@@ -211,9 +211,6 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 		return 0;
 	}
 
-	if (IS_ENABLED(CONFIG_ELF) && data->elf)
-		return elf_load(data->elf);
-
 	if (!data->os_file)
 		return -EINVAL;
 
@@ -562,8 +559,6 @@ int bootm_get_os_size(struct image_data *data)
 	struct stat s;
 	int ret;
 
-	if (data->elf)
-		return elf_get_mem_size(data->elf);
 	if (image_is_uimage(data))
 		return uimage_get_size(data->os, uimage_part_num(data->os_part));
 	if (data->os_fit)
@@ -676,25 +671,6 @@ static int bootm_open_fit(struct image_data *data)
 	return 0;
 }
 
-static int bootm_open_elf(struct image_data *data)
-{
-	struct elf_image *elf;
-
-	if (!IS_ENABLED(CONFIG_ELF))
-		return -ENOSYS;
-
-	elf = elf_open(data->os_file);
-	if (IS_ERR(elf))
-		return PTR_ERR(elf);
-
-	pr_info("Entry Point:  %08llx\n", elf->entry);
-
-	data->os_address = elf->entry;
-	data->elf = elf;
-
-	return 0;
-}
-
 static void bootm_print_info(struct image_data *data)
 {
 	if (data->os_res)
@@ -799,9 +775,6 @@ int bootm_boot(struct bootm_data *bootm_data)
 		break;
 	case filetype_uimage:
 		ret = bootm_open_os_uimage(data);
-		break;
-	case filetype_elf:
-		ret = bootm_open_elf(data);
 		break;
 	default:
 		ret = 0;
@@ -965,8 +938,6 @@ err_out:
 			uimage_close(data->initrd);
 		uimage_close(data->os);
 	}
-	if (IS_ENABLED(CONFIG_ELF) && data->elf)
-		elf_close(data->elf);
 	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit)
 		fit_close(data->os_fit);
 	if (data->of_root_node)

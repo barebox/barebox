@@ -60,6 +60,10 @@ static int do_boot_elf(struct image_data *data, struct elf_image *elf)
 	boot_func_entry entry;
 	unsigned long load_addr, initrd_address;
 
+	ret = elf_load(elf);
+	if (ret)
+		return ret;
+
 	/* load initrd after the elf */
 	load_addr = PAGE_ALIGN((unsigned long) elf->high_addr);
 	if (data->initrd_address != UIMAGE_INVALID_ADDRESS)
@@ -112,13 +116,8 @@ static int do_bootm_fit(struct image_data *data)
 	if (IS_ERR(elf))
 		return PTR_ERR(data->elf);
 
-	ret = elf_load(elf);
-	if (ret)
-		goto close_elf;
-
 	ret = do_boot_elf(data, elf);
 
-close_elf:
 	elf_close(elf);
 
 	return ret;
@@ -126,13 +125,18 @@ close_elf:
 
 static int do_bootm_elf(struct image_data *data)
 {
+	struct elf_image *elf;
 	int ret;
 
-	ret = bootm_load_os(data, data->os_address);
-	if (ret)
-		return ret;
+	elf = elf_open(data->os_file);
+	if (IS_ERR(elf))
+		return PTR_ERR(elf);
 
-	return do_boot_elf(data, data->elf);
+	ret = do_boot_elf(data, elf);
+
+	elf_close(elf);
+
+	return ret;
 }
 
 static struct image_handler elf_handler = {

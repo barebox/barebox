@@ -58,20 +58,26 @@ static int do_bootm_elf(struct image_data *data)
 {
 	void (*entry)(int, void *);
 	void *fdt;
+	struct elf_image *elf;
 	int ret = 0;
 
-	ret = bootm_load_os(data, data->os_address);
+	elf = elf_open(data->os_file);
+	if (IS_ERR(elf))
+		return PTR_ERR(elf);
+
+	ret = elf_load(elf);
 	if (ret)
-		return ret;
+		goto err;
 
 	fdt = bootm_get_devicetree(data);
 	if (IS_ERR(fdt)) {
 		pr_err("Failed to load dtb\n");
-		return PTR_ERR(fdt);
+		ret = PTR_ERR(fdt);
+		goto bootm_free_fdt;
 	}
 
 	pr_info("Starting application at 0x%08lx, dts 0x%p...\n",
-		data->os_address, data->of_root_node);
+		elf->entry, data->of_root_node);
 
 	if (data->dryrun)
 		goto bootm_free_fdt;
@@ -82,7 +88,7 @@ static int do_bootm_elf(struct image_data *data)
 
 	shutdown_barebox();
 
-	entry = (void *) (unsigned long) data->os_address;
+	entry = (void *) (unsigned long) elf->entry;
 
 	entry(-2, fdt);
 
@@ -91,6 +97,8 @@ static int do_bootm_elf(struct image_data *data)
 
 bootm_free_fdt:
 	free(fdt);
+err:
+	elf_close(elf);
 
 	return ret;
 }

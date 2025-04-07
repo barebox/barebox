@@ -668,14 +668,6 @@ config PE
 config ELF
 	bool "ELF Support" if COMPILE_TEST
 
-config BOOTM_ELF
-	bool
-	depends on BOOTM
-	select ELF
-	prompt "elf loading support"
-	help
-	  Add support to load elf file with bootm.
-
 config BOOTM_FITIMAGE
 	bool
 	prompt "FIT image support"

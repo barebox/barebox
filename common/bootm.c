@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include <bootm.h>
+#include <bootm-overrides.h>
 #include <fs.h>
 #include <malloc.h>
 #include <memory.h>
@@ -1004,7 +1005,7 @@ err_out:
 #ifdef CONFIG_BOOT_OVERRIDE
 void bootm_set_overrides(const struct bootm_overrides *overrides)
 {
-	bootm_overrides = *overrides;
+	bootm_overrides = overrides ? *overrides : (struct bootm_overrides){};
 }
 #endif
 

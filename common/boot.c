@@ -162,9 +162,13 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 		}
 	}
 
+	bootm_set_overrides(&be->overrides);
+
 	ret = be->boot(be, verbose, dryrun);
 	if (ret && ret != -ENOMEDIUM)
 		pr_err("Booting entry '%s' failed: %pe\n", be->title, ERR_PTR(ret));
+
+	bootm_set_overrides(NULL);
 
 	globalvar_set_match("linux.bootargs.dyn.", "");
 

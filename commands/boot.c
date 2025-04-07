@@ -179,6 +179,9 @@ BAREBOX_CMD_HELP_TEXT("- a partition name under /dev/")
 BAREBOX_CMD_HELP_TEXT("- a full path to a directory which")
 BAREBOX_CMD_HELP_TEXT("   - contains boot scripts, or")
 BAREBOX_CMD_HELP_TEXT("   - contains a loader/entries/ directory containing bootspec entries")
+#ifdef CONFIG_BOOTCHOOSER
+BAREBOX_CMD_HELP_TEXT("- \"bootchooser\": boot with barebox bootchooser")
+#endif
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Multiple bootsources may be given which are probed in order until")
 BAREBOX_CMD_HELP_TEXT("one succeeds.")

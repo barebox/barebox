@@ -132,11 +132,6 @@ static uintptr_t rk_load_optee(uintptr_t bl32, const void *bl32_image,
 		   SOC##_BAREBOX_LOAD_ADDRESS, (uintptr_t)fdt);                 \
 } while (0)                                                                     \
 
-void rk3399_atf_load_bl31(void *fdt)
-{
-	rockchip_atf_load_bl31(RK3399, rk3399_bl31_bin, rk3399_bl32_bin, fdt);
-}
-
 void rk3568_atf_load_bl31(void *fdt)
 {
 	rockchip_atf_load_bl31(RK3568, rk3568_bl31_bin, rk3568_bl32_bin, fdt);

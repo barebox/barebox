@@ -26,6 +26,7 @@
 #include <asm/armlinux.h>
 #include <asm/system.h>
 #include <asm/secure.h>
+#include <asm/boot.h>
 
 static struct tag *params;
 static void *armlinux_bootparams = NULL;
@@ -251,8 +252,7 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 		 unsigned long initrd_size, void *oftree,
 		 enum arm_security_state state, void *optee)
 {
-	void (*kernel)(int zero, unsigned arch, void *params) = adr;
-	void *params = NULL;
+	phys_addr_t params = 0;
 	unsigned architecture;
 	int ret;
 
@@ -264,11 +264,11 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 
 	if (oftree) {
 		pr_debug("booting kernel with devicetree\n");
-		params = oftree;
+		params = virt_to_phys(oftree);
 	} else {
-		params = armlinux_get_bootparams();
+		params = virt_to_phys(armlinux_get_bootparams());
 
-		if ((unsigned long)params < PAGE_SIZE)
+		if (params < PAGE_SIZE)
 			zero_page_access();
 
 		setup_tags(initrd_address, initrd_size, swap);
@@ -288,8 +288,8 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 	}
 
 	if (optee && IS_ENABLED(CONFIG_BOOTM_OPTEE)) {
-		start_kernel_optee(optee, kernel, oftree);
+		start_kernel_optee(optee, adr, oftree);
 	} else {
-		kernel(0, architecture, params);
+		__jump_to_linux(adr, architecture, params);
 	}
 }

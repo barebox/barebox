@@ -5,3 +5,6 @@
 path="/mnt/tftp"
 
 global.bootm.image="${path}/${global.user}-barebox-${global.hostname}"
+if [ ! -f "${global.bootm.image}" ]; then
+      global.bootm.image="${path}/${global.user}-barebox-${global.arch}"
+fi

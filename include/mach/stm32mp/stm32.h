@@ -28,6 +28,6 @@
 #define STM32_DDR_BASE			0xC0000000
 #define STM32_DDR_SIZE			SZ_1G
 
-int stm32mp_soc(void);
+unsigned stm32mp_soc_code(void);
 
 #endif /* _MACH_STM32_H_ */

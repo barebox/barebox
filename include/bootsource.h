@@ -33,6 +33,7 @@ const char *bootsource_to_string(enum bootsource src);
 const char *bootsource_get_alias_stem(enum bootsource bs);
 int bootsource_of_alias_xlate(enum bootsource bs, int instance);
 struct device_node *bootsource_of_node_get(struct device_node *root);
+int bootsource_of_node_set(struct device_node *np);
 
 /**
  * bootsource_set - set bootsource with optional DT mapping table

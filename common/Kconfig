@@ -1193,6 +1193,23 @@ config BOOTCHOOSER
 	select OFTREE
 	select PARAMETER
 
+config BAREBOX_DT_2ND
+	bool "Consume DT bindings relevant only when barebox is booted by barebox"
+	depends on OFDEVICE
+	default BOARD_GENERIC_DT
+	help
+	  Barebox fixes up a number of device tree properties into the kernel
+	  device tree that it does not itself consume.
+	  Say y here for barebox to not only provide, but also consume
+	  these device tree bindings.
+
+	  This is currently:
+
+	    /chosen/bootsource: Maintain the bootsource, even if SoC
+	    bootsource info is lost.
+
+	  If unsure, say n.
+
 config RESET_SOURCE
 	bool "detect Reset cause"
 	depends on GLOBALVAR

@@ -8,6 +8,7 @@
 #include <bootsource.h>
 #include <environment.h>
 #include <magicvar.h>
+#include <string.h>
 #include <init.h>
 
 static const char *bootsource_str[BOOTSOURCE_MAX] = {
@@ -134,6 +135,33 @@ void bootsource_set_raw_instance(int instance)
 		setenv("bootsource_instance","unknown");
 	else
 		pr_setenv("bootsource_instance", "%d", instance);
+}
+
+int bootsource_of_node_set(struct device_node *np)
+{
+	const char *alias;
+
+	alias = of_alias_get(np);
+	if (!alias)
+		return -EINVAL;
+
+	for (int bootsrc = 0; bootsrc < ARRAY_SIZE(bootsource_str); bootsrc++) {
+		int ret, instance;
+		size_t prefixlen;
+
+		prefixlen = str_has_prefix(alias, bootsource_str[bootsrc]);
+		if (!prefixlen)
+			continue;
+
+		ret = kstrtoint(alias + prefixlen, 10, &instance);
+		if (ret)
+			return ret;
+
+		bootsource_set_raw(bootsrc, instance);
+		return 0;
+	}
+
+	return -ENODEV;
 }
 
 int bootsource_of_alias_xlate(enum bootsource src, int instance)

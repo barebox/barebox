@@ -30,7 +30,7 @@
 static struct tag *params;
 static void *armlinux_bootparams = NULL;
 
-static int armlinux_architecture;
+static unsigned armlinux_architecture;
 static u32 armlinux_system_rev;
 static u64 armlinux_system_serial;
 
@@ -38,13 +38,13 @@ BAREBOX_MAGICVAR(armlinux_architecture, "ARM machine ID");
 BAREBOX_MAGICVAR(armlinux_system_rev, "ARM system revision");
 BAREBOX_MAGICVAR(armlinux_system_serial, "ARM system serial");
 
-void armlinux_set_architecture(int architecture)
+void armlinux_set_architecture(unsigned architecture)
 {
 	export_env_ull("armlinux_architecture", architecture);
 	armlinux_architecture = architecture;
 }
 
-static int armlinux_get_architecture(void)
+static unsigned armlinux_get_architecture(void)
 {
 	getenv_uint("armlinux_architecture", &armlinux_architecture);
 
@@ -241,7 +241,7 @@ static void setup_tags(unsigned long initrd_address,
 	setup_end_tag();
 
 	printf("commandline: %s\n"
-	       "arch_number: %d\n", commandline, armlinux_get_architecture());
+	       "arch_number: %u\n", commandline, armlinux_get_architecture());
 
 }
 
@@ -251,9 +251,9 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 		 unsigned long initrd_size, void *oftree,
 		 enum arm_security_state state, void *optee)
 {
-	void (*kernel)(int zero, int arch, void *params) = adr;
+	void (*kernel)(int zero, unsigned arch, void *params) = adr;
 	void *params = NULL;
-	int architecture;
+	unsigned architecture;
 	int ret;
 
 	if (IS_ENABLED(CONFIG_ARM_SECURE_MONITOR) && state > ARM_STATE_SECURE) {

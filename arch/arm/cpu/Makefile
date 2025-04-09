@@ -32,6 +32,7 @@ obj-$(CONFIG_CMD_ARM_CPUINFO) += cpuinfo.o
 obj-$(CONFIG_MMUINFO) += mmuinfo.o mmuinfo_$(S64_32).o
 obj-$(CONFIG_OFDEVICE) += dtb.o
 obj-$(CONFIG_ARM_BOOTM_ELF)	+= bootm-elf.o
+obj-$(CONFIG_ARM_BOOTM_FIP)	+= bootm-fip.o
 
 ifeq ($(CONFIG_MMU),)
 obj-$(CONFIG_CPU_32v7) += no-mmu.o

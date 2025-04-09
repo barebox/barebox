@@ -104,4 +104,17 @@ struct fip_state *fip_image_open(const char *filename, size_t offset);
 
 int fip_sha256(struct fip_state *fip, char *hash);
 
+struct fip_binding {
+	unsigned id;
+	uuid_t uuid;
+};
+
+#ifdef CONFIG_ARM_BOOTM_FIP
+void plat_set_fip_bindings(const struct fip_binding *bindings);
+#else
+static inline void plat_set_fip_bindings(const struct fip_binding *bindings)
+{
+}
+#endif
+
 #endif /* FIPTOOL_H */

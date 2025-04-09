@@ -14,8 +14,7 @@ static unsigned long get_kernel_address(unsigned long os_address,
 	resource_size_t start, end;
 	int ret;
 
-	if (os_address == UIMAGE_SOME_ADDRESS ||
-	    os_address == UIMAGE_INVALID_ADDRESS) {
+	if (!UIMAGE_IS_ADDRESS_VALID(os_address)) {
 		ret = memory_bank_first_find_space(&start, &end);
 		if (ret)
 			return UIMAGE_INVALID_ADDRESS;

@@ -31,7 +31,6 @@ static const char *bootsource_str[BOOTSOURCE_MAX] = {
 
 static enum bootsource bootsource = BOOTSOURCE_UNKNOWN;
 static int bootsource_instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-const char *bootsource_alias_name = NULL;
 
 const char *bootsource_to_string(enum bootsource src)
 {
@@ -83,14 +82,6 @@ const char *bootsource_get_alias_name(void)
 	const char *stem;
 	int ret;
 
-	/*
-	 * If alias name was overridden via
-	 * bootsource_set_alias_name() return that value without
-	 * asking any questions.
-	 */
-	if (bootsource_alias_name)
-		return bootsource_alias_name;
-
 	stem = bootsource_get_alias_stem(bootsource);
 	if (!stem)
 		return NULL;
@@ -121,11 +112,6 @@ struct device_node *bootsource_of_node_get(struct device_node *root)
 	np = of_find_node_by_alias(root, alias_name);
 
 	return np;
-}
-
-void bootsource_set_alias_name(const char *name)
-{
-	bootsource_alias_name = name;
 }
 
 void bootsource_set_raw(enum bootsource src, int instance)

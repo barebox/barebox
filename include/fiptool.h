@@ -91,8 +91,8 @@ typedef struct toc_entry {
 	char         *cmdline_name;
 } toc_entry_t;
 
-extern toc_entry_t toc_entries[];
-extern toc_entry_t plat_def_toc_entries[];
+extern const toc_entry_t toc_entries[];
+extern const toc_entry_t plat_def_toc_entries[];
 
 #define fip_for_each_desc(fip, e) \
         list_for_each_entry(e, &(fip)->descs, list)

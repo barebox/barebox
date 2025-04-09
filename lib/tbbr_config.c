@@ -5,7 +5,7 @@
 #include <fiptool.h>
 
 /* The images used depends on the platform. */
-toc_entry_t toc_entries[] = {
+const toc_entry_t toc_entries[] = {
 	{
 		.name = "SCP Firmware Updater Configuration FWU SCP_BL2U",
 		.uuid = UUID_TRUSTED_UPDATE_FIRMWARE_SCP_BL2U,
@@ -187,7 +187,7 @@ toc_entry_t toc_entries[] = {
 	}
 };
 
-toc_entry_t plat_def_toc_entries[] = {
+const toc_entry_t plat_def_toc_entries[] = {
 #ifdef CONFIG_ARCH_STM32MP
 	{
 		.name = "STM32MP CONFIG CERT",

@@ -8,8 +8,8 @@ static int dkx_probe(struct device *dev)
 {
 	const void *model;
 
-	stm32mp_bbu_mmc_register_handler("sd", "/dev/mmc0.ssbl",
-					 BBU_HANDLER_FLAG_DEFAULT);
+	stm32mp_bbu_mmc_fip_register("sd", "/dev/mmc0",
+				     BBU_HANDLER_FLAG_DEFAULT);
 
 	if (dev_get_drvdata(dev, &model) == 0)
 		barebox_set_model(model);

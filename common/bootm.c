@@ -622,7 +622,7 @@ static int bootm_open_fit(struct image_data *data)
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_FITIMAGE))
-		return 0;
+		return -ENOSYS;
 
 	header = (struct fdt_header *)data->os_header;
 	flen = bootm_get_os_size(data);

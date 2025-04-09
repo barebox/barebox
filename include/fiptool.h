@@ -23,6 +23,7 @@ struct fip_image_desc {
 	char              *cmdline_name;
 	int                action;
 	char              *action_arg;
+	void              *private_data;
 	struct fip_image  *image;
 	struct list_head  list;
 };

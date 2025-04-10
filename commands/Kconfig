@@ -1154,6 +1154,21 @@ config CMD_SHA256SUM
 
 	  Calculate a SHA256 digest over a FILE or a memory area.
 
+config CMD_BASE64
+	tristate
+	select BASE64
+	prompt "base64"
+	help
+	  base64 - base64 decode data
+
+	  Usage: base64 [-u] -d -o OUT IN
+
+	  Decode normal and URL base64 data
+
+	    -d		decode to base64 instead of encoding
+	    -o OUT	output file name
+	    -u		Use base64 URL character set
+
 config CMD_SHA384SUM
 	tristate
 	select COMPILE_HASH

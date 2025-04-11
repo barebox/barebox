@@ -285,6 +285,18 @@ struct spi_mem_driver {
 	int (*remove)(struct spi_mem *mem);
 };
 
+#if IS_ENABLED(CONFIG_SPI_MEM)
+bool spi_mem_default_supports_op(struct spi_mem *mem,
+				 const struct spi_mem_op *op);
+#else
+static inline
+bool spi_mem_default_supports_op(struct spi_mem *mem,
+				 const struct spi_mem_op *op)
+{
+	return false;
+}
+#endif
+
 int spi_mem_adjust_op_size(struct spi_mem *mem, struct spi_mem_op *op);
 
 bool spi_mem_supports_op(struct spi_mem *mem,

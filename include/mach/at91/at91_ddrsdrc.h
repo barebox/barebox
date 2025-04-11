@@ -357,11 +357,6 @@ static inline u32 at91sam9n12_get_ddram_size(void)
 	return at91_get_ddram_size(IOMEM(AT91SAM9N12_BASE_DDRSDRC0), true);
 }
 
-static inline u32 at91sama5d3_get_ddram_size(void)
-{
-	return at91_get_ddram_size(IOMEM(SAMA5D3_BASE_MPDDRC), true);
-}
-
 static inline u32 at91sama5d4_get_ddram_size(void)
 {
 	return at91_get_ddram_size(IOMEM(SAMA5D4_BASE_MPDDRC), true);

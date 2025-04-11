@@ -3,6 +3,7 @@
 #define _LINUX_KASAN_H
 
 #include <linux/types.h>
+#include <linux/kasan-enabled.h>
 
 /*
  * On 64bit architectures tlsf aligns all allocations to a 64bit

@@ -31,6 +31,7 @@ const char *var_name(struct variable_d *);
 
 #if IS_ENABLED(CONFIG_ENVIRONMENT_VARIABLES) && IN_PROPER
 const char *getenv(const char *);
+int envvar_for_each(int (*fn)(struct variable_d *v, void *data), void *data);
 int setenv(const char *, const char *);
 int pr_setenv(const char *, const char *fmt, ...)  __attribute__ ((format(__printf__, 2, 3)));
 void export_env_ull(const char *name, unsigned long long val);
@@ -44,6 +45,12 @@ const char *getenv_nonempty(const char *var);
 static inline char *getenv(const char *var)
 {
 	return NULL;
+}
+
+static inline int envvar_for_each(int (*fn)(struct list_head *l, void *data),
+				  void *data)
+{
+	return 0;
 }
 
 static inline int setenv(const char *var, const char *val)

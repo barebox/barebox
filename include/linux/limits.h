@@ -22,6 +22,8 @@
 #define INTPTR_MAX	LONG_MAX
 #define UINTPTR_MAX	ULONG_MAX
 
+#define RESOURCE_SIZE_MAX	((resource_size_t)~0)
+
 #define U8_MAX		((u8)~0U)
 #define S8_MAX		((s8)(U8_MAX >> 1))
 #define S8_MIN		((s8)(-S8_MAX - 1))

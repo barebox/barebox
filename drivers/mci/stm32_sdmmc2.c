@@ -271,7 +271,7 @@ static dma_addr_t stm32_sdmmc2_start_data(struct stm32_sdmmc2_priv *priv,
 
 	if (data->flags & MMC_DATA_READ) {
 		data_ctrl |= SDMMC_DCTRL_DTDIR;
-		idmabase0 = dma_map_single(priv->dev, (void *)data->src, num_bytes,
+		idmabase0 = dma_map_single(priv->dev, data->dest, num_bytes,
 					   DMA_FROM_DEVICE);
 	} else {
 		idmabase0 = dma_map_single(priv->dev, (void *)data->src, num_bytes,

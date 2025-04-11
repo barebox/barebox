@@ -128,11 +128,9 @@ void class_register(struct class *class);
 	pure_initcall(register_##_name);
 
 int class_add_device(struct class *class, struct device *dev);
-void class_remove_device(struct class *class, struct device *dev);
 
 int class_register_device(struct class *class, struct device *class_dev,
 			  const char *name);
-void class_unregister_device(struct device *class_dev);
 
 extern struct list_head class_list;
 #define class_for_each_device(class, dev) list_for_each_entry((dev), &(class)->devices, class_list)

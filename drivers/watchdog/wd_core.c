@@ -255,7 +255,7 @@ int watchdog_deregister(struct watchdog *wd)
 		poller_async_unregister(&wd->poller);
 	}
 
-	class_remove_device(&watchdog_class, &wd->dev);
+	list_del_init(&wd->dev.class_list);
 
 	return 0;
 }

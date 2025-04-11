@@ -46,7 +46,7 @@ static struct image_handler image_handler_stm32_image_v1_handler = {
 
 static int stm32mp_register_stm32image_image_handler(void)
 {
-	if (!stm32mp_soc())
+	if (!stm32mp_soc_code())
 		return 0;
 
 	return register_image_handler(&image_handler_stm32_image_v1_handler);

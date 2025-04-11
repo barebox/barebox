@@ -9,6 +9,7 @@
 #include <bootsource.h>
 #include <environment.h>
 #include <magicvar.h>
+#include <string.h>
 #include <init.h>
 
 static const char *bootsource_str[BOOTSOURCE_MAX] = {
@@ -32,7 +33,6 @@ static const char *bootsource_str[BOOTSOURCE_MAX] = {
 
 static enum bootsource bootsource = BOOTSOURCE_UNKNOWN;
 static int bootsource_instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-const char *bootsource_alias_name = NULL;
 
 const char *bootsource_to_string(enum bootsource src)
 {
@@ -84,14 +84,6 @@ const char *bootsource_get_alias_name(void)
 	const char *stem;
 	int ret;
 
-	/*
-	 * If alias name was overridden via
-	 * bootsource_set_alias_name() return that value without
-	 * asking any questions.
-	 */
-	if (bootsource_alias_name)
-		return bootsource_alias_name;
-
 	stem = bootsource_get_alias_stem(bootsource);
 	if (!stem)
 		return NULL;
@@ -140,11 +132,6 @@ struct cdev *bootsource_of_cdev_find(void)
 	return cdev;
 }
 
-void bootsource_set_alias_name(const char *name)
-{
-	bootsource_alias_name = name;
-}
-
 void bootsource_set_raw(enum bootsource src, int instance)
 {
 	if (src >= BOOTSOURCE_MAX)
@@ -165,6 +152,33 @@ void bootsource_set_raw_instance(int instance)
 		setenv("bootsource_instance","unknown");
 	else
 		pr_setenv("bootsource_instance", "%d", instance);
+}
+
+int bootsource_of_node_set(struct device_node *np)
+{
+	const char *alias;
+
+	alias = of_alias_get(np);
+	if (!alias)
+		return -EINVAL;
+
+	for (int bootsrc = 0; bootsrc < ARRAY_SIZE(bootsource_str); bootsrc++) {
+		int ret, instance;
+		size_t prefixlen;
+
+		prefixlen = str_has_prefix(alias, bootsource_str[bootsrc]);
+		if (!prefixlen)
+			continue;
+
+		ret = kstrtoint(alias + prefixlen, 10, &instance);
+		if (ret)
+			return ret;
+
+		bootsource_set_raw(bootsrc, instance);
+		return 0;
+	}
+
+	return -ENODEV;
 }
 
 int bootsource_of_alias_xlate(enum bootsource src, int instance)

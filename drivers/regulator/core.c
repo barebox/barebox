@@ -610,6 +610,20 @@ int regulator_disable(struct regulator *r)
 	return regulator_disable_rdev(r->rdev);
 }
 
+int regulator_is_enabled(struct regulator *r)
+{
+	if (!r)
+		return 0;
+
+	if (r->rdev->always_on)
+		return 1;
+
+	if (r->rdev->desc->ops->is_enabled)
+		return r->rdev->desc->ops->is_enabled(r->rdev);
+
+	return r->rdev->enable_count;
+}
+
 int regulator_set_voltage(struct regulator *r, int min_uV, int max_uV)
 {
 	if (!r)

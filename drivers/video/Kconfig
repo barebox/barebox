@@ -70,7 +70,7 @@ config DRIVER_VIDEO_STM32_LTDC
 
 config DRIVER_VIDEO_SDL
 	bool "SDL framebuffer driver"
-	depends on SANDBOX
+	depends on HAVE_LIBSDL2
 	select SDL
 
 config DRIVER_VIDEO_PXA

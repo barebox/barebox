@@ -55,25 +55,33 @@ jobs:
             lgenv: 'test/sandbox/sandbox_defconfig.yaml'
             defconfig: sandbox_defconfig
 
+          - ARCH: sandbox
+            lgenv: 'test/sandbox/allyesconfig.yaml'
+            defconfig: allyesconfig
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Build
       run: |
+        export KBUILD_OUTPUT=build-${{matrix.arch}}-${{matrix.defconfig}}
         export ARCH=${{matrix.arch}}
+        export KCONFIG_ADD="common/boards/configs/enable_self_test.config \
+                            common/boards/configs/disable_target_tools.config"
 
-        ./MAKEALL -O build-${{matrix.arch}} -l "" -v 0 \
-                -k common/boards/configs/enable_self_test.config \
-                -k common/boards/configs/disable_target_tools.config \
-                ${{matrix.defconfig}}
+        if [ ${{matrix.arch}} = sandbox ] && [ ${{matrix.defconfig}} = allyesconfig ]; then
+          KCONFIG_ADD="${KCONFIG_ADD} CONFIG_CONSOLE_DISABLE_INPUT=n CONFIG_MALLOC_LIBC=y"
+        fi
+
+        ./MAKEALL -O ${KBUILD_OUTPUT} -l "" -v 0 ${{matrix.defconfig}}
 
         if [ ${{matrix.arch}} = "riscv" ]; then
-          cp /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin build-${{matrix.arch}}
+          cp /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin ${KBUILD_OUTPUT}/
         fi
     - name: labgrid-pytest
       run: |
-        export KBUILD_OUTPUT=build-${{matrix.arch}}
+        export KBUILD_OUTPUT=build-${{matrix.arch}}-${{matrix.defconfig}}
 
         for i in ${{matrix.lgenv}}; do
           grep -wq '\(QEMUDriver\|ExternalConsoleDriver\):' "$i" || continue

@@ -35,7 +35,7 @@ function run_coverity {
 
     version="$(make bareboxversion)-g${GITHUB_SHA:0:10}"
 
-    make ARCH=sandbox sandbox_defconfig
+    make ARCH=sandbox allyesconfig
     COVERITY_UNSUPPORTED=1 "$tool_dir/bin/cov-build" --dir "$results_dir" sh -c "make -j$(nproc) ARCH=sandbox"
     "$tool_dir/bin/cov-import-scm" --dir "$results_dir" --scm git --log "$results_dir/scm_log.txt"
 

@@ -11,7 +11,7 @@ if SOUND
 
 config SOUND_SDL
 	bool "SDL sound driver for sandbox"
-	depends on SANDBOX && OFDEVICE
+	depends on HAVE_LIBSDL2 && OFDEVICE
 	select SDL
 
 config PWM_BEEPER

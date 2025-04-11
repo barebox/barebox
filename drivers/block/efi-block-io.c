@@ -108,12 +108,12 @@ static void efi_bio_print_info(struct device *dev)
 
 static bool is_bio_usbdev(struct efi_device *efidev)
 {
-	return IS_ENABLED(CONFIG_EFI_BLK_SEPARATE_USBDISK) &&
-		efi_device_has_guid(efidev, EFI_USB_IO_PROTOCOL_GUID);
+	return efi_device_has_guid(efidev, EFI_USB_IO_PROTOCOL_GUID);
 }
 
 static int efi_bio_probe(struct efi_device *efidev)
 {
+	bool is_usbdev;
 	int instance;
 	struct efi_bio_priv *priv;
 	struct efi_block_io_media *media;
@@ -134,7 +134,11 @@ static int efi_bio_probe(struct efi_device *efidev)
 		efi_bio_print_info(dev);
 	priv->dev = &efidev->dev;
 
-	if (is_bio_usbdev(efidev)) {
+	is_usbdev = is_bio_usbdev(efidev);
+	if (is_usbdev)
+		priv->blk.rootwait = true;
+
+	if (IS_ENABLED(CONFIG_EFI_BLK_SEPARATE_USBDISK) && is_usbdev) {
 		instance = cdev_find_free_index("usbdisk");
 		priv->blk.cdev.name = xasprintf("usbdisk%d", instance);
 	} else {

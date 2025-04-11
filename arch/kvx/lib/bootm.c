@@ -60,6 +60,10 @@ static int do_boot_elf(struct image_data *data, struct elf_image *elf)
 	boot_func_entry entry;
 	unsigned long load_addr, initrd_address;
 
+	ret = elf_load(elf);
+	if (ret)
+		return ret;
+
 	/* load initrd after the elf */
 	load_addr = PAGE_ALIGN((unsigned long) elf->high_addr);
 	if (data->initrd_address != UIMAGE_INVALID_ADDRESS)
@@ -103,48 +107,30 @@ err_free_fdt:
 	return ret;
 }
 
-static int do_bootm_fit(struct image_data *data)
+static int do_bootm_elf(struct image_data *data)
 {
-	int ret;
 	struct elf_image *elf;
+	int ret;
 
-	elf = elf_open_binary((void *) data->fit_kernel);
+	if (data->fit_kernel)
+		elf = elf_open_binary((void *) data->fit_kernel);
+	else
+		elf = elf_open(data->os_file);
+
 	if (IS_ERR(elf))
-		return PTR_ERR(data->elf);
-
-	ret = elf_load(elf);
-	if (ret)
-		goto close_elf;
+		return PTR_ERR(elf);
 
 	ret = do_boot_elf(data, elf);
 
-close_elf:
 	elf_close(elf);
 
 	return ret;
-}
-
-static int do_bootm_elf(struct image_data *data)
-{
-	int ret;
-
-	ret = bootm_load_os(data, data->os_address);
-	if (ret)
-		return ret;
-
-	return do_boot_elf(data, data->elf);
 }
 
 static struct image_handler elf_handler = {
 	.name = "ELF",
 	.bootm = do_bootm_elf,
 	.filetype = filetype_elf,
-};
-
-static struct image_handler fit_handler = {
-	.name = "FIT",
-	.bootm = do_bootm_fit,
-	.filetype = filetype_oftree,
 };
 
 static struct binfmt_hook binfmt_elf_hook = {
@@ -155,9 +141,6 @@ static struct binfmt_hook binfmt_elf_hook = {
 static int kvx_register_image_handler(void)
 {
 	register_image_handler(&elf_handler);
-
-	if (IS_ENABLED(CONFIG_FITIMAGE))
-		register_image_handler(&fit_handler);
 
 	binfmt_register(&binfmt_elf_hook);
 

@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <of.h>
 #include <bootsource.h>
 #include <environment.h>
 #include <magicvar.h>
@@ -121,6 +122,22 @@ struct device_node *bootsource_of_node_get(struct device_node *root)
 	np = of_find_node_by_alias(root, alias_name);
 
 	return np;
+}
+
+struct cdev *bootsource_of_cdev_find(void)
+{
+	struct device_node *np;
+	struct cdev *cdev;
+
+	np = bootsource_of_node_get(NULL);
+	if (!np)
+		return NULL;
+
+	cdev = of_cdev_find(np);
+	if (IS_ERR(cdev))
+		return NULL;
+
+	return cdev;
 }
 
 void bootsource_set_alias_name(const char *name)

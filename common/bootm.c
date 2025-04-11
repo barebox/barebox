@@ -6,6 +6,7 @@
 #include <fs.h>
 #include <malloc.h>
 #include <memory.h>
+#include <block.h>
 #include <libfile.h>
 #include <image-fit.h>
 #include <globalvar.h>
@@ -210,9 +211,6 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 
 		return 0;
 	}
-
-	if (IS_ENABLED(CONFIG_ELF) && data->elf)
-		return elf_load(data->elf);
 
 	if (!data->os_file)
 		return -EINVAL;
@@ -562,8 +560,6 @@ int bootm_get_os_size(struct image_data *data)
 	struct stat s;
 	int ret;
 
-	if (data->elf)
-		return elf_get_mem_size(data->elf);
 	if (image_is_uimage(data))
 		return uimage_get_size(data->os, uimage_part_num(data->os_part));
 	if (data->os_fit)
@@ -676,25 +672,6 @@ static int bootm_open_fit(struct image_data *data)
 	return 0;
 }
 
-static int bootm_open_elf(struct image_data *data)
-{
-	struct elf_image *elf;
-
-	if (!IS_ENABLED(CONFIG_ELF))
-		return -ENOSYS;
-
-	elf = elf_open(data->os_file);
-	if (IS_ERR(elf))
-		return PTR_ERR(elf);
-
-	pr_info("Entry Point:  %08llx\n", elf->entry);
-
-	data->os_address = elf->entry;
-	data->elf = elf;
-
-	return 0;
-}
-
 static void bootm_print_info(struct image_data *data)
 {
 	if (data->os_res)
@@ -738,6 +715,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	int ret;
 	enum filetype os_type;
 	size_t size;
+	const char *os_type_str;
 
 	if (!bootm_data->os_file) {
 		pr_err("no image given\n");
@@ -793,15 +771,16 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 	}
 
+	os_type_str = file_type_to_short_string(os_type);
+
 	switch (os_type) {
 	case filetype_oftree:
 		ret = bootm_open_fit(data);
+		os_type = file_detect_type(data->fit_kernel, data->fit_kernel_size);
+		os_type_str = "FIT";
 		break;
 	case filetype_uimage:
 		ret = bootm_open_os_uimage(data);
-		break;
-	case filetype_elf:
-		ret = bootm_open_elf(data);
 		break;
 	default:
 		ret = 0;
@@ -809,13 +788,6 @@ int bootm_boot(struct bootm_data *bootm_data)
 	}
 
 	if (ret) {
-		const char *os_type_str;
-
-		if (os_type == filetype_oftree)
-			os_type_str = "FIT";
-		else
-			os_type_str = file_type_to_short_string(os_type);
-
 		pr_err("Loading %s image failed with: %pe\n", os_type_str, ERR_PTR(ret));
 		goto err_out;
 	}
@@ -965,8 +937,6 @@ err_out:
 			uimage_close(data->initrd);
 		uimage_close(data->os);
 	}
-	if (IS_ENABLED(CONFIG_ELF) && data->elf)
-		elf_close(data->elf);
 	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit)
 		fit_close(data->os_fit);
 	if (data->of_root_node)
@@ -1077,6 +1047,8 @@ static struct image_handler zstd_bootm_handler = {
 	.filetype = filetype_zstd_compressed,
 };
 
+int linux_rootwait_secs = 10;
+
 static int bootm_init(void)
 {
 	globalvar_add_simple("bootm.image", NULL);
@@ -1102,6 +1074,9 @@ static int bootm_init(void)
 	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
 				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));
 
+	if (IS_ENABLED(CONFIG_ROOTWAIT_BOOTARG))
+		globalvar_add_simple_int("linux.rootwait",
+					 &linux_rootwait_secs, "%d");
 
 	if (IS_ENABLED(CONFIG_BZLIB))
 		register_image_handler(&bzip2_bootm_handler);

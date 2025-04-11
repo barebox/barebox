@@ -927,6 +927,10 @@ static int bootchooser_add_entry(struct bootentries *entries, const char *name)
 	return 1;
 }
 
+static struct bootentry_provider bootchooser_entry_provider = {
+	.generate = bootchooser_add_entry,
+};
+
 static const char * const reset_attempts_names[] = {
 	[RESET_ATTEMPTS_POWER_ON] = "power-on",
 	[RESET_ATTEMPTS_ALL_ZERO] = "all-zero",
@@ -953,7 +957,7 @@ static int bootchooser_init(void)
 	globalvar_add_simple_bitmask("bootchooser.reset_priorities", &reset_priorities,
 				  reset_priorities_names, ARRAY_SIZE(reset_priorities_names));
 
-	bootentry_register_provider(bootchooser_add_entry);
+	bootentry_register_provider(&bootchooser_entry_provider);
 
 	return 0;
 }

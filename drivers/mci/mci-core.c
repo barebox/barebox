@@ -260,6 +260,59 @@ static int mci_poll_until_ready(struct mci *mci, int timeout_ms)
 	return 0;
 }
 
+
+/**
+ * Write one or several blocks of data to the card
+ * @param mci_dev MCI instance
+ * @param src Where to read from to write to the card
+ * @param blocknum Block number to write
+ * @param blocks Block count to write
+ * @return Transaction status (0 on success)
+ */
+static int mci_block_write(struct mci *mci, const void *src, int blocknum,
+			   int blocks)
+{
+	struct mci_cmd cmd = {};
+	struct mci_data data;
+	unsigned mmccmd;
+	int ret;
+
+	/*
+	 * Quoting eMMC Spec v5.1 (JEDEC Standard No. 84-B51):
+	 * Due to legacy reasons, a Device may still treat CMD24/25 during
+	 * prg-state (while busy is active) as a legal or illegal command.
+	 * A host should not send CMD24/25 while the Device is in the prg
+	 * state and busy is active.
+	 */
+	ret = mci_poll_until_ready(mci, 1000 /* ms */);
+	if (ret && ret != -ENOSYS)
+		return ret;
+
+	if (blocks > 1)
+		mmccmd = MMC_CMD_WRITE_MULTIPLE_BLOCK;
+	else
+		mmccmd = MMC_CMD_WRITE_SINGLE_BLOCK;
+
+	mci_setup_cmd(&cmd,
+		mmccmd,
+		mci->high_capacity != 0 ? blocknum : blocknum * mci->write_bl_len,
+		MMC_RSP_R1);
+
+	data.src = src;
+	data.blocks = blocks;
+	data.blocksize = mci->write_bl_len;
+	data.flags = MMC_DATA_WRITE;
+
+	ret = mci_send_cmd(mci, &cmd, &data);
+
+	if (ret || blocks > 1) {
+		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0, MMC_RSP_R1b);
+		mci_send_cmd(mci, &cmd, NULL);
+        }
+
+	return ret;
+}
+
 /**
  * Erase one or several blocks of data to the card
  * @param mci_dev MCI instance
@@ -311,66 +364,6 @@ err_out:
 	return -EIO;
 }
 
-static int mci_do_block_op(struct mci *mci, const void *src, void *dst, int blocknum,
-		int blocks)
-{
-	struct mci_cmd cmd = {};
-	struct mci_data data;
-	int ret;
-	unsigned mmccmd_multi_block, mmccmd_single_block, mmccmd;
-	unsigned int flags;
-
-	if (dst) {
-		mmccmd_multi_block = MMC_CMD_READ_MULTIPLE_BLOCK;
-		mmccmd_single_block = MMC_CMD_READ_SINGLE_BLOCK;
-		flags = MMC_DATA_READ;
-	} else {
-		/*
-		 * Quoting eMMC Spec v5.1 (JEDEC Standard No. 84-B51):
-		 * Due to legacy reasons, a Device may still treat CMD24/25 during
-		 * prg-state (while busy is active) as a legal or illegal command.
-		 * A host should not send CMD24/25 while the Device is in the prg
-		 * state and busy is active.
-		 */
-		ret = mci_poll_until_ready(mci, 1000 /* ms */);
-		if (ret && ret != -ENOSYS)
-			return ret;
-
-		mmccmd_multi_block = MMC_CMD_WRITE_MULTIPLE_BLOCK;
-		mmccmd_single_block = MMC_CMD_WRITE_SINGLE_BLOCK;
-		flags = MMC_DATA_WRITE;
-	}
-
-	if (blocks > 1)
-		mmccmd = mmccmd_multi_block;
-	else
-		mmccmd = mmccmd_single_block;
-
-	mci_setup_cmd(&cmd,
-		mmccmd,
-		mci->high_capacity != 0 ? blocknum : blocknum * mci->read_bl_len,
-		MMC_RSP_R1);
-
-	if (dst)
-		data.dest = dst;
-	else
-		data.src = src;
-
-	data.blocks = blocks;
-	data.blocksize = mci->read_bl_len;
-	data.flags = flags;
-
-	ret = mci_send_cmd(mci, &cmd, &data);
-
-	if (ret || blocks > 1) {
-		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0,
-			      IS_SD(mci) ? MMC_RSP_R1b : MMC_RSP_R1);
-		mci_send_cmd(mci, &cmd, NULL);
-	}
-
-	return ret;
-}
-
 /**
  * Read one or several block(s) of data from the card
  * @param mci MCI instance
@@ -379,23 +372,36 @@ static int mci_do_block_op(struct mci *mci, const void *src, void *dst, int bloc
  * @param blocks number of blocks to read
  */
 static int mci_block_read(struct mci *mci, void *dst, int blocknum,
-		int blocks)
+			  int blocks)
 {
-	return mci_do_block_op(mci, NULL, dst, blocknum, blocks);
-}
+	struct mci_cmd cmd = {};
+	struct mci_data data;
+	int ret;
+	unsigned mmccmd;
 
-/**
- * Write one or several blocks of data to the card
- * @param mci_dev MCI instance
- * @param src Where to read from to write to the card
- * @param blocknum Block number to write
- * @param blocks Block count to write
- * @return Transaction status (0 on success)
- */
-static int mci_block_write(struct mci *mci, const void *src, int blocknum,
-	int blocks)
-{
-	return mci_do_block_op(mci, src, NULL, blocknum, blocks);
+	if (blocks > 1)
+		mmccmd = MMC_CMD_READ_MULTIPLE_BLOCK;
+	else
+		mmccmd = MMC_CMD_READ_SINGLE_BLOCK;
+
+	mci_setup_cmd(&cmd,
+		mmccmd,
+		mci->high_capacity != 0 ? blocknum : blocknum * mci->read_bl_len,
+		MMC_RSP_R1);
+
+	data.dest = dst;
+	data.blocks = blocks;
+	data.blocksize = mci->read_bl_len;
+	data.flags = MMC_DATA_READ;
+
+	ret = mci_send_cmd(mci, &cmd, &data);
+
+	if (ret || blocks > 1) {
+		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0,
+			      IS_SD(mci) ? MMC_RSP_R1b : MMC_RSP_R1);
+		mci_send_cmd(mci, &cmd, NULL);
+	}
+	return ret;
 }
 
 /**

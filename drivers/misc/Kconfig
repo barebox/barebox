@@ -60,6 +60,11 @@ config STORAGE_BY_ALIAS
 
 	  Following compatibles are supported:
 
+	  - "barebox,bootsource"
+
+	  Alias the device barebox was booted from. This is useful to have
+	  barebox-state come from the same device as barebox itself.
+
 	  - "barebox,storage-by-uuid"
 
 	  Look for a storage device matching the given DISKUUID and when found

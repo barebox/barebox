@@ -7,6 +7,9 @@
  * - barebox,storage-by-uuid
  *   Useful for referencing existing EFI disks and their partition
  *   from device tree by offset
+ * - barebox,bootsource
+ *   Reference the boot medium indicated by barebox $bootsource
+ *   and $bootsource_instance variable
  */
 #include <common.h>
 #include <init.h>
@@ -179,6 +182,12 @@ static int storage_by_uuid_init(struct sba *sba)
 	return 0;
 }
 
+static int storage_by_bootsource_init(struct sba *sba)
+{
+	sba->alias = xasprintf("bootsource");
+	return 0;
+}
+
 static int sba_probe(struct device *dev)
 {
 	int (*init)(struct sba *);
@@ -209,6 +218,9 @@ static struct of_device_id sba_dt_ids[] = {
 	{
 		.compatible = "barebox,storage-by-uuid",
 		.data = storage_by_uuid_init
+	}, {
+		.compatible = "barebox,bootsource",
+		.data = storage_by_bootsource_init
 	}, {
 		/* sentinel */
 	}

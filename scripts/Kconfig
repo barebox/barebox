@@ -49,13 +49,6 @@ config LAYERSCAPE_PBLIMAGE
 	help
 	  This enables building the PBL image tool for Freescale Layerscape SoCs
 
-config STM32_IMAGE
-	bool "STM32MP image tool" if COMPILE_HOST_TOOLS
-	depends on ARCH_STM32MP || COMPILE_HOST_TOOLS
-	default y if ARCH_STM32MP
-	help
-	  This enables building the image creation tool for STM32MP SoCs
-
 config RK_IMAGE
 	bool "Rockchip image tool" if COMPILE_HOST_TOOLS
 	depends on ARCH_ROCKCHIP_V8 || COMPILE_HOST_TOOLS

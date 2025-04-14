@@ -1,4 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-only
+/*
+ * cdev aliases for existing block devices. In future, this should
+ * likely be replaced by a more generic device mapper support.
+ *
+ * Currently supported targets:
+ * - barebox,storage-by-uuid
+ *   Useful for referencing existing EFI disks and their partition
+ *   from device tree by offset
+ */
 #include <common.h>
 #include <init.h>
 #include <io.h>
@@ -7,200 +16,215 @@
 #include <envfs.h>
 #include <fs.h>
 
-static LIST_HEAD(sbu_list);
+static LIST_HEAD(sba_list);
 
-struct sbu {
-	char *uuid;
+struct sba {
+	char *alias;
 	struct device *dev;
 	struct cdev *rcdev;
 	struct cdev cdev;
 	struct list_head list;
 };
 
-void storage_by_uuid_check_exist(struct cdev *cdev);
-
-static ssize_t sbu_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
+static ssize_t sba_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	return cdev_read(sbu->rcdev, buf, count, offset, flags);
+	return cdev_read(sba->rcdev, buf, count, offset, flags);
 }
 
-static ssize_t sbu_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
+static ssize_t sba_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	return cdev_write(sbu->rcdev, buf, count, offset, flags);
+	return cdev_write(sba->rcdev, buf, count, offset, flags);
 }
 
-static int sbu_ioctl(struct cdev *cdev, unsigned int request, void *buf)
+static int sba_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	return cdev_ioctl(sbu->rcdev, request, buf);
+	return cdev_ioctl(sba->rcdev, request, buf);
 }
 
-static int sbu_open(struct cdev *cdev, unsigned long flags)
+static int sba_open(struct cdev *cdev, unsigned long flags)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	return cdev_open(sbu->rcdev, flags);
+	return cdev_open(sba->rcdev, flags);
 }
 
-static int sbu_close(struct cdev *cdev)
+static int sba_close(struct cdev *cdev)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	cdev_close(sbu->rcdev);
+	cdev_close(sba->rcdev);
 
 	return 0;
 }
 
-static int sbu_flush(struct cdev *cdev)
+static int sba_flush(struct cdev *cdev)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	return cdev_flush(sbu->rcdev);
+	return cdev_flush(sba->rcdev);
 }
 
-static int sbu_erase(struct cdev *cdev, loff_t count, loff_t offset)
+static int sba_erase(struct cdev *cdev, loff_t count, loff_t offset)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	return cdev_erase(sbu->rcdev, count, offset);
+	return cdev_erase(sba->rcdev, count, offset);
 }
 
-static int sbu_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
+static int sba_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	return cdev_protect(sbu->rcdev, count, offset, prot);
+	return cdev_protect(sba->rcdev, count, offset, prot);
 }
 
-static int sbu_discard_range(struct cdev *cdev, loff_t count, loff_t offset)
+static int sba_discard_range(struct cdev *cdev, loff_t count, loff_t offset)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	return cdev_discard_range(sbu->rcdev, count, offset);
+	return cdev_discard_range(sba->rcdev, count, offset);
 }
 
-static int sbu_memmap(struct cdev *cdev, void **map, int flags)
+static int sba_memmap(struct cdev *cdev, void **map, int flags)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	return cdev_memmap(sbu->rcdev, map, flags);
+	return cdev_memmap(sba->rcdev, map, flags);
 }
 
-static int sbu_truncate(struct cdev *cdev, size_t size)
+static int sba_truncate(struct cdev *cdev, size_t size)
 {
-	struct sbu *sbu = cdev->priv;
+	struct sba *sba = cdev->priv;
 
-	return cdev_truncate(sbu->rcdev, size);
+	return cdev_truncate(sba->rcdev, size);
 }
 
-static struct cdev_operations sbu_ops = {
-	.read = sbu_read,
-	.write = sbu_write,
-	.ioctl = sbu_ioctl,
-	.open = sbu_open,
-	.close = sbu_close,
-	.flush = sbu_flush,
-	.erase = sbu_erase,
-	.protect = sbu_protect,
-	.discard_range = sbu_discard_range,
-	.memmap = sbu_memmap,
-	.truncate = sbu_truncate,
+static struct cdev_operations sba_ops = {
+	.read = sba_read,
+	.write = sba_write,
+	.ioctl = sba_ioctl,
+	.open = sba_open,
+	.close = sba_close,
+	.flush = sba_flush,
+	.erase = sba_erase,
+	.protect = sba_protect,
+	.discard_range = sba_discard_range,
+	.memmap = sba_memmap,
+	.truncate = sba_truncate,
 };
 
-static void storage_by_uuid_add_partitions(struct sbu *sbu, struct cdev *rcdev)
+static void sba_add_partitions(struct sba *sba, struct cdev *rcdev)
 {
 	int ret;
 
-	if (sbu->rcdev)
+	if (sba->rcdev)
 		return;
 
-	sbu->rcdev = rcdev;
-	sbu->cdev.name = sbu->uuid;
-	sbu->cdev.size = rcdev->size;
-	sbu->cdev.ops = &sbu_ops;
-	sbu->cdev.dev = sbu->dev;
-	sbu->cdev.priv = sbu;
+	sba->rcdev = rcdev;
+	sba->cdev.name = sba->alias;
+	sba->cdev.size = rcdev->size;
+	sba->cdev.ops = &sba_ops;
+	sba->cdev.dev = sba->dev;
+	sba->cdev.priv = sba;
 
 	if (rcdev->flags & DEVFS_WRITE_AUTOERASE)
-		sbu->cdev.flags |= DEVFS_WRITE_AUTOERASE;
+		sba->cdev.flags |= DEVFS_WRITE_AUTOERASE;
 
-	ret = devfs_create(&sbu->cdev);
+	ret = devfs_create(&sba->cdev);
 	if (ret) {
-		dev_err(sbu->dev, "Failed to create cdev: %s\n", strerror(-ret));
+		dev_err(sba->dev, "Failed to create cdev: %s\n", strerror(-ret));
 		return;
 	}
 
-	of_parse_partitions(&sbu->cdev, sbu->dev->of_node);
+	of_parse_partitions(&sba->cdev, sba->dev->of_node);
 }
 
-static void check_exist(struct sbu *sbu)
+static void check_exist(struct sba *sba)
 {
 	struct cdev *cdev;
 
 	for_each_cdev(cdev) {
 		if (cdev_is_partition(cdev))
 			continue;
-		if (strcmp(cdev->diskuuid, sbu->uuid))
+		if (strcmp(cdev->diskuuid, sba->alias))
 			continue;
 
-		dev_dbg(sbu->dev, "Found %s %s\n", cdev->name, cdev->diskuuid);
-		storage_by_uuid_add_partitions(sbu, cdev);
+		dev_dbg(sba->dev, "Found %s %s\n", cdev->name, cdev->diskuuid);
+		sba_add_partitions(sba, cdev);
 		return;
 	}
 }
 
-static int sbu_detect(struct device *dev)
+static int sba_detect(struct device *dev)
 {
-	struct sbu *sbu = dev->priv;
+	struct sba *sba = dev->priv;
 
 	dev_dbg(dev, "%s\n", __func__);
 
-	check_exist(sbu);
+	check_exist(sba);
 
 	return 0;
 }
 
-static int storage_by_uuid_probe(struct device *dev)
+static int storage_by_uuid_init(struct sba *sba)
 {
-	struct sbu *sbu;
-	int ret;
 	const char *uuid;
+	int ret;
 
-	sbu = xzalloc(sizeof(*sbu));
-
-	ret = of_property_read_string(dev->of_node, "uuid", &uuid);
+	ret = of_property_read_string(sba->dev->of_node, "uuid", &uuid);
 	if (ret)
 		return ret;
 
-	sbu->dev = dev;
-	sbu->uuid = xstrdup(uuid);
-
-	list_add_tail(&sbu->list, &sbu_list);
-
-	check_exist(sbu);
-	dev->priv = sbu;
-	dev->detect = sbu_detect;
+	sba->alias = xstrdup(uuid);
 
 	return 0;
 }
 
-static struct of_device_id storage_by_uuid_dt_ids[] = {
+static int sba_probe(struct device *dev)
+{
+	int (*init)(struct sba *);
+	struct sba *sba;
+	int ret;
+
+	sba = xzalloc(sizeof(*sba));
+	sba->dev = dev;
+
+	init = device_get_match_data(dev);
+	if (!init)
+		return -ENODEV;
+
+	ret = init(sba);
+	if (ret)
+		return ret;
+
+	list_add_tail(&sba->list, &sba_list);
+
+	check_exist(sba);
+	dev->priv = sba;
+	dev->detect = sba_detect;
+
+	return 0;
+}
+
+static struct of_device_id sba_dt_ids[] = {
 	{
 		.compatible = "barebox,storage-by-uuid",
+		.data = storage_by_uuid_init
 	}, {
 		/* sentinel */
 	}
 };
-MODULE_DEVICE_TABLE(of, storage_by_uuid_dt_ids);
+MODULE_DEVICE_TABLE(of, sba_dt_ids);
 
-static struct driver storage_by_uuid_driver = {
-	.name		= "storage-by-uuid",
-	.probe		= storage_by_uuid_probe,
-	.of_compatible	= storage_by_uuid_dt_ids,
+static struct driver sba_driver = {
+	.name		= "storage-by-alias",
+	.probe		= sba_probe,
+	.of_compatible	= sba_dt_ids,
 };
-device_platform_driver(storage_by_uuid_driver);
+device_platform_driver(sba_driver);

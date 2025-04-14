@@ -619,21 +619,8 @@ static inline bool cdev_is_gpt_partitioned(const struct cdev *master)
 	return master && (master->flags & DEVFS_IS_GPT_PARTITIONED);
 }
 
-static inline struct cdev *
-cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, guid_t *typeuuid)
-{
-	struct cdev *partcdev;
-
-	if (!cdev_is_gpt_partitioned(cdev))
-		return ERR_PTR(-EINVAL);
-
-	for_each_cdev_partition(partcdev, cdev) {
-		if (guid_equal(&partcdev->typeuuid, typeuuid))
-			return partcdev;
-	}
-
-	return ERR_PTR(-ENOENT);
-}
+struct cdev *
+cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, guid_t *typeuuid);
 
 #ifdef CONFIG_FS_AUTOMOUNT
 void cdev_create_default_automount(struct cdev *cdev);

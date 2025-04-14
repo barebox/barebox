@@ -126,6 +126,22 @@ struct cdev *cdev_by_diskuuid(const char *diskuuid)
 	return NULL;
 }
 
+struct cdev *
+cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, guid_t *typeuuid)
+{
+	struct cdev *partcdev;
+
+	if (!cdev_is_gpt_partitioned(cdev))
+		return ERR_PTR(-EINVAL);
+
+	for_each_cdev_partition(partcdev, cdev) {
+		if (guid_equal(&partcdev->typeuuid, typeuuid))
+			return partcdev;
+	}
+
+	return ERR_PTR(-ENOENT);
+}
+
 /**
  * device_find_partition - find a partition belonging to a physical device
  *

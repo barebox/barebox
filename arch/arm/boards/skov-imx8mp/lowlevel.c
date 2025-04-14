@@ -16,6 +16,7 @@
 #include <pbl/i2c.h>
 #include <pbl/pmic.h>
 #include <soc/imx8m/ddr.h>
+#include <mach/imx/imx-gpio.h>
 
 extern char __dtb_z_imx8mp_skov_start[];
 
@@ -69,6 +70,12 @@ static struct pmic_config pca9450_cfg[] = {
 static void power_init_board(void)
 {
 	struct pbl_i2c *i2c;
+
+	/* Assert switch reset early to avoid erratic behavior due to
+	 * violating power sequencing
+	 */
+	imx8mp_setup_pad(MX8MP_PAD_SAI3_TXD__GPIO5_IO01);
+	imx8m_gpio_direction_output(IOMEM(MX8MP_GPIO5_BASE_ADDR), 1, 0);
 
 	imx8mp_setup_pad(MX8MP_PAD_I2C1_SCL__I2C1_SCL | I2C_PAD_CTRL);
 	imx8mp_setup_pad(MX8MP_PAD_I2C1_SDA__I2C1_SDA | I2C_PAD_CTRL);

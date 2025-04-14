@@ -51,13 +51,19 @@ config STARFIVE_PWRSEQ
 	  be accessed over /dev/mem or used from kernels which still depend
 	  on bootloader for initialization.
 
-config STORAGE_BY_UUID
-	bool "storage by UUID"
+config STORAGE_BY_ALIAS
+	bool "storage by alias"
 	depends on OFDEVICE
 	help
-	  This adds a driver which matches to a "barebox,storage-by-uuid"
-	  compatible node. The driver looks for a storage device matching the
-	  given UUID and when found registers a new cdev for the device.
+	  This adds a driver which matches device tree nodes corresponding
+	  to a barebox cdev aliases.
+
+	  Following compatibles are supported:
+
+	  - "barebox,storage-by-uuid"
+
+	  Look for a storage device matching the given DISKUUID and when found
+	  registers a new cdev for the device.
 
 	  This driver solved a very specific problem. On EFI the storage devices
 	  are not connected to any device tree node. barebox-state however expects

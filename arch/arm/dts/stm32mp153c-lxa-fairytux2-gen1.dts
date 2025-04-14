@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) 2024 Leonard Goehrs, Pengutronix
+ */
+
+#include <arm/st/stm32mp153c-lxa-fairytux2-gen1.dts>
+#include "stm32mp153c-lxa-fairytux2.dtsi"

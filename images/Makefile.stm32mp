@@ -27,6 +27,7 @@ endef
 $(call build_stm32mp_ssbl_image, CONFIG_ARCH_STM32MP, start_stm32mp_bl33, stm32mp-generic-bl33)
 
 $(call build_stm32mp_ssbl_image, CONFIG_MACH_LXA_TAC, start_stm32mp15xc_lxa_tac, stm32mp15xc-lxa-tac)
+$(call build_stm32mp_ssbl_image, CONFIG_MACH_LXA_FAIRYTUX2, start_stm32mp153c_lxa_fairytux2, stm32mp153c-lxa-fairytux2)
 
 # ------------ SSBL Images for FIP with builtin Device Trees -------------
 # These images all have a device tree builtin. This is useful for boards that

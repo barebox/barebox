@@ -419,15 +419,16 @@ int devfs_create(struct cdev *new)
 			new->device_node = new->dev->of_node;
 	}
 
+	if (new->link)
+		list_add_tail(&new->link_entry, &new->link->links);
+
 	return 0;
 }
 
 int devfs_create_link(struct cdev *cdev, const char *name)
 {
 	struct cdev *new;
-
-	if (cdev_by_name(name))
-		return -EEXIST;
+	int ret;
 
 	/*
 	 * Create a link to the real cdev instead of creating
@@ -437,6 +438,12 @@ int devfs_create_link(struct cdev *cdev, const char *name)
 
 	new = cdev_alloc(name);
 	new->link = cdev;
+
+	ret = devfs_create(new);
+	if (ret) {
+		cdev_free(new);
+		return ret;
+	}
 
 	if (cdev->partname) {
 		size_t partnameoff = 0;
@@ -450,11 +457,6 @@ int devfs_create_link(struct cdev *cdev, const char *name)
 
 		new->partname = xstrdup(name + partnameoff);
 	}
-
-	INIT_LIST_HEAD(&new->links);
-	INIT_LIST_HEAD(&new->partitions);
-	list_add_tail(&new->list, &cdev_list);
-	list_add_tail(&new->link_entry, &cdev->links);
 
 	return 0;
 }

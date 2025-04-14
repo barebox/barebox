@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <range.h>
 #include <fs.h>
+#include <spec/dps.h>
 
 LIST_HEAD(cdev_list);
 
@@ -135,8 +136,14 @@ cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid)
 		return ERR_PTR(-EINVAL);
 
 	for_each_cdev_partition(partcdev, cdev) {
-		if (guid_equal(&partcdev->typeuuid, typeuuid))
-			return partcdev;
+		if (!guid_equal(&partcdev->typeuuid, typeuuid))
+			continue;
+		if (cdev->typeflags & DPS_TYPE_FLAG_NO_AUTO) {
+			dev_dbg(cdev->dev, "auto discovery skipped\n");
+			continue;
+		}
+
+		return partcdev;
 	}
 
 	return ERR_PTR(-ENOENT);

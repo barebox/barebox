@@ -519,7 +519,7 @@ static int blspec_scan_disk(struct bootscanner *scanner,
 		 * should be used as $BOOT
 		 */
 		if (cdev_is_mbr_partitioned(cdev) && partcdev->dos_partition_type == 0xea) {
-			ret = boot_scan_cdev(scanner, bootentries, partcdev);
+			ret = boot_scan_cdev(scanner, bootentries, partcdev, true);
 			if (ret == 0)
 				ret = -ENOENT;
 
@@ -568,7 +568,7 @@ static int blspec_scan_device(struct bootscanner *scanner,
 	 * by the bootblspec spec).
 	 */
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
-		ret = boot_scan_cdev(scanner, bootentries, cdev);
+		ret = boot_scan_cdev(scanner, bootentries, cdev, true);
 		if (ret > 0)
 			found += ret;
 	}

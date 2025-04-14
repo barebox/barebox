@@ -8,6 +8,7 @@
 #include <linux/stat.h>
 #include <linux/err.h>
 #include <mtd/ubi-user.h>
+#include <uapi/spec/dps.h>
 
 #include <bootscan.h>
 
@@ -80,7 +81,8 @@ static int boot_scan_ubi(struct bootscanner *scanner,
  * error occurred.
  */
 int boot_scan_cdev(struct bootscanner *scanner,
-		   struct bootentries *bootentries, struct cdev *cdev)
+		   struct bootentries *bootentries, struct cdev *cdev,
+		   bool autodiscover)
 {
 	int ret, found = 0;
 	void *buf = xzalloc(512);
@@ -88,6 +90,11 @@ int boot_scan_cdev(struct bootscanner *scanner,
 	const char *rootpath;
 
 	pr_debug("%s(%s): %s\n", __func__, scanner->name, cdev->name);
+
+	if (autodiscover && (cdev->typeflags & DPS_TYPE_FLAG_NO_AUTO)) {
+		pr_debug("auto discovery skipped\n");
+		return 0;
+	}
 
 	ret = cdev_read(cdev, buf, 512, 0, 0);
 	if (ret < 0) {
@@ -144,7 +151,7 @@ static int boot_scan_devicename(struct bootscanner *scanner,
 
 	cdev = cdev_by_name(devname);
 	if (cdev) {
-		int ret = boot_scan_cdev(scanner, bootentries, cdev);
+		int ret = boot_scan_cdev(scanner, bootentries, cdev, false);
 		if (ret > 0)
 			return ret;
 	}

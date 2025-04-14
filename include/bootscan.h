@@ -2,6 +2,8 @@
 #ifndef __BOOTSCAN_H
 #define __BOOTSCAN_H
 
+#include <linux/types.h>
+
 struct bootentries;
 struct device;
 struct cdev;
@@ -25,7 +27,8 @@ struct bootscanner {
 };
 
 int boot_scan_cdev(struct bootscanner *scanner,
-		   struct bootentries *bootentries, struct cdev *cdev);
+		   struct bootentries *bootentries, struct cdev *cdev,
+		   bool autodiscover);
 
 int bootentry_scan_generate(struct bootscanner *scanner,
 			    struct bootentries *bootentries,

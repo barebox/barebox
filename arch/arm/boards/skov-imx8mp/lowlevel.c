@@ -48,22 +48,22 @@ static struct pmic_config pca9450_cfg[] = {
 	/* BUCKxOUT_DVS0/1 control BUCK123 output */
 	{ PCA9450_BUCK123_DVS, 0x29 },
 	/*
-	 * increase VDD_SOC to typical value 0.95V before first
+	 * Set VDD_SOC to typical value 0.85V before first
 	 * DRAM access, set DVS1 to 0.85v for suspend.
 	 * Enable DVS control through PMIC_STBY_REQ and
 	 * set B1_ENMODE=1 (ON by PMIC_ON_REQ=H)
 	 */
-	{ PCA9450_BUCK1OUT_DVS0, 0x1C },
+	{ PCA9450_BUCK1OUT_DVS0, 0x14 },
 	{ PCA9450_BUCK1OUT_DVS1, 0x14 },
 	{ PCA9450_BUCK1CTRL, 0x59 },
-	/*
-	 * Increase VDD_ARM to 0.95V to avoid issues in case software after
-	 * Barebox switches to the OD ARM frequency without reprogramming the
-	 * PMIC first.
-	 */
-	{ PCA9450_BUCK2OUT_DVS0, 0x1C },
 	/* set WDOG_B_CFG to cold reset */
 	{ PCA9450_RESET_CTRL, 0xA1 },
+	/*
+	 * As we do cold resets and Linux will take care to reconfigure the
+	 * pmic before switching to the OD ARM frequency, we will just keep
+	 * VDD_ARM at 850mV
+	 */
+	{ PCA9450_BUCK2OUT_DVS0, 0x14 },
 };
 
 static void power_init_board(void)

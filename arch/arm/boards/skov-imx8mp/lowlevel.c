@@ -51,7 +51,7 @@ static void setup_uart(void)
 
 	pbl_set_putc(imx_uart_putc, uart);
 
-	putc_ll('>');
+	putchar('>');
 }
 
 static struct pmic_config pca9450_cfg[] = {

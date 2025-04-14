@@ -3,47 +3,32 @@
 # barebox image generation Makefile for STMicroelectronics MP
 #
 
-# %.stm32 - convert into STM32MP image
-# --------------------------------------
-
-.SECONDEXPANSION:
-$(obj)/%.stm32: $(obj)/$$(FILE_$$(@F)) FORCE
-	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
-	@(cd $(obj) && rm -f $(basename $(notdir $@)).img)
-	$(call if_changed,stm32_image)
-
-define build_stm32mp_image =
+define build_stm32mp_ssbl_image =
 $(eval
 ifeq ($($(strip $(1))), y)
 	pblb-y += $(strip $(2))
-	FILE_barebox-$(strip $(3)).stm32  = $(strip $(2)).pblb
-	OPTS_barebox-$(strip $(3)).stm32 = -a 0xc0100000 -e 0xc0100000 -v1
-	image-y += barebox-$(strip $(3)).stm32
+	FILE_barebox-$(strip $(3)).img  = $(strip $(2)).pblb
+	image-y += barebox-$(strip $(3)).img
 endif
 )
 endef
 
 # --------------------------------------
+# On STM32MP15 and STM32MP13 platforms, barebox can only be built
+# as second stage bootloader (SSBL) to be started by TF-A acting as FSBL.
+# The TF-A binary expects a FIP that can be created by fiptool.
+# barebox needs to be paced as --nt-fw (BL33) into the FIP image
 
-# For use as --nt-fw (BL33) in FIP images
-pblb-$(CONFIG_ARCH_STM32MP) += start_stm32mp_bl33
-FILE_barebox-stm32mp-generic-bl33.img  = start_stm32mp_bl33.pblb
-image-$(CONFIG_ARCH_STM32MP) += barebox-stm32mp-generic-bl33.img
+# ----------------------- Generic FIP SSBL Image -------------------------
+# This is the generic image, which contains no device tree.
+# The board device tree needs to be added separately as --hw-config
+# This should be used by default for new board support.
 
-$(call build_stm32mp_image, CONFIG_MACH_STM32MP15XX_DKX, start_stm32mp15xx_dkx, stm32mp15xx-dkx)
-$(call build_stm32mp_image, CONFIG_MACH_STM32MP15X_EV1, start_stm32mp15x_ev1, stm32mp15x-ev1)
+$(call build_stm32mp_ssbl_image, CONFIG_ARCH_STM32MP, start_stm32mp_bl33, stm32mp-generic-bl33)
 
-$(call build_stm32mp_image, CONFIG_MACH_LXA_MC1, start_stm32mp157c_lxa_mc1, stm32mp157c-lxa-mc1)
+# ------------ SSBL Images for FIP with builtin Device Trees -------------
+# These images all have a device tree builtin. This is useful for boards that
+# support multiple hardware variants and need to ship multiple device trees.
+# These boards ignore the hardware config in the FIP.
 
-$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP1, start_prtt1a, prtt1a)
-$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP1, start_prtt1s, prtt1s)
-$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP1, start_prtt1c, prtt1c)
-$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP1, start_mecio1, mecio1)
-$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP1, start_mect1s, mect1s)
-$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP1, start_stm32mp151c_plyaqm, stm32mp151c-plyaqm)
-$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP13, start_stm32mp133c_prihmb, stm32mp133c-prihmb)
-$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP13, start_stm32mp133c_mect1s, stm32mp133c-mect1s)
-
-$(call build_stm32mp_image, CONFIG_MACH_SEEED_ODYSSEY, start_stm32mp157c_seeed_odyssey, stm32mp157c-seeed-odyssey)
-
-$(call build_stm32mp_image, CONFIG_MACH_PHYTEC_PHYCORE_STM32MP1, start_phycore_stm32mp1_3, phycore-stm32mp1)
+$(call build_stm32mp_ssbl_image, CONFIG_MACH_STM32MP15XX_DKX, start_stm32mp15xx_dkx, stm32mp15xx-dkx)

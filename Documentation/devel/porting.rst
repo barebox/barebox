@@ -335,14 +335,8 @@ Example::
 
   --- a/images/Makefile.stm32mp
   +++ b/images/Makefile.stm32mp
-   $(obj)/%.stm32: $(obj)/% FORCE
-   $(call if_changed,stm32_image)
-
-   STM32MP1_OPTS = -a 0xc0100000 -e 0xc0100000 -v1
-
   +pblb-$(CONFIG_MACH_SEEED_ODYSSEY) += start_stm32mp157c_seeed_odyssey
-  +FILE_barebox-stm32mp157c-seeed-odyssey.img = start_stm32mp157c_seeed_odyssey.pblb.stm32
-  +OPTS_start_stm32mp157c_seeed_odyssey.pblb.stm32 = $(STM32MP1_OPTS)
+  +FILE_barebox-stm32mp157c-seeed-odyssey.img = start_stm32mp157c_seeed_odyssey.pblb
   +image-$(CONFIG_MACH_SEEED_ODYSSEY) += barebox-stm32mp157c-seeed-odyssey.img
 
 ********************

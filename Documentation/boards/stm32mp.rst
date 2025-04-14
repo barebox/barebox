@@ -10,12 +10,19 @@ The first stage boot loader (FSBL) is loaded by the ROM code into the built-in
 SYSRAM and executed. The FSBL sets up the SDRAM, install a secure monitor and
 then the second stage boot loader (SSBL) is loaded into DRAM.
 
-When building barebox, the resulting ``barebox-${board}.stm32`` file has the STM32
-header preprended, so it can be loaded directly as SSBL by the ARM TF-A
-(https://github.com/ARM-software/arm-trusted-firmware). Each entry point has a
-header-less image ending in ``*.pblb`` as well. Additionally, there is
-a ``barebox-stm32mp-generic.img``, which is a header-less image for
-use as part of a Firmware Image Package (FIP).
+When barebox is built, a ``barebox-stm32mp-generic.img`` is generated, which is
+a header-less image for use as part of a Firmware Image Package (FIP).
+This image can be used together with the device tree of any enabled board.
+This is very similar to ``barebox-dt-2nd.img`` with the difference that
+it can cope with being placed at the start of DRAM and reads the size
+of the DRAM out of the DRAM controller.
+
+Depending on enabled options, the build may also generate a number of
+``barebox-${board}.img`` images. These images ship multiple device trees,
+which is not feasible when using ``barebox-stm32mp-generic.img`` with
+a single device tree. It's up to the integrator which image they want
+to use depending on whether supporting multiple boards with the same
+FIP is desired or not.
 
 barebox images are meant to be loaded by the ARM TF-A
 (https://github.com/ARM-software/arm-trusted-firmware). FIP images are
@@ -35,19 +42,11 @@ There's a single ``stm32mp_defconfig`` for all STM32MP boards::
 The resulting images will be placed under ``images/``::
 
   barebox-stm32mp-generic-bl33.img
-  barebox-stm32mp13xx-dk.stm32
-  barebox-stm32mp15xx-dkx.stm32
-  barebox-stm32mp15x-ev1.stm32
-  barebox-stm32mp157c-lxa-mc1.stm32
-  barebox-prtt1a.stm32
-  barebox-prtt1s.stm32
-  barebox-prtt1c.stm32
-  barebox-stm32mp157c-seeed-odyssey.stm32
+  barebox-stm32mp15xx-dkx.img
   barebox-dt-2nd.img
 
-In the above output, images with a ``.stm32`` extension feature the (legacy)
-stm32image header. ``barebox-dt-2nd.img`` and ``barebox-stm32mp-generic-bl33.img``
-are board-generic barebox images that receive an external device tree.
+The ``barebox-stm32mp-generic-bl33.img`` image can be booted on all
+enabled boards, when provided an external device tree via a FIP image.
 
 .. _stm32mp_fip:
 
@@ -81,58 +80,17 @@ barebox can also be patched into an existing FIP image with ``fiptool``:
       --nt-fw $BAREBOX_BUILDDIR/images/barebox-stm32mp-generic-bl33.img \
       --hw-config $BAREBOX_BUILDDIR/arch/arm/dts/stm32mp135f-dk.dtb
 
-Flashing barebox (legacy stm32image)
-------------------------------------
+eMMC fast BOOT_ACK
+------------------
 
-After building ARM Trusted Firmware with ``STM32MP_USE_STM32IMAGE=1``,
-an appropriate image for a SD-Card can be generated with following
-``genimage(1)`` config::
-
-  image @STM32MP_BOARD@.img {
-      hdimage {
-          align = 1M
-          gpt = "true"
-      }
-      partition fsbl1 {
-          image = "tf-a-@STM32MP_BOARD@.stm32"
-          size = 256K
-      }
-      partition fsbl2 {
-          image = "tf-a-@STM32MP_BOARD@.stm32"
-          size = 256K
-      }
-      partition ssbl {
-          image = "barebox-@STM32MP_BOARD@.stm32"
-          size = 1M
-      }
-      partition barebox-environment {
-          image = "/dev/null"
-          size = 1M
-      }
-  }
-
-For eMMC, the boot partitions are used as the FSBL partitions and so the user
-partitions may look like this::
-
-  image @STM32MP_BOARD@.img {
-      partition ssbl {
-          image = "barebox-@STM32MP_BOARD@.stm32"
-          size = 1M
-      }
-      partition barebox-environment {
-          image = "/dev/null"
-          size = 1M
-      }
-  }
-
-The fsbl1 and fsbl2 can be flashed by writing to barebox ``/dev/mmcX.boot0`` and
-``/dev/mmcX.boot1`` respectively or from a booted operating system.
-
-Additionally, the eMMC's ``ext_csd`` register must be modified to activate the
+The eMMC's ``ext_csd`` register must be modified to activate the
 boot acknowledge signal (``BOOT_ACK``) and to select a boot partition.
 
-Assuming ``CONFIG_CMD_MMC_EXTCSD`` is enabled and the board shall boot from
-``/dev/mmc1.boot1``::
+This is done automatically when barebox is flashed to a board via
+the barebox update handler.
+
+To do it manually, enable ``CONFIG_CMD_MMC_EXTCSD`` and assuming the
+board should boot from ``/dev/mmc1.boot1``, run::
 
   mmc_extcsd /dev/mmc1 -i 179 -v 0x50
 

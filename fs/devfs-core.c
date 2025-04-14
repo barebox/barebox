@@ -189,13 +189,11 @@ struct cdev *device_find_partition(struct device *dev, const char *name)
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
 		struct cdev *cdevl;
 
-		if (!cdev->partname)
-			continue;
-		if (!strcmp(cdev->partname, name))
+		if (streq_ptr(cdev->partname, name))
 			return cdev;
 
 		list_for_each_entry(cdevl, &cdev->links, link_entry) {
-			if (!strcmp(cdevl->partname, name))
+			if (streq_ptr(cdevl->partname, name))
 				return cdev_readlink(cdevl);
 		}
 	}

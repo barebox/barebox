@@ -512,6 +512,7 @@ static int blspec_scan_disk(struct bootscanner *scanner,
 {
 	struct cdev *partcdev;
 	int ret, err = 0, found = 0;
+	bool have_esp = false;
 
 	for_each_cdev_partition(partcdev, cdev) {
 		struct cdev *match = NULL;
@@ -525,9 +526,13 @@ static int blspec_scan_disk(struct bootscanner *scanner,
 		 * - GPT disk label, and a partition with the GPT type GUID of
 		 *   bc13c2ff-59e6-4262-a352-b275fd6f7172 already exists
 		 *
+		 * - an EFI System Partition and none of the above
+		 *
 		 * it should be used as $BOOT
 		 */
-		if (cdev_is_mbr_partitioned(cdev)) {
+		if (partcdev->flags & DEVFS_PARTITION_BOOTABLE_ESP)
+			have_esp = true;
+		else if (cdev_is_mbr_partitioned(cdev)) {
 			if (partcdev->dos_partition_type == 0xea)
 				match = partcdev;
 		} else if (cdev_is_gpt_partitioned(cdev)) {
@@ -545,6 +550,25 @@ static int blspec_scan_disk(struct bootscanner *scanner,
 			err = ret ?: -ENOENT;
 	}
 
+	if (!have_esp)
+		goto out;
+
+	for_each_cdev_partition(partcdev, cdev) {
+		if (!(partcdev->flags & DEVFS_PARTITION_BOOTABLE_ESP))
+			continue;
+
+		/*
+		 * ESP is only a fallback. If we have an ESP, but no bootloader spec
+		 * files inside, this is not an error.
+		 */
+		ret = boot_scan_cdev(scanner, bootentries, partcdev, true);
+		if (ret >= 0)
+			found += ret;
+		else
+			err = ret;
+	}
+
+out:
 	return found ?: err;
 }
 

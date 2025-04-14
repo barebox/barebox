@@ -133,6 +133,7 @@ static int sba_add_partitions(struct cdev *rcdev, void *data)
 		return 0;
 
 	sba->rcdev = rcdev;
+	sba->cdev.link = rcdev;
 	sba->cdev.name = sba->alias;
 	sba->cdev.size = rcdev->size;
 	sba->cdev.ops = &sba_ops;

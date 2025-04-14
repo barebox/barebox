@@ -517,7 +517,7 @@ int cdev_find_free_index(const char *);
 struct cdev *cdev_find_partition(struct cdev *cdevm, const char *name);
 struct cdev *device_find_partition(struct device *dev, const char *name);
 struct cdev *lcdev_by_name(const char *filename);
-struct cdev *cdev_readlink(struct cdev *cdev);
+struct cdev *cdev_readlink(const struct cdev *cdev);
 struct cdev *cdev_by_device_node(struct device_node *node);
 struct cdev *cdev_by_partuuid(const char *partuuid);
 struct cdev *cdev_by_diskuuid(const char *partuuid);

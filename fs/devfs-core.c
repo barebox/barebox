@@ -50,7 +50,7 @@ int devfs_partition_complete(struct string_list *sl, char *instr)
 }
 #endif
 
-struct cdev *cdev_readlink(struct cdev *cdev)
+struct cdev *cdev_readlink(const struct cdev *cdev)
 {
 	if (!cdev)
 		return NULL;
@@ -61,7 +61,7 @@ struct cdev *cdev_readlink(struct cdev *cdev)
 	/* links to links are not allowed */
 	BUG_ON(cdev->link);
 
-	return cdev;
+	return (void *)cdev;
 }
 
 struct cdev *lcdev_by_name(const char *filename)

@@ -21,6 +21,7 @@
 #include <malloc.h>
 #include <ioctl.h>
 #include <nand.h>
+#include <string.h>
 #include <linux/err.h>
 #include <linux/fs.h>
 #include <linux/mtd/mtd.h>
@@ -147,6 +148,31 @@ cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid)
 	}
 
 	return ERR_PTR(-ENOENT);
+}
+
+/**
+ * cdev_find_partition - find a partition belonging to a physical device
+ *
+ * @cdev: the cdev which should be searched for partitions
+ * @name: the partition name
+ */
+struct cdev *cdev_find_partition(struct cdev *cdevm, const char *name)
+{
+	struct cdev *partcdev;
+
+	for_each_cdev_partition(partcdev, cdevm) {
+		struct cdev *cdevl;
+
+		if (streq_ptr(partcdev->partname, name))
+			return partcdev;
+
+		list_for_each_entry(cdevl, &partcdev->links, link_entry) {
+			if (streq_ptr(cdevl->partname, name))
+				return cdevl;
+		}
+	}
+
+	return NULL;
 }
 
 /**

@@ -17,22 +17,6 @@ struct cdev_alias {
 		       cdev_alias_processor_t fn, void *data);
 };
 
-static struct cdev *resolve_partition(struct cdev *cdev,
-				      const char *partname)
-{
-	struct cdev *partcdev;
-
-	if (!partname)
-		return cdev;
-
-	for_each_cdev_partition(partcdev, cdev) {
-		if (streq_ptr(partcdev->partname, partname))
-			return partcdev;
-	}
-
-	return ERR_PTR(-ENODEV);
-}
-
 static int cdev_alias_resolve_bootsource(struct cdev_alias *cdev_alias,
 					 const char *partname,
 					 cdev_alias_processor_t fn,
@@ -44,9 +28,11 @@ static int cdev_alias_resolve_bootsource(struct cdev_alias *cdev_alias,
 	if (!cdev)
 		return -ENODEV;
 
-	cdev = resolve_partition(cdev, partname);
-	if (IS_ERR(cdev))
-		return PTR_ERR(cdev);
+	if (partname) {
+		cdev = cdev_find_partition(cdev, partname);
+		if (!cdev)
+			return -ENODEV;
+	}
 
 	return fn(cdev, data);
 }

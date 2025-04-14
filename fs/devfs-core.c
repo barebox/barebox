@@ -133,6 +133,9 @@ cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid)
 {
 	struct cdev *partcdev;
 
+        /* Follow links to support storage-by-alias */
+        cdev = cdev_readlink(cdev);
+
 	if (!cdev_is_gpt_partitioned(cdev))
 		return ERR_PTR(-EINVAL);
 

@@ -134,6 +134,12 @@ int class_register_device(struct class *class, struct device *class_dev,
 
 extern struct list_head class_list;
 #define class_for_each_device(class, dev) list_for_each_entry((dev), &(class)->devices, class_list)
+#define class_first_device(class) \
+	list_first_entry_or_null(&(class)->devices, struct device, class_list)
+
+#define class_for_each_container_of_device(class, obj, member) \
+	list_for_each_entry((obj), &(class)->devices, member.class_list)
+
 #define class_for_each(class) list_for_each_entry((class), &class_list, list)
 
 struct device_alias {

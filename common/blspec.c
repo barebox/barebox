@@ -16,6 +16,7 @@
 #include <linux/stat.h>
 #include <linux/list.h>
 #include <linux/err.h>
+#include <uapi/spec/dps.h>
 #include <boot.h>
 
 #include <bootscan.h>
@@ -516,22 +517,22 @@ static int blspec_scan_disk(struct bootscanner *scanner,
 		struct cdev *match = NULL;
 
 		/*
-		 * If the OS is installed on a disk with MBR disk label, and a
-		 * partition with the MBR type id of 0xEA already exists it
-		 * should be used as $BOOT
+		 * If the OS is installed on a disk with:
+		 *
+		 * - MBR disk label, and a partition with the MBR type id of 0xEA
+		 *   already exists
+		 *
+		 * - GPT disk label, and a partition with the GPT type GUID of
+		 *   bc13c2ff-59e6-4262-a352-b275fd6f7172 already exists
+		 *
+		 * it should be used as $BOOT
 		 */
 		if (cdev_is_mbr_partitioned(cdev)) {
 			if (partcdev->dos_partition_type == 0xea)
 				match = partcdev;
-		} else {
-			/*
-			 * If the OS is installed on a disk with GPT disk label, and a
-			 * partition with the GPT type GUID of
-			 * bc13c2ff-59e6-4262-a352-b275fd6f7172 already exists, it
-			 * should be used as $BOOT.
-			 *
-			 * Not yet implemented
-			 */
+		} else if (cdev_is_gpt_partitioned(cdev)) {
+			if (guid_equal(&partcdev->typeuuid, &SD_GPT_XBOOTLDR))
+				match = partcdev;
 		}
 
 		if (!match)

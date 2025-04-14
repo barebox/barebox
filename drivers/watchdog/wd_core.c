@@ -11,7 +11,8 @@
 #include <watchdog.h>
 #include <restart.h>
 
-#define for_each_watchdog(wd) list_for_each_entry(wd, &watchdog_class.devices, dev.class_list)
+#define for_each_watchdog(wd) \
+	class_for_each_container_of_device(&watchdog_class, wd, dev)
 
 DEFINE_DEV_CLASS(watchdog_class, "watchdog");
 

@@ -597,7 +597,8 @@ void ifdown_edev(struct eth_device *edev);
 int ifdown(const char *name);
 void ifdown_all(void);
 
-#define for_each_netdev(netdev) list_for_each_entry(netdev, &eth_class.devices, dev.class_list)
+#define for_each_netdev(netdev) \
+	class_for_each_container_of_device(&eth_class, netdev, dev)
 
 extern struct class eth_class;
 

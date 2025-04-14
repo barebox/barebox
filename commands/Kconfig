@@ -92,7 +92,7 @@ config CMD_DEVLOOKUP
 	help
 	  Look up device behind device file and its parameters
 
-	  devlookup [-v VAR] /dev/DEVICE [parameter]
+	  devlookup [-v VAR] [-ka] /dev/DEVICE [parameter]
 
 	  Detects the device behind a device file and outputs it,
 	  unless a second argument is given. In that case the device

@@ -620,7 +620,7 @@ static inline bool cdev_is_gpt_partitioned(const struct cdev *master)
 }
 
 struct cdev *
-cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, guid_t *typeuuid);
+cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid);
 
 #ifdef CONFIG_FS_AUTOMOUNT
 void cdev_create_default_automount(struct cdev *cdev);

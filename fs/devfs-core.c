@@ -127,7 +127,7 @@ struct cdev *cdev_by_diskuuid(const char *diskuuid)
 }
 
 struct cdev *
-cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, guid_t *typeuuid)
+cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid)
 {
 	struct cdev *partcdev;
 

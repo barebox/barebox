@@ -119,12 +119,15 @@ static struct cdev_operations sba_ops = {
 	.truncate = sba_truncate,
 };
 
-static void sba_add_partitions(struct sba *sba, struct cdev *rcdev)
+static int sba_add_partitions(struct cdev *rcdev, void *data)
 {
+	struct sba *sba = data;
 	int ret;
 
+	dev_dbg(sba->dev, "Adding %s -> %s\n", sba->alias, rcdev->name);
+
 	if (sba->rcdev)
-		return;
+		return 0;
 
 	sba->rcdev = rcdev;
 	sba->cdev.name = sba->alias;
@@ -139,26 +142,16 @@ static void sba_add_partitions(struct sba *sba, struct cdev *rcdev)
 	ret = devfs_create(&sba->cdev);
 	if (ret) {
 		dev_err(sba->dev, "Failed to create cdev: %s\n", strerror(-ret));
-		return;
+		return 0;
 	}
 
 	of_parse_partitions(&sba->cdev, sba->dev->of_node);
+	return 0;
 }
 
 static void check_exist(struct sba *sba)
 {
-	struct cdev *cdev;
-
-	for_each_cdev(cdev) {
-		if (cdev_is_partition(cdev))
-			continue;
-		if (strcmp(cdev->diskuuid, sba->alias))
-			continue;
-
-		dev_dbg(sba->dev, "Found %s %s\n", cdev->name, cdev->diskuuid);
-		sba_add_partitions(sba, cdev);
-		return;
-	}
+	cdev_alias_resolve_for_each(sba->alias, sba_add_partitions, sba);
 }
 
 static int sba_detect(struct device *dev)
@@ -181,7 +174,7 @@ static int storage_by_uuid_init(struct sba *sba)
 	if (ret)
 		return ret;
 
-	sba->alias = xstrdup(uuid);
+	sba->alias = xasprintf("diskuuid.%s", uuid);
 
 	return 0;
 }

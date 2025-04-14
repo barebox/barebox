@@ -37,8 +37,39 @@ static int cdev_alias_resolve_bootsource(struct cdev_alias *cdev_alias,
 	return fn(cdev, data);
 }
 
+static int cdev_alias_resolve_diskuuid(struct cdev_alias *cdev_alias,
+				       const char *uuid,
+				       cdev_alias_processor_t fn,
+				       void *data)
+{
+	struct cdev *cdev;
+	char *arg;
+
+	arg = xstrdup(uuid);
+	uuid = strsep(&arg, ".");
+	if (!uuid || !*uuid)
+		return -EINVAL;
+
+	for_each_cdev(cdev) {
+		if (cdev_is_partition(cdev))
+			continue;
+
+		if (strcasecmp(cdev->diskuuid, uuid))
+			continue;
+
+		cdev = cdev_find_partition(cdev, arg);
+		if (!cdev)
+			return -ENODEV;
+
+		return fn(cdev, data);
+	}
+
+	return 0;
+}
+
 static struct cdev_alias cdev_alias_aliases[] = {
 	{ "bootsource", cdev_alias_resolve_bootsource },
+	{ "diskuuid", cdev_alias_resolve_diskuuid },
 	{ /* sentinel */}
 };
 

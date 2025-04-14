@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Multiplexer devices
+#
+
+config MULTIPLEXER
+	tristate
+	prompt "Multiplexer driver support" if COMPILE_TEST
+
+menu "Multiplexer drivers"
+	depends on MULTIPLEXER
+
+endmenu

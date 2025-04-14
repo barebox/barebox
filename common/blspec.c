@@ -510,33 +510,41 @@ static int blspec_scan_disk(struct bootscanner *scanner,
 			    struct bootentries *bootentries, struct cdev *cdev)
 {
 	struct cdev *partcdev;
-	int ret;
+	int ret, err = 0, found = 0;
 
 	for_each_cdev_partition(partcdev, cdev) {
+		struct cdev *match = NULL;
+
 		/*
 		 * If the OS is installed on a disk with MBR disk label, and a
 		 * partition with the MBR type id of 0xEA already exists it
 		 * should be used as $BOOT
 		 */
-		if (cdev_is_mbr_partitioned(cdev) && partcdev->dos_partition_type == 0xea) {
-			ret = boot_scan_cdev(scanner, bootentries, partcdev, true);
-			if (ret == 0)
-				ret = -ENOENT;
-
-			return ret;
+		if (cdev_is_mbr_partitioned(cdev)) {
+			if (partcdev->dos_partition_type == 0xea)
+				match = partcdev;
+		} else {
+			/*
+			 * If the OS is installed on a disk with GPT disk label, and a
+			 * partition with the GPT type GUID of
+			 * bc13c2ff-59e6-4262-a352-b275fd6f7172 already exists, it
+			 * should be used as $BOOT.
+			 *
+			 * Not yet implemented
+			 */
 		}
 
-		/*
-		 * If the OS is installed on a disk with GPT disk label, and a
-		 * partition with the GPT type GUID of
-		 * bc13c2ff-59e6-4262-a352-b275fd6f7172 already exists, it
-		 * should be used as $BOOT.
-		 *
-		 * Not yet implemented
-		 */
+		if (!match)
+			continue;
+
+		ret = boot_scan_cdev(scanner, bootentries, partcdev, true);
+		if (ret > 0)
+			found += ret;
+		else
+			err = ret ?: -ENOENT;
 	}
 
-	return 0;
+	return found ?: err;
 }
 
 /*

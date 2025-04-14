@@ -873,8 +873,7 @@ config CMD_SAVEENV
 
 	  ENVFS is usually a block in flash but can be any other file. If
 	  omitted, DIRECTORY defaults to /env and ENVFS defaults to
-	  /dev/env0. Note that envfs can only handle files, directories are being
-	  skipped silently.
+	  /dev/env0.
 
 config CMD_SETENV
 	tristate

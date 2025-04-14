@@ -20,6 +20,9 @@
 
 extern char __dtb_z_imx8mp_skov_start[];
 
+#define PGOOD_PAD_CTRL  MUX_PAD_CTRL(MX8MP_PAD_CTL_PUE | \
+				     MX8MP_PAD_CTL_PE)
+
 #define UART_PAD_CTRL   MUX_PAD_CTRL(MX8MP_PAD_CTL_DSE6 | \
 				     MX8MP_PAD_CTL_FSEL | \
 				     MX8MP_PAD_CTL_PUE | \
@@ -29,6 +32,12 @@ extern char __dtb_z_imx8mp_skov_start[];
 				     MX8MP_PAD_CTL_HYS | \
 				     MX8MP_PAD_CTL_PUE | \
 				     MX8MP_PAD_CTL_PE)
+
+static inline void led_d1_toggle(bool *on)
+{
+	imx8m_gpio_direction_output(IOMEM(MX8MP_GPIO1_BASE_ADDR), 5, *on);
+	*on = !*on;
+}
 
 static void setup_uart(void)
 {
@@ -67,6 +76,55 @@ static struct pmic_config pca9450_cfg[] = {
 	{ PCA9450_BUCK2OUT_DVS0, 0x14 },
 };
 
+static inline bool power_good(void)
+{
+	/* IMX_SHDN_MF in schematics */
+	return imx8m_gpio_val(IOMEM(MX8MP_GPIO4_BASE_ADDR), 23);
+}
+
+static void wait_for_power_good(void)
+{
+	void __iomem *gpio4 = IOMEM(MX8MP_GPIO4_BASE_ADDR);
+	int timeout_ms = 0;
+	bool led_active = true;
+
+	imx8mp_setup_pad(MX8MP_PAD_SAI2_RXD0__GPIO4_IO23 | PGOOD_PAD_CTRL);
+	imx8m_gpio_direction_input(gpio4, 23);
+
+	led_d1_toggle(&led_active);
+
+	if (power_good())
+		return;
+
+	pr_warn("\nDelaying boot until power stabilizes\n");
+
+	/* If we reach this, because Linux did a hw_protection_reboot, we don't
+	 * want to continue booting right away.
+	 *
+	 * Thus let's either wait for the condition to subscede or for voltage
+	 * to reach a low enough level for the PMIC to detect VSYS_UVLO going
+	 * lower than allowed
+	 */
+
+	while (1) {
+		if (power_good()) {
+			/* wait 10ms longer and check if it still good */
+			udelay(10000);
+			if (power_good()) {
+				pr_info("IMX_SHDN_MF stuck low for ~%ums.\n", timeout_ms);
+				break;
+			}
+		}
+		/* fast blink LED D1 */
+		if (timeout_ms % 100 == 0) {
+			pr_debug(".");
+			led_d1_toggle(&led_active);
+		}
+		udelay(1000);
+		timeout_ms++;
+	}
+}
+
 static void power_init_board(void)
 {
 	struct pbl_i2c *i2c;
@@ -76,6 +134,8 @@ static void power_init_board(void)
 	 */
 	imx8mp_setup_pad(MX8MP_PAD_SAI3_TXD__GPIO5_IO01);
 	imx8m_gpio_direction_output(IOMEM(MX8MP_GPIO5_BASE_ADDR), 1, 0);
+
+	wait_for_power_good();
 
 	imx8mp_setup_pad(MX8MP_PAD_I2C1_SCL__I2C1_SCL | I2C_PAD_CTRL);
 	imx8mp_setup_pad(MX8MP_PAD_I2C1_SDA__I2C1_SDA | I2C_PAD_CTRL);

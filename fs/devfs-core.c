@@ -394,6 +394,13 @@ static struct cdev *cdev_alloc(const char *name)
 	return new;
 }
 
+static void cdev_free(struct cdev *cdev)
+{
+	free(cdev->name);
+	free(cdev->partname);
+	free(cdev);
+}
+
 int devfs_create(struct cdev *new)
 {
 	struct cdev *cdev;
@@ -473,11 +480,8 @@ int devfs_remove(struct cdev *cdev)
 	if (cdev_is_partition(cdev))
 		list_del(&cdev->partition_entry);
 
-	if (cdev->link) {
-		free(cdev->name);
-		free(cdev->partname);
-		free(cdev);
-	}
+	if (cdev->link)
+		cdev_free(cdev);
 
 	return 0;
 }
@@ -666,9 +670,7 @@ int cdevfs_del_partition(struct cdev *cdev)
 	if (ret)
 		return ret;
 
-	free(cdev->name);
-	free(cdev->partname);
-	free(cdev);
+	cdev_free(cdev);
 
 	return 0;
 }
@@ -794,8 +796,7 @@ void cdev_remove_loop(struct cdev *cdev)
 	devfs_remove(cdev);
 	close(priv->fd);
 	free(priv);
-	free(cdev->name);
-	free(cdev);
+	cdev_free(cdev);
 }
 
 ssize_t mem_copy(struct device *dev, void *dst, const void *src,

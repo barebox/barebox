@@ -10,4 +10,20 @@ config MULTIPLEXER
 menu "Multiplexer drivers"
 	depends on MULTIPLEXER
 
+config MUX_GPIO
+	tristate "GPIO-controlled Multiplexer"
+	depends on GPIOLIB || COMPILE_TEST
+	help
+	  GPIO-controlled Multiplexer controller.
+
+	  The driver builds a single multiplexer controller using a number
+	  of gpio pins. For N pins, there will be 2^N possible multiplexer
+	  states. The GPIO pins can be connected (by the hardware) to several
+	  multiplexers.
+
+	  The barebox driver doesn't implement Linux' fastpath, which enables
+	  atomically switching GPIOs in the same bank where possible.
+	  This means that board code authors need to ensure that intermediate
+	  states when switching some of the GPIOs don't break anything.
+
 endmenu

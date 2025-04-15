@@ -62,11 +62,11 @@ archprepare: maketools
 PHONY += maketools
 
 ifeq ($(CONFIG_SDL),y)
-SDL_LIBS := $(shell $(PKG_CONFIG) sdl2 --libs)
+SDL_LIBS := $(shell $(CROSS_PKG_CONFIG) sdl2 --libs)
 endif
 
 ifeq ($(CONFIG_GPIO_LIBFTDI1),y)
-FTDI1_LIBS := $(shell $(PKG_CONFIG) libftdi1 --libs)
+FTDI1_LIBS := $(shell $(CROSS_PKG_CONFIG) libftdi1 --libs)
 endif
 
 ifeq ($(CONFIG_ASAN),y)

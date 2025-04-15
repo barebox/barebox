@@ -307,10 +307,8 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 	struct action_data data = {};
 	void *buf = NULL, *wbuf;
 	struct envfs_entry *env;
-	const char *defenv_path = default_environment_path_get();
+	__maybe_unused const char *defenv_path;
 
-	if (!filename)
-		filename = defenv_path;
 	if (!filename)
 		return -ENOENT;
 
@@ -419,6 +417,7 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 	ret = 0;
 
 #ifdef CONFIG_NVVAR
+	defenv_path = default_environment_path_get();
 	if (defenv_path && !strcmp(filename, defenv_path))
 	    nv_var_set_clean();
 #endif

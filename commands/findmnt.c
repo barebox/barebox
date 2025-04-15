@@ -15,11 +15,17 @@ static void print_header(bool *header_printed)
 	*header_printed = true;
 }
 
-static void report_findmnt(const struct fs_device *fsdev)
+static void report_findmnt(const struct fs_device *fsdev,
+			   const char *variable)
 {
 	const char *backingstore;
 
 	backingstore = fsdev->backingstore ?: cdev_name(fsdev->cdev) ?: "none";
+
+	if (variable) {
+		cmd_export_val(variable, backingstore);
+		return;
+	}
 
 	printf("%-20s%-25s%-10s%-20s\n", fsdev->path, backingstore,
 	       fsdev->driver->drv.name, fsdev->options);
@@ -31,9 +37,13 @@ static int do_findmnt(int argc, char *argv[])
 	struct fs_device *target = NULL;
 	char *device = NULL;
 	int opt, dirfd = AT_FDCWD;
+	const char *variable = NULL;
 
-	while ((opt = getopt(argc, argv, "T:")) > 0) {
+	while ((opt = getopt(argc, argv, "T:v:")) > 0) {
 		switch(opt) {
+		case 'v':
+			variable = optarg;
+			break;
 		case 'T':
 			target = get_fsdevice_by_path(dirfd, optarg);
 			if (!target)
@@ -50,9 +60,12 @@ static int do_findmnt(int argc, char *argv[])
 	if ((target && argc > 0) || (!target && argc > 1))
 		return COMMAND_ERROR_USAGE;
 
+	if (variable)
+		header_printed = true;
+
 	if (target) {
 		print_header(&header_printed);
-		report_findmnt(target);
+		report_findmnt(target, variable);
 		return 0;
 	}
 
@@ -60,13 +73,16 @@ static int do_findmnt(int argc, char *argv[])
 		device = canonicalize_path(dirfd, argv[0]);
 		if (!device)
 			return COMMAND_ERROR;
+	} else if (variable) {
+		return COMMAND_ERROR_USAGE;
 	}
 
 	for_each_fs_device(target) {
 		if (!device || streq_ptr(target->path, device) ||
 		    streq_ptr(target->backingstore, device)) {
-			print_header(&header_printed);
-			report_findmnt(target);
+			if (!variable)
+				print_header(&header_printed);
+			report_findmnt(target, variable);
 		} else {
 			const char *backingstore;
 			struct cdev *cdev;
@@ -80,7 +96,7 @@ static int do_findmnt(int argc, char *argv[])
 
 			if (streq_ptr(backingstore, cdev->name)) {
 				print_header(&header_printed);
-				report_findmnt(target);
+				report_findmnt(target, variable);
 			}
 			cdev_close(cdev);
 		}
@@ -98,12 +114,13 @@ BAREBOX_CMD_HELP_TEXT("source device as an argument")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-T",  "mount target file path")
+BAREBOX_CMD_HELP_OPT ("-v VARIABLE",  "export target to specified VARIABLE")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(findmnt)
 	.cmd		= do_findmnt,
 	BAREBOX_CMD_DESC("find a file system")
-	BAREBOX_CMD_OPTS("[ DEVICE | -T FILE ]")
+	BAREBOX_CMD_OPTS("[ DEVICE | -T FILE ] [-v VAR]")
 	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_findmnt_help)
 BAREBOX_CMD_END

@@ -10,7 +10,8 @@
 #include <linux/rtc.h>
 #include <device.h>
 
-#define for_each_rtc(rtc) list_for_each_entry(rtc, &rtc_class.devices, class_dev.class_list)
+#define for_each_rtc(rtc) \
+	class_for_each_container_of_device(&rtc_class, rtc, class_dev)
 
 DEFINE_DEV_CLASS(rtc_class, "rtc");
 

@@ -547,50 +547,45 @@ struct clk_hw *clk_hw_register_fixed_factor(struct device *dev,
  * @mwidth:	width of the numerator bit field
  * @nshift:	shift to the denominator bit field
  * @nwidth:	width of the denominator bit field
+ * @approximation: clk driver's callback for calculating the divider clock
+ * @lock:	register lock
  *
  * Clock with adjustable fractional divider affecting its output frequency.
  *
- * Flags:
+ * @flags:
  * CLK_FRAC_DIVIDER_ZERO_BASED - by default the numerator and denominator
- *      is the value read from the register. If CLK_FRAC_DIVIDER_ZERO_BASED
- *      is set then the numerator and denominator are both the value read
- *      plus one.
+ *	is the value read from the register. If CLK_FRAC_DIVIDER_ZERO_BASED
+ *	is set then the numerator and denominator are both the value read
+ *	plus one.
  * CLK_FRAC_DIVIDER_BIG_ENDIAN - By default little endian register accesses are
- *      used for the divider register.  Setting this flag makes the register
- *      accesses big endian.
+ *	used for the divider register.  Setting this flag makes the register
+ *	accesses big endian.
+ * CLK_FRAC_DIVIDER_POWER_OF_TWO_PS - By default the resulting fraction might
+ *	be saturated and the caller will get quite far from the good enough
+ *	approximation. Instead the caller may require, by setting this flag,
+ *	to shift left by a few bits in case, when the asked one is quite small
+ *	to satisfy the desired range of denominator. It assumes that on the
+ *	caller's side the power-of-two capable prescaler exists.
  */
 struct clk_fractional_divider {
 	struct clk_hw	hw;
 	void __iomem	*reg;
 	u8		mshift;
 	u8		mwidth;
-	u32		mmask;
 	u8		nshift;
 	u8		nwidth;
-	u32		nmask;
 	u8		flags;
 	void		(*approximation)(struct clk_hw *hw,
 				unsigned long rate, unsigned long *parent_rate,
 				unsigned long *m, unsigned long *n);
-	spinlock_t *lock;
+	spinlock_t	*lock;
 };
-
-#define CLK_FRAC_DIVIDER_ZERO_BASED		BIT(0)
-#define CLK_FRAC_DIVIDER_BIG_ENDIAN		BIT(1)
-
-struct clk *clk_fractional_divider_alloc(
-		const char *name, const char *parent_name, unsigned long flags,
-		void __iomem *reg, u8 mshift, u8 mwidth, u8 nshift, u8 nwidth,
-		u8 clk_divider_flags);
-struct clk *clk_fractional_divider(
-		const char *name, const char *parent_name, unsigned long flags,
-		void __iomem *reg, u8 mshift, u8 mwidth, u8 nshift, u8 nwidth,
-		u8 clk_divider_flags);
-void clk_fractional_divider_free(struct clk *clk_fd);
 
 #define to_clk_fd(_hw) container_of(_hw, struct clk_fractional_divider, hw)
 
-extern const struct clk_ops clk_fractional_divider_ops;
+#define CLK_FRAC_DIVIDER_ZERO_BASED		BIT(0)
+#define CLK_FRAC_DIVIDER_BIG_ENDIAN		BIT(1)
+#define CLK_FRAC_DIVIDER_POWER_OF_TWO_PS	BIT(2)
 
 struct clk_mux {
 	struct clk_hw hw;

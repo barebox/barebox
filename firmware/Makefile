@@ -25,13 +25,11 @@ fw-external-$(CONFIG_FIRMWARE_IMX93_OPTEE) += imx93-bl32.bin \
 fw-external-$(CONFIG_FIRMWARE_IMX93_OPTEE_A0) += mx93a0-ahab-container.img
 pbl-firmware-$(CONFIG_ARCH_RK3568) += rk3568-bl31.bin
 pbl-firmware-$(CONFIG_ARCH_RK3588) += rk3588-bl31.bin
-pbl-firmware-$(CONFIG_ARCH_RK3399) += rk3399-bl31.bin
 ifeq ($(CONFIG_ARCH_ROCKCHIP_OPTEE),y)
 # We install BL31 & BL32 while already running in DRAM,
 # so fw-external is not needed
 pbl-firmware-$(CONFIG_ARCH_RK3568) += rk3568-bl32.bin
 pbl-firmware-$(CONFIG_ARCH_RK3588) += rk3588-bl32.bin
-pbl-firmware-$(CONFIG_ARCH_RK3399) += rk3399-bl32.bin
 endif
 
 firmware-$(CONFIG_FIRMWARE_NEXT_IMAGE) += next-image.bin

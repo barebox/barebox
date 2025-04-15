@@ -286,6 +286,18 @@ config CMD_LSPCI
 	help
 	  The lspci command allows to list all PCI devices.
 
+config CMD_VARINFO
+	tristate
+	prompt "varinfo"
+	help
+	  Show information about variables
+
+	  varinfo VAR
+
+	  Shows information about the variable in its argument. This doesn't
+	  provide more information that what's available with devinfo, but
+	  it can be useful for devices with many parameters (e.g. global).
+
 config CMD_VERSION
 	tristate
 	default y
@@ -678,7 +690,7 @@ config CMD_FINDMNT
 	help
 	  Find a file system
 
-	  Usage: findmnt [ DEVICE | -T FILE ]
+	  Usage: findmnt [ DEVICE | -T FILE ] [-v VARIABLE]
 
 	  findmnt will list all mounted filesystems or search
 	  for a filesystem when given the mountpoint or the
@@ -686,6 +698,7 @@ config CMD_FINDMNT
 
 	  Options:
 		-T		mount target file path
+		-v VARIABLE	export target to specified VARIABLE
 
 config CMD_PARTED
 	tristate
@@ -860,8 +873,7 @@ config CMD_SAVEENV
 
 	  ENVFS is usually a block in flash but can be any other file. If
 	  omitted, DIRECTORY defaults to /env and ENVFS defaults to
-	  /dev/env0. Note that envfs can only handle files, directories are being
-	  skipped silently.
+	  /dev/env0.
 
 config CMD_SETENV
 	tristate
@@ -1149,6 +1161,21 @@ config CMD_SHA256SUM
 	  Usage: sha256sum FILE|AREA
 
 	  Calculate a SHA256 digest over a FILE or a memory area.
+
+config CMD_BASE64
+	tristate
+	select BASE64
+	prompt "base64"
+	help
+	  base64 - base64 decode data
+
+	  Usage: base64 [-u] -d -o OUT IN
+
+	  Decode normal and URL base64 data
+
+	    -d		decode to base64 instead of encoding
+	    -o OUT	output file name
+	    -u		Use base64 URL character set
 
 config CMD_SHA384SUM
 	tristate

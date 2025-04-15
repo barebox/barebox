@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
+// SPDX-FileCopyrightText: 2025 David Jander, Protonic Holland
+/dts-v1/;
+
+#include "stm32mp133c-mect1s.dtsi"
+#include "stm32mp131.dtsi"
+
+#ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
+#include CONFIG_BOOTM_FITIMAGE_PUBKEY
+#endif
+
+/ {
+	chosen {
+		stdout-path = "serial0:1500000n8";
+
+		environment-qspi {
+			compatible = "barebox,environment";
+			device-path = &barebox_env;
+			status = "disabled";
+		};
+	};
+};
+
+&qspi {
+	flash@0 {
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			tf-a@0 {
+				label = "tf-a-primary";
+				reg = <0x000000 0x40000>; /* 256 KiB */
+			};
+
+			tf-a@40000 {
+				label = "tf-a-secondary";
+				reg = <0x40000 0x40000>; /* 256 KiB */
+			};
+
+			barebox@80000 {
+				label = "barebox-fip";
+				reg = <0x80000 0x170000>;
+			};
+
+			barebox_env: barebox-env@1F0000 {
+				label = "barebox-environment";
+				reg = <0x1f0000 0x10000>; /* 64 KiB */
+			};
+		};
+	};
+};

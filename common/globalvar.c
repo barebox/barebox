@@ -680,6 +680,8 @@ static int globalvar_init(void)
 	if (strlen(buildsystem_version_string) > 0)
 		globalvar_add_simple("buildsystem.version", buildsystem_version_string);
 
+	globalvar_add_simple("arch", CONFIG_ARCH_LINUX_NAME);
+
 #ifdef __BIG_ENDIAN
 	endianness = "big";
 #elif defined(__LITTLE_ENDIAN)
@@ -698,6 +700,7 @@ BAREBOX_MAGICVAR(global.version, "The barebox version");
 BAREBOX_MAGICVAR(global.buildsystem.version,
 		 "version of buildsystem barebox was built with");
 BAREBOX_MAGICVAR(global.endianness, "The barebox endianness");
+BAREBOX_MAGICVAR(global.arch, "Name of architecture as used by Linux");
 
 /**
  * nvvar_save - save NV variables to persistent environment

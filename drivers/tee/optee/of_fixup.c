@@ -44,6 +44,9 @@ int of_optee_fixup(struct device_node *root, void *_data)
 	if (ret)
 		return ret;
 
+	if (!fixup_data->shm_size)
+		return 0;
+
 	if (!optee_get_membase(&optee_membase)) {
 		res.start = optee_membase + OPTEE_SIZE - fixup_data->shm_size;
 		res.end = optee_membase + OPTEE_SIZE - 1;

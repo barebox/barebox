@@ -1,22 +1,47 @@
-// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (C) 2014 Intel Corporation
  *
  * Adjustable fractional divider clock implementation.
- * Output rate = (m / n) * parent_rate.
  * Uses rational best approximation algorithm.
+ *
+ * Output is calculated as
+ *
+ *	rate = (m / n) * parent_rate				(1)
+ *
+ * This is useful when we have a prescaler block which asks for
+ * m (numerator) and n (denominator) values to be provided to satisfy
+ * the (1) as much as possible.
+ *
+ * Since m and n have the limitation by a range, e.g.
+ *
+ *	n >= 1, n < N_width, where N_width = 2^nwidth		(2)
+ *
+ * for some cases the output may be saturated. Hence, from (1) and (2),
+ * assuming the worst case when m = 1, the inequality
+ *
+ *	floor(log2(parent_rate / rate)) <= nwidth		(3)
+ *
+ * may be derived. Thus, in cases when
+ *
+ *	(parent_rate / rate) >> N_width				(4)
+ *
+ * we might scale up the rate by 2^scale (see the description of
+ * CLK_FRAC_DIVIDER_POWER_OF_TWO_PS for additional information), where
+ *
+ *	scale = floor(log2(parent_rate / rate)) - nwidth	(5)
+ *
+ * and assume that the IP, that needs m and n, has also its own
+ * prescaler, which is capable to divide by 2^scale. In this way
+ * we get the denominator to satisfy the desired range (2) and
+ * at the same time a much better result of m and n than simple
+ * saturated values.
  */
 
 #include <common.h>
-#include <io.h>
-#include <malloc.h>
-#include <linux/clk.h>
-#include <linux/spinlock.h>
-#include <linux/err.h>
-#include <linux/gcd.h>
-#include <linux/math64.h>
 #include <linux/rational.h>
-#include <linux/barebox-wrapper.h>
+
+#include "clk-fractional-divider.h"
 
 static inline u32 clk_fd_readl(struct clk_fractional_divider *fd)
 {
@@ -34,53 +59,79 @@ static inline void clk_fd_writel(struct clk_fractional_divider *fd, u32 val)
 		writel(val, fd->reg);
 }
 
-static unsigned long clk_fd_recalc_rate(struct clk_hw *hw,
-					unsigned long parent_rate)
+static void clk_fd_get_div(struct clk_hw *hw, struct u32_fract *fract)
 {
 	struct clk_fractional_divider *fd = to_clk_fd(hw);
 	unsigned long m, n;
+	u32 mmask, nmask;
 	u32 val;
-	u64 ret;
 
 	val = clk_fd_readl(fd);
 
-	m = (val & fd->mmask) >> fd->mshift;
-	n = (val & fd->nmask) >> fd->nshift;
+	mmask = GENMASK(fd->mwidth - 1, 0) << fd->mshift;
+	nmask = GENMASK(fd->nwidth - 1, 0) << fd->nshift;
+
+	m = (val & mmask) >> fd->mshift;
+	n = (val & nmask) >> fd->nshift;
 
 	if (fd->flags & CLK_FRAC_DIVIDER_ZERO_BASED) {
 		m++;
 		n++;
 	}
 
-	if (!n || !m)
+	fract->numerator = m;
+	fract->denominator = n;
+}
+
+static unsigned long clk_fd_recalc_rate(struct clk_hw *hw, unsigned long parent_rate)
+{
+	struct u32_fract fract;
+	u64 ret;
+
+	clk_fd_get_div(hw, &fract);
+
+	if (!fract.numerator || !fract.denominator)
 		return parent_rate;
 
-	ret = (u64)parent_rate * m;
-	do_div(ret, n);
+	ret = (u64)parent_rate * fract.numerator;
+	do_div(ret, fract.denominator);
 
 	return ret;
 }
 
-static void clk_fd_general_approximation(struct clk_hw *hw, unsigned long rate,
-					 unsigned long *parent_rate,
-					 unsigned long *m, unsigned long *n)
+void clk_fractional_divider_general_approximation(struct clk_hw *hw,
+						  unsigned long rate,
+						  unsigned long *parent_rate,
+						  unsigned long *m, unsigned long *n)
 {
 	struct clk_fractional_divider *fd = to_clk_fd(hw);
-	unsigned long scale;
+	unsigned long max_m, max_n;
 
 	/*
 	 * Get rate closer to *parent_rate to guarantee there is no overflow
 	 * for m and n. In the result it will be the nearest rate left shifted
 	 * by (scale - fd->nwidth) bits.
+	 *
+	 * For the detailed explanation see the top comment in this file.
 	 */
-	scale = fls_long(*parent_rate / rate - 1);
-	if (scale > fd->nwidth)
-		rate <<= scale - fd->nwidth;
+	if (fd->flags & CLK_FRAC_DIVIDER_POWER_OF_TWO_PS) {
+		unsigned long scale = fls_long(*parent_rate / rate - 1);
 
-	rational_best_approximation(rate, *parent_rate,
-			GENMASK(fd->mwidth - 1, 0), GENMASK(fd->nwidth - 1, 0),
-			m, n);
+		if (scale > fd->nwidth)
+			rate <<= scale - fd->nwidth;
+	}
+
+	if (fd->flags & CLK_FRAC_DIVIDER_ZERO_BASED) {
+		max_m = BIT(fd->mwidth);
+		max_n = BIT(fd->nwidth);
+	} else {
+		max_m = GENMASK(fd->mwidth - 1, 0);
+		max_n = GENMASK(fd->nwidth - 1, 0);
+	}
+
+	rational_best_approximation(rate, *parent_rate, max_m, max_n, m, n);
 }
+EXPORT_SYMBOL_GPL(clk_fractional_divider_general_approximation);
 
 static long clk_fd_round_rate(struct clk_hw *hw, unsigned long rate,
 			      unsigned long *parent_rate)
@@ -96,7 +147,7 @@ static long clk_fd_round_rate(struct clk_hw *hw, unsigned long rate,
 	if (fd->approximation)
 		fd->approximation(hw, rate, parent_rate, &m, &n);
 	else
-		clk_fd_general_approximation(hw, rate, parent_rate, &m, &n);
+		clk_fractional_divider_general_approximation(hw, rate, parent_rate, &m, &n);
 
 	ret = (u64)*parent_rate * m;
 	do_div(ret, n);
@@ -108,20 +159,29 @@ static int clk_fd_set_rate(struct clk_hw *hw, unsigned long rate,
 			   unsigned long parent_rate)
 {
 	struct clk_fractional_divider *fd = to_clk_fd(hw);
-	unsigned long m, n;
+	unsigned long m, n, max_m, max_n;
+	u32 mmask, nmask;
 	u32 val;
 
-	rational_best_approximation(rate, parent_rate,
-			GENMASK(fd->mwidth - 1, 0), GENMASK(fd->nwidth - 1, 0),
-			&m, &n);
+	if (fd->flags & CLK_FRAC_DIVIDER_ZERO_BASED) {
+		max_m = BIT(fd->mwidth);
+		max_n = BIT(fd->nwidth);
+	} else {
+		max_m = GENMASK(fd->mwidth - 1, 0);
+		max_n = GENMASK(fd->nwidth - 1, 0);
+	}
+	rational_best_approximation(rate, parent_rate, max_m, max_n, &m, &n);
 
 	if (fd->flags & CLK_FRAC_DIVIDER_ZERO_BASED) {
 		m--;
 		n--;
 	}
 
+	mmask = GENMASK(fd->mwidth - 1, 0) << fd->mshift;
+	nmask = GENMASK(fd->nwidth - 1, 0) << fd->nshift;
+
 	val = clk_fd_readl(fd);
-	val &= ~(fd->mmask | fd->nmask);
+	val &= ~(mmask | nmask);
 	val |= (m << fd->mshift) | (n << fd->nshift);
 	clk_fd_writel(fd, val);
 
@@ -134,61 +194,3 @@ const struct clk_ops clk_fractional_divider_ops = {
 	.set_rate = clk_fd_set_rate,
 };
 EXPORT_SYMBOL_GPL(clk_fractional_divider_ops);
-
-struct clk *clk_fractional_divider_alloc(
-		const char *name, const char *parent_name, unsigned long flags,
-		void __iomem *reg, u8 mshift, u8 mwidth, u8 nshift, u8 nwidth,
-		u8 clk_divider_flags)
-{
-	struct clk_fractional_divider *fd;
-
-	fd = xzalloc(sizeof(*fd));
-
-	fd->reg = reg;
-	fd->mshift = mshift;
-	fd->mwidth = mwidth;
-	fd->mmask = GENMASK(mwidth - 1, 0) << mshift;
-	fd->nshift = nshift;
-	fd->nwidth = nwidth;
-	fd->nmask = GENMASK(nwidth - 1, 0) << nshift;
-	fd->flags = clk_divider_flags;
-	fd->hw.clk.name = name;
-	fd->hw.clk.ops = &clk_fractional_divider_ops;
-	fd->hw.clk.flags = flags;
-	fd->hw.clk.parent_names = parent_name ? &parent_name : NULL;
-	fd->hw.clk.num_parents = parent_name ? 1 : 0;
-
-	return &fd->hw.clk;
-}
-
-void clk_fractional_divider_free(struct clk *clk_fd)
-{
-	struct clk_fractional_divider *fd = to_clk_fd(clk_to_clk_hw(clk_fd));
-
-	free(fd);
-}
-
-struct clk *clk_fractional_divider(
-		const char *name, const char *parent_name, unsigned long flags,
-		void __iomem *reg, u8 mshift, u8 mwidth, u8 nshift, u8 nwidth,
-		u8 clk_divider_flags)
-{
-	struct clk *fd;
-	int ret;
-
-	fd = clk_fractional_divider_alloc(name, parent_name, flags,
-		reg, mshift, mwidth, nshift, nwidth,
-		clk_divider_flags);
-
-	if (IS_ERR(fd))
-		return fd;
-
-	ret = bclk_register(fd);
-	if (ret) {
-		clk_fractional_divider_free(fd);
-		return ERR_PTR(ret);
-	}
-
-	return fd;
-}
-EXPORT_SYMBOL_GPL(clk_fractional_divider);

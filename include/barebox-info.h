@@ -25,7 +25,12 @@ bool barebox_hostname_is_valid(const char *s);
 const char *barebox_get_serial_number(void);
 void barebox_set_serial_number(const char *);
 
+#ifdef CONFIG_OFTREE
 void barebox_set_of_machine_compatible(const char *);
 const char *barebox_get_of_machine_compatible(void);
+#else
+static inline void barebox_set_of_machine_compatible(const char *compat) {}
+static inline const char *barebox_get_of_machine_compatible(void) { return NULL; }
+#endif
 
 #endif

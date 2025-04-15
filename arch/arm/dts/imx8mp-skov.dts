@@ -4,6 +4,7 @@
 
 #include <arm64/freescale/imx8mp.dtsi>
 #include "imx8mp.dtsi"
+#include <arm64/freescale/imx8mp-nominal.dtsi>
 
 #include <dt-bindings/leds/common.h>
 

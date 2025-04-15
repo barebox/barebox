@@ -217,6 +217,7 @@ void regulator_put(struct regulator *r);
 struct regulator *regulator_get_name(const char *name);
 int regulator_enable(struct regulator *);
 int regulator_disable(struct regulator *);
+int regulator_is_enabled(struct regulator *);
 int regulator_is_enabled_regmap(struct regulator_dev *);
 int regulator_enable_regmap(struct regulator_dev *);
 int regulator_disable_regmap(struct regulator_dev *);
@@ -283,6 +284,11 @@ static inline int regulator_enable(struct regulator *r)
 static inline int regulator_disable(struct regulator *r)
 {
 	return 0;
+}
+
+static inline int regulator_is_enabled(struct regulator *r)
+{
+	return 1;
 }
 
 static inline int regulator_set_voltage(struct regulator *regulator,

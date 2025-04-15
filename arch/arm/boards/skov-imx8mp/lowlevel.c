@@ -16,8 +16,12 @@
 #include <pbl/i2c.h>
 #include <pbl/pmic.h>
 #include <soc/imx8m/ddr.h>
+#include <mach/imx/imx-gpio.h>
 
 extern char __dtb_z_imx8mp_skov_start[];
+
+#define PGOOD_PAD_CTRL  MUX_PAD_CTRL(MX8MP_PAD_CTL_PUE | \
+				     MX8MP_PAD_CTL_PE)
 
 #define UART_PAD_CTRL   MUX_PAD_CTRL(MX8MP_PAD_CTL_DSE6 | \
 				     MX8MP_PAD_CTL_FSEL | \
@@ -28,6 +32,12 @@ extern char __dtb_z_imx8mp_skov_start[];
 				     MX8MP_PAD_CTL_HYS | \
 				     MX8MP_PAD_CTL_PUE | \
 				     MX8MP_PAD_CTL_PE)
+
+static inline void led_d1_toggle(bool *on)
+{
+	imx8m_gpio_direction_output(IOMEM(MX8MP_GPIO1_BASE_ADDR), 5, *on);
+	*on = !*on;
+}
 
 static void setup_uart(void)
 {
@@ -41,34 +51,91 @@ static void setup_uart(void)
 
 	pbl_set_putc(imx_uart_putc, uart);
 
-	putc_ll('>');
+	putchar('>');
 }
 
 static struct pmic_config pca9450_cfg[] = {
 	/* BUCKxOUT_DVS0/1 control BUCK123 output */
 	{ PCA9450_BUCK123_DVS, 0x29 },
 	/*
-	 * increase VDD_SOC to typical value 0.95V before first
+	 * Set VDD_SOC to typical value 0.85V before first
 	 * DRAM access, set DVS1 to 0.85v for suspend.
 	 * Enable DVS control through PMIC_STBY_REQ and
 	 * set B1_ENMODE=1 (ON by PMIC_ON_REQ=H)
 	 */
-	{ PCA9450_BUCK1OUT_DVS0, 0x1C },
+	{ PCA9450_BUCK1OUT_DVS0, 0x14 },
 	{ PCA9450_BUCK1OUT_DVS1, 0x14 },
 	{ PCA9450_BUCK1CTRL, 0x59 },
-	/*
-	 * Increase VDD_ARM to 0.95V to avoid issues in case software after
-	 * Barebox switches to the OD ARM frequency without reprogramming the
-	 * PMIC first.
-	 */
-	{ PCA9450_BUCK2OUT_DVS0, 0x1C },
 	/* set WDOG_B_CFG to cold reset */
 	{ PCA9450_RESET_CTRL, 0xA1 },
+	/*
+	 * As we do cold resets and Linux will take care to reconfigure the
+	 * pmic before switching to the OD ARM frequency, we will just keep
+	 * VDD_ARM at 850mV
+	 */
+	{ PCA9450_BUCK2OUT_DVS0, 0x14 },
 };
+
+static inline bool power_good(void)
+{
+	/* IMX_SHDN_MF in schematics */
+	return imx8m_gpio_val(IOMEM(MX8MP_GPIO4_BASE_ADDR), 23);
+}
+
+static void wait_for_power_good(void)
+{
+	void __iomem *gpio4 = IOMEM(MX8MP_GPIO4_BASE_ADDR);
+	int timeout_ms = 0;
+	bool led_active = true;
+
+	imx8mp_setup_pad(MX8MP_PAD_SAI2_RXD0__GPIO4_IO23 | PGOOD_PAD_CTRL);
+	imx8m_gpio_direction_input(gpio4, 23);
+
+	led_d1_toggle(&led_active);
+
+	if (power_good())
+		return;
+
+	pr_warn("\nDelaying boot until power stabilizes\n");
+
+	/* If we reach this, because Linux did a hw_protection_reboot, we don't
+	 * want to continue booting right away.
+	 *
+	 * Thus let's either wait for the condition to subscede or for voltage
+	 * to reach a low enough level for the PMIC to detect VSYS_UVLO going
+	 * lower than allowed
+	 */
+
+	while (1) {
+		if (power_good()) {
+			/* wait 10ms longer and check if it still good */
+			udelay(10000);
+			if (power_good()) {
+				pr_info("IMX_SHDN_MF stuck low for ~%ums.\n", timeout_ms);
+				break;
+			}
+		}
+		/* fast blink LED D1 */
+		if (timeout_ms % 100 == 0) {
+			pr_debug(".");
+			led_d1_toggle(&led_active);
+		}
+		udelay(1000);
+		timeout_ms++;
+	}
+}
 
 static void power_init_board(void)
 {
 	struct pbl_i2c *i2c;
+
+	/* Assert switch reset early to avoid erratic behavior due to
+	 * violating power sequencing
+	 */
+	imx8mp_setup_pad(MX8MP_PAD_SAI3_TXD__GPIO5_IO01);
+	imx8m_gpio_direction_output(IOMEM(MX8MP_GPIO5_BASE_ADDR), 1, 0);
+
+	wait_for_power_good();
 
 	imx8mp_setup_pad(MX8MP_PAD_I2C1_SCL__I2C1_SCL | I2C_PAD_CTRL);
 	imx8mp_setup_pad(MX8MP_PAD_I2C1_SDA__I2C1_SDA | I2C_PAD_CTRL);

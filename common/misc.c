@@ -148,7 +148,6 @@ BAREBOX_MAGICVAR(global.model, "Product name of this hardware");
 
 static char *hostname;
 static char *serial_number;
-static char *of_machine_compatible;
 
 /* Note that HOST_NAME_MAX is 64 on Linux */
 #define BAREBOX_HOST_NAME_MAX	64
@@ -260,6 +259,9 @@ const char *barebox_get_serial_number(void)
 
 BAREBOX_MAGICVAR(global.serial_number, "Board serial number");
 
+#ifdef CONFIG_OFTREE
+static char *of_machine_compatible;
+
 void barebox_set_of_machine_compatible(const char *__compatible)
 {
 	free(of_machine_compatible);
@@ -282,7 +284,8 @@ static int of_kernel_init(void)
 }
 device_initcall(of_kernel_init);
 
-BAREBOX_MAGICVAR(global.of.kernel.add_machine_compatible, "Additional machine/board compatible");
+BAREBOX_MAGICVAR(global.of.kernel.add_machine_compatible, "Extra machine/board compatible to prepend to kernel DT compatible");
+#endif
 
 static void __noreturn do_panic(bool stacktrace, const char *fmt, va_list ap)
 {

@@ -315,6 +315,7 @@ config EXPERIMENTAL
 
 choice
 	prompt "malloc implementation"
+	default MALLOC_TLSF
 
 config MALLOC_DLMALLOC
 	bool "dlmalloc"
@@ -1209,6 +1210,23 @@ config BOOT_DEFAULTS
 	  target, which will expand to the device that barebox has
 	  booted from if that could be determined.
 
+config BAREBOX_DT_2ND
+	bool "Consume DT bindings relevant only when barebox is booted by barebox"
+	depends on OFDEVICE
+	default BOARD_GENERIC_DT
+	help
+	  Barebox fixes up a number of device tree properties into the kernel
+	  device tree that it does not itself consume.
+	  Say y here for barebox to not only provide, but also consume
+	  these device tree bindings.
+
+	  This is currently:
+
+	    /chosen/bootsource: Maintain the bootsource, even if SoC
+	    bootsource info is lost.
+
+	  If unsure, say n.
+
 config RESET_SOURCE
 	bool "detect Reset cause"
 	depends on GLOBALVAR
@@ -1287,8 +1305,8 @@ config OPTEE_SIZE
 	depends on HAVE_OPTEE
 	help
 	  Size to reserve in main memory for OP-TEE.
-	  Can be smaller than the actual size used by OP-TEE, this is used to prevent
-	  barebox from allocating memory in this area.
+	  Can be larger than the actual size used by OP-TEE, this is used to prevent
+	  barebox from using or speculating into this area.
 
 config OPTEE_SHM_SIZE
 	hex
@@ -1296,8 +1314,13 @@ config OPTEE_SHM_SIZE
 	prompt "OP-TEE Shared Memory Size"
 	depends on HAVE_OPTEE
 	help
-	  Size to reserve in main memory for OP-TEE shared memory communication.
-	  Can be used for fixing up the OP-TEE OF node.
+	  Size to reserve in main memory for static OP-TEE shared memory
+	  communication. Can be used for fixing up the OP-TEE OF node.
+
+	  A shared memory size of 0 means that only dynamic shared memory
+	  will be supported for communication with OP-TEE. This is the only
+	  mode supported by barebox anyway, but support needs to be enabled
+	  in OP-TEE at compile-time.
 
 config BOOTM_OPTEE
 	bool

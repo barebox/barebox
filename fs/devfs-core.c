@@ -21,12 +21,14 @@
 #include <malloc.h>
 #include <ioctl.h>
 #include <nand.h>
+#include <string.h>
 #include <linux/err.h>
 #include <linux/fs.h>
 #include <linux/mtd/mtd.h>
 #include <unistd.h>
 #include <range.h>
 #include <fs.h>
+#include <spec/dps.h>
 
 LIST_HEAD(cdev_list);
 
@@ -48,7 +50,7 @@ int devfs_partition_complete(struct string_list *sl, char *instr)
 }
 #endif
 
-struct cdev *cdev_readlink(struct cdev *cdev)
+struct cdev *cdev_readlink(const struct cdev *cdev)
 {
 	if (!cdev)
 		return NULL;
@@ -59,7 +61,7 @@ struct cdev *cdev_readlink(struct cdev *cdev)
 	/* links to links are not allowed */
 	BUG_ON(cdev->link);
 
-	return cdev;
+	return (void *)cdev;
 }
 
 struct cdev *lcdev_by_name(const char *filename)
@@ -126,6 +128,56 @@ struct cdev *cdev_by_diskuuid(const char *diskuuid)
 	return NULL;
 }
 
+struct cdev *
+cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid)
+{
+	struct cdev *partcdev;
+
+        /* Follow links to support storage-by-alias */
+        cdev = cdev_readlink(cdev);
+
+	if (!cdev_is_gpt_partitioned(cdev))
+		return ERR_PTR(-EINVAL);
+
+	for_each_cdev_partition(partcdev, cdev) {
+		if (!guid_equal(&partcdev->typeuuid, typeuuid))
+			continue;
+		if (cdev->typeflags & DPS_TYPE_FLAG_NO_AUTO) {
+			dev_dbg(cdev->dev, "auto discovery skipped\n");
+			continue;
+		}
+
+		return partcdev;
+	}
+
+	return ERR_PTR(-ENOENT);
+}
+
+/**
+ * cdev_find_partition - find a partition belonging to a physical device
+ *
+ * @cdev: the cdev which should be searched for partitions
+ * @name: the partition name
+ */
+struct cdev *cdev_find_partition(struct cdev *cdevm, const char *name)
+{
+	struct cdev *partcdev;
+
+	for_each_cdev_partition(partcdev, cdevm) {
+		struct cdev *cdevl;
+
+		if (streq_ptr(partcdev->partname, name))
+			return partcdev;
+
+		list_for_each_entry(cdevl, &partcdev->links, link_entry) {
+			if (streq_ptr(cdevl->partname, name))
+				return cdevl;
+		}
+	}
+
+	return NULL;
+}
+
 /**
  * device_find_partition - find a partition belonging to a physical device
  *
@@ -140,13 +192,11 @@ struct cdev *device_find_partition(struct device *dev, const char *name)
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
 		struct cdev *cdevl;
 
-		if (!cdev->partname)
-			continue;
-		if (!strcmp(cdev->partname, name))
+		if (streq_ptr(cdev->partname, name))
 			return cdev;
 
 		list_for_each_entry(cdevl, &cdev->links, link_entry) {
-			if (!strcmp(cdevl->partname, name))
+			if (streq_ptr(cdevl->partname, name))
 				return cdev_readlink(cdevl);
 		}
 	}
@@ -347,6 +397,13 @@ static struct cdev *cdev_alloc(const char *name)
 	return new;
 }
 
+static void cdev_free(struct cdev *cdev)
+{
+	free(cdev->name);
+	free(cdev->partname);
+	free(cdev);
+}
+
 int devfs_create(struct cdev *new)
 {
 	struct cdev *cdev;
@@ -365,15 +422,16 @@ int devfs_create(struct cdev *new)
 			new->device_node = new->dev->of_node;
 	}
 
+	if (new->link)
+		list_add_tail(&new->link_entry, &new->link->links);
+
 	return 0;
 }
 
 int devfs_create_link(struct cdev *cdev, const char *name)
 {
 	struct cdev *new;
-
-	if (cdev_by_name(name))
-		return -EEXIST;
+	int ret;
 
 	/*
 	 * Create a link to the real cdev instead of creating
@@ -383,6 +441,12 @@ int devfs_create_link(struct cdev *cdev, const char *name)
 
 	new = cdev_alloc(name);
 	new->link = cdev;
+
+	ret = devfs_create(new);
+	if (ret) {
+		cdev_free(new);
+		return ret;
+	}
 
 	if (cdev->partname) {
 		size_t partnameoff = 0;
@@ -396,11 +460,6 @@ int devfs_create_link(struct cdev *cdev, const char *name)
 
 		new->partname = xstrdup(name + partnameoff);
 	}
-
-	INIT_LIST_HEAD(&new->links);
-	INIT_LIST_HEAD(&new->partitions);
-	list_add_tail(&new->list, &cdev_list);
-	list_add_tail(&new->link_entry, &cdev->links);
 
 	return 0;
 }
@@ -426,11 +485,8 @@ int devfs_remove(struct cdev *cdev)
 	if (cdev_is_partition(cdev))
 		list_del(&cdev->partition_entry);
 
-	if (cdev->link) {
-		free(cdev->name);
-		free(cdev->partname);
-		free(cdev);
-	}
+	if (cdev->link)
+		cdev_free(cdev);
 
 	return 0;
 }
@@ -619,9 +675,7 @@ int cdevfs_del_partition(struct cdev *cdev)
 	if (ret)
 		return ret;
 
-	free(cdev->name);
-	free(cdev->partname);
-	free(cdev);
+	cdev_free(cdev);
 
 	return 0;
 }
@@ -747,8 +801,7 @@ void cdev_remove_loop(struct cdev *cdev)
 	devfs_remove(cdev);
 	close(priv->fd);
 	free(priv);
-	free(cdev->name);
-	free(cdev);
+	cdev_free(cdev);
 }
 
 ssize_t mem_copy(struct device *dev, void *dst, const void *src,

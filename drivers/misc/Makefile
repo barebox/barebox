@@ -10,4 +10,4 @@ obj-$(CONFIG_DEV_MEM)		+= mem.o
 obj-$(CONFIG_DEV_PORT)		+= port.o
 obj-$(CONFIG_UBOOTVAR)		+= ubootvar.o
 obj-$(CONFIG_STARFIVE_PWRSEQ)	+= starfive-pwrseq.o
-obj-$(CONFIG_STORAGE_BY_UUID)	+= storage-by-uuid.o
+obj-$(CONFIG_STORAGE_BY_ALIAS)	+= storage-by-alias.o

@@ -514,9 +514,10 @@ int devfs_create(struct cdev *);
 int devfs_create_link(struct cdev *, const char *name);
 int devfs_remove(struct cdev *);
 int cdev_find_free_index(const char *);
+struct cdev *cdev_find_partition(struct cdev *cdevm, const char *name);
 struct cdev *device_find_partition(struct device *dev, const char *name);
 struct cdev *lcdev_by_name(const char *filename);
-struct cdev *cdev_readlink(struct cdev *cdev);
+struct cdev *cdev_readlink(const struct cdev *cdev);
 struct cdev *cdev_by_device_node(struct device_node *node);
 struct cdev *cdev_by_partuuid(const char *partuuid);
 struct cdev *cdev_by_diskuuid(const char *partuuid);
@@ -526,6 +527,19 @@ int cdev_open(struct cdev *, unsigned long flags);
 int cdev_fdopen(struct cdev *cdev, unsigned long flags);
 int cdev_close(struct cdev *cdev);
 int cdev_flush(struct cdev *cdev);
+
+typedef int (*cdev_alias_processor_t)(struct cdev *, void *data);
+
+#ifdef CONFIG_CDEV_ALIAS
+int cdev_alias_resolve_for_each(const char *name,
+				cdev_alias_processor_t, void *data);
+#else
+static inline int cdev_alias_resolve_for_each(const char *name,
+				cdev_alias_processor_t fn, void *data)
+{
+	return 0;
+}
+#endif
 #if IN_PROPER
 ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
 ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
@@ -572,7 +586,6 @@ extern struct list_head cdev_list;
 #define DEVFS_PARTITION_FIXED		(1U << 0)
 #define DEVFS_PARTITION_READONLY	(1U << 1)
 #define DEVFS_IS_CHARACTER_DEV		(1U << 3)
-#define DEVFS_IS_MCI_MAIN_PART_DEV	(1U << 4)
 #define DEVFS_PARTITION_FROM_OF		(1U << 5)
 #define DEVFS_PARTITION_FROM_TABLE	(1U << 6)
 #define DEVFS_IS_MBR_PARTITIONED	(1U << 7)
@@ -607,21 +620,8 @@ static inline bool cdev_is_gpt_partitioned(const struct cdev *master)
 	return master && (master->flags & DEVFS_IS_GPT_PARTITIONED);
 }
 
-static inline struct cdev *
-cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, guid_t *typeuuid)
-{
-	struct cdev *partcdev;
-
-	if (!cdev_is_gpt_partitioned(cdev))
-		return ERR_PTR(-EINVAL);
-
-	for_each_cdev_partition(partcdev, cdev) {
-		if (guid_equal(&partcdev->typeuuid, typeuuid))
-			return partcdev;
-	}
-
-	return ERR_PTR(-ENOENT);
-}
+struct cdev *
+cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid);
 
 #ifdef CONFIG_FS_AUTOMOUNT
 void cdev_create_default_automount(struct cdev *cdev);
@@ -630,11 +630,6 @@ static inline void cdev_create_default_automount(struct cdev *cdev)
 {
 }
 #endif
-
-static inline bool cdev_is_mci_main_part_dev(struct cdev *cdev)
-{
-	return cdev->flags & DEVFS_IS_MCI_MAIN_PART_DEV;
-}
 
 #define DEVFS_PARTITION_APPEND		0
 

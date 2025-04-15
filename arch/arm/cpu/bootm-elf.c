@@ -12,26 +12,33 @@ static int do_bootm_elf(struct image_data *data)
 {
 	void (*fn)(unsigned long x0, unsigned long x1, unsigned long x2,
 		   unsigned long x3);
-	struct elf_image *elf = data->elf;
+	struct elf_image *elf;
 	int ret;
+
+	elf = elf_open(data->os_file);
+	if (IS_ERR(elf))
+		return PTR_ERR(elf);
 
 	if (elf_hdr_e_machine(elf, elf->hdr_buf) != ELF_ARCH) {
 		pr_err("Unsupported machine: 0x%02x, but 0x%02x expected\n",
 		       elf_hdr_e_machine(elf, elf->hdr_buf), ELF_ARCH);
 
-		return -EINVAL;
+		ret = -EINVAL;
+		goto err;
 	}
 
-	ret = bootm_load_os(data, data->os_address);
+	ret = elf_load(elf);
 	if (ret)
-		return ret;
+		goto err;
 
-	if (data->dryrun)
-		return ret;
+	if (data->dryrun) {
+		ret = 0;
+		goto err;
+	}
 
 	ret = of_overlay_load_firmware();
 	if (ret)
-		return ret;
+		goto err;
 
 	shutdown_barebox();
 
@@ -40,7 +47,12 @@ static int do_bootm_elf(struct image_data *data)
 	fn(0, 0, 0, 0);
 
 	pr_err("ELF application terminated\n");
-	return -EINVAL;
+	ret = -EINVAL;
+
+err:
+	elf_close(elf);
+
+	return ret;
 }
 
 static struct image_handler elf_handler = {

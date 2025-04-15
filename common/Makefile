@@ -78,11 +78,13 @@ obj-y				+= file-list.o
 obj-$(CONFIG_FIRMWARE)		+= firmware.o
 obj-$(CONFIG_UBIFORMAT)		+= ubiformat.o
 obj-$(CONFIG_BAREBOX_UPDATE_IMX_NAND_FCB) += imx-bbu-nand-fcb.o
-obj-$(CONFIG_BOOT)		+= boot.o
+obj-$(CONFIG_BOOT)		+= boot.o bootscan.o
+obj-$(CONFIG_BOOT_DEFAULTS)	+= bootdef.o
 obj-$(CONFIG_SERIAL_DEV_BUS)	+= serdev.o
 obj-$(CONFIG_USB_GADGET)	+= usbgadget.o
 obj-pbl-$(CONFIG_HAVE_OPTEE)	+= optee.o
 obj-$(CONFIG_FASTBOOT_BASE)	+= fastboot.o
+obj-$(CONFIG_CDEV_ALIAS)	+= cdev-alias.o
 
 ifdef CONFIG_PASSWORD
 

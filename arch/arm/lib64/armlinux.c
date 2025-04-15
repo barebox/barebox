@@ -44,12 +44,6 @@ static struct image_handler aarch64_linux_efi_handler = {
         .filetype = filetype_arm64_efi_linux_image,
 };
 
-static struct image_handler aarch64_fit_handler = {
-	.name = "FIT image",
-	.bootm = do_bootm_linux,
-	.filetype = filetype_oftree,
-};
-
 static int do_bootm_barebox(struct image_data *data)
 {
 	void (*fn)(unsigned long x0, unsigned long x1, unsigned long x2,
@@ -96,9 +90,6 @@ static int aarch64_register_image_handler(void)
 	register_image_handler(&aarch64_linux_efi_handler);
 	register_image_handler(&aarch64_linux_handler);
 	register_image_handler(&aarch64_barebox_handler);
-
-	if (IS_ENABLED(CONFIG_FITIMAGE))
-		register_image_handler(&aarch64_fit_handler);
 
 	return 0;
 }

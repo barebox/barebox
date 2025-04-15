@@ -440,8 +440,8 @@ static int prt_imx6_bootentry_create(struct bootentries *bootentries, const char
 	return 0;
 }
 
-static int prt_imx6_bootentry_provider(struct bootentries *bootentries,
-				     const char *name)
+static int prt_imx6_bootentry_generate(struct bootentries *bootentries,
+				       const char *name)
 {
 	int found = 0;
 	unsigned int v;
@@ -458,6 +458,10 @@ static int prt_imx6_bootentry_provider(struct bootentries *bootentries,
 
 	return found;
 }
+
+static struct bootentry_provider prt_imx6_bootentry_provider = {
+	.generate = prt_imx6_bootentry_generate,
+};
 
 static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 {
@@ -568,7 +572,7 @@ static int prt_imx6_devices_init(void)
 	if (prt_imx6_read_ocotp_serial(priv) != 0)
 		prt_imx6_read_i2c_mac_serial(priv);
 
-	bootentry_register_provider(prt_imx6_bootentry_provider);
+	bootentry_register_provider(&prt_imx6_bootentry_provider);
 
 	prt_imx6_env_init(priv);
 

@@ -729,12 +729,6 @@ BAREBOX_MAGICVAR(aimage_noverwrite_bootargs, "Disable overwrite of the bootargs 
 BAREBOX_MAGICVAR(aimage_noverwrite_tags, "Disable overwrite of the tags addr with the one present in aimage");
 #endif
 
-static struct image_handler arm_fit_handler = {
-        .name = "FIT image",
-        .bootm = do_bootm_linux,
-        .filetype = filetype_oftree,
-};
-
 static struct binfmt_hook binfmt_aimage_hook = {
 	.type = filetype_aimage,
 	.exec = "bootm",
@@ -766,8 +760,6 @@ static int armlinux_register_image_handler(void)
 		register_image_handler(&aimage_handler);
 		binfmt_register(&binfmt_aimage_hook);
 	}
-	if (IS_BUILTIN(CONFIG_FITIMAGE))
-	        register_image_handler(&arm_fit_handler);
 	binfmt_register(&binfmt_arm_zimage_hook);
 	binfmt_register(&binfmt_barebox_hook);
 

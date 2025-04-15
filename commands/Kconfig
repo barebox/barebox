@@ -2313,6 +2313,19 @@ config CMD_2048
 	help
 	  Console version of the game "2048" for GNU/Linux
 
+config CMD_AVB_PVALUE
+	depends on OPTEE_AVB_PERSISTENT_VALUES
+	tristate
+	prompt "avb_pvalue"
+	help
+	  The avb_pvalue command provides access to the Android Verified Boot (AVB)
+	  persistent value store.
+
+	  AVB 2.0 spec. revision 1.1 introduces support for named persistent values
+	  that must be tamper evident and allows AVB to store arbitrary key-value
+	  pairs.
+
+
 config CMD_BAREBOX_UPDATE
 	tristate
 	select BAREBOX_UPDATE

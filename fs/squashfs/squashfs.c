@@ -33,8 +33,7 @@ char *squashfs_devread(struct squashfs_sb_info *fs, int byte_offset,
 
 	size = cdev_read(fs->cdev, buf, byte_len, byte_offset, 0);
 	if (size < 0) {
-		dev_err(fs->dev, "read error: %s\n",
-				strerror(-size));
+		dev_err(fs->dev, "read error: %pe\n", ERR_PTR(size));
 		return NULL;
 	}
 

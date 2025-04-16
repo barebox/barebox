@@ -313,8 +313,8 @@ static int do_miitool(int argc, char *argv[])
 		phydev = phy_device_create(mii, addr, -1);
 		ret = phy_register_device(phydev);
 		if (ret) {
-			printf("failed to register phy %s: %s\n",
-				dev_name(&phydev->dev), strerror(-ret));
+			printf("failed to register phy %s: %pe\n",
+				dev_name(&phydev->dev), ERR_PTR(ret));
 			goto free_phydevname;
 		} else {
 			printf("registered phy %s\n", dev_name(&phydev->dev));

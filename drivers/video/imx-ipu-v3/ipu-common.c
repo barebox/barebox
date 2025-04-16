@@ -810,7 +810,7 @@ static int ipu_probe(struct device *dev)
 
 	ret = devtype->reset(ipu);
 	if (ret) {
-		dev_err(dev, "failed to reset: %s\n", strerror(-ret));
+		dev_err(dev, "failed to reset: %pe\n", ERR_PTR(ret));
 		goto out_failed_reset;
 	}
 

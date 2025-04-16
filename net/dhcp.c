@@ -559,7 +559,7 @@ out1:
 	net_unregister(dhcp_con);
 out:
 	if (ret) {
-		debug("dhcp failed: %s\n", strerror(-ret));
+		debug("dhcp failed: %pe\n", ERR_PTR(ret));
 		free(dhcp_result);
 	} else {
 		*res = dhcp_result;

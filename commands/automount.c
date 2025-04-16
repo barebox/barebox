@@ -39,8 +39,7 @@ static int do_automount(int argc, char *argv[])
 
 	ret = automount_add(argv[optind], argv[optind + 1]);
 	if (ret)
-		printf("adding automountpoint failed: %s\n",
-				strerror(-ret));
+		printf("adding automountpoint failed: %pe\n", ERR_PTR(ret));
 
 	return ret ? 1 : 0;
 }

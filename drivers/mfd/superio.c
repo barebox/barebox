@@ -91,7 +91,7 @@ void superio_chip_add(struct superio_chip *siochip)
 
 	ret = regmap_register_cdev(regmap, chipname);
 	if (ret)
-		pr_warn("registering %s regmap cdev failed: %s\n",
-			chipname, strerror(-ret));
+		pr_warn("registering %s regmap cdev failed: %pe\n",
+			chipname, ERR_PTR(ret));
 }
 EXPORT_SYMBOL(superio_chip_add);

@@ -51,8 +51,8 @@ int twlcore_reg_read(struct twlcore *twlcore, u16 reg, u8 *val)
 
 	/* i2c_transfer returns number of messages transferred */
 	if (ret < 0) {
-		pr_err("%s: failed to transfer all messages: %s\n",
-				__func__, strerror(-ret));
+		pr_err("%s: failed to transfer all messages: %pe\n",
+				__func__, ERR_PTR(ret));
 		return ret;
 	}
 	return 0;
@@ -86,8 +86,8 @@ int twlcore_reg_write(struct twlcore *twlcore, u16 reg, u8 val)
 
 	/* i2c_transfer returns number of messages transferred */
 	if (ret < 0) {
-		pr_err("%s: failed to transfer all messages: %s\n",
-				__func__, strerror(-ret));
+		pr_err("%s: failed to transfer all messages: %pe\n",
+				__func__, ERR_PTR(ret));
 		return ret;
 	}
 	return 0;

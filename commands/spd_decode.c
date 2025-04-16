@@ -23,7 +23,7 @@ static int do_spd_decode(int argc, char *argv[])
 
 	ret = read_file_2(argv[1], NULL, &data, 256);
 	if (ret && ret != -EFBIG) {
-		printf("unable to read %s: %s\n", argv[1], strerror(-ret));
+		printf("unable to read %s: %pe\n", argv[1], ERR_PTR(ret));
 		return COMMAND_ERROR;
 	}
 

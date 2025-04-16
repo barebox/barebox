@@ -226,8 +226,8 @@ static int nand_update_handler_complete(struct bbu_handler *handler,
 
 			ret = mtd_peb_write(mtd, buf, i, 0, mtd->erasesize);
 			if (ret) {
-				pr_err("Failed to write MLO to PEB%d: %s\n", i,
-				       strerror(-ret));
+				pr_err("Failed to write MLO to PEB%d: %pe\n", i,
+				       ERR_PTR(ret));
 				continue;
 			}
 			written++;

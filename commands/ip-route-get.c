@@ -33,8 +33,8 @@ static int do_ip_route_get(int argc, char *argv[])
 
 	ret = resolv(argv[optind], &ip);
 	if (ret) {
-		printf("Cannot convert \"%s\" into a IP address: %s\n",
-		       argv[optind], strerror(-ret));
+		printf("Cannot convert \"%s\" into a IP address: %pe\n",
+		       argv[optind], ERR_PTR(ret));
 		return 1;
 	}
 

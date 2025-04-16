@@ -279,8 +279,8 @@ static int socfpga_fpgamgr_program_start(struct firmware_handler *fh)
 	/* initialize the FPGA Manager */
 	status = socfpga_fpgamgr_program_init(mgr);
 	if (status) {
-		dev_err(&mgr->dev, "program init failed with: %s\n",
-				strerror(-status));
+		dev_err(&mgr->dev, "program init failed with: %pe\n",
+				ERR_PTR(status));
 		return status;
 	}
 
@@ -328,8 +328,8 @@ static int socfpga_fpgamgr_program_finish(struct firmware_handler *fh)
 	/* Ensure the FPGA entering config done */
 	status = socfpga_fpgamgr_program_poll_cd(mgr);
 	if (status) {
-		dev_err(&mgr->dev, "poll for config done failed with: %s\n",
-				strerror(-status));
+		dev_err(&mgr->dev, "poll for config done failed with: %pe\n",
+				ERR_PTR(status));
 		return status;
 	}
 
@@ -338,8 +338,8 @@ static int socfpga_fpgamgr_program_finish(struct firmware_handler *fh)
 	/* Ensure the FPGA entering init phase */
 	status = socfpga_fpgamgr_program_poll_initphase(mgr);
 	if (status) {
-		dev_err(&mgr->dev, "poll for init phase failed with: %s\n",
-				strerror(-status));
+		dev_err(&mgr->dev, "poll for init phase failed with: %pe\n",
+				ERR_PTR(status));
 		return status;
 	}
 
@@ -348,8 +348,8 @@ static int socfpga_fpgamgr_program_finish(struct firmware_handler *fh)
 	/* Ensure the FPGA entering user mode */
 	status = socfpga_fpgamgr_program_poll_usermode(mgr);
 	if (status) {
-		dev_err(&mgr->dev, "poll for user mode with: %s\n",
-				strerror(-status));
+		dev_err(&mgr->dev, "poll for user mode with: %pe\n",
+				ERR_PTR(status));
 		return status;
 	}
 

@@ -1868,8 +1868,8 @@ static int mxcnd_probe(struct device *dev)
 		dev_info(dev, "no BBT found. creating one\n");
 		err = imxnd_create_bbt(this);
 		if (err)
-			dev_warn(dev, "Failed to create bbt: %s\n",
-				 strerror(-err));
+			dev_warn(dev, "Failed to create bbt: %pe\n",
+				 ERR_PTR(err));
 		err = 0;
 	}
 

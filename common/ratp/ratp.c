@@ -483,7 +483,7 @@ int barebox_ratp(struct console_device *cdev)
 
 	ret = console_register(&ctx->ratp_console);
 	if (ret) {
-		pr_err("registering console failed with %s\n", strerror(-ret));
+		pr_err("registering console failed with %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 

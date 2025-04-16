@@ -178,8 +178,8 @@ static int imx_pata_probe(struct device *dev)
 
 	ret = ide_port_register(ide);
 	if (ret) {
-		dev_err(dev, "Cannot register IDE interface: %s\n",
-				strerror(-ret));
+		dev_err(dev, "Cannot register IDE interface: %pe\n",
+			ERR_PTR(ret));
 		goto out_free_clk;
 	}
 

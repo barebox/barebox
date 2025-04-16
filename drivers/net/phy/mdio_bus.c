@@ -98,7 +98,7 @@ int mdiobus_detect(struct device *dev)
 			continue;
 		ret = phy_register_device(phydev);
 		if (ret)
-			dev_err(dev, "failed to register phy: %s\n", strerror(-ret));
+			dev_err(dev, "failed to register phy: %pe\n", ERR_PTR(ret));
 		dev_dbg(dev, "registered phy as /dev/%s\n", phydev->cdev.name);
 	}
 

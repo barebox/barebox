@@ -156,7 +156,7 @@ static int netconsole_init(void)
 
 	ret = console_register(cdev);
 	if (ret) {
-		pr_err("registering failed with %s\n", strerror(-ret));
+		pr_err("registering failed with %pe\n", ERR_PTR(ret));
 		kfree(priv);
 		return ret;
 	}

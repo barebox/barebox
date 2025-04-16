@@ -407,8 +407,8 @@ void of_fix_tree(struct device_node *node)
 
 		ret = of_fixup->fixup(node, of_fixup->context);
 		if (ret)
-			pr_warn("Failed to fixup node in %pS: %s\n",
-					of_fixup->fixup, strerror(-ret));
+			pr_warn("Failed to fixup node in %pS: %pe\n",
+					of_fixup->fixup, ERR_PTR(ret));
 	}
 }
 

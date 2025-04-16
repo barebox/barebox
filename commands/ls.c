@@ -92,7 +92,7 @@ int ls(const char *path, ulong flags)
 			sprintf(tmp, "%s/%s", path, entry->str);
 			ret = lstat(tmp, &s);
 			if (ret) {
-				printf("%s: %s\n", tmp, strerror(-ret));
+				printf("%s: %pe\n", tmp, ERR_PTR(ret));
 				continue;
 			}
 
@@ -108,7 +108,7 @@ int ls(const char *path, ulong flags)
 
 		ret = lstat(tmp, &s);
 		if (ret) {
-			printf("%s: %s\n", tmp, strerror(-ret));
+			printf("%s: %pe\n", tmp, ERR_PTR(ret));
 			continue;
 		}
 

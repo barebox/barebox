@@ -465,7 +465,7 @@ int imx_hab_write_srk_hash(const void *buf, unsigned flags)
 
 	ret = ops->read_srk_hash(cursrk);
 	if (ret) {
-		pr_err("Cannot read current SRK hash: %s\n", strerror(-ret));
+		pr_err("Cannot read current SRK hash: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 

@@ -70,15 +70,15 @@ static int do_loadenv(int argc, char *argv[])
 
 		ret = unlink_recursive(dirname, NULL);
 		if (ret && ret != -ENOENT) {
-			eprintf("cannot remove %s: %s\n", dirname,
-					strerror(-ret));
+			eprintf("cannot remove %s: %pe\n", dirname,
+					ERR_PTR(ret));
 			return 1;
 		}
 
 		ret = mkdir(dirname, 0);
 		if (ret) {
-			eprintf("cannot create %s: %s\n", dirname,
-					strerror(-ret));
+			eprintf("cannot create %s: %pe\n", dirname,
+					ERR_PTR(ret));
 			return ret;
 		}
 	}

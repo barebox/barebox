@@ -1128,8 +1128,8 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 				 minfo->writesize / nand->ecc.size,
 				 nand->ecc.size, nand->ecc.bytes);
 		if (err < 0) {
-			dev_err(oinfo->pdev, "ELM config failed: %s\n",
-				strerror(-err));
+			dev_err(oinfo->pdev, "ELM config failed: %pe\n",
+				ERR_PTR(err));
 			return err;
 		}
 

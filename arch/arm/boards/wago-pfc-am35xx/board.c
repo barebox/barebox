@@ -43,7 +43,7 @@ static int pfc200_phy_fixup(struct mii_bus *mii, int phyadr)
 
 	ret = phy_write(phydev, MII_BMCR, BMCR_ANENABLE | BMCR_HP_MDIX);
 	if (ret)
-		pr_err("Failed to write to phy: %s\n", strerror(-ret));
+		pr_err("Failed to write to phy: %pe\n", ERR_PTR(ret));
 
 	return ret;
 }

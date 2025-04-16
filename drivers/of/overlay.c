@@ -326,7 +326,7 @@ int of_overlay_apply_file(struct device_node *root, const char *filename,
 	if (ret == -ENODEV)
 		pr_debug("Not applied %s (not compatible)\n", filename);
 	else if (ret)
-		pr_err("Cannot apply %s: %s\n", filename, strerror(-ret));
+		pr_err("Cannot apply %s: %pe\n", filename, ERR_PTR(ret));
 	else
 		pr_info("Applied %s\n", filename);
 

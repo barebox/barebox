@@ -131,7 +131,7 @@ static void storage_by_uuid_add_partitions(struct sbu *sbu, struct cdev *rcdev)
 
 	ret = devfs_create(&sbu->cdev);
 	if (ret) {
-		dev_err(sbu->dev, "Failed to create cdev: %s\n", strerror(-ret));
+		dev_err(sbu->dev, "Failed to create cdev: %pe\n", ERR_PTR(ret));
 		return;
 	}
 

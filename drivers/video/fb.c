@@ -370,8 +370,8 @@ int register_framebuffer(struct fb_info *info)
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_SIMPLEFB)) {
 		ret = fb_register_simplefb(info);
 		if (ret)
-			dev_err(&info->dev, "failed to register simplefb: %s\n",
-					strerror(-ret));
+			dev_err(&info->dev, "failed to register simplefb: %pe\n",
+					ERR_PTR(ret));
 	}
 
 	if (IS_ENABLED(CONFIG_FRAMEBUFFER_CONSOLE))

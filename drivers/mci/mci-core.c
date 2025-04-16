@@ -2685,8 +2685,8 @@ static int mci_card_probe(struct mci *mci)
 
 	ret = regulator_enable(host->supply);
 	if (ret) {
-		dev_err(&mci->dev, "failed to enable regulator: %s\n",
-			strerror(-ret));
+		dev_err(&mci->dev, "failed to enable regulator: %pe\n",
+			ERR_PTR(ret));
 		return ret;
 	}
 

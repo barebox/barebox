@@ -68,7 +68,7 @@ static int do_filetype(int argc, char *argv[])
 
 	ret = file_name_detect_type(filename, &type);
 	if (ret) {
-		printf("failed to detect type of %s: %s\n", filename, strerror(-ret));
+		printf("failed to detect type of %s: %pe\n", filename, ERR_PTR(ret));
 		return COMMAND_ERROR;
 	}
 

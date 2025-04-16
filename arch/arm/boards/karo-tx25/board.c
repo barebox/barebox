@@ -46,7 +46,7 @@ static void noinline gpio_fec_active(void)
 	/* power down phy, put into reset */
 	ret = gpio_request_array(fec_gpios, ARRAY_SIZE(fec_gpios));
 	if (ret) {
-		pr_err("Failed to request fec gpios: %s\n", strerror(-ret));
+		pr_err("Failed to request fec gpios: %pe\n", ERR_PTR(ret));
 		return;
 	}
 

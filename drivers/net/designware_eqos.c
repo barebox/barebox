@@ -851,7 +851,7 @@ static int eqos_init(struct device *dev, struct eqos *eqos)
 
 	ret = eqos_init_resources(eqos);
 	if (ret) {
-		dev_err(dev, "eqos_init_resources() failed: %s\n", strerror(-ret));
+		dev_err(dev, "eqos_init_resources() failed: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 

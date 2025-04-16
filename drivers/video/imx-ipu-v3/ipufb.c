@@ -167,13 +167,13 @@ static int ipu_crtc_mode_set(struct ipufb_info *fbi,
 				  0, 0, mode->xres, mode->yres,
 				  x, y, mode->xres, mode->yres);
 	if (ret) {
-		dev_err(fbi->dev, "initialising plane failed with %s\n", strerror(-ret));
+		dev_err(fbi->dev, "initialising plane failed with %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 
 	ret = ipu_di_enable(fbi->di);
 	if (ret) {
-		dev_err(fbi->dev, "enabling di failed with %s\n", strerror(-ret));
+		dev_err(fbi->dev, "enabling di failed with %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 
@@ -330,7 +330,7 @@ static int ipufb_probe(struct device *dev)
 
 		ret = vpl_ioctl(&fbi->vpl, 2 + fbi->dino, VPL_GET_VIDEOMODES, &info->modes);
 		if (ret)
-			dev_dbg(fbi->dev, "failed to get modes: %s\n", strerror(-ret));
+			dev_dbg(fbi->dev, "failed to get modes: %pe\n", ERR_PTR(ret));
 
 		info->dev.parent = dev;
 		ret = register_framebuffer(info);

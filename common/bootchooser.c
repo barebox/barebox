@@ -531,13 +531,13 @@ int bootchooser_save(struct bootchooser *bc)
 	if (IS_ENABLED(CONFIG_STATE) && bc->state) {
 		ret = state_save(bc->state);
 		if (ret) {
-			pr_err("Cannot save state: %s\n", strerror(-ret));
+			pr_err("Cannot save state: %pe\n", ERR_PTR(ret));
 			return ret;
 		}
 	} else {
 		ret = nvvar_save();
 		if (ret) {
-			pr_err("Cannot save nv variables: %s\n", strerror(-ret));
+			pr_err("Cannot save nv variables: %pe\n", ERR_PTR(ret));
 			return ret;
 		}
 	}
@@ -568,7 +568,7 @@ int bootchooser_put(struct bootchooser *bc)
 
 	ret = bootchooser_save(bc);
 	if (ret)
-		pr_err("Failed to save bootchooser state: %s\n", strerror(-ret));
+		pr_err("Failed to save bootchooser state: %pe\n", ERR_PTR(ret));
 
 	list_for_each_entry_safe(target, tmp, &bc->targets, list) {
 		free(target->boot);

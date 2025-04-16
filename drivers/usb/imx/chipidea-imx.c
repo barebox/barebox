@@ -57,8 +57,8 @@ static int imx_chipidea_port_init(void *drvdata)
 		if (IS_ENABLED(CONFIG_USB_ULPI)) {
 			ret = ulpi_setup(ci->base + 0x170, 1);
 			if (ret)
-				dev_err(ci->dev, "ULPI setup failed with %s\n",
-						strerror(-ret));
+				dev_err(ci->dev, "ULPI setup failed with %pe\n",
+						ERR_PTR(ret));
 			mdelay(20);
 		} else {
 			dev_err(ci->dev, "no ULPI support available\n");
@@ -72,7 +72,7 @@ static int imx_chipidea_port_init(void *drvdata)
 	if (ci->have_usb_misc) {
 		ret = imx_usbmisc_port_init(ci->usbmisc, ci->portno, ci->flags);
 		if (ret)
-			dev_err(ci->dev, "misc init failed: %s\n", strerror(-ret));
+			dev_err(ci->dev, "misc init failed: %pe\n", ERR_PTR(ret));
 	}
 
 	/* PFSC bit is reset by ehci_reset(), thus have to set it not in
@@ -94,7 +94,7 @@ static int imx_chipidea_port_post_init(void *drvdata)
 	if (ci->have_usb_misc) {
 		ret = imx_usbmisc_port_post_init(ci->usbmisc, ci->portno, ci->flags);
 		if (ret)
-			dev_err(ci->dev, "post misc init failed: %s\n", strerror(-ret));
+			dev_err(ci->dev, "post misc init failed: %pe\n", ERR_PTR(ret));
 	}
 
 	return ret;

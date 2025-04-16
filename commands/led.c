@@ -86,7 +86,7 @@ static int do_led(int argc, char *argv[])
 
 	ret = led_set(led, value);
 	if (ret < 0) {
-		printf("led: %s\n", strerror(-ret));
+		printf("led: %pe\n", ERR_PTR(ret));
 		return COMMAND_ERROR;
 	}
 

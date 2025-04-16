@@ -38,7 +38,7 @@ static int ccbv2_probe(struct device *dev)
 
 	ret = of_register_overlay(overlay);
 	if (ret) {
-		printf("cannot apply oftree overlay: %s\n", strerror(-ret));
+		printf("cannot apply oftree overlay: %pe\n", ERR_PTR(ret));
 		goto err;
 	}
 

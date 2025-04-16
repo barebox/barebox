@@ -81,7 +81,7 @@ static int do_oftree(int argc, char *argv[])
 
 		ret = of_set_root_node(root);
 		if (ret) {
-			printf("setting root node failed: %s\n", strerror(-ret));
+			printf("setting root node failed: %pe\n", ERR_PTR(ret));
 			of_delete_node(root);
 			goto out;
 		}

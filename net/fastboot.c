@@ -410,7 +410,7 @@ static void fastboot_handler(void *ctx, char *packet, unsigned int raw_len)
 		/* poller just unregistered in fastboot_net_abort() */
 		ret = poller_register(&fbn->poller, "fastboot");
 		if (ret) {
-			pr_err("Cannot register poller: %s\n", strerror(-ret));
+			pr_err("Cannot register poller: %pe\n", ERR_PTR(ret));
 			return;
 		}
 		fastboot_send(fbn, header, NULL);

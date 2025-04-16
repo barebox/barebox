@@ -412,7 +412,7 @@ static int prt_imx6_usb_boot(struct bootentry *entry, int verbose, int dryrun)
 	return 0;
 
 exit_usb_boot:
-	dev_err(dev, "Failed to run usb boot: %s\n", strerror(-ret));
+	dev_err(dev, "Failed to run usb boot: %pe\n", ERR_PTR(ret));
 
 	return ret;
 }

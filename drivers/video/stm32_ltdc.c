@@ -310,7 +310,7 @@ static int ltdc_probe(struct device *dev)
 
 		ret = vpl_ioctl(&priv->vpl, priv->id, VPL_GET_VIDEOMODES, &info->modes);
 		if (ret)
-			dev_dbg(dev, "failed to get modes: %s\n", strerror(-ret));
+			dev_dbg(dev, "failed to get modes: %pe\n", ERR_PTR(ret));
 
 		ret = register_framebuffer(info);
 		if (ret < 0) {

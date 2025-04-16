@@ -421,7 +421,7 @@ int console_register(struct console_device *newcdev)
 	ret = devfs_create(&newcdev->devfs);
 
 	if (ret) {
-		pr_err("devfs entry creation failed: %s\n", strerror(-ret));
+		pr_err("devfs entry creation failed: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 

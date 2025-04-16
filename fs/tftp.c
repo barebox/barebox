@@ -1086,7 +1086,7 @@ static int tftp_probe(struct device *dev)
 
 	ret = resolv(fsdev->backingstore, &priv->server);
 	if (ret) {
-		pr_err("Cannot resolve \"%s\": %s\n", fsdev->backingstore, strerror(-ret));
+		pr_err("Cannot resolve \"%s\": %pe\n", fsdev->backingstore, ERR_PTR(ret));
 		goto err;
 	}
 

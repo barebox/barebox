@@ -71,7 +71,7 @@ static int do_trigger(int argc, char *argv[])
 	}
 
 	if (ret)
-		printf("trigger failed: %s\n", strerror(-ret));
+		printf("trigger failed: %pe\n", ERR_PTR(ret));
 	return ret ? 1 : 0;
 }
 

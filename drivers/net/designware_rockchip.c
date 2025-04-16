@@ -280,13 +280,13 @@ static int eqos_init_rk_gmac(struct device *dev, struct eqos *eqos)
 
 	ret = clk_bulk_get(dev, priv->num_clks, priv->clks);
 	if (ret) {
-		dev_err(dev, "Failed to get clks: %s\n", strerror(-ret));
+		dev_err(dev, "Failed to get clks: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 
 	ret = clk_bulk_enable(priv->num_clks, priv->clks);
 	if (ret) {
-		dev_err(dev, "Failed to enable clks: %s\n", strerror(-ret));
+		dev_err(dev, "Failed to enable clks: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 

@@ -793,7 +793,7 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 	ret = 0;
 err:
 	if (ret)
-		dev_err(&mtd->dev, "Failed to create bitflips: %s\n", strerror(-ret));
+		dev_err(&mtd->dev, "Failed to create bitflips: %pe\n", ERR_PTR(ret));
 
 	free(buf);
 	free(oobbuf);

@@ -154,8 +154,8 @@ static int eqos_init_stm32(struct device *dev, struct eqos *eqos)
 	ret = of_property_read_u32_index(dev->of_node, "st,syscon",
 					 1, &priv->mode_reg);
 	if (ret) {
-		dev_err(dev, "Can't get sysconfig mode offset (%s)\n",
-			strerror(-ret));
+		dev_err(dev, "Can't get sysconfig mode offset (%pe)\n",
+			ERR_PTR(ret));
 		return -EINVAL;
 	}
 
@@ -173,7 +173,7 @@ static int eqos_init_stm32(struct device *dev, struct eqos *eqos)
 
 	ret = eqos_set_mode_stm32(priv, eqos->interface);
 	if (ret)
-		dev_warn(dev, "Configuring syscfg failed: %s\n", strerror(-ret));
+		dev_warn(dev, "Configuring syscfg failed: %pe\n", ERR_PTR(ret));
 
 	priv->num_clks = ARRAY_SIZE(stm32_clks) + 1;
 	priv->clks = xmalloc(priv->num_clks * sizeof(*priv->clks));
@@ -181,7 +181,7 @@ static int eqos_init_stm32(struct device *dev, struct eqos *eqos)
 
 	ret = clk_bulk_get(dev, ARRAY_SIZE(stm32_clks), priv->clks);
 	if (ret) {
-		dev_err(dev, "Failed to get clks: %s\n", strerror(-ret));
+		dev_err(dev, "Failed to get clks: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 

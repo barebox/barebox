@@ -1235,7 +1235,7 @@ static int cpsw_probe(struct device *dev)
 	for (i = 0; i < priv->num_slaves; i++) {
 		ret = cpsw_slave_setup(&priv->slaves[i], i, priv);
 		if (ret) {
-			dev_err(dev, "Failed to setup slave %d: %s\n", i, strerror(-ret));
+			dev_err(dev, "Failed to setup slave %d: %pe\n", i, ERR_PTR(ret));
 			continue;
 		}
 	}

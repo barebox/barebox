@@ -61,13 +61,13 @@ static int do_nv(int argc, char *argv[])
 		if (do_remove) {
 			ret = nvvar_remove(argv[i]);
 			if (ret) {
-				printf("Failed removing %s: %s\n", argv[i], strerror(-ret));
+				printf("Failed removing %s: %pe\n", argv[i], ERR_PTR(ret));
 				failed = 1;
 			}
 		} else {
 			ret = nvvar_add(argv[i], value);
 			if (ret) {
-				printf("Failed adding %s: %s\n", argv[i], strerror(-ret));
+				printf("Failed adding %s: %pe\n", argv[i], ERR_PTR(ret));
 				failed = 1;
 			}
 		}

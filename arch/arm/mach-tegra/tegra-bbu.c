@@ -41,8 +41,8 @@ static int tegra_bbu_emmc_handler(struct bbu_handler *handler,
 
 	ret = write(fd, data->image, data->len);
 	if (ret < 0) {
-		pr_err("writing update to %s failed with %s\n",
-			data->devicefile, strerror(-ret));
+		pr_err("writing update to %s failed with %pe\n",
+			data->devicefile, ERR_PTR(ret));
 		goto err_close;
 	}
 

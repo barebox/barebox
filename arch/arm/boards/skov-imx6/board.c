@@ -43,8 +43,8 @@ static int eth_of_fixup_node(struct device_node *root, const char *node_path,
 
 	ret = of_set_property(node, "mac-address", ethaddr, ETH_ALEN, 1);
 	if (ret)
-		dev_err(skov_priv->dev, "Setting mac-address property of %pOF failed with: %s.\n",
-		        node, strerror(-ret));
+		dev_err(skov_priv->dev, "Setting mac-address property of %pOF failed with: %pe.\n",
+		        node, ERR_PTR(ret));
 
 	return ret;
 }

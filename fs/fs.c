@@ -3498,8 +3498,8 @@ static int do_lookup_dentry(int argc, char *argv[])
 
 	ret = filename_lookup(AT_FDCWD, getname(argv[1]), 0, &path);
 	if (ret) {
-		printf("Cannot lookup path \"%s\": %s\n",
-		       argv[1], strerror(-ret));
+		printf("Cannot lookup path \"%s\": %pe\n",
+		       argv[1], ERR_PTR(ret));
 		return 1;
 	}
 

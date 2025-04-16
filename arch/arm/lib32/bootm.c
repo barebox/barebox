@@ -184,7 +184,7 @@ static int bootm_load_tee_from_fit(struct image_data *data)
 		ret = fit_open_image(data->os_fit, data->fit_config, "tee",
 				     &tee, &tee_size);
 		if (ret) {
-			pr_err("Error opening tee fit image: %s\n", strerror(-ret));
+			pr_err("Error opening tee fit image: %pe\n", ERR_PTR(ret));
 			return ret;
 		}
 		memcpy(&hdr, tee, sizeof(hdr));

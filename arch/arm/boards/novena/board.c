@@ -22,7 +22,7 @@ static void power_on_audio_codec(void)
 	int rc = of_devices_ensure_probed_by_name("regulator-audio-codec");
 
 	if (rc < 0)
-		pr_err("Unable to power on audio codec: %s\n", strerror(-rc));
+		pr_err("Unable to power on audio codec: %pe\n", ERR_PTR(rc));
 }
 
 static struct novena_eeprom *novena_read_eeprom(void)
@@ -40,14 +40,14 @@ static struct novena_eeprom *novena_read_eeprom(void)
 
 	rc = of_device_ensure_probed_by_alias("eeprom0");
 	if (rc < 0) {
-		pr_err("Unable to probe eeprom0: %s\n", strerror(-rc));
+		pr_err("Unable to probe eeprom0: %pe\n", ERR_PTR(rc));
 		return NULL;
 	}
 
 	rc = read_file_2("/dev/eeprom0", &read, &eeprom, max);
 
 	if (rc < 0 && rc != -EFBIG) {
-		pr_err("Unable to read Novena EEPROM: %s\n", strerror(-rc));
+		pr_err("Unable to read Novena EEPROM: %pe\n", ERR_PTR(rc));
 		return NULL;
 	} else if (read != max) {
 		pr_err("Short read from Novena EEPROM?\n");

@@ -390,8 +390,8 @@ void __noreturn start_barebox(void)
 		pr_debug("initcall-> %pS\n", *initcall);
 		result = (*initcall)();
 		if (result)
-			pr_err("initcall %pS failed: %s\n", *initcall,
-					strerror(-result));
+			pr_err("initcall %pS failed: %pe\n", *initcall,
+					ERR_PTR(result));
 	}
 
 	pr_debug("initcalls done\n");

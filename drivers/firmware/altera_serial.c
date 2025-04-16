@@ -313,7 +313,7 @@ static int altera_spi_of(struct device *dev, struct fpga_spi *this)
 	return 0;
 
 out:
-	dev_err(dev, "Cannot request \"%s\" gpio: %s\n", name, strerror(-ret));
+	dev_err(dev, "Cannot request \"%s\" gpio: %pe\n", name, ERR_PTR(ret));
 
 	return ret;
 }

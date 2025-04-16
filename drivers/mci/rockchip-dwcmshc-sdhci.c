@@ -323,15 +323,15 @@ static int rk_sdhci_probe(struct device *dev)
 
 	ret = clk_bulk_get(host->mci.hw_dev, CLK_MAX, host->clks);
 	if (ret) {
-		dev_err(host->mci.hw_dev, "failed to get clocks: %s\n",
-			strerror(-ret));
+		dev_err(host->mci.hw_dev, "failed to get clocks: %pe\n",
+			ERR_PTR(ret));
 		return ret;
 	}
 
 	ret = clk_bulk_enable(CLK_MAX, host->clks);
 	if (ret) {
-		dev_err(host->mci.hw_dev, "failed to enable clocks: %s\n",
-			strerror(-ret));
+		dev_err(host->mci.hw_dev, "failed to enable clocks: %pe\n",
+			ERR_PTR(ret));
 		return ret;
 	}
 

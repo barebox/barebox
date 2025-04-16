@@ -1456,7 +1456,7 @@ static int nfs_probe(struct device *dev)
 
 	ret = resolv(tmp, &npriv->server);
 	if (ret) {
-		printf("cannot resolve \"%s\": %s\n", tmp, strerror(-ret));
+		printf("cannot resolve \"%s\": %pe\n", tmp, ERR_PTR(ret));
 		goto err1;
 	}
 

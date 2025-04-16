@@ -304,7 +304,7 @@ static int imx6_pcie_enable_ref_clk(struct imx6_pcie *imx6_pcie)
 
 	switch (imx6_pcie->drvdata->variant) {
 	case IMX6QP:
-	case IMX6Q:		/* FALLTHROUGH */
+	case IMX6Q:
 		/* power up core phy and enable ref clock */
 		gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
 		gpr1 &= ~IMX6Q_GPR1_PCIE_TEST_PD;
@@ -481,7 +481,7 @@ static void imx6_pcie_init_phy(struct imx6_pcie *imx6_pcie)
 		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
 		break;
 	case IMX6QP:
-	case IMX6Q:	/* FALLTHROUGH */
+	case IMX6Q:
 		gpr12 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
 		gpr12 &= ~IMX6Q_GPR12_PCIE_CTL_2;
 		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);

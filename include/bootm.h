@@ -160,22 +160,4 @@ void bootm_force_signed_images(void);
 
 void *booti_load_image(struct image_data *data, phys_addr_t *oftree);
 
-struct bootm_overrides {
-	const char *os_file;
-	const char *oftree_file;
-	const char *initrd_file;
-};
-
-#ifdef CONFIG_BOOT_OVERRIDE
-void bootm_set_overrides(const struct bootm_overrides *overrides);
-#else
-static inline void bootm_set_overrides(const struct bootm_overrides *overrides) {}
-#endif
-
-static inline void bootm_unset_overrides(void)
-{
-	struct bootm_overrides overrides = {};
-	bootm_set_overrides(&overrides);
-}
-
 #endif /* __BOOTM_H */

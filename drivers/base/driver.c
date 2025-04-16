@@ -725,6 +725,7 @@ const void *device_get_match_data(struct device *dev)
 
 	return NULL;
 }
+EXPORT_SYMBOL(device_get_match_data);
 
 static void device_set_deferred_probe_reason(struct device *dev,
 					     const struct va_format *vaf)

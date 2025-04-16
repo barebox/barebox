@@ -561,6 +561,7 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 	case 'J':
 		if (fmt[1] == 'P' && IS_ENABLED(CONFIG_JSMN))
 			return jsonpath_string(buf, end, ptr, field_width, precision, flags, fmt);
+		break;
         case 'M':
 		/* Colon separated: 00:01:02:03:04:05 */
 		return mac_address_string(buf, end, ptr, field_width, precision, flags, fmt);
@@ -774,6 +775,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 
 			case 'x':
 				flags |= SMALL;
+				fallthrough;
 			case 'X':
 				base = 16;
 				break;
@@ -781,6 +783,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			case 'd':
 			case 'i':
 				flags |= SIGN;
+				fallthrough;
 			case 'u':
 				break;
 

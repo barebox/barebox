@@ -58,10 +58,10 @@ const char *bootsource_get_alias_stem(enum bootsource src)
 	case BOOTSOURCE_SPI_EEPROM:
 	case BOOTSOURCE_SPI_NOR:
 		return bootsource_str[BOOTSOURCE_SPI];
-	case BOOTSOURCE_SERIAL:	/* FALLTHROUGH */
-	case BOOTSOURCE_I2C:	/* FALLTHROUGH */
-	case BOOTSOURCE_MMC:	/* FALLTHROUGH */
-	case BOOTSOURCE_SPI:	/* FALLTHROUGH */
+	case BOOTSOURCE_SERIAL:
+	case BOOTSOURCE_I2C:
+	case BOOTSOURCE_MMC:
+	case BOOTSOURCE_SPI:
 	case BOOTSOURCE_CAN:
 		return bootsource_str[src];
 	default:

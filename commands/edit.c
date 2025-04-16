@@ -46,27 +46,27 @@ static char *screenline(char *line, int *pos)
 	int i, outpos = 0;
 	static char lbuf[1024];
 
-	memset(lbuf, 0, 1024);
-
 	if (!line) {
-		lbuf[0] = '~';
-		return lbuf;
+		lbuf[outpos++] = '~';
+		goto out;
 	}
 
-	for (i = 0; outpos < 1024; i++) {
+	for (i = 0; outpos < sizeof(lbuf) - 1; i++) {
 		if (i == textx && pos)
 			*pos = outpos;
 		if (!line[i])
 			break;
 		if (line[i] == '\t') {
 			lbuf[outpos++] = ' ';
-			while (outpos % TABSPACE)
+			while (outpos < sizeof(lbuf) - 1 && outpos % TABSPACE)
 				lbuf[outpos++] = ' ';
 			continue;
 		}
 		lbuf[outpos++] = line[i];
 	}
 
+out:
+	lbuf[outpos] = 0;
 	return lbuf;
 }
 

@@ -185,7 +185,6 @@ static int pca954x_probe(struct device *dev)
 	struct i2c_adapter *adap = to_i2c_adapter(client->dev.parent);
 	int num;
 	struct pca954x *data;
-	uintptr_t tmp;
 	int ret = -ENODEV;
 	struct gpio_desc *gpio;
 	bool idle_disconnect;
@@ -211,10 +210,7 @@ static int pca954x_probe(struct device *dev)
 	if (i2c_smbus_write_byte(client, 0) < 0)
 		goto exit_free;
 
-	ret = dev_get_drvdata(dev, (const void **)&tmp);
-	data->type = tmp;
-	if (ret)
-		goto exit_free;
+	data->type = (uintptr_t)device_get_match_data(dev);
 
 	idle_disconnect = of_property_read_bool(dev->of_node,
 						"i2c-mux-idle-disconnect");

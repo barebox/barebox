@@ -1123,7 +1123,7 @@ i2c_omap_probe(struct device *pdev)
 		major = OMAP_I2C_REV_SCHEME_0_MAJOR(i2c_omap->rev);
 		break;
 	case OMAP_I2C_SCHEME_1:
-		/* FALLTHROUGH */
+		fallthrough;
 	default:
 		i2c_omap->regs = (u8 *)reg_map_ip_v2;
 		rev = (rev << 16) |
@@ -1131,6 +1131,7 @@ i2c_omap_probe(struct device *pdev)
 		minor = OMAP_I2C_REV_SCHEME_1_MINOR(rev);
 		major = OMAP_I2C_REV_SCHEME_1_MAJOR(rev);
 		i2c_omap->rev = rev;
+		break;
 	}
 
 	i2c_omap->errata = 0;

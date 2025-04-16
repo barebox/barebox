@@ -304,7 +304,7 @@ static bool e1000_is_second_port(struct e1000_hw *hw)
 	case e1000_82571:
 		if (e1000_read_reg(hw, E1000_STATUS) & E1000_STATUS_FUNC_1)
 			return true;
-		/* Fallthrough */
+		fallthrough;
 	default:
 		return false;
 	}
@@ -785,7 +785,7 @@ static int e1000_open(struct eth_device *edev)
 		reg_data = e1000_read_reg_array(hw, E1000_FFLT, 1);
 		reg_data &= ~0x00100000;
 		e1000_write_reg_array(hw, E1000_FFLT, 1, reg_data);
-		/* Fall through */
+		fallthrough;
 	case e1000_82571:
 	case e1000_82572:
 	case e1000_ich8lan:
@@ -2795,8 +2795,7 @@ static int32_t e1000_get_phy_cfg_done(struct e1000_hw *hw)
 		/* Separate *_CFG_DONE_* bit for each port */
 		if (e1000_is_second_port(hw))
 			cfg_mask = E1000_EEPROM_CFG_DONE_PORT_1;
-		/* Fall Through */
-
+		fallthrough;
 	case e1000_82571:
 	case e1000_82572:
 	case e1000_igb:

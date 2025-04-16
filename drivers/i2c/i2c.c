@@ -765,6 +765,7 @@ struct bus_type i2c_bus = {
 	.name = "i2c",
 	.match = device_match_of_modalias,
 };
+EXPORT_SYMBOL(i2c_bus);
 
 static int i2c_bus_init(void)
 {

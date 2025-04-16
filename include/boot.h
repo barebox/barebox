@@ -5,6 +5,7 @@
 #include <of.h>
 #include <menu.h>
 #include <environment.h>
+#include <bootm-overrides.h>
 
 #ifdef CONFIG_FLEXIBLE_BOOTARGS
 const char *linux_bootargs_get(void);
@@ -33,6 +34,7 @@ struct bootentry {
 	char *description;
 	int (*boot)(struct bootentry *entry, int verbose, int dryrun);
 	void (*release)(struct bootentry *entry);
+	struct bootm_overrides overrides;
 };
 
 int bootentries_add_entry(struct bootentries *entries, struct bootentry *entry);

@@ -135,6 +135,7 @@ int pr_print(int level, const char *fmt, ...)
 
 	return i;
 }
+EXPORT_SYMBOL(pr_print);
 
 int dev_printf(int level, const struct device *dev, const char *format, ...)
 {
@@ -161,6 +162,7 @@ int dev_printf(int level, const struct device *dev, const char *format, ...)
 
 	return ret;
 }
+EXPORT_SYMBOL(dev_printf);
 
 #ifdef CONFIG_CONSOLE_ALLOW_COLOR
 static unsigned int __console_allow_color = 1;

@@ -218,7 +218,7 @@ static int mv88e6xxx_port_set_speed(struct mv88e6xxx_chip *chip, int port,
 			MV88E6390_PORT_MAC_CTL_ALTSPEED;
 		break;
 	case 10000:
-		/* all bits set, fall through... */
+		/* all bits set */
 		fallthrough;
 	case SPEED_UNFORCED:
 		ctrl = MV88E6XXX_PORT_MAC_CTL_SPEED_UNFORCED;
@@ -619,7 +619,7 @@ int mv88e6xxx_port_probe(struct mv88e6xxx_chip *chip)
 					  status);
 			switch (i) {
 			case 4:
-			case 5:	/* FALLTHROUGH */
+			case 5:
 				if (cmode == MV88E6165_PORT_STS_CMODE_SGMII) {
 					/*
 					 * Port is configured to SGMII

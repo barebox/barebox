@@ -1986,7 +1986,7 @@ static int do_scsi_command(struct fsg_common *common)
 	case SCSI_RELEASE:
 	case SCSI_RESERVE:
 	case SCSI_SEND_DIAG:
-		/* Fall through */
+		fallthrough;
 
 	default:
 unknown_cmnd:

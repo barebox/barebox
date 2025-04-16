@@ -7,6 +7,7 @@ void *dma_alloc(size_t size)
 {
 	return xmemalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
 }
+EXPORT_SYMBOL(dma_alloc);
 
 void *dma_zalloc(size_t size)
 {
@@ -18,6 +19,7 @@ void *dma_zalloc(size_t size)
 
 	return buf;
 }
+EXPORT_SYMBOL(dma_zalloc);
 
 void dma_sync_single_for_cpu(struct device *dev, dma_addr_t address,
 			     size_t size, enum dma_data_direction dir)
@@ -29,6 +31,7 @@ void dma_sync_single_for_cpu(struct device *dev, dma_addr_t address,
 	if (!dev_is_dma_coherent(dev))
 		arch_sync_dma_for_cpu(ptr, size, dir);
 }
+EXPORT_SYMBOL(dma_sync_single_for_cpu);
 
 void dma_sync_single_for_device(struct device *dev, dma_addr_t address,
 					      size_t size, enum dma_data_direction dir)
@@ -40,6 +43,7 @@ void dma_sync_single_for_device(struct device *dev, dma_addr_t address,
 	if (!dev_is_dma_coherent(dev))
 		arch_sync_dma_for_device(ptr, size, dir);
 }
+EXPORT_SYMBOL(dma_sync_single_for_device);
 
 dma_addr_t dma_map_single(struct device *dev, void *ptr,
 					size_t size, enum dma_data_direction dir)
@@ -53,6 +57,7 @@ dma_addr_t dma_map_single(struct device *dev, void *ptr,
 
 	return dma_addr;
 }
+EXPORT_SYMBOL(dma_map_single);
 
 void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
 				    size_t size, enum dma_data_direction dir)
@@ -62,3 +67,4 @@ void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
 
 	debug_dma_unmap(dev, dma_addr, size, dir);
 }
+EXPORT_SYMBOL(dma_unmap_single);

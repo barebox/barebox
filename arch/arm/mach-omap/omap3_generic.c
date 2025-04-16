@@ -117,11 +117,9 @@ u32 get_cpu_rev(void)
 			retval = OMAP36XX_ES1_1;
 			break;
 		case 2:
-			/*
-			 * Fall through the default case.
-			 */
 		default:
 			retval = OMAP36XX_ES1_2;
+			break;
 		}
 		break;
 	case CPU_3430:
@@ -149,11 +147,9 @@ u32 get_cpu_rev(void)
 				retval = OMAP34XX_ES3;
 				break;
 			case 4:
-				/*
-				 * Same as default case
-				 */
 			default:
 				retval = OMAP34XX_ES3_1;
+				break;
 			}
 		}
 	}

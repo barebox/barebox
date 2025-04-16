@@ -61,7 +61,7 @@ static int pe_loader_relocate(const IMAGE_BASE_RELOCATION *rel,
 		return 0;
 
 	end = (const IMAGE_BASE_RELOCATION *)((const char *)rel + rel_size);
-	while (rel < end && rel->SizeOfBlock) {
+	while (rel + 1 < end && rel->SizeOfBlock) {
 		const uint16_t *relocs = (const uint16_t *)(rel + 1);
 		i = (rel->SizeOfBlock - sizeof(*rel)) / sizeof(uint16_t);
 		while (i--) {
@@ -373,7 +373,8 @@ int pe_load(struct pe_image *pe)
 
 void pe_close(struct pe_image *pe)
 {
-	release_sdram_region(pe->code);
+	if (pe->code)
+		release_sdram_region(pe->code);
 	free(pe->bin);
 	free(pe);
 }

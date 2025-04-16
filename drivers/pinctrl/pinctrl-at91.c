@@ -370,6 +370,9 @@ static struct at91_pinctrl_mux_ops at91sam9x5_ops = {
 
 static struct of_device_id at91_pinctrl_dt_ids[] = {
 	{
+		.compatible = "atmel,sama5d3-pinctrl",
+		.data = &at91sam9x5_ops,
+	}, {
 		.compatible = "atmel,at91rm9200-pinctrl",
 		.data = &at91rm9200_ops,
 	}, {

@@ -301,8 +301,7 @@ static int fsl_esdhc_probe(struct device *dev)
 
 	ret = clk_enable(host->clk);
 	if (ret) {
-		dev_err(dev, "Failed to enable clock: %s\n",
-			strerror(ret));
+		dev_err(dev, "Failed to enable clock: %pe\n", ERR_PTR(ret));
 		goto err_clk_put;
 	}
 

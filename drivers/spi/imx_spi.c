@@ -618,8 +618,8 @@ static int imx_spi_probe(struct device *dev)
 
 	ret = clk_enable(imx->clk);
 	if (ret) {
-		dev_err(dev, "Failed to enable clock: %s\n",
-			strerror(ret));
+		dev_err(dev, "Failed to enable clock: %pe\n",
+			ERR_PTR(ret));
 		return ret;
 	}
 

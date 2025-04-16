@@ -135,7 +135,7 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 
 		err = ubi_check_volume(ubi, vol->vol_id);
 		if (err < 0) {
-			ubi_err(ubi, "ubi volume check failed: %s", strerror(err));
+			ubi_err(ubi, "ubi volume check failed: %pe", ERR_PTR(err));
 			return err;
 		}
 

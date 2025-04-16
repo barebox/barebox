@@ -139,7 +139,7 @@ err_open:
 	close(fd);
 err:
 	if (ret)
-		pr_err("can't read eeprom /dev/eeprom0 (%s)\n", strerror(ret));
+		pr_err("can't read eeprom /dev/eeprom0 (%pe)\n", ERR_PTR(ret));
 
 	return ret;
 }

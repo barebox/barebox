@@ -122,7 +122,7 @@ err_open:
 	close(fd);
 err:
 	if (ret)
-		pr_err("can not read 1-wire %s (%s)\n", file, strerror(ret));
+		pr_err("can not read 1-wire %s (%pe)\n", file, ERR_PTR(ret));
 	return ret;
 }
 

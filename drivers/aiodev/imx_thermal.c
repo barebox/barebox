@@ -142,8 +142,8 @@ static int imx_thermal_probe(struct device *dev)
 
 	ret = clk_enable(imx_thermal->clk);
 	if (ret) {
-		dev_err(dev, "Failed to enable clock: %s\n",
-			  strerror(ret));
+		dev_err(dev, "Failed to enable clock: %pe\n",
+			  ERR_PTR(ret));
 		goto put_clock;
 	}
 

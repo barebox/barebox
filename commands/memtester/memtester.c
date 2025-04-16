@@ -91,9 +91,10 @@ static int do_memtester(int argc, char **argv) {
 
         switch (opt) {
             case 'm':
-                if (kstrtoul(optarg, 0, &testmask)) {
-                    printf("error parsing MEMTESTER_TEST_MASK %s: %s\n",
-                            optarg, strerror(errno));
+                ret = kstrtoul(optarg, 0, &testmask);
+                if (ret) {
+                    printf("error parsing MEMTESTER_TEST_MASK %s: %pe\n",
+                            optarg, ERR_PTR(ret));
                     return COMMAND_ERROR_USAGE;
                 }
                 printf("using testmask 0x%lx\n", testmask);

@@ -152,21 +152,23 @@ static int get_kernel_addresses(size_t image_size,
 
 static int optee_verify_header_request_region(struct image_data *data, struct optee_header *hdr)
 {
-	int ret = 0;
+	int ret;
 
 	ret = optee_verify_header(hdr);
-	if (ret < 0)
+	if (ret < 0) {
+		pr_err("Could not verify header: %pe", ERR_PTR(ret));
 		return ret;
+	}
 
 	data->tee_res = request_sdram_region("TEE", hdr->init_load_addr_lo, hdr->init_size);
 	if (!data->tee_res) {
-		pr_err("Cannot request SDRAM region 0x%08x-0x%08x: %s\n",
+		pr_err("Cannot request SDRAM region 0x%08x-0x%08x: %pe\n",
 		       hdr->init_load_addr_lo, hdr->init_load_addr_lo + hdr->init_size - 1,
-		       strerror(-EINVAL));
+		       ERR_PTR(-EINVAL));
 		return -EINVAL;
 	}
 
-	return ret;
+	return 0;
 }
 
 static int bootm_load_tee_from_fit(struct image_data *data)
@@ -186,11 +188,9 @@ static int bootm_load_tee_from_fit(struct image_data *data)
 			return ret;
 		}
 		memcpy(&hdr, tee, sizeof(hdr));
-		if (optee_verify_header_request_region(data, &hdr) < 0) {
-			pr_err("%s", strerror(errno));
-			ret = -errno;
+		ret = optee_verify_header_request_region(data, &hdr);
+		if (ret < 0)
 			goto out;
-		}
 		memcpy((void *)data->tee_res->start, tee + sizeof(hdr), hdr.init_size);
 		printf("Read optee image to %pa, size 0x%08x\n", (void *)data->tee_res->start, hdr.init_size);
 	}
@@ -214,11 +214,9 @@ static int bootm_load_tee_from_file(struct image_data *data)
 		goto out;
 	}
 
-	if (optee_verify_header_request_region(data, &hdr) < 0) {
-		pr_err("%s", strerror(errno));
-		ret = -errno;
+	ret = optee_verify_header_request_region(data, &hdr);
+	if (ret < 0)
 		goto out;
-	}
 
 	if (read_full(fd, (void *)data->tee_res->start, hdr.init_size) < 0) {
 		pr_err("%s", strerror(errno));

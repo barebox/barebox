@@ -269,7 +269,7 @@ static void jtag_info(struct device *pdev)
 		ret = jtag_ioctl(&info->cdev, JTAG_GET_ID, &jid);
 		printf("  Device number: %d\n", dn);
 		if (ret == -1)
-			printf("   JTAG_GET_ID failed: %s\n", strerror(errno));
+			printf("   JTAG_GET_ID failed: %m\n");
 		else
 			printf("   ID: 0x%lX\n", jid.id);
 	}

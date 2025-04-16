@@ -204,12 +204,12 @@ static int bootm_load_tee_from_file(struct image_data *data)
 
 	fd = open(data->tee_file, O_RDONLY);
 	if (fd < 0) {
-		pr_err("%s", strerror(errno));
+		pr_err("%m\n");
 		return -errno;
 	}
 
 	if (read_full(fd, &hdr, sizeof(hdr)) < 0) {
-		pr_err("%s", strerror(errno));
+		pr_err("%m\n");
 		ret = -errno;
 		goto out;
 	}
@@ -219,7 +219,7 @@ static int bootm_load_tee_from_file(struct image_data *data)
 		goto out;
 
 	if (read_full(fd, (void *)data->tee_res->start, hdr.init_size) < 0) {
-		pr_err("%s", strerror(errno));
+		pr_err("%m\n");
 		ret = -errno;
 		release_region(data->tee_res);
 		goto out;

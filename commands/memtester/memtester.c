@@ -109,8 +109,7 @@ static int do_memtester(int argc, char **argv) {
                 break;
             case 'd':
                 if (stat(optarg,&statbuf)) {
-                    printf("can not use %s as device: %s\n", optarg,
-                            strerror(errno));
+                    printf("can not use %s as device: %m\n", optarg);
                     return COMMAND_ERROR_USAGE;
                 } else {
                     if (!S_ISCHR(statbuf.st_mode) && !S_ISBLK(statbuf.st_mode)) {
@@ -164,14 +163,14 @@ static int do_memtester(int argc, char **argv) {
     if (memtester_use_phys) {
         memfd = open(device_name, O_RDWR);
         if (memfd == -1) {
-            printf("failed to open %s for physical memory: %s\n",
-                    device_name, strerror(errno));
+            printf("failed to open %s for physical memory: %m\n",
+                    device_name);
             return EXIT_FAIL_NONSTARTER;
         }
         buf = memmap(memfd, PROT_READ | PROT_WRITE) + memtester_physaddrbase;
         if (buf == MAP_FAILED) {
-            printf("failed to mmap %s for physical memory: %s\n",
-                    device_name, strerror(errno));
+            printf("failed to mmap %s for physical memory: %m\n",
+                    device_name);
             close(memfd);
             return EXIT_FAIL_NONSTARTER;
         }

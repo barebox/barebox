@@ -567,7 +567,7 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 
 	ret = glob(abspath, 0, NULL, &globb);
 	if (ret) {
-		pr_debug("%s: %s: %s\n", __func__, abspath, strerror(errno));
+		pr_debug("%s: %s: %m\n", __func__, abspath);
 		ret = -errno;
 		goto err_out;
 	}

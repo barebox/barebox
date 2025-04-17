@@ -1621,7 +1621,7 @@ int crypto_ecdh_shared_secret(unsigned int curve_id, unsigned int ndigits,
 
 	nbytes = ndigits << ECC_DIGITS_TO_BYTES_SHIFT;
 
-	get_random_bytes(rand_z, nbytes);
+	get_crypto_bytes(rand_z, nbytes);
 
 	pk = ecc_alloc_point(ndigits);
 	if (!pk) {

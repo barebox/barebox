@@ -100,7 +100,7 @@ void *barebox_arm_boot_dtb(void)
 
 unsigned long arm_mem_ramoops_get(void)
 {
-	return arm_mem_ramoops(arm_stack_top);
+	return arm_mem_ramoops(arm_endmem);
 }
 EXPORT_SYMBOL_GPL(arm_mem_ramoops_get);
 

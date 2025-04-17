@@ -67,7 +67,7 @@ static int imx_scc_blob_encrypt(struct blobgen *bg, const char *modifier,
 	req.dst = blob;
 	req.nbytes = bufsiz;
 
-	get_random_bytes(req.info, MAX_IVLEN);
+	get_crypto_bytes(req.info, MAX_IVLEN);
 
 	ret = imx_scc_cbc_des_encrypt(&req);
 	if (ret)

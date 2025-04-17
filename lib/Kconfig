@@ -139,6 +139,7 @@ config RATP
 
 config ALLOW_PRNG_FALLBACK
 	bool "Allow fallback to PRNG if HWRNG not available."
+	select HAS_INSECURE_DEFAULTS
 	help
 	  WARNING: it is not secure!!
 

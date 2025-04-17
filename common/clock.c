@@ -14,6 +14,7 @@
 #include <linux/math64.h>
 #include <clock.h>
 #include <sched.h>
+#include <stdlib.h>
 
 static uint64_t time_ns;
 
@@ -223,6 +224,8 @@ int init_clock(struct clocksource *cs)
 	 */
 	cs->cycle_last = cs->read() & cs->mask;
 	current_clock = cs;
+
+	srand_xor(cs->cycle_last);
 
 	return 0;
 }

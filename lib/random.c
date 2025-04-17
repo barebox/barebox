@@ -2,7 +2,7 @@
 /*
  * The barebox random number generator provides mainly two APIs:
  *
- *   - get_noncrypto_bytes: Xorshift*
+ *   - get_noncrypto_bytes: Xorshift* seeded initially with the cycle counter
  *     - https://en.wikipedia.org/wiki/Xorshift#xorshift*)
  *     - https://forum.pjrc.com/index.php?threads/teensy-4-1-random-number-generator.61125/#post-243895
  *

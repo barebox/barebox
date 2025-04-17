@@ -27,7 +27,7 @@ API
         void srand_xor(u64 seed);
 
         /* Fill the buffer with PRNG bits. */
-        void get_random_bytes(void *buf, int len);
+        void get_noncrypto_bytes(void *buf, int len);
 
         /* Fill the buffer with bits provided by HWRNG.
          * This function may fail with a message “error: no HWRNG available!”

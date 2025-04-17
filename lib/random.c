@@ -101,16 +101,6 @@ u32 random32(void)
 	return rand_r(&prng_state);
 }
 
-/**
- * get_random_bytes - get pseudo random numbers.
- * This interface can be good enough to generate MAC address
- * or use for NAND test.
- */
-void get_random_bytes(void *buf, int len)
-{
-	get_noncrypto_bytes(buf, len);
-}
-
 int hwrng_get_crypto_bytes(struct hwrng *rng, void *buf, int len)
 {
 	while (len) {
@@ -151,7 +141,7 @@ int get_crypto_bytes(void *buf, int len)
 
 	pr_warn("falling back to Pseudo RNG source!\n");
 
-	get_random_bytes(buf, len);
+	get_noncrypto_bytes(buf, len);
 
 	return 0;
 }

@@ -87,7 +87,7 @@ device_initcall(null_init);
 
 static ssize_t prng_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
 {
-	get_random_bytes(buf, count);
+	get_noncrypto_bytes(buf, count);
 	return count;
 }
 

@@ -6,20 +6,13 @@
 #include <types.h>
 #include <malloc.h>
 
-#define RAND_MAX 32767
-
-/* return a pseudo-random integer in the range [0, RAND_MAX] */
-unsigned int rand(void);
-
-/* set the seed for rand () */
-void srand(unsigned int seed);
-
 struct hwrng;
 
 /* fill a buffer with pseudo-random data */
 #if IN_PROPER
 void randbuf_r(u64 *x, void *buf, size_t len);
 void srand_xor(u64 entropy);
+u32 random32(void);
 void get_noncrypto_bytes(void *buf, size_t len);
 void get_random_bytes(void *buf, int len);
 int get_crypto_bytes(void *buf, int len);
@@ -30,6 +23,10 @@ static inline void randbuf_r(u64 *x, void *buf, size_t len)
 	BUG();
 }
 static inline void srand_xor(u64 entropy)
+{
+	BUG();
+}
+static inline u32 random32(void)
 {
 	BUG();
 }
@@ -50,15 +47,6 @@ static inline int hwrng_get_crypto_bytes(struct hwrng *rng, void *buf, int len)
 	return -ENOSYS;
 }
 #endif
-
-static inline u32 random32(void)
-{
-	u32 ret;
-
-	get_random_bytes(&ret, 4);
-
-	return ret;
-}
 
 static inline u32 prandom_u32_max(u32 ep_ro)
 {

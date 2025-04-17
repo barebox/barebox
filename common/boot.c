@@ -360,7 +360,7 @@ static char *parse_nfs_url(const char *url)
 		mountpath = xstrdup(prevpath);
 	} else {
 		mountpath = basprintf("/mnt/nfs-%s-bootentries-%08x", host,
-					rand());
+					random32());
 		if (port)
 			options = basprintf("mountport=%s,port=%s", port,
 					      port);

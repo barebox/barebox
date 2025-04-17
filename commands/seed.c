@@ -12,7 +12,7 @@ static int do_seed(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	if (isdigit(*argv[1])) {
-		srand(simple_strtoul(argv[1], NULL, 0));
+		srand_xor(simple_strtoull(argv[1], NULL, 0));
 		return 0;
 	}
 

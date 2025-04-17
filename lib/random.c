@@ -15,23 +15,6 @@
 #include <stdlib.h>
 #include <linux/hw_random.h>
 
-static unsigned int random_seed;
-
-#if RAND_MAX > 32767
-#error this rand implementation is for RAND_MAX < 32678 only.
-#endif
-
-unsigned int rand(void)
-{
-	random_seed = random_seed * 1103515245 + 12345;
-	return (random_seed / 65536) % (RAND_MAX + 1);
-}
-
-void srand(unsigned int seed)
-{
-	random_seed = seed;
-}
-
 static u64 prng_state = 1;
 
 /**
@@ -113,17 +96,19 @@ void get_noncrypto_bytes(void *buf, size_t len)
 	randbuf_r(&prng_state, buf, len);
 }
 
+u32 random32(void)
+{
+	return rand_r(&prng_state);
+}
+
 /**
  * get_random_bytes - get pseudo random numbers.
  * This interface can be good enough to generate MAC address
  * or use for NAND test.
  */
-void get_random_bytes(void *_buf, int len)
+void get_random_bytes(void *buf, int len)
 {
-	char *buf = _buf;
-
-	while (len--)
-		*buf++ = rand() % 256;
+	get_noncrypto_bytes(buf, len);
 }
 
 int hwrng_get_crypto_bytes(struct hwrng *rng, void *buf, int len)

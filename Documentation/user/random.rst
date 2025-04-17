@@ -11,8 +11,8 @@ Barebox provides two types of RNG sources - PRNG and HWRNG:
   (which may include truly random values). Although sequences that are closer to
   truly random can be generated using hardware random number generators."
   Pseudorandom number generator. https://en.wikipedia.org/wiki/Pseudorandom_number_generator (2017.05.08).
-  The PRNG used by Barebox is LCG (linear congruential generator) non cryptographically
-  secure, so please use with caution.
+  The PRNG used by Barebox is a Xorshift* and is not seeded in a manner appropriate
+  for cryptographic operations, so please use with caution.
 
 - The HWRNG framework is software that makes use of a special hardware feature on
   your CPU, SoC or motherboard. It can‘t provide any guarantee about cryptographic
@@ -23,8 +23,8 @@ API
 
 .. code-block:: c
 
-        /* seed the PRNG. */
-        void srand(unsigned int seed);
+        /* mix extra entropy into the PRNG state. */
+        void srand_xor(u64 seed);
 
         /* Fill the buffer with PRNG bits. */
         void get_random_bytes(void *buf, int len);

@@ -2,6 +2,8 @@
 #ifndef __DMA_DEVICES_H
 #define __DMA_DEVICES_H
 
+#include <linux/types.h>
+
 /**
  * enum dma_transfer_direction - dma transfer mode and direction indicator
  * @DMA_MEM_TO_MEM: Async/Memcpy mode

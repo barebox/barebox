@@ -2,18 +2,23 @@
 
 if ARCH_LAYERSCAPE
 
+config ARCH_LAYERSCAPE_ICID
+	bool
+
 config ARCH_LS1028
 	bool
 	select CPU_V8
 	select SYS_SUPPORTS_64BIT_KERNEL
 	select ARM_ATF
 	select FIRMWARE_LS1028A_ATF
+	select ARCH_LAYERSCAPE_ICID
 
 config ARCH_LS1046
 	bool
 	select CPU_V8
 	select ARM_ATF
 	select SYS_SUPPORTS_64BIT_KERNEL
+	select ARCH_LAYERSCAPE_ICID
 
 if 64BIT
 

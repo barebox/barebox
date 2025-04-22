@@ -56,7 +56,7 @@ static struct clk *rockchip_clk_register_branch(const char *name,
 
 		mux->reg = base + muxdiv_offset;
 		mux->shift = mux_shift;
-		mux->width = mux_width;
+		mux->mask = BIT(mux_width) - 1;
 		mux->flags = mux_flags;
 		mux->lock = lock;
 		mux->hw.clk.name = basprintf("%s.mux", name);
@@ -235,7 +235,7 @@ static struct clk *rockchip_clk_register_frac_branch(
 
 		frac_mux->reg = base + child->muxdiv_offset;
 		frac_mux->shift = child->mux_shift;
-		frac_mux->width = child->mux_width;
+		frac_mux->mask = BIT(child->mux_width) - 1;
 		frac_mux->flags = child->mux_flags;
 		frac_mux->lock = lock;
 		frac_mux->hw.init = &init;

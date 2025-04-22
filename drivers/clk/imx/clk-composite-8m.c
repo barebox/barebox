@@ -20,7 +20,7 @@
 #define PCG_DIV_MAX		64
 
 #define PCG_PCS_SHIFT		24
-#define PCG_PCS_WIDTH		3
+#define PCG_PCS_MASK		0x7
 
 #define PCG_CGC_SHIFT		28
 
@@ -126,7 +126,7 @@ static int imx8m_clk_composite_mux_set_parent(struct clk_hw *hw, u8 index)
 	u32 val;
 
 	val = readl(m->reg);
-	val &= ~(((1 << m->width) - 1) << m->shift);
+	val &= ~(m->mask << m->shift);
 	val |= index << m->shift;
 
 	/*
@@ -173,7 +173,7 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 	mux_hw = &mux->hw;
 	mux->reg = reg;
 	mux->shift = PCG_PCS_SHIFT;
-	mux->width = PCG_PCS_WIDTH;
+	mux->mask = PCG_PCS_MASK;
 
 	div = kzalloc(sizeof(*div), GFP_KERNEL);
 	if (!div)

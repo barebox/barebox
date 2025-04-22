@@ -607,11 +607,33 @@ void clk_fractional_divider_free(struct clk *clk_fd);
 
 extern const struct clk_ops clk_fractional_divider_ops;
 
+/**
+ * struct clk_mux - multiplexer clock
+ *
+ * @hw:		handle between common and hardware-specific interfaces
+ * @reg:	register controlling multiplexer
+ * @mask:	mask of mutliplexer bit field
+ * @shift:	shift to multiplexer bit field
+ * @flags:	hardware-specific flags
+ * @table:	array of register values corresponding to the parent index
+ * @lock:	register lock
+ *
+ * Clock with multiple selectable parents.  Implements .get_parent, .set_parent
+ * and .recalc_rate
+ *
+ * Flags:
+ * CLK_MUX_HIWORD_MASK - The mux settings are only in lower 16-bit of this
+ *	register, and mask of mux bits are in higher 16-bit of this register.
+ *	While setting the mux bits, higher 16-bit should also be updated to
+ *	indicate changing mux bits.
+ * CLK_MUX_READ_ONLY - The mux registers can't be written, only read in the
+ * 	.get_parent clk_op.
+ */
 struct clk_mux {
 	struct clk_hw hw;
 	void __iomem *reg;
-	int shift;
-	int width;
+	u32 mask;
+	u8 shift;
 	unsigned flags;
 	u32 *table;
 	spinlock_t *lock;

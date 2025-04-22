@@ -487,7 +487,7 @@ static struct clk_hw *_get_stm32_mux(struct device *dev, void __iomem *base,
 
 		mmux->mux.reg = cfg->mux->reg_off + base;
 		mmux->mux.shift = cfg->mux->shift;
-		mmux->mux.width = cfg->mux->width;
+		mmux->mux.mask = (1 << cfg->mux->width) - 1;
 		mmux->mux.flags = cfg->mux->mux_flags;
 		mmux->mux.table = cfg->mux->table;
 		mmux->mux.lock = lock;
@@ -502,7 +502,7 @@ static struct clk_hw *_get_stm32_mux(struct device *dev, void __iomem *base,
 
 		mux->reg = cfg->mux->reg_off + base;
 		mux->shift = cfg->mux->shift;
-		mux->width = cfg->mux->width;
+		mux->mask = (1 << cfg->mux->width) - 1;
 		mux->flags = cfg->mux->mux_flags;
 		mux->table = cfg->mux->table;
 		mux->lock = lock;
@@ -735,7 +735,7 @@ struct stm32_pll_obj {
 #define FRAC_SHIFT	3
 #define FRACLE		BIT(16)
 #define PLL_MUX_SHIFT	0
-#define PLL_MUX_WIDTH	2
+#define PLL_MUX_MASK	3
 
 static int __pll_is_enabled(struct clk_hw *hw)
 {
@@ -878,7 +878,7 @@ static struct clk_hw *clk_register_pll(struct device *dev, const char *name,
 	element->mux.lock = lock;
 	element->mux.reg =  mux_reg;
 	element->mux.shift = PLL_MUX_SHIFT;
-	element->mux.width =  PLL_MUX_WIDTH;
+	element->mux.mask =  PLL_MUX_MASK;
 	element->mux.flags =  CLK_MUX_READ_ONLY;
 	element->mux.reg =  mux_reg;
 

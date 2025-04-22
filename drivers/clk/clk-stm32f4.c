@@ -1081,7 +1081,7 @@ static struct clk_hw *stm32_register_cclk(struct device *dev,
 
 	mux->reg = reg;
 	mux->shift = shift;
-	mux->width = 2;
+	mux->mask = 3;
 	mux->flags = 0;
 
 	hw = clk_hw_register_composite(dev, name, parent_names, num_parents,

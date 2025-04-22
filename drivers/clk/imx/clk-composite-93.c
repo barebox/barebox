@@ -131,7 +131,7 @@ static int imx93_clk_composite_mux_set_parent(struct clk_hw *hw, u8 index)
 	int ret;
 
 	reg = readl(mux->reg);
-	reg &= ~(((1 << mux->width) - 1) << mux->shift);
+	reg &= ~(mux->mask << mux->shift);
 	val = val << mux->shift;
 	reg |= val;
 	writel(reg, mux->reg);
@@ -165,7 +165,7 @@ struct clk *imx93_clk_composite_flags(const char *name, const char * const *pare
 	mux_hw = &mux->hw;
 	mux->reg = reg;
 	mux->shift = CCM_MUX_SHIFT;
-	mux->width = 2;
+	mux->mask = CCM_MUX_MASK;
 
 	div = kzalloc(sizeof(*div), GFP_KERNEL);
 	if (!div)

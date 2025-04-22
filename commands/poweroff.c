@@ -9,7 +9,7 @@
 
 static int cmd_poweroff(int argc, char *argv[])
 {
-	poweroff_machine();
+	poweroff_machine(0);
 
 	/* Not reached */
 	return 1;

@@ -2,7 +2,7 @@
 #ifndef __INCLUDE_POWEROFF_H
 #define __INCLUDE_POWEROFF_H
 
-void __noreturn poweroff_machine(void);
+void __noreturn poweroff_machine(unsigned long poweroff_flags);
 
 struct poweroff_handler {
 	void (*poweroff)(struct poweroff_handler *);

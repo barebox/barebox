@@ -43,7 +43,7 @@ static int ratp_cmd_reset(const struct ratp_bb *req, int req_len,
 	if (!reset_req->force)
 		shutdown_barebox();
 
-	restart_machine();
+	restart_machine(0);
 	/* Not reached */
 	return 1;
 }

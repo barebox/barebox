@@ -284,7 +284,7 @@ int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
 static void cb_reboot(struct fastboot *fb, const char *cmd)
 {
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
-	restart_machine();
+	restart_machine(0);
 }
 
 static void cb_getvar(struct fastboot *fb, const char *cmd)

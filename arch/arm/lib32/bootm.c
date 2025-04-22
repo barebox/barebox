@@ -335,7 +335,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 	start_linux((void *)kernel, swap, initrd_start, initrd_size,
 		    fdt_load_address, state, tee);
 
-	restart_machine();
+	restart_machine(0);
 
 	return -ERESTARTSYS;
 }
@@ -693,7 +693,7 @@ static int do_bootm_aimage(struct image_data *data)
 
 		second();
 
-		restart_machine();
+		restart_machine(0);
 	}
 
 	close(fd);

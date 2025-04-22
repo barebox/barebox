@@ -144,7 +144,7 @@ static unsigned long psci_system_reset(void)
 	if (psci_ops->system_reset)
 		psci_ops->system_reset();
 
-	restart_machine();
+	restart_machine(0);
 }
 
 /* Avoid missing prototype warning, called from assembly */

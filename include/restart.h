@@ -9,7 +9,7 @@
 struct device_node;
 
 void restart_handlers_print(void);
-void __noreturn restart_machine(void);
+void __noreturn restart_machine(unsigned long restart_flags);
 struct restart_handler *restart_handler_get_by_name(const char *name, int flags);
 
 struct device_node;

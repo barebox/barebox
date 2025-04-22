@@ -63,7 +63,7 @@ int poweroff_handler_register_fn(void (*poweroff_fn)(struct poweroff_handler *))
 /**
  * poweroff_machine() - power off the machine
  */
-void __noreturn poweroff_machine(void)
+void __noreturn poweroff_machine(unsigned long flags)
 {
 	struct poweroff_handler *handler = NULL, *tmp;
 	unsigned int priority = 0;

@@ -122,7 +122,7 @@ static int rdu_i210_invm(void)
 	pwrite(fd, &val, sizeof(val), 0);
 
 	shutdown_barebox();
-	restart_machine();
+	restart_machine(0);
 
 	return 0;
 }

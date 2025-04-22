@@ -221,7 +221,7 @@ static int tegra20_pmc_probe(struct device *dev)
 static int do_tegrarcm(int argc, char *argv[])
 {
 	writel(2, pmc_base + PMC_SCRATCH(0));
-	restart_machine();
+	restart_machine(0);
 
 	return 0;
 }

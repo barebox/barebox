@@ -690,10 +690,35 @@ unsigned int clk_mux_index_to_val(u32 *table, unsigned int flags, u8 index);
 long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
 			unsigned long *prate);
 
+/**
+ * struct clk_gate - gating clock
+ *
+ * @hw:		handle between common and hardware-specific interfaces
+ * @reg:	register controlling gate
+ * @bit_idx:	single bit controlling gate
+ * @shift:	Alias for @shift
+ * @flags:	hardware-specific flags
+ * @lock:	register lock
+ * @_parent:	for barebox-internal use
+ *
+ * Clock which can gate its output.  Implements .enable & .disable
+ *
+ * Flags:
+ * CLK_GATE_SET_TO_DISABLE - by default this clock sets the bit at bit_idx to
+ *	enable the clock.  Setting this flag does the opposite: setting the bit
+ *	disable the clock and clearing it enables the clock
+ * CLK_GATE_HIWORD_MASK - The gate settings are only in lower 16-bit
+ *	of this register, and mask of gate bits are in higher 16-bit of this
+ *	register.  While setting the gate bits, higher 16-bit should also be
+ *	updated to indicate changing gate bits.
+ */
 struct clk_gate {
 	struct clk_hw hw;
 	void __iomem *reg;
-	int shift;
+	union {
+		u8 bit_idx;
+		u8 shift;
+	};
 	unsigned flags;
 	spinlock_t *lock;
 	const char *_parent;

@@ -64,8 +64,14 @@ static ssize_t null_write(struct cdev *cdev, const void *buf, size_t count, loff
 	return count;
 }
 
+static ssize_t null_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
+{
+	return 0;
+}
+
 static struct cdev_operations nullops = {
 	.write = null_write,
+	.read = null_read,
 };
 
 static int null_init(void)

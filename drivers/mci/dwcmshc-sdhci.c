@@ -40,14 +40,6 @@ static inline struct dwcmshc_host *priv_from_mci_host(struct mci_host *h)
 	return container_of(h, struct dwcmshc_host, mci);
 }
 
-static void mci_setup_cmd(struct mci_cmd *p, unsigned int cmd, unsigned int arg,
-			  unsigned int response)
-{
-	p->cmdidx = cmd;
-	p->cmdarg = arg;
-	p->resp_type = response;
-}
-
 static int do_abort_sequence(struct mci_host *mci, struct mci_cmd *current_cmd)
 {
 	int ret = 0;

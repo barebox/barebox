@@ -72,13 +72,13 @@ struct clk *clk_gate_alloc(const char *name, const char *parent,
 {
 	struct clk_gate *g = xzalloc(sizeof(*g));
 
-	g->parent = parent;
+	g->_parent = parent;
 	g->reg = reg;
 	g->shift = shift;
 	g->hw.clk.ops = &clk_gate_ops;
 	g->hw.clk.name = name;
 	g->hw.clk.flags = flags;
-	g->hw.clk.parent_names = &g->parent;
+	g->hw.clk.parent_names = &g->_parent;
 	g->hw.clk.num_parents = 1;
 	g->flags = clk_gate_flags;
 

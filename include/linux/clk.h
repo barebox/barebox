@@ -694,9 +694,9 @@ struct clk_gate {
 	struct clk_hw hw;
 	void __iomem *reg;
 	int shift;
-	const char *parent;
 	unsigned flags;
 	spinlock_t *lock;
+	const char *_parent;
 };
 
 int clk_gate_is_enabled(struct clk_hw *hw);

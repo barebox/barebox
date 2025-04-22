@@ -73,7 +73,7 @@ static inline struct resource *request_barebox_region(const char *name,
 					resource_size_t size)
 {
 
-		return ERR_PTR(-ENOSYS);
+		return NULL;
 }
 #endif
 

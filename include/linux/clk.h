@@ -269,12 +269,18 @@ static inline void clk_put(struct clk *clk)
  * @enable:	Prepare and enable the clock atomically. This must not return
  *		until the clock is generating a valid clock signal, usable by
  *		consumer devices.
+ * @prepare:	Alias for @enable. If the Linux driver defines both, they
+ *		must be merged when ported to barebox.
  *
  * @disable:	Unprepare and disable the clock atomically.
+ * @unprepare:	Alias for @disable. If the Linux driver defines both, they
+ *		must be merged when ported to barebox.
  *
  * @is_enabled:	Queries the hardware to determine if the clock is enabled.
  *		Optional, if this op is not set then the enable count will be
  *		used.
+ * @is_prepared Alias for @is_enabled. If the Linux driver defines both, they
+ *		must be merged when ported to barebox.
  *
  * @recalc_rate	Recalculate the rate of this clock, by querying hardware. The
  *		parent rate is an input parameter. If the driver cannot figure
@@ -319,9 +325,18 @@ static inline void clk_put(struct clk *clk)
  */
 struct clk_ops {
 	int 		(*init)(struct clk_hw *hw);
-	int		(*enable)(struct clk_hw *hw);
-	void		(*disable)(struct clk_hw *hw);
-	int		(*is_enabled)(struct clk_hw *hw);
+	union {
+		int		(*enable)(struct clk_hw *hw);
+		int		(*prepare)(struct clk_hw *hw);
+	};
+	union {
+		void		(*disable)(struct clk_hw *hw);
+		void		(*unprepare)(struct clk_hw *hw);
+	};
+	union {
+		int		(*is_enabled)(struct clk_hw *hw);
+		int		(*is_prepared)(struct clk_hw *hw);
+	};
 	unsigned long	(*recalc_rate)(struct clk_hw *hw,
 					unsigned long parent_rate);
 	long		(*round_rate)(struct clk_hw *hw, unsigned long,

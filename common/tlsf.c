@@ -12,6 +12,10 @@
 
 #ifndef CONFIG_KASAN
 #define __memcpy memcpy
+/* This is only an optimization: On sandbox, with ASan, we don't have
+ * an asan-less memset implementation, so we must unpoison memory anyhow.
+ */
+#define __memzero_explicit memzero_explicit
 #endif
 
 /*
@@ -610,7 +614,7 @@ static void* block_prepare_used(control_t* control, block_header_t* block,
 
 		if (want_init_on_alloc()) {
 			kasan_unpoison_shadow(p, size);
-			memzero_explicit(p, size);
+			__memzero_explicit(p, size);
 			/*
 			 * KASAN doesn't play nicely with poisoning addresses
 			 * that are not granule-aligned, which is why we poison
@@ -1028,7 +1032,7 @@ void tlsf_free(tlsf_t tlsf, void* ptr)
 		tlsf_assert(!block_is_free(block) && "block already marked as free");
 		if (want_init_on_free()) {
 			kasan_unpoison_shadow(ptr, block_size(block));
-			memzero_explicit(ptr, block_size(block));
+			__memzero_explicit(ptr, block_size(block));
 		}
 		kasan_poison_shadow(ptr, block_size(block), 0xff);
 		block_mark_as_free(block);

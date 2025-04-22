@@ -27,7 +27,8 @@ static void __noreturn jz4750d_halt(void)
 	unreachable();
 }
 
-static void __noreturn jz4750_poweroff(struct poweroff_handler *handler)
+static void __noreturn jz4750_poweroff(struct poweroff_handler *handler,
+				       unsigned long flags)
 {
 	u32 ctrl;
 

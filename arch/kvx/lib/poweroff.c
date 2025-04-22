@@ -9,7 +9,8 @@
 
 #include <asm/sfr.h>
 
-static void __noreturn kvx_poweroff(struct poweroff_handler *handler)
+static void __noreturn kvx_poweroff(struct poweroff_handler *handler,
+				    unsigned long flags)
 {
 	register int status asm("r0") = 0;
 

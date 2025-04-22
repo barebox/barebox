@@ -25,7 +25,8 @@ static void __noreturn psci_invoke_noreturn(ulong function)
 	hang();
 }
 
-static void __noreturn psci_poweroff(struct poweroff_handler *handler)
+static void __noreturn psci_poweroff(struct poweroff_handler *handler,
+				     unsigned long flags)
 {
 	psci_invoke_noreturn(ARM_PSCI_0_2_FN_SYSTEM_OFF);
 }

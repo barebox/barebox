@@ -14,7 +14,8 @@ struct sandbox_power {
 	struct nvmem_cell *reset_source_cell;
 };
 
-static void sandbox_poweroff(struct poweroff_handler *poweroff)
+static void sandbox_poweroff(struct poweroff_handler *poweroff,
+			     unsigned long flags)
 {
 	struct sandbox_power *power = container_of(poweroff, struct sandbox_power, poweroff);
 

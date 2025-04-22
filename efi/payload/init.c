@@ -233,7 +233,8 @@ static void __noreturn efi_restart_system(struct restart_handler *rst,
 	hang();
 }
 
-static void __noreturn efi_poweroff_system(struct poweroff_handler *handler)
+static void __noreturn efi_poweroff_system(struct poweroff_handler *handler,
+					   unsigned long flags)
 {
 	shutdown_barebox();
 	RT->reset_system(EFI_RESET_SHUTDOWN, EFI_SUCCESS, 0, NULL);

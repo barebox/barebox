@@ -109,7 +109,8 @@ static void __noreturn stpmic1_restart_handler(struct restart_handler *rst,
 	hang();
 }
 
-static void __noreturn stpmic1_poweroff(struct poweroff_handler *handler)
+static void __noreturn stpmic1_poweroff(struct poweroff_handler *handler,
+					unsigned long flags)
 {
 	struct stpmic1_wdt *wdt = container_of(handler, struct stpmic1_wdt, poweroff);
 

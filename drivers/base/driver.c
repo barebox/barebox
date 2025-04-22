@@ -547,7 +547,14 @@ void __iomem *dev_platform_get_and_ioremap_resource(struct device *dev,
 	res = dev_request_mem_resource(dev, num);
 	if (IS_ERR(res))
 		return IOMEM_ERR_PTR(PTR_ERR(res));
-	else if (WARN_ON(IS_ERR_VALUE(res->start)))
+
+	/* As everything is mapped 1:1 by default, drivers on unlucky
+	 * platforms can end up successfully requesting memory, but
+	 * getting a base address that looks like an error pointer.
+	 * Let's warn loudly about this case, as these drivers
+	 * should be using dev_request_mem_resource instead.
+	 */
+	if (WARN_ON(IS_ERR_VALUE(res->start)))
 		return IOMEM_ERR_PTR(-EINVAL);
 
 	if (out_res)
@@ -585,6 +592,8 @@ void __iomem *dev_request_mem_region(struct device *dev, int num)
 	struct resource *res;
 
 	res = dev_request_mem_resource(dev, num);
+	if (!IS_ERR(res) && WARN_ON(IS_ERR_VALUE(res->start)))
+		return IOMEM_ERR_PTR(res->start);
 	if (IS_ERR(res))
 		return ERR_CAST(res);
 

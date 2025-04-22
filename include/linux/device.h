@@ -39,7 +39,7 @@ static inline void __iomem *dev_platform_ioremap_resource(struct device *dev,
 	 * so we don't need to do anything besides requesting the regions
 	 * and can leave the memory attributes unchanged.
 	 */
-	return dev_request_mem_region_err_null(dev, resource);
+	return dev_request_mem_region(dev, resource);
 }
 
 static inline void __iomem *devm_ioremap(struct device *dev,

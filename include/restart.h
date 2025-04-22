@@ -9,6 +9,7 @@
 struct device_node;
 
 void restart_handlers_print(void);
+#define RESTART_WARM			BIT(0)
 void __noreturn restart_machine(unsigned long restart_flags);
 struct restart_handler *restart_handler_get_by_name(const char *name, int flags);
 
@@ -17,7 +18,6 @@ struct device_node;
 struct restart_handler {
 	void (*restart)(struct restart_handler *, unsigned long);
 	int priority;
-#define RESTART_FLAG_WARM_BOOTROM	BIT(0)
 	int flags;
 	struct device_node *of_node;
 	const char *name;

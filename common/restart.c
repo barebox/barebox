@@ -32,7 +32,7 @@ int restart_handler_register(struct restart_handler *rst)
 				     &rst->priority);
 		if (of_property_read_bool(rst->of_node,
 					  "barebox,restart-warm-bootrom"))
-			rst->flags |= RESTART_FLAG_WARM_BOOTROM;
+			rst->flags |= RESTART_WARM;
 	}
 
 	list_add_tail(&rst->list, &restart_handler_list);
@@ -127,8 +127,10 @@ void restart_handlers_print(void)
 	list_for_each_entry(tmp, &restart_handler_list, list) {
 		printf("%-20s %-20s %6d ",
 		       tmp->name, tmp->dev ? dev_name(tmp->dev) : "", tmp->priority);
-		if (tmp->flags & RESTART_FLAG_WARM_BOOTROM)
+		if (tmp->flags & RESTART_WARM)
 			putchar('W');
 		putchar('\n');
 	}
+
+	printf("\nW: Warm restart capable\n");
 }

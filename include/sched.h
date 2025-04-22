@@ -2,7 +2,7 @@
 #ifndef __BAREBOX_SCHED_H_
 #define __BAREBOX_SCHED_H_
 
-#ifdef CONFIG_HAS_SCHED
+#if defined CONFIG_HAS_SCHED && IN_PROPER
 void resched(void);
 #else
 static inline void resched(void)

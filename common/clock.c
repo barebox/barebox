@@ -34,7 +34,7 @@ static struct clocksource dummy_cs = {
 	.priority = -1,
 };
 
-static struct clocksource *current_clock = &dummy_cs;
+static struct clocksource *current_clock = IN_PROPER ? &dummy_cs : NULL;
 
 static int dummy_csrc_warn(void)
 {
@@ -54,6 +54,9 @@ uint64_t get_time_ns(void)
 	struct clocksource *cs = current_clock;
 	uint64_t cycle_now, cycle_delta;
 	uint64_t ns_offset;
+
+	if (IN_PBL && !cs)
+		panic("No PBL clocksource has been initialized\n");
 
 	/* read clocksource: */
 	cycle_now = cs->read() & cs->mask;

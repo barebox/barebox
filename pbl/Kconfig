@@ -57,6 +57,9 @@ config PBL_VERIFY_PIGGY
 	depends on ARM || MIPS || RISCV
 	bool "Verify barebox proper hash before decompression" if COMPILE_TEST
 
+config PBL_CLOCKSOURCE
+	bool
+
 config BOARD_GENERIC_DT
 	bool
 	select LIBFDT

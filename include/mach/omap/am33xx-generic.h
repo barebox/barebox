@@ -30,6 +30,8 @@ u32 am33xx_running_in_flash(void);
 u32 am33xx_running_in_sram(void);
 u32 am33xx_running_in_sdram(void);
 
+enum bootsource am33xx_get_bootsource(int *instance);
+
 void am33xx_enable_per_clocks(void);
 int am33xx_init(void);
 int am33xx_devices_init(void);

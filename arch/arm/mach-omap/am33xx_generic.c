@@ -120,40 +120,40 @@ u32 am33xx_running_in_sdram(void)
 	return 0;		/* running in SRAM or FLASH */
 }
 
-static int am33xx_bootsource(void)
+enum bootsource am33xx_get_bootsource(int *instance)
 {
-	enum bootsource src;
-	int instance = 0;
 	uint32_t *am33xx_bootinfo = (void *)AM33XX_SRAM_SCRATCH_SPACE;
 
 	switch (am33xx_bootinfo[2] & 0xFF) {
 	case 0x05:
-		src = BOOTSOURCE_NAND;
-		break;
+		return BOOTSOURCE_NAND;
 	case 0x08:
-		src = BOOTSOURCE_MMC;
 		instance = 0;
-		break;
+		return BOOTSOURCE_MMC;
 	case 0x09:
-		src = BOOTSOURCE_MMC;
-		instance = 1;
-		break;
+		*instance = 1;
+		return BOOTSOURCE_MMC;
 	case 0x0b:
-		src = BOOTSOURCE_SPI;
-		break;
+		return BOOTSOURCE_SPI;
 	case 0x41:
-		src = BOOTSOURCE_SERIAL;
-		break;
+		return BOOTSOURCE_SERIAL;
 	case 0x44:
-		src = BOOTSOURCE_USB;
-		break;
+		return BOOTSOURCE_USB;
 	case 0x46:
-		src = BOOTSOURCE_NET;
-		break;
+		return BOOTSOURCE_NET;
 	default:
-		src = BOOTSOURCE_UNKNOWN;
+		return BOOTSOURCE_UNKNOWN;
 	}
+}
+
+static int am33xx_bootsource(void)
+{
+	enum bootsource src;
+	int instance = 0;
+
+	src = am33xx_get_bootsource(&instance);
 	bootsource_set_raw(src, instance);
+
 	return 0;
 }
 

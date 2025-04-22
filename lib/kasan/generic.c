@@ -15,6 +15,7 @@
  */
 
 #include <common.h>
+#include <asm/reloc.h>
 
 #include "kasan.h"
 
@@ -153,6 +154,16 @@ static __always_inline bool check_memory_region_inline(unsigned long addr,
 						size_t size, bool write,
 						unsigned long ret_ip)
 {
+	/*
+	 * Hardening options like -ftrivial-auto-var-init=zero can end up
+	 * emitting memset calls to initialize stack variables.
+	 * This can lead to this function reached before relocation.
+	 *
+	 * Play it safe by ensuring we are relocated before proceeding.
+	 */
+	if (global_variable_offset() != 0)
+		return true;
+
 	if (!kasan_initialized)
 		return true;
 

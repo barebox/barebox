@@ -667,11 +667,12 @@ struct clk_hw *__clk_hw_register_mux(struct device *dev,
 				     spinlock_t *lock);
 
 #define clk_hw_register_mux(dev, name, parent_names,                  \
-		num_parents, flags, reg, shift, mask,                 \
+		num_parents, flags, reg, shift, width,                \
 		clk_mux_flags, lock)                                  \
 	__clk_hw_register_mux((dev), (name), (num_parents),           \
 				     (parent_names),                  \
-				     (flags), (reg), (shift), (mask), \
+				     (flags), (reg),                  \
+				     (shift), BIT((width)) - 1,       \
 				     (clk_mux_flags), NULL, (lock))
 
 #define clk_hw_register_mux_table(dev, name, parent_names, num_parents,	  \

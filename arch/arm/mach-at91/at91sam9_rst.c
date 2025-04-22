@@ -44,7 +44,8 @@ static void at91sam9x_set_reset_reason(struct device *dev,
 	reset_source_set(type);
 }
 
-static void __noreturn at91sam9x_restart_soc(struct restart_handler *rst)
+static void __noreturn at91sam9x_restart_soc(struct restart_handler *rst,
+					     unsigned long flags)
 {
 	struct at91sam9x_rst *priv = container_of(rst, struct at91sam9x_rst, restart);
 
@@ -59,7 +60,8 @@ static void __noreturn at91sam9x_restart_soc(struct restart_handler *rst)
 
 void __noreturn at91sam9_reset(void __iomem *sdram, void __iomem *rstc_cr);
 
-static void __noreturn at91sam9260_restart_soc(struct restart_handler *rst)
+static void __noreturn at91sam9260_restart_soc(struct restart_handler *rst,
+					       unsigned long flags)
 {
 	struct at91sam9x_rst *priv = container_of(rst, struct at91sam9x_rst, restart);
 

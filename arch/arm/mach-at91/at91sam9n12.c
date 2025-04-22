@@ -204,7 +204,8 @@ static void __init at91sam9n12_register_clocks(void)
 
 }
 
-static void at91sam9n12_restart(struct restart_handler *rst)
+static void at91sam9n12_restart(struct restart_handler *rst,
+				unsigned long flags)
 {
 	at91sam9g45_reset(IOMEM(AT91SAM9N12_BASE_DDRSDRC0),
 			  IOMEM(AT91SAM9N12_BASE_RSTC + AT91_RSTC_CR));

@@ -96,7 +96,8 @@ static int stpmic1_wdt_set_timeout(struct watchdog *wdd, unsigned int timeout)
 	return 0;
 }
 
-static void __noreturn stpmic1_restart_handler(struct restart_handler *rst)
+static void __noreturn stpmic1_restart_handler(struct restart_handler *rst,
+					       unsigned long flags)
 {
 	struct stpmic1_wdt *wdt = container_of(rst, struct stpmic1_wdt, restart);
 

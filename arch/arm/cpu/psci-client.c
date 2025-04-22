@@ -30,7 +30,8 @@ static void __noreturn psci_poweroff(struct poweroff_handler *handler)
 	psci_invoke_noreturn(ARM_PSCI_0_2_FN_SYSTEM_OFF);
 }
 
-static void __noreturn psci_restart(struct restart_handler *rst)
+static void __noreturn psci_restart(struct restart_handler *rst,
+				    unsigned long flags)
 {
 	psci_invoke_noreturn(ARM_PSCI_0_2_FN_SYSTEM_RESET);
 }

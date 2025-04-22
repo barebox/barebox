@@ -18,7 +18,8 @@
 #include <mach/rockchip/rk3188-regs.h>
 #include <mach/rockchip/rockchip.h>
 
-static void __noreturn rockchip_restart_soc(struct restart_handler *rst)
+static void __noreturn rockchip_restart_soc(struct restart_handler *rst,
+					    unsigned long flags)
 {
 	/* Map bootrom from address 0 */
 	writel(RK_SOC_CON0_REMAP << 16, RK_GRF_BASE + RK_GRF_SOC_CON0);

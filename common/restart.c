@@ -55,7 +55,8 @@ int restart_handler_register(struct restart_handler *rst)
  * return: 0 for success or negative error code
  */
 int restart_handler_register_fn(const char *name,
-				void (*restart_fn)(struct restart_handler *))
+				void (*restart_fn)(struct restart_handler *,
+						   unsigned long flags))
 {
 	struct restart_handler *rst;
 	int ret;
@@ -110,7 +111,7 @@ void __noreturn restart_machine(unsigned long flags)
 	if (rst) {
 		pr_debug("%s: using restart handler %s\n", __func__, rst->name);
 		console_flush();
-		rst->restart(rst);
+		rst->restart(rst, flags);
 	}
 
 	hang();

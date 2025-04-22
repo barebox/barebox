@@ -179,7 +179,8 @@ static int rave_sp_wdt_rdu_restart(struct watchdog *wdd)
 	return rave_sp_wdt_exec(wdd, cmd, sizeof(cmd));
 }
 
-static void __noreturn rave_sp_wdt_restart_handler(struct restart_handler *rst)
+static void __noreturn rave_sp_wdt_restart_handler(struct restart_handler *rst,
+						   unsigned long flags)
 {
 	struct rave_sp_wdt *sp_wd =
 			container_of(rst, struct rave_sp_wdt, restart);

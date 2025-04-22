@@ -19,7 +19,8 @@ struct syscon_reboot_context {
 	struct restart_handler restart_handler;
 };
 
-static void __noreturn syscon_restart_handle(struct restart_handler *this)
+static void __noreturn syscon_restart_handle(struct restart_handler *this,
+					     unsigned long flags)
 {
 	struct syscon_reboot_context *ctx =
 			container_of(this, struct syscon_reboot_context,

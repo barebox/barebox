@@ -12,7 +12,8 @@
 
 static u32 remap_size = 0;
 
-static void __noreturn clps711x_restart(struct restart_handler *rst)
+static void __noreturn clps711x_restart(struct restart_handler *rst,
+					unsigned long flags)
 {
 	shutdown_barebox();
 

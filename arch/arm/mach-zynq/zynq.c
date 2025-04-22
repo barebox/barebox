@@ -21,7 +21,8 @@
 #include <mach/zynq/zynq7000-regs.h>
 #include <restart.h>
 
-static void __noreturn zynq_restart_soc(struct restart_handler *rst)
+static void __noreturn zynq_restart_soc(struct restart_handler *rst,
+					unsigned long flags)
 {
 	/* write unlock key to slcr */
 	writel(0xDF0D, ZYNQ_SLCR_UNLOCK);

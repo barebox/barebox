@@ -39,7 +39,8 @@
 
 #include <mach/versatile/platform.h>
 
-static void __noreturn versatile_reset_soc(struct restart_handler *rst)
+static void __noreturn versatile_reset_soc(struct restart_handler *rst,
+					   unsigned long flags)
 {
 	u32 val;
 

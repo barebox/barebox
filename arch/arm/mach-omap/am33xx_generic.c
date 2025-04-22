@@ -30,7 +30,8 @@
 #include <mach/omap/gpmc.h>
 #include <reset_source.h>
 
-static void __noreturn am33xx_restart_soc(struct restart_handler *rst)
+static void __noreturn am33xx_restart_soc(struct restart_handler *rst,
+					  unsigned long flags)
 {
 	writel(AM33XX_PRM_RSTCTRL_RESET, AM33XX_PRM_RSTCTRL);
 

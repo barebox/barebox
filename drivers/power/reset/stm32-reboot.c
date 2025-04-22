@@ -62,7 +62,8 @@ static void stm32_reset(struct stm32_reset *priv, unsigned long id, bool assert)
 	writel(BIT(offset), reg);
 }
 
-static void __noreturn stm32mp_rcc_restart_handler(struct restart_handler *rst)
+static void __noreturn stm32mp_rcc_restart_handler(struct restart_handler *rst,
+						   unsigned long flags)
 {
 	struct stm32_reset *priv = container_of(rst, struct stm32_reset, restart);
 

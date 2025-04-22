@@ -47,7 +47,7 @@ static int cmd_reset(int argc, char *argv[])
 
 	if (rst) {
 		console_flush();
-		rst->restart(rst);
+		rst->restart(rst, 0);
 	}
 
 	hang();

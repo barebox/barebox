@@ -54,7 +54,8 @@
  *
  * @return void
  */
-static void __noreturn omap3_restart_soc(struct restart_handler *rst)
+static void __noreturn omap3_restart_soc(struct restart_handler *rst,
+					 unsigned long flags)
 {
 	writel(OMAP3_PRM_RSTCTRL_RESET, OMAP3_PRM_REG(RSTCTRL));
 

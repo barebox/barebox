@@ -23,12 +23,14 @@ static void sandbox_poweroff(struct poweroff_handler *poweroff)
 	linux_exit();
 }
 
-static void sandbox_rst_hang(struct restart_handler *rst)
+static void sandbox_rst_hang(struct restart_handler *rst,
+			     unsigned long flags)
 {
 	linux_hang();
 }
 
-static void sandbox_rst_reexec(struct restart_handler *rst)
+static void sandbox_rst_reexec(struct restart_handler *rst,
+			       unsigned long flags)
 {
 	struct sandbox_power *power = container_of(rst, struct sandbox_power, rst_reexec);
 

@@ -171,7 +171,8 @@ static int imx_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	return priv->ops->set_timeout(priv, timeout);
 }
 
-static void __noreturn imxwd_force_soc_reset(struct restart_handler *rst)
+static void __noreturn imxwd_force_soc_reset(struct restart_handler *rst,
+					     unsigned long flags)
 {
 	struct imx_wd *priv = container_of(rst, struct imx_wd, restart);
 
@@ -182,12 +183,13 @@ static void __noreturn imxwd_force_soc_reset(struct restart_handler *rst)
 	hang();
 }
 
-static void __noreturn imxwd_force_soc_reset_internal(struct restart_handler *rst)
+static void __noreturn imxwd_force_soc_reset_internal(struct restart_handler *rst,
+						      unsigned long flags)
 {
 	struct imx_wd *priv = container_of(rst, struct imx_wd, restart_warm);
 
 	priv->ext_reset = false;
-	imxwd_force_soc_reset(&priv->restart);
+	imxwd_force_soc_reset(&priv->restart, flags);
 }
 
 static void imx_watchdog_detect_reset_source(struct imx_wd *priv)

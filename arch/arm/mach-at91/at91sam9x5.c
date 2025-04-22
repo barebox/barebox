@@ -7,7 +7,8 @@
 #include <mach/at91/board.h>
 #include <mach/at91/at91_rstc.h>
 
-static void at91sam9x5_restart(struct restart_handler *rst)
+static void at91sam9x5_restart(struct restart_handler *rst,
+			       unsigned long flags)
 {
 	at91sam9g45_reset(IOMEM(AT91SAM9X5_BASE_DDRSDRC0),
 			  IOMEM(AT91SAM9X5_BASE_RSTC + AT91_RSTC_CR));

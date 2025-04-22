@@ -9,7 +9,8 @@
 #include <linux/mbus.h>
 #include <mach/mvebu/dove-regs.h>
 
-static void __noreturn dove_restart_soc(struct restart_handler *rst)
+static void __noreturn dove_restart_soc(struct restart_handler *rst,
+					unsigned long flags)
 {
 	/* enable and assert RSTOUTn */
 	writel(SOFT_RESET_OUT_EN, DOVE_BRIDGE_BASE + BRIDGE_RSTOUT_MASK);

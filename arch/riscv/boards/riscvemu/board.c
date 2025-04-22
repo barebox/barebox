@@ -18,7 +18,8 @@ struct riscvemu_priv {
 
 };
 
-static void __noreturn riscvemu_restart(struct restart_handler *rst)
+static void __noreturn riscvemu_restart(struct restart_handler *rst,
+					unsigned long flags)
 {
 	struct riscvemu_priv *priv = container_of(rst, struct riscvemu_priv, rst);
 

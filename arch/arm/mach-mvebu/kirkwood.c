@@ -9,7 +9,8 @@
 #include <linux/mbus.h>
 #include <mach/mvebu/kirkwood-regs.h>
 
-static void __noreturn kirkwood_restart_soc(struct restart_handler *rst)
+static void __noreturn kirkwood_restart_soc(struct restart_handler *rst,
+					    unsigned long flags)
 {
 	writel(SOFT_RESET_OUT_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_RSTOUT_MASK);
 	writel(SOFT_RESET_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_SYS_SOFT_RESET);

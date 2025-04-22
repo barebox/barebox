@@ -218,7 +218,8 @@ static void at91sam9261_register_clocks(void)
 	clk_register(&hck1);
 }
 
-static void at91sam9261_restart(struct restart_handler *rst)
+static void at91sam9261_restart(struct restart_handler *rst,
+				unsigned long flags)
 {
 	at91sam9_reset(IOMEM(AT91SAM9261_BASE_SDRAMC),
 		       IOMEM(AT91SAM9261_BASE_RSTC + AT91_RSTC_CR));

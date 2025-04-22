@@ -23,7 +23,8 @@
 #include <mach/socfpga/cyclone5-reset-manager.h>
 
 /* Write the reset manager register to cause reset */
-static void __noreturn socfpga_restart_soc(struct restart_handler *rst)
+static void __noreturn socfpga_restart_soc(struct restart_handler *rst,
+					   unsigned long flags)
 {
 	/* request a warm reset */
 	writel((1 << RSTMGR_CTRL_SWWARMRSTREQ_LSB),

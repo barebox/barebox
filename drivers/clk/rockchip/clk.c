@@ -567,7 +567,8 @@ void rockchip_clk_protect_critical(const char *const clocks[],
 }
 EXPORT_SYMBOL_GPL(rockchip_clk_protect_critical);
 
-static void rockchip_restart(struct restart_handler *this)
+static void rockchip_restart(struct restart_handler *this,
+			     unsigned long flags)
 {
 	struct rockchip_clk_provider *ctx =
 		container_of(this, struct rockchip_clk_provider, restart_handler);

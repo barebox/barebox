@@ -23,7 +23,8 @@
 #include <mach/rockchip/hardware.h>
 #include <mach/rockchip/rockchip.h>
 
-static void __noreturn rockchip_restart_soc(struct restart_handler *rst)
+static void __noreturn rockchip_restart_soc(struct restart_handler *rst,
+					    unsigned long flags)
 {
 	struct rk3288_cru *cru = (struct rk3288_cru *)RK3288_CRU_BASE;
 

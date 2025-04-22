@@ -62,3 +62,4 @@ WEAK(memcpy)
 
 ENDPROC(memcpy)
 ENDPROC(__memcpy)
+SYM_FUNC_ALIAS(__pi_memcpy, __memcpy)

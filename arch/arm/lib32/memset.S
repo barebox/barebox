@@ -132,6 +132,7 @@ UNWIND( .fnstart            )
 UNWIND( .fnend   )
 ENDPROC(memset)
 ENDPROC(__memset)
+SYM_FUNC_ALIAS(__pi_memset, __memset)
 
 ENTRY(__memset32)
 UNWIND( .fnstart         )

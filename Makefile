@@ -490,7 +490,7 @@ KBUILD_CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) \
 			  -fno-builtin -ffreestanding -Ulinux -Uunix
 
 KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
-		   -fno-strict-aliasing -fno-common -fshort-wchar \
+		   -fno-strict-aliasing -fno-common -fshort-wchar -funsigned-char \
 		   -Werror=implicit-function-declaration -Werror=implicit-int \
 		   -Werror=int-conversion \
 		   -Os -pipe -Wmissing-prototypes -std=gnu11

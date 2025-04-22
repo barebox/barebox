@@ -111,3 +111,4 @@ WEAK(memset)
 6:
 	ret
 END(__memset)
+SYM_FUNC_ALIAS(__pi_memset, __memset)

@@ -468,7 +468,7 @@ int omap_hsmmc_send_cmd(struct omap_hsmmc *hsmmc, struct mci_cmd *cmd,
 		return mmc_read_data(hsmmc, data->dest,
 				     data->blocksize * data->blocks);
 
-	if (IS_ENABLED(CONFIG_MCI_WRITE))
+	if (IS_ENABLED(CONFIG_MCI_WRITE) && IN_PROPER)
 		return mmc_write_data(hsmmc, data->src,
 				      data->blocksize * data->blocks);
 

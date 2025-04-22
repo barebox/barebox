@@ -8,18 +8,8 @@
 #include <common.h>
 #include <io.h>
 #include <malloc.h>
-#include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/err.h>
-
-struct clk_composite {
-	struct clk_hw	hw;
-
-	struct clk_hw	*mux_hw;
-	struct clk_hw	*rate_hw;
-	struct clk_hw	*gate_hw;
-};
-
-#define to_clk_composite(_hw) container_of(_hw, struct clk_composite, hw)
 
 static int clk_composite_get_parent(struct clk_hw *hw)
 {

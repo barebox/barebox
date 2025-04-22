@@ -191,4 +191,7 @@ void am33xx_pll_init(int mpupll_M, int ddrpll_M);
 void am33xx_enable_ddr_clocks(void);
 int am33xx_get_osc_clock(void);
 
+int omap_dmtimer_init(void __iomem *mmio_start,
+		      unsigned clk_speed);
+
 #endif  /* endif _AM33XX_CLOCKS_H_ */

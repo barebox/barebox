@@ -69,6 +69,18 @@ struct omap_dmtimer_data {
 	int (*get_clock)(struct device *dev);
 };
 
+int omap_dmtimer_init(void __iomem *mmio_start, unsigned clk_speed)
+{
+	base = mmio_start;
+
+	dmtimer_cs.mult = clocksource_hz2mult(clk_speed, dmtimer_cs.shift);
+
+	/* Enable counter */
+	writel(0x3, base + TCLR);
+
+	return init_clock(&dmtimer_cs);
+}
+
 static int omap_dmtimer_probe(struct device *dev)
 {
 	struct resource *iores;
@@ -90,12 +102,7 @@ static int omap_dmtimer_probe(struct device *dev)
 	if (clk_speed < 0)
 		return clk_speed;
 
-	dmtimer_cs.mult = clocksource_hz2mult(clk_speed, dmtimer_cs.shift);
-
-	/* Enable counter */
-	writel(0x3, base + TCLR);
-
-	return init_clock(&dmtimer_cs);
+	return omap_dmtimer_init(IOMEM(iores->start), clk_speed);
 }
 
 static int am335x_get_clock(struct device *dev)

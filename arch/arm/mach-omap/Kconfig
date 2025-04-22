@@ -40,6 +40,7 @@ config ARCH_AM33XX
 	select CPU_V7
 	select GENERIC_GPIO
 	select CLOCKSOURCE_TI_DM
+	select PBL_CLOCKSOURCE
 	help
 	  Say Y here if you are using Texas Instrument's AM33xx based platform
 

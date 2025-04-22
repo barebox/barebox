@@ -60,12 +60,15 @@ config OMAP_GPMC
 	  NAND, OneNAND etc.
 
 config OMAP_BUILD_IFT
-	prompt "build ift binary (MLO)"
+	prompt "build ift binaries (MLO) only"
 	bool
 	help
-	  Say Y here if you want to build an MLO binary. On TI SoCs, this
+	  Say Y here if you want to build only MLO binaries. On TI SoCs, this
 	  binary is loaded to SRAM. It is responsible for initializing
 	  the SDRAM and possibly chainloading a full-featured barebox.
+	  If you say n here, barebox may still generate extra MLO binaries
+	  alongside second stage barebox binaries, but these are currently
+	  limited to only specific bootmedia as indicated in their file name.
 
 config OMAP_BUILD_SPI
 	prompt "build SPI binary"
@@ -153,6 +156,7 @@ config MACH_BEAGLE
 config MACH_BEAGLEBONE
 	bool "Texas Instrument's Beagle Bone"
 	select ARCH_AM33XX
+	select MCI_OMAP_HSMMC_PBL
 	help
 	  Say Y here if you are using Beagle Bone
 

@@ -16,6 +16,7 @@
 #include <mach/omap/syslib.h>
 #include <mach/omap/am33xx-mux.h>
 #include <mach/omap/am33xx-generic.h>
+#include <mach/omap/xload.h>
 
 #include "beaglebone.h"
 
@@ -116,9 +117,6 @@ static void __udelay(int us)
 static noinline int beaglebone_sram_init(void)
 {
 	uint32_t sdram_size;
-	void *fdt;
-
-	fdt = __dtb_z_am335x_bone_common_start;
 
 	if (is_beaglebone_black())
 		sdram_size = SZ_512M;
@@ -150,7 +148,11 @@ static noinline int beaglebone_sram_init(void)
 	 */
 	__udelay(3000);
 
-	barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, sdram_size, fdt);
+	if (IS_ENABLED(CONFIG_OMAP_BUILD_IFT))
+		barebox_arm_entry(OMAP_DRAM_ADDR_SPACE_START, sdram_size,
+				  __dtb_z_am335x_bone_common_start);
+	else
+		am33xx_hsmmc_start_image();
 }
 
 ENTRY_FUNCTION(start_am33xx_beaglebone_sram, bootinfo, r1, r2)

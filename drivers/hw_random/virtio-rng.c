@@ -47,8 +47,8 @@ static int virtio_rng_read(struct hwrng *hwrng, void *data, size_t len, bool wai
 
 		virtqueue_kick(vi->rng_vq);
 
-		while (!virtqueue_get_buf(vi->rng_vq, &rsize))
-			;
+		if (!virtqueue_get_buf_timeout(vi->rng_vq, &rsize, NSEC_PER_SEC))
+			return -ETIMEDOUT;
 
 		memcpy(ptr, buf, rsize);
 		remaining -= rsize;

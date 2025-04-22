@@ -92,10 +92,8 @@ static int virtio_net_send(struct eth_device *edev, void *packet, int length)
 
 	virtqueue_kick(priv->tx_vq);
 
-	while (1) {
-		if (virtqueue_get_buf(priv->tx_vq, NULL))
-			break;
-	}
+	if (!virtqueue_get_buf_timeout(priv->tx_vq, NULL, NSEC_PER_SEC))
+		return -ETIMEDOUT;
 
 	return 0;
 }

@@ -179,7 +179,7 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 		 * we couldn't. If you want to get rid of this warning, consider
 		 * migrating your platform to have deep probe support.
 		 */
-		rdev_warn(rdev, "Failed to get '%s' regulator (ignored).\n",
+		rdev_warn(rdev, "Failed to get '%s' supply (ignored).\n",
 			 supply_name);
 		return 0;
 	}

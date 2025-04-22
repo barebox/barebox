@@ -607,10 +607,19 @@ static void* block_prepare_used(control_t* control, block_header_t* block,
 
 		kasan_poison_shadow(&block->size, size + 2 * sizeof(size_t),
 			    KASAN_KMALLOC_REDZONE);
-		kasan_unpoison_shadow(p, used);
 
-		if (want_init_on_alloc())
+		if (want_init_on_alloc()) {
+			kasan_unpoison_shadow(p, size);
 			memzero_explicit(p, size);
+			/*
+			 * KASAN doesn't play nicely with poisoning addresses
+			 * that are not granule-aligned, which is why we poison
+			 * the full size and then unpoison the rest.
+			 */
+			kasan_poison_shadow(p, size, 0xff);
+		}
+
+		kasan_unpoison_shadow(p, used);
 	}
 	return p;
 }
@@ -1017,8 +1026,10 @@ void tlsf_free(tlsf_t tlsf, void* ptr)
 		control_t* control = tlsf_cast(control_t*, tlsf);
 		block_header_t* block = block_from_ptr(ptr);
 		tlsf_assert(!block_is_free(block) && "block already marked as free");
-		if (want_init_on_free())
+		if (want_init_on_free()) {
+			kasan_unpoison_shadow(ptr, block_size(block));
 			memzero_explicit(ptr, block_size(block));
+		}
 		kasan_poison_shadow(ptr, block_size(block), 0xff);
 		block_mark_as_free(block);
 		block = block_merge_prev(control, block);

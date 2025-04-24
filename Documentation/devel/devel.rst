@@ -9,6 +9,7 @@ Contents:
    :maxdepth: 2
 
    porting
+   filesystems
    background-execution
    project-ideas
 

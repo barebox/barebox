@@ -3,7 +3,6 @@
 #define __DIRENT_H
 
 #include <linux/list.h>
-#include <linux/path.h>
 
 struct dirent {
 	char d_name[256];
@@ -15,7 +14,6 @@ typedef struct dir {
 	struct dirent d;
 	void *priv; /* private data for the fs driver */
 	int fd;
-	struct path path;
 	struct list_head entries;
 } DIR;
 
@@ -24,6 +22,7 @@ DIR *fdopendir(int fd);
 struct dirent *readdir(DIR *dir);
 int unreaddir(DIR *dir, const struct dirent *d);
 int rewinddir(DIR *dir);
+int countdir(DIR *dir);
 int closedir(DIR *dir);
 
 #endif /* __DIRENT_H */

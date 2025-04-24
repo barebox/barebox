@@ -13,10 +13,10 @@ static int odyssey_som_probe(struct device *dev)
 	int instance = bootsource_get_instance();
 
 	flags = instance == 0 ? BBU_HANDLER_FLAG_DEFAULT : 0;
-	stm32mp_bbu_mmc_register_handler("sd", "/dev/mmc0.ssbl", flags);
+	stm32mp_bbu_mmc_fip_register("sd", "/dev/mmc0", flags);
 
 	flags = instance == 1 ? BBU_HANDLER_FLAG_DEFAULT : 0;
-	stm32mp_bbu_mmc_register_handler("emmc", "/dev/mmc1.ssbl", flags);
+	stm32mp_bbu_mmc_fip_register("emmc", "/dev/mmc1", flags);
 
 
 	if (instance == 0)

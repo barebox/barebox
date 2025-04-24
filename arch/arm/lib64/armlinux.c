@@ -5,18 +5,18 @@
 #include <memory.h>
 #include <init.h>
 #include <bootm.h>
+#include <asm/boot.h>
 #include <efi/efi-mode.h>
 
 static int do_bootm_linux(struct image_data *data)
 {
-	void (*fn)(unsigned long dtb, unsigned long x1, unsigned long x2,
-		       unsigned long x3);
+	void *image;
 	phys_addr_t devicetree;
 	int ret;
 
-	fn = booti_load_image(data, &devicetree);
-	if (IS_ERR(fn))
-		return PTR_ERR(fn);
+	image = booti_load_image(data, &devicetree);
+	if (IS_ERR(image))
+		return PTR_ERR(image);
 
 	if (data->dryrun)
 		return 0;
@@ -27,7 +27,7 @@ static int do_bootm_linux(struct image_data *data)
 
 	shutdown_barebox();
 
-	fn(devicetree, 0, 0, 0);
+	jump_to_linux(image, devicetree);
 
 	return -EINVAL;
 }
@@ -42,12 +42,6 @@ static struct image_handler aarch64_linux_efi_handler = {
         .name = "ARM aarch64 Linux/EFI image",
         .bootm = do_bootm_linux,
         .filetype = filetype_arm64_efi_linux_image,
-};
-
-static struct image_handler aarch64_fit_handler = {
-	.name = "FIT image",
-	.bootm = do_bootm_linux,
-	.filetype = filetype_oftree,
 };
 
 static int do_bootm_barebox(struct image_data *data)
@@ -96,9 +90,6 @@ static int aarch64_register_image_handler(void)
 	register_image_handler(&aarch64_linux_efi_handler);
 	register_image_handler(&aarch64_linux_handler);
 	register_image_handler(&aarch64_barebox_handler);
-
-	if (IS_ENABLED(CONFIG_FITIMAGE))
-		register_image_handler(&aarch64_fit_handler);
 
 	return 0;
 }

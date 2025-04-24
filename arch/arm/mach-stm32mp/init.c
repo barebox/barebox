@@ -13,6 +13,7 @@
 #include <mach/stm32mp/revision.h>
 #include <mach/stm32mp/bootsource.h>
 #include <bootsource.h>
+#include <fiptool.h>
 #include <dt-bindings/pinctrl/stm32-pinfunc.h>
 
 /* Package = bit 27:29 of OTP16
@@ -236,6 +237,13 @@ int stm32mp_soc(void)
 	return __st32mp_soc;
 }
 
+static const struct fip_binding stm32mp_fip_handler[] = {
+	{  1, UUID_FW_CONFIG },
+	{  2, UUID_HW_CONFIG },
+	{  5, UUID_NON_TRUSTED_FIRMWARE_BL33 },
+	{ /* sentinel */ }
+};
+
 static int stm32mp_init(void)
 {
 	u32 boot_ctx;
@@ -259,6 +267,8 @@ static int stm32mp_init(void)
 	}
 
 	setup_boot_mode(boot_ctx);
+
+	plat_set_fip_bindings(stm32mp_fip_handler);
 
 	return 0;
 }

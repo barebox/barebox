@@ -979,40 +979,21 @@ void fit_close(struct fit_handle *handle)
 	free(handle);
 }
 
-static int do_bootm_sandbox_fit(struct image_data *data)
+static int do_bootm_fit(struct image_data *data)
 {
-	struct fit_handle *handle;
-	void *config;
-	int ret;
+	pr_err("Cannot boot device tree binary blob\n");
 
-	handle = fit_open(data->os_file, data->verbose, BOOTM_VERIFY_NONE,
-			  FILESIZE_MAX);
-	if (IS_ERR(handle))
-		return PTR_ERR(handle);
-
-	config = fit_open_configuration(handle, data->os_part);
-	if (IS_ERR(config)) {
-		ret = PTR_ERR(config);
-		goto out;
-	}
-
-	ret = 0;
-out:
-	fit_close(handle);
-
-	return ret;
+	return -EINVAL;
 }
 
-static struct image_handler sandbox_fit_handler = {
+static struct image_handler fit_handler = {
 	.name = "FIT image",
-	.bootm = do_bootm_sandbox_fit,
+	.bootm = do_bootm_fit,
 	.filetype = filetype_oftree,
 };
 
-static __maybe_unused int sandbox_fit_register(void)
+static int bootm_fit_register(void)
 {
-	return register_image_handler(&sandbox_fit_handler);
+	return register_image_handler(&fit_handler);
 }
-#ifdef CONFIG_SANDBOX
-late_initcall(sandbox_fit_register);
-#endif
+late_initcall(bootm_fit_register);

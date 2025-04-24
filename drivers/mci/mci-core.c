@@ -671,10 +671,8 @@ static void mci_part_add(struct mci *mci, uint64_t size,
 	part->part_cfg = part_cfg;
 	part->idx = idx;
 
-	if (area_type == MMC_BLK_DATA_AREA_MAIN) {
+	if (area_type == MMC_BLK_DATA_AREA_MAIN)
 		cdev_set_of_node(&part->blk.cdev, mci->host->hw_dev->of_node);
-		part->blk.cdev.flags |= DEVFS_IS_MCI_MAIN_PART_DEV;
-	}
 
 	mci->nr_parts++;
 }
@@ -2508,10 +2506,50 @@ static void mci_parse_cid(struct mci *mci)
 	dev_add_param_uint32_fixed(dev, "cid_month", mci->cid.month, "%0u");
 }
 
+static bool cdev_partname_equal(const struct cdev *a,
+				const struct cdev *b)
+{
+	return a->partname && b->partname &&
+		!strcmp(a->partname, b->partname);
+}
+
+static char *mci_get_linux_mmcblkdev(struct block_device *blk,
+				     const struct cdev *partcdev)
+
+{
+	struct mci_part *mci_part = container_of(blk, struct mci_part, blk);
+	struct cdev *cdevm = partcdev->master, *cdev;
+	int id, partnum;
+
+	if (mci_part->area_type != MMC_BLK_DATA_AREA_MAIN)
+		return NULL;
+
+	id = of_alias_get_id(cdev_of_node(cdevm), "mmc");
+	if (id < 0)
+		return NULL;
+
+	partnum = 1; /* linux partitions are 1 based */
+	list_for_each_entry(cdev, &cdevm->partitions, partition_entry) {
+
+		/*
+		 * Partname is not guaranteed but this partition cdev is listed
+		 * in the partitions list so we need to count it instead of
+		 * skipping it.
+		 */
+		if (cdev_partname_equal(partcdev, cdev))
+			return basprintf("root=/dev/mmcblk%dp%d", id, partnum);
+		partnum++;
+	}
+
+	return NULL;
+}
+
 static struct block_device_ops mci_ops = {
 	.read = mci_sd_read,
 	.write = IS_ENABLED(CONFIG_MCI_WRITE) ? mci_sd_write : NULL,
 	.erase = IS_ENABLED(CONFIG_MCI_ERASE) ? mci_sd_erase : NULL,
+	.get_rootarg = IS_ENABLED(CONFIG_MMCBLKDEV_ROOTARG) ?
+		mci_get_linux_mmcblkdev : NULL,
 };
 
 static int mci_set_boot(struct param_d *param, void *priv)
@@ -2600,6 +2638,7 @@ static int mci_register_partition(struct mci_part *part)
 	part->blk.dev = &mci->dev;
 	part->blk.ops = &mci_ops;
 	part->blk.type = IS_SD(mci) ? BLK_TYPE_SD : BLK_TYPE_MMC;
+	part->blk.rootwait = true;
 
 	rc = blockdevice_register(&part->blk);
 	if (rc != 0) {

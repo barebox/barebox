@@ -115,9 +115,9 @@ static int info_cmd(struct fip_state *fip, int argc, char *argv[])
 
 static int uuid_cmd(struct fip_state *fip, int argc, char *argv[])
 {
-	for (toc_entry_t *t = toc_entries; t->cmdline_name != NULL; t++)
+	for (const toc_entry_t *t = toc_entries; t->cmdline_name != NULL; t++)
 		printf("%pU\t%-16s\t%s\n", &t->uuid, t->cmdline_name, t->name);
-	for (toc_entry_t *t = plat_def_toc_entries; t->cmdline_name != NULL; t++)
+	for (const toc_entry_t *t = plat_def_toc_entries; t->cmdline_name != NULL; t++)
 		printf("%pU\t%-16s\t%s\n", &t->uuid, t->cmdline_name, t->name);
 	return 0;
 }

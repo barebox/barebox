@@ -13,6 +13,9 @@
 #include <init.h>
 #include <menu.h>
 #include <unistd.h>
+#include <libfile.h>
+#include <net.h>
+#include <fs.h>
 
 #include <linux/stat.h>
 
@@ -131,7 +134,12 @@ static char *global_user;
 
 static int init_boot(void)
 {
-	global_boot_default = global_boot_default ? : xstrdup("net");
+	if (!global_boot_default)
+		global_boot_default = xstrdup(
+			IF_ENABLED(CONFIG_BOOT_DEFAULTS, "bootsource ")
+			"net"
+		);
+
 	globalvar_add_simple_string("boot.default", &global_boot_default);
 	globalvar_add_simple_int("boot.watchdog_timeout",
 				 &boot_watchdog_timeout, "%u");
@@ -271,22 +279,117 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
 
 static LIST_HEAD(bootentry_providers);
 
-struct bootentry_provider {
-	int (*fn)(struct bootentries *bootentries, const char *name);
-	struct list_head list;
-};
-
-int bootentry_register_provider(int (*fn)(struct bootentries *bootentries, const char *name))
+int bootentry_register_provider(struct bootentry_provider *p)
 {
-	struct bootentry_provider *p;
-
-	p = xzalloc(sizeof(*p));
-	p->fn = fn;
-
-	list_add_tail(&p->list, &bootentry_providers);
-
+	list_add(&p->list, &bootentry_providers);
 	return 0;
 }
+
+/*
+ * nfs_find_mountpath - Check if a given url is already mounted
+ */
+static const char *nfs_find_mountpath(const char *nfshostpath)
+{
+	struct fs_device *fsdev;
+
+	for_each_fs_device(fsdev) {
+		if (fsdev->backingstore && !strcmp(fsdev->backingstore, nfshostpath))
+			return fsdev->path;
+	}
+
+	return NULL;
+}
+
+/*
+ * parse_nfs_url - check for nfs:// style url
+ *
+ * Check if the passed string is a NFS url and if yes, mount the
+ * NFS and return the path we have mounted to.
+ */
+static char *parse_nfs_url(const char *url)
+{
+	char *sep, *str, *host, *port, *path;
+	char *mountpath = NULL, *hostpath = NULL, *options = NULL;
+	const char *prevpath;
+	IPaddr_t ip;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_FS_NFS))
+		return NULL;
+
+	if (strncmp(url, "nfs://", 6))
+		return NULL;
+
+	url += 6;
+
+	str = xstrdup(url);
+
+	host = str;
+
+	sep = strchr(str, '/');
+	if (!sep) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	*sep++ = 0;
+
+	path = sep;
+
+	port = strchr(host, ':');
+	if (port)
+		*port++ = 0;
+
+	ret = ifup_all(0);
+	if (ret) {
+		pr_err("Failed to bring up networking\n");
+		goto out;
+	}
+
+	ret = resolv(host, &ip);
+	if (ret) {
+		pr_err("Cannot resolve \"%s\": %s\n", host, strerror(-ret));
+		goto out;
+	}
+
+	hostpath = basprintf("%pI4:%s", &ip, path);
+
+	prevpath = nfs_find_mountpath(hostpath);
+
+	if (prevpath) {
+		mountpath = xstrdup(prevpath);
+	} else {
+		mountpath = basprintf("/mnt/nfs-%s-bootentries-%08x", host,
+					random32());
+		if (port)
+			options = basprintf("mountport=%s,port=%s", port,
+					      port);
+
+		ret = make_directory(mountpath);
+		if (ret)
+			goto out;
+
+		pr_debug("host: %s port: %s path: %s\n", host, port, path);
+		pr_debug("hostpath: %s mountpath: %s options: %s\n", hostpath, mountpath, options);
+
+		ret = mount(hostpath, "nfs", mountpath, options);
+		if (ret)
+			goto out;
+	}
+
+	ret = 0;
+
+out:
+	free(str);
+	free(hostpath);
+	free(options);
+
+	if (ret)
+		free(mountpath);
+
+	return ret ? NULL : mountpath;
+}
+
 
 /*
  * bootentry_create_from_name - create boot entries from a name
@@ -308,12 +411,19 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 {
 	struct bootentry_provider *p;
 	int found = 0, ret;
+	char *nfspath;
+
+	nfspath = parse_nfs_url(name);
+	if (nfspath)
+		name = nfspath;
 
 	list_for_each_entry(p, &bootentry_providers, list) {
-		ret = p->fn(bootentries, name);
+		ret = p->generate(bootentries, name);
 		if (ret > 0)
 			found += ret;
 	}
+
+	free(nfspath);
 
 	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT) && !found) {
 		const char *path;

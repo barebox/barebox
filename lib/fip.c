@@ -105,7 +105,7 @@ void fip_free(struct fip_state *fip)
 
 void fip_fill_image_descs(struct fip_state *fip)
 {
-	toc_entry_t *toc_entry;
+	const toc_entry_t *toc_entry;
 
 	for (toc_entry = toc_entries;
 	     toc_entry->cmdline_name != NULL;

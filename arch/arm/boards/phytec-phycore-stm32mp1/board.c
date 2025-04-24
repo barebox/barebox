@@ -16,7 +16,7 @@ static int phycore_stm32mp1_probe(struct device *dev)
 		emmc_bbu_flags = BBU_HANDLER_FLAG_DEFAULT;
 	}
 
-	stm32mp_bbu_mmc_register_handler("sd", "/dev/mmc0.ssbl", sd_bbu_flags);
+	stm32mp_bbu_mmc_fip_register("sd", "/dev/mmc0", sd_bbu_flags);
 	stm32mp_bbu_mmc_fip_register("emmc", "/dev/mmc1", emmc_bbu_flags);
 
 	barebox_set_hostname("phyCORE-STM32MP1");

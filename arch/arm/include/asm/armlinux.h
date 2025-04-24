@@ -9,7 +9,7 @@
 
 #if defined CONFIG_ARM_LINUX && defined CONFIG_CPU_32
 void armlinux_set_bootparams(void *params);
-void armlinux_set_architecture(int architecture);
+void armlinux_set_architecture(unsigned architecture);
 void armlinux_set_revision(unsigned int);
 void armlinux_set_serial(u64);
 #else
@@ -17,7 +17,7 @@ static inline void armlinux_set_bootparams(void *params)
 {
 }
 
-static inline void armlinux_set_architecture(int architecture)
+static inline void armlinux_set_architecture(unsigned architecture)
 {
 }
 

@@ -25,7 +25,8 @@ static struct region_info_user memregion;
 static struct mtd_info_user meminfo;
 static struct mtd_ecc_stats oldstats, newstats;
 
-static int fd, seed;
+static int fd;
+static u64 seed;
 /* Markbad option flag */
 static int markbad;
 
@@ -184,7 +185,7 @@ static int erase_and_write(loff_t ofs, unsigned char *data,
 	 * debugging information. */
 	ret = memcmp(data, rbuf, meminfo.erasesize);
 	if (ret < 0) {
-		printf("\ncompare failed. seed %d\n", seed);
+		printf("\ncompare failed. seed %llu\n", seed);
 		for (i = 0; i < meminfo.erasesize; i++) {
 			if (data[i] != rbuf[i])
 				printf("Block 0x%llx byte 0x%0x (page 0x%x offset 0x%x) is %02x should be %02x\n",
@@ -236,7 +237,7 @@ static int do_nandtest(int argc, char *argv[])
 			markbad = 1;
 			break;
 		case 's':
-			seed = simple_strtoul(optarg, NULL, 0);
+			seed = simple_strtoull(optarg, NULL, 0);
 			break;
 		case 'i':
 			nr_iterations = simple_strtoul(optarg, NULL, 0);
@@ -352,8 +353,6 @@ static int do_nandtest(int argc, char *argv[])
 				test_ofs < flash_end;
 				test_ofs += meminfo.erasesize) {
 			pb_update(test_ofs);
-			srand(seed);
-			seed = rand();
 
 			if (ioctl(fd, MEMGETBADBLOCK, &test_ofs)) {
 				printf("\nBad block at 0x%08llx\n",
@@ -364,7 +363,7 @@ static int do_nandtest(int argc, char *argv[])
 			if (do_nandtest_ro) {
 				ret = read_corrected(test_ofs, rbuf, length);
 			} else {
-				get_random_bytes(wbuf, meminfo.erasesize);
+				randbuf_r(&seed, wbuf, meminfo.erasesize);
 				ret = erase_and_write(test_ofs, wbuf,
 						rbuf, length);
 			}

@@ -465,6 +465,25 @@ config ARM_MODULE_PLTS
 	  Say y if your memory configuration puts the heap to far away from the
 	  barebox image, causing relocation out of range errors
 
+config ARM_BOOTM_ELF
+	bool
+	depends on BOOTM
+	select ELF
+	prompt "elf loading support"
+	help
+	  Add support to load elf file with bootm.
+
+config ARM_BOOTM_FIP
+	bool
+	depends on BOOTM
+	select FIP
+	prompt "FIP loading support"
+	default ARCH_STM32MP
+	help
+	  Add support to load FIP file with bootm.
+	  This allows barebox to chainload barebox on platforms where it
+	  is located inside a FIP. This can be useful during development.
+
 config ARM_ATF
 	bool
 

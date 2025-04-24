@@ -488,10 +488,8 @@ int ubiformat(struct mtd_info *mtd, struct ubiformat_args *args)
 	if (!args->ubi_ver)
 		args->ubi_ver = 1;
 
-	if (!args->image_seq) {
-		srand(get_time_ns());
+	if (!args->image_seq)
 		args->image_seq = random32();
-	}
 
 	if (!is_power_of_2(mtd->writesize)) {
 		errmsg("min. I/O size is %d, but should be power of 2",

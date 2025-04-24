@@ -233,10 +233,10 @@ static void addRandom(uint16_t board[SIZE][SIZE])
 	}
 
 	if (len>0) {
-		r = rand()%len;
+		r = random32()%len;
 		x = list[r][0];
 		y = list[r][1];
-		n = ((rand()%10)/9+1)*2;
+		n = ((random32()%10)/9+1)*2;
 		board[x][y]=n;
 	}
 }

@@ -74,6 +74,9 @@ config LOGBUF
 config STDDEV
 	bool
 
+config CDEV_ALIAS
+	bool
+
 config MENUTREE
 	bool
 	select GLOB
@@ -668,14 +671,6 @@ config PE
 config ELF
 	bool "ELF Support" if COMPILE_TEST
 
-config BOOTM_ELF
-	bool
-	depends on BOOTM
-	select ELF
-	prompt "elf loading support"
-	help
-	  Add support to load elf file with bootm.
-
 config BOOTM_FITIMAGE
 	bool
 	prompt "FIT image support"
@@ -779,6 +774,17 @@ config FLEXIBLE_BOOTARGS
 	  This allows for more flexible scripting since with it it's possible
 	  to replace parts of the bootargs string without reconstructing it
 	  completely.
+
+config ROOTWAIT_BOOTARG
+	def_bool y
+	prompt "fixup 'rootwait' into kernel command-line when needed"
+	depends on FLEXIBLE_BOOTARGS
+	help
+	  Adds a rootwait= argument into the kernel command-line argument
+	  for boot media that requires it, like USB, SD/MMC or NFS.
+	  The duration chosen is controlled by the linux.rootwait
+	  parameter and defaults to 10 seconds. Setting the variable
+	  to 0 will wait indefinitely.
 
 config MMCBLKDEV_ROOTARG
 	bool
@@ -1191,6 +1197,17 @@ config BOOTCHOOSER
 	select ENVIRONMENT_VARIABLES
 	select OFTREE
 	select PARAMETER
+
+config BOOT_DEFAULTS
+	bool "default boot targets"
+	select BOOT
+	select CDEV_ALIAS
+	default BLSPEC && OFDEVICE
+	help
+	  Say y here to enable a number of default boot targets that
+	  determine at runtime what to do. An example is the bootsource
+	  target, which will expand to the device that barebox has
+	  booted from if that could be determined.
 
 config RESET_SOURCE
 	bool "detect Reset cause"

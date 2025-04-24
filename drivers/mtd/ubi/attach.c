@@ -1246,8 +1246,8 @@ static int late_analysis(struct ubi_device *ubi, struct ubi_attach_info *ai)
 		if (ai->maybe_bad_peb_count <= 2) {
 			ai->is_empty = 1;
 			ubi_msg(ubi, "empty MTD device detected");
-			get_random_bytes(&ubi->image_seq,
-					 sizeof(ubi->image_seq));
+			get_noncrypto_bytes(&ubi->image_seq,
+					    sizeof(ubi->image_seq));
 		} else {
 			ubi_err(ubi, "MTD device is not UBI-formatted and possibly contains non-UBI data - refusing it");
 			return -EINVAL;

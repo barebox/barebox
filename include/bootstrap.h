@@ -10,7 +10,7 @@
 
 #define bootstrap_err(fmt, arg...) printf(fmt, ##arg)
 
-typedef void (*kernel_entry_func)(int zero, int arch, void *params);
+typedef void (*kernel_entry_func)(int zero, unsigned arch, void *params);
 void bootstrap_boot(kernel_entry_func func, bool barebox);
 
 #ifdef CONFIG_BOOTSTRAP_DEVFS

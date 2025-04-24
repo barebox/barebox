@@ -26,11 +26,12 @@
 #include <asm/armlinux.h>
 #include <asm/system.h>
 #include <asm/secure.h>
+#include <asm/boot.h>
 
 static struct tag *params;
 static void *armlinux_bootparams = NULL;
 
-static int armlinux_architecture;
+static unsigned armlinux_architecture;
 static u32 armlinux_system_rev;
 static u64 armlinux_system_serial;
 
@@ -38,13 +39,13 @@ BAREBOX_MAGICVAR(armlinux_architecture, "ARM machine ID");
 BAREBOX_MAGICVAR(armlinux_system_rev, "ARM system revision");
 BAREBOX_MAGICVAR(armlinux_system_serial, "ARM system serial");
 
-void armlinux_set_architecture(int architecture)
+void armlinux_set_architecture(unsigned architecture)
 {
 	export_env_ull("armlinux_architecture", architecture);
 	armlinux_architecture = architecture;
 }
 
-static int armlinux_get_architecture(void)
+static unsigned armlinux_get_architecture(void)
 {
 	getenv_uint("armlinux_architecture", &armlinux_architecture);
 
@@ -241,7 +242,7 @@ static void setup_tags(unsigned long initrd_address,
 	setup_end_tag();
 
 	printf("commandline: %s\n"
-	       "arch_number: %d\n", commandline, armlinux_get_architecture());
+	       "arch_number: %u\n", commandline, armlinux_get_architecture());
 
 }
 
@@ -251,9 +252,8 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 		 unsigned long initrd_size, void *oftree,
 		 enum arm_security_state state, void *optee)
 {
-	void (*kernel)(int zero, int arch, void *params) = adr;
-	void *params = NULL;
-	int architecture;
+	phys_addr_t params = 0;
+	unsigned architecture;
 	int ret;
 
 	if (IS_ENABLED(CONFIG_ARM_SECURE_MONITOR) && state > ARM_STATE_SECURE) {
@@ -264,11 +264,11 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 
 	if (oftree) {
 		pr_debug("booting kernel with devicetree\n");
-		params = oftree;
+		params = virt_to_phys(oftree);
 	} else {
-		params = armlinux_get_bootparams();
+		params = virt_to_phys(armlinux_get_bootparams());
 
-		if ((unsigned long)params < PAGE_SIZE)
+		if (params < PAGE_SIZE)
 			zero_page_access();
 
 		setup_tags(initrd_address, initrd_size, swap);
@@ -288,8 +288,8 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 	}
 
 	if (optee && IS_ENABLED(CONFIG_BOOTM_OPTEE)) {
-		start_kernel_optee(optee, kernel, oftree);
+		start_kernel_optee(optee, adr, oftree);
 	} else {
-		kernel(0, architecture, params);
+		__jump_to_linux(adr, architecture, params);
 	}
 }

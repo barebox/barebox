@@ -81,7 +81,7 @@ static int dp83tg720_phy_init(struct phy_device *phydev)
 	 * the link partner.  The polling interval is set to 150ms +/- 50ms.
 	 */
 	phydev->polling_interval = (DP83TG720S_POLL_TIMEOUT_MS +
-				    (rand() % 10) * 10) * MSECOND;
+				    prandom_u32_max(100)) * MSECOND;
 
 	/* According to the "DP83TG720R-Q1 1000BASE-T1 Automotive Ethernet PHY
 	 * datasheet (Rev. C)" - "T6.2 Post reset stabilization-time prior to

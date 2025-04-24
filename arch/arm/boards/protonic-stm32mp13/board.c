@@ -51,7 +51,7 @@ static const struct prt_stm32_boot_dev prt_stm32_boot_devs[] = {
 	{
 		.name = "emmc",
 		.env = "/chosen/environment-emmc",
-		.dev = "/dev/mmc1.ssbl",
+		.dev = "/dev/mmc1",
 		.flags = PRT_STM32_BOOTSRC_EMMC,
 		.boot_src = BOOTSOURCE_MMC,
 		.boot_idx = 1,
@@ -68,7 +68,7 @@ static const struct prt_stm32_boot_dev prt_stm32_boot_devs[] = {
 		 */
 		.name = "sd",
 		.env = "/chosen/environment-sd",
-		.dev = "/dev/mmc0.ssbl",
+		.dev = "/dev/mmc0",
 		.flags = PRT_STM32_BOOTSRC_SD,
 		.boot_src = BOOTSOURCE_MMC,
 		.boot_idx = 0,
@@ -248,11 +248,13 @@ static int prt_stm32_probe(struct device *dev)
 			env_path = bd->env;
 		}
 
-		ret = stm32mp_bbu_mmc_register_handler(bd->name, bd->dev,
-						       bbu_flags);
-		if (ret < 0)
-			dev_warn(dev, "Failed to enable %s bbu (%pe)\n",
-				 bd->name, ERR_PTR(ret));
+		if (bd->boot_src == BOOTSOURCE_MMC) {
+			ret = stm32mp_bbu_mmc_fip_register(bd->name, bd->dev,
+							   bbu_flags);
+			if (ret < 0)
+				dev_warn(dev, "Failed to enable %s bbu (%pe)\n",
+					 bd->name, ERR_PTR(ret));
+		}
 	}
 
 	if (!env_path)

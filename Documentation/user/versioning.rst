@@ -7,15 +7,15 @@ In addition to the usual barebox release (e.g. ``v2025.03.0``), the
 version number can be extended to encode integration-specific version
 information:
 
-  * When built from git, ``scripts/setlocalversion`` will factor in
-    git revision information into the version string.
-  * The ``EXTRAVERSION =`` in the top-level ``Makefile`` can be used
-    to add a suffix to the version. This is useful if patches are applied
-    on top of the tarball release.
-  * The build host can set the ``BUILDSYSTEM_VERSION`` environment variable
-    prior to executing ``make`` to encode a board support package version.
-    This is useful to encode information about built-in environment
-    and firmware.
+* When built from git, ``scripts/setlocalversion`` will factor in
+  git revision information into the version string.
+* The ``EXTRAVERSION =`` in the top-level ``Makefile`` can be used
+  to add a suffix to the version. This is useful if patches are applied
+  on top of the tarball release.
+* The build host can set the ``BUILDSYSTEM_VERSION`` environment variable
+  prior to executing ``make`` to encode a board support package version.
+  This is useful to encode information about built-in environment
+  and firmware.
 
 Query from barebox
 ^^^^^^^^^^^^^^^^^^
@@ -32,17 +32,17 @@ Query from OS
 The barebox version (formatted as ``barebox-$version``) can be queried
 after boot by different means:
 
- * If the OS is booted with device tree, barebox will fixup a
-   ``/chosen/barebox-version`` property into the kernel device tree with
-   the version string. Under Linux, this can be accessed at:
+* If the OS is booted with device tree, barebox will fixup a
+  ``/chosen/barebox-version`` property into the kernel device tree with
+  the version string. Under Linux, this can be accessed at:
 
-   * ``/sys/firmware/devicetree/base/chosen/barebox-version``
-   * ``/proc/device-tree/base/chosen/barebox-version``
+ * ``/sys/firmware/devicetree/base/chosen/barebox-version``
+ * ``/proc/device-tree/base/chosen/barebox-version``
 
- * If the system is booted through barebox as EFI application (payload),
-   a ``LoaderInfo`` EFI variable with the systemd vendor GUID will
-   be set to the version string. Under Linux, the string is shown in
-   ``bootctl`` output
+* If the system is booted through barebox as EFI application (payload),
+  a ``LoaderInfo`` EFI variable with the systemd vendor GUID will
+  be set to the version string. Under Linux, the string is shown in
+  ``bootctl`` output
 
 Query without booting
 ^^^^^^^^^^^^^^^^^^^^^

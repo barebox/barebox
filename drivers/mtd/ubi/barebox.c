@@ -39,7 +39,7 @@ static ssize_t ubi_volume_cdev_read(struct cdev *cdev, void *buf, size_t size,
 
 		err = ubi_eba_read_leb(ubi, vol, lnum, buf, off, len, 0);
 		if (err) {
-			ubi_err(ubi, "read error: %s", strerror(-err));
+			ubi_err(ubi, "read error: %pe", ERR_PTR(err));
 			break;
 		}
 		off += len;
@@ -135,7 +135,7 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 
 		err = ubi_check_volume(ubi, vol->vol_id);
 		if (err < 0) {
-			ubi_err(ubi, "ubi volume check failed: %s", strerror(err));
+			ubi_err(ubi, "ubi volume check failed: %pe", ERR_PTR(err));
 			return err;
 		}
 

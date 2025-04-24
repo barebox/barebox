@@ -35,8 +35,8 @@ ssize_t ext4fs_devread(struct ext_filesystem *fs, sector_t __sector, int byte_of
 
 	size = cdev_read(fs->cdev, buf, byte_len, sector * SECTOR_SIZE + byte_offset, 0);
 	if (size < 0) {
-		dev_err(fs->dev, "read error at sector %llu: %s\n", __sector,
-				strerror(-size));
+		dev_err(fs->dev, "read error at sector %llu: %pe\n", __sector,
+			ERR_PTR(size));
 		return size;
 	}
 

@@ -483,8 +483,8 @@ static void rsa_init_keys_of(void)
 
 		ret = public_key_add(key);
 		if (ret)
-			pr_err("Cannot add rsa key %s: %s\n",
-				key->key_name_hint, strerror(-ret));
+			pr_err("Cannot add rsa key %s: %pe\n",
+				key->key_name_hint, ERR_PTR(ret));
 	}
 }
 

@@ -447,8 +447,7 @@ int linux_open_hostfile(struct hf_info *hf)
 				MAP_SHARED, fd, 0);
 
 		if (hf->base == (unsigned long)MAP_FAILED)
-			printf("warning: mmapping %s failed: %s\n",
-			       hf->filename, strerror(errno));
+			printf("warning: mmapping %s failed: %m\n", hf->filename);
 	} else {
 		printf("warning: %s: contiguous map failed\n", hf->filename);
 	}

@@ -85,8 +85,8 @@ static int syscon_reboot_mode_probe(struct device *dev)
 
 		ret = regmap_read(syscon_rbm->map, reg->offset, &magic[i]);
 		if (ret) {
-			dev_err(dev, "error reading reboot mode: %s\n",
-				strerror(-ret));
+			dev_err(dev, "error reading reboot mode: %pe\n",
+				ERR_PTR(ret));
 			goto free_magic;
 		}
 

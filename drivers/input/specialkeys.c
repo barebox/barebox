@@ -14,12 +14,12 @@ static void input_specialkeys_notify(struct input_notifier *in,
 	switch (ev->code) {
 	case KEY_RESTART:
 		pr_info("Triggering reset due to special key.\n");
-		restart_machine();
+		restart_machine(0);
 		break;
 
 	case KEY_POWER:
 		pr_info("Triggering poweroff due to special key.\n");
-		poweroff_machine();
+		poweroff_machine(0);
 		break;
 	}
 

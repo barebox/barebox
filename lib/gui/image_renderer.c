@@ -39,7 +39,7 @@ struct image *image_renderer_open(const char* file)
 
 	ret = read_file_2(file, &size, &data, FILESIZE_MAX);
 	if (ret) {
-		printf("unable to read %s: %s\n", file, strerror(-ret));
+		printf("unable to read %s: %pe\n", file, ERR_PTR(ret));
 		return ERR_PTR(ret);
 	}
 

@@ -14,7 +14,6 @@
 	.align	5
 
 ENTRY(__memset)
-ENTRY(mmioset)
 WEAK(memset)
 UNWIND( .fnstart         )
 	and	r1, r1, #255		@ cast to unsigned char
@@ -132,8 +131,8 @@ UNWIND( .fnstart            )
 	b	1b
 UNWIND( .fnend   )
 ENDPROC(memset)
-ENDPROC(mmioset)
 ENDPROC(__memset)
+SYM_FUNC_ALIAS(__pi_memset, __memset)
 
 ENTRY(__memset32)
 UNWIND( .fnstart         )

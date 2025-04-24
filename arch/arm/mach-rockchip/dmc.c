@@ -27,6 +27,12 @@
 #define RK3568_INT_REG_START		RK3399_INT_REG_START
 #define RK3588_INT_REG_START		RK3399_INT_REG_START
 
+/* RK3588 has two known memory gaps when using 16+ GiB DRAM */
+#define DRAM_GAP1_START         0x3fc000000
+#define DRAM_GAP1_END           0x3fc500000
+#define DRAM_GAP2_START         0x3fff00000
+#define DRAM_GAP2_END           0x400000000
+
 struct rockchip_dmc_drvdata {
 	unsigned int os_reg2;
 	unsigned int os_reg3;
@@ -220,9 +226,19 @@ static int rockchip_dmc_probe(struct device *dev)
 	arm_add_mem_device("ram0", membase,
 		min_t(resource_size_t, drvdata->internal_registers_start, memsize) - membase);
 
-	/* ram1, remaining RAM beyond 32bit space */
+	/* ram1, RAM beyond 32bit space up to first gap */
 	if (memsize > SZ_4G)
-		arm_add_mem_device("ram1", SZ_4G, memsize - SZ_4G);
+		arm_add_mem_device("ram1", SZ_4G,
+			min_t(resource_size_t, DRAM_GAP1_START, memsize) - SZ_4G);
+
+	/* ram2, RAM between first and second gap */
+	if (memsize > DRAM_GAP1_END)
+		arm_add_mem_device("ram2", DRAM_GAP1_END,
+			min_t(resource_size_t, DRAM_GAP2_START, memsize) - DRAM_GAP1_END);
+
+	/* ram3, remaining RAM after second gap */
+	if (memsize > DRAM_GAP2_END)
+		arm_add_mem_device("ram3", DRAM_GAP2_END, memsize - DRAM_GAP2_END);
 
 	return 0;
 }

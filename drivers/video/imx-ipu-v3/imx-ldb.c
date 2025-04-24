@@ -162,7 +162,7 @@ static int imx6q_set_clock(struct imx_ldb *ldb, int ipuno, int dino, int chno, u
 
 	ret = clk_set_parent(diclk, ldbclk);
 	if (ret) {
-		dev_err(ldb->dev, "failed to set display clock parent: %s\n", strerror(-ret));
+		dev_err(ldb->dev, "failed to set display clock parent: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 
@@ -233,7 +233,7 @@ static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
 
 	ret = clk_set_parent(diclk, ldbclk);
 	if (ret) {
-		dev_err(ldb->dev, "failed to set display clock parent: %s\n", strerror(-ret));
+		dev_err(ldb->dev, "failed to set display clock parent: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 

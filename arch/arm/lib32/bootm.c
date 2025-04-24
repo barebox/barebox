@@ -152,21 +152,23 @@ static int get_kernel_addresses(size_t image_size,
 
 static int optee_verify_header_request_region(struct image_data *data, struct optee_header *hdr)
 {
-	int ret = 0;
+	int ret;
 
 	ret = optee_verify_header(hdr);
-	if (ret < 0)
+	if (ret < 0) {
+		pr_err("Could not verify header: %pe", ERR_PTR(ret));
 		return ret;
+	}
 
 	data->tee_res = request_sdram_region("TEE", hdr->init_load_addr_lo, hdr->init_size);
 	if (!data->tee_res) {
-		pr_err("Cannot request SDRAM region 0x%08x-0x%08x: %s\n",
+		pr_err("Cannot request SDRAM region 0x%08x-0x%08x: %pe\n",
 		       hdr->init_load_addr_lo, hdr->init_load_addr_lo + hdr->init_size - 1,
-		       strerror(-EINVAL));
+		       ERR_PTR(-EINVAL));
 		return -EINVAL;
 	}
 
-	return ret;
+	return 0;
 }
 
 static int bootm_load_tee_from_fit(struct image_data *data)
@@ -182,15 +184,13 @@ static int bootm_load_tee_from_fit(struct image_data *data)
 		ret = fit_open_image(data->os_fit, data->fit_config, "tee",
 				     &tee, &tee_size);
 		if (ret) {
-			pr_err("Error opening tee fit image: %s\n", strerror(-ret));
+			pr_err("Error opening tee fit image: %pe\n", ERR_PTR(ret));
 			return ret;
 		}
 		memcpy(&hdr, tee, sizeof(hdr));
-		if (optee_verify_header_request_region(data, &hdr) < 0) {
-			pr_err("%s", strerror(errno));
-			ret = -errno;
+		ret = optee_verify_header_request_region(data, &hdr);
+		if (ret < 0)
 			goto out;
-		}
 		memcpy((void *)data->tee_res->start, tee + sizeof(hdr), hdr.init_size);
 		printf("Read optee image to %pa, size 0x%08x\n", (void *)data->tee_res->start, hdr.init_size);
 	}
@@ -204,24 +204,22 @@ static int bootm_load_tee_from_file(struct image_data *data)
 
 	fd = open(data->tee_file, O_RDONLY);
 	if (fd < 0) {
-		pr_err("%s", strerror(errno));
+		pr_err("%m\n");
 		return -errno;
 	}
 
 	if (read_full(fd, &hdr, sizeof(hdr)) < 0) {
-		pr_err("%s", strerror(errno));
+		pr_err("%m\n");
 		ret = -errno;
 		goto out;
 	}
 
-	if (optee_verify_header_request_region(data, &hdr) < 0) {
-		pr_err("%s", strerror(errno));
-		ret = -errno;
+	ret = optee_verify_header_request_region(data, &hdr);
+	if (ret < 0)
 		goto out;
-	}
 
 	if (read_full(fd, (void *)data->tee_res->start, hdr.init_size) < 0) {
-		pr_err("%s", strerror(errno));
+		pr_err("%m\n");
 		ret = -errno;
 		release_region(data->tee_res);
 		goto out;
@@ -337,7 +335,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 	start_linux((void *)kernel, swap, initrd_start, initrd_size,
 		    fdt_load_address, state, tee);
 
-	restart_machine();
+	restart_machine(0);
 
 	return -ERESTARTSYS;
 }
@@ -695,7 +693,7 @@ static int do_bootm_aimage(struct image_data *data)
 
 		second();
 
-		restart_machine();
+		restart_machine(0);
 	}
 
 	close(fd);

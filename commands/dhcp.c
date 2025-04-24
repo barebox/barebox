@@ -49,10 +49,17 @@ static int do_dhcp(int argc, char *argv[])
 		}
 	}
 
-	if (optind == argc)
+	switch (argc - optind) {
+	case 0:
 		edevname = "eth0";
-	else
+		puts("Defaulting to eth0\n");
+		break;
+	case 1:
 		edevname = argv[optind];
+		break;
+	default:
+		return COMMAND_ERROR_USAGE;
+	}
 
 	edev = eth_get_byname(edevname);
 	if (!edev) {

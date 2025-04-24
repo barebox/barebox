@@ -267,7 +267,7 @@ static int mxc_rngc_probe(struct device *dev)
 
 	ret = hwrng_register(dev, &rngc->rng);
 	if (ret) {
-		dev_err(dev, "failed to register: %s\n", strerror(-ret));
+		dev_err(dev, "failed to register: %pe\n", ERR_PTR(ret));
 		clk_disable(rngc->clk);
 
 		return ret;

@@ -281,7 +281,8 @@ static void __init sama5d4_register_clocks(void)
 	clk_register(&pck2);
 }
 
-static void sama5d4_restart(struct restart_handler *rst)
+static void sama5d4_restart(struct restart_handler *rst,
+			    unsigned long flags)
 {
 	at91sam9g45_reset(IOMEM(SAMA5D4_BASE_MPDDRC),
 			  IOMEM(SAMA5D4_BASE_RSTC + AT91_RSTC_CR));

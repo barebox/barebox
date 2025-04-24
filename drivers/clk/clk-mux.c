@@ -37,7 +37,10 @@ EXPORT_SYMBOL_GPL(clk_mux_index_to_val);
 static int clk_mux_get_parent(struct clk_hw *hw)
 {
 	struct clk_mux *m = to_clk_mux(hw);
-	int idx = readl(m->reg) >> m->shift & ((1 << m->width) - 1);
+	u32 idx;
+
+	idx = readl(m->reg) >> m->shift;
+	idx &= m->mask;
 
 	return clk_mux_val_to_index(hw, m->table, m->flags, idx);
 }
@@ -57,11 +60,11 @@ static int clk_mux_set_parent(struct clk_hw *hw, u8 idx)
 	idx = clk_mux_index_to_val(m->table, m->flags, idx);
 
 	val = readl(m->reg);
-	val &= ~(((1 << m->width) - 1) << m->shift);
+	val &= ~(m->mask << m->shift);
 	val |= idx << m->shift;
 
 	if (m->flags & CLK_MUX_HIWORD_MASK)
-		val |= ((1 << m->width) - 1) << (m->shift + 16);
+		val |= m->mask << (m->shift + 16);
 	writel(val, m->reg);
 
 	return 0;
@@ -165,7 +168,7 @@ struct clk *clk_mux_alloc(const char *name, unsigned clk_flags, void __iomem *re
 
 	m->reg = reg;
 	m->shift = shift;
-	m->width = width;
+	m->mask = (1 << width) - 1;
 	m->flags = mux_flags;
 	m->hw.clk.ops = &clk_mux_ops;
 	m->hw.clk.name = name;
@@ -225,12 +228,11 @@ struct clk_hw *__clk_hw_register_mux(struct device *dev,
 	struct clk_mux *mux;
 	struct clk_hw *hw;
 	struct clk_init_data init = {};
-	u8 width = 0;
 	int ret = -EINVAL;
 
-	width = fls(mask) - ffs(mask) + 1;
-
 	if (clk_mux_flags & CLK_MUX_HIWORD_MASK) {
+		u8 width = fls(mask) - ffs(mask) + 1;
+
 		if (width + shift > 16) {
 			pr_err("mux value exceeds LOWORD field\n");
 			return ERR_PTR(-EINVAL);
@@ -254,7 +256,7 @@ struct clk_hw *__clk_hw_register_mux(struct device *dev,
 	/* struct clk_mux assignments */
 	mux->reg = reg;
 	mux->shift = shift;
-	mux->width = width;
+	mux->mask = mask;
 	mux->flags = clk_mux_flags;
 	mux->lock = lock;
 	mux->table = table;

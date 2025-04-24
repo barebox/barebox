@@ -55,8 +55,8 @@ static int virtio_blk_do_req(struct virtio_blk_priv *priv, void *buffer,
 
 	virtqueue_kick(priv->vq);
 
-	while (!virtqueue_get_buf(priv->vq, NULL))
-		;
+	if (!virtqueue_get_buf_timeout(priv->vq, NULL, NSEC_PER_SEC))
+		return -ETIMEDOUT;
 
 	return status == VIRTIO_BLK_S_OK ? 0 : -EIO;
 }

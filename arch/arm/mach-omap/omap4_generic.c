@@ -38,7 +38,8 @@
 #define EMIF_L3_CONFIG_VAL_SYS_10_LL_0		0x0A0000FF
 #define EMIF_L3_CONFIG_VAL_SYS_10_MPU_3_LL_0	0x0A300000
 
-static void __noreturn omap4_restart_soc(struct restart_handler *rst)
+static void __noreturn omap4_restart_soc(struct restart_handler *rst,
+					 unsigned long flags)
 {
 	writel(OMAP44XX_PRM_RSTCTRL_RESET, OMAP44XX_PRM_RSTCTRL);
 

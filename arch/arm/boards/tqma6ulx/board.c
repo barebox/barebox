@@ -47,7 +47,7 @@ static int mba6ulx_optee_fixup(void)
 	/* register the overlay for fixing up the kernel device tree */
 	ret = of_register_overlay(overlay);
 	if (ret) {
-		printf("cannot apply oftree overlay: %s\n", strerror(-ret));
+		printf("cannot apply oftree overlay: %pe\n", ERR_PTR(ret));
 		goto err;
 	}
 

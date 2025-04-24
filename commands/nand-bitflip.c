@@ -88,7 +88,7 @@ static int do_nand_bitflip(int argc, char *argv[])
 		ret = mtd_peb_create_bitflips(meminfo.mtd, block, offset, meminfo.writesize,
 					      num_bitflips, random, 1);
 		if (ret) {
-			printf("Creating bitflips failed with: %s\n", strerror(-ret));
+			printf("Creating bitflips failed with: %pe\n", ERR_PTR(ret));
 			return ret;
 		}
 	}
@@ -104,8 +104,8 @@ static int do_nand_bitflip(int argc, char *argv[])
 	} else if (!ret) {
 		printf("No bitflips found on block %d, offset 0x%08llx\n", block, offset);
 	} else {
-		printf("Reading block %d, offset 0x%08llx failed with: %s\n", block, offset,
-		       strerror(-ret));
+		printf("Reading block %d, offset 0x%08llx failed with: %pe\n", block, offset,
+		       ERR_PTR(ret));
 	}
 
 	free(buf);

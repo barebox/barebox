@@ -14,7 +14,8 @@
 
 static struct regmap *ftu_regmap;
 
-static void __noreturn kvx_restart_soc(struct restart_handler *rst)
+static void __noreturn kvx_restart_soc(struct restart_handler *rst,
+				       unsigned long flags)
 {
 	regmap_write(ftu_regmap, KVX_FTU_SW_RESET_OFFSET, 0x1);
 

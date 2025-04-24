@@ -16,7 +16,8 @@
 #define HW_CLKCTRL_WDOG_POR_DISABLE (1 << 5)
 
 /* Reset the full i.MX28 SoC via a chipset feature */
-static void __noreturn imx28_restart_soc(struct restart_handler *rst)
+static void __noreturn imx28_restart_soc(struct restart_handler *rst,
+					 unsigned long flags)
 {
 	u32 reg;
 

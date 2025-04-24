@@ -26,7 +26,7 @@ static int cmd_reset(int argc, char *argv[])
 			restart_handlers_print();
 			return 0;
 		case 'w':
-			flags |= RESTART_FLAG_WARM_BOOTROM;
+			flags |= RESTART_WARM;
 			break;
 		case 'r':
 			name = optarg;
@@ -47,7 +47,7 @@ static int cmd_reset(int argc, char *argv[])
 
 	if (rst) {
 		console_flush();
-		rst->restart(rst);
+		rst->restart(rst, flags);
 	}
 
 	hang();

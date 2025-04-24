@@ -358,7 +358,8 @@ static int imx6_fixup_cpus_register(void)
 }
 device_initcall(imx6_fixup_cpus_register);
 
-void __noreturn imx6_pm_stby_poweroff(struct poweroff_handler *handler)
+void __noreturn imx6_pm_stby_poweroff(struct poweroff_handler *handler,
+				      unsigned long flags)
 {
 	void *ccm_base = IOMEM(MX6_CCM_BASE_ADDR);
 	void *gpc_base = IOMEM(MX6_GPC_BASE_ADDR);

@@ -21,16 +21,18 @@ static void __noreturn psci_invoke_noreturn(ulong function)
 
 	ret = psci_invoke(function, 0, 0, 0, NULL);
 
-	pr_err("psci command failed: %s\n", strerror(-ret));
+	pr_err("psci command failed: %pe\n", ERR_PTR(ret));
 	hang();
 }
 
-static void __noreturn psci_poweroff(struct poweroff_handler *handler)
+static void __noreturn psci_poweroff(struct poweroff_handler *handler,
+				     unsigned long flags)
 {
 	psci_invoke_noreturn(ARM_PSCI_0_2_FN_SYSTEM_OFF);
 }
 
-static void __noreturn psci_restart(struct restart_handler *rst)
+static void __noreturn psci_restart(struct restart_handler *rst,
+				    unsigned long flags)
 {
 	psci_invoke_noreturn(ARM_PSCI_0_2_FN_SYSTEM_RESET);
 }
@@ -160,8 +162,8 @@ static int __init psci_probe(struct device *dev)
 
 	ret = poweroff_handler_register_fn(psci_poweroff);
 	if (ret)
-		dev_warn(dev, "error registering poweroff handler: %s\n",
-			 strerror(-ret));
+		dev_warn(dev, "error registering poweroff handler: %pe\n",
+			 ERR_PTR(ret));
 
 	restart.name = "psci";
 	restart.restart = psci_restart;
@@ -169,8 +171,8 @@ static int __init psci_probe(struct device *dev)
 
 	ret = restart_handler_register(&restart);
 	if (ret)
-		dev_warn(dev, "error registering restart handler: %s\n",
-			 strerror(-ret));
+		dev_warn(dev, "error registering restart handler: %pe\n",
+			 ERR_PTR(ret));
 
 	return ret;
 }

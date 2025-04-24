@@ -55,7 +55,8 @@ core_initcall(clocksource_init);
 /*
  * Reset the cpu through the reset controller
  */
-static void __noreturn at91rm9200_restart_soc(struct restart_handler *rst)
+static void __noreturn at91rm9200_restart_soc(struct restart_handler *rst,
+					      unsigned long flags)
 {
 	/*
 	 * Perform a hardware reset with the use of the Watchdog timer.

@@ -97,16 +97,16 @@ static int rockchip_bbu_mmc_handler(struct bbu_handler *handler,
 
 	ret = pwrite_full(fd, data->image, data->len, wr0);
 	if (ret < 0) {
-		pr_err("writing to %s failed with %s\n", data->devicefile,
-			strerror(-ret));
+		pr_err("writing to %s failed with %pe\n", data->devicefile,
+			ERR_PTR(ret));
 		goto err_close;
 	}
 
 	if (wr1) {
 		ret = pwrite_full(fd, data->image, data->len, wr1);
 		if (ret < 0) {
-			pr_err("writing to %s failed with %s\n", data->devicefile,
-				strerror(-ret));
+			pr_err("writing to %s failed with %pe\n", data->devicefile,
+				ERR_PTR(ret));
 			goto err_close;
 		}
 	}

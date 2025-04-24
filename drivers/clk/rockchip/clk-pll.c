@@ -20,11 +20,11 @@
 #include <linux/regmap.h>
 #include <linux/iopoll.h>
 
-#define PLL_MODE_WIDTH		2
+#define PLL_MODE_MASK		0x3
 #define PLL_MODE_SLOW		0x0
 #define PLL_MODE_NORM		0x1
 #define PLL_MODE_DEEP		0x2
-#define PLL_RK3328_MODE_WIDTH	1
+#define PLL_RK3328_MODE_MASK	0x1
 
 struct rockchip_clk_pll {
 	struct clk_hw		hw;
@@ -1086,9 +1086,9 @@ struct clk *rockchip_clk_register_pll(struct rockchip_clk_provider *ctx,
 	pll_mux->reg = ctx->reg_base + mode_offset;
 	pll_mux->shift = mode_shift;
 	if (pll_type == pll_rk3328)
-		pll_mux->width = PLL_RK3328_MODE_WIDTH;
+		pll_mux->mask = PLL_RK3328_MODE_MASK;
 	else
-		pll_mux->width = PLL_MODE_WIDTH;
+		pll_mux->mask = PLL_MODE_MASK;
 	pll_mux->flags = 0;
 	pll_mux->lock = &ctx->lock;
 	pll_mux->hw.init = &init;

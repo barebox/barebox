@@ -55,7 +55,7 @@ static int do_keystore(int argc, char *argv[])
 	if (file) {
 		ret = read_file_2(file, &s_len, (void *)&secret_str, FILESIZE_MAX);
 		if (ret) {
-			printf("Cannot open %s: %s\n", file, strerror(-ret));
+			printf("Cannot open %s: %pe\n", file, ERR_PTR(ret));
 			return 1;
 		}
 	} else if (secret_str) {
@@ -70,13 +70,13 @@ static int do_keystore(int argc, char *argv[])
 	secret = xzalloc(s_len / 2);
 	ret = hex2bin(secret, secret_str, s_len / 2);
 	if (ret) {
-		printf("Cannot convert %s to binary: %s\n", secret_str, strerror(-ret));
+		printf("Cannot convert %s to binary: %pe\n", secret_str, ERR_PTR(ret));
 		return 1;
 	}
 
 	ret = keystore_set_secret(name, secret, s_len / 2);
 	if (ret)
-		printf("cannot set secret for key %s: %s\n", name, strerror(-ret));
+		printf("cannot set secret for key %s: %pe\n", name, ERR_PTR(ret));
 	else
 		printf("Added secret for key %s\n", name);
 

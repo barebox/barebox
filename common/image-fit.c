@@ -955,7 +955,7 @@ struct fit_handle *fit_open(const char *filename, bool verbose,
 	ret = read_file_2(filename, &handle->size, &handle->fit_alloc,
 			  max_size);
 	if (ret && ret != -EFBIG) {
-		pr_err("unable to read %s: %s\n", filename, strerror(-ret));
+		pr_err("unable to read %s: %pe\n", filename, ERR_PTR(ret));
 		return ERR_PTR(ret);
 	}
 

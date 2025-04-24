@@ -22,7 +22,8 @@ static u32 timeout = DEFAULT_TIMEOUT_MS;
 static u32 active_delay = 100;
 static u32 inactive_delay = 100;
 
-static void gpio_poweroff_do_poweroff(struct poweroff_handler *handler)
+static void gpio_poweroff_do_poweroff(struct poweroff_handler *handler,
+				      unsigned long flags)
 {
 	/* drive it active, also inactive->active edge */
 	gpiod_direction_output(reset_gpio, true);

@@ -84,8 +84,8 @@ static int backend_raw_digest_init(struct state_backend_format_raw *raw)
 
 	ret = digest_init(raw->digest);
 	if (ret) {
-		dev_err(raw->dev, "Failed to initialize digest: %s\n",
-			strerror(-ret));
+		dev_err(raw->dev, "Failed to initialize digest: %pe\n",
+			ERR_PTR(ret));
 		return ret;
 	}
 

@@ -141,7 +141,7 @@ static void stm32_bsec_init_dt(struct bsec_priv *priv, struct device *dev,
 
 	ret = stm32_bsec_read_mac(priv, offset, mac);
 	if (ret) {
-		dev_warn(dev, "error setting MAC address: %s\n", strerror(-ret));
+		dev_warn(dev, "error setting MAC address: %pe\n", ERR_PTR(ret));
 		return;
 	}
 

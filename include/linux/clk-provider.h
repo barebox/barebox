@@ -31,6 +31,24 @@ static inline long divider_ro_round_rate(struct clk_hw *hw, unsigned long rate,
 					    val);
 }
 
+/***
+ * struct clk_composite - aggregate clock of mux, divider and gate clocks
+ *
+ * @hw:		handle between common and hardware-specific interfaces
+ * @mux_hw:	handle between composite and hardware-specific mux clock
+ * @rate_hw:	handle between composite and hardware-specific rate clock
+ * @gate_hw:	handle between composite and hardware-specific gate clock
+ */
+struct clk_composite {
+	struct clk_hw	hw;
+
+	struct clk_hw	*mux_hw;
+	struct clk_hw	*rate_hw;
+	struct clk_hw	*gate_hw;
+};
+
+#define to_clk_composite(_hw) container_of(_hw, struct clk_composite, hw)
+
 /**
  * struct clk_rate_request - Structure encoding the clk constraints that
  * a clock user might require.

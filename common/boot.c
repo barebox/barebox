@@ -91,7 +91,7 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	ret = run_command(bs->scriptpath);
 	if (ret) {
-		pr_err("Running script '%s' failed: %s\n", bs->scriptpath, strerror(-ret));
+		pr_err("Running script '%s' failed: %pe\n", bs->scriptpath, ERR_PTR(ret));
 		goto out;
 	}
 
@@ -165,7 +165,7 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 
 		ret = watchdog_set_timeout(boot_enabled_watchdog, boot_watchdog_timeout);
 		if (ret) {
-			pr_warn("Failed to enable watchdog: %s\n", strerror(-ret));
+			pr_warn("Failed to enable watchdog: %pe\n", ERR_PTR(ret));
 			boot_enabled_watchdog = NULL;
 		}
 	}

@@ -12,6 +12,18 @@
 #include <clock.h>
 #include <pbl.h>
 
+#if IN_PROPER
+# define read_poll_get_time_ns()	get_time_ns()
+# define read_poll_is_timeout(s, t)	is_timeout(s, t)
+#else
+# ifndef read_poll_get_time_ns
+#  define read_poll_get_time_ns()	0
+# endif
+# ifndef read_poll_is_timeout
+#  define read_poll_is_timeout(s, t)	((void)s, (void)t, 0)
+# endif
+#endif
+
 /**
  * read_poll_timeout - Periodically poll an address until a condition is met or a timeout occurs
  * @op: accessor function (takes @addr as its only argument)
@@ -31,15 +43,13 @@
  */
 #define read_poll_timeout(op, val, cond, timeout_us, args...)	\
 ({ \
-	uint64_t start = 0; \
-	if (IN_PROPER && (timeout_us) != 0) \
-		start = get_time_ns(); \
+	uint64_t start = (timeout_us) == 0 ? read_poll_get_time_ns() : 0; \
 	for (;;) { \
 		(val) = op(args); \
 		if (cond) \
 			break; \
-		if (IN_PROPER && (timeout_us) != 0 && \
-		    is_timeout(start, ((timeout_us) * USECOND))) { \
+		if ((timeout_us) != 0 && \
+		    read_poll_is_timeout(start, ((timeout_us) * USECOND))) { \
 			(val) = op(args); \
 			break; \
 		} \

@@ -40,7 +40,7 @@ static int do_bootm_barebox(struct image_data *data)
 
 	barebox(-2, fdt);
 
-	restart_machine();
+	restart_machine(0);
 }
 
 static struct image_handler barebox_handler = {

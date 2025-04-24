@@ -56,6 +56,7 @@ extern struct device_node *of_find_matching_node_by_address(
 	struct device_node *from, const struct of_device_id *matches,
 	u64 base_address);
 extern void __iomem *of_iomap(struct device_node *np, int index);
+static inline void iounmap(void __iomem *addr) { }
 
 extern int of_dma_get_range(struct device_node *np, u64 *dma_addr, u64 *paddr,
 			    u64 *size);

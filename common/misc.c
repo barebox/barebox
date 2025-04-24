@@ -303,9 +303,9 @@ static void __noreturn do_panic(bool stacktrace, const char *fmt, va_list ap)
 	mdelay_non_interruptible(100);	/* allow messages to go out */
 
 	if (IS_ENABLED(CONFIG_PANIC_POWEROFF))
-		poweroff_machine();
+		poweroff_machine(0);
 	else
-		restart_machine();
+		restart_machine(0);
 }
 
 void __noreturn panic(const char *fmt, ...)

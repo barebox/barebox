@@ -37,7 +37,8 @@ static void __iomem *pmc_base;
 static int tegra_num_powerdomains;
 
 /* main SoC reset trigger */
-static void __noreturn tegra20_restart_soc(struct restart_handler *rst)
+static void __noreturn tegra20_restart_soc(struct restart_handler *rst,
+					   unsigned long flags)
 {
 	writel(PMC_CNTRL_MAIN_RST, pmc_base + PMC_CNTRL);
 
@@ -221,7 +222,7 @@ static int tegra20_pmc_probe(struct device *dev)
 static int do_tegrarcm(int argc, char *argv[])
 {
 	writel(2, pmc_base + PMC_SCRATCH(0));
-	restart_machine();
+	restart_machine(0);
 
 	return 0;
 }

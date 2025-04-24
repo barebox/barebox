@@ -64,7 +64,7 @@ static int do_bootm_kwbimage_v0_v1(struct image_data *data)
 
 	barebox();
 
-	restart_machine();
+	restart_machine(0);
 
 out_free:
 	free(barebox);

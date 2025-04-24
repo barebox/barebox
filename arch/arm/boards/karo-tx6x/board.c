@@ -78,7 +78,7 @@ static int setup_pmic_voltages(void)
 	pr_err("No PMIC found\n");
 out:
 	if (ret)
-		pr_err("PMIC setup failed with %s\n", strerror(-ret));
+		pr_err("PMIC setup failed with %pe\n", ERR_PTR(ret));
 
 	return ret;
 }

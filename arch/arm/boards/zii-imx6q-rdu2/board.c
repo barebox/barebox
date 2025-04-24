@@ -89,8 +89,8 @@ static int rdu2_reset_audio_touchscreen_nfc(void)
 	ret = gpio_request_array(rdu2_reset_gpios,
 				 ARRAY_SIZE(rdu2_reset_gpios));
 	if (ret) {
-		pr_err("Failed to request RDU2 reset gpios: %s\n",
-		       strerror(-ret));
+		pr_err("Failed to request RDU2 reset gpios: %pe\n",
+		       ERR_PTR(ret));
 		return ret;
 	}
 

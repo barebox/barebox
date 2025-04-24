@@ -671,7 +671,7 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 		}
 
 		if (ret) {
-			pr_err("Writing block %d failed with: %s\n", block, strerror(-ret));
+			pr_err("Writing block %d failed with: %pe\n", block, ERR_PTR(ret));
 			return ret;
 		}
 
@@ -766,16 +766,16 @@ again:
 
 	ret = imx_handler->fcb_write(mtd, block, fcb);
 	if (ret) {
-		pr_err("Writing FCB on block %d failed with %s\n",
-		       block, strerror(-ret));
+		pr_err("Writing FCB on block %d failed with %pe\n",
+		       block, ERR_PTR(ret));
 		goto out;
 	}
 
 	ret = mtd_peb_write(mtd, (void *)dbbt, block, mtd->writesize,
 			    mtd->writesize);
 	if (ret < 0) {
-		pr_err("Writing DBBT header on block %d failed with %s\n",
-		       block, strerror(-ret));
+		pr_err("Writing DBBT header on block %d failed with %pe\n",
+		       block, ERR_PTR(ret));
 		goto out;
 	}
 
@@ -783,8 +783,8 @@ again:
 		ret = mtd_peb_write(mtd, dbbt_data_page, block, mtd->writesize * 5,
 				    mtd->writesize);
 		if (ret < 0) {
-			pr_err("Writing DBBT on block %d failed with %s\n",
-			       block, strerror(-ret));
+			pr_err("Writing DBBT on block %d failed with %pe\n",
+			       block, ERR_PTR(ret));
 			goto out;
 		}
 	}
@@ -864,7 +864,7 @@ static int dbbt_check(struct mtd_info *mtd, int page)
 		pr_warn("page %d needs cleaning\n", page);
 		needs_cleanup = 1;
 	} else if (ret < 0) {
-		pr_err("Cannot read page %d: %s\n", page, strerror(-ret));
+		pr_err("Cannot read page %d: %pe\n", page, ERR_PTR(ret));
 		goto out;
 	}
 
@@ -885,7 +885,7 @@ static int dbbt_check(struct mtd_info *mtd, int page)
 			pr_warn("page %d needs cleaning\n", page);
 			needs_cleanup = 1;
 		} else if (ret < 0) {
-			pr_err("Cannot read page %d: %s\n", page, strerror(-ret));
+			pr_err("Cannot read page %d: %pe\n", page, ERR_PTR(ret));
 			goto out;
 		}
 	} else {
@@ -1001,7 +1001,7 @@ static int imx_bbu_write_fcbs_dbbts(struct imx_nand_fcb_bbu_handler *imx_handler
 
 		ret = imx_bbu_write_fcb(imx_handler, mtd, i, fcb, dbbt);
 		if (ret)
-			pr_err("Writing FCB/DBBT %d failed with: %s\n", i, strerror(-ret));
+			pr_err("Writing FCB/DBBT %d failed with: %pe\n", i, ERR_PTR(ret));
 		else
 			valid++;
 	}

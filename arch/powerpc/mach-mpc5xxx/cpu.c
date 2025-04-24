@@ -51,7 +51,8 @@ static int mpc5xxx_reserve_region(void)
 }
 coredevice_initcall(mpc5xxx_reserve_region);
 
-static void __noreturn mpc5xxx_restart_soc(struct restart_handler *rst)
+static void __noreturn mpc5xxx_restart_soc(struct restart_handler *rst,
+					   unsigned long flags)
 {
 	ulong msr;
 	/* Interrupts and MMU off */

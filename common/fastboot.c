@@ -284,7 +284,7 @@ int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
 static void cb_reboot(struct fastboot *fb, const char *cmd)
 {
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
-	restart_machine();
+	restart_machine(0);
 }
 
 static void cb_getvar(struct fastboot *fb, const char *cmd)
@@ -424,8 +424,8 @@ static void __maybe_unused cb_boot(struct fastboot *fb, const char *opt)
 	ret = bootm_boot(&data);
 
 	if (ret)
-		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "Booting failed: %s",
-				   strerror(-ret));
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "Booting failed: %pe",
+				   ERR_PTR(ret));
 	else
 		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 }
@@ -676,8 +676,8 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 		ret = fastboot_handle_sparse(fb, fentry);
 		if (ret)
 			fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
-					  "writing sparse image: %s",
-					  strerror(-ret));
+					  "writing sparse image: %pe",
+					  ERR_PTR(ret));
 
 		goto out;
 	}
@@ -694,8 +694,8 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 		ret = do_ubiformat(fb, mtd, fb->tempname, fb->download_size);
 		if (ret) {
 			fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
-					  "write partition: %s",
-					  strerror(-ret));
+					  "write partition: %pe",
+					  ERR_PTR(ret));
 			goto out;
 		}
 
@@ -733,7 +733,7 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 
 		if (ret)
 			fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
-				  "update barebox: %s", strerror(-ret));
+				  "update barebox: %pe", ERR_PTR(ret));
 
 		free(buf);
 
@@ -744,7 +744,7 @@ copy:
 	ret = copy_file(fb->tempname, filename, 1);
 	if (ret)
 		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
-				  "write partition: %s", strerror(-ret));
+				  "write partition: %pe", ERR_PTR(ret));
 
 out:
 	if (!ret)
@@ -785,8 +785,8 @@ static void cb_erase(struct fastboot *fb, const char *cmd)
 
 	if (ret)
 		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
-				  "cannot erase partition %s: %s",
-				  filename, strerror(-ret));
+				  "cannot erase partition %s: %pe",
+				  filename, ERR_PTR(ret));
 	else
 		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 }

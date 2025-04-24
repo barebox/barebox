@@ -10,7 +10,8 @@
 
 #include <poweroff.h>
 
-void __noreturn imx6_pm_stby_poweroff(struct poweroff_handler *handler);
+void __noreturn imx6_pm_stby_poweroff(struct poweroff_handler *handler,
+				      unsigned long flags);
 
 #define IMX6_ANATOP_SI_REV 0x260
 #define IMX6SL_ANATOP_SI_REV 0x280

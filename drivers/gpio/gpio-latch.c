@@ -127,8 +127,8 @@ static int gpio_latch_probe(struct device *dev)
 				       flags & OF_GPIO_ACTIVE_LOW ? GPIOF_ACTIVE_LOW : 0,
 				       dev_name(dev));
 		if (ret) {
-			dev_err(dev, "Cannot request gpio %d: %s\n", priv->clk_gpios[i],
-				strerror(-ret));
+			dev_err(dev, "Cannot request gpio %d: %pe\n", priv->clk_gpios[i],
+				ERR_PTR(ret));
 			goto err_gpio;
 		}
 
@@ -142,8 +142,8 @@ static int gpio_latch_probe(struct device *dev)
 				       flags & OF_GPIO_ACTIVE_LOW ? GPIOF_ACTIVE_LOW : 0,
 				       dev_name(dev));
 		if (ret) {
-			dev_err(dev, "Cannot request gpio %d: %s\n", priv->latched_gpios[i],
-				strerror(-ret));
+			dev_err(dev, "Cannot request gpio %d: %pe\n", priv->latched_gpios[i],
+				ERR_PTR(ret));
 			goto err_gpio;
 		}
 	}

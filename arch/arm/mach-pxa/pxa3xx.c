@@ -49,7 +49,8 @@ void pxa_clear_reset_source(void)
 
 device_initcall(pxa_detect_reset_source);
 
-static void __noreturn pxa3xx_poweroff(struct poweroff_handler *handler)
+static void __noreturn pxa3xx_poweroff(struct poweroff_handler *handler,
+				       unsigned long flags)
 {
 	shutdown_barebox();
 

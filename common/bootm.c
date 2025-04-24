@@ -245,8 +245,8 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 		if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
 			ret = uimage_verify(data->initrd);
 			if (ret) {
-				pr_err("Checking data crc failed with %s\n",
-					strerror(-ret));
+				pr_err("Checking data crc failed with %pe\n",
+					ERR_PTR(ret));
 				return ret;
 			}
 		}
@@ -293,8 +293,8 @@ bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk",
 				     &initrd, &initrd_size);
 		if (ret) {
-			pr_err("Cannot open ramdisk image in FIT image: %s\n",
-					strerror(-ret));
+			pr_err("Cannot open ramdisk image in FIT image: %pe\n",
+					ERR_PTR(ret));
 			return ERR_PTR(ret);
 		}
 		data->initrd_res = request_sdram_region("initrd",
@@ -318,7 +318,7 @@ initrd_file:
 
 	ret = file_name_detect_type(data->initrd_file, &type);
 	if (ret) {
-		pr_err("could not open initrd \"%s\": %s\n", data->initrd_file, strerror(-ret));
+		pr_err("could not open initrd \"%s\": %pe\n", data->initrd_file, ERR_PTR(ret));
 		return ERR_PTR(ret);
 	}
 
@@ -326,8 +326,7 @@ initrd_file:
 		int num;
 		ret = bootm_open_initrd_uimage(data);
 		if (ret) {
-			pr_err("loading initrd failed with %s\n",
-			       strerror(-ret));
+			pr_err("loading initrd failed with %pe\n", ERR_PTR(ret));
 			return ERR_PTR(ret);
 		}
 
@@ -450,8 +449,8 @@ void *bootm_get_devicetree(struct image_data *data)
 
 		ret = file_name_detect_type(data->oftree_file, &type);
 		if (ret) {
-			pr_err("could not open device tree \"%s\": %s\n", data->oftree_file,
-			       strerror(-ret));
+			pr_err("could not open device tree \"%s\": %pe\n", data->oftree_file,
+			       ERR_PTR(ret));
 			return ERR_PTR(ret);
 		}
 
@@ -589,8 +588,8 @@ static int bootm_open_os_uimage(struct image_data *data)
 	if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
 		ret = uimage_verify(data->os);
 		if (ret) {
-			pr_err("Checking data crc failed with %s\n",
-					strerror(-ret));
+			pr_err("Checking data crc failed with %pe\n",
+					ERR_PTR(ret));
 			return ret;
 		}
 	}
@@ -739,8 +738,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	ret = read_file_2(data->os_file, &size, &data->os_header, PAGE_SIZE);
 	if (ret < 0 && ret != -EFBIG) {
-		pr_err("could not open %s: %s\n", data->os_file,
-				strerror(-ret));
+		pr_err("could not open %s: %pe\n", data->os_file, ERR_PTR(ret));
 		goto err_out;
 	}
 	if (size < PAGE_SIZE)

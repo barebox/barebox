@@ -9,7 +9,8 @@
 #include <restart.h>
 #include <mach/loongson1.h>
 
-static void __noreturn longhorn_restart_soc(struct restart_handler *rst)
+static void __noreturn longhorn_restart_soc(struct restart_handler *rst,
+					    unsigned long flags)
 {
 	void __iomem *wdt = IOMEM(0);
 

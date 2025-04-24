@@ -65,7 +65,7 @@ static int do_ping(int argc, char *argv[])
 
 	ret = resolv(argv[1], &net_ping_ip);
 	if (ret) {
-		printf("Cannot resolve \"%s\": %s\n", argv[1], strerror(-ret));
+		printf("Cannot resolve \"%s\": %pe\n", argv[1], ERR_PTR(ret));
 		return 1;
 	}
 
@@ -115,7 +115,7 @@ out_unreg:
 	net_unregister(ping_con);
 out:
 	if (ret)
-		printf("ping failed: %s\n", strerror(-ret));
+		printf("ping failed: %pe\n", ERR_PTR(ret));
 	return ping_state == PING_STATE_SUCCESS ? 0 : 1;
 }
 

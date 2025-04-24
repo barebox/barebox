@@ -15,7 +15,8 @@
 # define HW_CLKCTRL_RESET_CHIP (1 << 1)
 
 /* Reset the full i.MX23 SoC via a chipset feature */
-static void __noreturn imx23_restart_soc(struct restart_handler *rst)
+static void __noreturn imx23_restart_soc(struct restart_handler *rst,
+					 unsigned long flags)
 {
 	u32 reg;
 

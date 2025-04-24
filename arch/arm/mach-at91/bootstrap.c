@@ -146,7 +146,7 @@ static void boot_mmc_disk_action(struct menu *m, struct menu_entry *me)
 
 static void boot_reset_action(struct menu *m, struct menu_entry *me)
 {
-	restart_machine();
+	restart_machine(0);
 }
 
 static void at91_bootstrap_menu(void)

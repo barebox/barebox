@@ -10,7 +10,8 @@
 
 static void __iomem *htif = IOMEM(HTIF_DEFAULT_BASE_ADDR);
 
-static void __noreturn riscvemu_poweroff(struct poweroff_handler *pwr)
+static void __noreturn riscvemu_poweroff(struct poweroff_handler *pwr,
+					 unsigned long flags)
 {
 	shutdown_barebox();
 

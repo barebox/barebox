@@ -431,7 +431,7 @@ static void imx_iim_init_dt(struct device *dev, struct iim_priv *iim)
 
 		ret = regmap_bulk_read(iim->bank[bank]->map, offset, mac, MAC_BYTES);
 		if (ret)
-			dev_err(dev, "cannot read: %s\n", strerror(-ret));
+			dev_err(dev, "cannot read: %pe\n", ERR_PTR(ret));
 		else
 			of_eth_register_ethaddr(rnode, mac);
 

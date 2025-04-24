@@ -194,8 +194,8 @@ int caam_rng_self_test(struct device *dev, const u8 caam_era, const u8 rngvid,
 	/* wait for job completion */
 	ret = caam_jr_enqueue(dev, desc, rng_self_test_done, &job_err);
 	if (ret) {
-		pr_err("Running RNG self-test descriptor failed: %d %s\n",
-				ret, strerror(ret));
+		pr_err("Running RNG self-test descriptor failed: %pe\n",
+		       ERR_PTR(ret));
 		goto err;
 	}
 	if (job_err) {

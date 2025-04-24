@@ -19,7 +19,8 @@ struct gpio_restart {
 	u32 wait_delay_ms;
 };
 
-static void __noreturn gpio_restart_handle(struct restart_handler *this)
+static void __noreturn gpio_restart_handle(struct restart_handler *this,
+					   unsigned long flags)
 {
 	struct gpio_restart *gpio_restart =
 		container_of(this, struct gpio_restart, restart_handler);

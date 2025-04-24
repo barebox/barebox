@@ -8,7 +8,8 @@
 #include <restart.h>
 #include <mach/ath79.h>
 
-static void __noreturn ath79_restart_soc(struct restart_handler *rst)
+static void __noreturn ath79_restart_soc(struct restart_handler *rst,
+					 unsigned long flags)
 {
 	ath79_reset_wr(AR933X_RESET_REG_RESET_MODULE, AR71XX_RESET_FULL_CHIP);
 	/*

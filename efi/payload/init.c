@@ -225,14 +225,16 @@ static int efi_console_init(void)
 }
 console_efi_initcall(efi_console_init);
 
-static void __noreturn efi_restart_system(struct restart_handler *rst)
+static void __noreturn efi_restart_system(struct restart_handler *rst,
+					  unsigned long flags)
 {
 	RT->reset_system(EFI_RESET_WARM, EFI_SUCCESS, 0, NULL);
 
 	hang();
 }
 
-static void __noreturn efi_poweroff_system(struct poweroff_handler *handler)
+static void __noreturn efi_poweroff_system(struct poweroff_handler *handler,
+					   unsigned long flags)
 {
 	shutdown_barebox();
 	RT->reset_system(EFI_RESET_SHUTDOWN, EFI_SUCCESS, 0, NULL);

@@ -231,7 +231,8 @@ static void da9053_detect_reset_source(struct da9053_priv *da9053)
 		return;
 }
 
-static void __noreturn da9053_force_system_reset(struct restart_handler *rst)
+static void __noreturn da9053_force_system_reset(struct restart_handler *rst,
+						 unsigned long flags)
 {
 	struct da9053_priv *da9053 = container_of(rst, struct da9053_priv, restart);
 	u8 val;

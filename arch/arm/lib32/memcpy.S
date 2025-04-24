@@ -56,11 +56,10 @@ UNWIND( .save	{r0, \regs}		)
 /* Prototype: void *memcpy(void *dest, const void *src, size_t n); */
 
 ENTRY(__memcpy)
-ENTRY(mmiocpy)
 WEAK(memcpy)
 
 #include "copy_template.S"
 
 ENDPROC(memcpy)
-ENDPROC(mmiocpy)
 ENDPROC(__memcpy)
+SYM_FUNC_ALIAS(__pi_memcpy, __memcpy)

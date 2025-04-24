@@ -53,8 +53,8 @@ static void put_chars(struct virtio_console *virtcons, const char *buf, int coun
 		/* Tell Host to go! */
 		virtqueue_kick(out_vq);
 		/* Chill out until it's done with the buffer. */
-		while (!virtqueue_get_buf(out_vq, &len))
-			cpu_relax();
+		if (!virtqueue_get_buf_timeout(out_vq, &len, NSEC_PER_SEC))
+			dev_warn(virtcons->cdev.dev, "Timeout waiting for TX ack\n");
 	}
 }
 

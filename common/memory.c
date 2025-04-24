@@ -382,7 +382,7 @@ static int of_memory_fixup(struct device_node *root, void *unused)
 
 		err = of_set_property(memnode, "reg", tmp, len, 1);
 		if (err) {
-			pr_err("could not set reg %s.\n", strerror(-err));
+			pr_err("could not set reg %pe.\n", ERR_PTR(err));
 			goto err_free;
 		}
 

@@ -60,8 +60,8 @@ static int imx_bbu_protect(int fd, struct imx_internal_bbu_handler *imx_handler,
 		if (ret == -ENOSYS)
 			return 0;
 
-		pr_err("%sprotecting %s failed with %s\n", prefix, devicefile,
-		       strerror(-ret));
+		pr_err("%sprotecting %s failed with %pe\n", prefix, devicefile,
+		       ERR_PTR(ret));
 	}
 
 	return ret;
@@ -110,16 +110,16 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 				devicefile, offset, image_len);
 		ret = erase(fd, image_len, offset, ERASE_TO_WRITE);
 		if (ret) {
-			pr_err("erasing %s failed with %s\n", devicefile,
-					strerror(-ret));
+			pr_err("erasing %s failed with %pe\n", devicefile,
+					ERR_PTR(ret));
 			goto err_close;
 		}
 	}
 
 	ret = pwrite_full(fd, buf, image_len, offset);
 	if (ret < 0) {
-		pr_err("writing to %s failed with %s\n", devicefile,
-		       strerror(-ret));
+		pr_err("writing to %s failed with %pe\n", devicefile,
+		       ERR_PTR(ret));
 		goto err_close;
 	}
 

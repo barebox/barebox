@@ -629,8 +629,8 @@ static void nvme_delete_queue(struct nvme_queue *nvmeq, u8 opcode)
 	int ret;
 	ret = adapter_delete_queue(nvmeq->dev, opcode, nvmeq->qid);
 	if (ret < 0)
-		dev_err(nvmeq->dev->dev, "%s: %s\n", __func__,
-			strerror(-ret));
+		dev_err(nvmeq->dev->dev, "%s: %pe\n", __func__,
+			ERR_PTR(ret));
 	else if (ret)
 		dev_err(nvmeq->dev->dev,
 			"%s: status code type: %xh, status code %02xh\n",

@@ -231,19 +231,19 @@ static int eqos_init_tegra186(struct device *dev, struct eqos *eqos)
 
 	ret = clk_bulk_enable(priv->num_clks, priv->clks);
 	if (ret < 0) {
-		eqos_err(eqos, "clk_bulk_enable() failed: %s\n", strerror(-ret));
+		eqos_err(eqos, "clk_bulk_enable() failed: %pe\n", ERR_PTR(ret));
 		goto release_res;
 	}
 
 	ret = eqos_clks_set_rate_tegra186(priv);
 	if (ret < 0) {
-		eqos_err(eqos, "clks_set_rate() failed: %s\n", strerror(-ret));
+		eqos_err(eqos, "clks_set_rate() failed: %pe\n", ERR_PTR(ret));
 		goto err_stop_clks;
 	}
 
 	eqos_reset_tegra186(priv, false);
 	if (ret < 0) {
-		eqos_err(eqos, "reset(0) failed: %s\n", strerror(-ret));
+		eqos_err(eqos, "reset(0) failed: %pe\n", ERR_PTR(ret));
 		goto err_stop_clks;
 	}
 

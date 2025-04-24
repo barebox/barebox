@@ -66,7 +66,7 @@ static int do_wd(int argc, char *argv[])
 			printf("Watchdog device doesn't exist.\n");
 			break;
 		default:
-			printf("Watchdog fails: '%s'\n", strerror(-rc));
+			printf("Watchdog fails: '%pe'\n", ERR_PTR(rc));
 			break;
 		}
 

@@ -11,6 +11,7 @@
 
 #include <linux/virtio_types.h>
 #include <linux/scatterlist.h>
+#include <linux/ktime.h>
 
 /* This marks a buffer as continuing via the next field */
 #define VRING_DESC_F_NEXT		1
@@ -256,6 +257,27 @@ void virtqueue_kick(struct virtqueue *vq);
  * handed to virtqueue_add_*().
  */
 void *virtqueue_get_buf(struct virtqueue *vq, unsigned int *len);
+
+/**
+ * virtqueue_get_buf_timeout - poll the next used buffer with timeout
+ *
+ * @vq:		the struct virtqueue we're talking about
+ * @len:	the length written into the buffer
+ * @timeout:	the timeout in nanoseconds
+ *
+ * If the device wrote data into the buffer, @len will be set to the
+ * amount written. This means you don't need to clear the buffer
+ * beforehand to ensure there's no data leakage in the case of short
+ * writes.
+ *
+ * Caller must ensure we don't call this with other virtqueue
+ * operations at the same time (except where noted).
+ *
+ * Returns NULL on timeout, or the "data" token
+ * handed to virtqueue_add_*().
+ */
+void *virtqueue_get_buf_timeout(struct virtqueue *vq, unsigned int *len,
+				ktime_t timeout);
 
 /**
  * vring_create_virtqueue - create a virtqueue for a virtio device

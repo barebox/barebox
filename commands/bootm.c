@@ -97,7 +97,7 @@ static int do_bootm(int argc, char *argv[])
 
 	ret = bootm_boot(&data);
 	if (ret) {
-		printf("handler failed with: %s\n", strerror(-ret));
+		printf("handler failed with: %pe\n", ERR_PTR(ret));
 		goto err_out;
 	}
 

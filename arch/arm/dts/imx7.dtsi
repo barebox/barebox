@@ -28,7 +28,7 @@
 		/* This is not fit for use as general purpose reset */
 		restart-priority = <5>;
 		/*
-		 * Can't use imxwd-warm due to errata e10574:
+		 * Can't use imxwd without fsl,ext-reset-output due to errata e10574:
 		 * Watchdog: A watchdog timeout or software trigger will
 		 * not reset the SOC
 		 */

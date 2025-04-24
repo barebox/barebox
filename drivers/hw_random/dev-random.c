@@ -46,7 +46,7 @@ static int devrandom_rnd_probe(struct device *dev)
 
 	ret = hwrng_register(dev, &rnd->hwrng);
 	if (ret) {
-		dev_err(dev, "failed to register: %s\n", strerror(-ret));
+		dev_err(dev, "failed to register: %pe\n", ERR_PTR(ret));
 
 		return ret;
 	}

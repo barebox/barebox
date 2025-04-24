@@ -17,7 +17,8 @@ static u32 offset;
 static u32 value;
 static u32 mask;
 
-static void syscon_poweroff(struct poweroff_handler *handler)
+static void syscon_poweroff(struct poweroff_handler *handler,
+			    unsigned long flags)
 {
 	/* Issue the poweroff */
 	regmap_update_bits(map, offset, mask, value);

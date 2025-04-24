@@ -116,7 +116,7 @@ static int defaultenv_load_one(struct defaultenv *df, const char *dir,
 				freep, NULL, uncompress_err_stdout);
 		if (ret) {
 			free(freep);
-			pr_err("Failed to uncompress: %s\n", strerror(-ret));
+			pr_err("Failed to uncompress: %pe\n", ERR_PTR(ret));
 			return ret;
 		}
 
@@ -131,7 +131,7 @@ static int defaultenv_load_one(struct defaultenv *df, const char *dir,
 	free(freep);
 
 	if (ret)
-		pr_err("Failed to load defaultenv: %s\n", strerror(-ret));
+		pr_err("Failed to load defaultenv: %pe\n", ERR_PTR(ret));
 
 	return ret;
 }

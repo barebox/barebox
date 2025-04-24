@@ -29,7 +29,8 @@ struct bcm2835_wd {
 
 #define RESET_TIMEOUT 10
 
-static void __noreturn bcm2835_restart_soc(struct restart_handler *rst)
+static void __noreturn bcm2835_restart_soc(struct restart_handler *rst,
+					   unsigned long flags)
 {
 	struct bcm2835_wd *priv = container_of(rst, struct bcm2835_wd, restart);
 	uint32_t rstc;
@@ -43,7 +44,8 @@ static void __noreturn bcm2835_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
-static void __noreturn bcm2835_poweroff_soc(struct poweroff_handler *poweroff)
+static void __noreturn bcm2835_poweroff_soc(struct poweroff_handler *poweroff,
+					    unsigned long flags)
 {
 	struct bcm2835_wd *priv = container_of(poweroff, struct bcm2835_wd, poweroff);
 	uint32_t val;
@@ -54,7 +56,7 @@ static void __noreturn bcm2835_poweroff_soc(struct poweroff_handler *poweroff)
 	val |= PM_PASSWORD | PM_RSTS_RASPBERRYPI_HALT;
 	writel_relaxed(val, priv->base + PM_RSTS);
 
-	bcm2835_restart_soc(&priv->restart);
+	bcm2835_restart_soc(&priv->restart, flags);
 }
 
 static int bcm2835_wd_set_timeout(struct watchdog *wd, unsigned timeout)

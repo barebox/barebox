@@ -90,7 +90,7 @@ static int do_delpart(int argc, char *argv[])
 	for (i = 1; i < argc; i++) {
 		err = devfs_del_partition(kbasename(argv[i]));
 		if (err) {
-			printf("cannot delete %s: %s\n", argv[i], strerror(-err));
+			printf("cannot delete %s: %pe\n", argv[i], ERR_PTR(err));
 			break;
 		}
 	}

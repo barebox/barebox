@@ -98,7 +98,7 @@ static int do_bootm_linux(struct image_data *data)
 	 */
 	kernel(fdt, kernel, 0, 0, 0);
 
-	restart_machine();
+	restart_machine(0);
 
 error:
 	return -1;

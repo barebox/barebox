@@ -19,11 +19,15 @@ int notifier_chain_unregister(struct notifier_head *nh, struct notifier_block *n
 int notifier_call_chain(struct notifier_head *nh, unsigned long val, void *v)
 {
 	struct notifier_block *entry, *tmp;
+	int ret = NOTIFY_DONE;
 
-	list_for_each_entry_safe(entry, tmp, &nh->blocks, list)
-		entry->notifier_call(entry, val, v);
+	list_for_each_entry_safe(entry, tmp, &nh->blocks, list) {
+		ret = entry->notifier_call(entry, val, v);
+		if (ret & NOTIFY_STOP_MASK)
+			break;
+	}
 
-	return 0;
+	return ret;
 }
 
 /*

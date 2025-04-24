@@ -28,19 +28,6 @@
 # define FW_CFG_DMA_OFF 0x10
 #endif
 
-/* fw_cfg DMA commands */
-#define FW_CFG_DMA_CTL_ERROR   0x01
-#define FW_CFG_DMA_CTL_READ    0x02
-#define FW_CFG_DMA_CTL_SKIP    0x04
-#define FW_CFG_DMA_CTL_SELECT  0x08
-#define FW_CFG_DMA_CTL_WRITE   0x10
-
-struct fw_cfg_dma {
-	__be32 control;
-	__be32 length;
-	__be64 address;
-} __packed;
-
 /* fw_cfg device i/o register addresses */
 struct fw_cfg {
 	struct resource *iores;
@@ -51,7 +38,7 @@ struct fw_cfg {
 	loff_t next_read_offset;
 	u32 sel;
 	bool is_mmio;
-	struct fw_cfg_dma __iomem *acc_virt;
+	struct fw_cfg_dma_access __iomem *acc_virt;
 	dma_addr_t acc_dma;
 };
 
@@ -83,6 +70,7 @@ static int fw_cfg_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 	switch (request) {
 	case FW_CFG_SELECT:
 		fw_cfg->sel = *(u16 *)buf;
+		fw_cfg->next_read_offset = 0;
 		break;
 	default:
 		ret = -ENOTTY;
@@ -100,10 +88,8 @@ static int fw_cfg_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 	while (*remaining >= sizeof(type)) {				\
 		val = __raw_read##type((fw_cfg)->reg_data);		\
 		*remaining -= sizeof(type);				\
-		if (*address) {						\
-			put_unaligned(val, (type *)*address);		\
-			*address += sizeof(type);			\
-		}							\
+		put_unaligned(val, (type *)*address);		\
+		*address += sizeof(type);			\
 	}								\
 } while(0)
 
@@ -136,11 +122,27 @@ static void fw_cfg_data_read(struct fw_cfg *fw_cfg, void *address, size_t remain
 	fw_cfg_data_read_sized(fw_cfg, &remaining, &address, u8);
 }
 
+static void fw_cfg_do_dma(struct fw_cfg *fw_cfg, dma_addr_t address,
+			  u32 count, u32 control)
+{
+	struct fw_cfg_dma_access __iomem *acc = fw_cfg->acc_virt;
+
+	acc->address = cpu_to_be64(address);
+	acc->length = cpu_to_be32(count);
+	acc->control = cpu_to_be32(control);
+
+	iowrite64be(fw_cfg->acc_dma, fw_cfg->reg_dma);
+
+	while (ioread32be(&acc->control) & ~FW_CFG_DMA_CTL_ERROR)
+		;
+}
+
 static ssize_t fw_cfg_read(struct cdev *cdev, void *buf, size_t count,
 			   loff_t pos, unsigned long flags)
 {
 	struct fw_cfg *fw_cfg = to_fw_cfg(cdev);
 	unsigned rdsize = FIELD_GET(O_RWSIZE_MASK, flags);
+	u32 selector = FW_CFG_DMA_CTL_SELECT | fw_cfg->sel << 16;
 
 	if (!pos || pos != fw_cfg->next_read_offset) {
 		fw_cfg_select(fw_cfg);
@@ -158,8 +160,9 @@ static ssize_t fw_cfg_read(struct cdev *cdev, void *buf, size_t count,
 			rdsize = 1;
 	}
 
-	while (pos-- > fw_cfg->next_read_offset)
-		fw_cfg_data_read(fw_cfg, NULL, count, rdsize);
+	if (pos != fw_cfg->next_read_offset)
+		fw_cfg_do_dma(fw_cfg, DMA_ERROR_CODE, pos,
+			      FW_CFG_DMA_CTL_SKIP | selector);
 
 	fw_cfg_data_read(fw_cfg, buf, count, rdsize);
 
@@ -172,13 +175,9 @@ static ssize_t fw_cfg_write(struct cdev *cdev, const void *buf, size_t count,
 {
 	struct fw_cfg *fw_cfg = to_fw_cfg(cdev);
 	struct device *dev = cdev->dev;
-	struct fw_cfg_dma __iomem *acc = fw_cfg->acc_virt;
 	void *dma_buf;
 	dma_addr_t mapping;
 	int ret = 0;
-
-	if (pos != 0)
-		return -EINVAL;
 
 	dma_buf = dma_alloc(count);
 	if (!dma_buf)
@@ -194,15 +193,11 @@ static ssize_t fw_cfg_write(struct cdev *cdev, const void *buf, size_t count,
 
 	fw_cfg->next_read_offset = 0;
 
-	acc->address = cpu_to_be64(mapping);
-	acc->length = cpu_to_be32(count);
-	acc->control = cpu_to_be32(FW_CFG_DMA_CTL_WRITE |
-				   FW_CFG_DMA_CTL_SELECT | fw_cfg->sel << 16);
+	fw_cfg_do_dma(fw_cfg, DMA_ERROR_CODE, pos, FW_CFG_DMA_CTL_SKIP |
+		      FW_CFG_DMA_CTL_SELECT | fw_cfg->sel << 16);
 
-	iowrite64be(fw_cfg->acc_dma, fw_cfg->reg_dma);
-
-	while (ioread32be(&acc->control) & ~FW_CFG_DMA_CTL_ERROR)
-		;
+	fw_cfg_do_dma(fw_cfg, mapping, count, FW_CFG_DMA_CTL_WRITE |
+		      FW_CFG_DMA_CTL_SELECT | fw_cfg->sel << 16);
 
 	dma_unmap_single(dev, mapping, count, DMA_FROM_DEVICE);
 free_buf:
@@ -268,7 +263,7 @@ static int fw_cfg_probe(struct device *dev)
 	fw_cfg->acc_virt = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					      sizeof(*fw_cfg->acc_virt), &fw_cfg->acc_dma);
 
-	fw_cfg->cdev.name = basprintf("fw_cfg%d", cdev_find_free_index("fw_cfg"));
+	fw_cfg->cdev.name = "fw_cfg";
 	fw_cfg->cdev.flags = DEVFS_IS_CHARACTER_DEV;
 	fw_cfg->cdev.size = 0;
 	fw_cfg->cdev.ops = &fw_cfg_ops;

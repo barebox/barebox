@@ -145,7 +145,7 @@ static int sba_add_partitions(struct cdev *rcdev, void *data)
 
 	ret = devfs_create(&sba->cdev);
 	if (ret) {
-		dev_err(sba->dev, "Failed to create cdev: %s\n", strerror(-ret));
+		dev_err(sba->dev, "Failed to create cdev: %pe\n", ERR_PTR(ret));
 		return 0;
 	}
 

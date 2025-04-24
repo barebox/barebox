@@ -39,7 +39,8 @@ struct jz4740_wdt_drvdata {
 	void __iomem *base;
 };
 
-static void __noreturn jz4740_reset_soc(struct restart_handler *rst)
+static void __noreturn jz4740_reset_soc(struct restart_handler *rst,
+					unsigned long flags)
 {
 	struct jz4740_wdt_drvdata *priv =
 		container_of(rst, struct jz4740_wdt_drvdata, restart);

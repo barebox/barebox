@@ -94,7 +94,8 @@ static int pfuze_i2c_reg_write(void *ctx, unsigned int reg, unsigned int val)
 	return ret == 1 ? 0 : ret;
 }
 
-static void pfuze_power_off_prepare(struct poweroff_handler *handler)
+static void pfuze_power_off_prepare(struct poweroff_handler *handler,
+				    unsigned long flags)
 {
 	dev_info(pfuze_dev->dev, "Configure standy mode for power off");
 

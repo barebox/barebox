@@ -753,14 +753,13 @@ static int arasan_sdhci_probe(struct device *dev)
 	}
 	ret = clk_enable(clk_ahb);
 	if (ret) {
-		dev_err(dev, "Failed to enable AHB clock: %s\n",
-			strerror(ret));
+		dev_err(dev, "Failed to enable AHB clock: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 
 	ret = clk_enable(clk_xin);
 	if (ret) {
-		dev_err(dev, "Failed to enable SD clock: %s\n", strerror(ret));
+		dev_err(dev, "Failed to enable SD clock: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 

@@ -53,7 +53,7 @@ static int do_ubiupdatevol(int argc, char *argv[])
 
 	ret = ioctl(fd_vol, UBI_IOCVOLUP, &size);
 	if (ret) {
-		printf("failed to start update: %s\n", strerror(-ret));
+		printf("failed to start update: %pe\n", ERR_PTR(ret));
 		goto error;
 	}
 
@@ -149,7 +149,7 @@ static int do_ubimkvol(int argc, char *argv[])
 
 	ret = ioctl(fd, UBI_IOCGETUBINUM, &ubinum);
 	if (ret) {
-		printf("failed to get ubinum: %s\n", strerror(-ret));
+		printf("failed to get ubinum: %pe\n", ERR_PTR(ret));
 		goto err;
 	}
 
@@ -209,13 +209,13 @@ static int do_ubiattach(int argc, char *argv[])
 
 	ret = ioctl(fd, MEMGETINFO, &user);
 	if (ret) {
-		printf("MEMGETINFO failed: %s\n", strerror(-ret));
+		printf("MEMGETINFO failed: %pe\n", ERR_PTR(ret));
 		goto err;
 	}
 
 	ret = ubi_attach_mtd_dev(user.mtd, devnum, vid_hdr_offset, 20);
 	if (ret < 0)
-		printf("failed to attach: %s\n", strerror(-ret));
+		printf("failed to attach: %pe\n", ERR_PTR(ret));
 	else
 		ret = 0;
 err:
@@ -271,7 +271,7 @@ out_close:
 
 out:
 	if (ret)
-		printf("failed to detach: %s\n", strerror(-ret));
+		printf("failed to detach: %pe\n", ERR_PTR(ret));
 
 	return ret;
 }
@@ -300,7 +300,7 @@ static int do_ubirmvol(int argc, char *argv[])
 
 	ret = ioctl(fd, UBI_IOCGETUBINUM, &ubinum);
 	if (ret) {
-		printf("failed to get ubinum: %s\n", strerror(-ret));
+		printf("failed to get ubinum: %pe\n", ERR_PTR(ret));
 		goto err;
 	}
 
@@ -313,7 +313,7 @@ static int do_ubirmvol(int argc, char *argv[])
 
 	ret = ubi_api_remove_volume(desc, 0);
 	if (ret)
-		printf("failed to remove volume %s: %s\n", argv[2], strerror(-ret));
+		printf("failed to remove volume %s: %pe\n", argv[2], ERR_PTR(ret));
 
 	ubi_close_volume(desc);
 err:
@@ -375,7 +375,7 @@ static int do_ubirename(int argc, char *argv[])
 	close(fd);
 
 	if (ret) {
-		printf("failed to get ubi num for %s: %s\n", argv[1], strerror(-ret));
+		printf("failed to get ubi num for %s: %pe\n", argv[1], ERR_PTR(ret));
 		return 1;
 	}
 
@@ -394,7 +394,7 @@ static int do_ubirename(int argc, char *argv[])
 
 	ret = ubi_api_rename_volumes(ubi_num, &req);
 	if (ret)
-		printf("failed to rename: %s", strerror(-ret));
+		printf("failed to rename: %pe", ERR_PTR(ret));
 err:
 	return ret ? 1 : 0;
 };

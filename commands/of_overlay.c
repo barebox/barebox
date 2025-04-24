@@ -51,7 +51,7 @@ static int do_of_overlay(int argc, char *argv[])
 	}
 
 	if (ret) {
-		printf("cannot apply oftree overlay: %s\n", strerror(-ret));
+		printf("cannot apply oftree overlay: %pe\n", ERR_PTR(ret));
 		goto err;
 	}
 

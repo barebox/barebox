@@ -9,7 +9,8 @@
 #include <restart.h>
 #include <mach/hardware.h>
 
-static void __noreturn bcm47xx_restart_soc(struct restart_handler *rst)
+static void __noreturn bcm47xx_restart_soc(struct restart_handler *rst,
+					   unsigned long flags)
 {
 	__raw_writel(GORESET, (char *)SOFTRES_REG);
 

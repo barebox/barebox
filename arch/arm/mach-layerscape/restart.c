@@ -7,7 +7,8 @@
 #include <soc/fsl/fsl_immap.h>
 #include <mach/layerscape/layerscape.h>
 
-static void ls102xa_restart(struct restart_handler *rst)
+static void ls102xa_restart(struct restart_handler *rst,
+			    unsigned long flags)
 {
 	void __iomem *rcr = IOMEM(LSCH2_RST_ADDR);
 

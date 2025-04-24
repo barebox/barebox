@@ -22,7 +22,8 @@
 
 extern void __reset(void);
 
-static void __noreturn openrisc_restart_cpu(struct restart_handler *rst)
+static void __noreturn openrisc_restart_cpu(struct restart_handler *rst,
+					    unsigned long flags)
 {
 	__reset();
 	/* not reached, __reset does not return */

@@ -351,7 +351,7 @@ static int fastboot_set_alt(struct usb_function *f,
 
 	ret = usb_ep_enable(f_fb->out_ep);
 	if (ret) {
-		pr_err("failed to enable out ep: %s\n", strerror(-ret));
+		pr_err("failed to enable out ep: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 
@@ -362,7 +362,7 @@ static int fastboot_set_alt(struct usb_function *f,
 
 	ret = usb_ep_enable(f_fb->in_ep);
 	if (ret) {
-		pr_err("failed to enable in ep: %s\n", strerror(-ret));
+		pr_err("failed to enable in ep: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 

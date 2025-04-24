@@ -222,7 +222,8 @@ static const struct rk808_reg_data rk818_pre_init_reg[] = {
 						    VB_LO_SEL_3500MV },
 };
 
-static void rk808_poweroff(struct poweroff_handler *handler)
+static void rk808_poweroff(struct poweroff_handler *handler,
+			   unsigned long flags)
 {
 	struct rk808 *rk808 = container_of(handler, struct rk808, poweroff);
 	int ret;

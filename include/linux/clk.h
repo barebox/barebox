@@ -269,12 +269,18 @@ static inline void clk_put(struct clk *clk)
  * @enable:	Prepare and enable the clock atomically. This must not return
  *		until the clock is generating a valid clock signal, usable by
  *		consumer devices.
+ * @prepare:	Alias for @enable. If the Linux driver defines both, they
+ *		must be merged when ported to barebox.
  *
  * @disable:	Unprepare and disable the clock atomically.
+ * @unprepare:	Alias for @disable. If the Linux driver defines both, they
+ *		must be merged when ported to barebox.
  *
  * @is_enabled:	Queries the hardware to determine if the clock is enabled.
  *		Optional, if this op is not set then the enable count will be
  *		used.
+ * @is_prepared Alias for @is_enabled. If the Linux driver defines both, they
+ *		must be merged when ported to barebox.
  *
  * @recalc_rate	Recalculate the rate of this clock, by querying hardware. The
  *		parent rate is an input parameter. If the driver cannot figure
@@ -319,9 +325,18 @@ static inline void clk_put(struct clk *clk)
  */
 struct clk_ops {
 	int 		(*init)(struct clk_hw *hw);
-	int		(*enable)(struct clk_hw *hw);
-	void		(*disable)(struct clk_hw *hw);
-	int		(*is_enabled)(struct clk_hw *hw);
+	union {
+		int		(*enable)(struct clk_hw *hw);
+		int		(*prepare)(struct clk_hw *hw);
+	};
+	union {
+		void		(*disable)(struct clk_hw *hw);
+		void		(*unprepare)(struct clk_hw *hw);
+	};
+	union {
+		int		(*is_enabled)(struct clk_hw *hw);
+		int		(*is_prepared)(struct clk_hw *hw);
+	};
 	unsigned long	(*recalc_rate)(struct clk_hw *hw,
 					unsigned long parent_rate);
 	long		(*round_rate)(struct clk_hw *hw, unsigned long,
@@ -587,11 +602,33 @@ struct clk_fractional_divider {
 #define CLK_FRAC_DIVIDER_BIG_ENDIAN		BIT(1)
 #define CLK_FRAC_DIVIDER_POWER_OF_TWO_PS	BIT(2)
 
+/**
+ * struct clk_mux - multiplexer clock
+ *
+ * @hw:		handle between common and hardware-specific interfaces
+ * @reg:	register controlling multiplexer
+ * @mask:	mask of mutliplexer bit field
+ * @shift:	shift to multiplexer bit field
+ * @flags:	hardware-specific flags
+ * @table:	array of register values corresponding to the parent index
+ * @lock:	register lock
+ *
+ * Clock with multiple selectable parents.  Implements .get_parent, .set_parent
+ * and .recalc_rate
+ *
+ * Flags:
+ * CLK_MUX_HIWORD_MASK - The mux settings are only in lower 16-bit of this
+ *	register, and mask of mux bits are in higher 16-bit of this register.
+ *	While setting the mux bits, higher 16-bit should also be updated to
+ *	indicate changing mux bits.
+ * CLK_MUX_READ_ONLY - The mux registers can't be written, only read in the
+ * 	.get_parent clk_op.
+ */
 struct clk_mux {
 	struct clk_hw hw;
 	void __iomem *reg;
-	int shift;
-	int width;
+	u32 mask;
+	u8 shift;
 	unsigned flags;
 	u32 *table;
 	spinlock_t *lock;
@@ -625,11 +662,12 @@ struct clk_hw *__clk_hw_register_mux(struct device *dev,
 				     spinlock_t *lock);
 
 #define clk_hw_register_mux(dev, name, parent_names,                  \
-		num_parents, flags, reg, shift, mask,                 \
+		num_parents, flags, reg, shift, width,                \
 		clk_mux_flags, lock)                                  \
 	__clk_hw_register_mux((dev), (name), (num_parents),           \
 				     (parent_names),                  \
-				     (flags), (reg), (shift), (mask), \
+				     (flags), (reg),                  \
+				     (shift), BIT((width)) - 1,       \
 				     (clk_mux_flags), NULL, (lock))
 
 #define clk_hw_register_mux_table(dev, name, parent_names, num_parents,	  \
@@ -647,13 +685,38 @@ unsigned int clk_mux_index_to_val(u32 *table, unsigned int flags, u8 index);
 long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
 			unsigned long *prate);
 
+/**
+ * struct clk_gate - gating clock
+ *
+ * @hw:		handle between common and hardware-specific interfaces
+ * @reg:	register controlling gate
+ * @bit_idx:	single bit controlling gate
+ * @shift:	Alias for @shift
+ * @flags:	hardware-specific flags
+ * @lock:	register lock
+ * @_parent:	for barebox-internal use
+ *
+ * Clock which can gate its output.  Implements .enable & .disable
+ *
+ * Flags:
+ * CLK_GATE_SET_TO_DISABLE - by default this clock sets the bit at bit_idx to
+ *	enable the clock.  Setting this flag does the opposite: setting the bit
+ *	disable the clock and clearing it enables the clock
+ * CLK_GATE_HIWORD_MASK - The gate settings are only in lower 16-bit
+ *	of this register, and mask of gate bits are in higher 16-bit of this
+ *	register.  While setting the gate bits, higher 16-bit should also be
+ *	updated to indicate changing gate bits.
+ */
 struct clk_gate {
 	struct clk_hw hw;
 	void __iomem *reg;
-	int shift;
-	const char *parent;
+	union {
+		u8 bit_idx;
+		u8 shift;
+	};
 	unsigned flags;
 	spinlock_t *lock;
+	const char *_parent;
 };
 
 int clk_gate_is_enabled(struct clk_hw *hw);

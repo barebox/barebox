@@ -113,7 +113,7 @@ s64 sntp(const char *server)
 
 	ret = resolv(server, &net_sntp_ip);
 	if (ret) {
-		printf("Cannot resolve \"%s\": %s\n", server, strerror(-ret));;
+		printf("Cannot resolve \"%s\": %pe\n", server, ERR_PTR(ret));
 		return 1;
 	}
 

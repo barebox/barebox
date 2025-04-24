@@ -177,7 +177,8 @@ static int seconds_to_expire_get(struct param_d *p, void *priv)
 	return 0;
 }
 
-static void __noreturn watchdog_restart_handle(struct restart_handler *this)
+static void __noreturn watchdog_restart_handle(struct restart_handler *this,
+					       unsigned long flags)
 {
 	struct watchdog *wd = watchdog_get_default();
 	int ret = -ENODEV;

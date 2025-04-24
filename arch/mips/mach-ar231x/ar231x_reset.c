@@ -14,7 +14,8 @@
 
 static void __iomem *reset_base;
 
-static void __noreturn ar2312x_restart_soc(struct restart_handler *rst)
+static void __noreturn ar2312x_restart_soc(struct restart_handler *rst,
+					   unsigned long flags)
 {
 	printf("reseting cpu\n");
 	__raw_writel(0x10000,

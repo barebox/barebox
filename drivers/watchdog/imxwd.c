@@ -30,7 +30,6 @@ struct imx_wd {
 	struct device *dev;
 	const struct imx_wd_ops *ops;
 	struct restart_handler restart;
-	struct restart_handler restart_warm;
 	bool ext_reset;
 	bool bigendian;
 	bool suspend_in_lpm;
@@ -171,23 +170,19 @@ static int imx_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	return priv->ops->set_timeout(priv, timeout);
 }
 
-static void __noreturn imxwd_force_soc_reset(struct restart_handler *rst)
+static void __noreturn imxwd_force_soc_reset(struct restart_handler *rst,
+					     unsigned long flags)
 {
 	struct imx_wd *priv = container_of(rst, struct imx_wd, restart);
+
+	if (flags & RESTART_WARM)
+		priv->ext_reset = false;
 
 	priv->ops->soc_reset(priv);
 
 	mdelay(1000);
 
 	hang();
-}
-
-static void __noreturn imxwd_force_soc_reset_internal(struct restart_handler *rst)
-{
-	struct imx_wd *priv = container_of(rst, struct imx_wd, restart_warm);
-
-	priv->ext_reset = false;
-	imxwd_force_soc_reset(&priv->restart);
 }
 
 static void imx_watchdog_detect_reset_source(struct imx_wd *priv)
@@ -230,13 +225,7 @@ static int imx21_wd_init_no_warm_reset(struct imx_wd *priv)
 
 static int imx21_wd_init(struct imx_wd *priv)
 {
-	priv->restart_warm.name = "imxwd-warm";
-	priv->restart_warm.restart = imxwd_force_soc_reset_internal;
-	priv->restart_warm.priority = RESTART_DEFAULT_PRIORITY - 10;
-	priv->restart_warm.flags = RESTART_FLAG_WARM_BOOTROM;
-
-	restart_handler_register(&priv->restart_warm);
-
+	priv->restart.flags = RESTART_WARM;
 	return imx21_wd_init_no_warm_reset(priv);
 }
 
@@ -293,6 +282,13 @@ static int imx_wd_probe(struct device *dev)
 		}
 	}
 
+	dev->priv = priv;
+
+	priv->restart.name = "imxwd";
+	priv->restart.restart = imxwd_force_soc_reset;
+	priv->restart.priority = RESTART_DEFAULT_PRIORITY;
+	priv->restart.dev = &priv->wd.dev;
+
 	if (priv->ops->init) {
 		ret = priv->ops->init(priv);
 		if (ret) {
@@ -301,13 +297,6 @@ static int imx_wd_probe(struct device *dev)
 			goto error_unregister;
 		}
 	}
-
-	dev->priv = priv;
-
-	priv->restart.name = "imxwd";
-	priv->restart.restart = imxwd_force_soc_reset;
-	priv->restart.priority = RESTART_DEFAULT_PRIORITY;
-	priv->restart.dev = &priv->wd.dev;
 
 	restart_handler_register(&priv->restart);
 

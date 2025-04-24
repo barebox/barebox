@@ -233,7 +233,8 @@ static const struct mfd_cell axp813_cells[] = {
 	},
 };
 
-static void axp20x_power_off(struct poweroff_handler *handler)
+static void axp20x_power_off(struct poweroff_handler *handler,
+			     unsigned long flags)
 {
 	struct axp20x_dev *axp20x = container_of(handler, struct axp20x_dev, poweroff);
 

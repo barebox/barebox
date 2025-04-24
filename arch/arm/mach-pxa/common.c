@@ -26,7 +26,8 @@
 #define OWER_WME	(1 << 0)	/* Watch-dog Match Enable */
 #define OSSR_M3		(1 << 3)	/* Match status channel 3 */
 
-static void __noreturn pxa_restart_soc(struct restart_handler *rst)
+static void __noreturn pxa_restart_soc(struct restart_handler *rst,
+				       unsigned long flags)
 {
 	/* Clear last reset source */
 	pxa_clear_reset_source();

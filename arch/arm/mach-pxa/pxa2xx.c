@@ -47,7 +47,8 @@ void pxa_clear_reset_source(void)
 	RCSR = RCSR_GPR | RCSR_SMR | RCSR_WDR | RCSR_HWR;
 }
 
-static void __noreturn pxa2xx_poweroff(struct poweroff_handler *handler)
+static void __noreturn pxa2xx_poweroff(struct poweroff_handler *handler,
+				       unsigned long flags)
 {
 	shutdown_barebox();
 

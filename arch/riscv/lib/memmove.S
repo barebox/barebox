@@ -62,3 +62,4 @@ exit_memcpy:
         move a1, t1
         ret
 END(__memmove)
+SYM_FUNC_ALIAS(__pi_memmove, __memmove)

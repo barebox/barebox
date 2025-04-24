@@ -32,7 +32,7 @@ int restart_handler_register(struct restart_handler *rst)
 				     &rst->priority);
 		if (of_property_read_bool(rst->of_node,
 					  "barebox,restart-warm-bootrom"))
-			rst->flags |= RESTART_FLAG_WARM_BOOTROM;
+			rst->flags |= RESTART_WARM;
 	}
 
 	list_add_tail(&rst->list, &restart_handler_list);
@@ -55,7 +55,8 @@ int restart_handler_register(struct restart_handler *rst)
  * return: 0 for success or negative error code
  */
 int restart_handler_register_fn(const char *name,
-				void (*restart_fn)(struct restart_handler *))
+				void (*restart_fn)(struct restart_handler *,
+						   unsigned long flags))
 {
 	struct restart_handler *rst;
 	int ret;
@@ -102,7 +103,7 @@ struct restart_handler *restart_handler_get_by_name(const char *name, int flags)
 /**
  * restart_machine() - reset the whole system
  */
-void __noreturn restart_machine(void)
+void __noreturn restart_machine(unsigned long flags)
 {
 	struct restart_handler *rst;
 
@@ -110,7 +111,7 @@ void __noreturn restart_machine(void)
 	if (rst) {
 		pr_debug("%s: using restart handler %s\n", __func__, rst->name);
 		console_flush();
-		rst->restart(rst);
+		rst->restart(rst, flags);
 	}
 
 	hang();
@@ -126,8 +127,10 @@ void restart_handlers_print(void)
 	list_for_each_entry(tmp, &restart_handler_list, list) {
 		printf("%-20s %-20s %6d ",
 		       tmp->name, tmp->dev ? dev_name(tmp->dev) : "", tmp->priority);
-		if (tmp->flags & RESTART_FLAG_WARM_BOOTROM)
+		if (tmp->flags & RESTART_WARM)
 			putchar('W');
 		putchar('\n');
 	}
+
+	printf("\nW: Warm restart capable\n");
 }

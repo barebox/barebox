@@ -47,7 +47,8 @@ static void arria10_init_emac(void)
 }
 
 /* Write the reset manager register to cause reset */
-static void __noreturn arria10_restart_soc(struct restart_handler *rst)
+static void __noreturn arria10_restart_soc(struct restart_handler *rst,
+					   unsigned long flags)
 {
 	/* request a warm reset */
 	writel(ARRIA10_RSTMGR_CTL_SWWARMRSTREQ,

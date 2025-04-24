@@ -23,7 +23,8 @@ struct rn5t568 {
 	struct regmap *regmap;
 };
 
-static void rn5t568_restart(struct restart_handler *rst)
+static void rn5t568_restart(struct restart_handler *rst,
+			    unsigned long flags)
 {
 	struct rn5t568 *rn5t568 = container_of(rst, struct rn5t568, restart);
 

@@ -3686,9 +3686,9 @@ pciserial_init_ports(struct pci_dev *dev, const struct pciserial_board *board)
 
 		rc = platform_device_register(ns16550_dev);
 		if (rc < 0) {
-			dev_err(&dev->dev, "couldn't register PCI %s console @0x%pa: %s\n",
+			dev_err(&dev->dev, "couldn't register PCI %s console @0x%pa: %pe\n",
 				res->flags & IORESOURCE_MEM ? "MMIO" : "IO port",
-				&res->start, strerror(-rc));
+				&res->start, ERR_PTR(rc));
 
 			break;
 		}

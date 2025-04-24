@@ -63,7 +63,8 @@ static int armada_xp_soc_id_fixup(void)
 	return 0;
 }
 
-static void __noreturn armada_370_xp_restart_soc(struct restart_handler *rst)
+static void __noreturn armada_370_xp_restart_soc(struct restart_handler *rst,
+						 unsigned long flags)
 {
 	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x60);
 	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x64);

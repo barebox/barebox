@@ -43,7 +43,8 @@ int poweroff_handler_register(struct poweroff_handler *handler)
  *
  * return: 0 for success or negative error code
  */
-int poweroff_handler_register_fn(void (*poweroff_fn)(struct poweroff_handler *))
+int poweroff_handler_register_fn(void (*poweroff_fn)(struct poweroff_handler *,
+						     unsigned long flags))
 {
 	struct poweroff_handler *handler;
 	int ret;
@@ -63,7 +64,7 @@ int poweroff_handler_register_fn(void (*poweroff_fn)(struct poweroff_handler *))
 /**
  * poweroff_machine() - power off the machine
  */
-void __noreturn poweroff_machine(void)
+void __noreturn poweroff_machine(unsigned long flags)
 {
 	struct poweroff_handler *handler = NULL, *tmp;
 	unsigned int priority = 0;
@@ -78,7 +79,7 @@ void __noreturn poweroff_machine(void)
 	if (handler) {
 		pr_debug("using poweroff handler %s\n", handler->name);
 		console_flush();
-		handler->poweroff(handler);
+		handler->poweroff(handler, flags);
 	} else {
 		pr_err("No poweroff handler found!\n");
 	}

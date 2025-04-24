@@ -31,7 +31,7 @@ void __noreturn sama5d3_barebox_entry(unsigned int r4, void *boarddata)
 {
 	__sama5d3_stashed_bootrom_r4 = r4;
 
-	barebox_arm_entry(SAMA5_DDRCS, at91sama5d3_get_ddram_size(),
+	barebox_arm_entry(SAMA5_DDRCS, sama5_ramsize(IOMEM(SAMA5D3_BASE_MPDDRC)),
 			  boarddata);
 }
 

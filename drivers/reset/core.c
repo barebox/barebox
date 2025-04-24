@@ -392,7 +392,7 @@ err:
 
 	return ERR_CAST(rstc);
 }
-EXPORT_SYMBOL_GPL(reset_control_get);
+EXPORT_SYMBOL_GPL(__reset_control_get);
 
 /**
  * reset_control_put - free the reset controller

@@ -20,4 +20,5 @@ def test_bthread(barebox, barebox_config):
     switches = int(barebox.run_check("bthread -c")[0].split()[0])
     yields   = int(barebox.run_check("bthread -t")[0].split()[0])
 
-    assert yields < switches
+    assert switches > 1000
+    assert yields > 1000

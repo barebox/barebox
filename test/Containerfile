@@ -10,7 +10,7 @@ LABEL Description="This image is for building and testing barebox inside a conta
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update and install things from apt now
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
 	bison \
 	build-essential \
 	coreutils \
@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
 	libgit2-dev \
 	libguestfs-tools \
 	liblz4-tool \
+	librsvg2-bin \
 	libseccomp-dev \
 	libssl-dev \
 	libtool \
@@ -30,6 +31,7 @@ RUN apt-get update && apt-get install -y \
 	lzma-alone \
 	lzop \
 	mount \
+	musl-tools \
 	openssl \
 	pkg-config \
 	util-linux \
@@ -52,25 +54,34 @@ RUN apt-get update && apt-get install -y \
 	u-boot-tools \
 	yamllint \
 	yq \
+	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 
 ENV GCC_VERSION=14.2.0
+ENV LLVM_VERSION=20
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	lsb-release software-properties-common gnupg \
+	&& wget https://apt.llvm.org/llvm.sh \
+	&& chmod +x llvm.sh && ./llvm.sh ${LLVM_VERSION} \
+	&& apt-get remove -y lsb-release software-properties-common gnupg \
+	&& apt-get autoremove -y --purge \
+	&& apt-get clean \
+	&& rm -rf llvm.sh /var/lib/apt/lists/*
 
 # Manually install the kernel.org Crosstool based toolchains
 RUN korg_crosstool_dl() { wget -nv -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/${1}/${2}/${1}-gcc-${2}-nolibc-${3}.tar.xz | tar -C /opt -xJ ; } && \
     korg_crosstool_dl x86_64 ${GCC_VERSION} arm-linux-gnueabi && \
     korg_crosstool_dl x86_64 ${GCC_VERSION} aarch64-linux     && \
     korg_crosstool_dl x86_64 ${GCC_VERSION} mips-linux        && \
-    korg_crosstool_dl x86_64 13.1.0         or1k-linux        && \
+    korg_crosstool_dl x86_64 ${GCC_VERSION} or1k-linux        && \
     korg_crosstool_dl x86_64 ${GCC_VERSION} powerpc-linux     && \
     korg_crosstool_dl x86_64 ${GCC_VERSION} riscv64-linux
 
-RUN wget -nv -O kvx.tgz https://github.com/kalray/build-scripts/releases/download/v5.0.0/gcc-kalray-kvx-ubuntu-22.04-v5.0.0.tar.gz
-
-RUN echo "d27b3d6e6246f5debffee0bb01e77eb133bd32c658782a68a779cf9fb4c436bc kvx.tgz" | \
-    sha256sum --check --status
-
-RUN tar -C /opt -xzf kvx.tgz && rm kvx.tgz
+RUN tgz_checksum_dl() { set -e; wget -nv -O archive.tgz "$1"; \
+                        echo "$2 archive.tgz" | sha256sum --check --status; tar -C /opt -xzf archive.tgz; rm archive.tgz; } && \
+    tgz_checksum_dl https://github.com/kalray/build-scripts/releases/download/v5.0.0/gcc-kalray-kvx-ubuntu-22.04-v5.0.0.tar.gz \
+                    d27b3d6e6246f5debffee0bb01e77eb133bd32c658782a68a779cf9fb4c436bc
 
 RUN wget -nv "https://github.com/qemu/qemu/blob/v5.2.0/pc-bios/opensbi-riscv32-generic-fw_dynamic.bin?raw=true" -O /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin
 
@@ -79,18 +90,21 @@ RUN useradd -m -U barebox
 RUN echo barebox ALL=NOPASSWD: ALL > /etc/sudoers.d/barebox
 
 # install labgrid
-RUN cd /tmp && \
-    git clone --depth 1 -b v24.0 https://github.com/labgrid-project/labgrid && \
-    cd labgrid && \
-    pip3 install --break-system-packages . && \
-    ln -s $(which pytest) /usr/local/bin/labgrid-pytest;
+RUN pip3 install -q --no-cache-dir --break-system-packages \
+    git+https://github.com/labgrid-project/labgrid.git@v24.0 && \
+    ln -s $(which pytest) /usr/local/bin/labgrid-pytest
 
 ENV CROSS_COMPILE_arm=/opt/gcc-${GCC_VERSION}-nolibc/arm-linux-gnueabi/bin/arm-linux-gnueabi-
 ENV CROSS_COMPILE_arm64=/opt/gcc-${GCC_VERSION}-nolibc/aarch64-linux/bin/aarch64-linux-
 ENV CROSS_COMPILE_mips=/opt/gcc-${GCC_VERSION}-nolibc/mips-linux/bin/mips-linux-
-ENV CROSS_COMPILE_openrisc=/opt/gcc-13.1.0-nolibc/or1k-linux/bin/or1k-linux-
+ENV CROSS_COMPILE_openrisc=/opt/gcc-${GCC_VERSION}-nolibc/or1k-linux/bin/or1k-linux-
 ENV CROSS_COMPILE_powerpc=/opt/gcc-${GCC_VERSION}-nolibc/powerpc-linux/bin/powerpc-linux-
 ENV CROSS_COMPILE_riscv=/opt/gcc-${GCC_VERSION}-nolibc/riscv64-linux/bin/riscv64-linux-
 ENV CROSS_COMPILE_kvx=/opt/gcc-kalray-kvx-v5.0.0/bin/kvx-elf-
+
+ENV CROSS_COMPILE_llvm=-${LLVM_VERSION}
+# Workaround for https://github.com/llvm/llvm-project/issues/112458
+RUN ln -Ts /usr/lib/llvm-${LLVM_VERSION}/lib/clang/${LLVM_VERSION}/lib/linux/ \
+           /usr/lib/llvm-${LLVM_VERSION}/lib/clang/${LLVM_VERSION}/lib/x86_64-pc-linux-gnu
 
 USER barebox:barebox

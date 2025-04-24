@@ -24,8 +24,8 @@ obj-y = common.o setjmp.o
 obj-$(CONFIG_DRIVER_NET_TAP) += tap.o
 obj-$(CONFIG_MALLOC_LIBC) += libc_malloc.o
 
-CFLAGS_sdl.o = $(shell $(PKG_CONFIG) sdl2 --cflags)
+CFLAGS_sdl.o = $(shell $(CROSS_PKG_CONFIG) sdl2 --cflags)
 obj-$(CONFIG_SDL) += sdl.o
 
-CFLAGS_ftdi.o = $(shell $(PKG_CONFIG) libftdi1 --cflags)
+CFLAGS_ftdi.o = $(shell $(CROSS_PKG_CONFIG) libftdi1 --cflags)
 obj-$(CONFIG_GPIO_LIBFTDI1) += ftdi.o

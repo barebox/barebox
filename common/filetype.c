@@ -423,11 +423,11 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (bufsize < 64)
 		return filetype_unknown;
 
-	if (le32_to_cpu(buf[14]) == 0x644d5241)
+	if (is_arm64_linux_bootimage(buf))
 		return is_dos_exe(buf8) ? filetype_arm64_efi_linux_image : filetype_arm64_linux_image;
-	if (le32_to_cpu(buf[14]) == 0x05435352)
+	if (is_riscv_linux_bootimage(buf))
 		return is_dos_exe(buf8) ? filetype_riscv_efi_linux_image : filetype_riscv_linux_image;
-	if (le32_to_cpu(buf[14]) == 0x56435352 && !memcmp(&buf[12], "barebox", 8))
+	if (is_riscv_linux_bootimage(buf) && !memcmp(&buf[12], "barebox", 8))
 		return filetype_riscv_barebox_image;
 
 	if (le32_to_cpu(buf[5]) == 0x504d5453)

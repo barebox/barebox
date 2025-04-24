@@ -14,14 +14,6 @@
 
 #ifdef __PBL__
 #define udelay early_udelay
-#undef  dev_err
-#define dev_err(d, ...)		pr_err(__VA_ARGS__)
-#undef  dev_warn
-#define dev_warn(d, ...)	pr_warn(__VA_ARGS__)
-#undef  dev_dbg
-#define dev_dbg(d, ...)		pr_debug(__VA_ARGS__)
-#undef  dev_info
-#define dev_info(d, ...)	pr_info(__VA_ARGS__)
 #undef	clk_enable
 #define clk_enable(...)
 #undef	clk_disable

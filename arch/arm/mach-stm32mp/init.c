@@ -230,9 +230,9 @@ static int stm32mp15_setup_cpu_type(void)
 	return 0;
 }
 
-static int __st32mp_soc;
+static unsigned __st32mp_soc;
 
-int stm32mp_soc(void)
+unsigned stm32mp_soc_code(void)
 {
 	return __st32mp_soc;
 }
@@ -248,18 +248,22 @@ static int stm32mp_init(void)
 {
 	u32 boot_ctx;
 
-	if (of_machine_is_compatible("st,stm32mp135"))
-		__st32mp_soc = 32135;
+	if (of_machine_is_compatible("st,stm32mp131"))
+		__st32mp_soc = 0x32131;
+	else if (of_machine_is_compatible("st,stm32mp133"))
+		__st32mp_soc = 0x32133;
+	else if (of_machine_is_compatible("st,stm32mp135"))
+		__st32mp_soc = 0x32135;
 	else if (of_machine_is_compatible("st,stm32mp151"))
-		__st32mp_soc = 32151;
+		__st32mp_soc = 0x32151;
 	else if (of_machine_is_compatible("st,stm32mp153"))
-		__st32mp_soc = 32153;
+		__st32mp_soc = 0x32153;
 	else if (of_machine_is_compatible("st,stm32mp157"))
-		__st32mp_soc = 32157;
+		__st32mp_soc = 0x32157;
 	else
 		return 0;
 
-	if (__st32mp_soc == 32135) {
+	if ((__st32mp_soc & 0xFF0) == 0x130) {
 		boot_ctx = readl(STM32MP13_TAMP_BOOT_CONTEXT);
 	} else {
 		stm32mp15_setup_cpu_type();

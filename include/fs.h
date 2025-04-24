@@ -155,7 +155,7 @@ char *canonicalize_path(int dirfd, const char *pathname);
 
 struct fs_device *get_fsdevice_by_path(int dirfd, const char *path);
 
-char *get_mounted_path(const char *path);
+const char *get_mounted_path(const char *path);
 
 struct cdev *get_cdev_by_mountpath(const char *path);
 

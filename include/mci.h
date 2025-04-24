@@ -475,6 +475,22 @@ struct mci_cmd {
 	unsigned response[4];	/**< card's response */
 };
 
+/**
+ * @param p Command definition to setup
+ * @param cmd Valid SD/MMC command (refer MMC_CMD_* / SD_CMD_*)
+ * @param arg Argument for the command (optional)
+ * @param response Command's response type (refer MMC_RSP_*)
+ *
+ * Note: When calling, the 'response' must match command's requirements
+ */
+static inline void mci_setup_cmd(struct mci_cmd *p, unsigned cmd,
+				 unsigned arg, unsigned response)
+{
+	p->cmdidx = cmd;
+	p->cmdarg = arg;
+	p->resp_type = response;
+}
+
 /** data information to be used with some SD/MMC commands */
 struct mci_data {
 	union {

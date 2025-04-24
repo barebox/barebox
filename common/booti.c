@@ -4,6 +4,7 @@
 #define pr_fmt(fmt) "booti: " fmt
 
 #include <common.h>
+#include <filetype.h>
 #include <memory.h>
 #include <bootm.h>
 #include <linux/sizes.h>
@@ -37,13 +38,19 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 	int ret;
 	void *fdt;
 
+	print_hex_dump_bytes("header ", DUMP_PREFIX_OFFSET, kernel_header, 80);
+
+	if ((IS_ENABLED(CONFIG_RISCV) && !is_riscv_linux_bootimage(kernel_header)) ||
+	    (IS_ENABLED(CONFIG_ARM64) && !is_arm64_linux_bootimage(kernel_header))) {
+		pr_err("Unexpected magic at offset 0x38!\n");
+		return ERR_PTR(-EINVAL);
+	}
+
 	text_offset = le64_to_cpup(kernel_header + 8);
 	image_size = le64_to_cpup(kernel_header + 16);
 
 	kernel = get_kernel_address(data->os_address, text_offset);
 
-	print_hex_dump_bytes("header ", DUMP_PREFIX_OFFSET,
-			     kernel_header, 80);
 	pr_debug("Kernel to be loaded to %lx+%lx\n", kernel, image_size);
 
 	if (kernel == UIMAGE_INVALID_ADDRESS)

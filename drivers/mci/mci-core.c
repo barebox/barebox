@@ -98,21 +98,6 @@ static int mci_send_cmd_retry(struct mci *mci, struct mci_cmd *cmd,
 }
 
 /**
- * @param p Command definition to setup
- * @param cmd Valid SD/MMC command (refer MMC_CMD_* / SD_CMD_*)
- * @param arg Argument for the command (optional)
- * @param response Command's response type (refer MMC_RSP_*)
- *
- * Note: When calling, the 'response' must match command's requirements
- */
-static void mci_setup_cmd(struct mci_cmd *p, unsigned cmd, unsigned arg, unsigned response)
-{
-	p->cmdidx = cmd;
-	p->cmdarg = arg;
-	p->resp_type = response;
-}
-
-/**
  * configure optional DSR value
  * @param mci_dev MCI instance
  * @return Transaction status (0 on success)

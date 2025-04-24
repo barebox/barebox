@@ -14,6 +14,7 @@
 #include <malloc.h>
 #include <init.h>
 #include <memory.h>
+#include <bootsource.h>
 #include <linux/sizes.h>
 #include <of_graph.h>
 #include <string.h>
@@ -3591,7 +3592,22 @@ const char *of_get_machine_compatible(void)
 }
 EXPORT_SYMBOL(of_get_machine_compatible);
 
-static int of_init_hostname(void)
+static int of_init_early_vars(void)
+{
+	struct device_node *bootsource;
+
+	if (!IS_ENABLED(CONFIG_BAREBOX_DT_2ND))
+		return 0;
+
+	bootsource = of_find_node_by_chosen("bootsource", NULL);
+	if (bootsource)
+		bootsource_of_node_set(bootsource);
+
+	return 0;
+}
+postcore_initcall(of_init_early_vars);
+
+static int of_init_late_vars(void)
 {
 	const char *name;
 
@@ -3600,4 +3616,4 @@ static int of_init_hostname(void)
 
 	return 0;
 }
-late_initcall(of_init_hostname);
+late_initcall(of_init_late_vars);

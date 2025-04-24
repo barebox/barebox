@@ -539,8 +539,6 @@ void eth_unregister(struct eth_device *edev)
 	if (IS_ENABLED(CONFIG_OFDEVICE))
 		free_const(edev->nodepath);
 
-	class_remove_device(&eth_class, &edev->dev);
-
 	free(edev->devname);
 
 	unregister_device(&edev->dev);

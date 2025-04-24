@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 obj-$(CONFIG_MCI)		+= mci-core.o
+pbl-$(CONFIG_MCI)		+= mci-pbl.o
 obj-$(CONFIG_MCI_AM654)		+= am654-sdhci.o
 obj-$(CONFIG_MCI_ARASAN)	+= arasan-sdhci.o
 obj-$(CONFIG_MCI_ATMEL)		+= atmel_mci.o atmel_mci_common.o
@@ -13,7 +14,8 @@ obj-$(CONFIG_MCI_IMX)		+= imx.o
 obj-$(CONFIG_MCI_IMX_ESDHC)	+= imx-esdhc.o imx-esdhc-common.o
 pbl-$(CONFIG_MCI_IMX_ESDHC_PBL)	+= imx-esdhc-pbl.o imx-esdhc-common.o
 obj-$(CONFIG_MCI_MXS)		+= mxs.o
-obj-$(CONFIG_MCI_OMAP_HSMMC)	+= omap_hsmmc.o
+obj-$(CONFIG_MCI_OMAP_HSMMC)	+= omap_hsmmc.o omap_hsmmc_common.o
+pbl-$(CONFIG_MCI_OMAP_HSMMC_PBL)	+= omap_hsmmc_pbl.o omap_hsmmc_common.o
 obj-$(CONFIG_MCI_PXA)		+= pxamci.o
 obj-$(CONFIG_MCI_ROCKCHIP_DWCMSHC)	+= rockchip-dwcmshc-sdhci.o
 obj-$(CONFIG_MCI_TEGRA)		+= tegra-sdmmc.o

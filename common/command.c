@@ -128,6 +128,19 @@ struct command *find_cmd (const char *cmd)
 }
 EXPORT_SYMBOL(find_cmd);
 
+int cmd_export_val(const char *variable, const char *val)
+{
+	if (!val)
+		return -EINVAL;
+
+	if (variable)
+		return setenv(variable, val);
+
+	printf("%s\n", val);
+	return 0;
+}
+EXPORT_SYMBOL(cmd_export_val);
+
 /*
  * Put all commands into a linked list. Without module support we could use
  * the raw command array, but with module support a list is easier to handle.

@@ -13,9 +13,8 @@ static int do_saveenv(int argc, char *argv[])
 {
 	int ret, opt;
 	unsigned envfs_flags = 0;
-	char *filename = NULL, *dirname = NULL;
+	const char *filename = NULL, *dirname = NULL;
 
-	printf("saving environment\n");
 	while ((opt = getopt(argc, argv, "z")) > 0) {
 		switch (opt) {
 		case 'z':
@@ -33,6 +32,10 @@ static int do_saveenv(int argc, char *argv[])
 	/* destination only given? */
 	if (argc - optind > 0)
 		filename = argv[optind];
+	if (!filename)
+		filename = default_environment_path_get();
+
+	printf("saving environment to %s\n", filename);
 
 	ret = envfs_save(filename, dirname, envfs_flags);
 

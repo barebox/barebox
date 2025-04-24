@@ -13,6 +13,7 @@
 #include <globalvar.h>
 #include <gpio.h>
 #include <i2c/i2c.h>
+#include <input/input.h>
 #include <mach/imx/bbu.h>
 #include <mach/imx/imx6.h>
 #include <mach/imx/ocotp-fusemap.h>
@@ -373,7 +374,7 @@ static int prt_imx6_usb_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	*second_word = 0;
 
-	if (strcmp(buf, priv->name)) {
+	if (strcmp(buf, priv->name) && strcmp(buf, "generic-imx6")) {
 		dev_err(dev, "Boot target for a different board! (got: %s expected: %s)\n",
 			buf, priv->name);
 		ret = -EINVAL;
@@ -499,7 +500,7 @@ static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 	if (!priv->no_usb_check)
 		boot_targets = xasprintf("prt-usb %s", bootsrc);
 	else
-		boot_targets = xstrdup(bootsrc);
+		boot_targets = xasprintf("%s prt-usb", bootsrc);
 
 	ret = setenv("global.boot.default", boot_targets);
 	free(boot_targets);
@@ -736,19 +737,23 @@ static int prt_imx6_init_kvg_yaco(struct prt_imx6_priv *priv)
 	return prt_imx6_init_kvg_power(priv, PW_MODE_KVG_WITH_YACO);
 }
 
-#define GPIO_KEY_F6     (0xe0 + 5)
-#define GPIO_KEY_CYCLE  (0xe0 + 2)
-
 static int prt_imx6_init_prtvt7(struct prt_imx6_priv *priv)
 {
-	/* This function relies heavely on the gpio-pca9539 driver */
+	unsigned long *keys;
 
-	gpio_direction_input(GPIO_KEY_F6);
-	gpio_direction_input(GPIO_KEY_CYCLE);
+	of_devices_ensure_probed_by_compatible("gpio-keys");
 
-	if (gpio_get_value(GPIO_KEY_CYCLE) && gpio_get_value(GPIO_KEY_F6))
+	/*
+	 * Prefer USB-boot and enable autoboot with timeout when CYCLE-F6 key
+	 * combination is pressed.
+	 */
+	keys = xzalloc((KEY_CYCLEWINDOWS / 8) + 1);
+	input_key_get_status(keys, KEY_CYCLEWINDOWS);
+
+	if (!(test_bit(KEY_CYCLEWINDOWS, keys) && test_bit(KEY_F6, keys)))
 		priv->no_usb_check = 1;
 
+	free(keys);
 	return 0;
 }
 

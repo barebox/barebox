@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) 2023 Leonard Göhrs, Pengutronix
+ */
+
+#include <arm/st/stm32mp157c-lxa-tac-gen1.dts>
+#include "stm32mp15xc-lxa-tac.dtsi"

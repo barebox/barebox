@@ -3,6 +3,27 @@
 #include <dt-bindings/soc/rockchip,boot-mode.h>
 
 / {
+	assigned-clocks =
+		<&cru CLK_SDMMC0>,
+		<&cru CCLK_EMMC>,
+		<&cru ACLK_BUS>,
+		<&cru PCLK_BUS>,
+		<&cru PCLK_TOP>,
+		<&cru PLL_APLL>,
+		<&cru PLL_NPLL>,
+		<&cru PLL_VPLL>;
+	assigned-clock-parents =
+		<&cru CPLL_50M>;
+	assigned-clock-rates =
+		<0>,
+		<200000000>,
+		<150000000>,
+		<100000000>,
+		<100000000>,
+		<816000000>,
+		<1200000000>,
+		<500000000>;
+
 	aliases {
 		pmugrf.reboot_mode = &reboot_mode_pmugrf;
 		pwm0 = &pwm0;

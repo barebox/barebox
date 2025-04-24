@@ -14,6 +14,8 @@
  *
  */
 
+#define pr_fmt(fmt) "kasan: generic: " fmt
+
 #include <common.h>
 #include <asm/reloc.h>
 
@@ -150,6 +152,11 @@ static __always_inline bool memory_is_poisoned(unsigned long addr, size_t size)
 
 static bool kasan_initialized;
 
+bool kasan_enabled(void)
+{
+	return kasan_initialized;
+}
+
 static __always_inline bool check_memory_region_inline(unsigned long addr,
 						size_t size, bool write,
 						unsigned long ret_ip)
@@ -234,6 +241,9 @@ void kasan_init(unsigned long membase, unsigned long memsize,
 
 	kasan_unpoison_shadow((void *)membase, memsize);
 	kasan_initialized = true;
+
+	pr_debug("initialized for 0x%08lx-0x%lx with shadow at 0x%08lx\n",
+		 kasan_shadow_start, kasan_shadowed_end, kasan_shadow_base);
 }
 
 bool __no_sanitize_address check_memory_region(unsigned long addr,

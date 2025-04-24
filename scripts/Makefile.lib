@@ -628,9 +628,6 @@ quiet_cmd_cboot_bct = BCT     $@
 $(obj)/%.bct: $(obj)/%.bct.cfg
 	$(call cmd,cboot_bct)
 
-quiet_cmd_stm32_image = STM32-IMG $@
-      cmd_stm32_image = $(objtree)/scripts/stm32image $(OPTS_$(@F)) -i $< -o $@
-
 quiet_cmd_b64dec = B64DEC  $@
       cmd_b64dec = base64 -d $< > $@
 

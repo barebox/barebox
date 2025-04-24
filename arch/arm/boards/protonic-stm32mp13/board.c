@@ -104,12 +104,12 @@ static int prt_stm32_read_serial(struct device *dev)
 
 	serial[PRT_STM32_SERIAL_LEN] = 0;
 
-	stm32_bsec_optee_ta_close(&ctx);
+	stm32_bsec_optee_ta_close(ctx);
 
 	return prt_stm32_set_serial(dev, serial);
 
 exit_pta_read:
-	stm32_bsec_optee_ta_close(&ctx);
+	stm32_bsec_optee_ta_close(ctx);
 	dev_err(dev, "Failed to read serial: %pe\n", ERR_PTR(ret));
 	return ret;
 }
@@ -214,6 +214,13 @@ static void prt_stm32_read_shift_reg(struct device *dev)
 	gpio_set_value(PRT_STM32_GPIO_HWID_CP, 1);
 }
 
+static void prt_stm32_put_gpios(void)
+{
+	gpio_free(PRT_STM32_GPIO_HWID_PL_N);
+	gpio_free(PRT_STM32_GPIO_HWID_CP);
+	gpio_free(PRT_STM32_GPIO_HWID_Q7);
+}
+
 static int prt_stm32_probe(struct device *dev)
 {
 	const struct prt_stm32_machine_data *dcfg;
@@ -229,6 +236,7 @@ static int prt_stm32_probe(struct device *dev)
 	prt_stm32_read_serial(dev);
 	prt_stm32_init_shift_reg(dev);
 	prt_stm32_read_shift_reg(dev);
+	prt_stm32_put_gpios();
 
 	for (i = 0; i < ARRAY_SIZE(prt_stm32_boot_devs); i++) {
 		const struct prt_stm32_boot_dev *bd = &prt_stm32_boot_devs[i];
@@ -275,14 +283,19 @@ static const struct prt_stm32_machine_data prt_stm32_prihmb = {
 	.flags = PRT_STM32_BOOTSRC_SD | PRT_STM32_BOOTSRC_EMMC,
 };
 
+static const struct prt_stm32_machine_data prt_stm32_mect1sr1 = {
+	.flags = PRT_STM32_BOOTSRC_SPI_NOR,
+};
+
 static const struct of_device_id prt_stm32_of_match[] = {
 	{ .compatible = "pri,prihmb", .data = &prt_stm32_prihmb },
+	{ .compatible = "prt,mect1sr1", .data = &prt_stm32_mect1sr1 },
 	{ /* sentinel */ },
 };
 BAREBOX_DEEP_PROBE_ENABLE(prt_stm32_of_match);
 
 static struct driver prt_stm32_board_driver = {
-	.name = "board-protonic-stm32",
+	.name = "board-protonic-stm32mp13",
 	.probe = prt_stm32_probe,
 	.of_compatible = prt_stm32_of_match,
 };

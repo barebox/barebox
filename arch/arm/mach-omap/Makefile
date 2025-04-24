@@ -21,6 +21,7 @@ obj-$(CONFIG_ARCH_OMAP3) += omap3_generic.o auxcr.o
 pbl-$(CONFIG_ARCH_OMAP3) += omap3_generic.o auxcr.o
 obj-$(CONFIG_ARCH_OMAP4) += omap4_generic.o omap4_clock.o
 pbl-$(CONFIG_ARCH_OMAP4) += omap4_generic.o omap4_clock.o
+pbl-$(CONFIG_MCI_OMAP_HSMMC_PBL) += am33xx_xload.o
 obj-pbl-$(CONFIG_ARCH_AM33XX) += am33xx_generic.o am33xx_clock.o am33xx_mux.o am3xxx.o emif4.o
 obj-pbl-$(CONFIG_ARCH_AM35XX) += am3xxx.o emif4.o
 obj-$(CONFIG_ARCH_AM33XX) += am33xx_scrm.o

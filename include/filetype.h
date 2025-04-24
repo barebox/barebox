@@ -4,6 +4,7 @@
 
 #include <linux/string.h>
 #include <linux/types.h>
+#include <asm/byteorder.h>
 
 /*
  * List of file types we know
@@ -135,6 +136,16 @@ static inline int is_barebox_mips_head(const char *head)
 static inline int is_barebox_head(const char *head)
 {
 	return is_barebox_arm_head(head) || is_barebox_mips_head(head);
+}
+
+static inline bool is_arm64_linux_bootimage(const void *header)
+{
+	return le32_to_cpup(header + 56) == 0x644d5241;
+}
+
+static inline bool is_riscv_linux_bootimage(const void *header)
+{
+	return le32_to_cpup(header + 56) == 0x05435352;
 }
 
 #endif /* __FILE_TYPE_H */

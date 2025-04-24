@@ -252,3 +252,6 @@ config MCI_ATMEL_PBL
 config MCI_ATMEL_SDHCI_PBL
 	bool
 	select MCI_SDHCI
+
+config MCI_OMAP_HSMMC_PBL
+	bool

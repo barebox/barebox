@@ -121,12 +121,12 @@ static int prt_stm32_read_serial(struct device *dev)
 
 	serial[PRT_STM32_SERIAL_LEN] = 0;
 
-	stm32_bsec_optee_ta_close(&ctx);
+	stm32_bsec_optee_ta_close(ctx);
 
 	return prt_stm32_set_serial(dev, serial);
 
 exit_pta_read:
-	stm32_bsec_optee_ta_close(&ctx);
+	stm32_bsec_optee_ta_close(ctx);
 	dev_err(dev, "Failed to read serial: %pe\n", ERR_PTR(ret));
 	return ret;
 }
@@ -230,6 +230,13 @@ static void prt_stm32_read_shift_reg(struct device *dev)
 	gpio_set_value(PRT_STM32_GPIO_HWID_CP, 1);
 }
 
+static void prt_stm32_put_gpios(void)
+{
+	gpio_free(PRT_STM32_GPIO_HWID_PL_N);
+	gpio_free(PRT_STM32_GPIO_HWID_CP);
+	gpio_free(PRT_STM32_GPIO_HWID_Q7);
+}
+
 static int prt_stm32_probe(struct device *dev)
 {
 	const struct prt_stm32_machine_data *dcfg;
@@ -247,6 +254,7 @@ static int prt_stm32_probe(struct device *dev)
 	if (!(dcfg->flags & PRT_STM32_NO_SHIFT_REG)) {
 		prt_stm32_init_shift_reg(dev);
 		prt_stm32_read_shift_reg(dev);
+		prt_stm32_put_gpios();
 	}
 
 	for (i = 0; i < ARRAY_SIZE(prt_stm32_boot_devs); i++) {

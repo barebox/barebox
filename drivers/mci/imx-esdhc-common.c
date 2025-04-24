@@ -105,10 +105,6 @@ static void __udelay(int us)
 }
 
 #define udelay(n)	__udelay(n)
-#undef  dev_err
-#undef  dev_dbg
-#define dev_err(d, ...)	pr_err(__VA_ARGS__)
-#define dev_dbg(d, ...)	pr_debug(__VA_ARGS__)
 
 #endif
 

@@ -194,6 +194,7 @@ struct tee_shm {
 	struct tee_context *ctx;
 	phys_addr_t paddr;
 	void *kaddr;
+	u64 *pages_list;
 	size_t size;
 	refcount_t refcount;
 	u32 flags;

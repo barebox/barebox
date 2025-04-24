@@ -68,7 +68,7 @@ static inline unsigned mci_caps(struct mci *mci)
  * @param data The data according to the command (can be NULL)
  * @return Driver's answer (0 on success)
  */
-static int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data)
+int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data)
 {
 	struct mci_host *host = mci->host;
 
@@ -347,6 +347,15 @@ err_out:
 	dev_err(&card->dev, "erase cmd %d error %d, status %#x\n",
 		cmd.cmdidx, err, cmd.response[0]);
 	return -EIO;
+}
+
+int mci_set_blockcount(struct mci *mci, unsigned int cmdarg)
+{
+	struct mci_cmd cmd = {};
+
+	mci_setup_cmd(&cmd, MMC_CMD_SET_BLOCK_COUNT, cmdarg, MMC_RSP_R1);
+
+	return mci_send_cmd(mci, &cmd, NULL);
 }
 
 /**
@@ -658,6 +667,8 @@ static void mci_part_add(struct mci *mci, uint64_t size,
 
 	if (area_type == MMC_BLK_DATA_AREA_MAIN)
 		cdev_set_of_node(&part->blk.cdev, mci->host->hw_dev->of_node);
+	else if (area_type == MMC_BLK_DATA_AREA_RPMB)
+		mci->rpmb_part = part;
 
 	mci->nr_parts++;
 }
@@ -803,6 +814,20 @@ static int mmc_change_freq(struct mci *mci)
 		mci->ext_csd_part_config = mci->ext_csd[EXT_CSD_PARTITION_CONFIG];
 		mci->bootpart = (mci->ext_csd_part_config >> 3) & 0x7;
 		mci->boot_ack_enable = (mci->ext_csd_part_config >> 6) & 0x1;
+	}
+
+	if (mci->ext_csd[EXT_CSD_REV] >= 5) {
+		if (mci->ext_csd[EXT_CSD_RPMB_SIZE_MULT]) {
+			char *name, *partname;
+
+			partname = basprintf("rpmb");
+			name = basprintf("%s.%s", mci->cdevname, partname);
+
+			mci_part_add(mci, mci->ext_csd[EXT_CSD_RPMB_SIZE_MULT] << 17,
+				EXT_CSD_PART_CONFIG_ACC_RPMB,
+				name, partname, 0, false,
+				MMC_BLK_DATA_AREA_RPMB);
+		}
 	}
 
 	if (IS_ENABLED(CONFIG_MCI_MMC_GPP_PARTITIONS))
@@ -2013,12 +2038,14 @@ static int sd_send_if_cond(struct mci *mci)
 /**
  * Switch between hardware MMC partitions on demand
  */
-static int mci_blk_part_switch(struct mci_part *part)
+int mci_blk_part_switch(struct mci_part *part)
 {
 	struct mci *mci = part->mci;
 	int ret;
 
-	if (!IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) && !IS_ENABLED(CONFIG_MCI_MMC_GPP_PARTITIONS))
+	if (!IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&
+	    !IS_ENABLED(CONFIG_MCI_MMC_GPP_PARTITIONS) &&
+	    !IS_ENABLED(CONFIG_MCI_MMC_RPMB))
 		return 0; /* no need */
 
 	if (mci->part_curr == part)
@@ -2625,6 +2652,9 @@ static int mci_register_partition(struct mci_part *part)
 	part->blk.type = IS_SD(mci) ? BLK_TYPE_SD : BLK_TYPE_MMC;
 	part->blk.rootwait = true;
 
+	if (part->area_type == MMC_BLK_DATA_AREA_RPMB)
+		return 0;
+
 	rc = blockdevice_register(&part->blk);
 	if (rc != 0) {
 		dev_err(&mci->dev, "Failed to register MCI/SD blockdevice\n");
@@ -2957,7 +2987,6 @@ void mci_of_parse_node(struct mci_host *host,
 {
 	u32 bus_width;
 	u32 dsr_val;
-	const char *alias;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
@@ -2965,9 +2994,14 @@ void mci_of_parse_node(struct mci_host *host,
 	if (!host->hw_dev || !np)
 		return;
 
-	alias = of_alias_get(np);
-	if (alias)
-		host->devname = xstrdup(alias);
+	host->of_id = of_alias_get_id(np, "mmc");
+	if (host->of_id < 0)
+		host->of_id = of_alias_get_id(np->parent, "mmc");
+
+	if (host->of_id >= 0) {
+		host->devname = xasprintf("mmc%u", host->of_id);
+		host->of_id_valid = true;
+	}
 
 	/* "bus-width" is translated to MMC_CAP_*_BIT_DATA flags */
 	if (of_property_read_u32(np, "bus-width", &bus_width) < 0) {
@@ -3053,6 +3087,27 @@ struct mci *mci_get_device_by_name(const char *name)
 			continue;
 		if (!strcmp(mci->cdevname, name))
 			return mci;
+	}
+
+	return NULL;
+}
+
+struct mci *mci_get_rpmb_dev(unsigned int id)
+{
+	struct mci *mci;
+
+	list_for_each_entry(mci, &mci_list, list) {
+		if (mci->host->of_id != id)
+			continue;
+
+		mci_detect_card(mci->host);
+
+		if (!mci->rpmb_part) {
+			dev_err(&mci->dev, "requested MMC does not have a RPMB partition\n");
+			return NULL;
+		}
+
+		return mci;
 	}
 
 	return NULL;

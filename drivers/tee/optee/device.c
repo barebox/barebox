@@ -115,6 +115,7 @@ static int __optee_enumerate_devices(u32 func)
 		goto out_sess;
 	if (!shm_size) {
 		pr_debug("device enumeration PTA found, but no devices!\n");
+		rc = 0;
 		goto out_sess;
 	}
 

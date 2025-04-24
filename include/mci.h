@@ -87,11 +87,15 @@
 #define MMC_CMD_READ_MULTIPLE_BLOCK	18
 #define MMC_SEND_TUNING_BLOCK		19   /* adtc R1  */
 #define MMC_SEND_TUNING_BLOCK_HS200	21   /* adtc R1  */
+#define MMC_CMD_SET_BLOCK_COUNT		23
 #define MMC_CMD_WRITE_SINGLE_BLOCK	24
 #define MMC_CMD_WRITE_MULTIPLE_BLOCK	25
 #define MMC_CMD_APP_CMD			55
 #define MMC_CMD_SPI_READ_OCR		58
 #define MMC_CMD_SPI_CRC_ON_OFF		59
+
+#define MMC_CMD23_ARG_BLOCKS	GENMASK(15, 0)
+#define MMC_CMD23_ARG_REL_WR	BIT(31)
 
   /* class 5 */
 #define MMC_ERASE_GROUP_START    35   /* ac   [31:0] data addr   R1  */
@@ -343,6 +347,7 @@
  */
 #define EXT_CSD_PART_CONFIG_ACC_MASK	(0x7)
 #define EXT_CSD_PART_CONFIG_ACC_BOOT0	(0x1)
+#define EXT_CSD_PART_CONFIG_ACC_RPMB	(0x3)
 #define EXT_CSD_PART_CONFIG_ACC_GPP0	(0x4)
 
 #define EXT_CSD_CMD_SET_NORMAL		(1<<0)
@@ -565,6 +570,8 @@ struct mci_host {
 	struct device *hw_dev;	/**< the host MCI hardware device */
 	struct mci *mci;
 	const char *devname;		/**< the devicename for the card, defaults to disk%d */
+	int of_id;
+	bool of_id_valid;
 	unsigned voltages;
 	unsigned host_caps;	/**< Host's interface capabilities, refer MMC_VDD_* */
 	unsigned caps2;		/* More host capabilities */
@@ -618,9 +625,11 @@ struct mci_host {
 #define MMC_NUM_BOOT_PARTITION	2
 #define MMC_NUM_GP_PARTITION	4
 #define MMC_NUM_USER_PARTITION	1
+#define MMC_NUM_RPMB_PARTITION	1
 #define MMC_NUM_PHY_PARTITION	(MMC_NUM_BOOT_PARTITION + \
                                  MMC_NUM_GP_PARTITION + \
-                                 MMC_NUM_USER_PARTITION)
+                                 MMC_NUM_USER_PARTITION + \
+                                 MMC_NUM_RPMB_PARTITION)
 
 struct mci_part {
 	struct block_device	blk;		/**< the blockdevice for the card */
@@ -686,6 +695,8 @@ struct mci {
 	int boot_ack_enable;
 
 	struct mci_part part[MMC_NUM_PHY_PARTITION];
+	struct mci_part *rpmb_part;
+
 	int nr_parts;
 	char *cdevname;
 
@@ -740,6 +751,12 @@ int mmc_hs200_tuning(struct mci *mci);
 int mci_execute_tuning(struct mci *mci);
 int mci_send_abort_tuning(struct mci *mci, u32 opcode);
 int mmc_select_timing(struct mci *mci);
+int mci_set_blockcount(struct mci *mci, unsigned int cmdarg);
+int mci_blk_part_switch(struct mci_part *part);
+int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data);
+struct mci *mci_get_rpmb_dev(unsigned int id);
+int mci_rpmb_route_frames(struct mci *mci, void *req, unsigned long reqlen,
+			  void *rsp, unsigned long rsplen);
 
 static inline bool mmc_card_hs200(struct mci *mci)
 {

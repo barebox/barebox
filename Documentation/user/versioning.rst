@@ -9,7 +9,7 @@ information:
 
   * When built from git, ``scripts/setlocalversion`` will factor in
     git revision information into the version string.
-  * The ``EXTRAVERSION = `` in the top-level ``Makefile`` can be used
+  * The ``EXTRAVERSION =`` in the top-level ``Makefile`` can be used
     to add a suffix to the version. This is useful if patches are applied
     on top of the tarball release.
   * The build host can set the ``BUILDSYSTEM_VERSION`` environment variable

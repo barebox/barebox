@@ -43,7 +43,7 @@
  */
 #define read_poll_timeout(op, val, cond, timeout_us, args...)	\
 ({ \
-	uint64_t start = (timeout_us) == 0 ? read_poll_get_time_ns() : 0; \
+	uint64_t start = (timeout_us) != 0 ? read_poll_get_time_ns() : 0; \
 	for (;;) { \
 		(val) = op(args); \
 		if (cond) \

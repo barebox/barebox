@@ -287,9 +287,27 @@ static void cb_reboot(struct fastboot *fb, const char *cmd)
 	restart_machine(0);
 }
 
-static void cb_getvar(struct fastboot *fb, const char *cmd)
+static bool fastboot_tx_print_var(struct fastboot *fb, struct list_head *vars,
+				  const char *varname)
 {
 	struct fb_variable *var;
+
+	list_for_each_entry(var, vars, list) {
+		if (!varname) {
+			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
+					  var->name, var->value);
+		} else if (!strcmp(varname, var->name)) {
+			fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "%s",
+					  var->value);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+static void cb_getvar(struct fastboot *fb, const char *cmd)
+{
 	LIST_HEAD(partition_list);
 	struct file_list_entry *fentry;
 
@@ -310,31 +328,18 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 	pr_debug("getvar: \"%s\"\n", cmd);
 
 	if (!strcmp(cmd, "all")) {
-		list_for_each_entry(var, &fb->variables, list)
-			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
-					  var->name, var->value);
-
-		list_for_each_entry(var, &partition_list, list)
-			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
-					  var->name, var->value);
+		fastboot_tx_print_var(fb, &fb->variables, NULL);
+		fastboot_tx_print_var(fb, &partition_list, NULL);
 
 		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 		goto out;
 	}
 
-	list_for_each_entry(var, &fb->variables, list) {
-		if (!strcmp(cmd, var->name)) {
-			fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, var->value);
-			goto out;
-		}
-	}
+	if (fastboot_tx_print_var(fb, &fb->variables, cmd))
+		goto out;
 
-	list_for_each_entry(var, &partition_list, list) {
-		if (!strcmp(cmd, var->name)) {
-			fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, var->value);
-			goto out;
-		}
-	}
+	if (fastboot_tx_print_var(fb, &partition_list, cmd))
+		goto out;
 
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 out:

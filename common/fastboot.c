@@ -80,15 +80,10 @@ static struct fb_variable *fb_addvar(struct fastboot *fb, struct list_head *list
 	return var;
 }
 
-static int fastboot_add_partition_variables(struct fastboot *fb, struct list_head *list,
-		struct file_list_entry *fentry)
+static loff_t fb_file_getsize(struct file_list_entry *fentry)
 {
 	struct stat s;
-	size_t size = 0;
-	int fd, ret;
-	struct mtd_info_user mtdinfo;
-	char *type = NULL;
-	struct fb_variable *var;
+	int ret;
 
 	ret = stat(fentry->filename, &s);
 	if (ret) {
@@ -96,7 +91,20 @@ static int fastboot_add_partition_variables(struct fastboot *fb, struct list_hea
 		ret = stat(fentry->filename, &s);
 	}
 
-	if (ret) {
+	return ret ? ret : s.st_size;
+}
+
+static int fastboot_add_partition_variables(struct fastboot *fb, struct list_head *list,
+		struct file_list_entry *fentry)
+{
+	loff_t size;
+	int fd, ret;
+	struct mtd_info_user mtdinfo;
+	char *type = NULL;
+	struct fb_variable *var;
+
+	size = fb_file_getsize(fentry);
+	if (size < 0) {
 		if (fentry->flags & FILE_LIST_FLAG_OPTIONAL) {
 			pr_info("skipping unavailable optional partition %s for fastboot gadget\n",
 				fentry->filename);
@@ -111,6 +119,7 @@ static int fastboot_add_partition_variables(struct fastboot *fb, struct list_hea
 			goto out;
 		}
 
+		ret = size;
 		goto out;
 	}
 
@@ -120,7 +129,6 @@ static int fastboot_add_partition_variables(struct fastboot *fb, struct list_hea
 		goto out;
 	}
 
-	size = s.st_size;
 
 	ret = ioctl(fd, MEMGETINFO, &mtdinfo);
 

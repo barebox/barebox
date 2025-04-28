@@ -298,8 +298,12 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 
 		ret = fastboot_add_partition_variables(fb, &partition_list, fentry);
 		if (ret) {
-			pr_warn("Failed to add partition variables: %pe", ERR_PTR(ret));
-			return;
+			char *msg = xasprintf("%s: Failed to add '%s' partition variables: %pe",
+					      fentry->name, fentry->filename, ERR_PTR(ret));
+			pr_warn("%s\n", msg);
+			fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "%s", msg);
+			free(msg);
+			goto out;
 		}
 	}
 

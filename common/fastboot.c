@@ -310,9 +310,14 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 {
 	LIST_HEAD(partition_list);
 	struct file_list_entry *fentry;
+	const char *partition;
 	bool all;
 
 	pr_debug("getvar: \"%s\"\n", cmd);
+
+	partition = strchr(cmd, ':');
+	if (partition)
+		partition++;
 
 	all = !strcmp(cmd, "all");
 	if (all)
@@ -321,8 +326,14 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 	if (fastboot_tx_print_var(fb, &fb->variables, cmd))
 		goto out;
 
+	if (!all && !partition)
+		goto skip_partitions;
+
 	file_list_for_each_entry(fb->files, fentry) {
 		int ret;
+
+		if (!all && strcmp(partition, fentry->name))
+			continue;
 
 		ret = fastboot_add_partition_variables(fb, &partition_list, fentry);
 		if (ret) {
@@ -338,6 +349,7 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 	if (fastboot_tx_print_var(fb, &partition_list, cmd))
 		goto out;
 
+skip_partitions:
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 out:
 	fastboot_free_variables(&partition_list);

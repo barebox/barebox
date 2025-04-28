@@ -310,6 +310,16 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 {
 	LIST_HEAD(partition_list);
 	struct file_list_entry *fentry;
+	bool all;
+
+	pr_debug("getvar: \"%s\"\n", cmd);
+
+	all = !strcmp(cmd, "all");
+	if (all)
+		cmd = NULL;
+
+	if (fastboot_tx_print_var(fb, &fb->variables, cmd))
+		goto out;
 
 	file_list_for_each_entry(fb->files, fentry) {
 		int ret;
@@ -324,19 +334,6 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 			goto out;
 		}
 	}
-
-	pr_debug("getvar: \"%s\"\n", cmd);
-
-	if (!strcmp(cmd, "all")) {
-		fastboot_tx_print_var(fb, &fb->variables, NULL);
-		fastboot_tx_print_var(fb, &partition_list, NULL);
-
-		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
-		goto out;
-	}
-
-	if (fastboot_tx_print_var(fb, &fb->variables, cmd))
-		goto out;
 
 	if (fastboot_tx_print_var(fb, &partition_list, cmd))
 		goto out;

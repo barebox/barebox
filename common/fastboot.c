@@ -94,6 +94,20 @@ static loff_t fb_file_getsize(struct file_list_entry *fentry)
 	return ret ? ret : s.st_size;
 }
 
+static int fb_file_available(struct file_list_entry *fentry)
+{
+	loff_t size;
+
+	size = fb_file_getsize(fentry);
+	if (size >= 0)
+		return 1;
+
+	if (fentry->flags & FILE_LIST_FLAG_CREATE)
+		return 0;
+
+	return size;
+}
+
 static int fastboot_add_partition_variables(struct fastboot *fb, struct list_head *list,
 		struct file_list_entry *fentry)
 {
@@ -682,11 +696,22 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 		goto out;
 	}
 
-	/* Check if board-code registered a vendor-specific handler */
+	/* Check if board-code registered a vendor-specific handler
+	 * We intentionally do this before the fb_file_available check
+	 * to afford board core more flexibility.
+	 */
 	if (fb->cmd_flash) {
 		ret = fb->cmd_flash(fb, fentry, fb->tempname, fb->download_size);
 		if (ret != FASTBOOT_CMD_FALLTHROUGH)
 			goto out;
+	}
+
+	ret = fb_file_available(fentry);
+	if (ret < 0) {
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
+				  "file %s doesn't exist", fentry->filename);
+		ret = -ENOENT;
+		goto out;
 	}
 
 	filename = fentry->filename;
@@ -798,6 +823,13 @@ static void cb_erase(struct fastboot *fb, const char *cmd)
 	if (!filename) {
 		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
 				  "No such partition: %s", cmd);
+		return;
+	}
+
+	ret = fb_file_available(fentry);
+	if (ret < 0) {
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
+				  "file %s doesn't exist", fentry->filename);
 		return;
 	}
 

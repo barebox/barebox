@@ -71,7 +71,7 @@ struct omap_dmtimer_data {
 	int (*get_clock)(struct device *dev);
 };
 
-int omap_dmtimer_init(void __iomem *mmio_start, unsigned clk_speed)
+int omap_dmtimer_init(void __iomem *mmio_start, u32 clk_speed)
 {
 	base = mmio_start;
 

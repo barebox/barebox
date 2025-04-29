@@ -26,6 +26,7 @@
 #include "k3-psil-priv.h"
 
 #define K3_UDMA_MAX_RFLOWS 1024
+#define K3_ADDRESS_ASEL_SHIFT     48
 
 struct udma_chan;
 
@@ -195,6 +196,8 @@ struct udma_chan_config {
 	unsigned int enable_acc32:1;
 	unsigned int enable_burst:1;
 	unsigned int notdpkt:1; /* Suppress sending TDC packet */
+
+	u8 asel;
 };
 
 struct udma_chan {
@@ -958,6 +961,7 @@ static int udma_alloc_tx_resources(struct udma_chan *uc)
 
 	memset(&ring_cfg, 0, sizeof(ring_cfg));
 	ring_cfg.size = 16;
+	ring_cfg.asel = uc->config.asel;
 	ring_cfg.elm_size = K3_RINGACC_RING_ELSIZE_8;
 	ring_cfg.mode = K3_RINGACC_RING_MODE_RING;
 
@@ -1042,6 +1046,7 @@ static int udma_alloc_rx_resources(struct udma_chan *uc)
 	ring_cfg.size = 16;
 	ring_cfg.elm_size = K3_RINGACC_RING_ELSIZE_8;
 	ring_cfg.mode = K3_RINGACC_RING_MODE_RING;
+	ring_cfg.asel = uc->config.asel;
 
 	ret = k3_ringacc_ring_cfg(rflow->fd_ring, &ring_cfg);
 	ret |= k3_ringacc_ring_cfg(rflow->r_ring, &ring_cfg);
@@ -1751,6 +1756,7 @@ static int *udma_prep_dma_memcpy(struct udma_chan *uc, dma_addr_t dest,
 	u16 tr0_cnt0, tr0_cnt1, tr1_cnt0;
 	void *tr_desc;
 	size_t desc_size;
+	u64 asel = (u64)uc->config.asel << K3_ADDRESS_ASEL_SHIFT;
 
 	if (len < SZ_64K) {
 		num_tr = 1;
@@ -1791,6 +1797,9 @@ static int *udma_prep_dma_memcpy(struct udma_chan *uc, dma_addr_t dest,
 	cppi5_tr_init(&tr_req[0].flags, CPPI5_TR_TYPE15, false, true,
 		      CPPI5_TR_EVENT_SIZE_COMPLETION, 1);
 	cppi5_tr_csf_set(&tr_req[0].flags, CPPI5_TR_CSF_SUPR_EVT);
+
+	src |= asel;
+	dest |= asel;
 
 	tr_req[0].addr = src;
 	tr_req[0].icnt0 = tr0_cnt0;
@@ -2339,6 +2348,7 @@ static int udma_send(struct dma *dma, dma_addr_t src, size_t len, void *metadata
 	struct udma_chan *uc;
 	u32 tc_ring_id;
 	int ret;
+	u64 asel;
 
 	if (metadata)
 		packet_data = *((struct ti_udma_drv_packet_data *)metadata);
@@ -2349,6 +2359,8 @@ static int udma_send(struct dma *dma, dma_addr_t src, size_t len, void *metadata
 	}
 	uc = &ud->channels[dma->id];
 
+	asel = (u64)uc->config.asel << K3_ADDRESS_ASEL_SHIFT;
+
 	if (uc->config.dir != DMA_MEM_TO_DEV)
 		return -EINVAL;
 
@@ -2357,6 +2369,8 @@ static int udma_send(struct dma *dma, dma_addr_t src, size_t len, void *metadata
 	desc_tx = uc->desc_tx;
 
 	cppi5_hdesc_reset_hbdesc(desc_tx);
+
+	src |= asel;
 
 	cppi5_hdesc_init(desc_tx,
 			 uc->config.needs_epib ? CPPI5_INFO0_HDESC_EPIB_PRESENT : 0,
@@ -2421,7 +2435,8 @@ static int udma_receive(struct dma *dma, dma_addr_t *dst, void *metadata)
 		packet_data->src_tag = port_id;
 	}
 
-	*dst = buf_dma;
+	*dst = buf_dma & GENMASK_ULL(K3_ADDRESS_ASEL_SHIFT - 1, 0);
+
 	uc->num_rx_bufs--;
 
 	return pkt_len;
@@ -2470,6 +2485,8 @@ static int udma_of_xlate(struct dma *dma, struct of_phandle_args *args)
 	    ep_config->mapped_channel_id >= 0) {
 		ucc->mapped_channel_id = ep_config->mapped_channel_id;
 		ucc->default_flow_id = ep_config->default_flow_id;
+		if (args->args_count == 2)
+			ucc->asel = args->args[1];
 	} else {
 		ucc->mapped_channel_id = -1;
 		ucc->default_flow_id = -1;
@@ -2498,6 +2515,7 @@ static int udma_prepare_rcv_buf(struct dma *dma, dma_addr_t dst, size_t size)
 	struct cppi5_host_desc_t *desc_rx;
 	struct udma_chan *uc;
 	u32 desc_num;
+	u64 asel;
 
 	if (dma->id >= (ud->rchan_cnt + ud->tchan_cnt)) {
 		dev_err(dma->dev, "invalid dma ch_id %lu\n", dma->id);
@@ -2511,6 +2529,7 @@ static int udma_prepare_rcv_buf(struct dma *dma, dma_addr_t dst, size_t size)
 	if (uc->num_rx_bufs >= UDMA_RX_DESC_NUM)
 		return -EINVAL;
 
+	asel = (u64)uc->config.asel << K3_ADDRESS_ASEL_SHIFT;
 	desc_num = uc->desc_rx_cur % UDMA_RX_DESC_NUM;
 	desc_rx = uc->desc_rx + (desc_num * uc->config.hdesc_size);
 
@@ -2520,6 +2539,7 @@ static int udma_prepare_rcv_buf(struct dma *dma, dma_addr_t dst, size_t size)
 			 uc->config.needs_epib ? CPPI5_INFO0_HDESC_EPIB_PRESENT : 0,
 			 uc->config.psd_size);
 	cppi5_hdesc_set_pktlen(desc_rx, size);
+	dst |= asel;
 	cppi5_hdesc_attach_buf(desc_rx, dst, size, dst, size);
 
 	udma_push_to_ring(uc->rflow->fd_ring, desc_rx);

@@ -328,15 +328,30 @@ struct ti_sci_proc_ops {
 	TI_SCI_MSG_VALUE_RM_RING_SIZE_VALID)
 
 /**
+ * struct ti_sci_msg_rm_ring_cfg - Ring configuration
+ *
+ * Parameters for Navigator Subsystem ring configuration
+ * See @ti_sci_msg_rm_ring_cfg_req
+ */
+struct ti_sci_msg_rm_ring_cfg {
+	u32 valid_params;
+	u16 nav_id;
+	u16 index;
+	u32 addr_lo;
+	u32 addr_hi;
+	u32 count;
+	u8 mode;
+	u8 size;
+	u8 order_id;
+};
+
+/**
  * struct ti_sci_rm_ringacc_ops - Ring Accelerator Management operations
  * @config: configure the SoC Navigator Subsystem Ring Accelerator ring
  */
 struct ti_sci_rm_ringacc_ops {
-	int (*config)(const struct ti_sci_handle *handle,
-		      u32 valid_params, u16 nav_id, u16 index,
-		      u32 addr_lo, u32 addr_hi, u32 count, u8 mode,
-		      u8 size, u8 order_id
-	);
+	int (*set_cfg)(const struct ti_sci_handle *handle,
+		       const struct ti_sci_msg_rm_ring_cfg *params);
 };
 
 /**

@@ -642,6 +642,8 @@ static int k3_ringacc_ring_cfg_sci(struct k3_ring *ring)
 	ring_cfg.addr_hi = upper_32_bits(ring->ring_mem_dma);
 	ring_cfg.count = ring->size;
 	ring_cfg.mode = ring->mode;
+	ring_cfg.size = ring->elm_size;
+	ring_cfg.asel = ring->asel;
 
 	ret = ringacc->tisci_ring_ops->set_cfg(ringacc->tisci, &ring_cfg);
 	if (ret)

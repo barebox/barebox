@@ -2172,6 +2172,8 @@ static int ti_sci_cmd_ring_config(const struct ti_sci_handle *handle,
 	req.mode = params->mode;
 	req.size = params->size;
 	req.order_id = params->order_id;
+	req.virtid = params->virtid;
+	req.asel = params->asel;
 
 	ret = ti_sci_do_xfer(info, xfer);
 	if (ret)

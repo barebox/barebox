@@ -319,13 +319,18 @@ struct ti_sci_proc_ops {
 #define TI_SCI_MSG_VALUE_RM_RING_SIZE_VALID	BIT(4)
 /* RA config.order_id parameter is valid for RM ring configure TISCI message */
 #define TI_SCI_MSG_VALUE_RM_RING_ORDER_ID_VALID	BIT(5)
+/* RA config.virtid parameter is valid for RM ring configure TISCI message */
+#define TI_SCI_MSG_VALUE_RM_RING_VIRTID_VALID   BIT(6)
+/* RA config.asel parameter is valid for RM ring configure TISCI message */
+#define TI_SCI_MSG_VALUE_RM_RING_ASEL_VALID     BIT(7)
 
 #define TI_SCI_MSG_VALUE_RM_ALL_NO_ORDER \
 	(TI_SCI_MSG_VALUE_RM_RING_ADDR_LO_VALID | \
 	TI_SCI_MSG_VALUE_RM_RING_ADDR_HI_VALID | \
 	TI_SCI_MSG_VALUE_RM_RING_COUNT_VALID | \
 	TI_SCI_MSG_VALUE_RM_RING_MODE_VALID | \
-	TI_SCI_MSG_VALUE_RM_RING_SIZE_VALID)
+	TI_SCI_MSG_VALUE_RM_RING_SIZE_VALID | \
+	TI_SCI_MSG_VALUE_RM_RING_ASEL_VALID)
 
 /**
  * struct ti_sci_msg_rm_ring_cfg - Ring configuration
@@ -343,6 +348,8 @@ struct ti_sci_msg_rm_ring_cfg {
 	u8 mode;
 	u8 size;
 	u8 order_id;
+	u16 virtid;
+	u8 asel;
 };
 
 /**

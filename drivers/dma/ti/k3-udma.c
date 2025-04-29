@@ -61,8 +61,8 @@ struct udma_tchan {
 	void __iomem *reg_rt;
 
 	int id;
-	struct k3_nav_ring *t_ring; /* Transmit ring */
-	struct k3_nav_ring *tc_ring; /* Transmit Completion ring */
+	struct k3_ring *t_ring; /* Transmit ring */
+	struct k3_ring *tc_ring; /* Transmit Completion ring */
 	int tflow_id; /* applicable only for PKTDMA */
 };
 
@@ -71,8 +71,8 @@ struct udma_tchan {
 struct udma_rflow {
 	void __iomem *reg_rflow;
 	int id;
-	struct k3_nav_ring *fd_ring; /* Free Descriptor ring */
-	struct k3_nav_ring *r_ring; /* Receive ring */
+	struct k3_ring *fd_ring; /* Free Descriptor ring */
+	struct k3_ring *r_ring; /* Receive ring */
 };
 
 struct udma_rchan {
@@ -142,7 +142,7 @@ struct udma_dev {
 	void __iomem *mmrs[MMR_LAST];
 
 	struct udma_tisci_rm tisci_rm;
-	struct k3_nav_ringacc *ringacc;
+	struct k3_ringacc *ringacc;
 
 	u32 features;
 
@@ -447,7 +447,7 @@ static inline bool udma_is_chan_running(struct udma_chan *uc)
 
 static int udma_pop_from_ring(struct udma_chan *uc, dma_addr_t *addr)
 {
-	struct k3_nav_ring *ring = NULL;
+	struct k3_ring *ring = NULL;
 	int ret = -ENOENT;
 
 	switch (uc->config.dir) {
@@ -464,16 +464,16 @@ static int udma_pop_from_ring(struct udma_chan *uc, dma_addr_t *addr)
 		break;
 	}
 
-	if (ring && k3_nav_ringacc_ring_get_occ(ring))
-		ret = k3_nav_ringacc_ring_pop(ring, addr);
+	if (ring && k3_ringacc_ring_get_occ(ring))
+		ret = k3_ringacc_ring_pop(ring, addr);
 
 	return ret;
 }
 
 static void udma_reset_rings(struct udma_chan *uc)
 {
-	struct k3_nav_ring *ring1 = NULL;
-	struct k3_nav_ring *ring2 = NULL;
+	struct k3_ring *ring1 = NULL;
+	struct k3_ring *ring2 = NULL;
 
 	switch (uc->config.dir) {
 	case DMA_DEV_TO_MEM:
@@ -493,9 +493,9 @@ static void udma_reset_rings(struct udma_chan *uc)
 	}
 
 	if (ring1)
-		k3_nav_ringacc_ring_reset_dma(ring1, k3_nav_ringacc_ring_get_occ(ring1));
+		k3_ringacc_ring_reset_dma(ring1, k3_ringacc_ring_get_occ(ring1));
 	if (ring2)
-		k3_nav_ringacc_ring_reset(ring2);
+		k3_ringacc_ring_reset(ring2);
 }
 
 static void udma_reset_counters(struct udma_chan *uc)
@@ -923,8 +923,8 @@ static void udma_free_tx_resources(struct udma_chan *uc)
 	if (!uc->tchan)
 		return;
 
-	k3_nav_ringacc_ring_free(uc->tchan->t_ring);
-	k3_nav_ringacc_ring_free(uc->tchan->tc_ring);
+	k3_ringacc_ring_free(uc->tchan->t_ring);
+	k3_ringacc_ring_free(uc->tchan->tc_ring);
 	uc->tchan->t_ring = NULL;
 	uc->tchan->tc_ring = NULL;
 
@@ -933,7 +933,7 @@ static void udma_free_tx_resources(struct udma_chan *uc)
 
 static int udma_alloc_tx_resources(struct udma_chan *uc)
 {
-	struct k3_nav_ring_cfg ring_cfg;
+	struct k3_ring_cfg ring_cfg;
 	struct udma_dev *ud = uc->ud;
 	struct udma_tchan *tchan;
 	int ring_idx, ret;
@@ -948,7 +948,7 @@ static int udma_alloc_tx_resources(struct udma_chan *uc)
 	else
 		ring_idx = tchan->id;
 
-	ret = k3_nav_ringacc_request_rings_pair(ud->ringacc, ring_idx, -1,
+	ret = k3_ringacc_request_rings_pair(ud->ringacc, ring_idx, -1,
 						&uc->tchan->t_ring,
 						&uc->tchan->tc_ring);
 	if (ret) {
@@ -958,11 +958,11 @@ static int udma_alloc_tx_resources(struct udma_chan *uc)
 
 	memset(&ring_cfg, 0, sizeof(ring_cfg));
 	ring_cfg.size = 16;
-	ring_cfg.elm_size = K3_NAV_RINGACC_RING_ELSIZE_8;
-	ring_cfg.mode = K3_NAV_RINGACC_RING_MODE_RING;
+	ring_cfg.elm_size = K3_RINGACC_RING_ELSIZE_8;
+	ring_cfg.mode = K3_RINGACC_RING_MODE_RING;
 
-	ret = k3_nav_ringacc_ring_cfg(uc->tchan->t_ring, &ring_cfg);
-	ret |= k3_nav_ringacc_ring_cfg(uc->tchan->tc_ring, &ring_cfg);
+	ret = k3_ringacc_ring_cfg(uc->tchan->t_ring, &ring_cfg);
+	ret |= k3_ringacc_ring_cfg(uc->tchan->tc_ring, &ring_cfg);
 
 	if (ret)
 		goto err_ringcfg;
@@ -970,9 +970,9 @@ static int udma_alloc_tx_resources(struct udma_chan *uc)
 	return 0;
 
 err_ringcfg:
-	k3_nav_ringacc_ring_free(uc->tchan->tc_ring);
+	k3_ringacc_ring_free(uc->tchan->tc_ring);
 	uc->tchan->tc_ring = NULL;
-	k3_nav_ringacc_ring_free(uc->tchan->t_ring);
+	k3_ringacc_ring_free(uc->tchan->t_ring);
 	uc->tchan->t_ring = NULL;
 err_tx_ring:
 	udma_put_tchan(uc);
@@ -986,8 +986,8 @@ static void udma_free_rx_resources(struct udma_chan *uc)
 		return;
 
         if (uc->rflow) {
-		k3_nav_ringacc_ring_free(uc->rflow->fd_ring);
-		k3_nav_ringacc_ring_free(uc->rflow->r_ring);
+		k3_ringacc_ring_free(uc->rflow->fd_ring);
+		k3_ringacc_ring_free(uc->rflow->r_ring);
 		uc->rflow->fd_ring = NULL;
 		uc->rflow->r_ring = NULL;
 
@@ -999,7 +999,7 @@ static void udma_free_rx_resources(struct udma_chan *uc)
 
 static int udma_alloc_rx_resources(struct udma_chan *uc)
 {
-	struct k3_nav_ring_cfg ring_cfg;
+	struct k3_ring_cfg ring_cfg;
 	struct udma_dev *ud = uc->ud;
 	struct udma_rflow *rflow;
 	int fd_ring_id;
@@ -1031,7 +1031,7 @@ static int udma_alloc_rx_resources(struct udma_chan *uc)
 			uc->rchan->id;
 	}
 
-	ret = k3_nav_ringacc_request_rings_pair(ud->ringacc, fd_ring_id, -1,
+	ret = k3_ringacc_request_rings_pair(ud->ringacc, fd_ring_id, -1,
 						&rflow->fd_ring, &rflow->r_ring);
 	if (ret) {
 		ret = -EBUSY;
@@ -1040,20 +1040,20 @@ static int udma_alloc_rx_resources(struct udma_chan *uc)
 
 	memset(&ring_cfg, 0, sizeof(ring_cfg));
 	ring_cfg.size = 16;
-	ring_cfg.elm_size = K3_NAV_RINGACC_RING_ELSIZE_8;
-	ring_cfg.mode = K3_NAV_RINGACC_RING_MODE_RING;
+	ring_cfg.elm_size = K3_RINGACC_RING_ELSIZE_8;
+	ring_cfg.mode = K3_RINGACC_RING_MODE_RING;
 
-	ret = k3_nav_ringacc_ring_cfg(rflow->fd_ring, &ring_cfg);
-	ret |= k3_nav_ringacc_ring_cfg(rflow->r_ring, &ring_cfg);
+	ret = k3_ringacc_ring_cfg(rflow->fd_ring, &ring_cfg);
+	ret |= k3_ringacc_ring_cfg(rflow->r_ring, &ring_cfg);
 	if (ret)
 		goto err_ringcfg;
 
 	return 0;
 
 err_ringcfg:
-	k3_nav_ringacc_ring_free(rflow->r_ring);
+	k3_ringacc_ring_free(rflow->r_ring);
 	rflow->r_ring = NULL;
-	k3_nav_ringacc_ring_free(rflow->fd_ring);
+	k3_ringacc_ring_free(rflow->fd_ring);
 	rflow->fd_ring = NULL;
 err_rx_ring:
 	udma_put_rflow(uc);
@@ -1066,7 +1066,7 @@ err_rflow:
 static int udma_alloc_tchan_sci_req(struct udma_chan *uc)
 {
 	struct udma_dev *ud = uc->ud;
-	int tc_ring = k3_nav_ringacc_get_ring_id(uc->tchan->tc_ring);
+	int tc_ring = k3_ringacc_get_ring_id(uc->tchan->tc_ring);
 	struct ti_sci_msg_rm_udmap_tx_ch_cfg req;
 	struct udma_tisci_rm *tisci_rm = &ud->tisci_rm;
 	u32 mode;
@@ -1103,9 +1103,9 @@ static int udma_alloc_tchan_sci_req(struct udma_chan *uc)
 static int udma_alloc_rchan_sci_req(struct udma_chan *uc)
 {
 	struct udma_dev *ud = uc->ud;
-	int fd_ring = k3_nav_ringacc_get_ring_id(uc->rflow->fd_ring);
-	int rx_ring = k3_nav_ringacc_get_ring_id(uc->rflow->r_ring);
-	int tc_ring = k3_nav_ringacc_get_ring_id(uc->tchan->tc_ring);
+	int fd_ring = k3_ringacc_get_ring_id(uc->rflow->fd_ring);
+	int rx_ring = k3_ringacc_get_ring_id(uc->rflow->r_ring);
+	int tc_ring = k3_ringacc_get_ring_id(uc->tchan->tc_ring);
 	struct ti_sci_msg_rm_udmap_rx_ch_cfg req = { 0 };
 	struct ti_sci_msg_rm_udmap_flow_cfg flow_req = { 0 };
 	struct udma_tisci_rm *tisci_rm = &ud->tisci_rm;
@@ -1733,18 +1733,18 @@ static int setup_resources(struct udma_dev *ud)
 	return ch_count;
 }
 
-static int udma_push_to_ring(struct k3_nav_ring *ring, void *elem)
+static int udma_push_to_ring(struct k3_ring *ring, void *elem)
 {
 	u64 addr = 0;
 
 	memcpy(&addr, &elem, sizeof(elem));
-	return k3_nav_ringacc_ring_push(ring, &addr);
+	return k3_ringacc_ring_push(ring, &addr);
 }
 
 static int *udma_prep_dma_memcpy(struct udma_chan *uc, dma_addr_t dest,
 				 dma_addr_t src, size_t len)
 {
-	u32 tc_ring_id = k3_nav_ringacc_get_ring_id(uc->tchan->tc_ring);
+	u32 tc_ring_id = k3_ringacc_get_ring_id(uc->tchan->tc_ring);
 	struct cppi5_tr_type15_t *tr_req;
 	int num_tr;
 	size_t tr_size = sizeof(struct cppi5_tr_type15_t);
@@ -1937,8 +1937,8 @@ static void bcdma_free_bchan_resources(struct udma_chan *uc)
 	if (!uc->bchan)
 		return;
 
-	k3_nav_ringacc_ring_free(uc->bchan->tc_ring);
-	k3_nav_ringacc_ring_free(uc->bchan->t_ring);
+	k3_ringacc_ring_free(uc->bchan->tc_ring);
+	k3_ringacc_ring_free(uc->bchan->t_ring);
 	uc->bchan->tc_ring = NULL;
 	uc->bchan->t_ring = NULL;
 
@@ -1947,7 +1947,7 @@ static void bcdma_free_bchan_resources(struct udma_chan *uc)
 
 static int bcdma_alloc_bchan_resources(struct udma_chan *uc)
 {
-	struct k3_nav_ring_cfg ring_cfg;
+	struct k3_ring_cfg ring_cfg;
 	struct udma_dev *ud = uc->ud;
 	int ret;
 
@@ -1955,7 +1955,7 @@ static int bcdma_alloc_bchan_resources(struct udma_chan *uc)
 	if (ret)
 		return ret;
 
-	ret = k3_nav_ringacc_request_rings_pair(ud->ringacc, uc->bchan->id, -1,
+	ret = k3_ringacc_request_rings_pair(ud->ringacc, uc->bchan->id, -1,
 						&uc->bchan->t_ring,
 						&uc->bchan->tc_ring);
 	if (ret) {
@@ -1965,19 +1965,19 @@ static int bcdma_alloc_bchan_resources(struct udma_chan *uc)
 
 	memset(&ring_cfg, 0, sizeof(ring_cfg));
 	ring_cfg.size = 16;
-	ring_cfg.elm_size = K3_NAV_RINGACC_RING_ELSIZE_8;
-	ring_cfg.mode = K3_NAV_RINGACC_RING_MODE_RING;
+	ring_cfg.elm_size = K3_RINGACC_RING_ELSIZE_8;
+	ring_cfg.mode = K3_RINGACC_RING_MODE_RING;
 
-	ret = k3_nav_ringacc_ring_cfg(uc->bchan->t_ring, &ring_cfg);
+	ret = k3_ringacc_ring_cfg(uc->bchan->t_ring, &ring_cfg);
 	if (ret)
 		goto err_ringcfg;
 
 	return 0;
 
 err_ringcfg:
-	k3_nav_ringacc_ring_free(uc->bchan->tc_ring);
+	k3_ringacc_ring_free(uc->bchan->tc_ring);
 	uc->bchan->tc_ring = NULL;
-	k3_nav_ringacc_ring_free(uc->bchan->t_ring);
+	k3_ringacc_ring_free(uc->bchan->t_ring);
 	uc->bchan->t_ring = NULL;
 err_ring:
 	bcdma_put_bchan(uc);
@@ -2352,7 +2352,7 @@ static int udma_send(struct dma *dma, dma_addr_t src, size_t len, void *metadata
 	if (uc->config.dir != DMA_MEM_TO_DEV)
 		return -EINVAL;
 
-	tc_ring_id = k3_nav_ringacc_get_ring_id(uc->tchan->tc_ring);
+	tc_ring_id = k3_ringacc_get_ring_id(uc->tchan->tc_ring);
 
 	desc_tx = uc->desc_tx;
 
@@ -2402,7 +2402,7 @@ static int udma_receive(struct dma *dma, dma_addr_t *dst, void *metadata)
 	if (!uc->num_rx_bufs)
 		return -EINVAL;
 
-	ret = k3_nav_ringacc_ring_pop(uc->rflow->r_ring, &desc_rx);
+	ret = k3_ringacc_ring_pop(uc->rflow->r_ring, &desc_rx);
 	if (ret && ret != -ENODATA) {
 		dev_err(dma->dev, "rx dma fail ch_id:%lu %d\n", dma->id, ret);
 		return ret;
@@ -2452,6 +2452,7 @@ static int udma_of_xlate(struct dma *dma, struct of_phandle_args *args)
 		ucc->dir = DMA_DEV_TO_MEM;
 
 	ep_config = psil_get_ep_config(ucc->remote_thread_id);
+
 	if (IS_ERR(ep_config)) {
 		dev_err(ud->dev, "No configuration for psi-l thread 0x%04x\n",
 			uc->config.remote_thread_id);
@@ -2610,7 +2611,7 @@ static int k3_udma_probe(struct device *dev)
 	tisci_rm->tisci_psil_ops = &tisci_rm->tisci->ops.rm_psil_ops;
 
 	if (ud->match_data->type == DMA_TYPE_UDMA) {
-		ud->ringacc = k3_navss_ringacc_get_by_phandle(dev, "ti,ringacc");
+		ud->ringacc = of_k3_ringacc_get_by_phandle(np, "ti,ringacc");
 	} else {
 		struct k3_ringacc_init_data ring_init_data;
 

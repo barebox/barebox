@@ -2536,6 +2536,9 @@ static char *mci_get_linux_mmcblkdev(struct block_device *blk,
 	if (mci_part->area_type != MMC_BLK_DATA_AREA_MAIN)
 		return NULL;
 
+	if (!cdevm)
+		return NULL;
+
 	id = of_alias_get_id(cdev_of_node(cdevm), "mmc");
 	if (id < 0)
 		return NULL;

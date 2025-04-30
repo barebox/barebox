@@ -2550,7 +2550,8 @@ static char *mci_get_linux_mmcblkdev(struct block_device *blk,
 		 */
 		if (cdev_partname_equal(partcdev, cdev))
 			return basprintf("root=/dev/mmcblk%dp%d", id, partnum);
-		partnum++;
+		if (cdev->flags & DEVFS_PARTITION_FROM_TABLE)
+			partnum++;
 	}
 
 	return NULL;

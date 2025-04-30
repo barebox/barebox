@@ -37,6 +37,8 @@
 #define IRQSTATUS_CLR		0x30
 #define IRQWAKEEN		0x34
 #define TCLR			0x38
+#define		TCLR_START		BIT(0)	/* Start=1 */
+#define		TCLR_AUTO_RELOAD	BIT(1)	/* Auto reload */
 #define TCRR			0x3C
 #define TLDR			0x40
 #define TTGR			0x44
@@ -69,14 +71,14 @@ struct omap_dmtimer_data {
 	int (*get_clock)(struct device *dev);
 };
 
-int omap_dmtimer_init(void __iomem *mmio_start, unsigned clk_speed)
+int omap_dmtimer_init(void __iomem *mmio_start, u32 clk_speed)
 {
 	base = mmio_start;
 
 	dmtimer_cs.mult = clocksource_hz2mult(clk_speed, dmtimer_cs.shift);
 
 	/* Enable counter */
-	writel(0x3, base + TCLR);
+	writel(TCLR_START | TCLR_AUTO_RELOAD, base + TCLR);
 
 	return init_clock(&dmtimer_cs);
 }

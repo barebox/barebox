@@ -160,7 +160,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 {
 	struct clk_hw *hw;
 	struct clk *parent;
-	unsigned long parent_rate = 0;
+	unsigned long parent_rate = 0, current_rate;
 	int ret;
 
 	if (!clk)
@@ -169,8 +169,15 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
-	if (clk_get_rate(clk) == clk_round_rate(clk, rate))
-		return 0;
+	current_rate = clk_get_rate(clk);
+
+	if (clk->ops->round_rate) {
+		if (current_rate == clk_round_rate(clk, rate))
+			return 0;
+	} else {
+		if (current_rate == rate)
+			return 0;
+	}
 
 	if (!clk->ops->set_rate)
 		return -ENOSYS;

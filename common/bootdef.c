@@ -13,6 +13,7 @@
 
 static int bootdev_process(struct cdev *cdev, void *entries)
 {
+	pr_info("resolved to %s\n", cdev->name);
 	return bootentry_create_from_name(entries, cdev->name);
 }
 
@@ -22,7 +23,7 @@ static int bootdef_add_entry(struct bootentries *entries, const char *name)
 
 	ret = cdev_alias_resolve_for_each(name, bootdev_process, entries);
 	if (ret == -ENODEV) {
-		pr_info("Could not autodetect bootsource device\n");
+		pr_info("Could not autodetect %s device\n", name);
 		return 0;
 	}
 

@@ -3,6 +3,7 @@
 #define __STRINGLIST_H
 
 #include <linux/list.h>
+#include <linux/string.h>
 #include <malloc.h>
 
 struct string_list {
@@ -22,6 +23,11 @@ static inline void string_list_init(struct string_list *sl)
 {
 	INIT_LIST_HEAD(&sl->list);
 	sl->str = NULL;
+}
+
+static inline size_t string_list_count(struct string_list *sl)
+{
+	return list_count_nodes(&sl->list);
 }
 
 static inline void string_list_free(struct string_list *sl)

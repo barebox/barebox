@@ -80,15 +80,10 @@ static struct fb_variable *fb_addvar(struct fastboot *fb, struct list_head *list
 	return var;
 }
 
-static int fastboot_add_partition_variables(struct fastboot *fb, struct list_head *list,
-		struct file_list_entry *fentry)
+static loff_t fb_file_getsize(struct file_list_entry *fentry)
 {
 	struct stat s;
-	size_t size = 0;
-	int fd, ret;
-	struct mtd_info_user mtdinfo;
-	char *type = NULL;
-	struct fb_variable *var;
+	int ret;
 
 	ret = stat(fentry->filename, &s);
 	if (ret) {
@@ -96,7 +91,34 @@ static int fastboot_add_partition_variables(struct fastboot *fb, struct list_hea
 		ret = stat(fentry->filename, &s);
 	}
 
-	if (ret) {
+	return ret ? ret : s.st_size;
+}
+
+static int fb_file_available(struct file_list_entry *fentry)
+{
+	loff_t size;
+
+	size = fb_file_getsize(fentry);
+	if (size >= 0)
+		return 1;
+
+	if (fentry->flags & FILE_LIST_FLAG_CREATE)
+		return 0;
+
+	return size;
+}
+
+static int fastboot_add_partition_variables(struct fastboot *fb, struct list_head *list,
+		struct file_list_entry *fentry)
+{
+	loff_t size;
+	int fd, ret;
+	struct mtd_info_user mtdinfo;
+	char *type = NULL;
+	struct fb_variable *var;
+
+	size = fb_file_getsize(fentry);
+	if (size < 0) {
 		if (fentry->flags & FILE_LIST_FLAG_OPTIONAL) {
 			pr_info("skipping unavailable optional partition %s for fastboot gadget\n",
 				fentry->filename);
@@ -111,6 +133,7 @@ static int fastboot_add_partition_variables(struct fastboot *fb, struct list_hea
 			goto out;
 		}
 
+		ret = size;
 		goto out;
 	}
 
@@ -120,7 +143,6 @@ static int fastboot_add_partition_variables(struct fastboot *fb, struct list_hea
 		goto out;
 	}
 
-	size = s.st_size;
 
 	ret = ioctl(fd, MEMGETINFO, &mtdinfo);
 
@@ -287,14 +309,53 @@ static void cb_reboot(struct fastboot *fb, const char *cmd)
 	restart_machine(0);
 }
 
-static void cb_getvar(struct fastboot *fb, const char *cmd)
+static bool fastboot_tx_print_var(struct fastboot *fb, struct list_head *vars,
+				  const char *varname)
 {
 	struct fb_variable *var;
+
+	list_for_each_entry(var, vars, list) {
+		if (!varname) {
+			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
+					  var->name, var->value);
+		} else if (!strcmp(varname, var->name)) {
+			fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "%s",
+					  var->value);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+static void cb_getvar(struct fastboot *fb, const char *cmd)
+{
 	LIST_HEAD(partition_list);
 	struct file_list_entry *fentry;
+	const char *partition;
+	bool all;
+
+	pr_debug("getvar: \"%s\"\n", cmd);
+
+	partition = strchr(cmd, ':');
+	if (partition)
+		partition++;
+
+	all = !strcmp(cmd, "all");
+	if (all)
+		cmd = NULL;
+
+	if (fastboot_tx_print_var(fb, &fb->variables, cmd))
+		goto out;
+
+	if (!all && !partition)
+		goto skip_partitions;
 
 	file_list_for_each_entry(fb->files, fentry) {
 		int ret;
+
+		if (!all && strcmp(partition, fentry->name))
+			continue;
 
 		ret = fastboot_add_partition_variables(fb, &partition_list, fentry);
 		if (ret) {
@@ -307,35 +368,10 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 		}
 	}
 
-	pr_debug("getvar: \"%s\"\n", cmd);
-
-	if (!strcmp(cmd, "all")) {
-		list_for_each_entry(var, &fb->variables, list)
-			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
-					  var->name, var->value);
-
-		list_for_each_entry(var, &partition_list, list)
-			fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s: %s",
-					  var->name, var->value);
-
-		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
+	if (fastboot_tx_print_var(fb, &partition_list, cmd))
 		goto out;
-	}
 
-	list_for_each_entry(var, &fb->variables, list) {
-		if (!strcmp(cmd, var->name)) {
-			fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, var->value);
-			goto out;
-		}
-	}
-
-	list_for_each_entry(var, &partition_list, list) {
-		if (!strcmp(cmd, var->name)) {
-			fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, var->value);
-			goto out;
-		}
-	}
-
+skip_partitions:
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 out:
 	fastboot_free_variables(&partition_list);
@@ -660,11 +696,22 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 		goto out;
 	}
 
-	/* Check if board-code registered a vendor-specific handler */
+	/* Check if board-code registered a vendor-specific handler
+	 * We intentionally do this before the fb_file_available check
+	 * to afford board core more flexibility.
+	 */
 	if (fb->cmd_flash) {
 		ret = fb->cmd_flash(fb, fentry, fb->tempname, fb->download_size);
 		if (ret != FASTBOOT_CMD_FALLTHROUGH)
 			goto out;
+	}
+
+	ret = fb_file_available(fentry);
+	if (ret < 0) {
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
+				  "file %s doesn't exist", fentry->filename);
+		ret = -ENOENT;
+		goto out;
 	}
 
 	filename = fentry->filename;
@@ -776,6 +823,13 @@ static void cb_erase(struct fastboot *fb, const char *cmd)
 	if (!filename) {
 		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
 				  "No such partition: %s", cmd);
+		return;
+	}
+
+	ret = fb_file_available(fentry);
+	if (ret < 0) {
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
+				  "file %s doesn't exist", fentry->filename);
 		return;
 	}
 

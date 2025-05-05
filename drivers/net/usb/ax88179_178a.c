@@ -417,6 +417,9 @@ static int ax88179_bind(struct usbnet *dev)
 static void ax88179_unbind(struct usbnet *dev)
 {
 	u16 tmp16;
+	struct ax88179_priv *priv = dev->driver_priv;
+
+	poller_unregister(&priv->poller);
 
 	/* Configure RX control register => stop operation */
 	tmp16 = AX_RX_CTL_STOP;

@@ -4,7 +4,6 @@
 #define __MACH_AT91_XLOAD_H
 
 #include <linux/compiler.h>
-#include <pbl/bio.h>
 #include <pbl/mci.h>
 
 void __noreturn sama5d2_start_image(u32 r4);

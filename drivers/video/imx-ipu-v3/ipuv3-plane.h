@@ -2,11 +2,7 @@
 #ifndef __IPUV3_PLANE_H__
 #define __IPUV3_PLANE_H__
 
-struct drm_plane;
-struct drm_device;
 struct ipu_soc;
-struct drm_crtc;
-struct drm_framebuffer;
 
 struct ipuv3_channel;
 struct dmfc_channel;

@@ -94,14 +94,11 @@ void __noreturn sam9263_atmci_start_image(u32 mmc_id, unsigned int clock,
 		at91_pmc_enable_periph_clock(IOMEM(AT91SAM926X_BASE_PMC),  AT91SAM9263_ID_MCI1);
 	}
 
-	ret = at91_mci_bio_init(&bio, base, clock, (int)slot_b);
+	ret = at91_mci_bio_init(&bio, base, clock, (int)slot_b, PBL_MCI_STANDARD_CAPACITY);
 	if (ret) {
 		pr_err("atmci_start_image: bio init faild: %d\n", ret);
 		goto out_panic;
 	}
-
-	/* at91sam9x do not support high capacity */
-	at91_mci_bio_set_highcapacity(false);
 
 	ret = pbl_fat_load(&bio, "barebox.bin", buf, SZ_16M);
 	if (ret < 0) {

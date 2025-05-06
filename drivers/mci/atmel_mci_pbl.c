@@ -83,7 +83,8 @@ static int at91_mci_bio_read(struct pbl_bio *bio, off_t start,
 }
 
 int at91_mci_bio_init(struct pbl_bio *bio, void __iomem *base,
-		      unsigned int clock, unsigned int slot)
+		      unsigned int clock, unsigned int slot,
+		      enum pbl_mci_capacity capacity)
 {
 	struct atmel_mci_priv *priv = &atmci_sdcard;
 	struct atmel_mci *host = &priv->host;
@@ -111,12 +112,10 @@ int at91_mci_bio_init(struct pbl_bio *bio, void __iomem *base,
 
 	atmci_common_set_ios(host, &ios);
 
-	priv->highcapacity_card = 1;
+	if (capacity == PBL_MCI_STANDARD_CAPACITY)
+		atmci_sdcard.highcapacity_card = false;
+	else
+		atmci_sdcard.highcapacity_card = true;
 
 	return 0;
-}
-
-void at91_mci_bio_set_highcapacity(bool highcapacity_card)
-{
-	atmci_sdcard.highcapacity_card = highcapacity_card;
 }

@@ -646,11 +646,9 @@ static int at91_gpio_probe(struct device *dev)
 
 	at91_gpio = &gpio_chip[alias_idx];
 
-	ret = dev_get_drvdata(dev, (const void **)&at91_gpio->ops);
-        if (ret) {
-                dev_err(dev, "dev_get_drvdata failed: %d\n", ret);
-                return ret;
-        }
+	at91_gpio->ops = device_get_match_data(dev);
+	if (!at91_gpio->ops)
+		return -ENODEV;
 
 	clk = clk_get(dev, NULL);
 	if (IS_ERR(clk)) {

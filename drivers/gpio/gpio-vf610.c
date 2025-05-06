@@ -157,11 +157,11 @@ static int vf610_gpio_probe(struct device *dev)
 	struct resource *iores;
 	struct vf610_gpio_port *port;
 	const __be32 *gpio_ranges;
-	struct fsl_gpio_soc_data *devtype;
+	const struct fsl_gpio_soc_data *devtype;
 
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
+	devtype = device_get_match_data(dev);
+	if (!devtype)
+		return -ENODEV;
 
 	port = xzalloc(sizeof(*port));
 

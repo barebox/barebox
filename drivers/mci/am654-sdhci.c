@@ -554,9 +554,9 @@ static int am654_sdhci_probe(struct device *dev)
 
 	plat = xzalloc(sizeof(*plat));
 
-	ret = dev_get_drvdata(dev, (const void **)&plat->soc_data);
-	if (ret)
-		return ret;
+	plat->soc_data = device_get_match_data(dev);
+	if (!plat->soc_data)
+		return -ENODEV;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

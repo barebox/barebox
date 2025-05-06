@@ -632,8 +632,10 @@ static int tegra_i2c_probe(struct device *dev)
 	if (ret)
 		i2c_dev->bus_clk_rate = 100000; /* default clock rate */
 
-	i2c_dev->hw = &tegra20_i2c_hw;
-	dev_get_drvdata(dev, (const void **)&i2c_dev->hw);
+	i2c_dev->hw = device_get_match_data(dev);
+	if (!i2c_dev->hw)
+		i2c_dev->hw = &tegra20_i2c_hw;
+
 	i2c_dev->is_dvc = of_device_is_compatible(dev->of_node,
 	                                          "nvidia,tegra20-i2c-dvc");
 

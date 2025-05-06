@@ -176,16 +176,16 @@ static int denali_dt_probe(struct device *ofdev)
 	struct resource *iores;
 	struct denali_dt *dt;
 	struct denali_controller *denali;
-	struct denali_dt_data *data;
+	const struct denali_dt_data *data;
 	struct device_node *np;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return 1;
 
-	ret = dev_get_drvdata(ofdev, (const void **)&data);
-	if (ret)
-		return ret;
+	data = device_get_match_data(ofdev);
+	if (!data)
+		return -ENODEV;
 
 	dt = kzalloc(sizeof(*dt), GFP_KERNEL);
 	if (!dt)

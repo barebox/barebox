@@ -179,18 +179,18 @@ MODULE_DEVICE_TABLE(of, dw_hdmi_imx_dt_ids);
 
 static int dw_hdmi_imx_probe(struct device *dev)
 {
+	const struct dw_hdmi_plat_data *_plat_data;
 	struct dw_hdmi_plat_data *plat_data;
 	struct device_node *np = dev->of_node;
 	struct imx_hdmi *hdmi;
-	int ret;
 
 	hdmi = xzalloc(sizeof(*hdmi));
 
-	ret = dev_get_drvdata(dev, (const void **)&plat_data);
-	if (ret)
-		return ret;
+	_plat_data = device_get_match_data(dev);
+	if (!_plat_data)
+		return -ENODEV;
 
-	plat_data = xmemdup(plat_data, sizeof(*plat_data));
+	plat_data = xmemdup(_plat_data, sizeof(*_plat_data));
 	plat_data->phy_data = hdmi;
 	plat_data->priv_data = hdmi;
 
@@ -204,9 +204,9 @@ static int dw_hdmi_imx_probe(struct device *dev)
 
 	hdmi->hdmi = dw_hdmi_bind(dev, plat_data);
 	if (IS_ERR(hdmi->hdmi))
-		ret = PTR_ERR(hdmi->hdmi);
+		return PTR_ERR(hdmi->hdmi);
 
-	return ret;
+	return 0;
 }
 
 struct driver dw_hdmi_imx_platform_driver = {

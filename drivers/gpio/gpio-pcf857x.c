@@ -152,7 +152,6 @@ static int pcf857x_probe(struct device *dev)
 	struct pcf857x			*gpio;
 	unsigned long			driver_data;
 	unsigned int			n_latch = 0;
-	int				ret;
 
 	if (!np)
 		return -EINVAL;
@@ -162,9 +161,9 @@ static int pcf857x_probe(struct device *dev)
 	/* Allocate, initialize, and register this gpio_chip. */
 	gpio = xzalloc(sizeof(*gpio));
 
-	ret = dev_get_drvdata(dev, (const void **)&driver_data);
-	if (ret)
-		return ret;
+	driver_data = (ulong)device_get_match_data(dev);
+	if (!driver_data)
+		return -ENODEV;
 
 	gpio->chip.base			= -1;
 	gpio->chip.ops			= &pcf857x_gpio_ops;

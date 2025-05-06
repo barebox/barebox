@@ -39,7 +39,7 @@ struct eqos_imx_priv {
 	struct regmap *intf_regmap;
 	u32 intf_reg_off;
 	bool rmii_refclk_ext;
-	struct eqos_imx_soc_data *soc_data;
+	const struct eqos_imx_soc_data *soc_data;
 };
 
 enum { CLK_STMMACETH, CLK_PCLK, CLK_PTP_REF, CLK_TX};
@@ -212,13 +212,13 @@ static struct eqos_ops imx_ops = {
 static int eqos_probe_imx(struct device *dev)
 {
 	struct device_node *np = dev->device_node;
-	struct eqos_imx_soc_data *soc_data;
+	const struct eqos_imx_soc_data *soc_data;
 	struct eqos_imx_priv *priv;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&soc_data);
-	if (ret)
-		return ret;
+	soc_data = device_get_match_data(dev);
+	if (!soc_data)
+		return -ENODEV;
 
 	priv = xzalloc(sizeof(*priv));
 

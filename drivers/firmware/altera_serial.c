@@ -340,9 +340,9 @@ static int altera_spi_probe(struct device *dev)
 
 	dev_dbg(dev, "Probing FPGA firmware programmer\n");
 
-	rc = dev_get_drvdata(dev, (const void **)&data);
-	if (rc)
-		return rc;
+	data = device_get_match_data(dev);
+	if (!data)
+		return -ENODEV;
 
 	this = xzalloc(sizeof(*this));
 	fh = &this->fh;

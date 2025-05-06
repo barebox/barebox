@@ -868,9 +868,9 @@ static int imx_ocotp_probe(struct device *dev)
 	const struct imx_ocotp_data *data;
 	struct nvmem_device *nvmem;
 
-	ret = dev_get_drvdata(dev, (const void **)&data);
-	if (ret)
-		return ret;
+	data = device_get_match_data(dev);
+	if (!data)
+		return -ENODEV;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

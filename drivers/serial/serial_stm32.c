@@ -145,11 +145,11 @@ static int stm32_serial_probe(struct device *dev)
 	struct stm32_uart *stm32;
 	const char *devname;
 	struct resource *res;
-	struct stm32_uart_info *info;
+	const struct stm32_uart_info *info;
 
-	ret = dev_get_drvdata(dev, (const void **)&info);
-	if (ret)
-		return ret;
+	info = device_get_match_data(dev);
+	if (!info)
+		return -ENODEV;
 
 	stm32 = xzalloc(sizeof(*stm32));
 	cdev = &stm32->cdev;

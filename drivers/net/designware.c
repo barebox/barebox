@@ -448,22 +448,18 @@ struct dw_eth_dev *dwc_drv_probe(struct device *dev)
 	void __iomem *base;
 	struct dwc_ether_platform_data *pdata = dev->platform_data;
 	int ret;
-	struct dw_eth_drvdata *drvdata;
+	const struct dw_eth_drvdata *drvdata;
 
 	dma_set_mask(dev, DMA_BIT_MASK(32));
 
 	priv = xzalloc(sizeof(struct dw_eth_dev));
 
-	ret = dev_get_drvdata(dev, (const void **)&drvdata);
-	if (ret)
-		return ERR_PTR(ret);
+	drvdata = device_get_match_data(dev);
+	if (!drvdata)
+		return ERR_PTR(-ENODEV);
 
-	if (drvdata) {
-		priv->enh_desc = drvdata->enh_desc;
-		priv->fix_mac_speed = drvdata->fix_mac_speed;
-	} else {
-		dev_warn(dev, "No drvdata specified\n");
-	}
+	priv->enh_desc = drvdata->enh_desc;
+	priv->fix_mac_speed = drvdata->fix_mac_speed;
 
 	if (pdata) {
 		priv->phy_addr = pdata->phy_addr;

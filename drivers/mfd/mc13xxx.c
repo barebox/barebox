@@ -302,15 +302,15 @@ static const struct regmap_config mc13xxx_regmap_i2c_config = {
 
 static int __init mc13xxx_probe(struct device *dev)
 {
-	struct mc13xxx_devtype *devtype;
+	const struct mc13xxx_devtype *devtype;
 	int ret, rev;
 
 	if (mc_dev)
 		return -EBUSY;
 
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
+	devtype = device_get_match_data(dev);
+	if (!devtype)
+		return -ENODEV;
 
 	mc_dev = xzalloc(sizeof(*mc_dev));
 	mc_dev->dev = dev;

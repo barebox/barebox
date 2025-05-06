@@ -217,7 +217,7 @@ static int ci_set_mode(void *ctx, enum usb_dr_mode mode)
 static int imx_chipidea_probe(struct device *dev)
 {
 	struct resource *iores;
-	struct imx_chipidea_data *imx_data;
+	const struct imx_chipidea_data *imx_data;
 	struct imxusb_platformdata *pdata = dev->platform_data;
 	char const *phynode_name;
 	int ret;
@@ -229,8 +229,8 @@ static int imx_chipidea_probe(struct device *dev)
 	ci->dev = dev;
 	dev->priv = ci;
 
-	ret = dev_get_drvdata(dev, (const void **)&imx_data);
-	if (!ret)
+	imx_data = device_get_match_data(dev);
+	if (imx_data)
 		ci->have_usb_misc = imx_data->have_usb_misc;
 
 	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node) {

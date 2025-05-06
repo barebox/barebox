@@ -43,10 +43,7 @@ struct virtio_device {
 	u32 status_param;
 };
 
-static inline struct virtio_device *dev_to_virtio(struct device *_dev)
-{
-	return container_of(_dev, struct virtio_device, dev);
-}
+#define dev_to_virtio(_dev)	container_of_const(_dev, struct virtio_device, dev)
 
 void virtio_add_status(struct virtio_device *dev, unsigned int status);
 int register_virtio_device(struct virtio_device *dev);
@@ -96,10 +93,7 @@ struct virtio_driver {
 	void (*config_changed)(struct virtio_device *dev);
 };
 
-static inline struct virtio_driver *drv_to_virtio(struct driver *drv)
-{
-	return container_of(drv, struct virtio_driver, driver);
-}
+#define drv_to_virtio(__drv)	container_of_const(__drv, struct virtio_driver, driver)
 
 int virtio_driver_register(struct virtio_driver *drv);
 

@@ -575,21 +575,13 @@ static int am654_sdhci_probe(struct device *dev)
                 return PTR_ERR(plat->base);
         }
 
-	plat->clk = clk_get(dev, "clk_xin");
-	if (IS_ERR(plat->clk)) {
-		dev_err(dev, "failed to get clock\n");
-		return ret;
-	}
+	plat->clk = clk_get_enabled(dev, "clk_xin");
+	if (IS_ERR(plat->clk))
+		return dev_errp_probe(dev, plat->clk, "failed to get clock\n");
 
-	clk_enable(plat->clk);
-
-	plat->clk_ahb = clk_get(dev, "clk_ahb");
-	if (IS_ERR(plat->clk_ahb)) {
-		dev_err(dev, "failed to get ahb clock\n");
-		return ret;
-	}
-
-	clk_enable(plat->clk_ahb);
+	plat->clk_ahb = clk_get_enabled(dev, "clk_ahb");
+	if (IS_ERR(plat->clk_ahb))
+		return dev_errp_probe(dev, plat->clk, "failed to get ahb clock\n");
 
 	mci = &plat->mci;
 	mci->f_max = clk_get_rate(plat->clk);

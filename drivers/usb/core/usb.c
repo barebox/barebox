@@ -1178,10 +1178,10 @@ static const struct usb_device_id *usb_match_id(struct usb_device *usbdev,
 }
 EXPORT_SYMBOL(usb_match_id);
 
-static int usb_match(struct device *dev, struct driver *drv)
+static int usb_match(struct device *dev, const struct driver *drv)
 {
 	struct usb_device *usbdev = container_of(dev, struct usb_device, dev);
-	struct usb_driver *usbdrv = container_of(dev->driver, struct usb_driver, driver);
+	const struct usb_driver *usbdrv = container_of_const(drv, struct usb_driver, driver);
 	const struct usb_device_id *id;
 
 	pr_debug("matching: 0x%04x 0x%04x\n", usbdev->descriptor->idVendor,
@@ -1190,9 +1190,9 @@ static int usb_match(struct device *dev, struct driver *drv)
 	id = usb_match_id(usbdev, usbdrv->id_table);
 	if (id) {
 		pr_debug("match: 0x%04x 0x%04x\n", id->idVendor, id->idProduct);
-		return 0;
+		return true;
 	}
-	return 1;
+	return false;
 }
 
 static int usb_probe(struct device *dev)

@@ -54,7 +54,10 @@ struct device {
 	/*! Devices of a particular class normaly need to store more
 	 * information than struct device holds.
 	 */
-	void *priv;
+	union {
+		void *priv;
+		void *driver_data;
+	};
 	void *type_data;     /*! In case this device is a specific device, this pointer
 			      * points to the type specific device, i.e. eth_device
 			      */

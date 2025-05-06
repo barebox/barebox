@@ -380,9 +380,9 @@ static int at24_probe(struct device *dev)
 		unsigned long magic;
 		u32 page_size;
 
-		err = dev_get_drvdata(dev, (const void **)&magic);
-		if (err)
-			return err;
+		magic = (uintptr_t)device_get_match_data(dev);
+		if (!magic)
+			return -ENODEV;
 
 		chip.byte_len = BIT(magic & AT24_BITMASK(AT24_SIZE_BYTELEN));
 		magic >>= AT24_SIZE_BYTELEN;

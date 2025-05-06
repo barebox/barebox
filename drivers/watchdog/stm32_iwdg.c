@@ -132,7 +132,7 @@ MODULE_DEVICE_TABLE(of, stm32_iwdg_of_match);
 
 static int stm32_iwdg_probe(struct device *dev)
 {
-	struct stm32_iwdg_data *data;
+	const struct stm32_iwdg_data *data;
 	struct stm32_iwdg *wd;
 	struct resource *res;
 	struct watchdog *wdd;
@@ -141,8 +141,8 @@ static int stm32_iwdg_probe(struct device *dev)
 
 	wd = xzalloc(sizeof(*wd));
 
-	ret = dev_get_drvdata(dev, (const void **)&data);
-	if (ret)
+	data = device_get_match_data(dev);
+	if (!data)
 		return -ENODEV;
 
 	res = dev_request_mem_resource(dev, 0);

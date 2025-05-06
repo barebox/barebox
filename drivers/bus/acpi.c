@@ -199,12 +199,12 @@ static int acpi_register_devices(struct bus_type *bus)
 	return 0;
 }
 
-static int acpi_bus_match(struct device *dev, struct driver *drv)
+static int acpi_bus_match(struct device *dev, const struct driver *drv)
 {
-	struct acpi_driver *acpidrv = to_acpi_driver(drv);
+	const struct acpi_driver *acpidrv = to_acpi_driver(drv);
 	struct acpi_sdt *sdt = acpi_get_dev_sdt(dev);
 
-	return acpi_sigcmp(acpidrv->signature, sdt->signature);
+	return !acpi_sigcmp(acpidrv->signature, sdt->signature);
 }
 
 struct bus_type acpi_bus = {

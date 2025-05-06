@@ -291,6 +291,11 @@ static int fb_set_shadowfb(struct param_d *p, void *priv)
 	return fb_alloc_shadowfb(info);
 }
 
+static const char *mode_name(struct fb_videomode *mode)
+{
+	return basprintf("%dx%d@%d", mode->xres, mode->yres, mode->refresh);
+}
+
 int register_framebuffer(struct fb_info *info)
 {
 	int id;
@@ -351,10 +356,18 @@ int register_framebuffer(struct fb_info *info)
 
 	names = xzalloc(sizeof(char *) * num_modes);
 
-	for (i = 0; i < info->modes.num_modes; i++)
+	for (i = 0; i < info->modes.num_modes; i++) {
+		if (!info->modes.modes[i].name)
+			info->modes.modes[i].name = mode_name(&info->modes.modes[i]);
 		names[i] = info->modes.modes[i].name;
-	for (i = 0; i < info->edid_modes.num_modes; i++)
+	}
+
+	for (i = 0; i < info->edid_modes.num_modes; i++) {
+		if (!info->edid_modes.modes[i].name)
+			info->modes.modes[i].name = mode_name(&info->edid_modes.modes[i]);
 		names[i + info->modes.num_modes] = info->edid_modes.modes[i].name;
+	}
+
 	dev_add_param_enum(dev, "mode_name", fb_set_modename, NULL, &info->current_mode, names, num_modes, info);
 	info->shadowfb = 1;
 	dev_add_param_bool(dev, "shadowfb", fb_set_shadowfb, NULL, &info->shadowfb, info);

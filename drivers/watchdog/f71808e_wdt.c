@@ -380,13 +380,12 @@ static int f71808e_probe(struct device *dev)
 {
 	struct f71808e_wdt *wd;
 	struct resource *res;
-	int ret;
 
 	wd = xzalloc(sizeof(*wd));
 
-	ret = dev_get_drvdata(dev, (const void **)&wd->variant);
-	if (ret)
-		return ret;
+	wd->variant = device_get_match_data(dev);
+	if (!wd->variant)
+		return -ENODEV;
 
 	res = dev_get_resource(dev->parent, IORESOURCE_IO, 0);
 	if (IS_ERR(res))

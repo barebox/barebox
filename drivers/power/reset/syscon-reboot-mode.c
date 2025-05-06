@@ -50,7 +50,7 @@ static int syscon_reboot_mode_probe(struct device *dev)
 {
 	int ret, i, nelems;
 	struct syscon_reboot_mode *syscon_rbm;
-	struct reboot_mode_driver *reboot_template;
+	const struct reboot_mode_driver *reboot_template;
 	struct device_node *np = dev->of_node;
 	u32 *magic;
 
@@ -60,9 +60,9 @@ static int syscon_reboot_mode_probe(struct device *dev)
 
 	syscon_rbm = xzalloc(struct_size(syscon_rbm, reg, nelems));
 
-	ret = dev_get_drvdata(dev, (const void **)&reboot_template);
-	if (ret)
-		return ret;
+	reboot_template = device_get_match_data(dev);
+	if (!reboot_template)
+		return -ENODEV;
 
 	syscon_rbm->reboot = *reboot_template;
 	syscon_rbm->reboot.dev = dev;

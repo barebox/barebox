@@ -144,7 +144,7 @@
 struct omap_i2c_struct {
 	void 			*base;
 	u8			reg_shift;
-	struct omap_i2c_driver_data	*data;
+	const struct omap_i2c_driver_data	*data;
 	struct resource		*ioarea;
 	u32			speed;		/* Speed of bus in Khz */
 	u16			scheme;
@@ -345,7 +345,7 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 	u16 fsscll = 0, fssclh = 0, hsscll = 0, hssclh = 0;
 	uint64_t start;
 	unsigned long internal_clk = 0;
-	struct omap_i2c_driver_data *i2c_data = i2c_omap->data;
+	const struct omap_i2c_driver_data *i2c_data = i2c_omap->data;
 
 	if (i2c_omap->rev >= OMAP_I2C_OMAP1_REV_2) {
 		/* Disable I2C controller before soft reset */
@@ -1063,7 +1063,7 @@ i2c_omap_probe(struct device *pdev)
 {
 	struct resource *iores;
 	struct omap_i2c_struct	*i2c_omap;
-	struct omap_i2c_driver_data *i2c_data;
+	const struct omap_i2c_driver_data *i2c_data;
 	int r;
 	u32 speed = 0;
 	u32 rev;
@@ -1075,9 +1075,9 @@ i2c_omap_probe(struct device *pdev)
 		goto err_free_mem;
 	}
 
-	r = dev_get_drvdata(pdev, (const void **)&i2c_data);
-	if (r)
-		return r;
+	i2c_data = device_get_match_data(pdev);
+	if (!i2c_data)
+		return -ENODEV;
 
 	if (of_machine_is_compatible("ti,am33xx"))
 		i2c_data = &am33xx_data;

@@ -47,7 +47,7 @@ int bus_register(struct bus_type *bus)
 	return 0;
 }
 
-int device_match(struct device *dev, struct driver *drv)
+int device_match(struct device *dev, const struct driver *drv)
 {
 	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node &&
 	    drv->of_compatible)
@@ -59,29 +59,29 @@ int device_match(struct device *dev, struct driver *drv)
 		while (id->name) {
 			if (!strcmp(id->name, dev->name)) {
 				dev->id_entry = id;
-				return 0;
+				return true;
 			}
 			id++;
 		}
 	} else if (!strcmp(dev->name, drv->name)) {
-		return 0;
+		return true;
 	}
 
-	return -1;
+	return false;
 }
 
-int device_match_of_modalias(struct device *dev, struct driver *drv)
+int device_match_of_modalias(struct device *dev, const struct driver *drv)
 {
 	const struct platform_device_id *id = drv->id_table;
 	const char *of_modalias = NULL, *p;
 	const struct property *prop;
 	const char *compat;
 
-	if (!device_match(dev, drv))
-		return 0;
+	if (device_match(dev, drv))
+		return true;
 
 	if (!id || !IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node)
-		return -1;
+		return false;
 
 	of_property_for_each_string(dev->of_node, "compatible", prop, compat) {
 		p = strchr(compat, ',');
@@ -90,10 +90,10 @@ int device_match_of_modalias(struct device *dev, struct driver *drv)
 		for (id = drv->id_table; id->name; id++) {
 			if (!strcmp(id->name, dev->name) || !strcmp(id->name, of_modalias)) {
 				dev->id_entry = id;
-				return 0;
+				return true;
 			}
 		}
 	}
 
-	return -1;
+	return false;
 }

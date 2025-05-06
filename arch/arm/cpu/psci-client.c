@@ -121,8 +121,8 @@ static int __init psci_probe(struct device *dev)
 	ulong of_version, actual_version;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&of_version);
-	if (ret)
+	of_version = (uintptr_t)device_get_match_data(dev);
+	if (!of_version)
 		return -ENODEV;
 
 	ret = of_property_read_string(dev->of_node, "method", &method);

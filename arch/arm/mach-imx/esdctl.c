@@ -35,7 +35,7 @@
 struct imx_esdctl_data {
 	unsigned long base0;
 	unsigned long base1;
-	int (*add_mem)(void *esdctlbase, struct imx_esdctl_data *);
+	int (*add_mem)(void *esdctlbase, const struct imx_esdctl_data *);
 };
 
 static int imx_esdctl_disabled;
@@ -229,19 +229,19 @@ static inline void imx_esdctl_v2_disable_default(void __iomem *esdctlbase)
 	}
 }
 
-static int imx_esdctl_v1_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
+static int imx_esdctl_v1_add_mem(void *esdctlbase, const struct imx_esdctl_data *data)
 {
 	return add_mem(data->base0, imx_v1_sdram_size(esdctlbase, 0),
 			data->base1, imx_v1_sdram_size(esdctlbase, 1));
 }
 
-static int imx_esdctl_v2_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
+static int imx_esdctl_v2_add_mem(void *esdctlbase, const struct imx_esdctl_data *data)
 {
 	return add_mem(data->base0, imx_v2_sdram_size(esdctlbase, 0),
 			data->base1, imx_v2_sdram_size(esdctlbase, 1));
 }
 
-static int imx_esdctl_v2_bug_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
+static int imx_esdctl_v2_bug_add_mem(void *esdctlbase, const struct imx_esdctl_data *data)
 {
 	imx_esdctl_v2_disable_default(esdctlbase);
 
@@ -249,13 +249,13 @@ static int imx_esdctl_v2_bug_add_mem(void *esdctlbase, struct imx_esdctl_data *d
 			data->base1, imx_v2_sdram_size(esdctlbase, 1));
 }
 
-static int imx_esdctl_v3_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
+static int imx_esdctl_v3_add_mem(void *esdctlbase, const struct imx_esdctl_data *data)
 {
 	return add_mem(data->base0, imx_v3_sdram_size(esdctlbase, 0),
 			data->base1, imx_v3_sdram_size(esdctlbase, 1));
 }
 
-static int imx_esdctl_v4_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
+static int imx_esdctl_v4_add_mem(void *esdctlbase, const struct imx_esdctl_data *data)
 {
 	return add_mem(data->base0, imx_v4_sdram_size(esdctlbase, 0),
 			data->base1, imx_v4_sdram_size(esdctlbase, 1));
@@ -286,7 +286,7 @@ static inline resource_size_t imx6_mmdc_sdram_size(void __iomem *mmdcbase)
 	return size;
 }
 
-static int imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static int imx6_mmdc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
 	return arm_add_mem_device("ram0", data->base0,
 			   imx6_mmdc_sdram_size(mmdcbase));
@@ -308,7 +308,7 @@ static inline resource_size_t vf610_ddrmc_sdram_size(void __iomem *ddrmc)
 	return memory_sdram_size(cols, rows, banks, width);
 }
 
-static int vf610_ddrmc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static int vf610_ddrmc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
 	return arm_add_mem_device("ram0", data->base0,
 			   vf610_ddrmc_sdram_size(mmdcbase));
@@ -513,7 +513,7 @@ static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc, unsigned buswid
 				   reduced_adress_space, mstr);
 }
 
-static int _imx8m_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data,
+static int _imx8m_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data,
 			       unsigned int buswidth)
 {
 	resource_size_t size = imx8m_ddrc_sdram_size(mmdcbase, buswidth);
@@ -548,12 +548,12 @@ static int _imx8m_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data,
 	return ret;
 }
 
-static int imx8m_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static int imx8m_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
 	return _imx8m_ddrc_add_mem(mmdcbase, data, 32);
 }
 
-static int imx8mn_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static int imx8mn_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
 	return _imx8m_ddrc_add_mem(mmdcbase, data, 16);
 }
@@ -592,7 +592,7 @@ resource_size_t imx9_ddrc_sdram_size(void)
 	return mem;
 }
 
-static int imx9_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static int imx9_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
 	return arm_add_mem_device("ram0", data->base0, imx9_ddrc_sdram_size());
 }
@@ -637,7 +637,7 @@ static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
 				   reduced_adress_space, mstr);
 }
 
-static int imx7d_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static int imx7d_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
 	return arm_add_mem_device("ram0", data->base0,
 			   imx7d_ddrc_sdram_size(mmdcbase));
@@ -646,13 +646,12 @@ static int imx7d_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 static int imx_esdctl_probe(struct device *dev)
 {
 	struct resource *iores;
-	struct imx_esdctl_data *data;
-	int ret;
+	const struct imx_esdctl_data *data;
 	void *base;
 
-	ret = dev_get_drvdata(dev, (const void **)&data);
-	if (ret)
-		return ret;
+	data = device_get_match_data(dev);
+	if (!data)
+		return -ENODEV;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
@@ -665,84 +664,84 @@ static int imx_esdctl_probe(struct device *dev)
 	return data->add_mem(base, data);
 }
 
-static __maybe_unused struct imx_esdctl_data imx1_data = {
+static __maybe_unused const struct imx_esdctl_data imx1_data = {
 	.base0 = MX1_CSD0_BASE_ADDR,
 	.base1 = MX1_CSD1_BASE_ADDR,
 	.add_mem = imx_esdctl_v1_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx25_data = {
+static __maybe_unused const struct imx_esdctl_data imx25_data = {
 	.base0 = MX25_CSD0_BASE_ADDR,
 	.base1 = MX25_CSD1_BASE_ADDR,
 	.add_mem = imx_esdctl_v2_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx27_data = {
+static __maybe_unused const struct imx_esdctl_data imx27_data = {
 	.base0 = MX27_CSD0_BASE_ADDR,
 	.base1 = MX27_CSD1_BASE_ADDR,
 	.add_mem = imx_esdctl_v2_bug_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx31_data = {
+static __maybe_unused const struct imx_esdctl_data imx31_data = {
 	.base0 = MX31_CSD0_BASE_ADDR,
 	.base1 = MX31_CSD1_BASE_ADDR,
 	.add_mem = imx_esdctl_v2_bug_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx35_data = {
+static __maybe_unused const struct imx_esdctl_data imx35_data = {
 	.base0 = MX35_CSD0_BASE_ADDR,
 	.base1 = MX35_CSD1_BASE_ADDR,
 	.add_mem = imx_esdctl_v2_bug_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx51_data = {
+static __maybe_unused const struct imx_esdctl_data imx51_data = {
 	.base0 = MX51_CSD0_BASE_ADDR,
 	.base1 = MX51_CSD1_BASE_ADDR,
 	.add_mem = imx_esdctl_v3_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx53_data = {
+static __maybe_unused const struct imx_esdctl_data imx53_data = {
 	.base0 = MX53_CSD0_BASE_ADDR,
 	.base1 = MX53_CSD1_BASE_ADDR,
 	.add_mem = imx_esdctl_v4_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx6q_data = {
+static __maybe_unused const struct imx_esdctl_data imx6q_data = {
 	.base0 = MX6_MMDC_PORT01_BASE_ADDR,
 	.add_mem = imx6_mmdc_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx6sx_data = {
+static __maybe_unused const struct imx_esdctl_data imx6sx_data = {
 	.base0 = MX6_MMDC_PORT0_BASE_ADDR,
 	.add_mem = imx6_mmdc_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx6ul_data = {
+static __maybe_unused const struct imx_esdctl_data imx6ul_data = {
 	.base0 = MX6_MMDC_PORT0_BASE_ADDR,
 	.add_mem = imx6_mmdc_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data vf610_data = {
+static __maybe_unused const struct imx_esdctl_data vf610_data = {
 	.base0 = VF610_RAM_BASE_ADDR,
 	.add_mem = vf610_ddrmc_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx8m_data = {
+static __maybe_unused const struct imx_esdctl_data imx8m_data = {
 	.base0 = MX8M_DDR_CSD1_BASE_ADDR,
 	.add_mem = imx8m_ddrc_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx8mn_data = {
+static __maybe_unused const struct imx_esdctl_data imx8mn_data = {
 	.base0 = MX8M_DDR_CSD1_BASE_ADDR,
 	.add_mem = imx8mn_ddrc_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx9_data = {
+static __maybe_unused const struct imx_esdctl_data imx9_data = {
 	.base0 = MX9_DDR_CSD1_BASE_ADDR,
 	.add_mem = imx9_ddrc_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx7d_data = {
+static __maybe_unused const struct imx_esdctl_data imx7d_data = {
 	.base0 = MX7_DDR_BASE_ADDR,
 	.add_mem = imx7d_ddrc_add_mem,
 };

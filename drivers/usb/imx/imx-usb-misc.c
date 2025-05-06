@@ -35,7 +35,7 @@ struct imx_usb_misc_data {
 };
 
 struct imx_usb_misc_priv {
-	struct imx_usb_misc_data *data;
+	const struct imx_usb_misc_data *data;
 	void __iomem *base;
 };
 
@@ -653,13 +653,12 @@ int imx_usbmisc_port_post_init(struct device *dev, int port, unsigned flags)
 static int imx_usbmisc_probe(struct device *dev)
 {
 	struct resource *iores;
-	struct imx_usb_misc_data *devtype;
+	const struct imx_usb_misc_data *devtype;
 	struct imx_usb_misc_priv *usbmisc;
-	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
+	devtype = device_get_match_data(dev);
+	if (!devtype)
+		return -ENODEV;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

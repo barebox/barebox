@@ -32,7 +32,7 @@ struct tegra_gpio_soc_config {
 };
 
 static void __iomem *gpio_base;
-static struct tegra_gpio_soc_config *config;
+static const struct tegra_gpio_soc_config *config;
 
 static inline void tegra_gpio_writel(u32 val, u32 reg)
 {
@@ -128,13 +128,11 @@ static struct gpio_chip tegra_gpio_chip = {
 static int tegra_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
-	int i, j, ret;
+	int i, j;
 
-	ret = dev_get_drvdata(dev, (const void **)&config);
-	if (ret) {
-		dev_err(dev, "dev_get_drvdata failed: %d\n", ret);
-		return ret;
-	}
+	config = device_get_match_data(dev);
+	if (!config)
+		return -ENODEV;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores)) {

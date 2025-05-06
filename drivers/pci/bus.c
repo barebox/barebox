@@ -73,19 +73,19 @@ const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
 }
 EXPORT_SYMBOL(pci_match_id);
 
-static int pci_match(struct device *dev, struct driver *drv)
+static int pci_match(struct device *dev, const struct driver *drv)
 {
 	struct pci_dev *pdev = to_pci_dev(dev);
-	struct pci_driver *pdrv = to_pci_driver(drv);
+	const struct pci_driver *pdrv = to_pci_driver(drv);
 	const struct pci_device_id *id;
 
 	for (id = pdrv->id_table; id->vendor; id++)
 		if (pci_match_one_device(id, pdev)) {
 			pdev->id = id;
-			return 0;
+			return true;
 		}
 
-	return -1;
+	return false;
 }
 
 static int pci_probe(struct device *dev)

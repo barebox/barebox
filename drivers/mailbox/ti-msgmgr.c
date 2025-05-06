@@ -340,9 +340,9 @@ static int k3_sec_proxy_probe(struct device *dev)
 
 	spm->rt = IOMEM(res->start);
 
-	ret = dev_get_drvdata(dev, &data);
-        if (ret)
-                return ret;
+	data = device_get_match_data(dev);
+	if (!data)
+		return -ENODEV;
 
 	spm->desc = data;
 	spm->k3_chans = xzalloc(spm->desc->num_valid_threads * sizeof(*spm->k3_chans));

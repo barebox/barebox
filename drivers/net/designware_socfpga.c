@@ -191,17 +191,14 @@ static int socfpga_dwc_ether_probe(struct device *dev)
 {
 	struct socfpga_dwc_dev *dwc_dev;
 	struct dw_eth_dev *priv;
-	struct dw_eth_drvdata *drvdata;
+	const struct dw_eth_drvdata *drvdata;
 	int ret;
 
 	dwc_dev = xzalloc(sizeof(*dwc_dev));
 
-	ret = dev_get_drvdata(dev, (const void **)&drvdata);
-	if (ret)
-		return ret;
-
+	drvdata = device_get_match_data(dev);
 	if (drvdata && drvdata->priv)
-		dwc_dev->ops = (struct socfpga_dwmac_ops *)drvdata->priv;
+		dwc_dev->ops = drvdata->priv;
 	else
 		return -EINVAL;
 

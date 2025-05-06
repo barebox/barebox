@@ -248,11 +248,10 @@ static int imx_pwm_probe(struct device *dev)
 	struct resource *iores;
 	const struct imx_pwm_data *data;
 	struct imx_chip *imx;
-	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&data);
-	if (ret)
-		return ret;
+	data = device_get_match_data(dev);
+	if (!data)
+		return -ENODEV;
 
 	imx = xzalloc(sizeof(*imx));
 

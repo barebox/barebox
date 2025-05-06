@@ -667,18 +667,6 @@ int cdevfs_del_partition(struct cdev *cdev);
 #define DRV_OF_COMPAT(compat) of_match_ptr(compat)
 
 /**
- * dev_get_drvdata - get driver match data associated with device
- * @dev: device instance
- * @data: pointer to void *, where match data is stored
- *
- * Returns 0 on success and error code otherwise.
- *
- * DEPRECATED: use device_get_match_data instead, which avoids
- * common pitfalls due to explicit pointer casts
- */
-int dev_get_drvdata(struct device *dev, const void **data);
-
-/**
  * device_get_match_data - get driver match data associated with device
  * @dev: device instance
  *

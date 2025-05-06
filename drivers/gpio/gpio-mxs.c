@@ -19,7 +19,6 @@ struct mxs_gpio_chip {
 	void __iomem *doe;
 	void __iomem *dout;
 	struct gpio_chip chip;
-	struct mxs_gpio_regs *regs;
 };
 
 struct mxs_gpio_regs {
@@ -101,12 +100,12 @@ static struct gpio_ops mxs_gpio_ops = {
 static int mxs_gpio_probe(struct device *dev)
 {
 	struct mxs_gpio_chip *mxsgpio;
-	struct mxs_gpio_regs *regs;
-	int ret, id;
+	const struct mxs_gpio_regs *regs;
+	int id;
 
-	ret = dev_get_drvdata(dev, (const void **)&regs);
-	if (ret)
-		return ret;
+	regs = device_get_match_data(dev);
+	if (!regs)
+		return -ENODEV;
 
 	mxsgpio = xzalloc(sizeof(*mxsgpio));
 	mxsgpio->chip.ops = &mxs_gpio_ops;
@@ -131,7 +130,6 @@ static int mxs_gpio_probe(struct device *dev)
 
 	mxsgpio->chip.ngpio = 32;
 	mxsgpio->chip.dev = dev;
-	mxsgpio->regs = regs;
 	gpiochip_add(&mxsgpio->chip);
 
 	dev_dbg(dev, "probed gpiochip%d with base %d\n", dev->id, mxsgpio->chip.base);

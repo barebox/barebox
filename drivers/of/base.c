@@ -842,17 +842,17 @@ struct device_node *of_find_matching_node_and_match(struct device_node *from,
 }
 EXPORT_SYMBOL(of_find_matching_node_and_match);
 
-int of_match(struct device *dev, struct driver *drv)
+bool of_match(struct device *dev, const struct driver *drv)
 {
 	const struct of_device_id *id;
 
 	id = of_match_node(drv->of_compatible, dev->of_node);
 	if (!id)
-		return 1;
+		return false;
 
 	dev->of_id_entry = id;
 
-	return 0;
+	return true;
 }
 EXPORT_SYMBOL(of_match);
 /**

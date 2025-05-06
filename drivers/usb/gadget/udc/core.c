@@ -1344,24 +1344,24 @@ EXPORT_SYMBOL_GPL(usb_del_gadget_udc);
 
 /* ------------------------------------------------------------------------- */
 
-static int gadget_match_driver(struct device *dev, struct driver *drv)
+static int gadget_match_driver(struct device *dev, const struct driver *drv)
 {
 	struct usb_gadget *gadget = dev_to_usb_gadget(dev);
 	struct usb_udc *udc = gadget->udc;
-	struct usb_gadget_driver *driver = container_of(drv,
+	const struct usb_gadget_driver *driver = container_of_const(drv,
 			struct usb_gadget_driver, driver);
 
 	/* If the driver specifies a udc_name, it must match the UDC's name */
 	if (driver->udc_name &&
 			strcmp(driver->udc_name, dev_name(&udc->dev)) != 0)
-		return -1;
+		return false;
 
 	/* If the driver is already bound to a gadget, it doesn't match */
 	if (driver->is_bound)
-		return -1;
+		return false;
 
 	/* Otherwise any gadget driver matches any UDC */
-	return 0;
+	return true;
 }
 
 static void udc_poll_driver(struct poller_struct *poller)

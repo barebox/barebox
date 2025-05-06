@@ -354,7 +354,7 @@ int generic_memmap_rw(struct cdev *dev, void **map, int flags);
 
 struct bus_type {
 	char *name;
-	int (*match)(struct device *dev, struct driver *drv);
+	int (*match)(struct device *dev, const struct driver *drv);
 	int (*probe)(struct device *dev);
 	void (*remove)(struct device *dev);
 
@@ -366,7 +366,13 @@ struct bus_type {
 };
 
 int bus_register(struct bus_type *bus);
-int device_match(struct device *dev, struct driver *drv);
+int device_match(struct device *dev, const struct driver *drv);
+
+static inline int driver_match_device(const struct driver *drv,
+				      struct device *dev)
+{
+	return drv->bus->match ? drv->bus->match(dev, drv) : true;
+}
 
 extern struct list_head bus_list;
 
@@ -674,7 +680,7 @@ int cdevfs_del_partition(struct cdev *cdev);
  */
 const void *device_get_match_data(struct device *dev);
 
-int device_match_of_modalias(struct device *dev, struct driver *drv);
+int device_match_of_modalias(struct device *dev, const struct driver *drv);
 
 struct device *device_find_child(struct device *parent, void *data,
 				 int (*match)(struct device *dev, void *data));

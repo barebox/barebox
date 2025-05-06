@@ -282,9 +282,9 @@ int efi_connect_all(void)
 	return 0;
 }
 
-static int efi_bus_match(struct device *dev, struct driver *drv)
+static int efi_bus_match(struct device *dev, const struct driver *drv)
 {
-	struct efi_driver *efidrv = to_efi_driver(drv);
+	const struct efi_driver *efidrv = to_efi_driver(drv);
 	struct efi_device *efidev = to_efi_device(dev);
 	int i;
 
@@ -292,11 +292,11 @@ static int efi_bus_match(struct device *dev, struct driver *drv)
 		if (!efi_guidcmp(efidrv->guid, efidev->guids[i])) {
 			BS->handle_protocol(efidev->handle, &efidev->guids[i],
 					&efidev->protocol);
-			return 0;
+			return true;
 		}
 	}
 
-	return 1;
+	return false;
 }
 
 static int efi_bus_probe(struct device *dev)

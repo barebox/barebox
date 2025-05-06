@@ -1347,7 +1347,11 @@ config PBL_OPTEE
 	select HAVE_OPTEE
 	help
 	  Allows starting OP-TEE during lowlevel initialization of the PBL.
-	  Requires explicit support in the board's lowlevel file.
+	  Requires explicit support in the board's lowlevel file (for ARM32)
+	  or the generic SoC support (for ARM64).
+
+	  The trampoline for jumping back from OP-TEE to barebox does currently
+	  not handle THUMB2, so barebox must be built either for A32 or A64.
 
 config FILETYPE_STRINGS
 	bool "Print file types as strings"

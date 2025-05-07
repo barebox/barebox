@@ -78,49 +78,11 @@ static int esdhc_setup_data(struct fsl_esdhc_host *host, struct mci_data *data,
 	return 0;
 }
 
-static bool esdhc_match32(struct fsl_esdhc_host *host, unsigned int off,
-			  unsigned int mask, unsigned int val)
-{
-	const unsigned int reg = sdhci_read32(&host->sdhci, off) & mask;
-
-	return reg == val;
-}
-
-#ifdef __PBL__
-/*
- * Stubs to make timeout logic below work in PBL
- */
-
-#define get_time_ns()		0
-/*
- * Use time in us (approx) as a busy counter timeout value
- */
-#define is_timeout(s, t)	((s)++ > ((t) / 1024))
-
-static void __udelay(int us)
-{
-	volatile int i;
-
-	for (i = 0; i < us * 4; i++);
-}
-
-#define udelay(n)	__udelay(n)
-
-#endif
-
-int esdhc_poll(struct fsl_esdhc_host *host, unsigned int off,
-	       unsigned int mask, unsigned int val,
-	       uint64_t timeout)
-{
-	return wait_on_timeout(timeout,
-			       esdhc_match32(host, off, mask, val));
-}
-
 int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 		     struct mci_data *data)
 {
 	u32	xfertyp, mixctrl, command;
-	u32	irqstat;
+	u32	val, irqstat;
 	dma_addr_t dma = SDHCI_NO_DMA;
 	int ret;
 
@@ -159,8 +121,8 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 		      command << 16 | xfertyp);
 
 	/* Wait for the command to complete */
-	ret = esdhc_poll(host, SDHCI_INT_STATUS,
-			 SDHCI_INT_CMD_COMPLETE, SDHCI_INT_CMD_COMPLETE,
+	ret = esdhc_poll(host, SDHCI_INT_STATUS, val,
+			 val & SDHCI_INT_CMD_COMPLETE,
 			 100 * MSECOND);
 	if (ret) {
 		dev_dbg(host->dev, "timeout 1\n");
@@ -185,9 +147,9 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 		 * Poll on DATA0 line for cmd with busy signal for
 		 * timout / 10 usec since DLA polling can be insecure.
 		 */
-		ret = esdhc_poll(host, SDHCI_PRESENT_STATE,
-				 PRSSTAT_DAT0, PRSSTAT_DAT0,
-				 2500 * MSECOND);
+		ret = esdhc_poll(host, SDHCI_PRESENT_STATE, val,
+				 val & PRSSTAT_DAT0,
+				 sdhci_compute_timeout(cmd, NULL, 2500 * MSECOND));
 		if (ret) {
 			dev_err(host->dev, "timeout PRSSTAT_DAT0\n");
 			goto undo_setup_data;
@@ -210,17 +172,17 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, -1);
 
 	/* Wait for the bus to be idle */
-	ret = esdhc_poll(host, SDHCI_PRESENT_STATE,
-			 SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA, 0,
-			 SECOND);
+	ret = esdhc_poll(host, SDHCI_PRESENT_STATE, val,
+			 (val & (SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA)) == 0,
+			 sdhci_compute_timeout(cmd, data, SECOND));
 	if (ret) {
 		dev_err(host->dev, "timeout 2\n");
 		return -ETIMEDOUT;
 	}
 
-	ret = esdhc_poll(host, SDHCI_PRESENT_STATE,
-			 SDHCI_DATA_LINE_ACTIVE, 0,
-			 100 * MSECOND);
+	ret = esdhc_poll(host, SDHCI_PRESENT_STATE, val,
+			 (val & SDHCI_DATA_LINE_ACTIVE) == 0,
+			 sdhci_compute_timeout(cmd, NULL, 100 * MSECOND));
 	if (ret) {
 		dev_err(host->dev, "timeout 3\n");
 		return -ETIMEDOUT;

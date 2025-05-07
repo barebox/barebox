@@ -49,7 +49,7 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 	int div, pre_div, ddr_pre_div = 1;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	unsigned sdhc_clk = clk_get_rate(host->clk);
-	u32 clk;
+	u32 val, clk;
 	unsigned long  cur_clock;
 
 	if (esdhc_is_usdhc(host) && ddr)
@@ -92,8 +92,8 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 	esdhc_clrsetbits32(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			SYSCTL_CLOCK_MASK, clk);
 
-	esdhc_poll(host, SDHCI_PRESENT_STATE,
-		   PRSSTAT_SDSTB, PRSSTAT_SDSTB,
+	esdhc_poll(host, SDHCI_PRESENT_STATE, val,
+		   val & PRSSTAT_SDSTB,
 		   10 * MSECOND);
 
 	clk = SYSCTL_PEREN | SYSCTL_CKEN | SYSCTL_INITA;
@@ -101,8 +101,8 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 	esdhc_setbits32(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			clk);
 
-	esdhc_poll(host, SDHCI_CLOCK_CONTROL,
-		   SYSCTL_INITA, SYSCTL_INITA,
+	esdhc_poll(host, SDHCI_CLOCK_CONTROL, val,
+		   val & SYSCTL_INITA,
 		   10 * MSECOND);
 }
 
@@ -217,9 +217,8 @@ static int esdhc_reset(struct fsl_esdhc_host *host)
 	}
 
 	/* hardware clears the bit when it is done */
-	if (esdhc_poll(host,
-		       SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
-		       SYSCTL_RSTA, 0, 100 * MSECOND)) {
+	if (esdhc_poll(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
+		       val, (val & SYSCTL_RSTA) == 0, 100 * MSECOND)) {
 		dev_err(host->dev, "Reset never completed.\n");
 		return -EIO;
 	}

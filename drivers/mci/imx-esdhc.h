@@ -10,6 +10,10 @@
 #include <errno.h>
 #include <asm/byteorder.h>
 #include <linux/bitfield.h>
+#include <linux/math.h>
+#include <linux/ktime.h>
+
+#include "sdhci.h"
 
 #define SYSCTL_INITA		0x08000000
 #define SYSCTL_TIMEOUT_MASK	0x000f0000
@@ -163,10 +167,29 @@ esdhc_setbits32(struct fsl_esdhc_host *host, unsigned int reg,
 }
 
 void esdhc_populate_sdhci(struct fsl_esdhc_host *host);
-int esdhc_poll(struct fsl_esdhc_host *host, unsigned int off,
-	       unsigned int mask, unsigned int val,
-	       uint64_t timeout);
 int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 		     struct mci_data *data);
+
+#ifdef __PBL__
+#undef	read_poll_get_time_ns
+#define read_poll_get_time_ns()		0
+/* Use time in us (approx) as a busy counter timeout value */
+#undef	read_poll_is_timeout
+#define read_poll_is_timeout(s, t)	((s)++ > ((t) / 1024))
+
+static inline void __udelay(int us)
+{
+	volatile int i;
+
+	for (i = 0; i < us * 4; i++);
+}
+
+#define udelay(n)	__udelay(n)
+
+#endif
+
+#define esdhc_poll(host, reg, val, cond, timeout_ns)	\
+	sdhci_read32_poll_timeout(&host->sdhci, reg, val, cond, \
+				  ktime_to_us(timeout_ns))
 
 #endif  /* __FSL_ESDHC_H__ */

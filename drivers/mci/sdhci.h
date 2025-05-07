@@ -133,6 +133,11 @@
 #define   SDHCI_CTRL_UHS_SDR104			0x3
 #define   SDHCI_CTRL_UHS_DDR50			0x4
 #define   SDHCI_CTRL_HS400			0x5 /* Non-standard */
+#define  SDHCI_CTRL_DRV_TYPE_MASK		GENMASK(5, 4)
+#define   SDHCI_CTRL_DRV_TYPE_B			0x0000
+#define   SDHCI_CTRL_DRV_TYPE_A			0x0010
+#define   SDHCI_CTRL_DRV_TYPE_C			0x0020
+#define   SDHCI_CTRL_DRV_TYPE_D			0x0030
 #define  SDHCI_CTRL_EXEC_TUNING			BIT(6)
 #define  SDHCI_CTRL_TUNED_CLK			BIT(7)
 #define  SDHCI_CTRL_64BIT_ADDR			BIT(13)
@@ -337,6 +342,7 @@ u16 sdhci_calc_clk(struct sdhci *host, unsigned int clock,
 		   unsigned int *actual_clock, unsigned int input_clock);
 void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_clock);
 void sdhci_enable_clk(struct sdhci *host, u16 clk);
+void sdhci_set_drv_type(struct sdhci *host, unsigned drv_type);
 void sdhci_enable_v4_mode(struct sdhci *host);
 int sdhci_setup_host(struct sdhci *host);
 void __sdhci_read_caps(struct sdhci *host, const u16 *ver,

@@ -887,6 +887,35 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 	sdhci_enable_clk(host, clk);
 }
 
+void sdhci_set_drv_type(struct sdhci *host, unsigned drv_type)
+{
+	u16 ctrl_2;
+
+	if (host->preset_enabled)
+		return;
+
+	/*
+	 * We only need to set Driver Strength if the
+	 * preset value enable is not set.
+	 */
+	ctrl_2 = sdhci_read16(host, SDHCI_HOST_CONTROL2);
+	ctrl_2 &= ~SDHCI_CTRL_DRV_TYPE_MASK;
+	if (drv_type == MMC_SET_DRIVER_TYPE_A)
+		ctrl_2 |= SDHCI_CTRL_DRV_TYPE_A;
+	else if (drv_type == MMC_SET_DRIVER_TYPE_B)
+		ctrl_2 |= SDHCI_CTRL_DRV_TYPE_B;
+	else if (drv_type == MMC_SET_DRIVER_TYPE_C)
+		ctrl_2 |= SDHCI_CTRL_DRV_TYPE_C;
+	else if (drv_type == MMC_SET_DRIVER_TYPE_D)
+		ctrl_2 |= SDHCI_CTRL_DRV_TYPE_D;
+	else {
+		dev_warn(sdhci_dev(host), "invalid driver type, default to driver type B\n");
+		ctrl_2 |= SDHCI_CTRL_DRV_TYPE_B;
+	}
+
+	sdhci_write16(host, ctrl_2, SDHCI_HOST_CONTROL2);
+}
+
 static void sdhci_do_enable_v4_mode(struct sdhci *host)
 {
 	u16 ctrl2;

@@ -207,6 +207,8 @@ static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	/* Set the clock speed */
 	set_sysctl(mci, ios->clock, mci_timing_is_ddr(ios->timing));
 
+	sdhci_set_drv_type(&host->sdhci, ios->drv_type);
+
 	/* Set the bus width */
 	esdhc_clrbits32(host, SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,
 			PROCTL_DTW_4 | PROCTL_DTW_8);

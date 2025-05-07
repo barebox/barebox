@@ -1626,6 +1626,28 @@ int mci_send_abort_tuning(struct mci *mci, u32 opcode)
 }
 EXPORT_SYMBOL_GPL(mci_send_abort_tuning);
 
+static void mmc_select_driver_type(struct mci *mci)
+{
+	int card_drv_type, drive_strength;
+	int fixed_drv_type = mci->host->fixed_drv_type;
+
+	card_drv_type = mci->ext_csd[EXT_CSD_DRIVER_STRENGTH] |
+			mmc_driver_type_mask(0);
+
+	if (mci->host->fixed_drv_type_valid)
+		drive_strength = card_drv_type & mmc_driver_type_mask(fixed_drv_type)
+				 ? fixed_drv_type : 0;
+	else
+		drive_strength = 0;
+
+	mci->host->drive_strength = drive_strength;
+
+	/* Linux only sets the drive strength immediately if the driver
+	 * implements select_drive_strength, which none of our drivers
+	 * do yet
+	 */
+}
+
 static void mmc_select_max_dtr(struct mci *mci)
 {
 	u8 card_type = mci->ext_csd[EXT_CSD_DEVICE_TYPE];
@@ -1698,6 +1720,8 @@ static int mmc_select_hs200(struct mci *mci)
 	int err = -EINVAL;
 	u8 val;
 
+	mmc_select_driver_type(mci);
+
 	/*
 	 * Set the bus width(4 or 8) with host's support and
 	 * switch to HS200 mode if bus width is set successfully.
@@ -1705,8 +1729,7 @@ static int mmc_select_hs200(struct mci *mci)
 	/* find out maximum bus width and then try DDR if supported */
 	err = mci_mmc_select_bus_width(mci);
 	if (err > 0) {
-		/* TODO  actually set drive strength instead of 0. Currently unsupported. */
-		val = EXT_CSD_TIMING_HS200 | 0 << EXT_CSD_DRV_STR_SHIFT;
+		val = EXT_CSD_TIMING_HS200 | (mci->host->drive_strength << EXT_CSD_DRV_STR_SHIFT);
 		err = mci_switch(mci, EXT_CSD_HS_TIMING, val);
 		if (err == -EIO)
 			return -EBADMSG;
@@ -3095,6 +3118,8 @@ void mci_of_parse_node(struct mci_host *host,
 	if (of_property_read_bool(np, "no-mmc"))
 		host->caps2 |= MMC_CAP2_NO_MMC;
 	if (IS_ENABLED(CONFIG_MCI_TUNING)) {
+		u32 drv_type;
+
 		if (of_property_read_bool(np, "mmc-hs200-1_8v"))
 			host->caps2 |= MMC_CAP2_HS200_1_8V_SDR;
 		if (of_property_read_bool(np, "mmc-hs200-1_2v"))
@@ -3118,6 +3143,17 @@ void mci_of_parse_node(struct mci_host *host,
 			 * to the IO lines. (Applicable for other modes in 1.8v)
 			 */
 			host->caps2 &= ~(MMC_CAP2_HSX00_1_8V | MMC_CAP2_HS400_ES);
+		}
+
+		/* Must be after "non-removable" check */
+		if (of_property_read_u32(np, "fixed-emmc-driver-type", &drv_type) == 0) {
+			if (host->non_removable) {
+				host->fixed_drv_type = drv_type;
+				host->fixed_drv_type_valid = true;
+			 } else {
+				dev_err(host->hw_dev,
+					"can't use fixed driver type, media is removable\n");
+			 }
 		}
 	}
 }

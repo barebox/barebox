@@ -208,6 +208,8 @@
 #define SD_ERASE_ARG			0x00000000
 #define SD_DISCARD_ARG			0x00000001
 
+#define mmc_driver_type_mask(n)		(1 << (n))
+
 /*
  * EXT_CSD fields
  */
@@ -560,6 +562,7 @@ struct mci_ios {
 	unsigned int		clock;			/* clock rate */
 	enum mci_bus_width	bus_width;		/* data bus width */
 	enum mci_timing		timing;			/* timing specification used */
+	unsigned char		drv_type;		/* driver type (A, B, C, D) */
 };
 
 struct mci;
@@ -632,6 +635,13 @@ struct mci_host {
 	int broken_cd;		/**< card detect is broken */
 	bool non_removable;	/**< device is non removable */
 	bool disable_wp;	/**< ignore write-protect detection logic */
+	bool fixed_drv_type_valid;
+	unsigned char fixed_drv_type;	/**< fixed driver type for non-removable media */
+	unsigned char	drive_strength;	/**< driver type (A, B, C, D) */
+#define MMC_SET_DRIVER_TYPE_B	0
+#define MMC_SET_DRIVER_TYPE_A	1
+#define MMC_SET_DRIVER_TYPE_C	2
+#define MMC_SET_DRIVER_TYPE_D	3
 	struct regulator *supply;
 	struct mci_ops ops;
 };

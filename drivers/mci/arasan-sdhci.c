@@ -773,6 +773,9 @@ static int arasan_sdhci_probe(struct device *dev)
 			mci->ops.execute_tuning = arasan_zynqmp_execute_tuning;
 		mci->caps2 |= MMC_CAP2_HS200;
 		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_CLOCK_25_BROKEN;
+	} else {
+		/* HS200 only supported for ZynqMP at the moment */
+		arasan_sdhci->sdhci.quirks2 = SDHCI_QUIRK2_BROKEN_HS200;
 	}
 
 	/*

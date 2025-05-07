@@ -1044,6 +1044,38 @@ int sdhci_setup_host(struct sdhci *host)
 	if (sdhci_can_64bit_dma(host))
 		host->flags |= SDHCI_USE_64_BIT_DMA;
 
+	if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V) {
+		host->caps1 &= ~(SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50 |
+				 SDHCI_SUPPORT_DDR50);
+		/*
+		 * The SDHCI controller in a SoC might support HS200/HS400
+		 * (indicated using mmc-hs200-1_8v/mmc-hs400-1_8v dt property),
+		 * but if the board is modeled such that the IO lines are not
+		 * connected to 1.8v then HS200/HS400 cannot be supported.
+		 * Disable HS200/HS400 if the board does not have 1.8v connected
+		 * to the IO lines. (Applicable for other modes in 1.8v)
+		 */
+		mci->caps2 &= ~(MMC_CAP2_HSX00_1_8V | MMC_CAP2_HS400_ES);
+		mci->host_caps &= ~(MMC_CAP_1_8V_DDR | MMC_CAP_UHS);
+	}
+
+	/* Any UHS-I mode in caps implies SDR12 and SDR25 support. */
+	if (host->caps1 & (SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50 |
+			   SDHCI_SUPPORT_DDR50))
+		mci->host_caps |= MMC_CAP_UHS_SDR12 | MMC_CAP_UHS_SDR25;
+
+	/* SDR104 supports also implies SDR50 support */
+	if (host->caps1 & SDHCI_SUPPORT_SDR104) {
+		mci->host_caps |= MMC_CAP_UHS_SDR104 | MMC_CAP_UHS_SDR50;
+		/* SD3.0: SDR104 is supported so (for eMMC) the caps2
+		 * field can be promoted to support HS200.
+		 */
+		if (!(host->quirks2 & SDHCI_QUIRK2_BROKEN_HS200))
+			mci->caps2 |= MMC_CAP2_HS200;
+	} else if (host->caps1 & SDHCI_SUPPORT_SDR50) {
+		mci->host_caps |= MMC_CAP_UHS_SDR50;
+	}
+
 	if ((mci->caps2 & (MMC_CAP2_HS200_1_8V_SDR | MMC_CAP2_HS400_1_8V)))
 		host->flags |= SDHCI_SIGNALING_180;
 

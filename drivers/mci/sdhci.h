@@ -249,6 +249,10 @@ struct sdhci {
 	unsigned int quirks;
 #define SDHCI_QUIRK_MISSING_CAPS		BIT(27)
 	unsigned int quirks2;
+/* The system physically doesn't support 1.8v, even if the host does */
+#define SDHCI_QUIRK2_NO_1_8_V				BIT(2)
+/* Controller does not support HS200 */
+#define SDHCI_QUIRK2_BROKEN_HS200			BIT(6)
 #define SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN	BIT(15)
 #define SDHCI_QUIRK2_ISSUE_CMD_DAT_RESET_TOGETHER	BIT(19)
 	u32 caps;	/* CAPABILITY_0 */

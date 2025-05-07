@@ -325,6 +325,8 @@ static int dwcmshc_probe(struct device *dev)
 	host->sdhci.base = IOMEM(iores->start);
 	host->sdhci.mci = mci;
 	host->sdhci.max_clk = clk_get_rate(clk);
+	/* HS200 not supported by this driver at the moment */
+	host->sdhci.quirks2 = SDHCI_QUIRK2_BROKEN_HS200;
 	host->cb = dwcmshc_cb;
 
 	mci->hw_dev = dev;

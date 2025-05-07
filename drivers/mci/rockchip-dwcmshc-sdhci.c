@@ -341,6 +341,9 @@ static int rk_sdhci_probe(struct device *dev)
 
 	mci_of_parse(&host->mci);
 
+	/* HS200 not supported by this driver at the moment */
+	host->sdhci.quirks2 = SDHCI_QUIRK2_BROKEN_HS200;
+
 	sdhci_setup_host(&host->sdhci);
 
 	dev->priv = host;

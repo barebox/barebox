@@ -638,6 +638,9 @@ static int am654_sdhci_probe(struct device *dev)
 	if (ret)
 		return ret;
 
+	/* HS200 not supported by this driver at the moment */
+	plat->sdhci.quirks2 = SDHCI_QUIRK2_BROKEN_HS200;
+
 	plat->sdhci.mci = mci;
 	sdhci_setup_host(&plat->sdhci);
 

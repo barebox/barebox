@@ -466,6 +466,9 @@ static int fsl_esdhc_probe(struct device *dev)
 	host->mci.hw_dev = dev;
 	host->sdhci.mci = &host->mci;
 
+	if (!(host->socdata->flags & ESDHC_FLAG_HS200))
+		host->sdhci.quirks2 |= SDHCI_QUIRK2_BROKEN_HS200;
+
 	ret = sdhci_setup_host(&host->sdhci);
 	if (ret)
 		goto err_clk_disable;

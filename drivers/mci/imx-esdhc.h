@@ -62,6 +62,8 @@
 /* Tuning bits */
 #define  MIX_CTRL_TUNING_MASK	0x03c00000
 #define IMX_SDHCI_DLL_CTRL	0x60
+#define  IMX_SDHCI_DLL_CTRL_OVERRIDE_VAL_SHIFT	9
+#define  IMX_SDHCI_DLL_CTRL_OVERRIDE_EN_SHIFT	8
 #define IMX_SDHCI_MIX_CTRL_FBCLK_SEL	BIT(25)
 
 /* tune control register */
@@ -137,11 +139,23 @@ struct esdhc_soc_data {
 	const char *clkidx;
 };
 
+/*
+ * struct esdhc_platform_data - platform data for esdhc on i.MX
+ */
+
+struct esdhc_platform_data {
+	unsigned int delay_line;
+	unsigned int tuning_step;       /* The delay cell steps in tuning procedure */
+	unsigned int tuning_start_tap;	/* The start delay cell point in tuning procedure */
+};
+
 struct fsl_esdhc_host {
 	struct mci_host		mci;
 	struct clk		*clk;
 	struct device		*dev;
 	const struct esdhc_soc_data *socdata;
+	struct esdhc_platform_data boarddata;
+	u32		last_cmd;
 	struct sdhci	sdhci;
 };
 

@@ -145,6 +145,15 @@ static void usdhc_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing
 	case MMC_TIMING_MMC_DDR52:
 		mixctrl |= MIX_CTRL_DDREN;
 		sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, mixctrl);
+		if (host->boarddata.delay_line) {
+			u32 v;
+			v = host->boarddata.delay_line <<
+				IMX_SDHCI_DLL_CTRL_OVERRIDE_VAL_SHIFT |
+				(1 << IMX_SDHCI_DLL_CTRL_OVERRIDE_EN_SHIFT);
+			if (cpu_is_mx53())
+				v <<= 1;
+			sdhci_write32(&host->sdhci, IMX_SDHCI_DLL_CTRL, v);
+		}
 		break;
 	default:
 		sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, mixctrl);
@@ -290,7 +299,36 @@ static int esdhc_init(struct mci_host *mci, struct device *dev)
 	esdhc_clrsetbits32(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			SYSCTL_TIMEOUT_MASK, 14 << 16);
 
-	return ret;
+	if (IS_ENABLED(CONFIG_MCI_TUNING) && esdhc_is_usdhc(host) &&
+	    (host->socdata->flags & ESDHC_FLAG_STD_TUNING)) {
+		u32 tmp;
+
+		/* disable DLL_CTRL delay line settings */
+		sdhci_write32(&host->sdhci, ESDHC_DLL_CTRL, 0x0);
+
+		tmp = sdhci_read32(&host->sdhci, ESDHC_TUNING_CTRL);
+		tmp |= ESDHC_STD_TUNING_EN;
+
+		tmp &= ~(ESDHC_TUNING_START_TAP_MASK | ESDHC_TUNING_STEP_MASK);
+		tmp |= host->boarddata.tuning_start_tap;
+
+		tmp |= host->boarddata.tuning_step << ESDHC_TUNING_STEP_SHIFT;
+
+		/* Disable the CMD CRC check for tuning, if not, need to
+		 * add some delay after every tuning command, because
+		 * hardware standard tuning logic will directly go to next
+		 * step once it detect the CMD CRC error, will not wait for
+		 * the card side to finally send out the tuning data, trigger
+		 * the buffer read ready interrupt immediately. If usdhc send
+		 * the next tuning command some eMMC card will stuck, can't
+		 * response, block the tuning procedure or the first command
+		 * after the whole tuning procedure always can't get any response.
+		 */
+		tmp |= ESDHC_TUNING_CMD_CRC_CHECK_DISABLE;
+		sdhci_write32(&host->sdhci, ESDHC_TUNING_CTRL, tmp);
+	}
+
+	return 0;
 }
 
 static const struct mci_ops fsl_esdhc_ops = {
@@ -299,6 +337,23 @@ static const struct mci_ops fsl_esdhc_ops = {
 	.init = esdhc_init,
 	.card_present = esdhc_card_present,
 };
+
+static void fsl_esdhc_probe_dt(struct device *dev, struct fsl_esdhc_host *host)
+{
+	struct device_node *np = dev->of_node;
+	struct esdhc_platform_data *boarddata = &host->boarddata;
+
+	if (!IS_ENABLED(CONFIG_MCI_TUNING))
+		return;
+
+	if (of_property_read_u32(np, "fsl,tuning-step", &boarddata->tuning_step))
+		boarddata->tuning_step = ESDHC_TUNING_STEP_DEFAULT;
+	if (of_property_read_u32(np, "fsl,tuning-start-tap",
+			     &boarddata->tuning_start_tap))
+		boarddata->tuning_start_tap = ESDHC_TUNING_START_TAP_DEFAULT;
+	if (of_property_read_u32(np, "fsl,delay-line", &boarddata->delay_line))
+		boarddata->delay_line = 0;
+}
 
 static int fsl_esdhc_probe(struct device *dev)
 {
@@ -359,6 +414,8 @@ static int fsl_esdhc_probe(struct device *dev)
 	host->mci.f_max = rate;
 
 	mci_of_parse(&host->mci);
+
+	fsl_esdhc_probe_dt(dev, host);
 
 	ret = mci_register(&host->mci);
 	if (ret)

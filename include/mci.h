@@ -504,6 +504,12 @@ static inline void mci_setup_cmd(struct mci_cmd *p, unsigned cmd,
 	p->resp_type = response;
 }
 
+static inline bool mmc_op_tuning(u32 cmdidx)
+{
+	return cmdidx == MMC_SEND_TUNING_BLOCK ||
+	       cmdidx == MMC_SEND_TUNING_BLOCK_HS200;
+}
+
 /** data information to be used with some SD/MMC commands */
 struct mci_data {
 	union {

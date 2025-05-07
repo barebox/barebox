@@ -1024,6 +1024,24 @@ retry_scr:
 	return 0;
 }
 
+static const char *mci_timing_tostr(unsigned timing)
+{
+	switch (timing) {
+	case MMC_TIMING_LEGACY:
+		return "legacy";
+	case MMC_TIMING_MMC_HS:
+		return "MMC HS";
+	case MMC_TIMING_SD_HS:
+		return "SD HS";
+	case MMC_TIMING_MMC_DDR52:
+		return "MMC DDR52";
+	case MMC_TIMING_MMC_HS200:
+		return "HS200";
+	default:
+		return "unknown"; /* shouldn't happen */
+	}
+}
+
 /**
  * Setup host's interface bus width and transfer frequency
  * @param mci MCI instance
@@ -1031,13 +1049,13 @@ retry_scr:
 static void mci_set_ios(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_ios ios = {
-		.bus_width = host->ios.bus_width,
-		.clock = host->ios.clock,
-		.timing = host->ios.timing,
-	};
+	struct mci_ios *ios = &host->ios;
 
-	host->ops.set_ios(host, &ios);
+	dev_dbg(&mci->dev, "clock %u.%uMHz width %u timing %s\n",
+		ios->clock / 1000000, ios->clock % 1000000,
+		1 << ios->bus_width, mci_timing_tostr(ios->timing));
+
+	host->ops.set_ios(host, ios);
 
 	host->actual_clock = host->ios.clock;
 }
@@ -2312,24 +2330,6 @@ static int mci_sd_read(struct block_device *blk, void *buffer, sector_t block,
 }
 
 /* ------------------ attach to the device API --------------------------- */
-
-static const char *mci_timing_tostr(unsigned timing)
-{
-	switch (timing) {
-	case MMC_TIMING_LEGACY:
-		return "legacy";
-	case MMC_TIMING_MMC_HS:
-		return "MMC HS";
-	case MMC_TIMING_SD_HS:
-		return "SD HS";
-	case MMC_TIMING_MMC_DDR52:
-		return "MMC DDR52";
-	case MMC_TIMING_MMC_HS200:
-		return "HS200";
-	default:
-		return "unknown"; /* shouldn't happen */
-	}
-}
 
 static void mci_print_caps(unsigned caps)
 {

@@ -771,6 +771,7 @@ static int arasan_sdhci_probe(struct device *dev)
 	if (of_device_is_compatible(np, "xlnx,zynqmp-8.9a")) {
 		if (IS_ENABLED(CONFIG_MCI_TUNING))
 			mci->ops.execute_tuning = arasan_zynqmp_execute_tuning;
+		mci->caps2 |= MMC_CAP2_HS200;
 		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_CLOCK_25_BROKEN;
 	}
 

@@ -616,6 +616,7 @@ struct mci_host {
 	unsigned f_max;		/**< host interface upper limit */
 	unsigned actual_clock;
 	struct mci_ios ios;		/* current io bus settings */
+	unsigned mmc_avail_type;	/**< supported device type by both host and card */
 	unsigned hs_max_dtr;
 	unsigned hs200_max_dtr;
 	unsigned max_req_size;

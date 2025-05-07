@@ -1582,14 +1582,8 @@ int mci_execute_tuning(struct mci *mci)
 	struct mci_host *host = mci->host;
 	u32 opcode;
 
-	if (!host->ops.execute_tuning) {
-		/*
-		 * For us, implementing ->execute_tuning is mandatory to
-		 * support higher speed modes
-		 */
-		dev_warn(&mci->dev, "tuning failed: no host diver support\n");
-		return -EOPNOTSUPP;
-	}
+	if (!host->ops.execute_tuning)
+		return 0;
 
 	/* Tuning is only supported for MMC / HS200 */
 	if (mmc_card_hs200(mci))
@@ -1626,29 +1620,35 @@ static void mmc_select_max_dtr(struct mci *mci)
 	u32 caps = mci->card_caps;
 	unsigned int hs_max_dtr = 0;
 	unsigned int hs200_max_dtr = 0;
+	unsigned int avail_type = 0;
 
 	if ((caps & MMC_CAP_MMC_HIGHSPEED) &&
 	    (card_type & EXT_CSD_CARD_TYPE_26)) {
 		hs_max_dtr = MMC_HIGH_26_MAX_DTR;
+		avail_type |= EXT_CSD_CARD_TYPE_26;
 	}
 
 	if ((caps & MMC_CAP_MMC_HIGHSPEED) &&
 	    (card_type & EXT_CSD_CARD_TYPE_52)) {
 		hs_max_dtr = MMC_HIGH_52_MAX_DTR;
+		avail_type |= EXT_CSD_CARD_TYPE_52;
 	}
 
 	if ((caps2 & MMC_CAP2_HS200_1_8V_SDR) &&
 	    (card_type & EXT_CSD_CARD_TYPE_HS200_1_8V)) {
 		hs200_max_dtr = MMC_HS200_MAX_DTR;
+		avail_type |= EXT_CSD_CARD_TYPE_HS200_1_8V;
 	}
 
 	if ((caps2 & MMC_CAP2_HS200_1_2V_SDR) &&
 	    (card_type & EXT_CSD_CARD_TYPE_HS200_1_2V)) {
 		hs200_max_dtr = MMC_HS200_MAX_DTR;
+		avail_type |= EXT_CSD_CARD_TYPE_HS200_1_2V;
 	}
 
 	mci->host->hs200_max_dtr = hs200_max_dtr;
 	mci->host->hs_max_dtr = hs_max_dtr;
+	mci->host->mmc_avail_type = avail_type;
 }
 /*
  * For device supporting HS200 mode, the following sequence
@@ -1733,16 +1733,14 @@ static void mmc_set_bus_speed(struct mci *mci)
  */
 int mmc_select_timing(struct mci *mci)
 {
-	unsigned int mmc_avail_type;
 	int err = 0;
 
 	mmc_select_max_dtr(mci);
 
-	mmc_avail_type = mci->ext_csd[EXT_CSD_DEVICE_TYPE] & EXT_CSD_CARD_TYPE_MASK;
-	if (mmc_avail_type & EXT_CSD_CARD_TYPE_HS200) {
+	if (mci->host->mmc_avail_type & EXT_CSD_CARD_TYPE_HS200) {
 		err = mmc_select_hs200(mci);
 		if (err == -EBADMSG)
-			mmc_avail_type &= ~EXT_CSD_CARD_TYPE_HS200;
+			mci->host->mmc_avail_type &= ~EXT_CSD_CARD_TYPE_HS200;
 		else
 			goto out;
 	}

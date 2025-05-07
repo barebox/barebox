@@ -1781,34 +1781,35 @@ static int mci_startup_mmc(struct mci *mci)
 	}
 
 	if (IS_ENABLED(CONFIG_MCI_TUNING)) {
-		/*
-		 * Select timing interface
-		 */
+		dev_dbg(&mci->dev, "select timing %s\n", mci_timing_tostr(host->ios.timing));
+
 		ret = mmc_select_timing(mci);
 		if (ret)
 			return ret;
 
-		if (mmc_card_hs200(mci))
+		if (mmc_card_hs200(mci)) {
 			ret = mmc_hs200_tuning(mci);
+			if (!ret) {
+				dev_dbg(&mci->dev, "HS200 tuning succeeded\n");
+				return 0;
+			}
 
-		if (ret) {
+			dev_dbg(&mci->dev, "HS200 tuning failed, falling back to HS\n");
+
 			host->ios.timing = MMC_TIMING_MMC_HS;
 			mci_switch(mci, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
 		}
 	}
 
-	if (ret || !IS_ENABLED(CONFIG_MCI_TUNING)) {
-		mci_set_clock(mci, mci->tran_speed);
+	mci_set_clock(mci, mci->tran_speed);
 
-		/* find out maximum bus width and then try DDR if supported */
-		ret = mci_mmc_select_bus_width(mci);
-		if (ret > MMC_BUS_WIDTH_1 && mci->tran_speed == 52000000)
-			ret = mci_mmc_select_hs_ddr(mci);
+	/* find out maximum bus width and then try DDR if supported */
+	ret = mci_mmc_select_bus_width(mci);
+	if (ret > MMC_BUS_WIDTH_1 && mci->tran_speed == 52000000)
+		ret = mci_mmc_select_hs_ddr(mci);
 
-		if (ret < 0) {
-			dev_warn(&mci->dev, "Changing MMC bus width failed: %d\n", ret);
-		}
-	}
+	if (ret < 0)
+		dev_warn(&mci->dev, "Changing MMC bus width failed: %d\n", ret);
 
 	return ret >= MMC_BUS_WIDTH_1 ? 0 : ret;
 }

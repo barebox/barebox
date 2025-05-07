@@ -14,6 +14,7 @@
 #include <of.h>
 #include <malloc.h>
 #include <mci.h>
+#include <linux/pinctrl/consumer.h>
 #include <clock.h>
 #include <io.h>
 #include <linux/clk.h>
@@ -56,6 +57,9 @@
 #define ESDHC_TUNING_STEP_MASK		0x00070000
 #define ESDHC_TUNING_STEP_SHIFT		16
 
+/* pinctrl state */
+#define ESDHC_PINCTRL_STATE_100MHZ	"state_100mhz"
+#define ESDHC_PINCTRL_STATE_200MHZ	"state_200mhz"
 
 #define to_fsl_esdhc(mci)	container_of(mci, struct fsl_esdhc_host, mci)
 
@@ -133,6 +137,37 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 		   10 * MSECOND);
 }
 
+static int esdhc_change_pinstate(struct fsl_esdhc_host *host,
+				 unsigned int uhs)
+{
+	struct pinctrl_state *pinctrl;
+
+	dev_dbg(host->dev, "change pinctrl state for uhs %d\n", uhs);
+
+	if (IS_ERR(host->pinctrl) ||
+		IS_ERR(host->pins_100mhz) ||
+		IS_ERR(host->pins_200mhz))
+		return -EINVAL;
+
+	switch (uhs) {
+	case MMC_TIMING_UHS_SDR50:
+	case MMC_TIMING_UHS_DDR50:
+		pinctrl = host->pins_100mhz;
+		break;
+	case MMC_TIMING_UHS_SDR104:
+	case MMC_TIMING_MMC_HS200:
+	case MMC_TIMING_MMC_HS400:
+		pinctrl = host->pins_200mhz;
+		break;
+	default:
+		/* back to default state for other legacy timing */
+		return pinctrl_select_state_default(host->dev);
+	}
+
+	return pinctrl_select_state(host->pinctrl, pinctrl);
+}
+
+
 static void usdhc_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing)
 {
 	u32 mixctrl;
@@ -158,6 +193,8 @@ static void usdhc_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing
 	default:
 		sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, mixctrl);
 	}
+
+	esdhc_change_pinstate(host, timing);
 
 	host->sdhci.timing = timing;
 }
@@ -355,6 +392,13 @@ static void fsl_esdhc_probe_dt(struct device *dev, struct fsl_esdhc_host *host)
 		boarddata->tuning_start_tap = ESDHC_TUNING_START_TAP_DEFAULT;
 	if (of_property_read_u32(np, "fsl,delay-line", &boarddata->delay_line))
 		boarddata->delay_line = 0;
+
+	if (esdhc_is_usdhc(host) && !IS_ERR(host->pinctrl)) {
+		host->pins_100mhz = pinctrl_lookup_state(host->pinctrl,
+						ESDHC_PINCTRL_STATE_100MHZ);
+		host->pins_200mhz = pinctrl_lookup_state(host->pinctrl,
+						ESDHC_PINCTRL_STATE_200MHZ);
+	}
 }
 
 static int fsl_esdhc_probe(struct device *dev)
@@ -416,6 +460,10 @@ static int fsl_esdhc_probe(struct device *dev)
 	host->mci.f_max = rate;
 
 	mci_of_parse(&host->mci);
+
+	host->pinctrl = pinctrl_get(dev);
+	if (IS_ERR(host->pinctrl))
+		dev_warn(host->dev, "could not get pinctrl\n");
 
 	fsl_esdhc_probe_dt(dev, host);
 

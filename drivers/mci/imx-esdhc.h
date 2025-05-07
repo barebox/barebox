@@ -153,6 +153,9 @@ struct fsl_esdhc_host {
 	struct mci_host		mci;
 	struct clk		*clk;
 	struct device		*dev;
+	struct pinctrl		*pinctrl;
+	struct pinctrl_state	*pins_100mhz;
+	struct pinctrl_state	*pins_200mhz;
 	const struct esdhc_soc_data *socdata;
 	struct esdhc_platform_data boarddata;
 	u32		last_cmd;

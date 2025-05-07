@@ -1650,6 +1650,28 @@ static void mmc_select_max_dtr(struct mci *mci)
 	mci->host->hs_max_dtr = hs_max_dtr;
 	mci->host->mmc_avail_type = avail_type;
 }
+
+static u32 mmc_card_caps2_from_ext_csd(struct mci *mci)
+{
+	u8 card_type;
+	u32 caps2;
+
+	if (!mci->ext_csd)
+		return 0;
+
+	card_type = mci->ext_csd[EXT_CSD_DEVICE_TYPE];
+	caps2 = 0;
+
+	if (card_type & EXT_CSD_CARD_TYPE_HS200_1_8V)
+		caps2 |= MMC_CAP2_HS200_1_8V_SDR;
+
+	if ((caps2 & MMC_CAP2_HS200_1_2V_SDR) &&
+	    (card_type & EXT_CSD_CARD_TYPE_HS200_1_2V))
+		caps2 |= MMC_CAP2_HS200_1_2V_SDR;
+
+	return caps2;
+}
+
 /*
  * For device supporting HS200 mode, the following sequence
  * should be done before executing the tuning process.
@@ -2330,9 +2352,9 @@ static int mci_sd_read(struct block_device *blk, void *buffer, sector_t block,
 
 /* ------------------ attach to the device API --------------------------- */
 
-static void mci_print_caps(unsigned caps)
+static void mci_print_caps(unsigned caps, unsigned caps2)
 {
-	printf("  capabilities: %s%s%s%s%s%s%s%s\n",
+	printf("  capabilities: %s%s%s%s%s%s%s%s%s%s\n",
 		caps & MMC_CAP_4_BIT_DATA ? "4bit " : "",
 		caps & MMC_CAP_8_BIT_DATA ? "8bit " : "",
 		caps & MMC_CAP_SD_HIGHSPEED ? "sd-hs " : "",
@@ -2340,7 +2362,9 @@ static void mci_print_caps(unsigned caps)
 		caps & MMC_CAP_MMC_HIGHSPEED_52MHZ ? "mmc-52MHz " : "",
 		caps & MMC_CAP_3_3V_DDR ? "ddr-3.3v " : "",
 		caps & MMC_CAP_1_8V_DDR ? "ddr-1.8v " : "",
-		caps & MMC_CAP_1_2V_DDR ? "ddr-1.2v " : "");
+		caps & MMC_CAP_1_2V_DDR ? "ddr-1.2v " : "",
+		caps2 & MMC_CAP2_HS200_1_8V_SDR ? "hs200-1.8v " : "",
+		caps2 & MMC_CAP2_HS200_1_2V_SDR ? "hs200-1.2v " : "");
 }
 
 /*
@@ -2458,7 +2482,7 @@ static void mci_info(struct device *dev)
 
 	printf("  current buswidth: %d\n", bw);
 	printf("  current timing: %s\n", mci_timing_tostr(host->ios.timing));
-	mci_print_caps(host->host_caps);
+	mci_print_caps(host->host_caps, host->caps2);
 
 	printf("Card information:\n");
 	printf("  Card type: %s\n", mci->sdio ? "SDIO" : IS_SD(mci) ? "SD" : "MMC");
@@ -2488,7 +2512,7 @@ static void mci_info(struct device *dev)
 	printf("   CSD: %08X-%08X-%08X-%08X\n", mci->csd[0], mci->csd[1],
 		mci->csd[2], mci->csd[3]);
 	printf("  Max. transfer speed: %u Hz\n", mci->tran_speed);
-	mci_print_caps(mci->card_caps);
+	mci_print_caps(mci->card_caps, mmc_card_caps2_from_ext_csd(mci));
 	printf("  Manufacturer ID: 0x%02x\n", mci->cid.manfid);
 	printf("  OEM/Application ID: 0x%04x\n", mci->cid.oemid);
 	printf("  Product name: '%s'\n", mci->cid.prod_name);

@@ -1094,6 +1094,19 @@ static void mci_set_bus_width(struct mci *mci, enum mci_bus_width width)
 }
 
 /**
+ * Setup host's interface timing
+ * @param mci MCI instance
+ * @param width New timing
+ */
+static void mci_set_timing(struct mci *mci, enum mci_timing timing)
+{
+	struct mci_host *host = mci->host;
+
+	host->ios.timing = timing;
+	mci_set_ios(mci);
+}
+
+/**
  * Extract card's version from its CSD
  * @param mci MCI instance
  */
@@ -1709,8 +1722,7 @@ static int mmc_select_hs200(struct mci *mci)
 		old_timing = mci->host->ios.timing;
 		old_clock = mci->host->ios.clock;
 
-		mci->host->ios.timing = MMC_TIMING_MMC_HS200;
-		mci_set_ios(mci);
+		mci_set_timing(mci, MMC_TIMING_MMC_HS200);
 		mci_set_clock(mci, mci->host->hs_max_dtr);
 
 		err = mci_switch_status(mci, true);
@@ -1721,8 +1733,7 @@ static int mmc_select_hs200(struct mci *mci)
 		 */
 		if (err == -EBADMSG) {
 			mci->host->ios.clock = old_clock;
-			mci->host->ios.timing = old_timing;
-			mci_set_ios(mci);
+			mci_set_timing(mci, old_timing);
 		}
 	}
 err:

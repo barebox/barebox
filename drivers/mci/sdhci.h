@@ -25,6 +25,7 @@
 #define  SDHCI_DEFAULT_BOUNDARY_ARG		SDHCI_DMA_BOUNDARY_512K
 #define  SDHCI_TRANSFER_BLOCK_SIZE(x)		((x) & 0xfff)
 #define SDHCI_BLOCK_COUNT					0x06
+#define  SDHCI_MAKE_BLKSZ(dma, blksz) (((dma & 0x7) << 12) | (blksz & 0xFFF))
 #define SDHCI_ARGUMENT						0x08
 #define SDHCI_TRANSFER_MODE__COMMAND				0x0c
 #define SDHCI_TRANSFER_MODE					0x0c

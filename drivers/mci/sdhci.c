@@ -10,7 +10,6 @@
 #include "sdhci.h"
 
 #define MAX_TUNING_LOOP 40
-#define  SDHCI_MAKE_BLKSZ(dma, blksz) (((dma & 0x7) << 12) | (blksz & 0xFFF))
 
 enum sdhci_reset_reason {
 	SDHCI_RESET_FOR_INIT,

@@ -125,7 +125,7 @@ static int mci_set_blocklen(struct mci *mci, unsigned len)
 		return 0;
 
 	mci_setup_cmd(&cmd, MMC_CMD_SET_BLOCKLEN, len, MMC_RSP_R1);
-	return mci_send_cmd(mci, &cmd, NULL);
+	return mci_send_cmd_retry(mci, &cmd, NULL, 4);
 }
 
 static void *sector_buf;

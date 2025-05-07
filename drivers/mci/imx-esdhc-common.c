@@ -121,15 +121,13 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 		      command << 16 | xfertyp);
 
 	/* Wait for the command to complete */
-	ret = esdhc_poll(host, SDHCI_INT_STATUS, val,
-			 val & SDHCI_INT_CMD_COMPLETE,
+	ret = esdhc_poll(host, SDHCI_INT_STATUS, irqstat,
+			 irqstat & SDHCI_INT_CMD_COMPLETE,
 			 100 * MSECOND);
 	if (ret) {
 		dev_dbg(host->dev, "timeout 1\n");
 		goto undo_setup_data;
 	}
-
-	irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
 
 	if (irqstat & CMD_ERR) {
 		ret = -EIO;

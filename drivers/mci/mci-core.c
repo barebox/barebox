@@ -791,7 +791,7 @@ static int mmc_change_freq(struct mci *mci)
 		mci->card_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ;
 
 		if (cardtype & EXT_CSD_CARD_TYPE_DDR_1_8V)
-			mci->card_caps |= MMC_CAP_MMC_3_3V_DDR | MMC_CAP_MMC_1_8V_DDR;
+			mci->card_caps |= MMC_CAP_3_3V_DDR | MMC_CAP_1_8V_DDR;
 	}
 
 	if (IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&
@@ -1563,7 +1563,7 @@ static int mci_mmc_select_hs_ddr(struct mci *mci)
 	 * higher speed modes that require voltage switching like HS200/HS400,
 	 * let's just check for either bit.
 	 */
-	if (!(mci_caps(mci) & (MMC_CAP_MMC_1_8V_DDR | MMC_CAP_MMC_3_3V_DDR)))
+	if (!(mci_caps(mci) & (MMC_CAP_1_8V_DDR | MMC_CAP_3_3V_DDR)))
 		return 0;
 
 	ret = mci_mmc_try_bus_width(mci, host->ios.bus_width, MMC_TIMING_MMC_DDR52);
@@ -2340,9 +2340,9 @@ static void mci_print_caps(unsigned caps)
 		caps & MMC_CAP_SD_HIGHSPEED ? "sd-hs " : "",
 		caps & MMC_CAP_MMC_HIGHSPEED ? "mmc-hs " : "",
 		caps & MMC_CAP_MMC_HIGHSPEED_52MHZ ? "mmc-52MHz " : "",
-		caps & MMC_CAP_MMC_3_3V_DDR ? "ddr-3.3v " : "",
-		caps & MMC_CAP_MMC_1_8V_DDR ? "ddr-1.8v " : "",
-		caps & MMC_CAP_MMC_1_2V_DDR ? "ddr-1.2v " : "");
+		caps & MMC_CAP_3_3V_DDR ? "ddr-3.3v " : "",
+		caps & MMC_CAP_1_8V_DDR ? "ddr-1.8v " : "",
+		caps & MMC_CAP_1_2V_DDR ? "ddr-1.2v " : "");
 }
 
 /*

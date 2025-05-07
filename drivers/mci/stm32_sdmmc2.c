@@ -637,9 +637,9 @@ static int stm32_sdmmc2_probe(struct amba_device *adev,
 		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ;
 
 	if (of_property_read_bool(np, "mmc-ddr-3_3v"))
-		mci->host_caps |= MMC_CAP_MMC_3_3V_DDR;
+		mci->host_caps |= MMC_CAP_3_3V_DDR;
 	if (of_property_read_bool(np, "mmc-ddr-1_8v"))
-		mci->host_caps |= MMC_CAP_MMC_1_8V_DDR;
+		mci->host_caps |= MMC_CAP_1_8V_DDR;
 
 	return mci_register(&priv->mci);
 

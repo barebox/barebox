@@ -324,7 +324,7 @@ static int fsl_esdhc_probe(struct device *dev)
 		goto err_clk_disable;
 
 	if (esdhc_is_usdhc(host) || esdhc_is_layerscape(host))
-		mci->host_caps |= MMC_CAP_MMC_3_3V_DDR | MMC_CAP_MMC_1_8V_DDR;
+		mci->host_caps |= MMC_CAP_3_3V_DDR | MMC_CAP_1_8V_DDR;
 
 	rate = clk_get_rate(host->clk);
 	host->mci.f_min = rate >> 12;

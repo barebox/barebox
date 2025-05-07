@@ -524,8 +524,8 @@ void sdhci_teardown_data(struct sdhci *sdhci,
 		dma_unmap_single(dev, dma, nbytes, DMA_TO_DEVICE);
 }
 
-int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
-			    dma_addr_t dma)
+int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_cmd *cmd,
+			    struct mci_data *data, dma_addr_t dma)
 {
 	struct device *dev = sdhci_dev(sdhci);
 	u64 start;
@@ -594,7 +594,8 @@ out:
 	return ret;
 }
 
-int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data)
+int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_cmd *cmd,
+			    struct mci_data *data)
 {
 	unsigned int block = 0;
 	u32 stat, prs;
@@ -635,7 +636,8 @@ int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data)
 	return 0;
 }
 
-int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t dma)
+int sdhci_transfer_data(struct sdhci *sdhci, struct mci_cmd *cmd,
+			struct mci_data *data, dma_addr_t dma)
 {
 	struct device *dev = sdhci_dev(sdhci);
 
@@ -643,9 +645,9 @@ int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t d
 		return 0;
 
 	if (dma_mapping_error(dev, dma))
-		return sdhci_transfer_data_pio(sdhci, data);
+		return sdhci_transfer_data_pio(sdhci, cmd, data);
 	else
-		return sdhci_transfer_data_dma(sdhci, data, dma);
+		return sdhci_transfer_data_dma(sdhci, cmd, data, dma);
 }
 
 int sdhci_reset(struct sdhci *sdhci, u8 mask)

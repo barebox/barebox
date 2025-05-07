@@ -159,9 +159,9 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 	/* Wait until all of the blocks are transferred */
 	if (data) {
 		if (esdhc_use_pio_mode())
-			ret = sdhci_transfer_data_pio(&host->sdhci, data);
+			ret = sdhci_transfer_data_pio(&host->sdhci, cmd, data);
 		else
-			ret = sdhci_transfer_data_dma(&host->sdhci, data, dma);
+			ret = sdhci_transfer_data_dma(&host->sdhci, cmd, data, dma);
 
 		if (ret)
 			return ret;

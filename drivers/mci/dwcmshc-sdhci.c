@@ -160,7 +160,7 @@ static int do_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 	sdhci_read_response(&host->sdhci, cmd);
 
-	ret = sdhci_transfer_data(&host->sdhci, data, dma);
+	ret = sdhci_transfer_data(&host->sdhci, cmd, data, dma);
 error:
 	if (ret) {
 		sdhci_reset(&host->sdhci, SDHCI_RESET_CMD);

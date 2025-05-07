@@ -293,7 +293,7 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);
 
 	if (data)
-		ret = sdhci_transfer_data_dma(&host->sdhci, data, dma);
+		ret = sdhci_transfer_data_dma(&host->sdhci, cmd, data, dma);
 
 error:
 	if (ret) {

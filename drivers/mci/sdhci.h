@@ -28,7 +28,8 @@
 #define SDHCI_TRANSFER_MODE					0x0c
 #define  SDHCI_MULTIPLE_BLOCKS			BIT(5)
 #define  SDHCI_DATA_TO_HOST			BIT(4)
-#define  SDHCI_TRNS_AUTO_CMD12			BIT(3)
+#define  SDHCI_TRNS_AUTO_CMD23			BIT(3)
+#define  SDHCI_TRNS_AUTO_CMD12			BIT(2)
 #define  SDHCI_BLOCK_COUNT_EN			BIT(1)
 #define  SDHCI_DMA_EN				BIT(0)
 #define SDHCI_COMMAND						0x0e

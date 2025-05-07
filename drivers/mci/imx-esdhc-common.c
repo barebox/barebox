@@ -10,6 +10,20 @@
 
 #define PRSSTAT_DAT0  0x01000000
 
+#define	ESDHC_CTRL_D3CD			0x08
+
+#define  SDHCI_CTRL_VDD_180         0x0008
+
+#define ESDHC_MIX_CTRL			0x48
+#define  ESDHC_MIX_CTRL_DDREN		(1 << 3)
+#define  ESDHC_MIX_CTRL_AC23EN		(1 << 7)
+#define  ESDHC_MIX_CTRL_EXE_TUNE	(1 << 22)
+#define  ESDHC_MIX_CTRL_SMPCLK_SEL	(1 << 23)
+#define  ESDHC_MIX_CTRL_AUTO_TUNE_EN	(1 << 24)
+#define  ESDHC_MIX_CTRL_FBCLK_SEL	(1 << 25)
+#define  ESDHC_MIX_CTRL_HS400_EN	(1 << 26)
+#define  ESDHC_MIX_CTRL_HS400_ES_EN	(1 << 27)
+
 static u32 esdhc_op_read32_be(struct sdhci *sdhci, int reg)
 {
 	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);

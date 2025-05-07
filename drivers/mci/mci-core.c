@@ -3097,6 +3097,17 @@ void mci_of_parse_node(struct mci_host *host,
 		if (of_property_read_bool(np, "no-mmc-hs400"))
 			host->caps2 &= ~(MMC_CAP2_HS400_1_8V | MMC_CAP2_HS400_1_2V |
 					 MMC_CAP2_HS400_ES);
+		if (of_property_read_bool(np, "no-1-8-v")) {
+			/*
+			 * The SDHCI controller in a SoC might support HS200/HS400
+			 * (indicated using mmc-hs200-1_8v/mmc-hs400-1_8v dt property),
+			 * but if the board is modeled such that the IO lines are not
+			 * connected to 1.8v then HS200/HS400 cannot be supported.
+			 * Disable HS200/HS400 if the board does not have 1.8v connected
+			 * to the IO lines. (Applicable for other modes in 1.8v)
+			 */
+			host->caps2 &= ~(MMC_CAP2_HSX00_1_8V | MMC_CAP2_HS400_ES);
+		}
 	}
 }
 

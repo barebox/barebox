@@ -66,6 +66,36 @@
 #define  IMX_SDHCI_DLL_CTRL_OVERRIDE_EN_SHIFT	8
 #define IMX_SDHCI_MIX_CTRL_FBCLK_SEL	BIT(25)
 
+/* pltfm-specific */
+#define ESDHC_HOST_CONTROL_LE	0x20
+
+/*
+ * eSDHC register definition
+ */
+
+/* Present State Register */
+#define ESDHC_PRSSTAT			0x24
+#define ESDHC_CLOCK_GATE_OFF		0x00000080
+#define ESDHC_CLOCK_STABLE		0x00000008
+
+/* Protocol Control Register */
+#define ESDHC_PROCTL			0x28
+#define ESDHC_VOLT_SEL			0x00000400
+#define ESDHC_CTRL_4BITBUS		(0x1 << 1)
+#define ESDHC_CTRL_8BITBUS		(0x2 << 1)
+#define ESDHC_CTRL_BUSWIDTH_MASK	(0x3 << 1)
+#define ESDHC_HOST_CONTROL_RES		0x01
+
+/* System Control Register */
+#define ESDHC_SYSTEM_CONTROL		0x2c
+#define ESDHC_CLOCK_MASK		0x0000fff0
+#define ESDHC_PREDIV_SHIFT		8
+#define ESDHC_DIVIDER_SHIFT		4
+#define ESDHC_CLOCK_SDCLKEN		0x00000008
+#define ESDHC_CLOCK_PEREN		0x00000004
+#define ESDHC_CLOCK_HCKEN		0x00000002
+#define ESDHC_CLOCK_IPGEN		0x00000001
+
 /* tune control register */
 #define ESDHC_TUNE_CTRL_STATUS		0x68
 #define  ESDHC_TUNE_CTRL_STEP		1

@@ -48,7 +48,7 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 {
 	int div, pre_div, ddr_pre_div = 1;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	int sdhc_clk = clk_get_rate(host->clk);
+	unsigned sdhc_clk = clk_get_rate(host->clk);
 	u32 clk;
 	unsigned long  cur_clock;
 
@@ -199,7 +199,7 @@ static int esdhc_card_present(struct mci_host *mci)
 
 static int esdhc_reset(struct fsl_esdhc_host *host)
 {
-	int val;
+	u32 val;
 
 	/* reset the controller */
 	sdhci_write32(&host->sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,

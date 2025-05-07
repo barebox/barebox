@@ -291,8 +291,10 @@ void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
 		if (data->flags & MMC_DATA_READ)
 			*xfer |= SDHCI_DATA_TO_HOST;
 
-		if (dma)
+		if (dma && !mmc_op_tuning(cmd->cmdidx))
 			*xfer |= SDHCI_DMA_EN;
+	} else if (mmc_op_tuning(cmd->cmdidx)) {
+		*command |= SDHCI_DATA_PRESENT;
 	}
 }
 
@@ -529,7 +531,7 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_cmd *cmd,
 	struct device *dev = sdhci_dev(sdhci);
 	u64 start;
 	int nbytes;
-	u32 irqstat;
+	u32 irqcheck, irqstat;
 	int ret;
 
 	if (!data)
@@ -538,6 +540,10 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_cmd *cmd,
 	nbytes = data->blocks * data->blocksize;
 
 	start = get_time_ns();
+
+	irqcheck = SDHCI_INT_XFER_COMPLETE;
+	if (mmc_op_tuning(cmd->cmdidx))
+		irqcheck = SDHCI_INT_DATA_AVAIL;
 
 	do {
 		irqstat = sdhci_read32(sdhci, SDHCI_INT_STATUS);
@@ -575,7 +581,7 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_cmd *cmd,
 			sdhci_set_sdma_addr(sdhci, ALIGN(dma, SDHCI_DEFAULT_BOUNDARY_SIZE));
 		}
 
-		if (irqstat & SDHCI_INT_XFER_COMPLETE)
+		if (irqstat & irqcheck)
 			break;
 
 		if (is_timeout(start, 10 * SECOND)) {
@@ -597,11 +603,15 @@ int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_cmd *cmd,
 			    struct mci_data *data)
 {
 	unsigned int block = 0;
-	u32 stat, prs;
+	u32 stat, prs, irqcheck;
 	uint64_t start = get_time_ns();
 
 	if (!data)
 		return 0;
+
+	irqcheck = SDHCI_INT_XFER_COMPLETE;
+	if (mmc_op_tuning(cmd->cmdidx))
+		irqcheck = SDHCI_INT_DATA_AVAIL;
 
 	do {
 		stat = sdhci_read32(sdhci, SDHCI_INT_STATUS);
@@ -630,7 +640,7 @@ int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_cmd *cmd,
 		if (is_timeout(start, 10 * SECOND))
 			return -ETIMEDOUT;
 
-	} while (!(stat & SDHCI_INT_XFER_COMPLETE));
+	} while (!(stat & irqcheck));
 
 	return 0;
 }
@@ -822,7 +832,8 @@ int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *da
 	if (data || (cmd && (cmd->resp_type & MMC_RSP_BUSY)))
 		mask |= SDHCI_CMD_INHIBIT_DATA;
 
-	if (cmd && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+	if (cmd && (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION ||
+		    mmc_op_tuning(cmd->cmdidx)))
 		mask &= ~SDHCI_CMD_INHIBIT_DATA;
 
 	timeout_ns = sdhci_compute_timeout(cmd, data, SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS);
@@ -847,7 +858,8 @@ int sdhci_wait_idle_data(struct sdhci *host, struct mci_cmd *cmd)
 	mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
 	timeout_ns = SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS;
 
-	if (cmd && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+	if (cmd && (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION ||
+		    mmc_op_tuning(cmd->cmdidx)))
 		mask &= ~SDHCI_CMD_INHIBIT_DATA;
 
 	if (cmd && cmd->busy_timeout != 0)

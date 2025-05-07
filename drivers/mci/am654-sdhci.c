@@ -83,12 +83,6 @@
 #define AM654_SDHCI_MIN_FREQ	400000
 #define CLOCK_TOO_SLOW_HZ	50000000
 
-#define MMC_CAP_UHS_SDR104 0
-#define MMC_CAP_UHS_SDR12 0
-#define MMC_CAP_UHS_DDR50 0
-#define MMC_CAP_UHS_SDR25 0
-#define MMC_CAP_UHS_SDR50 0
-
 struct timing_data {
 	const char *otap_binding;
 	const char *itap_binding;

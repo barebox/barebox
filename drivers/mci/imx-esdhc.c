@@ -226,6 +226,7 @@ static void layerscape_set_timing(struct fsl_esdhc_host *host, enum mci_timing t
 static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
+	bool ddr_changed = false;
 
 	/*
 	 * call esdhc_set_timing() before update the clock rate,
@@ -235,14 +236,18 @@ static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	 * setting clock rate.
 	 */
 	if (host->sdhci.timing != ios->timing) {
+		if (mci_timing_is_ddr(host->sdhci.timing) != mci_timing_is_ddr(ios->timing))
+			ddr_changed = true;
+
 		if (esdhc_is_usdhc(host))
 			usdhc_set_timing(host, ios->timing);
 		else if (esdhc_is_layerscape(host))
 			layerscape_set_timing(host, ios->timing);
 	}
 
-	/* Set the clock speed */
-	set_sysctl(mci, ios->clock, mci_timing_is_ddr(ios->timing));
+	/* Reconfigure clock if requested speed changes */
+	if (!ios->clock || mci->actual_clock != ios->clock || ddr_changed)
+		set_sysctl(mci, ios->clock, mci_timing_is_ddr(ios->timing));
 
 	sdhci_set_drv_type(&host->sdhci, ios->drv_type);
 

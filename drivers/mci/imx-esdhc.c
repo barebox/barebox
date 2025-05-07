@@ -347,6 +347,21 @@ static int esdhc_init(struct mci_host *mci, struct device *dev)
 	    (host->socdata->flags & ESDHC_FLAG_STD_TUNING)) {
 		u32 tmp;
 
+		/*
+		 * ROM code will change the bit burst_length_enable setting
+		 * to zero if this usdhc is chosen to boot system. Change
+		 * it back here, otherwise it will impact the performance a
+		 * lot. This bit is used to enable/disable the burst length
+		 * for the external AHB2AXI bridge. It's useful especially
+		 * for INCR transfer because without burst length indicator,
+		 * the AHB2AXI bridge does not know the burst length in
+		 * advance. And without burst length indicator, AHB INCR
+		 * transfer can only be converted to singles on the AXI side.
+		 */
+		sdhci_write32(&host->sdhci, SDHCI_HOST_CONTROL,
+			      sdhci_read32(&host->sdhci, SDHCI_HOST_CONTROL)
+			| ESDHC_BURST_LEN_EN_INCR);
+
 		/* disable DLL_CTRL delay line settings */
 		sdhci_write32(&host->sdhci, ESDHC_DLL_CTRL, 0x0);
 

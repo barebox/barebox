@@ -3,9 +3,11 @@
 #define __MCI_SDHCI_H
 
 #include <pbl.h>
+#include <mci.h>
 #include <dma.h>
 #include <linux/iopoll.h>
 #include <linux/sizes.h>
+#include <linux/ktime.h>
 
 #define SDHCI_DMA_ADDRESS					0x00
 #define SDHCI_BLOCK_SIZE__BLOCK_COUNT				0x04
@@ -201,7 +203,7 @@
 #define SDHCI_MAX_DIV_SPEC_200	256
 #define SDHCI_MAX_DIV_SPEC_300	2046
 
-#define SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_MS 10
+#define SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS	(10 * NSEC_PER_MSEC)
 
 struct sdhci {
 	u32 (*read32)(struct sdhci *host, int reg);
@@ -351,5 +353,24 @@ void sdhci_set_bus_width(struct sdhci *host, int width);
 
 #define sdhci_read32_poll_timeout(sdhci, reg, val, cond, timeout_us) \
 	read_poll_timeout(sdhci_read32, val, cond, timeout_us, sdhci, reg)
+
+/**
+ * sdhci_compute_timeout() - compute suitable timeout for operation
+ * @cmd: MCI command being sent, can be NULL
+ * @data: MCI data being sent, can be NULL
+ * @default_timeout: fallback value
+ *
+ * Return: the number of nanoseconds to wait.
+ */
+static inline ktime_t sdhci_compute_timeout(struct mci_cmd *cmd, struct mci_data *data,
+					    ktime_t default_timeout)
+{
+	if (data && data->timeout_ns != 0)
+		return data->timeout_ns;
+	else if (cmd && cmd->busy_timeout != 0)
+		return cmd->busy_timeout * (u64)NSEC_PER_MSEC;
+	else
+		return SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS;
+}
 
 #endif /* __MCI_SDHCI_H */

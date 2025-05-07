@@ -513,6 +513,7 @@ struct mci_data {
 	unsigned flags;		/**< refer MMC_DATA_* to define direction */
 	unsigned blocks;	/**< block count to handle in this command */
 	unsigned blocksize;	/**< block size in bytes (mostly 512) */
+	unsigned timeout_ns;	/**< data timeout in ns */
 };
 
 enum mci_timing {

@@ -813,11 +813,10 @@ void sdhci_enable_clk(struct sdhci *host, u16 clk)
 int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *data)
 {
 	u32 mask;
-	unsigned timeout_ms;
+	ktime_t timeout_ns;
 	int ret;
 
 	mask = SDHCI_CMD_INHIBIT_CMD;
-	timeout_ms = SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_MS;
 
 	if (data || (cmd && (cmd->resp_type & MMC_RSP_BUSY)))
 		mask |= SDHCI_CMD_INHIBIT_DATA;
@@ -825,12 +824,10 @@ int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *da
 	if (cmd && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 		mask &= ~SDHCI_CMD_INHIBIT_DATA;
 
-	if (cmd && cmd->busy_timeout != 0)
-		timeout_ms = cmd->busy_timeout;
+	timeout_ns = sdhci_compute_timeout(cmd, data, SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS);
 
-	ret = wait_on_timeout(timeout_ms * MSECOND,
+	ret = wait_on_timeout(timeout_ns,
 			!(sdhci_read32(host, SDHCI_PRESENT_STATE) & mask));
-
 	if (ret) {
 		dev_err(sdhci_dev(host),
 				"SDHCI timeout while waiting for idle\n");
@@ -843,19 +840,19 @@ int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *da
 int sdhci_wait_idle_data(struct sdhci *host, struct mci_cmd *cmd)
 {
 	u32 mask;
-	unsigned timeout_ms;
+	unsigned timeout_ns;
 	int ret;
 
 	mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
-	timeout_ms = SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_MS;
+	timeout_ns = SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS;
 
 	if (cmd && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 		mask &= ~SDHCI_CMD_INHIBIT_DATA;
 
 	if (cmd && cmd->busy_timeout != 0)
-		timeout_ms = cmd->busy_timeout;
+		timeout_ns = cmd->busy_timeout;
 
-	ret = wait_on_timeout(timeout_ms * MSECOND,
+	ret = wait_on_timeout(timeout_ns,
 			!(sdhci_read32(host, SDHCI_PRESENT_STATE) & mask));
 
 	if (ret) {

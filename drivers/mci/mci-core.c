@@ -121,7 +121,7 @@ static int mci_set_blocklen(struct mci *mci, unsigned len)
 {
 	struct mci_cmd cmd = {};
 
-	if (mci->host->timing == MMC_TIMING_MMC_DDR52)
+	if (mci->host->ios.timing == MMC_TIMING_MMC_DDR52)
 		return 0;
 
 	mci_setup_cmd(&cmd, MMC_CMD_SET_BLOCKLEN, len, MMC_RSP_R1);
@@ -1032,14 +1032,14 @@ static void mci_set_ios(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
 	struct mci_ios ios = {
-		.bus_width = host->bus_width,
-		.clock = host->clock,
-		.timing = host->timing,
+		.bus_width = host->ios.bus_width,
+		.clock = host->ios.clock,
+		.timing = host->ios.timing,
 	};
 
 	host->ops.set_ios(host, &ios);
 
-	host->actual_clock = host->clock;
+	host->actual_clock = host->ios.clock;
 }
 
 /**
@@ -1058,7 +1058,7 @@ static void mci_set_clock(struct mci *mci, unsigned clock)
 	if (clock < host->f_min)
 		clock = host->f_min;
 
-	host->clock = clock;	/* the new target frequency */
+	host->ios.clock = clock;	/* the new target frequency */
 	mci_set_ios(mci);
 }
 
@@ -1071,7 +1071,7 @@ static void mci_set_bus_width(struct mci *mci, enum mci_bus_width width)
 {
 	struct mci_host *host = mci->host;
 
-	host->bus_width = width;	/* the new target bus width */
+	host->ios.bus_width = width;	/* the new target bus width */
 	mci_set_ios(mci);
 }
 
@@ -1432,7 +1432,7 @@ static int mci_startup_sd(struct mci *mci)
 	}
 
 	if (mci->tran_speed > 25000000)
-		mci->host->timing = MMC_TIMING_SD_HS;
+		mci->host->ios.timing = MMC_TIMING_SD_HS;
 
 	mci_set_clock(mci, mci->tran_speed);
 
@@ -1471,7 +1471,7 @@ static int mci_mmc_try_bus_width(struct mci *mci, enum mci_bus_width bus_width,
 	if (err < 0)
 		goto out;
 
-	mci->host->timing = timing;
+	mci->host->ios.timing = timing;
 	mci_set_bus_width(mci, bus_width);
 
 	switch (bus_width) {
@@ -1526,7 +1526,7 @@ static int mci_mmc_select_bus_width(struct mci *mci)
 		 * 4bit transfer mode. On success set the corresponding
 		 * bus width on the host.
 		 */
-		ret = mci_mmc_try_bus_width(mci, bus_widths[idx], host->timing);
+		ret = mci_mmc_try_bus_width(mci, bus_widths[idx], host->ios.timing);
 		if (ret > 0)
 			break;
 	}
@@ -1548,9 +1548,9 @@ static int mci_mmc_select_hs_ddr(struct mci *mci)
 	if (!(mci_caps(mci) & (MMC_CAP_MMC_1_8V_DDR | MMC_CAP_MMC_3_3V_DDR)))
 		return 0;
 
-	ret = mci_mmc_try_bus_width(mci, host->bus_width, MMC_TIMING_MMC_DDR52);
+	ret = mci_mmc_try_bus_width(mci, host->ios.bus_width, MMC_TIMING_MMC_DDR52);
 	if (ret < 0)
-		return mci_mmc_try_bus_width(mci, host->bus_width, MMC_TIMING_MMC_HS);
+		return mci_mmc_try_bus_width(mci, host->ios.bus_width, MMC_TIMING_MMC_HS);
 
 	/* Block length is fixed to 512 bytes while in DDR mode */
 	mci->read_bl_len = SECTOR_SIZE;
@@ -1666,10 +1666,10 @@ static int mmc_select_hs200(struct mci *mci)
 		 * NB: We can't move to full (HS200) speeds until after we've
 		 * successfully switched over.
 		 */
-		old_timing = mci->host->timing;
-		old_clock = mci->host->clock;
+		old_timing = mci->host->ios.timing;
+		old_clock = mci->host->ios.clock;
 
-		mci->host->timing = MMC_TIMING_MMC_HS200;
+		mci->host->ios.timing = MMC_TIMING_MMC_HS200;
 		mci_set_ios(mci);
 		mci_set_clock(mci, mci->host->hs_max_dtr);
 
@@ -1680,8 +1680,8 @@ static int mmc_select_hs200(struct mci *mci)
 		 * it is a switch error.
 		 */
 		if (err == -EBADMSG) {
-			mci->host->clock = old_clock;
-			mci->host->timing = old_timing;
+			mci->host->ios.clock = old_clock;
+			mci->host->ios.timing = old_timing;
 			mci_set_ios(mci);
 		}
 	}
@@ -1759,7 +1759,7 @@ static int mci_startup_mmc(struct mci *mci)
 		else
 			mci->tran_speed = 26000000;
 
-		host->timing = MMC_TIMING_MMC_HS;
+		host->ios.timing = MMC_TIMING_MMC_HS;
 	}
 
 	if (IS_ENABLED(CONFIG_MCI_TUNING)) {
@@ -1774,7 +1774,7 @@ static int mci_startup_mmc(struct mci *mci)
 			ret = mmc_hs200_tuning(mci);
 
 		if (ret) {
-			host->timing = MMC_TIMING_MMC_HS;
+			host->ios.timing = MMC_TIMING_MMC_HS;
 			mci_switch(mci, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
 		}
 	}
@@ -2448,17 +2448,17 @@ static void mci_info(struct device *dev)
 	}
 
 	printf("Host information:\n");
-	printf("  current clock: %d\n", host->clock);
+	printf("  current clock: %d\n", host->ios.clock);
 
-	if (host->bus_width == MMC_BUS_WIDTH_8)
+	if (host->ios.bus_width == MMC_BUS_WIDTH_8)
 		bw = 8;
-	else if (host->bus_width == MMC_BUS_WIDTH_4)
+	else if (host->ios.bus_width == MMC_BUS_WIDTH_4)
 		bw = 4;
 	else
 		bw = 1;
 
 	printf("  current buswidth: %d\n", bw);
-	printf("  current timing: %s\n", mci_timing_tostr(host->timing));
+	printf("  current timing: %s\n", mci_timing_tostr(host->ios.timing));
 	mci_print_caps(host->host_caps);
 
 	printf("Card information:\n");
@@ -2845,7 +2845,7 @@ static int mci_card_probe(struct mci *mci)
 
 on_error:
 	if (rc != 0) {
-		host->clock = 0;	/* disable the MCI clock */
+		host->ios.clock = 0;	/* disable the MCI clock */
 		mci_set_ios(mci);
 		regulator_disable(host->supply);
 		mci->nr_parts = 0;

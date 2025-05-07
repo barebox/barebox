@@ -87,7 +87,7 @@ static int sdhci_send_tuning(struct sdhci *host, u32 opcode)
 	 * to 64 here.
 	 */
 	if (cmd.cmdidx == MMC_SEND_TUNING_BLOCK_HS200 &&
-	    host->mci->bus_width == MMC_BUS_WIDTH_8) {
+	    host->mci->ios.bus_width == MMC_BUS_WIDTH_8) {
 		sdhci_write16(host, SDHCI_BLOCK_SIZE, SDHCI_MAKE_BLKSZ(7, 128));
 	} else {
 		sdhci_write16(host, SDHCI_BLOCK_SIZE, SDHCI_MAKE_BLKSZ(7, 64));
@@ -196,7 +196,7 @@ int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode)
 	 * If the Host Controller supports the HS200 mode then the
 	 * tuning function has to be executed.
 	 */
-	switch (host->timing) {
+	switch (host->ios.timing) {
 	/* HS400 tuning is done in HS200 mode */
 	case MMC_TIMING_MMC_HS400:
 		err = -EINVAL;
@@ -859,9 +859,9 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 
 	BUG_ON(!host->mci); /* Call sdhci_setup_host() before using this */
 
-	host->mci->clock = 0;
+	host->mci->ios.clock = 0;
 
-	sdhci_set_uhs_signaling(host, host->mci->timing);
+	sdhci_set_uhs_signaling(host, host->mci->ios.timing);
 
 	sdhci_wait_idle_data(host, NULL);
 
@@ -870,7 +870,7 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 	if (clock == 0)
 		return;
 
-	clk = sdhci_calc_clk(host, clock, &host->mci->clock, input_clock);
+	clk = sdhci_calc_clk(host, clock, &host->mci->ios.clock, input_clock);
 	sdhci_enable_clk(host, clk);
 }
 

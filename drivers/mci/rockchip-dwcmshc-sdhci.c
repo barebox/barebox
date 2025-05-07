@@ -130,7 +130,7 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 	u32 txclk_tapnum = DLL_TXCLK_TAPNUM_DEFAULT, extra;
 	int err;
 
-	host->mci.clock = 0;
+	host->mci.ios.clock = 0;
 
 	/* DO NOT TOUCH THIS SETTING */
 	extra = DWCMSHC_EMMC_DLL_DLYENA |

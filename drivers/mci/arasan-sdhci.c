@@ -155,7 +155,7 @@ static int arasan_zynqmp_execute_tuning(struct mci_host *mci, u32 opcode)
 	int err;
 
 	/* ZynqMP SD controller does not perform auto tuning in DDR50 mode */
-	if (mci->timing == MMC_TIMING_UHS_DDR50)
+	if (mci->ios.timing == MMC_TIMING_UHS_DDR50)
 		return 0;
 
 	arasan_zynqmp_dll_reset(host, device_id);
@@ -205,9 +205,9 @@ static void arasan_sdhci_set_clock(struct mci_host *mci, unsigned int clock)
 	}
 
 	clk_set_phase(clk_data->sampleclk,
-		      clk_data->clk_phase_in[mci->mci->host->timing]);
+		      clk_data->clk_phase_in[mci->mci->host->ios.timing]);
 	clk_set_phase(clk_data->sdcardclk,
-		      clk_data->clk_phase_out[mci->mci->host->timing]);
+		      clk_data->clk_phase_out[mci->mci->host->ios.timing]);
 
 	sdhci_set_clock(&host->sdhci, clock, mci->f_max);
 }
@@ -312,9 +312,9 @@ static void sdhci_arasan_set_clk_delays(struct sdhci *host)
 	struct sdhci_arasan_clk_data *clk_data = &arasan_sdhci->clk_data;
 
 	clk_set_phase(clk_data->sampleclk,
-		      clk_data->clk_phase_in[mci->timing]);
+		      clk_data->clk_phase_in[mci->ios.timing]);
 	clk_set_phase(clk_data->sdcardclk,
-		      clk_data->clk_phase_out[mci->timing]);
+		      clk_data->clk_phase_out[mci->ios.timing]);
 }
 
 static void arasan_dt_read_clk_phase(struct device *dev,
@@ -372,7 +372,7 @@ static int arasan_zynqmp_sampleclk_set_phase(struct clk_hw *hw, int degrees)
 	/* Assert DLL Reset */
 	zynqmp_pm_sd_dll_reset(node_id, PM_DLL_RESET_ASSERT);
 
-	switch (host->timing) {
+	switch (host->ios.timing) {
 	case MMC_TIMING_MMC_HS:
 	case MMC_TIMING_SD_HS:
 	case MMC_TIMING_UHS_DDR50:
@@ -441,7 +441,7 @@ static int arasan_zynqmp_sdcardclk_set_phase(struct clk_hw *hw, int degrees)
 	if (sdhci_arasan->sdhci.version < SDHCI_SPEC_300)
 		return 0;
 
-	switch (host->timing) {
+	switch (host->ios.timing) {
 	case MMC_TIMING_MMC_HS:
 	case MMC_TIMING_SD_HS:
 	case MMC_TIMING_UHS_DDR50:

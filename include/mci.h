@@ -606,10 +606,8 @@ struct mci_host {
 #define MMC_CAP2_CRYPTO		0
 	unsigned f_min;		/**< host interface lower limit */
 	unsigned f_max;		/**< host interface upper limit */
-	unsigned clock;		/**< Current clock used to talk to the card */
 	unsigned actual_clock;
-	enum mci_bus_width bus_width;	/**< used data bus width to the card */
-	enum mci_timing timing;	/**< used timing specification to the card */
+	struct mci_ios ios;		/* current io bus settings */
 	unsigned hs_max_dtr;
 	unsigned hs200_max_dtr;
 	unsigned max_req_size;
@@ -739,8 +737,8 @@ static inline struct mci *mci_get_device_by_devpath(const char *devpath)
 
 static inline int mmc_card_hs(struct mci *mci)
 {
-	return mci->host->timing == MMC_TIMING_SD_HS ||
-		mci->host->timing == MMC_TIMING_MMC_HS;
+	return mci->host->ios.timing == MMC_TIMING_SD_HS ||
+		mci->host->ios.timing == MMC_TIMING_MMC_HS;
 }
 
 /*
@@ -760,7 +758,7 @@ int mci_rpmb_route_frames(struct mci *mci, void *req, unsigned long reqlen,
 
 static inline bool mmc_card_hs200(struct mci *mci)
 {
-	return mci->host->timing == MMC_TIMING_MMC_HS200;
+	return mci->host->ios.timing == MMC_TIMING_MMC_HS200;
 }
 
 #endif /* _MCI_H_ */

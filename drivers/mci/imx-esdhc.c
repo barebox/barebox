@@ -61,6 +61,14 @@
 #define ESDHC_PINCTRL_STATE_100MHZ	"state_100mhz"
 #define ESDHC_PINCTRL_STATE_200MHZ	"state_200mhz"
 
+/*
+ * Our interpretation of the SDHCI_HOST_CONTROL register
+ */
+#define ESDHC_CTRL_4BITBUS		(0x1 << 1)
+#define ESDHC_CTRL_8BITBUS		(0x2 << 1)
+#define ESDHC_CTRL_BUSWIDTH_MASK	(0x3 << 1)
+#define USDHC_GET_BUSWIDTH(c) (c & ESDHC_CTRL_BUSWIDTH_MASK)
+
 #define to_fsl_esdhc(mci)	container_of(mci, struct fsl_esdhc_host, mci)
 
 /*
@@ -137,6 +145,104 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 		   10 * MSECOND);
 }
 
+static inline void esdhc_clrset_le(struct fsl_esdhc_host *host,
+				   u32 mask, u32 val, int reg)
+{
+	void __iomem *base = host->sdhci.base + (reg & ~0x3);
+	u32 shift = (reg & 0x3) * 8;
+
+	writel(((readl(base) & ~(mask << shift)) | (val << shift)), base);
+}
+
+/* Enable the auto tuning circuit to check the CMD line and BUS line */
+static inline void usdhc_auto_tuning_mode_sel_and_en(struct fsl_esdhc_host *host)
+{
+	u32 buswidth, auto_tune_buswidth;
+	u32 reg;
+
+	buswidth = USDHC_GET_BUSWIDTH(sdhci_read32(&host->sdhci, SDHCI_HOST_CONTROL));
+
+	switch (buswidth) {
+	case ESDHC_CTRL_8BITBUS:
+		auto_tune_buswidth = ESDHC_VEND_SPEC2_AUTO_TUNE_8BIT_EN;
+		break;
+	case ESDHC_CTRL_4BITBUS:
+		auto_tune_buswidth = ESDHC_VEND_SPEC2_AUTO_TUNE_4BIT_EN;
+		break;
+	default:	/* 1BITBUS */
+		auto_tune_buswidth = ESDHC_VEND_SPEC2_AUTO_TUNE_1BIT_EN;
+		break;
+	}
+
+	esdhc_clrset_le(host, ESDHC_VEND_SPEC2_AUTO_TUNE_MODE_MASK,
+			auto_tune_buswidth | ESDHC_VEND_SPEC2_AUTO_TUNE_CMD_EN,
+			ESDHC_VEND_SPEC2);
+
+	reg = sdhci_read32(&host->sdhci, IMX_SDHCI_MIXCTRL);
+	reg |= MIX_CTRL_AUTO_TUNE_EN;
+	sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, reg);
+}
+
+static void esdhc_reset_tuning(struct fsl_esdhc_host *host)
+{
+	u32 ctrl;
+	int ret;
+
+	/* Reset the tuning circuit */
+	if (esdhc_is_usdhc(host)) {
+		ctrl = sdhci_read32(&host->sdhci, IMX_SDHCI_MIXCTRL);
+		ctrl &= ~MIX_CTRL_AUTO_TUNE_EN;
+		if (host->socdata->flags & ESDHC_FLAG_STD_TUNING) {
+			sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, ctrl);
+			ctrl = sdhci_read32(&host->sdhci, SDHCI_ACMD12_ERR__HOST_CONTROL2);
+			ctrl &= ~MIX_CTRL_SMPCLK_SEL;
+			ctrl &= ~MIX_CTRL_EXE_TUNE;
+			sdhci_write32(&host->sdhci, SDHCI_ACMD12_ERR__HOST_CONTROL2, ctrl);
+			/* Make sure MIX_CTRL_EXE_TUNE cleared */
+			ret = sdhci_read32_poll_timeout(&host->sdhci, SDHCI_ACMD12_ERR__HOST_CONTROL2,
+				ctrl, !(ctrl & MIX_CTRL_EXE_TUNE), 50);
+			if (ret == -ETIMEDOUT)
+				dev_warn(host->dev,
+				 "Warning! clear execute tuning bit failed\n");
+			/*
+			 * SDHCI_INT_DATA_AVAIL is W1C bit, set this bit will clear the
+			 * usdhc IP internal logic flag execute_tuning_with_clr_buf, which
+			 * will finally make sure the normal data transfer logic correct.
+			 */
+			ctrl = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
+			ctrl |= SDHCI_INT_DATA_AVAIL;
+			sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ctrl);
+		}
+	}
+}
+
+static int usdhc_execute_tuning(struct mci_host *mci, u32 opcode)
+{
+	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
+	int err;
+
+	/*
+	 * i.MX uSDHC internally already uses a fixed optimized timing for
+	 * DDR50, normally does not require tuning for DDR50 mode.
+	 */
+	if (host->sdhci.timing == MMC_TIMING_UHS_DDR50)
+		return 0;
+
+	/*
+	 * Reset tuning circuit logic. If not, the previous tuning result
+	 * will impact current tuning, make current tuning can't set the
+	 * correct delay cell.
+	 */
+	esdhc_reset_tuning(host);
+
+	err = sdhci_execute_tuning(&host->sdhci, opcode);
+	/* If tuning done, enable auto tuning */
+	if (!err)
+		usdhc_auto_tuning_mode_sel_and_en(host);
+
+	return err;
+}
+
 static int esdhc_change_pinstate(struct fsl_esdhc_host *host,
 				 unsigned int uhs)
 {
@@ -190,8 +296,18 @@ static void usdhc_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing
 			sdhci_write32(&host->sdhci, IMX_SDHCI_DLL_CTRL, v);
 		}
 		break;
-	default:
+	case MMC_TIMING_UHS_SDR12:
+	case MMC_TIMING_UHS_SDR25:
+	case MMC_TIMING_UHS_SDR50:
+	case MMC_TIMING_UHS_SDR104:
+	case MMC_TIMING_MMC_HS:
+	case MMC_TIMING_MMC_HS200:
 		sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, mixctrl);
+		break;
+	case MMC_TIMING_LEGACY:
+	default:
+		esdhc_reset_tuning(host);
+		break;
 	}
 
 	esdhc_change_pinstate(host, timing);
@@ -421,6 +537,39 @@ static void fsl_esdhc_probe_dt(struct device *dev, struct fsl_esdhc_host *host)
 	}
 }
 
+static bool usdhc_setup_tuning(struct fsl_esdhc_host *host)
+{
+	struct mci_host *mci = &host->mci;
+
+	if (!IS_ENABLED(CONFIG_MCI_TUNING) || !esdhc_is_usdhc(host))
+		return false;
+
+	/*
+	 * clear tuning bits in case ROM has set it already
+	 * We use writel, because we haven't set up SDHCI yet
+	 */
+	writel(0x0, host->sdhci.base + IMX_SDHCI_MIXCTRL);
+	writel(0x0, host->sdhci.base + SDHCI_ACMD12_ERR__HOST_CONTROL2);
+	writel(0x0, host->sdhci.base + ESDHC_TUNE_CTRL_STATUS);
+
+	if (!(host->socdata->flags & ESDHC_FLAG_HS200))
+		return false;
+
+	if (host->socdata->flags & ESDHC_FLAG_MAN_TUNING) {
+		dev_dbg(host->dev, "i.MX6Q manual tuning not supported\n");
+		return false;
+	}
+
+	/*
+	 * Link usdhc specific mmc_host_ops execute_tuning function,
+	 * to replace the standard one in sdhci_ops.
+	 */
+	mci->ops.execute_tuning = usdhc_execute_tuning;
+	mci->caps2 |= MMC_CAP2_HS200;
+
+	return true;
+}
+
 static int fsl_esdhc_probe(struct device *dev)
 {
 	struct resource *iores;
@@ -466,7 +615,7 @@ static int fsl_esdhc_probe(struct device *dev)
 	host->mci.hw_dev = dev;
 	host->sdhci.mci = &host->mci;
 
-	if (!(host->socdata->flags & ESDHC_FLAG_HS200))
+	if (!usdhc_setup_tuning(host))
 		host->sdhci.quirks2 |= SDHCI_QUIRK2_BROKEN_HS200;
 
 	ret = sdhci_setup_host(&host->sdhci);

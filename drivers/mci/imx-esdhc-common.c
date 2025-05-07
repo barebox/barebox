@@ -323,7 +323,7 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 		     struct mci_data *data)
 {
 	u32	xfertyp, mixctrl, command;
-	u32	val, irqstat;
+	u32	val, irqflags, irqstat;
 	dma_addr_t dma = SDHCI_NO_DMA;
 	int ret;
 
@@ -363,9 +363,13 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 	sdhci_write32(&host->sdhci, SDHCI_TRANSFER_MODE__COMMAND,
 		      command << 16 | xfertyp);
 
+	irqflags = SDHCI_INT_CMD_COMPLETE;
+	if (mmc_op_tuning(cmd->cmdidx))
+		irqflags = SDHCI_INT_DATA_AVAIL;
+
 	/* Wait for the command to complete */
 	ret = esdhc_poll(host, SDHCI_INT_STATUS, irqstat,
-			 irqstat & SDHCI_INT_CMD_COMPLETE,
+			 irqstat & irqflags,
 			 100 * MSECOND);
 	if (ret) {
 		dev_dbg(host->dev, "timeout 1\n");

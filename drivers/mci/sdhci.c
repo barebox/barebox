@@ -507,6 +507,23 @@ void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 	sdhci_set_sdma_addr(sdhci, *dma);
 }
 
+void sdhci_teardown_data(struct sdhci *sdhci,
+			 struct mci_data *data, dma_addr_t dma)
+{
+	struct device *dev = sdhci_dev(sdhci);
+	unsigned nbytes;
+
+	if (IN_PBL || !data || dma_mapping_error(dev, dma))
+		return;
+
+	nbytes = data->blocks * data->blocksize;
+
+	if (data->flags & MMC_DATA_READ)
+		dma_unmap_single(dev, dma, nbytes, DMA_FROM_DEVICE);
+	else
+		dma_unmap_single(dev, dma, nbytes, DMA_TO_DEVICE);
+}
+
 int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			    dma_addr_t dma)
 {
@@ -572,10 +589,7 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 
 	ret = 0;
 out:
-	if (data->flags & MMC_DATA_READ)
-		dma_unmap_single(dev, dma, nbytes, DMA_FROM_DEVICE);
-	else
-		dma_unmap_single(dev, dma, nbytes, DMA_TO_DEVICE);
+	sdhci_teardown_data(sdhci, data, dma);
 
 	return ret;
 }

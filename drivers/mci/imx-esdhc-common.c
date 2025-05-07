@@ -164,16 +164,20 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 			 100 * MSECOND);
 	if (ret) {
 		dev_dbg(host->dev, "timeout 1\n");
-		return -ETIMEDOUT;
+		goto undo_setup_data;
 	}
 
 	irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
 
-	if (irqstat & CMD_ERR)
-		return -EIO;
+	if (irqstat & CMD_ERR) {
+		ret = -EIO;
+		goto undo_setup_data;
+	}
 
-	if (irqstat & SDHCI_INT_TIMEOUT)
-		return -ETIMEDOUT;
+	if (irqstat & SDHCI_INT_TIMEOUT) {
+		ret = -ETIMEDOUT;
+		goto undo_setup_data;
+	}
 
 	/* Workaround for ESDHC errata ENGcm03648 / ENGcm12360 */
 	if (!data && (cmd->resp_type & MMC_RSP_BUSY)) {
@@ -186,7 +190,7 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 				 2500 * MSECOND);
 		if (ret) {
 			dev_err(host->dev, "timeout PRSSTAT_DAT0\n");
-			return -ETIMEDOUT;
+			goto undo_setup_data;
 		}
 	}
 
@@ -223,5 +227,8 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 	}
 
 	return 0;
+undo_setup_data:
+	sdhci_teardown_data(&host->sdhci, data, dma);
+	return ret;
 }
 

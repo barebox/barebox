@@ -3,9 +3,11 @@
 #define __MCI_SDHCI_H
 
 #include <pbl.h>
+#include <mci.h>
 #include <dma.h>
 #include <linux/iopoll.h>
 #include <linux/sizes.h>
+#include <linux/ktime.h>
 
 #define SDHCI_DMA_ADDRESS					0x00
 #define SDHCI_BLOCK_SIZE__BLOCK_COUNT				0x04
@@ -23,12 +25,14 @@
 #define  SDHCI_DEFAULT_BOUNDARY_ARG		SDHCI_DMA_BOUNDARY_512K
 #define  SDHCI_TRANSFER_BLOCK_SIZE(x)		((x) & 0xfff)
 #define SDHCI_BLOCK_COUNT					0x06
+#define  SDHCI_MAKE_BLKSZ(dma, blksz) (((dma & 0x7) << 12) | (blksz & 0xFFF))
 #define SDHCI_ARGUMENT						0x08
 #define SDHCI_TRANSFER_MODE__COMMAND				0x0c
 #define SDHCI_TRANSFER_MODE					0x0c
 #define  SDHCI_MULTIPLE_BLOCKS			BIT(5)
 #define  SDHCI_DATA_TO_HOST			BIT(4)
-#define  SDHCI_TRNS_AUTO_CMD12			BIT(3)
+#define  SDHCI_TRNS_AUTO_CMD23			BIT(3)
+#define  SDHCI_TRNS_AUTO_CMD12			BIT(2)
 #define  SDHCI_BLOCK_COUNT_EN			BIT(1)
 #define  SDHCI_DMA_EN				BIT(0)
 #define SDHCI_COMMAND						0x0e
@@ -130,10 +134,16 @@
 #define   SDHCI_CTRL_UHS_SDR104			0x3
 #define   SDHCI_CTRL_UHS_DDR50			0x4
 #define   SDHCI_CTRL_HS400			0x5 /* Non-standard */
+#define  SDHCI_CTRL_DRV_TYPE_MASK		GENMASK(5, 4)
+#define   SDHCI_CTRL_DRV_TYPE_B			0x0000
+#define   SDHCI_CTRL_DRV_TYPE_A			0x0010
+#define   SDHCI_CTRL_DRV_TYPE_C			0x0020
+#define   SDHCI_CTRL_DRV_TYPE_D			0x0030
 #define  SDHCI_CTRL_EXEC_TUNING			BIT(6)
 #define  SDHCI_CTRL_TUNED_CLK			BIT(7)
 #define  SDHCI_CTRL_64BIT_ADDR			BIT(13)
 #define  SDHCI_CTRL_V4_MODE			BIT(12)
+#define  SDHCI_CTRL_PRESET_VAL_ENABLE		BIT(15)
 #define SDHCI_CAPABILITIES					0x40
 #define  SDHCI_TIMEOUT_CLK_MASK			GENMASK(5, 0)
 #define  SDHCI_TIMEOUT_CLK_UNIT			0x00000080
@@ -200,7 +210,7 @@
 #define SDHCI_MAX_DIV_SPEC_200	256
 #define SDHCI_MAX_DIV_SPEC_300	2046
 
-#define SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_MS 10
+#define SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS	(10 * NSEC_PER_MSEC)
 
 struct sdhci {
 	u32 (*read32)(struct sdhci *host, int reg);
@@ -239,6 +249,10 @@ struct sdhci {
 	unsigned int quirks;
 #define SDHCI_QUIRK_MISSING_CAPS		BIT(27)
 	unsigned int quirks2;
+/* The system physically doesn't support 1.8v, even if the host does */
+#define SDHCI_QUIRK2_NO_1_8_V				BIT(2)
+/* Controller does not support HS200 */
+#define SDHCI_QUIRK2_BROKEN_HS200			BIT(6)
 #define SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN	BIT(15)
 #define SDHCI_QUIRK2_ISSUE_CMD_DAT_RESET_TOGETHER	BIT(19)
 	u32 caps;	/* CAPABILITY_0 */
@@ -322,15 +336,19 @@ void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
 			     u32 *xfer);
 void sdhci_setup_data_pio(struct sdhci *sdhci, struct mci_data *data);
 void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data, dma_addr_t *dma);
-int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t dma);
-int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data);
-int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
-			    dma_addr_t dma);
+void sdhci_teardown_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t dma);
+int sdhci_transfer_data(struct sdhci *sdhci, struct mci_cmd *cmd,
+			struct mci_data *data, dma_addr_t dma);
+int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_cmd *cmd,
+			    struct mci_data *data);
+int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_cmd *cmd,
+			    struct mci_data *data, dma_addr_t dma);
 int sdhci_reset(struct sdhci *sdhci, u8 mask);
 u16 sdhci_calc_clk(struct sdhci *host, unsigned int clock,
 		   unsigned int *actual_clock, unsigned int input_clock);
 void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_clock);
 void sdhci_enable_clk(struct sdhci *host, u16 clk);
+void sdhci_set_drv_type(struct sdhci *host, unsigned drv_type);
 void sdhci_enable_v4_mode(struct sdhci *host);
 int sdhci_setup_host(struct sdhci *host);
 void __sdhci_read_caps(struct sdhci *host, const u16 *ver,
@@ -349,5 +367,24 @@ void sdhci_set_bus_width(struct sdhci *host, int width);
 
 #define sdhci_read32_poll_timeout(sdhci, reg, val, cond, timeout_us) \
 	read_poll_timeout(sdhci_read32, val, cond, timeout_us, sdhci, reg)
+
+/**
+ * sdhci_compute_timeout() - compute suitable timeout for operation
+ * @cmd: MCI command being sent, can be NULL
+ * @data: MCI data being sent, can be NULL
+ * @default_timeout: fallback value
+ *
+ * Return: the number of nanoseconds to wait.
+ */
+static inline ktime_t sdhci_compute_timeout(struct mci_cmd *cmd, struct mci_data *data,
+					    ktime_t default_timeout)
+{
+	if (data && data->timeout_ns != 0)
+		return data->timeout_ns;
+	else if (cmd && cmd->busy_timeout != 0)
+		return cmd->busy_timeout * (u64)NSEC_PER_MSEC;
+	else
+		return SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS;
+}
 
 #endif /* __MCI_SDHCI_H */

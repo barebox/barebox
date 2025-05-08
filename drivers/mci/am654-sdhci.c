@@ -83,12 +83,6 @@
 #define AM654_SDHCI_MIN_FREQ	400000
 #define CLOCK_TOO_SLOW_HZ	50000000
 
-#define MMC_CAP_UHS_SDR104 0
-#define MMC_CAP_UHS_SDR12 0
-#define MMC_CAP_UHS_DDR50 0
-#define MMC_CAP_UHS_SDR25 0
-#define MMC_CAP_UHS_SDR50 0
-
 struct timing_data {
 	const char *otap_binding;
 	const char *itap_binding;
@@ -488,13 +482,15 @@ static int am654_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
 
 	ret = sdhci_wait_for_done(&host->sdhci, SDHCI_INT_CMD_COMPLETE);
-	if (ret)
+	if (ret) {
+		sdhci_teardown_data(&host->sdhci, data, dma);
 		goto error;
+	}
 
 	sdhci_read_response(&host->sdhci, cmd);
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);
 
-	ret = sdhci_transfer_data_dma(&host->sdhci, data, dma);
+	ret = sdhci_transfer_data_dma(&host->sdhci, cmd, data, dma);
 
 error:
 	if (ret) {
@@ -633,6 +629,9 @@ static int am654_sdhci_probe(struct device *dev)
 	ret = sdhci_am654_get_otap_delay(plat);
 	if (ret)
 		return ret;
+
+	/* HS200 not supported by this driver at the moment */
+	plat->sdhci.quirks2 = SDHCI_QUIRK2_BROKEN_HS200;
 
 	plat->sdhci.mci = mci;
 	sdhci_setup_host(&plat->sdhci);

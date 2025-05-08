@@ -198,6 +198,8 @@ static struct pwm_device *of_node_to_pwm_device(struct device_node *np, int id)
 {
 	struct pwm_device *pwm;
 
+	of_device_ensure_probed(np);
+
 	list_for_each_entry(pwm, &pwm_list, node) {
 		if (pwm->hwdev && pwm->hwdev->of_node == np &&
 				pwm->chip->id == id)

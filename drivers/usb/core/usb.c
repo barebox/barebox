@@ -623,7 +623,7 @@ int usb_host_detect(struct usb_host *host)
 {
 	int ret;
 
-	of_usb_host_probe_hubs(host);
+	of_usb_host_probe_devs(host);
 
 	if (!host->root_dev) {
 		if (host->init) {

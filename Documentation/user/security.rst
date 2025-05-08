@@ -170,3 +170,10 @@ a compiled-in RSA public key. Board code should read the JSON Web Token
 (e.g., from a raw partition on a USB mass storage device), verify the
 serial number claim within against the board's actual serial number and only
 then unlock any debugging functionality.
+
+Security Policy
+---------------
+
+For general information on supported versions and how to report security
+vulnerabilities, refer to the top-level
+`SECURITY.md <https://github.com/barebox/barebox/security/policy>`_ document.

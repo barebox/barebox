@@ -12,3 +12,8 @@ Compatibility with old kernels is maintained over barebox releases.
 
 Please report security vulnerabilities to security@barebox.org.
 We will work with the reporter to create a fix and to coordinate the disclosure.
+
+## Securing barebox
+
+Refer to the [Security Considerations](https://www.barebox.org/doc/latest/user/security.html)
+chapter of the documentation for information on how to configure barebox securely.

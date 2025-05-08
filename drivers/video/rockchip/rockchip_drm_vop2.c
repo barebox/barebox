@@ -1958,7 +1958,7 @@ int vop2_bind(struct device *dev)
 	vop2->data = vop2_data;
 
 	res = dev_get_resource_by_name(dev, IORESOURCE_MEM, "vop");
-	if (!res)
+	if (IS_ERR(res))
 		return dev_err_probe(vop2->dev, -EINVAL, "failed to get vop2 register byname\n");
 
 	vop2->regs = IOMEM(res->start);

@@ -538,7 +538,7 @@ static int bgpio_dev_probe(struct device *dev)
 		return PTR_ERR(pdata);
 
 	r = dev_get_resource_by_name(dev, IORESOURCE_MEM, "dat");
-	if (!r)
+	if (IS_ERR(r))
 		return -EINVAL;
 
 	sz = resource_size(r);

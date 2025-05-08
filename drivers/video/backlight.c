@@ -93,6 +93,8 @@ struct backlight_device *of_backlight_find(struct device_node *node)
 {
 	struct backlight_device *bl;
 
+	of_device_ensure_probed(node);
+
 	list_for_each_entry(bl, &backlights, list)
 		if (bl->node == node)
 			return bl;

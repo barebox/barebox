@@ -20,6 +20,7 @@ Contents:
    glossary
    devicetree/*
    devel/devel.rst
+   migration-guides/index
    talks
 
 * :ref:`search`

@@ -274,8 +274,10 @@ static int am65_cpsw_common_start(struct am65_cpsw_common *common)
 	struct am65_cpsw_port *port0 = &common->ports[0];
 	int ret, i;
 
-	if (common->started)
+	if (common->started) {
+		common->started++;
 		return 0;
+	}
 
 	ret = clk_enable(common->fclk);
 	if (ret) {

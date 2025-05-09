@@ -13,6 +13,10 @@
 
 #define CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_327 0x51c
 
+#define CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_316 0x4f0
+#define BANK_DIFF_1	GENMASK(25, 24)
+#define BANK_DIFF_0	GENMASK(17, 16)
+
 #define CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_317 0x4f4
 
 #define ROW_DIFF_0	GENMASK(2, 0)
@@ -30,32 +34,51 @@
 #define DENALI_CTL_0_DRAM_CLASS_DDR4		0xa
 #define DENALI_CTL_0_DRAM_CLASS_LPDDR4		0xb
 
+static unsigned int am625_get_banks_count(unsigned int regval)
+{
+	/*
+	 * The BANK_DIFF_x are only described in the Reference Manual as:
+	 *
+	 * "Encoded number of banks on the DRAM[s]"
+	 *
+	 * From putting different configurations into the TI DDR configuration
+	 * tool it seems that a register value of 0 means 16 banks and 1 means
+	 * 8 banks.
+	 */
+	switch (regval) {
+	case 0:
+		return 16;
+	case 1:
+		return 8;
+	default:
+		return 0;
+	}
+}
+
 u64 am625_sdram_size(void)
 {
 	void __iomem *base = IOMEM(AM625_DDRSS_BASE);
 	u32 ctl0 = readl(base + CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_0);
 	u32 ctl3 = readl(base + CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_3);
+	u32 ctl316 = readl(base + CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_316);
 	u32 ctl317 = readl(base + CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_317);
 	u32 ctl327 = readl(base + CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_327);
 	unsigned int cols, rows, banks;
 	u64 size = 0;
 
-	if (FIELD_GET(DRAM_CLASS, ctl0) == DENALI_CTL_0_DRAM_CLASS_LPDDR4)
-		banks = 8;
-	else if (FIELD_GET(DRAM_CLASS, ctl0) == DENALI_CTL_0_DRAM_CLASS_DDR4)
-		banks = 16;
-	else
-		return 0;
-
 	if (ctl327 & BIT(0)) {
 		cols = FIELD_GET(MAX_COL, ctl3) - FIELD_GET(COL_DIFF_0, ctl317);
 		rows = FIELD_GET(MAX_ROW, ctl3) - FIELD_GET(ROW_DIFF_0, ctl317);
+		banks = am625_get_banks_count(FIELD_GET(BANK_DIFF_0, ctl316));
+
 		size += memory_sdram_size(cols, rows, banks, 2);
 	}
 
 	if (ctl327 & BIT(1)) {
 		cols = FIELD_GET(MAX_COL, ctl3) - FIELD_GET(COL_DIFF_1, ctl317);
 		rows = FIELD_GET(MAX_ROW, ctl3) - FIELD_GET(ROW_DIFF_1, ctl317);
+		banks = am625_get_banks_count(FIELD_GET(BANK_DIFF_1, ctl316));
+
 		size += memory_sdram_size(cols, rows, banks, 2);
 	}
 

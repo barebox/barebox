@@ -146,6 +146,8 @@ config ARCH_ARM64_VIRT
 	select BOARD_ARM_VIRT
 	select HW_HAS_PCI
 	select HAS_DEBUG_LL
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
 
 config ARCH_BCM283X
 	bool "Broadcom BCM283x based boards"

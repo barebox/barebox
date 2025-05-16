@@ -58,7 +58,6 @@ static unsigned int am625_get_banks_count(unsigned int regval)
 u64 am625_sdram_size(void)
 {
 	void __iomem *base = IOMEM(AM625_DDRSS_BASE);
-	u32 ctl0 = readl(base + CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_0);
 	u32 ctl3 = readl(base + CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_3);
 	u32 ctl316 = readl(base + CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_316);
 	u32 ctl317 = readl(base + CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_317);

@@ -94,7 +94,6 @@ static int omap_dmtimer_probe(struct device *dev)
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	base = IOMEM(iores->start);
 
 	data = device_get_match_data(dev);
 

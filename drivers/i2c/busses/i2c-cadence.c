@@ -441,6 +441,7 @@ static int cdns_i2c_probe(struct device *dev)
 }
 
 static const struct of_device_id cdns_i2c_match[] = {
+	{ .compatible = "cdns,i2c-r1p10" },
 	{ .compatible = "cdns,i2c-r1p14" },
 	{},
 };

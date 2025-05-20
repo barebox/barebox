@@ -267,12 +267,6 @@ def build_fit(args):
     dtbs_seen = set()
     fdts = {}
 
-    # Handle the kernel
-    with open(args.kernel, 'rb') as inf:
-        comp_data = compress_data(inf, 'none')
-    size += os.path.getsize(args.kernel)
-    write_kernel(fsw, comp_data, args)
-
     for fname in args.dtbs:
         # Ignore non-DTB (*.dtb) files
         if os.path.splitext(fname)[1] != '.dtb':
@@ -296,6 +290,12 @@ def build_fit(args):
             raise RuntimeError(f"Duplicate file name '{dtbname}' during FIT creation")
 
         entries.append([dtbname, model, compat, files_seq])
+
+    # Handle the kernel
+    with open(args.kernel, 'rb') as inf:
+        comp_data = compress_data(inf, 'none')
+    size += os.path.getsize(args.kernel)
+    write_kernel(fsw, comp_data, args)
 
     finish_fit(fsw, entries)
 

@@ -293,7 +293,7 @@ static __always_inline void imx_set_cpu_type(unsigned int cpu_type)
 # define cpu_is_vf610()		(0)
 #endif
 
-#ifdef CONFIG_BOARD_ARM_GENERIC_DT
+#if defined(CONFIG_ARCH_MULTIARCH) || defined(CONFIG_BOARD_ARM_GENERIC_DT)
 # ifdef imx_cpu_type
 #  undef imx_cpu_type
 #  define imx_cpu_type __imx_cpu_type

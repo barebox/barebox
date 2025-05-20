@@ -56,6 +56,15 @@ extern unsigned int __omap_cpu_type;
 # define cpu_is_am33xx()	(0)
 #endif
 
+#if defined(CONFIG_ARCH_MULTIARCH) || defined(CONFIG_BOARD_ARM_GENERIC_DT)
+# ifdef omap_cpu_type
+#  undef omap_cpu_type
+#  define omap_cpu_type __omap_cpu_type
+# else
+#  define omap_cpu_type 0
+# endif
+#endif
+
 #ifdef omap_cpu_type
 #define cpu_is_omap()			(omap_cpu_type > 0)
 #else

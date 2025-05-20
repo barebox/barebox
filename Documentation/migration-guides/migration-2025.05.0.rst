@@ -59,6 +59,16 @@ Board support
   and using the hardware config FIP slot only as dummy.
   See the lxa-tac board for an example.
 
+* ``barebox-sama5d27-som1-ek-xload-mmc.img`` has been renamed to
+  ``barebox-sama5d27-som1-ek-xload.img`` and
+  ``barebox-groboards-sama5d27-giantboard-xload-mmc.img`` has been renamed to
+  ``barebox-groboards-sama5d27-giantboard-xload.img`` to reflect
+  that the same image is now also bootable from QSPI flash.
+
+* Clock initialization for RK356x is no longer hardcoded, but is now
+  specified in the device tree. barebox device trees not including
+  ``#include rk356x.dtsi`` (in ``arch/arm/dts``) may regress.
+
 Shell and magic variables
 -------------------------
 
@@ -69,3 +79,19 @@ Shell and magic variables
   This does not affect users setting ``nv boot.default``, but for
   others, barebox will look for bootloader spec on the bootsource
   medium first.
+
+Build system
+------------
+
+* When building for ``ARCH=sandbox``, ``libftdi1`` and ``sdl2``
+  libraries are now looked up with ``${CROSS_PKG_CONFIG}`` instead
+  of ``${PKG_CONFIG}``. This is not relevant when cross-building
+  just the barebox tools, which is the usual use case for sandbox
+  cross compilation.
+
+Bisectability
+-------------
+
+Many users of ``read*_poll_is_timeout`` are broken between
+``554bbc479c09..dea0ad02bbd6``, which can falsify git bisect
+results.

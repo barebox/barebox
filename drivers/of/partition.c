@@ -206,8 +206,8 @@ int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
 		partnode = np;
 		break;
 	case MTD_OF_BINDING_ADAPTIVE:
-		/* If there's already a compatible property, leave it as-is */
-		if (of_property_present(partnode, "compatible"))
+		/* If there's already a fixed-partitions node, leave compatible as-is */
+		if (of_node_is_fixed_partitions(partnode))
 			break;
 		if (!cdev->mtd)
 			compat = "barebox,fixed-partitions";

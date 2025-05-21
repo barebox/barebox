@@ -28,9 +28,8 @@ static int sama5_bootsource_init(void)
 	else
 		return 0;
 
-	if (at91_bootsource)
-		bootsource_set_raw(sama5_bootsource(at91_bootsource),
-				   sama5_bootsource_instance(at91_bootsource));
+	bootsource_set_raw(sama5_bootsource(at91_bootsource),
+			   sama5_bootsource_instance(at91_bootsource));
 
 	return 0;
 }

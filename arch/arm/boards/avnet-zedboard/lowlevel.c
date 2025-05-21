@@ -223,12 +223,13 @@ static void avnet_zedboard_ps7_init(void)
 	writel(0x00000081, 0XF8006000);
 
 	/* poor mans pinctrl */
+	/* UART1 pinmux TxD: MIO_PIN 48, RxD: MIO_PIN 49 */
 	writel(0x000002E0, ZYNQ_MIO_BASE + 0xC0);
 	writel(0x000002E1, ZYNQ_MIO_BASE + 0xC4);
-	/* UART1 pinmux */
+	/* UART0 pinmux TxD: MIO_PIN 50, RxD: MIO_PIN 51 */
 	writel(0x000002E1, ZYNQ_MIO_BASE + 0xC8);
 	writel(0x000002E0, ZYNQ_MIO_BASE + 0xCC);
-	/* QSPI pinmux */
+	/* QSPI pinmux MIO_PIN 01 - 08 */
 	writel(0x00001602, ZYNQ_MIO_BASE + 0x04);
 	writel(0x00000702, ZYNQ_MIO_BASE + 0x08);
 	writel(0x00000702, ZYNQ_MIO_BASE + 0x0c);

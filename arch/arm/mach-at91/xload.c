@@ -228,7 +228,8 @@ void __noreturn sama5d3_atmci_start_image(u32 r4, unsigned int clock,
 
 	sama5d3_pmc_enable_periph_clock(instance->id);
 
-	ret = at91_mci_bio_init(&bio, instance->base, clock, slot);
+	ret = at91_mci_bio_init(&bio, instance->base, clock, slot,
+				PBL_MCI_UNKNOWN_CAPACITY);
 	if (ret)
 		goto out_panic;
 

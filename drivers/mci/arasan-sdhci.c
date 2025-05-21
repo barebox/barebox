@@ -155,7 +155,7 @@ static int arasan_zynqmp_execute_tuning(struct mci_host *mci, u32 opcode)
 	int err;
 
 	/* ZynqMP SD controller does not perform auto tuning in DDR50 mode */
-	if (mci->timing == MMC_TIMING_UHS_DDR50)
+	if (mci->ios.timing == MMC_TIMING_UHS_DDR50)
 		return 0;
 
 	arasan_zynqmp_dll_reset(host, device_id);
@@ -205,9 +205,9 @@ static void arasan_sdhci_set_clock(struct mci_host *mci, unsigned int clock)
 	}
 
 	clk_set_phase(clk_data->sampleclk,
-		      clk_data->clk_phase_in[mci->mci->host->timing]);
+		      clk_data->clk_phase_in[mci->mci->host->ios.timing]);
 	clk_set_phase(clk_data->sdcardclk,
-		      clk_data->clk_phase_out[mci->mci->host->timing]);
+		      clk_data->clk_phase_out[mci->mci->host->ios.timing]);
 
 	sdhci_set_clock(&host->sdhci, clock, mci->f_max);
 }
@@ -280,18 +280,20 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
 
 	/* CMD19/21 generate _only_ Buffer Read Ready interrupt */
-	if (cmd->cmdidx == MMC_SEND_TUNING_BLOCK || cmd->cmdidx == MMC_SEND_TUNING_BLOCK_HS200)
+	if (mmc_op_tuning(cmd->cmdidx))
 		mask = SDHCI_INT_DATA_AVAIL;
 
 	ret = sdhci_wait_for_done(&host->sdhci, mask);
-	if (ret)
+	if (ret) {
+		sdhci_teardown_data(&host->sdhci, data, dma);
 		goto error;
+	}
 
 	sdhci_read_response(&host->sdhci, cmd);
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);
 
 	if (data)
-		ret = sdhci_transfer_data_dma(&host->sdhci, data, dma);
+		ret = sdhci_transfer_data_dma(&host->sdhci, cmd, data, dma);
 
 error:
 	if (ret) {
@@ -312,9 +314,9 @@ static void sdhci_arasan_set_clk_delays(struct sdhci *host)
 	struct sdhci_arasan_clk_data *clk_data = &arasan_sdhci->clk_data;
 
 	clk_set_phase(clk_data->sampleclk,
-		      clk_data->clk_phase_in[mci->timing]);
+		      clk_data->clk_phase_in[mci->ios.timing]);
 	clk_set_phase(clk_data->sdcardclk,
-		      clk_data->clk_phase_out[mci->timing]);
+		      clk_data->clk_phase_out[mci->ios.timing]);
 }
 
 static void arasan_dt_read_clk_phase(struct device *dev,
@@ -372,7 +374,7 @@ static int arasan_zynqmp_sampleclk_set_phase(struct clk_hw *hw, int degrees)
 	/* Assert DLL Reset */
 	zynqmp_pm_sd_dll_reset(node_id, PM_DLL_RESET_ASSERT);
 
-	switch (host->timing) {
+	switch (host->ios.timing) {
 	case MMC_TIMING_MMC_HS:
 	case MMC_TIMING_SD_HS:
 	case MMC_TIMING_UHS_DDR50:
@@ -441,7 +443,7 @@ static int arasan_zynqmp_sdcardclk_set_phase(struct clk_hw *hw, int degrees)
 	if (sdhci_arasan->sdhci.version < SDHCI_SPEC_300)
 		return 0;
 
-	switch (host->timing) {
+	switch (host->ios.timing) {
 	case MMC_TIMING_MMC_HS:
 	case MMC_TIMING_SD_HS:
 	case MMC_TIMING_UHS_DDR50:
@@ -769,7 +771,11 @@ static int arasan_sdhci_probe(struct device *dev)
 	if (of_device_is_compatible(np, "xlnx,zynqmp-8.9a")) {
 		if (IS_ENABLED(CONFIG_MCI_TUNING))
 			mci->ops.execute_tuning = arasan_zynqmp_execute_tuning;
+		mci->caps2 |= MMC_CAP2_HS200;
 		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_CLOCK_25_BROKEN;
+	} else {
+		/* HS200 only supported for ZynqMP at the moment */
+		arasan_sdhci->sdhci.quirks2 = SDHCI_QUIRK2_BROKEN_HS200;
 	}
 
 	/*

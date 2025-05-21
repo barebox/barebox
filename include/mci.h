@@ -53,11 +53,19 @@
 #define MMC_CAP_SD_HIGHSPEED		(1 << 3)
 #define MMC_CAP_MMC_HIGHSPEED		(1 << 4)
 #define MMC_CAP_MMC_HIGHSPEED_52MHZ	(1 << 5)
-#define MMC_CAP_MMC_3_3V_DDR		(1 << 7)	/* Host supports eMMC DDR 3.3V */
-#define MMC_CAP_MMC_1_8V_DDR		(1 << 8)	/* Host supports eMMC DDR 1.8V */
-#define MMC_CAP_MMC_1_2V_DDR		(1 << 9)	/* Host supports eMMC DDR 1.2V */
-#define MMC_CAP_DDR			(MMC_CAP_MMC_3_3V_DDR | MMC_CAP_MMC_1_8V_DDR | \
-					 MMC_CAP_MMC_1_2V_DDR)
+#define MMC_CAP_3_3V_DDR		(1 << 7)	/* Host supports eMMC DDR 3.3V */
+#define MMC_CAP_1_8V_DDR		(1 << 8)	/* Host supports eMMC DDR 1.8V */
+#define MMC_CAP_1_2V_DDR		(1 << 9)	/* Host supports eMMC DDR 1.2V */
+#define MMC_CAP_DDR			(MMC_CAP_3_3V_DDR | MMC_CAP_1_8V_DDR | \
+					 MMC_CAP_1_2V_DDR)
+#define MMC_CAP_UHS_SDR12	(1 << 16)	/* Host supports UHS SDR12 mode */
+#define MMC_CAP_UHS_SDR25	(1 << 17)	/* Host supports UHS SDR25 mode */
+#define MMC_CAP_UHS_SDR50	(1 << 18)	/* Host supports UHS SDR50 mode */
+#define MMC_CAP_UHS_SDR104	(1 << 19)	/* Host supports UHS SDR104 mode */
+#define MMC_CAP_UHS_DDR50	(1 << 20)	/* Host supports UHS DDR50 mode */
+#define MMC_CAP_UHS		(MMC_CAP_UHS_SDR12 | MMC_CAP_UHS_SDR25 | \
+				 MMC_CAP_UHS_SDR50 | MMC_CAP_UHS_SDR104 | \
+				 MMC_CAP_UHS_DDR50)
 /* Mask of all caps for bus width */
 #define MMC_CAP_BIT_DATA_MASK		(MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA)
 
@@ -199,6 +207,8 @@
 
 #define SD_ERASE_ARG			0x00000000
 #define SD_DISCARD_ARG			0x00000001
+
+#define mmc_driver_type_mask(n)		(1 << (n))
 
 /*
  * EXT_CSD fields
@@ -496,6 +506,12 @@ static inline void mci_setup_cmd(struct mci_cmd *p, unsigned cmd,
 	p->resp_type = response;
 }
 
+static inline bool mmc_op_tuning(u32 cmdidx)
+{
+	return cmdidx == MMC_SEND_TUNING_BLOCK ||
+	       cmdidx == MMC_SEND_TUNING_BLOCK_HS200;
+}
+
 /** data information to be used with some SD/MMC commands */
 struct mci_data {
 	union {
@@ -505,6 +521,7 @@ struct mci_data {
 	unsigned flags;		/**< refer MMC_DATA_* to define direction */
 	unsigned blocks;	/**< block count to handle in this command */
 	unsigned blocksize;	/**< block size in bytes (mostly 512) */
+	unsigned timeout_ns;	/**< data timeout in ns */
 };
 
 enum mci_timing {
@@ -545,6 +562,7 @@ struct mci_ios {
 	unsigned int		clock;			/* clock rate */
 	enum mci_bus_width	bus_width;		/* data bus width */
 	enum mci_timing		timing;			/* timing specification used */
+	unsigned char		drv_type;		/* driver type (A, B, C, D) */
 };
 
 struct mci;
@@ -606,10 +624,9 @@ struct mci_host {
 #define MMC_CAP2_CRYPTO		0
 	unsigned f_min;		/**< host interface lower limit */
 	unsigned f_max;		/**< host interface upper limit */
-	unsigned clock;		/**< Current clock used to talk to the card */
 	unsigned actual_clock;
-	enum mci_bus_width bus_width;	/**< used data bus width to the card */
-	enum mci_timing timing;	/**< used timing specification to the card */
+	struct mci_ios ios;		/* current io bus settings */
+	unsigned mmc_avail_type;	/**< supported device type by both host and card */
 	unsigned hs_max_dtr;
 	unsigned hs200_max_dtr;
 	unsigned max_req_size;
@@ -618,6 +635,13 @@ struct mci_host {
 	int broken_cd;		/**< card detect is broken */
 	bool non_removable;	/**< device is non removable */
 	bool disable_wp;	/**< ignore write-protect detection logic */
+	bool fixed_drv_type_valid;
+	unsigned char fixed_drv_type;	/**< fixed driver type for non-removable media */
+	unsigned char	drive_strength;	/**< driver type (A, B, C, D) */
+#define MMC_SET_DRIVER_TYPE_B	0
+#define MMC_SET_DRIVER_TYPE_A	1
+#define MMC_SET_DRIVER_TYPE_C	2
+#define MMC_SET_DRIVER_TYPE_D	3
 	struct regulator *supply;
 	struct mci_ops ops;
 };
@@ -739,8 +763,8 @@ static inline struct mci *mci_get_device_by_devpath(const char *devpath)
 
 static inline int mmc_card_hs(struct mci *mci)
 {
-	return mci->host->timing == MMC_TIMING_SD_HS ||
-		mci->host->timing == MMC_TIMING_MMC_HS;
+	return mci->host->ios.timing == MMC_TIMING_SD_HS ||
+		mci->host->ios.timing == MMC_TIMING_MMC_HS;
 }
 
 /*
@@ -749,6 +773,7 @@ static inline int mmc_card_hs(struct mci *mci)
  */
 int mmc_hs200_tuning(struct mci *mci);
 int mci_execute_tuning(struct mci *mci);
+int mmc_send_tuning(struct mci *mci, u32 opcode);
 int mci_send_abort_tuning(struct mci *mci, u32 opcode);
 int mmc_select_timing(struct mci *mci);
 int mci_set_blockcount(struct mci *mci, unsigned int cmdarg);
@@ -760,7 +785,7 @@ int mci_rpmb_route_frames(struct mci *mci, void *req, unsigned long reqlen,
 
 static inline bool mmc_card_hs200(struct mci *mci)
 {
-	return mci->host->timing == MMC_TIMING_MMC_HS200;
+	return mci->host->ios.timing == MMC_TIMING_MMC_HS200;
 }
 
 #endif /* _MCI_H_ */

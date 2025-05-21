@@ -472,35 +472,35 @@ static void mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	sdi_clkcr = mmci_readl(host, MMCICLOCK);
 
 	/* Ramp up the clock rate */
-	if (mci->clock) {
+	if (mci->ios.clock) {
 		u32 clkdiv = 0;
 		u32 tmp_clock;
 
 		dev_dbg(host->hw_dev, "setting clock and bus width in the host:");
-		if (mci->clock >= mci->f_max) {
+		if (mci->ios.clock >= mci->f_max) {
 			clkdiv = 0;
-			mci->clock = mci->f_max;
+			mci->ios.clock = mci->f_max;
 		} else {
-			clkdiv = (host->mclk / mci->clock) - 2;
+			clkdiv = (host->mclk / mci->ios.clock) - 2;
 		}
 		tmp_clock = host->mclk / (clkdiv + 2);
-		while (tmp_clock > mci->clock) {
+		while (tmp_clock > mci->ios.clock) {
 			clkdiv++;
 			tmp_clock = host->mclk / (clkdiv + 2);
 		}
 		if (clkdiv > MCI_CLK_CLKDIV_MASK)
 			clkdiv = MCI_CLK_CLKDIV_MASK;
 		tmp_clock = host->mclk / (clkdiv + 2);
-		mci->clock = tmp_clock;
+		mci->ios.clock = tmp_clock;
 		sdi_clkcr &= ~(MCI_CLK_CLKDIV_MASK);
 		sdi_clkcr |= clkdiv;
 	}
 
 	/* Set the bus width */
-	if (mci->bus_width) {
+	if (mci->ios.bus_width) {
 		u32 buswidth = 0;
 
-		switch (mci->bus_width) {
+		switch (mci->ios.bus_width) {
 		case MMC_BUS_WIDTH_1:
 			buswidth |= MCI_1BIT_BUS;
 			break;
@@ -511,7 +511,7 @@ static void mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 			buswidth |= MCI_ST_8BIT_BUS;
 			break;
 		default:
-			dev_err(host->hw_dev, "Invalid bus width (%d)\n", mci->bus_width);
+			dev_err(host->hw_dev, "Invalid bus width (%d)\n", mci->ios.bus_width);
 			break;
 		}
 		sdi_clkcr &= ~(MCI_xBIT_BUS_MASK);

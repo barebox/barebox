@@ -14,6 +14,7 @@
 #include <of.h>
 #include <malloc.h>
 #include <mci.h>
+#include <linux/pinctrl/consumer.h>
 #include <clock.h>
 #include <io.h>
 #include <linux/clk.h>
@@ -28,7 +29,45 @@
 
 
 #define PRSSTAT_SDSTB 0x00000008
+#define ESDHC_BURST_LEN_EN_INCR		(1 << 27)
 
+/* Bits 3 and 6 are not SDHCI standard definitions */
+#define  ESDHC_MIX_CTRL_SDHCI_MASK	0xb7
+/* Tuning bits */
+#define  ESDHC_MIX_CTRL_TUNING_MASK	0x03c00000
+
+/* dll control register */
+#define ESDHC_DLL_CTRL			0x60
+#define ESDHC_DLL_OVERRIDE_VAL_SHIFT	9
+#define ESDHC_DLL_OVERRIDE_EN_SHIFT	8
+
+/* tune control register */
+#define ESDHC_TUNE_CTRL_STATUS		0x68
+#define  ESDHC_TUNE_CTRL_STEP		1
+#define  ESDHC_TUNE_CTRL_MIN		0
+#define  ESDHC_TUNE_CTRL_MAX		((1 << 7) - 1)
+
+#define ESDHC_TUNING_CTRL		0xcc
+#define ESDHC_STD_TUNING_EN		(1 << 24)
+/* NOTE: the minimum valid tuning start tap for mx6sl is 1 */
+#define ESDHC_TUNING_START_TAP_DEFAULT	0x1
+#define ESDHC_TUNING_START_TAP_MASK	0x7f
+#define ESDHC_TUNING_CMD_CRC_CHECK_DISABLE	(1 << 7)
+#define ESDHC_TUNING_STEP_DEFAULT	0x1
+#define ESDHC_TUNING_STEP_MASK		0x00070000
+#define ESDHC_TUNING_STEP_SHIFT		16
+
+/* pinctrl state */
+#define ESDHC_PINCTRL_STATE_100MHZ	"state_100mhz"
+#define ESDHC_PINCTRL_STATE_200MHZ	"state_200mhz"
+
+/*
+ * Our interpretation of the SDHCI_HOST_CONTROL register
+ */
+#define ESDHC_CTRL_4BITBUS		(0x1 << 1)
+#define ESDHC_CTRL_8BITBUS		(0x2 << 1)
+#define ESDHC_CTRL_BUSWIDTH_MASK	(0x3 << 1)
+#define USDHC_GET_BUSWIDTH(c) (c & ESDHC_CTRL_BUSWIDTH_MASK)
 
 #define to_fsl_esdhc(mci)	container_of(mci, struct fsl_esdhc_host, mci)
 
@@ -48,8 +87,8 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 {
 	int div, pre_div, ddr_pre_div = 1;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	int sdhc_clk = clk_get_rate(host->clk);
-	u32 clk;
+	unsigned sdhc_clk = clk_get_rate(host->clk);
+	u32 val, clk;
 	unsigned long  cur_clock;
 
 	if (esdhc_is_usdhc(host) && ddr)
@@ -92,8 +131,8 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 	esdhc_clrsetbits32(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			SYSCTL_CLOCK_MASK, clk);
 
-	esdhc_poll(host, SDHCI_PRESENT_STATE,
-		   PRSSTAT_SDSTB, PRSSTAT_SDSTB,
+	esdhc_poll(host, SDHCI_PRESENT_STATE, val,
+		   val & PRSSTAT_SDSTB,
 		   10 * MSECOND);
 
 	clk = SYSCTL_PEREN | SYSCTL_CKEN | SYSCTL_INITA;
@@ -101,10 +140,139 @@ static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 	esdhc_setbits32(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			clk);
 
-	esdhc_poll(host, SDHCI_CLOCK_CONTROL,
-		   SYSCTL_INITA, SYSCTL_INITA,
+	esdhc_poll(host, SDHCI_CLOCK_CONTROL, val,
+		   val & SYSCTL_INITA,
 		   10 * MSECOND);
 }
+
+static inline void esdhc_clrset_le(struct fsl_esdhc_host *host,
+				   u32 mask, u32 val, int reg)
+{
+	void __iomem *base = host->sdhci.base + (reg & ~0x3);
+	u32 shift = (reg & 0x3) * 8;
+
+	writel(((readl(base) & ~(mask << shift)) | (val << shift)), base);
+}
+
+/* Enable the auto tuning circuit to check the CMD line and BUS line */
+static inline void usdhc_auto_tuning_mode_sel_and_en(struct fsl_esdhc_host *host)
+{
+	u32 buswidth, auto_tune_buswidth;
+	u32 reg;
+
+	buswidth = USDHC_GET_BUSWIDTH(sdhci_read32(&host->sdhci, SDHCI_HOST_CONTROL));
+
+	switch (buswidth) {
+	case ESDHC_CTRL_8BITBUS:
+		auto_tune_buswidth = ESDHC_VEND_SPEC2_AUTO_TUNE_8BIT_EN;
+		break;
+	case ESDHC_CTRL_4BITBUS:
+		auto_tune_buswidth = ESDHC_VEND_SPEC2_AUTO_TUNE_4BIT_EN;
+		break;
+	default:	/* 1BITBUS */
+		auto_tune_buswidth = ESDHC_VEND_SPEC2_AUTO_TUNE_1BIT_EN;
+		break;
+	}
+
+	esdhc_clrset_le(host, ESDHC_VEND_SPEC2_AUTO_TUNE_MODE_MASK,
+			auto_tune_buswidth | ESDHC_VEND_SPEC2_AUTO_TUNE_CMD_EN,
+			ESDHC_VEND_SPEC2);
+
+	reg = sdhci_read32(&host->sdhci, IMX_SDHCI_MIXCTRL);
+	reg |= MIX_CTRL_AUTO_TUNE_EN;
+	sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, reg);
+}
+
+static void esdhc_reset_tuning(struct fsl_esdhc_host *host)
+{
+	u32 ctrl;
+	int ret;
+
+	/* Reset the tuning circuit */
+	if (esdhc_is_usdhc(host)) {
+		ctrl = sdhci_read32(&host->sdhci, IMX_SDHCI_MIXCTRL);
+		ctrl &= ~MIX_CTRL_AUTO_TUNE_EN;
+		if (host->socdata->flags & ESDHC_FLAG_STD_TUNING) {
+			sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, ctrl);
+			ctrl = sdhci_read32(&host->sdhci, SDHCI_ACMD12_ERR__HOST_CONTROL2);
+			ctrl &= ~MIX_CTRL_SMPCLK_SEL;
+			ctrl &= ~MIX_CTRL_EXE_TUNE;
+			sdhci_write32(&host->sdhci, SDHCI_ACMD12_ERR__HOST_CONTROL2, ctrl);
+			/* Make sure MIX_CTRL_EXE_TUNE cleared */
+			ret = sdhci_read32_poll_timeout(&host->sdhci, SDHCI_ACMD12_ERR__HOST_CONTROL2,
+				ctrl, !(ctrl & MIX_CTRL_EXE_TUNE), 50);
+			if (ret == -ETIMEDOUT)
+				dev_warn(host->dev,
+				 "Warning! clear execute tuning bit failed\n");
+			/*
+			 * SDHCI_INT_DATA_AVAIL is W1C bit, set this bit will clear the
+			 * usdhc IP internal logic flag execute_tuning_with_clr_buf, which
+			 * will finally make sure the normal data transfer logic correct.
+			 */
+			ctrl = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
+			ctrl |= SDHCI_INT_DATA_AVAIL;
+			sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ctrl);
+		}
+	}
+}
+
+static int usdhc_execute_tuning(struct mci_host *mci, u32 opcode)
+{
+	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
+	int err;
+
+	/*
+	 * i.MX uSDHC internally already uses a fixed optimized timing for
+	 * DDR50, normally does not require tuning for DDR50 mode.
+	 */
+	if (host->sdhci.timing == MMC_TIMING_UHS_DDR50)
+		return 0;
+
+	/*
+	 * Reset tuning circuit logic. If not, the previous tuning result
+	 * will impact current tuning, make current tuning can't set the
+	 * correct delay cell.
+	 */
+	esdhc_reset_tuning(host);
+
+	err = sdhci_execute_tuning(&host->sdhci, opcode);
+	/* If tuning done, enable auto tuning */
+	if (!err)
+		usdhc_auto_tuning_mode_sel_and_en(host);
+
+	return err;
+}
+
+static int esdhc_change_pinstate(struct fsl_esdhc_host *host,
+				 unsigned int uhs)
+{
+	struct pinctrl_state *pinctrl;
+
+	dev_dbg(host->dev, "change pinctrl state for uhs %d\n", uhs);
+
+	if (IS_ERR(host->pinctrl) ||
+		IS_ERR(host->pins_100mhz) ||
+		IS_ERR(host->pins_200mhz))
+		return -EINVAL;
+
+	switch (uhs) {
+	case MMC_TIMING_UHS_SDR50:
+	case MMC_TIMING_UHS_DDR50:
+		pinctrl = host->pins_100mhz;
+		break;
+	case MMC_TIMING_UHS_SDR104:
+	case MMC_TIMING_MMC_HS200:
+	case MMC_TIMING_MMC_HS400:
+		pinctrl = host->pins_200mhz;
+		break;
+	default:
+		/* back to default state for other legacy timing */
+		return pinctrl_select_state_default(host->dev);
+	}
+
+	return pinctrl_select_state(host->pinctrl, pinctrl);
+}
+
 
 static void usdhc_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing)
 {
@@ -118,10 +286,31 @@ static void usdhc_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing
 	case MMC_TIMING_MMC_DDR52:
 		mixctrl |= MIX_CTRL_DDREN;
 		sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, mixctrl);
+		if (host->boarddata.delay_line) {
+			u32 v;
+			v = host->boarddata.delay_line <<
+				IMX_SDHCI_DLL_CTRL_OVERRIDE_VAL_SHIFT |
+				(1 << IMX_SDHCI_DLL_CTRL_OVERRIDE_EN_SHIFT);
+			if (cpu_is_mx53())
+				v <<= 1;
+			sdhci_write32(&host->sdhci, IMX_SDHCI_DLL_CTRL, v);
+		}
 		break;
-	default:
+	case MMC_TIMING_UHS_SDR12:
+	case MMC_TIMING_UHS_SDR25:
+	case MMC_TIMING_UHS_SDR50:
+	case MMC_TIMING_UHS_SDR104:
+	case MMC_TIMING_MMC_HS:
+	case MMC_TIMING_MMC_HS200:
 		sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, mixctrl);
+		break;
+	case MMC_TIMING_LEGACY:
+	default:
+		esdhc_reset_tuning(host);
+		break;
 	}
+
+	esdhc_change_pinstate(host, timing);
 
 	host->sdhci.timing = timing;
 }
@@ -153,6 +342,7 @@ static void layerscape_set_timing(struct fsl_esdhc_host *host, enum mci_timing t
 static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
+	bool ddr_changed = false;
 
 	/*
 	 * call esdhc_set_timing() before update the clock rate,
@@ -162,14 +352,20 @@ static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	 * setting clock rate.
 	 */
 	if (host->sdhci.timing != ios->timing) {
+		if (mci_timing_is_ddr(host->sdhci.timing) != mci_timing_is_ddr(ios->timing))
+			ddr_changed = true;
+
 		if (esdhc_is_usdhc(host))
 			usdhc_set_timing(host, ios->timing);
 		else if (esdhc_is_layerscape(host))
 			layerscape_set_timing(host, ios->timing);
 	}
 
-	/* Set the clock speed */
-	set_sysctl(mci, ios->clock, mci_timing_is_ddr(ios->timing));
+	/* Reconfigure clock if requested speed changes */
+	if (!ios->clock || mci->actual_clock != ios->clock || ddr_changed)
+		set_sysctl(mci, ios->clock, mci_timing_is_ddr(ios->timing));
+
+	sdhci_set_drv_type(&host->sdhci, ios->drv_type);
 
 	/* Set the bus width */
 	esdhc_clrbits32(host, SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,
@@ -199,7 +395,7 @@ static int esdhc_card_present(struct mci_host *mci)
 
 static int esdhc_reset(struct fsl_esdhc_host *host)
 {
-	int val;
+	u32 val;
 
 	/* reset the controller */
 	sdhci_write32(&host->sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
@@ -217,9 +413,8 @@ static int esdhc_reset(struct fsl_esdhc_host *host)
 	}
 
 	/* hardware clears the bit when it is done */
-	if (esdhc_poll(host,
-		       SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
-		       SYSCTL_RSTA, 0, 100 * MSECOND)) {
+	if (esdhc_poll(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
+		       val, (val & SYSCTL_RSTA) == 0, 100 * MSECOND)) {
 		dev_err(host->dev, "Reset never completed.\n");
 		return -EIO;
 	}
@@ -264,7 +459,51 @@ static int esdhc_init(struct mci_host *mci, struct device *dev)
 	esdhc_clrsetbits32(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			SYSCTL_TIMEOUT_MASK, 14 << 16);
 
-	return ret;
+	if (IS_ENABLED(CONFIG_MCI_TUNING) && esdhc_is_usdhc(host) &&
+	    (host->socdata->flags & ESDHC_FLAG_STD_TUNING)) {
+		u32 tmp;
+
+		/*
+		 * ROM code will change the bit burst_length_enable setting
+		 * to zero if this usdhc is chosen to boot system. Change
+		 * it back here, otherwise it will impact the performance a
+		 * lot. This bit is used to enable/disable the burst length
+		 * for the external AHB2AXI bridge. It's useful especially
+		 * for INCR transfer because without burst length indicator,
+		 * the AHB2AXI bridge does not know the burst length in
+		 * advance. And without burst length indicator, AHB INCR
+		 * transfer can only be converted to singles on the AXI side.
+		 */
+		sdhci_write32(&host->sdhci, SDHCI_HOST_CONTROL,
+			      sdhci_read32(&host->sdhci, SDHCI_HOST_CONTROL)
+			| ESDHC_BURST_LEN_EN_INCR);
+
+		/* disable DLL_CTRL delay line settings */
+		sdhci_write32(&host->sdhci, ESDHC_DLL_CTRL, 0x0);
+
+		tmp = sdhci_read32(&host->sdhci, ESDHC_TUNING_CTRL);
+		tmp |= ESDHC_STD_TUNING_EN;
+
+		tmp &= ~(ESDHC_TUNING_START_TAP_MASK | ESDHC_TUNING_STEP_MASK);
+		tmp |= host->boarddata.tuning_start_tap;
+
+		tmp |= host->boarddata.tuning_step << ESDHC_TUNING_STEP_SHIFT;
+
+		/* Disable the CMD CRC check for tuning, if not, need to
+		 * add some delay after every tuning command, because
+		 * hardware standard tuning logic will directly go to next
+		 * step once it detect the CMD CRC error, will not wait for
+		 * the card side to finally send out the tuning data, trigger
+		 * the buffer read ready interrupt immediately. If usdhc send
+		 * the next tuning command some eMMC card will stuck, can't
+		 * response, block the tuning procedure or the first command
+		 * after the whole tuning procedure always can't get any response.
+		 */
+		tmp |= ESDHC_TUNING_CMD_CRC_CHECK_DISABLE;
+		sdhci_write32(&host->sdhci, ESDHC_TUNING_CTRL, tmp);
+	}
+
+	return 0;
 }
 
 static const struct mci_ops fsl_esdhc_ops = {
@@ -273,6 +512,63 @@ static const struct mci_ops fsl_esdhc_ops = {
 	.init = esdhc_init,
 	.card_present = esdhc_card_present,
 };
+
+static void fsl_esdhc_probe_dt(struct device *dev, struct fsl_esdhc_host *host)
+{
+	struct device_node *np = dev->of_node;
+	struct esdhc_platform_data *boarddata = &host->boarddata;
+
+	if (!IS_ENABLED(CONFIG_MCI_TUNING))
+		return;
+
+	if (of_property_read_u32(np, "fsl,tuning-step", &boarddata->tuning_step))
+		boarddata->tuning_step = ESDHC_TUNING_STEP_DEFAULT;
+	if (of_property_read_u32(np, "fsl,tuning-start-tap",
+			     &boarddata->tuning_start_tap))
+		boarddata->tuning_start_tap = ESDHC_TUNING_START_TAP_DEFAULT;
+	if (of_property_read_u32(np, "fsl,delay-line", &boarddata->delay_line))
+		boarddata->delay_line = 0;
+
+	if (esdhc_is_usdhc(host) && !IS_ERR(host->pinctrl)) {
+		host->pins_100mhz = pinctrl_lookup_state(host->pinctrl,
+						ESDHC_PINCTRL_STATE_100MHZ);
+		host->pins_200mhz = pinctrl_lookup_state(host->pinctrl,
+						ESDHC_PINCTRL_STATE_200MHZ);
+	}
+}
+
+static bool usdhc_setup_tuning(struct fsl_esdhc_host *host)
+{
+	struct mci_host *mci = &host->mci;
+
+	if (!IS_ENABLED(CONFIG_MCI_TUNING) || !esdhc_is_usdhc(host))
+		return false;
+
+	/*
+	 * clear tuning bits in case ROM has set it already
+	 * We use writel, because we haven't set up SDHCI yet
+	 */
+	writel(0x0, host->sdhci.base + IMX_SDHCI_MIXCTRL);
+	writel(0x0, host->sdhci.base + SDHCI_ACMD12_ERR__HOST_CONTROL2);
+	writel(0x0, host->sdhci.base + ESDHC_TUNE_CTRL_STATUS);
+
+	if (!(host->socdata->flags & ESDHC_FLAG_HS200))
+		return false;
+
+	if (host->socdata->flags & ESDHC_FLAG_MAN_TUNING) {
+		dev_dbg(host->dev, "i.MX6Q manual tuning not supported\n");
+		return false;
+	}
+
+	/*
+	 * Link usdhc specific mmc_host_ops execute_tuning function,
+	 * to replace the standard one in sdhci_ops.
+	 */
+	mci->ops.execute_tuning = usdhc_execute_tuning;
+	mci->caps2 |= MMC_CAP2_HS200;
+
+	return true;
+}
 
 static int fsl_esdhc_probe(struct device *dev)
 {
@@ -319,12 +615,15 @@ static int fsl_esdhc_probe(struct device *dev)
 	host->mci.hw_dev = dev;
 	host->sdhci.mci = &host->mci;
 
+	if (!usdhc_setup_tuning(host))
+		host->sdhci.quirks2 |= SDHCI_QUIRK2_BROKEN_HS200;
+
 	ret = sdhci_setup_host(&host->sdhci);
 	if (ret)
 		goto err_clk_disable;
 
 	if (esdhc_is_usdhc(host) || esdhc_is_layerscape(host))
-		mci->host_caps |= MMC_CAP_MMC_3_3V_DDR | MMC_CAP_MMC_1_8V_DDR;
+		mci->host_caps |= MMC_CAP_3_3V_DDR | MMC_CAP_1_8V_DDR;
 
 	rate = clk_get_rate(host->clk);
 	host->mci.f_min = rate >> 12;
@@ -333,6 +632,12 @@ static int fsl_esdhc_probe(struct device *dev)
 	host->mci.f_max = rate;
 
 	mci_of_parse(&host->mci);
+
+	host->pinctrl = pinctrl_get(dev);
+	if (IS_ERR(host->pinctrl))
+		dev_warn(host->dev, "could not get pinctrl\n");
+
+	fsl_esdhc_probe_dt(dev, host);
 
 	ret = mci_register(&host->mci);
 	if (ret)

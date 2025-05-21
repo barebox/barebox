@@ -10,7 +10,6 @@
 #include "sdhci.h"
 
 #define MAX_TUNING_LOOP 40
-#define  SDHCI_MAKE_BLKSZ(dma, blksz) (((dma & 0x7) << 12) | (blksz & 0xFFF))
 
 enum sdhci_reset_reason {
 	SDHCI_RESET_FOR_INIT,
@@ -87,7 +86,7 @@ static int sdhci_send_tuning(struct sdhci *host, u32 opcode)
 	 * to 64 here.
 	 */
 	if (cmd.cmdidx == MMC_SEND_TUNING_BLOCK_HS200 &&
-	    host->mci->bus_width == MMC_BUS_WIDTH_8) {
+	    host->mci->ios.bus_width == MMC_BUS_WIDTH_8) {
 		sdhci_write16(host, SDHCI_BLOCK_SIZE, SDHCI_MAKE_BLKSZ(7, 128));
 	} else {
 		sdhci_write16(host, SDHCI_BLOCK_SIZE, SDHCI_MAKE_BLKSZ(7, 64));
@@ -196,7 +195,7 @@ int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode)
 	 * If the Host Controller supports the HS200 mode then the
 	 * tuning function has to be executed.
 	 */
-	switch (host->timing) {
+	switch (host->ios.timing) {
 	/* HS400 tuning is done in HS200 mode */
 	case MMC_TIMING_MMC_HS400:
 		err = -EINVAL;
@@ -292,8 +291,10 @@ void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
 		if (data->flags & MMC_DATA_READ)
 			*xfer |= SDHCI_DATA_TO_HOST;
 
-		if (dma)
+		if (dma && !mmc_op_tuning(cmd->cmdidx))
 			*xfer |= SDHCI_DMA_EN;
+	} else if (mmc_op_tuning(cmd->cmdidx)) {
+		*command |= SDHCI_DATA_PRESENT;
 	}
 }
 
@@ -507,13 +508,30 @@ void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 	sdhci_set_sdma_addr(sdhci, *dma);
 }
 
-int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
-			    dma_addr_t dma)
+void sdhci_teardown_data(struct sdhci *sdhci,
+			 struct mci_data *data, dma_addr_t dma)
+{
+	struct device *dev = sdhci_dev(sdhci);
+	unsigned nbytes;
+
+	if (IN_PBL || !data || dma_mapping_error(dev, dma))
+		return;
+
+	nbytes = data->blocks * data->blocksize;
+
+	if (data->flags & MMC_DATA_READ)
+		dma_unmap_single(dev, dma, nbytes, DMA_FROM_DEVICE);
+	else
+		dma_unmap_single(dev, dma, nbytes, DMA_TO_DEVICE);
+}
+
+int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_cmd *cmd,
+			    struct mci_data *data, dma_addr_t dma)
 {
 	struct device *dev = sdhci_dev(sdhci);
 	u64 start;
 	int nbytes;
-	u32 irqstat;
+	u32 irqcheck, irqstat;
 	int ret;
 
 	if (!data)
@@ -522,6 +540,10 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 	nbytes = data->blocks * data->blocksize;
 
 	start = get_time_ns();
+
+	irqcheck = SDHCI_INT_XFER_COMPLETE;
+	if (mmc_op_tuning(cmd->cmdidx))
+		irqcheck = SDHCI_INT_DATA_AVAIL;
 
 	do {
 		irqstat = sdhci_read32(sdhci, SDHCI_INT_STATUS);
@@ -559,7 +581,7 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			sdhci_set_sdma_addr(sdhci, ALIGN(dma, SDHCI_DEFAULT_BOUNDARY_SIZE));
 		}
 
-		if (irqstat & SDHCI_INT_XFER_COMPLETE)
+		if (irqstat & irqcheck)
 			break;
 
 		if (is_timeout(start, 10 * SECOND)) {
@@ -572,22 +594,24 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 
 	ret = 0;
 out:
-	if (data->flags & MMC_DATA_READ)
-		dma_unmap_single(dev, dma, nbytes, DMA_FROM_DEVICE);
-	else
-		dma_unmap_single(dev, dma, nbytes, DMA_TO_DEVICE);
+	sdhci_teardown_data(sdhci, data, dma);
 
 	return ret;
 }
 
-int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data)
+int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_cmd *cmd,
+			    struct mci_data *data)
 {
 	unsigned int block = 0;
-	u32 stat, prs;
+	u32 stat, prs, irqcheck;
 	uint64_t start = get_time_ns();
 
 	if (!data)
 		return 0;
+
+	irqcheck = SDHCI_INT_XFER_COMPLETE;
+	if (mmc_op_tuning(cmd->cmdidx))
+		irqcheck = SDHCI_INT_DATA_AVAIL;
 
 	do {
 		stat = sdhci_read32(sdhci, SDHCI_INT_STATUS);
@@ -616,12 +640,13 @@ int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data)
 		if (is_timeout(start, 10 * SECOND))
 			return -ETIMEDOUT;
 
-	} while (!(stat & SDHCI_INT_XFER_COMPLETE));
+	} while (!(stat & irqcheck));
 
 	return 0;
 }
 
-int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t dma)
+int sdhci_transfer_data(struct sdhci *sdhci, struct mci_cmd *cmd,
+			struct mci_data *data, dma_addr_t dma)
 {
 	struct device *dev = sdhci_dev(sdhci);
 
@@ -629,9 +654,9 @@ int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t d
 		return 0;
 
 	if (dma_mapping_error(dev, dma))
-		return sdhci_transfer_data_pio(sdhci, data);
+		return sdhci_transfer_data_pio(sdhci, cmd, data);
 	else
-		return sdhci_transfer_data_dma(sdhci, data, dma);
+		return sdhci_transfer_data_dma(sdhci, cmd, data, dma);
 }
 
 int sdhci_reset(struct sdhci *sdhci, u8 mask)
@@ -799,24 +824,22 @@ void sdhci_enable_clk(struct sdhci *host, u16 clk)
 int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *data)
 {
 	u32 mask;
-	unsigned timeout_ms;
+	ktime_t timeout_ns;
 	int ret;
 
 	mask = SDHCI_CMD_INHIBIT_CMD;
-	timeout_ms = SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_MS;
 
 	if (data || (cmd && (cmd->resp_type & MMC_RSP_BUSY)))
 		mask |= SDHCI_CMD_INHIBIT_DATA;
 
-	if (cmd && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+	if (cmd && (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION ||
+		    mmc_op_tuning(cmd->cmdidx)))
 		mask &= ~SDHCI_CMD_INHIBIT_DATA;
 
-	if (cmd && cmd->busy_timeout != 0)
-		timeout_ms = cmd->busy_timeout;
+	timeout_ns = sdhci_compute_timeout(cmd, data, SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS);
 
-	ret = wait_on_timeout(timeout_ms * MSECOND,
+	ret = wait_on_timeout(timeout_ns,
 			!(sdhci_read32(host, SDHCI_PRESENT_STATE) & mask));
-
 	if (ret) {
 		dev_err(sdhci_dev(host),
 				"SDHCI timeout while waiting for idle\n");
@@ -829,19 +852,20 @@ int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *da
 int sdhci_wait_idle_data(struct sdhci *host, struct mci_cmd *cmd)
 {
 	u32 mask;
-	unsigned timeout_ms;
+	unsigned timeout_ns;
 	int ret;
 
 	mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
-	timeout_ms = SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_MS;
+	timeout_ns = SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS;
 
-	if (cmd && cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+	if (cmd && (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION ||
+		    mmc_op_tuning(cmd->cmdidx)))
 		mask &= ~SDHCI_CMD_INHIBIT_DATA;
 
 	if (cmd && cmd->busy_timeout != 0)
-		timeout_ms = cmd->busy_timeout;
+		timeout_ns = cmd->busy_timeout;
 
-	ret = wait_on_timeout(timeout_ms * MSECOND,
+	ret = wait_on_timeout(timeout_ns,
 			!(sdhci_read32(host, SDHCI_PRESENT_STATE) & mask));
 
 	if (ret) {
@@ -859,9 +883,9 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 
 	BUG_ON(!host->mci); /* Call sdhci_setup_host() before using this */
 
-	host->mci->clock = 0;
+	host->mci->ios.clock = 0;
 
-	sdhci_set_uhs_signaling(host, host->mci->timing);
+	sdhci_set_uhs_signaling(host, host->mci->ios.timing);
 
 	sdhci_wait_idle_data(host, NULL);
 
@@ -870,8 +894,37 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 	if (clock == 0)
 		return;
 
-	clk = sdhci_calc_clk(host, clock, &host->mci->clock, input_clock);
+	clk = sdhci_calc_clk(host, clock, &host->mci->ios.clock, input_clock);
 	sdhci_enable_clk(host, clk);
+}
+
+void sdhci_set_drv_type(struct sdhci *host, unsigned drv_type)
+{
+	u16 ctrl_2;
+
+	if (host->preset_enabled)
+		return;
+
+	/*
+	 * We only need to set Driver Strength if the
+	 * preset value enable is not set.
+	 */
+	ctrl_2 = sdhci_read16(host, SDHCI_HOST_CONTROL2);
+	ctrl_2 &= ~SDHCI_CTRL_DRV_TYPE_MASK;
+	if (drv_type == MMC_SET_DRIVER_TYPE_A)
+		ctrl_2 |= SDHCI_CTRL_DRV_TYPE_A;
+	else if (drv_type == MMC_SET_DRIVER_TYPE_B)
+		ctrl_2 |= SDHCI_CTRL_DRV_TYPE_B;
+	else if (drv_type == MMC_SET_DRIVER_TYPE_C)
+		ctrl_2 |= SDHCI_CTRL_DRV_TYPE_C;
+	else if (drv_type == MMC_SET_DRIVER_TYPE_D)
+		ctrl_2 |= SDHCI_CTRL_DRV_TYPE_D;
+	else {
+		dev_warn(sdhci_dev(host), "invalid driver type, default to driver type B\n");
+		ctrl_2 |= SDHCI_CTRL_DRV_TYPE_B;
+	}
+
+	sdhci_write16(host, ctrl_2, SDHCI_HOST_CONTROL2);
 }
 
 static void sdhci_do_enable_v4_mode(struct sdhci *host)
@@ -990,6 +1043,38 @@ int sdhci_setup_host(struct sdhci *host)
 
 	if (sdhci_can_64bit_dma(host))
 		host->flags |= SDHCI_USE_64_BIT_DMA;
+
+	if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V) {
+		host->caps1 &= ~(SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50 |
+				 SDHCI_SUPPORT_DDR50);
+		/*
+		 * The SDHCI controller in a SoC might support HS200/HS400
+		 * (indicated using mmc-hs200-1_8v/mmc-hs400-1_8v dt property),
+		 * but if the board is modeled such that the IO lines are not
+		 * connected to 1.8v then HS200/HS400 cannot be supported.
+		 * Disable HS200/HS400 if the board does not have 1.8v connected
+		 * to the IO lines. (Applicable for other modes in 1.8v)
+		 */
+		mci->caps2 &= ~(MMC_CAP2_HSX00_1_8V | MMC_CAP2_HS400_ES);
+		mci->host_caps &= ~(MMC_CAP_1_8V_DDR | MMC_CAP_UHS);
+	}
+
+	/* Any UHS-I mode in caps implies SDR12 and SDR25 support. */
+	if (host->caps1 & (SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50 |
+			   SDHCI_SUPPORT_DDR50))
+		mci->host_caps |= MMC_CAP_UHS_SDR12 | MMC_CAP_UHS_SDR25;
+
+	/* SDR104 supports also implies SDR50 support */
+	if (host->caps1 & SDHCI_SUPPORT_SDR104) {
+		mci->host_caps |= MMC_CAP_UHS_SDR104 | MMC_CAP_UHS_SDR50;
+		/* SD3.0: SDR104 is supported so (for eMMC) the caps2
+		 * field can be promoted to support HS200.
+		 */
+		if (!(host->quirks2 & SDHCI_QUIRK2_BROKEN_HS200))
+			mci->caps2 |= MMC_CAP2_HS200;
+	} else if (host->caps1 & SDHCI_SUPPORT_SDR50) {
+		mci->host_caps |= MMC_CAP_UHS_SDR50;
+	}
 
 	if ((mci->caps2 & (MMC_CAP2_HS200_1_8V_SDR | MMC_CAP2_HS400_1_8V)))
 		host->flags |= SDHCI_SIGNALING_180;

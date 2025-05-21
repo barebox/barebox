@@ -130,7 +130,7 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 	u32 txclk_tapnum = DLL_TXCLK_TAPNUM_DEFAULT, extra;
 	int err;
 
-	host->mci.clock = 0;
+	host->mci.ios.clock = 0;
 
 	/* DO NOT TOUCH THIS SETTING */
 	extra = DWCMSHC_EMMC_DLL_DLYENA |
@@ -269,13 +269,15 @@ static int rk_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
 
 	ret = sdhci_wait_for_done(&host->sdhci, SDHCI_INT_CMD_COMPLETE);
-	if (ret)
+	if (ret) {
+		sdhci_teardown_data(&host->sdhci, data, dma);
 		goto error;
+	}
 
 	sdhci_read_response(&host->sdhci, cmd);
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);
 
-	ret = sdhci_transfer_data_dma(&host->sdhci, data, dma);
+	ret = sdhci_transfer_data_dma(&host->sdhci, cmd, data, dma);
 
 error:
 	if (ret) {
@@ -338,6 +340,9 @@ static int rk_sdhci_probe(struct device *dev)
 	host->sdhci.max_clk = clk_get_rate(host->clks[CLK_CORE].clk);
 
 	mci_of_parse(&host->mci);
+
+	/* HS200 not supported by this driver at the moment */
+	host->sdhci.quirks2 = SDHCI_QUIRK2_BROKEN_HS200;
 
 	sdhci_setup_host(&host->sdhci);
 

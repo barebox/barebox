@@ -121,11 +121,11 @@ static int mci_set_blocklen(struct mci *mci, unsigned len)
 {
 	struct mci_cmd cmd = {};
 
-	if (mci->host->timing == MMC_TIMING_MMC_DDR52)
+	if (mci->host->ios.timing == MMC_TIMING_MMC_DDR52)
 		return 0;
 
 	mci_setup_cmd(&cmd, MMC_CMD_SET_BLOCKLEN, len, MMC_RSP_R1);
-	return mci_send_cmd(mci, &cmd, NULL);
+	return mci_send_cmd_retry(mci, &cmd, NULL, 4);
 }
 
 static void *sector_buf;
@@ -791,7 +791,7 @@ static int mmc_change_freq(struct mci *mci)
 		mci->card_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ;
 
 		if (cardtype & EXT_CSD_CARD_TYPE_DDR_1_8V)
-			mci->card_caps |= MMC_CAP_MMC_3_3V_DDR | MMC_CAP_MMC_1_8V_DDR;
+			mci->card_caps |= MMC_CAP_3_3V_DDR | MMC_CAP_1_8V_DDR;
 	}
 
 	if (IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&
@@ -1024,6 +1024,24 @@ retry_scr:
 	return 0;
 }
 
+static const char *mci_timing_tostr(unsigned timing)
+{
+	switch (timing) {
+	case MMC_TIMING_LEGACY:
+		return "legacy";
+	case MMC_TIMING_MMC_HS:
+		return "MMC HS";
+	case MMC_TIMING_SD_HS:
+		return "SD HS";
+	case MMC_TIMING_MMC_DDR52:
+		return "MMC DDR52";
+	case MMC_TIMING_MMC_HS200:
+		return "HS200";
+	default:
+		return "unknown"; /* shouldn't happen */
+	}
+}
+
 /**
  * Setup host's interface bus width and transfer frequency
  * @param mci MCI instance
@@ -1031,15 +1049,15 @@ retry_scr:
 static void mci_set_ios(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_ios ios = {
-		.bus_width = host->bus_width,
-		.clock = host->clock,
-		.timing = host->timing,
-	};
+	struct mci_ios *ios = &host->ios;
 
-	host->ops.set_ios(host, &ios);
+	dev_dbg(&mci->dev, "clock %u.%uMHz width %u timing %s\n",
+		ios->clock / 1000000, ios->clock % 1000000,
+		1 << ios->bus_width, mci_timing_tostr(ios->timing));
 
-	host->actual_clock = host->clock;
+	host->ops.set_ios(host, ios);
+
+	host->actual_clock = host->ios.clock;
 }
 
 /**
@@ -1058,7 +1076,7 @@ static void mci_set_clock(struct mci *mci, unsigned clock)
 	if (clock < host->f_min)
 		clock = host->f_min;
 
-	host->clock = clock;	/* the new target frequency */
+	host->ios.clock = clock;	/* the new target frequency */
 	mci_set_ios(mci);
 }
 
@@ -1071,7 +1089,20 @@ static void mci_set_bus_width(struct mci *mci, enum mci_bus_width width)
 {
 	struct mci_host *host = mci->host;
 
-	host->bus_width = width;	/* the new target bus width */
+	host->ios.bus_width = width;	/* the new target bus width */
+	mci_set_ios(mci);
+}
+
+/**
+ * Setup host's interface timing
+ * @param mci MCI instance
+ * @param width New timing
+ */
+static void mci_set_timing(struct mci *mci, enum mci_timing timing)
+{
+	struct mci_host *host = mci->host;
+
+	host->ios.timing = timing;
 	mci_set_ios(mci);
 }
 
@@ -1432,7 +1463,7 @@ static int mci_startup_sd(struct mci *mci)
 	}
 
 	if (mci->tran_speed > 25000000)
-		mci->host->timing = MMC_TIMING_SD_HS;
+		mci->host->ios.timing = MMC_TIMING_SD_HS;
 
 	mci_set_clock(mci, mci->tran_speed);
 
@@ -1471,7 +1502,7 @@ static int mci_mmc_try_bus_width(struct mci *mci, enum mci_bus_width bus_width,
 	if (err < 0)
 		goto out;
 
-	mci->host->timing = timing;
+	mci->host->ios.timing = timing;
 	mci_set_bus_width(mci, bus_width);
 
 	switch (bus_width) {
@@ -1526,7 +1557,7 @@ static int mci_mmc_select_bus_width(struct mci *mci)
 		 * 4bit transfer mode. On success set the corresponding
 		 * bus width on the host.
 		 */
-		ret = mci_mmc_try_bus_width(mci, bus_widths[idx], host->timing);
+		ret = mci_mmc_try_bus_width(mci, bus_widths[idx], host->ios.timing);
 		if (ret > 0)
 			break;
 	}
@@ -1545,12 +1576,12 @@ static int mci_mmc_select_hs_ddr(struct mci *mci)
 	 * higher speed modes that require voltage switching like HS200/HS400,
 	 * let's just check for either bit.
 	 */
-	if (!(mci_caps(mci) & (MMC_CAP_MMC_1_8V_DDR | MMC_CAP_MMC_3_3V_DDR)))
+	if (!(mci_caps(mci) & (MMC_CAP_1_8V_DDR | MMC_CAP_3_3V_DDR)))
 		return 0;
 
-	ret = mci_mmc_try_bus_width(mci, host->bus_width, MMC_TIMING_MMC_DDR52);
+	ret = mci_mmc_try_bus_width(mci, host->ios.bus_width, MMC_TIMING_MMC_DDR52);
 	if (ret < 0)
-		return mci_mmc_try_bus_width(mci, host->bus_width, MMC_TIMING_MMC_HS);
+		return mci_mmc_try_bus_width(mci, host->ios.bus_width, MMC_TIMING_MMC_HS);
 
 	/* Block length is fixed to 512 bytes while in DDR mode */
 	mci->read_bl_len = SECTOR_SIZE;
@@ -1564,14 +1595,8 @@ int mci_execute_tuning(struct mci *mci)
 	struct mci_host *host = mci->host;
 	u32 opcode;
 
-	if (!host->ops.execute_tuning) {
-		/*
-		 * For us, implementing ->execute_tuning is mandatory to
-		 * support higher speed modes
-		 */
-		dev_warn(&mci->dev, "tuning failed: no host diver support\n");
-		return -EOPNOTSUPP;
-	}
+	if (!host->ops.execute_tuning)
+		return 0;
 
 	/* Tuning is only supported for MMC / HS200 */
 	if (mmc_card_hs200(mci))
@@ -1581,6 +1606,84 @@ int mci_execute_tuning(struct mci *mci)
 
 	return host->ops.execute_tuning(host, opcode);
 }
+
+static const u8 tuning_blk_pattern_4bit[] = {
+	0xff, 0x0f, 0xff, 0x00, 0xff, 0xcc, 0xc3, 0xcc,
+	0xc3, 0x3c, 0xcc, 0xff, 0xfe, 0xff, 0xfe, 0xef,
+	0xff, 0xdf, 0xff, 0xdd, 0xff, 0xfb, 0xff, 0xfb,
+	0xbf, 0xff, 0x7f, 0xff, 0x77, 0xf7, 0xbd, 0xef,
+	0xff, 0xf0, 0xff, 0xf0, 0x0f, 0xfc, 0xcc, 0x3c,
+	0xcc, 0x33, 0xcc, 0xcf, 0xff, 0xef, 0xff, 0xee,
+	0xff, 0xfd, 0xff, 0xfd, 0xdf, 0xff, 0xbf, 0xff,
+	0xbb, 0xff, 0xf7, 0xff, 0xf7, 0x7f, 0x7b, 0xde,
+};
+
+static const u8 tuning_blk_pattern_8bit[] = {
+	0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00, 0x00,
+	0xff, 0xff, 0xcc, 0xcc, 0xcc, 0x33, 0xcc, 0xcc,
+	0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff, 0xff,
+	0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee, 0xff,
+	0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd, 0xdd,
+	0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff, 0xbb,
+	0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff, 0xff,
+	0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee, 0xff,
+	0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00,
+	0x00, 0xff, 0xff, 0xcc, 0xcc, 0xcc, 0x33, 0xcc,
+	0xcc, 0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff,
+	0xff, 0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee,
+	0xff, 0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd,
+	0xdd, 0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff,
+	0xbb, 0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff,
+	0xff, 0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee,
+};
+
+int mmc_send_tuning(struct mci *mci, u32 opcode)
+{
+	struct mci_cmd cmd = {};
+	struct mci_data data = {};
+	const u8 *tuning_block_pattern;
+	int size, err = 0;
+	u8 *data_buf;
+
+	if (mci->host->ios.bus_width == MMC_BUS_WIDTH_8) {
+		tuning_block_pattern = tuning_blk_pattern_8bit;
+		size = sizeof(tuning_blk_pattern_8bit);
+	} else if (mci->host->ios.bus_width == MMC_BUS_WIDTH_4) {
+		tuning_block_pattern = tuning_blk_pattern_4bit;
+		size = sizeof(tuning_blk_pattern_4bit);
+	} else
+		return -EINVAL;
+
+	data_buf = calloc(size, 1);
+	if (!data_buf)
+		return -ENOMEM;
+
+	mci_setup_cmd(&cmd, opcode, 0, MMC_RSP_R1 | MMC_CMD_ADTC);
+
+
+	data.blocksize = size;
+	data.blocks = 1;
+	data.flags = MMC_DATA_READ;
+
+	/*
+	 * According to the tuning specs, Tuning process
+	 * is normally shorter 40 executions of CMD19,
+	 * and timeout value should be shorter than 150 ms
+	 */
+	data.timeout_ns = 150 * NSEC_PER_MSEC;
+
+	err = mci_send_cmd(mci, &cmd, &data);
+	if (err)
+		goto out;
+
+	if (memcmp(data_buf, tuning_block_pattern, size))
+		err = -EIO;
+
+out:
+	free(data_buf);
+	return err;
+}
+EXPORT_SYMBOL_GPL(mmc_send_tuning);
 
 int mci_send_abort_tuning(struct mci *mci, u32 opcode)
 {
@@ -1601,6 +1704,28 @@ int mci_send_abort_tuning(struct mci *mci, u32 opcode)
 }
 EXPORT_SYMBOL_GPL(mci_send_abort_tuning);
 
+static void mmc_select_driver_type(struct mci *mci)
+{
+	int card_drv_type, drive_strength;
+	int fixed_drv_type = mci->host->fixed_drv_type;
+
+	card_drv_type = mci->ext_csd[EXT_CSD_DRIVER_STRENGTH] |
+			mmc_driver_type_mask(0);
+
+	if (mci->host->fixed_drv_type_valid)
+		drive_strength = card_drv_type & mmc_driver_type_mask(fixed_drv_type)
+				 ? fixed_drv_type : 0;
+	else
+		drive_strength = 0;
+
+	mci->host->drive_strength = drive_strength;
+
+	/* Linux only sets the drive strength immediately if the driver
+	 * implements select_drive_strength, which none of our drivers
+	 * do yet
+	 */
+}
+
 static void mmc_select_max_dtr(struct mci *mci)
 {
 	u8 card_type = mci->ext_csd[EXT_CSD_DEVICE_TYPE];
@@ -1608,30 +1733,58 @@ static void mmc_select_max_dtr(struct mci *mci)
 	u32 caps = mci->card_caps;
 	unsigned int hs_max_dtr = 0;
 	unsigned int hs200_max_dtr = 0;
+	unsigned int avail_type = 0;
 
 	if ((caps & MMC_CAP_MMC_HIGHSPEED) &&
 	    (card_type & EXT_CSD_CARD_TYPE_26)) {
 		hs_max_dtr = MMC_HIGH_26_MAX_DTR;
+		avail_type |= EXT_CSD_CARD_TYPE_26;
 	}
 
 	if ((caps & MMC_CAP_MMC_HIGHSPEED) &&
 	    (card_type & EXT_CSD_CARD_TYPE_52)) {
 		hs_max_dtr = MMC_HIGH_52_MAX_DTR;
+		avail_type |= EXT_CSD_CARD_TYPE_52;
 	}
 
 	if ((caps2 & MMC_CAP2_HS200_1_8V_SDR) &&
 	    (card_type & EXT_CSD_CARD_TYPE_HS200_1_8V)) {
 		hs200_max_dtr = MMC_HS200_MAX_DTR;
+		avail_type |= EXT_CSD_CARD_TYPE_HS200_1_8V;
 	}
 
 	if ((caps2 & MMC_CAP2_HS200_1_2V_SDR) &&
 	    (card_type & EXT_CSD_CARD_TYPE_HS200_1_2V)) {
 		hs200_max_dtr = MMC_HS200_MAX_DTR;
+		avail_type |= EXT_CSD_CARD_TYPE_HS200_1_2V;
 	}
 
 	mci->host->hs200_max_dtr = hs200_max_dtr;
 	mci->host->hs_max_dtr = hs_max_dtr;
+	mci->host->mmc_avail_type = avail_type;
 }
+
+static u32 mmc_card_caps2_from_ext_csd(struct mci *mci)
+{
+	u8 card_type;
+	u32 caps2;
+
+	if (!mci->ext_csd)
+		return 0;
+
+	card_type = mci->ext_csd[EXT_CSD_DEVICE_TYPE];
+	caps2 = 0;
+
+	if (card_type & EXT_CSD_CARD_TYPE_HS200_1_8V)
+		caps2 |= MMC_CAP2_HS200_1_8V_SDR;
+
+	if ((caps2 & MMC_CAP2_HS200_1_2V_SDR) &&
+	    (card_type & EXT_CSD_CARD_TYPE_HS200_1_2V))
+		caps2 |= MMC_CAP2_HS200_1_2V_SDR;
+
+	return caps2;
+}
+
 /*
  * For device supporting HS200 mode, the following sequence
  * should be done before executing the tuning process.
@@ -1645,6 +1798,8 @@ static int mmc_select_hs200(struct mci *mci)
 	int err = -EINVAL;
 	u8 val;
 
+	mmc_select_driver_type(mci);
+
 	/*
 	 * Set the bus width(4 or 8) with host's support and
 	 * switch to HS200 mode if bus width is set successfully.
@@ -1652,8 +1807,7 @@ static int mmc_select_hs200(struct mci *mci)
 	/* find out maximum bus width and then try DDR if supported */
 	err = mci_mmc_select_bus_width(mci);
 	if (err > 0) {
-		/* TODO  actually set drive strength instead of 0. Currently unsupported. */
-		val = EXT_CSD_TIMING_HS200 | 0 << EXT_CSD_DRV_STR_SHIFT;
+		val = EXT_CSD_TIMING_HS200 | (mci->host->drive_strength << EXT_CSD_DRV_STR_SHIFT);
 		err = mci_switch(mci, EXT_CSD_HS_TIMING, val);
 		if (err == -EIO)
 			return -EBADMSG;
@@ -1666,11 +1820,10 @@ static int mmc_select_hs200(struct mci *mci)
 		 * NB: We can't move to full (HS200) speeds until after we've
 		 * successfully switched over.
 		 */
-		old_timing = mci->host->timing;
-		old_clock = mci->host->clock;
+		old_timing = mci->host->ios.timing;
+		old_clock = mci->host->ios.clock;
 
-		mci->host->timing = MMC_TIMING_MMC_HS200;
-		mci_set_ios(mci);
+		mci_set_timing(mci, MMC_TIMING_MMC_HS200);
 		mci_set_clock(mci, mci->host->hs_max_dtr);
 
 		err = mci_switch_status(mci, true);
@@ -1680,9 +1833,8 @@ static int mmc_select_hs200(struct mci *mci)
 		 * it is a switch error.
 		 */
 		if (err == -EBADMSG) {
-			mci->host->clock = old_clock;
-			mci->host->timing = old_timing;
-			mci_set_ios(mci);
+			mci->host->ios.clock = old_clock;
+			mci_set_timing(mci, old_timing);
 		}
 	}
 err:
@@ -1715,16 +1867,14 @@ static void mmc_set_bus_speed(struct mci *mci)
  */
 int mmc_select_timing(struct mci *mci)
 {
-	unsigned int mmc_avail_type;
 	int err = 0;
 
 	mmc_select_max_dtr(mci);
 
-	mmc_avail_type = mci->ext_csd[EXT_CSD_DEVICE_TYPE] & EXT_CSD_CARD_TYPE_MASK;
-	if (mmc_avail_type & EXT_CSD_CARD_TYPE_HS200) {
+	if (mci->host->mmc_avail_type & EXT_CSD_CARD_TYPE_HS200) {
 		err = mmc_select_hs200(mci);
 		if (err == -EBADMSG)
-			mmc_avail_type &= ~EXT_CSD_CARD_TYPE_HS200;
+			mci->host->mmc_avail_type &= ~EXT_CSD_CARD_TYPE_HS200;
 		else
 			goto out;
 	}
@@ -1759,38 +1909,39 @@ static int mci_startup_mmc(struct mci *mci)
 		else
 			mci->tran_speed = 26000000;
 
-		host->timing = MMC_TIMING_MMC_HS;
+		host->ios.timing = MMC_TIMING_MMC_HS;
 	}
 
 	if (IS_ENABLED(CONFIG_MCI_TUNING)) {
-		/*
-		 * Select timing interface
-		 */
+		dev_dbg(&mci->dev, "select timing %s\n", mci_timing_tostr(host->ios.timing));
+
 		ret = mmc_select_timing(mci);
 		if (ret)
 			return ret;
 
-		if (mmc_card_hs200(mci))
+		if (mmc_card_hs200(mci)) {
 			ret = mmc_hs200_tuning(mci);
+			if (!ret) {
+				dev_dbg(&mci->dev, "HS200 tuning succeeded\n");
+				return 0;
+			}
 
-		if (ret) {
-			host->timing = MMC_TIMING_MMC_HS;
+			dev_dbg(&mci->dev, "HS200 tuning failed, falling back to HS\n");
+
+			host->ios.timing = MMC_TIMING_MMC_HS;
 			mci_switch(mci, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
 		}
 	}
 
-	if (ret || !IS_ENABLED(CONFIG_MCI_TUNING)) {
-		mci_set_clock(mci, mci->tran_speed);
+	mci_set_clock(mci, mci->tran_speed);
 
-		/* find out maximum bus width and then try DDR if supported */
-		ret = mci_mmc_select_bus_width(mci);
-		if (ret > MMC_BUS_WIDTH_1 && mci->tran_speed == 52000000)
-			ret = mci_mmc_select_hs_ddr(mci);
+	/* find out maximum bus width and then try DDR if supported */
+	ret = mci_mmc_select_bus_width(mci);
+	if (ret > MMC_BUS_WIDTH_1 && mci->tran_speed == 52000000)
+		ret = mci_mmc_select_hs_ddr(mci);
 
-		if (ret < 0) {
-			dev_warn(&mci->dev, "Changing MMC bus width failed: %d\n", ret);
-		}
-	}
+	if (ret < 0)
+		dev_warn(&mci->dev, "Changing MMC bus width failed: %d\n", ret);
 
 	return ret >= MMC_BUS_WIDTH_1 ? 0 : ret;
 }
@@ -2313,35 +2464,19 @@ static int mci_sd_read(struct block_device *blk, void *buffer, sector_t block,
 
 /* ------------------ attach to the device API --------------------------- */
 
-static const char *mci_timing_tostr(unsigned timing)
+static void mci_print_caps(unsigned caps, unsigned caps2)
 {
-	switch (timing) {
-	case MMC_TIMING_LEGACY:
-		return "legacy";
-	case MMC_TIMING_MMC_HS:
-		return "MMC HS";
-	case MMC_TIMING_SD_HS:
-		return "SD HS";
-	case MMC_TIMING_MMC_DDR52:
-		return "MMC DDR52";
-	case MMC_TIMING_MMC_HS200:
-		return "HS200";
-	default:
-		return "unknown"; /* shouldn't happen */
-	}
-}
-
-static void mci_print_caps(unsigned caps)
-{
-	printf("  capabilities: %s%s%s%s%s%s%s%s\n",
+	printf("  capabilities: %s%s%s%s%s%s%s%s%s%s\n",
 		caps & MMC_CAP_4_BIT_DATA ? "4bit " : "",
 		caps & MMC_CAP_8_BIT_DATA ? "8bit " : "",
 		caps & MMC_CAP_SD_HIGHSPEED ? "sd-hs " : "",
 		caps & MMC_CAP_MMC_HIGHSPEED ? "mmc-hs " : "",
 		caps & MMC_CAP_MMC_HIGHSPEED_52MHZ ? "mmc-52MHz " : "",
-		caps & MMC_CAP_MMC_3_3V_DDR ? "ddr-3.3v " : "",
-		caps & MMC_CAP_MMC_1_8V_DDR ? "ddr-1.8v " : "",
-		caps & MMC_CAP_MMC_1_2V_DDR ? "ddr-1.2v " : "");
+		caps & MMC_CAP_3_3V_DDR ? "ddr-3.3v " : "",
+		caps & MMC_CAP_1_8V_DDR ? "ddr-1.8v " : "",
+		caps & MMC_CAP_1_2V_DDR ? "ddr-1.2v " : "",
+		caps2 & MMC_CAP2_HS200_1_8V_SDR ? "hs200-1.8v " : "",
+		caps2 & MMC_CAP2_HS200_1_2V_SDR ? "hs200-1.2v " : "");
 }
 
 /*
@@ -2448,18 +2583,18 @@ static void mci_info(struct device *dev)
 	}
 
 	printf("Host information:\n");
-	printf("  current clock: %d\n", host->clock);
+	printf("  current clock: %d\n", host->ios.clock);
 
-	if (host->bus_width == MMC_BUS_WIDTH_8)
+	if (host->ios.bus_width == MMC_BUS_WIDTH_8)
 		bw = 8;
-	else if (host->bus_width == MMC_BUS_WIDTH_4)
+	else if (host->ios.bus_width == MMC_BUS_WIDTH_4)
 		bw = 4;
 	else
 		bw = 1;
 
 	printf("  current buswidth: %d\n", bw);
-	printf("  current timing: %s\n", mci_timing_tostr(host->timing));
-	mci_print_caps(host->host_caps);
+	printf("  current timing: %s\n", mci_timing_tostr(host->ios.timing));
+	mci_print_caps(host->host_caps, host->caps2);
 
 	printf("Card information:\n");
 	printf("  Card type: %s\n", mci->sdio ? "SDIO" : IS_SD(mci) ? "SD" : "MMC");
@@ -2489,7 +2624,7 @@ static void mci_info(struct device *dev)
 	printf("   CSD: %08X-%08X-%08X-%08X\n", mci->csd[0], mci->csd[1],
 		mci->csd[2], mci->csd[3]);
 	printf("  Max. transfer speed: %u Hz\n", mci->tran_speed);
-	mci_print_caps(mci->card_caps);
+	mci_print_caps(mci->card_caps, mmc_card_caps2_from_ext_csd(mci));
 	printf("  Manufacturer ID: 0x%02x\n", mci->cid.manfid);
 	printf("  OEM/Application ID: 0x%04x\n", mci->cid.oemid);
 	printf("  Product name: '%s'\n", mci->cid.prod_name);
@@ -2845,7 +2980,7 @@ static int mci_card_probe(struct mci *mci)
 
 on_error:
 	if (rc != 0) {
-		host->clock = 0;	/* disable the MCI clock */
+		host->ios.clock = 0;	/* disable the MCI clock */
 		mci_set_ios(mci);
 		regulator_disable(host->supply);
 		mci->nr_parts = 0;
@@ -3061,6 +3196,8 @@ void mci_of_parse_node(struct mci_host *host,
 	if (of_property_read_bool(np, "no-mmc"))
 		host->caps2 |= MMC_CAP2_NO_MMC;
 	if (IS_ENABLED(CONFIG_MCI_TUNING)) {
+		u32 drv_type;
+
 		if (of_property_read_bool(np, "mmc-hs200-1_8v"))
 			host->caps2 |= MMC_CAP2_HS200_1_8V_SDR;
 		if (of_property_read_bool(np, "mmc-hs200-1_2v"))
@@ -3074,6 +3211,28 @@ void mci_of_parse_node(struct mci_host *host,
 		if (of_property_read_bool(np, "no-mmc-hs400"))
 			host->caps2 &= ~(MMC_CAP2_HS400_1_8V | MMC_CAP2_HS400_1_2V |
 					 MMC_CAP2_HS400_ES);
+		if (of_property_read_bool(np, "no-1-8-v")) {
+			/*
+			 * The SDHCI controller in a SoC might support HS200/HS400
+			 * (indicated using mmc-hs200-1_8v/mmc-hs400-1_8v dt property),
+			 * but if the board is modeled such that the IO lines are not
+			 * connected to 1.8v then HS200/HS400 cannot be supported.
+			 * Disable HS200/HS400 if the board does not have 1.8v connected
+			 * to the IO lines. (Applicable for other modes in 1.8v)
+			 */
+			host->caps2 &= ~(MMC_CAP2_HSX00_1_8V | MMC_CAP2_HS400_ES);
+		}
+
+		/* Must be after "non-removable" check */
+		if (of_property_read_u32(np, "fixed-emmc-driver-type", &drv_type) == 0) {
+			if (host->non_removable) {
+				host->fixed_drv_type = drv_type;
+				host->fixed_drv_type_valid = true;
+			 } else {
+				dev_err(host->hw_dev,
+					"can't use fixed driver type, media is removable\n");
+			 }
+		}
 	}
 }
 

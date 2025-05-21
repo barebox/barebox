@@ -10,6 +10,10 @@
 #include <errno.h>
 #include <asm/byteorder.h>
 #include <linux/bitfield.h>
+#include <linux/math.h>
+#include <linux/ktime.h>
+
+#include "sdhci.h"
 
 #define SYSCTL_INITA		0x08000000
 #define SYSCTL_TIMEOUT_MASK	0x000f0000
@@ -58,7 +62,59 @@
 /* Tuning bits */
 #define  MIX_CTRL_TUNING_MASK	0x03c00000
 #define IMX_SDHCI_DLL_CTRL	0x60
+#define  IMX_SDHCI_DLL_CTRL_OVERRIDE_VAL_SHIFT	9
+#define  IMX_SDHCI_DLL_CTRL_OVERRIDE_EN_SHIFT	8
 #define IMX_SDHCI_MIX_CTRL_FBCLK_SEL	BIT(25)
+
+/* pltfm-specific */
+#define ESDHC_HOST_CONTROL_LE	0x20
+
+/*
+ * eSDHC register definition
+ */
+
+/* Present State Register */
+#define ESDHC_PRSSTAT			0x24
+#define ESDHC_CLOCK_GATE_OFF		0x00000080
+#define ESDHC_CLOCK_STABLE		0x00000008
+
+/* Protocol Control Register */
+#define ESDHC_PROCTL			0x28
+#define ESDHC_VOLT_SEL			0x00000400
+#define ESDHC_CTRL_4BITBUS		(0x1 << 1)
+#define ESDHC_CTRL_8BITBUS		(0x2 << 1)
+#define ESDHC_CTRL_BUSWIDTH_MASK	(0x3 << 1)
+#define ESDHC_HOST_CONTROL_RES		0x01
+
+/* System Control Register */
+#define ESDHC_SYSTEM_CONTROL		0x2c
+#define ESDHC_CLOCK_MASK		0x0000fff0
+#define ESDHC_PREDIV_SHIFT		8
+#define ESDHC_DIVIDER_SHIFT		4
+#define ESDHC_CLOCK_SDCLKEN		0x00000008
+#define ESDHC_CLOCK_PEREN		0x00000004
+#define ESDHC_CLOCK_HCKEN		0x00000002
+#define ESDHC_CLOCK_IPGEN		0x00000001
+
+/* tune control register */
+#define ESDHC_TUNE_CTRL_STATUS		0x68
+#define  ESDHC_TUNE_CTRL_STEP		1
+#define  ESDHC_TUNE_CTRL_MIN		0
+#define  ESDHC_TUNE_CTRL_MAX		((1 << 7) - 1)
+
+/* VENDOR SPEC register */
+#define ESDHC_VENDOR_SPEC		0xc0
+#define  ESDHC_VENDOR_SPEC_SDIO_QUIRK	(1 << 1)
+#define  ESDHC_VENDOR_SPEC_VSELECT	(1 << 1)
+#define  ESDHC_VENDOR_SPEC_FRC_SDCLK_ON	(1 << 8)
+
+#define ESDHC_VEND_SPEC2		0xc8
+#define ESDHC_VEND_SPEC2_EN_BUSY_IRQ	(1 << 8)
+#define ESDHC_VEND_SPEC2_AUTO_TUNE_8BIT_EN	(1 << 4)
+#define ESDHC_VEND_SPEC2_AUTO_TUNE_4BIT_EN	(0 << 4)
+#define ESDHC_VEND_SPEC2_AUTO_TUNE_1BIT_EN	(2 << 4)
+#define ESDHC_VEND_SPEC2_AUTO_TUNE_CMD_EN	(1 << 6)
+#define ESDHC_VEND_SPEC2_AUTO_TUNE_MODE_MASK	(7 << 4)
 
 #define ESDHC_DMA_SYSCTL	0x40c /* Layerscape specific */
 #define ESDHC_SYSCTL_DMA_SNOOP 	BIT(6)
@@ -113,11 +169,26 @@ struct esdhc_soc_data {
 	const char *clkidx;
 };
 
+/*
+ * struct esdhc_platform_data - platform data for esdhc on i.MX
+ */
+
+struct esdhc_platform_data {
+	unsigned int delay_line;
+	unsigned int tuning_step;       /* The delay cell steps in tuning procedure */
+	unsigned int tuning_start_tap;	/* The start delay cell point in tuning procedure */
+};
+
 struct fsl_esdhc_host {
 	struct mci_host		mci;
 	struct clk		*clk;
 	struct device		*dev;
+	struct pinctrl		*pinctrl;
+	struct pinctrl_state	*pins_100mhz;
+	struct pinctrl_state	*pins_200mhz;
 	const struct esdhc_soc_data *socdata;
+	struct esdhc_platform_data boarddata;
+	u32		last_cmd;
 	struct sdhci	sdhci;
 };
 
@@ -163,10 +234,29 @@ esdhc_setbits32(struct fsl_esdhc_host *host, unsigned int reg,
 }
 
 void esdhc_populate_sdhci(struct fsl_esdhc_host *host);
-int esdhc_poll(struct fsl_esdhc_host *host, unsigned int off,
-	       unsigned int mask, unsigned int val,
-	       uint64_t timeout);
 int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 		     struct mci_data *data);
+
+#ifdef __PBL__
+#undef	read_poll_get_time_ns
+#define read_poll_get_time_ns()		0
+/* Use time in us (approx) as a busy counter timeout value */
+#undef	read_poll_is_timeout
+#define read_poll_is_timeout(s, t)	((s)++ > ((t) / 1024))
+
+static inline void __udelay(int us)
+{
+	volatile int i;
+
+	for (i = 0; i < us * 4; i++);
+}
+
+#define udelay(n)	__udelay(n)
+
+#endif
+
+#define esdhc_poll(host, reg, val, cond, timeout_ns)	\
+	sdhci_read32_poll_timeout(&host->sdhci, reg, val, cond, \
+				  ktime_to_us(timeout_ns))
 
 #endif  /* __FSL_ESDHC_H__ */

@@ -317,12 +317,12 @@ static int lcdfb_of_init(struct device *dev, struct atmel_lcdfb_info *sinfo)
 	struct fb_info *info = &sinfo->info;
 	struct display_timings *modes;
 	struct device_node *display;
-	struct atmel_lcdfb_config *config;
+	const struct atmel_lcdfb_config *config;
 	int ret;
 
 	/* Driver data - optional */
-	ret = dev_get_drvdata(dev, (const void **)&config);
-	if (!ret) {
+	config = device_get_match_data(dev);
+	if (config) {
 		sinfo->have_hozval = config->have_hozval;
 		sinfo->have_intensity_bit = config->have_intensity_bit;
 		sinfo->have_alt_pixclock = config->have_alt_pixclock;

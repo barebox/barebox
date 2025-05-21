@@ -73,7 +73,7 @@ struct resource;
 
 void of_fix_tree(struct device_node *);
 
-int of_match(struct device *dev, struct driver *drv);
+bool of_match(struct device *dev, const struct driver *drv);
 
 int of_add_initrd(struct device_node *root, resource_size_t start,
 		resource_size_t end);

@@ -453,15 +453,17 @@ static int imx_iim_probe(struct device *dev)
 	struct resource *iores;
 	struct iim_priv *iim;
 	int i, ret;
-	struct imx_iim_drvdata *drvdata = NULL;
-	char *nregs = NULL;
+	const struct imx_iim_drvdata *drvdata;
+	const char *nregs = NULL;
 
 	if (imx_iim)
 		return -EBUSY;
 
 	iim = xzalloc(sizeof(*iim));
 
-	dev_get_drvdata(dev, (const void **)&drvdata);
+	drvdata = device_get_match_data(dev);
+	if (!drvdata)
+		return -ENODEV;
 
 	if (drvdata && drvdata->supply)
 		iim->supply = drvdata->supply;

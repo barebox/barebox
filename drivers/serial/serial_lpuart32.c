@@ -102,11 +102,11 @@ static int lpuart32_serial_probe(struct device *dev)
 	struct console_device *cdev;
 	struct lpuart32 *lpuart32;
 	const char *devname;
-	struct lpuart32_devtype_data *devtype;
+	const struct lpuart32_devtype_data *devtype;
 
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
+	devtype = device_get_match_data(dev);
+	if (!devtype)
+		return -ENODEV;
 
 	lpuart32 = xzalloc(sizeof(*lpuart32));
 	cdev = &lpuart32->cdev;

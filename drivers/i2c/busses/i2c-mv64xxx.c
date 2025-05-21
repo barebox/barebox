@@ -535,7 +535,7 @@ mv64xxx_of_config(struct mv64xxx_i2c_data *drv_data,
 	u32 bus_freq, tclk;
 	int rc = 0;
 	u32 prop;
-	struct mv64xxx_i2c_regs *mv64xxx_regs;
+	const struct mv64xxx_i2c_regs *mv64xxx_regs;
 	int freq;
 
 	if (IS_ERR(drv_data->clk)) {
@@ -577,7 +577,7 @@ mv64xxx_of_config(struct mv64xxx_i2c_data *drv_data,
 		goto out;
 	}
 
-	dev_get_drvdata(pd, (const void **)&mv64xxx_regs);
+	mv64xxx_regs = device_get_match_data(pd);
 	memcpy(&drv_data->reg_offsets, mv64xxx_regs,
 		sizeof(drv_data->reg_offsets));
 

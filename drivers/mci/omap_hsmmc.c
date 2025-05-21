@@ -80,12 +80,11 @@ static int omap_mmc_probe(struct device *dev)
 	struct resource *iores;
 	struct omap_hsmmc *hsmmc;
 	struct omap_hsmmc_platform_data *pdata;
-	struct omap_mmc_driver_data *drvdata;
+	const struct omap_mmc_driver_data *drvdata;
 	unsigned long reg_ofs = 0;
-	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&drvdata);
-	if (!ret)
+	drvdata = device_get_match_data(dev);
+	if (drvdata)
 		reg_ofs = drvdata->reg_ofs;
 
 	hsmmc = xzalloc(sizeof(*hsmmc));

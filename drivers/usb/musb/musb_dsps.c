@@ -309,9 +309,9 @@ static int dsps_probe(struct device *dev)
 	struct dsps_glue *glue;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&wrp);
-	if (ret)
-		return ret;
+	wrp = device_get_match_data(dev);
+	if (!wrp)
+		return -ENODEV;
 
 	if (!IS_ENABLED(CONFIG_USB_MUSB_HOST) &&
 			!IS_ENABLED(CONFIG_USB_MUSB_GADGET)) {

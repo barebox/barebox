@@ -17,7 +17,7 @@
 struct imx_gpio_chip {
 	void __iomem *base;
 	struct gpio_chip chip;
-	struct imx_gpio_regs *regs;
+	const struct imx_gpio_regs *regs;
 };
 
 struct imx_gpio_regs {
@@ -121,12 +121,11 @@ static int imx_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_gpio_chip *imxgpio;
-	struct imx_gpio_regs *regs;
-	int ret;
+	const struct imx_gpio_regs *regs;
 
-	ret = dev_get_drvdata(dev, (const void **)&regs);
-	if (ret)
-		return ret;
+	regs = device_get_match_data(dev);
+	if (!regs)
+		return -ENODEV;
 
 	imxgpio = xzalloc(sizeof(*imxgpio));
 	iores = dev_request_mem_resource(dev, 0);

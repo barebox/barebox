@@ -32,7 +32,7 @@ struct cadence_serial_priv {
 	struct notifier_block notify;
 	void __iomem *regs;
 	struct clk *clk;
-	struct cadence_serial_devtype_data *devtype;
+	const struct cadence_serial_devtype_data *devtype;
 };
 
 static int cadence_serial_reset(struct console_device *cdev)
@@ -178,12 +178,12 @@ static int cadence_serial_probe(struct device *dev)
 	struct resource *iores;
 	struct console_device *cdev;
 	struct cadence_serial_priv *priv;
-	struct cadence_serial_devtype_data *devtype;
+	const struct cadence_serial_devtype_data *devtype;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
+	devtype = device_get_match_data(dev);
+	if (!devtype)
+		return -ENODEV;
 
 	priv = xzalloc(sizeof(*priv));
 	priv->devtype = devtype;

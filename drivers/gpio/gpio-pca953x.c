@@ -432,11 +432,9 @@ static int pca953x_probe(struct device *dev)
 		invert = pdata->invert;
 		chip->names = pdata->names;
 	} else {
-		int err;
-
-		err = dev_get_drvdata(dev, (const void **)&driver_data);
-		if (err)
-			return err;
+		driver_data = (uintptr_t)device_get_match_data(dev);
+		if (!driver_data)
+			return -ENODEV;
 
 		chip->gpio_start = -1;
 	}

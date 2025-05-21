@@ -30,37 +30,16 @@
 /* output flags */
 #define ROCKCHIP_OUTPUT_DSI_DUAL	BIT(0)
 
-struct drm_device;
-struct drm_connector;
-struct iommu_domain;
-
 struct rockchip_crtc_state {
 	int output_type;
 	int output_mode;
 	int output_bpc;
 	int output_flags;
-	bool enable_afbc;
 	bool yuv_overlay;
 	u32 bus_format;
 	u32 bus_flags;
-	int color_space;
 };
 #define to_rockchip_crtc_state(s) \
 		container_of(s, struct rockchip_crtc_state, base)
-
-/*
- * Rockchip drm private structure.
- *
- * @crtc: array of enabled CRTCs, used to map from "pipe" to drm_crtc.
- * @num_pipe: number of pipes for this device.
- * @mm_lock: protect drm_mm on multi-threads.
- */
-struct rockchip_drm_private {
-	struct device *iommu_dev;
-};
-
-struct rockchip_encoder {
-	int crtc_endpoint_id;
-};
 
 #endif /* _ROCKCHIP_DRM_DRV_H_ */

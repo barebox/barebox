@@ -585,8 +585,8 @@ static int dspi_probe(struct device *dev)
 	of_property_read_u32(np, "bus-num", &bus_num);
 	master->bus_num = bus_num;
 
-	ret = dev_get_drvdata(dev, (const void **)&dspi->devtype_data);
-	if (ret)
+	dspi->devtype_data = device_get_match_data(dev);
+	if (!dspi->devtype_data)
 		return -ENODEV;
 
 	res = dev_request_mem_resource(dev, 0);

@@ -6,12 +6,13 @@
 
 static int dkx_probe(struct device *dev)
 {
-	const void *model;
+	const char *model;
 
 	stm32mp_bbu_mmc_fip_register("sd", "/dev/mmc0",
 				     BBU_HANDLER_FLAG_DEFAULT);
 
-	if (dev_get_drvdata(dev, &model) == 0)
+	model = device_get_match_data(dev);
+	if (model)
 		barebox_set_model(model);
 
 	barebox_set_hostname("stm32mp15xx-dkx");

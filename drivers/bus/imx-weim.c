@@ -69,14 +69,14 @@ MODULE_DEVICE_TABLE(of, weim_id_table);
 struct imx_weim {
 	struct device *dev;
 	void __iomem *base;
-	struct imx_weim_devtype *devtype;
+	const struct imx_weim_devtype *devtype;
 };
 
 /* Parse and set the timing for this device. */
 static int
 weim_timing_setup(struct imx_weim *weim, struct device_node *np)
 {
-	struct imx_weim_devtype *devtype = weim->devtype;
+	const struct imx_weim_devtype *devtype = weim->devtype;
 	u32 cs_idx, value[devtype->cs_regs_count];
 	int i, ret;
 
@@ -128,13 +128,13 @@ static int weim_parse_dt(struct imx_weim *weim)
 static int weim_probe(struct device *dev)
 {
 	struct resource *iores;
-	struct imx_weim_devtype *devtype;
+	const struct imx_weim_devtype *devtype;
 	struct imx_weim *weim;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
+	devtype = device_get_match_data(dev);
+	if (!devtype)
+		return -ENODEV;
 
 	weim = xzalloc(sizeof(*weim));
 

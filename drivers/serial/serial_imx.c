@@ -48,7 +48,7 @@ struct imx_serial_priv {
 	struct notifier_block notify;
 	void __iomem *regs;
 	struct clk *clk;
-	struct imx_serial_devtype_data *devtype;
+	const struct imx_serial_devtype_data *devtype;
 	bool rs485_mode;
 };
 
@@ -203,13 +203,13 @@ static int imx_serial_probe(struct device *dev)
 	struct console_device *cdev;
 	struct imx_serial_priv *priv;
 	uint32_t val;
-	struct imx_serial_devtype_data *devtype;
+	const struct imx_serial_devtype_data *devtype;
 	int ret;
 	const char *devname;
 
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
+	devtype = device_get_match_data(dev);
+	if (!devtype)
+		return -ENODEV;
 
 	priv = xzalloc(sizeof(*priv));
 	priv->devtype = devtype;

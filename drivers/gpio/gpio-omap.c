@@ -119,9 +119,9 @@ static int omap_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct omap_gpio_chip *omapgpio;
-	struct omap_gpio_drvdata *drvdata = NULL;
+	const struct omap_gpio_drvdata *drvdata;
 
-	dev_get_drvdata(dev, (const void **)&drvdata);
+	drvdata = device_get_match_data(dev);
 
 	omapgpio = xzalloc(sizeof(*omapgpio));
 	iores = dev_request_mem_resource(dev, 0);

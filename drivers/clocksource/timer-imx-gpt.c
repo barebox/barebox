@@ -52,7 +52,7 @@ static struct imx_gpt_regs regs_imx31 = {
 	.tctl_val = IMX31_TCTL_FRR | IMX31_TCTL_CLKSOURCE_PER | TCTL_TEN,
 };
 
-static struct imx_gpt_regs *regs;
+static const struct imx_gpt_regs *regs;
 static void __iomem *timer_base;
 
 static uint64_t imx_clocksource_read(void)
@@ -81,16 +81,15 @@ static int imx_gpt_probe(struct device *dev)
 {
 	struct resource *iores;
 	int i;
-	int ret;
 	unsigned long rate;
 
 	/* one timer is enough */
 	if (timer_base)
 		return 0;
 
-	ret = dev_get_drvdata(dev, (const void **)&regs);
-	if (ret)
-		return ret;
+	regs = device_get_match_data(dev);
+	if (!regs)
+		return -ENODEV;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

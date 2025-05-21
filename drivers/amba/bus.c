@@ -29,13 +29,12 @@ amba_lookup(const struct amba_id *table, struct amba_device *dev)
 	return ret ? table : NULL;
 }
 
-static int amba_match(struct device *dev, struct driver *drv)
+static int amba_match(struct device *dev, const struct driver *drv)
 {
 	struct amba_device *pcdev = to_amba_device(dev);
+	const struct amba_driver *pcdrv = to_amba_driver(drv);
 
-	struct amba_driver *pcdrv = to_amba_driver(drv);
-
-	return amba_lookup(pcdrv->id_table, pcdev) == NULL;
+	return amba_lookup(pcdrv->id_table, pcdev) != NULL;
 }
 
 static int amba_get_enable_pclk(struct amba_device *pcdev)

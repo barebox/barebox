@@ -226,7 +226,7 @@ static int match(struct driver *drv, struct device *dev)
 
 	dev->driver = drv;
 
-	if (dev->bus->match && dev->bus->match(dev, drv))
+	if (!driver_match_device(drv, dev))
 		goto err_out;
 	ret = device_probe(dev);
 	if (ret)
@@ -708,21 +708,6 @@ static void devices_shutdown(void)
 	}
 }
 devshutdown_exitcall(devices_shutdown);
-
-int dev_get_drvdata(struct device *dev, const void **data)
-{
-	if (dev->of_id_entry) {
-		*data = dev->of_id_entry->data;
-		return 0;
-	}
-
-	if (dev->id_entry) {
-		*data = (const void **)dev->id_entry->driver_data;
-		return 0;
-	}
-
-	return -ENODEV;
-}
 
 const void *device_get_match_data(struct device *dev)
 {

@@ -21,10 +21,7 @@ static inline void randbuf_r(u64 *x, void *buf, size_t len)
 {
 	BUG();
 }
-static inline void srand_xor(u64 entropy)
-{
-	BUG();
-}
+static inline void srand_xor(u64 entropy) { }
 static inline u32 random32(void)
 {
 	BUG();

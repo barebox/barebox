@@ -204,9 +204,9 @@ static int stm32_bsec_probe(struct device *dev)
 	const struct stm32_bsec_data *data;
 	struct nvmem_device *nvmem;
 
-	ret = dev_get_drvdata(dev, (const void **)&data);
-	if (ret)
-		return ret;
+	data = device_get_match_data(dev);
+	if (!data)
+		return -ENODEV;
 
 	priv = xzalloc(sizeof(*priv));
 

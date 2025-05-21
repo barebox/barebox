@@ -425,9 +425,9 @@ static int atmel_pwm_probe(struct device *dev)
 	int ret;
 	int i;
 
-	ret = dev_get_drvdata(dev, (const void **)&data);
-	if (ret)
-		return ret;
+	data = device_get_match_data(dev);
+	if (!data)
+		return -ENODEV;
 
 	atmel_pwm = xzalloc(sizeof(*atmel_pwm));
 	atmel_pwm->data = data;

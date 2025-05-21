@@ -848,6 +848,9 @@ struct ti_sci_msg_req_wait_proc_boot_status {
  *	the formula (log2(size_bytes) - 2), where size_bytes cannot be
  *	greater than 256.
  * @order_id: Specifies the ring's bus order ID.
+ * @virtid: Ring virt ID value
+ * @asel: Ring ASEL (address select) value to be set into the ASEL field of the
+ *	ring's RING_BA_HI register.
  */
 struct ti_sci_msg_rm_ring_cfg_req {
 	struct ti_sci_msg_hdr hdr;
@@ -860,6 +863,8 @@ struct ti_sci_msg_rm_ring_cfg_req {
 	u8 mode;
 	u8 size;
 	u8 order_id;
+	u16 virtid;
+	u8 asel;
 } __packed;
 
 /**

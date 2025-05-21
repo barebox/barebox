@@ -749,9 +749,9 @@ static int ipu_probe(struct device *dev)
 	int i, ret;
 	const struct ipu_devtype *devtype;
 
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
+	devtype = device_get_match_data(dev);
+	if (!devtype)
+		return -ENODEV;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

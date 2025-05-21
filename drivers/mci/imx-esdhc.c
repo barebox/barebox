@@ -283,9 +283,9 @@ static int fsl_esdhc_probe(struct device *dev)
 	unsigned long rate;
 	const struct esdhc_soc_data *socdata;
 
-	ret = dev_get_drvdata(dev, (const void **)&socdata);
-	if (ret)
-		return ret;
+	socdata = device_get_match_data(dev);
+	if (!socdata)
+		return -ENODEV;
 
 	host = xzalloc(sizeof(*host));
 	host->socdata = socdata;

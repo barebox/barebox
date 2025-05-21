@@ -290,11 +290,11 @@ static int ds1307_probe(struct device *dev)
 	unsigned long driver_data;
 	const struct device_node *np = dev->of_node;
 
-	ds1307 = xzalloc(sizeof(struct ds1307));
+	driver_data = (uintptr_t)device_get_match_data(dev);
+	if (!driver_data)
+		return -ENODEV;
 
-	err = dev_get_drvdata(dev, (const void **)&driver_data);
-	if (err)
-		goto exit;
+	ds1307 = xzalloc(sizeof(struct ds1307));
 
 	ds1307->client = client;
 	ds1307->type = driver_data;

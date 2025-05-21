@@ -362,12 +362,12 @@ int w1_reset_select_slave(struct w1_device *dev)
 #define to_w1_device(d)	container_of(d, struct w1_device, dev)
 #define to_w1_driver(d) container_of(d, struct w1_driver, drv)
 
-static int w1_bus_match(struct device *_dev, struct driver *_drv)
+static int w1_bus_match(struct device *_dev, const struct driver *_drv)
 {
-	struct w1_device *dev = to_w1_device(_dev);
-	struct w1_driver *drv = to_w1_driver(_drv);
+	const struct w1_device *dev = to_w1_device(_dev);
+	const struct w1_driver *drv = to_w1_driver(_drv);
 
-	return !(drv->fid == dev->fid);
+	return drv->fid == dev->fid;
 }
 
 static int w1_bus_probe(struct device *_dev)

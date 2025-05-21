@@ -4,4 +4,4 @@
 # (the ones that don't fit into any other categories)
 #
 obj-$(CONFIG_USB_HUB_USB251XB)		+= usb251xb.o
-obj-$(CONFIG_USB_ONBOARD_HUB)		+= onboard_usb_hub.o
+obj-$(CONFIG_USB_ONBOARD_DEV)		+= onboard_usb_dev.o

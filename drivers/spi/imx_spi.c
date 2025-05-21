@@ -583,11 +583,11 @@ static int imx_spi_probe(struct device *dev)
 	struct spi_master *master;
 	struct imx_spi *imx;
 	struct spi_imx_master *pdata = dev->platform_data;
-	struct spi_imx_devtype_data *devdata = NULL;
+	const struct spi_imx_devtype_data *devdata;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&devdata);
-	if (ret)
+	devdata = device_get_match_data(dev);
+	if (!devdata)
 		return -ENODEV;
 
 	imx = xzalloc(sizeof(*imx));

@@ -769,9 +769,9 @@ static int fec_probe(struct device *dev)
 	u32 msec = 1, phy_post_delay = 0;
 	u32 reg;
 
-	ret = dev_get_drvdata(dev, &type_v);
-	if (ret)
-		return ret;
+	type_v = device_get_match_data(dev);
+	if (!type_v)
+		return -ENODEV;
 
 	type = (uintptr_t)(type_v);
 

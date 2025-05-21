@@ -234,12 +234,12 @@ static int imx_wd_probe(struct device *dev)
 	struct resource *iores;
 	struct imx_wd *priv;
 	struct clk *clk;
-	void *ops;
+	const struct imx_wd_ops *ops;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&ops);
-	if (ret)
-		return ret;
+	ops = device_get_match_data(dev);
+	if (!ops)
+		return -ENODEV;
 
 	priv = xzalloc(sizeof(struct imx_wd));
 	iores = dev_request_mem_resource(dev, 0);

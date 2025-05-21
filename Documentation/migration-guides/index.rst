@@ -11,3 +11,4 @@ cause build errors are generally out-of-scope for these documents.
 .. toctree::
 
    migration-2025.05.0
+   migration-2025.06.0

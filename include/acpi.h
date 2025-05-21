@@ -125,10 +125,7 @@ struct acpi_driver {
 
 extern struct bus_type acpi_bus;
 
-static inline struct acpi_driver *to_acpi_driver(struct driver *drv)
-{
-	return container_of(drv, struct acpi_driver, driver);
-}
+#define to_acpi_driver(drv) container_of_const((drv), struct acpi_driver, driver)
 
 #define device_acpi_driver(drv)	\
 	register_efi_driver_macro(device, acpi, drv)

@@ -134,9 +134,9 @@ static int am335x_control_usb_probe(struct device *dev)
 	const struct phy_control *phy_ctrl;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&phy_ctrl);
-	if (ret)
-		return ret;
+	phy_ctrl = device_get_match_data(dev);
+	if (!phy_ctrl)
+		return -ENODEV;
 
 	ctrl_usb = xzalloc(sizeof(*ctrl_usb));
 

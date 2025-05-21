@@ -113,7 +113,17 @@ static inline int dev_err_probe(struct device *dev, int err, const char *fmt,
 }
 #endif
 
-#define dev_errp_probe(dev, errptr, args...) dev_err_probe((dev), PTR_ERR(errptr), args)
+/* Simple helper for dev_err_probe() when error is already a pointer. */
+#define dev_errp_probe(dev, errptr, args...) \
+	dev_err_probe((dev), PTR_ERR(errptr), args)
+
+/* Simple helper for dev_err_probe() when ERR_PTR() is to be returned. */
+#define dev_err_ptr_probe(dev, ___err, fmt, ...) \
+	ERR_PTR(dev_err_probe(dev, ___err, fmt, ##__VA_ARGS__))
+
+/* Simple helper for dev_err_probe() when ERR_CAST() is to be returned. */
+#define dev_err_cast_probe(dev, ___err_ptr, fmt, ...) \
+	ERR_PTR(dev_err_probe(dev, PTR_ERR(___err_ptr), fmt, ##__VA_ARGS__))
 
 #define __pr_printk(level, format, args...) \
 	({	\

@@ -762,9 +762,9 @@ int close(int fd)
 }
 EXPORT_SYMBOL(close);
 
-static int fs_match(struct device *dev, struct driver *drv)
+static int fs_match(struct device *dev, const struct driver *drv)
 {
-	return strcmp(dev->name, drv->name) ? -1 : 0;
+	return strcmp(dev->name, drv->name) == 0;
 }
 
 static int fs_probe(struct device *dev)

@@ -26,13 +26,13 @@
 
 struct at91_pinctrl {
 	struct pinctrl_device pctl;
-	struct at91_pinctrl_mux_ops	*ops;
+	const struct at91_pinctrl_mux_ops	*ops;
 };
 
 struct at91_gpio_chip {
 	struct gpio_chip	chip;
 	void __iomem		*regbase;	/* PIO bank virtual address */
-	struct at91_pinctrl_mux_ops *ops;	/* ops */
+	const struct at91_pinctrl_mux_ops *ops;	/* ops */
 };
 
 #define MAX_GPIO_BANKS		5
@@ -384,27 +384,6 @@ static struct of_device_id at91_pinctrl_dt_ids[] = {
 };
 MODULE_DEVICE_TABLE(of, at91_pinctrl_dt_ids);
 
-static struct at91_pinctrl_mux_ops *at91_pinctrl_get_driver_data(struct device *dev)
-{
-	struct at91_pinctrl_mux_ops *ops_data = NULL;
-	int rc;
-
-	if (dev->of_node) {
-		const struct of_device_id *match;
-		match = of_match_node(at91_pinctrl_dt_ids, dev->of_node);
-		if (!match)
-			ops_data = NULL;
-		else
-			ops_data = (struct at91_pinctrl_mux_ops *)match->data;
-	} else {
-		rc = dev_get_drvdata(dev, (const void **)&ops_data);
-		if (rc)
-			ops_data = NULL;
-	}
-
-	return ops_data;
-}
-
 static int at91_pinctrl_set_conf(struct at91_pinctrl *info, unsigned int pin_num, unsigned int mux, unsigned int conf)
 {
 	unsigned int mask;
@@ -492,7 +471,7 @@ static int at91_pinctrl_probe(struct device *dev)
 
 	info = xzalloc(sizeof(struct at91_pinctrl));
 
-	info->ops = at91_pinctrl_get_driver_data(dev);
+	info->ops = device_get_match_data(dev);
 	if (!info->ops) {
 		dev_err(dev, "failed to retrieve driver data\n");
 		return -ENODEV;
@@ -646,11 +625,9 @@ static int at91_gpio_probe(struct device *dev)
 
 	at91_gpio = &gpio_chip[alias_idx];
 
-	ret = dev_get_drvdata(dev, (const void **)&at91_gpio->ops);
-        if (ret) {
-                dev_err(dev, "dev_get_drvdata failed: %d\n", ret);
-                return ret;
-        }
+	at91_gpio->ops = device_get_match_data(dev);
+	if (!at91_gpio->ops)
+		return -ENODEV;
 
 	clk = clk_get(dev, NULL);
 	if (IS_ERR(clk)) {

@@ -1085,15 +1085,14 @@ static int fsl_fman_mdio_probe(struct device *dev)
 static int fsl_fman_port_probe(struct device *dev)
 {
 	struct resource *iores;
-	int ret;
 	struct fsl_fman_port *port;
 	unsigned long type;
 
 	dev_dbg(dev, "probe\n");
 
-	ret = dev_get_drvdata(dev, (const void **)&type);
-	if (ret)
-		return ret;
+	type = (uintptr_t)device_get_match_data(dev);
+	if (!type)
+		return -ENODEV;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

@@ -754,7 +754,7 @@ int tee_client_invoke_func(struct tee_context *ctx,
 EXPORT_SYMBOL_GPL(tee_client_invoke_func);
 
 static int tee_client_device_match(struct device *dev,
-				   struct device_driver *drv)
+				   const struct device_driver *drv)
 {
 	const struct tee_client_device_id *id_table;
 	struct tee_client_device *tee_device;
@@ -764,11 +764,11 @@ static int tee_client_device_match(struct device *dev,
 
 	while (!uuid_is_null(&id_table->uuid)) {
 		if (uuid_equal(&tee_device->id.uuid, &id_table->uuid))
-			return 0;
+			return true;
 		id_table++;
 	}
 
-	return -1;
+	return false;
 }
 
 struct bus_type tee_bus_type = {

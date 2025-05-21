@@ -349,12 +349,11 @@ static int omap3_spi_probe(struct device *dev)
 	struct resource *iores;
 	struct spi_master *master;
 	struct omap3_spi_master *omap3_master;
-	struct omap_spi_drvdata *devtype;
-	int ret;
+	const struct omap_spi_drvdata *devtype;
 
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
+	devtype = device_get_match_data(dev);
+	if (!devtype)
+		return -ENODEV;
 
 	omap3_master = xzalloc(sizeof(*omap3_master));
 

@@ -485,10 +485,10 @@ extern struct list_head usb_device_list;
 
 bool usb_hub_is_root_hub(struct usb_device *hdev);
 
-#ifdef CONFIG_USB_ONBOARD_HUB
-void of_usb_host_probe_hubs(struct usb_host *host);
+#ifdef CONFIG_USB_ONBOARD_DEV
+void of_usb_host_probe_devs(struct usb_host *host);
 #else
-static inline void of_usb_host_probe_hubs(struct usb_host *host)
+static inline void of_usb_host_probe_devs(struct usb_host *host)
 {
 }
 #endif

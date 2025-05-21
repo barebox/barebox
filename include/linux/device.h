@@ -73,4 +73,36 @@ static inline int bus_for_each_dev(const struct bus_type *bus, struct device *st
 	return 0;
 }
 
+
+/**
+ * dev_set_drvdata - set driver private data for device
+ * @dev: device instance
+ * @data: driver-specific data
+ *
+ * Returns private driver data or NULL if none was set.
+ *
+ * NOTE: This does _not_ return the match data associated with
+ * the match. For that use device_get_match_data instead.
+ */
+static inline void dev_set_drvdata(struct device *dev, void *data)
+{
+	dev->driver_data = data;
+}
+
+/**
+ * dev_get_drvdata - get driver match data associated for device
+ * @dev: device instance
+ * @data: driver-specific data
+ *
+ * Set some driver and device specific data for later retrieval
+ * by dev_get_drvdata.
+ *
+ * NOTE: This does _not_ return the match data associated with
+ * the match. For that use device_get_match_data instead.
+ */
+static inline void *dev_get_drvdata(const struct device *dev)
+{
+	return dev->driver_data;
+}
+
 #endif

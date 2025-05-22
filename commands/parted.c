@@ -8,6 +8,7 @@
 #include <linux/sizes.h>
 #include <partitions.h>
 #include <linux/math64.h>
+#include <range.h>
 
 static struct partition_desc *gpdesc;
 static bool table_needs_write;
@@ -160,12 +161,17 @@ static int do_mkpart(struct block_device *blk, int argc, char *argv[])
 	end *= mult;
 
 	/* If not on sector boundaries move start up and end down */
-	start = ALIGN(start, SECTOR_SIZE);
-	end = ALIGN_DOWN(end, SECTOR_SIZE);
+	start = ALIGN(start, SZ_1M);
+	end = ALIGN_DOWN(end, SZ_1M);
 
 	/* convert to LBA */
 	start >>= SECTOR_SHIFT;
 	end >>= SECTOR_SHIFT;
+
+	if (end == start) {
+		printf("Error: After alignment the partition has zero size\n");
+		return -EINVAL;
+	}
 
 	/*
 	 * When unit is >= KB then substract one sector for user convenience.

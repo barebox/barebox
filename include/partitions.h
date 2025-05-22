@@ -68,6 +68,7 @@ int partition_create(struct partition_desc *pdesc, const char *name,
 		     const char *fs_type, uint64_t lba_start, uint64_t lba_end);
 int partition_remove(struct partition_desc *pdesc, int num);
 void partition_table_free(struct partition_desc *pdesc);
-
+bool partition_is_free(struct partition_desc *pdesc, uint64_t start, uint64_t size);
+int partition_find_free_space(struct partition_desc *pdesc, uint64_t sectors, uint64_t *start);
 
 #endif /* __PARTITIONS_PARSER_H__ */

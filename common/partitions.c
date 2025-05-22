@@ -163,6 +163,48 @@ int partition_table_write(struct partition_desc *pdesc)
 	return pdesc->parser->write(pdesc);
 }
 
+bool partition_is_free(struct partition_desc *pdesc, uint64_t start, uint64_t size)
+{
+	struct partition *p;
+
+	if (start < PARTITION_ALIGN_SECTORS)
+		return false;
+
+	if (start + size >= pdesc->blk->num_blocks)
+		return false;
+
+	list_for_each_entry(p, &pdesc->partitions, list) {
+		if (region_overlap_size(p->first_sec, p->size, start, size))
+			return false;
+	}
+
+	return true;
+}
+
+int partition_find_free_space(struct partition_desc *pdesc, uint64_t sectors, uint64_t *start)
+{
+	struct partition *p;
+	uint64_t min_sec = PARTITION_ALIGN_SECTORS;
+
+	min_sec = ALIGN(min_sec, PARTITION_ALIGN_SECTORS);
+
+	if (partition_is_free(pdesc, min_sec, sectors)) {
+		*start = min_sec;
+		return 0;
+	}
+
+	list_for_each_entry(p, &pdesc->partitions, list) {
+		uint64_t s = ALIGN(p->first_sec + p->size, PARTITION_ALIGN_SECTORS);
+
+		if (partition_is_free(pdesc, s, sectors)) {
+			*start = s;
+			return 0;
+		}
+	}
+
+	return -ENOSPC;
+}
+
 int partition_create(struct partition_desc *pdesc, const char *name,
 		     const char *fs_type, uint64_t lba_start, uint64_t lba_end)
 {

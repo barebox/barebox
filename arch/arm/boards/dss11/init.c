@@ -5,6 +5,7 @@
 #include <net.h>
 #include <mci.h>
 #include <init.h>
+#include <envfs.h>
 #include <environment.h>
 #include <asm/armlinux.h>
 #include <asm/mach-types.h>
@@ -114,6 +115,7 @@ static int dss11_devices_init(void)
 	dev_add_bb_dev("barebox", "barebox.bb");
 	devfs_add_partition("nand0", 0x60000, 0x40000, DEVFS_PARTITION_FIXED, "barebox-env");
 	dev_add_bb_dev("barebox-env", "env0");
+	default_environment_path_set("/dev/env0");
 
 	return 0;
 }

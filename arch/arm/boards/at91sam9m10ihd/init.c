@@ -8,6 +8,7 @@
 #include <net.h>
 #include <mci.h>
 #include <init.h>
+#include <envfs.h>
 #include <environment.h>
 #include <asm/armlinux.h>
 #include <asm/mach-types.h>
@@ -245,6 +246,7 @@ static int at91sam9m10ihd_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 	devfs_add_partition("nand0", SZ_512K, SZ_128K, DEVFS_PARTITION_FIXED, "env_raw1");
 	dev_add_bb_dev("env_raw1", "env1");
+	default_environment_path_set("/dev/env0");
 
 	/*
 	 * The internal Atmel kernel use the SAM9M10G45EK machine id

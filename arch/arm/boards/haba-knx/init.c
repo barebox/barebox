@@ -289,6 +289,8 @@ static int haba_knx_devices_init(void)
 
 	devfs_create_partitions("nand0", haba_knx_nand0_partitions);
 
+	default_environment_path_set("/dev/env0");
+
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
 		defaultenv_append_directory(defaultenv_haba_knx);
 

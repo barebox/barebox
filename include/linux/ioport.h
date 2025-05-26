@@ -133,6 +133,14 @@ enum resource_memtype {
 #define MEMATTR_RO	0x00020000	/* read-only */
 #define MEMATTR_SP	0x00040000	/* specific-purpose */
 
+#define MEMATTRS_CACHEABLE	(MEMATTR_WT | MEMATTR_WC | MEMATTR_WB)
+#define MEMATTRS_RW		(MEMATTRS_CACHEABLE | MEMATTR_XP)
+#define MEMATTRS_RO		(MEMATTRS_CACHEABLE | MEMATTR_XP | MEMATTR_RO)
+#define MEMATTRS_RX		(MEMATTRS_CACHEABLE | MEMATTR_RO)
+#define MEMATTRS_RWX		(MEMATTRS_CACHEABLE)	/* TODO: remove all */
+#define MEMATTRS_RW_DEVICE	(MEMATTR_UC | MEMATTR_XP)
+#define MEMATTRS_FAULT		(MEMATTR_UC | MEMATTR_XP | MEMATTR_RP | MEMATTR_RO)
+
 /* PnP I/O specific bits (IORESOURCE_BITS) */
 #define IORESOURCE_IO_16BIT_ADDR	(1<<0)
 #define IORESOURCE_IO_FIXED		(1<<1)
@@ -203,6 +211,25 @@ int release_region(struct resource *res);
 
 extern struct resource iomem_resource;
 extern struct resource ioport_resource;
+
+static inline void reserve_resource(struct resource *res)
+{
+	res->type = MEMTYPE_RESERVED;
+	/* Reserved memory is used for secure memory that should
+	 * be hardware-protected independently of MMU flags.
+	 * We map it as device memory, so we can still test
+	 * if it's indeed inaccessible
+	 */
+	res->attrs = MEMATTRS_RW_DEVICE;
+	res->flags |= IORESOURCE_TYPE_VALID;
+}
+
+static inline bool is_reserved_resource(const struct resource *res)
+{
+	if (res->flags & IORESOURCE_TYPE_VALID)
+		return res->type == MEMTYPE_RESERVED;
+	return false;
+}
 
 #endif /* __ASSEMBLY__ */
 #endif	/* _LINUX_IOPORT_H */

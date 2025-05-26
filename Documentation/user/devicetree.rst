@@ -83,6 +83,14 @@ barebox has support for device tree overlays. barebox knows two different trees,
 the live tree and the device tree the kernel is started with. Both can be applied
 overlays to.
 
+.. note:: Compiling a device tree discards label information by default. To be able
+ to use phandles into the base device tree from inside an overlay, pass to dtc the
+ ``-@`` option when compiling the base device tree.
+   This will populate ``/__symbols__`` in the base device tree.
+
+ Having ``__fixups__`` in the overlay, but no ``__symbols__`` in the base device
+ tree is not allowed: ``ERROR: of_resolver: __symbols__ missing from base devicetree``.
+
 Device tree overlays on the live tree
 .....................................
 
@@ -90,6 +98,9 @@ While the live tree can be patched by board code, barebox does not
 detect any changes to the live tree. To let the overlays have any effect, board
 code must make sure the live tree is patched before the devices are instanciated
 from it.
+
+The ``CONFIG_OF_OVERLAY_LIVE`` option will need to be enabled to generate
+``__symbols__`` into the barebox device tree.
 
 Device tree overlays on the kernel device tree
 ..............................................
@@ -118,3 +129,9 @@ the kernel. The behaviour is controlled by different variables:
   ``global.of.overlay.compatible`` above. The default is ``filepattern compatible``
   which means the two generic filters are active. This list may be replaced or
   supplemented by board specific filters.
+
+The kernel device trees need to be built with symbols (``dtc -@`` option) enabled.
+For upstream device trees, this is currently done on a case-by-case basis in the
+Makefiles::
+
+  DTC_FLAGS_bcm2711-rpi-4-b := -@

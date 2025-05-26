@@ -64,6 +64,7 @@ static inline u64 memory_sdram_size(unsigned int cols,
 void register_barebox_area(resource_size_t start, resource_size_t size);
 
 #if IN_PROPER
+bool inside_barebox_area(resource_size_t start, resource_size_t end);
 struct resource *request_barebox_region(const char *name,
 					resource_size_t start,
 					resource_size_t size);
@@ -74,6 +75,11 @@ static inline struct resource *request_barebox_region(const char *name,
 {
 
 		return NULL;
+}
+
+static inline bool inside_barebox_area(resource_size_t start, resource_size_t end)
+{
+	return false;
 }
 #endif
 

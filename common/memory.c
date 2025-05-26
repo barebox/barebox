@@ -72,14 +72,19 @@ static int mem_register_barebox(void)
 }
 postmem_initcall(mem_register_barebox);
 
+bool inside_barebox_area(resource_size_t start, resource_size_t end)
+{
+	return barebox_res && barebox_res->start <= start &&
+		end <= barebox_res->end;
+}
+
 struct resource *request_barebox_region(const char *name,
 					resource_size_t start,
 					resource_size_t size)
 {
 	resource_size_t end = start + size - 1;
 
-	if (barebox_res && barebox_res->start <= start &&
-	    end <= barebox_res->end) {
+	if (inside_barebox_area(start, end)) {
 		struct resource *iores;
 		iores = __request_region(barebox_res, start, end,
 					 name, IORESOURCE_MEM);

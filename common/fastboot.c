@@ -398,7 +398,7 @@ void fastboot_download_finished(struct fastboot *fb)
 
 	printf("\n");
 
-	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Downloading %d bytes finished",
+	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Downloading %zu bytes finished",
 			  fb->download_bytes);
 
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
@@ -421,7 +421,7 @@ static void cb_download(struct fastboot *fb, const char *cmd)
 	fb->download_size = simple_strtoul(cmd, NULL, 16);
 	fb->download_bytes = 0;
 
-	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Downloading %d bytes...",
+	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Downloading %zu bytes...",
 			  fb->download_size);
 
 	init_progression_bar(fb->download_size);
@@ -446,7 +446,7 @@ static void cb_download(struct fastboot *fb, const char *cmd)
 
 void fastboot_start_download_generic(struct fastboot *fb)
 {
-	fastboot_tx_print(fb, FASTBOOT_MSG_DATA, "%08x", fb->download_size);
+	fastboot_tx_print(fb, FASTBOOT_MSG_DATA, "%08zx", fb->download_size);
 }
 
 static void __maybe_unused cb_boot(struct fastboot *fb, const char *opt)

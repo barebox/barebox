@@ -16,7 +16,7 @@ https://www.barebox.org/download/
 Development versions of barebox are accessible via Git. A local repository clone
 can be checked out as follows:
 
-.. code-block:: sh
+.. code-block:: console
 
   $ git clone git://git.pengutronix.de/git/barebox.git
   Cloning into 'barebox'...
@@ -34,7 +34,7 @@ barebox, this is the right branch to send patches against.
 If you want to see which patches are already selected for the next release,
 you can look at the ``next`` branch:
 
-.. code-block:: sh
+.. code-block:: console
 
   $ git checkout -b next origin/remotes/next
 
@@ -66,17 +66,17 @@ in your $PATH, just the prefix.
 
 Either export ``ARCH`` and ``CROSS_COMPILE`` once before working on barebox:
 
-.. code-block:: sh
+.. code-block:: console
 
-  export ARCH=arm
-  export CROSS_COMPILE=/path/to/arm-cortexa8-linux-gnueabihf-
-  make ...
+  $ export ARCH=arm
+  $ export CROSS_COMPILE=/path/to/arm-cortexa8-linux-gnueabihf-
+  $ make ...
 
 or add them to each invocation of the ``make`` command:
 
-.. code-block:: sh
+.. code-block:: console
 
-  ARCH=arm CROSS_COMPILE=/path/to/arm-cortexa8-linux-gnueabihf- make ...
+  $ ARCH=arm CROSS_COMPILE=/path/to/arm-cortexa8-linux-gnueabihf- make ...
 
 For readability, ARCH/CROSS_COMPILE are skipped from the following examples.
 
@@ -87,23 +87,23 @@ All configuration files can be found under the ``arch/${ARCH}/configs/``
 directory. For an overview of possible Make targets for your architecture,
 type:
 
-.. code-block:: sh
+.. code-block:: console
 
-  make help
+  $ make help
 
 Your output from ``make help`` will be based on the architecture you've
 selected via the ``ARCH`` variable. So if, for example, you had selected:
 
-.. code-block:: sh
+.. code-block:: console
 
-  export ARCH=mips
+  $ export ARCH=mips
 
 your help output would represent all of the generic (architecture-independent)
 targets, followed by the MIPS-specific ones:
 
-.. code-block:: sh
+.. code-block:: console
 
-  make [ARCH=mips] help
+  $ make [ARCH=mips] help
   ...
   ... list of generic targets ...
   ...
@@ -122,16 +122,16 @@ can't find your board in the list, it may be supported by one of the multi-board
 configs. As an example, this is the case for tegra_v7_defconfig and imx_v7_defconfig.
 Select your config with ``make <yourboard>_defconfig``:
 
-.. code-block:: sh
+.. code-block:: console
 
-  make imx_v7_defconfig
+  $ make imx_v7_defconfig
 
 The configuration can be further customized with one of the configuration frontends
 with the most popular being ``menuconfig``:
 
-.. code-block:: sh
+.. code-block:: console
 
-  make menuconfig
+  $ make menuconfig
 
 barebox uses the same configuration and build system as Linux (Kconfig,
 Kbuild), so you can use all the kernel config targets you already know, e.g.
@@ -149,9 +149,9 @@ Once you check out your barebox source directory, and before you do any
 configuration or building, set the environment variable ``KBUILD_OUTPUT``
 to point to your intended output directory, as in:
 
-.. code-block:: sh
+.. code-block:: console
 
-  export KBUILD_OUTPUT=.../my_barebox_build_directory
+  $ export KBUILD_OUTPUT=.../my_barebox_build_directory
 
 From that point on, all of the ``make`` commands you run in your source
 directory will generate their output in your specified output directory.
@@ -174,9 +174,9 @@ Compilation
 After barebox has been :ref:`configured <configuration>` it can be compiled
 simply with:
 
-.. code-block:: sh
+.. code-block:: console
 
-  make
+  $ make
 
 The resulting binary varies depending on the board barebox is compiled for.
 Without :ref:`multi_image` support the ``barebox-flash-image`` link will point
@@ -320,10 +320,12 @@ In addition to these barebox also builds host and target tools that are useful
 outside of barebox build: e.g. to manipulate the environment or to load an
 image over a boot ROM's USB recovery protocol. These tools may link against
 libraries, which are detected using ``PKG_CONFIG`` and ``CROSS_PKG_CONFIG``
-for native and cross build respectively. Their default values are::
+for native and cross build respectively. Their default values are:
 
-  PKG_CONFIG=pkg-config
-  CROSS_PKG_CONFIG=${CROSS_COMPILE}pkg-config
+.. code-block:: console
+
+  $ PKG_CONFIG=pkg-config
+  $ CROSS_PKG_CONFIG=${CROSS_COMPILE}pkg-config
 
 These can be overridden using environment or make variables.
 
@@ -340,9 +342,9 @@ about ``libusb-1.0``. This config won't build any target tools.
 
 .. code-block:: console
 
-  export ARCH=sandbox
-  make hosttools_defconfig
-  make scripts
+  $ export ARCH=sandbox
+  $ make hosttools_defconfig
+  $ make scripts
 
 Target Tools
 ^^^^^^^^^^^^
@@ -355,7 +357,7 @@ use. Example:
 
 .. code-block:: console
 
-  export ARCH=sandbox CROSS_COMPILE=aarch64-linux-gnu-
-  export CROSS_PKG_CONFIG=pkg-config
-  make targettools_defconfig
-  make scripts
+  $ export ARCH=sandbox CROSS_COMPILE=aarch64-linux-gnu-
+  $ export CROSS_PKG_CONFIG=pkg-config
+  $ make targettools_defconfig
+  $ make scripts

@@ -163,7 +163,7 @@ setting the ``global.boot.default`` variable to ``mmc`` and then calling
 
 Especially for development, it can be useful to override only parts of
 the images used in a boot. To do so, set ``CONFIG_BOOT_OVERRIDE=y``
-and configure the overrides as arguments to the ``boot`` command::
+and configure the overrides as arguments to the ``boot`` command:
 
 .. code-block:: sh
 

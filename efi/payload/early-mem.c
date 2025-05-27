@@ -5,8 +5,8 @@
 #include <efi.h>
 #include <efi/efi-payload.h>
 
-efi_physical_addr_t efi_earlymem_alloc(const struct efi_system_table *sys_table,
-				       size_t *memsize)
+void *efi_earlymem_alloc(const struct efi_system_table *sys_table,
+			 size_t *memsize)
 {
 	struct efi_boot_services *bs = sys_table->boottime;
 	enum efi_allocate_type alloc_type = EFI_ALLOCATE_ANY_PAGES;
@@ -29,5 +29,5 @@ efi_physical_addr_t efi_earlymem_alloc(const struct efi_system_table *sys_table,
 		panic("failed to allocate %zu byte memory pool: 0x%lx\n",
 		      *memsize, efiret);
 
-	return mem;
+	return efi_phys_to_virt(mem);
 }

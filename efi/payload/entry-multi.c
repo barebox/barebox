@@ -24,7 +24,7 @@ static void efi_putc(void *ctx, int ch)
 void __efistub_efi_pe_entry(void *image, struct efi_system_table *sys_table)
 {
 	size_t memsize;
-	efi_physical_addr_t mem;
+	void *mem;
 	static struct barebox_efi_data efidata;
 
 #ifdef DEBUG
@@ -39,5 +39,5 @@ void __efistub_efi_pe_entry(void *image, struct efi_system_table *sys_table)
 
 	mem = efi_earlymem_alloc(sys_table, &memsize);
 
-	barebox_pbl_entry(mem, memsize, NULL);
+	barebox_pbl_entry((uintptr_t)mem, memsize, NULL);
 }

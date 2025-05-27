@@ -14,6 +14,7 @@
 #include <linux/linkage.h>
 #include <common.h>
 #include <linux/sizes.h>
+#include <linux/ktime.h>
 #include <memory.h>
 #include <clock.h>
 #include <command.h>
@@ -310,7 +311,7 @@ static int efi_postcore_init(void)
 		EFI_LOADER_FEATURE_DEVICETREE;
 
 	efi_set_variable_usec("LoaderTimeInitUSec", &efi_systemd_vendor_guid,
-			      get_time_ns()/1000);
+			      ktime_to_us(ktime_get()));
 
 	efi_set_variable_printf("LoaderInfo", &efi_systemd_vendor_guid,
 			"barebox-" UTS_RELEASE);

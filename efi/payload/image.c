@@ -8,6 +8,7 @@
 #include <clock.h>
 #include <common.h>
 #include <linux/sizes.h>
+#include <linux/ktime.h>
 #include <memory.h>
 #include <command.h>
 #include <magicvar.h>
@@ -302,7 +303,7 @@ static int do_bootm_efi(struct image_data *data)
 	}
 
 	efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
-			      get_time_ns()/1000);
+			      ktime_to_us(ktime_get()));
 
 	shutdown_barebox();
 	linux_efi_handover(handle, boot_header);

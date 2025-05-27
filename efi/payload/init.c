@@ -51,7 +51,7 @@ void *efi_get_variable(char *name, efi_guid_t *vendor, int *var_size)
 {
 	efi_status_t efiret;
 	void *buf;
-	unsigned long size = 0;
+	size_t size = 0;
 	s16 *name16 = xstrdup_char_to_wchar(name);
 
 	efiret = RT->get_variable(name16, vendor, NULL, &size, NULL);
@@ -84,7 +84,7 @@ out:
 }
 
 int efi_set_variable(char *name, efi_guid_t *vendor, uint32_t attributes,
-		     void *buf, unsigned long size)
+		     void *buf, size_t size)
 {
 	efi_status_t efiret = EFI_SUCCESS;
 	s16 *name16 = xstrdup_char_to_wchar(name);

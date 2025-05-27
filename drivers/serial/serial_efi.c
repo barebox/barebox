@@ -75,9 +75,9 @@ struct efi_serial_io_protocol {
 	efi_status_t (EFIAPI *getcontrol) (struct efi_serial_io_protocol *This,
 			uint32_t *control);
 	efi_status_t (EFIAPI *write) (struct efi_serial_io_protocol *This,
-			unsigned long *buffersize, void *buffer);
+			size_t *buffersize, void *buffer);
 	efi_status_t (EFIAPI *read) (struct efi_serial_io_protocol *This,
-			unsigned long *buffersize, void *buffer);
+			size_t *buffersize, void *buffer);
 
 	struct efi_serial_io_mode *mode;
 };
@@ -117,7 +117,7 @@ static void efi_serial_putc(struct console_device *cdev, char c)
 	struct efi_serial_io_protocol *serial = uart->serial;
 	uint32_t control;
 	efi_status_t efiret;
-	unsigned long buffersize = sizeof(char);
+	size_t buffersize = sizeof(char);
 
 	do {
 		efiret = serial->getcontrol(serial, &control);
@@ -136,7 +136,7 @@ static int efi_serial_puts(struct console_device *cdev, const char *s,
 	struct efi_serial_io_protocol *serial = uart->serial;
 	uint32_t control;
 	efi_status_t efiret;
-	unsigned long buffersize = nbytes;
+	size_t buffersize = nbytes;
 
 	do {
 		efiret = serial->getcontrol(serial, &control);
@@ -156,7 +156,7 @@ static int efi_serial_getc(struct console_device *cdev)
 	struct efi_serial_io_protocol *serial = uart->serial;
 	uint32_t control;
 	efi_status_t efiret;
-	unsigned long buffersize = sizeof(char);
+	size_t buffersize = sizeof(char);
 	char c;
 
 	do {

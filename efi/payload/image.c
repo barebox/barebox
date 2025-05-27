@@ -101,7 +101,7 @@ static void *efi_read_file(const char *file, size_t *size)
 		return NULL;
 	}
 
-	buf = (void *)mem;
+	buf = efi_phys_to_virt(mem);
 
 	ret = read_file_into_buf(file, buf, s.st_size);
 	if (ret < 0)
@@ -113,7 +113,7 @@ static void *efi_read_file(const char *file, size_t *size)
 
 static void efi_free_file(void *_mem, size_t size)
 {
-	efi_physical_addr_t mem = (efi_physical_addr_t)_mem;
+	efi_physical_addr_t mem = efi_virt_to_phys(_mem);
 
 	if (mem_malloc_start() <= mem && mem < mem_malloc_end())
 		free(_mem);

@@ -64,6 +64,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Build
+      id: build
       run: |
         export KBUILD_OUTPUT=build-${{matrix.arch}}-${{matrix.defconfig}}
         export ARCH=${{matrix.arch}}
@@ -94,14 +95,14 @@ jobs:
 
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
-      if: always()
+      if: steps.build.outcome == 'success'
       with:
         check_name: "Test Results (${{matrix.defconfig}})"
         files: ./*.tests.xml
 
     - name: Publish Labgrid Log Results
       uses: actions/upload-artifact@v4
-      if: always()
+      if: steps.build.outcome == 'success'
       with:
         name: console-log-${{matrix.defconfig}}
         path: log/

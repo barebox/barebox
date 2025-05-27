@@ -254,12 +254,12 @@ static char *raw_pointer(char *buf, const char *end, const void *ptr, int field_
 
 #if IN_PROPER
 static char *symbol_string(char *buf, const char *end, const void *ptr, int field_width,
-			   int precision, int flags)
+			   int precision, int flags, bool with_offset)
 {
 	unsigned long value = (unsigned long) ptr;
 #ifdef CONFIG_KALLSYMS
 	char sym[KSYM_SYMBOL_LEN];
-	sprint_symbol(sym, value);
+	sprint_symbol(sym, value, with_offset);
 	return string(buf, end, sym, field_width, precision, flags);
 #else
 	field_width = 2*sizeof(void *);
@@ -484,7 +484,8 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
  *
  * Right now we handle following Linux-compatible format specifiers:
  *
- * - 'S' For symbolic direct pointers
+ * - 'S' For symbolic direct pointers (or function descriptors) with offset
+ * - 's' For symbolic direct pointers (or function descriptors) without offset
  * - 'U' For a 16 byte UUID/GUID, it prints the UUID/GUID in the form
  *       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
  *       Options for %pU are:
@@ -523,9 +524,14 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
 static char *pointer(const char *fmt, char *buf, const char *end, const void *ptr,
 		     int field_width, int precision, int flags)
 {
+	bool with_offset = false;
+
 	switch (*fmt) {
 	case 'S':
-		return symbol_string(buf, end, ptr, field_width, precision, flags);
+		with_offset = true;
+		fallthrough;
+	case 's':
+		return symbol_string(buf, end, ptr, field_width, precision, flags, with_offset);
 	case 'U':
 		if (IS_ENABLED(CONFIG_PRINTF_UUID))
 			return uuid_string(buf, end, ptr, field_width, precision, flags, fmt);

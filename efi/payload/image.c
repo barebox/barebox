@@ -215,7 +215,6 @@ static int efi_execute_image(enum filetype filetype, const char *file)
 	return -efi_errno(efiret);
 }
 
-#ifdef __x86_64__
 typedef void(*handover_fn)(void *image, struct efi_system_table *table,
 		struct linux_kernel_header *header);
 
@@ -223,25 +222,15 @@ static inline void linux_efi_handover(efi_handle_t handle,
 		struct linux_kernel_header *header)
 {
 	handover_fn handover;
+	uintptr_t addr;
 
-	handover = (handover_fn)((long)header->code32_start + 512 +
-				 header->handover_offset);
+	addr = header->code32_start + header->handover_offset;
+	if (IS_ENABLED(CONFIG_X86_64))
+		addr += 512;
+
+	handover = efi_phys_to_virt(addr);
 	handover(handle, efi_sys_table, header);
 }
-#else
-typedef void(*handover_fn)(void *image, struct efi_system_table *table,
-		struct linux_kernel_header *setup);
-
-static inline void linux_efi_handover(efi_handle_t handle,
-		struct linux_kernel_header *header)
-{
-	handover_fn handover;
-
-	handover = (handover_fn)((long)header->code32_start +
-				 header->handover_offset);
-	handover(handle, efi_sys_table, header);
-}
-#endif
 
 static int do_bootm_efi(struct image_data *data)
 {

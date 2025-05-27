@@ -8,7 +8,7 @@
 
 typedef unsigned long efi_status_t;
 typedef wchar_t efi_char16_t;		/* UNICODE character */
-typedef u64 efi_physical_addr_t;
+typedef u64 efi_physical_addr_t;	/* always, even on 32-bit systems */
 
 struct efi_object;
 typedef struct efi_object *efi_handle_t;

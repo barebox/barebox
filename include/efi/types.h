@@ -7,7 +7,7 @@
 #include <linux/uuid.h>
 
 typedef unsigned long efi_status_t;
-typedef u16 efi_char16_t;		/* UNICODE character */
+typedef wchar_t efi_char16_t;		/* UNICODE character */
 typedef u64 efi_physical_addr_t;
 
 struct efi_object;

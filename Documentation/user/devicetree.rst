@@ -86,7 +86,7 @@ overlays to.
 .. note:: Compiling a device tree discards label information by default. To be able
  to use phandles into the base device tree from inside an overlay, pass to dtc the
  ``-@`` option when compiling the base device tree.
-   This will populate ``/__symbols__`` in the base device tree.
+ This will populate ``/__symbols__`` in the base device tree.
 
  Having ``__fixups__`` in the overlay, but no ``__symbols__`` in the base device
  tree is not allowed: ``ERROR: of_resolver: __symbols__ missing from base devicetree``.
@@ -96,7 +96,7 @@ Device tree overlays on the live tree
 
 While the live tree can be patched by board code, barebox does not
 detect any changes to the live tree. To let the overlays have any effect, board
-code must make sure the live tree is patched before the devices are instanciated
+code must make sure the live tree is patched before the devices are instantiated
 from it.
 
 The ``CONFIG_OF_OVERLAY_LIVE`` option will need to be enabled to generate

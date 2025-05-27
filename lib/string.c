@@ -423,18 +423,25 @@ size_t strnlen(const char * s, size_t count)
 #endif
 EXPORT_SYMBOL(strnlen);
 
-#ifndef __HAVE_ARCH_STRDUP
-char * strdup(const char *s)
+static __always_inline char *__memdup_nul(const char *s, size_t len)
 {
 	char *new;
 
 	if ((s == NULL)	||
-	    ((new = malloc (strlen(s) + 1)) == NULL) ) {
+	    ((new = malloc (len + 1)) == NULL) ) {
 		return NULL;
 	}
 
-	strcpy (new, s);
+	memcpy (new, s, len);
+	/* Ensure the buf is always NUL-terminated, regardless of @s. */
+	new[len] = '\0';
 	return new;
+}
+
+#ifndef __HAVE_ARCH_STRDUP
+char * strdup(const char *s)
+{
+	return s ? __memdup_nul(s, strlen(s)) : NULL;
 }
 #endif
 EXPORT_SYMBOL(strdup);
@@ -442,22 +449,25 @@ EXPORT_SYMBOL(strdup);
 #ifndef __HAVE_ARCH_STRNDUP
 char *strndup(const char *s, size_t n)
 {
-	char *new;
-	size_t len = strnlen(s, n);
-
-	if ((s == NULL) ||
-	    ((new = malloc(len + 1)) == NULL)) {
-		return NULL;
-	}
-
-	memcpy(new, s, len);
-	new[len] = '\0';
-
-	return new;
+	return s ? __memdup_nul(s, strnlen(s, n)) : NULL;
 }
 
 #endif
 EXPORT_SYMBOL(strndup);
+
+/**
+ * memdup_nul - Create a NUL-terminated string from @s, which might be unterminated.
+ * @s: The data to copy
+ * @len: The size of the data, not including the NUL terminator
+ *
+ * Return: newly allocated copy of @s with NUL-termination or %NULL in
+ * case of error
+ */
+char *memdup_nul(const char *s, size_t n)
+{
+	return s ? __memdup_nul(s, n) : NULL;
+}
+EXPORT_SYMBOL(memdup_nul);
 
 #ifndef __HAVE_ARCH_STRSPN
 /**

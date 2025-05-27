@@ -143,11 +143,11 @@ int get_crypto_bytes(void *buf, int len)
 	}
 
 	if (!IS_ENABLED(CONFIG_ALLOW_PRNG_FALLBACK)) {
-		pr_err("no HWRNG available!\n");
+		pr_err("%ps: no HWRNG available!\n", (void *)_RET_IP_);
 		return err;
 	}
 
-	pr_warn("falling back to Pseudo RNG source!\n");
+	pr_warn("%ps: falling back to Pseudo RNG source!\n", (void *)_RET_IP_);
 
 	get_noncrypto_bytes(buf, len);
 

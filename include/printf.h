@@ -20,8 +20,7 @@ struct device;
 	(IN_PBL && defined(CONFIG_PBL_CONSOLE))
 int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
 #else
-static int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
-static inline int printf(const char *fmt, ...)
+static inline __printf(1, 2) int printf(const char *fmt, ...)
 {
 	return 0;
 }

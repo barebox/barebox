@@ -124,3 +124,29 @@ char *strdup_wchar_to_char(const wchar_t *src)
 
 	return dst;
 }
+
+int wcscmp(const wchar_t *s1, const wchar_t *s2)
+{
+	while (*s1 == *s2++) {
+		if (*s1++ == 0)
+			return 0;
+	}
+
+	return *s1 - *--s2;
+}
+
+int wcsncmp (const wchar_t *s1, const wchar_t *s2, size_t n)
+{
+	if (n == 0)
+		return 0;
+
+	do {
+		if (*s1 != *s2++)
+			return *s1 - *--s2;
+
+		if (*s1++ == 0)
+			break;
+	} while (--n != 0);
+
+	return 0;
+}

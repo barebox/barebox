@@ -25,9 +25,10 @@ static int efi_parse_mmap(struct efi_memory_desc *desc, bool verbose)
 		return 0;
 
 	/* XXX At least OVMF doesn't populate ->virt_start and leaves it at zero
-	 * for all mapping. Thus assume a 1:1 mapping and ignore virt_start
+	 * for all mappings. Handles this by assume a 1:1 mapping and falling
+	 * back to phys_start.
 	 */
-	va_base = desc->phys_start;
+	va_base = (uintptr_t)desc->virt_start ?: desc->phys_start;
 
 	switch (desc->type) {
 	case EFI_RESERVED_TYPE:
@@ -124,9 +125,9 @@ static int efi_parse_mmap(struct efi_memory_desc *desc, bool verbose)
 		flags = IORESOURCE_MEM | IORESOURCE_ROM_BIOS_COPY;
 	}
 
-	fullname = xasprintf("%s@%llx", name, desc->phys_start);
+	fullname = xasprintf("%s@%llx", name, (u64)va_base);
 
-	pr_debug("%s: (0x%llx+0x%llx)\n", fullname, va_base, va_size);
+	pr_debug("%s: (%pad+%pad)\n", fullname, &va_base, &va_size);
 
 	res = request_iomem_region(fullname, va_base, va_base + va_size - 1);
 	if (IS_ERR(res)) {

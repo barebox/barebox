@@ -3,6 +3,7 @@
 #define __PRINTF_H
 
 #include <linux/types.h>
+#include <linux/compiler.h>
 
 struct device;
 
@@ -18,7 +19,7 @@ struct device;
 
 #if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \
 	(IN_PBL && defined(CONFIG_PBL_CONSOLE))
-int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
+int printf(const char *fmt, ...) __printf(1, 2);
 #else
 static inline __printf(1, 2) int printf(const char *fmt, ...)
 {

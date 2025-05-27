@@ -17,7 +17,7 @@ char *xstrdup(const char *s);
 char *xstrndup(const char *s, size_t size) __returns_nonnull;
 void* xmemalign(size_t alignment, size_t bytes) __xalloc_size(2);
 void* xmemdup(const void *orig, size_t size) __returns_nonnull;
-char *xasprintf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2))) __returns_nonnull;
+char *xasprintf(const char *fmt, ...) __printf(1, 2) __returns_nonnull;
 char *xvasprintf(const char *fmt, va_list ap) __returns_nonnull;
 
 wchar_t *xstrdup_wchar(const wchar_t *src);

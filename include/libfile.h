@@ -3,6 +3,7 @@
 #define __LIBFILE_H
 
 #include <linux/types.h>
+#include <linux/compiler.h>
 
 struct resource;
 
@@ -14,7 +15,7 @@ int copy_fd(int in, int out);
 
 ssize_t read_file_into_buf(const char *filename, void *buf, size_t size);
 
-char *read_file_line(const char *fmt, ...);
+char *read_file_line(const char *fmt, ...) __printf(1, 2);
 
 void *read_file(const char *filename, size_t *size);
 

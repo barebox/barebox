@@ -167,7 +167,8 @@ static inline __printf(3, 4) int dev_err_probe(struct device *dev,
 int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size,
 		   int swab);
 int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbytes,
-			int size, int swab, const char *format, ...);
+			int size, int swab, const char *format, ...)
+	__printf(7, 8);
 
 #define pr_memory_display(level, addr, offs, nbytes, size, swab) \
 	({	\

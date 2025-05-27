@@ -26,7 +26,7 @@ int asprintf(char **strp, const char *fmt, ...) __printf(2, 3);
 char *bvasprintf(const char *fmt, va_list ap);
 int vasprintf(char **strp, const char *fmt, va_list ap);
 #else
-static inline int asprintf(char **strp, const char *fmt, ...)
+static inline __printf(2, 3) int asprintf(char **strp, const char *fmt, ...)
 {
 	return -1;
 }

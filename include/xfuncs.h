@@ -33,7 +33,7 @@ static inline char *xstrdup(const char *s) { BUG(); }
 static inline char *xstrndup(const char *s, size_t size) { BUG(); }
 static inline void* xmemalign(size_t alignment, size_t bytes) { BUG(); }
 static inline void* xmemdup(const void *orig, size_t size) { BUG(); }
-static inline char *xasprintf(const char *fmt, ...) { BUG(); }
+static inline __printf(1, 2) char *xasprintf(const char *fmt, ...) { BUG(); }
 static inline char *xvasprintf(const char *fmt, va_list ap) { BUG(); }
 
 static inline wchar_t *xstrdup_wchar(const wchar_t *src) { BUG(); }

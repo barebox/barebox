@@ -27,8 +27,8 @@ static inline __printf(1, 2) int printf(const char *fmt, ...)
 }
 #endif
 
-void __attribute__((noreturn)) panic(const char *fmt, ...);
-void __attribute__((noreturn)) panic_no_stacktrace(const char *fmt, ...);
+void __noreturn panic(const char *fmt, ...) __printf(1, 2);
+void __noreturn panic_no_stacktrace(const char *fmt, ...) __printf(1, 2);
 
 #define printk			printf
 

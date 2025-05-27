@@ -139,7 +139,7 @@ static inline int psci_puts(const char *str)
 	return 0;
 }
 
-static inline int psci_printf(const char *fmt, ...)
+static inline __printf(1, 2) int psci_printf(const char *fmt, ...)
 {
 	return 0;
 }

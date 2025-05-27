@@ -84,7 +84,7 @@ void fastboot_generic_free(struct fastboot *fb);
 int fastboot_handle_download_data(struct fastboot *fb, const void *buffer,
 				  unsigned int len);
 int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
-		      const char *fmt, ...);
+		      const char *fmt, ...) __printf(3, 4);
 void fastboot_start_download_generic(struct fastboot *fb);
 void fastboot_download_finished(struct fastboot *fb);
 void fastboot_exec_cmd(struct fastboot *fb, const char *cmdbuf)

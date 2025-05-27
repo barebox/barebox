@@ -153,8 +153,8 @@ static inline const char *dev_name(const struct device *dev)
 	return dev_id(dev) ?: dev->name;
 }
 
-int dev_set_name(struct device *dev, const char *fmt, ...);
-int dev_add_alias(struct device *dev, const char *fmt, ...);
+int dev_set_name(struct device *dev, const char *fmt, ...) __printf(2, 3);
+int dev_add_alias(struct device *dev, const char *fmt, ...) __printf(2, 3);
 
 /*
  * get resource 'num' for a device

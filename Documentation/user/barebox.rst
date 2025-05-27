@@ -5,9 +5,9 @@ Getting barebox
 ---------------
 
 barebox is released on a monthly basis. The version numbers use the format
-YYYY.MM.N, so 2014.06.0 is the monthly release for June 2014. Stable releases
+``YYYY.MM.N``, so ``2025.05.0`` is the monthly release for May 2025. Stable releases
 are done as needed to fix critical problems and are indicated by incrementing
-the suffix (for example 2014.06.1).
+the suffix (for example ``2025.05.1``).
 
 All releases can be downloaded from:
 

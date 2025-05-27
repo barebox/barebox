@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'barebox'
-copyright = u'2014–2022, The barebox project'
+copyright = u'2014–2025, The barebox project'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

@@ -273,18 +273,18 @@ static int do_bootm_efi(struct image_data *data)
 		memcpy(initrd, tmp, size);
 		memset(initrd + size, 0, PAGE_ALIGN(size) - size);
 		free(tmp);
-		boot_header->ramdisk_image = (uint64_t)initrd;
+		boot_header->ramdisk_image = efi_virt_to_phys(initrd);
 		boot_header->ramdisk_size = PAGE_ALIGN(size);
 	}
 
 	options = linux_bootargs_get();
 	if (options) {
-		boot_header->cmd_line_ptr = (uint64_t)options;
+		boot_header->cmd_line_ptr = efi_virt_to_phys(options);
 		boot_header->cmdline_size = strlen(options);
 	}
 
-	boot_header->code32_start = (uint64_t)loaded_image->image_base +
-			(image_header->setup_sects+1) * 512;
+	boot_header->code32_start = efi_virt_to_phys(loaded_image->image_base +
+			(image_header->setup_sects+1) * 512);
 
 	if (bootm_verbose(data)) {
 		printf("\nStarting kernel at 0x%p", loaded_image->image_base);

@@ -642,6 +642,24 @@ config BOOTM_OFTREE
 
 	  -o DTS  specify device tree
 
+config BOOTM_OFTREE_FALLBACK
+	def_bool y
+	# We intentionally don't depend on BOOTM_OFTREE, because many boards
+	# don't enable it and instead rely on OFTREE being selected...
+	depends on BOOTM && HAVE_ARCH_BOOTM_OFTREE && OFTREE
+	prompt "pass along barebox' own DT as fallback"
+	help
+	  Say y here to substitute in the barebox device tree, when no kernel
+	  device tree was supplied. If unsure, say n.
+
+	  It's recommended to boot a kernel with the device tree that was
+	  shipped with it as DT binding breakage is not an infrequent
+	  occurrence.
+
+	  This especially applies to A/B boot setups, where each kernel
+	  should have its own DT, so fallback restores the system cleanly
+	  to the old state.
+
 config BOOTM_UIMAGE
 	def_bool y
 	prompt "support the legacy uImage format"

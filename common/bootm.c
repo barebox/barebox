@@ -484,14 +484,11 @@ void *bootm_get_devicetree(struct image_data *data)
 		}
 
 	} else {
-		struct device_node *root = of_get_root_node();
-
-		if (!root)
+		data->of_root_node = of_dup_root_node_for_boot();
+		if (!data->of_root_node)
 			return NULL;
 
-		data->of_root_node = of_dup(root);
-
-		if (bootm_verbose(data) > 1 && data->of_root_node)
+		if (bootm_verbose(data) > 1)
 			printf("using internal devicetree\n");
 	}
 

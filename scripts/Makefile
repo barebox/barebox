@@ -10,6 +10,7 @@ hostprogs-always-y					+= bareboxenv
 hostprogs-always-y					+= bareboxcrc32
 hostprogs-always-y					+= kernel-install
 hostprogs-always-$(CONFIG_QOICONV)			+= qoiconv
+hostprogs-always-$(CONFIG_TLV)				+= bareboxtlv
 hostprogs-always-$(CONFIG_KEYTOC)			+= keytoc
 HOSTCFLAGS_keytoc.o = `$(PKG_CONFIG) --cflags openssl`
 HOSTLDLIBS_keytoc = `$(PKG_CONFIG) --libs openssl`
@@ -42,6 +43,7 @@ HOSTLDLIBS_rk-usb-loader  = `$(PKG_CONFIG) --libs libusb-1.0`
 hostprogs-always-$(CONFIG_RK_USB_LOADER)		+= rk-usb-loader
 
 userprogs-always-$(CONFIG_BAREBOXENV_TARGET)		+= bareboxenv-target
+userprogs-always-$(CONFIG_BAREBOXTLV_TARGET)		+= bareboxtlv-target
 userprogs-always-$(CONFIG_KERNEL_INSTALL_TARGET)	+= kernel-install-target
 userprogs-always-$(CONFIG_BAREBOXCRC32_TARGET)		+= bareboxcrc32-target
 userprogs-always-$(CONFIG_IMD_TARGET)			+= bareboximd-target

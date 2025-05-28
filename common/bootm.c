@@ -862,6 +862,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	if (bootm_data->provide_hostname) {
 		const char *hostname = getenv_nonempty("global.hostname");
+		const char *suffix = NULL;
 		char *hostname_bootarg;
 
 		if (!hostname) {
@@ -876,7 +877,13 @@ int bootm_boot(struct bootm_data *bootm_data)
 			goto err_out;
 		}
 
-		hostname_bootarg = basprintf("systemd.hostname=%s", hostname);
+		if (IS_ENABLED(CONFIG_SERIAL_NUMBER_FIXUP_SYSTEMD_HOSTNAME))
+			suffix = barebox_get_serial_number();
+
+		hostname_bootarg = basprintf("systemd.hostname=%s%s%s",
+					     hostname, suffix ? "-" : "",
+					     suffix ?: "");
+
 		globalvar_add_simple("linux.bootargs.hostname", hostname_bootarg);
 		free(hostname_bootarg);
 	}

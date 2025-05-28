@@ -1254,6 +1254,16 @@ config MACHINE_ID
 	  Note: if no hashable information is available no machine id will be passed
 	  to the kernel.
 
+config SERIAL_NUMBER_FIXUP_SYSTEMD_HOSTNAME
+	bool "append board serial number to systemd.hostname= fixup"
+	depends on FLEXIBLE_BOOTARGS
+	help
+	  When a systemd.hostname= kernel command line argument is
+	  fixed up, append a `-${global.serial_number}' suffix.
+
+	  This option without effect if global.bootm.provide_hostname
+	  is unset.
+
 config SYSTEMD_OF_WATCHDOG
 	bool "inform devicetree-enabled kernel of used watchdog"
 	depends on WATCHDOG && OFTREE && FLEXIBLE_BOOTARGS

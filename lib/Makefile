@@ -100,7 +100,7 @@ KASAN_SANITIZE_ubsan.o := n
 CFLAGS_ubsan.o := -fno-stack-protector
 
 libfdt_files = fdt.o fdt_ro.o fdt_wip.o fdt_rw.o fdt_sw.o fdt_strerror.o \
-	                      fdt_empty_tree.o
+	                      fdt_empty_tree.o fdt_addresses.o
 $(foreach file, $(libfdt_files), \
 	$(eval CFLAGS_$(file) = -I $(srctree)/scripts/dtc/libfdt) \
 	$(eval CFLAGS_$(file:%.o=%.pbl.o) = -I $(srctree)/scripts/dtc/libfdt))

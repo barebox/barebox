@@ -8,7 +8,7 @@
 static int do_bootm_linux(struct image_data *data)
 {
 	void (*fn)(unsigned long a0, unsigned long dtb, unsigned long a2);
-	phys_addr_t devicetree;
+	phys_addr_t devicetree = 0;
 	long hartid = riscv_hartid();
 	int ret;
 

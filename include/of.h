@@ -323,7 +323,7 @@ extern const char *of_parse_phandle_and_get_alias_from(struct device_node *root,
 						       int index);
 
 extern struct device_node *of_get_root_node(void);
-extern struct fdt_header *of_get_fixed_tree(const struct device_node *node);
+extern struct fdt_header *of_get_flattened_tree(const struct device_node *node, bool fixup);
 extern int of_set_root_node(struct device_node *node);
 extern int barebox_register_of(struct device_node *root);
 extern int barebox_register_fdt(const void *dtb);
@@ -466,7 +466,7 @@ static inline struct device_node *of_get_root_node(void)
 	return NULL;
 }
 
-static inline struct fdt_header *of_get_fixed_tree(const struct device_node *node)
+static inline struct fdt_header *of_get_flattened_tree(const struct device_node *node, bool fixup)
 {
 	return NULL;
 }
@@ -1358,6 +1358,16 @@ static inline struct device_node *of_find_root_node(struct device_node *node)
 	return node;
 }
 
+/*
+ * Get the fixed fdt. This function uses the fdt input pointer
+ * if provided or the barebox internal devicetree if not.
+ * It increases the size of the tree and applies the registered
+ * fixups.
+ */
+static inline struct fdt_header *of_get_fixed_tree(const struct device_node *node)
+{
+	return of_get_flattened_tree(node, true);
+}
 
 static inline struct fdt_header *of_get_fixed_tree_for_boot(const struct device_node *node)
 {

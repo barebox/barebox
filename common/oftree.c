@@ -413,15 +413,14 @@ void of_fix_tree(struct device_node *node)
 }
 
 /*
- * Get the fixed fdt. This function uses the fdt input pointer
+ * Get the fdt. This function uses the fdt input pointer
  * if provided or the barebox internal devicetree if not.
- * It increases the size of the tree and applies the registered
- * fixups.
  */
-struct fdt_header *of_get_fixed_tree(const struct device_node *node)
+struct fdt_header *of_get_flattened_tree(const struct device_node *node,
+					 bool fixup)
 {
 	struct fdt_header *fdt = NULL;
-	struct device_node *np;
+	struct device_node *np = NULL;
 
 	if (!node) {
 		node = of_get_root_node();
@@ -429,16 +428,19 @@ struct fdt_header *of_get_fixed_tree(const struct device_node *node)
 			return NULL;
 	}
 
-	np = of_dup(node);
+	if (fixup)
+		node = np = of_dup(node);
 
-	if (!np)
+	if (!node)
 		return NULL;
 
-	of_fix_tree(np);
+	if (fixup)
+		of_fix_tree(np);
 
-	fdt = of_flatten_dtb(np);
+	fdt = of_flatten_dtb((struct device_node *)node);
 
-	of_delete_node(np);
+	if (fixup)
+		of_delete_node(np);
 
 	return fdt;
 }

@@ -2530,13 +2530,13 @@ config CMD_OFTREE
 	help
 	  oftree - handle device trees
 
-	  Usage: oftree [-lspf] [DTB]
+	  Usage: oftree [-lsSp]
 
 	  Options:
-		  -l		Load DTB to internal device tree
-		  -s		save internal device tree to DTB
+		  -l <DTB>	Load <DTB> to internal device tree
+		  -s <DTB>	save internal device tree with fixups to <DTB>
+		  -S <DTB>	save internal device tree without fixups to <DTB>
 		  -p		probe devices from stored device tree
-		  -f		free stored device tree
 
 config CMD_TIME
 	bool "time"

@@ -227,6 +227,17 @@ struct device *add_child_device(struct device *parent,
 				resource_size_t start, resource_size_t size, unsigned int flags,
 				void *pdata);
 
+#ifdef CONFIG_OFTREE
+struct device *of_add_child_device(struct device *parent,
+		const char* devname, int id, struct device_node *np);
+#else
+static inline struct device *of_add_child_device(struct device *parent,
+		const char* devname, int id, struct device_node *np)
+{
+	return NULL;
+}
+#endif
+
 /*
  * register a generic device
  * with only one resource

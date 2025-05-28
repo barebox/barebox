@@ -1,0 +1,27 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/dts-v1/;
+/ {
+	tlv0 {
+		device-hardware-release = "gutefee2-D01-R01-V01-C??";
+		factory-timestamp = "1743157342";
+		serial-number = "00040.00010";
+		modification = "0";
+		featureset = "base,PoE";
+		pcba-serial-number = "00036.00010";
+		pcba-hardware-release = "gutefee2-S01-R01-V01-C??";
+		ethernet-address {
+			address-0 = "18:74:e2:a0:03:c0";
+			address-1 = "18:74:e2:a0:03:c1";
+			address-2 = "18:74:e2:a0:03:c2";
+			address-3 = "18:74:e2:a0:03:c3";
+		};
+	};
+
+	tlv1 {
+		factory-timestamp = "1743157342";
+		modification = "0";
+		featureset = "base";
+		pcba-serial-number = "00037.00010";
+		pcba-hardware-release = "gutefee2-S02-R01-V01-C??";
+	};
+};

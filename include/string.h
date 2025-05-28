@@ -45,4 +45,9 @@ static inline const char *nonempty(const char *s)
 	return isempty(s) ? NULL : s;
 }
 
+static inline bool is_nul_terminated(const char *val, size_t len)
+{
+	return strnlen(val, len) != len;
+}
+
 #endif /* __STRING_H */

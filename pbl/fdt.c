@@ -17,8 +17,8 @@ static const __be32 *fdt_parse_reg(const __be32 *reg, uint32_t n,
 
 void fdt_find_mem(const void *fdt, unsigned long *membase, unsigned long *memsize)
 {
-	const __be32 *nap, *nsp, *reg;
-	uint32_t na, ns;
+	const __be32 *reg;
+	int na, ns;
 	uint64_t memsize64, membase64;
 	int node, size;
 
@@ -28,26 +28,23 @@ void fdt_find_mem(const void *fdt, unsigned long *membase, unsigned long *memsiz
 		goto err;
 	}
 
-	/* Find the #address-cells and #size-cells properties */
 	node = fdt_path_offset(fdt, "/");
 	if (node < 0) {
 		pr_err("Cannot find root node\n");
 		goto err;
 	}
 
-	nap = fdt_getprop(fdt, node, "#address-cells", &size);
-	if (!nap || (size != 4)) {
+	na = fdt_address_cells(fdt, node);
+	if (na < 0) {
 		pr_err("Cannot find #address-cells property");
 		goto err;
 	}
-	na = fdt32_to_cpu(*nap);
 
-	nsp = fdt_getprop(fdt, node, "#size-cells", &size);
-	if (!nsp || (size != 4)) {
+	ns = fdt_size_cells(fdt, node);
+	if (ns < 0) {
 		pr_err("Cannot find #size-cells property");
 		goto err;
 	}
-	ns = fdt32_to_cpu(*nsp);
 
 	/* Find the memory range */
 	node = fdt_node_offset_by_prop_value(fdt, -1, "device_type",

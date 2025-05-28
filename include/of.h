@@ -78,8 +78,6 @@ bool of_match(struct device *dev, const struct driver *drv);
 int of_add_initrd(struct device_node *root, resource_size_t start,
 		resource_size_t end);
 
-struct fdt_header *fdt_get_tree(void);
-
 /* Helper to read a big number; size is in cells (not bytes) */
 static inline u64 of_read_number(const __be32 *cell, int size)
 {

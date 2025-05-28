@@ -77,6 +77,12 @@ config HAVE_EFFICIENT_UNALIGNED_ACCESS
 config HAVE_ARCH_BOARD_GENERIC_DT
 	bool
 
+config HAVE_ARCH_BOOTM_OFTREE
+	bool
+	help
+	  Selected by architectures where barebox can pass a device tree to the
+	  kernel while booting with bootm.
+
 config HAVE_MOD_ARCH_SPECIFIC
 	bool
 	help

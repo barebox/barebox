@@ -18,6 +18,7 @@ config RISCV
 	select RISCV_TIMER if RISCV_SBI
 	select HW_HAS_PCI
 	select HAVE_ARCH_BOARD_GENERIC_DT
+	select HAVE_ARCH_BOOTM_OFTREE
 
 config ARCH_LINUX_NAME
 	string

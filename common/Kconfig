@@ -633,7 +633,7 @@ config BOOTM_INITRD
 
 config BOOTM_OFTREE
 	bool
-	depends on BOOTM
+	depends on BOOTM && HAVE_ARCH_BOOTM_OFTREE
 	select OFTREE
 	prompt "device tree (oftree) support"
 	help

@@ -32,10 +32,12 @@ config MACH_LXA_MC1
 config MACH_LXA_TAC
 	select ARCH_STM32MP157
 	bool "Linux Automation TAC board"
+	select BOARD_LXA
 
 config MACH_LXA_FAIRYTUX2
 	select ARCH_STM32MP157
 	bool "Linux Automation FairyTux 2"
+	select BOARD_LXA
 
 config MACH_SEEED_ODYSSEY
 	select ARCH_STM32MP157

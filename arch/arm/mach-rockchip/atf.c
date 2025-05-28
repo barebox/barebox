@@ -183,21 +183,21 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 	rk_scratch = (void *)arm_mem_scratch(endmem);
 
 	if (current_el() == 3) {
+		void *fdt_scratch = NULL;
+
 		rk3588_lowlevel_init();
 		rockchip_store_bootrom_iram(IOMEM(RK3588_IRAM_BASE));
 
-		/*
-		 * The downstream TF-A doesn't cope with our device tree when
-		 * CONFIG_OF_OVERLAY_LIVE is enabled, supposedly because it is
-		 * too big for some reason. Otherwise it doesn't have any visible
-		 * effect if we pass a device tree or not, except that the TF-A
-		 * fills in the ethernet MAC address into the device tree.
-		 * The upstream TF-A doesn't use the device tree at all.
-		 *
-		 * Pass NULL for now until we have a good reason to pass a real
-		 * device tree.
-		 */
-		rk3588_atf_load_bl31(NULL);
+		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_ATF_PASS_FDT)) {
+			pr_debug("Copy fdt to scratch area 0x%p (%zu bytes)\n",
+				 rk_scratch->fdt, sizeof(rk_scratch->fdt));
+			if (fdt_open_into(fdt, rk_scratch->fdt, sizeof(rk_scratch->fdt)) == 0)
+				fdt_scratch = rk_scratch->fdt;
+			else
+				pr_warn("Failed to copy fdt to scratch: Continue without fdt\n");
+		}
+
+		rk3588_atf_load_bl31(fdt_scratch);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 

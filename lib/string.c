@@ -819,6 +819,27 @@ void *memchr(const void *s, int c, size_t n)
 EXPORT_SYMBOL(memchr);
 
 /**
+ * memrchr - Find last occurrence of character in an area of memory.
+ * @s: The memory area
+ * @c: The byte to search for
+ * @n: The size of the area.
+ *
+ * returns the address of the last occurrence of @c, or %NULL
+ * if @c is not found
+ */
+void *memrchr(const void *s, int c, size_t n)
+{
+	const unsigned char *p = s;
+	while (n-- > 0) {
+		if ((unsigned char)c == p[n]) {
+			return (void *)(p+n);
+		}
+	}
+	return NULL;
+}
+EXPORT_SYMBOL(memrchr);
+
+/**
  * skip_spaces - Removes leading whitespace from @str.
  * @str: The string to be stripped.
  *

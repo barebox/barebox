@@ -22,6 +22,9 @@
 #include <linux/build_bug.h>
 
 #define TLV_MAGIC_BAREBOX_V1		0x61bb95f2
+#define TLV_MAGIC_LXA_BASEBOARD_V1	0xbc288dfe
+#define TLV_MAGIC_LXA_POWERBOARD_V1	0xc6895c21
+#define TLV_MAGIC_LXA_IOBOARD_V1	0xdca5a870
 
 #define TLV_IS_VENDOR_SPECIFIC(val)	((*(u8 *)&(val) & 0x80) == 0x80)
 #define TLV_IS_GENERIC(val)		((*(u8 *)&(val) & 0x80) != 0x80)

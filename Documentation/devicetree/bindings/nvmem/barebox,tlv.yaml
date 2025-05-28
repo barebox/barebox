@@ -22,6 +22,8 @@ properties:
     items:
       - enum:
         - barebox,tlv-v1        # magic: 0x61bb95f2
+        - lxa,tlv-baseboard-v1  # magic: 0xbc288dfe
+        - lxa,tlv-powerboard-v1 # magic: 0xdca5a870
       - const: barebox,tlv
 
   reg:

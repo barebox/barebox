@@ -11,6 +11,8 @@ char *strsep_unescaped(char **, const char *);
 char *stpcpy(char *dest, const char *src);
 bool strends(const char *str, const char *postfix);
 
+void *memrchr(const void *s, int c, size_t n);
+
 void *__default_memset(void *, int, __kernel_size_t);
 void *__nokasan_default_memset(void *, int, __kernel_size_t);
 

@@ -632,7 +632,7 @@ config BOOTM_INITRD
 	  -L ADDR    specify initrd load address
 
 config BOOTM_OFTREE
-	bool
+	def_bool y
 	depends on BOOTM && HAVE_ARCH_BOOTM_OFTREE
 	select OFTREE
 	prompt "device tree (oftree) support"

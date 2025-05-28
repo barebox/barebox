@@ -173,6 +173,24 @@ void rk3588_atf_load_bl31(void *fdt)
 	rockchip_atf_load_bl31(RK3588, rk3588_bl31_bin, rk3588_bl32_bin, fdt);
 }
 
+static int rk3588_fixup_mem(void *fdt)
+{
+	/* Use 4 blocks since rk3588 has 3 gaps in the address space */
+	unsigned long base[4];
+	unsigned long size[ARRAY_SIZE(base)];
+	phys_addr_t base_tmp[ARRAY_SIZE(base)];
+	resource_size_t size_tmp[ARRAY_SIZE(base_tmp)];
+	int i, n;
+
+	n = rk3588_ram_sizes(base_tmp, size_tmp, ARRAY_SIZE(base_tmp));
+	for (i = 0; i < n; i++) {
+		base[i] = base_tmp[i];
+		size[i] = size_tmp[i];
+	}
+
+	return fdt_fixup_mem(fdt, base, size, i);
+}
+
 void __noreturn rk3588_barebox_entry(void *fdt)
 {
 	unsigned long membase, endmem;
@@ -195,6 +213,8 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 				fdt_scratch = rk_scratch->fdt;
 			else
 				pr_warn("Failed to copy fdt to scratch: Continue without fdt\n");
+			if (fdt_scratch && rk3588_fixup_mem(fdt_scratch) != 0)
+				pr_warn("Failed to fixup memory nodes\n");
 		}
 
 		rk3588_atf_load_bl31(fdt_scratch);

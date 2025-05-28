@@ -613,4 +613,13 @@ void ifdown_all(void);
 
 extern struct class eth_class;
 
+struct eth_ethaddr {
+	struct list_head list;
+	u8 ethaddr[ETH_ALEN];
+	int ethid;
+	struct device_node *node;
+};
+
+extern struct list_head ethaddr_list;
+
 #endif /* __NET_H__ */

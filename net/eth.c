@@ -23,14 +23,7 @@
 
 DEFINE_DEV_CLASS(eth_class, "eth");
 
-struct eth_ethaddr {
-	struct list_head list;
-	u8 ethaddr[ETH_ALEN];
-	int ethid;
-	struct device_node *node;
-};
-
-static LIST_HEAD(ethaddr_list);
+LIST_HEAD(ethaddr_list);
 
 int eth_set_promisc(struct eth_device *edev, bool enable)
 {
@@ -102,7 +95,7 @@ void eth_register_ethaddr(int ethid, const char *ethaddr)
 	for_each_netdev(edev) {
 		if (edev->dev.id == ethid) {
 			register_preset_mac_address(edev, ethaddr);
-			return;
+			break;
 		}
 	}
 

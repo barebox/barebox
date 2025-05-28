@@ -319,19 +319,11 @@ static int eth_param_set_ethaddr(struct param_d *param, void *priv)
 }
 
 #ifdef CONFIG_OFTREE
-static void eth_of_fixup_node(struct device_node *root,
-			      const char *node_path, int ethid,
-			      const u8 ethaddr[ETH_ALEN])
+struct device_node *eth_of_get_fixup_node(struct device_node *root,
+					  const char *node_path, int ethid)
 {
 	struct device_node *bb_node, *fixup_node;
 	char *name;
-	int ret;
-
-	if (!is_valid_ether_addr(ethaddr)) {
-		pr_debug("%s: no valid mac address, cannot fixup\n",
-			 __func__);
-		return;
-	}
 
 	if (node_path) {
 		bb_node = of_find_node_by_path_from(0, node_path);
@@ -344,6 +336,23 @@ static void eth_of_fixup_node(struct device_node *root,
 		fixup_node = of_find_node_by_alias(root, eth);
 	}
 
+	return fixup_node;
+}
+
+static void eth_of_fixup_node(struct device_node *root,
+			      const char *node_path, int ethid,
+			      const u8 ethaddr[ETH_ALEN])
+{
+	struct device_node *fixup_node;
+	int ret;
+
+	if (!is_valid_ether_addr(ethaddr)) {
+		pr_debug("%s: no valid mac address, cannot fixup\n",
+			 __func__);
+		return;
+	}
+
+	fixup_node = eth_of_get_fixup_node(root, node_path, ethid);
 	if (!fixup_node) {
 		pr_debug("%s: no node to fixup\n", __func__);
 		return;

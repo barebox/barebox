@@ -128,6 +128,18 @@ static inline void of_eth_register_ethaddr(struct device_node *node,
 void eth_register_ethaddr(int ethid, const char *ethaddr);
 void of_eth_register_ethaddr(struct device_node *node, const char *ethaddr);
 #endif
+
+#ifdef CONFIG_OFTREE
+struct device_node *eth_of_get_fixup_node(struct device_node *root,
+					  const char *node_path, int ethid);
+#else
+static inline struct device_node *eth_of_get_fixup_node(struct device_node *root,
+							const char *node_path, int ethid)
+{
+	return NULL;
+}
+#endif
+
 /*
  *	Ethernet header
  */

@@ -418,7 +418,8 @@ static bool fitconfig_has_fdt(struct image_data *data)
  * devicetree. It returns a pointer to the allocated devicetree which must be
  * freed after use.
  *
- * Return: pointer to the fixed devicetree or a ERR_PTR() on failure.
+ * Return: pointer to the fixed devicetree, NULL if image_data has an empty DT
+ *         or a ERR_PTR() on failure.
  */
 void *bootm_get_devicetree(struct image_data *data)
 {
@@ -463,6 +464,8 @@ void *bootm_get_devicetree(struct image_data *data)
 			ret = read_file_2(data->oftree_file, &size, (void *)&oftree,
 					  FILESIZE_MAX);
 			break;
+		case filetype_empty:
+			return NULL;
 		default:
 			return ERR_PTR(-EINVAL);
 		}

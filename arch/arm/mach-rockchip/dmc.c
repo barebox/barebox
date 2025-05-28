@@ -187,7 +187,7 @@ resource_size_t rk3588_ram0_size(void)
 
 	pr_info("%s() size1 = 0x%08llx, size2 = 0x%08llx\n", __func__, (u64)size1, (u64)size2);
 
-	size = min_t(resource_size_t, RK3568_INT_REG_START, size1 + size2);
+	size = min_t(resource_size_t, RK3588_INT_REG_START, size1 + size2);
 
 	return size;
 }

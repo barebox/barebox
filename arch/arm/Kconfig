@@ -328,7 +328,7 @@ config THUMB2_BAREBOX
 
 config ARM_BOARD_APPEND_ATAG
 	bool "Let board specific code to add ATAGs to be passed to the kernel"
-	depends on ARM_LINUX && !CPU_V8
+	depends on BOOT_ATAGS
 	help
 	  This option is purely to start some vendor provided kernels.
 	  ** DO NOT USE FOR YOUR OWN DESIGNS! **
@@ -467,6 +467,16 @@ config ARM_MODULE_PLTS
 
 	  Say y if your memory configuration puts the heap to far away from the
 	  barebox image, causing relocation out of range errors
+
+config BOOT_ATAGS
+	bool "Support booting with legacy ATAGS mechanism"
+	depends on ARM_LINUX && ARM32
+	help
+	  Add support for passing hardware information with the legacy ATAGS
+	  mechanism that preceded OpenFirmware device trees.
+
+	  Unless you have a very old kernel, say n here and enable BOOTM_OFTREE
+	  instead.
 
 config ARM_BOOTM_ELF
 	bool

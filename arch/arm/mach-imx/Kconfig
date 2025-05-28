@@ -258,6 +258,7 @@ config MACH_KINDLE_MX50
 	select I2C
 	select I2C_IMX
 	select MFD_MC13XXX
+	select BOOT_ATAGS
 	select ARM_BOARD_APPEND_ATAG
 	select ARM_LINUX
 	select OFTREE

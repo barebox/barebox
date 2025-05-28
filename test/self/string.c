@@ -41,7 +41,7 @@ static int __strverscmp_assert(char *expr)
 	int expect = -42;
 	int i = 0;
 
-	while ((token = strsep_unescaped(&expr, " "))) {
+	while ((token = strsep_unescaped(&expr, " ", NULL))) {
 		if (i == 3) {
 			pr_err("invalid expression\n");
 			return -EILSEQ;

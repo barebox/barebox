@@ -541,12 +541,17 @@ EXPORT_SYMBOL(strsep);
  * strsep_unescaped - Split a string into tokens, while ignoring escaped delimiters
  * @s: The string to be searched
  * @ct: The delimiter characters to search for
+ * @delim: optional pointer to store found delimiter into
  *
  * strsep_unescaped() behaves like strsep unless it meets an escaped delimiter.
  * In that case, it shifts the string back in memory to overwrite the escape's
  * backslash then continues the search until an unescaped delimiter is found.
+ *
+ * On end of string, this function returns NULL. As long as a non-NULL
+ * value is returned and @delim is not NULL, the found delimiter will
+ * be stored into *@delim.
  */
-char *strsep_unescaped(char **s, const char *ct)
+char *strsep_unescaped(char **s, const char *ct, char *delim)
 {
         char *sbegin = *s, *hay;
         const char *needle;
@@ -571,9 +576,13 @@ char *strsep_unescaped(char **s, const char *ct)
         }
 
         *s = NULL;
+	if (delim)
+		*delim = '\0';
         return sbegin;
 
 match:
+	if (delim)
+		*delim = *hay;
         *hay = '\0';
         *s = &hay[shift + 1];
 

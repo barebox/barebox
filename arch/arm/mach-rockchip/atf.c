@@ -101,7 +101,6 @@ static uintptr_t rk_load_optee(uintptr_t bl32, const void *bl32_image,
 
 	rk_scratch_save_optee_hdr(hdr);
 
-
 	memcpy((void *)bl32, bl32_image, bl32_size);
 
 	return bl32;
@@ -176,32 +175,32 @@ void rk3588_atf_load_bl31(void *fdt)
 
 void __noreturn rk3588_barebox_entry(void *fdt)
 {
-       unsigned long membase, endmem;
+	unsigned long membase, endmem;
 
-       membase = RK3588_DRAM_BOTTOM;
-       endmem = rk3588_ram0_size();
+	membase = RK3588_DRAM_BOTTOM;
+	endmem = rk3588_ram0_size();
 
-       rk_scratch = (void *)arm_mem_scratch(endmem);
+	rk_scratch = (void *)arm_mem_scratch(endmem);
 
-       if (current_el() == 3) {
-               rk3588_lowlevel_init();
-               rockchip_store_bootrom_iram(IOMEM(RK3588_IRAM_BASE));
+	if (current_el() == 3) {
+		rk3588_lowlevel_init();
+		rockchip_store_bootrom_iram(IOMEM(RK3588_IRAM_BASE));
 
-               /*
-                * The downstream TF-A doesn't cope with our device tree when
-                * CONFIG_OF_OVERLAY_LIVE is enabled, supposedly because it is
-                * too big for some reason. Otherwise it doesn't have any visible
-                * effect if we pass a device tree or not, except that the TF-A
-                * fills in the ethernet MAC address into the device tree.
-                * The upstream TF-A doesn't use the device tree at all.
-                *
-                * Pass NULL for now until we have a good reason to pass a real
-                * device tree.
-                */
-               rk3588_atf_load_bl31(NULL);
-               /* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
-       }
+		/*
+		 * The downstream TF-A doesn't cope with our device tree when
+		 * CONFIG_OF_OVERLAY_LIVE is enabled, supposedly because it is
+		 * too big for some reason. Otherwise it doesn't have any visible
+		 * effect if we pass a device tree or not, except that the TF-A
+		 * fills in the ethernet MAC address into the device tree.
+		 * The upstream TF-A doesn't use the device tree at all.
+		 *
+		 * Pass NULL for now until we have a good reason to pass a real
+		 * device tree.
+		 */
+		rk3588_atf_load_bl31(NULL);
+		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
+	}
 
-       optee_set_membase(rk_scratch_get_optee_hdr());
-       barebox_arm_entry(membase, endmem - membase, fdt);
+	optee_set_membase(rk_scratch_get_optee_hdr());
+	barebox_arm_entry(membase, endmem - membase, fdt);
 }

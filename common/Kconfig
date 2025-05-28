@@ -300,6 +300,11 @@ config MALLOC_SIZE
 	default 0x400000
 	prompt "malloc area size"
 
+config SCRATCH_SIZE
+	hex
+	default 0x8000
+	prompt "Scratch size"
+
 config MALLOC_ALIGNMENT
 	hex
 	default 8

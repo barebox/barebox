@@ -37,6 +37,8 @@ enum ansi_color {
 	BRIGHT
 };
 
+#define DEFAULT_COLOR	WHITE
+
 struct fbc_priv {
 	struct console_device cdev;
 	struct fb_info *fb;
@@ -495,7 +497,7 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 		switch (code) {
 		case 0:
 			priv->flags = 0;
-			priv->color = BRIGHT + BLACK;
+			priv->color = DEFAULT_COLOR;
 			priv->bgcolor = BLACK;
 			break;
 		case 1:
@@ -508,7 +510,7 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 			priv->color = code - 30;
 			break;
 		case 39:
-			priv->color = WHITE;
+			priv->color = DEFAULT_COLOR;
 			break;
 		case 40 ... 47:
 			priv->bgcolor = code - 40;

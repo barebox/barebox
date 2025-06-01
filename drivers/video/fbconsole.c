@@ -516,6 +516,10 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 		case 49:
 			priv->bgcolor = BLACK;
 			break;
+		case 90 ... 97:
+			priv->flags |= ANSI_FLAG_BRIGHT;
+			priv->color = code - 90;
+			break;
 		}
 
 		if (*str != ';')

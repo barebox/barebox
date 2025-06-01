@@ -668,6 +668,7 @@ static int setup_font(struct fbc_priv *priv)
 	const struct font_desc *font;
 	unsigned int height = priv->fb->yres - priv->margin.top - priv->margin.bottom;
 	unsigned int width = priv->fb->xres - priv->margin.left - priv->margin.right;
+	unsigned int newrows, newcols;
 
 	font = find_font_enum(priv->par_font_val);
 	if (!font) {
@@ -679,14 +680,22 @@ static int setup_font(struct fbc_priv *priv)
 	switch (priv->rotation) {
 	case FBCONSOLE_ROTATE_0:
 	case FBCONSOLE_ROTATE_180:
-		priv->rows = height / priv->font->height;
-		priv->cols = width / priv->font->width;
+		newrows = height / priv->font->height;
+		newcols = width / priv->font->width;
 		break;
 	case FBCONSOLE_ROTATE_90:
 	case FBCONSOLE_ROTATE_270:
-		priv->rows = width / priv->font->height;
-		priv->cols = height / priv->font->width;
+		newrows = width / priv->font->height;
+		newcols = height / priv->font->width;
 		break;
+	default:
+		return -EINVAL;
+	}
+
+	if (priv->rows != newrows || priv->cols != newcols) {
+		priv->rows = newrows;
+		priv->cols = newcols;
+		priv->x = priv->y = 0;
 	}
 
 	return 0;

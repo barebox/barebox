@@ -61,10 +61,7 @@ static ssize_t nvmem_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	struct nvmem_device *nvmem;
 	ssize_t retlen;
 
-	if (cdev->master)
-		nvmem = container_of(cdev->master, struct nvmem_device, cdev);
-	else
-		nvmem = container_of(cdev, struct nvmem_device, cdev);
+	nvmem = container_of(cdev, struct nvmem_device, cdev);
 
 	dev_dbg(cdev->dev, "read ofs: 0x%08llx count: 0x%08zx\n",
 		offset, count);
@@ -80,10 +77,7 @@ static ssize_t nvmem_cdev_write(struct cdev *cdev, const void *buf, size_t count
 	struct nvmem_device *nvmem;
 	ssize_t retlen;
 
-	if (cdev->master)
-		nvmem = container_of(cdev->master, struct nvmem_device, cdev);
-	else
-		nvmem = container_of(cdev, struct nvmem_device, cdev);
+	nvmem = container_of(cdev, struct nvmem_device, cdev);
 
 	dev_dbg(cdev->dev, "write ofs: 0x%08llx count: 0x%08zx\n",
 		offset, count);

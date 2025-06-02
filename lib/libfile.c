@@ -534,7 +534,17 @@ out:
 }
 EXPORT_SYMBOL(copy_file);
 
-int copy_recursive(const char *src, const char *dst)
+/**
+ * copy_recursive - Copy files recursively
+ * @src:	The source filename or directory
+ * @dst:	The destination filename or directory
+ * @flags:	A bitmask of COPY_FILE_* flags. Possible values:
+ *
+ *                COPY_FILE_VERBOSE: show a progression bar
+ *
+ * Return: 0 for success or negative error code
+ */
+int copy_recursive(const char *src, const char *dst, unsigned flags)
 {
 	struct stat s;
 	DIR *dir;
@@ -563,7 +573,7 @@ int copy_recursive(const char *src, const char *dst)
 
 		from = basprintf("%s/%s", src, d->d_name);
 		to = basprintf("%s/%s", dst, d->d_name);
-		ret = copy_recursive(from, to);
+		ret = copy_recursive(from, to, flags);
 		if (ret)
 			break;
 		free(from);

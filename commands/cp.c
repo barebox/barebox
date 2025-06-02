@@ -66,7 +66,7 @@ static int do_cp(int argc, char *argv[])
 		dst = concat_path_file(argv[argc - 1], posix_basename(argv[i]));
 
 		if (recursive)
-			ret = copy_recursive(argv[i], dst);
+			ret = copy_recursive(argv[i], dst, flags);
 		else if (last_is_dir)
 			ret = copy_file(argv[i], dst, flags);
 		else

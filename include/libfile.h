@@ -32,7 +32,7 @@ int write_file_flash(const char *filename, const void *buf, size_t size);
 
 int copy_file(const char *src, const char *dst, unsigned flags);
 
-int copy_recursive(const char *src, const char *dst);
+int copy_recursive(const char *src, const char *dst, unsigned flags);
 
 int compare_file(const char *f1, const char *f2);
 

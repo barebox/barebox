@@ -224,12 +224,21 @@ int cdev_find_free_index(const char *basename)
 	return -EBUSY;	/* all indexes are used */
 }
 
+static struct cdev *cdev_get_master(struct cdev *cdev)
+{
+	while (cdev && cdev_is_partition(cdev))
+		cdev = cdev->master;
+
+	return cdev;
+}
+
 int cdev_open(struct cdev *cdev, unsigned long flags)
 {
+	struct cdev *master = cdev_get_master(cdev);
 	int ret;
 
 	if (cdev->ops->open) {
-		ret = cdev->ops->open(cdev, flags);
+		ret = cdev->ops->open(master, flags);
 		if (ret)
 			return ret;
 	}
@@ -275,8 +284,10 @@ struct cdev *cdev_open_by_name(const char *name, unsigned long flags)
 
 int cdev_close(struct cdev *cdev)
 {
+	struct cdev *master = cdev_get_master(cdev);
+
 	if (cdev->ops->close) {
-		int ret = cdev->ops->close(cdev);
+		int ret = cdev->ops->close(master);
 		if (ret)
 			return ret;
 	}
@@ -288,50 +299,61 @@ int cdev_close(struct cdev *cdev)
 
 ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
 {
+	struct cdev *master = cdev_get_master(cdev);
+
 	if (!cdev->ops->read)
 		return -ENOSYS;
 
-	return cdev->ops->read(cdev, buf, count, cdev->offset +offset, flags);
+	return cdev->ops->read(master, buf, count, cdev->offset +offset, flags);
 }
 
 ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
 {
+	struct cdev *master = cdev_get_master(cdev);
+
 	if (!cdev->ops->write)
 		return -ENOSYS;
 
-	return cdev->ops->write(cdev, buf, count, cdev->offset + offset, flags);
+	return cdev->ops->write(master, buf, count, cdev->offset + offset, flags);
 }
 
 int cdev_flush(struct cdev *cdev)
 {
+	struct cdev *master = cdev_get_master(cdev);
+
 	if (!cdev->ops->flush)
 		return 0;
 
-	return cdev->ops->flush(cdev);
+	return cdev->ops->flush(master);
 }
 
 int cdev_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 {
+	struct cdev *master = cdev_get_master(cdev);
+
 	if (!cdev->ops->ioctl)
 		return -EINVAL;
 
-	return cdev->ops->ioctl(cdev, request, buf);
+	return cdev->ops->ioctl(master, request, buf);
 }
 
 int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset)
 {
+	struct cdev *master = cdev_get_master(cdev);
+
 	if (!cdev->ops->erase)
 		return -ENOSYS;
 
-	return cdev->ops->erase(cdev, count, cdev->offset + offset);
+	return cdev->ops->erase(master, count, cdev->offset + offset);
 }
 
 int cdev_lseek(struct cdev *cdev, loff_t pos)
 {
+	struct cdev *master = cdev_get_master(cdev);
 	int ret;
 
 	if (cdev->ops->lseek) {
-		ret = cdev->ops->lseek(cdev, pos + cdev->offset);
+		ret = cdev->ops->lseek(master, pos + cdev->offset);
 		if (ret < 0)
 			return ret;
 	}
@@ -341,14 +363,18 @@ int cdev_lseek(struct cdev *cdev, loff_t pos)
 
 int cdev_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
 {
+	struct cdev *master = cdev_get_master(cdev);
+
 	if (!cdev->ops->protect)
 		return -ENOSYS;
 
-	return cdev->ops->protect(cdev, count, offset + cdev->offset, prot);
+	return cdev->ops->protect(master, count, offset + cdev->offset, prot);
 }
 
 int cdev_discard_range(struct cdev *cdev, loff_t count, loff_t offset)
 {
+	struct cdev *master = cdev_get_master(cdev);
+
 	if (!cdev->ops->discard_range)
 		return -ENOSYS;
 
@@ -361,17 +387,18 @@ int cdev_discard_range(struct cdev *cdev, loff_t count, loff_t offset)
 	if (count + offset > cdev->size)
 		count = cdev->size - offset;
 
-	return cdev->ops->discard_range(cdev, count, offset + cdev->offset);
+	return cdev->ops->discard_range(master, count, offset + cdev->offset);
 }
 
 int cdev_memmap(struct cdev *cdev, void **map, int flags)
 {
+	struct cdev *master = cdev_get_master(cdev);
 	int ret = -ENOSYS;
 
 	if (!cdev->ops->memmap)
 		return -EINVAL;
 
-	ret = cdev->ops->memmap(cdev, map, flags);
+	ret = cdev->ops->memmap(master, map, flags);
 
 	if (!ret)
 		*map = (void *)((unsigned long)*map + (unsigned long)cdev->offset);
@@ -381,8 +408,10 @@ int cdev_memmap(struct cdev *cdev, void **map, int flags)
 
 int cdev_truncate(struct cdev *cdev, size_t size)
 {
+	struct cdev *master = cdev_get_master(cdev);
+
 	if (cdev->ops->truncate)
-		return cdev->ops->truncate(cdev, size);
+		return cdev->ops->truncate(master, size);
 
 	return -EPERM;
 }

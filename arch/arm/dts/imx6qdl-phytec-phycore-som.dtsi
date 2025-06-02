@@ -8,6 +8,7 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
+	barebox,deep-probe;
 	chosen {
 		environment-sd1 {
 			compatible = "barebox,environment";

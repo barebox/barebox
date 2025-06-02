@@ -8,5 +8,6 @@
 / {
 	model = "Ka-Ro electronics TX6U-801x Module";
 	compatible = "karo,imx6dl-tx6dl", "fsl,imx6dl";
+	barebox,disable-deep-probe;
 };
 

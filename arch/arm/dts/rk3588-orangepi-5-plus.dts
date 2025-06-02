@@ -6,6 +6,8 @@
 #include "rk3588.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	chosen: chosen {
 		environment-emmc {
 			compatible = "barebox,environment";

@@ -8,6 +8,7 @@
 / {
 	model = "KONIC 200 (K200)";
 	compatible = "kalray,board-k200";
+	barebox,disable-deep-probe;
 
 	#address-cells = <2>;
 	#size-cells = <2>;

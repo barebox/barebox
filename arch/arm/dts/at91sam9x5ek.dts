@@ -10,6 +10,8 @@
 #include <arm/microchip/at91sam9x5ek.dtsi>
 
 / {
+	barebox,disable-deep-probe;
+
 	aliases {
 		mmc0 = &mmc0;
 		mmc1 = &mmc1;

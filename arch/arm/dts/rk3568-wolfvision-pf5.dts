@@ -11,6 +11,8 @@
 #include "wolfvision-state.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	aliases {
 		saradc = &saradc;
 	};

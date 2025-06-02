@@ -6,6 +6,8 @@
 #include "rk356x.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	memory@a00000 {
 		device_type = "memory";
 		reg = <0x0 0x00a00000 0x0 0x7f600000>;

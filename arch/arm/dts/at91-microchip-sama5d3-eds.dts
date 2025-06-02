@@ -4,6 +4,8 @@
 #include "sama5d3.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";

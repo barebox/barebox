@@ -4,6 +4,7 @@
 
 / {
 	compatible = "litex,vexriscv-soc-linux";
+	barebox,disable-deep-probe;
 
 	#address-cells = <1>;
 	#size-cells = <1>;

@@ -8,6 +8,7 @@
 	#size-cells = <2>;
 	compatible = "beagle,beaglev-starlight-jh7100", "starfive,jh7100";
 	model = "BeagleV Starlight Beta";
+	barebox,disable-deep-probe;
 
 	aliases {
 		serial0 = &uart3;

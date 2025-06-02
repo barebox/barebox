@@ -18,6 +18,7 @@
 / {
 	model = "Amazon Kindle D01100";
 	compatible = "amazon,kindle-d01100", "fsl,imx50";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart1;

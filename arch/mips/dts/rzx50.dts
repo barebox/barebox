@@ -5,6 +5,7 @@
 / {
 	model = "Ritmix RZX-50";
 	compatible = "ritmix,rzx50";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &serial1;

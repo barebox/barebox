@@ -2,6 +2,7 @@
 / {
 	model = "or1ksim";
 	compatible = "opencores,or1ksim";
+	barebox,disable-deep-probe;
 	#address-cells = <1>;
 	#size-cells = <1>;
 	interrupt-parent = <&pic>;

@@ -13,6 +13,7 @@
 / {
 	model = "Webasto common communication board Marvel MK3";
 	compatible = "webasto,imx6ul-marvel-b2", "webasto,imx6ul-marvel", "fsl,imx6ul";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart7;

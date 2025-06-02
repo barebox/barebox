@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0
 
+/ {
+	barebox,deep-probe;
+};
+
 &{/memory@0} {
 	reg = <0x0 0x0 0x0>;
 };

@@ -22,6 +22,7 @@
 / {
 	model = "Giant Board";
 	compatible = "groboards,sama5d27-giantboard", "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart1;

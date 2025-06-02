@@ -17,7 +17,7 @@
 / {
 	model = "PHYTEC phyCORE-i.MX6 Quad with NAND";
 	compatible = "phytec,imx6q-pcm058-nand", "fsl,imx6q";
-
+	barebox,deep-probe;
 };
 
 &eeprom {

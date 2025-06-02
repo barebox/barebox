@@ -14,6 +14,8 @@
 #include <arm/nxp/imx/imx6q-dmo-edmqmx6.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart2;
 

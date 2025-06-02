@@ -10,6 +10,8 @@
 #include "imx8mp.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";

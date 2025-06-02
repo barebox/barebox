@@ -8,3 +8,7 @@
 #include "am33xx-clocks-strip.dtsi"
 
 /delete-node/ &{/sound};
+
+/ {
+	barebox,disable-deep-probe;
+};

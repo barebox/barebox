@@ -1,6 +1,8 @@
 #include <arm/nxp/imx/imx6ul-pico-hobbit.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart1;
 

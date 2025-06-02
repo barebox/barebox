@@ -6,6 +6,8 @@
 #include "imx8mp.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	/*
 	* Switch the ethernet aliases compared to usual i.MX8MP ordering
 	* as the EQOS interface is on the main board, the FEC interface

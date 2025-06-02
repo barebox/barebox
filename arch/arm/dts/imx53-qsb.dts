@@ -13,3 +13,7 @@
 #include <arm/nxp/imx/imx53-qsb.dts>
 #include "imx53.dtsi"
 #include "imx53-qsb-common.dtsi"
+
+/ {
+	barebox,disable-deep-probe;
+};

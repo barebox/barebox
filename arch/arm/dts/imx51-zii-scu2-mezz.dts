@@ -6,6 +6,10 @@
 
 #include <arm/nxp/imx/imx51-zii-scu2-mezz.dts>
 
+/ {
+	barebox,disable-deep-probe;
+};
+
 &iim {
 	barebox,provide-mac-address = <&fec 1 9>;
 };

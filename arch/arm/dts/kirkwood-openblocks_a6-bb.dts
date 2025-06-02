@@ -4,6 +4,10 @@
 
 #include "arm/marvell/kirkwood-openblocks_a6.dts"
 
+/ {
+	barebox,disable-deep-probe;
+};
+
 &{/gpio-leds/led-green} {
 	barebox,default-trigger = "heartbeat";
 };

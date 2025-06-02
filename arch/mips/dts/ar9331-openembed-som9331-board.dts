@@ -9,6 +9,7 @@
 / {
 	model = "OpenEmbed SOM9331 Board";
 	compatible = "openembed,som9331-board", "openembed,som9331-module";
+	barebox,disable-deep-probe;
 
 	aliases {
 		serial0 = &uart;

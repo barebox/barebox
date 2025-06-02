@@ -9,6 +9,7 @@
 
 / {
 	compatible = "gome,e143_01", "variscite,var-som-mx7", "fsl,imx7d";
+	barebox,deep-probe;
 
 	aliases {
 		state = &state;

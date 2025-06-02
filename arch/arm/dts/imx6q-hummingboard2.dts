@@ -50,6 +50,7 @@
 / {
 	model = "SolidRun HummingBoard2 Dual/Quad";
 	compatible = "solidrun,hummingboard2/q", "fsl,imx6q";
+	barebox,disable-deep-probe;
 
 	chosen {
 		environment {

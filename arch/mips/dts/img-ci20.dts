@@ -13,6 +13,7 @@
 / {
 	model = "MIPS Creator CI20";
 	compatible = "img,ci20";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart0;

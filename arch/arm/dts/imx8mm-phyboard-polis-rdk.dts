@@ -5,6 +5,8 @@
 #include <arm64/freescale/imx8mm-phyboard-polis-rdk.dts>
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";

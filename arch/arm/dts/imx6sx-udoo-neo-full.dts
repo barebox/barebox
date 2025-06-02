@@ -2,7 +2,7 @@
 #include "imx6sx.dtsi"
 
 / {
-
+	barebox,deep-probe;
 	/delete-node/ memory@80000000;
 
 	chosen {

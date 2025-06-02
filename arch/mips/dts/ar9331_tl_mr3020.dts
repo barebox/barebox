@@ -2,6 +2,8 @@
 #include "ar9331.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	aliases {
 		spiflash = &spiflash;
 	};

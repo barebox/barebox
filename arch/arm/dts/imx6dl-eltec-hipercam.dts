@@ -6,6 +6,7 @@
 / {
 	model = "ELTEC HiPerCam";
 	compatible = "eltec,hipercam-rev01", "fsl,imx6dl";
+	barebox,disable-deep-probe;
 
 	memory@10000000 {
 		device_type = "memory";

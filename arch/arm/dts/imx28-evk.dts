@@ -1,6 +1,8 @@
 #include <arm/nxp/mxs/imx28-evk.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &duart;
 

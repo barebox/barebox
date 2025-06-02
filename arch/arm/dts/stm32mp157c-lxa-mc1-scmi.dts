@@ -6,6 +6,7 @@
 	model = "Linux Automation MC-1 SCMI board";
 	compatible = "lxa,stm32mp157c-mc1-scmi", "lxa,stm32mp157c-mc1",
 			   "oct,stm32mp15xx-osd32", "st,stm32mp157";
+	barebox,deep-probe;
 
 };
 

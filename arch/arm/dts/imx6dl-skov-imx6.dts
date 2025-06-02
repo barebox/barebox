@@ -17,6 +17,7 @@
 / {
 	model = "Skov IMX6";
 	compatible = "skov,imx6", "fsl,imx6dl";
+	barebox,deep-probe;
 
 	chosen {
 		stdout-path = &uart2;

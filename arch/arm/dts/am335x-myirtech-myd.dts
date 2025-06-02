@@ -6,6 +6,8 @@
 #include <arm/ti/omap/am335x-myirtech-myd.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	aliases {
 		gpio0 = &gpio0;
 		gpio1 = &gpio1;

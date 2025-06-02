@@ -1,12 +1,13 @@
 #include <arm/microchip/at91sam9263ek.dts>
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";
 			device-path = &environment_nand;
 		};
 	};
-
 };
 
 &{nand_controller/nand@3} {

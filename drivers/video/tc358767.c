@@ -1206,7 +1206,7 @@ static int tc_filter_videomodes(struct tc_data *tc, struct display_timings *timi
 		mode = &timings->modes[i];
 
 		/* minimum Pixel Clock Period for DPI is 6.5 nS = 6500 pS */
-		if (mode->pixclock < 6500) {
+		if (mode->pixclock.ps < 6500) {
 			dev_dbg(tc->dev, "%dx%d@%d (%d KHz, flags 0x%08x, sync 0x%08x) skipped\n",
 				mode->xres, mode->yres, mode->refresh,
 				(int)PICOS2KHZ(mode->pixclock), mode->display_flags,

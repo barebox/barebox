@@ -282,7 +282,7 @@ static void setup_parallel_timing(struct pxafb_info *fbi)
 	struct fb_info *info = &fbi->info;
 	struct fb_videomode *mode = info->mode;
 
-	unsigned int lines_per_panel, pcd = get_pcd(fbi, mode->pixclock);
+	unsigned int lines_per_panel, pcd = get_pcd(fbi, mode->pixclock.ps);
 
 	fbi->reg_lccr1 =
 		LCCR1_DisWdth(mode->xres) +

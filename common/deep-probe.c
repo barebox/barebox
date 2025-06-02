@@ -2,6 +2,10 @@
 
 #define pr_fmt(fmt) "deep-probe: " fmt
 
+#if defined(CONFIG_DEBUG_INITCALLS) || defined(CONFIG_DEBUG_PROBES)
+#define DEBUG
+#endif
+
 #include <common.h>
 #include <deep-probe.h>
 #include <of.h>
@@ -29,13 +33,14 @@ bool deep_probe_is_supported(void)
 		for (; matches->compatible; matches++) {
 			if (of_machine_is_compatible(matches->compatible)) {
 				boardstate = DEEP_PROBE_SUPPORTED;
-				pr_info("supported due to %s\n", matches->compatible);
+				pr_debug("supported due to %s\n", matches->compatible);
 				return true;
 			}
 		}
 	}
 
 	boardstate = DEEP_PROBE_NOT_SUPPORTED;
+	pr_info("not activated\n");
 	return false;
 }
 EXPORT_SYMBOL_GPL(deep_probe_is_supported);

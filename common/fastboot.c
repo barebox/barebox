@@ -792,7 +792,7 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 	}
 
 copy:
-	ret = copy_file(fb->tempname, filename, 1);
+	ret = copy_file(fb->tempname, filename, COPY_FILE_VERBOSE);
 	if (ret)
 		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
 				  "write partition: %pe", ERR_PTR(ret));

@@ -25,13 +25,13 @@ static int do_cp(int argc, char *argv[])
 	int last_is_dir = 0;
 	int i;
 	int opt;
-	int verbose = 0, recursive = 0;
+	int flags = 0, recursive = 0;
 	int argc_min;
 
 	while ((opt = getopt(argc, argv, "vr")) > 0) {
 		switch (opt) {
 		case 'v':
-			verbose = 1;
+			flags |= COPY_FILE_VERBOSE;
 			break;
 		case 'r':
 			recursive = 1;
@@ -68,9 +68,9 @@ static int do_cp(int argc, char *argv[])
 		if (recursive)
 			ret = copy_recursive(argv[i], dst);
 		else if (last_is_dir)
-			ret = copy_file(argv[i], dst, verbose);
+			ret = copy_file(argv[i], dst, flags);
 		else
-			ret = copy_file(argv[i], argv[argc - 1], verbose);
+			ret = copy_file(argv[i], argv[argc - 1], flags);
 
 		free(dst);
 		if (ret)

@@ -4,6 +4,7 @@
 
 #include <linux/types.h>
 #include <linux/compiler.h>
+#include <linux/bits.h>
 
 struct resource;
 
@@ -27,7 +28,9 @@ int read_file_2(const char *filename, size_t *size, void **outbuf,
 int write_file(const char *filename, const void *buf, size_t size);
 int write_file_flash(const char *filename, const void *buf, size_t size);
 
-int copy_file(const char *src, const char *dst, int verbose);
+#define COPY_FILE_VERBOSE	BIT(0)
+
+int copy_file(const char *src, const char *dst, unsigned flags);
 
 int copy_recursive(const char *src, const char *dst);
 

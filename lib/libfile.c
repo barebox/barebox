@@ -432,11 +432,13 @@ EXPORT_SYMBOL(write_file_flash);
  * copy_file - Copy a file
  * @src:	The source filename
  * @dst:	The destination filename
- * @verbose:	if true, show a progression bar
+ * @flags:	A bitmask of COPY_FILE_* flags. Possible values:
+ *
+ *                COPY_FILE_VERBOSE: show a progression bar
  *
  * Return: 0 for success or negative error code
  */
-int copy_file(const char *src, const char *dst, int verbose)
+int copy_file(const char *src, const char *dst, unsigned flags)
 {
 	char *rw_buf = NULL;
 	int srcfd = 0, dstfd = 0;
@@ -488,7 +490,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 		}
 	}
 
-	if (verbose)
+	if (flags & COPY_FILE_VERBOSE)
 		init_progression_bar(srcstat.st_size);
 
 	while (1) {
@@ -509,7 +511,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 
 		total += r;
 
-		if (verbose) {
+		if (flags & COPY_FILE_VERBOSE) {
 			if (srcstat.st_size && srcstat.st_size != FILESIZE_MAX)
 				show_progress(total);
 			else
@@ -519,7 +521,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 
 	ret = 0;
 out:
-	if (verbose)
+	if (flags & COPY_FILE_VERBOSE)
 		putchar('\n');
 
 	free(rw_buf);

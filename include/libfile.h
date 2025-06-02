@@ -29,6 +29,7 @@ int write_file(const char *filename, const void *buf, size_t size);
 int write_file_flash(const char *filename, const void *buf, size_t size);
 
 #define COPY_FILE_VERBOSE	BIT(0)
+#define COPY_FILE_NO_OVERWRITE	BIT(1)
 
 int copy_file(const char *src, const char *dst, unsigned flags);
 

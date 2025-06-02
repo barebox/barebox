@@ -435,6 +435,7 @@ EXPORT_SYMBOL(write_file_flash);
  * @flags:	A bitmask of COPY_FILE_* flags. Possible values:
  *
  *                COPY_FILE_VERBOSE: show a progression bar
+ *                COPY_FILE_NO_OVERWRITE: don't clobber existing files
  *
  * Return: 0 for success or negative error code
  */
@@ -467,8 +468,13 @@ int copy_file(const char *src, const char *dst, unsigned flags)
 	}
 
 	/* Set O_TRUNC only if file exists and is a regular file */
-	if (!s && S_ISREG(dststat.st_mode))
+	if (!s && S_ISREG(dststat.st_mode)) {
+		if (flags & COPY_FILE_NO_OVERWRITE) {
+			ret = 0;
+			goto out;
+		}
 		mode |= O_TRUNC;
+	}
 
 	dstfd = open(dst, mode);
 	if (dstfd < 0) {
@@ -498,7 +504,7 @@ int copy_file(const char *src, const char *dst, unsigned flags)
 		if (r < 0) {
 			perror("read");
 			ret = r;
-			goto out;
+			goto out_newline;
 		}
 		if (!r)
 			break;
@@ -506,7 +512,7 @@ int copy_file(const char *src, const char *dst, unsigned flags)
 		ret = write_full(dstfd, rw_buf, r);
 		if (ret < 0) {
 			perror("write");
-			goto out;
+			goto out_newline;
 		}
 
 		total += r;
@@ -520,10 +526,10 @@ int copy_file(const char *src, const char *dst, unsigned flags)
 	}
 
 	ret = 0;
-out:
+out_newline:
 	if (flags & COPY_FILE_VERBOSE)
 		putchar('\n');
-
+out:
 	free(rw_buf);
 	if (srcfd > 0)
 		close(srcfd);
@@ -541,6 +547,7 @@ EXPORT_SYMBOL(copy_file);
  * @flags:	A bitmask of COPY_FILE_* flags. Possible values:
  *
  *                COPY_FILE_VERBOSE: show a progression bar
+ *                COPY_FILE_NO_OVERWRITE: don't clobber existing files
  *
  * Return: 0 for success or negative error code
  */

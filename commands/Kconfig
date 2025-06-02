@@ -933,11 +933,13 @@ config CMD_CP
 	help
 	  Copy files
 
-	  Usage: cp [-v] SRC DEST
+	  Usage: cp [-rnv] SRC DEST
 
 	  Copy file from SRC to DEST.
 
 	  Options:
+		  -r    recursive
+		  -n    do not overwrite an existing file
 		  -v	verbose
 
 config CMD_CMP

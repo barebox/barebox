@@ -1304,9 +1304,11 @@ config OPTEE_SIZE
 	prompt "OP-TEE Memory Size"
 	depends on HAVE_OPTEE
 	help
-	  Size to reserve in main memory for OP-TEE.
+	  Size to reserve in main memory for OP-TEE, including its shared memory.
 	  Can be larger than the actual size used by OP-TEE, this is used to prevent
 	  barebox from using or speculating into this area.
+	  On i.MX, this should be at least OP-TEE CFG_TZDRAM + CFG_SHMEM_SIZE.
+	  The name of the CFG_ options may differ on other platforms.
 
 config OPTEE_SHM_SIZE
 	hex
@@ -1315,7 +1317,11 @@ config OPTEE_SHM_SIZE
 	depends on HAVE_OPTEE
 	help
 	  Size to reserve in main memory for static OP-TEE shared memory
-	  communication. Can be used for fixing up the OP-TEE OF node.
+	  communication. The OP-TEE shared memory starts directly after
+	  the OPTEE TZDRAM region. It should be chosen to be equivalent
+	  to CFG_SHMEM_SIZE in OP-TEE.
+
+	  This value can be used for fixing up the OP-TEE OF node.
 
 	  A shared memory size of 0 means that only dynamic shared memory
 	  will be supported for communication with OP-TEE. This is the only

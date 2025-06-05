@@ -217,7 +217,7 @@
 		clocks = <&scmi_clk 273>;
 		power-domains = <&scmi_pds 60>;
 		assigned-clocks = <&scmi_clk 273>;
-		assigned-clock-parents = <&scmi_clk 1>;
+		assigned-clock-parents = <&scmi_clk 275>;
 	};
 
 	rti1: watchdog@e010000 {
@@ -226,7 +226,7 @@
 		clocks = <&scmi_clk 279>;
 		power-domains = <&scmi_pds 61>;
 		assigned-clocks = <&scmi_clk 279>;
-		assigned-clock-parents = <&scmi_clk 1>;
+		assigned-clock-parents = <&scmi_clk 281>;
 	};
 
 	fss: bus@fc00000 {
@@ -317,7 +317,7 @@
 		clocks = <&scmi_clk 122>, <&scmi_clk 123>;
 		clock-names = "clk_ahb", "clk_xin";
 		assigned-clocks = <&scmi_clk 123>;
-		assigned-clock-parents = <&scmi_clk 0>;
+		assigned-clock-parents = <&scmi_clk 124>;
 		bus-width = <8>;
 		ti,clkbuf-sel = <0x7>;
 		ti,otap-del-sel-legacy = <0x0>;
@@ -334,7 +334,7 @@
 		clocks = <&scmi_clk 106>, <&scmi_clk 107>;
 		clock-names = "clk_ahb", "clk_xin";
 		assigned-clocks = <&scmi_clk 107>;
-		assigned-clock-parents = <&scmi_clk 0>;
+		assigned-clock-parents = <&scmi_clk 108>;
 		bus-width = <4>;
 		ti,clkbuf-sel = <0x7>;
 		ti,otap-del-sel-legacy = <0x0>;
@@ -351,7 +351,7 @@
 		clocks = <&scmi_clk 114>, <&scmi_clk 115>;
 		clock-names = "clk_ahb", "clk_xin";
 		assigned-clocks = <&scmi_clk 115>;
-		assigned-clock-parents = <&scmi_clk 0>;
+		assigned-clock-parents = <&scmi_clk 116>;
 		bus-width = <4>;
 		ti,clkbuf-sel = <0x7>;
 		ti,otap-del-sel-legacy = <0x0>;
@@ -600,7 +600,7 @@
 		power-domains = <&scmi_pds 0>;
 		clocks = <&scmi_clk 0>;
 		assigned-clocks = <&scmi_clk 0>;
-		assigned-clock-parents = <&scmi_clk 2>;
+		assigned-clock-parents = <&scmi_clk 3>;
 		assigned-clock-rates = <60000000>;
 		clock-names = "fck";
 		status = "disabled";
@@ -618,7 +618,7 @@
 		clock-names = "psm", "pll_ref";
 		power-domains = <&scmi_pds 86>;
 		assigned-clocks = <&scmi_clk 341>;
-		assigned-clock-parents = <&scmi_clk 0>;
+		assigned-clock-parents = <&scmi_clk 342>;
 		assigned-clock-rates = <25000000>;
 		#phy-cells = <0>;
 		status = "disabled";

@@ -72,25 +72,16 @@ OP-TEE is built from https://github.com/OP-TEE/optee_os.git::
 OP-TEE is optional. barebox will continue without ``optee.bin`` when the file
 does not exist.
 
-Copying ti-dm.bin
------------------
-
-The ``ti-dm.bin`` binary is part of ti-linux-firmware.git, this needs to be
-copied to the eMMC/SD as well::
-
-  cp $TI_LINUX_FIRMWARE/ti-dm/am62xx/ipc_echo_testb_mcu1_0_release_strip.xer5f $TI_BOOT/ti-dm.bin
-
 Combining binaries into a FIP image
 -----------------------------------
 
-Alternatively to putting the different binaries (``barebox.bin``, ``bl31.bin``, ``optee.bin``
-and ``ti-dm.bin``) into the FAT image the files can be combined into a FIP image named
-``k3.fip``.::
+The files have to be combined into a FIP image named ``k3.fip``.::
 
   fiptool create --soc-fw bl31.bin \
     --tos-fw optee.bin \
     --nt-fw barebox-beagleplay.img \
-    --blob uuid=9e8c2017-8b94-4e2b-a7b3-a0f88eabb8ae,file=ti-dm.bin k3.fip
+    --blob uuid=9e8c2017-8b94-4e2b-a7b3-a0f88eabb8ae,file=\
+    firmware/ti-linux-firmware/ti-dm/am62xx/ipc_echo_testb_mcu1_0_release_strip.xer5f k3.fip
 
 USB DFU boot
 ------------
@@ -99,19 +90,10 @@ using ``dfu-util``::
 
   dfu-util -D barebox-beagleplay-r5.img -a bootloader
 
-This will start the initial stage which then expects the following stages which can
-be uploaded with ``dfu-util`` as well, either as FIP image::
+This will start the initial stage which then expects the following stage which can
+be uploaded with ``dfu-util`` as well::
 
   dfu-util -D k3.fip -a fip
-
-or as separate files::
-
-  dfu-util -D blb31.bin -a tfa
-  dfu-util -D optee.bin -a optee
-  dfu-util -D ti-dm.bin -a ti-dm
-  dfu-util -D barebox-beagleplay.img -a barebox
-
-Uploading optee.bin can be skipped in case it's not needed.
 
 eMMC boot
 ---------

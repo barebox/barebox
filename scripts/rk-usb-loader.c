@@ -266,8 +266,8 @@ static int upload_image(const char *filename)
 
 		log_info("Uploading %d/%d\n", i + 1, n_files);
 
-		foffset = (entry->sector & 0xffff) * SECTOR_SIZE;
-		fsize = (entry->sector >> 16) * SECTOR_SIZE;
+		foffset = (entry->sector & 0xffff) * RK_SECTOR_SIZE;
+		fsize = (entry->sector >> 16) * RK_SECTOR_SIZE;
 
 		log_debug("image starting at offset 0x%08x, size 0x%08x\n", foffset, fsize);
 

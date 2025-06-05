@@ -1,25 +1,16 @@
-TI K3 based boards
-==================
+.. _ti_k3_am62x:
 
-The TI K3 is a line of 64-bit ARM SoCs.
+TI K3 AM62x based boards
+========================
 
-The boot process of the TI K3 SoCs is a two step process. The first stage boot loader
+The TI AM62x is SoC in the line of TI K3 64-bit ARM SoCs.
+
+The boot process of the TI AM62x SoCs is a two step process. The first stage boot loader
 is loaded by the ROM code and executed on a Cortex-R5 processor. The code on this
 processor is responsible for setting up the initial clocks, power domains and DRAM.
 It then loads the binaries for the A53 cores into DRAM and starts the A53 core. From
 this point on the Cortex-R5 processor is used as a system controller which controls
 clocks and power domains of the SoC.
-
-Prerequisites
--------------
-
-There are several binary blobs required for building barebox for TI K3 SoCs. Find them
-in git://git.ti.com/processor-firmware/ti-linux-firmware.git. The repository is assumed
-to be checked out at ``firmware/ti-linux-firmware``. Alternatively the barebox repository
-has a ti-linux-firmware submodule which checks out at the correct place. The K3 SoCs boot
-from a FAT partition on SD/eMMC cards. During the next steps the files are copied to
-``$TI_BOOT``. This is assumed to be an empty directory. After the build process copy its
-contents to a FAT filesystem on an SD/eMMC card.
 
 The Cortex-R5 is a 32-bit processors whereas the Cortex-A53 are 64-bit processors, so
 both 32-bit and 64-bit toolchains are needed::

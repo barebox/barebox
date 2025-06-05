@@ -4,6 +4,7 @@ SYMLINK_TARGET_barebox = sandbox_main.elf
 symlink-$(CONFIG_SANDBOX) += barebox
 
 fuzzer-$(CONFIG_FILETYPE)	+= filetype
+fuzzer-$(CONFIG_PARTITION)	+= partitions
 fuzzer-$(CONFIG_PRINTF_HEXSTR)	+= printf
 
 ifeq ($(CONFIG_SANDBOX),y)

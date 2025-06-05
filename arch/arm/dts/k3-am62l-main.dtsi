@@ -670,4 +670,99 @@
 			reg = <0x0 0x100>;
 		};
 	};
+
+	main_pktdma: dma-controller@485c0000 {
+		compatible = "ti,am62l-dmss-pktdma";
+		reg = <0x00 0x485c0000 0x00 0x4000>,
+			<0x00 0x48900000 0x00 0x80000>,
+			<0x00 0x47200000 0x00 0x100000>;
+		reg-names = "gcfg", "chanrt", "ringrt";
+		#address-cells = <2>;
+		#dma-cells = <2>;
+		#interrupt-cells = <1>;
+		interrupt-map = <0 0 0 &gic500 0 0 GIC_SPI 354 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 1 &gic500 0 0 GIC_SPI 355 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 2 &gic500 0 0 GIC_SPI 358 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 3 &gic500 0 0 GIC_SPI 359 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 4 &gic500 0 0 GIC_SPI 362 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 5 &gic500 0 0 GIC_SPI 363 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 6 &gic500 0 0 GIC_SPI 366 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 7 &gic500 0 0 GIC_SPI 367 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 8 &gic500 0 0 GIC_SPI 370 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 9 &gic500 0 0 GIC_SPI 371 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 10 &gic500 0 0 GIC_SPI 374 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 11 &gic500 0 0 GIC_SPI 375 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 12 &gic500 0 0 GIC_SPI 378 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 13 &gic500 0 0 GIC_SPI 379 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 64 &gic500 0 0 GIC_SPI 500 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 65 &gic500 0 0 GIC_SPI 501 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 66 &gic500 0 0 GIC_SPI 502 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 67 &gic500 0 0 GIC_SPI 503 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 68 &gic500 0 0 GIC_SPI 504 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 69 &gic500 0 0 GIC_SPI 505 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 70 &gic500 0 0 GIC_SPI 506 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 71 &gic500 0 0 GIC_SPI 507 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 72 &gic500 0 0 GIC_SPI 508 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 73 &gic500 0 0 GIC_SPI 509 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 74 &gic500 0 0 GIC_SPI 510 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 75 &gic500 0 0 GIC_SPI 511 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 76 &gic500 0 0 GIC_SPI 512 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 77 &gic500 0 0 GIC_SPI 513 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 78 &gic500 0 0 GIC_SPI 514 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 79 &gic500 0 0 GIC_SPI 515 IRQ_TYPE_LEVEL_HIGH>,
+			<0 0 96 &gic500 0 0 GIC_SPI 484 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	cpsw3g: ethernet@8000000 {
+		compatible = "ti,am642-cpsw-nuss";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		reg = <0x00 0x08000000 0x00 0x200000>;
+		reg-names = "cpsw_nuss";
+		ranges = <0x00 0x00 0x00 0x08000000 0x00 0x200000>;
+		clocks = <&scmi_clk 9>;
+		clock-names = "fck";
+		power-domains = <&scmi_pds 3>;
+		dmas = <&main_pktdma 0xc600 15>,
+			   <&main_pktdma 0xc601 15>,
+			   <&main_pktdma 0xc602 15>,
+			   <&main_pktdma 0xc603 15>,
+			   <&main_pktdma 0xc604 15>,
+			   <&main_pktdma 0xc605 15>,
+			   <&main_pktdma 0xc606 15>,
+			   <&main_pktdma 0xc607 15>,
+			   <&main_pktdma 0x4600 15>;
+		dma-names = "tx0", "tx1", "tx2", "tx3", "tx4", "tx5", "tx6",
+					"tx7", "rx";
+
+		ethernet-ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			cpsw_port1: port@1 {
+				reg = <1>;
+				ti,mac-only;
+				label = "port1";
+				phys = <&phy_gmii_sel 1>;
+			};
+
+			cpsw_port2: port@2 {
+				reg = <2>;
+				ti,mac-only;
+				label = "port2";
+				phys = <&phy_gmii_sel 2>;
+			};
+		};
+
+		cpsw3g_mdio: mdio@f00 {
+			compatible = "ti,cpsw-mdio","ti,davinci_mdio";
+			reg = <0x00 0xf00 0x00 0x100>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&scmi_clk 13 0>;
+			clock-names = "fck";
+			bus_freq = <1000000>;
+			status = "disabled";
+		};
+	};
 };

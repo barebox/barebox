@@ -26,3 +26,9 @@ config EFI_BLK_SEPARATE_USBDISK
 	  for your disk and checking against it with
 
 	    devlookup -v $bootguid /dev/disk$bootsource_instance guid
+
+config RAMDISK_BLK
+        bool
+        help
+	  This symbol is selected by testing code that requires lightweight
+	  creation of anonymous block devices backed fully by memory buffers.

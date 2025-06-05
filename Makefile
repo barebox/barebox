@@ -816,7 +816,7 @@ export KBUILD_BINARY ?= barebox.bin
 # the default value.
 
 barebox-flash-image: $(KBUILD_IMAGE) FORCE
-	$(call if_changed,ln)
+	$(call if_changed,symlink)
 
 barebox-flash-images: $(KBUILD_IMAGE)
 	@echo $^ > $@

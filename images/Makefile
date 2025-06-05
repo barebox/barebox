@@ -240,7 +240,7 @@ __images_install: images
 PHONY += __images_install
 
 $(flash-link): $(link-dest) FORCE
-	$(call if_changed,ln)
+	$(call if_changed,symlink)
 
 $(flash-list): $(image-y-path)
 	@for i in $^; do if [ -s $$i ]; then echo $$i; fi; done > $@

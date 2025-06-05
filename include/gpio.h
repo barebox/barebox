@@ -84,7 +84,7 @@ static inline struct gpio_chip *of_gpio_get_chip_by_alias(const char *alias)
 #if defined(CONFIG_ARCH_NR_GPIO) && CONFIG_ARCH_NR_GPIO > 0
 #define ARCH_NR_GPIOS CONFIG_ARCH_NR_GPIO
 #else
-#define ARCH_NR_GPIOS 256
+#define ARCH_NR_GPIOS 512
 #endif
 
 static inline int gpio_is_valid(int gpio)

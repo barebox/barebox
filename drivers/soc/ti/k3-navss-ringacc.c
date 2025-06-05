@@ -1405,9 +1405,12 @@ struct k3_ringacc *k3_ringacc_dmarings_init(struct device *dev,
 
 	mutex_init(&ringacc->req_lock);
 
-	base_rt = dev_request_mem_region_by_name(dev, "ringrt");
-	if (IS_ERR(base_rt))
-		return ERR_CAST(base_rt);
+	base_rt = data->base_rt;
+	if (!base_rt) {
+		base_rt = dev_request_mem_region_by_name(dev, "ringrt");
+		if (IS_ERR(base_rt))
+			return ERR_CAST(base_rt);
+	}
 
 	ringacc->rings = devm_kzalloc(dev,
 				      sizeof(*ringacc->rings) *

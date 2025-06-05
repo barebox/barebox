@@ -19,7 +19,6 @@ struct tlv_device *tlv_register_device(struct tlv_header *header,
 {
 	struct tlv_device *tlvdev;
 	const char *name = NULL;
-	char *buf = NULL;
 	struct device *dev;
 	static int id = 0;
 
@@ -34,17 +33,19 @@ struct tlv_device *tlv_register_device(struct tlv_header *header,
 	dev->parent = parent ?: tlv_bus.dev;
 	dev->id = DEVICE_ID_SINGLE;
 
-	if (parent)
+	if (parent) {
 		name = of_alias_get(parent->device_node);
-	if (!name)
-		name = buf = basprintf("tlv%u", id++);
+		if (name)
+			dev_set_name(dev, "%s", name);
+	}
 
-	dev->device_node = of_new_node(of_new_node(NULL, NULL), name);
+	if (!name)
+		dev_set_name(dev, "tlv%u", id++);
+
+	dev->device_node = of_new_node(of_new_node(NULL, NULL), dev_name(dev));
 	dev->device_node->dev = dev;
-	dev_set_name(dev, name);
 	register_device(dev);
 
-	free(buf);
 	return tlvdev;
 }
 

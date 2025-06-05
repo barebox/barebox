@@ -143,7 +143,7 @@ $(obj)/barebox.sum: $(obj)/barebox.z FORCE
 
 # barebox.z - compressed barebox binary
 # ----------------------------------------------------------------
-$(obj)/barebox.z: $(obj)/../barebox.bin FORCE
+$(obj)/barebox.z: $(obj)/../$(BAREBOX_PROPER) FORCE
 	$(call if_changed,$(suffix_y))
 
 # %.img - create a copy from another file

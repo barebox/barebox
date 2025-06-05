@@ -13,6 +13,14 @@ config PBL_IMAGE
 	bool "Pre-Bootloader image"
 	depends on HAVE_PBL_IMAGE
 
+config PBL_IMAGE_NO_PIGGY
+	bool
+	depends on PBL_IMAGE
+	help
+	  This is a special case for architectures that don't
+	  want to use the piggy mechanism to load barebox proper.
+	  It's so far only intended for sandbox.
+
 config PBL_MULTI_IMAGES
 	bool
 	select PBL_IMAGE

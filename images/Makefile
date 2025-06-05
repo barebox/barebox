@@ -56,21 +56,24 @@ extra-y += $(pbl-lds)
 $(pbl-lds): $(obj)/../arch/$(SRCARCH)/lib/pbl.lds.S FORCE
 	$(call if_changed_dep,cpp_lds_S)
 
+ifeq ($(CONFIG_PBL_IMAGE_NO_PIGGY),)
+BAREBOX_PIGGY_OBJS = $(obj)/piggy.o $(obj)/sha_sum.o
+endif
+
 quiet_cmd_elf__ ?= LD      $@
       cmd_elf__ ?= $(LD) $(LDFLAGS_$(patsubst .%,%,$(suffix $(@F)))) 	\
 		-e $(2) -Map $@.map $(LDFLAGS_$(@F)) -o $@		\
 		--gc-sections --defsym=__pbl_board_entry=$(2)  		\
 		-T $(pbl-lds)						\
-		--whole-archive $(BAREBOX_PBL_OBJS) $(obj)/piggy.o	\
-		$(obj)/sha_sum.o
+		--whole-archive $(BAREBOX_PBL_OBJS) $(BAREBOX_PIGGY_OBJS) \
 
 PBL_CPPFLAGS	+= -fdata-sections -ffunction-sections
 
-$(obj)/%.pbl: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(obj)/piggy.o $(obj)/sha_sum.o FORCE
+$(obj)/%.pbl: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(BAREBOX_PIGGY_OBJS) FORCE
 	$(call if_changed,elf__,$(*F))
 	$(call if_changed,prelink__)
 
-$(obj)/%.elf: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(obj)/piggy.o $(obj)/sha_sum.o FORCE
+$(obj)/%.elf: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(BAREBOX_PIGGY_OBJS) FORCE
 	$(call if_changed,elf__,$(*F))
 	$(call if_changed,prelink__)
 

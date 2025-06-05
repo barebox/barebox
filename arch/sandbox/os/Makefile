@@ -6,11 +6,7 @@ machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
 KBUILD_CPPFLAGS = $(patsubst %,-I$(srctree)/%include,$(machdirs))
 
-cppflags-$(CONFIG_CONSOLE_NONE) += -DCONFIG_CONSOLE_NONE=$(CONFIG_CONSOLE_NONE)
-cppflags-$(CONFIG_ASAN) += -DCONFIG_ASAN=$(CONFIG_ASAN)
-
-KBUILD_CPPFLAGS += -DCONFIG_MALLOC_SIZE=$(CONFIG_MALLOC_SIZE) -D_FILE_OFFSET_BITS=64 \
-		   -DCONFIG_STACK_SIZE=$(CONFIG_STACK_SIZE) $(cppflags-y)
+KBUILD_CPPFLAGS += -D_FILE_OFFSET_BITS=64 -include $(objtree)/include/generated/autoconf.h
 
 KBUILD_CFLAGS := -Wall
 

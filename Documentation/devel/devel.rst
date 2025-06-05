@@ -12,6 +12,7 @@ Contents:
    filesystems
    background-execution
    project-ideas
+   fuzzing
 
 * :ref:`search`
 * :ref:`genindex`

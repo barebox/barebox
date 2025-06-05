@@ -79,6 +79,13 @@ SANDBOX_LIBS += -Wl,-Bstatic -L"$(CONFIG_CLANG_RUNTIME_DIR)" \
 		-lclang_rt.fuzzer_no_main-$(LIBARCH-y) -Wl,-Bdynamic
 endif
 
+ifeq ($(CONFIG_GCOV),y)
+GCOV_OPT-$(CONFIG_CC_IS_CLANG) = -fprofile-instr-generate -fcoverage-mapping
+GCOV_OPT-$(CONFIG_CC_IS_GCC) = -fprofile-arcs -ftest-coverage
+KBUILD_CFLAGS += $(GCOV_OPT-y)
+BAREBOX_LDFLAGS += $(GCOV_OPT-y)
+endif
+
 ifeq ($(CONFIG_SANDBOX_LINUX_I386),y)
 KBUILD_CFLAGS += -m32
 KBUILD_LDFLAGS += -m elf_i386

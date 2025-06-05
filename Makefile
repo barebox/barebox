@@ -429,6 +429,8 @@ OBJCOPY		= $(LLVM_PREFIX)llvm-objcopy$(LLVM_SUFFIX)
 OBJDUMP		= $(LLVM_PREFIX)llvm-objdump$(LLVM_SUFFIX)
 READELF		= $(LLVM_PREFIX)llvm-readelf$(LLVM_SUFFIX)
 STRIP		= $(LLVM_PREFIX)llvm-strip$(LLVM_SUFFIX)
+PROFDATA	= $(LLVM_PREFIX)llvm-profdata$(LLVM_SUFFIX)
+COV		= $(LLVM_PREFIX)llvm-cov$(LLVM_SUFFIX)
 else
 CC		= $(CROSS_COMPILE)gcc
 CXX		= $(CROSS_COMPILE)g++
@@ -450,6 +452,7 @@ PERL		= perl
 PYTHON3		= python3
 CHECK		= sparse
 MKIMAGE		= mkimage
+GENHTML		= genhtml
 BASH		= bash
 KGZIP		= gzip
 KBZIP2		= bzip2
@@ -518,7 +521,7 @@ LDFLAGS_elf += $(LDFLAGS_common) --nmagic -s
 
 export ARCH SRCARCH CONFIG_SHELL BASH HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE LD CC CXX
 export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL PYTHON3 UTS_MACHINE
-export LEX YACC
+export LEX YACC PROFDATA COV GENHTML
 export HOSTCXX CHECK CHECKFLAGS MKIMAGE
 export KGZIP KBZIP2 KLZOP LZMA LZ4 XZ
 export KBUILD_HOSTCXXFLAGS KBUILD_HOSTLDFLAGS KBUILD_HOSTLDLIBS LDFLAGS_MODULE
@@ -1417,6 +1420,24 @@ endif
 	@echo  ''
 	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
 	@echo  'For further info see the documentation'
+
+# Code Coverage
+# ---------------------------------------------------------------------------
+
+barebox.coverage_html: barebox.coverage-info
+	genhtml -o $@ $<
+
+barebox.coverage-info: default.profdata
+	$(COV) export --format=lcov -instr-profile $< $(objtree)/barebox >$@
+
+default.profdata: $(srctree)/default.profraw
+	$(PROFDATA) merge -sparse $< -o $@
+
+# We intentionally don't depend on barebox being built as that can take >10
+# minutes when coverage is enabled
+PHONY += coverage-html
+coverage-html: barebox.coverage_html
+	@echo "HTML coverage generated to $(objtree)/$<"
 
 # Generate tags for editors
 # ---------------------------------------------------------------------------

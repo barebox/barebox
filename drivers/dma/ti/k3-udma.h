@@ -143,6 +143,7 @@ struct udma_dev {
 	int rchan_cnt;
 	int rflow_cnt;
 	int tflow_cnt;
+	int chan_cnt;
 	unsigned long *bchan_map;
 	unsigned long *tchan_map;
 	unsigned long *rchan_map;
@@ -156,6 +157,7 @@ struct udma_dev {
 	struct udma_rflow *rflows;
 
 	const struct udma_match_data *match_data;
+	void *bc_desc;
 
 	struct udma_chan *channels;
 	u32 psil_base;

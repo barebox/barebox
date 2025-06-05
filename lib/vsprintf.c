@@ -21,6 +21,7 @@
 #include <wchar.h>
 #include <of.h>
 #include <efi.h>
+#include <fuzz.h>
 
 #include <common.h>
 #include <pbl.h>
@@ -983,3 +984,17 @@ int asprintf(char **strp, const char *fmt, ...)
 	return len;
 }
 EXPORT_SYMBOL(asprintf);
+
+static int __maybe_unused fuzz_printf(const uint8_t *data, size_t size)
+{
+	static bool initialized = false;
+
+	if (!initialized) {
+		printf("initializing\n");
+		initialized = true;
+	}
+
+	printf("%*ph\n", (int)size, data);
+	return 0;
+}
+fuzz_test("printf", fuzz_printf);

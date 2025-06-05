@@ -18,6 +18,11 @@ config CLANG_VERSION
 	default $(cc-version) if CC_IS_CLANG
 	default 0
 
+config CLANG_RUNTIME_DIR
+	string
+	depends on CC_IS_CLANG
+	default "$(clang-runtime-dir)"
+
 config GREGORIAN_CALENDER
 	bool
 

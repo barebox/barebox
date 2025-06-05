@@ -42,3 +42,4 @@ barebox.sum
 *.fit
 *.missing-firmware
 *.k3img
+fuzz-*

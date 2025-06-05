@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -52,6 +53,22 @@
 int __attribute__((unused)) barebox_loglevel;
 #else
 extern int barebox_loglevel;
+#endif
+
+#ifdef CONFIG_FUZZ_EXTERNAL
+int call_for_each_fuzz_test(int (*fn)(const char **test));
+int setup_external_fuzz(const char *name,
+			int *argc, char ***argv);
+#else
+static inline int call_for_each_fuzz_test(int (*fn)(const char **test))
+{
+	return 0;
+}
+static inline int setup_external_fuzz(const char *name,
+				      int *argc, char ***argv)
+{
+	return -1;
+}
 #endif
 
 #define DELETED_OFFSET (sizeof(" (deleted)") - 1)
@@ -514,6 +531,8 @@ const char *barebox_cmdline_get(void)
 static void print_usage(const char*);
 
 #define OPT_LOGLEVEL		(CHAR_MAX + 1)
+#define OPT_LIST_FUZZERS	(CHAR_MAX + 2)
+#define OPT_FUZZ		(CHAR_MAX + 3)
 
 static struct option long_options[] = {
 	{"help",     0, 0, 'h'},
@@ -530,13 +549,71 @@ static struct option long_options[] = {
 #ifndef CONFIG_CONSOLE_NONE
 	{"loglevel", 1, 0, OPT_LOGLEVEL},
 #endif
+#ifdef CONFIG_FUZZ_EXTERNAL
+	{"fuzz", 1, 0, OPT_FUZZ},
+	{"list-fuzzers", 0, 0, OPT_LIST_FUZZERS},
+#endif
 	{0, 0, 0, 0},
 };
 
 static const char optstring[] = "hm:i:c:e:d:O:I:B:x:y:";
 
-ENTRY_FUNCTION(sandbox_main, argc, argv)
+static __attribute__((unused)) int print_fuzz_test_name(const char **test_name)
 {
+	printf("%s\n", *test_name);
+	return 0;
+}
+
+static inline size_t str_has_prefix(const char *str, const char *prefix)
+{
+	size_t len = strlen(prefix);
+	return strncmp(str, prefix, len) == 0 ? len : 0;
+}
+
+static char *realpath_alloc(char *path)
+{
+	char *real;
+
+	real = malloc(PATH_MAX);
+	if (!real) {
+		perror("malloc");
+		exit(3);
+	}
+
+	if (!realpath(path, real)) {
+		perror("realpath");
+		exit(EXIT_FAILURE);
+	}
+
+	return real;
+}
+
+static void setup_external_fuzz_with_args(const char *fuzz, int *pargc, char **pargv[])
+{
+	char **argv = *pargv;
+	char *rlpath;
+	int ret;
+
+	rlpath = realpath_alloc(argv[0]);
+
+	asprintf(&argv[optind - 1], "%s/fuzz-%s", dirname(rlpath), fuzz);
+
+	free(rlpath);
+
+	*pargc -= optind - 1;
+	*pargv += optind - 1;
+
+	ret = setup_external_fuzz(fuzz, pargc, pargv);
+	if (ret) {
+		printf("unknown fuzz target '%s'\n", fuzz);
+		exit(ret);
+	}
+}
+
+static int normal_main(int argc, char *argv[])
+{
+	bool skip_opts = false;
+	const char *fuzz = NULL;
 	void *ram;
 	int opt, ret, fd, fd2;
 	int malloc_size = CONFIG_MALLOC_SIZE;
@@ -548,7 +625,7 @@ ENTRY_FUNCTION(sandbox_main, argc, argv)
 	__sanitizer_set_death_callback(prepare_exit);
 #endif
 
-	while (1) {
+	while (!skip_opts) {
 		option_index = 0;
 		opt = getopt_long(argc, argv, optstring,
 			long_options, &option_index);
@@ -589,10 +666,18 @@ ENTRY_FUNCTION(sandbox_main, argc, argv)
 		case 'y':
 			sdl_yres = strtoul(optarg, NULL, 0);
 			break;
+		case OPT_LIST_FUZZERS:
+			call_for_each_fuzz_test(print_fuzz_test_name);
+			exit(0);
+			break;
+		case OPT_FUZZ:
+			skip_opts = true;
+			break;
 		default:
 			break;
 		}
 	}
+	skip_opts = false;
 
 	saved_argv = argv;
 
@@ -610,7 +695,7 @@ ENTRY_FUNCTION(sandbox_main, argc, argv)
 	 */
 	optind = 1;
 
-	while (1) {
+	while (!skip_opts) {
 		option_index = 0;
 		opt = getopt_long(argc, argv, optstring,
 			long_options, &option_index);
@@ -672,6 +757,10 @@ ENTRY_FUNCTION(sandbox_main, argc, argv)
 
 			barebox_register_console(fd2, fd);
 			break;
+		case OPT_FUZZ:
+			fuzz = optarg;
+			skip_opts = true;
+			break;
 		default:
 			break;
 		}
@@ -679,7 +768,10 @@ ENTRY_FUNCTION(sandbox_main, argc, argv)
 
 	barebox_register_console(fileno(stdin), fileno(stdout));
 
-	rawmode();
+	if (fuzz)
+		setup_external_fuzz_with_args(fuzz, &argc, &argv);
+	else
+		rawmode();
 
 	if (loglevel >= 0)
 		barebox_loglevel = loglevel;
@@ -688,6 +780,39 @@ ENTRY_FUNCTION(sandbox_main, argc, argv)
 
 	/* never reached */
 	return 0;
+}
+
+ENTRY_FUNCTION(sandbox_main, argc, argv)
+{
+	char **args;
+	char *argv0;
+	size_t fuzz_off;
+	char *rlpath;
+
+	tcgetattr(0, &term_orig);
+
+	argv0 = basename(argv[0]);
+	fuzz_off = str_has_prefix(argv0, "fuzz-");
+	if (fuzz_off) {
+		args = malloc((argc + 3) * sizeof(*args));
+		if (!args)
+			exit(3);
+
+		rlpath = realpath_alloc(argv[0]);
+		asprintf(&args[0], "%s/barebox", dirname(rlpath));
+
+		free(rlpath);
+
+		args[1] = "--fuzz";
+		args[2] = argv0 + fuzz_off;
+
+		memcpy(&args[3], &argv[1], argc * sizeof(*args));
+
+		argc += 2;
+		argv = args;
+	}
+
+	return normal_main(argc, argv);
 }
 
 #ifdef __PPC__
@@ -736,6 +861,10 @@ static void print_usage(const char *prgname)
 "			  6    informational (info)\n"
 "			  7    debug-level messages (debug)\n"
 "			  8    verbose debug messages (vdebug)\n"
+#endif
+#ifdef CONFIG_FUZZ_EXTERNAL
+"      --fuzz=<test>     Run libfuzzer against the <test> target.\n"
+"      --list-fuzzers    List all available fuzzing test targets.\n"
 #endif
 	, prgname
 	);

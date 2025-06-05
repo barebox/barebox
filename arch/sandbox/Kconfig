@@ -95,4 +95,9 @@ config HAVE_LIBFTDI
 config SDL
 	bool
 
+config SANDBOX_LINK_CXX
+	def_bool FUZZ_EXTERNAL
+	help
+	  Link with CXX instead of CC to support C++ static libraries.
+
 endmenu

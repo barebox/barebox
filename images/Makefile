@@ -223,9 +223,12 @@ flash-list := $(obj)/../barebox-flash-images
 # multiple images
 flash-link := $(obj)/../barebox-flash-image
 link-dest := $(if $(filter 1,$(words $(image-y))),$(image-y-path),multi-image-build)
+
+symlink-y-path := $(addprefix $(obj)/,$(symlink-y))
+
 multi-image-build:
 
-images: $(image-y-path) $(flash-link) $(flash-list) FORCE
+images: $(image-y-path) $(flash-link) $(flash-list) $(symlink-y-path) FORCE
 	@echo "images built:"
 	@for i in $(image-y); do \
 	  if [ -s $(obj)/$$i ]; then echo $$i; \
@@ -233,6 +236,7 @@ images: $(image-y-path) $(flash-link) $(flash-list) FORCE
 	  $(if $(CONFIG_MISSING_FIRMWARE_ERROR), >&2 sed 's/^/\t/' <$(obj)/$${i}.missing-firmware; missing=1;) \
 	  fi; done; if [ -n "$$missing" ]; then \
 	    echo >&2 "Firmware missing in CONFIG_MISSING_FIRMWARE_ERROR=y build"; exit 1; fi
+	@for i in $(symlink-y); do echo $$i; done
 
 __images_install: images
 	@for i in $(image-y-path); do if [ -s $$i ]; then install -t "$(INSTALL_PATH)" $$i; fi; done
@@ -244,6 +248,10 @@ $(flash-link): $(link-dest) FORCE
 
 $(flash-list): $(image-y-path)
 	@for i in $^; do if [ -s $$i ]; then echo $$i; fi; done > $@
+
+.SECONDEXPANSION:
+$(symlink-y-path): $(obj)/$$(SYMLINK_TARGET_$$(@F)) FORCE
+	$(call if_changed,symlink_quiet)
 
 clean-files := *.pbl *.pblb *.elf *.map start_*.imximg *.img barebox.z start_*.kwbimg \
 	start_*.kwbuartimg *.socfpgaimg *.mlo *.t20img *.t20img.cfg *.t30img \

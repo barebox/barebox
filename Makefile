@@ -815,9 +815,6 @@ export KBUILD_BINARY ?= barebox.bin
 # Also any assignments in arch/$(SRCARCH)/Makefile take precedence over
 # the default value.
 
-barebox-flash-image: $(KBUILD_IMAGE) FORCE
-	$(call if_changed,symlink)
-
 barebox-flash-images: $(KBUILD_IMAGE)
 	@echo $^ > $@
 
@@ -826,15 +823,21 @@ images: barebox.bin FORCE
 images/%: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=images $@
 
-ifdef CONFIG_EFI_STUB
-all: barebox.bin images barebox.efi
-barebox.efi: FORCE
-	$(Q)ln -fsn images/barebox-dt-2nd.img $@
-else ifdef CONFIG_PBL_IMAGE
+ifdef CONFIG_PBL_IMAGE
+SYMLINK_TARGET_barebox.efi = images/barebox-dt-2nd.img
+symlink-$(CONFIG_EFI_STUB) += barebox.efi
 all: barebox.bin images
 else
-all: barebox-flash-image barebox-flash-images
+SYMLINK_TARGET_barebox-flash-image = $(KBUILD_IMAGE)
+symlink-y += barebox-flash-image
+all: barebox-flash-images
 endif
+
+all: $(symlink-y)
+
+.SECONDEXPANSION:
+$(symlink-y): $$(SYMLINK_TARGET_$$(@F)) FORCE
+	$(call if_changed,symlink_quiet)
 
 common-$(CONFIG_PBL_IMAGE)	+= pbl/
 common-$(CONFIG_DEFAULT_ENVIRONMENT) += defaultenv/

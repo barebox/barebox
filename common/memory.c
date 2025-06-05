@@ -251,18 +251,16 @@ postmem_initcall(add_mem_devices);
 /*
  * Request a region from the registered sdram
  */
-struct resource *__request_sdram_region(const char *name, unsigned flags,
+struct resource *__request_sdram_region(const char *name,
 					resource_size_t start, resource_size_t size)
 {
 	struct memory_bank *bank;
-
-	flags |= IORESOURCE_MEM;
 
 	for_each_memory_bank(bank) {
 		struct resource *res;
 
 		res = __request_region(bank->res, start, start + size - 1,
-				       name, flags);
+				       name, IORESOURCE_MEM);
 		if (!IS_ERR(res))
 			return res;
 	}
@@ -286,7 +284,12 @@ struct resource *reserve_sdram_region(const char *name, resource_size_t start,
 		size = ALIGN(size, PAGE_SIZE);
 	}
 
-	res = __request_sdram_region(name, IORESOURCE_BUSY, start, size);
+	/*
+	 * We intentionally don't use request_sdram_region() here, because we
+	 * want to set the reserved flag independently of whether
+	 * CONFIG_MEMORY_ATTRIBUTES is enabled or not
+	 */
+	res = __request_sdram_region(name, start, size);
 	if (!res)
 		return NULL;
 

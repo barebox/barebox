@@ -37,7 +37,7 @@ int of_optee_fixup(struct device_node *root, void *_data)
 		res_core.start = arm_mem_endmem_get() - OPTEE_SIZE;
 		res_core.end = arm_mem_endmem_get() - fixup_data->shm_size - 1;
 	}
-	res_core.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+	res_core.flags = IORESOURCE_MEM;
 	reserve_resource(&res_core);
 	res_core.name = "optee_core";
 

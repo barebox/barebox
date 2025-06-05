@@ -15,6 +15,7 @@
 #include <dt-bindings/net/ti-dp83867.h>
 
 #include "k3-am62l3.dtsi"
+#include "k3-am62l-barebox.dtsi"
 #include "k3-pinctrl.h"
 
 / {

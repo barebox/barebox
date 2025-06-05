@@ -1,0 +1,16 @@
+
+&phy_gmii_sel {
+	compatible = "ti,am654-phy-gmii-sel", "syscon";
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio2 {
+	status = "okay";
+};
+
+&wkup_gpio0 {
+	status = "okay";
+};

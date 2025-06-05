@@ -835,7 +835,7 @@ static void cb_erase(struct fastboot *fb, const char *cmd)
 
 	fd = open(filename, O_RDWR);
 	if (fd < 0)
-		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, strerror(-fd));
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "%m");
 
 	ret = erase(fd, ERASE_SIZE_ALL, 0, ERASE_TO_CLEAR);
 
@@ -920,7 +920,7 @@ out:
 	free(var);
 
 	if (ret)
-		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, strerror(-ret));
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "%pe", ERR_PTR(ret));
 }
 
 static void cb_oem_exec(struct fastboot *fb, const char *cmd)
@@ -935,7 +935,7 @@ static void cb_oem_exec(struct fastboot *fb, const char *cmd)
 
 	ret = run_command(cmd);
 	if (ret < 0)
-		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, strerror(-ret));
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "%pe", ERR_PTR(ret));
 	else if (ret > 0)
 		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "");
 	else

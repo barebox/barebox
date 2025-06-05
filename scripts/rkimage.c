@@ -82,7 +82,7 @@ static int create_newidb(struct newidb *idb)
 		struct rkcode *c = &code[i];
 		unsigned int image_sector;
 
-		image_sector = c->size / SECTOR_SIZE;
+		image_sector = c->size / RK_SECTOR_SIZE;
 
 		entry->sector  = (image_sector << 16) + image_offset;
 		entry->unknown_ffffffff = 0xffffffff;
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 			exit(1);
 
 		c->path = path;
-		c->size = ALIGN(s.st_size, PAGE_SIZE);
+		c->size = ALIGN(s.st_size, RK_PAGE_SIZE);
 		c->buf = calloc(c->size, 1);
 		if (!c->buf)
 			exit(1);

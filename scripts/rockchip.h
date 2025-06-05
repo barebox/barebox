@@ -29,7 +29,7 @@ struct newidb {
 	unsigned char hash[512];
 };
 
-#define SECTOR_SIZE 512
-#define PAGE_SIZE 2048
+#define RK_SECTOR_SIZE 512
+#define RK_PAGE_SIZE 2048
 
 #endif /* __ROCKCHIP_H */

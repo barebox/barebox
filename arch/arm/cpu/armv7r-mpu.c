@@ -206,8 +206,9 @@ int armv7r_mpu_init_coherent(unsigned long start, enum size reg_size)
 static int armv7r_request_pool(void)
 {
 	if (dma_coherent_start && dma_coherent_size)
-		request_sdram_region("DMA coherent pool", dma_coherent_start,
-							dma_coherent_size);
+		request_sdram_region("DMA coherent pool",
+				     dma_coherent_start, dma_coherent_size,
+				     MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_RW);
 	return 0;
 }
 postmem_initcall(armv7r_request_pool);

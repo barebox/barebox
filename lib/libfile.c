@@ -749,6 +749,7 @@ int cache_file(const char *path, char **newpath)
 struct resource *file_to_sdram(const char *filename, unsigned long adr)
 {
 	struct resource *res;
+	unsigned memattrs;
 	size_t size = BUFSIZ;
 	size_t ofs = 0;
 	ssize_t now;
@@ -758,8 +759,15 @@ struct resource *file_to_sdram(const char *filename, unsigned long adr)
 	if (fd < 0)
 		return NULL;
 
+	/* FIXME: EFI payloads are started with MMU enabled, so for now
+	 * we keep attributes as RWX instead of remapping later on
+	 */
+	memattrs = IS_ENABLED(CONFIG_EFI_LOADER) ? MEMATTRS_RWX : MEMATTRS_RW;
+
 	while (1) {
-		res = request_sdram_region("image", adr, size);
+
+		res = request_sdram_region("image", adr, size,
+					   MEMTYPE_LOADER_CODE, memattrs);
 		if (!res) {
 			printf("unable to request SDRAM 0x%08lx-0x%08lx\n",
 				adr, adr + size - 1);
@@ -788,7 +796,8 @@ struct resource *file_to_sdram(const char *filename, unsigned long adr)
 
 		if (now < BUFSIZ) {
 			release_sdram_region(res);
-			res = request_sdram_region("image", adr, ofs + now);
+			res = request_sdram_region("image", adr, ofs + now,
+						   MEMTYPE_LOADER_CODE, memattrs);
 			goto out;
 		}
 

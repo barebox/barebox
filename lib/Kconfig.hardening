@@ -243,4 +243,11 @@ config PBL_STACKPROTECTOR_ALL
 
 endchoice
 
+config MEMORY_ATTRIBUTES
+	bool "record memory attributes" if EXPERIMENTAL
+	help
+	  Tag all SDRAM memory region requests with type and attributes.
+	  This is currently not acted upon, but protections (e.g. read-only)
+	  will in future be enforced by the MMU.
+
 endmenu

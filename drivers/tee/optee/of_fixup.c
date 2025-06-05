@@ -38,6 +38,7 @@ int of_optee_fixup(struct device_node *root, void *_data)
 		res_core.end = arm_mem_endmem_get() - fixup_data->shm_size - 1;
 	}
 	res_core.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+	reserve_resource(&res_core);
 	res_core.name = "optee_core";
 
 	ret = of_fixup_reserved_memory(root, &res_core);
@@ -55,6 +56,8 @@ int of_optee_fixup(struct device_node *root, void *_data)
 		res_shm.end = arm_mem_endmem_get() - 1;
 	}
 	res_shm.flags = IORESOURCE_MEM;
+	res_shm.type = MEMTYPE_CONVENTIONAL;
+	res_shm.attrs = MEMATTRS_RW | MEMATTR_SP;
 	res_shm.name = "optee_shm";
 
 	return of_fixup_reserved_memory(root, &res_shm);

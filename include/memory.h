@@ -37,10 +37,21 @@ struct resource *__request_sdram_region(const char *name, unsigned flags,
 
 static inline struct resource *request_sdram_region(const char *name,
 						    resource_size_t start,
-						    resource_size_t size)
+						    resource_size_t size,
+						    enum resource_memtype memtype,
+						    unsigned memattrs)
 {
+	struct resource *res;
+
 	/* IORESOURCE_MEM is implicit for all SDRAM regions */
-	return __request_sdram_region(name, 0, start, size);
+	res = __request_sdram_region(name, 0, start, size);
+	if (IS_ENABLED(CONFIG_MEMORY_ATTRIBUTES) && res) {
+		res->type = memtype;
+		res->attrs = memattrs;
+		res->flags |= IORESOURCE_TYPE_VALID;
+	}
+
+	return res;
 }
 
 struct resource *reserve_sdram_region(const char *name, resource_size_t start,
@@ -67,11 +78,13 @@ void register_barebox_area(resource_size_t start, resource_size_t size);
 bool inside_barebox_area(resource_size_t start, resource_size_t end);
 struct resource *request_barebox_region(const char *name,
 					resource_size_t start,
-					resource_size_t size);
+					resource_size_t size,
+					unsigned memattrs);
 #else
 static inline struct resource *request_barebox_region(const char *name,
 					resource_size_t start,
-					resource_size_t size)
+					resource_size_t size,
+					unsigned memattrs)
 {
 
 		return NULL;

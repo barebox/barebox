@@ -30,7 +30,7 @@ static int riscv_request_stack(void)
 	extern unsigned long riscv_stack_top;
 	return request_barebox_region("stack",
 				      riscv_stack_top - STACK_SIZE,
-				      STACK_SIZE) ? 0 : -EINVAL;
+				      STACK_SIZE, MEMATTRS_RW) ? 0 : -EINVAL;
 }
 coredevice_initcall(riscv_request_stack);
 

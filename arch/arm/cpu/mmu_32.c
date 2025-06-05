@@ -390,7 +390,8 @@ static void create_vector_table(unsigned long adr)
 	void *vectors;
 	u32 *pte;
 
-	vectors_sdram = request_barebox_region("vector table", adr, PAGE_SIZE);
+	vectors_sdram = request_barebox_region("vector table", adr, PAGE_SIZE,
+					       MEMATTRS_RWX); // FIXME
 	if (vectors_sdram) {
 		/*
 		 * The vector table address is inside the SDRAM physical
@@ -472,7 +473,8 @@ static void create_zero_page(void)
 	 * In case the zero page is in SDRAM request it to prevent others
 	 * from using it
 	 */
-	request_sdram_region("zero page", 0x0, PAGE_SIZE);
+	request_sdram_region("zero page", 0x0, PAGE_SIZE,
+			     MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_FAULT);
 
 	zero_page_faulting();
 	pr_debug("Created zero page\n");
@@ -486,7 +488,7 @@ static void create_guard_page(void)
 		return;
 
 	guard_page = arm_mem_guard_page_get();
-	request_barebox_region("guard page", guard_page, PAGE_SIZE);
+	request_barebox_region("guard page", guard_page, PAGE_SIZE, MEMATTRS_FAULT);
 	remap_range((void *)guard_page, PAGE_SIZE, MAP_FAULT);
 
 	pr_debug("Created guard page\n");
@@ -535,8 +537,11 @@ void __mmu_init(bool mmu_on)
 	struct memory_bank *bank;
 	uint32_t *ttb = get_ttb();
 
+	// TODO: remap writable only while remapping?
+	// TODO: What memtype for ttb when barebox is EFI loader?
 	if (!request_barebox_region("ttb", (unsigned long)ttb,
-				    ARM_EARLY_PAGETABLE_SIZE))
+				    ARM_EARLY_PAGETABLE_SIZE,
+				    MEMATTRS_RW))
 		/*
 		 * This can mean that:
 		 * - the early MMU code has put the ttb into a place

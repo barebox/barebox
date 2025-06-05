@@ -37,7 +37,8 @@ static int desc_to_sdram(struct fip_image_desc *loadable, ulong load_address)
 		return 0;
 
 	res = request_sdram_region("fip", load_address,
-				   loadable->image->toc_e.size);
+				   loadable->image->toc_e.size,
+				   MEMTYPE_LOADER_CODE, MEMATTRS_RW);
 	if (!res)
 		return -EBUSY;
 

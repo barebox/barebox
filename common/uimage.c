@@ -347,7 +347,8 @@ static long uimage_sdram_flush(void *buf, unsigned long len)
 		release_sdram_region(uimage_resource);
 
 		uimage_resource = request_sdram_region("uimage",
-				start, size);
+				start, size, MEMTYPE_LOADER_CODE,
+				MEMATTRS_RWX);
 		if (!uimage_resource) {
 			resource_size_t prsize = start + size - 1;
 			printf("unable to request SDRAM %pa - %pa\n",
@@ -385,7 +386,8 @@ struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
 		return NULL;
 
 	uimage_resource = request_sdram_region("uimage",
-				start, size);
+				start, size, MEMTYPE_LOADER_CODE,
+				MEMATTRS_RWX);
 	if (!uimage_resource) {
 		printf("unable to request SDRAM 0x%08llx-0x%08llx\n",
 			(unsigned long long)start,

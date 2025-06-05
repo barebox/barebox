@@ -248,7 +248,9 @@ static struct resource *pe_alloc(size_t virt_size)
 	if (start + virt_size > end)
 		return NULL;
 
-	return request_sdram_region("pe-code", start, virt_size);
+	return request_sdram_region("pe-code", start, virt_size,
+				    MEMTYPE_LOADER_CODE,
+				    MEMATTRS_RWX);
 }
 
 unsigned long pe_get_mem_size(struct pe_image *pe)

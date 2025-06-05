@@ -835,6 +835,8 @@ static void fs_remove(struct device *dev)
 	int ret;
 
 	if (fsdev->dev.driver) {
+		if (!dev->driver->remove)
+			return;
 		dev->driver->remove(dev);
 		list_del(&fsdev->list);
 	}

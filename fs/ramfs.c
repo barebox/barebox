@@ -435,10 +435,6 @@ static int ramfs_probe(struct device *dev)
 	return 0;
 }
 
-static void ramfs_remove(struct device *dev)
-{
-}
-
 static struct fs_driver ramfs_driver = {
 	.read      = ramfs_read,
 	.write     = ramfs_write,
@@ -446,7 +442,6 @@ static struct fs_driver ramfs_driver = {
 	.truncate  = ramfs_truncate,
 	.drv = {
 		.probe  = ramfs_probe,
-		.remove = ramfs_remove,
 		.name = "ramfs",
 	}
 };

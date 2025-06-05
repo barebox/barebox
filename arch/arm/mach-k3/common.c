@@ -20,8 +20,11 @@
 static const struct of_device_id k3_of_match[] = {
 	{
 		.compatible = "ti,am625",
+	}, {
+		.compatible = "ti,am62l3",
+	}, {
+		/* sentinel */
 	},
-	{ /* sentinel */ },
 };
 BAREBOX_DEEP_PROBE_ENABLE(k3_of_match);
 

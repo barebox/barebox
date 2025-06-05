@@ -1,5 +1,6 @@
 obj-y += common.o
 obj-$(CONFIG_MACH_AM62X) += am62x.o
+obj-$(CONFIG_MACH_AM62LX) += am62lx.o
 obj-pbl-$(CONFIG_MACH_K3_CORTEX_R5) += r5.o
 obj-pbl-y += ddrss.o
 obj-$(CONFIG_BAREBOX_UPDATE) += bbu.o

@@ -9,6 +9,7 @@
         UUID_INIT(0x9e8c2017, 0x8b94, 0x4e2b, 0xa7, 0xb3, 0xa0, 0xf8, 0x8e, 0xab, 0xb8, 0xae)
 
 void am62x_get_bootsource(enum bootsource *src, int *instance);
+void am62lx_get_bootsource(enum bootsource *src, int *instance);
 bool k3_boot_is_emmc(void);
 u64 am62x_sdram_size(void);
 void am62x_register_dram(void);

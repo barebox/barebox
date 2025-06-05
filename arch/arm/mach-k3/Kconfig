@@ -6,6 +6,9 @@ menu "K3 boards"
 config MACH_AM62X
 	bool
 
+config MACH_AM62LX
+	bool
+
 config MACH_K3_CORTEX_R5
 	bool
 	select CPU_V7

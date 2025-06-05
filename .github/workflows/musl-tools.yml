@@ -1,0 +1,39 @@
+name: build tools against musl
+
+on: [push, pull_request]
+
+jobs:
+  musl-tools:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/barebox/barebox/barebox-ci:latest
+      # allow mounting and devtmpfs in the container
+      options: --user=root --privileged -v /dev:/dev
+
+    strategy:
+      fail-fast: false
+      matrix:
+
+        include:
+          - defconfig: hosttools_defconfig
+            suffix:
+
+          - defconfig: targettools_defconfig
+            suffix: -target
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build
+      id: build
+      run: |
+        export PKG_CONFIG='pkg-config --keep-system-libs'
+        export CROSS_PKG_CONFIG='pkg-config --keep-system-libs'
+
+        m () { make -j$(nproc) CC=musl-gcc LD=musl-gcc HOSTCC=musl-gcc HOSTLD=musl-ld "$@"; }
+
+        m ${{matrix.defconfig}}
+        m scripts/
+
+        test -n "$(musl-ldd scripts/imx/imx-usb-loader${{matrix.suffix}} 2>/dev/null | grep musl)"

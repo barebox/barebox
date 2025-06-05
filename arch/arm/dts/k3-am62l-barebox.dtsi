@@ -14,3 +14,22 @@
 &wkup_gpio0 {
 	status = "okay";
 };
+
+/ {
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		tfa@80000000 {
+			reg = <0x0 0x80000000 0x0 0x80000>;
+			alignment = <0x1000>;
+			no-map;
+		};
+
+		secure_ddr: optee@80200000 {
+			reg = <0x00 0x80200000 0x00 0x400000>;
+			no-map;
+		};
+	};
+};

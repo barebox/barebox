@@ -28,40 +28,40 @@ KEY_custmpk=$(srctree)/arch/arm/mach-k3/custMpk.pem
 KEY_degenerate=$(srctree)/arch/arm/mach-k3/ti-degenerate-key.pem
 
 ## TI am625(sip)-SK ##
-SYSFW_start_am625_sk_r5.pblb.k3img=$(SYSFW_am625_hs_fs)
-SYSFWDATA_start_am625_sk_r5.pblb.k3img=$(SYSFWDATA_am625)
-DMDATA_start_am625_sk_r5.pblb.k3img=$(DMDATA_am625)
-INNERDATA_start_am625_sk_r5.pblb.k3img=$(INNERDATA_am625)
-KEY_start_am625_sk_r5.pblb.k3img=$(KEY_custmpk)
+SYSFW_start_am625_sk_r5.pblb.k3_am62x_img=$(SYSFW_am625_hs_fs)
+SYSFWDATA_start_am625_sk_r5.pblb.k3_am62x_img=$(SYSFWDATA_am625)
+DMDATA_start_am625_sk_r5.pblb.k3_am62x_img=$(DMDATA_am625)
+INNERDATA_start_am625_sk_r5.pblb.k3_am62x_img=$(INNERDATA_am625)
+KEY_start_am625_sk_r5.pblb.k3_am62x_img=$(KEY_custmpk)
 
 pblb-$(CONFIG_MACH_AM625_SK) += start_am625_sk_r5
-FILE_barebox-am625-sk-r5.img = start_am625_sk_r5.pblb.k3img
+FILE_barebox-am625-sk-r5.img = start_am625_sk_r5.pblb.k3_am62x_img
 image-$(CONFIG_MACH_AM625_SK) += barebox-am625-sk-r5.img
 
-SYSFW_start_am625sip_sk_r5.pblb.k3img=$(SYSFW_am625_hs_fs)
-SYSFWDATA_start_am625sip_sk_r5.pblb.k3img=$(SYSFWDATA_am625)
-DMDATA_start_am625sip_sk_r5.pblb.k3img=$(DMDATA_am625)
-INNERDATA_start_am625sip_sk_r5.pblb.k3img=$(INNERDATA_am625)
-KEY_start_am625sip_sk_r5.pblb.k3img=$(KEY_custmpk)
+SYSFW_start_am625sip_sk_r5.pblb.k3_am62x_img=$(SYSFW_am625_hs_fs)
+SYSFWDATA_start_am625sip_sk_r5.pblb.k3_am62x_img=$(SYSFWDATA_am625)
+DMDATA_start_am625sip_sk_r5.pblb.k3_am62x_img=$(DMDATA_am625)
+INNERDATA_start_am625sip_sk_r5.pblb.k3_am62x_img=$(INNERDATA_am625)
+KEY_start_am625sip_sk_r5.pblb.k3_am62x_img=$(KEY_custmpk)
 
 pblb-$(CONFIG_MACH_AM625_SK) += start_am625sip_sk_r5
-FILE_barebox-am625sip-sk-r5.img = start_am625sip_sk_r5.pblb.k3img
+FILE_barebox-am625sip-sk-r5.img = start_am625sip_sk_r5.pblb.k3_am62x_img
 image-$(CONFIG_MACH_AM625_SK) += barebox-am625sip-sk-r5.img
 
 ## BeaglePlay ##
-SYSFW_start_beagleplay_r5.pblb.k3img=$(SYSFW_am625_gp)
-SYSFWDATA_start_beagleplay_r5.pblb.k3img=$(SYSFWDATA_am625)
-DMDATA_start_beagleplay_r5.pblb.k3img=$(DMDATA_am625)
-KEY_start_beagleplay_r5.pblb.k3img=$(KEY_degenerate)
+SYSFW_start_beagleplay_r5.pblb.k3_am62x_img=$(SYSFW_am625_gp)
+SYSFWDATA_start_beagleplay_r5.pblb.k3_am62x_img=$(SYSFWDATA_am625)
+DMDATA_start_beagleplay_r5.pblb.k3_am62x_img=$(DMDATA_am625)
+KEY_start_beagleplay_r5.pblb.k3_am62x_img=$(KEY_degenerate)
 
 pblb-$(CONFIG_MACH_BEAGLEPLAY) += start_beagleplay_r5
-FILE_barebox-beagleplay-r5.img = start_beagleplay_r5.pblb.k3img
+FILE_barebox-beagleplay-r5.img = start_beagleplay_r5.pblb.k3_am62x_img
 image-$(CONFIG_MACH_BEAGLEPLAY) += barebox-beagleplay-r5.img
 
 endif
 
-quiet_cmd_k3_image = K3IMG   $@
-      cmd_k3_image = \
+quiet_cmd_k3_am62x_image = K3_am62x_IMG   $@
+      cmd_k3_am62x_image = \
 		if [ -n "$(INNERDATA_$(@F))" ]; then				\
 			inner="$(INNERDATA_$(@F)):3:0:0:00000000";		\
 		fi;								\
@@ -74,5 +74,5 @@ quiet_cmd_k3_image = K3IMG   $@
 			$(DMDATA_$(@F)):17:16:0:43c3a800			\
 			--key $(KEY_$(@F)) --out $@
 
-$(obj)/%.k3img: $(obj)/% scripts/k3img FORCE
-	$(call if_changed,k3_image)
+$(obj)/%.k3_am62x_img: $(obj)/% scripts/k3img FORCE
+	$(call if_changed,k3_am62x_image)

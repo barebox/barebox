@@ -17,6 +17,9 @@ image-$(CONFIG_MACH_BEAGLEPLAY) += barebox-beagleplay.img
 
 endif
 
+KEY_custmpk=$(srctree)/arch/arm/mach-k3/custMpk.pem
+KEY_degenerate=$(srctree)/arch/arm/mach-k3/ti-degenerate-key.pem
+
 ifdef CONFIG_MACH_K3_CORTEX_R5
 
 SYSFWDATA_am625=$(objtree)/arch/arm/mach-k3/combined-sysfw-cfg-am62x.k3cfg
@@ -24,8 +27,6 @@ DMDATA_am625=$(objtree)/arch/arm/mach-k3/combined-dm-cfg-am62x.k3cfg
 SYSFW_am625_hs_fs=$(FIRMWARE_DIR)/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-hs-fs-enc.bin
 SYSFW_am625_gp=$(FIRMWARE_DIR)/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-gp.bin
 INNERDATA_am625=$(FIRMWARE_DIR)/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-hs-fs-cert.bin
-KEY_custmpk=$(srctree)/arch/arm/mach-k3/custMpk.pem
-KEY_degenerate=$(srctree)/arch/arm/mach-k3/ti-degenerate-key.pem
 
 ## TI am625(sip)-SK ##
 SYSFW_start_am625_sk_r5.pblb.k3_am62x_img=$(SYSFW_am625_hs_fs)
@@ -60,6 +61,29 @@ image-$(CONFIG_MACH_BEAGLEPLAY) += barebox-beagleplay-r5.img
 
 endif
 
+SYSFWDATA_am62lx=$(objtree)/arch/arm/mach-k3/combined-sysfw-cfg-am62l.k3cfg
+SYSFW_am62lx_hs_fs=$(FIRMWARE_DIR)/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62lx-hs-fs-enc.bin
+INNERDATA_am62lx=$(FIRMWARE_DIR)/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62lx-hs-fs-cert.bin
+
+## TI am62lx-EVM ##
+SYSFW_start_am62lx_evm.pblb.k3_am62lx_img=$(SYSFW_am62lx_hs_fs)
+SYSFWDATA_start_am62lx_evm.pblb.k3_am62lx_img=$(SYSFWDATA_am62lx)
+TFA_start_am62lx_evm.pblb.k3_am62lx_img=$(FIRMWARE_DIR)/am62lx-bl31.bin
+INNERDATA_start_am62lx_evm.pblb.k3_am62lx_img=$(INNERDATA_am62lx)
+KEY_start_am62lx_evm.pblb.k3_am62lx_img=$(KEY_custmpk)
+
+SYSFW_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(SYSFW_am62lx_hs_fs)
+SYSFWDATA_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(SYSFWDATA_am62lx)
+INNERDATA_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(INNERDATA_am62lx)
+TFA_BL1_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(FIRMWARE_DIR)/am62lx-bl1.bin
+KEY_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(KEY_custmpk)
+
+pblb-$(CONFIG_MACH_AM62LX_EVM) += start_am62lx_evm
+FILE_barebox-am62lx-evm.img = start_am62lx_evm.pblb.k3_am62lx_img
+image-$(CONFIG_MACH_AM62LX_EVM) += barebox-am62lx-evm.img barebox-am62lx-evm-tiboot3.img
+
+FILE_barebox-am62lx-evm-tiboot3.img = start_am62lx_evm.pblb.k3_am62lx_tiboot3_img
+
 quiet_cmd_k3_am62x_image = K3_am62x_IMG   $@
       cmd_k3_am62x_image = \
 		if [ -n "$(INNERDATA_$(@F))" ]; then				\
@@ -74,5 +98,40 @@ quiet_cmd_k3_am62x_image = K3_am62x_IMG   $@
 			$(DMDATA_$(@F)):17:16:0:43c3a800			\
 			--key $(KEY_$(@F)) --out $@
 
+quiet_cmd_k3_am62lx_image = K3_am62lx_IMG   $@
+      cmd_k3_am62lx_image = \
+		if [ -n "$(INNERDATA_$(@F))" ]; then				\
+			inner="$(INNERDATA_$(@F)):3:0:0:00000000";		\
+		fi;								\
+										\
+		if [ -e "$(FIRMWARE_DIR)/am62lx-bl32.bin" ]; then		\
+			optee=$(FIRMWARE_DIR)/am62lx-bl32.bin:17:16:0:80200000;	\
+		fi;								\
+										\
+		$(srctree)/scripts/k3img					\
+			$(TFA_$(@F)):1:16:0:80000000				\
+			$(SYSFW_$(@F)):2:0:0:00040000				\
+			$(SYSFWDATA_$(@F)):18:0:0:0006c000			\
+			$$inner							\
+			$$optee							\
+			$<:17:16:0:82000000					\
+			--key $(KEY_$(@F)) --out $@
+
+quiet_cmd_k3_am62lx_tiboot3_image = K3_am62lx_tiboot3_IMG   $@
+      cmd_k3_am62lx_tiboot3_image = \
+		$(srctree)/scripts/k3img					\
+			$(TFA_BL1_$(@F)):1:16:160:70800000			\
+			$(SYSFW_$(@F)):2:0:0:00040000				\
+			$(SYSFWDATA_$(@F)):18:0:0:0006c000			\
+			$(INNERDATA_$(@F)):3:0:0:00000000			\
+			--key $(KEY_$(@F))					\
+			--out $@
+
 $(obj)/%.k3_am62x_img: $(obj)/% scripts/k3img FORCE
 	$(call if_changed,k3_am62x_image)
+
+$(obj)/%.k3_am62lx_img: $(obj)/% scripts/k3img FORCE
+	$(call if_changed,k3_am62lx_image)
+
+$(obj)/%.k3_am62lx_tiboot3_img: $(obj)/% scripts/k3img FORCE
+	$(call if_changed,k3_am62lx_tiboot3_image)

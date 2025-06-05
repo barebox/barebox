@@ -55,6 +55,11 @@ FW_K3="
 	firmware/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-gp.bin
 	firmware/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-hs-fs-enc.bin
 	firmware/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-gp.bin
+	firmware/am62lx-bl1.bin
+	firmware/am62lx-bl32.bin
+	firmware/am62lx-bl31.bin
+	firmware/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62lx-hs-fs-enc.bin
+	firmware/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62lx-hs-fs-cert.bin
 "
 
 FW="

@@ -46,6 +46,12 @@ config MACH_BEAGLEPLAY
 	help
 	  Say Y here if you are using a TI AM62x based BeaglePlay board
 
+config MACH_AM62LX_EVM
+	bool "TI AM62Lx EVM"
+	select MACH_AM62LX
+	help
+	  Say Y here if you are using a TI AM62Lx EVM board
+
 config ARCH_K3_AUTHENTICATE_IMAGE
 	bool "Force authentication of FIP image against ROM API"
 	help

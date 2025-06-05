@@ -6,6 +6,7 @@ obj-pbl-y += ddrss.o
 obj-$(CONFIG_BAREBOX_UPDATE) += bbu.o
 
 extra-$(CONFIG_MACH_K3_CORTEX_R5) += combined-dm-cfg-am62x.k3cfg combined-sysfw-cfg-am62x.k3cfg
+extra-$(CONFIG_MACH_AM62LX) += combined-sysfw-cfg-am62l.k3cfg
 
 $(obj)/combined-dm-cfg-am62x.k3cfg: $(srctree)/arch/arm/mach-k3/schema.yaml \
 				    $(obj)/pm-cfg-am62x.yaml \
@@ -18,5 +19,11 @@ $(obj)/combined-sysfw-cfg-am62x.k3cfg: $(srctree)/arch/arm/mach-k3/schema.yaml \
 				       $(obj)/sec-cfg-am62x.yaml \
 				       $(obj)/pm-cfg-am62x.yaml \
 				       $(obj)/rm-cfg-am62x.yaml \
+				       FORCE
+	$(call if_changed,k3_cfg)
+
+$(obj)/combined-sysfw-cfg-am62l.k3cfg: $(srctree)/arch/arm/mach-k3/schema.yaml \
+				       $(obj)/board-cfg-am62x.yaml \
+				       $(obj)/sec-cfg-am62l.yaml \
 				       FORCE
 	$(call if_changed,k3_cfg)

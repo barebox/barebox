@@ -8,7 +8,8 @@
 #define __TEST_FUZZ_H
 
 #include <linux/types.h>
-#include <linux/list.h>
+#include <linux/compiler_types.h>
+#include <ramdisk.h>
 
 /**
  * struct fuzz_test - Information about a fuzz test
@@ -47,6 +48,22 @@ extern const struct fuzz_test __barebox_fuzz_tests_end;
 #define fuzz_test(_name, _func)					\
 	static __always_unused void * _unused##_func = _func
 #endif
+
+#define fuzz_test_ramdisk(_name, _func)				\
+	static int _func##_ramdisk(const u8 *data, size_t size)	\
+	{							\
+		static struct ramdisk *ramdisk;			\
+		int ret;					\
+		if (!ramdisk)					\
+			ramdisk = ramdisk_init(512);		\
+		if (!ramdisk)					\
+			return -ENODEV;				\
+		ramdisk_setup_ro(ramdisk, data, size);		\
+		ret = _func(ramdisk_get_block_device(ramdisk));	\
+		ramdisk_setup_ro(ramdisk, NULL, 0);		\
+		return ret;					\
+	}							\
+	fuzz_test(_name, _func##_ramdisk)
 
 static inline int fuzz_test_once(const struct fuzz_test *test, const u8 *data, size_t len)
 {

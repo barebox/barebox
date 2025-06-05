@@ -9,6 +9,8 @@ source "test/self/Kconfig"
 
 config FUZZ
 	bool "fuzz tests"
+	select RAMDISK_BLK
+	select DISK
 	help
 	  Say y here to add include fuzz tests into barebox.
 	  These need to be exercised either via command or

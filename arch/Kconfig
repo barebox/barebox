@@ -110,3 +110,9 @@ config HAVE_ARCH_KASAN
 
 config ARCH_HAS_UBSAN_SANITIZE_ALL
 	bool
+
+config ARCH_HAS_FORTIFY_SOURCE
+	bool
+	help
+	  An architecture should select this when it can successfully
+	  build and run with CONFIG_FORTIFY_SOURCE.

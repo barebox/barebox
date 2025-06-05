@@ -6,19 +6,13 @@
  */
 
 /*
- * stupid library routines.. The optimized versions should generally be found
- * as inline code in <asm-xx/string.h>
- *
- * These are buggy as well..
- *
- * * Fri Jun 25 1999, Ingo Oeser <ioe@informatik.tu-chemnitz.de>
- * -  Added strsep() which will replace strtok() soon (because strsep() is
- *    reentrant and should be faster). Use only strsep() in new code, please.
- * * Mon Sep 14 2020, Ahmad Fatoum <a.fatoum@pengutronix.de>
- * -  Kissed strtok() goodbye
- *
+ * This file should be used only for "library" routines that may have
+ * alternative implementations on specific architectures (generally
+ * found in <asm/string.h>), or get overloaded by FORTIFY_SOURCE.
+ * (Specifically, this file is built with __NO_FORTIFY.)
  */
 
+#define __NO_FORTIFY
 #include <linux/types.h>
 #include <string.h>
 #include <linux/ctype.h>

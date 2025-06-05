@@ -698,7 +698,7 @@ static int fdt_string_is_compatible(const char *haystack, int haystack_len,
 	const char *p;
 	int index = 0;
 
-	while (haystack_len >= needle_len) {
+	while (haystack_len > needle_len) {
 		if (memcmp(needle, haystack, needle_len + 1) == 0)
 			return OF_DEVICE_COMPATIBLE_MAX_SCORE - (index << 2);
 

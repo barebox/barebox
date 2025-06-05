@@ -99,7 +99,6 @@ machine-$(CONFIG_ARCH_MVEBU)		+= mvebu
 machine-$(CONFIG_ARCH_OMAP)		+= omap
 machine-$(CONFIG_ARCH_PXA)		+= pxa
 machine-$(CONFIG_ARCH_ROCKCHIP)		+= rockchip
-machine-$(CONFIG_ARCH_SAMSUNG)		+= samsung
 machine-$(CONFIG_ARCH_SOCFPGA)		+= socfpga
 machine-$(CONFIG_ARCH_STM32MP)		+= stm32mp
 machine-$(CONFIG_ARCH_SUNXI)		+= sunxi
@@ -138,6 +137,9 @@ endif
 common-y += arch/arm/boards/ $(MACH)
 common-y += arch/arm/cpu/
 common-y += arch/arm/crypto/
+
+# For cleaning
+common- += $(patsubst %,arch/arm/mach-%/,$(machine-))
 
 ifeq ($(CONFIG_CPU_64), y)
 common-y += arch/arm/lib64/

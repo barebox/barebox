@@ -62,6 +62,8 @@ struct psil_endpoint_config *psil_get_ep_config(u32 thread_id)
 	if (!soc_ep_map) {
 		if (of_machine_is_compatible("ti,am625"))
 			soc_ep_map = &am62_ep_map;
+		else if (of_machine_is_compatible("ti,am62l3"))
+			soc_ep_map = &am62l_ep_map;
 	}
 
 	if (!soc_ep_map) {

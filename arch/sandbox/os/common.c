@@ -46,6 +46,7 @@
  */
 #include <mach/linux.h>
 #include <mach/hostfile.h>
+#include <asm/barebox-sandbox.h>
 
 #ifdef CONFIG_CONSOLE_NONE
 int __attribute__((unused)) barebox_loglevel;
@@ -534,7 +535,7 @@ static struct option long_options[] = {
 
 static const char optstring[] = "hm:i:c:e:d:O:I:B:x:y:";
 
-int main(int argc, char *argv[])
+ENTRY_FUNCTION(sandbox_main, argc, argv)
 {
 	void *ram;
 	int opt, ret, fd, fd2;

@@ -17,7 +17,6 @@ machine-y := sandbox
 
 board-y := arch/sandbox/board
 BOARD	:= $(board-y)/
-lds-y   := $(BOARD)/barebox.lds
 
 HEADER_ARCH 	:= $(SUBARCH)
 HOST_DIR := arch/$(HEADER_ARCH)
@@ -29,28 +28,12 @@ common-y += $(HOST_DIR)/um/
 KBUILD_CPPFLAGS += -I$(srctree)/$(HOST_DIR)/include
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
-KBUILD_CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
-		-Dmalloc_stats=barebox_malloc_stats -Dmemalign=barebox_memalign \
-		-Dmalloc_usable_size=barebox_malloc_usable_size \
-		-Dfree=barebox_free -Drealloc=barebox_realloc \
-		-Dbrk=barebox_brk -Dsbrk=barebox_sbrk \
-		-Dread=barebox_read -Dwrite=barebox_write \
-		-Dopen=barebox_open -Dclose=barebox_close \
-		-Dlseek=barebox_lseek -Dperror=barebox_perror \
-		-Derrno=barebox_errno -Dgetc=barebox_getc \
-		-Dputc=barebox_putc -Dfgetc=barebox_fgetc \
-		-Dfputc=barebox_fputc -Dfgets=barebox_fgets \
-		-Dfputs=barebox_fputs -Dsetenv=barebox_setenv \
-		-Dgetenv=barebox_getenv -Dprintf=barebox_printf \
-		-Dglob=barebox_glob -Dglobfree=barebox_globfree \
-		-Dioctl=barebox_ioctl -Dfstat=barebox_fstat \
-		-Dftruncate=barebox_ftruncate -Dasprintf=barebox_asprintf \
-		-Dopendir=barebox_opendir -Dreaddir=barebox_readdir \
-		-Dclosedir=barebox_closedir -Dreadlink=barebox_readlink \
-		-Doptarg=barebox_optarg -Doptind=barebox_optind \
-		-Dsetjmp=barebox_setjmp -Dlongjmp=barebox_longjmp \
-		-Dmkdir=barebox_mkdir -Ddirname=barebox_dirname \
-		-Dremove=barebox_remove -Dputchar=barebox_putchar
+
+SANDBOX_PBL2PROPER_GLUE_SYMS := \
+	putchar errno setjmp longjmp \
+	malloc_stats memalign malloc free realloc calloc brk sbrk
+
+KBUILD_CFLAGS += $(foreach s,$(SANDBOX_PBL2PROPER_GLUE_SYMS),-D$(s)=barebox_$(s))
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
@@ -61,25 +44,27 @@ archprepare: maketools
 
 PHONY += maketools
 
+export SANDBOX_LIBS BAREBOX_LDFLAGS
+
 ifeq ($(CONFIG_SDL),y)
-SDL_LIBS := $(shell $(CROSS_PKG_CONFIG) sdl2 --libs)
+SANDBOX_LIBS += $(shell $(CROSS_PKG_CONFIG) sdl2 --libs)
 endif
 
 ifeq ($(CONFIG_GPIO_LIBFTDI1),y)
-FTDI1_LIBS := $(shell $(CROSS_PKG_CONFIG) libftdi1 --libs)
+SANDBOX_LIBS += $(shell $(CROSS_PKG_CONFIG) libftdi1 --libs)
 endif
 
 ifeq ($(CONFIG_ASAN),y)
 KBUILD_CPPFLAGS += -fsanitize=address
-SANITIZER_LIBS += -fsanitize=address
+SANDBOX_LIBS += -fsanitize=address
 ifeq ($(CONFIG_CC_IS_CLANG),y)
 KBUILD_CPPFLAGS += -fno-sanitize-address-globals-dead-stripping
-BAREBOX_LDFLAGS += -fno-sanitize-address-globals-dead-stripping
+SANDBOX_LIBS += -fno-sanitize-address-globals-dead-stripping
 endif
 endif
 
 ifeq ($(CONFIG_UBSAN),y)
-SANITIZER_LIBS += -fsanitize=undefined
+SANDBOX_LIBS += -fsanitize=undefined
 endif
 
 ifeq ($(CONFIG_SANDBOX_LINUX_I386),y)
@@ -89,17 +74,28 @@ KBUILD_AFLAGS += -m32
 BAREBOX_LDFLAGS += -m32
 endif
 
-BAREBOX_LDFLAGS += \
-	-Wl,-T,$(BAREBOX_LDS) \
-	-Wl,--whole-archive $(BAREBOX_OBJS) -Wl,--no-whole-archive \
-	-lrt -pthread $(SDL_LIBS) $(FTDI1_LIBS) \
-	$(SANITIZER_LIBS)
-
-cmd_barebox__ = $(CC) -o $@ $(BAREBOX_LDFLAGS)
-
 common-y += $(BOARD) arch/sandbox/os/ arch/sandbox/lib/
 
-KBUILD_IMAGE := barebox
+SANDBOX_PROPER2PBL_GLUE_SYMS := \
+	strsep_unescaped start_barebox linux_get_stickypage_path \
+	stickypage mem_malloc_init \
+	barebox_register_filedev barebox_register_dtb barebox_register_console \
+	barebox_errno barebox_loglevel
+
+OBJCOPYFLAGS_barebox.o := $(addprefix --keep-global-symbol=, $(SANDBOX_PROPER2PBL_GLUE_SYMS))
+
+quiet_cmd_barebox__ = $(quiet_cmd_symlink)
+      cmd_barebox__ = ln -fsn --relative $(objtree)/images/barebox $(objtree)/barebox
+
+define rule_barebox__
+	$(call cmd,barebox__)
+	$(Q)echo 'savedcmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
+endef
+
+all: barebox
+
+KBUILD_IMAGE := barebox.o
+BAREBOX_PROPER := $(KBUILD_IMAGE)
 
 common-$(CONFIG_OFTREE) += arch/sandbox/dts/
 

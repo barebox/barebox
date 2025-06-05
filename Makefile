@@ -929,6 +929,7 @@ quiet_cmd_sysmap = SYSMAP  System.map
 # If CONFIG_KALLSYMS is set .version is already updated
 # Generate System.map and verify that the content is consistent
 # Use + in front of the barebox_version rule to silent warning with make -j2
+ifndef rule_barebox__
 define rule_barebox__
 	$(if $(CONFIG_KALLSYMS),,+$(call cmd,barebox_version))
 	$(call cmd,barebox__)
@@ -936,6 +937,7 @@ define rule_barebox__
 	$(call cmd,prelink__)
 	$(call cmd,sysmap)
 endef
+endif
 
 ifdef CONFIG_KALLSYMS
 # Generate section listing all symbols and add it into barebox $(kallsyms.o)
@@ -1049,6 +1051,18 @@ barebox.fit: images/barebox-$(CONFIG_ARCH_LINUX_NAME).fit
 
 barebox.srec: barebox
 	$(OBJCOPY) -O srec $< $@
+
+quiet_cmd_barebox_proper__ = CC      $@
+      cmd_barebox_proper__ = $(CC) -r -o $@ -Wl,--whole-archive $(BAREBOX_OBJS)
+
+.tmp_barebox.o: $(BAREBOX_OBJS) $(kallsyms.o) FORCE
+	$(if $(CONFIG_KALLSYMS),,+$(call cmd,barebox_version))
+	$(call cmd,barebox_proper__)
+	$(Q)echo 'savedcmd_$@ := $(cmd_barebox_proper__)' > $(@D)/.$(@F).cmd
+	$(Q)rm -f .old_version
+
+barebox.o: .tmp_barebox.o FORCE
+	$(call if_changed,objcopy)
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
@@ -1269,7 +1283,7 @@ CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map \
 		.tmp_kallsyms* barebox.ldr compile_commands.json \
-		barebox-flash-image \
+		.tmp_barebox.o barebox.o barebox-flash-image \
 		barebox.srec barebox.s5p barebox.ubl \
 		barebox.uimage \
 		barebox.efi barebox.canon-a1100.bin

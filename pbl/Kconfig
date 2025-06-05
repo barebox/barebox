@@ -45,7 +45,7 @@ config USE_COMPRESSED_DTB
 	select XZ_DECOMPRESS if IMAGE_COMPRESSION_XZKERN
 
 config PBL_RELOCATABLE
-	depends on ARM || MIPS || RISCV
+	depends on ARM || MIPS || RISCV || SANDBOX
 	bool "relocatable pbl image"
 	help
 	  Generate a pbl binary which can relocate itself during startup to run

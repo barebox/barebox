@@ -23,6 +23,7 @@
 *.mxssd
 *.csfbin
 pbl.lds
+barebox
 barebox.x
 barebox.z
 barebox.sha.bin

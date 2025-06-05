@@ -942,7 +942,7 @@ config CONSOLE_DISABLE_INPUT
 	  registered as consoles.
 
 config PBL_CONSOLE
-	depends on PBL_IMAGE
+	depends on PBL_IMAGE && !SANDBOX
 	depends on !CONSOLE_NONE
 	bool "Enable console support in PBL"
 	help

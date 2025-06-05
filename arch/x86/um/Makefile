@@ -8,5 +8,5 @@ else
 	BITS := 64
 endif
 
-AFLAGS_../lib/setjmp_$(BITS).o := -Dsetjmp=barebox_setjmp -Dlongjmp=barebox_longjmp
-obj-$(CONFIG_SANDBOX_SJLJ_ASM) += ../lib/setjmp_$(BITS).o
+AFLAGS_../lib/setjmp_$(BITS).pbl.o := -Dsetjmp=barebox_setjmp -Dlongjmp=barebox_longjmp
+pbl-$(CONFIG_SANDBOX_SJLJ_ASM) += ../lib/setjmp_$(BITS).o

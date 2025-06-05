@@ -323,7 +323,7 @@ int register_framebuffer(struct fb_info *info)
 
 		info->cdev.name = basprintf("%s_%d", dev_name(&info->base_plane->dev), ovl_id);
 		dev->id = DEVICE_ID_SINGLE;
-		dev_set_name(dev, info->cdev.name);
+		dev_set_name(dev, "%s", info->cdev.name);
 	} else {
 		id = get_free_deviceid("fb");
 		dev->id = id;

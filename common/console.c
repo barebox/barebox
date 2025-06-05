@@ -338,7 +338,7 @@ int console_register(struct console_device *newcdev)
 
 	if (newcdev->devname) {
 		dev->id = newcdev->devid;
-		dev_set_name(dev, newcdev->devname);
+		dev_set_name(dev, "%s", newcdev->devname);
 	} else {
 		dev->id = DEVICE_ID_DYNAMIC;
 		dev_set_name(dev, "cs");

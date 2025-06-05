@@ -31,7 +31,7 @@ int bus_register(struct bus_type *bus)
 		return -EEXIST;
 
 	bus->dev = xzalloc(sizeof(*bus->dev));
-	dev_set_name(bus->dev, bus->name);
+	dev_set_name(bus->dev, "%s", bus->name);
 	bus->dev->id = DEVICE_ID_SINGLE;
 
 	ret = register_device(bus->dev);

@@ -893,7 +893,7 @@ static void cb_oem_getenv(struct fastboot *fb, const char *cmd)
 
 	value = getenv(cmd);
 
-	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, value ? value : "");
+	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "%s", value ?: "");
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 }
 

@@ -19,7 +19,7 @@ static noinline void am625_sk_continue(void)
 	unsigned long membase = 0x80000000, memsize;
 	extern char __dtb_z_k3_am625_sk_start[];
 
-	memsize = am625_sdram_size();
+	memsize = am62x_sdram_size();
 
 	pr_info("Detected DRAM size: %ldMiB\n", memsize >> 20);
 

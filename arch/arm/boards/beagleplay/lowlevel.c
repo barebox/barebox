@@ -19,7 +19,7 @@ static noinline void beagleplay_continue(void)
 	unsigned long membase = 0x80000000, memsize;
 	extern char __dtb_k3_am625_beagleplay_start[];
 
-	memsize = am625_sdram_size();
+	memsize = am62x_sdram_size();
 
 	barebox_arm_entry(membase, memsize, __dtb_k3_am625_beagleplay_start);
 }

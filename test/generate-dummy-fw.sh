@@ -52,9 +52,9 @@ FW_NXP_LAYERSCAPE="
 "
 
 FW_K3="
-firmware/ti-fs-firmware-am62x-gp.bin
-firmware/ti-fs-firmware-am62x-hs-fs-cert.bin
-firmware/ti-fs-firmware-am62x-hs-fs-enc.bin
+	firmware/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-gp.bin
+	firmware/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-hs-fs-enc.bin
+	firmware/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-gp.bin
 "
 
 FW="

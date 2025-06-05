@@ -1102,7 +1102,7 @@ int udma_of_xlate(struct dma *dma, struct of_phandle_args *args)
 	    ep_config->mapped_channel_id >= 0) {
 		ucc->mapped_channel_id = ep_config->mapped_channel_id;
 		ucc->default_flow_id = ep_config->default_flow_id;
-		if (args->args_count == 2)
+		if (of_machine_is_compatible("ti,am625") && args->args_count == 2)
 			ucc->asel = args->args[1];
 	} else {
 		ucc->mapped_channel_id = -1;

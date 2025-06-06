@@ -68,6 +68,15 @@ config DRIVER_VIDEO_STM32_LTDC
 	  Say 'Y' here to enable framebuffer and splash screen support for
 	  STM32 and STM32MP1.
 
+config DRIVER_VIDEO_STM32_DSI
+	bool "Enable STM32 DSI video support"
+	select VIDEO_VPL
+	select DRIVER_VIDEO_DW_MIPI_DSI
+	depends on ARCH_STM32 || COMPILE_TEST
+	help
+	  This option enables support DSI internal bridge which can be used on
+	  devices which have DSI devices connected.
+
 config DRIVER_VIDEO_SDL
 	bool "SDL framebuffer driver"
 	depends on HAVE_LIBSDL2

@@ -70,7 +70,7 @@ int vpl_ioctl(struct vpl *vpl, unsigned int port,
 	for_each_child_of_node(node, endpoint) {
 		struct device_node *remote, *remote_parent;
 		struct vpl *remote_vpl;
-		u32 remote_port_id;
+		u32 remote_port_id = 0;
 
 		remote = of_graph_get_remote_port(endpoint);
 		if (!remote) {

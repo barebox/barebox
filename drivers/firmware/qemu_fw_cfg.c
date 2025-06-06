@@ -313,4 +313,4 @@ static int qemu_fw_cfg_init(void)
 
 	return of_devices_ensure_probed_by_dev_id(qemu_fw_cfg_of_match);
 }
-postmmu_initcall(qemu_fw_cfg_init);
+device_initcall(qemu_fw_cfg_init);

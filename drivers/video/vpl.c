@@ -53,8 +53,9 @@ struct vpl *of_vpl_get(struct device_node *node, int port)
 	return of_find_vpl(node);
 }
 
-int vpl_ioctl(struct vpl *vpl, unsigned int port,
-		unsigned int cmd, void *ptr)
+static int vpl_foreach_endpoint(struct vpl *vpl, unsigned int port,
+				int (*fn)(struct vpl *, unsigned port, void *data),
+				void *data)
 {
 	struct device_node *node, *endpoint;
 	int ret;
@@ -96,10 +97,30 @@ int vpl_ioctl(struct vpl *vpl, unsigned int port,
 		}
 
 		pr_debug("%s: looked up %pOF: %pS\n", __func__, remote, remote_vpl->ioctl);
-		ret = remote_vpl->ioctl(remote_vpl, remote_port_id, cmd, ptr);
+		ret = fn(remote_vpl, remote_port_id, data);
 		if (ret)
 			return ret;
 	}
 
 	return 0;
+}
+
+struct vpl_ioctl {
+	unsigned cmd;
+	void *ptr;
+};
+
+static int vpl_remote_ioctl(struct vpl *vpl, unsigned port, void *_data)
+{
+	struct vpl_ioctl *data = _data;
+
+	return vpl->ioctl(vpl, port, data->cmd, data->ptr);
+}
+
+int vpl_ioctl(struct vpl *vpl, unsigned int port,
+		unsigned int cmd, void *ptr)
+{
+	struct vpl_ioctl data = { .cmd = cmd, .ptr = ptr };
+
+	return vpl_foreach_endpoint(vpl, port, vpl_remote_ioctl, &data);
 }

@@ -30,17 +30,20 @@ static int efi_locate_handle(enum efi_locate_search_type search_type,
 				   buffer);
 }
 
+static int efi_device_match_handle(struct device *dev, const void *handle)
+{
+	struct efi_device *efidev = container_of(dev, struct efi_device, dev);
+	return efidev->handle == handle;
+}
+
 static struct efi_device *efi_find_device(efi_handle_t handle)
 {
 	struct device *dev;
-	struct efi_device *efidev;
 
-	bus_for_each_device(&efi_bus, dev) {
-		efidev = container_of(dev, struct efi_device, dev);
-
-		if (efidev->handle == handle)
-			return efidev;
-	}
+	dev = bus_find_device(&efi_bus, NULL, efi_device_match_handle,
+			      efi_device_match_handle);
+	if (dev)
+		return container_of(dev, struct efi_device, dev);
 
 	return NULL;
 }

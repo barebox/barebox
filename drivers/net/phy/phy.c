@@ -374,10 +374,9 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 		}
 	}
 
-	bus_for_each_device(&mdio_bus_type, dev) {
-		if (dev->of_node == phy_node)
-			return container_of(dev, struct phy_device, dev);
-	}
+	dev = bus_find_device_by_of_node(&mdio_bus_type, phy_node);
+	if (dev)
+		return container_of(dev, struct phy_device, dev);
 
 	return NULL;
 }

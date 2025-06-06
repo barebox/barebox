@@ -14,6 +14,7 @@
 
 #include <errno.h>
 #include <linux/list.h>
+#include <linux/gfp.h>
 
 struct idr {
 	int			id;
@@ -58,7 +59,9 @@ static inline void *idr_find(struct idr *head, int id)
 	return idr ? idr->ptr : NULL;
 }
 
-int idr_alloc_one(struct idr *head, void *ptr, int start);
+int idr_alloc(struct idr *, void *ptr, int start, int end, gfp_t);
+int __must_check idr_alloc_u32(struct idr *, void *ptr, u32 *id,
+				unsigned long max, gfp_t);
 
 static inline void idr_init(struct idr *idr)
 {

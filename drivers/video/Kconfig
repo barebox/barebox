@@ -119,6 +119,13 @@ config DRIVER_VIDEO_EDID
 config DRIVER_VIDEO_MIPI_DBI
 	bool
 
+config DRIVER_VIDEO_MIPI_DSI
+	bool
+	help
+	  Support MIPI DSI interface for driving a MIPI compatible device.
+	  The MIPI Display Serial Interface (MIPI DSI) defines a high-speed
+	  serial interface between a host processor and a display module.
+
 config DRIVER_VIDEO_BACKLIGHT
 	bool "Add backlight support"
 	help

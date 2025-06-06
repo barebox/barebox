@@ -40,7 +40,11 @@ static inline u32 unstuff_bits(const u32 *resp, int start, int size)
 	return __res & __mask;
 }
 
-LIST_HEAD(mci_list);
+static DEFINE_DEV_CLASS(mmc_class, "mmc");
+
+#define for_each_mci(mci) \
+	class_for_each_container_of_device(&mmc_class, mci, dev)
+
 
 /**
  * @file
@@ -3033,7 +3037,7 @@ static int mci_hw_detect(struct device *dev)
 {
 	struct mci *mci;
 
-	list_for_each_entry(mci, &mci_list, list) {
+	for_each_mci(mci) {
 		if (dev == mci->host->hw_dev)
 			return mci_detect_card(mci->host);
 	}
@@ -3111,7 +3115,7 @@ int mci_register(struct mci_host *host)
 		of_register_fixup(of_broken_cd_fixup, host);
 	}
 
-	list_add_tail(&mci->list, &mci_list);
+	class_add_device(&mmc_class, &mci->dev);
 
 	return 0;
 
@@ -3245,7 +3249,7 @@ struct mci *mci_get_device_by_name(const char *name)
 {
 	struct mci *mci;
 
-	list_for_each_entry(mci, &mci_list, list) {
+	for_each_mci(mci) {
 		if (!mci->cdevname)
 			continue;
 		if (!strcmp(mci->cdevname, name))
@@ -3259,7 +3263,7 @@ struct mci *mci_get_rpmb_dev(unsigned int id)
 {
 	struct mci *mci;
 
-	list_for_each_entry(mci, &mci_list, list) {
+	for_each_mci(mci) {
 		if (mci->host->of_id != id)
 			continue;
 

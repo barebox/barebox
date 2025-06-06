@@ -8,8 +8,7 @@
 #include <errno.h>
 #include <of.h>
 
-LIST_HEAD(bus_list);
-EXPORT_SYMBOL(bus_list);
+DEFINE_DEV_CLASS(bus_class, "bus");
 
 static struct bus_type *get_bus_by_name(const char *name)
 {
@@ -41,7 +40,7 @@ int bus_register(struct bus_type *bus)
 	INIT_LIST_HEAD(&bus->device_list);
 	INIT_LIST_HEAD(&bus->driver_list);
 
-	list_add_tail(&bus->list, &bus_list);
+	class_add_device(&bus_class, &bus->dev);
 
 	return 0;
 }

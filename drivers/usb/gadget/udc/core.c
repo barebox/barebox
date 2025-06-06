@@ -46,6 +46,7 @@ struct usb_udc {
 };
 
 static LIST_HEAD(udc_list);
+static DEFINE_DEV_CLASS(udc_class, "udc");
 
 /* Protects udc_list, udc->driver, driver->is_bound, and related calls */
 static DEFINE_MUTEX(udc_lock);
@@ -1193,6 +1194,8 @@ int usb_add_gadget(struct usb_gadget *gadget)
 	ret = register_device(&gadget->dev);
 	if (ret)
 		goto err_free_id;
+
+	class_add_device(&udc_class, &udc->dev);
 
 	dev_add_param_uint32(&gadget->dev, "product", NULL, NULL,
 			     &gadget->product_id, "0x%04x", NULL);

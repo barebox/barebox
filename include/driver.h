@@ -371,7 +371,6 @@ struct bus_type {
 
 	struct device dev;
 
-	struct list_head list;
 	struct list_head device_list;
 	struct list_head driver_list;
 };
@@ -385,11 +384,11 @@ static inline int driver_match_device(const struct driver *drv,
 	return drv->bus->match ? drv->bus->match(dev, drv) : true;
 }
 
-extern struct list_head bus_list;
+extern struct class bus_class;
 
 /* Iterate over all buses
  */
-#define for_each_bus(bus) list_for_each_entry(bus, &bus_list, list)
+#define for_each_bus(bus) class_for_each_container_of_device(&bus_class, bus, dev)
 
 /* Iterate over all devices of a bus
  */

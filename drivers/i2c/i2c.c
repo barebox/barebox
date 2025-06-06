@@ -42,7 +42,7 @@ struct boardinfo {
 };
 
 static LIST_HEAD(board_list);
-LIST_HEAD(i2c_adapter_list);
+DEFINE_DEV_CLASS(i2c_adapter_class, "i2c_adapter");
 
 /**
  * i2c_transfer - execute a single or combined I2C message
@@ -483,7 +483,7 @@ static void i2c_hw_rescan(struct device *dev)
 {
 	struct i2c_adapter *adap;
 
-	list_for_each_entry(adap, &i2c_adapter_list, list) {
+	for_each_i2c_adapter(adap) {
 		if (dev != adap->dev.parent)
 			continue;
 		of_i2c_register_devices(adap);
@@ -742,7 +742,7 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	if (ret)
 		return ret;
 
-	list_add_tail(&adapter->list, &i2c_adapter_list);
+	class_add_device(&i2c_adapter_class, &adapter->dev);
 
 	slice_init(&adapter->slice, dev_name(&adapter->dev));
 

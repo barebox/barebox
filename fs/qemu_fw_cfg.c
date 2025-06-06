@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <linux/stat.h>
 #include <xfuncs.h>
+#include <envfs.h>
 #include <fcntl.h>
 #include <linux/qemu_fw_cfg.h>
 #include <wchar.h>
@@ -370,7 +371,13 @@ static int fw_cfg_fs_probe(struct device *dev)
 	 */
 	fsdev->cdev = cdev_by_name(devpath_to_name(fsdev->backingstore));
 
-	return fw_cfg_fs_parse(sb);
+	ret = fw_cfg_fs_parse(sb);
+	if (ret)
+		goto free_data;
+
+	defaultenv_append_runtime_directory("/mnt/fw_cfg/by_name/opt/org.barebox.env");
+
+	return 0;
 free_data:
 	free(data);
 	return ret;

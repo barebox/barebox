@@ -59,6 +59,9 @@ static inline void *idr_find(struct idr *head, int id)
 	return idr ? idr->ptr : NULL;
 }
 
+static inline void idr_preload(gfp_t gfp_mask) {}
+static inline void idr_preload_end(void) {}
+
 int idr_alloc(struct idr *, void *ptr, int start, int end, gfp_t);
 int __must_check idr_alloc_u32(struct idr *, void *ptr, u32 *id,
 				unsigned long max, gfp_t);

@@ -95,3 +95,59 @@ int device_match_of_modalias(struct device *dev, const struct driver *drv)
 
 	return false;
 }
+
+static struct device *__bus_for_each_dev(const struct bus_type *bus, struct device *start, void *data,
+					 int (*fn)(struct device *dev, void *data), int *result)
+{
+	struct device *dev;
+	int ret;
+
+	bus_for_each_device(bus, dev) {
+		if (start) {
+			if (dev == start)
+				start = NULL;
+			continue;
+		}
+
+		ret = fn(dev, data);
+		if (ret) {
+			if (result)
+				*result = ret;
+			return dev;
+		}
+	}
+
+	return NULL;
+}
+
+int bus_for_each_dev(const struct bus_type *bus, struct device *start, void *data,
+		     int (*fn)(struct device *dev, void *data))
+{
+	int ret = 0;
+	__bus_for_each_dev(bus, start, data, fn, &ret);
+	return ret;
+}
+
+struct check_match_data {
+	device_match_t match;
+};
+
+struct device *bus_find_device(const struct bus_type *bus, struct device *start,
+			       const void *data, device_match_t match)
+{
+	return __bus_for_each_dev(bus, start, (void *)data,
+				  (int (*)(struct device *dev, void *data))match,
+				  NULL);
+}
+
+int device_match_name(struct device *dev, const void *name)
+{
+	return !strcmp(dev_name(dev), name);
+}
+EXPORT_SYMBOL_GPL(device_match_name);
+
+int device_match_of_node(struct device *dev, const void *np)
+{
+	return np && dev->of_node == np;
+}
+EXPORT_SYMBOL_GPL(device_match_of_node);

@@ -19,6 +19,9 @@ config FS_WRITABLE
 	  invisible option selected by filesystem drivers that can
 	  write and are not fully read-only.
 
+config NETFS_SUPPORT
+	bool
+
 if FS_LEGACY
 comment "Some selected filesystems still use the legacy FS API."
 comment "Consider updating them."
@@ -51,6 +54,7 @@ config FS_TFTP
 	prompt "tftp support"
 	depends on NET
 	select FS_WRITABLE
+	select NETFS_SUPPORT
 
 config FS_TFTP_MAX_WINDOW_SIZE
 	int

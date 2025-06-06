@@ -234,6 +234,9 @@ struct gpio_desc *gpiod_request_one(unsigned gpio,
 
 #endif
 
+#define gpiod_get_value_cansleep	gpiod_get_value
+#define gpiod_set_value_cansleep	gpiod_set_value
+
 static inline struct gpio_desc *dev_gpiod_get(struct device *dev,
 				struct device_node *np,
 				const char *con_id,

@@ -203,6 +203,15 @@ config DRIVER_VIDEO_PANEL_SITRONIX_ST7789V
 	  Say Y here if you want to enable support for the Sitronix
 	  ST7789V controller for 240x320 LCD panels
 
+config DRIVER_VIDEO_PANEL_ORISETECH_OTM8009A
+	tristate "Orise Technology otm8009a 480x800 dsi 2dl panel"
+	depends on OF
+	depends on DRIVER_VIDEO_MIPI_DSI
+	depends on DRIVER_VIDEO_BACKLIGHT
+	help
+	  Say Y here if you want to enable support for Orise Technology
+	  otm8009a 480x800 dsi 2dl panel.
+
 config DRIVER_VIDEO_PANEL_MIPI_DBI
 	tristate "MIPI DBI compatible panels"
 	depends on OFTREE && SPI

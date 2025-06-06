@@ -12,14 +12,18 @@
 #ifndef __LINUX_MUTEX_H
 #define __LINUX_MUTEX_H
 
+#include <linux/cleanup.h>
+
 #define mutex_init(...)
-#define mutex_lock(...)
-#define mutex_unlock(...)
+#define mutex_lock(lock) ((void)0)
+#define mutex_unlock(lock) ((void)0)
 #define mutex_lock_nested(...)
 #define mutex_unlock_nested(...)
 #define mutex_is_locked(...)	0
 struct mutex { int i; };
 
 #define DEFINE_MUTEX(obj) struct mutex  __always_unused obj
+
+DEFINE_DUMMY_GUARD(mutex, struct mutex *)
 
 #endif /* __LINUX_MUTEX_H */

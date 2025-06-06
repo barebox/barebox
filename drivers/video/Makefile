@@ -33,5 +33,6 @@ obj-$(CONFIG_DRIVER_VIDEO_EFI_GOP) += efi_gop.o
 obj-$(CONFIG_DRIVER_VIDEO_FB_SSD1307) += ssd1307fb.o
 obj-$(CONFIG_BACKLIGHT_RAVE_SP)	+= rave-sp-backlight.o
 obj-$(CONFIG_DRIVER_VIDEO_DW_HDMI) += dw-hdmi.o
+obj-$(CONFIG_DRIVER_VIDEO_DW_MIPI_DSI) += dw_mipi_dsi.o
 obj-$(CONFIG_DRIVER_VIDEO_BOCHS) += bochs/
 obj-$(CONFIG_DRIVER_VIDEO_ROCKCHIP) += rockchip/

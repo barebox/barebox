@@ -156,4 +156,11 @@ config FS_UBOOTVARFS
 	  This filesystem driver provides access to U-Boot environment
 	  variables.
 
+config FS_QEMU_FW_CFG
+	bool "QEMU FW CFG interface"
+	select QEMU_FW_CFG
+	help
+	  This filesystem driver provides access to the QEMU FW CFG conduit
+	  as a file system.
+
 endmenu

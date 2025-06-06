@@ -18,6 +18,7 @@
 #include <uncompress.h>
 #include <malloc.h>
 #include <init.h>
+#include <libfile.h>
 #include <asm/unaligned.h>
 #include "barebox_default_env.h"
 
@@ -25,6 +26,7 @@ static LIST_HEAD(defaultenv_list);
 
 struct defaultenv {
 	struct list_head list;
+	const char *srcdir;
 	const char *name;
 	void *buf;
 	size_t size;
@@ -93,6 +95,19 @@ void defaultenv_append(void *buf, unsigned int size, const char *name)
 	list_add_tail(&df->list, &defaultenv_list);
 }
 
+void defaultenv_append_runtime_directory(const char *srcdir)
+{
+	struct defaultenv *df;
+
+	defaultenv_add_base();
+
+	df = xzalloc(sizeof(*df));
+	df->srcdir = srcdir;
+	df->name = srcdir;
+
+	list_add_tail(&df->list, &defaultenv_list);
+}
+
 static int defaultenv_load_one(struct defaultenv *df, const char *dir,
 		unsigned flags)
 {
@@ -103,6 +118,13 @@ static int defaultenv_load_one(struct defaultenv *df, const char *dir,
 	int ret;
 
 	pr_debug("loading %s\n", df->name);
+
+	if (df->srcdir) {
+		int cpflags = 0;
+		if (flags & ENV_FLAG_NO_OVERWRITE)
+			cpflags |= COPY_FILE_NO_OVERWRITE;
+		return copy_recursive(df->srcdir, dir, cpflags);
+	}
 
 	if (!IS_ENABLED(CONFIG_DEFAULT_COMPRESSION_NONE) &&
 			ft != filetype_barebox_env) {

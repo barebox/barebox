@@ -369,7 +369,7 @@ struct bus_type {
 	int (*probe)(struct device *dev);
 	void (*remove)(struct device *dev);
 
-	struct device *dev;
+	struct device dev;
 
 	struct list_head list;
 	struct list_head device_list;

@@ -30,11 +30,10 @@ int bus_register(struct bus_type *bus)
 	if (get_bus_by_name(bus->name))
 		return -EEXIST;
 
-	bus->dev = xzalloc(sizeof(*bus->dev));
-	dev_set_name(bus->dev, "%s", bus->name);
-	bus->dev->id = DEVICE_ID_SINGLE;
+	dev_set_name(&bus->dev, "%s", bus->name);
+	bus->dev.id = DEVICE_ID_SINGLE;
 
-	ret = register_device(bus->dev);
+	ret = register_device(&bus->dev);
 	if (ret)
 		return ret;
 

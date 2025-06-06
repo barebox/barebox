@@ -106,7 +106,7 @@ config DRIVER_VIDEO_SIMPLEFB
 
 config DRIVER_VIDEO_RAMFB
 	bool "QEMU RamFB support"
-	select QEMU_FW_CFG
+	select FS_QEMU_FW_CFG
 	help
 	  Add support for setting up a QEMU RamFB driver.
 

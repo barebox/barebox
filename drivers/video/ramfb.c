@@ -19,7 +19,6 @@ struct ramfb {
 	struct fb_info info;
 	dma_addr_t screen_dma;
 	struct fb_videomode mode;
-	u16 etcfb_select;
 };
 
 struct fw_cfg_etc_ramfb {
@@ -30,37 +29,6 @@ struct fw_cfg_etc_ramfb {
 	u32 height;
 	u32 stride;
 } __packed;
-
-static int fw_cfg_find_file(struct device *dev, int fd, const char *filename)
-{
-	size_t filename_len = strlen(filename);
-	ssize_t ret;
-	__be32 count;
-	int i;
-
-	ioctl(fd, FW_CFG_SELECT, &(u16) { FW_CFG_FILE_DIR });
-
-	lseek(fd, 0, SEEK_SET);
-
-	ret = read(fd, &count, sizeof(count));
-	if (ret < 0)
-		return ret;
-
-	for (i = 0; i < be32_to_cpu(count); i++) {
-		struct fw_cfg_file qfile;
-
-		read(fd, &qfile, sizeof(qfile));
-
-		dev_dbg(dev, "enumerating file %s\n", qfile.name);
-
-		if (memcmp(qfile.name, filename, filename_len))
-			continue;
-
-		return be16_to_cpu(qfile.select);
-	}
-
-	return -ENOENT;
-}
 
 static void ramfb_populate_modes(struct ramfb *ramfb)
 {
@@ -81,14 +49,15 @@ static void ramfb_populate_modes(struct ramfb *ramfb)
 static int ramfb_activate_var(struct fb_info *fbi)
 {
 	struct ramfb *ramfb = fbi->priv;
+	struct device *hwdev = fbi->dev.parent->parent;
 
 	if (fbi->screen_base)
-		dma_free_coherent(DMA_DEVICE_BROKEN,
-				  fbi->screen_base, ramfb->screen_dma, fbi->screen_size);
+		dma_free_coherent(hwdev, fbi->screen_base, ramfb->screen_dma,
+				  fbi->screen_size);
 
 	fbi->screen_size = fbi->xres * fbi->yres * fbi->bits_per_pixel / BITS_PER_BYTE;
-	fbi->screen_base = dma_alloc_coherent(DMA_DEVICE_BROKEN,
-					      fbi->screen_size, &ramfb->screen_dma);
+	fbi->screen_base = dma_alloc_coherent(hwdev, fbi->screen_size,
+					      &ramfb->screen_dma);
 
 	return 0;
 }
@@ -107,8 +76,6 @@ static void ramfb_enable(struct fb_info *fbi)
 	etc_ramfb->height = cpu_to_be32(fbi->yres);
 	etc_ramfb->stride = cpu_to_be32(fbi->line_length);
 
-	ioctl(ramfb->fd, FW_CFG_SELECT, &ramfb->etcfb_select);
-
 	pwrite(ramfb->fd, etc_ramfb, sizeof(*etc_ramfb), 0);
 
 	dma_free(etc_ramfb);
@@ -119,74 +86,39 @@ static struct fb_ops ramfb_ops = {
 	.fb_enable = ramfb_enable,
 };
 
-static int ramfb_probe(struct device *parent_dev, int fd)
+static int ramfb_probe(struct device *dev)
 {
 	int ret;
 	struct ramfb *ramfb;
 	struct fb_info *fbi;
 
-	ret = -ENODEV;
-
 	ramfb = xzalloc(sizeof(*ramfb));
 
-	ramfb->fd = fd;
-
-	ret = fw_cfg_find_file(parent_dev, fd, "etc/ramfb");
-	if (ret < 0) {
-		dev_dbg(parent_dev, "ramfb: fw_cfg (etc/ramfb) file not found\n");
-		return -ENODEV;
-	}
-
-	ramfb->etcfb_select = ret;
-	dev_dbg(parent_dev, "etc/ramfb file at slot 0x%x\n", ramfb->etcfb_select);
+	ramfb->fd = (int)(uintptr_t)dev->platform_data;
 
 	fbi = &ramfb->info;
 	fbi->priv = ramfb;
 	fbi->fbops = &ramfb_ops;
-	fbi->dev.parent = parent_dev;
+	fbi->dev.parent = dev;
 
 	ramfb_populate_modes(ramfb);
 
 	ret = register_framebuffer(fbi);
 	if (ret < 0) {
-		dev_err(parent_dev, "Unable to register ramfb: %d\n", ret);
+		dev_err(dev, "Unable to register ramfb: %d\n", ret);
 		return ret;
 	}
 
-	dev_info(parent_dev, "ramfb registered\n");
+	dev_info(dev, "ramfb registered\n");
 
 	return 0;
 }
 
-static int ramfb_driver_init(void)
-{
-	struct cdev *cdev;
-	int err = 0;
-
-	for_each_cdev(cdev) {
-		int fd, ret;
-
-		if (!strstarts(cdev->name, "fw_cfg"))
-			continue;
-
-		fd = cdev_fdopen(cdev, O_RDWR);
-		if (fd < 0) {
-			err = fd;
-			continue;
-		}
-
-		ret = ramfb_probe(cdev->dev, fd);
-		if (ret == 0)
-			continue;
-		if (ret != -ENODEV && ret != -ENXIO)
-			err = ret;
-
-		close(fd);
-	}
-
-	return err;
-}
-device_initcall(ramfb_driver_init);
+static struct driver ramfb_driver = {
+	.probe = ramfb_probe,
+	.name = "qemu-ramfb",
+};
+device_platform_driver(ramfb_driver);
 
 MODULE_AUTHOR("Adrian Negreanu <adrian.negreanu@nxp.com>");
 MODULE_DESCRIPTION("QEMU RamFB driver");

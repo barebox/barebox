@@ -3570,6 +3570,37 @@ int of_graph_port_is_available(struct device_node *node)
 EXPORT_SYMBOL(of_graph_port_is_available);
 
 /**
+ * of_alias_from_compatible - Lookup appropriate alias for a device node
+ *			      depending on compatible
+ * @node:	pointer to a device tree node
+ * @alias:	Pointer to buffer that alias value will be copied into
+ * @len:	Length of alias value
+ *
+ * Based on the value of the compatible property, this routine will attempt
+ * to choose an appropriate alias value for a particular device tree node.
+ * It does this by stripping the manufacturer prefix (as delimited by a ',')
+ * from the first entry in the compatible list property.
+ *
+ * Note: The matching on just the "product" side of the compatible is a relic
+ * from I2C and SPI. Please do not add any new user.
+ *
+ * Return: This routine returns 0 on success, <0 on failure.
+ */
+int of_alias_from_compatible(const struct device_node *node, char *alias, int len)
+{
+	const char *compatible, *p;
+	int cplen;
+
+	compatible = of_get_property(node, "compatible", &cplen);
+	if (!compatible || strlen(compatible) > cplen)
+		return -ENODEV;
+	p = strchr(compatible, ',');
+	strscpy(alias, p ? p + 1 : compatible, len);
+	return 0;
+}
+EXPORT_SYMBOL_GPL(of_alias_from_compatible);
+
+/**
  * of_get_machine_compatible - get first compatible string from the root node.
  *
  * Returns the string or NULL.

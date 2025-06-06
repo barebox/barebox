@@ -106,6 +106,7 @@ static int vpl_foreach_endpoint(struct vpl *vpl, unsigned int port,
 }
 
 struct vpl_ioctl {
+	int err;
 	unsigned cmd;
 	void *ptr;
 };
@@ -113,6 +114,11 @@ struct vpl_ioctl {
 static int vpl_remote_ioctl(struct vpl *vpl, unsigned port, void *_data)
 {
 	struct vpl_ioctl *data = _data;
+
+	if (!vpl->ioctl) {
+		data->err = -EOPNOTSUPP;
+		return 0;
+	}
 
 	return vpl->ioctl(vpl, port, data->cmd, data->ptr);
 }
@@ -122,5 +128,5 @@ int vpl_ioctl(struct vpl *vpl, unsigned int port,
 {
 	struct vpl_ioctl data = { .cmd = cmd, .ptr = ptr };
 
-	return vpl_foreach_endpoint(vpl, port, vpl_remote_ioctl, &data);
+	return vpl_foreach_endpoint(vpl, port, vpl_remote_ioctl, &data) ?: data.err;
 }

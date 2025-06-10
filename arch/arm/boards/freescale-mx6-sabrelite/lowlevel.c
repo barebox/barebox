@@ -9,7 +9,6 @@
 #include <io.h>
 #include <mach/imx/debug_ll.h>
 #include <mach/imx/esdctl.h>
-#include <asm/cache.h>
 
 extern char __dtb_imx6q_sabrelite_start[];
 
@@ -32,8 +31,6 @@ static noinline void imx6q_sabrelite_start(void)
 ENTRY_FUNCTION(start_imx6q_sabrelite, r0, r1, r2)
 {
 	imx6_cpu_lowlevel_init();
-
-	arm_early_mmu_cache_invalidate();
 
 	relocate_to_current_adr();
 	setup_c();
@@ -63,8 +60,6 @@ static noinline void imx6dl_sabrelite_start(void)
 ENTRY_FUNCTION(start_imx6dl_sabrelite, r0, r1, r2)
 {
 	imx6_cpu_lowlevel_init();
-
-	arm_early_mmu_cache_invalidate();
 
 	relocate_to_current_adr();
 	setup_c();

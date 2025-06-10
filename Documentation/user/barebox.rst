@@ -18,15 +18,15 @@ can be checked out as follows:
 
 .. code-block:: console
 
-  $ git clone git://git.pengutronix.de/git/barebox.git
+  $ git clone https://git.pengutronix.de/git/barebox
   Cloning into 'barebox'...
-  remote: Counting objects: 113356, done.
-  remote: Compressing objects: 100% (25177/25177), done.
-  remote: Total 113356 (delta 87910), reused 111155 (delta 85935)
-  Receiving objects: 100% (113356/113356), 33.13 MiB | 183.00 KiB/s, done.
-  Resolving deltas: 100% (87910/87910), done.
-  Checking connectivity... done.
-  Checking out files: 100% (5651/5651), done.
+  remote: Enumerating objects: 330649, done.
+  remote: Counting objects: 100% (3932/3932), done.
+  remote: Compressing objects: 100% (2203/2203), done.
+  remote: Total 330649 (delta 2421), reused 2217 (delta 1706), pack-reused 326717
+  Receiving objects: 100% (330649/330649), 82.03 MiB | 14.88 MiB/s, done.
+  Resolving deltas: 100% (265076/265076), done.
+  Updating files: 100% (19054/19054), done.
 
 By default, the master branch is checked out. If you want to develop for
 barebox, this is the right branch to send patches against.

@@ -16,6 +16,7 @@
 #include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/math64.h>
+#include <linux/clk.h>
 #include <malloc.h>
 #include <kallsyms.h>
 #include <wchar.h>
@@ -310,7 +311,7 @@ char *ip4_addr_string(char *buf, const char *end, const u8 *addr, int field_widt
 }
 
 static
-char *error_string(char *buf, const char *end, const u8 *errptr, int field_width,
+char *error_string(char *buf, const char *end, const void *errptr, int field_width,
 		   int precision, int flags, const char *fmt)
 {
     if (!IS_ERR(errptr))
@@ -477,6 +478,18 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
 		      precision, flags);
 }
 
+static noinline_for_stack
+char *clock(char *buf, const char *end, const struct clk *clk,
+	    int field_width, int precision, int flags, const char *fmt)
+{
+#ifdef CONFIG_COMMON_CLK
+	if (!IS_ERR_OR_NULL(clk))
+		return string(buf, end, clk->name, field_width, precision, flags);
+#endif
+
+	return error_string(buf, end, clk, field_width, precision, flags, fmt);
+}
+
 /*
  * Show a '%p' thing.  A kernel extension is that the '%p' is followed
  * by an extra set of alphanumeric characters that are extended format
@@ -515,6 +528,7 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
  *              N no separator
  * - 'M' For a 6-byte MAC address, it prints the address in the
  *       usual colon-separated hex notation
+ * - 'C' For a clock, it prints the name in the Common Clock Framework
  *
  * Additionally, we support following barebox-specific format specifiers:
  *
@@ -575,6 +589,8 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 		if (IS_ENABLED(CONFIG_EFI_DEVICEPATH))
 			return device_path_string(buf, end, ptr, field_width, precision, flags);
 		break;
+	case 'C':
+		return clock(buf, end, ptr, field_width, precision, flags, fmt);
 	}
 
 	return raw_pointer(buf, end, ptr, field_width, precision, flags);

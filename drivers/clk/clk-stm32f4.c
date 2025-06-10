@@ -1879,7 +1879,7 @@ static void __init stm32f4_rcc_init(struct device_node *np)
 				&stm32f4_clk_lock);
 
 		if (IS_ERR(hw)) {
-			pr_warn("Unable to register %s clk\n", aux_clk->name);
+			pr_warn("Unable to register %pC clk\n", aux_clk);
 			continue;
 		}
 

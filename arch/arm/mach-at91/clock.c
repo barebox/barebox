@@ -858,7 +858,7 @@ static int at91_clock_reset(void)
 		if (clk->mode == pmc_sys_mode)
 			scdr |= clk->pmc_mask;
 
-		pr_debug("Clocks: disable unused %s\n", clk->name);
+		pr_debug("Clocks: disable unused %pC\n", clk);
 	}
 
 	at91_pmc_write(AT91_PMC_PCDR, pcdr);

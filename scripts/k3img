@@ -71,10 +71,10 @@ shasysfw=$(sha512sum $sysfw | sed 's/ .*//')
 shasysfwdata=$(sha512sum $sysfwdata | sed 's/ .*//')
 shadmdata=$(sha512sum $dmdata | sed 's/ .*//')
 
-sblsize=$(stat -c%s $sbl)
-sysfwsize=$(stat -c%s $sysfw)
-sysfwdatasize=$(stat -c%s $sysfwdata)
-dmdatasize=$(stat -c%s $dmdata)
+sblsize=$(stat -L -c%s $sbl)
+sysfwsize=$(stat -L -c%s $sysfw)
+sysfwdatasize=$(stat -L -c%s $sysfwdata)
+dmdatasize=$(stat -L -c%s $dmdata)
 
 total=$(($sblsize + $sysfwsize + $sysfwdatasize + $dmdatasize))
 
@@ -88,7 +88,7 @@ num_comp=4
 
 if [ -n "${innerdata}" ]; then
 	shainnerdata=$(sha512sum $innerdata | sed 's/ .*//')
-	innerdatasize=$(stat -c%s $innerdata)
+	innerdatasize=$(stat -L -c%s $innerdata)
 
 	innercert=$(cat <<EOF
 [sysfw_inner_cert]

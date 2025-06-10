@@ -19,6 +19,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <asm/errata.h>
+#include <asm/cache.h>
 #include <mach/tegra/lowlevel.h>
 #include <mach/tegra/tegra20-pmc.h>
 #include <mach/tegra/tegra20-car.h>
@@ -30,6 +31,7 @@ void tegra_maincomplex_entry(char *fdt)
 	u32 reg = 0;
 
 	arm_cpu_lowlevel_init();
+	arm_early_mmu_cache_invalidate();
 
 	chiptype = tegra_get_chiptype();
 

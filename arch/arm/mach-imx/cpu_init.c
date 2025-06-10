@@ -14,6 +14,7 @@
 #include <mach/imx/imx9-regs.h>
 #include <mach/imx/trdc.h>
 #include <io.h>
+#include <asm/cache.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
 
@@ -36,6 +37,7 @@ void imx6_cpu_lowlevel_init(void)
 {
 	arm_cpu_lowlevel_init();
 
+	arm_early_mmu_cache_invalidate();
 	enable_arm_errata_742230_war();
 	enable_arm_errata_743622_war();
 	enable_arm_errata_751472_war();

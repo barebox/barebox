@@ -133,6 +133,7 @@ struct omap_rng_dev;
  * @data_present: Callback to determine if data is available.
  * @init: Callback for IP specific initialization sequence.
  * @cleanup: Callback for IP specific cleanup sequence.
+ * @ignore_clocks: assume clocks are enabled (barebox-specific)
  */
 struct omap_rng_pdata {
 	u16	*regs;
@@ -140,6 +141,7 @@ struct omap_rng_pdata {
 	u32	(*data_present)(struct omap_rng_dev *priv);
 	int	(*init)(struct omap_rng_dev *priv);
 	void	(*cleanup)(struct omap_rng_dev *priv);
+	bool	ignore_clocks;
 };
 
 struct omap_rng_dev {
@@ -230,6 +232,7 @@ static struct omap_rng_pdata omap2_rng_pdata = {
 	.data_present	= omap2_rng_data_present,
 	.init		= omap2_rng_init,
 	.cleanup	= omap2_rng_cleanup,
+	.ignore_clocks	= true,
 };
 
 static inline u32 omap4_rng_data_present(struct omap_rng_dev *priv)
@@ -299,6 +302,7 @@ static struct omap_rng_pdata omap4_rng_pdata = {
 	.data_present	= omap4_rng_data_present,
 	.init		= omap4_rng_init,
 	.cleanup	= omap4_rng_cleanup,
+	.ignore_clocks	= true,
 };
 
 static struct omap_rng_pdata eip76_rng_pdata = {
@@ -336,9 +340,13 @@ static int of_get_omap_rng_device_details(struct omap_rng_dev *priv,
 	return 0;
 }
 
-static struct clk *ti_sysc_clk_get_enabled(struct device *dev, const char *clk_id)
+static struct clk *ti_sysc_clk_get_enabled(struct omap_rng_dev *priv,
+					   struct device *dev, const char *clk_id)
 {
 	struct clk *clk;
+
+	if (priv->pdata->ignore_clocks)
+		return NULL;
 
 	clk = clk_get_optional_enabled(dev, clk_id);
 	if (!clk)
@@ -377,21 +385,21 @@ static int omap_rng_probe(struct device *dev)
 		goto err_ioremap;
 	}
 
-	priv->clk = ti_sysc_clk_get_enabled(dev, NULL);
+	ret = of_get_omap_rng_device_details(priv, dev);
+	if (ret)
+		goto err_ioremap;
+
+	priv->clk = ti_sysc_clk_get_enabled(priv, dev, NULL);
 	if (IS_ERR(priv->clk)) {
 		ret = PTR_ERR(priv->clk);
 		goto err_ioremap;
 	}
 
-	priv->clk_reg = ti_sysc_clk_get_enabled(dev, "reg");
+	priv->clk_reg = ti_sysc_clk_get_enabled(priv, dev, "reg");
 	if (IS_ERR(priv->clk_reg)) {
 		ret = PTR_ERR(priv->clk_reg);
 		goto err_ioremap;
 	}
-
-	ret = of_get_omap_rng_device_details(priv, dev);
-	if (ret)
-		goto err_register;
 
 	ret = hwrng_register(dev, &priv->rng);
 	if (ret)

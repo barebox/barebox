@@ -5,6 +5,7 @@
 
 #include <linux/list.h>
 #include <linux/time.h>
+#include <linux/stat.h>
 #include <linux/mount.h>
 #include <linux/path.h>
 #include <linux/spinlock.h>
@@ -239,6 +240,25 @@ struct file {
 	void			*private_data;
 };
 
+/*
+ * Attribute flags.  These should be or-ed together to figure out what
+ * has been changed!
+ */
+#define ATTR_SIZE	(1 << 3)
+#define ATTR_FILE	(1 << 13)
+
+struct iattr {
+	unsigned int	ia_valid;
+	loff_t		ia_size;
+
+	/*
+	 * Not an attribute, but an auxiliary info for filesystems wanting to
+	 * implement an ftruncate() like method.  NOTE: filesystem should
+	 * check for (ia_valid & ATTR_FILE), and not for (ia_file != NULL).
+	 */
+	struct file	*ia_file;
+};
+
 struct super_operations {
 	struct inode *(*alloc_inode)(struct super_block *sb);
 	void (*destroy_inode)(struct inode *);
@@ -393,10 +413,21 @@ static inline loff_t i_size_read(const struct inode *inode)
 	return inode->i_size;
 }
 
+static inline void i_size_write(struct inode *inode, loff_t i_size)
+{
+	inode->i_size = i_size;
+}
+
+static inline void truncate_setsize(struct inode *inode, loff_t i_size)
+{
+	i_size_write(inode, i_size);
+}
+
 struct inode *new_inode(struct super_block *sb);
 unsigned int get_next_ino(void);
 void iput(struct inode *);
 struct inode *iget(struct inode *);
+void ihold(struct inode *inode);
 void inc_nlink(struct inode *inode);
 void clear_nlink(struct inode *inode);
 void set_nlink(struct inode *inode, unsigned int nlink);
@@ -475,5 +506,21 @@ int dcache_readdir(struct file *, struct dir_context *);
 const char *simple_get_link(struct dentry *dentry, struct inode *inode);
 struct inode *iget_locked(struct super_block *, unsigned long);
 void iget_failed(struct inode *inode);
+
+static inline void inode_init_owner(struct inode *inode,
+				    const struct inode *dir, umode_t mode)
+{
+	if (dir && dir->i_mode & S_ISGID) {
+		inode->i_gid = dir->i_gid;
+
+		/* Directories are special, and always inherit S_ISGID */
+		if (S_ISDIR(mode))
+			mode |= S_ISGID;
+	}
+
+	inode->i_mode = mode;
+}
+
+static inline void mark_inode_dirty(struct inode *inode) {}
 
 #endif /* _LINUX_FS_H */

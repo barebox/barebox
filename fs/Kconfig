@@ -81,6 +81,8 @@ config FS_NFS
 	bool
 	prompt "nfs support"
 
+source "fs/9p/Kconfig"
+
 config FS_EFI
 	depends on EFI_PAYLOAD
 	select FS_LEGACY

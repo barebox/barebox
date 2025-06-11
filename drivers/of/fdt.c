@@ -32,9 +32,13 @@ static inline bool __dt_ptr_ok(const struct fdt_header *fdt, const void *p,
 }
 #define dt_ptr_ok(fdt, p) __dt_ptr_ok(fdt, p, sizeof(*(p)), __alignof__(*(p)))
 
-static inline uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, uint32_t size)
+static inline uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, uint32_t size,
+					 uint32_t increment)
 {
 	if (check_add_overflow(dt, size, &dt))
+		return 0;
+
+	if (check_add_overflow(dt, increment, &dt))
 		return 0;
 
 	dt = ALIGN(dt, 4);
@@ -228,7 +232,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 			}
 
 			dt_struct = dt_struct_advance(&f, dt_struct,
-					sizeof(struct fdt_node_header) + len + 1);
+					sizeof(struct fdt_node_header) + 1, len);
 			if (!dt_struct) {
 				ret = -ESPIPE;
 				goto err;
@@ -261,7 +265,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 
 			node = node->parent;
 
-			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE);
+			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE, 0);
 			if (!dt_struct) {
 				ret = -ESPIPE;
 				goto err;
@@ -286,7 +290,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 			}
 
 			dt_struct = dt_struct_advance(&f, dt_struct,
-					sizeof(struct fdt_property) + len);
+					sizeof(struct fdt_property), len);
 			if (!dt_struct) {
 				ret = -ESPIPE;
 				goto err;
@@ -304,7 +308,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 			break;
 
 		case FDT_NOP:
-			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE);
+			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE, 0);
 			if (!dt_struct) {
 				ret = -ESPIPE;
 				goto err;
@@ -763,7 +767,7 @@ int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, con
 				return 0;
 
 			dt_struct = dt_struct_advance(&f, dt_struct,
-					sizeof(struct fdt_node_header) + 1);
+					sizeof(struct fdt_node_header), 1);
 			if (!dt_struct)
 				return 0;
 
@@ -790,7 +794,7 @@ int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, con
 				return 0;
 
 			dt_struct = dt_struct_advance(&f, dt_struct,
-						      sizeof(struct fdt_property) + len);
+						      sizeof(struct fdt_property), len);
 			if (!dt_struct)
 				return 0;
 
@@ -800,7 +804,7 @@ int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, con
 			return fdt_string_is_compatible(fdt_prop->data, len, compat, compat_len);
 
 		case FDT_NOP:
-			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE);
+			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE, 0);
 			if (!dt_struct)
 				return 0;
 			break;

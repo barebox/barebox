@@ -38,11 +38,13 @@ void tegra_maincomplex_entry(char *fdt)
 	/* enable ARM errata workarounds early */
 	switch (chiptype) {
 	case TEGRA20:
+		/* Cortex A9 r1p1 */
 		enable_arm_errata_716044_war();
 		enable_arm_errata_742230_war();
 		enable_arm_errata_751472_war();
 		break;
 	case TEGRA30:
+		/* Cortex A9 r2p9 */
 		enable_arm_errata_743622_war();
 		enable_arm_errata_751472_war();
 		break;

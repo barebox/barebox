@@ -9,6 +9,8 @@
 void arria10_cpu_lowlevel_init(void)
 {
 	arm_early_mmu_cache_invalidate();
+
+	/* apply necessary workarounds for Cortex A9 r4p1 */
 	enable_arm_errata_794072_war();
 	enable_arm_errata_845369_war();
 }

@@ -348,8 +348,10 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 	if (fastboot_tx_print_var(fb, &fb->variables, cmd))
 		goto out;
 
-	if (!all && !partition)
-		goto skip_partitions;
+	if (!all && !partition) {
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "no such variable: %s", cmd);
+		goto out;
+	}
 
 	file_list_for_each_entry(fb->files, fentry) {
 		int ret;
@@ -371,8 +373,11 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 	if (fastboot_tx_print_var(fb, &partition_list, cmd))
 		goto out;
 
-skip_partitions:
-	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
+	if (all)
+		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
+	else
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "no such variable: %s", cmd);
+
 out:
 	fastboot_free_variables(&partition_list);
 }

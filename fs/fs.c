@@ -330,7 +330,7 @@ static void put_file(struct file *f)
 	f->path = NULL;
 	f->fsdev = NULL;
 	iput(f->f_inode);
-	dput(f->f_dentry);
+	path_put(&f->f_path);
 }
 
 static struct file *fd_to_file(int fd, bool o_path_ok)
@@ -2550,7 +2550,7 @@ int openat(int dirfd, const char *pathname, int flags)
 	int error = 0;
 	struct inode *inode = NULL;
 	struct dentry *dentry = NULL;
-	struct path path;
+	struct path path = {};
 
 	if (flags & O_TMPFILE) {
 		error = filename_lookup(dirfd, getname(pathname), LOOKUP_DIRECTORY, &path);
@@ -2628,11 +2628,12 @@ int openat(int dirfd, const char *pathname, int flags)
 	f = get_file(fsdev);
 	if (!f) {
 		error = -EMFILE;
+		path_put(&path);
 		goto out1;
 	}
 
 	f->path = dpath(dentry, d_root);
-	f->f_dentry = dentry;
+	f->f_path = path;
 	f->f_inode = iget(inode);
 	f->f_flags = flags;
 

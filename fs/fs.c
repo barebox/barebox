@@ -2996,6 +2996,8 @@ char *canonicalize_path(int dirfd, const char *pathname)
 		goto out;
 
 	res = dpath(path.dentry, d_root);
+
+	path_put(&path);
 out:
 	errno_set(ret);
 	return res;

@@ -44,6 +44,7 @@
 #include <bselftest.h>
 #include <pbl/handoff-data.h>
 #include <libfile.h>
+#include <fuzz.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];

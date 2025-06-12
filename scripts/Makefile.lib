@@ -529,8 +529,10 @@ cmd_comp_copy ?= cat $(filter-out FORCE,$^) > $@; \
 quiet_cmd_disasm = DISASM  $@
 cmd_disasm = $(OBJDUMP) -d $< > $@
 
-quiet_cmd_ln = LN      $@
-cmd_ln = ln -sf $< $@
+quiet_cmd_symlink = LN      $@
+      cmd_symlink = mkdir -p $(dir $@) ; ln -fsn --relative $< $@
+
+cmd_symlink_quiet = mkdir -p $(dir $@) ; ln -fsn --relative $< $@
 
 quiet_cmd_check_size = CHKSIZE $2
       cmd_check_size = set -e;						\

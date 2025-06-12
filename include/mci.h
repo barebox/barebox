@@ -767,6 +767,7 @@ static inline int mmc_card_hs(struct mci *mci)
 		mci->host->ios.timing == MMC_TIMING_MMC_HS;
 }
 
+#if IN_PROPER
 /*
  * Execute tuning sequence to seek the proper bus operating
  * conditions for HS200 and HS400, which sends CMD21 to the device.
@@ -775,6 +776,14 @@ int mmc_hs200_tuning(struct mci *mci);
 int mci_execute_tuning(struct mci *mci);
 int mmc_send_tuning(struct mci *mci, u32 opcode);
 int mci_send_abort_tuning(struct mci *mci, u32 opcode);
+
+#else
+static inline int mmc_hs200_tuning(struct mci *mci) { return -ENOSYS; }
+static inline int mci_execute_tuning(struct mci *mci) { return -ENOSYS; }
+static inline int mmc_send_tuning(struct mci *mci, u32 opcode) { return -ENOSYS; }
+static inline int mci_send_abort_tuning(struct mci *mci, u32 opcode) { return -ENOSYS; }
+#endif
+
 int mmc_select_timing(struct mci *mci);
 int mci_set_blockcount(struct mci *mci, unsigned int cmdarg);
 int mci_blk_part_switch(struct mci_part *part);

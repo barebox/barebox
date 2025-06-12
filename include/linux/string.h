@@ -161,6 +161,23 @@ static inline const char *kbasename(const char *path)
 	return tail ? tail + 1 : path;
 }
 
+#if !defined(__NO_FORTIFY) && defined(__OPTIMIZE__) && defined(CONFIG_FORTIFY_SOURCE)
+#include <linux/fortify-string.h>
+#endif
+#ifndef unsafe_memcpy
+#define unsafe_memcpy(dst, src, bytes, justification)		\
+	memcpy(dst, src, bytes)
+#endif
+
+#ifndef unsafe_memset
+#define unsafe_memset(dst, val, size, justification)		\
+	memset(dst, val, size)
+#endif
+
+#ifndef unsafe_strlen
+#define unsafe_strlen(str, justification)			\
+	strlen(str)
+#endif
 
 #ifdef __cplusplus
 }

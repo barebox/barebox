@@ -106,7 +106,7 @@ static inline bool file_is_compressed_file(enum filetype ft)
 #define ARM_HEAD_MAGICWORD_OFFSET	0x20
 #define ARM_HEAD_SIZE_OFFSET		0x2C
 
-#ifdef CONFIG_ARM
+#if defined(CONFIG_ARM) || defined(CONFIG_FUZZ)
 static inline int is_barebox_arm_head(const char *head)
 {
 	return !strcmp(head + ARM_HEAD_MAGICWORD_OFFSET, "barebox");
@@ -122,7 +122,7 @@ static inline int is_barebox_arm_head(const char *head)
 #define MIPS_HEAD_MAGICWORD_OFFSET	0x10
 #define MIPS_HEAD_SIZE_OFFSET		0x1C
 
-#ifdef CONFIG_MIPS
+#if defined(CONFIG_MIPS) || defined(CONFIG_FUZZ)
 static inline int is_barebox_mips_head(const char *head)
 {
 	return !strncmp(head + MIPS_HEAD_MAGICWORD_OFFSET, "barebox", 7);

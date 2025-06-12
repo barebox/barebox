@@ -6,6 +6,8 @@
 #include <linux/compiler.h>
 #include <string.h>
 
+#define NO_FORTIFY_SOURCE "We want to test stack protector, not FORTIFY_SOURCE"
+
 static noinline void stack_overflow_frame(void)
 {
 	volatile int length = 512;
@@ -17,10 +19,10 @@ static noinline void stack_overflow_frame(void)
 	 */
 	OPTIMIZER_HIDE_VAR(length);
 
-	memset(a, 0xa5, length);
+	unsafe_memset(a, 0xa5, length, NO_FORTIFY_SOURCE);
 
 	printf("We have smashed our stack as this should not exceed 128: sizeof(a) = %zu\n",
-	       strlen(a));
+	       unsafe_strlen(a, NO_FORTIFY_SOURCE));
 }
 
 static noinline void stack_overflow_region(u64 i)

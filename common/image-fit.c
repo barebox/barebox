@@ -23,6 +23,7 @@
 #include <crypto/public_key.h>
 #include <uncompress.h>
 #include <image-fit.h>
+#include <fuzz.h>
 
 #define FDT_MAX_DEPTH 32
 #define FDT_MAX_PATH_LEN 200
@@ -825,6 +826,26 @@ default_unit:
 	return -ENOENT;
 }
 
+static int fit_find_last_unit(struct fit_handle *handle,
+			      const char **out_unit)
+{
+	struct device_node *conf_node = handle->configurations;
+	struct device_node *child;
+	const char *unit = NULL;
+
+	if (!conf_node)
+		return 0;
+
+	for_each_child_of_node(conf_node, child)
+		unit = child->name;
+
+	if (!unit)
+		return -ENOENT;
+
+	*out_unit = unit;
+	return 0;
+}
+
 /**
  * fit_open_configuration - open a FIT configuration
  * @handle: The FIT image handle
@@ -970,12 +991,16 @@ struct fit_handle *fit_open(const char *filename, bool verbose,
 	return handle;
 }
 
-void fit_close(struct fit_handle *handle)
+static void __fit_close(struct fit_handle *handle)
 {
 	if (handle->root)
 		of_delete_node(handle->root);
-
 	free(handle->fit_alloc);
+}
+
+void fit_close(struct fit_handle *handle)
+{
+	__fit_close(handle);
 	free(handle);
 }
 
@@ -997,3 +1022,50 @@ static int bootm_fit_register(void)
 	return register_image_handler(&fit_handler);
 }
 late_initcall(bootm_fit_register);
+
+static int fuzz_fit(const u8 *data, size_t size)
+{
+	const char *unit, *imgname = "kernel";
+	struct fit_handle handle = {};
+	const void *outdata;
+	unsigned long outsize, addr;
+	int ret;
+	void *config;
+
+	handle.verbose = false;
+	handle.verify = BOOTM_VERIFY_AVAILABLE;
+
+	handle.size = size;
+	handle.fit = data;
+	handle.fit_alloc = NULL;
+
+	ret = fit_do_open(&handle);
+	if (ret)
+		goto out;
+
+	config = fit_open_configuration(&handle, NULL);
+	if (IS_ERR(config)) {
+		ret = fit_find_last_unit(&handle, &unit);
+		if (ret)
+			goto out;
+		config = fit_open_configuration(&handle, unit);
+	}
+	if (IS_ERR(config)) {
+		ret = PTR_ERR(config);
+		goto out;
+	}
+
+	ret = fit_open_image(&handle, config, imgname, &outdata, &outsize);
+	if (ret)
+		goto out;
+
+	fit_get_image_address(&handle, config, imgname, "load", &addr);
+	fit_get_image_address(&handle, config, imgname, "entry", &addr);
+
+	ret = fit_open_image(&handle, NULL, imgname, &outdata, &outsize);
+out:
+	__fit_close(&handle);
+
+	return 0;
+}
+fuzz_test("fit", fuzz_fit);

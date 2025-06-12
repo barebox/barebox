@@ -34,7 +34,7 @@ endif
 
 firmware-$(CONFIG_FIRMWARE_NEXT_IMAGE) += next-image.bin
 
-firmware-$(CONFIG_DRIVER_NET_FSL_FMAN) += fsl_fman_ucode_ls1046_r1.0_106_4_18.bin
+obj-firmware-$(CONFIG_DRIVER_NET_FSL_FMAN) += fsl_fman_ucode_ls1046_r1.0_106_4_18.bin
 
 fw-external-$(CONFIG_FIRMWARE_LS1028A_ATF) += ls1028a-bl31.bin
 fw-external-$(CONFIG_FIRMWARE_LS1046A_ATF) += ls1046a-bl31.bin
@@ -45,6 +45,7 @@ pbl-firmware-$(CONFIG_FIRMWARE_TQMA6UL_OPTEE) += mba6ul_optee.bin
 fwobjdir := $(objtree)/firmware
 
 pbl-y     := $(addsuffix .gen.o, $(pbl-firmware-y))
+obj-y     := $(addsuffix .gen.o, $(obj-firmware-y))
 obj-pbl-y := $(addsuffix .gen.o, $(firmware-y))
 pbl-fwext-y := $(addsuffix .extgen.o, $(fw-external-y))
 

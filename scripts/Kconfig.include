@@ -28,6 +28,7 @@ cc-info := $(shell,$(srctree)/scripts/cc-version.sh $(CC))
 $(error-if,$(success,test -z "$(cc-info)"),Sorry$(comma) this C compiler is not supported.)
 cc-name := $(shell,set -- $(cc-info) && echo $1)
 cc-version := $(shell,set -- $(cc-info) && echo $2)
+clang-runtime-dir = $(shell,$(srctree)/scripts/clang-runtime-dir.sh $(CC))
 
 # $(cc-option,<flag>)
 # Return y if the compiler supports <flag>, n otherwise

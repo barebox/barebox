@@ -84,10 +84,10 @@ config I2C_RK3X
 config I2C_CADENCE
 	bool "Cadence I2C adapter"
 	depends on HAVE_CLK
-	depends on ARCH_ZYNQMP || COMPILE_TEST
+	depends on ARCH_ZYNQ || ARCH_ZYNQMP || COMPILE_TEST
 	help
 	  Say Y here to include support for the Cadence I2C host controller found
-	  in Zynq UltraScale+ MPSoCs.
+	  in Zynq-7000 or Zynq UltraScale+ MPSoCs.
 
 config I2C_EFI
 	bool "EFI I2C Master driver"

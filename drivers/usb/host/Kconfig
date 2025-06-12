@@ -14,6 +14,14 @@ config USB_EHCI_ATMEL
 	select USB_OHCI_AT91
 	bool "Atmel EHCI driver"
 
+config USB_EHCI_ZYNQ
+	bool "Support for Xilinx Zynq on-chip EHCI USB controller"
+	depends on ARCH_ZYNQ
+	depends on USB_EHCI
+	select USB_ULPI
+	help
+	  Enable support for Zynq on-chip EHCI USB controller
+
 config USB_OHCI
 	bool "OHCI driver"
 	depends on !MMU && HAS_DMA

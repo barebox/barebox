@@ -30,6 +30,8 @@ struct nvmem_device {
 					     const void *val, size_t val_size);
 	int			(*reg_read)(void *ctx, unsigned int reg,
 					    void *val, size_t val_size);
+	int			(*reg_protect)(void *ctx, unsigned int reg,
+					       size_t bytes, int prot);
 };
 
 struct nvmem_cell {
@@ -87,9 +89,38 @@ static ssize_t nvmem_cdev_write(struct cdev *cdev, const void *buf, size_t count
 	return retlen;
 }
 
+static int nvmem_cdev_protect(struct cdev *cdev, size_t count, loff_t offset,
+			      int prot)
+{
+	struct nvmem_device *nvmem;
+
+	nvmem = container_of(cdev, struct nvmem_device, cdev);
+
+	dev_dbg(cdev->dev, "protect ofs: 0x%08llx count: 0x%08zx prot: %d\n",
+		offset, count, prot);
+
+	if (!nvmem->reg_protect) {
+		dev_warn(cdev->dev, "NVMEM device %s does not support protect operation\n",
+			 nvmem->name);
+		return -EOPNOTSUPP;
+	}
+
+	if (!count)
+		return 0;
+
+	if (offset + count > nvmem->size) {
+		dev_err(cdev->dev, "protect range out of bounds (ofs: 0x%08llx, count 0x%08zx, size 0x%08zx)\n",
+			offset, count, nvmem->size);
+		return -EINVAL;
+	}
+
+	return nvmem->reg_protect(nvmem->priv, offset, count, prot);
+}
+
 static struct cdev_operations nvmem_chrdev_ops = {
 	.read  = nvmem_cdev_read,
 	.write  = nvmem_cdev_write,
+	.protect = nvmem_cdev_protect,
 };
 
 static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
@@ -207,6 +238,7 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	nvmem->dev.parent = config->dev;
 	nvmem->reg_read = config->reg_read;
 	nvmem->reg_write = config->reg_write;
+	nvmem->reg_protect = config->reg_protect;
 	np = config->cdev ? cdev_of_node(config->cdev) : config->dev->of_node;
 	nvmem->dev.of_node = np;
 	nvmem->priv = config->priv;

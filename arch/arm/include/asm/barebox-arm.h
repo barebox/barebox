@@ -61,7 +61,7 @@ void *barebox_arm_boot_dtb(void);
  *                                   ↓
  *  ---------- arm_mem_optee() / arm_mem_barebox_image_end() ----------
  *                                   ↑
- *                                 SZ_32K
+ *                              SCRATCH_SIZE
  *                                   ↓
  *  ------------------------ arm_mem_scratch() ------------------------
  *                                   ↑
@@ -105,7 +105,7 @@ static inline unsigned long arm_mem_barebox_image_end(unsigned long endmem)
 
 static inline unsigned long arm_mem_scratch(unsigned long endmem)
 {
-	return arm_mem_optee(endmem) - SZ_32K;
+	return arm_mem_optee(endmem) - SCRATCH_SIZE;
 }
 
 static inline unsigned long arm_mem_stack(unsigned long endmem)

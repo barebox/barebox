@@ -94,6 +94,10 @@ With these barebox can be compiled as:
 .. note:: The RK3566 and RK3568 seem to share the bl31 and bl32 firmware files,
   whereas the memory initialization blob is different.
 
+.. note:: The bl31 from the rkbin repository seems to be unable to handle
+  device trees of a larger size (for example, if CONFIG_OF_OVERLAY_LIVE is
+  enabled). Disable CONFIG_ARCH_ROCKCHIP_ATF_PASS_FDT in this case.
+
 Creating a bootable SD card
 ---------------------------
 

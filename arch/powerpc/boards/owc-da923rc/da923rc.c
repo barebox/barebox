@@ -88,6 +88,7 @@ static int da923rc_devices_init(void)
 {
 	add_cfi_flash_device(0, 0xfe000000, 32 << 20, 0);
 	devfs_add_partition("nor0", 0x0, 0x8000, DEVFS_PARTITION_FIXED, "env0");
+	default_environment_path_set("/dev/env0");
 	devfs_add_partition("nor0", 0x1f80000, 8 << 16, DEVFS_PARTITION_FIXED,
 			    "self0");
 	add_generic_device("i2c-fsl", 0, NULL, I2C1_BASE_ADDR, 0x100,

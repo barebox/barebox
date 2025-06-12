@@ -300,6 +300,7 @@ static int animeo_ip_devices_init(void)
 	dev_add_bb_dev("self_raw", "self0");
 	devfs_add_partition("nand0", SZ_256K + SZ_32K, SZ_32K, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
+	default_environment_path_set("/dev/env0");
 
 	animeo_ip_add_device_eth();
 

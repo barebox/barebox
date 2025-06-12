@@ -4,6 +4,7 @@
 #include <common.h>
 #include <init.h>
 #include <gpio.h>
+#include <envfs.h>
 #include <environment.h>
 #include <errno.h>
 #include <mci.h>
@@ -332,9 +333,8 @@ static int register_persistent_environment(void)
 		return -ENODEV;
 	}
 
-	/* use the full partition as our persistent environment storage */
-	env = devfs_add_partition("disk0.1", 0, cdev->size,
-					DEVFS_PARTITION_FIXED, "env0");
+	default_environment_path_set("/dev/disk0.1");
+
 	cdev_close(cdev);
 
 	return PTR_ERR_OR_ZERO(env);

@@ -26,6 +26,7 @@
 #include <platform_data/eth-fec.h>
 #include <types.h>
 #include <memory.h>
+#include <envfs.h>
 #include <linux/sizes.h>
 #include <linux/stat.h>
 #include <asm/io.h>
@@ -69,6 +70,7 @@ static int devices_init (void)
 
 	devfs_add_partition("nor0", s.st_size - SZ_1M, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", s.st_size - SZ_512K, SZ_512K, DEVFS_PARTITION_FIXED, "env0");
+	default_environment_path_set("/dev/env0");
 
 	return 0;
 }

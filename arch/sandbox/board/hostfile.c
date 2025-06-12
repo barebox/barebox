@@ -21,6 +21,7 @@
 #include <malloc.h>
 #include <mach/linux.h>
 #include <init.h>
+#include <envfs.h>
 #include <errno.h>
 #include <linux/err.h>
 #include <mach/hostfile.h>
@@ -241,6 +242,9 @@ static int of_hostfile_fixup(struct device_node *root, void *ctx)
 
 int barebox_register_filedev(struct hf_info *hf)
 {
+	if (!strcmp(hf->devname, "env0"))
+		default_environment_path_set("/dev/env0");
+
 	return of_register_fixup(of_hostfile_fixup, hf);
 }
 

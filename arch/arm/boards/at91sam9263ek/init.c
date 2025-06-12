@@ -221,6 +221,7 @@ static int at91sam9263ek_devices_init(void)
 	if (IS_ENABLED(CONFIG_DRIVER_CFI) && cdev_by_name("nor0")) {
 		devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self");
 		devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
+		default_environment_path_set("/dev/env0");
 	} else if (IS_ENABLED(CONFIG_NAND_ATMEL)) {
 		devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
 		dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");
@@ -230,6 +231,7 @@ static int at91sam9263ek_devices_init(void)
 		dev_add_bb_dev("env_raw", "env0");
 		devfs_add_partition("nand0", SZ_512K, SZ_128K, DEVFS_PARTITION_FIXED, "env_raw1");
 		dev_add_bb_dev("env_raw1", "env1");
+		default_environment_path_set("/dev/env0");
 	}
 
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9263EK);

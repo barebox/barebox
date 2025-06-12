@@ -82,6 +82,7 @@ static int devices_init(void)
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, CFG_FLASH_BASE, 16 << 20, 0);
 	devfs_add_partition("nor0", 0xf60000, 0x8000, DEVFS_PARTITION_FIXED,
 			"env0");
+	default_environment_path_set("/dev/env0");
 	devfs_add_partition("nor0", 0xf80000, 0x80000, DEVFS_PARTITION_FIXED,
 			"self0");
 	add_generic_device("i2c-fsl", 0, NULL, I2C1_BASE_ADDR,

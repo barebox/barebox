@@ -3,6 +3,7 @@
 
 #include <common.h>
 #include <bootsource.h>
+#include <envfs.h>
 #include <environment.h>
 #include <fcntl.h>
 #include <platform_data/eth-fec.h>
@@ -47,6 +48,7 @@ static int tx53_devices_init(void)
 		devfs_add_partition("mmc0", SZ_512K, SZ_1M,
 				DEVFS_PARTITION_FIXED, "env0");
 		envdev = "MMC";
+		default_environment_path_set("/dev/env0");
 		flag_mmc |= BBU_HANDLER_FLAG_DEFAULT;
 		break;
 	case BOOTSOURCE_NAND:
@@ -57,6 +59,7 @@ static int tx53_devices_init(void)
 		devfs_add_partition("nand0", 0x80000, 0x100000,
 				DEVFS_PARTITION_FIXED, "env_raw");
 		dev_add_bb_dev("env_raw", "env0");
+		default_environment_path_set("/dev/env0");
 		envdev = "NAND";
 		flag_nand |= BBU_HANDLER_FLAG_DEFAULT;
 		break;

@@ -159,6 +159,7 @@ static int at91rm9200ek_devices_init(void)
 #if defined(CONFIG_DRIVER_CFI) || defined(CONFIG_DRIVER_CFI_OLD)
 	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
+	default_environment_path_set("/dev/env0");
 #endif
 
 	armlinux_set_architecture(MACH_TYPE_AT91RM9200EK);

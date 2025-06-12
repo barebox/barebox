@@ -6,6 +6,7 @@
 #include <common.h>
 #include <gpio.h>
 #include <init.h>
+#include <envfs.h>
 #include <linux/clk.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/rawnand.h>
@@ -134,6 +135,7 @@ static int evk_devices_init(void)
 	devfs_add_partition("nand0", BOOTSTRAP_SIZE + SZ_256K + SZ_128K,
 			    SZ_128K, DEVFS_PARTITION_FIXED, "env_raw1");
 	dev_add_bb_dev("env_raw1", "env1");
+	default_environment_path_set("/dev/env0");
 
 	return 0;
 }

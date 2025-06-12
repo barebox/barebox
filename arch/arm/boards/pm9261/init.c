@@ -135,6 +135,7 @@ static int pm9261_devices_init(void)
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x10000, DEVFS_PARTITION_FIXED, "env0");
+	default_environment_path_set("/dev/env0");
 
 	armlinux_set_architecture(MACH_TYPE_PM9261);
 

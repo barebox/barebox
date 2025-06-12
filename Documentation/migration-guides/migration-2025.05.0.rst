@@ -92,6 +92,11 @@ Build system
 Bisectability
 -------------
 
-Many users of ``read*_poll_is_timeout`` are broken between
-``554bbc479c09..dea0ad02bbd6``, which can falsify git bisect
-results.
+Following regressions had a wider impact and could falsify
+falsify git bisect results:
+
+* Many users of ``read*_poll_is_timeout`` are broken between
+  ``554bbc479c09..dea0ad02bbd6``.
+
+* Handling of compressed kernel images on ARM64/RISC-V was broken between
+  ``a1248198fa3a..95aeb8d47d10``.

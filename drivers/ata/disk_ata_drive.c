@@ -315,7 +315,7 @@ int ata_port_register(struct ata_port *port)
 	int ret;
 
 	if (port->devname) {
-		dev_set_name(&port->class_dev, port->devname);
+		dev_set_name(&port->class_dev, "%s", port->devname);
 		port->class_dev.id = DEVICE_ID_SINGLE;
 	} else {
 		dev_set_name(&port->class_dev, "ata");

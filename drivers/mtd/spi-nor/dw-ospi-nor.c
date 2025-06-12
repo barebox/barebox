@@ -764,7 +764,7 @@ static int dw_spi_setup_flash(struct device *dev,
 	if (!nor->dev)
 		return -ENOMEM;
 
-	dev_set_name(nor->dev, np->name);
+	dev_set_name(nor->dev, "%s", np->name);
 
 	nor->dev->of_node = np;
 	nor->dev->id = DEVICE_ID_SINGLE;

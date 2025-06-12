@@ -19,6 +19,7 @@
 		#size-cells = <1>;
 
 		io_board_factory_data: factory-data@0 {
+			compatible = "lxa,tlv-ioboard-v1";
 			reg = <0 0x100>;
 			label = "tlv";
 		};

@@ -11,6 +11,8 @@ char *strsep_unescaped(char **, const char *, char *);
 char *stpcpy(char *dest, const char *src);
 bool strends(const char *str, const char *postfix);
 
+void *memrchr(const void *s, int c, size_t n);
+
 void *__default_memset(void *, int, __kernel_size_t);
 void *__nokasan_default_memset(void *, int, __kernel_size_t);
 
@@ -48,6 +50,11 @@ static inline bool isempty(const char *s)
 static inline const char *nonempty(const char *s)
 {
 	return isempty(s) ? NULL : s;
+}
+
+static inline bool is_nul_terminated(const char *val, size_t len)
+{
+	return strnlen(val, len) != len;
 }
 
 #endif /* __STRING_H */

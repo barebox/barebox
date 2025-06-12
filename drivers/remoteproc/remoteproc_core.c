@@ -111,7 +111,7 @@ static int rproc_register_dev(struct rproc *rproc, const char *alias)
 {
 	if (alias) {
 		rproc->dev.id = DEVICE_ID_SINGLE;
-		dev_set_name(&rproc->dev, alias);
+		dev_set_name(&rproc->dev, "%s", alias);
 	} else {
 		rproc->dev.id = DEVICE_ID_DYNAMIC;
 		dev_set_name(&rproc->dev, "remoteproc");

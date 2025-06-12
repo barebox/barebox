@@ -96,7 +96,7 @@ EXPORT_SYMBOL_GPL(typec_get_drvdata);
 static int typec_register_port_dev(struct typec_port *port, const char *name, int id)
 {
 	port->dev.id = id;
-	dev_set_name(&port->dev, name);
+	dev_set_name(&port->dev, "%s", name);
 
 	return register_device(&port->dev);
 }

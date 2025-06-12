@@ -90,6 +90,7 @@
 		#size-cells = <1>;
 
 		baseboard_factory_data: factory-data@0 {
+			compatible = "lxa,tlv-baseboard-v1";
 			reg = <0 0x400>;
 			label = "tlv";
 		};
@@ -103,6 +104,7 @@
 		#size-cells = <1>;
 
 		powerboard_factory_data: factory-data@0 {
+			compatible = "lxa,tlv-powerboard-v1";
 			reg = <0 0x100>;
 			label = "tlv";
 		};

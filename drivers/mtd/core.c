@@ -671,7 +671,7 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 
 	if (!devname)
 		devname = "mtd";
-	dev_set_name(&mtd->dev, devname);
+	dev_set_name(&mtd->dev, "%s", devname);
 	mtd->dev.id = device_id;
 
 	if (IS_ENABLED(CONFIG_MTD_UBI))

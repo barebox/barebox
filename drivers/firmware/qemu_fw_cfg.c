@@ -270,7 +270,7 @@ static int fw_cfg_probe(struct device *dev)
 	fw_cfg->cdev.dev = dev;
 	fw_cfg->cdev.filetype = filetype_qemu_fw_cfg;
 
-	dev_set_name(dev, fw_cfg->cdev.name);
+	dev_set_name(dev, "%s", fw_cfg->cdev.name);
 
 	ret = devfs_create(&fw_cfg->cdev);
 	if (ret) {

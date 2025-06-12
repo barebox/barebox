@@ -471,7 +471,7 @@ static void rx_handler_dl_image(struct usb_ep *ep, struct usb_request *req)
 					    req->actual);
 	if (ret < 0) {
 		fastboot_tx_print(&f_fb->fastboot, FASTBOOT_MSG_FAIL,
-				  strerror(-ret));
+				  "%pe", ERR_PTR(ret));
 		return;
 	}
 

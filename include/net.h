@@ -128,6 +128,18 @@ static inline void of_eth_register_ethaddr(struct device_node *node,
 void eth_register_ethaddr(int ethid, const char *ethaddr);
 void of_eth_register_ethaddr(struct device_node *node, const char *ethaddr);
 #endif
+
+#ifdef CONFIG_OFTREE
+struct device_node *eth_of_get_fixup_node(struct device_node *root,
+					  const char *node_path, int ethid);
+#else
+static inline struct device_node *eth_of_get_fixup_node(struct device_node *root,
+							const char *node_path, int ethid)
+{
+	return NULL;
+}
+#endif
+
 /*
  *	Ethernet header
  */
@@ -601,5 +613,14 @@ void ifdown_all(void);
 	class_for_each_container_of_device(&eth_class, netdev, dev)
 
 extern struct class eth_class;
+
+struct eth_ethaddr {
+	struct list_head list;
+	u8 ethaddr[ETH_ALEN];
+	int ethid;
+	struct device_node *node;
+};
+
+extern struct list_head ethaddr_list;
 
 #endif /* __NET_H__ */

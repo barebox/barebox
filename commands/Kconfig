@@ -2574,6 +2574,18 @@ config CMD_STATE
 	depends on STATE
 	prompt "state"
 
+config CMD_TLV
+	tristate
+	depends on TLV
+	prompt "tlv"
+	help
+	  tlv - handle barebox TLV
+
+	  Usage: tlv [-f] FILE
+
+	  The TLV command does the equivalent of having a "barebox,tlv"
+	  compatible node point at the file. It's meant as a debugging aid.
+
 config CMD_DHRYSTONE
 	bool
 	prompt "dhrystone"

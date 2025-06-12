@@ -14,7 +14,7 @@ struct device *device_alloc(const char *devname, int id)
 	struct device *dev;
 
 	dev = xzalloc(sizeof(*dev));
-	dev_set_name(dev, devname);
+	dev_set_name(dev, "%s", devname);
 	dev->id = id;
 
 	return dev;

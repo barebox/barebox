@@ -1179,6 +1179,30 @@ config BTHREAD
 	  scheduled within delay loops and the console idle to asynchronously
 	  execute actions, like checking for link up or feeding a watchdog.
 
+config TLV
+	bool "barebox TLV support"
+	depends on OFDEVICE
+	help
+	  barebox TLV is a scheme for storing factory data on non-volatile
+	  storage. Unlike state, it's meant to be read-only.
+
+config TLV_DRV
+	bool "barebox TLV generic driver"
+	depends on TLV
+	default y
+	help
+	  barebox,tlv devices in the device tree will be matched against
+	  a compatible decoder via the 4-byte magic header.
+
+config TLV_BAREBOX
+	bool "barebox TLV common format"
+	depends on TLV
+	depends on PARAMETER
+	select PRINTF_HEXSTR
+	default y
+	help
+	  Decoder support for the common barebox TLV format.
+
 config STATE
 	bool "generic state infrastructure"
 	select CRC32
@@ -1281,6 +1305,16 @@ config MACHINE_ID
 
 	  Note: if no hashable information is available no machine id will be passed
 	  to the kernel.
+
+config SERIAL_NUMBER_FIXUP_SYSTEMD_HOSTNAME
+	bool "append board serial number to systemd.hostname= fixup"
+	depends on FLEXIBLE_BOOTARGS
+	help
+	  When a systemd.hostname= kernel command line argument is
+	  fixed up, append a `-${global.serial_number}' suffix.
+
+	  This option without effect if global.bootm.provide_hostname
+	  is unset.
 
 config SYSTEMD_OF_WATCHDOG
 	bool "inform devicetree-enabled kernel of used watchdog"

@@ -106,7 +106,7 @@ int pwmchip_add(struct pwm_chip *chip)
 	pwm->chip = chip;
 	pwm->hwdev = chip->dev;
 
-	dev_set_name(&pwm->dev, chip->devname);
+	dev_set_name(&pwm->dev, "%s", chip->devname);
 	pwm->dev.id = DEVICE_ID_SINGLE;
 	pwm->dev.parent = chip->dev;
 

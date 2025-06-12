@@ -19,3 +19,8 @@ config BOARD_WOLFVISION
 	bool
 	select AIODEV
 	select ROCKCHIP_SARADC
+
+config BOARD_LXA
+	bool "LXA common board support" if COMPILE_TEST
+	select TLV
+	select TLV_BAREBOX

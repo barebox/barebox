@@ -1298,7 +1298,7 @@ again:
 		pd_dev->id = domain_index;
 		pd_dev->parent = dev;
 		pd_dev->priv = domain;
-		dev_set_name(pd_dev, imx_pgc_domain_id[0].name);
+		dev_set_name(pd_dev, "%s", imx_pgc_domain_id[0].name);
 
 		ret = platform_device_register(pd_dev);
 		if (ret)

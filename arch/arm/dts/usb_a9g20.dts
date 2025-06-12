@@ -2,3 +2,7 @@
 #include <arm/microchip/usb_a9g20.dts>
 #include "at91sam9g20.dtsi"
 #include "calao_nand.dtsi"
+
+/ {
+	barebox,disable-deep-probe;
+};

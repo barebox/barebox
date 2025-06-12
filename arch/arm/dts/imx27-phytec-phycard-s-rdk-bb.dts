@@ -6,6 +6,8 @@
 #include "imx27-phytec-phycard-s-som.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		stdout-path = &uart1;
 

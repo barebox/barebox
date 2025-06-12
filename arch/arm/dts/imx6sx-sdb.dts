@@ -11,6 +11,8 @@
 #include "imx6sx.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";

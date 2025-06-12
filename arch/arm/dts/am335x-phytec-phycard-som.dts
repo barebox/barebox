@@ -13,6 +13,7 @@
 / {
 	model = "Phytec phyCARD AM335x";
 	compatible = "phytec,phycard-am335x-som", "phytec,am335x-som", "ti,am33xx";
+	barebox,disable-deep-probe;
 };
 
 &eeprom {

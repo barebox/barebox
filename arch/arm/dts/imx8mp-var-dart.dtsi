@@ -12,6 +12,7 @@
 
 / {
 	compatible = "variscite,imx8mp-var-dart", "fsl,imx8mp";
+	barebox,deep-probe;
 
 	aliases {
 		ethernet0 = &eqos;

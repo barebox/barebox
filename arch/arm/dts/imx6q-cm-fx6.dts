@@ -18,6 +18,7 @@
 / {
 	model = "CompuLab CM-FX6";
 	compatible = "compulab,cm-fx6", "fsl,imx6q";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart4;

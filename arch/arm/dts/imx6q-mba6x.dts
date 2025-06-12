@@ -16,6 +16,7 @@
 / {
 	model = "TQ TQMA6Q on MBa6x";
 	compatible = "tq,mba6x", "tq,tqma6q", "fsl,imx6q";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart2;

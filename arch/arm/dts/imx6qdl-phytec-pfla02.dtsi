@@ -12,6 +12,8 @@
 #include <arm/nxp/imx/imx6qdl-phytec-pfla02.dtsi>
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		environment-nand {
 			compatible = "barebox,environment";

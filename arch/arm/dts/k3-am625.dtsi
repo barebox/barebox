@@ -1,5 +1,7 @@
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		barebox,bootsource-mmc0 = &sdhci0;
 		barebox,bootsource-mmc1 = &sdhci1;

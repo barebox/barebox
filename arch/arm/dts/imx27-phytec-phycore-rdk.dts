@@ -5,6 +5,8 @@
 #include <arm/nxp/imx/imx27-phytec-phycore-rdk.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart1;
 

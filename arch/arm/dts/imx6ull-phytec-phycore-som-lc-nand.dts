@@ -14,6 +14,7 @@
 / {
 	model = "PHYTEC phyCORE-i.MX6 ULL SOM low-cost with NAND";
 	compatible = "phytec,imx6ul-pcl063-nand", "fsl,imx6ull";
+	barebox,deep-probe;
 };
 
 &fec1 {

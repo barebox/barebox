@@ -6,6 +6,8 @@
 #include "fsl-ls1028a.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		environment-sd {
 			status = "disabled";

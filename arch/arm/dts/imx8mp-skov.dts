@@ -11,6 +11,7 @@
 / {
 	model = "Skov i.MX8MP";
 	compatible = "skov,imx8mp", "fsl,imx8mp";
+	barebox,deep-probe;
 
 	chosen {
 		stdout-path = &uart2;

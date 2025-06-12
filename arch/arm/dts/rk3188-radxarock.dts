@@ -15,6 +15,8 @@
 #include <arm/rockchip/rk3188-radxarock.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart2;
 

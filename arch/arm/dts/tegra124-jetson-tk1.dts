@@ -2,6 +2,8 @@
 #include "tegra124.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uartd;
 

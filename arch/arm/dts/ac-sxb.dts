@@ -8,6 +8,8 @@
 #include "imx7d-ddrc.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart1;
 	};

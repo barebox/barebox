@@ -17,6 +17,7 @@
 / {
 	model = "PHYTEC phyCARD-i.MX6 Quad";
 	compatible = "phytec,imx6q-pcaaxl3", "fsl,imx6q";
+	barebox,deep-probe;
 
 	chosen {
 		stdout-path = &uart3;

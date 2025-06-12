@@ -15,6 +15,7 @@
 / {
 	model = "Wago PFC200 (AM3505)";
 	compatible = "ti,pfc200", "ti,am3517", "ti,omap3";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart3;

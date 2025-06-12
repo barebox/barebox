@@ -9,6 +9,10 @@
 #include "imx6dl.dtsi"
 #include "imx6qdl-smarc-samx6i.dtsi"
 
+/ {
+	barebox,disable-deep-probe;
+};
+
 &fec {
 	status = "okay";
 };

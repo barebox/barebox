@@ -8,6 +8,7 @@
 / {
 	model = "Black Swift";
 	compatible = "smartlx,black-swift";
+	barebox,disable-deep-probe;
 
 	aliases {
 		spiflash = &spiflash;

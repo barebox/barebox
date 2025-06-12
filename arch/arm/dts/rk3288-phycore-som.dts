@@ -19,6 +19,7 @@
 / {
 	model = "phycore-rk3288";
 	compatible = "phytec,rk3288-phycore-som", "rockchip,rk3288";
+	barebox,disable-deep-probe;
 
 	memory@0 {
 		device_type = "memory";

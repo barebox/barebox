@@ -14,3 +14,7 @@
 #include <arm/nxp/imx/imx6dl-nitrogen6x.dts>
 #include "imx6dl.dtsi"
 #include "imx6qdl-nitrogen6x.dtsi"
+
+/ {
+	barebox,disable-deep-probe;
+};

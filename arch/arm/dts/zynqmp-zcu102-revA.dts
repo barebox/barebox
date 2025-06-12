@@ -3,6 +3,8 @@
 #include <arm64/xilinx/zynqmp-zcu102-revA.dts>
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";

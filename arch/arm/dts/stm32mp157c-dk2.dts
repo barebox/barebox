@@ -6,3 +6,7 @@
 
 #include <arm/st/stm32mp157c-dk2.dts>
 #include "stm32mp15xx-dkx.dtsi"
+
+/ {
+	barebox,deep-probe;
+};

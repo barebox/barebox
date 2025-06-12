@@ -7,6 +7,8 @@
 #include "at91-sama5d27_som1.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment-qspi {
 			compatible = "barebox,environment";

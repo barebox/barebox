@@ -1,5 +1,27 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+config DEEP_PROBE_DEFAULT
+	bool "Probe devices recursively on-demand"
+	help
+          The barebox 'deep probe' or 'probe on demand' mechanism gets
+          rid of the EPROBE_DEFER error code from probes by reordering
+          the device population and the driver registration.
+          All drivers are registered first and afterwards devices are
+          populated. When a device probing requires a resource that's
+          not yet available, the device providing that resource is probed
+          recursively, hence the probe callstack gets deeper until all
+          resources are available.
+
+          This changes the order in which drivers are initialized, which
+          can unearth bugs in drivers. Board code that makes use of
+          different initcall levels to interleave with driver probes
+          will behave differently.
+
+          If unsure and you want to fix implicit assumptions that may
+          break your startup, say 'y'.
+          If unsure and you want deep probe to only be enabled
+          explicitly per top-level machine compatible, say 'n'.
+
 config PM_GENERIC_DOMAINS
 	bool
 

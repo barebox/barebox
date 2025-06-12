@@ -3,3 +3,7 @@
 
 #include <arm/nxp/imx/imx6dl-prtmvt.dts>
 #include "imx6qdl-prti6q-nor.dtsi"
+
+/ {
+	barebox,deep-probe;
+};

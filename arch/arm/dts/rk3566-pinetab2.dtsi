@@ -4,6 +4,8 @@
 #include "rk356x.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	chosen: chosen {
 		environment-sd {
 			compatible = "barebox,environment";

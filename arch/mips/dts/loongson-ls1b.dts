@@ -5,6 +5,7 @@
 / {
 	model = "Loongson Tech LS1B Demo Board";
 	compatible = "loongson,ls1b";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &serial2;

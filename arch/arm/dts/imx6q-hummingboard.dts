@@ -9,6 +9,8 @@
 #include "imx6qdl.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart1;
 

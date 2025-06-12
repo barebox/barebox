@@ -9,6 +9,8 @@
 #include "fsl-ls1046a.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";

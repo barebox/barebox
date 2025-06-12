@@ -21,4 +21,5 @@
 / {
 	model = "DFI FS700-M60-6Q i.MX6q Q7 Board";
 	compatible = "dfi,fs700-m60-6q", "dfi,fs700-m60", "fsl,imx6q";
+	barebox,disable-deep-probe;
 };

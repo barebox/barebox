@@ -10,6 +10,8 @@
 #include <arm/nxp/imx/imx7d-flex-concentrator-mfg.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";

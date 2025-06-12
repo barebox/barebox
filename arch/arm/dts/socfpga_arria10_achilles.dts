@@ -20,6 +20,7 @@
 / {
 	model = "Reflex SOCFPGA Arria 10 Achilles";
 	compatible = "reflex,achilles", "altr,socfpga-arria10", "altr,socfpga";
+	barebox,disable-deep-probe;
 
 	aliases {
 		serial0 = &uart0;

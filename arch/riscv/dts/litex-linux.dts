@@ -7,6 +7,7 @@
 / {
 	model = "LiteX VexRiscV-SoC-Linux";
 	compatible = "litex,vexriscv-soc-linux";
+	barebox,disable-deep-probe;
 
 	aliases {
 		rom = &rom;

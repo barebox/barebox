@@ -20,6 +20,7 @@
 / {
 	model = "Garz & Fricke VINCELL LT";
 	compatible = "guf,imx53-vincell-lt", "fsl,imx53";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart2;

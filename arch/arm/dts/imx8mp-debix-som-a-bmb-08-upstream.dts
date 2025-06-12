@@ -12,6 +12,7 @@
 	model = "Polyhex i.MX8MPlus Debix SOM A on BMB-08";
 	compatible = "polyhex,imx8mp-debix-som-a-bmb-08", "polyhex,imx8mp-debix-som-a",
 		     "fsl,imx8mp";
+	barebox,deep-probe;
 
 	aliases {
 		ethernet0 = &eqos;

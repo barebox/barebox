@@ -6,6 +6,8 @@
 #include "arm/marvell/armada-370-mirabox.dts"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart0;
 	};

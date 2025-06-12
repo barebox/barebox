@@ -5,3 +5,7 @@
 
 #include <arm64/freescale/imx8mq-zii-ultra-rmb3.dts>
 #include "imx8mq-zii-ultra.dtsi"
+
+/ {
+	barebox,disable-deep-probe;
+};

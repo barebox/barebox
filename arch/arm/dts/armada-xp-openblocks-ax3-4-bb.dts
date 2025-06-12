@@ -6,6 +6,8 @@
 #include "arm/marvell/armada-xp-openblocks-ax3-4.dts"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart0;
 	};

@@ -19,6 +19,7 @@
 / {
 	model = "Phytec phyFLEX-i.MX6 Duallite Carrier-Board";
 	compatible = "phytec,imx6x-pbab01", "phytec,imx6dl-pfla02", "fsl,imx6dl";
+	barebox,deep-probe;
 
 	chosen {
 		stdout-path = &uart4;

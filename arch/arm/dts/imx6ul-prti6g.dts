@@ -4,6 +4,8 @@
 #include <arm/nxp/imx/imx6ul-prti6g.dts>
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		stdout-path = &uart4;
 

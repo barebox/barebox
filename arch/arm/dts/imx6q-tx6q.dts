@@ -8,5 +8,6 @@
 / {
 	model = "Ka-Ro electronics TX6Q Module";
 	compatible = "karo,imx6q-tx6q", "fsl,imx6q";
+	barebox,disable-deep-probe;
 };
 

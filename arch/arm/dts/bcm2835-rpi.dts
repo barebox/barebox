@@ -1,5 +1,9 @@
 #include <arm/broadcom/bcm2835-rpi-a.dts>
 
+/ {
+	barebox,deep-probe;
+};
+
 &{/aliases} {
 	usb0 = &usb;
 };

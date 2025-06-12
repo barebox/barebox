@@ -5,6 +5,8 @@
 #include "vf610-zii-dev.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	aliases {
 		/*
 		* NVMEM device corresponding to EEPROM attached to

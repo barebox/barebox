@@ -45,6 +45,8 @@
 #include "imx6ul-litesom.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";

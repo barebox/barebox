@@ -8,6 +8,7 @@
 / {
 	model = "TP-Link WDR4300 v1.7";
 	compatible = "tplink,tl-wdr4300", "tplink,tl-wdr4300-v1.7";
+	barebox,disable-deep-probe;
 
 	aliases {
 		serial0 = &uart0;

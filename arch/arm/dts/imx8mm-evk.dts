@@ -9,3 +9,7 @@
 #include <arm64/freescale/imx8mm-evk.dts>
 #include "imx8mm.dtsi"
 #include "imx8mm-evk.dtsi"
+
+/ {
+	barebox,deep-probe;
+};

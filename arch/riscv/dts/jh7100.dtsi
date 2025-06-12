@@ -7,6 +7,7 @@
 	#address-cells = <2>;
 	#size-cells = <2>;
 	compatible = "starfive,jh7100";
+	barebox,disable-deep-probe;
 
 	aliases {
 		spi0 = &qspi;

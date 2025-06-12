@@ -17,6 +17,8 @@
 #include "imx6q-embedsky-e9.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart1;
 

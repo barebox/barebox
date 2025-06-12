@@ -4,6 +4,10 @@
 #include <arm/nxp/imx/imx6dl-prtvt7.dts>
 #include "imx6qdl-prti6q-emmc.dtsi"
 
+/ {
+	barebox,deep-probe;
+};
+
 &state_emmc {
 	magic = <0x72766467>;
 	#address-cells = <1>;

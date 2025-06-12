@@ -4,6 +4,8 @@
 #include "stm32mp151.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";

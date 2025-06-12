@@ -20,4 +20,5 @@
 / {
        model = "Freescale i.MX6 Quad UDOO Board";
        compatible = "udoo,imx6q-udoo", "udoo,imx6qdl-udoo", "fsl,imx6q";
+       barebox,disable-deep-probe;
 };

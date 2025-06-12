@@ -3,6 +3,7 @@
 / {
 	model = "qemu malta";
 	compatible = "qemu,malta";
+	barebox,disable-deep-probe;
 
 	#address-cells = <1>;
 	#size-cells = <1>;

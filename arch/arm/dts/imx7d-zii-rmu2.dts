@@ -7,6 +7,10 @@
 #include <arm/nxp/imx/imx7d-zii-rmu2.dts>
 #include "imx7d-ddrc.dtsi"
 
+/ {
+	barebox,disable-deep-probe;
+};
+
 /* FIXME: barebox serial is broken when barebox applies requested reparenting */
 &uart2 {
 	/delete-property/ assigned-clocks;

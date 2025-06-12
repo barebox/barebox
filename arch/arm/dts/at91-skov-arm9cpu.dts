@@ -13,6 +13,7 @@
 / {
 	model = "SKOV ARM9 CPU";
 	compatible = "skov,arm9-cpu", "atmel,at91sam9263", "atmel,at91sam9";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = "serial0:115200n8";

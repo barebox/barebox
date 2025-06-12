@@ -9,6 +9,8 @@
 #include "imx6ul-webasto-ccbv2.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";

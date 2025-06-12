@@ -10,6 +10,8 @@
 #include <arm/nxp/imx/imx7s-warp.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart1;
 

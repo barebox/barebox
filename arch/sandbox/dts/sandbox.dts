@@ -3,6 +3,7 @@
 / {
 	model = "Sandbox";
 	compatible = "barebox,sandbox";
+	barebox,deep-probe;
 
 	#address-cells = <2>;
 	#size-cells = <2>;

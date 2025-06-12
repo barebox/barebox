@@ -42,6 +42,8 @@
 #include <arm/nxp/imx/imx6q-h100.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";

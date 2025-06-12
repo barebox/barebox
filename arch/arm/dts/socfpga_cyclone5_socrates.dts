@@ -19,6 +19,8 @@
 #include "socfpga.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart0;
 

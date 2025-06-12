@@ -4,6 +4,7 @@
 / {
 	model = "Ka-Ro electronics TX53 module";
 	compatible = "karo,tx53-1011", "karo,tx53", "fsl,imx53";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart1;

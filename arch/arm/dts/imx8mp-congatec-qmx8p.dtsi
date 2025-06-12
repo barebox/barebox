@@ -3,6 +3,11 @@
 // SPDX-FileCopyrightText: 2022 congatec GmbH
 // SPDX-FileCopyrightText: 2023 Pengutronix
 
+/ {
+	barebox,deep-probe;
+};
+
+
 &w25q64fw { /* FlexSPI NOR Flash */
 	#address-cells = <1>;
 	#size-cells = <1>;

@@ -8,6 +8,8 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
+	barebox,deep-probe;
+
 	aliases {
 		mmc1 = &sdmmc;
 	};

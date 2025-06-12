@@ -6,6 +6,7 @@
 / {
 	model = "generic Erizo SoC board";
 	compatible = "miet-riscv-workgroup,erizo-generic-board";
+	barebox,disable-deep-probe;
 
 	memory@80000000 {
 		device_type = "memory";

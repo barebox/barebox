@@ -18,6 +18,7 @@
 / {
 	model = "Advantech i.MX6 ROM-7421";
 	compatible = "advantech,imx6dl-rom-7421", "fsl,imx6dl";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart1;

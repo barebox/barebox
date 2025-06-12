@@ -15,6 +15,7 @@
 / {
 	model = "Freescale i.MX6 Quad Plus SABRE Smart Device Board";
 	compatible = "fsl,imx6qp-sabresd", "fsl,imx6qp";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart1;

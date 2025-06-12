@@ -4,6 +4,8 @@
 #include <arm/nxp/imx/imx6q-novena.dts>
 
 / {
+	barebox,deep-probe;
+
 	aliases {
 		eeprom0 = &eeprom;
 	};

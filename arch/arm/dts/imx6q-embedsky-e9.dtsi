@@ -16,6 +16,7 @@
 / {
 	model = "Embedsky E9";
 	compatible = "embedsky,e9", "fsl,imx6q";
+	barebox,disable-deep-probe;
 
 	regulators {
 		compatible = "simple-bus";

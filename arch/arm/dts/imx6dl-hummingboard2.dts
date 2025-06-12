@@ -49,6 +49,7 @@
 / {
 	model = "SolidRun HummingBoard2 Solo/DualLite";
 	compatible = "solidrun,hummingboard2/dl", "fsl,imx6dl";
+	barebox,disable-deep-probe;
 };
 
 &usdhc3 {

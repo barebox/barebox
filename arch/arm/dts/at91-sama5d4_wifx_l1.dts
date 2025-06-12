@@ -12,6 +12,7 @@
 / {
 	model = "Wifx L1";
 	compatible = "wifx,l1", "atmel,sama5d4", "atmel,sama5";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &usart3;

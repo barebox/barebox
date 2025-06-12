@@ -13,6 +13,7 @@
 / {
 	model = "Phytec phyFLEX AM335x";
 	compatible = "phytec,phyflex-am335x-som", "phytec,am335x-som", "ti,am33xx";
+	barebox,disable-deep-probe;
 };
 
 &spi0 {

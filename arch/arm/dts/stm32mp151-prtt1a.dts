@@ -9,6 +9,7 @@
 / {
 	model = "Protonic PRTT1A";
 	compatible = "prt,prtt1a", "st,stm32mp151";
+	barebox,deep-probe;
 
 	chosen {
 		environment-sd {

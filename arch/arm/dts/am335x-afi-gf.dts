@@ -13,6 +13,7 @@
 / {
 	model = "GF";
 	compatible = "afi,gf", "ti,am33xx";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart2;

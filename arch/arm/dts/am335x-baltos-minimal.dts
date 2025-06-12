@@ -19,6 +19,7 @@
 / {
 	model = "OnRISC Baltos";
 	compatible = "vscom,onrisc", "ti,am33xx";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart0;

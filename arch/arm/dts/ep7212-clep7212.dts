@@ -6,6 +6,7 @@
 / {
 	model = "Cirrus Logic EP7212";
 	compatible = "cirrus,clep7212", "cirrus,ep7212", "cirrus,ep7209";
+	barebox,disable-deep-probe;
 
 	memory@c0000000 {
 		device_type = "memory";

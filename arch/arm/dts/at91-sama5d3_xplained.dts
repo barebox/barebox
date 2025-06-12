@@ -10,6 +10,7 @@
 
 / {
 	model = "Atmel sama5d3_xplained";
+	barebox,disable-deep-probe;
 
 	chosen {
 		environment {

@@ -3,6 +3,7 @@
 / {
 	model = "D-Link DIR-320";
 	compatible = "dlink,dir320";
+	barebox,disable-deep-probe;
 
 	#address-cells = <1>;
 	#size-cells = <1>;

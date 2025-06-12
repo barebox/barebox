@@ -15,4 +15,8 @@
 #include "imx6q.dtsi"
 #include "imx6qdl-nitrogen6x.dtsi"
 
+/ {
+	barebox,disable-deep-probe;
+};
+
 /delete-node/ &{/memory@10000000};

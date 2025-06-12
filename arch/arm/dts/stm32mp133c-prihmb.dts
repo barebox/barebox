@@ -10,6 +10,8 @@
 #endif
 
 / {
+	barebox,deep-probe;
+
 	aliases {
 		state = &state_emmc;
 	};

@@ -4,3 +4,6 @@
 #include <arm/nxp/imx/imx6qp-prtwd3.dts>
 #include "imx6qdl-prti6q-emmc.dtsi"
 
+/ {
+	barebox,deep-probe;
+};

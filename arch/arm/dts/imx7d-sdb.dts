@@ -10,6 +10,8 @@
 #include <arm/nxp/imx/imx7d-sdb.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart1;
 	};

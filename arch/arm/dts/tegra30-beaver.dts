@@ -6,6 +6,7 @@
 / {
 	model = "NVIDIA Tegra30 Beaver evaluation board";
 	compatible = "nvidia,beaver", "nvidia,tegra30";
+	barebox,disable-deep-probe;
 
 	aliases {
 		rtc0 = &pmic;

@@ -4,7 +4,7 @@
  *
  * Support for SDHCI device on bcm2835
  * Based on sdhci-bcm2708.c (c) 2010 Broadcom
- * Inspired by bcm2835_sdhci.c from git://github.com/gonzoua/u-boot-pi.git
+ * Inspired by bcm2835_sdhci.c from https://github.com/gonzoua/u-boot-pi.git
  *
  * Portions (e.g. read/write macros, concepts for back-to-back register write
  * timing workarounds) obviously extracted from the Linux kernel at:

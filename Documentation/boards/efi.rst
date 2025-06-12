@@ -292,7 +292,7 @@ HOWTOs in the net, for example on http://tianocore.sourceforge.net/wiki/Using_ED
 
 .. code-block:: sh
 
-  git clone git://github.com/tianocore/edk2.git
+  git clone https://github.com/tianocore/edk2.git
   cd edk2
   git submodule update --init
   make -C BaseTools

@@ -1,6 +1,6 @@
 /*
  * This code is based on:
- * git://github.com/swetland/omap4boot.git
+ * https://github.com/swetland/omap4boot.git
  */
 /*
  * Copyright (C) 2010 The Android Open Source Project

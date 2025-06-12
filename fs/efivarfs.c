@@ -119,7 +119,7 @@ static int efivars_unlink(struct device *dev, const char *pathname)
 
 struct efivars_file {
 	void *buf;
-	unsigned long size;
+	size_t size;
 	efi_guid_t vendor;
 	s16 *name;
 	u32 attributes;
@@ -273,7 +273,7 @@ static int efivarfs_stat(struct device *dev, const char *filename,
 	efi_guid_t vendor;
 	s16 *name;
 	efi_status_t efiret;
-	unsigned long size = 0;
+	size_t size = 0;
 	int ret;
 
 	ret = efivarfs_parse_filename(filename, &vendor, &name);
@@ -299,7 +299,7 @@ static int efivarfs_probe(struct device *dev)
 	efi_guid_t vendor;
 	s16 name[1024];
 	char *name8;
-	unsigned long size;
+	size_t size;
 	struct efivarfs_priv *priv;
 
 	name[0] = 0;

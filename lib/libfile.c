@@ -432,11 +432,14 @@ EXPORT_SYMBOL(write_file_flash);
  * copy_file - Copy a file
  * @src:	The source filename
  * @dst:	The destination filename
- * @verbose:	if true, show a progression bar
+ * @flags:	A bitmask of COPY_FILE_* flags. Possible values:
+ *
+ *                COPY_FILE_VERBOSE: show a progression bar
+ *                COPY_FILE_NO_OVERWRITE: don't clobber existing files
  *
  * Return: 0 for success or negative error code
  */
-int copy_file(const char *src, const char *dst, int verbose)
+int copy_file(const char *src, const char *dst, unsigned flags)
 {
 	char *rw_buf = NULL;
 	int srcfd = 0, dstfd = 0;
@@ -465,8 +468,13 @@ int copy_file(const char *src, const char *dst, int verbose)
 	}
 
 	/* Set O_TRUNC only if file exists and is a regular file */
-	if (!s && S_ISREG(dststat.st_mode))
+	if (!s && S_ISREG(dststat.st_mode)) {
+		if (flags & COPY_FILE_NO_OVERWRITE) {
+			ret = 0;
+			goto out;
+		}
 		mode |= O_TRUNC;
+	}
 
 	dstfd = open(dst, mode);
 	if (dstfd < 0) {
@@ -488,7 +496,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 		}
 	}
 
-	if (verbose)
+	if (flags & COPY_FILE_VERBOSE)
 		init_progression_bar(srcstat.st_size);
 
 	while (1) {
@@ -496,7 +504,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 		if (r < 0) {
 			perror("read");
 			ret = r;
-			goto out;
+			goto out_newline;
 		}
 		if (!r)
 			break;
@@ -504,12 +512,12 @@ int copy_file(const char *src, const char *dst, int verbose)
 		ret = write_full(dstfd, rw_buf, r);
 		if (ret < 0) {
 			perror("write");
-			goto out;
+			goto out_newline;
 		}
 
 		total += r;
 
-		if (verbose) {
+		if (flags & COPY_FILE_VERBOSE) {
 			if (srcstat.st_size && srcstat.st_size != FILESIZE_MAX)
 				show_progress(total);
 			else
@@ -518,10 +526,10 @@ int copy_file(const char *src, const char *dst, int verbose)
 	}
 
 	ret = 0;
-out:
-	if (verbose)
+out_newline:
+	if (flags & COPY_FILE_VERBOSE)
 		putchar('\n');
-
+out:
 	free(rw_buf);
 	if (srcfd > 0)
 		close(srcfd);
@@ -532,7 +540,18 @@ out:
 }
 EXPORT_SYMBOL(copy_file);
 
-int copy_recursive(const char *src, const char *dst)
+/**
+ * copy_recursive - Copy files recursively
+ * @src:	The source filename or directory
+ * @dst:	The destination filename or directory
+ * @flags:	A bitmask of COPY_FILE_* flags. Possible values:
+ *
+ *                COPY_FILE_VERBOSE: show a progression bar
+ *                COPY_FILE_NO_OVERWRITE: don't clobber existing files
+ *
+ * Return: 0 for success or negative error code
+ */
+int copy_recursive(const char *src, const char *dst, unsigned flags)
 {
 	struct stat s;
 	DIR *dir;
@@ -561,7 +580,7 @@ int copy_recursive(const char *src, const char *dst)
 
 		from = basprintf("%s/%s", src, d->d_name);
 		to = basprintf("%s/%s", dst, d->d_name);
-		ret = copy_recursive(from, to);
+		ret = copy_recursive(from, to, flags);
 		if (ret)
 			break;
 		free(from);

@@ -175,6 +175,12 @@ static inline void *memdup(const void *buf, size_t size)
 }
 #endif
 
+extern char *memdup_nul(const char *s, size_t len);
+static inline char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
+{
+	return memdup_nul(s, len);
+}
+
 #define memdup_array(arr, count) memdup(arr, array_size(count, sizeof(*arr)));
 
 static inline void *kmemdup(const void *src, size_t len, gfp_t gfp)

@@ -23,6 +23,10 @@
 # define __packed		__attribute__((__packed__))
 #endif
 
+#ifndef __printf
+# define __printf(a, b)		__attribute__((format(__printf__, a, b)))
+#endif
+
 #ifndef __force
 # define __force
 #endif

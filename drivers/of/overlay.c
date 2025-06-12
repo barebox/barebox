@@ -242,7 +242,7 @@ static bool of_overlay_matches_filter(const char *filename, struct device_node *
 
 	p = path = strdup(of_overlay_filter);
 
-	while ((n = strsep_unescaped(&p, " "))) {
+	while ((n = strsep_unescaped(&p, " ", NULL))) {
 		int score = 0;
 
 		if (!*n)
@@ -524,7 +524,7 @@ static bool of_overlay_filter_filename(struct of_overlay_filter *f,
 
 	p = path = strdup(of_overlay_filepattern);
 
-	while ((n = strsep_unescaped(&p, " "))) {
+	while ((n = strsep_unescaped(&p, " ", NULL))) {
 		if (!*n)
 			continue;
 
@@ -575,7 +575,7 @@ static bool of_overlay_filter_compatible(struct of_overlay_filter *f,
 
 	p = compatibles = xstrdup(of_overlay_compatible);
 
-	while ((n = strsep_unescaped(&p, " "))) {
+	while ((n = strsep_unescaped(&p, " ", NULL))) {
 		if (!*n)
 			continue;
 

@@ -8,6 +8,7 @@
 #include <clock.h>
 #include <common.h>
 #include <linux/sizes.h>
+#include <linux/ktime.h>
 #include <memory.h>
 #include <command.h>
 #include <magicvar.h>
@@ -101,7 +102,7 @@ static void *efi_read_file(const char *file, size_t *size)
 		return NULL;
 	}
 
-	buf = (void *)mem;
+	buf = efi_phys_to_virt(mem);
 
 	ret = read_file_into_buf(file, buf, s.st_size);
 	if (ret < 0)
@@ -113,7 +114,7 @@ static void *efi_read_file(const char *file, size_t *size)
 
 static void efi_free_file(void *_mem, size_t size)
 {
-	efi_physical_addr_t mem = (efi_physical_addr_t)_mem;
+	efi_physical_addr_t mem = efi_virt_to_phys(_mem);
 
 	if (mem_malloc_start() <= mem && mem < mem_malloc_end())
 		free(_mem);
@@ -215,7 +216,6 @@ static int efi_execute_image(enum filetype filetype, const char *file)
 	return -efi_errno(efiret);
 }
 
-#ifdef __x86_64__
 typedef void(*handover_fn)(void *image, struct efi_system_table *table,
 		struct linux_kernel_header *header);
 
@@ -223,25 +223,15 @@ static inline void linux_efi_handover(efi_handle_t handle,
 		struct linux_kernel_header *header)
 {
 	handover_fn handover;
+	uintptr_t addr;
 
-	handover = (handover_fn)((long)header->code32_start + 512 +
-				 header->handover_offset);
+	addr = header->code32_start + header->handover_offset;
+	if (IS_ENABLED(CONFIG_X86_64))
+		addr += 512;
+
+	handover = efi_phys_to_virt(addr);
 	handover(handle, efi_sys_table, header);
 }
-#else
-typedef void(*handover_fn)(void *image, struct efi_system_table *table,
-		struct linux_kernel_header *setup);
-
-static inline void linux_efi_handover(efi_handle_t handle,
-		struct linux_kernel_header *header)
-{
-	handover_fn handover;
-
-	handover = (handover_fn)((long)header->code32_start +
-				 header->handover_offset);
-	handover(handle, efi_sys_table, header);
-}
-#endif
 
 static int do_bootm_efi(struct image_data *data)
 {
@@ -284,18 +274,18 @@ static int do_bootm_efi(struct image_data *data)
 		memcpy(initrd, tmp, size);
 		memset(initrd + size, 0, PAGE_ALIGN(size) - size);
 		free(tmp);
-		boot_header->ramdisk_image = (uint64_t)initrd;
+		boot_header->ramdisk_image = efi_virt_to_phys(initrd);
 		boot_header->ramdisk_size = PAGE_ALIGN(size);
 	}
 
 	options = linux_bootargs_get();
 	if (options) {
-		boot_header->cmd_line_ptr = (uint64_t)options;
+		boot_header->cmd_line_ptr = efi_virt_to_phys(options);
 		boot_header->cmdline_size = strlen(options);
 	}
 
-	boot_header->code32_start = (uint64_t)loaded_image->image_base +
-			(image_header->setup_sects+1) * 512;
+	boot_header->code32_start = efi_virt_to_phys(loaded_image->image_base +
+			(image_header->setup_sects+1) * 512);
 
 	if (bootm_verbose(data)) {
 		printf("\nStarting kernel at 0x%p", loaded_image->image_base);
@@ -313,7 +303,7 @@ static int do_bootm_efi(struct image_data *data)
 	}
 
 	efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
-			      get_time_ns()/1000);
+			      ktime_to_us(ktime_get()));
 
 	shutdown_barebox();
 	linux_efi_handover(handle, boot_header);

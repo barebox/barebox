@@ -33,10 +33,10 @@ static void efi_devpath(struct efi_boot_services *bs,
 	}
 }
 
-static void efi_dump(struct efi_boot_services *bs, efi_handle_t *handles, unsigned long handle_count)
+static void efi_dump(struct efi_boot_services *bs, efi_handle_t *handles, size_t handle_count)
 {
 	int i, j;
-	unsigned long num_guids;
+	size_t num_guids;
 	efi_guid_t **guids;
 
 	if (!handles || !handle_count)
@@ -61,7 +61,7 @@ static void efi_dump(struct efi_boot_services *bs, efi_handle_t *handles, unsign
 
 static int do_efi_protocol_dump(struct efi_boot_services *bs, int argc, char **argv)
 {
-	unsigned long handle_count = 0;
+	size_t handle_count = 0;
 	efi_handle_t *handles = NULL;
 	int ret;
 	efi_guid_t guid;
@@ -110,7 +110,7 @@ static int do_efi_protocol_dump(struct efi_boot_services *bs, int argc, char **a
 
 static int do_efi_handle_dump(int argc, char *argv[])
 {
-	unsigned long handle_count = 0;
+	size_t handle_count = 0;
 	efi_handle_t *handles = NULL;
 	struct efi_boot_services *bs;
 	int ret;

@@ -207,6 +207,13 @@ void mdelay_non_interruptible(unsigned long msecs)
 }
 EXPORT_SYMBOL(mdelay_non_interruptible);
 
+#if IN_PROPER
+void clocksource_srand(void)
+{
+	srand_xor(current_clock->read() & current_clock->mask);
+}
+#endif
+
 int init_clock(struct clocksource *cs)
 {
 	if (current_clock && cs->priority <= current_clock->priority)

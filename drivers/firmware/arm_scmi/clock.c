@@ -197,8 +197,8 @@ iter_clk_describe_update_state(struct scmi_iterator_state *st,
 	if (!p->clk->rate_discrete &&
 	    (st->num_returned != 3 || st->num_remaining != 0)) {
 		dev_warn(p->dev,
-			 "Out-of-spec CLOCK_DESCRIBE_RATES reply for %s - returned:%d remaining:%d rx_len:%zd\n",
-			 p->clk->name, st->num_returned, st->num_remaining,
+			 "Out-of-spec CLOCK_DESCRIBE_RATES reply for %pC - returned:%d remaining:%d rx_len:%zd\n",
+			 p->clk, st->num_returned, st->num_remaining,
 			 st->rx_len);
 
 		/*

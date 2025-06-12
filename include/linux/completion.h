@@ -42,6 +42,9 @@ static inline int wait_for_completion_interruptible(struct completion *x)
 	return 0;
 }
 
+#define wait_for_completion_killable	\
+	wait_for_completion_interruptible
+
 static inline bool completion_done(struct completion *x)
 {
 	return x->done;

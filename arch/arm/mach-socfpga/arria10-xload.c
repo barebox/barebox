@@ -16,20 +16,17 @@
 #include <mach/socfpga/generic.h>
 #include <linux/sizes.h>
 
-int a10_update_bits(unsigned int reg, unsigned int mask,
+void a10_update_bits(unsigned int reg, unsigned int mask,
 		    unsigned int val)
 {
 	unsigned int tmp, orig;
-	int ret = 0;
 
 	orig = readl(ARRIA10_FPGAMGRREGS_ADDR + reg);
 	tmp = orig & ~mask;
 	tmp |= val & mask;
 
 	if (tmp != orig)
-		ret = writel(tmp, ARRIA10_FPGAMGRREGS_ADDR + reg);
-
-	return ret;
+		writel(tmp, ARRIA10_FPGAMGRREGS_ADDR + reg);
 }
 
 static uint32_t socfpga_a10_fpga_read_stat(void)

@@ -6,7 +6,7 @@
 void arria10_init_mmc(void);
 int arria10_prepare_mmc(int barebox_part, int rbf_part);
 int arria10_read_blocks(void *dst, int blocknum, size_t len);
-int a10_update_bits(unsigned int reg, unsigned int mask, unsigned int val);
+void a10_update_bits(unsigned int reg, unsigned int mask, unsigned int val);
 
 struct partition {
 	uint64_t first_sec;

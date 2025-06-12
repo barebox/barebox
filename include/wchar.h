@@ -24,4 +24,7 @@ size_t wcsnlen(const wchar_t *s, size_t maxlen);
 int mbtowc(wchar_t *pwc, const char *s, size_t n);
 int wctomb(char *s, wchar_t wc);
 
+int wcscmp (const wchar_t *s1, const wchar_t *s2);
+int wcsncmp (const wchar_t *s1, const wchar_t *s2, size_t n);
+
 #endif /* __WCHAR_H */

@@ -43,6 +43,14 @@ void udelay(unsigned long usecs);
 void mdelay(unsigned long msecs);
 void mdelay_non_interruptible(unsigned long msecs);
 
+#if IN_PROPER
+void clocksource_srand(void);
+#else
+static inline void clocksource_srand(void)
+{
+}
+#endif
+
 #define SECOND ((uint64_t)(1000 * 1000 * 1000))
 #define MSECOND ((uint64_t)(1000 * 1000))
 #define USECOND ((uint64_t)(1000))

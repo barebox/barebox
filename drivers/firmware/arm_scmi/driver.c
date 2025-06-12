@@ -173,7 +173,8 @@ int scmi_protocol_register(const struct scmi_protocol *proto)
 	}
 
 	spin_lock(&protocol_lock);
-	ret = idr_alloc_one(&scmi_protocols, (void *)proto, proto->id);
+	ret = idr_alloc(&scmi_protocols, (void *)proto, proto->id, proto->id + 1,
+			GFP_KERNEL);
 	spin_unlock(&protocol_lock);
 	if (ret != proto->id) {
 		pr_err("unable to allocate SCMI idr slot for 0x%x - err %d\n",
@@ -1090,7 +1091,7 @@ scmi_alloc_init_protocol_instance(struct scmi_info *info,
 	if (ret)
 		goto clean;
 
-	ret = idr_alloc_one(&info->protocols, pi, proto->id);
+	ret = idr_alloc(&info->protocols, pi, proto->id, proto->id + 1, GFP_KERNEL);
 	if (ret != proto->id)
 		goto clean;
 
@@ -1444,7 +1445,7 @@ static int scmi_chan_setup(struct scmi_info *info, struct device_node *of_node,
 	}
 
 idr_alloc:
-	ret = idr_alloc_one(idr, cinfo, prot_id);
+	ret = idr_alloc(idr, cinfo, prot_id, prot_id + 1, GFP_KERNEL);
 	if (ret != prot_id) {
 		dev_err(info->dev,
 			"unable to allocate SCMI idr slot err %d\n", ret);
@@ -1693,7 +1694,8 @@ static int scmi_probe(struct device *dev)
 		 * Save this valid DT protocol descriptor amongst
 		 * @active_protocols for this SCMI instance/
 		 */
-		ret = idr_alloc_one(&info->active_protocols, child, prot_id);
+		ret = idr_alloc(&info->active_protocols, child,
+				prot_id, prot_id + 1, GFP_KERNEL);
 		if (ret != prot_id) {
 			dev_err(dev, "SCMI protocol %d already activated. Skip\n",
 				prot_id);

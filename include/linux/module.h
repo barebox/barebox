@@ -13,5 +13,6 @@
 #define MODULE_DEVICE_TABLE(bus, table)
 #define MODULE_ALIAS_DSA_TAG_DRIVER(drv)
 #define MODULE_ALIAS_CRYPTO(alias)
+#define MODULE_ALIAS_FS(alias)
 
 #endif

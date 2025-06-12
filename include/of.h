@@ -293,7 +293,7 @@ extern int of_property_write_string(struct device_node *np, const char *propname
 extern int of_property_write_strings(struct device_node *np, const char *propname,
 				    ...) __attribute__((__sentinel__));
 int of_property_sprintf(struct device_node *np, const char *propname, const char *fmt, ...)
-	__attribute__ ((format(__printf__, 3, 4)));
+	__printf(3, 4);
 
 extern struct device_node *of_parse_phandle(const struct device_node *np,
 					    const char *phandle_name,

@@ -772,7 +772,7 @@ static int fu540_c000_txclk_init(struct device *dev, struct clk **tx_clk)
 		return err;
 	}
 
-	dev_info(dev, "Registered clk switch '%s'\n", clk->name);
+	dev_info(dev, "Registered clk switch '%pC'\n", clk);
 	return 0;
 }
 #else

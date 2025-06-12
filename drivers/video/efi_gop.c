@@ -41,14 +41,14 @@ struct efi_graphics_output_protocol_mode {
 	uint32_t max_mode;
 	uint32_t mode;
 	struct efi_graphics_output_mode_info *info;
-	unsigned long size_of_info;
+	size_t size_of_info;
 	void *frame_buffer_base;
-	unsigned long frame_buffer_size;
+	size_t frame_buffer_size;
 };
 
 struct efi_graphics_output_protocol {
 	efi_status_t (EFIAPI *query_mode) (struct efi_graphics_output_protocol *This,
-			uint32_t mode_number, unsigned long *size_of_info,
+			uint32_t mode_number, size_t *size_of_info,
 			struct efi_graphics_output_mode_info **info);
 	efi_status_t (EFIAPI *set_mode) (struct efi_graphics_output_protocol *This,
 			uint32_t mode_number);
@@ -147,7 +147,7 @@ static int efi_gop_query(struct efi_gop_priv *priv)
 	struct efi_graphics_output_protocol_mode *mode;
 	struct efi_graphics_output_mode_info *info;
 	efi_status_t efiret;
-	unsigned long size = 0;
+	size_t size = 0;
 	int i;
 	struct fb_videomode *vmode;
 
@@ -180,7 +180,7 @@ static int efi_gop_fb_activate_var(struct fb_info *fb_info)
 	struct efi_gop_priv *priv = fb_info->priv;
 	struct efi_graphics_output_mode_info *info;
 	int num;
-	unsigned long size = 0;
+	size_t size = 0;
 	efi_status_t efiret;
 
 	num = simple_strtoul(fb_info->mode->name, NULL, 0);

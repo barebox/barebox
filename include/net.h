@@ -423,6 +423,7 @@ int generate_ether_addr(u8 *addr, int ethid);
  */
 static inline void random_ether_addr(u8 *addr)
 {
+	clocksource_srand();
 	get_noncrypto_bytes(addr, ETH_ALEN);
 	addr[0] &= 0xfe;	/* clear multicast bit */
 	addr[0] |= 0x02;	/* set local assignment bit (IEEE802) */

@@ -80,7 +80,7 @@ void clk_disable(struct clk *clk)
 		return;
 
 	if (clk->enable_count == 1 && clk->flags & CLK_IS_CRITICAL) {
-		pr_warn("Disabling critical clock %s\n", clk->name);
+		pr_warn("Disabling critical clock %pC\n", clk);
 		return;
 	}
 
@@ -446,8 +446,8 @@ static int __bclk_register(struct clk *clk)
 
 	list_for_each_entry(c, &clks, list) {
 		if (!strcmp(c->name, clk->name)) {
-			pr_err("%s clk %s is already registered, skipping!\n",
-				__func__, clk->name);
+			pr_err("%s clk %pC is already registered, skipping!\n",
+				__func__, clk);
 			return -EBUSY;
 		}
 	}
@@ -1046,8 +1046,8 @@ static void dump_one_summary(struct clk *clk, int flags, int indent)
 	else
 		stat = "enabled";
 
-	printf("%*s%s (rate %lu, enable_count: %d, %s)\n", indent * 4, "",
-	       clk->name,
+	printf("%*s%pC (rate %lu, enable_count: %d, %s)\n", indent * 4, "",
+	       clk,
 	       clk_get_rate(clk),
 	       clk->enable_count,
 	       hwstat);
@@ -1066,8 +1066,8 @@ static void dump_one_summary(struct clk *clk, int flags, int indent)
 
 static void dump_one_json(struct clk *clk, int flags, int indent)
 {
-	printf("\"%s\": { \"rate\": %lu,\"enable_count\": %d",
-	       clk->name,
+	printf("\"%pC\": { \"rate\": %lu,\"enable_count\": %d",
+	       clk,
 	       clk_get_rate(clk),
 	       clk->enable_count);
 }

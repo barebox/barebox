@@ -16,6 +16,7 @@
 #include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/math64.h>
+#include <linux/clk.h>
 #include <malloc.h>
 #include <kallsyms.h>
 #include <wchar.h>
@@ -254,12 +255,12 @@ static char *raw_pointer(char *buf, const char *end, const void *ptr, int field_
 
 #if IN_PROPER
 static char *symbol_string(char *buf, const char *end, const void *ptr, int field_width,
-			   int precision, int flags)
+			   int precision, int flags, bool with_offset)
 {
 	unsigned long value = (unsigned long) ptr;
 #ifdef CONFIG_KALLSYMS
 	char sym[KSYM_SYMBOL_LEN];
-	sprint_symbol(sym, value);
+	sprint_symbol(sym, value, with_offset);
 	return string(buf, end, sym, field_width, precision, flags);
 #else
 	field_width = 2*sizeof(void *);
@@ -310,7 +311,7 @@ char *ip4_addr_string(char *buf, const char *end, const u8 *addr, int field_widt
 }
 
 static
-char *error_string(char *buf, const char *end, const u8 *errptr, int field_width,
+char *error_string(char *buf, const char *end, const void *errptr, int field_width,
 		   int precision, int flags, const char *fmt)
 {
     if (!IS_ERR(errptr))
@@ -477,6 +478,18 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
 		      precision, flags);
 }
 
+static noinline_for_stack
+char *clock(char *buf, const char *end, const struct clk *clk,
+	    int field_width, int precision, int flags, const char *fmt)
+{
+#ifdef CONFIG_COMMON_CLK
+	if (!IS_ERR_OR_NULL(clk))
+		return string(buf, end, clk->name, field_width, precision, flags);
+#endif
+
+	return error_string(buf, end, clk, field_width, precision, flags, fmt);
+}
+
 /*
  * Show a '%p' thing.  A kernel extension is that the '%p' is followed
  * by an extra set of alphanumeric characters that are extended format
@@ -484,7 +497,8 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
  *
  * Right now we handle following Linux-compatible format specifiers:
  *
- * - 'S' For symbolic direct pointers
+ * - 'S' For symbolic direct pointers (or function descriptors) with offset
+ * - 's' For symbolic direct pointers (or function descriptors) without offset
  * - 'U' For a 16 byte UUID/GUID, it prints the UUID/GUID in the form
  *       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
  *       Options for %pU are:
@@ -514,6 +528,7 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
  *              N no separator
  * - 'M' For a 6-byte MAC address, it prints the address in the
  *       usual colon-separated hex notation
+ * - 'C' For a clock, it prints the name in the Common Clock Framework
  *
  * Additionally, we support following barebox-specific format specifiers:
  *
@@ -523,9 +538,14 @@ char *device_node_string(char *buf, const char *end, const struct device_node *n
 static char *pointer(const char *fmt, char *buf, const char *end, const void *ptr,
 		     int field_width, int precision, int flags)
 {
+	bool with_offset = false;
+
 	switch (*fmt) {
 	case 'S':
-		return symbol_string(buf, end, ptr, field_width, precision, flags);
+		with_offset = true;
+		fallthrough;
+	case 's':
+		return symbol_string(buf, end, ptr, field_width, precision, flags, with_offset);
 	case 'U':
 		if (IS_ENABLED(CONFIG_PRINTF_UUID))
 			return uuid_string(buf, end, ptr, field_width, precision, flags, fmt);
@@ -569,6 +589,8 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 		if (IS_ENABLED(CONFIG_EFI_DEVICEPATH))
 			return device_path_string(buf, end, ptr, field_width, precision, flags);
 		break;
+	case 'C':
+		return clock(buf, end, ptr, field_width, precision, flags, fmt);
 	}
 
 	return raw_pointer(buf, end, ptr, field_width, precision, flags);

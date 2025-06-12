@@ -35,6 +35,7 @@
 #include <kfifo.h>
 #include <parseopt.h>
 #include <linux/sizes.h>
+#include <linux/netfs.h>
 
 #include "tftp-selftest.h"
 
@@ -131,13 +132,12 @@ struct tftp_priv {
 };
 
 struct tftp_inode {
-	struct inode inode;
-	u64 time;
+	struct netfs_inode netfs_node;
 };
 
 static struct tftp_inode *to_tftp_inode(struct inode *inode)
 {
-	return container_of(inode, struct tftp_inode, inode);
+	return container_of(inode, struct tftp_inode, netfs_node.inode);
 }
 
 static inline bool is_block_before(uint16_t a, uint16_t b)
@@ -957,11 +957,11 @@ static struct inode *tftp_get_inode(struct super_block *sb, const struct inode *
 	if (!inode)
 		return NULL;
 
-	node = to_tftp_inode(inode);
-	node->time = get_time_ns();
-
 	inode->i_ino = get_next_ino();
 	inode->i_mode = mode;
+
+	node = to_tftp_inode(inode);
+	netfs_inode_init(&node->netfs_node);
 
 	switch (mode & S_IFMT) {
 	default:
@@ -1040,7 +1040,7 @@ static struct inode *tftp_alloc_inode(struct super_block *sb)
 	if (!node)
 		return NULL;
 
-	return &node->inode;
+	return &node->netfs_node.inode;
 }
 
 static void tftp_destroy_inode(struct inode *inode)
@@ -1053,25 +1053,6 @@ static void tftp_destroy_inode(struct inode *inode)
 static const struct super_operations tftp_ops = {
 	.alloc_inode = tftp_alloc_inode,
 	.destroy_inode = tftp_destroy_inode,
-};
-
-static int tftp_lookup_revalidate(struct dentry *dentry, unsigned int flags)
-{
-	struct tftp_inode *node;
-
-	if (!dentry->d_inode)
-		return 0;
-
-	node = to_tftp_inode(dentry->d_inode);
-
-	if (is_timeout(node->time, 2 * SECOND))
-		return 0;
-
-	return 1;
-}
-
-static const struct dentry_operations tftp_dentry_operations = {
-	.d_revalidate = tftp_lookup_revalidate,
 };
 
 static int tftp_probe(struct device *dev)
@@ -1091,7 +1072,7 @@ static int tftp_probe(struct device *dev)
 	}
 
 	sb->s_op = &tftp_ops;
-	sb->s_d_op = &tftp_dentry_operations;
+	sb->s_d_op = &netfs_dentry_operations_timed;
 
 	inode = tftp_get_inode(sb, NULL, S_IFDIR);
 	sb->s_root = d_make_root(inode);

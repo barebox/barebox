@@ -6,6 +6,8 @@
 #ifndef __ARM_PSCI_H__
 #define __ARM_PSCI_H__
 
+#include <linux/compiler.h>
+
 struct device_node;
 
 #define ARM_PSCI_VER(major, minor)	(((major) << 16) | (minor))
@@ -121,8 +123,7 @@ void psci_cpu_entry(void);
 void psci_set_putc(void (*putcf)(void *ctx, int c), void *ctx);
 void psci_putc(char c);
 int psci_puts(const char *str);
-int psci_printf(const char *fmt, ...)
-            __attribute__ ((format(__printf__, 1, 2)));
+int psci_printf(const char *fmt, ...) __printf(1, 2);
 #else
 
 static inline void psci_set_putc(void (*putcf)(void *ctx, int c), void *ctx)
@@ -138,7 +139,7 @@ static inline int psci_puts(const char *str)
 	return 0;
 }
 
-static inline int psci_printf(const char *fmt, ...)
+static inline __printf(1, 2) int psci_printf(const char *fmt, ...)
 {
 	return 0;
 }

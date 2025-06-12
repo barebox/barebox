@@ -261,8 +261,8 @@ static int clk_pll1443x_set_rate(struct clk_hw *hw, unsigned long drate,
 
 	rate = imx_get_pll_settings(pll, drate);
 	if (!rate) {
-		pr_err("%s: Invalid rate : %lu for pll clk %s\n", __func__,
-			drate, clk->name);
+		pr_err("%s: Invalid rate : %lu for pll clk %pC\n", __func__,
+			drate, clk);
 		return -EINVAL;
 	}
 

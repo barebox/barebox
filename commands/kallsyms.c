@@ -22,7 +22,7 @@ static int do_kallsyms(int argc, char *argv[])
 	if (kstrtoul(argv[1], 16, &addr) == 0) {
 		char sym[KSYM_SYMBOL_LEN];
 
-		sprint_symbol(sym, addr);
+		sprint_symbol(sym, addr, true);
 
 		printf("%s\n", sym);
 		return 0;

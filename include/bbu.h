@@ -37,8 +37,7 @@ struct bbu_handler {
 	const char *devicefile;
 };
 
-int bbu_force(struct bbu_data *, const char *fmt, ...)
-	__attribute__ ((format(__printf__, 2, 3)));
+int bbu_force(struct bbu_data *, const char *fmt, ...) __printf(2, 3);
 
 int bbu_confirm(struct bbu_data *);
 

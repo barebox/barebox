@@ -12,21 +12,21 @@
  */
 
 /* serial stuff */
-void serial_printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
+void serial_printf(const char *fmt, ...) __printf(1, 2);
 
-int sprintf(char *buf, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
-int snprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
-int scnprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
+int sprintf(char *buf, const char *fmt, ...) __printf(2, 3);
+int snprintf(char *buf, size_t size, const char *fmt, ...) __printf(3, 4);
+int scnprintf(char *buf, size_t size, const char *fmt, ...) __printf(3, 4);
 int vsprintf(char *buf, const char *fmt, va_list args);
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 
 #if IN_PROPER || defined(CONFIG_PBL_CONSOLE)
-int asprintf(char **strp, const char *fmt, ...)  __attribute__ ((format(__printf__, 2, 3)));
+int asprintf(char **strp, const char *fmt, ...) __printf(2, 3);
 char *bvasprintf(const char *fmt, va_list ap);
 int vasprintf(char **strp, const char *fmt, va_list ap);
 #else
-static inline int asprintf(char **strp, const char *fmt, ...)
+static inline __printf(2, 3) int asprintf(char **strp, const char *fmt, ...)
 {
 	return -1;
 }
@@ -143,7 +143,7 @@ static inline void putchar(char c)
 #define MAX_FILES	128
 
 int vdprintf(int fd, const char *fmt, va_list args) ;
-int dprintf(int file, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
+int dprintf(int file, const char *fmt, ...) __printf(2, 3);
 int dputs(int file, const char *s);
 int dputc(int file, const char c);
 

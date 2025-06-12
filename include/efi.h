@@ -193,12 +193,12 @@ struct efi_boot_services {
 	struct efi_table_hdr hdr;
 	efi_status_t (EFIAPI *raise_tpl)(unsigned long new_tpl);
 	void (EFIAPI *restore_tpl)(unsigned long old_tpl);
-	efi_status_t (EFIAPI *allocate_pages)(int, int, unsigned long,
+	efi_status_t (EFIAPI *allocate_pages)(int, int, size_t,
 				       efi_physical_addr_t *);
-	efi_status_t (EFIAPI *free_pages)(efi_physical_addr_t, unsigned long);
+	efi_status_t (EFIAPI *free_pages)(efi_physical_addr_t, size_t);
 	efi_status_t (EFIAPI *get_memory_map)(size_t *, struct efi_memory_desc *,
-					      size_t *, size_t *, u32 *);
-	efi_status_t (EFIAPI *allocate_pool)(int, unsigned long, void **);
+					      ulong *, size_t *, u32 *);
+	efi_status_t (EFIAPI *allocate_pool)(int, size_t, void **);
 	efi_status_t (EFIAPI *free_pool)(void *);
 #define EFI_EVT_TIMER				0x80000000
 #define EFI_EVT_RUNTIME				0x40000000
@@ -240,18 +240,18 @@ struct efi_boot_services {
 	efi_status_t (EFIAPI *install_configuration_table)(const efi_guid_t *guid, void *table);
 	efi_status_t (EFIAPI *load_image)(bool boot_policiy, efi_handle_t parent_image,
 			struct efi_device_path *file_path, void *source_buffer,
-			unsigned long source_size, efi_handle_t *image);
+			size_t source_size, efi_handle_t *image);
 	efi_status_t (EFIAPI *start_image)(efi_handle_t handle,
 			size_t *exitdata_size, u16 **exitdata);
 	efi_status_t(EFIAPI *exit)(efi_handle_t handle,  efi_status_t exit_status,
-			unsigned long exitdata_size, u16 *exitdata);
+			size_t exitdata_size, u16 *exitdata);
 	efi_status_t (EFIAPI *unload_image)(efi_handle_t handle);
 	efi_status_t (EFIAPI *exit_boot_services)(efi_handle_t, unsigned long);
 	void *get_next_monotonic_count;
 	efi_status_t (EFIAPI *stall)(unsigned long usecs);
 	efi_status_t (EFIAPI *set_watchdog_timer)(unsigned long timeout,
 						  uint64_t watchdog_code,
-						  unsigned long data_size,
+						  size_t data_size,
 						  u16 *watchdog_data);
 	efi_status_t(EFIAPI *connect_controller)(efi_handle_t controller_handle,
 			efi_handle_t *driver_image_handle,
@@ -272,22 +272,22 @@ struct efi_boot_services {
 					      efi_handle_t agent, efi_handle_t controller);
 	efi_status_t(EFIAPI *open_protocol_information)(efi_handle_t handle, const efi_guid_t *Protocol,
 			struct efi_open_protocol_information_entry **entry_buffer,
-			unsigned long *entry_count);
+			size_t *entry_count);
 	efi_status_t (EFIAPI *protocols_per_handle)(efi_handle_t handle,
 			efi_guid_t ***protocol_buffer,
-			unsigned long *protocols_buffer_count);
+			size_t *protocols_buffer_count);
 	efi_status_t (EFIAPI *locate_handle_buffer) (
 			enum efi_locate_search_type search_type,
 			const efi_guid_t *protocol, void *search_key,
-			unsigned long *no_handles, efi_handle_t **buffer);
+			size_t *no_handles, efi_handle_t **buffer);
 	efi_status_t (EFIAPI *locate_protocol)(const efi_guid_t *protocol,
 			void *registration, void **protocol_interface);
 	efi_status_t (EFIAPI *install_multiple_protocol_interfaces)(efi_handle_t *handle, ...);
 	efi_status_t (EFIAPI *uninstall_multiple_protocol_interfaces)(efi_handle_t handle, ...);
 	efi_status_t (EFIAPI *calculate_crc32)(const void *data,
-			unsigned long data_size, uint32_t *crc32);
-	void (EFIAPI *copy_mem)(void *destination, const void *source, unsigned long length);
-	void (EFIAPI *set_mem)(void *buffer, unsigned long size, uint8_t value);
+			size_t data_size, uint32_t *crc32);
+	void (EFIAPI *copy_mem)(void *destination, const void *source, size_t length);
+	void (EFIAPI *set_mem)(void *buffer, size_t size, uint8_t value);
 	void *create_event_ex;
 };
 
@@ -670,7 +670,7 @@ struct efi_system_table {
 	struct efi_simple_text_output_protocol *std_err;
 	struct efi_runtime_services *runtime;
 	struct efi_boot_services *boottime;
-	unsigned long nr_tables;
+	size_t nr_tables;
 	struct efi_config_table *tables;
 };
 
@@ -840,9 +840,9 @@ struct efi_block_io_protocol {
 	efi_status_t(EFIAPI *reset)(struct efi_block_io_protocol *this,
 			bool ExtendedVerification);
 	efi_status_t(EFIAPI *read)(struct efi_block_io_protocol *this, u32 media_id,
-			u64 lba, unsigned long buffer_size, void *buf);
+			u64 lba, size_t buffer_size, void *buf);
 	efi_status_t(EFIAPI *write)(struct efi_block_io_protocol *this, u32 media_id,
-			u64 lba, unsigned long buffer_size, void *buf);
+			u64 lba, size_t buffer_size, void *buf);
 	efi_status_t(EFIAPI *flush)(struct efi_block_io_protocol *this);
 };
 

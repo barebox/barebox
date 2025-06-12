@@ -68,11 +68,14 @@ int phy_update_status(struct phy_device *phydev)
 	if (phydev->adjust_link)
 		phydev->adjust_link(edev);
 
-	if (phydev->link)
+	if (phydev->link) {
 		dev_info(&edev->dev, "%dMbps %s duplex link detected\n",
 				phydev->speed, phydev->duplex ? "full" : "half");
-	else if (oldlink)
+		/* Add time to establish link up to RNG state */
+		clocksource_srand();
+	} else if (oldlink) {
 		dev_info(&edev->dev, "link down\n");
+	}
 
 	return 0;
 }

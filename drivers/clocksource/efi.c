@@ -74,7 +74,7 @@ static int efi_cs_init(struct clocksource *cs)
 			BS->close_event(efi_cs_evt);
 			return -ENODEV;
 		}
-		nb_100ns = 10 * 1000 * 1000 / freq;
+		nb_100ns = DIV_ROUND_DOWN_ULL(10 * 1000 * 1000, freq);
 		pr_warn("EFI Event timer too slow freq = %llu Hz\n", freq);
 		efiret = BS->set_timer(efi_cs_evt, EFI_TIMER_PERIODIC, nb_100ns);
 		if (EFI_ERROR(efiret)) {

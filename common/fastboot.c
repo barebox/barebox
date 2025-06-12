@@ -348,8 +348,10 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 	if (fastboot_tx_print_var(fb, &fb->variables, cmd))
 		goto out;
 
-	if (!all && !partition)
-		goto skip_partitions;
+	if (!all && !partition) {
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "no such variable: %s", cmd);
+		goto out;
+	}
 
 	file_list_for_each_entry(fb->files, fentry) {
 		int ret;
@@ -371,8 +373,11 @@ static void cb_getvar(struct fastboot *fb, const char *cmd)
 	if (fastboot_tx_print_var(fb, &partition_list, cmd))
 		goto out;
 
-skip_partitions:
-	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
+	if (all)
+		fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
+	else
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "no such variable: %s", cmd);
+
 out:
 	fastboot_free_variables(&partition_list);
 }
@@ -398,7 +403,7 @@ void fastboot_download_finished(struct fastboot *fb)
 
 	printf("\n");
 
-	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Downloading %d bytes finished",
+	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Downloading %zu bytes finished",
 			  fb->download_bytes);
 
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
@@ -421,7 +426,7 @@ static void cb_download(struct fastboot *fb, const char *cmd)
 	fb->download_size = simple_strtoul(cmd, NULL, 16);
 	fb->download_bytes = 0;
 
-	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Downloading %d bytes...",
+	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Downloading %zu bytes...",
 			  fb->download_size);
 
 	init_progression_bar(fb->download_size);
@@ -446,7 +451,7 @@ static void cb_download(struct fastboot *fb, const char *cmd)
 
 void fastboot_start_download_generic(struct fastboot *fb)
 {
-	fastboot_tx_print(fb, FASTBOOT_MSG_DATA, "%08x", fb->download_size);
+	fastboot_tx_print(fb, FASTBOOT_MSG_DATA, "%08zx", fb->download_size);
 }
 
 static void __maybe_unused cb_boot(struct fastboot *fb, const char *opt)
@@ -792,7 +797,7 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 	}
 
 copy:
-	ret = copy_file(fb->tempname, filename, 1);
+	ret = copy_file(fb->tempname, filename, COPY_FILE_VERBOSE);
 	if (ret)
 		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
 				  "write partition: %pe", ERR_PTR(ret));

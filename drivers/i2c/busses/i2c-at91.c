@@ -24,9 +24,8 @@
 #include <driver.h>
 #include <init.h>
 
-#define DEFAULT_TWI_CLK_HZ		100000		/* max 400 Kbits/s */
-#define AT91_I2C_TIMEOUT		(100 * MSECOND)	/* transfer timeout */
-#define AT91_I2C_DMA_THRESHOLD	8			/* enable DMA if transfer size is bigger than this threshold */
+#define AT91_I2C_TIMEOUT	(100 * MSECOND)	/* transfer timeout */
+#define AT91_I2C_DMA_THRESHOLD	8		/* enable DMA if transfer size is bigger than this threshold */
 
 /* AT91 TWI register definitions */
 #define	AT91_TWI_CR		0x0000	/* Control Register */
@@ -149,7 +148,7 @@ static void at91_init_twi_bus(struct at91_twi_dev *dev)
  * Calculate symmetric clock as stated in datasheet:
  * twi_clk = F_MAIN / (2 * (cdiv * (1 << ckdiv) + offset))
  */
-static void at91_calc_twi_clock(struct at91_twi_dev *dev, int twi_clk)
+static void at91_calc_twi_clock(struct at91_twi_dev *dev)
 {
 	int ckdiv, cdiv, div, hold = 0, filter_width = 0;
 	const struct at91_twi_pdata *pdata = dev->pdata;
@@ -160,7 +159,7 @@ static void at91_calc_twi_clock(struct at91_twi_dev *dev, int twi_clk)
 	i2c_parse_fw_timings(dev->dev, t, true);
 
 	div = max(0, (int)DIV_ROUND_UP(clk_get_rate(dev->clk),
-				       2 * twi_clk) - offset);
+				       2 * t->bus_freq_hz) - offset);
 	ckdiv = fls(div >> 8);
 	cdiv = div >> ckdiv;
 
@@ -519,7 +518,6 @@ static int at91_twi_probe(struct device *dev)
 	struct at91_twi_dev *i2c_at91;
 	const struct at91_twi_pdata *i2c_data;
 	int rc = 0;
-	u32 bus_clk_rate;
 
 	i2c_data = device_get_match_data(dev);
 	if (!i2c_data)
@@ -549,9 +547,7 @@ static int at91_twi_probe(struct device *dev)
 
 	clk_enable(i2c_at91->clk);
 
-	bus_clk_rate = DEFAULT_TWI_CLK_HZ;
-
-	at91_calc_twi_clock(i2c_at91, bus_clk_rate);
+	at91_calc_twi_clock(i2c_at91);
 	at91_init_twi_bus(i2c_at91);
 
 	i2c_at91->adapter.master_xfer = at91_twi_xfer;

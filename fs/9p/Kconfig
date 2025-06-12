@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config 9P_FS
+	tristate "Plan 9 Resource Sharing Support (9P2000)"
+	depends on NET_9P
+	help
+	  If you say Y here, you will get experimental support for
+	  Plan 9 resource sharing via the 9P2000 protocol.
+
+	  See <http://v9fs.sf.net> for more information.
+
+	  If unsure, say N.
+
+config 9P_FS_WRITE
+	tristate "9P2000 Write Support"
+	depends on 9P_FS
+	select FS_WRITABLE
+	help
+	  Enable support for writing in 9P filesystems.

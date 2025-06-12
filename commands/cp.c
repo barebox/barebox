@@ -25,13 +25,16 @@ static int do_cp(int argc, char *argv[])
 	int last_is_dir = 0;
 	int i;
 	int opt;
-	int verbose = 0, recursive = 0;
+	int flags = 0, recursive = 0;
 	int argc_min;
 
-	while ((opt = getopt(argc, argv, "vr")) > 0) {
+	while ((opt = getopt(argc, argv, "vnr")) > 0) {
 		switch (opt) {
 		case 'v':
-			verbose = 1;
+			flags |= COPY_FILE_VERBOSE;
+			break;
+		case 'n':
+			flags |= COPY_FILE_NO_OVERWRITE;
 			break;
 		case 'r':
 			recursive = 1;
@@ -66,11 +69,11 @@ static int do_cp(int argc, char *argv[])
 		dst = concat_path_file(argv[argc - 1], posix_basename(argv[i]));
 
 		if (recursive)
-			ret = copy_recursive(argv[i], dst);
+			ret = copy_recursive(argv[i], dst, flags);
 		else if (last_is_dir)
-			ret = copy_file(argv[i], dst, verbose);
+			ret = copy_file(argv[i], dst, flags);
 		else
-			ret = copy_file(argv[i], argv[argc - 1], verbose);
+			ret = copy_file(argv[i], argv[argc - 1], flags);
 
 		free(dst);
 		if (ret)
@@ -87,13 +90,14 @@ BAREBOX_CMD_HELP_TEXT("Copy file from SRC to DEST.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-r", "recursive")
+BAREBOX_CMD_HELP_OPT ("-n", "do not overwrite an existing file")
 BAREBOX_CMD_HELP_OPT ("-v", "verbose")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(cp)
 	.cmd		= do_cp,
 	BAREBOX_CMD_DESC("copy files")
-	BAREBOX_CMD_OPTS("[-rv] SRC DEST")
+	BAREBOX_CMD_OPTS("[-rnv] SRC DEST")
 	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_cp_help)
 BAREBOX_CMD_END

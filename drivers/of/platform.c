@@ -7,6 +7,7 @@
  * based on Linux devicetree support
  */
 #include <common.h>
+#include <driver.h>
 #include <deep-probe.h>
 #include <malloc.h>
 #include <of.h>
@@ -313,6 +314,31 @@ struct device *of_device_enable_and_register_by_alias(const char *alias)
 	return of_device_enable_and_register(node);
 }
 EXPORT_SYMBOL(of_device_enable_and_register_by_alias);
+
+struct device *of_add_child_device(struct device *parent,
+		const char* devname, int id, struct device_node *np)
+{
+	struct device *dev;
+	int err;
+
+	if (!of_property_present(np, "compatible") || !of_device_is_available(np))
+		return NULL;
+
+	dev = device_alloc(devname, id);
+	dev->parent = parent;
+	dev->of_node = np;
+
+	np->dev = dev;
+	err = platform_device_register(dev);
+	if (err) {
+		np->dev = NULL;
+		free_device(dev);
+		return ERR_PTR(err);
+	}
+
+	return dev;
+}
+EXPORT_SYMBOL(of_add_child_device);
 
 #ifdef CONFIG_ARM_AMBA
 static struct device *of_amba_device_create(struct device_node *np)

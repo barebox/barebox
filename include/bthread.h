@@ -7,12 +7,14 @@
 #define __BTHREAD_H_
 
 #include <linux/stddef.h>
+#include <linux/compiler.h>
 
 struct bthread;
 
 extern struct bthread *current;
 
-struct bthread *bthread_create(void (*threadfn)(void *), void *data, const char *namefmt, ...);
+struct bthread *bthread_create(void (*threadfn)(void *), void *data, const char *namefmt, ...)
+	__printf(3, 4);
 void bthread_cancel(struct bthread *bthread);
 
 void bthread_schedule(struct bthread *);

@@ -542,8 +542,8 @@ int ipu_di_init_sync_panel(struct ipu_di *di, struct ipu_di_signal_cfg *sig)
 	ret = clk_set_parent(&di->clk_di_pixel, parent);
 	if (ret) {
 		dev_err(di->ipu->dev,
-			"setting pixel clock to parent %s failed with %d\n",
-				parent->name, ret);
+			"setting pixel clock to parent %pC failed with %d\n",
+				parent, ret);
 		return ret;
 	}
 

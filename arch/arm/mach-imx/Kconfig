@@ -126,7 +126,6 @@ config ARCH_IMX6
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
 	select COMMON_CLK_OF_PROVIDER
-	select HW_HAS_PCI
 	select PBL_VERIFY_PIGGY if HABV4
 
 config ARCH_IMX6SL
@@ -149,7 +148,6 @@ config ARCH_IMX7
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 	select ARCH_HAS_IMX_GPT
-	select HW_HAS_PCI
 
 config ARCH_IMX8M
 	bool
@@ -157,7 +155,6 @@ config ARCH_IMX8M
 	select PINCTRL_IMX_IOMUX_V3
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
-	select HW_HAS_PCI
 	select IMX8M_DRAM
 	select PBL_VERIFY_PIGGY if HABV4
 	select SOC_BUS

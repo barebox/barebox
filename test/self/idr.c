@@ -42,6 +42,11 @@ static int count_idr(int id, void *p, void *data)
 	return 0;
 }
 
+static inline int idr_alloc_one(struct idr *idr, void *ptr, int id)
+{
+	return idr_alloc_u32(idr, ptr, &id, id + 1, GFP_KERNEL) ?: id;
+}
+
 static void test_idr(void)
 {
 	void *ptr;

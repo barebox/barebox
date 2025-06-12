@@ -78,7 +78,7 @@ static int do_tftpb(int argc, char *argv[])
 
 	debug("%s: %s -> %s\n", __func__, source, dest);
 
-	ret = copy_file(source, dest, 1);
+	ret = copy_file(source, dest, COPY_FILE_VERBOSE);
 
 	umount(TFTP_MOUNT_PATH);
 

@@ -118,7 +118,7 @@ static int rmem_probe(struct device *dev)
 
 	config.dev = priv->dev = dev;
 	config.priv = priv;
-	config.name = "rmem";
+	config.name = dev_name(dev);
 	config.size = resource_size(mem);
 	priv->size = config.size;
 

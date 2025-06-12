@@ -4,6 +4,7 @@ config KVX
 	bool
 	select 64BIT
 	select BOOTM
+	select HAVE_ARCH_BOOTM_OFTREE
 	select BOOTM_OFTREE
 	select BOOTM_INITRD
 	select COMMON_CLK

@@ -428,7 +428,7 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data, void **outfdt)
 			pr_err("unable to unflatten devicetree\n");
 			goto err_free;
 		}
-		*outfdt = of_get_fixed_tree(root);
+		*outfdt = of_get_fixed_tree_for_boot(root);
 		if (!*outfdt) {
 			pr_err("Unable to get fixed tree\n");
 			ret = -EINVAL;

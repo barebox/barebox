@@ -32,13 +32,13 @@ static int do_oftree(int argc, char *argv[])
 {
 	struct fdt_header *fdt = NULL;
 	int opt;
-	int probe = 0;
+	int probe = 0, fixup = 0;
 	char *load = NULL;
 	char *save = NULL;
 	int ret;
 	struct device_node *root;
 
-	while ((opt = getopt(argc, argv, "pfl:s:")) > 0) {
+	while ((opt = getopt(argc, argv, "pfl:s:S:")) > 0) {
 		switch (opt) {
 		case 'l':
 			load = optarg;
@@ -52,6 +52,9 @@ static int do_oftree(int argc, char *argv[])
 			}
 			break;
 		case 's':
+			fixup = 1;
+			fallthrough;
+		case 'S':
 			save = optarg;
 			break;
 		}
@@ -61,7 +64,7 @@ static int do_oftree(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	if (save) {
-		fdt = of_get_fixed_tree(NULL);
+		fdt = of_get_flattened_tree(NULL, fixup);
 		if (!fdt) {
 			printf("no devicetree available\n");
 			ret = -EINVAL;
@@ -102,14 +105,15 @@ out:
 BAREBOX_CMD_HELP_START(oftree)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-l <DTB>",  "Load <DTB> to internal devicetree")
-BAREBOX_CMD_HELP_OPT ("-s <DTB>",  "save internal devicetree to <DTB>")
+BAREBOX_CMD_HELP_OPT ("-s <DTB>",  "save internal devicetree after fixups to <DTB>")
+BAREBOX_CMD_HELP_OPT ("-S <DTB>",  "save internal devicetree without fixups to <DTB>")
 BAREBOX_CMD_HELP_OPT ("-p",  "probe devices from stored device tree")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(oftree)
 	.cmd		= do_oftree,
 	BAREBOX_CMD_DESC("handle device trees")
-	BAREBOX_CMD_OPTS("[-lsp]")
+	BAREBOX_CMD_OPTS("[-lsSp]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_oftree_help)
 BAREBOX_CMD_END

@@ -7,6 +7,7 @@ config PPC
 	select HAS_MODULES
 	select GENERIC_FIND_NEXT_BIT
 	select OFTREE
+	select HAVE_ARCH_BOOTM_OFTREE
 	select ARCH_HAS_SJLJ
 	default y
 

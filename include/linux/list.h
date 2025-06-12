@@ -7,6 +7,7 @@
 #include <linux/stddef.h>
 #include <linux/poison.h>
 #include <linux/const.h>
+#include <asm/barrier.h>
 
 /*
  * Simple doubly linked list implementation.

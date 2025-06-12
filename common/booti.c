@@ -79,9 +79,13 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 		fdt = bootm_get_devicetree(data);
 		if (IS_ERR(fdt))
 			return fdt;
+		if (!fdt) {
+			if (initrd_res)
+				pr_warn("initrd discarded due to missing devicetree.\n");
+			goto out;
+		}
 
 		ret = bootm_load_devicetree(data, fdt, devicetree);
-
 		free(fdt);
 
 		if (ret)
@@ -90,8 +94,9 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 		*oftree = devicetree;
 	}
 
+out:
 	printf("Loaded kernel to 0x%08lx", kernel);
-	if (oftree)
+	if (oftree && *oftree)
 		printf(", devicetree at %pa", oftree);
 	printf("\n");
 

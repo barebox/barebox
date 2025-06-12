@@ -10,9 +10,9 @@
 #ifndef _ASM_RISCV_BARRIER_H
 #define _ASM_RISCV_BARRIER_H
 
-#ifndef __ASSEMBLY__
+#include <asm-generic/barrier.h>
 
-#define nop()		__asm__ __volatile__ ("nop")
+#ifndef __ASSEMBLY__
 
 #define RISCV_FENCE(p, s) \
 	__asm__ __volatile__ ("fence " #p "," #s : : : "memory")

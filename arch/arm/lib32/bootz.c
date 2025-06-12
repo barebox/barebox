@@ -110,9 +110,12 @@ static int do_bootz(int argc, char *argv[])
 	}
 
 	printf("loaded zImage from %s with size %d\n", argv[1], end);
-#ifdef CONFIG_OFTREE
-	oftree = of_get_fixed_tree(NULL);
-#endif
+	oftree = of_get_fixed_tree_for_boot(NULL);
+	if (!oftree) {
+		printf("No devicetree given.\n");
+		return -EINVAL;
+	}
+
 	ret = of_overlay_load_firmware();
 	if (ret)
 		return ret;

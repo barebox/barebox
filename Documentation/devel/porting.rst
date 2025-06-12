@@ -488,6 +488,8 @@ Your architecture needs to implement following headers:
    Only if ``HAS_DMA`` is selected by the architecture.
  - ``<asm/io.h>``
    Defines I/O memory and port accessors
+ - ``<asm/barrier.h>``
+   Can normally just include ``<asm-generic/barrier.h>``
  - ``<asm/mmu.h>``
  - ``<asm/string.h>``
  - ``<asm/swab.h>``

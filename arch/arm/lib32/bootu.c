@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#define pr_fmt(fmt) "bootu: " fmt
+
 #include <common.h>
 #include <command.h>
 #include <fs.h>
@@ -24,9 +26,12 @@ static int do_bootu(int argc, char *argv[])
 	if (!kernel)
 		kernel = (void *)simple_strtoul(argv[1], NULL, 0);
 
-#ifdef CONFIG_OFTREE
-	oftree = of_get_fixed_tree(NULL);
-#endif
+	oftree = of_get_fixed_tree_for_boot(NULL);
+	if (!oftree) {
+		pr_err("No devicetree given.\n");
+		return -EINVAL;
+	}
+
 	ret = of_overlay_load_firmware();
 	if (ret)
 		return ret;

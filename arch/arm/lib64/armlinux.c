@@ -11,7 +11,7 @@
 static int do_bootm_linux(struct image_data *data)
 {
 	void *image;
-	phys_addr_t devicetree;
+	phys_addr_t devicetree = 0;
 	int ret;
 
 	image = booti_load_image(data, &devicetree);

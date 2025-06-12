@@ -65,6 +65,11 @@ static bool pgd_type_table(u32 pgd)
 
 #define PTE_SIZE       (PTRS_PER_PTE * sizeof(u32))
 
+static void set_pte(uint32_t *pt, uint32_t val)
+{
+	WRITE_ONCE(*pt, val);
+}
+
 #ifdef __PBL__
 static uint32_t *alloc_pte(void)
 {
@@ -141,13 +146,14 @@ static u32 *arm_create_pte(unsigned long virt, unsigned long phys,
 	ttb_idx = pgd_index(virt);
 
 	for (i = 0; i < PTRS_PER_PTE; i++) {
-		table[i] = phys | PTE_TYPE_SMALL | flags;
+		set_pte(&table[i], phys | PTE_TYPE_SMALL | flags);
 		virt += PAGE_SIZE;
 		phys += PAGE_SIZE;
 	}
 	dma_flush_range(table, PTRS_PER_PTE * sizeof(u32));
 
-	ttb[ttb_idx] = (unsigned long)table | PMD_TYPE_TABLE;
+	// TODO break-before-make missing
+	set_pte(&ttb[ttb_idx], (unsigned long)table | PMD_TYPE_TABLE);
 	dma_flush_range(&ttb[ttb_idx], sizeof(u32));
 
 	return table;
@@ -264,14 +270,17 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 		if (size >= PGDIR_SIZE && pgdir_size_aligned &&
 		    IS_ALIGNED(phys_addr, PGDIR_SIZE) &&
 		    !pgd_type_table(*pgd)) {
+			u32 val;
 			/*
 			 * TODO: Add code to discard a page table and
 			 * replace it with a section
 			 */
 			chunk = PGDIR_SIZE;
-			*pgd = phys_addr | pmd_flags;
+			val = phys_addr | pmd_flags;
 			if (map_type != MAP_FAULT)
-				*pgd |= PMD_TYPE_SECT;
+				val |= PMD_TYPE_SECT;
+			// TODO break-before-make missing
+			set_pte(pgd, val);
 			dma_flush_range(pgd, sizeof(*pgd));
 		} else {
 			unsigned int num_ptes;
@@ -310,10 +319,15 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 			}
 
 			for (i = 0; i < num_ptes; i++) {
-				pte[i] = phys_addr + i * PAGE_SIZE;
-				pte[i] |= pte_flags;
+				u32 val;
+
+				val = phys_addr + i * PAGE_SIZE;
+				val |= pte_flags;
 				if (map_type != MAP_FAULT)
-					pte[i] |= PTE_TYPE_SMALL;
+					val |= PTE_TYPE_SMALL;
+
+				// TODO break-before-make missing
+				set_pte(&pte[i], val);
 			}
 
 			dma_flush_range(pte, num_ptes * sizeof(u32));
@@ -350,7 +364,7 @@ static void create_sections(unsigned long first, unsigned long last,
 	unsigned int i, addr = first;
 
 	for (i = ttb_start; i < ttb_end; i++) {
-		ttb[i] = addr | flags;
+		set_pte(&ttb[i], addr | flags);
 		addr += PGDIR_SIZE;
 	}
 }
@@ -366,8 +380,10 @@ void *map_io_sections(unsigned long phys, void *_start, size_t size)
 	unsigned long start = (unsigned long)_start, sec;
 	uint32_t *ttb = get_ttb();
 
-	for (sec = start; sec < start + size; sec += PGDIR_SIZE, phys += PGDIR_SIZE)
-		ttb[pgd_index(sec)] = phys | get_pmd_flags(MAP_UNCACHED);
+	for (sec = start; sec < start + size; sec += PGDIR_SIZE, phys += PGDIR_SIZE) {
+		// TODO break-before-make missing
+		set_pte(&ttb[pgd_index(sec)], phys | get_pmd_flags(MAP_UNCACHED));
+	}
 
 	dma_flush_range(ttb, 0x4000);
 	tlb_invalidate();
@@ -410,7 +426,9 @@ static void create_vector_table(unsigned long adr)
 			 vectors, adr);
 		arm_create_pte(adr, adr, get_pte_flags(MAP_UNCACHED));
 		pte = find_pte(adr);
-		*pte = (u32)vectors | PTE_TYPE_SMALL | get_pte_flags(MAP_CACHED);
+		// TODO break-before-make missing
+		set_pte(pte, (u32)vectors | PTE_TYPE_SMALL |
+			get_pte_flags(MAP_CACHED));
 	}
 
 	arm_fixup_vectors();

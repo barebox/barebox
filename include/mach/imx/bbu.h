@@ -69,6 +69,9 @@ int imx7_bbu_internal_mmcboot_register_handler(const char *name, const char *dev
 int imx6_bbu_internal_spi_i2c_register_handler(const char *name, const char *devicefile,
 		unsigned long flags);
 
+int imx8m_bbu_internal_spi_i2c_register_handler(const char *name, const char *devicefile,
+		unsigned long flags);
+
 int vf610_bbu_internal_mmc_register_handler(const char *name, const char *devicefile,
 		unsigned long flags);
 

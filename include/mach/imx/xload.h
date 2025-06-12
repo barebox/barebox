@@ -16,6 +16,7 @@ int imx7_esdhc_start_image(int instance);
 int imx7_nand_start_image(void);
 
 /* Below functions only load and don't start the image */
+int imx8m_ecspi_load_image(int instance, void *bl33);
 int imx8m_esdhc_load_image(int instance, void *bl33);
 int imx8mn_esdhc_load_image(int instance, void *bl33);
 int imx8mp_esdhc_load_image(int instance, void *bl33);

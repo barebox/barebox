@@ -627,6 +627,15 @@ int imx6_bbu_internal_spi_i2c_register_handler(const char *name,
 					       unsigned long flags)
 	__alias(imx53_bbu_internal_spi_i2c_register_handler);
 
+int imx8m_bbu_internal_spi_i2c_register_handler(const char *name,
+					       const char *devicefile,
+					       unsigned long flags)
+{
+	flags |= IMX_BBU_FLAG_PARTITION_STARTS_AT_HEADER;
+
+	return imx53_bbu_internal_spi_i2c_register_handler(name, devicefile, flags);
+}
+
 /*
  * Register an VFxxx internal boot update handler for i2c/spi
  * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to

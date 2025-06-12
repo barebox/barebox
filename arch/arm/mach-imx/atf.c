@@ -16,6 +16,7 @@
 #include <soc/fsl/caam.h>
 #include <tee/optee.h>
 #include <mach/imx/ele.h>
+#include <mach/imx/xload.h>
 
 /**
  * imx8m_atf_load_bl31 - Load ATF BL31 blob and transfer control to it
@@ -102,6 +103,9 @@ void imx8mm_load_bl33(void *bl33)
 		break;
 	case BOOTSOURCE_SPI:
 		imx8mm_qspi_load_image(instance, bl33);
+		break;
+	case BOOTSOURCE_SPI_NOR:
+		imx8m_ecspi_load_image(instance, bl33);
 		break;
 	default:
 		printf("Unsupported bootsource BOOTSOURCE_%d\n", src);
@@ -193,6 +197,9 @@ void imx8mp_load_bl33(void *bl33)
 	case BOOTSOURCE_SPI:
 		imx8mp_qspi_load_image(instance, bl33);
 		break;
+	case BOOTSOURCE_SPI_NOR:
+		imx8m_ecspi_load_image(instance, bl33);
+		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
 		hang();
@@ -265,6 +272,9 @@ void imx8mn_load_bl33(void *bl33)
 	case BOOTSOURCE_SPI:
 		imx8mn_qspi_load_image(instance, bl33);
 		break;
+	case BOOTSOURCE_SPI_NOR:
+		imx8m_ecspi_load_image(instance, bl33);
+		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
 		hang();
@@ -329,6 +339,9 @@ void imx8mq_load_bl33(void *bl33)
 	switch (src) {
 	case BOOTSOURCE_MMC:
 		imx8m_esdhc_load_image(instance, bl33);
+		break;
+	case BOOTSOURCE_SPI_NOR:
+		imx8m_ecspi_load_image(instance, bl33);
 		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);

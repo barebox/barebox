@@ -442,6 +442,9 @@ int platform_driver_register(struct driver *drv);
 
 int platform_device_register(struct device *new_device);
 
+#define PROTECT_ENABLE_WRITE		0
+#define PROTECT_DISABLE_WRITE		1
+
 struct cdev_operations {
 	/*! Called in response of reading from this device. Required */
 	ssize_t (*read)(struct cdev*, void* buf, size_t count, loff_t offset, ulong flags);

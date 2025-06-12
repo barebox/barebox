@@ -10,7 +10,7 @@ obj-$(CONFIG_SELFTEST_ENVIRONMENT_VARIABLES) += envvar.o
 obj-$(CONFIG_SELFTEST_FS_RAMFS) += ramfs.o
 obj-$(CONFIG_SELFTEST_DIRFD) += dirfd.o
 obj-$(CONFIG_SELFTEST_JSON) += json.o
-obj-$(CONFIG_SELFTEST_JWT) += jwt.o jwt_test.pem.o
+obj-$(CONFIG_SELFTEST_JWT) += jwt.o development_rsa2048.pem.o
 obj-$(CONFIG_SELFTEST_DIGEST) += digest.o
 obj-$(CONFIG_SELFTEST_MMU) += mmu.o
 obj-$(CONFIG_SELFTEST_STRING) += string.o
@@ -22,7 +22,7 @@ obj-$(CONFIG_SELFTEST_TLV) += tlv.o tlv.dtb.o
 
 ifdef REGENERATE_KEYTOC
 
-$(obj)/jwt_test.pem.c_shipped: $(src)/jwt_test.pem FORCE
+$(obj)/development_rsa2048.pem.c_shipped: $(src)/development_rsa2048.pem FORCE
 	$(call if_changed,public_keys,$(basename $(target-stem)):$<,-s)
 
 endif

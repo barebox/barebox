@@ -30,6 +30,21 @@ def get_config(command):
     return options
 
 
+def of_get_property(barebox, path):
+    node, prop = os.path.split(path)
+
+    stdout = barebox.run_check(f"of_dump -p {node}")
+    for line in stdout:
+        if line == '{prop};':
+            return True
+
+        prefix = f'{prop} = '
+        if line.startswith(prefix):
+            # Also drop the semicolon
+            return line[len(prefix):-1]
+    return False
+
+
 def skip_disabled(config, *options):
     if bool(config):
         undefined = list(filterfalse(config.__contains__, options))

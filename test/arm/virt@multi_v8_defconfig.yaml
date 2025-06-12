@@ -15,6 +15,7 @@ targets:
     features:
       - virtio-mmio
       - network
+      - testfs
     runner:
       tuxmake_arch: arm64
 images:

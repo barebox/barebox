@@ -2,7 +2,9 @@
 
 set -e
 
-TEMP=$(getopt -o '' --long 'sysfw:,sysfwdata:,dmdata:,out:,sbl:,key:,innerdata:' -n 'k3img' -- "$@")
+bootcore_opts=0
+
+TEMP=$(getopt -o '' --long 'out:,key:,help' -n 'k3img' -- "$@")
 
 if [ $? -ne 0 ]; then
 	echo 'Terminating...' >&2
@@ -13,35 +15,27 @@ fi
 eval set -- "$TEMP"
 unset TEMP
 
+usage() {
+cat <<EndOfHereDocument
+Generate certificate images suitable for booting TI K3 SoCs.
+
+usage: $0 [OPTION]... [COMPONENT]...
+  --out <FILE>		write output image to <FILE>
+  --key <KEYFILE>	signing key
+  --help		this help
+
+Components have the form:
+
+filename:compType:bootCore:compOpts:destAddr
+
+For the meaning of compType, bootCore and compOpts see the Reference Manual
+EndOfHereDocument
+}
+
 while true; do
         case "$1" in
-        '--sysfw')
-		sysfw="$2"
-		shift 2
-		continue
-	;;
-        '--sysfwdata')
-		sysfwdata="$2"
-		shift 2
-		continue
-	;;
-        '--sysfw')
-		sysfw="$2"
-		shift 2
-		continue
-	;;
-        '--dmdata')
-		dmdata="$2"
-		shift 2
-		continue
-	;;
 	'--out')
 		out="$2"
-		shift 2
-		continue
-	;;
-	'--sbl')
-		sbl="$2"
 		shift 2
 		continue
 	;;
@@ -50,10 +44,9 @@ while true; do
 		shift 2
 		continue
 	;;
-	'--innerdata')
-		innerdata="$2"
-		shift 2
-		continue
+	'--help')
+		usage
+		exit 0
 	;;
 	'--')
 		shift
@@ -66,46 +59,57 @@ while true; do
 	esac
 done
 
-shasbl=$(sha512sum $sbl | sed 's/ .*//')
-shasysfw=$(sha512sum $sysfw | sed 's/ .*//')
-shasysfwdata=$(sha512sum $sysfwdata | sed 's/ .*//')
-shadmdata=$(sha512sum $dmdata | sed 's/ .*//')
+total=0
+num_comp=0
 
-sblsize=$(stat -L -c%s $sbl)
-sysfwsize=$(stat -L -c%s $sysfw)
-sysfwdatasize=$(stat -L -c%s $sysfwdata)
-dmdatasize=$(stat -L -c%s $dmdata)
-
-total=$(($sblsize + $sysfwsize + $sysfwdatasize + $dmdatasize))
-
-TMPDIR="$(mktemp -d)"
 trap 'rm -rf -- "$TMPDIR"' EXIT
+TMPDIR="$(mktemp -d)"
+
+components=${TMPDIR}/components
+ext_boot_info=${TMPDIR}/ext_boot_info
+data=${TMPDIR}/data
+
+for i in $*; do
+	filename=$(echo "$i" | cut -d ":" -f 1)
+	compType=$(echo "$i" | cut -d ":" -f 2)
+	bootCore=$(echo "$i" | cut -d ":" -f 3)
+	compOpts=$(echo "$i" | cut -d ":" -f 4)
+	destAddr=$(echo "$i" | cut -d ":" -f 5)
+
+	sha=$(sha512sum $filename | sed 's/ .*//')
+	size=$(stat -L -c%s $filename)
+
+	total=$((total + size))
+	num_comp=$((num_comp + 1))
+
+	cat >> $components <<EndOfHereDocument
+[comp$num_comp]
+compType = INTEGER:$compType
+bootCore = INTEGER:$bootCore
+compOpts = INTEGER:$compOpts
+destAddr = FORMAT:HEX,OCT:$destAddr
+compSize = INTEGER:$size
+shaType  = OID:2.16.840.1.101.3.4.2.3
+shaValue = FORMAT:HEX,OCT:$sha
+
+EndOfHereDocument
+
+	echo "comp$num_comp = SEQUENCE:comp$num_comp" >> $ext_boot_info
+	cat $filename >> $data
+done
+
+echo >> $ext_boot_info
+
+cat >> $components <<EndOfHereDocument
+[ debug ]
+debugUID = FORMAT:HEX,OCT:0000000000000000000000000000000000000000000000000000000000000000
+debugType = INTEGER:4
+coreDbgEn = INTEGER:0
+coreDbgSecEn = INTEGER:0
+EndOfHereDocument
 
 certcfg=${TMPDIR}/certcfg
 cert=${TMPDIR}/cert
-
-num_comp=4
-
-if [ -n "${innerdata}" ]; then
-	shainnerdata=$(sha512sum $innerdata | sed 's/ .*//')
-	innerdatasize=$(stat -L -c%s $innerdata)
-
-	innercert=$(cat <<EOF
-[sysfw_inner_cert]
-compType = INTEGER:3
-bootCore = INTEGER:0
-compOpts = INTEGER:0
-destAddr = FORMAT:HEX,OCT:00000000
-compSize = INTEGER:$innerdatasize
-shaType  = OID:2.16.840.1.101.3.4.2.3
-shaValue = FORMAT:HEX,OCT:$shainnerdata
-EOF
-)
-
-	num_comp=$((num_comp + 1))
-	total=$((total + innerdatasize))
-	sysfw_inner_cert="sysfw_inner_cert=SEQUENCE:sysfw_inner_cert"
-fi
 
 cat > $certcfg <<EndOfHereDocument
 [ req ]
@@ -135,58 +139,10 @@ swrv=INTEGER:1
 [ext_boot_info]
 extImgSize=INTEGER:$total
 numComp=INTEGER:$num_comp
-sbl=SEQUENCE:sbl
-sysfw=SEQUENCE:sysfw
-sysfw_data=SEQUENCE:sysfw_data
-$sysfw_inner_cert
-dm_data=SEQUENCE:dm_data
-
-[sbl]
-compType = INTEGER:1
-bootCore = INTEGER:16
-compOpts = INTEGER:0
-destAddr = FORMAT:HEX,OCT:43c00000
-compSize = INTEGER:$sblsize
-shaType  = OID:2.16.840.1.101.3.4.2.3
-shaValue = FORMAT:HEX,OCT:$shasbl
-
-[sysfw]
-compType = INTEGER:2
-bootCore = INTEGER:0
-compOpts = INTEGER:0
-destAddr = FORMAT:HEX,OCT:00040000
-compSize = INTEGER:$sysfwsize
-shaType  = OID:2.16.840.1.101.3.4.2.3
-shaValue = FORMAT:HEX,OCT:$shasysfw
-
-[sysfw_data]
-compType = INTEGER:18
-bootCore = INTEGER:0
-compOpts = INTEGER:0
-destAddr = FORMAT:HEX,OCT:00067000
-compSize = INTEGER:$sysfwdatasize
-shaType  = OID:2.16.840.1.101.3.4.2.3
-shaValue = FORMAT:HEX,OCT:$shasysfwdata
-
-[ debug ]
-debugUID = FORMAT:HEX,OCT:0000000000000000000000000000000000000000000000000000000000000000
-debugType = INTEGER:4
-coreDbgEn = INTEGER:0
-coreDbgSecEn = INTEGER:0
-
-$innercert
-
-[dm_data]
-compType = INTEGER:17
-bootCore = INTEGER:16
-compOpts = INTEGER:0
-destAddr = FORMAT:HEX,OCT:43c3a800
-compSize = INTEGER:$dmdatasize
-shaType  = OID:2.16.840.1.101.3.4.2.3
-shaValue = FORMAT:HEX,OCT:$shadmdata
-
 EndOfHereDocument
+
+cat $ext_boot_info $components >> $certcfg
 
 openssl req -new -x509 -key $key -nodes -outform DER -out $cert -config $certcfg -sha512
 
-cat $cert $sbl $sysfw $sysfwdata $innerdata $dmdata > $out
+cat $cert $data > $out

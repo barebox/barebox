@@ -9,7 +9,7 @@
 
 static int am625_sk_probe(struct device *dev)
 {
-	am625_enable_32k_crystal();
+	am62x_enable_32k_crystal();
 
 	k3_bbu_emmc_register("emmc", "/dev/mmc0", BBU_HANDLER_FLAG_DEFAULT);
 

@@ -1,0 +1,3 @@
+[submodule "ti-linux-firmware"]
+	path = firmware/ti-linux-firmware
+	url = https://git.ti.com/git/processor-firmware/ti-linux-firmware.git

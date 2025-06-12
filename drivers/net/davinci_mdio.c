@@ -112,16 +112,17 @@ static int cpsw_mdio_write(struct mii_bus *bus, int phy_id, int phy_reg, u16 val
 
 static void cpsw_mdio_init_clk(struct cpsw_mdio_priv *priv)
 {
-	u32 mdio_in, clk_div;
+	u32 mdio_in = 0, clk_div;
 	u32 bus_freq = 1000000;
 
 	of_property_read_u32(priv->dev->of_node, "bus_freq", &bus_freq);
 
 	priv->clk = clk_get_enabled(priv->dev, "fck");
-	if (IS_ERR(priv->clk))
-		mdio_in = 256000000;
-	else
+	if (!IS_ERR(priv->clk))
 		mdio_in = clk_get_rate(priv->clk);
+
+	if (mdio_in == 0)
+		mdio_in = 256000000;
 
 	clk_div = (mdio_in / bus_freq) - 1;
 	if (clk_div > CONTROL_MAX_DIV)

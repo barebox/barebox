@@ -1,0 +1,45 @@
+
+&phy_gmii_sel {
+	compatible = "ti,am654-phy-gmii-sel", "syscon";
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio2 {
+	status = "okay";
+};
+
+&wkup_gpio0 {
+	status = "okay";
+};
+
+/ {
+	aliases {
+		serial0 = &uart0;
+		serial1 = &uart1;
+		serial2 = &uart2;
+		serial3 = &uart3;
+		serial4 = &uart4;
+		serial5 = &uart5;
+		serial6 = &uart6;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		tfa@80000000 {
+			reg = <0x0 0x80000000 0x0 0x80000>;
+			alignment = <0x1000>;
+			no-map;
+		};
+
+		secure_ddr: optee@80200000 {
+			reg = <0x00 0x80200000 0x00 0x400000>;
+			no-map;
+		};
+	};
+};

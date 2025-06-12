@@ -9,7 +9,7 @@
 
 static int beagleplay_probe(struct device *dev)
 {
-	am625_enable_32k_crystal();
+	am62x_enable_32k_crystal();
 
 	return 0;
 }

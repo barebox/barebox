@@ -304,7 +304,7 @@ int of_fixup_reserved_memory(struct device_node *root, void *_res)
 
 	child = of_get_child_by_name(node, res->name) ?: of_new_node(node, res->name);
 
-	if (res->flags & IORESOURCE_BUSY)
+	if (is_reserved_resource(res))
 		of_property_write_bool(child, "no-map", true);
 
 	of_write_number(reg, res->start, addr_n_cells);

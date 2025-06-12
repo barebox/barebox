@@ -25,7 +25,9 @@ static int alloc_memtest_region(struct list_head *list,
 	struct mem_test_resource *r;
 
 	r = xzalloc(sizeof(struct mem_test_resource));
-	r_new = request_sdram_region("memtest", start, size);
+	r_new = request_sdram_region("memtest", start, size,
+				     MEMTYPE_BOOT_SERVICES_DATA,
+				     MEMATTRS_RW);
 	if (!r_new)
 		return -EINVAL;
 

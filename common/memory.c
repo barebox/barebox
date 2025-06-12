@@ -67,26 +67,47 @@ static int mem_register_barebox(void)
 {
 	if (barebox_start && barebox_size)
 		barebox_res = request_sdram_region("barebox", barebox_start,
-						   barebox_size);
+						   barebox_size,
+						   MEMTYPE_BOOT_SERVICES_CODE,
+						   MEMATTRS_RWX); // FIXME
 	return 0;
 }
 postmem_initcall(mem_register_barebox);
 
+bool inside_barebox_area(resource_size_t start, resource_size_t end)
+{
+	return barebox_res && barebox_res->start <= start &&
+		end <= barebox_res->end;
+}
+
 struct resource *request_barebox_region(const char *name,
 					resource_size_t start,
-					resource_size_t size)
+					resource_size_t size,
+					unsigned memattrs)
 {
 	resource_size_t end = start + size - 1;
+	enum resource_memtype memtype;
 
-	if (barebox_res && barebox_res->start <= start &&
-	    end <= barebox_res->end) {
+	if (memattrs & MEMATTR_XP)
+		memtype = MEMTYPE_BOOT_SERVICES_DATA;
+	else
+		memtype = MEMTYPE_BOOT_SERVICES_CODE;
+
+	if (inside_barebox_area(start, end)) {
 		struct resource *iores;
 		iores = __request_region(barebox_res, start, end,
 					 name, IORESOURCE_MEM);
-		return !IS_ERR(iores) ? iores : NULL;
+		if (IS_ERR(iores))
+			return NULL;
+
+		iores->type = memtype;
+		iores->attrs = memattrs;
+		iores->flags |= IORESOURCE_TYPE_VALID;
+
+		return iores;
 	}
 
-	return request_sdram_region(name, start, size);
+	return request_sdram_region(name, start, size, memtype, memattrs);
 }
 
 static int mem_malloc_resource(void)
@@ -100,22 +121,27 @@ static int mem_malloc_resource(void)
 	 */
 	request_sdram_region("malloc space",
 			malloc_start,
-			malloc_end - malloc_start + 1);
+			malloc_end - malloc_start + 1,
+			MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_RW);
 	request_barebox_region("barebox code",
 			(unsigned long)&_stext,
 			(unsigned long)&_etext -
-			(unsigned long)&_stext);
+			(unsigned long)&_stext,
+			MEMATTRS_RX);
 	request_barebox_region("barebox data",
 			(unsigned long)&_sdata,
 			(unsigned long)&_edata -
-			(unsigned long)&_sdata);
+			(unsigned long)&_sdata,
+			MEMATTRS_RW);
 	request_barebox_region("barebox bss",
 			(unsigned long)&__bss_start,
 			(unsigned long)&__bss_stop -
-			(unsigned long)&__bss_start);
+			(unsigned long)&__bss_start,
+			MEMATTRS_RW);
 #endif
 #ifdef STACK_BASE
-	request_sdram_region("stack", STACK_BASE, STACK_SIZE);
+	request_sdram_region("stack", STACK_BASE, STACK_SIZE,
+			     MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_RW);
 #endif
 
 	return 0;
@@ -225,18 +251,16 @@ postmem_initcall(add_mem_devices);
 /*
  * Request a region from the registered sdram
  */
-struct resource *__request_sdram_region(const char *name, unsigned flags,
+struct resource *__request_sdram_region(const char *name,
 					resource_size_t start, resource_size_t size)
 {
 	struct memory_bank *bank;
-
-	flags |= IORESOURCE_MEM;
 
 	for_each_memory_bank(bank) {
 		struct resource *res;
 
 		res = __request_region(bank->res, start, start + size - 1,
-				       name, flags);
+				       name, IORESOURCE_MEM);
 		if (!IS_ERR(res))
 			return res;
 	}
@@ -260,9 +284,18 @@ struct resource *reserve_sdram_region(const char *name, resource_size_t start,
 		size = ALIGN(size, PAGE_SIZE);
 	}
 
-	res = __request_sdram_region(name, IORESOURCE_BUSY, start, size);
+	/*
+	 * We intentionally don't use request_sdram_region() here, because we
+	 * want to set the reserved flag independently of whether
+	 * CONFIG_MEMORY_ATTRIBUTES is enabled or not
+	 */
+	res = __request_sdram_region(name, start, size);
 	if (!res)
 		return NULL;
+
+	res->type = MEMTYPE_RESERVED;
+	res->attrs = MEMATTRS_RW_DEVICE;
+	res->flags |= IORESOURCE_TYPE_VALID;
 
 	remap_range((void *)start, size, MAP_UNCACHED);
 

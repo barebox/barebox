@@ -18,7 +18,7 @@ static void __print_resources(struct resource *res, int indent)
 
 	printf("%pa - %pa (size %pa) %s%s\n",
 			&res->start, &res->end, &size,
-			res->flags & IORESOURCE_BUSY ? "[R] " : "",
+			is_reserved_resource(res) ? "[R] " : "",
 			res->name);
 
 	list_for_each_entry(r, &res->children, sibling) {

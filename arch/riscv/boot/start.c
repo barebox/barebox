@@ -104,7 +104,7 @@ static int barebox_memory_areas_init(void)
 {
 	if(barebox_boarddata)
 		request_barebox_region("board data", (unsigned long)barebox_boarddata,
-				       barebox_boarddata_size);
+				       barebox_boarddata_size, MEMATTRS_RO);
 
 	return 0;
 }

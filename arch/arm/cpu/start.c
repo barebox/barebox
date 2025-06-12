@@ -120,7 +120,8 @@ static int barebox_memory_areas_init(void)
 {
 	if (kasan_enabled())
 		request_sdram_region("kasan shadow", kasan_shadow_base,
-				     mem_malloc_start() - kasan_shadow_base);
+				     mem_malloc_start() - kasan_shadow_base,
+				     MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_RW);
 
 	return 0;
 }

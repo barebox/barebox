@@ -15,6 +15,7 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <efi/types.h>
+#include <efi/memtype.h>
 
 /* Bit mask for EFI status code with error */
 #define EFI_ERROR_MASK (1UL << (BITS_PER_LONG-1))
@@ -85,42 +86,6 @@ struct efi_memory_desc {
     u64 npages;
     u64 attrs;
 };
-
-/* Memory types: */
-enum efi_memory_type {
-	EFI_RESERVED_TYPE,
-	EFI_LOADER_CODE,
-	EFI_LOADER_DATA,
-	EFI_BOOT_SERVICES_CODE,
-	EFI_BOOT_SERVICES_DATA,
-	EFI_RUNTIME_SERVICES_CODE,
-	EFI_RUNTIME_SERVICES_DATA,
-	EFI_CONVENTIONAL_MEMORY,
-	EFI_UNUSABLE_MEMORY,
-	EFI_ACPI_RECLAIM_MEMORY,
-	EFI_ACPI_MEMORY_NVS,
-	EFI_MEMORY_MAPPED_IO,
-	EFI_MEMORY_MAPPED_IO_PORT_SPACE,
-	EFI_PAL_CODE,
-	EFI_MAX_MEMORY_TYPE
-};
-
-/* Attribute values: */
-#define EFI_MEMORY_UC		((u64)0x0000000000000001ULL)	/* uncached */
-#define EFI_MEMORY_WC		((u64)0x0000000000000002ULL)	/* write-coalescing */
-#define EFI_MEMORY_WT		((u64)0x0000000000000004ULL)	/* write-through */
-#define EFI_MEMORY_WB		((u64)0x0000000000000008ULL)	/* write-back */
-#define EFI_MEMORY_UCE		((u64)0x0000000000000010ULL)	/* uncached, exported */
-#define EFI_MEMORY_WP		((u64)0x0000000000001000ULL)	/* write-protect */
-#define EFI_MEMORY_RP		((u64)0x0000000000002000ULL)	/* read-protect */
-#define EFI_MEMORY_XP		((u64)0x0000000000004000ULL)	/* execute-protect */
-#define EFI_MEMORY_NV		((u64)0x0000000000008000ULL)	/* non-volatile */
-#define EFI_MEMORY_RUNTIME	((u64)0x8000000000000000ULL)	/* range requires runtime mapping */
-#define EFI_MEMORY_MORE_RELIABLE \
-				((u64)0x0000000000010000ULL)	/* higher reliability */
-#define EFI_MEMORY_RO		((u64)0x0000000000020000ULL)	/* read-only */
-#define EFI_MEMORY_SP		((u64)0x0000000000040000ULL)	/* specific-purpose memory (SPM) */
-#define EFI_MEMORY_DESCRIPTOR_VERSION	1
 
 #define EFI_PAGE_SHIFT		12
 #define EFI_PAGE_SIZE		(1ULL << EFI_PAGE_SHIFT)

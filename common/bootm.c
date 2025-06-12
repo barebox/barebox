@@ -187,7 +187,8 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 		unsigned long kernel_size = data->fit_kernel_size;
 
 		data->os_res = request_sdram_region("kernel",
-				load_address, kernel_size);
+				load_address, kernel_size,
+				MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
 		if (!data->os_res) {
 			pr_err("unable to request SDRAM region for kernel at"
 					" 0x%08llx-0x%08llx\n",
@@ -298,8 +299,8 @@ bootm_load_initrd(struct image_data *data, unsigned long load_address)
 			return ERR_PTR(ret);
 		}
 		data->initrd_res = request_sdram_region("initrd",
-				load_address,
-				initrd_size);
+				load_address, initrd_size,
+				MEMTYPE_LOADER_DATA, MEMATTRS_RW);
 		if (!data->initrd_res) {
 			pr_err("unable to request SDRAM region for initrd at"
 					" 0x%08llx-0x%08llx\n",
@@ -533,7 +534,7 @@ int bootm_load_devicetree(struct image_data *data, void *fdt,
 	fdt_size = be32_to_cpu(((struct fdt_header *)fdt)->totalsize);
 
 	data->oftree_res = request_sdram_region("oftree", load_address,
-			fdt_size);
+			fdt_size, MEMTYPE_LOADER_DATA, MEMATTRS_RW);
 	if (!data->oftree_res) {
 		pr_err("unable to request SDRAM region for device tree at"
 				" 0x%08llx-0x%08llx\n",

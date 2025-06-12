@@ -98,7 +98,7 @@ phys_size_t fsl_get_effective_memsize(void)
 static int fsl_reserve_region(void)
 {
 	request_barebox_region("stack", _text_base - STACK_SIZE,
-			STACK_SIZE);
+			STACK_SIZE, MEMATTRS_RW);
 	return 0;
 }
 coredevice_initcall(fsl_reserve_region);

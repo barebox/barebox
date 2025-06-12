@@ -87,7 +87,9 @@ static int do_bootz(int argc, char *argv[])
 		} else {
 			zimage = (void *)bank->start + SZ_8M;
 			res = request_sdram_region("zimage",
-					bank->start + SZ_8M, end);
+					bank->start + SZ_8M, end,
+					MEMTYPE_LOADER_CODE,
+					MEMATTRS_RWX);
 			if (!res) {
 				printf("can't request region for kernel\n");
 				goto err_out1;

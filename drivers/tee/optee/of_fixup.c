@@ -10,7 +10,7 @@ int of_optee_fixup(struct device_node *root, void *_data)
 {
 	struct of_optee_fixup_data *fixup_data = _data;
 	const char *optee_of_path = "/firmware/optee";
-	struct resource res = {};
+	struct resource res_core = {}, res_shm = {};
 	struct device_node *node;
 	u64 optee_membase;
 	int ret;
@@ -31,16 +31,17 @@ int of_optee_fixup(struct device_node *root, void *_data)
 		return ret;
 
 	if (!optee_get_membase(&optee_membase)) {
-		res.start = optee_membase;
-		res.end = optee_membase + OPTEE_SIZE - fixup_data->shm_size - 1;
+		res_core.start = optee_membase;
+		res_core.end = optee_membase + OPTEE_SIZE - fixup_data->shm_size - 1;
 	} else {
-		res.start = arm_mem_endmem_get() - OPTEE_SIZE;
-		res.end = arm_mem_endmem_get() - fixup_data->shm_size - 1;
+		res_core.start = arm_mem_endmem_get() - OPTEE_SIZE;
+		res_core.end = arm_mem_endmem_get() - fixup_data->shm_size - 1;
 	}
-	res.flags = IORESOURCE_BUSY;
-	res.name = "optee_core";
+	res_core.flags = IORESOURCE_MEM;
+	reserve_resource(&res_core);
+	res_core.name = "optee_core";
 
-	ret = of_fixup_reserved_memory(root, &res);
+	ret = of_fixup_reserved_memory(root, &res_core);
 	if (ret)
 		return ret;
 
@@ -48,14 +49,16 @@ int of_optee_fixup(struct device_node *root, void *_data)
 		return 0;
 
 	if (!optee_get_membase(&optee_membase)) {
-		res.start = optee_membase + OPTEE_SIZE - fixup_data->shm_size;
-		res.end = optee_membase + OPTEE_SIZE - 1;
+		res_shm.start = optee_membase + OPTEE_SIZE - fixup_data->shm_size;
+		res_shm.end = optee_membase + OPTEE_SIZE - 1;
 	} else {
-		res.start = arm_mem_endmem_get() - fixup_data->shm_size;
-		res.end = arm_mem_endmem_get() - 1;
+		res_shm.start = arm_mem_endmem_get() - fixup_data->shm_size;
+		res_shm.end = arm_mem_endmem_get() - 1;
 	}
-	res.flags &= ~IORESOURCE_BUSY;
-	res.name = "optee_shm";
+	res_shm.flags = IORESOURCE_MEM;
+	res_shm.type = MEMTYPE_CONVENTIONAL;
+	res_shm.attrs = MEMATTRS_RW | MEMATTR_SP;
+	res_shm.name = "optee_shm";
 
-	return of_fixup_reserved_memory(root, &res);
+	return of_fixup_reserved_memory(root, &res_shm);
 }

@@ -231,7 +231,8 @@ unsigned long mips_stack_top;
 
 static int mips_request_stack(void)
 {
-	if (!request_barebox_region("stack", mips_stack_top - STACK_SIZE, STACK_SIZE))
+	if (!request_barebox_region("stack", mips_stack_top - STACK_SIZE, STACK_SIZE,
+				    MEMATTRS_RW))
 		pr_err("Error: Cannot request SDRAM region for stack\n");
 
 	return 0;

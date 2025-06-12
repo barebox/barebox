@@ -74,5 +74,7 @@ FW="
 
 for i in $FW; do
 	mkdir -p $(dirname $i)
-	echo "Dummy firmware generated for $i" > $i
+	if [ ! -e $i ]; then
+		echo "Dummy firmware generated for $i" > $i
+	fi
 done

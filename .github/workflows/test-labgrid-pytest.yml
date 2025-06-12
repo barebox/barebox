@@ -26,6 +26,7 @@ jobs:
           - ARCH: arm
             lgenv: test/arm/multi_v8_defconfig.yaml
             defconfig: multi_v8_defconfig
+            lgargs: --runxfail
 
           - ARCH: mips
             lgenv: test/mips/qemu-malta_defconfig.yaml
@@ -101,8 +102,9 @@ jobs:
         for i in ${{matrix.lgenv}}; do
           grep -wq '\(QEMUDriver\|ExternalConsoleDriver\):' "$i" || continue
 
+          extraargs="${{matrix.lgargs}}"
           if grep -wq 'testfs' "$i"; then
-            extraargs="--fs testfs=${KBUILD_OUTPUT}/testfs"
+            extraargs="${extraargs} --fs testfs=${KBUILD_OUTPUT}/testfs"
           fi
 
           cfg=$(basename $i .yaml)

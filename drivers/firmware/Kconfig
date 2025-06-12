@@ -20,12 +20,28 @@ config FIRMWARE_ALTERA_SOCFPGA
 	depends on ARCH_SOCFPGA
 	select FIRMWARE
 
+config FIRMWARE_XILINX_FPGA
+	bool "Xilinx Zynq7000/ZynqMP FPGA loader"
+	depends on ARCH_ZYNQMP || ARCH_ZYNQ
+	select FIRMWARE
+	help
+	  Load a bitstream to the PL of Zynq 7000 or Zynq  Ultrascale+
+
 config FIRMWARE_ZYNQMP_FPGA
 	bool "Xilinx ZynqMP FPGA loader"
 	depends on ARCH_ZYNQMP
 	select FIRMWARE
+	select FIRMWARE_XILINX_FPGA
 	help
 	  Load a bitstream to the PL of Zynq Ultrascale+
+
+config FIRMWARE_ZYNQ7000_FPGA
+	bool "Xilinx Zynq FPGA loader"
+	depends on ARCH_ZYNQ
+	select FIRMWARE
+	select FIRMWARE_XILINX_FPGA
+	help
+	  Load a bitstream to the PL of Zynq 7000
 
 config QEMU_FW_CFG
 	bool "QEMU FW CFG interface"

@@ -96,9 +96,7 @@ int videomode_to_fb_videomode(const struct videomode *vm,
 	fbmode->lower_margin = vm->vfront_porch;
 	fbmode->vsync_len = vm->vsync_len;
 
-	/* prevent division by zero in KHZ2PICOS macro */
-	fbmode->pixclock = vm->pixelclock ?
-			KHZ2PICOS(vm->pixelclock / 1000) : 0;
+	fb_videomode_set_pixclock_hz(fbmode, vm->pixelclock);
 
 	fbmode->sync = 0;
 	fbmode->vmode = 0;
@@ -131,8 +129,7 @@ int videomode_to_fb_videomode(const struct videomode *vm,
 void fb_videomode_to_videomode(const struct fb_videomode *fbmode,
 			       struct videomode *vm)
 {
-	vm->pixelclock = fbmode->pixclock ?
-			 (PICOS2KHZ(fbmode->pixclock) * 1000) : 0;
+	vm->pixelclock = fb_videomode_get_pixclock_hz(fbmode);
 	vm->hactive = fbmode->xres;
 	vm->hfront_porch = fbmode->right_margin;
 	vm->hback_porch = fbmode->left_margin;

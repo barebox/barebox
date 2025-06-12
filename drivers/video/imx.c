@@ -320,7 +320,7 @@ static int imxfb_activate_var(struct fb_info *info)
 
 	lcd_clk = clk_get_rate(fbi->per_clk);
 
-	tmp = mode->pixclock * (unsigned long long)lcd_clk;
+	tmp = mode->pixclock.ps * (unsigned long long)lcd_clk;
 
 	do_div(tmp, 1000000);
 

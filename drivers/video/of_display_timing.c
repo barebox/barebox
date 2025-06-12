@@ -76,7 +76,7 @@ static int of_parse_display_timing(const struct device_node *np,
 	ret |= parse_timing_property(np, "vsync-len", &mode->vsync_len);
 	ret |= parse_timing_property(np, "clock-frequency", &pixelclock);
 
-	mode->pixclock = pixelclock ? KHZ2PICOS(pixelclock / 1000) : 0;
+	fb_videomode_set_pixclock_hz(mode, pixelclock);
 
 	if (!of_property_read_u32(np, "vsync-active", &val))
 		mode->sync |= val ? FB_SYNC_VERT_HIGH_ACT : 0;

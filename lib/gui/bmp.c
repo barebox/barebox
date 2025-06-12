@@ -96,7 +96,7 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 				image += bits_per_pixel >> 3;
 			}
 		}
-	} else if (bits_per_pixel == 24) {
+	} else if (bits_per_pixel == 24 || bits_per_pixel == 32) {
 		int x, y;
 
 		for (y = 0; y < height; y++) {
@@ -106,12 +106,11 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 			adr = buf + (y + starty) * sc->info->line_length +
 					startx * (sc->info->bits_per_pixel >> 3);
 			for (x = 0; x < width; x++) {
-				char *pixel;
+				u8 *pixel = image;
+				u8 alpha = bits_per_pixel == 32 ? pixel[3] : 255;
 
-				pixel = image;
-
-				gu_set_rgb_pixel(sc->info, adr, pixel[2], pixel[1],
-						pixel[0]);
+				gu_set_rgba_pixel(sc->info, adr,
+						  pixel[2], pixel[1], pixel[0], alpha);
 				adr += sc->info->bits_per_pixel >> 3;
 
 				image += bits_per_pixel >> 3;

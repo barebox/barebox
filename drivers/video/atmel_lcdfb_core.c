@@ -71,7 +71,7 @@ static int atmel_lcdfb_check_var(struct fb_info *info)
 
 	dev_dbg(dev, "%s:\n", __func__);
 
-	if (!(mode->pixclock && info->bits_per_pixel)) {
+	if (!(mode->pixclock.ps && info->bits_per_pixel)) {
 		dev_err(dev, "needed value not specified\n");
 		return -EINVAL;
 	}

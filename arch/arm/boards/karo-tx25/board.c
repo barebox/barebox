@@ -110,7 +110,7 @@ static iomux_v3_cfg_t tx25_lcdc_gpios[] = {
 
 static struct fb_videomode stk5_fb_mode = {
 	.name = "G-ETV570G0DMU",
-	.pixclock	= 33333,
+	.pixclock.ps	= 33333,
 
 	.xres		= 640,
 	.yres		= 480,

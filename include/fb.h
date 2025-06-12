@@ -31,8 +31,12 @@
 #define FB_VMODE_SMOOTH_XPAN	512	/* smooth xpan possible (internally used) */
 #define FB_VMODE_CONUPDATE	512	/* don't update x/yoffset	*/
 
-#define PICOS2KHZ(a) (1000000000UL/(a))
-#define KHZ2PICOS(a) (1000000000UL/(a))
+typedef struct {
+	u32 ps;
+} picoseconds_t;
+
+#define PICOS2KHZ(a) (1000000000UL/(a).ps)
+#define KHZ2PICOS(a) ((picoseconds_t){1000000000UL/(a)})
 
 enum display_flags {
 	DISPLAY_FLAGS_HSYNC_LOW		= BIT(0),
@@ -61,7 +65,7 @@ struct fb_videomode {
 	u32 refresh;		/* optional */
 	u32 xres;
 	u32 yres;
-	u32 pixclock;
+	picoseconds_t pixclock;
 	u32 left_margin;
 	u32 right_margin;
 	u32 upper_margin;
@@ -72,6 +76,17 @@ struct fb_videomode {
 	u32 vmode;
 	u32 display_flags;
 };
+
+static inline ulong fb_videomode_get_pixclock_hz(const struct fb_videomode *mode)
+{
+	return mode->pixclock.ps ? PICOS2KHZ(mode->pixclock) * 1000UL : 0;
+}
+
+static inline void fb_videomode_set_pixclock_hz(struct fb_videomode *mode,
+						ulong rate)
+{
+	mode->pixclock = rate ? KHZ2PICOS(rate / 1000UL) : (picoseconds_t){0};
+}
 
 /* Interpretation of offset for color fields: All offsets are from the right,
  * inside a "pixel" value, which is exactly 'bits_per_pixel' wide (means: you

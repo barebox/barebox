@@ -128,9 +128,14 @@ static inline const char *of_env_get_device_alias_by_path(const char *of_path)
 
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 void defaultenv_append(void *buf, unsigned int size, const char *name);
+void defaultenv_append_runtime_directory(const char *srcdir);
 int defaultenv_load(const char *dir, unsigned flags);
 #else
 static inline void defaultenv_append(void *buf, unsigned int size, const char *name)
+{
+}
+
+static inline void defaultenv_append_runtime_directory(const char *srcdir)
 {
 }
 

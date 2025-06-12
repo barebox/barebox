@@ -24,3 +24,4 @@ obj-$(CONFIG_FS_PSTORE) += pstore/
 obj-$(CONFIG_FS_SQUASHFS) += squashfs/
 obj-$(CONFIG_FS_RATP)	+= ratpfs.o
 obj-$(CONFIG_FS_UBOOTVARFS) += ubootvarfs.o
+obj-$(CONFIG_FS_QEMU_FW_CFG) += qemu_fw_cfg.o

@@ -30,6 +30,11 @@ static inline int strcmp_ptr(const char *a, const char *b)
 	return a && b ? strcmp(a, b) : compare3(a, b);
 }
 
+static inline int strncmp_ptr(const char *a, const char *b, size_t n)
+{
+	return a && b ? strncmp(a, b, n) : compare3(a, b);
+}
+
 static inline bool streq_ptr(const char *a, const char *b)
 {
 	return strcmp_ptr(a, b) == 0;

@@ -338,7 +338,8 @@ static void create_guard_page(void)
 		return;
 
 	guard_page = arm_mem_guard_page_get();
-	request_barebox_region("guard page", guard_page, PAGE_SIZE);
+	request_barebox_region("guard page", guard_page, PAGE_SIZE,
+			       MEMATTRS_FAULT);
 	remap_range((void *)guard_page, PAGE_SIZE, MAP_FAULT);
 
 	pr_debug("Created guard page\n");
@@ -352,8 +353,10 @@ void __mmu_init(bool mmu_on)
 	uint64_t *ttb = get_ttb();
 	struct memory_bank *bank;
 
+	// TODO: remap writable only while remapping?
+	// TODO: What memtype for ttb when barebox is EFI loader?
 	if (!request_barebox_region("ttb", (unsigned long)ttb,
-				  ARM_EARLY_PAGETABLE_SIZE))
+				  ARM_EARLY_PAGETABLE_SIZE, MEMATTRS_RW))
 		/*
 		 * This can mean that:
 		 * - the early MMU code has put the ttb into a place

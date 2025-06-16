@@ -30,17 +30,28 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 #define for_each_memory_bank(mem)	list_for_each_entry(mem, &memory_banks, list)
 #define for_each_reserved_region(mem, rsv) \
 	list_for_each_entry(rsv, &(mem)->res->children, sibling) \
-	if (((rsv)->flags & IORESOURCE_BUSY))
+		if (is_reserved_resource(rsv))
 
-struct resource *__request_sdram_region(const char *name, unsigned flags,
+struct resource *__request_sdram_region(const char *name,
 					resource_size_t start, resource_size_t size);
 
 static inline struct resource *request_sdram_region(const char *name,
 						    resource_size_t start,
-						    resource_size_t size)
+						    resource_size_t size,
+						    enum resource_memtype memtype,
+						    unsigned memattrs)
 {
+	struct resource *res;
+
 	/* IORESOURCE_MEM is implicit for all SDRAM regions */
-	return __request_sdram_region(name, 0, start, size);
+	res = __request_sdram_region(name, start, size);
+	if (IS_ENABLED(CONFIG_MEMORY_ATTRIBUTES) && res) {
+		res->type = memtype;
+		res->attrs = memattrs;
+		res->flags |= IORESOURCE_TYPE_VALID;
+	}
+
+	return res;
 }
 
 struct resource *reserve_sdram_region(const char *name, resource_size_t start,
@@ -64,16 +75,24 @@ static inline u64 memory_sdram_size(unsigned int cols,
 void register_barebox_area(resource_size_t start, resource_size_t size);
 
 #if IN_PROPER
+bool inside_barebox_area(resource_size_t start, resource_size_t end);
 struct resource *request_barebox_region(const char *name,
 					resource_size_t start,
-					resource_size_t size);
+					resource_size_t size,
+					unsigned memattrs);
 #else
 static inline struct resource *request_barebox_region(const char *name,
 					resource_size_t start,
-					resource_size_t size)
+					resource_size_t size,
+					unsigned memattrs)
 {
 
 		return NULL;
+}
+
+static inline bool inside_barebox_area(resource_size_t start, resource_size_t end)
+{
+	return false;
 }
 #endif
 

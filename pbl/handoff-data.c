@@ -202,7 +202,8 @@ static int handoff_data_reserve(void)
 
 	list_for_each_entry(hde, &hd->entries, list) {
 		const char *name = handoff_data_entry_name(hde);
-		request_barebox_region(name, (resource_size_t)hde->data, hde->size);
+		request_barebox_region(name, (resource_size_t)hde->data, hde->size,
+				       MEMATTRS_RO);
 	}
 
 	return 0;

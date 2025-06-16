@@ -22,7 +22,10 @@ struct resource {
 	resource_size_t start;
 	resource_size_t end;
 	const char *name;
-	unsigned long flags;
+	unsigned int flags;
+	unsigned int type:4;
+	unsigned int attrs:27;
+	unsigned int runtime:1;
 	struct resource *parent;
 	struct list_head children;
 	struct list_head sibling;
@@ -52,6 +55,8 @@ struct resource {
 #define IORESOURCE_MEM_64	0x00100000
 #define IORESOURCE_WINDOW	0x00200000	/* forwarded by bridge */
 #define IORESOURCE_MUXED	0x00400000	/* Resource is software muxed */
+
+#define IORESOURCE_TYPE_VALID	0x00800000	/* type & attrs are valid */
 
 #define IORESOURCE_EXCLUSIVE	0x08000000	/* Userland may not map this resource */
 #define IORESOURCE_DISABLED	0x10000000
@@ -94,6 +99,47 @@ struct resource {
 #define IORESOURCE_MEM_32BIT		(3<<3)
 #define IORESOURCE_MEM_SHADOWABLE	(1<<5)	/* dup: IORESOURCE_SHADOWABLE */
 #define IORESOURCE_MEM_EXPANSIONROM	(1<<6)
+
+enum resource_memtype {
+        MEMTYPE_RESERVED,
+        MEMTYPE_LOADER_CODE,
+        MEMTYPE_LOADER_DATA,
+        MEMTYPE_BOOT_SERVICES_CODE,
+        MEMTYPE_BOOT_SERVICES_DATA,
+        MEMTYPE_RUNTIME_SERVICES_CODE,
+        MEMTYPE_RUNTIME_SERVICES_DATA,
+        MEMTYPE_CONVENTIONAL,
+        MEMTYPE_UNUSABLE,
+        MEMTYPE_ACPI_RECLAIM,
+        MEMTYPE_ACPI_NVS,
+        MEMTYPE_MMIO,
+        MEMTYPE_MMIO_PORT,
+        MEMTYPE_PAL_CODE,
+        MEMTYPE_PERSISTENT,
+        MEMTYPE_UNACCEPTED,
+        MEMTYPE_MAX,
+};
+
+#define MEMATTR_UC	0x00000001	/* uncached */
+#define MEMATTR_WC	0x00000002	/* write-coalescing */
+#define MEMATTR_WT	0x00000004	/* write-through */
+#define MEMATTR_WB	0x00000008	/* write-back */
+#define MEMATTR_UCE	0x00000010	/* uncached, exported */
+#define MEMATTR_WP	0x00001000	/* write-protect */
+#define MEMATTR_RP	0x00002000	/* read-protect */
+#define MEMATTR_XP	0x00004000	/* execute-protect */
+#define MEMATTR_NV	0x00008000	/* non-volatile */
+#define MEMATTR_MORE_RELIABLE 0x00010000  /* higher reliability */
+#define MEMATTR_RO	0x00020000	/* read-only */
+#define MEMATTR_SP	0x00040000	/* specific-purpose */
+
+#define MEMATTRS_CACHEABLE	(MEMATTR_WT | MEMATTR_WC | MEMATTR_WB)
+#define MEMATTRS_RW		(MEMATTRS_CACHEABLE | MEMATTR_XP)
+#define MEMATTRS_RO		(MEMATTRS_CACHEABLE | MEMATTR_XP | MEMATTR_RO)
+#define MEMATTRS_RX		(MEMATTRS_CACHEABLE | MEMATTR_RO)
+#define MEMATTRS_RWX		(MEMATTRS_CACHEABLE)	/* TODO: remove all */
+#define MEMATTRS_RW_DEVICE	(MEMATTR_UC | MEMATTR_XP)
+#define MEMATTRS_FAULT		(MEMATTR_UC | MEMATTR_XP | MEMATTR_RP | MEMATTR_RO)
 
 /* PnP I/O specific bits (IORESOURCE_BITS) */
 #define IORESOURCE_IO_16BIT_ADDR	(1<<0)
@@ -165,6 +211,25 @@ int release_region(struct resource *res);
 
 extern struct resource iomem_resource;
 extern struct resource ioport_resource;
+
+static inline void reserve_resource(struct resource *res)
+{
+	res->type = MEMTYPE_RESERVED;
+	/* Reserved memory is used for secure memory that should
+	 * be hardware-protected independently of MMU flags.
+	 * We map it as device memory, so we can still test
+	 * if it's indeed inaccessible
+	 */
+	res->attrs = MEMATTRS_RW_DEVICE;
+	res->flags |= IORESOURCE_TYPE_VALID;
+}
+
+static inline bool is_reserved_resource(const struct resource *res)
+{
+	if (res->flags & IORESOURCE_TYPE_VALID)
+		return res->type == MEMTYPE_RESERVED;
+	return false;
+}
 
 #endif /* __ASSEMBLY__ */
 #endif	/* _LINUX_IOPORT_H */

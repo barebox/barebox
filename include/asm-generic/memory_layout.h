@@ -28,6 +28,7 @@
 #define HEAD_TEXT_BASE MALLOC_BASE
 #define MALLOC_SIZE CONFIG_MALLOC_SIZE
 #define STACK_SIZE  CONFIG_STACK_SIZE
+#define SCRATCH_SIZE	CONFIG_SCRATCH_SIZE
 
 /*
  * This generates a useless load from the specified symbol

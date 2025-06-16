@@ -101,7 +101,6 @@ static uintptr_t rk_load_optee(uintptr_t bl32, const void *bl32_image,
 
 	rk_scratch_save_optee_hdr(hdr);
 
-
 	memcpy((void *)bl32, bl32_image, bl32_size);
 
 	return bl32;
@@ -174,34 +173,54 @@ void rk3588_atf_load_bl31(void *fdt)
 	rockchip_atf_load_bl31(RK3588, rk3588_bl31_bin, rk3588_bl32_bin, fdt);
 }
 
+static int rk3588_fixup_mem(void *fdt)
+{
+	/* Use 4 blocks since rk3588 has 3 gaps in the address space */
+	unsigned long base[4];
+	unsigned long size[ARRAY_SIZE(base)];
+	phys_addr_t base_tmp[ARRAY_SIZE(base)];
+	resource_size_t size_tmp[ARRAY_SIZE(base_tmp)];
+	int i, n;
+
+	n = rk3588_ram_sizes(base_tmp, size_tmp, ARRAY_SIZE(base_tmp));
+	for (i = 0; i < n; i++) {
+		base[i] = base_tmp[i];
+		size[i] = size_tmp[i];
+	}
+
+	return fdt_fixup_mem(fdt, base, size, i);
+}
+
 void __noreturn rk3588_barebox_entry(void *fdt)
 {
-       unsigned long membase, endmem;
+	unsigned long membase, endmem;
 
-       membase = RK3588_DRAM_BOTTOM;
-       endmem = rk3588_ram0_size();
+	membase = RK3588_DRAM_BOTTOM;
+	endmem = rk3588_ram0_size();
 
-       rk_scratch = (void *)arm_mem_scratch(endmem);
+	rk_scratch = (void *)arm_mem_scratch(endmem);
 
-       if (current_el() == 3) {
-               rk3588_lowlevel_init();
-               rockchip_store_bootrom_iram(IOMEM(RK3588_IRAM_BASE));
+	if (current_el() == 3) {
+		void *fdt_scratch = NULL;
 
-               /*
-                * The downstream TF-A doesn't cope with our device tree when
-                * CONFIG_OF_OVERLAY_LIVE is enabled, supposedly because it is
-                * too big for some reason. Otherwise it doesn't have any visible
-                * effect if we pass a device tree or not, except that the TF-A
-                * fills in the ethernet MAC address into the device tree.
-                * The upstream TF-A doesn't use the device tree at all.
-                *
-                * Pass NULL for now until we have a good reason to pass a real
-                * device tree.
-                */
-               rk3588_atf_load_bl31(NULL);
-               /* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
-       }
+		rk3588_lowlevel_init();
+		rockchip_store_bootrom_iram(IOMEM(RK3588_IRAM_BASE));
 
-       optee_set_membase(rk_scratch_get_optee_hdr());
-       barebox_arm_entry(membase, endmem - membase, fdt);
+		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_ATF_PASS_FDT)) {
+			pr_debug("Copy fdt to scratch area 0x%p (%zu bytes)\n",
+				 rk_scratch->fdt, sizeof(rk_scratch->fdt));
+			if (fdt_open_into(fdt, rk_scratch->fdt, sizeof(rk_scratch->fdt)) == 0)
+				fdt_scratch = rk_scratch->fdt;
+			else
+				pr_warn("Failed to copy fdt to scratch: Continue without fdt\n");
+			if (fdt_scratch && rk3588_fixup_mem(fdt_scratch) != 0)
+				pr_warn("Failed to fixup memory nodes\n");
+		}
+
+		rk3588_atf_load_bl31(fdt_scratch);
+		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
+	}
+
+	optee_set_membase(rk_scratch_get_optee_hdr());
+	barebox_arm_entry(membase, endmem - membase, fdt);
 }

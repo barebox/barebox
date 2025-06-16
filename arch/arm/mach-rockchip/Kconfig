@@ -139,6 +139,29 @@ config ARCH_ROCKCHIP_ATF
 	  useful for debugging early startup, but for all other cases,
 	  say y here.
 
+config ARCH_ROCKCHIP_ATF_PASS_FDT
+	bool "Pass device tree to TF-A"
+	depends on ARCH_ROCKCHIP_ATF
+	help
+	  Enable this option if you are using an upstream OP-TEE that uses the
+	  device tree to initialize dynamic shared memory, which is passed
+	  through the upstream TF-A.
+
+	  Disable the option if you are using a downstream TF-A since it
+	  doesn't always cope with device trees. Supposedly this happens if the
+	  device tree is too large, for example if CONFIG_OF_OVERLAY_LIVE is
+	  enabled.
+
+config ARCH_ROCKCHIP_ATF_FDT_SIZE
+	hex
+	default 0x0
+	default 0x60000 if ARCH_ROCKCHIP_ATF_PASS_FDT
+	prompt "Reserved size for the FDT blob passed to the TF-A"
+	help
+	  Set this size to CFG_DTB_MAX_SIZE in the OP-TEE configuration. OP-TEE
+	  may modify the passed device tree and increase it's size. This
+	  ensures that barebox reserves enough memory for the modifications.
+
 config ARCH_ROCKCHIP_OPTEE
 	bool "Build rockchip OP-TEE binary into barebox"
 	depends on ARCH_ROCKCHIP_ATF

@@ -171,11 +171,12 @@ resource_size_t rk3568_ram0_size(void)
 #define RK3588_PMUGRF_OS_REG4           0x210
 #define RK3588_PMUGRF_OS_REG5           0x214
 
-resource_size_t rk3588_ram0_size(void)
+size_t rk3588_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
 {
 	void __iomem *pmugrf = IOMEM(RK3588_PMUGRF_BASE);
 	u32 sys_reg2, sys_reg3, sys_reg4, sys_reg5;
-	resource_size_t size, size1, size2;
+	resource_size_t memsize, size1, size2;
+	size_t i = 0;
 
 	sys_reg2 = readl(pmugrf + RK3588_PMUGRF_OS_REG2);
 	sys_reg3 = readl(pmugrf + RK3588_PMUGRF_OS_REG3);
@@ -187,7 +188,37 @@ resource_size_t rk3588_ram0_size(void)
 
 	pr_info("%s() size1 = 0x%08llx, size2 = 0x%08llx\n", __func__, (u64)size1, (u64)size2);
 
-	size = min_t(resource_size_t, RK3568_INT_REG_START, size1 + size2);
+	memsize = size1 + size2;
+
+	base[i] = 0xa00000;
+	size[i] = min_t(resource_size_t, RK3588_INT_REG_START, memsize) - 0xa00000;
+	i++;
+
+	if (i < n && memsize > SZ_4G) {
+		base[i] = SZ_4G;
+		size[i] = min_t(unsigned long, DRAM_GAP1_START, memsize) - SZ_4G;
+		i++;
+	}
+	if (i < n && memsize > DRAM_GAP1_END) {
+		base[i] = DRAM_GAP1_END;
+		size[i] = min_t(unsigned long, DRAM_GAP2_START, memsize) - DRAM_GAP1_END;
+		i++;
+	}
+	if (i < n && memsize > DRAM_GAP2_END) {
+		base[i] = DRAM_GAP2_END;
+		size[i] = memsize - DRAM_GAP2_END;
+		i++;
+	}
+
+	return i;
+}
+
+resource_size_t rk3588_ram0_size(void)
+{
+	phys_addr_t base;
+	resource_size_t size;
+
+	rk3588_ram_sizes(&base, &size, 1);
 
 	return size;
 }

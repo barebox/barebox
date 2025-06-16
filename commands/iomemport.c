@@ -24,6 +24,9 @@ static void __print_resources(struct resource *res, int indent,
 	if (addr && !region_overlap_end(*addr, *addr, res->start, res->end))
 		return;
 
+	if ((flags & FLAG_VERBOSE) && !(flags & FLAG_IOPORT))
+		printf("%-58s", resource_typeattr_format(buf, sizeof(buf), res) ?: "");
+
 	for (i = 0; i < indent; i++)
 		printf("  ");
 

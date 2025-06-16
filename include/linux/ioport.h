@@ -212,6 +212,9 @@ int release_region(struct resource *res);
 extern struct resource iomem_resource;
 extern struct resource ioport_resource;
 
+const char *resource_typeattr_format(char *buf, size_t size,
+				     const struct resource *res);
+
 static inline void reserve_resource(struct resource *res)
 {
 	res->type = MEMTYPE_RESERVED;

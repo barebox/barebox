@@ -4,6 +4,7 @@
 #include <io.h>
 #include <spi/imx-spi.h>
 #include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx8mq-regs.h>
 #include <mach/imx/generic.h>
 #include <bootsource.h>
 #include <asm/sections.h>
@@ -135,4 +136,41 @@ int imx6_spi_start_image(int instance)
 	bb = buf;
 
 	bb();
+}
+
+/**
+ * imx8m_spi_load_image - load an image from SPI NOR
+ * @instance: The SPI controller instance (0..2)
+ * @bl33: The buffer to load the bl33 barebox image to
+ *
+ * This function loads data from SPI NOR flash. This assumes the
+ * SPI controller has already been initialized and the pinctrl / clocks are
+ * configured correctly. This is the case when the ROM has loaded the initial
+ * portion of the boot loader from exactly this controller.
+ *
+ * Return: 0 if successful, negative error code otherwise
+ */
+
+int imx8m_ecspi_load_image(int instance, void *bl33)
+{
+	void *base;
+
+	/* Base Adresses are the same for i.MX8M[QM] */
+	switch (instance) {
+	case 0:
+		base = IOMEM(MX8MQ_ECSPI1_BASE_ADDR);
+		break;
+	case 1:
+		base = IOMEM(MX8MQ_ECSPI2_BASE_ADDR);
+		break;
+	case 2:
+		base = IOMEM(MX8MQ_ECSPI3_BASE_ADDR);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	cspi_2_3_load(base, SZ_8K, bl33, imx_image_size());
+
+	return 0;
 }

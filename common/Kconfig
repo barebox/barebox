@@ -18,6 +18,11 @@ config CLANG_VERSION
 	default $(cc-version) if CC_IS_CLANG
 	default 0
 
+config CLANG_RUNTIME_DIR
+	string
+	depends on CC_IS_CLANG
+	default "$(clang-runtime-dir)"
+
 config GREGORIAN_CALENDER
 	bool
 
@@ -960,7 +965,7 @@ config CONSOLE_DISABLE_INPUT
 	  registered as consoles.
 
 config PBL_CONSOLE
-	depends on PBL_IMAGE
+	depends on PBL_IMAGE && !SANDBOX
 	depends on !CONSOLE_NONE
 	bool "Enable console support in PBL"
 	help

@@ -118,6 +118,16 @@
 	KEEP(*(SORT_BY_NAME(.barebox_deep_probe*)))	\
 	__barebox_deep_probe_end = .;
 
+#ifdef CONFIG_FUZZ
+#define BAREBOX_FUZZ_TESTS			\
+	STRUCT_ALIGN();				\
+	__barebox_fuzz_tests_start = .;		\
+	KEEP(*(SORT_BY_NAME(.barebox_fuzz_test*)))	\
+	__barebox_fuzz_tests_end = .;
+#else
+#define BAREBOX_FUZZ_TESTS
+#endif
+
 
 #ifdef CONFIG_CONSTRUCTORS
 #define KERNEL_CTORS()  . = ALIGN(8);                      \
@@ -142,7 +152,8 @@
 	BAREBOX_DTB				\
 	BAREBOX_PUBLIC_KEYS			\
 	BAREBOX_PCI_FIXUP			\
-	BAREBOX_DEEP_PROBE
+	BAREBOX_DEEP_PROBE			\
+	BAREBOX_FUZZ_TESTS
 
 #if defined(CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE) && \
 CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE < CONFIG_BAREBOX_MAX_BARE_INIT_SIZE

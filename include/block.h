@@ -82,14 +82,9 @@ static inline int block_flush(struct block_device *blk)
 }
 
 #ifdef CONFIG_BLOCK
-struct block_device *cdev_get_block_device(const struct cdev *cdev);
 unsigned file_list_add_blockdevs(struct file_list *files);
 char *cdev_get_linux_rootarg(const struct cdev *partcdev);
 #else
-static inline struct block_device *cdev_get_block_device(const struct cdev *cdev)
-{
-	return NULL;
-}
 static inline unsigned file_list_add_blockdevs(struct file_list *files)
 {
 	return 0;
@@ -102,7 +97,8 @@ static inline char *cdev_get_linux_rootarg(const struct cdev *partcdev)
 
 static inline bool cdev_is_block_device(const struct cdev *cdev)
 {
-	return cdev_get_block_device(cdev) != NULL;
+	return IS_ENABLED(CONFIG_BLOCK) && cdev &&
+		(cdev->flags & DEVFS_IS_BLOCK_DEV);
 }
 
 static inline bool cdev_is_block_partition(const struct cdev *cdev)
@@ -114,6 +110,11 @@ static inline bool cdev_is_block_disk(const struct cdev *cdev)
 {
 	cdev = cdev_readlink(cdev);
 	return cdev_is_block_device(cdev) && !cdev_is_partition(cdev);
+}
+
+static inline struct block_device *cdev_get_block_device(const struct cdev *cdev)
+{
+	return cdev_is_block_device(cdev) ? cdev->priv : NULL;
 }
 
 #endif /* __BLOCK_H */

@@ -7,6 +7,7 @@ config SANDBOX
 	select OFTREE
 	select GPIOLIB
 	select ARCH_HAS_UBSAN_SANITIZE_ALL
+	select ARCH_HAS_FORTIFY_SOURCE
 	select HAS_DMA
 	select BLOCK
 	select BLOCK_WRITE
@@ -21,6 +22,10 @@ config SANDBOX
 	select ARCH_WANT_FRAME_POINTERS
 	select BAREBOX_CMDLINE
 	select HAVE_ARCH_BOOTM_OFTREE
+	select HAVE_PBL_IMAGE
+	select HAVE_PBL_MULTI_IMAGES
+	select PBL_IMAGE_NO_PIGGY
+	select PBL_CLOCKSOURCE if COMPILE_TEST
 	default y
 
 config ARCH_LINUX_NAME
@@ -90,5 +95,10 @@ config HAVE_LIBFTDI
 
 config SDL
 	bool
+
+config SANDBOX_LINK_CXX
+	def_bool FUZZ_EXTERNAL
+	help
+	  Link with CXX instead of CC to support C++ static libraries.
 
 endmenu

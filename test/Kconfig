@@ -7,4 +7,43 @@ if TEST
 
 source "test/self/Kconfig"
 
+config FUZZ
+	bool "fuzz tests"
+	select RAMDISK_BLK
+	select DISK
+	help
+	  Say y here to add include fuzz tests into barebox.
+	  These need to be exercised either via command or
+	  by libfuzzer
+
+config FUZZ_EXTERNAL
+	bool "link against libfuzzer"
+	depends on SANDBOX && CC_IS_CLANG
+	help
+	  LibFuzzer is an in-process, coverage-guided, evolutionary fuzzing
+	  engine. It can be linked against barebox on the sandbox
+	  architecture to feed fuzzed inputs into the fuzz tests.
+
+if FUZZ
+
+config CMD_FUZZ
+	bool "fuzz command"
+	depends on COMMAND_SUPPORT
+	default y
+	help
+	  Command to run enabled barebox fuzz tests on fixed input.
+	  If run without arguments, all tests are run.
+
+	  This is mostly useful for debugging, use FUZZ_EXTERNAL
+	  to have fuzzed inputs be bed automatically .
+
+	  Usage: fuzz [-ls] -f FILE [test]
+
+	  Options:
+	    -l        list registered fuzz tests
+	    -f FILE   use FILE as fuzz input
+	    -s SIZE   read only SIZE bytes from file
+
+endif
+
 endif

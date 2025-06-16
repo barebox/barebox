@@ -13,6 +13,14 @@ config PBL_IMAGE
 	bool "Pre-Bootloader image"
 	depends on HAVE_PBL_IMAGE
 
+config PBL_IMAGE_NO_PIGGY
+	bool
+	depends on PBL_IMAGE
+	help
+	  This is a special case for architectures that don't
+	  want to use the piggy mechanism to load barebox proper.
+	  It's so far only intended for sandbox.
+
 config PBL_MULTI_IMAGES
 	bool
 	select PBL_IMAGE
@@ -37,7 +45,7 @@ config USE_COMPRESSED_DTB
 	select XZ_DECOMPRESS if IMAGE_COMPRESSION_XZKERN
 
 config PBL_RELOCATABLE
-	depends on ARM || MIPS || RISCV
+	depends on ARM || MIPS || RISCV || SANDBOX
 	bool "relocatable pbl image"
 	help
 	  Generate a pbl binary which can relocate itself during startup to run

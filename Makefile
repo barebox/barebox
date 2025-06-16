@@ -421,6 +421,7 @@ ENVCC		:= $(CC)
 CPP		= $(CC) -E
 ifneq ($(LLVM),)
 CC		= $(LLVM_PREFIX)clang$(LLVM_SUFFIX)
+CXX		= $(LLVM_PREFIX)clang++$(LLVM_SUFFIX)
 LD		= $(LLVM_PREFIX)ld.lld$(LLVM_SUFFIX)
 AR		= $(LLVM_PREFIX)llvm-ar$(LLVM_SUFFIX)
 NM		= $(LLVM_PREFIX)llvm-nm$(LLVM_SUFFIX)
@@ -428,8 +429,11 @@ OBJCOPY		= $(LLVM_PREFIX)llvm-objcopy$(LLVM_SUFFIX)
 OBJDUMP		= $(LLVM_PREFIX)llvm-objdump$(LLVM_SUFFIX)
 READELF		= $(LLVM_PREFIX)llvm-readelf$(LLVM_SUFFIX)
 STRIP		= $(LLVM_PREFIX)llvm-strip$(LLVM_SUFFIX)
+PROFDATA	= $(LLVM_PREFIX)llvm-profdata$(LLVM_SUFFIX)
+COV		= $(LLVM_PREFIX)llvm-cov$(LLVM_SUFFIX)
 else
 CC		= $(CROSS_COMPILE)gcc
+CXX		= $(CROSS_COMPILE)g++
 LD		= $(CROSS_COMPILE)ld
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
@@ -448,6 +452,7 @@ PERL		= perl
 PYTHON3		= python3
 CHECK		= sparse
 MKIMAGE		= mkimage
+GENHTML		= genhtml
 BASH		= bash
 KGZIP		= gzip
 KBZIP2		= bzip2
@@ -514,9 +519,9 @@ LDFLAGS_barebox += $(LDFLAGS_common)
 LDFLAGS_pbl += $(LDFLAGS_common)
 LDFLAGS_elf += $(LDFLAGS_common) --nmagic -s
 
-export ARCH SRCARCH CONFIG_SHELL BASH HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE LD CC
+export ARCH SRCARCH CONFIG_SHELL BASH HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE LD CC CXX
 export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL PYTHON3 UTS_MACHINE
-export LEX YACC
+export LEX YACC PROFDATA COV GENHTML
 export HOSTCXX CHECK CHECKFLAGS MKIMAGE
 export KGZIP KBZIP2 KLZOP LZMA LZ4 XZ
 export KBUILD_HOSTCXXFLAGS KBUILD_HOSTLDFLAGS KBUILD_HOSTLDLIBS LDFLAGS_MODULE
@@ -812,26 +817,31 @@ export KBUILD_BINARY ?= barebox.bin
 # Also any assignments in arch/$(SRCARCH)/Makefile take precedence over
 # the default value.
 
-barebox-flash-image: $(KBUILD_IMAGE) FORCE
-	$(call if_changed,ln)
+export BAREBOX_PROPER ?= barebox.bin
 
 barebox-flash-images: $(KBUILD_IMAGE)
 	@echo $^ > $@
 
-images: barebox.bin FORCE
+images: $(BAREBOX_PROPER) FORCE
 	$(Q)$(MAKE) $(build)=images $@
-images/%: barebox.bin FORCE
+images/%: $(BAREBOX_PROPER) FORCE
 	$(Q)$(MAKE) $(build)=images $@
 
-ifdef CONFIG_EFI_STUB
-all: barebox.bin images barebox.efi
-barebox.efi: FORCE
-	$(Q)ln -fsn images/barebox-dt-2nd.img $@
-else ifdef CONFIG_PBL_IMAGE
-all: barebox.bin images
+ifdef CONFIG_PBL_IMAGE
+SYMLINK_TARGET_barebox.efi = images/barebox-dt-2nd.img
+symlink-$(CONFIG_EFI_STUB) += barebox.efi
+all: $(BAREBOX_PROPER) images
 else
-all: barebox-flash-image barebox-flash-images
+SYMLINK_TARGET_barebox-flash-image = $(KBUILD_IMAGE)
+symlink-y += barebox-flash-image
+all: barebox-flash-images
 endif
+
+all: $(symlink-y)
+
+.SECONDEXPANSION:
+$(symlink-y): $$(SYMLINK_TARGET_$$(@F)) FORCE
+	$(call if_changed,symlink_quiet)
 
 common-$(CONFIG_PBL_IMAGE)	+= pbl/
 common-$(CONFIG_DEFAULT_ENVIRONMENT) += defaultenv/
@@ -921,6 +931,7 @@ quiet_cmd_sysmap = SYSMAP  System.map
 # If CONFIG_KALLSYMS is set .version is already updated
 # Generate System.map and verify that the content is consistent
 # Use + in front of the barebox_version rule to silent warning with make -j2
+ifndef rule_barebox__
 define rule_barebox__
 	$(if $(CONFIG_KALLSYMS),,+$(call cmd,barebox_version))
 	$(call cmd,barebox__)
@@ -928,6 +939,7 @@ define rule_barebox__
 	$(call cmd,prelink__)
 	$(call cmd,sysmap)
 endef
+endif
 
 ifdef CONFIG_KALLSYMS
 # Generate section listing all symbols and add it into barebox $(kallsyms.o)
@@ -1024,7 +1036,7 @@ ifeq ($(INSTALL_PATH),)
 endif
 ifdef CONFIG_PBL_IMAGE
 	$(Q)$(MAKE) $(build)=images __images_install
-	@install -t "$(INSTALL_PATH)" barebox.bin
+	@install -t "$(INSTALL_PATH)" $(BAREBOX_PROPER)
 else
 	@install -t "$(INSTALL_PATH)" $(KBUILD_IMAGE)
 endif
@@ -1041,6 +1053,18 @@ barebox.fit: images/barebox-$(CONFIG_ARCH_LINUX_NAME).fit
 
 barebox.srec: barebox
 	$(OBJCOPY) -O srec $< $@
+
+quiet_cmd_barebox_proper__ = CC      $@
+      cmd_barebox_proper__ = $(CC) -r -o $@ -Wl,--whole-archive $(BAREBOX_OBJS)
+
+.tmp_barebox.o: $(BAREBOX_OBJS) $(kallsyms.o) FORCE
+	$(if $(CONFIG_KALLSYMS),,+$(call cmd,barebox_version))
+	$(call cmd,barebox_proper__)
+	$(Q)echo 'savedcmd_$@ := $(cmd_barebox_proper__)' > $(@D)/.$(@F).cmd
+	$(Q)rm -f .old_version
+
+barebox.o: .tmp_barebox.o FORCE
+	$(call if_changed,objcopy)
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
@@ -1261,7 +1285,7 @@ CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map \
 		.tmp_kallsyms* barebox.ldr compile_commands.json \
-		barebox-flash-image \
+		.tmp_barebox.o barebox.o barebox-flash-image \
 		barebox.srec barebox.s5p barebox.ubl \
 		barebox.uimage \
 		barebox.efi barebox.canon-a1100.bin
@@ -1393,6 +1417,24 @@ endif
 	@echo  ''
 	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
 	@echo  'For further info see the documentation'
+
+# Code Coverage
+# ---------------------------------------------------------------------------
+
+barebox.coverage_html: barebox.coverage-info
+	genhtml -o $@ $<
+
+barebox.coverage-info: default.profdata
+	$(COV) export --format=lcov -instr-profile $< $(objtree)/barebox >$@
+
+default.profdata: $(srctree)/default.profraw
+	$(PROFDATA) merge -sparse $< -o $@
+
+# We intentionally don't depend on barebox being built as that can take >10
+# minutes when coverage is enabled
+PHONY += coverage-html
+coverage-html: barebox.coverage_html
+	@echo "HTML coverage generated to $(objtree)/$<"
 
 # Generate tags for editors
 # ---------------------------------------------------------------------------

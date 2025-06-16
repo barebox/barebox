@@ -12,6 +12,7 @@
 #include <malloc.h>
 #include <init.h>
 #include <memory.h>
+#include <fuzz.h>
 #include <linux/sizes.h>
 #include <linux/ctype.h>
 #include <linux/log2.h>
@@ -358,6 +359,18 @@ struct device_node *of_unflatten_dtb_const(const void *infdt, int size)
 {
 	return __of_unflatten_dtb(infdt, size, true);
 }
+
+static int fuzz_dtb(const u8 *data, size_t size)
+{
+	struct device_node *np;
+
+	np = of_unflatten_dtb_const(data, size);
+	if (!IS_ERR(np))
+		of_delete_node(np);
+
+	return 0;
+}
+fuzz_test("dtb", fuzz_dtb);
 
 struct fdt {
 	void *dt;
@@ -816,3 +829,29 @@ int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, con
 
 	return 0;
 }
+
+/*
+ * In order to randomize all inputs to fdt_machine_is_compatible,
+ * we use the last 32 bytes of the random data as a compatible.
+ * As there maybe embedded nul bytes, the size thus varies
+ * between 0 and 31 bytes.
+ * of 
+ */
+#define COMPAT_THRESHOLD	768
+#define COMPAT_LEN		32
+
+static int fuzz_fdt_compatible(const u8 *data, size_t size)
+{
+	char compat[32] = "barebox,sandbox";
+
+	if (size > COMPAT_THRESHOLD) {
+		size -= COMPAT_LEN;
+		memcpy(compat, &data[COMPAT_THRESHOLD - COMPAT_LEN], COMPAT_LEN);
+		compat[COMPAT_LEN - 1] = '\0';
+	}
+
+	fdt_machine_is_compatible((const void *)data, size, compat);
+
+	return 0;
+}
+fuzz_test("fdt-compatible", fuzz_fdt_compatible);

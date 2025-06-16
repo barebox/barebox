@@ -23,6 +23,7 @@
 *.mxssd
 *.csfbin
 pbl.lds
+barebox
 barebox.x
 barebox.z
 barebox.sha.bin
@@ -41,3 +42,4 @@ barebox.sum
 *.fit
 *.missing-firmware
 *.k3img
+fuzz-*

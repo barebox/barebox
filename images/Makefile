@@ -56,21 +56,24 @@ extra-y += $(pbl-lds)
 $(pbl-lds): $(obj)/../arch/$(SRCARCH)/lib/pbl.lds.S FORCE
 	$(call if_changed_dep,cpp_lds_S)
 
+ifeq ($(CONFIG_PBL_IMAGE_NO_PIGGY),)
+BAREBOX_PIGGY_OBJS = $(obj)/piggy.o $(obj)/sha_sum.o
+endif
+
 quiet_cmd_elf__ ?= LD      $@
       cmd_elf__ ?= $(LD) $(LDFLAGS_$(patsubst .%,%,$(suffix $(@F)))) 	\
 		-e $(2) -Map $@.map $(LDFLAGS_$(@F)) -o $@		\
 		--gc-sections --defsym=__pbl_board_entry=$(2)  		\
 		-T $(pbl-lds)						\
-		--whole-archive $(BAREBOX_PBL_OBJS) $(obj)/piggy.o	\
-		$(obj)/sha_sum.o
+		--whole-archive $(BAREBOX_PBL_OBJS) $(BAREBOX_PIGGY_OBJS) \
 
 PBL_CPPFLAGS	+= -fdata-sections -ffunction-sections
 
-$(obj)/%.pbl: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(obj)/piggy.o $(obj)/sha_sum.o FORCE
+$(obj)/%.pbl: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(BAREBOX_PIGGY_OBJS) FORCE
 	$(call if_changed,elf__,$(*F))
 	$(call if_changed,prelink__)
 
-$(obj)/%.elf: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(obj)/piggy.o $(obj)/sha_sum.o FORCE
+$(obj)/%.elf: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(BAREBOX_PIGGY_OBJS) FORCE
 	$(call if_changed,elf__,$(*F))
 	$(call if_changed,prelink__)
 
@@ -140,7 +143,7 @@ $(obj)/barebox.sum: $(obj)/barebox.z FORCE
 
 # barebox.z - compressed barebox binary
 # ----------------------------------------------------------------
-$(obj)/barebox.z: $(obj)/../barebox.bin FORCE
+$(obj)/barebox.z: $(obj)/../$(BAREBOX_PROPER) FORCE
 	$(call if_changed,$(suffix_y))
 
 # %.img - create a copy from another file
@@ -173,6 +176,7 @@ include $(srctree)/images/Makefile.mvebu
 include $(srctree)/images/Makefile.mxs
 include $(srctree)/images/Makefile.omap3
 include $(srctree)/images/Makefile.rockchip
+include $(srctree)/images/Makefile.sandbox
 include $(srctree)/images/Makefile.socfpga
 include $(srctree)/images/Makefile.stm32mp
 include $(srctree)/images/Makefile.tegra
@@ -220,9 +224,12 @@ flash-list := $(obj)/../barebox-flash-images
 # multiple images
 flash-link := $(obj)/../barebox-flash-image
 link-dest := $(if $(filter 1,$(words $(image-y))),$(image-y-path),multi-image-build)
+
+symlink-y-path := $(addprefix $(obj)/,$(symlink-y))
+
 multi-image-build:
 
-images: $(image-y-path) $(flash-link) $(flash-list) FORCE
+images: $(image-y-path) $(flash-link) $(flash-list) $(symlink-y-path) FORCE
 	@echo "images built:"
 	@for i in $(image-y); do \
 	  if [ -s $(obj)/$$i ]; then echo $$i; \
@@ -230,6 +237,7 @@ images: $(image-y-path) $(flash-link) $(flash-list) FORCE
 	  $(if $(CONFIG_MISSING_FIRMWARE_ERROR), >&2 sed 's/^/\t/' <$(obj)/$${i}.missing-firmware; missing=1;) \
 	  fi; done; if [ -n "$$missing" ]; then \
 	    echo >&2 "Firmware missing in CONFIG_MISSING_FIRMWARE_ERROR=y build"; exit 1; fi
+	@for i in $(symlink-y); do echo $$i; done
 
 __images_install: images
 	@for i in $(image-y-path); do if [ -s $$i ]; then install -t "$(INSTALL_PATH)" $$i; fi; done
@@ -237,10 +245,14 @@ __images_install: images
 PHONY += __images_install
 
 $(flash-link): $(link-dest) FORCE
-	$(call if_changed,ln)
+	$(call if_changed,symlink)
 
 $(flash-list): $(image-y-path)
 	@for i in $^; do if [ -s $$i ]; then echo $$i; fi; done > $@
+
+.SECONDEXPANSION:
+$(symlink-y-path): $(obj)/$$(SYMLINK_TARGET_$$(@F)) FORCE
+	$(call if_changed,symlink_quiet)
 
 clean-files := *.pbl *.pblb *.elf *.map start_*.imximg *.img barebox.z start_*.kwbimg \
 	start_*.kwbuartimg *.socfpgaimg *.mlo *.t20img *.t20img.cfg *.t30img \

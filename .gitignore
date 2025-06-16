@@ -98,3 +98,9 @@ GTAGS
 /allrandom.config
 /allyes.config
 /compile_commands.json
+
+# coverage data
+default.profdata
+default.profraw
+coverage.info
+coverage_html/

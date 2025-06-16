@@ -327,9 +327,6 @@ choice
 	prompt "malloc implementation"
 	default MALLOC_TLSF
 
-config MALLOC_DLMALLOC
-	bool "dlmalloc"
-
 config MALLOC_TLSF
 	bool "tlsf"
 

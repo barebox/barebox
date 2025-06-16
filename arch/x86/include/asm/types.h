@@ -5,17 +5,4 @@
 
 #include <asm-generic/int-ll64.h>
 
-#ifndef __ASSEMBLY__
-
-#ifdef __x86_64__
-/*
- * This is used in dlmalloc. On X86_64 we need it to be
- * 64 bit
- */
-#define INTERNAL_SIZE_T unsigned long
-
-#endif
-
-#endif
-
 #endif

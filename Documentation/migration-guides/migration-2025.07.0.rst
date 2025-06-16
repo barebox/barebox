@@ -8,6 +8,11 @@ Configuration options
   It can be re-enabled using the newly added ``CONFIG_BOOT_ATAGS`` option.
   Use of ATAGS is deprecated. Users should migrate to OpenFirmware device trees.
 
+* ``CONFIG_MALLOC_DLMALLOC`` has been removed in favor of ``CONFIG_MALLOC_TLSF``.
+  This should be a drop-in replacement, but it may unearth memory safety issues
+  that went unnoticed before. If this is suspected, ``CONFIG_KASAN`` should
+  help in debugging them on ARM.
+
   Board support
 -------------
 

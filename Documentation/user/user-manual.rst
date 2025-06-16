@@ -40,6 +40,7 @@ Contents:
    watchdog
    reboot-mode
    virtio
+   barebox-tlv
 
 * :ref:`search`
 * :ref:`genindex`

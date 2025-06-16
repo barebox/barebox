@@ -20,7 +20,7 @@ int class_add_device(struct class *class, struct device *dev)
 static int __class_register_device(struct device *class_dev, const char *name, int id)
 {
 	class_dev->id = id;
-	dev_set_name(class_dev, name);
+	dev_set_name(class_dev, "%s", name);
 
 	return register_device(class_dev);
 }

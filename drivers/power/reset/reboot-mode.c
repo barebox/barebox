@@ -206,7 +206,7 @@ int reboot_mode_register(struct reboot_mode_driver *reboot,
 
 	alias = of_alias_get(np);
 	if (alias)
-		dev_set_name(reboot->dev, alias);
+		dev_set_name(reboot->dev, "%s", alias);
 
 	return 0;
 

@@ -143,6 +143,7 @@ obj-$(CONFIG_CMD_CMP)		+= cmp.o
 obj-$(CONFIG_CMD_NV)		+= nv.o
 obj-$(CONFIG_CMD_DEFAULTENV)	+= defaultenv.o
 obj-$(CONFIG_CMD_STATE)		+= state.o
+obj-$(CONFIG_CMD_TLV)		+= tlv.o
 obj-$(CONFIG_CMD_DHCP)		+= dhcp.o
 obj-$(CONFIG_CMD_BOOTCHOOSER)	+= bootchooser.o
 obj-$(CONFIG_CMD_DHRYSTONE)	+= dhrystone.o

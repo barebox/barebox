@@ -45,6 +45,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_REGULATOR if REGULATOR_FIXED
 	select SELFTEST_TEST_COMMAND if CMD_TEST
 	select SELFTEST_IDR
+	select SELFTEST_TLV
 	help
 	  Selects all self-tests compatible with current configuration
 
@@ -116,5 +117,11 @@ config SELFTEST_TEST_COMMAND
 config SELFTEST_IDR
 	bool "idr selftest"
 	select IDR
+
+config SELFTEST_TLV
+	bool "TLV selftest"
+	select TLV
+	select BASE64
+	select BOARD_LXA
 
 endif

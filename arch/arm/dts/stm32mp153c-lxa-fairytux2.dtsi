@@ -98,6 +98,7 @@
 		#size-cells = <1>;
 
 		baseboard_factory_data: factory-data@0 {
+			compatible = "lxa,tlv-baseboard-v1";
 			reg = <0 0x400>;
 			label = "tlv";
 		};

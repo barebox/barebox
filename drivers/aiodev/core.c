@@ -114,7 +114,7 @@ int aiodevice_register(struct aiodevice *aiodev)
 		aiodev->dev.id = DEVICE_ID_DYNAMIC;
 	}
 
-	dev_set_name(&aiodev->dev, aiodev->name);
+	dev_set_name(&aiodev->dev, "%s", aiodev->name);
 
 	aiodev->dev.parent = aiodev->hwdev;
 

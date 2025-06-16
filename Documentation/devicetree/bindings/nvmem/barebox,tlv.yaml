@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+%YAML 1.2
+---
+$id: http://barebox.org/schemas/nvmem/barebox,tlv.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: barebox TLV factory data
+
+description: |
+  barebox TLV is a scheme for storing factory data on non-volatile
+  storage. Unlike state, it's meant to be read-only and if content
+  is limited to already specified tags, it can be extended later on,
+  without modifying the bootloader binary.
+
+  Variables can not yet be defined as NVMEM device subnodes.
+
+maintainers:
+  - Ahmad Fatoum <a.fatoum@pengutronix.de>
+
+properties:
+  compatible:
+    items:
+      - enum:
+        - barebox,tlv-v1        # magic: 0x61bb95f2
+        - lxa,tlv-baseboard-v1  # magic: 0xbc288dfe
+        - lxa,tlv-powerboard-v1 # magic: 0xdca5a870
+      - const: barebox,tlv
+
+  reg:
+    maxItems: 1
+
+required:
+  - compatible
+  - label
+  - reg
+
+allOf:
+  - $ref: partition.yaml#
+
+additionalProperties: false
+
+examples:
+  - |
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        partition@0 {
+            reg = <0x0 0x100000>;
+            label = "barebox";
+            read-only;
+        };
+
+        partition@100000 {
+            compatible = "barebox,tlv";
+            label = "tlv";
+            reg = <0x100000 0x10000>;
+        };
+    };

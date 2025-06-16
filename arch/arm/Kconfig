@@ -14,6 +14,7 @@ config ARM
 	select PBL_RELOCATABLE
 	select USE_COMPRESSED_DTB
 	select HAVE_ARCH_BOARD_GENERIC_DT if OFDEVICE
+	select HW_HAS_PCI
 	default y
 
 config ARCH_LINUX_NAME
@@ -88,7 +89,6 @@ config ARCH_MVEBU
 	select COMMON_CLK_OF_PROVIDER
 	select GPIOLIB
 	select HAS_DEBUG_LL
-	select HW_HAS_PCI
 	select MVEBU_MBUS
 	select OFTREE
 	select OF_ADDRESS_PCI
@@ -120,7 +120,6 @@ config ARCH_TEGRA
 	depends on 32BIT
 	select CPU_V7
 	select HAS_DEBUG_LL
-	select HW_HAS_PCI
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select GPIOLIB
@@ -144,7 +143,6 @@ config ARCH_ARM64_VIRT
 	select CPU_V8
 	select ARM_AMBA
 	select BOARD_ARM_VIRT
-	select HW_HAS_PCI
 	select HAS_DEBUG_LL
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
@@ -192,7 +190,6 @@ config ARCH_LAYERSCAPE
 	select HAS_DEBUG_LL
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
-	select HW_HAS_PCI
 	select OF_DMA_COHERENCY
 
 config ARCH_OMAP_MULTI

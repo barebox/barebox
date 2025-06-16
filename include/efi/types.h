@@ -2,13 +2,17 @@
 #ifndef _EFI_TYPES_H_
 #define _EFI_TYPES_H_
 
+#ifndef __ASSEMBLY__
+
 #include <linux/types.h>
+#include <linux/limits.h>
+#include <linux/stddef.h>
 #include <linux/compiler.h>
 #include <linux/uuid.h>
 
 typedef unsigned long efi_status_t;
-typedef u16 efi_char16_t;		/* UNICODE character */
-typedef u64 efi_physical_addr_t;
+typedef wchar_t efi_char16_t;		/* UNICODE character */
+typedef u64 efi_physical_addr_t;	/* always, even on 32-bit systems */
 
 struct efi_object;
 typedef struct efi_object *efi_handle_t;
@@ -64,5 +68,20 @@ union efi_ip_address {
 	struct efi_ipv4_address v4;
 	struct efi_ipv6_address v6;
 };
+
+static inline void *efi_phys_to_virt(efi_physical_addr_t addr)
+{
+	if (addr > UINTPTR_MAX)
+		__builtin_trap();
+
+	return (void *)(uintptr_t)addr;
+}
+
+static inline efi_physical_addr_t efi_virt_to_phys(const void *addr)
+{
+	return (uintptr_t)addr;
+}
+
+#endif
 
 #endif

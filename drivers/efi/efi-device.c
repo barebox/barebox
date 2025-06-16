@@ -23,7 +23,7 @@
 static int efi_locate_handle(enum efi_locate_search_type search_type,
 		efi_guid_t *protocol,
 		void *search_key,
-		unsigned long *no_handles,
+		size_t *no_handles,
 		efi_handle_t **buffer)
 {
 	return __efi_locate_handle(BS, search_type, protocol, search_key, no_handles,
@@ -59,14 +59,14 @@ static void efi_devinfo(struct device *dev)
 
 static efi_handle_t efi_find_parent(efi_handle_t handle)
 {
-	unsigned long handle_count = 0;
+	size_t i, handle_count = 0;
 	efi_handle_t *handles = NULL, parent;
-	unsigned long num_guids;
+	size_t j, num_guids;
 	efi_guid_t **guids;
-	int ret, i, j, k;
+	int ret;
 	efi_status_t efiret;
 	struct efi_open_protocol_information_entry *entry_buffer;
-	unsigned long entry_count;
+	size_t k, entry_count;
 
 	ret = efi_locate_handle(BY_PROTOCOL, &efi_device_path_protocol_guid,
 			NULL, &handle_count, &handles);
@@ -215,9 +215,9 @@ static int efi_register_device(struct efi_device *efidev)
  */
 void efi_register_devices(void)
 {
-	unsigned long handle_count = 0;
+	size_t handle_count = 0;
 	efi_handle_t *handles = NULL;
-	unsigned long num_guids;
+	size_t num_guids;
 	efi_guid_t **guids;
 	int ret, i;
 	struct efi_device **efidevs;
@@ -264,9 +264,8 @@ void efi_register_devices(void)
 int efi_connect_all(void)
 {
 	efi_status_t  efiret;
-	unsigned long handle_count;
+	size_t i, handle_count;
 	efi_handle_t *handle_buffer;
-	int i;
 
 	efiret = BS->locate_handle_buffer(ALL_HANDLES, NULL, NULL, &handle_count,
 			&handle_buffer);

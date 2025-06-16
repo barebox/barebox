@@ -38,5 +38,6 @@
 #define S64_MIN		((s64)(-S64_MAX - 1))
 
 #define PATH_MAX       1024
+#define NAME_MAX       255	/* # chars in a file name */
 
 #endif /* _LINUX_LIMITS_H */

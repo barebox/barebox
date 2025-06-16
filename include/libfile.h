@@ -3,6 +3,8 @@
 #define __LIBFILE_H
 
 #include <linux/types.h>
+#include <linux/compiler.h>
+#include <linux/bits.h>
 
 struct resource;
 
@@ -14,7 +16,7 @@ int copy_fd(int in, int out);
 
 ssize_t read_file_into_buf(const char *filename, void *buf, size_t size);
 
-char *read_file_line(const char *fmt, ...);
+char *read_file_line(const char *fmt, ...) __printf(1, 2);
 
 void *read_file(const char *filename, size_t *size);
 
@@ -26,9 +28,12 @@ int read_file_2(const char *filename, size_t *size, void **outbuf,
 int write_file(const char *filename, const void *buf, size_t size);
 int write_file_flash(const char *filename, const void *buf, size_t size);
 
-int copy_file(const char *src, const char *dst, int verbose);
+#define COPY_FILE_VERBOSE	BIT(0)
+#define COPY_FILE_NO_OVERWRITE	BIT(1)
 
-int copy_recursive(const char *src, const char *dst);
+int copy_file(const char *src, const char *dst, unsigned flags);
+
+int copy_recursive(const char *src, const char *dst, unsigned flags);
 
 int compare_file(const char *f1, const char *f2);
 

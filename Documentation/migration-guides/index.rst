@@ -12,3 +12,4 @@ cause build errors are generally out-of-scope for these documents.
 
    migration-2025.05.0
    migration-2025.06.0
+   migration-2025.07.0

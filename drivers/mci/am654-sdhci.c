@@ -516,10 +516,20 @@ static void am654_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 	val = sdhci_read8(&plat->sdhci, SDHCI_HOST_CONTROL);
 
-	if (ios->clock > 26000000)
-		val |= SDHCI_CTRL_HISPD;
-	else
+	switch (ios->timing) {
+	/*
+	 * According to the data manual, HISPD bit
+	 * should not be set in these speed modes.
+	 */
+	case MMC_TIMING_SD_HS:
+	case MMC_TIMING_MMC_HS:
+	case MMC_TIMING_LEGACY:
 		val &= ~SDHCI_CTRL_HISPD;
+		break;
+	default:
+		val |= SDHCI_CTRL_HISPD;
+		break;
+	}
 
 	sdhci_write8(&plat->sdhci, SDHCI_HOST_CONTROL, val);
 

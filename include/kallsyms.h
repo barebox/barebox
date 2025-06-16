@@ -2,6 +2,8 @@
 #ifndef __KALLSYMS_H
 #define __KALLSYMS_H
 
+#include <linux/types.h>
+
 #define KSYM_NAME_LEN 128
 #define KSYM_SYMBOL_LEN (sizeof("%s+%#lx/%#lx [%s]") + (KSYM_NAME_LEN - 1) + \
 		2*(BITS_PER_LONG*3/10) + (MODULE_NAME_LEN - 1) + 1)
@@ -12,6 +14,6 @@ const char *kallsyms_lookup(unsigned long addr,
 			    char **modname, char *namebuf);
 
 /* Look up a kernel symbol and return it in a text buffer. */
-int sprint_symbol(char *buffer, unsigned long address);
+int sprint_symbol(char *buffer, unsigned long address, bool with_offset);
 
 #endif /* __KALLSYMS_H */

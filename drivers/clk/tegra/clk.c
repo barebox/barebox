@@ -117,23 +117,23 @@ void tegra_init_from_table(struct tegra_clk_init_table *tbl,
 		if (tbl->parent_id < clk_max) {
 			struct clk *parent = clks[tbl->parent_id];
 			if (clk_set_parent(clk, parent)) {
-				pr_err("%s: Failed to set parent %s of %s\n",
-				       __func__, parent->name, clk->name);
+				pr_err("%s: Failed to set parent %pC of %pC\n",
+				       __func__, parent, clk);
 				WARN_ON(1);
 			}
 		}
 
 		if (tbl->rate)
 			if (clk_set_rate(clk, tbl->rate)) {
-				pr_err("%s: Failed to set rate %lu of %s\n",
-				       __func__, tbl->rate, clk->name);
+				pr_err("%s: Failed to set rate %lu of %pC\n",
+				       __func__, tbl->rate, clk);
 				WARN_ON(1);
 			}
 
 		if (tbl->state)
 			if (clk_enable(clk)) {
-				pr_err("%s: Failed to enable %s\n", __func__,
-				       clk->name);
+				pr_err("%s: Failed to enable %pC\n", __func__,
+				       clk);
 				WARN_ON(1);
 			}
 	}

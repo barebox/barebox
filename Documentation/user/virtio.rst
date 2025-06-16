@@ -34,8 +34,15 @@ specification. Therefore most operations including device initialization,
 queues configuration and buffer transfers are nearly identical. Both MMIO
 and non-legacy PCI are supported in barebox.
 
-The VirtIO spec defines a lots of VirtIO device types, however at present only
-block, network, console, input and RNG devices are supported.
+The VirtIO spec defines a lots of VirtIO device types. barebox currently
+supports the following:
+
+  * Block
+  * Network
+  * Console
+  * Random Number Generator (RNG)
+  * Input
+  * File System (virtfs/9p)
 
 Build Instructions
 ------------------
@@ -86,3 +93,24 @@ Depending on QEMU version used, it may be required to add
 
 .. _VirtIO: http://docs.oasis-open.org/virtio/virtio/v1.0/virtio-v1.0.pdf
 .. _qemu: https://www.qemu.org
+
+VirtFS
+~~~~~~
+
+The current working directory can be passed to the guest via the ``virtio-9p``
+device::
+
+  qemu-system-aarch64 -kernel barebox-dt-2nd.img -machine virt,highmem=off \
+                       -fsdev local,security_model=mapped,id=fsdev0,path=. \
+                       -device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare
+                       -cpu cortex-a57 -m 1024M -nographic \
+                       -serial mon:stdio -trace file=/dev/null
+
+The file system can then be mounted in bareboxvia::
+
+  mkdir -p /mnt/9p/hostshare
+  mount -t 9p -o trans=virtio hostshare /mnt/9p/hostshare
+
+For ease of use, automounts units will automatically be created in ``/mnt/9p/``,
+so for a given ``mount_tag``, the file system wil automatically be mounted
+on first access to ``/mnt/9p/$mount_tag`` in barebox.

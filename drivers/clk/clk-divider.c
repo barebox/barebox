@@ -90,8 +90,8 @@ unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
 	div = _get_div(table, val, flags, width);
 	if (!div) {
 		WARN(!(flags & CLK_DIVIDER_ALLOW_ZERO),
-			"%s: Zero divisor and CLK_DIVIDER_ALLOW_ZERO not set\n",
-			clk->name);
+			"%pC: Zero divisor and CLK_DIVIDER_ALLOW_ZERO not set\n",
+			clk);
 		return parent_rate;
 	}
 

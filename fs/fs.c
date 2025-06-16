@@ -835,6 +835,8 @@ static void fs_remove(struct device *dev)
 	int ret;
 
 	if (fsdev->dev.driver) {
+		if (!dev->driver->remove)
+			return;
 		dev->driver->remove(dev);
 		list_del(&fsdev->list);
 	}
@@ -1381,6 +1383,15 @@ struct inode *iget(struct inode *inode)
 
 	return inode;
 }
+
+/*
+ * get additional reference to inode; caller must already hold one.
+ */
+void ihold(struct inode *inode)
+{
+	WARN_ON(++inode->i_count < 2);
+}
+EXPORT_SYMBOL(ihold);
 
 /* dcache.c */
 

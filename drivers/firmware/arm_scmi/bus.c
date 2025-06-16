@@ -114,8 +114,9 @@ static int scmi_protocol_device_request(const struct scmi_device_id *id_table)
 		}
 		INIT_LIST_HEAD(phead);
 
-		ret = idr_alloc_one(&scmi_requested_devices, (void *)phead,
-				id_table->protocol_id);
+		ret = idr_alloc(&scmi_requested_devices, (void *)phead,
+				id_table->protocol_id,
+				id_table->protocol_id + 1, GFP_KERNEL);
 		if (ret != id_table->protocol_id) {
 			pr_err("Failed to save SCMI device - ret:%d\n", ret);
 			kfree(rdev);

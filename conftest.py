@@ -52,6 +52,9 @@ def pytest_addoption(parser):
         help=('instantiate Virt I/O random number generator'))
     parser.addoption('--console', action='count', dest='qemu_console', default=0,
         help=('Pass an extra console (Virt I/O or ns16550_pci) to emulated barebox'))
+    parser.addoption('--fs', action='append', dest='qemu_fs',
+        default=[], metavar="[tag=]DIR", type=assignment,
+        help=('Pass directory trees to emulated barebox. Can be specified more than once'))
     parser.addoption('--blk', action='append', dest='qemu_block',
         default=[], metavar="FILE",
         help=('Pass block device to emulated barebox. Can be specified more than once'))
@@ -111,6 +114,18 @@ def strategy(request, target, pytestconfig):
 
     for arg in pytestconfig.option.qemu_arg:
         strategy.append_qemu_args(arg)
+
+    for i, fs in enumerate(pytestconfig.option.qemu_fs):
+        if virtio:
+            path = fs.pop()
+            tag = fs.pop() if fs else f"fs{i}"
+
+            strategy.append_qemu_args(
+                "-fsdev", f"local,security_model=mapped,id=fs{i},path={path}",
+                "-device", f"virtio-9p-{virtio},id=fs{i},fsdev=fs{i},mount_tag={tag}"
+            )
+        else:
+            pytest.exit("--fs unsupported for target\n", 1)
 
     state = request.config.option.lg_initial_state
     if state is not None:

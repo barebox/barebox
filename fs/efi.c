@@ -149,7 +149,7 @@ static int efifs_open(struct device *dev, struct file *f, const char *filename)
 	struct efifs_file *ufile;
 	wchar_t *efi_path = path_to_efi(filename);
 	struct efi_file_info *info;
-	unsigned long bufsize = 1024;
+	size_t bufsize = 1024;
 	uint64_t efimode = EFI_FILE_MODE_READ;
 	int ret;
 
@@ -205,7 +205,7 @@ static int efifs_read(struct device *_dev, struct file *f, void *buf, size_t ins
 {
 	struct efifs_file *ufile = f->private_data;
 	efi_status_t efiret;
-	unsigned long bufsize = insize;
+	size_t bufsize = insize;
 
 	efiret = ufile->entry->read(ufile->entry, &bufsize, buf);
 	if (EFI_ERROR(efiret)) {
@@ -220,7 +220,7 @@ static int efifs_write(struct device *_dev, struct file *f, const void *buf,
 {
 	struct efifs_file *ufile = f->private_data;
 	efi_status_t efiret;
-	unsigned long bufsize = insize;
+	size_t bufsize = insize;
 
 	efiret = ufile->entry->write(ufile->entry, &bufsize, (void *)buf);
 	if (EFI_ERROR(efiret)) {
@@ -249,7 +249,7 @@ static int efifs_truncate(struct device *dev, struct file *f, loff_t size)
 	struct efifs_file *ufile = f->private_data;
 	efi_status_t efiret;
 	struct efi_file_info *info;
-	unsigned long bufsize = 1024;
+	size_t bufsize = 1024;
 	int ret;
 
 	info = xzalloc(1024);
@@ -302,7 +302,7 @@ static struct dirent *efifs_readdir(struct device *dev, DIR *dir)
 {
 	struct efifs_dir *udir = container_of(dir, struct efifs_dir, dir);
 	efi_status_t efiret;
-	unsigned long bufsize = 256;
+	size_t bufsize = 256;
 	s16 buf[256];
 	struct efi_file_info *f;
 
@@ -336,7 +336,7 @@ static int efifs_stat(struct device *dev, const char *filename,
 	efi_status_t efiret;
 	struct efi_file_handle *entry;
 	struct efi_file_info *info;
-	unsigned long bufsize = 1024;
+	size_t bufsize = 1024;
 	int ret;
 
 	info = xzalloc(1024);

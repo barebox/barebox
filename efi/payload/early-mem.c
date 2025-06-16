@@ -5,17 +5,22 @@
 #include <efi.h>
 #include <efi/efi-payload.h>
 
-efi_physical_addr_t efi_earlymem_alloc(const struct efi_system_table *sys_table,
-				       size_t *memsize)
+void *efi_earlymem_alloc(const struct efi_system_table *sys_table,
+			 size_t *memsize)
 {
 	struct efi_boot_services *bs = sys_table->boottime;
+	enum efi_allocate_type alloc_type = EFI_ALLOCATE_ANY_PAGES;
 	efi_physical_addr_t mem;
 	efi_status_t efiret;
 
-	mem = IS_ENABLED(CONFIG_X86) ? 0x3fffffff : ~0ULL;
+	if (IS_ENABLED(CONFIG_X86)) {
+		/* Try to stay clear of memory mapped devices */
+		alloc_type = EFI_ALLOCATE_MAX_ADDRESS;
+		mem = SZ_1G - 1;
+	}
+
 	for (*memsize = SZ_256M; *memsize >= SZ_8M; *memsize /= 2) {
-		efiret  = bs->allocate_pages(EFI_ALLOCATE_MAX_ADDRESS,
-					     EFI_LOADER_DATA,
+		efiret  = bs->allocate_pages(alloc_type, EFI_LOADER_DATA,
 					     *memsize / EFI_PAGE_SIZE, &mem);
 		if (!EFI_ERROR(efiret) || efiret != EFI_OUT_OF_RESOURCES)
 			break;
@@ -24,5 +29,5 @@ efi_physical_addr_t efi_earlymem_alloc(const struct efi_system_table *sys_table,
 		panic("failed to allocate %zu byte memory pool: 0x%lx\n",
 		      *memsize, efiret);
 
-	return mem;
+	return efi_phys_to_virt(mem);
 }

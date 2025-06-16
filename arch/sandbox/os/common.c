@@ -305,7 +305,7 @@ int linux_watchdog_set_timeout(unsigned int timeout)
 extern void start_barebox(void);
 extern void mem_malloc_init(void *start, void *end);
 
-extern char * strsep_unescaped(char **s, const char *ct);
+extern char * strsep_unescaped(char **s, const char *ct, char *delim);
 
 static int add_image(const char *_str, char *devname_template, int *devname_number)
 {
@@ -320,8 +320,8 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 
 	str = strdup(_str);
 
-	filename = strsep_unescaped(&str, ",");
-	while ((opt = strsep_unescaped(&str, ","))) {
+	filename = strsep_unescaped(&str, ",", NULL);
+	while ((opt = strsep_unescaped(&str, ",", NULL))) {
 		if (!strcmp(opt, "ro"))
 			hf->is_readonly = 1;
 		if (!strcmp(opt, "cdev"))
@@ -331,8 +331,8 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	}
 
 	/* parses: "devname=filename" */
-	devname = strsep_unescaped(&filename, "=");
-	filename = strsep_unescaped(&filename, "=");
+	devname = strsep_unescaped(&filename, "=", NULL);
+	filename = strsep_unescaped(&filename, "=", NULL);
 	if (!filename) {
 		filename = devname;
 		snprintf(tmp, sizeof(tmp),

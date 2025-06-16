@@ -189,7 +189,7 @@ const char *kallsyms_lookup(unsigned long addr,
 }
 
 /* Look up a kernel symbol and return it in a text buffer. */
-int sprint_symbol(char *buffer, unsigned long address)
+int sprint_symbol(char *buffer, unsigned long address, bool with_offset)
 {
 	char *modname;
 	const char *name;
@@ -205,12 +205,16 @@ int sprint_symbol(char *buffer, unsigned long address)
 	len = strlen(buffer);
 	buffer += len;
 
+	if (!with_offset)
+		goto out;
+
 	if (modname)
 		len += sprintf(buffer, "+%#lx/%#lx [%s]",
 						offset, size, modname);
 	else
 		len += sprintf(buffer, "+%#lx/%#lx", offset, size);
 
+out:
 	return len;
 }
 EXPORT_SYMBOL_GPL(sprint_symbol);

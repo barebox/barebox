@@ -3,6 +3,7 @@
 #define __LINUX_PRINTK_H
 
 #include <linux/list.h>
+#include <linux/compiler.h>
 #include <linux/err.h>
 #include <printf.h>
 #include <stdarg.h>
@@ -30,19 +31,16 @@ struct device;
 
 #if !defined(CONFIG_CONSOLE_NONE) && IN_PROPER
 int dev_printf(int level, const struct device *dev, const char *format, ...)
-	__attribute__ ((format(__printf__, 3, 4)));
+	__printf(3, 4);
 #else
 #define dev_printf(level, dev, ...) pr_print(((void)dev, (level)), __VA_ARGS__)
 #endif
 
 #if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \
 	(IN_PBL && defined(CONFIG_PBL_CONSOLE))
-int pr_print(int level, const char *format, ...)
-	__attribute__ ((format(__printf__, 2, 3)));
+int pr_print(int level, const char *format, ...) __printf(2, 3);
 #else
-static int pr_print(int level, const char *format, ...)
-	__attribute__ ((format(__printf__, 2, 3)));
-static inline int pr_print(int level, const char *format, ...)
+static inline __printf(2, 3) int pr_print(int level, const char *format, ...)
 {
 	return 0;
 }
@@ -102,12 +100,10 @@ static inline int pr_print(int level, const char *format, ...)
 
 #if LOGLEVEL >= MSG_ERR
 int dev_err_probe(struct device *dev, int err, const char *fmt, ...)
-	__attribute__ ((format(__printf__, 3, 4)));
+	__printf(3, 4);
 #elif !defined(dev_err_probe)
-static int dev_err_probe(struct device *dev, int err, const char *fmt, ...)
-	__attribute__ ((format(__printf__, 3, 4)));
-static inline int dev_err_probe(struct device *dev, int err, const char *fmt,
-				...)
+static inline __printf(3, 4) int dev_err_probe(struct device *dev,
+			       int err, const char *fmt, ...)
 {
 	return err;
 }
@@ -171,7 +167,8 @@ static inline int dev_err_probe(struct device *dev, int err, const char *fmt,
 int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size,
 		   int swab);
 int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbytes,
-			int size, int swab, const char *format, ...);
+			int size, int swab, const char *format, ...)
+	__printf(7, 8);
 
 #define pr_memory_display(level, addr, offs, nbytes, size, swab) \
 	({	\

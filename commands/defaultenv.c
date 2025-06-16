@@ -54,7 +54,7 @@ static int do_defaultenv(int argc, char *argv[])
 	if (scrub)
 		unlink_recursive(to, NULL);
 
-	ret = copy_recursive(from, to);
+	ret = copy_recursive(from, to, 0);
 	free(from);
 	free(to);
 

@@ -153,8 +153,8 @@ static inline const char *dev_name(const struct device *dev)
 	return dev_id(dev) ?: dev->name;
 }
 
-int dev_set_name(struct device *dev, const char *fmt, ...);
-int dev_add_alias(struct device *dev, const char *fmt, ...);
+int dev_set_name(struct device *dev, const char *fmt, ...) __printf(2, 3);
+int dev_add_alias(struct device *dev, const char *fmt, ...) __printf(2, 3);
 
 /*
  * get resource 'num' for a device
@@ -226,6 +226,17 @@ struct device *add_child_device(struct device *parent,
 				const char* devname, int id, const char *resname,
 				resource_size_t start, resource_size_t size, unsigned int flags,
 				void *pdata);
+
+#ifdef CONFIG_OFTREE
+struct device *of_add_child_device(struct device *parent,
+		const char* devname, int id, struct device_node *np);
+#else
+static inline struct device *of_add_child_device(struct device *parent,
+		const char* devname, int id, struct device_node *np)
+{
+	return NULL;
+}
+#endif
 
 /*
  * register a generic device

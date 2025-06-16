@@ -11,6 +11,8 @@
  *     CONFIG_ALLOW_PRNG_FALLBACK set, which will emit a warning at runtime.
  */
 
+#define pr_fmt(fmt) "random: " fmt
+
 #include <common.h>
 #include <stdlib.h>
 #include <linux/hw_random.h>
@@ -75,6 +77,12 @@ void randbuf_r(u64 *x, void *buf, size_t len)
  */
 void srand_xor(u64 entropy)
 {
+	/* The PRNG shouldn't be used for crypto anyway, but still let's not
+	 * divulge the whole state in secure configurations.
+	 */
+	if (IS_ENABLED(CONFIG_INSECURE))
+		pr_debug("PRNG seeded with %llu\n", entropy);
+
 	prng_state ^= entropy;
 	/* Ensure prng_state is never zero */
 	prng_state += !prng_state;
@@ -135,11 +143,11 @@ int get_crypto_bytes(void *buf, int len)
 	}
 
 	if (!IS_ENABLED(CONFIG_ALLOW_PRNG_FALLBACK)) {
-		pr_err("no HWRNG available!\n");
+		pr_err("%ps: no HWRNG available!\n", (void *)_RET_IP_);
 		return err;
 	}
 
-	pr_warn("falling back to Pseudo RNG source!\n");
+	pr_warn("%ps: falling back to Pseudo RNG source!\n", (void *)_RET_IP_);
 
 	get_noncrypto_bytes(buf, len);
 

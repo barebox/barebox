@@ -41,7 +41,7 @@ static int __strverscmp_assert(char *expr)
 	int expect = -42;
 	int i = 0;
 
-	while ((token = strsep_unescaped(&expr, " "))) {
+	while ((token = strsep_unescaped(&expr, " ", NULL))) {
 		if (i == 3) {
 			pr_err("invalid expression\n");
 			return -EILSEQ;
@@ -172,9 +172,9 @@ static void __expect_streq(const char *func, int line,
 			   char *is, const char *expect, bool free_is)
 {
 	total_tests++;
-	if (strcmp(is, expect)) {
+	if (!streq_ptr(is, expect)) {
 		failed_tests++;
-		printf("%s:%d: got %s, but %s expected\n", func, line, is, expect);
+		printf("%s:%d: got '%s', but '%s' expected\n", func, line, is, expect);
 	}
 
 	if (free_is)
@@ -183,6 +183,13 @@ static void __expect_streq(const char *func, int line,
 
 #define expect_dynstreq(args...) \
 	__expect_streq(__func__, __LINE__, args, true)
+#define expect_streq(args...) \
+	__expect_streq(__func__, __LINE__, args, false)
+#define expect_chreq(ch1, ch2) do { \
+	char s1[2] = { ch1, '\0' }; \
+	char s2[2] = { ch2, '\0' }; \
+	__expect_streq(__func__, __LINE__, s1, s2, false); \
+} while (0);
 
 static void test_strjoin(void)
 {
@@ -195,9 +202,136 @@ static void test_strjoin(void)
 	expect_dynstreq(strjoin(" ",   NULL, 0),                "");
 }
 
+static void test_strsep_unescaped_basic(void)
+{
+	char str[] = "ayy,bee,cee", *s = str, delim;
+
+	expect_streq(strsep_unescaped(&s, ",", NULL), "ayy");
+	expect_streq(strsep_unescaped(&s, ",", &delim), "bee");
+	expect_chreq(delim, ',');
+	expect_streq(strsep_unescaped(&s, ",", NULL), "cee");
+	delim = '!';
+	expect_streq(strsep_unescaped(&s, ",", &delim), NULL);
+	expect_chreq(delim, '!');
+}
+
+static void test_strsep_unescaped_with_escape(void)
+{
+	char str[] = "ayy\\,bee,cee", *s = str;
+
+	expect_streq(strsep_unescaped(&s, ",", NULL), "ayy,bee");
+	expect_streq(strsep_unescaped(&s, ",", NULL), "cee");
+	expect_streq(strsep_unescaped(&s, ",", NULL), NULL);
+}
+
+static void test_strsep_unescaped_double_backslash(void)
+{
+	char str[] = "ayy\\\\,bee", *s = str;
+
+	expect_streq(strsep_unescaped(&s, ",", NULL), "ayy\\");
+	expect_streq(strsep_unescaped(&s, ",", NULL), "bee");
+	expect_streq(strsep_unescaped(&s, ",", NULL), NULL);
+}
+
+static void test_strsep_unescaped_trailing_escape(void)
+{
+	char str[] = "ayy\\", *s = str;
+
+	expect_streq(strsep_unescaped(&s, ",", NULL), "ayy");
+	expect_streq(strsep_unescaped(&s, ",", NULL), NULL);
+}
+
+static void test_strsep_unescaped_multiple_escaped(void)
+{
+	char str[] = "ayy\\,\\,bee\\,cee,dee", *s = str;
+
+	expect_streq(strsep_unescaped(&s, ",", NULL), "ayy,,bee,cee");
+	expect_streq(strsep_unescaped(&s, ",", NULL), "dee");
+	expect_streq(strsep_unescaped(&s, ",", NULL), NULL);
+}
+
+static void test_strsep_unescaped_multiple_delims(void)
+{
+	char str[] = "ayy\\ \\:bee:cee dee", *s = str;
+
+	expect_streq(strsep_unescaped(&s, ": ", NULL), "ayy :bee");
+	expect_streq(strsep_unescaped(&s, ": ", NULL), "cee");
+	expect_streq(strsep_unescaped(&s, ": ", NULL), "dee");
+	expect_streq(strsep_unescaped(&s, ": ", NULL), NULL);
+}
+
+static void test_strsep_unescaped_multiple_delims_empty(void)
+{
+	char str[] = "ayy\\ \\:bee::cee  dee", *s = str, delim;
+
+	expect_streq(strsep_unescaped(&s, ": ", &delim), "ayy :bee");
+	expect_chreq(delim, ':');
+	expect_streq(strsep_unescaped(&s, ": ", &delim), "");
+	expect_chreq(delim, ':');
+	expect_streq(strsep_unescaped(&s, ": ", &delim), "cee");
+	expect_chreq(delim, ' ');
+	expect_streq(strsep_unescaped(&s, ": ", &delim), "");
+	expect_chreq(delim, ' ');
+	expect_streq(strsep_unescaped(&s, ": ", &delim), "dee");
+	expect_chreq(delim, '\0');
+	expect_streq(strsep_unescaped(&s, ": ", NULL), NULL);
+}
+
+static void test_strsep_unescaped_no_delim(void)
+{
+	char str[] = "abc", *s = str, delim;
+
+	expect_streq(strsep_unescaped(&s, ",", &delim), "abc");
+	expect_chreq(delim, '\0');
+	expect_streq(strsep_unescaped(&s, ",", NULL), NULL);
+}
+
+static void test_strsep_unescaped_null_string(void)
+{
+	char *s = NULL;
+
+	expect_streq(strsep_unescaped(&s, ",", NULL), NULL);
+}
+
+static void test_strsep_unescaped_empty_string(void)
+{
+	char str[] = "", *s = str, delim;
+
+	expect_streq(strsep_unescaped(&s, ",", &delim), "");
+	expect_chreq(delim, '\0');
+	expect_streq(strsep_unescaped(&s, ",", NULL), NULL);
+}
+
+static void test_strsep_unescaped_only_delimiters(void)
+{
+	char str[] = ",,,", *s = str;
+
+	expect_streq(strsep_unescaped(&s, ",", NULL), "");
+	expect_streq(strsep_unescaped(&s, ",", NULL), "");
+	expect_streq(strsep_unescaped(&s, ",", NULL), "");
+	expect_streq(strsep_unescaped(&s, ",", NULL), "");
+	expect_streq(strsep_unescaped(&s, ",", NULL), NULL);
+}
+
+static void test_strsep_unescaped(void)
+{
+	test_strsep_unescaped_basic();
+	test_strsep_unescaped_with_escape();
+	test_strsep_unescaped_double_backslash();
+	test_strsep_unescaped_trailing_escape();
+	test_strsep_unescaped_multiple_escaped();
+	test_strsep_unescaped_multiple_delims();
+	test_strsep_unescaped_multiple_delims_empty();
+	test_strsep_unescaped_no_delim();
+	test_strsep_unescaped_null_string();
+	test_strsep_unescaped_empty_string();
+	test_strsep_unescaped_only_delimiters();
+}
+
 static void test_string(void)
 {
 	test_strverscmp();
 	test_strjoin();
+	test_strsep_unescaped();
 }
 bselftest(parser, test_string);

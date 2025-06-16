@@ -13,11 +13,11 @@ int __efi_locate_handle(struct efi_boot_services *bs,
 			enum efi_locate_search_type search_type,
 			efi_guid_t *protocol,
 			void *search_key,
-			unsigned long *no_handles,
+			size_t *no_handles,
 			efi_handle_t **buffer)
 {
 	efi_status_t efiret;
-	unsigned long buffer_size = 0;
+	size_t buffer_size = 0;
 	efi_handle_t *buf;
 
 	efiret = bs->locate_handle(search_type, protocol, search_key, &buffer_size,

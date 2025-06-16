@@ -103,6 +103,7 @@ int mxs_dma_go(int chan, struct mxs_dma_cmd *cmd, int ncmds)
 	struct apbh_dma *apbh = apbh_dma;
 	uint32_t timeout = 10000;
 	int i, ret, channel_bit;
+	dma_addr_t dma;
 
 	ret = mxs_dma_validate_chan(chan);
 	if (ret)
@@ -113,12 +114,18 @@ int mxs_dma_go(int chan, struct mxs_dma_cmd *cmd, int ncmds)
 		cmd[i].data |= MXS_DMA_DESC_CHAIN;
 	}
 
+	/*
+	 * TODO: cmd is in DMA coherent memory, but it uses DMA_ADDRESS_BROKEN,
+	 * and thus assumes a 1:1 mapping here
+	 */
+	dma = virt_to_phys(cmd);
+
 	if (apbh_dma_is_imx23(apbh)) {
-		writel(cmd, apbh->regs + HW_APBHX_CHn_NXTCMDAR_MX23(chan));
+		writel(dma, apbh->regs + HW_APBHX_CHn_NXTCMDAR_MX23(chan));
 		writel(1, apbh->regs + HW_APBHX_CHn_SEMA_MX23(chan));
 		channel_bit = chan + BP_APBH_CTRL0_CLKGATE_CHANNEL;
 	} else {
-		writel(cmd, apbh->regs + HW_APBHX_CHn_NXTCMDAR_MX28(chan));
+		writel(dma, apbh->regs + HW_APBHX_CHn_NXTCMDAR_MX28(chan));
 		writel(1, apbh->regs + HW_APBHX_CHn_SEMA_MX28(chan));
 		channel_bit = chan;
 	}

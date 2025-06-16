@@ -24,7 +24,8 @@ volatile ulong __stack_chk_guard = (ulong)(0xfeedf00ddeadbeef & ~0UL);
  */
 noinstr void __stack_chk_fail(void)
 {
-	panic("stack-protector: " STAGE " stack is corrupted in: %pS\n", _RET_IP_);
+	panic("stack-protector: " STAGE " stack is corrupted in: %pS\n",
+	      (void *)_RET_IP_);
 }
 EXPORT_SYMBOL(__stack_chk_fail);
 

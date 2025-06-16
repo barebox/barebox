@@ -8,6 +8,7 @@
 #include <linux/sizes.h>
 #include <partitions.h>
 #include <linux/math64.h>
+#include <range.h>
 
 static struct partition_desc *gpdesc;
 static bool table_needs_write;
@@ -160,12 +161,17 @@ static int do_mkpart(struct block_device *blk, int argc, char *argv[])
 	end *= mult;
 
 	/* If not on sector boundaries move start up and end down */
-	start = ALIGN(start, SECTOR_SIZE);
-	end = ALIGN_DOWN(end, SECTOR_SIZE);
+	start = ALIGN(start, SZ_1M);
+	end = ALIGN_DOWN(end, SZ_1M);
 
 	/* convert to LBA */
 	start >>= SECTOR_SHIFT;
 	end >>= SECTOR_SHIFT;
+
+	if (end == start) {
+		printf("Error: After alignment the partition has zero size\n");
+		return -EINVAL;
+	}
 
 	/*
 	 * When unit is >= KB then substract one sector for user convenience.
@@ -184,6 +190,57 @@ static int do_mkpart(struct block_device *blk, int argc, char *argv[])
 		table_needs_write = true;
 
 	return ret < 0 ? ret : 5;
+}
+
+static int do_mkpart_size(struct block_device *blk, int argc, char *argv[])
+{
+	struct partition_desc *pdesc;
+	uint64_t size, start;
+	const char *name, *fs_type;
+	int ret;
+	uint64_t mult;
+
+	if (argc < 4) {
+		printf("Error: Missing required arguments\n");
+		return -EINVAL;
+	}
+
+	name = argv[1];
+	fs_type = argv[2];
+
+	ret = parted_strtoull(argv[3], &size, &mult);
+	if (ret)
+		return ret;
+
+	if (!mult)
+		mult = gunit;
+
+	size *= mult;
+
+	/* If not on sector boundaries move start up and end down */
+	size = ALIGN(size, PARTITION_ALIGN_SIZE);
+
+	/* convert to LBA */
+	size >>= SECTOR_SHIFT;
+
+	pdesc = pdesc_get(blk);
+	if (!pdesc)
+		return -EINVAL;
+
+	ret = partition_find_free_space(pdesc, size, &start);
+	if (ret) {
+		printf("No free space for %llu sectors found\n", size);
+		return ret;
+	}
+
+	printf("%s: creating partition with %llu blocks at %llu\n", __func__, size, start);
+
+	ret = partition_create(pdesc, name, fs_type, start, start + size - 1);
+
+	if (!ret)
+		table_needs_write = true;
+
+	return ret < 0 ? ret : 4;
 }
 
 static int do_rmpart(struct block_device *blk, int argc, char *argv[])
@@ -261,6 +318,9 @@ struct parted_command parted_commands[] = {
 		.name = "mkpart",
 		.command = do_mkpart,
 	}, {
+		.name = "mkpart_size",
+		.command = do_mkpart_size,
+	},  {
 		.name = "print",
 		.command = do_print,
 	}, {
@@ -354,6 +414,7 @@ BAREBOX_CMD_HELP_OPT ("print", "print partitions")
 BAREBOX_CMD_HELP_OPT ("mklabel <type>", "create a new partition table")
 BAREBOX_CMD_HELP_OPT ("rm <num>", "remove a partition")
 BAREBOX_CMD_HELP_OPT ("mkpart <name> <fstype> <start> <end>", "create a new partition")
+BAREBOX_CMD_HELP_OPT ("mkpart_size <name> <fstype> <size>", "create a new partition")
 BAREBOX_CMD_HELP_OPT ("unit <unit>", "change display/input units")
 BAREBOX_CMD_HELP_OPT ("refresh", "refresh a partition table")
 BAREBOX_CMD_HELP_TEXT("")

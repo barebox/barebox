@@ -5,6 +5,7 @@
 #include <common.h>
 #include <init.h>
 #include <gpio.h>
+#include <envfs.h>
 #include <environment.h>
 #include <mci.h>
 #include <linux/err.h>
@@ -52,7 +53,7 @@ static struct fsl_usb2_platform_data usb_pdata = {
  */
 static int register_persistent_environment(void)
 {
-	struct cdev *cdev, *env;
+	struct cdev *cdev;
 
 	/*
 	 * The imx23-olinuxino only has one MCI card socket.
@@ -74,9 +75,8 @@ static int register_persistent_environment(void)
 		return -ENODEV;
 	}
 
-	/* use the full partition as our persistent environment storage */
-	env = devfs_add_partition("disk0.1", 0, cdev->size,
-						DEVFS_PARTITION_FIXED, "env0");
+	default_environment_path_set("/dev/disk0.1");
+
 	cdev_close(cdev);
 
 	return PTR_ERR_OR_ZERO(cdev);

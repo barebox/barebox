@@ -10,6 +10,7 @@
 #include <common.h>
 #include <net.h>
 #include <init.h>
+#include <envfs.h>
 #include <environment.h>
 #include <asm/armlinux.h>
 #include <fs.h>
@@ -295,6 +296,7 @@ static int sama5d4_xplained_devices_init(void)
 	ek_add_device_lcdc();
 
 	devfs_create_partitions("nand0", sama5d4_xplained_nand0_partitions);
+	default_environment_path_set("/dev/env0");
 
 	return 0;
 }

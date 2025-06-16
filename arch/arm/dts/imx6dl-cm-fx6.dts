@@ -19,4 +19,5 @@
 / {
 	model = "CompuLab CM-FX6";
 	compatible = "compulab,cm-fx6", "fsl,imx6dl";
+	barebox,disable-deep-probe;
 };

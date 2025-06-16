@@ -2,3 +2,7 @@
 #include <arm/microchip/tny_a9260.dts>
 #include "at91sam9260.dtsi"
 #include "calao_nand.dtsi"
+
+/ {
+	barebox,disable-deep-probe;
+};

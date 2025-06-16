@@ -5,6 +5,8 @@
 #include "imx93-phyboard-segin-downstream.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		environment-emmc {
 			compatible = "barebox,environment";

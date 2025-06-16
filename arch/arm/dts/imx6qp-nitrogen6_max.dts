@@ -42,3 +42,7 @@
 
 #include <arm/nxp/imx/imx6qp-nitrogen6_max.dts>
 #include "imx6qdl-nitrogen6_max.dtsi"
+
+/ {
+	barebox,disable-deep-probe;
+};

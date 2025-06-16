@@ -13,6 +13,8 @@
 / {
 	model = "TI AM335x BeagleBone black";
 	compatible = "ti,am335x-bone-black", "ti,am335x-bone", "ti,am33xx";
+	barebox,disable-deep-probe;
+
 };
 
 &{/memory@80000000} {

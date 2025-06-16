@@ -6,6 +6,8 @@
 #include "arm/marvell/armada-xp-db.dts"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart0;
 	};

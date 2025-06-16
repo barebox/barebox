@@ -1,6 +1,8 @@
 #include <arm/arm/vexpress-v2p-ca15_a7.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	barebox_environment {
 		compatible = "barebox,environment";
 		device-path = &barebox_env;

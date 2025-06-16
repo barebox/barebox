@@ -5,6 +5,7 @@
 / {
 	model = "CompuLab Utilite";
 	compatible = "compulab,utilite", "compulab,cm-fx6", "fsl,imx6q";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart4;

@@ -19,4 +19,5 @@
 / {
 	model = "Phytec phyBOARD SUBRA";
 	compatible = "phytec,imx6dl-pbab05", "phytec,imx6s-pfla02", "fsl,imx6dl";
+	barebox,deep-probe;
 };

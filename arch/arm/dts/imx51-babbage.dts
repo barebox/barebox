@@ -13,6 +13,8 @@
 #include <arm/nxp/imx/imx51-babbage.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart1;
 

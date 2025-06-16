@@ -8,6 +8,7 @@
 / {
 	model = "8devices LIMA";
 	compatible = "8devices,lima";
+	barebox,disable-deep-probe;
 
 	aliases {
 		serial0 = &uart0;

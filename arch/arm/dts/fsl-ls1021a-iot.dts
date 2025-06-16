@@ -10,6 +10,8 @@
 #include <arm/nxp/ls/ls1021a-iot.dts>
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		stdout-path = &uart0;
 

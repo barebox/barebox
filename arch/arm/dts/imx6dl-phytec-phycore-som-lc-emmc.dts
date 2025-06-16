@@ -17,6 +17,7 @@
 / {
 	model = "PHYTEC phyCORE-i.MX6 DualLite/SOLO with eMMC low-cost";
 	compatible = "phytec,imx6dl-pcm058-emmc", "fsl,imx6dl";
+	barebox,deep-probe;
 };
 
 &eeprom {

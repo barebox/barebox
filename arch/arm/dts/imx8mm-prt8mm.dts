@@ -12,6 +12,7 @@
 / {
 	model = "Protonic PRT8MM";
 	compatible = "prt,prt8mm", "fsl,imx8mm";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart4;

@@ -2,6 +2,10 @@
 
 #include <riscv/sifive/hifive-unleashed-a00.dts>
 
+/ {
+	barebox,disable-deep-probe;
+};
+
 /* probing on QEMU v5.2.0 triggers load access fault @0x10040014 */
 &qspi0 { status = "disabled"; };
 &qspi2 { status = "disabled"; };

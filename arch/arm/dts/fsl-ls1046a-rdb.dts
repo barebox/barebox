@@ -6,6 +6,8 @@
 #include "fsl-ls1046a.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	aliases {
 		eeprom = &{i2c0/eeprom@52};
 	};

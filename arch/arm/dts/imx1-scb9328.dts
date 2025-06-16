@@ -9,6 +9,7 @@
 / {
 	model = "Synertronix scb9328";
 	compatible = "stx,scb9328", "fsl,imx1";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart1;

@@ -11,6 +11,8 @@
 #include "imx8mq-ddrc.dtsi"
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment-emmc {
 			compatible = "barebox,environment";

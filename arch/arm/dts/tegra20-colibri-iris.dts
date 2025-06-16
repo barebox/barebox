@@ -5,6 +5,7 @@
 / {
 	model = "Toradex Colibri T20 on Iris";
 	compatible = "toradex,iris", "toradex,colibri_t20", "nvidia,tegra20";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uarta;

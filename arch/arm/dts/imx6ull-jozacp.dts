@@ -4,6 +4,8 @@
 #include "imx6ull-jozacp.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		stdout-path = &uart1;
 

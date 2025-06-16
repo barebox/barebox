@@ -49,4 +49,5 @@
 / {
 	model = "ZII RDU2 Board";
 	compatible = "zii,imx6q-zii-rdu2", "fsl,imx6q";
+	barebox,disable-deep-probe;
 };

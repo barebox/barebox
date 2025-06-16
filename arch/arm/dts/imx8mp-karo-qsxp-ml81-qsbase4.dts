@@ -11,6 +11,7 @@
 / {
 	model = "Ka-Ro electronics QSXP-ML81-QSBASE4 (NXP i.MX8MP) Board";
 	compatible = "karo,imx8mp-qsxp-ml81-qsbase4", "karo,imx8mp-qsxp-ml81", "fsl,imx8mp";
+	barebox,deep-probe;
 };
 
 &eqos {

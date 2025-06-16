@@ -6,6 +6,8 @@
 #include "rk356x.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	aliases {
 		state = &state_emmc;
 	};

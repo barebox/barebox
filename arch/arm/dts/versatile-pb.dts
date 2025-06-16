@@ -3,6 +3,7 @@
 / {
 	model = "ARM Versatile PB";
 	compatible = "arm,versatile-pb";
+	barebox,disable-deep-probe;
 
 	chosen {
 		environment-nor {

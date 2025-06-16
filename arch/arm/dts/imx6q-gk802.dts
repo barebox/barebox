@@ -9,6 +9,10 @@
 #include <arm/nxp/imx/imx6q-gk802.dts>
 #include "imx6q.dtsi"
 
+/ {
+	barebox,disable-deep-probe;
+};
+
 /* External USB-A port (USBOTG) */
 &usbotg {
 	phy_type = "utmi";

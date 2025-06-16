@@ -41,6 +41,8 @@
  */
 
 / {
+	barebox,disable-deep-probe;
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";

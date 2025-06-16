@@ -18,4 +18,5 @@
 / {
 	model = "Freescale i.MX6 DualLite SABRE Lite Board";
 	compatible = "fsl,imx6dl-sabrelite", "fsl,imx6dl";
+	barebox,deep-probe;
 };

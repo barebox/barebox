@@ -13,6 +13,7 @@
 / {
 	model = "Phytec phyCORE-i.MX8";
 	compatible = "phytec,imx8mq-pcl066", "fsl,imx8mq";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart1;

@@ -5,6 +5,10 @@
 
 #include "arm/marvell/armada-xp-lenovo-ix4-300d.dts"
 
+/ {
+	barebox,disable-deep-probe;
+};
+
 &{/gpio-leds/power-led} {
 	linux,default-trigger = "heartbeat";
 };

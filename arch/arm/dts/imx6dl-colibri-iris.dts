@@ -7,6 +7,8 @@
 #include "imx6qdl.dtsi"
 
 / {
+	barebox,deep-probe;
+
 	chosen {
 		barebox-environment {
 			compatible = "barebox,environment";

@@ -3,3 +3,7 @@
 
 #include <arm/nxp/imx/imx6dl-lanmcu.dts>
 #include "imx6qdl-prti6q-emmc.dtsi"
+
+/ {
+	barebox,deep-probe;
+};

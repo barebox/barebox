@@ -18,6 +18,7 @@
 / {
 	model = "Amazon Kindle EY21";
 	compatible = "amazon,kindle-ey21", "fsl,imx50";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart1;

@@ -15,6 +15,7 @@
 
 / {
 	compatible = "zii,imx51-rdu1", "fsl,imx51-babbage-power", "fsl,imx51";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart1;

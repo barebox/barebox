@@ -18,6 +18,7 @@
 / {
 	model = "Genesi Efika MX Smartbook";
 	compatible = "genesi,imx51-sb", "fsl,imx51";
+	barebox,disable-deep-probe;
 
 	chosen {
 		stdout-path = &uart1;

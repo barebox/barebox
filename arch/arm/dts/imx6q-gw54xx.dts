@@ -17,6 +17,7 @@
 / {
 	model = "Gateworks Ventana i.MX6 Quad GW54XX";
 	compatible = "gw,imx6q-gw54xx", "gw,ventana", "fsl,imx6q";
+	barebox,disable-deep-probe;
 };
 
 &sata {

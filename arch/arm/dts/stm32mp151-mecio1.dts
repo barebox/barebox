@@ -3,3 +3,7 @@
 
 #include <arm/st/stm32mp151c-mecio1r0.dts>
 #include "stm32mp151.dtsi"
+
+/ {
+	barebox,deep-probe;
+};

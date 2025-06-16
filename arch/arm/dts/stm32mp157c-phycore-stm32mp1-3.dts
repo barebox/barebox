@@ -12,6 +12,7 @@
 / {
 	model = "PHYTEC phyCORE-STM32MP1-3 SoM";
 	compatible = "phytec,phycore-stm32mp1-3", "st,stm32mp157";
+	barebox,disable-deep-probe;
 
 	chosen {
 		environment-sd {

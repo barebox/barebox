@@ -10,6 +10,7 @@
 / {
 	model = "o&kud max9331";
 	compatible = "okud,max9331";
+	barebox,disable-deep-probe;
 
 	aliases {
 		spiflash = &spiflash;

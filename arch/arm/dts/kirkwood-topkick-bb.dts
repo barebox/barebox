@@ -5,6 +5,10 @@
 
 #include "arm/marvell/kirkwood-topkick.dts"
 
+/ {
+	barebox,disable-deep-probe;
+};
+
 &{/gpio-leds/system} {
 	barebox,default-trigger = "heartbeat";
 };

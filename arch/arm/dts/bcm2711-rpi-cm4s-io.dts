@@ -9,6 +9,7 @@
 / {
 	compatible = "raspberrypi,4-compute-module-s", "brcm,bcm2711";
 	model = "Raspberry Pi Compute Module 4S IO Board";
+	barebox,deep-probe;
 
 	chosen {
 		stdout-path = "serial0:115200n8";

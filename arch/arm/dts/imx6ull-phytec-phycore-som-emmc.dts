@@ -15,6 +15,7 @@
 / {
 	model = "PHYTEC phyCORE-i.MX6 ULL SOM with eMMC";
 	compatible = "phytec,imx6ul-pcl063-emmc", "fsl,imx6ull";
+	barebox,deep-probe;
 };
 
 &fec1 {

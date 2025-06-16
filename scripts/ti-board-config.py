@@ -36,8 +36,6 @@ class Entry_ti_board_config:
         self._sw_rev = 1
         self._devgrp = 0
         self.cfgentries = []
-        self.header = struct.pack('<BB', 4, 1)
-        self._binary_offset = len(self.header)
         self._schema_file = schema
 
     def _convert_to_byte_chunk(self, val, data_type):
@@ -149,6 +147,9 @@ class Entry_ti_board_config:
         return data
 
     def save(self, filename):
+        print(len(self.cfgentries))
+        self.header = struct.pack('<BB', len(self.cfgentries), 1)
+        self._binary_offset = len(self.header)
         with open(filename, "wb") as binary_file:
             binary_file.write(self.header)
             for i in self.cfgentries:

@@ -3,6 +3,12 @@
 menu "K3 boards"
         depends on ARCH_K3
 
+config MACH_AM62X
+	bool
+
+config MACH_AM62LX
+	bool
+
 config MACH_K3_CORTEX_R5
 	bool
 	select CPU_V7
@@ -30,13 +36,21 @@ config MACH_K3_CORTEX_A
 
 config MACH_AM625_SK
 	bool "TI AM625 SK"
+	select MACH_AM62X
 	help
 	  Say Y here if you are using a TI AM625 SK board
 
 config MACH_BEAGLEPLAY
 	bool "BeagleBoard BeaglePlay"
+	select MACH_AM62X
 	help
 	  Say Y here if you are using a TI AM62x based BeaglePlay board
+
+config MACH_AM62LX_EVM
+	bool "TI AM62Lx EVM"
+	select MACH_AM62LX
+	help
+	  Say Y here if you are using a TI AM62Lx EVM board
 
 config ARCH_K3_AUTHENTICATE_IMAGE
 	bool "Force authentication of FIP image against ROM API"

@@ -34,7 +34,7 @@
 #define DENALI_CTL_0_DRAM_CLASS_DDR4		0xa
 #define DENALI_CTL_0_DRAM_CLASS_LPDDR4		0xb
 
-static unsigned int am625_get_banks_count(unsigned int regval)
+static unsigned int am62x_get_banks_count(unsigned int regval)
 {
 	/*
 	 * The BANK_DIFF_x are only described in the Reference Manual as:
@@ -55,7 +55,7 @@ static unsigned int am625_get_banks_count(unsigned int regval)
 	}
 }
 
-u64 am625_sdram_size(void)
+u64 am62x_sdram_size(void)
 {
 	void __iomem *base = IOMEM(AM625_DDRSS_BASE);
 	u32 ctl3 = readl(base + CTLPHY_CTL_CFG_CTLCFG_DENALI_CTL_3);
@@ -68,7 +68,7 @@ u64 am625_sdram_size(void)
 	if (ctl327 & BIT(0)) {
 		cols = FIELD_GET(MAX_COL, ctl3) - FIELD_GET(COL_DIFF_0, ctl317);
 		rows = FIELD_GET(MAX_ROW, ctl3) - FIELD_GET(ROW_DIFF_0, ctl317);
-		banks = am625_get_banks_count(FIELD_GET(BANK_DIFF_0, ctl316));
+		banks = am62x_get_banks_count(FIELD_GET(BANK_DIFF_0, ctl316));
 
 		size += memory_sdram_size(cols, rows, banks, 2);
 	}
@@ -76,7 +76,7 @@ u64 am625_sdram_size(void)
 	if (ctl327 & BIT(1)) {
 		cols = FIELD_GET(MAX_COL, ctl3) - FIELD_GET(COL_DIFF_1, ctl317);
 		rows = FIELD_GET(MAX_ROW, ctl3) - FIELD_GET(ROW_DIFF_1, ctl317);
-		banks = am625_get_banks_count(FIELD_GET(BANK_DIFF_1, ctl316));
+		banks = am62x_get_banks_count(FIELD_GET(BANK_DIFF_1, ctl316));
 
 		size += memory_sdram_size(cols, rows, banks, 2);
 	}
@@ -84,9 +84,9 @@ u64 am625_sdram_size(void)
 	return size;
 }
 
-void am625_register_dram(void)
+void am62x_register_dram(void)
 {
-	u64 size = am625_sdram_size();
+	u64 size = am62x_sdram_size();
 	u64 lowmem = min_t(u64, size, SZ_2G);
 
 	arm_add_mem_device("ram0", 0x80000000, lowmem);

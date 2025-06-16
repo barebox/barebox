@@ -20,10 +20,8 @@
 	extern char __bblogo_barebox_logo_w##width##_start[];			\
 	extern char __bblogo_barebox_logo_w##width##_end[];			\
 										\
-	static void load_logo_##width(void)					\
+	static __maybe_unused void load_logo_##width(void)			\
 	{									\
-		if (!IS_ENABLED(CONFIG_BAREBOX_LOGO_##width))			\
-			return;							\
 		load_logo(width, __bblogo_barebox_logo_w##width##_start,	\
 				__bblogo_barebox_logo_w##width##_end);		\
 	}
@@ -60,11 +58,15 @@ static int logo_init(void)
 	if (ret)
 		return ret;
 
-	load_logo_64();
-	load_logo_240();
-	load_logo_320();
-	load_logo_400();
-	load_logo_640();
+	/*
+	 * fixdep depends on CONFIG_ symbols being listed in the file
+	 * as-is with no preprocessor magic involved
+	 */
+	IF_ENABLED(CONFIG_BAREBOX_LOGO_64,  load_logo_64());
+	IF_ENABLED(CONFIG_BAREBOX_LOGO_240, load_logo_240());
+	IF_ENABLED(CONFIG_BAREBOX_LOGO_320, load_logo_320());
+	IF_ENABLED(CONFIG_BAREBOX_LOGO_400, load_logo_400());
+	IF_ENABLED(CONFIG_BAREBOX_LOGO_640, load_logo_640());
 
 	return 0;
 }

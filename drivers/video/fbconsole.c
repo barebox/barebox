@@ -32,6 +32,13 @@ static const char * const rotation_names[] = {
 	[FBCONSOLE_ROTATE_270] = "270",
 };
 
+enum ansi_color {
+	BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE,
+	BRIGHT
+};
+
+#define DEFAULT_COLOR	WHITE
+
 struct fbc_priv {
 	struct console_device cdev;
 	struct fb_info *fb;
@@ -111,22 +118,22 @@ struct rgb {
 };
 
 static struct rgb colors[] = {
-	{ 0, 0, 0 },
-	{ 205, 0, 0 },
-	{ 0, 205, 0 },
-	{ 205, 205, 0 },
-	{ 0, 0, 238 },
-	{ 205, 0, 205 },
-	{ 0, 205, 205 },
-	{ 229, 229, 229 },
-	{ 127, 127, 127 },
-	{ 255, 0, 0 },
-	{ 0, 255, 0 },
-	{ 255, 255, 0 },
-	{ 92, 92, 255 },
-	{ 255, 0, 255 },
-	{ 0, 255, 255 },
-	{ 255, 255, 255 },
+	[BLACK]			= { 0, 0, 0 },
+	[RED]			= { 205, 0, 0 },
+	[GREEN]			= { 0, 205, 0 },
+	[YELLOW]		= { 205, 205, 0 },
+	[BLUE]			= { 0, 0, 238 },
+	[MAGENTA]		= { 205, 0, 205 },
+	[CYAN]			= { 0, 205, 205 },
+	[WHITE]			= { 205, 205, 205 },
+	[BRIGHT + BLACK]	= { 127, 127, 127 },
+	[BRIGHT + RED]		= { 255, 0, 0 },
+	[BRIGHT + GREEN]	= { 0, 255, 0 },
+	[BRIGHT + YELLOW]	= { 255, 255, 0 },
+	[BRIGHT + BLUE]		= { 92, 92, 255 },
+	[BRIGHT + MAGENTA]	= { 255, 0, 255 },
+	[BRIGHT + CYAN]		= { 0, 255, 255 },
+	[BRIGHT + WHITE]	= { 255, 255, 255 },
 };
 
 static void drawchar(struct fbc_priv *priv, int x, int y, int c)
@@ -155,7 +162,7 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	bgcolor = priv->flags & ANSI_FLAG_INVERT ? priv->color : priv->bgcolor;
 
 	if (priv->flags & ANSI_FLAG_BRIGHT)
-		color += 8;
+		color += BRIGHT;
 
 	rgb = &colors[color];
 	color = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
@@ -490,8 +497,8 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 		switch (code) {
 		case 0:
 			priv->flags = 0;
-			priv->color = 8;
-			priv->bgcolor = 0;
+			priv->color = DEFAULT_COLOR;
+			priv->bgcolor = BLACK;
 			break;
 		case 1:
 			priv->flags |= ANSI_FLAG_BRIGHT;
@@ -503,13 +510,17 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 			priv->color = code - 30;
 			break;
 		case 39:
-			priv->color = 7;
+			priv->color = DEFAULT_COLOR;
 			break;
 		case 40 ... 47:
 			priv->bgcolor = code - 40;
 			break;
 		case 49:
-			priv->bgcolor = 0;
+			priv->bgcolor = BLACK;
+			break;
+		case 90 ... 97:
+			priv->flags |= ANSI_FLAG_BRIGHT;
+			priv->color = code - 90;
 			break;
 		}
 
@@ -823,8 +834,8 @@ int register_fbconsole(struct fb_info *fb)
 	priv->fb = fb;
 	priv->x = 0;
 	priv->y = 0;
-	priv->color = 7;
-	priv->bgcolor = 0;
+	priv->color = WHITE;
+	priv->bgcolor = BLACK;
 
 	cdev = &priv->cdev;
 	cdev->dev = &fb->dev;

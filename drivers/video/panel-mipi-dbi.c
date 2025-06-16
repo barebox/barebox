@@ -247,11 +247,13 @@ static int panel_mipi_dbi_get_mode(struct mipi_dbi_dev *dbidev, struct fb_videom
 	}
 
 	/* The driver doesn't use the pixel clock but it is mandatory so fake one if not set */
-	if (!mode->pixclock) {
-		mode->pixclock =
-			(mode->left_margin + mode->xres + mode->right_margin + mode->hsync_len) *
-			(mode->upper_margin + mode->yres + mode->lower_margin + mode->vsync_len) *
-			60 / 1000;
+	if (!mode->pixclock.ps) {
+		unsigned htotal = mode->left_margin + mode->xres +
+				mode->right_margin + mode->hsync_len;
+		unsigned vtotal = mode->upper_margin + mode->yres +
+			mode->lower_margin + mode->vsync_len;
+
+		mode->pixclock = KHZ2PICOS(htotal * vtotal * 60 / 1000);
 	}
 
 	return 0;

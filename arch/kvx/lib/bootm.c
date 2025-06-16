@@ -84,6 +84,8 @@ static int do_boot_elf(struct image_data *data, struct elf_image *elf)
 	}
 
 	fdt = bootm_get_devicetree(data);
+	if (!fdt)
+		fdt = ERR_PTR(-EINVAL);
 	if (IS_ERR(fdt)) {
 		printf("Failed to load dtb\n");
 		return PTR_ERR(fdt);

@@ -12,6 +12,7 @@ config MIPS
 	select ARCH_HAS_DATA_ABORT_MASK
 	select ARCH_HAS_SJLJ
 	select ELF
+	select HAVE_ARCH_BOOTM_OFTREE
 	default y
 
 config ARCH_LINUX_NAME

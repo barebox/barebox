@@ -11,6 +11,7 @@
  */
 enum filetype {
 	filetype_unknown,
+	filetype_empty,
 	filetype_arm_zimage,
 	filetype_lzo_compressed,
 	filetype_lz4_compressed,

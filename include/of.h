@@ -78,10 +78,6 @@ bool of_match(struct device *dev, const struct driver *drv);
 int of_add_initrd(struct device_node *root, resource_size_t start,
 		resource_size_t end);
 
-struct fdt_header *fdt_get_tree(void);
-
-struct fdt_header *of_get_fixed_tree(const struct device_node *node);
-
 /* Helper to read a big number; size is in cells (not bytes) */
 static inline u64 of_read_number(const __be32 *cell, int size)
 {
@@ -325,6 +321,7 @@ extern const char *of_parse_phandle_and_get_alias_from(struct device_node *root,
 						       int index);
 
 extern struct device_node *of_get_root_node(void);
+extern struct fdt_header *of_get_flattened_tree(const struct device_node *node, bool fixup);
 extern int of_set_root_node(struct device_node *node);
 extern int barebox_register_of(struct device_node *root);
 extern int barebox_register_fdt(const void *dtb);
@@ -463,6 +460,11 @@ static inline int of_add_memory(struct device_node *node, bool dump)
 }
 
 static inline struct device_node *of_get_root_node(void)
+{
+	return NULL;
+}
+
+static inline struct fdt_header *of_get_flattened_tree(const struct device_node *node, bool fixup)
 {
 	return NULL;
 }
@@ -1352,6 +1354,33 @@ static inline struct device_node *of_find_root_node(struct device_node *node)
 		node = node->parent;
 
 	return node;
+}
+
+/*
+ * Get the fixed fdt. This function uses the fdt input pointer
+ * if provided or the barebox internal devicetree if not.
+ * It increases the size of the tree and applies the registered
+ * fixups.
+ */
+static inline struct fdt_header *of_get_fixed_tree(const struct device_node *node)
+{
+	return of_get_flattened_tree(node, true);
+}
+
+static inline struct fdt_header *of_get_fixed_tree_for_boot(const struct device_node *node)
+{
+	if (!IS_ENABLED(CONFIG_BOOTM_OFTREE_FALLBACK) && !node)
+		return NULL;
+
+	return of_get_fixed_tree(node);
+}
+
+static inline struct device_node *of_dup_root_node_for_boot(void)
+{
+	if (!IS_ENABLED(CONFIG_BOOTM_OFTREE_FALLBACK))
+		return NULL;
+
+	return of_dup(of_get_root_node());
 }
 
 struct of_overlay_filter {

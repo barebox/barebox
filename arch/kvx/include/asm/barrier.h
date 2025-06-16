@@ -6,6 +6,8 @@
 #ifndef _ASM_KVX_BARRIER_H
 #define _ASM_KVX_BARRIER_H
 
+#include <asm-generic/barrier.h>
+
 /* fence is sufficient to guarantee write ordering */
 #define wmb()	__builtin_kvx_fence()
 

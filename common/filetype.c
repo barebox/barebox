@@ -28,6 +28,7 @@ struct filetype_str {
 
 static const struct filetype_str filetype_str[] = {
 	[filetype_unknown] = { "unknown", "unknown" },
+	[filetype_empty] = { "empty", "empty" },
 	[filetype_arm_zimage] = { "ARM Linux zImage", "arm-zimage" },
 	[filetype_lzo_compressed] = { "LZO compressed", "lzo" },
 	[filetype_lz4_compressed] = { "LZ4 compressed", "lz4" },
@@ -510,7 +511,7 @@ int file_name_detect_type_offset(const char *filename, loff_t pos, enum filetype
 	if (ret < 0)
 		goto err_out;
 
-	*type = detect(buf, ret);
+	*type = ret ? detect(buf, ret) : filetype_empty;
 
 	ret = 0;
 err_out:

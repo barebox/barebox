@@ -60,7 +60,7 @@ static int do_bootm_linux(struct image_data *data)
 	if (ret)
 		return ret;
 
-	fdt = of_get_fixed_tree(data->of_root_node);
+	fdt = of_get_fixed_tree_for_boot(data->of_root_node);
 	if (!fdt) {
 		pr_err("bootm: No devicetree given.\n");
 		return -EINVAL;

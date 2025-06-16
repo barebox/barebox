@@ -31,12 +31,14 @@ static uint64_t *get_ttb(void)
 	return (uint64_t *)get_ttbr(current_el());
 }
 
+static void set_pte(uint64_t *pt, uint64_t val)
+{
+	WRITE_ONCE(*pt, val);
+}
+
 static void set_table(uint64_t *pt, uint64_t *table_addr)
 {
-	uint64_t val;
-
-	val = PTE_TYPE_TABLE | (uint64_t)table_addr;
-	*pt = val;
+	set_pte(pt, PTE_TYPE_TABLE | (uint64_t)table_addr);
 }
 
 #ifdef __PBL__
@@ -114,14 +116,16 @@ static void split_block(uint64_t *pte, int level)
 
 
 	for (i = 0; i < MAX_PTE_ENTRIES; i++) {
-		new_table[i] = old_pte | (i << levelshift);
+		set_pte(&new_table[i], old_pte | (i << levelshift));
 
 		/* Level 3 block PTEs have the table type */
 		if ((level + 1) == 3)
 			new_table[i] |= PTE_TYPE_TABLE;
 	}
 
-	/* Set the new table into effect */
+	/* Set the new table into effect
+	 * TODO: break-before-make missing
+	 */
 	set_table(pte, new_table);
 }
 
@@ -157,7 +161,9 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 			    IS_ALIGNED(phys, block_size)) {
 				type = (level == 3) ?
 					PTE_TYPE_PAGE : PTE_TYPE_BLOCK;
-				*pte = phys | attr | type;
+
+				/* TODO: break-before-make missing */
+				set_pte(pte, phys | attr | type);
 				addr += block_size;
 				phys += block_size;
 				size -= block_size;
@@ -176,6 +182,24 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 
 static size_t granule_size(int level)
 {
+	/*
+	 *  With 4k page granule, a virtual address is split into 4 lookup parts
+	 *  spanning 9 bits each:
+	 *
+	 *    _______________________________________________
+	 *   |       |       |       |       |       |       |
+	 *   |   0   |  Lv0  |  Lv1  |  Lv2  |  Lv3  |  off  |
+	 *   |_______|_______|_______|_______|_______|_______|
+	 *     63-48   47-39   38-30   29-21   20-12   11-00
+	 *
+	 *             mask        page size
+	 *
+	 *    Lv0: FF8000000000       --
+	 *    Lv1:   7FC0000000       1G
+	 *    Lv2:     3FE00000       2M
+	 *    Lv3:       1FF000       4K
+	 *    off:          FFF
+	 */
 	switch (level) {
 	default:
 	case 0:

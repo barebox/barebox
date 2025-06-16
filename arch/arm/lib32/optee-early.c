@@ -7,7 +7,9 @@
  */
 #include <asm/cache.h>
 #include <asm/setjmp.h>
+#include <asm/system.h>
 #include <tee/optee.h>
+#include <linux/bug.h>
 #include <debug_ll.h>
 #include <string.h>
 
@@ -18,6 +20,9 @@ int start_optee_early(void *fdt, void *tee)
 	void (*tee_start)(void *r0, void *r1, void *r2);
 	struct optee_header *hdr;
 	int ret;
+
+	/* We expect this function to be called with data caches disabled */
+	BUG_ON(get_cr() & CR_C);
 
 	hdr = tee;
 	ret = optee_verify_header(hdr);
@@ -30,7 +35,6 @@ int start_optee_early(void *fdt, void *tee)
 	/* We use setjmp/longjmp here because OP-TEE clobbers most registers */
 	ret = setjmp(tee_buf);
 	if (ret == 0) {
-		sync_caches_for_execution();
 		tee_start(0, 0, fdt);
 		longjmp(tee_buf, 1);
 	}

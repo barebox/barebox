@@ -25,7 +25,7 @@ static inline void read_file_2_free(void *buf)
 static int imd_read_file(const char *filename, size_t *size, void **outbuf,
 			 bool allow_mmap)
 {
-	return read_file_2(filename, size, outbuf, 0x100000);
+	return read_file_2(filename, size, outbuf, 0x400000);
 }
 #endif
 

@@ -11,6 +11,14 @@ some firmware files and a BL1 which is responsible for setting up the initial cl
 power domains and DRAM. When this is done the BL1 branches back to the ROM which loads
 the second stage which contains the TF-A BL31, barebox proper and optionally OP-TEE.
 
+.. note::
+The AM62lx support currently depends on a modified downstream version of the TF-A. See
+https://lore.kernel.org/20250617090142.3000882-1-s.hauer@pengutronix.de for a patch
+series to be applied on the Downstream TF-A. Be aware that barebox might need further
+changes to be compatible with future upstream TF-A support. Specifically the SCMI clock
+IDs used in the assigned-clock-parents properties might not match the future upstream
+solution.
+
 Building TF-A
 -------------
 

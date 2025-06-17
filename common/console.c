@@ -264,7 +264,7 @@ struct console_device *of_console_by_stdout_path(void)
 		return NULL;
 
 	for_each_console(console) {
-		if (dev_of_node(console->dev) == stdout_np)
+		if (console->dev && dev_of_node(console->dev) == stdout_np)
 			return console;
 	}
 

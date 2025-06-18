@@ -125,9 +125,14 @@ static int mem_malloc_resource(void)
 			MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_RW);
 	request_barebox_region("barebox code",
 			(unsigned long)&_stext,
-			(unsigned long)&_etext -
+			(unsigned long)&__start_rodata -
 			(unsigned long)&_stext,
 			MEMATTRS_RX);
+	request_barebox_region("barebox RO data",
+			(unsigned long)&__start_rodata,
+			(unsigned long)&__end_rodata -
+			(unsigned long)&__start_rodata,
+			MEMATTRS_RO);
 	request_barebox_region("barebox data",
 			(unsigned long)&_sdata,
 			(unsigned long)&_edata -

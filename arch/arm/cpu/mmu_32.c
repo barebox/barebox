@@ -19,6 +19,7 @@
 #include <asm/system_info.h>
 #include <asm/sections.h>
 #include <linux/pagemap.h>
+#include <range.h>
 
 #include "mmu_32.h"
 
@@ -47,11 +48,18 @@ static inline void tlb_invalidate(void)
 	);
 }
 
+#define PTE_FLAGS_CACHED_V7_RWX (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE | \
+				 PTE_EXT_AP_URW_SRW)
 #define PTE_FLAGS_CACHED_V7 (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE | \
-			     PTE_EXT_AP_URW_SRW)
+			     PTE_EXT_AP_URW_SRW | PTE_EXT_XN)
+#define PTE_FLAGS_CACHED_RO_V7 (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE | \
+			     PTE_EXT_APX | PTE_EXT_AP0 | PTE_EXT_AP1 | PTE_EXT_XN)
+#define PTE_FLAGS_CODE_V7 (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE | \
+			     PTE_EXT_APX | PTE_EXT_AP0 | PTE_EXT_AP1)
 #define PTE_FLAGS_WC_V7 (PTE_EXT_TEX(1) | PTE_EXT_AP_URW_SRW | PTE_EXT_XN)
 #define PTE_FLAGS_UNCACHED_V7 (PTE_EXT_AP_URW_SRW | PTE_EXT_XN)
 #define PTE_FLAGS_CACHED_V4 (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
+#define PTE_FLAGS_CACHED_RO_V4 (PTE_SMALL_AP_UNO_SRO | PTE_CACHEABLE)
 #define PTE_FLAGS_UNCACHED_V4 PTE_SMALL_AP_UNO_SRW
 #define PGD_FLAGS_WC_V7 (PMD_SECT_TEX(1) | PMD_SECT_DEF_UNCACHED | \
 			 PMD_SECT_BUFFERABLE | PMD_SECT_XN)
@@ -208,7 +216,9 @@ static u32 pte_flags_to_pmd(u32 pte)
 		/* AP[2] */
 		pmd |= ((pte >> 9) & 0x1) << 15;
 	} else {
-		pmd |= PMD_SECT_AP_WRITE | PMD_SECT_AP_READ;
+		pmd |= PMD_SECT_AP_READ;
+		if (pte & PTE_SMALL_AP_MASK)
+			pmd |= PMD_SECT_AP_WRITE;
 	}
 
 	return pmd;
@@ -218,10 +228,16 @@ static uint32_t get_pte_flags(int map_type)
 {
 	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
 		switch (map_type) {
+		case ARCH_MAP_CACHED_RWX:
+			return PTE_FLAGS_CACHED_V7_RWX;
+		case ARCH_MAP_CACHED_RO:
+			return PTE_FLAGS_CACHED_RO_V7;
 		case MAP_CACHED:
 			return PTE_FLAGS_CACHED_V7;
 		case MAP_UNCACHED:
 			return PTE_FLAGS_UNCACHED_V7;
+		case MAP_CODE:
+			return PTE_FLAGS_CODE_V7;
 		case ARCH_MAP_WRITECOMBINE:
 			return PTE_FLAGS_WC_V7;
 		case MAP_FAULT:
@@ -230,6 +246,10 @@ static uint32_t get_pte_flags(int map_type)
 		}
 	} else {
 		switch (map_type) {
+		case ARCH_MAP_CACHED_RO:
+		case MAP_CODE:
+			return PTE_FLAGS_CACHED_RO_V4;
+		case ARCH_MAP_CACHED_RWX:
 		case MAP_CACHED:
 			return PTE_FLAGS_CACHED_V4;
 		case MAP_UNCACHED:
@@ -259,6 +279,8 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 
 	pte_flags = get_pte_flags(map_type);
 	pmd_flags = pte_flags_to_pmd(pte_flags);
+
+	pr_debug("%s: 0x%08x 0x%08x type %d\n", __func__, virt_addr, size, map_type);
 
 	size = PAGE_ALIGN(size);
 
@@ -348,6 +370,8 @@ static void early_remap_range(u32 addr, size_t size, unsigned map_type, bool for
 
 int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned map_type)
 {
+	map_type = arm_mmu_maybe_skip_permissions(map_type);
+
 	__arch_remap_range(virt_addr, phys_addr, size, map_type, false);
 
 	if (map_type == MAP_UNCACHED)
@@ -555,6 +579,12 @@ void __mmu_init(bool mmu_on)
 {
 	struct memory_bank *bank;
 	uint32_t *ttb = get_ttb();
+	unsigned long text_start = (unsigned long)&_stext;
+	unsigned long code_start = text_start;
+	unsigned long code_size = (unsigned long)&__start_rodata - (unsigned long)&_stext;
+	unsigned long text_size = (unsigned long)&_etext - text_start;
+	unsigned long rodata_start = (unsigned long)&__start_rodata;
+	unsigned long rodata_size = (unsigned long)&__end_rodata - rodata_start;
 
 	// TODO: remap writable only while remapping?
 	// TODO: What memtype for ttb when barebox is EFI loader?
@@ -591,10 +621,19 @@ void __mmu_init(bool mmu_on)
 			pos = rsv->end + 1;
 		}
 
+		if (region_overlap_size(pos, bank->start + bank->size - pos, text_start, text_size)) {
+			remap_range((void *)pos, code_start - pos, MAP_CACHED);
+			/* skip barebox segments here, will be mapped below */
+			pos = text_start + text_size;
+		}
+
 		remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
 	}
 
 	vectors_init();
+
+	remap_range((void *)code_start, code_size, MAP_CODE);
+	remap_range((void *)rodata_start, rodata_size, ARCH_MAP_CACHED_RO);
 }
 
 /*
@@ -627,11 +666,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 
 	set_ttbr(ttb);
 
-	/* For the XN bit to take effect, we can't be using DOMAIN_MANAGER. */
-	if (cpu_architecture() >= CPU_ARCH_ARMv7)
-		set_domain(DOMAIN_CLIENT);
-	else
-		set_domain(DOMAIN_MANAGER);
+	set_domain(DOMAIN_CLIENT);
 
 	/*
 	 * This marks the whole address space as uncachable as well as
@@ -647,7 +682,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 * map the bulk of the memory as sections to avoid allocating too many page tables
 	 * at this early stage
 	 */
-	early_remap_range(membase, barebox_start - membase, MAP_CACHED, false);
+	early_remap_range(membase, barebox_start - membase, ARCH_MAP_CACHED_RWX, false);
 	/*
 	 * Map the remainder of the memory explicitly with two level page tables. This is
 	 * the place where barebox proper ends at. In barebox proper we'll remap the code
@@ -657,10 +692,10 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 * a break-before-make sequence which we can't do when barebox proper is running
 	 * at the location being remapped.
 	 */
-	early_remap_range(barebox_start, barebox_size, MAP_CACHED, true);
+	early_remap_range(barebox_start, barebox_size, ARCH_MAP_CACHED_RWX, true);
 	early_remap_range(optee_start, OPTEE_SIZE, MAP_UNCACHED, false);
 	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext),
-			  MAP_CACHED, false);
+			  ARCH_MAP_CACHED_RWX, false);
 
 	__mmu_cache_on();
 }

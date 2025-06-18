@@ -247,7 +247,8 @@ static uint32_t get_pmd_flags(int map_type)
 	return pte_flags_to_pmd(get_pte_flags(map_type));
 }
 
-static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size, unsigned map_type)
+static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size,
+			       unsigned map_type, bool force_pages)
 {
 	u32 virt_addr = (u32)_virt_addr;
 	u32 pte_flags, pmd_flags;
@@ -268,7 +269,7 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 
 		if (size >= PGDIR_SIZE && pgdir_size_aligned &&
 		    IS_ALIGNED(phys_addr, PGDIR_SIZE) &&
-		    !pgd_type_table(*pgd)) {
+		    !pgd_type_table(*pgd) && !force_pages) {
 			u32 val;
 			/*
 			 * TODO: Add code to discard a page table and
@@ -339,14 +340,15 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 
 	tlb_invalidate();
 }
-static void early_remap_range(u32 addr, size_t size, unsigned map_type)
+
+static void early_remap_range(u32 addr, size_t size, unsigned map_type, bool force_pages)
 {
-	__arch_remap_range((void *)addr, addr, size, map_type);
+	__arch_remap_range((void *)addr, addr, size, map_type, force_pages);
 }
 
 int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned map_type)
 {
-	__arch_remap_range(virt_addr, phys_addr, size, map_type);
+	__arch_remap_range(virt_addr, phys_addr, size, map_type, false);
 
 	if (map_type == MAP_UNCACHED)
 		dma_inv_range(virt_addr, size);
@@ -616,6 +618,7 @@ void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_ha
 void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned long barebox_start)
 {
 	uint32_t *ttb = (uint32_t *)arm_mem_ttb(membase + memsize);
+	unsigned long barebox_size, optee_start;
 
 	pr_debug("enabling MMU, ttb @ 0x%p\n", ttb);
 
@@ -637,9 +640,27 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	create_flat_mapping();
 
 	/* maps main memory as cachable */
-	early_remap_range(membase, memsize - OPTEE_SIZE, MAP_CACHED);
-	early_remap_range(membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_UNCACHED);
-	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext), MAP_CACHED);
+	optee_start = membase + memsize - OPTEE_SIZE;
+	barebox_size = optee_start - barebox_start;
+
+	/*
+	 * map the bulk of the memory as sections to avoid allocating too many page tables
+	 * at this early stage
+	 */
+	early_remap_range(membase, barebox_start - membase, MAP_CACHED, false);
+	/*
+	 * Map the remainder of the memory explicitly with two level page tables. This is
+	 * the place where barebox proper ends at. In barebox proper we'll remap the code
+	 * segments readonly/executable and the ro segments readonly/execute never. For this
+	 * we need the memory being mapped pagewise. We can't do the split up from section
+	 * wise mapping to pagewise mapping later because that would require us to do
+	 * a break-before-make sequence which we can't do when barebox proper is running
+	 * at the location being remapped.
+	 */
+	early_remap_range(barebox_start, barebox_size, MAP_CACHED, true);
+	early_remap_range(optee_start, OPTEE_SIZE, MAP_UNCACHED, false);
+	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext),
+			  MAP_CACHED, false);
 
 	__mmu_cache_on();
 }

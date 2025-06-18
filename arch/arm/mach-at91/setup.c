@@ -188,7 +188,7 @@ static void __init dbgu_soc_detect(u32 dbgu_base)
 	}
 }
 
-static void __init chipid_soc_detect(u32 chipid_base)
+static void __init chipid_soc_detect(void __iomem *chipid_base)
 {
 	u32 cidr, socid;
 
@@ -347,9 +347,9 @@ static int at91_detect(void)
 	if (!at91_soc_is_detected())
 		dbgu_soc_detect(AT91_BASE_DBGU1);
 	if (!at91_soc_is_detected())
-		dbgu_soc_detect(AT91_BASE_DBGU2);
+		dbgu_soc_detect(SAMA5D4_BASE_DBGU);
 	if (!at91_soc_is_detected())
-		chipid_soc_detect(0xfc069000);
+		chipid_soc_detect(SAMA5D2_BASE_CHIPID);
 
 	if (!at91_soc_is_detected())
 		panic("AT91: Impossible to detect the SOC type");

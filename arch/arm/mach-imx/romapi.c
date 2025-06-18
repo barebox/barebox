@@ -299,7 +299,8 @@ void imx93_bootsource(void)
 		goto out;
 	}
 
-	arch_remap_range((void *)rom.start, rom.start, resource_size(&rom), MAP_CACHED);
+	/* TODO: restore uncached mapping once we no longer need this? */
+	arch_remap_range((void *)rom.start, rom.start, resource_size(&rom), MAP_CODE);
 
 	OPTIMIZER_HIDE_VAR(rom_api);
 

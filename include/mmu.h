@@ -8,6 +8,7 @@
 #define MAP_UNCACHED	0
 #define MAP_CACHED	1
 #define MAP_FAULT	2
+#define MAP_CODE	MAP_CACHED	/* until support added */
 
 /*
  * Depending on the architecture the default mapping can be

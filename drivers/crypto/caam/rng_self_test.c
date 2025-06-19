@@ -42,7 +42,7 @@
  * - i.MX67SD silicon revision 1.3
  */
 
-#define pr_fmt(fmt) "rng_self_test: " fmt
+#define pr_fmt(fmt) "caam-rng-self-test: " fmt
 
 #include <dma.h>
 #include <common.h>

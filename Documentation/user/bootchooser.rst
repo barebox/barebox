@@ -77,6 +77,9 @@ no remaining attempts left.
 To prevent ending up in an unbootable system after a number of failed boot
 attempts, there is also a built-in mechanism to reset the counters to their defaults,
 controlled by the ``global.bootchooser.reset_attempts`` variable.
+
+.. _bootchooser,attempts_lock:
+
 Alternatively, counting down the remaining attempts can be disabled by
 locking bootchooser boot attempts.
 This is done by defining a (32-bit) ``attempts_locked`` variable in the

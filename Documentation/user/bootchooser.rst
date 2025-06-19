@@ -77,6 +77,23 @@ no remaining attempts left.
 To prevent ending up in an unbootable system after a number of failed boot
 attempts, there is also a built-in mechanism to reset the counters to their defaults,
 controlled by the ``global.bootchooser.reset_attempts`` variable.
+Alternatively, counting down the remaining attempts can be disabled by
+locking bootchooser boot attempts.
+This is done by defining a (32-bit) ``attempts_locked`` variable in the
+bootstate and setting its value to ``1`` (usually from userspace).
+
+In scenarios where the system is rebootet too frequently (after the ``remaining_attempts``
+counter is decremented, but before it got incremented again after a successful boot) and falls
+back to the other boot target, the ``attempts_locked`` variable can be used to avoid this behavior
+Bootchooser is prevented from decrementing the ``remaining_attempts`` counter and falling back
+to the other target. It comes with the trade-off that a slot, that becomes broken
+over time, it won't be detected anymore and will be booted indefinitely.
+
+The variable affects all targets, is optional and its absence is
+interpreted as ``0``, meaning that attempts are decremented normally.
+
+The ``attempts_locked`` value does not influence the decision on which target
+to boot if any, only whether to decrement the attempts when booting.
 
 If ``global.bootchooser.retry`` is enabled (set to ``1``), the bootchooser
 algorithm will iterate through all valid boot targets (and decrease their
@@ -106,6 +123,19 @@ on the :ref:`reset reason <reset_reason>` (i.e. != WDG) using the
 
 This will reset the ``remaining_attempts`` counter of the *last chosen* slot to
 its default value (``reset_attempts``).
+
+Another option is to use ``attempts_locked``. Normally this should be controlled from
+Linux userspace using the *barebox-state* tool, i.e.::
+
+  barebox-state -s  bootstate.attempts_locked=1
+
+It can also be locked via the :ref:`bootchooser command <command_bootchooser>`::
+
+  bootchooser -l
+
+or unlocked::
+
+  bootchooser -L
 
 
 .. _dt-utils: https://git.pengutronix.de/cgit/tools/dt-utils

@@ -42,4 +42,9 @@ bootstate {
 		reg = <0x10 0x4>;
 		type = "uint32";
 	};
+
+	attempts_locked@14 {
+		reg = <0x14 0x4>;
+		type = "uint32";
+	};
 };

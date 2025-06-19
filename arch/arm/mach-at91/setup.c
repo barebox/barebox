@@ -281,12 +281,6 @@ static const char *soc_name[] = {
 	[AT91_SOC_NONE]		= "Unknown"
 };
 
-const char *at91_get_soc_type(struct at91_socinfo *c)
-{
-	return soc_name[c->type];
-}
-EXPORT_SYMBOL(at91_get_soc_type);
-
 static const char *soc_subtype_name[] = {
 	[AT91_SOC_RM9200_BGA]	= "at91rm9200 BGA",
 	[AT91_SOC_RM9200_PQFP]	= "at91rm9200 PQFP",
@@ -330,12 +324,6 @@ static const char *soc_subtype_name[] = {
 	[AT91_SOC_SUBTYPE_NONE]	= "Unknown"
 };
 
-const char *at91_get_soc_subtype(struct at91_socinfo *c)
-{
-	return soc_subtype_name[c->subtype];
-}
-EXPORT_SYMBOL(at91_get_soc_subtype);
-
 static int at91_detect(void)
 {
 	at91_soc_initdata.type = AT91_SOC_NONE;
@@ -353,9 +341,9 @@ static int at91_detect(void)
 		panic("AT91: Impossible to detect the SOC type");
 
 	pr_info("AT91: Detected soc type: %s\n",
-		at91_get_soc_type(&at91_soc_initdata));
+		soc_name[at91_soc_initdata.type]);
 	pr_info("AT91: Detected soc subtype: %s\n",
-		at91_get_soc_subtype(&at91_soc_initdata));
+		soc_subtype_name[at91_soc_initdata.subtype]);
 
 	/* Init clock subsystem */
 	at91_clock_init();
@@ -372,8 +360,8 @@ static int at91_soc_device(void)
 	struct device *dev;
 
 	dev = add_generic_device_res("soc", DEVICE_ID_SINGLE, NULL, 0, NULL);
-	dev_add_param_fixed(dev, "name", (char*)at91_get_soc_type(&at91_soc_initdata));
-	dev_add_param_fixed(dev, "subname", (char*)at91_get_soc_subtype(&at91_soc_initdata));
+	dev_add_param_fixed(dev, "name", soc_name[at91_soc_initdata.type]);
+	dev_add_param_fixed(dev, "subname", soc_subtype_name[at91_soc_initdata.subtype]);
 
 	return 0;
 }

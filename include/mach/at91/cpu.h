@@ -301,11 +301,6 @@ static inline int at91_soc_is_detected(void)
 #define cpu_is_sama5d44()	(0)
 #endif
 
-/*
- * Since this is ARM, we will never run on any AVR32 CPU. But these
- * definitions may reduce clutter in common drivers.
- */
-#define cpu_is_at32ap7000()	(0)
 #endif /* __ASSEMBLY__ */
 
 #endif /* __MACH_CPU_H__ */

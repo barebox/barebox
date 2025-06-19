@@ -409,8 +409,7 @@ static int lcdfb_pdata_init(struct device *dev,
 				   !cpu_is_at91sam9g45es();
 	sinfo->have_intensity_bit = pdata->have_intensity_bit;
 	sinfo->have_hozval = cpu_is_at91sam9261() ||
-			     cpu_is_at91sam9g10() ||
-			     cpu_is_at32ap7000();
+			     cpu_is_at91sam9g10();
 
 	info = &sinfo->info;
 	info->modes.modes = pdata->mode_list;

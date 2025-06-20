@@ -36,7 +36,7 @@ you can look at the ``next`` branch:
 
 .. code-block:: console
 
-  $ git checkout -b next origin/remotes/next
+  $ git checkout -b next remotes/origin/next
 
 A web interface to the repository is available at
 https://git.pengutronix.de/cgit/barebox

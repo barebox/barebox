@@ -366,7 +366,7 @@ static int do_parted(int argc, char *argv[])
 	if (argc < 3)
 		return COMMAND_ERROR_USAGE;
 
-	cdev = cdev_open_by_name(argv[1], O_RDWR);
+	cdev = cdev_open_by_path_name(argv[1], O_RDWR);
 	if (!cdev) {
 		printf("Cannot open %s\n", argv[1]);
 		return COMMAND_ERROR;

@@ -585,7 +585,7 @@ static __maybe_unused struct partition_desc *efi_partition_create_table(struct b
 	gpt_header *gpt;
 	unsigned int num_partition_entries = 128;
 	unsigned int gpt_size = (sizeof(gpt_entry) * num_partition_entries) / SECTOR_SIZE;
-	unsigned int first_usable_lba = gpt_size + 2;
+	unsigned int first_usable_lba = partition_first_usable_lba();
 
 	partition_desc_init(&epd->pd, blk);
 
@@ -719,7 +719,11 @@ static int efi_protective_mbr(struct block_device *blk)
 		return PTR_ERR(pdesc);
 	}
 
-	ret = partition_create(pdesc, "primary", "0xee", 1, last_lba(blk));
+	/*
+	 * For the protective MBR call directly into the mkpart hook. partition_create()
+	 * does not allow us to create a partition starting at LBA1
+	 */
+	ret = pdesc->parser->mkpart(pdesc, "primary", "0xee", 1, last_lba(blk));
 	if (ret) {
 		pr_err("Cannot create partition: %pe\n", ERR_PTR(ret));
 		goto out;

@@ -14,6 +14,7 @@ static int do_stat(int argc, char *argv[])
 {
 	int (*statfn)(int dirfd, const char *, struct stat *) = lstatat;
 	int ret, opt, dirfd = AT_FDCWD, extra_flags = 0, exitcode = 0;
+	const char *dir = NULL;
 	char **filename;
 	struct stat st;
 
@@ -26,9 +27,7 @@ static int do_stat(int argc, char *argv[])
 			extra_flags |= O_CHROOT;
 			fallthrough;
 		case 'c':
-			dirfd = open(optarg, O_PATH | O_DIRECTORY | extra_flags);
-			if (dirfd < 0)
-				return dirfd;
+			dir = optarg;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -37,6 +36,12 @@ static int do_stat(int argc, char *argv[])
 
 	if (optind == argc)
 		return COMMAND_ERROR_USAGE;
+
+	if (dir) {
+		dirfd = open(dir, O_PATH | O_DIRECTORY | extra_flags);
+		if (dirfd < 0)
+			return dirfd;
+	}
 
 	for (filename = &argv[optind]; *filename; filename++) {
 		ret = statfn(dirfd, *filename, &st);

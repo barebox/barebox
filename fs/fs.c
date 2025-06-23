@@ -835,9 +835,11 @@ static void fs_remove(struct device *dev)
 	int ret;
 
 	if (fsdev->dev.driver) {
-		if (!dev->driver->remove)
+		if (barebox_system_state == BAREBOX_EXITING
+		    && !dev->driver->remove)
 			return;
-		dev->driver->remove(dev);
+		if (dev->driver->remove)
+			dev->driver->remove(dev);
 		list_del(&fsdev->list);
 	}
 

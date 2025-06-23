@@ -48,4 +48,16 @@ void shutdown_barebox(void);
 
 long get_ram_size(volatile long *base, long size);
 
+enum system_states {
+	BAREBOX_STARTING,
+	BAREBOX_RUNNING,
+	BAREBOX_EXITING,
+};
+
+#if IN_PROPER
+extern enum system_states barebox_system_state;
+#else
+#define barebox_system_state	BAREBOX_STARTING
+#endif
+
 #endif

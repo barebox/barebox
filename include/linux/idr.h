@@ -37,9 +37,10 @@ struct idr {
  */
 #define idr_for_each_entry(_idr, _entry, _id)				\
 	for (struct idr *iter =						\
-	     list_first_entry_or_null(&(_idr)->list, struct idr, list);	\
-	     (iter && iter != (_idr)) || (_entry = NULL);	\
-	     iter = list_next_entry(iter, list))			\
+	     list_first_entry_or_null(&(_idr)->list, struct idr, list), \
+	     *tmp = iter ? list_next_entry(iter, list) : NULL;		\
+	     (iter && iter != (_idr)) || (_entry = NULL);		\
+	     iter = tmp, tmp = tmp ?  list_next_entry(tmp, list) : NULL)\
 	if ((_entry = iter->ptr, _id = iter->id, true))
 
 struct idr *__idr_find(struct idr *head, int lookup_id);

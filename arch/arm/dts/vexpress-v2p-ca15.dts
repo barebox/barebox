@@ -21,12 +21,17 @@
 
 		partition@0 {
 			label = "barebox";
-			reg = <0x0 0x80000>;
+			reg = <0x0 0x200000>;
 		};
 
-		barebox_env: partition@80000 {
+		barebox_env: partition@200000 {
 			label = "barebox-environment";
-			reg = <0x80000 0x80000>;
+			reg = <0x200000 0x200000>;
+		};
+
+		state_storage: partition@400000 {
+			label = "barebox-state";
+			reg = <0x400000 0x100000>;
 		};
 	};
 };

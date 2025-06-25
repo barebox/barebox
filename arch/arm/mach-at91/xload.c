@@ -79,7 +79,7 @@ static void __noreturn sama5d2_sdhci_start_image(u32 r4)
 	sama5d2_pmc_enable_periph_clock(SAMA5D2_ID_PIOA);
 	for (pin = instance->pins; *pin >= 0; pin++) {
 		at91_mux_pio4_set_periph(SAMA5D2_BASE_PIOA,
-					 BIT(*pin), instance->periph);
+					 pin_to_mask(*pin), instance->periph);
 	}
 
 	sama5d2_pmc_enable_periph_clock(instance->id);
@@ -143,7 +143,7 @@ static void __noreturn sama5d2_qspi_start_image(u32 r4)
 	sama5d2_pmc_enable_periph_clock(SAMA5D2_ID_PIOA);
 	for (pin = instance->pins; *pin >= 0; pin++)
 		at91_mux_pio4_set_periph(SAMA5D2_BASE_PIOA,
-					 BIT(*pin), instance->periph);
+					 pin_to_mask(*pin), instance->periph);
 
 	sama5d2_pmc_enable_periph_clock(instance->id);
 

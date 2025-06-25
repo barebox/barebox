@@ -581,6 +581,8 @@ config MACH_AT91SAM9263EK
 config MACH_AT91SAM9X5EK
 	bool "Atmel AT91SAM9x5 Series Evaluation Kit"
 	select SOC_AT91SAM9X5
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
 	help
 	  Select this if you re using Atmel's AT91SAM9x5-EK Evaluation Kit.
 	  Supported chips are sam9g15, sam9g25, sam9x25, sam9g35 and sam9x35.

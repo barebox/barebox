@@ -101,7 +101,6 @@ static void sam9_smc_cs_read_mode(void __iomem *base,
 	void __iomem *mode_reg;
 
 	switch (at91_soc_initdata.type) {
-	case AT91_SOC_SAMA5D2:
 	case AT91_SOC_SAMA5D3:
 	case AT91_SOC_SAMA5D4:
 		mode_reg = base + AT91_SAMA5_SMC_MODE;

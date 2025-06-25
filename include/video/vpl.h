@@ -20,9 +20,24 @@ struct vpl {
 	struct list_head list;
 };
 
+/**
+ * struct vpl_bridge - bridge control structure
+ */
+struct vpl_bridge {
+	/** @vpl: pointer to vpl instance of bridge */
+	struct vpl *vpl;
+	/** @port: remote input port on bridge */
+	int port;
+};
+
 int vpl_register(struct vpl *);
 int vpl_ioctl(struct vpl *, unsigned int port,
 		unsigned int cmd, void *ptr);
+struct vpl_bridge;
+int vpl_bridge_ioctl(struct vpl_bridge *,
+		     unsigned int cmd, void *ptr);
+struct vpl_bridge *devm_vpl_of_get_bridge(struct device *dev, struct device_node *np,
+					  unsigned int port, unsigned int endpoint);
 
 struct vpl *of_vpl_get(struct device_node *node, int port);
 

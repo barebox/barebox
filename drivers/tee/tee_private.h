@@ -19,7 +19,6 @@ struct tee_context;
  * struct tee_device - TEE Device representation
  * @name:	name of device
  * @desc:	description of device
- * @id:		unique id of device
  * @flags:	represented by TEE_DEVICE_FLAG_REGISTERED above
  * @dev:	embedded basic device structure
  * @cdev:	embedded cdev
@@ -29,7 +28,6 @@ struct tee_context;
 struct tee_device {
 	char name[TEE_MAX_DEV_NAME_LEN];
 	const struct tee_desc *desc;
-	struct list_head list;
 	unsigned int flags;
 
 	struct device dev;

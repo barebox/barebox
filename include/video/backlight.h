@@ -3,6 +3,8 @@
 #ifndef __VIDEO_BACKLIGHT_H
 #define __VIDEO_BACKLIGHT_H
 
+#include <device.h>
+
 #ifdef CONFIG_DRIVER_VIDEO_BACKLIGHT
 struct backlight_device {
 	int brightness;
@@ -11,7 +13,6 @@ struct backlight_device {
 	int brightness_default;
 	int slew_time_ms; /* time to stretch brightness changes */
 	int (*brightness_set)(struct backlight_device *, int brightness);
-	struct list_head list;
 	struct device dev;
 	struct device_node *node;
 };
@@ -36,5 +37,17 @@ backlight_set_brightness_default(struct backlight_device *dev)
 static inline struct backlight_device *
 of_backlight_find(struct device_node *node) { return NULL; }
 #endif
+
+static inline int
+backlight_enable(struct backlight_device *dev)
+{
+	return dev ? backlight_set_brightness_default(dev) : 0;
+}
+
+static inline int
+backlight_disable(struct backlight_device *dev)
+{
+	return dev ? backlight_set_brightness(dev, 0) : 0;
+}
 
 #endif /* __VIDEO_BACKLIGHT_H */

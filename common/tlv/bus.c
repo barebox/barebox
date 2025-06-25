@@ -30,7 +30,7 @@ struct tlv_device *tlv_register_device(struct tlv_header *header,
 	devinfo_add(dev, tlv_devinfo);
 	dev->platform_data = header;
 	tlvdev->magic = be32_to_cpu(header->magic);
-	dev->parent = parent ?: tlv_bus.dev;
+	dev->parent = parent ?: &tlv_bus.dev;
 	dev->id = DEVICE_ID_SINGLE;
 
 	if (parent) {
@@ -127,7 +127,7 @@ static int tlv_bus_register(void)
 	if (ret)
 		return ret;
 
-	devinfo_add(tlv_bus.dev, tlv_bus_info);
+	devinfo_add(&tlv_bus.dev, tlv_bus_info);
 
 	return 0;
 }

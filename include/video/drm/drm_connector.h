@@ -24,6 +24,8 @@
 #define __DRM_CONNECTOR_H__
 
 #include <uapi/drm/drm_mode.h>
+#include <linux/types.h>
+#include <linux/bitops.h>
 
 enum drm_connector_force {
 	DRM_FORCE_UNSPECIFIED,

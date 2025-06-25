@@ -52,28 +52,6 @@ static inline void __iomem *devm_ioremap(struct device *dev,
 	return IOMEM(start);
 }
 
-static inline int bus_for_each_dev(const struct bus_type *bus, struct device *start, void *data,
-				   int (*fn)(struct device *dev, void *data))
-{
-	struct device *dev;
-	int ret;
-
-	bus_for_each_device(bus, dev) {
-		if (start) {
-			if (dev == start)
-				start = NULL;
-			continue;
-		}
-
-		ret = fn(dev, data);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
-}
-
-
 /**
  * dev_set_drvdata - set driver private data for device
  * @dev: device instance

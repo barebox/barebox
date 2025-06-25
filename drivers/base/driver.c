@@ -269,7 +269,7 @@ int register_device(struct device *new_device)
 
 	if (new_device->bus) {
 		if (!new_device->parent)
-			new_device->parent = new_device->bus->dev;
+			new_device->parent = &new_device->bus->dev;
 
 		list_add_tail(&new_device->bus_list, &new_device->bus->device_list);
 

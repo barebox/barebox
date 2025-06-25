@@ -240,8 +240,6 @@ struct mii_bus {
 	/* PHY addresses to be ignored when probing */
 	u32 phy_mask;
 
-	struct list_head list;
-
 	bool is_multiplexed;
 
 	struct slice slice;
@@ -257,12 +255,12 @@ int mdiobus_register(struct mii_bus *bus);
 void mdiobus_unregister(struct mii_bus *bus);
 struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
 
-extern struct list_head mii_bus_list;
+extern struct class mii_class;
 
 int mdiobus_detect(struct device *dev);
 
 #define for_each_mii_bus(mii) \
-	list_for_each_entry(mii, &mii_bus_list, list)
+	class_for_each_container_of_device(&mii_class, mii, dev)
 
 struct mii_bus *mdiobus_get_bus(int busnum);
 

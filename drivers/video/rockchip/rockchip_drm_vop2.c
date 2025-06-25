@@ -975,19 +975,6 @@ static int us_to_vertical_line(struct drm_display_mode *mode, int us)
 	return us * mode->clock / mode->htotal / 1000;
 }
 
-static int drm_mode_vrefresh(const struct drm_display_mode *mode)
-{
-	unsigned int num, den;
-
-	if (mode->htotal == 0 || mode->vtotal == 0)
-		return 0;
-
-	num = mode->clock;
-	den = mode->htotal * mode->vtotal;
-
-	return DIV_ROUND_CLOSEST_ULL(mul_u32_u32(num, 1000), den);
-}
-
 static void vop2_crtc_atomic_enable(struct vop2_video_port *vp,
 				    struct drm_display_mode *mode,
 				    struct rockchip_crtc_state *vcstate)

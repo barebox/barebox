@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ -e /dev/fb0 ]; then
+        fb0.enable=1
+fi
+
+if [ -d /logo ]; then
+        for logo in /logo/*; do
+                splash $logo
+                exit
+        done
+fi
+
+# No logo, so let's show console instead
+if [ -e /dev/fbconsole0-1 ]; then
+        fbconsole0.font=7x14
+        fbconsole0.active=ioe
+fi

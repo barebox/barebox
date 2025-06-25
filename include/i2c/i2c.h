@@ -125,7 +125,6 @@ struct i2c_adapter {
 	struct slice		slice;
 	int			nr;	/* bus number */
 	int (*master_xfer)(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);
-	struct list_head	list;
 	int			retries;
 	void 			*algo_data;
 
@@ -304,9 +303,9 @@ int of_i2c_device_enable_and_register_by_alias(const char *alias);
 void i2c_parse_fw_timings(struct device *dev, struct i2c_timings *t,
 			  bool use_defaults);
 
-extern struct list_head i2c_adapter_list;
+extern struct class i2c_adapter_class;
 #define for_each_i2c_adapter(adap) \
-	list_for_each_entry(adap, &i2c_adapter_list, list)
+	class_for_each_container_of_device(&i2c_adapter_class, adap, dev)
 
 /* For devices that use several addresses, use i2c_new_dummy() to make
  * client handles for the extra addresses.

@@ -3,6 +3,7 @@
 #include <init.h>
 #include <mach/stm32mp/bbu.h>
 #include <deep-probe.h>
+#include <envfs.h>
 
 static int dkx_probe(struct device *dev)
 {
@@ -16,6 +17,8 @@ static int dkx_probe(struct device *dev)
 		barebox_set_model(model);
 
 	barebox_set_hostname("stm32mp15xx-dkx");
+
+	defaultenv_append_directory(defaultenv_stm32mp15xx_dkx);
 
 	return 0;
 }

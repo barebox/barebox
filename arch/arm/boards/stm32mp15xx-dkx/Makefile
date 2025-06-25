@@ -2,3 +2,4 @@
 
 lwl-y += lowlevel.o
 obj-y += board.o
+bbenv-y += defaultenv-stm32mp15xx-dkx

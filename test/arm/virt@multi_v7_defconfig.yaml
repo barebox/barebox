@@ -15,6 +15,7 @@ targets:
     features:
       - virtio-mmio
       - barebox-state
+      - testfs
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
 imports:

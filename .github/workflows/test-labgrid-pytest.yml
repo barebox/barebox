@@ -26,6 +26,7 @@ jobs:
           - ARCH: arm
             lgenv: test/arm/multi_v8_defconfig.yaml
             defconfig: multi_v8_defconfig
+            lgargs: --runxfail
 
           - ARCH: mips
             lgenv: test/mips/qemu-malta_defconfig.yaml
@@ -80,6 +81,20 @@ jobs:
         if [ ${{matrix.arch}} = "riscv" ]; then
           cp /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin ${KBUILD_OUTPUT}/
         fi
+
+    - name: Populate testfs
+      run: |
+        export KBUILD_OUTPUT=build-${{matrix.arch}}-${{matrix.defconfig}}
+        export KBUILD_DEFCONFIG=${{matrix.defconfig}}
+
+        for i in ${{matrix.lgenv}}; do
+          grep -wq 'testfs' "$i" || continue
+
+          # Just use already built dtc
+          export PATH="$PATH:${KBUILD_OUTPUT}/scripts/dtc/"
+          exec scripts/generate_testfs.sh
+        done
+
     - name: labgrid-pytest
       run: |
         export KBUILD_OUTPUT=build-${{matrix.arch}}-${{matrix.defconfig}}
@@ -87,10 +102,15 @@ jobs:
         for i in ${{matrix.lgenv}}; do
           grep -wq '\(QEMUDriver\|ExternalConsoleDriver\):' "$i" || continue
 
+          extraargs="${{matrix.lgargs}}"
+          if grep -wq 'testfs' "$i"; then
+            extraargs="${extraargs} --fs testfs=${KBUILD_OUTPUT}/testfs"
+          fi
+
           cfg=$(basename $i .yaml)
           echo "Testing $cfg"
           labgrid-pytest --lg-env $i test/py --verbosity=1 \
-          --junitxml=$cfg.tests.xml --lg-log=log/$cfg
+          --junitxml=$cfg.tests.xml --lg-log=log/$cfg $extraargs
         done
 
     - name: Publish Test Results

@@ -2617,6 +2617,12 @@ int openat(int dirfd, const char *pathname, int flags)
 			error = create(path.dentry, dentry);
 			if (error)
 				goto out1;
+			/* repoint path.dentry from parent to newly created entry.
+			 * path.mnt already points at the correct vfsmount, even
+			 * for a dirfd of the root directory, so that's fine.
+			 */
+			dput(path.dentry);
+			path.dentry = dentry;
 		} else {
 			dput(dentry);
 			error = -ENOENT;

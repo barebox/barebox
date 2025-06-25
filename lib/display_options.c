@@ -21,7 +21,7 @@
  *"as xxx KiB", "xxx.y KiB", "xxx MiB", "xxx.y MiB",
  * xxx GiB, xxx.y GiB, etc as needed;
  */
-char *size_human_readable(unsigned long long size)
+const char *size_human_readable(unsigned long long size)
 {
 	static char buf[30];
 	unsigned long m = 0, n;

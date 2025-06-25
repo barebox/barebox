@@ -97,7 +97,7 @@ static inline void ctrlc_handled(void)
 
 #endif
 
-char *size_human_readable(unsigned long long size);
+const char *size_human_readable(unsigned long long size);
 int readline(const char *prompt, char *buf, int len);
 
 #if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \

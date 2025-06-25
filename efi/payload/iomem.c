@@ -127,7 +127,7 @@ static int efi_parse_mmap(struct efi_memory_desc *desc, bool verbose)
 
 	fullname = xasprintf("%s@%llx", name, (u64)va_base);
 
-	pr_debug("%s: (%pad+%pad)\n", fullname, &va_base, &va_size);
+	pr_vdebug("%s: (%pad+%pad)\n", fullname, &va_base, &va_size);
 
 	res = request_iomem_region(fullname, va_base, va_base + va_size - 1);
 	if (IS_ERR(res)) {
@@ -136,6 +136,7 @@ static int efi_parse_mmap(struct efi_memory_desc *desc, bool verbose)
 	}
 
 	res->flags |= flags;
+	resource_set_efi_memory_type_attrs(res, desc->type, desc->attrs);
 
 out:
 	free(fullname);

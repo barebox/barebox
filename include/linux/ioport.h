@@ -133,11 +133,11 @@ enum resource_memtype {
 #define MEMATTR_RO	0x00020000	/* read-only */
 #define MEMATTR_SP	0x00040000	/* specific-purpose */
 
-#define MEMATTRS_CACHEABLE	(MEMATTR_WT | MEMATTR_WC | MEMATTR_WB)
-#define MEMATTRS_RW		(MEMATTRS_CACHEABLE | MEMATTR_XP)
-#define MEMATTRS_RO		(MEMATTRS_CACHEABLE | MEMATTR_XP | MEMATTR_RO)
-#define MEMATTRS_RX		(MEMATTRS_CACHEABLE | MEMATTR_RO)
-#define MEMATTRS_RWX		(MEMATTRS_CACHEABLE)	/* TODO: remove all */
+#define MEMATTRS_NORMAL		(MEMATTR_UC | MEMATTR_WT | MEMATTR_WC | MEMATTR_WB)
+#define MEMATTRS_RW		(MEMATTRS_NORMAL | MEMATTR_XP)
+#define MEMATTRS_RO		(MEMATTRS_NORMAL | MEMATTR_XP | MEMATTR_RO)
+#define MEMATTRS_RX		(MEMATTRS_NORMAL | MEMATTR_RO)
+#define MEMATTRS_RWX		(MEMATTRS_NORMAL)	/* TODO: remove all */
 #define MEMATTRS_RW_DEVICE	(MEMATTR_UC | MEMATTR_XP)
 #define MEMATTRS_FAULT		(MEMATTR_UC | MEMATTR_XP | MEMATTR_RP | MEMATTR_RO)
 
@@ -211,6 +211,9 @@ int release_region(struct resource *res);
 
 extern struct resource iomem_resource;
 extern struct resource ioport_resource;
+
+const char *resource_typeattr_format(char *buf, size_t size,
+				     const struct resource *res);
 
 static inline void reserve_resource(struct resource *res)
 {

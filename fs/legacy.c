@@ -89,7 +89,7 @@ static int legacy_open(struct inode *inode, struct file *file)
 	if (!legacy_ops->open)
 		return 0;
 
-	pathname = dpath(file->f_dentry, fsdev->vfsmount.mnt_root);
+	pathname = dpath(file->f_path.dentry, fsdev->vfsmount.mnt_root);
 	error = legacy_ops->open(&file->fsdev->dev, file, pathname);
 	free(pathname);
 

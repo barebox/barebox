@@ -2241,7 +2241,7 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 			return ERR_CAST(f);
 
 		nd->path.mnt = &f->fsdev->vfsmount;
-		nd->path.dentry = f->f_dentry;
+		nd->path.dentry = f->f_path.dentry;
 		follow_mount(&nd->path);
 
 		if (*s == '/')
@@ -2588,7 +2588,7 @@ int openat(int dirfd, const char *pathname, int flags)
 		}
 
 		f->path = NULL;
-		f->f_dentry = NULL;
+		f->f_path.dentry = NULL;
 		f->f_inode = new_inode(&fsdev->sb);
 		f->f_inode->i_mode = S_IFREG;
 		f->f_flags = flags;

@@ -44,7 +44,7 @@ int v9fs_file_open(struct inode *inode, struct file *file)
 	fid = file->private_data;
 
 	if (!fid) {
-		fid = v9fs_fid_clone(file->f_dentry);
+		fid = v9fs_fid_clone(file->f_path.dentry);
 		if (IS_ERR(fid))
 			return PTR_ERR(fid);
 

@@ -228,8 +228,6 @@ struct file {
 #define FILE_SIZE_STREAM	((loff_t) -1)
 #define f_size f_inode->i_size
 	struct inode		*f_inode;	/* cached value */
-#define f_dentry	f_path.dentry
-#define f_vfsmnt	f_path.mnt
 	const struct file_operations	*f_op;
 	unsigned int 		f_flags;
 	loff_t			f_pos;

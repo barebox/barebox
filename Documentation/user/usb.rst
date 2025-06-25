@@ -51,6 +51,8 @@ the :ref:`command_usbgadget` commands supports registering composite gadgets, wh
 exports multiple functions at once. This happens in the "background" without impacting
 use of the shell.
 
+.. _usbgadget_partitions:
+
 Partition description
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -316,12 +318,16 @@ USB Gadget autostart Options
   See :ref:`command_usbgadget` -a. (Default 0).
 ``global.system.partitions``
   Common function description for all of DFU, fastboot and USB mass storage
-  gadgets. Both Fastboot and DFU partitions also have dedicated override
+  gadgets.
+  See :ref:`usbgadget_partitions` above for the syntax.
+  Both Fastboot and DFU partitions also have dedicated override
   variables for backwards-compatibility:
 
 ``global.usbgadget.dfu_function``
-  Function description for DFU. See :ref:`command_usbgadget` -D [desc].
+  Function description for DFU. See :ref:`command_usbgadget` -D [desc],
+  and :ref:`usbgadget_partitions` above for the syntax.
 ``global.fastboot.partitions``
-  Function description for fastboot. See :ref:`command_usbgadget` -A [desc].
+  Function description for fastboot. See :ref:`command_usbgadget` -A [desc],
+  and :ref:`usbgadget_partitions` above for the syntax.
 ``global.fastboot.bbu``
   Export barebox update handlers. See :ref:`command_usbgadget` -b. (Default 0).

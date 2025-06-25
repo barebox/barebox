@@ -153,6 +153,8 @@ barebox can provide a serial console over USB. This can be initialized with the
 :ref:`command_usbserial` command. Once the host is plugged in it should show a
 new serial device, on Linux for example ``/dev/ttyACM0``.
 
+.. _fastboot:
+
 Android Fastboot support
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -306,6 +308,8 @@ instead of creating boot script. This can be useful if autostart policy should b
 chosen at boot time from other driver or script.
 To get usbgadget autostart support barebox has to be compiled with
 CONFIG_USB_GADGET_AUTOSTART enabled.
+
+.. _usbgadget_variables:
 
 USB Gadget autostart Options
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

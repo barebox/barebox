@@ -203,6 +203,22 @@ The netconsole can be used just like any other console. Note, however, that the
 simple console protocol is UDP based, so there is no guarantee about packet
 loss.
 
+Fastboot over UDP
+-----------------
+
+When built with ``CONFIG_NET_FASTBOOT=y`` and the environment variable
+``fastboot.net.autostart`` is set to any non-empty value, barebox will
+listen for fastboot commands on UDP port 5554.
+You might need to configure a IP address first in order to use fastboot (e.g.
+via DHCP or statically; see above).
+
+Additionally, you have to configure at least the ``fastboot.partitions``
+variable, see :ref:`usbgadget_variables`.
+
+On your development host, use fastboot with the ``-s udp:<IP-address>``
+parameter, specifying the IP address of your board.
+See :ref:`fastboot` for more information about Fastboot usage.
+
 DSA (Distributed Switch Architecture) Support in Barebox
 --------------------------------------------------------
 

@@ -34,6 +34,8 @@ struct nvmem_config {
 					     const void *val, size_t val_size);
 	int			(*reg_read)(void *ctx, unsigned int reg,
 					    void *val, size_t val_size);
+	int			(*reg_protect)(void *ctx, unsigned int offset,
+					       size_t bytes, int prot);
 	void			*priv;
 	nvmem_cell_post_process_t cell_post_process;
 };

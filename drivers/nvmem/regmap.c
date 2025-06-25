@@ -63,6 +63,70 @@ static int nvmem_regmap_read(void *ctx, unsigned offset, void *buf, size_t bytes
 	return 0;
 }
 
+static int nvmem_regmap_protect(void *ctx, unsigned int offset, size_t bytes,
+				int prot)
+{
+	unsigned int seal_flags = 0;
+	struct regmap *map = ctx;
+	size_t reg_val_bytes;
+	unsigned int i;
+	int ret = 0;
+
+	reg_val_bytes = regmap_get_val_bytes(map);
+	if (reg_val_bytes == 0) {
+		dev_err(regmap_get_device(map), "Invalid regmap value byte size (0)\n");
+		return -EINVAL;
+	}
+
+	/* NVMEM protect operations should typically be on aligned boundaries
+	 * matching the hardware's lockable unit (which is regmap's val_bytes
+	 * here).
+	 */
+	if ((offset % reg_val_bytes) != 0 || (bytes % reg_val_bytes) != 0) {
+		dev_warn(regmap_get_device(map),
+			 "NVMEM protect op for regmap: offset (0x%x) or size (0x%zx) not aligned to register size (%zu bytes).\n",
+			 offset, bytes, reg_val_bytes);
+		return -EINVAL;
+	}
+
+	switch (prot) {
+	case PROTECT_ENABLE_WRITE:
+		/* NVMEM protect mode 0 = Unlock/Make-writable
+		 * Attempt to clear write protection.
+		 * The underlying bus->reg_seal must support clearing.
+		 * For BSEC OTPs, this will (and should) fail with -EOPNOTSUPP
+		 * or -EPERM.
+		 */
+		seal_flags = REGMAP_SEAL_CLEAR | REGMAP_SEAL_WRITE_PROTECT;
+		break;
+	case PROTECT_DISABLE_WRITE:
+		/* NVMEM protect mode 1 = Lock/Write-protect */
+		/* For OTPs like BSEC, permanent is implied */
+		seal_flags = REGMAP_SEAL_WRITE_PROTECT | REGMAP_SEAL_PERMANENT;
+		break;
+	default:
+		dev_warn(regmap_get_device(map), "Unsupported NVMEM protect mode: %d\n",
+			 prot);
+		return -EOPNOTSUPP;
+	}
+
+	for (i = 0; i < bytes; i += reg_val_bytes) {
+		unsigned int current_reg_offset = offset + i;
+
+		ret = regmap_seal(map, current_reg_offset, seal_flags);
+		if (ret) {
+			dev_err(regmap_get_device(map), "regmap_seal failed for offset 0x%x: %pe\n",
+				current_reg_offset, ERR_PTR(ret));
+			/* No error handling for partial failures, we messed up
+			 * the HW state and can't recover.
+			 */
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
 struct nvmem_device *
 nvmem_regmap_register_with_pp(struct regmap *map, const char *name,
 			      nvmem_cell_post_process_t cell_post_process)
@@ -82,6 +146,7 @@ nvmem_regmap_register_with_pp(struct regmap *map, const char *name,
 	config.cell_post_process = cell_post_process;
 	config.reg_write = nvmem_regmap_write;
 	config.reg_read = nvmem_regmap_read;
+	config.reg_protect = nvmem_regmap_protect;
 
 	return nvmem_register(&config);
 }

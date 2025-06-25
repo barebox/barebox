@@ -41,6 +41,7 @@ static int global_default_priority = 1;
 static int disable_on_zero_attempts;
 static int retry;
 static int last_boot_successful;
+static bool attempts_locked;
 
 struct bootchooser {
 	struct list_head targets;
@@ -49,6 +50,7 @@ struct bootchooser {
 	struct state *state;
 	char *state_prefix;
 	int refs;
+	bool attempts_locked;
 
 	int verbose;
 	int dryrun;
@@ -350,9 +352,10 @@ struct bootchooser *bootchooser_get(void)
 	struct bootchooser *bc;
 	struct bootchooser_target *target;
 	char *targets, *str, *freep = NULL, *delim;
-	int ret = -EINVAL, id = 1;
+	int ret, id = 1;
 	uint32_t last_chosen;
 	static int attempts_resetted;
+	uint32_t locked;
 
 	if (bootchooser) {
 		bootchooser->refs++;
@@ -397,6 +400,15 @@ struct bootchooser *bootchooser_get(void)
 		pr_warn("using non-redundant NV instead of barebox-state\n");
 	}
 
+	/* this is an optional value */
+	bc->attempts_locked = attempts_locked;
+	ret = getenv_u32(bc->state_prefix, "attempts_locked", &locked);
+	if (!ret && locked)
+		bc->attempts_locked = true;
+
+	if (bc->attempts_locked)
+		pr_debug("remaining attempt counter is locked\n");
+
 	INIT_LIST_HEAD(&bc->targets);
 
 	freep = targets = xstrdup(available_targets);
@@ -418,11 +430,13 @@ struct bootchooser *bootchooser_get(void)
 
 	if (id == 1) {
 		pr_err("Target list $global.bootchooser.targets is empty\n");
+		ret = -EINVAL;
 		goto err;
 	}
 
 	if (list_empty(&bc->targets)) {
 		pr_err("No targets could be initialized\n");
+		ret = -EINVAL;
 		goto err;
 	}
 
@@ -621,6 +635,9 @@ void bootchooser_info(struct bootchooser *bc)
 
 	printf("\nlast booted target: %s\n", bc->last_chosen ?
 	       bc->last_chosen->name : "unknown");
+
+	printf("Locking of boot attempt counter: %s\n",
+	       bc->attempts_locked ? "enabled" : "disabled");
 }
 
 /**
@@ -650,11 +667,14 @@ static struct bootchooser_target *bootchooser_get_target(struct bootchooser *bc)
 	return ERR_PTR(-ENOENT);
 
 found:
-	target->remaining_attempts--;
-
-	if (bc->verbose)
-		pr_info("name=%s decrementing remaining_attempts to %d\n",
-			target->name, target->remaining_attempts);
+	if (!bc->attempts_locked) {
+		target->remaining_attempts--;
+		if (bc->verbose)
+			pr_info("name=%s remaining_attempts %d\n", target->name,
+				target->remaining_attempts);
+	} else {
+		pr_info("Attempts are locked, not decreasing remaining_attempts\n");
+	}
 
 	if (bc->verbose)
 		pr_info("selected target '%s', boot '%s'\n", target->name, target->boot);
@@ -802,6 +822,20 @@ struct bootchooser_target *bootchooser_get_last_chosen(struct bootchooser *bc)
 		return ERR_PTR(-ENODEV);
 
 	return bc->last_chosen;
+}
+
+/**
+ * bootchooser_lock_attempts - lock the bootchooser attempt counter
+ * @locked:     Whether the attempt counter is locked or not.
+ *
+ * Instruct bootchooser to lock the boot attempts counter.
+ * This means remaining_attempts will not be counted down.
+ *
+ * Return: 0 for success, negative error code otherwise
+ */
+void bootchooser_lock_attempts(bool locked)
+{
+	attempts_locked = locked;
 }
 
 static int bootchooser_boot_one(struct bootchooser *bc, int *tryagain)

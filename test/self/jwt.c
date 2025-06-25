@@ -72,11 +72,11 @@ static void test_jwt(void)
 	char *jwt_rs256_mangled, *ch;
 	struct jwt_key jwt_key;
 	struct jwt *jwt;
-	extern const struct rsa_public_key __key_jwt_test;
+	extern const struct rsa_public_key __key_development_rsa2048;
 	int old_loglevel;
 
 	jwt_key.alg = JWT_ALG_RS256;
-	jwt_key.material.rsa_pub = &__key_jwt_test;
+	jwt_key.material.rsa_pub = &__key_development_rsa2048;
 	total_tests++;
 
 	jwt = jwt_decode(jwt_rs256, &jwt_key);

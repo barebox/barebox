@@ -74,9 +74,36 @@ static int stm32_bsec_reg_write(void *ctx, unsigned reg, unsigned val)
 		return bsec_smc(BSEC_SMC_WRITE_SHADOW, reg, val, NULL);
 }
 
+static int stm32_bsec_do_reg_seal_otp(void *ctx, unsigned int reg,
+				      unsigned int flags)
+{
+	struct bsec_priv *priv = ctx;
+	struct device *dev = &priv->dev;
+
+	if (!priv->permanent_write_enable) {
+		dev_warn(dev, "BSEC seal: permanent_write_enable is OFF.\n");
+		return -EACCES;
+	}
+
+	/* Only REGMAP_SEAL_WRITE_PROTECT and REGMAP_SEAL_PERMANENT
+	 * flags are supported for BSEC OTP sealing.
+	 */
+	if ((flags & (REGMAP_SEAL_WRITE_PROTECT | REGMAP_SEAL_PERMANENT)) !=
+	    (REGMAP_SEAL_WRITE_PROTECT | REGMAP_SEAL_PERMANENT)) {
+		dev_warn(dev, "BSEC seal: unsupported flags 0x%x.\n", flags);
+		return -EINVAL;
+	}
+
+	dev_dbg(dev, "BSEC seal: Locking OTP word at byte offset 0x%x via SMC.\n",
+		reg);
+
+	return bsec_smc(BSEC_SMC_WRLOCK_OTP, reg, 0, NULL);
+}
+
 static struct regmap_bus stm32_bsec_regmap_bus = {
 	.reg_write = stm32_bsec_reg_write,
 	.reg_read = stm32_bsec_read_shadow,
+	.reg_seal = stm32_bsec_do_reg_seal_otp,
 };
 
 static void stm32_bsec_set_unique_machine_id(struct regmap *map)

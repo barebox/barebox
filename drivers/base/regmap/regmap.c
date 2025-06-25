@@ -81,6 +81,17 @@ static int _regmap_bus_reg_write(void *context, unsigned int reg,
 	return map->bus->reg_write(map->bus_context, reg, val);
 }
 
+static int _regmap_bus_reg_seal(void *context, unsigned int reg,
+				unsigned int flags)
+{
+	struct regmap *map = context;
+
+	if (!map->bus->reg_seal)
+		return -EOPNOTSUPP;
+
+	return map->bus->reg_seal(map->bus_context, reg, flags);
+}
+
 /*
  * regmap_init - initialize and register a regmap
  *
@@ -112,6 +123,8 @@ struct regmap *regmap_init(struct device *dev,
 	map->format.val_bytes = DIV_ROUND_UP(config->val_bits, 8);
 	map->reg_shift = config->pad_bits % 8;
 	map->max_register = config->max_register;
+
+	map->reg_seal = _regmap_bus_reg_seal;
 
 	if (!bus->read || !bus->write) {
 		map->reg_read = _regmap_bus_reg_read;
@@ -184,6 +197,23 @@ int regmap_write(struct regmap *map, unsigned int reg, unsigned int val)
 int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val)
 {
 	return map->reg_read(map, reg, val);
+}
+
+/**
+ * regmap_seal() - Seal a register in a map
+ *
+ * @map: Register map to seal
+ * @reg: Register to seal
+ * @flag: Flag to set in the register
+ *
+ * This function is used to seal a register, preventing further writes to it.
+ * The flag is typically used to indicate that the register is sealed.
+ *
+ * Returns zero for success, a negative number on error.
+ */
+int regmap_seal(struct regmap *map, unsigned int reg, unsigned int flags)
+{
+	return map->reg_seal(map, reg, flags);
 }
 
 /**

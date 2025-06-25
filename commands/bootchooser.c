@@ -48,8 +48,9 @@ static int do_bootchooser(int argc, char *argv[])
 	int info = 0;
 	bool done_something = false;
 	bool last_boot_successful = false;
+	int lock_state = -1;
 
-	while ((opt = getopt(argc, argv, "a:p:is")) > 0) {
+	while ((opt = getopt(argc, argv, "a:p:islL")) > 0) {
 		switch (opt) {
 		case 'a':
 			if (!strcmp(optarg, "default"))
@@ -68,6 +69,12 @@ static int do_bootchooser(int argc, char *argv[])
 			break;
 		case 's':
 			last_boot_successful = true;
+			break;
+		case 'l':
+			lock_state = true;
+			break;
+		case 'L':
+			lock_state = false;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -109,6 +116,11 @@ static int do_bootchooser(int argc, char *argv[])
 		done_something = true;
 	}
 
+	if (lock_state >= 0) {
+		bootchooser_lock_attempts(lock_state);
+		done_something = true;
+	}
+
 	if (!done_something) {
 		printf("Nothing to do\n");
 		ret = COMMAND_ERROR_USAGE;
@@ -126,6 +138,8 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-a <n|default> [TARGETS]",  "set remaining attempts of given targets to 'n' or the default attempts")
 BAREBOX_CMD_HELP_OPT ("-p <n|default> [TARGETS]",  "set priority of given targets to 'n' or the default priority")
 BAREBOX_CMD_HELP_OPT ("-i",  "Show information about the bootchooser")
+BAREBOX_CMD_HELP_OPT ("-l",  "Enable locking of remaining attempts")
+BAREBOX_CMD_HELP_OPT ("-L",  "Disable locking of remaining attempts")
 BAREBOX_CMD_HELP_OPT ("-s",  "Mark the last boot successful")
 BAREBOX_CMD_HELP_END
 

@@ -39,6 +39,8 @@ struct regmap {
 			unsigned int *val);
 	int (*reg_write)(void *context, unsigned int reg,
 			 unsigned int val);
+	int (*reg_seal)(void *context, unsigned int reg,
+			unsigned int flags);
 };
 
 struct regmap_field {

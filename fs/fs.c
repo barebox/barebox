@@ -914,7 +914,7 @@ const char *fs_detect(const char *filename, const char *fsoptions)
 		ret = file_name_detect_type_offset(filename, offset, &type,
 						   file_detect_fs_type);
 	} else {
-		struct cdev *cdev = cdev_open_by_name(filename, O_RDONLY);
+		struct cdev *cdev = cdev_open_by_path_name(filename, O_RDONLY);
 		if (cdev) {
 			ret = cdev_detect_type(cdev, &type);
 			cdev_close(cdev);
@@ -959,7 +959,7 @@ int fsdev_open_cdev(struct fs_device *fsdev)
 			}
 		}
 	} else {
-		fsdev->cdev = cdev_open_by_name(fsdev->backingstore, O_RDWR);
+		fsdev->cdev = cdev_open_by_path_name(fsdev->backingstore, O_RDWR);
 	}
 	if (!fsdev->cdev) {
 		path_put(&path);
@@ -3219,7 +3219,7 @@ int umount(const char *pathname)
 	path_put(&path);
 
 	if (!fsdev) {
-		struct cdev *cdev = cdev_open_by_name(pathname, O_RDWR);
+		struct cdev *cdev = cdev_open_by_path_name(pathname, O_RDWR);
 
 		if (cdev) {
 			cdev_close(cdev);

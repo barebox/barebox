@@ -8,6 +8,7 @@
 #define __PARTITIONS_PARSER_H__
 
 #include <block.h>
+#include <disks.h>
 #include <filetype.h>
 #include <linux/uuid.h>
 #include <linux/list.h>
@@ -70,5 +71,6 @@ int partition_remove(struct partition_desc *pdesc, int num);
 void partition_table_free(struct partition_desc *pdesc);
 bool partition_is_free(struct partition_desc *pdesc, uint64_t start, uint64_t size);
 int partition_find_free_space(struct partition_desc *pdesc, uint64_t sectors, uint64_t *start);
+uint64_t partition_first_usable_lba(void);
 
 #endif /* __PARTITIONS_PARSER_H__ */

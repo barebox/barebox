@@ -159,6 +159,7 @@ obj-$(CONFIG_CMD_UBSAN)		+= ubsan.o
 obj-$(CONFIG_CMD_SELFTEST)	+= selftest.o
 obj-$(CONFIG_CMD_FUZZ)		+= fuzz.o
 obj-$(CONFIG_CMD_TUTORIAL)	+= tutorial.o
+obj-$(CONFIG_CMD_CREATENV)	+= createnv.o
 obj-$(CONFIG_CMD_STACKSMASH)	+= stacksmash.o
 obj-$(CONFIG_CMD_PARTED)	+= parted.o
 obj-$(CONFIG_CMD_EFI_HANDLE_DUMP)	+= efi_handle_dump.o

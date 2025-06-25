@@ -3101,7 +3101,9 @@ int mci_register(struct mci_host *host)
 		devinfo_add(&mci->dev, mci_info);
 
 	/* if enabled, probe the attached card immediately */
-	if (IS_ENABLED(CONFIG_MCI_STARTUP))
+	if (IS_ENABLED(CONFIG_MCI_STARTUP) ||
+	   (IS_ENABLED(CONFIG_MCI_STARTUP_NONREMOVABLE) &&
+	    (host->host_caps & MMC_CAP_NONREMOVABLE)))
 		mci_card_probe(mci);
 
 	if (!(host->caps2 & MMC_CAP2_NO_SD) && dev_of_node(host->hw_dev)) {
@@ -3195,6 +3197,8 @@ void mci_of_parse_node(struct mci_host *host,
 		host->caps2 |= MMC_CAP2_NO_SD;
 	if (of_property_read_bool(np, "no-mmc"))
 		host->caps2 |= MMC_CAP2_NO_MMC;
+	if (of_property_read_bool(np, "non-removable"))
+                host->host_caps |= MMC_CAP_NONREMOVABLE;
 	if (IS_ENABLED(CONFIG_MCI_TUNING)) {
 		u32 drv_type;
 

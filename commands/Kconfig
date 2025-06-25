@@ -771,6 +771,24 @@ endmenu
 
 menu "Environment"
 
+config CMD_CREATENV
+	tristate
+	depends on PARTITION_DISK_EFI
+	select PARTITION_MANIPULATION
+	prompt "createnv"
+	help
+	  createnv - Create a barebox environment partition
+
+	  Usage: createnv [-sf] [device]
+
+	  Create a barebox environment partition.
+	  This creates a barebox environment partition and eventually
+	  a GPT partition table when it does not exist.
+
+	  Options:
+		-s <size>       specify partition size (default 1MiB)
+		-f      force. Do not ask
+
 config CMD_NV
 	depends on NVVAR
 	tristate

@@ -583,10 +583,13 @@ static __maybe_unused struct partition_desc *efi_partition_create_table(struct b
 {
 	struct efi_partition_desc *epd = xzalloc(sizeof(*epd));
 	gpt_header *gpt;
+	unsigned int num_partition_entries = 128;
+	unsigned int gpt_size = (sizeof(gpt_entry) * num_partition_entries) / SECTOR_SIZE;
+	unsigned int first_usable_lba = partition_first_usable_lba();
 
 	partition_desc_init(&epd->pd, blk);
 
-	epd->gpt = xzalloc(512);
+	epd->gpt = xzalloc(SECTOR_SIZE);
 	gpt = epd->gpt;
 
 	gpt->signature = cpu_to_le64(GPT_HEADER_SIGNATURE);
@@ -594,18 +597,18 @@ static __maybe_unused struct partition_desc *efi_partition_create_table(struct b
 	gpt->header_size = cpu_to_le32(sizeof(*gpt));
 	gpt->my_lba = cpu_to_le64(1);
 	gpt->alternate_lba = cpu_to_le64(last_lba(blk));
-	gpt->first_usable_lba = cpu_to_le64(34);
-	gpt->last_usable_lba = cpu_to_le64(last_lba(blk) - 34);;
+	gpt->first_usable_lba = cpu_to_le64(first_usable_lba);
+	gpt->last_usable_lba = cpu_to_le64(last_lba(blk) - (gpt_size + 2));;
 	generate_random_guid((unsigned char *)&gpt->disk_guid);
-	gpt->partition_entry_lba = cpu_to_le64(2);
-	gpt->num_partition_entries = cpu_to_le32(128);
+	gpt->partition_entry_lba = cpu_to_le64(first_usable_lba - gpt_size);
+	gpt->num_partition_entries = cpu_to_le32(num_partition_entries);
 	gpt->sizeof_partition_entry = cpu_to_le32(sizeof(gpt_entry));
 
 	add_gpt_diskuuid_param(epd, blk);
 
 	pr_info("Created new disk label with GUID %pU\n", &gpt->disk_guid);
 
-	epd->ptes = xzalloc(128 * sizeof(gpt_entry));
+	epd->ptes = xzalloc(num_partition_entries * sizeof(gpt_entry));
 
 	return &epd->pd;
 }
@@ -716,7 +719,11 @@ static int efi_protective_mbr(struct block_device *blk)
 		return PTR_ERR(pdesc);
 	}
 
-	ret = partition_create(pdesc, "primary", "0xee", 1, last_lba(blk));
+	/*
+	 * For the protective MBR call directly into the mkpart hook. partition_create()
+	 * does not allow us to create a partition starting at LBA1
+	 */
+	ret = pdesc->parser->mkpart(pdesc, "primary", "0xee", 1, last_lba(blk));
 	if (ret) {
 		pr_err("Cannot create partition: %pe\n", ERR_PTR(ret));
 		goto out;

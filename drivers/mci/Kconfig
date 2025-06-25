@@ -19,13 +19,30 @@ config MCI_TUNING
 	  higher clock speeds than 52 MHz SDR. MMC only; SD-Card max
 	  frequency is 50MHz SDR at present.
 
-config MCI_STARTUP
-	bool "Force probe on system start"
+choice
+	prompt "MMC detection on startup"
+
+config MCI_STARTUP_NONE
+	bool "do not detect cards during system start"
 	help
-	  Say 'y' here if the MCI framework should always probe for all attached
+	  Choose this if the MCI framework should never detect cards during system
+	  start
+
+config MCI_STARTUP_NONREMOVABLE
+	bool "detect non removable cards on system start"
+	help
+	  Choose this if the MCI framework should detect non removable cards (i.e.
+	  devices which have the non-removable device tree property).
+
+config MCI_STARTUP
+	bool "detect all cards on system start"
+	help
+	  Choose this if the MCI framework should always probe for all attached
 	  MCI cards on system start up. This may required for some legacy boards.
 	  When this is 'n', probing happens on demand either with "mci*.probe=1"
 	  or with driver/board code calling device_detect.
+
+endchoice
 
 config MCI_INFO
 	bool "MCI Info"

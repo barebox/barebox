@@ -18,6 +18,8 @@
 #include <partitions.h>
 #include <range.h>
 #include <fuzz.h>
+#include <globalvar.h>
+#include <magicvar.h>
 
 static LIST_HEAD(partition_parser_list);
 
@@ -202,6 +204,9 @@ int partition_find_free_space(struct partition_desc *pdesc, uint64_t sectors, ui
 	struct partition *p;
 	uint64_t min_sec = PARTITION_ALIGN_SECTORS;
 
+	if (min_sec < partition_first_usable_lba())
+		min_sec = partition_first_usable_lba();
+
 	min_sec = ALIGN(min_sec, PARTITION_ALIGN_SECTORS);
 
 	if (partition_is_free(pdesc, min_sec, sectors)) {
@@ -236,6 +241,12 @@ int partition_create(struct partition_desc *pdesc, const char *name,
 
 	if (lba_end >= pdesc->blk->num_blocks) {
 		pr_err("lba_end exceeds device: %llu >= %llu\n", lba_end, pdesc->blk->num_blocks);
+		return -EINVAL;
+	}
+
+	if (lba_start < partition_first_usable_lba()) {
+		pr_err("partition starts before first usable lba: %llu < %llu\n",
+		       lba_start, partition_first_usable_lba());
 		return -EINVAL;
 	}
 
@@ -411,3 +422,38 @@ loff_t cdev_unallocated_space(struct cdev *cdev)
 
 	return start;
 }
+
+static uint64_t first_usable_dma = SZ_8M / SECTOR_SIZE;
+
+uint64_t partition_first_usable_lba(void)
+{
+	return first_usable_dma;
+}
+
+static int set_first_usable_lba(struct param_d *p, void *priv)
+{
+	if (first_usable_dma < 1) {
+		pr_err("Minimum is 1\n");
+		return -EINVAL;
+	}
+
+	if (first_usable_dma % (SZ_1M / SECTOR_SIZE))
+		pr_warn("recommended to align to 1MiB\n");
+
+	return 0;
+}
+
+static int partitions_init(void)
+{
+	struct param_d *p = NULL;
+
+	if (IS_ENABLED(CONFIG_GLOBALVAR))
+		p = dev_add_param_uint64(&global_device, "partitions.first_usable_lba",
+					 set_first_usable_lba, NULL,
+					 &first_usable_dma, "%llu", NULL);
+
+	return PTR_ERR_OR_ZERO(p);
+}
+core_initcall(partitions_init);
+
+BAREBOX_MAGICVAR(global.partitions.first_usable_lba, "first usable LBA used for creating partitions");

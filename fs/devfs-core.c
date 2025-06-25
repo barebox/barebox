@@ -271,13 +271,28 @@ struct cdev *cdev_open_by_name(const char *name, unsigned long flags)
 	struct cdev *cdev;
 	int ret;
 
-	cdev = cdev_by_name(devpath_to_name(name));
+	cdev = cdev_by_name(name);
 	if (!cdev)
 		return NULL;
 
 	ret = cdev_open(cdev, flags);
 	if (ret)
 		return NULL;
+
+	return cdev;
+}
+
+struct cdev *cdev_open_by_path_name(const char *name, unsigned long flags)
+{
+	char *canon = canonicalize_path(AT_FDCWD, name);
+	struct cdev *cdev;
+
+	if (!canon)
+		return cdev_open_by_name(name, flags);
+
+	cdev = cdev_open_by_name(devpath_to_name(canon), flags);
+
+	free(canon);
 
 	return cdev;
 }

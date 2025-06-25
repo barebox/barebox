@@ -1,5 +1,5 @@
-Appendix: System Setup
-======================
+Appendix: Development Host Setup
+================================
 
 Serial Console Access
 ---------------------

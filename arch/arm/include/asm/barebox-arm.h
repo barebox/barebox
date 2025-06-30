@@ -52,6 +52,14 @@ static inline void arm_fixup_vectors(void)
 }
 #endif
 
+#if IS_ENABLED(CONFIG_ARM_EXCEPTIONS_PBL)
+void arm_pbl_init_exceptions(void);
+#else
+static inline void arm_pbl_init_exceptions(void)
+{
+}
+#endif
+
 void *barebox_arm_boot_dtb(void);
 
 /*

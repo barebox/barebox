@@ -2,7 +2,8 @@
 #ifndef __ABORT_H
 #define __ABORT_H
 
-#if defined CONFIG_ARCH_HAS_DATA_ABORT_MASK && IN_PROPER
+#if (defined CONFIG_ARCH_HAS_DATA_ABORT_MASK && IN_PROPER) || \
+    (defined CONFIG_ARCH_HAS_DATA_ABORT_MASK_PBL && IN_PBL)
 
 /*
  * data_abort_mask - ignore data aborts

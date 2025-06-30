@@ -68,6 +68,9 @@ config ARCH_HAS_STACK_DUMP
 config ARCH_HAS_DATA_ABORT_MASK
 	bool
 
+config ARCH_HAS_DATA_ABORT_MASK_PBL
+	bool
+
 config ARCH_HAS_ZERO_PAGE
 	bool
 

@@ -50,6 +50,7 @@ config ARCH_IMX_TZASC
 	bool
 	depends on ARCH_IMX6 || ARCH_IMX8M
 	default y if PBL_OPTEE
+	select ARM_EXCEPTIONS_PBL
 
 #
 # PMIC configuration found on i.MX51 Babbadge board

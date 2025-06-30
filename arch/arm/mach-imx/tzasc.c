@@ -13,6 +13,8 @@
 #include <linux/sizes.h>
 #include <mach/imx/imx8m-regs.h>
 #include <io.h>
+#include <abort.h>
+#include <asm/barebox-arm.h>
 
 /*******************************************************************************
  *                         TZC380 defines
@@ -327,6 +329,17 @@ bool imx6ul_tzc380_is_bypassed(void)
 	 * once set until the next power-up cycle.
 	 */
 	return !(readl(&gpr[9]) & MX6_GPR_TZASC1_EN);
+}
+
+bool imx6_can_access_tzasc(void)
+{
+	arm_pbl_init_exceptions();
+
+	data_abort_mask();
+
+	readl(IOMEM(MX6_TZASC1_BASE));
+
+	return !data_abort_unmask();
 }
 
 void imx8m_tzc380_init(void)

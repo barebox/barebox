@@ -3,8 +3,10 @@
 #define pr_fmt(fmt) "tzc380: " fmt
 
 #include <common.h>
+#include <mach/imx/esdctl.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/tzasc.h>
+#include <mach/imx/imx6-regs.h>
 #include <linux/bitfield.h>
 #include <linux/bitops.h>
 #include <linux/log2.h>
@@ -70,6 +72,9 @@
 /*******************************************************************************
  *                         SoC specific defines
  ******************************************************************************/
+
+#define MX6_TZASC1_BASE			0x21d0000
+#define MX6_TZASC2_BASE			0x21d4000
 
 #define GPR_TZASC_EN					BIT(0)
 #define GPR_TZASC_ID_SWAP_BYPASS		BIT(1)
@@ -249,6 +254,54 @@ tzc380_auto_configure(struct tzc380_instance *tzc380, unsigned int region,
 /******************************************************************************
  *                          SoC specific helpers
  ******************************************************************************/
+
+static void imx_tzc380_init_and_setup(void __iomem *base, unsigned int region,
+				      resource_size_t region_base,
+				      resource_size_t region_size,
+				      unsigned int region_attr)
+{
+	struct tzc380_instance *tzasc = tzc380_init(base);
+
+	tzc380_auto_configure(tzasc, region, region_base, region_size,
+			      region_attr);
+}
+
+/*
+ * imx6q_tzc380_early_ns_region1 - configure the whole DRAM as non-secure
+ *                                 region1
+ *
+ * Passing data between TEE and barebox need to follow some requirements:
+ *  - the location can be accessed by the normal and secure world
+ *  - the mapping in the normal and secure world must be the same to avoid
+ *    manual cache maintenance.
+ *
+ * Therefore this function reads the DRAM size out of the MMDC controller and
+ * configures the whole size as non-secure TZC380 region1. This allows the
+ * early TEE code to map the location as non-secure to while writing the data
+ * e.g. device-tee-overlays. Later on the TEE may reconfigure and lock the
+ * TZC380 regions. The reconfiguration needs to ensure that the exchange data
+ * location is still accessible by the normal world.
+ */
+void imx6q_tzc380_early_ns_region1(void)
+{
+	resource_size_t ram_sz = imx6_get_mmdc_sdram_size();
+
+	imx_tzc380_init_and_setup(IOMEM(MX6_TZASC1_BASE), 1,
+				  MX6_MMDC_PORT01_BASE_ADDR, ram_sz,
+				  TZC380_REGION_SP_NS_RW);
+	imx_tzc380_init_and_setup(IOMEM(MX6_TZASC2_BASE), 1,
+				  MX6_MMDC_PORT01_BASE_ADDR, ram_sz,
+				  TZC380_REGION_SP_NS_RW);
+}
+
+void imx6ul_tzc380_early_ns_region1(void)
+{
+	resource_size_t ram_sz = imx6_get_mmdc_sdram_size();
+
+	imx_tzc380_init_and_setup(IOMEM(MX6_TZASC1_BASE), 1,
+				  MX6_MMDC_PORT0_BASE_ADDR, ram_sz,
+				  TZC380_REGION_SP_NS_RW);
+}
 
 void imx8m_tzc380_init(void)
 {

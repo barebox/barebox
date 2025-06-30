@@ -76,6 +76,9 @@
 #define MX6_TZASC1_BASE			0x21d0000
 #define MX6_TZASC2_BASE			0x21d4000
 
+#define MX6_GPR_TZASC1_EN		BIT(0)
+#define MX6_GPR_TZASC2_EN		BIT(1)
+
 #define GPR_TZASC_EN					BIT(0)
 #define GPR_TZASC_ID_SWAP_BYPASS		BIT(1)
 #define GPR_TZASC_EN_LOCK				BIT(16)
@@ -301,6 +304,29 @@ void imx6ul_tzc380_early_ns_region1(void)
 	imx_tzc380_init_and_setup(IOMEM(MX6_TZASC1_BASE), 1,
 				  MX6_MMDC_PORT0_BASE_ADDR, ram_sz,
 				  TZC380_REGION_SP_NS_RW);
+}
+
+bool imx6q_tzc380_is_bypassed(void)
+{
+	u32 __iomem *gpr = IOMEM(MX6_IOMUXC_BASE_ADDR);
+
+	/*
+	 * MX6_GPR_TZASC1_EN and MX6_GPR_TZASC2_EN are sticky bits which
+	 * preserve their values once set until the next power-up cycle.
+	 */
+	return (readl(&gpr[9]) & (MX6_GPR_TZASC1_EN | MX6_GPR_TZASC2_EN)) !=
+	       (MX6_GPR_TZASC1_EN | MX6_GPR_TZASC2_EN);
+}
+
+bool imx6ul_tzc380_is_bypassed(void)
+{
+	u32 __iomem *gpr = IOMEM(MX6_IOMUXC_BASE_ADDR + 0x4000);
+
+	/*
+	 * MX6_GPR_TZASC1_EN is a sticky bit which preserves its value
+	 * once set until the next power-up cycle.
+	 */
+	return !(readl(&gpr[9]) & MX6_GPR_TZASC1_EN);
 }
 
 void imx8m_tzc380_init(void)

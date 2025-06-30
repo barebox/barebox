@@ -92,12 +92,9 @@ static void noinline start_mba6ulx(void)
 	imx6ul_barebox_entry(fdt);
 }
 
-ENTRY_FUNCTION(start_imx6ul_mba6ulx, r0, r1, r2)
+ENTRY_FUNCTION_WITHSTACK(start_imx6ul_mba6ulx, 0x00910000, r0, r1, r2)
 {
-
 	imx6ul_cpu_lowlevel_init();
-
-	arm_setup_stack(0x00910000);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		imx6_uart_setup_ll();

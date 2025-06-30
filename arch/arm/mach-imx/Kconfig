@@ -46,6 +46,11 @@ config ARCH_IMX_SCRATCHMEM
 	def_bool y
 	depends on ARCH_IMX8M || ARCH_IMX9
 
+config ARCH_IMX_TZASC
+	bool
+	depends on ARCH_IMX8M
+	default y if PBL_OPTEE
+
 #
 # PMIC configuration found on i.MX51 Babbadge board
 #

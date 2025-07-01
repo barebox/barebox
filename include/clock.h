@@ -6,6 +6,12 @@
 #include <linux/time.h>
 #include <linux/bitops.h>
 
+#define SECOND (1000ULL * 1000 * 1000)
+#define MSECOND (1000ULL * 1000)
+#define USECOND (1000ULL)
+
+#define HZ	SECOND
+
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
 struct clocksource {
@@ -50,12 +56,6 @@ static inline void clocksource_srand(void)
 {
 }
 #endif
-
-#define SECOND ((uint64_t)(1000 * 1000 * 1000))
-#define MSECOND ((uint64_t)(1000 * 1000))
-#define USECOND ((uint64_t)(1000))
-
-#define HZ	SECOND
 
 extern uint64_t time_beginning;
 

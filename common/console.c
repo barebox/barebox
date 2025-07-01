@@ -648,12 +648,9 @@ void ctrlc_handled(void)
 	ctrlc_abort = 0;
 }
 
-/* test if ctrl-c was pressed */
-int ctrlc(void)
+int ctrlc_non_interruptible(void)
 {
 	int ret = 0;
-
-	resched();
 
 	if (!ctrlc_allowed)
 		return 0;
@@ -672,6 +669,14 @@ int ctrlc(void)
 		ctrlc_abort = 1;
 
 	return ret;
+}
+EXPORT_SYMBOL(ctrlc_non_interruptible);
+
+/* test if ctrl-c was pressed */
+int ctrlc(void)
+{
+	resched();
+	return ctrlc_non_interruptible();
 }
 EXPORT_SYMBOL(ctrlc);
 

@@ -59,6 +59,7 @@ void console_flush(void);
 int vprintf(const char *fmt, va_list args);
 
 int ctrlc(void);
+int ctrlc_non_interruptible(void);
 void ctrlc_handled(void);
 #else
 static inline int tstc(void)
@@ -87,6 +88,11 @@ static inline int vprintf(const char *fmt, va_list args)
 
 /* test if ctrl-c was pressed */
 static inline int ctrlc (void)
+{
+	return 0;
+}
+
+static inline int ctrlc_non_interruptible(void)
 {
 	return 0;
 }

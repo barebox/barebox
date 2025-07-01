@@ -1418,6 +1418,8 @@ config PBL_OPTEE
 	  The trampoline for jumping back from OP-TEE to barebox does currently
 	  not handle THUMB2, so barebox must be built either for A32 or A64.
 
+endmenu
+
 config FILETYPE_STRINGS
 	bool "Print file types as strings"
 	default y
@@ -1425,8 +1427,6 @@ config FILETYPE_STRINGS
 	help
 	  Say yes here to include strings for filetypes in barebox. If disabled file
 	  types will be printed as numbers only.
-
-endmenu
 
 if FASTBOOT_BASE
 

@@ -14,7 +14,7 @@ void __noreturn hang (void);
 
 /*
  * Function pointer to the main barebox function. Defaults
- * to run_shell() when a shell is enabled.
+ * to run_init() when shell and command support are enabled.
  */
 extern int (*barebox_main)(void);
 

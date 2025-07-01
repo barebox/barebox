@@ -462,6 +462,9 @@ static int do_bootz_linux(struct image_data *data)
 	unsigned long mem_free;
 	void *fdt = NULL;
 
+	if (data->os_fit)
+		return do_bootm_linux(data);
+
 	fd = open(data->os_file, O_RDONLY);
 	if (fd < 0) {
 		perror("open");

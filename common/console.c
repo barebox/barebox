@@ -548,8 +548,8 @@ int getchar(void)
 			start = get_time_ns();
 		}
 
-		if (is_timeout(start, 100 * USECOND) &&
-				kfifo_len(console_input_fifo))
+		if (is_timeout_interruptible(start, 100 * USECOND) &&
+		    kfifo_len(console_input_fifo))
 			break;
 	}
 

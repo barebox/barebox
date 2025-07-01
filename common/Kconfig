@@ -1457,7 +1457,6 @@ endif
 endmenu
 
 source "common/Kconfig.debug"
-source "common/boards/Kconfig"
 
 config DDR_SPD
 	bool

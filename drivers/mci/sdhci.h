@@ -372,12 +372,10 @@ void sdhci_set_bus_width(struct sdhci *host, int width);
  * sdhci_compute_timeout() - compute suitable timeout for operation
  * @cmd: MCI command being sent, can be NULL
  * @data: MCI data being sent, can be NULL
- * @default_timeout: fallback value
  *
  * Return: the number of nanoseconds to wait.
  */
-static inline ktime_t sdhci_compute_timeout(struct mci_cmd *cmd, struct mci_data *data,
-					    ktime_t default_timeout)
+static inline ktime_t sdhci_compute_timeout(struct mci_cmd *cmd, struct mci_data *data)
 {
 	if (data && data->timeout_ns != 0)
 		return data->timeout_ns;

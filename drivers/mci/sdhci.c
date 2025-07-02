@@ -856,14 +856,12 @@ int sdhci_wait_idle_data(struct sdhci *host, struct mci_cmd *cmd)
 	int ret;
 
 	mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
-	timeout_ns = SDHCI_CMD_DEFAULT_BUSY_TIMEOUT_NS;
 
 	if (cmd && (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION ||
 		    mmc_op_tuning(cmd->cmdidx)))
 		mask &= ~SDHCI_CMD_INHIBIT_DATA;
 
-	if (cmd && cmd->busy_timeout != 0)
-		timeout_ns = ms_to_ktime(cmd->busy_timeout);
+	timeout_ns = sdhci_compute_timeout(cmd, NULL);
 
 	ret = wait_on_timeout(timeout_ns,
 			!(sdhci_read32(host, SDHCI_PRESENT_STATE) & mask));

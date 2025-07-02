@@ -22,3 +22,6 @@ Configuration options
   It's recommended that all boards switch to deep probe.
   If deep probe breaks your platform, please report to the mailing list
   and set ``barebox,disable-deep-probe`` in your device tree.
+
+* The hardcoded i.MX6ULL 14x14 EVK partition layout for barebox and its
+  environment on USDHC2 has changed. The split moved from 768/256 to 896/128 KiB.

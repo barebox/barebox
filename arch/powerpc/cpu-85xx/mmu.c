@@ -47,7 +47,7 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsign
 			break;
 		e500_read_tlbcam_entry(esel, &valid, &tsize, &epn,
 				&rpn);
-		if (flags & MAS2_I) {
+		if (pte_flags & MAS2_I) {
 			flush_dcache();
 			invalidate_icache();
 		}

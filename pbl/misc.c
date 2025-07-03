@@ -20,3 +20,6 @@ void __noreturn panic(const char *fmt, ...)
 	va_end(args);
 	while(1);
 }
+
+void __noreturn panic_no_stacktrace(const char *fmt, ...)
+	__alias(panic);

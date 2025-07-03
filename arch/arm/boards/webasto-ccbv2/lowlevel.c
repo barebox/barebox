@@ -13,6 +13,7 @@
 #include <mach/imx/iomux-mx6ul.h>
 #include <asm/cache.h>
 #include <tee/optee.h>
+#include <mach/imx/tzasc.h>
 
 #include "ccbv2.h"
 
@@ -31,28 +32,21 @@ static void configure_uart(void)
 
 }
 
-static void noinline start_ccbv2(u32 r0, unsigned long mem_size, char *fdt)
+static void noinline start_ccbv2(unsigned long mem_size, char *fdt)
 {
 	int tee_size;
 	void *tee;
 
-	/* Enable normal/secure r/w for TZC380 region0 */
-	writel(0xf0000000, 0x021D0108);
-
 	configure_uart();
 
 	/*
-	 * Chainloading barebox will pass a device tree within the RAM in r0,
-	 * skip OP-TEE early loading in this case
+	 * Skip loading barebox when we are chainloaded. We can detect that by detecting
+	 * if we can access the TZASC.
 	 */
-	if(IS_ENABLED(CONFIG_FIRMWARE_CCBV2_OPTEE)
-	   && !(r0 > MX6_MMDC_P0_BASE_ADDR
-	        &&  r0 < MX6_MMDC_P0_BASE_ADDR + mem_size)) {
+	if (IS_ENABLED(CONFIG_FIRMWARE_TQMA6UL_OPTEE) && imx6_can_access_tzasc()) {
 		get_builtin_firmware(ccbv2_optee_bin, &tee, &tee_size);
 
-		memset((void *)OPTEE_OVERLAY_LOCATION, 0, 0x1000);
-
-		start_optee_early(NULL, tee);
+		imx6ul_start_optee_early(NULL, tee, (void *)OPTEE_OVERLAY_LOCATION, 0x1000);
 	}
 
 	imx6ul_barebox_entry(fdt);
@@ -70,7 +64,7 @@ ENTRY_FUNCTION(start_imx6ul_ccbv2_256m, r0, r1, r2)
 	setup_c();
 	barrier();
 
-	start_ccbv2(r0, SZ_256M, __dtb_z_imx6ul_webasto_ccbv2_start);
+	start_ccbv2(SZ_256M, __dtb_z_imx6ul_webasto_ccbv2_start);
 }
 
 ENTRY_FUNCTION(start_imx6ul_ccbv2_512m, r0, r1, r2)
@@ -83,7 +77,7 @@ ENTRY_FUNCTION(start_imx6ul_ccbv2_512m, r0, r1, r2)
 	setup_c();
 	barrier();
 
-	start_ccbv2(r0, SZ_512M, __dtb_z_imx6ul_webasto_ccbv2_start);
+	start_ccbv2(SZ_512M, __dtb_z_imx6ul_webasto_ccbv2_start);
 }
 
 extern char __dtb_z_imx6ul_webasto_marvel_start[];
@@ -97,5 +91,5 @@ ENTRY_FUNCTION(start_imx6ul_marvel, r0, r1, r2)
 	setup_c();
 	barrier();
 
-	start_ccbv2(r0, SZ_512M, __dtb_z_imx6ul_webasto_marvel_start);
+	start_ccbv2(SZ_512M, __dtb_z_imx6ul_webasto_marvel_start);
 }

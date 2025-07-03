@@ -12,6 +12,8 @@
 #include <linux/bug.h>
 #include <debug_ll.h>
 #include <string.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/tzasc.h>
 
 static jmp_buf tee_buf;
 
@@ -40,4 +42,44 @@ int start_optee_early(void *fdt, void *tee)
 	}
 
 	return 0;
+}
+
+int imx6q_start_optee_early(void *fdt, void *tee, void *data_location,
+			    unsigned int data_location_size)
+{
+	if (imx6q_tzc380_is_bypassed())
+		panic("TZC380 is bypassed, abort OP-TEE loading\n");
+
+	/* Add early non-secure TZASC region1 to pass DTO */
+	imx6q_tzc380_early_ns_region1();
+
+	/*
+	 * Set the OP-TEE <-> barebox exchange data location to zero.
+	 * This is optional since recent OP-TEE versions perform the
+	 * memset too.
+	 */
+	if (data_location)
+		memset(data_location, 0, data_location_size);
+
+	return start_optee_early(fdt, tee);
+}
+
+int imx6ul_start_optee_early(void *fdt, void *tee, void *data_location,
+			     unsigned int data_location_size)
+{
+	if (imx6ul_tzc380_is_bypassed())
+		panic("TZC380 is bypassed, abort OP-TEE loading\n");
+
+	/* Add early non-secure TZASC region1 to pass DTO */
+	imx6ul_tzc380_early_ns_region1();
+
+	/*
+	 * Set the OP-TEE <-> barebox exchange data location to zero.
+	 * This is optional since recent OP-TEE versions perform the
+	 * memset too.
+	 */
+	if (data_location)
+		memset(data_location, 0, data_location_size);
+
+	return start_optee_early(fdt, tee);
 }

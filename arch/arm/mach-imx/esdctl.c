@@ -286,6 +286,11 @@ static inline resource_size_t imx6_mmdc_sdram_size(void __iomem *mmdcbase)
 	return size;
 }
 
+resource_size_t imx6_get_mmdc_sdram_size(void)
+{
+	return imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR));
+}
+
 static int imx6_mmdc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
 	return arm_add_mem_device("ram0", data->base0,

@@ -54,6 +54,10 @@ static inline int optee_get_membase(u64 *membase)
 #ifdef __PBL__
 
 int start_optee_early(void* fdt, void* tee);
+int imx6q_start_optee_early(void *fdt, void *tee, void *data_location,
+			    unsigned int data_location_size);
+int imx6ul_start_optee_early(void *fdt, void *tee, void *data_location,
+			     unsigned int data_location_size);
 
 #endif /* __PBL__ */
 

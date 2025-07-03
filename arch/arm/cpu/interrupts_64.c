@@ -88,7 +88,8 @@ static void __noreturn do_exception(struct pt_regs *pt_regs)
 {
 	show_regs(pt_regs);
 
-	unwind_backtrace(pt_regs);
+	if (IN_PROPER)
+		unwind_backtrace(pt_regs);
 
 	panic_no_stacktrace("panic: unhandled exception");
 }
@@ -226,3 +227,10 @@ static int aarch64_init_vectors(void)
 	return 0;
 }
 core_initcall(aarch64_init_vectors);
+
+#if IS_ENABLED(CONFIG_ARM_EXCEPTIONS_PBL)
+void arm_pbl_init_exceptions(void)
+{
+	aarch64_init_vectors();
+}
+#endif

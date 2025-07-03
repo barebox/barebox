@@ -19,14 +19,22 @@ During the PBL
 ^^^^^^^^^^^^^^
 
 To start OP-TEE during the lowlevel initialization of your board in the ``PBL``,
-enable the ``CONFIG_PBL_OPTEE`` configuration variable. your board should then
+enable the ``CONFIG_PBL_OPTEE`` configuration variable. Your board should then
 call the function ``start_optee_early(void* tee, void* fdt)`` with a valid tee
-and FDT. Ensure that your OP-TEE is compiled with ``CFG_NS_ENTRY_ADDR`` unset,
-otherwise OP-TEE will not correctly return to barebox after startup.
-Since OP-TEE in the default configuration also modifies the device tree, don't
-pass the barebox internal device tree, instead copy it into a different memory
-location and pass it to OP-TEE afterwards.
-The modified device tree can then be passed to the main barebox start function.
+and FDT. If you're running on an i.MX6 platform your board code should call
+``imx6q_start_optee_early()`` or ``imx6ul_start_optee_early()`` instead since it
+validates that the TZASC not bypassed and is configured as expected by OP-TEE.
+
+Ensure that your OP-TEE is compiled with ``CFG_NS_ENTRY_ADDR`` unset, otherwise
+OP-TEE will not correctly return to barebox after startup. Since OP-TEE in the
+default configuration also modifies the device tree, don't pass the barebox
+internal device tree, instead copy it into a different memory location and pass
+it to OP-TEE afterwards. The modified device tree can then be passed to the
+main barebox start function.
+
+.. note:: Modification of the device tree usually makes it bigger.
+  Some spare space must be left after the end of the device tree to
+  accommodate this.
 
 Before Linux start
 ^^^^^^^^^^^^^^^^^^

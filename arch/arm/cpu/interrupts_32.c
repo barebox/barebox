@@ -12,6 +12,7 @@
 #include <asm/ptrace.h>
 #include <asm/barebox-arm.h>
 #include <asm/unwind.h>
+#include <asm/system_info.h>
 #include <init.h>
 
 /* Avoid missing prototype warning, called from assembly */
@@ -61,7 +62,7 @@ void show_regs (struct pt_regs *regs)
 		fast_interrupts_enabled (regs) ? "on" : "off",
 		processor_modes[processor_mode (regs)],
 		thumb_mode (regs) ? " (T)" : "");
-#ifdef CONFIG_ARM_UNWIND
+#if defined CONFIG_ARM_UNWIND && IN_PROPER
 	unwind_backtrace(regs);
 #endif
 }
@@ -181,3 +182,14 @@ int data_abort_unmask(void)
 
 	return arm_data_abort_occurred != 0;
 }
+
+#if IS_ENABLED(CONFIG_ARM_EXCEPTIONS_PBL)
+void arm_pbl_init_exceptions(void)
+{
+	if (cpu_architecture() < CPU_ARCH_ARMv7)
+		return;
+
+	set_vbar((unsigned long)__exceptions_start);
+	arm_fixup_vectors();
+}
+#endif

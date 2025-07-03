@@ -13,7 +13,7 @@ Configuration options
   that went unnoticed before. If this is suspected, ``CONFIG_KASAN`` should
   help in debugging them on ARM.
 
-  Board support
+Board support
 -------------
 
 * barebox now warns at runtime about boards that disable the option

@@ -28,7 +28,7 @@
 #define DEFAULT_GPIO_RESET_ASSERT       1000      /* us */
 #define DEFAULT_GPIO_RESET_DEASSERT     1000      /* us */
 
-LIST_HEAD(mii_bus_list);
+DEFINE_DEV_CLASS(mii_class, "mii");
 
 static struct phy_device *mdio_device_create(struct mii_bus *bus, int addr)
 {
@@ -312,7 +312,7 @@ int mdiobus_register(struct mii_bus *bus)
 	if (bus->reset)
 		bus->reset(bus);
 
-	list_add_tail(&bus->list, &mii_bus_list);
+	class_add_device(&mii_class, &bus->dev);
 
 	pr_info("%s: probed\n", dev_name(&bus->dev));
 
@@ -342,7 +342,7 @@ void mdiobus_unregister(struct mii_bus *bus)
 
 	slice_exit(&bus->slice);
 
-	list_del(&bus->list);
+	list_del_init(&bus->dev.class_list);
 }
 EXPORT_SYMBOL(mdiobus_unregister);
 

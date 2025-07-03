@@ -30,17 +30,20 @@ static int efi_locate_handle(enum efi_locate_search_type search_type,
 				   buffer);
 }
 
+static int efi_device_match_handle(struct device *dev, const void *handle)
+{
+	struct efi_device *efidev = container_of(dev, struct efi_device, dev);
+	return efidev->handle == handle;
+}
+
 static struct efi_device *efi_find_device(efi_handle_t handle)
 {
 	struct device *dev;
-	struct efi_device *efidev;
 
-	bus_for_each_device(&efi_bus, dev) {
-		efidev = container_of(dev, struct efi_device, dev);
-
-		if (efidev->handle == handle)
-			return efidev;
-	}
+	dev = bus_find_device(&efi_bus, NULL, efi_device_match_handle,
+			      efi_device_match_handle);
+	if (dev)
+		return container_of(dev, struct efi_device, dev);
 
 	return NULL;
 }
@@ -418,17 +421,17 @@ static int efi_init_devices(void)
 
 	bus_register(&efi_bus);
 
-	dev_add_param_fixed(efi_bus.dev, "fw_vendor", fw_vendor);
+	dev_add_param_fixed(&efi_bus.dev, "fw_vendor", fw_vendor);
 	free(fw_vendor);
 
-	dev_add_param_uint32_fixed(efi_bus.dev, "major", sys_major, "%u");
-	dev_add_param_uint32_fixed(efi_bus.dev, "minor", sys_minor, "%u");
-	dev_add_param_uint32_fixed(efi_bus.dev, "fw_revision", efi_sys_table->fw_revision, "%u");
-	dev_add_param_bool_fixed(efi_bus.dev, "secure_boot", secure_boot);
-	dev_add_param_bool_fixed(efi_bus.dev, "secure_mode",
+	dev_add_param_uint32_fixed(&efi_bus.dev, "major", sys_major, "%u");
+	dev_add_param_uint32_fixed(&efi_bus.dev, "minor", sys_minor, "%u");
+	dev_add_param_uint32_fixed(&efi_bus.dev, "fw_revision", efi_sys_table->fw_revision, "%u");
+	dev_add_param_bool_fixed(&efi_bus.dev, "secure_boot", secure_boot);
+	dev_add_param_bool_fixed(&efi_bus.dev, "secure_mode",
 				 secure_boot & setup_mode);
 
-	devinfo_add(efi_bus.dev, efi_businfo);
+	devinfo_add(&efi_bus.dev, efi_businfo);
 
 	efi_register_devices();
 

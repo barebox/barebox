@@ -143,7 +143,7 @@ int amba_device_add(struct amba_device *dev)
 		cid = amba_device_get_cid(tmp, size);
 
 		if (IS_ENABLED(CONFIG_ARM_AMBA_DABT_MASK) && data_abort_unmask()) {
-			dev_err(amba_bustype.dev,
+			dev_err(&amba_bustype.dev,
 				"data abort during MMIO read of PID/CID for %pOF\n",
 				dev->dev.of_node);
 			ret = -EFAULT;

@@ -53,13 +53,15 @@ struct vpl *of_vpl_get(struct device_node *node, int port)
 	return of_find_vpl(node);
 }
 
-int vpl_ioctl(struct vpl *vpl, unsigned int port,
-		unsigned int cmd, void *ptr)
+static int vpl_foreach_endpoint(struct vpl *vpl, unsigned int port, int endpoint_id,
+				int (*fn)(struct vpl *, unsigned port, void *data),
+				void *data)
 {
 	struct device_node *node, *endpoint;
 	int ret;
 
-	pr_debug("%s: %pOF port %d\n", __func__, vpl->node, port);
+	pr_debug("%s: %pOF port %d endpoint %d\n", __func__, vpl->node,
+		 port, endpoint_id);
 
 	node = of_graph_get_port_by_id(vpl->node, port);
 	if (!node) {
@@ -70,7 +72,17 @@ int vpl_ioctl(struct vpl *vpl, unsigned int port,
 	for_each_child_of_node(node, endpoint) {
 		struct device_node *remote, *remote_parent;
 		struct vpl *remote_vpl;
-		u32 remote_port_id;
+		u32 remote_port_id = 0;
+
+		if (endpoint_id >= 0) {
+			u32 local_endpoint_id = 0;
+			of_property_read_u32(endpoint, "reg", &local_endpoint_id);
+			if (local_endpoint_id != endpoint_id) {
+				pr_debug("%s: skipping endpoint %pOF with id %d\n",
+					 __func__, endpoint, local_endpoint_id);
+				continue;
+			}
+		}
 
 		remote = of_graph_get_remote_port(endpoint);
 		if (!remote) {
@@ -96,10 +108,79 @@ int vpl_ioctl(struct vpl *vpl, unsigned int port,
 		}
 
 		pr_debug("%s: looked up %pOF: %pS\n", __func__, remote, remote_vpl->ioctl);
-		ret = remote_vpl->ioctl(remote_vpl, remote_port_id, cmd, ptr);
+		ret = fn(remote_vpl, remote_port_id, data);
 		if (ret)
 			return ret;
 	}
 
 	return 0;
+}
+
+struct vpl_ioctl {
+	int err;
+	unsigned cmd;
+	void *ptr;
+};
+
+static int vpl_remote_ioctl(struct vpl *vpl, unsigned port, void *_data)
+{
+	struct vpl_ioctl *data = _data;
+
+	if (!vpl->ioctl) {
+		data->err = -EOPNOTSUPP;
+		return 0;
+	}
+
+	return vpl->ioctl(vpl, port, data->cmd, data->ptr);
+}
+
+int vpl_ioctl(struct vpl *vpl, unsigned int port,
+		unsigned int cmd, void *ptr)
+{
+	struct vpl_ioctl data = { .cmd = cmd, .ptr = ptr };
+
+	return vpl_foreach_endpoint(vpl, port, -1, vpl_remote_ioctl, &data) ?: data.err;
+}
+
+static int vpl_alloc_bridge(struct vpl *vpl, unsigned port, void *_bridge)
+{
+	struct vpl_bridge **bridge = _bridge;
+
+	(*bridge) = malloc(sizeof(**bridge));
+	(*bridge)->vpl = vpl;
+	(*bridge)->port = port;
+
+	return 1;
+}
+
+struct vpl_bridge *devm_vpl_of_get_bridge(struct device *dev, struct device_node *np,
+					  unsigned int port, unsigned int endpoint)
+{
+	struct vpl_bridge *bridge = NULL;
+	struct vpl *vpl;
+	int ret;
+
+	vpl = of_find_vpl(np);
+	if (!vpl)
+		return ERR_PTR(-EPROBE_DEFER);
+
+	ret = vpl_foreach_endpoint(vpl, port, endpoint, vpl_alloc_bridge, &bridge);
+	if (ret < 0)
+		return ERR_PTR(ret);
+
+	return bridge ?: ERR_PTR(-EINVAL);
+}
+
+int vpl_bridge_ioctl(struct vpl_bridge *bridge, unsigned int cmd, void *ptr)
+{
+	struct vpl *vpl;
+
+	if (IS_ERR_OR_NULL(bridge))
+		return PTR_ERR_OR_ZERO(bridge);
+
+	vpl = bridge->vpl;
+	if (!vpl->ioctl)
+		return -EOPNOTSUPP;
+
+	return vpl->ioctl(vpl, bridge->port, cmd, ptr);
 }

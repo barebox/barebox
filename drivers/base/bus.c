@@ -8,8 +8,7 @@
 #include <errno.h>
 #include <of.h>
 
-LIST_HEAD(bus_list);
-EXPORT_SYMBOL(bus_list);
+DEFINE_DEV_CLASS(bus_class, "bus");
 
 static struct bus_type *get_bus_by_name(const char *name)
 {
@@ -30,11 +29,10 @@ int bus_register(struct bus_type *bus)
 	if (get_bus_by_name(bus->name))
 		return -EEXIST;
 
-	bus->dev = xzalloc(sizeof(*bus->dev));
-	dev_set_name(bus->dev, "%s", bus->name);
-	bus->dev->id = DEVICE_ID_SINGLE;
+	dev_set_name(&bus->dev, "%s", bus->name);
+	bus->dev.id = DEVICE_ID_SINGLE;
 
-	ret = register_device(bus->dev);
+	ret = register_device(&bus->dev);
 	if (ret)
 		return ret;
 
@@ -42,7 +40,7 @@ int bus_register(struct bus_type *bus)
 	INIT_LIST_HEAD(&bus->device_list);
 	INIT_LIST_HEAD(&bus->driver_list);
 
-	list_add_tail(&bus->list, &bus_list);
+	class_add_device(&bus_class, &bus->dev);
 
 	return 0;
 }
@@ -97,3 +95,59 @@ int device_match_of_modalias(struct device *dev, const struct driver *drv)
 
 	return false;
 }
+
+static struct device *__bus_for_each_dev(const struct bus_type *bus, struct device *start, void *data,
+					 int (*fn)(struct device *dev, void *data), int *result)
+{
+	struct device *dev;
+	int ret;
+
+	bus_for_each_device(bus, dev) {
+		if (start) {
+			if (dev == start)
+				start = NULL;
+			continue;
+		}
+
+		ret = fn(dev, data);
+		if (ret) {
+			if (result)
+				*result = ret;
+			return dev;
+		}
+	}
+
+	return NULL;
+}
+
+int bus_for_each_dev(const struct bus_type *bus, struct device *start, void *data,
+		     int (*fn)(struct device *dev, void *data))
+{
+	int ret = 0;
+	__bus_for_each_dev(bus, start, data, fn, &ret);
+	return ret;
+}
+
+struct check_match_data {
+	device_match_t match;
+};
+
+struct device *bus_find_device(const struct bus_type *bus, struct device *start,
+			       const void *data, device_match_t match)
+{
+	return __bus_for_each_dev(bus, start, (void *)data,
+				  (int (*)(struct device *dev, void *data))match,
+				  NULL);
+}
+
+int device_match_name(struct device *dev, const void *name)
+{
+	return !strcmp(dev_name(dev), name);
+}
+EXPORT_SYMBOL_GPL(device_match_name);
+
+int device_match_of_node(struct device *dev, const void *np)
+{
+	return np && dev->of_node == np;
+}
+EXPORT_SYMBOL_GPL(device_match_of_node);

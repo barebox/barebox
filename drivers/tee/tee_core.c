@@ -16,7 +16,7 @@
 
 #define TEE_IOCTL_PARAM_SIZE(x) (sizeof(struct tee_param) * (x))
 
-static LIST_HEAD(tee_clients);
+static DEFINE_DEV_CLASS(tee_client_class, "tee_client");
 
 struct tee_context *teedev_open(struct tee_device *teedev)
 {
@@ -591,7 +591,7 @@ int tee_device_register(struct tee_device *teedev)
 			goto out;
 	}
 
-	list_add_tail(&teedev->list, &tee_clients);
+	class_add_device(&tee_client_class, &teedev->dev);
 
 	teedev->flags |= TEE_DEVICE_FLAG_REGISTERED;
 	return 0;
@@ -640,7 +640,6 @@ void tee_device_unregister(struct tee_device *teedev)
 	if (!teedev)
 		return;
 
-	list_del(&teedev->list);
 	if (IS_ENABLED(CONFIG_OPTEE_DEVFS))
 		devfs_remove(&teedev->cdev);
 	unregister_device(&teedev->dev);
@@ -687,7 +686,7 @@ tee_client_open_context(struct tee_context *start,
 	if (start)
 		startdev = &start->teedev->dev;
 
-	list_for_each_entry(teedev, &tee_clients, list) {
+	class_for_each_container_of_device(&tee_client_class, teedev, dev) {
 		struct device *dev = &teedev->dev;
 		struct tee_context *ctx ;
 

@@ -406,4 +406,6 @@ struct drm_display_mode {
 	enum drm_mode_status status;
 };
 
+int drm_mode_vrefresh(const struct drm_display_mode *mode);
+
 #endif /* __DRM_MODES_H__ */

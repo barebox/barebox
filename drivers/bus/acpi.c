@@ -138,7 +138,7 @@ static struct device *acpi_add_device(struct bus_type *bus,
 	dev = xzalloc(sizeof(*dev));
 
 	dev->bus = bus;
-	dev->parent = bus->dev;
+	dev->parent = &bus->dev;
 	dev->id = DEVICE_ID_DYNAMIC;
 	devinfo_add(dev, acpi_devinfo);
 
@@ -149,7 +149,7 @@ static struct device *acpi_add_device(struct bus_type *bus,
 
 static int acpi_register_devices(struct bus_type *bus)
 {
-	struct efi_config_table *table = bus->dev->priv;
+	struct efi_config_table *table = bus->dev.priv;
 	struct acpi_rsdp *rsdp;
 	struct acpi_rsdt *root;
 	size_t entry_count;
@@ -165,7 +165,7 @@ static int acpi_register_devices(struct bus_type *bus)
 	 * 5.2.5.2 Finding the RSDP on UEFI Enabled Systems
 	 */
 	if (memcmp("RSD PTR ", rsdp->signature, sizeof(rsdp->signature))) {
-		dev_dbg(bus->dev, "unexpected signature at start of config table: '%.8s'\n",
+		dev_dbg(&bus->dev, "unexpected signature at start of config table: '%.8s'\n",
 			rsdp->signature);
 		return -ENODEV;
 	}
@@ -183,12 +183,12 @@ static int acpi_register_devices(struct bus_type *bus)
 	}
 
 	if (acpi_sigcmp(sig, root->sdt.signature)) {
-		dev_err(bus->dev, "Expected %s, but found '%.4s'.\n",
+		dev_err(&bus->dev, "Expected %s, but found '%.4s'.\n",
 			sig, root->sdt.signature);
 		return -EIO;
 	}
 
-	dev_info(bus->dev, "Found %s (OEM: %.8s) with %zu entries\n",
+	dev_info(&bus->dev, "Found %s (OEM: %.8s) with %zu entries\n",
 		sig, root->sdt.oem_id, entry_count);
 
 	for (i = 0; i < entry_count; i++) {
@@ -232,7 +232,7 @@ static int efi_acpi_probe(void)
 	if (!table)
 		return 0;
 
-	acpi_bus.dev->priv = table;
+	acpi_bus.dev.priv = table;
 	return acpi_register_devices(&acpi_bus);
 }
 postcore_efi_initcall(efi_acpi_probe);

@@ -12,6 +12,7 @@
 #include <linux/printk.h>
 #include <linux/module.h>
 #include <device.h>
+#include <linux/device/bus.h>
 #include <of.h>
 #include <init.h>
 #include <errno.h>
@@ -363,43 +364,11 @@ ssize_t mem_copy(struct device *dev, void *dst, const void *src,
 int generic_memmap_ro(struct cdev *dev, void **map, int flags);
 int generic_memmap_rw(struct cdev *dev, void **map, int flags);
 
-struct bus_type {
-	char *name;
-	int (*match)(struct device *dev, const struct driver *drv);
-	int (*probe)(struct device *dev);
-	void (*remove)(struct device *dev);
-
-	struct device *dev;
-
-	struct list_head list;
-	struct list_head device_list;
-	struct list_head driver_list;
-};
-
-int bus_register(struct bus_type *bus);
-int device_match(struct device *dev, const struct driver *drv);
-
 static inline int driver_match_device(const struct driver *drv,
 				      struct device *dev)
 {
 	return drv->bus->match ? drv->bus->match(dev, drv) : true;
 }
-
-extern struct list_head bus_list;
-
-/* Iterate over all buses
- */
-#define for_each_bus(bus) list_for_each_entry(bus, &bus_list, list)
-
-/* Iterate over all devices of a bus
- */
-#define bus_for_each_device(bus, dev) list_for_each_entry(dev, &(bus)->device_list, bus_list)
-
-/* Iterate over all drivers of a bus
- */
-#define bus_for_each_driver(bus, drv) list_for_each_entry(drv, &(bus)->driver_list, bus_list)
-
-extern struct bus_type platform_bus;
 
 int platform_driver_register(struct driver *drv);
 

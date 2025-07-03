@@ -71,9 +71,7 @@ static int do_devlookup(int argc, char *argv[])
 		devicefile = aliasbuf;
 	}
 
-	devicefile = devpath_to_name(devicefile);
-
-	cdev = cdev_open_by_name(devicefile, O_RDONLY);
+	cdev = cdev_open_by_path_name(devicefile, O_RDONLY);
 	if (!cdev) {
 		printf("devlookup: cdev %s not found\n", devicefile);
 		ret = -ENOENT;

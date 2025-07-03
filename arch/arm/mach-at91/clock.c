@@ -40,13 +40,9 @@
 #define cpu_has_utmi()		(  cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
-				|| cpu_is_sama5d2() \
-				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
 #define cpu_has_1200M_plla()	(cpu_is_sama5d4())
-
-#define cpu_has_1056M_plla()	(cpu_is_sama5d3())
 
 #define cpu_has_800M_plla()	(  cpu_is_at91sam9g20() \
 				|| cpu_is_at91sam9g45() \
@@ -64,14 +60,10 @@
 #define cpu_has_pllb()		(!(cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
-				|| cpu_is_sama5d2() \
-				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4()))
 
 #define cpu_has_upll()		(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
-				|| cpu_is_sama5d2() \
-				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
 /* USB host HS & FS */
@@ -81,36 +73,25 @@
 #define cpu_has_udpfs()		(!(cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
-				|| cpu_is_sama5d2() \
-				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4()))
 
 #define cpu_has_plladiv2()	(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
 				|| cpu_is_at91sam9n12() \
-				|| cpu_is_sama5d2() \
-				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
 #define cpu_has_mdiv3()		(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
 				|| cpu_is_at91sam9n12() \
-				|| cpu_is_sama5d2() \
-				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
 #define cpu_has_alt_prescaler()	(cpu_is_at91sam9x5() \
 				|| cpu_is_at91sam9n12() \
-				|| cpu_is_sama5d2() \
-				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
-#define cpu_has_pcr()		(cpu_is_sama5d2() \
-				|| cpu_is_sama5d3() \
-				|| cpu_is_sama5d4())
+#define cpu_has_pcr()		(cpu_is_sama5d4())
 
-#define cpu_has_dual_matrix()	(cpu_is_sama5d2() \
-				|| cpu_is_sama5d4())
+#define cpu_has_dual_matrix()	(cpu_is_sama5d4())
 
 static void *pmc;
 
@@ -253,7 +234,7 @@ static void pmc_periph_mode(struct clk *clk, int is_on)
 	u32 regval = 0;
 
 	/*
-	 * With sama5d3 chips, you have more than 32 peripherals so only one
+	 * With sama5d4 chips, you have more than 32 peripherals so only one
 	 * register is not enough to manage their clocks. A peripheral
 	 * control register has been introduced to solve this issue.
 	 */
@@ -517,7 +498,7 @@ static u32 at91_pll_rate(struct clk *pll, u32 freq, u32 reg)
 	unsigned mul, div;
 
 	div = reg & 0xff;
-	if (cpu_is_sama5d3() || cpu_is_sama5d4())
+	if (cpu_is_sama5d4())
 		mul = (reg >> 18) & 0x7ff;
 	else
 		mul = (reg >> 16) & 0x7ff;
@@ -666,8 +647,6 @@ int at91_clock_init(void)
 
 	if (cpu_is_sama5d4())
 		pmc = IOMEM(0xf0018000);
-	else if (cpu_is_sama5d2())
-		pmc = IOMEM(0xf0014000);
 	else
 		pmc = IOMEM(0xfffffc00); /*
 					  * All other supported SoCs use this
@@ -695,9 +674,6 @@ int at91_clock_init(void)
 	plla.rate_hz = at91_pll_rate(&plla, main_clock, at91_pmc_read(AT91_CKGR_PLLAR));
 	if (cpu_has_1200M_plla()) {
 		if (plla.rate_hz > 1200000000)
-			pll_overclock = 1;
-	} else if (cpu_has_1056M_plla()) {
-		if (plla.rate_hz > 1056000000)
 			pll_overclock = 1;
 	} else if (cpu_has_300M_plla()) {
 		if (plla.rate_hz > 300000000)

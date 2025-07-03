@@ -12,8 +12,6 @@
 #define AT91_BASE_DBGU0	0xfffff200
 /* 9263, 9g45 */
 #define AT91_BASE_DBGU1	0xffffee00
-/* sama5d4 */
-#define AT91_BASE_DBGU2	0xfc069000
 
 #include <mach/at91/at91rm9200.h>
 #include <mach/at91/at91sam9260.h>

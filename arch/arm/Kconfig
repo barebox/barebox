@@ -387,6 +387,18 @@ config ARM_UNWIND
 	  the performance is not affected. Currently, this feature
 	  only works with EABI compilers. If unsure say Y.
 
+config ARM_MMU_PERMISSIONS
+	bool "Map with extended RO/X permissions"
+	default y
+	help
+	  Enable this option to map readonly sections as readonly, executable
+	  sections as readonly/executable and the remainder of the SDRAM as
+	  read/write/non-executable.
+	  Traditionally barebox maps the whole SDRAM as read/write/execute.
+	  You get this behaviour by disabling this option which is meant as
+	  a debugging facility. It can go away once the extended permission
+	  settings are proved to work reliable.
+
 config ARM_SEMIHOSTING
 	bool "enable ARM semihosting support"
 	select SEMIHOSTING

@@ -70,6 +70,7 @@ THUMB(	orr	r12, r12, #PSR_T_BIT	)
 	orr	r12, r12, #CR_U
 	bic	r12, r12, #CR_A
 #else
+	orr	r12, r12, #CR_S
 	orr	r12, r12, #CR_A
 #endif
 

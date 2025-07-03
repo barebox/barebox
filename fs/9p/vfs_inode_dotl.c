@@ -319,7 +319,7 @@ v9fs_truncate(struct device *dev, struct file *f, loff_t size)
 		.ia_file = f,
 	};
 
-	return v9fs_vfs_setattr_dotl(f->f_dentry, &iattr);
+	return v9fs_vfs_setattr_dotl(f->f_path.dentry, &iattr);
 }
 
 /**

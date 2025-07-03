@@ -463,9 +463,7 @@ static int spi_transfer_one_message(struct spi_device *spi, struct spi_message *
 		if (msg->status != -EINPROGRESS)
 			goto out;
 
-		/* TODO: Convert to new spi_delay API */
-		if (xfer->delay_usecs)
-			udelay(xfer->delay_usecs);
+		spi_delay_exec(&xfer->delay, NULL);
 
 		if (xfer->cs_change) {
 			if (list_is_last(&xfer->transfer_list,

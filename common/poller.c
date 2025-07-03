@@ -10,6 +10,7 @@
 #include <malloc.h>
 #include <module.h>
 #include <param.h>
+#include <linux/ktime.h>
 #include <poller.h>
 #include <clock.h>
 #include <linux/ktime.h>
@@ -188,25 +189,55 @@ static void poller_info(void)
 	}
 }
 
+static struct poller_async blocking_poller;
+
+static void blocking_poller_cb(void *priv)
+{
+	ktime_t diff = ktime_get() - blocking_poller.end;
+
+	if (diff < 0) {
+		pr_err("Poller watchdog activated %lluns too early!\n", diff);
+	} else if (diff > SECOND) {
+		pr_warn("Poller watchdog activated %llums too late!\n",
+			ktime_to_ms(diff));
+	}
+
+	poller_call_async(&blocking_poller, SECOND, blocking_poller_cb, NULL);
+}
+
+static void poller_blocking_time(void)
+{
+	if (blocking_poller.active)
+		return;
+
+	poller_async_register(&blocking_poller, "poller-monitor");
+	printf("Poller registered to monitor blocking time\n");
+	poller_call_async(&blocking_poller, SECOND, blocking_poller_cb, NULL);
+}
+
 BAREBOX_CMD_HELP_START(poller)
 BAREBOX_CMD_HELP_TEXT("print info about registered pollers")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-i", "Print information about registered pollers")
 BAREBOX_CMD_HELP_OPT ("-t", "measure how many pollers we run in 1s")
+BAREBOX_CMD_HELP_OPT ("-b", "warn if poller was blocked from running for more than 1 second")
 BAREBOX_CMD_HELP_END
 
 static int do_poller(int argc, char *argv[])
 {
 	int opt;
 
-	while ((opt = getopt(argc, argv, "it")) > 0) {
+	while ((opt = getopt(argc, argv, "itb")) > 0) {
 		switch (opt) {
 		case 'i':
 			poller_info();
 			return 0;
 		case 't':
 			poller_time();
+			return 0;
+		case 'b':
+			poller_blocking_time();
 			return 0;
 		}
 	}

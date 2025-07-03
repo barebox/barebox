@@ -26,6 +26,7 @@ enum bsec_op {
 	BSEC_SMC_READ_OTP	= 4,
 	BSEC_SMC_READ_ALL	= 5,
 	BSEC_SMC_WRITE_ALL	= 6,
+	BSEC_SMC_WRLOCK_OTP	= 7,
 };
 
 static inline enum bsec_smc bsec_read_field(unsigned field, unsigned *val)

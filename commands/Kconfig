@@ -2323,15 +2323,7 @@ config CMD_HAB
 # end Hardware manipulation commands
 endmenu
 
-
-
-menu "Miscellaneous"
-
-config CMD_2048
-	tristate
-	prompt "2048"
-	help
-	  Console version of the game "2048" for GNU/Linux
+menu "Security"
 
 config CMD_AVB_PVALUE
 	depends on OPTEE_AVB_PERSISTENT_VALUES
@@ -2345,6 +2337,33 @@ config CMD_AVB_PVALUE
 	  that must be tamper evident and allows AVB to store arbitrary key-value
 	  pairs.
 
+config CMD_BLOBGEN
+	bool
+	select BLOBGEN
+	prompt "blobgen"
+	help
+	  Provides the "blobgen" command. This command encrypts and decrypts
+	  plaintext to/from blobs. This is done with hardware crypto engines,
+	  so this command is only useful when you also enable a blobgen capable
+	  driver.
+
+config CMD_KEYSTORE
+	depends on CRYPTO_KEYSTORE
+	bool
+	prompt "keystore"
+	help
+	  keystore provides access to the barebox keystore.
+
+# end Security commands
+endmenu
+
+menu "Miscellaneous"
+
+config CMD_2048
+	tristate
+	prompt "2048"
+	help
+	  Console version of the game "2048" for GNU/Linux
 
 config CMD_BAREBOX_UPDATE
 	tristate
@@ -2362,16 +2381,6 @@ config CMD_BAREBOX_UPDATE
 		  -y		autom. use 'yes' when asking confirmations
 		  -f LEVEL	set force level
 
-config CMD_BLOBGEN
-	bool
-	select BLOBGEN
-	prompt "blobgen"
-	help
-	  Provides the "blobgen" command. This command encrypts and decrypts
-	  plaintext to/from blobs. This is done with hardware crypto engines,
-	  so this command is only useful when you also enable a blobgen capable
-	  driver.
-
 config CMD_FIRMWARELOAD
 	bool
 	select FIRMWARE
@@ -2388,13 +2397,6 @@ config CMD_KALLSYMS
 	  query kallsyms table
 
 	  Usage: kallsyns [SYMBOL | ADDRESS]
-
-config CMD_KEYSTORE
-	depends on CRYPTO_KEYSTORE
-	bool
-	prompt "keystore"
-	help
-	  keystore provides access to the barebox keystore.
 
 config CMD_LINUX_EXEC
 	bool "linux exec"

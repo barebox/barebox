@@ -769,7 +769,7 @@ static int tftp_open(struct inode *inode, struct file *file)
 {
 	struct file_priv *priv;
 
-	priv = tftp_do_open(&file->fsdev->dev, file->f_flags, file->f_dentry, false);
+	priv = tftp_do_open(&file->fsdev->dev, file->f_flags, file->f_path.dentry, false);
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 

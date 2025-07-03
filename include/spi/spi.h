@@ -413,9 +413,9 @@ static inline size_t spi_max_transfer_size(struct spi_device *spi)
  * @bits_per_word: select a bits_per_word other then the device default
  *      for this transfer. If 0 the default (from @spi_device) is used.
  * @cs_change: affects chipselect after this transfer completes
- * @delay_usecs: microseconds to delay after this transfer before
- *	(optionally) changing the chipselect status, then starting
- *	the next transfer or completing this @spi_message.
+ * @delay: delay to be introduced after this transfer before
+ *  (optionally) changing the chipselect status, then starting
+ *  the next transfer or completing this @spi_message.
  * @transfer_list: transfers are sequenced through @spi_message.transfers
  *
  * SPI transfers always write the same number of bytes as they read.
@@ -476,7 +476,7 @@ struct spi_transfer {
 
 	unsigned	cs_change:1;
 	u8		bits_per_word;
-	u16		delay_usecs;
+	struct spi_delay    delay;
 	u32		speed_hz;
 
 	u32		effective_speed_hz;

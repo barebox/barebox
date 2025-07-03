@@ -9,6 +9,7 @@
 #include <init.h>
 #include <menu.h>
 #include <malloc.h>
+#include <slice.h>
 #include <xfuncs.h>
 #include <errno.h>
 #include <readkey.h>
@@ -290,10 +291,14 @@ int menu_show(struct menu *m)
 		struct menu_entry *old_selected = m->selected;
 		int repaint = 0;
 
-		if (m->auto_select >= 0)
+		if (m->auto_select >= 0) {
 			ch = BB_KEY_RETURN;
-		else
+		} else {
+			/* Ensure workqueues can run during menu, e.g. for fastboot */
+			command_slice_release();
 			ch = read_key();
+			command_slice_acquire();
+		}
 
 		m->auto_select = -1;
 

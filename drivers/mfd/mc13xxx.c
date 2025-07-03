@@ -84,7 +84,6 @@ static int spi_rw(struct spi_device *spi, void * buf, size_t len)
 		.rx_buf = buf,
 		.len = len,
 		.cs_change = 0,
-		.delay_usecs = 0,
 	};
 	struct spi_message m;
 

@@ -133,4 +133,4 @@ e.g. how to wrap the received buffer in a ramdisk to interface
 with code that requires block devices.
 
 When adding a new fuzzing test, please also `submit a pullrequest
-with a corpus <https://github.com/barebox/barebox-fuzz-corpora/compare>_.
+with a corpus <https://github.com/barebox/barebox-fuzz-corpora/compare>`_.

@@ -7,13 +7,22 @@
 #ifndef	_SECURE_REG_HELPER_H_
 #define	_SECURE_REG_HELPER_H_
 
+#include <linux/types.h>
+#include <linux/errno.h>
+
 #define SOCFPGA_SECURE_REG_SYSMGR_SOC64_SDMMC 1
 #define SOCFPGA_SECURE_REG_SYSMGR_SOC64_EMAC0 2
 #define SOCFPGA_SECURE_REG_SYSMGR_SOC64_EMAC1 3
 #define SOCFPGA_SECURE_REG_SYSMGR_SOC64_EMAC2 4
 
+#ifdef CONFIG_ARCH_SOCFPGA_AGILEX5
 int socfpga_secure_reg_read32(u32 id, u32 *val);
 int socfpga_secure_reg_write32(u32 id, u32 val);
 int socfpga_secure_reg_update32(u32 id, u32 mask, u32 val);
+#else
+static inline int socfpga_secure_reg_read32(u32 id, u32 *val) { return -ENOSYS; }
+static inline int socfpga_secure_reg_write32(u32 id, u32 val) { return -ENOSYS; }
+static inline int socfpga_secure_reg_update32(u32 id, u32 mask, u32 val) { return -ENOSYS; }
+#endif
 
 #endif /* _SECURE_REG_HELPER_H_ */

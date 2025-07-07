@@ -14,6 +14,14 @@ quiet_cmd_socfpga_image = SOCFPGA-IMG $@
 $(obj)/%.socfpgaimg: $(obj)/% FORCE
 	$(call if_changed,socfpga_image)
 
+# %.hex - convert into Intel hex format
+# ----------------------------------------------------------------
+quiet_cmd_socfpga_objcopy = SOCFPGA-OBJCOPY $@
+      cmd_socfpga_objcopy = $(OBJCOPY) $(OBJCOPYFLAGS) -I binary -O ihex --change-address=0x0 $< $@
+
+$(obj)/%.hex: $(obj)/% FORCE
+	$(call if_changed,socfpga_objcopy)
+
 # ----------------------- Cyclone5 based boards ---------------------------
 pblb-$(CONFIG_MACH_SOCFPGA_ALTERA_SOCDK) += start_socfpga_socdk_xload
 FILE_barebox-socfpga-socdk-xload.img = start_socfpga_socdk_xload.pblb.socfpgaimg

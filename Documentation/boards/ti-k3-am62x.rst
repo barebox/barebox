@@ -37,7 +37,7 @@ Building barebox for the Cortex-A53 processors
 
 The BeaglePlay image is built as part of the ``multi_v8_defconfig``::
 
-  export ARCH=arm CROSS_COMPILE=CROSS_COMPILE_64
+  export ARCH=arm CROSS_COMPILE=$CROSS_COMPILE_64
   make multi_v8_defconfig
   make
   cp images/barebox-beagleplay.img $TI_BOOT/barebox.bin

@@ -22,6 +22,10 @@ config ARCH_SOCFPGA_ARRIA10
 	select OFDEVICE
 	select OFTREE
 
+if 32BIT
+
+comment "Cyclone5 boards"
+
 config MACH_SOCFPGA_ALTERA_SOCDK
 	select ARCH_SOCFPGA_CYCLONE5
 	bool "Altera SoCFPGA Development Kit"
@@ -29,14 +33,6 @@ config MACH_SOCFPGA_ALTERA_SOCDK
 config MACH_SOCFPGA_EBV_SOCRATES
 	select ARCH_SOCFPGA_CYCLONE5
 	bool "EBV Socrates"
-
-config MACH_SOCFPGA_ENCLUSTRA_AA1
-	select ARCH_SOCFPGA_ARRIA10
-	bool "Enclustra AA1"
-
-config MACH_SOCFPGA_REFLEX_ACHILLES
-	select ARCH_SOCFPGA_ARRIA10
-	bool "Reflex Achilles"
 
 config MACH_SOCFPGA_TERASIC_DE0_NANO_SOC
 	select ARCH_SOCFPGA_CYCLONE5
@@ -50,4 +46,15 @@ config MACH_SOCFPGA_TERASIC_SOCKIT
 	select ARCH_SOCFPGA_CYCLONE5
 	bool "Terasic SoCKit"
 
+comment "Arria10 boards"
+
+config MACH_SOCFPGA_ENCLUSTRA_AA1
+	select ARCH_SOCFPGA_ARRIA10
+	bool "Enclustra AA1"
+
+config MACH_SOCFPGA_REFLEX_ACHILLES
+	select ARCH_SOCFPGA_ARRIA10
+	bool "Reflex Achilles"
+
+endif
 endif

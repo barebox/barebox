@@ -20,6 +20,8 @@
 #define SOCFPGA_MAX_PARENTS		5
 
 #define streq(a, b) (strcmp((a), (b)) == 0)
+#define SYSMGR_SDMMC_CTRL_SET_AS10(smplsel, drvsel) \
+	((((smplsel) & 0x7) << 4) | (((drvsel) & 0x7) << 0))
 
 extern void __iomem *clk_mgr_base_addr;
 
@@ -58,11 +60,13 @@ struct socfpga_gate_clk {
 	char *parent_name;
 	u32 fixed_div;
 	void __iomem *div_reg;
+	void __iomem *bypass_reg;
 	struct regmap *sys_mgr_base_addr;
 	u32 width;	/* only valid if div_reg != 0 */
 	u32 shift;	/* only valid if div_reg != 0 */
 	u32 bit_idx;
 	void __iomem *reg;
+	u32 bypass_shift;      /* only valid if bypass_reg != 0 */
 	u32 clk_phase[2];
 	const char *parent_names[SOCFPGA_MAX_PARENTS];
 };
@@ -73,8 +77,10 @@ struct socfpga_periph_clk {
 	char *parent_name;
 	u32 fixed_div;
 	void __iomem *div_reg;
+	void __iomem *bypass_reg;
 	u32 width;      /* only valid if div_reg != 0 */
 	u32 shift;      /* only valid if div_reg != 0 */
+	u32 bypass_shift;      /* only valid if bypass_reg != 0 */
 	const char *parent_names[SOCFPGA_MAX_PARENTS];
 };
 

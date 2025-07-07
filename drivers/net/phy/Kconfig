@@ -9,6 +9,13 @@ if PHYLIB
 
 comment "MII PHY device drivers"
 
+config ADIN_PHY
+	bool "Driver for Analog Devices Industrial Ethernet PHYs"
+	help
+	  Currently supports the:
+	  - ADIN1300
+	  Ethernet PHY
+
 config AR8327N_PHY
 	bool "Driver for QCA AR8327N PHYs"
 	help

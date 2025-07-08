@@ -27,6 +27,12 @@ Labgrid is used to run the barebox test suite, both on real and emulated
 hardware. A number of YAML files located in ``test/$ARCH`` describe some
 of the virtualized targets that barebox is known to run on.
 
+barebox makes use of recent labgrid features, so you may need to install
+it directly from PyPI instead of your distro's package repositories::
+
+  pipx install pytest
+  pipx inject pytest labgrid
+
 Example usage::
 
   # Run x86 VM runnig the EFI payload from efi_defconfig

@@ -13,9 +13,9 @@ from labgrid.strategy import Strategy, StrategyError
 from labgrid.util import labgrid_version
 
 match = re.match(r'^(\d+?)\.', labgrid_version())
-if match is None or int(match.group(1)) < 24:
+if match is None or int(match.group(1)) < 25:
     pytest.exit(f"Labgrid has version v{labgrid_version()}, "
-                f"but barebox test suite requires at least v24.")
+                f"but barebox test suite requires at least v25.")
 
 class Status(enum.Enum):
     unknown = 0

@@ -59,6 +59,18 @@ more easily::
   # Run tests and pass a block device (here /dev/virtioblk0)
   pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml --blk=rootfs.ext4
 
+For testing, the QEMU fw_cfg and virtfs support is particularly useful::
+
+  # inject boot.sh file in working directory into barebox environment
+  # at /env/boot/fit and set /env/nv/boot.default to fit
+  pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml \
+     --env nv/boot.default=fit --env boot/fit=@boot.sh
+
+  # make available the host's local working directory in barebox as
+  # /mnt/9p/host
+  pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml \
+     --fs host=.
+
 For a complete listing of possible options run ``pytest --help``.
 
 MAKEALL

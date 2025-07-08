@@ -7,6 +7,7 @@ targets:
         cpu: Nehalem
         memory: 1024M
         kernel: barebox.efi
+        display: qemu-default
         extra_args: '-bios OVMF.fd'
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '

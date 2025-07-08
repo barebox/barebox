@@ -7,6 +7,7 @@ targets:
         cpu: cortex-a7
         memory: 1G
         kernel: barebox-raspberry-pi.img
+        display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

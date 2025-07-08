@@ -7,6 +7,7 @@ targets:
         cpu: arm1176
         memory: 512M
         kernel: barebox-raspberry-pi.img
+        display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

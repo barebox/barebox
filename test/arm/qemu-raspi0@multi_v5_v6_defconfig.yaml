@@ -7,7 +7,6 @@ targets:
         cpu: arm1176
         memory: 512M
         kernel: barebox-raspberry-pi.img
-        extra_args: ''
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

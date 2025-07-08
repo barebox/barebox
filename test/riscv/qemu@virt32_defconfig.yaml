@@ -8,7 +8,6 @@ targets:
         memory: 256M
         kernel: barebox-dt-2nd.img
         bios: opensbi-riscv32-generic-fw_dynamic.bin
-        extra_args: ''
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

@@ -51,6 +51,8 @@ def pytest_addoption(parser):
     parser.addoption('--dump-dtb', action='store_const', const='qemu_dump_dtb',
         dest='lg_initial_state',
         help=('(for debugging) skip tests and just dump the Qemu device tree'))
+    parser.addoption('--graphic', '--graphics', action='store_true', dest='qemu_graphics',
+        help=('enable QEMU graphics output'))
     parser.addoption('--rng', action='count', dest='qemu_rng',
         help=('instantiate Virt I/O random number generator'))
     parser.addoption('--console', action='count', dest='qemu_console', default=0,
@@ -75,9 +77,12 @@ def strategy(request, target, pytestconfig):
         pytest.exit(e)
 
     try:
-        features = target.env.config.data["targets"]["main"]["features"]
+        main = target.env.config.data["targets"]["main"]
+        features = main["features"]
+        qemu_bin = main["drivers"]["QEMUDriver"]["qemu_bin"]
     except KeyError:
         features = []
+        qemu_bin = None
 
     virtio = None
 
@@ -108,6 +113,19 @@ def strategy(request, target, pytestconfig):
             )
         else:
             pytest.exit("barebox currently supports only a single extra virtio console\n", 1)
+
+    graphics = None
+    if pytestconfig.option.qemu_graphics:
+        if qemu_bin == "qemu-system-x86_64":
+            graphics = '-device isa-vga'
+        elif 'pci' in features:
+            graphics = '-device VGA'
+        elif virtio:
+            graphics = '-vga none -device ramfb'
+        else:
+            pytest.exit("--graphics unsupported for target\n", 1)
+
+    strategy.append_qemu_args(graphics or '-nographic')
 
     for i, blk in enumerate(pytestconfig.option.qemu_block):
         if virtio:

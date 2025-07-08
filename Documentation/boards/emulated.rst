@@ -59,6 +59,9 @@ more easily::
   # Run tests and pass a block device (here /dev/virtioblk0)
   pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml --blk=rootfs.ext4
 
+  # Run interactively with graphics output
+  pytest --lg-env test/mips/qemu-malta_defconfig.yaml --interactive --graphics
+
 For testing, the QEMU fw_cfg and virtfs support is particularly useful::
 
   # inject boot.sh file in working directory into barebox environment

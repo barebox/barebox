@@ -147,16 +147,10 @@ extern volatile int arm_data_abort_occurred;
 
 static const char *data_abort_reason(ulong far)
 {
-	ulong guard_page;
-
 	if (far < PAGE_SIZE)
 		return "NULL pointer dereference: ";
-
-	if (IS_ENABLED(CONFIG_STACK_GUARD_PAGE)) {
-		guard_page = arm_mem_guard_page_get();
-		if (guard_page <= far && far < guard_page + PAGE_SIZE)
-			return "Stack overflow: ";
-	}
+	if (inside_stack_guard_page(far))
+		return "Stack overflow: ";
 
 	return NULL;
 }

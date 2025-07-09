@@ -261,8 +261,9 @@ config MEMORY_ATTRIBUTES
 	bool "record memory attributes" if EXPERIMENTAL
 	help
 	  Tag all SDRAM memory region requests with type and attributes.
-	  This is currently not acted upon, but protections (e.g. read-only)
-	  will in future be enforced by the MMU.
+	  This is currently independent from ARM_MMU_PERMISSIONS, but protections
+	  (e.g. read-only) may in future be enforced by the MMU in addition
+	  to the protections already in-place.
 
 endmenu
 

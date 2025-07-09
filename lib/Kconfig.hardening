@@ -153,6 +153,7 @@ config FORTIFY_SOURCE
 config STACK_GUARD_PAGE
 	bool "Place guard page to catch stack overflows"
 	depends on ARM && MMU
+	default y
 	help
 	  When enabled, barebox places a faulting guard page to catch total
 	  stack usage exceeding CONFIG_STACK_SIZE. On overflows, that hit

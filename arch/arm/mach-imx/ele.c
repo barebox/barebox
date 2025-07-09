@@ -665,7 +665,7 @@ unsigned int imx93_ahab_read_lifecycle(void)
 	return readl(MX9_OCOTP_BASE_ADDR + 0x41c) & 0x3ff;
 }
 
-static const char *ele_life_cycle(u32 lc)
+const char *ele_life_cycle(u32 lc)
 {
 	switch (lc) {
 	case ELE_LIFECYCLE_BLANK: return "BLANK";

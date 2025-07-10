@@ -41,7 +41,7 @@ static inline bool region_overlap_size(u64 starta, u64 lena,
 }
 
 /**
- * region_overlap_end - check whether a pair of [start, end] ranges overlap
+ * region_identical - check whether a pair of [start, extend] ranges are identical
  *
  * @starta:  start of the first range
  * @extenta: end or length of the first range

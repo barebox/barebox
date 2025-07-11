@@ -15,10 +15,10 @@ development binary as well as for lean production systems.
 Just like busybox is the Swiss Army Knife for embedded Linux,
 barebox is the Swiss Army Knife for bare metal, hence the name.
 
-.. _feedback:
+.. _community:
 
-Feedback
---------
+Community
+---------
 
 For sending patches, asking for help and giving general feedback you are
 always welcome to write an e-mail to the barebox mailing list at
@@ -30,6 +30,15 @@ http://lists.infradead.org/mailman/listinfo/barebox/
 Mails sent to the barebox mailing list are archived on
 `lore.barebox.org <https://lore.barebox.org/barebox/>`_ and
 `lore.kernel.org <https://lore.kernel.org/barebox/>`_.
+
+There's also an IRC channel, which is
+`bridged to Matrix  <https://app.element.io/#/room/#barebox:matrix.org>`_:
+#barebox on Libera Chat.
+
+.. _feedback:
+
+Sending Patches
+---------------
 
 barebox uses a similar patch process as the Linux kernel, so most of the
 `Linux guide for submitting patches <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>`_
@@ -48,7 +57,3 @@ and have ``FETCH_HEAD`` point at it::
 
 CI tests are executed by Github Actions can be used by forking
 `the project on Github <https://github.com/barebox/barebox>`.
-
-There's also an IRC channel, which is
-`bridged to Matrix  <https://app.element.io/#/room/#barebox:matrix.org>`_:
-#barebox on Libera Chat.

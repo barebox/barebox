@@ -139,6 +139,7 @@ def gen_rst(name, cmd):
         out.append('%s\n %s' % (o, d))
       else:
         out.append(' %s' % (d,))
+      out.append('')
     out.append('')
   if 'h_post' in cmd:
     post = cmd['h_post']

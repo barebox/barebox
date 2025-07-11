@@ -175,6 +175,8 @@ In the ``chosen``-node, barebox fixes up
 These values can be read from the booted linux system in ``/proc/device-tree/``
 or ``/sys/firmware/devicetree/base``.
 
+.. _of_diff:
+
 To see a dry run of what barebox would fixup, the ``of_diff`` command can be
 used::
 

@@ -852,9 +852,9 @@ config HAB_CERTS_ENV
 	depends on HAB
 	bool "Specify certificates in environment"
 	help
-	  If this option is enabled the pathes to the HAB certificates are
+	  If this option is enabled the paths to the HAB certificates are
 	  taken from environment variables which allows for better integration
-	  with build systems. With this option disabled the pathes can be
+	  with build systems. With this option disabled the paths can be
 	  specified below.
 
 	  The environment variables have the same name as the corresponding

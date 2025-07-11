@@ -37,13 +37,13 @@ struct driver {
 	const char *name;
 
 	struct list_head list;
-	struct list_head bus_list; /* our bus            */
+	struct list_head bus_list; /* our bus */
 
 	/*! Called if an instance of a device is found */
-	int     (*probe) (struct device *);
+	int (*probe)(struct device *);
 
 	/*! Called if an instance of a device is gone. */
-	void     (*remove)(struct device *);
+	void (*remove)(struct device *);
 
 	struct bus_type *bus;
 
@@ -62,7 +62,7 @@ struct driver {
 
 /* dynamically assign the next free id */
 #define DEVICE_ID_DYNAMIC	-2
-/* do not use an id (only one device available */
+/* do not use an id (only one device available) */
 #define DEVICE_ID_SINGLE	-1
 
 /* Register devices and drivers.

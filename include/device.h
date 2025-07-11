@@ -37,7 +37,7 @@ struct device {
 	/*! This member is used to store device's unique name as
 	 *  obtained by calling dev_id(). Internal field, do not
 	 *  access it directly.
-	  */
+	 */
 	char *unique_name;
 	/*! The id is used to uniquely identify a device in the system. The id
 	 * will show up under /dev/ as the device's name. Usually this is
@@ -58,14 +58,16 @@ struct device {
 		void *priv;
 		void *driver_data;
 	};
-	void *type_data;     /*! In case this device is a specific device, this pointer
-			      * points to the type specific device, i.e. eth_device
-			      */
+	/*! In case this device is a specific device, this pointer
+	 * points to the type specific device, i.e. eth_device
+	 */
+	void *type_data;
+
 	struct driver *driver; /*! The driver for this device */
 
 	struct list_head list;     /* The list of all devices */
-	struct list_head bus_list; /* our bus            */
-	struct list_head children; /* our children            */
+	struct list_head bus_list; /* our bus */
+	struct list_head children; /* our children */
 	struct list_head sibling;
 	struct list_head active;   /* The list of all devices which have a driver */
 
@@ -102,8 +104,8 @@ struct device {
 	 * For devices which take longer to probe this is called
 	 * when the driver should actually detect client devices
 	 */
-	int     (*detect) (struct device *);
-	void	(*rescan) (struct device *);
+	int (*detect)(struct device *);
+	void (*rescan)(struct device *);
 
 	/*
 	 * if a driver probe is deferred, this stores the last error

@@ -291,8 +291,6 @@ static int ds1307_probe(struct device *dev)
 	const struct device_node *np = dev->of_node;
 
 	driver_data = (uintptr_t)device_get_match_data(dev);
-	if (!driver_data)
-		return -ENODEV;
 
 	ds1307 = xzalloc(sizeof(struct ds1307));
 

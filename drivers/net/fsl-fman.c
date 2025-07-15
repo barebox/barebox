@@ -1091,8 +1091,6 @@ static int fsl_fman_port_probe(struct device *dev)
 	dev_dbg(dev, "probe\n");
 
 	type = (uintptr_t)device_get_match_data(dev);
-	if (!type)
-		return -ENODEV;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

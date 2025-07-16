@@ -3,19 +3,9 @@
 # If CONFIG_OF_ALL_DTBS is enabled, all DT blobs are built
 dtb-$(CONFIG_OF_ALL_DTBS) += $(dtb-)
 
-# Composite DTB (i.e. DTB constructed by overlay)
-multi-dtb-y := $(call multi-search, $(dtb-y), .dtb, -dtbs)
-# Primitive DTB compiled from *.dts
-real-dtb-y := $(call real-search, $(dtb-y), .dtb, -dtbs)
-# Base DTB that overlay is applied onto
-base-dtb-y := $(filter %.dtb, $(call real-search, $(multi-dtb-y), .dtb, -dtbs))
-
 dtb-y           := $(addprefix $(obj)/, $(dtb-y))
-multi-dtb-y     := $(addprefix $(obj)/, $(multi-dtb-y))
-real-dtb-y      := $(addprefix $(obj)/, $(real-dtb-y))
 
 always-y        += $(dtb-y)
-targets         += $(real-dtb-y)
 
 # dtbs-list
 # ---------------------------------------------------------------------------

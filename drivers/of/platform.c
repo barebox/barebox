@@ -399,14 +399,14 @@ static inline struct device *of_amba_device_create(struct device_node *np)
 
 /**
  * of_platform_bus_create() - Create a device for a node and its children.
- * @bus: device node of the bus to instantiate
+ * @node: device node of the bus to instantiate
  * @matches: match table for bus nodes
  * @parent: parent for new device, or NULL for top level.
  *
  * Creates a platform_device for the provided device_node, and optionally
  * recursively create devices for all the child nodes.
  */
-static int of_platform_bus_create(struct device_node *bus,
+static int of_platform_bus_create(struct device_node *node,
 				const struct of_device_id *matches,
 				struct device *parent)
 {
@@ -415,22 +415,22 @@ static int of_platform_bus_create(struct device_node *bus,
 	int rc = 0;
 
 	/* Make sure it has a compatible property */
-	if (!of_get_property(bus, "compatible", NULL)) {
+	if (!of_get_property(node, "compatible", NULL)) {
 		pr_debug("%s() - skipping %pOF, no compatible prop\n",
-			__func__, bus);
+			__func__, node);
 		return 0;
 	}
 
-	if (of_device_is_compatible(bus, "arm,primecell")) {
-		if (of_amba_device_create(bus))
+	if (of_device_is_compatible(node, "arm,primecell")) {
+		if (of_amba_device_create(node))
 			return 0;
 	}
 
-	dev = of_platform_device_create(bus, parent);
-	if (!dev || !of_match_node(matches, bus))
+	dev = of_platform_device_create(node, parent);
+	if (!dev || !of_match_node(matches, node))
 		return 0;
 
-	for_each_child_of_node(bus, child) {
+	for_each_child_of_node(node, child) {
 		pr_debug("   create child: %pOF\n", child);
 		rc = of_platform_bus_create(child, matches, dev);
 		if (rc)

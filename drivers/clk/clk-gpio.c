@@ -96,7 +96,6 @@ static struct clk_hw *clk_register_gpio(struct device *dev, u8 num_parents,
 	struct clk_hw *hw;
 	struct clk_init_data init = {};
 	const char *parent_names[2];
-	int err;
 
 	clk_gpio = xzalloc(sizeof(*clk_gpio));
 	if (!clk_gpio)
@@ -116,11 +115,7 @@ static struct clk_hw *clk_register_gpio(struct device *dev, u8 num_parents,
 	clk_gpio->hw.init = &init;
 
 	hw = &clk_gpio->hw;
-	err =  bclk_register(&clk_gpio->hw.clk);
-	if (err)
-		return ERR_PTR(err);
-
-	return hw;
+	return clk_to_clk_hw(clk_register(dev, hw));
 }
 
 static struct clk_hw *clk_hw_register_gpio_gate(struct device *dev,

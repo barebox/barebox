@@ -352,6 +352,8 @@ static void save_trained_mr12_14(struct dram_cfg_param *cfg, u32 cfg_num, u32 mr
 
 #define MHZ(x)        ((x) * 1000000UL)
 
+#define SHARED_GPR(n) (0x4800 + ((n) * 0x20))
+
 #define SHARED_GPR_DRAM_CLK 2
 #define SHARED_GPR_DRAM_CLK_SEL_PLL 0
 #define SHARED_GPR_DRAM_CLK_SEL_CCM BIT(0)
@@ -376,7 +378,7 @@ static int dram_pll_init(u32 freq)
 
 static void ccm_shared_gpr_set(u32 gpr, u32 val)
 {
-	writel(val, IOMEM(MX9_CCM_BASE_ADDR + 0x4800));
+	writel(val, IOMEM(MX9_CCM_BASE_ADDR + SHARED_GPR(gpr)));
 }
 
 #define DRAM_ALT_CLK_ROOT	76

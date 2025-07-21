@@ -118,13 +118,6 @@ static inline void device_rescan(struct device *dev)
 #define device_for_each_child_safe(dev, tmpdev, child) \
 	list_for_each_entry_safe(child, tmpdev, &(dev)->children, sibling)
 
-/* Iterate through the devices of a given type. if last is NULL, the
- * first device of this type is returned. Put this pointer in as
- * 'last' to get the next device. This functions returns NULL if no
- * more devices are found.
- */
-struct device *get_device_by_type(ulong type, struct device *last);
-struct device *get_device_by_id(const char *id);
 struct device *get_device_by_name(const char *name);
 
 /* Find a device by name and if not found look up by device tree path
@@ -137,8 +130,6 @@ struct device *find_device(const char *str);
  * use this function rather than filling the id field themselves.
  */
 int get_free_deviceid(const char *name_template);
-
-char *deviceid_from_spec_str(const char *str, char **endp);
 
 static inline const char *dev_id(const struct device *dev)
 {

@@ -178,6 +178,8 @@ out:
 	fb_setvar(var, "%08zx", size);
 	var = fb_addvar(fb, list, "partition-type:%s", fentry->name);
 	fb_setvar(var, "%s", type);
+	var = fb_addvar(fb, list, "is-logical:%s", fentry->name);
+	fb_setvar(var, "%s", "no");
 
 	return ret;
 }

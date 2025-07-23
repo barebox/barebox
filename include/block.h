@@ -103,6 +103,7 @@ static inline bool cdev_is_block_device(const struct cdev *cdev)
 
 static inline bool cdev_is_block_partition(const struct cdev *cdev)
 {
+	cdev = cdev_readlink(cdev);
 	return cdev_is_block_device(cdev) && cdev_is_partition(cdev);
 }
 

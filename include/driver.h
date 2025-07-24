@@ -604,6 +604,16 @@ static inline bool cdev_is_gpt_partitioned(const struct cdev *master)
 	return master && (master->flags & DEVFS_IS_GPT_PARTITIONED);
 }
 
+#define DEVFS_INHERITABLE_FLAGS (DEVFS_WRITE_AUTOERASE | DEVFS_IS_BLOCK_DEV)
+
+static inline unsigned int
+get_inheritable_devfs_flags(const struct cdev *parent_cdev)
+{
+	if (!parent_cdev)
+		return 0;
+	return parent_cdev->flags & DEVFS_INHERITABLE_FLAGS;
+}
+
 struct cdev *
 cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid);
 

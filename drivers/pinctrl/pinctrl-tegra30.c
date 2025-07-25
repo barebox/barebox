@@ -669,31 +669,31 @@ static int pinctrl_tegra30_set_drvstate(struct pinctrl_tegra30 *ctrl,
 	if (schmitt >= 0) {
 		val = readl(regaddr);
 		val &= ~(0x1 << group->schmitt_bit);
-		val |= hsm << group->schmitt_bit;
+		val |= schmitt << group->schmitt_bit;
 		writel(val, regaddr);
 	}
 	if (pds >= 0) {
 		val = readl(regaddr);
 		val &= ~(((1 << group->drvdn_width) - 1) << group->drvdn_bit);
-		val |= hsm << group->drvdn_bit;
+		val |= pds << group->drvdn_bit;
 		writel(val, regaddr);
 	}
 	if (pus >= 0) {
 		val = readl(regaddr);
 		val &= ~(((1 << group->drvup_width) - 1) << group->drvup_bit);
-		val |= hsm << group->drvup_bit;
+		val |= pus << group->drvup_bit;
 		writel(val, regaddr);
 	}
 	if (srr >= 0) {
 		val = readl(regaddr);
 		val &= ~(((1 << group->slwr_width) - 1) << group->slwr_bit);
-		val |= hsm << group->slwr_bit;
+		val |= srr << group->slwr_bit;
 		writel(val, regaddr);
 	}
 	if (srf >= 0) {
 		val = readl(regaddr);
 		val &= ~(((1 << group->slwf_width) - 1) << group->slwf_bit);
-		val |= hsm << group->slwf_bit;
+		val |= srf << group->slwf_bit;
 		writel(val, regaddr);
 	}
 

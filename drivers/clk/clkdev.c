@@ -273,7 +273,7 @@ int clk_add_alias(const char *alias, const char *alias_dev_name, char *id,
 	if (IS_ERR(r))
 		return PTR_ERR(r);
 
-	l = clkdev_alloc(r, alias, alias_dev_name);
+	l = clkdev_alloc(r, alias, "%s", alias_dev_name);
 	clk_put(r);
 	if (!l)
 		return -ENODEV;

@@ -5,10 +5,16 @@
 #include <linux/types.h>
 #include <errno.h>
 
-#define MAP_UNCACHED	0
-#define MAP_CACHED	1
-#define MAP_FAULT	2
-#define MAP_CODE	3
+#define MAP_UNCACHED		0
+#define MAP_CACHED		1
+#define MAP_FAULT		2
+#define MAP_CODE		3
+
+#ifdef CONFIG_ARCH_HAS_DMA_WRITE_COMBINE
+#define MAP_WRITECOMBINE	4
+#else
+#define MAP_WRITECOMBINE	MAP_UNCACHED
+#endif
 
 /*
  * Depending on the architecture the default mapping can be

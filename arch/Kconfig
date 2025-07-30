@@ -59,6 +59,9 @@ config ARCH_HAS_CTRLC
 config ARCH_DMA_DEFAULT_COHERENT
 	bool
 
+config ARCH_HAS_DMA_WRITE_COMBINE
+	bool
+
 config ARCH_HAS_ASAN_FIBER_API
 	bool
 

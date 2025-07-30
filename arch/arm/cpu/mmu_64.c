@@ -296,7 +296,7 @@ static unsigned long get_pte_attrs(unsigned flags)
 		return attrs_xn() | UNCACHED_MEM;
 	case MAP_FAULT:
 		return 0x0;
-	case ARCH_MAP_WRITECOMBINE:
+	case MAP_WRITECOMBINE:
 		return attrs_xn() | MEM_ALLOC_WRITECOMBINE;
 	case MAP_CODE:
 		return CACHED_MEM | PTE_BLOCK_RO;
@@ -421,7 +421,7 @@ void dma_flush_range(void *ptr, size_t size)
 
 void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_handle)
 {
-	return dma_alloc_map(dev, size, dma_handle, ARCH_MAP_WRITECOMBINE);
+	return dma_alloc_map(dev, size, dma_handle, MAP_WRITECOMBINE);
 }
 
 static void init_range(size_t total_level0_tables)

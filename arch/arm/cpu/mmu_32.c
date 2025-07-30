@@ -237,7 +237,7 @@ static uint32_t get_pte_flags(int map_type)
 			return PTE_FLAGS_UNCACHED_V7;
 		case MAP_CODE:
 			return PTE_FLAGS_CODE_V7;
-		case ARCH_MAP_WRITECOMBINE:
+		case MAP_WRITECOMBINE:
 			return PTE_FLAGS_WC_V7;
 		case MAP_FAULT:
 		default:
@@ -252,7 +252,7 @@ static uint32_t get_pte_flags(int map_type)
 		case MAP_CACHED:
 			return PTE_FLAGS_CACHED_V4;
 		case MAP_UNCACHED:
-		case ARCH_MAP_WRITECOMBINE:
+		case MAP_WRITECOMBINE:
 			return PTE_FLAGS_UNCACHED_V4;
 		case MAP_FAULT:
 		default:
@@ -613,7 +613,7 @@ void mmu_disable(void)
 
 void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_handle)
 {
-	return dma_alloc_map(dev, size, dma_handle, ARCH_MAP_WRITECOMBINE);
+	return dma_alloc_map(dev, size, dma_handle, MAP_WRITECOMBINE);
 }
 
 void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned long barebox_start)

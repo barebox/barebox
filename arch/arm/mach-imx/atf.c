@@ -112,8 +112,6 @@ void imx8mm_load_bl33(void *bl33)
 		hang();
 	}
 
-	handoff_data_move(bl33 - ALIGN(handoff_data_size(), 0x1000));
-
 	/*
 	 * On completion the TF-A will jump to MX8M_ATF_BL33_BASE_ADDR
 	 * in EL2. Copy the image there, but replace the PBL part of

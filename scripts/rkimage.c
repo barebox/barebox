@@ -74,7 +74,7 @@ static int create_newidb(struct newidb *idb)
 	int image_offset;
 	int i;
 
-	idb->magic = NEWIDB_MAGIC;
+	idb->magic = NEWIDB_MAGIC_RKNS;
 	idb->n_files = (n_code << 16) | (1 << 7) | (1 << 8);
 	idb->flags = 0;
 

@@ -1,7 +1,7 @@
 #ifndef __ROCKCHIP_H
 #define __ROCKCHIP_H
 
-#define NEWIDB_MAGIC 0x534e4b52 /* 'RKNS' */
+#define NEWIDB_MAGIC_RKNS 0x534e4b52
 
 #define NEWIDB_FLAGS_SHA256	(1U << 0)
 #define NEWIDB_FLAGS_SHA512	(1U << 1)

@@ -43,6 +43,9 @@ config FIRMWARE_IMX8MQ_ATF
 config FIRMWARE_IMX93_ATF
 	bool
 
+config FIRMWARE_AGILEX5_ATF
+	bool
+
 config FIRMWARE_IMX8MM_OPTEE
 	bool "install OP-TEE on i.MX8MM boards"
 	depends on FIRMWARE_IMX8MM_ATF && PBL_OPTEE

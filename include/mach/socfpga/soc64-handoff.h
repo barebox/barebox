@@ -1,0 +1,50 @@
+/* SPDX-License-Identifier: GPL-2.0
+ *
+ * Copyright (C) 2016-2024 Intel Corporation <www.intel.com>
+ *
+ */
+
+#ifndef _HANDOFF_SOC64_H_
+#define _HANDOFF_SOC64_H_
+
+/*
+ * Offset for HW handoff from Quartus tools
+ */
+/* HPS handoff */
+#define SOC64_HANDOFF_MAGIC_BOOT	0x424F4F54
+#define SOC64_HANDOFF_MAGIC_MUX		0x504D5558
+#define SOC64_HANDOFF_MAGIC_IOCTL	0x494F4354
+#define SOC64_HANDOFF_MAGIC_FPGA	0x46504741
+#define SOC64_HANDOFF_MAGIC_DELAY	0x444C4159
+#define SOC64_HANDOFF_MAGIC_CLOCK	0x434C4B53
+#define SOC64_HANDOFF_MAGIC_PERI	0x50455249
+#define SOC64_HANDOFF_MAGIC_SDRAM	0x5344524d
+
+#define SOC64_HANDOFF_OFFSET_LENGTH	0x4
+#define SOC64_HANDOFF_OFFSET_DATA	0x10
+#define SOC64_HANDOFF_SIZE		4096
+
+#define SOC64_HANDOFF_BASE		0x0007F000
+
+#define SOC64_HANDOFF_MUX		(SOC64_HANDOFF_BASE + 0x10)
+#define SOC64_HANDOFF_IOCTL		(SOC64_HANDOFF_BASE + 0x1A0)
+#define SOC64_HANDOFF_FPGA		(SOC64_HANDOFF_BASE + 0x330)
+#define SOC64_HANDOFF_DELAY		(SOC64_HANDOFF_BASE + 0x3F0)
+#define SOC64_HANDOFF_CLOCK		(SOC64_HANDOFF_BASE + 0x580)
+#define SOC64_HANDOFF_PERI		(SOC64_HANDOFF_BASE + 0x620)
+#define SOC64_HANDOFF_SDRAM		(SOC64_HANDOFF_BASE + 0x634)
+#define SOC64_HANDOFF_SDRAM_LEN		5
+
+#define SOC64_HANDOFF_CLOCK_OSC		(SOC64_HANDOFF_BASE + 0x60c)
+#define SOC64_HANDOFF_CLOCK_FPGA	(SOC64_HANDOFF_BASE + 0x610)
+
+#define SOC64_HANDOFF_MUX_LEN		96
+#define SOC64_HANDOFF_IOCTL_LEN		96
+#define SOC64_HANDOFF_FPGA_LEN		40
+#define SOC64_HANDOFF_DELAY_LEN		96
+
+int socfpga_get_handoff_size(void *handoff_address);
+int socfpga_handoff_read(void *handoff_address, void *table, u32 table_len);
+const struct cm_config * const cm_get_default_config(void);
+
+#endif /* _HANDOFF_SOC64_H_ */

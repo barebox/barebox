@@ -499,12 +499,12 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 		barebox_size = optee_membase - barebox_start;
 
 		early_remap_range(optee_membase - barebox_size, barebox_size,
-			     get_pte_attrs(ARCH_MAP_CACHED_RWX), true);
+			     ARCH_MAP_CACHED_RWX, true);
 	} else {
 		barebox_size = membase + memsize - barebox_start;
 
 		early_remap_range(membase + memsize - barebox_size, barebox_size,
-			     get_pte_attrs(ARCH_MAP_CACHED_RWX), true);
+			     ARCH_MAP_CACHED_RWX, true);
 	}
 
 	early_remap_range(optee_membase, OPTEE_SIZE, MAP_FAULT, false);

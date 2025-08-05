@@ -146,6 +146,8 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 	attr &= ~PTE_TYPE_MASK;
 
 	size = PAGE_ALIGN(size);
+	if (!size)
+		return;
 
 	while (size) {
 		table = ttb;

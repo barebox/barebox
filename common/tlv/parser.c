@@ -95,8 +95,8 @@ int of_tlv_fixup(struct device_node *root, void *ctx)
 
 	list_for_each_entry(addr, &ethaddr_list, list) {
 		char propname[sizeof("address-4294967295")];
-		const u8 *enetaddr_a;
-		u8 enetaddr_b[ETH_ALEN];
+		const char *enetaddr_tlv_str;
+		u8 enetaddr_tlv[ETH_ALEN];
 		struct property *pp;
 
 		if (!eth_of_get_fixup_node(root, NULL, addr->ethid))
@@ -107,11 +107,11 @@ int of_tlv_fixup(struct device_node *root, void *ctx)
 		if (!pp)
 			continue;
 
-		enetaddr_a = of_property_get_value(pp);
-		if (string_to_ethaddr(addr->ethaddr, enetaddr_b))
+		enetaddr_tlv_str = of_property_get_value(pp);
+		if (string_to_ethaddr(enetaddr_tlv_str, enetaddr_tlv))
 			continue;
 
-		if (memcmp(enetaddr_a, enetaddr_b, ETH_ALEN))
+		if (memcmp(enetaddr_tlv, addr->ethaddr, ETH_ALEN))
 			continue;
 
 		of_delete_property(pp);

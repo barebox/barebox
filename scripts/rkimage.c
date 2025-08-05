@@ -42,6 +42,17 @@ static void sha512(const void *buf, int len, void *out)
 	EVP_MD_CTX_free(md_ctx);
 }
 
+static void idb_hash(struct newidb *idb)
+{
+	unsigned char *idbu8 = (void *)idb;
+	size_t size = 1536;
+
+	if (idb->flags & NEWIDB_FLAGS_SHA256)
+		sha256(idbu8, size, idbu8 + size);
+	else if (idb->flags & NEWIDB_FLAGS_SHA512)
+		sha512(idbu8, size, idbu8 + size);
+}
+
 typedef enum {
 	HASH_TYPE_SHA256 = 1,
 	HASH_TYPE_SHA512 = 2,
@@ -62,7 +73,6 @@ static int create_newidb(struct newidb *idb)
 	bool keep_cert = false;
 	int image_offset;
 	int i;
-	unsigned char *idbu8 = (void *)idb;
 
 	idb->magic = NEWIDB_MAGIC;
 	idb->n_files = (n_code << 16) | (1 << 7) | (1 << 8);
@@ -98,10 +108,7 @@ static int create_newidb(struct newidb *idb)
 
 	}
 
-	if (hash_type == HASH_TYPE_SHA256)
-		sha256(idbu8, 1536, idbu8 + 1536);
-	else if (hash_type == HASH_TYPE_SHA512)
-		sha512(idbu8, 1536, idbu8 + 1536);
+	idb_hash(idb);
 
 	return 0;
 }

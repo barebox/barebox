@@ -98,9 +98,9 @@ static int create_newidb(struct newidb *idb)
 	}
 
 	if (hash_type == HASH_TYPE_SHA256)
-		sha256(idbu8, 1535, idbu8 + 1536);
+		sha256(idbu8, 1536, idbu8 + 1536);
 	else if (hash_type == HASH_TYPE_SHA512)
-		sha512(idbu8, 1535, idbu8 + 1536);
+		sha512(idbu8, 1536, idbu8 + 1536);
 
 	return 0;
 }

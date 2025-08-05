@@ -23,6 +23,26 @@ static inline bool region_overlap_end_inclusive(u64 starta, u64 enda,
 }
 
 /**
+ * region_overlap_end_exclusive - check whether a pair of [start, end) ranges overlap
+ *
+ * @starta: start of the first range
+ * @enda:   end of the first range (exclusive)
+ * @startb: start of the second range
+ * @endb:   end of the second range (exclusive)
+ */
+static inline bool region_overlap_end_exclusive(u64 starta, u64 enda,
+						u64 startb, u64 endb)
+{
+	/* Empty ranges don't overlap */
+	if (starta >= enda || startb >= endb)
+		return false;
+
+	return region_overlap_end_inclusive(starta, enda - 1,
+					    startb, startb - 1);
+}
+
+
+/**
  * region_overlap_end - check whether a pair of [start, end] ranges overlap
  *
  * @starta: start of the first range
@@ -36,8 +56,8 @@ static inline bool region_overlap_size(u64 starta, u64 lena,
 	if (!lena || !lenb)
 		return false;
 
-	return region_overlap_end_inclusive(starta, starta + lena - 1,
-					    startb, startb + lenb - 1);
+	return region_overlap_end_exclusive(starta, starta + lena,
+					    startb, startb + lenb);
 }
 
 /**

@@ -470,12 +470,13 @@ int imx_hab_write_srk_hash(const void *buf, unsigned flags)
 	}
 
 	if (imx_hab_srk_hash_valid(cursrk)) {
-		char *str = "Current SRK hash is valid";
-
 		if (flags & IMX_SRK_HASH_FORCE) {
-			pr_warn("%s, ignoring\n", str);
+			pr_warn("Current SRK hash is valid, ignoring\n");
+		} else if (memcmp(cursrk, buf, SRK_HASH_SIZE) == 0) {
+			pr_info("Current SRK hash is equal, nothing to do\n");
+			return 0;
 		} else {
-			pr_err("%s, refusing to burn again\n", str);
+			pr_err("Current SRK hash is different, refusing to burn again\n");
 			return -EEXIST;
 		}
 	}

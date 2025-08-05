@@ -241,6 +241,7 @@ static void avnet_zedboard_ps7_init(void)
 	/* poor mans clkctrl */
 	writel(0x00001403, ZYNQ_CLOCK_CTRL_BASE + ZYNQ_UART_CLK_CTRL);
 	writel(0x00000101, ZYNQ_CLOCK_CTRL_BASE + ZYNQ_LQSPI_CLK_CTRL);
+	writel(0x00001401, ZYNQ_CLOCK_CTRL_BASE + ZYNQ_SDIO_CLK_CTRL);
 
 	/* GEM0 */
 	writel(0x00000001, 0xf8000138);

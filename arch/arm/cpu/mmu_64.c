@@ -360,6 +360,14 @@ static void create_guard_page(void)
 	pr_debug("Created guard page\n");
 }
 
+void setup_trap_pages(void)
+{
+	/* Vectors are already registered by aarch64_init_vectors */
+	/* Make zero page faulting to catch NULL pointer derefs */
+	zero_page_faulting();
+	create_guard_page();
+}
+
 /*
  * Prepare MMU for usage enable it.
  */
@@ -412,9 +420,7 @@ void __mmu_init(bool mmu_on)
 	remap_range((void *)code_start, code_size, MAP_CODE);
 	remap_range((void *)rodata_start, rodata_size, ARCH_MAP_CACHED_RO);
 
-	/* Make zero page faulting to catch NULL pointer derefs */
-	zero_page_faulting();
-	create_guard_page();
+	setup_trap_pages();
 }
 
 void mmu_disable(void)

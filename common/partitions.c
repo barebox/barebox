@@ -251,9 +251,9 @@ int partition_create(struct partition_desc *pdesc, const char *name,
 	}
 
 	list_for_each_entry(part, &pdesc->partitions, list) {
-		if (region_overlap_end(part->first_sec,
-				       part->first_sec + part->size - 1,
-				       lba_start, lba_end)) {
+		if (region_overlap_end_inclusive(part->first_sec,
+						 part->first_sec + part->size - 1,
+						 lba_start, lba_end)) {
 			pr_err("new partition %llu-%llu overlaps with partition %s (%llu-%llu)\n",
 			       lba_start, lba_end, part->name, part->first_sec,
 				part->first_sec + part->size - 1);

@@ -21,7 +21,7 @@ static void __print_resources(struct resource *res, int indent,
 	resource_size_t size = resource_size(res);
 	int i;
 
-	if (addr && !region_overlap_end(*addr, *addr, res->start, res->end))
+	if (addr && !region_overlap_end_inclusive(*addr, *addr, res->start, res->end))
 		return;
 
 	if ((flags & FLAG_VERBOSE) && !(flags & FLAG_IOPORT))

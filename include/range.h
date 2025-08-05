@@ -5,15 +5,15 @@
 #include <linux/types.h>
 
 /**
- * region_overlap_end - check whether a pair of [start, end] ranges overlap
+ * region_overlap_end_inclusive - check whether a pair of [start, end] ranges overlap
  *
  * @starta: start of the first range
  * @enda:   end of the first range (inclusive)
  * @startb: start of the second range
  * @endb:   end of the second range (inclusive)
  */
-static inline bool region_overlap_end(u64 starta, u64 enda,
-				      u64 startb, u64 endb)
+static inline bool region_overlap_end_inclusive(u64 starta, u64 enda,
+						u64 startb, u64 endb)
 {
 	if (enda < startb)
 		return false;
@@ -36,8 +36,8 @@ static inline bool region_overlap_size(u64 starta, u64 lena,
 	if (!lena || !lenb)
 		return false;
 
-	return region_overlap_end(starta, starta + lena - 1,
-				  startb, startb + lenb - 1);
+	return region_overlap_end_inclusive(starta, starta + lena - 1,
+					    startb, startb + lenb - 1);
 }
 
 /**

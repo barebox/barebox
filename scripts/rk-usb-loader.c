@@ -222,9 +222,10 @@ static int upload_image(const char *filename)
 
 	hdr = buf;
 
-	if (hdr->magic != NEWIDB_MAGIC_RKNS) {
-		log_error("%s has invalid magic 0x%08x ( != 0x%08x )\n", filename,
-			  hdr->magic, NEWIDB_MAGIC_RKNS);
+	if (hdr->magic != NEWIDB_MAGIC_RKNS &&
+	    hdr->magic != NEWIDB_MAGIC_RKSS) {
+		log_error("%s has invalid magic 0x%08x\n",
+			  filename, hdr->magic);
 		exit(1);
 	}
 

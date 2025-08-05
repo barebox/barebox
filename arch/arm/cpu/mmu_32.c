@@ -19,7 +19,6 @@
 #include <asm/system_info.h>
 #include <asm/sections.h>
 #include <linux/pagemap.h>
-#include <range.h>
 
 #include "mmu_32.h"
 
@@ -579,14 +578,7 @@ void setup_trap_pages(void)
  */
 void __mmu_init(bool mmu_on)
 {
-	struct memory_bank *bank;
 	uint32_t *ttb = get_ttb();
-	unsigned long text_start = (unsigned long)&_stext;
-	unsigned long code_start = text_start;
-	unsigned long code_size = (unsigned long)&__start_rodata - (unsigned long)&_stext;
-	unsigned long text_size = (unsigned long)&_etext - text_start;
-	unsigned long rodata_start = (unsigned long)&__start_rodata;
-	unsigned long rodata_size = (unsigned long)&__end_rodata - rodata_start;
 
 	// TODO: remap writable only while remapping?
 	// TODO: What memtype for ttb when barebox is EFI loader?
@@ -604,38 +596,6 @@ void __mmu_init(bool mmu_on)
 					ttb);
 
 	pr_debug("ttb: 0x%p\n", ttb);
-
-	/*
-	 * Early mmu init will have mapped everything but the initial memory area
-	 * (excluding final OPTEE_SIZE bytes) uncached. We have now discovered
-	 * all memory banks, so let's map all pages, excluding reserved memory areas,
-	 * cacheable and executable.
-	 */
-	for_each_memory_bank(bank) {
-		struct resource *rsv;
-		resource_size_t pos;
-
-		pos = bank->start;
-
-		/* Skip reserved regions */
-		for_each_reserved_region(bank, rsv) {
-			remap_range((void *)pos, rsv->start - pos, MAP_CACHED);
-			pos = rsv->end + 1;
-		}
-
-		if (region_overlap_size(pos, bank->start + bank->size - pos, text_start, text_size)) {
-			remap_range((void *)pos, code_start - pos, MAP_CACHED);
-			/* skip barebox segments here, will be mapped below */
-			pos = text_start + text_size;
-		}
-
-		remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
-	}
-
-	setup_trap_pages();
-
-	remap_range((void *)code_start, code_size, MAP_CODE);
-	remap_range((void *)rodata_start, rodata_size, ARCH_MAP_CACHED_RO);
 }
 
 /*

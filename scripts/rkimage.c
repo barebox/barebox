@@ -66,11 +66,12 @@ static int create_newidb(struct newidb *idb)
 
 	idb->magic = NEWIDB_MAGIC;
 	idb->n_files = (n_code << 16) | (1 << 7) | (1 << 8);
+	idb->flags = 0;
 
 	if (hash_type == HASH_TYPE_SHA256)
-		idb->hashtype = (1 << 0);
+		idb->flags |= NEWIDB_FLAGS_SHA256;
 	else if (hash_type == HASH_TYPE_SHA512)
-		idb->hashtype = (1 << 1);
+		idb->flags |= NEWIDB_FLAGS_SHA512;
 
 	if (!keep_cert)
 		image_offset = 4;

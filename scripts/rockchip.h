@@ -3,6 +3,9 @@
 
 #define NEWIDB_MAGIC 0x534e4b52 /* 'RKNS' */
 
+#define NEWIDB_FLAGS_SHA256	(1U << 0)
+#define NEWIDB_FLAGS_SHA512	(1U << 1)
+
 struct newidb_entry {
 	uint32_t sector;
 	uint32_t unknown_ffffffff;
@@ -16,7 +19,7 @@ struct newidb {
 	uint32_t magic;
 	unsigned char unknown1[4];
 	uint32_t n_files;
-	uint32_t hashtype;
+	uint32_t flags;
 	unsigned char unknown2[8];
 	unsigned char unknown3[8];
 	unsigned char unknown4[88];

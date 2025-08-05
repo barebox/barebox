@@ -226,6 +226,10 @@ int cdev_find_free_index(const char *basename)
 
 static struct cdev *cdev_get_master(struct cdev *cdev)
 {
+	/* mtd devices handle partitions themselves */
+	if (cdev->mtd)
+		return cdev;
+
 	while (cdev && cdev_is_partition(cdev))
 		cdev = cdev->master;
 

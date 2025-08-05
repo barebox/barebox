@@ -1,7 +1,11 @@
 #ifndef __ROCKCHIP_H
 #define __ROCKCHIP_H
 
-#define NEWIDB_MAGIC 0x534e4b52 /* 'RKNS' */
+#define NEWIDB_MAGIC_RKNS 0x534e4b52
+#define NEWIDB_MAGIC_RKSS 0x53534b52
+
+#define NEWIDB_FLAGS_SHA256	(1U << 0)
+#define NEWIDB_FLAGS_SHA512	(1U << 1)
 
 struct newidb_entry {
 	uint32_t sector;
@@ -16,7 +20,7 @@ struct newidb {
 	uint32_t magic;
 	unsigned char unknown1[4];
 	uint32_t n_files;
-	uint32_t hashtype;
+	uint32_t flags;
 	unsigned char unknown2[8];
 	unsigned char unknown3[8];
 	unsigned char unknown4[88];

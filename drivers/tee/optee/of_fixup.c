@@ -3,7 +3,6 @@
 #include <of.h>
 #include <linux/ioport.h>
 #include <asm/barebox-arm.h>
-#include <asm/optee.h>
 #include <tee/optee.h>
 
 int of_optee_fixup(struct device_node *root, void *_data)

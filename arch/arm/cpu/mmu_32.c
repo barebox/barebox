@@ -278,7 +278,7 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 	pte_flags = get_pte_flags(map_type);
 	pmd_flags = pte_flags_to_pmd(pte_flags);
 
-	pr_debug("%s: 0x%08x 0x%08x type %d\n", __func__, virt_addr, size, map_type);
+	pr_debug_remap(virt_addr, phys_addr, size, map_type);
 
 	size = PAGE_ALIGN(size);
 	if (!size)

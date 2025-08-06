@@ -27,7 +27,7 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptyp
 	if (phys_addr != virt_to_phys(virt_addr))
 		return -ENOSYS;
 
-	switch (flags) {
+	switch (flags & MAP_TYPE_MASK) {
 	case MAP_UNCACHED:
 		pte_flags = MAS2_I;
 		break;

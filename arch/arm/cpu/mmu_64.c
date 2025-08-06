@@ -289,7 +289,7 @@ static void flush_cacheable_pages(void *start, size_t size)
 
 static unsigned long get_pte_attrs(maptype_t map_type)
 {
-	switch (map_type) {
+	switch (map_type & MAP_TYPE_MASK) {
 	case MAP_CACHED:
 		return attrs_xn() | CACHED_MEM;
 	case MAP_UNCACHED:
@@ -330,7 +330,7 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptyp
 	if (attrs == ~0UL)
 		return -EINVAL;
 
-	if (map_type != MAP_CACHED)
+	if (!maptype_is_compatible(map_type, MAP_CACHED))
 		flush_cacheable_pages(virt_addr, size);
 
 	create_sections((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs, false);

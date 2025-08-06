@@ -9,9 +9,12 @@
 #include <linux/ioport.h>
 #include <linux/kernel.h>
 #include <linux/sizes.h>
+#include <linux/bits.h>
 
 #define ARCH_MAP_CACHED_RWX	MAP_ARCH(2)
 #define ARCH_MAP_CACHED_RO	MAP_ARCH(3)
+
+#define ARCH_MAP_FLAG_PAGEWISE	BIT(31)
 
 struct device;
 

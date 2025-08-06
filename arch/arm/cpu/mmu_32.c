@@ -266,8 +266,9 @@ static uint32_t get_pmd_flags(maptype_t map_type)
 }
 
 static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size,
-			       maptype_t map_type, bool force_pages)
+			       maptype_t map_type)
 {
+	bool force_pages = map_type & ARCH_MAP_FLAG_PAGEWISE;
 	u32 virt_addr = (u32)_virt_addr;
 	u32 pte_flags, pmd_flags;
 	uint32_t *ttb = get_ttb();
@@ -363,16 +364,16 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 	tlb_invalidate();
 }
 
-static void early_remap_range(u32 addr, size_t size, maptype_t map_type, bool force_pages)
+static void early_remap_range(u32 addr, size_t size, maptype_t map_type)
 {
-	__arch_remap_range((void *)addr, addr, size, map_type, force_pages);
+	__arch_remap_range((void *)addr, addr, size, map_type);
 }
 
 int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptype_t map_type)
 {
 	map_type = arm_mmu_maybe_skip_permissions(map_type);
 
-	__arch_remap_range(virt_addr, phys_addr, size, map_type, false);
+	__arch_remap_range(virt_addr, phys_addr, size, map_type);
 
 	if (maptype_is_compatible(map_type, MAP_UNCACHED))
 		dma_inv_range(virt_addr, size);
@@ -643,7 +644,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 * map the bulk of the memory as sections to avoid allocating too many page tables
 	 * at this early stage
 	 */
-	early_remap_range(membase, barebox_start - membase, ARCH_MAP_CACHED_RWX, false);
+	early_remap_range(membase, barebox_start - membase, ARCH_MAP_CACHED_RWX);
 	/*
 	 * Map the remainder of the memory explicitly with two level page tables. This is
 	 * the place where barebox proper ends at. In barebox proper we'll remap the code
@@ -653,10 +654,11 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 * a break-before-make sequence which we can't do when barebox proper is running
 	 * at the location being remapped.
 	 */
-	early_remap_range(barebox_start, barebox_size, ARCH_MAP_CACHED_RWX, true);
-	early_remap_range(optee_start, OPTEE_SIZE, MAP_UNCACHED, false);
+	early_remap_range(barebox_start, barebox_size,
+			  ARCH_MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
+	early_remap_range(optee_start, OPTEE_SIZE, MAP_UNCACHED);
 	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext),
-			  ARCH_MAP_CACHED_RWX, false);
+			  ARCH_MAP_CACHED_RWX);
 
 	__mmu_cache_on();
 }

@@ -146,8 +146,9 @@ static void split_block(uint64_t *pte, int level)
 }
 
 static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
-			      maptype_t map_type, bool force_pages)
+			      maptype_t map_type)
 {
+	bool force_pages = map_type & ARCH_MAP_FLAG_PAGEWISE;
 	unsigned long attr = get_pte_attrs(map_type);
 	uint64_t *ttb = get_ttb();
 	uint64_t block_size;
@@ -312,9 +313,9 @@ static void flush_cacheable_pages(void *start, size_t size)
 		v8_flush_dcache_range(flush_start, flush_end);
 }
 
-static void early_remap_range(uint64_t addr, size_t size, maptype_t map_type, bool force_pages)
+static void early_remap_range(uint64_t addr, size_t size, maptype_t map_type)
 {
-	__arch_remap_range(addr, addr, size, map_type, force_pages);
+	__arch_remap_range(addr, addr, size, map_type);
 }
 
 int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptype_t map_type)
@@ -324,7 +325,7 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptyp
 	if (!maptype_is_compatible(map_type, MAP_CACHED))
 		flush_cacheable_pages(virt_addr, size);
 
-	return __arch_remap_range((uint64_t)virt_addr, phys_addr, (uint64_t)size, map_type, false);
+	return __arch_remap_range((uint64_t)virt_addr, phys_addr, (uint64_t)size, map_type);
 }
 
 static void mmu_enable(void)
@@ -419,7 +420,7 @@ static void early_init_range(size_t total_level0_tables)
 	uint64_t addr = 0;
 
 	while (total_level0_tables--) {
-		early_remap_range(addr, L0_XLAT_SIZE, MAP_UNCACHED, false);
+		early_remap_range(addr, L0_XLAT_SIZE, MAP_UNCACHED);
 		split_block(ttb, 0);
 		addr += L0_XLAT_SIZE;
 		ttb++;
@@ -451,7 +452,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 */
 	early_init_range(2);
 
-	early_remap_range(membase, memsize, ARCH_MAP_CACHED_RWX, false);
+	early_remap_range(membase, memsize, ARCH_MAP_CACHED_RWX);
 
 	if (optee_get_membase(&optee_membase)) {
                 optee_membase = membase + memsize - OPTEE_SIZE;
@@ -459,18 +460,18 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 		barebox_size = optee_membase - barebox_start;
 
 		early_remap_range(optee_membase - barebox_size, barebox_size,
-			     ARCH_MAP_CACHED_RWX, true);
+			     ARCH_MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
 	} else {
 		barebox_size = membase + memsize - barebox_start;
 
 		early_remap_range(membase + memsize - barebox_size, barebox_size,
-			     ARCH_MAP_CACHED_RWX, true);
+			     ARCH_MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
 	}
 
-	early_remap_range(optee_membase, OPTEE_SIZE, MAP_FAULT, false);
+	early_remap_range(optee_membase, OPTEE_SIZE, MAP_FAULT);
 
 	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext),
-			  ARCH_MAP_CACHED_RWX, false);
+			  ARCH_MAP_CACHED_RWX);
 
 	mmu_enable();
 }

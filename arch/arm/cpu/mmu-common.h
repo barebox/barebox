@@ -10,8 +10,8 @@
 #include <linux/kernel.h>
 #include <linux/sizes.h>
 
-#define ARCH_MAP_CACHED_RWX	((unsigned)-2)
-#define ARCH_MAP_CACHED_RO	((unsigned)-3)
+#define ARCH_MAP_CACHED_RWX	MAP_ARCH(2)
+#define ARCH_MAP_CACHED_RO	MAP_ARCH(3)
 
 struct device;
 
@@ -26,7 +26,7 @@ static inline maptype_t arm_mmu_maybe_skip_permissions(maptype_t map_type)
 	if (IS_ENABLED(CONFIG_ARM_MMU_PERMISSIONS))
 		return map_type;
 
-	switch (map_type) {
+	switch (map_type & MAP_TYPE_MASK) {
 	case MAP_CODE:
 	case MAP_CACHED:
 	case ARCH_MAP_CACHED_RO:

@@ -226,7 +226,7 @@ static u32 pte_flags_to_pmd(u32 pte)
 static uint32_t get_pte_flags(maptype_t map_type)
 {
 	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
-		switch (map_type) {
+		switch (map_type & MAP_TYPE_MASK) {
 		case ARCH_MAP_CACHED_RWX:
 			return PTE_FLAGS_CACHED_V7_RWX;
 		case ARCH_MAP_CACHED_RO:
@@ -244,7 +244,7 @@ static uint32_t get_pte_flags(maptype_t map_type)
 			return 0x0;
 		}
 	} else {
-		switch (map_type) {
+		switch (map_type & MAP_TYPE_MASK) {
 		case ARCH_MAP_CACHED_RO:
 		case MAP_CODE:
 			return PTE_FLAGS_CACHED_RO_V4;
@@ -300,7 +300,7 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 			 */
 			chunk = PGDIR_SIZE;
 			val = phys_addr | pmd_flags;
-			if (map_type != MAP_FAULT)
+			if (!maptype_is_compatible(map_type, MAP_FAULT))
 				val |= PMD_TYPE_SECT;
 			// TODO break-before-make missing
 			set_pte(pgd, val);
@@ -346,7 +346,7 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 
 				val = phys_addr + i * PAGE_SIZE;
 				val |= pte_flags;
-				if (map_type != MAP_FAULT)
+				if (!maptype_is_compatible(map_type, MAP_FAULT))
 					val |= PTE_TYPE_SMALL;
 
 				// TODO break-before-make missing
@@ -375,7 +375,7 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptyp
 
 	__arch_remap_range(virt_addr, phys_addr, size, map_type, false);
 
-	if (map_type == MAP_UNCACHED)
+	if (maptype_is_compatible(map_type, MAP_UNCACHED))
 		dma_inv_range(virt_addr, size);
 
 	return 0;

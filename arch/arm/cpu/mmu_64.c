@@ -24,6 +24,39 @@
 
 #include "mmu_64.h"
 
+static size_t granule_size(int level)
+{
+	/*
+	 *  With 4k page granule, a virtual address is split into 4 lookup parts
+	 *  spanning 9 bits each:
+	 *
+	 *    _______________________________________________
+	 *   |       |       |       |       |       |       |
+	 *   |   0   |  Lv0  |  Lv1  |  Lv2  |  Lv3  |  off  |
+	 *   |_______|_______|_______|_______|_______|_______|
+	 *     63-48   47-39   38-30   29-21   20-12   11-00
+	 *
+	 *             mask        page size
+	 *
+	 *    Lv0: FF8000000000       --
+	 *    Lv1:   7FC0000000       1G
+	 *    Lv2:     3FE00000       2M
+	 *    Lv3:       1FF000       4K
+	 *    off:          FFF
+	 */
+	switch (level) {
+	default:
+	case 0:
+		return L0_XLAT_SIZE;
+	case 1:
+		return L1_XLAT_SIZE;
+	case 2:
+		return L2_XLAT_SIZE;
+	case 3:
+		return L3_XLAT_SIZE;
+	}
+}
+
 static uint64_t *get_ttb(void)
 {
 	return (uint64_t *)get_ttbr(current_el());
@@ -208,39 +241,6 @@ static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 
 	tlb_invalidate();
 	return 0;
-}
-
-static size_t granule_size(int level)
-{
-	/*
-	 *  With 4k page granule, a virtual address is split into 4 lookup parts
-	 *  spanning 9 bits each:
-	 *
-	 *    _______________________________________________
-	 *   |       |       |       |       |       |       |
-	 *   |   0   |  Lv0  |  Lv1  |  Lv2  |  Lv3  |  off  |
-	 *   |_______|_______|_______|_______|_______|_______|
-	 *     63-48   47-39   38-30   29-21   20-12   11-00
-	 *
-	 *             mask        page size
-	 *
-	 *    Lv0: FF8000000000       --
-	 *    Lv1:   7FC0000000       1G
-	 *    Lv2:     3FE00000       2M
-	 *    Lv3:       1FF000       4K
-	 *    off:          FFF
-	 */
-	switch (level) {
-	default:
-	case 0:
-		return L0_XLAT_SIZE;
-	case 1:
-		return L1_XLAT_SIZE;
-	case 2:
-		return L2_XLAT_SIZE;
-	case 3:
-		return L3_XLAT_SIZE;
-	}
 }
 
 static bool pte_is_cacheable(uint64_t pte)

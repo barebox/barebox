@@ -287,9 +287,9 @@ static void flush_cacheable_pages(void *start, size_t size)
 		v8_flush_dcache_range(flush_start, flush_end);
 }
 
-static unsigned long get_pte_attrs(unsigned flags)
+static unsigned long get_pte_attrs(maptype_t map_type)
 {
-	switch (flags) {
+	switch (map_type) {
 	case MAP_CACHED:
 		return attrs_xn() | CACHED_MEM;
 	case MAP_UNCACHED:
@@ -309,9 +309,9 @@ static unsigned long get_pte_attrs(unsigned flags)
 	}
 }
 
-static void early_remap_range(uint64_t addr, size_t size, unsigned flags, bool force_pages)
+static void early_remap_range(uint64_t addr, size_t size, maptype_t map_type, bool force_pages)
 {
-	unsigned long attrs = get_pte_attrs(flags);
+	unsigned long attrs = get_pte_attrs(map_type);
 
 	if (WARN_ON(attrs == ~0UL))
 		return;
@@ -319,18 +319,18 @@ static void early_remap_range(uint64_t addr, size_t size, unsigned flags, bool f
 	create_sections(addr, addr, size, attrs, force_pages);
 }
 
-int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned flags)
+int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptype_t map_type)
 {
 	unsigned long attrs;
 
-	flags = arm_mmu_maybe_skip_permissions(flags);
+	map_type = arm_mmu_maybe_skip_permissions(map_type);
 
-	attrs = get_pte_attrs(flags);
+	attrs = get_pte_attrs(map_type);
 
 	if (attrs == ~0UL)
 		return -EINVAL;
 
-	if (flags != MAP_CACHED)
+	if (map_type != MAP_CACHED)
 		flush_cacheable_pages(virt_addr, size);
 
 	create_sections((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs, false);

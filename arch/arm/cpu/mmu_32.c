@@ -223,7 +223,7 @@ static u32 pte_flags_to_pmd(u32 pte)
 	return pmd;
 }
 
-static uint32_t get_pte_flags(int map_type)
+static uint32_t get_pte_flags(maptype_t map_type)
 {
 	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
 		switch (map_type) {
@@ -261,13 +261,13 @@ static uint32_t get_pte_flags(int map_type)
 	}
 }
 
-static uint32_t get_pmd_flags(int map_type)
+static uint32_t get_pmd_flags(maptype_t map_type)
 {
 	return pte_flags_to_pmd(get_pte_flags(map_type));
 }
 
 static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size,
-			       unsigned map_type, bool force_pages)
+			       maptype_t map_type, bool force_pages)
 {
 	u32 virt_addr = (u32)_virt_addr;
 	u32 pte_flags, pmd_flags;
@@ -364,12 +364,12 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 	tlb_invalidate();
 }
 
-static void early_remap_range(u32 addr, size_t size, unsigned map_type, bool force_pages)
+static void early_remap_range(u32 addr, size_t size, maptype_t map_type, bool force_pages)
 {
 	__arch_remap_range((void *)addr, addr, size, map_type, force_pages);
 }
 
-int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned map_type)
+int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptype_t map_type)
 {
 	map_type = arm_mmu_maybe_skip_permissions(map_type);
 

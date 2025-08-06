@@ -13,7 +13,7 @@
 #include <mmu.h>
 
 static int do_test_one_area(struct mem_test_resource *r, int bus_only,
-		unsigned cache_flag)
+		maptype_t cache_flag)
 {
 	unsigned flags = MEMTEST_VERBOSE;
 	int ret;
@@ -39,7 +39,7 @@ static int do_test_one_area(struct mem_test_resource *r, int bus_only,
 }
 
 static int do_memtest_thorough(struct list_head *memtest_regions,
-		int bus_only, unsigned cache_flag)
+		int bus_only, maptype_t cache_flag)
 {
 	struct mem_test_resource *r;
 	int ret;
@@ -54,7 +54,7 @@ static int do_memtest_thorough(struct list_head *memtest_regions,
 }
 
 static int do_memtest_biggest(struct list_head *memtest_regions,
-		int bus_only, unsigned cache_flag)
+		int bus_only, maptype_t cache_flag)
 {
 	struct mem_test_resource *r;
 
@@ -70,7 +70,7 @@ static int do_memtest(int argc, char *argv[])
 	int bus_only = 0, ret, opt;
 	uint32_t i, max_i = 1;
 	struct list_head memtest_used_regions;
-	int (*memtest)(struct list_head *, int, unsigned);
+	int (*memtest)(struct list_head *, int, maptype_t);
 	int cached = 0, uncached = 0;
 
 	memtest = do_memtest_biggest;

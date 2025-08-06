@@ -17,7 +17,7 @@
 #include <mmu.h>
 #include <mach/mmu.h>
 
-int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned flags)
+int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptype_t flags)
 {
 	uint32_t ptr, start, tsize, valid, wimge, pte_flags;
 	unsigned long epn;

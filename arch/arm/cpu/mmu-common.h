@@ -17,11 +17,11 @@ struct device;
 
 void dma_inv_range(void *ptr, size_t size);
 void dma_flush_range(void *ptr, size_t size);
-void *dma_alloc_map(struct device *dev, size_t size, dma_addr_t *dma_handle, unsigned flags);
+void *dma_alloc_map(struct device *dev, size_t size, dma_addr_t *dma_handle, maptype_t map_type);
 void setup_trap_pages(void);
 void __mmu_init(bool mmu_on);
 
-static inline unsigned arm_mmu_maybe_skip_permissions(unsigned map_type)
+static inline maptype_t arm_mmu_maybe_skip_permissions(maptype_t map_type)
 {
 	if (IS_ENABLED(CONFIG_ARM_MMU_PERMISSIONS))
 		return map_type;

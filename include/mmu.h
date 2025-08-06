@@ -27,9 +27,9 @@
 
 #ifndef ARCH_HAS_REMAP
 static inline int arch_remap_range(void *virt_addr, phys_addr_t phys_addr,
-				   size_t size, unsigned flags)
+				   size_t size, maptype_t map_type)
 {
-	if (flags == MAP_ARCH_DEFAULT && phys_addr == virt_to_phys(virt_addr))
+	if (map_type == MAP_ARCH_DEFAULT && phys_addr == virt_to_phys(virt_addr))
 		return 0;
 
 	return -EINVAL;
@@ -46,9 +46,9 @@ static inline bool arch_can_remap(void)
 }
 #endif
 
-static inline int remap_range(void *start, size_t size, unsigned flags)
+static inline int remap_range(void *start, size_t size, maptype_t map_type)
 {
-	return arch_remap_range(start, virt_to_phys(start), size, flags);
+	return arch_remap_range(start, virt_to_phys(start), size, map_type);
 }
 
 #ifdef CONFIG_MMUINFO

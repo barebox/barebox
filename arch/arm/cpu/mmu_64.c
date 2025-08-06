@@ -95,6 +95,21 @@ static uint64_t *alloc_pte(void)
 }
 #endif
 
+/**
+ * __find_pte - Find page table entry
+ * @ttb: Translation Table Base
+ * @addr: Virtual address to lookup
+ * @level: used to store the level at which the page table walk ended.
+ *         if NULL, asserts that the smallest page was found
+ *
+ * This function walks the page table from the top down and finds the page
+ * table entry associated with the supplied virtual address.
+ * The level at which a page was found is saved into *level.
+ * if the level is NULL, a last level page must be found or the function
+ * panics.
+ *
+ * Returns a pointer to the page table entry
+ */
 static uint64_t *__find_pte(uint64_t *ttb, uint64_t addr, int *level)
 {
 	uint64_t *pte = ttb;
@@ -113,6 +128,8 @@ static uint64_t *__find_pte(uint64_t *ttb, uint64_t addr, int *level)
 			pte = (uint64_t *)(*pte & XLAT_ADDR_MASK);
 	}
 
+	if (!level && i != 3)
+		panic("Got level %d page table entry, where level 3 expected\n", i);
 	if (level)
 		*level = i;
 	return pte;

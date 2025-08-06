@@ -9,6 +9,8 @@
 
 #include "mmu-common.h"
 
+typedef u32 mmu_addr_t;
+
 #define PGDIR_SHIFT	20
 #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
 

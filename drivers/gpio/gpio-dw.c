@@ -114,6 +114,8 @@ static int dw_gpio_add_port(struct device *dev, struct device_node *node,
 	chip = xzalloc(sizeof(*chip));
 
 	chip->chip.ops = &dw_gpio_ops;
+
+	dev->id = of_alias_get_id(dev->device_node, "gpio");
 	if (dev->id < 0)
 		chip->chip.base = DEVICE_ID_DYNAMIC;
 	else
@@ -181,7 +183,7 @@ MODULE_DEVICE_TABLE(of, dwgpio_match);
 static struct driver dwgpio_driver = {
 	.name = "dw-apb-gpio",
 	.probe = dw_gpio_probe,
-	.of_compatible = DRV_OF_COMPAT(dwgpio_match),
+	.of_compatible = dwgpio_match,
 };
 
 postcore_platform_driver(dwgpio_driver);

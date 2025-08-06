@@ -274,10 +274,10 @@ static inline void dma_flush_range_end(unsigned long start, unsigned long end)
  */
 static void flush_cacheable_pages(void *start, size_t size)
 {
-	u64 flush_start = ~0ULL, flush_end = ~0ULL;
-	u64 region_start, region_end;
+	mmu_addr_t flush_start = ~0UL, flush_end = ~0UL;
+	mmu_addr_t region_start, region_end;
 	size_t block_size;
-	u64 *ttb;
+	mmu_addr_t *ttb;
 
 	region_start = PAGE_ALIGN_DOWN((ulong)start);
 	region_end = PAGE_ALIGN(region_start + size) - 1;
@@ -292,9 +292,9 @@ static void flush_cacheable_pages(void *start, size_t size)
 	 * windows being remapped being small, the overhead compared to
 	 * actually flushing the ranges isn't too significant.
 	 */
-	for (u64 addr = region_start; addr < region_end; addr += block_size) {
+	for (mmu_addr_t addr = region_start; addr < region_end; addr += block_size) {
 		int level;
-		u64 *pte = __find_pte(ttb, addr, &level);
+		mmu_addr_t *pte = __find_pte(ttb, addr, &level);
 
 		block_size = granule_size(level);
 		
@@ -314,7 +314,7 @@ static void flush_cacheable_pages(void *start, size_t size)
 		 * We don't have a previous contiguous flush area to append to.
 		 * If we recorded any area before, let's flush it now
 		 */
-		if (flush_start != ~0ULL)
+		if (flush_start != ~0UL)
 			dma_flush_range_end(flush_start, flush_end);
 
 		/* and start the new contiguous flush area with this page */
@@ -323,7 +323,7 @@ static void flush_cacheable_pages(void *start, size_t size)
 	}
 
 	/* The previous loop won't flush the last cached range, so do it here */
-	if (flush_start != ~0ULL)
+	if (flush_start != ~0UL)
 		dma_flush_range_end(flush_start, flush_end);
 }
 

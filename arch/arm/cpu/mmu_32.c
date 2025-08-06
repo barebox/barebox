@@ -381,8 +381,8 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptyp
 	return 0;
 }
 
-static void create_sections(unsigned long first, unsigned long last,
-			    unsigned int flags)
+static void early_create_sections(unsigned long first, unsigned long last,
+				  unsigned int flags)
 {
 	uint32_t *ttb = get_ttb();
 	unsigned long ttb_start = pgd_index(first);
@@ -395,10 +395,10 @@ static void create_sections(unsigned long first, unsigned long last,
 	}
 }
 
-static inline void create_flat_mapping(void)
+static inline void early_create_flat_mapping(void)
 {
 	/* create a flat mapping using 1MiB sections */
-	create_sections(0, 0xffffffff, attrs_uncached_mem());
+	early_create_sections(0, 0xffffffff, attrs_uncached_mem());
 }
 
 void *map_io_sections(unsigned long phys, void *_start, size_t size)
@@ -634,7 +634,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 * This marks the whole address space as uncachable as well as
 	 * unexecutable if possible
 	 */
-	create_flat_mapping();
+	early_create_flat_mapping();
 
 	/* maps main memory as cachable */
 	optee_start = membase + memsize - OPTEE_SIZE;

@@ -47,7 +47,7 @@ static void flush_cacheable_pages(void *start, size_t size)
 
 		block_size = granule_size(level);
 
-		if (!pte || !pte_is_cacheable(*pte))
+		if (!pte || !pte_is_cacheable(*pte, level))
 			continue;
 
 		if (flush_end == addr) {

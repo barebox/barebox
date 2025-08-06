@@ -24,6 +24,36 @@
 
 #define PTRS_PER_PTE		(PGDIR_SIZE / PAGE_SIZE)
 
+static size_t granule_size(int level)
+{
+	/*
+	 *  With 4k page granule, a virtual address is split into 2 lookup parts.
+	 *  We don't do LPAE or large (64K) pages for ARM32.
+	 *
+	 *    _______________________
+	 *   |       |       |       |
+	 *   |  Lv1  |  Lv2  |  off  |
+	 *   |_______|_______|_______|
+	 *     31-21   20-12   11-00
+	 *
+	 *             mask        page size   term
+	 *
+	 *    Lv0:     E0000000       --
+	 *    Lv1:     1FE00000       1M      PGD/PMD
+	 *    Lv2:       1FF000       4K      PTE
+	 *    off:          FFF
+	 */
+
+	switch (level) {
+	case 1:
+		return PGDIR_SIZE;
+	case 2:
+		return PAGE_SIZE;
+	}
+
+	return 0;
+}
+
 static inline uint32_t *get_ttb(void)
 {
 	/* Clear unpredictable bits [13:0] */
@@ -140,6 +170,20 @@ void dma_flush_range(void *ptr, size_t size)
 
 	if (outer_cache.flush_range)
 		outer_cache.flush_range(start, end);
+}
+
+/**
+ * dma_flush_range_end - Flush caches for address range
+ * @start: Starting virtual address of the range.
+ * @end:   Last virtual address in range (inclusive)
+ *
+ * This function cleans and invalidates all cache lines in the specified
+ * range. Note that end is inclusive, meaning that it's the last address
+ * that is flushed (assuming both start and total size are cache line aligned).
+ */
+static void dma_flush_range_end(unsigned long start, unsigned long end)
+{
+	dma_flush_range((void *)start, end - start + 1);
 }
 
 void dma_inv_range(void *ptr, size_t size)
@@ -389,14 +433,22 @@ static void early_remap_range(u32 addr, size_t size, maptype_t map_type)
 	__arch_remap_range((void *)addr, addr, size, map_type);
 }
 
+static bool pte_is_cacheable(uint32_t pte, int level)
+{
+	return	(level == 2 && (pte & PTE_CACHEABLE)) ||
+		(level == 1 && (pte & PMD_SECT_CACHEABLE));
+}
+
+#include "flush_cacheable_pages.h"
+
 int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptype_t map_type)
 {
+	if (!maptype_is_compatible(map_type, MAP_CACHED))
+		flush_cacheable_pages(virt_addr, size);
+
 	map_type = arm_mmu_maybe_skip_permissions(map_type);
 
 	__arch_remap_range(virt_addr, phys_addr, size, map_type);
-
-	if (maptype_is_compatible(map_type, MAP_UNCACHED))
-		dma_inv_range(virt_addr, size);
 
 	return 0;
 }

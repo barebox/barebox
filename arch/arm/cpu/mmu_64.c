@@ -254,7 +254,7 @@ static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 	return 0;
 }
 
-static bool pte_is_cacheable(uint64_t pte)
+static bool pte_is_cacheable(uint64_t pte, int level)
 {
 	return (pte & PTE_ATTRINDX_MASK) == PTE_ATTRINDX(MT_NORMAL);
 }

@@ -68,6 +68,8 @@ def pytest_addoption(parser):
         help=('Pass barebox environment files to barebox. Can be specified more than once'))
     parser.addoption('--qemu', dest='qemu_arg', nargs=argparse.REMAINDER, default=[],
         help=('Pass all remaining options to QEMU as is'))
+    parser.addoption('--bootarg', action='append', dest='bootarg', default=[],
+        help=('Pass boot arguments to barebox for debugging purposes'))
 
 @pytest.fixture(scope="session")
 def strategy(request, target, pytestconfig):
@@ -152,6 +154,9 @@ def strategy(request, target, pytestconfig):
             )
         else:
             pytest.exit("--env unsupported for target\n", 1)
+
+    if len(pytestconfig.option.bootarg) > 0:
+        strategy.append_qemu_bootargs(pytestconfig.option.bootarg)
 
     for arg in pytestconfig.option.qemu_arg:
         strategy.append_qemu_args(arg)

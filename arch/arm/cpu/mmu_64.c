@@ -46,8 +46,7 @@ static uint64_t *alloc_pte(void)
 
 	idx++;
 
-	if (idx * GRANULE_SIZE >= ARM_EARLY_PAGETABLE_SIZE)
-		return NULL;
+	BUG_ON(idx * GRANULE_SIZE >= ARM_EARLY_PAGETABLE_SIZE);
 
 	return (void *)get_ttb() + idx * GRANULE_SIZE;
 }
@@ -109,9 +108,6 @@ static void split_block(uint64_t *pte, int level)
 	levelshift = level2shift(level + 1);
 
 	new_table = alloc_pte();
-	if (!new_table)
-		panic("Unable to allocate PTE\n");
-
 
 	for (i = 0; i < MAX_PTE_ENTRIES; i++) {
 		set_pte(&new_table[i], old_pte | (i << levelshift));

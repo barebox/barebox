@@ -83,8 +83,7 @@ static uint32_t *alloc_pte(void)
 
 	idx++;
 
-	if (idx * PTE_SIZE >= ARM_EARLY_PAGETABLE_SIZE)
-		return NULL;
+	BUG_ON(idx * PTE_SIZE >= ARM_EARLY_PAGETABLE_SIZE);
 
 	return get_ttb() + idx * PTE_SIZE;
 }

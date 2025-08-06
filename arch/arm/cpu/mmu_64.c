@@ -424,7 +424,7 @@ void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_ha
 	return dma_alloc_map(dev, size, dma_handle, MAP_WRITECOMBINE);
 }
 
-static void init_range(size_t total_level0_tables)
+static void early_init_range(size_t total_level0_tables)
 {
 	uint64_t *ttb = get_ttb();
 	uint64_t addr = 0;
@@ -460,7 +460,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 * Assume maximum BITS_PER_PA set to 40 bits.
 	 * Set 1:1 mapping of VA->PA. So to cover the full 1TB range we need 2 tables.
 	 */
-	init_range(2);
+	early_init_range(2);
 
 	early_remap_range(membase, memsize, ARCH_MAP_CACHED_RWX, false);
 

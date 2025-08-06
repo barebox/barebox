@@ -24,7 +24,7 @@ void arch_sync_dma_for_cpu(void *vaddr, size_t size,
 }
 
 void *dma_alloc_map(struct device *dev,
-		    size_t size, dma_addr_t *dma_handle, unsigned flags)
+		    size_t size, dma_addr_t *dma_handle, maptype_t map_type)
 {
 	void *ret;
 
@@ -36,7 +36,7 @@ void *dma_alloc_map(struct device *dev,
 	memset(ret, 0, size);
 	dma_flush_range(ret, size);
 
-	remap_range(ret, size, flags);
+	remap_range(ret, size, map_type);
 
 	return ret;
 }

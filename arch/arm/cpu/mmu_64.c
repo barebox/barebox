@@ -67,9 +67,20 @@ static void set_pte(uint64_t *pt, uint64_t val)
 	WRITE_ONCE(*pt, val);
 }
 
-static void set_table(uint64_t *pt, uint64_t *table_addr)
+static void set_pte_range(unsigned level, uint64_t *virt, phys_addr_t phys,
+			  size_t count, uint64_t attrs, bool bbm)
 {
-	set_pte(pt, PTE_TYPE_TABLE | (uint64_t)table_addr);
+	unsigned granularity = granule_size(level);
+	if (!bbm)
+		goto write_attrs;
+
+	 // TODO break-before-make missing
+
+write_attrs:
+	for (int i = 0; i < count; i++, phys += granularity)
+		set_pte(&virt[i], phys | attrs);
+
+	dma_flush_range(virt, count * sizeof(*virt));
 }
 
 #ifdef __PBL__
@@ -160,37 +171,29 @@ static unsigned long get_pte_attrs(maptype_t map_type)
 #define MAX_PTE_ENTRIES 512
 
 /* Splits a block PTE into table with subpages spanning the old block */
-static void split_block(uint64_t *pte, int level)
+static void split_block(uint64_t *pte, int level, bool bbm)
 {
 	uint64_t old_pte = *pte;
 	uint64_t *new_table;
-	uint64_t i = 0;
-	int levelshift;
+	u64 flags = 0;
 
 	if ((*pte & PTE_TYPE_MASK) == PTE_TYPE_TABLE)
 		return;
 
-	/* level describes the parent level, we need the child ones */
-	levelshift = level2shift(level + 1);
-
 	new_table = alloc_pte();
 
-	for (i = 0; i < MAX_PTE_ENTRIES; i++) {
-		set_pte(&new_table[i], old_pte | (i << levelshift));
+	/* Level 3 block PTEs have the table type */
+	if ((level + 1) == 3)
+		flags |= PTE_TYPE_TABLE;
 
-		/* Level 3 block PTEs have the table type */
-		if ((level + 1) == 3)
-			new_table[i] |= PTE_TYPE_TABLE;
-	}
+	set_pte_range(level + 1, new_table, old_pte, MAX_PTE_ENTRIES, flags, bbm);
 
-	/* Set the new table into effect
-	 * TODO: break-before-make missing
-	 */
-	set_table(pte, new_table);
+	/* level describes the parent level, we need the child ones */
+	set_pte_range(level, pte, (uint64_t)new_table, 1, PTE_TYPE_TABLE, bbm);
 }
 
 static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
-			      maptype_t map_type)
+			      maptype_t map_type, bool bbm)
 {
 	bool force_pages = map_type & ARCH_MAP_FLAG_PAGEWISE;
 	unsigned long attr = get_pte_attrs(map_type);
@@ -235,14 +238,13 @@ static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 				type = (level == 3) ?
 					PTE_TYPE_PAGE : PTE_TYPE_BLOCK;
 
-				/* TODO: break-before-make missing */
-				set_pte(pte, phys | attr | type);
+				set_pte_range(level, pte, phys, 1, attr | type, bbm);
 				addr += block_size;
 				phys += block_size;
 				size -= block_size;
 				break;
 			} else {
-				split_block(pte, level);
+				split_block(pte, level, bbm);
 			}
 
 			table = get_level_table(pte);
@@ -277,7 +279,7 @@ static inline void dma_flush_range_end(unsigned long start, unsigned long end)
 
 static void early_remap_range(uint64_t addr, size_t size, maptype_t map_type)
 {
-	__arch_remap_range(addr, addr, size, map_type);
+	__arch_remap_range(addr, addr, size, map_type, false);
 }
 
 int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptype_t map_type)
@@ -287,7 +289,7 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptyp
 	if (!maptype_is_compatible(map_type, MAP_CACHED))
 		flush_cacheable_pages(virt_addr, size);
 
-	return __arch_remap_range((uint64_t)virt_addr, phys_addr, (uint64_t)size, map_type);
+	return __arch_remap_range((uint64_t)virt_addr, phys_addr, (uint64_t)size, map_type, true);
 }
 
 static void mmu_enable(void)
@@ -383,7 +385,7 @@ static void early_init_range(size_t total_level0_tables)
 
 	while (total_level0_tables--) {
 		early_remap_range(addr, L0_XLAT_SIZE, MAP_UNCACHED);
-		split_block(ttb, 0);
+		split_block(ttb, 0, false);
 		addr += L0_XLAT_SIZE;
 		ttb++;
 	}

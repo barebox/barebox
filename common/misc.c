@@ -289,6 +289,8 @@ BAREBOX_MAGICVAR(global.of.kernel.add_machine_compatible, "Extra machine/board c
 
 static void __noreturn do_panic(bool stacktrace, const char *fmt, va_list ap)
 {
+	if (*fmt)
+		eprintf("PANIC: ");
 	veprintf(fmt, ap);
 	eputchar('\n');
 

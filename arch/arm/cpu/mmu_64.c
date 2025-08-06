@@ -249,9 +249,23 @@ static bool pte_is_cacheable(uint64_t pte)
 }
 
 /**
+ * dma_flush_range_end - Flush caches for address range
+ * @start: Starting virtual address of the range.
+ * @end:   Last virtual address in range (inclusive)
+ *
+ * This function cleans and invalidates all cache lines in the specified
+ * range. Note that end is inclusive, meaning that it's the last address
+ * that is flushed (assuming both start and total size are cache line aligned).
+ */
+static inline void dma_flush_range_end(unsigned long start, unsigned long end)
+{
+	v8_flush_dcache_range(start, end + 1);
+}
+
+/**
  * flush_cacheable_pages - Flush only the cacheable pages in a region
  * @start: Starting virtual address of the range.
- * @end:   Ending virtual address of the range.
+ * @size:  Size of range
  *
  * This function walks the page table and flushes the data caches for the
  * specified range only if the memory is marked as normal cacheable in the
@@ -266,7 +280,7 @@ static void flush_cacheable_pages(void *start, size_t size)
 	u64 *ttb;
 
 	region_start = PAGE_ALIGN_DOWN((ulong)start);
-	region_end = PAGE_ALIGN(region_start + size);
+	region_end = PAGE_ALIGN(region_start + size) - 1;
 
 	ttb = get_ttb();
 
@@ -301,7 +315,7 @@ static void flush_cacheable_pages(void *start, size_t size)
 		 * If we recorded any area before, let's flush it now
 		 */
 		if (flush_start != ~0ULL)
-			v8_flush_dcache_range(flush_start, flush_end);
+			dma_flush_range_end(flush_start, flush_end);
 
 		/* and start the new contiguous flush area with this page */
 		flush_start = addr;
@@ -310,7 +324,7 @@ static void flush_cacheable_pages(void *start, size_t size)
 
 	/* The previous loop won't flush the last cached range, so do it here */
 	if (flush_start != ~0ULL)
-		v8_flush_dcache_range(flush_start, flush_end);
+		dma_flush_range_end(flush_start, flush_end);
 }
 
 static void early_remap_range(uint64_t addr, size_t size, maptype_t map_type)

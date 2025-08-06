@@ -164,6 +164,8 @@ static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 	if (WARN_ON(attr == ~0UL))
 		return -EINVAL;
 
+	pr_debug_remap(addr, phys, size, map_type);
+
 	attr &= ~PTE_TYPE_MASK;
 
 	size = PAGE_ALIGN(size);

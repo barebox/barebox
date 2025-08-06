@@ -106,6 +106,23 @@ static void set_pte(uint32_t *pt, uint32_t val)
 	WRITE_ONCE(*pt, val);
 }
 
+static void set_pte_range(unsigned level, uint32_t *virt, phys_addr_t phys,
+			  size_t count, uint32_t attrs, bool bbm)
+{
+	unsigned granularity = granule_size(level);
+
+	if (!bbm)
+		goto write_attrs;
+
+	 // TODO break-before-make missing
+
+write_attrs:
+	for (int i = 0; i < count; i++, phys += granularity)
+		set_pte(&virt[i], phys | attrs);
+
+	dma_flush_range(virt, count * sizeof(*virt));
+}
+
 #ifdef __PBL__
 static uint32_t *alloc_pte(void)
 {
@@ -203,11 +220,11 @@ void dma_inv_range(void *ptr, size_t size)
  * Not yet exported, but may be later if someone finds use for it.
  */
 static u32 *arm_create_pte(unsigned long virt, unsigned long phys,
-			   uint32_t flags)
+			   uint32_t flags, bool bbm)
 {
 	uint32_t *ttb = get_ttb();
 	u32 *table;
-	int i, ttb_idx;
+	int ttb_idx;
 
 	virt = ALIGN_DOWN(virt, PGDIR_SIZE);
 	phys = ALIGN_DOWN(phys, PGDIR_SIZE);
@@ -216,16 +233,9 @@ static u32 *arm_create_pte(unsigned long virt, unsigned long phys,
 
 	ttb_idx = pgd_index(virt);
 
-	for (i = 0; i < PTRS_PER_PTE; i++) {
-		set_pte(&table[i], phys | PTE_TYPE_SMALL | flags);
-		virt += PAGE_SIZE;
-		phys += PAGE_SIZE;
-	}
-	dma_flush_range(table, PTRS_PER_PTE * sizeof(u32));
+	set_pte_range(2, table, phys, PTRS_PER_PTE, PTE_TYPE_SMALL | flags, bbm);
 
-	// TODO break-before-make missing
-	set_pte(&ttb[ttb_idx], (unsigned long)table | PMD_TYPE_TABLE);
-	dma_flush_range(&ttb[ttb_idx], sizeof(u32));
+	set_pte_range(1, &ttb[ttb_idx], (unsigned long)table, 1, PMD_TYPE_TABLE, bbm);
 
 	return table;
 }
@@ -335,6 +345,7 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 			       maptype_t map_type)
 {
 	bool force_pages = map_type & ARCH_MAP_FLAG_PAGEWISE;
+	bool mmu_on;
 	u32 virt_addr = (u32)_virt_addr;
 	u32 pte_flags, pmd_flags;
 	uint32_t *ttb = get_ttb();
@@ -351,30 +362,30 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 	if (!size)
 		return;
 
+	mmu_on = get_cr() & CR_M;
+
 	while (size) {
 		const bool pgdir_size_aligned = IS_ALIGNED(virt_addr, PGDIR_SIZE);
 		u32 *pgd = (u32 *)&ttb[pgd_index(virt_addr)];
+		u32 flags;
 		size_t chunk;
 
 		if (size >= PGDIR_SIZE && pgdir_size_aligned &&
 		    IS_ALIGNED(phys_addr, PGDIR_SIZE) &&
 		    !pgd_type_table(*pgd) && !force_pages) {
-			u32 val;
 			/*
 			 * TODO: Add code to discard a page table and
 			 * replace it with a section
 			 */
 			chunk = PGDIR_SIZE;
-			val = phys_addr | pmd_flags;
+			flags = pmd_flags;
 			if (!maptype_is_compatible(map_type, MAP_FAULT))
-				val |= PMD_TYPE_SECT;
-			// TODO break-before-make missing
-			set_pte(pgd, val);
-			dma_flush_range(pgd, sizeof(*pgd));
+				flags |= PMD_TYPE_SECT;
+			set_pte_range(1, pgd, phys_addr, 1, flags, mmu_on);
 		} else {
 			unsigned int num_ptes;
 			u32 *table = NULL;
-			unsigned int i, level;
+			unsigned int level;
 			u32 *pte;
 			/*
 			 * We only want to cover pages up until next
@@ -401,23 +412,14 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 				 * and create a new page table for it
 				 */
 				table = arm_create_pte(virt_addr, phys_addr,
-						       pmd_flags_to_pte(*pgd));
+						       pmd_flags_to_pte(*pgd), mmu_on);
 				pte = find_pte(ttb, virt_addr, NULL);
 			}
 
-			for (i = 0; i < num_ptes; i++) {
-				u32 val;
-
-				val = phys_addr + i * PAGE_SIZE;
-				val |= pte_flags;
-				if (!maptype_is_compatible(map_type, MAP_FAULT))
-					val |= PTE_TYPE_SMALL;
-
-				// TODO break-before-make missing
-				set_pte(&pte[i], val);
-			}
-
-			dma_flush_range(pte, num_ptes * sizeof(u32));
+			flags = pte_flags;
+			if (!maptype_is_compatible(map_type, MAP_FAULT))
+				flags |= PTE_TYPE_SMALL;
+			set_pte_range(2, pte, phys_addr, num_ptes, flags, mmu_on);
 		}
 
 		virt_addr += chunk;
@@ -461,6 +463,7 @@ static void early_create_sections(unsigned long first, unsigned long last,
 	unsigned long ttb_end = pgd_index(last) + 1;
 	unsigned int i, addr = first;
 
+	/* This always runs with MMU disabled, so just opencode the loop */
 	for (i = ttb_start; i < ttb_end; i++) {
 		set_pte(&ttb[i], addr | flags);
 		addr += PGDIR_SIZE;
@@ -475,13 +478,11 @@ static inline void early_create_flat_mapping(void)
 
 void *map_io_sections(unsigned long phys, void *_start, size_t size)
 {
-	unsigned long start = (unsigned long)_start, sec;
+	unsigned long start = (unsigned long)_start;
 	uint32_t *ttb = get_ttb();
 
-	for (sec = start; sec < start + size; sec += PGDIR_SIZE, phys += PGDIR_SIZE) {
-		// TODO break-before-make missing
-		set_pte(&ttb[pgd_index(sec)], phys | get_pmd_flags(MAP_UNCACHED));
-	}
+	set_pte_range(1, &ttb[pgd_index(start)], phys, size / PGDIR_SIZE,
+		      get_pmd_flags(MAP_UNCACHED), true);
 
 	dma_flush_range(ttb, 0x4000);
 	tlb_invalidate();
@@ -523,11 +524,11 @@ static void create_vector_table(unsigned long adr)
 		vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 		pr_debug("Creating vector table, virt = 0x%p, phys = 0x%08lx\n",
 			 vectors, adr);
-		arm_create_pte(adr, adr, get_pte_flags(MAP_UNCACHED));
+
+		arm_create_pte(adr, adr, get_pte_flags(MAP_UNCACHED), true);
 		pte = find_pte(get_ttb(), adr, NULL);
-		// TODO break-before-make missing
-		set_pte(pte, (u32)vectors | PTE_TYPE_SMALL |
-			get_pte_flags(MAP_CACHED));
+		set_pte_range(2, pte, (u32)vectors, 1, PTE_TYPE_SMALL |
+			      get_pte_flags(MAP_CACHED), true);
 	}
 
 	arm_fixup_vectors();

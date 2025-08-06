@@ -147,8 +147,7 @@ static int da923rc_board_init_r(void)
 
 	da923rc_boardinfo_get(&binfo);
 
-	flush_dcache();
-	invalidate_icache();
+	sync_caches_for_execution();
 
 	/* Clear LBC error interrupts */
 	out_be32(lbc + FSL_LBC_LTESR_OFFSET, 0xffffffff);

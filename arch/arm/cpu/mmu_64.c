@@ -91,6 +91,28 @@ static __maybe_unused uint64_t *find_pte(uint64_t addr)
 	return __find_pte(get_ttb(), addr, NULL);
 }
 
+static unsigned long get_pte_attrs(maptype_t map_type)
+{
+	switch (map_type & MAP_TYPE_MASK) {
+	case MAP_CACHED:
+		return attrs_xn() | CACHED_MEM;
+	case MAP_UNCACHED:
+		return attrs_xn() | UNCACHED_MEM;
+	case MAP_FAULT:
+		return 0x0;
+	case MAP_WRITECOMBINE:
+		return attrs_xn() | MEM_ALLOC_WRITECOMBINE;
+	case MAP_CODE:
+		return CACHED_MEM | PTE_BLOCK_RO;
+	case ARCH_MAP_CACHED_RO:
+		return attrs_xn() | CACHED_MEM | PTE_BLOCK_RO;
+	case ARCH_MAP_CACHED_RWX:
+		return CACHED_MEM;
+	default:
+		return ~0UL;
+	}
+}
+
 #define MAX_PTE_ENTRIES 512
 
 /* Splits a block PTE into table with subpages spanning the old block */
@@ -123,9 +145,10 @@ static void split_block(uint64_t *pte, int level)
 	set_table(pte, new_table);
 }
 
-static void __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
-			       uint64_t attr, bool force_pages)
+static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
+			      maptype_t map_type, bool force_pages)
 {
+	unsigned long attr = get_pte_attrs(map_type);
 	uint64_t *ttb = get_ttb();
 	uint64_t block_size;
 	uint64_t block_shift;
@@ -138,11 +161,14 @@ static void __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 
 	addr = virt;
 
+	if (WARN_ON(attr == ~0UL))
+		return -EINVAL;
+
 	attr &= ~PTE_TYPE_MASK;
 
 	size = PAGE_ALIGN(size);
 	if (!size)
-		return;
+		return 0;
 
 	while (size) {
 		table = ttb;
@@ -178,6 +204,7 @@ static void __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 	}
 
 	tlb_invalidate();
+	return 0;
 }
 
 static size_t granule_size(int level)
@@ -283,55 +310,19 @@ static void flush_cacheable_pages(void *start, size_t size)
 		v8_flush_dcache_range(flush_start, flush_end);
 }
 
-static unsigned long get_pte_attrs(maptype_t map_type)
-{
-	switch (map_type & MAP_TYPE_MASK) {
-	case MAP_CACHED:
-		return attrs_xn() | CACHED_MEM;
-	case MAP_UNCACHED:
-		return attrs_xn() | UNCACHED_MEM;
-	case MAP_FAULT:
-		return 0x0;
-	case MAP_WRITECOMBINE:
-		return attrs_xn() | MEM_ALLOC_WRITECOMBINE;
-	case MAP_CODE:
-		return CACHED_MEM | PTE_BLOCK_RO;
-	case ARCH_MAP_CACHED_RO:
-		return attrs_xn() | CACHED_MEM | PTE_BLOCK_RO;
-	case ARCH_MAP_CACHED_RWX:
-		return CACHED_MEM;
-	default:
-		return ~0UL;
-	}
-}
-
 static void early_remap_range(uint64_t addr, size_t size, maptype_t map_type, bool force_pages)
 {
-	unsigned long attrs = get_pte_attrs(map_type);
-
-	if (WARN_ON(attrs == ~0UL))
-		return;
-
-	__arch_remap_range(addr, addr, size, attrs, force_pages);
+	__arch_remap_range(addr, addr, size, map_type, force_pages);
 }
 
 int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptype_t map_type)
 {
-	unsigned long attrs;
-
 	map_type = arm_mmu_maybe_skip_permissions(map_type);
-
-	attrs = get_pte_attrs(map_type);
-
-	if (attrs == ~0UL)
-		return -EINVAL;
 
 	if (!maptype_is_compatible(map_type, MAP_CACHED))
 		flush_cacheable_pages(virt_addr, size);
 
-	__arch_remap_range((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs, false);
-
-	return 0;
+	return __arch_remap_range((uint64_t)virt_addr, phys_addr, (uint64_t)size, map_type, false);
 }
 
 static void mmu_enable(void)

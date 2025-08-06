@@ -74,6 +74,11 @@ void dma_free_coherent(struct device *dev,
 	free(mem);
 }
 
+void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_handle)
+{
+	return dma_alloc_map(dev, size, dma_handle, MAP_WRITECOMBINE);
+}
+
 void zero_page_access(void)
 {
 	remap_range(0x0, PAGE_SIZE, MAP_CACHED);

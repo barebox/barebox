@@ -684,11 +684,6 @@ void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_handle)
-{
-	return dma_alloc_map(dev, size, dma_handle, MAP_WRITECOMBINE);
-}
-
 void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned long barebox_start)
 {
 	uint32_t *ttb = (uint32_t *)arm_mem_ttb(membase + memsize);

@@ -123,8 +123,8 @@ static void split_block(uint64_t *pte, int level)
 	set_table(pte, new_table);
 }
 
-static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
-			    uint64_t attr, bool force_pages)
+static void __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
+			       uint64_t attr, bool force_pages)
 {
 	uint64_t *ttb = get_ttb();
 	uint64_t block_size;
@@ -312,7 +312,7 @@ static void early_remap_range(uint64_t addr, size_t size, maptype_t map_type, bo
 	if (WARN_ON(attrs == ~0UL))
 		return;
 
-	create_sections(addr, addr, size, attrs, force_pages);
+	__arch_remap_range(addr, addr, size, attrs, force_pages);
 }
 
 int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptype_t map_type)
@@ -329,7 +329,7 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptyp
 	if (!maptype_is_compatible(map_type, MAP_CACHED))
 		flush_cacheable_pages(virt_addr, size);
 
-	create_sections((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs, false);
+	__arch_remap_range((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs, false);
 
 	return 0;
 }

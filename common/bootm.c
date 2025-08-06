@@ -61,8 +61,10 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->tee_file = getenv_nonempty("global.bootm.tee");
 	data->os_file = getenv_nonempty("global.bootm.image");
 	getenv_ul("global.bootm.image.loadaddr", &data->os_address);
-	getenv_ul("global.bootm.initrd.loadaddr", &data->initrd_address);
-	data->initrd_file = getenv_nonempty("global.bootm.initrd");
+	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
+		getenv_ul("global.bootm.initrd.loadaddr", &data->initrd_address);
+		data->initrd_file = getenv_nonempty("global.bootm.initrd");
+	}
 	data->root_dev = getenv_nonempty("global.bootm.root_dev");
 	data->verify = bootm_get_verify_mode();
 	data->appendroot = bootm_appendroot;
@@ -78,8 +80,10 @@ void bootm_data_restore_defaults(const struct bootm_data *data)
 	globalvar_set("bootm.tee", data->tee_file);
 	globalvar_set("bootm.image", data->os_file);
 	pr_setenv("global.bootm.image.loadaddr", "0x%lx", data->os_address);
-	pr_setenv("global.bootm.initrd.loadaddr", "0x%lx", data->initrd_address);
-	globalvar_set("bootm.initrd", data->initrd_file);
+	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
+		pr_setenv("global.bootm.initrd.loadaddr", "0x%lx", data->initrd_address);
+		globalvar_set("bootm.initrd", data->initrd_file);
+	}
 	globalvar_set("bootm.root_dev", data->root_dev);
 	bootm_set_verify_mode(data->verify);
 	bootm_appendroot = data->appendroot;

@@ -96,7 +96,7 @@ static uint64_t *alloc_pte(void)
 #endif
 
 /**
- * __find_pte - Find page table entry
+ * find_pte - Find page table entry
  * @ttb: Translation Table Base
  * @addr: Virtual address to lookup
  * @level: used to store the level at which the page table walk ended.
@@ -110,7 +110,7 @@ static uint64_t *alloc_pte(void)
  *
  * Returns a pointer to the page table entry
  */
-static uint64_t *__find_pte(uint64_t *ttb, uint64_t addr, int *level)
+static uint64_t *find_pte(uint64_t *ttb, uint64_t addr, unsigned *level)
 {
 	uint64_t *pte = ttb;
 	uint64_t block_shift;
@@ -133,12 +133,6 @@ static uint64_t *__find_pte(uint64_t *ttb, uint64_t addr, int *level)
 	if (level)
 		*level = i;
 	return pte;
-}
-
-/* This is currently unused, but useful for debugging */
-static __maybe_unused uint64_t *find_pte(uint64_t addr)
-{
-	return __find_pte(get_ttb(), addr, NULL);
 }
 
 static unsigned long get_pte_attrs(maptype_t map_type)
@@ -310,8 +304,8 @@ static void flush_cacheable_pages(void *start, size_t size)
 	 * actually flushing the ranges isn't too significant.
 	 */
 	for (mmu_addr_t addr = region_start; addr < region_end; addr += block_size) {
-		int level;
-		mmu_addr_t *pte = __find_pte(ttb, addr, &level);
+		unsigned level;
+		mmu_addr_t *pte = find_pte(ttb, addr, &level);
 
 		block_size = granule_size(level);
 		

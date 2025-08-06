@@ -94,16 +94,38 @@ static uint32_t *alloc_pte(void)
 }
 #endif
 
-static u32 *find_pte(unsigned long adr)
+/**
+ * find_pte - Find page table entry
+ * @ttb: Translation Table Base
+ * @addr: Virtual address to lookup
+ * @level: used to store the level at which the page table walk ended.
+ *         if NULL, asserts that the smallest page was found
+ *
+ * This function walks the page table from the top down and finds the page
+ * table entry associated with the supplied virtual address.
+ * The level at which a page was found is saved into *level.
+ * if the level is NULL, a last level page must be found or the function
+ * panics.
+ *
+ * Returns a pointer to the page table entry
+ */
+static u32 *find_pte(uint32_t *ttb, uint32_t adr, unsigned *level)
 {
+	u32 *pgd = &ttb[pgd_index(adr)];
 	u32 *table;
-	uint32_t *ttb = get_ttb();
 
-	if (!pgd_type_table(ttb[pgd_index(adr)]))
-		return NULL;
+	if (!pgd_type_table(*pgd)) {
+		if (!level)
+			panic("Got level 1 page table entry, where level 2 expected\n");
+		*level = 1;
+		return pgd;
+	}
+
+	if (level)
+		*level = 2;
 
 	/* find the coarse page table base address */
-	table = (u32 *)(ttb[pgd_index(adr)] & ~0x3ff);
+	table = (u32 *)(*pgd & ~0x3ff);
 
 	/* find second level descriptor */
 	return &table[(adr >> PAGE_SHIFT) & 0xff];
@@ -308,7 +330,7 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 		} else {
 			unsigned int num_ptes;
 			u32 *table = NULL;
-			unsigned int i;
+			unsigned int i, level;
 			u32 *pte;
 			/*
 			 * We only want to cover pages up until next
@@ -328,17 +350,15 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 			chunk = min(chunk, size);
 			num_ptes = chunk / PAGE_SIZE;
 
-			pte = find_pte(virt_addr);
-			if (!pte) {
+			pte = find_pte(ttb, virt_addr, &level);
+			if (level == 1) {
 				/*
-				 * If PTE is not found it means that
-				 * we needs to split this section and
-				 * create a new page table for it
+				 * No PTE at level 2, so we needs to split this section
+				 * and create a new page table for it
 				 */
 				table = arm_create_pte(virt_addr, phys_addr,
 						       pmd_flags_to_pte(*pgd));
-				pte = find_pte(virt_addr);
-				BUG_ON(!pte);
+				pte = find_pte(ttb, virt_addr, NULL);
 			}
 
 			for (i = 0; i < num_ptes; i++) {
@@ -452,7 +472,7 @@ static void create_vector_table(unsigned long adr)
 		pr_debug("Creating vector table, virt = 0x%p, phys = 0x%08lx\n",
 			 vectors, adr);
 		arm_create_pte(adr, adr, get_pte_flags(MAP_UNCACHED));
-		pte = find_pte(adr);
+		pte = find_pte(get_ttb(), adr, NULL);
 		// TODO break-before-make missing
 		set_pte(pte, (u32)vectors | PTE_TYPE_SMALL |
 			get_pte_flags(MAP_CACHED));

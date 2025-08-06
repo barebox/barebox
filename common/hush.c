@@ -426,8 +426,17 @@ static char *getprompt(void)
 	static char prompt[PATH_MAX + 32];
 
 #ifdef CONFIG_HUSH_FANCY_PROMPT
-	const char *ps1 = getenv("PS1");
+	const char *ps1, *prompt_command;
+	struct p_context ctx = {};
 
+	prompt_command = getenv("PROMPT_COMMAND");
+	if (prompt_command) {
+		initialize_context(&ctx);
+		parse_string_outer(&ctx, prompt_command, FLAG_PARSE_SEMICOLON);
+		release_context(&ctx);
+	}
+
+	ps1 = getenv("PS1");
 	if (ps1)
 		process_escape_sequence(ps1, prompt, PATH_MAX + 32);
 	else
@@ -2065,6 +2074,7 @@ BAREBOX_CMD_END
 BAREBOX_MAGICVAR(PATH, "colon separated list of paths to search for executables");
 #ifdef CONFIG_HUSH_FANCY_PROMPT
 BAREBOX_MAGICVAR(PS1, "hush prompt");
+BAREBOX_MAGICVAR(PROMPT_COMMAND, "command to execute prior to each primary prompt");
 #endif
 
 static int binfmt_sh_excute(struct binfmt_hook *b, char *file, int argc, char **argv)

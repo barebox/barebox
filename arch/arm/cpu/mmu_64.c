@@ -373,11 +373,6 @@ void dma_flush_range(void *ptr, size_t size)
 	v8_flush_dcache_range(start, end);
 }
 
-void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_handle)
-{
-	return dma_alloc_map(dev, size, dma_handle, MAP_WRITECOMBINE);
-}
-
 static void early_init_range(size_t total_level0_tables)
 {
 	uint64_t *ttb = get_ttb();

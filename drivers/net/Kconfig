@@ -158,6 +158,24 @@ config DRIVER_NET_DESIGNWARE_ROCKCHIP
 	help
 	  This option enables support for the Ethernet MAC on different Rockchip SoCs
 
+config DRIVER_NET_DESIGNWARE_XGMAC
+	bool "Designware XGMAC Ethernet driver support" if COMPILE_TEST
+	depends on HAS_DMA && OFTREE
+	select PHYLIB
+	select MFD_SYSCON
+	help
+	  This option enables support for the Synopsys Designware Ethernet XGMAC (10G Ethernet MAC).
+
+config DRIVER_NET_DESIGNWARE_XGMAC_SOCFPGA
+	bool "Designware XGMAC Ethernet driver support for SOCFPGA"
+	select DRIVER_NET_DESIGNWARE_XGMAC
+	depends on (ARCH_SOCFPGA_AGILEX5 || COMPILE_TEST)
+	select RESET_CONTROLLER if ARCH_SOCFPGA
+	select RESET_SIMPLE if ARCH_SOCFPGA_AGILEX5
+	help
+	  This option enables support for the Synopsys Designware Ethernet XGMAC with specific configuration
+	  for the Intel SoC FPGA chip.
+
 config DRIVER_NET_DM9K
 	bool "Davicom dm9k[E|A|B] ethernet driver"
 	depends on HAS_DM9000 || COMPILE_TEST

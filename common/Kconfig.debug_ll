@@ -236,6 +236,20 @@ config DEBUG_SOCFPGA_UART1
 	  Say Y here if you want kernel low-level debugging support
 	  on SOCFPGA(Arria 10) based platforms.
 
+config DEBUG_SOCFPGA_AGILEX5_UART0
+	bool "Use Agilex5 UART0 for low-level debug"
+	depends on ARCH_SOCFPGA_AGILEX5
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on Agilex5 based platforms.
+
+config DEBUG_SOCFPGA_AGILEX5_UART1
+	bool "Use Agilex5 UART1 for low-level debug"
+	depends on ARCH_SOCFPGA_AGILEX5
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on Agilex5 based platforms.
+
 config DEBUG_STM32MP_UART
 	bool "Use STM32MP UART4 for low-level debug"
 	depends on ARCH_STM32
@@ -417,12 +431,15 @@ config DEBUG_SOCFPGA_UART_PHYS_ADDR
 	hex "Physical base address of debug UART" if DEBUG_LL
 	default 0xffc02000 if DEBUG_SOCFPGA_UART0
 	default 0xffc02100 if DEBUG_SOCFPGA_UART1
+	default 0x10c02000 if DEBUG_SOCFPGA_AGILEX5_UART0
+	default 0x10c02100 if DEBUG_SOCFPGA_AGILEX5_UART1
 	depends on ARCH_SOCFPGA
 
 config DEBUG_SOCFPGA_UART_CLOCK
 	int "SoCFPGA UART debug clock" if DEBUG_LL
 	default 100000000 if ARCH_SOCFPGA_CYCLONE5
 	default  50000000 if ARCH_SOCFPGA_ARRIA10
+	default 100000000 if ARCH_SOCFPGA_AGILEX5
 	depends on ARCH_SOCFPGA
 	help
 	  Choose UART root clock.

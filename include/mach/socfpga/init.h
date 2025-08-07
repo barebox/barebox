@@ -5,4 +5,6 @@
 
 void arria10_cpu_lowlevel_init(void);
 
+void socfpga_agilex5_cpu_lowlevel_init(void);
+
 #endif

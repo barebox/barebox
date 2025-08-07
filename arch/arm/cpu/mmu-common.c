@@ -16,6 +16,20 @@
 #include "mmu-common.h"
 #include <efi/efi-mode.h>
 
+const char *map_type_tostr(maptype_t map_type)
+{
+	switch (map_type) {
+	case ARCH_MAP_CACHED_RWX:	return "RWX";
+	case ARCH_MAP_CACHED_RO:	return "RO";
+	case MAP_CACHED:		return "CACHED";
+	case MAP_UNCACHED:		return "UNCACHED";
+	case MAP_CODE:			return "CODE";
+	case MAP_WRITECOMBINE:		return "WRITECOMBINE";
+	case MAP_FAULT:			return "FAULT";
+	default:			return "<unknown>";
+	}
+}
+
 void arch_sync_dma_for_cpu(void *vaddr, size_t size,
 			   enum dma_data_direction dir)
 {
@@ -24,7 +38,7 @@ void arch_sync_dma_for_cpu(void *vaddr, size_t size,
 }
 
 void *dma_alloc_map(struct device *dev,
-		    size_t size, dma_addr_t *dma_handle, unsigned flags)
+		    size_t size, dma_addr_t *dma_handle, maptype_t map_type)
 {
 	void *ret;
 
@@ -36,7 +50,7 @@ void *dma_alloc_map(struct device *dev,
 	memset(ret, 0, size);
 	dma_flush_range(ret, size);
 
-	remap_range(ret, size, flags);
+	remap_range(ret, size, map_type);
 
 	return ret;
 }
@@ -58,6 +72,11 @@ void dma_free_coherent(struct device *dev,
 	remap_range(mem, size, MAP_CACHED);
 
 	free(mem);
+}
+
+void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_handle)
+{
+	return dma_alloc_map(dev, size, dma_handle, MAP_WRITECOMBINE);
 }
 
 void zero_page_access(void)

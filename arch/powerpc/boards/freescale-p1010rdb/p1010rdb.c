@@ -164,8 +164,7 @@ static int p1010rdb_board_init_r(void)
 	const u8 flash_esel = e500_find_tlb_idx((void *)flashbase, 1);
 
 	/* Flush d-cache and invalidate i-cache of any FLASH data */
-	flush_dcache();
-	invalidate_icache();
+	sync_caches_for_execution();
 
 	/* invalidate existing TLB entry for flash */
 	e500_disable_tlb(flash_esel);

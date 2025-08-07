@@ -6,4 +6,6 @@
 void flush_cache_all(void);
 void r4k_cache_init(void);
 
+#define sync_caches_for_execution flush_cache_all
+
 #endif /* _ASM_MIPS_CACHE_H */

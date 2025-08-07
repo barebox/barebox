@@ -20,7 +20,7 @@
 #  define read_poll_get_time_ns()	0
 # endif
 # ifndef read_poll_is_timeout
-#  define read_poll_is_timeout(s, t)	((void)s, (void)t, 0)
+#  define read_poll_is_timeout(s, t)	((void)(s), (void)(t), 0)
 # endif
 #endif
 
@@ -43,13 +43,14 @@
  */
 #define read_poll_timeout(op, val, cond, timeout_us, args...)	\
 ({ \
-	uint64_t start = (timeout_us) != 0 ? read_poll_get_time_ns() : 0; \
+	uint64_t __timeout_us = (timeout_us); \
+	uint64_t start = __timeout_us ? read_poll_get_time_ns() : 0; \
 	for (;;) { \
 		(val) = op(args); \
 		if (cond) \
 			break; \
-		if ((timeout_us) != 0 && \
-		    read_poll_is_timeout(start, ((timeout_us) * USECOND))) { \
+		if (__timeout_us && \
+		    read_poll_is_timeout(start, __timeout_us * USECOND)) { \
 			(val) = op(args); \
 			break; \
 		} \

@@ -85,7 +85,7 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 	struct driver_info	*info = dev->driver_info;
 	int			len, alen, ret;
 
-	dev_dbg(&edev->dev, "%s\n",__func__);
+	dev_vdbg(&edev->dev, "%s\n", __func__);
 
 	/* some devices want funky USB-level framing, for
 	 * win32 driver (usually) and/or hardware quirks
@@ -121,7 +121,7 @@ static void usbnet_recv(struct eth_device *edev)
 	struct driver_info	*info = dev->driver_info;
 	int len, ret, alen = 0;
 
-	dev_dbg(&edev->dev, "%s\n",__func__);
+	dev_vdbg(&edev->dev, "%s\n", __func__);
 
 	len = dev->rx_urb_size;
 

@@ -7,7 +7,7 @@ targets:
         cpu: sifive-u54
         memory: 256M
         kernel: barebox-hifive-unleashed.img
-        extra_args: ''
+        display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

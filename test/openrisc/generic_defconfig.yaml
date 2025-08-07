@@ -7,7 +7,7 @@ targets:
         cpu: or1200
         memory: 256M
         kernel: barebox
-        extra_args: ''
+        display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

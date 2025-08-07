@@ -27,6 +27,12 @@ Labgrid is used to run the barebox test suite, both on real and emulated
 hardware. A number of YAML files located in ``test/$ARCH`` describe some
 of the virtualized targets that barebox is known to run on.
 
+barebox makes use of recent labgrid features, so you may need to install
+it directly from PyPI instead of your distro's package repositories::
+
+  pipx install pytest
+  pipx inject pytest labgrid
+
 Example usage::
 
   # Run x86 VM runnig the EFI payload from efi_defconfig
@@ -52,6 +58,21 @@ more easily::
 
   # Run tests and pass a block device (here /dev/virtioblk0)
   pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml --blk=rootfs.ext4
+
+  # Run interactively with graphics output
+  pytest --lg-env test/mips/qemu-malta_defconfig.yaml --interactive --graphics
+
+For testing, the QEMU fw_cfg and virtfs support is particularly useful::
+
+  # inject boot.sh file in working directory into barebox environment
+  # at /env/boot/fit and set /env/nv/boot.default to fit
+  pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml \
+     --env nv/boot.default=fit --env boot/fit=@boot.sh
+
+  # make available the host's local working directory in barebox as
+  # /mnt/9p/host
+  pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml \
+     --fs host=.
 
 For a complete listing of possible options run ``pytest --help``.
 

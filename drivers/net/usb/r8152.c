@@ -1053,6 +1053,9 @@ static void r8152_get_version(struct r8152 *tp)
 			/* Found a supported version */
 			tp->version = r8152_versions[i].version;
 			tp->supports_gmii = r8152_versions[i].gmii;
+			dev_dbg(&tp->dev->edev.dev,
+				"r8152 tcr version 0x%04x RTL_VER_%02d detected\n",
+				tcr, tp->version);
 			break;
 		}
 	}

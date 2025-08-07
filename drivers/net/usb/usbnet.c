@@ -129,6 +129,9 @@ static void usbnet_recv(struct eth_device *edev)
 	if (ret)
 		return;
 
+	dev_dbg(&edev->dev, "%s: ret: %d len: %d alen: %d\n", __func__, ret,
+		len, alen);
+
 	if (alen) {
 		if (info->rx_fixup)
 			info->rx_fixup(dev, dev->rx_buf, alen);

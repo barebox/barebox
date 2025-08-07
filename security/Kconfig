@@ -39,6 +39,7 @@ if PASSWORD
 
 choice
 	prompt "passwd checksum"
+	default PASSWD_CRYPTO_PBKDF2
 
 config PASSWD_SUM_MD5
 	bool "MD5"

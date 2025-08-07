@@ -926,10 +926,9 @@ static void r8153_first_init(struct r8152 *tp)
 	r8152_ocp_write_dword(tp, MCU_TYPE_PLA, PLA_TXFIFO_CTRL,
 			      TXFIFO_THR_NORMAL2);
 
-	/* rx aggregation */
+	/* Disable rx aggregation */
 	ocp_data = r8152_ocp_read_word(tp, MCU_TYPE_USB, USB_USB_CTRL);
-
-	ocp_data &= ~(RX_AGG_DISABLE | RX_ZERO_EN);
+	ocp_data |= (RX_AGG_DISABLE | RX_ZERO_EN);
 	r8152_ocp_write_word(tp, MCU_TYPE_USB, USB_USB_CTRL, ocp_data);
 }
 
@@ -1117,10 +1116,9 @@ static void rtl8152b_init(struct r8152 *tp)
 	r8152b_enable_fc(tp);
 	rtl_tally_reset(tp);
 
-	/* enable rx aggregation */
+	/* Disable rx aggregation */
 	ocp_data = r8152_ocp_read_word(tp, MCU_TYPE_USB, USB_USB_CTRL);
-
-	ocp_data &= ~(RX_AGG_DISABLE | RX_ZERO_EN);
+	ocp_data |= (RX_AGG_DISABLE | RX_ZERO_EN);
 	r8152_ocp_write_word(tp, MCU_TYPE_USB, USB_USB_CTRL, ocp_data);
 }
 
@@ -1259,9 +1257,9 @@ static void r8153b_init(struct r8152 *tp)
 		}
 	}
 
-	/* rx aggregation */
+	/* Disable rx aggregation */
 	ocp_data = r8152_ocp_read_word(tp, MCU_TYPE_USB, USB_USB_CTRL);
-	ocp_data &= ~(RX_AGG_DISABLE | RX_ZERO_EN);
+	ocp_data |= (RX_AGG_DISABLE | RX_ZERO_EN);
 	r8152_ocp_write_word(tp, MCU_TYPE_USB, USB_USB_CTRL, ocp_data);
 
 	rtl_tally_reset(tp);

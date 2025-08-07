@@ -18,6 +18,7 @@
 #include <linux/platform_data/simplefb.h>
 #include <driver.h>
 #include <of.h>
+#include <mmu.h>
 
 static struct fb_ops simplefb_ops;
 
@@ -119,6 +120,11 @@ static int simplefb_probe(struct device *dev)
 	info->screen_base = (void *)mem->start;
 	info->screen_size = resource_size(mem);
 
+	/*
+	 * Best effort: Some platforms don't need this and those that do,
+	 * will at worst have some graphic artifacts on lack of remap_range.
+	 */
+	(void)remap_range(info->screen_base, info->screen_size, MAP_WRITECOMBINE);
 
 	info->fbops = &simplefb_ops;
 

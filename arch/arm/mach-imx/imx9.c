@@ -9,7 +9,6 @@
 #include <mach/imx/imx9-regs.h>
 #include <tee/optee.h>
 #include <asm-generic/memory_layout.h>
-#include <asm/optee.h>
 #include <mach/imx/scratch.h>
 
 #define SPEED_GRADING_MASK GENMASK(11, 6)

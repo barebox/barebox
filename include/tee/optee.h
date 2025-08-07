@@ -61,4 +61,21 @@ int imx6ul_start_optee_early(void *fdt, void *tee, void *data_location,
 
 #endif /* __PBL__ */
 
+struct device_node;
+
+struct of_optee_fixup_data {
+	const char *method;
+	size_t shm_size;
+};
+
+#ifdef CONFIG_OF_FIXUP_OPTEE
+int of_optee_fixup(struct device_node *root, void *fixup_data);
+#else
+static inline int of_optee_fixup(struct device_node *root, void *fixup_data)
+{
+	return -ENOSYS;
+}
+#endif
+
+
 #endif /* _OPTEE_H */

@@ -144,20 +144,6 @@
 /* values for service action in */
 #define	SAI_READ_CAPACITY_16	0x10
 
-/****************************************************************************
- * decleration of functions which have to reside in the LowLevel Part Driver
- */
-
-void scsi_bus_reset(void);
-void scsi_low_level_init(int busdevfunc);
-
-
-/***************************************************************************
- * functions residing inside cmd_scsi.c
- */
-void scsi_init(void);
-
-
 #define SCSI_IDENTIFY				0xC0  /* not used */
 
 /* Hardware errors  */

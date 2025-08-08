@@ -210,10 +210,6 @@ config GENERIC_LIB_MULDI3
 config NLS
 	bool "Native language support"
 
-config BLOBGEN
-	select BASE64
-	bool "include blob encode/decode support"
-
 config GENERIC_ALLOCATOR
 	bool
 	help
@@ -223,5 +219,3 @@ config IDR
 	bool
 
 endmenu
-
-source "lib/Kconfig.hardening"

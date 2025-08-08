@@ -1,10 +1,6 @@
-menu "Hardening options"
+# SPDX-License-Identifier: GPL-2.0
 
-if HAS_INSECURE_DEFAULTS
-comment "This barebox configuration has CONFIG_HAS_INSECURE_DEFAULTS=y indicating"
-comment "that some of the configured options have potentially insecure defaults."
-comment "Extra care needs to be taken in secure booted systems."
-endif
+menu "Hardening options"
 
 config BUG_ON_DATA_CORRUPTION
 	bool "Trigger a BUG when data corruption is detected"

@@ -97,6 +97,6 @@ BAREBOX_CMD_START(keystore)
 	.cmd	= do_keystore,
 	BAREBOX_CMD_DESC("manage keys")
 	BAREBOX_CMD_OPTS("[-rsf] <keyname>")
-	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
+	BAREBOX_CMD_GROUP(CMD_GRP_SECURITY)
 	BAREBOX_CMD_HELP(cmd_keystore_help)
 BAREBOX_CMD_END

@@ -59,6 +59,7 @@ static void list_commands(int verbose)
 	list_group(verbose, "Console",               CMD_GRP_CONSOLE);
 	list_group(verbose, "Memory",                CMD_GRP_MEM);
 	list_group(verbose, "Hardware manipulation", CMD_GRP_HWMANIP);
+	list_group(verbose, "Security",              CMD_GRP_SECURITY);
 	list_group(verbose, "Miscellaneous",         CMD_GRP_MISC);
 	list_group(verbose, "Ungrouped",             0);
 	printf("Use 'help COMMAND' for more details.\n\n");

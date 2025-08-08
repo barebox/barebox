@@ -148,16 +148,4 @@ config CRYPTO_PUBLIC_KEYS
 	  corresponding value in the environment variable VAR_NAME for both
 	  public key paths/URIs as well as key name hints.
 
-config CRYPTO_KEYSTORE
-	bool "Keystore"
-	help
-	  This is a simple keystore, which can be used to pass keys
-	  between several components via simple interface.
-
-config JWT
-	bool "JSON Web Token support" if COMPILE_TEST
-	select JSMN
-	select BASE64
-	select CRYPTO_RSA
-
 endmenu

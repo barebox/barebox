@@ -59,7 +59,6 @@ obj-$(CONFIG_MODULES)		+= module.o
 extra-$(CONFIG_MODULES)		+= module.lds
 obj-$(CONFIG_OFTREE)		+= oftree.o
 obj-$(CONFIG_PARTITION_DISK)	+= partitions.o partitions/
-obj-$(CONFIG_PASSWORD)		+= password.o
 obj-$(CONFIG_HAS_SCHED)		+= sched.o
 obj-$(CONFIG_POLLER)		+= poller.o
 obj-$(CONFIG_BTHREAD)		+= bthread.o
@@ -83,31 +82,8 @@ obj-$(CONFIG_BOOT)		+= boot.o bootscan.o
 obj-$(CONFIG_BOOT_DEFAULTS)	+= bootdef.o
 obj-$(CONFIG_SERIAL_DEV_BUS)	+= serdev.o
 obj-$(CONFIG_USB_GADGET)	+= usbgadget.o
-obj-pbl-$(CONFIG_HAVE_OPTEE)	+= optee.o
 obj-$(CONFIG_FASTBOOT_BASE)	+= fastboot.o
 obj-$(CONFIG_CDEV_ALIAS)	+= cdev-alias.o
-
-ifdef CONFIG_PASSWORD
-
-ifeq ($(CONFIG_PASSWORD_DEFAULT),"")
-define filechk_passwd
-	echo "static const char default_passwd[] = \"\";"
-endef
-else
-define filechk_passwd
-(							\
-echo -n "static const char default_passwd[] = \"";	\
-cat $(shell find $(srctree) -name $(CONFIG_PASSWORD_DEFAULT) -type f) | tr -d '\n';\
-echo "\";"						\
-)
-endef
-endif
-
-include/generated/passwd.h: FORCE
-	$(call filechk,passwd)
-
-$(obj)/password.o: include/generated/passwd.h
-endif # CONFIG_PASSWORD
 
 # dependencies on generated files need to be listed explicitly
 $(obj)/version.o: include/generated/compile.h

@@ -374,6 +374,12 @@ struct nvmem_device *nvmem_device_get(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(nvmem_device_get);
 
+struct nvmem_device *nvmem_from_device(struct device *dev)
+{
+	return container_of_safe(dev, struct nvmem_device, dev);
+}
+EXPORT_SYMBOL_GPL(nvmem_from_device);
+
 /**
  * nvmem_device_put() - put alredy got nvmem device
  *
@@ -828,6 +834,12 @@ int nvmem_device_write(struct nvmem_device *nvmem,
 	return bytes;
 }
 EXPORT_SYMBOL_GPL(nvmem_device_write);
+
+ssize_t nvmem_device_size(struct nvmem_device *nvmem)
+{
+	return nvmem->size;
+}
+EXPORT_SYMBOL_GPL(nvmem_device_size);
 
 void *nvmem_cell_get_and_read(struct device_node *np, const char *cell_name,
 			      size_t bytes)

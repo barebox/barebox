@@ -290,6 +290,14 @@ int barebox_update(struct bbu_data *data, struct bbu_handler *handler)
 }
 
 /*
+ * report whether any update handlers have been registered so far
+ */
+bool bbu_handlers_available(void)
+{
+	return !list_empty(&bbu_image_handlers);
+}
+
+/*
  * print a list of all registered update handlers
  */
 void bbu_handlers_list(void)

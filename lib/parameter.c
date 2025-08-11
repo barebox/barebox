@@ -71,8 +71,14 @@ struct param_d *get_param_by_name(bobject_t _bobj, const char *name)
 const char *bobject_get_param(bobject_t _bobj, const char *name)
 {
 	struct bobject *bobj = _bobj.bobj;
-	struct param_d *param = get_param_by_name(bobj, name);
+	struct param_d *param;
 
+	if (!bobj) {
+		errno = ENODEV;
+		return NULL;
+	}
+
+	param = get_param_by_name(bobj, name);
 	if (!param) {
 		errno = EINVAL;
 		return NULL;

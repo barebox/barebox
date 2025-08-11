@@ -454,7 +454,6 @@ int usb_new_device(struct usb_device *dev)
 	void *buf;
 	struct usb_host *host = dev->host;
 	struct usb_device *parent = dev->parent;
-	char str[16];
 
 	if (parent)
 		dev_set_name(&dev->dev, "%s-%d", parent->dev.name,
@@ -559,7 +558,6 @@ int usb_new_device(struct usb_device *dev)
 			dev->descriptor->iProduct, "%u");
 	dev_add_param_uint32_fixed(&dev->dev, "iSerialNumber",
 			dev->descriptor->iSerialNumber, "%u");
-	dev_add_param_fixed(&dev->dev, "iSerialNumber", str);
 	dev_add_param_fixed(&dev->dev, "Manufacturer", dev->mf);
 	dev_add_param_fixed(&dev->dev, "Product", dev->prod);
 	dev_add_param_fixed(&dev->dev, "SerialNumber", dev->serial);

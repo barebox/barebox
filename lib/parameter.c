@@ -213,15 +213,14 @@ struct param_d *bobject_add_param(bobject_t _bobj, const char *name,
 }
 
 /**
- * bobject_add_param_fixed - add a readonly parameter to a barebox object
+ * vbobject_add_param_fixed - add a readonly parameter to a barebox object
  * @param bobj	The barebox object
  * @param name	The name of the parameter
- * @param value	The value of the parameter
+ * @param fmt	Format string
  */
-struct param_d *bobject_add_param_fixed(bobject_t _bobj, const char *name,
-				    const char *value)
+struct param_d *vbobject_add_param_fixed(struct bobject *bobj, const char *name,
+					 const char *fmt, va_list ap)
 {
-	struct bobject *bobj = _bobj.bobj;
 	struct param_d *param;
 	int ret;
 
@@ -233,7 +232,27 @@ struct param_d *bobject_add_param_fixed(bobject_t _bobj, const char *name,
 		return ERR_PTR(ret);
 	}
 
-	param->value = strdup(value);
+	param->value = fmt ? bvasprintf(fmt, ap) : NULL;
+
+	return param;
+}
+
+/**
+ * bobject_add_param_fixed - add a readonly parameter to a barebox object
+ * @param bobj	The barebox object
+ * @param name	The name of the parameter
+ * @param fmt	Format string
+ */
+struct param_d *bobject_add_param_fixed(bobject_t _bobj, const char *name,
+					const char *fmt, ...)
+{
+	struct bobject *bobj = _bobj.bobj;
+	struct param_d *param;
+	va_list ap;
+
+	va_start(ap, fmt);
+	param = vbobject_add_param_fixed(bobj, name, fmt, ap);
+	va_end(ap);
 
 	return param;
 }

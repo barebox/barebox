@@ -197,7 +197,7 @@ static int efi_register_device(struct efi_device *efidev)
 
 	dev_path_str = device_path_to_str(efidev->devpath);
 	if (dev_path_str) {
-		dev_add_param_fixed(&efidev->dev, "devpath", dev_path_str);
+		dev_add_param_fixed(&efidev->dev, "devpath", "%s", dev_path_str);
 		free(dev_path_str);
 	}
 
@@ -421,7 +421,7 @@ static int efi_init_devices(void)
 
 	bus_register(&efi_bus);
 
-	dev_add_param_fixed(&efi_bus.dev, "fw_vendor", fw_vendor);
+	dev_add_param_fixed(&efi_bus.dev, "fw_vendor", "%s", fw_vendor);
 	free(fw_vendor);
 
 	dev_add_param_uint32_fixed(&efi_bus.dev, "major", sys_major, "%u");

@@ -558,9 +558,9 @@ int usb_new_device(struct usb_device *dev)
 			dev->descriptor->iProduct, "%u");
 	dev_add_param_uint32_fixed(&dev->dev, "iSerialNumber",
 			dev->descriptor->iSerialNumber, "%u");
-	dev_add_param_fixed(&dev->dev, "Manufacturer", dev->mf);
-	dev_add_param_fixed(&dev->dev, "Product", dev->prod);
-	dev_add_param_fixed(&dev->dev, "SerialNumber", dev->serial);
+	dev_add_param_fixed(&dev->dev, "Manufacturer", "%s", dev->mf);
+	dev_add_param_fixed(&dev->dev, "Product", "%s", dev->prod);
+	dev_add_param_fixed(&dev->dev, "SerialNumber", "%s", dev->serial);
 	dev_add_param_uint32_fixed(&dev->dev, "idVendor",
 			dev->descriptor->idVendor, "%04x");
 	dev_add_param_uint32_fixed(&dev->dev, "idProduct",

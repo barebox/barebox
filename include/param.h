@@ -6,6 +6,7 @@
 #include <linux/types.h>
 #include <linux/list.h>
 #include <bobject.h>
+#include <stdarg.h>
 
 #define PARAM_FLAG_RO	(1 << 0)
 #define PARAM_GLOBALVAR_UNQUALIFIED	(1 << 1)
@@ -103,8 +104,12 @@ struct param_d *bobject_add_param_file_list(bobject_t bobj, const char *name,
 					struct file_list **file_list,
 					void *priv);
 
+struct param_d *vbobject_add_param_fixed(struct bobject *bobj, const char *name,
+					 const char *fmt, va_list ap);
+
 struct param_d *bobject_add_param_fixed(bobject_t bobj, const char *name,
-				    const char *value);
+				    const char *fmt, ...)
+	__printf(3, 4);
 
 void param_remove(struct param_d *p);
 
@@ -224,9 +229,17 @@ static inline struct param_d *bobject_add_param_file_list(bobject_t bobj,
 	return NULL;
 }
 
-static inline struct param_d *bobject_add_param_fixed(bobject_t bobj,
-						  const char *name,
-						  const char *value)
+static inline
+struct param_d *vbobject_add_param_fixed(struct bobject *bobj, const char *name,
+					 const char *fmt, va_list ap)
+{
+	return NULL;
+}
+
+static inline __printf(3, 4)
+struct param_d *bobject_add_param_fixed(bobject_t bobj,
+					const char *name,
+					const char *fmt, ...)
 {
 	return NULL;
 }
@@ -340,7 +353,7 @@ static inline struct param_d *bobject_add_param_string_fixed(bobject_t bobj,
 							 const char *name,
 							 const char *value)
 {
-	return bobject_add_param_fixed(bobj, name, value);
+	return bobject_add_param_fixed(bobj, name, "%s", value);
 }
 
 static inline struct param_d *bobject_add_param_enum_ro(bobject_t bobj,
@@ -367,6 +380,7 @@ static inline struct param_d *bobject_add_param_bitmask_ro(bobject_t bobj,
 #define dev_set_param			bobject_set_param
 #define dev_add_param			bobject_add_param
 #define dev_add_param_string		bobject_add_param_string
+#define dev_add_param_fixed		bobject_add_param_fixed
 #define __dev_add_param_int		__bobject_add_param_int
 #define dev_add_param_enum		bobject_add_param_enum
 #define dev_add_param_tristate		bobject_add_param_tristate
@@ -375,7 +389,6 @@ static inline struct param_d *bobject_add_param_bitmask_ro(bobject_t bobj,
 #define dev_add_param_ip		bobject_add_param_ip
 #define dev_add_param_mac		bobject_add_param_mac
 #define dev_add_param_file_list		bobject_add_param_file_list
-#define dev_add_param_fixed		bobject_add_param_fixed
 #define dev_param_set_generic		bobject_param_set_generic
 
 #define dev_add_param_int		bobject_add_param_int

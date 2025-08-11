@@ -28,6 +28,7 @@ enum blk_type {
 	BLK_TYPE_NVME,
 	BLK_TYPE_VIRTUAL,
 	BLK_TYPE_MMC,
+	BLK_TYPE_COUNT,
 };
 
 const char *blk_type_str(enum blk_type);

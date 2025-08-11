@@ -1,5 +1,5 @@
 /*
- * parameter.c - device parameters
+ * parameter.c - barebox object parameters
  *
  * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
@@ -16,7 +16,7 @@
 
 /**
  * @file
- * @brief Handling device specific parameters
+ * @brief Handling barebox-object specific parameters
  */
 #include <common.h>
 #include <param.h>
@@ -49,11 +49,12 @@ const char *get_param_type(struct param_d *param)
 	return param_type_string[param->type];
 }
 
-struct param_d *get_param_by_name(struct device *dev, const char *name)
+struct param_d *get_param_by_name(bobject_t _bobj, const char *name)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_d *p;
 
-	list_for_each_entry(p, &dev->bobject.parameters, list) {
+	list_for_each_entry(p, &bobj->parameters, list) {
 		if (!strcmp(p->name, name))
 			return p;
 	}
@@ -62,38 +63,40 @@ struct param_d *get_param_by_name(struct device *dev, const char *name)
 }
 
 /**
- * dev_get_param - get the value of a parameter
- * @param dev	The device
+ * bobject_get_param - get the value of a parameter
+ * @param bobj	The barebox object
  * @param name	The name of the parameter
  * @return	The value
  */
-const char *dev_get_param(struct device *dev, const char *name)
+const char *bobject_get_param(bobject_t _bobj, const char *name)
 {
-	struct param_d *param = get_param_by_name(dev, name);
+	struct bobject *bobj = _bobj.bobj;
+	struct param_d *param = get_param_by_name(bobj, name);
 
 	if (!param) {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	return param->get(dev, param);
+	return param->get(bobj, param);
 }
 
 /**
- * dev_set_param - set a parameter of a device to a new value
- * @param dev	The device
+ * bobject_set_param - set a parameter of a barebox object to a new value
+ * @param bobj	The barebox object
  * @param name	The name of the parameter
  * @param val	The new value of the parameter
  */
-int dev_set_param(struct device *dev, const char *name, const char *val)
+int bobject_set_param(bobject_t _bobj, const char *name, const char *val)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_d *param;
 	int ret;
 
-	if (!dev)
+	if (!bobj)
 		return errno_set(-ENODEV);
 
-	param = get_param_by_name(dev, name);
+	param = get_param_by_name(bobj, name);
 
 	if (!param)
 		return errno_set(-EINVAL);
@@ -101,7 +104,7 @@ int dev_set_param(struct device *dev, const char *name, const char *val)
 	if (param->flags & PARAM_FLAG_RO)
 		return errno_set(-EACCES);
 
-	ret = param->set(dev, param, val);
+	ret = param->set(bobj, param, val);
 	if (ret)
 		return errno_set(ret);
 
@@ -109,8 +112,8 @@ int dev_set_param(struct device *dev, const char *name, const char *val)
 }
 
 /**
- * dev_param_set_generic - generic setter function for a parameter
- * @param dev	The device
+ * bobject_param_set_generic - generic setter function for a parameter
+ * @param bobj	The barebox object
  * @param p	the parameter
  * @param val	The new value
  *
@@ -119,7 +122,7 @@ int dev_set_param(struct device *dev, const char *name, const char *val)
  * used during deregistration of the parameter to free the alloctated
  * memory.
  */
-int dev_param_set_generic(struct device *dev, struct param_d *p,
+int bobject_param_set_generic(bobject_t _bobj, struct param_d *p,
 			  const char *val)
 {
 	free(p->value);
@@ -131,7 +134,7 @@ int dev_param_set_generic(struct device *dev, struct param_d *p,
 	return p->value ? 0 : -ENOMEM;
 }
 
-static const char *param_get_generic(struct device *dev, struct param_d *p)
+static const char *param_get_generic(struct bobject *bobj, struct param_d *p)
 {
 	return p->value ? p->value : "";
 }
@@ -144,13 +147,13 @@ static int compare(struct list_head *a, struct list_head *b)
 	return strcmp(na, nb);
 }
 
-static int __dev_add_param(struct param_d *param, struct device *dev,
+static int __bobject_add_param(struct param_d *param, struct bobject *bobj,
 			   const char *name,
-			   int (*set)(struct device *dev, struct param_d *p, const char *val),
-			   const char *(*get)(struct device *dev, struct param_d *p),
+			   int (*set)(bobject_t _bobj, struct param_d *p, const char *val),
+			   const char *(*get)(bobject_t _bobj, struct param_d *p),
 			   unsigned long flags)
 {
-	if (get_param_by_name(dev, name))
+	if (get_param_by_name(bobj, name))
 		return -EEXIST;
 
 	param->name = strdup_const(name);
@@ -160,45 +163,47 @@ static int __dev_add_param(struct param_d *param, struct device *dev,
 	if (set)
 		param->set = set;
 	else
-		param->set = dev_param_set_generic;
+		param->set = bobject_param_set_generic;
 	if (get)
 		param->get = get;
 	else
 		param->get = param_get_generic;
 
 	param->flags = flags;
-	param->dev = dev;
-	list_add_sort(&param->list, &dev->bobject.parameters, compare);
+	param->bobj = bobj;
+	list_add_sort(&param->list, &bobj->parameters, compare);
 
-	dev_param_init_from_nv(dev, name);
+	if (!bobj->local)
+		dev_param_init_from_nv(bobj_to_dev(bobj), name);
 
 	return 0;
 }
 
 /**
- * dev_add_param - add a parameter to a device
- * @param dev	The device
+ * bobject_add_param - add a parameter to a barebox object
+ * @param bobj	The barebox object
  * @param name	The name of the parameter
  * @param set	setter function for the parameter
  * @param get	getter function for the parameter
  * @param flags
  *
- * This function adds a new parameter to a device. The get/set functions can
+ * This function adds a new parameter to a barebox object. The get/set functions can
  * be zero in which case the generic functions are used. The generic functions
  * expect the parameter value to be a string which can be freed with free(). Do
  * not use static arrays when using the generic functions.
  */
-struct param_d *dev_add_param(struct device *dev, const char *name,
-			      int (*set)(struct device *dev, struct param_d *p, const char *val),
-			      const char *(*get)(struct device *dev, struct param_d *param),
+struct param_d *bobject_add_param(bobject_t _bobj, const char *name,
+			      int (*set)(bobject_t _bobj, struct param_d *p, const char *val),
+			      const char *(*get)(bobject_t _bobj, struct param_d *param),
 			      unsigned long flags)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_d *param;
 	int ret;
 
 	param = xzalloc(sizeof(*param));
 
-	ret = __dev_add_param(param, dev, name, set, get, flags);
+	ret = __bobject_add_param(param, bobj, name, set, get, flags);
 	if (ret) {
 		free(param);
 		return ERR_PTR(ret);
@@ -208,20 +213,21 @@ struct param_d *dev_add_param(struct device *dev, const char *name,
 }
 
 /**
- * dev_add_param_fixed - add a readonly parameter to a device
- * @param dev	The device
+ * bobject_add_param_fixed - add a readonly parameter to a barebox object
+ * @param bobj	The barebox object
  * @param name	The name of the parameter
  * @param value	The value of the parameter
  */
-struct param_d *dev_add_param_fixed(struct device *dev, const char *name,
+struct param_d *bobject_add_param_fixed(bobject_t _bobj, const char *name,
 				    const char *value)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_d *param;
 	int ret;
 
 	param = xzalloc(sizeof(*param));
 
-	ret = __dev_add_param(param, dev, name, NULL, NULL, PARAM_FLAG_RO);
+	ret = __bobject_add_param(param, bobj, name, NULL, NULL, PARAM_FLAG_RO);
 	if (ret) {
 		free(param);
 		return ERR_PTR(ret);
@@ -244,7 +250,7 @@ static inline struct param_string *to_param_string(struct param_d *p)
 	return container_of(p, struct param_string, param);
 }
 
-static int param_string_set(struct device *dev, struct param_d *p,
+static int param_string_set(struct bobject *bobj, struct param_d *p,
 			    const char *val)
 {
 	struct param_string *ps = to_param_string(p);
@@ -275,7 +281,7 @@ static int param_string_set(struct device *dev, struct param_d *p,
 	return ret;
 }
 
-static const char *param_string_get(struct device *dev, struct param_d *p)
+static const char *param_string_get(struct bobject *bobj, struct param_d *p)
 {
 	struct param_string *ps = to_param_string(p);
 	int ret;
@@ -289,11 +295,12 @@ static const char *param_string_get(struct device *dev, struct param_d *p)
 	return *ps->value;
 }
 
-struct param_d *dev_add_param_string(struct device *dev, const char *name,
+struct param_d *bobject_add_param_string(bobject_t _bobj, const char *name,
 				     int (*set)(struct param_d *p, void *priv),
 				     int (*get)(struct param_d *p, void *priv),
 				     char **value, void *priv)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_string *ps;
 	struct param_d *p;
 	int ret;
@@ -306,7 +313,7 @@ struct param_d *dev_add_param_string(struct device *dev, const char *name,
 	p->driver_priv = priv;
 	p->type = PARAM_TYPE_STRING;
 
-	ret = __dev_add_param(p, dev, name, param_string_set, param_string_get, 0);
+	ret = __bobject_add_param(p, bobj, name, param_string_set, param_string_get, 0);
 	if (ret) {
 		free(ps);
 		return ERR_PTR(ret);
@@ -329,7 +336,7 @@ static inline struct param_int *to_param_int(struct param_d *p)
 	return container_of(p, struct param_int, param);
 }
 
-static int param_int_set(struct device *dev, struct param_d *p,
+static int param_int_set(struct bobject *bobj, struct param_d *p,
 			 const char *val)
 {
 	struct param_int *pi = to_param_int(p);
@@ -371,7 +378,7 @@ static int param_int_set(struct device *dev, struct param_d *p,
 	return ret;
 }
 
-static const char *param_int_get(struct device *dev, struct param_d *p)
+static const char *param_int_get(struct bobject *bobj, struct param_d *p)
 {
 	struct param_int *pi = to_param_int(p);
 	int ret;
@@ -406,8 +413,8 @@ int param_set_readonly(struct param_d *p, void *priv)
 }
 
 /**
- * dev_add_param_int - add an integer parameter to a device
- * @param dev	The device
+ * bobject_add_param_int - add an integer parameter to a barebox object
+ * @param bobj	The barebox object
  * @param name	The name of the parameter
  * @param set	set function
  * @param get	get function
@@ -421,12 +428,13 @@ int param_set_readonly(struct param_d *p, void *priv)
  * The set function can be used as a notifer when the variable is about
  * to be written. Can also be used to limit the value.
  */
-struct param_d *__dev_add_param_int(struct device *dev, const char *name,
+struct param_d *__bobject_add_param_int(bobject_t _bobj, const char *name,
 				    int (*set)(struct param_d *p, void *priv),
 				    int (*get)(struct param_d *p, void *priv),
 				    void *value, enum param_type type,
 				    const char *format, void *priv)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_int *pi;
 	struct param_d *p;
 	int ret, dsize;
@@ -468,7 +476,7 @@ struct param_d *__dev_add_param_int(struct device *dev, const char *name,
 	p->driver_priv = priv;
 	p->type = type;
 
-	ret = __dev_add_param(p, dev, name, param_int_set, param_int_get, 0);
+	ret = __bobject_add_param(p, bobj, name, param_int_set, param_int_get, 0);
 	if (ret) {
 		free(pi);
 		return ERR_PTR(ret);
@@ -491,7 +499,7 @@ static inline struct param_enum *to_param_enum(struct param_d *p)
 	return container_of(p, struct param_enum, param);
 }
 
-static int param_enum_set(struct device *dev, struct param_d *p,
+static int param_enum_set(struct bobject *bobj, struct param_d *p,
 			  const char *val)
 {
 	struct param_enum *pe = to_param_enum(p);
@@ -520,7 +528,7 @@ static int param_enum_set(struct device *dev, struct param_d *p,
 	return ret;
 }
 
-static const char *param_enum_get(struct device *dev, struct param_d *p)
+static const char *param_enum_get(struct bobject *bobj, struct param_d *p)
 {
 	struct param_enum *pe = to_param_enum(p);
 	int ret;
@@ -559,12 +567,13 @@ static void param_enum_info(struct param_d *p)
 	}
 }
 
-struct param_d *dev_add_param_enum(struct device *dev, const char *name,
+struct param_d *bobject_add_param_enum(bobject_t _bobj, const char *name,
 				   int (*set)(struct param_d *p, void *priv),
 				   int (*get)(struct param_d *p, void *priv),
 				   int *value, const char * const *names,
 				   int num_names, void *priv)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_enum *pe;
 	struct param_d *p;
 	int ret;
@@ -580,7 +589,7 @@ struct param_d *dev_add_param_enum(struct device *dev, const char *name,
 	p->driver_priv = priv;
 	p->type = PARAM_TYPE_ENUM;
 
-	ret = __dev_add_param(p, dev, name, param_enum_set, param_enum_get, 0);
+	ret = __bobject_add_param(p, bobj, name, param_enum_set, param_enum_get, 0);
 	if (ret) {
 		free(pe);
 		return ERR_PTR(ret);
@@ -597,20 +606,22 @@ static const char *const tristate_names[] = {
 	[PARAM_TRISTATE_FALSE] = "0",
 };
 
-struct param_d *dev_add_param_tristate(struct device *dev, const char *name,
+struct param_d *bobject_add_param_tristate(bobject_t _bobj, const char *name,
 				       int (*set)(struct param_d *p, void *priv),
 				       int (*get)(struct param_d *p, void *priv),
 				       int *value, void *priv)
 {
-	return dev_add_param_enum(dev, name, set, get, value, tristate_names,
+	struct bobject *bobj = _bobj.bobj;
+	return bobject_add_param_enum(bobj, name, set, get, value, tristate_names,
 				  ARRAY_SIZE(tristate_names), priv);
 }
 
-struct param_d *dev_add_param_tristate_ro(struct device *dev,
+struct param_d *bobject_add_param_tristate_ro(bobject_t _bobj,
 					  const char *name,
 					  int *value)
 {
-	return dev_add_param_enum_ro(dev, name, value, tristate_names,
+	struct bobject *bobj = _bobj.bobj;
+	return bobject_add_param_enum_ro(bobj, name, value, tristate_names,
 				     ARRAY_SIZE(tristate_names));
 }
 
@@ -628,7 +639,7 @@ static inline struct param_bitmask *to_param_bitmask(struct param_d *p)
 	return container_of(p, struct param_bitmask, param);
 }
 
-static int param_bitmask_set(struct device *dev, struct param_d *p,
+static int param_bitmask_set(struct bobject *bobj, struct param_d *p,
 			     const char *val)
 {
 	struct param_bitmask *pb = to_param_bitmask(p);
@@ -675,7 +686,7 @@ out:
 	return ret;
 }
 
-static const char *param_bitmask_get(struct device *dev, struct param_d *p)
+static const char *param_bitmask_get(struct bobject *bobj, struct param_d *p)
 {
 	struct param_bitmask *pb = to_param_bitmask(p);
 	int ret, bit;
@@ -714,13 +725,14 @@ static void param_bitmask_info(struct param_d *p)
 	}
 }
 
-struct param_d *dev_add_param_bitmask(struct device *dev, const char *name,
+struct param_d *bobject_add_param_bitmask(bobject_t _bobj, const char *name,
 				      int (*set)(struct param_d *p, void *priv),
 				      int (*get)(struct param_d *p, void *priv),
 				      unsigned long *value,
 				      const char * const *names, int num_names,
 				      void *priv)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_bitmask *pb;
 	struct param_d *p;
 	int ret, i, len = 0;
@@ -742,7 +754,7 @@ struct param_d *dev_add_param_bitmask(struct device *dev, const char *name,
 
 	p->value = xzalloc(len);
 
-	ret = __dev_add_param(p, dev, name, param_bitmask_set, param_bitmask_get, 0);
+	ret = __bobject_add_param(p, bobj, name, param_bitmask_set, param_bitmask_get, 0);
 	if (ret) {
 		free(pb);
 		return ERR_PTR(ret);
@@ -765,7 +777,7 @@ static inline struct param_ip *to_param_ip(struct param_d *p)
 	return container_of(p, struct param_ip, param);
 }
 
-static int param_ip_set(struct device *dev, struct param_d *p,
+static int param_ip_set(struct bobject *bobj, struct param_d *p,
 			const char *val)
 {
 	struct param_ip *pi = to_param_ip(p);
@@ -789,7 +801,7 @@ static int param_ip_set(struct device *dev, struct param_d *p,
 	return ret;
 }
 
-static const char *param_ip_get(struct device *dev, struct param_d *p)
+static const char *param_ip_get(struct bobject *bobj, struct param_d *p)
 {
 	struct param_ip *pi = to_param_ip(p);
 	int ret;
@@ -806,11 +818,12 @@ static const char *param_ip_get(struct device *dev, struct param_d *p)
 	return p->value;
 }
 
-struct param_d *dev_add_param_ip(struct device *dev, const char *name,
+struct param_d *bobject_add_param_ip(bobject_t _bobj, const char *name,
 				 int (*set)(struct param_d *p, void *priv),
 				 int (*get)(struct param_d *p, void *priv),
 				 IPaddr_t *ip, void *priv)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_ip *pi;
 	int ret;
 
@@ -821,7 +834,7 @@ struct param_d *dev_add_param_ip(struct device *dev, const char *name,
 	pi->param.driver_priv = priv;
 	pi->param.type = PARAM_TYPE_IPV4;
 
-	ret = __dev_add_param(&pi->param, dev, name,
+	ret = __bobject_add_param(&pi->param, bobj, name,
 			param_ip_set, param_ip_get, 0);
 	if (ret) {
 		free(pi);
@@ -846,7 +859,7 @@ static inline struct param_mac *to_param_mac(struct param_d *p)
 	return container_of(p, struct param_mac, param);
 }
 
-static int param_mac_set(struct device *dev, struct param_d *p,
+static int param_mac_set(struct bobject *bobj, struct param_d *p,
 			 const char *val)
 {
 	struct param_mac *pm = to_param_mac(p);
@@ -876,7 +889,7 @@ out:
 	return ret;
 }
 
-static const char *param_mac_get(struct device *dev, struct param_d *p)
+static const char *param_mac_get(struct bobject *bobj, struct param_d *p)
 {
 	struct param_mac *pm = to_param_mac(p);
 	int ret;
@@ -892,11 +905,12 @@ static const char *param_mac_get(struct device *dev, struct param_d *p)
 	return p->value;
 }
 
-struct param_d *dev_add_param_mac(struct device *dev, const char *name,
+struct param_d *bobject_add_param_mac(bobject_t _bobj, const char *name,
 				  int (*set)(struct param_d *p, void *priv),
 				  int (*get)(struct param_d *p, void *priv),
 				  u8 *mac, void *priv)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_mac *pm;
 	int ret;
 
@@ -908,7 +922,7 @@ struct param_d *dev_add_param_mac(struct device *dev, const char *name,
 	pm->param.value = pm->mac_str;
 	pm->param.type = PARAM_TYPE_MAC;
 
-	ret = __dev_add_param(&pm->param, dev, name,
+	ret = __bobject_add_param(&pm->param, bobj, name,
 			param_mac_set, param_mac_get, 0);
 	if (ret) {
 		free(pm);
@@ -931,7 +945,7 @@ static inline struct param_file_list *to_param_file_list(struct param_d *p)
 	return container_of(p, struct param_file_list, param);
 }
 
-static int param_file_list_set(struct device *dev, struct param_d *p,
+static int param_file_list_set(struct bobject *bobj, struct param_d *p,
 			       const char *val)
 {
 	struct param_file_list *pfl = to_param_file_list(p);
@@ -962,7 +976,7 @@ out:
 	return ret;
 }
 
-static const char *param_file_list_get(struct device *dev, struct param_d *p)
+static const char *param_file_list_get(struct bobject *bobj, struct param_d *p)
 {
 	struct param_file_list *pfl = to_param_file_list(p);
 	int ret;
@@ -978,12 +992,13 @@ static const char *param_file_list_get(struct device *dev, struct param_d *p)
 	return p->value;
 }
 
-struct param_d *dev_add_param_file_list(struct device *dev, const char *name,
+struct param_d *bobject_add_param_file_list(bobject_t _bobj, const char *name,
 					int (*set)(struct param_d *p, void *priv),
 					int (*get)(struct param_d *p, void *priv),
 					struct file_list **file_list,
 					void *priv)
 {
+	struct bobject *bobj = _bobj.bobj;
 	struct param_file_list *pfl;
 	int ret;
 
@@ -994,7 +1009,7 @@ struct param_d *dev_add_param_file_list(struct device *dev, const char *name,
 	pfl->param.driver_priv = priv;
 	pfl->param.type = PARAM_TYPE_FILE_LIST;
 
-	ret = __dev_add_param(&pfl->param, dev, name,
+	ret = __bobject_add_param(&pfl->param, bobj, name,
 			param_file_list_set, param_file_list_get, 0);
 	if (ret) {
 		free(pfl);
@@ -1011,7 +1026,7 @@ struct param_d *dev_add_param_file_list(struct device *dev, const char *name,
  */
 void param_remove(struct param_d *p)
 {
-	p->set(p->dev, p, NULL);
+	p->set(p->bobj, p, NULL);
 	list_del(&p->list);
 	free_const(p->name);
 	free(p);

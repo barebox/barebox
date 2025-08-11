@@ -10,10 +10,12 @@
  * struct bobject - barebox object
  * @name: name of object (must be first member)
  * @parameters: list of struct param_d parameters
+ * @local: name of bobject is not unique across the system
  */
 struct bobject {
 	char			*name;
 	struct list_head	parameters;
+	u32			local:1;
 };
 
 struct device;

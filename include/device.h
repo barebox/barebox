@@ -124,6 +124,8 @@ struct device {
 	char *deferred_probe_reason;
 };
 
+#define bobj_to_dev(__bobj)	container_of_const(__bobj, struct device, bobject)
+
 struct class {
 	const char *name;
 	struct list_head devices;

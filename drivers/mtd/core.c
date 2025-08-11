@@ -25,6 +25,8 @@
 
 static LIST_HEAD(mtd_register_hooks);
 
+DEFINE_DEV_CLASS(mtd_class, "mtd");
+
 /**
  * mtd_buf_all_ff - check if buffer contains only 0xff
  * @buf: buffer to check
@@ -680,6 +682,8 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 	ret = register_device(&mtd->dev);
 	if (ret)
 		return ret;
+
+	class_add_device(&mtd_class, &mtd->dev);
 
 	mtd->cdev.ops = &mtd_ops;
 	mtd->cdev.size = mtd->size;

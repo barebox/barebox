@@ -56,7 +56,7 @@ static int do_varinfo(int argc, char *argv[])
 	if (!dev)
 		return -ENODEV;
 
-	list_for_each_entry(param, &dev->parameters, list) {
+	dev_for_each_param(dev, param) {
 		if (prefix && !strstarts(param->name, prefix))
 			continue;
 

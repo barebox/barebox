@@ -1026,7 +1026,7 @@ void dev_remove_parameters(struct device *dev)
 {
 	struct param_d *p, *n;
 
-	list_for_each_entry_safe(p, n, &dev->parameters, list)
+	dev_for_each_param_safe(dev, p, n)
 		param_remove(p);
 }
 

@@ -162,6 +162,11 @@ extern struct list_head class_list;
 
 #define class_for_each(class) list_for_each_entry((class), &class_list, list)
 
+#define dev_for_each_param(dev, param) \
+	list_for_each_entry((param), &(dev)->parameters, list)
+#define dev_for_each_param_safe(dev, param, tmp) \
+	list_for_each_entry_safe((param), (tmp), &(dev)->parameters, list)
+
 struct device_alias {
 	struct device *dev;
 	struct list_head list;

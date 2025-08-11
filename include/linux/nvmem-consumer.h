@@ -12,7 +12,8 @@
 #ifndef _LINUX_NVMEM_CONSUMER_H
 #define _LINUX_NVMEM_CONSUMER_H
 
-struct device;
+#include <device.h>
+
 struct device_node;
 /* consumer cookie */
 struct nvmem_cell;
@@ -25,6 +26,8 @@ struct nvmem_cell_info {
 	unsigned int		bit_offset;
 	unsigned int		nbits;
 };
+
+extern struct class nvmem_class;
 
 #if IS_ENABLED(CONFIG_NVMEM)
 

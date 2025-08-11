@@ -16,7 +16,6 @@
 struct nvmem_device {
 	const char		*name;
 	struct device		dev;
-	struct list_head	node;
 	int			stride;
 	int			word_size;
 	int			ncells;
@@ -46,15 +45,14 @@ struct nvmem_cell {
 };
 
 static LIST_HEAD(nvmem_cells);
-static LIST_HEAD(nvmem_devs);
+DEFINE_DEV_CLASS(nvmem_class, "nvmem");
 
 void nvmem_devices_print(void)
 {
 	struct nvmem_device *dev;
 
-	list_for_each_entry(dev, &nvmem_devs, node) {
+	class_for_each_container_of_device(&nvmem_class, dev, dev)
 		printf("%s\n", dev_name(&dev->dev));
-	}
 }
 
 static ssize_t nvmem_cdev_read(struct cdev *cdev, void *buf, size_t count,
@@ -154,7 +152,7 @@ static struct nvmem_device *of_nvmem_find(struct device_node *nvmem_np)
 	if (!nvmem_np)
 		return NULL;
 
-	list_for_each_entry(dev, &nvmem_devs, node)
+	class_for_each_container_of_device(&nvmem_class, dev, dev)
 		if (dev->dev.of_node == nvmem_np)
 			return dev;
 
@@ -266,7 +264,7 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 		}
 	}
 
-	list_add_tail(&nvmem->node, &nvmem_devs);
+	class_add_device(&nvmem_class, &nvmem->dev);
 
 	return nvmem;
 }

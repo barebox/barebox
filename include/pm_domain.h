@@ -28,6 +28,7 @@ typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
 #ifdef CONFIG_PM_GENERIC_DOMAINS
 
 void genpd_activate(void);
+bool genpd_is_active(void);
 
 int genpd_dev_pm_attach(struct device *dev);
 struct device *genpd_dev_pm_attach_by_id(struct device *dev,
@@ -61,6 +62,11 @@ void pm_genpd_print(void);
 
 static inline void genpd_activate(void)
 {
+}
+
+static inline bool genpd_is_active(void)
+{
+	return false;
 }
 
 static inline int pm_genpd_init(struct generic_pm_domain *genpd,

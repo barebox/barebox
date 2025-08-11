@@ -60,11 +60,6 @@ struct driver {
 #define device_d device
 #define driver_d driver
 
-/* dynamically assign the next free id */
-#define DEVICE_ID_DYNAMIC	-2
-/* do not use an id (only one device available) */
-#define DEVICE_ID_SINGLE	-1
-
 /* Register devices and drivers.
  */
 int register_driver(struct driver *);
@@ -131,21 +126,6 @@ struct device *find_device(const char *str);
  */
 int get_free_deviceid(const char *name_template);
 
-static inline const char *dev_id(const struct device *dev)
-{
-	if (!dev)
-		return NULL;
-	return (dev->id != DEVICE_ID_SINGLE) ? dev->unique_name : dev->name;
-}
-
-static inline const char *dev_name(const struct device *dev)
-{
-	if (!dev)
-		return NULL;
-	return dev_id(dev) ?: dev->name;
-}
-
-int dev_set_name(struct device *dev, const char *fmt, ...) __printf(2, 3);
 int dev_add_alias(struct device *dev, const char *fmt, ...) __printf(2, 3);
 
 /*

@@ -168,6 +168,27 @@ static inline struct device_node *dev_of_node(struct device *dev)
 	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->of_node : NULL;
 }
 
+/* dynamically assign the next free id */
+#define DEVICE_ID_DYNAMIC	-2
+/* do not use an id (only one device available) */
+#define DEVICE_ID_SINGLE	-1
+
+static inline const char *dev_id(const struct device *dev)
+{
+	if (!dev)
+		return NULL;
+	return (dev->id != DEVICE_ID_SINGLE) ? dev->unique_name : dev->name;
+}
+
+static inline const char *dev_name(const struct device *dev)
+{
+	if (!dev)
+		return NULL;
+	return dev_id(dev) ?: dev->name;
+}
+
+int dev_set_name(struct device *dev, const char *fmt, ...) __printf(2, 3);
+
 static inline bool dev_is_dma_coherent(struct device *dev)
 {
 	if (dev) {

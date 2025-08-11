@@ -26,6 +26,45 @@ def barebox_config(request, strategy, target):
     command = target.get_driver("BareboxDriver")
     return helper.get_config(command)
 
+
+def get_enabled_arch(config):
+    # Get the absolute path to the directory containing this script
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Path to the 'arch' directory relative to this script
+    arch_dir = os.path.join(base_dir, "arch")
+
+    if not os.path.isdir(arch_dir):
+        return None
+
+    # Optional mapping from directory names to config key suffixes
+    arch_map = {"powerpc": "ppc"}
+
+    for entry in os.listdir(arch_dir):
+        path = os.path.join(arch_dir, entry)
+        if os.path.isdir(path):
+            key_suffix = arch_map.get(entry, entry).upper()
+            config_key = f"CONFIG_{key_suffix}"
+            if config.get(config_key):
+                return entry
+
+    return None
+
+
+def guess_lg_env():
+    config_file = helper.open_config_file(os.environ['LG_BUILDDIR'] + "/.config")
+    config = helper.parse_config(config_file)
+    if not config or not config.get('CONFIG_NAME'):
+        return None
+    arch = get_enabled_arch(config)
+    if not arch:
+        return None
+    filename = os.path.join("test", arch, f"{config['CONFIG_NAME']}.yaml")
+    if os.path.exists(filename):
+        return filename
+    return None
+
+
 def pytest_configure(config):
     if 'LG_BUILDDIR' not in os.environ:
         if 'KBUILD_OUTPUT' in os.environ:
@@ -37,6 +76,14 @@ def pytest_configure(config):
 
     if os.environ['LG_BUILDDIR'] is not None:
         os.environ['LG_BUILDDIR'] = os.path.realpath(os.environ['LG_BUILDDIR'])
+
+    lg_env = config.option.lg_env
+    if lg_env is None:
+        lg_env = os.environ.get('LG_ENV')
+    if lg_env is None:
+        if lg_env := guess_lg_env():
+            os.environ['LG_ENV'] = lg_env
+
 
 def pytest_addoption(parser):
     def assignment(arg):

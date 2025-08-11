@@ -120,6 +120,10 @@ config NAME
 	  version command, but does not influence any runtime or
 	  compile-time behavior.
 
+	  For testing, pytest will use this option to determine, which
+	  Labgrid environment YAML to use if none was specified by the
+	  user.
+
 config LOCALVERSION
 	string "Local version - append to the version string"
 	help

@@ -11,7 +11,7 @@
 #include <featctrl.h>
 
 /* List of registered feature controllers */
-static LIST_HEAD(of_feature_controllers);
+LIST_HEAD(of_feature_controllers);
 
 /**
  * feature_controller_register() - Register a feature controller

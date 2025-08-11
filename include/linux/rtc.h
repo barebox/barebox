@@ -15,6 +15,7 @@
 
 #include <common.h>
 #include <linux/types.h>
+#include <linux/list.h>
 #include <linux/errno.h>
 #include <linux/nvmem-provider.h>
 #include <rtc.h>
@@ -39,6 +40,8 @@ struct rtc_class_ops {
 	int (*read_time)(struct rtc_device *, struct rtc_time *);
 	int (*set_time)(struct rtc_device *, struct rtc_time *);
 };
+
+extern struct class rtc_class;
 
 extern int rtc_register(struct rtc_device *rtcdev);
 

@@ -39,7 +39,7 @@ void globalvar_remove(const char *name)
 		if (fnmatch(name, p->name, 0))
 			continue;
 
-		dev_remove_param(p);
+		param_remove(p);
 	}
 }
 
@@ -282,7 +282,7 @@ int nvvar_remove(const char *name)
 
 		fname = basprintf("/env/nv/%s", p->name);
 
-		dev_remove_param(p);
+		param_remove(p);
 
 		unlink(fname);
 		free(fname);
@@ -510,7 +510,7 @@ static int globalvar_remove_unqualified(const char *name)
 	if (!(p->flags & PARAM_GLOBALVAR_UNQUALIFIED))
 		return -EEXIST;
 
-	dev_remove_param(p);
+	param_remove(p);
 
 	return 0;
 }

@@ -1006,11 +1006,10 @@ struct param_d *dev_add_param_file_list(struct device *dev, const char *name,
 
 
 /**
- * dev_remove_param - remove a parameter from a device and free its
- * memory
+ * param_remove - remove a parameter and free its memory
  * @param p	The parameter
  */
-void dev_remove_param(struct param_d *p)
+void param_remove(struct param_d *p)
 {
 	p->set(p->dev, p, NULL);
 	list_del(&p->list);

@@ -105,7 +105,7 @@ struct param_d *dev_add_param_file_list(struct device *dev, const char *name,
 struct param_d *dev_add_param_fixed(struct device *dev, const char *name,
 				    const char *value);
 
-void dev_remove_param(struct param_d *p);
+void param_remove(struct param_d *p);
 
 void dev_remove_parameters(struct device *dev);
 
@@ -232,7 +232,7 @@ static inline struct param_d *dev_add_param_fixed(struct device *dev,
 	return NULL;
 }
 
-static inline void dev_remove_param(struct param_d *p) {}
+static inline void param_remove(struct param_d *p) {}
 
 static inline void dev_remove_parameters(struct device *dev) {}
 

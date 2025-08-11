@@ -4,12 +4,15 @@
 
 #include <linux/errno.h>
 #include <linux/err.h>
+#include <linux/list.h>
 #include <device.h>
 
 struct device;
 struct device_node;
 
 struct pinctrl;
+
+extern struct list_head pinctrl_list;
 
 #ifdef CONFIG_PINCTRL
 struct pinctrl_state *pinctrl_lookup_state(struct pinctrl *pinctrl,

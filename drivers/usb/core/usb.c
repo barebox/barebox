@@ -48,7 +48,7 @@
 static int dev_count;
 static int dev_index;
 
-static LIST_HEAD(host_list);
+LIST_HEAD(usb_host_list);
 LIST_HEAD(usb_device_list);
 
 static void print_usb_device(struct usb_device *dev)
@@ -81,7 +81,7 @@ static int usb_hw_detect(struct device *dev)
 {
 	struct usb_host *host;
 
-	list_for_each_entry(host, &host_list, list) {
+	list_for_each_entry(host, &usb_host_list, list) {
 		if (dev == host->hw_dev)
 			return usb_host_detect(host);
 	}
@@ -91,7 +91,7 @@ static int usb_hw_detect(struct device *dev)
 
 int usb_register_host(struct usb_host *host)
 {
-	list_add_tail(&host->list, &host_list);
+	list_add_tail(&host->list, &usb_host_list);
 	host->busnum = host_busnum++;
 	slice_init(&host->slice, dev_name(host->hw_dev));
 	if (!host->hw_dev->detect)
@@ -653,7 +653,7 @@ int usb_rescan(void)
 
 	pr_info("USB: scanning bus for devices...\n");
 
-	list_for_each_entry(host, &host_list, list) {
+	list_for_each_entry(host, &usb_host_list, list) {
 		ret = usb_host_detect(host);
 		if (ret)
 			continue;

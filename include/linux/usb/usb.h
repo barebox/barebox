@@ -482,6 +482,7 @@ int otg_device_get_mode(struct device *dev);
 extern struct bus_type otg_bus_type;
 
 extern struct list_head usb_device_list;
+extern struct list_head usb_host_list;
 
 bool usb_hub_is_root_hub(struct usb_device *hdev);
 

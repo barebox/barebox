@@ -1026,12 +1026,8 @@ void dev_remove_parameters(struct device *dev)
 {
 	struct param_d *p, *n;
 
-	list_for_each_entry_safe(p, n, &dev->parameters, list) {
-		p->set(dev, p, NULL);
-		list_del(&p->list);
-		free_const(p->name);
-		free(p);
-	}
+	list_for_each_entry_safe(p, n, &dev->parameters, list)
+		param_remove(p);
 }
 
 /** @page dev_params Device parameters

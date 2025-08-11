@@ -46,6 +46,11 @@ void pstore_set_kmsg_bytes(int bytes)
 
 static int pstore_ready;
 
+bool pstore_is_ready(void)
+{
+	return pstore_ready;
+}
+
 void pstore_log(const char *str)
 {
 	uint64_t id;

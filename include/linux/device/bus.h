@@ -22,6 +22,7 @@ struct bus_type {
 
 int bus_register(struct bus_type *bus);
 int device_match(struct device *dev, const struct driver *drv);
+struct bus_type *get_bus_by_name(const char *name);
 
 extern struct class bus_class;
 

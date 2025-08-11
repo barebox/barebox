@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+/ {
+	dmc: memory-controller {
+		compatible = "rockchip,rk3576-dmc";
+		rockchip,pmu = <&pmu1_grf>;
+	};
+};
+
+&scmi_clk {
+	assigned-clocks = <&scmi_clk SCMI_ARMCLK_B>;
+	assigned-clock-rates = <816000000>, <816000000>;
+};

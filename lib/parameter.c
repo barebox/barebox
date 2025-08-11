@@ -53,7 +53,7 @@ struct param_d *get_param_by_name(struct device *dev, const char *name)
 {
 	struct param_d *p;
 
-	list_for_each_entry(p, &dev->parameters, list) {
+	list_for_each_entry(p, &dev->bobject.parameters, list) {
 		if (!strcmp(p->name, name))
 			return p;
 	}
@@ -168,7 +168,7 @@ static int __dev_add_param(struct param_d *param, struct device *dev,
 
 	param->flags = flags;
 	param->dev = dev;
-	list_add_sort(&param->list, &dev->parameters, compare);
+	list_add_sort(&param->list, &dev->bobject.parameters, compare);
 
 	dev_param_init_from_nv(dev, name);
 
@@ -1015,19 +1015,6 @@ void param_remove(struct param_d *p)
 	list_del(&p->list);
 	free_const(p->name);
 	free(p);
-}
-
-/**
- * dev_remove_parameters - remove all parameters from a device and free their
- * memory
- * @param dev	The device
- */
-void dev_remove_parameters(struct device *dev)
-{
-	struct param_d *p, *n;
-
-	dev_for_each_param_safe(dev, p, n)
-		param_remove(p);
 }
 
 /** @page dev_params Device parameters

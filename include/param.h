@@ -107,8 +107,6 @@ struct param_d *dev_add_param_fixed(struct device *dev, const char *name,
 
 void param_remove(struct param_d *p);
 
-void dev_remove_parameters(struct device *dev);
-
 int dev_param_set_generic(struct device *dev, struct param_d *p,
 			  const char *val);
 
@@ -233,8 +231,6 @@ static inline struct param_d *dev_add_param_fixed(struct device *dev,
 }
 
 static inline void param_remove(struct param_d *p) {}
-
-static inline void dev_remove_parameters(struct device *dev) {}
 
 static inline int dev_param_set_generic(struct device *dev, struct param_d *p,
 					const char *val)

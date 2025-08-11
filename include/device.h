@@ -55,8 +55,6 @@ struct of_device_id;
  *          If parent is NULL, the device is a top-level device.
  * @pm_domain: Attached power domain.
  * @bus: Type of bus device is on.
- * @parameters: The parameters for this device. This is used to carry information
- *              of board specific data from the board code to the device driver
  * @dma_mask: DMA mask.
  * @dma_offset: DMA offset.
  * @detect: For devices which take longer to probe, this is called when the driver
@@ -100,8 +98,6 @@ struct device {
 	struct generic_pm_domain *pm_domain;
 
 	struct bus_type *bus;
-
-	struct list_head parameters;
 
 	struct list_head cdevs;
 
@@ -163,9 +159,9 @@ extern struct list_head class_list;
 #define class_for_each(class) list_for_each_entry((class), &class_list, list)
 
 #define dev_for_each_param(dev, param) \
-	list_for_each_entry((param), &(dev)->parameters, list)
+	list_for_each_entry((param), &(dev)->bobject.parameters, list)
 #define dev_for_each_param_safe(dev, param, tmp) \
-	list_for_each_entry_safe((param), (tmp), &(dev)->parameters, list)
+	list_for_each_entry_safe((param), (tmp), &(dev)->bobject.parameters, list)
 
 struct device_alias {
 	struct device *dev;

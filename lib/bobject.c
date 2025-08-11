@@ -34,3 +34,41 @@ int bobject_set_name(bobject_t bobj, const char *fmt, ...)
 	return WARN_ON(err < 0) ? err : 0;
 }
 EXPORT_SYMBOL_GPL(bobject_set_name);
+
+struct bobject *bobject_alloc(const char *name)
+{
+	struct bobject *bobj = xzalloc(sizeof(*bobj));
+
+	bobject_init(bobj);
+	bobject_set_name(bobj, "%s", name);
+
+	return bobj;
+}
+EXPORT_SYMBOL_GPL(bobject_alloc);
+
+void bobject_free(struct bobject *bobj)
+{
+	if (!bobj)
+		return;
+
+	free(bobj->name);
+	bobject_del(bobj);
+	free(bobj);
+}
+EXPORT_SYMBOL_GPL(bobject_free);
+
+#ifdef CONFIG_PARAMETER
+/**
+ * bobject_remove_parameters - remove all parameters from a bobject and free their
+ * memory
+ * @param bobject	The barebox object
+ */
+void bobject_del(struct bobject *bobj)
+{
+	struct param_d *p, *n;
+
+	list_for_each_entry_safe(p, n, &bobj->parameters, list)
+		param_remove(p);
+}
+EXPORT_SYMBOL(bobject_del);
+#endif

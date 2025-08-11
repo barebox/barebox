@@ -479,6 +479,15 @@ void rockchip_clk_register_branches(struct rockchip_clk_provider *ctx,
 				ctx->reg_base + list->gate_offset,
 				list->gate_shift, list->gate_flags, &ctx->lock);
 			break;
+		case branch_grf_gate:
+			flags |= CLK_SET_RATE_PARENT;
+			/* FIXME:
+			clk = rockchip_clk_register_gate_grf(list->name,
+				list->parent_names[0], flags, grf,
+				list->gate_offset, list->gate_shift,
+				list->gate_flags);
+			*/
+			break;
 		case branch_composite:
 			clk = rockchip_clk_register_branch(list->name,
 				list->parent_names, list->num_parents,

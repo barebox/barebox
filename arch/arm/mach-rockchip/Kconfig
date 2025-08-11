@@ -31,6 +31,10 @@ config ARCH_RK3568
 	bool
 	select ARCH_ROCKCHIP_V8
 
+config ARCH_RK3576
+	bool
+	select ARCH_ROCKCHIP_V8
+
 config ARCH_RK3588
 	bool
 	select ARCH_ROCKCHIP_V8

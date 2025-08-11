@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+obj-y			+= bobject.o
 obj-y			+= bcd.o
 obj-y			+= term.o
 obj-$(CONFIG_BOOTSTRAP)	+= bootstrap/

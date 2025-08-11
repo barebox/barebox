@@ -9,6 +9,7 @@
 #include <linux/types.h>
 #include <linux/list.h>
 #include <init.h>
+#include <bobject.h>
 
 enum dev_dma_coherence {
 	DEV_DMA_COHERENCE_DEFAULT = 0,
@@ -26,6 +27,7 @@ struct of_device_id;
 
 /**
  * struct device - The basic device structure
+ * @bobject: base class barebox object
  * @name: This member is used to match with a driver. This is a
  *        descriptive name and could be MPC5XXX_ether or imx_serial.
  *        Unless absolutely necessary, should not be modified
@@ -63,7 +65,10 @@ struct of_device_id;
  * @deferred_probe_reason: If a driver probe is deferred, this stores the last error.
  */
 struct device {
-	char *name;
+	union {
+		struct bobject bobject;
+		char *name;
+	};
 
 	char *unique_name;
 	int id;
@@ -187,7 +192,7 @@ static inline const char *dev_name(const struct device *dev)
 	return dev_id(dev) ?: dev->name;
 }
 
-int dev_set_name(struct device *dev, const char *fmt, ...) __printf(2, 3);
+#define dev_set_name bobject_set_name
 
 static inline bool dev_is_dma_coherent(struct device *dev)
 {

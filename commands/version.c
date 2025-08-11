@@ -7,7 +7,10 @@
 
 static int do_version(int argc, char *argv[])
 {
-	printf ("\n%s\n\n", version_string);
+	printf ("\n%s", version_string);
+	if (*CONFIG_NAME)
+		printf (" (%s)", CONFIG_NAME);
+	printf ("\n\n");
 	return 0;
 }
 

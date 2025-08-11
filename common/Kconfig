@@ -112,6 +112,14 @@ config FASTBOOT_BASE
 
 menu "General Settings"
 
+config NAME
+	string "Informational config name to include in binary"
+	help
+	  Unless left empty, this compiles into barebox an informational
+	  string describing the config used. This is reproduced by the
+	  version command, but does not influence any runtime or
+	  compile-time behavior.
+
 config LOCALVERSION
 	string "Local version - append to the version string"
 	help

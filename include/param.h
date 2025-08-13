@@ -253,6 +253,16 @@ static inline int bobject_param_set_generic(bobject_t bobj, struct param_d *p,
 }
 #endif
 
+static inline const char *get_param_value(struct param_d *param)
+{
+	if (!IS_ENABLED(CONFIG_PARAMETER))
+		return NULL;
+	if (IS_ERR_OR_NULL(param))
+		return ERR_CAST(param);
+
+	return param->get(param->bobj, param);
+}
+
 int param_set_readonly(struct param_d *p, void *priv);
 
 /*

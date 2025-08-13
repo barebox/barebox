@@ -55,6 +55,10 @@ config BLOCK_STATS
 config FILETYPE
 	bool
 
+config STRUCTIO
+	bool
+	select PARAMETER
+
 config BINFMT
 	bool
 	select FILETYPE

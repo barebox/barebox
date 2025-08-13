@@ -2,6 +2,7 @@
 
 obj-y				+= boards/
 obj-y				+= memory.o
+obj-$(CONFIG_STRUCTIO)		+= structio.o
 obj-y				+= memory_display.o
 pbl-$(CONFIG_PBL_CONSOLE)	+= memory_display.o
 obj-y				+= clock.o

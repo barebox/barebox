@@ -7,19 +7,6 @@
 #include <linux/list.h>
 #include <complete.h>
 
-/* Function to calculate CIDR prefix from netmask */
-static int netmask_to_prefix(IPaddr_t netmask)
-{
-	int prefix = 0;
-
-	while (netmask) {
-		prefix += netmask & 1;
-		netmask >>= 1;
-	}
-
-	return prefix;
-}
-
 /* Function to display network links (`ip l`) */
 static int do_ip_link(int argc, char *argv[])
 {

@@ -435,46 +435,75 @@ static void ax88179_unbind(struct usbnet *dev)
 
 static int ax88179_rx_fixup(struct usbnet *dev, void *buf, int len)
 {
-	int pkt_cnt, frame_pos;
-	u32 rx_hdr;
-	u16 hdr_off;
+	u16 hdr_off, pkt_len, pkt_len_plus_padd;
+	u32 rx_hdr, hdr;
+	u8 *pos = buf;
 	u32 *pkt_hdr;
+	int pkt_cnt;
 
 	if (len == dev->rx_urb_size) {
-		dev_err(&dev->udev->dev, "broken package\n");
+		dev_err(&dev->udev->dev, "%s: broken packet\n", __func__);
 		return 0;
 	}
 
-	rx_hdr = get_unaligned_le32(buf + len - 4);
+	if (len < sizeof(rx_hdr)) {
+		dev_err(&dev->udev->dev, "%s: short packet\n", __func__);
+		return 0;
+	}
 
-	pkt_cnt = (u16)rx_hdr;
-	hdr_off = (u16)(rx_hdr >> 16);
+	rx_hdr = get_unaligned_le32(buf + len - sizeof(rx_hdr));
+	pkt_cnt = lower_16_bits(rx_hdr);
+	hdr_off = upper_16_bits(rx_hdr);
+
+	if (pkt_cnt == 0)
+		return 0;
+
+	if ((pkt_cnt * sizeof(*pkt_hdr) + hdr_off) > (len - sizeof(rx_hdr))) {
+		dev_err(&dev->udev->dev,
+			"%s: malformed metadata: pkt_cnt: %d hdr_off: %d len: %d\n",
+			__func__, pkt_cnt, hdr_off, len);
+		return 0;
+	}
+
 	pkt_hdr = (u32 *)(buf + hdr_off);
 
-	frame_pos = 0;
+	/* Packets must not overlap the metadata array */
+	len = hdr_off;
 
-	while (pkt_cnt--) {
-		u16 pkt_len;
-		u32 hdr = le32_to_cpup(pkt_hdr);
+	for (; pkt_cnt > 0; pkt_cnt--, pkt_hdr++) {
+		hdr = le32_to_cpup(pkt_hdr);
+		pkt_len = upper_16_bits(hdr) & GENMASK(12, 0);
+		pkt_len_plus_padd = (pkt_len + 7) & GENMASK(15, 3);
 
-		pkt_len = (hdr >> 16) & 0x1fff;
+		/* Skip dummy header used for alignment */
+		if (pkt_len == 0)
+			continue;
+
+		if (pkt_len_plus_padd > len) {
+			dev_dbg(&dev->udev->dev,
+				"%s: packet too large: %d > %d\n", __func__,
+				pkt_len_plus_padd, len);
+			return 0;
+		}
 
 		/* Check CRC or runt packet */
-		if ((hdr & AX_RXHDR_CRC_ERR) ||
-		    (hdr & AX_RXHDR_DROP_ERR)) {
-			pkt_hdr++;
+		if ((hdr & (AX_RXHDR_CRC_ERR | AX_RXHDR_DROP_ERR)) ||
+		    pkt_len < sizeof(u16) + ETH_HLEN) {
+			dev_dbg(&dev->udev->dev,
+				"%s: dropping packet: hdr: 0x%08x len: %d\n",
+				__func__, hdr, pkt_len);
+			pos += pkt_len_plus_padd;
+			len -= pkt_len_plus_padd;
 			continue;
 		}
 
-		frame_pos += 2;
+		dev_dbg(&dev->udev->dev, "%s: loop: frame_pos: %td len: %d\n",
+			__func__, pos - (u8 *)buf, pkt_len);
 
-		dev_dbg(&dev->udev->dev, "%s: loop: frame_pos: %d len: %d\n",
-			__func__, frame_pos, pkt_len);
+		net_receive(&dev->edev, pos + sizeof(u16), pkt_len);
 
-		net_receive(&dev->edev, buf + frame_pos, pkt_len);
-
-		pkt_hdr++;
-		frame_pos += ((pkt_len + 7) & 0xfff8) - 2;
+		pos += pkt_len_plus_padd;
+		len -= pkt_len_plus_padd;
 	}
 
 	return 0;

@@ -643,6 +643,12 @@ static int ax88179_reset(struct usbnet *dev)
 	ax88179_write_cmd(dev, AX_ACCESS_MAC, AX_MEDIUM_STATUS_MODE,
 			  2, 2, &tmp16);
 
+	/* Restart auto-negotiation */
+	tmp16 = 0;
+	ax88179_read_cmd(dev, AX_ACCESS_PHY, 0x03, MII_BMCR, 2, &tmp16);
+	tmp16 |= BMCR_ANENABLE | BMCR_ANRESTART;
+	ax88179_write_cmd(dev, AX_ACCESS_PHY, 0x03, MII_BMCR, 2, &tmp16);
+
 	return 0;
 }
 

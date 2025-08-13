@@ -4,26 +4,31 @@
 #include <command.h>
 #include <clock.h>
 #include <getopt.h>
+#include <structio.h>
 #include <linux/math64.h>
+
+#define BUFSIZE		128
 
 #define NSEC_PER_MINUTE	(NSEC_PER_SEC * 60LL)
 #define NSEC_PER_HOUR	(NSEC_PER_MINUTE * 60LL)
 #define NSEC_PER_DAY	(NSEC_PER_HOUR * 24LL)
 #define NSEC_PER_WEEK	(NSEC_PER_DAY * 7LL)
 
-static bool print_with_unit(u64 val, const char *unit, bool comma)
+static bool print_with_unit(char *buf, u64 val, const char *unit, bool comma)
 {
 	if (!val)
 		return comma;
 
-	printf("%s%llu %s%s", comma ? ", " : "", val, unit, val > 1 ? "s" : "");
+	snprintf(buf, BUFSIZE,
+		 "%s%llu %s%s", comma ? ", " : "", val, unit, val > 1 ? "s" : "");
 	return true;
 }
 
 static int do_uptime(int argc, char *argv[])
 {
+	char buf[BUFSIZE];
 	u64 timestamp, weeks, days, hours, minutes;
-	bool comma = false;
+	bool nanoseconds = false, comma = false;
 	int opt;
 
 	timestamp = get_time_ns();
@@ -31,8 +36,8 @@ static int do_uptime(int argc, char *argv[])
 	while((opt = getopt(argc, argv, "n")) > 0) {
 		switch(opt) {
 		case 'n':
-			printf("up %lluns\n", timestamp);
-			return 0;
+			nanoseconds = true;
+			break;
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
@@ -41,24 +46,29 @@ static int do_uptime(int argc, char *argv[])
 	if (optind != argc)
 		return COMMAND_ERROR_USAGE;
 
-	printf("up ");
+	stnoprintf("up ");
+
+	if (nanoseconds) {
+		stprintf_single("uptime", "%lluns", timestamp);
+		return 0;
+	}
 
 	weeks = div64_u64_rem(timestamp, NSEC_PER_WEEK, &timestamp);
 	days = div64_u64_rem(timestamp, NSEC_PER_DAY, &timestamp);
 	hours = div64_u64_rem(timestamp, NSEC_PER_HOUR, &timestamp);
 	minutes = div64_u64_rem(timestamp, NSEC_PER_MINUTE, &timestamp);
 
-	comma = print_with_unit(weeks, "week", false);
-	comma = print_with_unit(days, "day", comma);
-	comma = print_with_unit(hours, "hour", comma);
-	comma = print_with_unit(minutes, "minute", comma);
+	comma = print_with_unit(buf, weeks, "week", false);
+	comma = print_with_unit(buf, days, "day", comma);
+	comma = print_with_unit(buf, hours, "hour", comma);
+	comma = print_with_unit(buf, minutes, "minute", comma);
 
 	if (!comma) {
 		u64 seconds = div64_u64_rem(timestamp, NSEC_PER_SEC, &timestamp);
-		print_with_unit(seconds, "second", false);
+		print_with_unit(buf, seconds, "second", false);
 	}
 
-	printf("\n");
+	stprintf_single("uptime", "%s", buf);
 
 	return 0;
 }

@@ -1137,3 +1137,20 @@ char *strreplace(char *str, char old, char new)
 	return str;
 }
 EXPORT_SYMBOL(strreplace);
+
+/**
+ * strv_length - calculate length of string vector
+ * @strv: NULL-terminated array of string
+ *
+ * Return: size of the vector
+ */
+size_t strv_length(const char * const *l)
+{
+	size_t n = 0;
+
+        for (const char *const *s, *const *i = (l); (s = i) && *i; i++)
+		n++;
+
+	return n;
+}
+EXPORT_SYMBOL(strv_length);

@@ -40,8 +40,7 @@ static struct efi_device *efi_find_device(efi_handle_t handle)
 {
 	struct device *dev;
 
-	dev = bus_find_device(&efi_bus, NULL, efi_device_match_handle,
-			      efi_device_match_handle);
+	dev = bus_find_device(&efi_bus, NULL, handle, efi_device_match_handle);
 	if (dev)
 		return container_of(dev, struct efi_device, dev);
 

@@ -308,6 +308,17 @@ config CMD_VERSION
 
 	  barebox 2014.05.0-00142-gb289373 #177 Mon May 12 20:35:55 CEST 2014
 
+config CMD_BFETCH
+	tristate
+	depends on BANNER
+	select STRUCTIO
+	imply CMD_UPTIME
+	imply CMD_ARM_CPUINFO if ARM
+	imply CMD_DEVINFO
+	prompt "bfetch"
+	help
+	  Print system information from barebox point of view. Fancily.
+
 config CMD_MMC
 	tristate
 	prompt "mmc command allowing to set enhanced area"

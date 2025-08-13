@@ -46,6 +46,12 @@ static inline void string_list_free(struct string_list *sl)
 	}
 }
 
+static inline void string_list_reinit(struct string_list *sl)
+{
+	string_list_free(sl);
+	string_list_init(sl);
+}
+
 #define string_list_for_each_entry(entry, sl) \
 	list_for_each_entry(entry, &(sl)->list, list)
 

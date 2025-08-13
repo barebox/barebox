@@ -549,8 +549,10 @@ static bool optee_msg_api_uid_is_optee_api(optee_invoke_fn *invoke_fn)
 	return false;
 }
 
-static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
+static void optee_msg_get_os_revision(struct device *dev,
+				      optee_invoke_fn *invoke_fn)
 {
+	struct param_d *param;
 	union {
 		struct arm_smccc_res smccc;
 		struct optee_smc_call_get_os_revision_result result;
@@ -564,10 +566,15 @@ static void optee_msg_get_os_revision(optee_invoke_fn *invoke_fn)
 		  &res.smccc);
 
 	if (res.result.build_id)
-		pr_info("revision %lu.%lu (%08lx)\n", res.result.major,
-			res.result.minor, res.result.build_id);
+		param = dev_add_param_fixed(dev, "revision", "%lu.%lu (%08lx)",
+					    res.result.major, res.result.minor,
+					    res.result.build_id);
 	else
-		pr_info("revision %lu.%lu\n", res.result.major, res.result.minor);
+		param = dev_add_param_fixed(dev, "revision", "%lu.%lu",
+				    res.result.major, res.result.minor);
+
+	if (!IS_ERR_OR_NULL(param))
+		pr_info("revision %s\n", get_param_value(param));
 }
 
 static bool optee_msg_api_revision_is_compatible(optee_invoke_fn *invoke_fn)
@@ -662,7 +669,7 @@ static int optee_probe(struct device *dev)
 		return -EINVAL;
 	}
 
-	optee_msg_get_os_revision(invoke_fn);
+	optee_msg_get_os_revision(dev, invoke_fn);
 
 	if (!optee_msg_api_revision_is_compatible(invoke_fn)) {
 		pr_warn("api revision mismatch\n");

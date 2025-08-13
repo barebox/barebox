@@ -487,9 +487,27 @@ static void tee_devinfo(struct device *dev)
 {
 	struct tee_device *teedev = dev->priv;
 	struct tee_ioctl_version_data vers;
+	const char *impl = NULL, *rev;
 
 	teedev->desc->ops->get_version(teedev, &vers);
-	printf("Implementation ID: %d\n", vers.impl_id);
+
+	switch (vers.impl_id) {
+	case TEE_IMPL_ID_OPTEE:
+		impl = "optee";
+		break;
+	case TEE_IMPL_ID_AMDTEE:
+		impl = "amdtee";
+		break;
+	}
+
+	printf("Implementation ID: %d%s%s%s\n", vers.impl_id,
+	       impl ? " ( " : "", impl, impl ? ")" : "");
+	if (!dev->parent)
+		return;
+
+	rev = dev_get_param(dev->parent, "revision");
+	if (rev)
+		printf("Revision: %s\n", rev);
 }
 
 /**

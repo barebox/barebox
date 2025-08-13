@@ -99,6 +99,12 @@ config MACH_PROTONIC_MECSBC
 	help
 	  Say Y here if you are using a Protonic MECSBC
 
+config MACH_PROTONIC_PRTPUK
+	select ARCH_RK3576
+	bool "Protonic PRTPUK"
+	help
+	  Say Y here if you are using a Protonic PRTPUK
+
 config MACH_RADXA_ROCK3
 	select ARCH_RK3568
 	bool "Radxa ROCK3"

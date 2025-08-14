@@ -1114,6 +1114,15 @@ config POLLER
 	bool "generic polling infrastructure"
 	select HAS_SCHED
 
+config POLLER_WARN_OVERTIME
+	bool "warn on poller overtime"
+	depends on POLLER
+	default y
+	help
+	  Pollers are meant to poll and quickly execute actions.
+	  exceeding the maximum runtime of POLLER_MAX_RUNTIME_MS
+	  will trigger a one-time warning.
+
 config BTHREAD
 	bool "barebox co-operative (green) thread infrastructure"
 	select HAS_SCHED

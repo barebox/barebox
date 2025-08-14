@@ -96,7 +96,7 @@ quiet_cmd_k3_am62x_image = K3_am62x_IMG   $@
 			$(SYSFWDATA_$(@F)):18:0:0:00067000			\
 			$$inner							\
 			$(DMDATA_$(@F)):17:16:0:43c3a800			\
-			--key $(KEY_$(@F)) --out $@
+			--key "$(KEY_$(@F))" --out $@
 
 quiet_cmd_k3_am62lx_image = K3_am62lx_IMG   $@
       cmd_k3_am62lx_image = \
@@ -115,7 +115,7 @@ quiet_cmd_k3_am62lx_image = K3_am62lx_IMG   $@
 			$$inner							\
 			$$optee							\
 			$<:17:16:0:82000000					\
-			--key $(KEY_$(@F)) --out $@
+			--key "$(KEY_$(@F))" --out $@
 
 quiet_cmd_k3_am62lx_tiboot3_image = K3_am62lx_tiboot3_IMG   $@
       cmd_k3_am62lx_tiboot3_image = \
@@ -124,7 +124,7 @@ quiet_cmd_k3_am62lx_tiboot3_image = K3_am62lx_tiboot3_IMG   $@
 			$(SYSFW_$(@F)):2:0:0:00040000				\
 			$(SYSFWDATA_$(@F)):18:0:0:0006c000			\
 			$(INNERDATA_$(@F)):3:0:0:00000000			\
-			--key $(KEY_$(@F))					\
+			--key "$(KEY_$(@F))"					\
 			--out $@
 
 $(obj)/%.k3_am62x_img: $(obj)/% scripts/k3img FORCE

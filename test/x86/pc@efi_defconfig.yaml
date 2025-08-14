@@ -14,6 +14,14 @@ targets:
       BareboxTestStrategy: {}
     features:
       - pci
+    devices:
+      fb0: 'Type: primary'
+      fbconsole0: 'Parent: fb0'
+      wdog0: 'Parent: efi-wdt'
+      efivarfs0: 'Driver: efivarfs'
+      'pci-8086:1237.0': 'Bus: pci'
+      efifs0: 'Driver: efifs'
+      acpi-APIC0: 'Signature: APIC (Multiple APIC Description Table)'
     runner:
       tuxmake_arch: x86_64
       kconfig_add:

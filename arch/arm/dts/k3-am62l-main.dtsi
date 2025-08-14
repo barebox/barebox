@@ -212,7 +212,7 @@
 	};
 
 	rti0: watchdog@e000000 {
-		compatible = "ti,j7-rti-wdt";
+		compatible = "ti,am62l-rti-wdt";
 		reg = <0x00 0x0e000000 0x00 0x100>;
 		clocks = <&scmi_clk 273>;
 		power-domains = <&scmi_pds 60>;
@@ -221,7 +221,7 @@
 	};
 
 	rti1: watchdog@e010000 {
-		compatible = "ti,j7-rti-wdt";
+		compatible = "ti,am62l-rti-wdt";
 		reg = <0x00 0x0e010000 0x00 0x100>;
 		clocks = <&scmi_clk 279>;
 		power-domains = <&scmi_pds 61>;

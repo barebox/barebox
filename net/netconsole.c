@@ -97,12 +97,12 @@ static int nc_open(struct console_device *cdev)
 					struct nc_priv, cdev);
 
 	if (!priv->port) {
-		pr_err("port not set\n");
+		pr_info("port not set\n");
 		return -EINVAL;
 	}
 
 	if (!priv->ip) {
-		pr_err("ip not set\n");
+		pr_info("ip not set\n");
 		return -EINVAL;
 	}
 

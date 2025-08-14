@@ -17,7 +17,11 @@ image-$(CONFIG_MACH_BEAGLEPLAY) += barebox-beagleplay.img
 
 endif
 
+ifdef CONFIG_ARCH_K3_SIGNING_KEY_TI_DEVEL
 KEY_custmpk=$(srctree)/arch/arm/mach-k3/custMpk.pem
+else
+KEY_custmpk="$(CONFIG_ARCH_K3_SIGNING_KEY)"
+endif
 KEY_degenerate=$(srctree)/arch/arm/mach-k3/ti-degenerate-key.pem
 
 ifdef CONFIG_MACH_K3_CORTEX_R5

@@ -232,9 +232,9 @@ static void print_barebox_info(unsigned *line)
 		print_line("Architecture", "%s", CONFIG_ARCH_LINUX_NAME);
 }
 
-static void print_cpu_mem_info(unsigned *line)
+static struct bobject *print_cpu_mem_info(unsigned *line)
 {
-	struct bobject *bret;
+	struct bobject *bret = NULL;
 	struct memory_bank *mem;
 	unsigned long memsize = 0;
 	int nbanks = 0;
@@ -250,8 +250,13 @@ static void print_cpu_mem_info(unsigned *line)
 					   bobject_get_param(bret, "exception_level"));
 			else if (IS_ENABLED(CONFIG_ARM32))
 				print_line("CPU", "%s", bobject_get_param(bret, "core"));
-
-			bobject_free(bret);
+		}
+	} else if (IS_ENABLED(CONFIG_RISCV)) {
+		ret = structio_run_command(&bret, "cpuinfo");
+		if (!ret) {
+			print_line("CPU", "%s in %s-Mode",
+				   bobject_get_param(bret, "Architecture"),
+				   bobject_get_param(bret, "Mode"));
 		}
 	} else if (IS_ENABLED(CONFIG_GLOBALVAR)) {
 		print_line("CPU", "%s-endian", globalvar_get("endianness"));
@@ -268,6 +273,8 @@ static void print_cpu_mem_info(unsigned *line)
 	else if (nbanks == 1)
 		print_line("Memory",      "%s",
 			   size_human_readable(memsize));
+
+	return bret;
 }
 
 static void print_shell_console(unsigned *line)
@@ -635,11 +642,12 @@ static int tee_devinfo(struct bobject **bret)
 	return -ENODEV;
 }
 
-static void print_firmware(unsigned *line)
+static void print_firmware(unsigned *line, struct bobject *cpuinfo)
 {
 	const char *psci_version;
 	struct bobject *bret;
 	bool have_scmi = false, have_tee = false;
+	const char *sbi_version = NULL;
 
 	psci_version = getenv("psci.version");
 
@@ -647,8 +655,11 @@ static void print_firmware(unsigned *line)
 		have_scmi = true;
 	if (tee_devinfo(&bret) == 0)
 		have_tee = true;
+	if (IS_ENABLED(CONFIG_RISCV_SBI))
+		sbi_version = bobject_get_param(cpuinfo, "SBI version");
 
-	if (!psci_version && !have_scmi && !have_tee && !efi_is_payload())
+	if (!psci_version && !have_scmi && !have_tee && !efi_is_payload() &&
+	    !sbi_version)
 		return;
 
 	print_line("Firmware", "");
@@ -660,7 +671,19 @@ static void print_firmware(unsigned *line)
 	if (have_scmi)
 		print_line("  SCMI", "yes");
 
-	/* TODO: RISC-V SBI version */
+	if (sbi_version) {
+		const char *imp = bobject_get_param(cpuinfo, "SBI implementation name");
+
+		if (!imp)
+			imp = bobject_get_param(cpuinfo, "SBI implementation ID");
+
+		if (imp) {
+			print_line("  SBI", "%s by %s %s", sbi_version, imp,
+				   bobject_get_param(cpuinfo, "SBI implementation version") ?: "");
+		} else {
+			print_line("  SBI", "%s", sbi_version);
+		}
+	}
 
 	if (have_tee) {
 		const char *name = bobject_get_param(bret, "impl.name");
@@ -680,11 +703,13 @@ static void print_firmware(unsigned *line)
 			   dev_get_param(&efi_bus.dev, "fw_vendor"),
 			   dev_get_param(&efi_bus.dev, "fw_revision"));
 	}
+
+	bobject_free(cpuinfo);
 }
 
 static int do_bfetch(int argc, char *argv[])
 {
-	struct bobject *bret;
+	struct bobject *bret, *cpuinfo;
 	unsigned _line, *line = &_line;
 	int opt;
 	int ret;
@@ -703,7 +728,7 @@ static int do_bfetch(int argc, char *argv[])
 	print_header(line);
 
 	print_barebox_info(line);
-	print_cpu_mem_info(line);
+	cpuinfo = print_cpu_mem_info(line);
 
 	ret = structio_run_command(&bret, "uptime");
 	if (!ret) {
@@ -725,7 +750,7 @@ static int do_bfetch(int argc, char *argv[])
 	print_devices_drivers(line);
 	print_storage(line);
 	print_env(line);
-	print_firmware(line);
+	print_firmware(line, cpuinfo);
 
 	while (logo(line))
 		putchar('\n');

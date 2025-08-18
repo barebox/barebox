@@ -12,6 +12,7 @@
 #include <malloc.h>
 #include <of.h>
 #include <of_address.h>
+#include <of_device.h>
 #include <linux/amba/bus.h>
 #include <mmu.h>
 
@@ -37,41 +38,6 @@ struct device *of_find_device_by_node(struct device_node *np)
 	return NULL;
 }
 EXPORT_SYMBOL(of_find_device_by_node);
-
-/**
- * of_device_make_bus_id - Use the device node data to assign a unique name
- * @dev: pointer to device structure that is linked to a device tree node
- *
- * This routine will first try using the translated bus address to
- * derive a unique name. If it cannot, then it will prepend names from
- * parent nodes until a unique name can be derived.
- */
-static void of_device_make_bus_id(struct device *dev)
-{
-	struct device_node *node = dev->of_node;
-	const __be32 *reg;
-	u64 addr;
-
-	/* Construct the name, using parent nodes if necessary to ensure uniqueness */
-	while (node->parent) {
-		/*
-		 * If the address can be translated, then that is as much
-		 * uniqueness as we need. Make it the first component and return
-		 */
-		reg = of_get_property(node, "reg", NULL);
-		if (reg && (addr = of_translate_address(node, reg)) != OF_BAD_ADDR) {
-			dev_set_name(dev, dev->name ? "%llx.%s:%s" : "%llx.%s.of",
-				     (unsigned long long)addr, node->name,
-				     dev->name);
-			return;
-		}
-
-		/* format arguments only used if dev_name() resolves to NULL */
-		dev_set_name(dev, dev->name ? "%s:%s" : "%s.of",
-			     kbasename(node->full_name), dev->name);
-		node = node->parent;
-	}
-}
 
 static struct device_node *of_get_next_dma_parent(const struct device_node *np)
 {

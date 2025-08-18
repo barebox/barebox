@@ -17,14 +17,7 @@ struct device_node;
 /* consumer cookie */
 struct nvmem_cell;
 struct nvmem_device;
-
-struct nvmem_cell_info {
-	const char		*name;
-	unsigned int		offset;
-	unsigned int		bytes;
-	unsigned int		bit_offset;
-	unsigned int		nbits;
-};
+struct nvmem_cell_info;
 
 #if IS_ENABLED(CONFIG_NVMEM)
 
@@ -37,7 +30,7 @@ void *nvmem_cell_get_and_read(struct device_node *np, const char *cell_name,
 int nvmem_cell_read_variable_le_u32(struct device *dev, const char *cell_id,
 				    u32 *val);
 
-int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
+int nvmem_cell_write(struct nvmem_cell *cell, const void *buf, size_t len);
 
 /* direct nvmem device read/write interface */
 struct nvmem_device *nvmem_device_get(struct device *dev, const char *name);
@@ -49,7 +42,7 @@ int nvmem_device_write(struct nvmem_device *nvmem, unsigned int offset,
 ssize_t nvmem_device_cell_read(struct nvmem_device *nvmem,
 			       struct nvmem_cell_info *info, void *buf);
 int nvmem_device_cell_write(struct nvmem_device *nvmem,
-			    struct nvmem_cell_info *info, void *buf);
+			    struct nvmem_cell_info *info, const void *buf);
 
 void nvmem_devices_print(void);
 
@@ -85,7 +78,7 @@ static inline int nvmem_cell_read_variable_le_u32(struct device *dev,
 }
 
 static inline int nvmem_cell_write(struct nvmem_cell *cell,
-				    void *buf, size_t len)
+				   const void *buf, size_t len)
 {
 	return -EOPNOTSUPP;
 }
@@ -109,7 +102,7 @@ static inline ssize_t nvmem_device_cell_read(struct nvmem_device *nvmem,
 
 static inline int nvmem_device_cell_write(struct nvmem_device *nvmem,
 					  struct nvmem_cell_info *info,
-					  void *buf)
+					  const void *buf)
 {
 	return -EOPNOTSUPP;
 }

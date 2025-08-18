@@ -260,15 +260,19 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 
 	if (!config->cdev) {
 		rval = nvmem_register_cdev(nvmem, config->name);
-		if (rval) {
-			kfree(nvmem);
-			return ERR_PTR(rval);
-		}
+		if (rval)
+			goto err_unregister;
 	}
 
 	list_add_tail(&nvmem->node, &nvmem_devs);
 
 	return nvmem;
+
+err_unregister:
+	unregister_device(&nvmem->dev);
+	kfree(nvmem);
+
+	return ERR_PTR(rval);
 }
 EXPORT_SYMBOL_GPL(nvmem_register);
 

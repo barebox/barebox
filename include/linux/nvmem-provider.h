@@ -58,6 +58,8 @@ struct nvmem_cell_info {
  * @dev:	Parent device.
  * @name:	Optional name.
  * @id:		Optional device ID used in full name. Ignored if name is NULL.
+ * @fixup_dt_cell_info: Will be called before a cell is added. Can be
+ *		used to modify the nvmem_cell_info.
  * @read_only:	Device is read-only.
  * @reg_read:	Callback to read data; return zero if successful.
  * @reg_write:	Callback to write data; return zero if successful.
@@ -70,6 +72,8 @@ struct nvmem_config {
 	struct device		*dev;
 	const char		*name;
 	int			id;
+	void (*fixup_dt_cell_info)(struct nvmem_device *nvmem,
+				   struct nvmem_cell_info *cell);
 	bool			read_only;
 	struct cdev		*cdev;
 	nvmem_reg_read_t	reg_read;

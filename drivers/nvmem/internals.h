@@ -22,6 +22,8 @@ struct nvmem_device {
 	struct nvmem_layout	*layout;
 	struct list_head	cells;
 	nvmem_cell_post_process_t cell_post_process;
+	void (*fixup_dt_cell_info)(struct nvmem_device *nvmem,
+				   struct nvmem_cell_info *cell);
 	int			(*reg_write)(void *ctx, unsigned int reg,
 					     const void *val, size_t val_size);
 	int			(*reg_read)(void *ctx, unsigned int reg,

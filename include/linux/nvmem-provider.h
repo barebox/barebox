@@ -25,6 +25,9 @@ typedef int (*nvmem_cell_post_process_t)(void *priv, const char *id,
 					 unsigned int offset, void *buf,
 					 size_t bytes);
 
+#define NVMEM_DEVID_NONE	(-1)
+#define NVMEM_DEVID_AUTO	(-2)
+
 /**
  * struct nvmem_cell_info - NVMEM cell description
  * @name:	Name.
@@ -62,6 +65,7 @@ struct nvmem_cell_info {
 struct nvmem_config {
 	struct device		*dev;
 	const char		*name;
+	int			id;
 	bool			read_only;
 	struct cdev		*cdev;
 	nvmem_reg_read_t	reg_read;

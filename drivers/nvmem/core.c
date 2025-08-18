@@ -445,17 +445,23 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	if (config->read_only || !config->reg_write || of_property_read_bool(np, "read-only"))
 		nvmem->read_only = true;
 
-	dev_set_name(&nvmem->dev, "%s", config->name);
-	nvmem->dev.id = DEVICE_ID_DYNAMIC;
-
-	dev_dbg(nvmem->dev.parent, "Registering nvmem device %s\n", config->name);
+	dev_set_name(&nvmem->dev, "%s", config->name ? : "nvmem");
+	switch (config->id) {
+	case NVMEM_DEVID_NONE:
+		nvmem->dev.id = DEVICE_ID_SINGLE;
+		break;
+	case NVMEM_DEVID_AUTO:
+	default:
+		nvmem->dev.id = DEVICE_ID_DYNAMIC;
+		break;
+	}
 
 	rval = register_device(&nvmem->dev);
 	if (rval)
 		goto err_remove_cells;
 
 	if (!config->cdev) {
-		rval = nvmem_register_cdev(nvmem, config->name);
+		rval = nvmem_register_cdev(nvmem, dev_name(&nvmem->dev));
 		if (rval)
 			goto err_unregister;
 	}

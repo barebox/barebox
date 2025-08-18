@@ -737,6 +737,10 @@ int main(int argc, char *argv[])
 		char *keyname = NULL;
 		char *path = NULL;
 
+		keyspec = try_resolve_env(keyspec);
+		if (!keyspec)
+			exit(1);
+
 		if (!strncmp(keyspec, "pkcs11:", 7))
 			path = strdup(keyspec);
 		else

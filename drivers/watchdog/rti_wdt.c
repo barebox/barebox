@@ -51,7 +51,7 @@ struct rti_wdt_priv {
 	void __iomem *regs;
 	struct watchdog wdt;
 	unsigned int clk_hz;
-	struct rti_wdt_data *data;
+	const struct rti_wdt_data *data;
 };
 
 static int rti_wdt_ping(struct watchdog *wdt)

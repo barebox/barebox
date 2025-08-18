@@ -14,6 +14,7 @@
 
 #include <common.h>
 #include <linux/types.h>
+#include <linux/device.h>
 
 struct nvmem_device;
 typedef int (*nvmem_reg_read_t)(void *priv, unsigned int offset,
@@ -79,6 +80,32 @@ struct nvmem_config {
 	nvmem_cell_post_process_t cell_post_process;
 };
 
+/**
+ * struct nvmem_layout - NVMEM layout definitions
+ *
+ * @dev:		Device-model layout device.
+ * @nvmem:		The underlying NVMEM device
+ * @add_cells:		Will be called if a nvmem device is found which
+ *			has this layout. The function will add layout
+ *			specific cells with nvmem_add_one_cell().
+ *
+ * A nvmem device can hold a well defined structure which can just be
+ * evaluated during runtime. For example a TLV list, or a list of "name=val"
+ * pairs. A nvmem layout can parse the nvmem device and add appropriate
+ * cells.
+ */
+struct nvmem_layout {
+	struct device dev;
+	struct nvmem_device *nvmem;
+	int (*add_cells)(struct nvmem_layout *layout);
+};
+
+struct nvmem_layout_driver {
+	struct device_driver driver;
+	int (*probe)(struct nvmem_layout *layout);
+	void (*remove)(struct nvmem_layout *layout);
+};
+
 struct regmap;
 struct cdev;
 
@@ -91,6 +118,13 @@ struct nvmem_device *nvmem_regmap_register_with_pp(struct regmap *regmap,
 struct device *nvmem_device_get_device(struct nvmem_device *nvmem);
 int nvmem_add_one_cell(struct nvmem_device *nvmem,
 		       const struct nvmem_cell_info *info);
+
+int nvmem_layout_register(struct nvmem_layout *layout);
+void nvmem_layout_unregister(struct nvmem_layout *layout);
+
+int nvmem_layout_driver_register(struct nvmem_layout_driver *drv);
+#define module_nvmem_layout_driver(drv)		\
+	register_driver_macro(device, nvmem_layout, drv)
 
 #else
 
@@ -122,5 +156,34 @@ static inline int nvmem_add_one_cell(struct nvmem_device *nvmem,
 	return -EOPNOTSUPP;
 }
 
+static inline int nvmem_layout_register(struct nvmem_layout *layout)
+{
+	return -EOPNOTSUPP;
+}
+
+static inline void nvmem_layout_unregister(struct nvmem_layout *layout) {}
+
 #endif /* CONFIG_NVMEM */
+
+#if IS_ENABLED(CONFIG_NVMEM) && IS_ENABLED(CONFIG_OF)
+
+/**
+ * of_nvmem_layout_get_container() - Get OF node of layout container
+ *
+ * @nvmem: nvmem device
+ *
+ * Return: a node pointer with refcount incremented or NULL if no
+ * container exists. Use of_node_put() on it when done.
+ */
+struct device_node *of_nvmem_layout_get_container(struct nvmem_device *nvmem);
+
+#else  /* CONFIG_NVMEM && CONFIG_OF */
+
+static inline struct device_node *of_nvmem_layout_get_container(struct nvmem_device *nvmem)
+{
+	return NULL;
+}
+
+#endif /* CONFIG_NVMEM && CONFIG_OF */
+
 #endif  /* ifndef _LINUX_NVMEM_PROVIDER_H */

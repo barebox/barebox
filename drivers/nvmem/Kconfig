@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 menuconfig NVMEM
 	bool "NVMEM Support"
+	imply NVMEM_LAYOUTS
 	help
 	  Support for NVMEM(Non Volatile Memory) devices like EEPROM, EFUSES...
 
@@ -9,6 +10,12 @@ menuconfig NVMEM
 	  If unsure, say no.
 
 if NVMEM
+
+# Layouts
+
+source "drivers/nvmem/layouts/Kconfig"
+
+# Devices
 
 config NVMEM_RMEM
 	bool "Reserved Memory Based Driver Support"

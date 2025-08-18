@@ -35,6 +35,7 @@ struct nvmem_cell {
 };
 
 static LIST_HEAD(nvmem_devs);
+static LIST_HEAD(nvmem_layouts);
 
 void nvmem_devices_print(void)
 {
@@ -191,6 +192,9 @@ static int nvmem_populate_sysfs_cells(struct nvmem_device *nvmem)
 	struct device *dev = &nvmem->dev;
 	struct nvmem_cell_entry *entry;
 
+	if (list_empty(&nvmem->cells) || nvmem->sysfs_cells_populated)
+		return 0;
+
 	list_for_each_entry(entry, &nvmem->cells, node) {
 		struct cdev *cdev;
 		int ret;
@@ -210,6 +214,8 @@ static int nvmem_populate_sysfs_cells(struct nvmem_device *nvmem)
 			return ret;
 		}
 	}
+
+	nvmem->sysfs_cells_populated = true;
 
 	return 0;
 }
@@ -383,6 +389,52 @@ static int nvmem_add_cells_from_legacy_of(struct nvmem_device *nvmem)
 	return nvmem_add_cells_from_dt(nvmem, nvmem->dev.of_node);
 }
 
+static int nvmem_add_cells_from_fixed_layout(struct nvmem_device *nvmem)
+{
+	struct device_node *layout_np;
+	int err = 0;
+
+	layout_np = of_nvmem_layout_get_container(nvmem);
+	if (!layout_np)
+		return 0;
+
+	if (of_device_is_compatible(layout_np, "fixed-layout"))
+		err = nvmem_add_cells_from_dt(nvmem, layout_np);
+
+	of_node_put(layout_np);
+
+	return err;
+}
+
+int nvmem_layout_register(struct nvmem_layout *layout)
+{
+	int ret;
+
+	if (!layout->add_cells)
+		return -EINVAL;
+
+	/* Populate the cells */
+	ret = layout->add_cells(layout);
+	if (ret)
+		return ret;
+
+	ret = nvmem_populate_sysfs_cells(layout->nvmem);
+	if (ret) {
+		nvmem_device_remove_all_cdevs(layout->nvmem);
+		nvmem_device_remove_all_cells(layout->nvmem);
+		return ret;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(nvmem_layout_register);
+
+void nvmem_layout_unregister(struct nvmem_layout *layout)
+{
+	/* Keep the API even with an empty stub in case we need it later */
+}
+EXPORT_SYMBOL_GPL(nvmem_layout_unregister);
+
 /**
  * nvmem_register() - Register a nvmem device for given nvmem_config.
  *
@@ -422,6 +474,10 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	if (rval)
 		goto err_remove_cells;
 
+	rval = nvmem_add_cells_from_fixed_layout(nvmem);
+	if (rval)
+		goto err_remove_cells;
+
 	if (config->read_only || !config->reg_write || of_property_read_bool(np, "read-only"))
 		nvmem->read_only = true;
 
@@ -446,14 +502,20 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 			goto err_unregister;
 	}
 
-	rval = nvmem_populate_sysfs_cells(nvmem);
+	rval = nvmem_populate_layout(nvmem);
 	if (rval)
 		goto err_remove_cdevs;
+
+	rval = nvmem_populate_sysfs_cells(nvmem);
+	if (rval)
+		goto err_destroy_layout;
 
 	list_add_tail(&nvmem->node, &nvmem_devs);
 
 	return nvmem;
 
+err_destroy_layout:
+	nvmem_destroy_layout(nvmem);
 err_remove_cdevs:
 	nvmem_device_remove_all_cdevs(nvmem);
 err_unregister:
@@ -612,6 +674,17 @@ nvmem_find_cell_entry_by_node(struct nvmem_device *nvmem, struct device_node *np
 	return cell;
 }
 
+static int nvmem_layout_module_get_optional(struct nvmem_device *nvmem)
+{
+	if (!nvmem->layout)
+		return 0;
+
+	if (!nvmem->layout->dev.driver)
+		return -EPROBE_DEFER;
+
+	return 0;
+}
+
 /**
  * of_nvmem_cell_get() - Get a nvmem cell from given device node and cell id
  *
@@ -630,7 +703,7 @@ struct nvmem_cell *of_nvmem_cell_get(struct device_node *np, const char *id)
 	struct nvmem_device *nvmem;
 	struct nvmem_cell_entry *cell_entry;
 	struct nvmem_cell *cell;
-	int index = 0;
+	int ret, index = 0;
 
 	/* if cell name exists, find index to the name */
 	if (id)
@@ -641,11 +714,18 @@ struct nvmem_cell *of_nvmem_cell_get(struct device_node *np, const char *id)
 		return ERR_PTR(-ENOENT);
 
 	nvmem_np = of_get_parent(cell_np);
-	if (nvmem_np && of_device_is_compatible(nvmem_np, "fixed-layout"))
-		nvmem_np = of_get_parent(nvmem_np);
 	if (!nvmem_np) {
 		of_node_put(cell_np);
 		return ERR_PTR(-EINVAL);
+	}
+
+	/* nvmem layouts produce cells within the nvmem-layout container */
+	if (of_node_name_eq(nvmem_np, "nvmem-layout")) {
+		nvmem_np = of_get_parent(nvmem_np);
+		if (!nvmem_np) {
+			of_node_put(cell_np);
+			return ERR_PTR(-EINVAL);
+		}
 	}
 
 	nvmem = __nvmem_device_get(nvmem_np);
@@ -653,6 +733,13 @@ struct nvmem_cell *of_nvmem_cell_get(struct device_node *np, const char *id)
 	if (IS_ERR(nvmem)) {
 		of_node_put(cell_np);
 		return ERR_CAST(nvmem);
+	}
+
+	ret = nvmem_layout_module_get_optional(nvmem);
+	if (ret) {
+		of_node_put(cell_np);
+		__nvmem_device_put(nvmem);
+		return ERR_PTR(ret);
 	}
 
 	cell_entry = nvmem_find_cell_entry_by_node(nvmem, cell_np);
@@ -1090,3 +1177,10 @@ struct device *nvmem_device_get_device(struct nvmem_device *nvmem)
 	return &nvmem->dev;
 }
 EXPORT_SYMBOL_GPL(nvmem_device_get_device);
+
+static int __init nvmem_init(void)
+{
+	/* TODO: add support for the NVMEM bus too */
+	return nvmem_layout_bus_register();
+}
+pure_initcall(nvmem_init);

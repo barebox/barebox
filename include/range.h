@@ -38,7 +38,7 @@ static inline bool region_overlap_end_exclusive(u64 starta, u64 enda,
 		return false;
 
 	return region_overlap_end_inclusive(starta, enda - 1,
-					    startb, startb - 1);
+					    startb, endb - 1);
 }
 
 

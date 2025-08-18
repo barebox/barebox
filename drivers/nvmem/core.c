@@ -45,6 +45,8 @@ struct nvmem_cell_entry {
 	struct device_node	*np;
 	struct nvmem_device	*nvmem;
 	struct list_head	node;
+
+	struct cdev		cdev;
 };
 
 struct nvmem_cell {
@@ -167,6 +169,71 @@ static struct nvmem_device *of_nvmem_find(struct device_node *nvmem_np)
 	return NULL;
 }
 
+static struct nvmem_cell *nvmem_create_cell(struct nvmem_cell_entry *entry,
+					    const char *id);
+
+static ssize_t nvmem_cell_cdev_read(struct cdev *cdev, void *buf, size_t count,
+				    loff_t offset, unsigned long flags)
+{
+	struct nvmem_cell_entry *entry;
+	struct nvmem_cell *cell = NULL;
+	size_t cell_sz, read_len;
+	void *content;
+
+	entry = container_of(cdev, struct nvmem_cell_entry, cdev);
+	cell = nvmem_create_cell(entry, entry->name);
+	if (IS_ERR(cell))
+		return PTR_ERR(cell);
+
+	content = nvmem_cell_read(cell, &cell_sz);
+	if (IS_ERR(content)) {
+		read_len = PTR_ERR(content);
+		goto destroy_cell;
+	}
+
+	read_len = min_t(unsigned int, cell_sz - offset, count);
+	memcpy(buf, content + offset, read_len);
+	kfree(content);
+
+destroy_cell:
+	kfree_const(cell->id);
+	kfree(cell);
+
+	return read_len;
+}
+
+static struct cdev_operations nvmem_cell_chrdev_ops = {
+	.read  = nvmem_cell_cdev_read,
+};
+
+static int nvmem_populate_sysfs_cells(struct nvmem_device *nvmem)
+{
+	struct device *dev = &nvmem->dev;
+	struct nvmem_cell_entry *entry;
+
+	list_for_each_entry(entry, &nvmem->cells, node) {
+		struct cdev *cdev;
+		int ret;
+
+		cdev = &entry->cdev;
+		cdev->name = xasprintf("%s.%s", dev_name(dev),
+				       kbasename(entry->name));
+		cdev->ops = &nvmem_cell_chrdev_ops;
+		cdev->dev = dev;
+		cdev->size = entry->bytes;
+
+		/* Ignore the error but throw a warning for the user */
+		ret = devfs_create(cdev);
+		if (ret) {
+			dev_err(dev, "Failed to register %s with %pe\n",
+				cdev->name, ERR_PTR(ret));
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
 static void nvmem_cell_entry_drop(struct nvmem_cell_entry *cell)
 {
 	list_del(&cell->node);
@@ -181,6 +248,26 @@ static void nvmem_device_remove_all_cells(const struct nvmem_device *nvmem)
 
 	list_for_each_entry_safe(cell, p, &nvmem->cells, node)
 		nvmem_cell_entry_drop(cell);
+}
+
+static void nvmem_device_remove_all_cdevs(struct nvmem_device *nvmem)
+{
+	struct nvmem_cell_entry *cell, *p;
+
+	list_for_each_entry_safe(cell, p, &nvmem->cells, node) {
+		if (cell->cdev.name && cdev_by_name(cell->cdev.name)) {
+			devfs_remove(&cell->cdev);
+			free(cell->cdev.name);
+			cell->cdev.name = NULL;
+		}
+	}
+
+	if (!nvmem->cdev.name)
+		return;
+
+	devfs_remove(&nvmem->cdev);
+	free(nvmem->cdev.name);
+	nvmem->cdev.name = NULL;
 }
 
 static void nvmem_cell_entry_add(struct nvmem_cell_entry *cell)
@@ -373,10 +460,16 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 			goto err_unregister;
 	}
 
+	rval = nvmem_populate_sysfs_cells(nvmem);
+	if (rval)
+		goto err_remove_cdevs;
+
 	list_add_tail(&nvmem->node, &nvmem_devs);
 
 	return nvmem;
 
+err_remove_cdevs:
+	nvmem_device_remove_all_cdevs(nvmem);
 err_unregister:
 	unregister_device(&nvmem->dev);
 err_remove_cells:

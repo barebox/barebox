@@ -477,7 +477,6 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	nvmem->priv = config->priv;
 	INIT_LIST_HEAD(&nvmem->cells);
 	nvmem->fixup_dt_cell_info = config->fixup_dt_cell_info;
-	nvmem->cell_post_process = config->cell_post_process;
 
 	rval = nvmem_add_cells_from_legacy_of(nvmem);
 	if (rval)
@@ -876,13 +875,6 @@ static int __nvmem_cell_read(struct nvmem_device *nvmem,
 			return rc;
 	}
 
-	if (nvmem->cell_post_process) {
-		rc = nvmem->cell_post_process(nvmem->priv, id, index,
-					      cell->offset, buf, cell->bytes);
-		if (rc)
-			return rc;
-	}
-
 	if (len)
 		*len = cell->bytes;
 
@@ -985,7 +977,7 @@ static int __nvmem_cell_entry_write(struct nvmem_cell_entry *cell, const void *b
 		return -EINVAL;
 
 	/*
-	 * Any cells which have a cell_post_process hook are read-only because
+	 * Any cells which have a read_post_process hook are read-only because
 	 * we cannot reverse the operation and it might affect other cells,
 	 * too.
 	 */

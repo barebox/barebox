@@ -86,7 +86,6 @@ struct nvmem_config {
 	int			word_size;
 	int			stride;
 	void			*priv;
-	nvmem_cell_post_process_t cell_post_process;
 };
 
 /**
@@ -122,8 +121,9 @@ struct cdev;
 
 struct nvmem_device *nvmem_register(const struct nvmem_config *cfg);
 struct nvmem_device *nvmem_regmap_register(struct regmap *regmap, const char *name);
-struct nvmem_device *nvmem_regmap_register_with_pp(struct regmap *regmap,
-		const char *name, nvmem_cell_post_process_t cell_post_process);
+struct nvmem_device *nvmem_regmap_register_with_pp(struct regmap *map, const char *name,
+			      void (*fixup_dt_cell_info)(struct nvmem_device *nvmem,
+							 struct nvmem_cell_info *cell));
 struct device *nvmem_device_get_device(struct nvmem_device *nvmem);
 int nvmem_add_one_cell(struct nvmem_device *nvmem,
 		       const struct nvmem_cell_info *info);
@@ -147,9 +147,9 @@ static inline struct nvmem_device *nvmem_regmap_register(struct regmap *regmap, 
 	return ERR_PTR(-ENOSYS);
 }
 
-static inline struct nvmem_device *
-nvmem_regmap_register_with_pp(struct regmap *regmap, const char *name,
-			      nvmem_cell_post_process_t cell_post_process)
+static inline struct nvmem_device *nvmem_regmap_register_with_pp(struct regmap *map,
+		const char *name, void (*fixup_dt_cell_info)(struct nvmem_device *nvmem,
+							     struct nvmem_cell_info *cell))
 {
 	return ERR_PTR(-ENOSYS);
 }

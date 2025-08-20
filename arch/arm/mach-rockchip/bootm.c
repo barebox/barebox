@@ -118,6 +118,8 @@ static int rockchip_register_barebox_image_handler(void)
 	if (rockchip_soc() < 0)
 		return 0;
 
-	return register_image_handler(&image_handler_rkns_barebox_image);
+	register_image_handler(&image_handler_rkns_barebox_image);
+
+	return 0;
 }
 late_initcall(rockchip_register_barebox_image_handler);

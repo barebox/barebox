@@ -69,19 +69,20 @@ quiet_cmd_elf__ ?= LD      $@
 
 PBL_CPPFLAGS	+= -fdata-sections -ffunction-sections
 
+define rule_elf
+	$(call cmd,elf__,$(*F))
+	$(call cmd,prelink__)
+endef
+
 $(obj)/%.pbl: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(BAREBOX_PIGGY_OBJS) FORCE
-	$(call if_changed,elf__,$(*F))
-	$(call if_changed,prelink__)
+	$(call if_changed_rule,elf)
 
 $(obj)/%.elf: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(BAREBOX_PIGGY_OBJS) FORCE
-	$(call if_changed,elf__,$(*F))
-	$(call if_changed,prelink__)
+	$(call if_changed_rule,elf)
 
-$(obj)/%.pblb: $(obj)/%.pbl FORCE
-	$(call if_changed,objcopy_bin,$(*F))
-	$(call if_changed,check_missing_fw,$@,$<)
-	$(call if_changed,check_file_size,$@,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
 
+# Convert the ELF into a linear binary, check for missing firmware
+# and verify file sizes:
 #
 # For each start symbol create three variables containing the
 # relevant sizes in the image:
@@ -91,6 +92,13 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 # PBL_IMAGE_SIZE_$(symbol)  - contains the full image size including the
 #                             compressed payload
 #
+# if MAX_PBL_xxx_SIZE_$(symbol) is defined it contains the maximum size the
+# code/memory/image for this PBL may get. Check these values.
+define rule_pblb
+	$(call cmd,objcopy_bin,$(*F))
+	$(call cmd,check_missing_fw,$@,$<)
+	$(call cmd,check_file_size,$@,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
+
 	$(eval PBL_CODE_SIZE_$* = \
 		$(shell $(srctree)/scripts/extract_symbol_offset pbl_code_size $^))
 	$(eval PBL_MEMORY_SIZE_$*= \
@@ -98,21 +106,21 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 	$(eval PBL_IMAGE_SIZE_$*= \
 		$(shell $(srctree)/scripts/extract_symbol_offset pbl_image_size $^))
 
-#
-# if MAX_PBL_xxx_SIZE_$(symbol) is defined it contains the maximum size the
-# code/memory/image for this PBL may get. Check these values.
-#
 	$(if $(MAX_PBL_CODE_SIZE_$*), \
-		$(call if_changed,check_size,$(PBL_CODE_SIZE_$*),$(MAX_PBL_CODE_SIZE_$*)) \
+		$(call cmd,check_size,$(PBL_CODE_SIZE_$*),$(MAX_PBL_CODE_SIZE_$*)) \
 	)
 
 	$(if $(MAX_PBL_MEMORY_SIZE_$*), \
-		$(call if_changed,check_size,$(PBL_MEMORY_SIZE_$*),$(MAX_PBL_MEMORY_SIZE_$*)) \
+		$(call cmd,check_size,$(PBL_MEMORY_SIZE_$*),$(MAX_PBL_MEMORY_SIZE_$*)) \
 	)
 
 	$(if $(MAX_PBL_IMAGE_SIZE_$*), \
-		$(call if_changed,check_size,$(PBL_IMAGE_SIZE_$*),$(MAX_PBL_IMAGE_SIZE_$*)) \
+		$(call cmd,check_size,$(PBL_IMAGE_SIZE_$*),$(MAX_PBL_IMAGE_SIZE_$*)) \
 	)
+endef
+
+$(obj)/%.pblb: $(obj)/%.pbl FORCE
+	$(call if_changed_rule,pblb)
 
 $(obj)/%.s: $(obj)/% FORCE
 	$(call if_changed,disasm)

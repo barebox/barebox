@@ -26,7 +26,8 @@
 #define RTIWWDRXCTRL		0xa4
 #define RTIWWDSIZECTRL		0xa8
 
-#define RTIWWDRX_NMI		0xa
+#define RTIWWDRXN_RST 		0x5
+#define RTIWWDRXN_NMI		0xa
 
 #define RTIWWDSIZE_100P		0x5
 #define RTIWWDSIZE_50P		0x50
@@ -42,10 +43,15 @@
 
 #define DWDST			BIT(1)
 
+struct rti_wdt_data {
+	bool nmi;
+};
+
 struct rti_wdt_priv {
 	void __iomem *regs;
 	struct watchdog wdt;
 	unsigned int clk_hz;
+	const struct rti_wdt_data *data;
 };
 
 static int rti_wdt_ping(struct watchdog *wdt)
@@ -67,7 +73,7 @@ static int rti_wdt_ping(struct watchdog *wdt)
 static int rti_wdt_settimeout(struct watchdog *wdt, unsigned int timeout)
 {
 	struct rti_wdt_priv *priv = container_of(wdt, struct rti_wdt_priv, wdt);
-	u32 timer_margin;
+	u32 timer_margin, reaction;
 
 	if (!timeout)
 		return -ENOSYS;
@@ -84,7 +90,13 @@ static int rti_wdt_settimeout(struct watchdog *wdt, unsigned int timeout)
 		timer_margin = WDT_PRELOAD_MAX;
 
 	writel(timer_margin, priv->regs + RTIDWDPRLD);
-	writel(RTIWWDRX_NMI, priv->regs + RTIWWDRXCTRL);
+
+	if (priv->data->nmi)
+		reaction = RTIWWDRXN_NMI;
+	else
+		reaction = RTIWWDRXN_RST;
+
+	writel(reaction, priv->regs + RTIWWDRXCTRL);
 	writel(RTIWWDSIZE_50P, priv->regs + RTIWWDSIZECTRL);
 
 	(void)readl(priv->regs + RTIWWDSIZECTRL);
@@ -137,6 +149,8 @@ static int rti_wdt_probe(struct device *dev)
 	if (priv->clk_hz == 0)
 		return -EINVAL;
 
+	priv->data = device_get_match_data(dev);
+
 	/*
 	 * If watchdog is running at 32k clock, it is not accurate.
 	 * Adjust frequency down in this case so that it does not expire
@@ -172,8 +186,17 @@ static int rti_wdt_probe(struct device *dev)
 	return watchdog_register(wdt);
 }
 
+static struct rti_wdt_data j7_wdt = {
+	.nmi = true,
+};
+
+static struct rti_wdt_data am62l_wdt = {
+	.nmi = false,
+};
+
 static const struct of_device_id rti_wdt_of_match[] = {
-	{ .compatible = "ti,j7-rti-wdt", },
+	{ .compatible = "ti,j7-rti-wdt", .data = &j7_wdt },
+	{ .compatible = "ti,am62l-rti-wdt", .data = &am62l_wdt },
 	{ /* sentinel */ }
 };
 

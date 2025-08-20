@@ -180,6 +180,8 @@ out:
 	fb_setvar(var, "%s", type);
 	var = fb_addvar(fb, list, "is-logical:%s", fentry->name);
 	fb_setvar(var, "%s", "no");
+	var = fb_addvar(fb, list, "has-slot:%s", fentry->name);
+	fb_setvar(var, "%s", "no");
 
 	return ret;
 }

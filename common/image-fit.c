@@ -16,6 +16,7 @@
 #include <fs.h>
 #include <malloc.h>
 #include <linux/ctype.h>
+#include <linux/refcount.h>
 #include <asm/byteorder.h>
 #include <errno.h>
 #include <linux/err.h>
@@ -32,6 +33,8 @@
 #define CHECK_LEVEL_HASH 1
 #define CHECK_LEVEL_SIG 2
 #define CHECK_LEVEL_MAX 3
+
+static LIST_HEAD(open_fits);
 
 static uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, int size)
 {
@@ -902,6 +905,18 @@ void *fit_open_configuration(struct fit_handle *handle, const char *name,
 	return conf_node;
 }
 
+static struct fit_handle *fit_get_handle(const char *filename)
+{
+	struct fit_handle *handle;
+
+	list_for_each_entry(handle, &open_fits, entry) {
+		if (!strcmp(filename, handle->filename))
+			return handle;
+	}
+
+	return NULL;
+}
+
 static int fit_do_open(struct fit_handle *handle)
 {
 	const char *desc = "(no description)";
@@ -951,6 +966,8 @@ struct fit_handle *fit_open_buf(const void *buf, size_t size, bool verbose,
 	handle->size = size;
 	handle->verify = verify;
 
+	refcount_set(&handle->users, 1);
+
 	ret = fit_do_open(handle);
 	if (ret) {
 		fit_close(handle);
@@ -972,11 +989,24 @@ struct fit_handle *fit_open_buf(const void *buf, size_t size, bool verbose,
  *
  * Return: A handle to a FIT image or a ERR_PTR
  */
-struct fit_handle *fit_open(const char *filename, bool verbose,
+struct fit_handle *fit_open(const char *_filename, bool verbose,
 			    enum bootm_verify verify, loff_t max_size)
 {
 	struct fit_handle *handle;
+	char *filename;
 	int ret;
+
+	filename = canonicalize_path(AT_FDCWD, _filename);
+	if (!filename) {
+		pr_err("Cannot open %s: %m\n", _filename);
+		return ERR_PTR(-errno);
+	}
+
+	handle = fit_get_handle(filename);
+	if (handle) {
+		refcount_inc(&handle->users);
+		return handle;
+	}
 
 	handle = xzalloc(sizeof(struct fit_handle));
 
@@ -988,10 +1018,15 @@ struct fit_handle *fit_open(const char *filename, bool verbose,
 	if (ret && ret != -EFBIG) {
 		pr_err("unable to read %s: %pe\n", filename, ERR_PTR(ret));
 		free(handle);
+		free(filename);
 		return ERR_PTR(ret);
 	}
 
 	handle->fit = handle->fit_alloc;
+	handle->filename = filename;
+
+	refcount_set(&handle->users, 1);
+	list_add(&handle->entry, &open_fits);
 
 	ret = fit_do_open(handle);
 	if (ret) {
@@ -1004,8 +1039,16 @@ struct fit_handle *fit_open(const char *filename, bool verbose,
 
 static void __fit_close(struct fit_handle *handle)
 {
+	if (!refcount_dec_and_test(&handle->users))
+		return;
+
 	if (handle->root)
 		of_delete_node(handle->root);
+
+	if (handle->filename)
+		list_del(&handle->entry);
+
+	free(handle->filename);
 	free(handle->fit_alloc);
 }
 

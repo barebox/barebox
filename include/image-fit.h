@@ -7,12 +7,17 @@
 #define __IMAGE_FIT_H__
 
 #include <linux/types.h>
+#include <linux/refcount.h>
 #include <bootm.h>
 
 struct fit_handle {
 	const void *fit;
 	void *fit_alloc;
 	size_t size;
+	char *filename;
+
+	struct list_head entry;
+	refcount_t users;
 
 	bool verbose;
 	enum bootm_verify verify;

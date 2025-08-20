@@ -288,16 +288,22 @@ static bool of_overlay_matches_filter(const char *pattern, struct device_node *o
 	free(path);
 
 	/* No filter found at all, no match */
-	if (!have_pattern_filter && !have_content_filter)
+	if (!have_pattern_filter && !have_content_filter) {
+		pr_debug("No match, because no filter was found\n");
 		return false;
+	}
 
 	/* Want to match pattern, but we do not have a filename_filter */
-	if (pattern && !have_pattern_filter)
+	if (pattern && !have_pattern_filter) {
+		pr_debug("Pattern match requested, but no pattern filter found\n");
 		return true;
+	}
 
 	/* Want to match content, but we do not have a content_filter */
-	if (ovl && !have_content_filter)
+	if (ovl && !have_content_filter) {
+		pr_debug("Content match requested, but no content filter found\n");
 		return true;
+	}
 
 	if (apply)
 		pr_debug("pattern %s, overlay %p: match against filter %s\n",

@@ -782,7 +782,9 @@ err:
 
 static int fit_find_compatible_unit(struct fit_handle *handle,
 				    struct device_node *conf_node,
-				    const char **unit)
+				    const char **unit,
+				    bool (*config_node_valid)(struct fit_handle *handle,
+							      struct device_node *config))
 {
 	struct device_node *child = NULL;
 	struct device_node *barebox_root;
@@ -799,7 +801,12 @@ static int fit_find_compatible_unit(struct fit_handle *handle,
 		return -ENOENT;
 
 	for_each_child_of_node(conf_node, child) {
-		int score = of_device_is_compatible(child, machine);
+		int score;
+
+		if (config_node_valid && !config_node_valid(handle, child))
+			continue;
+
+		score = of_device_is_compatible(child, machine);
 
 		if (!score)
 			score = fit_fdt_is_compatible(handle, child, machine);
@@ -857,7 +864,9 @@ static int fit_find_last_unit(struct fit_handle *handle,
  * Return: If successful a pointer to a valid configuration node,
  *         otherwise a ERR_PTR()
  */
-void *fit_open_configuration(struct fit_handle *handle, const char *name)
+void *fit_open_configuration(struct fit_handle *handle, const char *name,
+			     bool (*match_valid)(struct fit_handle *handle,
+						 struct device_node *config))
 {
 	struct device_node *conf_node = handle->configurations;
 	const char *unit, *desc = "(no description)";
@@ -869,7 +878,8 @@ void *fit_open_configuration(struct fit_handle *handle, const char *name)
 	if (name) {
 		unit = name;
 	} else {
-		ret = fit_find_compatible_unit(handle, conf_node, &unit);
+		ret = fit_find_compatible_unit(handle, conf_node, &unit,
+					       match_valid);
 		if (ret) {
 			pr_info("Couldn't get a valid configuration. Aborting.\n");
 			return ERR_PTR(ret);
@@ -1044,12 +1054,12 @@ static int fuzz_fit(const u8 *data, size_t size)
 	if (ret)
 		goto out;
 
-	config = fit_open_configuration(&handle, NULL);
+	config = fit_open_configuration(&handle, NULL, NULL);
 	if (IS_ERR(config)) {
 		ret = fit_find_last_unit(&handle, &unit);
 		if (ret)
 			goto out;
-		config = fit_open_configuration(&handle, unit);
+		config = fit_open_configuration(&handle, unit, NULL);
 	}
 	if (IS_ERR(config)) {
 		ret = PTR_ERR(config);

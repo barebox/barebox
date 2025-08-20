@@ -26,7 +26,9 @@ struct fit_handle *fit_open(const char *filename, bool verbose,
 			    enum bootm_verify verify, loff_t max_size);
 struct fit_handle *fit_open_buf(const void *buf, size_t len, bool verbose,
 				enum bootm_verify verify);
-void *fit_open_configuration(struct fit_handle *handle, const char *name);
+void *fit_open_configuration(struct fit_handle *handle, const char *name,
+			     bool (*match_valid)(struct fit_handle *handle,
+						 struct device_node *config));
 int fit_has_image(struct fit_handle *handle, void *configuration,
 		  const char *name);
 int fit_open_image(struct fit_handle *handle, void *configuration,

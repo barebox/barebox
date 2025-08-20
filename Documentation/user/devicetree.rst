@@ -108,7 +108,7 @@ Device tree overlays on the kernel device tree
 Overlays can be applied to the kernel device tree before it is handed over to
 the kernel. The behaviour is controlled by different variables:
 
-``global.of.overlay.dir``
+``global.of.overlay.path``
   Overlays are read from this directory. barebox will try to apply all overlays
   found here if not limited by one of the other variables below. When the path
   given here is an absolute path it is used as is. A relative path is relative

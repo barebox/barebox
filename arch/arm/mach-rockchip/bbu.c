@@ -46,10 +46,10 @@ static int rockchip_bbu_mmc_handler(struct bbu_handler *handler,
 	struct cdev *cdev;
 
 	filetype = file_detect_type(data->image, data->len);
-	if (filetype != filetype_rockchip_rkns_image) {
-		if (!bbu_force(data, "incorrect image type. Expected: %s, got %s",
-				file_type_to_string(filetype_rockchip_rkns_image),
-				file_type_to_string(filetype)))
+	if (filetype != filetype_rockchip_rkns_image &&
+	    filetype != filetype_rockchip_rkss_image) {
+		if (!bbu_force(data, "incorrect image type. Got %s",
+			       file_type_to_string(filetype)))
 			return -EINVAL;
 	}
 

@@ -66,6 +66,7 @@ enum filetype {
 	filetype_qemu_fw_cfg,
 	filetype_nxp_fspi_image,
 	filetype_zstd_compressed,
+	filetype_rockchip_rkss_image,
 	filetype_max,
 };
 

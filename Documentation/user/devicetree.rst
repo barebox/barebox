@@ -118,15 +118,15 @@ the kernel. The behaviour is controlled by different variables:
   these compatibles will be applied. When this list is empty then all overlays
   will be applied. Overlays that don't have a compatible are considered being
   always compatible.
-``global.of.overlay.filepattern``
+``global.of.overlay.pattern``
   This is a space separated list of file patterns. An overlay is only applied
   when its filename matches one of the patterns. The patterns can contain
   ``*`` and ``?`` as wildcards. The default is ``*`` which means all files are
   applied.
 ``global.of.overlay.filter``
   This is a space separated list of filters to apply. There are two generic filters:
-  ``filepattern`` matches ``global.of.overlay.filepattern`` above, ``compatible`` matches
-  ``global.of.overlay.compatible`` above. The default is ``filepattern compatible``
+  ``pattern`` matches ``global.of.overlay.pattern`` above, ``compatible`` matches
+  ``global.of.overlay.compatible`` above. The default is ``pattern compatible``
   which means the two generic filters are active. This list may be replaced or
   supplemented by board specific filters.
 

@@ -96,8 +96,10 @@ static int init_public_keys(void)
 	for (iter = __public_keys_start; iter != __public_keys_end; iter++) {
 		struct public_key *key = public_key_dup(iter);
 
-		if (!key)
+		if (!key) {
+			pr_warn("error while adding key\n");
 			continue;
+		}
 
 		public_key_add(key);
 	}

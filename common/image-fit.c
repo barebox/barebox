@@ -258,6 +258,7 @@ static struct digest *fit_alloc_digest(struct device_node *sig_node,
 static int fit_check_signature(struct fit_handle *handle, struct device_node *sig_node,
 			       enum hash_algo algo, void *hash)
 {
+	const char *fail_reason = "no built-in keys";
 	const struct public_key *key;
 	const char *key_name = NULL;
 	int sig_len;
@@ -275,26 +276,34 @@ static int fit_check_signature(struct fit_handle *handle, struct device_node *si
 		key = public_key_get(key_name);
 		if (key) {
 			ret = public_key_verify(key, sig_value, sig_len, hash, algo);
+			if (handle->verbose)
+				pr_info("Key %*phN (%s) -> signature %s\n", key->hashlen,
+					key->hash, key_name, ret ? "BAD" : "OK");
 			if (!ret)
 				goto ok;
 		}
 	}
 
 	for_each_public_key(key) {
+		fail_reason = "verification failed";
+
 		if (key_name && !strcmp(key->key_name_hint, key_name))
 			continue;
 
 		ret = public_key_verify(key, sig_value, sig_len, hash, algo);
+
+		if (handle->verbose)
+			pr_info("Key %*phN -> signature %s\n", key->hashlen, key->hash,
+				ret ? "BAD" : "OK");
+
 		if (!ret)
 			goto ok;
 	}
 
-	pr_err("image signature BAD\n");
+	pr_err("image signature BAD: %s\n", fail_reason);
 
 	return -EBADMSG;
 ok:
-	pr_info("image signature OK\n");
-
 	return 0;
 }
 
@@ -417,10 +426,11 @@ static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
 	digest_update(d, data, data_len);
 
 	if (digest_verify(d, value_read)) {
-		pr_info("%pOF: hash BAD\n", hash);
+		pr_err("%pOF: hash BAD\n", hash);
 		ret =  -EBADMSG;
 	} else {
-		pr_info("%pOF: hash OK\n", hash);
+		if (handle->verbose)
+			pr_info("%pOF: hash OK\n", hash);
 		ret = 0;
 	}
 
@@ -663,7 +673,8 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 		return ret;
 
 	of_property_read_string(image, "description", &desc);
-	pr_info("image '%s': '%s'\n", unit, desc);
+	if (handle->verbose)
+		pr_info("image '%s': '%s'\n", unit, desc);
 
 	of_property_read_string(image, "type", &type);
 	if (!type) {

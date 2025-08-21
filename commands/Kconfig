@@ -2306,6 +2306,13 @@ config CMD_KEYSTORE
 	help
 	  keystore provides access to the barebox keystore.
 
+config CMD_KEYS
+	depends on CRYPTO_BUILTIN_KEYS
+	bool
+	prompt "keys"
+	help
+	  The keys command provides information about builtin public keys
+
 config CMD_LOGIN
 	tristate
 	select PASSWORD

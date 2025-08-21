@@ -45,9 +45,13 @@ static int state_backend_format_dtb_verify(struct state_backend_format *format,
 	struct state_backend_format_dtb *fdtb = get_format_dtb(format);
 	struct device_node *root;
 	struct fdt_header *fdt = (struct fdt_header *)buf;
-	size_t dtb_len = fdt32_to_cpu(fdt->totalsize);
+	size_t dtb_len;
 	size_t len = *lenp;
 
+	if (len < sizeof(*fdt))
+		return -EINVAL;
+
+	dtb_len = fdt32_to_cpu(fdt->totalsize);
 	if (dtb_len > len) {
 		dev_err(fdtb->dev, "Error, stored DTB length (%zd) longer than read buffer (%zd)\n",
 			dtb_len, len);

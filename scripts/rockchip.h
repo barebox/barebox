@@ -6,6 +6,9 @@
 
 #define NEWIDB_FLAGS_SHA256	(1U << 0)
 #define NEWIDB_FLAGS_SHA512	(1U << 1)
+#define NEWIDB_FLAGS_RSA2048	(1U << 4)
+#define NEWIDB_FLAGS_RSA4096	(1U << 5)
+#define NEWIDB_FLAGS_SIGNED	(1U << 13)
 
 struct newidb_entry {
 	uint32_t sector;
@@ -14,6 +17,12 @@ struct newidb_entry {
 	uint32_t image_number;
 	unsigned char unknown2[8];
 	unsigned char hash[64];
+};
+
+struct newidb_key {
+	unsigned char modulus[512];
+	unsigned char exponent[16];
+	unsigned char np[32];
 };
 
 struct newidb {
@@ -26,9 +35,7 @@ struct newidb {
 	unsigned char unknown4[88];
 	struct newidb_entry entries[4];
 	unsigned char unknown5[40];
-	unsigned char unknown6[512];
-	unsigned char unknown7[16];
-	unsigned char unknown8[32];
+	struct newidb_key key;
 	unsigned char unknown9[464];
 	unsigned char hash[512];
 };

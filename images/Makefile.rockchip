@@ -3,8 +3,16 @@
 # barebox image generation Makefile for Rockchip images
 #
 
+ifeq ($(CONFIG_ARCH_ROCKCHIP_IMAGE_SIGNED), y)
+ifeq ($(CONFIG_ARCH_ROCKCHIP_IMAGE_SIGN_KEY_ENV), y)
+RKIMAGE_OPTS += -k '$(shell echo '$(CONFIG_ARCH_ROCKCHIP_IMAGE_SIGN_KEY)')'
+else
+RKIMAGE_OPTS += -k $(CONFIG_ARCH_ROCKCHIP_IMAGE_SIGN_KEY)
+endif
+endif
+
 quiet_cmd_rkimg_image = RK-IMG $@
-      cmd_rkimg_image = $(objtree)/scripts/rkimage -o $@ $(word 2,$^) $(word 1,$^)
+      cmd_rkimg_image = $(objtree)/scripts/rkimage $(RKIMAGE_OPTS) -o $@ $(word 2,$^) $(word 1,$^)
 
 # params: CONFIG symbol, entry point, sdram-init.bin, board identifier string
 define build_rockchip_image =

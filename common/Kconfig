@@ -360,6 +360,7 @@ config RELOCATABLE
 
 choice
 	prompt "Configure action on fatal error"
+	default PANIC_TRAP if SANDBOX
 	default PANIC_RESET
 
 	config PANIC_POWEROFF
@@ -390,6 +391,14 @@ choice
 		  This option enables reset of the system in case of a
 		  fatal error, so you don't have to reset it manually.
 		  This is the recommended configuration in production.
+
+	config PANIC_TRAP
+		bool "invoke a trap instruction"
+		help
+		  This option triggers the trap instruction emitted by
+		  __builtin_trap() on fatal errors.
+		  This is mainly useful when running under a debugger
+		  or debugging instrumentation.
 
 endchoice
 

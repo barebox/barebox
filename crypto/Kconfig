@@ -141,9 +141,6 @@ config CRYPTO_PUBLIC_KEYS
 	  prefix, <hint> is used as a key name hint to find a key without
 	  iterating over all keys.
 
-	  This avoids the mkimage dependency of CONFIG_BOOTM_FITIMAGE_PUBKEY
-	  at the cost of an openssl build-time dependency.
-
 	  Placeholders such as __ENV__VAR_NAME can be used to look up the
 	  corresponding value in the environment variable VAR_NAME for both
 	  public key paths/URIs as well as key name hints.

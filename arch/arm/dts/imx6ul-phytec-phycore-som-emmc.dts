@@ -5,9 +5,6 @@
  */
 
 /dts-v1/;
-#ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
-#include CONFIG_BOOTM_FITIMAGE_PUBKEY
-#endif
 #include <arm/nxp/imx/imx6ul.dtsi>
 #include "imx6ul-phytec-phycore-som.dtsi"
 #include "imx6ul-phytec-state.dtsi"

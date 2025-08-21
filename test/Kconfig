@@ -46,4 +46,12 @@ config CMD_FUZZ
 
 endif
 
+config TEST_KEY_RSA2048
+	bool
+	help
+	  This is selected by crypto test code that needs a RSA2048 public
+	  key. The key added by this option is stand-alone, i.e., it is
+	  not part of the key ring and won't be consulted for FIT image
+	  verification.
+
 endif

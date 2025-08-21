@@ -4,6 +4,7 @@ SYMLINK_TARGET_barebox = sandbox_main.elf
 symlink-$(CONFIG_SANDBOX) += barebox
 
 fuzzer-$(CONFIG_FILETYPE)	+= filetype
+fuzzer-$(CONFIG_JWT)		+= jwt
 fuzzer-$(CONFIG_FITIMAGE)	+= fit
 fuzzer-$(CONFIG_OFTREE)		+= dtb
 fuzzer-$(CONFIG_OFTREE)		+= fdt-compatible

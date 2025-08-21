@@ -92,6 +92,7 @@ config JWT
 	select JSMN
 	select BASE64
 	select CRYPTO_RSA
+	select TEST_KEY_RSA2048 if FUZZ
 
 menu "OP-TEE loading"
 

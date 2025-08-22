@@ -26,7 +26,7 @@
 #include <linux/stringify.h>
 #include <pbl/handoff-data.h>
 
-#define ARM_EARLY_PAGETABLE_SIZE	SZ_64K
+#define ARM_EARLY_PAGETABLE_SIZE	SZ_256K
 
 #define handoff_add_arm_machine(machine)				\
 	do {								\

@@ -37,7 +37,7 @@ void __efistub_efi_pe_entry(void *image, struct efi_system_table *sys_table)
 
 	handoff_data_add(HANDOFF_DATA_EFI, &efidata, sizeof(efidata));
 
-	mem = efi_earlymem_alloc(sys_table, &memsize);
+	mem = efi_earlymem_alloc(sys_table, &memsize, EFI_LOADER_CODE);
 
 	barebox_pbl_entry((uintptr_t)mem, memsize, NULL);
 }

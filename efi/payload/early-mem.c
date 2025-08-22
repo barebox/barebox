@@ -6,7 +6,7 @@
 #include <efi/efi-payload.h>
 
 void *efi_earlymem_alloc(const struct efi_system_table *sys_table,
-			 size_t *memsize)
+			 size_t *memsize, enum efi_memory_type mem_type)
 {
 	struct efi_boot_services *bs = sys_table->boottime;
 	enum efi_allocate_type alloc_type = EFI_ALLOCATE_ANY_PAGES;
@@ -20,7 +20,7 @@ void *efi_earlymem_alloc(const struct efi_system_table *sys_table,
 	}
 
 	for (*memsize = SZ_256M; *memsize >= SZ_8M; *memsize /= 2) {
-		efiret  = bs->allocate_pages(alloc_type, EFI_LOADER_DATA,
+		efiret  = bs->allocate_pages(alloc_type, mem_type,
 					     *memsize / EFI_PAGE_SIZE, &mem);
 		if (!EFI_ERROR(efiret) || efiret != EFI_OUT_OF_RESOURCES)
 			break;

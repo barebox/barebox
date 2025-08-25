@@ -198,6 +198,8 @@ typedef u32 phys_size_t;
 
 typedef phys_addr_t resource_size_t;
 
+typedef unsigned maptype_t;
+
 struct ustat {
 	__kernel_daddr_t	f_tfree;
 	__kernel_ino_t		f_tinode;

@@ -160,6 +160,7 @@ int ele_authenticate_container(unsigned long addr, u32 *response);
 int ele_release_container(u32 *response);
 int ele_forward_lifecycle(u32 lc, u32 *response);
 int ele_print_events(void);
+const char *ele_life_cycle(u32 lc);
 
 int imx93_ele_load_fw(void *bl33);
 unsigned int imx93_ahab_read_lifecycle(void);

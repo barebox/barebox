@@ -13,7 +13,7 @@ picflags-$(CONFIG_ARM64)	:= -fpie
 
 picflags-y			+= -include $(srctree)/include/linux/hidden.h \
 				   -D__fully_pic__ \
-				   -D__NO_FORTIFY \
+				   -D__NO_FORTIFY="" \
 				   -ffreestanding \
 				   -fno-stack-protector \
 				   $(call cc-option,-fno-addrsig) \

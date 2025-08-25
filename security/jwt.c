@@ -8,6 +8,7 @@
 #include <linux/printk.h>
 #include <base64.h>
 #include <jsmn.h>
+#include <fuzz.h>
 #include <linux/ctype.h>
 
 #define JP(...)	(const char *[]) { __VA_ARGS__, NULL }
@@ -223,6 +224,22 @@ err:
 	jwt_free(jwt);
 	return ERR_PTR(ret);
 }
+
+static int fuzz_jwt(char *data, size_t size)
+{
+	struct jwt_key jwt_key;
+	struct jwt *jwt;
+	extern const struct rsa_public_key __key_development_rsa2048;
+
+	jwt_key.alg = JWT_ALG_RS256;
+	jwt_key.material.rsa_pub = &__key_development_rsa2048;
+
+	jwt = jwt_decode(data, &jwt_key);
+	if (!IS_ERR(jwt))
+		jwt_free(jwt);
+	return 0;
+}
+fuzz_test_str("jwt", fuzz_jwt);
 
 const char *jwt_get_payload(const struct jwt *t)
 {

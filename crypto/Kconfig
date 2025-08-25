@@ -148,4 +148,22 @@ config CRYPTO_PUBLIC_KEYS
 	  corresponding value in the environment variable VAR_NAME for both
 	  public key paths/URIs as well as key name hints.
 
+	  Examples specified directly:
+
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="pkcs11:object=foo"
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="myhint:pkcs11:object=foo"
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="myhint:pkcs11:object=foo /foobar/baz.der"
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="myhint:pkcs11:object=foo myotherhint:/foobar/baz.der"
+
+	  Example specified indirectly by two environment variables:
+
+	  - myhint="myhint"
+	  - myname="pkcs11:object=foo" (.der could be used too)
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="__ENV__myhint:__ENV__myname"
+
+	  Example specified indirectly by a single environment variable:
+
+	  - mykey="myhint:pkcs11:object=foo" (.der could be used too)
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="__ENV__mykey"
+
 endmenu

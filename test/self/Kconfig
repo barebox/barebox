@@ -86,6 +86,7 @@ config SELFTEST_JSON
 config SELFTEST_JWT
 	bool "JSON Web Token selftest"
 	depends on JWT
+	select TEST_KEY_RSA2048
 
 config SELFTEST_MMU
 	bool "MMU remapping selftest"

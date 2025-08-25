@@ -73,6 +73,14 @@ Hardware Manipulation
 
    commands/hwmanip/*
 
+Security
+--------
+.. toctree::
+   :titlesonly:
+   :glob:
+
+   commands/security/*
+
 Miscellaneous
 -------------
 .. toctree::

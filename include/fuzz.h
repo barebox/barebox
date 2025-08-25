@@ -9,6 +9,8 @@
 
 #include <linux/types.h>
 #include <linux/compiler_types.h>
+#include <linux/bug.h>
+#include <linux/string.h>
 #include <ramdisk.h>
 
 /**
@@ -64,6 +66,18 @@ extern const struct fuzz_test __barebox_fuzz_tests_end;
 		return ret;					\
 	}							\
 	fuzz_test(_name, _func##_ramdisk)
+
+#define fuzz_test_str(_name, _func)				\
+	static int _func##_str(const u8 *_data, size_t size)	\
+	{							\
+		int ret;					\
+		char *data = memdup_nul(_data, size);		\
+		BUG_ON(!data);					\
+		ret = _func(data, size);			\
+		free(data);					\
+		return ret;					\
+	}							\
+	fuzz_test(_name, _func##_str)
 
 static inline int fuzz_test_once(const struct fuzz_test *test, const u8 *data, size_t len)
 {

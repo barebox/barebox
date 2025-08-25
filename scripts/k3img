@@ -143,6 +143,10 @@ EndOfHereDocument
 
 cat $ext_boot_info $components >> $certcfg
 
-openssl req -new -x509 -key $key -nodes -outform DER -out $cert -config $certcfg -sha512
+case $key in pkcs11:*)
+	PKCS11OPTS="-engine pkcs11 -keyform engine"
+esac
+
+openssl req ${PKCS11OPTS} -new -x509 -key "${key}" -nodes -outform DER -out "${cert}" -config "${certcfg}" -sha512
 
 cat $cert $data > $out

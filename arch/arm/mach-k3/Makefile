@@ -22,7 +22,7 @@ $(obj)/combined-sysfw-cfg-am62x.k3cfg: $(srctree)/arch/arm/mach-k3/schema.yaml \
 				       FORCE
 	$(call if_changed,k3_cfg)
 
-$(obj)/combined-sysfw-cfg-am62l.k3cfg: $(srctree)/arch/arm/mach-k3/schema.yaml \
+$(obj)/combined-sysfw-cfg-am62l.k3cfg: $(srctree)/arch/arm/mach-k3/schema-am62l.yaml \
 				       $(obj)/board-cfg-am62x.yaml \
 				       $(obj)/sec-cfg-am62l.yaml \
 				       FORCE

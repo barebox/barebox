@@ -65,4 +65,26 @@ config ARCH_K3_COMMAND_AUTHENTICATE
 	  Add k3_authenticate_image command to test authenticating images
 	  against the K3 ROM API.
 
+choice
+	prompt "Select signing key"
+	default ARCH_K3_SIGNING_KEY_TI_DEVEL
+
+config ARCH_K3_SIGNING_KEY_TI_DEVEL
+	bool "Use TI devel key for signing (arch/arm/mach-k3/custMpk.pem)"
+	help
+	  Use the TI provided devel key for signing the bootable certificates
+
+config ARCH_K3_SIGNING_KEY_CUSTOM
+	bool "Specify custom key for signing"
+	help
+	  Use custom keys for signing the bootable certificates
+
+endchoice
+
+config ARCH_K3_SIGNING_KEY
+	string "Signing key"
+	depends on ARCH_K3_SIGNING_KEY_CUSTOM
+	help
+	  Path or PKS#11 uri for the signing keys
+
 endmenu

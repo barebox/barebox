@@ -14,6 +14,19 @@ obj-pbl-$(CONFIG_ARCH_SOCFPGA_ARRIA10) += arria10-bootsource.o \
 					  arria10-init.o \
 					  arria10-sdram.o
 
+pbl-$(CONFIG_ARCH_SOCFPGA_AGILEX5) += soc64-system-manager.o \
+				soc64-wrap-handoff.o \
+				iossm_mailbox.o \
+				mailbox_s10.o \
+				agilex5-sdram.o \
+				agilex5-secreg.o \
+				agilex5-clock-manager.o \
+				atf.o
+
+obj-$(CONFIG_ARCH_SOCFPGA_AGILEX5) += secure_reg_helper.o \
+			        mailbox_s10.o \
+				      smc_api.o
+
 ifdef CONFIG_ARCH_SOCFPGA_CYCLONE5
 obj-$(CONFIG_ARCH_SOCFPGA_XLOAD) += xload.o
 endif

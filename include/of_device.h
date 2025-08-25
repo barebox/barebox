@@ -23,6 +23,7 @@ static inline int of_driver_match_device(struct device *dev,
 
 extern const void *of_device_get_match_data(const struct device *dev);
 extern const char *of_device_get_match_compatible(const struct device *dev);
+void of_device_make_bus_id(struct device *dev);
 
 #else /* CONFIG_OFTREE */
 
@@ -49,6 +50,8 @@ static inline const struct of_device_id *__of_match_device(
 }
 #define of_match_device(matches, dev)	\
 	__of_match_device(matches, (dev))
+
+static inline void of_device_make_bus_id(struct device *dev) {}
 
 #endif /* CONFIG_OFTREE */
 

@@ -1680,117 +1680,182 @@ struct device_node *of_parse_phandle(const struct device_node *np,
 }
 EXPORT_SYMBOL(of_parse_phandle);
 
-/**
- * of_parse_phandle_with_args() - Find a node pointed by phandle in a list
- * @np:		pointer to a device tree node containing a list
- * @list_name:	property name that contains a list
- * @cells_name:	property name that specifies phandles' arguments count
- * @index:	index of a phandle to parse out
- * @out_args:	optional pointer to output arguments structure (will be filled)
- *
- * This function is useful to parse lists of phandles and their arguments.
- * Returns 0 on success and fills out_args, on error returns appropriate
- * errno value.
- *
- * Example:
- *
- * phandle1: node1 {
- * 	#list-cells = <2>;
- * }
- *
- * phandle2: node2 {
- * 	#list-cells = <1>;
- * }
- *
- * node3 {
- * 	list = <&phandle1 1 2 &phandle2 3>;
- * }
- *
- * To get a device_node of the `node2' node you may call this:
- * of_parse_phandle_with_args(node3, "list", "#list-cells", 1, &args);
- */
-static int __of_parse_phandle_with_args(const struct device_node *np,
-					const char *list_name,
-					const char *cells_name, int index,
-					struct of_phandle_args *out_args)
+int of_phandle_iterator_init(struct of_phandle_iterator *it,
+		const struct device_node *np,
+		const char *list_name,
+		const char *cells_name,
+		int cell_count)
 {
-	const __be32 *list, *list_end;
-	int rc = 0, size, cur_index = 0;
-	uint32_t count = 0;
-	struct device_node *node = NULL;
-	phandle phandle;
+	const __be32 *list;
+	int size;
 
-	/* Retrieve the phandle list property */
+	memset(it, 0, sizeof(*it));
+
+	/*
+	 * one of cell_count or cells_name must be provided to determine the
+	 * argument length.
+	 */
+	if (cell_count < 0 && !cells_name)
+		return -EINVAL;
+
 	list = of_get_property(np, list_name, &size);
 	if (!list)
 		return -ENOENT;
-	list_end = list + size / sizeof(*list);
 
-	/* Loop over the phandles until all the requested entry is found */
-	while (list < list_end) {
-		rc = -EINVAL;
-		count = 0;
+	it->cells_name = cells_name;
+	it->cell_count = cell_count;
+	it->parent = np;
+	it->list_end = list + size / sizeof(*list);
+	it->phandle_end = list;
+	it->cur = list;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(of_phandle_iterator_init);
+
+int of_phandle_iterator_next(struct of_phandle_iterator *it)
+{
+	uint32_t count = 0;
+
+	if (it->node) {
+		of_node_put(it->node);
+		it->node = NULL;
+	}
+
+	if (!it->cur || it->phandle_end >= it->list_end)
+		return -ENOENT;
+
+	it->cur = it->phandle_end;
+
+	/* If phandle is 0, then it is an empty entry with no arguments. */
+	it->phandle = be32_to_cpup(it->cur++);
+
+	if (it->phandle) {
 
 		/*
-		 * If phandle is 0, then it is an empty entry with no
-		 * arguments.  Skip forward to the next entry.
+		 * Find the provider node and parse the #*-cells property to
+		 * determine the argument length.
 		 */
-		phandle = be32_to_cpup(list++);
-		if (phandle) {
-			/*
-			 * Find the provider node and parse the #*-cells
-			 * property to determine the argument length
-			 */
-			node = of_find_node_by_phandle(phandle);
-			if (!node) {
-				pr_err("%pOF: could not find phandle\n", np);
-				goto err;
-			}
-			if (cells_name &&
-			    of_property_read_u32(node, cells_name, &count)) {
-				pr_err("%pOF: could not get %s for %pOF\n",
-					 np, cells_name, node);
+		it->node = of_find_node_by_phandle(it->phandle);
+
+		if (it->cells_name) {
+			if (!it->node) {
+				pr_err("%pOF: could not find phandle %d\n",
+				       it->parent, it->phandle);
 				goto err;
 			}
 
-			/*
-			 * Make sure that the arguments actually fit in the
-			 * remaining property data length
-			 */
-			if (list + count > list_end) {
-				pr_err("%pOF: arguments longer than property\n", np);
-				goto err;
+			if (of_property_read_u32(it->node, it->cells_name,
+						 &count)) {
+				/*
+				 * If both cell_count and cells_name is given,
+				 * fall back to cell_count in absence
+				 * of the cells_name property
+				 */
+				if (it->cell_count >= 0) {
+					count = it->cell_count;
+				} else {
+					pr_err("%pOF: could not get %s for %pOF\n",
+					       it->parent,
+					       it->cells_name,
+					       it->node);
+					goto err;
+				}
 			}
+		} else {
+			count = it->cell_count;
 		}
 
 		/*
-		 * All of the error cases above bail out of the loop, so at
+		 * Make sure that the arguments actually fit in the remaining
+		 * property data length
+		 */
+		if (it->cur + count > it->list_end) {
+			if (it->cells_name)
+				pr_err("%pOF: %s = %d found %td\n",
+					it->parent, it->cells_name,
+					count, it->list_end - it->cur);
+			else
+				pr_err("%pOF: phandle %s needs %d, found %td\n",
+					it->parent, of_node_full_name(it->node),
+					count, it->list_end - it->cur);
+			goto err;
+		}
+	}
+
+	it->phandle_end = it->cur + count;
+	it->cur_count = count;
+
+	return 0;
+
+err:
+	if (it->node) {
+		of_node_put(it->node);
+		it->node = NULL;
+	}
+
+	return -EINVAL;
+}
+EXPORT_SYMBOL_GPL(of_phandle_iterator_next);
+
+int of_phandle_iterator_args(struct of_phandle_iterator *it,
+			     uint32_t *args,
+			     int size)
+{
+	int i, count;
+
+	count = it->cur_count;
+
+	if (WARN_ON(size < count))
+		count = size;
+
+	for (i = 0; i < count; i++)
+		args[i] = be32_to_cpup(it->cur++);
+
+	return count;
+}
+
+int __of_parse_phandle_with_args(const struct device_node *np,
+				 const char *list_name,
+				 const char *cells_name,
+				 int cell_count, int index,
+				 struct of_phandle_args *out_args)
+{
+	struct of_phandle_iterator it;
+	int rc, cur_index = 0;
+
+	if (index < 0)
+		return -EINVAL;
+
+	/* Loop over the phandles until all the requested entry is found */
+	of_for_each_phandle(&it, rc, np, list_name, cells_name, cell_count) {
+		/*
+		 * All of the error cases bail out of the loop, so at
 		 * this point, the parsing is successful. If the requested
 		 * index matches, then fill the out_args structure and return,
 		 * or return -ENOENT for an empty entry.
 		 */
 		rc = -ENOENT;
 		if (cur_index == index) {
-			if (!phandle)
+			if (!it.phandle)
 				goto err;
 
 			if (out_args) {
-				int i;
-				if (WARN_ON(count > MAX_PHANDLE_ARGS))
-					count = MAX_PHANDLE_ARGS;
-				out_args->np = node;
-				out_args->args_count = count;
-				for (i = 0; i < count; i++)
-					out_args->args[i] =
-						be32_to_cpup(list++);
+				int c;
+
+				c = of_phandle_iterator_args(&it,
+							     out_args->args,
+							     MAX_PHANDLE_ARGS);
+				out_args->np = it.node;
+				out_args->args_count = c;
+			} else {
+				of_node_put(it.node);
 			}
 
 			/* Found it! return success */
 			return 0;
 		}
 
-		node = NULL;
-		list += count;
 		cur_index++;
 	}
 
@@ -1798,23 +1863,13 @@ static int __of_parse_phandle_with_args(const struct device_node *np,
 	 * Unlock node before returning result; will be one of:
 	 * -ENOENT : index is for empty phandle
 	 * -EINVAL : parsing error on data
-	 * [1..n]  : Number of phandle (count mode; when index = -1)
 	 */
-	rc = index < 0 ? cur_index : -ENOENT;
+
  err:
+	of_node_put(it.node);
 	return rc;
 }
-
-int of_parse_phandle_with_args(const struct device_node *np,
-		const char *list_name, const char *cells_name, int index,
-		struct of_phandle_args *out_args)
-{
-	if (index < 0)
-		return -EINVAL;
-	return __of_parse_phandle_with_args(np, list_name, cells_name,
-					index, out_args);
-}
-EXPORT_SYMBOL(of_parse_phandle_with_args);
+EXPORT_SYMBOL(__of_parse_phandle_with_args);
 
 /**
  * of_count_phandle_with_args() - Find the number of phandles references in a property
@@ -1822,7 +1877,7 @@ EXPORT_SYMBOL(of_parse_phandle_with_args);
  * @list_name:	property name that contains a list
  * @cells_name:	property name that specifies phandles' arguments count
  *
- * Returns the number of phandle + argument tuples within a property. It
+ * Return: The number of phandle + argument tuples within a property. It
  * is a typical pattern to encode a list of phandle and variable
  * arguments into a single property. The number of arguments is encoded
  * by a property in the phandle-target node. For example, a gpios
@@ -1831,11 +1886,40 @@ EXPORT_SYMBOL(of_parse_phandle_with_args);
  * determined by the #gpio-cells property in the node pointed to by the
  * phandle.
  */
-int of_count_phandle_with_args(const struct device_node *np,
-			const char *list_name, const char *cells_name)
+int of_count_phandle_with_args(const struct device_node *np, const char *list_name,
+				const char *cells_name)
 {
-	return __of_parse_phandle_with_args(np, list_name, cells_name,
-					-1, NULL);
+	struct of_phandle_iterator it;
+	int rc, cur_index = 0;
+
+	/*
+	 * If cells_name is NULL we assume a cell count of 0. This makes
+	 * counting the phandles trivial as each 32bit word in the list is a
+	 * phandle and no arguments are to consider. So we don't iterate through
+	 * the list but just use the length to determine the phandle count.
+	 */
+	if (!cells_name) {
+		const __be32 *list;
+		int size;
+
+		list = of_get_property(np, list_name, &size);
+		if (!list)
+			return -ENOENT;
+
+		return size / sizeof(*list);
+	}
+
+	rc = of_phandle_iterator_init(&it, np, list_name, cells_name, -1);
+	if (rc)
+		return rc;
+
+	while ((rc = of_phandle_iterator_next(&it)) == 0)
+		cur_index += 1;
+
+	if (rc != -ENOENT)
+		return rc;
+
+	return cur_index;
 }
 EXPORT_SYMBOL(of_count_phandle_with_args);
 

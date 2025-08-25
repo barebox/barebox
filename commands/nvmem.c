@@ -35,13 +35,13 @@ static int nvmem_create_dynamic_rmem(unsigned long create_size,
 	int ret = 0;
 
 	buffer = xzalloc(create_size);
-	dev = add_generic_device("rmem", dynamic_rmem_idx, NULL,
+	dev = add_generic_device("nvmem-rmem", dynamic_rmem_idx, NULL,
 				 (resource_size_t)(uintptr_t)buffer,
 				 (resource_size_t)create_size,
 				 IORESOURCE_MEM, NULL);
 
 	if (var_name)
-		ret = setenv(var_name, dev_name(dev));
+		ret = pr_setenv(var_name, "rmem%u", dynamic_rmem_idx);
 
 	dynamic_rmem_idx++;
 

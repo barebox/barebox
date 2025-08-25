@@ -371,7 +371,7 @@ static int at24_probe(struct device *dev)
 	struct at24_data *at24;
 	int err;
 	unsigned i, num_addresses;
-	char *devname;
+	const char *devname;
 	const char *alias;
 
 	if (dev->platform_data) {
@@ -423,16 +423,10 @@ static int at24_probe(struct device *dev)
 	at24->num_addresses = num_addresses;
 
 	alias = of_alias_get(dev->of_node);
-	if (alias) {
-		devname = xstrdup(alias);
-	} else {
-		err = cdev_find_free_index("eeprom");
-		if (err < 0) {
-			dev_err(&client->dev, "no index found to name device\n");
-			goto err_device_name;
-		}
-		devname = xasprintf("eeprom%d", err);
-	}
+	if (alias)
+		devname = alias;
+	else
+		devname = "eeprom";
 
 	writable = !(chip.flags & AT24_FLAG_READONLY);
 
@@ -487,6 +481,7 @@ static int at24_probe(struct device *dev)
 	at24->nvmem_config.stride = 1;
 	at24->nvmem_config.word_size = 1;
 	at24->nvmem_config.size = chip.byte_len;
+	at24->nvmem_config.id = alias ? NVMEM_DEVID_NONE : NVMEM_DEVID_AUTO;
 
 	at24->nvmem = nvmem_register(&at24->nvmem_config);
 	err = PTR_ERR_OR_ZERO(at24->nvmem);
@@ -503,7 +498,6 @@ err_clients:
 	if (gpio_is_valid(at24->wp_gpio))
 		gpio_free(at24->wp_gpio);
 	kfree(at24->writebuf);
-err_device_name:
 	kfree(at24);
 err_out:
 	dev_dbg(&client->dev, "probe error %d\n", err);

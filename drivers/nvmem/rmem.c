@@ -118,7 +118,8 @@ static int rmem_probe(struct device *dev)
 
 	config.dev = priv->dev = dev;
 	config.priv = priv;
-	config.name = dev_name(dev);
+	config.name = "rmem";
+	config.id = NVMEM_DEVID_AUTO;
 	config.size = resource_size(mem);
 	priv->size = config.size;
 
@@ -138,7 +139,7 @@ static const struct of_device_id rmem_match[] = {
 MODULE_DEVICE_TABLE(of, rmem_match);
 
 static struct driver rmem_driver = {
-	.name = "rmem",
+	.name = "nvmem-rmem",
 	.of_compatible = rmem_match,
 	.probe = rmem_probe,
 };

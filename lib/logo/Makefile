@@ -68,8 +68,11 @@ quiet_cmd_bmp = BMP     $@
 %.bmp: $(srctree)/Documentation/barebox.svg FORCE
 	$(call if_changed,bmp)
 
+# export SELF_CALL=xxx works around issue in [1]. This is seen on Debian Trixie
+# with Inkscape 1.4 (e7c3feb100, 2024-10-09)
+# [1] https://gitlab.com/inkscape/inkscape/-/issues/4716
 quiet_cmd_png = PNG     $@
-      cmd_png =	convert $(OPTS_$(@F:.png=)) $(CONVERTOPTS) $< png:$@
+      cmd_png =	export SELF_CALL=xxx ; convert $(OPTS_$(@F:.png=)) $(CONVERTOPTS) $< png:$@
 
 %.png: $(srctree)/Documentation/barebox.svg FORCE
 	$(call if_changed,png)

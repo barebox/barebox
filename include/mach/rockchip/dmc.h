@@ -85,6 +85,7 @@ enum {
 
 resource_size_t rk3399_ram0_size(void);
 resource_size_t rk3568_ram0_size(void);
+resource_size_t rk3576_ram0_size(void);
 resource_size_t rk3588_ram0_size(void);
 
 size_t rk3588_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n);

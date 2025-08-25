@@ -13,6 +13,7 @@
 #define GPIO_TYPE_V1		(0)           /* GPIO Version ID reserved */
 #define GPIO_TYPE_V2		(0x01000C2B)  /* GPIO Version ID 0x01000C2B */
 #define GPIO_TYPE_V2_1		(0x0101157C)  /* GPIO Version ID 0x0101157C */
+#define GPIO_TYPE_V2_2		(0x010219C8)  /* GPIO Version ID 0x010219C8 */
 
 struct rockchip_gpiochip {
 	struct device			*dev;
@@ -159,7 +160,7 @@ static int rockchip_gpio_probe(struct device *dev)
 	reg_base = rgc->reg_base;
 
 	id = readl(reg_base + 0x78);
-	if (id == GPIO_TYPE_V2 || id == GPIO_TYPE_V2_1)
+	if (id == GPIO_TYPE_V2 || id == GPIO_TYPE_V2_1 || id == GPIO_TYPE_V2_2)
 		gpio_type = GPIO_TYPE_V2;
 	else
 		gpio_type = GPIO_TYPE_V1;

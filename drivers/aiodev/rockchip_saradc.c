@@ -263,6 +263,12 @@ static const struct rockchip_saradc_cfg rk3568_saradc_cfg = {
 	.read = rockchip_saradc_read_v1,
 };
 
+static const struct rockchip_saradc_cfg rk3576_saradc_cfg = {
+	.num_bits = 12,
+	.num_channels = 8,
+	.read = rockchip_saradc_read_v2,
+};
+
 static const struct rockchip_saradc_cfg rk3588_saradc_cfg = {
 	.num_bits = 12,
 	.num_channels = 8,
@@ -271,6 +277,7 @@ static const struct rockchip_saradc_cfg rk3588_saradc_cfg = {
 
 static const struct of_device_id of_rockchip_saradc_match[] = {
 	{ .compatible = "rockchip,rk3568-saradc", .data = &rk3568_saradc_cfg },
+	{ .compatible = "rockchip,rk3576-saradc", .data = &rk3576_saradc_cfg },
 	{ .compatible = "rockchip,rk3588-saradc", .data = &rk3588_saradc_cfg },
 	{ /* end */ }
 };

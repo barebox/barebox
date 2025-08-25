@@ -215,6 +215,58 @@
 #define RK3568_PMU_CLKGATE_CON(x)	((x) * 0x4 + 0x180)
 #define RK3568_PMU_SOFTRST_CON(x)	((x) * 0x4 + 0x200)
 
+#define RK3576_PHP_CRU_BASE		0x8000
+#define RK3576_SECURE_NS_CRU_BASE	0x10000
+#define RK3576_PMU_CRU_BASE		0x20000
+#define RK3576_BIGCORE_CRU_BASE		0x38000
+#define RK3576_LITCORE_CRU_BASE		0x40000
+#define RK3576_CCI_CRU_BASE		0x48000
+
+#define RK3576_PLL_CON(x)		RK2928_PLL_CON(x)
+#define RK3576_MODE_CON0		0x280
+#define RK3576_BPLL_MODE_CON0		(RK3576_BIGCORE_CRU_BASE + 0x280)
+#define RK3576_LPLL_MODE_CON0		(RK3576_LITCORE_CRU_BASE + 0x280)
+#define RK3576_PPLL_MODE_CON0		(RK3576_PHP_CRU_BASE + 0x280)
+#define RK3576_CLKSEL_CON(x)		((x) * 0x4 + 0x300)
+#define RK3576_CLKGATE_CON(x)		((x) * 0x4 + 0x800)
+#define RK3576_SOFTRST_CON(x)		((x) * 0x4 + 0xa00)
+#define RK3576_GLB_CNT_TH		0xc00
+#define RK3576_GLB_SRST_FST		0xc08
+#define RK3576_GLB_SRST_SND		0xc0c
+#define RK3576_GLB_RST_CON		0xc10
+#define RK3576_GLB_RST_ST		0xc04
+#define RK3576_SDIO_CON0		0xC24
+#define RK3576_SDIO_CON1		0xC28
+#define RK3576_SDMMC_CON0		0xC30
+#define RK3576_SDMMC_CON1		0xC34
+
+#define RK3576_PHP_CLKSEL_CON(x)	((x) * 0x4 + RK3576_PHP_CRU_BASE + 0x300)
+#define RK3576_PHP_CLKGATE_CON(x)	((x) * 0x4 + RK3576_PHP_CRU_BASE + 0x800)
+#define RK3576_PHP_SOFTRST_CON(x)	((x) * 0x4 + RK3576_PHP_CRU_BASE + 0xa00)
+
+#define RK3576_PMU_PLL_CON(x)		((x) * 0x4 + RK3576_PHP_CRU_BASE)
+#define RK3576_PMU_CLKSEL_CON(x)	((x) * 0x4 + RK3576_PMU_CRU_BASE + 0x300)
+#define RK3576_PMU_CLKGATE_CON(x)	((x) * 0x4 + RK3576_PMU_CRU_BASE + 0x800)
+#define RK3576_PMU_SOFTRST_CON(x)	((x) * 0x4 + RK3576_PMU_CRU_BASE + 0xa00)
+
+#define RK3576_SECURE_NS_CLKSEL_CON(x)	((x) * 0x4 + RK3576_SECURE_NS_CRU_BASE + 0x300)
+#define RK3576_SECURE_NS_CLKGATE_CON(x)	((x) * 0x4 + RK3576_SECURE_NS_CRU_BASE + 0x800)
+#define RK3576_SECURE_NS_SOFTRST_CON(x)	((x) * 0x4 + RK3576_SECURE_NS_CRU_BASE + 0xa00)
+
+#define RK3576_CCI_CLKSEL_CON(x)	((x) * 0x4 + RK3576_CCI_CRU_BASE + 0x300)
+#define RK3576_CCI_CLKGATE_CON(x)	((x) * 0x4 + RK3576_CCI_CRU_BASE + 0x800)
+#define RK3576_CCI_SOFTRST_CON(x)	((x) * 0x4 + RK3576_CCI_CRU_BASE + 0xa00)
+
+#define RK3576_BPLL_CON(x)		((x) * 0x4 + RK3576_BIGCORE_CRU_BASE)
+#define RK3576_BIGCORE_CLKSEL_CON(x)	((x) * 0x4 + RK3576_BIGCORE_CRU_BASE + 0x300)
+#define RK3576_BIGCORE_CLKGATE_CON(x)	((x) * 0x4 + RK3576_BIGCORE_CRU_BASE + 0x800)
+#define RK3576_BIGCORE_SOFTRST_CON(x)	((x) * 0x4 + RK3576_BIGCORE_CRU_BASE + 0xa00)
+#define RK3576_LPLL_CON(x)		((x) * 0x4 + RK3576_CCI_CRU_BASE)
+#define RK3576_LITCORE_CLKSEL_CON(x)	((x) * 0x4 + RK3576_LITCORE_CRU_BASE + 0x300)
+#define RK3576_LITCORE_CLKGATE_CON(x)	((x) * 0x4 + RK3576_LITCORE_CRU_BASE + 0x800)
+#define RK3576_LITCORE_SOFTRST_CON(x)	((x) * 0x4 + RK3576_LITCORE_CRU_BASE + 0xa00)
+#define RK3576_NON_SECURE_GATING_CON00	0xc48
+
 #define RK3588_PHP_CRU_BASE		0x8000
 #define RK3588_PMU_CRU_BASE		0x30000
 #define RK3588_BIGCORE0_CRU_BASE	0x50000
@@ -267,6 +319,7 @@ enum rockchip_pll_type {
 	pll_rk3399,
 	pll_rk3588,
 	pll_rk3588_core,
+	pll_rk3588_ddr,
 };
 
 #define RK3036_PLL_RATE(_rate, _refdiv, _fbdiv, _postdiv1,	\
@@ -308,6 +361,16 @@ enum rockchip_pll_type {
 	.k = _k,						\
 }
 
+enum rockchip_grf_type {
+	grf_type_sys = 0,
+	grf_type_pmu0,
+	grf_type_pmu1,
+	grf_type_ioc,
+	grf_type_vo,
+	grf_type_vpu,
+	grf_type_num
+};
+
 /**
  * struct rockchip_clk_provider - information about clock provider
  * @reg_base: virtual address for the register base.
@@ -321,6 +384,7 @@ struct rockchip_clk_provider {
 	struct clk_onecell_data clk_data;
 	struct device_node *cru_node;
 	struct regmap *grf;
+	struct regmap *grfmap[grf_type_num];
 	struct restart_handler restart_handler;
 	unsigned int reg_restart;
 	spinlock_t lock;
@@ -499,6 +563,7 @@ enum rockchip_clk_branch_type {
 	branch_divider,
 	branch_fraction_divider,
 	branch_gate,
+	branch_grf_gate,
 	branch_linked_gate,
 	branch_mmc,
 	branch_inverter,
@@ -526,6 +591,7 @@ struct rockchip_clk_branch {
 	int				gate_offset;
 	u8				gate_shift;
 	u8				gate_flags;
+	enum rockchip_grf_type		grf_type;
 	struct rockchip_clk_branch	*child;
 };
 
@@ -750,7 +816,7 @@ struct rockchip_clk_branch {
 		.gate_offset	= -1,				\
 	}
 
-#define MUXGRF(_id, cname, pnames, f, o, s, w, mf)		\
+#define MUXGRF(_id, cname, pnames, f, o, s, w, mf, gt)		\
 	{							\
 		.id		= _id,				\
 		.branch_type	= branch_muxgrf,		\
@@ -763,6 +829,7 @@ struct rockchip_clk_branch {
 		.mux_width	= w,				\
 		.mux_flags	= mf,				\
 		.gate_offset	= -1,				\
+		.grf_type	= gt,				\
 	}
 
 #define DIV(_id, cname, pname, f, o, s, w, df)			\
@@ -806,6 +873,20 @@ struct rockchip_clk_branch {
 		.gate_offset	= o,				\
 		.gate_shift	= b,				\
 		.gate_flags	= gf,				\
+	}
+
+#define GATE_GRF(_id, cname, pname, f, o, b, gf, gt)		\
+	{							\
+		.id		= _id,				\
+		.branch_type	= branch_grf_gate,		\
+		.name		= cname,			\
+		.parent_names	= (const char *[]){ pname },	\
+		.num_parents	= 1,				\
+		.flags		= f,				\
+		.gate_offset	= o,				\
+		.gate_shift	= b,				\
+		.gate_flags	= gf,				\
+		.grf_type	= gt,				\
 	}
 
 #define MMC(_id, cname, pname, offset, shift)			\
@@ -950,6 +1031,7 @@ static inline void rockchip_register_softrst(struct device_node *np,
 	return rockchip_register_softrst_lut(np, NULL, num_regs, base, flags);
 }
 
+void rk3576_rst_init(struct device_node *np, void __iomem *reg_base);
 void rk3588_rst_init(struct device_node *np, void __iomem *reg_base);
 
 #endif

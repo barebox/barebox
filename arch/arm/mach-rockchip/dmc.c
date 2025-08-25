@@ -14,8 +14,10 @@
 #include <linux/regmap.h>
 #include <mfd/syscon.h>
 #include <mach/rockchip/dmc.h>
+#include <mach/rockchip/atf.h>
 #include <mach/rockchip/rk3399-regs.h>
 #include <mach/rockchip/rk3568-regs.h>
+#include <mach/rockchip/rk3576-regs.h>
 
 #define RK3399_PMUGRF_OS_REG2		0x308
 #define RK3399_PMUGRF_OS_REG3		0x30C
@@ -23,8 +25,12 @@
 #define RK3568_PMUGRF_OS_REG2           0x208
 #define RK3568_PMUGRF_OS_REG3           0x20c
 
+#define RK3576_PMUGRF_OS_REG2           0x208
+#define RK3576_PMUGRF_OS_REG3           0x20c
+
 #define RK3399_INT_REG_START		0xf0000000
 #define RK3568_INT_REG_START		RK3399_INT_REG_START
+#define RK3576_INT_REG_START		0x10000000
 #define RK3588_INT_REG_START		RK3399_INT_REG_START
 
 /* RK3588 has two known memory gaps when using 16+ GiB DRAM */
@@ -39,6 +45,7 @@ struct rockchip_dmc_drvdata {
 	unsigned int os_reg4;
 	unsigned int os_reg5;
 	resource_size_t internal_registers_start;
+	resource_size_t membase;
 };
 
 static resource_size_t rockchip_sdram_size(u32 sys_reg2, u32 sys_reg3)
@@ -165,6 +172,24 @@ resource_size_t rk3568_ram0_size(void)
 	return size;
 }
 
+resource_size_t rk3576_ram0_size(void)
+{
+	void __iomem *pmugrf = IOMEM(RK3576_PMUGRF_BASE);
+	u32 sys_reg2, sys_reg3;
+	resource_size_t size;
+
+	sys_reg2 = readl(pmugrf + RK3576_PMUGRF_OS_REG2);
+	sys_reg3 = readl(pmugrf + RK3576_PMUGRF_OS_REG3);
+
+	size = rockchip_sdram_size(sys_reg2, sys_reg3);
+	/* RK3576 has a different memory map...? */
+	/* size = min_t(resource_size_t, RK3576_INT_REG_START, size); */
+
+	pr_debug("%s() = %llu\n", __func__, (u64)size);
+
+	return size;
+}
+
 #define RK3588_PMUGRF_BASE 0xfd58a000
 #define RK3588_PMUGRF_OS_REG2           0x208
 #define RK3588_PMUGRF_OS_REG3           0x20c
@@ -226,7 +251,7 @@ resource_size_t rk3588_ram0_size(void)
 static int rockchip_dmc_probe(struct device *dev)
 {
 	const struct rockchip_dmc_drvdata *drvdata;
-	resource_size_t membase, memsize;
+	resource_size_t membase, memsize, regstart;
 	struct regmap *regmap;
 	u32 sys_rega, sys_regb;
 
@@ -250,26 +275,34 @@ static int rockchip_dmc_probe(struct device *dev)
 
 	dev_info(dev, "Detected memory size: 0x%08llx\n", (u64)memsize);
 
-	/* lowest 10M are shaved off for secure world firmware */
-	membase = 0xa00000;
+	/*
+	 * membase is actually the start of RAM + 0xa00000.
+	 * The lowest 10M are shaved off for secure world firmware
+	 */
+	membase = drvdata->membase;
+	regstart = drvdata->internal_registers_start;
 
-	/* ram0, from 0xa00000 up to SoC internal register space start */
-	arm_add_mem_device("ram0", membase,
-		min_t(resource_size_t, drvdata->internal_registers_start, memsize) - membase);
+	if (membase < regstart) {
+		/* ram0, from 0xa00000 up to SoC internal register space start */
+		arm_add_mem_device("ram0", membase,
+			min_t(resource_size_t, drvdata->internal_registers_start, memsize) - membase);
 
-	/* ram1, RAM beyond 32bit space up to first gap */
-	if (memsize > SZ_4G)
-		arm_add_mem_device("ram1", SZ_4G,
-			min_t(resource_size_t, DRAM_GAP1_START, memsize) - SZ_4G);
+		/* ram1, RAM beyond 32bit space up to first gap */
+		if (memsize > SZ_4G)
+			arm_add_mem_device("ram1", SZ_4G,
+				min_t(resource_size_t, DRAM_GAP1_START, memsize) - SZ_4G);
 
-	/* ram2, RAM between first and second gap */
-	if (memsize > DRAM_GAP1_END)
-		arm_add_mem_device("ram2", DRAM_GAP1_END,
-			min_t(resource_size_t, DRAM_GAP2_START, memsize) - DRAM_GAP1_END);
+		/* ram2, RAM between first and second gap */
+		if (memsize > DRAM_GAP1_END)
+			arm_add_mem_device("ram2", DRAM_GAP1_END,
+				min_t(resource_size_t, DRAM_GAP2_START, memsize) - DRAM_GAP1_END);
 
-	/* ram3, remaining RAM after second gap */
-	if (memsize > DRAM_GAP2_END)
-		arm_add_mem_device("ram3", DRAM_GAP2_END, memsize - DRAM_GAP2_END);
+		/* ram3, remaining RAM after second gap */
+		if (memsize > DRAM_GAP2_END)
+			arm_add_mem_device("ram3", DRAM_GAP2_END, memsize - DRAM_GAP2_END);
+	} else {
+		arm_add_mem_device("ram0", membase, memsize - 0xa00000);
+	}
 
 	return 0;
 }
@@ -278,12 +311,21 @@ static const struct rockchip_dmc_drvdata rk3399_drvdata = {
 	.os_reg2 = RK3399_PMUGRF_OS_REG2,
 	.os_reg3 = RK3399_PMUGRF_OS_REG3,
 	.internal_registers_start = RK3399_INT_REG_START,
+	.membase = RK3399_DRAM_BOTTOM,
 };
 
 static const struct rockchip_dmc_drvdata rk3568_drvdata = {
 	.os_reg2 = RK3568_PMUGRF_OS_REG2,
 	.os_reg3 = RK3568_PMUGRF_OS_REG3,
 	.internal_registers_start = RK3568_INT_REG_START,
+	.membase = RK3568_DRAM_BOTTOM,
+};
+
+static const struct rockchip_dmc_drvdata rk3576_drvdata = {
+	.os_reg2 = RK3576_PMUGRF_OS_REG2,
+	.os_reg3 = RK3576_PMUGRF_OS_REG3,
+	.internal_registers_start = RK3576_INT_REG_START,
+	.membase = RK3576_DRAM_BOTTOM,
 };
 
 static const struct rockchip_dmc_drvdata rk3588_drvdata = {
@@ -292,6 +334,7 @@ static const struct rockchip_dmc_drvdata rk3588_drvdata = {
 	.os_reg4 = RK3588_PMUGRF_OS_REG4,
 	.os_reg5 = RK3588_PMUGRF_OS_REG5,
 	.internal_registers_start = RK3588_INT_REG_START,
+	.membase = RK3588_DRAM_BOTTOM,
 };
 
 static struct of_device_id rockchip_dmc_dt_ids[] = {
@@ -302,6 +345,10 @@ static struct of_device_id rockchip_dmc_dt_ids[] = {
 	{
 		.compatible = "rockchip,rk3568-dmc",
 		.data = &rk3568_drvdata,
+	},
+	{
+		.compatible = "rockchip,rk3576-dmc",
+		.data = &rk3576_drvdata,
 	},
 	{
 		.compatible = "rockchip,rk3588-dmc",

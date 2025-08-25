@@ -60,7 +60,7 @@ config STM32_ADC
 
 config ROCKCHIP_SARADC
 	tristate "Rockchip SARADC driver"
-	depends on ARCH_RK3568 || COMPILE_TEST
+	depends on ARCH_RK3568 || ARCH_RK3576 || COMPILE_TEST
 	depends on OFDEVICE
 	help
 	  Support for Successive Approximation Register (SAR) ADC in Rockchip

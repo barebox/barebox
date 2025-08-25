@@ -85,6 +85,8 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_rockchip_rkns_image] = { "Rockchip boot image", "rk-image" },
 	[filetype_fip] = { "TF-A Firmware Image Package", "fip" },
 	[filetype_zstd_compressed] = { "ZSTD compressed", "zstd" },
+	[filetype_rockchip_rkss_image] = { "Rockchip signed boot image",
+					   "rk-image" },
 };
 
 static const char *file_type_to_nr_string(enum filetype f)
@@ -385,6 +387,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (strncmp(buf8, "RKNS", 4) == 0)
 		return filetype_rockchip_rkns_image;
+	if (strncmp(buf8, "RKSS", 4) == 0)
+		return filetype_rockchip_rkss_image;
 	if (le32_to_cpu(buf[0]) == le32_to_cpu(0xaa640001))
 		return filetype_fip;
 

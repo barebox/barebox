@@ -846,6 +846,11 @@ properties:
           - const: prt,mecsbc
           - const: rockchip,rk3568
 
+      - description: Protonic PRTPUK board
+        items:
+          - const: prt,prtpuk
+          - const: rockchip,rk3576
+
       - description: QNAP TS-433-4G 4-Bay NAS
         items:
           - const: qnap,ts433

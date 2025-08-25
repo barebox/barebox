@@ -926,10 +926,9 @@ static void r8153_first_init(struct r8152 *tp)
 	r8152_ocp_write_dword(tp, MCU_TYPE_PLA, PLA_TXFIFO_CTRL,
 			      TXFIFO_THR_NORMAL2);
 
-	/* rx aggregation */
+	/* Disable rx aggregation */
 	ocp_data = r8152_ocp_read_word(tp, MCU_TYPE_USB, USB_USB_CTRL);
-
-	ocp_data &= ~(RX_AGG_DISABLE | RX_ZERO_EN);
+	ocp_data |= (RX_AGG_DISABLE | RX_ZERO_EN);
 	r8152_ocp_write_word(tp, MCU_TYPE_USB, USB_USB_CTRL, ocp_data);
 }
 
@@ -1054,6 +1053,9 @@ static void r8152_get_version(struct r8152 *tp)
 			/* Found a supported version */
 			tp->version = r8152_versions[i].version;
 			tp->supports_gmii = r8152_versions[i].gmii;
+			dev_dbg(&tp->dev->edev.dev,
+				"r8152 tcr version 0x%04x RTL_VER_%02d detected\n",
+				tcr, tp->version);
 			break;
 		}
 	}
@@ -1117,10 +1119,9 @@ static void rtl8152b_init(struct r8152 *tp)
 	r8152b_enable_fc(tp);
 	rtl_tally_reset(tp);
 
-	/* enable rx aggregation */
+	/* Disable rx aggregation */
 	ocp_data = r8152_ocp_read_word(tp, MCU_TYPE_USB, USB_USB_CTRL);
-
-	ocp_data &= ~(RX_AGG_DISABLE | RX_ZERO_EN);
+	ocp_data |= (RX_AGG_DISABLE | RX_ZERO_EN);
 	r8152_ocp_write_word(tp, MCU_TYPE_USB, USB_USB_CTRL, ocp_data);
 }
 
@@ -1259,9 +1260,9 @@ static void r8153b_init(struct r8152 *tp)
 		}
 	}
 
-	/* rx aggregation */
+	/* Disable rx aggregation */
 	ocp_data = r8152_ocp_read_word(tp, MCU_TYPE_USB, USB_USB_CTRL);
-	ocp_data &= ~(RX_AGG_DISABLE | RX_ZERO_EN);
+	ocp_data |= (RX_AGG_DISABLE | RX_ZERO_EN);
 	r8152_ocp_write_word(tp, MCU_TYPE_USB, USB_USB_CTRL, ocp_data);
 
 	rtl_tally_reset(tp);

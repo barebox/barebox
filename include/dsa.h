@@ -7,6 +7,7 @@
 #define __DSA_H__
 
 #include <linux/phy.h>
+#include <linux/list.h>
 #include <net.h>
 
 /**
@@ -88,6 +89,7 @@ struct dsa_switch {
 	u32 phys_mii_mask;
 	void *priv;
 	u32 forwarding_enable;
+	struct list_head list;
 };
 
 static inline struct dsa_port *dsa_to_port(struct dsa_switch *ds, int p)
@@ -97,6 +99,8 @@ static inline struct dsa_port *dsa_to_port(struct dsa_switch *ds, int p)
 
 	return ds->dp[p];
 }
+
+extern struct list_head dsa_switch_list;
 
 int dsa_register_switch(struct dsa_switch *ds);
 u32 dsa_user_ports(struct dsa_switch *ds);

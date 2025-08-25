@@ -79,7 +79,8 @@ static inline int run_command(const char *cmd) { return -ENOSYS; }
 #define CMD_GRP_CONSOLE		8
 #define CMD_GRP_MEM		9
 #define CMD_GRP_HWMANIP		10
-#define CMD_GRP_MISC		11
+#define CMD_GRP_SECURITY	11
+#define CMD_GRP_MISC		12
 
 #endif	/* __ASSEMBLY__ */
 

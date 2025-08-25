@@ -311,7 +311,7 @@ static void dos_partition_free(struct partition_desc *pd)
 		free(dpart);
 	}
 
-	dev_remove_param(dpd->disksig.param);
+	param_remove(dpd->disksig.param);
 
 	free(pd);
 }

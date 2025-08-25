@@ -11,6 +11,7 @@
 #define __LINUX_CLK_H
 
 #include <linux/err.h>
+#include <linux/types.h>
 #include <linux/spinlock.h>
 #include <linux/stringify.h>
 #include <linux/string.h>
@@ -969,6 +970,9 @@ static inline void clk_hw_unregister(struct clk_hw *hw)
 
 #ifdef CONFIG_COMMON_CLK
 
+bool clk_have_nonfixed_providers(void);
+
+
 /**
  * clk_bulk_get - lookup and obtain a number of references to clock producer.
  * @dev: device for clock "consumer"
@@ -1083,6 +1087,11 @@ int __must_check clk_bulk_enable(int num_clks,
 void clk_bulk_disable(int num_clks, const struct clk_bulk_data *clks);
 
 #else
+static inline bool clk_have_nonfixed_providers(void)
+{
+	return false;
+}
+
 static inline int __must_check clk_bulk_get(struct device *dev, int num_clks,
 					    struct clk_bulk_data *clks)
 {

@@ -42,6 +42,13 @@ static int riscvemu_probe(struct device *dev)
 	struct riscvemu_priv *priv;
 	u64 start;
 
+	if (IS_ENABLED(CONFIG_ARCH_RV32I))
+		barebox_set_hostname("riscvemu32");
+	else
+		barebox_set_hostname("riscvemu64");
+
+	barebox_set_model("RISC-V Emulator");
+
 	of_overlay_apply_dtbo(dev->of_node, __dtbo_riscvemu_sram_start);
 	/* of_probe() will happen later at of_populate_initcall */
 

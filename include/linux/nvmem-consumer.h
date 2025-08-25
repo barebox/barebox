@@ -12,7 +12,8 @@
 #ifndef _LINUX_NVMEM_CONSUMER_H
 #define _LINUX_NVMEM_CONSUMER_H
 
-struct device;
+#include <device.h>
+
 struct device_node;
 /* consumer cookie */
 struct nvmem_cell;
@@ -25,6 +26,8 @@ struct nvmem_cell_info {
 	unsigned int		bit_offset;
 	unsigned int		nbits;
 };
+
+extern struct class nvmem_class;
 
 #if IS_ENABLED(CONFIG_NVMEM)
 
@@ -41,6 +44,7 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
 
 /* direct nvmem device read/write interface */
 struct nvmem_device *nvmem_device_get(struct device *dev, const char *name);
+struct nvmem_device *nvmem_from_device(struct device *dev);
 void nvmem_device_put(struct nvmem_device *nvmem);
 int nvmem_device_read(struct nvmem_device *nvmem, unsigned int offset,
 		      size_t bytes, void *buf);
@@ -50,7 +54,7 @@ ssize_t nvmem_device_cell_read(struct nvmem_device *nvmem,
 			       struct nvmem_cell_info *info, void *buf);
 int nvmem_device_cell_write(struct nvmem_device *nvmem,
 			    struct nvmem_cell_info *info, void *buf);
-
+ssize_t nvmem_device_size(struct nvmem_device *nvmem);
 void nvmem_devices_print(void);
 
 #else
@@ -96,6 +100,11 @@ static inline struct nvmem_device *nvmem_device_get(struct device *dev,
 	return ERR_PTR(-EOPNOTSUPP);
 }
 
+static inline struct nvmem_device *nvmem_from_device(struct device *dev)
+{
+	return IS_ERR(dev) ? ERR_CAST(dev) : ERR_PTR(-EOPNOTSUPP);
+}
+
 static inline void nvmem_device_put(struct nvmem_device *nvmem)
 {
 }
@@ -124,6 +133,11 @@ static inline int nvmem_device_read(struct nvmem_device *nvmem,
 static inline int nvmem_device_write(struct nvmem_device *nvmem,
 				     unsigned int offset, size_t bytes,
 				     const void *buf)
+{
+	return -EOPNOTSUPP;
+}
+
+static inline ssize_t nvmem_device_size(struct nvmem_device *nvmem)
 {
 	return -EOPNOTSUPP;
 }

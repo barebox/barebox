@@ -201,6 +201,7 @@ config GPIO_TEGRA
 
 config GPIO_DESIGNWARE
 	tristate "Synopsys DesignWare GPIO driver"
+	depends on OF_GPIO
 	help
 	  Say Y or M here to build support for the Synopsys DesignWare APB
 	  GPIO block.

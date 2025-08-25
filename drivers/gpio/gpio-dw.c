@@ -6,6 +6,7 @@
  */
 
 #include <common.h>
+#include <linux/device.h>
 #include <errno.h>
 #include <io.h>
 #include <gpio.h>
@@ -104,9 +105,9 @@ static struct gpio_ops dw_gpio_ops = {
 	.set = dw_gpio_set,
 };
 
-static int dw_gpio_add_port(struct device *dev, struct device_node *node,
-			    struct dw_gpio *parent)
+static int dw_gpio_add_port(struct device *dev)
 {
+	struct dw_gpio *parent = dev_get_drvdata(dev->parent);
 	struct dw_gpio_instance *chip;
 	uint32_t config1, config2;
 	int ngpio, ret;
@@ -114,6 +115,8 @@ static int dw_gpio_add_port(struct device *dev, struct device_node *node,
 	chip = xzalloc(sizeof(*chip));
 
 	chip->chip.ops = &dw_gpio_ops;
+
+	dev->id = of_alias_get_id(dev->device_node, "gpio");
 	if (dev->id < 0)
 		chip->chip.base = DEVICE_ID_DYNAMIC;
 	else
@@ -128,17 +131,7 @@ static int dw_gpio_add_port(struct device *dev, struct device_node *node,
 
 	chip->parent = parent;
 	chip->chip.ngpio = ngpio;
-	chip->chip.dev = add_generic_device("dw-port", DEVICE_ID_DYNAMIC, NULL,
-					    dev->resource[0].start,
-					    resource_size(&dev->resource[0]),
-					    IORESOURCE_MEM, NULL);
-
-	if (!chip->chip.dev) {
-		dev_err(dev, "unable to add device\n");
-		return -ENODEV;
-	}
-
-	chip->chip.dev->of_node = node;
+	chip->chip.dev = dev;
 
 	ret = gpiochip_add(&chip->chip);
 	if (ret)
@@ -150,11 +143,22 @@ static int dw_gpio_add_port(struct device *dev, struct device_node *node,
 	return 0;
 }
 
+static struct of_device_id dwgpio_port_match[] = {
+	{ .compatible = "snps,dw-apb-gpio-port" },
+	{ /* sentinel */ },
+};
+MODULE_DEVICE_TABLE(of, dwgpio_port_match);
+
+static struct driver dwgpio_port_driver = {
+	.name = "dw-apb-gpio-port",
+	.probe = dw_gpio_add_port,
+	.of_compatible = dwgpio_port_match,
+};
+
 static int dw_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct dw_gpio *gpio;
-	struct device_node *node;
 
 	gpio = xzalloc(sizeof(*gpio));
 
@@ -163,13 +167,12 @@ static int dw_gpio_probe(struct device *dev)
 		return PTR_ERR(iores);
 	gpio->regs = IOMEM(iores->start);
 
-	for_each_child_of_node(dev->of_node, node)
-		dw_gpio_add_port(dev, node, gpio);
+	dev_set_drvdata(dev, gpio);
 
-	return 0;
+	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
-static __maybe_unused struct of_device_id dwgpio_match[] = {
+static struct of_device_id dwgpio_match[] = {
 	{
 		.compatible = "snps,dw-apb-gpio",
 	}, {
@@ -181,7 +184,12 @@ MODULE_DEVICE_TABLE(of, dwgpio_match);
 static struct driver dwgpio_driver = {
 	.name = "dw-apb-gpio",
 	.probe = dw_gpio_probe,
-	.of_compatible = DRV_OF_COMPAT(dwgpio_match),
+	.of_compatible = dwgpio_match,
 };
 
-postcore_platform_driver(dwgpio_driver);
+static int __init dwgpio_driver_register(void)
+{
+	platform_driver_register(&dwgpio_port_driver);
+	return platform_driver_register(&dwgpio_driver);
+}
+postcore_initcall(dwgpio_driver_register);

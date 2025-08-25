@@ -179,7 +179,7 @@ static int device_param_complete(struct device *dev, const char *devname,
 {
 	struct param_d *param;
 
-	list_for_each_entry(param, &dev->parameters, list) {
+	dev_for_each_param(dev, param) {
 		if (!strstarts_escaped(param->name, instr))
 			continue;
 

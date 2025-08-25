@@ -1544,7 +1544,7 @@ static int print_field(u8 *reg, int index)
 
 	case EXT_CSD_RPMB_SIZE_MULT:
 		val = get_field_val(EXT_CSD_RPMB_SIZE_MULT, 0, 0xFF);
-		val = val * 131072;
+		val = val * 128;
 		printf("\t[7-0] RPMB Partition Size: %u KB\n", val);
 		return 1;
 

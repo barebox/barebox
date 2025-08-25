@@ -411,7 +411,6 @@ static bool w1_is_registered(struct w1_bus *bus, u64 rn)
 
 static int w1_device_register(struct w1_bus *bus, struct w1_device *dev)
 {
-	char str[18];
 	int ret;
 
 	dev_set_name(&dev->dev, "w1-%x-", dev->fid);
@@ -425,12 +424,9 @@ static int w1_device_register(struct w1_bus *bus, struct w1_device *dev)
 	if (ret)
 		return ret;
 
-	sprintf(str, "0x%x", dev->fid);
-	dev_add_param_fixed(&dev->dev, "fid", str);
-	sprintf(str, "0x%llx", dev->id);
-	dev_add_param_fixed(&dev->dev, "id", str);
-	sprintf(str, "0x%llx", dev->reg_num);
-	dev_add_param_fixed(&dev->dev, "reg_num", str);
+	dev_add_param_uint32_fixed(&dev->dev, "fid", dev->fid, "0x%x");
+	dev_add_param_uint64_fixed(&dev->dev, "id", dev->id, "0x%llx");
+	dev_add_param_uint64_fixed(&dev->dev, "reg_num", dev->reg_num, "0x%llx");
 
 	return ret;
 }

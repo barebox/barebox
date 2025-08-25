@@ -339,6 +339,8 @@ static inline uint32_t mtd_div_by_wb(uint64_t sz, struct mtd_info *mtd)
 extern int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id);
 extern int del_mtd_device (struct mtd_info *mtd);
 
+extern struct class mtd_class;
+
 extern struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num);
 extern struct mtd_info *get_mtd_device_nm(const char *name);
 

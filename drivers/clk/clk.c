@@ -14,7 +14,21 @@
 #include <linux/clk/clk-conf.h>
 #include <pinctrl.h>
 
+#include "clk-fixed.h"
+
 static LIST_HEAD(clks);
+
+bool clk_have_nonfixed_providers(void)
+{
+	struct clk *c;
+
+	list_for_each_entry(c, &clks, list) {
+		if (!clk_is_fixed(c))
+			return true;
+	}
+
+	return false;
+}
 
 static int clk_parent_enable(struct clk *clk)
 {

@@ -1224,7 +1224,8 @@ void fsdev_set_linux_rootarg(struct fs_device *fsdev, const char *str)
 {
 	fsdev->linux_rootarg = xstrdup(str);
 
-	dev_add_param_fixed(&fsdev->dev, "linux.bootargs", fsdev->linux_rootarg);
+	dev_add_param_fixed(&fsdev->dev, "linux.bootargs",
+			    "%s", fsdev->linux_rootarg);
 }
 
 /**

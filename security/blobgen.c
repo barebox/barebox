@@ -50,24 +50,28 @@ int blob_gen_register(struct device *dev, struct blobgen *bg)
 
 /**
  * blobgen_get - get a blob generator of given name
- * @name: The name of the blob generator to look for
+ * @name: The name of the blob generator to look for or NULL
  *
- * Finds a blob generator by name and returns it. Returns NULL if none is found.
+ * Finds a blob generator by name and returns it.
+ * If name is NULL, returns the first blob generator encountered.
+ * Returns NULL if none is found.
  */
 struct blobgen *blobgen_get(const char *name)
 {
-	struct device *dev;
+	struct device *dev = NULL;
 	struct blobgen *bg;
 
 	if (!name)
 		return bg_default;
 
-	dev = get_device_by_name(name);
-	if (!dev)
-		return NULL;
+	if (name) {
+		dev = get_device_by_name(name);
+		if (!dev)
+			return NULL;
+	}
 
 	list_for_each_entry(bg, &blobs, list) {
-		if (dev == &bg->dev)
+		if (!dev || dev == &bg->dev)
 			return bg;
 	}
 

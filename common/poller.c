@@ -134,7 +134,8 @@ void poller_call(void)
 
 		duration_ms = ktime_ms_delta(ktime_get(), start);
 		if (duration_ms > POLLER_MAX_RUNTIME_MS) {
-			if (!poller->overtime)
+			if (IS_ENABLED(CONFIG_POLLER_WARN_OVERTIME) &&
+			    !poller->overtime)
 				pr_warn("'%s' took unexpectedly long: %llums\n",
 					poller->name, duration_ms);
 

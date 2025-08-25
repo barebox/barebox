@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+obj-y			+= bobject.o
 obj-y			+= bcd.o
 obj-y			+= term.o
 obj-$(CONFIG_BOOTSTRAP)	+= bootstrap/
@@ -24,7 +25,6 @@ obj-y			+= libbb.o
 obj-y			+= libgen.o
 obj-$(CONFIG_FIP)	+= fip.o tbbr_config.o
 obj-$(CONFIG_JSMN)	+= jsmn.o
-obj-$(CONFIG_BLOBGEN)	+= blobgen.o
 obj-y			+= stringlist.o
 obj-y			+= scatterlist.o
 obj-y			+= cmdlinepart.o

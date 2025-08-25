@@ -12,7 +12,6 @@
 #include <of.h>
 #include <string.h>
 #include <linux/clk.h>
-#include <asm/optee.h>
 #include <asm-generic/memory_layout.h>
 
 #include "tqma6ulx.h"

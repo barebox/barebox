@@ -57,4 +57,11 @@ static inline bool is_nul_terminated(const char *val, size_t len)
 	return strnlen(val, len) != len;
 }
 
+typedef union {
+	char * const *sl;
+	const char * const *sl_const;
+} strv_t __attribute__((transparent_union));
+
+size_t strv_length(strv_t) __pure;
+
 #endif /* __STRING_H */

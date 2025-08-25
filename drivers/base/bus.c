@@ -4,13 +4,14 @@
  */
 
 #include <common.h>
+#include <linux/device/bus.h>
 #include <driver.h>
 #include <errno.h>
 #include <of.h>
 
 DEFINE_DEV_CLASS(bus_class, "bus");
 
-static struct bus_type *get_bus_by_name(const char *name)
+struct bus_type *get_bus_by_name(const char *name)
 {
 	struct bus_type *bus;
 

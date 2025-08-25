@@ -150,7 +150,6 @@ static void at91sam9x5ek_devices_detect_one(const char *name)
 	struct board_info* binfo;
 	struct vendor_info* vinfo;
 	struct device *dev = NULL;
-	char str[16];
 	u8 vendor_id = 0;
 
 	if (at91sam9x5ek_read_w1(name, &info))
@@ -206,14 +205,11 @@ static void at91sam9x5ek_devices_detect_one(const char *name)
 
 	dev_add_param_fixed(dev, "vendor", info.vendor_name);
 	dev_add_param_fixed(dev, "board", info.board_name);
-	sprintf(str, "%.2s", info.vendor_country);
-	dev_add_param_fixed(dev, "country", str);
+	dev_add_param_fixed(dev, "country", "%.2s", info.vendor_country);
 	dev_add_param_uint32_fixed(dev, "year", info.year, "%u");
 	dev_add_param_uint32_fixed(dev, "week", info.week, "%u");
-	sprintf(str, "%c", info.revision_code);
-	dev_add_param_fixed(dev, "revision_code", str);
-	sprintf(str, "%c", info.revision_id);
-	dev_add_param_fixed(dev, "revision_id", str);
+	dev_add_param_fixed(dev, "revision_code", "%c", info.revision_code);
+	dev_add_param_fixed(dev, "revision_id", "%c", info.revision_id);
 }
 
 #define NODE_NAME_LEN  128

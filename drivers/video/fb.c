@@ -9,6 +9,8 @@
 #include <fs.h>
 #include <init.h>
 
+DEFINE_DEV_CLASS(fb_class, "fb");
+
 static int fb_ioctl(struct cdev* cdev, unsigned int req, void *data)
 {
 	struct fb_info *info = cdev->priv;
@@ -345,6 +347,8 @@ int register_framebuffer(struct fb_info *info)
 	ret = register_device(&info->dev);
 	if (ret)
 		goto err_free;
+
+	class_add_device(&fb_class, &info->dev);
 
 	dev_add_param_bool(dev, "enable", fb_enable_set, fb_enable_get,
 			&info->p_enable, info);

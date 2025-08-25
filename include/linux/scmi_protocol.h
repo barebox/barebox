@@ -691,4 +691,6 @@ scmi_driver_register(struct scmi_driver *driver)
 struct scmi_protocol;
 int scmi_protocol_register(const struct scmi_protocol *proto);
 
+extern struct list_head scmi_list;
+
 #endif /* _LINUX_SCMI_PROTOCOL_H */

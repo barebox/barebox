@@ -37,13 +37,13 @@ struct driver {
 	const char *name;
 
 	struct list_head list;
-	struct list_head bus_list; /* our bus            */
+	struct list_head bus_list; /* our bus */
 
 	/*! Called if an instance of a device is found */
-	int     (*probe) (struct device *);
+	int (*probe)(struct device *);
 
 	/*! Called if an instance of a device is gone. */
-	void     (*remove)(struct device *);
+	void (*remove)(struct device *);
 
 	struct bus_type *bus;
 
@@ -59,11 +59,6 @@ struct driver {
 /* Legacy naming for out-of-tree patches. Will be phased out in future. */
 #define device_d device
 #define driver_d driver
-
-/* dynamically assign the next free id */
-#define DEVICE_ID_DYNAMIC	-2
-/* do not use an id (only one device available */
-#define DEVICE_ID_SINGLE	-1
 
 /* Register devices and drivers.
  */
@@ -118,13 +113,6 @@ static inline void device_rescan(struct device *dev)
 #define device_for_each_child_safe(dev, tmpdev, child) \
 	list_for_each_entry_safe(child, tmpdev, &(dev)->children, sibling)
 
-/* Iterate through the devices of a given type. if last is NULL, the
- * first device of this type is returned. Put this pointer in as
- * 'last' to get the next device. This functions returns NULL if no
- * more devices are found.
- */
-struct device *get_device_by_type(ulong type, struct device *last);
-struct device *get_device_by_id(const char *id);
 struct device *get_device_by_name(const char *name);
 
 /* Find a device by name and if not found look up by device tree path
@@ -138,23 +126,6 @@ struct device *find_device(const char *str);
  */
 int get_free_deviceid(const char *name_template);
 
-char *deviceid_from_spec_str(const char *str, char **endp);
-
-static inline const char *dev_id(const struct device *dev)
-{
-	if (!dev)
-		return NULL;
-	return (dev->id != DEVICE_ID_SINGLE) ? dev->unique_name : dev->name;
-}
-
-static inline const char *dev_name(const struct device *dev)
-{
-	if (!dev)
-		return NULL;
-	return dev_id(dev) ?: dev->name;
-}
-
-int dev_set_name(struct device *dev, const char *fmt, ...) __printf(2, 3);
 int dev_add_alias(struct device *dev, const char *fmt, ...) __printf(2, 3);
 
 /*

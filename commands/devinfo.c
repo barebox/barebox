@@ -88,7 +88,7 @@ static int do_devinfo(int argc, char *argv[])
 			printf("Parent: %s\n", dev_name(dev->parent));
 
 		first = true;
-		list_for_each_entry(param, &dev->parameters, list) {
+		dev_for_each_param(dev, param) {
 			if (first) {
 				printf("Parameters:\n");
 				first = false;

@@ -623,4 +623,17 @@ struct eth_ethaddr {
 
 extern struct list_head ethaddr_list;
 
+/* Function to calculate CIDR prefix from netmask */
+static inline int netmask_to_prefix(IPaddr_t netmask)
+{
+	int prefix = 0;
+
+	while (netmask) {
+		prefix += netmask & 1;
+		netmask >>= 1;
+	}
+
+	return prefix;
+}
+
 #endif /* __NET_H__ */

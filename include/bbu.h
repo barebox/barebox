@@ -58,6 +58,8 @@ int bbu_std_file_handler(struct bbu_handler *handler,
 
 #ifdef CONFIG_BAREBOX_UPDATE
 
+bool bbu_handlers_available(void);
+
 int bbu_register_handler(struct bbu_handler *);
 
 int bbu_register_std_file_update(const char *name, unsigned long flags,
@@ -70,6 +72,11 @@ int bbu_mmcboot_register_handler(const char *name,
 				 unsigned long flags);
 
 #else
+
+static inline bool bbu_handlers_available(void)
+{
+	return false;
+}
 
 static inline int bbu_register_handler(struct bbu_handler *unused)
 {

@@ -28,6 +28,7 @@ enum blk_type {
 	BLK_TYPE_NVME,
 	BLK_TYPE_VIRTUAL,
 	BLK_TYPE_MMC,
+	BLK_TYPE_COUNT,
 };
 
 const char *blk_type_str(enum blk_type);
@@ -103,6 +104,7 @@ static inline bool cdev_is_block_device(const struct cdev *cdev)
 
 static inline bool cdev_is_block_partition(const struct cdev *cdev)
 {
+	cdev = cdev_readlink(cdev);
 	return cdev_is_block_device(cdev) && cdev_is_partition(cdev);
 }
 

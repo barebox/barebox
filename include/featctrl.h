@@ -15,6 +15,8 @@ struct feature_controller {
 
 enum { FEATCTRL_GATED = 0, FEATCTRL_OKAY = 1 };
 
+extern struct list_head of_feature_controllers;
+
 int feature_controller_register(struct feature_controller *);
 
 #ifdef CONFIG_FEATURE_CONTROLLER

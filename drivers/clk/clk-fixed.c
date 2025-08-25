@@ -9,6 +9,8 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
+#include "clk-fixed.h"
+
 struct clk_fixed {
 	struct clk_hw hw;
 	unsigned long rate;
@@ -26,6 +28,11 @@ static struct clk_ops clk_fixed_ops = {
 	.recalc_rate = clk_fixed_recalc_rate,
 	.is_enabled = clk_is_enabled_always,
 };
+
+bool clk_is_fixed(struct clk *clk)
+{
+	return clk->ops == &clk_fixed_ops;
+}
 
 struct clk *clk_register_fixed_rate(const char *name,
 				    const char *parent_name, unsigned long flags,

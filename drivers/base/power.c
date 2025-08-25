@@ -349,6 +349,11 @@ void genpd_activate(void)
 	have_genpd_providers = true;
 }
 
+bool genpd_is_active(void)
+{
+	return have_genpd_providers && !list_empty(&gpd_list);
+}
+
 static struct bus_type genpd_bus_type = {
 	.name		= "genpd",
 };

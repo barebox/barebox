@@ -225,4 +225,6 @@ void fb_of_reserve_add_fixup(struct fb_info *info);
 int register_fbconsole(struct fb_info *fb);
 void *fb_get_screen_base(struct fb_info *info);
 
+extern struct class fb_class;
+
 #endif /* __FB_H */

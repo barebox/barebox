@@ -113,6 +113,7 @@
 #include <getopt.h>
 #include <libfile.h>
 #include <magicvar.h>
+#include <structio.h>
 #include <linux/list.h>
 #include <binfmt.h>
 #include <init.h>
@@ -844,7 +845,7 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	} else {
 		ret = execute_binfmt(globbuf.gl_pathc, globbuf.gl_pathv);
 		if (ret < 0) {
-			printf("%s: %pe\n", globbuf.gl_pathv[0], ERR_PTR(ret));
+			stnoprintf("%s: %pe\n", globbuf.gl_pathv[0], ERR_PTR(ret));
 			ret = 127;
 		}
 	}

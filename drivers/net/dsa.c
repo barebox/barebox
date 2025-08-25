@@ -6,6 +6,8 @@
 #include <of_net.h>
 #include <param.h>
 
+LIST_HEAD(dsa_switch_list);
+
 u32 dsa_user_ports(struct dsa_switch *ds)
 {
 	u32 mask = 0;
@@ -471,6 +473,8 @@ int dsa_register_switch(struct dsa_switch *ds)
 	}
 
 	ds->tx_buf = dma_alloc(DSA_PKTSIZE);
+
+	list_add_tail(&ds->list, &dsa_switch_list);
 
 	return 0;
 }

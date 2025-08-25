@@ -8,6 +8,7 @@
 #include <command.h>
 #include <complete.h>
 #include <memory.h>
+#include <structio.h>
 #include <asm/system.h>
 #include <asm/barebox-arm.h>
 #include <asm/cputype.h>
@@ -201,8 +202,8 @@ static int do_cpuinfo(int argc, char *argv[])
 		architecture = "Unknown";
 	}
 
-	printf("implementer: %s\narchitecture: %s\n",
-			implementer, architecture);
+	stprintf("implementer", "%s", implementer);
+	stprintf("architecture", "%s", architecture);
 
 	if (cpu_arch >= CPU_ARCH_ARMv7) {
 		unsigned int major, minor;
@@ -238,36 +239,38 @@ static int do_cpuinfo(int argc, char *argv[])
 			part = "Cortex-A72";
 			break;
 		default:
-			printf("core: unknown (0x%08lx) r%up%u\n",
-			       mainid, major, minor);
+			stprintf("core", "unknown (0x%08lx) r%up%u",
+				 mainid, major, minor);
 			break;
 		}
 
 		if (part)
-			printf("core: %s r%up%u\n", part, major, minor);
+			stprintf("core", "%s r%up%u", part, major, minor);
 	}
 
 #ifdef CONFIG_CPU_64v8
-	printf("exception level: %u\n", current_el());
+	stprintf_prefix("exception_level", "Exception level: ", "%u", current_el());
 #endif
 
-	if (cache & (1 << 24)) {
-		/* separate I/D cache */
-		printf("I-cache: ");
-		decode_cache(cache & 0xfff);
-		printf("D-cache: ");
-		decode_cache((cache >> 12) & 0xfff);
-	} else {
-		/* unified I/D cache */
-		printf("cache: ");
-		decode_cache(cache & 0xfff);
-	}
+	if (!structio_active()) {
+		if (cache & (1 << 24)) {
+			/* separate I/D cache */
+			printf("I-cache: ");
+			decode_cache(cache & 0xfff);
+			printf("D-cache: ");
+			decode_cache((cache >> 12) & 0xfff);
+		} else {
+			/* unified I/D cache */
+			printf("cache: ");
+			decode_cache(cache & 0xfff);
+		}
 
-	printf("Control register: ");
-	for (i = 0; i < ARRAY_SIZE(crbits); i++)
-		if (cr & (1 << i))
-			printf("%s ", crbits[i]);
-	printf("\n");
+		printf("Control register: ");
+		for (i = 0; i < ARRAY_SIZE(crbits); i++)
+			if (cr & (1 << i))
+				printf("%s ", crbits[i]);
+		printf("\n");
+	}
 
 	return 0;
 }

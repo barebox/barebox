@@ -82,8 +82,8 @@ static void animeo_ip_detect_version(void)
 		version = "IO";
 	}
 
-	dev_add_param_fixed(dev, "model", model);
-	dev_add_param_fixed(dev, "version", version);
+	dev_add_param_fixed(dev, "model", "%s", model);
+	dev_add_param_fixed(dev, "version", "%s", version);
 }
 
 static struct atmel_nand_data nand_pdata = {

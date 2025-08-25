@@ -44,7 +44,14 @@ struct blobgen {
 
 int blob_gen_register(struct device *dev, struct blobgen *bg);
 
+#ifdef CONFIG_BLOBGEN
 struct blobgen *blobgen_get(const char *name);
+#else
+static inline struct blobgen *blobgen_get(const char *name)
+{
+	return NULL;
+}
+#endif
 
 int blob_encrypt(struct blobgen *blg, const char *modifier, const void *plain,
 		 int plainsize, void **blob, int *blobsize);

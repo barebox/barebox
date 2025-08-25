@@ -3,14 +3,15 @@
 #include <command.h>
 #include <asm/sbi.h>
 #include <asm/system.h>
+#include <structio.h>
 
 static const char *implementations[] = {
-	[0] = "\"Berkeley Boot Loader (BBL)\" ",
-	[1] = "\"OpenSBI\" ",
-	[2] = "\"Xvisor\" ",
-	[3] = "\"KVM\" ",
-	[4] = "\"RustSBI\" ",
-	[5] = "\"Diosix\" ",
+	[0] = "Berkeley Boot Loader (BBL)",
+	[1] = "OpenSBI",
+	[2] = "Xvisor",
+	[3] = "KVM",
+	[4] = "RustSBI",
+	[5] = "Diosix",
 };
 
 static const char *modes[] = {
@@ -22,22 +23,22 @@ static const char *modes[] = {
 
 static int do_cpuinfo(int argc, char *argv[])
 {
-	const char *implementation = "";
+	const char *implementation = NULL;
 	enum riscv_mode mode;
 	unsigned long impid;
 
 	mode = riscv_mode() & RISCV_MODE_MASK;
 
-	printf("%s barebox for %s-Mode\n",
-	       IS_ENABLED(CONFIG_ARCH_RV64I) ? "RV64I" : "RV32I",
-	       modes[mode]);
+	stprintf("Architecture", "%s",
+		 IS_ENABLED(CONFIG_ARCH_RV64I) ? "RV64I" : "RV32I");
+	stprintf("Mode", "%s", modes[mode]);
 
 	switch (mode) {
 	case RISCV_S_MODE:
-		printf("Hart ID=%lu\n", riscv_hartid());
+		stprintf("Hart ID", "%lu", riscv_hartid());
 		if (!IS_ENABLED(CONFIG_RISCV_SBI))
 			break;
-		printf("SBI specification v%lu.%lu detected\n",
+		stprintf("SBI version", "v%lu.%lu",
 		       sbi_major_version(), sbi_minor_version());
 
 		if (sbi_spec_is_0_1())
@@ -47,12 +48,20 @@ static int do_cpuinfo(int argc, char *argv[])
 		if (impid < ARRAY_SIZE(implementations))
 			implementation = implementations[impid];
 
-		printf("SBI implementation ID=0x%lx %sVersion=0x%lx\n",
-		       impid, implementation, __sbi_base_ecall(SBI_EXT_BASE_GET_IMP_VERSION));
+		stprintf("SBI implementation ID", "0x%lx", impid);
+		if (implementation)
+			stprintf("SBI implementation name", "%s", implementation);
 
-		printf("SBI Machine VENDORID=0x%lx ARCHID=0x%lx MIMPID=0x%lx\n",
-		       __sbi_base_ecall(SBI_EXT_BASE_GET_MVENDORID),
-		       __sbi_base_ecall(SBI_EXT_BASE_GET_MARCHID),
+		stprintf("SBI implementation version", "0x%lx",
+			 __sbi_base_ecall(SBI_EXT_BASE_GET_IMP_VERSION));
+
+		stprintf("SBI machine VENDORID", "0x%lx",
+			 __sbi_base_ecall(SBI_EXT_BASE_GET_MVENDORID));
+
+		stprintf("SBI machine ARCHID", "0x%lx",
+			 __sbi_base_ecall(SBI_EXT_BASE_GET_MARCHID));
+
+		stprintf("SBI machine MIMPID", "0x%lx",
 		       __sbi_base_ecall(SBI_EXT_BASE_GET_MIMPID));
 		break;
 	default:

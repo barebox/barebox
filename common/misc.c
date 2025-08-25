@@ -211,8 +211,7 @@ bool barebox_hostname_is_valid(const char *s)
 
 /*
  * The hostname is supposed to be the shortname of a board. It should
- * contain only lowercase letters, numbers, '-', '_'. No whitespaces
- * allowed.
+ * contain only letters, numbers, hyphens. No whitespaces allowed.
  */
 void barebox_set_hostname(const char *__hostname)
 {

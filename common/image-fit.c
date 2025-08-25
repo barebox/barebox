@@ -16,6 +16,7 @@
 #include <fs.h>
 #include <malloc.h>
 #include <linux/ctype.h>
+#include <linux/refcount.h>
 #include <asm/byteorder.h>
 #include <errno.h>
 #include <linux/err.h>
@@ -32,6 +33,8 @@
 #define CHECK_LEVEL_HASH 1
 #define CHECK_LEVEL_SIG 2
 #define CHECK_LEVEL_MAX 3
+
+static LIST_HEAD(open_fits);
 
 static uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, int size)
 {
@@ -694,7 +697,7 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 	return 0;
 }
 
-static int fit_config_verify_signature(struct fit_handle *handle, struct device_node *conf_node)
+int fit_config_verify_signature(struct fit_handle *handle, struct device_node *conf_node)
 {
 	struct device_node *sig_node;
 	int ret = -EINVAL;
@@ -782,7 +785,9 @@ err:
 
 static int fit_find_compatible_unit(struct fit_handle *handle,
 				    struct device_node *conf_node,
-				    const char **unit)
+				    const char **unit,
+				    bool (*config_node_valid)(struct fit_handle *handle,
+							      struct device_node *config))
 {
 	struct device_node *child = NULL;
 	struct device_node *barebox_root;
@@ -799,7 +804,12 @@ static int fit_find_compatible_unit(struct fit_handle *handle,
 		return -ENOENT;
 
 	for_each_child_of_node(conf_node, child) {
-		int score = of_device_is_compatible(child, machine);
+		int score;
+
+		if (config_node_valid && !config_node_valid(handle, child))
+			continue;
+
+		score = of_device_is_compatible(child, machine);
 
 		if (!score)
 			score = fit_fdt_is_compatible(handle, child, machine);
@@ -857,7 +867,9 @@ static int fit_find_last_unit(struct fit_handle *handle,
  * Return: If successful a pointer to a valid configuration node,
  *         otherwise a ERR_PTR()
  */
-void *fit_open_configuration(struct fit_handle *handle, const char *name)
+void *fit_open_configuration(struct fit_handle *handle, const char *name,
+			     bool (*match_valid)(struct fit_handle *handle,
+						 struct device_node *config))
 {
 	struct device_node *conf_node = handle->configurations;
 	const char *unit, *desc = "(no description)";
@@ -869,7 +881,8 @@ void *fit_open_configuration(struct fit_handle *handle, const char *name)
 	if (name) {
 		unit = name;
 	} else {
-		ret = fit_find_compatible_unit(handle, conf_node, &unit);
+		ret = fit_find_compatible_unit(handle, conf_node, &unit,
+					       match_valid);
 		if (ret) {
 			pr_info("Couldn't get a valid configuration. Aborting.\n");
 			return ERR_PTR(ret);
@@ -890,6 +903,18 @@ void *fit_open_configuration(struct fit_handle *handle, const char *name)
 		return ERR_PTR(ret);
 
 	return conf_node;
+}
+
+static struct fit_handle *fit_get_handle(const char *filename)
+{
+	struct fit_handle *handle;
+
+	list_for_each_entry(handle, &open_fits, entry) {
+		if (!strcmp(filename, handle->filename))
+			return handle;
+	}
+
+	return NULL;
 }
 
 static int fit_do_open(struct fit_handle *handle)
@@ -941,6 +966,8 @@ struct fit_handle *fit_open_buf(const void *buf, size_t size, bool verbose,
 	handle->size = size;
 	handle->verify = verify;
 
+	refcount_set(&handle->users, 1);
+
 	ret = fit_do_open(handle);
 	if (ret) {
 		fit_close(handle);
@@ -962,11 +989,24 @@ struct fit_handle *fit_open_buf(const void *buf, size_t size, bool verbose,
  *
  * Return: A handle to a FIT image or a ERR_PTR
  */
-struct fit_handle *fit_open(const char *filename, bool verbose,
+struct fit_handle *fit_open(const char *_filename, bool verbose,
 			    enum bootm_verify verify, loff_t max_size)
 {
 	struct fit_handle *handle;
+	char *filename;
 	int ret;
+
+	filename = canonicalize_path(AT_FDCWD, _filename);
+	if (!filename) {
+		pr_err("Cannot open %s: %m\n", _filename);
+		return ERR_PTR(-errno);
+	}
+
+	handle = fit_get_handle(filename);
+	if (handle) {
+		refcount_inc(&handle->users);
+		return handle;
+	}
 
 	handle = xzalloc(sizeof(struct fit_handle));
 
@@ -977,10 +1017,16 @@ struct fit_handle *fit_open(const char *filename, bool verbose,
 			  max_size);
 	if (ret && ret != -EFBIG) {
 		pr_err("unable to read %s: %pe\n", filename, ERR_PTR(ret));
+		free(handle);
+		free(filename);
 		return ERR_PTR(ret);
 	}
 
 	handle->fit = handle->fit_alloc;
+	handle->filename = filename;
+
+	refcount_set(&handle->users, 1);
+	list_add(&handle->entry, &open_fits);
 
 	ret = fit_do_open(handle);
 	if (ret) {
@@ -993,8 +1039,16 @@ struct fit_handle *fit_open(const char *filename, bool verbose,
 
 static void __fit_close(struct fit_handle *handle)
 {
+	if (!refcount_dec_and_test(&handle->users))
+		return;
+
 	if (handle->root)
 		of_delete_node(handle->root);
+
+	if (handle->filename)
+		list_del(&handle->entry);
+
+	free(handle->filename);
 	free(handle->fit_alloc);
 }
 
@@ -1043,12 +1097,12 @@ static int fuzz_fit(const u8 *data, size_t size)
 	if (ret)
 		goto out;
 
-	config = fit_open_configuration(&handle, NULL);
+	config = fit_open_configuration(&handle, NULL, NULL);
 	if (IS_ERR(config)) {
 		ret = fit_find_last_unit(&handle, &unit);
 		if (ret)
 			goto out;
-		config = fit_open_configuration(&handle, unit);
+		config = fit_open_configuration(&handle, unit, NULL);
 	}
 	if (IS_ERR(config)) {
 		ret = PTR_ERR(config);

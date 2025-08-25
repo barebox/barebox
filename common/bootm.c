@@ -613,6 +613,16 @@ static int bootm_open_os_uimage(struct image_data *data)
 	return 0;
 }
 
+static bool bootm_fit_config_valid(struct fit_handle *fit,
+				   struct device_node *config)
+{
+	/*
+	 * Consider only FIT configurations which do provide a loadable kernel
+	 * image.
+	 */
+	return !!fit_has_image(fit, config, "kernel");
+}
+
 static int bootm_open_fit(struct image_data *data)
 {
 	struct fit_handle *fit;
@@ -638,7 +648,8 @@ static int bootm_open_fit(struct image_data *data)
 	data->os_fit = fit;
 
 	data->fit_config = fit_open_configuration(data->os_fit,
-						  data->os_part);
+						  data->os_part,
+						  bootm_fit_config_valid);
 	if (IS_ERR(data->fit_config)) {
 		pr_err("Cannot open FIT image configuration '%s'\n",
 		       data->os_part ? data->os_part : "default");

@@ -99,13 +99,6 @@ define rule_pblb
 	$(call cmd,check_missing_fw,$@,$<)
 	$(call cmd,check_file_size,$@,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
 
-	$(eval PBL_CODE_SIZE_$* = \
-		$(shell $(srctree)/scripts/extract_symbol_offset pbl_code_size $^))
-	$(eval PBL_MEMORY_SIZE_$*= \
-		$(shell $(srctree)/scripts/extract_symbol_offset pbl_memory_size $^))
-	$(eval PBL_IMAGE_SIZE_$*= \
-		$(shell $(srctree)/scripts/extract_symbol_offset pbl_image_size $^))
-
 	$(if $(MAX_PBL_CODE_SIZE_$*), \
 		$(call cmd,check_size,$(PBL_CODE_SIZE_$*),$(MAX_PBL_CODE_SIZE_$*)) \
 	)
@@ -120,6 +113,13 @@ define rule_pblb
 endef
 
 $(obj)/%.pblb: $(obj)/%.pbl FORCE
+	$(eval PBL_CODE_SIZE_$* = \
+		$(shell $(srctree)/scripts/extract_symbol_offset pbl_code_size $^))
+	$(eval PBL_MEMORY_SIZE_$*= \
+		$(shell $(srctree)/scripts/extract_symbol_offset pbl_memory_size $^))
+	$(eval PBL_IMAGE_SIZE_$*= \
+		$(shell $(srctree)/scripts/extract_symbol_offset pbl_image_size $^))
+
 	$(call if_changed_rule,pblb)
 
 $(obj)/%.s: $(obj)/% FORCE

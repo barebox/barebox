@@ -92,7 +92,7 @@ RUN echo barebox ALL=NOPASSWD: ALL > /etc/sudoers.d/barebox
 
 # install labgrid
 RUN pip3 install -q --no-cache-dir --break-system-packages \
-    git+https://github.com/labgrid-project/labgrid.git@v24.0 && \
+    git+https://github.com/labgrid-project/labgrid.git@v25.0 && \
     ln -s $(which pytest) /usr/local/bin/labgrid-pytest
 
 ENV CROSS_COMPILE_arm=/opt/gcc-${GCC_VERSION}-nolibc/arm-linux-gnueabi/bin/arm-linux-gnueabi-

@@ -8,7 +8,7 @@ targets:
         memory: 256M
         kernel: barebox-dt-2nd.img
         bios: opensbi-riscv32-generic-fw_dynamic.bin
-        extra_args: ''
+        display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

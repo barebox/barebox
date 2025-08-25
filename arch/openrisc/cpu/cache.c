@@ -149,3 +149,9 @@ static int cache_init(void)
 }
 
 core_initcall(cache_init);
+
+void sync_caches_for_execution(void)
+{
+	flush_dcache_range(0, checkdcache());
+	invalidate_icache_range(0, checkicache());
+}

@@ -265,9 +265,9 @@ static int state_backend_bucket_circular_read(struct state_backend_storage_bucke
 		offset = circ->write_area - read_len;
 	}
 
-	buf = xmalloc(read_len);
-	if (!buf)
-		return -ENOMEM;
+	buf = malloc(read_len);
+	if (ZERO_OR_NULL_PTR(buf))
+		return buf ? -EINVAL : -ENOMEM;
 
 	dev_dbg(circ->dev, "Read state from PEB %u global offset %lld length %zd\n",
 		circ->eraseblock, (long long) offset, read_len);
@@ -311,7 +311,9 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 	 * We need zero initialization so that our data comparisons don't show
 	 * random changes
 	 */
-	write_buf = xzalloc(written_length);
+	write_buf = calloc(1, written_length);
+	if (ZERO_OR_NULL_PTR(write_buf))
+		return write_buf ? -EINVAL : -ENOMEM;
 
 	memcpy(write_buf, buf, len);
 	meta = (struct state_backend_storage_bucket_circular_meta *)

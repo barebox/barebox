@@ -92,9 +92,9 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 
 	}
 
-	buf = xmalloc(read_len);
-	if (!buf)
-		return -ENOMEM;
+	buf = malloc(read_len);
+	if (ZERO_OR_NULL_PTR(buf))
+		return buf ? -EINVAL : -ENOMEM;
 
 	dev_dbg(direct->dev, "Read state from %lld length %d\n", (long long) direct->offset,
 		header_len + read_len);

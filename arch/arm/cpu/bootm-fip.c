@@ -91,7 +91,6 @@ static int parse_dtb_registry(struct fip_image_desc *fw_config_desc,
 		for_each_child_of_node_safe(fconf, tmp, image) {
 			u64 load_addr;
 			u32 id;
-			int ret;
 
 			ret = of_property_read_u32(image, "id", &id);
 			if (ret)

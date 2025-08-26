@@ -118,6 +118,6 @@ BAREBOX_CMD_START(blobgen)
 	.cmd	= do_blobgen,
 	BAREBOX_CMD_DESC("en/decrypt blobs")
 	BAREBOX_CMD_OPTS("[-edmVb] <plaintext/ciphertext>")
-	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
+	BAREBOX_CMD_GROUP(CMD_GRP_SECURITY)
 	BAREBOX_CMD_HELP(cmd_blobgen_help)
 BAREBOX_CMD_END

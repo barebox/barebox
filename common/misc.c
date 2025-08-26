@@ -304,6 +304,8 @@ static void __noreturn do_panic(bool stacktrace, const char *fmt, va_list ap)
 
 	if (IS_ENABLED(CONFIG_PANIC_POWEROFF))
 		poweroff_machine(0);
+	else if (IS_ENABLED(CONFIG_PANIC_TRAP))
+		__builtin_trap();
 	else
 		restart_machine(0);
 }

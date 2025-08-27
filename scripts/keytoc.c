@@ -550,13 +550,15 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 		fprintf(outfilep, "\t.y = %s_y,\n", key_name_c);
 		fprintf(outfilep, "};\n");
 		if (!standalone) {
-			fprintf(outfilep, "\nstruct public_key __attribute__((section(\".public_keys.rodata.%s\"))) %s_public_key = {\n", key_name_c, key_name_c);
+			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", key_name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_ECDSA,\n");
 			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", key_name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
 			fprintf(outfilep, "\t.ecdsa = &%s,\n", key_name_c);
 			fprintf(outfilep, "};\n");
+			fprintf(outfilep, "\n");
+			fprintf(outfilep, "const struct public_key *__%s_public_key __ll_elem(.public_keys.rodata.%s) = &%s_public_key;\n", key_name_c, key_name_c, key_name_c);
 		}
 	}
 
@@ -654,13 +656,15 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 		fprintf(outfilep, "};\n");
 
 		if (!standalone) {
-			fprintf(outfilep, "\nstruct public_key __attribute__((section(\".public_keys.rodata.%s\"))) %s_public_key = {\n", key_name_c, key_name_c);
+			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", key_name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_RSA,\n");
 			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", key_name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
 			fprintf(outfilep, "\t.rsa = &%s,\n", key_name_c);
 			fprintf(outfilep, "};\n");
+			fprintf(outfilep, "\n");
+			fprintf(outfilep, "const struct public_key *__%s_public_key __ll_elem(.public_keys.rodata.%s) = &%s_public_key;\n", key_name_c, key_name_c, key_name_c);
 		}
 	}
 

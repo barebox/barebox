@@ -14,6 +14,7 @@
 #include <linux/linkage.h>
 #include <asm/byteorder.h>
 #include <asm/neon.h>
+#include <asm/sysreg.h>
 
 MODULE_DESCRIPTION("SHA1 secure hash using ARMv8 Crypto Extensions");
 MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
@@ -88,6 +89,12 @@ static struct digest_algo m = {
 
 static int sha1_ce_mod_init(void)
 {
+	uint64_t isar0;
+
+	isar0 = read_sysreg(ID_AA64ISAR0_EL1);
+	if (!(isar0 & ID_AA64ISAR0_EL1_SHA1_MASK))
+		return -EOPNOTSUPP;
+
 	return digest_algo_register(&m);
 }
 coredevice_initcall(sha1_ce_mod_init);

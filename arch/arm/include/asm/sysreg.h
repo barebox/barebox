@@ -13,6 +13,12 @@
 #include <linux/stringify.h>
 
 /*
+ *	ARM64 registers
+ */
+#define ID_AA64ISAR0_EL1_SHA1_MASK      0xF00UL
+#define ID_AA64ISAR0_EL1_SHA2_MASK      0xF000UL
+
+/*
  * Unlike read_cpuid, calls to read_sysreg are never expected to be
  * optimized away or replaced with synthetic values.
  */

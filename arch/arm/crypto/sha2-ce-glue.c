@@ -14,8 +14,7 @@
 #include <linux/linkage.h>
 #include <asm/byteorder.h>
 #include <asm/neon.h>
-
-#include <asm/neon.h>
+#include <asm/sysreg.h>
 
 MODULE_DESCRIPTION("SHA-224/SHA-256 secure hash using ARMv8 Crypto Extensions");
 MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
@@ -116,6 +115,12 @@ static struct digest_algo sha256 = {
 
 static int sha256_ce_digest_register(void)
 {
+	uint64_t isar0;
+
+	isar0 = read_sysreg(ID_AA64ISAR0_EL1);
+	if (!(isar0 & ID_AA64ISAR0_EL1_SHA2_MASK))
+		return -EOPNOTSUPP;
+
 	return digest_algo_register(&sha256);
 }
 coredevice_initcall(sha256_ce_digest_register);

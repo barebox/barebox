@@ -63,7 +63,7 @@ static inline uint32_t __imx6_read_si_rev(void)
 	si_rev = readl(MX6_ANATOP_BASE_ADDR + IMX6SL_ANATOP_SI_REV);
 	cpu_type = SI_REV_CPUTYPE(si_rev);
 
-	if (si_rev == 0x60)
+	if (cpu_type == (IMX6_CPUTYPE_IMX6SL & 0xff))
 		return si_rev;
 
 	return 0;
@@ -74,8 +74,8 @@ static inline int __imx6_cpu_type(void)
 	uint32_t si_rev = __imx6_read_si_rev();
 	uint32_t cpu_type = SI_REV_CPUTYPE(si_rev);
 
-	/* intentionally skip scu_get_core_count() for MX6SL */
-	if (cpu_type == IMX6_CPUTYPE_IMX6SL)
+	/* There exists only one, single-cored iMX6SL variant. */
+	if (cpu_type == (IMX6_CPUTYPE_IMX6SL & 0xff))
 		return IMX6_CPUTYPE_IMX6SL;
 
 	cpu_type |= scu_get_core_count() << 8;

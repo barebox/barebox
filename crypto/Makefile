@@ -31,6 +31,15 @@ $(obj)/public-keys.o: $(obj)/public-keys.h
 CONFIG_CRYPTO_PUBLIC_KEYS := $(shell echo $(CONFIG_CRYPTO_PUBLIC_KEYS))
 CONFIG_CRYPTO_PUBLIC_KEYS := $(foreach d,$(CONFIG_CRYPTO_PUBLIC_KEYS),"$(d)")
 
+ifdef CONFIG_CRYPTO_BUILTIN_DEVELOPMENT_KEYS
+ifdef CONFIG_CRYPTO_RSA
+CONFIG_CRYPTO_PUBLIC_KEYS += rsa-devel:$(srctree)/crypto/fit-4096-development.crt
+endif
+ifdef CONFIG_CRYPTO_ECDSA
+CONFIG_CRYPTO_PUBLIC_KEYS += ecdsa-devel:$(srctree)/crypto/fit-ecdsa-development.crt
+endif
+endif
+
 filechk_public_keys_dummy = echo
 
 $(obj)/public-keys.h: FORCE

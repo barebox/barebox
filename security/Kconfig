@@ -76,6 +76,16 @@ endchoice
 
 endif
 
+config CRYPTO_BUILTIN_DEVELOPMENT_KEYS
+	select HAS_INSECURE_DEFAULTS
+	depends on CRYPTO_BUILTIN_KEYS
+	bool "Include development keys in build"
+	help
+	  Say y here to include well known development keys in build. These can be
+	  used to authenticate FIT images during development. The private keys can
+	  be found at [1]. This option should never be enabled in a production build.
+
+	  [1] https://git.pengutronix.de/cgit/ptx-code-signing-dev/
 
 config CRYPTO_KEYSTORE
 	bool "Keystore"
@@ -92,6 +102,7 @@ config JWT
 	select JSMN
 	select BASE64
 	select CRYPTO_RSA
+	select TEST_KEY_RSA2048 if FUZZ
 
 menu "OP-TEE loading"
 

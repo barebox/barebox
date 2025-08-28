@@ -231,12 +231,6 @@ dtc_cpp_flags  = -Wp,-MD,$(depfile).pre -nostdinc                        \
 		 $(DTC_CPP_FLAGS_$(basetarget)$(suffix $@))              \
 		 -undef -D__DTS__
 
-ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
-ifneq ($(CONFIG_BOOTM_FITIMAGE_PUBKEY),"")
-dtc_cpp_flags += -DCONFIG_BOOTM_FITIMAGE_PUBKEY=\"$(CONFIG_BOOTM_FITIMAGE_PUBKEY)\"
-endif
-endif
-
 # Finds the multi-part object the current object will be linked into
 modname-multi = $(sort $(foreach m,$(multi-used),\
 		$(if $(filter $(subst $(obj)/,,$*.o), $($(m:.o=-objs)) $($(m:.o=-y))),$(m:.o=))))
@@ -583,11 +577,6 @@ overwrite-hab-env = $(shell set -e; \
       test -n "$$$(1)"; \
       echo -D$(1)=\''"$($(1))"'\')
 
-overwrite-fit-env = $(shell set -e; \
-      test -n "$(CONFIG_BOOTM_FITIMAGE_PUBKEY_ENV)"; \
-      test -n "$$$(1)"; \
-      echo -D$(1)=\\\"$(shell echo $$$(1))\\\")
-
 imxcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
       -I $(srctree)/include -I $(srctree)/arch/arm/mach-imx/include \
       -include include/generated/autoconf.h \
@@ -598,7 +587,6 @@ imxcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
       $(call overwrite-hab-env,CONFIG_HABV4_CSF_CRT_PEM) \
       $(call overwrite-hab-env,CONFIG_HABV4_CSF_UNLOCK_UID) \
       $(call overwrite-hab-env,CONFIG_HABV4_IMG_CRT_PEM) \
-      $(call overwrite-fit-env,CONFIG_BOOTM_FITIMAGE_PUBKEY) \
 
 dcd-tmp = $(subst $(comma),_,$(dot-target).dcd.tmp)
 

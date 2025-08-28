@@ -67,11 +67,12 @@ static int of_read_string_list(struct device_node *np, const char *name, struct 
 	return prop ? 0 : -EINVAL;
 }
 
-static int fit_digest(const void *fit, struct digest *digest,
+static int fit_digest(struct fit_handle *handle, struct digest *digest,
 		      struct string_list *inc_nodes, struct string_list *exc_props,
 		      uint32_t hashed_strings_start, uint32_t hashed_strings_size)
 {
-	const struct fdt_header *fdt = fit;
+	const struct fdt_header *fdt = handle->fit;
+	const void *fit = handle->fit;
 	uint32_t dt_struct;
 	void *dt_strings;
 	struct fdt_header f = {};
@@ -257,9 +258,10 @@ static struct digest *fit_alloc_digest(struct device_node *sig_node,
 	return digest;
 }
 
-static int fit_check_signature(struct device_node *sig_node,
+static int fit_check_signature(struct fit_handle *handle, struct device_node *sig_node,
 			       enum hash_algo algo, void *hash)
 {
+	const char *fail_reason = "no built-in keys";
 	const struct public_key *key;
 	const char *key_name = NULL;
 	int sig_len;
@@ -277,33 +279,41 @@ static int fit_check_signature(struct device_node *sig_node,
 		key = public_key_get(key_name);
 		if (key) {
 			ret = public_key_verify(key, sig_value, sig_len, hash, algo);
+			if (handle->verbose)
+				pr_info("Key %*phN (%s) -> signature %s\n", key->hashlen,
+					key->hash, key_name, ret ? "BAD" : "OK");
 			if (!ret)
 				goto ok;
 		}
 	}
 
 	for_each_public_key(key) {
+		fail_reason = "verification failed";
+
 		if (key_name && !strcmp(key->key_name_hint, key_name))
 			continue;
 
 		ret = public_key_verify(key, sig_value, sig_len, hash, algo);
+
+		if (handle->verbose)
+			pr_info("Key %*phN -> signature %s\n", key->hashlen, key->hash,
+				ret ? "BAD" : "OK");
+
 		if (!ret)
 			goto ok;
 	}
 
-	pr_err("image signature BAD\n");
+	pr_err("image signature BAD: %s\n", fail_reason);
 
 	return -EBADMSG;
 ok:
-	pr_info("image signature OK\n");
-
 	return 0;
 }
 
 /*
  * The consistency of the FTD structure was already checked by of_unflatten_dtb()
  */
-static int fit_verify_signature(struct device_node *sig_node, const void *fit)
+static int fit_verify_signature(struct fit_handle *handle, struct device_node *sig_node)
 {
 	uint32_t hashed_strings_start, hashed_strings_size;
 	struct string_list inc_nodes, exc_props;
@@ -340,7 +350,7 @@ static int fit_verify_signature(struct device_node *sig_node, const void *fit)
 		goto out_sl;
 	}
 
-	ret = fit_digest(fit, digest, &inc_nodes, &exc_props, hashed_strings_start,
+	ret = fit_digest(handle, digest, &inc_nodes, &exc_props, hashed_strings_start,
 			 hashed_strings_size);
 	if (ret)
 		goto out_sl;
@@ -348,7 +358,7 @@ static int fit_verify_signature(struct device_node *sig_node, const void *fit)
 	hash = xzalloc(digest_length(digest));
 	digest_final(digest, hash);
 
-	ret = fit_check_signature(sig_node, algo, hash);
+	ret = fit_check_signature(handle, sig_node, algo, hash);
 	if (ret)
 		goto out_free_hash;
 
@@ -419,10 +429,11 @@ static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
 	digest_update(d, data, data_len);
 
 	if (digest_verify(d, value_read)) {
-		pr_info("%pOF: hash BAD\n", hash);
+		pr_err("%pOF: hash BAD\n", hash);
 		ret =  -EBADMSG;
 	} else {
-		pr_info("%pOF: hash OK\n", hash);
+		if (handle->verbose)
+			pr_info("%pOF: hash OK\n", hash);
 		ret = 0;
 	}
 
@@ -471,7 +482,7 @@ static int fit_image_verify_signature(struct fit_handle *handle,
 	hash = xzalloc(digest_length(digest));
 	digest_final(digest, hash);
 
-	ret = fit_check_signature(sig_node, algo, hash);
+	ret = fit_check_signature(handle, sig_node, algo, hash);
 
 	free(hash);
 
@@ -665,7 +676,8 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 		return ret;
 
 	of_property_read_string(image, "description", &desc);
-	pr_info("image '%s': '%s'\n", unit, desc);
+	if (handle->verbose)
+		pr_info("image '%s': '%s'\n", unit, desc);
 
 	of_property_read_string(image, "type", &type);
 	if (!type) {
@@ -724,7 +736,7 @@ int fit_config_verify_signature(struct fit_handle *handle, struct device_node *c
 		if (handle->verbose)
 			of_print_nodes(sig_node, 0, ~0);
 
-		ret = fit_verify_signature(sig_node, handle->fit);
+		ret = fit_verify_signature(handle, sig_node);
 		if (ret < 0)
 			return ret;
 	}

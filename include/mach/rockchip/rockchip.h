@@ -35,6 +35,15 @@ static inline int rk3568_init(void)
 }
 #endif
 
+#ifdef CONFIG_ARCH_RK3576
+int rk3576_init(void);
+#else
+static inline int rk3576_init(void)
+{
+	return -ENOTSUPP;
+}
+#endif
+
 #ifdef CONFIG_ARCH_RK3588
 int rk3588_init(void);
 #else
@@ -45,6 +54,7 @@ static inline int rk3588_init(void)
 #endif
 
 void rk3568_lowlevel_init(void);
+void rk3576_lowlevel_init(void);
 void rk3588_lowlevel_init(void);
 
 int rockchip_soc(void);

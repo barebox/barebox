@@ -471,6 +471,8 @@ static int rockchip_usb2phy_probe(struct device *dev)
 	dev->priv = rphy;
 
 	rphy->clk = clk_get(dev, "phyclk");
+	if (IS_ERR(rphy->clk))
+		rphy->clk = NULL;
 	rockchip_usb2phy_clk480m_register(rphy);
 
 	rphy->provider = of_phy_provider_register(dev, rockchip_usb2phy_of_xlate);

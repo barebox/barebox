@@ -12,6 +12,7 @@
 #include <mach/rockchip/rockchip.h>
 #include <mach/rockchip/bootrom.h>
 #include <mach/rockchip/rk3568-regs.h>
+#include <mach/rockchip/rk3576-regs.h>
 #include <mach/rockchip/rk3588-regs.h>
 
 struct rockchip_scratch_space *rk_scratch;
@@ -218,6 +219,43 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 		}
 
 		rk3588_atf_load_bl31(fdt_scratch);
+		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
+	}
+
+	optee_set_membase(rk_scratch_get_optee_hdr());
+	barebox_arm_entry(membase, endmem - membase, fdt);
+}
+
+void rk3576_atf_load_bl31(void *fdt)
+{
+	rockchip_atf_load_bl31(RK3576, rk3576_bl31_bin, rk3576_bl32_bin, fdt);
+}
+
+void __noreturn rk3576_barebox_entry(void *fdt)
+{
+	unsigned long membase, endmem;
+
+	membase = RK3576_DRAM_BOTTOM;
+	endmem = rk3576_ram0_size();
+
+	rk_scratch = (void *)arm_mem_scratch(endmem);
+
+	if (current_el() == 3) {
+		void *fdt_scratch = NULL;
+
+		rk3576_lowlevel_init();
+		rockchip_store_bootrom_iram(IOMEM(RK3576_IRAM_BASE));
+
+		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_ATF_PASS_FDT)) {
+			pr_debug("Copy fdt to scratch area 0x%p (%zu bytes)\n",
+				 rk_scratch->fdt, sizeof(rk_scratch->fdt));
+			if (fdt_open_into(fdt, rk_scratch->fdt, sizeof(rk_scratch->fdt)) == 0)
+				fdt_scratch = rk_scratch->fdt;
+			else
+				pr_warn("Failed to copy fdt to scratch: Continue without fdt\n");
+		}
+
+		rk3576_atf_load_bl31(fdt_scratch);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 

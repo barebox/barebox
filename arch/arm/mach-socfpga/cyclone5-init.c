@@ -56,5 +56,5 @@ void socfpga_lowlevel_init(struct socfpga_cm_config *cm_config,
 	writel(0x18, CYCLONE5_L3REGS_ADDRESS);
 	writel(0x1, 0xfffefc00);
 
-	INIT_LL();
+	socfpga_uart_setup_ll();
 }

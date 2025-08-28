@@ -4,13 +4,17 @@ if ARCH_SOCFPGA
 
 config ARCH_SOCFPGA_XLOAD
 	bool
-	prompt "Build preloader image"
+	depends on ARCH_SOCFPGA_CYCLONE5
+	prompt "Build SoCFPGA preloader image"
 
-comment "Altera SoCFPGA System-on-Chip"
+menu "SoCFPGA boards"
+
+if 32BIT
 
 config ARCH_SOCFPGA_CYCLONE5
 	bool
 	select CPU_V7
+	select ARM_SMP_TWD
 	select OFDEVICE if !ARCH_SOCFPGA_XLOAD
 	select OFTREE if !ARCH_SOCFPGA_XLOAD
 	select GPIOLIB if !ARCH_SOCFPGA_XLOAD
@@ -18,9 +22,13 @@ config ARCH_SOCFPGA_CYCLONE5
 config ARCH_SOCFPGA_ARRIA10
 	bool
 	select CPU_V7
+	select ARM_SMP_TWD
+	select ARM_USE_COMPRESSED_DTB
 	select RESET_CONTROLLER
 	select OFDEVICE
 	select OFTREE
+
+comment "Cyclone5 boards"
 
 config MACH_SOCFPGA_ALTERA_SOCDK
 	select ARCH_SOCFPGA_CYCLONE5
@@ -29,14 +37,6 @@ config MACH_SOCFPGA_ALTERA_SOCDK
 config MACH_SOCFPGA_EBV_SOCRATES
 	select ARCH_SOCFPGA_CYCLONE5
 	bool "EBV Socrates"
-
-config MACH_SOCFPGA_ENCLUSTRA_AA1
-	select ARCH_SOCFPGA_ARRIA10
-	bool "Enclustra AA1"
-
-config MACH_SOCFPGA_REFLEX_ACHILLES
-	select ARCH_SOCFPGA_ARRIA10
-	bool "Reflex Achilles"
 
 config MACH_SOCFPGA_TERASIC_DE0_NANO_SOC
 	select ARCH_SOCFPGA_CYCLONE5
@@ -49,5 +49,42 @@ config MACH_SOCFPGA_TERASIC_DE10_NANO
 config MACH_SOCFPGA_TERASIC_SOCKIT
 	select ARCH_SOCFPGA_CYCLONE5
 	bool "Terasic SoCKit"
+
+comment "Arria10 boards"
+
+config MACH_SOCFPGA_ENCLUSTRA_AA1
+	select ARCH_SOCFPGA_ARRIA10
+	bool "Enclustra AA1"
+
+config MACH_SOCFPGA_REFLEX_ACHILLES
+	select ARCH_SOCFPGA_ARRIA10
+	bool "Reflex Achilles"
+
+endif
+
+if 64BIT
+
+config ARCH_SOCFPGA_AGILEX5
+	bool
+	select CPU_V8
+	select ARM_USE_COMPRESSED_DTB
+	select RESET_CONTROLLER
+	select RESET_SIMPLE
+	select OFDEVICE
+	select OFTREE
+	select FIRMWARE_AGILEX5_ATF
+	select ARM_ATF
+	select ARM_SMCCC
+
+
+comment "SoCFPGA Agilex5 boards"
+
+config MACH_SOCFPGA_ARROW_AXE5_EAGLE
+       bool "Arrow AXE5 Eagle"
+       select ARCH_SOCFPGA_AGILEX5
+
+endif
+
+endmenu
 
 endif

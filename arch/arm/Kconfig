@@ -111,10 +111,7 @@ config ARCH_PXA
 
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA"
-	depends on 32BIT
 	select HAS_DEBUG_LL
-	select ARM_SMP_TWD
-	select CPU_V7
 	select COMMON_CLK
 
 config ARCH_TEGRA

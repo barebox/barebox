@@ -147,7 +147,7 @@ void arria10_finish_io(uint32_t *pinmux)
 
 	arria10_reset_deassert_fpga_peripherals();
 
-	INIT_LL();
+	socfpga_uart_setup_ll();
 
 	puts_ll("lowlevel init done\n");
 }

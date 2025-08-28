@@ -57,4 +57,10 @@ config RESET_SCMI
 	  This driver uses SCMI Message Protocol to interact with the
 	  firmware controlling all the reset signals.
 
+config RESET_SOCFPGA32
+	bool "SoCFPGA 32-bit Reset Driver"
+	default ARCH_SOCFPGA && 32BIT
+	help
+	  This enables the reset controller driver for 32-bit SoCFPGA platforms.
+
 endif

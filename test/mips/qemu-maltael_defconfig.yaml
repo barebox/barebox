@@ -7,7 +7,7 @@ targets:
         cpu: M14Kc
         memory: 256M
         bios: barebox-qemu-malta.img.swapped
-        extra_args: ''
+        display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

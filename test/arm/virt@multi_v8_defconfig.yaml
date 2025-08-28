@@ -7,7 +7,7 @@ targets:
         cpu: cortex-a57
         memory: 1024M
         kernel: barebox-dt-2nd.img
-        extra_args: ''
+        display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

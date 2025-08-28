@@ -7,7 +7,7 @@ targets:
         cpu: cortex-a15
         memory: 1024M
         bios: barebox-vexpress-ca15.img
-        extra_args: ''
+        display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

@@ -47,10 +47,8 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, maptyp
 			break;
 		e500_read_tlbcam_entry(esel, &valid, &tsize, &epn,
 				&rpn);
-		if (pte_flags & MAS2_I) {
-			flush_dcache();
-			invalidate_icache();
-		}
+		if (pte_flags & MAS2_I)
+			sync_caches_for_execution();
 		e500_set_tlb(1, epn, rpn, MAS3_SX|MAS3_SW|MAS3_SR,
 				(u8)wimge, 0, esel, tsize, 1);
 		/* convert tsize to bytes to increment address. */

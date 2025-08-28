@@ -9,6 +9,22 @@
 	};
 };
 
+&wkup_conf {
+	reboot-mode-syscon@10030 {
+		compatible = "syscon", "simple-mfd";
+		reg = <0x10030 0x4>;
+
+		reboot_mode: reboot-mode {
+			compatible = "syscon-reboot-mode";
+			offset = <0x0>;
+			mask = <0x3f8>;
+			mode-usbdfu = <0x250>;
+			mode-emmc = <0x48>;
+			mode-nand = <0x58>;
+		};
+	};
+};
+
 &phy_gmii_sel {
 	compatible = "ti,am654-phy-gmii-sel", "syscon";
 };

@@ -56,7 +56,7 @@ ifneq ($(userprogs),)
 include scripts/Makefile.userprogs
 endif
 
-ifneq ($(need-dtbslist)$(dtb-y)$(dtb-)$(filter %.dtb %.dtb.o %.dtbo.o,$(targets)),)
+ifneq ($(dtb-y)$(dtb-)$(filter %.dtb %.dtb.o %.dtbo.o,$(targets)),)
 include $(srctree)/scripts/Makefile.dtbs
 endif
 

@@ -10,11 +10,9 @@ always-y        += $(dtb-y)
 # dtbs-list
 # ---------------------------------------------------------------------------
 
-ifdef need-dtbslist
 subdir-dtbslist := $(addsuffix /dtbs-list, $(subdir-ym))
 dtb-y           += $(subdir-dtbslist)
 always-y        += $(obj)/dtbs-list
-endif
 
 $(subdir-dtbslist): $(obj)/%/dtbs-list: $(obj)/% ;
 

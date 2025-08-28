@@ -1187,14 +1187,9 @@ ifneq ($(dtstree),)
 
 PHONY += dtbs dtbs_prepare
 dtbs: dtbs_prepare
-	$(Q)$(MAKE) $(build)=$(dtstree) need-dtbslist=1
+	$(Q)$(MAKE) $(build)=$(dtstree)
 
 dtbs_prepare: include/config/kernel.release scripts_dtc
-
-ifdef CONFIG_OFDEVICE
-images: dtbs
-images/%: dtbs
-endif
 
 endif
 

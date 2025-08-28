@@ -212,6 +212,9 @@ static int cadence_serial_probe(struct device *dev)
 	cdev->getc = cadence_serial_getc;
 	cdev->flush = cadence_serial_flush;
 	cdev->setbrg = priv->clk ? cadence_serial_setbaudrate : NULL;
+	cdev->linux_console_name = "ttyPS";
+	cdev->linux_earlycon_name = "cdns";
+	cdev->phys_base = priv->regs;
 
 	cadence_serial_init_port(cdev);
 

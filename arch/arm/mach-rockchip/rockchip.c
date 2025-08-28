@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <common.h>
 #include <init.h>
-#include <asm/optee.h>
+#include <tee/optee.h>
 #include <asm-generic/memory_layout.h>
 #include <mach/rockchip/rockchip.h>
 #include <mach/rockchip/bootrom.h>

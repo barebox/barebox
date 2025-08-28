@@ -573,7 +573,7 @@ static void efi_partition_free(struct partition_desc *pd)
 		free(epart);
 	}
 
-	dev_remove_param(epd->param_guid);
+	param_remove(epd->param_guid);
 	free(epd->ptes);
 	free(epd->gpt);
 	free(epd);

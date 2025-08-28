@@ -26,6 +26,11 @@ static inline void string_list_init(struct string_list *sl)
 	sl->str = NULL;
 }
 
+static inline size_t string_list_empty(struct string_list *sl)
+{
+	return list_empty(&sl->list);
+}
+
 static inline size_t string_list_count(struct string_list *sl)
 {
 	return list_count_nodes(&sl->list);
@@ -39,6 +44,12 @@ static inline void string_list_free(struct string_list *sl)
 		free_const(entry->str);
 		free(entry);
 	}
+}
+
+static inline void string_list_reinit(struct string_list *sl)
+{
+	string_list_free(sl);
+	string_list_init(sl);
 }
 
 #define string_list_for_each_entry(entry, sl) \

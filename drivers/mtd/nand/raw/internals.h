@@ -33,6 +33,7 @@
 /* Kioxia is new name of Toshiba memory. */
 #define NAND_MFR_TOSHIBA	0x98
 #define NAND_MFR_WINBOND	0xef
+#define NAND_MFR_ISSI		0x9d
 
 /**
  * struct nand_manufacturer_ops - NAND Manufacturer operations

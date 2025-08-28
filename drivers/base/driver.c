@@ -262,10 +262,11 @@ int register_device(struct device *new_device)
 	list_add_tail(&new_device->list, &device_list);
 	INIT_LIST_HEAD(&new_device->children);
 	INIT_LIST_HEAD(&new_device->cdevs);
-	INIT_LIST_HEAD(&new_device->parameters);
 	INIT_LIST_HEAD(&new_device->active);
 	INIT_LIST_HEAD(&new_device->bus_list);
 	INIT_LIST_HEAD(&new_device->class_list);
+
+	bobject_init(&new_device->bobject);
 
 	if (new_device->bus) {
 		if (!new_device->parent)
@@ -295,7 +296,7 @@ int unregister_device(struct device *old_dev)
 
 	dev_dbg(old_dev, "unregister\n");
 
-	dev_remove_parameters(old_dev);
+	bobject_del(&old_dev->bobject);
 
 	if (old_dev->driver)
 		device_remove(old_dev);
@@ -620,38 +621,6 @@ int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
 
 	return generic_memmap_rw(cdev, map, flags);
 }
-
-/**
- * dev_set_name - set a device name
- * @dev: device
- * @fmt: format string for the device's name
- *
- * NOTE: This function expects dev->name to be free()-able, so extra
- * precautions needs to be taken when mixing its usage with manual
- * assignement of device.name.
- */
-int dev_set_name(struct device *dev, const char *fmt, ...)
-{
-	va_list vargs;
-	int err;
-	/*
-	 * Save old pointer in case we are overriding already set name
-	 */
-	char *oldname = dev->name;
-
-	va_start(vargs, fmt);
-	err = vasprintf(&dev->name, fmt, vargs);
-	va_end(vargs);
-
-	/*
-	 * Free old pointer, we do this after vasprintf call in case
-	 * old device name was in one of vargs
-	 */
-	free(oldname);
-
-	return WARN_ON(err < 0) ? err : 0;
-}
-EXPORT_SYMBOL_GPL(dev_set_name);
 
 /**
  * dev_add_alias - add alias for device

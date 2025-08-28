@@ -308,6 +308,17 @@ config CMD_VERSION
 
 	  barebox 2014.05.0-00142-gb289373 #177 Mon May 12 20:35:55 CEST 2014
 
+config CMD_BFETCH
+	tristate
+	depends on BANNER
+	select STRUCTIO
+	imply CMD_UPTIME
+	imply CMD_ARM_CPUINFO if ARM
+	imply CMD_DEVINFO
+	prompt "bfetch"
+	help
+	  Print system information from barebox point of view. Fancily.
+
 config CMD_MMC
 	tristate
 	prompt "mmc command allowing to set enhanced area"
@@ -1535,23 +1546,6 @@ config CMD_EDIT
 
 	  Use cursor keys, Ctrl-C to exit and Ctrl-D to exit-with-save.
 
-config CMD_LOGIN
-	tristate
-	select PASSWORD
-	depends on !CONSOLE_NONE
-	prompt "login"
-	help
-	  Ask for a password
-
-	  Usage: login [-t TIMEOUT] COMMAND
-
-	  Asks for a password from the console before script execution continues.
-	  The password can be set with the 'passwd' command. Instead of specifying
-	  a TIMEOUT the magic variable 'global.login.timeout' could be set.
-
-	  Options:
-		  -t TIMEOUT	Execute COMMAND if no login withing TIMEOUT seconds
-
 config CMD_MENU
 	tristate
 	depends on MENU
@@ -1645,37 +1639,6 @@ config CMD_MENUTREE
 	  Options:
 		  -m DIR	directory where the menu starts (Default: /env/menu)
 
-config CMD_PASSWD
-	tristate
-	depends on CMD_LOGIN
-	prompt "passwd"
-	help
-	  Set password
-
-	  Interactively asks for a password. The digest of this password will be
-	  stored in /env/etc/passwd. This is then used by the 'login' command.
-
-	  Passwords can be generated on the host machine using barebox sandbox.
-
-	  Entering an empty string will disable the password function.
-
-if CMD_LOGIN || CMD_PASSWD
-
-choice
-	prompt "passwd mode"
-
-config PASSWD_MODE_HIDE
-	bool "Hide"
-
-config PASSWD_MODE_STAR
-	bool "Star"
-
-config PASSWD_MODE_CLEAR
-	bool "Clear"
-
-endchoice
-
-endif
 config CMD_SPLASH
 	bool
 	select IMAGE_RENDERER
@@ -2353,6 +2316,55 @@ config CMD_KEYSTORE
 	prompt "keystore"
 	help
 	  keystore provides access to the barebox keystore.
+
+config CMD_LOGIN
+	tristate
+	select PASSWORD
+	depends on !CONSOLE_NONE
+	prompt "login"
+	help
+	  Ask for a password
+
+	  Usage: login [-t TIMEOUT] COMMAND
+
+	  Asks for a password from the console before script execution continues.
+	  The password can be set with the 'passwd' command. Instead of specifying
+	  a TIMEOUT the magic variable 'global.login.timeout' could be set.
+
+	  Options:
+		  -t TIMEOUT	Execute COMMAND if no login withing TIMEOUT seconds
+
+config CMD_PASSWD
+	tristate
+	depends on CMD_LOGIN
+	prompt "passwd"
+	help
+	  Set password
+
+	  Interactively asks for a password. The digest of this password will be
+	  stored in /env/etc/passwd. This is then used by the 'login' command.
+
+	  Passwords can be generated on the host machine using barebox sandbox.
+
+	  Entering an empty string will disable the password function.
+
+if CMD_LOGIN || CMD_PASSWD
+
+choice
+	prompt "passwd mode"
+
+config PASSWD_MODE_HIDE
+	bool "Hide"
+
+config PASSWD_MODE_STAR
+	bool "Star"
+
+config PASSWD_MODE_CLEAR
+	bool "Clear"
+
+endchoice
+
+endif
 
 # end Security commands
 endmenu

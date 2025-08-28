@@ -116,7 +116,6 @@ void of_print_nodes(struct device_node *node, int indent, unsigned maxpropsize);
 void of_print_properties(struct device_node *node, unsigned maxpropsize);
 int of_diff(struct device_node *a, struct device_node *b, int indent);
 int of_probe(void);
-int of_parse_dtb(struct fdt_header *fdt);
 struct device_node *of_unflatten_dtb(const void *fdt, int size);
 struct device_node *of_unflatten_dtb_const(const void *infdt, int size);
 

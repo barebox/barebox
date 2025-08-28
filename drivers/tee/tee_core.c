@@ -10,6 +10,7 @@
 #include <linux/tee_drv.h>
 #include <linux/uaccess.h>
 #include <linux/printk.h>
+#include <structio.h>
 #include "tee_private.h"
 
 #define TEE_NUM_DEVICES	32
@@ -487,9 +488,31 @@ static void tee_devinfo(struct device *dev)
 {
 	struct tee_device *teedev = dev->priv;
 	struct tee_ioctl_version_data vers;
+	const char *impl = NULL, *rev;
 
 	teedev->desc->ops->get_version(teedev, &vers);
-	printf("Implementation ID: %d\n", vers.impl_id);
+
+	switch (vers.impl_id) {
+	case TEE_IMPL_ID_OPTEE:
+		impl = "optee";
+		break;
+	case TEE_IMPL_ID_AMDTEE:
+		impl = "amdtee";
+		break;
+	}
+
+	if (structio_active()) {
+		stprintf("impl.id", "%d", vers.impl_id);
+		if (impl)
+			stprintf("impl.name", "%s", impl);
+	} else {
+		printf("Implementation ID: %d%s%s%s\n", vers.impl_id,
+		       impl ? " ( " : "", impl, impl ? ")" : "");
+	}
+
+	rev = dev_get_param(dev->parent, "revision");
+	if (rev)
+		stprintf_prefix("impl.rev", "Revision: ", "%s", rev);
 }
 
 /**

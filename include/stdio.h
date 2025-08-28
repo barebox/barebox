@@ -10,10 +10,6 @@
 /*
  * STDIO based functions (can always be used)
  */
-
-/* serial stuff */
-void serial_printf(const char *fmt, ...) __printf(1, 2);
-
 int sprintf(char *buf, const char *fmt, ...) __printf(2, 3);
 int snprintf(char *buf, size_t size, const char *fmt, ...) __printf(3, 4);
 int scnprintf(char *buf, size_t size, const char *fmt, ...) __printf(3, 4);

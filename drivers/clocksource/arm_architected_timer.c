@@ -24,7 +24,16 @@ static struct clocksource cs = {
 
 static int arm_arch_timer_probe(struct device *dev)
 {
-	cs.mult = clocksource_hz2mult(get_cntfrq(), cs.shift);
+	u32 cntfrq;
+	int ret;
+
+	/* Some platforms don't set CNTFRQ_EL0 before barebox */
+	ret = of_property_read_u32(dev->of_node, "clock-frequency", &cntfrq);
+
+	if (ret)
+		cntfrq = get_cntfrq();
+
+	cs.mult = clocksource_hz2mult(cntfrq, cs.shift);
 
 	return init_clock(&cs);
 }

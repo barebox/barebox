@@ -10,7 +10,6 @@
 #include <of_address.h>
 #include <pm_domain.h>
 
-#include <asm/optee.h>
 #include <asm-generic/memory_layout.h>
 
 #include <linux/io.h>

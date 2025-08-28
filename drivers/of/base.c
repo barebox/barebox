@@ -778,11 +778,13 @@ struct device_node *of_find_node_with_property(struct device_node *from,
 EXPORT_SYMBOL(of_find_node_with_property);
 
 /**
- * of_match_node - Tell if an device_node has a matching of_match structure
+ * of_match_node - Tell if a device_node has a matching of_device_id structure
  *      @matches:       array of of device match structures to search in
  *      @node:          the of device structure to match against
  *
  *      Low level utility function used by device matching.
+ *
+ *      Return: pointer to the best matching of_device_id structure, or NULL
  */
 const struct of_device_id *of_match_node(const struct of_device_id *matches,
 					 const struct device_node *node)

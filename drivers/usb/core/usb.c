@@ -48,7 +48,7 @@
 static int dev_count;
 static int dev_index;
 
-static LIST_HEAD(host_list);
+LIST_HEAD(usb_host_list);
 LIST_HEAD(usb_device_list);
 
 static void print_usb_device(struct usb_device *dev)
@@ -81,7 +81,7 @@ static int usb_hw_detect(struct device *dev)
 {
 	struct usb_host *host;
 
-	list_for_each_entry(host, &host_list, list) {
+	list_for_each_entry(host, &usb_host_list, list) {
 		if (dev == host->hw_dev)
 			return usb_host_detect(host);
 	}
@@ -91,7 +91,7 @@ static int usb_hw_detect(struct device *dev)
 
 int usb_register_host(struct usb_host *host)
 {
-	list_add_tail(&host->list, &host_list);
+	list_add_tail(&host->list, &usb_host_list);
 	host->busnum = host_busnum++;
 	slice_init(&host->slice, dev_name(host->hw_dev));
 	if (!host->hw_dev->detect)
@@ -454,7 +454,6 @@ int usb_new_device(struct usb_device *dev)
 	void *buf;
 	struct usb_host *host = dev->host;
 	struct usb_device *parent = dev->parent;
-	char str[16];
 
 	if (parent)
 		dev_set_name(&dev->dev, "%s-%d", parent->dev.name,
@@ -559,10 +558,9 @@ int usb_new_device(struct usb_device *dev)
 			dev->descriptor->iProduct, "%u");
 	dev_add_param_uint32_fixed(&dev->dev, "iSerialNumber",
 			dev->descriptor->iSerialNumber, "%u");
-	dev_add_param_fixed(&dev->dev, "iSerialNumber", str);
-	dev_add_param_fixed(&dev->dev, "Manufacturer", dev->mf);
-	dev_add_param_fixed(&dev->dev, "Product", dev->prod);
-	dev_add_param_fixed(&dev->dev, "SerialNumber", dev->serial);
+	dev_add_param_fixed(&dev->dev, "Manufacturer", "%s", dev->mf);
+	dev_add_param_fixed(&dev->dev, "Product", "%s", dev->prod);
+	dev_add_param_fixed(&dev->dev, "SerialNumber", "%s", dev->serial);
 	dev_add_param_uint32_fixed(&dev->dev, "idVendor",
 			dev->descriptor->idVendor, "%04x");
 	dev_add_param_uint32_fixed(&dev->dev, "idProduct",
@@ -655,7 +653,7 @@ int usb_rescan(void)
 
 	pr_info("USB: scanning bus for devices...\n");
 
-	list_for_each_entry(host, &host_list, list) {
+	list_for_each_entry(host, &usb_host_list, list) {
 		ret = usb_host_detect(host);
 		if (ret)
 			continue;

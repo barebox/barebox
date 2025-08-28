@@ -11,6 +11,17 @@
 
 #define	FLAG_VERBOSE		BIT(0)
 #define	FLAG_IOPORT		BIT(1)
+#define	FLAG_JSON		BIT(2)
+
+static inline bool json_puts(const char *str, int flags)
+{
+	if (flags & FLAG_JSON) {
+		puts(str);
+		return true;
+	}
+
+	return false;
+}
 
 static void __print_resources(struct resource *res, int indent,
 			      ulong *addr, unsigned flags)
@@ -24,32 +35,48 @@ static void __print_resources(struct resource *res, int indent,
 	if (addr && !region_overlap_end_inclusive(*addr, *addr, res->start, res->end))
 		return;
 
-	if ((flags & FLAG_VERBOSE) && !(flags & FLAG_IOPORT))
+	if ((flags & FLAG_VERBOSE) && !(flags & (FLAG_IOPORT | FLAG_JSON)))
 		printf("%-58s", resource_typeattr_format(buf, sizeof(buf), res) ?: "");
 
 	for (i = 0; i < indent; i++)
 		printf("  ");
 
-	if (flags & (FLAG_VERBOSE | FLAG_IOPORT)) {
-		snprintf(buf, sizeof(buf), "%pa", &size);
-		size_str = buf;
+	if (flags & FLAG_JSON) {
+		printf("{ \"name\": \"%s\", \"start\": \"%pa\", "
+		       "\"end\": \"%pa\", \"reserved\": %s",
+		       res->name, &res->start, &res->end,
+		       is_reserved_resource(res) ? "true" : "false");
 	} else {
-		size_str = size_human_readable(size);
+		if (flags & (FLAG_VERBOSE | FLAG_IOPORT)) {
+			snprintf(buf, sizeof(buf), "%pa", &size);
+			size_str = buf;
+		} else {
+			size_str = size_human_readable(size);
+		}
+
+		printf("%pa - %pa (size %9s) %s%s\n",
+		       &res->start, &res->end, size_str,
+		       is_reserved_resource(res) ? "[R] " : "",
+		       res->name);
 	}
 
-	printf("%pa - %pa (size %9s) %s%s\n",
-			&res->start, &res->end, size_str,
-			is_reserved_resource(res) ? "[R] " : "",
-			res->name);
-
-	list_for_each_entry(r, &res->children, sibling) {
-		__print_resources(r, indent + 1, addr, flags);
+	if (!list_empty(&res->children)) {
+		json_puts(", \"children\": [\n", flags);
+		list_for_each_entry(r, &res->children, sibling) {
+			__print_resources(r, indent + 1, addr, flags);
+			if (r->sibling.next != &res->children)
+				json_puts(",\n", flags);
+		}
+		json_puts("]", flags);
 	}
+
+	json_puts("}", flags);
 }
 
 static void print_resources(struct resource *res, ulong *addr, unsigned flags)
 {
 	__print_resources(res, 0, addr, flags);
+	json_puts("\n", flags);
 }
 
 static int do_iomem(int argc, char *argv[])
@@ -58,10 +85,13 @@ static int do_iomem(int argc, char *argv[])
 	unsigned flags = 0;
 	int opt, ret;
 
-	while((opt = getopt(argc, argv, "v")) > 0) {
+	while((opt = getopt(argc, argv, "vj")) > 0) {
 		switch(opt) {
 		case 'v':
 			flags |= FLAG_VERBOSE;
+			break;
+		case 'j':
+			flags |= FLAG_JSON;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -90,12 +120,16 @@ BAREBOX_CMD_HELP_START(iomem)
 BAREBOX_CMD_HELP_TEXT("Print barebox view of the physical address space.")
 BAREBOX_CMD_HELP_TEXT("An optional ADDRESS can be specified to get information")
 BAREBOX_CMD_HELP_TEXT("about its region in particular")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-v",  "verbose output")
+BAREBOX_CMD_HELP_OPT ("-j",  "JSON output")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(iomem)
 	.cmd		= do_iomem,
 	BAREBOX_CMD_DESC("show IO memory usage")
-	BAREBOX_CMD_OPTS("[-v] [ADDRESS]")
+	BAREBOX_CMD_OPTS("[-vj] [ADDRESS]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_iomem_help)
 BAREBOX_CMD_END

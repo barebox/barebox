@@ -3,7 +3,36 @@ import pytest
 import os
 import re
 import shlex
-from itertools import filterfalse
+
+
+def parse_config(lines):
+    options = {}
+    for line in lines:
+        if line and line.startswith("CONFIG_"):
+            key, val = line.split("=", 1)
+            key = key.strip()
+            val = val.strip()
+
+            if val == "y":
+                options[key] = True
+            elif val == "m":
+                options[key] = False
+            elif val == "n":
+                options[key] = None
+            elif val.startswith('"') and val.endswith('"'):
+                options[key] = val[1:-1]
+            else:
+                options[key] = int(val, base=0)
+
+    return options
+
+
+def open_config_file(path):
+    try:
+        with open(path) as f:
+            return f.read().splitlines()
+    except OSError:
+        return []
 
 
 def get_config(command):
@@ -19,17 +48,10 @@ def get_config(command):
 
     out, err, returncode = command.run("cat /env/data/config")
     if returncode != 0:
-        try:
-            with open(os.environ['LG_BUILDDIR'] + "/.config") as f:
-                out = f.read().splitlines()
-        except OSError:
-            return set()
+        out = open_config_file(os.environ['LG_BUILDDIR'] + "/.config")
 
-    options = set()
-    for line in out:
-        if line and line.startswith("CONFIG_"):
-            options.add(line.split('=')[0])
-    return options
+    return parse_config(out)
+
 
 def devinfo(barebox, device):
     info = {}
@@ -107,7 +129,7 @@ def of_get_property(barebox, path):
 
 def skip_disabled(config, *options):
     if bool(config):
-        undefined = list(filterfalse(config.__contains__, options))
+        undefined = [opt for opt in options if opt not in config]
 
         if bool(undefined):
             pytest.skip("skipping test due to disabled " + (",".join(undefined)) + " dependency")

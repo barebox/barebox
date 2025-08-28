@@ -63,18 +63,18 @@ struct firmware_mgr *firmwaremgr_find(const char *id)
  *
  * Find a firmware device handler using the device node of the firmware
  * handler. This allows to retrieve the firmware handler with a phandle from
- * the device tree.
+ * the device tree. If np is NULL, returns the first instance encountered.
  */
 struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np)
 {
 	struct firmware_mgr *mgr;
-	char *na, *nb;
+	char *na;
 
 	na = of_get_reproducible_name(np);
 
 	list_for_each_entry(mgr, &firmwaremgr_list, list) {
-		nb = of_get_reproducible_name(mgr->handler->device_node);
-		if (!strcmp(na, nb)) {
+		char *nb = of_get_reproducible_name(mgr->handler->device_node);
+		if (!na || !strcmp(na, nb)) {
 			free(na);
 			free(nb);
 			return mgr;

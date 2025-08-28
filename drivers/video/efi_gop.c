@@ -169,8 +169,6 @@ static int efi_gop_query(struct efi_gop_priv *priv)
 
 	priv->fb.screen_base = mode->frame_buffer_base;
 	priv->mode = mode->mode;
-	priv->fb.xres = priv->fb.mode->xres;
-	priv->fb.yres = priv->fb.mode->yres;
 
 	return 0;
 }

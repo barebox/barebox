@@ -37,7 +37,7 @@ void efi_main(efi_handle_t image, struct efi_system_table *sys_table)
 		BS->handle_protocol(efi_loaded_image->device_handle,
 				&efi_device_path_protocol_guid, (void **)&efi_device_path);
 
-	mem = efi_earlymem_alloc(sys_table, &memsize);
+	mem = efi_earlymem_alloc(sys_table, &memsize, EFI_LOADER_CODE);
 
 	mem_malloc_init(mem, mem + memsize - 1);
 

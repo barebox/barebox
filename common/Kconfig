@@ -518,6 +518,7 @@ config HUSH_FANCY_PROMPT
 	help
 	  Allow to set PS1 from the command line. PS1 can have several escaped commands
 	  like \h for the 'model' string or \w for the current working directory.
+	  PS1 can be set statically or computed on demand by executing PROMPT_COMMAND.
 
 config CMDLINE_EDITING
 	depends on !SHELL_NONE

@@ -716,6 +716,34 @@ static int gen_key(const char *keyname, const char *path)
 	return ret;
 }
 
+static void get_name_path(const char *keyspec, char **keyname, char **path)
+{
+	char *sep, *spec;
+
+	spec = strdup(keyspec);
+	if (!spec)
+		enomem_exit(__func__);
+
+	/* Split <key-hint>:<key-path> pair, <key-hint> is optional */
+	sep = strchr(spec, ':');
+	if (!sep) {
+		*path = spec;
+		return;
+	}
+
+	*sep = 0;
+	*keyname = strdup(spec);
+	if (!*keyname)
+		enomem_exit(__func__);
+
+	sep++;
+	*path = strdup(sep);
+	if (!*path)
+		enomem_exit(__func__);
+
+	free(spec);
+}
+
 int main(int argc, char *argv[])
 {
 	int i, opt, ret;
@@ -768,35 +796,31 @@ int main(int argc, char *argv[])
 	}
 
 	for (i = optind; i < argc; i++) {
-		char *keyspec = argv[i];
+		const char *keyspec = argv[i];
 		char *keyname = NULL;
-		char *path, *freep = NULL;
+		char *path = NULL;
 
-		if (!strncmp(keyspec, "pkcs11:", 7)) {
-			path = keyspec;
-		} else {
-			path = strchr(keyspec, ':');
-			if (path) {
-				*path = 0;
-				path++;
-				keyname = keyspec;
-			} else {
-				path = keyspec;
-			}
-		}
+		keyspec = try_resolve_env(keyspec);
+		if (!keyspec)
+			exit(1);
+
+		if (!strncmp(keyspec, "pkcs11:", 7))
+			path = strdup(keyspec);
+		else
+			get_name_path(keyspec, &keyname, &path);
 
 		if (!keyname) {
-			ret = asprintf(&freep, "key_%d", keynum++);
+			ret = asprintf(&keyname, "key_%d", keynum++);
 			if (ret < 0)
 				enomem_exit("asprintf");
-			keyname = freep;
 		}
 
 		ret = gen_key(keyname, path);
 		if (ret)
 			exit(1);
 
-		free(freep);
+		free(keyname);
+		free(path);
 	}
 
 	if (dts) {

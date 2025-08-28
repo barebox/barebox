@@ -129,7 +129,8 @@ static int nvmem_regmap_protect(void *ctx, unsigned int offset, size_t bytes,
 
 struct nvmem_device *
 nvmem_regmap_register_with_pp(struct regmap *map, const char *name,
-			      nvmem_cell_post_process_t cell_post_process)
+			      void (*fixup_dt_cell_info)(struct nvmem_device *nvmem,
+							 struct nvmem_cell_info *cell))
 {
 	struct nvmem_config config = {};
 
@@ -143,7 +144,7 @@ nvmem_regmap_register_with_pp(struct regmap *map, const char *name,
 	config.stride = 1;
 	config.word_size = 1;
 	config.size = regmap_size_bytes(map);
-	config.cell_post_process = cell_post_process;
+	config.fixup_dt_cell_info = fixup_dt_cell_info;
 	config.reg_write = nvmem_regmap_write;
 	config.reg_read = nvmem_regmap_read;
 	config.reg_protect = nvmem_regmap_protect;

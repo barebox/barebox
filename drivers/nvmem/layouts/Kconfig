@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config NVMEM_LAYOUTS
+	bool
+	depends on OF
+
+if NVMEM_LAYOUTS
+
+menu "Layout Types"
+
+endmenu
+
+endif

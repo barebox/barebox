@@ -109,8 +109,8 @@ static int imx_ocotp_reg_write(void *context, unsigned int offset, unsigned int 
 	return ret;
 }
 
-static int imx_ocotp_cell_pp(void *context, const char *id, unsigned int offset,
-			     void *data, size_t bytes)
+static int imx_ocotp_cell_pp(void *context, const char *id, int index,
+			     unsigned int offset, void *data, size_t bytes)
 {
 	/* Deal with some post processing of nvmem cell data */
 	if (id && !strcmp(id, "mac-address")) {
@@ -126,6 +126,12 @@ static int imx_ocotp_cell_pp(void *context, const char *id, unsigned int offset,
 	}
 
 	return 0;
+}
+
+static void imx_ocotp_fixup_dt_cell_info(struct nvmem_device *nvmem,
+					 struct nvmem_cell_info *cell)
+{
+	cell->read_post_process = imx_ocotp_cell_pp;
 }
 
 static struct regmap_bus imx_ocotp_regmap_bus = {
@@ -192,7 +198,7 @@ static int imx_ele_ocotp_probe(struct device *dev)
 		imx_ocotp_set_unique_machine_id(priv);
 
 	nvmem = nvmem_regmap_register_with_pp(priv->map, "imx_ocotp",
-					      imx_ocotp_cell_pp);
+					      imx_ocotp_fixup_dt_cell_info);
 	if (IS_ERR(nvmem))
 		return PTR_ERR(nvmem);
 

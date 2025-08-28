@@ -7,12 +7,17 @@
 #define __IMAGE_FIT_H__
 
 #include <linux/types.h>
+#include <linux/refcount.h>
 #include <bootm.h>
 
 struct fit_handle {
 	const void *fit;
 	void *fit_alloc;
 	size_t size;
+	char *filename;
+
+	struct list_head entry;
+	refcount_t users;
 
 	bool verbose;
 	enum bootm_verify verify;
@@ -26,7 +31,9 @@ struct fit_handle *fit_open(const char *filename, bool verbose,
 			    enum bootm_verify verify, loff_t max_size);
 struct fit_handle *fit_open_buf(const void *buf, size_t len, bool verbose,
 				enum bootm_verify verify);
-void *fit_open_configuration(struct fit_handle *handle, const char *name);
+void *fit_open_configuration(struct fit_handle *handle, const char *name,
+			     bool (*match_valid)(struct fit_handle *handle,
+						 struct device_node *config));
 int fit_has_image(struct fit_handle *handle, void *configuration,
 		  const char *name);
 int fit_open_image(struct fit_handle *handle, void *configuration,
@@ -35,6 +42,7 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 int fit_get_image_address(struct fit_handle *handle, void *configuration,
 			  const char *name, const char *property,
 			  unsigned long *address);
+int fit_config_verify_signature(struct fit_handle *handle, struct device_node *conf_node);
 
 void fit_close(struct fit_handle *handle);
 

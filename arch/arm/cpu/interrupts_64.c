@@ -84,14 +84,17 @@ void show_regs(struct pt_regs *regs)
 	eprintf("\n");
 }
 
-static void __noreturn do_exception(struct pt_regs *pt_regs)
+static void __noreturn do_exception(const char *reason, struct pt_regs *pt_regs)
 {
+	if (reason)
+		eprintf("PANIC: unable to handle %s\n", reason);
+
 	show_regs(pt_regs);
 
 	if (IN_PROPER)
 		unwind_backtrace(pt_regs);
 
-	panic_no_stacktrace("panic: unhandled exception");
+	panic_no_stacktrace("");
 }
 
 /**
@@ -102,8 +105,7 @@ static void __noreturn do_exception(struct pt_regs *pt_regs)
  */
 void do_fiq(struct pt_regs *pt_regs)
 {
-	eprintf("fast interrupt request\n");
-	do_exception(pt_regs);
+	do_exception("fast interrupt request", pt_regs);
 }
 
 /**
@@ -114,32 +116,27 @@ void do_fiq(struct pt_regs *pt_regs)
  */
 void do_irq(struct pt_regs *pt_regs)
 {
-	eprintf("interrupt request\n");
-	do_exception(pt_regs);
+	do_exception("interrupt request", pt_regs);
 }
 
 void do_bad_sync(struct pt_regs *pt_regs)
 {
-	eprintf("bad sync\n");
-	do_exception(pt_regs);
+	do_exception("bad sync", pt_regs);
 }
 
 void do_bad_irq(struct pt_regs *pt_regs)
 {
-	eprintf("bad irq\n");
-	do_exception(pt_regs);
+	do_exception("bad irq", pt_regs);
 }
 
 void do_bad_fiq(struct pt_regs *pt_regs)
 {
-	eprintf("bad fiq\n");
-	do_exception(pt_regs);
+	do_exception("bad fiq", pt_regs);
 }
 
 void do_bad_error(struct pt_regs *pt_regs)
 {
-	eprintf("bad error\n");
-	do_exception(pt_regs);
+	do_exception("bad error", pt_regs);
 }
 
 extern volatile int arm_ignore_data_abort;
@@ -148,9 +145,10 @@ extern volatile int arm_data_abort_occurred;
 static const char *data_abort_reason(ulong far)
 {
 	if (far < PAGE_SIZE)
-		return "NULL pointer dereference: ";
+		return "NULL pointer dereference";
+
 	if (inside_stack_guard_page(far))
-		return "Stack overflow: ";
+		return "stack overflow";
 
 	return NULL;
 }
@@ -169,16 +167,20 @@ void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 		extra = data_abort_reason(far);
 	}
 
-	eprintf("%s%s exception (ESR 0x%08x) at 0x%016lx\n", extra ?: "",
-		esr_get_class_string(esr), esr, far);
-	do_exception(pt_regs);
+	if (!extra)
+		extra = "paging request";
+
+	eprintf("PANIC: unable to handle %s at address 0x%016lx\n",
+		extra, far);
+
+	eprintf("%s (ESR 0x%08x)\n", esr_get_class_string(esr), esr);
+	do_exception(NULL, pt_regs);
 }
 
 
 void do_error(struct pt_regs *pt_regs)
 {
-	eprintf("error exception\n");
-	do_exception(pt_regs);
+	do_exception("error exception", pt_regs);
 }
 
 void data_abort_mask(void)

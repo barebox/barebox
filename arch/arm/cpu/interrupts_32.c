@@ -67,8 +67,11 @@ void show_regs (struct pt_regs *regs)
 #endif
 }
 
-static void __noreturn do_exception(struct pt_regs *pt_regs)
+static void __noreturn do_exception(const char *reason, struct pt_regs *pt_regs)
 {
+	if (reason)
+		eprintf("PANIC: unable to handle %s\n", reason);
+
 	show_regs(pt_regs);
 
 	panic_no_stacktrace("");
@@ -80,8 +83,7 @@ static void __noreturn do_exception(struct pt_regs *pt_regs)
  */
 void do_undefined_instruction (struct pt_regs *pt_regs)
 {
-	eprintf("undefined instruction\n");
-	do_exception(pt_regs);
+	do_exception("undefined instruction", pt_regs);
 }
 
 /**
@@ -93,8 +95,7 @@ void do_undefined_instruction (struct pt_regs *pt_regs)
  */
 void do_software_interrupt (struct pt_regs *pt_regs)
 {
-	eprintf("software interrupt\n");
-	do_exception(pt_regs);
+	do_exception("software interrupt", pt_regs);
 }
 
 /**
@@ -105,8 +106,7 @@ void do_software_interrupt (struct pt_regs *pt_regs)
  */
 void do_prefetch_abort (struct pt_regs *pt_regs)
 {
-	eprintf("prefetch abort\n");
-	do_exception(pt_regs);
+	do_exception("prefetch abort", pt_regs);
 }
 
 static const char *data_abort_reason(ulong far)
@@ -131,10 +131,10 @@ void do_data_abort (struct pt_regs *pt_regs)
 
 	asm volatile ("mrc     p15, 0, %0, c6, c0, 0" : "=r" (far) : : "cc");
 
-	eprintf("unable to handle %s at address 0x%08x\n",
+	eprintf("PANIC: unable to handle %s at address 0x%08x\n",
 		data_abort_reason(far), far);
 
-	do_exception(pt_regs);
+	do_exception(NULL, pt_regs);
 }
 
 /**
@@ -145,8 +145,7 @@ void do_data_abort (struct pt_regs *pt_regs)
  */
 void do_fiq (struct pt_regs *pt_regs)
 {
-	eprintf("fast interrupt request\n");
-	do_exception(pt_regs);
+	do_exception("fast interrupt request", pt_regs);
 }
 
 /**
@@ -157,8 +156,7 @@ void do_fiq (struct pt_regs *pt_regs)
  */
 void do_irq (struct pt_regs *pt_regs)
 {
-	eprintf("interrupt request\n");
-	do_exception(pt_regs);
+	do_exception("interrupt request", pt_regs);
 }
 
 extern volatile int arm_ignore_data_abort;

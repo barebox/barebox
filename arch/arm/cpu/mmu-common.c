@@ -18,6 +18,8 @@
 
 const char *map_type_tostr(maptype_t map_type)
 {
+	map_type &= ~ARCH_MAP_FLAG_PAGEWISE;
+
 	switch (map_type) {
 	case ARCH_MAP_CACHED_RWX:	return "RWX";
 	case ARCH_MAP_CACHED_RO:	return "RO";

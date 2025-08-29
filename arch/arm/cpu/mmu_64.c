@@ -413,19 +413,21 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 
 	early_remap_range(membase, memsize, ARCH_MAP_CACHED_RWX);
 
-	if (optee_get_membase(&optee_membase)) {
-                optee_membase = membase + memsize - OPTEE_SIZE;
+	/* Default location for OP-TEE: end of DRAM, leave OPTEE_SIZE space for it */
+	optee_membase = membase + memsize - OPTEE_SIZE;
 
-		barebox_size = optee_membase - barebox_start;
+	barebox_size = optee_membase - barebox_start;
 
-		early_remap_range(optee_membase - barebox_size, barebox_size,
-			     ARCH_MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
-	} else {
-		barebox_size = membase + memsize - barebox_start;
+	/*
+	 * map barebox area using pagewise mapping. We want to modify the XN/RO
+	 * attributes later, but can't switch from sections to pages later when
+	 * executing code from it
+	 */
+	early_remap_range(barebox_start, barebox_size,
+		     ARCH_MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
 
-		early_remap_range(membase + memsize - barebox_size, barebox_size,
-			     ARCH_MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
-	}
+	/* OP-TEE might be at location specified in OP-TEE header */
+	optee_get_membase(&optee_membase);
 
 	early_remap_range(optee_membase, OPTEE_SIZE, MAP_FAULT);
 

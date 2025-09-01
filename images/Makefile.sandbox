@@ -9,7 +9,6 @@ fuzzer-$(CONFIG_FITIMAGE)	+= fit
 fuzzer-$(CONFIG_OFTREE)		+= dtb
 fuzzer-$(CONFIG_OFTREE)		+= fdt-compatible
 fuzzer-$(CONFIG_PARTITION)	+= partitions
-fuzzer-$(CONFIG_PRINTF_HEXSTR)	+= printf
 
 ifeq ($(CONFIG_SANDBOX),y)
 

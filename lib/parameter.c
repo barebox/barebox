@@ -155,8 +155,8 @@ static int compare(struct list_head *a, struct list_head *b)
 
 static int __bobject_add_param(struct param_d *param, struct bobject *bobj,
 			   const char *name,
-			   int (*set)(bobject_t _bobj, struct param_d *p, const char *val),
-			   const char *(*get)(bobject_t _bobj, struct param_d *p),
+			   int (*set)(struct bobject *, struct param_d *p, const char *val),
+			   const char *(*get)(struct bobject *, struct param_d *p),
 			   unsigned long flags)
 {
 	if (get_param_by_name(bobj, name))
@@ -199,8 +199,8 @@ static int __bobject_add_param(struct param_d *param, struct bobject *bobj,
  * not use static arrays when using the generic functions.
  */
 struct param_d *bobject_add_param(bobject_t _bobj, const char *name,
-			      int (*set)(bobject_t _bobj, struct param_d *p, const char *val),
-			      const char *(*get)(bobject_t _bobj, struct param_d *param),
+			      int (*set)(struct bobject *, struct param_d *p, const char *val),
+			      const char *(*get)(struct bobject *, struct param_d *param),
 			      unsigned long flags)
 {
 	struct bobject *bobj = _bobj.bobj;

@@ -30,8 +30,8 @@ enum param_type {
 };
 
 struct param_d {
-	const char* (*get)(bobject_t, struct param_d *param);
-	int (*set)(bobject_t, struct param_d *param, const char *val);
+	const char* (*get)(struct bobject *, struct param_d *param);
+	int (*set)(struct bobject *, struct param_d *param, const char *val);
 	void (*info)(struct param_d *param);
 	unsigned int flags;
 	const char *name;

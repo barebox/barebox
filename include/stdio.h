@@ -57,6 +57,8 @@ int vprintf(const char *fmt, va_list args);
 int ctrlc(void);
 int ctrlc_non_interruptible(void);
 void ctrlc_handled(void);
+void console_ctrlc_allow(void);
+void console_ctrlc_forbid(void);
 #else
 static inline int tstc(void)
 {
@@ -97,6 +99,8 @@ static inline void ctrlc_handled(void)
 {
 }
 
+static inline void console_ctrlc_allow(void) { }
+static inline void console_ctrlc_forbid(void) { }
 #endif
 
 const char *size_human_readable(unsigned long long size);

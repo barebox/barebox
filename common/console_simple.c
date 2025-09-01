@@ -66,20 +66,6 @@ void console_flush(void)
 }
 EXPORT_SYMBOL(console_flush);
 
-/* test if ctrl-c was pressed */
-int ctrlc (void)
-{
-	int ret = 0;
-#ifdef CONFIG_ARCH_HAS_CTRLC
-	ret = arch_ctrlc();
-#else
-	if (tstc() && getchar() == 3)
-		ret = 1;
-#endif
-	return ret;
-}
-EXPORT_SYMBOL(ctrlc);
-
 int console_register(struct console_device *newcdev)
 {
 	if (console)

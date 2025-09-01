@@ -222,14 +222,6 @@ static inline int barebox_set_loglevel(int loglevel)
 }
 #endif
 
-#ifdef CONFIG_CONSOLE_FULL
-void console_ctrlc_allow(void);
-void console_ctrlc_forbid(void);
-#else
-static inline void console_ctrlc_allow(void) { }
-static inline void console_ctrlc_forbid(void) { }
-#endif
-
 /**
  * clk_get_for_console - get clock, ignoring known unavailable clock controller
  * @dev: device for clock "consumer"

@@ -2,7 +2,7 @@
 # This Containerfile is used to build an image containing basic stuff to be used
 # to build barebox and run our test suites.
 
-FROM debian:bookworm
+FROM debian:trixie
 MAINTAINER Sascha Hauer <s.hauer@pengutronix.de>
 LABEL Description="This image is for building and testing barebox inside a container"
 
@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	libc6-i386 \
 	libgit2-dev \
 	libguestfs-tools \
-	liblz4-tool \
+	lz4 \
 	librsvg2-bin \
 	libseccomp-dev \
 	libssl-dev \
@@ -61,11 +61,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV GCC_VERSION=15.2.0
 ENV LLVM_VERSION=21
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-	lsb-release software-properties-common gnupg \
+RUN apt-get update && apt-get install -y --no-install-recommends lsb-release gnupg \
 	&& wget https://apt.llvm.org/llvm.sh \
 	&& chmod +x llvm.sh && ./llvm.sh ${LLVM_VERSION} \
-	&& apt-get remove -y lsb-release software-properties-common gnupg \
+	&& apt-get remove -y lsb-release gnupg \
 	&& apt-get autoremove -y --purge \
 	&& apt-get clean \
 	&& rm -rf llvm.sh /var/lib/apt/lists/*

@@ -345,6 +345,7 @@ bool imx6_can_access_tzasc(void)
 void imx8m_tzc380_init(void)
 {
 	u32 __iomem *gpr = IOMEM(MX8M_IOMUXC_GPR_BASE_ADDR);
+	resource_size_t ram_sz;
 
 	/* Enable TZASC and lock setting */
 	setbits_le32(&gpr[10], GPR_TZASC_EN);
@@ -364,13 +365,21 @@ void imx8m_tzc380_init(void)
 	if (cpu_is_mx8mn() || cpu_is_mx8mp())
 		setbits_le32(&gpr[10], GPR_TZASC_ID_SWAP_BYPASS_LOCK);
 
+	/* All i.MX8M do have a 32-bit bus width except for the i.MX8M Nano */
+	ram_sz = imx8m_barebox_earlymem_size(32);
+	if (cpu_is_mx8mn())
+		ram_sz = imx8m_barebox_earlymem_size(16);
+
 	/*
-	 * set Region 0 attribute to allow secure and non-secure
-	 * read/write permission. Found some masters like usb dwc3
-	 * controllers can't work with secure memory.
+	 * Setup Region 1 to cover complete earlymem size, to  allow non-secure
+	 * read/write permission. Found some masters like usb dwc3 controllers
+	 * can't work with secure memory.
+	 *
+	 * According to upstream OP-TEE and TF-A the TZC-380 reagion base
+	 * address starts at 0x0 and not at MX8M_DDR_CSD1_BASE_ADDR.
 	 */
-	writel(MX8M_TZASC_REGION_ATTRIBUTES_0_SP,
-		   MX8M_TZASC_REGION_ATTRIBUTES_0);
+	imx_tzc380_init_and_setup(IOMEM(MX8M_TZASC_BASE_ADDR), 1,
+				  0, ram_sz, TZC380_REGION_SP_NS_RW);
 }
 
 bool imx8m_tzc380_is_enabled(void)

@@ -30,7 +30,7 @@ static int check_node_data(struct jffs2_sb_info *c, struct jffs2_tmp_dnode_info 
 	struct jffs2_raw_node_ref *ref = tn->fn->raw;
 	int err = 0, pointed = 0;
 	struct jffs2_eraseblock *jeb;
-	unsigned char *buffer;
+	unsigned char *buffer = NULL;
 	uint32_t crc, ofs, len;
 	size_t retlen;
 

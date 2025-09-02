@@ -75,11 +75,11 @@ TLV Binary Generation
 To generate a TLV binary the schema for the specific TLV must be defined.
 Schemas are yaml-files that represent what the actual parser in barebox expects.
 
-An example schema can be found in ``srcipts/bareboxtlv-generator/schema-example.yaml``.
+An example schema can be found in ``scripts/bareboxtlv-generator/schema-example.yaml``.
 This schema defines some well-known tags and two board-specific tags.
 
 Afterwards another yaml-file with the data for the TLV binary is needed.
-An example can be found in ``srcipts/bareboxtlv-generator/data-example.yaml``.
+An example can be found in ``scripts/bareboxtlv-generator/data-example.yaml``.
 
 With these information in place a TLV binary can be created:
 

@@ -12,6 +12,7 @@
 #include <asm/mmu.h>
 
 extern char __dtb_exynos8895_dreamlte_start[];
+extern char __dtb_exynos990_x1s_start[];
 
 /* called from assembly */
 void lowlevel_exynos(void *downstream_fdt);
@@ -55,6 +56,8 @@ static noinline void exynos_continue(void *downstream_fdt)
 	/* select device tree dynamically */
 	if (is_model(downstream_fdt, "Samsung DREAMLTE")) {
 		__dtb_start = __dtb_exynos8895_dreamlte_start;
+	} else if (is_model(downstream_fdt, "Samsung X1S")) {
+		__dtb_start = __dtb_exynos990_x1s_start;
 	} else {
 		/* we didn't match any device */
 		return;

@@ -8,5 +8,9 @@ if test "$global.model" = "Samsung Galaxy S8 (SM-G950F)"; then
 	global fit_offset=0x9000000
 fi
 
+if test "$global.model" = "Samsung Galaxy S20 5G"; then
+	global fit_offset=0x4000000
+fi
+
 addpart /dev/ram0 0x2000000@$global.fit_offset(fit)
 bootm -f /dev/ram0.fit

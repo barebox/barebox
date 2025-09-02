@@ -13,6 +13,7 @@
 #include <of_address.h>
 
 #define EXYNOS8895_DECON0	0x12860000
+#define EXYNOS990_DECON0	0x19050000
 #define HW_SW_TRIG_CONTROL	0x70
 #define TRIG_AUTO_MASK_EN	BIT(12)
 #define SW_TRIG_EN		BIT(8)
@@ -30,6 +31,8 @@ static int exynos_postcore_init(void)
 	 */
 	if (of_machine_is_compatible("samsung,exynos8895"))
 		trig_ctrl = IOMEM(EXYNOS8895_DECON0 + HW_SW_TRIG_CONTROL);
+	else if (of_machine_is_compatible("samsung,exynos990"))
+		trig_ctrl = IOMEM(EXYNOS990_DECON0 + HW_SW_TRIG_CONTROL);
 	else
 		return 0;
 
@@ -52,6 +55,7 @@ static inline int exynos_init(struct device *dev)
 
 static const struct of_device_id exynos_of_match[] = {
 	{ .compatible = "samsung,dreamlte" },
+	{ .compatible = "samsung,x1s" },
 	{ /* Sentinel */},
 };
 

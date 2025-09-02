@@ -1,0 +1,12 @@
+#!/bin/sh
+
+#
+# Boot a FIT image, packaged as ramdisk in the boot.img and placed
+# in memory by s-boot.
+#
+if test "$global.model" = "Samsung Galaxy S8 (SM-G950F)"; then
+	global fit_offset=0x9000000
+fi
+
+addpart /dev/ram0 0x2000000@$global.fit_offset(fit)
+bootm -f /dev/ram0.fit

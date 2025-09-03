@@ -945,6 +945,17 @@ config HABV4_IMAGE_SIGNED_USB
 	  enable the creation of a usb signed image, if the habv4-imx6-gencsf.h
 	  included in the flash-header and the NXP cst Tool is available
 
+config HABV4_IMAGE_SIGNED_USB_DCD
+	bool "build signed USB images including DCD"
+	depends on ARCH_IMX6
+	depends on HABV4_IMAGE_SIGNED_USB
+	help
+	  enable the creation of a usb signed image loaded via SDP and DCD_WRITE
+	  ROM command, if the habv4-imx6-gencsf.h included in the flash-header
+	  and the NXP cst Tool is available. The image will have the filename ending
+	  *-dcdusb.img and is compatible with NXPs uuu tool. The images are not
+	  compatible with imx-usb-loader.
+
 config HABV4_IMAGE_SIGNED_ENCRYPTED
 	bool "build signed encrypted images"
 	help

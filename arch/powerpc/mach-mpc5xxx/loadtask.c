@@ -13,12 +13,12 @@
 #include <types.h>
 
 /* BestComm/SmartComm microcode */
-extern int taskTable;
+extern int taskTable[];
 
 void loadtask(int basetask, int tasks)
 {
 	int *sram = (int *)MPC5XXX_SRAM;
-	int *task_org = &taskTable;
+	int *task_org = taskTable;
 	unsigned int start, offset, end;
 	int i;
 

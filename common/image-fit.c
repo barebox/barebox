@@ -491,19 +491,19 @@ static int fit_image_verify_signature(struct fit_handle *handle,
 	return ret;
 }
 
-int fit_has_image(struct fit_handle *handle, void *configuration,
-		  const char *name)
+bool fit_has_image(struct fit_handle *handle, void *configuration,
+		   const char *name)
 {
 	const char *unit;
 	struct device_node *conf_node = configuration;
 
 	if (!conf_node)
-		return -EINVAL;
+		return false;
 
 	if (of_property_read_string(conf_node, name, &unit))
-		return 0;
+		return false;
 
-	return 1;
+	return true;
 }
 
 static int fit_get_address(struct device_node *image, const char *property,

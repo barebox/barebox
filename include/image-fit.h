@@ -34,8 +34,8 @@ struct fit_handle *fit_open_buf(const void *buf, size_t len, bool verbose,
 void *fit_open_configuration(struct fit_handle *handle, const char *name,
 			     bool (*match_valid)(struct fit_handle *handle,
 						 struct device_node *config));
-int fit_has_image(struct fit_handle *handle, void *configuration,
-		  const char *name);
+bool fit_has_image(struct fit_handle *handle, void *configuration,
+		   const char *name);
 int fit_open_image(struct fit_handle *handle, void *configuration,
 		   const char *name, const void **outdata,
 		   unsigned long *outsize);

@@ -4,7 +4,6 @@ menu "Allwinner (sunxi) boards"
 config ARCH_SUN50I_A64
 	bool "Allwinner A64 SoC"
 	select CPU_V8
-	select CPU_SUPPORTS_64BIT_KERNEL
 	select CLOCKSOURCE_ARM_ARCHITECTED_TIMER
 	select PINCTRL_SUN50I_A64
 	depends on 64BIT

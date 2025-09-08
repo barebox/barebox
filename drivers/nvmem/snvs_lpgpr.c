@@ -125,6 +125,8 @@ static int snvs_lpgpr_probe(struct device *dev)
 	cfg->size = priv->dcfg->size;
 	cfg->reg_write = snvs_lpgpr_write;
 	cfg->reg_read  = snvs_lpgpr_read;
+	cfg->name = "snvs";
+	cfg->id = NVMEM_DEVID_NONE;
 
 	nvmem = nvmem_register(cfg);
 	if (IS_ERR(nvmem)) {

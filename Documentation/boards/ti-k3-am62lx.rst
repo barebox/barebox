@@ -3,7 +3,7 @@
 TI K3 AM62lx based boards
 =========================
 
-The TI AM62lx is SoC in the line of TI K3 64-bit ARM SoCs.
+The TI AM62lx is a SoC in the line of TI K3 64-bit ARM SoCs.
 
 The boot process of the TI AM62x SoCs is a two step process. The first stage boot loader
 is loaded by the ROM code and executed on the Cortex-A53 processor. This stage contains

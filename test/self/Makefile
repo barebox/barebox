@@ -20,6 +20,7 @@ obj-$(CONFIG_SELFTEST_REGULATOR) += regulator.o test_regulator.dtbo.o
 obj-$(CONFIG_SELFTEST_TEST_COMMAND) += test_command.o
 obj-$(CONFIG_SELFTEST_IDR) += idr.o
 obj-$(CONFIG_SELFTEST_TLV) += tlv.o tlv.dtb.o
+obj-$(CONFIG_SELFTEST_DM) += dm.o
 
 ifdef REGENERATE_KEYTOC
 

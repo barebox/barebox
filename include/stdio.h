@@ -21,6 +21,8 @@ int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 int asprintf(char **strp, const char *fmt, ...) __printf(2, 3);
 char *bvasprintf(const char *fmt, va_list ap);
 int vasprintf(char **strp, const char *fmt, va_list ap);
+int vrasprintf(char **strp, const char *fmt, va_list ap);
+int rasprintf(char **strp, const char *fmt, ...) __printf(2, 3);
 #else
 static inline __printf(2, 3) int asprintf(char **strp, const char *fmt, ...)
 {
@@ -31,6 +33,14 @@ static inline char *bvasprintf(const char *fmt, va_list ap)
 	return NULL;
 }
 static inline int vasprintf(char **strp, const char *fmt, va_list ap)
+{
+	return -1;
+}
+static inline int vrasprintf(char **strp, const char *fmt, va_list ap)
+{
+	return -1;
+}
+static inline __printf(2, 3) int rasprintf(char **strp, const char *fmt, ...)
 {
 	return -1;
 }

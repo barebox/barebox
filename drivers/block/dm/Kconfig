@@ -1,0 +1,7 @@
+menuconfig DM_BLK
+	bool "Device mapper"
+	help
+	  Composable virtual block devices made up of mappings to
+	  other data sources. Modeled after, and intended to be
+	  compatible with, the Linux kernel's device mapper subsystem.
+

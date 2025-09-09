@@ -2,3 +2,4 @@
 obj-$(CONFIG_EFI_BLK) += efi-block-io.o
 obj-$(CONFIG_VIRTIO_BLK) += virtio_blk.o
 obj-$(CONFIG_RAMDISK_BLK) += ramdisk.o
+obj-y += dm/

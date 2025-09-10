@@ -11,6 +11,7 @@
 void am62x_get_bootsource(enum bootsource *src, int *instance);
 void am62lx_get_bootsource(enum bootsource *src, int *instance);
 bool am62x_boot_is_emmc(void);
+bool am62lx_boot_is_emmc(void);
 u64 am62x_sdram_size(void);
 void am62x_register_dram(void);
 void am62x_enable_32k_crystal(void);

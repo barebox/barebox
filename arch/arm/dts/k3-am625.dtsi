@@ -10,9 +10,9 @@
 };
 
 &wkup_conf {
-	reboot-mode-syscon@10030 {
+	reboot-mode-syscon@30 {
 		compatible = "syscon", "simple-mfd";
-		reg = <0x10030 0x4>;
+		reg = <0x30 0x4>;
 
 		reboot_mode: reboot-mode {
 			compatible = "syscon-reboot-mode";

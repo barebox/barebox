@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# barebox image generation Makefile for exynos images
+#
+
+pblb-$(CONFIG_MACH_EXYNOS) += start_exynos
+FILE_barebox-exynos.img = start_exynos.pblb
+image-$(CONFIG_MACH_EXYNOS) += barebox-exynos.img

@@ -210,6 +210,10 @@ config ARCH_ROCKCHIP
 	select HAS_DEBUG_LL
 	imply GPIO_ROCKCHIP
 
+config ARCH_SAMSUNG
+	bool "ARM Exynos boards"
+	depends on ARCH_MULTIARCH
+
 config ARCH_STM32MP
 	bool "STMicroelectronics STM32MP"
 	depends on 32BIT
@@ -266,6 +270,7 @@ source "arch/arm/mach-k3/Kconfig"
 source "arch/arm/mach-omap/Kconfig"
 source "arch/arm/mach-pxa/Kconfig"
 source "arch/arm/mach-rockchip/Kconfig"
+source "arch/arm/mach-samsung/Kconfig"
 source "arch/arm/mach-socfpga/Kconfig"
 source "arch/arm/mach-sunxi/Kconfig"
 source "arch/arm/mach-stm32mp/Kconfig"

@@ -137,6 +137,19 @@ void am62lx_get_bootsource(enum bootsource *src, int *instance)
 		am62lx_get_backup_bootsource(devstat, src, instance);
 }
 
+bool am62lx_boot_is_emmc(void)
+{
+	u32 bootmode = readl(AM62LX_BOOT_PARAM_TABLE_INDEX_OCRAM);
+	u32 devstat = readl(AM62LX_CTRLMMR_MAIN_DEVSTAT);
+
+	if (bootmode != K3_PRIMARY_BOOTMODE)
+		return false;
+	if (FIELD_GET(MAIN_DEVSTAT_PRIMARY_BOOTMODE, devstat) != BOOT_DEVICE_EMMC)
+		return false;
+
+	return true;
+}
+
 static int am62lx_init(void)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
@@ -153,3 +166,18 @@ static int am62lx_init(void)
 	return 0;
 }
 postcore_initcall(am62lx_init);
+
+static int am62x_env_init(void)
+{
+	if (!of_machine_is_compatible("ti,am62l3"))
+		return 0;
+
+	if (bootsource_get() != BOOTSOURCE_MMC)
+		return 0;
+
+	if (am62lx_boot_is_emmc())
+		return 0;
+
+	return k3_env_init();
+}
+late_initcall(am62x_env_init);

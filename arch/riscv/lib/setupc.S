@@ -32,14 +32,14 @@ ENTRY(relocate_to_adr)
 	/* adjust return address */
 	sub	ra, ra, a1		/* sub address where we are actually running */
 	add	ra, ra, a0		/* add address where we are going to run */
-	REG_S	ra, (SZREG * 2)(sp)
+	REG_S	ra, SZREG(sp)
 
 	beq	a0, a1, copied		/* skip if already at new address */
 
 	lla	a2, copied
 	sub	a2, a2, a1
 	add	a2, a2, a0
-	REG_S	a2, (SZREG * 1)(sp)
+	REG_S	a2, (sp)
 
 	lla	a2, __bss_start
 	sub	a2, a2, a1		 /* a2: size */
@@ -48,10 +48,10 @@ ENTRY(relocate_to_adr)
 
 	jal	sync_caches_for_execution
 
-	REG_L	a0, (SZREG * 1)(sp)
+	REG_L	a0, (sp)
 	jr	a0 			/* jump to relocated address */
 copied:
-	REG_L	ra, (SZREG * 2)(sp)
+	REG_L	ra, SZREG(sp)
 	addi	sp, sp, SZREG * 2
 	j	relocate_to_current_adr	/* relocate binary */
 ENDPROC(relocate_to_adr)

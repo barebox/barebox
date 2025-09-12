@@ -63,9 +63,6 @@ ENTRY(relocate_to_adr)
 
 	bl	sync_caches_for_execution
 
-	mov	x0,#0
-	ic	ivau, x0	/* flush icache */
-
 	adr_l	x0, 1f
 	sub	x0, x0, x20
 	add	x0, x0, x21

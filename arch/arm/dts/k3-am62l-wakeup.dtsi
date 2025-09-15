@@ -129,5 +129,10 @@
 			reg = <0x14 0x4>;
 			bootph-all;
 		};
+
+		cpsw_mac_syscon: ethernet-mac-syscon@2000 {
+			compatible = "ti,am62p-cpsw-mac-efuse", "syscon";
+			reg = <0x2000 0x8>;
+		};
 	};
 };

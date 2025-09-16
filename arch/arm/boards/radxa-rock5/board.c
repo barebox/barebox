@@ -39,10 +39,19 @@ static const struct rock5_model rock5b = {
 	.shortname = "rock5b",
 };
 
+static const struct rock5_model rock5t = {
+	.name = "Radxa ROCK5 Model T",
+	.shortname = "rock5t",
+};
+
 static const struct of_device_id rock5_of_match[] = {
 	{
 		.compatible = "radxa,rock-5b",
 		.data = &rock5b,
+	},
+	{
+		.compatible = "radxa,rock-5t",
+		.data = &rock5t,
 	},
 	{ /* sentinel */ },
 };

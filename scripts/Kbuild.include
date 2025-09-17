@@ -158,6 +158,12 @@ delete-on-interrupt = \
 # print and execute commands
 cmd = @$(if $(cmd_$(1)),set -e; $($(quiet)log_print) $(delete-on-interrupt) $(cmd_$(1)),:)
 
+# The normal 'cmd' above is not *loopable*
+loop_cmd = $(if $(cmd_$(1)),set -e; $($(quiet)log_print) $(cmd_$(1)),:) || exit;
+
+# Like loop_cmd, but without printing
+noop_cmd = $(if $(cmd_$(1)),$(cmd_$(1)),:)
+
 ###
 # if_changed      - execute command if any prerequisite is newer than
 #                   target, or command line has changed

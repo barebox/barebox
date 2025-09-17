@@ -18,7 +18,11 @@ endif
 # ---------------------------------------------------------------------------
 
 $(obj)/%.sconfig.tmp: $(src)/%.sconfig FORCE
+ifeq ($(KPOLICY_TMPUPDATE),)
 	$(call filechk,cat)
+else
+	$(call if_changed,shipped)
+endif
 
 quiet_cmd_sconfigpost_c = SCONFPP $@
       cmd_sconfigpost_c = $(SCONFIGPOST) -o $@ -D$(depfile) $(2)

@@ -100,7 +100,7 @@ ifeq ($(silence),s)
 quiet=silent_
 endif
 
-export quiet Q KBUILD_VERBOSE
+export quiet Q KBUILD_VERBOSE KPOLICY_TMPUPDATE
 
 # Kbuild will save output files in the current working directory.
 # This does not need to match to the root of the kernel source tree.
@@ -1215,8 +1215,10 @@ security_checkconfigs: collect-policies $(KPOLICY.tmp) FORCE
 security_%config: collect-policies $(KPOLICY.tmp) FORCE
 	+$(Q)$(foreach p, $(KPOLICY), $(call loop_cmd,sconfig, \
 		$(@:security_%=%),$p.tmp))
+ifeq ($(KPOLICY_TMPUPDATE),)
 	+$(Q)$(foreach p, $(KPOLICY), \
 		cp 2>/dev/null $p.tmp $(call resolve-srctree,$p) || true;)
+endif
 
 quiet_cmd_sconfigpost = SCONFPP $@
       cmd_sconfigpost = $(SCONFIGPOST) $2 -D $(depfile) -o $@ $<

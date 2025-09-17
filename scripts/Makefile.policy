@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+real-policy-y   := $(addprefix $(obj)/, $(policy-y))
+
+targets         += $(addsuffix .tmp, $(real-policy-y))
+
+# policy-list
+# ---------------------------------------------------------------------------
+
+ifneq ($(policy-y)$(policy-),)
+always-y        += $(obj)/policy-list
+
+$(obj)/policy-list: $(real-policy-y) FORCE
+	$(call if_changed,gen_order_src)
+endif
+
+# sconfigpost (.sconfig -> .sconfig.c -> .sconfig.o)
+# ---------------------------------------------------------------------------
+
+$(obj)/%.sconfig.tmp: $(src)/%.sconfig FORCE
+	$(call filechk,cat)
+
+quiet_cmd_sconfigpost_c = SCONFPP $@
+      cmd_sconfigpost_c = $(SCONFIGPOST) -o $@ -D$(depfile) $(2)
+
+$(obj)/%.sconfig.c: quiet_cmd_sconfig :=
+$(obj)/%.sconfig.c: $(obj)/%.sconfig.tmp FORCE
+	+$(Q)$(call noop_cmd,security_checkconfig,$<)
+	$(call if_changed_dep,sconfigpost_c,$<)
+
+# targets
+# ---------------------------------------------------------------------------
+
+targets += $(always-y)

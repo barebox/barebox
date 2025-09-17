@@ -15,6 +15,7 @@ obj-m :=
 lib-y :=
 lib-m :=
 pbl-y :=
+policy-y :=
 always :=
 always-y :=
 always-m :=
@@ -60,6 +61,12 @@ ifneq ($(dtb-y)$(dtb-)$(filter %.dtb %.dtb.o %.dtbo.o,$(targets)),)
 include $(srctree)/scripts/Makefile.dtbs
 endif
 
+ifdef CONFIG_SECURITY_POLICY
+ifneq ($(policy-y)$(policy-)$(filter %.sconfig %.sconfig.tmp %.sconfig.c %.sconfig.o,$(targets)),)
+include $(srctree)/scripts/Makefile.policy
+endif
+endif
+
 ifndef obj
 $(warning kbuild: Makefile.build is included improperly)
 endif
@@ -70,6 +77,13 @@ endif
 # sub-directories. The timestamp should be updated when any of the member files.
 
 cmd_gen_order = { $(foreach m, $(real-prereqs), \
+	$(if $(filter %/$(notdir $@), $m), cat $m, echo $m);) :; } \
+	> $@
+
+# This is a list of source files from the current Makefile and its
+# sub-directories. The timestamp should be updated when any of the member files.
+
+cmd_gen_order_src = { $(foreach m, $(patsubst $(srctree)/%,%,$(real-prereqs)), \
 	$(if $(filter %/$(notdir $@), $m), cat $m, echo $m);) :; } \
 	> $@
 
@@ -278,12 +292,14 @@ intermediate_targets = $(foreach sfx, $(2), \
 # %.dtb.pbl.o <- %.dtb.S <- %.dtb <- %.dts (Barebox only)
 # %.lex.o <- %.lex.c <- %.l
 # %.tab.o <- %.tab.[ch] <- %.y
+# %.sconfig.o <- %.sconfig.c <- %.sconfig.tmp <- %.sconfig
 targets += $(call intermediate_targets, .asn1.o, .asn1.c .asn1.h) \
 	   $(call intermediate_targets, .dtb.o, .dtb.S .dtb.z .dtb) \
 	   $(call intermediate_targets, .dtbo.o, .dtbo.S .dtbo.z .dtbo) \
 	   $(call intermediate_targets, .dtb.pbl.o, .dtb.S .dtb.z .dtb) \
 	   $(call intermediate_targets, .lex.o, .lex.c) \
-	   $(call intermediate_targets, .tab.o, .tab.c .tab.h)
+	   $(call intermediate_targets, .tab.o, .tab.c .tab.h) \
+	   $(call intermediate_targets, .sconfig.o, .sconfig.c .sconfig.tmp)
 
 # Descending
 # ---------------------------------------------------------------------------

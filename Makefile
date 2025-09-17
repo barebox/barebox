@@ -278,7 +278,7 @@ ifneq ($(KBUILD_EXTMOD),)
 endif
 
 ifeq ($(KBUILD_EXTMOD),)
-        ifneq ($(filter config %config,$(MAKECMDGOALS)),)
+        ifneq ($(filter config %config,$(filter-out security_%config,$(MAKECMDGOALS))),)
 		config-build := 1
                 ifneq ($(words $(MAKECMDGOALS)),1)
 			mixed-build := 1
@@ -450,6 +450,7 @@ AWK		= awk
 GENKSYMS	= scripts/genksyms/genksyms
 DEPMOD		= /sbin/depmod
 KALLSYMS	= scripts/kallsyms
+SCONFIGPOST	= scripts/basic/sconfigpost
 PERL		= perl
 PYTHON3		= python3
 CHECK		= sparse
@@ -524,7 +525,7 @@ LDFLAGS_elf += $(LDFLAGS_common) --nmagic -s
 export ARCH SRCARCH CONFIG_SHELL BASH HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE LD CC CXX
 export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL PYTHON3 UTS_MACHINE
 export LEX YACC PROFDATA COV GENHTML
-export HOSTCXX CHECK CHECKFLAGS MKIMAGE
+export HOSTCXX CHECK CHECKFLAGS MKIMAGE SCONFIGPOST
 export KGZIP KBZIP2 KLZOP LZMA LZ4 XZ
 export KBUILD_HOSTCXXFLAGS KBUILD_HOSTLDFLAGS KBUILD_HOSTLDLIBS LDFLAGS_MODULE
 export KBUILD_USERCFLAGS KBUILD_USERLDFLAGS
@@ -601,6 +602,8 @@ ifdef config-build
 # *config targets only - make sure prerequisites are updated, and descend
 # in scripts/kconfig to make the *config target
 
+# KCONFIG_CONFIG_ORIG is only set for policy kconfig processing
+ifndef KCONFIG_CONFIG_ORIG
 include $(srctree)/scripts/Makefile.defconf
 
 # Read arch specific Makefile to set KBUILD_DEFCONFIG as needed.
@@ -608,6 +611,7 @@ include $(srctree)/scripts/Makefile.defconf
 # used for 'make defconfig'
 include $(srctree)/arch/$(SRCARCH)/Makefile
 export KBUILD_DEFCONFIG CC_VERSION_TEXT
+endif
 
 config: outputmakefile scripts_basic FORCE
 	$(Q)$(MAKE) $(build)=scripts/kconfig KCONFIG_DEFCONFIG_LIST= $@
@@ -1081,6 +1085,7 @@ $(sort $(BAREBOX_OBJS)) $(BAREBOX_LDS) $(BAREBOX_PBL_OBJS): $(barebox-dirs) ;
 
 PHONY += $(barebox-dirs)
 $(barebox-dirs): prepare scripts
+	@find $@ -name policy-list | xargs rm -f
 	$(Q)$(MAKE) $(build)=$@
 
 # Store (new) KERNELRELASE string in include/config/kernel.release
@@ -1171,6 +1176,73 @@ include/generated/version.h: FORCE
 
 include/generated/utsrelease.h: include/config/kernel.release FORCE
 	$(call filechk,utsrelease.h)
+
+# ---------------------------------------------------------------------------
+# Security policies
+
+ifdef CONFIG_SECURITY_POLICY
+
+.security_config: $(KCONFIG_CONFIG) FORCE
+	+$(call cmd,sconfig,allyesconfig,$@.tmp,$@)
+	$(Q)if [ ! -r $@ ] || ! cmp -s $@.tmp $@; then	\
+		mv -f $@.tmp $@;			\
+	else						\
+		rm -f $@.tmp;				\
+	fi
+
+targets	+= .security_config
+targets += include/generated/security_autoconf.h
+targets += include/generated/sconfig_names.h
+
+KPOLICY = $(shell find $(objtree)/ -name policy-list -exec cat {} \;)
+KPOLICY.tmp = $(addsuffix .tmp,$(KPOLICY))
+
+PHONY += collect-policies
+collect-policies: KBUILD_MODULES :=
+collect-policies: KBUILD_BUILTIN :=
+collect-policies: $(barebox-dirs) FORCE
+
+PHONY += security_listconfigs
+security_listconfigs: collect-policies FORCE
+	@echo policies:
+	@$(foreach p, $(KPOLICY), echo $p ;)
+
+PHONY += security_checkconfigs
+security_checkconfigs: collect-policies $(KPOLICY.tmp) FORCE
+	+$(Q)$(foreach p, $(KPOLICY), \
+		$(call loop_cmd,security_checkconfig,$p.tmp))
+
+security_%config: collect-policies $(KPOLICY.tmp) FORCE
+	+$(Q)$(foreach p, $(KPOLICY), $(call loop_cmd,sconfig, \
+		$(@:security_%=%),$p.tmp))
+	+$(Q)$(foreach p, $(KPOLICY), \
+		cp 2>/dev/null $p.tmp $(call resolve-srctree,$p) || true;)
+
+quiet_cmd_sconfigpost = SCONFPP $@
+      cmd_sconfigpost = $(SCONFIGPOST) $2 -D $(depfile) -o $@ $<
+
+include/generated/security_autoconf.h: .security_config scripts_basic FORCE
+	$(call if_changed_dep,sconfigpost,-e)
+
+include/generated/sconfig_names.h: .security_config scripts_basic FORCE
+	$(call if_changed_dep,sconfigpost,-s)
+
+archprepare: include/generated/security_autoconf.h include/generated/sconfig_names.h
+
+else
+
+PHONY += security_%configs security_%config security_disabled
+security_disabled: FORCE
+	@echo "Security policies are disabled. Set CONFIG_SECURITY_POLICY to enable them"
+	@false
+
+security_%configs: security_disabled FORCE
+	@false
+
+security_%config: security_disabled FORCE
+	@false
+
+endif
 
 # ---------------------------------------------------------------------------
 # Devicetree files
@@ -1295,8 +1367,8 @@ CLEAN_FILES +=	scripts/bareboxenv-target scripts/kernel-install-target \
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config usr/include include/generated Documentation/commands
-MRPROPER_FILES += .config .config.old .version .old_version \
-                  include/config.h           \
+MRPROPER_FILES += .config .config.old .security_config .version .old_version \
+                  include/config.h *.sconfig.old          \
 		  Module.symvers tags TAGS cscope*
 
 # clean - Delete most, but leave enough to build external modules
@@ -1317,7 +1389,8 @@ clean: archclean $(clean-dirs)
 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
 		-o -name '*lex.c' -o -name '.tab.[ch]' \
-		-o -name 'dtbs-list' \
+		-o -name 'dtbs-list' -o -name 'policy-list' \
+		-o -name '*.sconfig.tmp' -o -name '*.sconfig.[co]' \
 		-o -name '*.symtypes' -o -name '*.bbenv.*' -o -name "*.bbenv" \) \
 		-type f -print | xargs rm -f
 
@@ -1480,6 +1553,8 @@ target-dir = $(dir $@)
 %.o: %.S prepare scripts FORCE
 	$(Q)$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
 %.symtypes: %.c prepare scripts FORCE
+	$(Q)$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
+%.sconfig.tmp: %.sconfig prepare scripts FORCE
 	$(Q)$(MAKE) $(build)=$(build-dir) $(target-dir)$(notdir $@)
 
 # Modules

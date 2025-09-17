@@ -30,6 +30,9 @@
 *.patch
 *.pyc
 *.s
+*.sconfig.c
+*.sconfig.old
+*.sconfig.tmp
 *.so
 *.so.dbg
 *.symtypes
@@ -37,6 +40,7 @@
 binary.0
 Module.symvers
 dtbs-list
+policy-list
 *.dtb
 *.dtb.*
 *.dtbo

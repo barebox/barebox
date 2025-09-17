@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+# Note: Symbols starting with POLICY_ are reserved and handled specially
+config POLICY_NAME
+        string "Policy name"
+	help
+	  Policies are selected by name and only one can be active at a given time.
+	  barebox does not mandate any specific behavior for a policy according
+	  to its name. Boards have full freedom to name policies and configure the
+	  options as they deem appropriate.
+
+	  However, we recommend using established terms to make it easier to reason
+	  about the different security states:
+
+	    devel     Security policy should permit everything for
+	              development purposes.
+
+	    factory   System is in a secure boot mode, but policy allows
+	              interactive use for factory bring up purposes.
+	              Board code usually enforces via eFuse that factory
+	              mode can not be re-selected once deselected.
+
+	    lockdown  Factory bring up is done and device is ready for use
+	              in the field with barebox as part of the secure boot
+	              chain. This policy usually disallows booting unsigned
+	              images
+
+	    tamper    Tampering attempt was detected. The security policy would
+	              take steps to protect secrets (up to bricking the device).
+
+	    return    For use in field-return devices, the policy should
+	              take steps to unlock the device for analysis purposes.
+	              Board code should make sure to delete secret and
+	              confidential data before activating this policy.

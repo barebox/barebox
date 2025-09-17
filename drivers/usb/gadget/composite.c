@@ -15,6 +15,7 @@
 #include <linux/usb/composite.h>
 #include <linux/bitfield.h>
 #include <linux/uuid.h>
+#include <security/config.h>
 #include <asm/unaligned.h>
 #include <asm/byteorder.h>
 
@@ -2488,6 +2489,9 @@ static const struct usb_gadget_driver composite_driver_template = {
 int usb_composite_probe(struct usb_composite_driver *driver)
 {
 	struct usb_gadget_driver *gadget_driver;
+
+	if (!IS_ALLOWED(SCONFIG_USB_GADGET))
+		return -EPERM;
 
 	if (!driver || !driver->dev || !driver->bind)
 		return -EINVAL;

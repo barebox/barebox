@@ -29,7 +29,6 @@ hostprogs-always-$(CONFIG_RISCV)			+= prelink-riscv
 hostprogs-always-$(CONFIG_RK_IMAGE)			+= rkimage
 HOSTCFLAGS_rkimage.o = `$(PKG_CONFIG) --cflags openssl`
 HOSTLDLIBS_rkimage = `$(PKG_CONFIG) --libs openssl`
-KBUILD_HOSTCFLAGS += -I$(srctree)/scripts/include/
 HOSTCFLAGS_mxsimage.o = `$(PKG_CONFIG) --cflags openssl`
 HOSTLDLIBS_mxsimage  = `$(PKG_CONFIG) --libs openssl`
 HOSTCFLAGS_omap3-usb-loader.o = `$(PKG_CONFIG) --cflags libusb-1.0`

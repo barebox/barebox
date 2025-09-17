@@ -20,6 +20,14 @@ config SHELL_INTERACTIVE
 
 	  Disabling this option also disables interruption with ctrl-c keystrokes.
 
+config ENVIRONMENT_LOAD
+	bool "Allow loading barebox environment from persistent media"
+	depends on $(kconfig-enabled,ENV_HANDLING)
+	help
+	  The barebox environment doesn't have any security measures and could be
+	  manipulated by an attacker. Loading it from persistent media imposes a
+	  security risk and should thus be disabled.
+
 config RATP
 	bool "Allow remote control via RATP"
 	depends on $(kconfig-enabled,CONSOLE_RATP)

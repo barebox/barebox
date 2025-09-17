@@ -114,7 +114,7 @@ struct buffer_descriptor {
 };
 
 enum fec_type {
-	FEC_TYPE_IMX27,
+	FEC_TYPE_IMX27 = 1,
 	FEC_TYPE_IMX28,
 	FEC_TYPE_IMX6,
 };

@@ -2288,6 +2288,29 @@ endmenu
 
 menu "Security"
 
+config CMD_SCONFIG
+	depends on SECURITY_POLICY
+	select SECURITY_POLICY_NAMES
+	default y
+	bool "sconfig"
+	help
+	  Interact with security policies. By default, this only
+	  allows read-access and not selection of new policies
+
+config CMD_SCONFIG_MODIFY
+	depends on CMD_SCONFIG
+	select HAS_INSECURE_DEFAULTS
+	bool "support policy modification"
+	help
+	  Say y here if you are developing and want to extend the sconfig
+	  command to support selecting a different active policy and
+	  modifying it.
+
+	  This is an very priviliged operation and the recommendation is
+	  to hardcode policy transitions in board code and not from scripts.
+
+	  Say n here if unsure.
+
 config CMD_AVB_PVALUE
 	depends on OPTEE_AVB_PERSISTENT_VALUES
 	tristate

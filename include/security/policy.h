@@ -42,6 +42,10 @@ static inline int __security_policy_register(const struct security_policy policy
 }
 #endif
 
+#ifdef CONFIG_CMD_SCONFIG
+void security_policy_unregister_one(const struct security_policy *policy);
+#endif
+
 #define security_policy_add(name) ({				\
 	extern const struct security_policy __policy_##name[];	\
 	__security_policy_register(__policy_##name);		\

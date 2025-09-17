@@ -232,6 +232,9 @@ static int security_init(void)
 	dev_add_param_string(&security_device, "policy", param_set_readonly,
 			     security_policy_get_name, &policy_name, NULL);
 
+	if (*CONFIG_SECURITY_POLICY_PATH)
+		security_policy_add(default);
+
 	return 0;
 }
 pure_initcall(security_init);

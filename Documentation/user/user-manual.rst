@@ -29,6 +29,7 @@ Contents:
    bootchooser
    remote-control
    security
+   security-policies
    reset-reason
    system-reset
    state

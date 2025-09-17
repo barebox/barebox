@@ -13,6 +13,7 @@ Contents:
    troubleshooting
    filesystems
    background-execution
+   security-policies
    project-ideas
    fuzzing
 

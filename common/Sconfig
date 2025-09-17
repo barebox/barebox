@@ -2,6 +2,24 @@
 
 menu "General Settings"
 
+config SHELL
+	bool "Allow executing shell scripts"
+	depends on $(kconfig-enabled,SHELL_HUSH) || $(kconfig-enabled,SHELL_SIMPLE)
+	help
+	  Say y here if you want to allow executing shell scripts. Shell scripts are
+	  potentially dangerous when coming from untrusted sources. Enable this option
+	  only when only trusted scripts can be executed, i.e. ENVIRONMENT_LOAD and
+	  untrusted filesystems are disabled.
+
+config SHELL_INTERACTIVE
+	bool "Allow executing interactive shell"
+	depends on SHELL
+	help
+	  An interactive shell cannot be safely executed in trusted environments. Disable
+	  this option in lockdown security configs.
+
+	  Disabling this option also disables interruption with ctrl-c keystrokes.
+
 config RATP
 	bool "Allow remote control via RATP"
 	depends on $(kconfig-enabled,CONSOLE_RATP)

@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <debug_ll.h>
 #include <console.h>
+#include <security/config.h>
 
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);

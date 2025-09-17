@@ -25,6 +25,7 @@
 #include <linux/list.h>
 #include <linux/stringify.h>
 #include <debug_ll.h>
+#include <security/config.h>
 
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);

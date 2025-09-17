@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+menu "General Settings"
+
+config RATP
+	bool "Allow remote control via RATP"
+	depends on $(kconfig-enabled,CONSOLE_RATP)
+
+endmenu

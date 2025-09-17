@@ -432,9 +432,13 @@ static char *getprompt(void)
 
 	prompt_command = getenv("PROMPT_COMMAND");
 	if (prompt_command) {
+		unsigned int lr = last_return_code;
+
 		initialize_context(&ctx);
 		parse_string_outer(&ctx, prompt_command, FLAG_PARSE_SEMICOLON);
 		release_context(&ctx);
+
+		last_return_code = lr;
 	}
 
 	ps1 = getenv("PS1");

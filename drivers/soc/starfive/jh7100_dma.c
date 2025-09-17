@@ -37,7 +37,7 @@ static inline void jh7100_free_coherent(struct device *dev,
 	free((void *)dma_handle);
 }
 
-static const struct dma_ops jh7100_dma_ops = {
+static const struct dma_map_ops jh7100_dma_ops = {
 	.alloc_coherent = jh7100_alloc_coherent,
 	.free_coherent = jh7100_free_coherent,
 	.flush_range = sifive_l2_flush64_range,

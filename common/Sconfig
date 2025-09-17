@@ -6,6 +6,10 @@ config RATP
 	bool "Allow remote control via RATP"
 	depends on $(kconfig-enabled,CONSOLE_RATP)
 
+config FASTBOOT_CMD_OEM
+	bool "Allow Fastboot OEM commands"
+	depends on $(kconfig-enabled,FASTBOOT_CMD_OEM)
+
 endmenu
 
 menu "Boot Policy"

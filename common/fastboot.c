@@ -42,6 +42,7 @@
 #include <linux/types.h>
 #include <linux/stat.h>
 #include <linux/mtd/mtd.h>
+#include <security/config.h>
 #include <fastboot.h>
 #include <system-partitions.h>
 
@@ -967,6 +968,11 @@ static const struct cmd_dispatch_info cmd_oem_dispatch_info[] = {
 static void __maybe_unused cb_oem(struct fastboot *fb, const char *cmd)
 {
 	pr_debug("%s: \"%s\"\n", __func__, cmd);
+
+	if (!IS_ALLOWED(SCONFIG_FASTBOOT_CMD_OEM)) {
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "OEM commands not allowed");
+		return;
+	}
 
 	fb_run_command(fb, cmd, cmd_oem_dispatch_info, ARRAY_SIZE(cmd_oem_dispatch_info));
 }

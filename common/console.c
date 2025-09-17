@@ -513,6 +513,9 @@ static int tstc_raw(void)
 {
 	struct console_device *cdev;
 
+	if (!IS_ALLOWED(SCONFIG_CONSOLE_INPUT))
+		return 0;
+
 	for_each_console(cdev) {
 		if (!(cdev->f_active & CONSOLE_STDIN))
 			continue;
@@ -527,6 +530,9 @@ int getchar(void)
 {
 	unsigned char ch;
 	uint64_t start;
+
+	if (!IS_ALLOWED(SCONFIG_CONSOLE_INPUT))
+		return -1;
 
 	/*
 	 * For 100us we read the characters from the serial driver

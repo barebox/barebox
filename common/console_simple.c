@@ -45,6 +45,9 @@ EXPORT_SYMBOL(console_putc);
 
 int tstc(void)
 {
+	if (!IS_ALLOWED(SCONFIG_CONSOLE_INPUT))
+		return 0;
+
 	if (!console)
 		return 0;
 
@@ -54,6 +57,9 @@ EXPORT_SYMBOL(tstc);
 
 int getchar(void)
 {
+	if (!IS_ALLOWED(SCONFIG_CONSOLE_INPUT))
+		return -1;
+
 	if (!console)
 		return -EINVAL;
 	return console->getc(console);

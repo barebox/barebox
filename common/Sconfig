@@ -2,6 +2,15 @@
 
 menu "General Settings"
 
+config CONSOLE_INPUT
+	bool "Allow console input"
+	depends on $(kconfig-enabled,CONSOLE_SIMPLE) || $(kconfig-enabled,CONSOLE_FULL)
+	help
+	  Say y here if you want to allow input on consoles. Disabling this is the safest
+	  thing to make sure that a barebox build is fully non interactive. When you
+	  still need to react to input for example to trigger a recovery boot then consider
+	  disabling this option and disable SHELL_INTERACTIVE instead.
+
 config SHELL
 	bool "Allow executing shell scripts"
 	depends on $(kconfig-enabled,SHELL_HUSH) || $(kconfig-enabled,SHELL_SIMPLE)
@@ -13,7 +22,7 @@ config SHELL
 
 config SHELL_INTERACTIVE
 	bool "Allow executing interactive shell"
-	depends on SHELL
+	depends on SHELL && CONSOLE_INPUT
 	help
 	  An interactive shell cannot be safely executed in trusted environments. Disable
 	  this option in lockdown security configs.

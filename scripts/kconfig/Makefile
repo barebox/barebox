@@ -29,6 +29,9 @@ KCONFIG_DEFCONFIG_LIST += arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)
 
 # We need this, in case the user has it in its environment
 unexport CONFIG_
+ifdef KCONFIG_CONFIG_
+export CONFIG_=$(KCONFIG_CONFIG_)
+endif
 
 config-prog	:= conf
 menuconfig-prog	:= mconf

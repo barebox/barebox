@@ -7,3 +7,18 @@ config RATP
 	depends on $(kconfig-enabled,CONSOLE_RATP)
 
 endmenu
+
+menu "Boot Policy"
+
+config BOOT_UNSIGNED_IMAGES
+	bool "Allow booting unsigned images"
+	depends on $(kconfig-enabled,BOOTM_OPTIONAL_SIGNED_IMAGES)
+	help
+	  Say y here if you want to allow booting of images with
+	  an invalid signature or no signature at all.
+
+	  Systems with verified boot chains should say y here
+	  or force it at compile time irrespective of policy
+	  with CONFIG_BOOTM_FORCE_SIGNED_IMAGES
+
+endmenu

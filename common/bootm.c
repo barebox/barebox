@@ -16,8 +16,10 @@
 #include <magicvar.h>
 #include <uncompress.h>
 #include <zero_page.h>
+#include <security/config.h>
 
 static LIST_HEAD(handler_list);
+static struct sconfig_notifier_block sconfig_notifier;
 
 static __maybe_unused struct bootm_overrides bootm_overrides;
 
@@ -114,6 +116,13 @@ static const char * const bootm_verify_names[] = {
 	[BOOTM_VERIFY_SIGNATURE] = "signature",
 };
 
+/*
+ * There's three ways to influence whether signed images are forced:
+ * 1) CONFIG_BOOTM_FORCE_SIGNED_IMAGES: forced at compile time
+ * 2) SCONFIG_BOOT_UNSIGNED_IMAGES: determined by the active security policy
+ * 3) bootm_force_signed_images(): forced dynamically by board code.
+ *                                 will be deprecated in favor of 2)
+ */
 static bool force_signed_images = IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES);
 
 static void bootm_optional_signed_images(void)
@@ -141,6 +150,16 @@ static void bootm_require_signed_images(void)
 	bootm_verify_mode = BOOTM_VERIFY_SIGNATURE;
 }
 
+static void bootm_unsigned_sconfig_update(struct sconfig_notifier_block *nb,
+					  enum security_config_option opt,
+					  bool allowed)
+{
+	if (!allowed)
+		bootm_require_signed_images();
+	else
+		bootm_optional_signed_images();
+}
+
 void bootm_force_signed_images(void)
 {
 	bootm_require_signed_images();
@@ -149,7 +168,7 @@ void bootm_force_signed_images(void)
 
 bool bootm_signed_images_are_forced(void)
 {
-	return force_signed_images;
+	return force_signed_images || !IS_ALLOWED(SCONFIG_BOOT_UNSIGNED_IMAGES);
 }
 
 static int uimage_part_num(const char *partname)
@@ -1108,6 +1127,11 @@ static int bootm_init(void)
 		bootm_require_signed_images();
 	else
 		bootm_optional_signed_images();
+
+	sconfig_register_handler_filtered(&sconfig_notifier,
+					  bootm_unsigned_sconfig_update,
+					  SCONFIG_BOOT_UNSIGNED_IMAGES);
+
 
 	if (IS_ENABLED(CONFIG_ROOTWAIT_BOOTARG))
 		globalvar_add_simple_int("linux.rootwait",

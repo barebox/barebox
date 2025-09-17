@@ -7,6 +7,7 @@
 #include <init.h>
 #include <of.h>
 #include <deep-probe.h>
+#include <security/policy.h>
 #include "qemu-virt-flash.h"
 
 #ifdef CONFIG_64BIT
@@ -82,6 +83,13 @@ static int virt_board_driver_init(void)
 	of_alias_scan();
 
 	/* of_probe() will happen later at of_populate_initcall */
+
+	security_policy_add(qemu_virt_factory);
+	security_policy_add(qemu_virt_lockdown);
+	/*
+	 * qemu_virt_devel & qemu_virt_tamper intentionally not added here,
+	 * so the test suite can exercise CONFIG_SECURITY_POLICY_PATH.
+	 */
 
 	return 0;
 }

@@ -9,5 +9,8 @@ ifeq ($(CONFIG_ARM),y)
 DTC_CPP_FLAGS_qemu-virt-flash.dtbo := -DCONFIG_ARM
 endif
 
+policy-y += qemu-virt-factory.sconfig
+policy-y += qemu-virt-lockdown.sconfig
+
 clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts *.dtb.z
 clean-files += *.dtbo *.dtbo.S .*.dtso

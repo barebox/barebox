@@ -16,6 +16,8 @@ static int prt_prt8mm_init_power(void)
 	int ret;
 	char buf[2];
 
+	of_device_ensure_probed_by_alias("i2c1");
+
 	client.addr = 0x60;
 	adapter = i2c_get_adapter(1);
 	if (!adapter) {
@@ -76,6 +78,7 @@ static const struct of_device_id prt_imx8mm_of_match[] = {
 	{ /* sentinel */ },
 };
 MODULE_DEVICE_TABLE(of, prt_imx8mm_of_match);
+BAREBOX_DEEP_PROBE_ENABLE(prt_imx8mm_of_match);
 
 static struct driver prt_prt8mm_board_driver = {
 	.name = "board-protonic-imx8mm",

@@ -789,6 +789,16 @@ config CMD_UMOUNT
 
 	  Unmount a filesystem mounted on a specific MOINTPOINT
 
+config CMD_VERITYSETUP
+	tristate
+	depends on DM_BLK_VERITY
+	prompt "veritysetup"
+	help
+	  veritysetup - manage dm-verity volumes
+
+	  commands:
+	        open <data-dev> <name> <hash-dev> <root-hash>
+
 # end Partition commands
 endmenu
 

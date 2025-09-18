@@ -16,6 +16,7 @@
 #include <disks.h>
 #include <fcntl.h>
 #include <xfuncs.h>
+#include <unistd.h>
 
 #include <linux/bitmap.h>
 #include <linux/bitops.h>
@@ -461,3 +462,56 @@ static int __init dm_verity_init(void)
 	return dm_target_register(&dm_verity_ops);
 }
 device_initcall(dm_verity_init);
+
+struct dm_verity_sb {
+	    u8 signature[8];    /* "verity\0\0" */
+	__le32 version;         /* superblock version, 1 */
+	__le32 hash_type;       /* 0 - Chrome OS, 1 - normal */
+	    u8 uuid[16];        /* UUID of hash device */
+	    u8 algorithm[32];   /* hash algorithm name */
+	__le32 data_block_size; /* data block in bytes */
+	__le32 hash_block_size; /* hash block in bytes */
+	__le64 data_blocks;     /* number of data blocks */
+	__le16 salt_size;       /* salt size */
+	    u8 _pad1[6];
+	    u8 salt[256];       /* salt */
+	    u8 _pad2[168];
+} __packed;
+
+char *dm_verity_config_from_sb(const char *data_dev, const char *hash_dev,
+			       const char *root_hash)
+{
+	struct dm_verity_sb sb;
+	blkcnt_t sects;
+	ssize_t n;
+	int fd;
+
+	fd = open(hash_dev, O_RDONLY);
+	if (fd < 0)
+		return ERR_PTR(-ENOENT);
+
+	n = read(fd, &sb, sizeof(sb));
+	close(fd);
+	if (n != sizeof(sb))
+		return ERR_PTR((n < 0) ? n : -EIO);
+
+	if (memcmp(sb.signature, "verity\0\0", sizeof(sb.signature)))
+		return ERR_PTR(-EINVAL);
+
+	if (le32_to_cpu(sb.version) != 1)
+		return ERR_PTR(-ENOTSUPP);
+
+	sects = le32_to_cpu(sb.data_block_size) >> SECTOR_SHIFT;
+	if (!sects)
+		return ERR_PTR(-ERANGE);
+
+	sects *= le64_to_cpu(sb.data_blocks);
+
+	return xasprintf("0 %llu verity %u %s %s %u %u %llu 1 %s %s %*phN",
+			 sects, le32_to_cpu(sb.hash_type), data_dev, hash_dev,
+			 le32_to_cpu(sb.data_block_size),
+			 le32_to_cpu(sb.hash_block_size),
+			 le64_to_cpu(sb.data_blocks), sb.algorithm, root_hash,
+			 le16_to_cpu(sb.salt_size), sb.salt);
+}
+EXPORT_SYMBOL(dm_verity_config_from_sb);

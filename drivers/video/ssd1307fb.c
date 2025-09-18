@@ -404,11 +404,11 @@ static struct ssd1307fb_deviceinfo ssd1307fb_ssd1309_deviceinfo = {
 static const struct of_device_id ssd1307fb_of_match[] = {
 	{
 		.compatible = "solomon,ssd1305fb-i2c",
-		.data = (void *)&ssd1307fb_ssd1305_deviceinfo,
+		.data = &ssd1307fb_ssd1305_deviceinfo,
 	},
 	{
 		.compatible = "solomon,ssd1306fb-i2c",
-		.data = (void *)&ssd1307fb_ssd1306_deviceinfo,
+		.data = &ssd1307fb_ssd1306_deviceinfo,
 	},
 	{
 		/*
@@ -416,11 +416,11 @@ static const struct of_device_id ssd1307fb_of_match[] = {
 		 * documented as device tree binding.
 		 */
 		.compatible = "solomon,ssd1306",
-		.data = (void *)&ssd1307fb_ssd1306_deviceinfo,
+		.data = &ssd1307fb_ssd1306_deviceinfo,
 	},
 	{
 		.compatible = "solomon,ssd1309fb-i2c",
-		.data = (void *)&ssd1307fb_ssd1309_deviceinfo,
+		.data = &ssd1307fb_ssd1309_deviceinfo,
 	},
 	{},
 };

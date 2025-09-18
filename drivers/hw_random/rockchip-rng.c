@@ -187,15 +187,15 @@ static const struct rk_rng_soc_data rk_rng_v2_soc_data = {
 static const struct of_device_id rk_rng_dt_match[] = {
 	{
 		.compatible = "rockchip,rk3399-crypto",
-		.data = (void *)&rk_rng_rk3399_soc_data,
+		.data = &rk_rng_rk3399_soc_data,
 	},
 	{
 		.compatible = "rockchip,cryptov1-rng",
-		.data = (void *)&rk_rng_v1_soc_data,
+		.data = &rk_rng_v1_soc_data,
 	},
 	{
 		.compatible = "rockchip,rk3568-rng",
-		.data = (void *)&rk_rng_v2_soc_data,
+		.data = &rk_rng_v2_soc_data,
 	},
 	{ },
 };

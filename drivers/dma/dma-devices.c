@@ -35,7 +35,7 @@ static int dma_of_xlate_default(struct dma *dma,
 
 static int dma_request(struct device *dev, struct dma *dma)
 {
-	const struct dma_ops *ops = dma->dmad->ops;
+	const struct dma_device_ops *ops = dma->dmad->ops;
 
 	dev_dbg(dma->dev, "%s(dev=%p, dma=%p)\n", __func__, dev, dma);
 
@@ -61,7 +61,7 @@ struct dma *dma_get_by_index(struct device *dev, int index)
 {
 	int ret;
 	struct of_phandle_args args;
-	const struct dma_ops *ops;
+	const struct dma_device_ops *ops;
 	struct dma *dma;
 	struct dma_device *dmad;
 
@@ -120,7 +120,7 @@ struct dma *dma_get_by_name(struct device *dev, const char *name)
 
 int dma_release(struct dma *dma)
 {
-	const struct dma_ops *ops = dma->dmad->ops;
+	const struct dma_device_ops *ops = dma->dmad->ops;
 
 	dev_dbg(dma->dev, "%s(dma=%p)\n", __func__, dma);
 
@@ -132,7 +132,7 @@ int dma_release(struct dma *dma)
 
 int dma_enable(struct dma *dma)
 {
-	const struct dma_ops *ops = dma->dmad->ops;
+	const struct dma_device_ops *ops = dma->dmad->ops;
 
 	dev_dbg(dma->dev, "%s(dma=%p)\n", __func__, dma);
 
@@ -144,7 +144,7 @@ int dma_enable(struct dma *dma)
 
 int dma_disable(struct dma *dma)
 {
-	const struct dma_ops *ops = dma->dmad->ops;
+	const struct dma_device_ops *ops = dma->dmad->ops;
 
 	dev_dbg(dma->dev, "%s(dma=%p)\n", __func__, dma);
 
@@ -156,7 +156,7 @@ int dma_disable(struct dma *dma)
 
 int dma_prepare_rcv_buf(struct dma *dma, dma_addr_t dst, size_t size)
 {
-	const struct dma_ops *ops = dma->dmad->ops;
+	const struct dma_device_ops *ops = dma->dmad->ops;
 
 	dev_vdbg(dma->dev, "%s(dma=%p)\n", __func__, dma);
 
@@ -168,7 +168,7 @@ int dma_prepare_rcv_buf(struct dma *dma, dma_addr_t dst, size_t size)
 
 int dma_receive(struct dma *dma, dma_addr_t *dst, void *metadata)
 {
-	const struct dma_ops *ops = dma->dmad->ops;
+	const struct dma_device_ops *ops = dma->dmad->ops;
 
 	dev_vdbg(dma->dev, "%s(dma=%p)\n", __func__, dma);
 
@@ -180,7 +180,7 @@ int dma_receive(struct dma *dma, dma_addr_t *dst, void *metadata)
 
 int dma_send(struct dma *dma, dma_addr_t src, size_t len, void *metadata)
 {
-	const struct dma_ops *ops = dma->dmad->ops;
+	const struct dma_device_ops *ops = dma->dmad->ops;
 
 	dev_vdbg(dma->dev, "%s(dma=%p)\n", __func__, dma);
 
@@ -192,7 +192,7 @@ int dma_send(struct dma *dma, dma_addr_t src, size_t len, void *metadata)
 
 int dma_get_cfg(struct dma *dma, u32 cfg_id, void **cfg_data)
 {
-	const struct dma_ops *ops = dma->dmad->ops;
+	const struct dma_device_ops *ops = dma->dmad->ops;
 
 	dev_dbg(dma->dev, "%s(dma=%p)\n", __func__, dma);
 

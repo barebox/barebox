@@ -1190,7 +1190,7 @@ static int udma_rfree(struct dma *dma)
 	return 0;
 }
 
-static const struct dma_ops udma_ops = {
+static const struct dma_device_ops udma_ops = {
 	.transfer	= udma_transfer,
 	.of_xlate	= udma_of_xlate,
 	.request	= udma_request,

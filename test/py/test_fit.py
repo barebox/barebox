@@ -23,7 +23,9 @@ def test_fit(barebox, env, target, barebox_config):
     if returncode != 0:
         pytest.xfail("skipping test due to missing --fs testfs=")
 
-    barebox.run_check(f"ls {fit_name('gzipped')}")
+    _, _, returncode = barebox.run(f"ls {fit_name('gzipped')}")
+    if returncode != 0:
+        pytest.xfail("skipping test due to missing FIT image")
 
     # Sanity check, this is only fixed up on first boot
     assert of_get_property(barebox, "/chosen/barebox-version") is False

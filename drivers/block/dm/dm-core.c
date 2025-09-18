@@ -7,10 +7,128 @@
 #include <stdio.h>
 #include <string.h>
 #include <xfuncs.h>
+#include <unistd.h>
 
 #include <linux/kstrtox.h>
+#include <linux/stat.h>
 
 #include "dm-target.h"
+
+int dm_cdev_read(struct dm_cdev *dmcdev, void *buf, sector_t block,
+		 blkcnt_t num_blocks)
+{
+	ssize_t n;
+
+	n = cdev_read(dmcdev->cdev, buf, num_blocks << dmcdev->blk.bits,
+		      (dmcdev->blk.start + block) << dmcdev->blk.bits, 0);
+	if (n < 0)
+		return n;
+
+	if (n < (num_blocks << dmcdev->blk.bits))
+		return -EIO;
+
+	return 0;
+}
+
+int dm_cdev_write(struct dm_cdev *dmcdev, const void *buf, sector_t block,
+		  blkcnt_t num_blocks)
+{
+	ssize_t n;
+
+	n = cdev_write(dmcdev->cdev, buf, num_blocks << dmcdev->blk.bits,
+		       (dmcdev->blk.start + block) << dmcdev->blk.bits, 0);
+	if (n < 0)
+		return n;
+
+	if (n < (num_blocks << dmcdev->blk.bits))
+		return -EIO;
+
+	return 0;
+}
+
+int dm_cdev_open(struct dm_cdev *dmcdev, const char *path, ulong flags,
+		 sector_t start, blkcnt_t num_blocks, size_t blocksize, char **errmsg)
+{
+	struct stat st;
+	int err;
+
+	memset(dmcdev, 0, sizeof(*dmcdev));
+
+	err = stat(path, &st);
+	if (err) {
+		*errmsg = xasprintf("Cannot determine type: %m");
+		return err;
+	}
+
+	switch (st.st_mode & S_IFMT) {
+	case S_IFREG:
+		dmcdev->cdev = cdev_create_loop(path, flags, 0);
+		if (!dmcdev->cdev) {
+			*errmsg = xstrdup("Cannot create loop device");
+			return -ENODEV;
+		}
+		dmcdev->loop = true;
+		break;
+	case S_IFBLK:
+	case S_IFCHR:
+		dmcdev->cdev = cdev_open_by_path_name(path, flags);
+		if (!dmcdev->cdev) {
+			*errmsg = xstrdup("Cannot open device");
+			return -ENODEV;
+		}
+
+		dmcdev->cdev = cdev_readlink(dmcdev->cdev);
+		break;
+	default:
+		*errmsg = xstrdup("Only regular files and device specials are supported");
+		return -EINVAL;
+	}
+
+	if (blocksize == 0 || (blocksize & (blocksize - 1))) {
+		*errmsg = xasprintf("Invalid block size: %zu is not a power of 2",
+				    blocksize);
+		goto err;
+	}
+
+	dmcdev->blk.bits = ffs(blocksize) - 1;
+	if (dmcdev->blk.bits < SECTOR_SHIFT) {
+		*errmsg = xasprintf("Invalid block size: %zu, must be at least %u",
+				    blocksize, SECTOR_SIZE);
+		goto err;
+	}
+
+	dmcdev->blk.mask = (1 << (dmcdev->blk.bits - SECTOR_SHIFT)) - 1;
+
+	if (((start + num_blocks) << dmcdev->blk.bits) > dmcdev->cdev->size) {
+		*errmsg = xstrdup("# of blocks is larger than device");
+		err = -E2BIG;
+		goto err;
+	}
+
+	dmcdev->blk.start = start;
+	dmcdev->blk.num = num_blocks;
+	return 0;
+err:
+	if (dmcdev->cdev) {
+		if (dmcdev->loop)
+			cdev_remove_loop(dmcdev->cdev);
+		else
+			cdev_close(dmcdev->cdev);
+
+		memset(dmcdev, 0, sizeof(*dmcdev));
+	}
+	return err;
+}
+
+void dm_cdev_close(struct dm_cdev *dmcdev)
+{
+	if (dmcdev->loop)
+		cdev_remove_loop(dmcdev->cdev);
+	else
+		cdev_close(dmcdev->cdev);
+
+	memset(dmcdev, 0, sizeof(*dmcdev));
+}
 
 static LIST_HEAD(dm_target_ops_list);
 

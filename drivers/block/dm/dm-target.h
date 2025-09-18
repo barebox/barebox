@@ -4,6 +4,26 @@
 #ifndef __DM_TARGET_H
 #define __DM_TARGET_H
 
+struct dm_cdev {
+	struct cdev *cdev;
+	bool loop;
+
+	struct {
+		sector_t start;
+		blkcnt_t num;
+		u32 mask;
+		u8 bits;
+	} blk;
+};
+
+int dm_cdev_read(struct dm_cdev *dmc, void *buf, sector_t block,
+		 blkcnt_t num_blocks);
+int dm_cdev_write(struct dm_cdev *dmc, const void *buf, sector_t block,
+		  blkcnt_t num_blocks);
+int dm_cdev_open(struct dm_cdev *dmcdev, const char *path, ulong flags,
+		 sector_t start, blkcnt_t num_blocks, size_t blocksize, char **errmsg);
+void dm_cdev_close(struct dm_cdev *dmcdev);
+
 struct dm_device;
 struct dm_target_ops;
 

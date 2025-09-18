@@ -87,6 +87,10 @@ jobs:
           KCONFIG_ADD="${KCONFIG_ADD} CONFIG_CONSOLE_DISABLE_INPUT=n CONFIG_MALLOC_LIBC=y"
         fi
 
+        if [ "${{ steps.used-features.outputs.testfs }}" = "true" ]; then
+          KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/enable_dm_testing.config"
+        fi
+
         ./MAKEALL -O ${KBUILD_OUTPUT} -l "" -v 0 ${{matrix.defconfig}}
 
         if [ ${{matrix.arch}} = "riscv" ]; then

@@ -706,8 +706,10 @@ config MACH_POLYHEX_DEBIX
 config MACH_PROTONIC_IMX8M
 	bool "Protonic-Holland i.MX8Mx based boards"
 	select ARCH_IMX8MM
-	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select ARCH_IMX8MP
 	select FIRMWARE_IMX8MM_ATF
+	select FIRMWARE_IMX8MP_ATF
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select ARM_SMCCC
 	select MCI_IMX_ESDHC_PBL
 	select IMX8M_DRAM

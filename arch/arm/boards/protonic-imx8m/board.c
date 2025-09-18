@@ -9,7 +9,7 @@
 #include <init.h>
 #include <mach/imx/bbu.h>
 
-static int prt_prt8mm_init_power(void)
+static int prt_prt8m_init_power(void)
 {
 	struct i2c_adapter *adapter = NULL;
 	struct i2c_client client;
@@ -41,14 +41,14 @@ static int prt_prt8mm_init_power(void)
 	return 0;
 }
 
-static int prt_prt8mm_probe(struct device *dev)
+static int prt_prt8m_probe(struct device *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;
 
-	prt_prt8mm_init_power();
+	prt_prt8m_init_power();
 
-	barebox_set_hostname("prt8mm");
+	barebox_set_hostname(device_get_match_data(dev));
 
 	if (bootsource_get() == BOOTSOURCE_MMC) {
 		if (bootsource_get_instance() == 2) {
@@ -73,16 +73,17 @@ static int prt_prt8mm_probe(struct device *dev)
 	return 0;
 }
 
-static const struct of_device_id prt_imx8mm_of_match[] = {
-	{ .compatible = "prt,prt8mm", },
+static const struct of_device_id prt_imx8m_of_match[] = {
+	{ .compatible = "prt,prt8mm", .data = "prt8mm" },
+	{ .compatible = "prt,prt8ml", .data = "prt8ml" },
 	{ /* sentinel */ },
 };
-MODULE_DEVICE_TABLE(of, prt_imx8mm_of_match);
-BAREBOX_DEEP_PROBE_ENABLE(prt_imx8mm_of_match);
+MODULE_DEVICE_TABLE(of, prt_imx8m_of_match);
+BAREBOX_DEEP_PROBE_ENABLE(prt_imx8m_of_match);
 
-static struct driver prt_prt8mm_board_driver = {
-	.name = "board-protonic-imx8mm",
-	.probe = prt_prt8mm_probe,
-	.of_compatible = DRV_OF_COMPAT(prt_imx8mm_of_match),
+static struct driver prt_prt8m_board_driver = {
+	.name = "board-protonic-imx8m",
+	.probe = prt_prt8m_probe,
+	.of_compatible = DRV_OF_COMPAT(prt_imx8m_of_match),
 };
-device_platform_driver(prt_prt8mm_board_driver);
+device_platform_driver(prt_prt8m_board_driver);

@@ -11,45 +11,30 @@
 #include "dm-target.h"
 
 struct dm_linear {
-	struct cdev *cdev;
-	loff_t offset;
+	struct dm_cdev dmcdev;
 };
 
 static int dm_linear_read(struct dm_target *ti, void *buf,
 			  sector_t block, blkcnt_t num_blocks)
 {
 	struct dm_linear *l = ti->private;
-	ssize_t ret;
 
-	block <<= SECTOR_SHIFT;
-	num_blocks <<= SECTOR_SHIFT;
-
-	ret = cdev_read(l->cdev, buf, num_blocks, l->offset + block, 0);
-	if (ret < num_blocks)
-		return (ret < 0) ? ret : -EIO;
-
-	return 0;
+	return dm_cdev_read(&l->dmcdev, buf, block, num_blocks);
 }
 
 static int dm_linear_write(struct dm_target *ti, const void *buf,
 			   sector_t block, blkcnt_t num_blocks)
 {
 	struct dm_linear *l = ti->private;
-	ssize_t ret;
 
-	block <<= SECTOR_SHIFT;
-	num_blocks <<= SECTOR_SHIFT;
-
-	ret = cdev_write(l->cdev, buf, num_blocks, l->offset + block, 0);
-	if (ret < num_blocks)
-		return (ret < 0) ? ret : -EIO;
-
-	return 0;
+	return dm_cdev_write(&l->dmcdev, buf, block, num_blocks);
 }
 
 static int dm_linear_create(struct dm_target *ti, unsigned int argc, char **argv)
 {
-	struct dm_linear *l;
+	struct dm_linear *l = NULL;
+	loff_t offset;
+	char *errmsg;
 	int err;
 
 	if (argc != 2) {
@@ -62,37 +47,26 @@ static int dm_linear_create(struct dm_target *ti, unsigned int argc, char **argv
 	l = xzalloc(sizeof(*l));
 	ti->private = l;
 
-	if (kstrtoull(argv[1], 0, &l->offset)) {
+	if (kstrtoull(argv[1], 0, &offset)) {
 		dm_target_err(ti, "Invalid offset: \"%s\"\n", argv[1]);
 		err = -EINVAL;
-		goto err_free;
-	}
-	l->offset <<= SECTOR_SHIFT;
-
-	l->cdev = cdev_open_by_path_name(argv[0], O_RDWR);
-	if (!l->cdev) {
-		dm_target_err(ti, "Cannot open device %s: %m\n", argv[0]);
-		err = -ENODEV;
-		goto err_free;
+		goto err;
 	}
 
-	l->cdev = cdev_readlink(l->cdev);
-
-	if ((ti->size << SECTOR_SHIFT) > (l->cdev->size - l->offset)) {
-		dm_target_err(ti, "%s is too small to map %llu blocks at %llu, %llu available\n",
-			      argv[0], ti->size, l->offset >> SECTOR_SHIFT,
-			      (l->cdev->size - l->offset) >> SECTOR_SHIFT);
-		err = -ENOSPC;
-		goto err_close;
+	err = dm_cdev_open(&l->dmcdev, argv[0], O_RDWR, offset,
+			   ti->size, SECTOR_SIZE, &errmsg);
+	if (err) {
+		dm_target_err(ti, "Cannot open device %s: %s\n", argv[0], errmsg);
+		free(errmsg);
+		goto err;
 	}
 
 	return 0;
 
-err_close:
-	cdev_close(l->cdev);
-err_free:
-	free(l);
 err:
+	if (l)
+		free(l);
+
 	return err;
 }
 
@@ -100,7 +74,7 @@ static int dm_linear_destroy(struct dm_target *ti)
 {
 	struct dm_linear *l = ti->private;
 
-	cdev_close(l->cdev);
+	dm_cdev_close(&l->dmcdev);
 	free(l);
 	return 0;
 }
@@ -110,7 +84,7 @@ static char *dm_linear_asprint(struct dm_target *ti)
 	struct dm_linear *l = ti->private;
 
 	return xasprintf("dev:%s offset:%llu",
-			 cdev_name(l->cdev), l->offset >> SECTOR_SHIFT);
+			 cdev_name(l->dmcdev.cdev), l->dmcdev.blk.start);
 }
 
 static struct dm_target_ops dm_linear_ops = {

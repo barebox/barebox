@@ -40,3 +40,4 @@ pbl-y += xload-spi.o xload-common.o xload-imx-nand.o xload-gpmi-nand.o
 pbl-y += xload-qspi.o
 obj-pbl-$(CONFIG_ARCH_IMX9) += ele.o
 obj-pbl-$(CONFIG_ARCH_IMX9) += imx93-trdc.o
+lwl-$(CONFIG_ARCH_IMX_SNVS) += snvs.o

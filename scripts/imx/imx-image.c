@@ -495,6 +495,9 @@ static void usage(const char *prgname)
 		"             variable 'CST'\n"
 		"-u           create USB image suitable for imx-usb-loader\n"
 		"             necessary for signed images (-s) only\n"
+		"-a           authenticate additionaly the DCD block loaded via\n"
+		"             'SDP: DCD_WRITE' to the internal RAM on i.mx6 devices\n"
+		"             necessary for usb images (-u) only\n"
 		"-h           this help\n", prgname);
 	exit(1);
 }
@@ -660,6 +663,11 @@ static int nop(const struct config_data *data)
 	default:
 		return -EINVAL;
 	}
+}
+
+static int get_dcd_length(void)
+{
+	return sizeof(uint32_t) + (curdcd * sizeof(uint32_t));
 }
 
 /*
@@ -875,6 +883,7 @@ int main(int argc, char *argv[])
 		.write_mem = write_mem,
 		.check = check,
 		.nop = nop,
+		.get_dcd_length = get_dcd_length
 	};
 	uint32_t *bb_header;
 	size_t sizeof_bb_header;
@@ -883,7 +892,7 @@ int main(int argc, char *argv[])
 
 	prgname = argv[0];
 
-	while ((opt = getopt(argc, argv, "c:hf:o:p:bduse")) != -1) {
+	while ((opt = getopt(argc, argv, "c:hf:o:p:bduase")) != -1) {
 		switch (opt) {
 		case 'c':
 			configfile = optarg;
@@ -908,6 +917,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'u':
 			create_usb_image = true;
+			break;
+		case 'a':
+			data.dcd_usb_image = true;
 			break;
 		case 'e':
 			data.encrypt_image = 1;
@@ -967,6 +979,11 @@ int main(int argc, char *argv[])
 	if (create_usb_image && !data.csf) {
 		fprintf(stderr, "Warning: the -u option only has effect with signed images\n");
 		create_usb_image = 0;
+	}
+
+	if (data.dcd_usb_image && !create_usb_image) {
+		fprintf(stderr, "Warning: the -a option only has effect with usb images\n");
+		data.dcd_usb_image = false;
 	}
 
 	if (data.image_ivt_offset == 0xffffffff) {

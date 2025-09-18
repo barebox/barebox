@@ -38,7 +38,21 @@ struct dm_target {
 	void *private;
 };
 
+static inline size_t dm_target_size(struct dm_target *ti)
+{
+	return ti->size << SECTOR_SHIFT;
+}
+
 void dm_target_err(struct dm_target *ti, const char *fmt, ...);
+
+#define dm_target_err_once(_ti, _format, _args...) do {	\
+	static bool __print_once;				\
+								\
+	if (!__print_once && LOGLEVEL >= MSG_ERR) {		\
+		__print_once = true;				\
+		dm_target_err((_ti), (_format), ##_args);	\
+	}							\
+} while (0)
 
 struct dm_target_ops {
 	struct list_head list;

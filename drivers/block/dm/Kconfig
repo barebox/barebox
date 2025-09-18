@@ -11,3 +11,10 @@ config DM_BLK_LINEAR
 	help
 	  Maps a contiguous region of an existing device into a dm
 	  device.
+
+config DM_BLK_VERITY
+	bool "Verity target"
+	depends on DM_BLK
+	help
+	  Transparent integrity checking of underlying device using a
+	  pre-computed Merkle tree.

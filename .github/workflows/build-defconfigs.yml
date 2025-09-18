@@ -39,6 +39,8 @@ jobs:
 
         ./test/generate-dummy-fw.sh
 
+        export GNUMAKEFLAGS=--shuffle
+
         ./MAKEALL -O build-${{matrix.arch}} -l "" -v 0 \
                 -k common/boards/configs/disable_size_check.config \
                 -k common/boards/configs/disable_target_tools.config \

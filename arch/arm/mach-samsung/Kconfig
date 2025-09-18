@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+if ARCH_SAMSUNG
+
+config MACH_EXYNOS
+	bool "Samsung Exynos boards support"
+	depends on 64BIT
+	select CPU_V8
+	select ARM_PSCI_CLIENT
+	select HW_HAS_PCI
+	select OF_OVERLAY
+
+endif

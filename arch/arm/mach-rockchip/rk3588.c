@@ -14,7 +14,7 @@ void rk3588_lowlevel_init(void)
 
 int rk3588_init(void)
 {
-	rockchip_parse_bootrom_iram(rockchip_scratch_space());
+	rockchip_parse_bootrom_iram(rockchip_scratch_space()->iram);
 
 	return 0;
 }

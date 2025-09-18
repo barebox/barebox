@@ -14,7 +14,7 @@ void rk3576_lowlevel_init(void)
 
 int rk3576_init(void)
 {
-	rockchip_parse_bootrom_iram(rockchip_scratch_space());
+	rockchip_parse_bootrom_iram(rockchip_scratch_space()->iram);
 
 	return 0;
 }

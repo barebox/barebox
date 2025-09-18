@@ -31,3 +31,47 @@ generate_fit()
 if [ -f .github/testfs/${KBUILD_DEFCONFIG}-gzipped.its ]; then
 	generate_fit
 fi
+
+alias pad128k="dd if=/dev/zero bs=128k count=1 status=none"
+
+generate_dm_verity()
+{
+    work=$(mktemp -d)
+    cd ${work}
+
+    # Create two dummy files; use lots of padding to make sure that
+    # when we alter the contents of 'english' in root-bad, 'latin' is
+    # still be readable, as their contents wont (a) share the same
+    # hash block and (b) the block cache layer won't accedentally read
+    # the invalid block.
+
+    pad128k  >latin
+    echo -n "veritas vos liberabit" >>latin
+    pad128k >>latin
+
+    pad128k  >english
+    echo -n "truth will set you free" >>english
+    pad128k >>english
+
+    truncate -s 1M good.fat
+    mkfs.vfat good.fat
+    mcopy -i good.fat latin english ::
+
+    veritysetup format \
+		--root-hash-file=good.hash \
+		good.fat good.verity
+
+    sed 's/truth will set you free/LIAR LIAR PANTS ON FIRE/' \
+	<good.fat >bad.fat
+
+    cd -
+    cp \
+	${work}/good.fat \
+	${work}/good.verity \
+	${work}/good.hash \
+	${work}/bad.fat \
+	${KBUILD_OUTPUT}/testfs
+
+    rm -rf ${work}
+}
+generate_dm_verity

@@ -13,7 +13,7 @@ static int am625_sk_probe(struct device *dev)
 
 	k3_bbu_emmc_register("emmc", "/dev/mmc0", BBU_HANDLER_FLAG_DEFAULT);
 
-	if (k3_boot_is_emmc())
+	if (am62x_boot_is_emmc())
 		of_device_enable_path("/chosen/environment-emmc");
 
 	return 0;

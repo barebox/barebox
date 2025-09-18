@@ -431,7 +431,7 @@ static int k3_r5_start_image(void)
 
 	if (IS_ENABLED(CONFIG_USB_GADGET_DFU) && bootsource_get() == BOOTSOURCE_SERIAL)
 		ret = do_dfu();
-	else if (k3_boot_is_emmc())
+	else if (am62x_boot_is_emmc())
 		ret = load_fip_emmc();
 	else
 		ret = load_fip("/boot/k3.fip", 0);

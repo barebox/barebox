@@ -593,6 +593,36 @@ match:
         return sbegin;
 }
 
+/**
+ * strtokv - split string into array of tokens based on a delimiter set
+ * @str:	string to split
+ * @delim:	set of delimiter characters
+ * @cntp:	number of tokens
+ *
+ * Split @str into non-empty tokens delimited by spans of characters
+ * from @delim, and store the numbers of tokens in @cntp.
+ *
+ * Return: The allocated array of tokens, which the caller is
+ * responsible for freeing.
+ */
+char **strtokv(char *str, const char *delim, int *cntp)
+{
+	char *tok, **vec = NULL;
+	int cnt = 0;
+
+	while ((tok = strsep(&str, delim))) {
+		if (*tok == '\0')
+			continue;
+
+		vec = xrealloc(vec, (cnt + 1) * sizeof(*vec));
+		vec[cnt++] = tok;
+	}
+
+	*cntp = cnt;
+	return vec;
+}
+EXPORT_SYMBOL(strtokv);
+
 #ifndef __HAVE_ARCH_STRSWAB
 /**
  * strswab - swap adjacent even and odd bytes in %NUL-terminated string

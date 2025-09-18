@@ -19,6 +19,8 @@ void* xmemalign(size_t alignment, size_t bytes) __xalloc_size(2);
 void* xmemdup(const void *orig, size_t size) __returns_nonnull;
 char *xasprintf(const char *fmt, ...) __printf(1, 2) __returns_nonnull;
 char *xvasprintf(const char *fmt, va_list ap) __returns_nonnull;
+char *xvrasprintf(char *str, const char *fmt, va_list ap) __returns_nonnull;
+char *xrasprintf(char *str, const char *fmt, ...) __printf(2, 3) __returns_nonnull;
 
 wchar_t *xstrdup_wchar(const wchar_t *src);
 wchar_t *xstrdup_char_to_wchar(const char *src);
@@ -35,6 +37,8 @@ static inline void* xmemalign(size_t alignment, size_t bytes) { BUG(); }
 static inline void* xmemdup(const void *orig, size_t size) { BUG(); }
 static inline __printf(1, 2) char *xasprintf(const char *fmt, ...) { BUG(); }
 static inline char *xvasprintf(const char *fmt, va_list ap) { BUG(); }
+static inline char *xvrasprintf(char *str, const char *fmt, va_list ap) { BUG(); }
+static inline __printf(2, 3) char *xrasprintf(char *str, const char *fmt, ...) { BUG(); }
 
 static inline wchar_t *xstrdup_wchar(const wchar_t *src) { BUG(); }
 static inline wchar_t *xstrdup_char_to_wchar(const char *src) { BUG(); }

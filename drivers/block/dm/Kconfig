@@ -1,0 +1,13 @@
+menuconfig DM_BLK
+	bool "Device mapper"
+	help
+	  Composable virtual block devices made up of mappings to
+	  other data sources. Modeled after, and intended to be
+	  compatible with, the Linux kernel's device mapper subsystem.
+
+config DM_BLK_LINEAR
+	bool "Linear target"
+	depends on DM_BLK
+	help
+	  Maps a contiguous region of an existing device into a dm
+	  device.

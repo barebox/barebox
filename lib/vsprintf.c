@@ -1005,3 +1005,38 @@ int asprintf(char **strp, const char *fmt, ...)
 	return len;
 }
 EXPORT_SYMBOL(asprintf);
+
+int vrasprintf(char **strp, const char *fmt, va_list ap)
+{
+	int fmtlen, inlen = *strp ? strlen(*strp) : 0;
+	va_list aq;
+	char *p;
+
+	va_copy(aq, ap);
+	fmtlen = vsnprintf(NULL, 0, fmt, aq);
+	va_end(aq);
+
+	p = realloc(*strp, inlen + fmtlen + 1);
+	if (!p)
+		return -1;
+
+	vsnprintf(&p[inlen], fmtlen + 1, fmt, ap);
+
+	*strp = p;
+
+	return inlen + fmtlen;
+}
+EXPORT_SYMBOL(vrasprintf);
+
+int rasprintf(char **strp, const char *fmt, ...)
+{
+	va_list ap;
+	int len;
+
+	va_start(ap, fmt);
+	len = vrasprintf(strp, fmt, ap);
+	va_end(ap);
+
+	return len;
+}
+EXPORT_SYMBOL(rasprintf);

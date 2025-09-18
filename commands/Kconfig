@@ -732,6 +732,20 @@ config CMD_PARTED
 	         unit <unit>     change display/input units
 	         refresh         refresh a partition table
 
+config CMD_DMSETUP
+	tristate
+	depends on DM_BLK
+	prompt "dmsetup"
+	help
+	  dmsetup - low level interface to the device mapper
+
+	  Compose virtual block devices from a table of mappings from
+	  logical block addresses to various data sources, such as
+	  linear ranges from other existing devices.
+
+	  commands:
+	        create <name> <table-file>
+
 config CMD_UBI
 	tristate
 	default y if MTD_UBI

@@ -759,7 +759,7 @@
 			reg = <0x00 0xf00 0x00 0x100>;
 			#address-cells = <1>;
 			#size-cells = <0>;
-			clocks = <&scmi_clk 13 0>;
+			clocks = <&scmi_clk 9>;
 			clock-names = "fck";
 			bus_freq = <1000000>;
 			status = "disabled";

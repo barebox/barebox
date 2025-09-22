@@ -34,3 +34,5 @@ nvmem-kvx-otp-nv-y		:= kvx-otp-nv.o
 obj-$(CONFIG_NVMEM_ROCKCHIP_OTP)+= rockchip-otp.o
 obj-$(CONFIG_STARFIVE_OTP)	+= starfive-otp.o
 obj-$(CONFIG_IMX_OCOTP_ELE)	+= imx-ocotp-ele.o
+obj-$(CONFIG_NVMEM_ATMEL_I2C)	+= atmel-i2c.o
+obj-$(CONFIG_NVMEM_ATMEL_SHA204A) += atmel-sha204a.o

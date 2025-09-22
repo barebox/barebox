@@ -162,6 +162,9 @@ config CRC8
 	  when they need to do cyclic redundancy check according CRC8
 	  algorithm. Module will be called crc8.
 
+config CRC16
+	bool "CRC16 function"
+
 source "lib/gui/Kconfig"
 
 source "lib/fonts/Kconfig"

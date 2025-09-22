@@ -134,22 +134,4 @@ static struct ecc_curve nist_p521 = {
 	.b = nist_p521_b
 };
 
-/* curve25519 */
-static u64 curve25519_g_x[] = { 0x0000000000000009, 0x0000000000000000,
-				0x0000000000000000, 0x0000000000000000 };
-static u64 curve25519_p[] = { 0xffffffffffffffed, 0xffffffffffffffff,
-				0xffffffffffffffff, 0x7fffffffffffffff };
-static u64 curve25519_a[] = { 0x000000000001DB41, 0x0000000000000000,
-				0x0000000000000000, 0x0000000000000000 };
-static const struct ecc_curve ecc_25519 = {
-	.name = "curve25519",
-	.nbits = 255,
-	.g = {
-		.x = curve25519_g_x,
-		.ndigits = 4,
-	},
-	.p = curve25519_p,
-	.a = curve25519_a,
-};
-
 #endif

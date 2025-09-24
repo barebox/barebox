@@ -144,6 +144,30 @@ char *xasprintf(const char *fmt, ...)
 }
 EXPORT_SYMBOL(xasprintf);
 
+char *xvrasprintf(char *str, const char *fmt, va_list ap)
+{
+	int len;
+
+	len = vrasprintf(&str, fmt, ap);
+	if (len < 0)
+		enomem_panic(0);
+
+	return str;
+}
+EXPORT_SYMBOL(xvrasprintf);
+
+char *xrasprintf(char *str, const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	str = xvrasprintf(str, fmt, ap);
+	va_end(ap);
+
+	return str;
+}
+EXPORT_SYMBOL(xrasprintf);
+
 wchar_t *xstrdup_wchar(const wchar_t *s)
 {
 	wchar_t *p;

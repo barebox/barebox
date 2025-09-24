@@ -32,3 +32,5 @@ config RAMDISK_BLK
         help
 	  This symbol is selected by testing code that requires lightweight
 	  creation of anonymous block devices backed fully by memory buffers.
+
+source "drivers/block/dm/Kconfig"

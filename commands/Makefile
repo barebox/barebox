@@ -166,4 +166,6 @@ obj-$(CONFIG_CMD_STACKSMASH)	+= stacksmash.o
 obj-$(CONFIG_CMD_PARTED)	+= parted.o
 obj-$(CONFIG_CMD_EFI_HANDLE_DUMP)	+= efi_handle_dump.o
 obj-$(CONFIG_CMD_HOST)		+= host.o
+obj-$(CONFIG_CMD_DMSETUP)	+= dmsetup.o
+obj-$(CONFIG_CMD_VERITYSETUP)	+= veritysetup.o
 UBSAN_SANITIZE_ubsan.o := y

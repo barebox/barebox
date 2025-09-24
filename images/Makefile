@@ -184,6 +184,7 @@ include $(srctree)/images/Makefile.mvebu
 include $(srctree)/images/Makefile.mxs
 include $(srctree)/images/Makefile.omap3
 include $(srctree)/images/Makefile.rockchip
+include $(srctree)/images/Makefile.exynos
 include $(srctree)/images/Makefile.sandbox
 include $(srctree)/images/Makefile.socfpga
 include $(srctree)/images/Makefile.stm32mp

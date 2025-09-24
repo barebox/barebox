@@ -121,4 +121,19 @@ config STARFIVE_OTP
 	  This adds support for the StarFive OTP controller. Only reading
 	  is currently supported.
 
+config NVMEM_ATMEL_SHA204A
+	bool "Support for Microchip / Atmel SHA accelerator OTP support"
+	depends on I2C
+	select CRC16
+	select BITREV
+	select NVMEM_ATMEL_I2C
+	help
+	  Microchip / Atmel SHA accelerator and RNG.
+	  Select this if you want to use the Microchip / Atmel SHA204A
+	  chip. This driver currently only supports reading the OTP memory
+
+config NVMEM_ATMEL_I2C
+	bool
+	select BITREVERSE
+
 endif

@@ -508,7 +508,7 @@ static int __prci_register_clocks(struct device *dev, struct __prci_data *pd,
 			return PTR_ERR(clk);
 		}
 
-		r = clk_register_clkdev(clk, pic->name, dev_name(dev));
+		r = clk_register_clkdev(clk, pic->name, "%s", dev_name(dev));
 		if (r) {
 			dev_warn(dev, "Failed to register clkdev for %s: %d\n",
 				 clk_hw_get_name(&pic->hw), r);

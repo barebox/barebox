@@ -3236,7 +3236,7 @@ static const struct of_device_id rockchip_pinctrl_dt_match[] = {
 #endif
 #ifdef CONFIG_ARCH_RK3128
 	{ .compatible = "rockchip,rk3128-pinctrl",
-		.data = (void *)&rk3128_pin_ctrl },
+		.data = &rk3128_pin_ctrl },
 #endif
 #ifdef CONFIG_ARCH_RK3188
 	{ .compatible = "rockchip,rk3188-pinctrl",

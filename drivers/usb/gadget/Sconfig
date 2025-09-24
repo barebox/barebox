@@ -1,0 +1,11 @@
+
+menu "USB Gadget Policy"
+
+config USB_GADGET
+	bool "Allow USB gadget"
+	depends on $(kconfig-enabled,USB_GADGET)
+	help
+	  USB gadget support might be potentially dangerous in secure environments.
+	  The DFU and fastboot protocols allow to modify system partitions.
+
+endmenu

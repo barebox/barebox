@@ -5,6 +5,7 @@
 #include <password.h>
 #include <environment.h>
 #include <shell.h>
+#include <security/config.h>
 
 /*
  * not yet supported
@@ -190,6 +191,9 @@ int run_command(const char *cmd)
 	int argc, inquotes;
 	int rc = 0;
 
+	if (!IS_ALLOWED(SCONFIG_SHELL))
+		return -EPERM;
+
 #ifdef DEBUG
 	pr_debug("[RUN_COMMAND] cmd[%p]=\"", cmd);
 	puts (cmd ? cmd : "NULL");	/* use puts - string may be loooong */
@@ -268,6 +272,9 @@ int run_shell(void)
 {
 	static char lastcommand[CONFIG_CBSIZE] = { 0, };
 	int len;
+
+	if (!IS_ALLOWED(SCONFIG_SHELL_INTERACTIVE))
+		return -EPERM;
 
 	login();
 

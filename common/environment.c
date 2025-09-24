@@ -30,6 +30,7 @@
 #include <efi/partition.h>
 #include <bootsource.h>
 #include <magicvar.h>
+#include <security/config.h>
 #else
 #define EXPORT_SYMBOL(x)
 #endif
@@ -448,6 +449,11 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 	int envfd;
 	int ret = 0;
 	size_t size, rsize;
+
+#ifdef __BAREBOX__
+	if (!IS_ALLOWED(SCONFIG_ENVIRONMENT_LOAD))
+		return -EPERM;
+#endif
 
 	if (!filename)
 		filename = default_environment_path_get();

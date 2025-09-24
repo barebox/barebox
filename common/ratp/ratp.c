@@ -14,6 +14,7 @@
 #define pr_fmt(fmt) "barebox-ratp: " fmt
 
 #include <common.h>
+#include <security/config.h>
 #include <command.h>
 #include <malloc.h>
 #include <init.h>
@@ -46,6 +47,7 @@ struct ratp_ctx {
 
 	struct ratp_bb_pkt *fs_rx;
 
+	struct sconfig_notifier_block sconfig_notifier;
 	struct poller_struct poller;
 	struct work_queue wq;
 
@@ -456,10 +458,21 @@ static void ratp_work_cancel(struct work_struct *w)
 	free(rw);
 }
 
+static void barebox_ratp_sconfig_update(struct sconfig_notifier_block *nb,
+				       enum security_config_option opt,
+				       bool allowed)
+{
+	if (!allowed && ratp_ctx)
+		ratp_unregister(ratp_ctx);
+}
+
 int barebox_ratp(struct console_device *cdev)
 {
 	int ret;
 	struct ratp_ctx *ctx;
+
+	if (!IS_ALLOWED(SCONFIG_RATP))
+		return -EPERM;
 
 	if (!cdev->getc || !cdev->putc)
 		return -EINVAL;
@@ -514,6 +527,10 @@ int barebox_ratp(struct console_device *cdev)
 
 	console_set_active(&ctx->ratp_console, CONSOLE_STDOUT | CONSOLE_STDERR |
 			CONSOLE_STDIN);
+
+	sconfig_register_handler_filtered(&ctx->sconfig_notifier,
+					  barebox_ratp_sconfig_update,
+					  SCONFIG_RATP);
 
 	return 0;
 

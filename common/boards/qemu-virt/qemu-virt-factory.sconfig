@@ -1,0 +1,36 @@
+#
+# Automatically generated file; DO NOT EDIT.
+# Barebox Security Configuration
+#
+SCONFIG_POLICY_NAME="factory"
+
+#
+# General Settings
+#
+SCONFIG_CONSOLE_INPUT=y
+SCONFIG_SHELL=y
+SCONFIG_SHELL_INTERACTIVE=y
+SCONFIG_ENVIRONMENT_LOAD=y
+SCONFIG_RATP=y
+# SCONFIG_FASTBOOT_CMD_OEM is not set
+# end of General Settings
+
+#
+# Boot Policy
+#
+# SCONFIG_BOOT_UNSIGNED_IMAGES is not set
+# end of Boot Policy
+
+#
+# USB Gadget Policy
+#
+SCONFIG_USB_GADGET=y
+# end of USB Gadget Policy
+
+#
+# Command Policy
+#
+# SCONFIG_CMD_GO is not set
+# end of Command Policy
+
+SCONFIG_FS_EXTERNAL=y

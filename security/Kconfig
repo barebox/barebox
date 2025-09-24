@@ -17,6 +17,8 @@ config INSECURE
 
 	    - changes the default of global.env.autoprobe to 1
 
+source "security/Kconfig.policy"
+
 config PASSWORD
 	bool
 	prompt "Password Framework"

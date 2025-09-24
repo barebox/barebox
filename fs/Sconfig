@@ -1,0 +1,5 @@
+
+config FS_EXTERNAL
+	bool "Allow mounting external file systems"
+	help
+	  Say y to permit mounting file systems beyond devfs and ramfs.

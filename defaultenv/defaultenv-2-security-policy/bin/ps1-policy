@@ -1,0 +1,20 @@
+if [ -n "$security.policy" ]; then
+	if [ "$security.policy" = "devel" ]; then
+		PS1_policy_color="$YELLOW"
+	elif [ "$security.policy" = "factory" ]; then
+		PS1_policy_color="$PINK"
+	elif [ "$security.policy" = "lockdown" ]; then
+		PS1_policy_color="$RED"
+	elif [ "$security.policy" = "tamper" ]; then
+		PS1_policy_color="$RED_INV"
+	elif [ "$security.policy" = "return" ]; then
+		PS1_policy_color="$PINK_INV"
+	elif [[ "$security.policy" = "debug*" ]]; then
+		PS1_policy_color="$CYAN"
+        else
+                PS1_policy_color="$NC"
+	fi
+
+	. /env/init/ps1
+	export PS1="(${PS1_policy_color}${security.policy}${NC}) $PS1"
+fi

@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+mainmenu "Barebox Security Configuration"
+
+source "scripts/Sconfig.include"
+
+source "security/Sconfig"
+source "common/Sconfig"
+source "drivers/usb/gadget/Sconfig"
+source "commands/Sconfig"
+source "fs/Sconfig"

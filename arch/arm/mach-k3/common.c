@@ -28,21 +28,12 @@ static const struct of_device_id k3_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(k3_of_match);
 
-static int omap_env_init(void)
+int k3_env_init(void)
 {
 	char *partname, *cdevname, *envpath;
 	struct cdev *cdev;
 	const char *rootpath;
 	int instance;
-
-	if (!of_machine_is_compatible("ti,am625"))
-		return 0;
-
-	if (bootsource_get() != BOOTSOURCE_MMC)
-		return 0;
-
-	if (k3_boot_is_emmc())
-		return 0;
 
 	instance = bootsource_get_instance();
 
@@ -86,7 +77,6 @@ out:
 
 	return 0;
 }
-late_initcall(omap_env_init);
 
 int k3_authenticate_image(void **buf, size_t *size)
 {

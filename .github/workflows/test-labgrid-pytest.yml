@@ -116,9 +116,6 @@ jobs:
           grep -wq '\(QEMUDriver\|ExternalConsoleDriver\):' "$i" || continue
 
           extraargs="${{matrix.lgargs}}"
-          if grep -wq 'testfs' "$i"; then
-            extraargs="${extraargs} --fs testfs=${KBUILD_OUTPUT}/testfs"
-          fi
 
           cfg=$(basename $i .yaml)
           echo "Testing $cfg"

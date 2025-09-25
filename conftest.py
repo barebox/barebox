@@ -208,6 +208,12 @@ def strategy(request, target, pytestconfig):
     for arg in pytestconfig.option.qemu_arg:
         strategy.append_qemu_args(arg)
 
+    if "testfs" in features:
+        if not any(fs and fs[0] == "testfs" for fs in pytestconfig.option.qemu_fs):
+            testfs_path = os.path.join(os.environ["LG_BUILDDIR"], "testfs")
+            pytestconfig.option.qemu_fs.append(["testfs", testfs_path])
+            os.makedirs(testfs_path, exist_ok=True)
+
     for i, fs in enumerate(pytestconfig.option.qemu_fs):
         if virtio:
             path = fs.pop()

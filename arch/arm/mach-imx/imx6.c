@@ -31,8 +31,16 @@
 #define MX6_OCOTP_CFG0			0x410
 #define MX6_OCOTP_CFG1			0x420
 
+#define BM_MPR_MPROT1_MTW		(0x1 << 25)
+
 static void imx6_configure_aips(void __iomem *aips)
 {
+	u32 mpr = readl(aips);
+
+	/* Bail if CPU ist not trusted for write accesses. */
+	if (!(mpr & BM_MPR_MPROT1_MTW))
+		return;
+
 	/*
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
 	 * not forced to user-mode.

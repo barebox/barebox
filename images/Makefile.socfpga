@@ -59,6 +59,14 @@ pblb-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_AA1) += start_socfpga_aa1_bringup
 FILE_barebox-socfpga-aa1-bringup.img = start_socfpga_aa1_bringup.pblb
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_AA1) += barebox-socfpga-aa1-bringup.img
 
+pblb-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_SA2) += start_socfpga_sa2_xload
+FILE_barebox-socfpga-sa2-xload.img = start_socfpga_sa2_xload.pblb.socfpgaimg
+socfpga-xload-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_SA2) += barebox-socfpga-sa2-xload.img
+
+pblb-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_SA2) += start_socfpga_sa2
+FILE_barebox-socfpga-sa2.img = start_socfpga_sa2.pblb
+socfpga-barebox-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_SA2) += barebox-socfpga-sa2.img
+
 pblb-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += start_socfpga_achilles_xload
 FILE_barebox-socfpga-achilles-xload.img = start_socfpga_achilles_xload.pblb.socfpgaimg
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += barebox-socfpga-achilles-xload.img

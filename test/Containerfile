@@ -43,11 +43,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	qemu-system-common \
 	ovmf \
 	python3 \
-	python3-pip \
-	python3-virtualenv \
-	python3-setuptools \
+	python3-crcmod \
+	python3-cryptography \
 	python3-jsonschema \
 	python3-libfdt \
+	python3-pip \
+	python3-setuptools \
+	python3-virtualenv \
 	python3-yaml \
 	virtualenv \
 	sudo \

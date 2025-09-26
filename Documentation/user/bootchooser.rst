@@ -115,8 +115,8 @@ it can report this to bootchooser from Linux userspace using the
 *barebox-state* tool from the dt-utils_ package.::
 
   barebox-state [-n <state variable set>] -s [<prefix>.]<target>.remaining_attempts=<reset-value>
-  barebox-state -n system_state -s bootstate.system1.remaining_attempts=3
-  barebox-state -s system1.remaining_attempts=3
+  barebox-state -n system_state -s bootstate.system0.remaining_attempts=3
+  barebox-state -s system0.remaining_attempts=3
 
 Alternatively barebox can be configured to mark the last boot successful based
 on the :ref:`reset reason <reset_reason>` (i.e. != WDG) using the
@@ -235,25 +235,25 @@ Either device can be booted with the :ref:`boot <command_boot>` command command,
 and thus can be used by *bootchooser* and we can start to configure the
 *bootchooser* variables.
 
-The following example shows how to initialize two boot targets, ``system1`` and
-``system2``. Both boot from a UBIFS on ``nand0``, the former has a priority of
-21 and boots from the volume ``root_filesystem_1`` whereas the latter has a
-priority of 20 and boots from the volume ``root_filesystem_2``.
+The following example shows how to initialize two boot targets, ``system0`` and
+``system1``. Both boot from a UBIFS on ``nand0``, the former has a priority of
+20 and boots from the volume ``root_filesystem_1`` whereas the latter has a
+priority of 10 and boots from the volume ``root_filesystem_2``.
 
 .. code-block:: sh
 
-  # initialize target 'system1'
-  nv bootchooser.system1.boot=nand0.ubi.root_filesystem_1
-  nv bootchooser.system1.default_attempts=3
-  nv bootchooser.system1.default_priority=21
+  # initialize target 'system0'
+  nv bootchooser.system0.boot=nand0.ubi.root_filesystem_1
+  nv bootchooser.system0.default_attempts=3
+  nv bootchooser.system0.default_priority=20
 
-  # initialize target 'system2'
-  nv bootchooser.system2.boot=nand0.ubi.root_filesystem_2
-  nv bootchooser.system2.default_attempts=3
-  nv bootchooser.system2.default_priority=20
+  # initialize target 'system1'
+  nv bootchooser.system1.boot=nand0.ubi.root_filesystem_2
+  nv bootchooser.system1.default_attempts=3
+  nv bootchooser.system1.default_priority=10
 
   # make targets known
-  nv bootchooser.targets="system1 system2"
+  nv bootchooser.targets="system0 system1"
 
   # retry until one target succeeds
   nv bootchooser.retry=1
@@ -510,7 +510,7 @@ content for the *state* variable set looks like:
 
    system_state {
         [...]
-        system1 {
+        system0 {
              #address-cells = <1>;
              #size-cells = <1>;
              remaining_attempts@0 {
@@ -525,7 +525,7 @@ content for the *state* variable set looks like:
              };
         };
 
-        system2 {
+        system1 {
              #address-cells = <1>;
              #size-cells = <1>;
              remaining_attempts@8 {
@@ -536,7 +536,7 @@ content for the *state* variable set looks like:
              priority@c {
                  reg = <0xc 0x4>;
                  type = "uint32";
-                 default = <21>;
+                 default = <10>;
              };
         };
 
@@ -546,7 +546,7 @@ content for the *state* variable set looks like:
         };
    };
 
-.. important:: While the ``system1/2`` nodes suggest a different namespace inside the
+.. important:: While the ``system0/1`` nodes suggest a different namespace inside the
    *state* variable set, the actual variable's ``reg``-properties and their offset
    part are always relative to the whole *state* variable set and thus must be
    consecutive globally.

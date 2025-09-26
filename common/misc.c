@@ -60,6 +60,7 @@ const char *strerror(int errnum)
 	case	ELOOP		: return "Too many symbolic links encountered";
 	case	ENODATA		: return "No data available";
 	case	EOPNOTSUPP	: return "Operation not supported";
+	case	ENOIOCTLCMD	: return "Command not found";
 #if 0 /* These are probably not needed */
 	case	ENOTBLK		: return "Block device required";
 	case	EFBIG		: return "File too large";

@@ -26,86 +26,79 @@ const char *strerror(int errnum)
 {
 	static char errno_string[sizeof("error -2147483648")];
 
-#ifdef CONFIG_ERRNO_MESSAGES
-	char *str;
 	switch(errnum) {
-	case	0		: str = "No error"; break;
-	case	EPERM		: str = "Operation not permitted"; break;
-	case	ENOENT		: str = "No such file or directory"; break;
-	case	EIO		: str = "I/O error"; break;
-	case	ENXIO		: str = "No such device or address"; break;
-	case	E2BIG		: str = "Arg list too long"; break;
-	case	ENOEXEC		: str = "Exec format error"; break;
-	case	EBADF		: str = "Bad file number"; break;
-	case	ENOMEM		: str = "Out of memory"; break;
-	case	EACCES		: str = "Permission denied"; break;
-	case	EFAULT		: str = "Bad address"; break;
-	case	EBUSY		: str = "Device or resource busy"; break;
-	case	EEXIST		: str = "File exists"; break;
-	case	ENODEV		: str = "No such device"; break;
-	case	ENOTDIR		: str = "Not a directory"; break;
-	case	EISDIR		: str = "Is a directory"; break;
-	case	EINVAL		: str = "Invalid argument"; break;
-	case	ENOSPC		: str = "No space left on device"; break;
-	case	ESPIPE		: str = "Illegal seek"; break;
-	case	EROFS		: str = "Read-only file system"; break;
-	case	ENAMETOOLONG	: str = "File name too long"; break;
-	case	ENOSYS		: str = "Function not implemented"; break;
-	case	ENOTEMPTY	: str = "Directory not empty"; break;
-	case	EHOSTUNREACH	: str = "No route to host"; break;
-	case	EINTR		: str = "Interrupted system call"; break;
-	case	ENETUNREACH	: str = "Network is unreachable"; break;
-	case	ENETDOWN	: str = "Network is down"; break;
-	case	ETIMEDOUT	: str = "Connection timed out"; break;
-	case	EPROBE_DEFER	: str = "Requested probe deferral"; break;
-	case	ELOOP		: str = "Too many symbolic links encountered"; break;
-	case	ENODATA		: str = "No data available"; break;
-	case	EOPNOTSUPP	: str = "Operation not supported"; break;
+#ifdef CONFIG_ERRNO_MESSAGES
+	case	0		: return "No error";
+	case	EPERM		: return "Operation not permitted";
+	case	ENOENT		: return "No such file or directory";
+	case	EIO		: return "I/O error";
+	case	ENXIO		: return "No such device or address";
+	case	E2BIG		: return "Arg list too long";
+	case	ENOEXEC		: return "Exec format error";
+	case	EBADF		: return "Bad file number";
+	case	ENOMEM		: return "Out of memory";
+	case	EACCES		: return "Permission denied";
+	case	EFAULT		: return "Bad address";
+	case	EBUSY		: return "Device or resource busy";
+	case	EEXIST		: return "File exists";
+	case	ENODEV		: return "No such device";
+	case	ENOTDIR		: return "Not a directory";
+	case	EISDIR		: return "Is a directory";
+	case	EINVAL		: return "Invalid argument";
+	case	ENOSPC		: return "No space left on device";
+	case	ESPIPE		: return "Illegal seek";
+	case	EROFS		: return "Read-only file system";
+	case	ENAMETOOLONG	: return "File name too long";
+	case	ENOSYS		: return "Function not implemented";
+	case	ENOTEMPTY	: return "Directory not empty";
+	case	EHOSTUNREACH	: return "No route to host";
+	case	EINTR		: return "Interrupted system call";
+	case	ENETUNREACH	: return "Network is unreachable";
+	case	ENETDOWN	: return "Network is down";
+	case	ETIMEDOUT	: return "Connection timed out";
+	case	EPROBE_DEFER	: return "Requested probe deferral";
+	case	ELOOP		: return "Too many symbolic links encountered";
+	case	ENODATA		: return "No data available";
+	case	EOPNOTSUPP	: return "Operation not supported";
 #if 0 /* These are probably not needed */
-	case	ENOTBLK		: str = "Block device required"; break;
-	case	EFBIG		: str = "File too large"; break;
-	case	EBADSLT		: str = "Invalid slot"; break;
-	case	ETIME		: str = "Timer expired"; break;
-	case	ENONET		: str = "Machine is not on the network"; break;
-	case	EADV		: str = "Advertise error"; break;
-	case	ECOMM		: str = "Communication error on send"; break;
-	case	EPROTO		: str = "Protocol error"; break;
-	case	EBADMSG		: str = "Not a data message"; break;
-	case	EOVERFLOW	: str = "Value too large for defined data type"; break;
-	case	EBADFD		: str = "File descriptor in bad state"; break;
-	case	EREMCHG		: str = "Remote address changed"; break;
-	case	EMSGSIZE	: str = "Message too long"; break;
-	case	EPROTOTYPE	: str = "Protocol wrong type for socket"; break;
-	case	ENOPROTOOPT	: str = "Protocol not available"; break;
-	case	EPROTONOSUPPORT	: str = "Protocol not supported"; break;
-	case	ESOCKTNOSUPPORT	: str = "Socket type not supported"; break;
-	case	EPFNOSUPPORT	: str = "Protocol family not supported"; break;
-	case	EAFNOSUPPORT	: str = "Address family not supported by protocol"; break;
-	case	EADDRINUSE	: str = "Address already in use"; break;
-	case	EADDRNOTAVAIL	: str = "Cannot assign requested address"; break;
-	case	ENETRESET	: str = "Network dropped connection because of reset"; break;
-	case	ECONNABORTED	: str = "Software caused connection abort"; break;
-	case	ECONNRESET	: str = "Connection reset by peer"; break;
-	case	ENOBUFS		: str = "No buffer space available"; break;
-	case	ECONNREFUSED	: str = "Connection refused"; break;
-	case	EHOSTDOWN	: str = "Host is down"; break;
-	case	EALREADY	: str = "Operation already in progress"; break;
-	case	EINPROGRESS	: str = "Operation now in progress"; break;
-	case	ESTALE		: str = "Stale NFS file handle"; break;
-	case	EISNAM		: str = "Is a named type file"; break;
-	case	EREMOTEIO	: str = "Remote I/O error"; break;
+	case	ENOTBLK		: return "Block device required";
+	case	EFBIG		: return "File too large";
+	case	EBADSLT		: return "Invalid slot";
+	case	ETIME		: return "Timer expired";
+	case	ENONET		: return "Machine is not on the network";
+	case	EADV		: return "Advertise error";
+	case	ECOMM		: return "Communication error on send";
+	case	EPROTO		: return "Protocol error";
+	case	EBADMSG		: return "Not a data message";
+	case	EOVERFLOW	: return "Value too large for defined data type";
+	case	EBADFD		: return "File descriptor in bad state";
+	case	EREMCHG		: return "Remote address changed";
+	case	EMSGSIZE	: return "Message too long";
+	case	EPROTOTYPE	: return "Protocol wrong type for socket";
+	case	ENOPROTOOPT	: return "Protocol not available";
+	case	EPROTONOSUPPORT	: return "Protocol not supported";
+	case	ESOCKTNOSUPPORT	: return "Socket type not supported";
+	case	EPFNOSUPPORT	: return "Protocol family not supported";
+	case	EAFNOSUPPORT	: return "Address family not supported by protocol";
+	case	EADDRINUSE	: return "Address already in use";
+	case	EADDRNOTAVAIL	: return "Cannot assign requested address";
+	case	ENETRESET	: return "Network dropped connection because of reset";
+	case	ECONNABORTED	: return "Software caused connection abort";
+	case	ECONNRESET	: return "Connection reset by peer";
+	case	ENOBUFS		: return "No buffer space available";
+	case	ECONNREFUSED	: return "Connection refused";
+	case	EHOSTDOWN	: return "Host is down";
+	case	EALREADY	: return "Operation already in progress";
+	case	EINPROGRESS	: return "Operation now in progress";
+	case	ESTALE		: return "Stale NFS file handle";
+	case	EISNAM		: return "Is a named type file";
+	case	EREMOTEIO	: return "Remote I/O error";
+#endif
 #endif
 	default:
 		sprintf(errno_string, "error %d", errnum);
 		return errno_string;
 	};
-
-        return str;
-#else
-	sprintf(errno_string, "error %d", errnum);
-
-	return errno_string;
-#endif
 }
 EXPORT_SYMBOL(strerror);
 

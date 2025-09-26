@@ -9,7 +9,5 @@ targets:
       BareboxDriver:
         prompt: "barebox@[^:]+:[^ ]+ "
       BareboxTestStrategy: {}
-    runner:
-      tuxmake_arch: um
 imports:
   -  ../strategy.py

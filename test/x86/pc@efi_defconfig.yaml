@@ -24,7 +24,6 @@ targets:
       efifs0: 'Driver: efifs'
       acpi-APIC0: 'Signature: APIC (Multiple APIC Description Table)'
     runner:
-      tuxmake_arch: x86_64
       kconfig_add:
         - CONFIG_DRIVER_SERIAL_NS16550=y
         - CONFIG_CONSOLE_ACTIVATE_FIRST=y # avoid duplicate output

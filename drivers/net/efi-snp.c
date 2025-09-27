@@ -219,7 +219,7 @@ static int efi_snp_eth_open(struct eth_device *edev)
 
 	efiret = priv->snp->station_address(priv->snp, false,
 			(struct efi_mac_address *)priv->snp->Mode->PermanentAddress.Addr );
-	if (EFI_ERROR(efiret)) {
+	if (EFI_ERROR(efiret) && efiret != EFI_UNSUPPORTED) {
 		dev_err(priv->dev, "failed to set MAC address: %s\n",
 				efi_strerror(efiret));
 		return -efi_errno(efiret);

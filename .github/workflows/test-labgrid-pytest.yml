@@ -64,6 +64,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Determine used features
+      id: used-features
+      run: |
+        for i in ${{matrix.lgenv}}; do
+          if grep -wq 'testfs' "$i"; then
+            echo "testfs=true" >>$GITHUB_OUTPUT
+            exit
+          fi
+        done
+        echo "testfs=false" >> $GITHUB_OUTPUT
+
     - name: Build
       id: build
       run: |
@@ -76,6 +87,10 @@ jobs:
           KCONFIG_ADD="${KCONFIG_ADD} CONFIG_CONSOLE_DISABLE_INPUT=n CONFIG_MALLOC_LIBC=y"
         fi
 
+        if [ "${{ steps.used-features.outputs.testfs }}" = "true" ]; then
+          KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/enable_dm_testing.config"
+        fi
+
         ./MAKEALL -O ${KBUILD_OUTPUT} -l "" -v 0 ${{matrix.defconfig}}
 
         if [ ${{matrix.arch}} = "riscv" ]; then
@@ -83,17 +98,14 @@ jobs:
         fi
 
     - name: Populate testfs
+      if: steps.used-features.outputs.testfs == 'true'
       run: |
         export KBUILD_OUTPUT=build-${{matrix.arch}}-${{matrix.defconfig}}
         export KBUILD_DEFCONFIG=${{matrix.defconfig}}
 
-        for i in ${{matrix.lgenv}}; do
-          grep -wq 'testfs' "$i" || continue
-
-          # Just use already built dtc
-          export PATH="$PATH:${KBUILD_OUTPUT}/scripts/dtc/"
-          exec scripts/generate_testfs.sh
-        done
+        # Just use already built dtc
+        export PATH="$PATH:${KBUILD_OUTPUT}/scripts/dtc/"
+        exec scripts/generate_testfs.sh
 
     - name: labgrid-pytest
       if: steps.build.outcome == 'success'

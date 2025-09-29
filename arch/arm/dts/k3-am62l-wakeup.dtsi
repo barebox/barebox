@@ -43,7 +43,7 @@
 		interrupt-controller;
 		#interrupt-cells = <2>;
 		power-domains = <&scmi_pds 36>;
-		clocks = <&scmi_clk 142>;
+		clocks = <&scmi_clk 146>;
 		clock-names = "gpio";
 		ti,ngpio = <7>;
 		ti,davinci-gpio-unbanked = <0>;
@@ -54,7 +54,7 @@
 		compatible = "ti,am654-timer";
 		reg = <0x00 0x2b100000 0x00 0x400>;
 		interrupts = <GIC_SPI 190 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&scmi_clk 85>;
+		clocks = <&scmi_clk 93>;
 		clock-names = "fck";
 		power-domains = <&scmi_pds 19>;
 		ti,timer-pwm;
@@ -64,7 +64,7 @@
 		compatible = "ti,am654-timer";
 		reg = <0x00 0x2b110000 0x00 0x400>;
 		interrupts = <GIC_SPI 191 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&scmi_clk 96>;
+		clocks = <&scmi_clk 98>;
 		clock-names = "fck";
 		power-domains = <&scmi_pds 20>;
 		ti,timer-pwm;
@@ -128,6 +128,11 @@
 			compatible = "ti,am654-chipid";
 			reg = <0x14 0x4>;
 			bootph-all;
+		};
+
+		cpsw_mac_syscon: ethernet-mac-syscon@2000 {
+			compatible = "ti,am62p-cpsw-mac-efuse", "syscon";
+			reg = <0x2000 0x8>;
 		};
 	};
 };

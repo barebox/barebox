@@ -86,7 +86,7 @@
 		compatible = "ti,am654-timer";
 		reg = <0x00 0x2400000 0x00 0x400>;
 		interrupts = <GIC_SPI 170 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&scmi_clk 47>;
+		clocks = <&scmi_clk 58>;
 		clock-names = "fck";
 		power-domains = <&scmi_pds 15>;
 		ti,timer-pwm;
@@ -96,7 +96,7 @@
 		compatible = "ti,am654-timer";
 		reg = <0x00 0x2410000 0x00 0x400>;
 		interrupts = <GIC_SPI 171 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&scmi_clk 61>;
+		clocks = <&scmi_clk 63>;
 		clock-names = "fck";
 		power-domains = <&scmi_pds 16>;
 		ti,timer-pwm;
@@ -106,7 +106,7 @@
 		compatible = "ti,am654-timer";
 		reg = <0x00 0x2420000 0x00 0x400>;
 		interrupts = <GIC_SPI 172 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&scmi_clk 66>;
+		clocks = <&scmi_clk 77>;
 		clock-names = "fck";
 		power-domains = <&scmi_pds 17>;
 		ti,timer-pwm;
@@ -116,7 +116,7 @@
 		compatible = "ti,am654-timer";
 		reg = <0x00 0x2430000 0x00 0x400>;
 		interrupts = <GIC_SPI 173 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&scmi_clk 80>;
+		clocks = <&scmi_clk 82>;
 		clock-names = "fck";
 		power-domains = <&scmi_pds 18>;
 		ti,timer-pwm;
@@ -214,19 +214,19 @@
 	rti0: watchdog@e000000 {
 		compatible = "ti,am62l-rti-wdt";
 		reg = <0x00 0x0e000000 0x00 0x100>;
-		clocks = <&scmi_clk 273>;
+		clocks = <&scmi_clk 277>;
 		power-domains = <&scmi_pds 60>;
-		assigned-clocks = <&scmi_clk 273>;
-		assigned-clock-parents = <&scmi_clk 275>;
+		assigned-clocks = <&scmi_clk 277>;
+		assigned-clock-parents = <&scmi_clk 274>;
 	};
 
 	rti1: watchdog@e010000 {
 		compatible = "ti,am62l-rti-wdt";
 		reg = <0x00 0x0e010000 0x00 0x100>;
-		clocks = <&scmi_clk 279>;
+		clocks = <&scmi_clk 283>;
 		power-domains = <&scmi_pds 61>;
-		assigned-clocks = <&scmi_clk 279>;
-		assigned-clock-parents = <&scmi_clk 281>;
+		assigned-clocks = <&scmi_clk 283>;
+		assigned-clock-parents = <&scmi_clk 280>;
 	};
 
 	fss: bus@fc00000 {
@@ -242,8 +242,8 @@
 			reg = <0x00 0x0fc40000 0x00 0x100>,
 			      <0x05 0x00000000 0x01 0x00000000>;
 			interrupts = <GIC_SPI 240 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&scmi_clk 134>;
-			assigned-clocks = <&scmi_clk 134>;
+			clocks = <&scmi_clk 136>;
+			assigned-clocks = <&scmi_clk 136>;
 			assigned-clock-rates = <166666666>;
 			power-domains = <&scmi_pds 32>;
 			#size-cells = <0>;
@@ -259,7 +259,7 @@
 		compatible = "ti,am62-usb";
 		reg = <0x00 0x0f900000 0x00 0x800>,
 		      <0x00 0x0f908000 0x00 0x400>;
-		clocks = <&scmi_clk 329>;
+		clocks = <&scmi_clk 331>;
 		clock-names = "ref";
 		power-domains = <&scmi_pds 95>;
 		#address-cells = <2>;
@@ -286,7 +286,7 @@
 		compatible = "ti,am62-usb";
 		reg = <0x00 0x0f910000 0x00 0x800>,
 		      <0x00 0x0f918000 0x00 0x400>;
-		clocks = <&scmi_clk 336>;
+		clocks = <&scmi_clk 338>;
 		clock-names = "ref";
 		power-domains = <&scmi_pds 96>;
 		#address-cells = <2>;
@@ -314,9 +314,9 @@
 		      <0x00 0xfa18000 0x00 0x400>;
 		interrupts = <GIC_SPI 239 IRQ_TYPE_LEVEL_HIGH>;
 		power-domains = <&scmi_pds 28>;
-		clocks = <&scmi_clk 122>, <&scmi_clk 123>;
+		clocks = <&scmi_clk 122>, <&scmi_clk 125>;
 		clock-names = "clk_ahb", "clk_xin";
-		assigned-clocks = <&scmi_clk 123>;
+		assigned-clocks = <&scmi_clk 125>;
 		assigned-clock-parents = <&scmi_clk 124>;
 		bus-width = <8>;
 		ti,clkbuf-sel = <0x7>;
@@ -331,9 +331,9 @@
 		      <0x00 0x0fa08000 0x00 0x400>;
 		interrupts = <GIC_SPI 237 IRQ_TYPE_LEVEL_HIGH>;
 		power-domains = <&scmi_pds 26>;
-		clocks = <&scmi_clk 106>, <&scmi_clk 107>;
+		clocks = <&scmi_clk 106>, <&scmi_clk 109>;
 		clock-names = "clk_ahb", "clk_xin";
-		assigned-clocks = <&scmi_clk 107>;
+		assigned-clocks = <&scmi_clk 109>;
 		assigned-clock-parents = <&scmi_clk 108>;
 		bus-width = <4>;
 		ti,clkbuf-sel = <0x7>;
@@ -348,9 +348,9 @@
 		      <0x00 0x0fa28000 0x00 0x400>;
 		interrupts = <GIC_SPI 238 IRQ_TYPE_LEVEL_HIGH>;
 		power-domains = <&scmi_pds 27>;
-		clocks = <&scmi_clk 114>, <&scmi_clk 115>;
+		clocks = <&scmi_clk 114>, <&scmi_clk 117>;
 		clock-names = "clk_ahb", "clk_xin";
-		assigned-clocks = <&scmi_clk 115>;
+		assigned-clocks = <&scmi_clk 117>;
 		assigned-clock-parents = <&scmi_clk 116>;
 		bus-width = <4>;
 		ti,clkbuf-sel = <0x7>;
@@ -413,7 +413,7 @@
 		      <0x00 0x20708000 0x00 0x8000>;
 		reg-names = "m_can", "message_ram";
 		power-domains = <&scmi_pds 47>;
-		clocks = <&scmi_clk 179>, <&scmi_clk 174>;
+		clocks = <&scmi_clk 179>, <&scmi_clk 178>;
 		clock-names = "hclk", "cclk";
 		interrupts = <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>,
 			     <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>;
@@ -428,7 +428,7 @@
 		      <0x00 0x20718000 0x00 0x8000>;
 		reg-names = "m_can", "message_ram";
 		power-domains = <&scmi_pds 48>;
-		clocks = <&scmi_clk 185>, <&scmi_clk 180>;
+		clocks = <&scmi_clk 185>, <&scmi_clk 184>;
 		clock-names = "hclk", "cclk";
 		interrupts = <GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>,
 			     <GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>;
@@ -443,7 +443,7 @@
 		      <0x00 0x20728000 0x00 0x8000>;
 		reg-names = "m_can", "message_ram";
 		power-domains = <&scmi_pds 49>;
-		clocks = <&scmi_clk 191>, <&scmi_clk 186>;
+		clocks = <&scmi_clk 191>, <&scmi_clk 190>;
 		clock-names = "hclk", "cclk";
 		interrupts = <GIC_SPI 119 IRQ_TYPE_LEVEL_HIGH>,
 			     <GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>;
@@ -598,9 +598,9 @@
 		reg = <0x00 0x28001000 0x00 0x1000>;
 		interrupts = <GIC_SPI 253 IRQ_TYPE_LEVEL_HIGH>;
 		power-domains = <&scmi_pds 0>;
-		clocks = <&scmi_clk 0>;
-		assigned-clocks = <&scmi_clk 0>;
-		assigned-clock-parents = <&scmi_clk 3>;
+		clocks = <&scmi_clk 4>;
+		assigned-clocks = <&scmi_clk 4>;
+		assigned-clock-parents = <&scmi_clk 2>;
 		assigned-clock-rates = <60000000>;
 		clock-names = "fck";
 		status = "disabled";
@@ -614,11 +614,11 @@
 	dphy_tx0: phy@301c0000 {
 		compatible = "ti,j721e-dphy";
 		reg = <0x0 0x301c0000 0x0 0x1000>;
-		clocks = <&scmi_clk 348>, <&scmi_clk 341>;
+		clocks = <&scmi_clk 348>, <&scmi_clk 343>;
 		clock-names = "psm", "pll_ref";
 		power-domains = <&scmi_pds 86>;
-		assigned-clocks = <&scmi_clk 341>;
-		assigned-clock-parents = <&scmi_clk 342>;
+		assigned-clocks = <&scmi_clk 343>;
+		assigned-clock-parents = <&scmi_clk 341>;
 		assigned-clock-rates = <25000000>;
 		#phy-cells = <0>;
 		status = "disabled";
@@ -643,7 +643,7 @@
 		reg = <0x00 0x3b000000 0x00 0x400>,
 		      <0x00 0x50000000 0x00 0x8000000>;
 		power-domains = <&scmi_pds 37>;
-		clocks = <&scmi_clk 147>;
+		clocks = <&scmi_clk 149>;
 		clock-names = "fck";
 		reg-names = "cfg", "data";
 		interrupts = <GIC_SPI 244 IRQ_TYPE_LEVEL_HIGH>;
@@ -744,6 +744,7 @@
 				ti,mac-only;
 				label = "port1";
 				phys = <&phy_gmii_sel 1>;
+				ti,syscon-efuse = <&cpsw_mac_syscon 0x0>;
 			};
 
 			cpsw_port2: port@2 {

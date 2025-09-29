@@ -231,3 +231,11 @@ def strategy(request, target, pytestconfig):
         strategy.force(state)
 
     return strategy
+
+@pytest.fixture(scope="session")
+def testfs(strategy, env):
+    if "testfs" not in env.get_target_features():
+        pytest.skip("testfs not supported on this platform")
+
+    path = os.path.join(os.environ["LG_BUILDDIR"], "testfs")
+    return path

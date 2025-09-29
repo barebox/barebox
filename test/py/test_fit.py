@@ -15,10 +15,7 @@ def generate_bootscript(barebox, image, name="test"):
     return name
 
 
-def test_fit(barebox, env, target, barebox_config):
-    if 'testfs' not in env.get_target_features():
-        pytest.xfail("testfs feature not specified")
-
+def test_fit(barebox, env, target, barebox_config, testfs):
     _, _, returncode = barebox.run(f"ls {fit_name('gzipped')}")
     if returncode != 0:
         pytest.xfail("skipping test due to missing FIT image")

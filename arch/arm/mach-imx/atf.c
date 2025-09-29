@@ -17,6 +17,7 @@
 #include <tee/optee.h>
 #include <mach/imx/ele.h>
 #include <mach/imx/xload.h>
+#include <mach/imx/snvs.h>
 
 /**
  * imx8m_atf_load_bl31 - Load ATF BL31 blob and transfer control to it
@@ -155,6 +156,7 @@ __noreturn void __imx8mm_load_and_start_image_via_tfa(void *bl33)
 	imx_set_cpu_type(IMX_CPU_IMX8MM);
 	imx8mm_init_scratch_space();
 	imx8m_save_bootrom_log();
+	imx8m_setup_snvs();
 	imx8mm_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE)) {
@@ -229,6 +231,7 @@ __noreturn void __imx8mp_load_and_start_image_via_tfa(void *bl33)
 	imx_set_cpu_type(IMX_CPU_IMX8MP);
 	imx8mp_init_scratch_space();
 	imx8m_save_bootrom_log();
+	imx8m_setup_snvs();
 	imx8mp_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE)) {
@@ -304,6 +307,7 @@ __noreturn void __imx8mn_load_and_start_image_via_tfa(void *bl33)
 	imx_set_cpu_type(IMX_CPU_IMX8MN);
 	imx8mn_init_scratch_space();
 	imx8m_save_bootrom_log();
+	imx8m_setup_snvs();
 	imx8mn_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE)) {
@@ -372,6 +376,7 @@ __noreturn void __imx8mq_load_and_start_image_via_tfa(void *bl33)
 	imx_set_cpu_type(IMX_CPU_IMX8MQ);
 	imx8mq_init_scratch_space();
 	imx8m_save_bootrom_log();
+	imx8m_setup_snvs();
 	imx8mq_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_OPTEE)) {

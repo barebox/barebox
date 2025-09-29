@@ -9,13 +9,15 @@ $(eval
 ifeq ($($(strip $(1))), y)
 	pblb-y += $(strip $(2))
 	CFG_$(strip $(2)).pblb.imximg = $(board)/$(strip $(3)).imxcfg
-	FILE_barebox-$(strip $(4)).img    = $(strip $(2)).pblb.imximg
-	FILE_barebox-$(strip $(4))-s.img  = $(strip $(2)).pblb.simximg
-	FILE_barebox-$(strip $(4))-us.img = $(strip $(2)).pblb.usimximg
-	FILE_barebox-$(strip $(4))-es.img = $(strip $(2)).pblb.esimximg
+	FILE_barebox-$(strip $(4)).img       = $(strip $(2)).pblb.imximg
+	FILE_barebox-$(strip $(4))-s.img     = $(strip $(2)).pblb.simximg
+	FILE_barebox-$(strip $(4))-us.img    = $(strip $(2)).pblb.usimximg
+	FILE_barebox-$(strip $(4))-dcdus.img = $(strip $(2)).pblb.dcdusimximg
+	FILE_barebox-$(strip $(4))-es.img    = $(strip $(2)).pblb.esimximg
 	image-y += barebox-$(strip $(4)).img
 	image-$(CONFIG_HABV4_IMAGE_SIGNED) += barebox-$(strip $(4))-s.img
 	image-$(CONFIG_HABV4_IMAGE_SIGNED_USB) += barebox-$(strip $(4))-us.img
+	image-$(CONFIG_HABV4_IMAGE_SIGNED_USB_DCD) += barebox-$(strip $(4))-dcdus.img
 	image-$(CONFIG_HABV4_IMAGE_SIGNED_ENCRYPTED) += barebox-$(strip $(4))-es.img
 endif
 )
@@ -51,6 +53,7 @@ $(call imx_image_rule,pimximg, -p $$($$(patsubst $$(obj)/%.pblb,PBL_MEMORY_SIZE_
 $(call imx_image_rule,psimximg, -p $$($$(patsubst $$(obj)/%.pblb,PBL_MEMORY_SIZE_%,$$<)) -s)
 $(call imx_image_rule,simximg, -s)
 $(call imx_image_rule,usimximg, -u -s)
+$(call imx_image_rule,dcdusimximg, -u -s -a)
 $(call imx_image_rule,esimximg, -e -s)
 $(call imx_image_rule,esimximg.dek, -e -s)
 
@@ -486,6 +489,8 @@ $(call build_imx8m_habv4img, CONFIG_MACH_TQ_MBA8MPXL, start_tqma8mpxl, tqma8mpxl
 $(call build_imx8m_habv4img, CONFIG_MACH_POLYHEX_DEBIX, start_polyhex_debix, polyhex-debix/flash-header-polyhex-debix, polyhex-debix)
 
 $(call build_imx8m_habv4img, CONFIG_MACH_POLYHEX_DEBIX, start_polyhex_debix_som_a_8g, polyhex-debix/flash-header-polyhex-debix, polyhex-debix-som-a-8g)
+
+$(call build_imx8m_habv4img, CONFIG_MACH_PROTONIC_IMX8M, start_prt_prt8ml, protonic-imx8m/flash-header-prt8ml, prt-prt8ml)
 
 $(call build_imx8m_habv4img, CONFIG_MACH_VARISCITE_DT8MCUSTOMBOARD_IMX8MP, start_variscite_imx8mp_dart, variscite-dt8mcustomboard-imx8mp/flash-header-imx8mp-dart, variscite-imx8mp-dart-cb)
 

@@ -6,11 +6,7 @@ from .helper import of_get_property
 
 
 
-def test_dm_verity(barebox):
-    _, _, returncode = barebox.run("ls /mnt/9p/testfs")
-    if returncode != 0:
-        pytest.xfail("skipping test due to missing --fs testfs=")
-
+def test_dm_verity(barebox, testfs):
     barebox.run_check("cd /mnt/9p/testfs")
 
     # Since commands run in a subshell, export the root hash in a

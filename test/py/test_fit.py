@@ -19,10 +19,6 @@ def test_fit(barebox, env, target, barebox_config):
     if 'testfs' not in env.get_target_features():
         pytest.xfail("testfs feature not specified")
 
-    _, _, returncode = barebox.run("ls /mnt/9p/testfs")
-    if returncode != 0:
-        pytest.xfail("skipping test due to missing --fs testfs=")
-
     _, _, returncode = barebox.run(f"ls {fit_name('gzipped')}")
     if returncode != 0:
         pytest.xfail("skipping test due to missing FIT image")

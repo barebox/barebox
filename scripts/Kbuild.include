@@ -158,6 +158,12 @@ delete-on-interrupt = \
 # print and execute commands
 cmd = @$(if $(cmd_$(1)),set -e; $($(quiet)log_print) $(delete-on-interrupt) $(cmd_$(1)),:)
 
+# The normal 'cmd' above is not *loopable*
+loop_cmd = $(if $(cmd_$(1)),set -e; $($(quiet)log_print) $(cmd_$(1)),:) || exit;
+
+# Like loop_cmd, but without printing
+noop_cmd = $(if $(cmd_$(1)),$(cmd_$(1)),:)
+
 ###
 # if_changed      - execute command if any prerequisite is newer than
 #                   target, or command line has changed
@@ -219,6 +225,14 @@ cmd_and_fixdep =                                                             \
 # and if so will execute $(rule_foo).
 if_changed_rule = $(if $(if-changed-cond),$(rule_$(1)),@:)
 
+# Same as newer-prereqs, but allows to exclude specified extra dependencies
+newer_prereqs_except = $(filter-out $(PHONY) $(1),$?)
+
+# Same as if_changed, but allows to exclude specified extra dependencies
+if_changed_except = $(if $(call newer_prereqs_except,$(2))$(cmd-check),      \
+	$(cmd);                                                              \
+	printf '%s\n' 'savedcmd_$@ := $(make-cmd)' > $(dot-target).cmd, @:)
+
 ###
 # why - tell why a target got built
 #       enabled by make V=2
@@ -276,3 +290,30 @@ ifneq ($(and $(filter notintermediate, $(.FEATURES)),$(filter-out 4.4,$(MAKE_VER
 else
 .SECONDARY:
 endif
+
+###############################################################################
+## barebox specifics
+###############################################################################
+
+# File resolution
+# ===========================================================================
+
+# turn an absolute path relative if it's beneath the specified directory
+strip-path = $(patsubst $(2)/%,%,$(1))
+strip-srctree = $(call strip-path,$(1),$(srctree))
+strip-objtree = $(call strip-path,$(1),$(objtree))
+
+# turn a relative path absolute if it exists by prefixing it with the
+# specified directory
+resolve-path = $(strip $(if $(1), $(if $(filter /%,$(1)), $(1), \
+        $(if $(wildcard $(2)/$(1)), $(2)/$(1), $(1) ) ), $(1) ))
+resolve-srctree = $(call resolve-path,$(1),$(srctree))
+resolve-objtree = $(call resolve-path,$(1),$(objtree))
+
+# resolve a relative path first beneath srctree if it exists there
+# and otherwise beneath objtree
+resolve-external = $(call resolve-objtree,$(call resolve-srctree,$(1)))
+
+# Read file in filechk
+# ===========================================================================
+filechk_cat = cat $<

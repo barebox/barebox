@@ -35,6 +35,7 @@
 #include <libfile.h>
 #include <parseopt.h>
 #include <linux/namei.h>
+#include <security/config.h>
 
 char *mkmodestr(unsigned long mode, char *str)
 {
@@ -773,6 +774,11 @@ static int fs_probe(struct device *dev)
 	struct driver *drv = dev->driver;
 	struct fs_driver *fsdrv = container_of(drv, struct fs_driver, drv);
 	int ret;
+
+	if (!IS_ALLOWED(SCONFIG_FS_EXTERNAL) &&
+	    strcmp(fsdrv->drv.name, "ramfs") &&
+	    strcmp(fsdrv->drv.name, "devfs"))
+		return -EPERM;
 
 	ret = dev->driver->probe(dev);
 	if (ret)

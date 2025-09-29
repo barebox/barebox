@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+menu "Command Policy"
+
+config CMD_GO
+	bool "Allow go command"
+	depends on $(kconfig-enabled,CMD_GO)
+	help
+	  The go command jumps to an arbitrary address after shutting
+          down barebox and does not do any signature verification.
+
+endmenu

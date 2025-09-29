@@ -16,8 +16,10 @@
 #include <magicvar.h>
 #include <uncompress.h>
 #include <zero_page.h>
+#include <security/config.h>
 
 static LIST_HEAD(handler_list);
+static struct sconfig_notifier_block sconfig_notifier;
 
 static __maybe_unused struct bootm_overrides bootm_overrides;
 
@@ -114,14 +116,31 @@ static const char * const bootm_verify_names[] = {
 	[BOOTM_VERIFY_SIGNATURE] = "signature",
 };
 
+/*
+ * There's three ways to influence whether signed images are forced:
+ * 1) CONFIG_BOOTM_FORCE_SIGNED_IMAGES: forced at compile time
+ * 2) SCONFIG_BOOT_UNSIGNED_IMAGES: determined by the active security policy
+ * 3) bootm_force_signed_images(): forced dynamically by board code.
+ *                                 will be deprecated in favor of 2)
+ */
 static bool force_signed_images = IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES);
 
-void bootm_force_signed_images(void)
+static void bootm_optional_signed_images(void)
+{
+	/* This function should not be exported */
+	BUG_ON(force_signed_images);
+
+	globalvar_remove("bootm.verify");
+	/* recreate bootm.verify with a single enumeration as option */
+	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
+				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));
+
+	bootm_verify_mode = BOOTM_VERIFY_AVAILABLE;
+}
+
+static void bootm_require_signed_images(void)
 {
 	static unsigned int verify_mode = 0;
-
-	if (force_signed_images)
-		return;
 
 	/* recreate bootm.verify with a single enumeration as option */
 	globalvar_remove("bootm.verify");
@@ -129,12 +148,27 @@ void bootm_force_signed_images(void)
 				  &bootm_verify_names[BOOTM_VERIFY_SIGNATURE], 1);
 
 	bootm_verify_mode = BOOTM_VERIFY_SIGNATURE;
+}
+
+static void bootm_unsigned_sconfig_update(struct sconfig_notifier_block *nb,
+					  enum security_config_option opt,
+					  bool allowed)
+{
+	if (!allowed)
+		bootm_require_signed_images();
+	else
+		bootm_optional_signed_images();
+}
+
+void bootm_force_signed_images(void)
+{
+	bootm_require_signed_images();
 	force_signed_images = true;
 }
 
 bool bootm_signed_images_are_forced(void)
 {
-	return force_signed_images;
+	return force_signed_images || !IS_ALLOWED(SCONFIG_BOOT_UNSIGNED_IMAGES);
 }
 
 static int uimage_part_num(const char *partname)
@@ -1086,14 +1120,18 @@ static int bootm_init(void)
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
 	}
 
-	if (bootm_signed_images_are_forced())
-		bootm_verify_mode = BOOTM_VERIFY_SIGNATURE;
-
 	globalvar_add_simple_bool("bootm.dryrun", &bootm_dryrun);
 	globalvar_add_simple_int("bootm.verbose", &bootm_verbosity, "%u");
 
-	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
-				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));
+	if (bootm_signed_images_are_forced())
+		bootm_require_signed_images();
+	else
+		bootm_optional_signed_images();
+
+	sconfig_register_handler_filtered(&sconfig_notifier,
+					  bootm_unsigned_sconfig_update,
+					  SCONFIG_BOOT_UNSIGNED_IMAGES);
+
 
 	if (IS_ENABLED(CONFIG_ROOTWAIT_BOOTARG))
 		globalvar_add_simple_int("linux.rootwait",

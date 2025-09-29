@@ -18,6 +18,7 @@
 #include <globalvar.h>
 #include <magicvar.h>
 #include <system-partitions.h>
+#include <security/config.h>
 
 static int autostart;
 static int nv_loaded;
@@ -81,6 +82,9 @@ int usbgadget_register(struct f_multi_opts *opts)
 	int ret;
 	struct device *dev;
 
+	if (!IS_ALLOWED(SCONFIG_USB_GADGET))
+		return -EPERM;
+
 	/*
 	 * Creating a gadget with both DFU and Fastboot may not work.
 	 * fastboot 1:8.1.0+r23-5 can deal with it, but dfu-util 0.9
@@ -105,6 +109,9 @@ int usbgadget_prepare_register(const struct usbgadget_funcs *funcs)
 {
 	struct f_multi_opts *opts;
 	int ret;
+
+	if (!IS_ALLOWED(SCONFIG_USB_GADGET))
+		return -EPERM;
 
 	opts = usbgadget_prepare(funcs);
 	if (IS_ERR(opts))
@@ -161,6 +168,21 @@ void usbgadget_autostart(bool enable)
 	usbgadget_do_autostart();
 }
 
+static void usbgadget_sconfig_update(struct sconfig_notifier_block *nb,
+				     enum security_config_option opt,
+				     bool allowed)
+{
+        if (allowed) {
+		if (autostart)
+			usbgadget_do_autostart();
+	} else {
+		usb_multi_unregister();
+		usb_serial_unregister();
+	}
+}
+
+static struct sconfig_notifier_block sconfig_notifier;
+
 static int usbgadget_globalvars_init(void)
 {
 	globalvar_add_simple_bool("usbgadget.acm", &acm);
@@ -168,6 +190,10 @@ static int usbgadget_globalvars_init(void)
 	if (IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART))
 		globalvar_add_bool("usbgadget.autostart", usbgadget_autostart_set,
 				   &autostart, NULL);
+
+	sconfig_register_handler_filtered(&sconfig_notifier,
+                                          usbgadget_sconfig_update,
+                                          SCONFIG_USB_GADGET);
 
 	return 0;
 }

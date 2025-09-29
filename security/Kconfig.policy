@@ -1,0 +1,104 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# barebox Security Policy Support
+
+menuconfig SECURITY_POLICY
+	bool "Security Policy Support"
+	help
+	  A Security policy is a collection of security configuration options
+	  that can be activated together at runtime.
+	  Together, the describe a security state that barebox should operate in.
+
+	  Policies can be registered by board code or supplied by
+	  an external build system. The policy name must be unique across
+	  all registered policies.
+
+	  Policies are selected by name and only one can be active at a given time.
+	  barebox does not mandate any specific behavior for a policy according
+	  to its name. Boards have full freedom to name policies and configure the
+	  options as they deem appropriate.
+
+	  However, we recommend using established terms to make it easier to reason
+	  about the different security states:
+
+	    devel     Security policy should permit everything for
+	              development purposes.
+
+	    factory   System is in a secure boot mode, but policy allows
+	              interactive use for factory bring up purposes.
+	              Board code usually enforces via eFuse that factory
+	              mode can not be re-selected once deselected.
+
+	    lockdown  Factory bring up is done and device is ready for use
+	              in the field with barebox as part of the secure boot
+	              chain. This policy usually disallows booting unsigned
+	              images
+
+	    tamper    Tampering attempt was detected. The security policy would
+	              take steps to protect secrets (up to bricking the device).
+
+	    return    For use in field-return devices, the policy should
+	              take steps to unlock the device for analysis purposes.
+	              Board code should make sure to delete secret and
+	              confidential data before activating this policy.
+
+if SECURITY_POLICY
+
+config SECURITY_POLICY_INIT
+	string
+	prompt "Initial security policy"
+	help
+	  The policy named here will be automatically selected the first
+	  time a security policy is to be consulted.
+	  It's recommended to use a restrictive policy here and remove
+	  the restrictions if needed instead of the other way round.
+
+config SECURITY_POLICY_DEFAULT_PERMISSIVE
+	bool "Be permissive on missing security policy"
+	select HAS_INSECURE_DEFAULTS
+	help
+	  In absence of a selected security policy, by enabling this option
+	  everything is allowed. A warning will be printed the first time a
+	  security policy would need to be consulted.
+
+	  With this option disabled everything is forbidden until a security
+	  policy is selected.
+
+	  This is a development aid and unsuitable for use in the field:
+	  A security policy should always be selected, either early on by
+	  board code or via CONFIG_SECURITY_POLICY_INIT.
+
+config SECURITY_POLICY_PATH
+	string
+	depends on SECURITY_POLICY
+	prompt "Paths to additional security policies"
+	help
+	  Space separated list of security policies that should be
+	  compiled into barebox and registered. This option currently
+	  requires each security policy to match security/*.sconfig, i.e.
+	  be directly located in the security/ directory of the source
+	  source tree and have the .sconfig extension.
+	  If left empty, only security policies explicitly provided
+	  and registered by board code will be available.
+
+	  Absolute paths are disallowed.
+
+config SECURITY_POLICY_PATH
+	string
+	depends on SECURITY_POLICY
+	prompt "Paths to additional security policies"
+	help
+	  Space separated list of security policies that should be
+	  compiled into barebox and registered. This option currently
+	  requires each security policy to match security/*.sconfig, i.e.
+	  be directly located in the security/ directory of the source
+	  source tree and have the .sconfig extension.
+	  If left empty, only security policies explicitly provided
+	  and registered by board code will be available.
+
+	  Absolute paths are disallowed.
+
+config SECURITY_POLICY_NAMES
+	bool
+
+endif

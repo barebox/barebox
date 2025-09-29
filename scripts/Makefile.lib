@@ -85,6 +85,13 @@ extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX),$(bbenv-y))
 extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).S,$(bbenv-y))
 extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).o,$(bbenv-y))
 
+ifdef CONFIG_SECURITY_POLICY
+obj-y	+= $(addsuffix .o, $(policy-y))
+extra-	+= $(patsubst %,%.c,$(policy-))
+extra-m	+= $(patsubst %,%.c,$(policy-m))
+extra-y	+= $(patsubst %,%.c,$(policy-y))
+endif
+
 # Replace multi-part objects by their individual parts,
 # including built-in.a from subdirectories
 real-obj-y := $(foreach m, $(obj-y), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y)) $($(m:.o=-))),$($(m:.o=-objs)) $($(m:.o=-y)),$(m)))
@@ -640,3 +647,43 @@ cmd_public_keys = \
 
 %: %.base64
 	$(call cmd,b64dec)
+
+# Security Policy Handling
+# ---------------------------------------------------------------------------
+
+# Process security Kconfig file
+# TODO: set KCONFIG_WARN_UNKNOWN_SYMBOLS & KCONFIG_WERROR once supported
+quiet_cmd_sconfig = SCONFIG $(notdir $(or $(4),$(3)))
+      cmd_sconfig = \
+           KBUILD_KCONFIG=Sconfig			\
+           KCONFIG_CONFIG_ORIG=$(KCONFIG_CONFIG)	\
+           KCONFIG_CONFIG=$(3)				\
+           KCONFIG_CONFIG_=SCONFIG_			\
+           KBUILD_DEFCONFIG=allnoconfig			\
+           KCONFIG_NOSILENTUPDATE=1			\
+           KCONFIG_AUTOCONFIG=/dev/null			\
+           KCONFIG_AUTOHEADER=/dev/null			\
+           $(MAKE) -f $(srctree)/Makefile $(2) quiet=silent_
+
+# Check that a policy is up to date
+# NOTE: With KCONFIG_NOSILENTUPDATE=1, a simpler implementation is
+# possible: $(cmd_sconfig) syncconfig $(2), but it has the downside
+# of a worse error message, so we don't do that here
+quiet_cmd_security_checkconfig = SCONFIG $(notdir $(2))
+      cmd_security_checkconfig =				\
+	trap "rm -f $(2).tmp $(2).tmp.old" EXIT;		\
+	cp $(2) $(2).tmp ;					\
+        $(call noop_cmd,sconfig,olddefconfig,$(2).tmp,$(2)) ;	\
+	if ! cmp -s $(2).tmp $(2); then				\
+		echo >&2 '***'; \
+		echo >&2 '*** Security policy' \
+		         $(notdir $(2)) \
+		         'was not up to date.'; \
+		echo >&2 '***'; \
+		echo >&2 '*** Please run "make security_olddefconfig" or'; \
+		echo >&2 '*** another configurator and commit the results to'; \
+		echo >&2 '*** '$(2); \
+		echo >&2 '***'; \
+		$(if $(Q),,diff -u $(2) $(2).tmp >&2;) \
+		exit 1; \
+	fi ; rm -f $(2).tmp $(2).tmp.old

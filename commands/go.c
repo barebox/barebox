@@ -11,6 +11,7 @@
 #include <getopt.h>
 #include <linux/ctype.h>
 #include <errno.h>
+#include <security/config.h>
 
 #define INT_ARGS_MAX	4
 
@@ -23,6 +24,9 @@ static int do_go(int argc, char *argv[])
 	int	opt;
 	ulong	arg[INT_ARGS_MAX] = {};
 	bool	pass_argv = true;
+
+	if (!IS_ALLOWED(SCONFIG_CMD_GO))
+		return -EPERM;
 
 	while ((opt = getopt(argc, argv, "+si")) > 0) {
 		switch (opt) {

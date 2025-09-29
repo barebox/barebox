@@ -118,6 +118,7 @@
 #include <binfmt.h>
 #include <init.h>
 #include <shell.h>
+#include <security/config.h>
 
 /*cmd_boot.c*/
 extern int do_bootd(int flag, int argc, char *argv[]);      /* do_bootd */
@@ -1697,6 +1698,9 @@ char *shell_expand(char *str)
 	o_string o = {};
 	char *res, *parsed;
 
+	if (!IS_ALLOWED(SCONFIG_SHELL))
+		return str;
+
 	remove_quotes_in_str(str);
 
 	o.quote = 1;
@@ -1914,6 +1918,9 @@ int run_command(const char *cmd)
 	struct p_context ctx = {};
 	int ret;
 
+	if (!IS_ALLOWED(SCONFIG_SHELL))
+		return -EPERM;
+
 	initialize_context(&ctx);
 
 	ret = parse_string_outer(&ctx, cmd, FLAG_PARSE_SEMICOLON);
@@ -1925,6 +1932,9 @@ int run_command(const char *cmd)
 static int execute_script(const char *path, int argc, char *argv[])
 {
 	int ret;
+
+	if (!IS_ALLOWED(SCONFIG_SHELL))
+		return -EPERM;
 
 	env_push_context();
 	ret = source_script(path, argc, argv);
@@ -1966,6 +1976,9 @@ int run_shell(void)
 	struct in_str input;
 	struct p_context ctx = {};
 	int exit = 0;
+
+	if (!IS_ALLOWED(SCONFIG_SHELL_INTERACTIVE))
+		return -EPERM;
 
 	login();
 

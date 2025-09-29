@@ -15,6 +15,7 @@
 #include <linux/usb/gadget.h>
 #include <linux/usb/composite.h>
 #include <linux/usb/usbserial.h>
+#include <security/config.h>
 #include <asm/byteorder.h>
 
 #include "u_serial.h"
@@ -252,6 +253,9 @@ static bool usb_serial_registered;
 int usb_serial_register(struct usb_serial_pdata *pdata)
 {
 	int ret;
+
+	if (!IS_ALLOWED(SCONFIG_USB_GADGET))
+		return -EPERM;
 
 	if (usb_serial_registered) {
 		pr_err("USB serial gadget already registered\n");

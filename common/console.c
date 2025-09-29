@@ -5,6 +5,7 @@
  */
 
 #include <config.h>
+#include <security/config.h>
 #include <common.h>
 #include <stdarg.h>
 #include <malloc.h>
@@ -24,6 +25,7 @@
 #include <linux/list.h>
 #include <linux/stringify.h>
 #include <debug_ll.h>
+#include <security/config.h>
 
 LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
@@ -492,7 +494,8 @@ static int getc_raw(void)
 			if (cdev->tstc(cdev)) {
 				int ch = cdev->getc(cdev);
 
-				if (IS_ENABLED(CONFIG_RATP) && ch == 0x01) {
+				if (IS_ENABLED(CONFIG_RATP) && ch == 0x01 &&
+				    IS_ALLOWED(SCONFIG_RATP)) {
 					barebox_ratp(cdev);
 					return -1;
 				}
@@ -510,6 +513,9 @@ static int tstc_raw(void)
 {
 	struct console_device *cdev;
 
+	if (!IS_ALLOWED(SCONFIG_CONSOLE_INPUT))
+		return 0;
+
 	for_each_console(cdev) {
 		if (!(cdev->f_active & CONSOLE_STDIN))
 			continue;
@@ -524,6 +530,9 @@ int getchar(void)
 {
 	unsigned char ch;
 	uint64_t start;
+
+	if (!IS_ALLOWED(SCONFIG_CONSOLE_INPUT))
+		return -1;
 
 	/*
 	 * For 100us we read the characters from the serial driver

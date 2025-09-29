@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+source "scripts/Kconfig.include"
+
+kconfig-state = $(shell,CONFIG_=CONFIG_ $(srctree)/scripts/config --file "$(KCONFIG_CONFIG_ORIG)" -s "$(1)")
+kconfig-enabled = $(shell,echo $(kconfig-state,$(1)))

@@ -5,6 +5,7 @@
 #include <sched.h>
 #include <globalvar.h>
 #include <magicvar.h>
+#include <security/config.h>
 
 static int ctrlc_abort;
 static int ctrlc_allowed;
@@ -17,6 +18,9 @@ void ctrlc_handled(void)
 int ctrlc_non_interruptible(void)
 {
 	int ret = 0;
+
+	if (!IS_ALLOWED(SCONFIG_SHELL_INTERACTIVE))
+		return 0;
 
 	if (!ctrlc_allowed)
 		return 0;

@@ -8,7 +8,12 @@
 };
 
 &scmi_clk {
-	assigned-clocks = <&scmi_clk SCMI_CLK_CPUB01>,
-			  <&scmi_clk SCMI_CLK_CPUB23>;
-	assigned-clock-rates = <816000000>, <816000000>;
+	assigned-clocks =
+		<&scmi_clk SCMI_CLK_CPUL>,
+		<&scmi_clk SCMI_CLK_CPUB01>,
+		<&scmi_clk SCMI_CLK_CPUB23>;
+	assigned-clock-rates =
+		<1200000000>,
+		<1200000000>,
+		<1200000000>;
 };

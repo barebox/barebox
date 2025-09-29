@@ -38,13 +38,6 @@ typedef struct {
 	u64 m_high;
 } uint128_t;
 
-/* Returns curv25519 curve param */
-const struct ecc_curve *ecc_get_curve25519(void)
-{
-	return &ecc_25519;
-}
-EXPORT_SYMBOL(ecc_get_curve25519);
-
 const struct ecc_curve *ecc_get_curve(unsigned int curve_id)
 {
 	switch (curve_id) {

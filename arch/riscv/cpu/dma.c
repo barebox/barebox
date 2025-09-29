@@ -30,14 +30,14 @@ static void __dma_free_coherent(struct device *dev,
 	free(vaddr);
 }
 
-static const struct dma_ops coherent_dma_ops = {
+static const struct dma_map_ops coherent_dma_ops = {
 	.alloc_coherent = __dma_alloc_coherent,
 	.free_coherent = __dma_free_coherent,
 	.flush_range = __dma_flush_range,
 	.inv_range = __dma_flush_range,
 };
 
-static const struct dma_ops *dma_ops = &coherent_dma_ops;
+static const struct dma_map_ops *dma_ops = &coherent_dma_ops;
 
 void *dma_alloc_coherent(struct device *dev,
 			 size_t size, dma_addr_t *dma_handle)
@@ -51,7 +51,7 @@ void dma_free_coherent(struct device *dev,
 	dma_ops->free_coherent(dev, vaddr, dma_handle, size);
 }
 
-void dma_set_ops(const struct dma_ops *ops)
+void dma_set_ops(const struct dma_map_ops *ops)
 {
 	dma_ops = ops;
 }

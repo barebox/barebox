@@ -17,8 +17,6 @@ targets:
       - network
       - barebox-state
       - testfs
-    runner:
-      tuxmake_arch: arm64
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
 imports:

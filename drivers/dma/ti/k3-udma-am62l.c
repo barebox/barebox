@@ -408,7 +408,7 @@ static int am62l_udma_rfree(struct dma *dma)
 	return 0;
 }
 
-static const struct dma_ops am62l_udma_ops = {
+static const struct dma_device_ops am62l_udma_ops = {
 	.transfer	= udma_transfer,
 	.of_xlate	= udma_of_xlate,
 	.request	= am62l_udma_request,

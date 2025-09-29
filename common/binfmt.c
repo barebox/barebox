@@ -30,7 +30,7 @@ static int binfmt_run(char *file, int argc, char **argv)
 		if (ret != -ERESTARTNOHAND)
 			return ret;
 	}
-	return -ENOENT;
+	return -ENOIOCTLCMD;
 }
 
 /*
@@ -73,7 +73,7 @@ int execute_binfmt(int argc, char **argv)
 		return ret;
 	}
 
-	return -ENOENT;
+	return -ENOIOCTLCMD;
 }
 
 int binfmt_register(struct binfmt_hook *b)

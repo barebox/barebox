@@ -723,6 +723,7 @@
 		clocks = <&scmi_clk 9>;
 		clock-names = "fck";
 		power-domains = <&scmi_pds 3>;
+		status = "disabled";
 		dmas = <&main_pktdma 0xc600 15>,
 			   <&main_pktdma 0xc601 15>,
 			   <&main_pktdma 0xc602 15>,

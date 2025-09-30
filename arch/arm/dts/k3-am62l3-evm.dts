@@ -113,6 +113,7 @@
 };
 
 &cpsw3g {
+	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&rgmii1_pins_default>,
 		    <&rgmii2_pins_default>;

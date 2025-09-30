@@ -135,10 +135,13 @@ do_build_defconfig() {
 	[ -n "$logdir" ] && mkdir -p "${logdir}/${defconfig}"
 
 	MAKE="make -j${JOBS} ARCH=${arch} O=${BUILDDIR}"
+	${MAKE} ${defconfig} &>/dev/null
 
-	grep -q "CONFIG_64BIT=y" arch/${arch}/configs/${defconfig}
-	if [ $? = 0 ]; then
-		arch=arm64
+	if [ ${arch} = "arm" ]; then
+		grep -q "CONFIG_ARM64=y" ${BUILDDIR}/.config
+		if [ $? = 0 ]; then
+			arch=arm64
+		fi
 	fi
 
 	tmp=$(echo "${defconfig}" | tr - _)

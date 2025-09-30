@@ -13,7 +13,6 @@
 #include <stdbool.h>
 
 #include <openssl/bn.h>
-#include <openssl/core_names.h>
 /*
  * TODO Switch from the OpenSSL ENGINE API to the PKCS#11 provider and the
  * PROVIDER API: https://github.com/latchset/pkcs11-provider
@@ -64,7 +63,7 @@ static void idb_hash(struct newidb *idb)
 		sha512(idbu8, size, idbu8 + size);
 }
 
-static EVP_PKEY *load_key_pkcs11(const char *path)
+static __attribute__((unused)) EVP_PKEY *load_key_pkcs11(const char *path)
 {
 	const char *engine_id = "pkcs11";
 	ENGINE *e;
@@ -95,7 +94,7 @@ err_engine_by_id:
 	return pkey;
 }
 
-static EVP_PKEY *load_key_file(const char *path)
+static __attribute__((unused)) EVP_PKEY *load_key_file(const char *path)
 {
 	BIO *key;
 	EVP_PKEY *pkey = NULL;
@@ -179,6 +178,9 @@ static int create_newidb(struct newidb *idb)
 
 	return 0;
 }
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
 
 static int rsa_get_params(EVP_PKEY *key, BIGNUM *e, BIGNUM *n, BIGNUM *np)
 {
@@ -356,6 +358,13 @@ out:
 
 	return ret;
 }
+#else
+static int sign_newidb(struct newidb *idb, const char *path)
+{
+       fprintf(stderr, "Signing support requires at least OpenSSL 3.0\n");
+       return -ENOSYS;
+}
+#endif
 
 struct option cbootcmd[] = {
 	{"help", 0, NULL, 'h'},

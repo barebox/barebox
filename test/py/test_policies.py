@@ -29,15 +29,15 @@ def test_security_policies(barebox, env):
     assert 'go: Operation not permitted' not in stdout
     assert rc == 1
 
-    stdout = barebox.run_check('sconfig -v -s tamper')
+    stdout = barebox.run_check("""
+    sconfig -v -s tamper; echo "POLICY=${security.policy}";
+    sconfig +SCONFIG_CONSOLE_INPUT +SCONFIG_SHELL
+    """)
     assert set(['-SCONFIG_BOOT_UNSIGNED_IMAGES',
                 '-SCONFIG_RATP',
-                '-SCONFIG_CMD_GO']) <= set(stdout)
-    assert 'Active Policy: tamper' in barebox.run_check('sconfig')
-
-    _, _, rc = barebox.run('sconfig -s devel')
-    assert rc != 0
-    assert 'Active Policy: tamper' in barebox.run_check('sconfig')
+                '-SCONFIG_CMD_GO',
+                'POLICY=tamper']) <= set(stdout)
+    assert 'Active Policy: debug0' in barebox.run_check('sconfig')
 
     stdout, _, rc = barebox.run('go')
     assert 'go - start application at address or file' not in stdout

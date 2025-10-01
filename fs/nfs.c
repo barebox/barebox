@@ -1067,7 +1067,7 @@ static void nfs_handler(void *ctx, char *p, unsigned len)
 	list_add_tail(&packet->list, &npriv->packets);
 }
 
-static int nfs_truncate(struct device *dev, struct file *f, loff_t size)
+static int nfs_truncate(struct file *f, loff_t size)
 {
 	return -ENOSYS;
 }
@@ -1187,13 +1187,12 @@ static int nfs_close(struct inode *inode, struct file *file)
 	return 0;
 }
 
-static int nfs_write(struct device *_dev, struct file *file, const void *inbuf,
-		     size_t insize)
+static int nfs_write(struct file *file, const void *inbuf, size_t insize)
 {
 	return -ENOSYS;
 }
 
-static int nfs_read(struct device *dev, struct file *file, void *buf, size_t insize)
+static int nfs_read(struct file *file, void *buf, size_t insize)
 {
 	struct file_priv *priv = file->private_data;
 
@@ -1209,7 +1208,7 @@ static int nfs_read(struct device *dev, struct file *file, void *buf, size_t ins
 	return kfifo_get(priv->fifo, buf, insize);
 }
 
-static int nfs_lseek(struct device *dev, struct file *file, loff_t pos)
+static int nfs_lseek(struct file *file, loff_t pos)
 {
 	struct file_priv *priv = file->private_data;
 

@@ -89,8 +89,7 @@ static int jffs2_get_block(struct jffs2_file *jf, unsigned int pos)
 	return 0;
 }
 
-static int jffs2_read(struct device *_dev, struct file *f, void *buf,
-		      size_t insize)
+static int jffs2_read(struct file *f, void *buf, size_t insize)
 {
 	struct jffs2_file *jf = f->private_data;
 	unsigned int pos = f->f_pos;

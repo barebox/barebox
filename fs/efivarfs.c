@@ -180,8 +180,7 @@ static int efivarfs_close(struct device *dev, struct file *f)
 	return 0;
 }
 
-static int efivarfs_read(struct device *_dev, struct file *f, void *buf,
-			 size_t insize)
+static int efivarfs_read(struct file *f, void *buf, size_t insize)
 {
 	struct efivars_file *efile = f->private_data;
 
@@ -190,8 +189,7 @@ static int efivarfs_read(struct device *_dev, struct file *f, void *buf,
 	return insize;
 }
 
-static int efivarfs_write(struct device *_dev, struct file *f, const void *buf,
-			  size_t insize)
+static int efivarfs_write(struct file *f, const void *buf, size_t insize)
 {
 	struct efivars_file *efile = f->private_data;
 	efi_status_t efiret;
@@ -212,7 +210,7 @@ static int efivarfs_write(struct device *_dev, struct file *f, const void *buf,
 	return insize;
 }
 
-static int efivarfs_truncate(struct device *dev, struct file *f, loff_t size)
+static int efivarfs_truncate(struct file *f, loff_t size)
 {
 	struct efivars_file *efile = f->private_data;
 	efi_status_t efiret;

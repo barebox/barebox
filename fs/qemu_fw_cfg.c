@@ -304,12 +304,11 @@ static const struct super_operations fw_cfg_fs_ops = {
 	.destroy_inode = fw_cfg_fs_destroy_inode,
 };
 
-static int fw_cfg_fs_io(struct device *dev, struct file *f, void *buf,
-			 size_t insize, bool read)
+static int fw_cfg_fs_io(struct file *f, void *buf, size_t insize, bool read)
 {
 	struct inode *inode = f->f_inode;
 	struct fw_cfg_fs_inode *node = inode_to_node(inode);
-	struct fw_cfg_fs_data *data = dev->priv;
+	struct fw_cfg_fs_data *data = f->fsdev->dev.priv;
 	int fd = data->fd;
 
 	if (node->buf) {
@@ -328,16 +327,14 @@ static int fw_cfg_fs_io(struct device *dev, struct file *f, void *buf,
 		return pwrite(fd, buf, insize, f->f_pos);
 }
 
-static int fw_cfg_fs_read(struct device *dev, struct file *f, void *buf,
-			   size_t insize)
+static int fw_cfg_fs_read(struct file *f, void *buf, size_t insize)
 {
-	return fw_cfg_fs_io(dev, f, buf, insize, true);
+	return fw_cfg_fs_io(f, buf, insize, true);
 }
 
-static int fw_cfg_fs_write(struct device *dev, struct file *f, const void *buf,
-			    size_t insize)
+static int fw_cfg_fs_write(struct file *f, const void *buf, size_t insize)
 {
-	return fw_cfg_fs_io(dev, f, (void *)buf, insize, false);
+	return fw_cfg_fs_io(f, (void *)buf, insize, false);
 }
 
 static int fw_cfg_fs_probe(struct device *dev)

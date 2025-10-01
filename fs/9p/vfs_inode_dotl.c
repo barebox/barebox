@@ -311,7 +311,7 @@ static int v9fs_vfs_setattr_dotl(struct dentry *dentry, struct iattr *iattr)
 }
 
 static __maybe_unused int
-v9fs_truncate(struct device *dev, struct file *f, loff_t size)
+v9fs_truncate(struct file *f, loff_t size)
 {
 	struct iattr iattr = {
 		.ia_valid = ATTR_SIZE | ATTR_FILE,

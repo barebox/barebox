@@ -370,11 +370,11 @@ static int create(struct dentry *dir, struct dentry *dentry)
 	return inode->i_op->create(inode, dentry, S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
-static int fsdev_truncate(struct device *dev, struct file *f, loff_t length)
+static int fsdev_truncate(struct file *f, loff_t length)
 {
 	struct fs_driver *fsdrv = f->fsdev->driver;
 
-	return fsdrv->truncate ? fsdrv->truncate(dev, f, length) : -EROFS;
+	return fsdrv->truncate ? fsdrv->truncate(f, length) : -EROFS;
 }
 
 int ftruncate(int fd, loff_t length)
@@ -388,7 +388,7 @@ int ftruncate(int fd, loff_t length)
 	if (f->f_size == FILE_SIZE_STREAM)
 		return 0;
 
-	ret = fsdev_truncate(&f->fsdev->dev, f, length);
+	ret = fsdev_truncate(f, length);
 	if (ret)
 		return errno_set(ret);
 
@@ -409,7 +409,7 @@ int ioctl(int fd, unsigned int request, void *buf)
 	fsdrv = f->fsdev->driver;
 
 	if (fsdrv->ioctl)
-		ret = fsdrv->ioctl(&f->fsdev->dev, f, request, buf);
+		ret = fsdrv->ioctl(f, request, buf);
 	else
 		ret = -ENOSYS;
 
@@ -437,7 +437,7 @@ static ssize_t __read(struct file *f, void *buf, size_t count)
 	if (!count)
 		return 0;
 
-	ret = fsdrv->read(&f->fsdev->dev, f, buf, count);
+	ret = fsdrv->read(f, buf, count);
 out:
 	return errno_set(ret);
 }
@@ -492,7 +492,7 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 		assert_command_context();
 
 	if (f->f_size != FILE_SIZE_STREAM && f->f_pos + count > f->f_size) {
-		ret = fsdev_truncate(&f->fsdev->dev, f, f->f_pos + count);
+		ret = fsdev_truncate(f, f->f_pos + count);
 		if (ret) {
 			if (ret == -EPERM)
 				ret = -ENOSPC;
@@ -505,7 +505,7 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 			f->f_size = f->f_pos + count;
 		}
 	}
-	ret = fsdrv->write(&f->fsdev->dev, f, buf, count);
+	ret = fsdrv->write(f, buf, count);
 out:
 	return errno_set(ret);
 }
@@ -555,7 +555,7 @@ int flush(int fd)
 
 	fsdrv = f->fsdev->driver;
 	if (fsdrv->flush)
-		ret = fsdrv->flush(&f->fsdev->dev, f);
+		ret = fsdrv->flush(f);
 	else
 		ret = 0;
 
@@ -599,7 +599,7 @@ loff_t lseek(int fd, loff_t offset, int whence)
 		goto out;
 
 	if (fsdrv->lseek) {
-		ret = fsdrv->lseek(&f->fsdev->dev, f, pos);
+		ret = fsdrv->lseek(f, pos);
 		if (ret < 0)
 			goto out;
 	}
@@ -636,7 +636,7 @@ int erase(int fd, loff_t count, loff_t offset, enum erase_type type)
 		assert_command_context();
 
 	if (fsdrv->erase)
-		ret = fsdrv->erase(&f->fsdev->dev, f, count, offset, type);
+		ret = fsdrv->erase(f, count, offset, type);
 	else
 		ret = -ENOSYS;
 
@@ -663,7 +663,7 @@ int protect(int fd, size_t count, loff_t offset, int prot)
 		assert_command_context();
 
 	if (fsdrv->protect)
-		ret = fsdrv->protect(&f->fsdev->dev, f, count, offset, prot);
+		ret = fsdrv->protect(f, count, offset, prot);
 	else
 		ret = -ENOSYS;
 
@@ -690,7 +690,7 @@ int discard_range(int fd, loff_t count, loff_t offset)
 		assert_command_context();
 
 	if (fsdrv->discard_range)
-		ret = fsdrv->discard_range(&f->fsdev->dev, f, count, offset);
+		ret = fsdrv->discard_range(f, count, offset);
 	else
 		ret = -ENOSYS;
 
@@ -728,7 +728,7 @@ void *memmap(int fd, int flags)
 		assert_command_context();
 
 	if (fsdrv->memmap)
-		ret = fsdrv->memmap(&f->fsdev->dev, f, &retp, flags);
+		ret = fsdrv->memmap(f, &retp, flags);
 	else
 		ret = -EINVAL;
 
@@ -2675,7 +2675,7 @@ int openat(int dirfd, const char *pathname, int flags)
 	}
 
 	if (flags & O_TRUNC) {
-		error = fsdev_truncate(&fsdev->dev, f, 0);
+		error = fsdev_truncate(f, 0);
 		f->f_size = 0;
 		if (error)
 			goto out;

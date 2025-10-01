@@ -199,8 +199,7 @@ static int squashfs_read_buf(struct squashfs_page *page, int pos, void **buf)
 	return 0;
 }
 
-static int squashfs_read(struct device *_dev, struct file *f, void *buf,
-			 size_t insize)
+static int squashfs_read(struct file *f, void *buf, size_t insize)
 {
 	unsigned int size = insize;
 	unsigned int pos = f->f_pos;

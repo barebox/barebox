@@ -201,7 +201,7 @@ static int efifs_close(struct device *dev, struct file *f)
 	return 0;
 }
 
-static int efifs_read(struct device *_dev, struct file *f, void *buf, size_t insize)
+static int efifs_read(struct file *f, void *buf, size_t insize)
 {
 	struct efifs_file *ufile = f->private_data;
 	efi_status_t efiret;
@@ -215,8 +215,7 @@ static int efifs_read(struct device *_dev, struct file *f, void *buf, size_t ins
 	return bufsize;
 }
 
-static int efifs_write(struct device *_dev, struct file *f, const void *buf,
-		       size_t insize)
+static int efifs_write(struct file *f, const void *buf, size_t insize)
 {
 	struct efifs_file *ufile = f->private_data;
 	efi_status_t efiret;
@@ -231,7 +230,7 @@ static int efifs_write(struct device *_dev, struct file *f, const void *buf,
 	return bufsize;
 }
 
-static int efifs_lseek(struct device *dev, struct file *f, loff_t pos)
+static int efifs_lseek(struct file *f, loff_t pos)
 {
 	struct efifs_file *ufile = f->private_data;
 	efi_status_t efiret;
@@ -244,7 +243,7 @@ static int efifs_lseek(struct device *dev, struct file *f, loff_t pos)
 	return 0;
 }
 
-static int efifs_truncate(struct device *dev, struct file *f, loff_t size)
+static int efifs_truncate(struct file *f, loff_t size)
 {
 	struct efifs_file *ufile = f->private_data;
 	efi_status_t efiret;

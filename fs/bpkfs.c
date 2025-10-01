@@ -180,7 +180,7 @@ static int bpkfs_close(struct device *dev, struct file *file)
 	return 0;
 }
 
-static int bpkfs_read(struct device *dev, struct file *file, void *buf,
+static int bpkfs_read(struct file *file, void *buf,
 		      size_t insize)
 {
 	struct bpkfs_handle_data *d = file->private_data;
@@ -193,7 +193,7 @@ static int bpkfs_read(struct device *dev, struct file *file, void *buf,
 	}
 }
 
-static int bpkfs_lseek(struct device *dev, struct file *file, loff_t pos)
+static int bpkfs_lseek(struct file *file, loff_t pos)
 {
 	struct bpkfs_handle_data *d = file->private_data;
 

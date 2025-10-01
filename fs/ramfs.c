@@ -409,6 +409,13 @@ static int ramfs_memmap(struct file *f, void **map, int flags)
 	return 0;
 }
 
+static const struct file_operations ramfs_file_operations = {
+	.read      = ramfs_read,
+	.write     = ramfs_write,
+	.memmap    = ramfs_memmap,
+	.truncate  = ramfs_truncate,
+};
+
 static struct inode *ramfs_alloc_inode(struct super_block *sb)
 {
 	struct ramfs_inode *node;
@@ -449,10 +456,6 @@ static int ramfs_probe(struct device *dev)
 }
 
 static struct fs_driver ramfs_driver = {
-	.read      = ramfs_read,
-	.write     = ramfs_write,
-	.memmap    = ramfs_memmap,
-	.truncate  = ramfs_truncate,
 	.drv = {
 		.probe  = ramfs_probe,
 		.name = "ramfs",

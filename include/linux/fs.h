@@ -482,14 +482,26 @@ static inline int dir_emit_dots(struct file *file, struct dir_context *ctx)
 	return true;
 }
 
+enum erase_type;
+
 struct file_operations {
 	int (*open) (struct inode *, struct file *);
 	int (*release) (struct inode *, struct file *);
 	int (*iterate) (struct file *, struct dir_context *);
-	/*
-	 * TODO: move the remaining callbacks in struct fs_driver
-	 * here with Linux semantics
-	 */
+	int (*read)(struct file *f, void *buf, size_t size);
+	int (*write)(struct file *f, const void *buf,
+			size_t size);
+	int (*flush)(struct file *f);
+	int (*lseek)(struct file *f, loff_t pos);
+
+	int (*ioctl)(struct file *f, unsigned int request, void *buf);
+	int (*erase)(struct file *f, loff_t count,
+			loff_t offset, enum erase_type type);
+	int (*protect)(struct file *f, size_t count,
+			loff_t offset, int prot);
+	int (*discard_range)(struct file *f, loff_t count, loff_t offset);
+	int (*memmap)(struct file *f, void **map, int flags);
+	int (*truncate)(struct file *f, loff_t size);
 };
 
 void drop_nlink(struct inode *inode);

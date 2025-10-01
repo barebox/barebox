@@ -282,11 +282,11 @@ static const struct fs_legacy_ops pstore_ops = {
 	.readdir   = pstore_readdir,
 	.closedir  = pstore_closedir,
 	.stat      = pstore_stat,
+	.read      = pstore_read,
+	.lseek     = pstore_lseek,
 };
 
 static struct fs_driver pstore_driver = {
-	.read      = pstore_read,
-	.lseek     = pstore_lseek,
 	.legacy_ops = &pstore_ops,
 	.type = filetype_uimage,
 	.drv = {

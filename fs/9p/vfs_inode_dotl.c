@@ -310,8 +310,7 @@ static int v9fs_vfs_setattr_dotl(struct dentry *dentry, struct iattr *iattr)
 	return 0;
 }
 
-static __maybe_unused int
-v9fs_truncate(struct file *f, loff_t size)
+int v9fs_truncate(struct file *f, loff_t size)
 {
 	struct iattr iattr = {
 		.ia_valid = ATTR_SIZE | ATTR_FILE,
@@ -565,12 +564,6 @@ const struct inode_operations v9fs_symlink_inode_operations_dotl = {
 };
 
 struct fs_driver v9fs_driver = {
-	.read      = v9fs_read,
-#ifdef CONFIG_9P_FS_WRITE
-	.write     = v9fs_write,
-	.truncate  = v9fs_truncate,
-	.flush     = v9fs_file_fsync_dotl,
-#endif
 	.drv = {
 		.probe  = v9fs_mount,
 		.remove = v9fs_umount,

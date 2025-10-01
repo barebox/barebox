@@ -1321,6 +1321,10 @@ static const struct inode_operations nfs_dir_inode_operations;
 static const struct file_operations nfs_file_operations = {
 	.open      = nfs_open,
 	.release     = nfs_close,
+	.read      = nfs_read,
+	.lseek     = nfs_lseek,
+	.write     = nfs_write,
+	.truncate  = nfs_truncate,
 };
 static const struct inode_operations nfs_symlink_inode_operations = {
 	.get_link = nfs_get_link,
@@ -1554,10 +1558,6 @@ static void nfs_remove(struct device *dev)
 }
 
 static struct fs_driver nfs_driver = {
-	.read      = nfs_read,
-	.lseek     = nfs_lseek,
-	.write     = nfs_write,
-	.truncate  = nfs_truncate,
 	.drv = {
 		.probe  = nfs_probe,
 		.remove = nfs_remove,

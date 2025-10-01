@@ -179,6 +179,10 @@ const struct file_operations ext_dir_operations = {
 	.iterate = ext_iterate,
 };
 
+const struct file_operations ext_file_operations = {
+	.read = ext_read,
+};
+
 static const char *ext_get_link(struct dentry *dentry, struct inode *inode)
 {
 	struct ext2fs_node *node = to_ext2_node(inode);
@@ -230,6 +234,7 @@ struct inode *ext_get_inode(struct super_block *sb, int ino)
 		return NULL;
 	case S_IFREG:
 		inode->i_op = &ext_inode_operations;
+		inode->i_fop = &ext_file_operations;
 		break;
 	case S_IFDIR:
 		inode->i_op = &ext_inode_operations;
@@ -299,7 +304,6 @@ static void ext_remove(struct device *dev)
 }
 
 static struct fs_driver ext_driver = {
-	.read      = ext_read,
 	.type      = filetype_ext,
 	.drv = {
 		.probe  = ext_probe,

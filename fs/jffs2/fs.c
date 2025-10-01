@@ -64,11 +64,6 @@ static int jffs2_close(struct inode *inode, struct file *f)
 	return 0;
 }
 
-const struct file_operations jffs2_file_operations = {
-	.open = jffs2_open,
-	.release = jffs2_close,
-};
-
 static int jffs2_get_block(struct jffs2_file *jf, unsigned int pos)
 {
 	struct jffs2_sb_info *c = JFFS2_SB_INFO(jf->inode->i_sb);
@@ -137,6 +132,12 @@ static int jffs2_read(struct file *f, void *buf, size_t insize)
 	return insize;
 
 }
+
+const struct file_operations jffs2_file_operations = {
+	.open = jffs2_open,
+	.release = jffs2_close,
+	.read = jffs2_read,
+};
 
 struct inode *jffs2_iget(struct super_block *sb, unsigned long ino)
 {
@@ -458,7 +459,6 @@ static void jffs2_remove(struct device *dev)
 
 
 static struct fs_driver jffs2_driver = {
-	.read = jffs2_read,
 	.type = filetype_jffs2,
 	.drv = {
 		.probe  = jffs2_probe,

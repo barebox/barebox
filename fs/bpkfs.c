@@ -498,11 +498,11 @@ static const struct fs_legacy_ops bpkfs_ops = {
 	.readdir   = bpkfs_readdir,
 	.closedir  = bpkfs_closedir,
 	.stat      = bpkfs_stat,
+	.read      = bpkfs_read,
+	.lseek     = bpkfs_lseek,
 };
 
 static struct fs_driver bpkfs_driver = {
-	.read      = bpkfs_read,
-	.lseek     = bpkfs_lseek,
 	.legacy_ops = &bpkfs_ops,
 	.type = filetype_bpk,
 	.drv = {

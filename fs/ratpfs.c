@@ -446,12 +446,12 @@ static const struct fs_legacy_ops ratpfs_ops = {
 	.unlink    = ratpfs_rm,
 	.mkdir     = ratpfs_mkdir,
 	.rmdir     = ratpfs_rm,
-};
-
-static struct fs_driver ratpfs_driver = {
 	.read      = ratpfs_read,
 	.write     = ratpfs_write,
 	.truncate  = ratpfs_truncate,
+};
+
+static struct fs_driver ratpfs_driver = {
 	.legacy_ops = &ratpfs_ops,
 	.drv = {
 		.probe  = ratpfs_probe,

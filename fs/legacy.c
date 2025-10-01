@@ -298,6 +298,53 @@ static const char *legacy_get_link(struct dentry *dentry, struct inode *inode)
 	return inode->i_link;
 }
 
+static int legacy_read(struct file *f, void *buf, size_t size)
+{
+	const struct fs_legacy_ops *legacy_ops = f->fsdev->driver->legacy_ops;
+
+	return legacy_ops->read(f, buf, size);
+}
+
+static int legacy_write(struct file *f, const void *buf, size_t size)
+{
+	const struct fs_legacy_ops *legacy_ops = f->fsdev->driver->legacy_ops;
+
+	if (!legacy_ops->write)
+		return -EBADF;
+
+	return legacy_ops->write(f, buf, size);
+}
+
+static int legacy_lseek(struct file *f, loff_t pos)
+{
+	const struct fs_legacy_ops *legacy_ops = f->fsdev->driver->legacy_ops;
+
+	if (!legacy_ops->lseek)
+		return 0;
+
+	return legacy_ops->lseek(f, pos);
+}
+
+static int legacy_ioctl(struct file *f, unsigned int request, void *buf)
+{
+	const struct fs_legacy_ops *legacy_ops = f->fsdev->driver->legacy_ops;
+
+	if (!legacy_ops->ioctl)
+		return -ENOSYS;
+
+	return legacy_ops->ioctl(f, request, buf);
+}
+
+static int legacy_truncate(struct file *f, loff_t size)
+{
+	const struct fs_legacy_ops *legacy_ops = f->fsdev->driver->legacy_ops;
+
+	if (!legacy_ops->truncate)
+		return -EROFS;
+
+	return legacy_ops->truncate(f, size);
+}
+
 static const struct super_operations legacy_s_ops;
 static const struct inode_operations legacy_file_inode_operations;
 
@@ -313,6 +360,11 @@ static const struct inode_operations legacy_dir_inode_operations = {
 static const struct file_operations legacy_file_operations = {
 	.open = legacy_open,
 	.release = legacy_release,
+	.read = legacy_read,
+	.write = legacy_write,
+	.lseek = legacy_lseek,
+	.ioctl = legacy_ioctl,
+	.truncate = legacy_truncate,
 };
 
 static const struct file_operations legacy_dir_operations = {

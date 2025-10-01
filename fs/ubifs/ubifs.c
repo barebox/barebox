@@ -382,7 +382,7 @@ static int ubifs_get_block(struct ubifs_file *uf, unsigned int pos)
 	return 0;
 }
 
-static int ubifs_read(struct file *f, void *buf, size_t insize)
+int ubifs_read(struct file *f, void *buf, size_t insize)
 {
 	struct ubifs_file *uf = f->private_data;
 	unsigned int pos = f->f_pos;
@@ -502,7 +502,6 @@ static void ubifs_remove(struct device *dev)
 }
 
 static struct fs_driver ubifs_driver = {
-	.read      = ubifs_read,
 	.type = filetype_ubifs,
 	.drv = {
 		.probe  = ubifs_probe,

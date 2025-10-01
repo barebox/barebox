@@ -58,9 +58,7 @@ static const struct inode_operations fw_cfg_fs_dir_inode_operations;
 static const struct inode_operations fw_cfg_fs_symlink_inode_operations = {
 	.get_link = fw_cfg_fs_get_link,
 };
-static const struct file_operations fw_cfg_fs_file_operations = {
-	.open = fw_cfg_fs_open
-};
+static const struct file_operations fw_cfg_fs_file_operations;
 static const struct file_operations fw_cfg_fs_dir_operations;
 
 static struct inode *fw_cfg_fs_get_inode(struct inode *iparent,
@@ -337,6 +335,12 @@ static int fw_cfg_fs_write(struct file *f, const void *buf, size_t insize)
 	return fw_cfg_fs_io(f, (void *)buf, insize, false);
 }
 
+static const struct file_operations fw_cfg_fs_file_operations = {
+	.open = fw_cfg_fs_open,
+	.read = fw_cfg_fs_read,
+	.write = fw_cfg_fs_write,
+};
+
 static int fw_cfg_fs_probe(struct device *dev)
 {
 	struct fw_cfg_fs_inode *node;
@@ -390,8 +394,6 @@ static void fw_cfg_fs_remove(struct device *dev)
 }
 
 static struct fs_driver fw_cfg_fs_driver = {
-	.read = fw_cfg_fs_read,
-	.write = fw_cfg_fs_write,
 	.type = filetype_qemu_fw_cfg,
 	.drv = {
 		.probe = fw_cfg_fs_probe,

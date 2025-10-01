@@ -176,6 +176,16 @@ static const struct inode_operations devfs_dir_inode_operations;
 static const struct file_operations devfs_file_operations = {
 	.open = devfs_open,
 	.release = devfs_close,
+	.read = devfs_read,
+	.write = devfs_write,
+	.lseek = devfs_lseek,
+	.flush = devfs_flush,
+	.ioctl = devfs_ioctl,
+	.truncate = devfs_truncate,
+	.erase = devfs_erase,
+	.protect = devfs_protect,
+	.discard_range = devfs_discard_range,
+	.memmap = devfs_memmap,
 };
 
 static int devfs_lookup_revalidate(struct dentry *dentry, unsigned int flags)
@@ -300,16 +310,6 @@ static void devfs_delete(struct device *dev)
 }
 
 static struct fs_driver devfs_driver = {
-	.read      = devfs_read,
-	.write     = devfs_write,
-	.lseek     = devfs_lseek,
-	.flush     = devfs_flush,
-	.ioctl     = devfs_ioctl,
-	.truncate  = devfs_truncate,
-	.erase     = devfs_erase,
-	.protect   = devfs_protect,
-	.discard_range = devfs_discard_range,
-	.memmap    = devfs_memmap,
 	.drv = {
 		.probe  = devfs_probe,
 		.remove = devfs_delete,

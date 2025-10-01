@@ -945,6 +945,10 @@ static const struct inode_operations tftp_dir_inode_operations;
 static const struct file_operations tftp_file_operations = {
 	.open = tftp_open,
 	.release = tftp_close,
+	.read      = tftp_read,
+	.lseek     = tftp_lseek,
+	.write     = tftp_write,
+	.truncate  = tftp_truncate,
 };
 
 static struct inode *tftp_get_inode(struct super_block *sb, const struct inode *dir,
@@ -1091,10 +1095,6 @@ static void tftp_remove(struct device *dev)
 }
 
 static struct fs_driver tftp_driver = {
-	.read      = tftp_read,
-	.lseek     = tftp_lseek,
-	.write     = tftp_write,
-	.truncate  = tftp_truncate,
 	.drv = {
 		.probe  = tftp_probe,
 		.remove = tftp_remove,

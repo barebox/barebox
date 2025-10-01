@@ -43,22 +43,6 @@ enum erase_type {
 struct fs_driver {
 	int (*probe) (struct device *dev);
 
-	/* Truncate a file to given size */
-	int (*truncate)(struct file *f, loff_t size);
-
-	int (*read)(struct file *f, void *buf, size_t size);
-	int (*write)(struct file *f, const void *buf, size_t size);
-	int (*flush)(struct file *f);
-	int (*lseek)(struct file *f, loff_t pos);
-
-	int (*ioctl)(struct file *f, unsigned int request, void *buf);
-	int (*erase)(struct file *f, loff_t count,
-			loff_t offset, enum erase_type type);
-	int (*protect)(struct file *f, size_t count, loff_t offset, int prot);
-	int (*discard_range)(struct file *f, loff_t count, loff_t offset);
-
-	int (*memmap)(struct file *f, void **map, int flags);
-
 	const struct fs_legacy_ops {
 		int (*open)(struct device *dev, struct file *f, const char *pathname);
 		int (*close)(struct device *dev, struct file *f);
@@ -76,6 +60,11 @@ struct fs_driver {
 		struct dirent* (*readdir)(struct device *dev, struct dir *dir);
 		int (*closedir)(struct device *dev, DIR *dir);
 		int (*stat)(struct device *dev, const char *file, struct stat *stat);
+		int (*read)(struct file *f, void *buf, size_t size);
+		int (*write)(struct file *f, const void *buf, size_t size);
+		int (*lseek)(struct file *f, loff_t pos);
+		int (*ioctl)(struct file *f, unsigned int request, void *buf);
+		int (*truncate)(struct file *f, loff_t size);
 	} *legacy_ops;
 
 	struct driver drv;

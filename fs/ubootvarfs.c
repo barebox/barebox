@@ -382,6 +382,12 @@ static int ubootvarfs_truncate(struct file *f, loff_t size)
 	return 0;
 }
 
+static const struct file_operations ubootvarfs_file_operations = {
+	.truncate = ubootvarfs_truncate,
+	.read = ubootvarfs_read,
+	.write = ubootvarfs_write,
+};
+
 static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 			     size_t size)
 {
@@ -479,9 +485,6 @@ static void ubootvarfs_remove(struct device *dev)
 }
 
 static struct fs_driver ubootvarfs_driver = {
-	.truncate = ubootvarfs_truncate,
-	.read = ubootvarfs_read,
-	.write = ubootvarfs_write,
 	.type = filetype_ubootvar,
 	.drv = {
 		.probe = ubootvarfs_probe,

@@ -522,12 +522,12 @@ static const struct fs_legacy_ops uimagefs_ops = {
 	.readdir   = uimagefs_readdir,
 	.closedir  = uimagefs_closedir,
 	.stat      = uimagefs_stat,
-};
-
-static struct fs_driver uimagefs_driver = {
 	.read      = uimagefs_read,
 	.lseek     = uimagefs_lseek,
 	.ioctl	   = uimagefs_ioctl,
+};
+
+static struct fs_driver uimagefs_driver = {
 	.legacy_ops = &uimagefs_ops,
 	.type = filetype_uimage,
 	.drv = {

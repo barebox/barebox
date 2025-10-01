@@ -432,13 +432,13 @@ static const struct fs_legacy_ops efifs_ops = {
 	.stat      = efifs_stat,
 	.symlink   = efifs_symlink,
 	.readlink  = efifs_readlink,
-};
-
-static struct fs_driver efifs_driver = {
 	.truncate  = efifs_truncate,
 	.read      = efifs_read,
 	.write     = efifs_write,
 	.lseek     = efifs_lseek,
+};
+
+static struct fs_driver efifs_driver = {
 	.legacy_ops = &efifs_ops,
 	.drv = {
 		.probe  = efifs_probe,

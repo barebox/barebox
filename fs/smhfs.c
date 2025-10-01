@@ -142,13 +142,13 @@ static const struct fs_legacy_ops smhfs_ops = {
 	.unlink    = smhfs_rm,
 	.mkdir     = smhfs_mkdir,
 	.rmdir     = smhfs_rm,
-};
-
-static struct fs_driver smhfs_driver = {
 	.read      = smhfs_read,
 	.lseek     = smhfs_lseek,
 	.write     = smhfs_write,
 	.truncate  = smhfs_truncate,
+};
+
+static struct fs_driver smhfs_driver = {
 	.legacy_ops = &smhfs_ops,
 	.drv = {
 		.probe  = smhfs_probe,

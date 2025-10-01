@@ -384,16 +384,14 @@ static const struct fs_legacy_ops fat_ops = {
 	.unlink    = fat_unlink,
 	.mkdir     = fat_mkdir,
 	.rmdir     = fat_rmdir,
-#endif
-};
-
-static struct fs_driver fat_driver = {
-	.read      = fat_read,
-	.lseek     = fat_lseek,
-#ifdef CONFIG_FS_FAT_WRITE
 	.write     = fat_write,
 	.truncate  = fat_truncate,
 #endif
+	.read      = fat_read,
+	.lseek     = fat_lseek,
+};
+
+static struct fs_driver fat_driver = {
 	.legacy_ops = &fat_ops,
 	.type = filetype_fat,
 	.drv = {

@@ -352,12 +352,12 @@ static const struct fs_legacy_ops efivarfs_ops = {
 	.readdir   = efivarfs_readdir,
 	.closedir  = efivarfs_closedir,
 	.stat      = efivarfs_stat,
-};
-
-static struct fs_driver efivarfs_driver = {
 	.read      = efivarfs_read,
 	.write     = efivarfs_write,
 	.truncate  = efivarfs_truncate,
+};
+
+static struct fs_driver efivarfs_driver = {
 	.legacy_ops = &efivarfs_ops,
 	.drv = {
 		.probe  = efivarfs_probe,

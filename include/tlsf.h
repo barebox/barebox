@@ -63,6 +63,7 @@ tlsf_t tlsf_create(void* mem);
 tlsf_t tlsf_create_with_pool(void* mem, size_t bytes);
 void tlsf_destroy(tlsf_t tlsf);
 pool_t tlsf_get_pool(tlsf_t tlsf);
+void tlsf_register_store(tlsf_t tlsf, void (*cb)(tlsf_t tlsf, size_t bytes));
 
 /* Add/remove memory pools. */
 pool_t tlsf_add_pool(tlsf_t tlsf, void* mem, size_t bytes);

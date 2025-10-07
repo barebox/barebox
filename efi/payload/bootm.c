@@ -34,11 +34,74 @@
 #include "image.h"
 #include "setup_header.h"
 
+static bool ramdisk_is_fit(struct image_data *data)
+{
+	struct stat st;
+
+	if (bootm_signed_images_are_forced())
+		return true;
+
+	if (data->initrd_file) {
+		if (!stat(data->initrd_file, &st) && st.st_size > 0)
+			return false;
+	}
+
+	return data->os_fit ? fit_has_image(data->os_fit,
+			data->fit_config, "ramdisk") > 0 : false;
+}
+
+static bool fdt_is_fit(struct image_data *data)
+{
+	struct stat st;
+
+	if (bootm_signed_images_are_forced())
+		return true;
+
+	if (data->oftree_file) {
+		if (!stat(data->oftree_file, &st) && st.st_size > 0)
+			return false;
+	}
+
+	return data->os_fit ? fit_has_image(data->os_fit,
+			data->fit_config, "fdt") > 0 : false;
+}
+
 static int efi_load_os(struct image_data *data,
 		       struct efi_loaded_image **loaded_image,
 		       efi_handle_t *handle)
 {
-	return efi_load_image(data->os_file, loaded_image, handle);
+	efi_status_t efiret;
+	efi_handle_t h;
+
+	if (!data->os_fit)
+		return efi_load_image(data->os_file, loaded_image, handle);
+
+	if (!data->fit_kernel)
+		return -ENOENT;
+
+	efiret = BS->load_image(false, efi_parent_image, efi_device_path,
+				(void *)data->fit_kernel, data->fit_kernel_size, &h);
+	if (EFI_ERROR(efiret)) {
+		pr_err("failed to LoadImage: %s\n", efi_strerror(efiret));
+		goto out_mem;
+	};
+
+	efiret = BS->open_protocol(h, &efi_loaded_image_protocol_guid,
+				   (void **)loaded_image, efi_parent_image,
+				   NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+	if (EFI_ERROR(efiret)) {
+		pr_err("failed to OpenProtocol: %s\n", efi_strerror(efiret));
+		goto out_unload;
+	}
+
+	*handle = h;
+
+	return 0;
+
+out_unload:
+	BS->unload_image(h);
+out_mem:
+	return -efi_errno(efiret);
 }
 
 static int efi_load_ramdisk(struct image_data *data, void **initrd)
@@ -47,17 +110,26 @@ static int efi_load_ramdisk(struct image_data *data, void **initrd)
 	void *initrd_mem;
 	int ret;
 
-	if (!data->initrd_file)
-		return 0;
+	if (ramdisk_is_fit(data)) {
+		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk",
+				     (const void **)&initrd_mem, &initrd_size);
+		if (ret) {
+			pr_err("Cannot open ramdisk image in FIT image: %m\n");
+			return ret;
+		}
+	} else {
+		if (!data->initrd_file)
+			return 0;
 
-	pr_info("Loading ramdisk from '%s'\n", data->initrd_file);
+		pr_info("Loading ramdisk from '%s'\n", data->initrd_file);
 
-	initrd_mem = read_file(data->initrd_file, &initrd_size);
-	if (!initrd_mem) {
-		ret = -errno;
-		pr_err("Failed to read initrd from file '%s': %m\n",
-		       data->initrd_file);
-		return ret;
+		initrd_mem = read_file(data->initrd_file, &initrd_size);
+		if (!initrd_mem) {
+			ret = -errno;
+			pr_err("Failed to read initrd from file '%s': %m\n",
+			       data->initrd_file);
+			return ret;
+		}
 	}
 
 	ret = efi_initrd_register(initrd_mem, initrd_size);
@@ -84,16 +156,25 @@ static int efi_load_fdt(struct image_data *data, void **fdt)
 	unsigned long of_size;
 	int ret;
 
-	if (!data->oftree_file)
-		return 0;
+	if (fdt_is_fit(data)) {
+		ret = fit_open_image(data->os_fit, data->fit_config, "fdt",
+				     (const void **)&of_tree, &of_size);
+		if (ret) {
+			pr_err("Cannot open FDT image in FIT image: %m\n");
+			return ret;
+		}
+	} else {
+		if (!data->oftree_file)
+			return 0;
 
-	pr_info("Loading devicetree from '%s'\n", data->oftree_file);
+		pr_info("Loading devicetree from '%s'\n", data->oftree_file);
 
-	of_tree = read_file(data->oftree_file, &of_size);
-	if (!of_tree) {
-		ret = -errno;
-		pr_err("Failed to read oftree: %m\n");
-		return ret;
+		of_tree = read_file(data->oftree_file, &of_size);
+		if (!of_tree) {
+			ret = -errno;
+			pr_err("Failed to read oftree: %m\n");
+			return ret;
+		}
 	}
 
 	efiret = BS->allocate_pages(EFI_ALLOCATE_ANY_PAGES,

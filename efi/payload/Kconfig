@@ -15,6 +15,7 @@ config EFI_PAYLOAD
 	select BLOCK
 	select PARTITION_DISK
 	select HW_HAS_PCI
+	select MALLOC_TLSF
 
 config HAVE_EFI_STUB
 	bool

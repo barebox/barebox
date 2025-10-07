@@ -32,6 +32,7 @@ config EFI_HANDOVER_PROTOCOL
 
 config EFI_PAYLOAD_BOOTM
 	bool "EFI bootm protocol"
+	select BOOTM_FITIMAGE
 	default !X86
 
 endif

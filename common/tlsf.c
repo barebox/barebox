@@ -814,6 +814,7 @@ size_t tlsf_alloc_overhead(void)
 
 pool_t tlsf_add_pool(tlsf_t tlsf, void* mem, size_t bytes)
 {
+	control_t* control = tlsf_cast(control_t*, tlsf);
 	block_header_t* block;
 	block_header_t* next;
 
@@ -844,13 +845,15 @@ pool_t tlsf_add_pool(tlsf_t tlsf, void* mem, size_t bytes)
 	block_set_size(block, pool_bytes);
 	block_set_free(block);
 	block_set_prev_used(block);
-	block_insert(tlsf_cast(control_t*, tlsf), block);
+	block_insert(control, block);
 
 	/* Split the block to create a zero-size sentinel block. */
 	next = block_link_next(block);
 	block_set_size(next, 0);
 	block_set_used(next);
 	block_set_prev_free(next);
+
+	kasan_poison_shadow(mem, bytes, KASAN_TAG_INVALID);
 
 	return mem;
 }
@@ -927,7 +930,7 @@ tlsf_t tlsf_create_with_pool(void* mem, size_t bytes)
 {
 	tlsf_t tlsf = tlsf_create(mem);
 	tlsf_add_pool(tlsf, (char*)mem + tlsf_size(), bytes - tlsf_size());
-	kasan_poison_shadow(mem, bytes, KASAN_TAG_INVALID);
+	kasan_poison_shadow(mem, tlsf_size(), KASAN_TAG_INVALID);
 	return tlsf;
 }
 

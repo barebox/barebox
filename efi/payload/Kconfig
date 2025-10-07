@@ -27,7 +27,11 @@ config EFI_STUB
 
 config EFI_HANDOVER_PROTOCOL
 	bool "EFI Handover protocol"
-	default y
+	depends on !EFI_PAYLOAD_BOOTM
 	depends on X86
+
+config EFI_PAYLOAD_BOOTM
+	bool "EFI bootm protocol"
+	default !X86
 
 endif

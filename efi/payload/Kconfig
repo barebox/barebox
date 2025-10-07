@@ -25,4 +25,9 @@ if EFI_PAYLOAD
 config EFI_STUB
 	def_bool HAVE_EFI_STUB
 
+config EFI_HANDOVER_PROTOCOL
+	bool "EFI Handover protocol"
+	default y
+	depends on X86
+
 endif

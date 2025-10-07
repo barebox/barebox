@@ -11,11 +11,14 @@
 #include <stdio.h>
 #include <module.h>
 #include <tlsf.h>
+#include <linux/sizes.h>
+#include <linux/log2.h>
 
 #include <linux/kasan.h>
 #include <linux/list.h>
 
 tlsf_t tlsf_mem_pool;
+static void (*malloc_request_store)(size_t bytes);
 
 struct pool_entry {
 	pool_t pool;
@@ -23,6 +26,11 @@ struct pool_entry {
 };
 
 static LIST_HEAD(mem_pool_list);
+
+static inline size_t mem_pool_overhead(void)
+{
+	return sizeof(struct pool_entry) + tlsf_pool_overhead();
+}
 
 void *malloc(size_t bytes)
 {
@@ -123,4 +131,19 @@ void *malloc_add_pool(void *mem, size_t bytes)
 	list_add(&new_pool_entry->list, &mem_pool_list);
 
 	return (void *)new_pool;
+}
+
+static void tlsf_request_store(tlsf_t tlsf, size_t bytes)
+{
+	size_t size;
+
+	size = roundup_pow_of_two(bytes + mem_pool_overhead());
+
+	malloc_request_store(max_t(size_t, SZ_8M, size));
+}
+
+void malloc_register_store(void (*cb)(size_t bytes))
+{
+	malloc_request_store = cb;
+	tlsf_register_store(tlsf_mem_pool, tlsf_request_store);
 }

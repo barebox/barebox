@@ -115,8 +115,6 @@ void *malloc_add_pool(void *mem, size_t bytes)
 	if (!new_pool)
 		return NULL;
 
-	kasan_poison_shadow(mem, bytes, KASAN_TAG_INVALID);
-
 	new_pool_entry = malloc(sizeof(*new_pool_entry));
 	if (!new_pool_entry)
 		return NULL;

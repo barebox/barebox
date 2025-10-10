@@ -97,16 +97,6 @@ jobs:
           cp /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin ${KBUILD_OUTPUT}/
         fi
 
-    - name: Populate testfs
-      if: steps.used-features.outputs.testfs == 'true'
-      run: |
-        export KBUILD_OUTPUT=build-${{matrix.arch}}-${{matrix.defconfig}}
-        export KBUILD_DEFCONFIG=${{matrix.defconfig}}
-
-        # Just use already built dtc
-        export PATH="$PATH:${KBUILD_OUTPUT}/scripts/dtc/"
-        exec scripts/generate_testfs.sh
-
     - name: labgrid-pytest
       if: steps.build.outcome == 'success'
       run: |
@@ -116,9 +106,6 @@ jobs:
           grep -wq '\(QEMUDriver\|ExternalConsoleDriver\):' "$i" || continue
 
           extraargs="${{matrix.lgargs}}"
-          if grep -wq 'testfs' "$i"; then
-            extraargs="${extraargs} --fs testfs=${KBUILD_OUTPUT}/testfs"
-          fi
 
           cfg=$(basename $i .yaml)
           echo "Testing $cfg"

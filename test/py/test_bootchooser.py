@@ -5,10 +5,6 @@ from .helper import globalvars_set, devinfo, getparam_int, \
                     getstate_int, getenv_int
 
 
-def fit_name(suffix):
-    return f"/mnt/9p/testfs/barebox-{suffix}.fit"
-
-
 def generate_bootscript(barebox, command, name="test"):
     barebox.run_check(f"echo -o /env/boot/{name} '#!/bin/sh'")
     barebox.run_check(f"echo -a /env/boot/{name} '{command}'")

@@ -49,12 +49,14 @@ static inline size_t str_has_prefix(const char *str, const char *prefix)
 	return strncmp(str, prefix, len) == 0 ? len : 0;
 }
 
-static void *nonnull(void *ptr)
+static void *pnonnull(void *ptr, const char *ptrname)
 {
 	if (!ptr)
-		exit(2);
+		panic("%s is unexpectedly NULL\n", ptrname);
 	return ptr;
 }
+
+#define nonnull(ptr) pnonnull(ptr, #ptr)
 
 static FILE *xfopen(const char *path, const char *mode)
 {
@@ -366,6 +368,8 @@ static void append_dependency(FILE *depfile, const char *path)
 		fprintf(depfile, "\n");
 		return;
 	}
+
+	debug("appending dependency for %s\n", path);
 
 	abspath = nonnull(realpath(path, NULL));
 

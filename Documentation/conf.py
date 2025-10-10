@@ -35,7 +35,7 @@ extensions = []
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = {'.rst': 'restructuredtext'}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -269,7 +269,7 @@ class DashFriendlySearchEnglish(SearchEnglish):
     # Accept words that can include 'inner' hyphens or dots
     _word_re = re.compile(r'[\w]+(?:[\.\-][\w]+)*')
 
-    js_splitter_code = """
+    js_splitter_code = r"""
 function splitQuery(query) {
     return query
         .split(/[^\p{Letter}\p{Number}_\p{Emoji_Presentation}\-\.]+/gu)

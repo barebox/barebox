@@ -4,7 +4,7 @@
 CONTAINER=${CONTAINER:-ghcr.io/barebox/barebox/barebox-ci:latest}
 export KCONFIG_ADD="common/boards/configs/disable_target_tools.config $KCONFIG_ADD"
 
-while getopts "c:uh" opt; do
+while getopts "c:e:uh" opt; do
 	case "$opt" in
 	h)
 		echo "usage: $0 [-c CONTAINER] [command...]"
@@ -24,6 +24,10 @@ while getopts "c:uh" opt; do
 	c)
 		CONTAINER="$OPTARG"
 		;;
+	e)
+		env="$env -e $OPTARG"
+		;;
+
 	esac
 done
 
@@ -39,6 +43,6 @@ fi
 
 exec podman run -it $volumes --rm \
 	-e TERM -e ARCH -e CONFIG -e JOBS -e LOGDIR -e REGEX \
-	-e KBUILD_OUTPUT -e LG_BUILDDIR \
+	-e KBUILD_OUTPUT -e LG_BUILDDIR $env \
 	-e KCONFIG_ADD -w "$PWD" --userns=keep-id:uid=1000,gid=1000 \
 	-- "$CONTAINER" "${@:-/bin/bash}"

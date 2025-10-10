@@ -162,7 +162,7 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 	return outsize;
 }
 
-static int cramfs_read(struct device *_dev, struct file *f, void *buf, size_t size)
+static int cramfs_read(struct file *f, void *buf, size_t size)
 {
 	return cramfs_read_file(f->f_inode, f->f_pos, buf, size);
 }
@@ -198,6 +198,7 @@ static int cramfs_info (struct device *dev)
 static const struct file_operations cramfs_dir_operations;
 static const struct inode_operations cramfs_dir_inode_operations;
 static const struct inode_operations cramfs_symlink_inode_operations;
+static const struct file_operations cramfs_file_operations;
 
 static unsigned long cramino(const struct cramfs_inode *cino, unsigned int offset)
 {
@@ -237,6 +238,7 @@ static struct inode *get_cramfs_inode(struct super_block *sb,
 
 	switch (cramfs_inode->mode & S_IFMT) {
 	case S_IFREG:
+		inode->i_fop = &cramfs_file_operations;
 		break;
 	case S_IFDIR:
 		inode->i_op = &cramfs_dir_inode_operations;
@@ -414,6 +416,10 @@ static const struct file_operations cramfs_dir_operations = {
 	.iterate = cramfs_iterate,
 };
 
+static const struct file_operations cramfs_file_operations = {
+	.read = cramfs_read,
+};
+
 static const struct inode_operations cramfs_dir_inode_operations =
 {
 	.lookup = cramfs_lookup,
@@ -497,7 +503,6 @@ static void cramfs_remove(struct device *dev)
 }
 
 static struct fs_driver cramfs_driver = {
-	.read		= cramfs_read,
 	.drv = {
 		.probe = cramfs_probe,
 		.remove = cramfs_remove,

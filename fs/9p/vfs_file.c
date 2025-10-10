@@ -64,4 +64,10 @@ int v9fs_file_open(struct inode *inode, struct file *file)
 const struct file_operations v9fs_file_operations_dotl = {
 	.open = v9fs_file_open,
 	.release = v9fs_dir_release,
+	.read = v9fs_read,
+#ifdef CONFIG_9P_FS_WRITE
+	.write = v9fs_write,
+	.truncate = v9fs_truncate,
+	.flush = v9fs_file_fsync_dotl,
+#endif
 };

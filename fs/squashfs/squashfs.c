@@ -176,11 +176,6 @@ static int squashfs_close(struct inode *inode, struct file *f)
 	return 0;
 }
 
-const struct file_operations squashfs_file_operations = {
-	.open = squashfs_open,
-	.release = squashfs_close,
-};
-
 static int squashfs_read_buf(struct squashfs_page *page, int pos, void **buf)
 {
 	unsigned int data_block = pos / (32 * PAGE_CACHE_SIZE);
@@ -199,8 +194,7 @@ static int squashfs_read_buf(struct squashfs_page *page, int pos, void **buf)
 	return 0;
 }
 
-static int squashfs_read(struct device *_dev, struct file *f, void *buf,
-			 size_t insize)
+static int squashfs_read(struct file *f, void *buf, size_t insize)
 {
 	unsigned int size = insize;
 	unsigned int pos = f->f_pos;
@@ -242,8 +236,13 @@ static int squashfs_read(struct device *_dev, struct file *f, void *buf,
 	return insize;
 }
 
+const struct file_operations squashfs_file_operations = {
+	.open = squashfs_open,
+	.release = squashfs_close,
+	.read = squashfs_read,
+};
+
 static struct fs_driver squashfs_driver = {
-	.read		= squashfs_read,
 	.type		= filetype_squashfs,
 	.drv = {
 		.probe = squashfs_probe,

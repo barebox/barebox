@@ -37,23 +37,18 @@ There's also an IRC channel, which is
 
 .. _feedback:
 
-Sending Patches
----------------
+Patch workflow
+--------------
 
-barebox uses a similar patch process as the Linux kernel, so most of the
-`Linux guide for submitting patches <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>`_
-also applies to barebox, except for the need to select your recipient;
-all barebox patches go to the same list.
+Patches are sent via email to the barebox mailing list, similarly to how
+you would contribute to the Linux kernel.
 
-Patch series can be sent and fetched from the list using `b4 <https://pypi.org/project/b4/>`_ ::
+Patch series on the mailing list can be fetched most easily with
+`b4 <https://pypi.org/project/b4/>`_::
 
-   b4 shazam -M https://lore.barebox.org/$messageid # replace with link
+   b4 shazam -H https://lore.barebox.org/$messageid # replace with link
 
-Fixes should apply on master and new features on the next branch.
-If a series fails to apply, ``b4`` can determine/guess the base
-and have ``FETCH_HEAD`` point at it::
+This will determine a suitable base, apply the patches onto it and point
+the ``FETCH_HEAD`` ref at it.
 
-   b4 shazam -H https://lore.kernel.org/$messageid # URL can be omitted
-
-CI tests are executed by Github Actions can be used by forking
-`the project on Github <https://github.com/barebox/barebox>`.
+For a guide on how to send patches, see :ref:`contributing`.

@@ -9,6 +9,7 @@ Contents:
    :maxdepth: 2
 
    architecture
+   contributing
    porting
    troubleshooting
    filesystems

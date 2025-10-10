@@ -20,86 +20,17 @@ fix up the virtio mmio regions into the device tree and barebox will
 discover the devices automatically, analogously to what it does with
 VirtIO over PCI.
 
-labgrid
--------
+Running in QEMU
+---------------
 
-Labgrid is used to run the barebox test suite, both on real and emulated
-hardware. A number of YAML files located in ``test/$ARCH`` describe some
-of the virtualized targets that barebox is known to run on.
-
-barebox makes use of recent labgrid features, so you may need to install
-it directly from PyPI instead of your distro's package repositories::
-
-  pipx install pytest
-  pipx inject pytest labgrid
-
-Example usage::
+Emulated targets can be started interactively with ``pytest --interactive``::
 
   # Run x86 VM runnig the EFI payload from efi_defconfig
   pytest --lg-env test/x86/efi_defconfig.yaml --interactive
 
-  # Run the test suite against the same
-  pytest --lg-env test/x86/efi_defconfig.yaml
+  # Identical to above, provided the CONFIG_NAME=efi_defconfig
+  pytest --interactive
 
-The above assumes that barebox has already been built for the
-configuration and that labgrid is available. If barebox has been
-built out-of-tree, the build directory must be pointed at by
-``LG_BUILDDIR``, ``KBUILD_OUTPUT`` or a ``build`` symlink.
-
-Additional QEMU command-line options can be added by specifying
-them after the ``--qemu`` option::
-
-  # appends -device ? to the command line. Add --dry-run to see the final result
-  pytest --lg-env test/riscv/rv64i_defconfig.yaml --interactive --qemu -device '?'
-
-Some of the QEMU options that are used more often also have explicit
-support in the test runner, so paravirtualized devices can be added
-more easily::
-
-  # Run tests and pass a block device (here /dev/virtioblk0)
-  pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml --blk=rootfs.ext4
-
-  # Run interactively with graphics output
-  pytest --lg-env test/mips/qemu-malta_defconfig.yaml --interactive --graphics
-
-For testing, the QEMU fw_cfg and virtfs support is particularly useful::
-
-  # inject boot.sh file in working directory into barebox environment
-  # at /env/boot/fit and set /env/nv/boot.default to fit
-  pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml \
-     --env nv/boot.default=fit --env boot/fit=@boot.sh
-
-  # make available the host's local working directory in barebox as
-  # /mnt/9p/host
-  pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml \
-     --fs host=.
-
-For a complete listing of possible options run ``pytest --help``.
-
-MAKEALL
--------
-
-The ``MAKEALL`` script is a wrapper around ``make`` to more easily build
-multiple configurations. It also accepts YAML Labgrid environment files
-as arguments, which will cause it to build and then run the tests::
-
-  ./MAKEALL test/mips/qemu-maltael_defconfig.yaml
-
-This expects ``CROSS_COMPILE`` (or ``CROSS_COMPILE_mips``) to have been
-set beforehand to point at an appropriate toolchain prefix.
-
-The barebox-ci container provides an easy way to run ``MAKEALL`` against
-all configurations supported by barebox, even if the host system
-lacks the appropriate toolchains::
-
-  # Run MAKEALL and possibly pytest in the container
-  alias MAKEALL="scripts/container.sh ./MAKEALL"
-
-  # Build a single configuration
-  MAKEALL test/mips/qemu-maltael_defconfig.yaml
-
-  # Build all configurations for an architecture, no test
-  MAKEALL -a riscv
-
-  # Build all mips platforms that can be tested
-  MAKEALL test/mips/*.yaml
+The test suite can be run by omitting the ``--interactive``.
+For more information, see the :ref:`labgrid` section in the
+:ref:`contributing` guide.

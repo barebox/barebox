@@ -1226,7 +1226,7 @@ quiet_cmd_sconfigpost = SCONFPP $@
 include/generated/security_autoconf.h: .security_config scripts_basic FORCE
 	$(call if_changed_dep,sconfigpost,-e)
 
-include/generated/sconfig_names.h: .security_config scripts_basic FORCE
+include/generated/sconfig_names.h: .security_config scripts_basic include/generated/security_autoconf.h FORCE
 	$(call if_changed_dep,sconfigpost,-s)
 
 archprepare: include/generated/security_autoconf.h include/generated/sconfig_names.h

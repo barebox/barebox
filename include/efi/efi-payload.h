@@ -32,6 +32,9 @@ int efi_set_variable(char *name, efi_guid_t *vendor, uint32_t attributes,
 int efi_set_variable_usec(char *name, efi_guid_t *vendor, uint64_t usec);
 
 void *efi_earlymem_alloc(const struct efi_system_table *sys_table,
-			 size_t *memsize, enum efi_memory_type mem_type);
+			 size_t memsize, enum efi_memory_type mem_type);
+
+int efi_initrd_register(void *initrd, size_t initrd_size);
+void efi_initrd_unregister(void);
 
 #endif

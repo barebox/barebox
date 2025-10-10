@@ -2,21 +2,7 @@
 
 menu "EFI (Extensible Firmware Interface) Support"
 
-config HAVE_EFI_PAYLOAD
-	bool
-
-config EFI_PAYLOAD
-	bool "Build as EFI payload" if COMPILE_TEST
-	depends on HAVE_EFI_PAYLOAD
-	select PBL_FULLY_PIC if ARM64
-	select EFI
-	select EFI_GUID
-	select EFI_DEVICEPATH
-	select PRINTF_UUID
-	select PRINTF_WCHAR
-	select BLOCK
-	select PARTITION_DISK
-	select HW_HAS_PCI
+source "efi/payload/Kconfig"
 
 config EFI
 	bool
@@ -25,10 +11,6 @@ config HAVE_EFI_STUB
 	bool
 
 if EFI
-
-config EFI_STUB
-	def_bool EFI_PAYLOAD
-	depends on HAVE_EFI_STUB
 
 config EFI_GUID
 	bool

@@ -270,10 +270,25 @@ static int efi_init(void)
 }
 device_efi_initcall(efi_init);
 
+static void efi_request_mem(size_t bytes)
+{
+	efi_status_t efiret;
+	efi_physical_addr_t mem;
+	size_t pages;
+
+	pages = DIV_ROUND_UP(bytes, EFI_PAGE_SIZE);
+	efiret = BS->allocate_pages(EFI_ALLOCATE_ANY_PAGES, EFI_LOADER_DATA,
+				    pages, &mem);
+	if (!EFI_ERROR(efiret))
+		malloc_add_pool(efi_phys_to_virt(mem), pages * EFI_PAGE_SIZE);
+}
+
 static int efi_core_init(void)
 {
 	struct device *dev;
 	int ret;
+
+	malloc_register_store(efi_request_mem);
 
 	dev = device_alloc("efi-cs", DEVICE_ID_SINGLE);
 	ret = platform_device_register(dev);

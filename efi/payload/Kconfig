@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config HAVE_EFI_PAYLOAD
+	bool
+
+config EFI_PAYLOAD
+	bool "Build as EFI payload"
+	depends on HAVE_EFI_PAYLOAD
+	select PBL_FULLY_PIC if ARM64
+	select EFI
+	select EFI_GUID
+	select EFI_DEVICEPATH
+	select PRINTF_UUID
+	select PRINTF_WCHAR
+	select BLOCK
+	select PARTITION_DISK
+	select HW_HAS_PCI
+	select MALLOC_TLSF
+
+config HAVE_EFI_STUB
+	bool
+
+if EFI_PAYLOAD
+
+config EFI_STUB
+	def_bool HAVE_EFI_STUB
+
+config EFI_HANDOVER_PROTOCOL
+	bool "EFI Handover protocol"
+	depends on !EFI_PAYLOAD_BOOTM
+	depends on X86
+
+config EFI_PAYLOAD_BOOTM
+	bool "EFI bootm protocol"
+	select BOOTM_FITIMAGE
+	default !X86
+
+endif

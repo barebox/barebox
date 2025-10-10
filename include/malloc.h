@@ -23,6 +23,7 @@
 
 #ifdef CONFIG_MALLOC_TLSF
 void *malloc_add_pool(void *mem, size_t bytes);
+void malloc_register_store(void (*cb)(size_t bytes));
 #endif
 
 #if IN_PROPER

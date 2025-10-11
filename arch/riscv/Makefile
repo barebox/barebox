@@ -45,13 +45,6 @@ archprepare: maketools
 
 PHONY += maketools
 
-common-y += arch/riscv/boards/
-common-y += arch/riscv/cpu/
-common-y += arch/riscv/lib/
-common-y += arch/riscv/boot/
-
-common-$(CONFIG_OFTREE) += arch/riscv/dts/
-
 lds-y	:= arch/riscv/lib/barebox.lds
 
 CLEAN_FILES += arch/riscv/lib/barebox.lds

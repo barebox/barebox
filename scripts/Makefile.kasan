@@ -1,16 +1,18 @@
- # SPDX-License-Identifier: GPL-2.0
-ifdef CONFIG_KASAN
+# SPDX-License-Identifier: GPL-2.0
 CFLAGS_KASAN_NOSANITIZE := -fno-builtin
 KASAN_SHADOW_OFFSET ?= $(CONFIG_KASAN_SHADOW_OFFSET)
-endif
 
 CFLAGS_KASAN_MINIMAL := -fsanitize=kernel-address
 
 cc-param = $(call cc-option, -mllvm -$(1), $(call cc-option, --param $(1)))
 
 CFLAGS_KASAN-$(CONFIG_ARM32) += $(call cc-param,asan-stack=1)
+check-args = $(foreach arg,$(2),$(call $(1),$(arg)))
 
 CFLAGS_KASAN := $(CFLAGS_KASAN_MINIMAL) \
 	$(call cc-param,asan-globals=1) \
 	$(call cc-param,asan-instrument-allocas=1) \
 	$(CFLAGS_KASAN-y)
+kasan_params :=
+
+export CFLAGS_KASAN CFLAGS_KASAN_NOSANITIZE

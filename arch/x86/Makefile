@@ -39,15 +39,8 @@ machdirs := $(patsubst %,arch/x86/mach-%/,$(machine-y))
 KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 
 ifneq ($(machine-y),)
-MACH  := arch/x86/mach-$(machine-y)/
-else
-MACH  :=
+core-y += arch/x86/mach-$(machine-y)/
 endif
-
-common-y += $(MACH)
-common-y += arch/x86/lib/
-
-# arch/x86/cpu/
 
 lds-$(CONFIG_X86_32)   := arch/x86/mach-efi/elf_ia32_efi.lds
 lds-$(CONFIG_X86_64)   := arch/x86/mach-efi/elf_x86_64_efi.lds

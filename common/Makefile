@@ -91,20 +91,11 @@ obj-$(CONFIG_CDEV_ALIAS)	+= cdev-alias.o
 obj-$(CONFIG_K3_KEYWRITER_LITE)	+= k3-keywriter-lite.o
 
 # dependencies on generated files need to be listed explicitly
-$(obj)/version.o: include/generated/compile.h
-$(obj)/imd-barebox.o: include/generated/compile.h
-$(obj)/imd-barebox.pbl.o: include/generated/compile.h
+$(obj)/version.o: include/generated/utsversion.h
+$(obj)/imd-barebox.o: include/generated/utsversion.h
+$(obj)/imd-barebox.pbl.o: include/generated/utsversion.h
 
-# compile.h changes depending on hostname, generation number, etc,
-# so we regenerate it always.
-# mkcompile_h will make sure to only update the
-# actual file if its content has changed.
+filechk_utsversion.h = $(srctree)/scripts/mkutsversion_h
 
-       chk_compile.h = :
- quiet_chk_compile.h = echo '  CHK     $@'
-silent_chk_compile.h = :
-include/generated/compile.h: FORCE
-	@$($(quiet)chk_compile.h)
-	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkcompile_h $@ \
-	"$(UTS_MACHINE)" "$(CC) $(KBUILD_CFLAGS)"
-
+include/generated/utsversion.h: FORCE
+	$(call filechk,utsversion.h)

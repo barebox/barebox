@@ -18,3 +18,88 @@ $(subdir-dtbslist): $(obj)/%/dtbs-list: $(obj)/% ;
 
 $(obj)/dtbs-list: $(dtb-y) FORCE
 	$(call if_changed,gen_order)
+
+# DTC
+# ---------------------------------------------------------------------------
+
+DTC ?= $(objtree)/scripts/dtc/dtc
+DTC_FLAGS += -Wno-unique_unit_address
+
+DTC_FLAGS += -Wno-unit_address_vs_reg \
+             -Wno-unit_address_format \
+             -Wno-avoid_unnecessary_addr_size \
+             -Wno-alias_paths \
+             -Wno-graph_child_address \
+             -Wno-simple_bus_reg \
+             -Wno-pci_device_reg \
+             -Wno-interrupt_provider
+
+# Disable noisy checks by default
+ifeq ($(findstring 1,$(KBUILD_EXTRA_WARN)),)
+DTC_FLAGS += -Wno-interrupt_map
+else
+DTC_FLAGS += -Wunique_unit_address_if_enabled
+endif
+
+ifneq ($(findstring 2,$(KBUILD_EXTRA_WARN)),)
+DTC_FLAGS += -Wnode_name_chars_strict \
+             -Wproperty_name_chars_strict \
+             -Wunique_unit_address
+endif
+
+DTC_FLAGS += $(DTC_FLAGS_$(target-stem))
+
+# Set -@ if the target is a base DTB that overlay is applied onto
+DTC_FLAGS += $(if $(filter $(patsubst $(obj)/%,%,$@), $(base-dtb-y)), -@)
+
+ifeq ($(CONFIG_OF_OVERLAY_LIVE), y)
+DTC_FLAGS.dtb += -@
+endif
+
+DTC_FLAGS.dtbo += -Wno-avoid_default_addr_size -Wno-reg_format -Wno-graph_port
+
+# DT Build Rules
+# ---------------------------------------------------------------------------
+
+# Generate an assembly file to wrap the output of the device tree compiler
+quiet_cmd_dt_S_dtb = DTB     $@
+cmd_dt_S_dtb = $(srctree)/scripts/gen-dtb-s $(subst -,_,$(*F)) $< $(CONFIG_IMD) > $@
+$(obj)/%.dtb.S: $(obj)/%.dtb $(obj)/%.dtb.z $(srctree)/scripts/gen-dtb-s FORCE
+	$(call if_changed,dt_S_dtb)
+
+quiet_cmd_dt_S_dtbo = DTBO    $@
+cmd_dt_S_dtbo = $(srctree)/scripts/gen-dtbo-s $(subst -,_,$(*F)) $< > $@
+$(obj)/%.dtbo.S: $(obj)/%.dtbo $(srctree)/scripts/gen-dtbo-s FORCE
+	$(call if_changed,dt_S_dtbo)
+
+$(obj)/%.dtb.z: $(obj)/%.dtb FORCE
+	$(call if_changed,$(suffix_y))
+
+dts-frags = $(subst $(quote),,$(CONFIG_EXTERNAL_DTS_FRAGMENTS))
+quiet_cmd_dtc = DTC     $@
+cmd_dtc = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
+	-D'$(subst -,_,$(*F))_dts=1' $(foreach f,$< $(2),-include '$(f)') /dev/null ; \
+	$(objtree)/scripts/dtc/dtc -O dtb -o $@ -b 0 \
+		-i $(srctree)/arch/$(SRCARCH)/dts $(DTC_FLAGS) $(DTC_FLAGS$(suffix $@)) \
+		-i $(srctree)/dts/src/$(SRCARCH) \
+		-i $(srctree)/dts/src/arm/ti/omap \
+		-d $(depfile).dtc $(dtc-tmp) ; \
+	cat $(depfile).pre $(depfile).dtc > $(depfile)
+
+$(obj)/%.dtb: $(src)/%.dts FORCE
+	$(call if_changed_dep,dtc,$(dts-frags))
+
+$(obj)/%.dtbo: $(src)/%.dtso $(DTC) FORCE
+	$(call if_changed_dep,dtc)
+
+dtc-tmp = $(subst $(comma),_,$(dot-target).dts)
+
+# targets
+# ---------------------------------------------------------------------------
+
+targets += $(always-y)
+
+# %.dtb.o <- %.dtb.S <- %.dtb <- %.dts
+# %.dtbo.o <- %.dtbo.S <- %.dtbo <- %.dtso
+targets += $(call intermediate_targets, .dtb.o, .dtb.S .dtb) \
+           $(call intermediate_targets, .dtbo.o, .dtbo.S .dtbo)

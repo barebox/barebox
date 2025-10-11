@@ -36,6 +36,91 @@ config DEFAULT_LOGLEVEL
 	  7    debug-level messages (debug)
 	  8    verbose debug messages (vdebug)
 
+config DEBUG_INFO
+	bool "Debug information in ELF"
+	help
+	  Say here if the ELF files produced by the build
+	  (barebox and images/*.pbl) should contain debug symbols.
+
+	  This is needed if you intend to use binary object tools like
+	  gdb, decode-stacktrace.sh, ... etc on the kernel.
+
+if DEBUG_INFO
+
+config DEBUG_INFO_REDUCED
+	bool "Reduce debugging information"
+	help
+	  If you say Y here gcc is instructed to generate less debugging
+	  information for structure types. This means that tools that
+	  need full debugging information (like gdb) won't be happy.
+	  But if you merely need debugging information to resolve line
+	  numbers there is no loss. Advantage is that build directory
+	  object sizes shrink dramatically over a full DEBUG_INFO build
+	  and compile times are reduced too.
+	  Only works with newer gcc versions.
+
+choice
+	prompt "Compressed Debug information"
+	help
+	  Compress the resulting debug info. Results in smaller debug info sections,
+	  but requires that consumers are able to decompress the results.
+
+	  If unsure, choose DEBUG_INFO_COMPRESSED_NONE.
+
+config DEBUG_INFO_COMPRESSED_NONE
+	bool "Don't compress debug information"
+	help
+	  Don't compress debug info sections.
+
+config DEBUG_INFO_COMPRESSED_ZLIB
+	bool "Compress debugging information with zlib"
+	depends on $(cc-option,-gz=zlib)
+	depends on $(ld-option,--compress-debug-sections=zlib)
+	help
+	  Compress the debug information using zlib.  Requires GCC 5.0+ or Clang
+	  5.0+, binutils 2.26+, and zlib.
+
+	  Users of dpkg-deb via debian/rules may find an increase in
+	  size of their debug .deb packages with this config set, due to the
+	  debug info being compressed with zlib, then the object files being
+	  recompressed with a different compression scheme. But this is still
+	  preferable to setting KDEB_COMPRESS or DPKG_DEB_COMPRESSOR_TYPE to
+	  "none" which would be even larger.
+
+config DEBUG_INFO_COMPRESSED_ZSTD
+	bool "Compress debugging information with zstd"
+	depends on $(cc-option,-gz=zstd)
+	depends on $(ld-option,--compress-debug-sections=zstd)
+	help
+	  Compress the debug information using zstd.  This may provide better
+	  compression than zlib, for about the same time costs, but requires newer
+	  toolchain support.  Requires GCC 13.0+ or Clang 16.0+, binutils 2.40+, and
+	  zstd.
+
+endchoice # "Compressed Debug information"
+
+config DEBUG_INFO_SPLIT
+	bool "Produce split debuginfo in .dwo files"
+	depends on $(cc-option,-gsplit-dwarf)
+	# RISC-V linker relaxation + -gsplit-dwarf has issues with LLVM and GCC
+	# prior to 12.x:
+	# https://github.com/llvm/llvm-project/issues/56642
+	# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99090
+	depends on !RISCV || GCC_VERSION >= 120000
+	help
+	  Generate debug info into separate .dwo files. This significantly
+	  reduces the build directory size for builds with DEBUG_INFO,
+	  because it stores the information only once on disk in .dwo
+	  files instead of multiple times in object files and executables.
+	  In addition the debug information is also compressed.
+
+	  Requires recent gcc (4.7+) and recent gdb/binutils.
+	  Any tool that packages or reads debug information would need
+	  to know about the .dwo files and include them.
+	  Incompatible with older versions of ccache.
+
+endif # DEBUG_INFO
+
 source "common/Kconfig.debug_ll"
 
 config ARCH_WANT_FRAME_POINTERS

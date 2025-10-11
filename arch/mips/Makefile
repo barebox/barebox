@@ -88,15 +88,8 @@ machdirs := $(patsubst %,arch/mips/mach-%/,$(machine-y))
 KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 
 ifneq ($(machine-y),)
-MACH  := arch/mips/mach-$(machine-y)/
-else
-MACH  :=
+core-y += arch/mips/mach-$(machine-y)/
 endif
-
-common-y += $(MACH)
-common-y += arch/mips/lib/
-common-y += arch/mips/boot/
-common-y += arch/mips/boards/
 
 KBUILD_CPPFLAGS += $(cflags-y)
 KBUILD_CFLAGS += $(cflags-y)
@@ -116,7 +109,5 @@ dts := arch/mips/dts
 
 %.dtb: scripts
 	$(Q)$(MAKE) $(build)=$(dts) $(dts)/$@
-
-common-$(CONFIG_OFTREE) += arch/mips/dts/
 
 KBUILD_IMAGE ?= $(KBUILD_BINARY)

@@ -52,7 +52,8 @@ else
 MACH  :=
 endif
 
-common-y += $(BOARD) $(MACH) arch/powerpc/
+core-y += $(BOARD)
+core-y += $(MACH)
 
 ifdef CONFIG_MPC85xx
 lds-y += $(MACH)/barebox.lds

@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-2.0
+
+pbl_cppflags := -D__PBL__ -fdata-sections -ffunction-sections
+
+ifeq ($(CONFIG_DEBUG_PBL),y)
+pbl_cppflags += -DDEBUG
+endif
+
+ifeq ($(CONFIG_PBL_FULLY_PIC),y)
+include $(srctree)/scripts/Makefile.pic
+pbl_cppflags += $(picflags-y)
+endif
+
+_stackp_flags_pbl-y                                    := -fno-stack-protector
+_stackp_flags_pbl-$(CONFIG_PBL_STACKPROTECTOR_STRONG)  := -fstack-protector-strong
+_stackp_flags_pbl-$(CONFIG_PBL_STACKPROTECTOR_ALL)     := -fstack-protector-all
+
+pbl_cppflags += $(_stackp_flags_pbl-y)
+
+# As Linux has no concept of PBL, the $(error ...) here
+# is a sanity check to catch issues when updating Kbuild
+assert-no-pbl-objs = $(if $(filter %.pbl.o,$@),\
+	$(error $@: pbl object compiled for non-pbl))
+
+_c_flags += $(if $(part-of-pbl),$(pbl_cppflags),$(assert-no-pbl-objs))
+_a_flags += $(if $(part-of-pbl),$(pbl_cppflags),$(assert-no-pbl-objs))
+
+# Decompressor for barebox proper binary when using PBL
+# ---------------------------------------------------------------------------
+
+suffix_y = comp_copy
+suffix_$(CONFIG_IMAGE_COMPRESSION_GZIP) = gzip
+suffix_$(CONFIG_IMAGE_COMPRESSION_LZO) = lzo_with_size
+suffix_$(CONFIG_IMAGE_COMPRESSION_LZ4) = lz4_with_size
+suffix_$(CONFIG_IMAGE_COMPRESSION_XZKERN) = xzkern_with_size
+suffix_$(CONFIG_IMAGE_COMPRESSION_NONE) = comp_copy

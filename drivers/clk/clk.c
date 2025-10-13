@@ -302,6 +302,9 @@ int clk_set_parent(struct clk *clk, struct clk *newparent)
 	if (IS_ERR(newparent))
 		return PTR_ERR(newparent);
 
+	if (newparent == curparent)
+		return 0;
+
 	if (!clk->num_parents)
 		return -EINVAL;
 	if (!clk->ops->set_parent)

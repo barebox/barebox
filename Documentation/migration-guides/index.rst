@@ -9,8 +9,6 @@ configuration and downstream board support. barebox API breakage that
 cause build errors are generally out-of-scope for these documents.
 
 .. toctree::
+   :glob:
 
-   migration-2025.05.0
-   migration-2025.06.0
-   migration-2025.07.0
-   migration-2025.08.0
+   migration-20*

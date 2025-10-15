@@ -2561,10 +2561,37 @@ out:
 	return errno_set(error);
 }
 
+static int do_dentry_open(struct file *f)
+{
+	int error;
+
+	f->f_inode = d_inode(f->f_path.dentry);
+
+	if (unlikely(f->f_flags & O_PATH))
+		return 0;
+
+	if (f->f_inode->i_fop->open) {
+		error = f->f_inode->i_fop->open(f->f_inode, f);
+		if (error)
+			return error;
+	}
+
+	if (f->f_flags & O_TRUNC) {
+		error = fsdev_truncate(f, 0);
+		f->f_size = 0;
+		if (error)
+			return error;
+	}
+
+	if (f->f_flags & O_APPEND)
+		f->f_pos = f->f_size;
+
+	return 0;
+}
+
 int openat(int dirfd, const char *pathname, int flags)
 {
 	struct fs_device *fsdev;
-	struct fs_driver *fsdrv;
 	struct super_block *sb;
 	struct file *f;
 	int error = 0;
@@ -2660,29 +2687,13 @@ int openat(int dirfd, const char *pathname, int flags)
 
 	f->path = dpath(dentry, d_root);
 	f->f_path = path;
-	f->f_inode = iget(inode);
 	f->f_flags = flags;
 
-	fsdrv = fsdev->driver;
+	iget(inode);
 
-	if (flags & O_PATH)
-		return file_to_fd(f);
-
-	if (f->f_inode->i_fop->open) {
-		error = f->f_inode->i_fop->open(inode, f);
-		if (error)
-			goto out;
-	}
-
-	if (flags & O_TRUNC) {
-		error = fsdev_truncate(f, 0);
-		f->f_size = 0;
-		if (error)
-			goto out;
-	}
-
-	if (flags & O_APPEND)
-		f->f_pos = f->f_size;
+	error = do_dentry_open(f);
+	if (error)
+		goto out;
 
 	return file_to_fd(f);
 

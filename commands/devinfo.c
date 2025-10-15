@@ -117,6 +117,10 @@ static int do_devinfo(int argc, char *argv[])
 				printf("\n");
 				of_print_nodes(dev->of_node, 0, ~0);
 			}
+
+			if (dev == of_platform_root_device)
+				printf("Deep probe: %s\n",
+				       deep_probe_is_supported() ? "true" : "false");
 		}
 #endif
 	}

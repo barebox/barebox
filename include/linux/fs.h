@@ -443,6 +443,7 @@ struct inode_operations {
 	int (*rmdir) (struct inode *,struct dentry *);
 	int (*rename) (struct inode *, struct dentry *,
 		       struct inode *, struct dentry *, unsigned int);
+	int (*tmpfile)(struct inode *, struct file *, umode_t);
 };
 
 static inline ino_t parent_ino(struct dentry *dentry)
@@ -496,6 +497,8 @@ void drop_nlink(struct inode *inode);
 extern const struct file_operations simple_dir_operations;
 extern const struct inode_operations simple_symlink_inode_operations;
 
+extern void d_tmpfile(struct file *, struct inode *);
+
 int simple_empty(struct dentry *dentry);
 int simple_unlink(struct inode *dir, struct dentry *dentry);
 int simple_rmdir(struct inode *dir, struct dentry *dentry);
@@ -520,5 +523,28 @@ static inline void inode_init_owner(struct inode *inode,
 }
 
 static inline void mark_inode_dirty(struct inode *inode) {}
+
+int finish_open(struct file *file, struct dentry *dentry);
+
+/* Helper for the simple case when original dentry is used */
+static inline int finish_open_simple(struct file *file, int error)
+{
+	if (error)
+		return error;
+
+	return finish_open(file, file->f_path.dentry);
+}
+
+static inline void inode_inc_link_count(struct inode *inode)
+{
+	inc_nlink(inode);
+	mark_inode_dirty(inode);
+}
+
+static inline void inode_dec_link_count(struct inode *inode)
+{
+	drop_nlink(inode);
+	mark_inode_dirty(inode);
+}
 
 #endif /* _LINUX_FS_H */

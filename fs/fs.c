@@ -2589,6 +2589,70 @@ static int do_dentry_open(struct file *f)
 	return 0;
 }
 
+/**
+ * finish_open - finish opening a file
+ * @file: file pointer
+ * @dentry: pointer to dentry
+ *
+ * If the open callback is set to NULL, then the standard f_op->open()
+ * filesystem callback is substituted.
+ *
+ * In Linux, this function accepts an open callback, but we don't yet
+ * need this in barebox. Thus the standard f_op()->open() callback
+ * will be used for non-O_PATH.
+ *
+ * Returns zero on success or -errno if the open failed.
+ */
+int finish_open(struct file *file, struct dentry *dentry)
+{
+	file->f_path.dentry = dentry;
+	return do_dentry_open(file);
+}
+
+/**
+ * tmpfile_create - create tmpfile
+ * @parentpath:	pointer to the path of the base directory
+ * @mode:	mode of the new tmpfile
+ * @flags:	flags used to open the file
+ *
+ * Create a temporary file.
+ */
+static struct file *tmpfile_create(const struct path *parentpath,
+				   umode_t mode, int flags)
+{
+	struct inode *dir = d_inode(parentpath->dentry);
+	struct fs_device *fsdev;
+	struct file *f;
+	int error;
+
+	fsdev = get_fsdevice_by_dentry(parentpath->dentry);
+	if (!fsdev)
+		return ERR_PTR(-ENOENT);
+
+	if (!dir->i_op->tmpfile)
+		return ERR_PTR(-EOPNOTSUPP);
+
+	f = get_file(fsdev);
+	if (!f)
+		return ERR_PTR(-EMFILE);
+
+	f->f_path.mnt = parentpath->mnt;
+	f->f_path.dentry = d_alloc_anon(&fsdev->sb);
+	f->f_flags = flags;
+
+	error = dir->i_op->tmpfile(dir, f, mode);
+
+	free(f->f_path.dentry);
+	f->f_path.dentry = NULL;
+
+	if (error) {
+		put_file(f);
+		return ERR_PTR(error);
+	}
+
+	return f;
+}
+
 int openat(int dirfd, const char *pathname, int flags)
 {
 	struct fs_device *fsdev;
@@ -2604,33 +2668,10 @@ int openat(int dirfd, const char *pathname, int flags)
 		if (error)
 			return errno_set(error);
 
-		fsdev = get_fsdevice_by_dentry(path.dentry);
+		f = tmpfile_create(&path, S_IFREG, flags);
 		path_put(&path);
 
-		if (!fsdev) {
-			errno = ENOENT;
-			return -errno;
-		}
-
-		if (fsdev->driver != ramfs_driver) {
-			errno = EOPNOTSUPP;
-			return -errno;
-		}
-
-		f = get_file(fsdev);
-		if (!f) {
-			errno = EMFILE;
-			return -errno;
-		}
-
-		f->path = NULL;
-		f->f_path.dentry = NULL;
-		f->f_inode = new_inode(&fsdev->sb);
-		f->f_inode->i_mode = S_IFREG;
-		f->f_flags = flags;
-		f->f_size = 0;
-
-		return file_to_fd(f);
+		return errno_setp(f) ?: file_to_fd(f);
 	}
 
 	if (flags & O_CREAT) {
@@ -2988,6 +3029,19 @@ static char *__dpath(struct dentry *dentry, struct dentry *root)
 
 	return res;
 }
+
+void d_tmpfile(struct file *file, struct inode *inode)
+{
+	struct dentry *dentry = file->f_path.dentry;
+
+	inode_dec_link_count(inode);
+
+	file->path = xasprintf(dentry->name, "#%llu",
+			       (unsigned long long)inode->i_ino);
+
+	d_instantiate(dentry, inode);
+}
+EXPORT_SYMBOL(d_tmpfile);
 
 /**
  * dpath - return path of a dentry

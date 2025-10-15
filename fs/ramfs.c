@@ -174,6 +174,19 @@ static const struct inode_operations ramfs_symlink_inode_operations =
 	.get_link = ramfs_get_link,
 };
 
+static int ramfs_tmpfile(struct inode *dir, struct file *file, umode_t mode)
+{
+	struct inode *inode;
+
+	inode = ramfs_get_inode(dir->i_sb, dir, mode);
+	if (!inode)
+		return -ENOSPC;
+
+	d_tmpfile(file, inode);
+
+	return finish_open_simple(file, 0);
+}
+
 static const struct inode_operations ramfs_dir_inode_operations =
 {
 	.lookup = simple_lookup,
@@ -182,6 +195,7 @@ static const struct inode_operations ramfs_dir_inode_operations =
 	.rmdir = simple_rmdir,
 	.unlink = simple_unlink,
 	.create = ramfs_create,
+	.tmpfile = ramfs_tmpfile,
 };
 
 static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node,

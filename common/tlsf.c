@@ -77,10 +77,7 @@ enum tlsf_private
 ** Static assertion mechanism.
 */
 
-#define _tlsf_glue2(x, y) x ## y
-#define _tlsf_glue(x, y) _tlsf_glue2(x, y)
-#define tlsf_static_assert(exp) \
-	typedef char _tlsf_glue(static_assert, __LINE__) [(exp) ? 1 : -1]
+#define tlsf_static_assert static_assert
 
 /* This code has been tested on 32- and 64-bit (LP/LLP) architectures. */
 tlsf_static_assert(sizeof(int) * CHAR_BIT == 32);

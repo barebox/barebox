@@ -60,8 +60,6 @@ static struct dentry *legacy_lookup(struct inode *dir, struct dentry *dentry,
 	int ret;
 
 	pathname = dpath(dentry, fsdev->vfsmount.mnt_root);
-	if (!pathname)
-		return NULL;
 
 	ret = legacy_ops->stat(&fsdev->dev, pathname, &s);
 	if (!ret) {

@@ -3022,9 +3022,9 @@ static char *__dpath(struct dentry *dentry, struct dentry *root)
 
 	ppath = __dpath(dentry->d_parent, root);
 	if (ppath)
-		res = basprintf("%s/%s", ppath, dentry->d_name.name);
+		res = xasprintf("%s/%s", ppath, dentry->d_name.name);
 	else
-		res = basprintf("/%s", dentry->d_name.name);
+		res = xasprintf("/%s", dentry->d_name.name);
 	free(ppath);
 
 	return res;
@@ -3058,7 +3058,7 @@ char *dpath(struct dentry *dentry, struct dentry *root)
 	char *res;
 
 	if (dentry == root)
-		return strdup("/");
+		return xstrdup("/");
 
 	res = __dpath(dentry, root);
 

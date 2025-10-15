@@ -16,8 +16,7 @@ static struct inode *legacy_get_inode(struct super_block *sb, const struct inode
 
 static int legacy_iterate(struct file *file, struct dir_context *ctx)
 {
-	struct dentry *dentry = file->f_path.dentry;
-	struct inode *dir = d_inode(dentry);
+	struct inode *dir = d_inode(file->f_path.dentry);
 	struct super_block *sb = dir->i_sb;
 	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	const struct fs_legacy_ops *legacy_ops = fsdev->driver->legacy_ops;
@@ -27,7 +26,7 @@ static int legacy_iterate(struct file *file, struct dir_context *ctx)
 
 	dir_emit_dots(file, ctx);
 
-	pathname = dpath(dentry, fsdev->vfsmount.mnt_root);
+	pathname = filepath(file);
 
 	d = legacy_ops->opendir(&fsdev->dev, pathname);
 	if (!d)
@@ -87,7 +86,8 @@ static int legacy_open(struct inode *inode, struct file *file)
 	if (!legacy_ops->open)
 		return 0;
 
-	pathname = dpath(file->f_path.dentry, fsdev->vfsmount.mnt_root);
+	pathname = filepath(file);
+
 	error = legacy_ops->open(&file->fsdev->dev, file, pathname);
 	free(pathname);
 

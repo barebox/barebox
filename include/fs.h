@@ -172,4 +172,9 @@ static inline const char *devpath_to_name(const char *devpath)
 
 const char *fs_detect(const char *filename, const char *fsoptions);
 
+static inline char *filepath(struct file *f)
+{
+	return dpath(f->f_path.dentry, f->fsdev->vfsmount.mnt_root);
+}
+
 #endif /* __FS_H */

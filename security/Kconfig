@@ -16,6 +16,7 @@ config INSECURE
 	  This option is a moving target. Currently it:
 
 	    - changes the default of global.env.autoprobe to 1
+	    - allows enablement of CRYPTO_BUILTIN_DEVELOPMENT_KEYS
 
 source "security/Kconfig.policy"
 
@@ -79,7 +80,7 @@ endchoice
 endif
 
 config CRYPTO_BUILTIN_DEVELOPMENT_KEYS
-	select HAS_INSECURE_DEFAULTS
+	depends on INSECURE
 	depends on CRYPTO_BUILTIN_KEYS
 	bool "Include development keys in build"
 	help

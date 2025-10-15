@@ -108,7 +108,11 @@ static int do_devinfo(int argc, char *argv[])
 			       dev_is_dma_coherent(dev) ? "true" : "false",
 			       dev->dma_coherent == DEV_DMA_COHERENCE_DEFAULT ? " (default)" : "");
 
-			printf("Device node: %pOF", dev->of_node);
+			if (dev->of_node->parent)
+				printf("Device node: %pOF", dev->of_node);
+			else
+				printf("Device node: %s", "/");
+
 			if (!main_dev) {
 			       printf(" (unpopulated)\n");
 			} else if (main_dev != dev) {

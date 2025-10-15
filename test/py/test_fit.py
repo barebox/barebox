@@ -52,9 +52,6 @@ def fit_testdata(barebox_config, testfs):
     except FileNotFoundError as e:
         pytest.skip(f"Skip dm tests due to missing dependency: {e}")
 
-    yield
-
-    os.remove(outfile)
 
 def test_fit(barebox, target, testfs, fit_testdata):
     _, _, returncode = barebox.run(f"ls {fit_name('gzipped')}")

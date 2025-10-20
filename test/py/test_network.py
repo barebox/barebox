@@ -5,6 +5,7 @@ import socket
 import threading
 import re
 import warnings
+from .helper import skip_disabled
 
 # Setting the port to zero causes bind to choose a random ephermal port
 TFTP_TEST_PORT = 0
@@ -64,7 +65,9 @@ def tftp_conversation(barebox, barebox_interface, guestaddr):
         barebox.run_check("ifdown eth0")
 
 
-def test_barebox_network(barebox, env):
+def test_barebox_network(barebox, barebox_config, env):
+    skip_disabled(barebox_config, "CONFIG_CMD_TFTP")
+
     # on DUTs without network feature, this is expected to fail
     # set xfail_strict=True to enforce specifying the network feature if available
     if not 'network' in env.get_target_features():

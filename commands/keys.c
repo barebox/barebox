@@ -5,8 +5,9 @@
 static int do_keys(int argc, char *argv[])
 {
 	const struct public_key *key;
+	int id;
 
-	for_each_public_key(key) {
+	for_each_public_key(key, id) {
 		printf("KEY: %*phN", key->hashlen, key->hash);
 
 		if (key->key_name_hint)

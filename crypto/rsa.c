@@ -384,6 +384,7 @@ static void rsa_convert_big_endian(uint32_t *dst, const uint32_t *src, int len)
 struct public_key *rsa_of_read_key(struct device_node *node)
 {
 	const void *modulus, *rr;
+	void *brr, *bmodulus;
 	const uint64_t *public_exponent;
 	int length;
 	struct public_key *key;
@@ -394,7 +395,8 @@ struct public_key *rsa_of_read_key(struct device_node *node)
 		return ERR_PTR(-EINVAL);
 
 	key = xzalloc(sizeof(*key));
-	rsa = key->rsa = xzalloc(sizeof(*rsa));
+	rsa = xzalloc(sizeof(*rsa));
+	key->rsa = rsa;
 
 	key->key_name_hint = xstrdup(node->name + 4);
 
@@ -426,11 +428,14 @@ struct public_key *rsa_of_read_key(struct device_node *node)
 
 	rsa->len /= sizeof(uint32_t) * 8;
 
-	rsa->modulus = xzalloc(RSA_MAX_KEY_BITS / 8);
-	rsa->rr = xzalloc(RSA_MAX_KEY_BITS / 8);
+	bmodulus = xzalloc(RSA_MAX_KEY_BITS / 8);
+	brr = xzalloc(RSA_MAX_KEY_BITS / 8);
 
-	rsa_convert_big_endian(rsa->modulus, modulus, rsa->len);
-	rsa_convert_big_endian(rsa->rr, rr, rsa->len);
+	rsa_convert_big_endian(bmodulus, modulus, rsa->len);
+	rsa->modulus = bmodulus;
+
+	rsa_convert_big_endian(brr, rr, rsa->len);
+	rsa->rr = brr;
 
 	err = 0;
 out:

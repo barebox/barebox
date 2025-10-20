@@ -447,24 +447,6 @@ out:
 	return err ? ERR_PTR(err) : key;
 }
 
-void rsa_key_free(struct rsa_public_key *key)
-{
-	free(key->modulus);
-	free(key->rr);
-	free(key);
-}
-
-struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
-{
-	struct rsa_public_key *new;
-
-	new = xmemdup(key, sizeof(*key));
-	new->modulus = xmemdup(key->modulus, key->len * sizeof(uint32_t));
-	new->rr = xmemdup(key->rr, key->len  * sizeof(uint32_t));
-
-	return new;
-}
-
 static void rsa_init_keys_of(void)
 {
 	struct device_node *sigs, *sig;

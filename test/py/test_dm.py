@@ -2,7 +2,7 @@
 
 import re
 import pytest
-from .helper import of_get_property
+from .helper import skip_disabled
 
 import os, subprocess, shutil
 
@@ -59,7 +59,10 @@ def reset_pwd(barebox):
     yield
     barebox.run("cd")
 
-def test_dm_verity(barebox, dm_testdata):
+
+def test_dm_verity(barebox, barebox_config, dm_testdata):
+    skip_disabled(barebox_config, "CONFIG_CMD_VERITYSETUP")
+
     barebox.run_check("cd /mnt/9p/testfs/dm")
 
     # Since commands run in a subshell, export the root hash in a

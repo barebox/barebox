@@ -1,7 +1,10 @@
+# SPDX-License-Identifier: GPL-2.0-only
 import pytest
 import os
 import argparse
+from labgrid.exceptions import NoDriverFoundError
 from test.py import helper
+
 
 def transition_to_barebox(request, strategy):
     try:
@@ -15,10 +18,12 @@ def transition_to_barebox(request, strategy):
             pytest.exit(f"{type(e).__name__}(\"{e}\"). Standard error:\n{stderr}",
                         returncode=3)
 
+
 @pytest.fixture(scope='function')
 def barebox(request, strategy, target):
     transition_to_barebox(request, strategy)
     return target.get_driver('BareboxDriver')
+
 
 @pytest.fixture(scope="session")
 def barebox_config(request, strategy, target):
@@ -87,39 +92,40 @@ def pytest_configure(config):
 
 def pytest_addoption(parser):
     def assignment(arg):
-            return arg.split('=', 1)
+        return arg.split('=', 1)
 
     parser.addoption('--interactive', action='store_const', const='qemu_interactive',
-        dest='lg_initial_state',
-        help=('(for debugging) skip tests and just start Qemu interactively'))
+                     dest='lg_initial_state',
+                     help=('(for debugging) skip tests and just start Qemu interactively'))
     parser.addoption('--dry-run', action='store_const', const='qemu_dry_run',
-        dest='lg_initial_state',
-        help=('(for debugging) skip tests and just print Qemu command line'))
+                     dest='lg_initial_state',
+                     help=('(for debugging) skip tests and just print Qemu command line'))
     parser.addoption('--dump-dtb', action='store_const', const='qemu_dump_dtb',
-        dest='lg_initial_state',
-        help=('(for debugging) skip tests and just dump the Qemu device tree'))
+                     dest='lg_initial_state',
+                     help=('(for debugging) skip tests and just dump the Qemu device tree'))
     parser.addoption('--graphic', '--graphics', action='store_true', dest='qemu_graphics',
-        help=('enable QEMU graphics output'))
+                     help=('enable QEMU graphics output'))
     parser.addoption('--rng', action='count', dest='qemu_rng',
-        help=('instantiate Virt I/O random number generator'))
+                     help=('instantiate Virt I/O random number generator'))
     parser.addoption('--console', action='count', dest='qemu_console', default=0,
-        help=('Pass an extra console (Virt I/O or ns16550_pci) to emulated barebox'))
+                     help=('Pass an extra console (Virt I/O or ns16550_pci) to emulated barebox'))
     parser.addoption('--fs', action='append', dest='qemu_fs',
-        default=[], metavar="[tag=]DIR", type=assignment,
-        help=('Pass directory trees to emulated barebox. Can be specified more than once'))
+                     default=[], metavar="[tag=]DIR", type=assignment,
+                     help=('Pass directory trees to emulated barebox. Can be specified more than once'))  # noqa
     parser.addoption('--blk', action='append', dest='qemu_block',
-        default=[], metavar="FILE",
-        help=('Pass block device to emulated barebox. Can be specified more than once'))
-    parser.addoption('--env', action='append', dest='qemu_fw_cfg',
-        default=[], metavar="[envpath=]content | [envpath=]@filepath", type=assignment,
-        help=('Pass barebox environment files to barebox. Can be specified more than once'))
+                     default=[], metavar="FILE",
+                     help=('Pass block device to emulated barebox. Can be specified more than once'))  # noqa
+    parser.addoption('--env', action='append', dest='qemu_fw_cfg', type=assignment,
+                     default=[], metavar="[envpath=]content | [envpath=]@filepath",
+                     help=('Pass barebox environment files to barebox. Can be specified more than once'))  # noqa
     parser.addoption('--qemu', dest='qemu_arg', nargs=argparse.REMAINDER, default=[],
-        help=('Pass all remaining options to QEMU as is'))
+                     help=('Pass all remaining options to QEMU as is'))
     parser.addoption('--bootarg', action='append', dest='bootarg', default=[],
-        help=('Pass boot arguments to barebox for debugging purposes'))
+                     help=('Pass boot arguments to barebox for debugging purposes'))
+
 
 @pytest.fixture(scope="session")
-def strategy(request, target, pytestconfig):
+def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
     try:
         strategy = target.get_driver("Strategy")
     except NoDriverFoundError as e:
@@ -231,6 +237,7 @@ def strategy(request, target, pytestconfig):
         strategy.force(state)
 
     return strategy
+
 
 @pytest.fixture(scope="session")
 def testfs(strategy, env):

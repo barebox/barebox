@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 from labgrid.driver import BareboxDriver
 import pytest
 import os
@@ -113,6 +115,7 @@ def getstate_int(barebox, var, prefix="state.bootstate"):
 def getparam_int(info, var):
     return int(info["Parameters"][var].split()[0])
 
+
 def of_get_property(barebox, path):
     node, prop = os.path.split(path)
 
@@ -126,6 +129,7 @@ def of_get_property(barebox, path):
             # Also drop the semicolon
             return line[len(prefix):-1]
     return False
+
 
 def skip_disabled(config, *options):
     if bool(config):

@@ -1,13 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-import re
 import pytest
+import os
+import subprocess
+import shutil
 from .helper import skip_disabled
 
-import os, subprocess, shutil
 
 def pad128k(f):
     f.write(b"\0" * 128 * 1024)
+
 
 @pytest.fixture(scope="module")
 def dm_testdata(testfs):
@@ -29,7 +31,8 @@ def dm_testdata(testfs):
     try:
         subprocess.run(["truncate", "-s", "1M", "good.fat"], check=True)
         subprocess.run(["mkfs.vfat", "good.fat"], check=True)
-        subprocess.run(["mcopy", "-i", "good.fat", "latin", "english", "::"], check=True)
+        subprocess.run(["mcopy", "-i", "good.fat", "latin", "english", "::"],
+                       check=True)
 
         subprocess.run([
             "veritysetup", "format",
@@ -41,7 +44,8 @@ def dm_testdata(testfs):
         shutil.rmtree(path)
         pytest.skip(f"missing dependency: {e}")
 
-    with open("good.fat", "rb") as f: data = f.read()
+    with open("good.fat", "rb") as f:
+        data = f.read()
     with open("bad.fat", "wb") as f:
         f.write(data.replace(
             b"truth will set you free",
@@ -53,6 +57,7 @@ def dm_testdata(testfs):
     yield path
 
     shutil.rmtree(path)
+
 
 @pytest.fixture(autouse=True)
 def reset_pwd(barebox):

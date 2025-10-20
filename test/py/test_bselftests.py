@@ -1,5 +1,7 @@
-import pytest
-from .helper import *
+# SPDX-License-Identifier: GPL-2.0-only
+
+from .helper import skip_disabled
+
 
 def test_bselftest(barebox, barebox_config):
     skip_disabled(barebox_config, "CONFIG_CMD_SELFTEST")

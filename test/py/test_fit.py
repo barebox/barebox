@@ -41,14 +41,19 @@ def fit_testdata(barebox_config, testfs):
             input=(builddir / "images" / "barebox-dt-2nd.img").read_bytes(),
             stdout=open(builddir / "barebox-dt-2nd.img.gz", "wb"))
 
-        find = subprocess.Popen(["find", "COPYING", "LICENSES/"], stdout=subprocess.PIPE)
-        cpio = subprocess.Popen(["cpio", "-o", "-H", "newc"], stdin=find.stdout, stdout=subprocess.PIPE)
+        find = subprocess.Popen(["find", "COPYING", "LICENSES/"],
+                                stdout=subprocess.PIPE)
+        cpio = subprocess.Popen(["cpio", "-o", "-H", "newc"],
+                                stdin=find.stdout, stdout=subprocess.PIPE)
         gzip = subprocess.Popen(["gzip"], stdin=cpio.stdout,
                                 stdout=open(builddir / "ramdisk.cpio.gz", "wb"))
-        find.wait(); cpio.wait(); gzip.wait()
 
-        run([ "mkimage", "-G", "test/self/development_rsa2048.pem", "-r", "-f",
-             str(builddir / its_name), str(outfile) ])
+        find.wait()
+        cpio.wait()
+        gzip.wait()
+
+        run(["mkimage", "-G", "test/self/development_rsa2048.pem", "-r", "-f",
+             str(builddir / its_name), str(outfile)])
     except FileNotFoundError as e:
         pytest.skip(f"Skip dm tests due to missing dependency: {e}")
 

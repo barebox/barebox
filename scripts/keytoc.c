@@ -529,14 +529,14 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "\nstatic uint64_t %s_x[] = {", key_name_c);
+		fprintf(outfilep, "\nstatic const uint64_t %s_x[] = {", key_name_c);
 		ret = print_bignum(key_x, bits, 64);
 		if (ret)
 			return ret;
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static uint64_t %s_y[] = {", key_name_c);
+		fprintf(outfilep, "static const uint64_t %s_y[] = {", key_name_c);
 		ret = print_bignum(key_y, bits, 64);
 		if (ret)
 			return ret;
@@ -627,14 +627,14 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "\nstatic uint32_t %s_modulus[] = {", key_name_c);
+		fprintf(outfilep, "\nstatic const uint32_t %s_modulus[] = {", key_name_c);
 		ret = print_bignum(modulus, bits, 32);
 		if (ret)
 			return ret;
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static uint32_t %s_rr[] = {", key_name_c);
+		fprintf(outfilep, "static const uint32_t %s_rr[] = {", key_name_c);
 		ret = print_bignum(r_squared, bits, 32);
 		if (ret)
 			return ret;

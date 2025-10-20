@@ -14,13 +14,13 @@ enum public_key_type {
 
 struct public_key {
 	enum public_key_type type;
-	char *key_name_hint;
-	unsigned char *hash;
+	const char *key_name_hint;
+	const unsigned char *hash;
 	unsigned int hashlen;
 
 	union {
-		struct rsa_public_key *rsa;
-		struct ecdsa_public_key *ecdsa;
+		const struct rsa_public_key *rsa;
+		const struct ecdsa_public_key *ecdsa;
 	};
 };
 

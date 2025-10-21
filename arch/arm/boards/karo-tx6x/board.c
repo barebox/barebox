@@ -115,7 +115,7 @@ static int tx6x_devices_init(void)
 		of_device_enable_and_register_by_name("environment-nand");
 		of_device_enable_and_register_by_alias("nand");
 	} else {
-		imx6_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc3.boot0",
+		imx6_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc3",
 						       BBU_HANDLER_FLAG_DEFAULT);
 		of_device_enable_and_register_by_name("environment-emmc");
 		of_device_enable_and_register_by_alias("mmc3");

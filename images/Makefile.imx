@@ -530,3 +530,7 @@ image-$(CONFIG_MACH_TQMA93XX) += barebox-tqma93xx.img
 pblb-$(CONFIG_MACH_PHYTEC_PHYCORE_IMX93) += start_imx93_phyboard_segin
 FILE_barebox-phyboard_segin.img = start_imx93_phyboard_segin.pblb.imx9img
 image-$(CONFIG_MACH_PHYTEC_PHYCORE_IMX93) += barebox-phyboard_segin.img
+
+pblb-$(CONFIG_MACH_NXP_IMX93_FRDM) += start_imx93_nxp_mx93_frdm
+FILE_barebox-nxp_mx93_frdm.img = start_imx93_nxp_mx93_frdm.pblb.imx9img
+image-$(CONFIG_MACH_NXP_IMX93_FRDM) += barebox-nxp_mx93_frdm.img

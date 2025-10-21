@@ -51,33 +51,26 @@ PHONY += maketools
 
 export SANDBOX_LIBS BAREBOX_LDFLAGS
 
-ifeq ($(CONFIG_SDL),y)
-SANDBOX_LIBS += $(shell $(CROSS_PKG_CONFIG) sdl2 --libs)
-endif
-
-ifeq ($(CONFIG_GPIO_LIBFTDI1),y)
-SANDBOX_LIBS += $(shell $(CROSS_PKG_CONFIG) libftdi1 --libs)
-endif
+SANDBOX_LIBS-$(CONFIG_SDL) += $(shell $(CROSS_PKG_CONFIG) sdl2 --libs)
+SANDBOX_LIBS-$(CONFIG_GPIO_LIBFTDI1) += $(shell $(CROSS_PKG_CONFIG) libftdi1 --libs)
 
 ifeq ($(CONFIG_ASAN),y)
 KBUILD_CPPFLAGS += -fsanitize=address
-SANDBOX_LIBS += -fsanitize=address
+SANDBOX_LIBS-y += -fsanitize=address
 ifeq ($(CONFIG_CC_IS_CLANG),y)
 KBUILD_CPPFLAGS += -fno-sanitize-address-globals-dead-stripping
-SANDBOX_LIBS += -fno-sanitize-address-globals-dead-stripping
+SANDBOX_LIBS-y += -fno-sanitize-address-globals-dead-stripping
 endif
 endif
 
-ifeq ($(CONFIG_UBSAN),y)
-SANDBOX_LIBS += -fsanitize=undefined
-endif
+SANDBOX_LIBS-$(CONFIG_UBSAN) += -fsanitize=undefined
 
 ifeq ($(CONFIG_FUZZ_EXTERNAL),y)
 LIBARCH-y = $(UNAME_M)
 LIBARCH-$(CONFIG_SANDBOX_LINUX_I386) = i386
 
 KBUILD_CPPFLAGS += -fsanitize=fuzzer-no-link
-SANDBOX_LIBS += -Wl,-Bstatic -L"$(CONFIG_CLANG_RUNTIME_DIR)" \
+SANDBOX_LIBS-y += -Wl,-Bstatic -L"$(CONFIG_CLANG_RUNTIME_DIR)" \
 		-lclang_rt.fuzzer_no_main-$(LIBARCH-y) -Wl,-Bdynamic
 endif
 
@@ -94,6 +87,8 @@ KBUILD_LDFLAGS += -m elf_i386
 KBUILD_AFLAGS += -m32
 BAREBOX_LDFLAGS += -m32
 endif
+
+SANDBOX_LIBS += $(SANDBOX_LIBS-y)
 
 common-y += $(BOARD) arch/sandbox/os/ arch/sandbox/lib/
 

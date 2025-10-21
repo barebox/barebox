@@ -6,6 +6,7 @@ import attr
 import pytest
 import subprocess
 import re
+from contextlib import contextmanager
 
 from labgrid import target_factory, step, driver
 from labgrid.strategy import Strategy, StrategyError
@@ -70,6 +71,20 @@ class BareboxTestStrategy(Strategy):
                 format(self.status, status)
             )
         self.status = status
+
+    @contextmanager
+    def boot(self, boottarget=None):
+        self.transition(Status.barebox)
+
+        try:
+            self.barebox.boot(boottarget)
+            self.target.deactivate(self.barebox)
+            self.target.activate(self.barebox)
+            yield
+        finally:
+            self.target.deactivate(self.barebox)
+            self.power.cycle()
+            self.target.activate(self.barebox)
 
     def force(self, state):
         self.transition(Status.off)  # pylint: disable=missing-kwoa

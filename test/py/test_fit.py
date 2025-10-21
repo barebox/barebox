@@ -58,7 +58,7 @@ def fit_testdata(barebox_config, testfs):
         pytest.skip(f"Skip dm tests due to missing dependency: {e}")
 
 
-def test_fit(barebox, target, testfs, fit_testdata):
+def test_fit(barebox, strategy, testfs, fit_testdata):
     _, _, returncode = barebox.run(f"ls {fit_name('gzipped')}")
     if returncode != 0:
         pytest.xfail("skipping test due to missing FIT image")
@@ -77,25 +77,23 @@ def test_fit(barebox, target, testfs, fit_testdata):
     barebox.run_check("global linux.bootargs.testarg=barebox.chainloaded")
 
     boottarget = generate_bootscript(barebox, fit_name('gzipped'))
-    barebox.boot(boottarget)
-    target.deactivate(barebox)
-    target.activate(barebox)
 
-    assert of_get_property(barebox, "/chosen/barebox-version") == f'"{ver}"', \
-           "/chosen/barebox-version suggests we did not chainload"
+    with strategy.boot(boottarget):
+        assert of_get_property(barebox, "/chosen/barebox-version") == f'"{ver}"', \
+               "/chosen/barebox-version suggests we did not chainload"
 
-    assert of_get_property(barebox, "/chosen/barebox,boot-count") == '<0x1>', \
-           "/chosen/barebox,boot-count suggests we got bultin DT"
+        assert of_get_property(barebox, "/chosen/barebox,boot-count") == '<0x1>', \
+               "/chosen/barebox,boot-count suggests we got bultin DT"
 
-    # Check that command line arguments were fixed up
-    bootargs = of_get_property(barebox, "/chosen/bootargs")
-    assert "barebox.chainloaded" in bootargs
+        # Check that command line arguments were fixed up
+        bootargs = of_get_property(barebox, "/chosen/bootargs")
+        assert "barebox.chainloaded" in bootargs
 
-    initrd_start = of_get_property(barebox, "/chosen/linux,initrd-start")
-    initrd_end = of_get_property(barebox, "/chosen/linux,initrd-end")
+        initrd_start = of_get_property(barebox, "/chosen/linux,initrd-start")
+        initrd_end = of_get_property(barebox, "/chosen/linux,initrd-end")
 
-    addr_regex = r"<(0x[0-9a-f]{1,8} ?)+>"
-    assert re.search(addr_regex, initrd_start), \
-        f"initrd start {initrd_start} malformed"
-    assert re.search(addr_regex, initrd_end), \
-        f"initrd end {initrd_end} malformed"
+        addr_regex = r"<(0x[0-9a-f]{1,8} ?)+>"
+        assert re.search(addr_regex, initrd_start), \
+            f"initrd start {initrd_start} malformed"
+        assert re.search(addr_regex, initrd_end), \
+            f"initrd end {initrd_end} malformed"

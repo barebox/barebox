@@ -24,6 +24,9 @@
 #ifdef CONFIG_MALLOC_TLSF
 void *malloc_add_pool(void *mem, size_t bytes);
 void malloc_register_store(void (*cb)(size_t bytes));
+bool malloc_store_is_registered(void);
+#else
+static inline bool malloc_store_is_registered(void) { return false; }
 #endif
 
 #if IN_PROPER

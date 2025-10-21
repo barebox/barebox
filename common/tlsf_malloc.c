@@ -147,3 +147,8 @@ void malloc_register_store(void (*cb)(size_t bytes))
 	malloc_request_store = cb;
 	tlsf_register_store(tlsf_mem_pool, tlsf_request_store);
 }
+
+bool malloc_store_is_registered(void)
+{
+	return malloc_request_store;
+}

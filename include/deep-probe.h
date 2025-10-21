@@ -5,6 +5,7 @@
 #include <linux/stringify.h>
 #include <linux/compiler_types.h>
 #include <linux/types.h>
+#include <of.h>
 
 struct deep_probe_entry {
 	const struct of_device_id *device_id;

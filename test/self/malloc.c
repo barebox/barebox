@@ -109,9 +109,15 @@ static void test_malloc(void)
 
 	if (mem_malloc_size) {
 		tmp = expect_alloc_fail(realloc(p, mem_malloc_size));
+		if (tmp)
+			p = NULL;
+
 		free(tmp);
 
 		tmp = expect_alloc_fail(realloc(p, RELOC_HIDE(MALLOC_MAX_SIZE, -1)));
+		if (tmp)
+			p = NULL;
+
 		free(tmp);
 	} else {
 		skipped_tests += 2;

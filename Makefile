@@ -450,7 +450,7 @@ AWK		= awk
 GENKSYMS	= scripts/genksyms/genksyms
 DEPMOD		= /sbin/depmod
 KALLSYMS	= scripts/kallsyms
-SCONFIGPOST	= scripts/basic/sconfigpost
+SCONFIGPOST	= scripts/sconfig/sconfigpost
 PERL		= perl
 PYTHON3		= python3
 CHECK		= sparse
@@ -555,6 +555,10 @@ export RCS_TAR_IGNORE := --exclude SCCS --exclude BitKeeper --exclude .svn \
 PHONY += scripts_basic
 scripts_basic:
 	$(Q)$(MAKE) $(build)=scripts/basic
+
+PHONY += scripts_sconfig
+scripts_sconfig: scripts_basic
+	$(Q)$(MAKE) $(build)=scripts/sconfig
 
 PHONY += outputmakefile
 # Before starting out-of-tree build, make sure the source tree is clean.
@@ -1223,10 +1227,10 @@ endif
 quiet_cmd_sconfigpost = SCONFPP $@
       cmd_sconfigpost = $(SCONFIGPOST) $2 -D $(depfile) -o $@ $<
 
-include/generated/security_autoconf.h: .security_config scripts_basic FORCE
+include/generated/security_autoconf.h: .security_config scripts_sconfig FORCE
 	$(call if_changed_dep,sconfigpost,-e)
 
-include/generated/sconfig_names.h: .security_config scripts_basic include/generated/security_autoconf.h FORCE
+include/generated/sconfig_names.h: .security_config scripts_sconfig include/generated/security_autoconf.h FORCE
 	$(call if_changed_dep,sconfigpost,-s)
 
 archprepare: include/generated/security_autoconf.h include/generated/sconfig_names.h

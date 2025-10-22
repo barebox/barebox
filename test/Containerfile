@@ -63,7 +63,7 @@ RUN apt-get update && apt-get upgrade && apt-get install -y --no-install-recomme
 ENV GCC_VERSION=15.2.0
 ENV LLVM_VERSION=20
 
-RUN apt-get install -y --no-install-recommends lsb-release gnupg \
+RUN apt-get update && apt-get install -y --no-install-recommends lsb-release gnupg \
 	&& wget https://apt.llvm.org/llvm.sh \
 	&& chmod +x llvm.sh && ./llvm.sh ${LLVM_VERSION} \
 	&& apt-get remove -y lsb-release gnupg \

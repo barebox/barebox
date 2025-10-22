@@ -135,7 +135,7 @@ do_build_defconfig() {
 	[ -n "$logdir" ] && mkdir -p "${logdir}/${defconfig}"
 
 	MAKE="make -j${JOBS} ARCH=${arch} O=${BUILDDIR}"
-	shuffle=$(${MAKE} --debug=basic ${defconfig} 2>&1 | sed -n 's/.*Enabled shuffle mode: //p;T;q')
+	shuffle=$(${MAKE} --debug=basic ${defconfig} 2>&1 | sed -n 's/.*Enabled shuffle mode: //p' | head -n1)
 
 	if [ -n "$shuffle" ]; then
 		report "Probing ${arch} ${defconfig} (--shuffle=$shuffle)\n" >&2

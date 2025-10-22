@@ -223,8 +223,8 @@ If a failure occurs, the log will include a ``shuffle=`` value::
 
 You should be able to reproduce the same issue locally by running::
 
-  ./scripts/container.sh -l '' -v 0 -e GNUMAKEFLAGS=--shuffle=857479879 \
-	./MAKEALL -a arm virt32_secure_defconfig
+  ./scripts/container.sh -e GNUMAKEFLAGS=--shuffle=857479879 \
+	./MAKEALL -l '' -v 0 -a arm virt32_secure_defconfig
 
 Replace ``857479879`` above with the actual value reported by the CI.
 This reproduces the same randomized build sequence locally to help

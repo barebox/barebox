@@ -160,9 +160,8 @@ static int do_mkpart(struct block_device *blk, int argc, char *argv[])
 	start *= mult;
 	end *= mult;
 
-	/* If not on sector boundaries move start up and end down */
+	/* If not on sector boundaries round start up */
 	start = ALIGN(start, SZ_1M);
-	end = ALIGN_DOWN(end, SZ_1M);
 
 	/* convert to LBA */
 	start >>= SECTOR_SHIFT;

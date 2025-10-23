@@ -10,6 +10,9 @@
 #ifndef __AIODEVICE_H
 #define __AIODEVICE_H
 
+#include <driver.h>
+#include <linux/types.h>
+
 struct aiodevice;
 struct aiochannel {
 	int index;

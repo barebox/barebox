@@ -428,6 +428,8 @@ extern int of_set_root_node(struct device_node *node);
 extern int barebox_register_of(struct device_node *root);
 extern int barebox_register_fdt(const void *dtb);
 
+extern struct device *of_platform_root_device;
+
 extern struct device *of_platform_device_create(struct device_node *np,
 						struct device *parent);
 extern void of_platform_device_dummy_drv(struct device *dev);

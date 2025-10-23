@@ -266,12 +266,12 @@ static const struct of_device_id dwc3_ti_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, dwc3_ti_of_match);
 
-static struct driver dwc3_of_simple_driver = {
+static struct driver dwc3_ti_driver = {
 	.probe = dwc3_ti_probe,
 	.name = "dwc3-of-simple",
 	.of_compatible = DRV_OF_COMPAT(dwc3_ti_of_match),
 };
-device_platform_driver(dwc3_of_simple_driver);
+device_platform_driver(dwc3_ti_driver);
 
 MODULE_ALIAS("platform:dwc3-am62");
 MODULE_AUTHOR("Aswath Govindraju <a-govindraju@ti.com>");

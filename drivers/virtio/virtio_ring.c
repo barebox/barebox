@@ -241,10 +241,8 @@ void *virtqueue_get_buf(struct virtqueue *vq, unsigned int *len)
 	u16 last_used;
 	void *ret;
 
-	if (!more_used(vq)) {
-		vq_debug(vq, "No more buffers in queue\n");
+	if (!more_used(vq))
 		return NULL;
-	}
 
 	/* Only get used array entries after they have been exposed by host */
 	virtio_rmb();

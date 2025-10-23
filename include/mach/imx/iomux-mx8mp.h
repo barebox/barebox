@@ -1081,8 +1081,8 @@ enum {
 };
 
 #define MX8MP_PAD_CTL_DSE1	(0 << 1)
-#define MX8MP_PAD_CTL_DSE2	(1 << 1)
-#define MX8MP_PAD_CTL_DSE4	(2 << 1)
+#define MX8MP_PAD_CTL_DSE2	(2 << 1)
+#define MX8MP_PAD_CTL_DSE4	(1 << 1)
 #define MX8MP_PAD_CTL_DSE6	(3 << 1)
 #define MX8MP_PAD_CTL_FSEL	BIT(4)
 #define MX8MP_PAD_CTL_ODE	BIT(5)

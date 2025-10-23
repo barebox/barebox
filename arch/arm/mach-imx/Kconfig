@@ -775,6 +775,15 @@ config MACH_TQMA93XX
 	select FIRMWARE_IMX93_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 
+config MACH_NXP_IMX93_FRDM
+	bool "NXP IMX93 FRDM Board"
+	select ARCH_IMX93
+	select IMX9_DRAM
+	select I2C
+	select I2C_IMX_LPI2C
+	select FIRMWARE_IMX93_ATF
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+
 endif
 
 endmenu

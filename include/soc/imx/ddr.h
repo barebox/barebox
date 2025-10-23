@@ -18,6 +18,7 @@ enum dram_type {
 #define DRAM_TYPE_MASK	0x00ff
 	DRAM_TYPE_LPDDR4	= 0 << 0,
 	DRAM_TYPE_DDR4		= 1 << 0,
+	DRAM_TYPE_DDR3		= 2 << 0,
 };
 
 static inline enum dram_type get_dram_type(unsigned type)
@@ -115,11 +116,14 @@ struct dram_controller {
 
 void ddr_get_firmware_lpddr4(void);
 void ddr_get_firmware_ddr4(void);
+void ddr_get_firmware_ddr3(void);
 
 static inline void ddr_get_firmware(enum dram_type dram_type)
 {
 	if (dram_type == DRAM_TYPE_LPDDR4)
 		ddr_get_firmware_lpddr4();
+	else if (dram_type == DRAM_TYPE_DDR3)
+		ddr_get_firmware_ddr3();
 	else
 		ddr_get_firmware_ddr4();
 }
@@ -186,6 +190,12 @@ static inline bool dram_is_ddr4(enum dram_type dram_type)
 {
 	return IS_ENABLED(CONFIG_FIRMWARE_IMX_DDR4_PMU_TRAIN) &&
 		dram_type == DRAM_TYPE_DDR4;
+}
+
+static inline bool dram_is_ddr3(enum dram_type dram_type)
+{
+	return IS_ENABLED(CONFIG_FIRMWARE_IMX_DDR3_PMU_TRAIN) &&
+		dram_type == DRAM_TYPE_DDR3;
 }
 
 #define DDRC_PHY_REG(x)	((x) * 4)

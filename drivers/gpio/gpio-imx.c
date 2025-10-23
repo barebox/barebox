@@ -89,17 +89,6 @@ static int imx_gpio_direction_output(struct gpio_chip *chip, unsigned gpio, int 
 	return 0;
 }
 
-static int imx_gpio_get_value(struct gpio_chip *chip, unsigned gpio)
-{
-	struct imx_gpio_chip *imxgpio = container_of(chip, struct imx_gpio_chip, chip);
-	void __iomem *base = imxgpio->base;
-	u32 val;
-
-	val = readl(base + imxgpio->regs->psr);
-
-	return val & (1 << gpio) ? 1 : 0;
-}
-
 static int imx_get_direction(struct gpio_chip *chip, unsigned offset)
 {
 	struct imx_gpio_chip *imxgpio = container_of(chip, struct imx_gpio_chip, chip);
@@ -107,6 +96,20 @@ static int imx_get_direction(struct gpio_chip *chip, unsigned offset)
 	u32 val = readl(base + imxgpio->regs->gdir);
 
 	return (val & (1 << offset)) ? GPIOF_DIR_OUT : GPIOF_DIR_IN;
+}
+
+static int imx_gpio_get_value(struct gpio_chip *chip, unsigned gpio)
+{
+	struct imx_gpio_chip *imxgpio = container_of(chip, struct imx_gpio_chip, chip);
+	void __iomem *base = imxgpio->base;
+	u32 val;
+
+	if (imx_get_direction(chip, gpio) == GPIOF_DIR_IN)
+		val = readl(base + imxgpio->regs->psr);
+	else
+		val = readl(base + imxgpio->regs->dr);
+
+	return val & (1 << gpio) ? 1 : 0;
 }
 
 static struct gpio_ops imx_gpio_ops = {

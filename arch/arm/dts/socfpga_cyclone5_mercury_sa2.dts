@@ -1,0 +1,17 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/*
+ *  Copyright (C) 2025 David Picard <david.picard@clermont.in2p3.fr>
+ */
+
+#include "socfpga_cyclone5_mercury_sa2.dtsi"
+#include "socfpga.dtsi"
+
+/ {
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &mmc, "partname:1";
+			file-path = "barebox.env";
+		};
+	};
+};

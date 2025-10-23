@@ -1,0 +1,211 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+/*
+ * Copyright (C) 2024 Enclustra GmbH - https://www.enclustra.com
+ *
+ * TODO: This whole file should be dropped, once the patches[1] are upstream
+ * and synced into barebox dts/src/arm.
+ * [1]: https://lore.kernel.org/all/20241116131025.114542-1-l.rubusch@gmail.com/
+ */
+
+#include <arm/intel/socfpga/socfpga_cyclone5.dtsi>
+
+/ {
+	barebox,deep-probe;
+};
+
+/ {
+	model = "Enclustra Mercury+ SA2";
+	compatible = "enclustra,mercury-sa2-st1", "enclustra,mercury-sa2", "altr,socfpga-cyclone5", "altr,socfpga";
+
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		ethernet0 = &gmac1;
+		som-sernum = "/serial-number";
+	};
+
+	/* Adjusted the i2c labels to use generic base-board dtsi files for
+	 * Enclustra Arria10 and Cyclone5 SoMs.
+	 *
+	 * The set of i2c0 and i2c1 labels defined in socfpga_cyclone5.dtsi and in
+	 * socfpga_arria10.dtsi do not allow for using the same base-board .dtsi
+	 * fragments. Thus define generic labels here to match the correct i2c
+	 * bus in a generic base-board .dtsi file.
+	 */
+	soc {
+		i2c_encl: i2c@ffc04000 {
+		};
+		i2c_encl_fpga: i2c@ffc05000 {
+		};
+	};
+
+	memory {
+		name = "memory";
+		device_type = "memory";
+		reg = <0x0 0x80000000>; /* 2GB */
+	};
+
+	serial-number {
+		nvmem-cells = <&ser_num>;
+		nvmem-cell-names = "serial-number";
+	};
+};
+
+&osc1 {
+	clock-frequency = <50000000>;
+};
+
+&fpga_bridge0 {
+	status = "okay";
+	bridge-enable = <0x1>;
+};
+
+&fpga_bridge1 {
+	status = "okay";
+	bridge-enable = <0x1>;
+};
+
+&i2c_encl {
+	i2c-sda-hold-time-ns = <300>;
+	clock-frequency = <100000>;
+	status = "okay";
+
+	isl12020: rtc@6f {
+		compatible = "isil,isl12022";
+		reg = <0x6f>;
+	};
+
+	atsha204a: atsha204a@64 {
+		status = "okay";
+		compatible = "atmel,atsha204a";
+		reg = <0x64>;
+
+		nvmem-layout {
+			compatible = "fixed-layout";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			ser_num: serial-number@0 {
+				reg = <0x00 0x4>;
+				#nvmem-cell-cells = <0>;
+			};
+
+			mac_address_0: mac@10 {
+				compatible = "mac-base";
+				reg = <0x10 0x6>;
+				#nvmem-cell-cells = <0>;
+			};
+		};
+	};
+
+	si5338: si5338@70 {
+		status = "okay";
+		compatible = "silabs,si5338";
+		reg = <0x70>;
+	};
+};
+
+&i2c_encl_fpga {
+	i2c-sda-hold-time-ns = <300>;
+	status = "disabled";
+};
+
+&uart0 {
+	clock-frequency = <100000000>;
+};
+
+&mmc0 {
+	status = "okay";
+};
+
+&qspi {
+	status = "okay";
+
+	flash0: flash@0 {
+		u-boot,dm-pre-reloc;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spansion,s25fl512s", "jedec,spi-nor";
+		reg = <0>;
+
+		spi-rx-bus-width = <4>;
+		spi-tx-bus-width = <4>;
+		spi-max-frequency = <10000000>;
+
+		cdns,read-delay = <4>;
+		cdns,tshsl-ns = <50>;
+		cdns,tsd2d-ns = <50>;
+		cdns,tchsh-ns = <4>;
+		cdns,tslch-ns = <4>;
+
+		partition@raw {
+			label = "Flash Raw";
+			reg = <0x0 0x4000000>;
+		};
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&gmac1 {
+	status = "okay";
+	phy-mode = "rgmii";
+	phy-handle = <&phy3>;
+	nvmem-cells = <&mac_address_0>;
+	nvmem-cell-names = "mac-address";
+
+	mdio0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dwmac-mdio";
+
+		phy3: ethernet-phy@3 {
+			reg = <3>;
+
+			/*
+			Ethernet PHY reset pin (active low, GPIO44) :
+			- 1st field: GPIO controller phandle
+			- 2nd field: GPIO line offset
+			- 3rd field: flags (see gpio.txt)
+
+			Reference:
+			- Cyclone 5 HPS technical reference, table 23-1: GPIO44 is on controller
+			GPIO1, whose 1st line is GPIO29. The offset is thus 44 - 29 = 15.
+			- Linux documentation:
+				- Documentation/devicetree/bindings/gpio/gpio.txt
+				- Documentation/devicetree/bindings/gpio/snps,dw-apb-gpio.yaml
+			*/
+			reset-gpios = <&portb 15 0x01>;
+
+			/* Add 2ns RX clock delay (1.2ns + 0.78ns)*/
+			rxc-skew-ps = <1680>;
+			rxd0-skew-ps = <420>;
+			rxd1-skew-ps = <420>;
+			rxd2-skew-ps = <420>;
+			rxd3-skew-ps = <420>;
+			rxdv-skew-ps = <420>;
+
+			/* Add 1.38ns TX clock delay (0.96ns + 0.42ns)*/
+			txc-skew-ps = <1860>;
+			txd0-skew-ps = <0>;
+			txd1-skew-ps = <0>;
+			txd2-skew-ps = <0>;
+			txd3-skew-ps = <0>;
+			txen-skew-ps = <0>;
+		};
+	};
+};
+
+&usb1 {
+	status = "okay";
+	dr_mode = "host";
+};

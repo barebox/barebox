@@ -61,16 +61,6 @@ static void *efi_read_file(const char *file, size_t *size)
 	return buf;
 }
 
-static void efi_free_file(void *_mem, size_t size)
-{
-	efi_physical_addr_t mem = efi_virt_to_phys(_mem);
-
-	if (mem_malloc_start() <= mem && mem < mem_malloc_end())
-		free(_mem);
-	else
-		BS->free_pages(mem, DIV_ROUND_UP(size, EFI_PAGE_SIZE));
-}
-
 int efi_load_image(const char *file, struct efi_loaded_image **loaded_image,
 		   efi_handle_t *h)
 {
@@ -101,7 +91,7 @@ int efi_load_image(const char *file, struct efi_loaded_image **loaded_image,
 
 	*h = handle;
 out:
-	efi_free_file(exe, size);
+	BS->free_pages(efi_virt_to_phys(exe), DIV_ROUND_UP(size, EFI_PAGE_SIZE));
 	return -efi_errno(efiret);
 }
 

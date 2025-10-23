@@ -67,6 +67,7 @@ static void *__expect(void *ptr, bool expect,
 static void test_malloc(void)
 {
 	size_t mem_malloc_size = mem_malloc_end() - mem_malloc_start();
+	bool have_overcommit = false;
 	u8 *p, *tmp;
 
 	pr_debug("mem_malloc_size = %zu\n", mem_malloc_size);
@@ -78,7 +79,7 @@ static void test_malloc(void)
 	 */
 	if (IS_ENABLED(CONFIG_MALLOC_LIBC)) {
 		pr_info("built with host libc allocator: Skipping tests that may trigger overcommit\n");
-		mem_malloc_size = 0;
+		have_overcommit = true;
 	}
 
 	p = expect_alloc_ok(malloc(1));
@@ -90,7 +91,7 @@ static void test_malloc(void)
 	p = expect_alloc_fail(malloc(RELOC_HIDE(MALLOC_MAX_SIZE, 1)));
 	free(p);
 
-	if (mem_malloc_size) {
+	if (!have_overcommit) {
 		tmp = expect_alloc_fail(malloc(RELOC_HIDE(MALLOC_MAX_SIZE, -1)));
 		free(tmp);
 	} else {
@@ -108,13 +109,26 @@ static void test_malloc(void)
 	__expect_cond(*p == 0x42, true, "reread after realloc", __func__, __LINE__);
 
 	if (mem_malloc_size) {
-		tmp = expect_alloc_fail(realloc(p, mem_malloc_size));
-		free(tmp);
+		tmp = realloc(p, mem_malloc_size);
+		if (!malloc_store_is_registered() && !have_overcommit)
+			__expect_cond(tmp, false, "realloc of mem_malloc_size", __func__, __LINE__);
 
-		tmp = expect_alloc_fail(realloc(p, RELOC_HIDE(MALLOC_MAX_SIZE, -1)));
+		if (tmp)
+			p = NULL;
+
 		free(tmp);
 	} else {
-		skipped_tests += 2;
+		skipped_tests++;
+	}
+
+	if (!have_overcommit) {
+		tmp = expect_alloc_fail(realloc(p, RELOC_HIDE(MALLOC_MAX_SIZE, -1)));
+		if (tmp)
+			p = NULL;
+
+		free(tmp);
+	} else {
+		skipped_tests++;
 	}
 
 	free(p);

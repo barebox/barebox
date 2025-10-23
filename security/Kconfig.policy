@@ -83,21 +83,6 @@ config SECURITY_POLICY_PATH
 
 	  Absolute paths are disallowed.
 
-config SECURITY_POLICY_PATH
-	string
-	depends on SECURITY_POLICY
-	prompt "Paths to additional security policies"
-	help
-	  Space separated list of security policies that should be
-	  compiled into barebox and registered. This option currently
-	  requires each security policy to match security/*.sconfig, i.e.
-	  be directly located in the security/ directory of the source
-	  source tree and have the .sconfig extension.
-	  If left empty, only security policies explicitly provided
-	  and registered by board code will be available.
-
-	  Absolute paths are disallowed.
-
 config SECURITY_POLICY_NAMES
 	bool
 

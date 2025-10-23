@@ -93,8 +93,7 @@ static int omap4_usbbootfs_close(struct device *dev, struct file *f)
 	return omap4_usbbootfs_do_close(priv);
 }
 
-static int omap4_usbbootfs_read(struct device *dev, struct file *f, void *buf,
-				size_t size)
+static int omap4_usbbootfs_read(struct file *f, void *buf, size_t size)
 {
 	struct file_priv *priv = f->private_data;
 	u32 data;

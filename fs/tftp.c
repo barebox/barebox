@@ -188,7 +188,7 @@ static int tftp_window_cache_insert(struct tftp_cache *cache, uint16_t id,
 	return 0;
 }
 
-static int tftp_truncate(struct device *dev, struct file *f, loff_t size)
+static int tftp_truncate(struct file *f, loff_t size)
 {
 	return 0;
 }
@@ -825,8 +825,7 @@ static int tftp_close(struct inode *inode, struct file *f)
 	return tftp_do_close(priv);
 }
 
-static int tftp_write(struct device *_dev, struct file *f, const void *inbuf,
-		      size_t insize)
+static int tftp_write(struct file *f, const void *inbuf, size_t insize)
 {
 	struct file_priv *priv = f->private_data;
 	size_t size, now;
@@ -861,7 +860,7 @@ static int tftp_write(struct device *_dev, struct file *f, const void *inbuf,
 	return insize;
 }
 
-static int tftp_read(struct device *dev, struct file *f, void *buf, size_t insize)
+static int tftp_read(struct file *f, void *buf, size_t insize)
 {
 	struct file_priv *priv = f->private_data;
 	size_t outsize = 0, now;
@@ -901,7 +900,7 @@ static int tftp_read(struct device *dev, struct file *f, void *buf, size_t insiz
 	return outsize;
 }
 
-static int tftp_lseek(struct device *dev, struct file *f, loff_t pos)
+static int tftp_lseek(struct file *f, loff_t pos)
 {
 	/* We cannot seek backwards without reloading or caching the file */
 	loff_t f_pos = f->f_pos;
@@ -913,7 +912,7 @@ static int tftp_lseek(struct device *dev, struct file *f, loff_t pos)
 		while (pos > f_pos) {
 			size_t len = min_t(size_t, 1024, pos - f_pos);
 
-			ret = tftp_read(dev, f, buf, len);
+			ret = tftp_read(f, buf, len);
 
 			if (!ret)
 				/* EOF, so the desired pos is invalid. */
@@ -946,6 +945,10 @@ static const struct inode_operations tftp_dir_inode_operations;
 static const struct file_operations tftp_file_operations = {
 	.open = tftp_open,
 	.release = tftp_close,
+	.read      = tftp_read,
+	.lseek     = tftp_lseek,
+	.write     = tftp_write,
+	.truncate  = tftp_truncate,
 };
 
 static struct inode *tftp_get_inode(struct super_block *sb, const struct inode *dir,
@@ -1092,10 +1095,6 @@ static void tftp_remove(struct device *dev)
 }
 
 static struct fs_driver tftp_driver = {
-	.read      = tftp_read,
-	.lseek     = tftp_lseek,
-	.write     = tftp_write,
-	.truncate  = tftp_truncate,
 	.drv = {
 		.probe  = tftp_probe,
 		.remove = tftp_remove,

@@ -2060,6 +2060,7 @@ int ubifs_decompress(const struct ubifs_info *c, const void *buf, int len,
 /* barebox specific */
 int ubifs_open(struct inode *inode, struct file *file);
 int ubifs_close(struct inode *inode, struct file *f);
+int ubifs_read(struct file *f, void *buf, size_t insize);
 void ubifs_umount(struct ubifs_info *c);
 int ubifs_get_super(struct device *dev, struct ubi_volume_desc *ubi,
 		    int silent);

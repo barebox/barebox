@@ -174,6 +174,19 @@ static const struct inode_operations ramfs_symlink_inode_operations =
 	.get_link = ramfs_get_link,
 };
 
+static int ramfs_tmpfile(struct inode *dir, struct file *file, umode_t mode)
+{
+	struct inode *inode;
+
+	inode = ramfs_get_inode(dir->i_sb, dir, mode);
+	if (!inode)
+		return -ENOSPC;
+
+	d_tmpfile(file, inode);
+
+	return finish_open_simple(file, 0);
+}
+
 static const struct inode_operations ramfs_dir_inode_operations =
 {
 	.lookup = simple_lookup,
@@ -182,6 +195,7 @@ static const struct inode_operations ramfs_dir_inode_operations =
 	.rmdir = simple_rmdir,
 	.unlink = simple_unlink,
 	.create = ramfs_create,
+	.tmpfile = ramfs_tmpfile,
 };
 
 static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node,
@@ -210,7 +224,7 @@ static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node,
 	return NULL;
 }
 
-static int ramfs_read(struct device *_dev, struct file *f, void *buf, size_t insize)
+static int ramfs_read(struct file *f, void *buf, size_t insize)
 {
 	struct inode *inode = f->f_inode;
 	struct ramfs_inode *node = to_ramfs_inode(inode);
@@ -240,8 +254,7 @@ static int ramfs_read(struct device *_dev, struct file *f, void *buf, size_t ins
 	return insize;
 }
 
-static int ramfs_write(struct device *_dev, struct file *f, const void *buf,
-		       size_t insize)
+static int ramfs_write(struct file *f, const void *buf, size_t insize)
 {
 	struct inode *inode = f->f_inode;
 	struct ramfs_inode *node = to_ramfs_inode(inode);
@@ -345,7 +358,7 @@ out:
 	return -ENOSPC;
 }
 
-static int ramfs_truncate(struct device *dev, struct file *f, loff_t size)
+static int ramfs_truncate(struct file *f, loff_t size)
 {
 	struct inode *inode = f->f_inode;
 	struct ramfs_inode *node = to_ramfs_inode(inode);
@@ -377,7 +390,7 @@ static int ramfs_truncate(struct device *dev, struct file *f, loff_t size)
 	return 0;
 }
 
-static int ramfs_memmap(struct device *_dev, struct file *f, void **map, int flags)
+static int ramfs_memmap(struct file *f, void **map, int flags)
 {
 	struct inode *inode = f->f_inode;
 	struct ramfs_inode *node = to_ramfs_inode(inode);
@@ -395,6 +408,13 @@ static int ramfs_memmap(struct device *_dev, struct file *f, void **map, int fla
 
 	return 0;
 }
+
+static const struct file_operations ramfs_file_operations = {
+	.read      = ramfs_read,
+	.write     = ramfs_write,
+	.memmap    = ramfs_memmap,
+	.truncate  = ramfs_truncate,
+};
 
 static struct inode *ramfs_alloc_inode(struct super_block *sb)
 {
@@ -436,10 +456,6 @@ static int ramfs_probe(struct device *dev)
 }
 
 static struct fs_driver ramfs_driver = {
-	.read      = ramfs_read,
-	.write     = ramfs_write,
-	.memmap    = ramfs_memmap,
-	.truncate  = ramfs_truncate,
 	.drv = {
 		.probe  = ramfs_probe,
 		.name = "ramfs",

@@ -76,8 +76,7 @@ static int ratpfs_rm(struct device __always_unused *dev,
 	return 0;
 }
 
-static int ratpfs_truncate(struct device __always_unused *dev,
-			   struct file *f, loff_t size)
+static int ratpfs_truncate(struct file *f, loff_t size)
 {
 	int len_tx = 1 /* type */
 		+ 4 /* handle */
@@ -198,8 +197,7 @@ out:
 	return ret;
 }
 
-static int ratpfs_write(struct device __always_unused *dev,
-			struct file *f, const void *buf, size_t orig_size)
+static int ratpfs_write(struct file *f, const void *buf, size_t orig_size)
 {
 	int size = min((int)orig_size, 4096);
 	int len_tx = 1 /* type */
@@ -241,8 +239,7 @@ out:
 	return ret;
 }
 
-static int ratpfs_read(struct device __always_unused *dev,
-		       struct file *f, void *buf, size_t orig_size)
+static int ratpfs_read(struct file *f, void *buf, size_t orig_size)
 {
 	int size = min((int)orig_size, 4096);
 	int len_tx = 1 /* type */
@@ -449,12 +446,12 @@ static const struct fs_legacy_ops ratpfs_ops = {
 	.unlink    = ratpfs_rm,
 	.mkdir     = ratpfs_mkdir,
 	.rmdir     = ratpfs_rm,
-};
-
-static struct fs_driver ratpfs_driver = {
 	.read      = ratpfs_read,
 	.write     = ratpfs_write,
 	.truncate  = ratpfs_truncate,
+};
+
+static struct fs_driver ratpfs_driver = {
 	.legacy_ops = &ratpfs_ops,
 	.drv = {
 		.probe  = ratpfs_probe,

@@ -370,11 +370,10 @@ static int create(struct dentry *dir, struct dentry *dentry)
 	return inode->i_op->create(inode, dentry, S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
-static int fsdev_truncate(struct device *dev, struct file *f, loff_t length)
+static int fsdev_truncate(struct file *f, loff_t length)
 {
-	struct fs_driver *fsdrv = f->fsdev->driver;
-
-	return fsdrv->truncate ? fsdrv->truncate(dev, f, length) : -EROFS;
+	return f->f_inode->i_fop->truncate ?
+		f->f_inode->i_fop->truncate(f, length) : -EROFS;
 }
 
 int ftruncate(int fd, loff_t length)
@@ -388,7 +387,7 @@ int ftruncate(int fd, loff_t length)
 	if (f->f_size == FILE_SIZE_STREAM)
 		return 0;
 
-	ret = fsdev_truncate(&f->fsdev->dev, f, length);
+	ret = fsdev_truncate(f, length);
 	if (ret)
 		return errno_set(ret);
 
@@ -408,8 +407,8 @@ int ioctl(int fd, unsigned int request, void *buf)
 
 	fsdrv = f->fsdev->driver;
 
-	if (fsdrv->ioctl)
-		ret = fsdrv->ioctl(&f->fsdev->dev, f, request, buf);
+	if (f->f_inode->i_fop->ioctl)
+		ret = f->f_inode->i_fop->ioctl(f, request, buf);
 	else
 		ret = -ENOSYS;
 
@@ -437,7 +436,7 @@ static ssize_t __read(struct file *f, void *buf, size_t count)
 	if (!count)
 		return 0;
 
-	ret = fsdrv->read(&f->fsdev->dev, f, buf, count);
+	ret = f->f_inode->i_fop->read(f, buf, count);
 out:
 	return errno_set(ret);
 }
@@ -483,7 +482,7 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 
 	fsdrv = f->fsdev->driver;
 
-	if ((f->f_flags & O_ACCMODE) == O_RDONLY || !fsdrv->write) {
+	if ((f->f_flags & O_ACCMODE) == O_RDONLY || !f->f_inode->i_fop->write) {
 		ret = -EBADF;
 		goto out;
 	}
@@ -492,7 +491,7 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 		assert_command_context();
 
 	if (f->f_size != FILE_SIZE_STREAM && f->f_pos + count > f->f_size) {
-		ret = fsdev_truncate(&f->fsdev->dev, f, f->f_pos + count);
+		ret = fsdev_truncate(f, f->f_pos + count);
 		if (ret) {
 			if (ret == -EPERM)
 				ret = -ENOSPC;
@@ -505,7 +504,8 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 			f->f_size = f->f_pos + count;
 		}
 	}
-	ret = fsdrv->write(&f->fsdev->dev, f, buf, count);
+
+	ret = f->f_inode->i_fop->write(f, buf, count);
 out:
 	return errno_set(ret);
 }
@@ -554,8 +554,8 @@ int flush(int fd)
 		return -errno;
 
 	fsdrv = f->fsdev->driver;
-	if (fsdrv->flush)
-		ret = fsdrv->flush(&f->fsdev->dev, f);
+	if (f->f_inode->i_fop->flush)
+		ret = f->f_inode->i_fop->flush(f);
 	else
 		ret = 0;
 
@@ -598,8 +598,8 @@ loff_t lseek(int fd, loff_t offset, int whence)
 	if (f->f_size != FILE_SIZE_STREAM && (pos < 0 || pos > f->f_size))
 		goto out;
 
-	if (fsdrv->lseek) {
-		ret = fsdrv->lseek(&f->fsdev->dev, f, pos);
+	if (f->f_inode->i_fop->lseek) {
+		ret = f->f_inode->i_fop->lseek(f, pos);
 		if (ret < 0)
 			goto out;
 	}
@@ -635,8 +635,8 @@ int erase(int fd, loff_t count, loff_t offset, enum erase_type type)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (fsdrv->erase)
-		ret = fsdrv->erase(&f->fsdev->dev, f, count, offset, type);
+	if (f->f_inode->i_fop->erase)
+		ret = f->f_inode->i_fop->erase(f, count, offset, type);
 	else
 		ret = -ENOSYS;
 
@@ -662,8 +662,8 @@ int protect(int fd, size_t count, loff_t offset, int prot)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (fsdrv->protect)
-		ret = fsdrv->protect(&f->fsdev->dev, f, count, offset, prot);
+	if (f->f_inode->i_fop->protect)
+		ret = f->f_inode->i_fop->protect(f, count, offset, prot);
 	else
 		ret = -ENOSYS;
 
@@ -689,8 +689,8 @@ int discard_range(int fd, loff_t count, loff_t offset)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (fsdrv->discard_range)
-		ret = fsdrv->discard_range(&f->fsdev->dev, f, count, offset);
+	if (f->f_inode->i_fop->discard_range)
+		ret = f->f_inode->i_fop->discard_range(f, count, offset);
 	else
 		ret = -ENOSYS;
 
@@ -727,8 +727,8 @@ void *memmap(int fd, int flags)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (fsdrv->memmap)
-		ret = fsdrv->memmap(&f->fsdev->dev, f, &retp, flags);
+	if (f->f_inode->i_fop->memmap)
+		ret = f->f_inode->i_fop->memmap(f, &retp, flags);
 	else
 		ret = -EINVAL;
 
@@ -2561,10 +2561,101 @@ out:
 	return errno_set(error);
 }
 
+static int do_dentry_open(struct file *f)
+{
+	int error;
+
+	f->f_inode = d_inode(f->f_path.dentry);
+
+	if (unlikely(f->f_flags & O_PATH))
+		return 0;
+
+	if (f->f_inode->i_fop->open) {
+		error = f->f_inode->i_fop->open(f->f_inode, f);
+		if (error)
+			return error;
+	}
+
+	if (f->f_flags & O_TRUNC) {
+		error = fsdev_truncate(f, 0);
+		f->f_size = 0;
+		if (error)
+			return error;
+	}
+
+	if (f->f_flags & O_APPEND)
+		f->f_pos = f->f_size;
+
+	return 0;
+}
+
+/**
+ * finish_open - finish opening a file
+ * @file: file pointer
+ * @dentry: pointer to dentry
+ *
+ * If the open callback is set to NULL, then the standard f_op->open()
+ * filesystem callback is substituted.
+ *
+ * In Linux, this function accepts an open callback, but we don't yet
+ * need this in barebox. Thus the standard f_op()->open() callback
+ * will be used for non-O_PATH.
+ *
+ * Returns zero on success or -errno if the open failed.
+ */
+int finish_open(struct file *file, struct dentry *dentry)
+{
+	file->f_path.dentry = dentry;
+	return do_dentry_open(file);
+}
+
+/**
+ * tmpfile_create - create tmpfile
+ * @parentpath:	pointer to the path of the base directory
+ * @mode:	mode of the new tmpfile
+ * @flags:	flags used to open the file
+ *
+ * Create a temporary file.
+ */
+static struct file *tmpfile_create(const struct path *parentpath,
+				   umode_t mode, int flags)
+{
+	struct inode *dir = d_inode(parentpath->dentry);
+	struct fs_device *fsdev;
+	struct file *f;
+	int error;
+
+	fsdev = get_fsdevice_by_dentry(parentpath->dentry);
+	if (!fsdev)
+		return ERR_PTR(-ENOENT);
+
+	if (!dir->i_op->tmpfile)
+		return ERR_PTR(-EOPNOTSUPP);
+
+	f = get_file(fsdev);
+	if (!f)
+		return ERR_PTR(-EMFILE);
+
+	f->f_path.mnt = parentpath->mnt;
+	f->f_path.dentry = d_alloc_anon(&fsdev->sb);
+	f->f_flags = flags;
+
+	error = dir->i_op->tmpfile(dir, f, mode);
+
+	free(f->f_path.dentry);
+	f->f_path.dentry = NULL;
+
+	if (error) {
+		put_file(f);
+		return ERR_PTR(error);
+	}
+
+	return f;
+}
+
 int openat(int dirfd, const char *pathname, int flags)
 {
 	struct fs_device *fsdev;
-	struct fs_driver *fsdrv;
 	struct super_block *sb;
 	struct file *f;
 	int error = 0;
@@ -2577,33 +2668,10 @@ int openat(int dirfd, const char *pathname, int flags)
 		if (error)
 			return errno_set(error);
 
-		fsdev = get_fsdevice_by_dentry(path.dentry);
+		f = tmpfile_create(&path, S_IFREG, flags);
 		path_put(&path);
 
-		if (!fsdev) {
-			errno = ENOENT;
-			return -errno;
-		}
-
-		if (fsdev->driver != ramfs_driver) {
-			errno = EOPNOTSUPP;
-			return -errno;
-		}
-
-		f = get_file(fsdev);
-		if (!f) {
-			errno = EMFILE;
-			return -errno;
-		}
-
-		f->path = NULL;
-		f->f_path.dentry = NULL;
-		f->f_inode = new_inode(&fsdev->sb);
-		f->f_inode->i_mode = S_IFREG;
-		f->f_flags = flags;
-		f->f_size = 0;
-
-		return file_to_fd(f);
+		return errno_setp(f) ?: file_to_fd(f);
 	}
 
 	if (flags & O_CREAT) {
@@ -2660,29 +2728,13 @@ int openat(int dirfd, const char *pathname, int flags)
 
 	f->path = dpath(dentry, d_root);
 	f->f_path = path;
-	f->f_inode = iget(inode);
 	f->f_flags = flags;
 
-	fsdrv = fsdev->driver;
+	iget(inode);
 
-	if (flags & O_PATH)
-		return file_to_fd(f);
-
-	if (f->f_inode->i_fop->open) {
-		error = f->f_inode->i_fop->open(inode, f);
-		if (error)
-			goto out;
-	}
-
-	if (flags & O_TRUNC) {
-		error = fsdev_truncate(&fsdev->dev, f, 0);
-		f->f_size = 0;
-		if (error)
-			goto out;
-	}
-
-	if (flags & O_APPEND)
-		f->f_pos = f->f_size;
+	error = do_dentry_open(f);
+	if (error)
+		goto out;
 
 	return file_to_fd(f);
 
@@ -2970,13 +3022,26 @@ static char *__dpath(struct dentry *dentry, struct dentry *root)
 
 	ppath = __dpath(dentry->d_parent, root);
 	if (ppath)
-		res = basprintf("%s/%s", ppath, dentry->d_name.name);
+		res = xasprintf("%s/%s", ppath, dentry->d_name.name);
 	else
-		res = basprintf("/%s", dentry->d_name.name);
+		res = xasprintf("/%s", dentry->d_name.name);
 	free(ppath);
 
 	return res;
 }
+
+void d_tmpfile(struct file *file, struct inode *inode)
+{
+	struct dentry *dentry = file->f_path.dentry;
+
+	inode_dec_link_count(inode);
+
+	file->path = xasprintf(dentry->name, "#%llu",
+			       (unsigned long long)inode->i_ino);
+
+	d_instantiate(dentry, inode);
+}
+EXPORT_SYMBOL(d_tmpfile);
 
 /**
  * dpath - return path of a dentry
@@ -2993,7 +3058,7 @@ char *dpath(struct dentry *dentry, struct dentry *root)
 	char *res;
 
 	if (dentry == root)
-		return strdup("/");
+		return xstrdup("/");
 
 	res = __dpath(dentry, root);
 

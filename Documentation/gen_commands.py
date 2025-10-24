@@ -44,69 +44,57 @@ def parse_c(name):
     cmd = None
     last = None
     for line in open(name, 'r'):
-        x = HELP_START.match(line)
-        if x:
+        if x := HELP_START.match(line):
             cmd = CMDS.setdefault(x.group(1), defaultdict(list))
             cmd.setdefault("files", set()).add(name)
-            continue
-        x = CMD_START.match(line)
-        if x:
+
+        elif x := CMD_START.match(line):
             cmd = CMDS.setdefault(x.group(1), defaultdict(list))
             cmd.setdefault("files", set()).add(name)
-            continue
-        if cmd is None:
-            continue
-        x = HELP_TEXT.match(line)
-        if x:
-            if 'h_opts' not in cmd:
-                last = cmd['h_pre']
-            else:
-                last = cmd['h_post']
+
+        elif cmd is None:
+            pass
+
+        elif x := HELP_TEXT.match(line):
+            last = cmd['h_post' if 'h_opts' in cmd else 'h_pre']
             last.append(string_escape(x.group(1)).strip())
-            continue
-        x = HELP_OPT.match(line)
-        if x:
+
+        elif x := HELP_OPT.match(line):
             last = cmd['h_opts']
             last.append([
                 string_escape(x.group(1)),
                 string_escape(x.group(2)),
             ])
-            continue
-        x = CMD_FUNC.match(line)
-        if x:
+
+        elif x := CMD_FUNC.match(line):
             last = cmd['c_func']
             last.append(x.group(1))
-            continue
-        x = CMD_DESC.match(line)
-        if x:
+
+        elif x := CMD_DESC.match(line):
             last = cmd['c_desc']
             last.append(string_escape(x.group(1)))
-            continue
-        x = CMD_OPTS.match(line)
-        if x:
+
+        elif x := CMD_OPTS.match(line):
             last = cmd['c_opts']
             last.append(string_escape_literal(x.group(1)))
-            continue
-        x = CMD_GROUP.match(line)
-        if x:
+
+        elif x := CMD_GROUP.match(line):
             last = cmd['c_group']
             last.append(x.group(1).split('_')[-1].lower())
-            continue
-        x = CONT.match(line)
-        if x:
+
+        elif x := CONT.match(line):
             if last is None:
                 raise Exception("Parse error in %s: %r" % (name, line))
             if isinstance(last[-1], str):
                 last[-1] += string_escape(x.group(1))
             elif isinstance(last[-1], list):
                 last[-1][1] += string_escape(x.group(1))
-            continue
-        x = HELP_END.match(line)
-        if x:
-            cmd = last = None
-        x = CMD_END.match(line)
-        if x:
-            cmd = last = None
+
+        else:
+            if x := HELP_END.match(line):
+                cmd = last = None
+            if x := CMD_END.match(line):
+                cmd = last = None
 
 
 def gen_rst(name, cmd):

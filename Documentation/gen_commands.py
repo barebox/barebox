@@ -57,7 +57,7 @@ def parse_c(name):
 
         elif x := HELP_TEXT.match(line):
             last = cmd['h_post' if 'h_opts' in cmd else 'h_pre']
-            last.append(string_escape(x.group(1)).strip())
+            last.append(string_escape_literal(x.group(1)).strip())
 
         elif x := HELP_OPT.match(line):
             last = cmd['h_opts']
@@ -123,7 +123,8 @@ def gen_rst(name, cmd):
         if pre:
             out.append('Synopsis')
             out.append('^' * len(out[-1]))
-            out.append('\n'.join(cmd['h_pre']).strip())
+            out.append('\n::\n')
+            out.append('\n'.join([f'  {s}' for s in cmd['h_pre']]))
             out.append('')
     if 'h_opts' in cmd:
         out.append('Options')
@@ -144,7 +145,8 @@ def gen_rst(name, cmd):
         if post:
             out.append('Description')
             out.append('^' * len(out[-1]))
-            out.append('\n'.join(cmd['h_post']).strip())
+            out.append('\n::\n')
+            out.append('\n'.join([f'  {s}' for s in cmd['h_post']]))
             out.append('')
     out.append('.. generated from: %s' % ', '.join(cmd['files']))
     if 'c_func' in cmd:

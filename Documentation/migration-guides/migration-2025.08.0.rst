@@ -1,6 +1,18 @@
 Release v2025.08.0
 ==================
 
+W^X on ARM
+----------
+
+``CONFIG_ARM_MMU_PERMISSIONS=y`` is now the default and instructs barebox to map
+its memory regions with more restricted permissions: Data is no longer executable
+and code as well as read-only data is no longer writable.
+
+This can lead to breakage in code that had invalid assumptions beforehand,
+e.g. code expecting on-chip SRAMs to be executable or bogus code casting away
+const. Please report to upstream any issues that are resolved by disabling
+``CONFIG_ARM_MMU_PERMISSIONS``, so they can be properly fixed.
+
 Bootchooser
 -----------
 

@@ -26,12 +26,19 @@ CMD_END    = re.compile(r"""^BAREBOX_CMD_END\s*$""")
 
 CONT = re.compile(r"""\s*"(.*?)"\s*\)?\s*$""")
 
+ESCAPE = re.compile(r"""([*_`|<>\\])""")
+UNESCAPE = re.compile(r'''\\(["\\])''')
+
 CMDS = {}
 
+
+def string_escape_literal(s):
+    return re.sub(UNESCAPE, r'\1', s.replace(r'\t', '').replace(r'\n', ''))
+
+
 def string_escape(s):
-  # This used to do s.decode("string_escape") which isn't available on Python 3.
-  # Actually we only need to drop '\t' and '\n', so do this here.
-  return s.replace(r'\t', '').replace(r'\n', '')
+    return re.sub(ESCAPE, r'\\\1', string_escape_literal(s))
+
 
 def parse_c(name):
   cmd = None
@@ -78,7 +85,7 @@ def parse_c(name):
     x = CMD_OPTS.match(line)
     if x:
       last = cmd['c_opts']
-      last.append(string_escape(x.group(1)))
+      last.append(string_escape_literal(x.group(1)))
       continue
     x = CMD_GROUP.match(line)
     if x:

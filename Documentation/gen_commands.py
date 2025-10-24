@@ -104,9 +104,9 @@ def gen_rst(name, cmd):
     out.append('.. _command_%s:' % name)
     out.append('')
     if 'c_desc' in cmd:
-        out.append("%s - %s" % (name, ''.join(cmd['c_desc']).strip()))
+        out.append("%s - %s" % (string_escape(name), ''.join(cmd['c_desc']).strip()))
     else:
-        out.append("%s" % (name,))
+        out.append("%s" % (string_escape(name),))
     out.append('=' * len(out[-1]))
     out.append('')
     if 'c_opts' in cmd:

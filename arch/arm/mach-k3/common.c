@@ -168,6 +168,6 @@ BAREBOX_CMD_START(k3_authenticate_image)
 	BAREBOX_CMD_DESC("authenticate file with K3 ROM API")
 	BAREBOX_CMD_OPTS("[-o <out>] file")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
-	BAREBOX_CMD_HELP(k3_authenticate_image)
+	BAREBOX_CMD_HELP(cmd_k3_authenticate_image_help)
 BAREBOX_CMD_END
 #endif

@@ -42,6 +42,8 @@ struct param_d {
 	enum param_type type;
 };
 
+#define PARAM_ENUM_UNKNOWN	(-1000000)
+
 enum param_tristate { PARAM_TRISTATE_UNKNOWN, PARAM_TRISTATE_TRUE, PARAM_TRISTATE_FALSE };
 
 #ifdef CONFIG_PARAMETER

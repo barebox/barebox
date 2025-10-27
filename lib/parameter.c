@@ -566,7 +566,9 @@ static const char *param_enum_get(struct bobject *bobj, struct param_d *p)
 
 	free(p->value);
 
-	if (*pe->value >= pe->num_names)
+	if (*pe->value == PARAM_ENUM_UNKNOWN)
+		p->value = strdup("unknown");
+	else if (*pe->value >= pe->num_names)
 		p->value = basprintf("invalid:%d", *pe->value);
 	else
 		p->value = strdup(pe->names[*pe->value]);
@@ -579,7 +581,7 @@ static void param_enum_info(struct param_d *p)
 	struct param_enum *pe = to_param_enum(p);
 	int i;
 
-	if (pe->num_names <= 1)
+	if (pe->num_names <= 1 && *pe->value != PARAM_ENUM_UNKNOWN)
 		return;
 
 	printf(" (values: ");

@@ -25,4 +25,14 @@ struct pinctrl_device {
 int pinctrl_register(struct pinctrl_device *pdev);
 void pinctrl_unregister(struct pinctrl_device *pdev);
 
+#ifdef CONFIG_PINCTRL_STATE_PARAM
+void of_pinctrl_register_consumer(struct device *dev, struct device_node *np);
+void of_pinctrl_unregister_consumer(struct device *dev);
+#else
+static inline void of_pinctrl_register_consumer(struct device *dev, struct device_node *np)
+{
+}
+static inline void of_pinctrl_unregister_consumer(struct device *dev) {}
+#endif
+
 #endif /* PINCTRL_H */

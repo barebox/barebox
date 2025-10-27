@@ -371,9 +371,6 @@ static int __genpd_dev_pm_attach(struct device *dev,
 	struct generic_pm_domain *pd;
 	int ret;
 
-	if (!have_genpd_providers)
-		return 0;
-
 	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
 				"#power-domain-cells", index, &pd_args);
 	if (ret < 0)
@@ -384,11 +381,18 @@ static int __genpd_dev_pm_attach(struct device *dev,
 		ret = PTR_ERR(pd);
 		dev_dbg(dev, "%s() failed to find PM domain: %d\n",
 			__func__, ret);
+
+		if (ret == -ENOENT)
+			ret = -EPROBE_DEFER;
+
+		if (!have_genpd_providers && ret == -EPROBE_DEFER)
+			return 0;
+
 		/*
 		 * Assume that missing genpds are unresolved
 		 * dependency are report them as deferred
 		 */
-		return (ret == -ENOENT) ? -EPROBE_DEFER : ret;
+		return ret;
 	}
 
 	dev_dbg(dev, "adding to PM domain %s\n", pd ? pd->name : "dummy");

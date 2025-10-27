@@ -17,6 +17,7 @@
 #include <linux/err.h>
 #include <of.h>
 #include <regulator.h>
+#include <linux/phy/phy-mipi-dphy.h>
 
 struct phy;
 

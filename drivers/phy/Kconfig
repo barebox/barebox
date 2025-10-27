@@ -16,6 +16,14 @@ menuconfig GENERIC_PHY
 
 if GENERIC_PHY
 
+config GENERIC_PHY_MIPI_DPHY
+	bool
+	help
+	  Generic MIPI D-PHY support.
+
+	  Provides a number of helpers a core functions for MIPI D-PHY
+	  drivers to us.
+
 config USB_NOP_XCEIV
 	bool "Generic USB nop phy"
 	help

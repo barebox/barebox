@@ -67,6 +67,7 @@ enum filetype {
 	filetype_nxp_fspi_image,
 	filetype_zstd_compressed,
 	filetype_rockchip_rkss_image,
+	filetype_x86_linux_image,
 	filetype_max,
 };
 
@@ -148,6 +149,11 @@ static inline bool is_arm64_linux_bootimage(const void *header)
 static inline bool is_riscv_linux_bootimage(const void *header)
 {
 	return le32_to_cpup(header + 56) == 0x05435352;
+}
+
+static inline bool is_x86_linux_bootimage(const void *header)
+{
+	return le32_to_cpup(header + 0x202) == 0x53726448;
 }
 
 #endif /* __FILE_TYPE_H */

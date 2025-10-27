@@ -259,6 +259,13 @@ config MCI_STM32_SDMMC2
 	  If you have a board based on such a SoC and with a SD/MMC slot,
 	  say Y or M here.
 
+config MMC_CADENCE_SDHCI
+	tristate "SDHCI support for the Cadence SD/SDIO/eMMC controller"
+	select MCI_SDHCI
+	help
+	  This selects the Cadence SD/SDIO/eMMC driver.
+	  If you have a controller with this interface, say Y or M here.
+
 endif
 
 config MCI_IMX_ESDHC_PBL

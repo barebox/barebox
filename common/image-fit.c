@@ -290,7 +290,8 @@ static int fit_check_signature(struct fit_handle *handle, struct device_node *si
 	for_each_public_key(key) {
 		fail_reason = "verification failed";
 
-		if (key_name && !strcmp(key->key_name_hint, key_name))
+		/* Don't recheck with same key_name as before */
+		if (key_name && streq_ptr(key->key_name_hint, key_name))
 			continue;
 
 		ret = public_key_verify(key, sig_value, sig_len, hash, algo);

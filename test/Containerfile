@@ -10,7 +10,7 @@ LABEL Description="This image is for building and testing barebox inside a conta
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update and install things from apt now
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade && apt-get install -y --no-install-recommends \
 	bison \
 	build-essential \
 	coreutils \
@@ -63,7 +63,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV GCC_VERSION=15.2.0
 ENV LLVM_VERSION=20
 
-RUN apt-get update && apt-get install -y --no-install-recommends lsb-release gnupg \
+RUN apt-get install -y --no-install-recommends lsb-release gnupg \
 	&& wget https://apt.llvm.org/llvm.sh \
 	&& chmod +x llvm.sh && ./llvm.sh ${LLVM_VERSION} \
 	&& apt-get remove -y lsb-release gnupg \

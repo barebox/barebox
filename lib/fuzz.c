@@ -4,6 +4,10 @@
 #include <string.h>
 #include <common.h>
 
+#define for_each_fuzz_test(test) \
+	for (test = &__barebox_fuzz_tests_start; \
+	     test != &__barebox_fuzz_tests_end; test++)
+
 int call_for_each_fuzz_test(int (*fn)(const struct fuzz_test *test, void *ctx),
 			    void *ctx)
 {

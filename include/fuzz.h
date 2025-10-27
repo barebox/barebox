@@ -27,10 +27,6 @@ struct fuzz_test {
 extern const struct fuzz_test __barebox_fuzz_tests_start;
 extern const struct fuzz_test __barebox_fuzz_tests_end;
 
-#define for_each_fuzz_test(test) \
-	for (test = &__barebox_fuzz_tests_start; \
-	     test != &__barebox_fuzz_tests_end; test++)
-
 #if IS_ENABLED(CONFIG_FUZZ) && IN_PROPER
 /**
  * fuzz_test() - register a fuzz test

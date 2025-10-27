@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 import pytest
 import re
 
@@ -13,6 +15,7 @@ ESSENTIAL_CONFIGS = [
     "CONFIG_NVMEM_RMEM",      # For creating dynamic rmem NVMEM devices
     "CONFIG_FS_DEVFS"         # For /dev/ device character file paths
 ]
+
 
 @pytest.fixture(scope="session", autouse=True)
 def check_essential_barebox_configs(barebox_config):
@@ -38,6 +41,7 @@ def check_essential_barebox_configs(barebox_config):
             f"{', '.join(missing_configs)}"
         )
 
+
 # --- Individual Test Skip Helper ---
 def skip_disabled(barebox_config, *config_options_needed):
     if not barebox_config:
@@ -55,28 +59,36 @@ def skip_disabled(barebox_config, *config_options_needed):
             f"{', '.join(missing_for_this_test)}"
         )
 
+
 # --- Constants ---
 NVMEM_MAX_DYNAMIC_SIZE = 1024 * 1024
 TEST_ENV_VAR_NAME = "TESTNVMEMDEV"
 DEFAULT_DEVICE_SIZE = 1024
 
+
 # --- Helper Functions ---
 def string_to_hex_bytes_for_mw(s: str) -> str:
     return " ".join([f"0x{ord(c):02x}" for c in s])
+
 
 def parse_md_output(output_lines: list[str],
                     access_size_char: str = 'b') -> str:
     hex_data = []
 
     unit_hex_len = 0
-    if access_size_char == 'b': unit_hex_len = 2
-    elif access_size_char == 'w': unit_hex_len = 4
-    elif access_size_char == 'l': unit_hex_len = 8
-    elif access_size_char == 'q': unit_hex_len = 16 # For 64-bit quad
+    if access_size_char == 'b':
+        unit_hex_len = 2
+    elif access_size_char == 'w':
+        unit_hex_len = 4
+    elif access_size_char == 'l':
+        unit_hex_len = 8
+    elif access_size_char == 'q':
+        unit_hex_len = 16  # For 64-bit quad
     else:
         return ""
 
-    hex_part_regex_str = r"^[0-9a-fA-F]+:\s+((?:[0-9a-fA-F]{" + str(unit_hex_len) + r"}\s*)+)"
+    hex_part_regex_str = r"^[0-9a-fA-F]+:\s+((?:[0-9a-fA-F]{" + \
+                         str(unit_hex_len) + r"}\s*)+)"
     hex_part_regex = re.compile(hex_part_regex_str)
 
     for i, line in enumerate(output_lines):
@@ -89,16 +101,18 @@ def parse_md_output(output_lines: list[str],
     full_hex_string = "".join(hex_data)
     return full_hex_string.lower()
 
-def parse_md_word_value(output_lines: list[str]) -> int | None: # For 16-bit
+
+def parse_md_word_value(output_lines: list[str]) -> int | None:  # For 16-bit
     hex_string = parse_md_output(output_lines, 'w')
-    if hex_string and len(hex_string) == 4: # 16-bit word is 4 hex chars
+    if hex_string and len(hex_string) == 4:  # 16-bit word is 4 hex chars
         try:
             return int(hex_string, 16)
         except ValueError:
             return None
     return None
 
-def parse_md_long_value(output_lines: list[str]) -> int | None: # For 32-bit
+
+def parse_md_long_value(output_lines: list[str]) -> int | None:  # For 32-bit
     hex_string = parse_md_output(output_lines, 'l')
     if hex_string and len(hex_string) == 8:
         try:
@@ -107,14 +121,16 @@ def parse_md_long_value(output_lines: list[str]) -> int | None: # For 32-bit
             return None
     return None
 
-def parse_md_bytes_to_string(output_lines: list[str], expected_num_bytes: int) -> str | None:
+
+def parse_md_bytes_to_string(output_lines: list[str],
+                             expected_num_bytes: int) -> str | None:
     hex_string = parse_md_output(output_lines, 'b')
 
     expected_hex_len = expected_num_bytes * 2
     if len(hex_string) > expected_hex_len:
         hex_string = hex_string[:expected_hex_len]
 
-    if hex_string and len(hex_string) == expected_hex_len :
+    if hex_string and len(hex_string) == expected_hex_len:
         try:
             if len(hex_string) % 2 != 0:
                 return None
@@ -125,6 +141,7 @@ def parse_md_bytes_to_string(output_lines: list[str], expected_num_bytes: int) -
         except ValueError:
             return None
     return None
+
 
 # --- Pytest Fixtures (test-specific setup) ---
 @pytest.fixture(scope="function")
@@ -171,7 +188,8 @@ def created_nvmem_device_name(barebox, barebox_config):
         final_cdev_name = cdev_name_match.group(1)
     else:
         # If it doesn't end with '0' (e.g. it's already 'rmemX')
-        cdev_name_match_direct = re.match(r"(rmem\d+)$", actual_device_name_listed)
+        cdev_name_match_direct = re.match(r"(rmem\d+)$",
+                                          actual_device_name_listed)
         if not cdev_name_match_direct:
             pytest.fail(
                 f"Could not derive cdev base name from listed name "
@@ -197,6 +215,7 @@ def test_nvmem_list_empty_or_static(barebox, barebox_config):
     _, _, returncode = barebox.run('nvmem')
     assert returncode == 0, "`nvmem` command failed"
 
+
 def test_nvmem_create_dynamic_device(barebox, barebox_config):
     """
     Tests creating a dynamic NVMEM rmem device using `nvmem -c <size>`.
@@ -211,7 +230,7 @@ def test_nvmem_create_dynamic_device(barebox, barebox_config):
     rmem_devices_before = {
         line.strip() for line in stdout_before if line.strip().startswith('rmem')
     }
-    barebox.run_check(f'nvmem -c 1k') # Create a 1KB device
+    barebox.run_check('nvmem -c 1k')  # Create a 1KB device
     stdout_after, _, returncode = barebox.run('nvmem')
     assert returncode == 0, "`nvmem` command failed after creating a device"
     rmem_devices_after = {
@@ -227,6 +246,7 @@ def test_nvmem_create_dynamic_device(barebox, barebox_config):
         f"New device name '{new_device_name}' does not match expected "
         "'rmemX' or 'rmemX0' pattern."
     )
+
 
 def test_nvmem_create_dynamic_device_with_var(barebox, barebox_config):
     """
@@ -246,8 +266,8 @@ def test_nvmem_create_dynamic_device_with_var(barebox, barebox_config):
 
     stdout_list_b, _, _ = barebox.run('nvmem')
     # Count existing 'rmem' entries to predict the next index.
-    num_current_rmem = sum(1 for l in stdout_list_b if l.strip().startswith('rmem'))
-    expected_dev_name_in_var = f"rmem{num_current_rmem}" # e.g., rmem0, rmem1
+    num_current_rmem = sum(1 for line in stdout_list_b if line.strip().startswith('rmem'))
+    expected_dev_name_in_var = f"rmem{num_current_rmem}"  # e.g., rmem0, rmem1
 
     # Compound command to create device and echo the variable in the same shell context
     compound_cmd = (
@@ -289,6 +309,7 @@ def test_nvmem_create_invalid_size_zero(barebox, barebox_config):
     assert any("Error: Invalid size '0'" in line for line in stdout), \
         "Expected error message for zero size not found in stdout."
 
+
 def test_nvmem_create_invalid_size_too_large(barebox, barebox_config):
     """
     Tests `nvmem -c <size>` where size exceeds NVMEM_MAX_DYNAMIC_SIZE.
@@ -329,6 +350,7 @@ def test_nvmem_option_v_without_c(barebox, barebox_config):
                for line in stdout), \
         "Expected error for missing -c with -v not found."
 
+
 def test_nvmem_help_on_h_option(barebox, barebox_config):
     """
     Tests `nvmem -h` for displaying help/usage information.
@@ -345,6 +367,7 @@ def test_nvmem_help_on_h_option(barebox, barebox_config):
            any("Options:" in line for line in stdout), \
            "Help output (Usage:/Options:) not found for `nvmem -h`."
 
+
 # == CDEV Read/Write Tests (using mw and md) ==
 def test_nvmem_cdev_mw_md_long(barebox, barebox_config,
                                created_nvmem_device_name):
@@ -360,7 +383,7 @@ def test_nvmem_cdev_mw_md_long(barebox, barebox_config,
     actual_dev_name = created_nvmem_device_name
 
     if not actual_dev_name:
-        pytest.fail(f"Fixture created_nvmem_device_name returned empty. Cannot proceed.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty. Cannot proceed.")
 
     dev_path = f"/dev/{actual_dev_name}"
 
@@ -384,8 +407,7 @@ def test_nvmem_cdev_mw_md_long(barebox, barebox_config,
         "Read long value does not match written value."
 
 
-def test_nvmem_cdev_mw_md_bytes_string(barebox, barebox_config,
-                                      created_nvmem_device_name):
+def test_nvmem_cdev_mw_md_bytes_string(barebox, barebox_config, created_nvmem_device_name):
     """
     Tests writing a string as a sequence of bytes to an NVMEM device using `mw -b`
     and reading it back using `md -b`, then verifying the string content.
@@ -397,10 +419,10 @@ def test_nvmem_cdev_mw_md_bytes_string(barebox, barebox_config,
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_cdev_mw_md_bytes_string.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
-    test_string = "BareboxNVMEMTest" # Length 16
+    test_string = "BareboxNVMEMTest"  # Length 16
     hex_bytes_for_mw_cmd = string_to_hex_bytes_for_mw(test_string)
     num_bytes = len(test_string)
     test_addr_hex = "0x40"
@@ -422,8 +444,9 @@ def test_nvmem_cdev_mw_md_bytes_string(barebox, barebox_config,
     assert read_string == test_string, \
         "Read byte string does not match written string."
 
+
 def test_nvmem_cdev_mw_md_long_bytes_string_wrapped(barebox, barebox_config,
-                                                   created_nvmem_device_name):
+                                                    created_nvmem_device_name):
     """
     Tests writing a longer string (34 bytes) to an NVMEM device,
     which is likely to cause `md -b` output to wrap over multiple lines.
@@ -437,7 +460,7 @@ def test_nvmem_cdev_mw_md_long_bytes_string_wrapped(barebox, barebox_config,
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_cdev_mw_md_long_bytes_string_wrapped.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
     test_string = "ThisIsALongerTestStringForNVMEM012"
@@ -464,6 +487,7 @@ def test_nvmem_cdev_mw_md_long_bytes_string_wrapped(barebox, barebox_config,
     assert read_string == test_string, \
         "Read byte string (wrapped test) does not match written string."
 
+
 # --- New tests for different parameters ---
 def test_nvmem_cdev_mw_md_word(barebox, barebox_config, created_nvmem_device_name):
     """
@@ -477,7 +501,7 @@ def test_nvmem_cdev_mw_md_word(barebox, barebox_config, created_nvmem_device_nam
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_cdev_mw_md_word.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
     test_val_hex = "0xABCD"
@@ -500,6 +524,7 @@ def test_nvmem_cdev_mw_md_word(barebox, barebox_config, created_nvmem_device_nam
     assert read_val_int == int(test_val_hex, 16), \
         "Read word value does not match written value."
 
+
 def test_nvmem_cdev_mw_md_long_swapped(barebox, barebox_config, created_nvmem_device_name):
     """
     Tests writing a 32-bit long value with byte swapping (`mw -l -x`)
@@ -513,7 +538,7 @@ def test_nvmem_cdev_mw_md_long_swapped(barebox, barebox_config, created_nvmem_de
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_cdev_mw_md_long_swapped.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
     original_val_hex = "0x12345678"
@@ -545,7 +570,7 @@ def test_nvmem_cdev_mw_md_long_swapped(barebox, barebox_config, created_nvmem_de
 
 # == Protection Mechanism Tests ==
 def test_nvmem_protect_then_write_fail(barebox, barebox_config,
-                                      created_nvmem_device_name):
+                                       created_nvmem_device_name):
     """
     Tests NVMEM protection:
     1. Writes an initial value to a memory region.
@@ -562,7 +587,7 @@ def test_nvmem_protect_then_write_fail(barebox, barebox_config,
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_protect_then_write_fail.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
     addr_hex = "0x10"
@@ -603,8 +628,9 @@ def test_nvmem_protect_then_write_fail(barebox, barebox_config,
     assert read_val_after_int == int(val_before_hex, 16), \
         "Value in protected area changed after failed write attempt."
 
+
 def test_nvmem_unprotect_then_write_ok(barebox, barebox_config,
-                                      created_nvmem_device_name):
+                                       created_nvmem_device_name):
     """
     Tests NVMEM unprotection:
     1. Writes an initial value and protects a region.
@@ -622,10 +648,9 @@ def test_nvmem_unprotect_then_write_ok(barebox, barebox_config,
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_unprotect_then_write_ok.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
-    device_size = DEFAULT_DEVICE_SIZE
     addr_hex = "0x20"
     length = 4
     val_initial_hex = "0xDEADBEEF"
@@ -657,8 +682,9 @@ def test_nvmem_unprotect_then_write_ok(barebox, barebox_config,
     assert read_val_final_int == int(val_after_unprotect_hex, 16), \
         "Value after unprotect and write is incorrect."
 
+
 def test_nvmem_protect_write_outside_range_ok(barebox, barebox_config,
-                                             created_nvmem_device_name):
+                                              created_nvmem_device_name):
     """
     Tests that writing outside a protected range is successful,
     while the protected range itself remains inaccessible.
@@ -674,7 +700,7 @@ def test_nvmem_protect_write_outside_range_ok(barebox, barebox_config,
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_protect_write_outside_range_ok.")
+        pytest.fail(f"Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
     protected_addr_hex = "0x30"
@@ -714,8 +740,9 @@ def test_nvmem_protect_write_outside_range_ok(barebox, barebox_config,
     assert read_val_prot_int == int(initial_val_prot_hex, 16), \
         "Protected area content changed or was not initially set."
 
+
 def test_nvmem_write_span_unprotected_protected(barebox, barebox_config,
-                                               created_nvmem_device_name):
+                                                created_nvmem_device_name):
     """
     Tests writing a sequence of bytes (`mw -b`) that spans from an unprotected
     area into a protected area. Expects the write to fail for bytes entering
@@ -731,7 +758,7 @@ def test_nvmem_write_span_unprotected_protected(barebox, barebox_config,
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_write_span_unprotected_protected.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
     prot_start_addr_val = 0x10
@@ -764,8 +791,9 @@ def test_nvmem_write_span_unprotected_protected(barebox, barebox_config,
     assert read_hex_verify == "aabb0000", \
         "Data in spanned region is not as expected after partial write."
 
+
 def test_nvmem_write_at_start_and_end_exact(barebox, barebox_config,
-                                           created_nvmem_device_name):
+                                            created_nvmem_device_name):
     """
     Tests writing exactly at the start (offset 0) and filling up to the
     exact end of the NVMEM device. Also tests that writing 1 byte past
@@ -781,7 +809,7 @@ def test_nvmem_write_at_start_and_end_exact(barebox, barebox_config,
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_write_at_start_and_end_exact.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
     device_size = DEFAULT_DEVICE_SIZE
@@ -792,7 +820,7 @@ def test_nvmem_write_at_start_and_end_exact(barebox, barebox_config,
             f'mw -d {dev_path} -l {addr_start_hex} {val_start_hex}'
         )
     except Exception as e:
-        pytest.fail(f"mw to start of device failed in test_nvmem_write_at_start_and_end_exact: {e}")
+        pytest.fail(f"mw to start of device failed in: {e}")
 
     stdout_md_start = barebox.run_check(
         f'md -s {dev_path} -l {addr_start_hex}+4'
@@ -807,7 +835,7 @@ def test_nvmem_write_at_start_and_end_exact(barebox, barebox_config,
             f'mw -d {dev_path} -l {addr_end_hex} {val_end_hex}'
         )
     except Exception as e:
-        pytest.fail(f"mw to end of device failed in test_nvmem_write_at_start_and_end_exact: {e}")
+        pytest.fail(f"mw to end of device failed: {e}")
 
     stdout_md_end = barebox.run_check(
         f'md -s {dev_path} -l {addr_end_hex}+4'
@@ -821,8 +849,9 @@ def test_nvmem_write_at_start_and_end_exact(barebox, barebox_config,
     )
     assert ret_mw_past != 0, "mw write past end should fail."
 
+
 def test_nvmem_protect_merge_overlapping(barebox, barebox_config,
-                                        created_nvmem_device_name):
+                                         created_nvmem_device_name):
     """
     Tests if two overlapping `protect` calls result in a single, correctly
     merged protected range. The log message from `rmem.c` should reflect
@@ -837,7 +866,7 @@ def test_nvmem_protect_merge_overlapping(barebox, barebox_config,
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_protect_merge_overlapping.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
     addr1_hex, len1 = "0x10", 4
@@ -847,7 +876,6 @@ def test_nvmem_protect_merge_overlapping(barebox, barebox_config,
     assert ret_p1 == 0, "First protect call failed."
 
     addr2_hex, len2 = "0x12", 4
-    exp_merged_addr_hex, exp_merged_len = "0x10", 6
     stdout_p2, _, ret_p2 = barebox.run(
         f'protect {dev_path} {addr2_hex}+{len2}'
     )
@@ -859,8 +887,9 @@ def test_nvmem_protect_merge_overlapping(barebox, barebox_config,
     barebox.run_check(f'mw -d {dev_path} -b 0x0F 0xAA')
     barebox.run_check(f'mw -d {dev_path} -b 0x16 0xBB')
 
+
 def test_nvmem_mw_multiple_bytes_single_command(barebox, barebox_config,
-                                               created_nvmem_device_name):
+                                                created_nvmem_device_name):
     """
     Tests `mw -b` with multiple hexadecimal byte values provided in a single command line,
     e.g., `mw -d /dev/rmem0 -b 0x90 0x4F 0x4B`.
@@ -872,7 +901,7 @@ def test_nvmem_mw_multiple_bytes_single_command(barebox, barebox_config,
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_mw_multiple_bytes_single_command.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
     hex_bytes_for_mw_cmd = "0x4F 0x4B"
@@ -895,8 +924,9 @@ def test_nvmem_mw_multiple_bytes_single_command(barebox, barebox_config,
         f"'{expected_hex_string}'."
     )
 
+
 def test_nvmem_unprotect_noop_if_not_protected(barebox, barebox_config,
-                                             created_nvmem_device_name):
+                                               created_nvmem_device_name):
     """
     Tests that calling `unprotect` on a device with no active protections
     is a no-op and succeeds. It should still log the standard "Unprotected range..."
@@ -909,7 +939,7 @@ def test_nvmem_unprotect_noop_if_not_protected(barebox, barebox_config,
     """
     actual_dev_name = created_nvmem_device_name
     if not actual_dev_name:
-         pytest.fail(f"Fixture created_nvmem_device_name returned empty for test_nvmem_unprotect_noop_if_not_protected.")
+        pytest.fail("Fixture created_nvmem_device_name returned empty")
     dev_path = f"/dev/{actual_dev_name}"
 
     device_size = DEFAULT_DEVICE_SIZE

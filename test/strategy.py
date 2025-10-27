@@ -1,12 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 import enum
 
 import attr
 import pytest
 import subprocess
-import os
-import shutil
-import sys
 import re
+from contextlib import contextmanager
 
 from labgrid import target_factory, step, driver
 from labgrid.strategy import Strategy, StrategyError
@@ -17,6 +17,7 @@ if match is None or int(match.group(1)) < 25:
     pytest.exit(f"Labgrid has version v{labgrid_version()}, "
                 f"but barebox test suite requires at least v25.")
 
+
 class Status(enum.Enum):
     unknown = 0
     off = 1
@@ -24,6 +25,7 @@ class Status(enum.Enum):
     qemu_dry_run = 3
     qemu_interactive = 4
     qemu_dump_dtb = 5
+
 
 @target_factory.reg_driver
 @attr.s(eq=False)
@@ -70,6 +72,20 @@ class BareboxTestStrategy(Strategy):
             )
         self.status = status
 
+    @contextmanager
+    def boot(self, boottarget=None):
+        self.transition(Status.barebox)
+
+        try:
+            self.barebox.boot(boottarget)
+            self.target.deactivate(self.barebox)
+            self.target.activate(self.barebox)
+            yield
+        finally:
+            self.target.deactivate(self.barebox)
+            self.power.cycle()
+            self.target.activate(self.barebox)
+
     def force(self, state):
         self.transition(Status.off)  # pylint: disable=missing-kwoa
 
@@ -106,6 +122,7 @@ class BareboxTestStrategy(Strategy):
         if self.console.boot_args is None:
             self.console.boot_args = ""
         self.console.boot_args += " ".join(args)
+
 
 def quote_cmd(cmd):
     quoted = map(lambda s : s if s.find(" ") == -1 else "'" + s + "'", cmd)

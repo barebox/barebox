@@ -28,9 +28,11 @@ static int do_tlv(int argc, char *argv[])
 	if (!filename)
 		return COMMAND_ERROR_USAGE;
 
-	tlvdev = tlv_register_device_by_path(argv[optind], NULL);
-	if (IS_ERR(tlvdev))
-		return PTR_ERR(tlvdev);
+	tlvdev = tlv_register_device_by_path(filename, NULL);
+	if (IS_ERR(tlvdev)) {
+		printf("Could not open \"%s\": %m\n", filename);
+		return COMMAND_ERROR;
+	}
 
 	if (fixup)
 		return tlv_of_register_fixup(tlvdev);

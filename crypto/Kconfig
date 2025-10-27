@@ -129,6 +129,7 @@ config CRYPTO_ECDSA
 config CRYPTO_BUILTIN_KEYS
 	bool "builtin keys"
 	select KEYTOC
+	select IDR
 
 config CRYPTO_PUBLIC_KEYS
 	depends on CRYPTO_BUILTIN_KEYS

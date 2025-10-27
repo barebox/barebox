@@ -104,15 +104,6 @@ int ecdsa_verify(const struct ecdsa_public_key *key, const uint8_t *sig,
 	return _ecdsa_verify(ctx, (void *)mhash, rh, sh);
 }
 
-static LIST_HEAD(ecdsa_keys);
-
-int ecdsa_key_add(struct ecdsa_public_key *key)
-{
-	list_add_tail(&key->list, &ecdsa_keys);
-
-	return 0;
-}
-
 struct ecdsa_public_key *ecdsa_key_dup(const struct ecdsa_public_key *key)
 {
 	struct ecdsa_public_key *new;
@@ -128,13 +119,4 @@ struct ecdsa_public_key *ecdsa_key_dup(const struct ecdsa_public_key *key)
 	new->size_bits = key_size_bits;
 
 	return new;
-}
-
-const struct ecdsa_public_key *ecdsa_key_next(const struct ecdsa_public_key *prev)
-{
-	prev = list_prepare_entry(prev, &ecdsa_keys, list);
-	list_for_each_entry_continue(prev, &ecdsa_keys, list)
-		return prev;
-
-	return NULL;
 }

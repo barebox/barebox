@@ -1,17 +1,74 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-import re
 import pytest
-from .helper import of_get_property
+import os
+import subprocess
+import shutil
+from .helper import skip_disabled
 
 
+def pad128k(f):
+    f.write(b"\0" * 128 * 1024)
 
-def test_dm_verity(barebox):
-    _, _, returncode = barebox.run("ls /mnt/9p/testfs")
-    if returncode != 0:
-        pytest.xfail("skipping test due to missing --fs testfs=")
 
-    barebox.run_check("cd /mnt/9p/testfs")
+@pytest.fixture(scope="module")
+def dm_testdata(testfs):
+    path = os.path.join(testfs, "dm")
+    os.makedirs(path, exist_ok=True)
+    cwd = os.getcwd()
+    os.chdir(path)
+
+    with open("latin", "wb") as f:
+        pad128k(f)
+        f.write(b"veritas vos liberabit")
+        pad128k(f)
+
+    with open("english", "wb") as f:
+        pad128k(f)
+        f.write(b"truth will set you free")
+        pad128k(f)
+
+    try:
+        subprocess.run(["truncate", "-s", "1M", "good.fat"], check=True)
+        subprocess.run(["mkfs.vfat", "good.fat"], check=True)
+        subprocess.run(["mcopy", "-i", "good.fat", "latin", "english", "::"],
+                       check=True)
+
+        subprocess.run([
+            "veritysetup", "format",
+            "--root-hash-file=good.hash",
+            "good.fat", "good.verity"
+        ], check=True)
+    except FileNotFoundError as e:
+        os.chdir(cwd)
+        shutil.rmtree(path)
+        pytest.skip(f"missing dependency: {e}")
+
+    with open("good.fat", "rb") as f:
+        data = f.read()
+    with open("bad.fat", "wb") as f:
+        f.write(data.replace(
+            b"truth will set you free",
+            b"LIAR LIAR PANTS ON FIRE"
+        ))
+
+    os.chdir(cwd)
+
+    yield path
+
+    shutil.rmtree(path)
+
+
+@pytest.fixture(autouse=True)
+def reset_pwd(barebox):
+    yield
+    barebox.run("cd")
+
+
+def test_dm_verity(barebox, barebox_config, dm_testdata):
+    skip_disabled(barebox_config, "CONFIG_CMD_VERITYSETUP")
+
+    barebox.run_check("cd /mnt/9p/testfs/dm")
 
     # Since commands run in a subshell, export the root hash in a
     # global, so that we can access it from subsequent commands

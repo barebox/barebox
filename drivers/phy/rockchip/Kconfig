@@ -1,4 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0-only
+
+config PHY_ROCKCHIP_INNO_DSIDPHY
+	tristate "Rockchip Innosilicon MIPI/LVDS/TTL PHY driver"
+	depends on (ARCH_ROCKCHIP || COMPILE_TEST) && OF
+	select GENERIC_PHY_MIPI_DPHY
+	help
+	  Enable this to support the Rockchip MIPI/LVDS/TTL PHY with
+	  Innosilicon IP block.
+
 config PHY_ROCKCHIP_INNO_USB2
 	bool "Rockchip INNO USB2PHY Driver"
 	depends on (ARCH_ROCKCHIP || COMPILE_TEST) && OFDEVICE

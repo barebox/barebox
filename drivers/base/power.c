@@ -331,14 +331,22 @@ int pm_runtime_resume_and_get_genpd(struct device *dev)
 	return genpd_power_on(genpd);
 }
 
-static void genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
+static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
 {
 	dev->pm_domain = genpd;
+
+	if (genpd->attach_dev)
+		return genpd->attach_dev(genpd, dev);
+
+	return 0;
 }
 
 static void genpd_remove_device(struct generic_pm_domain *genpd,
 			       struct device *dev)
 {
+	if (genpd->detach_dev)
+		genpd->detach_dev(genpd, dev);
+
 	dev->pm_domain = NULL;
 }
 

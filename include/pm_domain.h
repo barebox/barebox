@@ -20,6 +20,9 @@ struct generic_pm_domain {
 
 	int (*power_off)(struct generic_pm_domain *domain);
 	int (*power_on)(struct generic_pm_domain *domain);
+
+	int (*attach_dev)(struct generic_pm_domain *genpd, struct device *dev);
+	void (*detach_dev)(struct generic_pm_domain *genpd, struct device *dev);
 };
 
 typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,

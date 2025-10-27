@@ -31,6 +31,8 @@
 			mode-usbdfu = <0x250>;
 			mode-emmc = <0x48>;
 			mode-nand = <0x58>;
+			mode-sd-fs = <0x240>;
+			mode-sd-raw = <0x2c0>;
 		};
 	};
 };

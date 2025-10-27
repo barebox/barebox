@@ -50,7 +50,7 @@ void v9fs_stat2inode_dotl(struct p9_stat_dotl *stat, struct inode *inode);
 int v9fs_dir_release(struct inode *inode, struct file *file);
 int v9fs_file_open(struct inode *inode, struct file *file);
 
-int v9fs_file_fsync_dotl(struct device *dev, struct file *filp);
+int v9fs_file_fsync_dotl(struct file *filp);
 static inline void v9fs_invalidate_inode_attr(struct inode *inode)
 {
 	netfs_invalidate_inode_attr(netfs_inode(inode));

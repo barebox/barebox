@@ -443,6 +443,7 @@ struct inode_operations {
 	int (*rmdir) (struct inode *,struct dentry *);
 	int (*rename) (struct inode *, struct dentry *,
 		       struct inode *, struct dentry *, unsigned int);
+	int (*tmpfile)(struct inode *, struct file *, umode_t);
 };
 
 static inline ino_t parent_ino(struct dentry *dentry)
@@ -481,20 +482,34 @@ static inline int dir_emit_dots(struct file *file, struct dir_context *ctx)
 	return true;
 }
 
+enum erase_type;
+
 struct file_operations {
 	int (*open) (struct inode *, struct file *);
 	int (*release) (struct inode *, struct file *);
 	int (*iterate) (struct file *, struct dir_context *);
-	/*
-	 * TODO: move the remaining callbacks in struct fs_driver
-	 * here with Linux semantics
-	 */
+	int (*read)(struct file *f, void *buf, size_t size);
+	int (*write)(struct file *f, const void *buf,
+			size_t size);
+	int (*flush)(struct file *f);
+	int (*lseek)(struct file *f, loff_t pos);
+
+	int (*ioctl)(struct file *f, unsigned int request, void *buf);
+	int (*erase)(struct file *f, loff_t count,
+			loff_t offset, enum erase_type type);
+	int (*protect)(struct file *f, size_t count,
+			loff_t offset, int prot);
+	int (*discard_range)(struct file *f, loff_t count, loff_t offset);
+	int (*memmap)(struct file *f, void **map, int flags);
+	int (*truncate)(struct file *f, loff_t size);
 };
 
 void drop_nlink(struct inode *inode);
 
 extern const struct file_operations simple_dir_operations;
 extern const struct inode_operations simple_symlink_inode_operations;
+
+extern void d_tmpfile(struct file *, struct inode *);
 
 int simple_empty(struct dentry *dentry);
 int simple_unlink(struct inode *dir, struct dentry *dentry);
@@ -520,5 +535,28 @@ static inline void inode_init_owner(struct inode *inode,
 }
 
 static inline void mark_inode_dirty(struct inode *inode) {}
+
+int finish_open(struct file *file, struct dentry *dentry);
+
+/* Helper for the simple case when original dentry is used */
+static inline int finish_open_simple(struct file *file, int error)
+{
+	if (error)
+		return error;
+
+	return finish_open(file, file->f_path.dentry);
+}
+
+static inline void inode_inc_link_count(struct inode *inode)
+{
+	inc_nlink(inode);
+	mark_inode_dirty(inode);
+}
+
+static inline void inode_dec_link_count(struct inode *inode)
+{
+	drop_nlink(inode);
+	mark_inode_dirty(inode);
+}
 
 #endif /* _LINUX_FS_H */

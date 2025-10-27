@@ -162,7 +162,7 @@ static int pstore_close(struct device *dev, struct file *file)
 	return 0;
 }
 
-static int pstore_read(struct device *dev, struct file *file, void *buf,
+static int pstore_read(struct file *file, void *buf,
 		       size_t insize)
 {
 	struct pstore_private *d = file->private_data;
@@ -173,7 +173,7 @@ static int pstore_read(struct device *dev, struct file *file, void *buf,
 	return insize;
 }
 
-static int pstore_lseek(struct device *dev, struct file *file, loff_t pos)
+static int pstore_lseek(struct file *file, loff_t pos)
 {
 	struct pstore_private *d = file->private_data;
 
@@ -282,11 +282,11 @@ static const struct fs_legacy_ops pstore_ops = {
 	.readdir   = pstore_readdir,
 	.closedir  = pstore_closedir,
 	.stat      = pstore_stat,
+	.read      = pstore_read,
+	.lseek     = pstore_lseek,
 };
 
 static struct fs_driver pstore_driver = {
-	.read      = pstore_read,
-	.lseek     = pstore_lseek,
 	.legacy_ops = &pstore_ops,
 	.type = filetype_uimage,
 	.drv = {

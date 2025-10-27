@@ -154,7 +154,7 @@ int v9fs_dir_release(struct inode *inode, struct file *filp)
 	return retval;
 }
 
-int v9fs_file_fsync_dotl(struct device *dev, struct file *filp)
+int v9fs_file_fsync_dotl(struct file *filp)
 {
         struct p9_fid *fid;
 

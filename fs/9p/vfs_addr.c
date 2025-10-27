@@ -63,8 +63,7 @@ static void v9fs_free_request(struct netfs_io_request *rreq)
 	p9_fid_put(fid);
 }
 
-int v9fs_read(struct device *dev, struct file *f, void *buf,
-	      size_t insize)
+int v9fs_read(struct file *f, void *buf, size_t insize)
 {
 	struct netfs_io_request rreq = {
 		.origin = NETFS_READPAGE,
@@ -86,8 +85,7 @@ int v9fs_read(struct device *dev, struct file *f, void *buf,
 	return len ?: err;
 }
 
-int v9fs_write(struct device *dev, struct file *f, const void *buf,
-	       size_t insize)
+int v9fs_write(struct file *f, const void *buf, size_t insize)
 {
 	struct netfs_io_request rreq = {
 		.origin = NETFS_WRITETHROUGH,

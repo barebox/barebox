@@ -333,8 +333,7 @@ static const struct super_operations ubootvarfs_ops = {
 	.destroy_inode = ubootvarfs_destroy_inode,
 };
 
-static int ubootvarfs_io(struct device *dev, struct file *f, void *buf,
-			 size_t insize, bool read)
+static int ubootvarfs_io(struct file *f, void *buf, size_t insize, bool read)
 {
 	struct inode *inode = f->f_inode;
 	struct ubootvarfs_inode *node = inode_to_node(inode);
@@ -348,19 +347,17 @@ static int ubootvarfs_io(struct device *dev, struct file *f, void *buf,
 	return insize;
 }
 
-static int ubootvarfs_read(struct device *dev, struct file *f, void *buf,
-			   size_t insize)
+static int ubootvarfs_read(struct file *f, void *buf, size_t insize)
 {
-	return ubootvarfs_io(dev, f, buf, insize, true);
+	return ubootvarfs_io(f, buf, insize, true);
 }
 
-static int ubootvarfs_write(struct device *dev, struct file *f, const void *buf,
-			    size_t insize)
+static int ubootvarfs_write(struct file *f, const void *buf, size_t insize)
 {
-	return ubootvarfs_io(dev, f, (void *)buf, insize, false);
+	return ubootvarfs_io(f, (void *)buf, insize, false);
 }
 
-static int ubootvarfs_truncate(struct device *dev, struct file *f, loff_t size)
+static int ubootvarfs_truncate(struct file *f, loff_t size)
 {
 	struct inode *inode = f->f_inode;
 	struct ubootvarfs_inode *node = inode_to_node(inode);
@@ -384,6 +381,12 @@ static int ubootvarfs_truncate(struct device *dev, struct file *f, loff_t size)
 
 	return 0;
 }
+
+static const struct file_operations ubootvarfs_file_operations = {
+	.truncate = ubootvarfs_truncate,
+	.read = ubootvarfs_read,
+	.write = ubootvarfs_write,
+};
 
 static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 			     size_t size)
@@ -482,9 +485,6 @@ static void ubootvarfs_remove(struct device *dev)
 }
 
 static struct fs_driver ubootvarfs_driver = {
-	.truncate = ubootvarfs_truncate,
-	.read = ubootvarfs_read,
-	.write = ubootvarfs_write,
 	.type = filetype_ubootvar,
 	.drv = {
 		.probe = ubootvarfs_probe,

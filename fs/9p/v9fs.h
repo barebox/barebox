@@ -132,11 +132,9 @@ extern const struct inode_operations v9fs_symlink_inode_operations_dotl;
 extern struct inode *v9fs_fid_iget_dotl(struct super_block *sb,
 						struct p9_fid *fid, bool new);
 
-int v9fs_read(struct device *dev, struct file *f, void *buf,
-	      size_t insize);
-
-int v9fs_write(struct device *dev, struct file *f, const void *buf,
-	       size_t insize);
+int v9fs_read(struct file *f, void *buf, size_t insize);
+int v9fs_write(struct file *f, const void *buf, size_t insize);
+int v9fs_truncate(struct file *f, loff_t size);
 
 /* other default globals */
 #define V9FS_PORT	564

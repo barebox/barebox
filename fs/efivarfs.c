@@ -180,8 +180,7 @@ static int efivarfs_close(struct device *dev, struct file *f)
 	return 0;
 }
 
-static int efivarfs_read(struct device *_dev, struct file *f, void *buf,
-			 size_t insize)
+static int efivarfs_read(struct file *f, void *buf, size_t insize)
 {
 	struct efivars_file *efile = f->private_data;
 
@@ -190,8 +189,7 @@ static int efivarfs_read(struct device *_dev, struct file *f, void *buf,
 	return insize;
 }
 
-static int efivarfs_write(struct device *_dev, struct file *f, const void *buf,
-			  size_t insize)
+static int efivarfs_write(struct file *f, const void *buf, size_t insize)
 {
 	struct efivars_file *efile = f->private_data;
 	efi_status_t efiret;
@@ -212,7 +210,7 @@ static int efivarfs_write(struct device *_dev, struct file *f, const void *buf,
 	return insize;
 }
 
-static int efivarfs_truncate(struct device *dev, struct file *f, loff_t size)
+static int efivarfs_truncate(struct file *f, loff_t size)
 {
 	struct efivars_file *efile = f->private_data;
 	efi_status_t efiret;
@@ -354,12 +352,12 @@ static const struct fs_legacy_ops efivarfs_ops = {
 	.readdir   = efivarfs_readdir,
 	.closedir  = efivarfs_closedir,
 	.stat      = efivarfs_stat,
-};
-
-static struct fs_driver efivarfs_driver = {
 	.read      = efivarfs_read,
 	.write     = efivarfs_write,
 	.truncate  = efivarfs_truncate,
+};
+
+static struct fs_driver efivarfs_driver = {
 	.legacy_ops = &efivarfs_ops,
 	.drv = {
 		.probe  = efivarfs_probe,

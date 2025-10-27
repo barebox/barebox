@@ -51,8 +51,7 @@ static int smhfs_rm(struct device __always_unused *dev,
 	return semihosting_remove(pathname);
 }
 
-static int smhfs_truncate(struct device __always_unused *dev,
-			  struct file __always_unused *f,
+static int smhfs_truncate(struct file __always_unused *f,
 			  loff_t __always_unused size)
 {
 	return 0;
@@ -83,22 +82,19 @@ static int smhfs_close(struct device __always_unused *dev,
 	return semihosting_close(file_to_fd(f));
 }
 
-static int smhfs_write(struct device __always_unused *dev,
-		       struct file *f, const void *inbuf, size_t insize)
+static int smhfs_write(struct file *f, const void *inbuf, size_t insize)
 {
 	long ret = semihosting_write(file_to_fd(f), inbuf, insize);
 	return ret < 0 ? ret : insize;
 }
 
-static int smhfs_read(struct device __always_unused *dev,
-		      struct file *f, void *buf, size_t insize)
+static int smhfs_read(struct file *f, void *buf, size_t insize)
 {
 	long ret = semihosting_read(file_to_fd(f), buf, insize);
 	return ret < 0 ? ret : insize;
 }
 
-static int smhfs_lseek(struct device __always_unused *dev,
-			  struct file *f, loff_t pos)
+static int smhfs_lseek(struct file *f, loff_t pos)
 {
 	return semihosting_seek(file_to_fd(f), pos);
 }
@@ -146,13 +142,13 @@ static const struct fs_legacy_ops smhfs_ops = {
 	.unlink    = smhfs_rm,
 	.mkdir     = smhfs_mkdir,
 	.rmdir     = smhfs_rm,
-};
-
-static struct fs_driver smhfs_driver = {
 	.read      = smhfs_read,
 	.lseek     = smhfs_lseek,
 	.write     = smhfs_write,
 	.truncate  = smhfs_truncate,
+};
+
+static struct fs_driver smhfs_driver = {
 	.legacy_ops = &smhfs_ops,
 	.drv = {
 		.probe  = smhfs_probe,

@@ -27,4 +27,10 @@ static inline int errno_set(int err)
 	return err;
 }
 
+static inline int errno_setp(const void *errp)
+{
+	int error = IS_ERR(errp) ? PTR_ERR(errp) : 0;
+	return errno_set(error);
+}
+
 #endif /* __ERRNO_H */

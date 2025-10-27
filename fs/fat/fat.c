@@ -125,8 +125,7 @@ static int fat_rmdir(struct device *dev, const char *pathname)
 	return 0;
 }
 
-static int fat_write(struct device *_dev, struct file *f, const void *buf,
-		     size_t insize)
+static int fat_write(struct file *f, const void *buf, size_t insize)
 {
 	FIL *f_file = f->private_data;
 	int outsize;
@@ -144,7 +143,7 @@ static int fat_write(struct device *_dev, struct file *f, const void *buf,
 	return outsize;
 }
 
-static int fat_truncate(struct device *dev, struct file *f, loff_t size)
+static int fat_truncate(struct file *f, loff_t size)
 {
 	FIL *f_file = f->private_data;
 	unsigned long lastofs;
@@ -224,7 +223,7 @@ static int fat_close(struct device *dev, struct file *f)
 	return 0;
 }
 
-static int fat_read(struct device *_dev, struct file *f, void *buf, size_t insize)
+static int fat_read(struct file *f, void *buf, size_t insize)
 {
 	int ret;
 	FIL *f_file = f->private_data;
@@ -240,7 +239,7 @@ static int fat_read(struct device *_dev, struct file *f, void *buf, size_t insiz
 	return outsize;
 }
 
-static int fat_lseek(struct device *dev, struct file *f, loff_t pos)
+static int fat_lseek(struct file *f, loff_t pos)
 {
 	FIL *f_file = f->private_data;
 	int ret;
@@ -385,16 +384,14 @@ static const struct fs_legacy_ops fat_ops = {
 	.unlink    = fat_unlink,
 	.mkdir     = fat_mkdir,
 	.rmdir     = fat_rmdir,
-#endif
-};
-
-static struct fs_driver fat_driver = {
-	.read      = fat_read,
-	.lseek     = fat_lseek,
-#ifdef CONFIG_FS_FAT_WRITE
 	.write     = fat_write,
 	.truncate  = fat_truncate,
 #endif
+	.read      = fat_read,
+	.lseek     = fat_lseek,
+};
+
+static struct fs_driver fat_driver = {
 	.legacy_ops = &fat_ops,
 	.type = filetype_fat,
 	.drv = {

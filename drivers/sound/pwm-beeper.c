@@ -14,6 +14,7 @@ struct pwm_beeper {
 	struct pwm_device *pwm;
 	struct regulator *amplifier;
 	struct sound_card card;
+	u32 duty_cycle;
 };
 
 #define HZ_TO_NANOSECONDS(x) (1000000000UL/(x))
@@ -33,7 +34,7 @@ static int pwm_beeper_beep(struct sound_card *card, unsigned freq, unsigned dura
 
 	state.enabled = true;
 	state.period = HZ_TO_NANOSECONDS(freq);
-	pwm_set_relative_duty_cycle(&state, 50, 100);
+	pwm_set_relative_duty_cycle(&state, beeper->duty_cycle, 100);
 
 	error = pwm_apply_state(beeper->pwm, &state);
 	if (error)
@@ -47,6 +48,22 @@ static int pwm_beeper_beep(struct sound_card *card, unsigned freq, unsigned dura
 pwm_disable:
 	pwm_disable(beeper->pwm);
 	return error;
+}
+
+static int pwm_beeper_apply_params(struct param_d *p, void *priv)
+{
+	struct pwm_beeper *beeper = priv;
+	struct pwm_state state;
+
+	if (beeper->duty_cycle > 100)
+	    return -EINVAL;
+
+	pwm_get_state(beeper->pwm, &state);
+	if (!state.enabled)
+		return 0;
+
+	pwm_set_relative_duty_cycle(&state, beeper->duty_cycle, 100);
+	return pwm_apply_state(beeper->pwm, &state);
 }
 
 static int pwm_beeper_probe(struct device *dev)
@@ -74,6 +91,7 @@ static int pwm_beeper_probe(struct device *dev)
 		return error;
 	}
 
+	beeper->duty_cycle = 50;
 	beeper->amplifier = regulator_get(dev, "amp");
 	if (IS_ERR(beeper->amplifier))
 		return dev_errp_probe(dev, beeper->amplifier, "getting 'amp' regulator\n");
@@ -90,6 +108,9 @@ static int pwm_beeper_probe(struct device *dev)
 	card->name = dev->of_node->full_name;
 	card->bell_frequency = bell_frequency;
 	card->beep = pwm_beeper_beep;
+
+	dev_add_param_uint32(dev, "duty_cycle", pwm_beeper_apply_params,
+			NULL, &beeper->duty_cycle, "%u%", beeper);
 
 	return sound_card_register(card);
 }

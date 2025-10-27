@@ -19,6 +19,19 @@ int call_for_each_fuzz_test(int (*fn)(const struct fuzz_test *test, void *ctx),
 	return 0;
 }
 
+static int list_fuzz_test_one(const struct fuzz_test *test, void *ctx)
+{
+	int (*println)(const char *) = ctx;
+
+	println(test->name);
+	return 0;
+}
+
+void list_fuzz_tests(int (*println)(const char *))
+{
+	call_for_each_fuzz_test(list_fuzz_test_one, println);
+}
+
 #ifdef CONFIG_FUZZ_EXTERNAL
 const u8 *fuzzer_get_data(size_t *len);
 #else

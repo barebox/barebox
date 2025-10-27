@@ -20,7 +20,7 @@
  * @func: Function to call to perform fuzz test on an input
  */
 struct fuzz_test {
-	const char *name; /* must be first member */
+	const char *name;
 	int (*func)(const uint8_t * data, size_t size);
 };
 
@@ -85,6 +85,8 @@ static inline int fuzz_test_once(const struct fuzz_test *test, const u8 *data, s
 }
 
 int call_for_each_fuzz_test(int (*fn)(const struct fuzz_test *test, void *), void *ctx);
+
+void list_fuzz_tests(int (*println)(const char *));
 
 int setup_external_fuzz(const char *fuzz_name,
 			int *argc, char ***argv);

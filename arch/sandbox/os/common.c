@@ -56,14 +56,11 @@ extern int barebox_loglevel;
 #endif
 
 #ifdef CONFIG_FUZZ_EXTERNAL
-int call_for_each_fuzz_test(int (*fn)(const char **test, void *), void *ctx);
+void list_fuzz_tests(int (*println)(const char *));
 int setup_external_fuzz(const char *name,
 			int *argc, char ***argv);
 #else
-static inline int call_for_each_fuzz_test(int (*fn)(const char **test, void *), void *ctx)
-{
-	return 0;
-}
+static inline void list_fuzz_tests(int (*println)(const char *)) { }
 static inline int setup_external_fuzz(const char *name,
 				      int *argc, char ***argv)
 {
@@ -668,7 +665,7 @@ static int normal_main(int argc, char *argv[])
 			sdl_yres = strtoul(optarg, NULL, 0);
 			break;
 		case OPT_LIST_FUZZERS:
-			call_for_each_fuzz_test(print_fuzz_test_name, NULL);
+			list_fuzz_tests(puts);
 			exit(0);
 			break;
 		case OPT_FUZZ:

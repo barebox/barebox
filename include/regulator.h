@@ -4,8 +4,7 @@
 
 #include <linux/bitops.h>
 #include <linux/err.h>
-
-struct device;
+#include <device.h>
 
 /* struct regulator is an opaque object for consumers */
 struct regulator;
@@ -212,7 +211,9 @@ const char *rdev_get_name(struct regulator_dev *rdev);
 
 #ifdef CONFIG_REGULATOR
 
-struct regulator *regulator_get(struct device *, const char *);
+struct regulator *dev_of_regulator_get(struct device *dev,
+				       struct device_node *np,
+				       const char *supply);
 void regulator_put(struct regulator *r);
 struct regulator *regulator_get_name(const char *name);
 int regulator_enable(struct regulator *);
@@ -265,8 +266,9 @@ int regulator_list_voltage_table(struct regulator_dev *rdev,
 				  unsigned int selector);
 #else
 
-static inline struct regulator *regulator_get(struct device *dev,
-					      const char *id)
+static inline struct regulator *dev_of_regulator_get(struct device *dev,
+						     struct device_node *np,
+						     const char *supply)
 {
 	return NULL;
 }
@@ -326,6 +328,21 @@ static inline int regulator_get_voltage(struct regulator *regulator)
 }
 
 #endif
+
+/*
+ * regulator_get - get the supply for a device.
+ * @dev:	the device a supply is requested for
+ * @supply:     the supply name
+ *
+ * This returns a supply for a device. Check the result with IS_ERR().
+ * NULL is a valid regulator, the dummy regulator.
+ *
+ * Return: a regulator object or an error pointer
+ */
+static inline struct regulator *regulator_get(struct device *dev, const char *id)
+{
+	return dev_of_regulator_get(dev, dev_of_node(dev), id);
+}
 
 static inline struct regulator *regulator_get_optional(struct device *dev,
 						       const char *id)

@@ -18,6 +18,8 @@
 
 #include "clk.h"
 
+#define TEGRA30_CLK_CLK_MAX	311
+
 static void __iomem *car_base;
 
 static struct clk *clks[TEGRA30_CLK_CLK_MAX];

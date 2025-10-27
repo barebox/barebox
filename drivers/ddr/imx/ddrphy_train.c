@@ -52,6 +52,19 @@ void ddr_get_firmware_ddr4(void)
 			     &ddr4_dmem_2d_size);
 }
 
+static const u16 *ddr3_imem_1d;
+static size_t ddr3_imem_1d_size;
+static const u16 *ddr3_dmem_1d;
+static size_t ddr3_dmem_1d_size;
+
+void ddr_get_firmware_ddr3(void)
+{
+	get_builtin_firmware(ddr3_imem_1d_bin, &ddr3_imem_1d,
+			     &ddr3_imem_1d_size);
+	get_builtin_firmware(ddr3_dmem_1d_bin, &ddr3_dmem_1d,
+			     &ddr3_dmem_1d_size);
+}
+
 void ddr_load_train_code(struct dram_controller *dram, enum dram_type dram_type,
 			 enum fw_type fw_type)
 {
@@ -82,6 +95,11 @@ void ddr_load_train_code(struct dram_controller *dram, enum dram_type dram_type,
 			dmem = ddr4_dmem_2d;
 			dsize = ddr4_dmem_2d_size;
 		}
+	} else if (dram_is_ddr3(dram_type)) {
+		imem = ddr3_imem_1d;
+		isize = ddr3_imem_1d_size;
+		dmem = ddr3_dmem_1d;
+		dsize = ddr3_dmem_1d_size;
 	} else {
 		panic("No matching DDR PHY firmware found");
 	}

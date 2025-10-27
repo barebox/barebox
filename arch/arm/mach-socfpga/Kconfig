@@ -38,6 +38,14 @@ config MACH_SOCFPGA_EBV_SOCRATES
 	select ARCH_SOCFPGA_CYCLONE5
 	bool "EBV Socrates"
 
+config MACH_SOCFPGA_ENCLUSTRA_SA2
+	select ARCH_SOCFPGA_CYCLONE5
+	bool "Enclustra SA2"
+
+config MACH_SOCFPGA_ENCLUSTRA_SA2_SI5338
+	depends on MACH_SOCFPGA_ENCLUSTRA_SA2
+	bool "Configure the SI5338 clock generator on ST1 baseboard"
+
 config MACH_SOCFPGA_TERASIC_DE0_NANO_SOC
 	select ARCH_SOCFPGA_CYCLONE5
 	bool "Terasic DE0-NANO-SoC aka Atlas"

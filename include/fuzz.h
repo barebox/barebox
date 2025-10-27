@@ -84,7 +84,7 @@ static inline int fuzz_test_once(const struct fuzz_test *test, const u8 *data, s
 	return test->func(data, len);
 }
 
-int call_for_each_fuzz_test(int (*fn)(const struct fuzz_test *test));
+int call_for_each_fuzz_test(int (*fn)(const struct fuzz_test *test, void *), void *ctx);
 
 int setup_external_fuzz(const char *fuzz_name,
 			int *argc, char ***argv);

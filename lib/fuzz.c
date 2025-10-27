@@ -4,13 +4,14 @@
 #include <string.h>
 #include <common.h>
 
-int call_for_each_fuzz_test(int (*fn)(const struct fuzz_test *test))
+int call_for_each_fuzz_test(int (*fn)(const struct fuzz_test *test, void *ctx),
+			    void *ctx)
 {
 	const struct fuzz_test *test;
 	int ret;
 
 	for_each_fuzz_test(test) {
-		ret = fn(test);
+		ret = fn(test, ctx);
 		if (ret)
 			return ret;
 	}

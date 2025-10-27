@@ -56,11 +56,11 @@ extern int barebox_loglevel;
 #endif
 
 #ifdef CONFIG_FUZZ_EXTERNAL
-int call_for_each_fuzz_test(int (*fn)(const char **test));
+int call_for_each_fuzz_test(int (*fn)(const char **test, void *), void *ctx);
 int setup_external_fuzz(const char *name,
 			int *argc, char ***argv);
 #else
-static inline int call_for_each_fuzz_test(int (*fn)(const char **test))
+static inline int call_for_each_fuzz_test(int (*fn)(const char **test, void *), void *ctx)
 {
 	return 0;
 }
@@ -558,7 +558,8 @@ static struct option long_options[] = {
 
 static const char optstring[] = "hm:i:c:e:d:O:I:B:x:y:";
 
-static __attribute__((unused)) int print_fuzz_test_name(const char **test_name)
+static __attribute__((unused)) int print_fuzz_test_name(const char **test_name,
+							void *ctx)
 {
 	printf("%s\n", *test_name);
 	return 0;
@@ -667,7 +668,7 @@ static int normal_main(int argc, char *argv[])
 			sdl_yres = strtoul(optarg, NULL, 0);
 			break;
 		case OPT_LIST_FUZZERS:
-			call_for_each_fuzz_test(print_fuzz_test_name);
+			call_for_each_fuzz_test(print_fuzz_test_name, NULL);
 			exit(0);
 			break;
 		case OPT_FUZZ:

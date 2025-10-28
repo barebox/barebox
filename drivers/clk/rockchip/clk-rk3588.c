@@ -2500,6 +2500,13 @@ static void __init rk3588_clk_init(struct device_node *np)
 
 	rockchip_register_restart_notifier(ctx, RK3588_GLB_SRST_FST);
 
+	/*
+	 * CPLL must run at 1.5GHz. Do this here instead via assigned-clocks
+	 * in the device tree so that we do not have to overwrite the properties
+	 * in the upstream device tree.
+	 */
+	clk_set_rate(ctx->clk_data.clks[PLL_CPLL], 1500000000);
+
 	rockchip_clk_of_add_provider(np, ctx);
 }
 

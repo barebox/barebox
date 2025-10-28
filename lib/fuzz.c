@@ -4,18 +4,36 @@
 #include <string.h>
 #include <common.h>
 
-int call_for_each_fuzz_test(int (*fn)(const struct fuzz_test *test))
+#define for_each_fuzz_test(test) \
+	for (test = &__barebox_fuzz_tests_start; \
+	     test != &__barebox_fuzz_tests_end; test++)
+
+int call_for_each_fuzz_test(int (*fn)(const struct fuzz_test *test, void *ctx),
+			    void *ctx)
 {
 	const struct fuzz_test *test;
 	int ret;
 
 	for_each_fuzz_test(test) {
-		ret = fn(test);
+		ret = fn(test, ctx);
 		if (ret)
 			return ret;
 	}
 
 	return 0;
+}
+
+static int list_fuzz_test_one(const struct fuzz_test *test, void *ctx)
+{
+	int (*println)(const char *) = ctx;
+
+	println(test->name);
+	return 0;
+}
+
+void list_fuzz_tests(int (*println)(const char *))
+{
+	call_for_each_fuzz_test(list_fuzz_test_one, println);
 }
 
 #ifdef CONFIG_FUZZ_EXTERNAL

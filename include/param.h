@@ -42,6 +42,8 @@ struct param_d {
 	enum param_type type;
 };
 
+#define PARAM_ENUM_UNKNOWN	(-1000000)
+
 enum param_tristate { PARAM_TRISTATE_UNKNOWN, PARAM_TRISTATE_TRUE, PARAM_TRISTATE_FALSE };
 
 #ifdef CONFIG_PARAMETER
@@ -115,6 +117,8 @@ void param_remove(struct param_d *p);
 
 int bobject_param_set_generic(bobject_t bobj, struct param_d *p,
 			  const char *val);
+
+int param_int_set_scale(struct param_d *p, uint64_t max);
 
 #else
 static inline const char *bobject_get_param(bobject_t bobj, const char *name)
@@ -251,6 +255,12 @@ static inline int bobject_param_set_generic(bobject_t bobj, struct param_d *p,
 {
 	return 0;
 }
+
+static inline int param_int_set_scale(struct param_d *p, uint64_t max)
+{
+	return 0;
+}
+
 #endif
 
 static inline const char *get_param_value(struct param_d *param)

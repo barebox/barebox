@@ -83,6 +83,7 @@ int console_close(struct console_device *cdev)
 
 int console_set_active(struct console_device *cdev, unsigned flag)
 {
+	unsigned flag_new = flag & ~cdev->f_active;
 	int ret;
 
 	if (!cdev->getc)
@@ -117,6 +118,10 @@ int console_set_active(struct console_device *cdev, unsigned flag)
 		barebox_banner();
 		while (kfifo_getc(console_output_fifo, &ch) == 0)
 			console_putc(CONSOLE_STDOUT, ch);
+	} else if (IS_ENABLED(CONFIG_BANNER) && cdev->puts &&
+		   flag_new == CONSOLE_STDIOE) {
+		cdev->puts(cdev, version_string, strlen(version_string));
+		cdev->puts(cdev, "\n\n", 2);
 	}
 
 	return 0;

@@ -78,7 +78,10 @@ int ecdsa_verify(const struct ecdsa_public_key *key, const uint8_t *sig,
 	const void *r, *s;
 	u64 rh[4], sh[4];
 	u64 mhash[ECC_MAX_DIGITS];
-	int key_size_bytes = key->size_bits / 8;
+	int key_size_bits, key_size_bytes;
+
+	key_size_bits = ecdsa_key_size(key->curve_name);
+	key_size_bytes = key_size_bits / 8;
 
 	ctx->curve_id = curve_id;
 	ctx->curve = ecc_get_curve(curve_id);
@@ -102,21 +105,4 @@ int ecdsa_verify(const struct ecdsa_public_key *key, const uint8_t *sig,
 	ecc_swap_digits((u64 *)hash, mhash, ctx->curve->g.ndigits);
 
 	return _ecdsa_verify(ctx, (void *)mhash, rh, sh);
-}
-
-struct ecdsa_public_key *ecdsa_key_dup(const struct ecdsa_public_key *key)
-{
-	struct ecdsa_public_key *new;
-	int key_size_bits;
-
-	key_size_bits = ecdsa_key_size(key->curve_name);
-	if (!key_size_bits)
-		return NULL;
-
-	new = xmemdup(key, sizeof(*key));
-	new->x = xmemdup(key->x, key_size_bits / 8);
-	new->y = xmemdup(key->y, key_size_bits / 8);
-	new->size_bits = key_size_bits;
-
-	return new;
 }

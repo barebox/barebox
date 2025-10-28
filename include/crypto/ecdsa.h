@@ -10,7 +10,6 @@ struct ecdsa_public_key {
 	const char *curve_name;	/* Name of curve, e.g. "prime256v1" */
 	const uint64_t *x;	/* x coordinate of public key */
 	const uint64_t *y;	/* y coordinate of public key */
-	unsigned int size_bits;	/* key size in bits, derived from curve name */
 };
 
 #ifdef CONFIG_CRYPTO_ECDSA

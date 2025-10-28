@@ -185,6 +185,7 @@ struct vop2_video_port {
 };
 
 struct vop2 {
+	u32 version;
 	struct device *dev;
 	struct vop2_video_port vps[4];
 
@@ -348,7 +349,7 @@ static bool vop2_win_dither_up(u32 format)
 
 static bool vop2_output_rg_swap(struct vop2 *vop2, u32 bus_format)
 {
-	if (vop2->data->soc_id == 3588) {
+	if (vop2->version == VOP_VERSION_RK3588) {
 		if (bus_format == MEDIA_BUS_FMT_YUV8_1X24 ||
 		    bus_format == MEDIA_BUS_FMT_YUV10_1X30)
 			return true;
@@ -466,15 +467,26 @@ static void rk3588_vop2_power_domain_enable_all(struct vop2 *vop2)
 static void vop2_enable(struct vop2 *vop2)
 {
 	int ret;
+	u32 version;
 
 	ret = vop2_core_clks_prepare_enable(vop2);
 	if (ret)
 		return;
 
+	version = vop2_readl(vop2, RK3568_VERSION_INFO);
+	if (version != vop2->version) {
+		dev_err(vop2->dev, "Hardware version(0x%08x) mismatch\n", version);
+		return;
+	}
+
+	/*
+	 * rk3566 share the same vop version with rk3568, so
+	 * we need to use soc_id for identification here.
+	 */
 	if (vop2->data->soc_id == 3566)
 		vop2_writel(vop2, RK3568_OTP_WIN_EN, 1);
 
-	if (vop2->data->soc_id == 3588)
+	if (vop2->version == VOP_VERSION_RK3588)
 		rk3588_vop2_power_domain_enable_all(vop2);
 
 	vop2_writel(vop2, RK3568_REG_CFG_DONE, RK3568_REG_CFG_DONE__GLB_CFG_DONE_EN);
@@ -962,9 +974,9 @@ static unsigned long vop2_set_intf_mux(struct vop2_video_port *vp, int ep_id, u3
 {
 	struct vop2 *vop2 = vp->vop2;
 
-	if (vop2->data->soc_id == 3566 || vop2->data->soc_id == 3568)
+	if (vop2->version == VOP_VERSION_RK3568)
 		return rk3568_set_intf_mux(vp, ep_id, polflags, clock);
-	else if (vop2->data->soc_id == 3588)
+	else if (vop2->version == VOP_VERSION_RK3588)
 		return rk3588_set_intf_mux(vp, ep_id, polflags, clock);
 	else
 		return 0;
@@ -1877,6 +1889,31 @@ static int vop2_esmart_init(struct vop2_win *win)
 	return ret;
 };
 
+/*
+ * On RK3566 these windows don't have an independent
+ * framebuffer. They can only share/mirror the framebuffer
+ * with smart0, esmart0 and cluster0 respectively.
+ * And RK3566 share the same vop version with Rk3568, so we
+ * need to use soc_id for identification here.
+ */
+static bool vop2_is_mirror_win(struct vop2_win *win)
+{
+	struct vop2 *vop2 = win->vop2;
+
+	if (vop2->data->soc_id == 3566) {
+		switch (win->data->phys_id) {
+		case ROCKCHIP_VOP2_SMART1:
+		case ROCKCHIP_VOP2_ESMART1:
+		case ROCKCHIP_VOP2_CLUSTER1:
+			return true;
+		default:
+			return false;
+		}
+	} else {
+		return false;
+	}
+}
+
 static int vop2_win_init(struct vop2 *vop2)
 {
 	const struct vop2_data *vop2_data = vop2->data;
@@ -1886,25 +1923,14 @@ static int vop2_win_init(struct vop2 *vop2)
 	for (i = 0; i < vop2_data->win_size; i++) {
 		const struct vop2_win_data *win_data = &vop2_data->win[i];
 
-		if (vop2->data->soc_id == 3566) {
-			/*
-			 * On RK3566 these windows don't have an independent
-			 * framebuffer. They share the framebuffer with smart0,
-			 * esmart0 and cluster0 respectively.
-			 */
-			switch (win_data->phys_id) {
-			case ROCKCHIP_VOP2_SMART1:
-			case ROCKCHIP_VOP2_ESMART1:
-			case ROCKCHIP_VOP2_CLUSTER1:
-				continue;
-			}
-		}
-
 		win = &vop2->win[n];
 		win->data = win_data;
 		win->type = win_data->type;
 		win->offset = win_data->base;
 		win->vop2 = vop2;
+
+		if (vop2_is_mirror_win(win))
+		    continue;
 
 		ret = vop2_esmart_init(win);
 		if (ret)
@@ -1943,6 +1969,7 @@ int vop2_bind(struct device *dev)
 
 	vop2->dev = dev;
 	vop2->data = vop2_data;
+	vop2->version = vop2_data->version;
 
 	res = dev_get_resource_by_name(dev, IORESOURCE_MEM, "vop");
 	if (IS_ERR(res))

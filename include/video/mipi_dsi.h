@@ -17,6 +17,7 @@
 
 #include <video/mipi_display.h>
 #include <linux/container_of.h>
+#include <linux/array_size.h>
 #include <linux/bitops.h>
 #include <linux/device.h>
 #include <linux/errno.h>

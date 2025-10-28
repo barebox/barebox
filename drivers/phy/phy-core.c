@@ -20,6 +20,65 @@ static int phy_ida;
 
 DEFINE_DEV_CLASS(phy_class, "phy");
 
+static const char *phy_mode_tostr(struct phy *phy)
+{
+	switch (phy->attrs.mode) {
+	case PHY_MODE_INVALID:
+		return "invalid";
+	case PHY_MODE_USB_HOST:
+		return "usb-host";
+	case PHY_MODE_USB_HOST_LS:
+		return "usb-host-ls";
+	case PHY_MODE_USB_HOST_FS:
+		return "usb-host-fs";
+	case PHY_MODE_USB_HOST_HS:
+		return "usb-host-hs";
+	case PHY_MODE_USB_HOST_SS:
+		return "usb-host-ss";
+	case PHY_MODE_USB_DEVICE:
+		return "usb-device";
+	case PHY_MODE_USB_DEVICE_LS:
+		return "usb-device-ls";
+	case PHY_MODE_USB_DEVICE_FS:
+		return "usb-device-fs";
+	case PHY_MODE_USB_DEVICE_HS:
+		return "usb-device-hs";
+	case PHY_MODE_USB_DEVICE_SS:
+		return "usb-device-ss";
+	case PHY_MODE_USB_OTG:
+		return "usb-otg";
+	case PHY_MODE_UFS_HS_A:
+		return "ufs-hs-a";
+	case PHY_MODE_UFS_HS_B:
+		return "ufs-hs-b";
+	case PHY_MODE_PCIE:
+		return "pcie";
+	case PHY_MODE_ETHERNET:
+		return "ethernet";
+	case PHY_MODE_MIPI_DPHY:
+		return "mipi-dphy";
+	case PHY_MODE_SATA:
+		return "sata";
+	case PHY_MODE_LVDS:
+		return "lvds";
+	case PHY_MODE_DP:
+		return "dp";
+	}
+
+	return "unknown";
+}
+
+static void phy_devinfo(struct device *dev)
+{
+	struct phy *phy = container_of(dev, struct phy, dev);
+
+	printf("PHY info:\n");
+	if (phy->attrs.mode != PHY_MODE_INVALID)
+		printf("  mode: %s\n", phy_mode_tostr(phy));
+	printf("  init count: %u\n", phy->init_count);
+	printf("  power count: %u\n", phy->power_count);
+}
+
 /**
  * phy_create() - create a new phy
  * @dev: device that is creating the new phy
@@ -63,6 +122,8 @@ struct phy *phy_create(struct device *dev, struct device_node *node,
 	ret = class_register_device(&phy_class, &phy->dev, "phy");
 	if (ret)
 		goto free_ida;
+
+	devinfo_add(&phy->dev, phy_devinfo);
 
 	return phy;
 
@@ -220,6 +281,29 @@ int phy_set_mode_ext(struct phy *phy, enum phy_mode mode, int submode)
 	return ret;
 }
 EXPORT_SYMBOL_GPL(phy_set_mode_ext);
+
+/**
+ * phy_configure() - Changes the phy parameters
+ * @phy: the phy returned by phy_get()
+ * @opts: New configuration to apply
+ *
+ * Used to change the PHY parameters. phy_init() must have been called
+ * on the phy. The configuration will be applied on the current phy
+ * mode, that can be changed using phy_set_mode().
+ *
+ * Return: %0 if successful, a negative error code otherwise
+ */
+int phy_configure(struct phy *phy, union phy_configure_opts *opts)
+{
+	if (!phy)
+		return -EINVAL;
+
+	if (!phy->ops->configure)
+		return -EOPNOTSUPP;
+
+	return phy->ops->configure(phy, opts);
+}
+EXPORT_SYMBOL_GPL(phy_configure);
 
 struct usb_phy *phy_to_usbphy(struct phy *phy)
 {

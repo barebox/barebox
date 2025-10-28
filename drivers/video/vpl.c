@@ -116,6 +116,46 @@ static int vpl_foreach_endpoint(struct vpl *vpl, unsigned int port, int endpoint
 	return 0;
 }
 
+static const char *ioctl_cmd_str(unsigned cmd)
+{
+	switch (cmd) {
+	case VPL_PREPARE:
+		return "PREPARE";
+	case VPL_UNPREPARE:
+		return "UNPREPARE";
+	case VPL_ENABLE:
+		return "ENABLE";
+	case VPL_DISABLE:
+		return "DISABLE";
+	case VPL_GET_VIDEOMODES:
+		return "GET_VIDEOMODES";
+	case VPL_GET_BUS_FORMAT:
+		return "GET_BUS_FORMAT";
+	case VPL_GET_DISPLAY_INFO:
+		return "GET_DISPLAY_INFO";
+	default:
+		return NULL;
+	}
+}
+
+static int vpl_do_ioctl(struct vpl *vpl, unsigned port, unsigned cmd,
+			 void *data)
+{
+	char buf[sizeof("0x12345678")];
+	const char *cmdstr;
+
+	cmdstr = ioctl_cmd_str(cmd);
+	if (!cmdstr) {
+		snprintf(buf, sizeof(buf), "0x%08x", cmd);
+		cmdstr = buf;
+	}
+
+	pr_debug("%s: calling %ps(\"%pOF\", %d, %s, %p)\n", __func__,
+		 vpl->ioctl, vpl->node, port, cmdstr, data);
+
+	return vpl->ioctl(vpl, port, cmd, data);
+}
+
 struct vpl_ioctl {
 	int err;
 	unsigned cmd;
@@ -131,7 +171,7 @@ static int vpl_remote_ioctl(struct vpl *vpl, unsigned port, void *_data)
 		return 0;
 	}
 
-	return vpl->ioctl(vpl, port, data->cmd, data->ptr);
+	return vpl_do_ioctl(vpl, port, data->cmd, data->ptr);
 }
 
 int vpl_ioctl(struct vpl *vpl, unsigned int port,
@@ -182,5 +222,5 @@ int vpl_bridge_ioctl(struct vpl_bridge *bridge, unsigned int cmd, void *ptr)
 	if (!vpl->ioctl)
 		return -EOPNOTSUPP;
 
-	return vpl->ioctl(vpl, bridge->port, cmd, ptr);
+	return vpl_do_ioctl(vpl, bridge->port, cmd, ptr);
 }

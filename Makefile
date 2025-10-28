@@ -463,6 +463,7 @@ KLZOP		= lzop
 LZMA		= lzma
 LZ4		= lz4
 XZ		= xz
+PYTEST		= $(if $(shell command -v labgrid-pytest 2>/dev/null),labgrid-pytest,pytest)
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise $(CF)
 CFLAGS_KERNEL	=
@@ -1054,7 +1055,32 @@ endif
 
 PHONY += install
 
+# Testing barebox
+# ---------------------------------------------------------------------------
+# This target has pytest select the YAML env matching CONFIG_NAME if available.
+# Use pytest --lg-env $labgrid_env_yaml directly if you need more than that.
+
+labgrid-env := $(srctree)/test/$(SRCARCH)/$(CONFIG_NAME).yaml
+
+check:
+ifeq ($(CONFIG_NAME),"")
+	@echo "error: can't autoload labgrid env with CONFIG_NAME unset!" >&2
+	@exit 1
+endif
+	@if [ ! -r "$(labgrid-env)" ]; then \
+		echo "error: No Labgrid environment at $(labgrid-env)!" >&2; \
+		echo "Choose a different config (or change CONFIG_NAME)" >&2; \
+		echo "that can be automatically tested" >&2; \
+		exit 1; \
+	fi
+	@echo
+	@# This is intentionally not @suppressed, to make it easier to reproduce
+	(cd $(srctree); $(PYTEST))
+
+PHONY += check
+
 # barebox image
+# ---------------------------------------------------------------------------
 barebox: $(BAREBOX_LDS) $(BAREBOX_OBJS) $(kallsyms.o) FORCE
 	$(call if_changed_rule,barebox__)
 	$(Q)rm -f .old_version

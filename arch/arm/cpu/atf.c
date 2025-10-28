@@ -158,6 +158,14 @@ struct bl2_to_bl31_params_mem_v2 *bl2_plat_get_bl31_params_v2(uintptr_t bl32_ent
 
 	p.bl33_ep_info.args.arg0 = 0xffff & read_mpidr();
 	p.bl33_ep_info.pc = bl33_entry;
+	/*
+	 * The FDT address is passed via arg3 to the BL32. The BL31 which is in
+	 * charge to start the BL32, adapts this information and passes the FDT
+	 * via arg2 to the BL32 in case of OP-TEE since OP-TEE expects the FDT
+	 * within arg2. The reason for this behaviour is the TF-A legacy code
+	 * path which uses arg0 to specify the SPSR (AARCH32, AARCH64) state.
+	 * Therefore all OP-TEE call arguments are shifted by one.
+	 */
 	p.bl32_ep_info.args.arg3 = fdt_addr;
 	p.bl32_ep_info.pc = bl32_entry;
 

@@ -237,14 +237,19 @@ int imx93_romapi_load_image(void *adr)
 const u32 *imx8m_get_bootrom_log(void)
 {
 	if (current_el() == 3) {
+		bool remap_zero_page = zero_page_remappable();
 		ulong *rom_log_addr_offset = (void *)0x9e0;
 		ulong rom_log_addr;
 
 		OPTIMIZER_HIDE_VAR(rom_log_addr_offset);
 
-		zero_page_access();
+		if (remap_zero_page)
+			zero_page_access();
+
 		rom_log_addr = *rom_log_addr_offset;
-		zero_page_faulting();
+
+		if (remap_zero_page)
+			zero_page_faulting();
 
 		if (rom_log_addr < MX8M_OCRAM_BASE_ADDR ||
 		    rom_log_addr >= MX8M_OCRAM_BASE_ADDR + MX8M_OCRAM_MAX_SIZE ||

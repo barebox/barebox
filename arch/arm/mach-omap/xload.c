@@ -181,7 +181,7 @@ static void *omap_serial_boot(void){
 		return NULL;
 	}
 
-	cdev = console_get_first_active();
+	cdev = console_get_first_interactive();
 	if (!cdev) {
 		printf("failed to get console\n");
 		return NULL;

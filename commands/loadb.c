@@ -628,7 +628,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 			return -ENODEV;
 		}
 	} else {
-		cdev = console_get_first_active();
+		cdev = console_get_first_interactive();
 		if (!cdev) {
 			printf("No console device with STDIN and STDOUT\n");
 			return -ENODEV;

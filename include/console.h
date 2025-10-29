@@ -199,7 +199,7 @@ bool console_allow_color(void);
 extern struct list_head console_list;
 #define for_each_console(console) list_for_each_entry(console, &console_list, list)
 
-struct console_device *console_get_first_active(void);
+struct console_device *console_get_first_interactive(void);
 
 extern int barebox_loglevel;
 static inline int barebox_set_loglevel(int loglevel)
@@ -211,7 +211,7 @@ static inline int barebox_set_loglevel(int loglevel)
 #else
 #define for_each_console(console) while (((void)console, 0))
 
-static inline struct console_device *console_get_first_active(void)
+static inline struct console_device *console_get_first_interactive(void)
 {
 	return NULL;
 }

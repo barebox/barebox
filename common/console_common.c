@@ -24,6 +24,7 @@
 #include <linux/math64.h>
 #include <linux/sizes.h>
 #include <linux/overflow.h>
+#include <security/config.h>
 
 #ifndef CONFIG_CONSOLE_NONE
 
@@ -337,10 +338,15 @@ EXPORT_SYMBOL(console_get_by_name);
  * @return console device which is registered with CONSOLE_STDIN and
  * CONSOLE_STDOUT
  */
-struct console_device *console_get_first_active(void)
+struct console_device *console_get_first_interactive(void)
 {
 	struct console_device *cdev;
 	const unsigned char active = CONSOLE_STDIN | CONSOLE_STDOUT;
+
+	/* if no console input is allows, then we can't have STDIN on any. */
+	if (!IS_ALLOWED(SCONFIG_CONSOLE_INPUT))
+		return NULL;
+
 	/*
 	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
 	 * same output console
@@ -352,7 +358,7 @@ struct console_device *console_get_first_active(void)
 
 	return NULL;
 }
-EXPORT_SYMBOL(console_get_first_active);
+EXPORT_SYMBOL(console_get_first_interactive);
 
 struct console_device *of_console_get_by_alias(const char *alias)
 {

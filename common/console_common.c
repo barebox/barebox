@@ -5,6 +5,7 @@
  * (C) Copyright 2000 Paolo Scaffardi, AIRVENT SAM s.p.a -
  * RIMINI(ITALY), arsenio@tin.it
  */
+#include "stdio.h"
 #include <common.h>
 #include <fs.h>
 #include <errno.h>
@@ -210,6 +211,15 @@ int log_writefile(const char *filepath)
 	return ret < 0 ? ret : nbytes;
 }
 
+/**
+ * log_print - print the log buffer
+ *
+ * @flags:	Flags selecting output formatting
+ * @levels:	bitmask of loglevels to print, 0 for all
+ *
+ * This function prints the messages of the selected levels; optionally with
+ * additional information and formatting.
+ */
 int log_print(unsigned flags, unsigned levels)
 {
 	struct log_entry *log;
@@ -221,7 +231,7 @@ int log_print(unsigned flags, unsigned levels)
 
 		if (levels && !(levels & (1 << log->level)))
 			continue;
-		if (ctrlc())
+		if (ctrlc_non_interruptible())
 			return -EINTR;
 
 		if (!(flags & (BAREBOX_LOG_PRINT_RAW | BAREBOX_LOG_PRINT_TIME

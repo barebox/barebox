@@ -115,6 +115,14 @@ int ubi_io_read(const struct ubi_device *ubi, void *buf, int pnum, int offset,
 	ret = mtd_peb_read(ubi->mtd, buf, pnum, offset, len);
 	if (mtd_is_bitflip(ret))
 		return UBI_IO_BITFLIPS;
+
+	if (ret) {
+		const char *errstr = mtd_is_eccerr(ret) ? " (ECC error)" : "";
+
+		ubi_err(ubi, "error %d%s while reading %d bytes from PEB %d:%d\n",
+			ret, errstr, len, pnum, offset);
+	}
+
 	return ret;
 }
 

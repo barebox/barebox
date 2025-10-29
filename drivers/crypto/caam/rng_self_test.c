@@ -48,6 +48,14 @@
 #include <common.h>
 #include <linux/kernel.h>
 
+#ifdef CONFIG_ARCH_IMX6
+#include <mach/imx/generic.h>
+#include <mach/imx/imx6.h>
+#else
+#define cpu_is_mx6()			false
+#define imx6_cannot_write_l2x0()	false
+#endif
+
 #include "error.h"
 #include "regs.h"
 #include "jr.h"
@@ -143,7 +151,7 @@ static void rng_self_test_done(struct device *dev, u32 *desc, u32 err,
  * * i.MX6DLS silicon revision 1.4
  * * i.MX6SX silicon revision 1.4
  * * i.MX6UL silicon revision 1.2
- * * i.MX67SD silicon revision 1.3
+ * * i.MX7SD silicon revision 1.3
  *
  */
 int caam_rng_self_test(struct device *dev, const u8 caam_era, const u8 rngvid,
@@ -174,6 +182,15 @@ int caam_rng_self_test(struct device *dev, const u8 caam_era, const u8 rngvid,
 		pr_err("Invalid CAAM version: %d,%d,%d\n",
 				caam_era, rngvid, rngrev);
 		return -EINVAL;
+	}
+
+	if (cpu_is_mx6() && imx6_cannot_write_l2x0()) {
+		/* If we enter this if clause, we are likely running
+		 * under OP-TEE, so there is no point in continuing
+		 * and getting -EBUSY waiting for job completion
+		 */
+		pr_info("skipping test in normal world\n");
+		return 0;
 	}
 
 	result = dma_alloc(sizeof(*result) * result_size);

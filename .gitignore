@@ -53,6 +53,9 @@ policy-list
 /TAGS
 /barebox*
 /System.map
+/build
+/oe-logs
+/oe-workdir
 
 #
 # git files that we don't want to ignore even it they are dot-files

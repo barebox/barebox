@@ -28,6 +28,7 @@ config SELFTEST_AUTORUN
 
 config SELFTEST_ENABLE_ALL
 	bool "Enable all self-tests"
+	select SELFTEST_RANGE
 	select SELFTEST_PRINTF
 	select SELFTEST_MALLOC
 	select SELFTEST_PROGRESS_NOTIFIER
@@ -49,6 +50,11 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_DM
 	help
 	  Selects all self-tests compatible with current configuration
+
+config SELFTEST_RANGE
+	bool "range.h selftest"
+	help
+	  Tests range functions
 
 config SELFTEST_MALLOC
 	bool "malloc() selftest"

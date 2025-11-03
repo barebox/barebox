@@ -14,7 +14,7 @@
 #include <linux/fs.h>
 #include <linux/list_sort.h>
 
-struct elf_section {
+struct elf_segment {
 	struct list_head list;
 	struct resource *r;
 	void *phdr;
@@ -26,16 +26,16 @@ static int elf_request_region(struct elf_image *elf, resource_size_t start,
 {
 	struct list_head *list = &elf->list;
 	struct resource *r_new;
-	struct elf_section *r;
+	struct elf_segment *r;
 
 	r = calloc(1, sizeof(*r));
 	if (!r)
 		return -ENOMEM;
 
-	r_new = request_sdram_region("elf_section", start, size,
+	r_new = request_sdram_region("elf_segment", start, size,
 				     MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
 	if (!r_new) {
-		r_new = request_iomem_region("elf_section", start, size);
+		r_new = request_iomem_region("elf_segment", start, size);
 		if (!r_new) {
 			pr_err("Failed to request region: %pa %pa\n", &start, &size);
 			return -EINVAL;
@@ -53,7 +53,7 @@ static int elf_request_region(struct elf_image *elf, resource_size_t start,
 static void elf_release_regions(struct elf_image *elf)
 {
 	struct list_head *list = &elf->list;
-	struct elf_section *r, *r_tmp;
+	struct elf_segment *r, *r_tmp;
 
 	list_for_each_entry_safe(r, r_tmp, list, list) {
 		if (r->is_iomem_region)
@@ -92,16 +92,16 @@ static int request_elf_segment(struct elf_image *elf, void *phdr)
 	return 0;
 }
 
-static int elf_section_cmp(void *priv, struct list_head *a, struct list_head *b)
+static int elf_segment_cmp(void *priv, struct list_head *a, struct list_head *b)
 {
 	struct elf_image *elf = priv;
-	struct elf_section *elf_a, *elf_b;
+	struct elf_segment *elf_a, *elf_b;
 
 	if (a == b)
 		return 0;
 
-	elf_a = list_entry(a, struct elf_section, list);
-	elf_b = list_entry(b, struct elf_section, list);
+	elf_a = list_entry(a, struct elf_segment, list);
+	elf_b = list_entry(b, struct elf_segment, list);
 
 	return elf_phdr_p_offset(elf, elf_a->phdr) >
 	       elf_phdr_p_offset(elf, elf_b->phdr);
@@ -112,7 +112,7 @@ static int load_elf_to_memory(struct elf_image *elf)
 	void *dst;
 	int ret = 0, fd = -1;
 	u64 p_filesz, p_memsz, p_offset;
-	struct elf_section *r;
+	struct elf_segment *r;
 	struct list_head *list = &elf->list;
 
 	if (elf->filename) {
@@ -185,7 +185,7 @@ static int load_elf_image_segments(struct elf_image *elf)
 	 * Sort the list to avoid doing backward lseek while loading the elf
 	 * segments from file to memory(some filesystems don't support it)
 	 */
-	list_sort(elf, &elf->list, elf_section_cmp);
+	list_sort(elf, &elf->list, elf_segment_cmp);
 
 	ret = load_elf_to_memory(elf);
 	if (ret)

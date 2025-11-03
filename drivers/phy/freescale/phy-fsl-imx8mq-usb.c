@@ -5,6 +5,7 @@
 #include <driver.h>
 #include <errno.h>
 #include <init.h>
+#include <regulator.h>
 #include <io.h>
 #include <linux/bitfield.h>
 #include <linux/clk.h>
@@ -40,6 +41,7 @@ struct imx8mq_usb_phy {
 	struct phy *phy;
 	struct clk *clk;
 	void __iomem *base;
+	struct regulator *vbus;
 };
 
 static int imx8mq_usb_phy_init(struct phy *phy)
@@ -109,6 +111,11 @@ static int imx8mp_usb_phy_init(struct phy *phy)
 static int imx8mq_phy_power_on(struct phy *phy)
 {
 	struct imx8mq_usb_phy *imx_phy = phy_get_drvdata(phy);
+	int ret;
+
+	ret = regulator_enable(imx_phy->vbus);
+	if (ret)
+		return ret;
 
 	return clk_enable(imx_phy->clk);
 }
@@ -118,6 +125,7 @@ static int imx8mq_phy_power_off(struct phy *phy)
 	struct imx8mq_usb_phy *imx_phy = phy_get_drvdata(phy);
 
 	clk_disable(imx_phy->clk);
+	regulator_disable(imx_phy->vbus);
 
 	return 0;
 }
@@ -176,6 +184,12 @@ static int imx8mq_usb_phy_probe(struct device *dev)
 	imx_phy->phy = phy_create(dev, NULL, phy_ops);
 	if (IS_ERR(imx_phy->phy))
 		return PTR_ERR(imx_phy->phy);
+
+	imx_phy->vbus = regulator_get(dev, "vbus");
+	if (IS_ERR(imx_phy->vbus)) {
+		imx_phy->vbus = NULL;
+		dev_warn(dev, "Failed to get 'vbus' regulator (ignored).\n");
+	}
 
 	phy_set_drvdata(imx_phy->phy, imx_phy);
 

@@ -405,10 +405,12 @@ int state_from_node(struct state *state, struct device_node *node, bool create)
 	if (create) {
 		const struct state_variable *sv;
 
-		/* start with second entry */
-		sv = list_first_entry(&state->variables, struct state_variable,
-				      list);
+		/* no variable = no variable overlap */
+		sv = list_first_entry_or_null(&state->variables, struct state_variable, list);
+		if (!sv)
+			return 0;
 
+		/* start with second entry */
 		list_for_each_entry_continue(sv, &state->variables, list) {
 			const struct state_variable *last_sv;
 

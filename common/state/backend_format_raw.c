@@ -198,6 +198,18 @@ static int backend_format_raw_unpack(struct state_backend_format *format,
 	return ret;
 }
 
+static inline size_t state_data_size(struct state *state)
+{
+	const struct state_variable *sv;
+
+	/* Make use of the fact that the list is sorted in ascending order */
+	sv = list_last_entry_or_null(&state->variables, struct state_variable, list);
+	if (!sv)
+		return 0;
+
+	return sv->start + sv->size;
+}
+
 static int backend_format_raw_pack(struct state_backend_format *format,
 				   struct state *state, void ** buf_out,
 				   ssize_t * len_out)
@@ -216,8 +228,8 @@ static int backend_format_raw_pack(struct state_backend_format *format,
 			return ret;
 	}
 
-	sv = list_last_entry(&state->variables, struct state_variable, list);
-	size_data = sv->start + sv->size;
+	size_data = state_data_size(state);
+
 	size_full = size_data + sizeof(*header) + backend_raw->digest_length;
 
 	buf = xzalloc(size_full);

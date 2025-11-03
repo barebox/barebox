@@ -40,8 +40,6 @@ SECTIONS
 
 	.data : { *(.data*) }
 
-	.barebox_imd : { BAREBOX_IMD }
-
 	BAREBOX_RELOCATION_TABLE
 
 	_edata = .;

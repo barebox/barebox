@@ -25,6 +25,15 @@
 #include <openssl/param_build.h>
 #include <openssl/store.h>
 
+#include <stdbool.h>
+#include <ctype.h>
+
+struct keyinfo {
+	char *keyname;
+	char *keyring;
+	char *path;
+};
+
 static int dts, standalone;
 
 static void enomem_exit(const char *func)
@@ -491,7 +500,7 @@ err:
 	return ret ? -EINVAL : 0;
 }
 
-static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_name_c)
+static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *keyring, const char *key_name_c)
 {
 	char group[128];
 	size_t outlen;
@@ -553,6 +562,7 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", key_name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_ECDSA,\n");
 			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
+			fprintf(outfilep, "\t.keyring = \"%s\",\n", keyring);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", key_name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
 			fprintf(outfilep, "\t.ecdsa = &%s,\n", key_name_c);
@@ -565,9 +575,9 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *key_na
 	return 0;
 }
 
-static const char *try_resolve_env(const char *input)
+static char *try_resolve_env(char *input)
 {
-	const char *var;
+	char *var;
 
 	if (strncmp(input, "__ENV__", 7))
 		return input;
@@ -583,7 +593,7 @@ static const char *try_resolve_env(const char *input)
 	return var;
 }
 
-static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name_c)
+static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *keyring, const char *key_name_c)
 {
 	BIGNUM *modulus, *r_squared;
 	uint64_t exponent = 0;
@@ -659,6 +669,7 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", key_name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_RSA,\n");
 			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
+			fprintf(outfilep, "\t.keyring = \"%s\",\n", keyring);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", key_name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
 			fprintf(outfilep, "\t.rsa = &%s,\n", key_name_c);
@@ -671,18 +682,18 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *key_name
 	return 0;
 }
 
-static int gen_key(const char *keyname, const char *path)
+static int gen_key(struct keyinfo *info)
 {
 	int ret;
 	EVP_PKEY *key;
 	char *tmp, *key_name_c;
 
 	/* key name handling */
-	keyname = try_resolve_env(keyname);
-	if (!keyname)
+	info->keyname = try_resolve_env(info->keyname);
+	if (!info->keyname)
 		exit(1);
 
-	tmp = key_name_c = strdup(keyname);
+	tmp = key_name_c = strdup(info->keyname);
 
 	while (*tmp) {
 		if (*tmp == '-')
@@ -691,32 +702,104 @@ static int gen_key(const char *keyname, const char *path)
 	}
 
 	/* path/URI handling */
-	path = try_resolve_env(path);
-	if (!path)
+	info->path = try_resolve_env(info->path);
+	if (!info->path)
 		exit(1);
 
-	if (!strncmp(path, "pkcs11:", 7)) {
-		ret = engine_get_pub_key(path, &key);
+	if (!strncmp(info->path, "pkcs11:", 7)) {
+		ret = engine_get_pub_key(info->path, &key);
 		if (ret)
 			exit(1);
 	} else {
-		ret = pem_get_pub_key(path, &key);
+		ret = pem_get_pub_key(info->path, &key);
 		if (ret)
 			exit(1);
 	}
 
 	/* generate built-in keys */
-	ret = gen_key_ecdsa(key, keyname, key_name_c);
+	ret = gen_key_ecdsa(key, info->keyname, info->keyring, key_name_c);
 	if (ret == -EOPNOTSUPP)
 		return ret;
 
 	if (ret)
-		ret = gen_key_rsa(key, keyname, key_name_c);
+		ret = gen_key_rsa(key, info->keyname, info->keyring, key_name_c);
 
 	return ret;
 }
 
-static void get_name_path(const char *keyspec, char **keyname, char **path)
+static bool is_identifier(char **s)
+{
+	char *p = *s;
+
+	/* [a-zA-Z] */
+	if (!isalpha(*p))
+		return false;
+	p++;
+
+	/* [a-zA-Z0-9_-]* */
+	while (isalnum(*p) || *p == '_' || *p == '-')
+		p++;
+
+	*s = p;
+	return true;
+}
+
+static bool parse_info(char *p, struct keyinfo *out)
+{
+	char *k = p;
+	char *v;
+
+	if (*p == '\0') /* spec starts with colon. This is valid. */
+		return true;
+
+	if (!is_identifier(&p))
+		return false;
+
+	if (*p == '\0') {
+		out->keyname = strdup(k);
+		if (!k)
+			enomem_exit(__func__);
+		return true; /* legacy syntax */
+	}
+
+	/* new syntax: `<k>=<v>[,k=v[...]]` */
+	for (;;) {
+		if (*p != '=')
+			return false;
+		*p = '\0';
+
+		p++;
+		/* read `<k>=`, excepting <v> */
+		v = p;
+		if (!is_identifier(&p))
+			return false;
+
+		if (*p == '\0' || *p == ',') {
+			char d = *p;
+			*p = '\0';
+			v = strdup(v);
+			if (!v)
+				enomem_exit(__func__);
+			if (strcmp(k, "keyring") == 0)
+				out->keyring = strdup(v);
+			else if (strcmp(k, "hint") == 0)
+				out->keyname = strdup(v);
+			else
+				return false;
+
+			if (d == '\0')
+				return true;
+		} else {
+			return false;
+		}
+		p++;
+		k = p;
+		if (!is_identifier(&p))
+			return true;
+	}
+}
+
+static bool get_name_path(const char *keyspec, struct keyinfo *out)
 {
 	char *sep, *spec;
 
@@ -724,24 +807,24 @@ static void get_name_path(const char *keyspec, char **keyname, char **path)
 	if (!spec)
 		enomem_exit(__func__);
 
-	/* Split <key-hint>:<key-path> pair, <key-hint> is optional */
 	sep = strchr(spec, ':');
 	if (!sep) {
-		*path = spec;
-		return;
+		out->path = spec;
+		return true;
 	}
 
 	*sep = 0;
-	*keyname = strdup(spec);
-	if (!*keyname)
-		enomem_exit(__func__);
-
+	if (!parse_info(spec, out)) {
+		free(spec);
+		return false;
+	}
 	sep++;
-	*path = strdup(sep);
-	if (!*path)
+	out->path = strdup(sep);
+	if (!out->path)
 		enomem_exit(__func__);
 
 	free(spec);
+	return true;
 }
 
 int main(int argc, char *argv[])
@@ -749,6 +832,8 @@ int main(int argc, char *argv[])
 	int i, opt, ret;
 	char *outfile = NULL;
 	int keynum = 1;
+	int keycount;
+	struct keyinfo *keylist;
 
 	outfilep = stdout;
 
@@ -776,11 +861,31 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind == argc) {
-		fprintf(stderr, "Usage: %s [-ods] <key_name_hint>:<crt> ...\n", argv[0]);
+		fprintf(stderr, "Usage: %s [-ods] keyring=<keyring>,hint=<hint>:<crt> ...\n", argv[0]);
 		fprintf(stderr, "\t-o FILE\twrite output into FILE instead of stdout\n");
 		fprintf(stderr, "\t-d\tgenerate device tree snippet instead of C code\n");
 		fprintf(stderr, "\t-s\tgenerate standalone key outside FIT image keyring\n");
 		exit(1);
+	}
+
+	keycount = argc - optind;
+	keylist = calloc(sizeof(struct keyinfo), keycount);
+
+	for (i = 0; i < keycount; i++) {
+		const char *keyspec = argv[optind + i];
+		struct keyinfo *info = &keylist[i];
+
+		if (!keyspec)
+			exit(1);
+
+		if (!strncmp(keyspec, "pkcs11:", 7)) { // legacy format of pkcs11 URI
+			info->path = strdup(keyspec);
+		} else {
+			if (!get_name_path(keyspec, info)) {
+				fprintf(stderr, "invalid keyspec %i: %s\n", optind, keyspec);
+				exit(1);
+			}
+		}
 	}
 
 	if (dts) {
@@ -795,32 +900,24 @@ int main(int argc, char *argv[])
 		fprintf(outfilep, "#include <crypto/rsa.h>\n");
 	}
 
-	for (i = optind; i < argc; i++) {
-		const char *keyspec = argv[i];
-		char *keyname = NULL;
-		char *path = NULL;
 
-		keyspec = try_resolve_env(keyspec);
-		if (!keyspec)
-			exit(1);
+	for (i = 0; i < keycount; i++) {
+		struct keyinfo *info = &keylist[i];
 
-		if (!strncmp(keyspec, "pkcs11:", 7))
-			path = strdup(keyspec);
-		else
-			get_name_path(keyspec, &keyname, &path);
-
-		if (!keyname) {
-			ret = asprintf(&keyname, "key_%d", keynum++);
+		if (!info->keyname) {
+			ret = asprintf(&info->keyname, "key_%d", keynum++);
 			if (ret < 0)
 				enomem_exit("asprintf");
 		}
 
-		ret = gen_key(keyname, path);
+		if (!info->keyring) {
+			info->keyring = strdup("fit");
+			fprintf(stderr, "Warning: No keyring provided in keyspec, defaulting to keyring=fit for %s\n", argv[optind + i]);
+		}
+
+		ret = gen_key(info);
 		if (ret)
 			exit(1);
-
-		free(keyname);
-		free(path);
 	}
 
 	if (dts) {
@@ -828,5 +925,6 @@ int main(int argc, char *argv[])
 		fprintf(outfilep, "};\n");
 	}
 
+	/* all keyinfo fields freed on exit */
 	exit(0);
 }

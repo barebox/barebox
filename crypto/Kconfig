@@ -135,33 +135,42 @@ config CRYPTO_PUBLIC_KEYS
 	depends on CRYPTO_BUILTIN_KEYS
 	string "public keys to compile in"
 	help
-	  This option should be a space separated list of filenames of
-	  PEM-formatted files containing X.509 certificates to be included into
-	  barebox. If an entry starts with "pkcs11:" it is interpreted as a
-	  PKCS#11 URI rather than a file. If an entry starts with a <hint>:
-	  prefix, <hint> is used as a key name hint to find a key without
-	  iterating over all keys.
+	  This option should be a space separated list of filenames of public
+	  key specifications. While other syntaxes are supported for legacy
+	  reasons, each entry should have the format
+	  keyring=<keyring>[,fit-hint=<hint>]:<crt>
+
+	  <keyring> specifies the keyring for the key to be included in (e.g.
+	  "fit" if this key is to be used for fitimage verification).
+
+	  <fit-hint> is used as a key name hint for fitimage verificaiton to
+	  find a key without iterating over all keys.
+
+	  <crt> specifies the path of a public key to be included in barebox.
+	  It can be a PEM-formatted file containing an X.509 certificate. If a
+	  certificate path starts with "pkcs11:" it is interpreted as a PKCS#11
+	  URI rather than a file.
 
 	  Placeholders such as __ENV__VAR_NAME can be used to look up the
-	  corresponding value in the environment variable VAR_NAME for both
-	  public key paths/URIs as well as key name hints.
+	  corresponding value in the environment variable VAR_NAME for public
+	  key paths/URIs as well as key name hints.
 
 	  Examples specified directly:
 
-	  - CONFIG_CRYPTO_PUBLIC_KEYS="pkcs11:object=foo"
-	  - CONFIG_CRYPTO_PUBLIC_KEYS="myhint:pkcs11:object=foo"
-	  - CONFIG_CRYPTO_PUBLIC_KEYS="myhint:pkcs11:object=foo /foobar/baz.der"
-	  - CONFIG_CRYPTO_PUBLIC_KEYS="myhint:pkcs11:object=foo myotherhint:/foobar/baz.der"
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="keyring=fit:pkcs11:object=foo"
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="keyring=fit,fit-hint=myhint:pkcs11:object=foo"
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="keyring=fit,fit-hint=myhint:pkcs11:object=foo keyring=fit:/foobar/baz.der"
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="keyring=fit,fit-hint=myhint:pkcs11:object=foo keyring=fit,fit-hint=myotherhint:/foobar/baz.der"
 
 	  Example specified indirectly by two environment variables:
 
 	  - myhint="myhint"
 	  - myname="pkcs11:object=foo" (.der could be used too)
-	  - CONFIG_CRYPTO_PUBLIC_KEYS="__ENV__myhint:__ENV__myname"
+	  - CONFIG_CRYPTO_PUBLIC_KEYS="keyring=fit,fit-hint=__ENV__myhint:__ENV__myname"
 
 	  Example specified indirectly by a single environment variable:
 
-	  - mykey="myhint:pkcs11:object=foo" (.der could be used too)
+	  - mykey="keyring=fit,fit-hint=myhint:pkcs11:object=foo" (.der could be used too)
 	  - CONFIG_CRYPTO_PUBLIC_KEYS="__ENV__mykey"
 
 endmenu

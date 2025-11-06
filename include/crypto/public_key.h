@@ -13,6 +13,18 @@ enum public_key_type {
 	PUBLIC_KEY_TYPE_ECDSA,
 };
 
+static inline const char *public_key_type_string(enum public_key_type type)
+{
+	switch (type) {
+	case PUBLIC_KEY_TYPE_RSA:
+		return "RSA";
+	case PUBLIC_KEY_TYPE_ECDSA:
+		return "ECDSA";
+	default:
+		return "unknown";
+	}
+}
+
 struct public_key {
 	enum public_key_type type;
 	const char *key_name_hint;

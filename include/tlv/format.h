@@ -18,6 +18,7 @@
 
 #include <linux/compiler.h>
 #include <linux/types.h>
+#include <linux/overflow.h>
 #include <asm/unaligned.h>
 #include <linux/build_bug.h>
 
@@ -48,6 +49,8 @@ struct tlv_header {
 	__be32 length_tlv; /* in bytes */
 	__be32 length_sig; /* in bytes */
 	struct tlv tlvs[];
+	/* __be32 crc; */
+	/* u8 sig[]; */
 };
 static_assert(sizeof(struct tlv_header) == 3 * 4);
 
@@ -56,8 +59,13 @@ static_assert(sizeof(struct tlv_header) == 3 * 4);
 
 static inline size_t tlv_total_len(const struct tlv_header *header)
 {
-	return sizeof(struct tlv_header) + get_unaligned_be32(&header->length_tlv)
-		+ get_unaligned_be32(&header->length_sig) + 4;
+	size_t ret;
+
+	ret = size_add(sizeof(struct tlv_header), get_unaligned_be32(&header->length_tlv));
+	ret = size_add(ret, sizeof(__be32)); /* CRC appended after TLVs */
+	ret = size_add(ret, get_unaligned_be32(&header->length_sig)); /* optional signature appended after CRC */
+
+	return ret; /* SIZE_MAX on overflow */
 }
 
 /*

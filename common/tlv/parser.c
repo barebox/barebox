@@ -16,14 +16,19 @@ int tlv_parse(struct tlv_device *tlvdev,
 	const struct tlv *tlv = NULL;
 	struct tlv_mapping *map = NULL;
 	struct tlv_header *header = tlv_device_header(tlvdev);
-	u32 magic, size;
+	u32 magic;
+	size_t size;
 	int ret = 0;
 	u32 crc = ~0;
-
 
 	magic = be32_to_cpu(header->magic);
 
 	size = tlv_total_len(header);
+
+	if (size == SIZE_MAX) {
+		pr_warn("Invalid TLV header, overflows\n");
+		return -EOVERFLOW;
+	}
 
 	crc = crc32_be(crc, header, size - 4);
 	if (crc != tlv_crc(header)) {
@@ -133,7 +138,8 @@ void tlv_of_unregister_fixup(struct tlv_device *tlvdev)
 struct tlv_header *tlv_read(const char *filename, size_t *nread)
 {
 	struct tlv_header *header = NULL, *tmpheader;
-	int size, fd, ret;
+	size_t size;
+	int fd, ret;
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0)
@@ -152,6 +158,12 @@ struct tlv_header *tlv_read(const char *filename, size_t *nread)
 		goto err;
 
 	size = tlv_total_len(header);
+
+	if (size == SIZE_MAX) {
+		pr_warn("Invalid TLV header, overflows\n");
+		ret = -EOVERFLOW;
+		goto err;
+	}
 
 	tmpheader = realloc(header, size);
 	if (!tmpheader) {

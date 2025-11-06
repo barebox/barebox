@@ -29,9 +29,10 @@
 #include <ctype.h>
 
 struct keyinfo {
-	char *keyname;
+	char *name_hint;
 	char *keyring;
 	char *path;
+	char *name_c;
 };
 
 static int dts, standalone;
@@ -366,7 +367,7 @@ static int print_bignum(BIGNUM *num, int num_bits, int width)
 
 	arr = malloc(num_bits / width * sizeof(*arr));
 	if (!arr)
-		enomem_exit("malloc");
+		enomem_exit(__func__);
 
 	for (i = 0; i < num_bits / width; i++) {
 		BN_mod(tmp, num, big2_32, ctx); /* n = N mod B */
@@ -500,7 +501,7 @@ err:
 	return ret ? -EINVAL : 0;
 }
 
-static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *keyring, const char *key_name_c)
+static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 {
 	char group[128];
 	size_t outlen;
@@ -530,7 +531,7 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *keyrin
 		fprintf(stderr, "ERROR: generating a dts snippet for ECDSA keys is not yet supported\n");
 		return -EOPNOTSUPP;
 	} else {
-		fprintf(outfilep, "\nstatic unsigned char %s_hash[] = {\n\t", key_name_c);
+		fprintf(outfilep, "\nstatic unsigned char %s_hash[] = {\n\t", info->name_c);
 
 		ret = print_hash(key);
 		if (ret)
@@ -538,37 +539,37 @@ static int gen_key_ecdsa(EVP_PKEY *key, const char *key_name, const char *keyrin
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "\nstatic const uint64_t %s_x[] = {", key_name_c);
+		fprintf(outfilep, "\nstatic const uint64_t %s_x[] = {", info->name_c);
 		ret = print_bignum(key_x, bits, 64);
 		if (ret)
 			return ret;
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static const uint64_t %s_y[] = {", key_name_c);
+		fprintf(outfilep, "static const uint64_t %s_y[] = {", info->name_c);
 		ret = print_bignum(key_y, bits, 64);
 		if (ret)
 			return ret;
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static struct ecdsa_public_key %s = {\n", key_name_c);
+		fprintf(outfilep, "static struct ecdsa_public_key %s = {\n", info->name_c);
 
 		fprintf(outfilep, "\t.curve_name = \"%s\",\n", group);
-		fprintf(outfilep, "\t.x = %s_x,\n", key_name_c);
-		fprintf(outfilep, "\t.y = %s_y,\n", key_name_c);
+		fprintf(outfilep, "\t.x = %s_x,\n", info->name_c);
+		fprintf(outfilep, "\t.y = %s_y,\n", info->name_c);
 		fprintf(outfilep, "};\n");
 		if (!standalone) {
-			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", key_name_c);
+			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", info->name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_ECDSA,\n");
-			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
-			fprintf(outfilep, "\t.keyring = \"%s\",\n", keyring);
-			fprintf(outfilep, "\t.hash = %s_hash,\n", key_name_c);
+			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
+			fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyring);
+			fprintf(outfilep, "\t.hash = %s_hash,\n", info->name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
-			fprintf(outfilep, "\t.ecdsa = &%s,\n", key_name_c);
+			fprintf(outfilep, "\t.ecdsa = &%s,\n", info->name_c);
 			fprintf(outfilep, "};\n");
 			fprintf(outfilep, "\n");
-			fprintf(outfilep, "const struct public_key *__%s_public_key __ll_elem(.public_keys.rodata.%s) = &%s_public_key;\n", key_name_c, key_name_c, key_name_c);
+			fprintf(outfilep, "const struct public_key *__%s_public_key __ll_elem(.public_keys.rodata.%s) = &%s_public_key;\n", info->name_c, info->name_c, info->name_c);
 		}
 	}
 
@@ -579,7 +580,7 @@ static char *try_resolve_env(char *input)
 {
 	char *var;
 
-	if (strncmp(input, "__ENV__", 7))
+	if (!input || strncmp(input, "__ENV__", 7))
 		return input;
 
 	var = getenv(input + 7);
@@ -593,7 +594,7 @@ static char *try_resolve_env(char *input)
 	return var;
 }
 
-static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *keyring, const char *key_name_c)
+static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 {
 	BIGNUM *modulus, *r_squared;
 	uint64_t exponent = 0;
@@ -608,7 +609,7 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *keyring,
 	bits = BN_num_bits(modulus);
 
 	if (dts) {
-		fprintf(outfilep, "\t\tkey-%s {\n", key_name_c);
+		fprintf(outfilep, "\t\tkey-%s {\n", info->name_c);
 		fprintf(outfilep, "\t\t\trsa,r-squared = <");
 		ret = print_bignum(r_squared, bits, 32);
 		if (ret)
@@ -626,10 +627,10 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *keyring,
 			exponent & 0xffffffff);
 		fprintf(outfilep, "\t\t\trsa,n0-inverse = <0x%0x>;\n", n0_inv);
 		fprintf(outfilep, "\t\t\trsa,num-bits = <0x%0x>;\n", bits);
-		fprintf(outfilep, "\t\t\tkey-name-hint = \"%s\";\n", key_name_c);
+		fprintf(outfilep, "\t\t\tkey-name-hint = \"%s\";\n", info->name_c);
 		fprintf(outfilep, "\t\t};\n");
 	} else {
-		fprintf(outfilep, "\nstatic unsigned char %s_hash[] = {\n\t", key_name_c);
+		fprintf(outfilep, "\nstatic unsigned char %s_hash[] = {\n\t", info->name_c);
 
 		ret = print_hash(key);
 		if (ret)
@@ -637,14 +638,14 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *keyring,
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "\nstatic const uint32_t %s_modulus[] = {", key_name_c);
+		fprintf(outfilep, "\nstatic const uint32_t %s_modulus[] = {", info->name_c);
 		ret = print_bignum(modulus, bits, 32);
 		if (ret)
 			return ret;
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static const uint32_t %s_rr[] = {", key_name_c);
+		fprintf(outfilep, "static const uint32_t %s_rr[] = {", info->name_c);
 		ret = print_bignum(r_squared, bits, 32);
 		if (ret)
 			return ret;
@@ -652,30 +653,30 @@ static int gen_key_rsa(EVP_PKEY *key, const char *key_name, const char *keyring,
 		fprintf(outfilep, "\n};\n\n");
 
 		if (standalone) {
-			fprintf(outfilep, "struct rsa_public_key __key_%s;\n", key_name_c);
-			fprintf(outfilep, "struct rsa_public_key __key_%s = {\n", key_name_c);
+			fprintf(outfilep, "struct rsa_public_key __key_%s;\n", info->name_c);
+			fprintf(outfilep, "struct rsa_public_key __key_%s = {\n", info->name_c);
 		} else {
-			fprintf(outfilep, "static struct rsa_public_key %s = {\n", key_name_c);
+			fprintf(outfilep, "static struct rsa_public_key %s = {\n", info->name_c);
 		}
 
 		fprintf(outfilep, "\t.len = %d,\n", bits / 32);
 		fprintf(outfilep, "\t.n0inv = 0x%0x,\n", n0_inv);
-		fprintf(outfilep, "\t.modulus = %s_modulus,\n", key_name_c);
-		fprintf(outfilep, "\t.rr = %s_rr,\n", key_name_c);
+		fprintf(outfilep, "\t.modulus = %s_modulus,\n", info->name_c);
+		fprintf(outfilep, "\t.rr = %s_rr,\n", info->name_c);
 		fprintf(outfilep, "\t.exponent = 0x%0lx,\n", exponent);
 		fprintf(outfilep, "};\n");
 
 		if (!standalone) {
-			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", key_name_c);
+			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", info->name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_RSA,\n");
-			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", key_name);
-			fprintf(outfilep, "\t.keyring = \"%s\",\n", keyring);
-			fprintf(outfilep, "\t.hash = %s_hash,\n", key_name_c);
+			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
+			fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyring);
+			fprintf(outfilep, "\t.hash = %s_hash,\n", info->name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
-			fprintf(outfilep, "\t.rsa = &%s,\n", key_name_c);
+			fprintf(outfilep, "\t.rsa = &%s,\n", info->name_c);
 			fprintf(outfilep, "};\n");
 			fprintf(outfilep, "\n");
-			fprintf(outfilep, "const struct public_key *__%s_public_key __ll_elem(.public_keys.rodata.%s) = &%s_public_key;\n", key_name_c, key_name_c, key_name_c);
+			fprintf(outfilep, "const struct public_key *__%s_public_key __ll_elem(.public_keys.rodata.%s) = &%s_public_key;\n", info->name_c, info->name_c, info->name_c);
 		}
 	}
 
@@ -686,23 +687,7 @@ static int gen_key(struct keyinfo *info)
 {
 	int ret;
 	EVP_PKEY *key;
-	char *tmp, *key_name_c;
 
-	/* key name handling */
-	info->keyname = try_resolve_env(info->keyname);
-	if (!info->keyname)
-		exit(1);
-
-	tmp = key_name_c = strdup(info->keyname);
-
-	while (*tmp) {
-		if (*tmp == '-')
-			*tmp = '_';
-		tmp++;
-	}
-
-	/* path/URI handling */
-	info->path = try_resolve_env(info->path);
 	if (!info->path)
 		exit(1);
 
@@ -717,12 +702,12 @@ static int gen_key(struct keyinfo *info)
 	}
 
 	/* generate built-in keys */
-	ret = gen_key_ecdsa(key, info->keyname, info->keyring, key_name_c);
+	ret = gen_key_ecdsa(key, info);
 	if (ret == -EOPNOTSUPP)
 		return ret;
 
 	if (ret)
-		ret = gen_key_rsa(key, info->keyname, info->keyring, key_name_c);
+		ret = gen_key_rsa(key, info);
 
 	return ret;
 }
@@ -756,7 +741,7 @@ static bool parse_info(char *p, struct keyinfo *out)
 		return false;
 
 	if (*p == '\0') {
-		out->keyname = strdup(k);
+		out->name_hint = strdup(k);
 		if (!k)
 			enomem_exit(__func__);
 		return true; /* legacy syntax */
@@ -782,8 +767,8 @@ static bool parse_info(char *p, struct keyinfo *out)
 				enomem_exit(__func__);
 			if (strcmp(k, "keyring") == 0)
 				out->keyring = strdup(v);
-			else if (strcmp(k, "hint") == 0)
-				out->keyname = strdup(v);
+			else if (strcmp(k, "fit-hint") == 0)
+				out->name_hint = strdup(v);
 			else
 				return false;
 
@@ -831,7 +816,6 @@ int main(int argc, char *argv[])
 {
 	int i, opt, ret;
 	char *outfile = NULL;
-	int keynum = 1;
 	int keycount;
 	struct keyinfo *keylist;
 
@@ -861,7 +845,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind == argc) {
-		fprintf(stderr, "Usage: %s [-ods] keyring=<keyring>,hint=<hint>:<crt> ...\n", argv[0]);
+		fprintf(stderr, "Usage: %s [-ods] keyring=<keyring>[,fit-hint=<hint>]:<crt> ...\n", argv[0]);
 		fprintf(stderr, "\t-o FILE\twrite output into FILE instead of stdout\n");
 		fprintf(stderr, "\t-d\tgenerate device tree snippet instead of C code\n");
 		fprintf(stderr, "\t-s\tgenerate standalone key outside FIT image keyring\n");
@@ -904,11 +888,16 @@ int main(int argc, char *argv[])
 	for (i = 0; i < keycount; i++) {
 		struct keyinfo *info = &keylist[i];
 
-		if (!info->keyname) {
-			ret = asprintf(&info->keyname, "key_%d", keynum++);
-			if (ret < 0)
-				enomem_exit("asprintf");
-		}
+		/* resolve __ENV__ for name_hint and path */
+		info->name_hint = try_resolve_env(info->name_hint);
+		info->path = try_resolve_env(info->path);
+
+		if (asprintf(&info->name_c, "key_%i", i + 1) < 0)
+			enomem_exit("asprintf");
+
+		/* unfortunately, the fit name hint is mandatory in the barebox codebase */
+		if (!info->name_hint)
+			info->name_hint = info->name_c;
 
 		if (!info->keyring) {
 			info->keyring = strdup("fit");

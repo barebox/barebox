@@ -47,11 +47,12 @@ struct tlv {
 struct tlv_header {
 	__be32 magic;
 	__be32 length_tlv; /* in bytes */
-	__be32 length_sig; /* in bytes */
+	__be16 reserved;
+	__be16 length_sig; /* in bytes */
 	struct tlv tlvs[];
-	/* __be32 crc; */
 	/* u8 sig[]; */
-};
+	/* __be32 crc; */
+} __packed;
 static_assert(sizeof(struct tlv_header) == 3 * 4);
 
 #define for_each_tlv(tlv_head, tlv) \
@@ -62,8 +63,19 @@ static inline size_t tlv_total_len(const struct tlv_header *header)
 	size_t ret;
 
 	ret = size_add(sizeof(struct tlv_header), get_unaligned_be32(&header->length_tlv));
-	ret = size_add(ret, sizeof(__be32)); /* CRC appended after TLVs */
-	ret = size_add(ret, get_unaligned_be32(&header->length_sig)); /* optional signature appended after CRC */
+	ret = size_add(ret, get_unaligned_be16(&header->length_sig)); /* optional signature appended after TLVs */
+	ret = size_add(ret, sizeof(__be32)); /* CRC at end of file */
+
+	return ret; /* SIZE_MAX on overflow */
+}
+
+/*
+ * Retrieve length of header+TLVs (offset of spki hash part of signature if available)
+ */
+
+static inline size_t tlv_spki_hash_offset(const struct tlv_header *header)
+{
+	size_t ret = size_add(sizeof(struct tlv_header), get_unaligned_be32(&header->length_tlv));
 
 	return ret; /* SIZE_MAX on overflow */
 }

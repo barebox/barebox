@@ -3,6 +3,7 @@
 
 #include <digest.h>
 #include <linux/idr.h>
+#include <string.h>
 
 struct rsa_public_key;
 struct ecdsa_public_key;
@@ -26,13 +27,19 @@ struct public_key {
 };
 
 int public_key_add(struct public_key *key);
-const struct public_key *public_key_get(const char *name);
+const struct public_key *public_key_get(const char *name, const char *keyring);
 const struct public_key *public_key_next(const struct public_key *prev);
 
 extern struct idr public_keys;
 
 #define for_each_public_key(key, id) \
 		idr_for_each_entry(&public_keys, key, id)
+
+#define for_each_public_key_keyring(key, id, _keyring)                    \
+	for_each_public_key(key, id)                                      \
+		if (!key->keyring || strcmp(key->keyring, _keyring) != 0) \
+			continue;                                         \
+		else
 
 int public_key_verify(const struct public_key *key, const uint8_t *sig,
 		      const uint32_t sig_len, const uint8_t *hash,

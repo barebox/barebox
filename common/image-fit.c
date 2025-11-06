@@ -261,7 +261,7 @@ static struct digest *fit_alloc_digest(struct device_node *sig_node,
 static int fit_check_signature(struct fit_handle *handle, struct device_node *sig_node,
 			       enum hash_algo algo, void *hash)
 {
-	const char *fail_reason = "no built-in keys";
+	const char *fail_reason;
 	const struct public_key *key;
 	const char *key_name = NULL;
 	int sig_len;
@@ -274,10 +274,13 @@ static int fit_check_signature(struct fit_handle *handle, struct device_node *si
 		return -EINVAL;
 	}
 
+	fail_reason = "no matching keys";
+
 	of_property_read_string(sig_node, "key-name-hint", &key_name);
 	if (key_name) {
-		key = public_key_get(key_name);
+		key = public_key_get(key_name, "fit");
 		if (key) {
+			fail_reason = "verification failed";
 			ret = public_key_verify(key, sig_value, sig_len, hash, algo);
 			if (handle->verbose)
 				pr_info("Key %*phN (%s) -> signature %s\n", key->hashlen,
@@ -287,13 +290,13 @@ static int fit_check_signature(struct fit_handle *handle, struct device_node *si
 		}
 	}
 
-	for_each_public_key(key, id) {
-		fail_reason = "verification failed";
+	for_each_public_key_keyring(key, id, "fit") {
 
-		/* Don't recheck with same key_name as before */
+		/* Don't recheck with same key as before */
 		if (key_name && streq_ptr(key->key_name_hint, key_name))
 			continue;
 
+		fail_reason = "verification failed";
 		ret = public_key_verify(key, sig_value, sig_len, hash, algo);
 
 		if (handle->verbose)

@@ -41,7 +41,7 @@ struct idr {
 	     *tmp = iter ? list_next_entry(iter, list) : NULL;		\
 	     (iter && iter != (_idr)) || (_entry = NULL);		\
 	     iter = tmp, tmp = tmp ?  list_next_entry(tmp, list) : NULL)\
-	if ((_entry = iter->ptr, _id = iter->id, true))
+	if ((_entry = iter->ptr, _id = iter->id, false)) {} else
 
 struct idr *__idr_find(struct idr *head, int lookup_id);
 

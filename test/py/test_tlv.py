@@ -94,10 +94,10 @@ class _TLV_Testdata:
         self.data = self.scripts_dir / "data-example.yaml"
         self.schema = self.scripts_dir / "schema-example.yaml"
         self.generator_py = self.scripts_dir / "bareboxtlv-generator.py"
-        self.privkey_rsa = Path("crypto/fit-4096-development.key")
-        self.pubkey_rsa = Path("crypto/fit-4096-development.crt")
-        self.privkey_ecdsa = Path("crypto/fit-ecdsa-development.key")
-        self.pubkey_ecdsa = Path("crypto/fit-ecdsa-development.crt")
+        self.privkey_rsa = Path("crypto/snakeoil-4096-development.pem")
+        self.pubkey_rsa = Path("crypto/snakeoil-4096-development.pem")
+        self.privkey_ecdsa = Path("crypto/snakeoil-ecdsa-development.pem")
+        self.pubkey_ecdsa = Path("crypto/snakeoil-ecdsa-development.pem")
         self.unsigned_bin = self.dir / "unsigned.tlv"
         self.corrupted_bin = self.dir / "unsigned_corrupted.tlv"
         self.signed_bin = self.dir / "signed.tlv"

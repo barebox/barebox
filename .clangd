@@ -1,3 +1,2 @@
 CompileFlags:
   Remove: [ -mabi=lp64, -fno-allow-store-data-races]
-  Add: [ -enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang ]

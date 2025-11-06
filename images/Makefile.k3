@@ -20,7 +20,15 @@ endif
 ifdef CONFIG_ARCH_K3_SIGNING_KEY_TI_DEVEL
 KEY_custmpk=$(srctree)/arch/arm/mach-k3/custMpk.pem
 else
-KEY_custmpk="$(CONFIG_ARCH_K3_SIGNING_KEY)"
+
+k3_sigining_key=$(call remove_quotes,$(CONFIG_ARCH_K3_SIGNING_KEY))
+
+ifeq ($(CONFIG_ARCH_K3_SIGNING_KEY_ENV),y)
+KEY_custmpk=$(shell echo $$$(k3_sigining_key))
+else
+KEY_custmpk=$(k3_sigining_key)
+endif
+
 endif
 KEY_degenerate=$(srctree)/arch/arm/mach-k3/ti-degenerate-key.pem
 

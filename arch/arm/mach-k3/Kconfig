@@ -81,6 +81,14 @@ config ARCH_K3_SIGNING_KEY_CUSTOM
 
 endchoice
 
+config ARCH_K3_SIGNING_KEY_ENV
+	bool "Specify signing key in environment"
+	depends on ARCH_K3_SIGNING_KEY_CUSTOM
+	help
+	  If this option is enabled the content of CONFIG_ARCH_K3_SIGNING_KEY
+	  is treated as name of an environment variable rather than a filename/uri
+	  directly which allows for better integration with build systems.
+
 config ARCH_K3_SIGNING_KEY
 	string "Signing key"
 	depends on ARCH_K3_SIGNING_KEY_CUSTOM

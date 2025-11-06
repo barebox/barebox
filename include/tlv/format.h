@@ -23,6 +23,7 @@
 #include <linux/build_bug.h>
 
 #define TLV_MAGIC_BAREBOX_V1		0x61bb95f2
+#define TLV_MAGIC_BAREBOX_V1_SIGNED	0x61bb95f3
 #define TLV_MAGIC_LXA_BASEBOARD_V1	0xbc288dfe
 #define TLV_MAGIC_LXA_POWERBOARD_V1	0xc6895c21
 #define TLV_MAGIC_LXA_IOBOARD_V1	0xdca5a870

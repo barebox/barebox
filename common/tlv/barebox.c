@@ -177,16 +177,39 @@ static struct of_device_id of_matches[] = {
 	{ .compatible = "barebox,tlv-v1" },
 	{ /* sentinel */}
 };
+static struct of_device_id of_matches_signed[] = {
+	{ .compatible = "barebox,tlv-v1-signed" },
+	{ /* sentinel */ }
+};
 
 static struct tlv_decoder barebox_tlv_v1 = {
 	.magic = TLV_MAGIC_BAREBOX_V1,
 	.driver.name = "barebox-tlv-v1",
 	.driver.of_compatible = of_matches,
 	.mappings = mappings,
+	.signature_keyring = NULL,
+};
+
+static struct tlv_decoder barebox_tlv_v1_signed = {
+	.magic = TLV_MAGIC_BAREBOX_V1_SIGNED,
+	.driver.name = "barebox-tlv-v1-signed",
+	.driver.of_compatible = of_matches_signed,
+	.mappings = mappings,
+	.signature_keyring = "tlv-generic",
 };
 
 static int tlv_register_default(void)
 {
-	return tlv_register_decoder(&barebox_tlv_v1);
+	int err;
+
+	err = tlv_register_decoder(&barebox_tlv_v1);
+	if (err)
+		return err;
+	if (IS_ENABLED(CONFIG_TLV_SIGNATURE)) {
+		err = tlv_register_decoder(&barebox_tlv_v1_signed);
+		if (err)
+			return err;
+	}
+	return 0;
 }
 device_initcall(tlv_register_default);

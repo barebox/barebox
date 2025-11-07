@@ -127,15 +127,15 @@ static int do_bootm_efi(struct image_data *data)
 	return 0;
 }
 
-static struct image_handler efi_handle_tr = {
+static struct image_handler efi_x86_linux_handle_handover = {
 	.name = "EFI Application",
 	.bootm = do_bootm_efi,
-	.filetype = filetype_exe,
+	.filetype = filetype_x86_efi_linux_image,
 };
 
 static int efi_register_handover_handler(void)
 {
-	register_image_handler(&efi_handle_tr);
+	register_image_handler(&efi_x86_linux_handle_handover);
 	return 0;
 }
 late_efi_initcall(efi_register_handover_handler);

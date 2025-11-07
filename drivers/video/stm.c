@@ -8,6 +8,9 @@
  * Copyright 2008-2009 Freescale Semiconductor, Inc. All Rights Reserved.
  * Copyright 2008 Embedded Alley Solutions, Inc All Rights Reserved.
  */
+
+#define pr_fmt(fmt) "stmfb: " fmt
+
 #include <common.h>
 #include <init.h>
 #include <driver.h>
@@ -47,24 +50,16 @@
 # define GET_BYTE_PACKAGING(x) (((x) >> 16) & 0xf)
 # define CTRL1_RESET (1 << 0)
 
-#ifdef CONFIG_ARCH_IMX28
-# define HW_LCDIF_CTRL2 0x20
-# define HW_LCDIF_TRANSFER_COUNT 0x30
-#endif
-#ifdef CONFIG_ARCH_IMX23
-# define HW_LCDIF_TRANSFER_COUNT 0x20
-#endif
+#define LCDC_V3_TRANSFER_COUNT		0x20
+#define LCDC_V4_TRANSFER_COUNT		0x30
+
 # define SET_VCOUNT(x) (((x) & 0xffff) << 16)
 # define SET_HCOUNT(x) ((x) & 0xffff)
 
-#ifdef CONFIG_ARCH_IMX28
-# define HW_LCDIF_CUR_BUF 0x40
-# define HW_LCDIF_NEXT_BUF 0x50
-#endif
-#ifdef CONFIG_ARCH_IMX23
-# define HW_LCDIF_CUR_BUF 0x30
-# define HW_LCDIF_NEXT_BUF 0x40
-#endif
+#define LCDC_V3_CUR_BUF			0x30
+#define LCDC_V3_NEXT_BUF		0x40
+#define LCDC_V4_CUR_BUF			0x40
+#define LCDC_V4_NEXT_BUF		0x50
 
 #define HW_LCDIF_TIMING 0x60
 # define SET_CMD_HOLD(x) (((x) & 0xff) << 24)
@@ -87,12 +82,8 @@
 #define HW_LCDIF_VDCTRL1 0x80
 
 #define HW_LCDIF_VDCTRL2 0x90
-#ifdef CONFIG_ARCH_IMX28
-# define SET_HSYNC_PULSE_WIDTH(x) (((x) & 0x3fff) << 18)
-#endif
-#ifdef CONFIG_ARCH_IMX23
-# define SET_HSYNC_PULSE_WIDTH(x) (((x) & 0xff) << 24)
-#endif
+# define SET_HSYNC_PULSE_WIDTH(devdata, x) \
+	(((x) & (devdata)->hs_wdth_mask) << (devdata)->hs_wdth_shift)
 # define SET_HSYNC_PERIOD(x) ((x) & 0x3ffff)
 
 #define HW_LCDIF_VDCTRL3 0xa0
@@ -102,9 +93,6 @@
 # define SET_VERT_WAIT_CNT(x) ((x) & 0xffff)
 
 #define HW_LCDIF_VDCTRL4 0xb0
-#ifdef CONFIG_ARCH_IMX28
-# define SET_DOTCLK_DLY(x) (((x) & 0x7) << 29)
-#endif
 # define VDCTRL4_SYNC_SIGNALS_ON (1 << 18)
 # define SET_DOTCLK_H_VALID_DATA_CNT(x) ((x) & 0x3ffff)
 
@@ -114,19 +102,9 @@
 #define HW_LCDIF_DVICTRL3 0xf0
 #define HW_LCDIF_DVICTRL4 0x100
 
-#ifdef CONFIG_ARCH_IMX28
-# define HW_LCDIF_DATA 0x180
-#endif
-#ifdef CONFIG_ARCH_IMX23
-# define HW_LCDIF_DATA 0x1b0
-#endif
+#define LCDC_V3_DEBUG0 0x1f0
+#define LCDC_V4_DEBUG0 0x1d0
 
-#ifdef CONFIG_ARCH_IMX28
-# define HW_LCDIF_DEBUG0 0x1d0
-#endif
-#ifdef CONFIG_ARCH_IMX23
-# define HW_LCDIF_DEBUG0 0x1f0
-#endif
 # define DEBUG_HSYNC (1 < 26)
 # define DEBUG_VSYNC (1 < 25)
 
@@ -146,7 +124,7 @@ struct imxfb_info {
 	unsigned flags;
 	unsigned ld_intf_width;
 	void (*enable)(int enable);
-	unsigned dotclk_delay;
+	const struct mxsfb_devdata *devdata;
 };
 
 /* the RGB565 true colour mode */
@@ -216,6 +194,7 @@ static inline unsigned calc_line_length(unsigned ppl, unsigned bpp)
 static void stmfb_enable_controller(struct fb_info *fb_info)
 {
 	struct imxfb_info *fbi = fb_info->priv;
+	const struct mxsfb_devdata *devdata = fbi->devdata;
 	uint32_t reg, last_reg;
 	unsigned loop, edges;
 
@@ -244,9 +223,9 @@ static void stmfb_enable_controller(struct fb_info *fb_info)
 
 	while (edges != 0) {
 		loop = 800;
-		last_reg = readl(fbi->base + HW_LCDIF_DEBUG0) & DEBUG_VSYNC;
+		last_reg = readl(fbi->base + devdata->debug0) & DEBUG_VSYNC;
 		do {
-			reg = readl(fbi->base + HW_LCDIF_DEBUG0) & DEBUG_VSYNC;
+			reg = readl(fbi->base + devdata->debug0) & DEBUG_VSYNC;
 			if (reg != last_reg)
 				break;
 			last_reg = reg;
@@ -307,6 +286,7 @@ static void stmfb_disable_controller(struct fb_info *fb_info)
 static int stmfb_activate_var(struct fb_info *fb_info)
 {
 	struct imxfb_info *fbi = fb_info->priv;
+	const struct mxsfb_devdata *devdata = fbi->devdata;
 	struct fb_videomode *mode = fb_info->mode;
 	uint32_t reg;
 	unsigned size;
@@ -430,8 +410,8 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	writel(reg, fbi->base + HW_LCDIF_CTRL);
 	pr_debug("Setting up CTRL to %08X\n", reg);
 
-	writel(SET_VCOUNT(mode->yres) |
-		SET_HCOUNT(mode->xres), fbi->base + HW_LCDIF_TRANSFER_COUNT);
+	writel(SET_VCOUNT(mode->yres) | SET_HCOUNT(mode->xres),
+	       fbi->base + devdata->transfer_count);
 
 	reg = VDCTRL0_ENABLE_PRESENT |	/* always in DOTCLOCK mode */
 		VDCTRL0_VSYNC_PERIOD_UNIT |
@@ -457,7 +437,7 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 		fbi->base + HW_LCDIF_VDCTRL1);
 
 	/* line length in units of clocks or pixels */
-	writel(SET_HSYNC_PULSE_WIDTH(mode->hsync_len) |
+	writel(SET_HSYNC_PULSE_WIDTH(devdata, mode->hsync_len) |
 		SET_HSYNC_PERIOD(mode->left_margin + mode->hsync_len +
 			mode->right_margin + mode->xres),
 		fbi->base + HW_LCDIF_VDCTRL2);
@@ -466,15 +446,11 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 		SET_VERT_WAIT_CNT(mode->upper_margin + mode->vsync_len),
 		fbi->base + HW_LCDIF_VDCTRL3);
 
-	writel(
-#ifdef CONFIG_ARCH_IMX28
-		SET_DOTCLK_DLY(fbi->dotclk_delay) |
-#endif
-		SET_DOTCLK_H_VALID_DATA_CNT(mode->xres),
+	writel(SET_DOTCLK_H_VALID_DATA_CNT(mode->xres),
 		fbi->base + HW_LCDIF_VDCTRL4);
 
-	writel((uint32_t)fb_info->screen_base, fbi->base + HW_LCDIF_CUR_BUF);
-	writel((uint32_t)fb_info->screen_base, fbi->base + HW_LCDIF_NEXT_BUF);
+	writel((uintptr_t)fb_info->screen_base, fbi->base + devdata->cur_buf);
+	writel((uintptr_t)fb_info->screen_base, fbi->base + devdata->next_buf);
 
 	return 0;
 }
@@ -519,6 +495,21 @@ static int stmfb_probe(struct device *hw_dev)
 
 	/* add runtime video info */
 	if (pdata) {
+		if (!pdata->devdata) {
+			const char *name;
+
+			if (IS_ENABLED(CONFIG_ARCH_IMX23)) {
+				pdata->devdata = &mxsfb_devdata[MXSFB_V3];
+				name = "MXSFB_V3";
+			} else {
+				pdata->devdata = &mxsfb_devdata[MXSFB_V4];
+				name = "MXSFB_V4";
+			}
+
+			pr_warn("imx_fb_platformdata::devdata unset. Assuming %s\n",
+				name);
+		}
+
 		fbi.info.modes.modes = pdata->mode_list;
 		fbi.info.modes.num_modes = pdata->mode_cnt;
 		fbi.info.mode = &fbi.info.modes.modes[0];
@@ -534,6 +525,10 @@ static int stmfb_probe(struct device *hw_dev)
 		struct device_node *display;
 
 		if (!IS_ENABLED(CONFIG_OFDEVICE) || !hw_dev->of_node)
+			return -EINVAL;
+
+		fbi.devdata = device_get_match_data(hw_dev);
+		if (!fbi.devdata)
 			return -EINVAL;
 
 		display = of_parse_phandle(hw_dev->of_node, "display", 0);
@@ -573,11 +568,33 @@ static int stmfb_probe(struct device *hw_dev)
 	return 0;
 }
 
+const struct mxsfb_devdata mxsfb_devdata[] = {
+	[MXSFB_V3] = {
+		.transfer_count	= LCDC_V3_TRANSFER_COUNT,
+		.cur_buf	= LCDC_V3_CUR_BUF,
+		.next_buf	= LCDC_V3_NEXT_BUF,
+		.debug0		= LCDC_V3_DEBUG0,
+		.hs_wdth_mask	= 0xff,
+		.hs_wdth_shift	= 24,
+	},
+	[MXSFB_V4] = {
+		.transfer_count	= LCDC_V4_TRANSFER_COUNT,
+		.cur_buf	= LCDC_V4_CUR_BUF,
+		.next_buf	= LCDC_V4_NEXT_BUF,
+		.debug0		= LCDC_V4_DEBUG0,
+		.hs_wdth_mask	= 0x3fff,
+		.hs_wdth_shift	= 18,
+	},
+};
+EXPORT_SYMBOL(mxsfb_devdata);
+
 static __maybe_unused struct of_device_id stmfb_compatible[] = {
 	{
 		.compatible = "fsl,imx23-lcdif",
+		.data = &mxsfb_devdata[MXSFB_V3],
 	}, {
 		.compatible = "fsl,imx28-lcdif",
+		.data = &mxsfb_devdata[MXSFB_V4],
 	}, {
 		/* sentinel */
 	}

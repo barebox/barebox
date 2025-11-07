@@ -76,6 +76,7 @@ static struct imx_fb_platformdata fb_mode = {
 	.enable = chumby_fb_enable,
 	.fixed_screen = (void *)(0x40000000 + SZ_64M - MAX_FB_SIZE),
 	.fixed_screen_size = MAX_FB_SIZE,
+	.devdata = MXSFB_DEVDATA(MXSFB_V3),
 };
 
 static const uint32_t pad_setup[] = {

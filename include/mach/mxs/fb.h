@@ -18,6 +18,28 @@
 
 #define USE_LCD_RESET		1
 
+enum mxsfb_devtype {
+	MXSFB_V3,
+	MXSFB_V4,
+};
+
+struct mxsfb_devdata {
+	unsigned int	transfer_count;
+	unsigned int	cur_buf;
+	unsigned int	next_buf;
+	unsigned int	debug0;
+	unsigned int	hs_wdth_mask;
+	unsigned int	hs_wdth_shift;
+};
+
+extern const struct mxsfb_devdata mxsfb_devdata[];
+
+#ifdef CONFIG_DRIVER_VIDEO_STM
+#define MXSFB_DEVDATA(devtype) (&mxsfb_devdata[devtype])
+#else
+#define MXSFB_DEVDATA(devtype) 0
+#endif
+
 struct imx_fb_platformdata {
 	struct fb_videomode *mode_list;
 	unsigned mode_cnt;
@@ -31,6 +53,8 @@ struct imx_fb_platformdata {
 
 	unsigned flags;
 	void (*enable)(int enable); /**< hook to enable backlight */
+
+	const struct mxsfb_devdata *devdata;
 };
 
 #endif /* __MACH_FB_H */

@@ -97,6 +97,7 @@
 
 #define pr_fmt(fmt) "hush: " fmt
 
+#include <talloc.h>
 #include <malloc.h>         /* malloc, free, realloc*/
 #include <xfuncs.h>
 #include <linux/ctype.h>    /* isalpha, isdigit */
@@ -180,6 +181,7 @@ struct option {
 
 /* This holds pointers to the various results of parsing */
 struct p_context {
+	const void *scope;
 	struct child_prog *child;
 	struct pipe *list_head;
 	struct pipe *pipe;
@@ -308,7 +310,7 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi);
 /*   variable assignment: */
 static int is_assignment(const char *s);
 /*   data structure manipulation: */
-static void initialize_context(struct p_context *ctx);
+static void initialize_context(struct p_context *ctx, bool newscope);
 static void release_context(struct p_context *ctx);
 static int done_word(o_string *dest, struct p_context *ctx);
 static int done_command(struct p_context *ctx);
@@ -435,7 +437,7 @@ static char *getprompt(void)
 	if (prompt_command) {
 		unsigned int lr = last_return_code;
 
-		initialize_context(&ctx);
+		initialize_context(&ctx, false);
 		parse_string_outer(&ctx, prompt_command, FLAG_PARSE_SEMICOLON);
 		release_context(&ctx);
 
@@ -837,7 +839,7 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 		char * str = NULL;
 		struct p_context ctx1;
 
-		initialize_context(&ctx1);
+		initialize_context(&ctx1, true);
 
 		str = make_string((child->argv + i));
 		rcode = parse_string_outer(&ctx1, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
@@ -1062,7 +1064,8 @@ static int free_pipe(struct pipe *pi, int indent)
 		}
 	}
 
-	free(pi->progs);   /* children are an array, they get freed all at once */
+	/* children are an array, they get freed all at once */
+	talloc_free(pi->progs);
 	pi->progs = NULL;
 
 	return ret_code;
@@ -1079,7 +1082,7 @@ static int free_pipe_list(struct pipe *head, int indent)
 		final_printf("%s pipe followup code %d\n", indenter(indent), pi->followup);
 		next = pi->next;
 		pi->next = NULL;
-		free(pi);
+		talloc_free(pi);
 	}
 	return rcode;
 }
@@ -1182,16 +1185,18 @@ static int is_assignment(const char *s)
 }
 
 
-static struct pipe *new_pipe(void)
+static struct pipe *new_pipe(struct p_context *ctx)
 {
-	return xzalloc(sizeof(struct pipe));
+	return xtalloc_zero_size(ctx->scope, sizeof(struct pipe));
 }
 
-static void initialize_context(struct p_context *ctx)
+static void initialize_context(struct p_context *ctx, bool newscope)
 {
+	if (newscope)
+		ctx->scope = talloc_new(NULL);
 	ctx->pipe = NULL;
 	ctx->child = NULL;
-	ctx->list_head = new_pipe();
+	ctx->list_head = new_pipe(ctx);
 	ctx->pipe = ctx->list_head;
 	ctx->w = RES_NONE;
 	ctx->stack = NULL;
@@ -1211,6 +1216,7 @@ static void release_context(struct p_context *ctx)
 		free(opt);
 	}
 #endif
+	talloc_free((void *)ctx->scope);
 }
 
 /* normal return is 0
@@ -1269,7 +1275,7 @@ static int reserved_word(o_string *dest, struct p_context *ctx)
 				return 1;
 			}
 			*new = *ctx;   /* physical copy */
-			initialize_context(ctx);
+			initialize_context(ctx, false);
 			ctx->stack = new;
 		} else if (ctx->w == RES_NONE || !(ctx->old_flag & (1 << r->code))) {
 			syntax_unexpected_token(r->literal);
@@ -1366,7 +1372,10 @@ static int done_command(struct p_context *ctx)
 	} else {
 		hush_debug("%s: initializing\n", __func__);
 	}
-	pi->progs = xrealloc(pi->progs, sizeof(*pi->progs) * (pi->num_progs + 1));
+	pi->progs = talloc_realloc_size(ctx->scope, pi->progs,
+					sizeof(*pi->progs) * (pi->num_progs + 1));
+	if (!pi->progs)
+		panic("enomem");
 
 	prog = pi->progs + pi->num_progs;
 	prog->glob_result.gl_pathv = NULL;
@@ -1392,7 +1401,7 @@ static int done_pipe(struct p_context *ctx, pipe_style type)
 	ctx->pipe->followup = type;
 	ctx->pipe->r_mode = ctx->w;
 
-	new_p = new_pipe();
+	new_p = new_pipe(ctx);
 
 	ctx->pipe->next = new_p;
 	ctx->pipe = new_p;
@@ -1705,7 +1714,7 @@ char *shell_expand(char *str)
 
 	o.quote = 1;
 
-	initialize_context(&ctx);
+	initialize_context(&ctx, false);
 
 	parse_string(&o, &ctx, str);
 
@@ -1732,7 +1741,7 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 
 	do {
 		ctx->type = flag;
-		initialize_context(ctx);
+		initialize_context(ctx, false);
 		update_ifs_map();
 
 		if (!(flag & FLAG_PARSE_SEMICOLON) || (flag & FLAG_REPARSING))
@@ -1921,7 +1930,7 @@ int run_command(const char *cmd)
 	if (!IS_ALLOWED(SCONFIG_SHELL))
 		return -EPERM;
 
-	initialize_context(&ctx);
+	initialize_context(&ctx, true);
 
 	ret = parse_string_outer(&ctx, cmd, FLAG_PARSE_SEMICOLON);
 	release_context(&ctx);
@@ -1949,7 +1958,7 @@ static int source_script(const char *path, int argc, char *argv[])
 	char *script;
 	int ret;
 
-	initialize_context(&ctx);
+	initialize_context(&ctx, true);
 
 	ctx.global_argc = argc;
 	ctx.global_argv = argv;

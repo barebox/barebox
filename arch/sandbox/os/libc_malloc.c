@@ -98,3 +98,12 @@ void *barebox_calloc(size_t n, size_t elem_size)
 
 	return mem;
 }
+
+#ifdef CONFIG_DEBUG_MEMLEAK
+void barebox_memleak_check(void)
+{
+	void __lsan_do_recoverable_leak_check(void);
+
+	__lsan_do_recoverable_leak_check();
+}
+#endif

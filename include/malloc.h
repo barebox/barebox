@@ -88,4 +88,10 @@ static inline bool want_init_on_free(void)
 	return IS_ENABLED(CONFIG_INIT_ON_FREE_DEFAULT_ON);
 }
 
+#ifdef CONFIG_DEBUG_MEMLEAK
+void memleak_check(void);
+#else
+static inline void memleak_check(void) {}
+#endif
+
 #endif /* __MALLOC_H */

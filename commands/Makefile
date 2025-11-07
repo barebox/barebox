@@ -47,6 +47,7 @@ obj-$(CONFIG_CMD_TRUNCATE)	+= truncate.o
 obj-$(CONFIG_CMD_SYNC)		+= sync.o
 obj-$(CONFIG_CMD_FLASH)		+= flash.o
 obj-$(CONFIG_CMD_MEMINFO)	+= meminfo.o
+obj-$(CONFIG_CMD_CHECKLEAK)	+= checkleak.o
 obj-$(CONFIG_CMD_TIMEOUT)	+= timeout.o
 obj-$(CONFIG_CMD_READLINE)	+= readline.o
 obj-$(CONFIG_CMD_SETENV)	+= setenv.o

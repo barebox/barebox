@@ -26,6 +26,9 @@ wchar_t *xstrdup_wchar(const wchar_t *src);
 wchar_t *xstrdup_char_to_wchar(const char *src);
 char *xstrdup_wchar_to_char(const wchar_t *src);
 
+void *xtalloc_size(const void *parent, size_t size) __xalloc_size(2);
+void *xtalloc_zero_size(const void *parent, size_t size) __xalloc_size(2);
+
 #else
 
 static inline void *xmalloc(size_t size) { BUG(); }
@@ -43,6 +46,9 @@ static inline __printf(2, 3) char *xrasprintf(char *str, const char *fmt, ...) {
 static inline wchar_t *xstrdup_wchar(const wchar_t *src) { BUG(); }
 static inline wchar_t *xstrdup_char_to_wchar(const char *src) { BUG(); }
 static inline char *xstrdup_wchar_to_char(const wchar_t *src) { BUG(); }
+
+static inline void *xtalloc_size(const void *paent, size_t size) { BUG(); }
+static inline void *xtalloc_zero_size(const void *paent, size_t size) { BUG(); }
 #endif
 
 #endif /* __XFUNCS_H */

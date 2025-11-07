@@ -38,6 +38,9 @@ static bool ramdisk_is_fit(struct image_data *data)
 {
 	struct stat st;
 
+	if (!IS_ENABLED(CONFIG_BOOTM_FITIMAGE))
+		return false;
+
 	if (bootm_signed_images_are_forced())
 		return true;
 
@@ -54,6 +57,9 @@ static bool fdt_is_fit(struct image_data *data)
 {
 	struct stat st;
 
+	if (!IS_ENABLED(CONFIG_BOOTM_FITIMAGE))
+		return false;
+
 	if (bootm_signed_images_are_forced())
 		return true;
 
@@ -66,6 +72,17 @@ static bool fdt_is_fit(struct image_data *data)
 			data->fit_config, "fdt") > 0 : false;
 }
 
+static bool os_is_fit(struct image_data *data)
+{
+	if (!IS_ENABLED(CONFIG_BOOTM_FITIMAGE))
+		return false;
+
+	if (bootm_signed_images_are_forced())
+		return true;
+
+	return data->os_fit;
+}
+
 static int efi_load_os(struct image_data *data,
 		       struct efi_loaded_image **loaded_image,
 		       efi_handle_t *handle)
@@ -73,7 +90,7 @@ static int efi_load_os(struct image_data *data,
 	efi_status_t efiret;
 	efi_handle_t h;
 
-	if (!data->os_fit)
+	if (!os_is_fit(data))
 		return efi_load_image(data->os_file, loaded_image, handle);
 
 	if (!data->fit_kernel)

@@ -609,6 +609,9 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 		.compatible = "ti,omap4-uart",
 		.data = &omap_drvdata,
 	}, {
+		.compatible = "ti,am3352-uart",
+		.data = &omap_drvdata,
+	}, {
 		.compatible = "ti,am4372-uart",
 		.data = &omap_clk48m_drvdata,
 	},

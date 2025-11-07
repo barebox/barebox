@@ -344,8 +344,6 @@ EXPORT_SYMBOL(unregister_device);
  */
 void free_device_res(struct device *dev)
 {
-	free(dev->name);
-	dev->name = NULL;
 	free(dev->unique_name);
 	dev->unique_name = NULL;
 	free(dev->deferred_probe_reason);

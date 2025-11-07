@@ -39,10 +39,6 @@ static inline void bobject_init(struct bobject *bobj)
 struct bobject *bobject_alloc(const char *name);
 void bobject_free(struct bobject *bobj);
 
-#ifdef CONFIG_PARAMETER
 void bobject_del(struct bobject *bobj);
-#else
-static inline void bobject_del(struct bobject *bobj) { }
-#endif
 
 #endif

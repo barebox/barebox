@@ -33,19 +33,6 @@
 #include "image.h"
 #include "setup_header.h"
 
-static int efi_do_execute_image(enum filetype filetype, const char *file)
-{
-	efi_handle_t handle;
-	struct efi_loaded_image *loaded_image;
-	int ret;
-
-	ret = efi_load_image(file, &loaded_image, &handle);
-	if (ret)
-		return ret;
-
-	return efi_execute_image(handle, loaded_image, filetype);
-}
-
 typedef void(*handover_fn)(void *image, struct efi_system_table *table,
 			   struct x86_setup_header *header);
 

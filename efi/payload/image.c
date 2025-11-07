@@ -119,14 +119,16 @@ int efi_execute_image(efi_handle_t handle,
 		(loaded_image->image_code_type == EFI_RUNTIME_SERVICES_CODE);
 
 	if (is_linux_image(filetype, loaded_image->image_base)) {
-		pr_debug("Linux kernel detected. Adding bootargs.");
 		options = linux_bootargs_get();
-		pr_info("add linux options '%s'\n", options);
+		printf("Booting kernel via StartImage");
 		if (options) {
+			printf("with options '%s'", options);
 			loaded_image->load_options = xstrdup_char_to_wchar(options);
 			loaded_image->load_options_size =
 				(strlen(options) + 1) * sizeof(wchar_t);
 		}
+		printf("...\n");
+
 		shutdown_barebox();
 	}
 

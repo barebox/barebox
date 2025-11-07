@@ -103,13 +103,14 @@ static int do_bootm_efi(struct image_data *data)
 	boot_header->code32_start = efi_virt_to_phys(loaded_image->image_base +
 			(image_header->setup_sects+1) * 512);
 
+	printf("Booting kernel via handover");
 	if (bootm_verbose(data)) {
-		printf("\nStarting kernel at 0x%p", loaded_image->image_base);
+		printf("at 0x%p", loaded_image->image_base);
 		if (data->initrd_file)
 			printf(", initrd at 0x%08x",
 			       boot_header->ramdisk_image);
-		printf("...\n");
 	}
+	printf("...\n");
 
 	if (data->dryrun) {
 		BS->unload_image(handle);

@@ -14,6 +14,8 @@ static void tlv_devinfo(struct device *dev)
 	printf("Magic: %08x\n", tlvdev->magic);
 }
 
+static struct device_node *tlv_parent_node;
+
 struct tlv_device *tlv_register_device(struct tlv_header *header,
 				       struct device *parent)
 {
@@ -42,7 +44,7 @@ struct tlv_device *tlv_register_device(struct tlv_header *header,
 	if (!name)
 		dev_set_name(dev, "tlv%u", id++);
 
-	dev->device_node = of_new_node(of_new_node(NULL, NULL), dev_name(dev));
+	dev->device_node = of_new_node(tlv_parent_node, dev_name(dev));
 	dev->device_node->dev = dev;
 	register_device(dev);
 
@@ -122,6 +124,8 @@ static void tlv_bus_info(struct device *dev)
 static int tlv_bus_register(void)
 {
 	int ret;
+
+	tlv_parent_node = of_new_node(NULL, NULL);
 
 	ret = bus_register(&tlv_bus);
 	if (ret)

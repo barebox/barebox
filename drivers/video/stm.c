@@ -45,6 +45,7 @@
 # define CTRL_RUN (1 << 0)
 
 #define HW_LCDIF_CTRL1 0x10
+#define CTRL1_RECOVER_ON_UNDERFLOW	(1 << 24)
 # define CTRL1_FIFO_CLEAR (1 << 21)
 # define SET_BYTE_PACKAGING(x) (((x) & 0xf) << 16)
 # define GET_BYTE_PACKAGING(x) (((x) >> 16) & 0xf)
@@ -215,23 +216,57 @@ static void stmfb_enable_controller(struct fb_info *fb_info)
 	writel(reg, fbi->base + HW_LCDIF_VDCTRL4);
 
 	/*
-	 * Give the attached LC display or monitor a chance to sync into
-	 * our signals.
-	 * Wait for at least 2 VSYNCs = four VSYNC edges
+	 * Enable recovery on underflow.
+	 *
+	 * There is some sort of corner case behavior of the controller,
+	 * which could rarely be triggered at least on i.MX6SX connected
+	 * to 800x480 DPI panel and i.MX8MM connected to DPI->DSI->LVDS
+	 * bridged 1920x1080 panel (and likely on other setups too), where
+	 * the image on the panel shifts to the right and wraps around.
+	 * This happens either when the controller is enabled on boot or
+	 * even later during run time. The condition does not correct
+	 * itself automatically, i.e. the display image remains shifted.
+	 *
+	 * It seems this problem is known and is due to sporadic underflows
+	 * of the LCDIF FIFO. While the LCDIF IP does have underflow/overflow
+	 * IRQs, neither of the IRQs trigger and neither IRQ status bit is
+	 * asserted when this condition occurs.
+	 *
+	 * All known revisions of the LCDIF IP have CTRL1 RECOVER_ON_UNDERFLOW
+	 * bit, which is described in the reference manual since i.MX23 as
+	 * "
+	 *   Set this bit to enable the LCDIF block to recover in the next
+	 *   field/frame if there was an underflow in the current field/frame.
+	 * "
+	 * Enable this bit to mitigate the sporadic underflows.
 	 */
-	edges = 4;
+	reg = readl(fbi->base + HW_LCDIF_CTRL1);
+	reg |= CTRL1_RECOVER_ON_UNDERFLOW;
+	writel(reg, fbi->base + HW_LCDIF_CTRL1);
 
-	while (edges != 0) {
-		loop = 800;
-		last_reg = readl(fbi->base + devdata->debug0) & DEBUG_VSYNC;
-		do {
-			reg = readl(fbi->base + devdata->debug0) & DEBUG_VSYNC;
-			if (reg != last_reg)
-				break;
-			last_reg = reg;
-			loop--;
-		} while (loop != 0);
-		edges--;
+	if (devdata->debug0) {
+		/*
+		 * Give the attached LC display or monitor a chance to sync into
+		 * our signals.
+		 * Wait for at least 2 VSYNCs = four VSYNC edges
+		 *
+		 * TODO: i.MX6SX doesn't have debug0. The Linux driver seems to
+		 * do without this at all..
+		 */
+		edges = 4;
+
+		while (edges != 0) {
+			loop = 800;
+			last_reg = readl(fbi->base + devdata->debug0) & DEBUG_VSYNC;
+			do {
+				reg = readl(fbi->base + devdata->debug0) & DEBUG_VSYNC;
+				if (reg != last_reg)
+					break;
+				last_reg = reg;
+				loop--;
+			} while (loop != 0);
+			edges--;
+		}
 	}
 
 	/* stop FIFO reset */
@@ -585,6 +620,13 @@ const struct mxsfb_devdata mxsfb_devdata[] = {
 		.hs_wdth_mask	= 0x3fff,
 		.hs_wdth_shift	= 18,
 	},
+	[MXSFB_V6] = {
+		.transfer_count	= LCDC_V4_TRANSFER_COUNT,
+		.cur_buf	= LCDC_V4_CUR_BUF,
+		.next_buf	= LCDC_V4_NEXT_BUF,
+		.hs_wdth_mask	= 0x3fff,
+		.hs_wdth_shift	= 18,
+	},
 };
 EXPORT_SYMBOL(mxsfb_devdata);
 
@@ -595,6 +637,9 @@ static __maybe_unused struct of_device_id stmfb_compatible[] = {
 	}, {
 		.compatible = "fsl,imx28-lcdif",
 		.data = &mxsfb_devdata[MXSFB_V4],
+	}, {
+		.compatible = "fsl,imx6sx-lcdif",
+		.data = &mxsfb_devdata[MXSFB_V6],
 	}, {
 		/* sentinel */
 	}

@@ -165,24 +165,24 @@ static struct binfmt_hook binfmt_efi_hook = {
 	.hook = efi_execute,
 };
 
-static int do_bootm_mbr(struct image_data *data)
+static struct image_handler non_efi_handle_linux_x86;
+
+static int do_bootm_nonefi(struct image_data *data)
 {
-	/* On x86, Linux kernel images have a MBR magic at the end of
-	 * the first 512 byte sector and a PE magic if they're EFI-stubbed.
-	 * The PE magic has precedence over the MBR, so if we arrive in
-	 * this boot handler, the kernel has no EFI stub.
-	 *
-	 * Print a descriptive error message instead of "no image handler
-	 * found for image type MBR sector".
+	/* On x86, Linux kernel images have a bzImage header as well as
+	 * a PE magic if they're EFI-stubbed.
+	 * We have separate file types for x86 Linux images with and
+	 * without PE.
 	 */
-	pr_err("Can't boot MBR sector: Is CONFIG_EFI_STUB disabled in your Linux kernel config?\n");
+	pr_err("'%s' unsupported: CONFIG_EFI_STUB must be enabled in your Linux kernel config\n",
+	       non_efi_handle_linux_x86.name);
 	return -ENOSYS;
 }
 
 static struct image_handler non_efi_handle_linux_x86 = {
 	.name = "non-EFI x86 Linux Image",
-	.bootm = do_bootm_mbr,
-	.filetype = filetype_mbr,
+	.bootm = do_bootm_nonefi,
+	.filetype = filetype_x86_linux_image,
 };
 
 static struct binfmt_hook binfmt_arm64_efi_hook = {

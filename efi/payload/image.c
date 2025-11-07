@@ -191,7 +191,7 @@ static struct binfmt_hook binfmt_arm64_efi_hook = {
 };
 
 static struct binfmt_hook binfmt_x86_efi_hook = {
-	.type = filetype_x86_linux_image,
+	.type = filetype_x86_efi_linux_image,
 	.hook = efi_execute,
 };
 

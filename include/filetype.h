@@ -68,6 +68,7 @@ enum filetype {
 	filetype_zstd_compressed,
 	filetype_rockchip_rkss_image,
 	filetype_x86_linux_image,
+	filetype_x86_efi_linux_image,
 	filetype_max,
 };
 

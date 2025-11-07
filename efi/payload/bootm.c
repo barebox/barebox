@@ -276,7 +276,7 @@ static struct image_handler efi_app_handle_tr = {
 static struct image_handler efi_x86_linux_handle_tr = {
 	.name = "EFI X86 Linux kernel",
 	.bootm = do_bootm_efi_stub,
-	.filetype = filetype_x86_linux_image,
+	.filetype = filetype_x86_efi_linux_image,
 };
 
 static struct image_handler efi_arm64_handle_tr = {

@@ -9,6 +9,7 @@
 
 #include <clock.h>
 #include <common.h>
+#include <globalvar.h>
 #include <linux/sizes.h>
 #include <linux/ktime.h>
 #include <memory.h>
@@ -284,16 +285,32 @@ static int efi_app_execute(struct image_data *data)
 	return efi_execute_image(handle, loaded_image, type);
 }
 
+static int linux_efi_handover = true;
+
+bool efi_x86_boot_method_check(struct image_handler *handler,
+			       struct image_data *data,
+			       enum filetype detected_filetype)
+{
+	if (handler->filetype != detected_filetype)
+		return false;
+
+	if (IS_ENABLED(CONFIG_EFI_HANDOVER_PROTOCOL) && linux_efi_handover)
+		return handler == &efi_x86_linux_handle_handover;
+	else
+		return handler == &efi_x86_linux_handle_tr;
+}
+
 static struct image_handler efi_app_handle_tr = {
 	.name = "EFI Application",
 	.bootm = efi_app_execute,
 	.filetype = filetype_exe,
 };
 
-static struct image_handler efi_x86_linux_handle_tr = {
-	.name = "EFI X86 Linux kernel",
+struct image_handler efi_x86_linux_handle_tr = {
+	.name = "EFI X86 Linux kernel (StartImage)",
 	.bootm = do_bootm_efi_stub,
 	.filetype = filetype_x86_efi_linux_image,
+	.check_image = efi_x86_boot_method_check,
 };
 
 static struct image_handler efi_arm64_handle_tr = {
@@ -302,12 +319,18 @@ static struct image_handler efi_arm64_handle_tr = {
 	.filetype = filetype_arm64_efi_linux_image,
 };
 
+BAREBOX_MAGICVAR(global.linux.efi.handover,
+		 "Use legacy x86 handover protocol instead of StartImage BootService");
+
 static int efi_register_bootm_handler(void)
 {
 	register_image_handler(&efi_app_handle_tr);
 
-	if (IS_ENABLED(CONFIG_X86))
+	if (IS_ENABLED(CONFIG_X86)) {
+		if (IS_ENABLED(CONFIG_EFI_HANDOVER_PROTOCOL))
+			globalvar_add_simple_bool("linux.efi.handover", &linux_efi_handover);
 		register_image_handler(&efi_x86_linux_handle_tr);
+	}
 
 	if (IS_ENABLED(CONFIG_ARM64))
 		register_image_handler(&efi_arm64_handle_tr);

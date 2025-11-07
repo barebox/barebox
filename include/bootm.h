@@ -117,6 +117,9 @@ struct image_handler {
 	int ih_os;
 
 	enum filetype filetype;
+	bool (*check_image)(struct image_handler *handler,
+			    struct image_data *data,
+			    enum filetype detected_filetype);
 	int (*bootm)(struct image_data *data);
 };
 

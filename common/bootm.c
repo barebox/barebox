@@ -23,10 +23,32 @@ static struct sconfig_notifier_block sconfig_notifier;
 
 static __maybe_unused struct bootm_overrides bootm_overrides;
 
+static bool uimage_check(struct image_handler *handler,
+			 struct image_data *data,
+			 enum filetype detected_filetype)
+{
+	return detected_filetype == filetype_uimage &&
+		handler->ih_os == data->os->header.ih_os;
+}
+
+static bool filetype_check(struct image_handler *handler,
+			   struct image_data *data,
+			   enum filetype detected_filetype)
+{
+	return handler->filetype == detected_filetype;
+}
+
 int register_image_handler(struct image_handler *handler)
 {
-	list_add_tail(&handler->list, &handler_list);
+	if (!handler->check_image) {
+		if (IS_ENABLED(CONFIG_BOOTM_UIMAGE) &&
+		    handler->filetype == filetype_uimage)
+			handler->check_image = uimage_check;
+		else
+			handler->check_image = filetype_check;
+	}
 
+	list_add_tail(&handler->list, &handler_list);
 	return 0;
 }
 
@@ -36,11 +58,7 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 	struct image_handler *handler;
 
 	list_for_each_entry(handler, &handler_list, list) {
-		if (filetype != filetype_uimage &&
-				handler->filetype == filetype)
-			return handler;
-		if  (filetype == filetype_uimage &&
-				handler->ih_os == data->os->header.ih_os)
+		if (handler->check_image(handler, data, filetype))
 			return handler;
 	}
 

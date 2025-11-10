@@ -1332,3 +1332,9 @@ source "common/Kconfig.debug"
 config DDR_SPD
 	bool
 	select CRC_ITU_T
+
+config K3_KEYWRITER_LITE
+	bool
+	select DIGEST
+	select DIGEST_SHA512_GENERIC
+	depends on MACH_AM62LX

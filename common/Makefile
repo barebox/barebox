@@ -85,6 +85,7 @@ obj-$(CONFIG_SERIAL_DEV_BUS)	+= serdev.o
 obj-$(CONFIG_USB_GADGET)	+= usbgadget.o
 obj-$(CONFIG_FASTBOOT_BASE)	+= fastboot.o
 obj-$(CONFIG_CDEV_ALIAS)	+= cdev-alias.o
+obj-$(CONFIG_K3_KEYWRITER_LITE)	+= k3-keywriter-lite.o
 
 # dependencies on generated files need to be listed explicitly
 $(obj)/version.o: include/generated/compile.h

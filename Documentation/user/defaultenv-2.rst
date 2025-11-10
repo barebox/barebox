@@ -50,9 +50,10 @@ and their respective included directories in ``defaultenv/Makefile``:
 /env/bin/init
 -------------
 
-This script is executed by the barebox startup code after initialization.
-In defaultenv-2, this script will define and set a number of global
-variables, followed by sourcing all of the scripts in ``/env/init/`` with:
+The default init script is now written in C. However, you can still define
+your own ``/env/bin/init`` script and it will take precedence over the
+built-in C implementation.
+Example for simple init script:
 
 .. code-block:: sh
 

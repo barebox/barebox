@@ -1010,9 +1010,12 @@ err_out:
 }
 
 #ifdef CONFIG_BOOT_OVERRIDE
-void bootm_set_overrides(const struct bootm_overrides *overrides)
+struct bootm_overrides bootm_set_overrides(const struct bootm_overrides overrides)
 {
-	bootm_overrides = overrides ? *overrides : (struct bootm_overrides){};
+	struct bootm_overrides old = bootm_overrides;
+	/* bootm_merge_overrides copies only actual (non-NULL) overrides */
+	bootm_merge_overrides(&bootm_overrides, &overrides);
+	return old;
 }
 #endif
 

@@ -428,6 +428,7 @@ err_destroy:
 	list_for_each_entry_safe_reverse(ti, tmp, &dm->targets, list) {
 		ti->ops->destroy(ti);
 		list_del(&ti->list);
+		free(ti);
 	}
 
 	free(rowv);
@@ -439,12 +440,13 @@ err_destroy:
 
 void dm_destroy(struct dm_device *dm)
 {
-	struct dm_target *ti;
+	struct dm_target *ti, *tmp;
 
 	blockdevice_unregister(&dm->blk);
 
-	list_for_each_entry_reverse(ti, &dm->targets, list) {
+	list_for_each_entry_safe_reverse(ti, tmp, &dm->targets, list) {
 		ti->ops->destroy(ti);
+		free(ti);
 	}
 
 	unregister_device(&dm->dev);

@@ -210,6 +210,15 @@ config CMD_MEMINFO
 	  system bytes     =     282616
 	  in use bytes     =     274752
 
+config CMD_CHECKLEAK
+	tristate
+	prompt "checkleak"
+	depends on DEBUG_MEMLEAK
+	default y
+	help
+	  List memory leaks encountered since the last time
+	  the command ran.
+
 config CMD_ARM_MMUINFO
 	bool "mmuinfo command"
 	depends on CPU_V7 || CPU_V8

@@ -19,6 +19,7 @@
 
 #include <common.h>
 #include <malloc.h>
+#include <talloc.h>
 #include <module.h>
 #include <wchar.h>
 
@@ -44,6 +45,17 @@ void *xmalloc(size_t size)
 }
 EXPORT_SYMBOL(xmalloc);
 
+void *xtalloc_size(const void *parent, size_t size)
+{
+	void *p = NULL;
+
+	if (!(p = talloc_size(parent, size)))
+		enomem_panic(size);
+
+	return p;
+}
+EXPORT_SYMBOL(xtalloc_size);
+
 void *xrealloc(void *ptr, size_t size)
 {
 	void *p = NULL;
@@ -62,6 +74,14 @@ void *xzalloc(size_t size)
 	return ptr;
 }
 EXPORT_SYMBOL(xzalloc);
+
+void *xtalloc_zero_size(const void *parent, size_t size)
+{
+	void *ptr = xtalloc_size(parent, size);
+	memset(ptr, 0, size);
+	return ptr;
+}
+EXPORT_SYMBOL(xtalloc_zero_size);
 
 char *xstrdup(const char *s)
 {

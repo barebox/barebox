@@ -124,6 +124,12 @@ config PRINTF_FULL
 source "lib/Kconfig.ubsan"
 source "lib/kasan/Kconfig"
 
+config DEBUG_MEMLEAK
+	bool "barebox memory leak detector"
+	depends on MALLOC_LIBC && ASAN
+	help
+	  Say Y here if you want to enable LeakSanitizer.
+
 config COMPILE_TEST
 	bool "compile-test drivers of other platforms"
 	default n

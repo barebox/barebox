@@ -25,22 +25,25 @@ The TLV binary has the following format:
 .. code-block:: C
 
      struct tlv {
-         be16 tag; /* 2 bytes */
-         be16 len; /* 2 bytes */
+         be16 tag;
+         be16 len;
          u8 payload[];
      };
 
-     struct binfile {
-         be32 magic_version;
-         be32 length_tlv; /* 4 bytes */
-         be32 length_sig; /* 4 bytes */
-         struct tlv tlvs[];
-         be32 crc32;
+     struct sig {
+         u8 spki_hash_prefix[4];
+         u8 signature[];
      };
 
-.. note::
-  Even though the header has a ``length_sig`` field,
-  there is currently no support for cryptographic signatures.
+     struct tlv_format {
+         be32 magic;
+         be32 length_tlv;   /* in bytes */
+         be16 reserved;     /* must be 0 */
+         be16 length_sig;   /* in bytes */
+         struct tlv tlvs[];
+         struct sig signature; /* omitted if length_sig == 0 */
+         be32 crc;
+     };
 
 Tags
 ----
@@ -60,6 +63,24 @@ These common tags are defined in ``common/tlv/barebox.c``.
 
 The tag range ``0x8000`` to ``0xFFFF`` is intended for custom extensions.
 Parsing must be handled by board-specific extensions.
+
+Signature
+---------
+
+If ``length_sig`` is zero, signature is disabled.  The ``signature`` section of
+the file is exactly ``length_sig`` bytes long.  This includes the
+``spki_hash_prefix``, followed by the signature itself.  ``spki_hash_prefix``
+is the first four bytes of the sha256 hash of the *Subject Public Key Info* and
+its purpose is to allow for quicker matching of a signed TLV with its
+corresponding public key during signature verification.
+
+The ``signature`` shall be verified on all fields before the ``signature`` field,
+but with ``length_sig`` overwritten with 0,
+hashed with sha256
+and signed using any of the supported algorithms (currently RSA and some ECDSA curves).
+
+Note that ECDSA signatures are not DER encoded but rather plain concatenation
+of r and s (each extended to the size of the ECDSA-key).
 
 Data Types
 ----------
@@ -87,6 +108,12 @@ With these information in place a TLV binary can be created:
 
    ./bareboxtlv-generator.py --input-data data-example.yaml \
                              schema-example.yaml tlv.bin
+
+To additionally sign the TLV, supply a private key using the ``--sign KEY`` option.
+
+As ``bareboxtlv-generator.py`` internally uses ``openssl pkeyutl`` for
+accessing the private key, when using OpenSSL 3, any provider, such as pkcs11,
+that is correctly configured, can be used as KEY.
 
 .. note::
   The ``FactoryDataset`` class in ``bareboxtlv-generator.py``

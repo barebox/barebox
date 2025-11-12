@@ -8,12 +8,8 @@ static int do_keys(int argc, char *argv[])
 	int id;
 
 	for_each_public_key(key, id) {
-		printf("KEY: %*phN", key->hashlen, key->hash);
-
-		if (key->key_name_hint)
-			printf(" (%s)\n", key->key_name_hint);
-		else
-			printf("\n");
+		printf("KEY: %*phN\tTYPE: %s\tKEYRING: %s\tHINT: %s\n", key->hashlen,
+		       key->hash, public_key_type_string(key->type), key->keyring, key->key_name_hint);
 	}
 
 	return 0;

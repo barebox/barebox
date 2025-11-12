@@ -18,10 +18,12 @@
 
 #include <linux/compiler.h>
 #include <linux/types.h>
+#include <linux/overflow.h>
 #include <asm/unaligned.h>
 #include <linux/build_bug.h>
 
 #define TLV_MAGIC_BAREBOX_V1		0x61bb95f2
+#define TLV_MAGIC_BAREBOX_V1_SIGNED	0x61bb95f3
 #define TLV_MAGIC_LXA_BASEBOARD_V1	0xbc288dfe
 #define TLV_MAGIC_LXA_POWERBOARD_V1	0xc6895c21
 #define TLV_MAGIC_LXA_IOBOARD_V1	0xdca5a870
@@ -46,9 +48,12 @@ struct tlv {
 struct tlv_header {
 	__be32 magic;
 	__be32 length_tlv; /* in bytes */
-	__be32 length_sig; /* in bytes */
+	__be16 reserved;
+	__be16 length_sig; /* in bytes */
 	struct tlv tlvs[];
-};
+	/* u8 sig[]; */
+	/* __be32 crc; */
+} __packed;
 static_assert(sizeof(struct tlv_header) == 3 * 4);
 
 #define for_each_tlv(tlv_head, tlv) \
@@ -56,8 +61,24 @@ static_assert(sizeof(struct tlv_header) == 3 * 4);
 
 static inline size_t tlv_total_len(const struct tlv_header *header)
 {
-	return sizeof(struct tlv_header) + get_unaligned_be32(&header->length_tlv)
-		+ get_unaligned_be32(&header->length_sig) + 4;
+	size_t ret;
+
+	ret = size_add(sizeof(struct tlv_header), get_unaligned_be32(&header->length_tlv));
+	ret = size_add(ret, get_unaligned_be16(&header->length_sig)); /* optional signature appended after TLVs */
+	ret = size_add(ret, sizeof(__be32)); /* CRC at end of file */
+
+	return ret; /* SIZE_MAX on overflow */
+}
+
+/*
+ * Retrieve length of header+TLVs (offset of spki hash part of signature if available)
+ */
+
+static inline size_t tlv_spki_hash_offset(const struct tlv_header *header)
+{
+	size_t ret = size_add(sizeof(struct tlv_header), get_unaligned_be32(&header->length_tlv));
+
+	return ret; /* SIZE_MAX on overflow */
 }
 
 /*

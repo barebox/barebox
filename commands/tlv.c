@@ -29,7 +29,7 @@ static int do_tlv(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	tlvdev = tlv_register_device_by_path(filename, NULL);
-	if (IS_ERR(tlvdev)) {
+	if (IS_ERR(tlvdev) || tlvdev->dev.driver == NULL) {
 		printf("Could not open \"%s\": %m\n", filename);
 		return COMMAND_ERROR;
 	}

@@ -17,6 +17,7 @@
 #include <linux/err.h>
 #include <of.h>
 #include <regulator.h>
+#include <linux/phy/phy-mipi-dphy.h>
 
 struct phy;
 
@@ -44,6 +45,16 @@ enum phy_mode {
 };
 
 /**
+ * union phy_configure_opts - Opaque generic phy configuration
+ *
+ * @mipi_dphy:	Configuration set applicable for phys supporting
+ *		the MIPI_DPHY phy mode.
+ */
+union phy_configure_opts {
+	struct phy_configure_opts_mipi_dphy	mipi_dphy;
+};
+
+/**
  * struct phy_ops - set of function pointers for performing phy operations
  * @init: operation to be performed for initializing phy
  * @exit: operation to be performed while exiting
@@ -59,6 +70,18 @@ struct phy_ops {
 	int	(*power_off)(struct phy *phy);
 	int	(*set_mode)(struct phy *phy, enum phy_mode mode, int submode);
 	struct usb_phy *(*to_usbphy)(struct phy *phy);
+
+	/**
+	 * @configure:
+	 *
+	 * Optional.
+	 *
+	 * Used to change the PHY parameters. phy_init() must have
+	 * been called on the phy.
+	 *
+	 * Returns: 0 if successful, an negative error code otherwise
+	 */
+	int	(*configure)(struct phy *phy, union phy_configure_opts *opts);
 };
 
 /**
@@ -158,6 +181,7 @@ int phy_power_off(struct phy *phy);
 int phy_set_mode_ext(struct phy *phy, enum phy_mode mode, int submode);
 #define phy_set_mode(phy, mode) \
         phy_set_mode_ext(phy, mode, 0)
+int phy_configure(struct phy *phy, union phy_configure_opts *opts);
 static inline int phy_get_bus_width(struct phy *phy)
 {
 	return phy->attrs.bus_width;
@@ -220,6 +244,15 @@ static inline int phy_set_mode_ext(struct phy *phy, enum phy_mode mode,
 
 #define phy_set_mode(phy, mode) \
         phy_set_mode_ext(phy, mode, 0)
+
+static inline int phy_configure(struct phy *phy,
+				union phy_configure_opts *opts)
+{
+	if (!phy)
+		return 0;
+
+	return -ENOSYS;
+}
 
 static inline int phy_get_bus_width(struct phy *phy)
 {

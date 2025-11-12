@@ -171,9 +171,17 @@ static inline bool __print_string_list(unsigned *line, const char *key,
 				       struct string_list *sl,
 				       const char *joinstr)
 {
+	char *str;
+
 	if (string_list_empty(sl))
 		return false;
-	print_line(key, "%s", string_list_join(sl, joinstr));
+
+	str = string_list_join(sl, joinstr);
+
+	print_line(key, "%s", str);
+
+	free(str);
+
 	return true;
 }
 #define print_string_list(k, sl, js) __print_string_list(line, k, sl, js)
@@ -309,8 +317,13 @@ static void print_shell_console(unsigned *line)
 
 	for_each_console(console)
 		string_list_add(&sl, console->devfs.name);
-	if (!string_list_empty(&sl))
-		print_line("Consoles", "%s", string_list_join(&sl, " "));
+	if (!string_list_empty(&sl)) {
+		char *str = string_list_join(&sl, " ");
+
+		print_line("Consoles", "%s", str);
+
+		free(str);
+	}
 
 	string_list_free(&sl);
 }
@@ -332,8 +345,13 @@ static void print_framebuffers(unsigned *line)
 					 info->bits_per_pixel);
 	}
 
-	if (!string_list_empty(&sl))
-		print_line("Framebuffers", "%s", string_list_join(&sl, ", "));
+	if (!string_list_empty(&sl)) {
+		char *str = string_list_join(&sl, ", ");
+
+		print_line("Framebuffers", "%s", str);
+
+		free(str);
+	}
 
 	string_list_free(&sl);
 }

@@ -51,15 +51,13 @@ void bobject_free(struct bobject *bobj)
 	if (!bobj)
 		return;
 
-	free(bobj->name);
 	bobject_del(bobj);
 	free(bobj);
 }
 EXPORT_SYMBOL_GPL(bobject_free);
 
-#ifdef CONFIG_PARAMETER
 /**
- * bobject_remove_parameters - remove all parameters from a bobject and free their
+ * bobject_del - remove all parameters from a bobject and free their
  * memory
  * @param bobject	The barebox object
  */
@@ -69,6 +67,7 @@ void bobject_del(struct bobject *bobj)
 
 	list_for_each_entry_safe(p, n, &bobj->parameters, list)
 		param_remove(p);
+
+	free(bobj->name);
 }
 EXPORT_SYMBOL(bobject_del);
-#endif

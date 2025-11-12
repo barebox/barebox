@@ -383,6 +383,7 @@ int of_unregister_fixup(int (*fixup)(struct device_node *, void *),
 	list_for_each_entry(of_fixup, &of_fixup_list, list) {
 		if (of_fixup->fixup == fixup && of_fixup->context == context) {
 			list_del(&of_fixup->list);
+			free(of_fixup);
 			return 0;
 		}
 	}

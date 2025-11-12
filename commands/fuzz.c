@@ -9,23 +9,41 @@
 #include <libfile.h>
 #include <fs.h>
 
-static const struct fuzz_test *get_fuzz_test(const char *match, bool print)
-{
+struct fuzz_process {
+	bool print;
+	const char *match;
+	unsigned nmatches;
 	const struct fuzz_test *test;
-	unsigned matches = 0;
+};
 
-	for_each_fuzz_test(test) {
-		if (print) {
-			printf("%s\n", test->name);
-			matches++;
-		}
+static int process_fuzz_test(const struct fuzz_test *test,
+			     void *_ctx)
+{
+	struct fuzz_process *ctx = _ctx;
 
-		if (match && !strcmp(test->name, match))
-			return test;
-
+	if (ctx->print) {
+		printf("%s\n", test->name);
+		ctx->nmatches++;
 	}
 
-	if (!matches) {
+	if (ctx->match && !strcmp(test->name, ctx->match)) {
+		ctx->test = test;
+		return true;
+	}
+
+	return false;
+}
+
+static const struct fuzz_test *get_fuzz_test(const char *match, bool print)
+{
+	struct fuzz_process ctx = {
+		.match = match, .print = print
+	};
+
+	if (call_for_each_fuzz_test(process_fuzz_test, &ctx))
+		return ctx.test;
+
+	if (!ctx.nmatches) {
 		if (match)
 			printf("No fuzz tests matching '%s' found.\n", match);
 		else

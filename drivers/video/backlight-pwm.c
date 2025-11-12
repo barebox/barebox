@@ -12,8 +12,7 @@
 #include <linux/err.h>
 #include <of.h>
 #include <regulator.h>
-#include <gpio.h>
-#include <of_gpio.h>
+#include <linux/gpio/consumer.h>
 #include <linux/math64.h>
 
 struct pwm_backlight {
@@ -22,8 +21,7 @@ struct pwm_backlight {
 	struct regulator *power;
 	uint32_t period;
 	unsigned int *levels;
-	int enable_gpio;
-	int enable_active_high;
+	struct gpio_desc *enable_gpio;
 	int enabled;
 	unsigned int scale;
 };
@@ -41,10 +39,7 @@ static int backlight_pwm_enable(struct pwm_backlight *pwm_backlight)
 
 	regulator_enable(pwm_backlight->power);
 
-	if (gpio_is_valid(pwm_backlight->enable_gpio)) {
-		gpio_direction_output(pwm_backlight->enable_gpio,
-				pwm_backlight->enable_active_high);
-	}
+	gpiod_direction_output(pwm_backlight->enable_gpio, true);
 
 	pwm_backlight->enabled = 1;
 
@@ -53,13 +48,13 @@ static int backlight_pwm_enable(struct pwm_backlight *pwm_backlight)
 
 static int backlight_pwm_disable(struct pwm_backlight *pwm_backlight)
 {
+	int ret;
+
 	if (!pwm_backlight->enabled)
 		return 0;
 
-	if (gpio_is_valid(pwm_backlight->enable_gpio)) {
-		gpio_direction_output(pwm_backlight->enable_gpio,
-				!pwm_backlight->enable_active_high);
-
+	ret = gpiod_direction_output(pwm_backlight->enable_gpio, false);
+	if (!ret) {
 		regulator_disable(pwm_backlight->power);
 
 		/*
@@ -109,7 +104,6 @@ static int pwm_backlight_parse_dt(struct device *dev,
 	int length;
 	u32 value;
 	int ret, i;
-	enum of_gpio_flags flags;
 
 	if (!node)
 		return -ENODEV;
@@ -154,12 +148,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
 		pwm_backlight->backlight.brightness_max = pwm_backlight->scale;
 	}
 
-	pwm_backlight->enable_gpio = of_get_named_gpio_flags(node, "enable-gpios", 0, &flags);
-
-	if (gpio_is_valid(pwm_backlight->enable_gpio)) {
-		if (!(flags & OF_GPIO_ACTIVE_LOW))
-			pwm_backlight->enable_active_high = 1;
-	}
+	pwm_backlight->enable_gpio = gpiod_get_optional(dev, "enable-gpios", 0);
 
 	return 0;
 }

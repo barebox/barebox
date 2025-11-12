@@ -69,6 +69,7 @@ static int backlight_brightness_set(struct param_d *p, void *priv)
 
 int backlight_register(struct backlight_device *bl)
 {
+	struct param_d *param;
 	int ret;
 
 	dev_set_name(&bl->dev, "backlight");
@@ -78,8 +79,10 @@ int backlight_register(struct backlight_device *bl)
 	if (ret)
 		return ret;
 
-	dev_add_param_uint32(&bl->dev, "brightness", backlight_brightness_set,
-			NULL, &bl->brightness, "%u", bl);
+	param = dev_add_param_uint32(&bl->dev, "brightness", backlight_brightness_set,
+				     NULL, &bl->brightness, "%u", bl);
+	param_int_set_scale(param, bl->brightness_max);
+
 	dev_add_param_uint32(&bl->dev, "slew_time_ms", NULL, NULL,
 			     &bl->slew_time_ms, "%u", NULL);
 

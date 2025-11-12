@@ -354,6 +354,7 @@ struct param_int {
 	const char *format;
 	int (*set)(struct param_d *p, void *priv);
 	int (*get)(struct param_d *p, void *priv);
+	u64 scale_max;
 };
 
 static inline struct param_int *to_param_int(struct param_d *p)
@@ -403,6 +404,33 @@ static int param_int_set(struct bobject *bobj, struct param_d *p,
 	return ret;
 }
 
+static int param_int_set_scaled(struct bobject *bobj, struct param_d *p,
+				const char *val)
+{
+	char buf[sizeof("18446744073709551615")];
+	struct param_int *pi = to_param_int(p);
+	s64 scaled;
+	char *end;
+
+	if (!isempty(val) && val[strlen(val) - 1] == '%') {
+		u64 percent = div_u64(pi->scale_max, 100);
+
+		scaled = simple_strtofract(val, &end, percent);
+		if (val == end || *end != '%' ||
+		    scaled < 0 || scaled > percent * 100)
+			return -EINVAL;
+
+		/* saturate at 100% */
+		if (scaled == percent * 100)
+			scaled = pi->scale_max;
+
+		snprintf(buf, sizeof(buf), pi->format, scaled);
+		val = buf;
+	}
+
+	return param_int_set(bobj, p, val);
+}
+
 static const char *param_int_get(struct bobject *bobj, struct param_d *p)
 {
 	struct param_int *pi = to_param_int(p);
@@ -430,6 +458,24 @@ static const char *param_int_get(struct bobject *bobj, struct param_d *p)
 	}
 
 	return p->value;
+}
+
+static void param_int_max_info(struct param_d *p)
+{
+	struct param_int *pi = to_param_int(p);
+	printf(" (maximum: %llu)", pi->scale_max);
+}
+
+int param_int_set_scale(struct param_d *p, uint64_t max)
+{
+	if (IS_ERR(p))
+		return PTR_ERR(p);
+
+	p->info = param_int_max_info;
+	p->set = param_int_set_scaled;
+	to_param_int(p)->scale_max = max;
+
+	return 0;
 }
 
 int param_set_readonly(struct param_d *p, void *priv)
@@ -566,7 +612,9 @@ static const char *param_enum_get(struct bobject *bobj, struct param_d *p)
 
 	free(p->value);
 
-	if (*pe->value >= pe->num_names)
+	if (*pe->value == PARAM_ENUM_UNKNOWN)
+		p->value = strdup("unknown");
+	else if (*pe->value >= pe->num_names)
 		p->value = basprintf("invalid:%d", *pe->value);
 	else
 		p->value = strdup(pe->names[*pe->value]);
@@ -579,7 +627,7 @@ static void param_enum_info(struct param_d *p)
 	struct param_enum *pe = to_param_enum(p);
 	int i;
 
-	if (pe->num_names <= 1)
+	if (pe->num_names <= 1 && *pe->value != PARAM_ENUM_UNKNOWN)
 		return;
 
 	printf(" (values: ");

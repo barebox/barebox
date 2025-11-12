@@ -52,8 +52,6 @@ SECTIONS
 	. = ALIGN(4);
 	.data : { *(.data*) }
 
-	.barebox_imd : { BAREBOX_IMD }
-
 	/DISCARD/ : { *(.rela.plt*) }
 	.rela.dyn : {
 		__rel_dyn_start = .;

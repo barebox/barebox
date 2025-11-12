@@ -61,7 +61,7 @@ static int do_loady(int argc, char *argv[])
 	if (cname)
 		cdev = console_get_by_name(cname);
 	else
-		cdev = console_get_first_active();
+		cdev = console_get_first_interactive();
 	if (!cdev) {
 		printf("%s:No console device %s with STDIN and STDOUT\n",
 		       argv[0], cname ? cname : "default");
@@ -151,7 +151,7 @@ static int do_loadx(int argc, char *argv[])
 	if (cname)
 		cdev = console_get_by_name(cname);
 	else
-		cdev = console_get_first_active();
+		cdev = console_get_first_interactive();
 	if (!cdev) {
 		printf("%s:No console device %s with STDIN and STDOUT",
 		       argv[0], cname ? cname : "default");

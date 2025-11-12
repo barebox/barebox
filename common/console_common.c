@@ -5,6 +5,7 @@
  * (C) Copyright 2000 Paolo Scaffardi, AIRVENT SAM s.p.a -
  * RIMINI(ITALY), arsenio@tin.it
  */
+#include "stdio.h"
 #include <common.h>
 #include <fs.h>
 #include <errno.h>
@@ -23,6 +24,7 @@
 #include <linux/math64.h>
 #include <linux/sizes.h>
 #include <linux/overflow.h>
+#include <security/config.h>
 
 #ifndef CONFIG_CONSOLE_NONE
 
@@ -210,6 +212,15 @@ int log_writefile(const char *filepath)
 	return ret < 0 ? ret : nbytes;
 }
 
+/**
+ * log_print - print the log buffer
+ *
+ * @flags:	Flags selecting output formatting
+ * @levels:	bitmask of loglevels to print, 0 for all
+ *
+ * This function prints the messages of the selected levels; optionally with
+ * additional information and formatting.
+ */
 int log_print(unsigned flags, unsigned levels)
 {
 	struct log_entry *log;
@@ -221,7 +232,7 @@ int log_print(unsigned flags, unsigned levels)
 
 		if (levels && !(levels & (1 << log->level)))
 			continue;
-		if (ctrlc())
+		if (ctrlc_non_interruptible())
 			return -EINTR;
 
 		if (!(flags & (BAREBOX_LOG_PRINT_RAW | BAREBOX_LOG_PRINT_TIME
@@ -327,10 +338,15 @@ EXPORT_SYMBOL(console_get_by_name);
  * @return console device which is registered with CONSOLE_STDIN and
  * CONSOLE_STDOUT
  */
-struct console_device *console_get_first_active(void)
+struct console_device *console_get_first_interactive(void)
 {
 	struct console_device *cdev;
 	const unsigned char active = CONSOLE_STDIN | CONSOLE_STDOUT;
+
+	/* if no console input is allows, then we can't have STDIN on any. */
+	if (!IS_ALLOWED(SCONFIG_CONSOLE_INPUT))
+		return NULL;
+
 	/*
 	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
 	 * same output console
@@ -342,7 +358,7 @@ struct console_device *console_get_first_active(void)
 
 	return NULL;
 }
-EXPORT_SYMBOL(console_get_first_active);
+EXPORT_SYMBOL(console_get_first_interactive);
 
 struct console_device *of_console_get_by_alias(const char *alias)
 {

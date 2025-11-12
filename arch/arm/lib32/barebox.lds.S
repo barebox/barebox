@@ -63,8 +63,6 @@ SECTIONS
 		CONSTRUCTORS
 	}
 
-	.barebox_imd : { BAREBOX_IMD }
-
 	. = .;
 
 	BAREBOX_RELOCATION_TABLE

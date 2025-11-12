@@ -90,6 +90,12 @@ static const struct board_description imx8mp_variants[] = {
 	[3] = {
 		.dts_compatible = "skov,imx8mp-skov-revc-tian-g07017",
 	},
+
+	[4] = {
+		.dts_compatible = "skov,imx8mp-skov-revc-jutouch-jt101tm023",
+		.dts_compatible_hdmi = "skov,imx8mp-skov-revc-hdmi",
+		.flags = SKOV_IMX8MP_HAS_HDMI,
+	},
 };
 
 static const struct board_description imx8mp_basic_variant = {

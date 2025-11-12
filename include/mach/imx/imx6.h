@@ -135,4 +135,6 @@ int imx6_cpu_revision(void);
 
 u64 imx6_uid(void);
 
+bool imx6_cannot_write_l2x0(void);
+
 #endif /* __MACH_IMX6_H */

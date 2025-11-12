@@ -54,7 +54,7 @@ config DRIVER_VIDEO_IMX_IPU_OVERLAY
 
 config DRIVER_VIDEO_STM
 	bool "i.MX23/28 framebuffer driver"
-	depends on ARCH_MXS
+	depends on ARCH_MXS || COMPILE_TEST
 	help
 	  Say 'Y' here to enable framebuffer and splash screen support for
 	  i.MX23 and i.MX28 based systems.

@@ -254,7 +254,7 @@ int imx6_devices_init(void)
 	return 0;
 }
 
-static bool imx6_cannot_write_l2x0(void)
+bool imx6_cannot_write_l2x0(void)
 {
 	void __iomem *l2x0_base = IOMEM(0x00a02000);
 	u32 val;

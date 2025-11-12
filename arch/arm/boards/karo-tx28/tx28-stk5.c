@@ -192,6 +192,7 @@ static struct imx_fb_platformdata tx28_fb_pdata = {
 	.fixed_screen = (void *)(0x40000000 + SZ_128M - MAX_FB_SIZE),
 	.fixed_screen_size = MAX_FB_SIZE,
 	.enable = tx28_fb_enable,
+	.devdata = MXSFB_DEVDATA(MXSFB_V4),
 };
 
 static const uint32_t tx28_starterkit_pad_setup[] = {

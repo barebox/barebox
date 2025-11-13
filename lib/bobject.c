@@ -29,7 +29,7 @@ int bobject_set_name(bobject_t bobj, const char *fmt, ...)
 	 * Free old pointer, we do this after vasprintf call in case
 	 * old device name was in one of vargs
 	 */
-	free(oldname);
+	free_const(oldname);
 
 	return WARN_ON(err < 0) ? err : 0;
 }
@@ -68,6 +68,6 @@ void bobject_del(struct bobject *bobj)
 	list_for_each_entry_safe(p, n, &bobj->parameters, list)
 		param_remove(p);
 
-	free(bobj->name);
+	free_const(bobj->name);
 }
 EXPORT_SYMBOL(bobject_del);

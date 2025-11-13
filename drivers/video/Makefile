@@ -25,6 +25,7 @@ obj-$(CONFIG_DRIVER_VIDEO_STM32_LTDC) += stm32_ltdc.o
 obj-$(CONFIG_DRIVER_VIDEO_STM32_DSI) += stm32_dsi.o
 obj-$(CONFIG_DRIVER_VIDEO_IMX) += imx.o
 obj-$(CONFIG_DRIVER_VIDEO_IMX_IPU) += imx-ipu-fb.o
+obj-$(CONFIG_DRIVER_VIDEO_LCDIF) += lcdif_drv.o lcdif_kms.o
 obj-$(CONFIG_DRIVER_VIDEO_PXA) += pxa.o
 obj-$(CONFIG_DRIVER_VIDEO_SDL) += sdl.o
 obj-$(CONFIG_DRIVER_VIDEO_BCM283X) += bcm2835.o

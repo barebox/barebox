@@ -52,6 +52,13 @@ config DRIVER_VIDEO_IMX_IPU_OVERLAY
 	bool "i.MX31/35 framebuffer overlay support"
 	depends on DRIVER_VIDEO_IMX_IPU && (ARCH_IMX35 || ARCH_IMX31)
 
+config DRIVER_VIDEO_LCDIF
+	bool "i.MX9 framebuffer driver"
+	depends on ARCH_IMX9 || ARCH_IMX93
+	help
+	  Add support for the LCDIFv3 LCD controller found on
+	  i.MX8MP and i.MX93 SoCs.
+
 config DRIVER_VIDEO_STM
 	bool "i.MX23/28 framebuffer driver"
 	depends on ARCH_MXS || COMPILE_TEST

@@ -31,6 +31,7 @@
 #ifdef CONFIG_ARCH_IMX
 #include <mach/imx/ocotp.h>
 #include <mach/imx/ocotp-fusemap.h>
+#include <mach/imx/generic.h>
 #else
 #include <mach/mxs/ocotp.h>
 #include <mach/mxs/ocotp-fusemap.h>
@@ -853,6 +854,13 @@ static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 	return imx8m_feat_ctrl_init(priv->dev.parent, tester3, tester4, priv->data->feat);
 }
 
+#ifndef CONFIG_ARCH_IMX
+static inline bool imx8mp_keep_compatible_soc_uid(void)
+{
+	return false;
+}
+#endif
+
 #define IMX8MP_OCOTP_UID(n)	\
 	(OCOTP_WORD(0x420 + 0x10 * (n)) | OCOTP_BIT(0) | OCOTP_WIDTH(32))
 #define IMX8MP_OCOTP_UID_2(n)	\
@@ -865,7 +873,7 @@ static void imx_ocotp_set_unique_machine_id(void)
 	int len;
 	char *uidstr;
 
-	if (is_imx8mp) {
+	if (is_imx8mp && !imx8mp_keep_compatible_soc_uid()) {
 		if (imx_ocotp_read_field(IMX8MP_OCOTP_UID(0), &uid[0]))
 			return;
 		if (imx_ocotp_read_field(IMX8MP_OCOTP_UID(1), &uid[1]))
@@ -887,7 +895,7 @@ static void imx_ocotp_set_unique_machine_id(void)
 		uidstr = xasprintf("%08X%08X", uid[1], uid[0]);
 	}
 
-	barebox_set_soc_uid(uidstr, &uid, sizeof(uid));
+	barebox_set_soc_uid(uidstr, &uid, len);
 	free(uidstr);
 }
 

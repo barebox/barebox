@@ -284,6 +284,10 @@ static int __init imx8_soc_init(void)
 		goto free_rev;
 	}
 
+	if (!IS_ENABLED(CONFIG_IMX_OCOTP))
+		barebox_set_soc_uid(soc_dev_attr->serial_number, soc_uid,
+				    sizeof(soc_uid));
+
 	soc_dev = soc_device_register(soc_dev_attr);
 	if (IS_ERR(soc_dev)) {
 		ret = PTR_ERR(soc_dev);

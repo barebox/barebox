@@ -17,6 +17,9 @@ lwl-$(CONFIG_MACH_EXYNOS) += exynos8895-dreamlte.dtb.o \
 			exynos990-x1s.dtb.o
 lwl-$(CONFIG_MACH_DUCKBILL) += imx28-duckbill.dtb.o
 lwl-$(CONFIG_MACH_KINDLE_MX50) += imx50-kindle-d01100.dtb.o imx50-kindle-d01200.dtb.o imx50-kindle-ey21.dtb.o
+lwl-$(CONFIG_MACH_KINDLE_6_7) += imx6sl-kindle-wp63gw.dtb.o \
+		imx6sl-kindle-dp75sdi.dtb.o \
+		imx6sl-kindle-nm460gz.dtb.o
 lwl-$(CONFIG_MACH_EFIKA_MX_SMARTBOOK) += imx51-genesi-efika-sb.dtb.o
 lwl-$(CONFIG_MACH_ELTEC_HIPERCAM) += imx6dl-eltec-hipercam.dtb.o
 lwl-$(CONFIG_MACH_EMBEST_MARSBOARD) += imx6q-marsboard.dtb.o

@@ -374,6 +374,27 @@ $(call build_imx_habv4img, CONFIG_MACH_ADVANTECH_ROM_742X, start_advantech_imx6d
 
 $(call build_imx_habv4img, CONFIG_MACH_ZII_RDU2, start_imx6_zii_rdu2, zii-imx6q-rdu2/flash-header-rdu2, zii-imx6-rdu2)
 
+# ----------------------- i.MX6sl based boards --------------
+pblb-$(CONFIG_MACH_KINDLE_6_7) += start_imx6sl_kindle_wp63gw
+CFG_start_imx6sl_kindle_wp63gw.pblb.imximg = $(board)/kindle-mx6sl/flash-header-kindle-mx6sl-256m.imxcfg
+FILE_barebox-kindle-wp63gw.img = start_imx6sl_kindle_wp63gw.pblb.imximg
+image-$(CONFIG_MACH_KINDLE_6_7) += barebox-kindle-wp63gw.img
+
+pblb-$(CONFIG_MACH_KINDLE_6_7) += start_imx6sl_kindle6_dp75sdi
+CFG_start_imx6sl_kindle6_dp75sdi.pblb.imximg = $(board)/kindle-mx6sl/flash-header-kindle-mx6sl-256m.imxcfg
+FILE_barebox-kindle6-dp75sdi.img = start_imx6sl_kindle6_dp75sdi.pblb.imximg
+image-$(CONFIG_MACH_KINDLE_6_7) += barebox-kindle6-dp75sdi.img
+
+pblb-$(CONFIG_MACH_KINDLE_6_7) += start_imx6sl_kindle7_dp75sdi
+CFG_start_imx6sl_kindle7_dp75sdi.pblb.imximg = $(board)/kindle-mx6sl/flash-header-kindle-mx6sl-512m.imxcfg
+FILE_barebox-kindle7-dp75sdi.img = start_imx6sl_kindle7_dp75sdi.pblb.imximg
+image-$(CONFIG_MACH_KINDLE_6_7) += barebox-kindle7-dp75sdi.img
+
+pblb-$(CONFIG_MACH_KINDLE_6_7) += start_imx6sl_kindle_nm460gz
+CFG_start_imx6sl_kindle_nm460gz.pblb.imximg = $(board)/kindle-mx6sl/flash-header-kindle-mx6sl-512m.imxcfg
+FILE_barebox-kindle-nm460gz.img = start_imx6sl_kindle_nm460gz.pblb.imximg
+image-$(CONFIG_MACH_KINDLE_6_7) += barebox-kindle-nm460gz.img
+
 # ----------------------- i.MX6ul / i.MX6ull based boards --------------
 $(call build_imx_habv4img, CONFIG_MACH_GRINN_LITEBOARD, start_imx6ul_liteboard_256mb, grinn-liteboard/flash-header-liteboard-256mb, grinn-liteboard-256mb)
 

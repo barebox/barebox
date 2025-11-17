@@ -353,6 +353,23 @@ config MACH_ADVANTECH_ROM_742X
 	bool "Advantech ROM 742X"
 	select ARCH_IMX6
 
+config MACH_KINDLE_6_7
+	bool "i.MX6SL based Amazon Kindle generation 6 and 7"
+	select ARCH_IMX6SL
+	select SPI
+	select DRIVER_SPI_IMX
+	select I2C
+	select I2C_IMX
+	select GPIO_IMX
+	select ARM_BOARD_APPEND_ATAG
+	select ARM_LINUX
+	select OFTREE
+	select PINCTRL
+	help
+	  Say Y here if you are using the sixth or seventh generation Amazon
+	  Kindle Model No. DP75SDI (Paperwhite 2 or 3), WP63GW (Kindle 7) or
+	  NM460GZ (Kindle Voyage) based on the i.MX6SL SoC and MAX77696 PMIC.
+
 config MACH_NITROGEN6
 	bool "BoundaryDevices Nitrogen6 boards"
 	select ARCH_IMX6

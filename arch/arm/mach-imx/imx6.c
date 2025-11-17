@@ -226,7 +226,7 @@ int imx6_init(void)
 
 	imx_set_silicon_revision(cputypestr, mx6_silicon_revision);
 	imx_set_reset_reason(src + IMX_SRC_SRSR, imx_reset_reasons);
-	pr_info("%s unique ID: %llx\n", cputypestr, mx6_uid);
+	pr_info("%s unique ID: %0llx\n", cputypestr, mx6_uid);
 
 	imx6_setup_ipu_qos();
 	imx6ul_enet_clk_init();

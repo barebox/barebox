@@ -840,6 +840,16 @@ config IMX_SAVE_BOOTROM_LOG
 	bool
 	default CMD_BOOTROM
 
+config ARCH_IMX8MP_KEEP_COMPATIBLE_SOC_UID
+	bool "Keep compatible i.MX8MP SOC UID"
+	depends on ARCH_IMX8MP
+	help
+	  barebox used to wrongly read out the i.MX8MP SOC UID. The SOC UID on
+	  i.MX8MP is 128bits wide, but we used to only use 64bit. As the
+	  machine_id might be generated from the SOC UID already deployed
+	  systems might depend on the SOC UID staying constant. Enable this
+	  option to keep the old behaviour.
+
 config HAB
 	bool
 

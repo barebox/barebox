@@ -143,13 +143,20 @@ static void imx_ocotp_set_unique_machine_id(struct imx_ocotp_priv *priv)
 {
 	uint32_t unique_id_parts[UNIQUE_ID_NUM];
 	int i;
+	char *uidstr;
 
 	for (i = 0; i < UNIQUE_ID_NUM; i++)
 		if (imx_ocotp_reg_read(priv, OCOTP_UNIQUE_ID(i),
 					 &unique_id_parts[i]))
 			return;
 
-	machine_id_set_hashable(unique_id_parts, sizeof(unique_id_parts));
+	uidstr = xasprintf("%08X%08X%08X%08X",
+			   unique_id_parts[1], unique_id_parts[0],
+			   unique_id_parts[3], unique_id_parts[2]);
+
+	barebox_set_soc_uid(uidstr, unique_id_parts, sizeof(unique_id_parts));
+
+	free(uidstr);
 }
 
 static int permanent_write_enable_set(struct param_d *param, void *ctx)
@@ -194,8 +201,7 @@ static int imx_ele_ocotp_probe(struct device *dev)
 	if (IS_ERR(priv->map))
 		return PTR_ERR(priv->map);
 
-	if (IS_ENABLED(CONFIG_MACHINE_ID))
-		imx_ocotp_set_unique_machine_id(priv);
+	imx_ocotp_set_unique_machine_id(priv);
 
 	nvmem = nvmem_regmap_register_with_pp(priv->map, "imx_ocotp",
 					      imx_ocotp_fixup_dt_cell_info);

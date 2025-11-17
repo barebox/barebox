@@ -91,8 +91,14 @@ static int simplefb_create_node(struct device_node *root,
 {
 	struct device_node *node;
 	phys_addr_t screen_base;
-	u32 cells[2];
-	int ret;
+	__be32 cells[4];
+	int addr_cells = 2, size_cells = 1, ret;
+
+	of_property_read_u32(root, "#address-cells", &addr_cells);
+	of_property_read_u32(root, "#size-cells", &size_cells);
+
+	if ((addr_cells + size_cells) > 4)
+		return -EINVAL;
 
 	node = of_create_node(root, "/framebuffer");
 	if (!node)
@@ -107,12 +113,11 @@ static int simplefb_create_node(struct device_node *root,
 		return ret;
 
 	screen_base = virt_to_phys(fbi->screen_base);
-	if (upper_32_bits(screen_base))
-		return -ENOSYS;
 
-	cells[0] = cpu_to_be32(lower_32_bits(screen_base));
-	cells[1] = cpu_to_be32(fbi->line_length * fbi->yres);
-	ret = of_set_property(node, "reg", cells, sizeof(cells[0]) * 2, 1);
+	of_write_number(cells, screen_base, addr_cells);
+	of_write_number(cells + addr_cells, fbi->screen_size, size_cells);
+
+	ret = of_set_property(node, "reg", cells, sizeof(cells[0]) * (addr_cells + size_cells), 1);
 	if (ret < 0)
 		return ret;
 

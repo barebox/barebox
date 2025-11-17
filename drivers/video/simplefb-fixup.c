@@ -13,6 +13,7 @@
 #include <fb.h>
 #include <fcntl.h>
 #include <fs.h>
+#include <of.h>
 #include <init.h>
 #include <xfuncs.h>
 
@@ -93,6 +94,7 @@ static int simplefb_create_node(struct device_node *root,
 	phys_addr_t screen_base;
 	__be32 cells[4];
 	int addr_cells = 2, size_cells = 1, ret;
+	struct resource res = { };
 
 	of_property_read_u32(root, "#address-cells", &addr_cells);
 	of_property_read_u32(root, "#size-cells", &size_cells);
@@ -121,6 +123,12 @@ static int simplefb_create_node(struct device_node *root,
 	if (ret < 0)
 		return ret;
 
+	res.name = "simple-framebuffer";
+	res.flags |= IORESOURCE_BUSY;
+	resource_set_range(&res, screen_base, fbi->screen_size);
+
+	of_fixup_reserved_memory(root, &res);
+
 	cells[0] = cpu_to_be32(fbi->xres);
 	ret = of_set_property(node, "width", cells, sizeof(cells[0]), 1);
 	if (ret < 0)
@@ -139,8 +147,6 @@ static int simplefb_create_node(struct device_node *root,
 	ret = of_property_write_string(node, "format", format);
 	if (ret < 0)
 		return ret;
-
-	of_add_reserve_entry(screen_base, screen_base + fbi->screen_size);
 
 	return of_property_write_string(node, "status", "okay");
 }

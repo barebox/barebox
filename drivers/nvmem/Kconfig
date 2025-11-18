@@ -114,7 +114,7 @@ config KVX_OTP_NV
 	  volatile regs.
 
 config STARFIVE_OTP
-	tristate "Starfive OTP Supprot"
+	tristate "Starfive OTP Support"
 	depends on SOC_STARFIVE
 	depends on OFDEVICE
 	help

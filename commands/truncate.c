@@ -83,9 +83,9 @@ close:
 }
 
 BAREBOX_CMD_HELP_START(truncate)
-BAREBOX_CMD_HELP_TEXT("truncate truncates files to a given size. If a file does")
-BAREBOX_CMD_HELP_TEXT("not exist, it is created unless told otherwise.")
-BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Set files to specified size. Missing files are created")
+BAREBOX_CMD_HELP_TEXT("unless -c option is used. With -s +SIZE, increase size")
+BAREBOX_CMD_HELP_TEXT("by SIZE bytes; with -s SIZE, set absolute size.")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-c",     "Do not create files")
 BAREBOX_CMD_HELP_OPT ("-s [+]SIZE", "truncate file to SIZE, or increase by +SIZE")

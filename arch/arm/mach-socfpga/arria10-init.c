@@ -146,10 +146,6 @@ void arria10_finish_io(uint32_t *pinmux)
 	arria10_reset_deassert_shared_peripherals();
 
 	arria10_reset_deassert_fpga_peripherals();
-
-	socfpga_uart_setup_ll();
-
-	puts_ll("lowlevel init done\n");
 }
 /*
  * First C function to initialize the critical hardware early
@@ -197,4 +193,8 @@ void arria10_init(struct arria10_mainpll_cfg *mainpll,
 
 	/* deassert peripheral resets */
 	arria10_reset_deassert_dedicated_peripherals();
+
+	socfpga_uart_setup_ll();
+
+	puts_ll("lowlevel init done\n");
 }

@@ -128,10 +128,11 @@ static int do_bootm_efi(struct image_data *data)
 	return 0;
 }
 
-static struct image_handler efi_x86_linux_handle_handover = {
-	.name = "EFI Application",
+struct image_handler efi_x86_linux_handle_handover = {
+	.name = "EFI X86 Linux kernel (Legacy Handover)",
 	.bootm = do_bootm_efi,
 	.filetype = filetype_x86_efi_linux_image,
+	.check_image = efi_x86_boot_method_check,
 };
 
 static int efi_register_handover_handler(void)

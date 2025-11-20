@@ -59,9 +59,14 @@ static unsigned long eqos_get_csr_clk_rate_imx(struct eqos *eqos)
 
 static int eqos_set_txclk(struct eqos *eqos, int speed)
 {
+	phy_interface_t interface = eqos->interface;
 	struct eqos_imx_priv *priv = eqos->priv;
 	unsigned long rate;
 	int ret;
+
+	if (interface == PHY_INTERFACE_MODE_RMII ||
+	    interface == PHY_INTERFACE_MODE_MII)
+		return 0;
 
 	switch (speed) {
 	case SPEED_10:

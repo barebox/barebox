@@ -50,6 +50,19 @@ variable:
   global.bootm.image=/path/to/zImage
   bootm
 
+To use an initramfs, use the ``-r`` option or the ``global.bootm.initrd``
+variable:
+
+.. code-block:: sh
+
+  bootm -r /path/to/initrd /path/to/zImage
+
+  # same as:
+
+  global.bootm.initrd=/path/to/initrd
+  global.bootm.image=/path/to/zImage
+  bootm
+
 FIT image configurations will be matched by comparing the ``compatible`` property
 inside the configuration node with the barebox live tree's ``/compatible``.
 It's also possible to select a specific configuration explicitly:

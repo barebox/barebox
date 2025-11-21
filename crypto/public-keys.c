@@ -60,7 +60,7 @@ static int init_public_keys(void)
 
 	for (iter = __public_keys_start; iter != __public_keys_end; iter++) {
 		ret = idr_alloc(&public_keys, *iter, 0, INT_MAX, GFP_NOWAIT);
-		if (ret)
+		if (ret < 0)
 			pr_warn("error while adding key\n");
 	}
 

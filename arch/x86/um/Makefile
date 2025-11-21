@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
 
-obj- := __dummy__.o
-
 ifeq ($(CONFIG_32BIT),y)
 	BITS := 32
 else

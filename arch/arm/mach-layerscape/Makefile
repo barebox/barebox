@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-obj- := __dummy__.o
 lwl-y += errata.o
 lwl-$(CONFIG_ARCH_LS1046) += lowlevel.o lowlevel-ls1046a.o
 obj-$(CONFIG_ARCH_LAYERSCAPE_ICID) += icid.o

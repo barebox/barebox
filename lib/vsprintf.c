@@ -554,6 +554,10 @@ char *clock(char *buf, const char *end, const struct clk *clk,
  *       usual colon-separated hex notation
  * - 'C' For a clock, it prints the name in the Common Clock Framework
  *
+ * There is also a '%pA' format specifier, but it is only intended to be used
+ * from Rust code to format core::fmt::Arguments. Do *not* use it from C.
+ * See rust/kernel/print.rs for details.
+ *
  * Additionally, we support following barebox-specific format specifiers:
  *
  * - 'JP' For a JSON path
@@ -619,6 +623,12 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 		break;
 	case 'C':
 		return clock(buf, end, ptr, field_width, precision, flags, fmt);
+	case 'A':
+		if (!IS_ENABLED(CONFIG_RUST)) {
+			WARN_ONCE(1, "Please remove %%pA from non-Rust code\n");
+			return string(buf, end, "(%pA?)", field_width, precision, flags);
+		}
+		return rust_fmt_argument(buf, (char *)end, ptr);
 	}
 
 	return raw_pointer(buf, end, ptr, field_width, precision, flags);

@@ -103,7 +103,7 @@ static void test_jwt(void)
 	 * noisy, so we decrease logging a bit during their run
 	 */
 
-	old_loglevel = barebox_set_loglevel(MSG_CRIT);
+	old_loglevel = barebox_set_loglevel(LOGLEVEL_CRIT);
 
 	jwt_rs256_mangled = strdup(jwt_rs256);
 	ch = &jwt_rs256_mangled[strlen(jwt_rs256_mangled) - 1];

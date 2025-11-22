@@ -779,7 +779,7 @@ int dev_err_probe(struct device *dev, int err, const char *fmt, ...)
 	if (err == -EPROBE_DEFER)
 		device_set_deferred_probe_reason(dev, &vaf);
 
-	dev_printf(err == -EPROBE_DEFER ? MSG_DEBUG : MSG_ERR,
+	dev_printf(err == -EPROBE_DEFER ? LOGLEVEL_DEBUG : LOGLEVEL_ERR,
 		   dev, "error %pe: %pV", ERR_PTR(err), &vaf);
 
 	va_end(args);

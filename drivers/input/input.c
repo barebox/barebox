@@ -37,11 +37,11 @@ void input_report_key_event(struct input_device *idev, unsigned int code, int va
 
 	/*
 	 * We don't use pr_debug here as we want to output the message
-	 * to the log, even if CONFIG_COMPILE_LOGLEVEL < MSG_DEBUG and
+	 * to the log, even if CONFIG_COMPILE_LOGLEVEL < LOGLEVEL_DEBUG and
 	 * the DEBUG mcro wasn't defined for the file.
 	 */
 	if (IS_ENABLED(CONFIG_INPUT_EVBUG))
-		pr_print(MSG_DEBUG, "Event. Dev: %s, Type: %d, Code: %d, Value: %d\n",
+		pr_print(LOGLEVEL_DEBUG, "Event. Dev: %s, Type: %d, Code: %d, Value: %d\n",
 			 dev_name(idev->parent), EV_KEY, code, value);
 
 	/* Only report depressed keys, if we registered them being pressed */

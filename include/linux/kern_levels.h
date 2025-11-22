@@ -34,5 +34,6 @@
 #define LOGLEVEL_NOTICE		5	/* normal but significant condition */
 #define LOGLEVEL_INFO		6	/* informational */
 #define LOGLEVEL_DEBUG		7	/* debug-level messages */
+#define LOGLEVEL_VDEBUG		8	/* verbose debug messages */
 
 #endif

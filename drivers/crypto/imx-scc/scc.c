@@ -151,7 +151,7 @@ static int imx_scc_get_data(struct imx_scc_ctx *ctx,
 	memcpy(ablkreq->dst, from + ctx->offset, ctx->size);
 
 	pr_debug("GET_DATA:\n");
-	pr_memory_display(MSG_DEBUG, from, 0, ctx->size, 0x40 >> 3, 0);
+	pr_memory_display(LOGLEVEL_DEBUG, from, 0, ctx->size, 0x40 >> 3, 0);
 
 	ctx->offset += ctx->size;
 
@@ -207,11 +207,11 @@ static int imx_scc_put_data(struct imx_scc_ctx *ctx,
 
 	dev_dbg(scc->dev, "copied %d bytes to 0x%p\n", ctx->size, to);
 	pr_debug("IV:\n");
-	pr_memory_display(MSG_DEBUG, scc->base + SCC_SCM_INIT_VECTOR_0, 0,
+	pr_memory_display(LOGLEVEL_DEBUG, scc->base + SCC_SCM_INIT_VECTOR_0, 0,
 			  scc->block_size_bytes,
 			     0x40 >> 3, 0);
 	pr_debug("DATA:\n");
-	pr_memory_display(MSG_DEBUG, to, 0, ctx->size, 0x40 >> 3, 0);
+	pr_memory_display(LOGLEVEL_DEBUG, to, 0, ctx->size, 0x40 >> 3, 0);
 
 	return 0;
 }

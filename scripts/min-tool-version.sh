@@ -22,6 +22,12 @@ gcc)
 llvm)
 	echo 15.0.0
 	;;
+rustc)
+	echo 1.85.0
+	;;
+bindgen)
+	echo 0.71.1
+	;;
 *)
 	echo "$1: unknown tool" >&2
 	exit 1

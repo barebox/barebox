@@ -5,6 +5,7 @@ KASAN_SHADOW_OFFSET ?= $(CONFIG_KASAN_SHADOW_OFFSET)
 CFLAGS_KASAN_MINIMAL := -fsanitize=kernel-address
 
 cc-param = $(call cc-option, -mllvm -$(1), $(call cc-option, --param $(1)))
+rustc-param = $(call rustc-option, -Cllvm-args=-$(1),)
 
 CFLAGS_KASAN-$(CONFIG_ARM32) += $(call cc-param,asan-stack=1)
 check-args = $(foreach arg,$(2),$(call $(1),$(arg)))
@@ -15,4 +16,9 @@ CFLAGS_KASAN := $(CFLAGS_KASAN_MINIMAL) \
 	$(CFLAGS_KASAN-y)
 kasan_params :=
 
-export CFLAGS_KASAN CFLAGS_KASAN_NOSANITIZE
+ifdef CONFIG_RUST
+	# Avoid calling `rustc-param` unless Rust is enabled.
+	RUSTFLAGS_KASAN += $(call check-args, rustc-param, $(kasan_params))
+endif # CONFIG_RUST
+
+export CFLAGS_KASAN CFLAGS_KASAN_NOSANITIZE RUSTFLAGS_KASAN

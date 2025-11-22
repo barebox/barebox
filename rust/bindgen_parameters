@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: GPL-2.0
+# SPDX-Comment: Origin-URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/rust/bindgen_parameters?id=7d0a66e4bb9081d75c82ec4957c50034cb0ea449
+
+# We want to map these types to `isize`/`usize` manually, instead of
+# define them as `int`/`long` depending on platform bitwidth.
+--blocklist-type __kernel_s?size_t
+--blocklist-type __kernel_ptrdiff_t
+
+--opaque-type xregs_state
+--opaque-type desc_struct
+--opaque-type arch_lbr_state
+--opaque-type local_apic
+
+# Packed type cannot transitively contain a `#[repr(align)]` type.
+--opaque-type alt_instr
+--opaque-type x86_msi_data
+--opaque-type x86_msi_addr_lo
+
+# If SMP is disabled, `arch_spinlock_t` is defined as a ZST which triggers a Rust
+# warning. We don't need to peek into it anyway.
+--opaque-type spinlock
+
+# `seccomp`'s comment gets understood as a doctest
+--no-doc-comments
+
+# These functions use the `__preserve_most` calling convention, which neither bindgen
+# nor Rust currently understand, and which Clang currently declares to be unstable.
+--blocklist-function __list_.*_report
+
+# These constants are sometimes not recognized by bindgen depending on config.
+# We use const helpers to aid bindgen, to avoid conflicts when constants are
+# recognized, block generation of the non-helper constants.
+--blocklist-item ARCH_SLAB_MINALIGN
+--blocklist-item ARCH_KMALLOC_MINALIGN
+
+# Structs should implement `Zeroable` when all of their fields do.
+--with-derive-custom-struct .*=MaybeZeroable
+--with-derive-custom-union .*=MaybeZeroable

@@ -9,20 +9,10 @@
 #include <printf.h>
 #include <stdarg.h>
 
-#define MSG_EMERG      0    /* system is unusable */
-#define MSG_ALERT      1    /* action must be taken immediately */
-#define MSG_CRIT       2    /* critical conditions */
-#define MSG_ERR        3    /* error conditions */
-#define MSG_WARNING    4    /* warning conditions */
-#define MSG_NOTICE     5    /* normal but significant condition */
-#define MSG_INFO       6    /* informational */
-#define MSG_DEBUG      7    /* debug-level messages */
-#define MSG_VDEBUG     8    /* verbose debug messages */
-
 #ifdef VERBOSE_DEBUG
-#define LOGLEVEL	MSG_VDEBUG
+#define LOGLEVEL	LOGLEVEL_VDEBUG
 #elif defined DEBUG
-#define LOGLEVEL	MSG_DEBUG
+#define LOGLEVEL	LOGLEVEL_DEBUG
 #elif !defined(LOGLEVEL)
 #define LOGLEVEL	CONFIG_COMPILE_LOGLEVEL
 #endif
@@ -99,7 +89,7 @@ static inline __printf(2, 3) int pr_print(int level, const char *format, ...)
 #define dev_vdbg_once(dev, format, arg...)		\
 	__dev_printf_once(8, (dev) , format , ## arg)
 
-#if LOGLEVEL >= MSG_ERR
+#if LOGLEVEL >= LOGLEVEL_ERR
 int dev_err_probe(struct device *dev, int err, const char *fmt, ...)
 	__printf(3, 4);
 #elif !defined(dev_err_probe)
@@ -239,10 +229,10 @@ struct va_format {
 	va_list *va;
 };
 
-#if LOGLEVEL >= MSG_DEBUG
+#if LOGLEVEL >= LOGLEVEL_DEBUG
 #define print_hex_dump_debug(prefix_str, prefix_type, rowsize,		\
 			     groupsize, buf, len, ascii)		\
-	print_hex_dump(MSG_DEBUG, prefix_str, prefix_type, rowsize,	\
+	print_hex_dump(LOGLEVEL_DEBUG, prefix_str, prefix_type, rowsize,	\
 		       groupsize, buf, len, ascii)
 #else
 static inline void print_hex_dump_debug(const char *prefix_str, int prefix_type,
@@ -261,7 +251,7 @@ static inline void print_hex_dump_debug(const char *prefix_str, int prefix_type,
  * @buf: data blob to dump
  * @len: number of bytes in the @buf
  *
- * Calls print_hex_dump(), with log level of MSG_DEBUG,
+ * Calls print_hex_dump(), with log level of LOGLEVEL_DEBUG,
  * rowsize of 16, groupsize of 1, and ASCII output included.
  */
 #define print_hex_dump_bytes(prefix_str, prefix_type, buf, len)	\

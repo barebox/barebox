@@ -12,17 +12,17 @@
 static void ethlog_rx_monitor(struct eth_device *edev, void *packet,
 			       int length)
 {
-	dev_print_hex_dump(&edev->dev, MSG_DEBUG, "rx data <: ",
+	dev_print_hex_dump(&edev->dev, LOGLEVEL_DEBUG, "rx data <: ",
 			   DUMP_PREFIX_OFFSET, 16, 1, packet, length, true);
-	pr_print(MSG_DEBUG, "\n");
+	pr_print(LOGLEVEL_DEBUG, "\n");
 }
 
 static void ethlog_tx_monitor(struct eth_device *edev, void *packet,
 			       int length)
 {
-	dev_print_hex_dump(&edev->dev, MSG_DEBUG, "tx data >: ",
+	dev_print_hex_dump(&edev->dev, LOGLEVEL_DEBUG, "tx data >: ",
 			   DUMP_PREFIX_OFFSET, 16, 1, packet, length, true);
-	pr_print(MSG_DEBUG, "\n");
+	pr_print(LOGLEVEL_DEBUG, "\n");
 }
 
 static int do_ethlog(int argc, char *argv[])

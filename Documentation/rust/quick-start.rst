@@ -32,6 +32,9 @@ Building
 	make ARCH=sandbox olddefconfig
 	make ARCH=sandbox
 
+``version`` prints the Rust compiler used for the build and ``bfetch``
+lists ``RUST`` among the features.
+
 Editor support
 --------------
 

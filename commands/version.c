@@ -11,7 +11,13 @@ static int do_version(int argc, char *argv[])
 	printf ("\n%s", version_string);
 	if (*CONFIG_NAME)
 		printf (" (%s)", CONFIG_NAME);
-	printf ("\nCompiled by: %s\n\n", BAREBOX_COMPILER);
+	printf ("\nCompiled by: %s", BAREBOX_COMPILER);
+#ifdef CONFIG_RUST
+	printf (",\n%*s%s", (int)sizeof("Compiled by:"), "",
+		CONFIG_RUSTC_VERSION_TEXT);
+#endif
+
+	printf ("\n\n");
 	return 0;
 }
 

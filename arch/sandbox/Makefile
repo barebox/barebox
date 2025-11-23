@@ -15,7 +15,7 @@ simpleconsole_defconfig:
 libfuzzer_defconfig:
 	$(call merge_into_defconfig_named,sandbox_defconfig,libfuzzer,$@)
 
-KBUILD_CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing -fvisibility=hidden
+KBUILD_CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing
 
 
 machine-y := sandbox

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 
-pbl_cppflags := -D__PBL__ -fdata-sections -ffunction-sections
+pbl_cppflags := -D__PBL__ -fdata-sections -ffunction-sections -fvisibility=hidden
 
 ifeq ($(CONFIG_DEBUG_PBL),y)
 pbl_cppflags += -DDEBUG

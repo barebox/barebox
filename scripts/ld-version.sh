@@ -24,7 +24,14 @@ orig_args="$@"
 # Get the first line of the --version output.
 IFS='
 '
-set -- $(LC_ALL=C "$@" --version)
+
+# barebox-specific: support built with CC=musl-gcc LD=musl-gcc
+linker="$(LC_ALL=C "$@" -print-prog-name=ld 2>/dev/null || true)"
+if [ -n "${linker}" ]; then
+	set -- $(LC_ALL=C "${linker}" --version)
+else
+	set -- $(LC_ALL=C "$@" --version)
+fi
 
 # Split the line on spaces.
 IFS=' '

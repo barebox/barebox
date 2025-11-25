@@ -172,17 +172,17 @@ static int defaultenv_load_one(struct defaultenv *df, const char *dir,
 int defaultenv_load(const char *dir, unsigned flags)
 {
 	struct defaultenv *df;
-	int ret;
+	int err = 0;
 
 	defaultenv_add_base();
 
 	defaultenv_add_external();
 
 	list_for_each_entry(df, &defaultenv_list, list) {
-		ret = defaultenv_load_one(df, dir, flags);
+		int ret = defaultenv_load_one(df, dir, flags);
 		if (ret)
-			return ret;
+			err = ret;
 	}
 
-	return 0;
+	return err;
 }

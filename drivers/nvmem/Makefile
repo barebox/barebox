@@ -36,3 +36,4 @@ obj-$(CONFIG_STARFIVE_OTP)	+= starfive-otp.o
 obj-$(CONFIG_IMX_OCOTP_ELE)	+= imx-ocotp-ele.o
 obj-$(CONFIG_NVMEM_ATMEL_I2C)	+= atmel-i2c.o
 obj-$(CONFIG_NVMEM_ATMEL_SHA204A) += atmel-sha204a.o
+obj-$(CONFIG_TI_K3_OTP)		+= k3-fuse.o

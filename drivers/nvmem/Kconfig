@@ -136,4 +136,11 @@ config NVMEM_ATMEL_I2C
 	bool
 	select BITREVERSE
 
+config TI_K3_OTP
+	bool "TI K3 OTP"
+	depends on ARCH_K3
+	select ARM_SMCCC
+	help
+	  This adds support for the TI K3 SMC call based OTP found on AM62L SoCs.
+
 endif

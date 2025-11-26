@@ -43,7 +43,7 @@ Usage
    ``CONFIG_SECURITY_POLICY_PATH``.
 
    Alternatively, policies can also be be referenced in a board's
-   Makefile::
+   Makefile:
 
    .. code-block:: make
 

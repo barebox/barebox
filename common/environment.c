@@ -104,10 +104,14 @@ static struct cdev *default_environment_path_search(void)
 		if (IS_ERR(part))
 			continue;
 
-		score++;
+		/* Prefer eMMC over SD if neither is the boot medium */
+		if (blockdevice_is_removable(blk))
+			score += 1;
+		else
+			score += 2;
 
 		if (boot_node && boot_node == blk->cdev.device_node)
-			score++;
+			score += 4;
 
 		if (score > max_score) {
 			max_score = score;

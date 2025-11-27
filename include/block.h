@@ -82,6 +82,17 @@ static inline int block_flush(struct block_device *blk)
 	return cdev_flush(&blk->cdev);
 }
 
+static inline bool blockdevice_is_removable(struct block_device *blk)
+{
+	switch (blk->type) {
+	case BLK_TYPE_USB:
+	case BLK_TYPE_SD:
+		return true;
+	default:
+		return false;
+	}
+}
+
 #ifdef CONFIG_BLOCK
 unsigned file_list_add_blockdevs(struct file_list *files);
 char *cdev_get_linux_rootarg(const struct cdev *partcdev);

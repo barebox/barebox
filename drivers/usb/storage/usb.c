@@ -422,6 +422,7 @@ static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
 	pblk_dev->blk.cdev.name = basprintf("disk%d", result);
 	pblk_dev->blk.blockbits = SECTOR_SHIFT;
 	pblk_dev->blk.type = BLK_TYPE_USB;
+	pblk_dev->blk.removable = true;
 	pblk_dev->blk.rootwait = true;
 
 	result = blockdevice_register(&pblk_dev->blk);

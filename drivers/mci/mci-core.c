@@ -2795,6 +2795,10 @@ static int mci_register_partition(struct mci_part *part)
 	part->blk.type = IS_SD(mci) ? BLK_TYPE_SD : BLK_TYPE_MMC;
 	part->blk.rootwait = true;
 
+	part->blk.removable = IS_SD(mci);
+	if (host->non_removable)
+		part->blk.removable = false;
+
 	if (part->area_type == MMC_BLK_DATA_AREA_RPMB)
 		return 0;
 

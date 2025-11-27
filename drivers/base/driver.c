@@ -335,6 +335,8 @@ int unregister_device(struct device *old_dev)
 	if (np && np->dev == old_dev)
 		np->dev = NULL;
 
+	free_device_res(old_dev);
+
 	return 0;
 }
 EXPORT_SYMBOL(unregister_device);
@@ -352,6 +354,7 @@ void free_device_res(struct device *dev)
 	free(dev->unique_name);
 	dev->unique_name = NULL;
 	free(dev->deferred_probe_reason);
+	dev->deferred_probe_reason = NULL;
 }
 EXPORT_SYMBOL(free_device_res);
 

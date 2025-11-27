@@ -86,6 +86,8 @@ static void test_tree(const char *path, struct test_tree_ctx *ctx)
 
 	}
 
+	closedir(dir);
+
 	popd(oldwd);
 }
 

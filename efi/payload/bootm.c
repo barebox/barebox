@@ -33,7 +33,6 @@
 #include <efi/efi-device.h>
 
 #include "image.h"
-#include "setup_header.h"
 
 static bool ramdisk_is_fit(struct image_data *data)
 {

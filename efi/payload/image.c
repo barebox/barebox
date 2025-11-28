@@ -29,7 +29,6 @@
 #include <efi/efi-device.h>
 
 #include "image.h"
-#include "setup_header.h"
 
 static void *efi_read_file(const char *file, size_t *size)
 {
@@ -96,18 +95,6 @@ out:
 	return -efi_errno(efiret);
 }
 
-static bool is_linux_image(enum filetype filetype, const void *base)
-{
-	if (IS_ENABLED(CONFIG_X86) && is_x86_setup_header(base))
-		return true;
-
-	if (IS_ENABLED(CONFIG_ARM64) &&
-	    filetype == filetype_arm64_efi_linux_image)
-		return true;
-
-	return false;
-}
-
 int efi_execute_image(efi_handle_t handle,
 		      struct efi_loaded_image *loaded_image,
 		      enum filetype filetype)
@@ -119,7 +106,7 @@ int efi_execute_image(efi_handle_t handle,
 	is_driver = (loaded_image->image_code_type == EFI_BOOT_SERVICES_CODE) ||
 		(loaded_image->image_code_type == EFI_RUNTIME_SERVICES_CODE);
 
-	if (is_linux_image(filetype, loaded_image->image_base)) {
+	if (filetype_is_linux_efi_image(filetype)) {
 		options = linux_bootargs_get();
 		printf("Booting kernel via StartImage");
 		if (options) {

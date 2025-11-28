@@ -6,47 +6,11 @@
 #include <console.h>
 #include <printf.h>
 #include <xfuncs.h>
+#include <linux/sprintf.h>
 
 /*
  * STDIO based functions (can always be used)
  */
-int sprintf(char *buf, const char *fmt, ...) __printf(2, 3);
-int snprintf(char *buf, size_t size, const char *fmt, ...) __printf(3, 4);
-int scnprintf(char *buf, size_t size, const char *fmt, ...) __printf(3, 4);
-int vsprintf(char *buf, const char *fmt, va_list args);
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
-int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
-
-#if IN_PROPER || defined(CONFIG_PBL_CONSOLE)
-int asprintf(char **strp, const char *fmt, ...) __printf(2, 3);
-char *bvasprintf(const char *fmt, va_list ap);
-int vasprintf(char **strp, const char *fmt, va_list ap);
-int vrasprintf(char **strp, const char *fmt, va_list ap);
-int rasprintf(char **strp, const char *fmt, ...) __printf(2, 3);
-#else
-static inline __printf(2, 3) int asprintf(char **strp, const char *fmt, ...)
-{
-	return -1;
-}
-static inline char *bvasprintf(const char *fmt, va_list ap)
-{
-	return NULL;
-}
-static inline int vasprintf(char **strp, const char *fmt, va_list ap)
-{
-	return -1;
-}
-static inline int vrasprintf(char **strp, const char *fmt, va_list ap)
-{
-	return -1;
-}
-static inline __printf(2, 3) int rasprintf(char **strp, const char *fmt, ...)
-{
-	return -1;
-}
-#endif
-
-#define basprintf xasprintf
 
 #ifdef CONFIG_ARCH_HAS_CTRLC
 int arch_ctrlc(void);
@@ -113,7 +77,6 @@ static inline void console_ctrlc_allow(void) { }
 static inline void console_ctrlc_forbid(void) { }
 #endif
 
-const char *size_human_readable(unsigned long long size);
 int readline(const char *prompt, char *buf, int len);
 
 #if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \

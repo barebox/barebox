@@ -35,7 +35,6 @@
  */
 #define pr_fmt(fmt)  "image-sparse: " fmt
 
-#include <config.h>
 #include <common.h>
 #include <image-sparse.h>
 #include <unistd.h>

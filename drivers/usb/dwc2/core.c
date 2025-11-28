@@ -672,7 +672,7 @@ int dwc2_get_dr_mode(struct dwc2 *dwc2)
 {
 	enum usb_dr_mode mode;
 
-	mode = of_usb_get_dr_mode(dwc2->dev->of_node, NULL);
+	mode = usb_get_dr_mode(dwc2->dev);
 	dwc2->dr_mode = mode;
 
 	if (dwc2_hw_is_device(dwc2)) {

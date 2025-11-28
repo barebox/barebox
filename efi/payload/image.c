@@ -10,6 +10,7 @@
 #include <clock.h>
 #include <common.h>
 #include <linux/sizes.h>
+#include <linux/ktime.h>
 #include <memory.h>
 #include <init.h>
 #include <driver.h>
@@ -128,6 +129,9 @@ int efi_execute_image(efi_handle_t handle,
 				(strlen(options) + 1) * sizeof(wchar_t);
 		}
 		printf("...\n");
+
+		efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
+				      ktime_to_us(ktime_get()));
 
 		shutdown_barebox();
 	}

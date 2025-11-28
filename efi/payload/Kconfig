@@ -25,6 +25,10 @@ if EFI_PAYLOAD
 config EFI_STUB
 	def_bool HAVE_EFI_STUB
 
+config EFI_PAYLOAD_ESP_IMAGE
+	bool "Generate barebox.esp image from payload"
+	depends on EFI_STUB || !PBL_IMAGE
+
 config EFI_HANDOVER_PROTOCOL
 	bool "EFI Handover protocol (DEPRECATED)"
 	depends on X86

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+img="$1"
+part="$2"
+
+# We operate on local files only, so sfdisk in /sbin is still ok
+export PATH="$PATH:/sbin"
+
+truncate -s 4114KiB "$img"
+dd if="/dev/zero" of="$img" seek=2048 count=1 conv=notrunc status=none
+echo ',2M,U' | sfdisk --quiet --force --label gpt "$img"
+dd if="$part" of="$img" seek=2048 conv=notrunc status=none

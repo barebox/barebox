@@ -856,7 +856,7 @@ int main(int argc, char *argv[])
 	keylist = calloc(sizeof(struct keyinfo), keycount);
 
 	for (i = 0; i < keycount; i++) {
-		const char *keyspec = argv[optind + i];
+		const char *keyspec = try_resolve_env(argv[optind + i]);
 		struct keyinfo *info = &keylist[i];
 
 		if (!keyspec)

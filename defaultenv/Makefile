@@ -21,6 +21,7 @@ cmd_env_default = $(srctree)/scripts/genenv $@ "$(CONFIG_DEFAULT_ENVIRONMENT_PAT
 # changes, so that the dependent targets are not unnecessarily rebuilt
 $(obj)/barebox_default_env: FORCE
 	$(call cmd,env_default)
+	$(Q)printf '%s\n' 'savedcmd_$@ := $(cmd_env)' > $(dot-target).cmd
 
 quiet_cmd_env_h = ENVH    $@
 cmd_env_h = cat $< | $(objtree)/scripts/bin2c "__aligned(4) default_environment" > $@; \

@@ -202,6 +202,17 @@ static int barebox_grow_memory_bank(struct memory_bank *bank, const char *name,
 	return 0;
 }
 
+static int memory_banks_compare(struct list_head *a, struct list_head *b)
+{
+	struct resource *res_a = list_entry(a, struct memory_bank, list)->res;
+	struct resource *res_b = list_entry(b, struct memory_bank, list)->res;
+
+	/* banks are requested from iomem_resource, so they can't overlap
+	 * and thus comparing just the start is sufficient
+	 */
+	return compare3(res_a->start, res_b->start);
+}
+
 int barebox_add_memory_bank(const char *name, resource_size_t start,
 				    resource_size_t size)
 {
@@ -230,7 +241,7 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 
 	bank->res = res;
 
-	list_add_tail(&bank->list, &memory_banks);
+	list_add_sort(&bank->list, &memory_banks, memory_banks_compare);
 
 	return 0;
 }

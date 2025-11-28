@@ -36,9 +36,9 @@ static enum usb_dr_mode usb_get_dr_mode_from_string(const char *str)
  * usb_get_dr_mode - Get dual role mode for given device
  * @dev:	Pointer to the given device
  *
- * The function gets phy interface string from property 'dr_mode',
- * in the given device's device tree node and returns the correspondig
- * enum usb_dr_mode
+ * The function gets phy interface string from property 'barebox,dr_mode'
+ * or 'dr_mode' in the given device's device tree node and returns the
+ * correspondig enum usb_dr_mode
  */
 enum usb_dr_mode usb_get_dr_mode(struct device *dev)
 {
@@ -46,7 +46,9 @@ enum usb_dr_mode usb_get_dr_mode(struct device *dev)
 	const char *dr_mode;
 	int err;
 
-	err = of_property_read_string(np, "dr_mode", &dr_mode);
+	err = of_property_read_string(np, "barebox,dr_mode", &dr_mode);
+	if (err < 0)
+		err = of_property_read_string(np, "dr_mode", &dr_mode);
 	if (err < 0)
 		return USB_DR_MODE_UNKNOWN;
 

@@ -46,9 +46,14 @@ unsigned long arm_mem_endmem_get(void);
 
 #ifdef CONFIG_ARM_EXCEPTIONS
 void arm_fixup_vectors(void);
+ulong arm_get_vector_table(void);
 #else
 static inline void arm_fixup_vectors(void)
 {
+}
+static inline ulong arm_get_vector_table(void)
+{
+	return ~0;
 }
 #endif
 

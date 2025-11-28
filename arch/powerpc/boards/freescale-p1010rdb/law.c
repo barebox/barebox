@@ -14,6 +14,7 @@
  */
 
 #include <common.h>
+#include <asm/config.h>
 #include <asm/fsl_law.h>
 
 struct law_entry law_table[] = {

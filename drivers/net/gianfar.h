@@ -14,7 +14,7 @@
 #define __GIANFAR_H
 
 #include <net.h>
-#include <config.h>
+#include <asm/config.h>
 #include <mach/gianfar.h>
 
 #define MAC_ADDR_LEN 6

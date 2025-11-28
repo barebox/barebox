@@ -23,6 +23,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <asm/config.h>
 #include <asm/processor.h>
 #include <asm/cache.h>
 #include <asm/fsl_law.h>

@@ -17,7 +17,7 @@
  *
  */
 
-#include <config.h>
+#include <asm/config.h>
 #include <common.h>
 #include <command.h>
 #include <asm/cache.h>

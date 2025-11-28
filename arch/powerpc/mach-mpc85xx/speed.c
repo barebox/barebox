@@ -22,6 +22,7 @@
  */
 
 #include <common.h>
+#include <asm/config.h>
 #include <asm/processor.h>
 #include <mach/clock.h>
 #include <mach/immap_85xx.h>

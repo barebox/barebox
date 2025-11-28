@@ -27,6 +27,7 @@
 #include <platform_data/serial-ns16550.h>
 #include <environment.h>
 #include <i2c/i2c.h>
+#include <asm/config.h>
 #include <asm/fsl_ddr_sdram.h>
 #include <asm/cache.h>
 #include <mach/mmu.h>

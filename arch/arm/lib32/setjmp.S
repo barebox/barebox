@@ -3,7 +3,6 @@
  * (C) 2017 Theobroma Systems Design und Consulting GmbH
  */
 
-#include <config.h>
 #include <asm/assembler.h>
 #include <linux/linkage.h>
 

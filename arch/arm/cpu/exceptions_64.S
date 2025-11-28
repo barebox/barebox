@@ -5,7 +5,6 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#include <config.h>
 #include <asm/ptrace.h>
 #include <asm/assembler64.h>
 #include <linux/linkage.h>

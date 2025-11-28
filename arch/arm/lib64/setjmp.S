@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 /* SPDX-FileCopyrightText: 2017 Theobroma Systems Design und Consulting GmbH */
 
-#include <config.h>
 #include <linux/linkage.h>
 
 .pushsection .text.setjmp, "ax"

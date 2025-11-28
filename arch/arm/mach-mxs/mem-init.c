@@ -10,7 +10,6 @@
  */
 
 #include <common.h>
-#include <config.h>
 #include <io.h>
 #include <mach/mxs/imx-regs.h>
 #include <linux/compiler.h>

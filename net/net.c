@@ -220,24 +220,28 @@ static int arp_request(struct eth_device *edev, IPaddr_t dest, unsigned char *et
 
 	ret = eth_send(edev, arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
 	if (ret)
-		return ret;
+		goto out;
 	arp_start = get_time_ns();
 
 	while (pending_arp.ip) {
-		if (ctrlc())
-			return -EINTR;
+		if (ctrlc()) {
+			ret = -EINTR;
+			goto out;
+		}
 
 		if (is_timeout(arp_start, 3 * SECOND)) {
 			printf("T ");
 			arp_start = get_time_ns();
 			ret = eth_send(edev, arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
 			if (ret)
-				return ret;
+				goto out;
 			retries++;
 		}
 
-		if (retries > PKT_NUM_RETRIES)
-			return -ETIMEDOUT;
+		if (retries > PKT_NUM_RETRIES) {
+			ret = -ETIMEDOUT;
+			goto out;
+		}
 
 		net_poll();
 	}
@@ -245,7 +249,11 @@ static int arp_request(struct eth_device *edev, IPaddr_t dest, unsigned char *et
 	pr_debug("Got ARP REPLY for %pI4: %02x:%02x:%02x:%02x:%02x:%02x\n",
 		 &dest, ether[0], ether[1], ether[2], ether[3], ether[4],
 		 ether[5]);
-	return 0;
+
+out:
+	pending_arp.ip = 0;
+	pending_arp.ether = NULL;
+	return ret;
 }
 
 void net_poll(void)

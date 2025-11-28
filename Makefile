@@ -1386,11 +1386,9 @@ endif # CONFIG_MODULES
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map \
-		.tmp_kallsyms* barebox.ldr compile_commands.json \
+		.tmp_kallsyms* compile_commands.json \
 		.tmp_barebox.o barebox.o barebox-flash-image \
-		barebox.srec barebox.s5p barebox.ubl \
-		barebox.uimage \
-		barebox.efi barebox.canon-a1100.bin
+		barebox.srec barebox.efi
 
 CLEAN_FILES +=	scripts/bareboxenv-target scripts/kernel-install-target \
 		scripts/bareboxcrc32-target scripts/bareboximd-target \

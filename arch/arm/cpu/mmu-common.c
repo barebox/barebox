@@ -145,7 +145,7 @@ static void mmu_remap_memory_banks(void)
 		struct resource *rsv;
 		resource_size_t pos;
 
-		pos = bank->start;
+		pos = bank->res->start;
 
 		/* Skip reserved regions */
 		for_each_reserved_region(bank, rsv) {
@@ -154,7 +154,7 @@ static void mmu_remap_memory_banks(void)
 			pos = rsv->end + 1;
 		}
 
-		remap_range_end_sans_text(pos, bank->start + bank->size, MAP_CACHED);
+		remap_range_end_sans_text(pos, bank->res->end + 1, MAP_CACHED);
 	}
 
 	/* Do this while interrupt vectors are still writable */

@@ -185,8 +185,8 @@ static int barebox_grow_memory_bank(struct memory_bank *bank, const char *name,
 	struct resource *res;
 	resource_size_t bank_end = bank->res->end;
 
-	if (newres->start < bank->start) {
-		res = request_iomem_region(name, newres->start, bank->start - 1);
+	if (newres->start < bank->res->start) {
+		res = request_iomem_region(name, newres->start, bank->res->start - 1);
 		if (IS_ERR(res))
 			return PTR_ERR(res);
 		__merge_regions(name, bank->res, res);
@@ -198,9 +198,6 @@ static int barebox_grow_memory_bank(struct memory_bank *bank, const char *name,
 			return PTR_ERR(res);
 		__merge_regions(name, bank->res, res);
 	}
-
-	bank->start = newres->start;
-	bank->size = resource_size(bank->res);
 
 	return 0;
 }
@@ -232,8 +229,6 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 	bank = xzalloc(sizeof(*bank));
 
 	bank->res = res;
-	bank->start = start;
-	bank->size = size;
 
 	list_add_tail(&bank->list, &memory_banks);
 
@@ -245,7 +240,8 @@ static int add_mem_devices(void)
 	struct memory_bank *bank;
 
 	for_each_memory_bank(bank) {
-		add_mem_device(bank->res->name, bank->start, bank->size,
+		add_mem_device(bank->res->name,
+			       bank->res->start, resource_size(bank->res),
 			       IORESOURCE_MEM_WRITEABLE);
 	}
 
@@ -400,7 +396,7 @@ static int of_memory_fixup(struct device_node *root, void *unused)
 		int len = 0;
 
 		/* Create a /memory node for each bank */
-		memnode_name = xasprintf("/memory@%lx", bank->start);
+		memnode_name = xasprintf("/memory@%llx", (u64)bank->res->start);
 
 		memnode = of_create_node(root, memnode_name);
 		if (!memnode) {
@@ -413,9 +409,9 @@ static int of_memory_fixup(struct device_node *root, void *unused)
 		if (err)
 			goto err_free;
 
-		of_write_number(tmp, bank->start, addr_cell_len);
+		of_write_number(tmp, bank->res->start, addr_cell_len);
 		len += addr_cell_len * 4;
-		of_write_number(tmp + len, bank->size, size_cell_len);
+		of_write_number(tmp + len, resource_size(bank->res), size_cell_len);
 		len += size_cell_len * 4;
 
 		err = of_set_property(memnode, "reg", tmp, len, 1);

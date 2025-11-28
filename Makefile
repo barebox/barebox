@@ -1083,7 +1083,9 @@ PHONY += check
 # ---------------------------------------------------------------------------
 barebox: $(BAREBOX_LDS) $(BAREBOX_OBJS) $(kallsyms.o) FORCE
 	$(call if_changed_rule,barebox__)
+ifeq ($(BAREBOX_PROPER),barebox)
 	$(Q)rm -f .old_version
+endif
 
 barebox.fit: images/barebox-$(CONFIG_ARCH_LINUX_NAME).fit
 	$(Q)ln -fsn $< $@

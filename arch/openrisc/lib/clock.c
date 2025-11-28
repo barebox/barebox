@@ -16,6 +16,7 @@
 #include <common.h>
 #include <clock.h>
 #include <init.h>
+#include <asm/config.h>
 #include <asm/system.h>
 #include <asm/openrisc_exc.h>
 

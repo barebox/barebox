@@ -14,7 +14,7 @@
  *
  */
 
-#include <config.h>
+#include <asm/config.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/spr-defs.h>
 

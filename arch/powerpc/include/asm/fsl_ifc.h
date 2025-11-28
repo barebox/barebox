@@ -8,7 +8,7 @@
 #ifndef __FSL_IFC_H
 #define __FSL_IFC_H
 
-#include <config.h>
+#include <asm/config.h>
 #include <common.h>
 
 /* Big-Endian */

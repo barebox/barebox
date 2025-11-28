@@ -15,6 +15,7 @@
  */
 
 #include <common.h>
+#include <asm/config.h>
 #include <mach/fsl_i2c.h>
 #include <mach/immap_85xx.h>
 #include <mach/clock.h>

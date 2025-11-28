@@ -1,25 +1,11 @@
-/*
- * Copyright 2012 GE Intelligent Platforms, Inc.
- * Copyright 2009-2011 Freescale Semiconductor, Inc.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
- * GNU General Public License for more details.
- *
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2012 GE Intelligent Platforms, Inc.
+// SPDX-FileCopyrightText: 2009-2011 Freescale Semiconductor, Inc.
 
-/*
- * P2020RDB board configuration file
- */
+/* Don't include directly, include <asm/config.h> instead.  */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#ifndef __BOARD_P2020RDB_H
+#define __BOARD_P2020RDB_H
 
 #ifndef __ASSEMBLY__
 extern unsigned long get_board_sys_clk(unsigned long dummy);
@@ -82,4 +68,4 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
 /* Leave 256 bytes for global data */
 #define CFG_INIT_SP_OFFSET	(0x00004000 - 256)
 
-#endif	/* __CONFIG_H */
+#endif	/* __BOARD_P2020RDB_H */

@@ -30,6 +30,17 @@
 #include <linux/mtd/concat.h>
 #include "cfi_flash.h"
 
+#ifdef CONFIG_PPC
+#include <asm/config.h>
+#endif
+
+/*
+ * Check if chip width is defined. If not, start detecting with 8bit.
+ */
+#ifndef CFG_FLASH_CFI_WIDTH
+#define CFG_FLASH_CFI_WIDTH	FLASH_CFI_8BIT
+#endif
+
 /*
  * This file implements a Common Flash Interface (CFI) driver for barebox.
  * The width of the port and the width of the chips are determined at initialization.
@@ -49,13 +60,6 @@
 static unsigned int flash_offset_cfi[2] = {
 	FLASH_OFFSET_CFI,FLASH_OFFSET_CFI_ALT
 };
-
-/*
- * Check if chip width is defined. If not, start detecting with 8bit.
- */
-#ifndef CFG_FLASH_CFI_WIDTH
-#define CFG_FLASH_CFI_WIDTH	FLASH_CFI_8BIT
-#endif
 
 struct cfi_priv {
 	struct flash_info *infos;

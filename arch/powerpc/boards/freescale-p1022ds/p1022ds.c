@@ -23,6 +23,7 @@
 #include <i2c/i2c.h>
 #include <memory.h>
 #include <envfs.h>
+#include <asm/config.h>
 #include <asm/cache.h>
 #include <asm/fsl_ddr_sdram.h>
 #include <asm/fsl_law.h>

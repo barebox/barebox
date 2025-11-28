@@ -29,6 +29,7 @@
 #include <envfs.h>
 #include <linux/sizes.h>
 #include <linux/stat.h>
+#include <asm/config.h>
 #include <asm/io.h>
 #include <fs.h>
 #include <i2c/i2c.h>

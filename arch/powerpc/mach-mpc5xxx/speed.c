@@ -15,6 +15,7 @@
  */
 
 #include <common.h>
+#include <asm/config.h>
 #include <mach/mpc5xxx.h>
 #include <init.h>
 #include <asm/processor.h>

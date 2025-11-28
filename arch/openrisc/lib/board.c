@@ -19,14 +19,15 @@
 #include <memory.h>
 #include <asm-generic/memory_layout.h>
 #include <debug_ll.h>
+#include <asm/config.h>
 
 /* Called from assembly */
 void openrisc_start_barebox(void);
 
 void __noreturn openrisc_start_barebox(void)
 {
-	mem_malloc_init((void *)(OPENRISC_SOPC_TEXT_BASE - MALLOC_SIZE),
-			(void *)(OPENRISC_SOPC_TEXT_BASE - 1));
+	mem_malloc_init((void *)(TEXT_BASE - MALLOC_SIZE),
+			(void *)(TEXT_BASE  - 1));
 
 	putc_ll('>');
 

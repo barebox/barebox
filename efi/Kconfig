@@ -4,6 +4,10 @@ menu "EFI (Extensible Firmware Interface) Support"
 
 source "efi/payload/Kconfig"
 
+config EFI_PAYLOAD_ESP_IMAGE
+	bool "Generate barebox.esp image from payload"
+	depends on EFI_PAYLOAD
+
 config EFI
 	bool
 

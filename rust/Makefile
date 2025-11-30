@@ -14,6 +14,9 @@ obj-$(CONFIG_RUST) += bindings.o pin_init.o kernel.o
 always-$(CONFIG_RUST) += exports_helpers_generated.h \
     exports_bindings_generated.h exports_kernel_generated.h
 
+obj-$(CONFIG_RUST) += alloc.o barebox.o
+always-$(CONFIG_RUST) += exports_alloc_generated.h exports_barebox_generated.h
+
 always-$(CONFIG_RUST) += uapi/uapi_generated.rs
 obj-$(CONFIG_RUST) += uapi.o
 
@@ -43,6 +46,10 @@ RUST_LIB_SRC ?= $(rustc_sysroot)/lib/rustlib/src/rust/library
 core-cfgs = \
     --cfg no_fp_fmt_parse \
     --cfg no_io_statics
+
+alloc-cfgs = \
+    --cfg no_rc \
+    --cfg no_sync
 
 core-edition := $(if $(call rustc-min-version,108700),2024,2021)
 
@@ -180,6 +187,12 @@ $(obj)/exports_bindings_generated.h: $(obj)/bindings.o FORCE
 $(obj)/exports_kernel_generated.h: $(obj)/kernel.o FORCE
 	$(call if_changed,exports)
 
+$(obj)/exports_barebox_generated.h: $(obj)/barebox.o FORCE
+	$(call if_changed,exports)
+
+$(obj)/exports_alloc_generated.h: $(obj)/alloc.o FORCE
+	$(call if_changed,exports)
+
 quiet_cmd_rustc_procmacro = $(RUSTC_OR_CLIPPY_QUIET) P $@
       cmd_rustc_procmacro = \
 	$(RUSTC_OR_CLIPPY) $(rust_common_flags) $(rustc_target_flags) \
@@ -213,6 +226,7 @@ quiet_cmd_rustc_library = $(if $(skip_clippy),RUSTC,$(RUSTC_OR_CLIPPY_QUIET)) L 
 
 rust-analyzer:
 	$(Q)MAKEFLAGS= $(srctree)/scripts/generate_rust_analyzer.py \
+		--cfgs='alloc=$(alloc-cfgs)' \
 		--cfgs='core=$(core-cfgs)' $(core-edition) \
 		$(realpath $(srctree)) $(realpath $(objtree)) \
 		$(rustc_sysroot) $(RUST_LIB_SRC) $(if $(KBUILD_EXTMOD),$(srcroot)) \
@@ -266,6 +280,12 @@ $(obj)/compiler_builtins.o: private rustc_objcopy = -w -W '__*'
 $(obj)/compiler_builtins.o: $(src)/compiler_builtins.rs $(obj)/core.o FORCE
 	+$(call if_changed_rule,rustc_library)
 
+$(obj)/alloc.o: private skip_clippy = 1
+$(obj)/alloc.o: private skip_flags = --edition=2021 -Wunreachable_pub
+$(obj)/alloc.o: private rustc_target_flags = --edition=$(core-edition) $(alloc-cfgs)
+$(obj)/alloc.o: $(RUST_LIB_SRC)/alloc/src/lib.rs $(obj)/compiler_builtins.o FORCE
+	+$(call if_changed_rule,rustc_library)
+
 $(obj)/pin_init.o: private rustc_target_flags = --extern pin_init_internal \
     --extern macros --cfg kernel
 $(obj)/pin_init.o: $(src)/pin-init/src/lib.rs $(obj)/compiler_builtins.o \
@@ -302,6 +322,12 @@ $(obj)/kernel.o: private rustc_target_flags = --extern ffi --extern pin_init \
     --extern build_error --extern macros --extern bindings --extern uapi
 $(obj)/kernel.o: $(src)/kernel/lib.rs $(obj)/build_error.o $(obj)/pin_init.o \
     $(obj)/$(libmacros_name) $(obj)/bindings.o $(obj)/uapi.o FORCE
+	+$(call if_changed_rule,rustc_library)
+
+$(obj)/barebox.o: private rustc_target_flags = --extern ffi --extern pin_init \
+    --extern build_error --extern macros --extern bindings --extern alloc
+$(obj)/barebox.o: $(src)/barebox/lib.rs $(obj)/build_error.o $(obj)/pin_init.o \
+    $(obj)/$(libmacros_name) $(obj)/bindings.o $(obj)/uapi.o $(obj)/alloc.o FORCE
 	+$(call if_changed_rule,rustc_library)
 
 endif # CONFIG_RUST

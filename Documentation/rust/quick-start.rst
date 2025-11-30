@@ -42,3 +42,11 @@ Editor support
 
 ``make rust-analyzer`` generates a ``rust-project.json`` for
 rust-analyzer in the build directory.
+
+Writing Rust code
+-----------------
+
+Rust code in barebox is ``no_std``: ``core`` and ``alloc`` can be used,
+``std`` can't. A global allocator on top of barebox' heap backs ``Box``,
+``Vec``, ``String`` and the other ``alloc`` types. ``Rc``, ``Arc`` and
+``CString`` are left out to save space.

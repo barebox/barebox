@@ -77,7 +77,7 @@ def generate_crates(srctree, objtree, sysroot_src, external_src, cfgs, core_edit
     # here is important for ensuring that rust-analyzer can resolve symbols. The sources of truth
     # for this dependency graph are `(sysroot_src / crate / "Cargo.toml" for crate in crates)`.
     append_sysroot_crate("core", [], cfg=crates_cfgs.get("core", []), edition=core_edition)
-    append_sysroot_crate("alloc", ["core"])
+    append_sysroot_crate("alloc", ["core"], cfg=crates_cfgs.get("alloc", []))
     append_sysroot_crate("std", ["alloc", "core"])
     append_sysroot_crate("proc_macro", ["core", "std"])
 
@@ -143,6 +143,13 @@ def generate_crates(srctree, objtree, sysroot_src, external_src, cfgs, core_edit
     append_crate_with_generated("bindings", ["core", "ffi", "pin_init"])
     append_crate_with_generated("uapi", ["core", "ffi", "pin_init"])
     append_crate_with_generated("kernel", ["core", "macros", "build_error", "pin_init", "ffi", "bindings", "uapi"])
+
+    append_crate(
+        "barebox",
+        srctree / "rust" / "barebox" / "lib.rs",
+        ["core", "alloc", "macros", "build_error", "pin_init", "ffi", "bindings", "uapi"],
+        cfg=cfg,
+    )
 
     def is_root_crate(build_file, target):
         try:

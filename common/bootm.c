@@ -70,6 +70,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 		data->initrd_file = getenv_nonempty("global.bootm.initrd");
 	}
 	data->root_dev = getenv_nonempty("global.bootm.root_dev");
+	data->root_param = getenv_nonempty("global.bootm.root_param");
 	data->verify = bootm_get_verify_mode();
 	data->appendroot = bootm_appendroot;
 	data->provide_machine_id = bootm_provide_machine_id;
@@ -89,6 +90,7 @@ void bootm_data_restore_defaults(const struct bootm_data *data)
 		globalvar_set("bootm.initrd", data->initrd_file);
 	}
 	globalvar_set("bootm.root_dev", data->root_dev);
+	globalvar_set("bootm.root_param", data->root_param);
 	bootm_set_verify_mode(data->verify);
 	bootm_appendroot = data->appendroot;
 	bootm_provide_machine_id = data->provide_machine_id;
@@ -854,14 +856,14 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 			if (ret) {
 				if (!root_cdev)
-					pr_err("no cdev found for %s, cannot set root= option\n",
-						root_dev_name);
+					pr_err("no cdev found for %s, cannot set %s= option\n",
+						root_dev_name, bootm_data->root_param);
 				else if (!root_cdev->partuuid[0])
-					pr_err("%s doesn't have a PARTUUID, cannot set root= option\n",
-						root_dev_name);
+					pr_err("%s doesn't have a PARTUUID, cannot set %s= option\n",
+						root_dev_name, bootm_data->root_param);
 				else
-					pr_err("could not determine root= from %s\n",
-						root_dev_name);
+					pr_err("could not determine %s= from %s\n",
+						bootm_data->root_param, root_dev_name);
 			}
 
 			if (root_cdev)
@@ -875,10 +877,12 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 
 		if (!root) {
-			pr_err("Failed to append kernel cmdline parameter 'root='\n");
+			pr_err("Failed to append kernel cmdline parameter '%s='\n",
+			       bootm_data->root_param);
 		} else {
 			char *rootarg;
-			rootarg = format_root_bootarg("root", root, rootopts);
+
+			rootarg = format_root_bootarg(bootm_data->root_param, root, rootopts);
 			pr_info("Adding \"%s\" to Kernel commandline\n", rootarg);
 			globalvar_add_simple("linux.bootargs.bootm.appendroot",
 					     rootarg);
@@ -1121,6 +1125,7 @@ static int bootm_init(void)
 	globalvar_add_simple("bootm.image.loadaddr", NULL);
 	globalvar_add_simple("bootm.oftree", NULL);
 	globalvar_add_simple("bootm.root_dev", NULL);
+	globalvar_add_simple("bootm.root_param", "root");
 	globalvar_add_simple("bootm.tee", NULL);
 	globalvar_add_simple_bool("bootm.appendroot", &bootm_appendroot);
 	globalvar_add_simple_bool("bootm.earlycon", &bootm_earlycon);
@@ -1178,5 +1183,6 @@ BAREBOX_MAGICVAR(global.bootm.verbose, "bootm default verbosity level (0=quiet)"
 BAREBOX_MAGICVAR(global.bootm.earlycon, "Add earlycon option to Kernel for early log output");
 BAREBOX_MAGICVAR(global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from (default, device can be overridden via global.bootm.root_dev)");
 BAREBOX_MAGICVAR(global.bootm.root_dev, "bootm default root device (overrides default device in global.bootm.appendroot)");
+BAREBOX_MAGICVAR(global.bootm.root_param, "bootm root parameter name (normally 'root' for root=/dev/...)");
 BAREBOX_MAGICVAR(global.bootm.provide_machine_id, "If true, append systemd.machine_id=$global.machine_id to Kernel command line");
 BAREBOX_MAGICVAR(global.bootm.provide_hostname, "If true, append systemd.hostname=$global.hostname to Kernel command line");

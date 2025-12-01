@@ -15,4 +15,12 @@ config DRIVER_VIDEO_ROCKCHIP_HDMI
         select DRIVER_VIDEO_EDID
         select DRIVER_VIDEO_DW_HDMI
 
+config DRIVER_VIDEO_ROCKCHIP_MIPI_DSI
+        bool "Rockchip MIPI-DSI driver"
+        select VIDEO_VPL
+        select OFTREE
+        select DRIVER_VIDEO_DW_MIPI_DSI
+        select GENERIC_PHY
+        select GENERIC_PHY_MIPI_DPHY
+
 endif

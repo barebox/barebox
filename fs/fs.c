@@ -1260,32 +1260,6 @@ char *format_root_bootarg(const char *root_arg, const char *root, const char *ro
 }
 
 /**
- * path_get_linux_rootarg() - Given a path return a suitable root= option for
- *                            Linux
- * @path: The path
- *
- * Return: A string containing the root= option or an ERR_PTR. the returned
- *         string must be freed by the caller.
- */
-char *path_get_linux_rootarg(const char *path)
-{
-	struct fs_device *fsdev;
-	const char *root = NULL;
-	const char *rootopts = NULL;
-
-	fsdev = get_fsdevice_by_path(AT_FDCWD, path);
-	if (!fsdev)
-		return ERR_PTR(-ENOSYS);
-
-	fsdev_get_linux_root_options(fsdev, &root, &rootopts);
-
-	if (!root)
-		return ERR_PTR(-ENOSYS);
-
-	return format_root_bootarg("root", root, rootopts);
-}
-
-/**
  * __is_tftp_fs() - return true when path is mounted on TFTP
  * @path: The path
  *

@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <common.h>
+#include <bootargs.h>
 #include <bootm.h>
 #include <bootm-overrides.h>
 #include <fs.h>
+#include <fcntl.h>
 #include <malloc.h>
 #include <memory.h>
 #include <block.h>
@@ -841,33 +843,42 @@ int bootm_boot(struct bootm_data *bootm_data)
 	}
 
 	if (bootm_data->appendroot) {
-		char *rootarg;
+		const char *root = NULL;
+		const char *rootopts = NULL;
 
 		if (bootm_data->root_dev) {
 			const char *root_dev_name = devpath_to_name(bootm_data->root_dev);
 			struct cdev *root_cdev = cdev_open_by_name(root_dev_name, O_RDONLY);
 
-			rootarg = cdev_get_linux_rootarg(root_cdev);
-			if (!rootarg) {
-				rootarg = ERR_PTR(-EINVAL);
+			ret = cdev_get_linux_root_and_opts(root_cdev, &root, &rootopts);
 
+			if (ret) {
 				if (!root_cdev)
 					pr_err("no cdev found for %s, cannot set root= option\n",
 						root_dev_name);
 				else if (!root_cdev->partuuid[0])
 					pr_err("%s doesn't have a PARTUUID, cannot set root= option\n",
 						root_dev_name);
+				else
+					pr_err("could not determine root= from %s\n",
+						root_dev_name);
 			}
 
 			if (root_cdev)
 				cdev_close(root_cdev);
 		} else {
-			rootarg = path_get_linux_rootarg(data->os_file);
+			struct fs_device *fsdev = get_fsdevice_by_path(AT_FDCWD, data->os_file);
+			if (fsdev)
+				fsdev_get_linux_root_options(fsdev, &root, &rootopts);
+			else
+				pr_err("no fsdevice under path: %s\n", data->os_file);
 		}
 
-		if (IS_ERR(rootarg)) {
+		if (!root) {
 			pr_err("Failed to append kernel cmdline parameter 'root='\n");
 		} else {
+			char *rootarg;
+			rootarg = format_root_bootarg("root", root, rootopts);
 			pr_info("Adding \"%s\" to Kernel commandline\n", rootarg);
 			globalvar_add_simple("linux.bootargs.bootm.appendroot",
 					     rootarg);

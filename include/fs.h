@@ -163,7 +163,6 @@ void mount_all(void);
 void fsdev_set_linux_root_options(struct fs_device *fsdev, const char *root, const char* rootopts);
 void fsdev_get_linux_root_options(struct fs_device *fsdev, const char **root,
 				  const char **rootopts);
-char *path_get_linux_rootarg(const char *path);
 
 static inline const char *devpath_to_name(const char *devpath)
 {

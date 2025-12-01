@@ -76,6 +76,4 @@ dw_mipi_dsi_bind(struct device *dev,
 		 const struct dw_mipi_dsi_plat_data *plat_data);
 static inline void dw_mipi_dsi_unbind(struct dw_mipi_dsi *dsi) { }
 
-struct device_node *dw_mipi_dsi_crtc_node(struct dw_mipi_dsi *dsi);
-
 #endif /* __DW_MIPI_DSI__ */

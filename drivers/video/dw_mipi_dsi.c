@@ -1029,12 +1029,6 @@ struct dw_mipi_dsi *dw_mipi_dsi_bind(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(dw_mipi_dsi_bind);
 
-struct device_node *dw_mipi_dsi_crtc_node(struct dw_mipi_dsi *dsi)
-{
-	return dsi->dsi_host.dev->of_node;
-}
-EXPORT_SYMBOL_GPL(dw_mipi_dsi_crtc_node);
-
 MODULE_AUTHOR("Chris Zhong <zyw@rock-chips.com>");
 MODULE_AUTHOR("Philippe Cornu <philippe.cornu@st.com>");
 MODULE_AUTHOR("Yannick Fertré <yannick.fertre@st.com>");

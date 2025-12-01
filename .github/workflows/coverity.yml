@@ -7,6 +7,8 @@ name: Coverity
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 0 1 * *"
 
 permissions:
   contents: read
@@ -26,5 +28,7 @@ jobs:
     steps:
       - name: Repository checkout
         uses: actions/checkout@v4
+        with:
+          ref: next
       - name: Build & upload the results
         run: .github/workflows/coverity.sh

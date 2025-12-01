@@ -23,6 +23,7 @@ struct tlv_device *tlv_register_device(struct tlv_header *header,
 	const char *name = NULL;
 	struct device *dev;
 	static int id = 0;
+	int ret;
 
 	tlvdev = xzalloc(sizeof(*tlvdev));
 
@@ -46,7 +47,11 @@ struct tlv_device *tlv_register_device(struct tlv_header *header,
 
 	dev->device_node = of_new_node(tlv_parent_node, dev_name(dev));
 	dev->device_node->dev = dev;
-	register_device(dev);
+	ret = register_device(dev);
+	if (ret) {
+		free(tlvdev);
+		return ERR_PTR(ret);
+	}
 
 	return tlvdev;
 }

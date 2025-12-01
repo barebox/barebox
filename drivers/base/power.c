@@ -335,7 +335,7 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
 {
 	dev->pm_domain = genpd;
 
-	if (genpd->attach_dev)
+	if (genpd && genpd->attach_dev)
 		return genpd->attach_dev(genpd, dev);
 
 	return 0;
@@ -344,7 +344,7 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
 static void genpd_remove_device(struct generic_pm_domain *genpd,
 			       struct device *dev)
 {
-	if (genpd->detach_dev)
+	if (genpd && genpd->detach_dev)
 		genpd->detach_dev(genpd, dev);
 
 	dev->pm_domain = NULL;

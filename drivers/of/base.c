@@ -2875,8 +2875,10 @@ const struct of_device_id of_default_bus_match_table[] = {
 	{
 		.compatible = "simple-bus",
 	}, {
+#ifndef CONFIG_OF_SIMPLE_PM_BUS
 		.compatible = "simple-pm-bus",
 	}, {
+#endif
 		.compatible = "simple-mfd",
 	}, {
 		/* sentinel */

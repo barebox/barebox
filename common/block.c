@@ -598,8 +598,14 @@ char *cdev_get_linux_rootarg(const struct cdev *partcdev)
 	if (!blk)
 		return NULL;
 
-	if (blk->ops->get_rootarg)
-		rootarg = blk->ops->get_rootarg(blk, partcdev);
+	if (blk->ops->get_root) {
+		char *root = NULL;
+		root = blk->ops->get_root(blk, partcdev);
+		if (root) {
+			rootarg = basprintf("root=%s", root);
+			free(root);
+		}
+	}
 	if (!rootarg && partcdev->partuuid[0] != 0)
 		rootarg = basprintf("root=PARTUUID=%s", partcdev->partuuid);
 

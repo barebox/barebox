@@ -14,7 +14,7 @@ struct block_device_ops {
 	int (*write)(struct block_device *, const void *buf, sector_t block, blkcnt_t num_blocks);
 	int (*erase)(struct block_device *blk, sector_t block, blkcnt_t num_blocks);
 	int (*flush)(struct block_device *);
-	char *(*get_rootarg)(struct block_device *blk, const struct cdev *partcdev);
+	char *(*get_root)(struct block_device *blk, const struct cdev *partcdev);
 };
 
 struct chunk;

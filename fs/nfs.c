@@ -1558,7 +1558,7 @@ static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device *fsdev)
 	char *str, *tmp;
 	const char *bootargs;
 
-	str = basprintf("root=/dev/nfs nfsroot=%pI4:%s%s%s", &npriv->server, npriv->path,
+	str = basprintf("nfsroot=%pI4:%s%s%s", &npriv->server, npriv->path,
 			  rootnfsopts[0] ? "," : "", rootnfsopts);
 
 	/* forward specific mount options on demand */
@@ -1584,7 +1584,7 @@ static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device *fsdev)
 	if (IS_ENABLED(CONFIG_ROOTWAIT_BOOTARG))
 		str = linux_bootargs_append_rootwait(str);
 
-	fsdev_set_linux_rootarg(fsdev, str);
+	fsdev_set_linux_root_options(fsdev, "/dev/nfs", str);
 
 	free(str);
 }

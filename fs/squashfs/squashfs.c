@@ -46,7 +46,8 @@ static void squashfs_set_rootarg(struct fs_device *fsdev)
 	struct ubi_volume_info vi = {};
 	struct ubi_device_info di = {};
 	struct mtd_info *mtd;
-	char *str;
+	char *root;
+	char *rootopts;
 
 	if (!IS_ENABLED(CONFIG_MTD_UBI))
 		return;
@@ -60,12 +61,14 @@ static void squashfs_set_rootarg(struct fs_device *fsdev)
 	ubi_get_device_info(vi.ubi_num, &di);
 	mtd = di.mtd;
 
-	str = basprintf("root=/dev/ubiblock%d_%d ubi.mtd=%s ubi.block=%d,%d rootfstype=squashfs",
-			vi.ubi_num, vi.vol_id, mtd->cdev.partname, vi.ubi_num, vi.vol_id);
+	root = basprintf("/dev/ubiblock%d_%d", vi.ubi_num, vi.vol_id);
+	rootopts = basprintf("ubi.mtd=%s ubi.block=%d,%d rootfstype=squashfs",
+			mtd->cdev.partname, vi.ubi_num, vi.vol_id);
 
-	fsdev_set_linux_rootarg(fsdev, str);
+	fsdev_set_linux_root_options(fsdev, root, rootopts);
 
-	free(str);
+	free(root);
+	free(rootopts);
 }
 
 static struct inode *squashfs_alloc_inode(struct super_block *sb)

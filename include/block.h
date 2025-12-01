@@ -96,6 +96,8 @@ static inline bool blockdevice_is_removable(struct block_device *blk)
 #ifdef CONFIG_BLOCK
 unsigned file_list_add_blockdevs(struct file_list *files);
 char *cdev_get_linux_rootarg(const struct cdev *partcdev);
+int cdev_get_linux_root_and_opts(const struct cdev *partcdev, const char **root,
+				 const char **rootopts);
 #else
 static inline unsigned file_list_add_blockdevs(struct file_list *files)
 {
@@ -104,6 +106,12 @@ static inline unsigned file_list_add_blockdevs(struct file_list *files)
 static inline char *cdev_get_linux_rootarg(const struct cdev *partcdev)
 {
 	return NULL;
+}
+static inline int cdev_get_linux_root_and_opts(const struct cdev *partcdev,
+					       const char **root,
+					       const char **rootopts)
+{
+	return -ENOSYS;
 }
 #endif
 

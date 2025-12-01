@@ -90,7 +90,8 @@ struct fs_device {
 	char *path;
 	struct list_head list;
 	char *options;
-	char *linux_rootarg;
+	char *linux_root;
+	char *linux_rootopts;
 
 	struct super_block sb;
 
@@ -159,7 +160,9 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions);
 const char *cdev_mount(struct cdev *cdev);
 void mount_all(void);
 
-void fsdev_set_linux_rootarg(struct fs_device *fsdev, const char *str);
+void fsdev_set_linux_root_options(struct fs_device *fsdev, const char *root, const char* rootopts);
+void fsdev_get_linux_root_options(struct fs_device *fsdev, const char **root,
+				  const char **rootopts);
 char *path_get_linux_rootarg(const char *path);
 
 static inline const char *devpath_to_name(const char *devpath)

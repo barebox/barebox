@@ -15,3 +15,7 @@
 	 */
 	clock-frequency = <500000000>;
 };
+
+&power {
+	barebox,allow-dummy;
+};

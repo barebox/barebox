@@ -19,6 +19,7 @@
 *.dcd
 *.dcd.S
 *.elf
+*.exe
 *.i
 *.ko
 *.lex.c

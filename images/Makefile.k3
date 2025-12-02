@@ -126,8 +126,16 @@ quiet_cmd_k3_am62lx_tiboot3_image = K3_am62lx_tiboot3_IMG   $@
 $(obj)/%.k3_am62x_img: $(obj)/% scripts/k3img FORCE
 	$(call if_changed,k3_am62x_image)
 
-$(obj)/%.k3_am62lx_img: $(obj)/% scripts/k3img FORCE
+$(obj)/%.k3_am62lx_img: $(obj)/% scripts/k3img FORCE \
+		$(TFA_BL31_am62lx)				\
+		$(INNERDATA_am62lx)				\
+		$(SYSFW_am62lx_hs_fs)				\
+		$(SYSFWDATA_am62lx)				\
+		$(AM62L_TIBOOT3_OPTEE)
 	$(call if_changed,k3_am62lx_image)
 
-$(obj)/%.k3_am62lx_tiboot3_img: $(obj)/% scripts/k3img FORCE
+$(obj)/%.k3_am62lx_tiboot3_img: $(obj)/% scripts/k3img FORCE 	\
+		$(SYSFW_am62lx_hs_fs)				\
+		$$(TFA_BL1_$$(@F))				\
+		$(INNERDATA_am62lx)
 	$(call if_changed,k3_am62lx_tiboot3_image)

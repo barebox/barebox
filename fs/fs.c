@@ -2680,7 +2680,12 @@ int openat(int dirfd, const char *pathname, int flags)
 	}
 
 	if (!(flags & O_CREAT) || error == -EEXIST) {
-		error = filename_lookup(dirfd, getname(pathname), LOOKUP_FOLLOW, &path);
+		unsigned f = LOOKUP_FOLLOW;
+
+		if (flags & O_DIRECTORY)
+			f |= LOOKUP_DIRECTORY;
+
+		error = filename_lookup(dirfd, getname(pathname), f, &path);
 		dentry = path.dentry;
 	}
 
@@ -2710,9 +2715,6 @@ int openat(int dirfd, const char *pathname, int flags)
 		}
 
 		flags |= O_DIRECTORY;
-	} else if (flags & O_DIRECTORY) {
-		error = -ENOTDIR;
-		goto out1;
 	}
 
 	inode = d_inode(dentry);

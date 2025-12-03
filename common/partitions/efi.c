@@ -15,8 +15,11 @@
 #include <common.h>
 #include <disks.h>
 #include <init.h>
+#include <magicvar.h>
+#include <globalvar.h>
 #include <asm/unaligned.h>
 #include <crc.h>
+#include <fcntl.h>
 #include <linux/ctype.h>
 
 #include <efi/partition.h>
@@ -37,6 +40,93 @@ struct efi_partition {
 };
 
 static const int force_gpt = IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_NO_FORCE);
+
+struct gpt_refresh {
+	struct block_device *blk;
+	struct list_head list;
+};
+
+static LIST_HEAD(gpt_refreshes);
+
+static unsigned int global_gpt_refresh;
+
+static int gpt_refresh_one(struct block_device *blk)
+{
+	struct partition_desc *pdesc;
+	int ret;
+
+	if (!global_gpt_refresh)
+		return 0;
+
+	ret = cdev_open(&blk->cdev, O_RDWR);
+	if (ret)
+		return ret;
+
+	pdesc = partition_table_read(blk);
+	if (!pdesc) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	ret = partition_table_write(pdesc);
+	if (ret)
+		goto out;
+
+	ret = 0;
+
+	partition_table_free(pdesc);
+out:
+	cdev_close(&blk->cdev);
+
+	if (ret)
+		dev_err(blk->dev, "Refreshing partition table failed: %pe\n",
+			ERR_PTR(ret));
+
+	return ret;
+}
+
+static bool gpt_refresh_done;
+
+static int do_gpt_refreshes(void)
+{
+	struct gpt_refresh *r, *tmp;
+
+	if (!IS_ENABLED(CONFIG_PARTITION_DISK_EFI_REFRESH))
+		return 0;
+
+	if (!global_gpt_refresh)
+		return 0;
+
+	list_for_each_entry_safe(r, tmp, &gpt_refreshes, list) {
+		gpt_refresh_one(r->blk);
+		list_del(&r->list);
+		free(r);
+	}
+
+	gpt_refresh_done = true;
+
+	return 0;
+}
+postenvironment_initcall(do_gpt_refreshes);
+
+static void add_gpt_refresh(struct block_device *blk)
+{
+	struct gpt_refresh *r;
+
+	if (!IS_ENABLED(CONFIG_PARTITION_DISK_EFI_REFRESH))
+		return;
+
+	if (gpt_refresh_done) {
+		gpt_refresh_one(blk);
+		return;
+	}
+
+	r = xzalloc(sizeof(*r));
+
+	r->blk = blk;
+
+	list_add_tail(&r->list, &gpt_refreshes);
+}
 
 /**
 * compute_partitions_entries_size() - return the size of all partitions
@@ -290,9 +380,11 @@ is_pte_valid(const gpt_entry *pte, const u64 lastlba)
  *
  */
 static void
-compare_gpts(struct device *dev, gpt_header *pgpt, gpt_header *agpt,
+compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 	     u64 lastlba)
 {
+	struct device *dev = blk->dev;
+
 	int error_found = 0;
 	if (!pgpt || !agpt)
 		return;
@@ -376,8 +468,14 @@ compare_gpts(struct device *dev, gpt_header *pgpt, gpt_header *agpt,
 		error_found++;
 	}
 
-	if (error_found)
-		dev_warn(dev, "GPT: Use parted to correct GPT errors.\n");
+	if (error_found) {
+		add_gpt_refresh(blk);
+		if (!IS_ENABLED(CONFIG_PARTITION_DISK_EFI_REFRESH))
+			dev_info(dev, "GPT: will repair later if global.system.gpt_refresh=1\n");
+		else
+			dev_warn(dev, "GPT: Use parted to correct GPT errors.\n");
+	}
+
 	return;
 }
 
@@ -424,7 +522,7 @@ static int find_valid_gpt(struct efi_partition_desc *epd, void *buf)
 		goto fail;
 
 	if (IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_COMPARE))
-		compare_gpts(blk->dev, pgpt, agpt, lastlba);
+		compare_gpts(blk, pgpt, agpt, lastlba);
 
 	epd->good_pgpt = good_pgpt;
 	epd->good_agpt = good_agpt;
@@ -874,8 +972,16 @@ static struct partition_parser efi_partition_parser = {
 	.name = "gpt",
 };
 
+#ifdef CONFIG_PARTITION_DISK_EFI_REFRESH
+BAREBOX_MAGICVAR(global.system.gpt_refresh, "When true, refresh GPT partitions when necessary");
+#endif
+
 static int efi_partition_init(void)
 {
+	if (IS_ENABLED(CONFIG_PARTITION_DISK_EFI_REFRESH))
+		globalvar_add_simple_bool("system.gpt_refresh",
+					  &global_gpt_refresh);
+
 	return partition_parser_register(&efi_partition_parser);
 }
 postconsole_initcall(efi_partition_init);

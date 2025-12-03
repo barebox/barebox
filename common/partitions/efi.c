@@ -27,6 +27,8 @@ struct efi_partition_desc {
 	gpt_header *gpt;
 	gpt_entry *ptes;
 	struct param_d *param_guid;
+	bool good_pgpt;
+	bool good_agpt;
 };
 
 struct efi_partition {
@@ -424,6 +426,9 @@ static int find_valid_gpt(struct efi_partition_desc *epd, void *buf)
 	if (IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_COMPARE))
 		compare_gpts(blk->dev, pgpt, agpt, lastlba);
 
+	epd->good_pgpt = good_pgpt;
+	epd->good_agpt = good_agpt;
+
 	/* The good cases */
 	if (good_pgpt) {
 		epd->gpt  = pgpt;
@@ -810,11 +815,11 @@ static __maybe_unused int efi_partition_write(struct partition_desc *pd)
 	if (ret)
 		return ret;
 
-	ret = __efi_partition_write(epd, true);
+	ret = __efi_partition_write(epd, !epd->good_pgpt);
 	if (ret)
 		goto err_block_write;
 
-	ret = __efi_partition_write(epd, false);
+	ret = __efi_partition_write(epd, epd->good_pgpt);
 	if (ret)
 		goto err_block_write;
 

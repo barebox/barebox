@@ -15,6 +15,8 @@
 #include <asm/system_info.h>
 #include <init.h>
 
+#include "mmu_32.h"
+
 /* Avoid missing prototype warning, called from assembly */
 void do_undefined_instruction (struct pt_regs *pt_regs);
 void do_software_interrupt (struct pt_regs *pt_regs);
@@ -174,6 +176,87 @@ int data_abort_unmask(void)
 
 	return arm_data_abort_occurred != 0;
 }
+
+static unsigned long arm_vbar = ~0;
+
+unsigned long arm_get_vector_table(void)
+{
+	return arm_vbar;
+}
+
+#define ARM_HIGH_VECTORS	0xffff0000
+#define ARM_LOW_VECTORS		0x0
+
+/**
+ * set_vector_table - let CPU use the vector table at given address
+ * @adr - The address of the vector table
+ *
+ * Depending on the CPU the possibilities differ. ARMv7 and later allow
+ * to map the vector table to arbitrary addresses. Other CPUs only allow
+ * vectors at 0xffff0000 or at 0x0.
+ */
+static int set_vector_table(unsigned long adr)
+{
+	u32 cr;
+
+	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
+		set_vbar(adr);
+	} else if (adr == ARM_HIGH_VECTORS) {
+		cr = get_cr();
+		cr |= CR_V;
+		set_cr(cr);
+		cr = get_cr();
+		if (!(cr & CR_V))
+			return -EINVAL;
+	} else if (adr == ARM_LOW_VECTORS) {
+		cr = get_cr();
+		cr &= ~CR_V;
+		set_cr(cr);
+		cr = get_cr();
+		if (cr & CR_V)
+			return -EINVAL;
+	} else {
+		return -EOPNOTSUPP;
+	}
+
+	pr_debug("Vectors are at 0x%08lx\n", adr);
+	arm_vbar = adr;
+
+	return 0;
+}
+
+static __maybe_unused int arm_init_vectors(void)
+{
+	/*
+	 * First try to use the vectors where they actually are, works
+	 * on ARMv7 and later.
+	 */
+	if (!set_vector_table((unsigned long)__exceptions_start)) {
+		arm_fixup_vectors();
+		return 0;
+	}
+
+	/*
+	 * Next try high vectors at 0xffff0000.
+	 */
+	if (!set_vector_table(ARM_HIGH_VECTORS)) {
+		create_vector_table(ARM_HIGH_VECTORS);
+		return 0;
+	}
+
+	/*
+	 * As a last resort use low vectors at 0x0. With this we can't
+	 * set the zero page to faulting and can't catch NULL pointer
+	 * exceptions.
+	 */
+	set_vector_table(ARM_LOW_VECTORS);
+	create_vector_table(ARM_LOW_VECTORS);
+
+	return 0;
+}
+#ifdef CONFIG_MMU
+core_initcall(arm_init_vectors);
+#endif
 
 #if IS_ENABLED(CONFIG_ARM_EXCEPTIONS_PBL)
 void arm_pbl_init_exceptions(void)

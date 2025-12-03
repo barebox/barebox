@@ -71,4 +71,6 @@ static inline unsigned long attrs_uncached_mem(void)
 	return flags;
 }
 
+void create_vector_table(unsigned long adr);
+
 #endif /* __ARM_MMU_H */

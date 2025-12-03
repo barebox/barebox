@@ -801,7 +801,7 @@ static __maybe_unused int efi_partition_write(struct partition_desc *pd)
 
 	if (ret)
 		goto err_block_write;
-	ret = block_write(blk, epd->ptes, last_lba(blk) - 32, 32);
+	ret = block_write(blk, epd->ptes, last_lba(blk) - 32, size);
 	if (ret)
 		goto err_block_write;
 

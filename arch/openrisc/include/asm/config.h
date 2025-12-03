@@ -1,0 +1,15 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+#ifndef _OPENRISC_ASM_CONFIG_H_
+#define _OPENRISC_ASM_CONFIG_H_
+
+#define CFG_SYS_CLK_FREQ		50000000
+
+#define OPENRISC_TIMER_FREQ		CFG_SYS_CLK_FREQ
+
+#define OPENRISC_SOPC_MEMORY_BASE	0x00000000
+#define OPENRISC_SOPC_MEMORY_SIZE	0x02000000
+
+/* We reserve 512K for barebox */
+#define BAREBOX_RESERVED_SIZE		0x80000
+
+#endif

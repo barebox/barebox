@@ -201,7 +201,7 @@ struct tee_shm {
 	struct list_head link;
 
 	int fd;
-	struct device_d dev;
+	struct device dev;
 	struct cdev cdev;
 	struct resource res;
 };

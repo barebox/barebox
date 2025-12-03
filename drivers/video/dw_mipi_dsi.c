@@ -906,9 +906,20 @@ static int dw_mipi_dsi_ioctl(struct vpl *vpl, unsigned int port,
 {
 	struct dw_mipi_dsi *dsi = container_of(vpl, struct dw_mipi_dsi, vpl);
 	struct drm_display_mode mode = {};
+	bool vpg_enable_hack;
+	int ret;
+
+	/*
+	 * HACK: If Video Pattern Generator is not running here, the panel
+	 * initialization on the Sitronix ST7703 (RGB30-Panel) times out...
+	 * FIXME: figure out why Linux doesn't suffer from this
+	 */
+	vpg_enable_hack = true;
 
 	switch (cmd) {
 	case VPL_ENABLE:
+		if (vpg_enable_hack)
+			dsi->vpg_mode = VPG_COLORS_V;
 		/* Switch to video mode for panel-bridge enable & panel enable */
 		dw_mipi_dsi_set_mode(dsi, MIPI_DSI_MODE_VIDEO);
 		break;
@@ -934,7 +945,14 @@ static int dw_mipi_dsi_ioctl(struct vpl *vpl, unsigned int port,
 	/* Probes should have occured by now */
 	WARN_ON(!dsi->panel_bridge);
 
-	return vpl_bridge_ioctl(dsi->panel_bridge, cmd, data);
+	ret = vpl_bridge_ioctl(dsi->panel_bridge, cmd, data);
+
+	if (cmd == VPL_ENABLE && vpg_enable_hack) {
+		dsi->vpg_mode = VPG_DISABLED;
+		vpg_param_set(NULL, dsi);
+	}
+
+	return ret;
 }
 
 static const char *vpg_modes[] = {
@@ -1028,12 +1046,6 @@ struct dw_mipi_dsi *dw_mipi_dsi_bind(struct device *dev,
 	return dw_mipi_dsi_probe(dev, plat_data);
 }
 EXPORT_SYMBOL_GPL(dw_mipi_dsi_bind);
-
-struct device_node *dw_mipi_dsi_crtc_node(struct dw_mipi_dsi *dsi)
-{
-	return dsi->dsi_host.dev->of_node;
-}
-EXPORT_SYMBOL_GPL(dw_mipi_dsi_crtc_node);
 
 MODULE_AUTHOR("Chris Zhong <zyw@rock-chips.com>");
 MODULE_AUTHOR("Philippe Cornu <philippe.cornu@st.com>");

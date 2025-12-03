@@ -138,9 +138,8 @@ static int imx_gpio_probe(struct device *dev)
 	imxgpio->chip.ops = &imx_gpio_ops;
 	if (dev->id < 0) {
 		imxgpio->chip.base = of_alias_get_id(dev->of_node, "gpio");
-		if (imxgpio->chip.base < 0)
-			return imxgpio->chip.base;
-		imxgpio->chip.base *= 32;
+		if (imxgpio->chip.base >= 0)
+			imxgpio->chip.base *= 32;
 	} else {
 		imxgpio->chip.base = dev->id * 32;
 	}

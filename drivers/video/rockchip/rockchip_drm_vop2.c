@@ -1420,7 +1420,8 @@ static int vop2_output_mode(u32 bus_format, int crtc_endpoint_id)
 	if (vop2_output_if_is_hdmi(crtc_endpoint_id))
 		return ROCKCHIP_OUT_MODE_AAAA;
 
-	if (vop2_output_if_is_dpi(crtc_endpoint_id))
+	if (vop2_output_if_is_dpi(crtc_endpoint_id) ||
+	    vop2_output_if_is_mipi(crtc_endpoint_id))
 		switch (bus_format) {
 		case MEDIA_BUS_FMT_RGB666_1X18:
 			return ROCKCHIP_OUT_MODE_P666;

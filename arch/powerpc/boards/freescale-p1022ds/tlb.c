@@ -14,6 +14,7 @@
  */
 
 #include <common.h>
+#include <asm/config.h>
 #include <mach/mmu.h>
 
 struct fsl_e_tlb_entry tlb_table[] = {

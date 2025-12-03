@@ -7,7 +7,6 @@
  *
  */
 
-#include <config.h>
 #include <common.h>
 #include <driver.h>
 #include <init.h>

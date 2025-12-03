@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <asm/config.h>
 #include <asm/io.h>
 
 /* decode S[0-2] to Output Divider (OD) */

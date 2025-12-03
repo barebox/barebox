@@ -2,6 +2,7 @@
 menu "PM Domains"
 
 source "drivers/pmdomain/imx/Kconfig"
+source "drivers/pmdomain/rockchip/Kconfig"
 source "drivers/pmdomain/ti/Kconfig"
 
 endmenu

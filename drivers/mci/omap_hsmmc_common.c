@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: 2008 Texas Instruments (http://www.ti.com/, Sukumar Ghorai <s-ghorai@ti.com>)
 
 /* #define DEBUG */
-#include <config.h>
 #include <common.h>
 #include <init.h>
 #include <driver.h>

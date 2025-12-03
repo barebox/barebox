@@ -39,7 +39,7 @@ static struct {
  * (from the signal handler when it is not signal handling, read ahead
  * for more information).
  */
-static void __attribute__((noinline, noreturn))
+static void __attribute__((__noinline__, noreturn))
 coroutine_bootstrap(void (*entry)(void))
 {
 	for (;;)

@@ -9,6 +9,7 @@
  */
 
 #include <arm64/xilinx/zynqmp-zcu106-revA.dts>
+#include "zynqmp.dtsi"
 
 / {
 	barebox,disable-deep-probe;

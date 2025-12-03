@@ -86,6 +86,22 @@ can be used to compile in well known development keys into the barebox binary.
 The private keys for these keys can be found
 `[here] <https://git.pengutronix.de/cgit/ptx-code-signing-dev>`__
 
+Prevent the kernel from booting the rootfs in verity boots
+----------------------------------------------------------
+
+In systems, where barebox loads an initramfs that setups a dm-verity rootfs and
+passes the location of the root file system on the kernel command-line, make
+sure not to use ``root=``!
+``root=`` is also interpreted by the kernel and can lead to the kernel mounting
+the rootfs without dm-verity, if the initramfs failed to load, e.g. due to
+different compression algorithm.
+
+The fail-safe alternative is to use a parameter name understood only by the
+initramfs (e.g. ``verity_root=``) in all bootloader scripts. If the
+``root=$dev`` is fixed up by barebox dynamically, the
+``$global.bootm.root_param`` variable can be used to customize the name of the
+parameter passed to Linux.
+
 Disabling the shell
 ^^^^^^^^^^^^^^^^^^^
 

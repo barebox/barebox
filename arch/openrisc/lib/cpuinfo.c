@@ -16,6 +16,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <asm/config.h>
 #include <asm/system.h>
 #include <asm/cache.h>
 #include <asm/openrisc_exc.h>
@@ -114,7 +115,7 @@ static int checkcpu(void)
 	char impl_str[50];
 
 	printf("CPU:   OpenRISC-%x00 (rev %d) @ %d MHz\n",
-		ver, rev, (CONFIG_SYS_CLK_FREQ / 1000000));
+		ver, rev, (CFG_SYS_CLK_FREQ / 1000000));
 
 	if (vr2) {
 		cpu_implementation(vr2, impl_str);

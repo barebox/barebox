@@ -13,9 +13,10 @@ Example:
 
    barebox:/ mount -t nfs 192.168.23.4:/home/user/nfsroot /mnt/nfs
 
-The barebox NFS driver adds a ``linux.bootargs`` device parameter to the NFS device.
-This parameter holds a Linux kernel commandline snippet containing a suitable root=
-option for booting from exactly that NFS share.
+The barebox NFS driver adds two ``linux.bootargs`` device parameters to the NFS
+device. These parameters will be combined into a Linux kernel commandline
+snippet containing a suitable root= option for booting from exactly that NFS
+share.
 
 Example:
 
@@ -23,7 +24,8 @@ Example:
 
   barebox:/ devinfo nfs0
   ...
-  linux.bootargs: root=/dev/nfs nfsroot=192.168.23.4:/home/sha/nfsroot/generic-v7,v3,tcp
+  linux.bootargs.root: /dev/nfs
+  linux.bootargs.rootopts: nfsroot=192.168.23.4:/home/sha/nfsroot/generic-v7,v3,tcp
 
 The options default to ``v3,tcp`` but can be adjusted before mounting the NFS share with
 the ``global.linux.rootnfsopts`` variable

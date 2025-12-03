@@ -191,7 +191,7 @@ static int mvebuimg_v1_write_binhdr(int fd, size_t *offset,
 	*offset += ALIGN_SUP(s.st_size, 4);
 	trailer[0] = is_last_header ? 0 : 1;
 
-	summ->method.update(&summ->method, trailer, sizeof(4));
+	summ->method.update(&summ->method, trailer, sizeof(trailer));
 	ret = pwrite(fd, trailer, sizeof(trailer), *offset);
 	if (ret < 0) {
 		pr_err("failed to write trailer of binhdr \"%s\"\n",

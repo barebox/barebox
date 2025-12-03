@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <barebox.h>
 #include <module.h>
-#include <config.h>
 #include <clock.h>
 #include <linux/bitops.h>
 #include <linux/types.h>

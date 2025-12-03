@@ -31,4 +31,8 @@ dts := arch/openrisc/dts
 %.dtb: scripts
 	$(Q)$(MAKE) $(build)=$(dts) $(dts)/$@
 
+TEXT_BASE = $(CONFIG_ARCH_TEXT_BASE)
+
+KBUILD_CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
+
 KBUILD_IMAGE := barebox

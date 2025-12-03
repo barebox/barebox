@@ -435,19 +435,21 @@ static void ubifs_set_rootarg(struct ubifs_priv *priv,
 	struct ubi_volume_info vi = {};
 	struct ubi_device_info di = {};
 	struct mtd_info *mtd;
-	char *str;
+	char *root;
+	char *rootopts;
 
 	ubi_get_volume_info(priv->ubi, &vi);
 	ubi_get_device_info(vi.ubi_num, &di);
 
 	mtd = di.mtd;
 
-	str = basprintf("root=ubi0:%s ubi.mtd=%s rootfstype=ubifs",
-			  vi.name, mtd->cdev.partname);
+	root = basprintf("ubi0:%s", vi.name);
+	rootopts = basprintf("ubi.mtd=%s rootfstype=ubifs", mtd->cdev.partname);
 
-	fsdev_set_linux_rootarg(fsdev, str);
+	fsdev_set_linux_root_options(fsdev, root, rootopts);
 
-	free(str);
+	free(root);
+	free(rootopts);
 }
 
 static int ubifs_probe(struct device *dev)

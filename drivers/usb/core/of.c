@@ -17,32 +17,44 @@ static const char *usb_dr_modes[] = {
 };
 
 /**
- * of_usb_get_dr_mode - Get dual role mode for given device_node
- * @np:	Pointer to the given device_node
+ * usb_get_dr_mode_from_string() - Get dual role mode for given string
+ * @str: String to find the corresponding dual role mode for
  *
- * The function gets phy interface string from property 'dr_mode',
- * and returns the correspondig enum usb_dr_mode
+ * This function performs a lookup for the given string and returns the
+ * corresponding enum usb_dr_mode. If no match for the string could be found,
+ * 'USB_DR_MODE_UNKNOWN' is returned.
  */
-enum usb_dr_mode of_usb_get_dr_mode(struct device_node *np,
-		const char *propname)
+static enum usb_dr_mode usb_get_dr_mode_from_string(const char *str)
 {
+	int ret;
+
+	ret = match_string(usb_dr_modes, ARRAY_SIZE(usb_dr_modes), str);
+	return (ret < 0) ? USB_DR_MODE_UNKNOWN : ret;
+}
+
+/**
+ * usb_get_dr_mode - Get dual role mode for given device
+ * @dev:	Pointer to the given device
+ *
+ * The function gets phy interface string from property 'barebox,dr_mode'
+ * or 'dr_mode' in the given device's device tree node and returns the
+ * correspondig enum usb_dr_mode
+ */
+enum usb_dr_mode usb_get_dr_mode(struct device *dev)
+{
+	struct device_node *np = dev_of_node(dev);
 	const char *dr_mode;
-	int err, i;
+	int err;
 
-	if (!propname)
-		propname = "dr_mode";
-
-	err = of_property_read_string(np, propname, &dr_mode);
+	err = of_property_read_string(np, "barebox,dr_mode", &dr_mode);
+	if (err < 0)
+		err = of_property_read_string(np, "dr_mode", &dr_mode);
 	if (err < 0)
 		return USB_DR_MODE_UNKNOWN;
 
-	for (i = 0; i < ARRAY_SIZE(usb_dr_modes); i++)
-		if (!strcmp(dr_mode, usb_dr_modes[i]))
-			return i;
-
-	return USB_DR_MODE_UNKNOWN;
+	return usb_get_dr_mode_from_string(dr_mode);
 }
-EXPORT_SYMBOL_GPL(of_usb_get_dr_mode);
+EXPORT_SYMBOL_GPL(usb_get_dr_mode);
 
 static const char *usbphy_modes[] = {
 	[USBPHY_INTERFACE_MODE_UNKNOWN]	= "",

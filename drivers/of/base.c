@@ -22,6 +22,7 @@
 #include <linux/clk.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
+#include <pm_domain.h>
 
 static struct device_node *root_node;
 
@@ -2109,7 +2110,9 @@ int barebox_register_of(struct device_node *root)
 
 	if (IS_ENABLED(CONFIG_OFDEVICE)) {
 		of_clk_init();
-		if (!deep_probe_is_supported())
+		if (deep_probe_is_supported())
+			genpd_activate();
+		else
 			return of_probe();
 	}
 
@@ -2875,8 +2878,10 @@ const struct of_device_id of_default_bus_match_table[] = {
 	{
 		.compatible = "simple-bus",
 	}, {
+#ifndef CONFIG_OF_SIMPLE_PM_BUS
 		.compatible = "simple-pm-bus",
 	}, {
+#endif
 		.compatible = "simple-mfd",
 	}, {
 		/* sentinel */

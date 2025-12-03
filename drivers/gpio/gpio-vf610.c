@@ -198,21 +198,15 @@ static int vf610_gpio_probe(struct device *dev)
 		port->gpio_base = IOMEM(iores->start);
 	}
 
+	port->chip.dev = dev;
 	port->chip.ops  = &vf610_gpio_ops;
 	if (dev->id < 0) {
 		port->chip.base = of_alias_get_id(dev->of_node, "gpio");
-		if (port->chip.base < 0) {
-			ret = port->chip.base;
-			dev_dbg(dev, "Failed to get GPIO alias\n");
-			goto free_port;
-		}
+		if (port->chip.base >= 0)
+			port->chip.base *= VF610_GPIO_PER_PORT;
 	} else {
-		port->chip.base = dev->id;
+		port->chip.base = dev->id * VF610_GPIO_PER_PORT;
 	}
-
-
-	port->chip.base *= VF610_GPIO_PER_PORT;
-	port->chip.dev = dev;
 
 	return gpiochip_add(&port->chip);
 

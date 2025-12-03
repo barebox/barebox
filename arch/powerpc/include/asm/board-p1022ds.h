@@ -1,19 +1,10 @@
-/*
- * Copyright 2009-2011 Freescale Semiconductor, Inc.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
- * GNU General Public License for more details.
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2009-2011 Freescale Semiconductor, Inc.
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+/* Don't include directly, include <asm/config.h> instead.  */
+
+#ifndef __BOARD_P1022DS_H
+#define __BOARD_P1022DS_H
 
 #ifndef __ASSEMBLY__
 extern unsigned long ics307_clk_freq(unsigned int reg);
@@ -52,4 +43,4 @@ extern unsigned long ics307_clk_freq(unsigned int reg);
 #define CFG_PIXIS_BASE		0xffdf0000
 #define CFG_PIXIS_BASE_PHYS	CFG_PIXIS_BASE
 
-#endif /* __CONFIG_H */
+#endif /* __BOARD_P1022DS_H */

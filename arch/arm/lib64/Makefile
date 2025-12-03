@@ -9,4 +9,4 @@ extra-y += barebox.lds
 obj-pbl-y   += runtime-offset.o
 obj-pbl-y   += setjmp.o
 obj-y += io.o
-pbl-y	+= div0.o pbl.o
+pbl-y	+= div0.o delay.o

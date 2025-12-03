@@ -740,14 +740,59 @@ out:
 	return ret;
 }
 
+static int __efi_partition_write(struct efi_partition_desc *epd, bool primary)
+{
+	struct block_device *blk = epd->pd.blk;
+	gpt_header *gpt;
+	unsigned int count, size;
+	uint64_t my_lba, partition_entry_lba;
+	int ret;
+
+	gpt = xmemdup(epd->gpt, SECTOR_SIZE);
+
+	count = le32_to_cpu(gpt->num_partition_entries) *
+		le32_to_cpu(gpt->sizeof_partition_entry);
+
+	size = count / GPT_BLOCK_SIZE;
+
+	if (primary) {
+		my_lba = 1;
+		partition_entry_lba = le64_to_cpu(gpt->partition_entry_lba);
+		gpt->alternate_lba = cpu_to_le64(last_lba(blk));
+	} else {
+		my_lba = last_lba(blk);
+		partition_entry_lba = last_lba(blk) - 32;
+		gpt->alternate_lba = cpu_to_le64(1);
+	}
+
+	gpt->my_lba = cpu_to_le64(my_lba);
+	gpt->partition_entry_lba = cpu_to_le64(partition_entry_lba);
+	gpt->partition_entry_array_crc32 = cpu_to_le32(efi_crc32(
+			(const unsigned char *)epd->ptes, count));
+	gpt->header_crc32 = 0;
+	gpt->header_crc32 = cpu_to_le32(efi_crc32((const unsigned char *)gpt,
+						  le32_to_cpu(gpt->header_size)));
+
+	ret = block_write(blk, gpt, my_lba, 1);
+	if (ret)
+		goto err_block_write;
+
+	ret = block_write(blk, epd->ptes, partition_entry_lba, size);
+	if (ret)
+		goto err_block_write;
+
+err_block_write:
+	free(gpt);
+
+	return ret;
+}
+
 static __maybe_unused int efi_partition_write(struct partition_desc *pd)
 {
 	struct block_device *blk = pd->blk;
 	struct efi_partition_desc *epd = container_of(pd, struct efi_partition_desc, pd);
-	gpt_header *gpt = epd->gpt, *altgpt;
+	gpt_header *gpt = epd->gpt;
 	int ret;
-	uint32_t count;
-	uint64_t from, size;
 
 	if (le32_to_cpu(gpt->num_partition_entries) != 128) {
 		/*
@@ -761,54 +806,23 @@ static __maybe_unused int efi_partition_write(struct partition_desc *pd)
 		return -EINVAL;
 	}
 
-	count = le32_to_cpu(gpt->num_partition_entries) *
-		le32_to_cpu(gpt->sizeof_partition_entry);
-
-	gpt->my_lba = cpu_to_le64(1);
-	gpt->alternate_lba = cpu_to_le64(last_lba(blk));
-	gpt->partition_entry_array_crc32 = cpu_to_le32(efi_crc32(
-			(const unsigned char *)epd->ptes, count));
-	gpt->header_crc32 = 0;
-	gpt->header_crc32 = cpu_to_le32(efi_crc32((const unsigned char *)gpt,
-						  le32_to_cpu(gpt->header_size)));
-
 	ret = efi_protective_mbr(blk);
 	if (ret)
 		return ret;
 
-	ret = block_write(blk, gpt, 1, 1);
+	ret = __efi_partition_write(epd, true);
 	if (ret)
 		goto err_block_write;
 
-	from = le64_to_cpu(gpt->partition_entry_lba);
-	size = count / GPT_BLOCK_SIZE;
-
-	ret = block_write(blk, epd->ptes, from, size);
+	ret = __efi_partition_write(epd, false);
 	if (ret)
 		goto err_block_write;
 
-	altgpt = xmemdup(gpt, SECTOR_SIZE);
-
-	altgpt->alternate_lba = cpu_to_le64(1);
-	altgpt->my_lba = cpu_to_le64(last_lba(blk));
-	altgpt->partition_entry_lba = cpu_to_le64(last_lba(blk) - 32);
-	altgpt->header_crc32 = 0;
-	altgpt->header_crc32 = cpu_to_le32(efi_crc32((const unsigned char *)altgpt,
-						  le32_to_cpu(altgpt->header_size)));
-	ret = block_write(blk, altgpt, last_lba(blk), 1);
-
-	free(altgpt);
-
-	if (ret)
-		goto err_block_write;
-	ret = block_write(blk, epd->ptes, last_lba(blk) - 32, size);
-	if (ret)
-		goto err_block_write;
-
-	return 0;
+	ret = 0;
 
 err_block_write:
-	pr_err("Cannot write to block device: %pe\n", ERR_PTR(ret));
+	if (ret)
+		pr_err("Cannot write to block device: %pe\n", ERR_PTR(ret));
 
 	return ret;
 }

@@ -116,6 +116,10 @@ config FIRMWARE_LS1028A_ATF
 config FIRMWARE_LS1046A_ATF
 	bool
 
+config FIRMWARE_K3_AM62L_OPTEE
+	bool "install OP-TEE on K3 AM62L boards"
+	depends on MACH_AM62LX
+
 config HAVE_FIRMWARE_VERIFY_NEXT_IMAGE
 	bool
 

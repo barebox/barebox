@@ -111,6 +111,7 @@ obj-$(CONFIG_CMD_DMESG)		+= dmesg.o
 obj-$(CONFIG_CMD_BLOBGEN)	+= blobgen.o
 obj-$(CONFIG_CMD_BASENAME)	+= basename.o
 obj-$(CONFIG_CMD_HAB)		+= hab.o
+obj-$(CONFIG_CMD_K3_KEYWRITER)	+= k3-keywriter.o
 obj-$(CONFIG_CMD_DIRNAME)	+= dirname.o
 obj-$(CONFIG_CMD_READLINK)	+= readlink.o
 obj-$(CONFIG_CMD_LET)		+= let.o

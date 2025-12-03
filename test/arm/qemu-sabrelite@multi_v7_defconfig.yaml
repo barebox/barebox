@@ -9,7 +9,7 @@ targets:
         kernel: barebox-dt-2nd.img
         dtb: imx6q-sabreliste.dtb
         display: qemu-default
-        extra_args: '-nographic -serial null'
+        extra_args: '-serial null'
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

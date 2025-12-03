@@ -101,6 +101,21 @@ int pr_print(int level, const char *fmt, ...)
 	return i;
 }
 
+int _printk(const char *fmt, ...)
+{
+	va_list args;
+	uint i;
+
+	/* no loglevel filtering in PBL */
+	fmt = printk_skip_level(fmt);
+
+	va_start(args, fmt);
+	i = vprintf(fmt, args);
+	va_end(args);
+
+	return i;
+}
+
 int ctrlc(void)
 {
 	return 0;

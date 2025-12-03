@@ -4,6 +4,7 @@
 
 #include <linux/list.h>
 #include <linux/compiler.h>
+#include <linux/kern_levels.h>
 #include <linux/err.h>
 #include <printf.h>
 #include <stdarg.h>
@@ -163,6 +164,43 @@ static inline __printf(3, 4) int dev_err_probe(struct device *dev,
 
 #define pr_warn			pr_warning
 #define pr_warn_once		pr_warning_once
+
+static inline int printk_get_level(const char *buffer)
+{
+	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
+		switch (buffer[1]) {
+		case '0' ... '9':
+		case 'c':	/* KERN_CONT */
+			return buffer[1];
+		}
+	}
+	return 0;
+}
+
+static inline const char *printk_skip_level(const char *buffer)
+{
+	if (printk_get_level(buffer))
+		return buffer + 2;
+
+	return buffer;
+}
+
+#if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \
+	(IN_PBL && defined(CONFIG_PBL_CONSOLE))
+int _printk(const char *fmt, ...) __printf(1, 2);
+#else
+static inline __printf(1, 2) int _printk(const char *fmt, ...)
+{
+	return 0;
+}
+#endif
+
+/* without KERN_<LEVEL> prefix, print like pr_cont() */
+#define printk(fmt, ...) \
+	((fmt)[0] == KERN_SOH_ASCII ? _printk(fmt, ##__VA_ARGS__) : \
+		pr_print(LOGLEVEL_DEFAULT, fmt, ##__VA_ARGS__))
+
+#define no_printk no_printf
 
 int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size,
 		   int swab);

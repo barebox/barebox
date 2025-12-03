@@ -158,6 +158,44 @@ int pr_print(int level, const char *fmt, ...)
 }
 EXPORT_SYMBOL(pr_print);
 
+static int printk_level(const char **fmt)
+{
+	int kern_level = printk_get_level(*fmt);
+
+	*fmt = printk_skip_level(*fmt);
+
+	switch (kern_level) {
+	case '0' ... '9':
+		return kern_level - '0';
+	case 'c':
+	default:
+		/* like pr_cont(): unconditional and undecorated */
+		return LOGLEVEL_DEFAULT;
+	}
+}
+
+int _printk(const char *fmt, ...)
+{
+	va_list args;
+	int i;
+	char printbuffer[CFG_PBSIZE];
+	int level;
+
+	level = printk_level(&fmt);
+
+	if (!IS_ENABLED(CONFIG_LOGBUF) && level > barebox_loglevel)
+		return 0;
+
+	va_start(args, fmt);
+	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
+	va_end(args);
+
+	pr_puts(level, printbuffer);
+
+	return i;
+}
+EXPORT_SYMBOL(_printk);
+
 int dev_printf(int level, const struct device *dev, const char *format, ...)
 {
 	va_list args;

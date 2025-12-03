@@ -586,3 +586,15 @@ bool filetype_is_barebox_image(enum filetype ft)
 		return false;
 	}
 }
+
+bool filetype_is_linux_efi_image(enum filetype ft)
+{
+	switch (ft) {
+	case filetype_arm64_efi_linux_image:
+	case filetype_riscv_efi_linux_image:
+	case filetype_x86_efi_linux_image:
+		return true;
+	default:
+		return false;
+	}
+}

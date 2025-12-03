@@ -762,7 +762,36 @@ static int __efi_partition_write(struct efi_partition_desc *epd, bool primary)
 
 	if (primary) {
 		my_lba = 1;
-		partition_entry_lba = le64_to_cpu(gpt->partition_entry_lba);
+
+		if (epd->good_pgpt) {
+			/*
+			 * The primary GPT was good, we can just leave the partition
+			 * entries where they are.
+			 */
+			partition_entry_lba = le64_to_cpu(gpt->partition_entry_lba);
+		} else {
+			/*
+			 * The primary GPT was bad. When this is not a new partition
+			 * table, but instead read from the disk, the header is from the
+			 * alternate GPT, meaning the partition_entry_lba also points
+			 * to the alternate partitions. We have to find a place for the
+			 * primary partition entries in this case. We could store them
+			 * right after the GPT header, but this might destroy a bootloader
+			 * stored there. Instead, substract the size we need from the
+			 * first usable LBA.
+			 */
+			uint64_t first_usable_lba;
+
+			first_usable_lba = le64_to_cpu(gpt->first_usable_lba);
+
+			if (first_usable_lba < 32 + 1 + 1) {
+				pr_err("First usable LBA is %llu which doesn't leave "
+				       "enough space for partition entries\n",
+					first_usable_lba);
+				return -EINVAL;
+			}
+			partition_entry_lba = first_usable_lba - 32;
+		}
 		gpt->alternate_lba = cpu_to_le64(last_lba(blk));
 	} else {
 		my_lba = last_lba(blk);

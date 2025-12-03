@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# MAX77696 PMIC setup.
+#
+# Common settings for gen 6/7 kindles
+# LDO_L07_CNFG1_REG
+i2c_write -b 0 -a 0x3c -r 0x4f 0x70
+# LDO_L10_CNFG1_REG
+i2c_write -b 0 -a 0x3c -r 0x55 0xf4
+
+i2c_write -b 0 -a 0x3c -r 0x2 0x36
+# BUCK_VOUT1_REG
+i2c_write -b 0 -a 0x3c -r 0x31 0x34
+# BUCK_VOUTCNFG1_REG
+i2c_write -b 0 -a 0x3c -r 0x39 0xd0
+# BUCK_VOUTCNFG2_REG
+i2c_write -b 0 -a 0x3c -r 0x3a 0xd0
+# BUCK_VOUTCNFG3_REG
+i2c_write -b 0 -a 0x3c -r 0x3b 0x40
+# BUCK_VOUTCNFG6_REG
+i2c_write -b 0 -a 0x3c -r 0x3e 0x70
+i2c_write -b 0 -a 0x3c -r 0x5e 0x04
+# VREG_EPDCNFG_REG
+i2c_write -b 0 -a 0x3c -r 0x60 0x00
+# VREG_EPDSEQ_REG / VDDQ_SET_REG
+i2c_write -b 0 -a 0x3c -r 0x69 0x18
+
+if [ "$global.model" = "kindle6-dp75sdi" -o "$global.model" = "kindle7-dp75sdi" ]; then
+	# Backlight not available on WP63GW.
+	i2c_write -b 0 -a 0x3c -r 0x6c 0x80
+	i2c_write -b 0 -a 0x3c -r 0x6d 0x20
+fi

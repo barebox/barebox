@@ -2,6 +2,7 @@
 
 #include <init.h>
 #include <common.h>
+#include <pm_domain.h>
 #include <linux/clk.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/ele.h>
@@ -183,6 +184,8 @@ int imx93_init(void)
 		of_optee_fixup(of_get_root_node(), &optee_fixup_data);
 		of_register_fixup(of_optee_fixup, &optee_fixup_data);
 	}
+
+	genpd_activate();
 
 	return 0;
 }

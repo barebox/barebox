@@ -88,7 +88,7 @@ static const struct board_description imx8mp_variants[] = {
 	},
 
 	[3] = {
-		.dts_compatible = "skov,imx8mp-skov-revc-tian-g07017",
+		.dts_compatible = "skov,imx8mp-skov-revc-jutouch-jt070tm041",
 	},
 
 	[4] = {

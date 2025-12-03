@@ -381,11 +381,10 @@ compare_gpts(struct device *dev, gpt_header *pgpt, gpt_header *agpt,
 
 /**
  * find_valid_gpt() - Search disk for valid GPT headers and PTEs
- * @state
- * @gpt is a GPT header ptr, filled on return.
- * @ptes is a PTEs ptr, filled on return.
- * Description: Returns 1 if valid, 0 on error.
- * If valid, returns pointers to newly allocated GPT header and PTEs.
+ * @buf buffer containing the first lba
+ * @epd the efi partition descriptor context pointer
+ * Description: Returns 0 for success, negative error code otherwise.
+ * If valid, epd is filled with pointers to newly allocated GPT header and PTEs.
  * Validity depends on PMBR being valid (or being overridden by the
  * 'gpt' kernel command line option) and finding either the Primary
  * GPT header and PTEs valid, or the Alternate GPT header and PTEs
@@ -394,16 +393,13 @@ compare_gpts(struct device *dev, gpt_header *pgpt, gpt_header *agpt,
  * This protects against devices which misreport their size, and forces
  * the user to decide to use the Alternate GPT.
  */
-static int find_valid_gpt(void *buf, struct block_device *blk, gpt_header **gpt,
-			  gpt_entry **ptes)
+static int find_valid_gpt(struct efi_partition_desc *epd, void *buf)
 {
+	struct block_device *blk = epd->pd.blk;
 	int good_pgpt = 0, good_agpt = 0;
 	gpt_header *pgpt = NULL, *agpt = NULL;
 	gpt_entry *pptes = NULL, *aptes = NULL;
 	u64 lastlba;
-
-	if (!ptes)
-		return 0;
 
 	lastlba = last_lba(blk);
 	if (force_gpt) {
@@ -430,21 +426,20 @@ static int find_valid_gpt(void *buf, struct block_device *blk, gpt_header **gpt,
 
 	/* The good cases */
 	if (good_pgpt) {
-		*gpt  = pgpt;
-		*ptes = pptes;
+		epd->gpt  = pgpt;
+		epd->ptes = pptes;
 		free(agpt);
 		free(aptes);
 		if (!good_agpt)
 			dev_warn(blk->dev, "Alternate GPT is invalid, using primary GPT.\n");
-		return 1;
-	}
-	else if (good_agpt) {
-		*gpt  = agpt;
-		*ptes = aptes;
+		return 0;
+	} else {
+		epd->gpt  = agpt;
+		epd->ptes = aptes;
 		free(pgpt);
 		free(pptes);
 		dev_warn(blk->dev, "Primary GPT is invalid, using alternate GPT.\n");
-		return 1;
+		return 0;
 	}
 
  fail:
@@ -452,9 +447,8 @@ static int find_valid_gpt(void *buf, struct block_device *blk, gpt_header **gpt,
 	free(agpt);
 	free(pptes);
 	free(aptes);
-	*gpt = NULL;
-	*ptes = NULL;
-	return 0;
+
+	return -EINVAL;
 }
 
 static void part_set_efi_name(gpt_entry *pte, char *dest)
@@ -516,9 +510,17 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 	struct efi_partition *epart;
 	struct partition *pentry;
 	struct efi_partition_desc *epd;
+	int ret;
 
-	if (!find_valid_gpt(buf, blk, &gpt, &ptes) || !gpt || !ptes)
-		return NULL;
+	epd = xzalloc(sizeof(*epd));
+	partition_desc_init(&epd->pd, blk);
+
+	ret = find_valid_gpt(epd, buf);
+	if (ret)
+		goto err;
+
+	gpt = epd->gpt;
+	ptes = epd->ptes;
 
 	blk->cdev.flags |= DEVFS_IS_GPT_PARTITIONED;
 
@@ -529,12 +531,6 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 			 nb_part, MAX_PARTITION);
 		nb_part = MAX_PARTITION;
 	}
-
-	epd = xzalloc(sizeof(*epd));
-	partition_desc_init(&epd->pd, blk);
-
-	epd->gpt = gpt;
-	epd->ptes = ptes;
 
 	snprintf(blk->cdev.diskuuid, sizeof(blk->cdev.diskuuid), "%pUl", &gpt->disk_guid);
 	add_gpt_diskuuid_param(epd, blk);
@@ -560,6 +556,10 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 	}
 
 	return &epd->pd;
+err:
+	free(epd);
+
+	return NULL;
 }
 
 static void efi_partition_free(struct partition_desc *pd)

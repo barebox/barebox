@@ -86,13 +86,18 @@ struct device *get_device_by_name(const char *name)
 static struct device *get_device_by_name_id(const char *name, int id)
 {
 	struct device *dev;
+	char *str = NULL;
 
-	for_each_device(dev) {
-		if(!strcmp(dev->name, name) && id == dev->id)
-			return dev;
-	}
+	if (id == DEVICE_ID_SINGLE)
+		return get_device_by_name(name);
 
-	return NULL;
+	str = basprintf("%s%u", name, id);
+
+	dev = get_device_by_name(str);
+
+	free(str);
+
+	return dev;
 }
 
 int get_free_deviceid_from(const char *name_template, int id_from)

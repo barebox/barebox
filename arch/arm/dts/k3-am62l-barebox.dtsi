@@ -64,4 +64,8 @@
 			no-map;
 		};
 	};
+
+	otp: otp {
+		compatible = "ti,am62l-otp";
+	};
 };

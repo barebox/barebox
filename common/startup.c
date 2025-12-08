@@ -92,8 +92,12 @@ static int load_environment(void)
 
 	default_environment_path = default_environment_path_get();
 
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
-		defaultenv_load("/env", 0);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT)) {
+		ret = defaultenv_load("/env", 0);
+		if (ret)
+			pr_warn("Failed loading (some) defaultenv overlays: %pe\n",
+				ERR_PTR(ret));
+	}
 
 	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
 		envfs_load(default_environment_path, "/env", 0);

@@ -20,6 +20,8 @@
 #include <linux/err.h>
 #include <linux/ctype.h>
 
+#define FW_CFG_BAREBOX_ENV	"/mnt/fw_cfg/by_name/opt/org.barebox.env"
+
 struct fw_cfg_fs_inode {
 	struct inode inode;
 	const char *name;
@@ -376,8 +378,6 @@ static int fw_cfg_fs_probe(struct device *dev)
 	if (ret)
 		goto free_data;
 
-	defaultenv_append_runtime_directory("/mnt/fw_cfg/by_name/opt/org.barebox.env");
-
 	return 0;
 free_data:
 	free(data);
@@ -410,35 +410,23 @@ coredevice_initcall(qemu_fw_cfg_fs_init);
 
 static int qemu_fw_cfg_early_mount(void)
 {
-	struct cdev *cdev;
-	struct device *dev;
-	const char *mntpath;
-	int dirfd, fd;
-
-	cdev = cdev_by_name("fw_cfg");
-	if (!cdev)
-		return 0;
+	struct stat s;
+	int fd;
 
 	/*
-	 * Trigger a mount, so ramfb device can be detected and
-	 * environment can be loaded
+	 * Also triggers the automount, so both ramfb device can be detected
+	 * and environment can be loaded
 	 */
-	mntpath = cdev_mount(cdev);
-	if (IS_ERR(mntpath))
-		return PTR_ERR(mntpath);
-
-	dirfd = open(mntpath, O_PATH | O_DIRECTORY);
-	if (dirfd < 0)
-		return dirfd;
-
-	fd = openat(dirfd, "by_name/etc/ramfb", O_WRONLY);
-	close(dirfd);
+	fd = open("/mnt/fw_cfg/by_name/etc/ramfb", O_WRONLY);
 	if (fd >= 0) {
-		dev = device_alloc("qemu-ramfb", DEVICE_ID_SINGLE);
-		dev->parent = cdev->dev;
+		struct device *dev = device_alloc("qemu-ramfb", DEVICE_ID_SINGLE);
+		dev->parent = device_find_by_file_path("/dev/fw_cfg");
 		dev->platform_data = (void *)(uintptr_t)fd;
 		platform_device_register(dev);
 	}
+
+	if (!stat(FW_CFG_BAREBOX_ENV, &s) && S_ISDIR(s.st_mode))
+		defaultenv_append_runtime_directory(FW_CFG_BAREBOX_ENV);
 
 	return 0;
 }

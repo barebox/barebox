@@ -325,6 +325,7 @@ static int vf610_ddrmc_add_mem(void *mmdcbase, const struct imx_esdctl_data *dat
 #define DDRC_ADDRMAP0_CS_BIT0			GENMASK(4, 0)
 
 #define DDRC_MSTR				0x0000
+#define DDRC_MSTR_DDR3				BIT(0)
 #define DDRC_MSTR_DDR4				BIT(4)
 #define DDRC_MSTR_LPDDR4			BIT(5)
 #define DDRC_MSTR_DATA_BUS_WIDTH		GENMASK(13, 12)
@@ -508,8 +509,8 @@ static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc, unsigned buswid
 		FIELD_GET(DDRC_ADDRMAP6_LPDDR4_6GB_12GB_24GB, addrmap[6]);
 	u32 mstr = readl(ddrc + DDRC_MSTR);
 
-	/* Device config is ignored and taken as 32-bit for LPDDR4 */
-	if (mstr & DDRC_MSTR_LPDDR4)
+	/* Device config is ignored and taken as 32-bit for LPDDR4 and DDR3 */
+	if (mstr & DDRC_MSTR_LPDDR4 || mstr & DDRC_MSTR_DDR3)
 		imx_ddrc_set_mstr_device_config(&mstr, buswidth);
 
 	return imx_ddrc_sdram_size(ddrc, addrmap,

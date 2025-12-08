@@ -489,9 +489,6 @@ void *map_io_sections(unsigned long phys, void *_start, size_t size)
 	return _start;
 }
 
-#define ARM_HIGH_VECTORS	0xffff0000
-#define ARM_LOW_VECTORS		0x0
-
 /**
  * create_vector_table - create a vector table at given address
  * @adr - The address where the vector table should be created
@@ -499,7 +496,7 @@ void *map_io_sections(unsigned long phys, void *_start, size_t size)
  * After executing this function the vector table is found at the
  * virtual address @adr.
  */
-static void create_vector_table(unsigned long adr)
+void create_vector_table(unsigned long adr)
 {
 	struct resource *vectors_sdram;
 	void *vectors;
@@ -537,53 +534,6 @@ static void create_vector_table(unsigned long adr)
 	memcpy(vectors, __exceptions_start, __exceptions_stop - __exceptions_start);
 }
 
-/**
- * set_vector_table - let CPU use the vector table at given address
- * @adr - The address of the vector table
- *
- * Depending on the CPU the possibilities differ. ARMv7 and later allow
- * to map the vector table to arbitrary addresses. Other CPUs only allow
- * vectors at 0xffff0000 or at 0x0.
- */
-static int set_vector_table(unsigned long adr)
-{
-	u32 cr;
-
-	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
-		pr_debug("Vectors are at 0x%08lx\n", adr);
-		set_vbar(adr);
-		return 0;
-	}
-
-	if (adr == ARM_HIGH_VECTORS) {
-		cr = get_cr();
-		cr |= CR_V;
-		set_cr(cr);
-		cr = get_cr();
-		if (cr & CR_V) {
-			pr_debug("Vectors are at 0x%08lx\n", adr);
-			return 0;
-		} else {
-			return -EINVAL;
-		}
-	}
-
-	if (adr == ARM_LOW_VECTORS) {
-		cr = get_cr();
-		cr &= ~CR_V;
-		set_cr(cr);
-		cr = get_cr();
-		if (cr & CR_V) {
-			return -EINVAL;
-		} else {
-			pr_debug("Vectors are at 0x%08lx\n", adr);
-			return 0;
-		}
-	}
-
-	return -EINVAL;
-}
-
 static void create_zero_page(void)
 {
 	/*
@@ -616,34 +566,9 @@ static void create_guard_page(void)
  */
 void setup_trap_pages(void)
 {
+	if (arm_get_vector_table() != 0x0)
+		create_zero_page();
 	create_guard_page();
-
-	/*
-	 * First try to use the vectors where they actually are, works
-	 * on ARMv7 and later.
-	 */
-	if (!set_vector_table((unsigned long)__exceptions_start)) {
-		arm_fixup_vectors();
-		create_zero_page();
-		return;
-	}
-
-	/*
-	 * Next try high vectors at 0xffff0000.
-	 */
-	if (!set_vector_table(ARM_HIGH_VECTORS)) {
-		create_zero_page();
-		create_vector_table(ARM_HIGH_VECTORS);
-		return;
-	}
-
-	/*
-	 * As a last resort use low vectors at 0x0. With this we can't
-	 * set the zero page to faulting and can't catch NULL pointer
-	 * exceptions.
-	 */
-	set_vector_table(ARM_LOW_VECTORS);
-	create_vector_table(ARM_LOW_VECTORS);
 }
 
 /*

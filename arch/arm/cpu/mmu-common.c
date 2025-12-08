@@ -157,11 +157,10 @@ static void mmu_remap_memory_banks(void)
 		remap_range_end_sans_text(pos, bank->start + bank->size, MAP_CACHED);
 	}
 
-	/* Do this while interrupt vectors are still writable */
-	setup_trap_pages();
-
 	remap_range((void *)code_start, code_size, MAP_CODE);
 	remap_range((void *)rodata_start, rodata_size, ARCH_MAP_CACHED_RO);
+
+	setup_trap_pages();
 }
 
 static int mmu_init(void)

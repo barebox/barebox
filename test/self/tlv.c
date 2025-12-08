@@ -85,5 +85,7 @@ static void test_lxa_tlv(void)
 		tlv_free_device(cpu_tlvdev);
 	if (!IS_ERR(io_tlvdev))
 		tlv_free_device(io_tlvdev);
+
+	of_delete_node(expected);
 }
 bselftest(parser, test_lxa_tlv);

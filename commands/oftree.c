@@ -74,6 +74,8 @@ static int do_oftree(int argc, char *argv[])
 
 		ret = write_file(save, fdt, fdt32_to_cpu(fdt->totalsize));
 
+		free(fdt);
+
 		goto out;
 	}
 

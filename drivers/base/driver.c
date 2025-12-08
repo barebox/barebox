@@ -335,6 +335,8 @@ int unregister_device(struct device *old_dev)
 	if (np && np->dev == old_dev)
 		np->dev = NULL;
 
+	free_device_res(old_dev);
+
 	return 0;
 }
 EXPORT_SYMBOL(unregister_device);
@@ -348,9 +350,11 @@ EXPORT_SYMBOL(unregister_device);
  */
 void free_device_res(struct device *dev)
 {
+	devinfo_del(dev, NULL);
 	free(dev->unique_name);
 	dev->unique_name = NULL;
 	free(dev->deferred_probe_reason);
+	dev->deferred_probe_reason = NULL;
 }
 EXPORT_SYMBOL(free_device_res);
 
@@ -825,10 +829,11 @@ void devinfo_del(struct device *dev, void (*info)(struct device *))
 	devinfo_init(dev);
 
 	list_for_each_entry_safe(cb, tmp, &dev->info_list, list) {
-		if (cb->info == info) {
-			list_del(&cb->list);
-			free(cb);
-		}
+		if (info && cb->info != info)
+			continue;
+
+		list_del(&cb->list);
+		free(cb);
 	}
 }
 

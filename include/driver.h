@@ -124,7 +124,12 @@ struct device *find_device(const char *str);
  * appending a number to the template. Dynamically created devices should
  * use this function rather than filling the id field themselves.
  */
-int get_free_deviceid(const char *name_template);
+int get_free_deviceid_from(const char *name_template, int id_from);
+
+static inline int get_free_deviceid(const char *name_template)
+{
+	return get_free_deviceid_from(name_template, 0);
+}
 
 int dev_add_alias(struct device *dev, const char *fmt, ...) __printf(2, 3);
 

@@ -104,6 +104,12 @@ static int do_devinfo(int argc, char *argv[])
 		if (dev->of_node) {
 			struct device *main_dev = dev->of_node->dev;
 
+			if (dev->dma_offset)
+				printf("DMA offset: 0x%lx\n", dev->dma_offset);
+
+			if (dev->dma_mask)
+				printf("DMA mask: 0x%llx\n", dev->dma_mask);
+
 			printf("DMA Coherent: %s%s\n",
 			       dev_is_dma_coherent(dev) ? "true" : "false",
 			       dev->dma_coherent == DEV_DMA_COHERENCE_DEFAULT ? " (default)" : "");

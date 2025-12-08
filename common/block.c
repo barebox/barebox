@@ -584,28 +584,46 @@ const char *blk_type_str(enum blk_type type)
 	}
 }
 
-char *cdev_get_linux_rootarg(const struct cdev *partcdev)
+int cdev_get_linux_root_and_opts(const struct cdev *partcdev, const char **root,
+				 const char **rootopts)
 {
+
 	const struct cdev *cdevm;
 	struct block_device *blk;
-	char *rootarg = NULL;
+	char *root_local = NULL;
 
 	if (!partcdev)
-		return NULL;
+		return -EINVAL;
 
 	cdevm = partcdev->master ?: partcdev;
 	blk = cdev_get_block_device(cdevm);
 	if (!blk)
-		return NULL;
+		return -EINVAL;
 
-	if (blk->ops->get_rootarg)
-		rootarg = blk->ops->get_rootarg(blk, partcdev);
-	if (!rootarg && partcdev->partuuid[0] != 0)
-		rootarg = basprintf("root=PARTUUID=%s", partcdev->partuuid);
+	if (blk->ops->get_root)
+		root_local = blk->ops->get_root(blk, partcdev);
+	if (!root_local && partcdev->partuuid[0] != 0)
+		root_local = xasprintf("PARTUUID=%s", partcdev->partuuid);
+
+	if (!root_local)
+		return -ENODEV;
 
 	if (IS_ENABLED(CONFIG_ROOTWAIT_BOOTARG) && blk->rootwait)
-		rootarg = linux_bootargs_append_rootwait(rootarg);
+		*rootopts = xasprintf("rootwait=%d", linux_rootwait_secs);
 
-	return rootarg;
+	*root = root_local;
+	return 0;
 }
 
+char *cdev_get_linux_rootarg(const struct cdev *partcdev)
+{
+	int err;
+	const char *root = NULL;
+	const char *rootopts = NULL;
+
+	err = cdev_get_linux_root_and_opts(partcdev, &root, &rootopts);
+	if (err)
+		return NULL;
+
+	return format_root_bootarg("root", root, rootopts);
+}

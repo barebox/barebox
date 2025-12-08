@@ -28,6 +28,7 @@ config SELFTEST_AUTORUN
 
 config SELFTEST_ENABLE_ALL
 	bool "Enable all self-tests"
+	select SELFTEST_BASE64
 	select SELFTEST_RANGE
 	select SELFTEST_PRINTF
 	select SELFTEST_MALLOC
@@ -51,6 +52,12 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_TALLOC
 	help
 	  Selects all self-tests compatible with current configuration
+
+config SELFTEST_BASE64
+	bool "base64 selftest"
+	select BASE64
+	help
+	  Tests base64 implementation
 
 config SELFTEST_RANGE
 	bool "range.h selftest"

@@ -74,7 +74,7 @@ struct tag *armlinux_get_bootparams(void)
 		return armlinux_bootparams;
 
 	for_each_memory_bank(mem)
-		return (void *)mem->start + 0x100;
+		return (void *)mem->res->start + 0x100;
 
 	BUG();
 }
@@ -110,8 +110,8 @@ static void setup_memory_tags(void)
 		params->hdr.tag = ATAG_MEM;
 		params->hdr.size = tag_size(tag_mem32);
 
-		params->u.mem.start = bank->start;
-		params->u.mem.size = bank->size;
+		params->u.mem.start = bank->res->start;
+		params->u.mem.size = resource_size(bank->res);
 
 		params = tag_next(params);
 	}

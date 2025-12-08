@@ -19,6 +19,7 @@ struct bootm_data {
 	const char *oftree_file;
 	const char *tee_file;
 	const char *root_dev;
+	const char *root_param;
 	int verbose;
 	enum bootm_verify verify;
 	bool force;

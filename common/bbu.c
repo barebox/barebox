@@ -431,8 +431,7 @@ int bbu_mmcboot_register_handler(const char *name,
 	return ret;
 }
 
-int bbu_std_file_handler(struct bbu_handler *handler,
-			 struct bbu_data *data)
+int bbu_flash(struct bbu_data *data, loff_t offset)
 {
 	int fd, ret;
 	struct stat s;
@@ -458,25 +457,25 @@ int bbu_std_file_handler(struct bbu_handler *handler,
 	if (fd < 0)
 		return fd;
 
-	ret = protect(fd, data->len, 0, 0);
+	ret = protect(fd, data->len, offset, 0);
 	if (ret && (ret != -ENOSYS) && (ret != -ENOTSUPP)) {
 		printf("unprotecting %s failed with %pe\n", data->devicefile,
 				ERR_PTR(ret));
 		goto err_close;
 	}
 
-	ret = erase(fd, data->len, 0, ERASE_TO_WRITE);
+	ret = erase(fd, data->len, offset, ERASE_TO_WRITE);
 	if (ret && ret != -ENOSYS) {
 		printf("erasing %s failed with %pe\n", data->devicefile,
 				ERR_PTR(ret));
 		goto err_close;
 	}
 
-	ret = write_full(fd, data->image, data->len);
+	ret = pwrite_full(fd, data->image, data->len, offset);
 	if (ret < 0)
 		goto err_close;
 
-	protect(fd, data->len, 0, 1);
+	protect(fd, data->len, offset, 1);
 
 	ret = 0;
 
@@ -484,6 +483,12 @@ err_close:
 	close(fd);
 
 	return ret;
+}
+
+int bbu_std_file_handler(struct bbu_handler *handler,
+			 struct bbu_data *data)
+{
+	return bbu_flash(data, 0);
 }
 
 static int bbu_std_file_handler_checked(struct bbu_handler *handler,

@@ -13,7 +13,7 @@
  *
  */
 
-#include <config.h>
+#include <asm/config.h>
 #include <asm/barebox.lds.h>
 
 OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)

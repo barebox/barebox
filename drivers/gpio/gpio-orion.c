@@ -95,10 +95,9 @@ static int orion_gpio_probe(struct device *dev)
 	gpio->chip.ops = &orion_gpio_ops;
 
 	id = of_alias_get_id(dev->of_node, "gpio");
-	if (id < 0)
-		return id;
+	if (id >= 0)
+		gpio->chip.base = id * 32;
 
-	gpio->chip.base = id * 32;
 	gpio->chip.ngpio = 32;
 	of_property_read_u32(dev->of_node, "ngpios", &gpio->chip.ngpio);
 

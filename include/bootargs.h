@@ -26,4 +26,6 @@ static inline char *linux_bootargs_append_rootwait(char *rootarg)
 }
 #endif
 
+char *format_root_bootarg(const char *root_arg, const char *root, const char *rootopts);
+
 #endif /* __BOOTARGS_H */

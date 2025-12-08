@@ -118,7 +118,7 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 
 	ci->flags = MXC_EHCI_MODE_UTMI_8BIT;
 
-	ci->mode = of_usb_get_dr_mode(ci->dev->of_node, NULL);
+	ci->mode = usb_get_dr_mode(ci->dev);
 
 	if (ci->mode == USB_DR_MODE_UNKNOWN) {
 		/*

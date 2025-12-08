@@ -6,7 +6,7 @@
 #include <common.h>
 #include <linux/usb/ulpi.h>
 
-static int zynq_ehci_probe(struct device_d *dev)
+static int zynq_ehci_probe(struct device *dev)
 {
 	struct resource *res;
 	void __iomem *base;

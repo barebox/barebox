@@ -18,7 +18,7 @@
 /*
  *  barebox - Startup Code for MPC5xxx CPUs
  */
-#include <config.h>
+#include <asm/config.h>
 
 #include <asm/ppc_asm.tmpl>
 #include <asm/ppc_defs.h>

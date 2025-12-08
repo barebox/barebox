@@ -154,7 +154,7 @@ static int imx_usbphy_probe(struct device *dev)
 
 	ret = of_alias_get_id(np, "usbphy");
 	if (ret < 0) {
-		dev_dbg(dev, "failed to get alias id, errno %d\n", ret);
+		ret = dev_err_probe(dev, -ENOENT, "failed to get alias id\n");
 		goto err_free;
 	}
 	imxphy->port_id = ret;

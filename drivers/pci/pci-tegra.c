@@ -1240,13 +1240,13 @@ static int tegra_pcie_probe(struct device *dev)
 	if (!pcie)
 		return -ENOMEM;
 
+	pcie->dev = dev;
 	pcie->pci.parent = pcie->dev;
 	pci_controller_init(&pcie->pci);
 
 	INIT_LIST_HEAD(&pcie->buses);
 	INIT_LIST_HEAD(&pcie->ports);
 	pcie->soc_data = device_get_match_data(dev);
-	pcie->dev = dev;
 
 	err = tegra_pcie_parse_dt(pcie);
 	if (err < 0) {

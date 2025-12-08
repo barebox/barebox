@@ -2691,7 +2691,7 @@ static char *mci_get_linux_mmcblkdev(struct block_device *blk,
 		 * skipping it.
 		 */
 		if (cdev_partname_equal(partcdev, cdev))
-			return basprintf("root=/dev/mmcblk%dp%d", id, partnum);
+			return basprintf("/dev/mmcblk%dp%d", id, partnum);
 		if (cdev->flags & DEVFS_PARTITION_FROM_TABLE)
 			partnum++;
 	}
@@ -2703,7 +2703,7 @@ static struct block_device_ops mci_ops = {
 	.read = mci_sd_read,
 	.write = IS_ENABLED(CONFIG_MCI_WRITE) ? mci_sd_write : NULL,
 	.erase = IS_ENABLED(CONFIG_MCI_ERASE) ? mci_sd_erase : NULL,
-	.get_rootarg = IS_ENABLED(CONFIG_MMCBLKDEV_ROOTARG) ?
+	.get_root = IS_ENABLED(CONFIG_MMCBLKDEV_ROOTARG) ?
 		mci_get_linux_mmcblkdev : NULL,
 };
 
@@ -2794,6 +2794,10 @@ static int mci_register_partition(struct mci_part *part)
 	part->blk.ops = &mci_ops;
 	part->blk.type = IS_SD(mci) ? BLK_TYPE_SD : BLK_TYPE_MMC;
 	part->blk.rootwait = true;
+
+	part->blk.removable = IS_SD(mci);
+	if (host->non_removable)
+		part->blk.removable = false;
 
 	if (part->area_type == MMC_BLK_DATA_AREA_RPMB)
 		return 0;

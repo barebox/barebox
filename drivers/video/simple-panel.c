@@ -130,6 +130,8 @@ static int simple_panel_ioctl(struct vpl *vpl, unsigned int port,
 		return simple_panel_disable(panel);
 	case VPL_GET_VIDEOMODES:
 		return simple_panel_get_modes(panel, ptr);
+	case VPL_GET_BUS_FORMAT:
+		return of_property_read_u32(panel->dev->of_node, "bus-format", ptr);
 	default:
 		return 0;
 	}

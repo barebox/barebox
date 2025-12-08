@@ -56,6 +56,8 @@ int bbu_mmcboot_handler(struct bbu_handler *, struct bbu_data *,
 int bbu_std_file_handler(struct bbu_handler *handler,
 			 struct bbu_data *data);
 
+int bbu_flash(struct bbu_data *data, loff_t offset);
+
 #ifdef CONFIG_BAREBOX_UPDATE
 
 bool bbu_handlers_available(void);

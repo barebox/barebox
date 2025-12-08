@@ -5,7 +5,7 @@
 #include <deep-probe.h>
 #include <mach/imx/bbu.h>
 
-static int var_som_mx7_probe(struct device_d *dev)
+static int var_som_mx7_probe(struct device *dev)
 {
 	imx7_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc2", BBU_HANDLER_FLAG_DEFAULT);
 	return 0;

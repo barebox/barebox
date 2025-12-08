@@ -66,11 +66,11 @@ static int sdram_start_and_size(unsigned long *start, unsigned long *size)
 	res = list_first_entry_or_null(&bank->res->children, struct resource,
 			sibling);
 	if (res)
-		*size = res->start - bank->start;
+		*size = res->start - bank->res->start;
 	else
-		*size = bank->size;
+		*size = resource_size(bank->res);
 
-	*start = bank->start;
+	*start = bank->res->start;
 
 	return 0;
 }

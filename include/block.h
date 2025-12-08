@@ -14,7 +14,7 @@ struct block_device_ops {
 	int (*write)(struct block_device *, const void *buf, sector_t block, blkcnt_t num_blocks);
 	int (*erase)(struct block_device *blk, sector_t block, blkcnt_t num_blocks);
 	int (*flush)(struct block_device *);
-	char *(*get_rootarg)(struct block_device *blk, const struct cdev *partcdev);
+	char *(*get_root)(struct block_device *blk, const struct cdev *partcdev);
 };
 
 struct chunk;
@@ -46,6 +46,7 @@ struct block_device {
 	u8 blockbits;
 	u8 type; /* holds enum blk_type */
 	u8 rootwait:1;
+	u8 removable:1;
 	blkcnt_t num_blocks;
 	int rdbufsize;
 	int blkmask;
@@ -85,6 +86,8 @@ static inline int block_flush(struct block_device *blk)
 #ifdef CONFIG_BLOCK
 unsigned file_list_add_blockdevs(struct file_list *files);
 char *cdev_get_linux_rootarg(const struct cdev *partcdev);
+int cdev_get_linux_root_and_opts(const struct cdev *partcdev, const char **root,
+				 const char **rootopts);
 #else
 static inline unsigned file_list_add_blockdevs(struct file_list *files)
 {
@@ -93,6 +96,12 @@ static inline unsigned file_list_add_blockdevs(struct file_list *files)
 static inline char *cdev_get_linux_rootarg(const struct cdev *partcdev)
 {
 	return NULL;
+}
+static inline int cdev_get_linux_root_and_opts(const struct cdev *partcdev,
+					       const char **root,
+					       const char **rootopts)
+{
+	return -ENOSYS;
 }
 #endif
 

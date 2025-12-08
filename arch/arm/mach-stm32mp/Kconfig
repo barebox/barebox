@@ -39,6 +39,10 @@ config MACH_LXA_FAIRYTUX2
 	bool "Linux Automation FairyTux 2"
 	select BOARD_LXA
 
+config MACH_DHCOR_STM32MP1
+	select ARCH_STM32MP157
+	bool "DHCOR STM32MP1 boards including Arrow Avenger96"
+
 config MACH_SEEED_ODYSSEY
 	select ARCH_STM32MP157
 	bool "Seeed Studio Odyssey"

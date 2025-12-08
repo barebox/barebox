@@ -391,6 +391,29 @@ static bool entry_is_match_machine_id(struct blspec_entry *entry)
 	return ret;
 }
 
+/*
+ * Return the path prefix before the deepest "/loader/entries/" component
+ * in @configname. Falls back to the mounted path if none is found.
+ */
+static const char *get_blspec_prefix_path(const char *configname)
+{
+	const char *p;
+	const char *scfg = configname;
+	const char *save = NULL;
+
+	while ((p = strstr(scfg, "/loader/entries/")) != NULL) {
+		if (p - configname > 0)
+			save = p;
+
+		scfg = p + 1;
+	}
+
+	if (save && save - configname > 0)
+		return xstrndup(configname, save - configname);
+
+	return get_mounted_path(configname);
+}
+
 static int __blspec_scan_file(struct bootentries *bootentries, const char *root,
 			      const char *configname)
 {
@@ -404,7 +427,7 @@ static int __blspec_scan_file(struct bootentries *bootentries, const char *root,
 	if (IS_ERR(entry))
 		return PTR_ERR(entry);
 
-	root = root ?: get_mounted_path(configname);
+	root = root ?: get_blspec_prefix_path(configname);
 	entry->rootpath = xstrdup_const(root);
 	entry->configpath = xstrdup_const(configname);
 	entry->cdev = get_cdev_by_mountpath(root);

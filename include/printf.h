@@ -30,18 +30,19 @@ static inline __printf(1, 2) int printf(const char *fmt, ...)
 void __noreturn panic(const char *fmt, ...) __printf(1, 2);
 void __noreturn panic_no_stacktrace(const char *fmt, ...) __printf(1, 2);
 
-#define printk			printf
-
 /*
- * Dummy printk for disabled debugging statements to use whilst maintaining
+ * Dummy printf for disabled debugging statements to use whilst maintaining
  * gcc's format checking.
  */
-#define no_printk(fmt, ...)				\
+#define no_printf(fmt, ...)				\
 ({							\
 	if (0)						\
-		printk(fmt, ##__VA_ARGS__);		\
+		printf(fmt, ##__VA_ARGS__);		\
 	0;						\
 })
+
+#define printk			printf
+#define no_printk		no_printf
 
 enum {
 	DUMP_PREFIX_NONE,

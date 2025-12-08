@@ -193,3 +193,80 @@ int stm32mp_bbu_mmc_fip_register(const char *name,
 
 	return ret;
 }
+
+static int stm32mp_bbu_nor_fip_handler(struct bbu_handler *handler,
+			 struct bbu_data *data)
+{
+	struct bbu_data *fsbl_data, *fip_data;
+	enum filetype filetype;
+	int ret;
+
+	filetype = file_detect_type(data->image, data->len);
+	if (filetype == filetype_fip) {
+		pr_debug("Flashing FIP at offset 512K\n");
+		return bbu_flash(data, SZ_512K);
+	}
+
+	if (filetype != filetype_stm32_image_fsbl_v1) {
+		if (!bbu_force(data, "incorrect image type. Expected: %s, got %s",
+				file_type_to_string(filetype_stm32_image_fsbl_v1),
+				file_type_to_string(filetype)))
+			return -EINVAL;
+
+		/* Force: Let's assume it's an FSBL and flash anyway */
+	}
+
+	if (data->len > SZ_256K)
+		filetype = file_detect_type(data->image + SZ_256K,
+					    data->len - SZ_256K);
+	else
+		filetype = filetype_unknown;
+
+	/* Not an eMMC image, just flash 1:1 */
+	if (filetype != filetype_fip) {
+		pr_debug("Flashing FSBL at offset 0\n");
+		return bbu_flash(data, 0);
+	}
+
+	/* On SPI-NOR, offset 256K is FSBL2. If we get a FIP image there
+	 * instead, let's assume that's an eMMC boot partition image
+	 * and flash the FSBL to offset 0 and the remainder to offset 512K
+	 */
+
+	pr_debug("Flashing FSBL at offset 0\n");
+	fsbl_data = data;
+	fsbl_data->image = data->image;
+	fsbl_data->len = SZ_256K;
+
+	ret = bbu_flash(fsbl_data, 0);
+	if (ret < 0)
+		return ret;
+
+	pr_debug("Flashing FIP from file offset 256K at offset 512K\n");
+	fip_data = data;
+	fip_data->image = data->image + SZ_256K;
+	fip_data->len = data->len - SZ_256K;
+
+	return bbu_flash(fip_data, SZ_512K);
+}
+
+int stm32mp_bbu_nor_fip_register(const char *name,
+				 const char *devicefile,
+				 unsigned long flags)
+{
+	struct stm32mp_bbu_handler *priv;
+	int ret;
+
+	priv = xzalloc(sizeof(*priv));
+
+	priv->handler.flags = flags;
+	priv->handler.devicefile = devicefile;
+	priv->handler.name = name;
+	priv->handler.handler = stm32mp_bbu_nor_fip_handler;
+
+	ret = bbu_register_handler(&priv->handler);
+	if (ret)
+		free(priv);
+
+	return ret;
+}

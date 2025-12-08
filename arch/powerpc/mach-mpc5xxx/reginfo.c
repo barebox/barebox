@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include <common.h>
-#include <config.h>
+#include <asm/config.h>
 #include <mach/mpc5xxx.h>
 #include <command.h>
 #include <complete.h>

@@ -11,7 +11,7 @@
 #ifndef __ASM_PPC_FSL_LBC_H
 #define __ASM_PPC_FSL_LBC_H
 
-#include <config.h>
+#include <asm/config.h>
 #include <common.h>
 
 /*

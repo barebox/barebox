@@ -70,11 +70,11 @@ static void v9fs_set_rootarg(struct v9fs_session_info *v9ses,
 	trans = v9ses->clnt->trans_mod->name;
 	path = v9ses->aname;
 
-	str = basprintf("root=%s rootfstype=9p rootflags=trans=%s,msize=%d,"
+	str = basprintf("rootfstype=9p rootflags=trans=%s,msize=%d,"
 			"cache=loose,uname=%s,dfltuid=0,dfltgid=0,aname=%s",
-			tag, trans, v9ses->clnt->msize, tag, path);
+			trans, v9ses->clnt->msize, tag, path);
 
-	fsdev_set_linux_rootarg(fsdev, str);
+	fsdev_set_linux_root_options(fsdev, tag, str);
 
 	free(str);
 }

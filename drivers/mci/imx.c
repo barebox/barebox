@@ -12,7 +12,6 @@
  * Derived from pxamci.c by Russell King
  */
 
-#include <config.h>
 #include <common.h>
 #include <command.h>
 #include <mci.h>

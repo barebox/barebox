@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#ifndef __BOARD_H
+#define __BOARD_H
 
 #define MASTER_PLL_MUL		39
 #define MASTER_PLL_DIV		4

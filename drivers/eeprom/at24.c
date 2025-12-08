@@ -369,7 +369,7 @@ static int at24_probe(struct device *dev)
 	struct at24_platform_data chip;
 	bool writable;
 	struct at24_data *at24;
-	int err;
+	int devid, err;
 	unsigned i, num_addresses;
 	const char *devname;
 	const char *alias;
@@ -423,10 +423,14 @@ static int at24_probe(struct device *dev)
 	at24->num_addresses = num_addresses;
 
 	alias = of_alias_get(dev->of_node);
-	if (alias)
+	if (alias) {
 		devname = alias;
-	else
+		devid = NVMEM_DEVID_NONE;
+	} else {
 		devname = "eeprom";
+		devid = get_free_deviceid_from(devname,
+					       of_alias_get_highest_id(devname) + 1);
+	}
 
 	writable = !(chip.flags & AT24_FLAG_READONLY);
 
@@ -481,7 +485,7 @@ static int at24_probe(struct device *dev)
 	at24->nvmem_config.stride = 1;
 	at24->nvmem_config.word_size = 1;
 	at24->nvmem_config.size = chip.byte_len;
-	at24->nvmem_config.id = alias ? NVMEM_DEVID_NONE : NVMEM_DEVID_AUTO;
+	at24->nvmem_config.id = devid;
 
 	at24->nvmem = nvmem_register(&at24->nvmem_config);
 	err = PTR_ERR_OR_ZERO(at24->nvmem);

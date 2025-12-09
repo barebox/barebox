@@ -63,7 +63,7 @@ static int register_one_partition(struct block_device *blk, struct partition *pa
 		return 0;
 
 	partition_name = xasprintf("%s.%s", blk->cdev.name, part->name);
-	ret = devfs_create_link(cdev, partition_name);
+	ret = devfs_add_alias(cdev, partition_name);
 	if (ret)
 		dev_warn(blk->dev, "Failed to create link from %s to %s\n",
 			 partition_name, cdev->name);

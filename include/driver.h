@@ -17,6 +17,7 @@
 #include <init.h>
 #include <errno.h>
 #include <filetype.h>
+#include <stringlist.h>
 
 #define FORMAT_DRIVER_NAME_ID	"%s%d"
 
@@ -432,8 +433,7 @@ struct cdev {
 	u16 typeflags; /* GPT type-specific attributes */
 	int open;
 	struct mtd_info *mtd;
-	struct cdev *link;
-	struct list_head link_entry, links;
+	struct list_head aliases;
 	struct list_head partition_entry, partitions;
 	struct cdev *master;
 	enum filetype filetype;
@@ -441,6 +441,15 @@ struct cdev {
 		u8 dos_partition_type;
 		guid_t typeuuid;
 	};
+};
+
+#define cdev_for_each_alias(alias, cdev) \
+	list_for_each_entry(alias, &cdev->aliases, list)
+
+struct cdev_alias {
+	char *name;
+	struct device_node *device_node;
+	struct list_head list;
 };
 
 static inline struct device_node *cdev_of_node(const struct cdev *cdev)
@@ -461,15 +470,12 @@ static inline const char *cdev_name(struct cdev *cdev)
 
 void devfs_init(void);
 int devfs_create(struct cdev *);
-int devfs_create_link(struct cdev *, const char *name);
-int devfs_create_link_node(struct cdev *cdev, const char *name,
-			   struct device_node *node);
+int devfs_add_alias(struct cdev *, const char *name);
+int devfs_add_alias_node(struct cdev *, const char *name, struct device_node *np);
 int devfs_remove(struct cdev *);
 int cdev_find_free_index(const char *);
 struct cdev *cdev_find_partition(struct cdev *cdevm, const char *name);
 struct cdev *device_find_partition(struct device *dev, const char *name);
-struct cdev *lcdev_by_name(const char *filename);
-struct cdev *cdev_readlink(const struct cdev *cdev);
 struct cdev *cdev_by_device_node(struct device_node *node);
 struct cdev *cdev_by_partuuid(const char *partuuid);
 struct cdev *cdev_by_diskuuid(const char *partuuid);

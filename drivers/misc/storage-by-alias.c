@@ -38,7 +38,7 @@ static int sba_add_partitions(struct cdev *rcdev, void *data)
 
 	dev_info(sba->dev, "Adding %s -> %s\n", sba->alias, rcdev->name);
 
-	ret = devfs_create_link_node(rcdev, sba->alias, sba->dev->device_node);
+	ret = devfs_add_alias_node(rcdev, sba->alias, sba->dev->device_node);
 	if (ret)
 		return ret;
 

@@ -50,40 +50,19 @@ int devfs_partition_complete(struct string_list *sl, char *instr)
 }
 #endif
 
-struct cdev *cdev_readlink(const struct cdev *cdev)
-{
-	if (!cdev)
-		return NULL;
-
-	if (cdev->link)
-		cdev = cdev->link;
-
-	/* links to links are not allowed */
-	BUG_ON(cdev->link);
-
-	return (void *)cdev;
-}
-
-struct cdev *lcdev_by_name(const char *filename)
+struct cdev *cdev_by_name(const char *filename)
 {
 	struct cdev *cdev;
+	struct cdev_alias *alias;
 
 	for_each_cdev(cdev) {
 		if (!strcmp(cdev->name, filename))
 			return cdev;
+		cdev_for_each_alias(alias, cdev)
+			if (!strcmp(alias->name, filename))
+				return cdev;
 	}
 	return NULL;
-}
-
-struct cdev *cdev_by_name(const char *filename)
-{
-	struct cdev *cdev;
-
-	cdev = lcdev_by_name(filename);
-	if (!cdev)
-		return NULL;
-
-	return cdev_readlink(cdev);
 }
 
 struct cdev *cdev_by_device_node(struct device_node *node)
@@ -94,8 +73,14 @@ struct cdev *cdev_by_device_node(struct device_node *node)
 		return NULL;
 
 	for_each_cdev(cdev) {
+		struct cdev_alias *alias;
+
 		if (cdev_of_node(cdev) == node)
-			return cdev_readlink(cdev);
+			return cdev;
+
+		cdev_for_each_alias(alias, cdev)
+			if (alias->device_node == node)
+				return cdev;
 	}
 	return NULL;
 }
@@ -133,9 +118,6 @@ cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid)
 {
 	struct cdev *partcdev;
 
-        /* Follow links to support storage-by-alias */
-        cdev = cdev_readlink(cdev);
-
 	if (!cdev_is_gpt_partitioned(cdev))
 		return ERR_PTR(-EINVAL);
 
@@ -153,6 +135,29 @@ cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid)
 	return ERR_PTR(-ENOENT);
 }
 
+static bool cdev_has_partname_alias(struct cdev *cdev, const char *partname)
+{
+	char *fullname;
+	struct cdev_alias *alias;
+	bool ret = false;
+
+	if (!cdev->master)
+		return false;
+
+	fullname = xasprintf("%s.%s", cdev->master->name, partname);
+
+	cdev_for_each_alias(alias, cdev) {
+		if (streq_ptr(alias->name, fullname)) {
+			ret = true;
+			break;
+		}
+	}
+
+	free(fullname);
+
+	return ret;
+}
+
 /**
  * cdev_find_partition - find a partition belonging to a physical device
  *
@@ -164,15 +169,10 @@ struct cdev *cdev_find_partition(struct cdev *cdevm, const char *name)
 	struct cdev *partcdev;
 
 	for_each_cdev_partition(partcdev, cdevm) {
-		struct cdev *cdevl;
-
 		if (streq_ptr(partcdev->partname, name))
 			return partcdev;
-
-		list_for_each_entry(cdevl, &partcdev->links, link_entry) {
-			if (streq_ptr(cdevl->partname, name))
-				return cdevl;
-		}
+		if (cdev_has_partname_alias(partcdev, name))
+			return partcdev;
 	}
 
 	return NULL;
@@ -190,15 +190,11 @@ struct cdev *device_find_partition(struct device *dev, const char *name)
 	struct device *child;
 
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
-		struct cdev *cdevl;
-
 		if (streq_ptr(cdev->partname, name))
 			return cdev;
 
-		list_for_each_entry(cdevl, &cdev->links, link_entry) {
-			if (streq_ptr(cdevl->partname, name))
-				return cdev_readlink(cdevl);
-		}
+		if (cdev_has_partname_alias(cdev, name))
+			return cdev;
 	}
 
 	device_for_each_child(dev, child) {
@@ -460,25 +456,54 @@ static void cdev_free(struct cdev *cdev)
 
 static bool devfs_initialized;
 
+static int cdev_symlink(struct cdev *cdev, const char *linkname)
+{
+	char *path;
+	int ret;
+
+	if (!devfs_initialized)
+		return 0;
+
+	path = xasprintf("/dev/%s", linkname);
+	ret = symlink(cdev->name, path);
+	free(path);
+
+	return ret;
+}
+
 static void devfs_mknod(struct cdev *cdev)
 {
 	char *path;
 	int ret;
+	struct cdev_alias *alias;
 
 	if (!devfs_initialized)
 		return;
 
 	path = xasprintf("/dev/%s", cdev->name);
 
-	if (cdev->link)
-		ret = symlink(cdev->link->name, path);
-	else
-		ret = mknod(path, S_IFCHR | 0600, cdev->name);
+	cdev_for_each_alias(alias, cdev)
+		cdev_symlink(cdev, alias->name);
+
+	ret = mknod(path, S_IFCHR | 0600, cdev->name);
 
 	free(path);
 
-	if (ret)
+	if (ret) {
 		pr_err("Failed to create /dev/%s: %pe\n", cdev->name, ERR_PTR(ret));
+		dump_stack();
+	}
+}
+
+static void devfs_unlink(const char *name)
+{
+	char *path;
+
+	path = xasprintf("/dev/%s", name);
+
+	unlink(path);
+
+	free(path);
 }
 
 void devfs_init(void)
@@ -499,8 +524,8 @@ int devfs_create(struct cdev *new)
 	if (cdev)
 		return -EEXIST;
 
-	INIT_LIST_HEAD(&new->links);
 	INIT_LIST_HEAD(&new->partitions);
+	INIT_LIST_HEAD(&new->aliases);
 
 	list_add_tail(&new->list, &cdev_list);
 	if (new->dev) {
@@ -509,54 +534,44 @@ int devfs_create(struct cdev *new)
 			new->device_node = new->dev->of_node;
 	}
 
-	if (new->link)
-		list_add_tail(&new->link_entry, &new->link->links);
-
 	devfs_mknod(new);
 
 	return 0;
 }
 
-int devfs_create_link_node(struct cdev *cdev, const char *name, struct device_node *node)
+int devfs_add_alias_node(struct cdev *cdev, const char *name, struct device_node *np)
 {
-	struct cdev *new;
-	int ret;
+	struct cdev *conflict;
+	struct cdev_alias *alias;
 
-	/*
-	 * Create a link to the real cdev instead of creating
-	 * a link to a link.
-	 */
-	cdev = cdev_readlink(cdev);
+	conflict = cdev_by_name(name);
+	if (conflict)
+		return -EEXIST;
 
-	new = cdev_alloc(name);
-	new->link = cdev;
-	new->device_node = node;
+	alias = xzalloc(sizeof(*alias));
+	alias->name = xstrdup(name);
+	alias->device_node = np;
+	list_add_tail(&alias->list, &cdev->aliases);
 
-	ret = devfs_create(new);
-	if (ret) {
-		cdev_free(new);
-		return ret;
-	}
-
-	if (cdev->partname) {
-		size_t partnameoff = 0;
-
-		if (cdev->master) {
-			size_t masterlen = strlen(cdev->master->name);
-
-			if (!strncmp(name, cdev->master->name, masterlen))
-				partnameoff += masterlen + 1;
-		}
-
-		new->partname = xstrdup(name + partnameoff);
-	}
+	cdev_symlink(cdev, name);
 
 	return 0;
 }
 
-int devfs_create_link(struct cdev *cdev, const char *name)
+int devfs_add_alias(struct cdev *cdev, const char *name)
 {
-	return devfs_create_link_node(cdev, name, NULL);
+	return devfs_add_alias_node(cdev, name, NULL);
+}
+
+static void devfs_remove_aliases(struct cdev *cdev)
+{
+	struct cdev_alias *alias, *tmp;
+
+	list_for_each_entry_safe(alias, tmp, &cdev->aliases, list) {
+		devfs_unlink(alias->name);
+		free(alias->name);
+		free(alias);
+	}
 }
 
 int devfs_remove(struct cdev *cdev)
@@ -571,17 +586,15 @@ int devfs_remove(struct cdev *cdev)
 	if (cdev->dev)
 		list_del(&cdev->devices_list);
 
-	list_for_each_entry_safe(c, tmp, &cdev->links, link_entry)
-		devfs_remove(c);
+	devfs_unlink(cdev->name);
+
+	devfs_remove_aliases(cdev);
 
 	list_for_each_entry_safe(c, tmp, &cdev->partitions, partition_entry)
 		cdevfs_del_partition(c);
 
 	if (cdev_is_partition(cdev))
 		list_del(&cdev->partition_entry);
-
-	if (cdev->link)
-		cdev_free(cdev);
 
 	return 0;
 }
@@ -687,7 +700,7 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 	if (overlap) {
 		if (!IS_ERR(overlap)) {
 			/* only fails with -EEXIST, which is fine */
-			(void)devfs_create_link(overlap, partinfo->name);
+			(void)devfs_add_alias(overlap, partinfo->name);
 		}
 
 		return overlap;

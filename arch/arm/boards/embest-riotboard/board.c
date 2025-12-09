@@ -21,7 +21,7 @@
 
 static int riotboard_probe(struct device *dev)
 {
-	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc3.barebox",
+	imx6_bbu_internal_mmcboot_register_handler("emmc", "/dev/mmc3",
 			BBU_HANDLER_FLAG_DEFAULT);
 	imx6_bbu_internal_mmc_register_handler("sd", "/dev/mmc2", 0);
 

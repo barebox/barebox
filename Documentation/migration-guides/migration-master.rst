@@ -24,3 +24,12 @@ becomes::
 
     linux.bootargs.root="/dev/nfs"
     linux.bootargs.rootopts="nfsroot=192.168.1.1:/rootfs"
+
+Boards
+------
+
+ARM i.MX6 RIoTboard
+^^^^^^^^^^^^^^^^^^^
+
+The barebox update handler has been changed to write barebox to the
+eMMC boot partitions rather than the user data area.

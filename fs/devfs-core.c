@@ -476,7 +476,7 @@ int devfs_create(struct cdev *new)
 	return 0;
 }
 
-int devfs_create_link(struct cdev *cdev, const char *name)
+int devfs_create_link_node(struct cdev *cdev, const char *name, struct device_node *node)
 {
 	struct cdev *new;
 	int ret;
@@ -489,6 +489,7 @@ int devfs_create_link(struct cdev *cdev, const char *name)
 
 	new = cdev_alloc(name);
 	new->link = cdev;
+	new->device_node = node;
 
 	ret = devfs_create(new);
 	if (ret) {
@@ -510,6 +511,11 @@ int devfs_create_link(struct cdev *cdev, const char *name)
 	}
 
 	return 0;
+}
+
+int devfs_create_link(struct cdev *cdev, const char *name)
+{
+	return devfs_create_link_node(cdev, name, NULL);
 }
 
 int devfs_remove(struct cdev *cdev)

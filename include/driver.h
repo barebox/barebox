@@ -461,6 +461,8 @@ static inline const char *cdev_name(struct cdev *cdev)
 
 int devfs_create(struct cdev *);
 int devfs_create_link(struct cdev *, const char *name);
+int devfs_create_link_node(struct cdev *cdev, const char *name,
+			   struct device_node *node);
 int devfs_remove(struct cdev *);
 int cdev_find_free_index(const char *);
 struct cdev *cdev_find_partition(struct cdev *cdevm, const char *name);

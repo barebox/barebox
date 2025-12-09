@@ -109,8 +109,7 @@ static int devfs_open(struct inode *inode, struct file *f)
 			return -ENOENT;
 	}
 
-	f->f_size = cdev->flags & DEVFS_IS_CHARACTER_DEV ?
-			FILE_SIZE_STREAM : cdev->size;
+	f->f_size = cdev_size(cdev);
 	f->private_data = cdev;
 
 	return cdev_open(cdev, f->f_flags);

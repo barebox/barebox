@@ -435,6 +435,12 @@ int cdev_truncate(struct cdev *cdev, size_t size)
 	return -EPERM;
 }
 
+loff_t cdev_size(struct cdev *cdev)
+{
+	return cdev->flags & DEVFS_IS_CHARACTER_DEV ?
+		FILE_SIZE_STREAM : cdev->size;
+}
+
 static struct cdev *cdev_alloc(const char *name)
 {
 	struct cdev *new;

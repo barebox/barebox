@@ -526,6 +526,7 @@ int cdev_protect(struct cdev*, size_t count, loff_t offset, int prot);
 int cdev_discard_range(struct cdev*, loff_t count, loff_t offset);
 int cdev_memmap(struct cdev*, void **map, int flags);
 int cdev_truncate(struct cdev*, size_t size);
+loff_t cdev_size(struct cdev *cdev);
 loff_t cdev_unallocated_space(struct cdev *cdev);
 static inline bool cdev_is_partition(const struct cdev *cdev)
 {

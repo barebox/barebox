@@ -11,13 +11,13 @@
 #include <driver.h>
 #include <init.h>
 
-struct cdev_alias {
+struct cdev_alias_res {
 	const char *name;
-	int (*resolve)(struct cdev_alias *, const char *arg,
+	int (*resolve)(struct cdev_alias_res *, const char *arg,
 		       cdev_alias_processor_t fn, void *data);
 };
 
-static int cdev_alias_resolve_bootsource(struct cdev_alias *cdev_alias,
+static int cdev_alias_resolve_bootsource(struct cdev_alias_res *cdev_alias_res,
 					 const char *partname,
 					 cdev_alias_processor_t fn,
 					 void *data)
@@ -37,7 +37,7 @@ static int cdev_alias_resolve_bootsource(struct cdev_alias *cdev_alias,
 	return fn(cdev, data);
 }
 
-static int cdev_alias_resolve_diskuuid(struct cdev_alias *cdev_alias,
+static int cdev_alias_resolve_diskuuid(struct cdev_alias_res *cdev_alias_res,
 				       const char *uuid,
 				       cdev_alias_processor_t fn,
 				       void *data)
@@ -67,7 +67,7 @@ static int cdev_alias_resolve_diskuuid(struct cdev_alias *cdev_alias,
 	return 0;
 }
 
-static struct cdev_alias cdev_alias_aliases[] = {
+static struct cdev_alias_res cdev_alias_aliases[] = {
 	{ "bootsource", cdev_alias_resolve_bootsource },
 	{ "diskuuid", cdev_alias_resolve_diskuuid },
 	{ /* sentinel */}
@@ -76,7 +76,7 @@ static struct cdev_alias cdev_alias_aliases[] = {
 int cdev_alias_resolve_for_each(const char *name,
 				cdev_alias_processor_t fn, void *data)
 {
-	struct cdev_alias *alias;
+	struct cdev_alias_res *alias;
 	int ret = 0;
 	char *buf, *arg;
 

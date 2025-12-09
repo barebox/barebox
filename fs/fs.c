@@ -137,7 +137,6 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 	struct fs_device *fdev;
 	struct cdev *cdev = NULL;
 	const char *type = NULL, *typeprefix = "";
-	bool is_cdev_link = false;
 	char modestr[11];
 
 	mkmodestr(st->st_mode, modestr);
@@ -152,23 +151,10 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 		case S_IFREG:    type = "regular file"; break;
 	}
 
-	if (st->st_mode & S_IFCHR) {
-		char *path;
-
-		path = canonicalize_path(dirfd, filename);
-		if (path) {
-			const char *devicefile = devpath_to_name(path);
-			struct cdev *lcdev;
-
-			lcdev = lcdev_by_name(devicefile);
-			cdev = cdev_readlink(lcdev);
-			if (cdev != lcdev)
-				is_cdev_link = true;
-			if (cdev)
-				bdev = cdev_get_block_device(cdev);
-
-			free(path);
-		}
+	if ((st->st_mode & S_IFCHR) && st->st_cdevname) {
+		cdev = cdev_by_name(st->st_cdevname);
+		if (cdev)
+			bdev = cdev_get_block_device(cdev);
 	}
 
 	printf("  File: %s", filename);
@@ -182,9 +168,6 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 			printf(" -> <readlink error %pe>", ERR_PTR(ret));
 		else
 			printf(" -> %s", realname);
-	} else if (is_cdev_link) {
-		printf(" ~> %s", cdev->name);
-		typeprefix = "cdev link to ";
 	}
 
 	printf("\nSize: ");

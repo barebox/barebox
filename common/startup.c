@@ -60,7 +60,7 @@ static int mount_root(void)
 	mkdir("/dev", 0);
 	mkdir("/tmp", 0);
 	mkdir("/mnt", 0);
-	mount("none", "devfs", "/dev", NULL);
+	devfs_init();
 
 	if (IS_ENABLED(CONFIG_FS_EFIVARFS) && efi_is_payload()) {
 		mkdir("/efivars", 0);

@@ -459,6 +459,7 @@ static inline const char *cdev_name(struct cdev *cdev)
 	return cdev ? cdev->name : NULL;
 }
 
+void devfs_init(void);
 int devfs_create(struct cdev *);
 int devfs_create_link(struct cdev *, const char *name);
 int devfs_create_link_node(struct cdev *cdev, const char *name,

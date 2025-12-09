@@ -458,6 +458,39 @@ static void cdev_free(struct cdev *cdev)
 	free(cdev);
 }
 
+static bool devfs_initialized;
+
+static void devfs_mknod(struct cdev *cdev)
+{
+	char *path;
+	int ret;
+
+	if (!devfs_initialized)
+		return;
+
+	path = xasprintf("/dev/%s", cdev->name);
+
+	if (cdev->link)
+		ret = symlink(cdev->link->name, path);
+	else
+		ret = mknod(path, S_IFCHR | 0600, cdev->name);
+
+	free(path);
+
+	if (ret)
+		pr_err("Failed to create /dev/%s: %pe\n", cdev->name, ERR_PTR(ret));
+}
+
+void devfs_init(void)
+{
+	struct cdev *cdev;
+
+	devfs_initialized = true;
+
+	for_each_cdev(cdev)
+		devfs_mknod(cdev);
+}
+
 int devfs_create(struct cdev *new)
 {
 	struct cdev *cdev;
@@ -478,6 +511,8 @@ int devfs_create(struct cdev *new)
 
 	if (new->link)
 		list_add_tail(&new->link_entry, &new->link->links);
+
+	devfs_mknod(new);
 
 	return 0;
 }

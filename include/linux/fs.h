@@ -149,6 +149,8 @@ struct inode {
 
 	char			*i_link;
 
+	const char		*cdevname;
+
 	void			*i_private; /* fs or device private pointer */
 };
 
@@ -429,6 +431,16 @@ void ihold(struct inode *inode);
 void inc_nlink(struct inode *inode);
 void clear_nlink(struct inode *inode);
 void set_nlink(struct inode *inode, unsigned int nlink);
+#ifdef CONFIG_FS_DEVFS
+void init_special_inode(struct inode *inode, umode_t mode, const char *cdevname);
+#else
+static inline void init_special_inode(struct inode *inode, umode_t mode,
+				      const char *cdevname)
+{
+}
+#endif
+
+struct cdev;
 
 struct inode_operations {
 	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
@@ -436,6 +448,7 @@ struct inode_operations {
 	const char *(*get_link) (struct dentry *dentry, struct inode *inode);
 
 	int (*create) (struct inode *,struct dentry *, umode_t);
+	int (*mknod) (struct inode *,struct dentry *, umode_t, const char *name);
 	int (*link) (struct dentry *,struct inode *,struct dentry *);
 	int (*unlink) (struct inode *,struct dentry *);
 	int (*symlink) (struct inode *,struct dentry *,const char *);

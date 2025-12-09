@@ -832,6 +832,8 @@ static int dentry_delete_subtree(struct super_block *sb, struct dentry *parent)
 
 static void destroy_inode(struct inode *inode)
 {
+	free_const(inode->cdevname);
+
 	if (inode->i_sb->s_op->destroy_inode)
 		inode->i_sb->s_op->destroy_inode(inode);
 	else
@@ -2778,6 +2780,39 @@ out1:
 	return errno_set(error);
 }
 EXPORT_SYMBOL(openat);
+
+static int vfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode,
+		     const char *cdevname)
+{
+	int error;
+
+	if (!dir->i_op->mknod)
+		return -EPERM;
+
+	error = dir->i_op->mknod(dir, dentry, mode, cdevname);
+
+	return error;
+}
+
+int mknodat(int dirfd, const char *pathname, mode_t mode, const char *devname)
+{
+	struct dentry *dentry;
+	struct path path;
+	int error;
+
+	dentry = filename_create(dirfd, getname(pathname), &path, 0);
+	if (IS_ERR(dentry)) {
+		error = PTR_ERR(dentry);
+		goto out;
+	}
+
+	error = vfs_mknod(path.dentry->d_inode, dentry, mode, devname);
+
+	dput(dentry);
+	path_put(&path);
+out:
+	return errno_set(error);
+}
 
 int unlinkat(int dirfd, const char *pathname, int flags)
 {

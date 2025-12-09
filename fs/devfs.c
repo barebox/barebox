@@ -103,6 +103,12 @@ static int devfs_open(struct inode *inode, struct file *f)
 	struct devfs_inode *node = container_of(inode, struct devfs_inode, inode);
 	struct cdev *cdev = node->cdev;
 
+	if (inode->cdevname) {
+		cdev = cdev_by_name(inode->cdevname);
+		if (!cdev)
+			return -ENOENT;
+	}
+
 	f->f_size = cdev->flags & DEVFS_IS_CHARACTER_DEV ?
 			FILE_SIZE_STREAM : cdev->size;
 	f->private_data = cdev;
@@ -187,6 +193,13 @@ static const struct file_operations devfs_file_operations = {
 	.discard_range = devfs_discard_range,
 	.memmap = devfs_memmap,
 };
+
+void init_special_inode(struct inode *inode, umode_t mode, const char *cdevname)
+{
+	inode->i_mode = mode;
+	inode->i_fop = &devfs_file_operations;
+	inode->cdevname = xstrdup_const(cdevname);
+}
 
 static int devfs_lookup_revalidate(struct dentry *dentry, unsigned int flags)
 {

@@ -260,6 +260,12 @@ static void mntput(struct vfsmount *mnt)
 	if (!mnt)
 		return;
 
+	if (!mnt->ref) {
+		WARN_ONCE(1, "refcount for mount \"%s\" becomes negative\n",
+			  mnt->mountpoint->name);
+		return;
+	}
+
 	mnt->ref--;
 }
 

@@ -2251,6 +2251,7 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 
 		nd->path.mnt = &f->fsdev->vfsmount;
 		nd->path.dentry = f->f_path.dentry;
+		path_get(&nd->path);
 		follow_mount(&nd->path);
 
 		if (*s == '/')

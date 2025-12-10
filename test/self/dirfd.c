@@ -9,6 +9,7 @@
 #include <linux/bitfield.h>
 #include <unistd.h>
 #include <bselftest.h>
+#include <libfile.h>
 
 BSELFTEST_GLOBALS();
 
@@ -26,7 +27,7 @@ BSELFTEST_GLOBALS();
 
 static void check_statat(const char *at, int dirfd, const char *prefix, unsigned expected)
 {
-	static const char *paths[] = { ".", "..", "zero", "dev" };
+	static const char *paths[] = { ".", "..", "testfile", "dirfdtest" };
 	struct stat s;
 
 	for (int i = 0; i < ARRAY_SIZE(paths); i++) {
@@ -63,9 +64,9 @@ static void check_statat(const char *at, int dirfd, const char *prefix, unsigned
 			    fullpath, at, testpath))
 			goto next;
 
-		ret = strcmp_ptr(fsdev1->path, "/dev");
+		ret = strcmp_ptr(fsdev1->path, "/dirfdtest");
 		if (!expect(ret == 0, FIELD_GET(BIT(0), expected),
-			    "fsdev_of(%s)->path = %s != /dev", fullpath, fsdev1->path))
+			    "fsdev_of(%s)->path = %s != /dirfdtest", fullpath, fsdev1->path))
 			goto next;
 
 next:
@@ -84,9 +85,9 @@ static void do_test_dirfd(const char *at, int dirfd,
 
 	check_statat(at, dirfd, "",             expected1);
 	check_statat(at, dirfd, "./",           expected1);
-	check_statat(at, dirfd, "/dev/",        expected2);
-	check_statat(at, dirfd, "/dev/./",      expected2);
-	check_statat(at, dirfd, "/dev/../dev/", expected2);
+	check_statat(at, dirfd, "/dirfdtest/",        expected2);
+	check_statat(at, dirfd, "/dirfdtest/./",      expected2);
+	check_statat(at, dirfd, "/dirfdtest/../dirfdtest/", expected2);
 	check_statat(at, dirfd, "/",            expected3);
 	check_statat(at, dirfd, "../",          expected4);
 
@@ -97,19 +98,31 @@ static void do_test_dirfd(const char *at, int dirfd,
 
 static void test_dirfd(void)
 {
-	int fd;
+	int fd, ret;
 
 	fd = open("/", O_PATH | O_DIRECTORY);
-	if (expect(fd < 0, false, "open(/, O_PATH | O_DIRECTORY) = %d", fd))
+	if (!expect(fd < 0, false, "open(/, O_PATH | O_DIRECTORY) = %d", fd))
 		close(fd);
+
+	ret = make_directory("/dirfdtest");
+	if (!expect(ret == 0, true, "make_directory(\"/dirfdtest\") = %d", ret))
+		return;
+
+	ret = mount("none", "ramfs", "/dirfdtest", NULL);
+	if (!expect(ret == 0, true, "mount(\"none\", \"ramfs\", \"/dirfdtest\") = %d", ret))
+		goto out;
+
+	ret = write_file("/dirfdtest/testfile", __func__, strlen(__func__));
+	if (!expect(ret == 0, true, "write_file() = %d", ret))
+		goto out;
 
 #define B(dot, dotdot, zero, dev) 0b##dev##zero##dotdot##dot
 	/* We do fiften tests for every configuration
-	 * for dir in ./ /dev / ../ ; do
-	 *	for file in . .. zero dev ; do
+	 * for dir in ./ /dirfdtest / ../ ; do
+	 *	for file in . .. zero dirfdtest ; do
 	 *		test if file exists
 	 *		test if file can be canonicalized
-	 *		test if parent FS is mounted at /dev
+	 *		test if parent FS is mounted at /dirfdtest
 	 *	done
 	 * done
 	 *
@@ -119,11 +132,18 @@ static void test_dirfd(void)
 	do_test_dirfd("AT_FDCWD", AT_FDCWD,
 		      B(110,110,000,111), B(111,110,111,000),
 		      B(110,110,000,111), B(110,110,000,111));
-	do_test_dirfd("/dev", open("/dev", O_PATH | O_DIRECTORY),
+	do_test_dirfd("/dirfdtest", open("/dirfdtest", O_PATH | O_DIRECTORY),
 		      B(111,110,111,000), B(111,110,111,000),
 		      B(110,110,000,111), B(110,110,000,111));
-	do_test_dirfd("/dev O_CHROOT", open("/dev", O_PATH | O_CHROOT),
+	do_test_dirfd("/dirfdtest O_CHROOT", open("/dirfdtest", O_PATH | O_CHROOT),
 		      B(111,111,111,000), B(000,000,000,000),
 		      B(111,111,111,000), B(111,111,111,000));
+
+out:
+	ret = umount("/dirfdtest");
+	expect(ret == 0, true, "umount(\"/dirfdtest\") = %d", ret);
+
+	ret = rmdir("/dirfdtest");
+	expect(ret == 0, true, "rmdir(\"/dirfdtest\") = %d", ret);
 }
 bselftest(core, test_dirfd);

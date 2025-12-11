@@ -92,7 +92,7 @@ static int do_findmnt(int argc, char *argv[])
 				continue;
 
 			backingstore = target->backingstore;
-			backingstore += str_has_prefix(backingstore, "/dev/");
+			backingstore = devpath_to_name(backingstore);
 
 			if (streq_ptr(backingstore, cdev->name)) {
 				print_header(&header_printed);

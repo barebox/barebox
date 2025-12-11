@@ -42,12 +42,11 @@ struct efi_graphics_output_protocol {
 	efi_status_t (EFIAPI *set_mode) (struct efi_graphics_output_protocol *This,
 			uint32_t mode_number);
 	efi_status_t (EFIAPI *blt)(struct efi_graphics_output_protocol *This,
-			void *buffer,
-			unsigned long operation,
-			unsigned long sourcex, unsigned long sourcey,
-			unsigned long destinationx, unsigned long destinationy,
-			unsigned long width, unsigned long height, unsigned
-			long delta);
+			struct efi_pixel_bitmask *buffer,
+			u32 operation,
+			size_t sourcex, size_t sourcey,
+			size_t destinationx, size_t destinationy,
+			size_t width, size_t height, size_t delta);
 	struct efi_graphics_output_protocol_mode *mode;
 };
 

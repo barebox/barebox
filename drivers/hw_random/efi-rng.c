@@ -3,8 +3,10 @@
 #include <driver.h>
 #include <init.h>
 #include <linux/hw_random.h>
-#include <efi.h>
-#include <efi/efi-device.h>
+#include <efi/error.h>
+#include <efi/payload/driver.h>
+#include <efi/protocol/rng.h>
+#include <efi/payload.h>
 
 struct efi_rng_priv {
 	struct efi_rng_protocol *protocol;

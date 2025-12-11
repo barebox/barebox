@@ -2,7 +2,8 @@
 
 #include <linux/ctype.h>
 #include <string.h>
-#include <efi/efi-util.h>
+#include <efi/guid.h>
+#include <efi/variable.h>
 
 static int char_to_nibble(char c)
 {

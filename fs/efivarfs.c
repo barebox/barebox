@@ -24,13 +24,14 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 #include <fcntl.h>
-#include <efi.h>
-#include <efi/efi-mode.h>
 #include <wchar.h>
 #include <linux/err.h>
 #include <linux/ctype.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/services.h>
+#include <efi/mode.h>
+#include <efi/variable.h>
+#include <efi/error.h>
+#include <efi/guid.h>
 
 struct efivarfs_inode {
 	s16 *name;

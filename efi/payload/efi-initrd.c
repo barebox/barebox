@@ -9,10 +9,12 @@
 #include <driver.h>
 #include <init.h>
 #include <linux/hw_random.h>
-#include <efi.h>
-#include <efi/efi-device.h>
-#include <efi/device-path.h>
-#include <efi/efi-payload.h>
+#include <efi/devicepath.h>
+#include <efi/protocol/file.h>
+#include <efi/initrd.h>
+#include <efi/guid.h>
+#include <efi/payload.h>
+#include <efi/error.h>
 
 static efi_status_t EFIAPI efi_initrd_load_file2(
 	struct efi_load_file_protocol *this, struct efi_device_path *file_path,

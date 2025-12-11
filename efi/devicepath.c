@@ -2,13 +2,15 @@
 
 #include <common.h>
 #include <linux/compiler.h>
-#include <efi.h>
-#include <efi/efi-util.h>
 #include <malloc.h>
 #include <string.h>
 #include <wchar.h>
 #include <linux/overflow.h>
-#include <efi/device-path.h>
+#include <efi/devicepath.h>
+#include <efi/guid.h>
+#include <efi/mode.h>
+#include <efi/error.h>
+#include <efi/services.h>
 
 struct string {
 	char *str;

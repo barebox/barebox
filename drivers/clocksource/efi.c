@@ -6,9 +6,8 @@
 #include <init.h>
 #include <driver.h>
 #include <clock.h>
-#include <efi.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/error.h>
 #include <linux/err.h>
 
 static uint64_t ticks = 1;

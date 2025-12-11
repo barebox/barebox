@@ -15,7 +15,6 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 #include <fcntl.h>
-#include <efi.h>
 #include <wchar.h>
 #include <linux/err.h>
 #include <linux/ctype.h>

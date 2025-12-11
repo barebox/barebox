@@ -18,7 +18,6 @@
 #include <init.h>
 #include <driver.h>
 #include <io.h>
-#include <efi.h>
 #include <malloc.h>
 #include <string.h>
 #include <linux/err.h>
@@ -29,8 +28,10 @@
 #include <binfmt.h>
 #include <wchar.h>
 #include <image-fit.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/payload/driver.h>
+#include <efi/error.h>
+#include <efi/initrd.h>
 
 #include "image.h"
 

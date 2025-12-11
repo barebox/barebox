@@ -21,7 +21,7 @@
 #include <kallsyms.h>
 #include <wchar.h>
 #include <of.h>
-#include <efi.h>
+#include <efi/devicepath.h>
 
 #include <common.h>
 #include <pbl.h>

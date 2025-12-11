@@ -5,9 +5,9 @@
 
 #include <common.h>
 #include <init.h>
-#include <efi.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-init.h>
+#include <efi/payload.h>
+#include <efi/error.h>
+#include <efi/payload/init.h>
 #include <memory.h>
 #include <linux/sizes.h>
 

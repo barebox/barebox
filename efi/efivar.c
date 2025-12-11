@@ -7,11 +7,10 @@
 
 #define pr_fmt(fmt) "efi-var: " fmt
 
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 #include <efi/variable.h>
-#include <efi.h>
-#include <efi/efi-util.h>
-#include <efi/variable.h>
+#include <efi/services.h>
+#include <efi/error.h>
 #include <wchar.h>
 #include <xfuncs.h>
 #include <stdio.h>

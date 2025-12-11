@@ -7,10 +7,12 @@
 
 #include <common.h>
 #include <command.h>
-#include <efi.h>
 #include <linux/uuid.h>
-#include <efi/efi-mode.h>
-#include <efi/efi-device.h>
+#include <efi/mode.h>
+#include <efi/payload.h>
+#include <efi/error.h>
+#include <efi/devicepath.h>
+#include <efi/payload/driver.h>
 
 static void efi_devpath(struct efi_boot_services *bs,
 			efi_handle_t handle,

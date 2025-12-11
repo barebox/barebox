@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef __EFI_EFI_DEVICE_H
-#define __EFI_EFI_DEVICE_H
+#ifndef __EFI_PAYLOAD_DRIVER_H
+#define __EFI_PAYLOAD_DRIVER_H
 
 #include <efi/types.h>
-#include <efi/efi-util.h>
+#include <efi/guid.h>
 #include <driver.h>
-#include <efi/efi-init.h>
+#include <efi/payload/init.h>
 
 struct efi_device {
 	struct device dev;
@@ -60,13 +60,4 @@ static inline bool efi_device_has_guid(struct efi_device *efidev, efi_guid_t gui
 	return false;
 }
 
-enum efi_locate_search_type;
-
-int __efi_locate_handle(struct efi_boot_services *bs,
-		enum efi_locate_search_type search_type,
-		efi_guid_t *protocol,
-		void *search_key,
-		size_t *no_handles,
-		efi_handle_t **buffer);
-
-#endif /* __EFI_EFI_DEVICE_H */
+#endif /* __EFI_PAYLOAD_DRIVER_H */

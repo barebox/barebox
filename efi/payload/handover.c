@@ -17,7 +17,6 @@
 #include <init.h>
 #include <driver.h>
 #include <io.h>
-#include <efi.h>
 #include <malloc.h>
 #include <string.h>
 #include <linux/err.h>
@@ -27,8 +26,9 @@
 #include <libfile.h>
 #include <binfmt.h>
 #include <wchar.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/payload/init.h>
+#include <efi/guid.h>
 #include <efi/variable.h>
 
 #include "image.h"

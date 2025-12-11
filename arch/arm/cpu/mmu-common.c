@@ -14,7 +14,7 @@
 #include <zero_page.h>
 #include <range.h>
 #include "mmu-common.h"
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 
 const char *map_type_tostr(maptype_t map_type)
 {

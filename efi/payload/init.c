@@ -25,7 +25,6 @@
 #include <driver.h>
 #include <platform_data/serial-ns16550.h>
 #include <io.h>
-#include <efi.h>
 #include <malloc.h>
 #include <string.h>
 #include <linux/err.h>
@@ -34,8 +33,10 @@
 #include <binfmt.h>
 #include <wchar.h>
 #include <envfs.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/payload/driver.h>
+#include <efi/devicepath.h>
+#include <efi/error.h>
 #include <efi/variable.h>
 #include <libfile.h>
 #include <state.h>

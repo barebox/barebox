@@ -11,7 +11,7 @@
 #include <init.h>
 #include <asm/system.h>
 #include <asm/esr.h>
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 
 /* Avoid missing prototype warning, called from assembly */
 void do_bad_sync (struct pt_regs *pt_regs);

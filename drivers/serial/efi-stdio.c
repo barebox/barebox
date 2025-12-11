@@ -10,13 +10,13 @@
 #include <malloc.h>
 #include <console.h>
 #include <xfuncs.h>
-#include <efi.h>
 #include <readkey.h>
 #include <linux/ctype.h>
-#include <efi/efi-payload.h>
+#include <efi/payload.h>
 #include <kfifo.h>
-#include <efi/efi-device.h>
-#include <efi/efi-stdio.h>
+#include <efi/payload/driver.h>
+#include <efi/protocol/text.h>
+#include <efi/error.h>
 
 struct efi_console_priv {
 	struct efi_simple_text_output_protocol *out;

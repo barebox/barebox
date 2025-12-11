@@ -40,7 +40,7 @@
 #include <watchdog.h>
 #include <glob.h>
 #include <net.h>
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 #include <bselftest.h>
 #include <pbl/handoff-data.h>
 #include <libfile.h>

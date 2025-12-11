@@ -15,11 +15,11 @@
 #include <linux/sizes.h>
 #include <wchar.h>
 #include <init.h>
-#include <efi.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/error.h>
+#include <efi/payload/driver.h>
+#include <efi/devicepath.h>
 #include <efi/variable.h>
-#include <efi/device-path.h>
 #include <linux/err.h>
 
 static int efi_locate_handle(enum efi_locate_search_type search_type,

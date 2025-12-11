@@ -6,8 +6,10 @@
 
 #include <linux/kernel.h>
 #include <linux/sizes.h>
-#include <efi.h>
-#include <efi/efi-payload.h>
+#include <efi/payload.h>
+#include <efi/error.h>
+#include <efi/guid.h>
+#include <efi/protocol/text.h>
 #include <memory.h>
 #include <common.h>
 

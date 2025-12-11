@@ -65,7 +65,7 @@ struct efi_boot_services {
 #define EFI_TPL_NOTIFY		16
 #define EFI_TPL_HIGH_LEVEL	31
 	efi_status_t(EFIAPI *create_event)(u32 type , unsigned long tpl,
-			void (*fn) (struct efi_event *event, void *ctx),
+			void (EFIAPI *fn) (struct efi_event *event, void *ctx),
 			void *ctx, struct efi_event **event);
 	efi_status_t(EFIAPI *set_timer)(struct efi_event *event, enum efi_timer_delay type, uint64_t time);
 	efi_status_t(EFIAPI *wait_for_event)(size_t number_of_events, struct efi_event **event,
@@ -174,7 +174,7 @@ struct efi_runtime_services {
 				       size_t descriptor_size,
 				       uint32_t descriptor_version,
 				       struct efi_memory_desc *virtmap);
-	efi_status_t (*convert_pointer)(unsigned long dbg, void **address);
+	efi_status_t (EFIAPI *convert_pointer)(unsigned long dbg, void **address);
 	efi_status_t (EFIAPI *get_variable)(efi_char16_t *variable_name, const efi_guid_t *vendor,
 			u32 *Attributes, size_t *data_size, void *data);
 	efi_status_t (EFIAPI *get_next_variable)(size_t *variable_name_size,

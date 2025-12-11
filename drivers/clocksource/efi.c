@@ -18,7 +18,7 @@ static uint64_t efi_cs_read(void)
 	return ticks;
 }
 
-static void efi_cs_inc(struct efi_event *event, void *ctx)
+static void EFIAPI efi_cs_inc(struct efi_event *event, void *ctx)
 {
 	ticks++;
 }

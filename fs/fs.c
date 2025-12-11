@@ -2454,6 +2454,31 @@ struct fs_device *get_fsdevice_by_path(int dirfd, const char *pathname)
 	return fsdev;
 }
 
+struct fs_device *resolve_fsdevice_path(int dirfd, const char *pathname, char **filepath)
+{
+	struct fs_device *fsdev;
+	char *res = NULL;
+	struct path path;
+	int ret;
+
+	fsdev = get_fsdevice_by_path(dirfd, pathname);
+	if (!fsdev)
+		return NULL;
+
+	ret = filename_lookup(dirfd, getname(pathname), LOOKUP_FOLLOW, &path);
+	if (ret)
+		goto out;
+
+	res = dpath(path.dentry, fsdev->vfsmount.mnt_root);
+	if (res)
+		*filepath = res;
+
+	path_put(&path);
+out:
+	errno_set(ret);
+	return res ? fsdev : NULL;
+}
+
 static int vfs_rmdir(struct inode *dir, struct dentry *dentry)
 {
 	int error;

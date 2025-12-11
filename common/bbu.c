@@ -43,27 +43,19 @@ void bbu_append_handlers_to_file_list(struct file_list *files)
 	struct bbu_handler *handler;
 
 	list_for_each_entry(handler, &bbu_image_handlers, list) {
-		const char *cdevname, *devpath;
-		char *buf = NULL;
+		const char *devicefile;
 		struct stat s;
 
-		devpath = handler->devicefile;
+		devicefile = handler->devicefile;
 
-		if (strstarts(devpath, "/dev/")) {
-			cdevname = devpath_to_name(devpath);
-			device_detect_by_name(cdevname);
+		device_detect_by_name(devpath_to_name(devicefile));
 
-			devpath = buf = basprintf("/dev/%s", cdevname);
-		}
-
-		if (stat(devpath, &s) == 0) {
-			append_bbu_entry(handler->name, devpath, files);
+		if (stat(devicefile, &s) == 0) {
+			append_bbu_entry(handler->name, devicefile, files);
 		} else {
 			pr_info("Skipping handler bbu-%s: %s unavailable\n",
-				handler->name, devpath);
+				handler->name, devicefile);
 		}
-
-		free(buf);
 	}
 }
 

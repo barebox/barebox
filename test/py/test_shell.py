@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 from .helper import skip_disabled
+import json
 
 
 def test_barebox_true(barebox, barebox_config):
@@ -39,3 +40,43 @@ def test_barebox_no_err(barebox, barebox_config):
     # TODO extend by err once all qemu platforms conform
     stdout, _, _ = barebox.run('dmesg -l crit,alert,emerg')
     assert stdout == []
+
+
+def count_dicts_in_command_output(barebox, cmd):
+    def count_dicts(obj):
+        count = 0
+        if isinstance(obj, dict):
+            count += 1  # count this dict itself
+            for value in obj.values():
+                count += count_dicts(value)
+        elif isinstance(obj, list):
+            for item in obj:
+                count += count_dicts(item)
+        return count
+
+    stdout = "\n".join(barebox.run_check(cmd))
+    return count_dicts(json.loads(stdout))
+
+
+def test_cmd_iomem(barebox, barebox_config):
+    skip_disabled(barebox_config, "CONFIG_CMD_IOMEM")
+
+    regions = count_dicts_in_command_output(barebox, 'iomem -j')
+    assert regions > 0
+
+    assert count_dicts_in_command_output(barebox, 'iomem -jv') == regions
+    if regions > 1:
+        assert count_dicts_in_command_output(barebox, 'iomem -jg') > regions
+        assert count_dicts_in_command_output(barebox, 'iomem -vjg') > regions
+    else:
+        assert count_dicts_in_command_output(barebox, 'iomem -jg') >= regions
+        assert count_dicts_in_command_output(barebox, 'iomem -vjg') >= regions
+
+
+def test_cmd_clk(barebox, barebox_config):
+    skip_disabled(barebox_config, "CONFIG_CMD_CLK")
+
+    regions = count_dicts_in_command_output(barebox, 'clk_dump -j')
+    assert regions >= 0
+
+    assert count_dicts_in_command_output(barebox, 'clk_dump -vj') == regions

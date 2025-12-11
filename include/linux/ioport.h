@@ -241,5 +241,23 @@ struct resource *resource_iter_last(struct resource *current, struct resource *g
 struct resource *resource_iter_prev(struct resource *current, struct resource *gap);
 struct resource *resource_iter_next(struct resource *current, struct resource *gap);
 
+/**
+ * for_each_resource_region - Iterate over child resources and gaps between them
+ * @parent: parent resource
+ * @region: pointer to child resource or gap
+ */
+#define for_each_resource_region(parent, region) \
+	for (struct resource gap, *region = resource_iter_first((parent), &gap); \
+	     region; region = resource_iter_next(region, &gap))
+
+/**
+ * for_each_resource_region_reverse - Reverse iterate over child resources and gaps between them
+ * @parent: parent resource
+ * @region: pointer to child resource or gap
+ */
+#define for_each_resource_region_reverse(parent, region) \
+	for (struct resource gap, *region = resource_iter_last((parent), &gap); \
+	     region; region = resource_iter_prev(region, &gap))
+
 #endif /* __ASSEMBLY__ */
 #endif	/* _LINUX_IOPORT_H */

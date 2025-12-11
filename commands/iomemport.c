@@ -12,6 +12,7 @@
 #define	FLAG_VERBOSE		BIT(0)
 #define	FLAG_IOPORT		BIT(1)
 #define	FLAG_JSON		BIT(2)
+#define	FLAG_GAPS		BIT(3)
 
 static inline bool json_puts(const char *str, int flags)
 {
@@ -26,11 +27,13 @@ static inline bool json_puts(const char *str, int flags)
 static void __print_resources(struct resource *res, int indent,
 			      ulong *addr, unsigned flags)
 {
-	const char *size_str;
+	const char *size_str, *name;
 	char buf[64];
-	struct resource *r;
+	struct resource *gap, _gap;
 	resource_size_t size = resource_size(res);
 	int i;
+
+	gap = flags & FLAG_GAPS ? &_gap : NULL;
 
 	if (addr && !region_overlap_end_inclusive(*addr, *addr, res->start, res->end))
 		return;
@@ -41,11 +44,14 @@ static void __print_resources(struct resource *res, int indent,
 	for (i = 0; i < indent; i++)
 		printf("  ");
 
+	name = res->name ?: "";
+
 	if (flags & FLAG_JSON) {
 		printf("{ \"name\": \"%s\", \"start\": \"%pa\", "
-		       "\"end\": \"%pa\", \"reserved\": %s",
-		       res->name, &res->start, &res->end,
-		       is_reserved_resource(res) ? "true" : "false");
+		       "\"end\": \"%pa\", \"reserved\": %s%s",
+		       name, &res->start, &res->end,
+		       is_reserved_resource(res) ? "true" : "false",
+		       region_is_gap(res) ? ", \"free\": true" : "");
 	} else {
 		if (flags & (FLAG_VERBOSE | FLAG_IOPORT)) {
 			snprintf(buf, sizeof(buf), "%pa", &size);
@@ -54,19 +60,24 @@ static void __print_resources(struct resource *res, int indent,
 			size_str = size_human_readable(size);
 		}
 
-		printf("%pa - %pa (size %9s) %s%s\n",
-		       &res->start, &res->end, size_str,
-		       is_reserved_resource(res) ? "[R] " : "",
-		       res->name);
+		printf("%pa - %pa (%s %9s) %s%s\n",
+		       &res->start, &res->end, region_is_gap(res) ? "free" : "size",
+		       size_str, is_reserved_resource(res) ? "[R] " : "", name);
 	}
 
 	if (!list_empty(&res->children)) {
+		struct resource *r = resource_iter_first(res, gap);
+
 		json_puts(", \"children\": [\n", flags);
-		list_for_each_entry(r, &res->children, sibling) {
+
+		while (r) {
 			__print_resources(r, indent + 1, addr, flags);
-			if (r->sibling.next != &res->children)
+
+			r = resource_iter_next(r, gap);
+			if (r)
 				json_puts(",\n", flags);
 		}
+
 		json_puts("]", flags);
 	}
 
@@ -85,13 +96,16 @@ static int do_iomem(int argc, char *argv[])
 	unsigned flags = 0;
 	int opt, ret;
 
-	while((opt = getopt(argc, argv, "vj")) > 0) {
+	while((opt = getopt(argc, argv, "vjg")) > 0) {
 		switch(opt) {
 		case 'v':
 			flags |= FLAG_VERBOSE;
 			break;
 		case 'j':
 			flags |= FLAG_JSON;
+			break;
+		case 'g':
+			flags |= FLAG_GAPS;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -124,12 +138,13 @@ BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-v",  "verbose output")
 BAREBOX_CMD_HELP_OPT ("-j",  "JSON output")
+BAREBOX_CMD_HELP_OPT ("-g",  "include gaps")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(iomem)
 	.cmd		= do_iomem,
 	BAREBOX_CMD_DESC("show IO memory usage")
-	BAREBOX_CMD_OPTS("[-vj] [ADDRESS]")
+	BAREBOX_CMD_OPTS("[-vjg] [ADDRESS]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_iomem_help)
 BAREBOX_CMD_END

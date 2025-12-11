@@ -5,6 +5,7 @@
 
 #include <linux/stddef.h>
 #include <linux/types.h>
+#include <efi/types.h>
 
 struct efi_boot_services;
 struct efi_runtime_services;

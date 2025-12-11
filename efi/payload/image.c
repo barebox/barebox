@@ -27,6 +27,7 @@
 #include <wchar.h>
 #include <efi/efi-payload.h>
 #include <efi/efi-device.h>
+#include <efi/variable.h>
 
 #include "image.h"
 

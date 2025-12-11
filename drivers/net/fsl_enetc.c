@@ -10,10 +10,16 @@
 #include <linux/pci.h>
 #include <linux/io.h>
 #include <linux/mdio.h>
-#include <asm/system.h>
 #include <of_net.h>
 #include <asm/unaligned.h>
 #include <io-64-nonatomic-lo-hi.h>
+
+#ifdef CONFIG_ARM
+#include <asm/system.h>
+#else
+#include <linux/bug.h>
+#define dmb()	BUG()
+#endif
 
 #include "fsl_enetc.h"
 

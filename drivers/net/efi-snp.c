@@ -75,8 +75,6 @@ static void efi_snp_eth_rx(struct eth_device *edev)
 	net_receive(edev, priv->rx_buf, bufsize);
 }
 
-static efi_guid_t snp_guid = EFI_SIMPLE_NETWORK_PROTOCOL_GUID;
-
 static int efi_snp_open_exclusive(struct efi_device *efidev)
 {
 	void *interface;
@@ -86,7 +84,7 @@ static int efi_snp_open_exclusive(struct efi_device *efidev)
 	 * Try to re-open SNP exlusively to close any active MNP protocol instance
 	 * that may compete for packet polling
 	 */
-	efiret = BS->open_protocol(efidev->handle, &snp_guid,
+	efiret = BS->open_protocol(efidev->handle, &efi_snp_guid,
 			&interface, efi_parent_image, NULL, EFI_OPEN_PROTOCOL_EXCLUSIVE);
 	if (EFI_ERROR(efiret)) {
 		dev_err(&efidev->dev, "failed to open exclusively: %s\n", efi_strerror(efiret));
@@ -98,7 +96,7 @@ static int efi_snp_open_exclusive(struct efi_device *efidev)
 
 static void efi_snp_close_exclusive(struct efi_device *efidev)
 {
-	BS->close_protocol(efidev->handle, &snp_guid, efi_parent_image, NULL);
+	BS->close_protocol(efidev->handle, &efi_snp_guid, efi_parent_image, NULL);
 }
 
 static int efi_snp_eth_open(struct eth_device *edev)

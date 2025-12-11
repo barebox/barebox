@@ -46,6 +46,9 @@ const efi_guid_t shim_lock_guid = SHIM_LOCK_GUID;
 const efi_guid_t efi_rt_properties_table_guid = EFI_RT_PROPERTIES_TABLE_GUID;
 const efi_guid_t efi_guid_firmware_management_protocol = EFI_FIRMWARE_MANAGEMENT_PROTOCOL_GUID;
 const efi_guid_t efi_debug_image_info_table_guid = EFI_DEBUG_IMAGE_INFO_TABLE_GUID;
+const efi_guid_t efi_gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+const efi_guid_t efi_snp_guid = EFI_SIMPLE_NETWORK_PROTOCOL_GUID;
+const efi_guid_t efi_text_input_ex_guid = EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL_GUID;
 const efi_guid_t efi_text_input_guid = EFI_SIMPLE_TEXT_IN_PROTOCOL_GUID;
 const efi_guid_t efi_text_output_guid = EFI_SIMPLE_TEXT_OUT_PROTOCOL_GUID;
 

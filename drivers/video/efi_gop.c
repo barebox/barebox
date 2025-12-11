@@ -163,10 +163,9 @@ static int efi_gop_probe(struct efi_device *efidev)
 	struct efi_gop_priv *priv;
 	int ret = 0;
 	efi_status_t efiret;
-	efi_guid_t got_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 	void *protocol;
 
-	efiret = BS->handle_protocol(efidev->handle, &got_guid, &protocol);
+	efiret = BS->handle_protocol(efidev->handle, &efi_gop_guid, &protocol);
 	if (EFI_ERROR(efiret))
 		return  -efi_errno(efiret);
 

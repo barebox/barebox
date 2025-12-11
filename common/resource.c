@@ -169,6 +169,118 @@ struct resource *request_ioport_region(const char *name,
 	return res;
 }
 
+static struct resource *
+resource_iter_gap(struct resource *parent, struct resource *before,
+		  struct resource *gap, struct resource *after)
+{
+	*gap = (struct resource) {};
+
+	gap->attrs = parent->attrs;
+	gap->type = parent->type;
+	gap->flags = IORESOURCE_UNSET | parent->flags;
+	gap->parent = parent;
+	INIT_LIST_HEAD(&gap->children);
+
+	if (before) {
+		gap->start = before->end + 1;
+		gap->sibling.prev = &before->sibling;
+	} else {
+		gap->start = parent->start;
+		gap->sibling.prev = &parent->children;
+	}
+
+	if (after) {
+		gap->end = after->start - 1;
+		gap->sibling.next = &after->sibling;
+	} else {
+		gap->end = parent->end;
+		gap->sibling.next = &parent->children;
+	}
+
+	return gap;
+}
+
+struct resource *
+resource_iter_first(struct resource *parent, struct resource *gap)
+{
+	struct resource *child;
+
+	if (!parent || region_is_gap(parent))
+		return NULL;
+
+	child = list_first_entry_or_null(&parent->children,
+					 struct resource, sibling);
+	if (!gap || (child && parent->start == child->start))
+		return child;
+
+	return resource_iter_gap(parent, NULL, gap, child);
+}
+
+struct resource *
+resource_iter_last(struct resource *parent, struct resource *gap)
+{
+	struct resource *child;
+
+	if (!parent || region_is_gap(parent))
+		return NULL;
+
+	child = list_last_entry_or_null(&parent->children,
+					struct resource, sibling);
+	if (!gap || (child && parent->end == child->end))
+		return child;
+
+	return resource_iter_gap(parent, child, gap, NULL);
+}
+
+struct resource *
+resource_iter_next(struct resource *current, struct resource *gap)
+{
+	struct resource *parent, *cursor, *next = NULL;
+
+	if (!current || !current->parent)
+		return NULL;
+
+	parent = current->parent;
+	if (current->end == parent->end)
+		return NULL;
+
+	cursor = current;
+	list_for_each_entry_continue(cursor, &parent->children, sibling) {
+		next = cursor;
+		break;
+	}
+
+	if (!gap || (next && resource_adjacent(current, next)))
+		return next;
+
+	return resource_iter_gap(parent, current, gap, next);
+}
+
+struct resource *
+resource_iter_prev(struct resource *current,
+		       struct resource *gap)
+{
+	struct resource *parent, *cursor, *prev = NULL;
+
+	if (!current || !current->parent)
+		return NULL;
+
+	parent = current->parent;
+	if (current->start == parent->start)
+		return NULL;
+
+	cursor = current;
+	list_for_each_entry_continue_reverse(cursor, &parent->children, sibling) {
+		prev = cursor;
+		break;
+	}
+
+	if (!gap || (prev && resource_adjacent(prev, current)))
+		return prev;
+
+	return resource_iter_gap(parent, prev, gap, current);
+}
+
 struct resource_entry *resource_list_create_entry(struct resource *res,
 						  size_t extra_size)
 {

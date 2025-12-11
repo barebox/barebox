@@ -234,5 +234,12 @@ static inline bool is_reserved_resource(const struct resource *res)
 	return false;
 }
 
+#define region_is_gap(region) ((region)->flags & IORESOURCE_UNSET)
+
+struct resource *resource_iter_first(struct resource *current, struct resource *gap);
+struct resource *resource_iter_last(struct resource *current, struct resource *gap);
+struct resource *resource_iter_prev(struct resource *current, struct resource *gap);
+struct resource *resource_iter_next(struct resource *current, struct resource *gap);
+
 #endif /* __ASSEMBLY__ */
 #endif	/* _LINUX_IOPORT_H */

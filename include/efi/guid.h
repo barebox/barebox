@@ -14,6 +14,8 @@ efi_guidcmp (efi_guid_t left, efi_guid_t right)
 	return memcmp(&left, &right, sizeof (efi_guid_t));
 }
 
+
+/* ---------- Protocol GUIDs ---------- */
 extern efi_guid_t efi_file_info_id;
 extern efi_guid_t efi_simple_file_system_protocol_guid;
 extern efi_guid_t efi_file_system_info_guid;
@@ -32,37 +34,10 @@ extern efi_guid_t efi_loaded_image_device_path_guid;
 extern const efi_guid_t efi_device_path_to_text_protocol_guid;
 extern const efi_guid_t efi_dt_fixup_protocol_guid;
 extern const efi_guid_t efi_driver_binding_protocol_guid;
-extern const efi_guid_t efi_guid_event_group_exit_boot_services;
-extern const efi_guid_t efi_guid_event_group_virtual_address_change;
-extern const efi_guid_t efi_guid_event_group_memory_map_change;
-extern const efi_guid_t efi_guid_event_group_ready_to_boot;
-extern const efi_guid_t efi_guid_event_group_reset_system;
 extern const efi_guid_t efi_load_file_protocol_guid;
 extern const efi_guid_t efi_load_file2_protocol_guid;
 extern const efi_guid_t efi_device_path_utilities_protocol_guid;
 extern const efi_guid_t efi_linux_initrd_media_guid;
-
-
-/* EFI event group GUID definitions */
-#define EFI_EVENT_GROUP_EXIT_BOOT_SERVICES \
-	EFI_GUID(0x27abf055, 0xb1b8, 0x4c26, 0x80, 0x48, \
-		 0x74, 0x8f, 0x37, 0xba, 0xa2, 0xdf)
-
-#define EFI_EVENT_GROUP_VIRTUAL_ADDRESS_CHANGE \
-	EFI_GUID(0x13fa7698, 0xc831, 0x49c7, 0x87, 0xea, \
-		 0x8f, 0x43, 0xfc, 0xc2, 0x51, 0x96)
-
-#define EFI_EVENT_GROUP_MEMORY_MAP_CHANGE \
-	EFI_GUID(0x78bee926, 0x692f, 0x48fd, 0x9e, 0xdb, \
-		 0x01, 0x42, 0x2e, 0xf0, 0xd7, 0xab)
-
-#define EFI_EVENT_GROUP_READY_TO_BOOT \
-	EFI_GUID(0x7ce88fb3, 0x4bd7, 0x4679, 0x87, 0xa8, \
-		 0xa8, 0xd8, 0xde, 0xe5, 0x0d, 0x2b)
-
-#define EFI_EVENT_GROUP_RESET_SYSTEM \
-	EFI_GUID(0x62da6a56, 0x13fb, 0x485a, 0xa8, 0xda, \
-		 0xa3, 0xdd, 0x79, 0x12, 0xcb, 0x6b)
 
 /*
  *  EFI Configuration Table and GUID definitions
@@ -299,5 +274,31 @@ extern const efi_guid_t efi_linux_initrd_media_guid;
 
 #define EFI_RNG_ALGORITHM_RAW \
     EFI_GUID(0xe43176d7, 0xb6e8, 0x4827, 0xb7, 0x84, 0x7f, 0xfd, 0xc4, 0xb6, 0x85, 0x61)
+
+
+/* ---------- Event  GUIDs ---------- */
+extern const efi_guid_t efi_guid_event_group_exit_boot_services;
+extern const efi_guid_t efi_guid_event_group_virtual_address_change;
+extern const efi_guid_t efi_guid_event_group_memory_map_change;
+extern const efi_guid_t efi_guid_event_group_ready_to_boot;
+extern const efi_guid_t efi_guid_event_group_reset_system;
+
+
+/* EFI event group GUID definitions */
+#define EFI_EVENT_GROUP_EXIT_BOOT_SERVICES \
+    EFI_GUID(0x27abf055, 0xb1b8, 0x4c26, 0x80, 0x48, 0x74, 0x8f, 0x37, 0xba, 0xa2, 0xdf)
+
+#define EFI_EVENT_GROUP_VIRTUAL_ADDRESS_CHANGE \
+    EFI_GUID(0x13fa7698, 0xc831, 0x49c7, 0x87, 0xea, 0x8f, 0x43, 0xfc, 0xc2, 0x51, 0x96)
+
+#define EFI_EVENT_GROUP_MEMORY_MAP_CHANGE \
+    EFI_GUID(0x78bee926, 0x692f, 0x48fd, 0x9e, 0xdb, 0x01, 0x42, 0x2e, 0xf0, 0xd7, 0xab)
+
+#define EFI_EVENT_GROUP_READY_TO_BOOT \
+    EFI_GUID(0x7ce88fb3, 0x4bd7, 0x4679, 0x87, 0xa8, 0xa8, 0xd8, 0xde, 0xe5, 0x0d, 0x2b)
+
+#define EFI_EVENT_GROUP_RESET_SYSTEM \
+    EFI_GUID(0x62da6a56, 0x13fb, 0x485a, 0xa8, 0xda, 0xa3, 0xdd, 0x79, 0x12, 0xcb, 0x6b)
+
 
 #endif

@@ -272,7 +272,7 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	if (!data->os_file)
 		return -EINVAL;
 
-	data->os_res = file_to_sdram(data->os_file, load_address);
+	data->os_res = file_to_sdram(data->os_file, load_address, MEMTYPE_LOADER_CODE);
 	if (!data->os_res)
 		return -ENOMEM;
 
@@ -397,7 +397,7 @@ initrd_file:
 		goto done;
 	}
 
-	data->initrd_res = file_to_sdram(data->initrd_file, load_address);
+	data->initrd_res = file_to_sdram(data->initrd_file, load_address, MEMTYPE_LOADER_DATA);
 	if (!data->initrd_res)
 		return ERR_PTR(-ENOMEM);
 

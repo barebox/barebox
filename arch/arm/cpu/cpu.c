@@ -88,12 +88,12 @@ static void arch_shutdown(void)
 	if (efi_is_payload())
 		return;
 
-#ifdef CONFIG_MMU
+	disable_interrupts();
+
 	mmu_disable();
-#endif
+
 	icache_invalidate();
 
-	disable_interrupts();
 }
 archshutdown_exitcall(arch_shutdown);
 

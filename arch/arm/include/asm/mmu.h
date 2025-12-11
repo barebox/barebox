@@ -10,7 +10,12 @@
 
 struct arm_memory;
 
+#ifdef CONFIG_MMU
 void mmu_disable(void);
+#else
+static inline void mmu_disable(void) {}
+#endif
+
 static inline void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
 		unsigned int flags)
 {

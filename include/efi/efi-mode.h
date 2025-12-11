@@ -7,7 +7,9 @@
 #include <linux/types.h>
 
 struct efi_boot_services;
+struct efi_runtime_services;
 extern struct efi_boot_services *BS;
+extern struct efi_runtime_services *RT;
 
 static inline bool efi_is_payload(void)
 {
@@ -23,6 +25,14 @@ static inline struct efi_boot_services *efi_get_boot_services(void)
 {
 	if (efi_is_payload())
 		return BS;
+
+	return NULL;
+}
+
+static inline struct efi_runtime_services *efi_get_runtime_services(void)
+{
+	if (efi_is_payload())
+		return RT;
 
 	return NULL;
 }

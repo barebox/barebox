@@ -62,9 +62,9 @@ static int mount_root(void)
 	mkdir("/mnt", 0);
 	mount("none", "devfs", "/dev", NULL);
 
-	if (IS_ENABLED(CONFIG_FS_EFIVARFS) && efi_is_payload()) {
+	if (IS_ENABLED(CONFIG_FS_EFIVARFS)) {
 		mkdir("/efivars", 0);
-		mount("none", "efivarfs", "/efivars", NULL);
+		automount_add("/efivars", "mount -t efivarfs none /efivars");
 	}
 
 	if (IS_ENABLED(CONFIG_FS_PSTORE)) {

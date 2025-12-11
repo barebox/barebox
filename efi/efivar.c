@@ -15,6 +15,7 @@
 #include <wchar.h>
 #include <xfuncs.h>
 #include <stdio.h>
+#include <errno.h>
 
 void *efi_get_variable(char *name, efi_guid_t *vendor, int *var_size)
 {

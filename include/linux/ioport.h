@@ -209,6 +209,11 @@ int __merge_regions(const char *name,
 
 int release_region(struct resource *res);
 
+int release_region_range(struct resource *parent,
+			 resource_size_t start, resource_size_t size,
+			 int (*should_free)(struct resource *res, void *data),
+			 void *data);
+
 extern struct resource iomem_resource;
 extern struct resource ioport_resource;
 

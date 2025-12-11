@@ -107,6 +107,140 @@ int release_region(struct resource *res)
 	return 0;
 }
 
+static int yes_free(struct resource *res, void *data)
+{
+	return 1;
+}
+
+/*
+ * release a region previously requested with request_*_region
+ */
+int release_region_range(struct resource *parent,
+			 resource_size_t start, resource_size_t size,
+			 int (*should_free)(struct resource *res, void *data),
+			 void *data)
+{
+	resource_size_t end = start + size - 1;
+	struct resource *r, *tmp;
+	int ret, err = 0;
+
+	if (end < parent->start || start > parent->end)
+		return 0;
+
+	if (!should_free)
+		should_free = yes_free;
+
+	list_for_each_entry_safe(r, tmp, &parent->children, sibling) {
+		if (end < r->start || start > r->end)
+			continue;
+
+		/*
+		 * CASE 1: fully covered
+		 *
+		 *   r:    |----------------|
+		 *   cut: |xxxxxxxxxxxxxxxxxxx|
+		 *
+		 *   remove fully
+		 */
+		if (start <= r->start && r->end <= end) {
+			ret = should_free(r, data);
+			if (ret < 0)
+				return ret;
+			if (ret == 0)
+				continue;
+
+			ret = release_region(r);
+			if (ret)
+				err = ret;
+			continue;
+		}
+
+		/*
+		 * CASE 2: trim head
+		 *
+		 *   r:    |----------------|
+		 *   cut: |xxxxx|
+		 *   new pieces:
+		 *       left  = removed
+		 *       right = end+1   .. r.end
+		 */
+		if (start <= r->start && r->end > end) {
+			ret = should_free(r, data);
+			if (ret < 0)
+				return ret;
+			if (ret == 0)
+				continue;
+
+			if (list_empty(&r->children))
+				r->start = end + 1;
+			else
+				err = -EBUSY;
+			continue;
+		}
+
+		/*
+		 * CASE 3: trim tail
+		 *
+		 *   r:    |----------------|
+		 *   cut:                |xxxxx|
+		 *   new pieces:
+		 *       left  = r.start .. start-1
+		 *       right = removed
+		 */
+		if (start > r->start && r->end <= end) {
+			ret = should_free(r, data);
+			if (ret < 0)
+				return ret;
+			if (ret == 0)
+				continue;
+
+			if (list_empty(&r->children))
+				r->end = start - 1;
+			else
+				err = -EBUSY;
+			continue;
+		}
+
+		/*
+		 * CASE 4: split
+		 *
+		 *   r:    |----------------|
+		 *   cut:       |xxxxx|
+		 *   new pieces:
+		 *       left  = r.start .. start-1
+		 *       right = end+1   .. r.end
+		 */
+		if (start > r->start && r->end > end) {
+			struct resource *right;
+
+			ret = should_free(r, data);
+			if (ret < 0)
+				return ret;
+			if (ret == 0)
+				continue;
+
+			if (!list_empty(&r->children)) {
+				err = -EBUSY;
+				continue;
+			}
+
+			right = xzalloc(sizeof(*right));
+			init_resource(right, r->name);
+
+			right->start = end + 1;
+			right->end = r->end;
+			right->parent = parent;
+			right->flags = r->flags;
+
+			r->end = start - 1;
+
+			list_add(&right->sibling, &r->sibling);
+			continue;
+		}
+	}
+
+	return WARN_ON(err);
+}
 
 /*
  * merge two adjacent sibling regions.

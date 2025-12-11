@@ -25,9 +25,11 @@ extern efi_guid_t efi_loaded_image_protocol_guid;
 extern efi_guid_t efi_unknown_device_guid;
 extern efi_guid_t efi_null_guid;
 extern efi_guid_t efi_global_variable_guid;
+extern const efi_guid_t efi_guid_image_security_database;
 extern efi_guid_t efi_block_io_protocol_guid;
 extern efi_guid_t efi_rng_protocol_guid;
 extern efi_guid_t efi_barebox_vendor_guid;
+extern efi_guid_t efi_file_store_vars_guid;
 extern efi_guid_t efi_systemd_vendor_guid;
 extern efi_guid_t efi_fdt_guid;
 extern efi_guid_t efi_loaded_image_device_path_guid;
@@ -38,6 +40,19 @@ extern const efi_guid_t efi_load_file_protocol_guid;
 extern const efi_guid_t efi_load_file2_protocol_guid;
 extern const efi_guid_t efi_device_path_utilities_protocol_guid;
 extern const efi_guid_t efi_linux_initrd_media_guid;
+extern const efi_guid_t efi_smbios_guid;
+extern const efi_guid_t efi_smbios3_guid;
+extern const efi_guid_t efi_text_input_guid;
+extern const efi_guid_t efi_text_output_guid;
+extern const efi_guid_t efi_guid_unicode_collation_protocol2;
+extern const efi_guid_t efi_guid_hii_config_routing_protocol;
+extern const efi_guid_t efi_guid_hii_config_access_protocol;
+extern const efi_guid_t efi_guid_hii_database_protocol;
+extern const efi_guid_t efi_guid_hii_string_protocol;
+extern const efi_guid_t shim_lock_guid;
+extern const efi_guid_t efi_rt_properties_table_guid;
+extern const efi_guid_t efi_guid_firmware_management_protocol;
+extern const efi_guid_t efi_debug_image_info_table_guid;
 
 /*
  *  EFI Configuration Table and GUID definitions
@@ -54,8 +69,11 @@ extern const efi_guid_t efi_linux_initrd_media_guid;
 #define EFI_ACPI_20_TABLE_GUID    \
     EFI_GUID(  0x8868e871, 0xe4f1, 0x11d3, 0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81 )
 
-#define EFI_SMBIOS_TABLE_GUID    \
-    EFI_GUID(  0xeb9d2d31, 0x2d88, 0x11d3, 0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d )
+#define EFI_SMBIOS_TABLE_GUID \
+    EFI_GUID(0xeb9d2d31, 0x2d88, 0x11d3, 0x9a, 0x16, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d )
+
+#define EFI_SMBIOS3_TABLE_GUID \
+    EFI_GUID(0xf2fd1544, 0x9794, 0x4a2c, 0x99, 0x2e, 0xe5, 0xbb, 0xcf, 0x20, 0xe3, 0x94 )
 
 #define EFI_SAL_SYSTEM_TABLE_GUID    \
     EFI_GUID(  0xeb9d2d32, 0x2d88, 0x11d3, 0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d )
@@ -69,8 +87,14 @@ extern const efi_guid_t efi_linux_initrd_media_guid;
 #define EFI_GLOBAL_VARIABLE_GUID \
     EFI_GUID(  0x8be4df61, 0x93ca, 0x11d2, 0xaa, 0x0d, 0x00, 0xe0, 0x98, 0x03, 0x2b, 0x8c )
 
+#define EFI_IMAGE_SECURITY_DATABASE_GUID \
+    EFI_GUID(  0xd719b2cb, 0x3d3a, 0x4596, 0xa3, 0xbc, 0xda, 0xd0, 0x0e, 0x67, 0x65, 0x6f )
+
 #define EFI_UV_SYSTEM_TABLE_GUID \
     EFI_GUID(  0x3b13a7d4, 0x633e, 0x11dd, 0x93, 0xec, 0xda, 0x25, 0x56, 0xd8, 0x95, 0x93 )
+
+#define EFI_RT_PROPERTIES_TABLE_GUID \
+    EFI_GUID(  0xeb66918a, 0x7eef, 0x402a, 0x84, 0x2e, 0x93, 0x1d, 0x21, 0xc3, 0x8a, 0xe9 )
 
 #define EFI_LINUX_EFI_CRASH_GUID \
     EFI_GUID(  0xcfc8fc79, 0xbe2e, 0x4ddc, 0x97, 0xf0, 0x9f, 0x98, 0xbf, 0xe2, 0x98, 0xa0 )
@@ -248,6 +272,9 @@ extern const efi_guid_t efi_linux_initrd_media_guid;
 #define EFI_BAREBOX_VENDOR_GUID \
     EFI_GUID(0x5b91f69c, 0x8b88, 0x4a2b, 0x92, 0x69, 0x5f, 0x1d, 0x80, 0x2b, 0x51, 0x75)
 
+#define EFI_FILE_STORE_VARS_GUID \
+    EFI_GUID(0xb2ac5fc9, 0x92b7, 0x4acd, 0xae, 0xac, 0x11, 0xe8, 0x18, 0xc3, 0x13, 0x0c)
+
 /* for systemd */
 #define EFI_SYSTEMD_VENDOR_GUID \
     EFI_GUID(0x4a67b082, 0x0a4c, 0x41cf, 0xb6, 0xc7, 0x44, 0x0b, 0x29, 0xbb, 0x8c, 0x4f)
@@ -275,6 +302,30 @@ extern const efi_guid_t efi_linux_initrd_media_guid;
 #define EFI_RNG_ALGORITHM_RAW \
     EFI_GUID(0xe43176d7, 0xb6e8, 0x4827, 0xb7, 0x84, 0x7f, 0xfd, 0xc4, 0xb6, 0x85, 0x61)
 
+#define EFI_HII_STRING_PROTOCOL_GUID \
+    EFI_GUID(0x0fd96974, 0x23aa, 0x4cdc, 0xb9, 0xcb, 0x98, 0xd1, 0x77, 0x50, 0x32, 0x2a)
+
+#define EFI_HII_DATABASE_PROTOCOL_GUID \
+    EFI_GUID(0xef9fc172, 0xa1b2, 0x4693, 0xb3, 0x27, 0x6d, 0x32, 0xfc, 0x41, 0x60, 0x42)
+
+#define EFI_HII_CONFIG_ROUTING_PROTOCOL_GUID \
+    EFI_GUID(0x587e72d7, 0xcc50, 0x4f79, 0x82, 0x09, 0xca, 0x29, 0x1f, 0xc1, 0xa1, 0x0f)
+
+#define EFI_HII_CONFIG_ACCESS_PROTOCOL_GUID \
+    EFI_GUID(0x330d4706, 0xf2a0, 0x4e4f, 0xa3, 0x69, 0xb6, 0x6f, 0xa8, 0xd5, 0x43, 0x85)
+
+#define EFI_UNICODE_COLLATION_PROTOCOL2_GUID \
+    EFI_GUID(0xa4c751fc, 0x23ae, 0x4c3e, 0x92, 0xe9, 0x49, 0x64, 0xcf, 0x63, 0xf3, 0x49)
+
+/* GUID used by Shim to store the MOK database */
+#define SHIM_LOCK_GUID \
+    EFI_GUID(0x605dab50, 0xe046, 0x4300, 0xab, 0xb6, 0x3d, 0xd8, 0x10, 0xdd, 0x8b, 0x23)
+
+#define EFI_FIRMWARE_MANAGEMENT_PROTOCOL_GUID \
+    EFI_GUID(0x86c77a67, 0x0b97, 0x4633, 0xa1, 0x87, 0x49, 0x10, 0x4d, 0x06, 0x85, 0xc7)
+
+#define EFI_DEBUG_IMAGE_INFO_TABLE_GUID \
+   EFI_GUID(0x49152e77, 0x1ada, 0x4764, 0xb7, 0xa2, 0x7a, 0xfe, 0xfe, 0xd9, 0x5e, 0x8b)
 
 /* ---------- Event  GUIDs ---------- */
 extern const efi_guid_t efi_guid_event_group_exit_boot_services;
@@ -282,11 +333,16 @@ extern const efi_guid_t efi_guid_event_group_virtual_address_change;
 extern const efi_guid_t efi_guid_event_group_memory_map_change;
 extern const efi_guid_t efi_guid_event_group_ready_to_boot;
 extern const efi_guid_t efi_guid_event_group_reset_system;
+extern const efi_guid_t efi_guid_event_group_before_exit_boot_services;
+extern const efi_guid_t efi_guid_event_group_return_to_efibootmgr;
 
 
 /* EFI event group GUID definitions */
 #define EFI_EVENT_GROUP_EXIT_BOOT_SERVICES \
     EFI_GUID(0x27abf055, 0xb1b8, 0x4c26, 0x80, 0x48, 0x74, 0x8f, 0x37, 0xba, 0xa2, 0xdf)
+
+#define EFI_EVENT_GROUP_BEFORE_EXIT_BOOT_SERVICES \
+    EFI_GUID(0x8be0e274, 0x3970, 0x4b44, 0x80, 0xc5, 0x1a, 0xb9, 0x50, 0x2f, 0x3b, 0xfc)
 
 #define EFI_EVENT_GROUP_VIRTUAL_ADDRESS_CHANGE \
     EFI_GUID(0x13fa7698, 0xc831, 0x49c7, 0x87, 0xea, 0x8f, 0x43, 0xfc, 0xc2, 0x51, 0x96)
@@ -300,5 +356,7 @@ extern const efi_guid_t efi_guid_event_group_reset_system;
 #define EFI_EVENT_GROUP_RESET_SYSTEM \
     EFI_GUID(0x62da6a56, 0x13fb, 0x485a, 0xa8, 0xda, 0xa3, 0xdd, 0x79, 0x12, 0xcb, 0x6b)
 
+#define EFI_EVENT_GROUP_RETURN_TO_EFIBOOTMGR \
+    EFI_GUID(0xb4a40fe6, 0x9149, 0x4f29, 0x94, 0x47, 0x49, 0x38, 0x7a, 0x7f, 0xab, 0x87)
 
 #endif

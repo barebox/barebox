@@ -131,6 +131,8 @@ int bobject_set_param(bobject_t _bobj, const char *name, const char *val)
 int bobject_param_set_generic(bobject_t _bobj, struct param_d *p,
 			  const char *val)
 {
+	if (val == p->value)
+		return 0;
 	free(p->value);
 	if (!val) {
 		p->value = NULL;

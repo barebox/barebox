@@ -30,7 +30,7 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 #define for_each_memory_bank(mem)	list_for_each_entry(mem, &memory_banks, list)
 #define for_each_reserved_region(mem, rsv) \
 	list_for_each_entry(rsv, &(mem)->res->children, sibling) \
-		if (is_reserved_resource(rsv))
+		if (!is_reserved_resource(rsv)) {} else
 
 struct resource *__request_sdram_region(const char *name,
 					resource_size_t start, resource_size_t size);

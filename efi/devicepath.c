@@ -67,6 +67,7 @@ const struct efi_device_path end_instance_device_path = {
 const struct efi_device_path *
 device_path_from_handle(efi_handle_t Handle)
 {
+	struct efi_boot_services *bs = efi_get_boot_services();
 	const efi_guid_t *const protocols[] = {
 		&efi_loaded_image_device_path_guid,
 		&efi_device_path_protocol_guid,
@@ -78,7 +79,7 @@ device_path_from_handle(efi_handle_t Handle)
 	for (proto = protocols; *proto; proto++) {
 		const struct efi_device_path *device_path;
 
-		Status = BS->handle_protocol(Handle, *proto, (void *) &device_path);
+		Status = bs->handle_protocol(Handle, *proto, (void *) &device_path);
 		if (!EFI_ERROR(Status) && device_path)
 			return device_path;
 	}

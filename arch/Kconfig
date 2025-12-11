@@ -101,6 +101,11 @@ config ARCH_HAS_SJLJ
 	help
 	  Architecture has support implemented for setjmp()/longjmp()/initjmp()
 
+config HAVE_EFI_PAYLOAD
+	bool
+
+config HAVE_EFI_STUB
+	bool
 
 config PHYS_ADDR_T_64BIT
 	bool

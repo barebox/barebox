@@ -2,12 +2,30 @@
 
 menu "EFI (Extensible Firmware Interface) Support"
 
+config EFI_PAYLOAD
+	bool "barebox as EFI payload/app (consumer)"
+	depends on HAVE_EFI_PAYLOAD || COMPILE_TEST
+	select PBL_FULLY_PIC if ARM64
+	select EFI
+	select EFI_GUID
+	select EFI_DEVICEPATH
+	select PRINTF_UUID
+	select PRINTF_WCHAR
+	select BLOCK
+	select PARTITION_DISK
+	select HW_HAS_PCI
+	select MALLOC_TLSF
+	help
+	  Select this option if you want a barebox.efi image generated that
+	  can be loaded from existing UEFI firmware and that consumes services
+	  and protocols provided by that UEFI firmware instead of having to
+	  interact directly with the hardware.
+
+if EFI_PAYLOAD
 source "efi/payload/Kconfig"
+endif
 
 config EFI
-	bool
-
-config HAVE_EFI_STUB
 	bool
 
 if EFI

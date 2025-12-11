@@ -13,6 +13,8 @@
 #include <linux/uuid.h>
 
 typedef unsigned long efi_status_t;
+typedef size_t efi_uintn_t;
+typedef ssize_t efi_intn_t;
 typedef wchar_t efi_char16_t;		/* UNICODE character */
 typedef u64 efi_physical_addr_t;	/* always, even on 32-bit systems */
 

@@ -590,6 +590,11 @@ get_inheritable_devfs_flags(const struct cdev *parent_cdev)
 	return parent_cdev->flags & DEVFS_INHERITABLE_FLAGS;
 }
 
+static inline bool cdev_is_storage(const struct cdev *cdev)
+{
+	return (cdev->flags & DEVFS_IS_BLOCK_DEV) || cdev->mtd;
+}
+
 struct cdev *
 cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid);
 

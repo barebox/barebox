@@ -57,9 +57,11 @@ static int cdev_alias_resolve_diskuuid(struct cdev_alias *cdev_alias,
 		if (strcasecmp(cdev->diskuuid, uuid))
 			continue;
 
-		cdev = cdev_find_partition(cdev, arg);
-		if (!cdev)
-			return -ENODEV;
+		if (arg) {
+			cdev = cdev_find_partition(cdev, arg);
+			if (!cdev)
+				return -ENODEV;
+		}
 
 		return fn(cdev, data);
 	}

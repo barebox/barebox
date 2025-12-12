@@ -85,6 +85,15 @@ static int mount_root(void)
 fs_initcall(mount_root);
 #endif
 
+static bool may_autoload_external_env = IS_ENABLED(CONFIG_ENV_HANDLING);
+
+#ifdef CONFIG_ENV_HANDLING
+void autoload_external_env(bool endis)
+{
+	may_autoload_external_env = endis;
+}
+#endif
+
 static int load_environment(void)
 {
 	const char *default_environment_path;
@@ -95,10 +104,11 @@ static int load_environment(void)
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
 		defaultenv_load("/env", 0);
 
-	if (IS_ENABLED(CONFIG_ENV_HANDLING))
+	if (may_autoload_external_env)
 		envfs_load(default_environment_path, "/env", 0);
 	else if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
-		pr_info("external environment support disabled. Using default environment\n");
+		pr_info("external environment support %s. Using default environment\n",
+			IS_ENABLED(CONFIG_ENV_HANDLING) ? "disallowed" : "disabled");
 
 	nvvar_load();
 

@@ -287,6 +287,21 @@ int bootentry_register_provider(struct bootentry_provider *p)
 	return 0;
 }
 
+struct bootentry_provider *get_bootentry_provider(const char *name)
+{
+	struct bootentry_provider *p;
+
+	if (!name)
+		return NULL;
+
+	list_for_each_entry(p, &bootentry_providers, list) {
+		if (streq_ptr(p->name, name))
+			return p;
+	}
+
+	return NULL;
+}
+
 /*
  * nfs_find_mountpath - Check if a given url is already mounted
  */

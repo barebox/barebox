@@ -639,6 +639,7 @@ static int blspec_bootentry_generate(struct bootentries *bootentries,
 }
 
 static struct bootentry_provider blspec_bootentry_provider = {
+	.name = "blspec",
 	.generate = blspec_bootentry_generate,
 };
 

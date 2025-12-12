@@ -31,6 +31,7 @@ static int bootdef_add_entry(struct bootentries *entries, const char *name)
 }
 
 static struct bootentry_provider bootdef_entry_provider = {
+	.name = "bootdef",
 	.generate = bootdef_add_entry,
 };
 

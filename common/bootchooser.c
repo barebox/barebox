@@ -962,6 +962,7 @@ static int bootchooser_add_entry(struct bootentries *entries, const char *name)
 }
 
 static struct bootentry_provider bootchooser_entry_provider = {
+	.name = "bootchooser",
 	.generate = bootchooser_add_entry,
 };
 

@@ -43,12 +43,15 @@ static int cdev_alias_resolve_diskuuid(struct cdev_alias *cdev_alias,
 				       void *data)
 {
 	struct cdev *cdev;
-	char *arg;
+	char *str, *arg;
+	int ret = 0;
 
-	arg = xstrdup(uuid);
+	arg = str = xstrdup(uuid);
 	uuid = strsep(&arg, ".");
-	if (!uuid || !*uuid)
-		return -EINVAL;
+	if (!uuid || !*uuid) {
+		ret = -EINVAL;
+		goto out;
+	}
 
 	for_each_cdev(cdev) {
 		if (cdev_is_partition(cdev))
@@ -59,14 +62,19 @@ static int cdev_alias_resolve_diskuuid(struct cdev_alias *cdev_alias,
 
 		if (arg) {
 			cdev = cdev_find_partition(cdev, arg);
-			if (!cdev)
-				return -ENODEV;
+			if (!cdev) {
+				ret = -ENODEV;
+				break;
+			}
 		}
 
-		return fn(cdev, data);
+		ret = fn(cdev, data);
+		break;
 	}
 
-	return 0;
+out:
+	free(str);
+	return ret;
 }
 
 static struct cdev_alias cdev_alias_aliases[] = {

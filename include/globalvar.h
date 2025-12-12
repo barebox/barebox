@@ -148,6 +148,7 @@ static inline void globalvar_alias_deprecated(const char *newname, const char *o
 #endif
 
 void nv_var_set_clean(void);
+void nv_var_set_persistable(void);
 int nvvar_save(void);
 int nv_complete(struct string_list *sl, char *instr);
 int global_complete(struct string_list *sl, char *instr);

@@ -1076,13 +1076,14 @@ i2c_omap_probe(struct device *pdev)
 	}
 
 	i2c_data = device_get_match_data(pdev);
-	if (!i2c_data)
-		return -ENODEV;
 
 	if (of_machine_is_compatible("ti,am33xx"))
 		i2c_data = &am33xx_data;
 	if (of_machine_is_compatible("ti,omap4"))
 		i2c_data = &omap4_data;
+
+	if (!i2c_data)
+		return -EINVAL;
 
 	i2c_omap->data = i2c_data;
 	i2c_omap->reg_shift = (i2c_data->flags >>

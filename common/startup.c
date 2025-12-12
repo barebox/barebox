@@ -95,12 +95,10 @@ static int load_environment(void)
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
 		defaultenv_load("/env", 0);
 
-	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
+	if (IS_ENABLED(CONFIG_ENV_HANDLING))
 		envfs_load(default_environment_path, "/env", 0);
-	} else {
-		if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
-			pr_notice("No support for persistent environment. Using default environment\n");
-	}
+	else if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
+		pr_info("external environment support disabled. Using default environment\n");
 
 	nvvar_load();
 

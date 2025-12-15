@@ -9,6 +9,7 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <reset_source.h>
+#include <magicvar.h>
 
 static const char * const reset_src_names[] = {
 	[RESET_UKWN] = "unknown",
@@ -93,3 +94,6 @@ static int reset_source_init(void)
 	return 0;
 }
 coredevice_initcall(reset_source_init);
+
+BAREBOX_MAGICVAR(global.system.reset, "The reason for the last system reset")
+BAREBOX_MAGICVAR(global.system.reset_instance, "The reset reason instance number")

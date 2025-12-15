@@ -142,6 +142,12 @@ static inline int is_barebox_head(const char *head)
 	return is_barebox_arm_head(head) || is_barebox_mips_head(head);
 }
 
+static inline bool is_dos_exe(const void *buf)
+{
+	const u8 *buf8 = buf;
+	return buf8[0] == 'M' && buf8[1] == 'Z';
+}
+
 static inline bool is_arm64_linux_bootimage(const void *header)
 {
 	return le32_to_cpup(header + 56) == 0x644d5241;

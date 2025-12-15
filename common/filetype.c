@@ -288,11 +288,6 @@ enum filetype file_detect_partition_table(const void *_buf, size_t bufsize)
 	return filetype_unknown;
 }
 
-static bool is_dos_exe(const u8 *buf8)
-{
-	return buf8[0] == 'M' && buf8[1] == 'Z';
-}
-
 #define CH_TOC_section_name     0x14
 
 enum filetype file_detect_compression_type(const void *_buf, size_t bufsize)

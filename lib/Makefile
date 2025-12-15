@@ -37,6 +37,7 @@ obj-y			+= parser.o
 obj-y			+= iov_iter.o
 obj-y			+= math/
 obj-y			+= uuid.o
+obj-$(CONFIG_SMBIOS)	+= smbios.o tables_csum.o
 obj-$(CONFIG_XXHASH)	+= xxhash.o
 obj-$(CONFIG_BZLIB)	+= decompress_bunzip2.o
 obj-$(CONFIG_ZLIB)	+= decompress_inflate.o zlib_inflate/

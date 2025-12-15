@@ -44,8 +44,10 @@ the device. By convention, this should end with ``.reboot_mode``, e.g.::
 	};
 
 Reboot mode providers have priorities. The provider with the highest
-priority has its parameters aliased as ``$global.system.reboot_mode.prev``
-and ``$global.system.reboot_mode.next``. After executing the init scripts,
+priority has its parameters aliased as
+:ref:`global.system.reboot_mode.prev <magicvar_global_system_reboot_mode_prev>`
+and :ref:`global.system.reboot_mode.next <magicvar_global_system_reboot_mode_next>`.
+After executing the init scripts,
 barebox startup will ``source /env/bmode/${global.system.reboot_mode.prev}``
 if available. Example usage::
 
@@ -74,7 +76,8 @@ functionality. They all ultimately serve different purposes, however.
 Comparison to reset reason
 ---------------------------
 
-The reset reason ``$global.system.reset`` is populated by different drivers
+The reset reason :ref:`global.system.reset <magicvar_global_system_reset>` is
+populated by different drivers
 to reflect the hardware cause of a reset, e.g. a watchdog. A reboot mode
 describes the OS intention behind a reset, e.g. to fall into a recovery
 mode. Reboot modes besides the default ``normal`` mode usually accompany
@@ -84,15 +87,17 @@ to activate the next reboot mode).
 Comparison to bootsource
 ------------------------
 
-``$bootsource`` reflects the current boot's medium as indicated by the
-SoC. In cases where the reboot mode is used to communicate with the BootROM,
-``$bootsource`` and ``$bootsource_instance`` may describe the same device
-as the reboot mode.
+:ref:`bootsource <magicvar_bootsource>` reflects the current boot's medium as
+indicated by the SoC.
+In cases where the reboot mode is used to communicate with the BootROM,
+:ref:`bootsource <magicvar_bootsource>` and
+:ref:`bootsource_instance <magicvar_bootsource_instance>` may describe the same
+device as the reboot mode.
 
 For cases, where the communication instead happens between barebox and an OS,
-they can be completely different, e.g. ``$bootsource`` may say barebox was
-booted from ``spi-nor``, while the reboot mode describes that barebox should
-boot the Kernel off a USB flash drive.
+they can be completely different, e.g. :ref:`bootsource <magicvar_bootsource>`
+may say barebox was booted from ``spi-nor``, while the reboot mode describes
+that barebox should boot the Kernel off a USB flash drive.
 
 Comparison to barebox state
 ---------------------------

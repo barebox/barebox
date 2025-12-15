@@ -74,7 +74,8 @@ Shell and magic variables
 
 * ``/dev/fw_cfg0`` has been renamed to ``/dev/fw_cfg``
 
-* ``global.boot.default`` is now ``bootsource net`` by default.
+* :ref:`global.boot.default <magicvar_global_boot_default>` is now
+  ``bootsource net`` by default.
 
   This does not affect users setting ``nv boot.default``, but for
   others, barebox will look for bootloader spec on the bootsource

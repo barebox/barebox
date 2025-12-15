@@ -32,7 +32,9 @@ Bootchooser Targets
 -------------------
 
 A *bootchooser* boot target represents one target that barebox can boot. The
-known targets are set in ``global.bootchooser.targets``. A target consists of a
+known targets are set in
+:ref:`global.bootchooser.targets <magicvar_global_bootchooser_targets>`.
+A target consists of a
 set of variables in the ``global.bootchooser.<targetname>`` namespace. The
 following configuration variables describe a *bootchooser* boot target:
 
@@ -46,7 +48,9 @@ following configuration variables describe a *bootchooser* boot target:
   Defaults to ``bootchooser.default_attempts``, see below.
 ``global.bootchooser.<targetname>.default_priority``
   The default priority of a boot target.
-  Defaults to ``global.bootchooser.default_priority``, see below.
+  Defaults to
+  :ref:`global.bootchooser.default_priority <magicvar_global_bootchooser_default_priority>`,
+  see below.
 
 The *bootchooser* algorithm generally only starts boot targets that have a ``priority``
 > 0 and a ``remaining_attempts`` counter > 0.
@@ -76,7 +80,9 @@ no remaining attempts left.
 
 To prevent ending up in an unbootable system after a number of failed boot
 attempts, there is also a built-in mechanism to reset the counters to their defaults,
-controlled by the ``global.bootchooser.reset_attempts`` variable.
+controlled by the
+:ref:`global.bootchooser.reset_attempts <magicvar_global_bootchooser_reset_attempts>`
+variable.
 
 .. _bootchooser,attempts_lock:
 
@@ -98,7 +104,8 @@ interpreted as ``0``, meaning that attempts are decremented normally.
 The ``attempts_locked`` value does not influence the decision on which target
 to boot if any, only whether to decrement the attempts when booting.
 
-If ``global.bootchooser.retry`` is enabled (set to ``1``), the bootchooser
+If :ref:`global.bootchooser.retry <magicvar_global_bootchooser_retry>`
+is enabled (set to ``1``), the bootchooser
 algorithm will iterate through all valid boot targets (and decrease their
 counters) until one succeeds or none is left.
 If it is disabled only one attempt will be made for each bootchooser call.
@@ -149,17 +156,17 @@ General Bootchooser Options
 In addition to the boot target options described above, *bootchooser* has some general
 options not specific to any boot target.
 
-``global.bootchooser.disable_on_zero_attempts``
+:ref:`global.bootchooser.disable_on_zero_attempts <magicvar_global_bootchooser_disable_on_zero_attempts>`
   Boolean flag. If set to 1, *bootchooser* disables a boot target (sets priority
   to 0) whenever the remaining attempts counter reaches 0. Defaults to 0.
-``global.bootchooser.default_attempts``
+:ref:`global.bootchooser.default_attempts <magicvar_global_bootchooser_default_attempts>`
   The default number of attempts that a boot target shall be tried before skipping
   it, used when not overwritten with the boot target specific variable of the same
   name. Defaults to 3.
-``global.bootchooser.default_priority``
+:ref:`global.bootchooser.default_priority <magicvar_global_bootchooser_default_priority>`
   The default priority of a boot target when not overwritten with the target
   specific variable of the same name. Defaults to 1.
-``global.bootchooser.reset_attempts``
+:ref:`global.bootchooser.reset_attempts <magicvar_global_bootchooser_reset_attempts>`
   A space-separated list of conditions (checked during bootchooser start) that
   shall cause the ``remaining_attempts`` counters of all enabled targets to be
   reset. Possible values:
@@ -170,22 +177,22 @@ options not specific to any boot target.
   * ``reset``: If a generic reset (``$global.system.reset="RST"``) is detected.
   * ``all-zero``: If the ``remaining_attempts`` counters of all enabled targets
     are zero.
-``global.bootchooser.reset_priorities``
+:ref:`global.bootchooser.reset_priorities <magicvar_global_bootchooser_reset_priorities>`
   A space-separated list of conditions (checked during bootchooser start) that
   shall cause the ``priority``  of all boot targets to be reset. Possible values:
 
   * empty: Priorities will never be reset (default).
   * ``all-zero``: If all boot targets have zero ``priority``.
-``global.bootchooser.retry``
+:ref:`global.bootchooser.retry <magicvar_global_bootchooser_retry>`
   If set to 1, *bootchooser* retries booting until one succeeds or no more valid
   boot targets exist.
   Otherwise the ``boot`` command will return with an error after the first failed
   boot target. Defaults to 0.
-``global.bootchooser.state_prefix``
+:ref:`global.bootchooser.state_prefix <magicvar_global_bootchooser_state_prefix>`
   If set, this makes *bootchooser* use the *state* framework as backend for
   storing run-time data and defines the name of the state instance to use, see
   :ref:`below <bootchooser,state_framework>`. Defaults to an empty string.
-``global.bootchooser.targets``
+:ref:`global.bootchooser.targets <magicvar_global_bootchooser_targets>`
   Space-separated list of boot targets that are used. For each entry in the list
   a corresponding set of variables must exist in the chosen *bootchooser* storage
   backend.

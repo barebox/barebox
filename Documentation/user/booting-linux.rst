@@ -25,7 +25,7 @@ following images are supported:
 * FIT images, containing a zImage or Image
 
 The images can either be passed directly to the bootm command as argument or
-in the ``global.bootm.image`` variable:
+in the :ref:`global.bootm.image <magicvar_global_bootm_image>` variable:
 
 .. code-block:: sh
 
@@ -37,8 +37,8 @@ in the ``global.bootm.image`` variable:
   bootm
 
 When barebox has an internal devicetree it is passed to the kernel. You can
-specify an alternative devicetree with the ``-o DTS`` option or the ``global.bootm.oftree``
-variable:
+specify an alternative devicetree with the ``-o DTS`` option or the
+:ref:`global.bootm.oftree <magicvar_global_bootm_oftree>` variable:
 
 .. code-block:: sh
 
@@ -50,8 +50,8 @@ variable:
   global.bootm.image=/path/to/zImage
   bootm
 
-To use an initramfs, use the ``-r`` option or the ``global.bootm.initrd``
-variable:
+To use an initramfs, use the ``-r`` option or the
+:ref:`global.bootm.initrd <magicvar_global_bootm_initrd>` variable:
 
 .. code-block:: sh
 
@@ -73,14 +73,15 @@ It's also possible to select a specific configuration explicitly:
 
 **NOTE:** it may happen that barebox is probed from the devicetree, but you have
 want to start a Kernel without passing a devicetree. In this case set the
-``global.bootm.boot_atag`` variable to ``true``.
+:ref:`global.bootm.boot_atag <magicvar_global_bootm_boot_atag_arm>` variable to
+``true``.
 
 Passing Kernel Arguments
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 The simple method to pass bootargs to the kernel is with
 ``CONFIG_FLEXIBLE_BOOTARGS`` disabled: in this case the bootm command
-takes the bootargs from the ``bootargs`` environment variable.
+takes the bootargs from the :ref:`bootargs <magicvar_bootargs>` environment variable.
 
 With ``CONFIG_FLEXIBLE_BOOTARGS`` enabled, the bootargs are composed
 from different :ref:`global device<global_device>` variables. All variables beginning
@@ -128,7 +129,8 @@ Creating root= options for the Kernel
 It's a common case that the Linux Kernel is loaded from a filesystem
 that later becomes the root filesystem for the Kernel. For several
 filesystems barebox can automatically append a suitable root= option
-to the Kernel command line. This is done when ``global.bootm.appendroot``
+to the Kernel command line. This is done when
+:ref:`global.bootm.appendroot <magicvar_global_bootm_appendroot>`
 is true. How the root= option is appended depends on the device type
 and filesystem the kernel is booted from. For disk like devices (SD/MMC,
 ATA) the partition UUID will be used, the root= option will be something
@@ -171,8 +173,8 @@ This is done so that following boot entries do not leak command line
 parameters from the previous boot entries.
 
 This entry can be booted with ``boot mmc``. It can also be made the default by
-setting the ``global.boot.default`` variable to ``mmc`` and then calling
-``boot`` without arguments.
+setting the :ref:`global.boot.default <magicvar_global_boot_default>` variable
+to ``mmc`` and then calling ``boot`` without arguments.
 
 Especially for development, it can be useful to override only parts of
 the images used in a boot. To do so, set ``CONFIG_BOOT_OVERRIDE=y``
@@ -242,7 +244,8 @@ The entry can be listed with the ``-l`` option:
         linux:      11ab7c89d02c4f66a4e2474ea25b2b84.15/linux
 
 When the SD card shows up as ``mmc1`` in barebox, this entry can be booted with
-``boot mmc1`` or by setting ``global.boot.default`` to ``mmc1``.
+``boot mmc1`` or by setting
+:ref:`global.boot.default <magicvar_global_boot_default>` to ``mmc1``.
 
 A bootloader spec entry can also reside on an NFS server by pointing the boot
 command at the mount point
@@ -292,7 +295,8 @@ Note that barebox will pass the same IP settings to the kernel, i.e. it passes
 and ``ip=dhcp`` for a dynamic DHCP setup. ``<linuxdevname>`` is a configurable value.
 set ``nv.dev.<ethdev>.linuxdevname`` to the name the device has in Linux.
 
-By default, barebox uses the variables ``global.user`` and ``global.hostname``
+By default, barebox uses the variables ``global.user`` and
+:ref:`global.hostname <magicvar_global_hostname>`
 to retrieve its kernel image over TFTP, which makes it possible to use multiple
 boards for multiple users with one single server.
 You can adjust those variables using nvvars with these commands::

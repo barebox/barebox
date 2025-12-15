@@ -4,7 +4,8 @@ Release v2025.04.0
 Boot overrides
 --------------
 
-It's no longer possible to override ``global.bootm.image`` with
+It's no longer possible to override
+:ref:`global.bootm.image <magicvar_global_bootm_image>` with
 the new ``boot -o`` syntax. This override led to issues when
 substituting wildly different boot image formats.
 

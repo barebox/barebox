@@ -126,3 +126,52 @@ MaskROM mode when no other bootsource contains a valid bootloader. This means to
 you have to make all other bootsources invalid by removing SD cards and shortcircuiting
 eMMCs. The RK3568 EVB has a pushbutton to disable the eMMC.
 On the Quartz64 boards, remove the eMMC module if present.
+
+Console Output
+--------------
+
+The DDR-init in the rkbin repository will set up a serial console
+at 1.5 MBaud, while barebox will set up the console with the baudrate it
+has been configured with in DT and/or Kconfig, which may be different.
+
+It can be useful for debugging to have the same baudrate for all components.
+
+The barebox baudrate is defined by device tree::
+
+  / {
+    chosen {
+      stdout-path = "serial0:1500000n8";
+    };
+  };
+
+and ``CONFIG_BAUDRATE`` controls the default if no baud rate is specified
+or the device tree has not been parsed yet:
+
+.. code-block:: console
+
+  $ scripts/config --file .config --set-str CONFIG_BAUDRATE 1500000
+
+
+The DDR-init baudrate can be modified by setting a ``uart baudrate``
+override in the ``ddrbin_param.txt`` file in the rkbin repository:
+
+.. code-block:: diff
+
+  diff --git a/tools/ddrbin_param.txt b/tools/ddrbin_param.txt
+  index 0d0f53884a72..f71e09aafc4c 100644
+  --- a/tools/ddrbin_param.txt
+  +++ b/tools/ddrbin_param.txt
+  @@ -11,7 +11,7 @@ lp5_freq=
+   
+   uart id=
+   uart iomux=
+  -uart baudrate=
+  +uart baudrate=115200
+   
+   sr_idle=
+   pd_idle=
+
+And after that the ``ddrbin_tool`` binary can be used to apply this
+modification to the relevant ddr init blob::
+
+$ tools/ddrbin_tool rk3568 tools/ddrbin_param.txt bin/rk35/rk3568_ddr_1560MHz_v1.21.bin

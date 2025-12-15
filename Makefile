@@ -1497,6 +1497,8 @@ endif
 	@echo  '  tags/TAGS	  - Generate tags file for editors'
 	@echo  '  cscope	  - Generate cscope index'
 	@echo  '                    (default: $(INSTALL_HDR_PATH))'
+	@echo  'Documentation targets:'
+	@$(MAKE) -f $(srctree)/Documentation/Makefile dochelp
 	@echo  ''
 	@echo  'Architecture specific targets ($(SRCARCH)):'
 	@$(if $(archhelp),$(archhelp),\
@@ -1520,6 +1522,15 @@ endif
 	@echo  ''
 	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
 	@echo  'For further info see the documentation'
+
+
+# Documentation targets
+# ---------------------------------------------------------------------------
+DOC_TARGETS := docs htmldocs dochelp
+
+PHONY += $(DOC_TARGETS)
+$(DOC_TARGETS):
+	$(Q)$(MAKE) -f $(srctree)/Documentation/Makefile $@
 
 # Code Coverage
 # ---------------------------------------------------------------------------
@@ -1546,15 +1557,6 @@ quiet_cmd_tags = GEN     $@
 
 tags TAGS cscope gtags: FORCE
 	$(call cmd,tags)
-
-SPHINXBUILD   = sphinx-build
-ALLSPHINXOPTS   =  source
-
-docs: FORCE
-	@mkdir -p $(srctree)/Documentation/commands
-	@$(srctree)/Documentation/gen_commands.py $(srctree) $(srctree)/Documentation/commands
-	@$(SPHINXBUILD) -b html -d $(objtree)/doctrees $(srctree)/Documentation \
-		$(objtree)/Documentation/html
 
 bareboxversion:
 	@echo $(KERNELVERSION)

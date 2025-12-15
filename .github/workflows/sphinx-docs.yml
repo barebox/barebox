@@ -1,0 +1,17 @@
+name: Pull Request Docs Check
+
+on: [push, pull_request]
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build docs
+      uses: ammaraskar/sphinx-action@master
+      with:
+        docs-folder: "Documentation/"
+        build-command: "make htmldocs"

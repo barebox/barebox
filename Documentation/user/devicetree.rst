@@ -108,27 +108,30 @@ Device tree overlays on the kernel device tree
 Overlays can be applied to the kernel device tree before it is handed over to
 the kernel. The behaviour is controlled by different variables:
 
-``global.of.overlay.path``
+:ref:`global.of.overlay.path <magicvar_global_of_overlay_path>`
   Overlays are read from this path. The path can either be a directory which
   contains the overlays or a path to a FIT-image. barebox will try to apply all
   overlays found if not limited by one of the other variables below. When the
   path given here is an absolute path it is used as is. A relative path is
   relative to ``/`` or relative to the rootfs when using bootloader spec.
-``global.of.overlay.compatible``
+:ref:`global.of.overlay.compatible <magicvar_global_of_overlay_compatible>`
   This is a space separated list of compatibles. Only overlays matching one of
   these compatibles will be applied. When this list is empty then all overlays
   will be applied. Overlays that don't have a compatible are considered being
   always compatible.
-``global.of.overlay.pattern``
+:ref:`global.of.overlay.pattern <magicvar_global_of_overlay_pattern>`
   This is a space separated list of file patterns or FIT-image config-node name
   patterns. An overlay is only applied when its filename or FIT-image
   config-node name matches one of the patterns. The patterns can contain ``*``
   and ``?`` as wildcards. The default is ``*`` which means all files or FIT-Image
   config-nodes are applied.
-``global.of.overlay.filter``
+:ref:`global.of.overlay.filter <magicvar_global_of_overlay_filter>`
   This is a space separated list of filters to apply. There are two generic filters:
-  ``pattern`` matches ``global.of.overlay.pattern`` above, ``compatible`` matches
-  ``global.of.overlay.compatible`` above. The default is ``pattern compatible``
+  ``pattern`` matches
+  :ref:`global.of.overlay.pattern <magicvar_global_of_overlay_pattern>` above,
+  ``compatible`` matches
+  :ref:`global.of.overlay.compatible <magicvar_global_of_overlay_compatible>` above.
+  The default is ``pattern compatible``
   which means the two generic filters are active. This list may be replaced or
   supplemented by board specific filters.
 

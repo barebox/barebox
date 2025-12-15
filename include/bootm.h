@@ -103,6 +103,7 @@ struct image_data {
 	char *tee_file;
 	struct resource *tee_res;
 
+	enum filetype os_type;
 	enum bootm_verify verify;
 	int verbose;
 	int force;

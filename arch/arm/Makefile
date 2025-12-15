@@ -68,6 +68,7 @@ CFLAGS_ABI-$(CONFIG_CPU_32)	:=$(call cc-option,-mapcs-32,-mabi=apcs-gnu) $(call 
 CFLAGS_ABI-$(CONFIG_AEABI)	:=-mabi=aapcs-linux
 
 CFLAGS_ABI-$(CONFIG_ARM_UNWIND)	+=-funwind-tables
+CFLAGS_ABI-$(CONFIG_AAPCS64)	+=-ffixed-x18
 
 ifeq ($(CONFIG_THUMB2_BAREBOX),y)
 AFLAGS_AUTOIT	:=$(call as-option,-Wa$(comma)-mimplicit-it=always,-Wa$(comma)-mauto-it)

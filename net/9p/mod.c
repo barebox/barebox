@@ -26,7 +26,7 @@
 
 #ifdef CONFIG_NET_9P_DEBUG
 unsigned int p9_debug_level;	/* feature-rific global debug level  */
-BAREBOX_MAGICVAR(plan9debug, "9P debugging level");
+BAREBOX_MAGICVAR(global.9p.debug, "9P debugging level");
 
 void _p9_debug(enum p9_debug_flags level, const char *func,
 	       const char *fmt, ...)

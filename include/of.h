@@ -217,6 +217,7 @@ extern void of_delete_node(struct device_node *node);
 
 extern int of_alias_from_compatible(const struct device_node *node, char *alias, int len);
 extern const char *of_get_machine_compatible(void);
+extern char *of_get_machine_vendor(void);
 extern int of_machine_is_compatible(const char *compat);
 extern int of_device_is_compatible(const struct device_node *device,
 		const char *compat);

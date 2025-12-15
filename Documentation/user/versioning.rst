@@ -23,8 +23,9 @@ Query from barebox
 When ``CONFIG_BANNER`` is enabled, the version information will be printed
 to the console. From the shell, there is the
 :ref:`version command <command_version>` for interactive use and the
-``global.version`` and ``global.buildsystem.version`` :ref:`magicvars`
-for use in scripts.
+:ref:`global.version <magicvar_global_version>` and
+:ref:`global.buildsystem.version <magicvar_global_buildsystem_version>`
+:ref:`magicvars` for use in scripts.
 
 Query from OS
 ^^^^^^^^^^^^^

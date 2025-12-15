@@ -14,9 +14,8 @@ For example it should wait for another update (for the case the cause of a
 crash is a failed update) or should start into a fall back system instead.
 
 In order to handle failing systems gracefully the bootloader needs the
-information why it runs. This is called the "reset reason". It is provided by
-the global variable ``system.reset`` and can be used in scripts via
-``$global.system.reset``.
+information why it runs. This is called the "reset reason". It is available
+to scripts as :ref:`global.system.reset <magicvar_global_system_reset>`.
 
 The following values can help to detect the reason why the bootloader runs:
 

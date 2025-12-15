@@ -27,7 +27,7 @@ following to ``/env/network/eth0-discover``:
   usb
 
 Alternatively, a ``detect -a`` (all) can be forced in ``ifup`` by setting
-``global.net.ifup_force_detect=1``.
+:ref:`global.net.ifup_force_detect=1 <magicvar_global_net_ifup_force_detect>`.
 
 USB mass storage
 ^^^^^^^^^^^^^^^^
@@ -314,24 +314,24 @@ CONFIG_USB_GADGET_AUTOSTART enabled.
 USB Gadget autostart Options
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``global.usbgadget.autostart``
+:ref:`global.usbgadget.autostart <magicvar_global_usbgadget_autostart>`
   Boolean flag. If set to 1, usbgadget will be started automatically on boot and
   enable USB OTG mode. (Default 0).
-``global.usbgadget.acm``
+:ref:`global.usbgadget.acm <magicvar_global_usbgadget_acm>`
   Boolean flag. If set to 1, CDC ACM function will be created.
   See :ref:`command_usbgadget` -a. (Default 0).
-``global.system.partitions``
+:ref:`global.system.partitions <magicvar_global_system_partitions>`
   Common function description for all of DFU, fastboot and USB mass storage
   gadgets.
   See :ref:`usbgadget_partitions` above for the syntax.
   Both Fastboot and DFU partitions also have dedicated override
   variables for backwards-compatibility:
 
-``global.usbgadget.dfu_function``
+:ref:`global.usbgadget.dfu_function <magicvar_global_usbgadget_dfu_function>`
   Function description for DFU. See :ref:`command_usbgadget` -D [desc],
   and :ref:`usbgadget_partitions` above for the syntax.
-``global.fastboot.partitions``
+:ref:`global.fastboot.partitions <magicvar_global_fastboot_partitions>`
   Function description for fastboot. See :ref:`command_usbgadget` -A [desc],
   and :ref:`usbgadget_partitions` above for the syntax.
-``global.fastboot.bbu``
+:ref:`global.fastboot.bbu <magicvar_global_fastboot_bbu>`
   Export barebox update handlers. See :ref:`command_usbgadget` -b. (Default 0).

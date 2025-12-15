@@ -4,7 +4,8 @@ Release v2025.02.0
 Environment Auto-Probe
 ----------------------
 
-A new magic variable ``global.env.autoprobe`` now controls whether barebox
+A new magic variable :ref:`global.env.autoprobe <magicvar_global_env_autoprobe>`
+now controls whether barebox
 will automatically probe known block devices for a GPT barebox environment
 partition if no environment was specified by other means.
 

@@ -379,7 +379,8 @@ to :ref:`visualize only the fixups that were applied by barebox to the device tr
 
 If you are sure that the kernel is indeed being loaded, the ``earlycon`` kernel
 feature can enable early debugging output before kernel serial drivers are loaded.
-barebox can fixup an earlycon option if ``global.bootm.earlycon=1`` is specified.
+barebox can fixup an earlycon option if
+:ref:`global.bootm.earlycon=1 <magicvar_global_bootm_earlycon>` is specified.
 
 Spurious Aborts/Hangs
 =====================

@@ -15,11 +15,16 @@ objtree ?= $(srctree)
 
 docs: htmldocs FORCE
 
-htmldocs: FORCE
-	@mkdir -p $(srctree)/Documentation/commands
-	@$(srctree)/Documentation/gen_commands.py $(srctree) $(srctree)/Documentation/commands
+htmldocs: gen_commands gen_magicvars FORCE
 	@$(SPHINXBUILD) -b html -d $(objtree)/doctrees $(srctree)/Documentation \
 		$(objtree)/Documentation/html $(ALLSPHINXOPTS)
+
+gen_commands: FORCE
+	@mkdir -p $(srctree)/Documentation/commands
+	@$(srctree)/Documentation/gen_commands.py $(srctree) $(srctree)/Documentation/commands
+
+gen_magicvars: FORCE
+	@$(srctree)/Documentation/gen_magicvars.py $(srctree) $(srctree)/Documentation/user/magicvars.rst
 
 dochelp: FORCE
 	@echo  ' barebox internal documentation from ReST:'

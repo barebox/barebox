@@ -94,13 +94,13 @@ This example changes the partitioning of the nand0 device:
 .. _magicvars:
 
 Magic variables
----------------
+===============
 
 Some variables have special meanings and influence the behaviour
 of barebox. Most but not all of them are consolidated in the :ref:`global_device`.
 Since it's hard to remember which variables these are and if the current
 barebox has support for them the :ref:`command_magicvar` command can print a list
-of all variables with special meaning along with a short description:
+of all active variables with special meaning along with a short description:
 
 .. code-block:: console
 
@@ -108,9 +108,6 @@ of all variables with special meaning along with a short description:
   OPTARG                           optarg for hush builtin getopt
   PATH                             colon separated list of paths to search for executables
   PS1                              hush prompt
-  armlinux_architecture            ARM machine ID
-  armlinux_system_rev              ARM system revision
-  armlinux_system_serial           ARM system serial
   automount_path                   mountpath passed to automount scripts
   bootargs                         Linux Kernel parameters
   bootsource                       The source barebox has been booted from
@@ -118,3 +115,7 @@ of all variables with special meaning along with a short description:
   global.boot.default              default boot order
   ...
 
+Above output will only list magic variables that were compiled.
+Below is a full listing of all currently documented magic variables:
+
+.. include:: magicvars.rst

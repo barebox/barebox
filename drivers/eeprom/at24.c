@@ -496,8 +496,11 @@ static int at24_probe(struct device *dev)
 
 err_devfs_create:
 err_clients:
-	for (i = 1; i < num_addresses; i++)
+	for (i = 1; i < num_addresses; i++) {
+		if (at24->client[i])
+			i2c_unregister_device(at24->client[i]);
 		kfree(at24->client[i]);
+	}
 
 	if (gpio_is_valid(at24->wp_gpio))
 		gpio_free(at24->wp_gpio);

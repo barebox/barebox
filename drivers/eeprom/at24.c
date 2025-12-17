@@ -429,7 +429,7 @@ static int at24_probe(struct device *dev)
 	} else {
 		devname = "eeprom";
 		devid = get_free_deviceid_from(devname,
-					       of_alias_get_highest_id(devname) + 1);
+					       of_alias_get_free_id(devname));
 	}
 
 	writable = !(chip.flags & AT24_FLAG_READONLY);

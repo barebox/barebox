@@ -273,16 +273,16 @@ int of_alias_get_id(struct device_node *np, const char *stem)
 EXPORT_SYMBOL_GPL(of_alias_get_id);
 
 /**
- * of_alias_get_highest_id - Get highest alias id for the given stem
+ * of_alias_get_free_id - Get lowest free alias id for the given stem
  * @stem:	Alias stem to be examined
  *
  * The function travels the lookup table to get the highest alias id for the
- * given alias stem.  It returns the alias id if found.
+ * given alias stem. It returns the lowest free alias id.
  */
-int of_alias_get_highest_id(const char *stem)
+int of_alias_get_free_id(const char *stem)
 {
 	struct alias_prop *app;
-	int id = -ENODEV;
+	int id = -1;
 
 	list_for_each_entry(app, &aliases_lookup, link) {
 		if (strcmp(app->stem, stem) != 0)
@@ -292,7 +292,7 @@ int of_alias_get_highest_id(const char *stem)
 			id = app->id;
 	}
 
-	return id;
+	return id + 1;
 }
 EXPORT_SYMBOL_GPL(of_alias_get_highest_id);
 

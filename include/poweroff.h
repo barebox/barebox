@@ -6,10 +6,12 @@
 #include <linux/types.h>
 
 void __noreturn poweroff_machine(unsigned long poweroff_flags);
+void __noreturn rt_poweroff_machine(unsigned long poweroff_flags);
 
 struct poweroff_handler {
 	void (*poweroff)(struct poweroff_handler *,
 			 unsigned long flags);
+	void (*rt_poweroff)(unsigned long flags);
 	int priority;
 	const char *name;
 	struct list_head list;

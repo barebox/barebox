@@ -2,3 +2,4 @@
 
 obj-$(CONFIG_FS) += file.o
 obj-$(CONFIG_DISK) += disk.o
+obj-$(CONFIG_VIDEO) += gop.o

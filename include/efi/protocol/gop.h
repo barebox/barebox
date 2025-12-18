@@ -10,12 +10,21 @@
 #define PIXEL_BLT_ONLY					3
 #define PIXEL_FORMAT_MAX				4
 
+#define EFI_GOT_RGBA8		0
+#define EFI_GOT_BGRA8		1
+#define EFI_GOT_BITMASK		2
+
 struct efi_pixel_bitmask {
 	u32 red_mask;
 	u32 green_mask;
 	u32 blue_mask;
 	u32 reserved_mask;
 };
+
+#define EFI_BLT_VIDEO_FILL		0
+#define EFI_BLT_VIDEO_TO_BLT_BUFFER	1
+#define EFI_BLT_BUFFER_TO_VIDEO		2
+#define EFI_BLT_VIDEO_TO_VIDEO		3
 
 struct efi_graphics_output_mode_info {
 	u32 version;

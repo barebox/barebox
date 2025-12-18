@@ -39,6 +39,8 @@ enum efi_timer_delay {
 struct efi_event;
 struct efi_memory_desc;
 
+#define EFI_BOOT_SERVICES_SIGNATURE ((u64)0x56524553544f4f42ULL)
+
 /*
  * EFI Boot Services table
  */

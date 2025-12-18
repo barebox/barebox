@@ -21,6 +21,10 @@ extern efi_uintn_t efi_memory_map_key;
 
 extern struct efi_system_table systab;
 
+/* Called by bootefi to initialize runtime */
+efi_status_t efi_alloc_system_table(void);
+efi_status_t efi_initialize_system_table(void);
+
 /* Allocate boot service data pool memory */
 void *efi_alloc(size_t len, const char *name);
 /* Reallocate boot service data pool memory */

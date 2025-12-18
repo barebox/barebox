@@ -5,3 +5,4 @@ obj-y += trace.o
 obj-y += table.o
 obj-y += devicepath.o
 obj-y += debug_support.o
+obj-y += boot.o

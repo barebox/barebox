@@ -1,6 +1,17 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # SPDX-Comment: Origin-URL: https://github.com/u-boot/u-boot/blob/a0fe8cedcbe8c76403a77e57eac228b8f778a3ae/lib/efi_loader/Kconfig
 
+config EFI_LOADER_BOOTMGR
+	bool "Rudimentary UEFI Boot Manager support"
+	select BOOT
+	select BOOT_DEFAULTS
+	default y
+	help
+	  This boot manager doesn't yet make use of Boot# variables, but instead
+	  hardcodes order to lookup removable and then builtin storage devices
+	  for EFI payloads located at the removable media path indicated by
+	  CONFIG_EFI_PAYLOAD_DEFAULT_PATH within their respective devices.
+
 config EFI_LOADER_DEBUG_SUPPORT
 	bool "EFI Debug Support"
 	default y

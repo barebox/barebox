@@ -13,3 +13,4 @@ obj-y += watchdog.o
 obj-y += pe.o
 obj-y += loadopts.o
 obj-$(CONFIG_BOOT) += bootesp.o
+obj-$(CONFIG_EFI_LOADER_BOOTMGR) += efibootmgr.o

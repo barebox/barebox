@@ -136,9 +136,10 @@ static int init_boot(void)
 {
 	if (!global_boot_default)
 		global_boot_default = xstrdup(
-			IF_ENABLED(CONFIG_BOOT_DEFAULTS, "bootsource ")
-			IF_ENABLED(CONFIG_BOOT_DEFAULTS, "storage.builtin ")
-			IF_ENABLED(CONFIG_BOOT_DEFAULTS, "storage.removable ")
+			IF_ENABLED(CONFIG_EFI_LOADER_BOOTMGR,  "efibootmgr ")
+			IF_ENABLED(CONFIG_BOOT_DEFAULTS,       "bootsource ")
+			IF_ENABLED(CONFIG_BOOT_DEFAULTS,       "storage.builtin ")
+			IF_ENABLED(CONFIG_BOOT_DEFAULTS,       "storage.removable ")
 			"net"
 		);
 

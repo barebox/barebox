@@ -14,8 +14,15 @@ Supported Boards
 - Radxa ROCK3 Model A
 - Radxa ROCK5 (RK3588)
 - Radxa CM3 (RK3566) IO Board
+- QNAP TS-433 NAS
 - Protonic MECSBC
 - Protonic PRTPUK
+
+.. toctree::
+  :glob:
+  :maxdepth: 1
+
+  rk35xx/*
 
 The steps described in the following target the RK3568 and the RK3568 EVB but
 generally apply to both SoCs and all boards.

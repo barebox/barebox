@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+
+/dts-v1/;
+#include <arm64/rockchip/rk3568-qnap-ts433.dts>
+#include "rk356x.dtsi"
+
+&gmac0 {
+	/*
+	 * The Linux device tree uses rgmii-id and that also works iff the
+	 * matching phy driver (motorcomm) is available. The barebox motorcomm
+	 * driver however doesn't support the used phy (Motorcomm YT8521) yet
+	 * and so we have to stick to rgmii and explicit delays for now.
+	 */
+	phy-mode = "rgmii";
+	tx_delay = <0x3c>;
+	rx_delay = <0x2f>;
+};
+
+&usb_host0_xhci {
+	/*
+	 * This USB-A port is used by MaskROM for recovery and by barebox
+	 * to provide fastboot and other gadgets, so we configure it as otg
+	 * and expect users to explicitly set otg.mode=peripheral or =host.
+	 */
+	barebox,dr_mode = "otg";
+};

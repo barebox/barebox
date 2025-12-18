@@ -105,6 +105,13 @@ config MACH_PROTONIC_PRTPUK
 	help
 	  Say Y here if you are using a Protonic PRTPUK
 
+config MACH_QNAP_TSX33
+	select ARCH_RK3568
+	bool "QNAP TS-433 NAS"
+	help
+	  Select this if you are using a QNAP TS-433 NAS.
+	  <https://www.qnap.com/en-us/product/ts-433>
+
 config MACH_RADXA_ROCK3
 	select ARCH_RK3568
 	bool "Radxa ROCK3"

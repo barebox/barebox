@@ -22,6 +22,9 @@ extern efi_uintn_t efi_memory_map_key;
 extern struct efi_runtime_services efi_runtime_services;
 extern struct efi_system_table systab;
 
+extern struct efi_simple_text_output_protocol efi_con_out;
+extern struct efi_simple_text_input_protocol efi_con_in;
+
 /* Called by bootefi to initialize runtime */
 efi_status_t efi_alloc_system_table(void);
 efi_status_t efi_initialize_system_table(void);

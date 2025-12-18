@@ -101,17 +101,31 @@ struct efi_simple_text_input_protocol {
 	struct efi_event *wait_for_key;
 };
 
-#define EFI_SHIFT_STATE_VALID           0x80000000
-#define EFI_RIGHT_CONTROL_PRESSED       0x00000004
-#define EFI_LEFT_CONTROL_PRESSED        0x00000008
-#define EFI_RIGHT_ALT_PRESSED           0x00000010
-#define EFI_LEFT_ALT_PRESSED            0x00000020
+#define EFI_SHIFT_STATE_INVALID		0x00000000
+#define EFI_RIGHT_SHIFT_PRESSED		0x00000001
+#define EFI_LEFT_SHIFT_PRESSED		0x00000002
+#define EFI_RIGHT_CONTROL_PRESSED	0x00000004
+#define EFI_LEFT_CONTROL_PRESSED	0x00000008
+#define EFI_RIGHT_ALT_PRESSED		0x00000010
+#define EFI_LEFT_ALT_PRESSED		0x00000020
+#define EFI_RIGHT_LOGO_PRESSED		0x00000040
+#define EFI_LEFT_LOGO_PRESSED		0x00000080
+#define EFI_MENU_KEY_PRESSED		0x00000100
+#define EFI_SYS_REQ_PRESSED		0x00000200
+#define EFI_SHIFT_STATE_VALID		0x80000000
 
 #define EFI_CONTROL_PRESSED             (EFI_RIGHT_CONTROL_PRESSED | EFI_LEFT_CONTROL_PRESSED)
 #define EFI_ALT_PRESSED                 (EFI_RIGHT_ALT_PRESSED | EFI_LEFT_ALT_PRESSED)
 #define KEYPRESS(keys, scan, uni) ((((uint64_t)keys) << 32) | ((scan) << 16) | (uni))
 #define KEYCHAR(k) ((k) & 0xffff)
 #define CHAR_CTRL(c) ((c) - 'a' + 1)
+
+#define EFI_TOGGLE_STATE_INVALID	0x00
+#define EFI_SCROLL_LOCK_ACTIVE		0x01
+#define EFI_NUM_LOCK_ACTIVE		0x02
+#define EFI_CAPS_LOCK_ACTIVE		0x04
+#define EFI_KEY_STATE_EXPOSED		0x40
+#define EFI_TOGGLE_STATE_VALID		0x80
 
 #define EFI_BLACK   0x00
 #define EFI_BLUE    0x01
@@ -131,7 +145,13 @@ struct efi_simple_text_input_protocol {
 #define EFI_YELLOW          (EFI_BROWN | EFI_BRIGHT)
 #define EFI_WHITE           (EFI_BLUE | EFI_GREEN | EFI_RED | EFI_BRIGHT)
 
-#define EFI_TEXT_ATTR(f,b)  ((f) | ((b) << 4))
+#define EFI_TEXT_ATTR(f,b)	((f) | ((b) << 4))
+/* extract foreground color from EFI attribute */
+#define EFI_ATTR_FG(attr)	((attr) & 0x07)
+/* treat high bit of FG as bright/bold (similar to edk2) */
+#define EFI_ATTR_BOLD(attr)	(((attr) >> 3) & 0x01)
+/* extract background color from EFI attribute */
+#define EFI_ATTR_BG(attr)	(((attr) >> 4) & 0x7)
 
 #define EFI_BACKGROUND_BLACK        0x00
 #define EFI_BACKGROUND_BLUE         0x10

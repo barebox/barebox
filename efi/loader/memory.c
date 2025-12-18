@@ -121,7 +121,7 @@ static u64 efi_memory_type_default_attrs(enum efi_memory_type type)
 		return MEMATTRS_RW | MEMATTR_SP;
 	case EFI_UNUSABLE_MEMORY:
 	case EFI_MAX_MEMORY_TYPE:
-		pr_warn("Unallocatable type %u\n", type); // FIXME
+		pr_warn("Unallocatable type %u\n", type);
 		return MEMATTRS_FAULT;
 	}
 
@@ -188,9 +188,8 @@ efi_status_t efi_allocate_pages(enum efi_allocate_type type,
 				   efi_memory_type_to_resource_type(memory_type),
 				   attrs);
 	if (!res) {
-		pr_err("failed to request %s at page 0x%zx+%zu (%s)\n",
-		       namebuf, new_page, npages, typestr);
-		dump_stack();
+		pr_err("failed to request %s at page 0x%llx+%zx (%s)\n",
+		       namebuf, new_addr, npages << EFI_PAGE_SHIFT, typestr);
 		return EFI_OUT_OF_RESOURCES;
 	}
 
@@ -202,22 +201,6 @@ efi_status_t efi_allocate_pages(enum efi_allocate_type type,
 
 	*memory = new_addr;
 	return EFI_SUCCESS;
-}
-
-static int free_efi_only(struct resource *res, void *data)
-{
-	int *nfreed = data;
-
-	if (!(res->flags & IORESOURCE_EFI_ALLOC)) {
-		pr_warn("refusing to free non-EFI allocated resource %s at 0x%llx\n",
-			res->name, res->start);
-		*nfreed = -1;
-		return false;
-	}
-
-	if (nfreed >= 0)
-		++*nfreed;
-	return true;
 }
 
 // SPDX-SnippetBegin
@@ -280,6 +263,22 @@ void *efi_alloc_aligned_pages(u64 len, int memory_type, size_t align,
 }
 
 // SPDX-SnippetEnd
+
+static int free_efi_only(struct resource *res, void *data)
+{
+	int *nfreed = data;
+
+	if (!(res->flags & IORESOURCE_EFI_ALLOC)) {
+		pr_err("refusing to free non-EFI allocated resource %s at 0x%pap\n",
+			res->name, &res->start);
+		*nfreed = -1;
+		return false;
+	}
+
+	if (nfreed >= 0)
+		++*nfreed;
+	return true;
+}
 
 /**
  * efi_free_pages() - free memory pages

@@ -237,6 +237,10 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 
 	res->flags = IORESOURCE_MEM;
 
+	res->type = MEMTYPE_CONVENTIONAL;
+	res->attrs = MEMATTRS_NORMAL;
+	res->flags |= IORESOURCE_TYPE_VALID;
+
 	bank = xzalloc(sizeof(*bank));
 
 	bank->res = res;

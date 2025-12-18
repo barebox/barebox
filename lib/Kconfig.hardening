@@ -169,6 +169,7 @@ config STACKPROTECTOR_NONE
 config STACKPROTECTOR_STRONG
 	bool "Strong"
 	depends on $(cc-option,-fstack-protector-strong)
+	depends on !EFI_RUNTIME
 	select STACKPROTECTOR
 	help
 	  This option turns on the "stack-protector" GCC feature. This
@@ -196,6 +197,7 @@ config STACKPROTECTOR_ALL
 	bool "All"
 	depends on $(cc-option,-fstack-protector-all)
 	depends on COMPILE_TEST
+	depends on !EFI_RUNTIME
 	select STACKPROTECTOR
 	help
 	  This pushes and verifies stack protector canaries on all functions,

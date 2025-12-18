@@ -414,6 +414,7 @@ config ARM_UNWIND
 
 config ARM_MMU_PERMISSIONS
 	bool "Map with extended RO/X permissions"
+	depends on !EFI_RUNTIME
 	default y
 	help
 	  Enable this option to map readonly sections as readonly, executable

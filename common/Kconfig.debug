@@ -77,6 +77,13 @@ config DEBUG_PROBES
 	  Most consoles do not implement a remove callback to remain operable until
 	  the very end. Consoles using DMA, however, must be removed.
 
+config DEBUG_EFI_LOADER_ENTRY
+	bool "Debug EFI loader entry/exit"
+	depends on EFI_LOADER
+	help
+	  If enabled, this will print whenever an EFI payload/app calls
+	  into barebox or is returned to before ExitBootServices.
+
 config DMA_API_DEBUG
 	bool "Enable debugging of DMA-API usage"
 	depends on HAS_DMA

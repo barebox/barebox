@@ -2657,20 +2657,13 @@ static void mci_parse_cid(struct mci *mci)
 	dev_add_param_uint32_fixed(dev, "cid_month", mci->cid.month, "%0u");
 }
 
-static bool cdev_partname_equal(const struct cdev *a,
-				const struct cdev *b)
-{
-	return a->partname && b->partname &&
-		!strcmp(a->partname, b->partname);
-}
-
 static char *mci_get_linux_mmcblkdev(struct block_device *blk,
 				     const struct cdev *partcdev)
 
 {
 	struct mci_part *mci_part = container_of(blk, struct mci_part, blk);
-	struct cdev *cdevm = partcdev->master, *cdev;
-	int id, partnum;
+	struct cdev *cdevm = partcdev->master;
+	int id;
 
 	if (mci_part->area_type != MMC_BLK_DATA_AREA_MAIN)
 		return NULL;
@@ -2682,21 +2675,11 @@ static char *mci_get_linux_mmcblkdev(struct block_device *blk,
 	if (id < 0)
 		return NULL;
 
-	partnum = 1; /* linux partitions are 1 based */
-	list_for_each_entry(cdev, &cdevm->partitions, partition_entry) {
+	if (!(partcdev->flags & DEVFS_PARTITION_FROM_TABLE))
+		return NULL;
 
-		/*
-		 * Partname is not guaranteed but this partition cdev is listed
-		 * in the partitions list so we need to count it instead of
-		 * skipping it.
-		 */
-		if (cdev_partname_equal(partcdev, cdev))
-			return basprintf("/dev/mmcblk%dp%d", id, partnum);
-		if (cdev->flags & DEVFS_PARTITION_FROM_TABLE)
-			partnum++;
-	}
-
-	return NULL;
+	return basprintf("/dev/mmcblk%dp%d", id,
+			 partcdev->partition_table_index + 1);
 }
 
 static struct block_device_ops mci_ops = {

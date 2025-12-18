@@ -19,6 +19,7 @@ struct efi_table_hdr;
 /* Key identifying current memory map */
 extern efi_uintn_t efi_memory_map_key;
 
+extern struct efi_runtime_services efi_runtime_services;
 extern struct efi_system_table systab;
 
 /* Called by bootefi to initialize runtime */
@@ -51,6 +52,9 @@ efi_status_t efi_get_memory_map(efi_uintn_t *memory_map_size,
 				efi_uintn_t *map_key,
 				efi_uintn_t *descriptor_size,
 				uint32_t *descriptor_version);
+
+/* Indicate supported runtime services */
+efi_status_t efi_init_runtime_supported(void);
 
 /* Update CRC32 in table header */
 void efi_update_table_header_crc32(struct efi_table_hdr *table);

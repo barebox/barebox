@@ -3233,8 +3233,14 @@ efi_status_t efi_initialize_system_table(void)
 {
 	systab.boottime = &efi_boot_services;
 
+	/*
+	 * This will be overwritten dynamically at detach time.
+	 */
+	systab.runtime = &efi_runtime_services;
+
 	/* Set CRC32 field in table headers */
 	efi_update_table_header_crc32(&systab.hdr);
+	efi_update_table_header_crc32(&efi_runtime_services.hdr);
 	efi_update_table_header_crc32(&efi_boot_services.hdr);
 
 	if (IS_ENABLED(CONFIG_EFI_LOADER_DEBUG_SUPPORT)) {

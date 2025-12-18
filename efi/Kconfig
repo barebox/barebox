@@ -29,6 +29,7 @@ config EFI_LOADER
 	bool "barebox as EFI loader (provider)"
 	depends on HAVE_EFI_LOADER
 	select EFI
+	select EFI_RUNTIME
 	select EFI_GUID
 	select EFI_DEVICEPATH
 	select CHARSET
@@ -44,6 +45,13 @@ config EFI_LOADER
 
 if EFI_LOADER
 source "efi/loader/Kconfig"
+endif
+
+config EFI_RUNTIME
+	bool
+
+if EFI_RUNTIME
+source "efi/runtime/Kconfig"
 endif
 
 config EFI

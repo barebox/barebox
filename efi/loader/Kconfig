@@ -9,3 +9,23 @@ config EFI_LOADER_DEBUG_SUPPORT
 	  Table and the EFI_SYSTEM_TABLE_POINTER which is used by the debug
 	  agent or an external debugger to determine loaded image information
 	  in a quiescent manner.
+
+menu "UEFI services"
+
+config EFI_LOADER_GET_TIME
+	bool "GetTime() runtime service"
+	depends on RTC_CLASS
+	default y
+	help
+	  Provide the GetTime() runtime service at boottime. This service
+	  can be used by an EFI application to read the real time clock.
+
+config EFI_LOADER_SET_TIME
+	bool "SetTime() runtime service"
+	depends on RTC_CLASS
+	default y
+	help
+	  Provide the SetTime() runtime service at boottime. This service
+	  can be used by an EFI application to adjust the real time clock.
+
+endmenu

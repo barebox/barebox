@@ -6,3 +6,4 @@ obj-y += table.o
 obj-y += devicepath.o
 obj-y += debug_support.o
 obj-y += boot.o
+obj-y += runtime.o

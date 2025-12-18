@@ -17,7 +17,7 @@
 
 static efi_status_t EFIAPI efi_initrd_load_file2(
 	struct efi_load_file_protocol *this, struct efi_device_path *file_path,
-	bool boot_policy, unsigned long *buffer_size, void *buffer);
+	bool boot_policy, size_t *buffer_size, void *buffer);
 
 static const struct {
 	struct efi_device_path_vendor vendor;
@@ -44,7 +44,7 @@ static struct linux_initrd {
 
 static efi_status_t EFIAPI efi_initrd_load_file2(
 	struct efi_load_file_protocol *this, struct efi_device_path *file_path,
-	bool boot_policy, unsigned long *buffer_size, void *buffer)
+	bool boot_policy, size_t *buffer_size, void *buffer)
 {
 
 	struct linux_initrd *initrd = to_linux_initrd(this);

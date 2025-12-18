@@ -4,3 +4,4 @@ obj-y += memory.o pool_alloc.o
 obj-y += trace.o
 obj-y += table.o
 obj-y += devicepath.o
+obj-y += debug_support.o

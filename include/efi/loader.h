@@ -19,6 +19,8 @@ struct efi_table_hdr;
 /* Key identifying current memory map */
 extern efi_uintn_t efi_memory_map_key;
 
+extern struct efi_system_table systab;
+
 /* Allocate boot service data pool memory */
 void *efi_alloc(size_t len, const char *name);
 /* Reallocate boot service data pool memory */

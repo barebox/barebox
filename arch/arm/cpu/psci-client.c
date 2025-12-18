@@ -47,6 +47,12 @@ static void __noreturn __efi_runtime rt_psci_poweroff(unsigned long flags)
 	__hang();
 }
 
+static void __noreturn __efi_runtime rt_psci_restart(unsigned long flags)
+{
+	psci_invoke_fn(ARM_PSCI_0_2_FN_SYSTEM_RESET, 0, 0, 0);
+	__hang();
+}
+
 static u32 version;
 int psci_get_version(void)
 {
@@ -184,6 +190,7 @@ static int __init psci_probe(struct device *dev)
 
 	restart.name = "psci";
 	restart.restart = psci_restart;
+	restart.rt_restart = rt_psci_restart;
 	restart.priority = 400;
 
 	ret = restart_handler_register(&restart);

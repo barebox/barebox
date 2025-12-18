@@ -1,0 +1,33 @@
+targets:
+  main:
+    drivers:
+      QEMUDriver:
+        qemu_bin: qemu-system-aarch64
+        machine: virt,highmem=off
+        cpu: cortex-a57
+        memory: 1024M
+        kernel: barebox-dt-2nd.img
+        display: qemu-default
+        extra_args: >
+          -drive if=virtio,format=raw,snapshot=on,file=debian-13-nocloud-arm64.raw
+          -device virtio-rng
+      BareboxDriver:
+        prompt: 'barebox@[^:]+:[^ ]+ '
+        autoboot: 'stop autoboot'
+        bootstring: 'commandline:|Starting EFI payload at'
+      ShellDriver:
+        prompt: '\x1b\[\?2004hroot@[^:]+:[^ ]+'
+        login_prompt: ' login: '
+        login_timeout: 300
+        await_login_timeout: 20
+        username: 'root'
+      BareboxTestStrategy: {}
+    features:
+      - virtio-mmio
+      - smbios
+      - bootable
+      - efi
+images:
+  barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
+imports:
+  -  ../strategy.py

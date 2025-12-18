@@ -12,3 +12,4 @@ obj-y += setup.o
 obj-y += watchdog.o
 obj-y += pe.o
 obj-y += loadopts.o
+obj-$(CONFIG_BOOT) += bootesp.o

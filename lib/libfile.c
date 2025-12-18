@@ -20,6 +20,7 @@
 #include <libfile.h>
 #include <progress.h>
 #include <stdlib.h>
+#include <string.h>
 #include <linux/stat.h>
 
 /*
@@ -830,4 +831,59 @@ out:
 	close(fd);
 
 	return res;
+}
+
+int fixup_path_case(int fd, const char **path)
+{
+	DIR *dir;
+	struct dirent *entry;
+	char *resolved_path, *curr, *next;
+
+	next = resolved_path = xstrdup(*path);
+
+	while ((curr = strsep(&next, "/"))) {
+		size_t nextlen = strlen(curr);
+		char *imatch = NULL;
+
+		dir = fdopendir(fd);
+		if (!dir)
+			goto err;
+
+		while ((entry = readdir(dir)) != NULL) {
+			size_t d_namelen = strlen(entry->d_name);
+
+			if (nextlen != d_namelen)
+				continue;
+
+			if (!strcmp(entry->d_name, curr))
+				goto next_component;
+
+			if (!imatch && !strcasecmp(entry->d_name, curr))
+				imatch = xstrdup(entry->d_name);
+		}
+
+		if (!imatch) {
+			errno = ENOENT;
+			goto err;
+		}
+
+		strncpy(curr, imatch, nextlen);
+		free(imatch);
+
+next_component:
+		fd = openat(fd, curr, next ? O_DIRECTORY : 0);
+		closedir(dir);
+
+		if (fd < 0)
+			goto err;
+
+		if (next)
+			curr[nextlen] = '/';
+	}
+
+	*path = resolved_path;
+	return fd;
+err:
+	free(resolved_path);
+	return -errno;
 }

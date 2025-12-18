@@ -27,7 +27,9 @@
 #include <efi/error.h>
 #include <efi/variable.h>
 #include <efi/devicepath.h>
+#include <efi/mode.h>
 #include <efi/loader/trace.h>
+#include <efi/runtime.h>
 #include <malloc.h>
 #include <pe.h>
 #include <asm/cache.h>
@@ -2049,9 +2051,72 @@ error:
 static efi_status_t EFIAPI efi_exit_boot_services(efi_handle_t image_handle,
 						  efi_uintn_t map_key)
 {
+	struct efi_event *evt, *next_event;
+	efi_status_t ret = EFI_SUCCESS;
+
 	EFI_ENTRY("%p, %zx", image_handle, map_key);
 
-	return EFI_EXIT(EFI_UNSUPPORTED);
+	/* Check that the caller has read the current memory map */
+	if (map_key != efi_memory_map_key) {
+		ret = EFI_INVALID_PARAMETER;
+		goto out;
+	}
+
+	/* Check if ExitBootServices has already been called */
+	if (!systab.boottime)
+		goto out;
+
+	/* Notify EFI_EVENT_GROUP_BEFORE_EXIT_BOOT_SERVICES event group. */
+	list_for_each_entry(evt, &efi_events, link) {
+		if (evt->group &&
+		    !efi_guidcmp(*evt->group,
+				 efi_guid_event_group_before_exit_boot_services)) {
+			efi_signal_event(evt);
+			break;
+		}
+	}
+
+	/* Stop all timer related activities */
+	timers_enabled = false;
+
+	/* Add related events to the event group */
+	list_for_each_entry(evt, &efi_events, link) {
+		if (evt->type == EFI_EVT_SIGNAL_EXIT_BOOT_SERVICES)
+			evt->group = &efi_guid_event_group_exit_boot_services;
+	}
+	/* Notify that ExitBootServices is invoked. */
+	list_for_each_entry(evt, &efi_events, link) {
+		if (evt->group &&
+		    !efi_guidcmp(*evt->group,
+			     efi_guid_event_group_exit_boot_services)) {
+			efi_signal_event(evt);
+			break;
+		}
+	}
+
+	/* Make sure that notification functions are not called anymore */
+	efi_tpl = EFI_TPL_HIGH_LEVEL;
+
+	/* Remove all events except EFI_EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE */
+	list_for_each_entry_safe(evt, next_event, &efi_events, link) {
+		if (evt->type != EFI_EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE)
+			list_del(&evt->link);
+	}
+
+	/* Patch out unsupported runtime function */
+	efi_runtime_detach(&systab);
+
+	efi_loader_set_state(EFI_LOADER_RUNTIME);
+
+	resched();
+
+	shutdown_barebox();
+
+	/* Give the payload some time to boot */
+	efi_set_watchdog(0);
+out:
+
+	return EFI_EXIT(ret);
 }
 
 /**

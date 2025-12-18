@@ -7,10 +7,41 @@
 #include <common.h>
 #include <restart.h>
 #include <malloc.h>
+#include <asm/sections.h>
+#include <efi/types.h>
 #include <of.h>
 
 static LIST_HEAD(restart_handler_list);
 static unsigned resetidx;
+
+static __efi_runtime_data void (*rt_restart)(unsigned long flags);
+static int rt_restart_prio = INT_MIN;
+static __efi_runtime_data void (*rt_restart_warm)(unsigned long flags);
+static int rt_restart_warm_prio = INT_MIN;
+
+static void rt_restart_handler_register(struct restart_handler *handler)
+{
+	if (!IS_ENABLED(CONFIG_EFI_RUNTIME))
+		return;
+	if (!handler->rt_restart)
+		return;
+	if (!in_barebox_efi_runtime((ulong)handler->rt_restart)) {
+		/* Check if __efi_runtime attribute is missing */
+		pr_warn("handler outside EFI runtime section\n");
+		return;
+	}
+
+	if (handler->priority > rt_restart_prio) {
+		rt_restart = handler->rt_restart;
+		rt_restart_prio = handler->priority;
+	}
+
+	if (handler->priority > rt_restart_warm_prio &&
+	    handler->flags & RESTART_WARM) {
+		rt_restart_warm = handler->rt_restart;
+		rt_restart_warm_prio = handler->priority;
+	}
+}
 
 /**
  * restart_handler_register() - register a handler for restarting the system
@@ -34,6 +65,8 @@ int restart_handler_register(struct restart_handler *rst)
 					  "barebox,restart-warm-bootrom"))
 			rst->flags |= RESTART_WARM;
 	}
+
+	rt_restart_handler_register(rst);
 
 	list_add_tail(&rst->list, &restart_handler_list);
 
@@ -98,6 +131,19 @@ struct restart_handler *restart_handler_get_by_name(const char *name, int flags)
 	}
 
 	return rst;
+}
+
+/**
+ * rt_restart_machine() - reset the machine from a runtime service
+ */
+void __noreturn __efi_runtime rt_restart_machine(unsigned long flags)
+{
+	if ((flags & RESTART_WARM) && rt_restart_warm)
+		rt_restart_warm(flags);
+	if (rt_restart)
+		rt_restart(flags);
+
+	__hang();
 }
 
 /**

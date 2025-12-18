@@ -11,6 +11,7 @@
 
 #include <linux/printk.h>
 #include <linux/array_size.h>
+#include <linux/sizes.h>
 #include <driver.h>
 #include <string.h>
 #include <magicvar.h>

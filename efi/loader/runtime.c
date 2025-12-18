@@ -22,6 +22,8 @@
 #include <restart.h>
 #include <linux/rtc.h>
 
+#include "variable.h"
+
 
 /*
  * EFI runtime code lives in two stages. In the first stage, EFI loader and an
@@ -297,12 +299,12 @@ struct efi_runtime_services efi_runtime_services = {
 	.set_wakeup_time = (void *)efi_unimplemented,
 	.set_virtual_address_map = (void *)efi_unimplemented,
 	.convert_pointer = (void *)efi_unimplemented,
-	.get_variable = (void *)efi_unimplemented,
-	.get_next_variable = (void *)efi_unimplemented,
-	.set_variable = (void *)efi_unimplemented,
+	.get_variable = efi_get_variable_boot,
+	.get_next_variable = efi_get_next_variable_name_boot,
+	.set_variable = efi_set_variable_boot,
 	.get_next_high_mono_count = (void *)efi_unimplemented,
 	.reset_system = &efi_reset_system_boottime,
 	.update_capsule = (void *)efi_unimplemented,
 	.query_capsule_caps = (void *)efi_unimplemented,
-	.query_variable_info = (void *)efi_unimplemented,
+	.query_variable_info = efi_query_variable_info_boot,
 };

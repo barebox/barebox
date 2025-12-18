@@ -21,6 +21,9 @@ config EFI_LOADER_DEBUG_SUPPORT
 	  agent or an external debugger to determine loaded image information
 	  in a quiescent manner.
 
+config EFI_LOADER_SECURE_BOOT
+	bool
+
 menu "UEFI services"
 
 config EFI_LOADER_GET_TIME
@@ -38,6 +41,32 @@ config EFI_LOADER_SET_TIME
 	help
 	  Provide the SetTime() runtime service at boottime. This service
 	  can be used by an EFI application to adjust the real time clock.
+
+choice
+	prompt "Store for non-volatile UEFI variables"
+	default EFI_VARIABLE_FILE_STORE
+	help
+	  Select where non-volatile UEFI variables shall be stored.
+
+config EFI_VARIABLE_FILE_STORE
+	bool "Store non-volatile UEFI variables as file"
+	depends on FS_FAT_WRITE
+	select EFI_RUNTIME_GET_VARIABLE
+	select EFI_RUNTIME_GET_NEXT_VARIABLE_NAME
+	select EFI_RUNTIME_QUERY_VARIABLE_INFO
+	help
+	  Select this option if you want non-volatile UEFI variables to be
+	  stored under the file name indicated by ${efi.vars.filestore}
+	  on the EFI system partition.
+
+config EFI_VARIABLE_NO_STORE
+	bool "Don't persist non-volatile UEFI variables"
+	help
+	  If you choose this option, non-volatile variables cannot be persisted.
+	  You could still provide non-volatile variables via the barebox
+	  environment.
+
+endchoice
 
 endmenu
 

@@ -16,6 +16,7 @@
 #include <efi/loader/object.h>
 #include <efi/loader/devicepath.h>
 #include <efi/loader/file.h>
+#include <efi/loader/variable.h>
 #include <efi/loader/trace.h>
 #include <efi/partition.h>
 #include <malloc.h>
@@ -389,6 +390,16 @@ static efi_status_t efi_disk_register(void *data)
 	pr_info("exporting %d disks\n", ndisks);
 
 	symlink_esp();
+
+	if (IS_ENABLED(CONFIG_EFI_VARIABLE_FILE_STORE) && efi_var_file_name) {
+		int dirfd = efiloader_esp_mount_dir();
+		if (dirfd >= 0) {
+			ret = efi_var_from_file(dirfd, efi_var_file_name);
+			if (ret != EFI_SUCCESS && ret != EFI_NOT_FOUND)
+				pr_warn("Failed to load /esp/%s: %lx\n",
+					efi_var_file_name, ret);
+		}
+	}
 
 	return EFI_SUCCESS;
 }

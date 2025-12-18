@@ -1,9 +1,8 @@
 RK35xx Rockchip SoCs
 ====================
 
-Barebox features support for the Rockchip RK3566 and RK3568 SoCs, where the
-RK3566 can be considered as reduced but largely identical version of the
-RK3568.
+Barebox features support for multiple SoCs of the Rockchip RK35xx
+series, including RK3566, RK3568, RK3576 and RK3588.
 
 Supported Boards
 ----------------
@@ -11,9 +10,12 @@ Supported Boards
 - Rockchip RK3568 EVB
 - Rockchip RK3568 Bananapi R2 Pro
 - Pine64 Quartz64 Model A
+- Pine64 Pine Tab 2
 - Radxa ROCK3 Model A
+- Radxa ROCK5 (RK3588)
 - Radxa CM3 (RK3566) IO Board
 - Protonic MECSBC
+- Protonic PRTPUK
 
 The steps described in the following target the RK3568 and the RK3568 EVB but
 generally apply to both SoCs and all boards.
@@ -127,3 +129,18 @@ And after that the ``ddrbin_tool`` binary can be used to apply this
 modification to the relevant ddr init blob::
 
 $ tools/ddrbin_tool rk3568 tools/ddrbin_param.txt bin/rk35/rk3568_ddr_1560MHz_v1.21.bin
+
+Adding new SoC support
+----------------------
+
+On 64-bit Rockchip Platforms, the barebox prebootloader acts as
+the latter part of BL2 to load TF-A and optionally OP-TEE and
+then execution continues to barebox proper as BL33.
+
+As the low-level setup of DRAM happens outside of barebox,
+adding support for new SoCs is thus very straight-forward.
+
+For base functionality, it probably requires only porting the
+Linux clk and pinctrl drivers as well as the boilerplate needed
+for every SoC. Reach out to the :ref:`mailing list <feedback>`
+if you have unsupported hardware.

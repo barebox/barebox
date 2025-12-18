@@ -31,4 +31,12 @@ config EFI_LOADER_UNICODE_CAPITALIZATION
 	  set, only the the correct handling of the letters of the codepage
 	  used by the FAT file system is ensured.
 
+config EFI_LOADER_RNG
+	bool "EFI_RNG_PROTOCOL support"
+	depends on HWRNG
+	default y
+	help
+	  Provide a EFI_RNG_PROTOCOL implementation using the hardware random
+	  number generator of the platform.
+
 endmenu

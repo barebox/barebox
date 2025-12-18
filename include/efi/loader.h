@@ -13,6 +13,10 @@
 /* Key identifying current memory map */
 extern efi_uintn_t efi_memory_map_key;
 
+/* Allocate boot service data pool memory */
+void *efi_alloc(size_t len, const char *name);
+/* Reallocate boot service data pool memory */
+efi_status_t efi_realloc(void **ptr, size_t len, const char *name);
 /* Allocate pages on the specified alignment */
 void *efi_alloc_aligned_pages(u64 len, int memory_type, size_t align,
 			      const char *name);
@@ -23,6 +27,12 @@ efi_status_t efi_allocate_pages(enum efi_allocate_type type,
 				const char *name);
 /* EFI memory free function. */
 efi_status_t efi_free_pages(uint64_t memory, efi_uintn_t pages);
+/* EFI memory allocator for small allocations */
+efi_status_t efi_allocate_pool(enum efi_memory_type pool_type,
+			       efi_uintn_t size, void **buffer,
+			       const char *name);
+/* EFI pool memory free function. */
+efi_status_t efi_free_pool(void *buffer);
 /* Returns the EFI memory map */
 efi_status_t efi_get_memory_map(efi_uintn_t *memory_map_size,
 				struct efi_memory_desc *memory_map,

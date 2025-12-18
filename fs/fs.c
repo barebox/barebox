@@ -1562,6 +1562,9 @@ static bool d_same_name(const struct dentry *dentry,
 	if (dentry->d_name.len != name->len)
 		return false;
 
+	if (dentry->d_sb->s_casefold)
+		return strncasecmp(dentry->d_name.name, name->name, name->len) == 0;
+
 	return strncmp(dentry->d_name.name, name->name, name->len) == 0;
 }
 

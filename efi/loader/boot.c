@@ -1831,7 +1831,7 @@ static efi_status_t EFIAPI efi_set_watchdog_timer(unsigned long timeout,
 {
 	EFI_ENTRY("%ld, 0x%llx, %zu, %p", timeout, watchdog_code,
 		  data_size, watchdog_data);
-	return EFI_EXIT(EFI_UNSUPPORTED);
+	return EFI_EXIT(efi_set_watchdog(timeout));
 }
 
 /**

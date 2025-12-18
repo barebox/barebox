@@ -26,6 +26,9 @@ extern struct efi_system_table systab;
 efi_status_t efi_alloc_system_table(void);
 efi_status_t efi_initialize_system_table(void);
 
+/* Called by efi_set_watchdog_timer to reset the timer */
+efi_status_t efi_set_watchdog(unsigned long timeout);
+
 /* Allocate boot service data pool memory */
 void *efi_alloc(size_t len, const char *name);
 /* Reallocate boot service data pool memory */

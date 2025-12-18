@@ -10,6 +10,10 @@ extern char __start_rodata[], __end_rodata[];
 extern char __bss_start[], __bss_stop[];
 extern char _sdata[], _edata[];
 extern char __bare_init_start[], __bare_init_end[];
+extern char __efi_runtime_start[], __efi_runtime_stop[];
+extern char __efi_runtime_text_start[], __efi_runtime_text_stop[];
+extern char __efi_runtime_data_start[], __efi_runtime_data_stop[];
+extern char __efi_runtime_rodata_start[], __efi_runtime_rodata_stop[];
 extern char _end[];
 extern char __image_start[];
 extern char __image_end[];
@@ -37,6 +41,12 @@ static inline bool is_barebox_rodata(unsigned long addr)
 {
 	return addr >= (unsigned long)__start_rodata &&
 	       addr < (unsigned long)__end_rodata;
+}
+
+static inline bool in_barebox_efi_runtime(unsigned long addr)
+{
+	return addr >= (unsigned long)__efi_runtime_start &&
+	       addr < (unsigned long)__efi_runtime_stop;
 }
 
 #endif /* _ASM_GENERIC_SECTIONS_H_ */

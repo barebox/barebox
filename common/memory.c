@@ -7,6 +7,7 @@
 
 #include <common.h>
 #include <memory.h>
+#include <efi/mode.h>
 #include <of.h>
 #include <init.h>
 #include <linux/ioport.h>
@@ -112,6 +113,8 @@ struct resource *request_barebox_region(const char *name,
 
 static int mem_malloc_resource(void)
 {
+	__maybe_unused struct resource *res;
+	int ret = 0;
 #if !defined __SANDBOX__
 	/*
 	 * Normally it's a bug when one of these fails,
@@ -138,6 +141,37 @@ static int mem_malloc_resource(void)
 			(unsigned long)&_edata -
 			(unsigned long)&_sdata,
 			MEMATTRS_RW);
+#ifdef CONFIG_EFI_RUNTIME
+	if (!efi_is_payload()) {
+		/* We don't usually have much .rodata here, so we just
+		 * fold it into the text area, so we don't waste the
+		 * rest of the page
+		 */
+		res = request_barebox_region("barebox EFI runtime code",
+				(unsigned long)&__efi_runtime_text_start,
+				(unsigned long)&__efi_runtime_rodata_stop -
+				(unsigned long)&__efi_runtime_text_start,
+				MEMATTRS_RX);
+		if (res) {
+			res->runtime = true;
+			res->type = MEMTYPE_RUNTIME_SERVICES_CODE;
+		} else {
+			ret = -EBUSY;
+		}
+
+		res = request_barebox_region("barebox EFI runtime data",
+				(unsigned long)&__efi_runtime_data_start,
+				(unsigned long)&__efi_runtime_data_stop -
+				(unsigned long)&__efi_runtime_data_start,
+				MEMATTRS_RW);
+		if (res) {
+			res->runtime = true;
+			res->type = MEMTYPE_RUNTIME_SERVICES_DATA;
+		} else {
+			ret = -EBUSY;
+		}
+	}
+#endif
 	request_barebox_region("barebox bss",
 			(unsigned long)&__bss_start,
 			(unsigned long)&__bss_stop -
@@ -149,7 +183,7 @@ static int mem_malloc_resource(void)
 			     MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_RW);
 #endif
 
-	return 0;
+	return ret;
 }
 coredevice_initcall(mem_malloc_resource);
 

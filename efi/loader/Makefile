@@ -19,3 +19,4 @@ obj-y += efi_var_common.o
 obj-y += efi_variable.o
 obj-y += efi_var_mem.o
 obj-y += efi_var_file.o
+obj-y += defaultvars.o

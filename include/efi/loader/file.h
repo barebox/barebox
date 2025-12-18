@@ -12,6 +12,9 @@ struct efi_file_handle;
 struct efi_simple_file_system_protocol *
 efi_fs_from_path(struct efi_device_path *fp);
 
+/* open file from device-path: */
+struct efi_file_handle *efi_file_from_path(struct efi_device_path *fp);
+
 efi_status_t efi_file_size(struct efi_file_handle *fh, efi_uintn_t *size);
 
 /**

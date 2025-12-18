@@ -922,6 +922,73 @@ static const struct efi_file_handle efi_file_handle_protocol = {
 	.flush_ex = efi_file_flush_ex,
 };
 
+/**
+ * efi_file_from_path() - open file via device path
+ *
+ * @fp:		device path
+ * Return:	EFI_FILE_PROTOCOL for the file or NULL
+ */
+struct efi_file_handle *efi_file_from_path(struct efi_device_path *fp)
+{
+	struct efi_simple_file_system_protocol *v;
+	struct efi_file_handle *f;
+	efi_status_t efiret;
+
+	v = efi_fs_from_path(fp);
+	if (!v)
+		return NULL;
+
+	efiret = v->open_volume(v, &f);
+	if (efiret != EFI_SUCCESS)
+		return NULL;
+
+	/* Skip over device-path nodes before the file path. */
+	while (fp && !EFI_DP_TYPE(fp, MEDIA_DEVICE, FILE_PATH))
+		fp = efi_dp_next(fp);
+
+	/*
+	 * Step through the nodes of the directory path until the actual file
+	 * node is reached which is the final node in the device path.
+	 */
+	while (fp) {
+		struct efi_device_path_file_path *fdp =
+			container_of(fp, struct efi_device_path_file_path, header);
+		struct efi_file_handle *f2;
+		efi_char16_t *filename;
+		size_t filename_sz;
+
+		if (!EFI_DP_TYPE(fp, MEDIA_DEVICE, FILE_PATH)) {
+			pr_warn("bad file path!\n");
+			f->close(f);
+			return NULL;
+		}
+
+		/*
+		 * UEFI specification requires pointers that are passed to
+		 * protocol member functions to be aligned.  So memcpy it
+		 * unconditionally
+		 */
+		if (fdp->header.length <= offsetof(struct efi_device_path_file_path, path_name))
+			return NULL;
+		filename_sz = fdp->header.length -
+			offsetof(struct efi_device_path_file_path, path_name);
+		filename = memdup(fdp->path_name, filename_sz);
+		if (!filename)
+			return NULL;
+		efiret = f->open(f, &f2, filename, EFI_FILE_MODE_READ, 0);
+		free(filename);
+		if (efiret != EFI_SUCCESS)
+			return NULL;
+
+		fp = efi_dp_next(fp);
+
+		f->close(f);
+		f = f2;
+	}
+
+	return f;
+}
+
 static efi_status_t EFIAPI
 efi_open_volume(struct efi_simple_file_system_protocol *this,
 		struct efi_file_handle **root)

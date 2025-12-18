@@ -12,6 +12,10 @@ struct efi_table_hdr;
 
 #define EFI_SPECIFICATION_VERSION (2 << 16 | 80)
 
+/* GUID used by the root node. */
+#define BAREBOX_GUID \
+	EFI_GUID(0x0f38fd98, 0x6788, 0x5379, 0x9b, 0xae, 0x43, 0x05, 0xb3, 0x58, 0x4f, 0x82)
+
 /* Key identifying current memory map */
 extern efi_uintn_t efi_memory_map_key;
 

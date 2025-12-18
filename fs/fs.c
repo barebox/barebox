@@ -37,6 +37,7 @@
 #include <parseopt.h>
 #include <linux/namei.h>
 #include <security/config.h>
+#include <efi/loader/devicepath.h>
 
 char *mkmodestr(unsigned long mode, char *str)
 {
@@ -197,6 +198,12 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 
 	if (cdev)
 		cdev_print(cdev);
+
+	if (IS_ENABLED(CONFIG_EFI_LOADER)) {
+		char *dpstr = efi_dp_from_file_tostr(dirfd, filename);
+		printf("EFI device path: %s\n", dpstr);
+		free(dpstr);
+	}
 }
 EXPORT_SYMBOL(stat_print);
 

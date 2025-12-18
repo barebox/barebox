@@ -44,13 +44,13 @@ struct efi_memory_desc;
  */
 struct efi_boot_services {
 	struct efi_table_hdr hdr;
-	efi_status_t (EFIAPI *raise_tpl)(unsigned long new_tpl);
-	void (EFIAPI *restore_tpl)(unsigned long old_tpl);
+	efi_status_t (EFIAPI *raise_tpl)(efi_uintn_t new_tpl);
+	void (EFIAPI *restore_tpl)(efi_uintn_t old_tpl);
 	efi_status_t (EFIAPI *allocate_pages)(int, int, size_t,
 				       efi_physical_addr_t *);
 	efi_status_t (EFIAPI *free_pages)(efi_physical_addr_t, size_t);
 	efi_status_t (EFIAPI *get_memory_map)(size_t *, struct efi_memory_desc *,
-					      ulong *, size_t *, u32 *);
+					      efi_uintn_t *, size_t *, u32 *);
 	efi_status_t (EFIAPI *allocate_pool)(int, size_t, void **);
 	efi_status_t (EFIAPI *free_pool)(void *);
 #define EFI_EVT_TIMER				0x80000000
@@ -64,7 +64,7 @@ struct efi_boot_services {
 #define EFI_TPL_CALLBACK	8
 #define EFI_TPL_NOTIFY		16
 #define EFI_TPL_HIGH_LEVEL	31
-	efi_status_t(EFIAPI *create_event)(u32 type , unsigned long tpl,
+	efi_status_t(EFIAPI *create_event)(u32 type , efi_uintn_t tpl,
 			void (EFIAPI *fn) (struct efi_event *event, void *ctx),
 			void *ctx, struct efi_event **event);
 	efi_status_t(EFIAPI *set_timer)(struct efi_event *event, enum efi_timer_delay type, uint64_t time);
@@ -99,7 +99,7 @@ struct efi_boot_services {
 	efi_status_t(EFIAPI *exit)(efi_handle_t handle,  efi_status_t exit_status,
 			size_t exitdata_size, u16 *exitdata);
 	efi_status_t (EFIAPI *unload_image)(efi_handle_t handle);
-	efi_status_t (EFIAPI *exit_boot_services)(efi_handle_t, unsigned long);
+	efi_status_t (EFIAPI *exit_boot_services)(efi_handle_t, efi_uintn_t);
 	void *get_next_monotonic_count;
 	efi_status_t (EFIAPI *stall)(unsigned long usecs);
 	efi_status_t (EFIAPI *set_watchdog_timer)(unsigned long timeout,

@@ -9,3 +9,4 @@ obj-y += boot.o
 obj-y += runtime.o
 obj-y += setup.o
 obj-y += watchdog.o
+obj-y += pe.o

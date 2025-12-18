@@ -755,6 +755,19 @@ config MMCBLKDEV_ROOTARG
 	  [1] fa2d0aa96941 ("mmc: core: Allow setting slot index via device tree
 	      alias")
 
+config GENERATE_SMBIOS_TABLE
+	bool "Generate an SMBIOS (System Management BIOS) table"
+	depends on EFI_LOADER && OF
+	select SMBIOS
+	default y
+	help
+	  The System Management BIOS (SMBIOS) specification addresses how
+	  motherboard and system vendors present management information about
+	  their products in a standard format by extending the BIOS interface
+	  on Intel architecture systems.
+
+	  Check http://www.dmtf.org/standards/smbios for details.
+
 config BAREBOX_UPDATE
 	bool "In-system barebox update infrastructure"
 

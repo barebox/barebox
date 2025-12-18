@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 
+obj-y += protocols/
 obj-y += memory.o pool_alloc.o
 obj-y += trace.o
 obj-y += table.o

@@ -29,3 +29,5 @@ config EFI_LOADER_SET_TIME
 	  can be used by an EFI application to adjust the real time clock.
 
 endmenu
+
+source "efi/loader/protocols/Kconfig"

@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-2.0
+
+menu "UEFI protocol support"
+
+config EFI_LOADER_HII
+	bool "HII protocols"
+	default y
+	help
+	  The Human Interface Infrastructure is a complicated framework that
+	  allows UEFI applications to draw fancy menus and hook strings using
+	  a translation framework.
+
+	  barebox implements enough of its features to be able to run the UEFI
+	  Shell, but not more than that.
+
+endmenu

@@ -12,8 +12,12 @@
 #include <poweroff.h>
 #include <restart.h>
 #include <linux/arm-smccc.h>
+#include <efi/types.h>
 
 static struct restart_handler restart;
+static struct poweroff_handler poweroff;
+
+static __efi_runtime_data u32 (*psci_invoke_fn)(ulong, ulong, ulong, ulong);
 
 static void __noreturn psci_invoke_noreturn(ulong function)
 {
@@ -37,6 +41,12 @@ static void __noreturn psci_restart(struct restart_handler *rst,
 	psci_invoke_noreturn(ARM_PSCI_0_2_FN_SYSTEM_RESET);
 }
 
+static void __noreturn __efi_runtime rt_psci_poweroff(unsigned long flags)
+{
+	psci_invoke_fn(ARM_PSCI_0_2_FN_SYSTEM_OFF, 0, 0, 0);
+	__hang();
+}
+
 static u32 version;
 int psci_get_version(void)
 {
@@ -46,7 +56,6 @@ int psci_get_version(void)
 	return version;
 }
 
-static u32 (*psci_invoke_fn)(ulong, ulong, ulong, ulong);
 
 static int psci_xlate_error(s32 errnum)
 {
@@ -96,14 +105,14 @@ int psci_invoke(ulong function, ulong arg0, ulong arg1, ulong arg2,
 	return psci_xlate_error(ret);
 }
 
-static u32 invoke_psci_fn_hvc(ulong function, ulong arg0, ulong arg1, ulong arg2)
+static u32 __efi_runtime invoke_psci_fn_hvc(ulong function, ulong arg0, ulong arg1, ulong arg2)
 {
 	struct arm_smccc_res res;
 	arm_smccc_hvc(function, arg0, arg1, arg2, 0, 0, 0, 0, &res);
 	return res.a0;
 }
 
-static u32 invoke_psci_fn_smc(ulong function, ulong arg0, ulong arg1, ulong arg2)
+static u32 __efi_runtime invoke_psci_fn_smc(ulong function, ulong arg0, ulong arg1, ulong arg2)
 {
 	struct arm_smccc_res res;
 	arm_smccc_smc(function, arg0, arg1, arg2, 0, 0, 0, 0, &res);
@@ -165,7 +174,10 @@ static int __init psci_probe(struct device *dev)
 	if (actual_version != of_version)
 		of_register_fixup(of_psci_do_fixup, (void *)method);
 
-	ret = poweroff_handler_register_fn(psci_poweroff);
+	poweroff.name = "psci";
+	poweroff.poweroff = psci_poweroff;
+	poweroff.rt_poweroff = rt_psci_poweroff;
+	ret = poweroff_handler_register(&poweroff);
 	if (ret)
 		dev_warn(dev, "error registering poweroff handler: %pe\n",
 			 ERR_PTR(ret));

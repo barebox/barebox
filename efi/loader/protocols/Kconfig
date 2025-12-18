@@ -39,4 +39,11 @@ config EFI_LOADER_RNG
 	  Provide a EFI_RNG_PROTOCOL implementation using the hardware random
 	  number generator of the platform.
 
+config EFI_LOADER_DEVICE_PATH_UTIL
+	bool "Device path utilities protocol"
+	default y
+	help
+	  The device path utilities protocol creates and manipulates device
+	  paths and device nodes. It is required to run the EFI Shell.
+
 endmenu

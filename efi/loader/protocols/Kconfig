@@ -39,6 +39,13 @@ config EFI_LOADER_RNG
 	  Provide a EFI_RNG_PROTOCOL implementation using the hardware random
 	  number generator of the platform.
 
+config EFI_LOADER_DEVICE_PATH_TO_TEXT
+	bool "Device path to text protocol"
+	default y
+	help
+	  The device path to text protocol converts device nodes and paths to
+	  human readable strings.
+
 config EFI_LOADER_DEVICE_PATH_UTIL
 	bool "Device path utilities protocol"
 	default y

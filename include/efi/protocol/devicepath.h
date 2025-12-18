@@ -4,6 +4,17 @@
 
 #include <efi/types.h>
 
+struct efi_device_path_to_text_protocol {
+	uint16_t *(EFIAPI *convert_device_node_to_text)(
+			const struct efi_device_path *device_node,
+			bool display_only,
+			bool allow_shortcuts);
+	uint16_t *(EFIAPI *convert_device_path_to_text)(
+			const struct efi_device_path *device_path,
+			bool display_only,
+			bool allow_shortcuts);
+};
+
 struct efi_device_path_utilities_protocol {
 	size_t (EFIAPI *get_device_path_size)(
 		const struct efi_device_path *device_path);

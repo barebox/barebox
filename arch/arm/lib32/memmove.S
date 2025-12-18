@@ -10,8 +10,9 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 #include <asm/unwind.h>
+#include <efi/attributes.h>
 
-		.text
+		.section EFI_RUNTIME_SECTION(.text)
 
 /*
  * Prototype: void *memmove(void *dest, const void *src, size_t n);

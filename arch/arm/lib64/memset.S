@@ -13,6 +13,9 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 #include <asm/cache.h>
+#include <efi/attributes.h>
+
+.section EFI_RUNTIME_SECTION(.text)
 
 /*
  * Fill in the buffer with character c (alignment handled by the hardware)

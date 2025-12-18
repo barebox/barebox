@@ -9,8 +9,9 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 #include <asm/unwind.h>
+#include <efi/attributes.h>
 
-	.text
+	.section EFI_RUNTIME_SECTION(.text)
 	.align	5
 
 ENTRY(__memset)

@@ -2,8 +2,10 @@
 /* SPDX-FileCopyrightText: 2015 Linaro Limited */
 
 #include <linux/linkage.h>
-
+#include <efi/attributes.h>
 #include <asm/unwind.h>
+
+.section EFI_RUNTIME_SECTION(.text.smccc)
 
     .arch_extension sec
     .arch_extension virt

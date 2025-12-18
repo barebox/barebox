@@ -2,8 +2,11 @@
 /* SPDX-FileCopyrightText: 2015 Linaro Limited */
 
 #include <linux/linkage.h>
+#include <efi/attributes.h>
 #include <linux/arm-smccc.h>
 #include <asm/asm-offsets.h>
+
+.section EFI_RUNTIME_SECTION(.text.smccc)
 
 	.macro SMCCC instr
 	.cfi_startproc

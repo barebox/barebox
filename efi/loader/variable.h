@@ -2,6 +2,8 @@
 #include <efi/types.h>
 #include <efi/error.h>
 
+efi_status_t efi_init_runtime_variable_supported(void);
+
 efi_status_t EFIAPI efi_get_variable_boot(u16 *variable_name,
 					  const efi_guid_t *vendor, u32 *attributes,
 					  efi_uintn_t *data_size, void *data);

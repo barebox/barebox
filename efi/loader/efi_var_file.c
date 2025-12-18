@@ -184,6 +184,57 @@ error:
 	free(buf);
 	return ret;
 }
+
+// SPDX-SnippetBegin
+// SPDX-Snippet-Comment: Origin-URL: https://github.com/u-boot/u-boot/blob/e9c34fab18a9a0022b36729afd8e262e062764e2/lib/efi_loader/efi_runtime.c
+
+efi_status_t efi_init_runtime_variable_supported(void)
+{
+	u8 s = 0;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_EFI_RT_VOLATILE_STORE))
+		return EFI_SUCCESS;
+
+	ret = efi_set_variable_int(u"RTStorageVolatile",
+				   &efi_file_store_vars_guid,
+				   EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				   EFI_VARIABLE_RUNTIME_ACCESS |
+				   EFI_VARIABLE_READ_ONLY,
+				   strlen(efi_var_file_name) + 1,
+				   efi_var_file_name, false);
+	if (ret != EFI_SUCCESS) {
+		pr_err("Failed to set RTStorageVolatile\n");
+		return ret;
+	}
+	/*
+	 * This variable needs to be visible so users can read it,
+	 * but the real contents are going to be filled during
+	 * GetVariable
+	 */
+	ret = efi_set_variable_int(u"VarToFile",
+				   &efi_file_store_vars_guid,
+				   EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				   EFI_VARIABLE_RUNTIME_ACCESS |
+				   EFI_VARIABLE_READ_ONLY,
+				   sizeof(s),
+				   &s, false);
+	if (ret != EFI_SUCCESS) {
+		pr_err("Failed to set VarToFile\n");
+		efi_set_variable_int(u"RTStorageVolatile",
+				     &efi_file_store_vars_guid,
+				     EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				     EFI_VARIABLE_RUNTIME_ACCESS |
+				     EFI_VARIABLE_READ_ONLY,
+				     0, NULL, false);
+		return ret;
+	}
+
+	return EFI_SUCCESS;
+}
+
+// SPDX-SnippetEnd
+
 static int efi_init_var_params(void)
 {
 	if (efi_is_payload())

@@ -18,4 +18,6 @@ uint32_t crc32_no_comp(uint32_t, const void *, unsigned int);
 int file_crc(char *filename, unsigned long start, unsigned long size,
 	     unsigned long *crc, unsigned long *total);
 
+uint32_t __pi_crc32(uint32_t, const void *, unsigned int);
+
 #endif /* __INCLUDE_CRC_H */

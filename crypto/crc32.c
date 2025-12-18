@@ -17,9 +17,11 @@
 #include <malloc.h>
 #include <linux/ctype.h>
 #include <errno.h>
+#include <efi/attributes.h>
 #define STATIC
 #else
 #define STATIC static inline
+#define __efi_runtime
 #endif
 
 static uint32_t crc_table[sizeof(uint32_t) * 256];
@@ -105,6 +107,28 @@ STATIC uint32_t crc32(uint32_t crc, const void *buf, unsigned int len)
 
 #ifdef __BAREBOX__
 EXPORT_SYMBOL(crc32);
+#endif
+
+/* Taken from Hacker's Delight 2nd Edition by Henry S. Warren */
+STATIC __efi_runtime  uint32_t __pi_crc32(uint32_t crc, const void *_buf, unsigned int len)
+{
+	const unsigned char *buf = _buf;
+	uint32_t mask;
+
+	crc = ~crc;
+	for (int i = 0; i < len; i++) {
+		crc = crc ^ buf[i];
+		for (int j = 7; j >= 0; j--) {
+			mask = -(crc & 1);
+			crc = (crc >> 1) ^ (0xEDB88320 & mask);
+		}
+	}
+
+	return ~crc;
+}
+
+#ifdef __BAREBOX__
+EXPORT_SYMBOL(__pi_crc32);
 #endif
 
 STATIC uint32_t crc32_be(uint32_t crc, const void *_buf, unsigned int len)

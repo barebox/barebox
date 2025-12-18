@@ -196,7 +196,7 @@ static int efi_register_device(struct efi_device *efidev)
 	if (ret)
 		return ret;
 
-	dev_path_str = device_path_to_str(efidev->devpath);
+	dev_path_str = device_path_to_str(efidev->devpath, true);
 	if (dev_path_str) {
 		dev_add_param_fixed(&efidev->dev, "devpath", "%s", dev_path_str);
 		free(dev_path_str);

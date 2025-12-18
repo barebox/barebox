@@ -94,7 +94,7 @@ static struct efi_boot *efi_get_boot(int num)
 
 	boot->path = memdup(ptr, boot->file_path_len);
 
-	printf("path: %s\n", device_path_to_str(boot->path));
+	printf("path: %s\n", device_path_to_str(boot->path, true));
 
 	return boot;
 }

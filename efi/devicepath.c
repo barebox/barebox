@@ -674,7 +674,7 @@ struct {
 };
 
 static void __device_path_to_str(struct string *str,
-				 const struct efi_device_path *dev_path)
+				 const struct efi_device_path *dev_path, bool all_nodes)
 {
 	const struct efi_device_path *dev_path_node;
 	void (*dump_node) (struct string *, const void *);
@@ -702,6 +702,9 @@ static void __device_path_to_str(struct string *str,
 
 		dump_node(str, dev_path_node);
 
+		if (!all_nodes)
+			return;
+
 		dev_path_node = next_device_path_node(dev_path_node);
 	}
 }
@@ -712,19 +715,20 @@ static void __device_path_to_str(struct string *str,
  * @dev_path:	The EFI device path to format
  * @buf:	The buffer to format into or optionally NULL if @len is zero
  * @len:	The number of bytes that may be written into @buf
+ * @all_nodes:  Whether to format the whole path or only the first node
  * Return:	total number of bytes that are required to store the formatted
  *		result, excluding the terminating NUL byte, which is always
  *		written.
  */
 size_t device_path_to_str_buf(const struct efi_device_path *dev_path,
-			      char *buf, size_t len)
+			      char *buf, size_t len, bool all_nodes)
 {
 	struct string str = {
 		.str = buf,
 		.allocated = len,
 	};
 
-	__device_path_to_str(&str, dev_path);
+	__device_path_to_str(&str, dev_path, all_nodes);
 
 	return str.used;
 }
@@ -733,20 +737,21 @@ size_t device_path_to_str_buf(const struct efi_device_path *dev_path,
  * device_path_to_str() - formats a device path into a newly allocated buffer
  *
  * @dev_path:	The EFI device path to format
+ * @all_nodes:  Whether to format the whole path or only the first node
  * Return:	A pointer to the nul-terminated formatted device path.
  */
-char *device_path_to_str(const struct efi_device_path *dev_path)
+char *device_path_to_str(const struct efi_device_path *dev_path, bool all_nodes)
 {
 	void *buf;
 	size_t size;
 
-	size = device_path_to_str_buf(dev_path, NULL, 0);
+	size = device_path_to_str_buf(dev_path, NULL, 0, all_nodes);
 
 	buf = malloc(size + 1);
 	if (!buf)
 		return NULL;
 
-	device_path_to_str_buf(dev_path, buf, size + 1);
+	device_path_to_str_buf(dev_path, buf, size + 1, all_nodes);
 
 	return buf;
 }

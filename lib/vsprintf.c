@@ -395,7 +395,7 @@ static char *device_path_string(char *buf, const char *end, const struct efi_dev
 	if (!dp)
 		return string(buf, end, NULL, field_width, precision, flags);
 
-	return buf + device_path_to_str_buf(dp, buf, end - buf);
+	return buf + device_path_to_str_buf(dp, buf, end - buf, true);
 }
 
 static noinline_for_stack

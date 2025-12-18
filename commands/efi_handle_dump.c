@@ -28,7 +28,7 @@ static void efi_devpath(struct efi_boot_services *bs,
 	if (EFI_ERROR(efiret))
 		return;
 
-	dev_path_str = device_path_to_str(devpath);
+	dev_path_str = device_path_to_str(devpath, true);
 	if (dev_path_str) {
 		printf("  %s: \n  %s\n", desc, dev_path_str);
 		free(dev_path_str);

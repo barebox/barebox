@@ -29,6 +29,10 @@ efi_status_t efi_initialize_system_table(void);
 /* Called by efi_set_watchdog_timer to reset the timer */
 efi_status_t efi_set_watchdog(unsigned long timeout);
 
+efi_status_t __efi_start_image(efi_handle_t image_handle,
+			       efi_uintn_t *exit_data_size,
+			       u16 **exit_data, int flags);
+
 /* Allocate boot service data pool memory */
 void *efi_alloc(size_t len, const char *name);
 /* Reallocate boot service data pool memory */

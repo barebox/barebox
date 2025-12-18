@@ -6,7 +6,7 @@
 #include <efi/types.h>
 #include <linux/string.h>
 
-const char *efi_guid_string(efi_guid_t *g);
+const char *efi_guid_string(const efi_guid_t *g);
 
 static inline int
 efi_guidcmp (efi_guid_t left, efi_guid_t right)

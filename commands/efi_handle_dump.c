@@ -51,7 +51,7 @@ static void efi_dump(struct efi_boot_services *bs, efi_handle_t *handles, size_t
 		printf("  Protocols:\n");
 		for (j = 0; j < num_guids; j++)
 			printf("  %d: %pUl: %s\n", j, guids[j],
-					efi_guid_string(guids[j]));
+					efi_guid_string(guids[j]) ?: "unknown");
 
 		efi_devpath(bs, handles[i], &efi_device_path_protocol_guid,
 			    "Devpath");

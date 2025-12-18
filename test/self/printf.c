@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <linux/string.h>
 #include <errno.h>
+#include <efi/guid.h>
 
 #include <linux/bitmap.h>
 
@@ -260,6 +261,7 @@ uuid(void)
 {
 	const char uuid[16] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
 			       0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf};
+	efi_guid_t protocol_guid = EFI_LOAD_FILE2_PROTOCOL_GUID;
 
 	if (!IS_ENABLED(CONFIG_PRINTF_UUID)) {
 		pr_info("skipping UUID tests: disabled in config\n");
@@ -271,6 +273,8 @@ uuid(void)
 	test("00010203-0405-0607-0809-0A0B0C0D0E0F", "%pUB", uuid);
 	test("03020100-0504-0706-0809-0a0b0c0d0e0f", "%pUl", uuid);
 	test("03020100-0504-0706-0809-0A0B0C0D0E0F", "%pUL", uuid);
+	if (IS_ENABLED(CONFIG_EFI_GUID))
+		test("EFI Load File 2 Protocol", "%pUs", &protocol_guid);
 }
 
 static void __init

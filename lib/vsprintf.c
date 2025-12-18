@@ -22,6 +22,7 @@
 #include <wchar.h>
 #include <of.h>
 #include <efi/devicepath.h>
+#include <efi/guid.h>
 
 #include <common.h>
 #include <pbl.h>
@@ -372,6 +373,22 @@ char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
 	return string(buf, end, uuid, field_width, precision, flags);
 }
 
+static noinline_for_stack
+char *efi_guid_string_format(char *buf, const char *end, const efi_guid_t *addr,
+			     int field_width, int precision, int flags, const char *fmt)
+{
+	const char *desc = NULL;
+
+	if (!addr)
+		return string(buf, end, NULL, field_width, precision, flags);
+
+	desc = efi_guid_string(addr);
+	if (desc)
+		return string(buf, end, desc, field_width, precision, flags);
+
+	return uuid_string(buf, end, addr->b, field_width, precision, flags, fmt);
+}
+
 static char *device_path_string(char *buf, const char *end, const struct efi_device_path *dp,
 				int field_width, int precision, int flags)
 {
@@ -510,6 +527,8 @@ char *clock(char *buf, const char *end, const struct clk *clk,
  *             [0][1][2][3]-[4][5]-[6][7]-[8][9]-[10][11][12][13][14][15]
  *           little endian output byte order is:
  *             [3][2][1][0]-[5][4]-[7][6]-[8][9]-[10][11][12][13][14][15]
+ *         s human readable description of the EFI GUID if possible and plain
+ *           GUID otherwise
  * - 'V' For a struct va_format which contains a format string * and va_list *,
  *       call vsnprintf(->format, *->va_list).
  *       Implements a "recursive vsnprintf".
@@ -534,6 +553,8 @@ char *clock(char *buf, const char *end, const struct clk *clk,
  *
  * - 'JP' For a JSON path
  * - 'D' For EFI device paths
+ * - 'Us' For a 16 byte EFI GUID, it prints the human readable description
+ *   if possible or the plain GUID as %pU would otherwise.
  */
 static char *pointer(const char *fmt, char *buf, const char *end, const void *ptr,
 		     int field_width, int precision, int flags)
@@ -547,6 +568,8 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 	case 's':
 		return symbol_string(buf, end, ptr, field_width, precision, flags, with_offset);
 	case 'U':
+		if (fmt[1] == 's' && IS_ENABLED(CONFIG_EFI_GUID))
+			return efi_guid_string_format(buf, end, ptr, field_width, precision, flags, fmt);
 		if (IS_ENABLED(CONFIG_PRINTF_UUID))
 			return uuid_string(buf, end, ptr, field_width, precision, flags, fmt);
 		break;

@@ -58,7 +58,7 @@ static void efi_devinfo(struct device *dev)
 
 	for (i = 0; i < efidev->num_guids; i++)
 		printf("  %d: %pUl: %s\n", i, &efidev->guids[i],
-					efi_guid_string(&efidev->guids[i]));
+					efi_guid_string(&efidev->guids[i]) ?: "unknown");
 }
 
 static efi_handle_t efi_find_parent(efi_handle_t handle)

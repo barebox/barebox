@@ -80,7 +80,7 @@ const efi_guid_t efi_guid_event_group_return_to_efibootmgr =
 		return long;			\
 	} while(0)
 
-const char *efi_guid_string(efi_guid_t *g)
+const char *efi_guid_string(const efi_guid_t *g)
 {
 	EFI_GUID_STRING(EFI_NULL_GUID, "NULL", "NULL GUID");
 	EFI_GUID_STRING(EFI_MPS_TABLE_GUID, "MPS Table", "MPS Table GUID in EFI System Table");
@@ -161,5 +161,5 @@ const char *efi_guid_string(efi_guid_t *g)
 	/* Ramdisk */
 	EFI_GUID_STRING(EFI_LINUX_INITRD_MEDIA_GUID, "Initrd Media", "EFI Linux Initrd Media GUID");
 
-	return "unknown";
+	return NULL;
 }

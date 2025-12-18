@@ -6,6 +6,7 @@
 #include <bootm-overrides.h>
 #include <fs.h>
 #include <fcntl.h>
+#include <efi/mode.h>
 #include <malloc.h>
 #include <memory.h>
 #include <block.h>
@@ -73,6 +74,7 @@ static int bootm_earlycon;
 static int bootm_provide_machine_id;
 static int bootm_provide_hostname;
 static int bootm_verbosity;
+static int bootm_efi_mode = BOOTM_EFI_AVAILABLE;
 
 void bootm_data_init_defaults(struct bootm_data *data)
 {
@@ -95,6 +97,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->provide_hostname = bootm_provide_hostname;
 	data->verbose = bootm_verbosity;
 	data->dryrun = bootm_dryrun;
+	data->efi_boot = bootm_efi_mode;
 }
 
 void bootm_data_restore_defaults(const struct bootm_data *data)
@@ -115,6 +118,7 @@ void bootm_data_restore_defaults(const struct bootm_data *data)
 	bootm_provide_hostname = data->provide_hostname;
 	bootm_verbosity = data->verbose;
 	bootm_dryrun = data->dryrun;
+	bootm_efi_mode = data->efi_boot;
 }
 
 static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_AVAILABLE;
@@ -807,6 +811,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	data->initrd_address = bootm_data->initrd_address;
 	data->os_address = bootm_data->os_address;
 	data->os_entry = bootm_data->os_entry;
+	data->efi_boot = bootm_data->efi_boot;
 
 	ret = read_file_2(data->os_file, &size, &data->os_header, PAGE_SIZE);
 	if (ret < 0 && ret != -EFBIG) {
@@ -1052,6 +1057,30 @@ struct bootm_overrides bootm_set_overrides(const struct bootm_overrides override
 }
 #endif
 
+bool bootm_efi_check_image(struct image_handler *handler,
+			   struct image_data *data,
+			   enum filetype detected_filetype)
+{
+	/* This is our default: Use EFI when support is compiled in,
+	 * and fallback to normal boot otherwise.
+	 */
+	if (data->efi_boot == BOOTM_EFI_AVAILABLE) {
+		if (IS_ENABLED(CONFIG_EFI_LOADER))
+			data->efi_boot = BOOTM_EFI_REQUIRED;
+		else
+			data->efi_boot = BOOTM_EFI_DISABLED;
+	}
+
+	/* If EFI is disabled, we assume EFI-stubbed images are
+	 * just normal non-EFI stubbed ones
+	 */
+	if (data->efi_boot == BOOTM_EFI_DISABLED)
+		return handler->filetype == filetype_no_efistub(detected_filetype);
+
+	/* If EFI is required, we enforce handlers to match exactly */
+	return detected_filetype == handler->filetype;
+}
+
 static int do_bootm_compressed(struct image_data *img_data)
 {
 	struct bootm_data bootm_data = {
@@ -1140,6 +1169,12 @@ static struct image_handler zstd_bootm_handler = {
 
 int linux_rootwait_secs = 10;
 
+static const char * const bootm_efi_loader_mode_names[] = {
+	[BOOTM_EFI_DISABLED] = "disabled",
+	[BOOTM_EFI_AVAILABLE] = "available",
+	[BOOTM_EFI_REQUIRED] = "required",
+};
+
 static int bootm_init(void)
 {
 	globalvar_add_simple("bootm.image", NULL);
@@ -1174,6 +1209,11 @@ static int bootm_init(void)
 		globalvar_add_simple_int("linux.rootwait",
 					 &linux_rootwait_secs, "%d");
 
+	if (IS_ENABLED(CONFIG_EFI_LOADER) && !efi_is_payload())
+		globalvar_add_simple_enum("bootm.efi", &bootm_efi_mode,
+					  bootm_efi_loader_mode_names,
+					  ARRAY_SIZE(bootm_efi_loader_mode_names));
+
 	if (IS_ENABLED(CONFIG_BZLIB))
 		register_image_handler(&bzip2_bootm_handler);
 	if (IS_ENABLED(CONFIG_ZLIB))
@@ -1200,6 +1240,9 @@ BAREBOX_MAGICVAR(global.bootm.oftree, "bootm default oftree");
 BAREBOX_MAGICVAR(global.bootm.tee, "bootm default tee image");
 BAREBOX_MAGICVAR(global.bootm.dryrun, "bootm default dryrun level");
 BAREBOX_MAGICVAR(global.bootm.verify, "bootm default verify level");
+#ifdef CONFIG_EFI_LOADER
+BAREBOX_MAGICVAR(global.bootm.efi, "efiloader: Behavior for EFI-stubbable boot images: EFI \"disabled\", EFI if \"available\" (default), EFI is \"required\"");
+#endif
 BAREBOX_MAGICVAR(global.bootm.verbose, "bootm default verbosity level (0=quiet)");
 BAREBOX_MAGICVAR(global.bootm.earlycon, "Add earlycon option to Kernel for early log output");
 BAREBOX_MAGICVAR(global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from (default, device can be overridden via global.bootm.root_dev)");

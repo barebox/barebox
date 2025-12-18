@@ -33,15 +33,10 @@ static int do_bootm_linux(struct image_data *data)
 }
 
 static struct image_handler aarch64_linux_handler = {
-        .name = "ARM aarch64 Linux image",
-        .bootm = do_bootm_linux,
-        .filetype = filetype_arm64_linux_image,
-};
-
-static struct image_handler aarch64_linux_efi_handler = {
-        .name = "ARM aarch64 Linux/EFI image",
-        .bootm = do_bootm_linux,
-        .filetype = filetype_arm64_efi_linux_image,
+	.name = "ARM aarch64 Linux image",
+	.bootm = do_bootm_linux,
+	.check_image = bootm_efi_check_image,
+	.filetype = filetype_arm64_linux_image,
 };
 
 static int do_bootm_barebox(struct image_data *data)
@@ -87,7 +82,6 @@ static int aarch64_register_image_handler(void)
 	if (efi_is_payload())
 		return 0;
 
-	register_image_handler(&aarch64_linux_efi_handler);
 	register_image_handler(&aarch64_linux_handler);
 	register_image_handler(&aarch64_barebox_handler);
 

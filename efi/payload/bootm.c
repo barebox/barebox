@@ -316,6 +316,7 @@ struct image_handler efi_x86_linux_handle_tr = {
 static struct image_handler efi_arm64_handle_tr = {
 	.name = "EFI ARM64 Linux kernel",
 	.bootm = do_bootm_efi_stub,
+	.check_image = bootm_efi_check_image,
 	.filetype = filetype_arm64_efi_linux_image,
 };
 

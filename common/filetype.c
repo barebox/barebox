@@ -595,3 +595,19 @@ bool filetype_is_linux_efi_image(enum filetype ft)
 		return false;
 	}
 }
+
+enum filetype filetype_no_efistub(enum filetype ft)
+{
+	switch (ft) {
+	case filetype_arm_efi_zimage:
+		return filetype_arm_zimage;
+	case filetype_arm64_efi_linux_image:
+		return filetype_arm64_linux_image;
+	case filetype_riscv_efi_linux_image:
+		return filetype_riscv_linux_image;
+	case filetype_x86_efi_linux_image:
+		return filetype_x86_linux_image;
+	default:
+		return ft;
+	}
+}

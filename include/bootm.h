@@ -13,6 +13,12 @@ enum bootm_verify {
 	BOOTM_VERIFY_AVAILABLE,
 };
 
+enum bootm_efi_mode {
+	BOOTM_EFI_DISABLED,
+	BOOTM_EFI_AVAILABLE,
+	BOOTM_EFI_REQUIRED,
+};
+
 struct bootm_data {
 	const char *os_file;
 	const char *initrd_file;
@@ -40,6 +46,7 @@ struct bootm_data {
 	 * of global.hostname to Kernel.
 	 */
 	bool provide_hostname;
+	enum bootm_efi_mode efi_boot;
 	unsigned long initrd_address;
 	unsigned long os_address;
 	unsigned long os_entry;
@@ -109,6 +116,7 @@ struct image_data {
 	int verbose;
 	int force;
 	int dryrun;
+	enum bootm_efi_mode efi_boot;
 };
 
 struct image_handler {
@@ -164,5 +172,9 @@ void bootm_force_signed_images(void);
 	 (addr) != UIMAGE_SOME_ADDRESS)
 
 void *booti_load_image(struct image_data *data, phys_addr_t *oftree);
+
+bool bootm_efi_check_image(struct image_handler *handler,
+			   struct image_data *data,
+			   enum filetype detected_filetype);
 
 #endif /* __BOOTM_H */

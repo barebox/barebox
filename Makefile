@@ -618,6 +618,9 @@ include $(srctree)/arch/$(SRCARCH)/Makefile
 export KBUILD_DEFCONFIG CC_VERSION_TEXT
 endif
 
+%_efiloader_defconfig: FORCE
+	$(call merge_into_defconfig,$*_defconfig,efi-loader)
+
 config: outputmakefile scripts_basic FORCE
 	$(Q)$(MAKE) $(build)=scripts/kconfig KCONFIG_DEFCONFIG_LIST= $@
 

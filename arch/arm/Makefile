@@ -12,6 +12,10 @@ multi_v8_efi_defconfig:
 	$(call merge_into_defconfig,multi_v8_defconfig,efi-payload)
 generated_configs += multi_v8_efi_defconfig
 
+# Generic rule applying the fragment is in top-level Makefile
+generated_configs += $(patsubst %_defconfig,%_efiloader_defconfig, \
+		     multi_v7_defconfig multi_v8_defconfig)
+
 KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
 ifeq ($(CONFIG_CPU_64),y)

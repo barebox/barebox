@@ -25,6 +25,25 @@ if EFI_PAYLOAD
 source "efi/payload/Kconfig"
 endif
 
+config EFI_LOADER
+	bool "barebox as EFI loader (provider)"
+	depends on HAVE_EFI_LOADER
+	select EFI
+	select EFI_GUID
+	select EFI_DEVICEPATH
+	select MEMORY_ATTRIBUTES
+	help
+	  Select this option if you want to run UEFI applications (like GNU
+	  GRUB or an EFI-stubbed kernel) on top of barebox.
+
+	  If this option is enabled, barebox will expose the UEFI API to
+	  loaded applications, enabling them to reuse barebox device drivers
+	  and file systems.
+
+if EFI_LOADER
+source "efi/loader/Kconfig"
+endif
+
 config EFI
 	bool
 

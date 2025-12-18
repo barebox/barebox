@@ -26,6 +26,8 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 				    resource_size_t size);
 
 #define for_each_memory_bank(mem)	list_for_each_entry(mem, &memory_banks, list)
+#define for_each_memory_bank_reverse(mem)	\
+	list_for_each_entry_reverse(mem, &memory_banks, list)
 #define for_each_reserved_region(mem, rsv) \
 	list_for_each_entry(rsv, &(mem)->res->children, sibling) \
 		if (!is_reserved_resource(rsv)) {} else

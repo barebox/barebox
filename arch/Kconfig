@@ -107,6 +107,9 @@ config HAVE_EFI_PAYLOAD
 config HAVE_EFI_STUB
 	bool
 
+config HAVE_EFI_LOADER
+	bool
+
 config PHYS_ADDR_T_64BIT
 	bool
 

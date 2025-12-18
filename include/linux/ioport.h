@@ -58,6 +58,8 @@ struct resource {
 
 #define IORESOURCE_TYPE_VALID	0x00800000	/* type & attrs are valid */
 
+#define IORESOURCE_EFI_ALLOC	0x02000000	/* Resource allocated by barebox EFI loader */
+
 #define IORESOURCE_EXCLUSIVE	0x08000000	/* Userland may not map this resource */
 #define IORESOURCE_DISABLED	0x10000000
 #define IORESOURCE_UNSET	0x20000000

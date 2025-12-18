@@ -10,6 +10,7 @@
 #include <linux/limits.h>
 #include <linux/stddef.h>
 #include <linux/compiler.h>
+#include <linux/align.h>
 #include <linux/uuid.h>
 
 typedef unsigned long efi_status_t;
@@ -120,6 +121,19 @@ enum efi_allocate_type {
 #define EFI_PAGE_SHIFT			12
 #define EFI_PAGE_SIZE			(1ULL << EFI_PAGE_SHIFT)
 #define EFI_PAGE_MASK			(EFI_PAGE_SIZE - 1)
+#define EFI_PAGE_ALIGN(val)		ALIGN((val), EFI_PAGE_SIZE)
+#define EFI_PAGE_ALIGN_DOWN(val)	ALIGN_DOWN((val), EFI_PAGE_SIZE)
+
+/**
+ * efi_size_in_pages() - convert size in bytes to size in pages
+ *
+ * This macro returns the number of EFI memory pages required to hold 'size'
+ * bytes.
+ *
+ * @size:	size in bytes
+ * Return:	size in pages
+ */
+#define efi_size_in_pages(size) (((size) + EFI_PAGE_MASK) >> EFI_PAGE_SHIFT)
 
 #endif
 

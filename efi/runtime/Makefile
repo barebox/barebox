@@ -42,3 +42,12 @@ $(obj)/%.efirt.o: $(obj)/%.o FORCE
 	$(call if_changed,efirtcopy)
 
 obj-y := $(patsubst %.o,%.efirt.o,$(lib-y))
+BAREBOX_EFIRT_OBJS := $(patsubst %.o,$(obj)/%.o,$(obj-y))
+
+quiet_cmd_chkrel__ ?= CHKREL  $@
+      cmd_chkrel__ ?= $(srctree)/scripts/check-efi-runtime.sh $@ $(2)
+
+$(obj)/efirt.so: $(BAREBOX_EFIRT_OBJS) FORCE
+	$(call if_changed,chkrel__,$(BAREBOX_EFIRT_OBJS))
+
+always-y += efirt.so

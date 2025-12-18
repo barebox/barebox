@@ -62,4 +62,13 @@ void efi_update_table_header_crc32(struct efi_table_hdr *table);
 /* replacement function, returns EFI_UNSUPPORTED */
 efi_status_t __efi_runtime EFIAPI efi_unimplemented(void);
 
+enum efi_loader_state;
+
+void efi_loader_set_state(enum efi_loader_state);
+
+extern struct device efidev;
+
+void efi_register_deferred_init(efi_status_t (*init)(void *), void *);
+void efi_add_root_node_protocol_deferred(const efi_guid_t *protocol, const void *interface);
+
 #endif /* _EFI_LOADER_H */

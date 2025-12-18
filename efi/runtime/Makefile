@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 
+lib-y += services.o
 lib-y += efi_var_mem.o efi_variable.o
 
 KASAN_SANITIZE := n

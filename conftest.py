@@ -25,6 +25,12 @@ def barebox(request, strategy, target):
     return target.get_driver('BareboxDriver')
 
 
+@pytest.fixture(scope='function')
+def shell(strategy, target):
+    strategy.transition('shell')
+    return target.get_driver('ShellDriver')
+
+
 @pytest.fixture(scope="session")
 def barebox_config(request, strategy, target):
     transition_to_barebox(request, strategy)

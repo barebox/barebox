@@ -2,3 +2,4 @@
 
 obj-y += memory.o pool_alloc.o
 obj-y += trace.o
+obj-y += table.o

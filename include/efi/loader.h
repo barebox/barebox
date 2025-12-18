@@ -8,6 +8,8 @@
 #include <efi/services.h>
 #include <efi/memory.h>
 
+struct efi_table_hdr;
+
 #define EFI_SPECIFICATION_VERSION (2 << 16 | 80)
 
 /* Key identifying current memory map */
@@ -39,5 +41,11 @@ efi_status_t efi_get_memory_map(efi_uintn_t *memory_map_size,
 				efi_uintn_t *map_key,
 				efi_uintn_t *descriptor_size,
 				uint32_t *descriptor_version);
+
+/* Update CRC32 in table header */
+void efi_update_table_header_crc32(struct efi_table_hdr *table);
+
+/* replacement function, returns EFI_UNSUPPORTED */
+efi_status_t __efi_runtime EFIAPI efi_unimplemented(void);
 
 #endif /* _EFI_LOADER_H */

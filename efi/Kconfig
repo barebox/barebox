@@ -33,6 +33,8 @@ config EFI_LOADER
 	select EFI_GUID
 	select EFI_DEVICEPATH
 	select CHARSET
+	select BLOCK
+	select PARTITION_DISK
 	select MEMORY_ATTRIBUTES
 	select CRC32
 	help

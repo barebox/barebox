@@ -74,4 +74,6 @@ extern struct device efidev;
 void efi_register_deferred_init(efi_status_t (*init)(void *), void *);
 void efi_add_root_node_protocol_deferred(const efi_guid_t *protocol, const void *interface);
 
+int efiloader_esp_mount_dir(void);
+
 #endif /* _EFI_LOADER_H */

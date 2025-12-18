@@ -222,6 +222,22 @@ config GENERIC_LIB_MULDI3
 config NLS
 	bool "Native language support"
 
+config CHARSET
+	bool "Enable character set conversion routines" if COMPILE_TEST
+	help
+	  Enables support for various conversions between different
+	  character sets, such as between unicode representations and
+	  different 'code pages'.
+
+config UNICODE_CAPITALIZATION
+	bool "Support Unicode capitalization" if COMPILE_TEST
+	depends on CHARSET
+	help
+	  Enable correct handling of the capitalization of Unicode codepoints
+	  in the range 0x0000-0xffff. If this option is not set, only the
+	  the correct handling of the letters of the codepage used by the
+	  FAT file system is ensured.
+
 config GENERIC_ALLOCATOR
 	bool
 	help

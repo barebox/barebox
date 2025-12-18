@@ -90,6 +90,9 @@ static void arch_shutdown(void)
 
 	disable_interrupts();
 
+	if (efi_is_loader() == EFI_LOADER_RUNTIME)
+		return;
+
 	mmu_disable();
 
 	icache_invalidate();

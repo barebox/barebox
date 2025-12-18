@@ -11,3 +11,4 @@ obj-y += runtime.o
 obj-y += setup.o
 obj-y += watchdog.o
 obj-y += pe.o
+obj-y += loadopts.o

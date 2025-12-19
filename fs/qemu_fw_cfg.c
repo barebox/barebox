@@ -20,6 +20,8 @@
 #include <linux/err.h>
 #include <linux/ctype.h>
 
+#define FW_CFG_BAREBOX_ENV	"/mnt/fw_cfg/by_name/opt/org.barebox.env"
+
 struct fw_cfg_fs_inode {
 	struct inode inode;
 	const char *name;
@@ -375,8 +377,6 @@ static int fw_cfg_fs_probe(struct device *dev)
 	if (ret)
 		goto free_data;
 
-	defaultenv_append_runtime_directory("/mnt/fw_cfg/by_name/opt/org.barebox.env");
-
 	return 0;
 free_data:
 	free(data);
@@ -411,10 +411,12 @@ coredevice_initcall(qemu_fw_cfg_fs_init);
 
 static int qemu_fw_cfg_early_mount(void)
 {
+	struct stat s;
 	int fd;
 
 	/*
-	 * Also triggers the automount, so ramfb device can be detected
+	 * Also triggers the automount, so both ramfb device can be detected
+	 * and environment can be loaded
 	 */
 	fd = open("/mnt/fw_cfg/by_name/etc/ramfb", O_WRONLY);
 	if (fd >= 0) {
@@ -423,6 +425,9 @@ static int qemu_fw_cfg_early_mount(void)
 		dev->platform_data = (void *)(uintptr_t)fd;
 		platform_device_register(dev);
 	}
+
+	if (!stat(FW_CFG_BAREBOX_ENV, &s) && S_ISDIR(s.st_mode))
+		defaultenv_append_runtime_directory(FW_CFG_BAREBOX_ENV);
 
 	return 0;
 }

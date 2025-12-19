@@ -86,6 +86,12 @@ struct cdev *cdev_by_name(const char *filename)
 	return cdev_readlink(cdev);
 }
 
+struct device *device_find_by_file_path(const char *filename)
+{
+	struct cdev *cdev = cdev_by_name(devpath_to_name(filename));
+	return cdev ? cdev->dev : NULL;
+}
+
 struct cdev *cdev_by_device_node(struct device_node *node)
 {
 	struct cdev *cdev;

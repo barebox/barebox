@@ -880,6 +880,23 @@ config HABV4_CSF_UNLOCK_FIELD_RETURN
 	  that the CONFIG_HABV4_CSF_UNLOCK_UID is set correct as
 	  well.
 
+config HABV4_CSF_UNLOCK_UID
+	depends on HABV4 && HABV4_CSF_UNLOCK_FIELD_RETURN
+	string "CSF Unlock UID"
+	help
+	  Device specific 64-bit UID required to unlock the field-return
+	  feature. This value must match the per device UNIQUE_ID fuses.
+
+	  The below example shows the expected format. The UNIQUE_ID is
+	  printed during boot by barebox:
+	    i.MX___ unique ID: 7766554433221100
+	  or it can be queried by Linux via:
+	    - cat /sys/devices/soc0/serial_number
+	      7766554433221100
+
+	  So this value have to be set:
+	    - 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77
+
 config HAB_CERTS_ENV
 	depends on HAB
 	bool "Specify certificates in environment"
@@ -900,7 +917,6 @@ config HAB_CERTS_ENV
 
 	  CONFIG_HABV4_TABLE_BIN
 	  CONFIG_HABV4_CSF_CRT_PEM
-	  CONFIG_HABV4_CSF_UNLOCK_UID
 	  CONFIG_HABV4_IMG_CRT_PEM
 
 config HABV4_SRK_INDEX
@@ -934,21 +950,6 @@ config HABV4_CSF_CRT_PEM
 
 	  This file will be inserted into the Command Sequence File
 	  (CSF) when using the CSF template that comes with barebox.
-
-config HABV4_CSF_UNLOCK_UID
-	depends on HABV4 && HABV4_CSF_UNLOCK_FIELD_RETURN
-	string "CSF Unlock UID"
-	help
-	  Device specific 64-bit UID Required to unlock the field-return
-          feature. This value must match the per device UNIQUE_ID fuses.
-
-	  The below example shows the expected format. The UNIQUE_ID is
-	  queried by Linux via:
-            - cat /sys/devices/soc0/serial_number
-	      7766554433221100
-
-	  So this value have to be set:
-	    - 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77
 
 config HABV4_IMG_CRT_PEM
 	string "Path to IMG certificate"

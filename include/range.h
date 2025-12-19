@@ -3,6 +3,8 @@
 #define _RANGE_H__
 
 #include <linux/types.h>
+#include <linux/compiler.h>
+#include <linux/build_bug.h>
 
 /**
  * region_overlap_end_inclusive - check whether a pair of [start, end] ranges overlap
@@ -29,17 +31,26 @@ static inline bool region_overlap_end_inclusive(u64 starta, u64 enda,
  * @enda:   end of the first range (exclusive)
  * @startb: start of the second range
  * @endb:   end of the second range (exclusive)
+ *
+ * NOTE: end of zero is always interpreted to mean including the maximum
+ * value of the type.
  */
-static inline bool region_overlap_end_exclusive(u64 starta, u64 enda,
-						u64 startb, u64 endb)
-{
-	/* Empty ranges don't overlap */
-	if (starta >= enda || startb >= endb)
-		return false;
-
-	return region_overlap_end_inclusive(starta, enda - 1,
-					    startb, endb - 1);
-}
+#define region_overlap_end_exclusive(starta, enda, startb, endb)	\
+({									\
+	u64 __starta = (starta), __enda = (enda) - 1;			\
+	u64 __startb = (startb), __endb = (endb) - 1;			\
+									\
+	static_assert(__same_type((starta), (enda)));			\
+	static_assert(__same_type((enda), (startb)));			\
+	static_assert(__same_type((startb), (endb)));			\
+	static_assert(((typeof(endb))-1) > 0);				\
+									\
+	/* Empty ranges don't overlap */				\
+	(__starta <= __enda && __startb <= __endb)			\
+		 ? region_overlap_end_inclusive(__starta, __enda,	\
+						__startb, __endb)	\
+		 : false;						\
+})
 
 
 /**

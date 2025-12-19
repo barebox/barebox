@@ -110,26 +110,33 @@ int setenv_ip(const char *name, IPaddr_t ip)
 	return 0;
 }
 
-static unsigned char *arp_ether;
-static IPaddr_t arp_wait_ip;
+/**
+ * struct pending_arp - Pending ARP state
+ * @ip: input IPv4 address whose resolution is being requested 
+ * @ether: output MAC addess buffer after receing a response
+ */
+static struct pending_arp {
+	IPaddr_t ip;
+	unsigned char *ether;
+} pending_arp;
 
 static void arp_handler(struct arprequest *arp)
 {
 	IPaddr_t tmp;
 
 	/* are we waiting for a reply */
-	if (!arp_wait_ip)
+	if (!pending_arp.ip)
 		return;
 
 	tmp = net_read_ip(&arp->ar_data[6]);
 
 	/* matched waiting packet's address */
-	if (tmp == arp_wait_ip) {
+	if (tmp == pending_arp.ip) {
 		/* save address for later use */
-		memcpy(arp_ether, &arp->ar_data[0], 6);
+		memcpy(pending_arp.ether, &arp->ar_data[0], 6);
 
 		/* no arp request pending now */
-		arp_wait_ip = 0;
+		pending_arp.ip = 0;
 	}
 }
 
@@ -162,6 +169,7 @@ static int arp_request(struct eth_device *edev, IPaddr_t dest, unsigned char *et
 	static char *arp_packet;
 	struct ethernet *et;
 	unsigned retries = 0;
+	IPaddr_t arp_wait_ip;
 	int ret;
 
 	if (!edev)
@@ -207,14 +215,15 @@ static int arp_request(struct eth_device *edev, IPaddr_t dest, unsigned char *et
 
 	net_write_ip(arp->ar_data + 16, arp_wait_ip);
 
-	arp_ether = ether;
+	pending_arp.ether = ether;
+	pending_arp.ip = arp_wait_ip;
 
 	ret = eth_send(edev, arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
 	if (ret)
 		return ret;
 	arp_start = get_time_ns();
 
-	while (arp_wait_ip) {
+	while (pending_arp.ip) {
 		if (ctrlc())
 			return -EINTR;
 

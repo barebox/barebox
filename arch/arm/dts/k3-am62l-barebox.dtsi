@@ -11,6 +11,10 @@
 	status = "okay";
 };
 
+&rti1 {
+	status = "disabled";
+};
+
 &wkup_gpio0 {
 	status = "okay";
 };

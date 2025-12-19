@@ -81,6 +81,11 @@ void *dma_alloc_writecombine(struct device *dev, size_t size, dma_addr_t *dma_ha
 	return dma_alloc_map(dev, size, dma_handle, MAP_WRITECOMBINE);
 }
 
+bool zero_page_remappable(void)
+{
+	return get_cr() & CR_M;
+}
+
 void zero_page_access(void)
 {
 	remap_range(0x0, PAGE_SIZE, MAP_CACHED);

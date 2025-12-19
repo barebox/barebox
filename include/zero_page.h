@@ -20,12 +20,12 @@ void zero_page_faulting(void);
  */
 void zero_page_access(void);
 
-void zero_page_access(void);
-
-static inline bool zero_page_remappable(void)
-{
-	return true;
-}
+/**
+ * zero_page_remappable() - check if zero page can be remapped
+ *
+ * Check if MMU is enabled and zero page remapping support is available.
+ */
+bool zero_page_remappable(void);
 
 #else
 

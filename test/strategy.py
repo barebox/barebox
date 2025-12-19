@@ -77,6 +77,9 @@ class BareboxTestStrategy(Strategy):
             if state == "qemu_dump_dtb":
                 self.qemu.machine += f",dumpdtb={self.target.name}.dtb"
 
+            if self.qemu is None:
+                pytest.exit(f"Can't enter {state} for non-QEMU target")
+
             cmd = self.qemu.get_qemu_base_args()
 
             cmd.append("-serial")

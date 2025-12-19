@@ -421,6 +421,12 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	return client;
 }
 
+void i2c_unregister_device(struct i2c_client *client)
+{
+	unregister_device(&client->dev);
+	devinfo_del(&client->dev, i2c_info);
+}
+
 static void of_i2c_register_devices(struct i2c_adapter *adap)
 {
 	struct device_node *n;

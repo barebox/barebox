@@ -1099,7 +1099,7 @@ config POLLER_WARN_OVERTIME
 	help
 	  Pollers are meant to poll and quickly execute actions.
 	  exceeding the maximum runtime of POLLER_MAX_RUNTIME_MS
-	  will trigger a one-time warning.
+	  three times will trigger a one-time warning.
 
 config BTHREAD
 	bool "barebox co-operative (green) thread infrastructure"

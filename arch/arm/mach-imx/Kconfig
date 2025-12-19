@@ -897,6 +897,8 @@ config HABV4_CSF_UNLOCK_UID
 	  So this value have to be set:
 	    - 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77
 
+	  Afterwards, the `hab -p -r` command can be used to burn the fuse.
+
 config HAB_CERTS_ENV
 	depends on HAB
 	bool "Specify certificates in environment"

@@ -16,9 +16,9 @@ static int do_hab(int argc, char *argv[])
 	char *srkhashfile = NULL, *srkhash = NULL;
 	unsigned flags = 0;
 	u8 srk[SRK_HASH_SIZE];
-	int lockdown = 0, info = 0;
+	int lockdown = 0, info = 0, field_return = 0;
 
-	while ((opt = getopt(argc, argv, "s:fpx:li")) > 0) {
+	while ((opt = getopt(argc, argv, "s:fpx:lir")) > 0) {
 		switch (opt) {
 		case 's':
 			srkhashfile = optarg;
@@ -38,12 +38,15 @@ static int do_hab(int argc, char *argv[])
 		case 'i':
 			info = 1;
 			break;
+		case 'r':
+			field_return = 1;
+			break;
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
 	}
 
-	if (!info && !lockdown && !srkhashfile && !srkhash) {
+	if (!info && !lockdown && !srkhashfile && !srkhash && !field_return) {
 		printf("Nothing to do\n");
 		return COMMAND_ERROR_USAGE;
 	}
@@ -94,7 +97,19 @@ static int do_hab(int argc, char *argv[])
 		printf("Device successfully locked down\n");
 	}
 
-	return 0;
+	if (field_return) {
+		ret = imx_hab_field_return(flags & IMX_SRK_HASH_WRITE_PERMANENT);
+		if (ret == -EINVAL && IS_ENABLED(CONFIG_HABV4_CSF_UNLOCK_FIELD_RETURN))
+			printf("Field-return burn failed, check HABV4_CSF_UNLOCK_UID!\n");
+		else if (ret == -EINVAL && !IS_ENABLED(CONFIG_HABV4_CSF_UNLOCK_FIELD_RETURN))
+			printf("Field-return burn failed because CONFIG_HABV4_CSF_UNLOCK_FIELD_RETURN=n\n");
+		else if (ret)
+			printf("Field-return burn failed\n");
+		else
+			printf("Field return fuse successfully burnt\n");
+	}
+
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(hab)
@@ -105,6 +120,7 @@ BAREBOX_CMD_HELP_OPT ("-x <sha256>",  "Burn Super Root Key hash from hex string"
 BAREBOX_CMD_HELP_OPT ("-i",  "Print HAB info")
 BAREBOX_CMD_HELP_OPT ("-f",  "Force. Write even when a key is already written")
 BAREBOX_CMD_HELP_OPT ("-l",  "Lockdown device. Dangerous! After executing only signed images can be booted")
+BAREBOX_CMD_HELP_OPT ("-r",  "Field Return. Dangerous! Access to device keys will be disabled forever")
 BAREBOX_CMD_HELP_OPT ("-p",  "Permanent. Really burn fuses. Be careful!")
 BAREBOX_CMD_HELP_END
 

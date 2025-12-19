@@ -34,8 +34,6 @@ INNERDATA_am625=$(FIRMWARE_DIR)/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62x-
 
 ## TI am625(sip)-SK ##
 SYSFW_start_am625_sk_r5.pblb.k3_am62x_img=$(SYSFW_am625_hs_fs)
-SYSFWDATA_start_am625_sk_r5.pblb.k3_am62x_img=$(SYSFWDATA_am625)
-DMDATA_start_am625_sk_r5.pblb.k3_am62x_img=$(DMDATA_am625)
 INNERDATA_start_am625_sk_r5.pblb.k3_am62x_img=$(INNERDATA_am625)
 KEY_start_am625_sk_r5.pblb.k3_am62x_img=$(KEY_custmpk)
 
@@ -44,8 +42,6 @@ FILE_barebox-am625-sk-r5.img = start_am625_sk_r5.pblb.k3_am62x_img
 image-$(CONFIG_MACH_AM625_SK) += barebox-am625-sk-r5.img
 
 SYSFW_start_am625sip_sk_r5.pblb.k3_am62x_img=$(SYSFW_am625_hs_fs)
-SYSFWDATA_start_am625sip_sk_r5.pblb.k3_am62x_img=$(SYSFWDATA_am625)
-DMDATA_start_am625sip_sk_r5.pblb.k3_am62x_img=$(DMDATA_am625)
 INNERDATA_start_am625sip_sk_r5.pblb.k3_am62x_img=$(INNERDATA_am625)
 KEY_start_am625sip_sk_r5.pblb.k3_am62x_img=$(KEY_custmpk)
 
@@ -55,8 +51,6 @@ image-$(CONFIG_MACH_AM625_SK) += barebox-am625sip-sk-r5.img
 
 ## BeaglePlay ##
 SYSFW_start_beagleplay_r5.pblb.k3_am62x_img=$(SYSFW_am625_gp)
-SYSFWDATA_start_beagleplay_r5.pblb.k3_am62x_img=$(SYSFWDATA_am625)
-DMDATA_start_beagleplay_r5.pblb.k3_am62x_img=$(DMDATA_am625)
 KEY_start_beagleplay_r5.pblb.k3_am62x_img=$(KEY_degenerate)
 
 pblb-$(CONFIG_MACH_BEAGLEPLAY) += start_beagleplay_r5
@@ -68,18 +62,10 @@ endif
 SYSFWDATA_am62lx=$(objtree)/arch/arm/mach-k3/combined-sysfw-cfg-am62l.k3cfg
 SYSFW_am62lx_hs_fs=$(FIRMWARE_DIR)/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62lx-hs-enc.bin
 INNERDATA_am62lx=$(FIRMWARE_DIR)/ti-linux-firmware/ti-sysfw/ti-fs-firmware-am62lx-hs-cert.bin
+TFA_BL31_am62lx=$(FIRMWARE_DIR)/am62lx-bl31.bin
 
 ## TI am62lx-EVM ##
-SYSFW_start_am62lx_evm.pblb.k3_am62lx_img=$(SYSFW_am62lx_hs_fs)
-SYSFWDATA_start_am62lx_evm.pblb.k3_am62lx_img=$(SYSFWDATA_am62lx)
-TFA_start_am62lx_evm.pblb.k3_am62lx_img=$(FIRMWARE_DIR)/am62lx-bl31.bin
-INNERDATA_start_am62lx_evm.pblb.k3_am62lx_img=$(INNERDATA_am62lx)
-KEY_start_am62lx_evm.pblb.k3_am62lx_img=$(KEY_custmpk)
-
-SYSFW_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(SYSFW_am62lx_hs_fs)
-INNERDATA_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(INNERDATA_am62lx)
 TFA_BL1_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(FIRMWARE_DIR)/am62lx-bl1.bin
-KEY_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(KEY_custmpk)
 
 pblb-$(CONFIG_MACH_AM62LX_EVM) += start_am62lx_evm
 FILE_barebox-am62lx-evm.img = start_am62lx_evm.pblb.k3_am62lx_img
@@ -96,37 +82,33 @@ quiet_cmd_k3_am62x_image = K3_am62x_IMG   $@
 		$(srctree)/scripts/k3img					\
 			$<:1:16:0:43c00000					\
 			$(SYSFW_$(@F)):2:0:0:00040000				\
-			$(SYSFWDATA_$(@F)):18:0:0:00067000			\
+			$(SYSFWDATA_am625):18:0:0:00067000			\
 			$$inner							\
-			$(DMDATA_$(@F)):17:16:0:43c3a800			\
+			$(DMDATA_am625):17:16:0:43c3a800			\
 			--key "$(KEY_$(@F))" --out $@
 
 quiet_cmd_k3_am62lx_image = K3_am62lx_IMG   $@
       cmd_k3_am62lx_image = \
-		if [ -n "$(INNERDATA_$(@F))" ]; then				\
-			inner="$(INNERDATA_$(@F)):3:0:0:00000000";		\
-		fi;								\
-										\
 		if [ -e "$(FIRMWARE_DIR)/am62lx-bl32.bin" ]; then		\
 			optee=$(FIRMWARE_DIR)/am62lx-bl32.bin:17:16:0:80200000;	\
 		fi;								\
 										\
 		$(srctree)/scripts/k3img					\
-			$(TFA_$(@F)):1:16:0:80000000				\
-			$(SYSFW_$(@F)):2:0:0:00040000				\
-			$(SYSFWDATA_$(@F)):18:0:0:0006c000			\
-			$$inner							\
+			$(TFA_BL31_am62lx):1:16:0:80000000			\
+			$(SYSFW_am62lx_hs_fs):2:0:0:00040000			\
+			$(SYSFWDATA_am62lx):18:0:0:0006c000			\
+			$(INNERDATA_am62lx):3:0:0:00000000			\
 			$$optee							\
 			$<:17:16:0:82000000					\
-			--key "$(KEY_$(@F))" --out $@
+			--key "$(KEY_custmpk)" --out $@
 
 quiet_cmd_k3_am62lx_tiboot3_image = K3_am62lx_tiboot3_IMG   $@
       cmd_k3_am62lx_tiboot3_image = \
 		$(srctree)/scripts/k3img					\
 			$(TFA_BL1_$(@F)):1:16:160:70800000			\
-			$(SYSFW_$(@F)):2:0:0:00040000				\
-			$(INNERDATA_$(@F)):3:0:0:00000000			\
-			--key "$(KEY_$(@F))"					\
+			$(SYSFW_am62lx_hs_fs):2:0:0:00040000			\
+			$(INNERDATA_am62lx):3:0:0:00000000			\
+			--key "$(KEY_custmpk)"					\
 			--out $@
 
 $(obj)/%.k3_am62x_img: $(obj)/% scripts/k3img FORCE

@@ -421,13 +421,9 @@ static uint32_t *rpc_add_credentials(uint32_t *p)
 	return p;
 }
 
-static int rpc_check_reply(struct packet *pkt, int rpc_prog,
-			   uint32_t rpc_id, int *nfserr)
+static int rpc_check_reply(struct packet *pkt, uint32_t rpc_id)
 {
-	uint32_t *data;
 	struct rpc_reply rpc;
-
-	*nfserr = 0;
 
 	memcpy(&rpc, pkt->data, sizeof(rpc));
 
@@ -439,15 +435,6 @@ static int rpc_check_reply(struct packet *pkt, int rpc_prog,
 	    rpc.astatus ) {
 		return -EINVAL;
 	}
-
-	if (rpc_prog != PROG_NFS)
-		return 0;
-
-	data = (uint32_t *)(pkt->data + sizeof(struct rpc_reply));
-	*nfserr = ntoh32(net_read_uint32(data));
-	*nfserr = -*nfserr;
-
-	debug("%s: err %d\n", __func__, *nfserr);
 
 	return 0;
 }
@@ -468,7 +455,6 @@ static struct packet *rpc_req(struct nfs_priv *npriv, int rpc_prog,
 	unsigned short dport;
 	int ret;
 	unsigned char *payload = net_udp_get_payload(npriv->con);
-	int nfserr;
 	int tries = 0;
 	struct packet *packet;
 
@@ -530,8 +516,7 @@ again:
 
 		packet = list_first_entry(&npriv->packets, struct packet, list);
 
-		ret = rpc_check_reply(packet, rpc_prog,
-				      npriv->rpc_id, &nfserr);
+		ret = rpc_check_reply(packet, npriv->rpc_id);
 		if (ret == -EAGAIN) {
 			nfs_free_packet(packet);
 			continue;
@@ -539,12 +524,7 @@ again:
 			nfs_free_packet(packet);
 			return ERR_PTR(ret);
 		} else {
-			if (rpc_prog == PROG_NFS && nfserr) {
-				nfs_free_packet(packet);
-				return ERR_PTR(nfserr);
-			} else {
-				return packet;
-			}
+			return packet;
 		}
 	}
 }

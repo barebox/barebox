@@ -77,7 +77,6 @@ INNERDATA_start_am62lx_evm.pblb.k3_am62lx_img=$(INNERDATA_am62lx)
 KEY_start_am62lx_evm.pblb.k3_am62lx_img=$(KEY_custmpk)
 
 SYSFW_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(SYSFW_am62lx_hs_fs)
-SYSFWDATA_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(SYSFWDATA_am62lx)
 INNERDATA_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(INNERDATA_am62lx)
 TFA_BL1_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(FIRMWARE_DIR)/am62lx-bl1.bin
 KEY_start_am62lx_evm.pblb.k3_am62lx_tiboot3_img=$(KEY_custmpk)
@@ -126,7 +125,6 @@ quiet_cmd_k3_am62lx_tiboot3_image = K3_am62lx_tiboot3_IMG   $@
 		$(srctree)/scripts/k3img					\
 			$(TFA_BL1_$(@F)):1:16:160:70800000			\
 			$(SYSFW_$(@F)):2:0:0:00040000				\
-			$(SYSFWDATA_$(@F)):18:0:0:0006c000			\
 			$(INNERDATA_$(@F)):3:0:0:00000000			\
 			--key "$(KEY_$(@F))"					\
 			--out $@

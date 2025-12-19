@@ -149,7 +149,8 @@ static void mmu_remap_memory_banks(void)
 
 		/* Skip reserved regions */
 		for_each_reserved_region(bank, rsv) {
-			remap_range_end_sans_text(pos, rsv->start, MAP_CACHED);
+			if (pos != rsv->start)
+				remap_range_end_sans_text(pos, rsv->start, MAP_CACHED);
 			pos = rsv->end + 1;
 		}
 

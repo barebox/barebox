@@ -33,7 +33,7 @@ obj := $(realpath $(obj))
 CPPFLAGS := -I $(LIBUSB_MINGW)/include/libusb-1.0 -I $(src)/../include/ -I $(src)/../../include/mach/ -include $(src)/../include/defines.h
 LDFLAGS := -L $(LIBUSB_MINGW)/lib -lusb-1.0 -static
 
-OBJECTS := $(addprefix $(obj)/, imx.o imx-usb-loader.o)
+OBJECTS := $(addprefix $(obj)/, imx.o imx-usb-loader.o pread.o)
 
 $(obj)/%.o: $(src)/%.c
 	@$(CC) -c -o $@ $< $(CPPFLAGS)

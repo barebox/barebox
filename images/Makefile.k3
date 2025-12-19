@@ -87,10 +87,14 @@ quiet_cmd_k3_am62x_image = K3_am62x_IMG   $@
 			$(DMDATA_am625):17:16:0:43c3a800			\
 			--key "$(KEY_$(@F))" --out $@
 
+ifdef CONFIG_FIRMWARE_K3_AM62L_OPTEE
+AM62L_TIBOOT3_OPTEE = $(FIRMWARE_DIR)/am62lx-bl32.bin
+endif
+
 quiet_cmd_k3_am62lx_image = K3_am62lx_IMG   $@
       cmd_k3_am62lx_image = \
-		if [ -e "$(FIRMWARE_DIR)/am62lx-bl32.bin" ]; then		\
-			optee=$(FIRMWARE_DIR)/am62lx-bl32.bin:17:16:0:80200000;	\
+		if [ -n "$(AM62L_TIBOOT3_OPTEE)" ]; then			\
+			optee=$(AM62L_TIBOOT3_OPTEE):17:16:0:80200000;		\
 		fi;								\
 										\
 		$(srctree)/scripts/k3img					\

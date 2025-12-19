@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 
 / {
-	assigned-clocks = <&cru PLL_CPLL>;
-	assigned-clock-rates = <1500000000>;
-
 	dmc: memory-controller {
 		compatible = "rockchip,rk3588-dmc";
 		rockchip,pmu = <&pmu1grf>;

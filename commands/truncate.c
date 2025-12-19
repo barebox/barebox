@@ -59,23 +59,26 @@ static int do_truncate(int argc, char *argv[])
 			continue;
 		}
 
+		off_t target_size = size;
+
 		if (modify) {
 			struct stat st;
 
 			if (fstat(fd, &st) == -1) {
 				perror("fstat");
 				ret = 1;
-				goto close;
+				close(fd);
+				continue;
 			}
 
-			size = st.st_size + modify * size;
+			target_size = st.st_size + size;
 		}
 
-		if (ftruncate(fd, size) == -1) {
+		if (ftruncate(fd, target_size) == -1) {
 			perror("truncate");
 			ret = 1;
 		}
-close:
+
 		close(fd);
 	}
 

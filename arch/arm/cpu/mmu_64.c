@@ -344,17 +344,7 @@ void __mmu_init(bool mmu_on)
 
 void mmu_disable(void)
 {
-	unsigned int cr;
-
-	cr = get_cr();
-	cr &= ~(CR_M | CR_C);
-
-	set_cr(cr);
-	v8_flush_dcache_all();
-	tlb_invalidate();
-
-	dsb();
-	isb();
+	v8_mmu_disable();
 }
 
 void dma_inv_range(void *ptr, size_t size)
@@ -435,19 +425,4 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 			  ARCH_MAP_CACHED_RWX);
 
 	mmu_enable();
-}
-
-void mmu_early_disable(void)
-{
-	unsigned int cr;
-
-	cr = get_cr();
-	cr &= ~(CR_M | CR_C);
-
-	set_cr(cr);
-	v8_flush_dcache_all();
-	tlb_invalidate();
-
-	dsb();
-	isb();
 }

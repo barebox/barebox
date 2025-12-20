@@ -27,6 +27,7 @@
 #define MAP_DEFAULT	MAP_ARCH_DEFAULT
 
 #include <asm/mmu.h>
+#include <asm/io.h>
 
 static inline bool maptype_is_compatible(maptype_t active, maptype_t check)
 {

@@ -7,7 +7,7 @@
  */
 
 #include <common.h>
-#include <config.h>
+#include <asm/config.h>
 #include <asm/fsl_ddr_sdram.h>
 
 #include "ddr.h"

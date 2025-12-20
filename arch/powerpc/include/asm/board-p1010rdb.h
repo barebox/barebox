@@ -1,19 +1,10 @@
-/*
- * Copyright 2009-2011 Freescale Semiconductor, Inc.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
- * GNU General Public License for more details.
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2009-2011 Freescale Semiconductor, Inc.
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+/* Don't include directly, include <asm/config.h> instead.  */
+
+#ifndef __BOARD_P1010RDB_H
+#define __BOARD_P1010RDB_H
 
 #define CFG_SYS_CLK_FREQ	66666666
 #define CFG_DDR_CLK_FREQ	66666666
@@ -55,4 +46,4 @@
 #define CFG_IFC_CSOR0	CSOR_NOR_ADM_SHIFT(7)
 #define CFG_IFC_AMASK0	IFC_AMASK(32*1024*1024)
 
-#endif /* __CONFIG_H */
+#endif /* __BOARD_P1010RDB_H */

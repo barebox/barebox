@@ -1179,7 +1179,7 @@ static void dwc3_get_properties(struct dwc3 *dwc)
 
 	dwc->maximum_speed = of_usb_get_maximum_speed(dev->of_node, NULL);
 //	dwc->max_ssp_rate = usb_get_maximum_ssp_rate(dev);
-	dwc->dr_mode = of_usb_get_dr_mode(dev->of_node, NULL);
+	dwc->dr_mode = usb_get_dr_mode(dev);
 	dwc->hsphy_mode = of_usb_get_phy_mode(dev->of_node, NULL);
 
 	dwc->sysdev_is_parent = of_property_read_bool(dev->of_node,

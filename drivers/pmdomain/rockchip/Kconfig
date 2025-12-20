@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-2.0-only
+if ARCH_ROCKCHIP || COMPILE_TEST
+
+config ROCKCHIP_PM_DOMAINS
+	bool "Rockchip generic power domain"
+	depends on REGULATOR
+	select PM_GENERIC_DOMAINS
+	help
+	  Say y here to enable power domain support.
+	  The PMU is dedicated for managing the power of the whole chip and may
+	  be needed, so peripherals that barebox is using are powered.
+
+endif

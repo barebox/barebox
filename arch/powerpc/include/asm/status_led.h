@@ -9,6 +9,8 @@
 #ifndef __ASM_STATUS_LED_H__
 #define __ASM_STATUS_LED_H__
 
+#include <asm/config.h>
+
 /* if not overriden */
 #ifndef CONFIG_BOARD_SPECIFIC_LED
 # if defined(CONFIG_8xx)

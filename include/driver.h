@@ -125,7 +125,12 @@ struct device *find_device(const char *str);
  * appending a number to the template. Dynamically created devices should
  * use this function rather than filling the id field themselves.
  */
-int get_free_deviceid(const char *name_template);
+int get_free_deviceid_from(const char *name_template, int id_from);
+
+static inline int get_free_deviceid(const char *name_template)
+{
+	return get_free_deviceid_from(name_template, 0);
+}
 
 int dev_add_alias(struct device *dev, const char *fmt, ...) __printf(2, 3);
 
@@ -598,6 +603,11 @@ get_inheritable_devfs_flags(const struct cdev *parent_cdev)
 	if (!parent_cdev)
 		return 0;
 	return parent_cdev->flags & DEVFS_INHERITABLE_FLAGS;
+}
+
+static inline bool cdev_is_storage(const struct cdev *cdev)
+{
+	return (cdev->flags & DEVFS_IS_BLOCK_DEV) || cdev->mtd;
 }
 
 struct cdev *

@@ -11,3 +11,7 @@
 &{/memory@0} {
 	reg = <0x0 0x0>;
 };
+
+&power {
+	barebox,allow-dummy;
+};

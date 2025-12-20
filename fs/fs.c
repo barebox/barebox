@@ -14,6 +14,7 @@
  *
  */
 
+#include <bootargs.h>
 #include <common.h>
 #include <command.h>
 #include <fs.h>
@@ -1228,36 +1229,36 @@ void mount_all(void)
 	}
 }
 
-void fsdev_set_linux_rootarg(struct fs_device *fsdev, const char *str)
+void fsdev_set_linux_root_options(struct fs_device *fsdev, const char *root, const char *rootopts)
 {
-	fsdev->linux_rootarg = xstrdup(str);
+	fsdev->linux_root = xstrdup(root);
+	fsdev->linux_rootopts = xstrdup(rootopts);
 
-	dev_add_param_fixed(&fsdev->dev, "linux.bootargs",
-			    "%s", fsdev->linux_rootarg);
+	dev_add_param_fixed(&fsdev->dev, "linux.bootargs.root",
+			    "%s", fsdev->linux_root);
+	dev_add_param_fixed(&fsdev->dev, "linux.bootargs.rootopts",
+			    "%s", fsdev->linux_rootopts);
 }
 
-/**
- * path_get_linux_rootarg() - Given a path return a suitable root= option for
- *                            Linux
- * @path: The path
- *
- * Return: A string containing the root= option or an ERR_PTR. the returned
- *         string must be freed by the caller.
- */
-char *path_get_linux_rootarg(const char *path)
+void fsdev_get_linux_root_options(struct fs_device *fsdev,
+				  const char **root, const char **rootopts)
 {
-	struct fs_device *fsdev;
-	const char *str;
+	if (fsdev) {
+		*root = dev_get_param(&fsdev->dev, "linux.bootargs.root");
+		*rootopts = dev_get_param(&fsdev->dev, "linux.bootargs.rootopts");
+	}
+}
 
-	fsdev = get_fsdevice_by_path(AT_FDCWD, path);
-	if (!fsdev)
-		return ERR_PTR(-EINVAL);
+char *format_root_bootarg(const char *root_arg, const char *root, const char *rootopts)
+{
+	char *bootarg;
 
-	str = dev_get_param(&fsdev->dev, "linux.bootargs");
-	if (!str)
-		return ERR_PTR(-ENOSYS);
+	if (rootopts)
+		bootarg = xasprintf("%s=%s %s", root_arg, root, rootopts);
+	else
+		bootarg = xasprintf("%s=%s", root_arg, root);
 
-	return xstrdup(str);
+	return bootarg;
 }
 
 /**
@@ -3312,12 +3313,13 @@ int mount(const char *device, const char *fsname, const char *pathname,
 
 	fsdev->vfsmount.mnt_root = fsdev->sb.s_root;
 
-	if (!fsdev->linux_rootarg) {
-		char *str;
+	if (!fsdev->linux_root) {
+		const char *root = NULL;
+		const char *rootopts = NULL;
 
-		str = cdev_get_linux_rootarg(fsdev->cdev);
-		if (str)
-			fsdev_set_linux_rootarg(fsdev, str);
+		ret = cdev_get_linux_root_and_opts(fsdev->cdev, &root, &rootopts);
+		if (ret == 0)
+			fsdev_set_linux_root_options(fsdev, root, rootopts);
 	}
 
 	path_put(&path);

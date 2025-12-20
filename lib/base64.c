@@ -163,19 +163,19 @@ out:
 		 */
 		if (count > 1)
 			*dst++ = six_bit[0] << 2 | six_bit[1] >> 4;
-		if (count > 2)
+		if (count > 2 && dst_len > 1)
 			*dst++ = six_bit[1] << 4 | six_bit[2] >> 2;
-		if (count > 3)
+		if (count > 3 && dst_len > 2)
 			*dst++ = six_bit[2] << 6 | six_bit[3];
+		/* last character was "=" */
+		if (count != 0)
+			length += min(count - 1, dst_len);
 		/*
 		 * Note that if we decode "AA==" and ate first '=',
 		 * we just decoded one char (count == 2) and now we'll
 		 * do the loop once more to decode second '='.
 		 */
 		dst_len -= count-1;
-		/* last character was "=" */
-		if (count != 0)
-			length += count - 1;
 	}
 ret:
 	p_dst = dst;

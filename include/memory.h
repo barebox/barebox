@@ -17,8 +17,6 @@ static inline ulong mem_malloc_size(void)
 
 struct memory_bank {
 	struct list_head list;
-	unsigned long start;
-	unsigned long size;
 	struct resource *res;
 };
 

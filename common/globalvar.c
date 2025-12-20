@@ -15,6 +15,7 @@
 #include <fnmatch.h>
 
 static int nv_dirty;
+static bool nv_persistable;
 
 struct device global_device = {
 	.name = "global",
@@ -29,6 +30,11 @@ struct device nv_device = {
 void nv_var_set_clean(void)
 {
 	nv_dirty = 0;
+}
+
+void nv_var_set_persistable(void)
+{
+	nv_persistable = true;
 }
 
 void globalvar_remove(const char *name)
@@ -718,8 +724,9 @@ int nvvar_save(void)
 
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
 		defaultenv_load(TMPDIR, 0);
+	if (nv_persistable)
+		envfs_load(env, TMPDIR, 0);
 
-	envfs_load(env, TMPDIR, 0);
 	unlink_recursive(TMPDIR "/nv", NULL);
 
 	dev_for_each_param(&nv_device, param) {

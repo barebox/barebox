@@ -461,6 +461,7 @@ static int prt_imx6_bootentry_generate(struct bootentries *bootentries,
 }
 
 static struct bootentry_provider prt_imx6_bootentry_provider = {
+	.name = "prt-imx6",
 	.generate = prt_imx6_bootentry_generate,
 };
 

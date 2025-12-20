@@ -461,8 +461,7 @@ struct usb_device_id {
 #define USB_CTRL_SET_TIMEOUT   5000
 #define USB_CTRL_GET_TIMEOUT   5000
 
-enum usb_dr_mode of_usb_get_dr_mode(struct device_node *np,
-		const char *propname);
+enum usb_dr_mode usb_get_dr_mode(struct device *dev);
 
 enum usb_dr_mode {
 	USB_DR_MODE_UNKNOWN,

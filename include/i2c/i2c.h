@@ -313,6 +313,8 @@ extern struct class i2c_adapter_class;
 extern struct i2c_client *
 i2c_new_dummy(struct i2c_adapter *adap, u16 address);
 
+void i2c_unregister_device(struct i2c_client *client);
+
 /* Return the adapter number for a specific adapter */
 static inline int i2c_adapter_id(struct i2c_adapter *adap)
 {

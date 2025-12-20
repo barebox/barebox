@@ -26,12 +26,14 @@ struct bootentry {
 int bootentries_add_entry(struct bootentries *entries, struct bootentry *entry);
 
 struct bootentry_provider {
+	const char *name;
 	int (*generate)(struct bootentries *bootentries, const char *name);
 	/* internal fields */
 	struct list_head list;
 };
 
 int bootentry_register_provider(struct bootentry_provider *provider);
+struct bootentry_provider *get_bootentry_provider(const char *name);
 
 #define bootentries_for_each_entry(bootentries, entry) \
 	list_for_each_entry(entry, &bootentries->entries, list)

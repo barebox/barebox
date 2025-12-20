@@ -156,7 +156,6 @@ struct am654_sdhci_plat {
 	bool fails_without_test_cd;
 
 	struct regmap *base;
-	bool non_removable;
 	u32 otap_del_sel[ARRAY_SIZE(td)];
 	u32 itap_del_sel[ARRAY_SIZE(td)];
 	u32 trm_icp;
@@ -359,7 +358,7 @@ static int am654_sdhci_init(struct mci_host *mci, struct device *dev)
 		regmap_update_bits(plat->base, PHY_CTRL1, IOMUX_ENABLE_MASK, 0);
 
 	/* Set slot type based on SD or eMMC */
-	if (plat->non_removable)
+	if (mci->non_removable)
 		ctl_cfg_2 = SLOTTYPE_EMBEDDED;
 
 	regmap_update_bits(plat->base, CTL_CFG_2, SLOTTYPE_MASK, ctl_cfg_2);

@@ -137,6 +137,8 @@ static int init_boot(void)
 	if (!global_boot_default)
 		global_boot_default = xstrdup(
 			IF_ENABLED(CONFIG_BOOT_DEFAULTS, "bootsource ")
+			IF_ENABLED(CONFIG_BOOT_DEFAULTS, "storage.builtin ")
+			IF_ENABLED(CONFIG_BOOT_DEFAULTS, "storage.removable ")
 			"net"
 		);
 
@@ -284,6 +286,21 @@ int bootentry_register_provider(struct bootentry_provider *p)
 {
 	list_add(&p->list, &bootentry_providers);
 	return 0;
+}
+
+struct bootentry_provider *get_bootentry_provider(const char *name)
+{
+	struct bootentry_provider *p;
+
+	if (!name)
+		return NULL;
+
+	list_for_each_entry(p, &bootentry_providers, list) {
+		if (streq_ptr(p->name, name))
+			return p;
+	}
+
+	return NULL;
 }
 
 /*

@@ -8,7 +8,7 @@
  * based on work by Andy Fleming
  */
 
-#include <config.h>
+#include <asm/config.h>
 #include <common.h>
 #include <malloc.h>
 #include <net.h>

@@ -7,6 +7,10 @@
 		barebox,bootsource-mmc1 = &sdhci1;
 		barebox,bootsource-mmc2 = &sdhci2;
 	};
+
+	otp: otp {
+		compatible = "ti,am62x-otp";
+	};
 };
 
 &wkup_conf {

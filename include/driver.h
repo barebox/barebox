@@ -489,6 +489,8 @@ int cdev_fdopen(struct cdev *cdev, unsigned long flags);
 int cdev_close(struct cdev *cdev);
 int cdev_flush(struct cdev *cdev);
 
+struct device *device_find_by_file_path(const char *filepath);
+
 typedef int (*cdev_alias_processor_t)(struct cdev *, void *data);
 
 #ifdef CONFIG_CDEV_ALIAS

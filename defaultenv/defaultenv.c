@@ -32,48 +32,6 @@ struct defaultenv {
 	size_t size;
 };
 
-static void defaultenv_add_base(void)
-{
-	static int base_added;
-
-	if (base_added)
-		return;
-
-	base_added = 1;
-
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW))
-		defaultenv_append_directory(defaultenv_2_base);
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_MENU))
-		defaultenv_append_directory(defaultenv_2_menu);
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_DFU))
-		defaultenv_append_directory(defaultenv_2_dfu);
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_REBOOT_MODE))
-		defaultenv_append_directory(defaultenv_2_reboot_mode);
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_SECURITY_POLICY))
-		defaultenv_append_directory(defaultenv_2_security_policy);
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_IKCONFIG))
-		defaultenv_append_directory(defaultenv_2_ikconfig);
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
-		defaultenv_append_directory(defaultenv_1);
-}
-
-static void defaultenv_add_external(void)
-{
-	static int external_added;
-
-	if (external_added)
-		return;
-
-	external_added = 1;
-
-	/*
-	 * The traditional or external environment given with
-	 * CONFIG_DEFAULT_ENVIRONMENT_PATH.
-	 */
-	defaultenv_append((void *)default_environment,
-			default_environment_size, "defaultenv");
-}
-
 /*
  * defaultenv_append - append a envfs buffer to the default environment
  * @buf:	The buffer containing the binary environment. If it is
@@ -87,8 +45,6 @@ void defaultenv_append(void *buf, unsigned int size, const char *name)
 {
 	struct defaultenv *df;
 
-	defaultenv_add_base();
-
 	df = xzalloc(sizeof(*df));
 	df->buf = buf;
 	df->size = size;
@@ -100,8 +56,6 @@ void defaultenv_append(void *buf, unsigned int size, const char *name)
 void defaultenv_append_runtime_directory(const char *srcdir)
 {
 	struct defaultenv *df;
-
-	defaultenv_add_base();
 
 	df = xzalloc(sizeof(*df));
 	df->srcdir = srcdir;
@@ -172,17 +126,41 @@ static int defaultenv_load_one(struct defaultenv *df, const char *dir,
 int defaultenv_load(const char *dir, unsigned flags)
 {
 	struct defaultenv *df;
-	int ret;
-
-	defaultenv_add_base();
-
-	defaultenv_add_external();
+	int err = 0;
 
 	list_for_each_entry(df, &defaultenv_list, list) {
-		ret = defaultenv_load_one(df, dir, flags);
+		int ret = defaultenv_load_one(df, dir, flags);
 		if (ret)
-			return ret;
+			err = ret;
 	}
+
+	return err;
+}
+
+static int defaultenv_init(void)
+{
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW))
+		defaultenv_append_directory(defaultenv_2_base);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_MENU))
+		defaultenv_append_directory(defaultenv_2_menu);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_DFU))
+		defaultenv_append_directory(defaultenv_2_dfu);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_REBOOT_MODE))
+		defaultenv_append_directory(defaultenv_2_reboot_mode);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_SECURITY_POLICY))
+		defaultenv_append_directory(defaultenv_2_security_policy);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_IKCONFIG))
+		defaultenv_append_directory(defaultenv_2_ikconfig);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_1);
+
+	/*
+	 * The traditional or external environment given with
+	 * CONFIG_DEFAULT_ENVIRONMENT_PATH.
+	 */
+	defaultenv_append((void *)default_environment,
+			default_environment_size, "defaultenv");
 
 	return 0;
 }
+pure_initcall(defaultenv_init);

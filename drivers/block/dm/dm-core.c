@@ -442,6 +442,7 @@ void dm_destroy(struct dm_device *dm)
 	struct dm_target *ti, *tmp;
 
 	blockdevice_unregister(&dm->blk);
+	free(dm->blk.cdev.name);
 
 	list_for_each_entry_safe_reverse(ti, tmp, &dm->targets, list) {
 		ti->ops->destroy(ti);

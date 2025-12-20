@@ -34,8 +34,10 @@ const char *linux_bootargs_get(void)
 	free(linux_bootargs);
 
 	bootargs = globalvar_get_match("linux.bootargs.", " ");
-	if (!strlen(bootargs))
+	if (!strlen(bootargs)) {
+		free(bootargs);
 		return getenv("bootargs");
+	}
 
 	linux_bootargs = bootargs;
 

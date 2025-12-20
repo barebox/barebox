@@ -1,0 +1,4 @@
+#!/bin/sh
+
+usbserial
+global.autoboot_timeout=10

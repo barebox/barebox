@@ -80,17 +80,9 @@ static struct pmic_config bd71837_cfg[] = {
 
 extern struct dram_timing_info imx8mn_evk_ddr4_timing, imx8mn_evk_lpddr4_timing;
 
-static void start_atf(void)
+static void nxp_imx8mn_evk_init_early(void)
 {
 	struct pbl_i2c *i2c;
-
-	/*
-	 * If we are in EL3 we are running for the first time and need to
-	 * initialize the DRAM and run TF-A (BL31). The TF-A will then jump
-	 * to DRAM in EL2.
-	 */
-	if (current_el() != 3)
-		return;
 
 	imx8mn_early_clock_init();
 
@@ -108,8 +100,6 @@ static void start_atf(void)
 		pmic_configure(i2c, 0x4b, bd71837_cfg, ARRAY_SIZE(bd71837_cfg));
 		imx8mn_ddr_init(&imx8mn_evk_ddr4_timing, DRAM_TYPE_DDR4);
 	}
-
-	imx8mn_load_and_start_image_via_tfa();
 }
 
 /*
@@ -135,7 +125,15 @@ static __noreturn noinline void nxp_imx8mn_evk_start(void)
 
 	setup_uart();
 
-	start_atf();
+	/*
+	 * If we are in EL3 we are running for the first time and need to
+	 * initialize the DRAM and run TF-A (BL31). The TF-A will then jump
+	 * to DRAM in EL2.
+	 */
+	if (current_el() == 3) {
+		nxp_imx8mn_evk_init_early();
+		imx8mn_load_and_start_image_via_tfa();
+	}
 
 	/* Check if we configured DDR4 in EL3 */
 	if (readl(MX8M_DDRC_CTL_BASE_ADDR) & BIT(4))

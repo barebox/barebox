@@ -52,6 +52,13 @@ config DRIVER_VIDEO_IMX_IPU_OVERLAY
 	bool "i.MX31/35 framebuffer overlay support"
 	depends on DRIVER_VIDEO_IMX_IPU && (ARCH_IMX35 || ARCH_IMX31)
 
+config DRIVER_VIDEO_LCDIF
+	bool "i.MX9 framebuffer driver"
+	depends on ARCH_IMX9 || ARCH_IMX93
+	help
+	  Add support for the LCDIFv3 LCD controller found on
+	  i.MX8MP and i.MX93 SoCs.
+
 config DRIVER_VIDEO_STM
 	bool "i.MX23/28 framebuffer driver"
 	depends on ARCH_MXS || COMPILE_TEST
@@ -254,5 +261,13 @@ config DRIVER_VIDEO_DW_MIPI_DSI
 	  Say Y here if you want to enable support for the Designware MIPI-DSI
 	  controller. To make use of this driver you need platform specific
 	  glue code to be selected as well.
+
+config DRIVER_VIDEO_FSL_LDB
+	tristate "DRM support for FSL_LDB DPI-to-LVDS controller"
+	depends on OFTREE
+	select VIDEO_VPL
+	help
+	  Say Y here if you want to enable support for the i.MX6SX/8MP/93
+	  DPI-to-LVDS on-SoC encoder.
 
 endif

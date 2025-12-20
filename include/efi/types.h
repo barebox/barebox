@@ -2,6 +2,8 @@
 #ifndef _EFI_TYPES_H_
 #define _EFI_TYPES_H_
 
+#include <efi/attributes.h>
+
 #ifndef __ASSEMBLY__
 
 #include <linux/types.h>
@@ -11,6 +13,8 @@
 #include <linux/uuid.h>
 
 typedef unsigned long efi_status_t;
+typedef size_t efi_uintn_t;
+typedef ssize_t efi_intn_t;
 typedef wchar_t efi_char16_t;		/* UNICODE character */
 typedef u64 efi_physical_addr_t;	/* always, even on 32-bit systems */
 
@@ -38,12 +42,6 @@ typedef guid_t efi_guid_t __aligned(__alignof__(u32));
   (b) & 0xff, ((b) >> 8) & 0xff, \
   (c) & 0xff, ((c) >> 8) & 0xff, \
   (d0), (d1), (d2), (d3), (d4), (d5), (d6), (d7) }})
-
-#ifdef __x86_64__
-#define EFIAPI __attribute__((ms_abi))
-#else
-#define EFIAPI
-#endif
 
 struct efi_device_path {
 	u8 type;
@@ -81,6 +79,47 @@ static inline efi_physical_addr_t efi_virt_to_phys(const void *addr)
 {
 	return (uintptr_t)addr;
 }
+
+/*
+ * Types and defines for Time Services
+ */
+#define EFI_TIME_ADJUST_DAYLIGHT 0x1
+#define EFI_TIME_IN_DAYLIGHT     0x2
+#define EFI_UNSPECIFIED_TIMEZONE 0x07ff
+
+struct efi_time {
+	u16 year;
+	u8 month;
+	u8 day;
+	u8 hour;
+	u8 minute;
+	u8 second;
+	u8 pad1;
+	u32 nanosecond;
+	s16 timezone;
+	u8 daylight;
+	u8 pad2;
+};
+
+struct efi_time_cap {
+	u32 resolution;
+	u32 accuracy;
+	u8 sets_to_zero;
+};
+
+/*
+ * Allocation types for calls to boottime->allocate_pages.
+ */
+enum efi_allocate_type {
+	EFI_ALLOCATE_ANY_PAGES,
+	EFI_ALLOCATE_MAX_ADDRESS,
+	EFI_ALLOCATE_ADDRESS,
+	EFI_MAX_ALLOCATE_TYPE
+};
+
+#define EFI_PAGE_SHIFT			12
+#define EFI_PAGE_SIZE			(1ULL << EFI_PAGE_SHIFT)
+#define EFI_PAGE_MASK			(EFI_PAGE_SIZE - 1)
 
 #endif
 

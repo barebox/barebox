@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef _EFI_MEMTYPE_H_
-#define _EFI_MEMTYPE_H_
+#ifndef _EFI_MEMORY_H_
+#define _EFI_MEMORY_H_
 
 #include <linux/ioport.h>
 #include <efi/types.h>
@@ -75,5 +75,20 @@ static inline void resource_set_efi_memory_type_attrs(struct resource *res,
 	res->attrs = attrs & ~EFI_MEMORY_RUNTIME;
 	res->flags |= IORESOURCE_TYPE_VALID;
 }
+
+/*
+ * Memory map descriptor:
+ */
+
+struct efi_memory_desc {
+    u32 type; /* enum efi_memory_type */
+    u32 _padding;
+    efi_physical_addr_t phys_start;
+    void *virt_start;
+    u64 npages;
+    u64 attrs;
+};
+
+#define EFI_MEMORY_DESCRIPTOR_VERSION	1
 
 #endif

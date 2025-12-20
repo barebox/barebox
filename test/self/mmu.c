@@ -9,7 +9,7 @@
 #include <abort.h>
 #include <zero_page.h>
 #include <linux/sizes.h>
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 #include <memory.h>
 
 #define TEST_BUFFER_SIZE		SZ_1M

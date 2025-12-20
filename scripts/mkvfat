@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -e
+
+img="$1"
+bb="$2"
+fullpath="$3"
+
+truncate -s 2048KiB "$img"
+mkdosfs "$img" >/dev/null
+
+path="$fullpath"
+while true; do
+    path="$(dirname "$path")"
+    if [ "$path" = "." ]; then break; fi
+    components="::$path $components"
+done
+
+mmd -DsS -i "$img" $components
+mcopy -sp -D overwrite -i "$img" "$bb" "::$fullpath"

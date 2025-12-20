@@ -23,10 +23,32 @@ static struct sconfig_notifier_block sconfig_notifier;
 
 static __maybe_unused struct bootm_overrides bootm_overrides;
 
+static bool uimage_check(struct image_handler *handler,
+			 struct image_data *data,
+			 enum filetype detected_filetype)
+{
+	return detected_filetype == filetype_uimage &&
+		handler->ih_os == data->os->header.ih_os;
+}
+
+static bool filetype_check(struct image_handler *handler,
+			   struct image_data *data,
+			   enum filetype detected_filetype)
+{
+	return handler->filetype == detected_filetype;
+}
+
 int register_image_handler(struct image_handler *handler)
 {
-	list_add_tail(&handler->list, &handler_list);
+	if (!handler->check_image) {
+		if (IS_ENABLED(CONFIG_BOOTM_UIMAGE) &&
+		    handler->filetype == filetype_uimage)
+			handler->check_image = uimage_check;
+		else
+			handler->check_image = filetype_check;
+	}
 
+	list_add_tail(&handler->list, &handler_list);
 	return 0;
 }
 
@@ -36,11 +58,7 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 	struct image_handler *handler;
 
 	list_for_each_entry(handler, &handler_list, list) {
-		if (filetype != filetype_uimage &&
-				handler->filetype == filetype)
-			return handler;
-		if  (filetype == filetype_uimage &&
-				handler->ih_os == data->os->header.ih_os)
+		if (handler->check_image(handler, data, filetype))
 			return handler;
 	}
 
@@ -254,7 +272,7 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	if (!data->os_file)
 		return -EINVAL;
 
-	data->os_res = file_to_sdram(data->os_file, load_address);
+	data->os_res = file_to_sdram(data->os_file, load_address, MEMTYPE_LOADER_CODE);
 	if (!data->os_res)
 		return -ENOMEM;
 
@@ -379,7 +397,7 @@ initrd_file:
 		goto done;
 	}
 
-	data->initrd_res = file_to_sdram(data->initrd_file, load_address);
+	data->initrd_res = file_to_sdram(data->initrd_file, load_address, MEMTYPE_LOADER_DATA);
 	if (!data->initrd_res)
 		return ERR_PTR(-ENOMEM);
 
@@ -794,7 +812,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (size < PAGE_SIZE)
 		goto err_out;
 
-	os_type = file_detect_type(data->os_header, PAGE_SIZE);
+	os_type = data->os_type = file_detect_type(data->os_header, PAGE_SIZE);
 
 	if (!data->force && os_type == filetype_unknown) {
 		pr_err("Unknown OS filetype (try -f)\n");

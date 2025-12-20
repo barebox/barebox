@@ -10,13 +10,13 @@
 #include <malloc.h>
 #include <console.h>
 #include <xfuncs.h>
-#include <efi.h>
 #include <readkey.h>
 #include <linux/ctype.h>
-#include <efi/efi-payload.h>
+#include <efi/payload.h>
 #include <kfifo.h>
-#include <efi/efi-device.h>
-#include <efi/efi-stdio.h>
+#include <efi/payload/driver.h>
+#include <efi/protocol/text.h>
+#include <efi/error.h>
 
 struct efi_console_priv {
 	struct efi_simple_text_output_protocol *out;
@@ -423,7 +423,6 @@ static void efi_set_mode(struct efi_console_priv *priv)
 
 static int efi_console_probe(struct device *dev)
 {
-	efi_guid_t inex_guid = EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL_GUID;
 	struct efi_simple_text_input_ex_protocol *inex;
 	struct console_device *cdev;
 	struct efi_console_priv *priv;
@@ -440,7 +439,7 @@ static int efi_console_probe(struct device *dev)
 		return -ENOMEM;
 
 	efiret = BS->open_protocol(efi_sys_table->con_in_handle,
-			     &inex_guid,
+			     &efi_text_input_ex_guid,
 			     (void **)&inex,
 			     efi_parent_image,
 			     0,

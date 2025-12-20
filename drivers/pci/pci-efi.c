@@ -8,12 +8,11 @@
 #include <driver.h>
 #include <init.h>
 #include <xfuncs.h>
-#include <efi.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/payload/driver.h>
+#include <efi/protocol/pci.h>
+#include <efi/error.h>
 #include <linux/pci.h>
-
-#include "pci-efi.h"
 
 struct efi_pci_priv {
 	struct efi_pci_root_bridge_io_protocol *protocol;

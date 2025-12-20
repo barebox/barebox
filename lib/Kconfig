@@ -44,6 +44,15 @@ config XZ_DECOMPRESS
 	select XZ_DEC_SPARC
 	select XZ_DEC_ARM64
 
+config SMBIOS
+	bool "SMBIOS utility functions" if COMPILE_TEST
+	help
+	  The System Management BIOS (SMBIOS) specification defines data
+	  structures to read management information produced by the BIOS
+	  of a computer. barebox can make use of this to report information
+	  like its the board serial number, reset/wake reason, or whether
+	  a hardware watchdog has been enabled.
+
 config XZ_DEC_X86
 	bool
 

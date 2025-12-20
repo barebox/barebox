@@ -17,7 +17,7 @@
 #include <asm/cputype.h>
 #include <asm/cache.h>
 #include <asm/ptrace.h>
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 
 /**
  * Enable processor's instruction cache

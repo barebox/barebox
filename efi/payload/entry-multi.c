@@ -4,10 +4,9 @@
 #include <linux/linkage.h>
 #include <linux/sizes.h>
 #include <stdio.h>
-#include <efi.h>
 #include <asm/common.h>
-#include <efi/efi-util.h>
-#include <efi/efi-payload.h>
+#include <efi/protocol/text.h>
+#include <efi/payload.h>
 #include <pbl.h>
 #include <pbl/handoff-data.h>
 

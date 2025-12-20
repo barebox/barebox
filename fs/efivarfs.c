@@ -24,12 +24,14 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 #include <fcntl.h>
-#include <efi.h>
 #include <wchar.h>
 #include <linux/err.h>
 #include <linux/ctype.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/services.h>
+#include <efi/mode.h>
+#include <efi/variable.h>
+#include <efi/error.h>
+#include <efi/guid.h>
 
 struct efivarfs_inode {
 	s16 *name;
@@ -45,12 +47,14 @@ struct efivarfs_dir {
 
 struct efivarfs_priv {
 	struct list_head inodes;
+	struct efi_runtime_services *rt;
 };
 
 static int efivars_create(struct device *dev, const char *pathname,
 			  mode_t mode)
 {
 	struct efivarfs_priv *priv = dev->priv;
+	struct efi_runtime_services *rt = priv->rt;
 	struct efivarfs_inode *inode;
 	efi_guid_t vendor;
 	efi_status_t efiret;
@@ -79,7 +83,7 @@ static int efivars_create(struct device *dev, const char *pathname,
 	inode->full_name = basprintf("%s-%pUl", name8, &inode->vendor);
 	free(name8);
 
-	efiret = RT->set_variable(inode->name, &inode->vendor,
+	efiret = rt->set_variable(inode->name, &inode->vendor,
 				  EFI_VARIABLE_NON_VOLATILE |
 				  EFI_VARIABLE_BOOTSERVICE_ACCESS |
 				  EFI_VARIABLE_RUNTIME_ACCESS,
@@ -97,6 +101,7 @@ static int efivars_create(struct device *dev, const char *pathname,
 static int efivars_unlink(struct device *dev, const char *pathname)
 {
 	struct efivarfs_priv *priv = dev->priv;
+	struct efi_runtime_services *rt = priv->rt;
 	struct efivarfs_inode *inode, *tmp;
 	efi_status_t efiret;
 
@@ -105,7 +110,7 @@ static int efivars_unlink(struct device *dev, const char *pathname)
 
 	list_for_each_entry_safe(inode, tmp, &priv->inodes, node) {
 		if (!strcmp(inode->full_name, pathname)) {
-			efiret = RT->set_variable(inode->name, &inode->vendor,
+			efiret = rt->set_variable(inode->name, &inode->vendor,
 						  0, 0, NULL);
 			if (EFI_ERROR(efiret))
 				return -efi_errno(efiret);
@@ -123,10 +128,13 @@ struct efivars_file {
 	efi_guid_t vendor;
 	s16 *name;
 	u32 attributes;
+	struct efivarfs_priv *priv;
 };
 
 static int efivarfs_open(struct device *dev, struct file *f, const char *filename)
 {
+	struct efivarfs_priv *priv = dev->priv;
+	struct efi_runtime_services *rt = priv->rt;
 	struct efivars_file *efile;
 	efi_status_t efiret;
 	int ret;
@@ -137,7 +145,7 @@ static int efivarfs_open(struct device *dev, struct file *f, const char *filenam
 	if (ret)
 		return -ENOENT;
 
-	efiret = RT->get_variable(efile->name, &efile->vendor,
+	efiret = rt->get_variable(efile->name, &efile->vendor,
 				  NULL, &efile->size, NULL);
 	if (EFI_ERROR(efiret) && efiret != EFI_BUFFER_TOO_SMALL) {
 		ret = -efi_errno(efiret);
@@ -150,13 +158,15 @@ static int efivarfs_open(struct device *dev, struct file *f, const char *filenam
 		goto out;
 	}
 
-	efiret = RT->get_variable(efile->name, &efile->vendor,
+	efiret = rt->get_variable(efile->name, &efile->vendor,
 				  &efile->attributes, &efile->size,
 				  efile->buf);
 	if (EFI_ERROR(efiret)) {
 		ret = -efi_errno(efiret);
 		goto out;
 	}
+
+	efile->priv = priv;
 
 	f->f_size = efile->size;
 	f->private_data = efile;
@@ -192,6 +202,7 @@ static int efivarfs_read(struct file *f, void *buf, size_t insize)
 static int efivarfs_write(struct file *f, const void *buf, size_t insize)
 {
 	struct efivars_file *efile = f->private_data;
+	struct efi_runtime_services *rt = efile->priv->rt;
 	efi_status_t efiret;
 
 	if (efile->size < f->f_pos + insize) {
@@ -201,7 +212,7 @@ static int efivarfs_write(struct file *f, const void *buf, size_t insize)
 
 	memcpy(efile->buf + f->f_pos, buf, insize);
 
-	efiret = RT->set_variable(efile->name, &efile->vendor,
+	efiret = rt->set_variable(efile->name, &efile->vendor,
 				  efile->attributes,
 				  efile->size ? efile->size : 1, efile->buf);
 	if (EFI_ERROR(efiret))
@@ -213,12 +224,13 @@ static int efivarfs_write(struct file *f, const void *buf, size_t insize)
 static int efivarfs_truncate(struct file *f, loff_t size)
 {
 	struct efivars_file *efile = f->private_data;
+	struct efi_runtime_services *rt = efile->priv->rt;
 	efi_status_t efiret;
 
 	efile->size = size;
 	efile->buf = realloc(efile->buf, efile->size + sizeof(uint32_t));
 
-	efiret = RT->set_variable(efile->name, &efile->vendor,
+	efiret = rt->set_variable(efile->name, &efile->vendor,
 				  efile->attributes,
 				  efile->size ? efile->size : 1, efile->buf);
 	if (EFI_ERROR(efiret))
@@ -268,6 +280,8 @@ static int efivarfs_closedir(struct device *dev, DIR *dir)
 static int efivarfs_stat(struct device *dev, const char *filename,
 			 struct stat *s)
 {
+	struct efivarfs_priv *priv = dev->priv;
+	struct efi_runtime_services *rt = priv->rt;
 	efi_guid_t vendor;
 	s16 *name;
 	efi_status_t efiret;
@@ -278,7 +292,7 @@ static int efivarfs_stat(struct device *dev, const char *filename,
 	if (ret)
 		return -ENOENT;
 
-	efiret = RT->get_variable(name, &vendor, NULL, &size, NULL);
+	efiret = rt->get_variable(name, &vendor, NULL, &size, NULL);
 
 	free(name);
 
@@ -299,17 +313,23 @@ static int efivarfs_probe(struct device *dev)
 	char *name8;
 	size_t size;
 	struct efivarfs_priv *priv;
+	struct efi_runtime_services *rt;
+
+	rt = efi_get_runtime_services();
+	if (!rt)
+		return -ENODEV;
 
 	name[0] = 0;
 
 	priv = xzalloc(sizeof(*priv));
+	priv->rt = rt;
 	INIT_LIST_HEAD(&priv->inodes);
 
 	while (1) {
 		struct efivarfs_inode *inode;
 
 		size = sizeof(name);
-		efiret = RT->get_next_variable(&size, name, &vendor);
+		efiret = rt->get_next_variable(&size, name, &vendor);
 		if (EFI_ERROR(efiret))
 			break;
 
@@ -370,5 +390,4 @@ static int efivarfs_init(void)
 {
 	return register_fs_driver(&efivarfs_driver);
 }
-
-coredevice_efi_initcall(efivarfs_init);
+coredevice_initcall(efivarfs_init);

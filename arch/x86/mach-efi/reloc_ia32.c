@@ -34,7 +34,7 @@
 */
 
 #include <common.h>
-#include <efi.h>
+#include <efi/error.h>
 
 #include <elf.h>
 

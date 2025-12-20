@@ -6,7 +6,7 @@
 #include <init.h>
 #include <bootm.h>
 #include <asm/boot.h>
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 
 static int do_bootm_linux(struct image_data *data)
 {

@@ -89,6 +89,7 @@ int cdev_detect_type(struct cdev *cdev, enum filetype *type);
 enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec);
 int is_fat_boot_sector(const void *_buf);
 bool filetype_is_barebox_image(enum filetype ft);
+bool filetype_is_linux_efi_image(enum filetype ft);
 
 static inline bool file_is_compressed_file(enum filetype ft)
 {

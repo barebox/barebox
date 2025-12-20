@@ -6,9 +6,8 @@
 #include <init.h>
 #include <driver.h>
 #include <clock.h>
-#include <efi.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/error.h>
 #include <linux/err.h>
 
 static uint64_t ticks = 1;
@@ -19,7 +18,7 @@ static uint64_t efi_cs_read(void)
 	return ticks;
 }
 
-static void efi_cs_inc(struct efi_event *event, void *ctx)
+static void EFIAPI efi_cs_inc(struct efi_event *event, void *ctx)
 {
 	ticks++;
 }

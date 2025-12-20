@@ -11,13 +11,15 @@
 #include <malloc.h>
 #include <memory.h>
 #include <string.h>
+#include <magicvar.h>
 #include <linux/sizes.h>
 #include <wchar.h>
 #include <init.h>
-#include <efi.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
-#include <efi/device-path.h>
+#include <efi/payload.h>
+#include <efi/error.h>
+#include <efi/payload/driver.h>
+#include <efi/devicepath.h>
+#include <efi/variable.h>
 #include <linux/err.h>
 
 static int efi_locate_handle(enum efi_locate_search_type search_type,
@@ -429,6 +431,8 @@ static int efi_init_devices(void)
 	dev_add_param_bool_fixed(&efi_bus.dev, "secure_boot", secure_boot);
 	dev_add_param_bool_fixed(&efi_bus.dev, "secure_mode",
 				 secure_boot & setup_mode);
+	dev_add_param_fixed(&efi_bus.dev, "payload_default_path",
+			    CONFIG_EFI_PAYLOAD_DEFAULT_PATH);
 
 	devinfo_add(&efi_bus.dev, efi_businfo);
 
@@ -439,6 +443,8 @@ static int efi_init_devices(void)
 	return 0;
 }
 core_efi_initcall(efi_init_devices);
+
+BAREBOX_MAGICVAR(efi.payload_default_path, "The arch-specific removable media path");
 
 void efi_pause_devices(void)
 {

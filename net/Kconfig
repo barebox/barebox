@@ -9,7 +9,7 @@ if NET
 config NET_ETHADDR_FROM_MACHINE_ID
 	bool
 	prompt "generate stable Ethernet address"
-	depends on MACHINE_ID && HAVE_DIGEST_SHA256 && HAVE_DIGEST_HMAC
+	depends on MACHINE_ID_SPECIFIC
 	help
 	  By default, barebox will generate random Ethernet addresses for
 	  interfaces that had no explicit Ethernet address set via

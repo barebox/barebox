@@ -40,7 +40,7 @@
 #include <watchdog.h>
 #include <glob.h>
 #include <net.h>
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 #include <bselftest.h>
 #include <pbl/handoff-data.h>
 #include <libfile.h>
@@ -62,9 +62,9 @@ static int mount_root(void)
 	mkdir("/mnt", 0);
 	devfs_init();
 
-	if (IS_ENABLED(CONFIG_FS_EFIVARFS) && efi_is_payload()) {
+	if (IS_ENABLED(CONFIG_FS_EFIVARFS)) {
 		mkdir("/efivars", 0);
-		mount("none", "efivarfs", "/efivars", NULL);
+		automount_add("/efivars", "mount -t efivarfs none /efivars");
 	}
 
 	if (IS_ENABLED(CONFIG_FS_PSTORE)) {
@@ -262,11 +262,22 @@ static int register_autoboot_vars(void)
 }
 postcore_initcall(register_autoboot_vars);
 
+static enum autoboot_state current_autoboot = AUTOBOOT_UNKNOWN;
+
+/**
+ * get_autoboot_state - get the autoboot state
+ *
+ * This functions returns the autoboot state last used.
+ */
+enum autoboot_state get_autoboot_state(void)
+{
+	return current_autoboot;
+}
+
 static int run_init(void)
 {
 	const char *bmode, *cmdline;
 	bool env_bin_init_exists;
-	enum autoboot_state autoboot;
 	struct stat s;
 	glob_t g;
 	int i, ret;
@@ -343,19 +354,20 @@ static int run_init(void)
 		free(scr);
 	}
 
-	autoboot = do_autoboot_countdown();
+	current_autoboot = do_autoboot_countdown();
 
 	console_ctrlc_allow();
 
-	if (autoboot == AUTOBOOT_BOOT)
+	if (current_autoboot == AUTOBOOT_BOOT)
 		run_command("boot");
 
 	if (IS_ENABLED(CONFIG_NET) && !IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT) &&
-	    autoboot != AUTOBOOT_HALT)
+	    current_autoboot != AUTOBOOT_HALT)
 		eth_open_all();
 
-	if (autoboot != AUTOBOOT_MENU) {
-		if (autoboot == AUTOBOOT_ABORT && autoboot == global_autoboot_state)
+	if (current_autoboot != AUTOBOOT_MENU) {
+		if (current_autoboot == AUTOBOOT_ABORT &&
+		    current_autoboot == global_autoboot_state)
 			watchdog_inhibit_all();
 
 		run_shell();

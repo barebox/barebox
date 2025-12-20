@@ -5,14 +5,15 @@
  * Copyright (c) 2025 Anis Chali <chalianis1@gmail.com>
  * Copyright (C) 2025 Ahmad Fatoum <a.fatoum@pengutronix.de>
  */
-#include <common.h>
-#include <driver.h>
 #include <init.h>
 #include <linux/hw_random.h>
-#include <efi.h>
-#include <efi/efi-device.h>
-#include <efi/device-path.h>
-#include <efi/efi-payload.h>
+#include <efi/devicepath.h>
+#include <efi/mode.h>
+#include <efi/services.h>
+#include <efi/protocol/file.h>
+#include <efi/initrd.h>
+#include <efi/guid.h>
+#include <efi/error.h>
 
 static efi_status_t EFIAPI efi_initrd_load_file2(
 	struct efi_load_file_protocol *this, struct efi_device_path *file_path,
@@ -71,6 +72,7 @@ static efi_status_t EFIAPI efi_initrd_load_file2(
 
 int efi_initrd_register(void *initrd_base, size_t initrd_sz)
 {
+	struct efi_boot_services *bs;
 	efi_status_t efiret;
 	int ret;
 
@@ -78,7 +80,11 @@ int efi_initrd_register(void *initrd_base, size_t initrd_sz)
 	initrd.start = initrd_base;
 	initrd.size = initrd_sz;
 
-	efiret = BS->install_multiple_protocol_interfaces(
+	bs = efi_get_boot_services();
+	if (!bs)
+		return -EOPNOTSUPP;
+
+	efiret = bs->install_multiple_protocol_interfaces(
 		&initrd.lf2_handle, &efi_load_file2_protocol_guid, &initrd.base,
 		&efi_device_path_protocol_guid, &initrd_dev_path, NULL);
 	if (EFI_ERROR(efiret)) {
@@ -93,10 +99,12 @@ int efi_initrd_register(void *initrd_base, size_t initrd_sz)
 
 void efi_initrd_unregister(void)
 {
-	if (!initrd.base.load_file)
+	struct efi_boot_services *bs = efi_get_boot_services();
+
+	if (!bs || !initrd.base.load_file)
 		return;
 
-	BS->uninstall_multiple_protocol_interfaces(
+	bs->uninstall_multiple_protocol_interfaces(
 		initrd.lf2_handle, &efi_device_path_protocol_guid, &initrd_dev_path,
 		&efi_load_file2_protocol_guid, &initrd.base, NULL);
 

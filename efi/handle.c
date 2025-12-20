@@ -3,11 +3,9 @@
  * Copyright (c) 2014 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  */
 
-#include <common.h>
-#include <efi.h>
-#include <efi/efi-util.h>
-#include <efi/efi-device.h>
-#include <efi/efi-mode.h>
+#include <efi/payload.h>
+#include <efi/error.h>
+#include <malloc.h>
 
 int __efi_locate_handle(struct efi_boot_services *bs,
 			enum efi_locate_search_type search_type,

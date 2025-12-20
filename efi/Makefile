@@ -3,4 +3,5 @@
 obj-$(CONFIG_EFI_PAYLOAD)	+= payload/
 obj-$(CONFIG_EFI_GUID)		+= guid.o
 obj-$(CONFIG_EFI_DEVICEPATH)	+= devicepath.o
-obj-y				+= errno.o efivar-filename.o
+obj-y				+= errno.o handle.o efivar.o efivar-filename.o
+obj-y				+= initrd.o

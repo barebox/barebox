@@ -1,8 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0-only
-#ifndef __PCI_EFI_H_
-#define __PCI_EFI_H_
+/* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <efi.h>
+#ifndef __EFI_PROTOCOL_PCI_H_
+#define __EFI_PROTOCOL_PCI_H_
+
+#include <efi/types.h>
+#include <efi/memory.h>
 
 struct efi_pci_root_bridge_io_protocol;
 struct efi_pci_io_protocol;

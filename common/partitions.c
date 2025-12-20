@@ -52,6 +52,7 @@ static int register_one_partition(struct block_device *blk, struct partition *pa
 		goto out;
 	}
 
+	cdev->partition_table_index = part->num;
 	cdev->flags |= DEVFS_PARTITION_FROM_TABLE | part->flags;
 	cdev->typeflags |= part->typeflags;
 	cdev->typeuuid = part->typeuuid;

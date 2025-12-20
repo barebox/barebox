@@ -25,8 +25,8 @@
 #include <unistd.h>
 #include <watchdog.h>
 
-#include <efi/efi-mode.h>
-#include <efi/efi-device.h>
+#include <efi/mode.h>
+#include <efi/payload/driver.h>
 
 #include <generated/utsrelease.h>
 #include <linux/clk.h>

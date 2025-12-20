@@ -3715,6 +3715,29 @@ const char *of_get_machine_compatible(void)
 }
 EXPORT_SYMBOL(of_get_machine_compatible);
 
+/**
+ * of_get_machine_vendor - get first vendor prefix string from the root node.
+ *
+ * Returns the string or NULL.
+ */
+char *of_get_machine_vendor(void)
+{
+	const char *name = NULL;
+	char *p;
+
+	if (!root_node)
+		return NULL;
+
+
+	of_property_read_string(root_node, "compatible", &name);
+
+	p = strdup(name);
+	if (p)
+		*strchrnul(p, ',') = '\0';
+	return p;
+}
+EXPORT_SYMBOL(of_get_machine_vendor);
+
 static int of_init_early_vars(void)
 {
 	struct device_node *bootsource;

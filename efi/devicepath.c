@@ -2,13 +2,15 @@
 
 #include <common.h>
 #include <linux/compiler.h>
-#include <efi.h>
-#include <efi/efi-util.h>
 #include <malloc.h>
 #include <string.h>
 #include <wchar.h>
 #include <linux/overflow.h>
-#include <efi/device-path.h>
+#include <efi/devicepath.h>
+#include <efi/guid.h>
+#include <efi/mode.h>
+#include <efi/error.h>
+#include <efi/services.h>
 
 struct string {
 	char *str;
@@ -65,6 +67,7 @@ const struct efi_device_path end_instance_device_path = {
 const struct efi_device_path *
 device_path_from_handle(efi_handle_t Handle)
 {
+	struct efi_boot_services *bs = efi_get_boot_services();
 	const efi_guid_t *const protocols[] = {
 		&efi_loaded_image_device_path_guid,
 		&efi_device_path_protocol_guid,
@@ -76,7 +79,7 @@ device_path_from_handle(efi_handle_t Handle)
 	for (proto = protocols; *proto; proto++) {
 		const struct efi_device_path *device_path;
 
-		Status = BS->handle_protocol(Handle, *proto, (void *) &device_path);
+		Status = bs->handle_protocol(Handle, *proto, (void *) &device_path);
 		if (!EFI_ERROR(Status) && device_path)
 			return device_path;
 	}

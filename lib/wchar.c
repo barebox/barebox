@@ -1,41 +1,9 @@
-/*
- * wchar.c - wide character support
- *
- * Copyright (c) 2014 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- */
+// SPDX-License-Identifier: GPL-2.0
+// SPDX-FileCopyrightText: 2014 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
 
 #include <wchar.h>
 #include <malloc.h>
 #include <string.h>
-
-size_t wcslen(const wchar_t *s)
-{
-	size_t len = 0;
-
-	while (*s++)
-		len++;
-
-	return len;
-}
-
-size_t wcsnlen(const wchar_t * s, size_t count)
-{
-	const wchar_t *sc;
-
-	for (sc = s; count-- && *sc != L'\0'; ++sc)
-		/* nothing */;
-	return sc - s;
-}
 
 wchar_t *strdup_wchar(const wchar_t *src)
 {
@@ -123,30 +91,4 @@ char *strdup_wchar_to_char(const wchar_t *src)
 	strcpy_wchar_to_char(dst, src);
 
 	return dst;
-}
-
-int wcscmp(const wchar_t *s1, const wchar_t *s2)
-{
-	while (*s1 == *s2++) {
-		if (*s1++ == 0)
-			return 0;
-	}
-
-	return *s1 - *--s2;
-}
-
-int wcsncmp (const wchar_t *s1, const wchar_t *s2, size_t n)
-{
-	if (n == 0)
-		return 0;
-
-	do {
-		if (*s1 != *s2++)
-			return *s1 - *--s2;
-
-		if (*s1++ == 0)
-			break;
-	} while (--n != 0);
-
-	return 0;
 }

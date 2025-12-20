@@ -26,10 +26,11 @@
 #include <xfuncs.h>
 #include <fcntl.h>
 #include <wchar.h>
-#include <efi.h>
+#include <efi/protocol/file.h>
 #include <libfile.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/payload/driver.h>
+#include <efi/error.h>
 #include <linux/stddef.h>
 
 struct efifs_priv {

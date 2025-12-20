@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef EFI_STDIO_H_
-#define EFI_STDIO_H_
+
+#ifndef __EFI_PROTOCOL_TEXT_H_
+#define __EFI_PROTOCOL_TEXT_H_
 
 #include <efi/types.h>
 
@@ -59,6 +60,45 @@ struct efi_simple_text_input_ex_protocol {
 	efi_set_state set_state;
 	efi_register_keystroke_notify register_key_notify;
 	efi_unregister_keystroke_notify unregister_key_notify;
+};
+
+struct simple_text_output_mode {
+	s32 max_mode;
+	s32 mode;
+	s32 attribute;
+	s32 cursor_column;
+	s32 cursor_row;
+	bool cursor_visible;
+};
+
+struct efi_simple_text_output_protocol {
+	efi_status_t (EFIAPI *reset)(
+			struct efi_simple_text_output_protocol *this,
+			char extended_verification);
+	efi_status_t (EFIAPI *output_string)(struct efi_simple_text_output_protocol *this, const efi_char16_t *str);
+	efi_status_t (EFIAPI *test_string)(struct efi_simple_text_output_protocol *this,
+			const efi_char16_t *str);
+
+	efi_status_t(EFIAPI *query_mode)(struct efi_simple_text_output_protocol *this,
+			unsigned long mode_number, unsigned long *columns, unsigned long *rows);
+	efi_status_t(EFIAPI *set_mode)(struct efi_simple_text_output_protocol *this,
+			unsigned long mode_number);
+	efi_status_t(EFIAPI *set_attribute)(struct efi_simple_text_output_protocol *this,
+			unsigned long attribute);
+	efi_status_t(EFIAPI *clear_screen) (struct efi_simple_text_output_protocol *this);
+	efi_status_t(EFIAPI *set_cursor_position) (struct efi_simple_text_output_protocol *this,
+			unsigned long column, unsigned long row);
+	efi_status_t(EFIAPI *enable_cursor)(struct efi_simple_text_output_protocol *this,
+			bool enable);
+	struct simple_text_output_mode *mode;
+};
+
+struct efi_simple_text_input_protocol {
+	efi_status_t(EFIAPI *reset)(struct efi_simple_text_input_protocol *this,
+			bool ExtendedVerification);
+	efi_status_t(EFIAPI *read_key_stroke)(struct efi_simple_text_input_protocol *this,
+			struct efi_input_key *key);
+	struct efi_event *wait_for_key;
 };
 
 #define EFI_SHIFT_STATE_VALID           0x80000000

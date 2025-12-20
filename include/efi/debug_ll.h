@@ -1,12 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef __MACH_DEBUG_LL_H__
-#define __MACH_DEBUG_LL_H__
+#ifndef __EFI_DEBUG_LL_H__
+#define __EFI_DEBUG_LL_H__
 
 #define EFI_DEBUG 0
 #define EFI_DEBUG_CLEAR_MEMORY 0
 
-#include <efi.h>
-#include <efi/efi-payload.h>
+#include <efi/services.h>
+#include <efi/payload.h>
+#include <efi/protocol/text.h>
 
 static inline void PUTC_LL(char c)
 {

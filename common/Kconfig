@@ -1247,6 +1247,9 @@ config MACHINE_ID
 	  Note: if no hashable information is available no machine id will be passed
 	  to the kernel.
 
+config MACHINE_ID_SPECIFIC
+	def_bool MACHINE_ID && HAVE_DIGEST_SHA256 && HAVE_DIGEST_HMAC
+
 config SERIAL_NUMBER_FIXUP_SYSTEMD_HOSTNAME
 	bool "append board serial number to systemd.hostname= fixup"
 	depends on FLEXIBLE_BOOTARGS

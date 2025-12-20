@@ -103,6 +103,7 @@ struct image_data {
 	char *tee_file;
 	struct resource *tee_res;
 
+	enum filetype os_type;
 	enum bootm_verify verify;
 	int verbose;
 	int force;
@@ -117,6 +118,9 @@ struct image_handler {
 	int ih_os;
 
 	enum filetype filetype;
+	bool (*check_image)(struct image_handler *handler,
+			    struct image_data *data,
+			    enum filetype detected_filetype);
 	int (*bootm)(struct image_data *data);
 };
 

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <common.h>
-#include <efi.h>
-#include <efi/efi-util.h>
+#include <efi/guid.h>
 
+/* ---------- Protocol GUIDs ---------- */
 efi_guid_t efi_file_info_id = EFI_FILE_INFO_GUID;
 efi_guid_t efi_simple_file_system_protocol_guid = EFI_SIMPLE_FILE_SYSTEM_GUID;
 efi_guid_t efi_file_system_info_guid = EFI_FILE_SYSTEM_INFO_GUID;
@@ -13,9 +13,11 @@ efi_guid_t efi_loaded_image_protocol_guid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
 efi_guid_t efi_unknown_device_guid = EFI_UNKNOWN_DEVICE_GUID;
 efi_guid_t efi_null_guid = EFI_NULL_GUID;
 efi_guid_t efi_global_variable_guid = EFI_GLOBAL_VARIABLE_GUID;
+const efi_guid_t efi_guid_image_security_database = EFI_IMAGE_SECURITY_DATABASE_GUID;
 efi_guid_t efi_block_io_protocol_guid = EFI_BLOCK_IO_PROTOCOL_GUID;
 efi_guid_t efi_rng_protocol_guid = EFI_RNG_PROTOCOL_GUID;
 efi_guid_t efi_barebox_vendor_guid = EFI_BAREBOX_VENDOR_GUID;
+efi_guid_t efi_file_store_vars_guid = EFI_FILE_STORE_VARS_GUID;
 efi_guid_t efi_systemd_vendor_guid = EFI_SYSTEMD_VENDOR_GUID;
 efi_guid_t efi_fdt_guid = EFI_DEVICE_TREE_GUID;
 efi_guid_t efi_loaded_image_device_path_guid =
@@ -26,6 +28,32 @@ const efi_guid_t efi_dt_fixup_protocol_guid = EFI_DT_FIXUP_PROTOCOL_GUID;
 /* GUID of the EFI_DRIVER_BINDING_PROTOCOL */
 const efi_guid_t efi_driver_binding_protocol_guid = EFI_DRIVER_BINDING_PROTOCOL_GUID;
 
+/* GUIDs of the Load File and Load File2 protocols */
+const efi_guid_t efi_load_file_protocol_guid = EFI_LOAD_FILE_PROTOCOL_GUID;
+const efi_guid_t efi_load_file2_protocol_guid = EFI_LOAD_FILE2_PROTOCOL_GUID;
+const efi_guid_t efi_device_path_utilities_protocol_guid =
+	EFI_DEVICE_PATH_UTILITIES_PROTOCOL_GUID;
+const efi_guid_t efi_linux_initrd_media_guid = EFI_LINUX_INITRD_MEDIA_GUID;
+const efi_guid_t efi_smbios_guid = EFI_SMBIOS_TABLE_GUID;
+const efi_guid_t efi_smbios3_guid = EFI_SMBIOS3_TABLE_GUID;
+const efi_guid_t efi_guid_hii_database_protocol = EFI_HII_DATABASE_PROTOCOL_GUID;
+const efi_guid_t efi_guid_hii_string_protocol = EFI_HII_STRING_PROTOCOL_GUID;
+const efi_guid_t efi_guid_hii_config_routing_protocol = EFI_HII_CONFIG_ROUTING_PROTOCOL_GUID;
+const efi_guid_t efi_guid_hii_config_access_protocol = EFI_HII_CONFIG_ACCESS_PROTOCOL_GUID;
+const efi_guid_t efi_guid_unicode_collation_protocol2 = EFI_UNICODE_COLLATION_PROTOCOL2_GUID;
+const efi_guid_t shim_lock_guid = SHIM_LOCK_GUID;
+/* GUID of the runtime properties table */
+const efi_guid_t efi_rt_properties_table_guid = EFI_RT_PROPERTIES_TABLE_GUID;
+const efi_guid_t efi_guid_firmware_management_protocol = EFI_FIRMWARE_MANAGEMENT_PROTOCOL_GUID;
+const efi_guid_t efi_debug_image_info_table_guid = EFI_DEBUG_IMAGE_INFO_TABLE_GUID;
+const efi_guid_t efi_gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+const efi_guid_t efi_snp_guid = EFI_SIMPLE_NETWORK_PROTOCOL_GUID;
+const efi_guid_t efi_text_input_ex_guid = EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL_GUID;
+const efi_guid_t efi_text_input_guid = EFI_SIMPLE_TEXT_IN_PROTOCOL_GUID;
+const efi_guid_t efi_text_output_guid = EFI_SIMPLE_TEXT_OUT_PROTOCOL_GUID;
+
+
+/* ---------- Event  GUIDs ---------- */
 /* event group ExitBootServices() invoked */
 const efi_guid_t efi_guid_event_group_exit_boot_services =
 			EFI_EVENT_GROUP_EXIT_BOOT_SERVICES;
@@ -39,12 +67,13 @@ const efi_guid_t efi_guid_event_group_memory_map_change =
 const efi_guid_t efi_guid_event_group_ready_to_boot = EFI_EVENT_GROUP_READY_TO_BOOT;
 /* event group ResetSystem() invoked (before ExitBootServices) */
 const efi_guid_t efi_guid_event_group_reset_system = EFI_EVENT_GROUP_RESET_SYSTEM;
-/* GUIDs of the Load File and Load File2 protocols */
-const efi_guid_t efi_load_file_protocol_guid = EFI_LOAD_FILE_PROTOCOL_GUID;
-const efi_guid_t efi_load_file2_protocol_guid = EFI_LOAD_FILE2_PROTOCOL_GUID;
-const efi_guid_t efi_device_path_utilities_protocol_guid =
-	EFI_DEVICE_PATH_UTILITIES_PROTOCOL_GUID;
-const efi_guid_t efi_linux_initrd_media_guid = EFI_LINUX_INITRD_MEDIA_GUID;
+/* event group before ExitBootServices() invoked */
+const efi_guid_t efi_guid_event_group_before_exit_boot_services =
+			EFI_EVENT_GROUP_BEFORE_EXIT_BOOT_SERVICES;
+/* event group return to efibootmgr */
+const efi_guid_t efi_guid_event_group_return_to_efibootmgr =
+			EFI_EVENT_GROUP_RETURN_TO_EFIBOOTMGR;
+
 
 #define EFI_GUID_STRING(guid, short, long) do {	\
 	if (!efi_guidcmp(guid, *g))		\

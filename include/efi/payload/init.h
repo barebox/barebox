@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 
-#ifndef EFI_INIT_H_
-#define EFI_INIT_H_
+#ifndef __EFI_PAYLOAD_INIT_H_
+#define __EFI_PAYLOAD_INIT_H_
 
 #include <init.h>
 #include <linux/compiler.h>

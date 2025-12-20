@@ -431,6 +431,9 @@ struct cdev {
 	loff_t size;
 	unsigned int flags;
 	u16 typeflags; /* GPT type-specific attributes */
+	s8 partition_table_index;    /* For GPT/MBR-formatted disks only:
+				      * 0-based index of partition on disk
+				      */
 	int open;
 	struct mtd_info *mtd;
 	struct list_head aliases;

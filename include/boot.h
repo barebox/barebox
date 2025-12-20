@@ -28,6 +28,7 @@ int bootentries_add_entry(struct bootentries *entries, struct bootentry *entry);
 struct bootentry_provider {
 	const char *name;
 	int (*generate)(struct bootentries *bootentries, const char *name);
+	int priority;
 	/* internal fields */
 	struct list_head list;
 };

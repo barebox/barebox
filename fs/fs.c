@@ -137,7 +137,6 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 	struct fs_device *fdev;
 	struct cdev *cdev = NULL;
 	const char *type = NULL, *typeprefix = "";
-	bool is_cdev_link = false;
 	char modestr[11];
 
 	mkmodestr(st->st_mode, modestr);
@@ -152,23 +151,10 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 		case S_IFREG:    type = "regular file"; break;
 	}
 
-	if (st->st_mode & S_IFCHR) {
-		char *path;
-
-		path = canonicalize_path(dirfd, filename);
-		if (path) {
-			const char *devicefile = devpath_to_name(path);
-			struct cdev *lcdev;
-
-			lcdev = lcdev_by_name(devicefile);
-			cdev = cdev_readlink(lcdev);
-			if (cdev != lcdev)
-				is_cdev_link = true;
-			if (cdev)
-				bdev = cdev_get_block_device(cdev);
-
-			free(path);
-		}
+	if ((st->st_mode & S_IFCHR) && st->st_cdevname) {
+		cdev = cdev_by_name(st->st_cdevname);
+		if (cdev)
+			bdev = cdev_get_block_device(cdev);
 	}
 
 	printf("  File: %s", filename);
@@ -182,9 +168,6 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 			printf(" -> <readlink error %pe>", ERR_PTR(ret));
 		else
 			printf(" -> %s", realname);
-	} else if (is_cdev_link) {
-		printf(" ~> %s", cdev->name);
-		typeprefix = "cdev link to ";
 	}
 
 	printf("\nSize: ");
@@ -259,6 +242,12 @@ static void mntput(struct vfsmount *mnt)
 {
 	if (!mnt)
 		return;
+
+	if (!mnt->ref) {
+		WARN_ONCE(1, "refcount for mount \"%s\" becomes negative\n",
+			  mnt->mountpoint->name);
+		return;
+	}
 
 	mnt->ref--;
 }
@@ -826,6 +815,8 @@ static int dentry_delete_subtree(struct super_block *sb, struct dentry *parent)
 
 static void destroy_inode(struct inode *inode)
 {
+	free_const(inode->cdevname);
+
 	if (inode->i_sb->s_op->destroy_inode)
 		inode->i_sb->s_op->destroy_inode(inode);
 	else
@@ -1098,11 +1089,21 @@ EXPORT_SYMBOL(readdir);
 
 static void stat_inode(struct inode *inode, struct stat *s)
 {
+	if (inode->cdevname) {
+		struct cdev *cdev;
+
+		cdev = cdev_by_name(inode->cdevname);
+
+		s->st_size = cdev ? cdev_size(cdev) : 0;
+	} else {
+		s->st_size = inode->i_size;
+	}
+
 	s->st_ino = inode->i_ino;
 	s->st_mode = inode->i_mode;
 	s->st_uid = inode->i_uid;
 	s->st_gid = inode->i_gid;
-	s->st_size = inode->i_size;
+	s->st_cdevname = inode->cdevname;
 }
 
 int fstat(int fd, struct stat *s)
@@ -2251,6 +2252,7 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 
 		nd->path.mnt = &f->fsdev->vfsmount;
 		nd->path.dentry = f->f_path.dentry;
+		path_get(&nd->path);
 		follow_mount(&nd->path);
 
 		if (*s == '/')
@@ -2445,6 +2447,31 @@ struct fs_device *get_fsdevice_by_path(int dirfd, const char *pathname)
 	path_put(&path);
 
 	return fsdev;
+}
+
+struct fs_device *resolve_fsdevice_path(int dirfd, const char *pathname, char **filepath)
+{
+	struct fs_device *fsdev;
+	char *res = NULL;
+	struct path path;
+	int ret;
+
+	fsdev = get_fsdevice_by_path(dirfd, pathname);
+	if (!fsdev)
+		return NULL;
+
+	ret = filename_lookup(dirfd, getname(pathname), LOOKUP_FOLLOW, &path);
+	if (ret)
+		goto out;
+
+	res = dpath(path.dentry, fsdev->vfsmount.mnt_root);
+	if (res)
+		*filepath = res;
+
+	path_put(&path);
+out:
+	errno_set(ret);
+	return res ? fsdev : NULL;
 }
 
 static int vfs_rmdir(struct inode *dir, struct dentry *dentry)
@@ -2746,6 +2773,39 @@ out1:
 	return errno_set(error);
 }
 EXPORT_SYMBOL(openat);
+
+static int vfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode,
+		     const char *cdevname)
+{
+	int error;
+
+	if (!dir->i_op->mknod)
+		return -EPERM;
+
+	error = dir->i_op->mknod(dir, dentry, mode, cdevname);
+
+	return error;
+}
+
+int mknodat(int dirfd, const char *pathname, mode_t mode, const char *devname)
+{
+	struct dentry *dentry;
+	struct path path;
+	int error;
+
+	dentry = filename_create(dirfd, getname(pathname), &path, 0);
+	if (IS_ERR(dentry)) {
+		error = PTR_ERR(dentry);
+		goto out;
+	}
+
+	error = vfs_mknod(path.dentry->d_inode, dentry, mode, devname);
+
+	dput(dentry);
+	path_put(&path);
+out:
+	return errno_set(error);
+}
 
 int unlinkat(int dirfd, const char *pathname, int flags)
 {

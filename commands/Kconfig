@@ -1144,6 +1144,10 @@ config CMD_MKDIR
 	  Options:
 		  -p	make parent directories as needed
 
+config CMD_MKNOD
+	tristate
+	prompt "mknod"
+
 config CMD_PWD
 	tristate
 	default y

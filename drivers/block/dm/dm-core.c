@@ -77,7 +77,6 @@ int dm_cdev_open(struct dm_cdev *dmcdev, const char *path, ulong flags,
 			return -ENODEV;
 		}
 
-		dmcdev->cdev = cdev_readlink(dmcdev->cdev);
 		break;
 	default:
 		*errmsg = xstrdup("Only regular files and device specials are supported");

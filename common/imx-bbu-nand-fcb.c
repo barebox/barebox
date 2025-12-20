@@ -1232,7 +1232,7 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	}
 
 	/* Support both boot /dev/nand0.barebox and boot nand0.barebox */
-	devname += str_has_prefix(devname, "/dev/");
+	devname = devpath_to_name(devname);
 
 	device_detect_by_name(devname);
 

@@ -140,6 +140,7 @@ void cdev_print(const struct cdev *cdev);
 char *canonicalize_path(int dirfd, const char *pathname);
 
 struct fs_device *get_fsdevice_by_path(int dirfd, const char *path);
+struct fs_device *resolve_fsdevice_path(int dirfd, const char *pathname, char **filepath);
 
 const char *get_mounted_path(const char *path);
 

@@ -55,6 +55,7 @@ struct stat {
 	unsigned short st_mode;
 	unsigned short st_uid;
 	unsigned short st_gid;
+	const char *st_cdevname; /* barebox specific */
 	loff_t  st_size;
 };
 

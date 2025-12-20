@@ -209,6 +209,11 @@ int __merge_regions(const char *name,
 
 int release_region(struct resource *res);
 
+int release_region_range(struct resource *parent,
+			 resource_size_t start, resource_size_t size,
+			 int (*should_free)(struct resource *res, void *data),
+			 void *data);
+
 extern struct resource iomem_resource;
 extern struct resource ioport_resource;
 
@@ -264,6 +269,31 @@ static inline void resource_set_range(struct resource *res,
 	res->start = start;
 	resource_set_size(res, size);
 }
+
+#define region_is_gap(region) ((region)->flags & IORESOURCE_UNSET)
+
+struct resource *resource_iter_first(struct resource *current, struct resource *gap);
+struct resource *resource_iter_last(struct resource *current, struct resource *gap);
+struct resource *resource_iter_prev(struct resource *current, struct resource *gap);
+struct resource *resource_iter_next(struct resource *current, struct resource *gap);
+
+/**
+ * for_each_resource_region - Iterate over child resources and gaps between them
+ * @parent: parent resource
+ * @region: pointer to child resource or gap
+ */
+#define for_each_resource_region(parent, region) \
+	for (struct resource gap, *region = resource_iter_first((parent), &gap); \
+	     region; region = resource_iter_next(region, &gap))
+
+/**
+ * for_each_resource_region_reverse - Reverse iterate over child resources and gaps between them
+ * @parent: parent resource
+ * @region: pointer to child resource or gap
+ */
+#define for_each_resource_region_reverse(parent, region) \
+	for (struct resource gap, *region = resource_iter_last((parent), &gap); \
+	     region; region = resource_iter_prev(region, &gap))
 
 #endif /* __ASSEMBLY__ */
 #endif	/* _LINUX_IOPORT_H */

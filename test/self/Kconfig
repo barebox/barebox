@@ -45,6 +45,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_STRING
 	select SELFTEST_SETJMP if ARCH_HAS_SJLJ
 	select SELFTEST_REGULATOR if REGULATOR_FIXED
+	select SELFTEST_RESOURCE
 	select SELFTEST_TEST_COMMAND if CMD_TEST
 	select SELFTEST_IDR
 	select SELFTEST_TLV
@@ -130,6 +131,9 @@ config SELFTEST_REGULATOR
 	bool "Regulator selftest"
 	depends on REGULATOR_FIXED
 	select OF_OVERLAY
+
+config SELFTEST_RESOURCE
+	bool "Resource selftest"
 
 config SELFTEST_TEST_COMMAND
 	bool "test command selftest"

@@ -2,8 +2,8 @@
 
 soc imx8mn
 
-loadaddr 0x912000
-max_load_size 0x3f000
+loadaddr 0x910000
+max_load_size 0x70000
 ivtofs 0x0
 
 #include <mach/imx/flexspi-imx8mp-cfg.h>

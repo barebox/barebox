@@ -15,8 +15,11 @@
 #include <common.h>
 #include <disks.h>
 #include <init.h>
+#include <magicvar.h>
+#include <globalvar.h>
 #include <asm/unaligned.h>
 #include <crc.h>
+#include <fcntl.h>
 #include <linux/ctype.h>
 
 #include <efi/partition.h>
@@ -27,6 +30,8 @@ struct efi_partition_desc {
 	gpt_header *gpt;
 	gpt_entry *ptes;
 	struct param_d *param_guid;
+	bool good_pgpt;
+	bool good_agpt;
 };
 
 struct efi_partition {
@@ -35,6 +40,93 @@ struct efi_partition {
 };
 
 static const int force_gpt = IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_NO_FORCE);
+
+struct gpt_refresh {
+	struct block_device *blk;
+	struct list_head list;
+};
+
+static LIST_HEAD(gpt_refreshes);
+
+static unsigned int global_gpt_refresh;
+
+static int gpt_refresh_one(struct block_device *blk)
+{
+	struct partition_desc *pdesc;
+	int ret;
+
+	if (!global_gpt_refresh)
+		return 0;
+
+	ret = cdev_open(&blk->cdev, O_RDWR);
+	if (ret)
+		return ret;
+
+	pdesc = partition_table_read(blk);
+	if (!pdesc) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	ret = partition_table_write(pdesc);
+	if (ret)
+		goto out;
+
+	ret = 0;
+
+	partition_table_free(pdesc);
+out:
+	cdev_close(&blk->cdev);
+
+	if (ret)
+		dev_err(blk->dev, "Refreshing partition table failed: %pe\n",
+			ERR_PTR(ret));
+
+	return ret;
+}
+
+static bool gpt_refresh_done;
+
+static int do_gpt_refreshes(void)
+{
+	struct gpt_refresh *r, *tmp;
+
+	if (!IS_ENABLED(CONFIG_PARTITION_DISK_EFI_REFRESH))
+		return 0;
+
+	if (!global_gpt_refresh)
+		return 0;
+
+	list_for_each_entry_safe(r, tmp, &gpt_refreshes, list) {
+		gpt_refresh_one(r->blk);
+		list_del(&r->list);
+		free(r);
+	}
+
+	gpt_refresh_done = true;
+
+	return 0;
+}
+postenvironment_initcall(do_gpt_refreshes);
+
+static void add_gpt_refresh(struct block_device *blk)
+{
+	struct gpt_refresh *r;
+
+	if (!IS_ENABLED(CONFIG_PARTITION_DISK_EFI_REFRESH))
+		return;
+
+	if (gpt_refresh_done) {
+		gpt_refresh_one(blk);
+		return;
+	}
+
+	r = xzalloc(sizeof(*r));
+
+	r->blk = blk;
+
+	list_add_tail(&r->list, &gpt_refreshes);
+}
 
 /**
 * compute_partitions_entries_size() - return the size of all partitions
@@ -288,9 +380,11 @@ is_pte_valid(const gpt_entry *pte, const u64 lastlba)
  *
  */
 static void
-compare_gpts(struct device *dev, gpt_header *pgpt, gpt_header *agpt,
+compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 	     u64 lastlba)
 {
+	struct device *dev = blk->dev;
+
 	int error_found = 0;
 	if (!pgpt || !agpt)
 		return;
@@ -374,18 +468,23 @@ compare_gpts(struct device *dev, gpt_header *pgpt, gpt_header *agpt,
 		error_found++;
 	}
 
-	if (error_found)
-		dev_warn(dev, "GPT: Use parted to correct GPT errors.\n");
+	if (error_found) {
+		add_gpt_refresh(blk);
+		if (!IS_ENABLED(CONFIG_PARTITION_DISK_EFI_REFRESH))
+			dev_info(dev, "GPT: will repair later if global.system.gpt_refresh=1\n");
+		else
+			dev_warn(dev, "GPT: Use parted to correct GPT errors.\n");
+	}
+
 	return;
 }
 
 /**
  * find_valid_gpt() - Search disk for valid GPT headers and PTEs
- * @state
- * @gpt is a GPT header ptr, filled on return.
- * @ptes is a PTEs ptr, filled on return.
- * Description: Returns 1 if valid, 0 on error.
- * If valid, returns pointers to newly allocated GPT header and PTEs.
+ * @buf buffer containing the first lba
+ * @epd the efi partition descriptor context pointer
+ * Description: Returns 0 for success, negative error code otherwise.
+ * If valid, epd is filled with pointers to newly allocated GPT header and PTEs.
  * Validity depends on PMBR being valid (or being overridden by the
  * 'gpt' kernel command line option) and finding either the Primary
  * GPT header and PTEs valid, or the Alternate GPT header and PTEs
@@ -394,16 +493,13 @@ compare_gpts(struct device *dev, gpt_header *pgpt, gpt_header *agpt,
  * This protects against devices which misreport their size, and forces
  * the user to decide to use the Alternate GPT.
  */
-static int find_valid_gpt(void *buf, struct block_device *blk, gpt_header **gpt,
-			  gpt_entry **ptes)
+static int find_valid_gpt(struct efi_partition_desc *epd, void *buf)
 {
+	struct block_device *blk = epd->pd.blk;
 	int good_pgpt = 0, good_agpt = 0;
 	gpt_header *pgpt = NULL, *agpt = NULL;
 	gpt_entry *pptes = NULL, *aptes = NULL;
 	u64 lastlba;
-
-	if (!ptes)
-		return 0;
 
 	lastlba = last_lba(blk);
 	if (force_gpt) {
@@ -426,25 +522,27 @@ static int find_valid_gpt(void *buf, struct block_device *blk, gpt_header **gpt,
 		goto fail;
 
 	if (IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_COMPARE))
-		compare_gpts(blk->dev, pgpt, agpt, lastlba);
+		compare_gpts(blk, pgpt, agpt, lastlba);
+
+	epd->good_pgpt = good_pgpt;
+	epd->good_agpt = good_agpt;
 
 	/* The good cases */
 	if (good_pgpt) {
-		*gpt  = pgpt;
-		*ptes = pptes;
+		epd->gpt  = pgpt;
+		epd->ptes = pptes;
 		free(agpt);
 		free(aptes);
 		if (!good_agpt)
 			dev_warn(blk->dev, "Alternate GPT is invalid, using primary GPT.\n");
-		return 1;
-	}
-	else if (good_agpt) {
-		*gpt  = agpt;
-		*ptes = aptes;
+		return 0;
+	} else {
+		epd->gpt  = agpt;
+		epd->ptes = aptes;
 		free(pgpt);
 		free(pptes);
 		dev_warn(blk->dev, "Primary GPT is invalid, using alternate GPT.\n");
-		return 1;
+		return 0;
 	}
 
  fail:
@@ -452,9 +550,8 @@ static int find_valid_gpt(void *buf, struct block_device *blk, gpt_header **gpt,
 	free(agpt);
 	free(pptes);
 	free(aptes);
-	*gpt = NULL;
-	*ptes = NULL;
-	return 0;
+
+	return -EINVAL;
 }
 
 static void part_set_efi_name(gpt_entry *pte, char *dest)
@@ -516,9 +613,17 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 	struct efi_partition *epart;
 	struct partition *pentry;
 	struct efi_partition_desc *epd;
+	int ret;
 
-	if (!find_valid_gpt(buf, blk, &gpt, &ptes) || !gpt || !ptes)
-		return NULL;
+	epd = xzalloc(sizeof(*epd));
+	partition_desc_init(&epd->pd, blk);
+
+	ret = find_valid_gpt(epd, buf);
+	if (ret)
+		goto err;
+
+	gpt = epd->gpt;
+	ptes = epd->ptes;
 
 	blk->cdev.flags |= DEVFS_IS_GPT_PARTITIONED;
 
@@ -529,12 +634,6 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 			 nb_part, MAX_PARTITION);
 		nb_part = MAX_PARTITION;
 	}
-
-	epd = xzalloc(sizeof(*epd));
-	partition_desc_init(&epd->pd, blk);
-
-	epd->gpt = gpt;
-	epd->ptes = ptes;
 
 	snprintf(blk->cdev.diskuuid, sizeof(blk->cdev.diskuuid), "%pUl", &gpt->disk_guid);
 	add_gpt_diskuuid_param(epd, blk);
@@ -560,6 +659,10 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 	}
 
 	return &epd->pd;
+err:
+	free(epd);
+
+	return NULL;
 }
 
 static void efi_partition_free(struct partition_desc *pd)
@@ -740,14 +843,88 @@ out:
 	return ret;
 }
 
+static int __efi_partition_write(struct efi_partition_desc *epd, bool primary)
+{
+	struct block_device *blk = epd->pd.blk;
+	gpt_header *gpt;
+	unsigned int count, size;
+	uint64_t my_lba, partition_entry_lba;
+	int ret;
+
+	gpt = xmemdup(epd->gpt, SECTOR_SIZE);
+
+	count = le32_to_cpu(gpt->num_partition_entries) *
+		le32_to_cpu(gpt->sizeof_partition_entry);
+
+	size = count / GPT_BLOCK_SIZE;
+
+	if (primary) {
+		my_lba = 1;
+
+		if (epd->good_pgpt) {
+			/*
+			 * The primary GPT was good, we can just leave the partition
+			 * entries where they are.
+			 */
+			partition_entry_lba = le64_to_cpu(gpt->partition_entry_lba);
+		} else {
+			/*
+			 * The primary GPT was bad. When this is not a new partition
+			 * table, but instead read from the disk, the header is from the
+			 * alternate GPT, meaning the partition_entry_lba also points
+			 * to the alternate partitions. We have to find a place for the
+			 * primary partition entries in this case. We could store them
+			 * right after the GPT header, but this might destroy a bootloader
+			 * stored there. Instead, substract the size we need from the
+			 * first usable LBA.
+			 */
+			uint64_t first_usable_lba;
+
+			first_usable_lba = le64_to_cpu(gpt->first_usable_lba);
+
+			if (first_usable_lba < 32 + 1 + 1) {
+				pr_err("First usable LBA is %llu which doesn't leave "
+				       "enough space for partition entries\n",
+					first_usable_lba);
+				return -EINVAL;
+			}
+			partition_entry_lba = first_usable_lba - 32;
+		}
+		gpt->alternate_lba = cpu_to_le64(last_lba(blk));
+	} else {
+		my_lba = last_lba(blk);
+		partition_entry_lba = last_lba(blk) - 32;
+		gpt->alternate_lba = cpu_to_le64(1);
+	}
+
+	gpt->my_lba = cpu_to_le64(my_lba);
+	gpt->partition_entry_lba = cpu_to_le64(partition_entry_lba);
+	gpt->partition_entry_array_crc32 = cpu_to_le32(efi_crc32(
+			(const unsigned char *)epd->ptes, count));
+	gpt->header_crc32 = 0;
+	gpt->header_crc32 = cpu_to_le32(efi_crc32((const unsigned char *)gpt,
+						  le32_to_cpu(gpt->header_size)));
+
+	ret = block_write(blk, gpt, my_lba, 1);
+	if (ret)
+		goto err_block_write;
+
+	ret = block_write(blk, epd->ptes, partition_entry_lba, size);
+	if (ret)
+		goto err_block_write;
+
+err_block_write:
+	free(gpt);
+
+	return ret;
+}
+
 static __maybe_unused int efi_partition_write(struct partition_desc *pd)
 {
 	struct block_device *blk = pd->blk;
 	struct efi_partition_desc *epd = container_of(pd, struct efi_partition_desc, pd);
-	gpt_header *gpt = epd->gpt, *altgpt;
+	gpt_header *gpt = epd->gpt;
 	int ret;
-	uint32_t count;
-	uint64_t from, size;
 
 	if (le32_to_cpu(gpt->num_partition_entries) != 128) {
 		/*
@@ -761,54 +938,23 @@ static __maybe_unused int efi_partition_write(struct partition_desc *pd)
 		return -EINVAL;
 	}
 
-	count = le32_to_cpu(gpt->num_partition_entries) *
-		le32_to_cpu(gpt->sizeof_partition_entry);
-
-	gpt->my_lba = cpu_to_le64(1);
-	gpt->alternate_lba = cpu_to_le64(last_lba(blk));
-	gpt->partition_entry_array_crc32 = cpu_to_le32(efi_crc32(
-			(const unsigned char *)epd->ptes, count));
-	gpt->header_crc32 = 0;
-	gpt->header_crc32 = cpu_to_le32(efi_crc32((const unsigned char *)gpt,
-						  le32_to_cpu(gpt->header_size)));
-
 	ret = efi_protective_mbr(blk);
 	if (ret)
 		return ret;
 
-	ret = block_write(blk, gpt, 1, 1);
+	ret = __efi_partition_write(epd, !epd->good_pgpt);
 	if (ret)
 		goto err_block_write;
 
-	from = le64_to_cpu(gpt->partition_entry_lba);
-	size = count / GPT_BLOCK_SIZE;
-
-	ret = block_write(blk, epd->ptes, from, size);
+	ret = __efi_partition_write(epd, epd->good_pgpt);
 	if (ret)
 		goto err_block_write;
 
-	altgpt = xmemdup(gpt, SECTOR_SIZE);
-
-	altgpt->alternate_lba = cpu_to_le64(1);
-	altgpt->my_lba = cpu_to_le64(last_lba(blk));
-	altgpt->partition_entry_lba = cpu_to_le64(last_lba(blk) - 32);
-	altgpt->header_crc32 = 0;
-	altgpt->header_crc32 = cpu_to_le32(efi_crc32((const unsigned char *)altgpt,
-						  le32_to_cpu(altgpt->header_size)));
-	ret = block_write(blk, altgpt, last_lba(blk), 1);
-
-	free(altgpt);
-
-	if (ret)
-		goto err_block_write;
-	ret = block_write(blk, epd->ptes, last_lba(blk) - 32, 32);
-	if (ret)
-		goto err_block_write;
-
-	return 0;
+	ret = 0;
 
 err_block_write:
-	pr_err("Cannot write to block device: %pe\n", ERR_PTR(ret));
+	if (ret)
+		pr_err("Cannot write to block device: %pe\n", ERR_PTR(ret));
 
 	return ret;
 }
@@ -826,8 +972,16 @@ static struct partition_parser efi_partition_parser = {
 	.name = "gpt",
 };
 
+#ifdef CONFIG_PARTITION_DISK_EFI_REFRESH
+BAREBOX_MAGICVAR(global.system.gpt_refresh, "When true, refresh GPT partitions when necessary");
+#endif
+
 static int efi_partition_init(void)
 {
+	if (IS_ENABLED(CONFIG_PARTITION_DISK_EFI_REFRESH))
+		globalvar_add_simple_bool("system.gpt_refresh",
+					  &global_gpt_refresh);
+
 	return partition_parser_register(&efi_partition_parser);
 }
 postconsole_initcall(efi_partition_init);

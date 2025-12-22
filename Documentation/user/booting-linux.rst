@@ -184,6 +184,32 @@ and configure the overrides as arguments to the ``boot`` command:
 
   boot -o bootm.image=/mnt/tftp/oftree mmc
 
+Generic Boot Targets
+^^^^^^^^^^^^^^^^^^^^
+
+A single boot target can yield multiple entries, e.g., one for each
+bootloader spec file detected at runtime as described in the next section.
+
+There is also a number of generic default boot targets available, when
+``CONFIG_BOOT_DEFAULTS`` is enabled. These expands to a single device at most:
+
+* ``bootsource``: expands to the device barebox booted from
+* ``diskuuid.*``: expands to the device with specified ``*`` diskuuid
+
+For these targets that expand to a single device, a partition can also be specified,
+e.g., ``bootsource.esp`` to reference the partition with the ``esp`` partition
+label within the bootsource.
+
+Following target can expand to multiple devices:
+
+* ``storage.removable``: expands to removable storage devices,
+  like USB flash drives or SD-Cards in slots
+* ``storage.builtin``: expands to built-in storage devices, like eMMC
+* ``storage``: expands to all of the above ``storage.*``
+
+If the bootsource exists within any of these targets, it will be the first
+device in the returned list.
+
 .. _bootloader_spec:
 
 Boot Loader Specification

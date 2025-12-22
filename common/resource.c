@@ -107,6 +107,140 @@ int release_region(struct resource *res)
 	return 0;
 }
 
+static int yes_free(struct resource *res, void *data)
+{
+	return 1;
+}
+
+/*
+ * release a region previously requested with request_*_region
+ */
+int release_region_range(struct resource *parent,
+			 resource_size_t start, resource_size_t size,
+			 int (*should_free)(struct resource *res, void *data),
+			 void *data)
+{
+	resource_size_t end = start + size - 1;
+	struct resource *r, *tmp;
+	int ret, err = 0;
+
+	if (end < parent->start || start > parent->end)
+		return 0;
+
+	if (!should_free)
+		should_free = yes_free;
+
+	list_for_each_entry_safe(r, tmp, &parent->children, sibling) {
+		if (end < r->start || start > r->end)
+			continue;
+
+		/*
+		 * CASE 1: fully covered
+		 *
+		 *   r:    |----------------|
+		 *   cut: |xxxxxxxxxxxxxxxxxxx|
+		 *
+		 *   remove fully
+		 */
+		if (start <= r->start && r->end <= end) {
+			ret = should_free(r, data);
+			if (ret < 0)
+				return ret;
+			if (ret == 0)
+				continue;
+
+			ret = release_region(r);
+			if (ret)
+				err = ret;
+			continue;
+		}
+
+		/*
+		 * CASE 2: trim head
+		 *
+		 *   r:    |----------------|
+		 *   cut: |xxxxx|
+		 *   new pieces:
+		 *       left  = removed
+		 *       right = end+1   .. r.end
+		 */
+		if (start <= r->start && r->end > end) {
+			ret = should_free(r, data);
+			if (ret < 0)
+				return ret;
+			if (ret == 0)
+				continue;
+
+			if (list_empty(&r->children))
+				r->start = end + 1;
+			else
+				err = -EBUSY;
+			continue;
+		}
+
+		/*
+		 * CASE 3: trim tail
+		 *
+		 *   r:    |----------------|
+		 *   cut:                |xxxxx|
+		 *   new pieces:
+		 *       left  = r.start .. start-1
+		 *       right = removed
+		 */
+		if (start > r->start && r->end <= end) {
+			ret = should_free(r, data);
+			if (ret < 0)
+				return ret;
+			if (ret == 0)
+				continue;
+
+			if (list_empty(&r->children))
+				r->end = start - 1;
+			else
+				err = -EBUSY;
+			continue;
+		}
+
+		/*
+		 * CASE 4: split
+		 *
+		 *   r:    |----------------|
+		 *   cut:       |xxxxx|
+		 *   new pieces:
+		 *       left  = r.start .. start-1
+		 *       right = end+1   .. r.end
+		 */
+		if (start > r->start && r->end > end) {
+			struct resource *right;
+
+			ret = should_free(r, data);
+			if (ret < 0)
+				return ret;
+			if (ret == 0)
+				continue;
+
+			if (!list_empty(&r->children)) {
+				err = -EBUSY;
+				continue;
+			}
+
+			right = xzalloc(sizeof(*right));
+			init_resource(right, r->name);
+
+			right->start = end + 1;
+			right->end = r->end;
+			right->parent = parent;
+			right->flags = r->flags;
+
+			r->end = start - 1;
+
+			list_add(&right->sibling, &r->sibling);
+			continue;
+		}
+	}
+
+	return WARN_ON(err);
+}
 
 /*
  * merge two adjacent sibling regions.
@@ -167,6 +301,118 @@ struct resource *request_ioport_region(const char *name,
 		return ERR_CAST(res);
 
 	return res;
+}
+
+static struct resource *
+resource_iter_gap(struct resource *parent, struct resource *before,
+		  struct resource *gap, struct resource *after)
+{
+	*gap = (struct resource) {};
+
+	gap->attrs = parent->attrs;
+	gap->type = parent->type;
+	gap->flags = IORESOURCE_UNSET | parent->flags;
+	gap->parent = parent;
+	INIT_LIST_HEAD(&gap->children);
+
+	if (before) {
+		gap->start = before->end + 1;
+		gap->sibling.prev = &before->sibling;
+	} else {
+		gap->start = parent->start;
+		gap->sibling.prev = &parent->children;
+	}
+
+	if (after) {
+		gap->end = after->start - 1;
+		gap->sibling.next = &after->sibling;
+	} else {
+		gap->end = parent->end;
+		gap->sibling.next = &parent->children;
+	}
+
+	return gap;
+}
+
+struct resource *
+resource_iter_first(struct resource *parent, struct resource *gap)
+{
+	struct resource *child;
+
+	if (!parent || region_is_gap(parent))
+		return NULL;
+
+	child = list_first_entry_or_null(&parent->children,
+					 struct resource, sibling);
+	if (!gap || (child && parent->start == child->start))
+		return child;
+
+	return resource_iter_gap(parent, NULL, gap, child);
+}
+
+struct resource *
+resource_iter_last(struct resource *parent, struct resource *gap)
+{
+	struct resource *child;
+
+	if (!parent || region_is_gap(parent))
+		return NULL;
+
+	child = list_last_entry_or_null(&parent->children,
+					struct resource, sibling);
+	if (!gap || (child && parent->end == child->end))
+		return child;
+
+	return resource_iter_gap(parent, child, gap, NULL);
+}
+
+struct resource *
+resource_iter_next(struct resource *current, struct resource *gap)
+{
+	struct resource *parent, *cursor, *next = NULL;
+
+	if (!current || !current->parent)
+		return NULL;
+
+	parent = current->parent;
+	if (current->end == parent->end)
+		return NULL;
+
+	cursor = current;
+	list_for_each_entry_continue(cursor, &parent->children, sibling) {
+		next = cursor;
+		break;
+	}
+
+	if (!gap || (next && resource_adjacent(current, next)))
+		return next;
+
+	return resource_iter_gap(parent, current, gap, next);
+}
+
+struct resource *
+resource_iter_prev(struct resource *current,
+		       struct resource *gap)
+{
+	struct resource *parent, *cursor, *prev = NULL;
+
+	if (!current || !current->parent)
+		return NULL;
+
+	parent = current->parent;
+	if (current->start == parent->start)
+		return NULL;
+
+	cursor = current;
+	list_for_each_entry_continue_reverse(cursor, &parent->children, sibling) {
+		prev = cursor;
+		break;
+	}
+
+	if (!gap || (prev && resource_adjacent(prev, current)))
+		return prev;
+
+	return resource_iter_gap(parent, prev, gap, current);
 }
 
 struct resource_entry *resource_list_create_entry(struct resource *res,

@@ -94,7 +94,7 @@ config FS_EFI
 	  by the EFI Firmware via the EFI Simple File System Protocol.
 
 config FS_EFIVARFS
-	depends on EFI_PAYLOAD
+	depends on EFI
 	select FS_LEGACY
 	select FS_WRITABLE
 	bool

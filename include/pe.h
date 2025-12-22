@@ -78,6 +78,21 @@ typedef struct _IMAGE_BASE_RELOCATION
 #define IMAGE_REL_BASED_DIR64                   10
 #define IMAGE_REL_BASED_HIGH3ADJ                11
 
+/* certificate appended to PE image */
+typedef struct _WIN_CERTIFICATE {
+	uint32_t dwLength;
+	uint16_t wRevision;
+	uint16_t wCertificateType;
+} WIN_CERTIFICATE, *LPWIN_CERTIFICATE;
+
+/* Definitions for the contents of the certs data block */
+#define WIN_CERT_TYPE_PKCS_SIGNED_DATA	0x0002
+#define WIN_CERT_TYPE_EFI_OKCS115	0x0EF0
+#define WIN_CERT_TYPE_EFI_GUID		0x0EF1
+
+#define WIN_CERT_REVISION_1_0		0x0100
+#define WIN_CERT_REVISION_2_0		0x0200
+
 struct pe_image {
 	u64 entry;
 	struct resource *code;
@@ -88,37 +103,5 @@ struct pe_image {
 	IMAGE_NT_HEADERS32 *nt;
 	int num_sections;
 };
-
-#ifdef CONFIG_PE
-struct pe_image *pe_open(const char *filename);
-unsigned long pe_get_mem_size(struct pe_image *pe);
-struct pe_image *pe_open_buf(void *bin, size_t pe_size);
-int pe_load(struct pe_image *pe);
-void pe_close(struct pe_image *pe);
-#else
-static inline struct pe_image *pe_open(const char *filename)
-{
-	return ERR_PTR(-ENOSYS);
-}
-
-static inline unsigned long pe_get_mem_size(struct pe_image *pe)
-{
-	return 0;
-}
-
-static inline struct pe_image *pe_open_buf(void *bin, size_t pe_size)
-{
-	return ERR_PTR(-ENOSYS);
-}
-
-static inline int pe_load(struct pe_image *pe)
-{
-	return -ENOSYS;
-}
-
-static inline void pe_close(struct pe_image *pe)
-{
-}
-#endif
 
 #endif /* _PE_H */

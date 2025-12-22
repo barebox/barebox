@@ -19,7 +19,7 @@
  *
  */
 
-#include <config.h>
+#include <asm/config.h>
 #include <common.h>
 #include <memory.h>
 #include <init.h>

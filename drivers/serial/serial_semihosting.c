@@ -2,7 +2,7 @@
 
 #include <console.h>
 #include <asm/semihosting.h>
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 
 static void smh_serial_putc(struct console_device *cdev, char ch)
 {

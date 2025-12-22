@@ -31,6 +31,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_unknown] = { "unknown", "unknown" },
 	[filetype_empty] = { "empty", "empty" },
 	[filetype_arm_zimage] = { "ARM Linux zImage", "arm-zimage" },
+	[filetype_arm_efi_zimage] = { "ARM/EFI Linux zImage", "arm-efi-zimage" },
 	[filetype_lzo_compressed] = { "LZO compressed", "lzo" },
 	[filetype_lz4_compressed] = { "LZ4 compressed", "lz4" },
 	[filetype_arm_barebox] = { "ARM barebox image", "arm-barebox" },
@@ -288,11 +289,6 @@ enum filetype file_detect_partition_table(const void *_buf, size_t bufsize)
 	return filetype_unknown;
 }
 
-static bool is_dos_exe(const u8 *buf8)
-{
-	return buf8[0] == 'M' && buf8[1] == 'Z';
-}
-
 #define CH_TOC_section_name     0x14
 
 enum filetype file_detect_compression_type(const void *_buf, size_t bufsize)
@@ -446,7 +442,7 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (is_barebox_arm_head(_buf))
 		return filetype_arm_barebox;
 	if (buf[9] == 0x016f2818 || buf[9] == 0x18286f01)
-		return filetype_arm_zimage;
+		return is_dos_exe(buf8) ? filetype_arm_efi_zimage : filetype_arm_zimage;
 
 	if (is_dos_exe(buf8))
 		return filetype_exe;
@@ -584,5 +580,34 @@ bool filetype_is_barebox_image(enum filetype ft)
 		return true;
 	default:
 		return false;
+	}
+}
+
+bool filetype_is_linux_efi_image(enum filetype ft)
+{
+	switch (ft) {
+	case filetype_arm_efi_zimage:
+	case filetype_arm64_efi_linux_image:
+	case filetype_riscv_efi_linux_image:
+	case filetype_x86_efi_linux_image:
+		return true;
+	default:
+		return false;
+	}
+}
+
+enum filetype filetype_no_efistub(enum filetype ft)
+{
+	switch (ft) {
+	case filetype_arm_efi_zimage:
+		return filetype_arm_zimage;
+	case filetype_arm64_efi_linux_image:
+		return filetype_arm64_linux_image;
+	case filetype_riscv_efi_linux_image:
+		return filetype_riscv_linux_image;
+	case filetype_x86_efi_linux_image:
+		return filetype_x86_linux_image;
+	default:
+		return ft;
 	}
 }

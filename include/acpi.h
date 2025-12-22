@@ -9,7 +9,7 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <driver.h>
-#include <efi/efi-init.h>
+#include <efi/payload/init.h>
 
 /* Names within the namespace are 4 bytes long */
 

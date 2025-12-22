@@ -1,0 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+
+#include <arm/st/stm32mp157a-dhcor-avenger96.dts>
+#include "stm32mp151.dtsi"

@@ -104,10 +104,14 @@ static struct cdev *default_environment_path_search(void)
 		if (IS_ERR(part))
 			continue;
 
-		score++;
+		/* Prefer eMMC over SD if neither is the boot medium */
+		if (blk->removable)
+			score += 1;
+		else
+			score += 2;
 
 		if (boot_node && boot_node == blk->cdev.device_node)
-			score++;
+			score += 4;
 
 		if (score > max_score) {
 			max_score = score;
@@ -449,6 +453,7 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 	int envfd;
 	int ret = 0;
 	size_t size, rsize;
+	__maybe_unused const char *defenv_path;
 
 #ifdef __BAREBOX__
 	if (!IS_ALLOWED(SCONFIG_ENVIRONMENT_LOAD))
@@ -526,6 +531,12 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 		goto out;
 
 	ret = 0;
+
+#ifdef CONFIG_NVVAR
+	defenv_path = default_environment_path_get();
+	if (defenv_path && !strcmp(filename, defenv_path))
+	    nv_var_set_persistable();
+#endif
 
 out:
 	close(envfd);

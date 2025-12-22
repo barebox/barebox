@@ -1,38 +1,37 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-config HAVE_EFI_PAYLOAD
-	bool
-
-config EFI_PAYLOAD
-	bool "Build as EFI payload"
-	depends on HAVE_EFI_PAYLOAD
-	select PBL_FULLY_PIC if ARM64
-	select EFI
-	select EFI_GUID
-	select EFI_DEVICEPATH
-	select PRINTF_UUID
-	select PRINTF_WCHAR
-	select BLOCK
-	select PARTITION_DISK
-	select HW_HAS_PCI
-	select MALLOC_TLSF
-
-config HAVE_EFI_STUB
-	bool
-
-if EFI_PAYLOAD
-
-config EFI_STUB
-	def_bool HAVE_EFI_STUB
+config EFI_PAYLOAD_ESP_IMAGE
+	bool "Generate barebox.esp image from payload"
+	depends on EFI_STUB || !PBL_IMAGE
 
 config EFI_HANDOVER_PROTOCOL
-	bool "EFI Handover protocol"
-	depends on !EFI_PAYLOAD_BOOTM
+	bool "EFI Handover protocol (DEPRECATED)"
 	depends on X86
+	default y
+	help
+	  Select this in order to include support for booting Linux
+	  over the deprecated EFI handover protocol, which defines alternative
+	  entry points into the EFI stub.
+
+	  This is a practice that has no basis in the UEFI specification,
+	  and requires a priori knowledge on the part of the bootloader about
+	  Linux/x86 specific ways of passing the command line and initrd,
+	  and where in memory those assets may be loaded.
+
+	  This method of booting has been deprecated in Linux v6.2 in favor
+	  of the StartImage() boot service and should not be required with
+	  Linux v5.7 and above.
+
+	  If you say y here, the handover protocol will be used, unless
+	  global.linux.efi.handover=0 was set.
+
+	  If unsure, keep the default of y. The StartImage support for booting
+	  Linux is still new in barebox and will be made the default once we
+	  gain more confidence in its implementation.
 
 config EFI_PAYLOAD_BOOTM
 	bool "EFI bootm protocol"
-	select BOOTM_FITIMAGE
 	default !X86
 
-endif
+config EFI_STUB
+       def_bool HAVE_EFI_STUB

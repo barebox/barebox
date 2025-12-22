@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <common.h>
-#include <efi/efi-init.h>
+#include <efi/payload/init.h>
 #include <driver.h>
 
 static int efi_x86_pure_init(void)

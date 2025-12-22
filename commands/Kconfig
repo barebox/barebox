@@ -1144,6 +1144,10 @@ config CMD_MKDIR
 	  Options:
 		  -p	make parent directories as needed
 
+config CMD_MKNOD
+	tristate
+	prompt "mknod"
+
 config CMD_PWD
 	tristate
 	default y
@@ -2315,6 +2319,14 @@ config CMD_HAB
 	bool
 	depends on HAB
 	prompt "High Assurance boot (hab)"
+
+config CMD_K3_KEYWRITER
+	bool
+	depends on MACH_AM62LX
+	select K3_KEYWRITER_LITE
+	prompt "K3 keywriter support"
+	help
+	  The K3 keywriter command provides support for fusing TI AM62Lx SoCs
 
 # end Hardware manipulation commands
 endmenu

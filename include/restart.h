@@ -5,11 +5,13 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <linux/bitops.h>
+#include <efi/types.h>
 
 struct device_node;
 
 void restart_handlers_print(void);
 #define RESTART_WARM			BIT(0)
+void __noreturn __efi_runtime rt_restart_machine(unsigned long flags);
 void __noreturn restart_machine(unsigned long restart_flags);
 struct restart_handler *restart_handler_get_by_name(const char *name, int flags);
 
@@ -17,6 +19,7 @@ struct device_node;
 
 struct restart_handler {
 	void (*restart)(struct restart_handler *, unsigned long);
+	void (*rt_restart)(unsigned long);
 	int priority;
 	int flags;
 	struct device_node *of_node;

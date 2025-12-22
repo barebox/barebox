@@ -34,4 +34,14 @@ config ACPI
 	  Driver needed for supporting drivers probed from ACPI tables.
 	  The root SDT is found via UEFI.
 
+config OF_SIMPLE_PM_BUS
+	def_bool PM_GENERIC_DOMAINS
+	prompt "Simple Power-managed bus" if COMPILE_TEST
+	depends on OFDEVICE
+	help
+	  simple-pm-bus is a bus that may have clocks and power domains
+	  that need to be enabled before the bus may be accessed.
+	  If this option is disabled or deep probe is not enabled at
+	  runtime, simple-pm-bus will be treated identically to simple-bus.
+
 endmenu

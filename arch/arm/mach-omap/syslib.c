@@ -22,7 +22,6 @@
  * GNU General Public License for more details.
  */
 
-#include <config.h>
 #include <common.h>
 #include <io.h>
 #include <mach/omap/syslib.h>

@@ -4,6 +4,7 @@
 
 #include <linux/types.h>
 #include <linux/stddef.h>
+#include <linux/ucs2_string.h>
 
 wchar_t *strdup_wchar(const wchar_t *src);
 
@@ -15,16 +16,14 @@ wchar_t *strdup_char_to_wchar(const char *src);
 
 char *strdup_wchar_to_char(const wchar_t *src);
 
-size_t wcslen(const wchar_t *s);
-
-size_t wcsnlen(const wchar_t *s, size_t maxlen);
+#define wcsnlen		ucs2_strnlen
+#define wcslen		ucs2_strlen
+#define wcsncmp		ucs2_strncmp
+#define wcscmp(s1, s2)	wcsncmp((s1), (s2), ~0UL)
 
 #define MB_CUR_MAX 4
 
 int mbtowc(wchar_t *pwc, const char *s, size_t n);
 int wctomb(char *s, wchar_t wc);
-
-int wcscmp (const wchar_t *s1, const wchar_t *s2);
-int wcsncmp (const wchar_t *s1, const wchar_t *s2, size_t n);
 
 #endif /* __WCHAR_H */

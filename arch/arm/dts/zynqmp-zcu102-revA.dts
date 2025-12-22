@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #include <arm64/xilinx/zynqmp-zcu102-revA.dts>
+#include "zynqmp.dtsi"
 
 / {
 	barebox,deep-probe;

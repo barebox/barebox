@@ -35,7 +35,6 @@
 #include <linux/err.h>
 #include <linux/usb/ch9.h>
 #include <linux/usb/dfu.h>
-#include <config.h>
 #include <common.h>
 #include <malloc.h>
 #include <errno.h>

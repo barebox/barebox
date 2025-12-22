@@ -25,7 +25,6 @@
 #include <driver.h>
 #include <platform_data/serial-ns16550.h>
 #include <io.h>
-#include <efi.h>
 #include <malloc.h>
 #include <string.h>
 #include <linux/err.h>
@@ -34,8 +33,11 @@
 #include <binfmt.h>
 #include <wchar.h>
 #include <envfs.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/payload/driver.h>
+#include <efi/devicepath.h>
+#include <efi/error.h>
+#include <efi/variable.h>
 #include <libfile.h>
 #include <state.h>
 #include <bbu.h>
@@ -47,107 +49,6 @@ struct efi_system_table *efi_sys_table;
 efi_handle_t efi_parent_image;
 struct efi_device_path *efi_device_path;
 struct efi_loaded_image *efi_loaded_image;
-
-void *efi_get_variable(char *name, efi_guid_t *vendor, int *var_size)
-{
-	efi_status_t efiret;
-	void *buf;
-	size_t size = 0;
-	s16 *name16 = xstrdup_char_to_wchar(name);
-
-	efiret = RT->get_variable(name16, vendor, NULL, &size, NULL);
-
-	if (EFI_ERROR(efiret) && efiret != EFI_BUFFER_TOO_SMALL) {
-		buf = ERR_PTR(-efi_errno(efiret));
-		goto out;
-	}
-
-	buf = malloc(size);
-	if (!buf) {
-		buf = ERR_PTR(-ENOMEM);
-		goto out;
-	}
-
-	efiret = RT->get_variable(name16, vendor, NULL, &size, buf);
-	if (EFI_ERROR(efiret)) {
-		free(buf);
-		buf = ERR_PTR(-efi_errno(efiret));
-		goto out;
-	}
-
-	if (var_size)
-		*var_size = size;
-
-out:
-	free(name16);
-
-	return buf;
-}
-
-int efi_set_variable(char *name, efi_guid_t *vendor, uint32_t attributes,
-		     void *buf, size_t size)
-{
-	efi_status_t efiret = EFI_SUCCESS;
-	s16 *name16 = xstrdup_char_to_wchar(name);
-
-	efiret = RT->set_variable(name16, vendor, attributes, size, buf);
-
-	free(name16);
-
-	return -efi_errno(efiret);
-}
-
-int efi_set_variable_usec(char *name, efi_guid_t *vendor, uint64_t usec)
-{
-	char buf[20];
-	wchar_t buf16[40];
-
-	snprintf(buf, sizeof(buf), "%lld", usec);
-	strcpy_char_to_wchar(buf16, buf);
-
-	return efi_set_variable(name, vendor,
-				EFI_VARIABLE_BOOTSERVICE_ACCESS |
-				EFI_VARIABLE_RUNTIME_ACCESS, buf16,
-				(strlen(buf)+1) * sizeof(wchar_t));
-}
-
-static int efi_set_variable_printf(char *name, efi_guid_t *vendor, const char *fmt, ...)
-{
-	va_list args;
-	char *buf;
-	wchar_t *buf16;
-
-	va_start(args, fmt);
-	buf = xvasprintf(fmt, args);
-	va_end(args);
-	buf16 = xstrdup_char_to_wchar(buf);
-
-	return efi_set_variable(name, vendor,
-				EFI_VARIABLE_BOOTSERVICE_ACCESS |
-				EFI_VARIABLE_RUNTIME_ACCESS, buf16,
-				(strlen(buf)+1) * sizeof(wchar_t));
-	free(buf);
-	free(buf16);
-}
-
-static int efi_set_variable_uint64_le(char *name, efi_guid_t *vendor, uint64_t value)
-{
-	uint8_t buf[8];
-
-	buf[0] = (uint8_t)(value >> 0U & 0xFF);
-	buf[1] = (uint8_t)(value >> 8U & 0xFF);
-	buf[2] = (uint8_t)(value >> 16U & 0xFF);
-	buf[3] = (uint8_t)(value >> 24U & 0xFF);
-	buf[4] = (uint8_t)(value >> 32U & 0xFF);
-	buf[5] = (uint8_t)(value >> 40U & 0xFF);
-	buf[6] = (uint8_t)(value >> 48U & 0xFF);
-	buf[7] = (uint8_t)(value >> 56U & 0xFF);
-
-	return efi_set_variable(name, vendor,
-				EFI_VARIABLE_BOOTSERVICE_ACCESS |
-				EFI_VARIABLE_RUNTIME_ACCESS, buf,
-				sizeof(buf));
-}
 
 struct efi_boot {
 	u32 attributes;
@@ -193,7 +94,7 @@ static struct efi_boot *efi_get_boot(int num)
 
 	boot->path = memdup(ptr, boot->file_path_len);
 
-	printf("path: %s\n", device_path_to_str(boot->path));
+	printf("path: %s\n", device_path_to_str(boot->path, true));
 
 	return boot;
 }

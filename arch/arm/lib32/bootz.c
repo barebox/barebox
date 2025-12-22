@@ -48,8 +48,8 @@ static int do_bootz(int argc, char *argv[])
 	 * the first 128MB of SDRAM.
 	 */
 	zimage = memmap(fd, PROT_READ);
-	if (zimage && (unsigned long)zimage  >= bank->start &&
-			(unsigned long)zimage < bank->start + SZ_128M) {
+	if (zimage && (unsigned long)zimage  >= bank->res->start &&
+			(unsigned long)zimage < bank->res->start + SZ_128M) {
 		usemap = 1;
 		header = zimage;
 	}
@@ -82,12 +82,12 @@ static int do_bootz(int argc, char *argv[])
 		end = swab32(end);
 
 	if (!usemap) {
-		if (bank->size <= SZ_128M) {
+		if (resource_size(bank->res) <= SZ_128M) {
 			zimage = xmalloc(end);
 		} else {
-			zimage = (void *)bank->start + SZ_8M;
+			zimage = (void *)bank->res->start + SZ_8M;
 			res = request_sdram_region("zimage",
-					bank->start + SZ_8M, end,
+					bank->res->start + SZ_8M, end,
 					MEMTYPE_LOADER_CODE,
 					MEMATTRS_RWX);
 			if (!res) {

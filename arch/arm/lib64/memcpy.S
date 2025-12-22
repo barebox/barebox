@@ -8,12 +8,15 @@
 
 #include <linux/linkage.h>
 #include <asm/assembler.h>
+#include <efi/attributes.h>
 
 /* Assumptions:
  *
  * ARMv8-a, AArch64, unaligned accesses.
  *
  */
+
+.section EFI_RUNTIME_SECTION(.text)
 
 #define L(label) .L ## label
 

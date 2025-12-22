@@ -17,6 +17,7 @@ config ARM
 	select HAVE_ARCH_BOOTM_OFTREE
 	select HW_HAS_PCI
 	select ARCH_HAS_DMA_WRITE_COMBINE
+	select HAVE_EFI_LOADER if MMU # for payload unaligned accesses
 	default y
 
 config ARCH_LINUX_NAME
@@ -313,6 +314,18 @@ config AEABI
 
 	  To use this you need GCC version 4.0.0 or later.
 
+config AAPCS64
+	bool "Observe ARM64 Procedure Call Standard" if COMPILE_TEST
+	depends on CPU_V8
+	default EFI_RUNTIME
+	help
+	  This option instructs barebox to observe the AAPCS64 for
+	  interoperability with other firmware.
+
+	  The only effect this currently has is reserving x18 (the
+	  platform register), so Linux can call back into a barebox
+	  EFI runtime service without it getting clobbered.
+
 config THUMB2_BAREBOX
 	select AEABI
 	depends on !ARCH_TEGRA && !ARCH_AT91
@@ -402,6 +415,7 @@ config ARM_UNWIND
 
 config ARM_MMU_PERMISSIONS
 	bool "Map with extended RO/X permissions"
+	depends on !EFI_RUNTIME
 	default y
 	help
 	  Enable this option to map readonly sections as readonly, executable

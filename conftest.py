@@ -134,9 +134,13 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
     try:
         main = target.env.config.data["targets"]["main"]
         features = main["features"]
-        qemu_bin = main["drivers"]["QEMUDriver"]["qemu_bin"]
     except KeyError:
         features = []
+
+    try:
+        main = target.env.config.data["targets"]["main"]
+        qemu_bin = main["drivers"]["QEMUDriver"]["qemu_bin"]
+    except KeyError:
         qemu_bin = None
 
     virtio = None

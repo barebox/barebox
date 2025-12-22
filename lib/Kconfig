@@ -44,6 +44,15 @@ config XZ_DECOMPRESS
 	select XZ_DEC_SPARC
 	select XZ_DEC_ARM64
 
+config SMBIOS
+	bool "SMBIOS utility functions" if COMPILE_TEST
+	help
+	  The System Management BIOS (SMBIOS) specification defines data
+	  structures to read management information produced by the BIOS
+	  of a computer. barebox can make use of this to report information
+	  like its the board serial number, reset/wake reason, or whether
+	  a hardware watchdog has been enabled.
+
 config XZ_DEC_X86
 	bool
 
@@ -212,6 +221,22 @@ config GENERIC_LIB_MULDI3
 
 config NLS
 	bool "Native language support"
+
+config CHARSET
+	bool "Enable character set conversion routines" if COMPILE_TEST
+	help
+	  Enables support for various conversions between different
+	  character sets, such as between unicode representations and
+	  different 'code pages'.
+
+config UNICODE_CAPITALIZATION
+	bool "Support Unicode capitalization" if COMPILE_TEST
+	depends on CHARSET
+	help
+	  Enable correct handling of the capitalization of Unicode codepoints
+	  in the range 0x0000-0xffff. If this option is not set, only the
+	  the correct handling of the letters of the codepage used by the
+	  FAT file system is ensured.
 
 config GENERIC_ALLOCATOR
 	bool

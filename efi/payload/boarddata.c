@@ -6,8 +6,9 @@
 #define DEBUG
 #endif
 
-#include <efi/efi-payload.h>
-#include <efi.h>
+#include <efi/payload.h>
+#include <efi/error.h>
+#include <efi/guid.h>
 #include <memory.h>
 #include <linux/kernel.h>
 #include <linux/printk.h>

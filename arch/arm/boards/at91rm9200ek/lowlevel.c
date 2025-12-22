@@ -15,7 +15,7 @@
 #include <mach/at91/at91_pmc.h>
 #include <mach/at91/hardware.h>
 
-#include "config.h"
+#include "board.h"
 
 void static inline access_sdram(void)
 {

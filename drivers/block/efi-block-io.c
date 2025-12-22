@@ -10,10 +10,11 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 #include <fcntl.h>
-#include <efi.h>
 #include <block.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/payload/driver.h>
+#include <efi/error.h>
+#include <efi/protocol/block.h>
 #include <bootsource.h>
 
 #define EFI_BLOCK_IO_PROTOCOL_REVISION2 0x00020001

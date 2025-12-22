@@ -24,6 +24,20 @@ config PARTITION_DISK_EFI
 	help
 	  Add support to handle partitions in GUID Partition Table style.
 
+config PARTITION_DISK_EFI_REFRESH
+	depends on PARTITION_DISK_EFI && PARTITION_MANIPULATION
+	bool "refresh GPT partition on demand"
+	help
+	  The GPT alternative header must be at the end of the device. When disk
+	  images are written to a device this often is not the case which results
+	  in warnings:
+
+	  GPT:Primary header thinks Alt. header is not at the end of the disk.
+
+	  Enable this option and set global.system.gpt_refresh to true to refresh
+	  GPT partition tables when necessary. Only erroneous partition tables will
+	  be rewritten, once fixed up partition tables will not be touched.
+
 config PARTITION_DISK_EFI_GPT_NO_FORCE
 	depends on PARTITION_DISK_EFI
 	default y

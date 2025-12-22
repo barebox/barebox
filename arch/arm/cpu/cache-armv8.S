@@ -7,9 +7,10 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#include <config.h>
 #include <linux/linkage.h>
 #include <init.h>
+#include <asm/system.h>
+#include <asm/assembler64.h>
 
 /*
  * void v8_flush_dcache_level(level)
@@ -120,6 +121,54 @@ ENTRY(v8_invalidate_dcache_all)
 	mov	x30, x16
 	ret
 ENDPROC(v8_invalidate_dcache_all)
+
+/*
+ * void v8_mmu_disable(void)
+ *
+ * Implements the equivalent of following C code:
+ *
+ *	set_cr(get_cr() & ~(CR_M | CR_C))
+ *	v8_flush_dcache_all();
+ *	tlb_invalidate();
+ *
+ *	dsb();
+ *	isb();
+ *
+ * As D$ needs to be cleaned after it was disabled, this procedure
+ * is not permitted to trigger memory access, including spilling
+ * locals to stack. It's thus necessarily needs to be implemented
+ * in assembly.
+ */
+.section .text.v8_mmu_disable
+ENTRY(v8_mmu_disable)
+	mov	x14, lr
+	mov	x1, #~(CR_C | CR_M)
+	switch_el x0, 3f, 2f, 1f
+3:	/* EL3 */
+	mrs	x0, sctlr_el3
+	and	x0, x0, x1
+	msr	sctlr_el3, x0
+	bl	v8_flush_dcache_all
+	tlbi	alle3
+	b	0f
+2:	/* EL2 */
+	mrs	x0, sctlr_el2
+	and	x0, x0, x1
+	msr	sctlr_el2, x0
+	bl	v8_flush_dcache_all
+	tlbi	alle2
+	b	0f
+1:	/* EL1 */
+	mrs	x0, sctlr_el1
+	and	x0, x0, x1
+	msr	sctlr_el1, x0
+	bl	v8_flush_dcache_all
+	tlbi	vmalle1
+0:	/* common epilogue */
+	dsb 	sy
+	isb
+	ret	x14
+ENDPROC(v8_mmu_disable)
 
 /*
  * void v8_flush_dcache_range(start, end)

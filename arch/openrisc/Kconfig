@@ -13,10 +13,9 @@ config ARCH_MKIMAGE_NAME
 	string
 	default "or1k"
 
-# not used
 config ARCH_TEXT_BASE
 	hex
-	default 0x00000000
+	default 0x1f80000
 
 config BUILTIN_DTB
 	bool "link a DTB into the barebox image"

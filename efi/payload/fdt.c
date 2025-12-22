@@ -5,9 +5,9 @@
 #include <common.h>
 #include <init.h>
 #include <libfile.h>
-#include <efi.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/payload/init.h>
+#include <efi/guid.h>
 
 static int efi_fdt_probe(void)
 {

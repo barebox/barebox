@@ -222,6 +222,39 @@ static inline int barebox_set_loglevel(int loglevel)
 }
 #endif
 
+#ifdef CONFIG_ARCH_HAS_CTRLC
+int arch_ctrlc(void);
+#endif
+
+#ifndef CONFIG_CONSOLE_NONE
+/* stdout */
+void console_putc(unsigned int ch, const char c);
+int console_puts(unsigned int ch, const char *s);
+void console_flush(void);
+
+int ctrlc(void);
+int ctrlc_non_interruptible(void);
+void ctrlc_handled(void);
+void console_ctrlc_allow(void);
+void console_ctrlc_forbid(void);
+#else
+static inline int console_puts(unsigned int ch, const char *str) { return 0; }
+static inline void console_putc(unsigned int ch, char c) {}
+static inline void console_flush(void) {}
+
+/* test if ctrl-c was pressed */
+static inline int ctrlc (void) { return 0; }
+static inline int ctrlc_non_interruptible(void) { return 0; }
+static inline void ctrlc_handled(void) { }
+static inline void console_ctrlc_allow(void) { }
+static inline void console_ctrlc_forbid(void) { }
+#endif
+
+#define STDIN_FILENO		0
+#define STDOUT_FILENO		1
+#define STDERR_FILENO		2
+#define MAX_FILES	128
+
 /**
  * clk_get_for_console - get clock, ignoring known unavailable clock controller
  * @dev: device for clock "consumer"

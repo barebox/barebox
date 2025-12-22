@@ -487,15 +487,23 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	if (config->read_only || !config->reg_write || of_property_read_bool(np, "read-only"))
 		nvmem->read_only = true;
 
-	dev_set_name(&nvmem->dev, "%s", config->name ? : "nvmem");
-	switch (config->id) {
-	case NVMEM_DEVID_NONE:
-		nvmem->dev.id = DEVICE_ID_SINGLE;
+	if (config->name) {
+		dev_set_name(&nvmem->dev, "%s", config->name);
+
+		switch (config->id) {
+		case NVMEM_DEVID_NONE:
+			nvmem->dev.id = DEVICE_ID_SINGLE;
+			break;
+		case NVMEM_DEVID_AUTO:
+			nvmem->dev.id = DEVICE_ID_DYNAMIC;
+			break;
+		default:
+			nvmem->dev.id = config->id;
 		break;
-	case NVMEM_DEVID_AUTO:
-	default:
+		}
+	} else {
+		dev_set_name(&nvmem->dev, "nvmem");
 		nvmem->dev.id = DEVICE_ID_DYNAMIC;
-		break;
 	}
 
 	rval = register_device(&nvmem->dev);

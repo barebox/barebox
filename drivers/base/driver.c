@@ -86,23 +86,26 @@ struct device *get_device_by_name(const char *name)
 static struct device *get_device_by_name_id(const char *name, int id)
 {
 	struct device *dev;
+	char *str = NULL;
 
-	for_each_device(dev) {
-		if(!strcmp(dev->name, name) && id == dev->id)
-			return dev;
-	}
+	if (id == DEVICE_ID_SINGLE)
+		return get_device_by_name(name);
 
-	return NULL;
+	str = basprintf("%s%u", name, id);
+
+	dev = get_device_by_name(str);
+
+	free(str);
+
+	return dev;
 }
 
-int get_free_deviceid(const char *name_template)
+int get_free_deviceid_from(const char *name_template, int id_from)
 {
-	int i = 0;
-
 	while (1) {
-		if (!get_device_by_name_id(name_template, i))
-			return i;
-		i++;
+		if (!get_device_by_name_id(name_template, id_from))
+			return id_from;
+		id_from++;
 	};
 }
 
@@ -335,6 +338,8 @@ int unregister_device(struct device *old_dev)
 	if (np && np->dev == old_dev)
 		np->dev = NULL;
 
+	free_device_res(old_dev);
+
 	return 0;
 }
 EXPORT_SYMBOL(unregister_device);
@@ -348,9 +353,11 @@ EXPORT_SYMBOL(unregister_device);
  */
 void free_device_res(struct device *dev)
 {
+	devinfo_del(dev, NULL);
 	free(dev->unique_name);
 	dev->unique_name = NULL;
 	free(dev->deferred_probe_reason);
+	dev->deferred_probe_reason = NULL;
 }
 EXPORT_SYMBOL(free_device_res);
 
@@ -655,15 +662,25 @@ int dev_add_alias(struct device *dev, const char *fmt, ...)
 }
 EXPORT_SYMBOL_GPL(dev_add_alias);
 
-bool device_remove(struct device *dev)
+typedef void (*dev_remove_op_t)(struct device *dev);
+
+static dev_remove_op_t get_device_remove(struct device *dev)
 {
 	if (dev->bus && dev->bus->remove)
-		dev->bus->remove(dev);
+		return dev->bus->remove;
 	else if (dev->driver->remove)
-		dev->driver->remove(dev);
+		return dev->driver->remove;
 	else
-		return false; /* nothing to do */
+		return NULL;
+}
 
+bool device_remove(struct device *dev)
+{
+	dev_remove_op_t remove = get_device_remove(dev);
+	if (!remove)
+		return false;  /* nothing to do */
+
+	remove(dev);
 	return true;
 }
 EXPORT_SYMBOL_GPL(device_remove);
@@ -673,8 +690,11 @@ static void devices_shutdown(void)
 	struct device *dev;
 
 	list_for_each_entry(dev, &active_device_list, active) {
-		if (device_remove(dev))
+		dev_remove_op_t remove = get_device_remove(dev);
+		if (remove) {
 			pr_report_probe("%*sremove-> %s\n", 1 * 4, "", dev_name(dev));
+			remove(dev);
+		}
 		dev->driver = NULL;
 	}
 }
@@ -825,10 +845,11 @@ void devinfo_del(struct device *dev, void (*info)(struct device *))
 	devinfo_init(dev);
 
 	list_for_each_entry_safe(cb, tmp, &dev->info_list, list) {
-		if (cb->info == info) {
-			list_del(&cb->list);
-			free(cb);
-		}
+		if (info && cb->info != info)
+			continue;
+
+		list_del(&cb->list);
+		free(cb);
 	}
 }
 

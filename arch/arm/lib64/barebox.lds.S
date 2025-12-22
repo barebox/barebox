@@ -44,6 +44,8 @@ SECTIONS
 
 	_edata = .;
 
+	BAREBOX_EFI_RUNTIME
+
 	.image_end : { *(.__image_end) }
 
 	. = ALIGN(4);
@@ -53,3 +55,5 @@ SECTIONS
 	_end = .;
 	_barebox_image_size = __bss_start;
 }
+
+NOCROSSREFS_FROM(.efi_runtime)

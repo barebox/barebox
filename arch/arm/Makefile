@@ -12,6 +12,10 @@ multi_v8_efi_defconfig:
 	$(call merge_into_defconfig,multi_v8_defconfig,efi-payload)
 generated_configs += multi_v8_efi_defconfig
 
+# Generic rule applying the fragment is in top-level Makefile
+generated_configs += $(patsubst %_defconfig,%_efiloader_defconfig, \
+		     multi_v7_defconfig multi_v8_defconfig)
+
 KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
 ifeq ($(CONFIG_CPU_64),y)
@@ -68,6 +72,7 @@ CFLAGS_ABI-$(CONFIG_CPU_32)	:=$(call cc-option,-mapcs-32,-mabi=apcs-gnu) $(call 
 CFLAGS_ABI-$(CONFIG_AEABI)	:=-mabi=aapcs-linux
 
 CFLAGS_ABI-$(CONFIG_ARM_UNWIND)	+=-funwind-tables
+CFLAGS_ABI-$(CONFIG_AAPCS64)	+=-ffixed-x18
 
 ifeq ($(CONFIG_THUMB2_BAREBOX),y)
 AFLAGS_AUTOIT	:=$(call as-option,-Wa$(comma)-mimplicit-it=always,-Wa$(comma)-mauto-it)
@@ -105,7 +110,6 @@ machine-$(CONFIG_ARCH_PXA)		+= pxa
 machine-$(CONFIG_ARCH_ROCKCHIP)		+= rockchip
 machine-$(CONFIG_ARCH_SOCFPGA)		+= socfpga
 machine-$(CONFIG_ARCH_STM32MP)		+= stm32mp
-machine-$(CONFIG_ARCH_SUNXI)		+= sunxi
 machine-$(CONFIG_ARCH_VERSATILE)	+= versatile
 machine-$(CONFIG_ARCH_VEXPRESS)		+= vexpress
 machine-$(CONFIG_ARCH_TEGRA)		+= tegra

@@ -24,102 +24,8 @@ static LIST_HEAD(sba_list);
 struct sba {
 	char *alias;
 	struct device *dev;
-	struct cdev *rcdev;
-	struct cdev cdev;
 	struct list_head list;
-};
-
-static ssize_t sba_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
-{
-	struct sba *sba = cdev->priv;
-
-	return cdev_read(sba->rcdev, buf, count, offset, flags);
-}
-
-static ssize_t sba_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
-{
-	struct sba *sba = cdev->priv;
-
-	return cdev_write(sba->rcdev, buf, count, offset, flags);
-}
-
-static int sba_ioctl(struct cdev *cdev, unsigned int request, void *buf)
-{
-	struct sba *sba = cdev->priv;
-
-	return cdev_ioctl(sba->rcdev, request, buf);
-}
-
-static int sba_open(struct cdev *cdev, unsigned long flags)
-{
-	struct sba *sba = cdev->priv;
-
-	return cdev_open(sba->rcdev, flags);
-}
-
-static int sba_close(struct cdev *cdev)
-{
-	struct sba *sba = cdev->priv;
-
-	cdev_close(sba->rcdev);
-
-	return 0;
-}
-
-static int sba_flush(struct cdev *cdev)
-{
-	struct sba *sba = cdev->priv;
-
-	return cdev_flush(sba->rcdev);
-}
-
-static int sba_erase(struct cdev *cdev, loff_t count, loff_t offset)
-{
-	struct sba *sba = cdev->priv;
-
-	return cdev_erase(sba->rcdev, count, offset);
-}
-
-static int sba_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
-{
-	struct sba *sba = cdev->priv;
-
-	return cdev_protect(sba->rcdev, count, offset, prot);
-}
-
-static int sba_discard_range(struct cdev *cdev, loff_t count, loff_t offset)
-{
-	struct sba *sba = cdev->priv;
-
-	return cdev_discard_range(sba->rcdev, count, offset);
-}
-
-static int sba_memmap(struct cdev *cdev, void **map, int flags)
-{
-	struct sba *sba = cdev->priv;
-
-	return cdev_memmap(sba->rcdev, map, flags);
-}
-
-static int sba_truncate(struct cdev *cdev, size_t size)
-{
-	struct sba *sba = cdev->priv;
-
-	return cdev_truncate(sba->rcdev, size);
-}
-
-static struct cdev_operations sba_ops = {
-	.read = sba_read,
-	.write = sba_write,
-	.ioctl = sba_ioctl,
-	.open = sba_open,
-	.close = sba_close,
-	.flush = sba_flush,
-	.erase = sba_erase,
-	.protect = sba_protect,
-	.discard_range = sba_discard_range,
-	.memmap = sba_memmap,
-	.truncate = sba_truncate,
+	bool populated;
 };
 
 static int sba_add_partitions(struct cdev *rcdev, void *data)
@@ -127,29 +33,17 @@ static int sba_add_partitions(struct cdev *rcdev, void *data)
 	struct sba *sba = data;
 	int ret;
 
-	dev_dbg(sba->dev, "Adding %s -> %s\n", sba->alias, rcdev->name);
-
-	if (sba->rcdev)
+	if (sba->populated)
 		return 0;
 
-	sba->rcdev = rcdev;
-	sba->cdev.link = rcdev;
-	sba->cdev.name = sba->alias;
-	sba->cdev.size = rcdev->size;
-	sba->cdev.ops = &sba_ops;
-	sba->cdev.dev = sba->dev;
-	sba->cdev.priv = sba;
+	dev_info(sba->dev, "Adding %s -> %s\n", sba->alias, rcdev->name);
 
-	if (rcdev->flags & DEVFS_WRITE_AUTOERASE)
-		sba->cdev.flags |= DEVFS_WRITE_AUTOERASE;
+	ret = devfs_add_alias_node(rcdev, sba->alias, sba->dev->device_node);
+	if (ret)
+		return ret;
 
-	ret = devfs_create(&sba->cdev);
-	if (ret) {
-		dev_err(sba->dev, "Failed to create cdev: %pe\n", ERR_PTR(ret));
-		return 0;
-	}
+	sba->populated = true;
 
-	of_parse_partitions(&sba->cdev, sba->dev->of_node);
 	return 0;
 }
 

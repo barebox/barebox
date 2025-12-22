@@ -17,7 +17,7 @@
 #include <asm/cputype.h>
 #include <asm/cache.h>
 #include <asm/ptrace.h>
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 
 /**
  * Enable processor's instruction cache
@@ -88,12 +88,15 @@ static void arch_shutdown(void)
 	if (efi_is_payload())
 		return;
 
-#ifdef CONFIG_MMU
+	disable_interrupts();
+
+	if (efi_is_loader() == EFI_LOADER_RUNTIME)
+		return;
+
 	mmu_disable();
-#endif
+
 	icache_invalidate();
 
-	disable_interrupts();
 }
 archshutdown_exitcall(arch_shutdown);
 

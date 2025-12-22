@@ -10,11 +10,11 @@
 #include <clock.h>
 #include <common.h>
 #include <linux/sizes.h>
+#include <linux/ktime.h>
 #include <memory.h>
 #include <init.h>
 #include <driver.h>
 #include <io.h>
-#include <efi.h>
 #include <malloc.h>
 #include <string.h>
 #include <linux/err.h>
@@ -24,11 +24,12 @@
 #include <libfile.h>
 #include <binfmt.h>
 #include <wchar.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/error.h>
+#include <efi/payload.h>
+#include <efi/payload/driver.h>
+#include <efi/variable.h>
 
 #include "image.h"
-#include "setup_header.h"
 
 static void *efi_read_file(const char *file, size_t *size)
 {
@@ -95,18 +96,6 @@ out:
 	return -efi_errno(efiret);
 }
 
-static bool is_linux_image(enum filetype filetype, const void *base)
-{
-	if (IS_ENABLED(CONFIG_X86) && is_x86_setup_header(base))
-		return true;
-
-	if (IS_ENABLED(CONFIG_ARM64) &&
-	    filetype == filetype_arm64_efi_linux_image)
-		return true;
-
-	return false;
-}
-
 int efi_execute_image(efi_handle_t handle,
 		      struct efi_loaded_image *loaded_image,
 		      enum filetype filetype)
@@ -118,7 +107,7 @@ int efi_execute_image(efi_handle_t handle,
 	is_driver = (loaded_image->image_code_type == EFI_BOOT_SERVICES_CODE) ||
 		(loaded_image->image_code_type == EFI_RUNTIME_SERVICES_CODE);
 
-	if (is_linux_image(filetype, loaded_image->image_base)) {
+	if (filetype_is_linux_efi_image(filetype)) {
 		options = linux_bootargs_get();
 		printf("Booting kernel via StartImage");
 		if (options) {
@@ -128,6 +117,9 @@ int efi_execute_image(efi_handle_t handle,
 				(strlen(options) + 1) * sizeof(wchar_t);
 		}
 		printf("...\n");
+
+		efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
+				      ktime_to_us(ktime_get()));
 
 		shutdown_barebox();
 	}

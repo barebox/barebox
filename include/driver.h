@@ -17,6 +17,7 @@
 #include <init.h>
 #include <errno.h>
 #include <filetype.h>
+#include <stringlist.h>
 
 #define FORMAT_DRIVER_NAME_ID	"%s%d"
 
@@ -124,7 +125,12 @@ struct device *find_device(const char *str);
  * appending a number to the template. Dynamically created devices should
  * use this function rather than filling the id field themselves.
  */
-int get_free_deviceid(const char *name_template);
+int get_free_deviceid_from(const char *name_template, int id_from);
+
+static inline int get_free_deviceid(const char *name_template)
+{
+	return get_free_deviceid_from(name_template, 0);
+}
 
 int dev_add_alias(struct device *dev, const char *fmt, ...) __printf(2, 3);
 
@@ -430,10 +436,12 @@ struct cdev {
 	loff_t size;
 	unsigned int flags;
 	u16 typeflags; /* GPT type-specific attributes */
+	s8 partition_table_index;    /* For GPT/MBR-formatted disks only:
+				      * 0-based index of partition on disk
+				      */
 	int open;
 	struct mtd_info *mtd;
-	struct cdev *link;
-	struct list_head link_entry, links;
+	struct list_head aliases;
 	struct list_head partition_entry, partitions;
 	struct cdev *master;
 	enum filetype filetype;
@@ -441,6 +449,15 @@ struct cdev {
 		u8 dos_partition_type;
 		guid_t typeuuid;
 	};
+};
+
+#define cdev_for_each_alias(alias, cdev) \
+	list_for_each_entry(alias, &cdev->aliases, list)
+
+struct cdev_alias {
+	char *name;
+	struct device_node *device_node;
+	struct list_head list;
 };
 
 static inline struct device_node *cdev_of_node(const struct cdev *cdev)
@@ -459,14 +476,14 @@ static inline const char *cdev_name(struct cdev *cdev)
 	return cdev ? cdev->name : NULL;
 }
 
+void devfs_init(void);
 int devfs_create(struct cdev *);
-int devfs_create_link(struct cdev *, const char *name);
+int devfs_add_alias(struct cdev *, const char *name);
+int devfs_add_alias_node(struct cdev *, const char *name, struct device_node *np);
 int devfs_remove(struct cdev *);
 int cdev_find_free_index(const char *);
 struct cdev *cdev_find_partition(struct cdev *cdevm, const char *name);
 struct cdev *device_find_partition(struct device *dev, const char *name);
-struct cdev *lcdev_by_name(const char *filename);
-struct cdev *cdev_readlink(const struct cdev *cdev);
 struct cdev *cdev_by_device_node(struct device_node *node);
 struct cdev *cdev_by_partuuid(const char *partuuid);
 struct cdev *cdev_by_diskuuid(const char *partuuid);
@@ -476,6 +493,8 @@ int cdev_open(struct cdev *, unsigned long flags);
 int cdev_fdopen(struct cdev *cdev, unsigned long flags);
 int cdev_close(struct cdev *cdev);
 int cdev_flush(struct cdev *cdev);
+
+struct device *device_find_by_file_path(const char *filepath);
 
 typedef int (*cdev_alias_processor_t)(struct cdev *, void *data);
 
@@ -524,6 +543,7 @@ int cdev_protect(struct cdev*, size_t count, loff_t offset, int prot);
 int cdev_discard_range(struct cdev*, loff_t count, loff_t offset);
 int cdev_memmap(struct cdev*, void **map, int flags);
 int cdev_truncate(struct cdev*, size_t size);
+loff_t cdev_size(struct cdev *cdev);
 loff_t cdev_unallocated_space(struct cdev *cdev);
 static inline bool cdev_is_partition(const struct cdev *cdev)
 {
@@ -583,6 +603,11 @@ get_inheritable_devfs_flags(const struct cdev *parent_cdev)
 	if (!parent_cdev)
 		return 0;
 	return parent_cdev->flags & DEVFS_INHERITABLE_FLAGS;
+}
+
+static inline bool cdev_is_storage(const struct cdev *cdev)
+{
+	return (cdev->flags & DEVFS_IS_BLOCK_DEV) || cdev->mtd;
 }
 
 struct cdev *

@@ -648,9 +648,6 @@ config BOOTM_AIMAGE
 	help
 	  Support using Android Images.
 
-config PE
-	bool "PE/COFF Support" if COMPILE_TEST
-
 config ELF
 	bool "ELF Support" if COMPILE_TEST
 
@@ -757,6 +754,19 @@ config MMCBLKDEV_ROOTARG
 
 	  [1] fa2d0aa96941 ("mmc: core: Allow setting slot index via device tree
 	      alias")
+
+config GENERATE_SMBIOS_TABLE
+	bool "Generate an SMBIOS (System Management BIOS) table"
+	depends on EFI_LOADER && OF
+	select SMBIOS
+	default y
+	help
+	  The System Management BIOS (SMBIOS) specification addresses how
+	  motherboard and system vendors present management information about
+	  their products in a standard format by extending the BIOS interface
+	  on Intel architecture systems.
+
+	  Check http://www.dmtf.org/standards/smbios for details.
 
 config BAREBOX_UPDATE
 	bool "In-system barebox update infrastructure"
@@ -901,6 +911,17 @@ config PBL_CONSOLE
 	  printf/pr_* need a valid C environment, so the binary
 	  must be running at the address it's linked at and bss must
 	  be cleared. On ARM that would be after setup_c().
+
+config BUG
+	def_bool y
+
+config DEBUG_BUGVERBOSE
+	bool "Verbose BUG() reporting"
+	depends on BUG
+	default y
+	help
+	  Say Y here to make WARN_ONCE() and BUG() panics output the file name
+	  and line number of the BUG/WARN call as well as the EIP and oops trace.
 
 source "common/ratp/Kconfig"
 
@@ -1104,7 +1125,7 @@ config POLLER_WARN_OVERTIME
 	help
 	  Pollers are meant to poll and quickly execute actions.
 	  exceeding the maximum runtime of POLLER_MAX_RUNTIME_MS
-	  will trigger a one-time warning.
+	  three times will trigger a one-time warning.
 
 config BTHREAD
 	bool "barebox co-operative (green) thread infrastructure"
@@ -1247,6 +1268,9 @@ config MACHINE_ID
 	  Note: if no hashable information is available no machine id will be passed
 	  to the kernel.
 
+config MACHINE_ID_SPECIFIC
+	def_bool MACHINE_ID && HAVE_DIGEST_SHA256 && HAVE_DIGEST_HMAC
+
 config SERIAL_NUMBER_FIXUP_SYSTEMD_HOSTNAME
 	bool "append board serial number to systemd.hostname= fixup"
 	depends on FLEXIBLE_BOOTARGS
@@ -1332,3 +1356,9 @@ source "common/Kconfig.debug"
 config DDR_SPD
 	bool
 	select CRC_ITU_T
+
+config K3_KEYWRITER_LITE
+	bool
+	select DIGEST
+	select DIGEST_SHA512_GENERIC
+	depends on MACH_AM62LX

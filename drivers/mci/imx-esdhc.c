@@ -6,7 +6,6 @@
  * Andy Fleming
  */
 
-#include <config.h>
 #include <common.h>
 #include <dma.h>
 #include <driver.h>

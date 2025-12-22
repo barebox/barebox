@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: GPL-2.0
+
+menu "UEFI protocol support"
+
+config EFI_LOADER_HII
+	bool "HII protocols"
+	default y
+	help
+	  The Human Interface Infrastructure is a complicated framework that
+	  allows UEFI applications to draw fancy menus and hook strings using
+	  a translation framework.
+
+	  barebox implements enough of its features to be able to run the UEFI
+	  Shell, but not more than that.
+
+config EFI_LOADER_UNICODE_COLLATION_PROTOCOL2
+	bool "Unicode collation protocol"
+	default y
+	help
+	  The Unicode collation protocol is used for lexical comparisons. It is
+	  required to run the UEFI shell.
+
+config EFI_LOADER_UNICODE_CAPITALIZATION
+	bool "Support Unicode capitalization"
+	default y
+	depends on EFI_LOADER_UNICODE_COLLATION_PROTOCOL2
+	select UNICODE_CAPITALIZATION
+	help
+	  Select this option to enable correct handling of the capitalization of
+	  Unicode codepoints in the range 0x0000-0xffff. If this option is not
+	  set, only the the correct handling of the letters of the codepage
+	  used by the FAT file system is ensured.
+
+config EFI_LOADER_RNG
+	bool "EFI_RNG_PROTOCOL support"
+	depends on HWRNG
+	default y
+	help
+	  Provide a EFI_RNG_PROTOCOL implementation using the hardware random
+	  number generator of the platform.
+
+config EFI_LOADER_DEVICE_PATH_TO_TEXT
+	bool "Device path to text protocol"
+	default y
+	help
+	  The device path to text protocol converts device nodes and paths to
+	  human readable strings.
+
+config EFI_LOADER_DEVICE_PATH_UTIL
+	bool "Device path utilities protocol"
+	default y
+	help
+	  The device path utilities protocol creates and manipulates device
+	  paths and device nodes. It is required to run the EFI Shell.
+
+endmenu

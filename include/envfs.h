@@ -105,6 +105,7 @@ int envfs_load_from_buf(void *buf, int len, const char *dir, unsigned flags);
 #ifdef CONFIG_ENV_HANDLING
 void default_environment_path_set(const char *path);
 const char *default_environment_path_get(void);
+void autoload_external_env(bool endis);
 #else
 static inline void default_environment_path_set(const char *path)
 {
@@ -113,6 +114,10 @@ static inline void default_environment_path_set(const char *path)
 static inline const char *default_environment_path_get(void)
 {
 	return NULL;
+}
+
+static inline void autoload_external_env(bool endis)
+{
 }
 #endif
 

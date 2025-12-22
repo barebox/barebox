@@ -7,6 +7,7 @@
 
 #include <common.h>
 #include <memory.h>
+#include <efi/mode.h>
 #include <of.h>
 #include <init.h>
 #include <linux/ioport.h>
@@ -112,6 +113,8 @@ struct resource *request_barebox_region(const char *name,
 
 static int mem_malloc_resource(void)
 {
+	__maybe_unused struct resource *res;
+	int ret = 0;
 #if !defined __SANDBOX__
 	/*
 	 * Normally it's a bug when one of these fails,
@@ -138,6 +141,37 @@ static int mem_malloc_resource(void)
 			(unsigned long)&_edata -
 			(unsigned long)&_sdata,
 			MEMATTRS_RW);
+#ifdef CONFIG_EFI_RUNTIME
+	if (!efi_is_payload()) {
+		/* We don't usually have much .rodata here, so we just
+		 * fold it into the text area, so we don't waste the
+		 * rest of the page
+		 */
+		res = request_barebox_region("barebox EFI runtime code",
+				(unsigned long)&__efi_runtime_text_start,
+				(unsigned long)&__efi_runtime_rodata_stop -
+				(unsigned long)&__efi_runtime_text_start,
+				MEMATTRS_RX);
+		if (res) {
+			res->runtime = true;
+			res->type = MEMTYPE_RUNTIME_SERVICES_CODE;
+		} else {
+			ret = -EBUSY;
+		}
+
+		res = request_barebox_region("barebox EFI runtime data",
+				(unsigned long)&__efi_runtime_data_start,
+				(unsigned long)&__efi_runtime_data_stop -
+				(unsigned long)&__efi_runtime_data_start,
+				MEMATTRS_RW);
+		if (res) {
+			res->runtime = true;
+			res->type = MEMTYPE_RUNTIME_SERVICES_DATA;
+		} else {
+			ret = -EBUSY;
+		}
+	}
+#endif
 	request_barebox_region("barebox bss",
 			(unsigned long)&__bss_start,
 			(unsigned long)&__bss_stop -
@@ -149,7 +183,7 @@ static int mem_malloc_resource(void)
 			     MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_RW);
 #endif
 
-	return 0;
+	return ret;
 }
 coredevice_initcall(mem_malloc_resource);
 
@@ -185,8 +219,8 @@ static int barebox_grow_memory_bank(struct memory_bank *bank, const char *name,
 	struct resource *res;
 	resource_size_t bank_end = bank->res->end;
 
-	if (newres->start < bank->start) {
-		res = request_iomem_region(name, newres->start, bank->start - 1);
+	if (newres->start < bank->res->start) {
+		res = request_iomem_region(name, newres->start, bank->res->start - 1);
 		if (IS_ERR(res))
 			return PTR_ERR(res);
 		__merge_regions(name, bank->res, res);
@@ -199,10 +233,18 @@ static int barebox_grow_memory_bank(struct memory_bank *bank, const char *name,
 		__merge_regions(name, bank->res, res);
 	}
 
-	bank->start = newres->start;
-	bank->size = resource_size(bank->res);
-
 	return 0;
+}
+
+static int memory_banks_compare(struct list_head *a, struct list_head *b)
+{
+	struct resource *res_a = list_entry(a, struct memory_bank, list)->res;
+	struct resource *res_b = list_entry(b, struct memory_bank, list)->res;
+
+	/* banks are requested from iomem_resource, so they can't overlap
+	 * and thus comparing just the start is sufficient
+	 */
+	return compare3(res_a->start, res_b->start);
 }
 
 int barebox_add_memory_bank(const char *name, resource_size_t start,
@@ -229,13 +271,15 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 
 	res->flags = IORESOURCE_MEM;
 
+	res->type = MEMTYPE_CONVENTIONAL;
+	res->attrs = MEMATTRS_NORMAL;
+	res->flags |= IORESOURCE_TYPE_VALID;
+
 	bank = xzalloc(sizeof(*bank));
 
 	bank->res = res;
-	bank->start = start;
-	bank->size = size;
 
-	list_add_tail(&bank->list, &memory_banks);
+	list_add_sort(&bank->list, &memory_banks, memory_banks_compare);
 
 	return 0;
 }
@@ -245,7 +289,8 @@ static int add_mem_devices(void)
 	struct memory_bank *bank;
 
 	for_each_memory_bank(bank) {
-		add_mem_device(bank->res->name, bank->start, bank->size,
+		add_mem_device(bank->res->name,
+			       bank->res->start, resource_size(bank->res),
 			       IORESOURCE_MEM_WRITEABLE);
 	}
 
@@ -400,7 +445,7 @@ static int of_memory_fixup(struct device_node *root, void *unused)
 		int len = 0;
 
 		/* Create a /memory node for each bank */
-		memnode_name = xasprintf("/memory@%lx", bank->start);
+		memnode_name = xasprintf("/memory@%llx", (u64)bank->res->start);
 
 		memnode = of_create_node(root, memnode_name);
 		if (!memnode) {
@@ -413,9 +458,9 @@ static int of_memory_fixup(struct device_node *root, void *unused)
 		if (err)
 			goto err_free;
 
-		of_write_number(tmp, bank->start, addr_cell_len);
+		of_write_number(tmp, bank->res->start, addr_cell_len);
 		len += addr_cell_len * 4;
-		of_write_number(tmp + len, bank->size, size_cell_len);
+		of_write_number(tmp + len, resource_size(bank->res), size_cell_len);
 		len += size_cell_len * 4;
 
 		err = of_set_property(memnode, "reg", tmp, len, 1);

@@ -3,8 +3,7 @@
 obj-y += init.o
 obj-y += image.o
 obj-$(CONFIG_EFI_HANDOVER_PROTOCOL) += handover.o
-obj-$(CONFIG_EFI_PAYLOAD_BOOTM) += bootm.o
-obj-y += efi-initrd.o
+obj-y += bootm.o
 obj-$(CONFIG_OFTREE) += fdt.o
 bbenv-y += env-efi
 obj-$(CONFIG_CMD_IOMEM) += iomem.o

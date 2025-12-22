@@ -22,6 +22,7 @@
 #include <linux/clk.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
+#include <pm_domain.h>
 
 static struct device_node *root_node;
 
@@ -272,16 +273,16 @@ int of_alias_get_id(struct device_node *np, const char *stem)
 EXPORT_SYMBOL_GPL(of_alias_get_id);
 
 /**
- * of_alias_get_highest_id - Get highest alias id for the given stem
+ * of_alias_get_free_id - Get lowest free alias id for the given stem
  * @stem:	Alias stem to be examined
  *
  * The function travels the lookup table to get the highest alias id for the
- * given alias stem.  It returns the alias id if found.
+ * given alias stem. It returns the lowest free alias id.
  */
-int of_alias_get_highest_id(const char *stem)
+int of_alias_get_free_id(const char *stem)
 {
 	struct alias_prop *app;
-	int id = -ENODEV;
+	int id = -1;
 
 	list_for_each_entry(app, &aliases_lookup, link) {
 		if (strcmp(app->stem, stem) != 0)
@@ -291,7 +292,7 @@ int of_alias_get_highest_id(const char *stem)
 			id = app->id;
 	}
 
-	return id;
+	return id + 1;
 }
 EXPORT_SYMBOL_GPL(of_alias_get_highest_id);
 
@@ -2109,7 +2110,9 @@ int barebox_register_of(struct device_node *root)
 
 	if (IS_ENABLED(CONFIG_OFDEVICE)) {
 		of_clk_init();
-		if (!deep_probe_is_supported())
+		if (deep_probe_is_supported())
+			genpd_activate();
+		else
 			return of_probe();
 	}
 
@@ -2875,8 +2878,10 @@ const struct of_device_id of_default_bus_match_table[] = {
 	{
 		.compatible = "simple-bus",
 	}, {
+#ifndef CONFIG_OF_SIMPLE_PM_BUS
 		.compatible = "simple-pm-bus",
 	}, {
+#endif
 		.compatible = "simple-mfd",
 	}, {
 		/* sentinel */
@@ -3714,6 +3719,29 @@ const char *of_get_machine_compatible(void)
 	return nonempty(p ? p + 1 : name);
 }
 EXPORT_SYMBOL(of_get_machine_compatible);
+
+/**
+ * of_get_machine_vendor - get first vendor prefix string from the root node.
+ *
+ * Returns the string or NULL.
+ */
+char *of_get_machine_vendor(void)
+{
+	const char *name = NULL;
+	char *p;
+
+	if (!root_node)
+		return NULL;
+
+
+	of_property_read_string(root_node, "compatible", &name);
+
+	p = strdup(name);
+	if (p)
+		*strchrnul(p, ',') = '\0';
+	return p;
+}
+EXPORT_SYMBOL(of_get_machine_vendor);
 
 static int of_init_early_vars(void)
 {

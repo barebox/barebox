@@ -31,15 +31,10 @@ static int do_bootm_linux(struct image_data *data)
 }
 
 static struct image_handler riscv_linux_handler = {
-        .name = "RISC-V Linux image",
-        .bootm = do_bootm_linux,
-        .filetype = filetype_riscv_linux_image,
-};
-
-static struct image_handler riscv_linux_efi_handler = {
-        .name = "RISC-V Linux/EFI image",
-        .bootm = do_bootm_linux,
-        .filetype = filetype_riscv_efi_linux_image,
+	.name = "RISC-V Linux image",
+	.bootm = do_bootm_linux,
+	.check_image = bootm_efi_check_image,
+	.filetype = filetype_riscv_linux_image,
 };
 
 static struct image_handler riscv_barebox_handler = {
@@ -51,7 +46,6 @@ static struct image_handler riscv_barebox_handler = {
 static int riscv_register_image_handler(void)
 {
 	register_image_handler(&riscv_linux_handler);
-	register_image_handler(&riscv_linux_efi_handler);
 	register_image_handler(&riscv_barebox_handler);
 
 	return 0;

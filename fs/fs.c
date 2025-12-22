@@ -14,6 +14,7 @@
  *
  */
 
+#include <bootargs.h>
 #include <common.h>
 #include <command.h>
 #include <fs.h>
@@ -36,6 +37,7 @@
 #include <parseopt.h>
 #include <linux/namei.h>
 #include <security/config.h>
+#include <efi/loader/devicepath.h>
 
 char *mkmodestr(unsigned long mode, char *str)
 {
@@ -137,7 +139,6 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 	struct fs_device *fdev;
 	struct cdev *cdev = NULL;
 	const char *type = NULL, *typeprefix = "";
-	bool is_cdev_link = false;
 	char modestr[11];
 
 	mkmodestr(st->st_mode, modestr);
@@ -152,23 +153,10 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 		case S_IFREG:    type = "regular file"; break;
 	}
 
-	if (st->st_mode & S_IFCHR) {
-		char *path;
-
-		path = canonicalize_path(dirfd, filename);
-		if (path) {
-			const char *devicefile = devpath_to_name(path);
-			struct cdev *lcdev;
-
-			lcdev = lcdev_by_name(devicefile);
-			cdev = cdev_readlink(lcdev);
-			if (cdev != lcdev)
-				is_cdev_link = true;
-			if (cdev)
-				bdev = cdev_get_block_device(cdev);
-
-			free(path);
-		}
+	if ((st->st_mode & S_IFCHR) && st->st_cdevname) {
+		cdev = cdev_by_name(st->st_cdevname);
+		if (cdev)
+			bdev = cdev_get_block_device(cdev);
 	}
 
 	printf("  File: %s", filename);
@@ -182,9 +170,6 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 			printf(" -> <readlink error %pe>", ERR_PTR(ret));
 		else
 			printf(" -> %s", realname);
-	} else if (is_cdev_link) {
-		printf(" ~> %s", cdev->name);
-		typeprefix = "cdev link to ";
 	}
 
 	printf("\nSize: ");
@@ -213,6 +198,12 @@ void stat_print(int dirfd, const char *filename, const struct stat *st)
 
 	if (cdev)
 		cdev_print(cdev);
+
+	if (IS_ENABLED(CONFIG_EFI_LOADER)) {
+		char *dpstr = efi_dp_from_file_tostr(dirfd, filename);
+		printf("EFI device path: %s\n", dpstr);
+		free(dpstr);
+	}
 }
 EXPORT_SYMBOL(stat_print);
 
@@ -259,6 +250,12 @@ static void mntput(struct vfsmount *mnt)
 {
 	if (!mnt)
 		return;
+
+	if (!mnt->ref) {
+		WARN_ONCE(1, "refcount for mount \"%s\" becomes negative\n",
+			  mnt->mountpoint->name);
+		return;
+	}
 
 	mnt->ref--;
 }
@@ -826,6 +823,9 @@ static int dentry_delete_subtree(struct super_block *sb, struct dentry *parent)
 
 static void destroy_inode(struct inode *inode)
 {
+	free_const(inode->cdevname);
+	free(inode->i_link);
+
 	if (inode->i_sb->s_op->destroy_inode)
 		inode->i_sb->s_op->destroy_inode(inode);
 	else
@@ -1098,11 +1098,21 @@ EXPORT_SYMBOL(readdir);
 
 static void stat_inode(struct inode *inode, struct stat *s)
 {
+	if (inode->cdevname) {
+		struct cdev *cdev;
+
+		cdev = cdev_by_name(inode->cdevname);
+
+		s->st_size = cdev ? cdev_size(cdev) : 0;
+	} else {
+		s->st_size = inode->i_size;
+	}
+
 	s->st_ino = inode->i_ino;
 	s->st_mode = inode->i_mode;
 	s->st_uid = inode->i_uid;
 	s->st_gid = inode->i_gid;
-	s->st_size = inode->i_size;
+	s->st_cdevname = inode->cdevname;
 }
 
 int fstat(int fd, struct stat *s)
@@ -1226,36 +1236,36 @@ void mount_all(void)
 	}
 }
 
-void fsdev_set_linux_rootarg(struct fs_device *fsdev, const char *str)
+void fsdev_set_linux_root_options(struct fs_device *fsdev, const char *root, const char *rootopts)
 {
-	fsdev->linux_rootarg = xstrdup(str);
+	fsdev->linux_root = xstrdup(root);
+	fsdev->linux_rootopts = xstrdup(rootopts);
 
-	dev_add_param_fixed(&fsdev->dev, "linux.bootargs",
-			    "%s", fsdev->linux_rootarg);
+	dev_add_param_fixed(&fsdev->dev, "linux.bootargs.root",
+			    "%s", fsdev->linux_root);
+	dev_add_param_fixed(&fsdev->dev, "linux.bootargs.rootopts",
+			    "%s", fsdev->linux_rootopts);
 }
 
-/**
- * path_get_linux_rootarg() - Given a path return a suitable root= option for
- *                            Linux
- * @path: The path
- *
- * Return: A string containing the root= option or an ERR_PTR. the returned
- *         string must be freed by the caller.
- */
-char *path_get_linux_rootarg(const char *path)
+void fsdev_get_linux_root_options(struct fs_device *fsdev,
+				  const char **root, const char **rootopts)
 {
-	struct fs_device *fsdev;
-	const char *str;
+	if (fsdev) {
+		*root = dev_get_param(&fsdev->dev, "linux.bootargs.root");
+		*rootopts = dev_get_param(&fsdev->dev, "linux.bootargs.rootopts");
+	}
+}
 
-	fsdev = get_fsdevice_by_path(AT_FDCWD, path);
-	if (!fsdev)
-		return ERR_PTR(-EINVAL);
+char *format_root_bootarg(const char *root_arg, const char *root, const char *rootopts)
+{
+	char *bootarg;
 
-	str = dev_get_param(&fsdev->dev, "linux.bootargs");
-	if (!str)
-		return ERR_PTR(-ENOSYS);
+	if (rootopts)
+		bootarg = xasprintf("%s=%s %s", root_arg, root, rootopts);
+	else
+		bootarg = xasprintf("%s=%s", root_arg, root);
 
-	return xstrdup(str);
+	return bootarg;
 }
 
 /**
@@ -1558,6 +1568,9 @@ static bool d_same_name(const struct dentry *dentry,
 {
 	if (dentry->d_name.len != name->len)
 		return false;
+
+	if (dentry->d_sb->s_casefold)
+		return strncasecmp(dentry->d_name.name, name->name, name->len) == 0;
 
 	return strncmp(dentry->d_name.name, name->name, name->len) == 0;
 }
@@ -2251,6 +2264,7 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 
 		nd->path.mnt = &f->fsdev->vfsmount;
 		nd->path.dentry = f->f_path.dentry;
+		path_get(&nd->path);
 		follow_mount(&nd->path);
 
 		if (*s == '/')
@@ -2445,6 +2459,31 @@ struct fs_device *get_fsdevice_by_path(int dirfd, const char *pathname)
 	path_put(&path);
 
 	return fsdev;
+}
+
+struct fs_device *resolve_fsdevice_path(int dirfd, const char *pathname, char **filepath)
+{
+	struct fs_device *fsdev;
+	char *res = NULL;
+	struct path path;
+	int ret;
+
+	fsdev = get_fsdevice_by_path(dirfd, pathname);
+	if (!fsdev)
+		return NULL;
+
+	ret = filename_lookup(dirfd, getname(pathname), LOOKUP_FOLLOW, &path);
+	if (ret)
+		goto out;
+
+	res = dpath(path.dentry, fsdev->vfsmount.mnt_root);
+	if (res)
+		*filepath = res;
+
+	path_put(&path);
+out:
+	errno_set(ret);
+	return res ? fsdev : NULL;
 }
 
 static int vfs_rmdir(struct inode *dir, struct dentry *dentry)
@@ -2746,6 +2785,39 @@ out1:
 	return errno_set(error);
 }
 EXPORT_SYMBOL(openat);
+
+static int vfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode,
+		     const char *cdevname)
+{
+	int error;
+
+	if (!dir->i_op->mknod)
+		return -EPERM;
+
+	error = dir->i_op->mknod(dir, dentry, mode, cdevname);
+
+	return error;
+}
+
+int mknodat(int dirfd, const char *pathname, mode_t mode, const char *devname)
+{
+	struct dentry *dentry;
+	struct path path;
+	int error;
+
+	dentry = filename_create(dirfd, getname(pathname), &path, 0);
+	if (IS_ERR(dentry)) {
+		error = PTR_ERR(dentry);
+		goto out;
+	}
+
+	error = vfs_mknod(path.dentry->d_inode, dentry, mode, devname);
+
+	dput(dentry);
+	path_put(&path);
+out:
+	return errno_set(error);
+}
 
 int unlinkat(int dirfd, const char *pathname, int flags)
 {
@@ -3251,12 +3323,13 @@ int mount(const char *device, const char *fsname, const char *pathname,
 
 	fsdev->vfsmount.mnt_root = fsdev->sb.s_root;
 
-	if (!fsdev->linux_rootarg) {
-		char *str;
+	if (!fsdev->linux_root) {
+		const char *root = NULL;
+		const char *rootopts = NULL;
 
-		str = cdev_get_linux_rootarg(fsdev->cdev);
-		if (str)
-			fsdev_set_linux_rootarg(fsdev, str);
+		ret = cdev_get_linux_root_and_opts(fsdev->cdev, &root, &rootopts);
+		if (ret == 0)
+			fsdev_set_linux_root_options(fsdev, root, rootopts);
 	}
 
 	path_put(&path);

@@ -352,6 +352,7 @@ static int fat_probe(struct device *dev)
 		goto err_open;
 
 	priv->cdev = fsdev->cdev;
+	fsdev->sb.s_casefold = true;
 
 	priv->fat.userdata = priv;
 	ret = f_mount(&priv->fat);

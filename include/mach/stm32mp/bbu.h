@@ -10,9 +10,19 @@
 int stm32mp_bbu_mmc_fip_register(const char *name, const char *devicefile,
 				 unsigned long flags);
 
+int stm32mp_bbu_nor_fip_register(const char *name, const char *devicefile,
+				 unsigned long flags);
+
 #else
 
 static inline int stm32mp_bbu_mmc_fip_register(const char *name,
+					       const char *devicefile,
+					       unsigned long flags)
+{
+	return -ENOSYS;
+}
+
+static inline int stm32mp_bbu_nor_fip_register(const char *name,
 					       const char *devicefile,
 					       unsigned long flags)
 {

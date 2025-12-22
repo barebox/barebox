@@ -6,9 +6,8 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
-#include <efi.h>
-#include <efi/efi-payload.h>
-#include <efi/efi-device.h>
+#include <efi/payload.h>
+#include <efi/payload/driver.h>
 #include <acpi.h>
 
 static struct sig_desc {

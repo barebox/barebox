@@ -95,21 +95,11 @@ static void power_init_board(void)
 
 extern struct dram_timing_info imx8mm_evk_dram_timing;
 
-static void start_atf(void)
+static void nxp_imx8mm_evk_init_early(void)
 {
-	/*
-	 * If we are in EL3 we are running for the first time and need to
-	 * initialize the DRAM and run TF-A (BL31). The TF-A will then jump
-	 * to DRAM in EL2.
-	 */
-	if (current_el() != 3)
-		return;
-
 	imx8mm_early_clock_init();
 	power_init_board();
 	imx8mm_ddr_init(&imx8mm_evk_dram_timing, DRAM_TYPE_LPDDR4);
-
-	imx8mm_load_and_start_image_via_tfa();
 }
 
 /*
@@ -136,7 +126,15 @@ static __noreturn noinline void nxp_imx8mm_evk_start(void)
 
 	setup_uart();
 
-	start_atf();
+	/*
+	 * If we are in EL3 we are running for the first time and need to
+	 * initialize the DRAM and run TF-A (BL31). The TF-A will then jump
+	 * to DRAM in EL2.
+	 */
+	if (current_el() == 3) {
+		nxp_imx8mm_evk_init_early();
+		imx8mm_load_and_start_image_via_tfa();
+	}
 
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF. I2C pad

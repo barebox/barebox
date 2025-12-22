@@ -37,4 +37,16 @@
 #endif
 #endif
 
+#ifdef CONFIG_MACH_PHYCORE_MPC5200B_TINY
+#include <asm/board-pcm030.h>
+#elif defined(CONFIG_P1010RDB)
+#include <asm/board-p1010rdb.h>
+#elif defined(CONFIG_P2020RDB)
+#include <asm/board-p2020rdb.h>
+#elif defined(CONFIG_P1022DS)
+#include <asm/board-p1022ds.h>
+#elif defined(CONFIG_DA923RC)
+#include <asm/board-da923rc.h>
+#endif
+
 #endif /* _ASM_CONFIG_H_ */

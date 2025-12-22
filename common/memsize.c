@@ -5,7 +5,6 @@
  */
 
 #include <common.h>
-#include <config.h>
 #if defined (__PPC__) && !defined (__SANDBOX__)
 /*
  * At least on G2 PowerPC cores, sequential accesses to non-existent

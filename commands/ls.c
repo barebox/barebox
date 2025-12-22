@@ -33,8 +33,12 @@ static void ls_one(const char *path, const char* fullname)
 		return;
 
 	mkmodestr(s.st_mode, modestr);
-	printf("%s %*llu %*.*s", modestr, SIZELEN, s.st_size, namelen,
-	       namelen, path);
+	if (s.st_size == FILE_SIZE_STREAM)
+		printf("%s %*s %*.*s", modestr, SIZELEN, "~0", namelen,
+		       namelen, path);
+	else
+		printf("%s %*llu %*.*s", modestr, SIZELEN, s.st_size, namelen,
+			namelen, path);
 
 	if (S_ISLNK(s.st_mode)) {
 		char realname[PATH_MAX];

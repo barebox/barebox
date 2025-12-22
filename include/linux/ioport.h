@@ -58,6 +58,8 @@ struct resource {
 
 #define IORESOURCE_TYPE_VALID	0x00800000	/* type & attrs are valid */
 
+#define IORESOURCE_EFI_ALLOC	0x02000000	/* Resource allocated by barebox EFI loader */
+
 #define IORESOURCE_EXCLUSIVE	0x08000000	/* Userland may not map this resource */
 #define IORESOURCE_DISABLED	0x10000000
 #define IORESOURCE_UNSET	0x20000000
@@ -133,7 +135,7 @@ enum resource_memtype {
 #define MEMATTR_RO	0x00020000	/* read-only */
 #define MEMATTR_SP	0x00040000	/* specific-purpose */
 
-#define MEMATTRS_NORMAL		(MEMATTR_UC | MEMATTR_WT | MEMATTR_WC | MEMATTR_WB)
+#define MEMATTRS_NORMAL		(MEMATTR_WB)
 #define MEMATTRS_RW		(MEMATTRS_NORMAL | MEMATTR_XP)
 #define MEMATTRS_RO		(MEMATTRS_NORMAL | MEMATTR_XP | MEMATTR_RO)
 #define MEMATTRS_RX		(MEMATTRS_NORMAL | MEMATTR_RO)
@@ -209,6 +211,11 @@ int __merge_regions(const char *name,
 
 int release_region(struct resource *res);
 
+int release_region_range(struct resource *parent,
+			 resource_size_t start, resource_size_t size,
+			 int (*should_free)(struct resource *res, void *data),
+			 void *data);
+
 extern struct resource iomem_resource;
 extern struct resource ioport_resource;
 
@@ -233,6 +240,62 @@ static inline bool is_reserved_resource(const struct resource *res)
 		return res->type == MEMTYPE_RESERVED;
 	return false;
 }
+
+/**
+ * resource_set_size - Calculate resource end address from size and start
+ * @res: Resource descriptor
+ * @size: Size of the resource
+ *
+ * Calculate the end address for @res based on @size.
+ *
+ * Note: The start address of @res must be set when calling this function.
+ * Prefer resource_set_range() if setting both the start address and @size.
+ */
+static inline void resource_set_size(struct resource *res, resource_size_t size)
+{
+	res->end = res->start + size - 1;
+}
+
+/**
+ * resource_set_range - Set resource start and end addresses
+ * @res: Resource descriptor
+ * @start: Start address for the resource
+ * @size: Size of the resource
+ *
+ * Set @res start address and calculate the end address based on @size.
+ */
+static inline void resource_set_range(struct resource *res,
+				      resource_size_t start,
+				      resource_size_t size)
+{
+	res->start = start;
+	resource_set_size(res, size);
+}
+
+#define region_is_gap(region) ((region)->flags & IORESOURCE_UNSET)
+
+struct resource *resource_iter_first(struct resource *current, struct resource *gap);
+struct resource *resource_iter_last(struct resource *current, struct resource *gap);
+struct resource *resource_iter_prev(struct resource *current, struct resource *gap);
+struct resource *resource_iter_next(struct resource *current, struct resource *gap);
+
+/**
+ * for_each_resource_region - Iterate over child resources and gaps between them
+ * @parent: parent resource
+ * @region: pointer to child resource or gap
+ */
+#define for_each_resource_region(parent, region) \
+	for (struct resource gap, *region = resource_iter_first((parent), &gap); \
+	     region; region = resource_iter_next(region, &gap))
+
+/**
+ * for_each_resource_region_reverse - Reverse iterate over child resources and gaps between them
+ * @parent: parent resource
+ * @region: pointer to child resource or gap
+ */
+#define for_each_resource_region_reverse(parent, region) \
+	for (struct resource gap, *region = resource_iter_last((parent), &gap); \
+	     region; region = resource_iter_prev(region, &gap))
 
 #endif /* __ASSEMBLY__ */
 #endif	/* _LINUX_IOPORT_H */

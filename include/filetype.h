@@ -13,6 +13,7 @@ enum filetype {
 	filetype_unknown,
 	filetype_empty,
 	filetype_arm_zimage,
+	filetype_arm_efi_zimage,
 	filetype_lzo_compressed,
 	filetype_lz4_compressed,
 	filetype_arm_barebox,
@@ -89,6 +90,8 @@ int cdev_detect_type(struct cdev *cdev, enum filetype *type);
 enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec);
 int is_fat_boot_sector(const void *_buf);
 bool filetype_is_barebox_image(enum filetype ft);
+bool filetype_is_linux_efi_image(enum filetype ft);
+enum filetype filetype_no_efistub(enum filetype);
 
 static inline bool file_is_compressed_file(enum filetype ft)
 {
@@ -140,6 +143,12 @@ static inline int is_barebox_mips_head(const char *head)
 static inline int is_barebox_head(const char *head)
 {
 	return is_barebox_arm_head(head) || is_barebox_mips_head(head);
+}
+
+static inline bool is_dos_exe(const void *buf)
+{
+	const u8 *buf8 = buf;
+	return buf8[0] == 'M' && buf8[1] == 'Z';
 }
 
 static inline bool is_arm64_linux_bootimage(const void *header)

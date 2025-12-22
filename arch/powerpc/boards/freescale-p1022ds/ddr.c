@@ -11,6 +11,7 @@
 #include <mach/fsl_i2c.h>
 #include <mach/immap_85xx.h>
 #include <mach/clock.h>
+#include <asm/config.h>
 #include <asm/io.h>
 #include <asm/fsl_lbc.h>
 #include <asm/fsl_ddr_sdram.h>

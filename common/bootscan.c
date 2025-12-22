@@ -145,7 +145,7 @@ static int boot_scan_devicename(struct bootscanner *scanner,
 	pr_debug("%s(%s): %s\n", __func__, scanner->name, devname);
 
 	/* Support both boot /dev/disk0.rootfs and boot disk0.rootfs */
-	devname += str_has_prefix(devname, "/dev/");
+	devname = devpath_to_name(devname);
 
 	device_detect_by_name(devname);
 

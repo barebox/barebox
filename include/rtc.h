@@ -54,4 +54,15 @@ static inline struct rtc_device *rtc_lookup(const char *name)
 
 const char *time_str(struct rtc_time *tm);
 
+/**
+ * rtc_calc_weekday() - Work out the weekday from a time
+ *
+ * This only works for the Gregorian calendar - i.e. after 1752 (in the UK).
+ * It sets time->tm_wdaay to the correct day of the week.
+ *
+ * @time:	Time to inspect. tm_wday is updated
+ * Return: 0 if OK, -EINVAL if the weekday could not be determined
+ */
+int rtc_calc_weekday(struct rtc_time *time);
+
 #endif	/* _RTC_H_ */

@@ -12,7 +12,6 @@
  * last 4K page(0xfffff000-0xffffffff) in flash/rom.
  */
 
-#include <config.h>
 #include <asm/config.h>
 
 #include <asm/processor.h>

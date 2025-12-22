@@ -17,8 +17,6 @@ static inline ulong mem_malloc_size(void)
 
 struct memory_bank {
 	struct list_head list;
-	unsigned long start;
-	unsigned long size;
 	struct resource *res;
 };
 
@@ -28,9 +26,17 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 				    resource_size_t size);
 
 #define for_each_memory_bank(mem)	list_for_each_entry(mem, &memory_banks, list)
+#define for_each_memory_bank_reverse(mem)	\
+	list_for_each_entry_reverse(mem, &memory_banks, list)
 #define for_each_reserved_region(mem, rsv) \
 	list_for_each_entry(rsv, &(mem)->res->children, sibling) \
-		if (is_reserved_resource(rsv))
+		if (!is_reserved_resource(rsv)) {} else
+
+#define for_each_memory_bank_region(bank, region) \
+	for_each_resource_region((bank)->res, region)
+
+#define for_each_memory_bank_region_reverse(bank, region) \
+	for_each_resource_region_reverse((bank)->res, region)
 
 struct resource *__request_sdram_region(const char *name,
 					resource_size_t start, resource_size_t size);

@@ -10,6 +10,7 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 #include <asm/unwind.h>
+#include <efi/attributes.h>
 
 #define LDR1W_SHIFT	0
 #define STR1W_SHIFT	0
@@ -51,7 +52,7 @@ UNWIND( .save	{r0, \regs}		)
 	ldmfd sp!, {r0, \regs}
 	.endm
 
-	.text
+.section EFI_RUNTIME_SECTION(.text)
 
 /* Prototype: void *memcpy(void *dest, const void *src, size_t n); */
 

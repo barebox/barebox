@@ -4,9 +4,8 @@
 
 #include <linux/types.h>
 #include <linux/compiler.h>
+#include <linux/ioport.h>
 #include <linux/bits.h>
-
-struct resource;
 
 int pread_full(int fd, void *buf, size_t size, loff_t offset);
 int pwrite_full(int fd, const void *buf, size_t size, loff_t offset);
@@ -55,6 +54,9 @@ char *make_temp(const char *template);
 
 int cache_file(const char *path, char **newpath);
 
-struct resource *file_to_sdram(const char *filename, unsigned long adr);
+struct resource *file_to_sdram(const char *filename, unsigned long adr,
+			       enum resource_memtype memtype);
+
+int fixup_path_case(int dirfd, const char **path);
 
 #endif /* __LIBFILE_H */

@@ -1,0 +1,91 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# SPDX-Comment: Origin-URL: https://github.com/u-boot/u-boot/blob/a0fe8cedcbe8c76403a77e57eac228b8f778a3ae/lib/efi_loader/Kconfig
+
+config EFI_LOADER_BOOTMGR
+	bool "Rudimentary UEFI Boot Manager support"
+	select BOOT
+	select BOOT_DEFAULTS
+	default y
+	help
+	  This boot manager doesn't yet make use of Boot# variables, but instead
+	  hardcodes order to lookup removable and then builtin storage devices
+	  for EFI payloads located at the removable media path indicated by
+	  CONFIG_EFI_PAYLOAD_DEFAULT_PATH within their respective devices.
+
+config EFI_LOADER_DEBUG_SUPPORT
+	bool "EFI Debug Support"
+	default y
+	help
+	  Select this option if you want to setup the EFI Debug Support
+	  Table and the EFI_SYSTEM_TABLE_POINTER which is used by the debug
+	  agent or an external debugger to determine loaded image information
+	  in a quiescent manner.
+
+config EFI_LOADER_SECURE_BOOT
+	bool
+
+menu "UEFI services"
+
+config EFI_LOADER_GET_TIME
+	bool "GetTime() runtime service"
+	depends on RTC_CLASS
+	default y
+	help
+	  Provide the GetTime() runtime service at boottime. This service
+	  can be used by an EFI application to read the real time clock.
+
+config EFI_LOADER_SET_TIME
+	bool "SetTime() runtime service"
+	depends on RTC_CLASS
+	default y
+	help
+	  Provide the SetTime() runtime service at boottime. This service
+	  can be used by an EFI application to adjust the real time clock.
+
+choice
+	prompt "Store for non-volatile UEFI variables"
+	default EFI_VARIABLE_FILE_STORE
+	help
+	  Select where non-volatile UEFI variables shall be stored.
+
+config EFI_VARIABLE_FILE_STORE
+	bool "Store non-volatile UEFI variables as file"
+	depends on FS_FAT_WRITE
+	select EFI_RUNTIME_GET_VARIABLE
+	select EFI_RUNTIME_GET_NEXT_VARIABLE_NAME
+	select EFI_RUNTIME_QUERY_VARIABLE_INFO
+	help
+	  Select this option if you want non-volatile UEFI variables to be
+	  stored under the file name indicated by ${efi.vars.filestore}
+	  on the EFI system partition.
+
+config EFI_VARIABLE_NO_STORE
+	bool "Don't persist non-volatile UEFI variables"
+	help
+	  If you choose this option, non-volatile variables cannot be persisted.
+	  You could still provide non-volatile variables via the barebox
+	  environment.
+
+endchoice
+
+config EFI_RT_VOLATILE_STORE
+	bool "Allow variable runtime services in volatile storage (e.g RAM)"
+	depends on EFI_VARIABLE_FILE_STORE
+	select EFI_RUNTIME_SET_VARIABLE
+	default y
+	help
+	  When EFI variables are stored on file we don't allow SetVariableRT,
+	  since the OS doesn't know how to write that file. At the same time
+	  we copy runtime variables in DRAM and support GetVariableRT
+
+	  Enable this option to allow SetVariableRT on the RAM backend of
+	  the EFI variable storage. The OS will be responsible for syncing
+	  the RAM contents to the file, otherwise any changes made during
+	  runtime won't persist reboots.
+	  Authenticated variables are not supported. Note that this will
+	  violate the EFI spec since writing auth variables will return
+	  EFI_INVALID_PARAMETER
+
+endmenu
+
+source "efi/loader/protocols/Kconfig"

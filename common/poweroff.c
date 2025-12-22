@@ -7,9 +7,32 @@
 #include <common.h>
 #include <poweroff.h>
 #include <malloc.h>
+#include <efi/types.h>
+#include <asm/sections.h>
 #include <of.h>
 
 static LIST_HEAD(poweroff_handler_list);
+
+static __efi_runtime_data void (*rt_poweroff)(unsigned long flags);
+static int rt_poweroff_prio = INT_MIN;
+
+static void rt_poweroff_handler_register(struct poweroff_handler *handler)
+{
+	if (!IS_ENABLED(CONFIG_EFI_RUNTIME))
+		return;
+	if (!handler->rt_poweroff)
+		return;
+	if (!in_barebox_efi_runtime((ulong)handler->rt_poweroff)) {
+		/* Check if __efi_runtime attribute is missing */
+		pr_warn("handler outside EFI runtime section\n");
+		return;
+	}
+	if (handler->priority <= rt_poweroff_prio)
+		return;
+
+	rt_poweroff = handler->rt_poweroff;
+	rt_poweroff_prio = handler->priority;
+}
 
 /**
  * poweroff_handler_register() - register a handler for poweroffing the system
@@ -25,6 +48,8 @@ int poweroff_handler_register(struct poweroff_handler *handler)
 		handler->name = POWEROFF_DEFAULT_NAME;
 	if (!handler->priority)
 		handler->priority = POWEROFF_DEFAULT_PRIORITY;
+
+	rt_poweroff_handler_register(handler);
 
 	list_add_tail(&handler->list, &poweroff_handler_list);
 
@@ -59,6 +84,17 @@ int poweroff_handler_register_fn(void (*poweroff_fn)(struct poweroff_handler *,
 		free(handler);
 
 	return ret;
+}
+
+/**
+ * rt_poweroff_machine() - power off the machine from a runtime service
+ */
+void __noreturn __efi_runtime rt_poweroff_machine(unsigned long flags)
+{
+	if (rt_poweroff)
+		rt_poweroff(flags);
+
+	__hang();
 }
 
 /**

@@ -4,7 +4,6 @@
 #define __MACH_IMX_DEBUG_LL_H__
 
 #include <io.h>
-#include <config.h>
 #include <common.h>
 #include <mach/imx/imx1-regs.h>
 #include <mach/imx/imx21-regs.h>

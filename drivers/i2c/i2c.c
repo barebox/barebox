@@ -421,6 +421,12 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	return client;
 }
 
+void i2c_unregister_device(struct i2c_client *client)
+{
+	unregister_device(&client->dev);
+	devinfo_del(&client->dev, i2c_info);
+}
+
 static void of_i2c_register_devices(struct i2c_adapter *adap)
 {
 	struct device_node *n;
@@ -686,20 +692,6 @@ void i2c_parse_fw_timings(struct device *dev, struct i2c_timings *t,
 EXPORT_SYMBOL_GPL(i2c_parse_fw_timings);
 
 /**
- * i2c_first_nonreserved_index() - get the first index that is not reserved
- */
-static int i2c_first_nonreserved_index(void)
-{
-	int max;
-
-	max = of_alias_get_highest_id("i2c");
-	if (max < 0)
-		return 0;
-
-	return max + 1;
-}
-
-/**
  * i2c_add_numbered_adapter - declare i2c adapter, use static bus number
  * @adapter: the adapter to register (with adap->nr initialized)
  *
@@ -725,7 +717,7 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	if (adapter->nr < 0) {
 		int nr;
 
-		for (nr = i2c_first_nonreserved_index();
+		for (nr = of_alias_get_free_id("i2c");
 		     i2c_get_adapter(nr); nr++)
 			;
 

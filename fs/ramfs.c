@@ -89,6 +89,9 @@ static struct inode *ramfs_get_inode(struct super_block *sb, const struct inode 
 	case S_IFLNK:
 		inode->i_op = &ramfs_symlink_inode_operations;
 		break;
+	case S_IFBLK:
+	case S_IFCHR:
+		break;
 	}
 
 	return inode;
@@ -149,6 +152,20 @@ static int ramfs_create(struct inode *dir, struct dentry *dentry, umode_t mode)
 	return ramfs_mknod(dir, dentry, mode | S_IFREG);
 }
 
+static int __ramfs_mknod(struct inode *dir,struct dentry *dentry, umode_t mode,
+			 const char *cdevname)
+{
+	int ret;
+
+	ret = ramfs_mknod(dir, dentry, mode);
+	if (ret)
+		return ret;
+
+	init_special_inode(dentry->d_inode, mode, cdevname);
+
+	return 0;
+}
+
 static int ramfs_symlink(struct inode *dir, struct dentry *dentry,
 			 const char *symname)
 {
@@ -196,6 +213,7 @@ static const struct inode_operations ramfs_dir_inode_operations =
 	.unlink = simple_unlink,
 	.create = ramfs_create,
 	.tmpfile = ramfs_tmpfile,
+	.mknod = __ramfs_mknod,
 };
 
 static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node,

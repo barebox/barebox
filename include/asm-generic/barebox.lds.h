@@ -155,6 +155,30 @@
 	BAREBOX_DEEP_PROBE			\
 	BAREBOX_FUZZ_TESTS
 
+#ifdef CONFIG_EFI_RUNTIME
+#define BAREBOX_EFI_RUNTIME			\
+	. = ALIGN(4096);			\
+	.efi_runtime : {			\
+		__efi_runtime_start = .;	\
+		__efi_runtime_text_start = .;	\
+		*(.efi_runtime.text*)		\
+		__efi_runtime_text_stop = .;	\
+		__efi_runtime_rodata_start = .;	\
+		*(.efi_runtime.rodata*)		\
+		__efi_runtime_rodata_stop = .;	\
+		. = ALIGN(4096);		\
+		__efi_runtime_data_start = .;	\
+		*(.efi_runtime.data*)		\
+		*(.efi_runtime.bss*)		\
+		__efi_runtime_data_stop = .;	\
+		__efi_runtime_stop = .;		\
+	}					\
+	. = ALIGN(4096);
+#else
+#define BAREBOX_EFI_RUNTIME
+#endif
+
+
 #if defined(CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE) && \
 CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE < CONFIG_BAREBOX_MAX_BARE_INIT_SIZE
 #define MAX_BARE_INIT_SIZE CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE
@@ -187,3 +211,19 @@ CONFIG_ARCH_BAREBOX_MAX_PBL_SIZE < CONFIG_BAREBOX_MAX_PBL_SIZE
 #else
 #define READONLY
 #endif
+
+#ifdef CONFIG_IS_CLANG
+/* binutils implements this since v2.27 */
+#define NOCROSSREFS_TO(...)
+#endif
+
+#define NOCROSSREFS_FROM(sect) \
+	NOCROSSREFS_TO(.text sect) \
+	NOCROSSREFS_TO(.bss sect) \
+	NOCROSSREFS_TO(.rodata sect) \
+	NOCROSSREFS_TO(.data sect) \
+	NOCROSSREFS_TO(.bbenv sect) \
+	NOCROSSREFS_TO(.dynamic sect) \
+	NOCROSSREFS_TO(.got sect) \
+	NOCROSSREFS_TO(.rela sect) \
+	NOCROSSREFS_TO(.dynsym sect)

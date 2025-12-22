@@ -136,7 +136,10 @@ static int init_boot(void)
 {
 	if (!global_boot_default)
 		global_boot_default = xstrdup(
-			IF_ENABLED(CONFIG_BOOT_DEFAULTS, "bootsource ")
+			IF_ENABLED(CONFIG_EFI_LOADER_BOOTMGR,  "efibootmgr ")
+			IF_ENABLED(CONFIG_BOOT_DEFAULTS,       "bootsource ")
+			IF_ENABLED(CONFIG_BOOT_DEFAULTS,       "storage.builtin ")
+			IF_ENABLED(CONFIG_BOOT_DEFAULTS,       "storage.removable ")
 			"net"
 		);
 
@@ -280,10 +283,33 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
 
 static LIST_HEAD(bootentry_providers);
 
+static int bootentry_provider_sort(struct list_head *_a, struct list_head *_b)
+{
+	struct bootentry_provider *a = container_of(_a, struct bootentry_provider, list);
+	struct bootentry_provider *b = container_of(_b, struct bootentry_provider, list);
+
+	return compare3(b->priority, a->priority); /* descending order */
+}
+
 int bootentry_register_provider(struct bootentry_provider *p)
 {
-	list_add(&p->list, &bootentry_providers);
+	list_add_sort(&p->list, &bootentry_providers, bootentry_provider_sort);
 	return 0;
+}
+
+struct bootentry_provider *get_bootentry_provider(const char *name)
+{
+	struct bootentry_provider *p;
+
+	if (!name)
+		return NULL;
+
+	list_for_each_entry(p, &bootentry_providers, list) {
+		if (streq_ptr(p->name, name))
+			return p;
+	}
+
+	return NULL;
 }
 
 /*

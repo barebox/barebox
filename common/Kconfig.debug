@@ -77,6 +77,29 @@ config DEBUG_PROBES
 	  Most consoles do not implement a remove callback to remain operable until
 	  the very end. Consoles using DMA, however, must be removed.
 
+config DEBUG_EFI_LOADER_ENTRY
+	bool "Debug EFI loader entry/exit"
+	depends on EFI_LOADER
+	help
+	  If enabled, this will print whenever an EFI payload/app calls
+	  into barebox or is returned to before ExitBootServices.
+
+config DEBUG_EFI_RUNTIME_ENTRY
+	bool "Debug EFI runtime entry/exit"
+	depends on EFI_RUNTIME
+	depends on DEBUG_LL
+	help
+	  If enabled this will print whenever the operating system calls
+	  into barebox or is returned to after ExitBootServices.
+
+	  This requires DEBUG_LL support and board-specific setup, so
+	  any UART MMIO regions needed for the barebox runtime services
+	  are marked as such in the UEFI memory map.
+
+	  This option is most convenient to use with a second UART that
+	  the OS doesn't use, e.g. CONFIG_DEBUG_SEMIHOSTING when running
+	  under QEMU.
+
 config DMA_API_DEBUG
 	bool "Enable debugging of DMA-API usage"
 	depends on HAS_DMA

@@ -7,10 +7,12 @@
 
 #include <common.h>
 #include <command.h>
-#include <efi.h>
 #include <linux/uuid.h>
-#include <efi/efi-mode.h>
-#include <efi/efi-device.h>
+#include <efi/mode.h>
+#include <efi/payload.h>
+#include <efi/error.h>
+#include <efi/devicepath.h>
+#include <efi/payload/driver.h>
 
 static void efi_devpath(struct efi_boot_services *bs,
 			efi_handle_t handle,
@@ -26,7 +28,7 @@ static void efi_devpath(struct efi_boot_services *bs,
 	if (EFI_ERROR(efiret))
 		return;
 
-	dev_path_str = device_path_to_str(devpath);
+	dev_path_str = device_path_to_str(devpath, true);
 	if (dev_path_str) {
 		printf("  %s: \n  %s\n", desc, dev_path_str);
 		free(dev_path_str);
@@ -49,7 +51,7 @@ static void efi_dump(struct efi_boot_services *bs, efi_handle_t *handles, size_t
 		printf("  Protocols:\n");
 		for (j = 0; j < num_guids; j++)
 			printf("  %d: %pUl: %s\n", j, guids[j],
-					efi_guid_string(guids[j]));
+					efi_guid_string(guids[j]) ?: "unknown");
 
 		efi_devpath(bs, handles[i], &efi_device_path_protocol_guid,
 			    "Devpath");

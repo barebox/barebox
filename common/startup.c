@@ -40,7 +40,7 @@
 #include <watchdog.h>
 #include <glob.h>
 #include <net.h>
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 #include <bselftest.h>
 #include <pbl/handoff-data.h>
 #include <libfile.h>
@@ -60,11 +60,11 @@ static int mount_root(void)
 	mkdir("/dev", 0);
 	mkdir("/tmp", 0);
 	mkdir("/mnt", 0);
-	mount("none", "devfs", "/dev", NULL);
+	devfs_init();
 
-	if (IS_ENABLED(CONFIG_FS_EFIVARFS) && efi_is_payload()) {
+	if (IS_ENABLED(CONFIG_FS_EFIVARFS)) {
 		mkdir("/efivars", 0);
-		mount("none", "efivarfs", "/efivars", NULL);
+		automount_add("/efivars", "mount -t efivarfs none /efivars");
 	}
 
 	if (IS_ENABLED(CONFIG_FS_PSTORE)) {
@@ -85,6 +85,15 @@ static int mount_root(void)
 fs_initcall(mount_root);
 #endif
 
+static bool may_autoload_external_env = IS_ENABLED(CONFIG_ENV_HANDLING);
+
+#ifdef CONFIG_ENV_HANDLING
+void autoload_external_env(bool endis)
+{
+	may_autoload_external_env = endis;
+}
+#endif
+
 static int load_environment(void)
 {
 	const char *default_environment_path;
@@ -92,15 +101,18 @@ static int load_environment(void)
 
 	default_environment_path = default_environment_path_get();
 
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
-		defaultenv_load("/env", 0);
-
-	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
-		envfs_load(default_environment_path, "/env", 0);
-	} else {
-		if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
-			pr_notice("No support for persistent environment. Using default environment\n");
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT)) {
+		ret = defaultenv_load("/env", 0);
+		if (ret)
+			pr_warn("Failed loading (some) defaultenv overlays: %pe\n",
+				ERR_PTR(ret));
 	}
+
+	if (may_autoload_external_env)
+		envfs_load(default_environment_path, "/env", 0);
+	else if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
+		pr_info("external environment support %s. Using default environment\n",
+			IS_ENABLED(CONFIG_ENV_HANDLING) ? "disallowed" : "disabled");
 
 	nvvar_load();
 
@@ -262,11 +274,22 @@ static int register_autoboot_vars(void)
 }
 postcore_initcall(register_autoboot_vars);
 
+static enum autoboot_state current_autoboot = AUTOBOOT_UNKNOWN;
+
+/**
+ * get_autoboot_state - get the autoboot state
+ *
+ * This functions returns the autoboot state last used.
+ */
+enum autoboot_state get_autoboot_state(void)
+{
+	return current_autoboot;
+}
+
 static int run_init(void)
 {
 	const char *bmode, *cmdline;
 	bool env_bin_init_exists;
-	enum autoboot_state autoboot;
 	struct stat s;
 	glob_t g;
 	int i, ret;
@@ -343,19 +366,20 @@ static int run_init(void)
 		free(scr);
 	}
 
-	autoboot = do_autoboot_countdown();
+	current_autoboot = do_autoboot_countdown();
 
 	console_ctrlc_allow();
 
-	if (autoboot == AUTOBOOT_BOOT)
+	if (current_autoboot == AUTOBOOT_BOOT)
 		run_command("boot");
 
 	if (IS_ENABLED(CONFIG_NET) && !IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT) &&
-	    autoboot != AUTOBOOT_HALT)
+	    current_autoboot != AUTOBOOT_HALT)
 		eth_open_all();
 
-	if (autoboot != AUTOBOOT_MENU) {
-		if (autoboot == AUTOBOOT_ABORT && autoboot == global_autoboot_state)
+	if (current_autoboot != AUTOBOOT_MENU) {
+		if (current_autoboot == AUTOBOOT_ABORT &&
+		    current_autoboot == global_autoboot_state)
 			watchdog_inhibit_all();
 
 		run_shell();

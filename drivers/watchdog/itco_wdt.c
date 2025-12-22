@@ -13,7 +13,6 @@
 
 #include <common.h>
 #include <init.h>
-#include <efi.h>
 #include <linux/pci.h>
 #include <watchdog.h>
 

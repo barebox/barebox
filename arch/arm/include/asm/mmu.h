@@ -10,7 +10,12 @@
 
 struct arm_memory;
 
+#ifdef CONFIG_MMU
 void mmu_disable(void);
+#else
+static inline void mmu_disable(void) {}
+#endif
+
 static inline void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
 		unsigned int flags)
 {
@@ -65,6 +70,5 @@ void __dma_flush_range(unsigned long, unsigned long);
 void __dma_inv_range(unsigned long, unsigned long);
 
 void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned long barebox_base);
-void mmu_early_disable(void);
 
 #endif /* __ASM_MMU_H */

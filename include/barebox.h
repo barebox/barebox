@@ -40,6 +40,7 @@ enum autoboot_state {
 	AUTOBOOT_UNKNOWN,
 };
 
+enum autoboot_state get_autoboot_state(void);
 void set_autoboot_state(enum autoboot_state autoboot);
 enum autoboot_state do_autoboot_countdown(void);
 

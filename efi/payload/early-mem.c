@@ -2,8 +2,8 @@
 
 #include <linux/kernel.h>
 #include <linux/sizes.h>
-#include <efi.h>
-#include <efi/efi-payload.h>
+#include <efi/error.h>
+#include <efi/payload.h>
 
 void *efi_earlymem_alloc(const struct efi_system_table *sys_table,
 			 size_t memsize, enum efi_memory_type mem_type)

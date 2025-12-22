@@ -14,7 +14,7 @@
 #include <zero_page.h>
 #include <range.h>
 #include "mmu-common.h"
-#include <efi/efi-mode.h>
+#include <efi/mode.h>
 
 const char *map_type_tostr(maptype_t map_type)
 {
@@ -145,7 +145,7 @@ static void mmu_remap_memory_banks(void)
 		struct resource *rsv;
 		resource_size_t pos;
 
-		pos = bank->start;
+		pos = bank->res->start;
 
 		/* Skip reserved regions */
 		for_each_reserved_region(bank, rsv) {
@@ -154,14 +154,13 @@ static void mmu_remap_memory_banks(void)
 			pos = rsv->end + 1;
 		}
 
-		remap_range_end_sans_text(pos, bank->start + bank->size, MAP_CACHED);
+		remap_range_end_sans_text(pos, bank->res->end + 1, MAP_CACHED);
 	}
-
-	/* Do this while interrupt vectors are still writable */
-	setup_trap_pages();
 
 	remap_range((void *)code_start, code_size, MAP_CODE);
 	remap_range((void *)rodata_start, rodata_size, ARCH_MAP_CACHED_RO);
+
+	setup_trap_pages();
 }
 
 static int mmu_init(void)

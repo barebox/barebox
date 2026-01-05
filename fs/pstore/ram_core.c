@@ -397,10 +397,9 @@ void persistent_ram_free(struct persistent_ram_zone *prz)
 	if (!prz)
 		return;
 
-	if (prz->res) {
-		release_sdram_region(prz->res);
-		prz->res = NULL;
-	}
+	release_sdram_region(prz->res);
+	prz->res = NULL;
+
 	if (prz->rs_decoder) {
 		free_rs(prz->rs_decoder);
 		prz->rs_decoder = NULL;

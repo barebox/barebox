@@ -52,9 +52,8 @@ static int desc_to_sdram(struct fip_image_desc *loadable, ulong load_address)
 
 static void desc_release_sdram(struct fip_image_desc *loadable)
 {
-	struct resource *res = loadable ? desc_get_res(loadable) : NULL;
-	if (res)
-		release_sdram_region(res);
+	if (loadable)
+		release_sdram_region(desc_get_res(loadable));
 }
 
 enum { IMAGE_BL33, IMAGE_HW_CONFIG, IMAGE_COUNT };

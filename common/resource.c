@@ -97,6 +97,8 @@ ok:
  */
 int release_region(struct resource *res)
 {
+	if (!res)
+		return 0;
 	if (!list_empty(&res->children))
 		return -EBUSY;
 

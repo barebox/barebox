@@ -571,7 +571,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (size < PAGE_SIZE)
 		goto err_out;
 
-	os_type = data->os_type = file_detect_type(data->os_header, PAGE_SIZE);
+	os_type = data->os_type = file_detect_boot_image_type(data->os_header, PAGE_SIZE);
 
 	if (!data->force && os_type == filetype_unknown) {
 		pr_err("Unknown OS filetype (try -f)\n");
@@ -589,7 +589,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		data->oftree_file = NULL;
 		data->initrd_file = NULL;
 		data->tee_file = NULL;
-		if (os_type != filetype_oftree) {
+		if (os_type != filetype_fit) {
 			pr_err("Signed boot and image is no FIT image, aborting\n");
 			ret = -EINVAL;
 			goto err_out;
@@ -599,10 +599,9 @@ int bootm_boot(struct bootm_data *bootm_data)
 	os_type_str = file_type_to_short_string(os_type);
 
 	switch (os_type) {
-	case filetype_oftree:
+	case filetype_fit:
 		ret = bootm_open_fit(data);
 		os_type = file_detect_type(data->fit_kernel, data->fit_kernel_size);
-		os_type_str = "FIT";
 		break;
 	case filetype_uimage:
 		ret = bootm_open_uimage(data);

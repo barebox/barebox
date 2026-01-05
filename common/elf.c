@@ -201,7 +201,7 @@ elf_release_regions:
 
 static int elf_check_image(struct elf_image *elf, void *buf)
 {
-	if (strncmp(buf, ELFMAG, SELFMAG)) {
+	if (memcmp(buf, ELFMAG, SELFMAG)) {
 		pr_err("ELF magic not found.\n");
 		return -EINVAL;
 	}

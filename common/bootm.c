@@ -339,6 +339,7 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 const struct resource *
 bootm_load_initrd(struct image_data *data, unsigned long load_address)
 {
+	struct resource *res;
 	enum filetype type;
 	int ret;
 
@@ -362,10 +363,9 @@ bootm_load_initrd(struct image_data *data, unsigned long load_address)
 					ERR_PTR(ret));
 			return ERR_PTR(ret);
 		}
-		data->initrd_res = request_sdram_region("initrd",
-				load_address, initrd_size,
-				MEMTYPE_LOADER_DATA, MEMATTRS_RW);
-		if (!data->initrd_res) {
+		res = request_sdram_region("initrd", load_address, initrd_size,
+					   MEMTYPE_LOADER_DATA, MEMATTRS_RW);
+		if (!res) {
 			pr_err("unable to request SDRAM region for initrd at"
 					" 0x%08llx-0x%08llx\n",
 				(unsigned long long)load_address,
@@ -397,16 +397,15 @@ initrd_file:
 
 		num = uimage_part_num(data->initrd_part);
 
-		data->initrd_res = uimage_load_to_sdram(data->initrd,
-			num, load_address);
-		if (!data->initrd_res)
+		res = uimage_load_to_sdram(data->initrd, num, load_address);
+		if (!res)
 			return ERR_PTR(-ENOMEM);
 
 		goto done;
 	}
 
-	data->initrd_res = file_to_sdram(data->initrd_file, load_address, MEMTYPE_LOADER_DATA);
-	if (!data->initrd_res)
+	res = file_to_sdram(data->initrd_file, load_address, MEMTYPE_LOADER_DATA);
+	if (!res)
 		return ERR_PTR(-ENOMEM);
 
 done:
@@ -417,10 +416,9 @@ done:
 		pr_info(", multifile image %s", data->initrd_part);
 	pr_info("\n");
 done1:
-	pr_info("initrd is at %pa-%pa\n",
-		&data->initrd_res->start,
-		&data->initrd_res->end);
+	pr_info("initrd is at %pa-%pa\n", &res->start, &res->end);
 
+	data->initrd_res = res;
 	return data->initrd_res;
 }
 

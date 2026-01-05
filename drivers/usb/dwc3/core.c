@@ -17,6 +17,7 @@
 #include <linux/reset.h>
 #include <linux/usb/of.h>
 
+#include "glue.h"
 #include "core.h"
 #include "gadget.h"
 #include "io.h"
@@ -1402,40 +1403,42 @@ static void dwc3_check_params(struct dwc3 *dwc)
 	}
 }
 
-static int dwc3_probe(struct device *dev)
+int dwc3_core_probe(const struct dwc3_probe_data *data)
 {
-	struct dwc3		*dwc;
+	struct dwc3		*dwc = data->dwc;
+	struct device		*dev = dwc->dev;
+	struct resource		*res = data->res;
 	int			ret;
 
-	dwc = xzalloc(sizeof(*dwc));
 	dev->priv = dwc;
 
-	dwc->dev = dev;
-	dwc->regs = dev_get_mem_region(dwc->dev, 0) + DWC3_GLOBALS_REGS_START;
+	dwc->regs = IOMEM(res->start) + DWC3_GLOBALS_REGS_START;
 
 	dwc3_get_properties(dwc);
 
-	if (dev->of_node) {
-		ret = clk_bulk_get_all(dev, &dwc->clks);
-		if (ret < 0)
+	if (!data->ignore_clocks_and_resets) {
+		if (dev->of_node) {
+			ret = clk_bulk_get_all(dev, &dwc->clks);
+			if (ret < 0)
+				return ret;
+
+			dwc->num_clks = ret;
+		}
+
+		ret = clk_bulk_enable(dwc->num_clks, dwc->clks);
+		if (ret)
 			return ret;
 
-		dwc->num_clks = ret;
+		dwc->reset = reset_control_get(dev, NULL);
+		if (IS_ERR(dwc->reset)) {
+			dev_err(dev, "Failed to get reset control: %pe\n", dwc->reset);
+			return PTR_ERR(dwc->reset);
+		}
+
+		reset_control_assert(dwc->reset);
+		mdelay(1);
+		reset_control_deassert(dwc->reset);
 	}
-
-	ret = clk_bulk_enable(dwc->num_clks, dwc->clks);
-	if (ret)
-		return ret;
-
-	dwc->reset = reset_control_get(dev, NULL);
-	if (IS_ERR(dwc->reset)) {
-		dev_err(dev, "Failed to get reset control: %pe\n", dwc->reset);
-		return PTR_ERR(dwc->reset);
-	}
-
-	reset_control_assert(dwc->reset);
-	mdelay(1);
-	reset_control_deassert(dwc->reset);
 
 	if (!dwc3_core_is_valid(dwc)) {
 		dev_err(dwc->dev, "this is not a DesignWare USB3 DRD Core\n");
@@ -1476,15 +1479,40 @@ static int dwc3_probe(struct device *dev)
 	return 0;
 }
 
-static void dwc3_remove(struct device *dev)
+static int dwc3_probe(struct device *dev)
 {
-	struct dwc3 *dwc = dev->priv;
+	struct dwc3_probe_data probe_data = {};
+	struct resource *res;
+	struct dwc3 *dwc;
 
+	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
+	if (!res) {
+		dev_err(dev, "missing memory resource\n");
+		return -ENODEV;
+	}
+
+	dwc = xzalloc(sizeof(*dwc));
+
+	dwc->dev = dev;
+
+	probe_data.dwc = dwc;
+	probe_data.res = res;
+
+	return dwc3_core_probe(&probe_data);
+}
+
+void dwc3_core_remove(struct dwc3 *dwc)
+{
 	dwc3_core_exit_mode(dwc);
 	dwc3_core_exit(dwc);
 	clk_bulk_put(dwc->num_clks, dwc->clks);
 	dwc3_free_event_buffers(dwc);
 	dwc3_free_scratch_buffers(dwc);
+}
+
+static void dwc3_remove(struct device *dev)
+{
+	dwc3_core_remove(dev->priv);
 }
 
 static const struct of_device_id of_dwc3_match[] = {

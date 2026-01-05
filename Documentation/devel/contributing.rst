@@ -77,7 +77,7 @@ GitHub Actions. The CI performs a range of checks, including:
 * Shuffle make dependency build order to find missing dependencies
 
 You can run the exact same tests yourself by forking the
-`the project on Github <https://github.com/barebox/barebox>`.
+`the project on Github <https://github.com/barebox/barebox>`_.
 
 Read along for instructions on reproducing locally.
 

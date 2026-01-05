@@ -21,6 +21,10 @@ ENTRY_FUNCTION(start_imx6s_riotboard, r0, r1, r2)
 	imx6_cpu_lowlevel_init();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
+		/*
+		 * CONFIG_DEBUG_IMX6Q_UART=y
+		 * CONFIG_DEBUG_IMX_UART_PORT=2
+		 */
 		writel(0x4, 0x020e016c);
 		imx6_ungate_all_peripherals();
 		imx6_uart_setup_ll();

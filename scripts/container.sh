@@ -41,6 +41,15 @@ if [ "$(realpath --no-symlinks $PWD)" != "$pwd_real" ]; then
 	volumes="$volumes -v $pwd_real:$pwd_real:z"
 fi
 
+if [ -n "$KBUILD_OUTPUT" ]; then
+	KBUILD_OUTPUT=$(realpath $KBUILD_OUTPUT)
+	volumes="$volumes -v $KBUILD_OUTPUT:$KBUILD_OUTPUT:z"
+fi
+if [ -n "$LG_BUILDDIR" ] && [ "$KBUILD_OUTPUT" != "$LG_BUILDDIR" ]; then
+	LG_BUILDDIR=$(realpath $LG_BUILDDIR)
+	volumes="$volumes -v $LG_BUILDDIR:$LG_BUILDDIR:z"
+fi
+
 exec podman run -it $volumes --rm \
 	-e TERM -e ARCH -e CONFIG -e JOBS -e LOGDIR -e REGEX \
 	-e KBUILD_OUTPUT -e LG_BUILDDIR $env \

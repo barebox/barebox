@@ -5,3 +5,12 @@
 		method = "smc";
 	};
 };
+
+/* Temporary workaround pending fsl,ls1028a-dwc3 driver support */
+&usb0 {
+	compatible = "snps,dwc3";
+};
+
+&usb1 {
+	compatible = "snps,dwc3";
+};

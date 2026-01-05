@@ -280,61 +280,54 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 const struct resource *
 bootm_load_initrd(struct image_data *data, unsigned long load_address)
 {
-	struct resource *res;
-	enum filetype type;
+	struct resource *res = NULL;
+	const char *initrd, *initrd_part = NULL;
+	enum filetype type = filetype_unknown;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
 		return NULL;
 
-	if (bootm_get_override(&data->initrd_file, bootm_overrides.initrd_file))
-		goto initrd_file;
-
-	if (data->initrd_res)
+	/* TODO: This should not be set anywhere, but in case it is, let's print
+	 * a warning to find out if we need this
+	 */
+	if (WARN_ON(data->initrd_res))
 		return data->initrd_res;
 
-	if (data->os_fit) {
-		res = bootm_load_fit_initrd(data, load_address);
-		if (IS_ERR(res))
-			return res;
-		if (res)
-			pr_info("Loaded initrd from FIT image\n");
+	bootm_get_override(&data->initrd_file, bootm_overrides.initrd_file);
 
-		goto done1;
-	}
-
-initrd_file:
-	if (!data->initrd_file)
-		return NULL;
-
-	ret = file_name_detect_type(data->initrd_file, &type);
-	if (ret) {
-		pr_err("could not open initrd \"%s\": %pe\n", data->initrd_file, ERR_PTR(ret));
-		return ERR_PTR(ret);
+	initrd = data->initrd_file;
+	if (initrd) {
+		ret = file_name_detect_type(initrd, &type);
+		if (ret) {
+			pr_err("could not open initrd \"%s\": %pe\n",
+			       initrd, ERR_PTR(ret));
+			return ERR_PTR(ret);
+		}
 	}
 
 	if (type == filetype_uimage) {
 		res = bootm_load_uimage_initrd(data, load_address);
-		if (IS_ERR(res))
-			return res;
+		if (data->initrd->header.ih_type == IH_TYPE_MULTI)
+			initrd_part = data->initrd_part;
 
-		goto done;
+	} else if (initrd) {
+		res = file_to_sdram(initrd, load_address, MEMTYPE_LOADER_DATA)
+			?: ERR_PTR(-ENOMEM);
+
+	} else if (data->os_fit) {
+		res = bootm_load_fit_initrd(data, load_address);
+		type = filetype_fit;
+
 	}
 
-	res = file_to_sdram(data->initrd_file, load_address, MEMTYPE_LOADER_DATA);
-	if (!res)
-		return ERR_PTR(-ENOMEM);
+	if (IS_ERR_OR_NULL(res))
+		return res;
 
-done:
-
-	pr_info("Loaded initrd %s '%s'", file_type_to_string(type),
-	       data->initrd_file);
-	if (type == filetype_uimage && data->initrd->header.ih_type == IH_TYPE_MULTI)
-		pr_info(", multifile image %s", data->initrd_part);
-	pr_info("\n");
-done1:
-	if (res)
-		pr_info("initrd is at %pa-%pa\n", &res->start, &res->end);
+	pr_info("Loaded initrd from %s %s%s%s to %pa-%pa\n",
+		file_type_to_string(type), initrd,
+		initrd_part ? "@" : "", initrd_part ?: "",
+		&res->start, &res->end);
 
 	data->initrd_res = res;
 	return data->initrd_res;

@@ -445,6 +445,18 @@ static void dwc3_cache_hwparams(struct dwc3 *dwc)
 		parms->hwparams9 = dwc3_readl(dwc->regs, DWC3_GHWPARAMS9);
 }
 
+static void dwc3_config_soc_bus(struct dwc3 *dwc)
+{
+	if (dwc->gsbuscfg0_reqinfo != DWC3_GSBUSCFG0_REQINFO_UNSPECIFIED) {
+		u32 reg;
+
+		reg = dwc3_readl(dwc->regs, DWC3_GSBUSCFG0);
+		reg &= ~DWC3_GSBUSCFG0_REQINFO(~0);
+		reg |= DWC3_GSBUSCFG0_REQINFO(dwc->gsbuscfg0_reqinfo);
+		dwc3_writel(dwc->regs, DWC3_GSBUSCFG0, reg);
+	}
+}
+
 static int dwc3_core_ulpi_init(struct dwc3 *dwc)
 {
 	int intf;
@@ -903,6 +915,8 @@ static int dwc3_core_init(struct dwc3 *dwc)
 
 	dwc3_set_incr_burst_type(dwc);
 
+	dwc3_config_soc_bus(dwc);
+
 	usb_phy_set_suspend(dwc->usb2_phy, 0);
 	usb_phy_set_suspend(dwc->usb3_phy, 0);
 	ret = phy_power_on(dwc->usb2_generic_phy);
@@ -1145,6 +1159,26 @@ static void dwc3_core_exit_mode(struct dwc3 *dwc)
 
 	/* de-assert DRVVBUS for HOST and OTG mode */
 	dwc3_set_prtcap(dwc, DWC3_GCTL_PRTCAP_DEVICE);
+}
+
+static void dwc3_get_software_properties(struct dwc3 *dwc,
+					 const struct dwc3_properties *properties)
+{
+	dwc->gsbuscfg0_reqinfo = DWC3_GSBUSCFG0_REQINFO_UNSPECIFIED;
+
+	if (properties->gsbuscfg0_reqinfo !=
+	    DWC3_GSBUSCFG0_REQINFO_UNSPECIFIED) {
+		dwc->gsbuscfg0_reqinfo = properties->gsbuscfg0_reqinfo;
+		return;
+	}
+
+	/*
+	 * TODO: Iterate over all parent nodes for finding swnode properties
+	 * and non-DT (non-ABI) properties once we have device properties..
+	 *
+	 * In Linux, this is used for Xilinx ZynqMP, which we don't configure
+	 * here.
+	 */
 }
 
 static void dwc3_get_properties(struct dwc3 *dwc)
@@ -1416,6 +1450,8 @@ int dwc3_core_probe(const struct dwc3_probe_data *data)
 
 	dwc3_get_properties(dwc);
 
+	dwc3_get_software_properties(dwc, &data->properties);
+
 	if (!data->ignore_clocks_and_resets) {
 		if (dev->of_node) {
 			ret = clk_bulk_get_all(dev, &dwc->clks);
@@ -1497,6 +1533,7 @@ static int dwc3_probe(struct device *dev)
 
 	probe_data.dwc = dwc;
 	probe_data.res = res;
+	probe_data.properties = DWC3_DEFAULT_PROPERTIES;
 
 	return dwc3_core_probe(&probe_data);
 }

@@ -21,7 +21,7 @@ endif
 quiet_cmd_elf__ = LD      $@
       cmd_elf__ = $(linker) -o $@ $(BAREBOX_LDFLAGS) \
 	-Wl,-T,$(pbl-lds) -Wl,--defsym=main=$(2) -Wl,--whole-archive \
-	$(obj)/../$(BAREBOX_PROPER) $(BAREBOX_PBL_OBJS) -Wl,--no-whole-archive \
+	$(BAREBOX_PIGGY_OBJS) $(BAREBOX_PBL_OBJS) -Wl,--no-whole-archive \
 	-lrt -pthread $(SANDBOX_LIBS) $(LDFLAGS_$(@F))
 
 ifeq ($(CONFIG_FUZZ_EXTERNAL),y)

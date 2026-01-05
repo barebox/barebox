@@ -13,6 +13,7 @@
 #include <libfile.h>
 #include <bootm-fit.h>
 #include <image-fit.h>
+#include <bootm-uimage.h>
 #include <globalvar.h>
 #include <init.h>
 #include <environment.h>
@@ -250,18 +251,8 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	if (data->os_fit)
 		return bootm_load_fit_os(data, load_address);
 
-	if (image_is_uimage(data)) {
-		int num;
-
-		num = uimage_part_num(data->os_part);
-
-		data->os_res = uimage_load_to_sdram(data->os,
-			num, load_address);
-		if (!data->os_res)
-			return -ENOMEM;
-
-		return 0;
-	}
+	if (image_is_uimage(data))
+		return bootm_load_uimage_os(data, load_address);
 
 	if (!data->os_file)
 		return -EINVAL;
@@ -269,34 +260,6 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	data->os_res = file_to_sdram(data->os_file, load_address, MEMTYPE_LOADER_CODE);
 	if (!data->os_res)
 		return -ENOMEM;
-
-	return 0;
-}
-
-static int bootm_open_initrd_uimage(struct image_data *data)
-{
-	int ret;
-
-	if (!IS_ENABLED(CONFIG_BOOTM_UIMAGE))
-		return -ENOSYS;
-
-	if (strcmp(data->os_file, data->initrd_file)) {
-		data->initrd = uimage_open(data->initrd_file);
-		if (!data->initrd)
-			return -EINVAL;
-
-		if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
-			ret = uimage_verify(data->initrd);
-			if (ret) {
-				pr_err("Checking data crc failed with %pe\n",
-					ERR_PTR(ret));
-				return ret;
-			}
-		}
-		uimage_print_contents(data->initrd);
-	} else {
-		data->initrd = data->os;
-	}
 
 	return 0;
 }
@@ -351,18 +314,9 @@ initrd_file:
 	}
 
 	if (type == filetype_uimage) {
-		int num;
-		ret = bootm_open_initrd_uimage(data);
-		if (ret) {
-			pr_err("loading initrd failed with %pe\n", ERR_PTR(ret));
-			return ERR_PTR(ret);
-		}
-
-		num = uimage_part_num(data->initrd_part);
-
-		res = uimage_load_to_sdram(data->initrd, num, load_address);
-		if (!res)
-			return ERR_PTR(-ENOMEM);
+		res = bootm_load_uimage_initrd(data, load_address);
+		if (IS_ERR(res))
+			return res;
 
 		goto done;
 	}
@@ -384,48 +338,6 @@ done1:
 
 	data->initrd_res = res;
 	return data->initrd_res;
-}
-
-static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
-				    struct fdt_header **fdt)
-{
-	enum filetype ft;
-	const char *oftree = data->oftree_file;
-	int num = uimage_part_num(data->oftree_part);
-	struct uimage_handle *of_handle;
-	int release = 0;
-
-	pr_info("Loading devicetree from '%s'@%d\n", oftree, num);
-
-	if (!IS_ENABLED(CONFIG_BOOTM_OFTREE_UIMAGE))
-		return -EINVAL;
-
-	if (!strcmp(data->os_file, oftree)) {
-		of_handle = data->os;
-	} else if (!strcmp(data->initrd_file, oftree)) {
-		of_handle = data->initrd;
-	} else {
-		of_handle = uimage_open(oftree);
-		if (!of_handle)
-			return -ENODEV;
-		uimage_print_contents(of_handle);
-		release = 1;
-	}
-
-	*fdt = uimage_load_to_buf(of_handle, num, size);
-
-	if (release)
-		uimage_close(of_handle);
-
-	ft = file_detect_type(*fdt, *size);
-	if (ft != filetype_oftree) {
-		pr_err("%s is not an oftree but %s\n",
-			data->oftree_file, file_type_to_string(ft));
-		free(*fdt);
-		return -EINVAL;
-	}
-
-	return 0;
 }
 
 /*
@@ -585,40 +497,6 @@ int bootm_get_os_size(struct image_data *data)
 	return s.st_size;
 }
 
-static int bootm_open_os_uimage(struct image_data *data)
-{
-	int ret;
-
-	if (!IS_ENABLED(CONFIG_BOOTM_UIMAGE))
-		return -ENOSYS;
-
-	data->os = uimage_open(data->os_file);
-	if (!data->os)
-		return -EINVAL;
-
-	if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
-		ret = uimage_verify(data->os);
-		if (ret) {
-			pr_err("Checking data crc failed with %pe\n",
-					ERR_PTR(ret));
-			return ret;
-		}
-	}
-
-	uimage_print_contents(data->os);
-
-	if (IH_ARCH == IH_ARCH_INVALID || data->os->header.ih_arch != IH_ARCH) {
-		pr_err("Unsupported Architecture 0x%x\n",
-		       data->os->header.ih_arch);
-		return -EINVAL;
-	}
-
-	if (data->os_address == UIMAGE_SOME_ADDRESS)
-		data->os_address = data->os->header.ih_load;
-
-	return 0;
-}
-
 static void bootm_print_info(struct image_data *data)
 {
 	if (data->os_res)
@@ -727,7 +605,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		os_type_str = "FIT";
 		break;
 	case filetype_uimage:
-		ret = bootm_open_os_uimage(data);
+		ret = bootm_open_uimage(data);
 		break;
 	default:
 		ret = 0;
@@ -897,11 +775,8 @@ err_out:
 		release_sdram_region(data->oftree_res);
 	if (data->tee_res)
 		release_sdram_region(data->tee_res);
-	if (image_is_uimage(data)) {
-		if (data->initrd && data->initrd != data->os)
-			uimage_close(data->initrd);
-		uimage_close(data->os);
-	}
+	if (image_is_uimage(data))
+		bootm_close_uimage(data);
 	if (data->os_fit)
 		bootm_close_fit(data);
 	if (data->of_root_node)

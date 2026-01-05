@@ -1454,16 +1454,12 @@ int dwc3_core_probe(const struct dwc3_probe_data *data)
 
 	if (!data->ignore_clocks_and_resets) {
 		if (dev->of_node) {
-			ret = clk_bulk_get_all(dev, &dwc->clks);
+			ret = clk_bulk_get_all_enabled(dev, &dwc->clks);
 			if (ret < 0)
 				return ret;
 
 			dwc->num_clks = ret;
 		}
-
-		ret = clk_bulk_enable(dwc->num_clks, dwc->clks);
-		if (ret)
-			return ret;
 
 		dwc->reset = reset_control_get(dev, NULL);
 		if (IS_ERR(dwc->reset)) {

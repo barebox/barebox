@@ -16,13 +16,9 @@ static int simple_pm_bus_probe(struct device *dev)
 	int num_clks;
 
 	if (deep_probe_is_supported()) {
-		num_clks = clk_bulk_get_all(dev, &clks);
+		num_clks = clk_bulk_get_all_enabled(dev, &clks);
 		if (num_clks < 0)
 			return dev_err_probe(dev, num_clks, "failed to get clocks\n");
-
-		num_clks = clk_bulk_prepare_enable(num_clks, clks);
-		if (num_clks)
-			return dev_err_probe(dev, num_clks, "failed to enable clocks\n");
 	}
 
 	of_platform_populate(np, NULL, dev);

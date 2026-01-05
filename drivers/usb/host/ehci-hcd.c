@@ -1442,14 +1442,11 @@ static int ehci_probe(struct device *dev)
 	if (ret)
 		return ret;
 
-	ret = clk_bulk_get_all(dev, &clks);
+	ret = clk_bulk_get_all_enabled(dev, &clks);
 	if (ret < 0)
 		return ret;
 
 	num_clocks = ret;
-	ret = clk_bulk_enable(num_clocks, clks);
-	if (ret)
-		return ret;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

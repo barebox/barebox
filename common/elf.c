@@ -315,7 +315,7 @@ static struct elf_image *elf_check_init(const char *filename)
 	}
 	close(fd);
 
-	elf->filename = strdup(filename);
+	elf->filename = strdup_const(filename);
 	if (!elf->filename) {
 		ret = -ENOMEM;
 		goto err_free_hdr_buf;

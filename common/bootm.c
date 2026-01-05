@@ -11,6 +11,7 @@
 #include <memory.h>
 #include <block.h>
 #include <libfile.h>
+#include <bootm-fit.h>
 #include <image-fit.h>
 #include <globalvar.h>
 #include <init.h>
@@ -246,23 +247,8 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	if (load_address == UIMAGE_INVALID_ADDRESS)
 		return -EINVAL;
 
-	if (data->os_fit) {
-		const void *kernel = data->fit_kernel;
-		unsigned long kernel_size = data->fit_kernel_size;
-
-		data->os_res = request_sdram_region("kernel",
-				load_address, kernel_size,
-				MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
-		if (!data->os_res) {
-			pr_err("unable to request SDRAM region for kernel at"
-					" 0x%08llx-0x%08llx\n",
-				(unsigned long long)load_address,
-				(unsigned long long)load_address + kernel_size - 1);
-			return -ENOMEM;
-		}
-		zero_page_memcpy((void *)load_address, kernel, kernel_size);
-		return 0;
-	}
+	if (data->os_fit)
+		return bootm_load_fit_os(data, load_address);
 
 	if (image_is_uimage(data)) {
 		int num;
@@ -285,14 +271,6 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 		return -ENOMEM;
 
 	return 0;
-}
-
-static bool fitconfig_has_ramdisk(struct image_data *data)
-{
-	if (!IS_ENABLED(CONFIG_FITIMAGE) || !data->os_fit)
-		return false;
-
-	return fit_has_image(data->os_fit, data->fit_config, "ramdisk");
 }
 
 static int bootm_open_initrd_uimage(struct image_data *data)
@@ -352,28 +330,13 @@ bootm_load_initrd(struct image_data *data, unsigned long load_address)
 	if (data->initrd_res)
 		return data->initrd_res;
 
-	if (fitconfig_has_ramdisk(data)) {
-		const void *initrd;
-		unsigned long initrd_size;
+	if (data->os_fit) {
+		res = bootm_load_fit_initrd(data, load_address);
+		if (IS_ERR(res))
+			return res;
+		if (res)
+			pr_info("Loaded initrd from FIT image\n");
 
-		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk",
-				     &initrd, &initrd_size);
-		if (ret) {
-			pr_err("Cannot open ramdisk image in FIT image: %pe\n",
-					ERR_PTR(ret));
-			return ERR_PTR(ret);
-		}
-		res = request_sdram_region("initrd", load_address, initrd_size,
-					   MEMTYPE_LOADER_DATA, MEMATTRS_RW);
-		if (!res) {
-			pr_err("unable to request SDRAM region for initrd at"
-					" 0x%08llx-0x%08llx\n",
-				(unsigned long long)load_address,
-				(unsigned long long)load_address + initrd_size - 1);
-			return ERR_PTR(-ENOMEM);
-		}
-		memcpy((void *)load_address, initrd, initrd_size);
-		pr_info("Loaded initrd from FIT image\n");
 		goto done1;
 	}
 
@@ -416,7 +379,8 @@ done:
 		pr_info(", multifile image %s", data->initrd_part);
 	pr_info("\n");
 done1:
-	pr_info("initrd is at %pa-%pa\n", &res->start, &res->end);
+	if (res)
+		pr_info("initrd is at %pa-%pa\n", &res->start, &res->end);
 
 	data->initrd_res = res;
 	return data->initrd_res;
@@ -464,14 +428,6 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 	return 0;
 }
 
-static bool fitconfig_has_fdt(struct image_data *data)
-{
-	if (!IS_ENABLED(CONFIG_FITIMAGE) || !data->os_fit)
-		return false;
-
-	return fit_has_image(data->os_fit, data->fit_config, "fdt");
-}
-
 /*
  * bootm_get_devicetree() - get devicetree
  *
@@ -494,20 +450,12 @@ void *bootm_get_devicetree(struct image_data *data)
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return ERR_PTR(-ENOSYS);
 
-	from_fit = fitconfig_has_fdt(data);
+	from_fit = bootm_fit_has_fdt(data);
 	if (bootm_get_override(&data->oftree_file, bootm_overrides.oftree_file))
 		from_fit = false;
 
 	if (from_fit) {
-		const void *of_tree;
-		unsigned long of_size;
-
-		ret = fit_open_image(data->os_fit, data->fit_config, "fdt",
-				     &of_tree, &of_size);
-		if (ret)
-			return ERR_PTR(ret);
-
-		data->of_root_node = of_unflatten_dtb(of_tree, of_size);
+		data->of_root_node = bootm_get_fit_devicetree(data);
 	} else if (data->oftree_file) {
 		size_t size;
 
@@ -667,80 +615,6 @@ static int bootm_open_os_uimage(struct image_data *data)
 
 	if (data->os_address == UIMAGE_SOME_ADDRESS)
 		data->os_address = data->os->header.ih_load;
-
-	return 0;
-}
-
-static bool bootm_fit_config_valid(struct fit_handle *fit,
-				   struct device_node *config)
-{
-	/*
-	 * Consider only FIT configurations which do provide a loadable kernel
-	 * image.
-	 */
-	return !!fit_has_image(fit, config, "kernel");
-}
-
-static int bootm_open_fit(struct image_data *data)
-{
-	struct fit_handle *fit;
-	struct fdt_header *header;
-	static const char *kernel_img = "kernel";
-	size_t flen, hlen;
-	int ret;
-
-	if (!IS_ENABLED(CONFIG_FITIMAGE))
-		return -ENOSYS;
-
-	header = (struct fdt_header *)data->os_header;
-	flen = bootm_get_os_size(data);
-	hlen = fdt32_to_cpu(header->totalsize);
-
-	fit = fit_open(data->os_file, data->verbose, data->verify,
-		       min(flen, hlen));
-	if (IS_ERR(fit)) {
-		pr_err("Loading FIT image %s failed with: %pe\n", data->os_file, fit);
-		return PTR_ERR(fit);
-	}
-
-	data->os_fit = fit;
-
-	data->fit_config = fit_open_configuration(data->os_fit,
-						  data->os_part,
-						  bootm_fit_config_valid);
-	if (IS_ERR(data->fit_config)) {
-		pr_err("Cannot open FIT image configuration '%s'\n",
-		       data->os_part ? data->os_part : "default");
-		return PTR_ERR(data->fit_config);
-	}
-
-	ret = fit_open_image(data->os_fit, data->fit_config, kernel_img,
-			     &data->fit_kernel, &data->fit_kernel_size);
-	if (ret)
-		return ret;
-	if (data->os_address == UIMAGE_SOME_ADDRESS) {
-		ret = fit_get_image_address(data->os_fit,
-					    data->fit_config,
-					    kernel_img,
-					    "load", &data->os_address);
-		if (!ret)
-			pr_info("Load address from FIT '%s': 0x%lx\n",
-				kernel_img, data->os_address);
-		/* Note: Error case uses default value. */
-	}
-	if (data->os_entry == UIMAGE_SOME_ADDRESS) {
-		unsigned long entry;
-		ret = fit_get_image_address(data->os_fit,
-					    data->fit_config,
-					    kernel_img,
-					    "entry", &entry);
-		if (!ret) {
-			data->os_entry = entry - data->os_address;
-			pr_info("Entry address from FIT '%s': 0x%lx\n",
-				kernel_img, entry);
-		}
-		/* Note: Error case uses default value. */
-	}
 
 	return 0;
 }
@@ -1028,8 +902,8 @@ err_out:
 			uimage_close(data->initrd);
 		uimage_close(data->os);
 	}
-	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit)
-		fit_close(data->os_fit);
+	if (data->os_fit)
+		bootm_close_fit(data);
 	if (data->of_root_node)
 		of_delete_node(data->of_root_node);
 

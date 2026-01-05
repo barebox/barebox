@@ -71,6 +71,7 @@ obj-$(CONFIG_RATP)		+= ratp/
 obj-$(CONFIG_BOOTCHOOSER)	+= bootchooser.o
 obj-$(CONFIG_UIMAGE)		+= uimage_types.o uimage.o
 obj-$(CONFIG_FITIMAGE)		+= image-fit.o
+obj-$(CONFIG_BOOTM_FITIMAGE)	+= bootm-fit.o
 obj-$(CONFIG_MENUTREE)		+= menutree.o
 lwl-$(CONFIG_IMD)		+= imd-barebox.o
 obj-$(CONFIG_IMD)		+= imd.o

@@ -22,6 +22,7 @@ ENTRY_FUNCTION(start_imx6s_riotboard, r0, r1, r2)
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x4, 0x020e016c);
+		imx6_ungate_all_peripherals();
 		imx6_uart_setup_ll();
 		putc_ll('a');
 	}

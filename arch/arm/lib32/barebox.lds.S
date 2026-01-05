@@ -59,9 +59,7 @@ SECTIONS
 	_sdata = .;
 
 	. = ALIGN(4);
-	.data : { *(.data*)
-		CONSTRUCTORS
-	}
+	.data : { *(.data*) }
 
 	. = .;
 

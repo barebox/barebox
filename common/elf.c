@@ -31,8 +31,8 @@ static int elf_request_region(struct elf_image *elf, resource_size_t start,
 	if (!r)
 		return -ENOMEM;
 
-	r_new = request_sdram_region("elf_segment", start, size,
-				     MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
+	r_new = request_sdram_region_silent("elf_segment", start, size,
+					    MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
 	if (!r_new) {
 		r_new = request_iomem_region("elf_segment", start, size);
 		if (!r_new) {

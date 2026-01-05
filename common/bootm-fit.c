@@ -26,13 +26,9 @@ int bootm_load_fit_os(struct image_data *data, unsigned long load_address)
 	data->os_res = request_sdram_region("kernel",
 			load_address, kernel_size,
 			MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
-	if (!data->os_res) {
-		pr_err("unable to request SDRAM region for kernel at"
-				" 0x%08llx-0x%08llx\n",
-			(unsigned long long)load_address,
-			(unsigned long long)load_address + kernel_size - 1);
+	if (!data->os_res)
 		return -ENOMEM;
-	}
+
 	zero_page_memcpy((void *)load_address, kernel, kernel_size);
 	return 0;
 }
@@ -75,13 +71,8 @@ struct resource *bootm_load_fit_initrd(struct image_data *data, unsigned long lo
 	res = request_sdram_region("initrd",
 				   load_address, initrd_size,
 				   MEMTYPE_LOADER_DATA, MEMATTRS_RW);
-	if (!res) {
-		pr_err("unable to request SDRAM region for initrd at"
-				" 0x%08llx-0x%08llx\n",
-			(unsigned long long)load_address,
-			(unsigned long long)load_address + initrd_size - 1);
+	if (!res)
 		return ERR_PTR(-ENOMEM);
-	}
 
 	memcpy((void *)load_address, initrd, initrd_size);
 	return res;

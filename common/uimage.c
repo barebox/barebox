@@ -349,12 +349,8 @@ static long uimage_sdram_flush(void *buf, unsigned long len)
 		uimage_resource = request_sdram_region("uimage",
 				start, size, MEMTYPE_LOADER_CODE,
 				MEMATTRS_RWX);
-		if (!uimage_resource) {
-			resource_size_t prsize = start + size - 1;
-			printf("unable to request SDRAM %pa - %pa\n",
-				&start, &prsize);
+		if (!uimage_resource)
 			return -ENOMEM;
-		}
 	}
 
 	if (zero_page_contains((unsigned long)uimage_buf + uimage_size))
@@ -388,12 +384,8 @@ struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
 	uimage_resource = request_sdram_region("uimage",
 				start, size, MEMTYPE_LOADER_CODE,
 				MEMATTRS_RWX);
-	if (!uimage_resource) {
-		printf("unable to request SDRAM 0x%08llx-0x%08llx\n",
-			(unsigned long long)start,
-			(unsigned long long)start + size - 1);
+	if (!uimage_resource)
 		return NULL;
-	}
 
 	ret = uimage_load(handle, image_no, uimage_sdram_flush);
 	if (ret) {

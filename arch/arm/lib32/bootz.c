@@ -90,10 +90,8 @@ static int do_bootz(int argc, char *argv[])
 					bank->res->start + SZ_8M, end,
 					MEMTYPE_LOADER_CODE,
 					MEMATTRS_RWX);
-			if (!res) {
-				printf("can't request region for kernel\n");
+			if (!res)
 				goto err_out1;
-			}
 		}
 
 		memcpy(zimage, header, sizeof(*header));

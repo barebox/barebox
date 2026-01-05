@@ -450,13 +450,8 @@ int bootm_load_devicetree(struct image_data *data, void *fdt,
 
 	data->oftree_res = request_sdram_region("oftree", load_address,
 			fdt_size, MEMTYPE_LOADER_DATA, MEMATTRS_RW);
-	if (!data->oftree_res) {
-		pr_err("unable to request SDRAM region for device tree at"
-				" 0x%08llx-0x%08llx\n",
-			(unsigned long long)load_address,
-			(unsigned long long)load_address + fdt_size - 1);
+	if (!data->oftree_res)
 		return -ENOMEM;
-	}
 
 	memcpy((void *)data->oftree_res->start, fdt, fdt_size);
 

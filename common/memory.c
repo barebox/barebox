@@ -352,11 +352,6 @@ struct resource *reserve_sdram_region(const char *name, resource_size_t start,
 	return res;
 }
 
-int release_sdram_region(struct resource *res)
-{
-	return release_region(res);
-}
-
 void memory_bank_find_space(struct memory_bank *bank, resource_size_t *retstart,
 			   resource_size_t *retend)
 {

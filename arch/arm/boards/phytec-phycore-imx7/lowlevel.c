@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#define DEBUG
 #include <io.h>
 #include <common.h>
 #include <linux/sizes.h>

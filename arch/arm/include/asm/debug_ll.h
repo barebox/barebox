@@ -5,6 +5,8 @@
 
 #if defined CONFIG_DEBUG_IMX_UART
 #include <mach/imx/debug_ll.h>
+#elif defined CONFIG_DEBUG_MESON_UART
+#include <mach/meson/debug_ll.h>
 #elif defined CONFIG_DEBUG_ROCKCHIP_UART
 #include <mach/rockchip/debug_ll.h>
 #elif defined CONFIG_DEBUG_OMAP_UART

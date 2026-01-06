@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/* The barebox additions to a G12 device tree, applied to any DT it boots with */
+
+/dts-v1/;
+/plugin/;
+
+#include "meson-g12-symbols-paths.h"
+
+/ {
+	compatible = "amlogic,g12a", "amlogic,g12b", "amlogic,sm1";
+};
+
+&{/chosen} {
+	barebox,bootsource-mmc0 = BASE_PATH(sd_emmc_a);
+	barebox,bootsource-mmc1 = BASE_PATH(sd_emmc_b);
+	barebox,bootsource-mmc2 = BASE_PATH(sd_emmc_c);
+};

@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+if ARCH_MESON
+
+config ARCH_MESON_G12
+	bool "Amlogic Meson G12A, G12B and SM1"
+	help
+	  Say Y here to support the Amlogic G12A, G12B and SM1 SoCs. barebox
+	  is started as BL33 by the vendor firmware, as barebox-dt-2nd.img
+	  with the board's device tree appended.
+
+endif

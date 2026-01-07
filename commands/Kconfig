@@ -2328,6 +2328,15 @@ config CMD_K3_KEYWRITER
 	help
 	  The K3 keywriter command provides support for fusing TI AM62Lx SoCs
 
+config CMD_RKSECURE
+	bool
+	depends on OPTEE_RKSECURE
+	select PRINTF_HEXSTR
+	prompt "Rockchip Secure Boot"
+	help
+	  The rksecure command allows to retrieve information about and enable
+	  secure boot for Rockchip rk3588 SoCs.
+
 # end Hardware manipulation commands
 endmenu
 

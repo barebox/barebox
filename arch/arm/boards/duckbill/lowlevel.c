@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #define pr_fmt(fmt) "I2SE Duckbill: " fmt
-#define DEBUG
 
 #include <common.h>
 #include <linux/sizes.h>

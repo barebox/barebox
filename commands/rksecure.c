@@ -9,7 +9,7 @@
 #include <libfile.h>
 #include <linux/kstrtox.h>
 
-#include <rk_secure_boot.h>
+#include <soc/rockchip/secure_boot.h>
 
 static int rksecure_write_hash_hex(const char *hex, u32 key_size_bits)
 {

@@ -8,7 +8,7 @@
 #include <linux/array_size.h>
 #include <uapi/linux/tee.h>
 
-#include <rk_secure_boot.h>
+#include <soc/rockchip/secure_boot.h>
 
 #include "optee_private.h"
 #include "pta_rk_secure_boot.h"

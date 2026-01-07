@@ -13,7 +13,7 @@
  * and output value. These values cannot be OR'd.
  */
 enum gpiod_flags {
-	GPIOD_ASIS	= 0,
+	GPIOD_ASIS	= GPIOF_ASIS,
 	GPIOD_IN	= GPIOF_IN,
 	/*
 	 * To change this later to a different logic level (i.e. taking

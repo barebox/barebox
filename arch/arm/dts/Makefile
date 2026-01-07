@@ -130,6 +130,7 @@ lwl-$(CONFIG_MACH_PROTONIC_STM32MP1) += \
 lwl-$(CONFIG_MACH_PROTONIC_STM32MP13) += \
 	stm32mp133c-mect1s.dtb.o \
 	stm32mp133c-prihmb.dtb.o
+lwl-$(CONFIG_MACH_QNAP_TSX33) += rk3568-qnap-ts433.dtb.o rk3568-qnap-ts433eu.dtb.o
 lwl-$(CONFIG_MACH_RADXA_ROCK) += rk3188-radxarock.dtb.o
 lwl-$(CONFIG_MACH_RADXA_ROCK3) += rk3568-rock-3a.dtb.o
 lwl-$(CONFIG_MACH_RADXA_ROCK5) += \

@@ -1,57 +1,8 @@
-Rockchip RK3188
-===============
+RK35xx Rockchip SoCs
+====================
 
-Radxa Rock
-----------
-
-Radxa Rock is a small SBC based on Rockchip RK3188 SoC.
-See http://radxa.com/Rock for additional information.
-
-Building
-^^^^^^^^
-
-.. code-block:: sh
-
-  make ARCH=arm radxa_rock_defconfig
-  make ARCH=arm
-
-Creating bootable SD card
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This will require a DRAM setup blob and additional utilities, see above.
-
-Card layout (block == 0x200 bytes).
-
-============   ==========================================
-Block Number   Name
-============   ==========================================
-0x0000         DOS partition table
-0x0040         RK bootinfo (BootROM check sector)
-0x0044         DRAM setup routine
-0x005C         Bootloader (barebox)
-0x0400         Barebox environment
-0x0800         Free space start
-============   ==========================================
-
-Instructions.
-
-* Make 2 partitions on SD for boot and root filesystems.
-* Checkout and compile https://github.com/apxii/rkboottools
-* Get some RK3188 bootloader from https://github.com/neo-technologies/rockchip-bootloader
-* Run "rk-splitboot RK3188Loader(L)_V2.13.bin" command. (for example).
-  You will get FlashData file with others. It's a DRAM setup blob.
-* Otherwise it can be borrowed from RK U-boot sources from
-  https://github.com/linux-rockchip/u-boot-rockchip/blob/u-boot-rk3188/tools/rk_tools/3188_LPDDR2_300MHz_DDR3_300MHz_20130830.bin
-* Run "rk-makebootable FlashData barebox-radxa-rock.bin rrboot.bin"
-* Insert SD card and run "dd if=rrboot.bin of=</dev/sdcard> bs=$((0x200)) seek=$((0x40))"
-* SD card is ready
-
-Rockchip RK356x
-===============
-
-Barebox features support for the Rockchip RK3566 and RK3568 SoCs, where the
-RK3566 can be considered as reduced but largely identical version of the
-RK3568.
+Barebox features support for multiple SoCs of the Rockchip RK35xx
+series, including RK3566, RK3568, RK3576 and RK3588.
 
 Supported Boards
 ----------------
@@ -59,9 +10,19 @@ Supported Boards
 - Rockchip RK3568 EVB
 - Rockchip RK3568 Bananapi R2 Pro
 - Pine64 Quartz64 Model A
+- Pine64 Pine Tab 2
 - Radxa ROCK3 Model A
+- Radxa ROCK5 (RK3588)
 - Radxa CM3 (RK3566) IO Board
+- QNAP TS-433 NAS
 - Protonic MECSBC
+- Protonic PRTPUK
+
+.. toctree::
+  :glob:
+  :maxdepth: 1
+
+  rk35xx/*
 
 The steps described in the following target the RK3568 and the RK3568 EVB but
 generally apply to both SoCs and all boards.
@@ -175,3 +136,18 @@ And after that the ``ddrbin_tool`` binary can be used to apply this
 modification to the relevant ddr init blob::
 
 $ tools/ddrbin_tool rk3568 tools/ddrbin_param.txt bin/rk35/rk3568_ddr_1560MHz_v1.21.bin
+
+Adding new SoC support
+----------------------
+
+On 64-bit Rockchip Platforms, the barebox prebootloader acts as
+the latter part of BL2 to load TF-A and optionally OP-TEE and
+then execution continues to barebox proper as BL33.
+
+As the low-level setup of DRAM happens outside of barebox,
+adding support for new SoCs is thus very straight-forward.
+
+For base functionality, it probably requires only porting the
+Linux clk and pinctrl drivers as well as the boilerplate needed
+for every SoC. Reach out to the :ref:`mailing list <feedback>`
+if you have unsupported hardware.

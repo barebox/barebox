@@ -39,15 +39,16 @@ typedef struct user_fp elf_fpregset_t;
 /*
  * These are used to set parameters in the core dumps.
  */
-#define ELF_CLASS	ELFCLASS32
 #ifdef __ARMEB__
 #define ELF_DATA	ELFDATA2MSB
 #else
 #define ELF_DATA	ELFDATA2LSB
 #endif
 #ifdef CONFIG_CPU_64
+#define ELF_CLASS	ELFCLASS64
 #define ELF_ARCH	EM_AARCH64
 #else
+#define ELF_CLASS	ELFCLASS32
 #define ELF_ARCH	EM_ARM
 #endif
 

@@ -352,6 +352,10 @@ config DEBUG_AM62X_UART
 	bool "Texas Instruments AM62X debug UART"
 	depends on ARCH_K3
 
+config DEBUG_QEMU_ARM32_VIRT
+	bool "QEMU ARM32 Virt PL011 console"
+	depends on MACH_VIRT
+
 config DEBUG_QEMU_ARM64_VIRT
 	bool "QEMU ARM64 Virt PL011 console"
 	depends on ARCH_ARM64_VIRT

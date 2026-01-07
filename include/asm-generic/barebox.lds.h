@@ -129,24 +129,12 @@
 #endif
 
 
-#ifdef CONFIG_CONSTRUCTORS
-#define KERNEL_CTORS()  . = ALIGN(8);                      \
-			__ctors_start = .;                 \
-			KEEP(*(.ctors))                    \
-			KEEP(*(SORT(.init_array.*)))       \
-			KEEP(*(.init_array))               \
-			__ctors_end = .;
-#else
-#define KERNEL_CTORS()
-#endif
-
 #define RO_DATA_SECTION				\
 	BAREBOX_INITCALLS			\
 	BAREBOX_EXITCALLS			\
 	BAREBOX_CMDS				\
 	BAREBOX_RATP_CMDS			\
 	BAREBOX_SYMS				\
-	KERNEL_CTORS()				\
 	BAREBOX_MAGICVARS			\
 	BAREBOX_CLK_TABLE			\
 	BAREBOX_DTB				\

@@ -8,6 +8,9 @@ Board comes with:
 
 Not including booting via serial, the device can boot from either SD or eMMC.
 
+.. warning:: Barebox is currently not compatible with the MCIMX8M-EVK**B**
+   variant with 4GiB of RAM.
+
 Downloading DDR PHY and HDMI/eDP Firmware
 -----------------------------------------
 

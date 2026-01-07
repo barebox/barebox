@@ -99,8 +99,8 @@ different compression algorithm.
 The fail-safe alternative is to use a parameter name understood only by the
 initramfs (e.g. ``verity_root=``) in all bootloader scripts. If the
 ``root=$dev`` is fixed up by barebox dynamically, the
-``$global.bootm.root_param`` variable can be used to customize the name of the
-parameter passed to Linux.
+:ref:`global.bootm.root_param <magicvar_global_bootm_root_param>` variable can
+be used to customize the name of the parameter passed to Linux.
 
 Disabling the shell
 ^^^^^^^^^^^^^^^^^^^

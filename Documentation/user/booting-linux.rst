@@ -193,7 +193,7 @@ bootloader spec file detected at runtime as described in the next section.
 There is also a number of generic default boot targets available, when
 ``CONFIG_BOOT_DEFAULTS`` is enabled. These expands to a single device at most:
 
-* ``bootsource``: expands to the device barebox booted from
+* :ref:`bootsource <magicvar_bootsource>`: expands to the device barebox booted from
 * ``diskuuid.*``: expands to the device with specified ``*`` diskuuid
 
 For these targets that expand to a single device, a partition can also be specified,

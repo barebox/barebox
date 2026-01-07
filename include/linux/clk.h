@@ -1033,6 +1033,22 @@ int __must_check clk_bulk_get_all(struct device *dev,
 				  struct clk_bulk_data **clks);
 
 /**
+ * devm_clk_bulk_get_all_enabled - Get and enable all clocks of the consumer
+ * @dev: device for clock "consumer"
+ * @clks: pointer to the clk_bulk_data table of consumer
+ *
+ * Returns a positive value for the number of clocks obtained while the
+ * clock references are stored in the clk_bulk_data table in @clks field.
+ * Returns 0 if there're none and a negative value if something failed.
+ *
+ * This helper function allows drivers to get all clocks of the
+ * consumer and enables them in one operation.
+ */
+
+int __must_check clk_bulk_get_all_enabled(struct device *dev,
+					  struct clk_bulk_data **clks);
+
+/**
  * clk_bulk_put	- "free" the clock source
  * @num_clks: the number of clk_bulk_data
  * @clks: the clk_bulk_data table of consumer
@@ -1109,6 +1125,12 @@ static inline int __must_check clk_bulk_get_optional(struct device *dev,
 
 static inline int __must_check clk_bulk_get_all(struct device *dev,
 						struct clk_bulk_data **clks)
+{
+	return 0;
+}
+
+static inline int __must_check clk_bulk_get_all_enabled(struct device *dev,
+							struct clk_bulk_data **clks)
 {
 	return 0;
 }

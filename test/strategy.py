@@ -21,11 +21,12 @@ if match is None or int(match.group(1)) < 25:
 class Status(enum.Enum):
     unknown = 0
     off = 1
-    barebox = 2
-    qemu_dry_run = 3
-    qemu_interactive = 4
-    qemu_dump_dtb = 5
-    shell = 6
+    on = 2
+    barebox = 3
+    qemu_dry_run = 4
+    qemu_interactive = 5
+    qemu_dump_dtb = 6
+    shell = 7
 
 
 @target_factory.reg_driver
@@ -63,11 +64,13 @@ class BareboxTestStrategy(Strategy):
             self.target.deactivate(self.console)
             self.target.activate(self.power)
             self.power.off()
-        elif status == Status.barebox:
+        elif status == Status.on:
             self.transition(Status.off)  # pylint: disable=missing-kwoa
             self.target.activate(self.console)
             # cycle power
             self.power.cycle()
+        elif status == Status.barebox:
+            self.transition(Status.on)  # pylint: disable=missing-kwoa
             # interrupt barebox
             self.target.activate(self.barebox)
         elif status == Status.shell:

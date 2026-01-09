@@ -4,8 +4,13 @@ import re
 import pytest
 
 
-def get_dmesg(shell):
-    stdout, _, ret = shell.run("journalctl -k --no-pager --grep efi -o cat")
+def get_journalctl(shell, kernel=True, grep=None):
+    opts = ''
+    if grep is not None:
+        opts += f" --grep={grep}"
+    if kernel:
+        opts += " -k"
+    stdout, _, ret = shell.run(f"journalctl --no-pager {opts} -o cat")
     assert ret == 0
     return stdout
 
@@ -19,7 +24,7 @@ def test_efi_kernel_no_warn(shell):
 
 @pytest.mark.lg_feature(['bootable', 'efi'])
 def test_expected_efi_messages(shell, env):
-    dmesg = get_dmesg(shell)
+    dmesg = get_journalctl(shell, 'efi')
 
     expected_patterns = [
         r"efi:\s+EFI v2\.8 by barebox",

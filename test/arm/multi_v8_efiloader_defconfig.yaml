@@ -27,6 +27,11 @@ targets:
       - smbios
       - bootable
       - efi
+    options:
+      root_dev: virtioblk0.0
+      bootm.image: 'boot/vmlinuz-*'
+      bootm.initrd: 'boot/initrd.img-*'
+
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
 imports:

@@ -9,7 +9,7 @@ targets:
         kernel: barebox-dt-2nd.img
         display: qemu-default
         extra_args: >
-          -drive if=virtio,format=raw,snapshot=on,file=debian-13-nocloud-arm64.raw
+          -drive if=virtio,snapshot=on,file=debian-13-nocloud-arm64.qcow2
           -device virtio-rng
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '

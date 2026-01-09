@@ -78,7 +78,7 @@ def test_fit(barebox, strategy, testfs, fit_testdata):
 
     boottarget = generate_bootscript(barebox, fit_name('gzipped'))
 
-    with strategy.boot(boottarget):
+    with strategy.boot_barebox(boottarget) as barebox:
         assert of_get_property(barebox, "/chosen/barebox-version") == f'"{ver}"', \
                "/chosen/barebox-version suggests we did not chainload"
 

@@ -28,6 +28,11 @@ jobs:
             defconfig: multi_v8_defconfig
             lgargs: --runxfail
 
+          - ARCH: arm
+            lgenv: test/arm/multi_v8_efiloader_defconfig.yaml
+            defconfig: multi_v8_efiloader_defconfig
+            osimg: debian-13-nocloud-arm64.qcow2
+
           - ARCH: mips
             lgenv: test/mips/qemu-malta_defconfig.yaml
             defconfig: qemu-malta_defconfig
@@ -63,6 +68,21 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Cache OS image
+      id: cache-osimg
+      if: ${{ matrix.osimg != '' }}
+      uses: actions/cache@v4
+      with:
+        path: ${{ matrix.osimg }}
+        key: osimg-${{ matrix.osimg }}
+        restore-keys: osimg-${{ matrix.osimg }}-
+
+    - name: Download OS image
+      if: ${{ steps.cache-osimg.outputs.cache-hit != 'true' && matrix.osimg != '' }}
+      run: |
+        echo "::warning::Cache miss - downloading fresh OS image from Debian infra."
+        scripts/fetch-os.sh
 
     - name: Determine used features
       id: used-features

@@ -43,7 +43,6 @@ extern int tlv_handle_eth_address_seq(struct tlv_device *dev, struct tlv_mapping
 struct tlv_decoder {
 	u32 magic;
 	const char *signature_keyring;
-	void *driverata;
 	struct tlv_mapping **mappings;
 	struct driver driver;
 	/* private members */

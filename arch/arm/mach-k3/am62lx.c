@@ -158,6 +158,7 @@ static int am62lx_init(void)
 	if (!of_machine_is_compatible("ti,am62l3"))
 		return 0;
 
+	am62x_register_dram();
 	am62lx_get_bootsource(&src, &instance);
 	bootsource_set(src, instance);
 

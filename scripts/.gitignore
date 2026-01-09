@@ -39,3 +39,4 @@ mips-relocs
 keytoc
 mvebuimg
 prelink-riscv
+imx9image

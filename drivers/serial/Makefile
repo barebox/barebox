@@ -12,6 +12,7 @@ obj-$(CONFIG_DRIVER_SERIAL_CLPS711X)		+= serial_clps711x.o
 obj-$(CONFIG_DRIVER_SERIAL_NS16550)		+= serial_ns16550.o
 obj-$(CONFIG_DRIVER_SERIAL_NS16550_PCI)		+= serial_ns16550_pci.o
 obj-$(CONFIG_DRIVER_SERIAL_STM32)		+= serial_stm32.o
+obj-$(CONFIG_DRIVER_SERIAL_MESON)		+= serial_meson.o
 obj-$(CONFIG_DRIVER_SERIAL_PXA)			+= serial_pxa.o
 obj-$(CONFIG_DRIVER_SERIAL_OMAP4_USBBOOT)	+= serial_omap4_usbboot.o
 obj-$(CONFIG_DRIVER_SERIAL_AUART)		+= serial_auart.o

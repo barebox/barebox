@@ -7,7 +7,6 @@ targets:
         cpu: rv32
         memory: 256M
         kernel: barebox-dt-2nd.img
-        bios: opensbi-riscv32-generic-fw_dynamic.bin
         display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
@@ -17,11 +16,7 @@ targets:
       - virtio-mmio
       - barebox-state
       - testfs
-    runner:
-      download:
-        opensbi-riscv32-generic-fw_dynamic.bin: https://github.com/qemu/qemu/blob/v5.2.0/pc-bios/opensbi-riscv32-generic-fw_dynamic.bin?raw=true
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
-  opensbi-riscv32-generic-fw_dynamic.bin: !template "$LG_BUILDDIR/opensbi-riscv32-generic-fw_dynamic.bin"
 imports:
   -  ../strategy.py

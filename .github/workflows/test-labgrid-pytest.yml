@@ -94,10 +94,6 @@ jobs:
 
         ./MAKEALL -O ${KBUILD_OUTPUT} -l "" -v 0 ${{matrix.defconfig}}
 
-        if [ ${{matrix.arch}} = "riscv" ]; then
-          cp /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin ${KBUILD_OUTPUT}/
-        fi
-
     - name: labgrid-pytest
       if: steps.build.outcome == 'success'
       run: |

@@ -60,6 +60,8 @@ usage() {
 	echo "TARGET      -t      Makefile target"
 	echo "V           -v      verbosity"
 	echo "INCREMENTAL -i"
+	echo "     	  -d	  (iterative development mode)"
+	echo "        	  -D	  (extended iterative development mode)"
 	echo ""
 }
 
@@ -189,6 +191,9 @@ do_build_defconfig() {
 		report "Compile: " ${defconfig}
 
 		if [ "$compile_result" = "0" ]; then
+			if [ "$DEVEL" = "1" ]; then
+				${MAKE} $silent_flag compile_commands.json
+			fi
 			report "OK     \n"
 		else
 			report "FAILED \n"
@@ -288,7 +293,7 @@ do_build_all() {
 	return $nbuilds
 }
 
-while getopts "hc:j:O:l:a:e:k:t:v:i" Option
+while getopts "hc:j:O:l:a:e:k:t:v:idD" Option
 do
 case $Option in
 	a )
@@ -320,6 +325,16 @@ case $Option in
 		;;
 	i )
 		INCREMENTAL=1
+		;;
+	d | D)
+		DEVEL=1
+		INCREMENTAL=1
+		KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/devel.config"
+		BUILDDIR="build"
+		if [ "$Option" = D ]; then
+			KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/sanitizers.config"
+			export NO_MISSING_FIRMWARE_WARNING=1
+		fi
 		;;
 	h )
 		usage

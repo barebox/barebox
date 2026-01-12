@@ -45,10 +45,10 @@ STATIC int decompress(u8 *input, int in_len,
 
 static void noinline errorfn(char *error)
 {
-	puts_ll("ERROR: ");
-	puts_ll(error);
-	puts_ll("\nHANG\n");
-	while (1);
+	pbl_puts("ERROR: ");
+	pbl_puts(error);
+	pbl_puts("\nHANG\n");
+	__hang();
 }
 
 extern unsigned char sha_sum[];

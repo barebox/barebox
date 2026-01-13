@@ -651,6 +651,7 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 	if (cdev_is_block_disk(cdev)) {
 		cdev = cdev_find_child_by_gpt_typeuuid(cdev, &barebox_state_partition_guid);
 		if (IS_ERR(cdev)) {
+			dev_err(&state->dev, "cannot find backend GPT partition by PartitionTypeGUID\n");
 			ret = -EINVAL;
 			goto out_release_state;
 		}

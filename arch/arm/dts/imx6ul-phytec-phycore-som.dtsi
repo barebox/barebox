@@ -240,7 +240,3 @@
 		};
 	};
 };
-
-&ocotp {
-	barebox,provide-mac-address = <&fec1 0x620 &fec2 0x632>;
-};

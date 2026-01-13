@@ -460,10 +460,6 @@
 		     "", "STATUS_CM_UC_DI", "RST_EMERG_UC_DO", "", "";
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec1 0x620>;
-};
-
 &reg_arm {
 	vin-supply = <&vdd_soc_in>;
 	regulator-allow-bypass;

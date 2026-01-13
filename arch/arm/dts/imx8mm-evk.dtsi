@@ -71,7 +71,3 @@
 		reg = <0xe0000 0x20000>;
 	};
 };
-
-&ocotp {
-	barebox,provide-mac-address = <&fec1 0x640>;
-};

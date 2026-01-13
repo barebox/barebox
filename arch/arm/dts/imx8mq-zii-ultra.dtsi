@@ -42,10 +42,6 @@
 	nvmem-cell-names = "mac-address";
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec1 0x640>;
-};
-
 &pcie1 {
 	host@0 {
 		reg = <0 0 0 0 0>;

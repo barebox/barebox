@@ -44,7 +44,3 @@
 &rgmii_phy {
 	qca,clk-out-frequency = <125000000>;
 };
-
-&ocotp {
-	barebox,provide-mac-address = <&fec 0x620>;
-};

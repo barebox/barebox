@@ -91,11 +91,11 @@ static int do_delpart(int argc, char *argv[])
 		err = devfs_del_partition(kbasename(argv[i]));
 		if (err) {
 			printf("cannot delete %s: %pe\n", argv[i], ERR_PTR(err));
-			break;
+			return err;
 		}
 	}
 
-	return 1;
+	return 0;
 }
 
 BAREBOX_CMD_HELP_START(delpart)

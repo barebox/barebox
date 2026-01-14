@@ -20,11 +20,11 @@
 #include <mach/imx/snvs.h>
 
 /**
- * imx8m_atf_load_bl31 - Load ATF BL31 blob and transfer control to it
+ * imx8m_tfa_start_bl31 - Load TF-A BL31 blob and transfer control to it
  *
- * @fw:		Pointer to the BL31 blob
- * @fw_size:	Size of the BL31 blob
- * @atf_dest:	Place where the BL31 is copied to and executed
+ * @tfa:	Pointer to the BL31 blob
+ * @tfa_size:	Size of the BL31 blob
+ * @tfa_dest:	Place where the BL31 is copied to and executed
  *
  * This function:
  *
@@ -38,12 +38,12 @@
  *     3. Transfers control to BL31
  */
 
-static __noreturn void imx8m_atf_start_bl31(const void *fw, size_t fw_size, void *atf_dest)
+static __noreturn void imx8m_tfa_start_bl31(const void *tfa_bin, size_t tfa_size, void *tfa_dest)
 {
-	void __noreturn (*bl31)(void) = atf_dest;
+	void __noreturn (*bl31)(void) = tfa_dest;
 	int ret;
 
-	BUG_ON(fw_size > MX8M_ATF_BL31_SIZE_LIMIT);
+	BUG_ON(tfa_size > MX8M_ATF_BL31_SIZE_LIMIT);
 
 	if (IS_ENABLED(CONFIG_FSL_CAAM_RNG_PBL_INIT)) {
 		ret = imx_early_caam_init(MX8M_CAAM_BASE_ADDR);
@@ -53,10 +53,10 @@ static __noreturn void imx8m_atf_start_bl31(const void *fw, size_t fw_size, void
 			pr_debug("CAAM early init successful\n");
 	}
 
-	memcpy(bl31, fw, fw_size);
+	memcpy(bl31, tfa_bin, tfa_size);
 
 	asm volatile("msr sp_el2, %0" : :
-		     "r" (atf_dest - 16) :
+		     "r" (tfa_dest - 16) :
 		     "cc");
 	bl31();
 	__builtin_unreachable();
@@ -178,7 +178,7 @@ __noreturn void __imx8mm_load_and_start_image_via_tfa(void *bl33)
 		get_builtin_firmware(imx8mm_bl31_bin, &bl31, &bl31_size);
 	}
 
-	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
+	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
 }
 
 void imx8mp_load_bl33(void *bl33)
@@ -253,9 +253,8 @@ __noreturn void __imx8mp_load_and_start_image_via_tfa(void *bl33)
 		get_builtin_firmware(imx8mp_bl31_bin, &bl31, &bl31_size);
 	}
 
-	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);
+	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);
 }
-
 
 void imx8mn_load_bl33(void *bl33)
 {
@@ -329,7 +328,7 @@ __noreturn void __imx8mn_load_and_start_image_via_tfa(void *bl33)
 		get_builtin_firmware(imx8mn_bl31_bin, &bl31, &bl31_size);
 	}
 
-	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
+	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
 }
 
 void imx8mq_load_bl33(void *bl33)
@@ -398,7 +397,7 @@ __noreturn void __imx8mq_load_and_start_image_via_tfa(void *bl33)
 		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
 	}
 
-	imx8m_atf_start_bl31(bl31, bl31_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
+	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
 }
 
 void __noreturn imx93_load_and_start_image_via_tfa(void)

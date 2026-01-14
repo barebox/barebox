@@ -350,13 +350,13 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 	u32 pte_flags, pmd_flags;
 	uint32_t *ttb = get_ttb();
 
-	BUG_ON(!IS_ALIGNED(virt_addr, PAGE_SIZE));
-	BUG_ON(!IS_ALIGNED(phys_addr, PAGE_SIZE));
-
 	pte_flags = get_pte_flags(map_type);
 	pmd_flags = pte_flags_to_pmd(pte_flags);
 
 	pr_debug_remap(virt_addr, phys_addr, size, map_type);
+
+	BUG_ON(!IS_ALIGNED(virt_addr, PAGE_SIZE));
+	BUG_ON(!IS_ALIGNED(phys_addr, PAGE_SIZE));
 
 	size = PAGE_ALIGN(size);
 	if (!size)

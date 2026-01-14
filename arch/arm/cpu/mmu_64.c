@@ -214,6 +214,9 @@ static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 
 	pr_debug_remap(addr, phys, size, map_type);
 
+	BUG_ON(!IS_ALIGNED(virt, PAGE_SIZE));
+	BUG_ON(!IS_ALIGNED(phys, PAGE_SIZE));
+
 	attr &= ~PTE_TYPE_MASK;
 
 	size = PAGE_ALIGN(size);

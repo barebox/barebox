@@ -384,8 +384,9 @@ struct bootchooser *bootchooser_get(void)
 			}
 			free(state_devname);
 		} else {
-			pr_err("State disabled, cannot use nv.bootchooser.state_prefix=%s\n",
+			pr_err("barebox-state backend selected (nv.bootchooser.state_prefix=%s) but CONFIG_STATE is disabled\n",
 			       state_prefix);
+
 			ret = -ENODEV;
 			goto err;
 		}

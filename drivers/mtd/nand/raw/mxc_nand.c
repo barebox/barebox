@@ -1809,7 +1809,8 @@ static int mxcnd_probe(struct device *dev)
 	nand_set_controller_data(this, host);
 	nand_set_flash_node(this, dev->of_node);
 
-	host->clk = clk_get(dev, NULL);
+	/* Clock support might not be implemented, so use the optional variant */
+	host->clk = clk_get_optional(dev, NULL);
 	if (IS_ERR(host->clk))
 		return PTR_ERR(host->clk);
 

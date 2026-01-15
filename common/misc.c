@@ -142,6 +142,7 @@ BAREBOX_MAGICVAR(global.model, "Product name of this hardware");
 
 static char *hostname;
 static char *serial_number;
+static uuid_t product_uuid;
 
 /* Note that HOST_NAME_MAX is 64 on Linux */
 #define BAREBOX_HOST_NAME_MAX	64
@@ -251,6 +252,19 @@ const char *barebox_get_serial_number(void)
 }
 
 BAREBOX_MAGICVAR(global.serial_number, "Board serial number");
+
+void barebox_set_product_uuid(const uuid_t *__product_uuid)
+{
+	globalvar_add_simple_uuid("product.uuid", &product_uuid);
+	product_uuid = *__product_uuid;
+}
+
+const uuid_t *barebox_get_product_uuid(void)
+{
+	return &product_uuid;
+}
+
+BAREBOX_MAGICVAR(global.product.uuid, "SMBIOS-reported product UUID");
 
 #ifdef CONFIG_OFTREE
 static char *of_machine_compatible;

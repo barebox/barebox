@@ -60,6 +60,9 @@ static int chunk_flush(struct block_device *blk, struct chunk *chunk)
 	if (!chunk->dirty)
 		return 0;
 
+	if (!blk->ops->write)
+		return 0;
+
 	len = writebuffer_io_len(blk, chunk);
 	ret = blk->ops->write(blk, chunk->data, chunk->block_start, len);
 	if (ret < 0)

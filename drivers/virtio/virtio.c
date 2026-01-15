@@ -138,6 +138,10 @@ int virtio_finalize_features(struct virtio_device *dev)
 			return -ENODEV;
 		}
 
+		/* When this changes in future with support for IOMMUs in
+		 * emulation, make sure to adapt vring_alloc_queue(), so
+		 * it ignores IOMMUs if virtio_has_dma_quirk()
+		 */
 		if (!virtio_has_feature(dev, VIRTIO_F_ACCESS_PLATFORM)) {
 			dev_warn(&dev->dev,
 				 "device must provide VIRTIO_F_ACCESS_PLATFORM\n");

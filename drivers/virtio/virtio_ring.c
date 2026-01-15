@@ -23,9 +23,14 @@
 #define vq_info(vq, fmt, ...) \
 	dev_info(&vq->vdev->dev, fmt, ##__VA_ARGS__)
 
+static inline struct device *virtio_dma_dev(const struct virtio_device *vdev)
+{
+	return vdev->dev.parent;
+}
+
 static inline struct device *vring_dma_dev(const struct virtqueue *vq)
 {
-	return vq->vdev->dev.parent;
+	return virtio_dma_dev(vq->vdev);
 }
 
 /* Map one sg entry. */
@@ -330,11 +335,6 @@ static struct virtqueue *__vring_new_virtqueue(unsigned int index,
  * On most systems with virtio, physical addresses match bus addresses,
  * and it _shouldn't_ particularly matter whether we use the DMA API.
  *
- * However, barebox' dma_alloc_coherent doesn't yet take a device pointer
- * as argument, so even for dma-coherent devices, the virtqueue is mapped
- * uncached on ARM. This has considerable impact on the Virt I/O performance,
- * so we really want to avoid using the DMA API if possible for the time being.
- *
  * On some systems, including Xen and any system with a physical device
  * that speaks virtio behind a physical IOMMU, we must use the DMA API
  * for virtio DMA to work at all.
@@ -344,58 +344,21 @@ static struct virtqueue *__vring_new_virtqueue(unsigned int index,
  * ignores the IOMMU, so we must either pretend that the IOMMU isn't
  * there or somehow map everything as the identity.
  *
- * For the time being, we preserve historic behavior and bypass the DMA
- * API.
- *
- * TODO: install a per-device DMA ops structure that does the right thing
- * taking into account all the above quirks, and use the DMA API
- * unconditionally on data path.
+ * As we do not support IOMMUs yet amd dma_alloc_cohrent takes a device
+ * pointer that enables us to do cached DMA, just use the DMA API
+ * unconditionally for now.
  */
-
-static bool vring_use_dma_api(const struct virtio_device *vdev)
-{
-	return !virtio_has_dma_quirk(vdev);
-}
 
 static void *vring_alloc_queue(struct virtio_device *vdev,
 			       size_t size, dma_addr_t *dma_handle)
 {
-	if (vring_use_dma_api(vdev)) {
-		return dma_alloc_coherent(DMA_DEVICE_BROKEN, size, dma_handle);
-	} else {
-		void *queue = memalign(PAGE_SIZE, PAGE_ALIGN(size));
-
-		if (queue) {
-			phys_addr_t phys_addr = virt_to_phys(queue);
-			*dma_handle = (dma_addr_t)phys_addr;
-
-			/*
-			 * Sanity check: make sure we dind't truncate
-			 * the address.  The only arches I can find that
-			 * have 64-bit phys_addr_t but 32-bit dma_addr_t
-			 * are certain non-highmem MIPS and x86
-			 * configurations, but these configurations
-			 * should never allocate physical pages above 32
-			 * bits, so this is fine.  Just in case, throw a
-			 * warning and abort if we end up with an
-			 * unrepresentable address.
-			 */
-			if (WARN_ON_ONCE(*dma_handle != phys_addr)) {
-				free(queue);
-				return NULL;
-			}
-		}
-		return queue;
-	}
+	return dma_alloc_coherent(virtio_dma_dev(vdev), size, dma_handle);
 }
 
 static void vring_free_queue(struct virtio_device *vdev,
 			     size_t size, void *queue, dma_addr_t dma_handle)
 {
-	if (vring_use_dma_api(vdev))
-		dma_free_coherent(DMA_DEVICE_BROKEN, queue, dma_handle, size);
-	else
-		free(queue);
+	dma_free_coherent(virtio_dma_dev(vdev), queue, dma_handle, size);
 }
 
 struct virtqueue *vring_create_virtqueue(unsigned int index, unsigned int num,

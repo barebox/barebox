@@ -45,6 +45,7 @@ config FIRMWARE_ZYNQ7000_FPGA
 
 config QEMU_FW_CFG
 	bool "QEMU FW CFG interface"
+	select BOARD_QEMU
 	help
 	  This driver exposes the QEMU FW CFG conduit as a single
 	  character device.

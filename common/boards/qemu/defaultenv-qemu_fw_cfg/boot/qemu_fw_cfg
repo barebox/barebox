@@ -1,0 +1,12 @@
+#!/bin/sh
+
+global.bootm.image=/dev/fw_cfg.kernel
+
+if [ -s /dev/fw_cfg.initrd ]; then
+        global.bootm.initrd=/dev/fw_cfg.initrd
+fi
+
+if [ -s /dev/fw_cfg.cmdline ]; then
+        readf /dev/fw_cfg.initrd qemu_fw_cfg_cmdline
+        global linux.bootargs.dyn.qemu="${qemu_fw_cfg_cmdline}"
+fi

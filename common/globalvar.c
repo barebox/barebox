@@ -671,6 +671,46 @@ int globalvar_add_simple_ip(const char *name, IPaddr_t *ip)
 	return 0;
 }
 
+int globalvar_add_simple_uuid(const char *name, uuid_t *uuid)
+{
+	struct param_d *p;
+	int ret;
+
+	ret = globalvar_remove_unqualified(name);
+	if (ret)
+		return ret;
+
+	p = dev_add_param_uuid(&global_device, name,
+			       NULL, NULL, uuid, 0);
+
+	if (IS_ERR(p))
+		return PTR_ERR(p);
+
+	globalvar_nv_sync(name);
+
+	return 0;
+}
+
+int globalvar_add_simple_guid(const char *name, guid_t *guid)
+{
+	struct param_d *p;
+	int ret;
+
+	ret = globalvar_remove_unqualified(name);
+	if (ret)
+		return ret;
+
+	p = dev_add_param_guid(&global_device, name,
+			       NULL, NULL, guid, 0);
+
+	if (IS_ERR(p))
+		return PTR_ERR(p);
+
+	globalvar_nv_sync(name);
+
+	return 0;
+}
+
 static int globalvar_init(void)
 {
 	const char *endianness;

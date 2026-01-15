@@ -79,47 +79,29 @@ static int fw_cfg_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 	return 0;
 }
 
-#define __raw_readu64 __raw_readq
-#define __raw_readu32 __raw_readl
-#define __raw_readu16 __raw_readw
-#define __raw_readu8 __raw_readb
-
-#define fw_cfg_data_read_sized(fw_cfg, remaining, address, type) do {	\
-	while (*remaining >= sizeof(type)) {				\
-		val = __raw_read##type((fw_cfg)->reg_data);		\
-		*remaining -= sizeof(type);				\
-		put_unaligned(val, (type *)*address);		\
-		*address += sizeof(type);			\
-	}								\
-} while(0)
-
-static void fw_cfg_data_read(struct fw_cfg *fw_cfg, void *address, size_t remaining,
-			     unsigned rdsize)
+static void reads_n(const void __iomem *src, void *dst,
+		   resource_size_t count, int rwsize)
 {
-
-	u64 val;
-
-	if (fw_cfg->is_mmio) {
-		/*
-		 * This is just a preference. If we can't honour it, we
-		 * fall back to byte-sized copy
-		 */
-		switch(rdsize) {
-		case 8:
+	switch (rwsize) {
+	case 1: readsb(src, dst, count / 1); break;
+	case 2: readsw(src, dst, count / 2); break;
+	case 4: readsl(src, dst, count / 4); break;
 #ifdef CONFIG_64BIT
-			fw_cfg_data_read_sized(fw_cfg, &remaining, &address, u64);
-			break;
+	case 8: readsq(src, dst, count / 8); break;
 #endif
-		case 4:
-			fw_cfg_data_read_sized(fw_cfg, &remaining, &address, u32);
-			break;
-		case 2:
-			fw_cfg_data_read_sized(fw_cfg, &remaining, &address, u16);
-			break;
-		}
 	}
+}
 
-	fw_cfg_data_read_sized(fw_cfg, &remaining, &address, u8);
+static void ins_n(unsigned long src, void *dst,
+		  resource_size_t count, int rwsize)
+{
+	switch (rwsize) {
+	case 1: insb(src, dst, count / 1); break;
+	case 2: insw(src, dst, count / 2); break;
+	case 4: insl(src, dst, count / 4); break;
+	/* No insq, so just do 32-bit accesses */
+	case 8: insl(src, dst, count / 4); break;
+	}
 }
 
 static void fw_cfg_do_dma(struct fw_cfg *fw_cfg, dma_addr_t address,
@@ -141,30 +123,20 @@ static ssize_t fw_cfg_read(struct cdev *cdev, void *buf, size_t count,
 			   loff_t pos, unsigned long flags)
 {
 	struct fw_cfg *fw_cfg = to_fw_cfg(cdev);
-	unsigned rdsize = FIELD_GET(O_RWSIZE_MASK, flags);
-	u32 selector = FW_CFG_DMA_CTL_SELECT | fw_cfg->sel << 16;
+	unsigned rdsize = FIELD_GET(O_RWSIZE_MASK, flags) ?: 8;
 
 	if (!pos || pos != fw_cfg->next_read_offset) {
 		fw_cfg_select(fw_cfg);
 		fw_cfg->next_read_offset = 0;
 	}
 
-	if (!rdsize) {
-		if (pos % 8 == 0)
-			rdsize = 8;
-		else if (pos % 4 == 0)
-			rdsize = 4;
-		else if (pos % 2 == 0)
-			rdsize = 2;
-		else
-			rdsize = 1;
-	}
+	if (!IS_ALIGNED(pos, rdsize) || !IS_ALIGNED(count, rdsize))
+		rdsize = 1;
 
-	if (pos != fw_cfg->next_read_offset)
-		fw_cfg_do_dma(fw_cfg, DMA_ERROR_CODE, pos,
-			      FW_CFG_DMA_CTL_SKIP | selector);
-
-	fw_cfg_data_read(fw_cfg, buf, count, rdsize);
+	if (fw_cfg->is_mmio)
+		reads_n(fw_cfg->reg_data, buf, count, rdsize);
+	else
+		ins_n((ulong)fw_cfg->reg_data, buf, count, rdsize);
 
 	fw_cfg->next_read_offset += count;
 	return count;

@@ -30,25 +30,14 @@ void sync_caches_for_execution(void)
 	local_flush_icache_all();
 }
 
-void relocate_to_current_adr(void)
+static void relocate_image(unsigned long offset,
+			   void *dstart, void *dend,
+			   long *dynsym, long *dynend)
 {
-	unsigned long offset;
-	unsigned long *dynsym;
-	void *dstart, *dend;
 	Elf_Rela *rela;
 
-	/* Get offset between linked address and runtime address */
-	offset = get_runtime_offset();
 	if (!offset)
 		return;
-
-	/*
-	 * We have yet to relocate, so using runtime_address
-	 * to compute the relocated address
-	 */
-	dstart = runtime_address(__rel_dyn_start);
-	dend = runtime_address(__rel_dyn_end);
-	dynsym = runtime_address(__dynsym_start);
 
 	for (rela = dstart; (void *)rela < dend; rela++) {
 		unsigned long *fixup;
@@ -73,6 +62,16 @@ void relocate_to_current_adr(void)
 			__hang();
 		}
 	}
+
+}
+
+void relocate_to_current_adr(void)
+{
+	relocate_image(get_runtime_offset(),
+		       runtime_address(__rel_dyn_start),
+		       runtime_address(__rel_dyn_end),
+		       runtime_address(__dynsym_start),
+		       NULL);
 
 	sync_caches_for_execution();
 }

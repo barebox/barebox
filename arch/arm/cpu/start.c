@@ -189,14 +189,3 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 	start_barebox();
 }
-
-void start(unsigned long membase, unsigned long memsize, struct handoff_data *hd);
-/*
- * First function in the uncompressed image. We get here from
- * the pbl. The stack already has been set up by the pbl.
- */
-void __section(.text_entry) start(unsigned long membase,
-		unsigned long memsize, struct handoff_data *hd)
-{
-	barebox_non_pbl_start(membase, memsize, hd);
-}

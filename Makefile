@@ -1353,6 +1353,20 @@ else
 depmod_opts	:= -b $(INSTALL_MOD_PATH) -r
 endif
 
+# Target to build modules environment
+MODULES_ENV_DIR := $(objtree)/.tmp_barebox_modules_env
+CLEAN_DIRS += $(MODULES_ENV_DIR)
+
+barebox_modules_env: modules FORCE
+	$(Q)rm -rf $(MODULES_ENV_DIR)
+	$(Q)$(MAKE) -f $(srctree)/Makefile modules_install MODLIB=$(MODULES_ENV_DIR)
+	$(Q)$(objtree)/scripts/bareboxenv -s $(MODULES_ENV_DIR)/barebox $@
+	$(Q)mv barebox_modules_env $(objtree)/defaultenv/
+
+ifdef CONFIG_MODULES_ENVIRONMENT
+all: barebox_modules_env
+endif
+
 else # CONFIG_MODULES
 
 # Modules not configured

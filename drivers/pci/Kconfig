@@ -68,7 +68,7 @@ config PCI_EFI
 	select PCI
 
 config PCI_ECAM_GENERIC
-	bool "Generic ECAM-based PCI host controller support"
+	tristate "Generic ECAM-based PCI host controller support"
 	select OF_PCI
 	select PCI
 	help

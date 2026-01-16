@@ -439,4 +439,10 @@ static inline unsigned long elf_size_of_phdr(struct elf_image *elf)
 		return sizeof(Elf64_Phdr);
 }
 
+#define elf_for_each_segment(phdr, elf, buf) \
+	for (phdr = (void *)buf + elf_hdr_e_phoff(elf, buf); \
+	     phdr < (void *)buf + elf_hdr_e_phoff(elf, buf) + \
+	     elf_hdr_e_phnum(elf, buf) * elf_size_of_phdr(elf); \
+	     phdr = (void *)phdr + elf_size_of_phdr(elf))
+
 #endif /* _LINUX_ELF_H */

@@ -166,19 +166,17 @@ out:
 static int load_elf_image_segments(struct elf_image *elf)
 {
 	void *buf = elf->hdr_buf;
-	void *phdr = (void *) (buf + elf_hdr_e_phoff(elf, buf));
-	int i, ret;
+	void *phdr;
+	int ret;
 
 	/* File as already been loaded */
 	if (!list_empty(&elf->list))
 		return -EINVAL;
 
-	for (i = 0; i < elf_hdr_e_phnum(elf, buf) ; ++i) {
+	elf_for_each_segment(phdr, elf, buf) {
 		ret = request_elf_segment(elf, phdr);
 		if (ret)
 			goto elf_release_regions;
-
-		phdr += elf_size_of_phdr(elf);
 	}
 
 	/*

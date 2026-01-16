@@ -423,6 +423,14 @@ int elf_load(struct elf_image *elf);
 void elf_set_load_address(struct elf_image *elf, void *addr);
 
 /*
+ * Apply dynamic relocations to an ELF binary already loaded in memory.
+ * This modifies the ELF image in place without allocating new memory.
+ * Useful for self-relocating loaders or externally loaded binaries.
+ * The elf parameter must have been previously opened with elf_open_binary().
+ */
+int elf_load_inplace(struct elf_image *elf);
+
+/*
  * Architecture-specific relocation handler.
  * Returns 0 on success, -ENOSYS if architecture doesn't support relocations,
  * other negative error codes on failure.

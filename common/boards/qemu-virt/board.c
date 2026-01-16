@@ -38,7 +38,6 @@ static inline void arm_virt_init(void) {}
 #endif
 
 extern char __dtbo_qemu_virt_flash_start[];
-extern char __dtb_fitimage_pubkey_start[];
 
 static const struct of_device_id virt_of_match[] = {
 	{ .compatible = "linux,dummy-virt", .data = arm_virt_init },

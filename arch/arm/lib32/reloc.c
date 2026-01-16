@@ -54,3 +54,22 @@ void __prereloc relocate_image(unsigned long offset,
 	if (dynend)
 		__memset(dynsym, 0, (unsigned long)dynend - (unsigned long)dynsym);
 }
+
+/*
+ * Apply ARM32 ELF relocations
+ */
+int elf_apply_relocations(struct elf_image *elf, const void *dyn_seg)
+{
+	void *rel_ptr = NULL, *symtab = NULL;
+	u64 relsz;
+	phys_addr_t base = (phys_addr_t)elf->reloc_offset;
+	int ret;
+
+	ret = elf_parse_dynamic_section_rel(elf, dyn_seg, &rel_ptr, &relsz, &symtab);
+	if (ret)
+		return ret;
+
+	relocate_image(base, rel_ptr, rel_ptr + relsz, symtab, NULL);
+
+	return 0;
+}

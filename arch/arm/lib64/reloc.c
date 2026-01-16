@@ -8,8 +8,6 @@
 #include <debug_ll.h>
 #include <asm/reloc.h>
 
-#define R_AARCH64_RELATIVE 1027
-
 /*
  * relocate binary to the currently running address
  */
@@ -44,4 +42,23 @@ void __prereloc relocate_image(unsigned long offset,
 
 		dstart += sizeof(*rel);
 	}
+}
+
+/*
+ * Apply ARM64 ELF relocations
+ */
+int elf_apply_relocations(struct elf_image *elf, const void *dyn_seg)
+{
+	void *rela_ptr = NULL, *symtab = NULL;
+	u64 relasz;
+	phys_addr_t base = (phys_addr_t)elf->reloc_offset;
+	int ret;
+
+	ret = elf_parse_dynamic_section_rela(elf, dyn_seg, &rela_ptr, &relasz, &symtab);
+	if (ret)
+		return ret;
+
+	relocate_image(base, rela_ptr, rela_ptr + relasz, symtab, NULL);
+
+	return 0;
 }

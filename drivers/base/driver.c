@@ -586,6 +586,7 @@ struct resource *dev_request_mem_resource(struct device *dev, int num)
 
 	return dev_request_iomem_resource(dev, res);
 }
+EXPORT_SYMBOL(dev_request_mem_resource);
 
 void __iomem *dev_request_mem_region_err_null(struct device *dev, int num)
 {

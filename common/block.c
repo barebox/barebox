@@ -16,6 +16,7 @@
 #include <file-list.h>
 
 LIST_HEAD(block_device_list);
+EXPORT_SYMBOL(block_device_list);
 
 /* a chunk of contiguous data */
 struct chunk {
@@ -586,6 +587,7 @@ const char *blk_type_str(enum blk_type type)
 		return "unknown";
 	}
 }
+EXPORT_SYMBOL(blk_type_str);
 
 int cdev_get_linux_root_and_opts(const struct cdev *partcdev, const char **root,
 				 const char **rootopts)

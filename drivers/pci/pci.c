@@ -48,6 +48,7 @@ void pci_controller_init(struct pci_controller *hose)
 
 	of_pci_bridge_init(hose->parent, hose);
 }
+EXPORT_SYMBOL(pci_controller_init);
 
 void register_pci_controller(struct pci_controller *hose)
 {
@@ -85,6 +86,7 @@ void register_pci_controller(struct pci_controller *hose)
 
 	return;
 }
+EXPORT_SYMBOL(register_pci_controller);
 
 /*
  *  Wrappers for all PCI configuration access functions.  They just check

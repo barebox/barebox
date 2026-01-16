@@ -212,6 +212,7 @@ void *sbrk(ptrdiff_t increment)
 }
 
 LIST_HEAD(memory_banks);
+EXPORT_SYMBOL(memory_banks);
 
 static int barebox_grow_memory_bank(struct memory_bank *bank, const char *name,
 				    const struct resource *newres)

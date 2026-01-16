@@ -113,7 +113,7 @@ ucs2_strcmp(const ucs2_char_t *a, const ucs2_char_t *b)
 {
 	return ucs2_strncmp(a, b, ~0UL);
 }
-EXPORT_SYMBOL(ucs2_strncmp);
+EXPORT_SYMBOL(ucs2_strcmp);
 
 unsigned long
 ucs2_utf8size(const ucs2_char_t *src)

@@ -28,6 +28,7 @@ int platform_driver_register(struct driver *drv)
 
 	return register_driver(drv);
 }
+EXPORT_SYMBOL(platform_driver_register);
 
 int platform_device_register(struct device *new_device)
 {

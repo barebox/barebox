@@ -25,6 +25,7 @@ obj-pbl-y += reloc.o
 obj-$(CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS)	+= memcpy.o
 obj-$(CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS)	+= memmove.o
 obj-$(CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS)	+= memset.o
+obj-$(CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS)	+= string.o
 obj-$(CONFIG_ARM_UNWIND) += unwind.o
 obj-$(CONFIG_MODULES) += module.o
 obj-$(CONFIG_ARM_MODULE_PLTS) += module-plts.o

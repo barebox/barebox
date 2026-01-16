@@ -87,6 +87,7 @@ struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np)
 
 	return NULL;
 }
+EXPORT_SYMBOL(firmwaremgr_find_by_node);
 
 /*
  * firmwaremgr_list_handlers - list registered firmware device handlers

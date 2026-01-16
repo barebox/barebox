@@ -39,6 +39,7 @@ static DEFINE_SPINLOCK(protocol_lock);
 
 /* List of all SCMI devices active in system */
 LIST_HEAD(scmi_list);
+EXPORT_SYMBOL(scmi_list);
 /* Protection for the entire list */
 static DEFINE_MUTEX(scmi_list_mutex);
 /* Track the unique id for the transfers for debug & profiling purpose */

@@ -4,6 +4,7 @@
 #include <linux/list.h>
 
 LIST_HEAD(class_list);
+EXPORT_SYMBOL(class_list);
 
 void class_register(struct class *class)
 {

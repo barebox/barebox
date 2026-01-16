@@ -27,6 +27,7 @@ int string_list_add(struct string_list *sl, const char *str)
 
 	return 0;
 }
+EXPORT_SYMBOL(string_list_add);
 
 int string_list_add_asprintf(struct string_list *sl, const char *fmt, ...)
 {
@@ -50,6 +51,7 @@ int string_list_add_asprintf(struct string_list *sl, const char *fmt, ...)
 
 	return 0;
 }
+EXPORT_SYMBOL(string_list_add_asprintf);
 
 int string_list_add_sorted(struct string_list *sl, const char *str)
 {
@@ -126,6 +128,7 @@ char *string_list_join(const struct string_list *sl, const char *joinstr)
 
 	return str;
 }
+EXPORT_SYMBOL(string_list_join);
 
 void string_list_print_by_column(struct string_list *sl)
 {

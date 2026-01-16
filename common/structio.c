@@ -3,6 +3,7 @@
 #include <structio.h>
 #include <command.h>
 #include <device.h>
+#include <linux/export.h>
 
 static struct bobject *active_capture;
 
@@ -34,6 +35,7 @@ int structio_run_command(struct bobject **bret, const char *cmd)
 	*bret = bobj;
 	return 0;
 }
+EXPORT_SYMBOL(structio_run_command);
 
 int structio_devinfo(struct bobject **bret, struct device *dev)
 {
@@ -54,3 +56,4 @@ int structio_devinfo(struct bobject **bret, struct device *dev)
 	*bret = bobj;
 	return 0;
 }
+EXPORT_SYMBOL(structio_devinfo);

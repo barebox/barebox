@@ -102,6 +102,7 @@ struct hwrng *hwrng_get_first(void)
 	else
 		return list_first_entry(&hwrngs, struct hwrng, list);
 }
+EXPORT_SYMBOL(hwrng_get_first);
 
 int hwrng_register(struct device *dev, struct hwrng *rng)
 {

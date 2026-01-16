@@ -10,6 +10,7 @@
 #include <of.h>
 
 DEFINE_DEV_CLASS(bus_class, "bus");
+EXPORT_SYMBOL(bus_class);
 
 struct bus_type *get_bus_by_name(const char *name)
 {
@@ -22,6 +23,7 @@ struct bus_type *get_bus_by_name(const char *name)
 
 	return NULL;
 }
+EXPORT_SYMBOL(get_bus_by_name);
 
 int bus_register(struct bus_type *bus)
 {

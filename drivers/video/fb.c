@@ -10,6 +10,7 @@
 #include <init.h>
 
 DEFINE_DEV_CLASS(fb_class, "fb");
+EXPORT_SYMBOL(fb_class);
 
 static int fb_ioctl(struct cdev* cdev, unsigned int req, void *data)
 {

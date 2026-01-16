@@ -38,6 +38,7 @@ struct nvmem_cell {
 };
 
 DEFINE_DEV_CLASS(nvmem_class, "nvmem");
+EXPORT_SYMBOL(nvmem_class);
 
 void nvmem_devices_print(void)
 {

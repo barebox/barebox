@@ -468,7 +468,7 @@ PYTEST		= $(if $(shell command -v labgrid-pytest 2>/dev/null),labgrid-pytest,pyt
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise $(CF)
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
-CFLAGS_MODULE	= -fshort-wchar
+CFLAGS_MODULE	= -fshort-wchar -std=gnu11
 AFLAGS_MODULE	=
 
 LDFLAGS_MODULE  = -T common/module.lds

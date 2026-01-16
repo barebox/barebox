@@ -29,9 +29,11 @@ typedef struct user_fp elf_fpregset_t;
 
 #define R_ARM_NONE	0
 #define R_ARM_PC24	1
+#define R_ARM_REL32	3
 #define R_ARM_ABS32	2
 #define R_ARM_CALL	28
 #define R_ARM_JUMP24	29
+#define R_ARM_PREL31	42
 
 #define R_ARM_THM_CALL		10
 #define R_ARM_THM_JUMP24	30

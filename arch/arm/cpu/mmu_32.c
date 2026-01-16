@@ -528,8 +528,6 @@ void create_vector_table(unsigned long adr)
 			      get_pte_flags(MAP_CACHED), true);
 	}
 
-	arm_fixup_vectors();
-
 	memset(vectors, 0, PAGE_SIZE);
 	memcpy(vectors, __exceptions_start, __exceptions_stop - __exceptions_start);
 }

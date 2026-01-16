@@ -145,6 +145,12 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
 
     try:
         main = target.env.config.data["targets"]["main"]
+        yaml_env = main["env"]
+    except KeyError:
+        yaml_env = {}
+
+    try:
+        main = target.env.config.data["targets"]["main"]
         qemu_bin = main["drivers"]["QEMUDriver"]["qemu_bin"]
     except KeyError:
         qemu_bin = None
@@ -217,6 +223,19 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
             )
         else:
             pytest.exit("--env unsupported for target\n", 1)
+
+    for envpath, value in yaml_env.items():
+        if virtio:
+            if value.startswith('@'):
+                source = f"file='{value[1:]}'"
+            else:
+                source = f"string='{value}'"
+
+            strategy.append_qemu_args(
+                '-fw_cfg', f'name=opt/org.barebox.env/{envpath},{source}'
+            )
+        else:
+            pytest.exit("env unsupported for target\n", 1)
 
     if len(pytestconfig.option.bootarg) > 0:
         strategy.append_qemu_bootargs(pytestconfig.option.bootarg)

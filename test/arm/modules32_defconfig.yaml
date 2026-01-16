@@ -1,0 +1,27 @@
+targets:
+  main:
+    drivers:
+      QEMUDriver:
+        qemu_bin: qemu-system-arm
+        machine: virt
+        cpu: cortex-a7
+        memory: 64M  # To avoid indirection via (unsupported) PLTs
+        bios: barebox-qemu-virt.img
+        display: qemu-default
+      BareboxDriver:
+        prompt: 'barebox@[^:]+:[^ ]+ '
+        bootstring: 'commandline:'
+      BareboxTestStrategy: {}
+    features:
+      - virtio-mmio
+      - testfs
+      - modules
+    env:
+      data/modules.env: !template "@$LG_BUILDDIR/defaultenv/barebox_modules_env"
+      init/loadenv-modules: |
+        #!/bin/sh
+        loadenv /env/data/modules.env /modules
+images:
+  barebox-qemu-virt.img: !template "$LG_BUILDDIR/images/barebox-qemu-virt.img"
+imports:
+  - ../strategy.py

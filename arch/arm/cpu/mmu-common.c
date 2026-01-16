@@ -109,17 +109,19 @@ static inline void remap_range_end(unsigned long start, unsigned long end,
 	remap_range((void *)start, end - start, map_type);
 }
 
-static inline void remap_range_end_sans_text(unsigned long start, unsigned long end,
+static inline void remap_range_end_sans_image(unsigned long start, unsigned long end,
 					     unsigned map_type)
 {
-	unsigned long text_start = (unsigned long)&_stext;
-	unsigned long text_end = (unsigned long)&_etext;
+	unsigned long image_start = (unsigned long)&__image_start;
+	unsigned long image_end = (unsigned long)&__image_end;
 
-	if (region_overlap_end_exclusive(start, end, text_start, text_end)) {
-		remap_range_end(start, text_start, MAP_CACHED);
-		/* skip barebox segments here, will be mapped later */
-		start = text_end;
+	if (region_overlap_end_exclusive(start, end, image_start, image_end)) {
+		remap_range_end(start, image_start, MAP_CACHED);
+		/* skip barebox segments here, PBL has already mapped them */
+		start = image_end;
 	}
+
+	start = ALIGN(start, PAGE_SIZE);
 
 	remap_range_end(start, end, MAP_CACHED);
 }
@@ -127,16 +129,16 @@ static inline void remap_range_end_sans_text(unsigned long start, unsigned long 
 static void mmu_remap_memory_banks(void)
 {
 	struct memory_bank *bank;
-	unsigned long code_start = (unsigned long)&_stext;
-	unsigned long code_size = (unsigned long)&__start_rodata - (unsigned long)&_stext;
-	unsigned long rodata_start = (unsigned long)&__start_rodata;
-	unsigned long rodata_size = (unsigned long)&__end_rodata - rodata_start;
 
 	/*
 	 * Early mmu init will have mapped everything but the initial memory area
 	 * (excluding final OPTEE_SIZE bytes) uncached. We have now discovered
 	 * all memory banks, so let's map all pages, excluding reserved memory areas
 	 * and barebox text area cacheable.
+	 *
+	 * PBL has already set up the MMU with proper permissions for text, data
+	 * and rodata based on ELF segment information, so we don't need to remap
+	 * those here.
 	 *
 	 * This code will become much less complex once we switch over to using
 	 * CONFIG_MEMORY_ATTRIBUTES for MMU as well.
@@ -150,15 +152,12 @@ static void mmu_remap_memory_banks(void)
 		/* Skip reserved regions */
 		for_each_reserved_region(bank, rsv) {
 			if (pos != rsv->start)
-				remap_range_end_sans_text(pos, rsv->start, MAP_CACHED);
+				remap_range_end_sans_image(pos, rsv->start, MAP_CACHED);
 			pos = rsv->end + 1;
 		}
 
-		remap_range_end_sans_text(pos, bank->res->end + 1, MAP_CACHED);
+		remap_range_end_sans_image(pos, bank->res->end + 1, MAP_CACHED);
 	}
-
-	remap_range((void *)code_start, code_size, MAP_CODE);
-	remap_range((void *)rodata_start, rodata_size, MAP_CACHED_RO);
 
 	setup_trap_pages();
 }

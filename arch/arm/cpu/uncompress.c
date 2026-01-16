@@ -21,6 +21,7 @@
 #include <asm/unaligned.h>
 #include <compressed-dtb.h>
 #include <elf.h>
+#include <pbl/mmu.h>
 
 #include <debug_ll.h>
 
@@ -102,6 +103,15 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	ret = elf_load_inplace(&elf);
 	if (ret)
 		panic("Failed to relocate ELF: %d\n", ret);
+
+	/*
+	 * Now that the ELF image is relocated, we know the exact addresses
+	 * of all segments. Set up MMU with proper permissions based on
+	 * ELF segment flags (PF_R/W/X).
+	 */
+	ret = pbl_mmu_setup_from_elf(&elf, membase, memsize);
+	if (ret)
+		panic("Failed to setup MMU from ELF: %d\n", ret);
 
 	barebox = (void *)(unsigned long)elf.entry;
 

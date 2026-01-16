@@ -394,11 +394,15 @@ extern Elf64_Dyn _DYNAMIC [];
 struct elf_image {
 	struct list_head list;
 	u8 class;
+	u16 type;		/* ET_EXEC or ET_DYN */
 	u64 entry;
 	void *low_addr;
 	void *high_addr;
 	void *hdr_buf;
 	const char *filename;
+	void *load_address;	/* User-specified load address (NULL = use p_paddr) */
+	void *base_load_addr;	/* Calculated base address for ET_DYN */
+	unsigned long reloc_offset;	/* Offset between p_vaddr and actual load address */
 };
 
 static inline size_t elf_get_mem_size(struct elf_image *elf)
@@ -410,6 +414,31 @@ struct elf_image *elf_open_binary(void *buf);
 struct elf_image *elf_open(const char *filename);
 void elf_close(struct elf_image *elf);
 int elf_load(struct elf_image *elf);
+
+/*
+ * Set the load address for the ELF file.
+ * Must be called before elf_load().
+ * If not set, ET_EXEC uses p_paddr, ET_DYN uses lowest p_paddr.
+ */
+void elf_set_load_address(struct elf_image *elf, void *addr);
+
+/*
+ * Architecture-specific relocation handler.
+ * Returns 0 on success, -ENOSYS if architecture doesn't support relocations,
+ * other negative error codes on failure.
+ */
+int elf_apply_relocations(struct elf_image *elf, const void *dyn_seg);
+
+/*
+ * Parse the dynamic section and extract relocation information.
+ * This is a generic function that works for both 32-bit and 64-bit ELF files,
+ * and handles both REL and RELA relocation formats.
+ * Returns 0 on success, -EINVAL on error.
+ */
+int elf_parse_dynamic_section_rel(struct elf_image *elf, const void *dyn_seg,
+				  void **rel_out, u64 *relsz_out, void **symtab);
+int elf_parse_dynamic_section_rela(struct elf_image *elf, const void *dyn_seg,
+				   void **rel_out, u64 *relsz_out, void **symtab);
 
 #define ELF_GET_FIELD(__s, __field, __type) \
 static inline __type elf_##__s##_##__field(struct elf_image *elf, void *arg) { \
@@ -426,10 +455,12 @@ ELF_GET_FIELD(hdr, e_phentsize, u16)
 ELF_GET_FIELD(hdr, e_type, u16)
 ELF_GET_FIELD(hdr, e_machine, u16)
 ELF_GET_FIELD(phdr, p_paddr, u64)
+ELF_GET_FIELD(phdr, p_vaddr, u64)
 ELF_GET_FIELD(phdr, p_filesz, u64)
 ELF_GET_FIELD(phdr, p_memsz, u64)
 ELF_GET_FIELD(phdr, p_type, u32)
 ELF_GET_FIELD(phdr, p_offset, u64)
+ELF_GET_FIELD(phdr, p_flags, u32)
 
 static inline unsigned long elf_size_of_phdr(struct elf_image *elf)
 {
@@ -444,5 +475,38 @@ static inline unsigned long elf_size_of_phdr(struct elf_image *elf)
 	     phdr < (void *)buf + elf_hdr_e_phoff(elf, buf) + \
 	     elf_hdr_e_phnum(elf, buf) * elf_size_of_phdr(elf); \
 	     phdr = (void *)phdr + elf_size_of_phdr(elf))
+
+/* Dynamic section accessors */
+static inline s64 elf_dyn_d_tag(struct elf_image *elf, const void *arg)
+{
+	if (elf->class == ELFCLASS32)
+		return (s64)((Elf32_Dyn *)arg)->d_tag;
+	else
+		return (s64)((Elf64_Dyn *)arg)->d_tag;
+}
+
+static inline u64 elf_dyn_d_val(struct elf_image *elf, const void *arg)
+{
+	if (elf->class == ELFCLASS32)
+		return (u64)((Elf32_Dyn *)arg)->d_un.d_val;
+	else
+		return (u64)((Elf64_Dyn *)arg)->d_un.d_val;
+}
+
+static inline u64 elf_dyn_d_ptr(struct elf_image *elf, const void *arg)
+{
+	if (elf->class == ELFCLASS32)
+		return (u64)((Elf32_Dyn *)arg)->d_un.d_ptr;
+	else
+		return (u64)((Elf64_Dyn *)arg)->d_un.d_ptr;
+}
+
+static inline unsigned long elf_size_of_dyn(struct elf_image *elf)
+{
+	if (elf->class == ELFCLASS32)
+		return sizeof(Elf32_Dyn);
+	else
+		return sizeof(Elf64_Dyn);
+}
 
 #endif /* _LINUX_ELF_H */

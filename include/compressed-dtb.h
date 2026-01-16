@@ -2,9 +2,11 @@
 #ifndef COMPRESSED_DTB_H_
 #define COMPRESSED_DTB_H_
 
+#include <linux/align.h>
 #include <linux/types.h>
 #include <linux/sizes.h>
 #include <asm/unaligned.h>
+#include <fdt.h>
 
 struct barebox_boarddata_compressed_dtb {
 #define BAREBOX_BOARDDATA_COMPRESSED_DTB_MAGIC 0x7b66bcbd

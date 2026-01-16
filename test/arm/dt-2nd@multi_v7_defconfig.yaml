@@ -2,11 +2,11 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu-system-aarch64
-        machine: virt,highmem=off
-        cpu: cortex-a57
+        qemu_bin: qemu-system-arm
+        machine: virt
+        cpu: cortex-a7
         memory: 1024M
-        bios: barebox-qemu-virt.img
+        kernel: barebox-dt-2nd.img
         display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
@@ -14,10 +14,9 @@ targets:
       BareboxTestStrategy: {}
     features:
       - virtio-mmio
-      - network
       - barebox-state
       - testfs
 images:
-  barebox-qemu-virt.img: !template "$LG_BUILDDIR/images/barebox-qemu-virt.img"
+  barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
 imports:
   -  ../strategy.py

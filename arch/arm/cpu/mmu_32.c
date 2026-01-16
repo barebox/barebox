@@ -304,7 +304,7 @@ static uint32_t get_pte_flags(maptype_t map_type)
 		switch (map_type & MAP_TYPE_MASK) {
 		case ARCH_MAP_CACHED_RWX:
 			return PTE_FLAGS_CACHED_V7_RWX;
-		case ARCH_MAP_CACHED_RO:
+		case MAP_CACHED_RO:
 			return PTE_FLAGS_CACHED_RO_V7;
 		case MAP_CACHED:
 			return PTE_FLAGS_CACHED_V7;
@@ -320,7 +320,7 @@ static uint32_t get_pte_flags(maptype_t map_type)
 		}
 	} else {
 		switch (map_type & MAP_TYPE_MASK) {
-		case ARCH_MAP_CACHED_RO:
+		case MAP_CACHED_RO:
 		case MAP_CODE:
 			return PTE_FLAGS_CACHED_RO_V4;
 		case ARCH_MAP_CACHED_RWX:

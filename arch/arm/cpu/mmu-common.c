@@ -22,7 +22,7 @@ const char *map_type_tostr(maptype_t map_type)
 
 	switch (map_type) {
 	case ARCH_MAP_CACHED_RWX:	return "RWX";
-	case ARCH_MAP_CACHED_RO:	return "RO";
+	case MAP_CACHED_RO:		return "RO";
 	case MAP_CACHED:		return "CACHED";
 	case MAP_UNCACHED:		return "UNCACHED";
 	case MAP_CODE:			return "CODE";
@@ -158,7 +158,7 @@ static void mmu_remap_memory_banks(void)
 	}
 
 	remap_range((void *)code_start, code_size, MAP_CODE);
-	remap_range((void *)rodata_start, rodata_size, ARCH_MAP_CACHED_RO);
+	remap_range((void *)rodata_start, rodata_size, MAP_CACHED_RO);
 
 	setup_trap_pages();
 }

@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: GPL-2.0
+# ==========================================================================
+# Installing modules
+# ==========================================================================
+
+PHONY := __modinst
+__modinst:
+
+include $(objtree)/include/config/auto.conf
+include $(srctree)/scripts/Kbuild.include
+
+install-y :=
+
+# remove the old directory
+$(shell rm -fr $(MODLIB)/barebox)
+
+dst := $(MODLIB)/barebox
+
+# Find all .ko files in the build tree
+modules := $(shell find $(objtree) -name '*.ko' -not -path '$(MODLIB)/*' 2>/dev/null)
+modules-dst := $(addprefix $(dst)/, $(patsubst $(objtree)/%,%,$(modules)))
+
+install-$(CONFIG_MODULES) += $(modules-dst)
+
+__modinst: $(install-y)
+	@:
+
+#
+# Installation
+#
+quiet_cmd_install = INSTALL $@
+      cmd_install = mkdir -p $(dir $@) && cp $< $@
+
+INSTALL_MOD_STRIP ?= 1
+
+# Strip
+#
+# INSTALL_MOD_STRIP, if defined, will cause modules to be stripped after they
+# are installed. If INSTALL_MOD_STRIP is '1', then the default option
+# --strip-debug will be used. Otherwise, INSTALL_MOD_STRIP value will be used
+# as the options to the strip command.
+ifdef INSTALL_MOD_STRIP
+
+ifeq ($(INSTALL_MOD_STRIP),1)
+strip-option := --strip-debug
+else
+strip-option := $(INSTALL_MOD_STRIP)
+endif
+
+quiet_cmd_strip = STRIP   $@
+      cmd_strip = $(STRIP) $(strip-option) $@
+
+else
+
+quiet_cmd_strip =
+      cmd_strip = :
+
+endif
+
+$(dst)/%.ko: $(objtree)/%.ko FORCE
+	$(call cmd,install)
+	$(call cmd,strip)
+
+PHONY += FORCE
+FORCE:
+
+.PHONY: $(PHONY)

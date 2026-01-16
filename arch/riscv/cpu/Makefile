@@ -7,3 +7,4 @@ obj-pbl-$(CONFIG_RISCV_M_MODE) += mtrap.o
 obj-pbl-$(CONFIG_RISCV_S_MODE) += strap.o
 obj-pbl-y += interrupts.o
 endif
+obj-pbl-$(CONFIG_MMU) += mmu.o

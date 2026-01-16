@@ -2,6 +2,13 @@
 
 KBUILD_DEFCONFIG := rv64i_defconfig
 
+generated_configs += virt32_mmu_defconfig rv64i_mmu_defconfig
+
+virt32_mmu_defconfig:
+	$(call merge_into_defconfig,virt32_defconfig,enable_mmu)
+rv64i_mmu_defconfig:
+	$(call merge_into_defconfig,rv64i_defconfig,enable_mmu)
+
 KBUILD_CPPFLAGS += -fno-strict-aliasing
 
 ifeq ($(CONFIG_ARCH_RV32I),y)

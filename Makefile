@@ -831,7 +831,11 @@ export KBUILD_BINARY ?= barebox.bin
 # Also any assignments in arch/$(SRCARCH)/Makefile take precedence over
 # the default value.
 
+ifeq ($(CONFIG_PBL_IMAGE_ELF),y)
+export BAREBOX_PROPER ?= vmbarebox
+else
 export BAREBOX_PROPER ?= barebox.bin
+endif
 
 barebox-flash-images: $(KBUILD_IMAGE)
 	@echo $^ > $@

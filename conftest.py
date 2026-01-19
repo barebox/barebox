@@ -248,6 +248,7 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
             testfs_path = os.path.join(os.environ["LG_BUILDDIR"], "testfs")
             pytestconfig.option.qemu_fs.append(["testfs", testfs_path])
             os.makedirs(testfs_path, exist_ok=True)
+            strategy.append_qemu_args("-nic", f"user,id=net0,tftp={testfs_path}")
 
     for i, fs in enumerate(pytestconfig.option.qemu_fs):
         if virtio:

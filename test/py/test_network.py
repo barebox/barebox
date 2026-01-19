@@ -6,6 +6,7 @@ from labgrid import driver
 import socket
 import threading
 import re
+from pathlib import Path
 import warnings
 from .helper import skip_disabled
 
@@ -71,15 +72,21 @@ def tftp_conversation(barebox, barebox_interface, guestaddr):
         barebox.run_check("ifdown eth0")
 
 
-def test_barebox_network(barebox, barebox_config, env):
-    skip_disabled(barebox_config, "CONFIG_CMD_TFTP")
+@pytest.fixture(scope="module")
+def testfs_hostname(testfs):
+    with open(Path(testfs) / "hostname", "w", encoding="utf-8") as f:
+        f.write("QEMU\n")
 
+
+@pytest.fixture(scope="function")
+def barebox_interfaces(barebox, env, testfs):
     # on DUTs without network feature, this is expected to fail
     # set xfail_strict=True to enforce specifying the network feature
     # if available
     if 'network' not in env.get_target_features():
         pytest.xfail("network feature not specified")
 
+    barebox.run_check("ifdown -a")
     stdout = barebox.run_check("ifup -a")
 
     interfaces = []
@@ -94,7 +101,13 @@ def test_barebox_network(barebox, barebox_config, env):
 
     assert interfaces, "Network testing is only possible with at least one DHCP interface"
 
-    for iface in interfaces:
+    return interfaces
+
+
+def test_barebox_network_mock_tftp(barebox, barebox_config, barebox_interfaces):
+    skip_disabled(barebox_config, "CONFIG_CMD_TFTP")
+
+    for iface in barebox_interfaces:
         ifname = iface[0]
         ifaddr = iface[1]
 
@@ -115,3 +128,10 @@ def test_barebox_network(barebox, barebox_config, env):
         if not success:
             pytest.fail("Could not converse with DUT on any of the found DHCP interfaces!")
 
+
+def test_barebox_network_real_tftp(barebox, barebox_config,
+                                   testfs_hostname, barebox_interfaces):
+    skip_disabled(barebox_config, "CONFIG_CMD_TFTP")
+
+    barebox.run_check(f"tftp hostname", timeout=3)
+    assert barebox.run_check(f"cat hostname") == ["QEMU"]

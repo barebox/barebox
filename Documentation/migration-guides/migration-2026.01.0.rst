@@ -1,4 +1,5 @@
-:orphan:
+Release v2026.01.0
+==================
 
 <config.h> removal for PowerPC
 ------------------------------

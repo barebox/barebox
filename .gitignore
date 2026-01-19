@@ -116,3 +116,6 @@ coverage_html/
 # Disk images (used for testing)
 /*.raw
 /*.qcow2
+
+# Labgrid default console log file
+/console_main

@@ -7,6 +7,7 @@
 #include <globalvar.h>
 #include <envfs.h>
 #include <deep-probe.h>
+#include <environment.h>
 #include <linux/usb/gadget-multi.h>
 
 struct ts433_match_data {
@@ -30,7 +31,8 @@ static int ts433_probe(struct device *dev)
 		 * usbgadget -b -A "kernel(kernel)c,initramfs(initramfs)c,dtb(dtb)" -a
 		 */
 		globalvar_add_simple("fastboot.bbu", "1");
-		globalvar_add_simple("fastboot.partitions", "kernel(kernel)c,initramfs(initramfs)c,dtb(dtb)c");
+		globalvar_add_simple("fastboot.partitions",
+		     "/dev/mmc0(emmc),kernel(kernel)c,initramfs(initramfs)c,dtb(dtb)c");
 		globalvar_add_simple("usbgadget.acm", "1");
 		usbgadget_autostart(true);
 
@@ -48,6 +50,8 @@ static int ts433_probe(struct device *dev)
 	}
 
 	rockchip_bbu_mmc_register("emmc", BBU_HANDLER_FLAG_DEFAULT, "/dev/mmc0");
+
+	defaultenv_append_directory(defaultenv_tsx33);
 
 	return 0;
 }

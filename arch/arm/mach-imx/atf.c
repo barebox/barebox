@@ -53,7 +53,23 @@ static __noreturn void imx8m_tfa_start_bl31(const void *tfa_bin, size_t tfa_size
 			pr_debug("CAAM early init successful\n");
 	}
 
+	pr_debug("Loading BL31 to %p ", tfa_bin);
+
 	memcpy(bl31, tfa_bin, tfa_size);
+
+	/*
+	 * If all works fine (and TF-A has debug output enabled), the next
+	 * serial output should start with:
+	 *
+	 *   NOTICE:  BL31:
+	 *
+	 * If not, set IMX_BOOT_UART_BASE=auto when building TF-A if supported,
+	 * check if DRAM configuration is correct and that the PMIC correctly
+	 * configured the DRAM rails. For very old TF-A versions, also compare
+	 * barebox tfa_dest against whatever value your TF-A hardcodes.
+	 */
+	pr_debug("and jumping with SP: %p\n", tfa_dest - 16);
+
 
 	asm volatile("msr sp_el2, %0" : :
 		     "r" (tfa_dest - 16) :

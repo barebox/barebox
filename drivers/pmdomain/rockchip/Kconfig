@@ -5,6 +5,7 @@ config ROCKCHIP_PM_DOMAINS
 	bool "Rockchip generic power domain"
 	depends on REGULATOR
 	select PM_GENERIC_DOMAINS
+	default ARCH_ROCKCHIP
 	help
 	  Say y here to enable power domain support.
 	  The PMU is dedicated for managing the power of the whole chip and may

@@ -293,7 +293,7 @@ int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *firmware)
 		ret = uncompress_fd_to_fd(firmwarefd, devicefd,
 					  uncompress_err_stdout);
 	else
-		ret = copy_fd(firmwarefd, devicefd);
+		ret = copy_fd(firmwarefd, devicefd, 0);
 
 out:
 	free(dst);

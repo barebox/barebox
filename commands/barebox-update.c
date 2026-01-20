@@ -85,10 +85,7 @@ static int do_barebox_update(int argc, char *argv[])
 	if (argc - optind > 0) {
 		data.imagefile = argv[optind];
 	} else if (!repair) {
-		if (!IS_ENABLED(CONFIG_FS_TFTP))
-			return COMMAND_ERROR_USAGE;
-
-		pathbuf = xasprintf("/mnt/tftp/%s-barebox-%s",
+		pathbuf = xasprintf("%s/%s-barebox-%s", globalvar_get("net.fetchdir"),
 				    globalvar_get("user"), globalvar_get("hostname"));
 		data.imagefile = pathbuf;
 	}

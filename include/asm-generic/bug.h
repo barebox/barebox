@@ -13,7 +13,7 @@
 #else
 #define __bug_printf no_printf
 #define __bug_panic panic_no_stacktrace
-#define __bug_dump_stack (void)0
+#define __bug_dump_stack() (void)0
 #endif
 
 #define BUG() do {						\

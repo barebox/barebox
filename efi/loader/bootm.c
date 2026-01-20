@@ -124,15 +124,20 @@ done:
  */
 static efi_status_t efi_install_fdt(void *fdt)
 {
+	const struct fdt_header *hdr = fdt;
 	/*
 	 * The EBBR spec requires that we have either an FDT or an ACPI table
 	 * but not both.
 	 */
 	efi_status_t ret;
 
-	/* Install device tree */
-	if (fdt_check_header(fdt)) {
-		pr_err("invalid device tree\n");
+	if (hdr->magic != cpu_to_fdt32(FDT_MAGIC)) {
+		pr_err("bad magic: 0x%08x\n", fdt32_to_cpu(hdr->magic));
+		return EFI_LOAD_ERROR;
+	}
+
+	if (hdr->version != cpu_to_fdt32(17)) {
+		pr_err("bad dt version: 0x%08x\n", fdt32_to_cpu(hdr->version));
 		return EFI_LOAD_ERROR;
 	}
 

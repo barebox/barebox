@@ -12,7 +12,7 @@ ENTRY(arm_cpu_lowlevel_init)
 	/* save sp, because possible HYP -> SVC transition below clobbers it */
 	mov	r3, sp
 
-#ifdef CONFIG_CPU_32v7
+#ifdef CONFIG_CPU_V7VE
 	/* careful: the hyp install corrupts r0 and r1 */
 	bl	__hyp_install
 #endif

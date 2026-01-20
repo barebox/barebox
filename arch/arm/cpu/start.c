@@ -137,7 +137,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 							   barebox_image_size,
 							   hd);
 
-	if (IS_ENABLED(CONFIG_CPU_V7))
+	if (IS_ENABLED(CONFIG_CPU_V7VE))
 		armv7_hyp_install();
 
 	pbl_barebox_break();

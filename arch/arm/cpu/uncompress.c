@@ -121,7 +121,7 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 
 	pr_debug("jumping to ELF entry point at 0x%p\n", barebox);
 
-	if (IS_ENABLED(CONFIG_CPU_V7) && boot_cpu_mode() == HYP_MODE)
+	if (IS_ENABLED(CONFIG_CPU_V7VE) && boot_cpu_mode() == HYP_MODE)
 		armv7_switch_to_hyp();
 
 	barebox(membase, memsize, handoff_data);

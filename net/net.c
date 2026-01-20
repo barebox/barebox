@@ -31,7 +31,7 @@
 
 static unsigned int net_ip_id;
 
-char *net_server;
+char *net_server, *net_fetchdir;
 IPaddr_t net_gateway;
 static IPaddr_t net_nameserver;
 static char *net_domainname;
@@ -874,10 +874,13 @@ free:
 
 static int net_init(void)
 {
+	net_fetchdir = xstrdup("/mnt/tftp");
+
 	globalvar_add_simple_ip("net.nameserver", &net_nameserver);
 	globalvar_add_simple_string("net.domainname", &net_domainname);
 	globalvar_add_simple_string("net.server", &net_server);
 	globalvar_add_simple_ip("net.gateway", &net_gateway);
+	globalvar_add_simple_string("net.fetchdir", &net_fetchdir);
 
 	return 0;
 }
@@ -887,3 +890,4 @@ postcore_initcall(net_init);
 BAREBOX_MAGICVAR(global.net.nameserver, "The DNS server used for resolving host names");
 BAREBOX_MAGICVAR(global.net.domainname, "Domain name used for DNS requests");
 BAREBOX_MAGICVAR(global.net.server, "Standard server used for NFS/TFTP");
+BAREBOX_MAGICVAR(global.net.fetchdir, "The directory within which artifacts are fetched for network boot targets (/mnt/tftp by default)");

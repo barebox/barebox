@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# script to boot barebox over tftp
+# script to boot barebox over network
 
-path="/mnt/tftp"
+path="${global.net.fetchdir}"
 
 global.bootm.image="${path}/${global.user}-barebox-${global.hostname}"
 if [ ! -f "${global.bootm.image}" ]; then

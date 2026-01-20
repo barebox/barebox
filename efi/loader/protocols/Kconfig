@@ -2,6 +2,24 @@
 
 menu "UEFI protocol support"
 
+config EFI_LOADER_GOP
+	bool "Graphics output protocol"
+	depends on VIDEO
+	select IMAGE_RENDERER
+	default y
+	help
+    	  The graphics output protocol (GOP) provides UEFI applications access
+    	  to a framebuffer for graphical output. This allows booting of UEFI
+    	  applications and operating systems that require graphics support.
+
+    	  The protocol exposes the video mode information and framebuffer
+    	  details to UEFI payloads, enabling them to render graphics, display
+    	  boot menus, and provide visual feedback during boot.
+
+    	  If you have video support enabled and want to boot UEFI applications
+    	  that require graphics (such as GRUB with graphical menus or Linux
+    	  with EFIFB), say Y here.
+
 config EFI_LOADER_HII
 	bool "HII protocols"
 	default y

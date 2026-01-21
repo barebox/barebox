@@ -68,6 +68,11 @@ TMPDIR="$(mktemp -d)"
 components=${TMPDIR}/components
 ext_boot_info=${TMPDIR}/ext_boot_info
 data=${TMPDIR}/data
+component=${TMPDIR}/component
+
+align128() {
+	echo $(( ($1 + 0x7f) & ~0x7f ))
+}
 
 for i in $*; do
 	filename=$(echo "$i" | cut -d ":" -f 1)
@@ -76,8 +81,13 @@ for i in $*; do
 	compOpts=$(echo "$i" | cut -d ":" -f 4)
 	destAddr=$(echo "$i" | cut -d ":" -f 5)
 
-	sha=$(sha512sum $filename | sed 's/ .*//')
-	size=$(stat -L -c%s $filename)
+	cp $filename $component
+
+	size=$(stat -L -c%s $component)
+	size=$(align128 $size)
+	truncate --size=$size $component
+
+	sha=$(sha512sum $component | sed 's/ .*//')
 
 	total=$((total + size))
 	num_comp=$((num_comp + 1))
@@ -95,7 +105,8 @@ shaValue = FORMAT:HEX,OCT:$sha
 EndOfHereDocument
 
 	echo "comp$num_comp = SEQUENCE:comp$num_comp" >> $ext_boot_info
-	cat $filename >> $data
+
+	cat $component >> $data
 done
 
 echo >> $ext_boot_info
@@ -148,5 +159,25 @@ case $key in pkcs11:*)
 esac
 
 openssl req ${PKCS11OPTS} -new -x509 -key "${key}" -nodes -outform DER -out "${cert}" -config "${certcfg}" -sha512
+
+certsize=$(stat -L -c%s ${cert})
+
+#
+# AM62l erratum i2474:
+#
+#   Boot: Certain second stage binaries fail for block based boot modes
+#   ROM fails to boot on SD, eMMC, USB-DFU, Serial NAND, GPMC NAND, and
+#   UART if certificate size is aligned to 128 Bytes.
+#
+#   Certificate size must not be aligned to 128 bytes, however, individual
+#   components must be aligned to 128 bytes.
+#
+# The 128 byte alignment of the components is assured by this script. If you
+# hit the check below you have to add/remove a few bytes to/from $certcfg above.
+#
+if [ $certsize = $(align128 $certsize) ]; then
+	echo "$0: Certificate is 128 byte aligned, this is not allowed"
+	exit 1
+fi
 
 cat $cert $data > $out

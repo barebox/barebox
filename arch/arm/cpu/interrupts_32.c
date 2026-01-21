@@ -231,10 +231,8 @@ static __maybe_unused int arm_init_vectors(void)
 	 * First try to use the vectors where they actually are, works
 	 * on ARMv7 and later.
 	 */
-	if (!set_vector_table((unsigned long)__exceptions_start)) {
-		arm_fixup_vectors();
+	if (!set_vector_table((unsigned long)__exceptions_start))
 		return 0;
-	}
 
 	/*
 	 * Next try high vectors at 0xffff0000.
@@ -265,6 +263,5 @@ void arm_pbl_init_exceptions(void)
 		return;
 
 	set_vbar((unsigned long)__exceptions_start);
-	arm_fixup_vectors();
 }
 #endif

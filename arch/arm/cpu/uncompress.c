@@ -20,6 +20,8 @@
 #include <asm/mmu.h>
 #include <asm/unaligned.h>
 #include <compressed-dtb.h>
+#include <elf.h>
+#include <pbl/mmu.h>
 
 #include <debug_ll.h>
 
@@ -41,6 +43,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	void *pg_start, *pg_end;
 	unsigned long pc = get_pc();
 	void *handoff_data;
+	struct elf_image elf;
+	int ret;
 
 	/* piggy data is not relocated, so determine the bounds now */
 	pg_start = runtime_address(input_data);
@@ -85,21 +89,37 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	else if (IS_ENABLED(CONFIG_ARMV7R_MPU))
 		set_cr(get_cr() | CR_C);
 
-	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x)\n",
+	pr_debug("uncompressing barebox ELF at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x)\n",
 			pg_start, pg_len, barebox_base, uncompressed_len);
 
 	pbl_barebox_uncompress((void*)barebox_base, pg_start, pg_len);
+
+	pr_debug("relocating ELF in place\n");
+
+	ret = elf_open_binary_into(&elf, (void *)barebox_base);
+	if (ret)
+		panic("Failed to open ELF binary: %d\n", ret);
+
+	ret = elf_load_inplace(&elf);
+	if (ret)
+		panic("Failed to relocate ELF: %d\n", ret);
+
+	/*
+	 * Now that the ELF image is relocated, we know the exact addresses
+	 * of all segments. Set up MMU with proper permissions based on
+	 * ELF segment flags (PF_R/W/X).
+	 */
+	ret = pbl_mmu_setup_from_elf(&elf, membase, memsize);
+	if (ret)
+		panic("Failed to setup MMU from ELF: %d\n", ret);
+
+	barebox = (void *)(unsigned long)elf.entry;
 
 	handoff_data_move(handoff_data);
 
 	sync_caches_for_execution();
 
-	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
-		barebox = (void *)(barebox_base + 1);
-	else
-		barebox = (void *)barebox_base;
-
-	pr_debug("jumping to uncompressed image at 0x%p\n", barebox);
+	pr_debug("jumping to ELF entry point at 0x%p\n", barebox);
 
 	if (IS_ENABLED(CONFIG_CPU_V7) && boot_cpu_mode() == HYP_MODE)
 		armv7_switch_to_hyp();

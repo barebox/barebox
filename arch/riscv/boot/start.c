@@ -114,7 +114,7 @@ device_initcall(barebox_memory_areas_init);
  * First function in the uncompressed image. We get here from
  * the pbl. The stack already has been set up by the pbl.
  */
-__noreturn __no_sanitize_address __section(.text_entry)
+__noreturn
 void barebox_non_pbl_start(unsigned long membase, unsigned long memsize,
 			   void *boarddata)
 {
@@ -122,12 +122,6 @@ void barebox_non_pbl_start(unsigned long membase, unsigned long memsize,
 	unsigned long malloc_start, malloc_end;
 	unsigned long barebox_size = barebox_image_size + MAX_BSS_SIZE;
 	unsigned long barebox_base = riscv_mem_barebox_image(membase, endmem, barebox_size);
-
-	relocate_to_current_adr();
-
-	setup_c();
-
-	barrier();
 
 	irq_init_vector(riscv_mode());
 
@@ -182,15 +176,4 @@ void barebox_non_pbl_start(unsigned long membase, unsigned long memsize,
 	pr_debug("starting barebox...\n");
 
 	start_barebox();
-}
-
-void start(unsigned long membase, unsigned long memsize, void *boarddata);
-/*
- * First function in the uncompressed image. We get here from
- * the pbl. The stack already has been set up by the pbl.
- */
-void __no_sanitize_address __section(.text_entry) start(unsigned long membase,
-		unsigned long memsize, void *boarddata)
-{
-	barebox_non_pbl_start(membase, memsize, boarddata);
 }

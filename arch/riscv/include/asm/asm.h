@@ -9,7 +9,8 @@
 #ifdef __ASSEMBLY__
 #define __ASM_STR(x)	x
 #else
-#define __ASM_STR(x)	#x
+#define __ASM_STR_HELPER(x)	#x
+#define __ASM_STR(x)	__ASM_STR_HELPER(x)
 #endif
 
 #if __riscv_xlen == 64

@@ -23,7 +23,8 @@
 #include <mach/stm32mp/debug_ll.h>
 #endif
 
-#ifdef CONFIG_DEBUG_VEXPRESS_UART
+#if defined(CONFIG_DEBUG_VEXPRESS_UART) || \
+    defined(CONFIG_DEBUG_QEMU_ARM32_VIRT)
 #include <mach/vexpress/debug_ll.h>
 #endif
 

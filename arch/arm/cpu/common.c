@@ -36,9 +36,6 @@ void sync_caches_for_execution(void)
 	arm_early_mmu_cache_flush();
 }
 
-#define R_ARM_RELATIVE 23
-#define R_AARCH64_RELATIVE 1027
-
 void pbl_barebox_break(void)
 {
 	__asm__ __volatile__ (
@@ -56,83 +53,13 @@ void pbl_barebox_break(void)
 	);
 }
 
-/*
- * relocate binary to the currently running address
- */
 void __prereloc relocate_to_current_adr(void)
 {
-	unsigned long offset;
-	unsigned long __maybe_unused *dynsym, *dynend;
-	void *dstart, *dend;
-
-	/* Get offset between linked address and runtime address */
-	offset = get_runtime_offset();
-
-	/*
-	 * We have yet to relocate, so using runtime_address
-	 * to compute the relocated address
-	 */
-	dstart = runtime_address(__rel_dyn_start);
-	dend = runtime_address(__rel_dyn_end);
-
-#if defined(CONFIG_CPU_64)
-	while (dstart < dend) {
-		struct elf64_rela *rel = dstart;
-
-		if (ELF64_R_TYPE(rel->r_info) == R_AARCH64_RELATIVE) {
-			unsigned long *fixup = (unsigned long *)(rel->r_offset + offset);
-
-			*fixup = rel->r_addend + offset;
-			rel->r_addend += offset;
-			rel->r_offset += offset;
-		} else {
-			putc_ll('>');
-			puthex_ll(rel->r_info);
-			putc_ll(' ');
-			puthex_ll(rel->r_offset);
-			putc_ll(' ');
-			puthex_ll(rel->r_addend);
-			putc_ll('\n');
-			__hang();
-		}
-
-		dstart += sizeof(*rel);
-	}
-#elif defined(CONFIG_CPU_32)
-	dynsym = runtime_address(__dynsym_start);
-	dynend = runtime_address(__dynsym_end);
-
-	while (dstart < dend) {
-		struct elf32_rel *rel = dstart;
-
-		if (ELF32_R_TYPE(rel->r_info) == R_ARM_RELATIVE) {
-			unsigned long *fixup = (unsigned long *)(rel->r_offset + offset);
-
-			*fixup = *fixup + offset;
-
-			rel->r_offset += offset;
-		} else if (ELF32_R_TYPE(rel->r_info) == R_ARM_ABS32) {
-			unsigned long r = dynsym[ELF32_R_SYM(rel->r_info) * 4 + 1];
-			unsigned long *fixup = (unsigned long *)(rel->r_offset + offset);
-
-			*fixup = *fixup + r + offset;
-			rel->r_offset += offset;
-		} else {
-			putc_ll('>');
-			puthex_ll(rel->r_info);
-			putc_ll(' ');
-			puthex_ll(rel->r_offset);
-			putc_ll('\n');
-			__hang();
-		}
-
-		dstart += sizeof(*rel);
-	}
-
-	__memset(dynsym, 0, (unsigned long)dynend - (unsigned long)dynsym);
-#else
-#error "Architecture not specified"
-#endif
+	relocate_image(get_runtime_offset(),
+		       runtime_address(__rel_dyn_start),
+		       runtime_address(__rel_dyn_end),
+		       runtime_address(__dynsym_start),
+		       runtime_address(__dynsym_end));
 
 	sync_caches_for_execution();
 }
@@ -184,4 +111,3 @@ void print_pbl_mem_layout(ulong membase, ulong endmem, ulong barebox_base)
 	printf("membase               = 0x%08lx+0x%08lx\n",
 	       membase, endmem - membase);
 }
-

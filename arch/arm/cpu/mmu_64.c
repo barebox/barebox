@@ -159,7 +159,7 @@ static unsigned long get_pte_attrs(maptype_t map_type)
 		return attrs_xn() | MEM_ALLOC_WRITECOMBINE;
 	case MAP_CODE:
 		return CACHED_MEM | PTE_BLOCK_RO;
-	case ARCH_MAP_CACHED_RO:
+	case MAP_CACHED_RO:
 		return attrs_xn() | CACHED_MEM | PTE_BLOCK_RO;
 	case ARCH_MAP_CACHED_RWX:
 		return CACHED_MEM;
@@ -213,6 +213,9 @@ static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 		return -EINVAL;
 
 	pr_debug_remap(addr, phys, size, map_type);
+
+	BUG_ON(!IS_ALIGNED(virt, PAGE_SIZE));
+	BUG_ON(!IS_ALIGNED(phys, PAGE_SIZE));
 
 	attr &= ~PTE_TYPE_MASK;
 

@@ -538,8 +538,8 @@ static void create_zero_page(void)
 	 * In case the zero page is in SDRAM request it to prevent others
 	 * from using it
 	 */
-	request_sdram_region("zero page", 0x0, PAGE_SIZE,
-			     MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_FAULT);
+	request_sdram_region_silent("zero page", 0x0, PAGE_SIZE,
+				    MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_FAULT);
 
 	zero_page_faulting();
 	pr_debug("Created zero page\n");

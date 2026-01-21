@@ -162,12 +162,8 @@ static int optee_verify_header_request_region(struct image_data *data, struct op
 
 	data->tee_res = request_sdram_region("TEE", hdr->init_load_addr_lo, hdr->init_size,
 					     MEMTYPE_RESERVED, MEMATTRS_RW_DEVICE);
-	if (!data->tee_res) {
-		pr_err("Cannot request SDRAM region 0x%08x-0x%08x: %pe\n",
-		       hdr->init_load_addr_lo, hdr->init_load_addr_lo + hdr->init_size - 1,
-		       ERR_PTR(-EINVAL));
+	if (!data->tee_res)
 		return -EINVAL;
-	}
 
 	return 0;
 }
@@ -509,8 +505,6 @@ static int do_bootz_linux(struct image_data *data)
 	data->os_res = request_sdram_region("zimage", load_address, image_size,
 					    MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
 	if (!data->os_res) {
-		pr_err("bootm/zImage: failed to request memory at 0x%lx to 0x%lx (%zu).\n",
-		       load_address, load_address + image_size, image_size);
 		ret = -ENOMEM;
 		goto err_out;
 	}
@@ -634,15 +628,12 @@ static int do_bootm_aimage(struct image_data *data)
 	data->os_res = request_sdram_region("akernel", cmp->load_addr, cmp->size,
 					    MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
 	if (!data->os_res) {
-		pr_err("Cannot request region 0x%08x - 0x%08x, using default load address\n",
-				cmp->load_addr, cmp->size);
+		pr_err("using default load address\n");
 
 		data->os_address = mem_start + PAGE_ALIGN(cmp->size * 4);
 		data->os_res = request_sdram_region("akernel", data->os_address, cmp->size,
 						    MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
 		if (!data->os_res) {
-			pr_err("Cannot request region 0x%08x - 0x%08x\n",
-					cmp->load_addr, cmp->size);
 			ret = -ENOMEM;
 			goto err_out;
 		}

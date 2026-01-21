@@ -42,6 +42,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_gzip] = { "GZIP compressed", "gzip" },
 	[filetype_bzip2] = { "BZIP2 compressed", "bzip2" },
 	[filetype_oftree] = { "open firmware Device Tree flattened Binary", "dtb" },
+	[filetype_fit] = { "Flattened Image Tree", "FIT" },
 	[filetype_aimage] = { "android boot image", "android" },
 	[filetype_sh] = { "bourne SHell", "sh" },
 	[filetype_mips_barebox] = { "MIPS barebox image", "mips-barebox" },

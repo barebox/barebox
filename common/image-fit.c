@@ -1081,10 +1081,19 @@ static int do_bootm_fit(struct image_data *data)
 	return -EINVAL;
 }
 
+static bool fitimage_check(struct image_handler *handler,
+			   struct image_data *data,
+			   enum filetype detected_filetype)
+{
+	return detected_filetype == filetype_oftree ||
+		detected_filetype == filetype_fit;
+}
+
 static struct image_handler fit_handler = {
 	.name = "FIT image",
 	.bootm = do_bootm_fit,
-	.filetype = filetype_oftree,
+	.filetype = filetype_fit,
+	.check_image = fitimage_check,
 };
 
 static int bootm_fit_register(void)

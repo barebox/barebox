@@ -789,11 +789,8 @@ struct resource *file_to_sdram(const char *filename, unsigned long adr,
 
 		res = request_sdram_region("image", adr, size,
 					   memtype, memattrs);
-		if (!res) {
-			printf("unable to request SDRAM 0x%08lx-0x%08lx\n",
-				adr, adr + size - 1);
+		if (!res)
 			goto out;
-		}
 
 		if (zero_page_contains(res->start + ofs)) {
 			void *tmp = malloc(BUFSIZ);

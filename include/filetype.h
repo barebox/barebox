@@ -24,6 +24,7 @@ enum filetype {
 	filetype_gzip,
 	filetype_bzip2,
 	filetype_oftree,
+	filetype_fit,
 	filetype_aimage,
 	filetype_sh,
 	filetype_mips_barebox,
@@ -106,6 +107,12 @@ static inline bool file_is_compressed_file(enum filetype ft)
 	default:
 		return false;
 	}
+}
+
+static inline enum filetype file_detect_boot_image_type(const void *_buf, size_t bufsize)
+{
+	enum filetype ft = file_detect_type(_buf, bufsize);
+	return ft == filetype_oftree ? filetype_fit : ft;
 }
 
 #define ARM_HEAD_SIZE			0x30

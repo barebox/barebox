@@ -18,7 +18,6 @@ struct elf_segment {
 	struct list_head list;
 	struct resource *r;
 	void *phdr;
-	bool is_iomem_region;
 };
 
 static void *elf_phdr_relocated_paddr(struct elf_image *elf, void *phdr)
@@ -44,15 +43,14 @@ static int elf_request_region(struct elf_image *elf, resource_size_t start,
 	if (!r)
 		return -ENOMEM;
 
-	r_new = request_sdram_region("elf_segment", start, size,
-				     MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
+	r_new = request_sdram_region_silent("elf_segment", start, size,
+					    MEMTYPE_LOADER_CODE, MEMATTRS_RWX);
 	if (!r_new) {
 		r_new = request_iomem_region("elf_segment", start, size);
 		if (!r_new) {
 			pr_err("Failed to request region: %pa %pa\n", &start, &size);
 			return -EINVAL;
 		}
-		r->is_iomem_region = true;
 	}
 
 	r->r = r_new;
@@ -68,10 +66,7 @@ static void elf_release_regions(struct elf_image *elf)
 	struct elf_segment *r, *r_tmp;
 
 	list_for_each_entry_safe(r, r_tmp, list, list) {
-		if (r->is_iomem_region)
-			release_region(r->r);
-		else
-			release_sdram_region(r->r);
+		release_region(r->r);
 		list_del(&r->list);
 		free(r);
 	}

@@ -39,7 +39,21 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 	for_each_resource_region_reverse((bank)->res, region)
 
 struct resource *__request_sdram_region(const char *name,
-					resource_size_t start, resource_size_t size);
+					resource_size_t start, resource_size_t size,
+					bool verbose);
+
+static inline struct resource *sdram_region_with_attrs(struct resource *res,
+						       enum resource_memtype memtype,
+						       unsigned memattrs)
+{
+	if (IS_ENABLED(CONFIG_MEMORY_ATTRIBUTES) && res) {
+		res->type = memtype;
+		res->attrs = memattrs;
+		res->flags |= IORESOURCE_TYPE_VALID;
+	}
+
+	return res;
+}
 
 static inline struct resource *request_sdram_region(const char *name,
 						    resource_size_t start,
@@ -50,20 +64,33 @@ static inline struct resource *request_sdram_region(const char *name,
 	struct resource *res;
 
 	/* IORESOURCE_MEM is implicit for all SDRAM regions */
-	res = __request_sdram_region(name, start, size);
-	if (IS_ENABLED(CONFIG_MEMORY_ATTRIBUTES) && res) {
-		res->type = memtype;
-		res->attrs = memattrs;
-		res->flags |= IORESOURCE_TYPE_VALID;
-	}
+	res = __request_sdram_region(name, start, size, true);
 
-	return res;
+	return sdram_region_with_attrs(res, memtype, memattrs);
+}
+
+static inline struct resource *request_sdram_region_silent(const char *name,
+							   resource_size_t start,
+							   resource_size_t size,
+							   enum resource_memtype memtype,
+							   unsigned memattrs)
+{
+	struct resource *res;
+
+	/* IORESOURCE_MEM is implicit for all SDRAM regions */
+	res = __request_sdram_region(name, start, size, false);
+
+	return sdram_region_with_attrs(res, memtype, memattrs);
 }
 
 struct resource *reserve_sdram_region(const char *name, resource_size_t start,
 				      resource_size_t size);
 
-int release_sdram_region(struct resource *res);
+/* It's always fine to call release_region directly as well */
+static inline int release_sdram_region(struct resource *res)
+{
+	return release_region(res);
+}
 
 void memory_bank_find_space(struct memory_bank *bank, resource_size_t *retstart,
 			    resource_size_t *retend);

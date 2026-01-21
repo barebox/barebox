@@ -36,9 +36,9 @@ static int desc_to_sdram(struct fip_image_desc *loadable, ulong load_address)
 	if (desc_get_res(loadable))
 		return 0;
 
-	res = request_sdram_region("fip", load_address,
-				   loadable->image->toc_e.size,
-				   MEMTYPE_LOADER_CODE, MEMATTRS_RW);
+	res = request_sdram_region_silent("fip", load_address,
+					  loadable->image->toc_e.size,
+					  MEMTYPE_LOADER_CODE, MEMATTRS_RW);
 	if (!res)
 		return -EBUSY;
 
@@ -52,9 +52,8 @@ static int desc_to_sdram(struct fip_image_desc *loadable, ulong load_address)
 
 static void desc_release_sdram(struct fip_image_desc *loadable)
 {
-	struct resource *res = loadable ? desc_get_res(loadable) : NULL;
-	if (res)
-		release_sdram_region(res);
+	if (loadable)
+		release_sdram_region(desc_get_res(loadable));
 }
 
 enum { IMAGE_BL33, IMAGE_HW_CONFIG, IMAGE_COUNT };

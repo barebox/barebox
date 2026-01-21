@@ -77,6 +77,7 @@ struct of_reserve_map {
 };
 
 int of_add_reserve_entry(resource_size_t start, resource_size_t end);
+void of_del_reserve_entry(resource_size_t start, resource_size_t end);
 void of_clean_reserve_map(void);
 void fdt_add_reserve_map(void *fdt);
 void fdt_print_reserve_map(const void *fdt);

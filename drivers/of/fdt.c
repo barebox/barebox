@@ -651,6 +651,30 @@ int of_add_reserve_entry(resource_size_t start, resource_size_t end)
 	return 0;
 }
 
+void of_del_reserve_entry(resource_size_t start, resource_size_t end)
+{
+	int i, index = -1;
+
+	/* Find the entry with matching start and end addresses */
+	for (i = 0; i < of_reserve_map.num_entries; i++) {
+		if (of_reserve_map.start[i] == start && of_reserve_map.end[i] == end) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index < 0)
+		return;
+
+	/* Shift all subsequent entries up to close the gap */
+	for (i = index; i < of_reserve_map.num_entries - 1; i++) {
+		of_reserve_map.start[i] = of_reserve_map.start[i + 1];
+		of_reserve_map.end[i] = of_reserve_map.end[i + 1];
+	}
+
+	of_reserve_map.num_entries--;
+}
+
 struct of_reserve_map *of_get_reserve_map(void)
 {
 	return &of_reserve_map;

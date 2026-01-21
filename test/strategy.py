@@ -86,17 +86,47 @@ class BareboxTestStrategy(Strategy):
             )
         self.status = status
 
+    def barebox_bootm(self, image=None):
+        self.barebox._run(f"global.loglevel={self.barebox.saved_log_level}",
+                          adjust_log_level=False)
+        if image:
+            self.console.sendline(f"bootm -v {image}")
+        else:
+            self.console.sendline("bootm -v")
+
     @contextmanager
-    def boot(self, boottarget=None):
+    def boot_barebox(self, boottarget=None, bootm=False):
         self.transition(Status.barebox)
 
         try:
-            self.barebox.boot(boottarget)
+            if bootm:
+                self.barebox_bootm(boottarget)
+            else:
+                self.barebox.boot(boottarget)
+
             self.target.deactivate(self.barebox)
             self.target.activate(self.barebox)
-            yield
+            yield self.barebox
         finally:
             self.target.deactivate(self.barebox)
+            self.power.cycle()
+            self.target.activate(self.barebox)
+
+    @contextmanager
+    def boot_kernel(self, boottarget=None, bootm=False):
+        self.transition(Status.barebox)
+
+        try:
+            if bootm:
+                self.barebox_bootm(boottarget)
+            else:
+                self.barebox.boot(boottarget)
+
+            self.barebox.await_boot()
+            self.target.activate(self.shell)
+            yield self.shell
+        finally:
+            self.target.deactivate(self.shell)
             self.power.cycle()
             self.target.activate(self.barebox)
 

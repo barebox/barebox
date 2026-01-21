@@ -40,7 +40,7 @@ static inline void arm_virt_init(void) {}
 #endif
 
 extern char __dtbo_qemu_virt_flash_start[];
-extern char __dtb_fitimage_pubkey_start[];
+extern char __dtbo_qemu_virt_flash_nonsecure_start[];
 
 static const struct of_device_id virt_of_match[] = {
 	{ .compatible = "linux,dummy-virt", .data = arm_virt_init },
@@ -80,8 +80,14 @@ static int virt_board_driver_init(void)
 	 * configurations, where the first flash bank is secure-world only
 	 */
 	flash = of_find_node_by_path(PARTS_TARGET_PATH_STR);
-	if (flash && of_device_is_available(flash))
+	if (flash && of_device_is_available(flash)) {
 		of_overlay_apply_dtbo(root, __dtbo_qemu_virt_flash_start);
+	} else if (IS_ENABLED(CONFIG_ARM)) {
+		flash = of_find_node_by_path("/flash@4000000");
+		if (flash && of_device_is_available(flash))
+			of_overlay_apply_dtbo(root, __dtbo_qemu_virt_flash_nonsecure_start);
+	}
+
 
 	/* fragment may have added aliases to the DT */
 	of_alias_scan();

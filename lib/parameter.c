@@ -42,6 +42,8 @@ static const char *param_type_string[] = {
 	[PARAM_TYPE_IPV4] = "ipv4",
 	[PARAM_TYPE_MAC] = "MAC",
 	[PARAM_TYPE_FILE_LIST] = "file-list",
+	[PARAM_TYPE_UUID] = "uuid",
+	[PARAM_TYPE_GUID] = "guid",
 };
 
 const char *get_param_type(struct param_d *param)
@@ -1093,6 +1095,99 @@ struct param_d *bobject_add_param_file_list(bobject_t _bobj, const char *name,
 	}
 
 	return &pfl->param;
+}
+
+struct param_uuid {
+	struct param_d param;
+	void *uuid;
+	char *uuid_str;
+	int (*set)(struct param_d *p, void *priv);
+	int (*get)(struct param_d *p, void *priv);
+};
+
+static inline struct param_uuid *to_param_uuid(struct param_d *p)
+{
+	return container_of(p, struct param_uuid, param);
+}
+
+static int param_uuid_set(struct bobject *bobj, struct param_d *p,
+			  const char *val)
+{
+	struct param_uuid *pui = to_param_uuid(p);
+	u8 uuid_save[UUID_SIZE];
+	int ret;
+
+	if (!val || strlen(val) == UUID_STRING_LEN)
+		return -EINVAL;
+
+	memcpy(uuid_save, pui->uuid, UUID_SIZE);
+
+	if (pui->param.type == PARAM_TYPE_GUID)
+		ret = guid_parse(val, pui->uuid);
+	else
+		ret = uuid_parse(val, pui->uuid);
+
+	if (ret)
+		return ret;
+
+	if (!pui->set)
+		return 0;
+
+	ret = pui->set(p, p->driver_priv);
+	if (ret)
+		memcpy(pui->uuid, uuid_save, UUID_SIZE);
+
+	return ret;
+}
+
+static const char *param_uuid_get(struct bobject *bobj, struct param_d *p)
+{
+	struct param_uuid *pui = to_param_uuid(p);
+	int ret;
+
+	if (pui->get) {
+		ret = pui->get(p, p->driver_priv);
+		if (ret)
+			return NULL;
+	}
+
+	p->value = xrealloc(p->value, UUID_STRING_LEN + 1);
+
+	/* We don't use xasprintf here to avoid forcing a PRINTF_UUID
+	 * dependency on all CONFIG_PARAMETER users
+	 */
+	*uuid_string(p->value, p->value + UUID_STRING_LEN + 1,
+		    pui->uuid, -1, -1, 0,
+		    pui->param.type == PARAM_TYPE_GUID ? "Ul" : "Ub") = '\0';
+
+	return p->value;
+}
+
+struct param_d *__bobject_add_param_uuid(bobject_t _bobj, const char *name,
+					 int (*set)(struct param_d *p, void *priv),
+					 int (*get)(struct param_d *p, void *priv),
+					 void *uuid, bool is_guid,
+					 void *priv)
+{
+	struct bobject *bobj = _bobj.bobj;
+	struct param_uuid *pui;
+	int ret;
+
+	pui = xzalloc(sizeof(*pui));
+	pui->uuid = uuid;
+	pui->set = set;
+	pui->get = get;
+	pui->param.driver_priv = priv;
+	pui->param.type = is_guid ? PARAM_TYPE_GUID : PARAM_TYPE_UUID;
+
+	ret = __bobject_add_param(&pui->param, bobj, name,
+			param_uuid_set, param_uuid_get, 0);
+	if (ret) {
+		free(pui);
+		return ERR_PTR(ret);
+	}
+
+	return &pui->param;
 }
 
 

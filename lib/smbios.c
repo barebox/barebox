@@ -221,6 +221,8 @@ static int smbios_write_type1(void **current, int handle,
 {
 	struct smbios_type1 *t;
 	int len = sizeof(*t);
+	const uuid_t *product_uuid = NULL;
+	uuid_t product_uuid_buf;
 	char *vendor;
 
 	t = map_sysmem(*current, len);
@@ -236,15 +238,19 @@ static int smbios_write_type1(void **current, int handle,
 	t->version = smbios_add_string(ctx, NULL);
 	t->serial_number = smbios_add_string(ctx, barebox_get_serial_number());
 
-	if (IS_ENABLED(CONFIG_MACHINE_ID_SPECIFIC)) {
-		uuid_t id;
-		int ret;
+	product_uuid = barebox_get_product_uuid();
+	if (!product_uuid && IS_ENABLED(CONFIG_MACHINE_ID_SPECIFIC)) {
+		int err;
 
-		ret = machine_id_get_app_specific(&id, ARRAY_AND_SIZE("barebox-smbios"),
+		err = machine_id_get_app_specific(&product_uuid_buf,
+						  ARRAY_AND_SIZE("barebox-smbios"),
 						  NULL);
-		if (!ret)
-			export_uuid(t->uuid, &id);
+		if (!err)
+			product_uuid = &product_uuid_buf;
 	}
+
+	if (product_uuid)
+		export_uuid(t->uuid, product_uuid);
 
 	if (reset_source_get() == RESET_WKE)
 		t->wakeup_type = SMBIOS_WAKEUP_TYPE_OTHER;

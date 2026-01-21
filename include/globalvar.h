@@ -5,6 +5,7 @@
 #include <param.h>
 #include <driver.h>
 #include <linux/err.h>
+#include <linux/uuid.h>
 #include <stringlist.h>
 
 extern struct device global_device;
@@ -36,6 +37,8 @@ int globalvar_add_simple_enum(const char *name,	int *value,
 int globalvar_add_simple_bitmask(const char *name, unsigned long *value,
 				 const char * const *names, int max);
 int globalvar_add_simple_ip(const char *name, IPaddr_t *ip);
+int globalvar_add_simple_uuid(const char *name, uuid_t *uuid);
+int globalvar_add_simple_guid(const char *name, guid_t *guid);
 
 int nvvar_load(void);
 void nvvar_print(void);
@@ -97,6 +100,15 @@ static inline int globalvar_add_simple_bitmask(const char *name,
 
 static inline int globalvar_add_simple_ip(const char *name,
 		IPaddr_t *ip)
+{
+	return 0;
+}
+
+static inline int globalvar_add_simple_uuid(const char *name, uuid_t *uuid)
+{
+	return 0;
+}
+static inline int globalvar_add_simple_guid(const char *name, guid_t *guid)
 {
 	return 0;
 }

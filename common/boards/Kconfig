@@ -1,5 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+config BOARD_QEMU
+	bool "Extra support for QEMU-emulated boards" if COMPILE_TEST
+
+config BOARD_QEMU_VIRT
+	bool
+	select OF_OVERLAY
+	select BOARD_QEMU
+
 config BOARD_QEMU_VIRT
 	bool
 	select OF_OVERLAY

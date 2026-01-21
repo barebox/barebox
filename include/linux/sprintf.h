@@ -43,6 +43,9 @@ static inline __printf(2, 3) int rasprintf(char **strp, const char *fmt, ...)
 
 #define basprintf xasprintf
 
+char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
+		  int precision, int flags, const char *fmt);
 const char *size_human_readable(unsigned long long size);
+
 
 #endif	/* _LINUX_KERNEL_SPRINTF_H */

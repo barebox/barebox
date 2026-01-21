@@ -2,11 +2,13 @@
 
 obj-y += board.o commandline.o
 obj-y += qemu-virt-flash.dtbo.o
+obj-$(CONFIG_ARM) += qemu-virt-flash-nonsecure.dtbo.o
 ifeq ($(CONFIG_RISCV),y)
 DTC_CPP_FLAGS_qemu-virt-flash.dtbo := -DCONFIG_RISCV
 endif
 ifeq ($(CONFIG_ARM),y)
 DTC_CPP_FLAGS_qemu-virt-flash.dtbo := -DCONFIG_ARM
+DTC_CPP_FLAGS_qemu-virt-flash-nonsecure.dtbo := -DCONFIG_ARM
 endif
 
 policy-y += qemu-virt-factory.sconfig

@@ -35,11 +35,12 @@ struct fw_cfg {
 	void __iomem *reg_data;
 	void __iomem *reg_dma;
 	struct cdev cdev;
-	loff_t next_read_offset;
 	u32 sel;
 	bool is_mmio;
 	struct fw_cfg_dma_access __iomem *acc_virt;
 	dma_addr_t acc_dma;
+	u32 rev;
+	int use_pio;
 };
 
 static struct fw_cfg *to_fw_cfg(struct cdev *cdev)
@@ -70,7 +71,6 @@ static int fw_cfg_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 	switch (request) {
 	case FW_CFG_SELECT:
 		fw_cfg->sel = *(u16 *)buf;
-		fw_cfg->next_read_offset = 0;
 		break;
 	default:
 		ret = -ENOTTY;
@@ -79,136 +79,196 @@ static int fw_cfg_ioctl(struct cdev *cdev, unsigned int request, void *buf)
 	return 0;
 }
 
-#define __raw_readu64 __raw_readq
-#define __raw_readu32 __raw_readl
-#define __raw_readu16 __raw_readw
-#define __raw_readu8 __raw_readb
-
-#define fw_cfg_data_read_sized(fw_cfg, remaining, address, type) do {	\
-	while (*remaining >= sizeof(type)) {				\
-		val = __raw_read##type((fw_cfg)->reg_data);		\
-		*remaining -= sizeof(type);				\
-		put_unaligned(val, (type *)*address);		\
-		*address += sizeof(type);			\
-	}								\
-} while(0)
-
-static void fw_cfg_data_read(struct fw_cfg *fw_cfg, void *address, size_t remaining,
-			     unsigned rdsize)
+static inline bool fw_cfg_dma_enabled(struct fw_cfg *fw_cfg)
 {
+	return (fw_cfg->rev & FW_CFG_VERSION_DMA) && fw_cfg->reg_dma;
+}
 
-	u64 val;
+/* qemu fw_cfg device is sync today, but spec says it may become async */
+static void fw_cfg_wait_for_control(struct fw_cfg_dma_access *d)
+{
+	for (;;) {
+		u32 ctrl = be32_to_cpu(READ_ONCE(d->control));
 
-	if (fw_cfg->is_mmio) {
-		/*
-		 * This is just a preference. If we can't honour it, we
-		 * fall back to byte-sized copy
-		 */
-		switch(rdsize) {
-		case 8:
-#ifdef CONFIG_64BIT
-			fw_cfg_data_read_sized(fw_cfg, &remaining, &address, u64);
-			break;
-#endif
-		case 4:
-			fw_cfg_data_read_sized(fw_cfg, &remaining, &address, u32);
-			break;
-		case 2:
-			fw_cfg_data_read_sized(fw_cfg, &remaining, &address, u16);
-			break;
-		}
+		/* do not reorder the read to d->control */
+		/* rmb(); */
+		if ((ctrl & ~FW_CFG_DMA_CTL_ERROR) == 0)
+			return;
+
+		cpu_relax();
+	}
+}
+
+static ssize_t fw_cfg_dma_transfer(struct fw_cfg *fw_cfg,
+				   void *address, u32 length, u32 control)
+{
+	phys_addr_t dma;
+	struct fw_cfg_dma_access *d = NULL;
+	ssize_t ret = length;
+
+	d = dma_alloc(sizeof(*d));
+	if (!d) {
+		ret = -ENOMEM;
+		goto end;
 	}
 
-	fw_cfg_data_read_sized(fw_cfg, &remaining, &address, u8);
+	/* fw_cfg device does not need IOMMU protection, so use physical addresses */
+	*d = (struct fw_cfg_dma_access) {
+		.address = cpu_to_be64(address ? virt_to_phys(address) : 0),
+		.length = cpu_to_be32(length),
+		.control = cpu_to_be32(control)
+	};
+
+	dma = virt_to_phys(d);
+
+	iowrite32be((u64)dma >> 32, fw_cfg->reg_dma);
+	/* force memory to sync before notifying device via MMIO */
+	/* wmb(); */
+	iowrite32be(dma, fw_cfg->reg_dma + 4);
+
+	fw_cfg_wait_for_control(d);
+
+	if (be32_to_cpu(READ_ONCE(d->control)) & FW_CFG_DMA_CTL_ERROR) {
+		ret = -EIO;
+	}
+
+end:
+	dma_free(d);
+
+	return ret;
 }
 
-static void fw_cfg_do_dma(struct fw_cfg *fw_cfg, dma_addr_t address,
-			  u32 count, u32 control)
+static ssize_t fw_cfg_dma_transfer_at(struct fw_cfg *fw_cfg,
+				      void *buf, u32 count, loff_t pos,
+				      u32 direction)
 {
-	struct fw_cfg_dma_access __iomem *acc = fw_cfg->acc_virt;
+	int ret;
 
-	acc->address = cpu_to_be64(address);
-	acc->length = cpu_to_be32(count);
-	acc->control = cpu_to_be32(control);
+	if (pos == 0) {
+		ret = fw_cfg_dma_transfer(fw_cfg, buf, count,
+					  fw_cfg->sel << 16 |
+					  FW_CFG_DMA_CTL_SELECT | direction);
+	} else {
+		fw_cfg_select(fw_cfg);
+		ret = fw_cfg_dma_transfer(fw_cfg, NULL, pos, FW_CFG_DMA_CTL_SKIP);
+		if (ret >= 0)
+			ret = fw_cfg_dma_transfer(fw_cfg, buf, count, direction);
+	}
 
-	iowrite64be(fw_cfg->acc_dma, fw_cfg->reg_dma);
-
-	while (ioread32be(&acc->control) & ~FW_CFG_DMA_CTL_ERROR)
-		;
+	return ret;
 }
 
-static ssize_t fw_cfg_read(struct cdev *cdev, void *buf, size_t count,
-			   loff_t pos, unsigned long flags)
+static ssize_t fw_cfg_dma_read(struct cdev *cdev, void *buf,
+			       size_t count, loff_t pos, unsigned long flags)
+{
+	return fw_cfg_dma_transfer_at(to_fw_cfg(cdev), buf, count, pos,
+				      FW_CFG_DMA_CTL_READ);
+}
+
+static ssize_t fw_cfg_dma_write(struct cdev *cdev, const void *buf,
+				size_t count, loff_t pos, unsigned long flags)
+{
+	return fw_cfg_dma_transfer_at(to_fw_cfg(cdev), (void *)buf, count, pos,
+				      FW_CFG_DMA_CTL_WRITE);
+}
+
+static struct cdev_operations fw_cfg_dma_ops = {
+	.read = fw_cfg_dma_read,
+	.write = fw_cfg_dma_write,
+	.ioctl = fw_cfg_ioctl,
+};
+
+static void reads_n(const void __iomem *src, void *dst,
+		   resource_size_t count, int rwsize)
+{
+	switch (rwsize) {
+	case 1: readsb(src, dst, count / 1); break;
+	case 2: readsw(src, dst, count / 2); break;
+	case 4: readsl(src, dst, count / 4); break;
+#ifdef CONFIG_64BIT
+	case 8: readsq(src, dst, count / 8); break;
+#endif
+	}
+}
+
+static void ins_n(unsigned long src, void *dst,
+		  resource_size_t count, int rwsize)
+{
+	switch (rwsize) {
+	case 1: insb(src, dst, count / 1); break;
+	case 2: insw(src, dst, count / 2); break;
+	case 4: insl(src, dst, count / 4); break;
+	/* No insq, so just do 32-bit accesses */
+	case 8: insl(src, dst, count / 4); break;
+	}
+}
+
+static ssize_t fw_cfg_pio_read(struct cdev *cdev, void *buf, size_t count,
+			       loff_t pos, unsigned long flags)
 {
 	struct fw_cfg *fw_cfg = to_fw_cfg(cdev);
-	unsigned rdsize = FIELD_GET(O_RWSIZE_MASK, flags);
-	u32 selector = FW_CFG_DMA_CTL_SELECT | fw_cfg->sel << 16;
+	unsigned rdsize = FIELD_GET(O_RWSIZE_MASK, flags) ?: 8;
 
-	if (!pos || pos != fw_cfg->next_read_offset) {
-		fw_cfg_select(fw_cfg);
-		fw_cfg->next_read_offset = 0;
-	}
+	if (!IS_ALIGNED(pos, rdsize) || !IS_ALIGNED(count, rdsize))
+		rdsize = 1;
 
-	if (!rdsize) {
-		if (pos % 8 == 0)
-			rdsize = 8;
-		else if (pos % 4 == 0)
-			rdsize = 4;
-		else if (pos % 2 == 0)
-			rdsize = 2;
-		else
-			rdsize = 1;
-	}
+	fw_cfg_select(fw_cfg);
+	while (pos-- > 0)
+		ioread8(fw_cfg->reg_data);
 
-	if (pos != fw_cfg->next_read_offset)
-		fw_cfg_do_dma(fw_cfg, DMA_ERROR_CODE, pos,
-			      FW_CFG_DMA_CTL_SKIP | selector);
+	if (fw_cfg->is_mmio)
+		reads_n(fw_cfg->reg_data, buf, count, rdsize);
+	else
+		ins_n((ulong)fw_cfg->reg_data, buf, count, rdsize);
 
-	fw_cfg_data_read(fw_cfg, buf, count, rdsize);
-
-	fw_cfg->next_read_offset += count;
 	return count;
 }
 
-static ssize_t fw_cfg_write(struct cdev *cdev, const void *buf, size_t count,
-			    loff_t pos, unsigned long flags)
+static void writes_n(void __iomem *dst, const void *src,
+		   resource_size_t count, int rwsize)
 {
-	struct fw_cfg *fw_cfg = to_fw_cfg(cdev);
-	struct device *dev = cdev->dev;
-	void *dma_buf;
-	dma_addr_t mapping;
-	int ret = 0;
-
-	dma_buf = dma_alloc(count);
-	if (!dma_buf)
-		return -ENOMEM;
-
-	memcpy(dma_buf, buf, count);
-
-	mapping = dma_map_single(dev, dma_buf, count, DMA_TO_DEVICE);
-	if (dma_mapping_error(dev, mapping)) {
-		ret = -EFAULT;
-		goto free_buf;
+	switch (rwsize) {
+	case 1: writesb(dst, src, count / 1); break;
+	case 2: writesw(dst, src, count / 2); break;
+	case 4: writesl(dst, src, count / 4); break;
+#ifdef CONFIG_64BIT
+	case 8: writesq(dst, src, count / 8); break;
+#endif
 	}
-
-	fw_cfg->next_read_offset = 0;
-
-	fw_cfg_do_dma(fw_cfg, DMA_ERROR_CODE, pos, FW_CFG_DMA_CTL_SKIP |
-		      FW_CFG_DMA_CTL_SELECT | fw_cfg->sel << 16);
-
-	fw_cfg_do_dma(fw_cfg, mapping, count, FW_CFG_DMA_CTL_WRITE |
-		      FW_CFG_DMA_CTL_SELECT | fw_cfg->sel << 16);
-
-	dma_unmap_single(dev, mapping, count, DMA_FROM_DEVICE);
-free_buf:
-	dma_free(dma_buf);
-
-	return ret ?: count;
 }
 
-static struct cdev_operations fw_cfg_ops = {
-	.read = fw_cfg_read,
-	.write = fw_cfg_write,
+static void outs_n(unsigned long dst, const void *src,
+		  resource_size_t count, int rwsize)
+{
+	switch (rwsize) {
+	case 1: outsb(dst, src, count / 1); break;
+	case 2: outsw(dst, src, count / 2); break;
+	case 4: outsl(dst, src, count / 4); break;
+	/* No insq, so just do 32-bit accesses */
+	case 8: outsl(dst, src, count / 4); break;
+	}
+}
+
+static ssize_t fw_cfg_pio_write(struct cdev *cdev, const void *buf, size_t count,
+			       loff_t pos, unsigned long flags)
+{
+	struct fw_cfg *fw_cfg = to_fw_cfg(cdev);
+	unsigned wrsize = FIELD_GET(O_RWSIZE_MASK, flags) ?: 8;
+
+	if (!IS_ALIGNED(pos, wrsize) || !IS_ALIGNED(count, wrsize))
+		wrsize = 1;
+
+	if (fw_cfg->is_mmio)
+		writes_n(fw_cfg->reg_data, buf, count, wrsize);
+	else
+		outs_n((ulong)fw_cfg->reg_data, buf, count, wrsize);
+
+	return count;
+}
+
+static struct cdev_operations fw_cfg_pio_ops = {
+	.read = fw_cfg_pio_read,
+	.write = fw_cfg_pio_write,
 	.ioctl = fw_cfg_ioctl,
 };
 
@@ -219,12 +279,20 @@ static int fw_cfg_param_select(struct param_d *p, void *priv)
 	return fw_cfg->sel <= U16_MAX ? 0 : -EINVAL;
 }
 
+static int fw_cfg_param_use_pio(struct param_d *p, void *priv)
+{
+	struct fw_cfg *fw_cfg = priv;
+	fw_cfg->cdev.ops = fw_cfg->use_pio ? &fw_cfg_pio_ops : &fw_cfg_dma_ops;
+	return 0;
+}
+
 static int fw_cfg_probe(struct device *dev)
 {
 	struct device_node *np = dev_of_node(dev);
 	struct resource *parent_res, *iores;
 	char sig[FW_CFG_SIG_SIZE];
 	struct fw_cfg *fw_cfg;
+	__le32 rev;
 	int ret;
 
 	fw_cfg = xzalloc(sizeof(*fw_cfg));
@@ -253,12 +321,20 @@ static int fw_cfg_probe(struct device *dev)
 
 	/* verify fw_cfg device signature */
 	fw_cfg->sel = FW_CFG_SIGNATURE;
-	fw_cfg_read(&fw_cfg->cdev, sig, FW_CFG_SIG_SIZE, 0, 0);
+	fw_cfg_pio_read(&fw_cfg->cdev, sig, FW_CFG_SIG_SIZE, 0, 0);
 
 	if (memcmp(sig, "QEMU", FW_CFG_SIG_SIZE) != 0) {
 		ret = np ? -EILSEQ : -ENODEV;
 		goto err;
 	}
+
+	fw_cfg->sel = FW_CFG_ID;
+	ret = fw_cfg_pio_read(&fw_cfg->cdev, &rev, sizeof(rev), 0, 0);
+	if (ret < 0)
+		goto err;
+
+	fw_cfg->rev = le32_to_cpu(rev);
+	fw_cfg->use_pio = !fw_cfg_dma_enabled(fw_cfg);
 
 	fw_cfg->acc_virt = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					      sizeof(*fw_cfg->acc_virt), &fw_cfg->acc_dma);
@@ -266,7 +342,7 @@ static int fw_cfg_probe(struct device *dev)
 	fw_cfg->cdev.name = "fw_cfg";
 	fw_cfg->cdev.flags = DEVFS_IS_CHARACTER_DEV;
 	fw_cfg->cdev.size = 0;
-	fw_cfg->cdev.ops = &fw_cfg_ops;
+	fw_cfg->cdev.ops = fw_cfg->use_pio ? &fw_cfg_pio_ops : &fw_cfg_dma_ops;
 	fw_cfg->cdev.dev = dev;
 	fw_cfg->cdev.filetype = filetype_qemu_fw_cfg;
 
@@ -282,6 +358,9 @@ static int fw_cfg_probe(struct device *dev)
 
 	dev_add_param_uint32(dev, "selector", fw_cfg_param_select,
 			     NULL, &fw_cfg->sel, "%u", fw_cfg);
+
+	dev_add_param_bool(dev, "pio", fw_cfg_param_use_pio, NULL,
+			   &fw_cfg->use_pio, fw_cfg);
 
 	dev->priv = fw_cfg;
 

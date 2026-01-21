@@ -3,4 +3,6 @@
 /dts-v1/;
 /plugin/;
 
+#define USE_NONSECURE_SECOND_FLASH
+
 #include "qemu-virt-flash.dtsi"

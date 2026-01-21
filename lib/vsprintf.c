@@ -321,7 +321,7 @@ char *error_string(char *buf, const char *end, const void *errptr, int field_wid
     return string(buf, end, strerror(-PTR_ERR(errptr)), field_width, precision, flags);
 }
 
-static noinline_for_stack
+noinline_for_stack
 char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
 		  int precision, int flags, const char *fmt)
 {

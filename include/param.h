@@ -5,6 +5,7 @@
 #include <linux/err.h>
 #include <linux/types.h>
 #include <linux/list.h>
+#include <linux/uuid.h>
 #include <bobject.h>
 #include <stdarg.h>
 
@@ -27,6 +28,8 @@ enum param_type {
 	PARAM_TYPE_IPV4,
 	PARAM_TYPE_MAC,
 	PARAM_TYPE_FILE_LIST,
+	PARAM_TYPE_UUID,
+	PARAM_TYPE_GUID,
 };
 
 struct param_d {
@@ -105,6 +108,12 @@ struct param_d *bobject_add_param_file_list(bobject_t bobj, const char *name,
 					int (*get)(struct param_d *p, void *priv),
 					struct file_list **file_list,
 					void *priv);
+
+struct param_d *__bobject_add_param_uuid(bobject_t _bobj, const char *name,
+					 int (*set)(struct param_d *p, void *priv),
+					 int (*get)(struct param_d *p, void *priv),
+					 void *uuid, bool is_guid,
+					 void *priv);
 
 struct param_d *vbobject_add_param_fixed(struct bobject *bobj, const char *name,
 					 const char *fmt, va_list ap);
@@ -233,6 +242,15 @@ static inline struct param_d *bobject_add_param_file_list(bobject_t bobj,
 	return NULL;
 }
 
+static inline struct param_d *__bobject_add_param_uuid(bobject_t _bobj, const char *name,
+						       int (*set)(struct param_d *p, void *priv),
+						       int (*get)(struct param_d *p, void *priv),
+						       void *uuid, bool is_guid,
+						       void *priv)
+{
+	return NULL;
+}
+
 static inline
 struct param_d *vbobject_add_param_fixed(struct bobject *bobj, const char *name,
 					 const char *fmt, va_list ap)
@@ -272,6 +290,25 @@ static inline const char *get_param_value(struct param_d *param)
 
 	return param->get(param->bobj, param);
 }
+
+static inline struct param_d *
+bobject_add_param_uuid(bobject_t _bobj, const char *name,
+		       int (*set)(struct param_d *p, void *priv),
+		       int (*get)(struct param_d *p, void *priv),
+		       uuid_t *uuid, void *priv)
+{
+	return __bobject_add_param_uuid(_bobj, name, set, get, uuid, false, priv);
+}
+
+static inline struct param_d *
+bobject_add_param_guid(bobject_t _bobj, const char *name,
+		       int (*set)(struct param_d *p, void *priv),
+		       int (*get)(struct param_d *p, void *priv),
+		       guid_t *guid, void *priv)
+{
+	return __bobject_add_param_uuid(_bobj, name, set, get, guid, true, priv);
+}
+
 
 int param_set_readonly(struct param_d *p, void *priv);
 
@@ -409,6 +446,8 @@ static inline struct param_d *bobject_add_param_bitmask_ro(bobject_t bobj,
 #define dev_add_param_ip		bobject_add_param_ip
 #define dev_add_param_mac		bobject_add_param_mac
 #define dev_add_param_file_list		bobject_add_param_file_list
+#define dev_add_param_uuid		bobject_add_param_uuid
+#define dev_add_param_guid		bobject_add_param_guid
 #define dev_param_set_generic		bobject_param_set_generic
 
 #define dev_add_param_int		bobject_add_param_int

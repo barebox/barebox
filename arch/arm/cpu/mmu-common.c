@@ -50,9 +50,11 @@ void *dma_alloc_map(struct device *dev,
 		*dma_handle = (dma_addr_t)ret;
 
 	memset(ret, 0, size);
-	dma_flush_range(ret, size);
 
-	remap_range(ret, size, map_type);
+	if (!dev_is_dma_coherent(dev)) {
+		dma_flush_range(ret, size);
+		remap_range(ret, size, map_type);
+	}
 
 	return ret;
 }
@@ -70,8 +72,8 @@ void *dma_alloc_coherent(struct device *dev,
 void dma_free_coherent(struct device *dev,
 		       void *mem, dma_addr_t dma_handle, size_t size)
 {
-	size = PAGE_ALIGN(size);
-	remap_range(mem, size, MAP_CACHED);
+	if (!dev_is_dma_coherent(dev))
+		remap_range(mem, PAGE_ALIGN(size), MAP_CACHED);
 
 	free(mem);
 }

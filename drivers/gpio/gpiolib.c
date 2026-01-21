@@ -622,6 +622,7 @@ static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long lflags,
 	const bool logical     = (dflags & GPIOF_LOGICAL) == GPIOF_LOGICAL;
 	const bool init_active = (dflags & GPIOF_INIT_ACTIVE) == GPIOF_INIT_ACTIVE;
 	const bool init_high   = (dflags & GPIOF_INIT_HIGH) == GPIOF_INIT_HIGH;
+	const bool set         = (dflags & GPIOF_ASIS) == GPIOF_ASIS;
 
 	err = gpiodesc_request(desc, label);
 	if (err)
@@ -631,12 +632,14 @@ static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long lflags,
 	if (active_low)
 		desc->flags |= OF_GPIO_ACTIVE_LOW;
 
-	if (dir_in)
-		err = gpiod_direction_input(desc);
-	else if (logical)
-		err = gpiod_direction_output(desc, init_active);
-	else
-		err = gpiod_direction_output_raw(desc, init_high);
+	if (!set) {
+		if (dir_in)
+			err = gpiod_direction_input(desc);
+		else if (logical)
+			err = gpiod_direction_output(desc, init_active);
+		else
+			err = gpiod_direction_output_raw(desc, init_high);
+	}
 
 	if (err)
 		gpiodesc_free(desc);

@@ -33,6 +33,7 @@ typedef enum {
 	OPT_BLOCK,
 	OPT_CHAR,
 	OPT_SYMBOLIC_LINK,
+	OPT_NONZERO_SIZE,
 	OPT_MAX,
 } test_opts;
 
@@ -56,6 +57,7 @@ static char *test_options[] = {
 	[OPT_BLOCK]			= "-b",
 	[OPT_CHAR]			= "-c",
 	[OPT_SYMBOLIC_LINK]		= "-L",
+	[OPT_NONZERO_SIZE]		= "-s",
 };
 
 static int parse_opt(const char *opt)
@@ -201,6 +203,7 @@ static int do_test(int argc, char *argv[])
 		case OPT_BLOCK:
 		case OPT_CHAR:
 		case OPT_SYMBOLIC_LINK:
+		case OPT_NONZERO_SIZE:
 			adv = 2;
 			if (left < 2)
 				break;
@@ -232,6 +235,10 @@ static int do_test(int argc, char *argv[])
 					break;
 				}
 				if (opt == OPT_CHAR && S_ISCHR(statbuf.st_mode)) {
+					expr = 1;
+					break;
+				}
+				if (opt == OPT_NONZERO_SIZE && statbuf.st_size) {
 					expr = 1;
 					break;
 				}
@@ -295,7 +302,7 @@ static const char * const test_aliases[] = { "[", "[[", NULL};
 BAREBOX_CMD_HELP_START(test)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_TEXT("\t!, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e,")
-BAREBOX_CMD_HELP_TEXT("\t-f, -L; see 'man test' on your PC for more information.")
+BAREBOX_CMD_HELP_TEXT("\t-s, -f, -L; see 'man test' on your PC for more information.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(test)

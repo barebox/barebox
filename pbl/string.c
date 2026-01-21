@@ -102,6 +102,21 @@ int strcmp(const char *cs, const char *ct)
 	return res;
 }
 
+int strncmp(const char *cs, const char *ct, size_t count)
+{
+	register signed char __res = 0;
+
+	BUG_ON(!cs || !ct);
+
+	while (count) {
+		if ((__res = *cs - *ct++) != 0 || !*cs++)
+			break;
+		count--;
+	}
+
+	return __res;
+}
+
 int strcasecmp(const char *s1, const char *s2)
 {
 	int c1, c2;

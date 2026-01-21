@@ -22,12 +22,12 @@
 				(unsigned long)ZERO_SIZE_PTR)
 
 #ifdef CONFIG_MALLOC_TLSF
-void *malloc_add_pool(void *mem, size_t bytes);
+void malloc_add_pool(void *mem, size_t bytes);
 void malloc_register_store(void (*cb)(size_t bytes));
 bool malloc_store_is_registered(void);
 #else
 #include <linux/bug.h>
-static inline void *malloc_add_pool(void *mem, size_t bytes) { BUG(); }
+static inline void malloc_add_pool(void *mem, size_t bytes) { BUG(); }
 static inline void malloc_register_store(void (*cb)(size_t bytes)) { BUG(); }
 static inline bool malloc_store_is_registered(void) { return false; }
 #endif

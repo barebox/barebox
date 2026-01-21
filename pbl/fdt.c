@@ -128,9 +128,9 @@ int fdt_fixup_mem(void *fdt, unsigned long membase[], unsigned long memsize[],
 
 		snprintf(name, sizeof(name), "memory@%lx", base);
 		node = fdt_find_or_add_memory(fdt, root, name);
-		if (!node) {
+		if (node < 0) {
 			pr_warn("%s: Failed to get node: %s\n",
-				name, fdt_strerror(err));
+				name, fdt_strerror(node));
 			continue;
 		}
 

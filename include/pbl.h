@@ -34,5 +34,10 @@ int pbl_barebox_verify(const void *compressed_start, unsigned int len,
 
 void __noreturn barebox_pbl_entry(ulong, ulong, void *);
 
+#ifdef CONFIG_PBL_CONSOLE
+#define pbl_puts	puts
+#else
+#define pbl_puts	puts_ll
+#endif
 
 #endif /* __PBL_H__ */

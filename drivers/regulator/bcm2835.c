@@ -138,8 +138,10 @@ postcore_platform_driver(regulator_bcm2835_driver);
 
 static int regulator_bcm2835_init(void)
 {
-	add_generic_device("regulator-bcm2835", DEVICE_ID_SINGLE, NULL,
-			   0, 0, 0, NULL);
+	if (of_get_compatible_child(of_get_root_node(),
+				    "raspberrypi,bcm2835-firmware"))
+		add_generic_device("regulator-bcm2835", DEVICE_ID_SINGLE, NULL,
+				   0, 0, 0, NULL);
 
 	return 0;
 }

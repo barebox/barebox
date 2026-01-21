@@ -105,13 +105,13 @@ void malloc_stats(void)
 	printf("used: %zu\nfree: %zu\n", s.used, s.free);
 }
 
-void *malloc_add_pool(void *mem, size_t bytes)
+void malloc_add_pool(void *mem, size_t bytes)
 {
 	pool_t new_pool;
 	struct pool_entry *new_pool_entry;
 
 	if (!mem)
-		return NULL;
+		return;
 
 	if (!tlsf_mem_pool) {
 		tlsf_mem_pool = tlsf_create(mem);
@@ -121,16 +121,14 @@ void *malloc_add_pool(void *mem, size_t bytes)
 
 	new_pool = tlsf_add_pool(tlsf_mem_pool, mem, bytes);
 	if (!new_pool)
-		return NULL;
+		return;
 
 	new_pool_entry = malloc(sizeof(*new_pool_entry));
 	if (!new_pool_entry)
-		return NULL;
+		return;
 
 	new_pool_entry->pool = new_pool;
 	list_add(&new_pool_entry->list, &mem_pool_list);
-
-	return (void *)new_pool;
 }
 
 static void tlsf_request_store(tlsf_t tlsf, size_t bytes)

@@ -11,6 +11,9 @@
 #ifndef __BL_COMMON_H__
 #define __BL_COMMON_H__
 
+#include <linux/sizes.h>
+#include <linux/types.h>
+
 #define ATF_PARAM_EP		0x01
 #define ATF_PARAM_IMAGE_BINARY	0x02
 #define ATF_PARAM_BL31		0x03

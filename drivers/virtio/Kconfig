@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 config VIRTIO
 	bool
+	select OF_DMA_COHERENCY if OF
 	help
 	  This option is selected by any driver which implements the virtio
 	  bus, such as CONFIG_VIRTIO_MMIO, CONFIG_VIRTIO_PCI.

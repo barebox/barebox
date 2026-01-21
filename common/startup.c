@@ -20,6 +20,7 @@
 #include <shell.h>
 #include <init.h>
 #include <command.h>
+#include <poweroff.h>
 #include <malloc.h>
 #include <debug_ll.h>
 #include <fs.h>
@@ -425,8 +426,8 @@ void __noreturn start_barebox(void)
 		barebox_main();
 
 	if (IS_ENABLED(CONFIG_SHELL_NONE)) {
-		pr_err("Nothing left to do\n");
-		hang();
+		pr_crit("Nothing left to do\n");
+		poweroff_machine(0);
 	} else {
 		while (1)
 			run_shell();

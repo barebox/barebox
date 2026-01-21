@@ -36,3 +36,12 @@ ARM i.MX6 RIoTboard
 
 The barebox update handler has been changed to write barebox to the
 eMMC boot partitions rather than the user data area.
+
+CONFIG_SHELL_NONE
+-----------------
+
+If there's nothing to do for a shell-less barebox, it will now attempt
+to poweroff the system instead of busy-looping indefinitely.
+This changes behavior for systems that rely on a watchdog to reset
+a hanging barebox in this situation. If this breaks anything for you,
+please reach out.

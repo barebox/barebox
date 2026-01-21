@@ -74,7 +74,7 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 
 	partstr = end;
 
-	if (*partstr == 'r' && *(partstr + 1) == 'o') {
+	if (!strncasecmp(partstr, "ro", 2)) {
 		flags |= DEVFS_PARTITION_READONLY;
 		end = (char *)(partstr + 2);
 	}

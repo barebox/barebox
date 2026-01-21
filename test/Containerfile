@@ -85,8 +85,6 @@ RUN tgz_checksum_dl() { set -e; wget -nv -O archive.tgz "$1"; \
     tgz_checksum_dl https://github.com/kalray/build-scripts/releases/download/v5.2.0/gcc-kalray-kvx-ubuntu-22.04-v5.2.0.tar.gz \
 		    f59964cac188f1e5a8f628d0abef68e3b6ceebdae18dff51625472329fe6ec40
 
-RUN wget -nv "https://github.com/qemu/qemu/blob/v10.1.0/pc-bios/opensbi-riscv32-generic-fw_dynamic.bin?raw=true" -O /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin
-
 # Create our user/group
 RUN useradd -m -U barebox
 RUN echo barebox ALL=NOPASSWD: ALL > /etc/sudoers.d/barebox

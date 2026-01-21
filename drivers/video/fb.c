@@ -208,11 +208,12 @@ static int fb_of_reserve_fixup(struct device_node *root, void *context)
 {
 	struct fb_info *info = context;
 
-	if (!info->enabled)
-		return 0;
+	of_del_reserve_entry((unsigned long)info->screen_base,
+			     (unsigned long)info->screen_base + info->screen_size);
 
-	of_add_reserve_entry((unsigned long)info->screen_base,
-			(unsigned long)info->screen_base + info->screen_size);
+	if (info->enabled)
+		of_add_reserve_entry((unsigned long)info->screen_base,
+				     (unsigned long)info->screen_base + info->screen_size);
 
 	return 0;
 }

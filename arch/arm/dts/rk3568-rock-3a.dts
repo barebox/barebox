@@ -55,3 +55,8 @@
 		};
 	};
 };
+
+/* Device driver probe occasionally hangs, but pcie2x1 is fine... */
+&pcie3x2 {
+	barebox,status = "disabled";
+};

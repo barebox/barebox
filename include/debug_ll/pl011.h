@@ -3,25 +3,36 @@
 #ifndef __INCLUDE_ARM_ASM_DEBUG_LL_PL011_H__
 #define __INCLUDE_ARM_ASM_DEBUG_LL_PL011_H__
 
+#include <io.h>
+#include <linux/amba/serial.h>
+
+static inline void debug_ll_pl011_putc(void __iomem *base, int c)
+{
+	/* Wait until there is space in the FIFO */
+	while (readl(base + UART01x_FR) & UART01x_FR_TXFF)
+		;
+
+	/* Send the character */
+	writel(c, base + UART01x_DR);
+}
+
+#ifdef CONFIG_DEBUG_LL
+
 #ifndef DEBUG_LL_UART_ADDR
 #error DEBUG_LL_UART_ADDR is undefined!
 #endif
 
-#include <io.h>
-#include <linux/amba/serial.h>
-
 static inline void PUTC_LL(char c)
 {
-	/* Wait until there is space in the FIFO */
-	while (readl(DEBUG_LL_UART_ADDR + UART01x_FR) & UART01x_FR_TXFF)
-		;
+	void __iomem *base = IOMEM(DEBUG_LL_UART_ADDR);
 
-	/* Send the character */
-	writel(c, DEBUG_LL_UART_ADDR + UART01x_DR);
+	debug_ll_pl011_putc(base, c);
 
 	/* Wait to make sure it hits the line, in case we die too soon. */
-	while (readl(DEBUG_LL_UART_ADDR + UART01x_FR) & UART01x_FR_TXFF)
+	while (readl(base + UART01x_FR) & UART01x_FR_TXFF)
 		;
 }
+
+#endif
 
 #endif /* __INCLUDE_ARM_ASM_DEBUG_LL_PL011_H__ */

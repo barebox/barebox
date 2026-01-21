@@ -58,12 +58,6 @@
 		};
 	};
 
-	memory@80000000 {
-		reg = <0x00000000 0x80000000 0x00000000 0x80000000>;
-		device_type = "memory";
-		bootph-all;
-	};
-
 	vcc_1v8: regulator-3 {
 		/* output of TPS6282518DMQ */
 		compatible = "regulator-fixed";

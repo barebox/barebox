@@ -123,7 +123,6 @@ if SOC_ALLWINNER_SUN20I
 config BOARD_ALLWINNER_D1
 	bool "Allwinner D1 Nezha"
 	select RISCV_S_MODE
-	select RISCV_M_MODE
 	def_bool y
 
 endif

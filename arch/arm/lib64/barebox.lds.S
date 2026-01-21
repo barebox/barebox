@@ -5,32 +5,38 @@
 
 OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
 OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
-ENTRY(start)
+ENTRY(barebox_non_pbl_start)
+
+PHDRS
+{
+	text PT_LOAD FLAGS(5);		/* PF_R | PF_X */
+	rodata PT_LOAD FLAGS(4);	/* PF_R */
+	dynamic PT_DYNAMIC FLAGS(4);	/* PF_R */
+	data PT_LOAD FLAGS(6);		/* PF_R | PF_W */
+}
+
 SECTIONS
 {
 	. = 0x0;
 
-	.image_start : { *(.__image_start) }
+	.image_start : { *(.__image_start) } :text
 
 	. = ALIGN(4);
-	._text : { *(._text) }
+	._text : { *(._text) } :text
 	.text      :
 	{
 		_stext = .;
-		*(.text_entry*)
-		__bare_init_start = .;
-		*(.text_bare_init*)
-		__bare_init_end = .;
 		*(.text*)
-	}
-	BAREBOX_BARE_INIT_SIZE
+	} :text
 
 	. = ALIGN(4096);
 	__start_rodata = .;
 	.rodata : {
 		*(.rodata*)
 		RO_DATA_SECTION
-	}
+	} :rodata
+
+	.dynamic : { *(.dynamic) } :rodata :dynamic
 
 	. = ALIGN(4096);
 
@@ -38,20 +44,18 @@ SECTIONS
 	_etext = .;
 	_sdata = .;
 
-	.data : { *(.data*) }
-
-	BAREBOX_RELOCATION_TABLE
+	.data : { *(.data*) } :data
 
 	_edata = .;
 
 	BAREBOX_EFI_RUNTIME
 
-	.image_end : { *(.__image_end) }
+	.image_end : { *(.__image_end) } :data
 
 	. = ALIGN(4);
-	.__bss_start :  { *(.__bss_start) }
-	.bss : { *(.bss*) }
-	.__bss_stop :  { *(.__bss_stop) }
+	.__bss_start :  { *(.__bss_start) } :data
+	.bss : { *(.bss*) } :data
+	.__bss_stop :  { *(.__bss_stop) } :data
 	_end = .;
 	_barebox_image_size = __bss_start;
 }

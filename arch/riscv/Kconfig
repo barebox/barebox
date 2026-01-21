@@ -17,6 +17,7 @@ config RISCV
 	select HAS_KALLSYMS
 	select RISCV_TIMER if RISCV_SBI
 	select HW_HAS_PCI
+	select PBL_IMAGE_ELF
 	select HAVE_ARCH_BOARD_GENERIC_DT
 	select HAVE_ARCH_BOOTM_OFTREE
 
@@ -127,5 +128,21 @@ config RISCV_MULTI_MODE
 
 config RISCV_SBI
 	def_bool RISCV_S_MODE
+
+config MMU
+	bool "MMU-based memory protection"
+	help
+	  Enable MMU (Memory Management Unit) support for RISC-V S-mode.
+	  This provides hardware-enforced W^X (Write XOR Execute) memory
+	  protection using page tables (Sv39 for RV64, Sv32 for RV32).
+
+	  The PBL sets up page table entries based on ELF segment permissions,
+	  ensuring that:
+	  - Text sections are read-only and executable
+	  - Read-only data sections are read-only and non-executable
+	  - Data sections are read-write and non-executable
+
+	  Say Y if running in S-mode (supervisor mode) with virtual memory.
+	  Say N if running in M-mode or if you don't need memory protection.
 
 endmenu

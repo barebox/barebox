@@ -58,8 +58,6 @@ static int nommu_v7_vectors_init(void)
 	cr &= ~CR_V;
 	set_cr(cr);
 
-	arm_fixup_vectors();
-
 	vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 	memset(vectors, 0, PAGE_SIZE);
 	memcpy(vectors, __exceptions_start, __exceptions_size);

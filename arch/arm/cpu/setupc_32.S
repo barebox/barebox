@@ -43,12 +43,21 @@ ENDPROC(setup_c)
  * executing at new address.
  */
 .section .text.relocate_to_adr
+#ifdef __PBL__
+ENTRY(relocate_to_adr_full)
+	ldr	r2, =__image_end
+	b	1f
+#endif
+
 ENTRY(relocate_to_adr)
-					/* r0: target address */
+	ldr	r2, =__bss_start
+	b	1f
+
+1:
 	push	{r3, r4, r5, r6, r7, r8}
 	mov	r7, lr
 
-	mov	r6, r0
+	mov	r6, r0			/* r0: target address */
 
 	bl	get_runtime_offset
 
@@ -60,8 +69,6 @@ ENTRY(relocate_to_adr)
 
 	cmp	r1, r6			/* already at correct address? */
 	beq	1f			/* yes, skip copy to new address */
-
-	ldr	r2, =__bss_start
 
 	sub	r2, r2, r8		/* r2: size */
 	mov	r0, r6			/* r0: target */

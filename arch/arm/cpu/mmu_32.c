@@ -304,7 +304,7 @@ static uint32_t get_pte_flags(maptype_t map_type)
 		switch (map_type & MAP_TYPE_MASK) {
 		case ARCH_MAP_CACHED_RWX:
 			return PTE_FLAGS_CACHED_V7_RWX;
-		case ARCH_MAP_CACHED_RO:
+		case MAP_CACHED_RO:
 			return PTE_FLAGS_CACHED_RO_V7;
 		case MAP_CACHED:
 			return PTE_FLAGS_CACHED_V7;
@@ -320,7 +320,7 @@ static uint32_t get_pte_flags(maptype_t map_type)
 		}
 	} else {
 		switch (map_type & MAP_TYPE_MASK) {
-		case ARCH_MAP_CACHED_RO:
+		case MAP_CACHED_RO:
 		case MAP_CODE:
 			return PTE_FLAGS_CACHED_RO_V4;
 		case ARCH_MAP_CACHED_RWX:
@@ -350,13 +350,13 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 	u32 pte_flags, pmd_flags;
 	uint32_t *ttb = get_ttb();
 
-	BUG_ON(!IS_ALIGNED(virt_addr, PAGE_SIZE));
-	BUG_ON(!IS_ALIGNED(phys_addr, PAGE_SIZE));
-
 	pte_flags = get_pte_flags(map_type);
 	pmd_flags = pte_flags_to_pmd(pte_flags);
 
 	pr_debug_remap(virt_addr, phys_addr, size, map_type);
+
+	BUG_ON(!IS_ALIGNED(virt_addr, PAGE_SIZE));
+	BUG_ON(!IS_ALIGNED(phys_addr, PAGE_SIZE));
 
 	size = PAGE_ALIGN(size);
 	if (!size)
@@ -527,8 +527,6 @@ void create_vector_table(unsigned long adr)
 		set_pte_range(2, pte, (u32)vectors, 1, PTE_TYPE_SMALL |
 			      get_pte_flags(MAP_CACHED), true);
 	}
-
-	arm_fixup_vectors();
 
 	memset(vectors, 0, PAGE_SIZE);
 	memcpy(vectors, __exceptions_start, __exceptions_stop - __exceptions_start);

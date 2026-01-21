@@ -40,6 +40,13 @@ config OPTEE_AVB_PERSISTENT_VALUES
 	  pairs. AVB itself is not implemented in barebox, but enabling this option
 	  allows barebox to use the AVB persistent value store.
 
+config OPTEE_RKSECURE
+	bool "Rockchip Secure Boot PTA support"
+	depends on OPTEE
+	help
+	  Enable this option to use the Rockchip Secure Boot PTA to read or
+	  write the secure boot OTP fuses of an rk3588 SoC.
+
 endif
 
 config OF_FIXUP_OPTEE

@@ -28,10 +28,6 @@
 	};
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec1 0x640>;
-};
-
 &usdhc1 {
 	#address-cells = <1>;
 	#size-cells = <1>;

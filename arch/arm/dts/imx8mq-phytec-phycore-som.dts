@@ -148,10 +148,6 @@
 	};
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec1 0x640>;
-};
-
 &uart1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;

@@ -256,13 +256,7 @@ static int imx8m_hab_revoke_key_ocotp(unsigned key_idx)
 	return ret;
 }
 
-/*
- * The fuse pattern for i.MX8M Plus is 0x28001401, but bit 2 is already set from factory.
- * This means when field return is set, the fuse word value reads 0x28001405
- */
-#define MX8MP_FIELD_RETURN_PATTERN	0x28001401
-
-static int imx8m_hab_field_return_ocotp(void)
+static int imx_hab_field_return_ocotp(uint32_t field, unsigned int value)
 {
 	int ret;
 
@@ -274,13 +268,26 @@ static int imx8m_hab_field_return_ocotp(void)
 	if (ret == 1)
 		return -EINVAL;
 
-	if (cpu_is_mx8mp())
-		ret = imx_ocotp_write_field(MX8MP_OCOTP_FIELD_RETURN,
-					    MX8MP_FIELD_RETURN_PATTERN);
-	else
-		ret = imx_ocotp_write_field(MX8M_OCOTP_FIELD_RETURN, 1);
+	return imx_ocotp_write_field(field, value);
+}
 
-	return ret;
+static int imx6_hab_field_return_ocotp(void)
+{
+	return imx_hab_field_return_ocotp(MX6_OCOTP_FIELD_RETURN, 1);
+}
+
+/*
+ * The fuse pattern for i.MX8M Plus is 0x28001401, but bit 2 is already set from factory.
+ * This means when field return is set, the fuse word value reads 0x28001405
+ */
+#define MX8MP_FIELD_RETURN_PATTERN	0x28001401
+
+static int imx8m_hab_field_return_ocotp(void)
+{
+	if (cpu_is_mx8mp())
+		return imx_hab_field_return_ocotp(MX8MP_OCOTP_FIELD_RETURN,
+						  MX8MP_FIELD_RETURN_PATTERN);
+	return imx_hab_field_return_ocotp(MX8M_OCOTP_FIELD_RETURN, 1);
 }
 
 struct imx_hab_ops {
@@ -310,6 +317,7 @@ static struct imx_hab_ops imx6_hab_ops_ocotp = {
 	.device_locked_down = imx6_hab_device_locked_down_ocotp,
 	.permanent_write_enable = imx_hab_permanent_write_enable_ocotp,
 	.print_status = imx6_hab_print_status,
+	.field_return = imx6_hab_field_return_ocotp,
 };
 
 static struct imx_hab_ops imx8m_hab_ops_ocotp = {

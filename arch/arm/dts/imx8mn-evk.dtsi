@@ -70,10 +70,6 @@
 	};
 };
 
-&ocotp {
-	barebox,provide-mac-address = <&fec1 0x640>;
-};
-
 &iomuxc {
 	pinctrl_flexspi0: flexspi0grp {
 		fsl,pins = <

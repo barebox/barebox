@@ -185,30 +185,6 @@ int armv7_secure_monitor_install(void)
 	return 0;
 }
 
-/*
- * of_secure_monitor_fixup - reserve memory region for secure monitor
- *
- * We currently do not support putting the secure monitor into onchip RAM,
- * hence it runs in SDRAM and we must reserve the memory region so that we
- * won't get overwritten from the Kernel.
- * Beware: despite the name this is not secure in any way. The Kernel obeys
- * the reserve map, but only because it's nice. It could always overwrite the
- * secure monitor and hijack secure mode.
- */
-static int of_secure_monitor_fixup(struct device_node *root, void *unused)
-{
-	unsigned long res_start, res_end;
-
-	res_start = (unsigned long)_stext;
-	res_end = (unsigned long)__bss_stop;
-
-	of_add_reserve_entry(res_start, res_end);
-
-	pr_debug("Reserved memory range from 0x%08lx to 0x%08lx\n", res_start, res_end);
-
-	return 0;
-}
-
 static enum arm_security_state bootm_secure_state;
 
 static const char * const bootm_secure_state_names[] = {
@@ -229,7 +205,17 @@ const char *bootm_arm_security_state_name(enum arm_security_state state)
 
 static int sm_init(void)
 {
-	of_register_fixup(of_secure_monitor_fixup, NULL);
+	/*
+	 * Reserve memory region for secure monitor
+	 *
+	 * We currently do not support putting the secure monitor into onchip RAM,
+	 * hence it runs in SDRAM and we must reserve the memory region so that we
+	 * won't get overwritten from the Kernel.
+	 * Beware: despite the name this is not secure in any way. The Kernel obeys
+	 * the reserve map, but only because it's nice. It could always overwrite the
+	 * secure monitor and hijack secure mode.
+	 */
+	of_add_reserve_entry((ulong)_stext, (ulong)__bss_stop);
 
 	globalvar_add_simple_enum("bootm.secure_state",
 				  (unsigned int *)&bootm_secure_state,

@@ -1077,6 +1077,69 @@ int genphy_config_init(struct phy_device *phydev)
 	return 0;
 }
 
+/**
+ * phy_poll_reset - Safely wait until a PHY reset has properly completed
+ * @phydev: The PHY device to poll
+ *
+ * Description: According to IEEE 802.3, Section 2, Subsection 22.2.4.1.1, as
+ *   published in 2008, a PHY reset may take up to 0.5 seconds.  The MII BMCR
+ *   register must be polled until the BMCR_RESET bit clears.
+ *
+ *   Furthermore, any attempts to write to PHY registers may have no effect
+ *   or even generate MDIO bus errors until this is complete.
+ *
+ *   Some PHYs (such as the Marvell 88E1111) don't entirely conform to the
+ *   standard and do not fully reset after the BMCR_RESET bit is set, and may
+ *   even *REQUIRE* a soft-reset to properly restart autonegotiation.  In an
+ *   effort to support such broken PHYs, this function is separate from the
+ *   standard phy_init_hw() which will zero all the other bits in the BMCR
+ *   and reapply all driver-specific and board-specific fixups.
+ */
+static int phy_poll_reset(struct phy_device *phydev)
+{
+	/* Poll until the reset bit clears (50ms per retry == 0.6 sec) */
+	int ret, val;
+
+	ret = phy_read_poll_timeout(phydev, MII_BMCR, val, !(val & BMCR_RESET),
+				    600000);
+	if (ret)
+		return ret;
+	/* Some chips (smsc911x) may still need up to another 1ms after the
+	 * BMCR_RESET bit is cleared before they are usable.
+	 */
+	mdelay(1);
+	return 0;
+}
+
+int genphy_soft_reset(struct phy_device *phydev)
+{
+	u16 res = BMCR_RESET;
+	int ret;
+
+	if (phydev->autoneg == AUTONEG_ENABLE)
+		res |= BMCR_ANRESTART;
+
+	ret = phy_modify(phydev, MII_BMCR, BMCR_ISOLATE, res);
+	if (ret < 0)
+		return ret;
+
+	/* Clause 22 states that setting bit BMCR_RESET sets control registers
+	 * to their default value. Therefore the POWER DOWN bit is supposed to
+	 * be cleared after soft reset.
+	 */
+
+	ret = phy_poll_reset(phydev);
+	if (ret)
+		return ret;
+
+	/* BMCR may be reset to defaults */
+	if (phydev->autoneg == AUTONEG_DISABLE)
+		ret = genphy_setup_forced(phydev);
+
+	return ret;
+}
+EXPORT_SYMBOL(genphy_soft_reset);
+
 int phy_driver_register(struct phy_driver *phydrv)
 {
 	phydrv->drv.bus = &mdio_bus_type;

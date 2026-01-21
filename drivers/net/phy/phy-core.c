@@ -23,6 +23,37 @@ int phy_modify(struct phy_device *phydev, u32 regnum, u16 mask, u16 set)
 	return ret < 0 ? ret : 0;
 }
 
+/**
+ * phy_modify_changed - Function for modifying a PHY register
+ * @phydev: the phy_device struct
+ * @regnum: register number to modify
+ * @mask: bit mask of bits to clear
+ * @set: new value of bits set in mask to write to @regnum
+ *
+ * NOTE: MUST NOT be called from interrupt context,
+ * because the bus read/write functions may wait for an interrupt
+ * to conclude the operation.
+ *
+ * Returns negative errno, 0 if there was no change, and 1 in case of change
+ */
+int phy_modify_changed(struct phy_device *phydev, u32 regnum, u16 mask, u16 set)
+{
+	int new, ret;
+
+	ret = phy_read(phydev, regnum);
+	if (ret < 0)
+		return ret;
+
+	new = (ret & ~mask) | set;
+	if (new == ret)
+		return 0;
+
+	ret = phy_write(phydev, regnum, (ret & ~mask) | set);
+
+	return ret < 0 ? ret : 1;
+}
+EXPORT_SYMBOL_GPL(phy_modify_changed);
+
 static int phy_read_page(struct phy_device *phydev)
 {
 	struct phy_driver *phydrv = to_phy_driver(phydev->dev.driver);
@@ -184,3 +215,26 @@ int phy_modify_paged(struct phy_device *phydev, int page, u32 regnum,
 
 	return phy_restore_page(phydev, oldpage, ret);
 }
+
+/**
+ * phy_modify_paged_changed() - Function for modifying a paged register
+ * @phydev: a pointer to a &struct phy_device
+ * @page: the page for the phy
+ * @regnum: register number
+ * @mask: bit mask of bits to clear
+ * @set: bit mask of bits to set
+ *
+ * Returns negative errno, 0 if there was no change, and 1 in case of change
+ */
+int phy_modify_paged_changed(struct phy_device *phydev, int page, u32 regnum,
+			     u16 mask, u16 set)
+{
+	int ret = 0, oldpage;
+
+	oldpage = phy_select_page(phydev, page);
+	if (oldpage >= 0)
+		ret = phy_modify_changed(phydev, regnum, mask, set);
+
+	return phy_restore_page(phydev, oldpage, ret);
+}
+EXPORT_SYMBOL(phy_modify_paged_changed);

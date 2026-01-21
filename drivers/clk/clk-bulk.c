@@ -153,6 +153,25 @@ int __must_check clk_bulk_get_all(struct device *dev,
 }
 EXPORT_SYMBOL(clk_bulk_get_all);
 
+int __must_check clk_bulk_get_all_enabled(struct device *dev,
+					  struct clk_bulk_data **clks)
+{
+	int ret, num_clks;
+
+	num_clks = clk_bulk_get_all(dev, clks);
+	if (num_clks <= 0)
+		return num_clks;
+
+	ret = clk_bulk_prepare_enable(num_clks, *clks);
+	if (ret < 0) {
+		clk_bulk_put_all(num_clks, *clks);
+		return ret;
+	}
+
+	return num_clks;
+}
+EXPORT_SYMBOL_GPL(clk_bulk_get_all_enabled);
+
 /**
  * clk_bulk_disable - gate a set of clocks
  * @num_clks: the number of clk_bulk_data

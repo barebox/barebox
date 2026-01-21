@@ -25,7 +25,8 @@ config PARTITION_DISK_EFI
 	  Add support to handle partitions in GUID Partition Table style.
 
 config PARTITION_DISK_EFI_REFRESH
-	depends on PARTITION_DISK_EFI && PARTITION_MANIPULATION
+	depends on PARTITION_DISK_EFI
+	select PARTITION_MANIPULATION
 	bool "refresh GPT partition on demand"
 	help
 	  The GPT alternative header must be at the end of the device. When disk

@@ -6,7 +6,7 @@ targets:
         machine: virt
         cpu: cortex-a7
         memory: 1024M
-        kernel: barebox-dt-2nd.img
+        bios: barebox-qemu-virt.img
         display: qemu-default
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
@@ -17,6 +17,6 @@ targets:
       - barebox-state
       - testfs
 images:
-  barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
+  barebox-qemu-virt.img: !template "$LG_BUILDDIR/images/barebox-qemu-virt.img"
 imports:
   -  ../strategy.py

@@ -26,6 +26,7 @@
 static LIST_HEAD(mtd_register_hooks);
 
 DEFINE_DEV_CLASS(mtd_class, "mtd");
+EXPORT_SYMBOL(mtd_class);
 
 /**
  * mtd_buf_all_ff - check if buffer contains only 0xff

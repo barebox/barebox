@@ -22,6 +22,7 @@ const void *machine_id_get_hashable(size_t *len)
 	*len = __machine_id_hashable_length;
 	return __machine_id_hashable;
 }
+EXPORT_SYMBOL(machine_id_get_hashable);
 
 /**
  * machine_id_set_hashable - Provide per-board unique data

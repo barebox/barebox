@@ -288,6 +288,7 @@ bool bbu_handlers_available(void)
 {
 	return !list_empty(&bbu_image_handlers);
 }
+EXPORT_SYMBOL(bbu_handlers_available);
 
 /*
  * print a list of all registered update handlers

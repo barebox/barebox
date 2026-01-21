@@ -21,6 +21,7 @@ struct device global_device = {
 	.name = "global",
 	.id = DEVICE_ID_SINGLE,
 };
+EXPORT_SYMBOL(global_device);
 
 struct device nv_device = {
 	.name = "nv",

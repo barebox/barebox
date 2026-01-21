@@ -448,7 +448,6 @@ LEX		= flex
 YACC		= bison
 AWK		= awk
 GENKSYMS	= scripts/genksyms/genksyms
-DEPMOD		= /sbin/depmod
 KALLSYMS	= scripts/kallsyms
 SCONFIGPOST	= scripts/sconfig/sconfigpost
 PERL		= perl
@@ -468,7 +467,7 @@ PYTEST		= $(if $(shell command -v labgrid-pytest 2>/dev/null),labgrid-pytest,pyt
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise $(CF)
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
-CFLAGS_MODULE	= -fshort-wchar
+CFLAGS_MODULE	= -fshort-wchar -std=gnu11
 AFLAGS_MODULE	=
 
 LDFLAGS_MODULE  = -T common/module.lds
@@ -1331,18 +1330,13 @@ modules_prepare: prepare scripts
 
 # Target to install modules
 PHONY += modules_install
-modules_install: _modinst_ _modinst_post
+modules_install: _modinst_
 
 PHONY += _modinst_
 _modinst_:
-	@if [ -z "`$(DEPMOD) -V 2>/dev/null | grep module-init-tools`" ]; then \
-		echo "Warning: you may need to install module-init-tools"; \
-		echo "See http://www.codemonkey.org.uk/docs/post-halloween-2.6.txt";\
-		sleep 1; \
-	fi
-	@rm -rf $(MODLIB)/kernel
+	@rm -rf $(MODLIB)/barebox
 	@rm -f $(MODLIB)/source
-	@mkdir -p $(MODLIB)/kernel
+	@mkdir -p $(MODLIB)/barebox
 	@ln -s $(srctree) $(MODLIB)/source
 	@if [ ! $(objtree) -ef  $(MODLIB)/build ]; then \
 		rm -f $(MODLIB)/build ; \
@@ -1360,9 +1354,20 @@ depmod_opts	:=
 else
 depmod_opts	:= -b $(INSTALL_MOD_PATH) -r
 endif
-PHONY += _modinst_post
-_modinst_post: _modinst_
-	if [ -r System.map -a -x $(DEPMOD) ]; then $(DEPMOD) -ae -F System.map $(depmod_opts) $(KERNELRELEASE); fi
+
+# Target to build modules environment
+MODULES_ENV_DIR := $(objtree)/.tmp_barebox_modules_env
+CLEAN_DIRS += $(MODULES_ENV_DIR)
+
+barebox_modules_env: modules FORCE
+	$(Q)rm -rf $(MODULES_ENV_DIR)
+	$(Q)$(MAKE) -f $(srctree)/Makefile modules_install MODLIB=$(MODULES_ENV_DIR)
+	$(Q)$(objtree)/scripts/bareboxenv -s $(MODULES_ENV_DIR)/barebox $@
+	$(Q)mv barebox_modules_env $(objtree)/defaultenv/
+
+ifdef CONFIG_MODULES_ENVIRONMENT
+all: barebox_modules_env
+endif
 
 else # CONFIG_MODULES
 
@@ -1407,8 +1412,7 @@ MRPROPER_FILES += .config .config.old .security_config .version .old_version \
 
 # clean - Delete most, but leave enough to build external modules
 #
-clean: rm-dirs  := $(CLEAN_DIRS)
-clean: rm-files := $(CLEAN_FILES)
+clean: rm-files := $(CLEAN_FILES) $(CLEAN_DIRS)
 clean-dirs      := $(addprefix _clean_,$(srctree) $(barebox-alldirs))
 
 PHONY += $(clean-dirs) clean archclean
@@ -1417,7 +1421,6 @@ $(clean-dirs):
 	$(Q)$(MAKE) $(clean)=$(patsubst _clean_%,%,$@)
 
 clean: archclean $(clean-dirs)
-	$(call cmd,rmdirs)
 	$(call cmd,rmfiles)
 	@find . $(RCS_FIND_IGNORE) \
 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
@@ -1430,8 +1433,7 @@ clean: archclean $(clean-dirs)
 
 # mrproper - Delete all generated files, including .config
 #
-mrproper: rm-dirs  := $(wildcard $(MRPROPER_DIRS))
-mrproper: rm-files := $(wildcard $(MRPROPER_FILES))
+mrproper: rm-files := $(wildcard $(MRPROPER_DIRS)) $(wildcard $(MRPROPER_FILES))
 mrproper-dirs      := $(addprefix _mrproper_,scripts)
 
 PHONY += $(mrproper-dirs) mrproper
@@ -1439,7 +1441,6 @@ $(mrproper-dirs):
 	$(Q)$(MAKE) $(clean)=$(patsubst _mrproper_%,%,$@)
 
 mrproper: clean $(mrproper-dirs)
-	$(call cmd,rmdirs)
 	$(call cmd,rmfiles)
 
 # distclean
@@ -1604,11 +1605,8 @@ target-dir = $(dir $@)
 # FIXME Should go into a make.lib or something
 # ===========================================================================
 
-quiet_cmd_rmdirs = $(if $(wildcard $(rm-dirs)),CLEAN   $(wildcard $(rm-dirs)))
-      cmd_rmdirs = rm -rf $(rm-dirs)
-
 quiet_cmd_rmfiles = $(if $(wildcard $(rm-files)),CLEAN   $(wildcard $(rm-files)))
-      cmd_rmfiles = rm -f $(rm-files)
+      cmd_rmfiles = rm -rf $(rm-files)
 
 
 a_flags = -Wp,-MD,$(depfile) $(KBUILD_AFLAGS) $(AFLAGS_KERNEL) \

@@ -361,6 +361,7 @@ bool genpd_is_active(void)
 {
 	return have_genpd_providers && !list_empty(&gpd_list);
 }
+EXPORT_SYMBOL(genpd_is_active);
 
 static struct bus_type genpd_bus_type = {
 	.name		= "genpd",
@@ -563,3 +564,4 @@ void pm_genpd_print(void)
 		printf("%-20s %6s\n", genpd->name,
 		       genpd->status == GPD_STATE_ACTIVE ? "on" : "off");
 }
+EXPORT_SYMBOL(pm_genpd_print);

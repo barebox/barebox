@@ -662,7 +662,7 @@ struct gpio_desc *gpiod_request_one(unsigned gpio,
 
 	return desc;
 }
-EXPORT_SYMBOL_GPL(gpio_request_one);
+EXPORT_SYMBOL_GPL(gpiod_request_one);
 
 
 /**

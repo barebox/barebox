@@ -294,7 +294,7 @@ int of_alias_get_free_id(const char *stem)
 
 	return id + 1;
 }
-EXPORT_SYMBOL_GPL(of_alias_get_highest_id);
+EXPORT_SYMBOL_GPL(of_alias_get_free_id);
 
 int of_alias_get_id_from(struct device_node *root, struct device_node *np,
 			 const char *stem)
@@ -2072,6 +2072,7 @@ struct device_node *of_get_root_node(void)
 {
 	return root_node;
 }
+EXPORT_SYMBOL(of_get_root_node);
 
 int of_set_root_node(struct device_node *node)
 {

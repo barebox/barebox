@@ -29,6 +29,7 @@ bool clk_have_nonfixed_providers(void)
 
 	return false;
 }
+EXPORT_SYMBOL(clk_have_nonfixed_providers);
 
 static int clk_parent_enable(struct clk *clk)
 {

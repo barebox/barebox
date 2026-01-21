@@ -22,6 +22,7 @@
 #include <linux/stat.h>
 
 DEFINE_DEV_CLASS(eth_class, "eth");
+EXPORT_SYMBOL(eth_class);
 
 LIST_HEAD(ethaddr_list);
 

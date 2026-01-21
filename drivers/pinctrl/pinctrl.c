@@ -30,6 +30,7 @@ struct pinctrl_consumer_info {
 };
 
 LIST_HEAD(pinctrl_list);
+EXPORT_SYMBOL(pinctrl_list);
 
 static struct pinctrl_device *pin_to_pinctrl(unsigned int pin)
 {

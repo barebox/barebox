@@ -356,6 +356,20 @@ config MODULES
 	  As modules can't be signed, loading external modules is not
 	  recommended for secure systems.
 
+config MODULES_ENVIRONMENT
+	bool "Build environment with all modules"
+	depends on MODULES
+	help
+	  This option creates a separate environment file (barebox_modules_env)
+	  containing all built modules in stripped form. This environment is
+	  not built into barebox but can be flashed separately and mounted
+	  at runtime to load modules.
+
+	  The modules are taken from the barebox/ directory inside $MODLIB
+	  after running modules_install and have been stripped.
+
+	  If unsure, say n here.
+
 config KALLSYMS
 	depends on HAS_KALLSYMS
 	bool "kallsyms"

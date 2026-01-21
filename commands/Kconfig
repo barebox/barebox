@@ -273,7 +273,7 @@ config CMD_REGULATOR
 	  their current state.
 
 config CMD_PM_DOMAIN
-	bool
+	tristate
 	depends on PM_GENERIC_DOMAINS
 	prompt "pm_domain command"
 	help

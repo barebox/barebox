@@ -7,6 +7,7 @@
 #include <param.h>
 
 LIST_HEAD(dsa_switch_list);
+EXPORT_SYMBOL(dsa_switch_list);
 
 u32 dsa_user_ports(struct dsa_switch *ds)
 {

@@ -4,7 +4,7 @@ comment "Processor Type"
 
 config CPU_32
 	bool
-	select HAS_MODULES
+	select HAS_MODULES if !ARM_MMU_PERMISSIONS
 	select HAVE_MOD_ARCH_SPECIFIC
 	select HAS_DMA
 	select ARCH_HAS_ZERO_PAGE

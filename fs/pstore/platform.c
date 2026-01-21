@@ -50,6 +50,7 @@ bool pstore_is_ready(void)
 {
 	return pstore_ready;
 }
+EXPORT_SYMBOL(pstore_is_ready);
 
 void pstore_log(const char *str)
 {

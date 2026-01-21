@@ -2,4 +2,5 @@
 
 barebox_default_env*
 barebox_zero_env
+barebox_modules_env
 defaultenv-2-ikconfig/

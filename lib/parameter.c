@@ -86,6 +86,7 @@ const char *bobject_get_param(bobject_t _bobj, const char *name)
 
 	return param->get(bobj, param);
 }
+EXPORT_SYMBOL(bobject_get_param);
 
 /**
  * bobject_set_param - set a parameter of a barebox object to a new value

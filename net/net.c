@@ -364,6 +364,7 @@ IPaddr_t net_get_ip(struct eth_device *edev)
 {
 	return edev->ipaddr;
 }
+EXPORT_SYMBOL(net_get_ip);
 
 void net_set_netmask(struct eth_device *edev, IPaddr_t nm)
 {

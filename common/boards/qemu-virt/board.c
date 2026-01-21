@@ -6,6 +6,8 @@
 #include <common.h>
 #include <init.h>
 #include <of.h>
+#include <memory.h>
+#include <compressed-dtb.h>
 #include <deep-probe.h>
 #include <security/policy.h>
 #include "qemu-virt-flash.h"
@@ -47,6 +49,8 @@ static const struct of_device_id virt_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(virt_of_match);
 
+static bool is_qemu_virt;
+
 /*
  * We don't have a dedicated qemu-virt device tree and instead rely
  * on what Qemu passes us. To be able to get fundamental changes
@@ -63,6 +67,8 @@ static int virt_board_driver_init(void)
 	id = of_match_node(virt_of_match, root);
 	if (!id)
 		return 0;
+
+	is_qemu_virt = true;
 
 	if (id->data) {
 		init = id->data;
@@ -94,3 +100,29 @@ static int virt_board_driver_init(void)
 	return 0;
 }
 postcore_initcall(virt_board_driver_init);
+
+static __maybe_unused int virt_board_reserve_fdt(void)
+{
+	resource_size_t start = ~0, end = ~0;
+
+	if (!is_qemu_virt)
+		return 0;
+
+	memory_bank_first_find_space(&start, &end);
+	if (start != ~0) {
+		void *fdt = (void *)start;
+
+		if (!blob_is_fdt(fdt))
+			return 0;
+
+		request_sdram_region("qemu-virt-fdt", start,
+				     fdt_totalsize(fdt),
+				     MEMTYPE_BOOT_SERVICES_DATA,
+				     MEMATTRS_RO);
+	}
+
+	return 0;
+}
+#ifdef CONFIG_ARM
+postmem_initcall(virt_board_reserve_fdt);
+#endif

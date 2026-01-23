@@ -65,6 +65,7 @@ static int elf_compute_load_offset(struct elf_image *elf)
 	void *phdr = buf + elf_hdr_e_phoff(elf, buf);
 	u64 min_vaddr = (u64)-1;
 	u64 min_paddr = (u64)-1;
+	unsigned long base_load_addr;
 
 	/* Find lowest p_vaddr and p_paddr in PT_LOAD segments */
 	elf_for_each_segment(phdr, elf, buf) {
@@ -86,11 +87,11 @@ static int elf_compute_load_offset(struct elf_image *elf)
 	 * 3. For ET_DYN, use lowest p_paddr
 	 */
 	if (elf->load_address)
-		elf->base_load_addr = elf->load_address;
+		base_load_addr = (unsigned long)elf->load_address;
 	else if (elf->type == ET_EXEC)
-		elf->base_load_addr = NULL;
+		base_load_addr = 0;
 	else
-		elf->base_load_addr = (void *)(phys_addr_t)min_paddr;
+		base_load_addr = min_paddr;
 
 	/*
 	 * Calculate relocation offset:
@@ -100,11 +101,11 @@ static int elf_compute_load_offset(struct elf_image *elf)
 	if (elf->type == ET_EXEC && !elf->load_address)
 		elf->reloc_offset = 0;
 	else
-		elf->reloc_offset = ((unsigned long)elf->base_load_addr - min_vaddr);
+		elf->reloc_offset = base_load_addr - min_vaddr;
 
-	pr_debug("ELF load: type=%s, base=%p, offset=%08lx\n",
+	pr_debug("ELF load: type=%s, base=%08lx, offset=%08lx\n",
 		 elf->type == ET_EXEC ? "ET_EXEC" : "ET_DYN",
-		 elf->base_load_addr, elf->reloc_offset);
+		 base_load_addr, elf->reloc_offset);
 
 	return 0;
 }

@@ -7,17 +7,18 @@
 #include <linux/list.h>
 
 struct elf_image {
-	struct list_head list;
 	u8 class;
 	u16 type;		/* ET_EXEC or ET_DYN */
 	u64 entry;
+	void *hdr_buf;
+	void *load_address;	/* User-specified load address (NULL = use p_paddr) */
+	unsigned long reloc_offset;	/* Offset between p_vaddr and actual load address */
+
+	/* Only used in barebox proper */
+	struct list_head list;
 	void *low_addr;
 	void *high_addr;
-	void *hdr_buf;
 	const char *filename;
-	void *load_address;	/* User-specified load address (NULL = use p_paddr) */
-	void *base_load_addr;	/* Calculated base address for ET_DYN */
-	unsigned long reloc_offset;	/* Offset between p_vaddr and actual load address */
 };
 
 static inline void elf_init_struct(struct elf_image *elf)

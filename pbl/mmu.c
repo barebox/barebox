@@ -46,7 +46,6 @@ int pbl_mmu_setup_from_elf(struct elf_image *elf, unsigned long membase,
 	int i = -1;
 
 	pr_debug("Setting up MMU from ELF segments\n");
-	pr_debug("ELF loaded at: 0x%p - 0x%p\n", elf->low_addr, elf->high_addr);
 
 	/*
 	 * Iterate through all PT_LOAD segments and set up MMU permissions

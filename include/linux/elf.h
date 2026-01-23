@@ -7,6 +7,7 @@
 //#include <linux/auxvec.h>
 //#include <linux/elf-em.h>
 #include <asm/elf.h>
+#include <lib/elf.h>
 
 struct file;
 
@@ -391,64 +392,6 @@ extern Elf64_Dyn _DYNAMIC [];
 
 #endif
 
-struct elf_image {
-	struct list_head list;
-	u8 class;
-	u16 type;		/* ET_EXEC or ET_DYN */
-	u64 entry;
-	void *low_addr;
-	void *high_addr;
-	void *hdr_buf;
-	const char *filename;
-	void *load_address;	/* User-specified load address (NULL = use p_paddr) */
-	void *base_load_addr;	/* Calculated base address for ET_DYN */
-	unsigned long reloc_offset;	/* Offset between p_vaddr and actual load address */
-};
-
-static inline size_t elf_get_mem_size(struct elf_image *elf)
-{
-	return elf->high_addr - elf->low_addr;
-}
-
-int elf_open_binary_into(struct elf_image *elf, void *buf);
-struct elf_image *elf_open_binary(void *buf);
-struct elf_image *elf_open(const char *filename);
-void elf_close(struct elf_image *elf);
-int elf_load(struct elf_image *elf);
-
-/*
- * Set the load address for the ELF file.
- * Must be called before elf_load().
- * If not set, ET_EXEC uses p_paddr, ET_DYN uses lowest p_paddr.
- */
-void elf_set_load_address(struct elf_image *elf, void *addr);
-
-/*
- * Apply dynamic relocations to an ELF binary already loaded in memory.
- * This modifies the ELF image in place without allocating new memory.
- * Useful for self-relocating loaders or externally loaded binaries.
- * The elf parameter must have been previously opened with elf_open_binary().
- */
-int elf_load_inplace(struct elf_image *elf);
-
-/*
- * Architecture-specific relocation handler.
- * Returns 0 on success, -ENOSYS if architecture doesn't support relocations,
- * other negative error codes on failure.
- */
-int elf_apply_relocations(struct elf_image *elf, const void *dyn_seg);
-
-/*
- * Parse the dynamic section and extract relocation information.
- * This is a generic function that works for both 32-bit and 64-bit ELF files,
- * and handles both REL and RELA relocation formats.
- * Returns 0 on success, -EINVAL on error.
- */
-int elf_parse_dynamic_section_rel(struct elf_image *elf, const void *dyn_seg,
-				  void **rel_out, u64 *relsz_out, void **symtab);
-int elf_parse_dynamic_section_rela(struct elf_image *elf, const void *dyn_seg,
-				   void **rel_out, u64 *relsz_out, void **symtab);
-
 #define ELF_GET_FIELD(__s, __field, __type) \
 static inline __type elf_##__s##_##__field(struct elf_image *elf, void *arg) { \
 	if (elf->class == ELFCLASS32) \
@@ -477,6 +420,14 @@ static inline unsigned long elf_size_of_phdr(struct elf_image *elf)
 		return sizeof(Elf32_Phdr);
 	else
 		return sizeof(Elf64_Phdr);
+}
+
+static inline void *elf_phdr_relocated_paddr(struct elf_image *elf, void *phdr)
+{
+	if (elf->reloc_offset)
+		return (void *)(unsigned long)(elf->reloc_offset + elf_phdr_p_vaddr(elf, phdr));
+	else
+		return (void *)(unsigned long)elf_phdr_p_paddr(elf, phdr);
 }
 
 #define elf_for_each_segment(phdr, elf, buf) \

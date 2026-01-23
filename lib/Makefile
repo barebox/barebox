@@ -3,6 +3,7 @@
 obj-y			+= bobject.o
 obj-y			+= bcd.o
 obj-y			+= term.o
+obj-pbl-$(CONFIG_ELF)	+= elf.o
 obj-$(CONFIG_BOOTSTRAP)	+= bootstrap/
 obj-pbl-y		+= ctype.o
 obj-y			+= rbtree.o

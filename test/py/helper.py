@@ -86,6 +86,20 @@ def devinfo(barebox, device):
     return info
 
 
+def filter_errors(lines):
+    prefixes = (
+        "WARNING:",
+        "ERROR:",
+        "CRITICAL:",
+        "ALERT:",
+        "EMERG:",
+        "PANIC:",
+        "BUG:",
+    )
+
+    return [line for line in lines if line.startswith(prefixes)]
+
+
 def format_dict_with_prefix(varset: dict, prefix: str) -> str:
     parts = []
     for k, v in varset.items():

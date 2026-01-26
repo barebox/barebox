@@ -1120,6 +1120,8 @@ static int fuzz_fit(const u8 *data, size_t size)
 	handle.fit = data;
 	handle.fit_alloc = NULL;
 
+	refcount_set(&handle.users, 1);
+
 	ret = fit_do_open(&handle);
 	if (ret)
 		goto out;

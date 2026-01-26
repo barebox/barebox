@@ -122,4 +122,13 @@ static const __maybe_unused char cmd_##_name##_help[] =
 
 int register_command(struct command *);
 
+#ifdef CONFIG_CMD_BOOTM
+unsigned bootm_command_attempts(void);
+#else
+static inline unsigned bootm_command_attempts(void)
+{
+	return 0;
+}
+#endif
+
 #endif	/* __COMMAND_H */

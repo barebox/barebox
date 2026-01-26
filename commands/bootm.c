@@ -36,6 +36,13 @@
 #define BOOTM_OPTS BOOTM_OPTS_COMMON
 #endif
 
+static unsigned command_attempts;
+
+unsigned bootm_command_attempts(void)
+{
+	return command_attempts;
+}
+
 static int do_bootm(int argc, char *argv[])
 {
 	int opt;
@@ -43,6 +50,8 @@ static int do_bootm(int argc, char *argv[])
 	int ret = 1;
 
 	bootm_data_init_defaults(&data);
+
+	command_attempts++;
 
 	while ((opt = getopt(argc, argv, BOOTM_OPTS)) > 0) {
 		switch(opt) {

@@ -75,6 +75,7 @@ struct bootentry_script {
 static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 {
 	struct bootentry_script *bs = container_of(entry, struct bootentry_script, entry);
+	int bootm_nattempts;
 	int ret;
 
 	struct bootm_data backup = {}, data = {};
@@ -89,11 +90,17 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	globalvar_add_simple("linux.bootargs.dyn.ip", NULL);
 	globalvar_add_simple("linux.bootargs.dyn.root", NULL);
 
+	bootm_nattempts = bootm_command_attempts();
+
 	ret = run_command(bs->scriptpath);
 	if (ret) {
 		pr_err("Running script '%s' failed: %pe\n", bs->scriptpath, ERR_PTR(ret));
 		goto out;
 	}
+
+	/* No point in repeating bootm if script already called it */
+	if (bootm_nattempts != bootm_command_attempts())
+		goto out;
 
 	bootm_data_init_defaults(&data);
 

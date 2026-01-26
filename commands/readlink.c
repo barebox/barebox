@@ -11,6 +11,8 @@
 #include <malloc.h>
 #include <getopt.h>
 
+enum can_mode { CAN_NONE, CAN_ALL_BUT_LAST, CAN_EXISTING };
+
 static void output_result(const char *var, const char *val)
 {
 	if (var)
@@ -20,20 +22,59 @@ static void output_result(const char *var, const char *val)
 
 }
 
+static int canonicalize_filename_mode(const char *var, char *path, enum can_mode can_mode)
+{
+	char *buf = NULL, *file, *dir;
+	struct stat s;
+	int ret = -1;
+
+	buf = canonicalize_path(AT_FDCWD, path);
+	if (buf)
+		goto out;
+
+	switch (can_mode) {
+	case CAN_ALL_BUT_LAST:
+		file = basename(path);
+		dir = dirname(path);
+
+		buf = canonicalize_path(AT_FDCWD, dir);
+		if (!buf || stat(dir, &s) || !S_ISDIR(s.st_mode))
+			goto err;
+
+		buf = xrasprintf(buf, "/%s", file);
+		break;
+	case CAN_EXISTING:
+	case CAN_NONE:
+		goto err;
+	}
+
+out:
+	output_result(var, buf);
+	ret = 0;
+err:
+	free(buf);
+	return ret;
+}
+
 static int do_readlink(int argc, char *argv[])
 {
 	const char *var;
 	char *path, realname[PATH_MAX];
-	int canonicalize = 0;
+	enum can_mode can_mode = CAN_NONE;
 	int opt;
 
 	memset(realname, 0, PATH_MAX);
 
-	while ((opt = getopt(argc, argv, "f")) > 0) {
+	while ((opt = getopt(argc, argv, "fe")) > 0) {
 		switch (opt) {
 		case 'f':
-			canonicalize = 1;
+			can_mode = CAN_ALL_BUT_LAST;
 			break;
+		case 'e':
+			can_mode = CAN_EXISTING;
+			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 
@@ -46,18 +87,9 @@ static int do_readlink(int argc, char *argv[])
 	path = argv[0];
 	var = argv[1];
 
-	if (canonicalize) {
-		char *buf = canonicalize_path(AT_FDCWD, path);
-		struct stat s;
-
-		if (!buf)
+	if (can_mode > CAN_NONE) {
+		if (canonicalize_filename_mode(var, path, can_mode))
 			goto err;
-		if (stat(dirname(path), &s) || !S_ISDIR(s.st_mode)) {
-			free(buf);
-			goto err;
-		}
-		output_result(var, buf);
-		free(buf);
 	} else {
 		if (readlink(path, realname, PATH_MAX - 1) < 0)
 			goto err;
@@ -77,14 +109,14 @@ BAREBOX_CMD_HELP_TEXT("The value is either stored it into the specified VARIABLE
 BAREBOX_CMD_HELP_TEXT("or printed.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-f", "canonicalize by following symlinks;")
-BAREBOX_CMD_HELP_OPT("",   "final component need not exist");
+BAREBOX_CMD_HELP_OPT("-f", "canonicalize by following symlinks; final component need not exist")
+BAREBOX_CMD_HELP_OPT("-e", "canonicalize by following symlinks; all components must exist")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(readlink)
 	.cmd		= do_readlink,
 	BAREBOX_CMD_DESC("read value of a symbolic link or canonical file name")
-	BAREBOX_CMD_OPTS("[-f] FILE [VARIABLE]")
+	BAREBOX_CMD_OPTS("[-fe] FILE [VARIABLE]")
 	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_readlink_help)
 BAREBOX_CMD_END

@@ -8,12 +8,14 @@ struct bootm_overrides {
 };
 
 #ifdef CONFIG_BOOT_OVERRIDE
-struct bootm_overrides bootm_set_overrides(const struct bootm_overrides overrides_new);
+struct bootm_overrides bootm_save_overrides(const struct bootm_overrides overrides);
+void bootm_restore_overrides(const struct bootm_overrides overrides);
 #else
-static inline struct bootm_overrides bootm_set_overrides(const struct bootm_overrides overrides)
+static inline struct bootm_overrides bootm_save_overrides(const struct bootm_overrides overrides)
 {
 	return (struct bootm_overrides) {};
 }
+static inline void bootm_restore_overrides(const struct bootm_overrides overrides) {}
 #endif
 
 static inline void bootm_merge_overrides(struct bootm_overrides *dst,

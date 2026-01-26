@@ -18,6 +18,38 @@ def test_barebox_false(barebox, barebox_config):
     assert returncode == 1
 
 
+def test_barebox_echo_cat(barebox, barebox_config):
+    skip_disabled(barebox_config, "CONFIG_CMD_ECHO", "CONFIG_CMD_CAT")
+
+    barebox.run_check('rm -f stanza*')
+
+    barebox.run_check('echo -o stanza-1 meow')
+    barebox.run_check('echo -o stanza-1 mau')
+    barebox.run_check('echo -o stanza-2 meow')
+    barebox.run_check('echo -a stanza-2 meow')
+    barebox.run_check('cat  -o stanza-3 /dev/null')
+    barebox.run_check('echo -a stanza-3 mau')
+    barebox.run_check('echo -a stanza-3 ma')
+
+    expected = ["mau", "meow", "meow", "mau", "ma"]
+
+    stdout = barebox.run_check('ls -l stanza-*')
+
+    assert len(stdout) == 3
+
+    assert barebox.run_check('cat stanza-*') == expected
+
+    barebox.run_check('rm -f stanza')
+
+    stdout = barebox.run_check('cat -o stanza stanza-*')
+    assert stdout == []
+    assert barebox.run_check('cat stanza') == expected
+
+    stdout = barebox.run_check('cat -a stanza stanza-*')
+    assert stdout == []
+    assert barebox.run_check('cat stanza') == expected + expected
+
+
 def test_barebox_md5sum(barebox, barebox_config):
     skip_disabled(barebox_config, "CONFIG_CMD_MD5SUM", "CONFIG_CMD_ECHO")
 

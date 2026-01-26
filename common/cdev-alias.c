@@ -82,6 +82,8 @@ out:
 #define STORAGE_REMOVABLE	BIT(0)
 #define STORAGE_BUILTIN		BIT(1)
 
+#define STORAGE_NONBOOTSOURCE	BIT(31)
+
 /**
  * call_for_each_storage() - invoke callback for each storage medium
  *
@@ -136,24 +138,29 @@ static int cdev_alias_resolve_storage(struct cdev_alias_res *cdev_alias_res,
 				      cdev_alias_processor_t fn,
 				      void *data)
 {
-	struct cdev *bootcdev;
 	unsigned filter = 0;
-	int bootsource, nmatches;
+	int bootsource = 0, nmatches;
 
 	if (!class)
-		filter = ~0;
+		filter = STORAGE_REMOVABLE | STORAGE_BUILTIN;
+	else if (streq_ptr(class, "nonbootsource"))
+		filter = STORAGE_REMOVABLE | STORAGE_BUILTIN | STORAGE_NONBOOTSOURCE;
 	else if (streq_ptr(class, "removable"))
 		filter |= STORAGE_REMOVABLE;
 	else if (streq_ptr(class, "builtin"))
 		filter |= STORAGE_BUILTIN;
+	else if (streq_ptr(class, "removable.nonbootsource"))
+		filter |= STORAGE_REMOVABLE | STORAGE_NONBOOTSOURCE;
+	else if (streq_ptr(class, "builtin.nonbootsource"))
+		filter |= STORAGE_BUILTIN | STORAGE_NONBOOTSOURCE;
 	else
 		return -EINVAL;
 
-	bootcdev = bootsource_of_cdev_find();
-
-	bootsource = call_for_each_storage(fn, data, filter, true);
-	if (bootsource < 0)
-		return bootsource;
+	if (!(filter & STORAGE_NONBOOTSOURCE)) {
+		bootsource = call_for_each_storage(fn, data, filter, true);
+		if (bootsource < 0)
+			return bootsource;
+	}
 
 	nmatches = call_for_each_storage(fn, data, filter, false);
 	if (nmatches < 0)

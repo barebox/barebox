@@ -320,6 +320,18 @@ class FactoryDataset:
                 if len(bin) > 2**16 - 1:
                     raise ValueError(f"String {name} is too long!")
 
+            elif tag_format == "bytes":
+                try:
+                    bin = bytes.fromhex(value)
+                except ValueError:
+                    raise ValueError(f"{name}: Invalid hex string for bytes format")
+                if "length" in tag:
+                    if tag["length"]!=len(bin):
+                        raise ValueError(f"{name}: schema requires this byte sequence to be {tag["length"]} bytes but the given sequence is {len(bin)} byte long.")
+                fmt = f"{len(bin)}s"
+                if len(bin) > 2**16 - 1:
+                    raise ValueError(f"Bytes {name} is too long!")
+
             elif tag_format == "decimal":
                 fmtl = tag["length"]
                 if fmtl == 1:
@@ -451,6 +463,8 @@ class FactoryDataset:
                 value = struct.unpack_from(fmt, bin, data_ptr)[0]
             elif tag_schema["format"] == "string":
                 value = bin[data_ptr : data_ptr + tag_len].decode("UTF-8")  # noqa E203
+            elif tag_schema["format"] == "bytes":
+                value = bin[data_ptr : data_ptr + tag_len].hex()
             elif tag_schema["format"] == "mac-sequence":
                 if tag_len != 7:
                     raise ValueError(f"Tag {name} has wrong length {hex(tag_len)} but expected 0x7.")

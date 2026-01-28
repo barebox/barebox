@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include "barebox-info.h"
 #include <common.h>
 #include <net.h>
 #include <tlv/tlv.h>
+#include <param.h>
+#include <string.h>
+
 
 int tlv_handle_serial(struct tlv_device *dev, struct tlv_mapping *map, u16 len, const u8 *val)
 {
@@ -150,6 +154,23 @@ int tlv_format_dec(struct tlv_device *dev, struct tlv_mapping *map, u16 len, con
 	}
 }
 
+int tlv_bind_soc_uid(struct tlv_device *dev, struct tlv_mapping *map, u16 len, const u8 *val)
+{
+	const void *soc_uid = 0;
+	size_t soc_uid_len = 0;
+
+	if (barebox_get_soc_uid_bin(&soc_uid, &soc_uid_len))
+		return -EACCES;
+
+	if (soc_uid && (size_t)len == soc_uid_len && !memcmp(val, soc_uid, len))
+		return tlv_format(dev, map, "%*phN", len, val);
+
+	dev_err(&dev->dev, "%s: tlv bound to SoC UID %*phN, got %*phN\n", __func__,
+		len, val, (int)soc_uid_len, soc_uid);
+
+	return -EACCES;
+}
+
 struct tlv_mapping barebox_tlv_v1_mappings[] = {
 	/* Detailed release information string for the device */
 	{ 0x0002, tlv_format_str, "device-hardware-release" },
@@ -169,6 +190,8 @@ struct tlv_mapping barebox_tlv_v1_mappings[] = {
 	{ 0x0011, tlv_handle_eth_address, "ethernet-address" },
 	/* A sequence of multiple Ethernet addresses */
 	{ 0x0012, tlv_handle_eth_address_seq, "ethernet-address" },
+	/* Reject TLV if supplied binary data does not match UID SoC register */
+	{ 0x0024, tlv_bind_soc_uid, "bound-soc-uid"},
 	{ /* sentintel */ },
 };
 
@@ -212,4 +235,4 @@ static int tlv_register_default(void)
 	}
 	return 0;
 }
-device_initcall(tlv_register_default);
+late_initcall(tlv_register_default);

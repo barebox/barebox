@@ -29,6 +29,10 @@ void barebox_set_serial_number(const char *);
 void barebox_set_product_uuid(const uuid_t *uuid);
 const uuid_t *barebox_get_product_uuid(void);
 
+void barebox_set_soc_uid(const char *uidstr, const void *uidbuf, size_t len);
+const char *barebox_get_soc_uid(void);
+int barebox_get_soc_uid_bin(const void **buf, size_t *len);
+
 #ifdef CONFIG_OFTREE
 void barebox_set_of_machine_compatible(const char *);
 const char *barebox_get_of_machine_compatible(void);

@@ -110,13 +110,16 @@ static void stm32_bsec_set_unique_machine_id(struct regmap *map)
 {
 	u32 unique_id[3];
 	int ret;
+	char *uidstr;
 
 	ret = regmap_bulk_read(map, BSEC_OTP_SERIAL * 4,
 			       unique_id, sizeof(unique_id) / 4);
 	if (ret)
 		return;
 
-	machine_id_set_hashable(unique_id, sizeof(unique_id));
+	uidstr = xasprintf("%08X%08X%08X", unique_id[0], unique_id[1], unique_id[2]);
+	barebox_set_soc_uid(uidstr, unique_id, sizeof(unique_id));
+	free(uidstr);
 }
 
 static int stm32_bsec_read_mac(struct bsec_priv *priv, int offset, u8 *mac)
@@ -278,8 +281,7 @@ static int stm32_bsec_probe(struct device *dev)
 	if (IS_ERR(nvmem))
 		return PTR_ERR(nvmem);
 
-	if (IS_ENABLED(CONFIG_MACHINE_ID))
-		stm32_bsec_set_unique_machine_id(map);
+	stm32_bsec_set_unique_machine_id(map);
 
 	stm32_bsec_init_dt(priv, dev, map);
 

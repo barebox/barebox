@@ -48,7 +48,7 @@ struct imx8_soc_data {
 	void (*save_boot_loc)(void);
 };
 
-static u64 soc_uid;
+static u64 soc_uid[2];
 
 #ifdef CONFIG_HAVE_ARM_SMCCC
 static u32 imx8mq_soc_revision_from_atf(void)
@@ -99,9 +99,9 @@ static u32 __init imx8mq_soc_revision(void)
 			rev = REV_B1;
 	}
 
-	soc_uid = readl_relaxed(ocotp_base + OCOTP_UID_HIGH);
-	soc_uid <<= 32;
-	soc_uid |= readl_relaxed(ocotp_base + OCOTP_UID_LOW);
+	soc_uid[0] = readl_relaxed(ocotp_base + OCOTP_UID_HIGH);
+	soc_uid[0] <<= 32;
+	soc_uid[0] |= readl_relaxed(ocotp_base + OCOTP_UID_LOW);
 
 	/* Keep the OCOTP clk on for the TF-A else the CPU stuck */
 	of_node_put(np);
@@ -109,13 +109,16 @@ static u32 __init imx8mq_soc_revision(void)
 	return rev;
 }
 
+#define IMX8MP_OCOTP_UID_2_LOW	0xe00
+#define IMX8MP_OCOTP_UID_2_HIGH	0xe10
+
 static void __init imx8mm_soc_uid(void)
 {
 	void __iomem *ocotp_base;
 	struct device_node *np;
 	struct clk *clk;
-	u32 offset = of_machine_is_compatible("fsl,imx8mp") ?
-		     IMX8MP_OCOTP_UID_OFFSET : 0;
+	bool is_imx8mp = of_machine_is_compatible("fsl,imx8mp");
+	u32 offset = is_imx8mp ? IMX8MP_OCOTP_UID_OFFSET : 0;
 
 	np = of_find_compatible_node(NULL, NULL, "fsl,imx8mm-ocotp");
 	if (!np)
@@ -131,9 +134,15 @@ static void __init imx8mm_soc_uid(void)
 
 	clk_prepare_enable(clk);
 
-	soc_uid = readl_relaxed(ocotp_base + OCOTP_UID_HIGH + offset);
-	soc_uid <<= 32;
-	soc_uid |= readl_relaxed(ocotp_base + OCOTP_UID_LOW + offset);
+	soc_uid[0] = readl_relaxed(ocotp_base + OCOTP_UID_HIGH + offset);
+	soc_uid[0] <<= 32;
+	soc_uid[0] |= readl_relaxed(ocotp_base + OCOTP_UID_LOW + offset);
+
+	if (is_imx8mp) {
+		soc_uid[1] = readl_relaxed(ocotp_base + IMX8MP_OCOTP_UID_2_HIGH);
+		soc_uid[1] <<= 32;
+		soc_uid[1] |= readl_relaxed(ocotp_base + IMX8MP_OCOTP_UID_2_LOW);
+	}
 
 	/* Keep the OCOTP clk on for the TF-A else the CPU stuck */
 	of_node_put(np);
@@ -265,11 +274,19 @@ static int __init imx8_soc_init(void)
 		goto free_soc;
 	}
 
-	soc_dev_attr->serial_number = xasprintf("%016llX", soc_uid);
+	if (soc_uid[1] && !imx8mp_keep_compatible_soc_uid())
+		soc_dev_attr->serial_number = xasprintf("%016llX%016llX",
+							soc_uid[1], soc_uid[0]);
+	else
+		soc_dev_attr->serial_number = xasprintf("%016llX", soc_uid[0]);
 	if (!soc_dev_attr->serial_number) {
 		ret = -ENOMEM;
 		goto free_rev;
 	}
+
+	if (!IS_ENABLED(CONFIG_IMX_OCOTP))
+		barebox_set_soc_uid(soc_dev_attr->serial_number, soc_uid,
+				    sizeof(soc_uid));
 
 	soc_dev = soc_device_register(soc_dev_attr);
 	if (IS_ERR(soc_dev)) {

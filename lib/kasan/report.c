@@ -179,6 +179,9 @@ static void __kasan_report(unsigned long addr, size_t size, bool is_write,
 	}
 
 	end_report(&flags);
+
+	if (IS_ENABLED(CONFIG_BUG_ON_DATA_CORRUPTION))
+		panic_no_stacktrace("");
 }
 
 bool kasan_report(unsigned long addr, size_t size, bool is_write,

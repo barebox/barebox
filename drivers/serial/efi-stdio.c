@@ -349,7 +349,9 @@ static int efi_console_puts(struct console_device *cdev, const char *s,
 
 static void efi_console_putc(struct console_device *cdev, char c)
 {
-	efi_console_puts(cdev, &c, 1);
+	struct efi_console_priv *priv = to_efi(cdev);
+	efi_console_add_char(priv, c);
+	efi_console_flush(priv);
 }
 
 static int efi_console_tstc(struct console_device *cdev)

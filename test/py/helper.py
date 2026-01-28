@@ -116,18 +116,64 @@ def getparam_int(info, var):
     return int(info["Parameters"][var].split()[0])
 
 
-def of_get_property(barebox, path):
+def of_scan_property(val, ncells=1):
+    if '/*' in val:
+        raise ValueError("Comments are not allowed")
+
+    # empty string
+    if val == '""':
+        return ""
+
+    items = []
+
+    # strings
+    for m in re.finditer(r'"([^"]*)"', val):
+        items.append(m.group(1))
+
+    # < ... > cells
+    for m in re.finditer(r'<([^>]*)>', val):
+        nums = [int(x, 16) for x in m.group(1).split()]
+
+        if ncells > 1 and len(nums) % ncells:
+            raise ValueError("Cell count not divisible by ncells")
+
+        if ncells == 0:
+            v = 0
+            for i, n in enumerate(nums):
+                v |= n << (32 * (len(nums) - i - 1))
+            items.append(v)
+        elif ncells == 1:
+            items.extend(nums)
+        else:
+            for i in range(0, len(nums), ncells):
+                v = 0
+                for j, n in enumerate(nums[i:i+ncells]):
+                    v |= n << (32 * (ncells - j - 1))
+                items.append(v)
+
+    # [ ... ] byte list
+    m = re.search(r'\[([0-9a-fA-F ]+)\]', val)
+    if m:
+        items.append(bytes(int(x, 16) for x in m.group(1).split()))
+
+    if not items:
+        return False
+    return items[0] if len(items) == 1 else items
+
+
+def of_get_property(barebox, path, ncells=1):
     node, prop = os.path.split(path)
 
     stdout = barebox.run_check(f"of_dump -p {node}")
     for line in stdout:
-        if line == '{prop};':
+        if line == f'{prop};':
             return True
 
         prefix = f'{prop} = '
         if line.startswith(prefix):
-            # Also drop the semicolon
-            return line[len(prefix):-1]
+            # Drop the prefix and semicolon, then parse the value
+            value_str = line[len(prefix):-1].strip()
+            return of_scan_property(value_str, ncells)
     return False
 
 

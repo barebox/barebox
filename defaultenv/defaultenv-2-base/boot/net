@@ -1,6 +1,6 @@
 #!/bin/sh
 
-path="/mnt/tftp"
+path="${global.net.fetchdir}"
 
 # global.net.server and global.hostname may be set by DHCP, so trigger it first
 ifup -a1

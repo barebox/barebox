@@ -11,7 +11,7 @@ int pread_full(int fd, void *buf, size_t size, loff_t offset);
 int pwrite_full(int fd, const void *buf, size_t size, loff_t offset);
 int write_full(int fd, const void *buf, size_t size);
 int read_full(int fd, void *buf, size_t size);
-int copy_fd(int in, int out);
+int copy_fd(int in, int out, size_t size);
 
 ssize_t read_file_into_buf(const char *filename, void *buf, size_t size);
 

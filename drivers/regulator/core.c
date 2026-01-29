@@ -96,6 +96,9 @@ static int regulator_disable_rdev(struct regulator_dev *rdev)
 
 	rdev->enable_count--;
 
+	if (rdev->off_on_delay)
+		udelay(rdev->off_on_delay);
+
 	return regulator_disable(rdev->supply);
 }
 
@@ -309,7 +312,7 @@ int of_regulator_register(struct regulator_dev *rdev, struct device_node *node)
 	node->dev = rdev->dev;
 
 	if (rdev->desc->off_on_delay)
-		rdev->enable_time_us = rdev->desc->off_on_delay;
+		rdev->off_on_delay = rdev->desc->off_on_delay;
 
 	if (rdev->desc->fixed_uV && rdev->desc->n_voltages == 1)
 		rdev->min_uv = rdev->max_uv = rdev->desc->fixed_uV;

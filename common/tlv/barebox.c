@@ -186,9 +186,9 @@ struct tlv_mapping barebox_tlv_v1_mappings[] = {
 	{ 0x0007, tlv_format_str, "pcba-serial-number"},
 	/* Printed Circuit Board Assembly hardware release */
 	{ 0x0008, tlv_format_str, "pcba-hardware-release"},
-	/* A single Ethernet address */
+	/* A list of Ethernet addresses or a single Ethernet address */
 	{ 0x0011, tlv_handle_eth_address, "ethernet-address" },
-	/* A sequence of multiple Ethernet addresses */
+	/* A sequence of subsequent Ethernet addresses, by number and starting address */
 	{ 0x0012, tlv_handle_eth_address_seq, "ethernet-address" },
 	/* Reject TLV if supplied binary data does not match UID SoC register */
 	{ 0x0024, tlv_bind_soc_uid, "bound-soc-uid"},

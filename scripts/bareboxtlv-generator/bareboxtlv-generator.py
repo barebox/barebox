@@ -267,6 +267,14 @@ class FactoryDataset:
             |    tag: 0x0005
             |    format: decimal
             |    length: 1
+        * mac-list:
+          - A list of MAC addresses or a signle MAC address
+          - Input data must be an iterable of MAC addresses: (first_mac: int, second_mac: int, ...)
+          - MAC-addresses are represented as python ints
+          - Schema example:
+            |  ethernet-address:
+            |    tag: 0x0011
+            |    format: "mac-list"
         * mac-sequence:
           - Describes a consecutive number of MAC addresses
           - Contains a starting address and a count
@@ -276,14 +284,6 @@ class FactoryDataset:
             |  ethernet-address:
             |    tag: 0x0012
             |    format: "mac-sequence"
-        * mac-list:
-          - A list of MAC addresses
-          - Input data must be an iterable of MAC addresses: (first_mac: int, second_mac: int, ...)
-          - MAC-addresses are represented as python ints
-          - Schema example:
-            |  ethernet-address:
-            |    tag: 0x0012
-            |    format: "mac-list"
         * linear-calibration
           - Linear calibration data for analog channels
           - Input data must be an iterable of floats: (c1: float, c2: float, ...)
@@ -346,18 +346,18 @@ class FactoryDataset:
                     raise ValueError(f"Decimal {name} has invalid len {fmtl}. Must be in [1, 2, 4, 8]!")
                 bin = abs(int(value))
 
+            elif tag_format == "mac-list":
+                bin = b""
+                for mac in value:
+                    bin += struct.pack(">Q", mac)[2:]
+                fmt = f"{len(value) * 6}s"
+
             elif tag_format == "mac-sequence":
                 if len(value) != 2:
                     raise ValueError(f"mac-sequence {name} must be in format (base_mac: int, count: int)")
                 fmt = "7s"
                 mac = struct.pack(">Q", value[0])[2:]
                 bin = struct.pack(">B6s", value[1], mac)
-
-            elif tag_format == "mac-list":
-                bin = b""
-                for mac in value:
-                    bin += struct.pack(">Q", mac)[2:]
-                fmt = f"{len(value) * 6}s"
 
             elif tag_format == "calibration":
                 bin = b""
@@ -465,12 +465,6 @@ class FactoryDataset:
                 value = bin[data_ptr : data_ptr + tag_len].decode("UTF-8")  # noqa E203
             elif tag_schema["format"] == "bytes":
                 value = bin[data_ptr : data_ptr + tag_len].hex()
-            elif tag_schema["format"] == "mac-sequence":
-                if tag_len != 7:
-                    raise ValueError(f"Tag {name} has wrong length {hex(tag_len)} but expected 0x7.")
-                count, base_mac = struct.unpack_from(">B6s", bin, data_ptr)
-                base_mac = struct.unpack(">Q", b"\x00\x00" + base_mac)[0]
-                value = [base_mac, count]
             elif tag_schema["format"] == "mac-list":
                 if tag_len % 6 != 0:
                     raise ValueError(f"Tag {name} has wrong length {hex(tag_id)}. Must be multiple of 0x6.")
@@ -479,6 +473,12 @@ class FactoryDataset:
                     mac = struct.unpack_from(">6s", bin, data_ptr + int(i * 6))[0]
                     mac = struct.unpack(">Q", b"\x00\x00" + mac)[0]
                     value.append(mac)
+            elif tag_schema["format"] == "mac-sequence":
+                if tag_len != 7:
+                    raise ValueError(f"Tag {name} has wrong length {hex(tag_len)} but expected 0x7.")
+                count, base_mac = struct.unpack_from(">B6s", bin, data_ptr)
+                base_mac = struct.unpack(">Q", b"\x00\x00" + base_mac)[0]
+                value = [base_mac, count]
             elif tag_schema["format"] == "calibration":
                 if tag_len % 4 != 0:
                     raise ValueError(f"Tag {name} has wrong length {hex(tag_id)}. Must be multiple of 0x4.")

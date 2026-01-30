@@ -17,6 +17,8 @@ int rockchip_soc(void)
 		__rockchip_soc = 3188;
 	else if (of_machine_is_compatible("rockchip,rk3288"))
 		__rockchip_soc = 3288;
+	else if (of_machine_is_compatible("rockchip,rk3562"))
+		__rockchip_soc = 3562;
 	else if (of_machine_is_compatible("rockchip,rk3566"))
 		__rockchip_soc = 3566;
 	else if (of_machine_is_compatible("rockchip,rk3568"))
@@ -49,6 +51,8 @@ static int rockchip_init(void)
 		return rk3188_init();
 	case 3288:
 		return rk3288_init();
+	case 3562:
+		return rk3562_init();
 	case 3566:
 		return rk3568_init();
 	case 3568:

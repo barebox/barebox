@@ -27,6 +27,10 @@ config ARCH_ROCKCHIP_V8
 	select CPU_V8
 	select ARM_ATF
 
+config ARCH_RK3562
+	bool
+	select ARCH_ROCKCHIP_V8
+
 config ARCH_RK3568
 	bool
 	select ARCH_ROCKCHIP_V8

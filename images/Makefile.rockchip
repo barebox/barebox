@@ -38,6 +38,7 @@ FILE_barebox-rk3288-phycore-som.img = start_rk3288_phycore_som.pblb
 image-$(CONFIG_MACH_PHYTEC_SOM_RK3288) += barebox-rk3288-phycore-som.img
 
 $(call build_rockchip_image, CONFIG_MACH_RK3562_EVB2, start_rk3562_evb2, rockchip-rk3562-evb2/sdram-init.bin, rk3562-evb2)
+$(call build_rockchip_image, CONFIG_MACH_RK3562_KICKPI_K3, start_rk3562_kickpi_k3, rockchip-rk3562-kickpi-k3/sdram-init.bin, rk3562-kickpi-k3)
 $(call build_rockchip_image, CONFIG_MACH_RK3568_EVB, start_rk3568_evb, rockchip-rk3568-evb/sdram-init.bin, rk3568-evb)
 $(call build_rockchip_image, CONFIG_MACH_RK3568_BPI_R2PRO, start_rk3568_bpi_r2pro, rockchip-rk3568-bpi-r2pro/sdram-init.bin, rk3568-bpi-r2pro)
 $(call build_rockchip_image, CONFIG_MACH_PINE64_PINETAB2, start_pinetab2_v0, pine64-pinetab2/sdram-init.bin, pinetab2-v0)

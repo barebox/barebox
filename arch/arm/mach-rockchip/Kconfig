@@ -70,6 +70,12 @@ config MACH_RK3562_EVB2
 	help
 	  Say Y here if you are using a RK3562 EVB2
 
+config MACH_RK3562_KICKPI_K3
+	select ARCH_RK3562
+	bool "RK3562 KICKPI K3"
+	help
+	  Say Y here if you are using a RK3562 KICKPI K3
+
 config MACH_RK3568_EVB
 	select ARCH_RK3568
 	bool "RK3568 EVB"

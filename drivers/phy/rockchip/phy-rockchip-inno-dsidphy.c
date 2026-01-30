@@ -742,6 +742,9 @@ static const struct of_device_id inno_dsidphy_of_match[] = {
 		.compatible = "rockchip,rk3368-dsi-dphy",
 		.data = &max_1ghz_video_phy_plat_data,
 	}, {
+		.compatible = "rockchip,rk3562-dsi-dphy",
+		.data = &max_2_5ghz_video_phy_plat_data,
+	}, {
 		.compatible = "rockchip,rk3568-dsi-dphy",
 		.data = &max_2_5ghz_video_phy_plat_data,
 	}, {

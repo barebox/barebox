@@ -21,6 +21,8 @@
 #include <linux/clk.h>
 #include <restart.h>
 
+struct clk;
+
 #define HIWORD_UPDATE(val, mask, shift) \
 		((val) << (shift) | (mask) << ((shift) + 16))
 
@@ -77,6 +79,92 @@
 #define RV1108_SDIO_CON1		0x1e4
 #define RV1108_EMMC_CON0		0x1e8
 #define RV1108_EMMC_CON1		0x1ec
+
+#define RV1126_PMU_MODE			0x0
+#define RV1126_PMU_PLL_CON(x)		((x) * 0x4 + 0x10)
+#define RV1126_PMU_CLKSEL_CON(x)	((x) * 0x4 + 0x100)
+#define RV1126_PMU_CLKGATE_CON(x)	((x) * 0x4 + 0x180)
+#define RV1126_PMU_SOFTRST_CON(x)	((x) * 0x4 + 0x200)
+#define RV1126_PLL_CON(x)		((x) * 0x4)
+#define RV1126_MODE_CON			0x90
+#define RV1126_CLKSEL_CON(x)		((x) * 0x4 + 0x100)
+#define RV1126_CLKGATE_CON(x)		((x) * 0x4 + 0x280)
+#define RV1126_SOFTRST_CON(x)		((x) * 0x4 + 0x300)
+#define RV1126_GLB_SRST_FST		0x408
+#define RV1126_GLB_SRST_SND		0x40c
+#define RV1126_SDMMC_CON0		0x440
+#define RV1126_SDMMC_CON1		0x444
+#define RV1126_SDIO_CON0		0x448
+#define RV1126_SDIO_CON1		0x44c
+#define RV1126_EMMC_CON0		0x450
+#define RV1126_EMMC_CON1		0x454
+
+#define RV1126B_TOPCRU_BASE		0x0
+#define RV1126B_BUSCRU_BASE		0x10000
+#define RV1126B_PERICRU_BASE		0x20000
+#define RV1126B_CORECRU_BASE		0x30000
+#define RV1126B_PMUCRU_BASE		0x40000
+#define RV1126B_PMU1CRU_BASE		0x50000
+#define RV1126B_DDRCRU_BASE		0x60000
+#define RV1126B_SUBDDRCRU_BASE		0x68000
+#define RV1126B_VICRU_BASE		0x70000
+#define RV1126B_VEPUCRU_BASE		0x80000
+#define RV1126B_NPUCRU_BASE		0x90000
+#define RV1126B_VDOCRU_BASE		0xA0000
+#define RV1126B_VCPCRU_BASE		0xB0000
+
+#define RV1126B_PLL_CON(x)		((x) * 0x4 + RV1126B_TOPCRU_BASE)
+#define RV1126B_MODE_CON		(0x280 + RV1126B_TOPCRU_BASE)
+#define RV1126B_CLKSEL_CON(x)		((x) * 0x4 + 0x300 + RV1126B_TOPCRU_BASE)
+#define RV1126B_CLKGATE_CON(x)		((x) * 0x4 + 0x800 + RV1126B_TOPCRU_BASE)
+#define RV1126B_SOFTRST_CON(x)		((x) * 0x4 + 0xa00 + RV1126B_TOPCRU_BASE)
+#define RV1126B_GLB_SRST_FST		(0xc08 + RV1126B_TOPCRU_BASE)
+#define RV1126B_GLB_SRST_SND		(0xc0c + RV1126B_TOPCRU_BASE)
+#define RV1126B_CLK_CM_FRAC0_DIV_H	(0xcc0 + RV1126B_TOPCRU_BASE)
+#define RV1126B_CLK_CM_FRAC1_DIV_H	(0xcc4 + RV1126B_TOPCRU_BASE)
+#define RV1126B_CLK_CM_FRAC2_DIV_H	(0xcc8 + RV1126B_TOPCRU_BASE)
+#define RV1126B_CLK_UART_FRAC0_DIV_H	(0xccc + RV1126B_TOPCRU_BASE)
+#define RV1126B_CLK_UART_FRAC1_DIV_H	(0xcd0 + RV1126B_TOPCRU_BASE)
+#define RV1126B_CLK_AUDIO_FRAC0_DIV_H	(0xcd4 + RV1126B_TOPCRU_BASE)
+#define RV1126B_CLK_AUDIO_FRAC1_DIV_H	(0xcd8 + RV1126B_TOPCRU_BASE)
+#define RV1126B_BUSCLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_BUSCRU_BASE)
+#define RV1126B_BUSCLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_BUSCRU_BASE)
+#define RV1126B_BUSSOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_BUSCRU_BASE)
+#define RV1126B_PERIPLL_CON(x)		((x) * 0x4 + RV1126B_PERICRU_BASE)
+#define RV1126B_PERICLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_PERICRU_BASE)
+#define RV1126B_PERICLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_PERICRU_BASE)
+#define RV1126B_PERISOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_PERICRU_BASE)
+#define RV1126B_CORECLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_CORECRU_BASE)
+#define RV1126B_CORECLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_CORECRU_BASE)
+#define RV1126B_CORESOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_CORECRU_BASE)
+#define RV1126B_PMUCLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_PMUCRU_BASE)
+#define RV1126B_PMUCLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_PMUCRU_BASE)
+#define RV1126B_PMUSOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_PMUCRU_BASE)
+#define RV1126B_PMU1CLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_PMU1CRU_BASE)
+#define RV1126B_PMU1CLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_PMU1CRU_BASE)
+#define RV1126B_PMU1SOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_PMU1CRU_BASE)
+#define RV1126B_DDRCLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_DDRCRU_BASE)
+#define RV1126B_DDRCLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_DDRCRU_BASE)
+#define RV1126B_DDRSOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_DDRCRU_BASE)
+#define RV1126B_SUBDDRPLL_CON(x)	((x) * 0x4 + RV1126B_SUBDDRCRU_BASE)
+#define RV1126B_SUBDDRCLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_SUBDDRCRU_BASE)
+#define RV1126B_SUBDDRCLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_SUBDDRCRU_BASE)
+#define RV1126B_SUBDDRSOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_SUBDDRCRU_BASE)
+#define RV1126B_VICLKSEL_CON(x)		((x) * 0x4 + 0x300 + RV1126B_VICRU_BASE)
+#define RV1126B_VICLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_VICRU_BASE)
+#define RV1126B_VISOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_VICRU_BASE)
+#define RV1126B_VEPUCLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_VEPUCRU_BASE)
+#define RV1126B_VEPUCLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_VEPUCRU_BASE)
+#define RV1126B_VEPUSOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_VEPUCRU_BASE)
+#define RV1126B_NPUCLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_NPUCRU_BASE)
+#define RV1126B_NPUCLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_NPUCRU_BASE)
+#define RV1126B_NPUSOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_NPUCRU_BASE)
+#define RV1126B_VDOCLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_VDOCRU_BASE)
+#define RV1126B_VDOCLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_VDOCRU_BASE)
+#define RV1126B_VDOSOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_VDOCRU_BASE)
+#define RV1126B_VCPCLKSEL_CON(x)	((x) * 0x4 + 0x300 + RV1126B_VCPCRU_BASE)
+#define RV1126B_VCPCLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_VCPCRU_BASE)
+#define RV1126B_VCPSOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_VCPCRU_BASE)
 
 #define RK2928_PLL_CON(x)		((x) * 0x4)
 #define RK2928_MODE_CON		0x40
@@ -186,6 +274,80 @@
 #define RK3399_PMU_CLKSEL_CON(x)	((x) * 0x4 + 0x80)
 #define RK3399_PMU_CLKGATE_CON(x)	((x) * 0x4 + 0x100)
 #define RK3399_PMU_SOFTRST_CON(x)	((x) * 0x4 + 0x110)
+
+#define RK3506_PMU_CRU_BASE		0x10000
+#define RK3506_PLL_CON(x)		((x) * 0x4 + RK3506_PMU_CRU_BASE)
+#define RK3506_CLKSEL_CON(x)		((x) * 0x4 + 0x300)
+#define RK3506_CLKGATE_CON(x)		((x) * 0x4 + 0x800)
+#define RK3506_SOFTRST_CON(x)		((x) * 0x4 + 0xa00)
+#define RK3506_PMU_CLKSEL_CON(x)	((x) * 0x4 + 0x300 + RK3506_PMU_CRU_BASE)
+#define RK3506_PMU_CLKGATE_CON(x)	((x) * 0x4 + 0x800 + RK3506_PMU_CRU_BASE)
+#define RK3506_MODE_CON			0x280
+#define RK3506_GLB_CNT_TH		0xc00
+#define RK3506_GLB_SRST_FST		0xc08
+#define RK3506_GLB_SRST_SND		0xc0c
+
+#define RK3528_PMU_CRU_BASE		0x10000
+#define RK3528_PCIE_CRU_BASE		0x20000
+#define RK3528_DDRPHY_CRU_BASE		0x28000
+#define RK3528_PLL_CON(x)		RK2928_PLL_CON(x)
+#define RK3528_PCIE_PLL_CON(x)		((x) * 0x4 + RK3528_PCIE_CRU_BASE)
+#define RK3528_DDRPHY_PLL_CON(x)	((x) * 0x4 + RK3528_DDRPHY_CRU_BASE)
+#define RK3528_MODE_CON			0x280
+#define RK3528_CLKSEL_CON(x)		((x) * 0x4 + 0x300)
+#define RK3528_CLKGATE_CON(x)		((x) * 0x4 + 0x800)
+#define RK3528_SOFTRST_CON(x)		((x) * 0x4 + 0xa00)
+#define RK3528_SDMMC_CON(x)		((x) * 0x4 + 0x24)
+#define RK3528_SDIO0_CON(x)		((x) * 0x4 + 0x4)
+#define RK3528_SDIO1_CON(x)		((x) * 0x4 + 0xc)
+#define RK3528_PMU_CLKSEL_CON(x)	((x) * 0x4 + 0x300 + RK3528_PMU_CRU_BASE)
+#define RK3528_PMU_CLKGATE_CON(x)	((x) * 0x4 + 0x800 + RK3528_PMU_CRU_BASE)
+#define RK3528_PCIE_CLKSEL_CON(x)	((x) * 0x4 + 0x300 + RK3528_PCIE_CRU_BASE)
+#define RK3528_PCIE_CLKGATE_CON(x)	((x) * 0x4 + 0x800 + RK3528_PCIE_CRU_BASE)
+#define RK3528_DDRPHY_CLKGATE_CON(x)	((x) * 0x4 + 0x800 + RK3528_DDRPHY_CRU_BASE)
+#define RK3528_DDRPHY_MODE_CON		(0x280 + RK3528_DDRPHY_CRU_BASE)
+#define RK3528_GLB_CNT_TH		0xc00
+#define RK3528_GLB_SRST_FST		0xc08
+#define RK3528_GLB_SRST_SND		0xc0c
+
+#define RK3562_PMU0_CRU_BASE		0x10000
+#define RK3562_PMU1_CRU_BASE		0x18000
+#define RK3562_DDR_CRU_BASE		0x20000
+#define RK3562_SUBDDR_CRU_BASE		0x28000
+#define RK3562_PERI_CRU_BASE		0x30000
+
+#define RK3562_PLL_CON(x)		RK2928_PLL_CON(x)
+#define RK3562_PMU1_PLL_CON(x)		((x) * 0x4 + RK3562_PMU1_CRU_BASE + 0x40)
+#define RK3562_SUBDDR_PLL_CON(x)	((x) * 0x4 + RK3562_SUBDDR_CRU_BASE + 0x20)
+#define RK3562_MODE_CON			0x600
+#define RK3562_PMU1_MODE_CON		(RK3562_PMU1_CRU_BASE + 0x380)
+#define RK3562_SUBDDR_MODE_CON		(RK3562_SUBDDR_CRU_BASE + 0x380)
+#define RK3562_CLKSEL_CON(x)		((x) * 0x4 + 0x100)
+#define RK3562_CLKGATE_CON(x)		((x) * 0x4 + 0x300)
+#define RK3562_SOFTRST_CON(x)		((x) * 0x4 + 0x400)
+#define RK3562_DDR_CLKSEL_CON(x)	((x) * 0x4 + RK3562_DDR_CRU_BASE + 0x100)
+#define RK3562_DDR_CLKGATE_CON(x)	((x) * 0x4 + RK3562_DDR_CRU_BASE + 0x180)
+#define RK3562_DDR_SOFTRST_CON(x)	((x) * 0x4 + RK3562_DDR_CRU_BASE + 0x200)
+#define RK3562_SUBDDR_CLKSEL_CON(x)	((x) * 0x4 + RK3562_SUBDDR_CRU_BASE + 0x100)
+#define RK3562_SUBDDR_CLKGATE_CON(x)	((x) * 0x4 + RK3562_SUBDDR_CRU_BASE + 0x180)
+#define RK3562_SUBDDR_SOFTRST_CON(x)	((x) * 0x4 + RK3562_SUBDDR_CRU_BASE + 0x200)
+#define RK3562_PERI_CLKSEL_CON(x)	((x) * 0x4 + RK3562_PERI_CRU_BASE + 0x100)
+#define RK3562_PERI_CLKGATE_CON(x)	((x) * 0x4 + RK3562_PERI_CRU_BASE + 0x300)
+#define RK3562_PERI_SOFTRST_CON(x)	((x) * 0x4 + RK3562_PERI_CRU_BASE + 0x400)
+#define RK3562_PMU0_CLKSEL_CON(x)	((x) * 0x4 + RK3562_PMU0_CRU_BASE + 0x100)
+#define RK3562_PMU0_CLKGATE_CON(x)	((x) * 0x4 + RK3562_PMU0_CRU_BASE + 0x180)
+#define RK3562_PMU0_SOFTRST_CON(x)	((x) * 0x4 + RK3562_PMU0_CRU_BASE + 0x200)
+#define RK3562_PMU1_CLKSEL_CON(x)	((x) * 0x4 + RK3562_PMU1_CRU_BASE + 0x100)
+#define RK3562_PMU1_CLKGATE_CON(x)	((x) * 0x4 + RK3562_PMU1_CRU_BASE + 0x180)
+#define RK3562_PMU1_SOFTRST_CON(x)	((x) * 0x4 + RK3562_PMU1_CRU_BASE + 0x200)
+#define RK3562_GLB_SRST_FST		0x614
+#define RK3562_GLB_SRST_SND		0x618
+#define RK3562_GLB_RST_CON		0x61c
+#define RK3562_GLB_RST_ST		0x620
+#define RK3562_SDMMC0_CON0		0x624
+#define RK3562_SDMMC0_CON1		0x628
+#define RK3562_SDMMC1_CON0		0x62c
+#define RK3562_SDMMC1_CON1		0x630
 
 #define RK3568_PLL_CON(x)		RK2928_PLL_CON(x)
 #define RK3568_MODE_CON0		0xc0
@@ -371,12 +533,28 @@ enum rockchip_grf_type {
 	grf_type_num
 };
 
+/* ceil(sqrt(enums in rockchip_grf_type - 1)) */
+#define GRF_HASH_ORDER 2
+
+/**
+ * struct rockchip_aux_grf - entry for the aux_grf_table hashtable
+ * @grf: pointer to the grf this entry references
+ * @type: what type of GRF this is
+ * @node: hlist node
+ */
+struct rockchip_aux_grf {
+	struct regmap *grf;
+	enum rockchip_grf_type type;
+	struct hlist_node node;
+};
+
 /**
  * struct rockchip_clk_provider - information about clock provider
  * @reg_base: virtual address for the register base.
  * @clk_data: holds clock related data like clk* and number of clocks.
  * @cru_node: device-node of the clock-provider
  * @grf: regmap of the general-register-files syscon
+ * @aux_grf_table: hashtable of auxiliary GRF regmaps, indexed by grf_type
  * @lock: maintains exclusion between callbacks for a given clock-provider.
  */
 struct rockchip_clk_provider {
@@ -436,7 +614,8 @@ struct rockchip_pll_rate_table {
  *
  * Flags:
  * ROCKCHIP_PLL_SYNC_RATE - check rate parameters to match against the
- *	rate_table parameters and ajust them if necessary.
+ *	rate_table parameters and adjust them if necessary.
+ * ROCKCHIP_PLL_FIXED_MODE - the pll operates in normal mode only
  */
 struct rockchip_pll_clock {
 	unsigned int		id;
@@ -454,6 +633,7 @@ struct rockchip_pll_clock {
 };
 
 #define ROCKCHIP_PLL_SYNC_RATE		BIT(0)
+#define ROCKCHIP_PLL_FIXED_MODE		BIT(1)
 
 #define PLL(_type, _id, _name, _pnames, _flags, _con, _mode, _mshift,	\
 		_lshift, _pflags, _rtable)				\
@@ -559,7 +739,7 @@ struct clk *rockchip_clk_register_muxgrf(const char *name,
 enum rockchip_clk_branch_type {
 	branch_composite,
 	branch_mux,
-	branch_muxgrf,
+	branch_grf_mux,
 	branch_divider,
 	branch_fraction_divider,
 	branch_gate,
@@ -816,10 +996,26 @@ struct rockchip_clk_branch {
 		.gate_offset	= -1,				\
 	}
 
+#define MUXTBL(_id, cname, pnames, f, o, s, w, mf, mt)		\
+	{							\
+		.id		= _id,				\
+		.branch_type	= branch_mux,			\
+		.name		= cname,			\
+		.parent_names	= pnames,			\
+		.num_parents	= ARRAY_SIZE(pnames),		\
+		.flags		= f,				\
+		.muxdiv_offset	= o,				\
+		.mux_shift	= s,				\
+		.mux_width	= w,				\
+		.mux_flags	= mf,				\
+		.gate_offset	= -1,				\
+		.mux_table	= mt,				\
+	}
+
 #define MUXGRF(_id, cname, pnames, f, o, s, w, mf, gt)		\
 	{							\
 		.id		= _id,				\
-		.branch_type	= branch_muxgrf,		\
+		.branch_type	= branch_grf_mux,		\
 		.name		= cname,			\
 		.parent_names	= pnames,			\
 		.num_parents	= ARRAY_SIZE(pnames),		\
@@ -900,6 +1096,18 @@ struct rockchip_clk_branch {
 		.div_shift	= shift,			\
 	}
 
+#define MMC_GRF(_id, cname, pname, offset, shift, grftype)	\
+	{							\
+		.id		= _id,				\
+		.branch_type	= branch_grf_mmc,		\
+		.name		= cname,			\
+		.parent_names	= (const char *[]){ pname },	\
+		.num_parents	= 1,				\
+		.muxdiv_offset	= offset,			\
+		.div_shift	= shift,			\
+		.grf_type	= grftype,			\
+	}
+
 #define INVERTER(_id, cname, pname, io, is, if)			\
 	{							\
 		.id		= _id,				\
@@ -960,6 +1168,58 @@ struct rockchip_clk_branch {
 		.gate_flags	= gf,				\
 	}
 
+#define COMPOSITE_NOGATE_HALFDIV(_id, cname, pnames, f, mo, ms, mw, mf,	\
+				 ds, dw, df)				\
+	{							\
+		.id		= _id,				\
+		.branch_type	= branch_half_divider,		\
+		.name		= cname,			\
+		.parent_names	= pnames,			\
+		.num_parents	= ARRAY_SIZE(pnames),		\
+		.flags		= f,				\
+		.muxdiv_offset	= mo,				\
+		.mux_shift	= ms,				\
+		.mux_width	= mw,				\
+		.mux_flags	= mf,				\
+		.div_shift	= ds,				\
+		.div_width	= dw,				\
+		.div_flags	= df,				\
+		.gate_offset	= -1,				\
+	}
+
+#define COMPOSITE_NOMUX_HALFDIV(_id, cname, pname, f, mo, ds, dw, df,	\
+			go, gs, gf)				\
+	{							\
+		.id		= _id,				\
+		.branch_type	= branch_half_divider,		\
+		.name		= cname,			\
+		.parent_names	= (const char *[]){ pname },	\
+		.num_parents	= 1,				\
+		.flags		= f,				\
+		.muxdiv_offset	= mo,				\
+		.div_shift	= ds,				\
+		.div_width	= dw,				\
+		.div_flags	= df,				\
+		.gate_offset	= go,				\
+		.gate_shift	= gs,				\
+		.gate_flags	= gf,				\
+	}
+
+#define DIV_HALF(_id, cname, pname, f, o, s, w, df)			\
+	{							\
+		.id		= _id,				\
+		.branch_type	= branch_half_divider,		\
+		.name		= cname,			\
+		.parent_names	= (const char *[]){ pname },	\
+		.num_parents	= 1,				\
+		.flags		= f,				\
+		.muxdiv_offset	= o,				\
+		.div_shift	= s,				\
+		.div_width	= w,				\
+		.div_flags	= df,				\
+		.gate_offset	= -1,				\
+	}
+
 /* SGRF clocks are only accessible from secure mode, so not controllable */
 #define SGRF_GATE(_id, cname, pname)				\
 		FACTOR(_id, cname, pname, 0, 1, 1)
@@ -994,7 +1254,6 @@ void rockchip_clk_register_late_branches(struct device *dev,
 					 struct rockchip_clk_provider *ctx,
 					 struct rockchip_clk_branch *list,
 					 unsigned int nr_clk);
-
 void rockchip_clk_register_plls(struct rockchip_clk_provider *ctx,
 				struct rockchip_pll_clock *pll_list,
 				unsigned int nr_pll, int grf_lock_offset);
@@ -1031,6 +1290,7 @@ static inline void rockchip_register_softrst(struct device_node *np,
 	return rockchip_register_softrst_lut(np, NULL, num_regs, base, flags);
 }
 
+void rk3562_rst_init(struct device_node *np, void __iomem *reg_base);
 void rk3576_rst_init(struct device_node *np, void __iomem *reg_base);
 void rk3588_rst_init(struct device_node *np, void __iomem *reg_base);
 

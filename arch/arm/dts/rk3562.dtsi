@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+/ {
+	aliases {
+		pmugrf.reboot_mode = &reboot_mode;
+		pwm0 = &pwm0;
+		pwm1 = &pwm1;
+		pwm2 = &pwm2;
+		pwm3 = &pwm3;
+		pwm4 = &pwm4;
+		pwm5 = &pwm5;
+		pwm6 = &pwm6;
+		pwm7 = &pwm7;
+		pwm8 = &pwm8;
+		pwm9 = &pwm9;
+		pwm10 = &pwm10;
+		pwm11 = &pwm11;
+		pwm12 = &pwm12;
+		pwm13 = &pwm13;
+		pwm14 = &pwm14;
+		pwm15 = &pwm15;
+		i2c0  = &i2c0;
+		i2c5  = &i2c5;
+		spi0  = &spi0;
+		spi1  = &spi1;
+		spi2  = &spi2;
+		spi3  = &sfc;
+	};
+
+	chosen {
+		barebox,bootsource-mmc0 = &sdhci;
+		barebox,bootsource-mmc1 = &sdmmc0;
+		barebox,bootsource-mmc2 = &sdmmc1;
+	};
+
+	dmc: memory-controller {
+		compatible = "rockchip,rk3562-dmc";
+		rockchip,pmu = <&pmu_grf>;
+	};
+};

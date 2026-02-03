@@ -8,11 +8,11 @@ config ARCH_NR_GPIO
 
 config ARCH_STM32MP13
 	select ARM_PSCI_CLIENT
-	bool
+	bool "Support STM32MP153-based chips"
 
 config ARCH_STM32MP157
 	select ARM_PSCI_CLIENT
-	bool
+	bool "Support STM32MP157-based chips"
 
 config MACH_STM32MP13XX_DK
 	select ARCH_STM32MP13

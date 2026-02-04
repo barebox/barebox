@@ -691,6 +691,16 @@ enum {
 	IMX8MM_PAD_UART4_TXD_GPIO5_IO29                               =  IOMUX_PAD(0x04B8, 0x0250, 5, 0x0000, 0, 0),
 };
 
+#define MX8MM_PAD_CTL_DSE1	(0 << 1)
+#define MX8MM_PAD_CTL_DSE2	(2 << 1)
+#define MX8MM_PAD_CTL_DSE4	(1 << 1)
+#define MX8MM_PAD_CTL_DSE6	(3 << 1)
+#define MX8MM_PAD_CTL_FSEL	BIT(4)
+#define MX8MM_PAD_CTL_ODE	BIT(5)
+#define MX8MM_PAD_CTL_PUE	BIT(6)
+#define MX8MM_PAD_CTL_HYS	BIT(7)
+#define MX8MM_PAD_CTL_PE	BIT(8)
+
 static inline void imx8mm_setup_pad(iomux_v3_cfg_t pad)
 {
 	void __iomem *iomux = IOMEM(MX8MM_IOMUXC_BASE_ADDR);

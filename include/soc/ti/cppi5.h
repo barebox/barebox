@@ -150,7 +150,7 @@ struct cppi5_monolithic_desc_t {
 
 static inline void cppi5_desc_dump(void *desc, u32 size)
 {
-	print_hex_dump(KERN_ERR, "dump udmap_desc: ", DUMP_PREFIX_NONE,
+	print_hex_dump(MSG_ERR, "dump udmap_desc: ", DUMP_PREFIX_NONE,
 		       32, 4, desc, size, false);
 }
 

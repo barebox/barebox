@@ -1,6 +1,7 @@
 #ifndef __PBL_HANDOFF_DATA_H
 #define __PBL_HANDOFF_DATA_H
 
+#include <linux/bug.h>
 #include <linux/list.h>
 
 struct handoff_data {

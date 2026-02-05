@@ -22,7 +22,7 @@
 #define LOGLEVEL	MSG_VDEBUG
 #elif defined DEBUG
 #define LOGLEVEL	MSG_DEBUG
-#else
+#elif !defined(LOGLEVEL)
 #define LOGLEVEL	CONFIG_COMPILE_LOGLEVEL
 #endif
 

@@ -187,6 +187,11 @@ int of_tlv_fixup(struct device_node *root, void *ctx)
 	if (!ethaddrs)
 		return 0;
 
+	if (!IS_ENABLED(CONFIG_NET)) {
+		pr_warn("CONFIG_NET disabled, so skipping ethernet-address trimming in fixup\n");
+		return 0;
+	}
+
 	list_for_each_entry(addr, &ethaddr_list, list) {
 		char propname[sizeof("address-4294967295")];
 		const char *enetaddr_tlv_str;

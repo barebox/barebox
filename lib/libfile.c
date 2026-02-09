@@ -884,3 +884,53 @@ err:
 	free(resolved_path);
 	return -errno;
 }
+
+/**
+ * open_fdt - open a flattened device tree file and determine its size
+ * @filename: path to the FDT file
+ * @size: returns the total size from the FDT header
+ *
+ * Opens the file, reads the FDT header to determine totalsize, validates
+ * it against the file size, then reopens the file for sequential reading.
+ *
+ * Return: file descriptor on success, negative error code on failure
+ */
+int open_fdt(const char *filename, size_t *size)
+{
+	__be32 fdt_hdr[2];
+	u32 fdt_size;
+	struct stat st;
+	int fd, ret;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0)
+		return fd;
+
+	ret = fstat(fd, &st);
+	if (ret)
+		goto err;
+
+	ret = pread_full(fd, &fdt_hdr, sizeof(fdt_hdr), 0);
+	if (ret >= 0 && ret < sizeof(fdt_hdr))
+		ret = -EILSEQ;
+	if (ret < 0)
+		goto err;
+
+	fdt_size = be32_to_cpu(fdt_hdr[1]);
+	if (st.st_size < fdt_size) {
+		ret = -ENODATA;
+		goto err;
+	}
+
+	close(fd);
+
+	/* HACK: TFTP doesn't support backwards seeking, so reopen afresh */
+	fd = open(filename, O_RDONLY);
+	if (fd >= 0)
+		*size = fdt_size;
+
+	return fd;
+err:
+	close(fd);
+	return ret;
+}

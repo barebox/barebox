@@ -28,7 +28,7 @@ struct fit_handle {
 };
 
 struct fit_handle *fit_open(const char *filename, bool verbose,
-			    enum bootm_verify verify, loff_t max_size);
+			    enum bootm_verify verify);
 struct fit_handle *fit_open_buf(const void *buf, size_t len, bool verbose,
 				enum bootm_verify verify);
 void *fit_open_configuration(struct fit_handle *handle, const char *name,

@@ -129,17 +129,10 @@ static enum filetype bootm_fit_update_os_header(struct image_data *data)
 int bootm_open_fit(struct image_data *data)
 {
 	struct fit_handle *fit;
-	struct fdt_header *header;
 	static const char *kernel_img = "kernel";
-	size_t flen, hlen;
 	int ret;
 
-	header = (struct fdt_header *)data->os_header;
-	flen = bootm_get_os_size(data);
-	hlen = fdt32_to_cpu(header->totalsize);
-
-	fit = fit_open(data->os_file, data->verbose, data->verify,
-		       min(flen, hlen));
+	fit = fit_open(data->os_file, data->verbose, data->verify);
 	if (IS_ERR(fit)) {
 		pr_err("Loading FIT image %s failed with: %pe\n", data->os_file, fit);
 		return PTR_ERR(fit);

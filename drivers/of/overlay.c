@@ -535,7 +535,7 @@ static bool of_overlay_valid_config(struct fit_handle *fit,
 }
 
 static int of_overlay_global_fixup_fit(struct device_node *root,
-				       const char *fit_path, loff_t fit_size)
+				       const char *fit_path)
 {
 	enum bootm_verify verify = bootm_get_verify_mode();
 	struct device_node *conf_node;
@@ -547,7 +547,7 @@ static int of_overlay_global_fixup_fit(struct device_node *root,
 		return -EINVAL;
 	}
 
-	fit = fit_open(fit_path, 0, verify, fit_size);
+	fit = fit_open(fit_path, 0, verify);
 	if (IS_ERR(fit)) {
 		pr_err("Loading FIT image %s failed with: %pe\n", fit_path, fit);
 		return PTR_ERR(fit);
@@ -598,7 +598,7 @@ static int of_overlay_global_fixup(struct device_node *root, void *data)
 	}
 
 	/* Assume a FIT image if of_overlay_path points to a file */
-	ret = of_overlay_global_fixup_fit(root, dir, s.st_size);
+	ret = of_overlay_global_fixup_fit(root, dir);
 
 out:
 	free(dir);

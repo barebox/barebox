@@ -131,6 +131,12 @@ config HAVE_ARCH_KASAN
 config ARCH_HAS_UBSAN_SANITIZE_ALL
 	bool
 
+config HAVE_STACKPROTECTOR
+	bool
+	help
+	  An arch should select this symbol if:
+	  - it has implemented a stack canary (e.g. __stack_chk_guard)
+
 config ARCH_HAS_FORTIFY_SOURCE
 	bool
 	help

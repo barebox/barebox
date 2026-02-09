@@ -3,6 +3,7 @@
 config KVX
 	bool
 	select 64BIT
+	select HAVE_STACKPROTECTOR
 	select BOOTM
 	select HAVE_ARCH_BOOTM_OFTREE
 	select BOOTM_OFTREE

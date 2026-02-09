@@ -162,6 +162,7 @@ config STACKPROTECTOR
 
 choice
 	prompt "Stack Protector buffer overflow detection"
+	depends on HAVE_STACKPROTECTOR
 
 config STACKPROTECTOR_NONE
 	bool "None"
@@ -211,6 +212,7 @@ endchoice
 
 choice
 	prompt "Stack Protector buffer overflow detection for PBL" if PBL_IMAGE
+	depends on HAVE_STACKPROTECTOR
 
 config PBL_STACKPROTECTOR_NONE
 	bool "None"

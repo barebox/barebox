@@ -417,6 +417,39 @@ resource_iter_prev(struct resource *current,
 	return resource_iter_gap(parent, prev, gap, current);
 }
 
+/**
+ * lookup_region - find the region containing a given address
+ * @parent: parent resource to search within
+ * @addr: address to look up
+ * @gap: if non-NULL and addr is in a gap, the gap info is copied here
+ *
+ * Searches the children of @parent (and gaps between them) for the region
+ * containing @addr.
+ *
+ * Return: pointer to the resource containing @addr, or @gap if @addr is in
+ *         a gap and @gap is non-NULL, or NULL if @addr is not found or is
+ *         in a gap and @gap is NULL
+ */
+struct resource *lookup_region(struct resource *parent,
+			       resource_size_t addr, struct resource *gap)
+{
+	for_each_resource_region(parent, region) {
+		if (addr < region->start || region->end < addr)
+			continue;
+
+		if (!region_is_gap(region))
+			return region;
+		if (!gap)
+			return NULL;
+
+		*gap = *region;
+		INIT_LIST_HEAD(&gap->sibling);
+		return gap;
+	}
+
+	return NULL;
+}
+
 struct resource_entry *resource_list_create_entry(struct resource *res,
 						  size_t extra_size)
 {

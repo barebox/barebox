@@ -92,6 +92,68 @@ ok:
 	return new;
 }
 
+/**
+ * resize_region - change the size of an allocated resource region
+ * @res: resource to resize (may be NULL for no-op)
+ * @size: new desired size in bytes (must be non-zero)
+ *
+ * Shrinking checks that no child extends past the new end.
+ * Growing checks that the new end does not overflow, stays within
+ * the parent region and does not collide with the next sibling.
+ *
+ * Return: 0 on success, negative error code on failure
+ */
+int resize_region(struct resource *res, resource_size_t size)
+{
+	struct resource *parent;
+	struct resource *next;
+	resource_size_t newend;
+
+	if (!res)
+		return 0;
+	if (!size)
+		return -EINVAL;
+
+	if (size == resource_size(res))
+		return 0;
+
+	if (size < resource_size(res)) {
+		struct resource *last;
+
+		last = list_last_entry_or_null(&res->children,
+					       struct resource, sibling);
+		if (last && last->end > res->start + size - 1)
+			return -EBUSY;
+		res->end = res->start + size - 1;
+		return 0;
+	}
+
+	parent = res->parent;
+	if (!parent)
+		return -EINVAL;
+
+	if (check_add_overflow(res->start, size - 1, &newend))
+		return -EINVAL;
+
+	if (newend > parent->end)
+		return -EINVAL;
+
+	/*
+	 * parent->children is the list_head that anchors the ordered list of
+	 * children. If res is not the last entry, the immediate next entry is
+	 * the only sibling we must check.
+	 */
+	if (res->sibling.next != &parent->children) {
+		next = list_next_entry(res, sibling);
+
+		if (newend >= next->start)
+			return -EBUSY;
+	}
+
+	res->end = newend;
+	return 0;
+}
+
 /*
  * release a region previously requested with request_*_region
  */

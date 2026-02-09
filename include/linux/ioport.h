@@ -272,6 +272,8 @@ static inline void resource_set_range(struct resource *res,
 	resource_set_size(res, size);
 }
 
+int resize_region(struct resource *res, resource_size_t size);
+
 #define region_is_gap(region) ((region)->flags & IORESOURCE_UNSET)
 
 struct resource *resource_iter_first(struct resource *current, struct resource *gap);

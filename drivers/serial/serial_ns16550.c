@@ -584,6 +584,8 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 		.compatible = "ns16450",
 		.data = &ns16450_drvdata,
 	}, {
+		.compatible = "ns16550",
+	}, {
 		.compatible = "ns16550a",
 	}, {
 		.compatible = "snps,dw-apb-uart",

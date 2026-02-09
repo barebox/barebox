@@ -13,6 +13,7 @@
 #include <bootm.h>
 #include <binfmt.h>
 #include <common.h>
+#include <memory.h>
 #include <libfile.h>
 #include <linux/kernel.h>
 
@@ -54,7 +55,8 @@ static int do_boot_entry(struct image_data *data, boot_func_entry entry,
 
 static int do_boot_elf(struct image_data *data, struct elf_image *elf)
 {
-	const struct resource *initrd_res;
+	const struct resource *sdram, *initrd_res, *fdt_res;
+	struct resource gap;
 	int ret;
 	void *fdt;
 	boot_func_entry entry;
@@ -71,7 +73,11 @@ static int do_boot_elf(struct image_data *data, struct elf_image *elf)
 	else
 		initrd_address = load_addr;
 
-	initrd_res = bootm_load_initrd(data, initrd_address);
+	sdram = memory_bank_lookup_region(initrd_address, &gap);
+	if (sdram != &gap)
+		return sdram ? -EBUSY : -EINVAL;
+
+	initrd_res = bootm_load_initrd(data, initrd_address, gap.end);
 	if (IS_ERR(initrd_res)) {
 		printf("Failed to load initrd\n");
 		return PTR_ERR(initrd_res);
@@ -93,9 +99,10 @@ static int do_boot_elf(struct image_data *data, struct elf_image *elf)
 
 	printf("Loading device tree at %lx\n", load_addr);
 	/* load device tree after the initrd if any */
-	ret = bootm_load_devicetree(data, fdt, load_addr);
-	if (ret) {
-		printf("Failed to load device tree: %d\n", ret);
+	fdt_res = bootm_load_devicetree(data, fdt, load_addr, gap.end);
+	if (IS_ERR(fdt_res)) {
+		printf("Failed to load device tree: %pe\n", fdt_res);
+		ret = PTR_ERR(fdt_res);
 		goto err_free_fdt;
 	}
 

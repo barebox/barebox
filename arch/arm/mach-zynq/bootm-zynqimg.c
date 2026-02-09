@@ -8,6 +8,7 @@
 static int do_bootm_zynqimage(struct image_data *data)
 {
 	resource_size_t start, end;
+	const struct resource *os_res;
 	void (*barebox)(void);
 	u32 *header;
 	int ret;
@@ -16,9 +17,9 @@ static int do_bootm_zynqimage(struct image_data *data)
 	if (ret)
 		return ret;
 
-	ret = bootm_load_os(data, start);
-	if (ret)
-		return ret;
+	os_res = bootm_load_os(data, start, end);
+	if (IS_ERR(os_res))
+		return PTR_ERR(os_res);
 
 	header = (u32*)start;
 	barebox = (void*)start + header[12];

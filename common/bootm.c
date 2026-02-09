@@ -228,57 +228,69 @@ static bool bootm_get_override(char **oldpath, const char *newpath)
 	return true;
 }
 
-/*
+/**
  * bootm_load_os() - load OS to RAM
- *
  * @data:		image data context
  * @load_address:	The address where the OS should be loaded to
+ * @end_address:	The end address of the load buffer (inclusive)
  *
  * This loads the OS to a RAM location. load_address must be a valid
- * address. If the image_data doesn't have a OS specified it's considered
+ * address. If the image_data doesn't have an OS specified it's considered
  * an error.
  *
- * Return: 0 on success, negative error code otherwise
+ * Return: the OS resource on success, or an error pointer on failure
  */
-int bootm_load_os(struct image_data *data, unsigned long load_address)
+const struct resource *bootm_load_os(struct image_data *data,
+		ulong load_address, ulong end_address)
 {
+	int err;
+
 	if (data->os_res)
-		return 0;
+		return data->os_res;
 
 	if (load_address == UIMAGE_INVALID_ADDRESS)
-		return -EINVAL;
+		return ERR_PTR(-EINVAL);
+	if (end_address <= load_address)
+		return ERR_PTR(-EINVAL);
 
-	if (data->os_fit)
-		return bootm_load_fit_os(data, load_address);
+	if (data->os_fit) {
+		err = bootm_load_fit_os(data, load_address);
+	} else if (image_is_uimage(data)) {
+		err = bootm_load_uimage_os(data, load_address);
+	} else if (data->os_file) {
+		data->os_res = file_to_sdram(data->os_file, load_address, MEMTYPE_LOADER_CODE);
+		err = data->os_res ? 0 : -EBUSY;
+	} else {
+		err = -EINVAL;
+	}
 
-	if (image_is_uimage(data))
-		return bootm_load_uimage_os(data, load_address);
+	if (err)
+		return ERR_PTR(err);
 
-	if (!data->os_file)
-		return -EINVAL;
+	/* FIXME: We need some more rework to be able to detect this overflow
+	 * before it happens, but for now, let's at least detect it.
+	 */
+	if (WARN_ON(data->os_res->end > end_address))
+		return ERR_PTR(-ENOSPC);
 
-	data->os_res = file_to_sdram(data->os_file, load_address, MEMTYPE_LOADER_CODE);
-	if (!data->os_res)
-		return -ENOMEM;
-
-	return 0;
+	return data->os_res;
 }
 
-/*
+/**
  * bootm_load_initrd() - load initrd to RAM
- *
  * @data:		image data context
  * @load_address:	The address where the initrd should be loaded to
+ * @end_address:	The end address of the load buffer (inclusive)
  *
  * This loads the initrd to a RAM location. load_address must be a valid
- * address. If the image_data doesn't have a initrd specified this function
- * still returns successful as an initrd is optional. Check data->initrd_res
- * to see if an initrd has been loaded.
+ * address. If the image_data doesn't have an initrd specified this function
+ * still returns successful as an initrd is optional.
  *
- * Return: 0 on success, negative error code otherwise
+ * Return: the initrd resource if one was loaded, NULL if no initrd was
+ *         specified, or an error pointer on failure
  */
 const struct resource *
-bootm_load_initrd(struct image_data *data, unsigned long load_address)
+bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address)
 {
 	struct resource *res = NULL;
 	const char *initrd, *initrd_part = NULL;
@@ -293,6 +305,8 @@ bootm_load_initrd(struct image_data *data, unsigned long load_address)
 	 */
 	if (WARN_ON(data->initrd_res))
 		return data->initrd_res;
+	if (end_address <= load_address)
+		return ERR_PTR(-EINVAL);
 
 	bootm_get_override(&data->initrd_file, bootm_overrides.initrd_file);
 
@@ -313,7 +327,7 @@ bootm_load_initrd(struct image_data *data, unsigned long load_address)
 
 	} else if (initrd) {
 		res = file_to_sdram(initrd, load_address, MEMTYPE_LOADER_DATA)
-			?: ERR_PTR(-ENOMEM);
+			?: ERR_PTR(-EBUSY);
 
 	} else if (data->os_fit) {
 		res = bootm_load_fit_initrd(data, load_address);
@@ -322,6 +336,12 @@ bootm_load_initrd(struct image_data *data, unsigned long load_address)
 
 	if (IS_ERR_OR_NULL(res))
 		return res;
+
+	/* FIXME: We need some more rework to be able to detect this overflow
+	 * before it happens, but for now, let's at least detect it.
+	 */
+	if (WARN_ON(res->end > end_address))
+		return ERR_PTR(-ENOSPC);
 
 	pr_info("Loaded initrd from %s %s%s%s to %pa-%pa\n",
 		file_type_to_string(type), initrd ?: "",
@@ -424,33 +444,38 @@ void *bootm_get_devicetree(struct image_data *data)
 	return oftree;
 }
 
-/*
- * bootm_load_devicetree() - load devicetree
- *
+/**
+ * bootm_load_devicetree() - load devicetree into specified memory range
  * @data:		image data context
  * @fdt:		The flat device tree to load
  * @load_address:	The address where the devicetree should be loaded to
+ * @end_address:	The end address of the load buffer (inclusive)
  *
  * This loads the devicetree to a RAM location. load_address must be a valid
  * address which is requested with request_sdram_region. The associated region
  * is released automatically in the bootm error path.
  *
- * Return: 0 on success, negative error code otherwise
+ * Return: the devicetree resource on success, or an error pointer on failure
  */
-int bootm_load_devicetree(struct image_data *data, void *fdt,
-			    unsigned long load_address)
+const struct resource *
+bootm_load_devicetree(struct image_data *data, void *fdt,
+		      ulong load_address, ulong end_address)
 {
 	int fdt_size;
 
 	if (!IS_ENABLED(CONFIG_OFTREE))
-		return -ENOSYS;
+		return ERR_PTR(-ENOSYS);
+	if (end_address <= load_address)
+		return ERR_PTR(-EINVAL);
 
 	fdt_size = be32_to_cpu(((struct fdt_header *)fdt)->totalsize);
+	if (load_address + fdt_size - 1 > end_address)
+		return ERR_PTR(-ENOSPC);
 
 	data->oftree_res = request_sdram_region("oftree", load_address,
 			fdt_size, MEMTYPE_LOADER_DATA, MEMATTRS_RW);
 	if (!data->oftree_res)
-		return -ENOMEM;
+		return ERR_PTR(-EBUSY);
 
 	memcpy((void *)data->oftree_res->start, fdt, fdt_size);
 
@@ -460,7 +485,7 @@ int bootm_load_devicetree(struct image_data *data, void *fdt,
 		fdt_print_reserve_map(fdt);
 	}
 
-	return 0;
+	return data->oftree_res;
 }
 
 int bootm_get_os_size(struct image_data *data)

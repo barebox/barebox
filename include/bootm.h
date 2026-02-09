@@ -150,14 +150,19 @@ static inline int bootm_verbose(struct image_data *data)
 void bootm_data_init_defaults(struct bootm_data *data);
 void bootm_data_restore_defaults(const struct bootm_data *data);
 
-int bootm_load_os(struct image_data *data, unsigned long load_address);
+const struct resource *
+bootm_load_os(struct image_data *data,
+	      ulong load_address, ulong end_address);
 
 const struct resource *
-bootm_load_initrd(struct image_data *data, unsigned long load_address);
+bootm_load_initrd(struct image_data *data,
+		  ulong load_address, ulong end_address);
 
 void *bootm_get_devicetree(struct image_data *data);
-int bootm_load_devicetree(struct image_data *data, void *fdt,
-			  unsigned long load_address);
+
+const struct resource *
+bootm_load_devicetree(struct image_data *data, void *fdt,
+		      ulong load_address, ulong end_address);
 int bootm_get_os_size(struct image_data *data);
 
 enum bootm_verify bootm_get_verify_mode(void);

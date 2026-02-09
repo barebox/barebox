@@ -186,4 +186,6 @@ bool bootm_efi_check_image(struct image_handler *handler,
 			   struct image_data *data,
 			   enum filetype detected_filetype);
 
+int file_read_and_detect_boot_image_type(const char *os_file, void **os_header);
+
 #endif /* __BOOTM_H */

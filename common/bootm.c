@@ -542,6 +542,33 @@ static int bootm_image_name_and_part(const char *name, char **filename, char **p
 	return 0;
 }
 
+/**
+ * file_read_and_detect_boot_image_type - read file header and detect image type
+ * @os_file: path to the boot image file
+ * @os_header: returns a PAGE_SIZE buffer with the file header (caller frees)
+ *
+ * Return: detected filetype (enum filetype) on success, negative error code
+ *         on failure. On error, *os_header is set to NULL.
+ */
+int file_read_and_detect_boot_image_type(const char *os_file, void **os_header)
+{
+	size_t size;
+	int ret;
+
+	ret = read_file_2(os_file, &size, os_header, PAGE_SIZE);
+	if (ret < 0 && ret != -EFBIG) {
+		pr_err("could not open %s: %pe\n", os_file, ERR_PTR(ret));
+		return ret;
+	}
+	if (size < PAGE_SIZE) {
+		free(*os_header);
+		*os_header = NULL;
+		return -ENODATA;
+	}
+
+	return file_detect_boot_image_type(*os_header, PAGE_SIZE);
+}
+
 /*
  * bootm_boot - Boot an application image described by bootm_data
  */
@@ -550,7 +577,6 @@ int bootm_boot(struct bootm_data *bootm_data)
 	struct image_data *data;
 	struct image_handler *handler;
 	int ret;
-	size_t size;
 	const char *image_type_str;
 
 	if (!bootm_data->os_file) {
@@ -574,15 +600,10 @@ int bootm_boot(struct bootm_data *bootm_data)
 	data->os_entry = bootm_data->os_entry;
 	data->efi_boot = bootm_data->efi_boot;
 
-	ret = read_file_2(data->os_file, &size, &data->os_header, PAGE_SIZE);
-	if (ret < 0 && ret != -EFBIG) {
-		pr_err("could not open %s: %pe\n", data->os_file, ERR_PTR(ret));
+	ret = file_read_and_detect_boot_image_type(data->os_file, &data->os_header);
+	if (ret < 0)
 		goto err_out;
-	}
-	if (size < PAGE_SIZE)
-		goto err_out;
-
-	data->image_type = file_detect_boot_image_type(data->os_header, PAGE_SIZE);
+	data->image_type = ret;
 
 	if (!data->force && data->image_type == filetype_unknown) {
 		pr_err("Unknown OS filetype (try -f)\n");

@@ -27,7 +27,7 @@ struct blspec_entry {
 	struct device_node *node;
 	struct cdev *cdev;
 	const char *rootpath;
-	const char *configpath;
+	/* configpath is entry.path */
 	char *sortkey;
 };
 
@@ -180,7 +180,6 @@ static void blspec_entry_free(struct bootentry *be)
 	struct blspec_entry *entry = container_of(be, struct blspec_entry, entry);
 
 	of_delete_node(entry->node);
-	free_const(entry->configpath);
 	free_const(entry->rootpath);
 	free(entry->sortkey);
 	free(entry);
@@ -305,7 +304,7 @@ static int blspec_have_entry(struct bootentries *bootentries, const char *path)
 		if (!is_blspec_entry(be))
 			continue;
 		e = container_of(be, struct blspec_entry, entry);
-		if (e->configpath && !strcmp(e->configpath, path))
+		if (e->entry.path && !strcmp(e->entry.path, path))
 			return 1;
 	}
 
@@ -426,8 +425,8 @@ static int blspec_compare(struct list_head *list_a, struct list_head *list_b)
 {
 	struct bootentry *be_a = container_of(list_a, struct bootentry, list);
 	struct bootentry *be_b = container_of(list_b, struct bootentry, list);
+	const char *a_version = be_a->path, *b_version = be_b->path;
 	struct blspec_entry *a, *b;
-	const char *a_version, *b_version;
 	int r;
 
 	/* The boot entry providers are called one by one and passed an empty
@@ -438,9 +437,6 @@ static int blspec_compare(struct list_head *list_a, struct list_head *list_b)
 
 	a = container_of(be_a, struct blspec_entry, entry);
 	b = container_of(be_b, struct blspec_entry, entry);
-
-	a_version = a->configpath;
-	b_version = b->configpath;
 
 	if (a->sortkey && b->sortkey) {
 		const char *a_machine_id, *b_machine_id;
@@ -489,7 +485,7 @@ static int __blspec_scan_file(struct bootentries *bootentries, const char *root,
 
 	root = root ?: get_blspec_prefix_path(configname);
 	entry->rootpath = xstrdup_const(root);
-	entry->configpath = xstrdup_const(configname);
+	entry->entry.path = xstrdup_const(configname);
 	entry->cdev = get_cdev_by_mountpath(root);
 
 	if (!entry_is_of_compatible(entry)) {

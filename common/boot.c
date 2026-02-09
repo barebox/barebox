@@ -64,6 +64,7 @@ void bootentries_free(struct bootentries *bootentries)
 		list_del(&be->list);
 		free_const(be->title);
 		free(be->description);
+		free_const(be->path);
 		free_const(be->me.display);
 		be->release(be);
 	}
@@ -81,7 +82,6 @@ void bootentries_free(struct bootentries *bootentries)
 
 struct bootentry_script {
 	struct bootentry entry;
-	const char *scriptpath;
 };
 
 /*
@@ -95,7 +95,7 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	struct bootm_data backup = {}, data = {};
 
 	if (dryrun == 1) {
-		printf("Would run %s\n", bs->scriptpath);
+		printf("Would run %s\n", bs->entry.path);
 		return 0;
 	}
 
@@ -104,9 +104,9 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	globalvar_add_simple("linux.bootargs.dyn.ip", NULL);
 	globalvar_add_simple("linux.bootargs.dyn.root", NULL);
 
-	ret = run_command(bs->scriptpath);
+	ret = run_command(bs->entry.path);
 	if (ret) {
-		pr_err("Running script '%s' failed: %pe\n", bs->scriptpath, ERR_PTR(ret));
+		pr_err("Running script '%s' failed: %s\n", bs->entry.path, strerror(-ret));
 		goto out;
 	}
 
@@ -216,10 +216,7 @@ static void bootsource_action(struct menu *m, struct menu_entry *me)
 
 static void bootscript_entry_release(struct bootentry *entry)
 {
-	struct bootentry_script *bs = container_of(entry, struct bootentry_script, entry);
-
-	free_const(bs->scriptpath);
-	free(bs);
+	free(entry);
 }
 
 /*
@@ -242,8 +239,8 @@ static int bootscript_create_entry(struct bootentries *bootentries, const char *
 	bs->entry.me.type = MENU_ENTRY_NORMAL;
 	bs->entry.release = bootscript_entry_release;
 	bs->entry.boot = bootscript_boot;
-	bs->scriptpath = xstrdup_const(name);
-	bs->entry.title = xstrdup_const(kbasename(bs->scriptpath));
+	bs->entry.path = xstrdup_const(name);
+	bs->entry.title = xstrdup_const(kbasename(bs->entry.path));
 	bs->entry.description = basprintf("script: %s", name);
 	bootentries_add_entry(bootentries, &bs->entry);
 

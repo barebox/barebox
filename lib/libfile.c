@@ -764,6 +764,38 @@ int cache_file(const char *path, char **newpath)
 	return 0;
 }
 
+/*
+ * __read_full_anywhere - read from filedescriptor, even into zero_page
+ *
+ * Like read_full, but this function will temporarily remap the zero
+ * page if data is to be placed there. You should not need to use this
+ * outside of boot code!
+ */
+int __read_full_anywhere(int fd, void *buf, size_t size)
+{
+	ssize_t nbytes = 0, now;
+
+	if (unlikely(zero_page_contains((ulong)buf))) {
+		void *tmp = malloc(PAGE_SIZE);
+		if (!tmp)
+			return -ENOMEM;
+
+		now = read_full(fd, tmp, min_t(size_t, size, PAGE_SIZE));
+		if (now > 0)
+			zero_page_memcpy(buf, tmp, now);
+
+		free(tmp);
+
+		if (now <= 0)
+			return now;
+
+		nbytes += now;
+	}
+
+	now = read_full(fd, buf + nbytes, size - nbytes);
+	return now < 0 ? now : now + nbytes;
+}
+
 #define BUFSIZ	(PAGE_SIZE * 32)
 
 struct resource *file_to_sdram(const char *filename, unsigned long adr,

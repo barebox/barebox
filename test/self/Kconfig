@@ -51,6 +51,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_TLV
 	select SELFTEST_DM
 	select SELFTEST_TALLOC
+	select SELFTEST_BLSPEC if BLSPEC && DEFAULT_ENVIRONMENT
 	help
 	  Selects all self-tests compatible with current configuration
 
@@ -126,6 +127,10 @@ config SELFTEST_STRING
 config SELFTEST_SETJMP
 	bool "setjmp/longjmp library selftest"
 	depends on ARCH_HAS_SJLJ
+
+config SELFTEST_BLSPEC
+	bool "bootloader spec selftest"
+	depends on BLSPEC && DEFAULT_ENVIRONMENT
 
 config SELFTEST_REGULATOR
 	bool "Regulator selftest"

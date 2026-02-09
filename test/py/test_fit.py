@@ -73,10 +73,19 @@ def test_fit_dryrun(barebox, strategy, fitimage):
     barebox.run_check("global dryrun_attempts=5")
     barebox.run_check('[ "$global.dryrun_attempts" = 5 ]')
 
-    for i in range(5):
-        stdout, _, _ = barebox.run(f"bootm -d -v {fitimage}")
-        errors = filter_errors(stdout)
-        assert errors == [], errors
+    [efi] = barebox.run_check("echo ${global.bootm.efi}")
+
+    try:
+        if efi:
+            barebox.run_check("global.bootm.efi=disabled")
+
+        for i in range(5):
+            stdout, _, _ = barebox.run(f"bootm -d -v {fitimage}")
+            errors = filter_errors(stdout)
+            assert errors == [], errors
+    finally:
+        if efi:
+            barebox.run_check(f"global.bootm.efi={efi}")
 
     # If we actually did boot, this variable would be undefined
     barebox.run_check('[ "$global.dryrun_attempts" = 5 ]')

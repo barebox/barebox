@@ -99,6 +99,7 @@ class BareboxTestStrategy(Strategy):
         self.transition(Status.barebox)
 
         try:
+            self.barebox.run("global.bootm.efi=disabled # if it exists")
             if bootm:
                 self.barebox_bootm(boottarget)
             else:

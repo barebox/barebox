@@ -5,7 +5,7 @@
 
 #include <linux/types.h>
 
-int efi_initrd_register(void *initrd, size_t initrd_size);
+int efi_initrd_register(const void *initrd, size_t initrd_size);
 void efi_initrd_unregister(void);
 
 #endif

@@ -187,7 +187,7 @@ static efi_status_t efi_install_initrd(struct image_data *data,
 	if (IS_ERR(initrd_res))
 		return PTR_ERR(initrd_res);
 	if (initrd_res)
-		efi_initrd_register((void *)initrd_res->start,
+		efi_initrd_register((const void *)initrd_res->start,
 				    resource_size(initrd_res));
 
 	return EFI_SUCCESS;

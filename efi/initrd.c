@@ -35,7 +35,7 @@ static const struct {
 
 static struct linux_initrd {
 	struct efi_load_file_protocol base;
-	void *start;
+	const void *start;
 	size_t size;
 	efi_handle_t lf2_handle;
 } initrd;
@@ -70,7 +70,7 @@ static efi_status_t EFIAPI efi_initrd_load_file2(
 	return EFI_SUCCESS;
 }
 
-int efi_initrd_register(void *initrd_base, size_t initrd_sz)
+int efi_initrd_register(const void *initrd_base, size_t initrd_sz)
 {
 	struct efi_boot_services *bs;
 	efi_status_t efiret;

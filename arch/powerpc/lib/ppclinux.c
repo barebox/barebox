@@ -30,7 +30,7 @@ static struct fdt_header *bootm_relocate_fdt(struct image_data *data,
 		 */
 		if (os < (void *)fdt->totalsize) {
 			os = (void *)PAGE_ALIGN((phys_addr_t)os +
-					data->os->header.ih_size);
+					data->os_uimage->header.ih_size);
 			os += fdt->totalsize;
 			if (os < LINUX_TLB1_MAX_ADDR)
 				os = LINUX_TLB1_MAX_ADDR;

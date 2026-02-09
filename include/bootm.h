@@ -59,7 +59,7 @@ struct image_data {
 	struct resource *os_res;
 
 	/* if os is an uImage this will be provided */
-	struct uimage_handle *os;
+	struct uimage_handle *os_uimage;
 
 	/* if os is a FIT image this will be provided */
 	struct fit_handle *os_fit;
@@ -84,7 +84,7 @@ struct image_data {
 	struct resource *initrd_res;
 
 	/* if initrd is an uImage this will be provided */
-	struct uimage_handle *initrd;
+	struct uimage_handle *initrd_uimage;
 	char *initrd_part;
 
 	/* otherwise only the filename will be provided */

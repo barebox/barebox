@@ -104,9 +104,19 @@ unsigned long fsl_get_ddr_freq(ulong dummy)
 	return sys_info.freqDDRBus;
 }
 
+static unsigned long timebase_clock_override;
+
+void fsl_set_timebase_clock(unsigned long freq)
+{
+	timebase_clock_override = freq;
+}
+
 unsigned long fsl_get_timebase_clock(void)
 {
 	struct sys_info sysinfo;
+
+	if (timebase_clock_override)
+		return timebase_clock_override;
 
 	fsl_get_sys_info(&sysinfo);
 

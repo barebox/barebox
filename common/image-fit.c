@@ -524,24 +524,20 @@ static int fit_get_address(struct device_node *image, const char *property,
 	return 0;
 }
 
-static int
+static struct device_node *
 fit_get_image(struct fit_handle *handle, void *configuration,
-	      const char **unit, struct device_node **image)
+	      const char **unit, int idx)
 {
 	struct device_node *conf_node = configuration;
 
 	if (conf_node) {
-		if (of_property_read_string(conf_node, *unit, unit)) {
+		if (of_property_read_string_index(conf_node, *unit, idx, unit)) {
 			pr_err("No image named '%s'\n", *unit);
-			return -ENOENT;
+			return NULL;
 		}
 	}
 
-	*image = of_get_child_by_name(handle->images, *unit);
-	if (!*image)
-		return -ENOENT;
-
-	return 0;
+	return of_get_child_by_name(handle->images, *unit);
 }
 
 /**
@@ -571,9 +567,9 @@ int fit_get_image_address(struct fit_handle *handle, void *configuration,
 	if (!address || !property || !name)
 		return -EINVAL;
 
-	ret = fit_get_image(handle, configuration, &unit, &image);
-	if (ret)
-		return ret;
+	image = fit_get_image(handle, configuration, &unit, 0);
+	if (!image)
+		return -ENOENT;
 
 	/* Treat type = "kernel_noload" as if entry/load address is missing */
 	ret = of_property_read_string(image, "type", &type);
@@ -649,22 +645,22 @@ static int fit_handle_decompression(struct device_node *image,
 /**
  * fit_open_image - Open an image in a FIT image
  * @handle: The FIT image handle
+ * @configuration: configuration cookie from fit_open_configuration(), or NULL
  * @name: The name of the image to open
+ * @idx: The index of image to open (for multi-image properties like overlays)
  * @outdata: The returned image
  * @outsize: Size of the returned image
  *
  * Open an image in a FIT image. The returned image is freed during fit_close().
- * @configuration holds the cookie returned from fit_open_configuration() if
- * the image is opened as part of a configuration, or NULL if the image is
- * opened without a configuration. If @configuration is NULL then the RSA
- * signature of the image is checked if desired, if @configuration is non NULL,
- * then only the hash is checked (because opening the configuration already
- * checks the RSA signature of all involved nodes).
+ *
+ * If @configuration is NULL then the RSA signature of the image is checked
+ * if desired; otherwise only the hash is checked (because opening the
+ * configuration already checks the RSA signature of all involved nodes).
  *
  * Return: 0 for success, negative error code otherwise
  */
 int fit_open_image(struct fit_handle *handle, void *configuration,
-		   const char *name, const void **outdata,
+		   const char *name, int idx, const void **outdata,
 		   unsigned long *outsize)
 {
 	struct device_node *image;
@@ -673,9 +669,9 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 	int data_len;
 	int ret = 0;
 
-	ret = fit_get_image(handle, configuration, &unit, &image);
-	if (ret)
-		return ret;
+	image = fit_get_image(handle, configuration, &unit, idx);
+	if (!image)
+		return -ENOENT;
 
 	of_property_read_string(image, "description", &desc);
 	if (handle->verbose)
@@ -767,9 +763,11 @@ static int fit_fdt_is_compatible(struct fit_handle *handle,
 	if (!of_property_present(child, "fdt"))
 		return 0;
 
-	ret = fit_get_image(handle, child, &unit, &image);
-	if (ret)
+	image = fit_get_image(handle, child, &unit, 0);
+	if (!image) {
+		ret = -ENOENT;
 		goto err;
+	}
 
 	data = of_get_property(image, "data", &data_len);
 	if (!data)
@@ -1136,14 +1134,14 @@ static int fuzz_fit(const u8 *data, size_t size)
 		goto out;
 	}
 
-	ret = fit_open_image(&handle, config, imgname, &outdata, &outsize);
+	ret = fit_open_image(&handle, config, imgname, 0, &outdata, &outsize);
 	if (ret)
 		goto out;
 
 	fit_get_image_address(&handle, config, imgname, "load", &addr);
 	fit_get_image_address(&handle, config, imgname, "entry", &addr);
 
-	ret = fit_open_image(&handle, NULL, imgname, &outdata, &outsize);
+	ret = fit_open_image(&handle, NULL, imgname, 0, &outdata, &outsize);
 out:
 	__fit_close(&handle);
 

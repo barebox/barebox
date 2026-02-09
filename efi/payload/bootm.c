@@ -129,7 +129,7 @@ static int efi_load_ramdisk(struct image_data *data, void **initrd)
 	int ret;
 
 	if (ramdisk_is_fit(data)) {
-		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk",
+		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk", 0,
 				     (const void **)&initrd_mem, &initrd_size);
 		if (ret) {
 			pr_err("Cannot open ramdisk image in FIT image: %m\n");
@@ -175,7 +175,7 @@ static int efi_load_fdt(struct image_data *data, void **fdt)
 	int ret;
 
 	if (fdt_is_fit(data)) {
-		ret = fit_open_image(data->os_fit, data->fit_config, "fdt",
+		ret = fit_open_image(data->os_fit, data->fit_config, "fdt", 0,
 				     (const void **)&of_tree, &of_size);
 		if (ret) {
 			pr_err("Cannot open FDT image in FIT image: %m\n");

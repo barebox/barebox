@@ -61,7 +61,7 @@ struct resource *bootm_load_fit_initrd(struct image_data *data, unsigned long lo
 	if (!fitconfig_has_ramdisk(data))
 		return NULL;
 
-	ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk",
+	ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk", 0,
 			     &initrd, &initrd_size);
 	if (ret) {
 		pr_err("Cannot open ramdisk image in FIT image: %pe\n",
@@ -96,7 +96,7 @@ void *bootm_get_fit_devicetree(struct image_data *data)
 	const void *of_tree;
 	unsigned long of_size;
 
-	ret = fit_open_image(data->os_fit, data->fit_config, "fdt",
+	ret = fit_open_image(data->os_fit, data->fit_config, "fdt", 0,
 			     &of_tree, &of_size);
 	if (ret)
 		return ERR_PTR(ret);
@@ -144,7 +144,7 @@ int bootm_open_fit(struct image_data *data)
 		return PTR_ERR(data->fit_config);
 	}
 
-	ret = fit_open_image(data->os_fit, data->fit_config, kernel_img,
+	ret = fit_open_image(data->os_fit, data->fit_config, kernel_img, 0,
 			     &data->fit_kernel, &data->fit_kernel_size);
 	if (ret)
 		return ret;

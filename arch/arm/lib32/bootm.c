@@ -178,7 +178,7 @@ static int bootm_load_tee_from_fit(struct image_data *data)
 		const void *tee;
 		unsigned long tee_size;
 
-		ret = fit_open_image(data->os_fit, data->fit_config, "tee",
+		ret = fit_open_image(data->os_fit, data->fit_config, "tee", 0,
 				     &tee, &tee_size);
 		if (ret) {
 			pr_err("Error opening tee fit image: %pe\n", ERR_PTR(ret));

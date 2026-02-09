@@ -490,7 +490,7 @@ static int of_overlay_apply_fit(struct device_node *root, struct fit_handle *fit
 	if (!of_overlay_matches_filter(name, NULL))
 		return 0;
 
-	ret = fit_open_image(fit, config, "fdt", &ovl, &ovl_sz);
+	ret = fit_open_image(fit, config, "fdt", 0, &ovl, &ovl_sz);
 	if (ret)
 		return ret;
 

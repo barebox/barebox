@@ -252,15 +252,16 @@ static int do_bootm_efi_stub(struct image_data *data)
 		goto unload_oftree;
 
 	type = file_detect_type(loaded_image->image_base, PAGE_SIZE);
-	ret = efi_execute_image(handle, loaded_image, type);
-	if (ret)
+
+	if (data->dryrun)
 		goto unload_ramdisk;
 
-	return 0;
-
+	ret = efi_execute_image(handle, loaded_image, type);
 unload_ramdisk:
-	if (initrd)
+	if (initrd) {
 		efi_initrd_unregister();
+		free(initrd);
+	}
 unload_oftree:
 	efi_unload_fdt(fdt);
 unload_os:

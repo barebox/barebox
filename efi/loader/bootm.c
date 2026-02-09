@@ -215,7 +215,7 @@ static int efi_loader_bootm(struct image_data *data)
 	if (IS_ERR(os_res))
 		return PTR_ERR(os_res);
 
-	if (filetype_is_linux_efi_image(data->os_type)) {
+	if (filetype_is_linux_efi_image(data->kernel_type)) {
 		const char *options;
 
 		options = linux_bootargs_get();

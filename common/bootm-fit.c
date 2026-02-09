@@ -5,6 +5,7 @@
 #include <bootm-fit.h>
 #include <memory.h>
 #include <zero_page.h>
+#include <filetype.h>
 
 /*
  * bootm_load_fit_os() - load OS from FIT to RAM
@@ -114,6 +115,17 @@ static bool bootm_fit_config_valid(struct fit_handle *fit,
 	return !!fit_has_image(fit, config, "kernel");
 }
 
+static enum filetype bootm_fit_update_os_header(struct image_data *data)
+{
+	if (data->fit_kernel_size < PAGE_SIZE)
+		return filetype_unknown;
+
+	free(data->os_header);
+	data->os_header = xmemdup(data->fit_kernel, PAGE_SIZE);
+
+	return file_detect_type(data->os_header, PAGE_SIZE);
+}
+
 int bootm_open_fit(struct image_data *data)
 {
 	struct fit_handle *fit;
@@ -148,6 +160,9 @@ int bootm_open_fit(struct image_data *data)
 			     &data->fit_kernel, &data->fit_kernel_size);
 	if (ret)
 		return ret;
+
+	data->kernel_type = bootm_fit_update_os_header(data);
+
 	if (data->os_address == UIMAGE_SOME_ADDRESS) {
 		ret = fit_get_image_address(data->os_fit,
 					    data->fit_config,

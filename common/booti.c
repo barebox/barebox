@@ -39,8 +39,7 @@ static unsigned long get_kernel_address(unsigned long os_address,
 
 void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 {
-	const void *kernel_header =
-			data->os_fit ? data->fit_kernel : data->os_header;
+	const void *kernel_header = data->os_header;
 	const struct resource *os_res;
 	unsigned long text_offset, image_size, kernel;
 	unsigned long image_end;

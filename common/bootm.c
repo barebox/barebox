@@ -550,9 +550,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 	struct image_data *data;
 	struct image_handler *handler;
 	int ret;
-	enum filetype os_type;
 	size_t size;
-	const char *os_type_str;
+	const char *image_type_str;
 
 	if (!bootm_data->os_file) {
 		pr_err("no image given\n");
@@ -583,9 +582,9 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (size < PAGE_SIZE)
 		goto err_out;
 
-	os_type = data->os_type = file_detect_boot_image_type(data->os_header, PAGE_SIZE);
+	data->image_type = file_detect_boot_image_type(data->os_header, PAGE_SIZE);
 
-	if (!data->force && os_type == filetype_unknown) {
+	if (!data->force && data->image_type == filetype_unknown) {
 		pr_err("Unknown OS filetype (try -f)\n");
 		ret = -EINVAL;
 		goto err_out;
@@ -601,19 +600,21 @@ int bootm_boot(struct bootm_data *bootm_data)
 		data->oftree_file = NULL;
 		data->initrd_file = NULL;
 		data->tee_file = NULL;
-		if (os_type != filetype_fit) {
+		if (data->image_type != filetype_fit) {
 			pr_err("Signed boot and image is no FIT image, aborting\n");
 			ret = -EINVAL;
 			goto err_out;
 		}
 	}
 
-	os_type_str = file_type_to_short_string(os_type);
+	image_type_str = file_type_to_short_string(data->image_type);
 
-	switch (os_type) {
+	/* May be updated by below container-specific handlers */
+	data->kernel_type = data->image_type;
+
+	switch (data->image_type) {
 	case filetype_fit:
 		ret = bootm_open_fit(data);
-		os_type = file_detect_type(data->fit_kernel, data->fit_kernel_size);
 		break;
 	case filetype_uimage:
 		ret = bootm_open_uimage(data);
@@ -624,7 +625,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	}
 
 	if (ret) {
-		pr_err("Loading %s image failed with: %pe\n", os_type_str, ERR_PTR(ret));
+		pr_err("Loading %s image failed with: %pe\n", image_type_str, ERR_PTR(ret));
 		goto err_out;
 	}
 
@@ -737,9 +738,9 @@ int bootm_boot(struct bootm_data *bootm_data)
 		free(hostname_bootarg);
 	}
 
-	pr_info("\nLoading %s '%s'", file_type_to_string(os_type),
+	pr_info("\nLoading %s '%s'", file_type_to_string(data->kernel_type),
 		data->os_file);
-	if (os_type == filetype_uimage &&
+	if (data->kernel_type == filetype_uimage &&
 			data->os->header.ih_type == IH_TYPE_MULTI)
 		pr_info(", multifile image %d", uimage_part_num(data->os_part));
 	pr_info("\n");
@@ -749,11 +750,11 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (data->os_entry == UIMAGE_SOME_ADDRESS)
 		data->os_entry = 0;
 
-	handler = bootm_find_handler(os_type, data);
+	handler = bootm_find_handler(data->kernel_type, data);
 	if (!handler) {
 		pr_err("no image handler found for image type %s\n",
-		       file_type_to_string(os_type));
-		if (os_type == filetype_uimage)
+		       file_type_to_string(data->kernel_type));
+		if (data->kernel_type == filetype_uimage)
 			pr_err("and OS type: %d\n", data->os->header.ih_os);
 		ret = -ENODEV;
 		goto err_out;

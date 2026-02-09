@@ -111,7 +111,11 @@ struct image_data {
 	char *tee_file;
 	struct resource *tee_res;
 
-	enum filetype os_type;
+	/* Type of OS image, e.g. filetype_fit or the same as kernel_type */
+	enum filetype image_type;
+	/* Type of kernel image that's going to be booted */
+	enum filetype kernel_type;
+
 	enum bootm_verify verify;
 	int verbose;
 	int force;

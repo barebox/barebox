@@ -2,7 +2,8 @@
 #ifndef _LINUX_ARRAY_SIZE_H
 #define _LINUX_ARRAY_SIZE_H
 
-#include <linux/compiler.h>
+#include <linux/compiler_types.h>
+#include <linux/build_bug.h>
 
 /**
  * ARRAY_SIZE - get the number of elements in array @arr

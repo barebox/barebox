@@ -43,7 +43,13 @@ void board_init_r (ulong end_of_ram)
 	asm ("sync ; isync");
 
 #ifdef CONFIG_MPC85xx
+#ifndef CONFIG_QEMU_PPCE500
+	/* Traditional boards relocate to end of RAM */
 	_text_base = end_of_ram;
+#else
+	/* QEMU: no relocation, stay at link address */
+	_text_base = TEXT_BASE;
+#endif
 #endif
 
 	malloc_end = (_text_base - STACK_SIZE) & ~(4095);

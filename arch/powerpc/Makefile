@@ -18,6 +18,7 @@ KBUILD_CPPFLAGS += -Wa,-me500x2 -msoft-float -mno-string
 endif
 
 board-$(CONFIG_MACH_PHYCORE_MPC5200B_TINY)	:= pcm030
+board-$(CONFIG_QEMU_PPCE500)			:= qemu-e500
 board-$(CONFIG_P1010RDB)			:= freescale-p1010rdb
 board-$(CONFIG_P2020RDB)			:= freescale-p2020rdb
 board-$(CONFIG_P1022DS)				:= freescale-p1022ds

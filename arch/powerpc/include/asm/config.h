@@ -39,6 +39,8 @@
 
 #ifdef CONFIG_MACH_PHYCORE_MPC5200B_TINY
 #include <asm/board-pcm030.h>
+#elif defined(CONFIG_QEMU_PPCE500)
+#include <asm/board-qemu-e500.h>
 #elif defined(CONFIG_P1010RDB)
 #include <asm/board-p1010rdb.h>
 #elif defined(CONFIG_P2020RDB)

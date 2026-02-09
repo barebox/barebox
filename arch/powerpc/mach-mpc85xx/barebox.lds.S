@@ -22,7 +22,11 @@
 #endif
 
 OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
+#ifdef CONFIG_QEMU_PPCE500
+ENTRY(_start_qemu_e500)
+#else
 ENTRY(_start_e500)
+#endif
 
 PHDRS
 {
@@ -122,6 +126,8 @@ SECTIONS
 
   __init_size = __init_end - _start;
 
+#ifndef CONFIG_QEMU_PPCE500
+  /* Boot page and reset vector for flash boot */
   .bootpg RESET_VECTOR_ADDRESS - 0xffc :
   {
     _text = .;
@@ -139,6 +145,12 @@ SECTIONS
 #if (RESET_VECTOR_ADDRESS == 0xfffffffc)
   /* This avoids wrapping around to offset 0 */
   . |= 0x10;
+#endif
+#else
+  /* QEMU entry point: simpler, no boot page or reset vector needed */
+  .text_entry : {
+    arch/powerpc/cpu-85xx/start-qemu.o (.text_entry)
+  } :text
 #endif
 
   __bss_start = .;

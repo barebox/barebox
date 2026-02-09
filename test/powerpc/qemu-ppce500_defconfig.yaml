@@ -1,0 +1,17 @@
+targets:
+  main:
+    drivers:
+      QEMUDriver:
+        qemu_bin: qemu-system-ppc
+        machine: ppce500
+        cpu: e500
+        memory: 256M
+        kernel: barebox
+        display: qemu-default
+      BareboxDriver:
+        prompt: 'barebox:[^ ]+ '
+      BareboxTestStrategy: {}
+images:
+  barebox: !template "$LG_BUILDDIR/barebox"
+imports:
+  - ../strategy.py

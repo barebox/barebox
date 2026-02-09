@@ -183,6 +183,7 @@ struct uimage_handle *uimage_open(const char *filename)
 	 * fd is now at the first data word
 	 */
 	handle->fd = fd;
+	handle->filename = xstrdup(filename);
 
 	return handle;
 err_out:
@@ -212,6 +213,7 @@ void uimage_close(struct uimage_handle *handle)
 	}
 
 	free(handle->name);
+	free(handle->filename);
 	free(handle);
 }
 EXPORT_SYMBOL(uimage_close);

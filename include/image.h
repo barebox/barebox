@@ -312,6 +312,7 @@ void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 struct uimage_handle {
 	struct image_header header;
 	char *name;
+	char *filename;
 	char *copy;
 	struct uimage_handle_data ihd[MAX_MULTI_IMAGE_COUNT];
 	int nb_data_entries;

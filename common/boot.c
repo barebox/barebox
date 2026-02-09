@@ -26,6 +26,14 @@ int bootentries_add_entry(struct bootentries *entries, struct bootentry *entry)
 	return 0;
 }
 
+#define BOOTENTRIES(name) \
+	struct bootentries name = { .entries = LIST_HEAD_INIT(name.entries) }
+
+static inline void bootentries_merge(struct bootentries *dst, struct bootentries *src)
+{
+	list_splice_tail_init(&src->entries, &dst->entries);
+}
+
 struct bootentries *bootentries_alloc(void)
 {
 	struct bootentries *bootentries;
@@ -446,9 +454,17 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 		name = nfspath;
 
 	list_for_each_entry(p, &bootentry_providers, list) {
-		ret = p->generate(bootentries, name);
+		BOOTENTRIES(provider_bootentries);
+
+		ret = p->generate(&provider_bootentries, name);
 		if (ret > 0)
 			found += ret;
+
+		/* We want to allow for providers to sort their bootentries as
+		 * they see fit, so they are passed an empty list above with
+		 * only their own entries and then we aggregate here
+		 */
+		bootentries_merge(bootentries, &provider_bootentries);
 	}
 
 	free(nfspath);

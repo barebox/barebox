@@ -34,6 +34,13 @@ static inline void bootentries_merge(struct bootentries *dst, struct bootentries
 	list_splice_tail_init(&src->entries, &dst->entries);
 }
 
+void bootentries_add_entry_sorted(struct bootentries *entries, struct bootentry *entry,
+				  int (*compare)(struct list_head *, struct list_head *))
+
+{
+	list_add_sort(&entry->list, &entries->entries, compare);
+}
+
 struct bootentries *bootentries_alloc(void)
 {
 	struct bootentries *bootentries;

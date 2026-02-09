@@ -715,6 +715,7 @@ config BLSPEC
 	select BOOT
 	select BOOTM
 	select OFTREE
+	select VERSION_CMP
 	bool
 	prompt "Support bootloader spec"
 	help

@@ -104,7 +104,7 @@ endif
 %_defconfig: $(obj)/conf
 	$(Q)$< $(silent) --defconfig=arch/$(SRCARCH)/configs/$@ $(Kconfig)
 
-configfiles = $(wildcard $(srctree)/kernel/configs/$(1) $(srctree)/arch/$(SRCARCH)/configs/$(1))
+configfiles = $(wildcard $(srctree)/common/boards/configs/$(1) $(srctree)/arch/$(SRCARCH)/configs/$(1))
 all-config-fragments = $(call configfiles,*.config)
 config-fragments = $(call configfiles,$@)
 

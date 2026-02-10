@@ -27,10 +27,13 @@ Building
 
 ``CONFIG_RUST`` is currently available on 64-bit sandbox only::
 
-	make ARCH=sandbox sandbox_defconfig
-	./scripts/config -e RUST
-	make ARCH=sandbox olddefconfig
+	make ARCH=sandbox rust_defconfig
 	make ARCH=sandbox
+
+The ``rust.config`` fragment enables Rust in any other defconfig::
+
+	make ARCH=<arch> <board>_defconfig
+	make ARCH=<arch> rust.config
 
 ``version`` prints the Rust compiler used for the build and ``bfetch``
 lists ``RUST`` among the features.

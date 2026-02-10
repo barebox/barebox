@@ -187,13 +187,13 @@
 struct txbd8 {
 	uint16_t     status;	     /* Status Fields */
 	uint16_t     length;	     /* Buffer length */
-	uint32_t     bufPtr;	     /* Buffer Pointer */
+	uint32_t     buf;	     /* Buffer Pointer */
 };
 
 struct rxbd8 {
 	uint16_t     status;	     /* Status Fields */
 	uint16_t     length;	     /* Buffer Length */
-	uint32_t     bufPtr;	     /* Buffer Pointer */
+	uint32_t     buf;	     /* Buffer Pointer */
 };
 
 /* eTSEC general control and status registers */

@@ -16,7 +16,7 @@
 #include <driver.h>
 #include <command.h>
 #include <errno.h>
-#include <asm/io.h>
+#include <linux/io.h>
 #include <linux/phy.h>
 #include <linux/err.h>
 #include "gianfar.h"
@@ -77,11 +77,11 @@ static void gfar_adjust_link(struct eth_device *edev)
 	u32 ecntrl, maccfg2;
 
 	priv->link = edev->phydev->link;
-	priv->duplexity =edev->phydev->duplex;
+	priv->duplexity = edev->phydev->duplex;
 
 	if (edev->phydev->speed == SPEED_1000)
 		priv->speed = 1000;
-	if (edev->phydev->speed == SPEED_100)
+	else if (edev->phydev->speed == SPEED_100)
 		priv->speed = 100;
 	else
 		priv->speed = 10;
@@ -194,7 +194,7 @@ static int gfar_open(struct eth_device *edev)
 	for (ix = 0; ix < RX_BUF_CNT; ix++) {
 		out_be16(&priv->rxbd[ix].status, RXBD_EMPTY);
 		out_be16(&priv->rxbd[ix].length, 0);
-		out_be32(&priv->rxbd[ix].bufPtr, (uint) priv->rx_buffer[ix]);
+		out_be32(&priv->rxbd[ix].buf, (uint)priv->rx_buffer[ix]);
 	}
 	out_be16(&priv->rxbd[RX_BUF_CNT - 1].status, RXBD_EMPTY | RXBD_WRAP);
 
@@ -202,7 +202,7 @@ static int gfar_open(struct eth_device *edev)
 	for (ix = 0; ix < TX_BUF_CNT; ix++) {
 		out_be16(&priv->txbd[ix].status, 0);
 		out_be16(&priv->txbd[ix].length, 0);
-		out_be32(&priv->txbd[ix].bufPtr, 0);
+		out_be32(&priv->txbd[ix].buf, 0);
 	}
 	out_be16(&priv->txbd[TX_BUF_CNT - 1].status, TXBD_WRAP);
 
@@ -356,7 +356,7 @@ static int gfar_send(struct eth_device *edev, void *packet, int length)
 	uint16_t status;
 
 	tidx = priv->txidx;
-	out_be32(&priv->txbd[tidx].bufPtr, (u32) packet);
+	out_be32(&priv->txbd[tidx].buf, (u32)packet);
 	out_be16(&priv->txbd[tidx].length, length);
 	out_be16(&priv->txbd[tidx].status,
 		in_be16(&priv->txbd[tidx].status) |
@@ -368,9 +368,8 @@ static int gfar_send(struct eth_device *edev, void *packet, int length)
 	/* Wait for buffer to be transmitted */
 	start = get_time_ns();
 	while (in_be16(&priv->txbd[tidx].status) & TXBD_READY) {
-		if (is_timeout(start, 5 * MSECOND)) {
+		if (is_timeout(start, 5 * MSECOND))
 			break;
-		}
 	}
 
 	status = in_be16(&priv->txbd[tidx].status);
@@ -483,7 +482,7 @@ static int gfar_probe(struct device *dev)
 	priv->tbiana = gfar_info->tbiana;
 
 	mdev = get_device_by_name("gfar-mdio0");
-	if (mdev == NULL) {
+	if (!mdev) {
 		pr_err("gfar-mdio0 was not found\n");
 		return -ENODEV;
 	}
@@ -492,7 +491,7 @@ static int gfar_probe(struct device *dev)
 	if (priv->mdiobus_tbi != 0) {
 		sprintf(devname, "%s%d", "gfar-tbiphy", priv->mdiobus_tbi);
 		mdev = get_device_by_name(devname);
-		if (mdev == NULL) {
+		if (!mdev) {
 			pr_err("%s was not found\n", devname);
 			return -ENODEV;
 		}

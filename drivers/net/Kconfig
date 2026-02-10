@@ -237,7 +237,7 @@ config DRIVER_NET_FSL_FMAN
 
 config DRIVER_NET_GIANFAR
 	bool "Gianfar Ethernet"
-	depends on ARCH_MPC85XX
+	depends on ARCH_MPC85XX || ARCH_LS1021
 	select PHYLIB
 
 config DRIVER_NET_KS8851_MLL

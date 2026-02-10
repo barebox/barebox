@@ -69,6 +69,22 @@
 	status = "disabled";
 };
 
+&enet0 {
+	status = "disabled";
+};
+
+&enet1 {
+	tbi-handle = <&tbi1>;
+	phy-handle = <&phy3>;
+	phy-mode = "sgmii";
+	/* Disable property as transmit fails without a DMA sync */
+	/delete-property/ dma-coherent;
+};
+
+&enet2 {
+	status = "disabled";
+};
+
 &uart0 {
 	status = "okay";
 	clock-frequency = <150000000>;

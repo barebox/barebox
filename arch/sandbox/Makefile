@@ -3,7 +3,7 @@
 KBUILD_DEFCONFIG := sandbox_defconfig
 
 generated_configs += headless_defconfig noshell_defconfig lockdown_defconfig \
-		     simpleconsole_defconfig libfuzzer_defconfig
+		     simpleconsole_defconfig libfuzzer_defconfig rust_defconfig
 headless_defconfig:
 	$(call merge_into_defconfig_named,sandbox_defconfig,headless,$@)
 noshell_defconfig:
@@ -14,6 +14,8 @@ simpleconsole_defconfig:
 	$(call merge_into_defconfig_named,sandbox_defconfig,simpleconsole,$@)
 libfuzzer_defconfig:
 	$(call merge_into_defconfig_named,sandbox_defconfig,libfuzzer,$@)
+rust_defconfig:
+	$(call merge_into_defconfig_named,sandbox_defconfig,rust,$@)
 
 KBUILD_CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing
 

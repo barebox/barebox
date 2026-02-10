@@ -121,11 +121,11 @@ static void gfar_adjust_link(struct eth_device *edev)
 		out_be32(regs + GFAR_ECNTRL_OFFSET, ecntrl);
 		out_be32(regs + GFAR_MACCFG2_OFFSET, maccfg2);
 
-		dev_info(&edev->dev, "Speed: %d, %s duplex\n", priv->speed,
-		       (priv->duplexity) ? "full" : "half");
+		dev_dbg(&edev->dev, "Speed: %d, %s duplex\n", priv->speed,
+				(priv->duplexity) ? "full" : "half");
 
 	} else {
-		dev_info(&edev->dev, "No link.\n");
+		dev_dbg(&edev->dev, "No link.\n");
 	}
 }
 

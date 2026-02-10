@@ -114,10 +114,8 @@ machine-$(CONFIG_ARCH_TEGRA)		+= tegra
 machine-$(CONFIG_ARCH_ZYNQ)		+= zynq
 machine-$(CONFIG_ARCH_ZYNQMP)		+= zynqmp
 
-# Add cleanup flags
-KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS_barebox += --gc-sections -pie
-LDFLAGS_pbl += --gc-sections -pie
+LDFLAGS_barebox += -pie
+LDFLAGS_pbl += -pie
 
 # early code often runs at addresses we are not linked at
 KBUILD_CFLAGS_KERNEL += -fPIE

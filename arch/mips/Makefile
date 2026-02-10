@@ -73,11 +73,7 @@ endif
 
 KBUILD_CPPFLAGS += -DTEXT_BASE=$(MIPS_TEXT_BASE)
 
-ifndef CONFIG_MODULES
-# Add cleanup flags
-KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS_barebox += -static --gc-sections --emit-relocs
-endif
+LDFLAGS_barebox += -static --emit-relocs
 
 KBUILD_BINARY := barebox.bin
 

@@ -28,14 +28,10 @@ else
 endif
 
 
-ifndef CONFIG_MODULES
-# Add cleanup flags
 ifeq ($(CONFIG_X86_EFI),y)
 LDFLAGS_barebox += -shared -Bsymbolic -znocombreloc
 else
-KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS_barebox += -static --gc-sections
-endif
+LDFLAGS_barebox += -static
 endif
 
 machdirs := $(patsubst %,arch/x86/mach-%/,$(machine-y))

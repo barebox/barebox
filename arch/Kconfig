@@ -64,6 +64,9 @@ config RELR
 	  This can save ~10% of binary size, more if the final barebox image
 	  contains less external firmware blobs.
 
+config LD_DEAD_CODE_DATA_ELIMINATION
+	bool
+
 config ARCH_HAS_CTRLC
 	bool
 

@@ -38,12 +38,6 @@ riscv-ldflags-y += -pie -static
 LDFLAGS_pbl += $(riscv-ldflags-y)
 LDFLAGS_barebox += $(riscv-ldflags-y)
 
-ifndef CONFIG_MODULES
-# Add cleanup flags
-KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS_barebox += -static --gc-sections
-endif
-
 KBUILD_BINARY := barebox.bin
 KBUILD_IMAGE := $(KBUILD_BINARY)
 

@@ -160,10 +160,10 @@ static void imx_adjust_optee_memory(void **bl32, void **bl32_image, size_t *bl32
 
 __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 {
-	__imx8mm_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+	__imx8mm_load_and_start_image_via_tfa(NULL, (void *)MX8M_ATF_BL33_BASE_ADDR);
 }
 
-__noreturn void __imx8mm_load_and_start_image_via_tfa(void *bl33)
+__noreturn void __imx8mm_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
 	const void *bl31;
 	size_t bl31_size;
@@ -235,10 +235,10 @@ void imx8mp_load_bl33(void *bl33)
 
 __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 {
-	__imx8mp_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+	__imx8mp_load_and_start_image_via_tfa(NULL, (void *)MX8M_ATF_BL33_BASE_ADDR);
 }
 
-__noreturn void __imx8mp_load_and_start_image_via_tfa(void *bl33)
+__noreturn void __imx8mp_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
 	const void *bl31;
 	size_t bl31_size;
@@ -310,10 +310,10 @@ void imx8mn_load_bl33(void *bl33)
 
 __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 {
-	__imx8mn_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+	__imx8mn_load_and_start_image_via_tfa(NULL, (void *)MX8M_ATF_BL33_BASE_ADDR);
 }
 
-__noreturn void __imx8mn_load_and_start_image_via_tfa(void *bl33)
+__noreturn void __imx8mn_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
 	const void *bl31;
 	size_t bl31_size;
@@ -379,10 +379,10 @@ void imx8mq_load_bl33(void *bl33)
 
 __noreturn void imx8mq_load_and_start_image_via_tfa(void)
 {
-	__imx8mq_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+	__imx8mq_load_and_start_image_via_tfa(NULL, (void *)MX8M_ATF_BL33_BASE_ADDR);
 }
 
-__noreturn void __imx8mq_load_and_start_image_via_tfa(void *bl33)
+__noreturn void __imx8mq_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
 	const void *bl31;
 	size_t bl31_size;

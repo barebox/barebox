@@ -117,6 +117,15 @@ config HAVE_OPTEE
 	  bidirectional communication with OP-TEE is enabled via
 	  CONFIG_OPTEE.
 
+config OPTEE_APPLY_OVERLAY
+	bool "Apply OP-TEE DTBO to barebox and kernel DT"
+	depends on HAVE_OPTEE
+	help
+	  Apply the OP-TEE provided device-tree overlay to internal barebox DT
+	  and the kernel DT if this option is enabled. This requires barebox
+	  machine support and the board lowlevel code to pass the barebox
+	  internal DT to OP-TEE while booting.
+
 config OPTEE_SIZE
 	hex
 	default 0x02000000

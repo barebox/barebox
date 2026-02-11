@@ -2,10 +2,12 @@
 
 #define pr_fmt(fmt) "optee: " fmt
 
-#include <tee/optee.h>
+#include <compressed-dtb.h>
 #include <linux/printk.h>
 #include <linux/errno.h>
 #include <linux/limits.h>
+#include <pbl/handoff-data.h>
+#include <tee/optee.h>
 
 static u64 optee_membase = U64_MAX;
 
@@ -59,4 +61,15 @@ void optee_set_membase(const struct optee_header *hdr)
 
 	optee_membase = (u64)hdr->init_load_addr_hi << 32;
 	optee_membase |= hdr->init_load_addr_lo;
+}
+
+void optee_handoff_overlay(void *ovl, unsigned int ovl_sz)
+{
+	if (!IS_ENABLED(CONFIG_OPTEE_APPLY_OVERLAY))
+		return;
+
+	if (!blob_is_fdt(ovl))
+		return;
+
+	handoff_data_add(HANDOFF_DATA_TEE_DT_OVL, ovl, ovl_sz);
 }

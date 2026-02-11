@@ -37,6 +37,7 @@ int optee_verify_header (const struct optee_header *hdr);
 
 void optee_set_membase(const struct optee_header *hdr);
 int optee_get_membase(u64 *membase);
+void optee_handoff_overlay(void *ovl, unsigned int ovl_sz);
 
 #else
 
@@ -47,6 +48,10 @@ static inline void optee_set_membase(const struct optee_header *hdr)
 static inline int optee_get_membase(u64 *membase)
 {
 	return -ENOSYS;
+}
+
+static inline void optee_handoff_overlay(void *ovl, unsigned int ovl_sz)
+{
 }
 
 #endif /* CONFIG_HAVE_OPTEE */

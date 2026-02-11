@@ -31,6 +31,8 @@ fdt_device_get_match_data(const void *fdt, const char *nodepath,
 
 int pbl_barebox_verify(const void *compressed_start, unsigned int len,
 		       const void *hash, unsigned int hash_len);
+int pbl_load_fdt(const void *fdt, void *dest, int destsize);
+
 #endif
 
 void __noreturn barebox_pbl_entry(ulong, ulong, void *);

@@ -56,6 +56,20 @@ static inline void optee_handoff_overlay(void *ovl, unsigned int ovl_sz)
 
 #endif /* CONFIG_HAVE_OPTEE */
 
+#ifdef CONFIG_OF_FIXUP_OPTEE
+void optee_register_overlay(void);
+bool optee_overlay_registered(void);
+#else
+static inline void optee_register_overlay(void)
+{
+}
+
+static inline bool optee_overlay_registered(void)
+{
+	return false;
+}
+#endif /* CONFIG_OF_FIXUP_OPTEE */
+
 #ifdef __PBL__
 
 int start_optee_early(void* fdt, void* tee);

@@ -15,6 +15,8 @@ struct optee_header;
 const struct optee_header *imx_scratch_get_optee_hdr(void);
 void imx_scratch_save_optee_hdr(const struct optee_header *hdr);
 
+u8 *imx_scratch_get_fdt(unsigned int *fdt_sz);
+
 #define imx8mq_init_scratch_space() imx8m_init_scratch_space(32, true)
 #define imx8mm_init_scratch_space() imx8m_init_scratch_space(32, true)
 #define imx8mn_init_scratch_space() imx8m_init_scratch_space(16, true)

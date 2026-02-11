@@ -13,10 +13,22 @@
 #include <pbl.h>
 
 struct imx_scratch_space {
-	u32 bootrom_log[128];
-	u32 reserved[128];		/* reserve for bootrom log */
-	struct optee_header optee_hdr;
+	union {
+		/* Internal buffer, never use directly! */
+		u8 __buf[CONFIG_SCRATCH_SIZE];
+		struct {
+			u32 bootrom_log[128];
+			/* reserve for bootrom log */
+			u32 reserved[128];
+			struct optee_header optee_hdr;
+			/* FDT needs an 8 byte alignment, always last element! */
+			u8 fdt[] __aligned(8);
+		};
+	};
 };
+/* Ensure that 'fdt' size fits into OP-TEE DTB_MAX_SIZE size */
+static_assert(sizeof(struct imx_scratch_space) -
+	      offsetof(struct imx_scratch_space, fdt) >= PBL_OPTEE_DTB_MAX_SIZE);
 
 static struct imx_scratch_space *scratch;
 
@@ -91,4 +103,30 @@ const struct optee_header *imx_scratch_get_optee_hdr(void)
 	}
 
 	return &scratch->optee_hdr;
+}
+
+u8 *imx_scratch_get_fdt(unsigned int *fdt_sz)
+{
+	unsigned int sz;
+
+	if (!scratch) {
+		if (IN_PBL)
+			return ERR_PTR(-EINVAL);
+		else
+			scratch = (void *)arm_mem_scratch_get();
+	}
+
+	if (PBL_OPTEE_DTB_MAX_SIZE == 0)
+		return NULL;
+
+	sz = sizeof(struct imx_scratch_space) -
+	     offsetof(struct imx_scratch_space, fdt);
+
+	if (sz > PBL_OPTEE_DTB_MAX_SIZE)
+		sz = PBL_OPTEE_DTB_MAX_SIZE;
+
+	if (fdt_sz)
+		*fdt_sz = sz;
+
+	return scratch->fdt;
 }

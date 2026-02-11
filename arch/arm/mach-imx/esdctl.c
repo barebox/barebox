@@ -468,8 +468,9 @@ static void imx_ddrc_set_mstr_device_config(u32 *mstr, unsigned bits)
 	*mstr |= FIELD_PREP(DDRC_MSTR_DEVICE_CONFIG, fls(bits / 8));
 }
 
-static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc, unsigned buswidth)
+static resource_size_t imx8m_ddrc_sdram_size(unsigned buswidth)
 {
+	void __iomem *ddrc = IOMEM(MX8M_DDRC_CTL_BASE_ADDR);
 	const u32 addrmap[DDRC_ADDRMAP_LENGTH] = {
 		readl(ddrc + DDRC_ADDRMAP(0)),
 		readl(ddrc + DDRC_ADDRMAP(1)),
@@ -519,10 +520,10 @@ static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc, unsigned buswid
 				   reduced_adress_space, mstr);
 }
 
-static int _imx8m_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data,
+static int _imx8m_ddrc_add_mem(const struct imx_esdctl_data *data,
 			       unsigned int buswidth)
 {
-	resource_size_t size = imx8m_ddrc_sdram_size(mmdcbase, buswidth);
+	resource_size_t size = imx8m_ddrc_sdram_size(buswidth);
 	resource_size_t size0, size1;
 	int ret;
 
@@ -556,12 +557,12 @@ static int _imx8m_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *dat
 
 static int imx8m_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
-	return _imx8m_ddrc_add_mem(mmdcbase, data, 32);
+	return _imx8m_ddrc_add_mem(data, 32);
 }
 
 static int imx8mn_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
-	return _imx8m_ddrc_add_mem(mmdcbase, data, 16);
+	return _imx8m_ddrc_add_mem(data, 16);
 }
 
 #define IMX9_DDRC_CS_CONFIG(n)	(0x80 + (n) * 4)
@@ -1002,7 +1003,7 @@ resource_size_t imx8m_barebox_earlymem_size(unsigned buswidth)
 {
 	resource_size_t size;
 
-	size = imx8m_ddrc_sdram_size(IOMEM(MX8M_DDRC_CTL_BASE_ADDR), buswidth);
+	size = imx8m_ddrc_sdram_size(buswidth);
 	/*
 	 * We artificially limit detected memory size to force malloc
 	 * pool placement to be within 4GiB address space, so as to

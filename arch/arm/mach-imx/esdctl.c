@@ -877,6 +877,45 @@ upper_or_coalesced_range(unsigned long base0, unsigned long size0,
 	}
 }
 
+static void imx_optee_handoff_overlay(void)
+{
+	unsigned int early_fdt_sz;
+	u8 *early_fdt;
+
+	/*
+	 * On ARMv8 i.MX SoCs CONFIG_ARCH_IMX_ATF_PASS_BL_PARAMS must be enabled
+	 * else no FDT is passed to OP-TEE.
+	 */
+	if (IS_ENABLED(CONFIG_CPU_V8) &&
+	    !IS_ENABLED(CONFIG_ARCH_IMX_ATF_PASS_BL_PARAMS))
+		return;
+
+	early_fdt = imx_scratch_get_fdt(&early_fdt_sz);
+	if (IS_ERR(early_fdt)) {
+		pr_warn("Failed to get FDT scratch mem, skip register OP-TEE DTBO\n");
+		return;
+	}
+
+	/* Early FDT is optional */
+	if (!early_fdt)
+		return;
+
+	/*
+	 * OP-TEE DT handling is really cumbersome. In case an external DT was
+	 * supplied, OP-TEE re-use this DT and appends overlays if enabled.
+	 *
+	 * Register the whole early FDT as overlay and let the barebox common
+	 * code extract the __fragment__'s from the early FDT which should be
+	 * faster than doing it here manually via libfdt and no MMU.
+	 *
+	 * Note: This assumes that OP-TEE is the only one adding __fragment__'s.
+	 * This is always the case on ARMv7, but on ARMv8 the BL31 (TF-A) could
+	 * add __fragment__'s too. Since the barebox i.MX port doesn't pass the
+	 * FDT to the TF-A this is fine for now.
+	 */
+	optee_handoff_overlay(early_fdt, early_fdt_sz);
+}
+
 void __noreturn imx1_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
@@ -1020,6 +1059,7 @@ static void __noreturn imx8m_barebox_entry(void *boarddata, unsigned buswidth)
 {
 	imx8m_init_scratch_space(buswidth, false);
 	optee_set_membase(imx_scratch_get_optee_hdr());
+	imx_optee_handoff_overlay();
 	barebox_arm_entry(MX8M_DDR_CSD1_BASE_ADDR,
 			  imx8m_barebox_earlymem_size(buswidth), boarddata);
 }

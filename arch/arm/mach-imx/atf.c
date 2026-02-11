@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <asm/atf_common.h>
 #include <asm/sections.h>
 #include <common.h>
 #include <firmware.h>
@@ -18,6 +19,7 @@
 #include <mach/imx/ele.h>
 #include <mach/imx/xload.h>
 #include <mach/imx/snvs.h>
+#include <pbl.h>
 
 static void imx_adjust_optee_memory(void **bl32, void **bl32_image, size_t *bl32_size)
 {
@@ -35,6 +37,68 @@ static void imx_adjust_optee_memory(void **bl32, void **bl32_image, size_t *bl32
 	*bl32 = (void *)membase;
 	*bl32_size -= sizeof(*hdr);
 	*bl32_image += sizeof(*hdr);
+}
+
+static __noreturn void bl31_via_bl_params(void *bl31, void *bl32, void *bl33,
+					  void *fdt)
+{
+	struct bl2_to_bl31_params_mem_v2 *params;
+
+	/* Prepare bl_params for BL32 */
+	params = bl2_plat_get_bl31_params_v2((uintptr_t)bl32,
+			(uintptr_t)bl33, (uintptr_t)fdt);
+
+	pr_debug("Jump to BL31 with bl-params (%s BL32-FDT)\n",
+		 fdt ? "including" : "excluding");
+	/*
+	 * Start BL31 without passing the FDT via x1 since the mainline
+	 * TF-A doesn't support it yet.
+	 */
+	bl31_entry_v2((uintptr_t)bl31, &params->bl_params, NULL);
+
+	__builtin_unreachable();
+}
+
+static __noreturn void start_bl31_via_bl_params(void *bl31, void *bl32,
+						void *bl33, void *fdt)
+{
+	unsigned long mem_base = MX8M_DDR_CSD1_BASE_ADDR;
+	unsigned long mem_sz;
+	unsigned int bufsz = 0;
+	int error;
+	u8 *buf;
+
+	if (!fdt)
+		bl31_via_bl_params(bl31, bl32, bl33, NULL);
+
+	buf = imx_scratch_get_fdt(&bufsz);
+	if (IS_ERR_OR_NULL(buf)) {
+		if (!buf)
+			pr_debug("No FDT scratch mem configured, continue without FDT\n");
+		else
+			pr_warn("Failed to get FDT scratch mem, continue without FDT\n");
+		bl31_via_bl_params(bl31, bl32, bl33, NULL);
+	}
+
+	error = pbl_load_fdt(fdt, buf, bufsz);
+	if (error) {
+		pr_warn("Failed to load FDT, continue without FDT\n");
+		bl31_via_bl_params(bl31, bl32, bl33, NULL);
+	}
+
+	if (cpu_is_mx8mn())
+		mem_sz = imx8m_ddrc_sdram_size(16);
+	else
+		mem_sz = imx8m_ddrc_sdram_size(32);
+
+	fdt = buf;
+	error = fdt_fixup_mem(fdt, &mem_base, &mem_sz, 1);
+	if (error) {
+		pr_warn("Failed to fixup FDT memory node, continue without FDT\n");
+		bl31_via_bl_params(bl31, bl32, bl33, NULL);
+	}
+
+	bl31_via_bl_params(bl31, bl32, bl33, fdt);
 }
 
 /**
@@ -122,7 +186,21 @@ imx8m_tfa_start_bl31(const void *tfa_bin, size_t tfa_size, void *tfa_dest,
 	asm volatile("msr sp_el2, %0" : :
 		     "r" (tfa_dest - 16) :
 		     "cc");
-	bl31();
+
+	/*
+	 * If enabled the bl_params are passed via x0 to the TF-A, except for
+	 * the i.MX8MQ which doesn't support bl_params yet.
+	 * Passing the bl_params must be explicit enabled to be backward
+	 * compatible with downstream TF-A versions, which may have problems
+	 * with the bl_params.
+	 */
+	if (!IS_ENABLED(CONFIG_ARCH_IMX_ATF_PASS_BL_PARAMS) || cpu_is_mx8mq()) {
+		pr_debug("Jump to BL31 without bl-params\n");
+		bl31();
+	} else {
+		start_bl31_via_bl_params(bl31, bl32, bl33, fdt);
+	}
+
 	__builtin_unreachable();
 }
 

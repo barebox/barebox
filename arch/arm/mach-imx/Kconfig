@@ -38,6 +38,22 @@ config ARCH_IMX_ATF
 	def_bool y
 	depends on ARCH_IMX8M || ARCH_IMX9
 
+config ARCH_IMX_ATF_PASS_BL_PARAMS
+	bool "Pass BL3x bl_params as arg0 to TF-A"
+	depends on ARCH_IMX_ATF
+	select ARM_ATF
+	select LIBFDT
+	help
+	  Enable this option if you are using an upstream TF-A that uses
+	  the struct::bl_params to handover all required BL32 and BL33
+	  information required to start the BL32 and BL33 image.
+
+	  Since upstream TF-A v2.12 all i.MX8M support this feature except for
+	  the i.MX8MQ.
+
+	  This option is required if the barebox DT should be passed to the
+	  BL32 firmware.
+
 config ARCH_IMX_ROMAPI
 	def_bool y
 	depends on ARCH_IMX8M || ARCH_IMX9

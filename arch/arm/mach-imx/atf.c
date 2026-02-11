@@ -45,6 +45,9 @@ static void imx_adjust_optee_memory(void **bl32, void **bl32_image, size_t *bl32
  * @tfa_dest:	Place where the BL31 is copied to and executed
  * @tee:	Pointer to the optional BL32 blob
  * @tee_size:	Size of the optional BL32 blob
+ * @bl33:	Pointer to the already loaded BL33 blob
+ * @fdt:	Pointer to the barebox internal DT (either compressed or not
+ *		compressed)
  *
  * This function:
  *
@@ -64,7 +67,7 @@ static void imx_adjust_optee_memory(void **bl32, void **bl32_image, size_t *bl32
 
 static __noreturn void
 imx8m_tfa_start_bl31(const void *tfa_bin, size_t tfa_size, void *tfa_dest,
-		     void *tee_bin, size_t tee_size)
+		     void *tee_bin, size_t tee_size, void *bl33, void *fdt)
 {
 	void __noreturn (*bl31)(void) = tfa_dest;
 	unsigned long endmem;
@@ -211,7 +214,7 @@ __noreturn void __imx8mm_load_and_start_image_via_tfa(void *fdt, void *bl33)
 	}
 
 	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MM_ATF_BL31_BASE_ADDR,
-			     bl32, bl32_size);
+			     bl32, bl32_size, bl33, fdt);
 }
 
 void imx8mp_load_bl33(void *bl33)
@@ -276,7 +279,7 @@ __noreturn void __imx8mp_load_and_start_image_via_tfa(void *fdt, void *bl33)
 	}
 
 	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MP_ATF_BL31_BASE_ADDR,
-			     bl32, bl32_size);
+			     bl32, bl32_size, bl33, fdt);
 }
 
 void imx8mn_load_bl33(void *bl33)
@@ -341,7 +344,7 @@ __noreturn void __imx8mn_load_and_start_image_via_tfa(void *fdt, void *bl33)
 	}
 
 	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MN_ATF_BL31_BASE_ADDR,
-			     bl32, bl32_size);
+			     bl32, bl32_size, bl33, fdt);
 }
 
 void imx8mq_load_bl33(void *bl33)
@@ -400,7 +403,7 @@ __noreturn void __imx8mq_load_and_start_image_via_tfa(void *fdt, void *bl33)
 	}
 
 	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR,
-			     bl32, bl32_size);
+			     bl32, bl32_size, bl33, fdt);
 }
 
 void __noreturn imx93_load_and_start_image_via_tfa(void)

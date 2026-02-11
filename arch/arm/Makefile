@@ -57,6 +57,14 @@ ifeq ($(CONFIG_CPU_64),y)
 KBUILD_CFLAGS += -mstrict-align
 # Prevent use of floating point and Advanced SIMD registers.
 KBUILD_CFLAGS += -mgeneral-regs-only
+# NEON/FP is fine, arm_cpu_lowlevel_init() enables it
+KBUILD_RUSTFLAGS += --target=aarch64-unknown-none
+endif
+ifeq ($(CONFIG_CPU_32),y)
+# ARMv7-only target, hence HAVE_RUST depends on CPU_32v7
+KBUILD_RUSTFLAGS += --target=armv7a-none-eabi
+# barebox is linked with -pie
+KBUILD_RUSTFLAGS += -Crelocation-model=pic
 endif
 
 # This selects which instruction set is used.

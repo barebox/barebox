@@ -25,15 +25,15 @@ On Debian, install ``rustc``, ``rust-src``, ``bindgen`` and
 Building
 --------
 
-``CONFIG_RUST`` is currently available on 64-bit sandbox only::
+``CONFIG_RUST`` is available on 64-bit sandbox, ARMv7 and ARM64::
 
 	make ARCH=sandbox rust_defconfig
 	make ARCH=sandbox
 
 The ``rust.config`` fragment enables Rust in any other defconfig::
 
-	make ARCH=<arch> <board>_defconfig
-	make ARCH=<arch> rust.config
+	make ARCH=arm64 multi_v8_defconfig
+	make ARCH=arm64 rust.config
 
 ``version`` prints the Rust compiler used for the build and ``bfetch``
 lists ``RUST`` among the features.

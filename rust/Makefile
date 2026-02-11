@@ -245,8 +245,7 @@ ifdef CONFIG_ARM32
 	# Add eabi initrinsics for ARM 32-bit
 	redirect-intrinsics += \
 		__aeabi_fadd __aeabi_fmul __aeabi_fcmpeq __aeabi_fcmple __aeabi_fcmplt __aeabi_fcmpun \
-		__aeabi_dadd __aeabi_dmul __aeabi_dcmple __aeabi_dcmplt __aeabi_dcmpun \
-		__aeabi_uldivmod
+		__aeabi_dadd __aeabi_dmul __aeabi_dcmple __aeabi_dcmplt __aeabi_dcmpun
 endif
 ifneq ($(or $(CONFIG_ARM64),$(and $(CONFIG_RISCV),$(CONFIG_64BIT))),)
 	# These intrinsics are defined for ARM64 and RISCV64

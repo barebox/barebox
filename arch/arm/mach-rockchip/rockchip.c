@@ -33,7 +33,8 @@ static int rockchip_init(void)
 {
 	const struct optee_header *hdr = rk_scratch_get_optee_hdr();
 
-	if (IS_ENABLED(CONFIG_PBL_OPTEE) && optee_verify_header(hdr) == 0) {
+	if (IS_ENABLED(CONFIG_PBL_OPTEE) && !optee_overlay_registered() &&
+	    optee_verify_header(hdr) == 0) {
 		static struct of_optee_fixup_data optee_fixup_data = {
 			.shm_size = OPTEE_SHM_SIZE,
 			.method = "smc",

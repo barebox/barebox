@@ -140,7 +140,8 @@ static int init_boot(void)
 			IF_ENABLED(CONFIG_BOOT_DEFAULTS,       "bootsource ")
 			IF_ENABLED(CONFIG_BOOT_DEFAULTS,       "storage.builtin.nonbootsource ")
 			IF_ENABLED(CONFIG_BOOT_DEFAULTS,       "storage.removable.nonbootsource ")
-			"net"
+			IF_ENABLED(CONFIG_NET,                 "net")
+			""
 		);
 
 	globalvar_add_simple_string("boot.default", &global_boot_default);

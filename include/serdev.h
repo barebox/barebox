@@ -3,6 +3,7 @@
 #define _SERDEV_H_
 
 #include <driver.h>
+#include <param.h>
 #include <poller.h>
 #include <kfifo.h>
 
@@ -14,6 +15,7 @@
  * @buf:		Buffer used to pass Rx data to consumers
  * @poller		Async poller used to poll this serdev
  * @polling_interval:	Async poller periodicity
+ * @polling_interval_param:	Async poller periodicity barebox param_d
  * @polling_window:	Duration of a single busy loop poll
  * @locked:		Lock to prevent recursive polling
  * @receive_buf:	Function called with data received from device;
@@ -25,6 +27,7 @@ struct serdev_device {
 	unsigned char *buf;
 	struct poller_async poller;
 	uint64_t polling_interval;
+	struct param_d *polling_interval_param;
 	uint64_t polling_window;
 	bool locked;
 
@@ -33,6 +36,7 @@ struct serdev_device {
 };
 
 int serdev_device_open(struct serdev_device *);
+void serdev_device_close(struct serdev_device *);
 unsigned int serdev_device_set_baudrate(struct serdev_device *, unsigned int);
 int serdev_device_write(struct serdev_device *, const unsigned char *,
 			size_t, unsigned long);

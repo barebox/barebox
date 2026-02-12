@@ -92,6 +92,8 @@ int serdev_device_open(struct serdev_device *serdev)
 		goto err_console_close;
 	}
 
+	serdev->polling_interval_param = p;
+
 	return 0;
 
 err_console_close:
@@ -104,6 +106,17 @@ err_free_buf:
 	free(serdev->buf);
 
 	return ret;
+}
+
+void serdev_device_close(struct serdev_device *serdev)
+{
+	struct console_device *cdev = to_console_device(serdev);
+
+	param_remove(serdev->polling_interval_param);
+	console_close(cdev);
+	poller_async_unregister(&serdev->poller);
+	kfifo_free(serdev->fifo);
+	free(serdev->buf);
 }
 
 unsigned int serdev_device_set_baudrate(struct serdev_device *serdev,

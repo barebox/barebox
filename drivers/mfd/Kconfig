@@ -158,4 +158,13 @@ config MFD_ATMEL_SMC
 	bool
 	select MFD_SYSCON
 
+config MFD_HGS_EFI
+	tristate "Hexagon Geosystems EFI core driver"
+	depends on SERIAL_DEV_BUS
+	select CRC16
+	help
+	  Select this to get support for the Hexagon Electrical Front Interface
+	  (EFI) Co-Processor device found on several devices in the System1600
+	  platform.
+
 endmenu

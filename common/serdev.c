@@ -71,21 +71,39 @@ int serdev_device_open(struct serdev_device *serdev)
 
 	serdev->buf = xzalloc(PAGE_SIZE);
 	serdev->fifo = kfifo_alloc(PAGE_SIZE);
-	if (!serdev->fifo)
-		return -ENOMEM;
+	if (!serdev->fifo) {
+		ret = -ENOMEM;
+		goto err_free_buf;
+	}
 
 	ret = poller_async_register(&serdev->poller, "serdev");
 	if (ret)
-		return ret;
+		goto err_free_fifo;
 
 	ret = console_open(cdev);
 	if (ret)
-		return ret;
+		goto err_poller_unregister;
 
 	p = dev_add_param_uint64(serdev->dev, "polling_interval",
 				 serdev_device_set_polling_interval, NULL,
 				 &serdev->polling_interval, "%llu", serdev);
-	return PTR_ERR_OR_ZERO(p);
+	if (IS_ERR(p)) {
+		ret = PTR_ERR(p);
+		goto err_console_close;
+	}
+
+	return 0;
+
+err_console_close:
+	console_close(cdev);
+err_poller_unregister:
+	poller_async_unregister(&serdev->poller);
+err_free_fifo:
+	kfifo_free(serdev->fifo);
+err_free_buf:
+	free(serdev->buf);
+
+	return ret;
 }
 
 unsigned int serdev_device_set_baudrate(struct serdev_device *serdev,

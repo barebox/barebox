@@ -259,7 +259,7 @@ static int clk_stm32_mux_set_parent(struct clk_hw *hw, u8 index)
 }
 
 const struct clk_ops clk_stm32_mux_ops = {
-	.round_rate	= clk_mux_round_rate,
+	.determine_rate	= __clk_mux_determine_rate,
 	.get_parent	= clk_stm32_mux_get_parent,
 	.set_parent	= clk_stm32_mux_set_parent,
 };
@@ -436,25 +436,6 @@ static int clk_stm32_composite_determine_rate(struct clk_hw *hw,
 	return 0;
 }
 
-static long clk_stm32_composite_round_rate(struct clk_hw *hw,
-					   unsigned long rate,
-					   unsigned long *prate)
-{
-	struct clk_rate_request req = {};
-	int ret;
-
-	req.rate = rate;
-	req.best_parent_rate = *prate;
-
-	ret = clk_stm32_composite_determine_rate(hw, &req);
-	if (ret)
-		return ret;
-
-	*prate = req.best_parent_rate;
-
-	return req.rate;
-}
-
 static int clk_stm32_composite_get_parent(struct clk_hw *hw)
 {
 	struct clk_stm32_composite *composite = to_clk_stm32_composite(hw);
@@ -587,7 +568,7 @@ static void clk_stm32_composite_gate_disable(struct clk_hw *hw)
 const struct clk_ops clk_stm32_composite_ops = {
 	.set_rate	= clk_stm32_composite_set_rate,
 	.recalc_rate	= clk_stm32_composite_recalc_rate,
-	.round_rate	= clk_stm32_composite_round_rate,
+	.determine_rate	= clk_stm32_composite_determine_rate,
 	.get_parent	= clk_stm32_composite_get_parent,
 	.set_parent	= clk_stm32_composite_set_parent,
 	.enable		= clk_stm32_composite_gate_enable,

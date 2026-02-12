@@ -66,7 +66,7 @@ static int source_env_network(struct eth_device *edev)
 	};
 	IPaddr_t ipaddr, netmask, gateway, serverip;
 	unsigned char ethaddr[6];
-	char *file, *cmd;
+	char *file;
 	const char *ethaddrstr, *modestr, *linuxdevname;
 	int ret, mode, ethaddr_valid = 0, i;
 	struct stat s;
@@ -87,12 +87,9 @@ static int source_env_network(struct eth_device *edev)
 	for (i = 0; i < ARRAY_SIZE(vars); i++)
 		unsetenv(vars[i]);
 
-	cmd = basprintf("source /env/network/%s", edev->devname);
-	ret = run_command(cmd);
-	if (ret) {
-		pr_err("Running '%s' failed with %d\n", cmd, ret);
+	ret = run_command("source /env/network/%s", edev->devname);
+	if (ret)
 		goto out;
-	}
 
 	ipaddr = getenv_ip("ipaddr");
 	netmask = getenv_ip("netmask");
@@ -150,7 +147,6 @@ static int source_env_network(struct eth_device *edev)
 
 out:
 	env_pop_context();
-	free(cmd);
 	free(file);
 
 	return ret;

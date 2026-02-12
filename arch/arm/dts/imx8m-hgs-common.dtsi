@@ -1,0 +1,80 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+// SPDX-FileCopyrightText: 2024 Pengutronix
+
+/ {
+	aliases {
+		state = &state;
+	};
+
+	chosen {
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &usdhc3, "partname:barebox-environment";
+			status = "disabled";
+		};
+	};
+
+	state: state {
+		compatible = "barebox,state";
+		magic = <0xef784236>;
+		backend-type = "raw";
+		backend = <&usdhc3>;
+
+		/*
+		 * barebox-state partition size: 1 MiB
+		 * nr. of redundant copies:      3
+		 * ==> max. stride size: 1 MiB / 3 = 349525 Byte
+		 * ==> keep it simple and align it to 256K
+		 *
+		 * stride size:     262144 Byte
+		 * raw-header:     -    16 Byte
+		 * direct-storage: -     8 Byte
+		 *                 ------------
+		 * max state size:  262120 Byte
+		 *                  ===========
+		 */
+		backend-stridesize = <262144>;
+
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			systemA {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@0 {
+					reg = <0x0 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority@4 {
+					reg = <0x4 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+			};
+
+			systemB {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@8 {
+					reg = <0x8 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority@c {
+					reg = <0xc 0x4>;
+					type = "uint32";
+					default = <10>;
+				};
+			};
+
+			last_chosen@10 {
+				reg = <0x10 0x4>;
+				type = "uint32";
+			};
+		};
+	};
+};

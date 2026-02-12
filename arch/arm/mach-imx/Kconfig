@@ -628,6 +628,14 @@ config MACH_CONGATEC_QMX8P_SOM
 	select IMX8M_DRAM
 	select I2C_IMX_EARLY
 
+config MACH_HGS_GS05
+	bool "Hexagon Geosystems GS05 Board"
+	select ARCH_IMX8MM
+	select BOARD_HGS
+	select FIRMWARE_IMX8MM_ATF
+	select USB_GADGET_DRIVER_ARC_PBL
+	select HGS_EFI_WATCHDOG
+
 config MACH_KOENIGBAUER_ALPHAJET
 	bool "Koenig+Bauer AlphaJet"
 	select MACH_CONGATEC_QMX8P_SOM

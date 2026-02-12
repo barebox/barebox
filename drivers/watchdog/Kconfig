@@ -195,4 +195,13 @@ config K3_RTI_WDT
 	  Say Y here if you want to include support for the K3 watchdog
 	  timer (RTI module) available in the K3 generation of processors.
 
+config HGS_EFI_WATCHDOG
+	bool "Hexagon Geosystems EFI watchdog"
+	depends on MFD_HGS_EFI || COMPILE_TEST
+	help
+	  Say Y here if you want to include support for the Hexagon Geosystems
+	  EFI watchdog timer.
+
+	  If unsure, say N.
+
 endif

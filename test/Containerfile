@@ -41,6 +41,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 	qemu-system-misc \
 	qemu-system-mips \
 	qemu-system-x86 \
+	qemu-system-ppc \
 	qemu-system-common \
 	qemu-efi-aarch64 \
 	ovmf \

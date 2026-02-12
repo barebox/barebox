@@ -710,7 +710,7 @@ static int clk_mmux_set_parent(struct clk_hw *hw, u8 index)
 static const struct clk_ops clk_mmux_ops = {
 	.get_parent	= clk_mmux_get_parent,
 	.set_parent	= clk_mmux_set_parent,
-	.round_rate	= clk_mux_round_rate,
+	.determine_rate	= __clk_mux_determine_rate,
 };
 
 /* STM32 PLL */

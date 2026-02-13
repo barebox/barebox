@@ -4,13 +4,11 @@ import re
 import pytest
 
 
-def get_journalctl(shell, kernel=True, grep=None):
-    opts = ''
+def get_dmesg(shell, grep=None):
+    cmd = 'dmesg'
     if grep is not None:
-        opts += f" --grep={grep}"
-    if kernel:
-        opts += " -k"
-    stdout, _, ret = shell.run(f"journalctl --no-pager {opts} -o cat")
+        cmd += f" | grep '{grep}'"
+    stdout, _, ret = shell.run(cmd)
     assert ret == 0
     return stdout
 
@@ -56,11 +54,11 @@ def test_boot_manual_with_initrd(strategy, barebox, env, efiloader):
         shell.run_check("grep -q apparmor=0 /proc/cmdline")
 
         initrd_freed = any("Freeing initrd memory"
-                           in line for line in get_journalctl(shell, 'initrd'))
+                           in line for line in get_dmesg(shell, 'initrd'))
         assert initrd_freed, "initrd was not loaded or freed"
 
         # Verify we booted to shell
-        dmesg = get_journalctl(shell, 'efi')
+        dmesg = get_dmesg(shell, 'efi')
 
         uefi_not_found = re.search("efi: UEFI not found.",
                                    "\n".join(dmesg)) is not None
@@ -81,14 +79,14 @@ def test_boot_manual_with_initrd(strategy, barebox, env, efiloader):
 
 @pytest.mark.lg_feature(['bootable', 'efi'])
 def test_efi_kernel_no_warn(shell):
-    stdout, stderr, ret = shell.run("journalctl -k --no-pager --grep efi -o cat -p warning")
+    stdout, stderr, ret = shell.run("dmesg -r | grep '<[0-4]>.*\\<efi\\>'")
     assert stdout == []
     assert stderr == []
 
 
 @pytest.mark.lg_feature(['bootable', 'efi'])
 def test_expected_efi_messages(shell, env):
-    dmesg = get_journalctl(shell, 'efi')
+    dmesg = get_dmesg(shell, 'efi')
 
     expected_patterns = [
         r"efi:\s+EFI v2\.8 by barebox",
@@ -122,6 +120,7 @@ def test_efi_systab(shell, env):
 @pytest.mark.lg_feature(['bootable', 'efi'])
 def test_efivars_filesystem_not_empty(shell):
     # Directory must not be empty
+    shell.run("mount -t efivarfs efivarfs /sys/firmware/efi/efivars")
     stdout, _, ret = shell.run("ls -1 /sys/firmware/efi/efivars")
     assert ret == 0
 

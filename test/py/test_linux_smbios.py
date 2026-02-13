@@ -8,15 +8,16 @@ def test_smbios3_tables_present(shell):
     _, _, ret = shell.run("test -e /sys/firmware/dmi/tables/smbios_entry_point")
     assert ret == 0, "SMBIOS entry point not found"
 
-    [stdout], _, ret = shell.run("stat -c '%s' /sys/firmware/dmi/tables/DMI")
+    [stdout], _, ret = shell.run("wc -c </sys/firmware/dmi/tables/DMI")
     assert ret == 0
 
     size = int(stdout)
     assert size > 0, "SMBIOS DMI table is empty"
 
-    [stdout], _, ret = shell.run("dd if=/sys/firmware/dmi/tables/smbios_entry_point bs=1 count=5 2>/dev/null")
-    assert ret == 0
-    assert stdout == "_SM3_", "SMBIOS entry point is not SMBIOS 3.x"
+    shell.run_check("echo _SM3_ >/tmp/sm3")
+    stdout, _, ret = shell.run("cmp --bytes 5 /tmp/sm3 /sys/firmware/dmi/tables/smbios_entry_point")
+    assert stdout == []
+    assert ret == 0, "SMBIOS entry point is not SMBIOS 3.x"
 
 
 @pytest.mark.lg_feature(['bootable', 'smbios'])
@@ -26,5 +27,5 @@ def test_smbios_contains_barebox(shell):
     This avoids dmidecode and relies on simple string matching.
     """
     # The DMI table is binary; strings are still ASCII embedded
-    stdout, _, ret = shell.run("strings /sys/firmware/dmi/tables/DMI | grep -i barebox")
+    stdout, _, ret = shell.run("grep -a barebox /sys/firmware/dmi/tables/DMI")
     assert len(stdout) > 0, "barebox not found in SMBIOS/DMI tables"

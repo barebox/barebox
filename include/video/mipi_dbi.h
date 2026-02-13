@@ -122,6 +122,11 @@ struct mipi_dbi_dev {
 	void *driver_private;
 
 	/**
+	 * @rotation: initial rotation in degrees Counter Clock Wise
+	 */
+	unsigned int rotation;
+
+	/**
 	 * @damage: Damage rectangle.
 	 */
 	struct fb_rect damage;

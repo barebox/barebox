@@ -72,10 +72,10 @@ def test_boot_manual_with_initrd(strategy, barebox, env, efiloader, debian_iso):
                                    "\n".join(dmesg)) is not None
 
         if efiloader:
-            test_efi_kernel_no_warn(shell)
-            test_expected_efi_messages(shell, env)
-            test_efi_systab(shell, env)
-            test_efivars_filesystem_not_empty(shell)
+            check_efi_kernel_no_warn(shell)
+            check_expected_efi_messages(shell, env)
+            check_efi_systab(shell, env)
+            check_efivars_filesystem_not_empty(shell)
 
             assert not uefi_not_found, \
                    "EFI stub was not used despite global.bootm.efi=required"
@@ -85,15 +85,13 @@ def test_boot_manual_with_initrd(strategy, barebox, env, efiloader, debian_iso):
                    "EFI stub was used despite global.bootm.efi=disabled"
 
 
-@pytest.mark.lg_feature(['bootable', 'efi'])
-def test_efi_kernel_no_warn(shell):
-    stdout, stderr, ret = shell.run("dmesg -r | grep '<[0-4]>.*\\<efi\\>'")
+def check_efi_kernel_no_warn(shell):
+    stdout, stderr, _ = shell.run("dmesg -r | grep '<[0-4]>.*\\<efi\\>'")
     assert stdout == []
     assert stderr == []
 
 
-@pytest.mark.lg_feature(['bootable', 'efi'])
-def test_expected_efi_messages(shell, env):
+def check_expected_efi_messages(shell, env):
     dmesg = get_dmesg(shell, 'efi')
 
     expected_patterns = [
@@ -106,8 +104,7 @@ def test_expected_efi_messages(shell, env):
                f"Missing expected EFI message: {pattern}"
 
 
-@pytest.mark.lg_feature(['bootable', 'efi'])
-def test_efi_systab(shell, env):
+def check_efi_systab(shell, env):
     stdout, stderr, ret = shell.run("cat /sys/firmware/efi/systab")
     assert ret == 0
     assert stderr == []
@@ -124,9 +121,7 @@ def test_efi_systab(shell, env):
                f"Missing expected entry in systab : {pattern}"
 
 
-@pytest.mark.lg_feature(['bootable', 'efi'])
-def test_efivars_filesystem_not_empty(shell):
-    # Directory must not be empty
+def check_efivars_filesystem_not_empty(shell):
     shell.run("mount -t efivarfs efivarfs /sys/firmware/efi/efivars")
     stdout, _, ret = shell.run("ls -1 /sys/firmware/efi/efivars")
     assert ret == 0

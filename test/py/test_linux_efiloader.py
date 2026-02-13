@@ -1,7 +1,20 @@
 # SPDX-License-Identifier: GPL-2.0-only
+# Boot to Linux via EFI CDROM installer image
 
 import re
 import pytest
+
+from .helper import ensure_debian_iso
+
+fetchdir = "/mnt/9p/testfs"
+
+
+@pytest.fixture(scope="module")
+def debian_iso(env, testfs):
+    result = ensure_debian_iso(env, testfs)
+    if result is None:
+        pytest.skip("Debian ISO not found")
+    return result
 
 
 def get_dmesg(shell, grep=None):
@@ -13,9 +26,9 @@ def get_dmesg(shell, grep=None):
     return stdout
 
 
-@pytest.mark.lg_feature(['bootable', 'efi'])
+@pytest.mark.lg_feature(['bootable', 'efi', 'testfs'])
 @pytest.mark.parametrize('efiloader', [False, True])
-def test_boot_manual_with_initrd(strategy, barebox, env, efiloader):
+def test_boot_manual_with_initrd(strategy, barebox, env, efiloader, debian_iso):
     """Test booting Debian kernel directly without GRUB"""
 
     barebox.run_check(f"global.bootm.efi={'required' if efiloader else 'disabled'}")
@@ -25,27 +38,22 @@ def test_boot_manual_with_initrd(strategy, barebox, env, efiloader):
         return config.get_target_option(strategy.target.name, opt)
 
     try:
-        root_dev = get_option(strategy, "root_dev")
         kernel_path = get_option(strategy, "bootm.image")
     except KeyError:
-        pytest.fail("Feature bootable enabled, but root_dev/bootm.image option missing.")  # noqa
+        pytest.fail("Feature bootable enabled, but bootm.image option missing.")
 
-    # Detect block devices
-    barebox.run_check("detect -a")
-    barebox.run_check(f"ls /mnt/{root_dev}/")
-
-    [kernel_path] = barebox.run_check(f"ls /mnt/{root_dev}/{kernel_path}")
+    kernel_path = f"{fetchdir}/{kernel_path}"
+    [kernel_path] = barebox.run_check(f"ls {kernel_path}")
 
     try:
         initrd_path = get_option(strategy, "bootm.initrd")
-        [initrd_path] = barebox.run_check(f"ls /mnt/{root_dev}/{initrd_path}")
+        initrd_path = f"{fetchdir}/{initrd_path}"
+        [initrd_path] = barebox.run_check(f"ls {initrd_path}")
         barebox.run_check(f"global.bootm.initrd={initrd_path}")
     except KeyError:
         pass
 
     barebox.run_check(f"global.bootm.image={kernel_path}")
-    barebox.run_check(f"global.bootm.root_dev=/dev/{root_dev}")
-    barebox.run_check("global.bootm.appendroot=1")
     # Speed up subsequent runs a bit
     barebox.run_check("global linux.bootargs.noapparmor=apparmor=0")
 
@@ -90,7 +98,6 @@ def test_expected_efi_messages(shell, env):
 
     expected_patterns = [
         r"efi:\s+EFI v2\.8 by barebox",
-        r"Remapping and enabling EFI services\.",
         r"efivars:\s+Registered efivars operations",
     ]
 

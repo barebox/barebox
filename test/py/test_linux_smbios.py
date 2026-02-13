@@ -2,8 +2,20 @@
 
 import pytest
 
+from .helper import ensure_debian_iso
 
-@pytest.mark.lg_feature(['bootable', 'smbios'])
+fetchdir = "/mnt/9p/testfs"
+
+
+@pytest.fixture(scope="module")
+def debian_iso(env, testfs):
+    result = ensure_debian_iso(env, testfs)
+    if result is None:
+        pytest.skip("Debian ISO not found")
+    return result
+
+
+@pytest.mark.lg_feature(['bootable', 'smbios', 'testfs'])
 def test_smbios3_tables_present(shell):
     _, _, ret = shell.run("test -e /sys/firmware/dmi/tables/smbios_entry_point")
     assert ret == 0, "SMBIOS entry point not found"
@@ -20,7 +32,7 @@ def test_smbios3_tables_present(shell):
     assert ret == 0, "SMBIOS entry point is not SMBIOS 3.x"
 
 
-@pytest.mark.lg_feature(['bootable', 'smbios'])
+@pytest.mark.lg_feature(['bootable', 'smbios', 'testfs'])
 def test_smbios_contains_barebox(shell):
     """
     Search raw SMBIOS/DMI tables for a barebox vendor string.

@@ -5,6 +5,7 @@ import pytest
 import os
 import re
 import shlex
+import subprocess
 
 
 def parse_config(lines):
@@ -197,3 +198,41 @@ def skip_disabled(config, *options):
 
         if bool(undefined):
             pytest.skip("skipping test due to disabled " + (",".join(undefined)) + " dependency")
+
+
+def ensure_debian_iso(env, destdir):
+    """
+    Extract Debian kernel and initrd from ISO into destdir.
+
+    The debian_iso specified under images in the YAML will be used
+    Files are extracted into destdir/install.a64/{vmlinuz,initrd.gz}
+    and skipped if they already exist.
+
+    Returns destdir, or None if the ISO doesn't exist.
+    """
+    iso_path = env.config.get_image_path("debian_iso")
+    if iso_path is None:
+        return None
+
+    outdir = os.path.join(destdir, "install.a64")
+    vmlinuz_path = os.path.join(outdir, "vmlinuz")
+    initrd_path = os.path.join(outdir, "initrd.gz")
+
+    if os.path.exists(vmlinuz_path) and os.path.exists(initrd_path):
+        return destdir
+
+    os.makedirs(outdir, exist_ok=True)
+
+    with open(vmlinuz_path, "wb") as f:
+        subprocess.run(
+            ["isoinfo", "-i", iso_path, "-x", "/INSTALL.A64/VMLINUZ.;1"],
+            stdout=f, check=True,
+        )
+
+    with open(initrd_path, "wb") as f:
+        subprocess.run(
+            ["isoinfo", "-i", iso_path, "-x", "/INSTALL.A64/INITRD.GZ;1"],
+            stdout=f, check=True,
+        )
+
+    return destdir

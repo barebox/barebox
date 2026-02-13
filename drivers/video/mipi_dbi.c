@@ -9,6 +9,7 @@
 
 #include <common.h>
 #include <dma.h>
+#include <linux/device.h> /* devm_kmalloc() */
 #include <linux/kernel.h>
 #include <linux/sizes.h>
 #include <linux/gpio/consumer.h>
@@ -44,8 +45,6 @@ EXPORT_SYMBOL(mipi_dbi_list);
  * update and uses register 0x2C to write to frame memory, it is most likely
  * MIPI compliant.
  *
- * Only MIPI Type 1 displays are supported since a full frame memory is needed.
- *
  * There are 3 MIPI DBI implementation types:
  *
  * A. Motorola 6800 type parallel bus
@@ -58,8 +57,19 @@ EXPORT_SYMBOL(mipi_dbi_list);
  *    2. Same as above except it's sent as 16 bits
  *    3. 8-bit with the Data/Command signal as a separate D/CX pin
  *
- * Currently barebox mipi_dbi only supports Type C option 3 with
- * mipi_dbi_spi_init().
+ * MIPI DBI Type C Option 1 supports 9-bit transfers where the MSB is used
+ * as the Data/Command bit. Since most SPI controllers only support 8-bit
+ * words, two implementations are provided:
+ *
+ * - mipi_dbi_spi1_transfer(): uses native 9-bit SPI transfers when supported
+ * - mipi_dbi_spi1e_transfer(): emulates 9-bit transfers using 8-bit SPI by
+ *   packing 8 DBI words into 9 SPI bytes
+ *
+ * Read commands are not supported in this implementation, as MIPI DBI
+ * Type C Option 1 panels typically do not wire the SPI MISO line.
+ *
+ * The appropriate implementation is selected automatically based on the
+ * SPI controller capabilities.
  */
 
 #define MIPI_DBI_DEBUG_COMMAND(cmd, data, len) \
@@ -622,6 +632,235 @@ err_free:
 	return ret;
 }
 
+/**
+ * mipi_dbi_spi1e_transfer - Emulated MIPI DBI Type C Option 1 SPI transfer
+ * @dbi: MIPI DBI structure
+ * @dc: Data/Command flag (0 = command, 1 = data)
+ * @buf: Buffer containing command or pixel data
+ * @len: Number of bytes in @buf
+ * @bpw: Source bits-per-word (8 or 16)
+ *
+ * Perform a MIPI DBI Type C Option 1 transfer using an 8-bit SPI controller
+ * by emulating 9-bit words. The Data/Command bit is packed together with
+ * the data stream by grouping 8 DBI words (9 bits each) into 9 SPI bytes.
+ *
+ * If the transfer length is not a multiple of 8 bytes, the remaining bytes
+ * are padded with MIPI_DCS_NOP (zero) to complete the 9-byte block.
+ *
+ * This fallback implementation is used when the SPI controller does not
+ * support native 9 bits-per-word transfers.
+ *
+ * Return: 0 on success, or a negative error code on failure.
+ */
+static int mipi_dbi_spi1e_transfer(struct mipi_dbi *dbi, int dc,
+				   const void *buf, size_t len,
+				   unsigned int bpw)
+{
+	bool swap_bytes = (bpw == 16 && mipi_dbi_machine_little_endian());
+	size_t chunk, max_chunk = dbi->tx_buf9_len;
+	struct spi_device *spi = dbi->spi;
+	struct spi_transfer tr = {
+		.tx_buf = dbi->tx_buf9,
+		.bits_per_word = 8,
+	};
+	struct spi_message m;
+	const u8 *src = buf;
+	int i, ret;
+	u8 *dst;
+
+	tr.speed_hz = mipi_dbi_spi_cmd_max_speed(spi, len);
+	spi_message_init_with_transfers(&m, &tr, 1);
+
+	if (!dc) {
+		if (WARN_ON_ONCE(len != 1))
+			return -EINVAL;
+
+		/* Command: pad no-op's (zeroes) at beginning of block */
+		dst = dbi->tx_buf9;
+		memset(dst, 0, 9);
+		dst[8] = *src;
+		tr.len = 9;
+
+		return spi_sync(spi, &m);
+	}
+
+	/* max with room for adding one bit per byte */
+	max_chunk = max_chunk / 9 * 8;
+	/* but no bigger than len */
+	max_chunk = min(max_chunk, len);
+	/* 8 byte blocks */
+	max_chunk = max_t(size_t, 8, max_chunk & ~0x7);
+
+	while (len) {
+		size_t added = 0;
+
+		chunk = min(len, max_chunk);
+		len -= chunk;
+		dst = dbi->tx_buf9;
+
+		if (chunk < 8) {
+			u8 val, carry = 0;
+
+			/* Data: pad no-op's (zeroes) at end of block */
+			memset(dst, 0, 9);
+
+			if (swap_bytes) {
+				for (i = 1; i < (chunk + 1); i++) {
+					val = src[1];
+					*dst++ = carry | BIT(8 - i) | (val >> i);
+					carry = val << (8 - i);
+					i++;
+					val = src[0];
+					*dst++ = carry | BIT(8 - i) | (val >> i);
+					carry = val << (8 - i);
+					src += 2;
+				}
+				*dst++ = carry;
+			} else {
+				for (i = 1; i < (chunk + 1); i++) {
+					val = *src++;
+					*dst++ = carry | BIT(8 - i) | (val >> i);
+					carry = val << (8 - i);
+				}
+				*dst++ = carry;
+			}
+
+			chunk = 8;
+			added = 1;
+		} else {
+			for (i = 0; i < chunk; i += 8) {
+				if (swap_bytes) {
+					*dst++ =                 BIT(7) | (src[1] >> 1);
+					*dst++ = (src[1] << 7) | BIT(6) | (src[0] >> 2);
+					*dst++ = (src[0] << 6) | BIT(5) | (src[3] >> 3);
+					*dst++ = (src[3] << 5) | BIT(4) | (src[2] >> 4);
+					*dst++ = (src[2] << 4) | BIT(3) | (src[5] >> 5);
+					*dst++ = (src[5] << 3) | BIT(2) | (src[4] >> 6);
+					*dst++ = (src[4] << 2) | BIT(1) | (src[7] >> 7);
+					*dst++ = (src[7] << 1) | BIT(0);
+					*dst++ = src[6];
+				} else {
+					*dst++ =                 BIT(7) | (src[0] >> 1);
+					*dst++ = (src[0] << 7) | BIT(6) | (src[1] >> 2);
+					*dst++ = (src[1] << 6) | BIT(5) | (src[2] >> 3);
+					*dst++ = (src[2] << 5) | BIT(4) | (src[3] >> 4);
+					*dst++ = (src[3] << 4) | BIT(3) | (src[4] >> 5);
+					*dst++ = (src[4] << 3) | BIT(2) | (src[5] >> 6);
+					*dst++ = (src[5] << 2) | BIT(1) | (src[6] >> 7);
+					*dst++ = (src[6] << 1) | BIT(0);
+					*dst++ = src[7];
+				}
+
+				src += 8;
+				added++;
+			}
+		}
+
+		tr.len = chunk + added;
+
+		ret = spi_sync(spi, &m);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
+/**
+ * mipi_dbi_spi1_transfer - MIPI DBI Type C Option 1 SPI transfer
+ * @dbi: MIPI DBI structure
+ * @dc: Data/Command flag (0 = command, 1 = data)
+ * @buf: Buffer containing command or pixel data
+ * @len: Number of bytes in @buf
+ * @bpw: Source bits-per-word (8 or 16)
+ *
+ * Perform a MIPI DBI Type C Option 1 transfer using native 9-bit SPI words
+ * when supported by the SPI controller. The most significant bit of each
+ * SPI word is used as the Data/Command bit.
+ *
+ * If the SPI controller does not support 9 bits-per-word, this function
+ * automatically falls back to mipi_dbi_spi1e_transfer(), which emulates
+ * 9-bit transfers using an 8-bit SPI interface.
+ *
+ * Return: 0 on success, or a negative error code on failure.
+ */
+int mipi_dbi_spi1_transfer(struct mipi_dbi *dbi, int dc, const void *buf,
+			   size_t len, unsigned int bpw)
+{
+	struct spi_device *spi = dbi->spi;
+	struct spi_transfer tr = {
+		.bits_per_word = 9,
+	};
+	const u16 *src16 = buf;
+	const u8 *src8 = buf;
+	struct spi_message m;
+	size_t max_chunk;
+	u16 *dst16;
+	int ret;
+
+	if (!spi_is_bpw_supported(spi, 9))
+		return mipi_dbi_spi1e_transfer(dbi, dc, buf, len, bpw);
+
+	tr.speed_hz = mipi_dbi_spi_cmd_max_speed(spi, len);
+	max_chunk = dbi->tx_buf9_len;
+	dst16 = dbi->tx_buf9;
+
+	max_chunk = min(max_chunk / 2, len);
+
+	spi_message_init_with_transfers(&m, &tr, 1);
+	tr.tx_buf = dst16;
+
+	while (len) {
+		size_t chunk = min(len, max_chunk);
+		unsigned int i;
+
+		if (bpw == 16 && mipi_dbi_machine_little_endian()) {
+			for (i = 0; i < (chunk * 2); i += 2) {
+				dst16[i] = *src16 >> 8;
+				dst16[i + 1] = *src16++ & 0xFF;
+				if (dc) {
+					dst16[i] |= 0x0100;
+					dst16[i + 1] |= 0x0100;
+				}
+			}
+		} else {
+			for (i = 0; i < chunk; i++) {
+				dst16[i] = *src8++;
+				if (dc)
+					dst16[i] |= 0x0100;
+			}
+		}
+
+		tr.len = chunk * 2;
+		len -= chunk;
+
+		ret = spi_sync(spi, &m);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(mipi_dbi_spi1_transfer);
+
+static int mipi_dbi_typec1_command(struct mipi_dbi *dbi, u8 *cmd,
+				   u8 *parameters, size_t num)
+{
+	unsigned int bpw = (*cmd == MIPI_DCS_WRITE_MEMORY_START) ? 16 : 8;
+	int ret;
+
+	if (mipi_dbi_command_is_read(dbi, *cmd))
+		return -ENOTSUPP;
+
+	MIPI_DBI_DEBUG_COMMAND(*cmd, parameters, num);
+
+	ret = mipi_dbi_spi1_transfer(dbi, 0, cmd, 1, 8);
+	if (ret || !num)
+		return ret;
+
+	return mipi_dbi_spi1_transfer(dbi, 1, parameters, num, bpw);
+}
+
 static int mipi_dbi_typec3_command(struct mipi_dbi *dbi, u8 *cmd,
 				   u8 *par, size_t num)
 {
@@ -680,13 +919,19 @@ int mipi_dbi_spi_init(struct spi_device *spi, struct mipi_dbi *dbi,
 	dbi->spi = spi;
 	dbi->read_commands = mipi_dbi_dcs_read_commands;
 
-	if (!dc) {
-		dev_dbg(dev, "MIPI DBI Type-C 1 unsupported\n");
-		return -ENOSYS;
+	if (dc) {
+		dev_dbg(dev, "MIPI DBI Type-C 3\n");
+		dbi->command = mipi_dbi_typec3_command;
+		dbi->dc = dc;
+	} else {
+		dev_dbg(dev, "MIPI DBI Type-C 1\n");
+		dbi->command = mipi_dbi_typec1_command;
+		dbi->tx_buf9_len = SZ_16K;
+		dbi->tx_buf9 = devm_kmalloc(dev, dbi->tx_buf9_len, GFP_KERNEL);
+		if (!dbi->tx_buf9)
+			return -ENOMEM;
 	}
 
-	dbi->command = mipi_dbi_typec3_command;
-	dbi->dc = dc;
 	if (mipi_dbi_machine_little_endian() && !spi_is_bpw_supported(spi, 16))
 		dbi->swap_bytes = true;
 

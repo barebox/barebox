@@ -143,8 +143,12 @@ void fb_videomode_to_videomode(const struct fb_videomode *fbmode,
 
 	if (fbmode->sync & FB_SYNC_HOR_HIGH_ACT)
 		vm->flags |= DISPLAY_FLAGS_HSYNC_HIGH;
+	else
+		vm->flags |= DISPLAY_FLAGS_HSYNC_LOW;
 	if (fbmode->sync & FB_SYNC_VERT_HIGH_ACT)
 		vm->flags |= DISPLAY_FLAGS_VSYNC_HIGH;
+	else
+		vm->flags |= DISPLAY_FLAGS_VSYNC_LOW;
 	if (fbmode->vmode & FB_VMODE_INTERLACED)
 		vm->flags |= DISPLAY_FLAGS_INTERLACED;
 	if (fbmode->vmode & FB_VMODE_DOUBLE)

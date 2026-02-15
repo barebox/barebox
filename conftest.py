@@ -272,7 +272,7 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
             tag = fs.pop() if fs else f"fs{i}"
 
             strategy.append_qemu_args(
-                "-fsdev", f"local,security_model=mapped,id=fs{i},path={path}",
+                "-fsdev", f"local,security_model=none,id=fs{i},path={path}",
                 "-device", f"virtio-9p-{virtio},id=fs{i},fsdev=fs{i},mount_tag={tag}"
             )
         else:

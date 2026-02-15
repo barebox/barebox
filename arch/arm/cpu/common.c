@@ -55,11 +55,18 @@ void pbl_barebox_break(void)
 
 void __prereloc relocate_to_current_adr(void)
 {
-	relocate_image(get_runtime_offset(),
+	unsigned long offset = get_runtime_offset();
+
+	relocate_image(offset,
 		       runtime_address(__rel_dyn_start),
 		       runtime_address(__rel_dyn_end),
 		       runtime_address(__dynsym_start),
 		       runtime_address(__dynsym_end));
+
+	if (IS_ENABLED(CONFIG_RELR))
+		relocate_relr(offset,
+			      runtime_address(__relr_dyn_start),
+			      runtime_address(__relr_dyn_end));
 
 	sync_caches_for_execution();
 }

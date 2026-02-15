@@ -675,6 +675,12 @@ ifdef need-config
 include include/config/auto.conf
 endif
 
+ifeq ($(CONFIG_RELR),y)
+# ld.lld before 15 did not support -z pack-relative-relocs.
+LDFLAGS_barebox += $(call ld-option,--pack-dyn-relocs=relr,-z pack-relative-relocs)
+LDFLAGS_pbl += $(call ld-option,--pack-dyn-relocs=relr,-z pack-relative-relocs)
+endif
+
 # We need some generic definitions.
 include $(srctree)/scripts/Makefile.lib
 

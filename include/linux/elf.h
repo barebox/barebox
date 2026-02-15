@@ -87,6 +87,9 @@ typedef __s64	Elf64_Sxword;
 #define DT_TEXTREL	22
 #define DT_JMPREL	23
 #define DT_ENCODING	32
+#define DT_RELRSZ	35
+#define DT_RELR		36
+#define DT_RELRENT	37
 #define OLD_DT_LOOS	0x60000000
 #define DT_LOOS		0x6000000d
 #define DT_HIOS		0x6ffff000
@@ -382,6 +385,9 @@ extern Elf32_Dyn _DYNAMIC [];
 #define elf_note	elf32_note
 #define elf_addr_t	Elf32_Off
 
+typedef __u32		elf_relr_t;
+#define ELF_RELR_BITMAP_BITS	31	/* 32 bits - 1 for LSB flag */
+
 #else
 
 extern Elf64_Dyn _DYNAMIC [];
@@ -389,6 +395,9 @@ extern Elf64_Dyn _DYNAMIC [];
 #define elf_phdr	elf64_phdr
 #define elf_note	elf64_note
 #define elf_addr_t	Elf64_Off
+
+typedef __u64		elf_relr_t;
+#define ELF_RELR_BITMAP_BITS	63	/* 64 bits - 1 for LSB flag */
 
 #endif
 

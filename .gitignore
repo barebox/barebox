@@ -53,6 +53,7 @@ policy-list
 /tags
 /TAGS
 /barebox*
+/vmbarebox
 /System.map
 /build
 /oe-logs

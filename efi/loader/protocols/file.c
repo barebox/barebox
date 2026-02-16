@@ -113,7 +113,7 @@ static struct efi_file_handle *file_open(struct file_handle *parent,
 
 	dirfd = parent->dir ? parent->fd : parent->parent->fd;
 
-	if (open_mode & (EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE))
+	if (open_mode & EFI_FILE_MODE_WRITE)
 		flags |= O_RDWR;
 	else
 		flags |= O_RDONLY;

@@ -153,6 +153,8 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 		case FDT_END_NODE:
 			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE);
 
+			if (depth < 0)
+				return -ESPIPE;
 			include = want;
 			want = stack[depth--];
 			while (end > path && *--end != '/')

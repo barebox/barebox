@@ -97,8 +97,12 @@ static LIST_HEAD(efi_deferred_cbs);
 
 void efi_register_deferred_init(efi_status_t (*init)(void *), void *data)
 {
-	struct efi_deferred_cb *deferred = xzalloc(sizeof(*deferred));
+	struct efi_deferred_cb *deferred;
 
+	if (efi_is_payload())
+		return;
+
+	deferred = xzalloc(sizeof(*deferred));
 	deferred->cb = init;
 	deferred->data = data;
 	list_add_tail(&deferred->list, &efi_deferred_cbs);

@@ -8,6 +8,7 @@
 #include <efi/error.h>
 #include <efi/guid.h>
 #include <efi/loader.h>
+#include <efi/mode.h>
 #include <efi/variable.h>
 #include <linux/printk.h>
 #include <linux/string.h>
@@ -109,6 +110,9 @@ static char *efi_lang_codes;
 
 static int efi_defaultvars_init(void)
 {
+	if (efi_is_payload())
+		return 0;
+
 	efi_lang_codes = xstrdup("en-US");
 	dev_add_param_string(&efidev, "lang.codes", NULL, NULL,
 			     &efi_lang_codes, NULL);

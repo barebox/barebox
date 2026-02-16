@@ -2103,8 +2103,12 @@ of_populate_initcall(barebox_of_populate);
 
 int barebox_register_of(struct device_node *root)
 {
-	if (root_node)
-		return -EBUSY;
+	if (root_node) {
+		if (!list_empty(&root->children))
+			return -EBUSY;
+		/* Not necessarily safe to free, so leak it.. */
+		root_node = NULL;
+	}
 
 	of_set_root_node(root);
 	of_fix_tree(root);

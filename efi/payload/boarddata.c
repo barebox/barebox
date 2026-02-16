@@ -14,6 +14,7 @@
 #include <linux/printk.h>
 #include <debug_ll.h>
 #include <init.h>
+#include <of.h>
 #include <pbl/handoff-data.h>
 
 static int handle_efi_boarddata(void)
@@ -46,3 +47,13 @@ static int handle_efi_boarddata(void)
 	return 0;
 }
 pure_initcall(handle_efi_boarddata);
+
+static __maybe_unused int efi_register_of(void)
+{
+	if (!BS)
+		return 0;
+	return barebox_register_of(of_new_node(NULL, NULL));
+}
+#ifdef CONFIG_OFDEVICE
+core_initcall(efi_register_of);
+#endif

@@ -232,7 +232,7 @@ dev_path_fibre(struct string *str, const void *dev_path)
 
 	Fibre = dev_path;
 	cprintf(str, "Fibre%s(0x%016llx,0x%016llx)",
-		device_path_type(&Fibre->header) ==
+		Fibre->header.sub_type ==
 		DEVICE_PATH_SUB_TYPE_MSG_FIBRECHANNEL ? "" : "Ex", Fibre->WWN, Fibre->Lun);
 }
 

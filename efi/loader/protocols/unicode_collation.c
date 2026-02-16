@@ -251,7 +251,7 @@ static void EFIAPI efi_fat_to_str(struct efi_unicode_collation_protocol *this,
 	EFI_ENTRY("%p, %zu, %s, %p", this, fat_size, fat, string);
 	for (i = 0; i < fat_size; ++i) {
 		c = (unsigned char)fat[i];
-		if (c > 0x80)
+		if (c >= 0x80)
 			c = codepage[c - 0x60];
 		string[i] = c;
 		if (!c)

@@ -170,8 +170,6 @@ static efi_status_t EFIAPI efi_cout_output_string(
 {
 	struct simple_text_output_mode *con = &efi_con_mode;
 	struct cout_mode *mode = &efi_cout_modes[con->mode];
-	char *buf, *pos;
-	const u16 *p;
 	efi_status_t ret = EFI_SUCCESS;
 
 	EFI_ENTRY("%p, '%ls'", this, string);
@@ -181,16 +179,6 @@ static efi_status_t EFIAPI efi_cout_output_string(
 		goto out;
 	}
 
-	buf = malloc(utf16_utf8_strlen(string) + 1);
-	if (!buf) {
-		ret = EFI_OUT_OF_RESOURCES;
-		goto out;
-	}
-	pos = buf;
-	utf16_utf8_strcpy(&pos, string);
-	puts(buf);
-	free(buf);
-
 	/*
 	 * Update the cursor position.
 	 *
@@ -198,7 +186,15 @@ static efi_status_t EFIAPI efi_cout_output_string(
 	 * and U000D. All other control characters are ignored. Any non-control
 	 * character increase the column by one.
 	 */
-	for (p = string; *p; ++p) {
+	for (const u16 *p = string; *p; ++p) {
+		bool is_high_surrogate = p[1] && 0xd800 <= *p && *p <= 0xdbff;
+		u8 utf8[9], *end;
+
+		end = utf16_to_utf8(utf8, p, is_high_surrogate ? 2 : 1);
+
+		/* console_puts turns \n into \r\n, which we want to avoid */
+		console_putbin(CONSOLE_STDOUT, utf8, end - utf8);
+
 		switch (*p) {
 		case '\b':	/* U+0008, backspace */
 			if (con->cursor_column)
@@ -211,16 +207,12 @@ static efi_status_t EFIAPI efi_cout_output_string(
 		case '\r':	/* U+000D, carriage-return */
 			con->cursor_column = 0;
 			break;
-		case 0xd800 ... 0xdbff:
-			/*
-			 * Ignore high surrogates, we do not want to count a
-			 * Unicode character twice.
-			 */
-			break;
 		default:
 			/* Exclude control codes */
 			if (*p > 0x1f)
 				con->cursor_column++;
+			if (is_high_surrogate)
+				p++;
 			break;
 		}
 		if (con->cursor_column >= mode->columns) {

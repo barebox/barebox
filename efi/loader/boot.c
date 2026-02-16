@@ -729,7 +729,7 @@ static efi_status_t EFIAPI efi_create_event_ext(
 					void *context),
 			void *notify_context, struct efi_event **event)
 {
-	EFI_ENTRY("%d, 0x%lu, %p, %p", type, notify_tpl, notify_function,
+	EFI_ENTRY("%d, 0x%zx, %p, %p", type, notify_tpl, notify_function,
 		  notify_context);
 	return EFI_EXIT2(efi_create_event(type, notify_tpl, notify_function,
 					 notify_context, NULL, event), *event);
@@ -3741,7 +3741,7 @@ efi_status_t EFIAPI efi_disconnect_controller(
 				      &number_of_children,
 				      &child_handle_buffer);
 	if (r != EFI_SUCCESS)
-		return r;
+		return EFI_EXIT(r);
 	sole_child = (number_of_children == 1);
 
 	if (child_handle) {

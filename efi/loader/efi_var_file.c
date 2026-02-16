@@ -180,7 +180,7 @@ efi_status_t efi_var_from_file(int dirfd, const char *filename)
 		goto error;
 	}
 
-	return EFI_SUCCESS;
+	ret = EFI_SUCCESS;
 error:
 	free(buf);
 	return ret;

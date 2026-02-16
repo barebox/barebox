@@ -977,10 +977,11 @@ set_string(const struct efi_hii_string_protocol *this,
 				if (!buf)
 					return EFI_EXIT(EFI_OUT_OF_RESOURCES);
 
-				memset(&stbl->strings[string_id - 1], 0,
+				stbl->strings = buf;
+				memset(&stbl->strings[stbl->nstrings], 0,
 				       (string_id - stbl->nstrings)
 					 * sizeof(stbl->strings[0]));
-				stbl->strings = buf;
+				stbl->nstrings = string_id;
 			}
 
 			str = u16_strdup(string);

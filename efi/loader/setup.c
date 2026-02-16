@@ -117,6 +117,8 @@ void efi_add_root_node_protocol_deferred(const efi_guid_t *protocol, const void 
 
 	deferred->base.cb = add_protocol;
 	deferred->base.data = &deferred->ctx;
+	deferred->ctx.protocol = protocol;
+	deferred->ctx.interface = interface;
 
 	list_add_tail(&deferred->base.list, &efi_deferred_cbs);
 }

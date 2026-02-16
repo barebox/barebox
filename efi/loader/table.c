@@ -13,6 +13,7 @@
  */
 void __efi_runtime efi_update_table_header_crc32(struct efi_table_hdr *table)
 {
+	table->crc32 = 0;
 	table->crc32 = __pi_crc32(0, table, table->headersize);
 }
 

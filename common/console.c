@@ -637,6 +637,37 @@ int console_puts(unsigned int ch, const char *str)
 }
 EXPORT_SYMBOL(console_puts);
 
+void console_putbin(unsigned int ch, const u8 *str, size_t len)
+{
+	struct console_device *cdev;
+
+	switch (initialized) {
+	case CONSOLE_UNINITIALIZED:
+		console_init_early();
+		fallthrough;
+	case CONSOLE_INITIALIZED_BUFFER:
+		kfifo_put(console_output_fifo, str, len);
+		for (size_t i = 0; i < len; i++)
+			putc_ll(str[i]);
+		return;
+	case CONSOLE_INIT_FULL:
+		for_each_console(cdev) {
+			if (!(cdev->f_active & ch))
+				continue;
+
+			for (size_t i = 0; i < len; i++)
+				cdev->putc(cdev, str[i]);
+		}
+		return;
+	default:
+		/* If we have problems inititalizing our data
+		 * get them early
+		 */
+		hang();
+	}
+}
+EXPORT_SYMBOL(console_putbin);
+
 void console_flush(void)
 {
 	struct console_device *cdev;

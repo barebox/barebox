@@ -230,6 +230,7 @@ int arch_ctrlc(void);
 /* stdout */
 void console_putc(unsigned int ch, const char c);
 int console_puts(unsigned int ch, const char *s);
+void console_putbin(unsigned int ch, const u8 *str, size_t len);
 void console_flush(void);
 
 int ctrlc(void);

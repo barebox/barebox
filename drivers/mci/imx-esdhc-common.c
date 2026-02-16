@@ -327,7 +327,7 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 	dma_addr_t dma = SDHCI_NO_DMA;
 	int ret;
 
-	host->last_cmd = cmd ? cmd->cmdidx : 0;
+	host->last_cmd = cmd->cmdidx;
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, -1);
 

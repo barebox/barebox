@@ -1,8 +1,8 @@
 barebox TLV - Non-Volatile Factory Data Storage
 ===============================================
 
-barebox TLV is a system to store and retrieve a device's (read-only)
-meta-data from non-volatile memory.
+barebox TLV ("Tag Length Value" format) is a system to store and
+retrieve a device's (read-only) meta-data from non-volatile memory.
 It is intended to handle information that are usually only set in
 the factory - like serial number, MAC-addresses, analog calibration
 data, etc.

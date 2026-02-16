@@ -55,8 +55,10 @@ static void *efi_read_file(const char *file, size_t *size)
 	buf = efi_phys_to_virt(mem);
 
 	ret = read_file_into_buf(file, buf, s.st_size);
-	if (ret < 0)
+	if (ret < 0) {
+		BS->free_pages(mem, DIV_ROUND_UP(s.st_size, EFI_PAGE_SIZE));
 		return NULL;
+	}
 
 	*size = ret;
 	return buf;

@@ -306,7 +306,7 @@ static int efi_late_init(void)
 	free(fdt);
 
 	if (!IS_ERR(state_root)) {
-		struct device_node *np = NULL;
+		struct device_node *np;
 		struct state *state;
 
 		ret = barebox_register_of(state_root);
@@ -314,6 +314,10 @@ static int efi_late_init(void)
 			pr_warn("Failed to register device-tree: %pe\n", ERR_PTR(ret));
 
 		np = of_find_node_by_alias(state_root, "state");
+		if (!np) {
+			pr_warn("No state alias in %s\n", state_desc);
+			return 0;
+		}
 
 		state = state_new_from_node(np, false);
 		if (IS_ERR(state))

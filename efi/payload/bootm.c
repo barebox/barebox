@@ -228,7 +228,7 @@ static void efi_unload_fdt(void *fdt)
 		return;
 
 	BS->install_configuration_table(&efi_fdt_guid, NULL);
-	BS->free_pages(efi_virt_to_phys(fdt), SZ_2M);
+	BS->free_pages(efi_virt_to_phys(fdt), DIV_ROUND_UP(SZ_2M, EFI_PAGE_SIZE));
 }
 
 static int do_bootm_efi_stub(struct image_data *data)

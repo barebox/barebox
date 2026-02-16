@@ -465,8 +465,10 @@ efi_status_t efi_dp_split_file_path(struct efi_device_path *full_path,
 			goto out;
 	}
 	fp = efi_dp_dup(p);
-	if (!fp)
+	if (!fp) {
+		free(dp);
 		return EFI_OUT_OF_RESOURCES;
+	}
 	p->type = DEVICE_PATH_TYPE_END;
 	p->sub_type = DEVICE_PATH_SUB_TYPE_END;
 	p->length = sizeof(*p);

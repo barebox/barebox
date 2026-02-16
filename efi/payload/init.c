@@ -96,6 +96,8 @@ static struct efi_boot *efi_get_boot(int num)
 
 	printf("path: %s\n", device_path_to_str(boot->path, true));
 
+	free(buf);
+
 	return boot;
 }
 
@@ -301,6 +303,8 @@ static int efi_late_init(void)
 	}
 
 	state_root = of_unflatten_dtb(fdt, size);
+	free(fdt);
+
 	if (!IS_ERR(state_root)) {
 		struct device_node *np = NULL;
 		struct state *state;

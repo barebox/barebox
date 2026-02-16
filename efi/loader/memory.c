@@ -275,7 +275,7 @@ static int free_efi_only(struct resource *res, void *data)
 		return false;
 	}
 
-	if (nfreed >= 0)
+	if (*nfreed >= 0)
 		++*nfreed;
 	return true;
 }

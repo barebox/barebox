@@ -76,6 +76,9 @@ def guess_lg_env():
     return None
 
 
+lg_env = lg_builddir = None
+
+
 def pytest_configure(config):
     if 'LG_BUILDDIR' not in os.environ:
         if 'KBUILD_OUTPUT' in os.environ:
@@ -88,12 +91,25 @@ def pytest_configure(config):
     if os.environ['LG_BUILDDIR'] is not None:
         os.environ['LG_BUILDDIR'] = os.path.realpath(os.environ['LG_BUILDDIR'])
 
+    global lg_env
+    global lg_builddir
+
+    lg_builddir = os.environ['LG_BUILDDIR']
     lg_env = config.option.lg_env
     if lg_env is None:
         lg_env = os.environ.get('LG_ENV')
     if lg_env is None:
         if lg_env := guess_lg_env():
             os.environ['LG_ENV'] = lg_env
+
+
+def pytest_report_header(config):
+    report = []
+    if lg_builddir is not None:
+        report += [f"Build diectory: {lg_builddir}"]
+    if lg_env is not None:
+        report += [f"Labgrid Environment: {lg_env}"]
+    return "\n".join(report)
 
 
 def pytest_addoption(parser):

@@ -3,6 +3,7 @@
 #ifndef __MACH_IMX_SCRATCH_H
 #define __MACH_IMX_SCRATCH_H
 
+void imx_init_scratch_space(ulong endmem, bool zero_init);
 void imx8m_init_scratch_space(int ddr_buswidth, bool zero_init);
 void imx93_init_scratch_space(bool zero_init);
 

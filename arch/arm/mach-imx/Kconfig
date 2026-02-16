@@ -44,7 +44,7 @@ config ARCH_IMX_ROMAPI
 
 config ARCH_IMX_SCRATCHMEM
 	def_bool y
-	depends on ARCH_IMX8M || ARCH_IMX9
+	depends on ARCH_IMX6 || ARCH_IMX8M || ARCH_IMX9
 
 config ARCH_IMX_TZASC
 	bool

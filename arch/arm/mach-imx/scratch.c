@@ -20,25 +20,25 @@ struct imx_scratch_space {
 
 static struct imx_scratch_space *scratch;
 
-void imx8m_init_scratch_space(int ddr_buswidth, bool zero_init)
+void imx_init_scratch_space(ulong endmem, bool zero_init)
 {
-	ulong endmem = MX8M_DDR_CSD1_BASE_ADDR +
-		imx8m_barebox_earlymem_size(ddr_buswidth);
-
 	scratch = (void *)arm_mem_scratch(endmem);
 
 	if (zero_init)
 		memset(scratch, 0, sizeof(*scratch));
 }
 
+void imx8m_init_scratch_space(int ddr_buswidth, bool zero_init)
+{
+	ulong endmem = MX8M_DDR_CSD1_BASE_ADDR +
+		imx8m_barebox_earlymem_size(ddr_buswidth);
+	imx_init_scratch_space(endmem, zero_init);
+}
+
 void imx93_init_scratch_space(bool zero_init)
 {
 	ulong endmem = MX9_DDR_CSD1_BASE_ADDR + imx9_ddrc_sdram_size();
-
-	scratch = (void *)arm_mem_scratch(endmem);
-
-	if (zero_init)
-		memset(scratch, 0, sizeof(*scratch));
+	imx_init_scratch_space(endmem, zero_init);
 }
 
 void imx8m_scratch_save_bootrom_log(const u32 *rom_log)

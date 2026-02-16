@@ -99,7 +99,7 @@ static efi_status_t EFIAPI efi_disk_write(struct efi_block_io_protocol *this,
 
 	ret = cdev_write(disk->cdev, buffer, buffer_size, lba << disk->blockbits, 0);
 
-	return ret ? EFI_DEVICE_ERROR : EFI_SUCCESS;
+	return ret < 0 ? EFI_DEVICE_ERROR : EFI_SUCCESS;
 }
 
 static efi_status_t EFIAPI efi_disk_flush(struct efi_block_io_protocol *this)

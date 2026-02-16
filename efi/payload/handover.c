@@ -142,6 +142,10 @@ static int do_bootm_efi(struct image_data *data)
 
 	if (data->initrd_file) {
 		tmp = read_file(data->initrd_file, &size);
+		if (!tmp) {
+			ret = -errno;
+			goto err_free;
+		}
 		initrd = xmemalign(PAGE_SIZE, PAGE_ALIGN(size));
 		memcpy(initrd, tmp, size);
 		memset(initrd + size, 0, PAGE_ALIGN(size) - size);
@@ -169,10 +173,8 @@ static int do_bootm_efi(struct image_data *data)
 	printf("...\n");
 
 	if (data->dryrun) {
-		BS->unload_image(handle);
-		free(boot_header);
-		free(initrd);
-		return 0;
+		ret = 0;
+		goto err_free;
 	}
 
 	efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
@@ -182,6 +184,12 @@ static int do_bootm_efi(struct image_data *data)
 	linux_efi_handover(handle, boot_header);
 
 	return 0;
+
+err_free:
+	BS->unload_image(handle);
+	free(boot_header);
+	free(initrd);
+	return ret;
 }
 
 struct image_handler efi_x86_linux_handle_handover = {

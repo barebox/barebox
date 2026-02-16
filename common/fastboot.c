@@ -441,7 +441,7 @@ static void cb_download(struct fastboot *fb, const char *cmd)
 		close(fb->download_fd);
 	}
 
-	fb->download_fd = open(fb->tempname, O_WRONLY | O_CREAT | O_TRUNC);
+	fb->download_fd = open(fb->tempname, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (fb->download_fd < 0) {
 		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "internal error");
 			return;
@@ -589,7 +589,7 @@ static int fastboot_handle_sparse(struct fastboot *fb,
 			return ret;
 	}
 
-	fd = open(fentry->filename, flags);
+	fd = open(fentry->filename, flags, 0666);
 	if (fd < 0)
 		return -errno;
 

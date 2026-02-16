@@ -96,7 +96,7 @@ static int do_echo(int argc, char *argv[])
 
 exit_parse:
 	if (file) {
-		fd = open(file, oflags);
+		fd = open(file, oflags, 0666);
 		if (fd < 0) {
 			perror("open");
 			return 1;

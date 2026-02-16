@@ -55,7 +55,7 @@ static inline int open(const char *pathname, int flags, ...)
 
 static inline int creat(const char *pathname, mode_t mode)
 {
-	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC);
+	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
 }
 
 static inline int mknod(const char *pathname, mode_t mode, const char *devname)

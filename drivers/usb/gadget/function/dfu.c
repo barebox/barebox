@@ -258,14 +258,14 @@ static void dfu_do_open_dnload(struct dfu_work *dw)
 	pr_debug("do open dnload\n");
 
 	if (dfu_file_entry->flags & FILE_LIST_FLAG_SAFE) {
-		dfufd = open(DFU_TEMPFILE, O_WRONLY | O_CREAT);
+		dfufd = open(DFU_TEMPFILE, O_WRONLY | O_CREAT, 0666);
 	} else {
 		unsigned flags = O_WRONLY;
 
 		if (dfu_file_entry->flags & FILE_LIST_FLAG_CREATE)
 			flags |= O_CREAT | O_TRUNC;
 
-		dfufd = open(dfu_file_entry->filename, flags);
+		dfufd = open(dfu_file_entry->filename, flags, 0666);
 	}
 
 	if (dfufd < 0) {
@@ -324,7 +324,7 @@ static void dfu_do_copy(struct dfu_work *dw)
 	if (dfu_file_entry->flags & FILE_LIST_FLAG_CREATE)
 		flags |= O_CREAT | O_TRUNC;
 
-	fd = open(dfu_file_entry->filename, flags);
+	fd = open(dfu_file_entry->filename, flags, 0666);
 	if (fd < 0) {
 		perror("open");
 		dfu->dfu_state = DFU_STATE_dfuERROR;

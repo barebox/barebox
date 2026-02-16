@@ -334,10 +334,8 @@ static int xilinx_fpga_probe(struct device *dev)
 	fh->device_node = dev->of_node;
 
 	ret = firmwaremgr_register(fh);
-	if (ret != 0) {
-		free(mgr);
+	if (ret != 0)
 		goto out_unreg;
-	}
 
 	return 0;
 out_unreg:

@@ -72,11 +72,18 @@ static inline bool optee_overlay_registered(void)
 
 #ifdef __PBL__
 
-int start_optee_early(void* fdt, void* tee);
+int start_optee_early(void *fdt, void *tee);
 int imx6q_start_optee_early(void *fdt, void *tee, void *data_location,
 			    unsigned int data_location_size);
 int imx6ul_start_optee_early(void *fdt, void *tee, void *data_location,
 			     unsigned int data_location_size);
+
+#else
+
+static inline int start_optee_early(void *fdt, void *tee)
+{
+	return -ENOSYS;
+}
 
 #endif /* __PBL__ */
 

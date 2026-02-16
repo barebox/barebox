@@ -6,6 +6,7 @@
 #include <common.h>
 #include <io.h>
 #include <errno.h>
+#include <firmware.h>
 #include <linux/sizes.h>
 #include <init.h>
 #include <of.h>
@@ -30,6 +31,7 @@
 #include <mach/imx/imx7-regs.h>
 #include <mach/imx/imx9-regs.h>
 #include <mach/imx/scratch.h>
+#include <mach/imx/tzasc.h>
 #include <tee/optee.h>
 
 struct imx_esdctl_data {
@@ -1016,18 +1018,58 @@ void __noreturn imx53_barebox_entry(void *boarddata)
 static void __noreturn
 imx6_barebox_entry(unsigned long membase, void *boarddata)
 {
-	barebox_arm_entry(membase,
-			  imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR)),
-			  boarddata);
+	ulong memsize = imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR));
+
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX6_OPTEE) &&
+	    IS_ENABLED(CONFIG_PBL_OPTEE) && imx6_can_access_tzasc()) {
+		void *fdto;
+		unsigned int fdto_size;
+		int tee_size;
+		void *tee;
+
+		get_builtin_firmware(imx6_optee_bin, &tee, &tee_size);
+
+		imx_init_scratch_space(membase + memsize, 1);
+		fdto = imx_scratch_get_fdt(&fdto_size);
+		if (IS_ERR(fdto)) {
+			pr_warn("Failed to get FDT scratch mem.\n");
+			fdto = NULL;
+		} else if (fdto == NULL)
+			pr_warn("No space configured for OP-TEE devicetree\n");
+
+		start_optee_early(fdto, tee);
+		if (!IS_ERR(fdto))
+			optee_handoff_overlay(fdto, fdto_size);
+	}
+
+	barebox_arm_entry(membase, memsize, boarddata);
 }
 
 void __noreturn imx6q_barebox_entry(void *boarddata)
 {
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX6_OPTEE) &&
+	    IS_ENABLED(CONFIG_PBL_OPTEE) && imx6_can_access_tzasc()) {
+		if (imx6q_tzc380_is_bypassed())
+			panic("TZC380 is bypassed, abort OP-TEE loading\n");
+
+		/* Add early non-secure TZASC region1 to pass DTO */
+		imx6q_tzc380_early_ns_region1();
+	}
+
 	imx6_barebox_entry(MX6_MMDC_PORT01_BASE_ADDR, boarddata);
 }
 
 void __noreturn imx6ul_barebox_entry(void *boarddata)
 {
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX6_OPTEE) &&
+	    IS_ENABLED(CONFIG_PBL_OPTEE) && imx6_can_access_tzasc()) {
+		if (imx6ul_tzc380_is_bypassed())
+			panic("TZC380 is bypassed, abort OP-TEE loading\n");
+
+		/* Add early non-secure TZASC region1 to pass DTO */
+		imx6ul_tzc380_early_ns_region1();
+	}
+
 	imx6_barebox_entry(MX6_MMDC_PORT0_BASE_ADDR, boarddata);
 }
 

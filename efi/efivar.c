@@ -82,7 +82,7 @@ int efi_set_variable_usec(char *name, efi_guid_t *vendor, uint64_t usec)
 	char buf[20];
 	wchar_t buf16[40];
 
-	snprintf(buf, sizeof(buf), "%lld", usec);
+	snprintf(buf, sizeof(buf), "%llu", usec);
 	strcpy_char_to_wchar(buf16, buf);
 
 	return efi_set_variable(name, vendor,

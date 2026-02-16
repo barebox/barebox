@@ -79,6 +79,9 @@ int __efivarfs_parse_filename(const char *filename, efi_guid_t *vendor,
 	if (ret)
 		return ret;
 
+	if (!name)
+		return 0;
+
 	for (i = 0; i < *namelen - 1; i++)
 		name[i] = filename[i];
 

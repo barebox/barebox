@@ -40,7 +40,8 @@ static efi_status_t efi_smbios_register(void *data)
 
 	if (!write_smbios_table(buf)) {
 		pr_err("Failed to write SMBIOS table\n");
-		return -EINVAL;
+		efi_free_pages(memory, efi_size_in_pages(TABLE_SIZE));
+		return EFI_LOAD_ERROR;
 	}
 
 	/* Install SMBIOS information as configuration table */

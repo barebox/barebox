@@ -233,19 +233,21 @@ static int efi_loader_bootm(struct image_data *data)
 	efiret = efi_init_obj_list();
 	if (efiret) {
 		pr_err("Cannot initialize UEFI sub-system: %pe\n",
-			ERR_PTR(-efi_errno(ret)));
+			ERR_PTR(-efi_errno(efiret)));
 		goto out;
 	}
 
 	ret = -EINVAL;
 
 	fdt = bootm_get_devicetree(data);
-	if (IS_ERR(fdt))
-		return PTR_ERR(fdt);
+	if (IS_ERR(fdt)) {
+		ret = PTR_ERR(fdt);
+		goto out;
+	}
 	if (fdt) {
 		ret = efi_install_fdt(fdt);
 		if (ret)
-			return ret;
+			goto out;
 	}
 
 	efiret = efi_install_initrd(data, source);
@@ -280,17 +282,17 @@ static int efi_loader_bootm(struct image_data *data)
 	 * Unified Extensible Firmware Interface (UEFI), version 2.7 Errata A
 	 * 7.5. Miscellaneous Boot Services - EFI_BOOT_SERVICES.SetWatchdogTimer
 	 */
-	ret = efi_set_watchdog(300);
-	if (ret != EFI_SUCCESS) {
+	efiret = efi_set_watchdog(300);
+	if (efiret != EFI_SUCCESS) {
 		pr_err("failed to set watchdog timer\n");
 		goto out;
 	}
 
 	/* Call our payload! */
-	ret = __efi_start_image(handle, &exit_data_size, &exit_data, flags);
-	if (ret != EFI_SUCCESS) {
+	efiret = __efi_start_image(handle, &exit_data_size, &exit_data, flags);
+	if (efiret != EFI_SUCCESS) {
 		pr_err("## Application failed, r = %lu\n",
-			ret & ~EFI_ERROR_MASK);
+			efiret & ~EFI_ERROR_MASK);
 		if (exit_data) {
 			pr_err("## %ls\n", exit_data);
 			efi_free_pool(exit_data);
@@ -311,7 +313,7 @@ static int efi_loader_bootm(struct image_data *data)
 	/* Control is returned to us, disable EFI watchdog */
 	efi_set_watchdog(0);
 
-	return ret;
+	return -efi_errno(efiret);
 
 out:
 	efi_initrd_unregister();

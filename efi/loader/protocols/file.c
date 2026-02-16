@@ -968,17 +968,23 @@ struct efi_file_handle *efi_file_from_path(struct efi_device_path *fp)
 		 * protocol member functions to be aligned.  So memcpy it
 		 * unconditionally
 		 */
-		if (fdp->header.length <= offsetof(struct efi_device_path_file_path, path_name))
+		if (fdp->header.length <= offsetof(struct efi_device_path_file_path, path_name)) {
+			f->close(f);
 			return NULL;
+		}
 		filename_sz = fdp->header.length -
 			offsetof(struct efi_device_path_file_path, path_name);
 		filename = memdup(fdp->path_name, filename_sz);
-		if (!filename)
+		if (!filename) {
+			f->close(f);
 			return NULL;
+		}
 		efiret = f->open(f, &f2, filename, EFI_FILE_MODE_READ, 0);
 		free(filename);
-		if (efiret != EFI_SUCCESS)
+		if (efiret != EFI_SUCCESS) {
+			f->close(f);
 			return NULL;
+		}
 
 		fp = efi_dp_next(fp);
 

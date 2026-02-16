@@ -42,7 +42,8 @@ int eth_set_ethaddr(struct eth_device *edev, const char *ethaddr)
 	if (ret)
 		return ret;
 
-	memcpy(edev->ethaddr, ethaddr, ETH_ALEN);
+	if (ethaddr != edev->ethaddr)
+		memcpy(edev->ethaddr, ethaddr, ETH_ALEN);
 
 	return 0;
 }

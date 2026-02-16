@@ -35,3 +35,16 @@ define merge_into_defconfig_override
 		))
 	+$(Q)$(MAKE) -f $(srctree)/Makefile olddefconfig
 endef
+
+
+# Creates 'merged defconfigs' and sets CONFIG_NAME to the config name
+# ---------------------------------------------------------------------------
+# Usage:
+#   $(call merge_into_defconfig_named,base_config,config_fragment1 config_fragment2 ...,config_name)
+#
+# Input config fragments without '.config' suffix
+define merge_into_defconfig_named
+	$(call merge_into_defconfig_override,$1,$2)
+	$(Q)echo 'CONFIG_NAME="$3"' >> $(objtree)/.config
+	+$(Q)$(MAKE) -f $(srctree)/Makefile olddefconfig
+endef

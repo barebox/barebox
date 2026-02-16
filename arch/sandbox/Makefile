@@ -5,15 +5,15 @@ KBUILD_DEFCONFIG := sandbox_defconfig
 generated_configs += headless_defconfig noshell_defconfig lockdown_defconfig \
 		     simpleconsole_defconfig libfuzzer_defconfig
 headless_defconfig:
-	$(call merge_into_defconfig,sandbox_defconfig,headless)
+	$(call merge_into_defconfig_named,sandbox_defconfig,headless,$@)
 noshell_defconfig:
-	$(call merge_into_defconfig,sandbox_defconfig,noshell)
+	$(call merge_into_defconfig_named,sandbox_defconfig,noshell,$@)
 lockdown_defconfig:
-	$(call merge_into_defconfig,sandbox_defconfig,headless noshell)
+	$(call merge_into_defconfig_named,sandbox_defconfig,headless noshell,$@)
 simpleconsole_defconfig:
-	$(call merge_into_defconfig,sandbox_defconfig,simpleconsole)
+	$(call merge_into_defconfig_named,sandbox_defconfig,simpleconsole,$@)
 libfuzzer_defconfig:
-	$(call merge_into_defconfig,sandbox_defconfig,libfuzzer)
+	$(call merge_into_defconfig_named,sandbox_defconfig,libfuzzer,$@)
 
 KBUILD_CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing -fvisibility=hidden
 

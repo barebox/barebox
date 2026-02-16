@@ -248,6 +248,18 @@ static efi_status_t efi_disk_add_cdev(efi_handle_t parent,
 		diskobj->dp = efi_dp_from_cdev(cdev, true);
 	}
 
+	diskobj->media.removable_media = removable;
+	diskobj->media.media_present = true;
+	diskobj->media.read_only = cdev->flags & DEVFS_PARTITION_READONLY;
+	diskobj->media.block_size = 512;
+	diskobj->media.io_align = 512;
+	diskobj->media.last_block = cdev->size / diskobj->media.block_size - 1;
+
+	diskobj->ops = block_io_disk_template;
+	diskobj->ops.media = &diskobj->media;
+
+	diskobj->cdev = cdev;
+
 	/*
 	 * Install the device path and the block IO protocol.
 	 *
@@ -271,18 +283,6 @@ static efi_status_t efi_disk_add_cdev(efi_handle_t parent,
 		if (ret != EFI_SUCCESS)
 			return ret;
 	}
-
-	diskobj->media.removable_media = removable;
-	diskobj->media.media_present = true;
-	diskobj->media.read_only = cdev->flags & DEVFS_PARTITION_READONLY;
-	diskobj->media.block_size = 512;
-	diskobj->media.io_align = 512;
-	diskobj->media.last_block = cdev->size / diskobj->media.block_size - 1;
-
-	diskobj->ops = block_io_disk_template;
-	diskobj->ops.media = &diskobj->media;
-
-	diskobj->cdev = cdev;
 
 	if (disk)
 		*disk = diskobj;

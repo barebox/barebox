@@ -421,10 +421,8 @@ static void *memalign_realloc(void *orig, size_t oldsize, size_t newsize)
 		return memalign(align, newsize);
 
 	newbuf = memalign(align, newsize);
-	if (!newbuf) {
-		free(orig);
+	if (!newbuf)
 		return NULL;
-	}
 
 	memcpy(newbuf, orig, oldsize);
 	free(orig);
@@ -606,10 +604,13 @@ void *of_flatten_dtb(struct device_node *node)
 	header.size_dt_strings = cpu_to_fdt32(fdt.str_nextofs);
 
 	if (fdt.dt_size - fdt.dt_nextofs < fdt.str_nextofs) {
-		fdt.dt = memalign_realloc(fdt.dt, fdt.dt_size,
+		void *newmem;
+
+		newmem = memalign_realloc(fdt.dt, fdt.dt_size,
 				fdt.dt_nextofs + fdt.str_nextofs);
-		if (!fdt.dt)
+		if (!newmem)
 			goto out_free;
+		fdt.dt = newmem;
 	}
 
 	memcpy(fdt.dt + fdt.dt_nextofs, fdt.strings, fdt.str_nextofs);

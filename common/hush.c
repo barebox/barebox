@@ -851,6 +851,9 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 
 	do_glob_in_argv(&globbuf, child->argc - i, &child->argv[i]);
 
+	if (!globbuf.gl_pathv)
+		return -1;
+
 	remove_quotes(globbuf.gl_pathc, globbuf.gl_pathv);
 
 	if (!strcmp(globbuf.gl_pathv[0], "getopt") &&

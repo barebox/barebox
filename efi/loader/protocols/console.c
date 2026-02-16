@@ -1316,7 +1316,7 @@ static efi_status_t efi_console_register(void *data)
 	return r;
 out_of_memory:
 	pr_err("Out of memory\n");
-	return r;
+	return EFI_OUT_OF_RESOURCES;
 }
 
 static int efi_console_init(void)

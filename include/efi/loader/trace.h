@@ -44,9 +44,13 @@ const char *__efi_nesting_dec(void);
 #ifndef EFI_EXIT2
 #define EFI_EXIT2(ret, val) ({ \
 	typeof(ret) _r = ret; \
-	__EFI_PRINT("%sEFI: Exit: %s: %s (%u) = 0x%llx\n", __efi_nesting_dec(), \
-		__func__, efi_strerror((uintptr_t)_r), (u32)((uintptr_t) _r & ~EFI_ERROR_MASK), \
-		(u64)(uintptr_t)(val)); \
+	if (EFI_ERROR(_r)) \
+		EFI_EXIT(_r); \
+	else \
+		__EFI_PRINT("%sEFI: Exit: %s: %s (%u) = 0x%llx\n", __efi_nesting_dec(), \
+			__func__, efi_strerror((uintptr_t)_r), \
+			(u32)((uintptr_t) _r & ~EFI_ERROR_MASK), \
+			(u64)(uintptr_t)(val)); \
 	_r; \
 	})
 #endif

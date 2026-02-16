@@ -241,11 +241,11 @@ efirt_query_variable_info(u32 attributes,
 	EFI_ENTRY(L"");
 
 	if (!(attributes & EFI_VARIABLE_RUNTIME_ACCESS))
-		return EFI_INVALID_PARAMETER;
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
 	if ((attributes & (EFI_VARIABLE_AUTHENTICATED_WRITE_ACCESS |
 			   EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS |
 			   EFI_VARIABLE_ENHANCED_AUTHENTICATED_ACCESS)))
-		return EFI_UNSUPPORTED;
+		return EFI_EXIT(EFI_UNSUPPORTED);
 
 	ret = efi_query_variable_info_int(attributes,
 					  maximum_variable_storage_size,

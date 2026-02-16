@@ -27,7 +27,7 @@ static int phy_read_page(struct phy_device *phydev)
 {
 	struct phy_driver *phydrv = to_phy_driver(phydev->dev.driver);
 
-	if (!phydrv->read_page) {
+	if (!phydrv || !phydrv->read_page) {
 		dev_warn_once(&phydev->dev, "read_page callback not available, PHY driver not loaded?\n");
 		return -EOPNOTSUPP;
 	}
@@ -39,7 +39,7 @@ static int phy_write_page(struct phy_device *phydev, int page)
 {
 	struct phy_driver *phydrv = to_phy_driver(phydev->dev.driver);
 
-	if (!phydrv->write_page) {
+	if (!phydrv || !phydrv->write_page) {
 		dev_warn_once(&phydev->dev, "write_page callback not available, PHY driver not loaded?\n");
 		return -EOPNOTSUPP;
 	}

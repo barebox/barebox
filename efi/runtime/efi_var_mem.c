@@ -192,8 +192,8 @@ efi_status_t __efi_runtime efi_var_mem_ins(
 	var_name_len = u16_strlen(variable_name) + 1;
 	data = var->name + var_name_len;
 
-	if ((uintptr_t)data - (uintptr_t)efi_var_buf + size1 + size2 >
-	    efi_var_buf_rtsize)
+	if (ALIGN((uintptr_t)data + size1 + size2, 8) -
+	    (uintptr_t)efi_var_buf > efi_var_buf_rtsize)
 		return EFI_OUT_OF_RESOURCES;
 
 	var->attr = attributes;

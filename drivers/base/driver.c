@@ -649,8 +649,10 @@ int dev_add_alias(struct device *dev, const char *fmt, ...)
 	va_end(va_copy);
 
 	alias = malloc(struct_size(alias, name, len + 1));
-	if (!alias)
+	if (!alias) {
+		va_end(va);
 		return -ENOMEM;
+	}
 
 	vsnprintf(alias->name, len + 1, fmt, va);
 

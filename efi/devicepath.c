@@ -242,7 +242,7 @@ dev_path1394(struct string *str, const void *dev_path)
 	const struct efi_device_path_f1394 *F1394;
 
 	F1394 = dev_path;
-	cprintf(str, "1394(%pUl)", &F1394->Guid);
+	cprintf(str, "1394(0x%016llx)", F1394->Guid);
 }
 
 static void

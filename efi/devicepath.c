@@ -622,7 +622,7 @@ dev_path_node_unknown(struct string *str, const void *dev_path)
 			break;
 		}
 	}
-	length = Path->length;
+	length = Path->length - sizeof(struct efi_device_path);
 	for (index = 0; index < length; index++) {
 		if (index == 0)
 			cprintf(str, ",0x");

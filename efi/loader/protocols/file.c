@@ -285,6 +285,11 @@ static efi_status_t EFIAPI efi_file_delete(struct efi_file_handle *file)
 
 	file_close(fh);
 
+	if (!fh->parent) {
+		free(fh);
+		return EFI_EXIT(EFI_WARN_DELETE_FAILURE);
+	}
+
 	ret = unlinkat(fh->parent->fd, fh->path, flags);
 
 	free(fh);

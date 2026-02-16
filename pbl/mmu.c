@@ -10,6 +10,7 @@
 #include <asm/mmu.h>
 #include <linux/bits.h>
 #include <linux/sizes.h>
+#include <efi/mode.h>
 
 /*
  * Map ELF segment permissions (p_flags) to architecture MMU flags
@@ -44,6 +45,9 @@ int pbl_mmu_setup_from_elf(struct elf_image *elf, unsigned long membase,
 {
 	void *phdr;
 	int i = -1;
+
+	if (efi_is_payload())
+		return 0;
 
 	pr_debug("Setting up MMU from ELF segments\n");
 

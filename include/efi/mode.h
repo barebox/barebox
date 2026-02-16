@@ -18,10 +18,14 @@ enum efi_loader_state {
 	EFI_LOADER_RUNTIME,
 };
 
+#if IN_PBL && defined(CONFIG_EFI_STUB)
+bool efi_is_payload(void);
+#else
 static inline bool efi_is_payload(void)
 {
-	return IS_ENABLED(CONFIG_EFI_PAYLOAD) && BS;
+	return IS_ENABLED(CONFIG_EFI_PAYLOAD) && IN_PROPER && BS;
 }
+#endif
 
 #ifdef CONFIG_EFI_LOADER
 enum efi_loader_state efi_is_loader(void);

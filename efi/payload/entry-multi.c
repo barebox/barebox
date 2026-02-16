@@ -7,10 +7,22 @@
 #include <asm/common.h>
 #include <efi/protocol/text.h>
 #include <efi/payload.h>
+#include <efi/mode.h>
 #include <pbl.h>
 #include <pbl/handoff-data.h>
 
 asmlinkage void __efistub_efi_pe_entry(void *image, struct efi_system_table *sys_table);
+
+/*
+ * Put these in the data section so that they survive the clearing of the
+ * BSS segment.
+ */
+static __attribute__ ((section(".data"))) bool is_efi_payload;
+
+bool efi_is_payload(void)
+{
+	return is_efi_payload;
+}
 
 static void efi_putc(void *ctx, int ch)
 {
@@ -30,6 +42,7 @@ void __efistub_efi_pe_entry(void *image, struct efi_system_table *sys_table)
 #endif
 	pbl_set_putc(efi_putc, sys_table);
 
+	is_efi_payload = true;
 	efidata.image = image;
 	efidata.sys_table = sys_table;
 

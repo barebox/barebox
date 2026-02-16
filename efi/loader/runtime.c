@@ -240,10 +240,10 @@ static efi_status_t EFIAPI efi_set_time_boottime(struct efi_time *time)
 	struct rtc_time tm;
 	struct rtc_device *rtc;
 
+	EFI_ENTRY("%p", time);
+
 	if (!IS_ENABLED(CONFIG_EFI_LOADER_SET_TIME))
 		return EFI_EXIT(EFI_UNSUPPORTED);
-
-	EFI_ENTRY("%p", time);
 
 	if (efi_validate_time(time)) {
 		ret = EFI_INVALID_PARAMETER;

@@ -540,7 +540,7 @@ static int of_overlay_global_fixup_fit(struct device_node *root,
 	enum bootm_verify verify = bootm_get_verify_mode();
 	struct device_node *conf_node;
 	struct fit_handle *fit;
-	int ret;
+	int ret = 0;
 
 	if (!IS_ENABLED(CONFIG_FITIMAGE)) {
 		pr_err("FIT based overlay handling requested while CONFIG_FITIMAGE=n\n");

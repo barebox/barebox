@@ -84,7 +84,8 @@ efi_status_t efi_var_to_file(void)
 		goto error;
 	}
 
-	return 0;
+	efiret = EFI_SUCCESS;
+	goto out;
 
 error:
 	if (efiret != EFI_SUCCESS)

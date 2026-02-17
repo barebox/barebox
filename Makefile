@@ -1461,7 +1461,7 @@ quiet_cmd_gen_compile_commands = GEN     $@
       cmd_gen_compile_commands = $(PYTHON3) $< -a $(AR) -o $@ $(filter-out $<, $(real-prereqs))
 
 compile_commands.json: scripts/clang-tools/gen_compile_commands.py \
-	$(BAREBOX_OBJS) $(if $(CONFIG_PBL_IMAGE),$(BAREBOX_PBL_OBJS),) FORCE
+	$(BAREBOX_OBJS) $(if $(CONFIG_PBL_IMAGE),$(BAREBOX_PBL_OBJS),) scripts/ FORCE
 	$(call if_changed,gen_compile_commands)
 
 PHONY += compile_commands.json

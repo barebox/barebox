@@ -351,6 +351,9 @@ int of_overlay_apply_dtbo(struct device_node *root, const void *dtbo)
 	int ret;
 
 	overlay = of_unflatten_dtb(dtbo, INT_MAX);
+	if (IS_ERR(overlay))
+		return PTR_ERR(overlay);
+
 	ret = of_overlay_apply_tree(root, overlay);
 	of_delete_node(overlay);
 

@@ -83,28 +83,8 @@ attempts, there is also a built-in mechanism to reset the counters to their defa
 controlled by the
 :ref:`global.bootchooser.reset_attempts <magicvar_global_bootchooser_reset_attempts>`
 variable.
-
-.. _bootchooser,attempts_lock:
-
-Alternatively, counting down the remaining attempts can be disabled by
-locking bootchooser boot attempts.
-This is done by defining a (32-bit) ``attempts_locked`` run-time variable and
-setting its value to ``1`` (usually from userspace).
-
-In scenarios where the system is rebooted too frequently (after the ``remaining_attempts``
-counter is decremented, but before it got incremented again after a successful boot), it can unintentionally fall
-back to the other boot target.
-The ``attempts_locked`` variable can be used to avoid this behavior.
-Bootchooser is prevented from decrementing the ``remaining_attempts`` counter and falling back
-to the other target. It comes with the trade-off that a slot that becomes broken
-over time will no longer be detected as such and will be booted indefinitely.
-
-The variable affects all targets, is optional and its absence is
-interpreted as ``0``, meaning that attempts are decremented normally.
-
-The ``attempts_locked`` variable does not influence which boot target is
-selected, only whether its ``remaining_attempts`` counter is decremented when
-booting.
+Alternatively, the remaining attempts counters can be frozen globally by
+enabling :ref:`boot attempts locking <bootchooser,attempts_lock>`.
 
 If :ref:`global.bootchooser.retry <magicvar_global_bootchooser_retry>`
 is enabled (set to ``1``), the bootchooser
@@ -136,18 +116,38 @@ on the :ref:`reset reason <reset_reason>` (i.e. != WDG) using the
 This will reset the ``remaining_attempts`` counter of the *last chosen* slot to
 its default value (``reset_attempts``).
 
-An additional option is to use ``attempts_locked``. Normally this should be controlled from
-Linux userspace using the *barebox-state* tool, i.e.::
+An additional option is to use :ref:`boot attempts locking <bootchooser,attempts_lock>`
+to fully disable automatic fallback.
+
+.. _bootchooser,attempts_lock:
+
+Boot Attempts Locking
+#####################
+
+In scenarios where the system is rebooted too frequently (after the ``remaining_attempts``
+counter is decremented, but before it is incremented again after a successful boot), it can unintentionally fall
+back to the other boot target.
+This can be avoided by enabling boot attempt locking.
+If enabled, bootchooser is prevented from decrementing the ``remaining_attempts`` counter and falling back
+to the other target. This comes with the trade-off that a slot that becomes broken
+over time will no longer be detected as such and will be booted indefinitely.
+
+Attempts locking can be controlled by an optional (32-bit) ``attempts_locked`` run-time variable.
+Setting its value to ``1`` enables locking for all
+boot targets; setting it to ``0`` disables locking.
+
+The ``attempts_locked`` variable does not influence which boot target is
+selected, only whether the ``remaining_attempts`` counter is decremented on each boot.
+
+To enable boot attempts locking from Linux userspace using the *barebox-state*
+tool, run::
 
   barebox-state -s bootstate.attempts_locked=1
 
-It can also be locked from barebox via the :ref:`bootchooser command <command_bootchooser>`::
+It can also be controlled from barebox via the :ref:`bootchooser command <command_bootchooser>`::
 
-  bootchooser -l
-
-or unlocked::
-
-  bootchooser -L
+  bootchooser -l # lock
+  bootchooser -L # unlock
 
 
 .. _dt-utils: https://git.pengutronix.de/cgit/tools/dt-utils

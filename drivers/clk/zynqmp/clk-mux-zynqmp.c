@@ -11,6 +11,7 @@
 
 #include <common.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <mach/zynqmp/firmware-zynqmp.h>
 
 #include "clk-zynqmp.h"
@@ -44,15 +45,13 @@ static int zynqmp_clk_mux_set_parent(struct clk_hw *hw, u8 index)
 }
 
 static const struct clk_ops zynqmp_clk_mux_ops = {
-	.set_rate = clk_parent_set_rate,
-	.round_rate = clk_parent_round_rate,
+	.determine_rate = __clk_mux_determine_rate,
 	.get_parent = zynqmp_clk_mux_get_parent,
 	.set_parent = zynqmp_clk_mux_set_parent,
 };
 
 static const struct clk_ops zynqmp_clk_mux_ro_ops = {
-	.set_rate = clk_parent_set_rate,
-	.round_rate = clk_parent_round_rate,
+	.determine_rate = clk_hw_determine_rate_no_reparent,
 	.get_parent = zynqmp_clk_mux_get_parent,
 };
 

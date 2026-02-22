@@ -56,8 +56,6 @@ static int zynqmp_clk_gate_is_enabled(struct clk_hw *hw)
 }
 
 static const struct clk_ops zynqmp_clk_gate_ops = {
-	.set_rate = clk_parent_set_rate,
-	.round_rate = clk_parent_round_rate,
 	.enable = zynqmp_clk_gate_enable,
 	.disable = zynqmp_clk_gate_disable,
 	.is_enabled = zynqmp_clk_gate_is_enabled,

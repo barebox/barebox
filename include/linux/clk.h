@@ -707,8 +707,6 @@ int clk_mux_val_to_index(struct clk_hw *hw, u32 *table, unsigned int flags,
 			 unsigned int val);
 unsigned int clk_mux_index_to_val(u32 *table, unsigned int flags, u8 index);
 
-long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
-			unsigned long *prate);
 int __clk_mux_determine_rate(struct clk_hw *hw,
 			     struct clk_rate_request *req);
 int __clk_mux_determine_rate_closest(struct clk_hw *hw,

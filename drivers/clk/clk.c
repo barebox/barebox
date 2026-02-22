@@ -487,7 +487,14 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 			return 0;
 		if (clk->flags & CLK_SET_RATE_PARENT)
 			return clk_set_rate(clk_get_parent(clk), rate);
-		return -ENOSYS;
+		/*
+		 * There is nothing to program: the clock either just follows
+		 * its parent or runs at a fixed rate.  Linux'
+		 * clk_core_set_rate_nolock() returns 0 in that case, because
+		 * clk_core_round_rate_nolock() answers with the current rate
+		 * for a clock that cannot round.
+		 */
+		return 0;
 	}
 
 	if (clk->flags & CLK_SET_RATE_UNGATE) {

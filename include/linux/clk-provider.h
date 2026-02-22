@@ -55,7 +55,7 @@ struct clk_composite {
  *
  * Should be initialized by calling clk_hw_init_rate_request().
  *
- * @core: 		Pointer to the struct clk_core affected by this request
+ * @hw:		Pointer to the struct clk_hw affected by this request
  * @rate:		Requested clock rate. This field will be adjusted by
  *			clock drivers according to hardware capabilities.
  * @min_rate:		Minimum rate imposed by clk users.
@@ -67,13 +67,28 @@ struct clk_composite {
  *
  */
 struct clk_rate_request {
-	struct clk_core *core;
+	struct clk_hw *hw;
 	unsigned long rate;
 	unsigned long min_rate;
 	unsigned long max_rate;
 	unsigned long best_parent_rate;
 	struct clk_hw *best_parent_hw;
 };
+
+void clk_hw_init_rate_request(const struct clk_hw *hw,
+			      struct clk_rate_request *req,
+			      unsigned long rate);
+void clk_hw_forward_rate_request(const struct clk_hw *hw,
+				 const struct clk_rate_request *old_req,
+				 const struct clk_hw *parent,
+				 struct clk_rate_request *req,
+				 unsigned long parent_rate);
+
+int clk_hw_determine_rate_no_reparent(struct clk_hw *hw,
+				      struct clk_rate_request *req);
+int clk_mux_determine_rate_flags(struct clk_hw *hw,
+				 struct clk_rate_request *req,
+				 unsigned long flags);
 
 #define CLK_HW_INIT(_name, _parent, _ops, _flags)		\
 	(&(struct clk_init_data) {				\

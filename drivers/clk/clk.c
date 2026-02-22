@@ -9,7 +9,7 @@
 #include <malloc.h>
 #include <stringlist.h>
 #include <complete.h>
-#include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/err.h>
 #include <linux/clk/clk-conf.h>
 #include <pinctrl.h>
@@ -142,33 +142,281 @@ unsigned long clk_hw_get_rate(struct clk_hw *hw)
 	return clk_get_rate(clk_hw_to_clk(hw));
 }
 
-long clk_round_rate(struct clk *clk, unsigned long rate)
+/**
+ * clk_hw_init_rate_request - Initializes a clk_rate_request
+ * @hw: the clk for which we want to submit a rate request
+ * @req: the clk_rate_request structure we want to initialise
+ * @rate: the rate which is to be requested
+ *
+ * Initializes a clk_rate_request structure to submit to
+ * __clk_determine_rate() or similar functions.
+ */
+void clk_hw_init_rate_request(const struct clk_hw *hw,
+			      struct clk_rate_request *req,
+			      unsigned long rate)
+{
+	struct clk_hw *parent;
+
+	if (WARN_ON(!hw || !req))
+		return;
+
+	parent = clk_hw_get_parent((struct clk_hw *)hw);
+
+	if (!IS_ERR_OR_NULL(parent)) {
+		req->best_parent_hw = parent;
+		req->best_parent_rate = clk_hw_get_rate(parent);
+	} else {
+		req->best_parent_hw = NULL;
+		req->best_parent_rate = 0;
+	}
+
+	req->hw = (struct clk_hw *)hw;
+	req->rate = rate;
+	req->min_rate = 0;
+	req->max_rate = ULONG_MAX;
+}
+EXPORT_SYMBOL_GPL(clk_hw_init_rate_request);
+
+static bool clk_hw_has_parent(struct clk_hw *hw, const struct clk_hw *parent)
+{
+	unsigned int i;
+
+	if (clk_hw_get_parent(hw) == parent)
+		return true;
+
+	for (i = 0; i < hw->clk.num_parents; i++) {
+		struct clk_hw *tmp = clk_hw_get_parent_by_index(hw, i);
+
+		if (!tmp)
+			continue;
+		if (tmp == parent)
+			return true;
+	}
+
+	return false;
+}
+
+/**
+ * clk_hw_forward_rate_request - Forwards a clk_rate_request to a parent
+ * @hw: the original clk for which the request was made
+ * @old_req: the original clk_rate_request structure we want to forward
+ * @parent: the clk we want to forward @old_req to
+ * @req: the clk_rate_request structure we want to initialise
+ * @parent_rate: The rate which is to be requested to @parent
+ *
+ * Initializes a clk_rate_request structure to submit to a parent clock
+ * of the clock the original request was made for.
+ */
+void clk_hw_forward_rate_request(const struct clk_hw *hw,
+				 const struct clk_rate_request *old_req,
+				 const struct clk_hw *parent,
+				 struct clk_rate_request *req,
+				 unsigned long parent_rate)
+{
+	struct clk_hw *parent_parent;
+
+	if (WARN_ON(!hw || !old_req || !parent || !req))
+		return;
+
+	if (WARN_ON(!clk_hw_has_parent((struct clk_hw *)hw, parent)))
+		return;
+
+	parent_parent = clk_hw_get_parent((struct clk_hw *)parent);
+
+	if (!IS_ERR_OR_NULL(parent_parent)) {
+		req->best_parent_hw = parent_parent;
+		req->best_parent_rate = clk_hw_get_rate(parent_parent);
+	} else {
+		req->best_parent_hw = NULL;
+		req->best_parent_rate = 0;
+	}
+
+	req->hw = (struct clk_hw *)parent;
+	req->rate = parent_rate;
+	req->min_rate = old_req->min_rate;
+	req->max_rate = old_req->max_rate;
+}
+
+static bool mux_is_better_rate(unsigned long rate, unsigned long now,
+			       unsigned long best, unsigned long flags)
+{
+	if (flags & CLK_MUX_ROUND_CLOSEST)
+		return abs(now - rate) < abs(best - rate);
+
+	return now <= rate && now > best;
+}
+
+/*
+ * Unlike Linux, which recurses through clk_core_round_rate_nolock to
+ * preserve the full request context (including best_parent_hw for
+ * grandparent reparenting), barebox uses clk_hw_round_rate which only
+ * returns a rate.  This is sufficient for current barebox clock trees.
+ */
+static int clk_core_determine_rate_no_reparent(struct clk_hw *hw,
+					       struct clk_rate_request *req)
+{
+	struct clk_hw *parent = clk_hw_get_parent(hw);
+	unsigned long best;
+
+	if (hw->clk.flags & CLK_SET_RATE_PARENT) {
+		struct clk_rate_request parent_req;
+		long ret;
+
+		if (!parent) {
+			req->rate = 0;
+			return 0;
+		}
+
+		clk_hw_forward_rate_request(hw, req, parent, &parent_req,
+					    req->rate);
+
+		ret = clk_round_rate(&parent->clk, parent_req.rate);
+		if (ret < 0)
+			return ret;
+
+		best = ret;
+	} else if (parent) {
+		best = clk_hw_get_rate(parent);
+	} else {
+		best = clk_hw_get_rate(hw);
+	}
+
+	req->best_parent_rate = best;
+	req->rate = best;
+
+	return 0;
+}
+
+/**
+ * clk_hw_determine_rate_no_reparent - determine_rate that doesn't reparent
+ * @hw: mux type clk to determine rate on
+ * @req: rate request, also used to return preferred frequency
+ *
+ * Helper for finding best parent rate to provide a given frequency.
+ * This can be used directly as a determine_rate callback (e.g. for a
+ * mux), or from a more complex clock that may combine a mux with other
+ * operations.
+ *
+ * Returns: 0 on success, -EERROR value on error
+ */
+int clk_hw_determine_rate_no_reparent(struct clk_hw *hw,
+				      struct clk_rate_request *req)
+{
+	return clk_core_determine_rate_no_reparent(hw, req);
+}
+EXPORT_SYMBOL_GPL(clk_hw_determine_rate_no_reparent);
+
+int clk_mux_determine_rate_flags(struct clk_hw *hw,
+				 struct clk_rate_request *req,
+				 unsigned long flags)
+{
+	struct clk_hw *parent, *best_parent = NULL;
+	int i, num_parents;
+	unsigned long best = 0;
+
+	if (hw->clk.flags & CLK_SET_RATE_NO_REPARENT)
+		return clk_core_determine_rate_no_reparent(hw, req);
+
+	num_parents = hw->clk.num_parents;
+	for (i = 0; i < num_parents; i++) {
+		unsigned long parent_rate;
+
+		parent = clk_hw_get_parent_by_index(hw, i);
+		if (!parent)
+			continue;
+
+		if (hw->clk.flags & CLK_SET_RATE_PARENT) {
+			struct clk_rate_request parent_req;
+
+			clk_hw_forward_rate_request(hw, req, parent,
+						    &parent_req, req->rate);
+			parent_rate = clk_hw_round_rate(parent,
+							parent_req.rate);
+			if (!parent_rate)
+				continue;
+		} else {
+			parent_rate = clk_hw_get_rate(parent);
+		}
+
+		if (mux_is_better_rate(req->rate, parent_rate, best, flags)) {
+			best_parent = parent;
+			best = parent_rate;
+		}
+	}
+
+	if (!best_parent)
+		return -EINVAL;
+
+	req->best_parent_hw = best_parent;
+	req->best_parent_rate = best;
+	req->rate = best;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(clk_mux_determine_rate_flags);
+
+int __clk_mux_determine_rate(struct clk_hw *hw,
+			     struct clk_rate_request *req)
+{
+	return clk_mux_determine_rate_flags(hw, req, 0);
+}
+EXPORT_SYMBOL_GPL(__clk_mux_determine_rate);
+
+int __clk_mux_determine_rate_closest(struct clk_hw *hw,
+				     struct clk_rate_request *req)
+{
+	return clk_mux_determine_rate_flags(hw, req, CLK_MUX_ROUND_CLOSEST);
+}
+EXPORT_SYMBOL_GPL(__clk_mux_determine_rate_closest);
+
+static long clk_determine_round(struct clk *clk, unsigned long rate)
 {
 	struct clk_hw *hw;
-	unsigned long parent_rate = 0;
-	struct clk *parent;
+	struct clk_rate_request req;
 
+	hw = clk_to_clk_hw(clk);
+
+	clk_hw_init_rate_request(hw, &req, rate);
+
+	if (clk->ops->determine_rate) {
+		int ret = clk->ops->determine_rate(hw, &req);
+
+		if (ret)
+			return ret;
+
+		return req.rate;
+	}
+
+	if (clk->ops->round_rate) {
+		return clk->ops->round_rate(hw, rate,
+					    &req.best_parent_rate);
+	}
+
+	if (clk->flags & CLK_SET_RATE_PARENT)
+		return clk_round_rate(clk_get_parent(clk), rate);
+
+	return clk_get_rate(clk);
+}
+
+long clk_round_rate(struct clk *clk, unsigned long rate)
+{
 	if (!clk)
 		return 0;
 
 	if (IS_ERR(clk))
 		return 0;
 
-	parent = clk_get_parent(clk);
-	if (parent)
-		parent_rate = clk_get_rate(parent);
-
-	hw = clk_to_clk_hw(clk);
-
-	if (clk->ops->round_rate)
-		return clk->ops->round_rate(hw, rate, &parent_rate);
-
-	return clk_get_rate(clk);
+	return clk_determine_round(clk, rate);
 }
 
-long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate)
+unsigned long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate)
 {
-	return clk_round_rate(&hw->clk, rate);
+	long ret = clk_round_rate(&hw->clk, rate);
+
+	if (ret < 0)
+		return 0;
+
+	return ret;
 }
 
 int clk_set_rate(struct clk *clk, unsigned long rate)
@@ -186,7 +434,47 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 
 	current_rate = clk_get_rate(clk);
 
-	if (clk->ops->round_rate) {
+	if (clk->ops->determine_rate) {
+		struct clk_rate_request req;
+		struct clk_hw *best_parent_hw;
+
+		hw = clk_to_clk_hw(clk);
+		clk_hw_init_rate_request(hw, &req, rate);
+		ret = clk->ops->determine_rate(hw, &req);
+		if (ret)
+			return ret;
+
+		if (req.rate == current_rate)
+			return 0;
+
+		rate = req.rate;
+		best_parent_hw = req.best_parent_hw;
+
+		/* Reparent if determine_rate selected a different parent */
+		if (best_parent_hw) {
+			struct clk *best_parent = clk_hw_to_clk(best_parent_hw);
+
+			parent = clk_get_parent(clk);
+			if (!IS_ERR_OR_NULL(parent) && parent != best_parent) {
+				ret = clk_set_parent(clk, best_parent);
+				if (ret)
+					return ret;
+			}
+		}
+
+		/* Propagate rate to parent if CLK_SET_RATE_PARENT is set */
+		if ((clk->flags & CLK_SET_RATE_PARENT) && best_parent_hw) {
+			struct clk *best_parent = clk_hw_to_clk(best_parent_hw);
+			unsigned long bp_rate = clk_get_rate(best_parent);
+
+			if (bp_rate != req.best_parent_rate) {
+				ret = clk_set_rate(best_parent,
+						   req.best_parent_rate);
+				if (ret)
+					return ret;
+			}
+		}
+	} else if (clk->ops->round_rate) {
 		if (current_rate == clk_round_rate(clk, rate))
 			return 0;
 	} else {
@@ -194,8 +482,13 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 			return 0;
 	}
 
-	if (!clk->ops->set_rate)
+	if (!clk->ops->set_rate) {
+		if (clk->ops->determine_rate)
+			return 0;
+		if (clk->flags & CLK_SET_RATE_PARENT)
+			return clk_set_rate(clk_get_parent(clk), rate);
 		return -ENOSYS;
+	}
 
 	if (clk->flags & CLK_SET_RATE_UNGATE) {
 		ret = clk_enable(clk);
@@ -203,6 +496,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 			return ret;
 	}
 
+	/* Re-read parent and parent_rate (may have changed due to reparenting) */
 	parent = clk_get_parent(clk);
 	if (parent) {
 		parent_rate = clk_get_rate(parent);
@@ -355,11 +649,16 @@ struct clk_hw *
 clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int idx)
 {
 	struct clk *clk = clk_hw_to_clk(hw);
+	struct clk *parent;
 
 	if (!clk || idx >= clk->num_parents || !clk->parents)
 		return NULL;
 
-	return clk_to_clk_hw(clk_get_parent_by_index(clk, idx));
+	parent = clk_get_parent_by_index(clk, idx);
+	if (IS_ERR_OR_NULL(parent))
+		return NULL;
+
+	return clk_to_clk_hw(parent);
 }
 EXPORT_SYMBOL_GPL(clk_hw_get_parent_by_index);
 
@@ -395,8 +694,8 @@ struct clk_hw *clk_hw_get_parent(struct clk_hw *hw)
 {
 	struct clk *clk = clk_get_parent(clk_hw_to_clk(hw));
 
-	if (IS_ERR(clk))
-		return ERR_CAST(clk);
+	if (IS_ERR_OR_NULL(clk))
+		return NULL;
 
 	return clk_to_clk_hw(clk);
 }

@@ -30,6 +30,7 @@ struct device;
  */
 struct clk;
 struct clk_hw;
+struct clk_rate_request;
 
 /**
  * struct clk_bulk_data - Data used for bulk clk operations.
@@ -111,7 +112,7 @@ unsigned long clk_hw_get_rate(struct clk_hw *hw);
  * Returns rounded clock rate in Hz, or negative errno.
  */
 long clk_round_rate(struct clk *clk, unsigned long rate);
-long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate);
+unsigned long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate);
 /**
  * clk_set_rate - set the clock rate for a clock source
  * @clk: clock source
@@ -293,6 +294,11 @@ static inline void clk_put(struct clk *clk)
  *		supported by the clock. The parent rate is an input/output
  *		parameter.
  *
+ * @determine_rate: Given a target rate, determines the closest rate actually
+ *		supported by the clock. The rate, best parent rate and best
+ *		parent hw are stored in the clk_rate_request structure.
+ *		Preferred over @round_rate when both are present.
+ *
  * @set_parent:	Change the input source of this clock; for clocks with multiple
  *		possible parents specify a new parent by passing in the index
  *		as a u8 corresponding to the parent in either the .parent_names
@@ -342,6 +348,8 @@ struct clk_ops {
 					unsigned long parent_rate);
 	long		(*round_rate)(struct clk_hw *hw, unsigned long,
 					unsigned long *);
+	int		(*determine_rate)(struct clk_hw *hw,
+					  struct clk_rate_request *req);
 	int		(*set_parent)(struct clk_hw *hw, u8 index);
 	int		(*get_parent)(struct clk_hw *hw);
 	int		(*set_rate)(struct clk_hw *hw, unsigned long,
@@ -471,6 +479,7 @@ struct clk_divider {
 
 #define CLK_MUX_HIWORD_MASK		(1 << 2)
 #define CLK_MUX_READ_ONLY		(1 << 3) /* mux can't be changed */
+#define CLK_MUX_ROUND_CLOSEST		(1 << 4)
 
 extern const struct clk_ops clk_divider_ops;
 extern const struct clk_ops clk_divider_ro_ops;
@@ -700,6 +709,10 @@ unsigned int clk_mux_index_to_val(u32 *table, unsigned int flags, u8 index);
 
 long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
 			unsigned long *prate);
+int __clk_mux_determine_rate(struct clk_hw *hw,
+			     struct clk_rate_request *req);
+int __clk_mux_determine_rate_closest(struct clk_hw *hw,
+				     struct clk_rate_request *req);
 
 /**
  * struct clk_gate - gating clock

@@ -215,8 +215,8 @@ size_t rk3588_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
 
 	memsize = size1 + size2;
 
-	base[i] = 0xa00000;
-	size[i] = min_t(resource_size_t, RK3588_INT_REG_START, memsize) - 0xa00000;
+	base[i] = RK3588_DRAM_BOTTOM;
+	size[i] = min_t(resource_size_t, RK3588_INT_REG_START, memsize) - RK3588_DRAM_BOTTOM;
 	i++;
 
 	if (i < n && memsize > SZ_4G) {

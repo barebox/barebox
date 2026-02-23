@@ -5,6 +5,7 @@
 
 #include <common.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/err.h>
 #include <io.h>
 #include <linux/math64.h>
@@ -45,18 +46,18 @@ static unsigned long clk_frac_recalc_rate(struct clk_hw *hw,
 	return (parent_rate >> frac->width) * div;
 }
 
-static long clk_frac_round_rate(struct clk_hw *hw, unsigned long rate,
-				unsigned long *prate)
+static int clk_frac_determine_rate(struct clk_hw *hw,
+				   struct clk_rate_request *req)
 {
 	struct clk_frac *frac = to_clk_frac(hw);
-	unsigned long parent_rate = *prate;
+	unsigned long parent_rate = req->best_parent_rate;
 	u32 div;
 	u64 tmp;
 
-	if (rate > parent_rate)
+	if (req->rate > parent_rate)
 		return -EINVAL;
 
-	tmp = rate;
+	tmp = req->rate;
 	tmp <<= frac->width;
 	do_div(tmp, parent_rate);
 	div = tmp;
@@ -64,7 +65,8 @@ static long clk_frac_round_rate(struct clk_hw *hw, unsigned long rate,
 	if (!div)
 		return -EINVAL;
 
-	return (parent_rate >> frac->width) * div;
+	req->rate = (parent_rate >> frac->width) * div;
+	return 0;
 }
 
 static int clk_frac_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -98,7 +100,7 @@ static int clk_frac_set_rate(struct clk_hw *hw, unsigned long rate,
 
 static struct clk_ops clk_frac_ops = {
 	.recalc_rate = clk_frac_recalc_rate,
-	.round_rate = clk_frac_round_rate,
+	.determine_rate = clk_frac_determine_rate,
 	.set_rate = clk_frac_set_rate,
 };
 

@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <linux/slab.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 
 #include "clk.h"
 
@@ -75,19 +76,34 @@ static int imx8m_clk_composite_compute_dividers(unsigned long rate,
 	return ret;
 }
 
-static long imx8m_clk_composite_divider_round_rate(struct clk_hw *hw,
-						unsigned long rate,
-						unsigned long *prate)
+static int imx8m_clk_composite_divider_determine_rate(struct clk_hw *hw,
+						      struct clk_rate_request *req)
 {
+	struct clk_divider *divider = to_clk_divider(hw);
 	int prediv_value;
 	int div_value;
 
-	imx8m_clk_composite_compute_dividers(rate, *prate,
-						&prediv_value, &div_value);
-	rate = DIV_ROUND_UP(*prate, prediv_value);
+	/* if read only, just return current value */
+	if (divider->flags & CLK_DIVIDER_READ_ONLY) {
+		u32 val;
 
-	return DIV_ROUND_UP(rate, div_value);
+		val = readl(divider->reg);
+		prediv_value = val >> divider->shift;
+		prediv_value &= clk_div_mask(divider->width);
+		prediv_value++;
+		div_value = val >> PCG_DIV_SHIFT;
+		div_value &= clk_div_mask(PCG_DIV_WIDTH);
+		div_value++;
 
+		return divider_ro_determine_rate(hw, req, divider->table,
+						 PCG_PREDIV_WIDTH + PCG_DIV_WIDTH,
+						 divider->flags,
+						 prediv_value * div_value);
+	}
+
+	return divider_determine_rate(hw, req, divider->table,
+				      PCG_PREDIV_WIDTH + PCG_DIV_WIDTH,
+				      divider->flags);
 }
 
 static int imx8m_clk_composite_divider_set_rate(struct clk_hw *hw,
@@ -141,15 +157,14 @@ static int imx8m_clk_composite_mux_set_parent(struct clk_hw *hw, u8 index)
 
 static const struct clk_ops imx8m_clk_composite_divider_ops = {
 	.recalc_rate = imx8m_clk_composite_divider_recalc_rate,
-	.round_rate = imx8m_clk_composite_divider_round_rate,
+	.determine_rate = imx8m_clk_composite_divider_determine_rate,
 	.set_rate = imx8m_clk_composite_divider_set_rate,
 };
 
 static const struct clk_ops imx8m_clk_composite_mux_ops = {
 	.get_parent = imx8m_clk_composite_mux_get_parent,
 	.set_parent = imx8m_clk_composite_mux_set_parent,
-	.set_rate = clk_parent_set_rate,
-	.round_rate = clk_parent_round_rate,
+	.determine_rate = __clk_mux_determine_rate,
 };
 
 struct clk *imx8m_clk_composite_flags(const char *name,

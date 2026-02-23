@@ -161,7 +161,7 @@ static unsigned long get_pte_attrs(maptype_t map_type)
 		return CACHED_MEM | PTE_BLOCK_RO;
 	case MAP_CACHED_RO:
 		return attrs_xn() | CACHED_MEM | PTE_BLOCK_RO;
-	case ARCH_MAP_CACHED_RWX:
+	case MAP_CACHED_RWX:
 		return CACHED_MEM;
 	default:
 		return ~0UL;
@@ -404,7 +404,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 */
 	early_init_range(2);
 
-	early_remap_range(membase, memsize, ARCH_MAP_CACHED_RWX);
+	early_remap_range(membase, memsize, MAP_CACHED_RWX);
 
 	/* Default location for OP-TEE: end of DRAM, leave OPTEE_SIZE space for it */
 	optee_membase = membase + memsize - OPTEE_SIZE;
@@ -417,7 +417,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 * executing code from it
 	 */
 	early_remap_range(barebox_start, barebox_size,
-		     ARCH_MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
+		     MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
 
 	/* OP-TEE might be at location specified in OP-TEE header */
 	optee_get_membase(&optee_membase);
@@ -425,7 +425,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	early_remap_range(optee_membase, OPTEE_SIZE, MAP_FAULT);
 
 	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext),
-			  ARCH_MAP_CACHED_RWX);
+			  MAP_CACHED_RWX);
 
 	mmu_enable();
 }

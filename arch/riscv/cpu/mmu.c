@@ -125,14 +125,14 @@ static unsigned long flags_to_pte(maptype_t flags)
 
 	/*
 	 * Map barebox memory types to RISC-V PTE flags:
-	 * - ARCH_MAP_CACHED_RWX: read + write + execute (early boot, full RAM access)
+	 * - MAP_CACHED_RWX: read + write + execute (early boot, full RAM access)
 	 * - MAP_CODE: read + execute (text sections)
 	 * - MAP_CACHED_RO: read only (rodata sections)
 	 * - MAP_CACHED: read + write (data/bss sections)
 	 * - MAP_UNCACHED: read + write, uncached (device memory)
 	 */
 	switch (flags & MAP_TYPE_MASK) {
-	case ARCH_MAP_CACHED_RWX:
+	case MAP_CACHED_RWX:
 		/* Full access for early boot: R + W + X */
 		pte |= PTE_R | PTE_W | PTE_X;
 		break;
@@ -287,7 +287,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize,
 	 */
 	pr_debug("Remapping RAM 0x%08lx-0x%08lx as cached RWX...\n", membase, end);
 	for (addr = membase; addr < end; addr += RISCV_L1_SIZE)
-		create_megapage(addr, addr, ARCH_MAP_CACHED_RWX);
+		create_megapage(addr, addr, MAP_CACHED_RWX);
 
 	pr_debug("Page table setup complete, used %lu KB\n",
 		 (early_pt_idx * RISCV_PGSIZE) / 1024);

@@ -302,7 +302,7 @@ static uint32_t get_pte_flags(maptype_t map_type)
 {
 	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
 		switch (map_type & MAP_TYPE_MASK) {
-		case ARCH_MAP_CACHED_RWX:
+		case MAP_CACHED_RWX:
 			return PTE_FLAGS_CACHED_V7_RWX;
 		case MAP_CACHED_RO:
 			return PTE_FLAGS_CACHED_RO_V7;
@@ -323,7 +323,7 @@ static uint32_t get_pte_flags(maptype_t map_type)
 		case MAP_CACHED_RO:
 		case MAP_CODE:
 			return PTE_FLAGS_CACHED_RO_V4;
-		case ARCH_MAP_CACHED_RWX:
+		case MAP_CACHED_RWX:
 		case MAP_CACHED:
 			return PTE_FLAGS_CACHED_V4;
 		case MAP_UNCACHED:
@@ -635,7 +635,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 * map the bulk of the memory as sections to avoid allocating too many page tables
 	 * at this early stage
 	 */
-	early_remap_range(membase, barebox_start - membase, ARCH_MAP_CACHED_RWX);
+	early_remap_range(membase, barebox_start - membase, MAP_CACHED_RWX);
 	/*
 	 * Map the remainder of the memory explicitly with two level page tables. This is
 	 * the place where barebox proper ends at. In barebox proper we'll remap the code
@@ -646,10 +646,10 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 * at the location being remapped.
 	 */
 	early_remap_range(barebox_start, barebox_size,
-			  ARCH_MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
+			  MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
 	early_remap_range(optee_start, OPTEE_SIZE, MAP_UNCACHED);
 	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext),
-			  ARCH_MAP_CACHED_RWX);
+			  MAP_CACHED_RWX);
 
 	__mmu_cache_on();
 }

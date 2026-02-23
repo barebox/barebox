@@ -378,11 +378,10 @@ static void early_init_range(size_t total_level0_tables)
 	}
 }
 
-void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned long barebox_start)
+void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
 	int el;
 	u64 optee_membase;
-	unsigned long barebox_size;
 	unsigned long ttb = arm_mem_ttb(membase + memsize);
 
 	if (get_cr() & CR_M)
@@ -407,10 +406,6 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 
 	/* Default location for OP-TEE: end of DRAM, leave OPTEE_SIZE space for it */
 	optee_membase = membase + memsize - OPTEE_SIZE;
-
-	barebox_size = optee_membase - barebox_start;
-
-	early_remap_range(barebox_start, barebox_size, MAP_CACHED_RWX);
 
 	/* OP-TEE might be at location specified in OP-TEE header */
 	optee_get_membase(&optee_membase);

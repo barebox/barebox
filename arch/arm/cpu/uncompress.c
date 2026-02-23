@@ -85,7 +85,7 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	print_pbl_mem_layout(membase, endmem, barebox_base);
 #endif
 	if (IS_ENABLED(CONFIG_MMU))
-		mmu_early_enable(membase, memsize, barebox_base);
+		mmu_early_enable(membase, memsize);
 	else if (IS_ENABLED(CONFIG_ARMV7R_MPU))
 		set_cr(get_cr() | CR_C);
 

@@ -13,6 +13,7 @@
 #include <malloc.h>
 #include <clock.h>
 #include <linux/math64.h>
+#include <linux/clk-provider.h>
 
 #include "clk.h"
 
@@ -67,15 +68,16 @@ static unsigned long clk_pll1_recalc_rate(struct clk_hw *hw,
 	return parent_rate * 2 * (divf + 1);
 }
 
-static long clk_pll1_round_rate(struct clk_hw *hw, unsigned long rate,
-			       unsigned long *prate)
+static int clk_pll1_determine_rate(struct clk_hw *hw,
+				   struct clk_rate_request *req)
 {
-	unsigned long parent_rate = *prate;
+	unsigned long parent_rate = req->best_parent_rate;
 	u32 div;
 
-	div = rate / (parent_rate * 2);
+	div = req->rate / (parent_rate * 2);
 
-	return parent_rate * div * 2;
+	req->rate = parent_rate * div * 2;
+	return 0;
 }
 
 static int clk_pll1_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -155,15 +157,16 @@ static unsigned long clk_pll2_recalc_rate(struct clk_hw *hw,
 	return (unsigned long)temp64;
 }
 
-static long clk_pll2_round_rate(struct clk_hw *hw, unsigned long rate,
-			       unsigned long *prate)
+static int clk_pll2_determine_rate(struct clk_hw *hw,
+				   struct clk_rate_request *req)
 {
 	u32 div;
-	unsigned long parent_rate = *prate;
+	unsigned long parent_rate = req->best_parent_rate;
 
-	div = rate / (parent_rate);
+	div = req->rate / (parent_rate);
 
-	return parent_rate * div;
+	req->rate = parent_rate * div;
+	return 0;
 }
 
 static int clk_pll2_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -188,7 +191,7 @@ static int clk_pll2_set_rate(struct clk_hw *hw, unsigned long rate,
 static const struct clk_ops clk_sccg_pll1_ops = {
 	.is_enabled	= clk_pll1_is_prepared,
 	.recalc_rate	= clk_pll1_recalc_rate,
-	.round_rate	= clk_pll1_round_rate,
+	.determine_rate	= clk_pll1_determine_rate,
 	.set_rate	= clk_pll1_set_rate,
 };
 
@@ -196,7 +199,7 @@ static const struct clk_ops clk_sccg_pll2_ops = {
 	.enable		= clk_pll1_prepare,
 	.disable	= clk_pll1_unprepare,
 	.recalc_rate	= clk_pll2_recalc_rate,
-	.round_rate	= clk_pll2_round_rate,
+	.determine_rate	= clk_pll2_determine_rate,
 	.set_rate	= clk_pll2_set_rate,
 };
 

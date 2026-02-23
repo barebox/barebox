@@ -133,7 +133,7 @@ do_build_defconfig() {
 	local log_err="${logdir}/${defconfig}/errors.log"
 	local err=0
 
-	[ "$INCREMENTAL" != "1" ] && rm -rf "${BUILDDIR}"
+	[ "$INCREMENTAL" != "1" ] && find "${BUILDDIR}" -mindepth 1 -delete
 	[ -n "$logdir" ] && mkdir -p "${logdir}/${defconfig}"
 
 	MAKE="make -j${JOBS} ARCH=${arch} O=${BUILDDIR}"
@@ -382,6 +382,15 @@ fi
 if [ -n "$logdir" ] && [ ! -d "${logdir}" ]
 then
 	mkdir "${logdir}" || exit 1
+fi
+
+# Take an exclusive lock on the build directory to prevent parallel builds
+# from corrupting each other.
+mkdir -p "${BUILDDIR}"
+exec 9<"${BUILDDIR}"
+if ! flock -n 9; then
+	echo "error: another MAKEALL is already using build directory '${BUILDDIR}'" >&2
+	exit 1
 fi
 
 if [ ! "${REGEX}" ]

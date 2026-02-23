@@ -34,4 +34,6 @@ static inline int pbl_mci_send_cmd(struct pbl_mci *mci,
 
 int pbl_mci_bio_init(struct pbl_mci *mci, struct pbl_bio *bio);
 
+int dw_mmc_pbl_bio_init(struct pbl_bio *bio, void __iomem *dw_mmc_base);
+
 #endif /* __PBL_MCI_H__ */

@@ -344,7 +344,6 @@ static uint32_t get_pmd_flags(maptype_t map_type)
 static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size,
 			       maptype_t map_type)
 {
-	bool force_pages = map_type & ARCH_MAP_FLAG_PAGEWISE;
 	bool mmu_on;
 	u32 virt_addr = (u32)_virt_addr;
 	u32 pte_flags, pmd_flags;
@@ -372,7 +371,7 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 
 		if (size >= PGDIR_SIZE && pgdir_size_aligned &&
 		    IS_ALIGNED(phys_addr, PGDIR_SIZE) &&
-		    !pgd_type_table(*pgd) && !force_pages) {
+		    !pgd_type_table(*pgd)) {
 			/*
 			 * TODO: Add code to discard a page table and
 			 * replace it with a section
@@ -636,17 +635,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 * at this early stage
 	 */
 	early_remap_range(membase, barebox_start - membase, MAP_CACHED_RWX);
-	/*
-	 * Map the remainder of the memory explicitly with two level page tables. This is
-	 * the place where barebox proper ends at. In barebox proper we'll remap the code
-	 * segments readonly/executable and the ro segments readonly/execute never. For this
-	 * we need the memory being mapped pagewise. We can't do the split up from section
-	 * wise mapping to pagewise mapping later because that would require us to do
-	 * a break-before-make sequence which we can't do when barebox proper is running
-	 * at the location being remapped.
-	 */
-	early_remap_range(barebox_start, barebox_size,
-			  MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
+	early_remap_range(barebox_start, barebox_size, MAP_CACHED_RWX);
 	early_remap_range(optee_start, OPTEE_SIZE, MAP_UNCACHED);
 	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext),
 			  MAP_CACHED_RWX);

@@ -11,8 +11,6 @@
 #include <linux/sizes.h>
 #include <linux/bits.h>
 
-#define ARCH_MAP_FLAG_PAGEWISE	BIT(31)
-
 struct device;
 
 void dma_inv_range(void *ptr, size_t size);

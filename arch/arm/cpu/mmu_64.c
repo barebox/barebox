@@ -195,7 +195,6 @@ static void split_block(uint64_t *pte, int level, bool bbm)
 static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 			      maptype_t map_type, bool bbm)
 {
-	bool force_pages = map_type & ARCH_MAP_FLAG_PAGEWISE;
 	unsigned long attr = get_pte_attrs(map_type);
 	uint64_t *ttb = get_ttb();
 	uint64_t block_size;
@@ -237,7 +236,7 @@ static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 				        IS_ALIGNED(addr, block_size) &&
 				        IS_ALIGNED(phys, block_size);
 
-			if ((force_pages && level == 3) || (!force_pages && block_aligned)) {
+			if (block_aligned) {
 				type = (level == 3) ?
 					PTE_TYPE_PAGE : PTE_TYPE_BLOCK;
 
@@ -411,13 +410,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 
 	barebox_size = optee_membase - barebox_start;
 
-	/*
-	 * map barebox area using pagewise mapping. We want to modify the XN/RO
-	 * attributes later, but can't switch from sections to pages later when
-	 * executing code from it
-	 */
-	early_remap_range(barebox_start, barebox_size,
-		     MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
+	early_remap_range(barebox_start, barebox_size, MAP_CACHED_RWX);
 
 	/* OP-TEE might be at location specified in OP-TEE header */
 	optee_get_membase(&optee_membase);

@@ -9,6 +9,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/math64.h>
+#include <linux/clk-provider.h>
 
 #include "clk.h"
 
@@ -115,17 +116,17 @@ static unsigned long clk_pll_recalc_rate(struct clk_hw *hw,
 	return parent_rate * 8 * (divfi + 1) / divq + (unsigned long)temp64;
 }
 
-static long clk_pll_round_rate(struct clk_hw *hw, unsigned long rate,
-			       unsigned long *prate)
+static int clk_pll_determine_rate(struct clk_hw *hw,
+				  struct clk_rate_request *req)
 {
 	u32 divff, divfi;
 	u64 temp64;
-	unsigned long parent_rate = *prate;
+	unsigned long parent_rate = req->best_parent_rate;
 
 	parent_rate *= 8;
-	rate *= 2;
-	divfi = rate / parent_rate;
-	temp64 = (u64)(rate - divfi * parent_rate);
+	req->rate *= 2;
+	divfi = req->rate / parent_rate;
+	temp64 = (u64)(req->rate - divfi * parent_rate);
 	temp64 *= PLL_FRAC_DENOM;
 	do_div(temp64, parent_rate);
 	divff = temp64;
@@ -134,7 +135,8 @@ static long clk_pll_round_rate(struct clk_hw *hw, unsigned long rate,
 	temp64 *= divff;
 	do_div(temp64, PLL_FRAC_DENOM);
 
-	return (parent_rate * divfi + (unsigned long)temp64) / 2;
+	req->rate = (parent_rate * divfi + (unsigned long)temp64) / 2;
+	return 0;
 }
 
 /*
@@ -189,7 +191,7 @@ static const struct clk_ops clk_frac_pll_ops = {
 	.disable	= clk_pll_disable,
 	.is_enabled	= clk_pll_is_enabled,
 	.recalc_rate	= clk_pll_recalc_rate,
-	.round_rate	= clk_pll_round_rate,
+	.determine_rate	= clk_pll_determine_rate,
 	.set_rate	= clk_pll_set_rate,
 };
 

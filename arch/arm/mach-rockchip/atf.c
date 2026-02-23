@@ -194,12 +194,14 @@ static int rk3588_fixup_mem(void *fdt)
 
 void __noreturn rk3588_barebox_entry(void *fdt)
 {
-	unsigned long membase, endmem;
+	phys_addr_t membase, memend;
+	resource_size_t memsize;
 
-	membase = RK3588_DRAM_BOTTOM;
-	endmem = rk3588_ram0_size();
+	rk3588_ram_sizes(&membase, &memsize, 1);
 
-	rk_scratch = (void *)arm_mem_scratch(endmem);
+	memend = membase + memsize;
+
+	rk_scratch = (void *)arm_mem_scratch(memend);
 
 	if (current_el() == 3) {
 		void *fdt_scratch = NULL;
@@ -223,7 +225,7 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, endmem - membase, fdt);
+	barebox_arm_entry(membase, memsize, fdt);
 }
 
 void rk3576_atf_load_bl31(void *fdt)

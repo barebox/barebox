@@ -461,6 +461,12 @@ else
 				echo "Skipping test due to failed build"
 			fi
 		else
+			if [ ! "${ARCH}" ]; then
+				echo "ARCH must be specified via the -a option or environment"
+				usage
+				exit 1
+			fi
+
 			do_build_defconfig ${ARCH} $config
 		fi
 	done

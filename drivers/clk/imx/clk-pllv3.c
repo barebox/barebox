@@ -10,6 +10,7 @@
 #include <malloc.h>
 #include <clock.h>
 #include <linux/math64.h>
+#include <linux/clk-provider.h>
 
 #include "clk.h"
 
@@ -91,13 +92,14 @@ static unsigned long clk_pllv3_recalc_rate(struct clk_hw *hw,
 	return (div == 1) ? parent_rate * 22 : parent_rate * 20;
 }
 
-static long clk_pllv3_round_rate(struct clk_hw *hw, unsigned long rate,
-				 unsigned long *prate)
+static int clk_pllv3_determine_rate(struct clk_hw *hw,
+				    struct clk_rate_request *req)
 {
-	unsigned long parent_rate = *prate;
+	unsigned long parent_rate = req->best_parent_rate;
 
-	return (rate >= parent_rate * 22) ? parent_rate * 22 :
-					    parent_rate * 20;
+	req->rate = (req->rate >= parent_rate * 22) ? parent_rate * 22 :
+						      parent_rate * 20;
+	return 0;
 }
 
 static int clk_pllv3_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -125,7 +127,7 @@ static const struct clk_ops clk_pllv3_ops = {
 	.enable		= clk_pllv3_enable,
 	.disable	= clk_pllv3_disable,
 	.recalc_rate	= clk_pllv3_recalc_rate,
-	.round_rate	= clk_pllv3_round_rate,
+	.determine_rate	= clk_pllv3_determine_rate,
 	.set_rate	= clk_pllv3_set_rate,
 };
 
@@ -138,12 +140,13 @@ static unsigned long clk_pllv3_sys_recalc_rate(struct clk_hw *hw,
 	return parent_rate * div / 2;
 }
 
-static long clk_pllv3_sys_round_rate(struct clk_hw *hw, unsigned long rate,
-				     unsigned long *prate)
+static int clk_pllv3_sys_determine_rate(struct clk_hw *hw,
+					struct clk_rate_request *req)
 {
-	unsigned long parent_rate = *prate;
+	unsigned long parent_rate = req->best_parent_rate;
 	unsigned long min_rate = parent_rate * 54 / 2;
 	unsigned long max_rate = parent_rate * 108 / 2;
+	unsigned long rate = req->rate;
 	u32 div;
 
 	if (rate > max_rate)
@@ -152,7 +155,8 @@ static long clk_pllv3_sys_round_rate(struct clk_hw *hw, unsigned long rate,
 		rate = min_rate;
 	div = rate * 2 / parent_rate;
 
-	return parent_rate * div / 2;
+	req->rate = parent_rate * div / 2;
+	return 0;
 }
 
 static int clk_pllv3_sys_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -179,7 +183,7 @@ static const struct clk_ops clk_pllv3_sys_ops = {
 	.enable		= clk_pllv3_enable,
 	.disable	= clk_pllv3_disable,
 	.recalc_rate	= clk_pllv3_sys_recalc_rate,
-	.round_rate	= clk_pllv3_sys_round_rate,
+	.determine_rate	= clk_pllv3_sys_determine_rate,
 	.set_rate	= clk_pllv3_sys_set_rate,
 };
 
@@ -200,12 +204,13 @@ static unsigned long clk_pllv3_av_recalc_rate(struct clk_hw *hw,
 	return parent_rate * div + (unsigned long)temp64;
 }
 
-static long clk_pllv3_av_round_rate(struct clk_hw *hw, unsigned long rate,
-				    unsigned long *prate)
+static int clk_pllv3_av_determine_rate(struct clk_hw *hw,
+				       struct clk_rate_request *req)
 {
-	unsigned long parent_rate = *prate;
+	unsigned long parent_rate = req->best_parent_rate;
 	unsigned long min_rate = parent_rate * 27;
 	unsigned long max_rate = parent_rate * 54;
+	unsigned long rate = req->rate;
 	u32 div;
 	u32 mfn, mfd = 1000000;
 	u32 max_mfd = 0x3FFFFFFF;
@@ -225,7 +230,8 @@ static long clk_pllv3_av_round_rate(struct clk_hw *hw, unsigned long rate,
 	do_div(temp64, parent_rate);
 	mfn = temp64;
 
-	return parent_rate * div + parent_rate / mfd * mfn;
+	req->rate = parent_rate * div + parent_rate / mfd * mfn;
+	return 0;
 }
 
 static int clk_pllv3_av_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -266,7 +272,7 @@ static const struct clk_ops clk_pllv3_av_ops = {
 	.enable		= clk_pllv3_enable,
 	.disable	= clk_pllv3_disable,
 	.recalc_rate	= clk_pllv3_av_recalc_rate,
-	.round_rate	= clk_pllv3_av_round_rate,
+	.determine_rate	= clk_pllv3_av_determine_rate,
 	.set_rate	= clk_pllv3_av_set_rate,
 };
 
@@ -306,26 +312,30 @@ static unsigned long clk_pllv3_sys_vf610_recalc_rate(struct clk_hw *hw,
 	return parent_rate * div + (unsigned long)temp64;
 }
 
-static long clk_pllv3_sys_vf610_round_rate(struct clk_hw *hw, unsigned long rate,
-					   unsigned long *prate)
+static int clk_pllv3_sys_vf610_determine_rate(struct clk_hw *hw,
+					      struct clk_rate_request *req)
 {
-	unsigned long parent_rate = *prate;
+	unsigned long parent_rate = req->best_parent_rate;
 	unsigned long min_rate = parent_rate * 20;
 	unsigned long max_rate = 528000000;
+	unsigned long rate = req->rate;
 	u32 mfn, mfd = 1000000;
 	u64 temp64;
 
-	if (rate >= max_rate)
-		return max_rate;
-	else if (rate < min_rate)
+	if (rate >= max_rate) {
+		req->rate = max_rate;
+		return 0;
+	} else if (rate < min_rate) {
 		rate = min_rate;
+	}
 
 	temp64 = (u64) (rate - 20 * parent_rate);
 	temp64 *= mfd;
 	do_div(temp64, parent_rate);
 	mfn = temp64;
 
-	return parent_rate * 20 + parent_rate / mfd * mfn;
+	req->rate = parent_rate * 20 + parent_rate / mfd * mfn;
+	return 0;
 }
 
 static int clk_pllv3_sys_vf610_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -369,7 +379,7 @@ static const struct clk_ops clk_pllv3_sys_vf610_ops = {
 	.enable		= clk_pllv3_enable,
 	.disable	= clk_pllv3_disable,
 	.recalc_rate	= clk_pllv3_sys_vf610_recalc_rate,
-	.round_rate	= clk_pllv3_sys_vf610_round_rate,
+	.determine_rate	= clk_pllv3_sys_vf610_determine_rate,
 	.set_rate	= clk_pllv3_sys_vf610_set_rate,
 };
 

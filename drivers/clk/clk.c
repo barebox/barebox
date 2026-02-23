@@ -948,27 +948,6 @@ int clk_is_enabled_always(struct clk_hw *hw)
 	return 1;
 }
 
-long clk_parent_round_rate(struct clk_hw *hw, unsigned long rate,
-				unsigned long *prate)
-{
-	struct clk *clk = clk_hw_to_clk(hw);
-
-	if (!(clk->flags & CLK_SET_RATE_PARENT))
-		return *prate;
-
-	return clk_round_rate(clk_get_parent(clk), rate);
-}
-
-int clk_parent_set_rate(struct clk_hw *hw, unsigned long rate,
-				unsigned long parent_rate)
-{
-	struct clk *clk = clk_hw_to_clk(hw);
-
-	if (!(clk->flags & CLK_SET_RATE_PARENT))
-		return 0;
-	return clk_set_rate(clk_get_parent(clk), rate);
-}
-
 int clk_name_set_parent(const char *clkname, const char *clkparentname)
 {
 	struct clk *clk = clk_lookup(clkname);

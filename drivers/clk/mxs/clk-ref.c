@@ -5,6 +5,7 @@
 
 #include <common.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/err.h>
 #include <io.h>
 #include <linux/math64.h>
@@ -74,15 +75,15 @@ static unsigned long clk_ref_recalc_rate(struct clk_hw *hw,
 	return tmp;
 }
 
-static long clk_ref_round_rate(struct clk_hw *hw, unsigned long rate,
-			       unsigned long *prate)
+static int clk_ref_determine_rate(struct clk_hw *hw,
+				  struct clk_rate_request *req)
 {
-	unsigned long parent_rate = *prate;
+	unsigned long parent_rate = req->best_parent_rate;
 	u64 tmp = parent_rate;
 	u32 frac;
 
-	tmp = tmp * 18 + rate / 2;
-	do_div(tmp, rate);
+	tmp = tmp * 18 + req->rate / 2;
+	do_div(tmp, req->rate);
 	frac = tmp;
 
 	if (frac < 18)
@@ -94,7 +95,8 @@ static long clk_ref_round_rate(struct clk_hw *hw, unsigned long rate,
 	tmp *= 18;
 	do_div(tmp, frac);
 
-	return tmp;
+	req->rate = tmp;
+	return 0;
 }
 
 static int clk_ref_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -127,7 +129,7 @@ static const struct clk_ops clk_ref_ops = {
 	.enable		= clk_ref_enable,
 	.disable	= clk_ref_disable,
 	.recalc_rate	= clk_ref_recalc_rate,
-	.round_rate	= clk_ref_round_rate,
+	.determine_rate	= clk_ref_determine_rate,
 	.set_rate	= clk_ref_set_rate,
 };
 

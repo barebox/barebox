@@ -786,10 +786,6 @@ int clk_is_enabled(struct clk *clk);
 int clk_hw_is_enabled(struct clk_hw *hw);
 
 int clk_is_enabled_always(struct clk_hw *hw);
-long clk_parent_round_rate(struct clk_hw *hw, unsigned long rate,
-				unsigned long *prate);
-int clk_parent_set_rate(struct clk_hw *hw, unsigned long rate,
-				unsigned long parent_rate);
 
 int bclk_register(struct clk *clk);
 struct clk *clk_register(struct device *dev, struct clk_hw *hw);

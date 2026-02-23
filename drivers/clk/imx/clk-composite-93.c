@@ -7,6 +7,7 @@
 
 #include <io.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/err.h>
 #include <linux/types.h>
 #include <of_address.h>
@@ -84,10 +85,11 @@ imx93_clk_composite_divider_recalc_rate(struct clk_hw *hw, unsigned long parent_
 	return clk_divider_ops.recalc_rate(hw, parent_rate);
 }
 
-static long
-imx93_clk_composite_divider_round_rate(struct clk_hw *hw, unsigned long rate, unsigned long *prate)
+static int
+imx93_clk_composite_divider_determine_rate(struct clk_hw *hw,
+					   struct clk_rate_request *req)
 {
-	return clk_divider_ops.round_rate(hw, rate, prate);
+	return clk_divider_ops.determine_rate(hw, req);
 }
 
 static int imx93_clk_composite_divider_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -114,7 +116,7 @@ static int imx93_clk_composite_divider_set_rate(struct clk_hw *hw, unsigned long
 
 static const struct clk_ops imx93_clk_composite_divider_ops = {
 	.recalc_rate = imx93_clk_composite_divider_recalc_rate,
-	.round_rate = imx93_clk_composite_divider_round_rate,
+	.determine_rate = imx93_clk_composite_divider_determine_rate,
 	.set_rate = imx93_clk_composite_divider_set_rate,
 };
 
@@ -141,9 +143,17 @@ static int imx93_clk_composite_mux_set_parent(struct clk_hw *hw, u8 index)
 	return ret;
 }
 
+static int
+imx93_clk_composite_mux_determine_rate(struct clk_hw *hw,
+				       struct clk_rate_request *req)
+{
+	return clk_mux_ops.determine_rate(hw, req);
+}
+
 static const struct clk_ops imx93_clk_composite_mux_ops = {
 	.get_parent = imx93_clk_composite_mux_get_parent,
 	.set_parent = imx93_clk_composite_mux_set_parent,
+	.determine_rate = imx93_clk_composite_mux_determine_rate,
 };
 
 struct clk *imx93_clk_composite_flags(const char *name, const char * const *parent_names,

@@ -72,8 +72,6 @@ static int clk_gate2_is_enabled(struct clk_hw *hw)
 }
 
 static struct clk_ops clk_gate2_ops = {
-	.set_rate = clk_parent_set_rate,
-	.round_rate = clk_parent_round_rate,
 	.enable = clk_gate2_enable,
 	.disable = clk_gate2_disable,
 	.is_enabled = clk_gate2_is_enabled,

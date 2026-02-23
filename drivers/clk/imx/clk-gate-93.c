@@ -131,8 +131,6 @@ static int imx93_clk_gate_is_enabled(struct clk_hw *hw)
 }
 
 static const struct clk_ops imx93_clk_gate_ops = {
-	.set_rate = clk_parent_set_rate,
-	.round_rate = clk_parent_round_rate,
 	.enable = imx93_clk_gate_enable,
 	.disable = imx93_clk_gate_disable,
 	.is_enabled = imx93_clk_gate_is_enabled,

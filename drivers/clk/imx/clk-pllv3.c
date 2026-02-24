@@ -230,7 +230,11 @@ static int clk_pllv3_av_determine_rate(struct clk_hw *hw,
 	do_div(temp64, parent_rate);
 	mfn = temp64;
 
-	req->rate = parent_rate * div + parent_rate / mfd * mfn;
+	temp64 = (u64)parent_rate;
+	temp64 *= mfn;
+	do_div(temp64, mfd);
+
+	req->rate = parent_rate * div + (unsigned long)temp64;
 	return 0;
 }
 
@@ -334,7 +338,11 @@ static int clk_pllv3_sys_vf610_determine_rate(struct clk_hw *hw,
 	do_div(temp64, parent_rate);
 	mfn = temp64;
 
-	req->rate = parent_rate * 20 + parent_rate / mfd * mfn;
+	temp64 = (u64)parent_rate;
+	temp64 *= mfn;
+	do_div(temp64, mfd);
+
+	req->rate = parent_rate * 20 + (unsigned long)temp64;
 	return 0;
 }
 

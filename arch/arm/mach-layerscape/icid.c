@@ -63,6 +63,7 @@
 
 struct icid_id_table {
 	const char *compat;
+	const char *alt_compat;
 	u32 id;
 	u32 reg;
 	phys_addr_t compat_addr;
@@ -93,6 +94,27 @@ static phandle of_get_iommu_handle(struct device_node *root)
 	return of_node_create_phandle(iommu);
 }
 
+static bool of_fixup_icid_node(struct device_node *root, phandle iommu_handle,
+			       const struct icid_id_table *icid,
+			       const char *compat)
+{
+	struct device_node *np;
+
+	for_each_compatible_node_from(np, root, NULL, compat) {
+		struct resource res;
+
+		if (of_address_to_resource(np, 0, &res))
+			continue;
+
+		if (res.start == icid->compat_addr) {
+			of_set_iommu_prop(np, iommu_handle, icid->id);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 static int of_fixup_icid(struct device_node *root, phandle iommu_handle,
 			 const struct icid_id_table *icid_table, int num_icid)
 {
@@ -100,22 +122,13 @@ static int of_fixup_icid(struct device_node *root, phandle iommu_handle,
 
 	for (i = 0; i < num_icid; i++) {
 		const struct icid_id_table *icid = &icid_table[i];
-		struct device_node *np;
 
 		if (!icid->compat)
 			continue;
 
-		for_each_compatible_node_from(np, root, NULL, icid->compat) {
-			struct resource res;
-
-			if (of_address_to_resource(np, 0, &res))
-				continue;
-
-			if (res.start == icid->compat_addr) {
-				of_set_iommu_prop(np, iommu_handle, icid->id);
-				break;
-			}
-		}
+		if (!of_fixup_icid_node(root, iommu_handle, icid, icid->compat)
+		    && icid->alt_compat)
+			of_fixup_icid_node(root, iommu_handle, icid, icid->alt_compat);
 	}
 
 	return 0;
@@ -168,19 +181,19 @@ static const struct icid_id_table icid_tbl_ls1046a[] = {
 		.compat_addr = LSCH2_ESDHC_ADDR,
 		.reg_addr = offsetof(struct ccsr_scfg, sdhc_icid) + LSCH2_SCFG_ADDR,
 	}, {
-		.compat = "snps,dwc3",
+		.compat = "fsl,ls1028a-dwc3", .alt_compat = "snps,dwc3",
 		.id = FSL_USB1_STREAM_ID,
 		.reg = (((FSL_USB1_STREAM_ID) << 24) | (1 << 23)),
 		.compat_addr = LSCH2_XHCI_USB1_ADDR,
 		.reg_addr = offsetof(struct ccsr_scfg, usb1_icid) + LSCH2_SCFG_ADDR,
 	}, {
-		.compat = "snps,dwc3",
+		.compat = "fsl,ls1028a-dwc3", .alt_compat = "snps,dwc3",
 		.id = FSL_USB2_STREAM_ID,
 		.reg = (((FSL_USB2_STREAM_ID) << 24) | (1 << 23)),
 		.compat_addr = LSCH2_XHCI_USB2_ADDR,
 		.reg_addr = offsetof(struct ccsr_scfg, usb2_icid) + LSCH2_SCFG_ADDR,
 	}, {
-		.compat = "snps,dwc3",
+		.compat = "fsl,ls1028a-dwc3", .alt_compat = "snps,dwc3",
 		.id = FSL_USB3_STREAM_ID,
 		.reg = (((FSL_USB3_STREAM_ID) << 24) | (1 << 23)),
 		.compat_addr = LSCH2_XHCI_USB3_ADDR,
@@ -584,13 +597,13 @@ void ls1046a_setup_icids(void)
 
 static const struct icid_id_table icid_tbl_ls1028a[] = {
 	{
-		.compat = "snps,dwc3",
+		.compat = "fsl,ls1028a-dwc3", .alt_compat = "snps,dwc3",
 		.id = 1,
 		.reg = 1,
 		.compat_addr = LSCH3_XHCI_USB1_ADDR,
 		.reg_addr = offsetof(struct lsch3_ccsr_gur, usb1_amqr) + LSCH3_GUTS_ADDR,
 	}, {
-		.compat = "snps,dwc3",
+		.compat = "fsl,ls1028a-dwc3", .alt_compat = "snps,dwc3",
 		.id = 2,
 		.reg = 2,
 		.compat_addr = LSCH3_XHCI_USB2_ADDR,

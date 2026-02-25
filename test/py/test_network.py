@@ -68,6 +68,7 @@ def tftp_conversation(barebox, barebox_interface, guestaddr):
     finally:
         # terminate a timed-out tftp
         barebox.console.sendcontrol("c")
+        barebox._await_prompt()
         tftp_thread.join()
         barebox.run_check("ifdown eth0")
 

@@ -130,7 +130,7 @@ static void layerscape_usb_enable_snooping(void)
 {
 	struct device_node *np;
 
-	for_each_compatible_node(np, NULL, "snps,dwc3") {
+	for_each_compatible_node(np, NULL, "fsl,ls1028a-dwc3") {
 		struct resource res;
 
 		if (of_address_to_resource(np, 0, &res))

@@ -195,14 +195,11 @@ static void am65_cpsw_update_link(struct eth_device *edev)
 #define AM65_GMII_SEL_MODE_RGMII	2
 #define AM65_GMII_SEL_MODE_SGMII	3
 
-#define AM65_GMII_SEL_RGMII_IDMODE	BIT(4)
-
 static int am65_cpsw_gmii_sel_k3(struct am65_cpsw_port *port,
 				 phy_interface_t phy_mode)
 {
 	struct device *dev = &port->dev;
 	u32 offset, reg;
-	bool rgmii_id = false;
 	struct regmap *gmii_sel;
 	u32 mode = 0;
 	int ret;
@@ -229,12 +226,6 @@ static int am65_cpsw_gmii_sel_k3(struct am65_cpsw_port *port,
 		mode = AM65_GMII_SEL_MODE_RGMII;
 		break;
 
-	case PHY_INTERFACE_MODE_RGMII_ID:
-	case PHY_INTERFACE_MODE_RGMII_TXID:
-		mode = AM65_GMII_SEL_MODE_RGMII;
-		rgmii_id = true;
-		break;
-
 	case PHY_INTERFACE_MODE_SGMII:
 		mode = AM65_GMII_SEL_MODE_SGMII;
 		break;
@@ -248,9 +239,6 @@ static int am65_cpsw_gmii_sel_k3(struct am65_cpsw_port *port,
 		mode = AM65_GMII_SEL_MODE_MII;
 		break;
 	};
-
-	if (rgmii_id)
-		mode |= AM65_GMII_SEL_RGMII_IDMODE;
 
 	reg = mode;
 	dev_dbg(dev, "gmii_sel PHY mode: %u, new gmii_sel: %08x\n",
@@ -594,11 +582,36 @@ static int am65_cpsw_ofdata_parse_phy(struct am65_cpsw_port *port)
 {
 	int ret;
 
+
 	ret = of_get_phy_mode(port->device_node);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_warn(&port->dev, "Invalid PHY mode, port %u\n", port->port_id);
 		port->interface = PHY_INTERFACE_MODE_MII;
-	else
-		port->interface = ret;
+		return 0;
+	}
+
+	port->interface = ret;
+
+	/* CPSW controllers supported by this driver have a fixed
+	 * internal TX delay in RGMII mode. Fix up PHY mode to account
+	 * for this and warn about Device Trees that claim to have a TX
+	 * delay on the PCB.
+	 */
+	switch (port->interface) {
+	case PHY_INTERFACE_MODE_RGMII_ID:
+		port->interface = PHY_INTERFACE_MODE_RGMII_RXID;
+		break;
+	case PHY_INTERFACE_MODE_RGMII_TXID:
+		port->interface = PHY_INTERFACE_MODE_RGMII;
+		break;
+	case PHY_INTERFACE_MODE_RGMII:
+	case PHY_INTERFACE_MODE_RGMII_RXID:
+		dev_warn(&port->dev,
+			 "RGMII mode without internal TX delay unsupported; please fix your Device Tree\n");
+		break;
+	default:
+		break;
+	}
 
 	return 0;
 }

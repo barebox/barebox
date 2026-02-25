@@ -12,21 +12,22 @@ like the in-tree boards are already doing.
 Filesystems
 -----------
 
-``{linux.bootargs}`` is replaced with ``root={linux.bootargs.root} {linux.bootargs.rootopts}``
+The ``linux.bootargs`` file system device parameter (e.g. ``ext40.linux.bootargs``)
+has been replaced by the two variables ``${fsdev}.linux.bootargs.root`` and
+``${fsdev}.linux.bootargs.rootopts``, splitting the previous bootargs
+into three parts. For example, the previous::
 
-The variable linux.bootargs has been replaced by the two variables
-linux.bootargs.root and linux.bootargs.rootopts, splitting the previous bootargs
-into three parts. A nonexistent fixed "root=", then the root filesystem and then
-additional optional params for this particular filesystem.
-
-for example the previous::
-
-    linux.bootargs="root=/dev/nfs nfsroot=192.168.1.1:/rootfs"
+    ext40.linux.bootargs="root=/dev/nfs nfsroot=192.168.1.1:/rootfs"
 
 becomes::
 
-    linux.bootargs.root="/dev/nfs"
-    linux.bootargs.rootopts="nfsroot=192.168.1.1:/rootfs"
+    ext40.linux.bootargs.root="/dev/nfs"
+    ext40.linux.bootargs.rootopts="nfsroot=192.168.1.1:/rootfs"
+
+Scripts that access these parameters will need to be adapted to replace
+``{linux.bootargs}`` with ``root={linux.bootargs.root} {linux.bootargs.rootopts}``.
+
+``global.linux.bootargs.*`` is unaffected by this change.
 
 Boards
 ------

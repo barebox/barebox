@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <stdio.h>
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
@@ -16,8 +17,9 @@ void __noreturn panic(const char *fmt, ...)
 	va_list args;
 
 	va_start(args, fmt);
-	printf(fmt, args);
+	vprintf(fmt, args);
 	va_end(args);
+
 	while(1);
 }
 

@@ -1258,7 +1258,7 @@ security_%config: collect-policies FORCE
 		$(@:security_%=%),$p.tmp))
 ifeq ($(KPOLICY_TMPUPDATE),)
 	+$(Q)$(foreach p, $(KPOLICY), \
-		cp 2>/dev/null $p.tmp $(call resolve-srctree,$p) || true;)
+		cp 2>/dev/null $p.tmp $(call resolve-external,$p) || true;)
 endif
 
 quiet_cmd_sconfigpost = SCONFPP $@

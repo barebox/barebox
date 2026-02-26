@@ -56,17 +56,31 @@ int console_puts(unsigned int ch, const char *str)
 	return n;
 }
 
+int vprintf(const char *fmt, va_list args)
+{
+	int i;
+	char printbuffer[CFG_PBSIZE];
+
+	/*
+	 * For this to work, printbuffer must be larger than
+	 * anything we ever want to print.
+	 */
+	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
+
+	/* Print the string */
+	console_puts(CONSOLE_STDOUT, printbuffer);
+
+	return i;
+}
+
 int printf(const char *fmt, ...)
 {
 	va_list args;
 	uint i;
-	char printbuffer[CFG_PBSIZE];
 
 	va_start(args, fmt);
-	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
+	i = vprintf(fmt, args);
 	va_end(args);
-
-	console_puts(CONSOLE_STDOUT, printbuffer);
 
 	return i;
 }

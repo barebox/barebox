@@ -389,6 +389,7 @@ struct clk_init_data {
 
 struct clk {
 	const struct clk_ops *ops;
+	struct device *dev;
 	int enable_count;
 	struct list_head list;
 	const char *name;

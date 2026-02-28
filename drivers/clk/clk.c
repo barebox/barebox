@@ -872,6 +872,7 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 	clk->name = xstrdup(init->name);
 	clk->ops = init->ops;
 	clk->num_parents = init->num_parents;
+	clk->dev = dev;
 
 	clk->parents = xzalloc(sizeof(struct clk *) * clk->num_parents);
 

@@ -21,7 +21,7 @@ options to crash barebox on detection of memory safety issues::
   barebox
   fuzz-filetype
   fuzz-fit
-  fuzz-fs
+  fuzz-jwt
   fuzz-dtb
   fuzz-fdt-compatible
   fuzz-partitions
@@ -45,8 +45,8 @@ Examples of running the fuzzers::
   images/fuzz-dtb -rss_limit_mb=10000 -max_len=51200 -jobs=64 \
 	../barebox-fuzz-corpora/dtb
 
-  # Some fuzzers still leak, so disable leak detection till resolved
-  images/fuzz-fit -max_total_time=600 -rss_limit_mb=20000 -max_len=128000 -detect_leaks=0
+  # Run fuzz-fit with a time limit
+  images/fuzz-fit -max_total_time=600 -rss_limit_mb=20000 -max_len=128000
 
   # Debug a crash
   gdb --args images/fuzz-fit crash-$HASH

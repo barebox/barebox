@@ -442,21 +442,17 @@ static int fit_verify_signature(struct fit_handle *handle,
 	ret = fit_digest(handle, digest, &inc_nodes, &exc_props, hashed_strings_start,
 			 hashed_strings_size);
 	if (ret)
-		goto out_sl;
+		goto out_digest;
 
 	hash = xzalloc(digest_length(digest));
 	digest_final(digest, hash);
 
 	ret = fit_check_signature(handle, sig_node, algo, hash);
-	if (ret) {
+	if (ret)
 		fit_config_check_hash_nodes(sig_node, &inc_nodes);
-		goto out_free_hash;
-	}
 
-	ret = 0;
-
- out_free_hash:
 	free(hash);
+ out_digest:
 	digest_free(digest);
  out_sl:
 	string_list_free(&inc_nodes);

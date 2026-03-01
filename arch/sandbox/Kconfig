@@ -5,6 +5,7 @@ source "scripts/Kconfig.include"
 config SANDBOX
 	bool
 	select OFTREE
+	select HAVE_STACKPROTECTOR
 	select GPIOLIB
 	select ARCH_HAS_UBSAN_SANITIZE_ALL
 	select ARCH_HAS_FORTIFY_SOURCE

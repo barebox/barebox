@@ -49,6 +49,10 @@ jobs:
             lgenv: test/openrisc/generic_defconfig.yaml
             defconfig: generic_defconfig
 
+          - ARCH: powerpc
+            lgenv: test/powerpc/qemu-ppce500_defconfig.yaml
+            defconfig: qemu-ppce500_defconfig
+
           - ARCH: x86
             lgenv: test/x86/efi_defconfig.yaml
             defconfig: efi_defconfig

@@ -311,6 +311,11 @@ config DEBUG_ZYNQMP_UART
 	  Say Y here if you want kernel low-level debugging support
 	  on Zynqmp.
 
+config DEBUG_QEMU_PPCE500
+	bool "Qemu ppce500 PowerPC ns16550 port"
+	depends on QEMU_PPCE500
+	select DEBUG_LL_NS16550
+
 config DEBUG_ERIZO
 	bool "Erizo ns16550 port"
 	depends on SOC_ERIZO
@@ -382,7 +387,7 @@ endchoice
 config DEBUG_LL_NS16550
 	bool
 	help
-	  Selected by RISC-V platforms that use ns16550 for debug_ll
+	  Selected by RISC-V and PowerPC platforms that use ns16550 for debug_ll
 
 config DEBUG_IMX_UART_PORT
 	int "i.MX Debug UART Port Selection" if DEBUG_IMX1_UART || \

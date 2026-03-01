@@ -102,7 +102,7 @@ config GPIO_MALTA_FPGA_I2C
 
 config GPIO_MPC8XXX
 	bool "MPC512x/MPC8xxx/QorIQ GPIO support"
-	depends on ARCH_LAYERSCAPE || COMPILE_TEST
+	depends on ARCH_LAYERSCAPE || ARCH_MPC85XX || COMPILE_TEST
 	select GPIO_GENERIC
 	help
 	  Say Y here if you're going to use hardware that connects to the

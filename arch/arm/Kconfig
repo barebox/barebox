@@ -3,6 +3,7 @@
 config ARM
 	bool
 	select HAS_KALLSYMS
+	select HAVE_STACKPROTECTOR
 	select HAVE_IMAGE_COMPRESSION
 	select HAVE_ARCH_KASAN
 	select ARCH_HAS_SJLJ

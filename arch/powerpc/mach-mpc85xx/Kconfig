@@ -11,11 +11,13 @@ config BTB
 
 config TEXT_BASE
 	hex
+	default 0x00f00000 if QEMU_PPCE500
 	default 0xeff80000 if P1010RDB || P2020RDB || P1022DS
 	default 0xfff80000 if DA923RC
 
 config RESET_VECTOR_ADDRESS
 	hex
+	default 0x00000000 if QEMU_PPCE500
 	default 0xfffffffc if DA923RC
 	default 0xeffffffc if P1010RDB || P2020RDB || P1022DS
 
@@ -33,6 +35,7 @@ config E500
 
 choice
 	prompt "Select your board"
+
 config P1010RDB
 	bool "P1010RDB"
     select P1010
@@ -64,6 +67,16 @@ config DA923RC
     select FSL_DDR2
 	help
 	Say Y here if you are using the GE Intelligent Platforms DA923RC
+
+config QEMU_PPCE500
+	bool "QEMU ppce500"
+	select HAS_DEBUG_LL
+	select LIBFDT
+	select GPIOLIB
+	help
+	  Say Y here for QEMU ppce500 generic paravirt e500 support.
+	  CCSRBAR is at 36-bit physical address 0xFE0000000.
+
 endchoice
 endif
 

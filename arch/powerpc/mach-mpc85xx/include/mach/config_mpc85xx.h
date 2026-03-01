@@ -57,6 +57,12 @@
 #define PPC_E500_DEBUG_TLB	2
 #define FSL_TSECV2
 
+#elif defined(CONFIG_QEMU_PPCE500)
+#define MAX_CPUS		1
+#define FSL_NUM_LAWS		12
+#define PPC_E500_DEBUG_TLB	0
+/* QEMU e500: generic e500v2 platform, minimal configuration */
+
 #else
 #error Processor type not defined for this platform
 #endif

@@ -197,7 +197,7 @@ int log_writefile(const char *filepath)
 	int ret = 0, nbytes = 0, fd = -1;
 	struct log_entry *log;
 
-	fd = open(filepath, O_WRONLY | O_CREAT | O_TRUNC);
+	fd = open(filepath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0)
 		return -errno;
 

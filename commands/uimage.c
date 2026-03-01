@@ -67,7 +67,7 @@ static int do_uimage(int argc, char *argv[])
 	}
 
 	if (extract) {
-		fd = open(extract, O_WRONLY | O_CREAT | O_TRUNC);
+		fd = open(extract, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 		if (fd < 0) {
 			perror("open");
 			ret = fd;

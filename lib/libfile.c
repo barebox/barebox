@@ -381,7 +381,7 @@ int write_file(const char *filename, const void *buf, size_t size)
 {
 	int fd, ret;
 
-	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT);
+	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT, 0644);
 	if (fd < 0)
 		return fd;
 
@@ -477,7 +477,7 @@ int copy_file(const char *src, const char *dst, unsigned flags)
 		mode |= O_TRUNC;
 	}
 
-	dstfd = open(dst, mode);
+	dstfd = open(dst, mode, 0666);
 	if (dstfd < 0) {
 		printf("could not open %s: %m\n", dst);
 		ret = dstfd;

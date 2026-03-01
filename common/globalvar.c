@@ -61,7 +61,7 @@ static int __nv_save(const char *prefix, const char *name, const char *val)
 
 	fname = basprintf("%s/%s", prefix, name);
 
-	fd = open(fname, O_CREAT | O_WRONLY | O_TRUNC);
+	fd = open(fname, O_CREAT | O_WRONLY | O_TRUNC, 0666);
 
 	free(fname);
 

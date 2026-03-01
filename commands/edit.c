@@ -243,7 +243,7 @@ static int save_file(const char *path)
 	int fd;
 	int ret = 0;
 
-	fd = open(path, O_WRONLY | O_TRUNC | O_CREAT);
+	fd = open(path, O_WRONLY | O_TRUNC | O_CREAT, 0666);
 	if (fd < 0) {
 		printf("could not open file for writing: %m\n");
 		return fd;

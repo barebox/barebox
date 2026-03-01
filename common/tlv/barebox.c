@@ -69,8 +69,12 @@ static const char *__tlv_format(struct tlv_device *dev, struct tlv_mapping *map,
 		return NULL;
 
 	param = dev_add_param_fixed(&dev->dev, map->prop, NULL);
-	if (!IS_ERR(param))
-		param->value = buf; /* pass ownership */
+	if (IS_ERR(param)) {
+		free(buf);
+		return NULL;
+	}
+
+	param->value = buf; /* pass ownership */
 
 	ret = of_append_property(tlv_of_node(dev), map->prop, buf, strlen(buf) + 1);
 	if (ret)

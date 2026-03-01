@@ -876,13 +876,8 @@ int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, con
 			if (!dt_struct)
 				return 0;
 			break;
-
-		default:
-			return 0;
 		}
 	}
-
-	return 0;
 }
 
 /*

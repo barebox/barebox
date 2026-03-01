@@ -117,11 +117,11 @@ static unsigned int get_bits(struct bunzip_data *bd, char bits_wanted)
 	   (Loop getting one byte at a time to enforce endianness and avoid
 	   unaligned access.) */
 	while (bd->inbufBitCount < bits_wanted) {
+		if (bd->io_error)
+			return 0;
 		/* If we need to read more data from file into byte buffer, do
 		   so */
 		if (bd->inbufPos == bd->inbufCount) {
-			if (bd->io_error)
-				return 0;
 			bd->inbufCount = bd->fill(bd->inbuf, BZIP2_IOBUF_SIZE);
 			if (bd->inbufCount <= 0) {
 				bd->io_error = RETVAL_UNEXPECTED_INPUT_EOF;
@@ -374,7 +374,8 @@ static int get_next_block(struct bunzip_data *bd)
 		   equivalent to j = get_bits(bd, hufGroup->maxLen);
 		 */
 		while (bd->inbufBitCount < hufGroup->maxLen) {
-			if (bd->inbufPos == bd->inbufCount) {
+			if (bd->io_error ||
+			    bd->inbufPos == bd->inbufCount) {
 				j = get_bits(bd, hufGroup->maxLen);
 				goto got_huff_bits;
 			}

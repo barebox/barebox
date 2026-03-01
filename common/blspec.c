@@ -27,7 +27,8 @@ struct blspec_entry {
 	struct device_node *node;
 	struct cdev *cdev;
 	const char *rootpath;
-	const char *configpath;
+	/* configpath is entry.path */
+	char *sortkey;
 };
 
 /*
@@ -179,8 +180,8 @@ static void blspec_entry_free(struct bootentry *be)
 	struct blspec_entry *entry = container_of(be, struct blspec_entry, entry);
 
 	of_delete_node(entry->node);
-	free_const(entry->configpath);
 	free_const(entry->rootpath);
+	free(entry->sortkey);
 	free(entry);
 }
 
@@ -268,6 +269,12 @@ static struct blspec_entry *blspec_entry_open(struct bootentries *bootentries,
 			}
 		}
 
+		/* This will be read often during comparison, so we cache it */
+		if (!strcmp(name, "sort-key")) {
+			entry->sortkey = xstrdup(val);
+			continue;
+		}
+
 		blspec_entry_var_set(entry, name, val);
 	}
 
@@ -297,7 +304,7 @@ static int blspec_have_entry(struct bootentries *bootentries, const char *path)
 		if (!is_blspec_entry(be))
 			continue;
 		e = container_of(be, struct blspec_entry, entry);
-		if (e->configpath && !strcmp(e->configpath, path))
+		if (e->entry.path && !strcmp(e->entry.path, path))
 			return 1;
 	}
 
@@ -414,6 +421,55 @@ static const char *get_blspec_prefix_path(const char *configname)
 	return get_mounted_path(configname);
 }
 
+static int blspec_compare(struct list_head *list_a, struct list_head *list_b)
+{
+	struct bootentry *be_a = container_of(list_a, struct bootentry, list);
+	struct bootentry *be_b = container_of(list_b, struct bootentry, list);
+	const char *a_version = be_a->path, *b_version = be_b->path;
+	struct blspec_entry *a, *b;
+	int r;
+
+	/* The boot entry providers are called one by one and passed an empty
+	 * list that's aggregated later, so we should only be encountering
+	 * bootloader spec entries here.
+	 */
+	DEBUG_ASSERT(is_blspec_entry(be_a) && is_blspec_entry(be_b));
+
+	a = container_of(be_a, struct blspec_entry, entry);
+	b = container_of(be_b, struct blspec_entry, entry);
+
+	if (a->sortkey && b->sortkey) {
+		const char *a_machine_id, *b_machine_id;
+
+		/* A-Z, increasing alphanumerical order */
+		r = strcmp(a->sortkey, b->sortkey);
+		if (r != 0)
+			return r;
+
+		a_machine_id = blspec_entry_var_get(a, "machine-id");
+		b_machine_id = blspec_entry_var_get(b, "machine-id");
+
+		/* A-Z, increasing alphanumerical order) */
+		r = strcmp_ptr(a_machine_id, b_machine_id);
+		if (r != 0)
+			return r;
+
+		/* Will be compared in decreasing version order */
+		a_version = blspec_entry_var_get(a, "version");
+		b_version = blspec_entry_var_get(b, "version");
+	} else if (a->sortkey != b->sortkey) {
+		/* If sort-key is set on one entry, it sorts earlier. */
+		return a->sortkey ? -1 : 1;
+	}
+
+	/* At the end, if necessary, when sort-key is not set or
+	 * those fields are not set or are all equal, the boot loader
+	 * should sort using the file name of the entry (decreasing
+	 * version sort), with the suffix removed.
+	 */
+	return -strverscmp(a_version, b_version);
+}
+
 static int __blspec_scan_file(struct bootentries *bootentries, const char *root,
 			      const char *configname)
 {
@@ -429,7 +485,7 @@ static int __blspec_scan_file(struct bootentries *bootentries, const char *root,
 
 	root = root ?: get_blspec_prefix_path(configname);
 	entry->rootpath = xstrdup_const(root);
-	entry->configpath = xstrdup_const(configname);
+	entry->entry.path = xstrdup_const(configname);
 	entry->cdev = get_cdev_by_mountpath(root);
 
 	if (!entry_is_of_compatible(entry)) {
@@ -459,7 +515,7 @@ static int __blspec_scan_file(struct bootentries *bootentries, const char *root,
 	entry->entry.me.type = MENU_ENTRY_NORMAL;
 	entry->entry.release = blspec_entry_free;
 
-	bootentries_add_entry(bootentries, &entry->entry);
+	bootentries_add_entry_sorted(bootentries, &entry->entry, blspec_compare);
 	return 1;
 }
 

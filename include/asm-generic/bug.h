@@ -78,4 +78,11 @@
 		BUG_ON(!(expr));			\
 } while (0)
 
+
+#ifdef DEBUG
+#define DEBUG_ASSERT(expr)	BUG_ON(!(expr))
+#else
+#define DEBUG_ASSERT(expr)	((void)(expr))
+#endif
+
 #endif

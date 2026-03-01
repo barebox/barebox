@@ -18,12 +18,15 @@ struct bootentry {
 	struct menu_entry me;
 	const char *title;
 	char *description;
+	const char *path;
 	int (*boot)(struct bootentry *entry, int verbose, int dryrun);
 	void (*release)(struct bootentry *entry);
 	struct bootm_overrides overrides;
 };
 
 int bootentries_add_entry(struct bootentries *entries, struct bootentry *entry);
+void bootentries_add_entry_sorted(struct bootentries *entries, struct bootentry *entry,
+				  int (*compare)(struct list_head *, struct list_head *));
 
 struct bootentry_provider {
 	const char *name;

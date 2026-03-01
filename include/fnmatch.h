@@ -17,8 +17,17 @@
 /* Value returned by `fnmatch' if STRING does not match PATTERN.  */
 #define	FNM_NOMATCH	1
 
+#ifdef CONFIG_FNMATCH
+
 /* Match NAME against the filename pattern PATTERN,
    returning zero if it matches, FNM_NOMATCH if not.  */
 extern int fnmatch(const char *pattern, const char *name, int flags);
+
+#else
+static inline int fnmatch(const char *pattern, const char *name, int flags)
+{
+	return 0;
+}
+#endif
 
 #endif /* fnmatch.h */

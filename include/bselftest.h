@@ -78,4 +78,24 @@ static inline void selftests_run(void)
 int selftest_run(struct selftest *test);
 bool selftest_is_running(struct selftest *test);
 
+#define __assert_cond(cond) ({ total_tests++; cond || (failed_tests++, false); })
+
+#define assert_cond(cond) ({ \
+	bool __cond = __assert_cond(cond); \
+	if (!__cond) \
+		pr_warn("%s:%d: condition %s unexpectedly false\n", \
+			__func__, __LINE__, #cond); \
+	__cond; \
+})
+
+#define assert_inteq(a, b) assert_cond(a == b)
+
+#define assert_streq(a, b) ({ \
+	bool __cond = __assert_cond(strcmp(a, b) == 0); \
+	if (!__cond) \
+		pr_warn("%s:%d: %s and %s unexpectedly unequal\n", \
+			__func__, __LINE__, a, b); \
+	__cond; \
+})
+
 #endif

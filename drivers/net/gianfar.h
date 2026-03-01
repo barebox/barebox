@@ -14,8 +14,14 @@
 #define __GIANFAR_H
 
 #include <net.h>
+
+#ifdef CONFIG_PPC
 #include <asm/config.h>
+#endif
+
+#ifdef CONFIG_ARCH_MPC85XX
 #include <mach/gianfar.h>
+#endif
 
 #define MAC_ADDR_LEN 6
 
@@ -26,6 +32,10 @@
 #define GFAR_TBI_ANLPBPA	0x05
 #define GFAR_TBI_ANEX		0x06
 #define GFAR_TBI_TBICON		0x11
+
+#ifndef GFAR_TBIPA_OFFSET
+#define GFAR_TBIPA_OFFSET       0x030
+#endif
 
 /* TBI MDIO register bit fields*/
 #define GFAR_TBICON_CLK_SELECT		0x0020
@@ -64,7 +74,9 @@
 
 #define ECNTRL_INIT_SETTINGS		0x00001000
 #define GFAR_ECNTRL_TBI_MODE		0x00000020
+#define ECNTRL_REDUCED_MODE		0x00000010
 #define GFAR_ECNTRL_R100		0x00000008
+#define GFAR_ECNTRL_RMM			0x00000004
 #define GFAR_ECNTRL_SGMII_MODE		0x00000002
 
 #ifndef GFAR_TBIPA_VALUE
@@ -187,13 +199,13 @@
 struct txbd8 {
 	uint16_t     status;	     /* Status Fields */
 	uint16_t     length;	     /* Buffer length */
-	uint32_t     bufPtr;	     /* Buffer Pointer */
+	uint32_t     buf;	     /* Buffer Pointer */
 };
 
 struct rxbd8 {
 	uint16_t     status;	     /* Status Fields */
 	uint16_t     length;	     /* Buffer Length */
-	uint32_t     bufPtr;	     /* Buffer Pointer */
+	uint32_t     buf;	     /* Buffer Pointer */
 };
 
 /* eTSEC general control and status registers */
@@ -271,9 +283,11 @@ struct gfar_phy {
 #define BUF_ALIGN	8
 
 struct gfar_private {
+	struct device_d *dev;
 	struct eth_device edev;
 	void __iomem *regs;
 	int mdiobus_tbi;
+	phy_interface_t interface;
 	struct gfar_phy *gfar_mdio;
 	struct gfar_phy *gfar_tbi;
 	struct phy_info *phyinfo;
@@ -284,9 +298,23 @@ struct gfar_private {
 	uint phyaddr;
 	uint tbicr;
 	uint tbiana;
+	uint tbiaddr;
 	uint link;
 	uint duplexity;
 	uint speed;
 	void *rx_buffer[PKTBUFSRX];
 };
+
+#define TBIANA_SETTINGS ( \
+	GFAR_TBIANA_ASYMMETRIC_PAUSE \
+	| GFAR_TBIANA_SYMMETRIC_PAUSE \
+	| GFAR_TBIANA_FULL_DUPLEX \
+	)
+
+#define TSEC_TBICR_SETTINGS ( \
+	GFAR_TBICR_PHY_RESET \
+	| GFAR_TBICR_ANEG_ENABLE \
+	| GFAR_TBICR_FULL_DUPLEX \
+	| GFAR_TBICR_SPEED1_SET \
+	)
 #endif /* __GIANFAR_H */

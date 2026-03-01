@@ -8,15 +8,19 @@
  * based on work by Andy Fleming
  */
 
+#ifdef CONFIG_PPC
 #include <asm/config.h>
+#endif
 #include <common.h>
 #include <malloc.h>
 #include <net.h>
+#include <dma.h>
 #include <init.h>
 #include <driver.h>
 #include <command.h>
 #include <errno.h>
-#include <asm/io.h>
+#include <of_address.h>
+#include <linux/io.h>
 #include <linux/phy.h>
 #include <linux/err.h>
 #include "gianfar.h"
@@ -77,11 +81,11 @@ static void gfar_adjust_link(struct eth_device *edev)
 	u32 ecntrl, maccfg2;
 
 	priv->link = edev->phydev->link;
-	priv->duplexity =edev->phydev->duplex;
+	priv->duplexity = edev->phydev->duplex;
 
 	if (edev->phydev->speed == SPEED_1000)
 		priv->speed = 1000;
-	if (edev->phydev->speed == SPEED_100)
+	else if (edev->phydev->speed == SPEED_100)
 		priv->speed = 100;
 	else
 		priv->speed = 10;
@@ -121,11 +125,11 @@ static void gfar_adjust_link(struct eth_device *edev)
 		out_be32(regs + GFAR_ECNTRL_OFFSET, ecntrl);
 		out_be32(regs + GFAR_MACCFG2_OFFSET, maccfg2);
 
-		dev_info(&edev->dev, "Speed: %d, %s duplex\n", priv->speed,
-		       (priv->duplexity) ? "full" : "half");
+		dev_dbg(&edev->dev, "Speed: %d, %s duplex\n", priv->speed,
+				(priv->duplexity) ? "full" : "half");
 
 	} else {
-		dev_info(&edev->dev, "No link.\n");
+		dev_dbg(&edev->dev, "No link.\n");
 	}
 }
 
@@ -173,28 +177,44 @@ static int gfar_init(struct eth_device *edev)
 	return  0;
 }
 
+static int gfar_receive_packets_setup(struct gfar_private *priv, int ix)
+{
+	dma_addr_t dma;
+
+	dma = dma_map_single(priv->dev, priv->rx_buffer[ix], PKTSIZE,
+				DMA_FROM_DEVICE);
+	if (dma_mapping_error(priv->dev, dma))
+		return -EFAULT;
+
+	out_be32(&priv->rxbd[ix].buf, dma);
+
+	return 0;
+}
+
 static int gfar_open(struct eth_device *edev)
 {
-	int ix;
 	struct gfar_private *priv = edev->priv;
 	struct gfar_phy *phy = priv->gfar_mdio;
 	void __iomem *regs = priv->regs;
-	int ret;
+	int ix, ret;
 
-	ret = phy_device_connect(edev, &phy->miibus, priv->phyaddr,
-				 gfar_adjust_link, 0, PHY_INTERFACE_MODE_NA);
+	ret = phy_device_connect(edev, (phy ? &phy->miibus : NULL), priv->phyaddr,
+				 gfar_adjust_link, 0, priv->interface);
 	if (ret)
 		return ret;
 
 	/* Point to the buffer descriptors */
-	out_be32(regs + GFAR_TBASE0_OFFSET, (unsigned int)priv->txbd);
-	out_be32(regs + GFAR_RBASE0_OFFSET, (unsigned int)priv->rxbd);
+	out_be32(regs + GFAR_TBASE0_OFFSET, virt_to_phys(priv->txbd));
+	out_be32(regs + GFAR_RBASE0_OFFSET, virt_to_phys(priv->rxbd));
 
 	/* Initialize the Rx Buffer descriptors */
 	for (ix = 0; ix < RX_BUF_CNT; ix++) {
 		out_be16(&priv->rxbd[ix].status, RXBD_EMPTY);
 		out_be16(&priv->rxbd[ix].length, 0);
-		out_be32(&priv->rxbd[ix].bufPtr, (uint) priv->rx_buffer[ix]);
+		if (gfar_receive_packets_setup(priv, ix)) {
+			dev_err(&edev->dev, "RX packet dma mapping failed");
+			return -EIO;
+		}
 	}
 	out_be16(&priv->rxbd[RX_BUF_CNT - 1].status, RXBD_EMPTY | RXBD_WRAP);
 
@@ -202,7 +222,7 @@ static int gfar_open(struct eth_device *edev)
 	for (ix = 0; ix < TX_BUF_CNT; ix++) {
 		out_be16(&priv->txbd[ix].status, 0);
 		out_be16(&priv->txbd[ix].length, 0);
-		out_be32(&priv->txbd[ix].bufPtr, 0);
+		out_be32(&priv->txbd[ix].buf, 0);
 	}
 	out_be16(&priv->txbd[TX_BUF_CNT - 1].status, TXBD_WRAP);
 
@@ -324,26 +344,19 @@ static int gfar_bus_reset(struct mii_bus *bus)
 	return 0;
 }
 
-/* Reset the external PHYs. */
 static void gfar_init_phy(struct eth_device *dev)
 {
 	struct gfar_private *priv = dev->priv;
-	struct gfar_phy *phy = priv->gfar_mdio;
 	void __iomem *regs = priv->regs;
-	uint64_t start;
+	uint32_t ecntrl;
 
-	gfar_local_mdio_write(phy->regs, priv->phyaddr, GFAR_MIIM_CR,
-			GFAR_MIIM_CR_RST);
-
-	start = get_time_ns();
-	while (!is_timeout(start, 10 * MSECOND)) {
-		if (!(gfar_local_mdio_read(phy->regs, priv->phyaddr,
-					GFAR_MIIM_CR) & GFAR_MIIM_CR_RST))
-			break;
-	}
-
-	if (in_be32(regs + GFAR_ECNTRL_OFFSET) & GFAR_ECNTRL_SGMII_MODE)
+	ecntrl = in_be32(regs + GFAR_ECNTRL_OFFSET);
+	if (ecntrl & GFAR_ECNTRL_SGMII_MODE) {
+		priv->interface = PHY_INTERFACE_MODE_SGMII;
 		gfar_configure_serdes(priv);
+	} else if (ecntrl & ECNTRL_REDUCED_MODE) {
+		priv->interface = PHY_INTERFACE_MODE_RGMII;
+	}
 }
 
 static int gfar_send(struct eth_device *edev, void *packet, int length)
@@ -351,12 +364,19 @@ static int gfar_send(struct eth_device *edev, void *packet, int length)
 	struct gfar_private *priv = edev->priv;
 	void __iomem *regs = priv->regs;
 	struct device *dev = edev->parent;
+	dma_addr_t dma;
 	uint64_t start;
 	uint tidx;
 	uint16_t status;
 
 	tidx = priv->txidx;
-	out_be32(&priv->txbd[tidx].bufPtr, (u32) packet);
+
+	dma = dma_map_single(dev, packet, length, DMA_TO_DEVICE);
+	if (dma_mapping_error(priv->dev, dma)) {
+		dev_err(dev, "TX mapping packet failed");
+		return -EFAULT;
+	}
+	out_be32(&priv->txbd[tidx].buf, (u32)dma);
 	out_be16(&priv->txbd[tidx].length, length);
 	out_be16(&priv->txbd[tidx].status,
 		in_be16(&priv->txbd[tidx].status) |
@@ -368,10 +388,10 @@ static int gfar_send(struct eth_device *edev, void *packet, int length)
 	/* Wait for buffer to be transmitted */
 	start = get_time_ns();
 	while (in_be16(&priv->txbd[tidx].status) & TXBD_READY) {
-		if (is_timeout(start, 5 * MSECOND)) {
+		if (is_timeout(start, 5 * MSECOND))
 			break;
-		}
 	}
+	dma_unmap_single(dev, dma, length, DMA_TO_DEVICE);
 
 	status = in_be16(&priv->txbd[tidx].status);
 	if (status & TXBD_READY) {
@@ -401,10 +421,18 @@ static void gfar_recv(struct eth_device *edev)
 
 	/* Send the packet up if there were no errors */
 	status = in_be16(&priv->rxbd[priv->rxidx].status);
-	if (!(status & RXBD_STATS))
-		net_receive(edev, priv->rx_buffer[priv->rxidx], length - 4);
-	else
+	if (!(status & RXBD_STATS)) {
+		void *frame;
+
+		frame = phys_to_virt(in_be32(&priv->rxbd[priv->rxidx].buf));
+		dma_sync_single_for_cpu(dev, (unsigned long)frame, length,
+					DMA_FROM_DEVICE);
+		net_receive(edev, frame, length - 4);
+		dma_sync_single_for_device(dev, (unsigned long)frame, length,
+					   DMA_FROM_DEVICE);
+	} else {
 		dev_err(dev, "Got error %x\n", status & RXBD_STATS);
+	}
 
 	out_be16(&priv->rxbd[priv->rxidx].length, 0);
 
@@ -451,39 +479,117 @@ static int gfar_miiphy_write(struct mii_bus *bus, int addr, int reg,
 	return 0;
 }
 
-/*
- * Initialize device structure. Returns success if
- * initialization succeeded.
- */
-static int gfar_probe(struct device *dev)
+#ifdef CONFIG_OFDEVICE
+static int gfar_probe_dt(struct gfar_private *priv)
 {
-	struct gfar_info_struct *gfar_info = dev->platform_data;
-	struct eth_device *edev;
-	struct gfar_private *priv;
+	struct device *dev = priv->dev;
+	struct device_node *np;
+	uint32_t tbiaddr = 0x1f;
+
+	priv->dev = dev;
+	if (IS_ERR(priv->regs)) {
+		struct device_node *child;
+
+		child = of_get_next_child(dev->device_node, NULL);
+		for_each_child_of_node(dev->device_node, child) {
+			if (child->name && !strncmp(child->name, "queue-group",
+						strlen("queue-group"))) {
+				priv->regs = of_iomap(child, 0);
+				if (IS_ERR(priv->regs)) {
+					dev_err(dev, "Failed to acquire first group address\n");
+					return -ENOENT;
+				}
+				break;
+			}
+		}
+	}
+
+	priv->phyaddr = -1;
+	np = of_parse_phandle_from(dev->device_node, NULL, "phy-handle", 0);
+	if (np) {
+		uint32_t reg = 0;
+
+		if (!of_property_read_u32(np, "reg", &reg))
+			priv->phyaddr = reg;
+	} else {
+		dev_err(dev, "Could not get phy-handle address\n");
+		return -ENOENT;
+	}
+
+	priv->tbicr = TSEC_TBICR_SETTINGS;
+	priv->tbiana = TBIANA_SETTINGS;
+
+	/* Handle to tbi node */
+	np = of_parse_phandle_from(dev->device_node, NULL, "tbi-handle", 0);
+	if (np) {
+		struct device_node *parent;
+		struct gfar_phy *tbiphy;
+		struct device *bus_dev;
+		struct mii_bus *bus;
+
+		/* Get tbi address to be programmed in device */
+		if (of_property_read_u32(np, "reg", &tbiaddr)) {
+			dev_err(dev, "Failed to get tbi reg property\n");
+			return -ENOENT;
+		}
+		/* MDIO is the parent  */
+		parent = of_get_parent(np);
+		if (!parent)  {
+			dev_err(dev, "No parent node for TBI PHY?\n");
+			return -ENOENT;
+		}
+		tbiphy = xzalloc(sizeof(*tbiphy));
+		tbiphy->dev = parent->dev;
+		tbiphy->regs = NULL;
+
+		for_each_mii_bus(bus) {
+			if (bus->dev.of_node == parent) {
+				struct gfar_phy *phy;
+
+				bus_dev = bus->parent;
+				phy = bus_dev->priv;
+				tbiphy->regs = phy->regs;
+				break;
+			}
+		}
+		if (!tbiphy->regs) {
+			dev_err(dev, "Could not get TBI address\n");
+			free(tbiphy);
+			return PTR_ERR(tbiphy->regs);
+		}
+
+		tbiphy->miibus.read = gfar_miiphy_read;
+		tbiphy->miibus.write = gfar_miiphy_write;
+		tbiphy->miibus.priv = tbiphy;
+		tbiphy->miibus.parent = dev;
+		tbiphy->dev->priv = tbiphy;
+		priv->gfar_tbi = tbiphy;
+	}
+
+	priv->tbiaddr = tbiaddr;
+	out_be32(priv->regs + GFAR_TBIPA_OFFSET, priv->tbiaddr);
+
+	return 0;
+}
+
+static int gfar_probe_pd(struct gfar_private *priv)
+{
+	return -ENODEV;
+}
+#else
+static int gfar_probe_pd(struct gfar_private *priv)
+{
+	struct gfar_info_struct *gfar_info = priv->dev->platform_data;
 	struct device *mdev;
-	size_t size;
 	char devname[16];
-	char *p;
-	int ret;
-
-	priv = xzalloc(sizeof(struct gfar_private));
-
-	ret = net_alloc_packets(priv->rx_buffer, ARRAY_SIZE(priv->rx_buffer));
-	if (ret)
-		return ret;
-
-	edev = &priv->edev;
 
 	priv->mdiobus_tbi = gfar_info->mdiobus_tbi;
-	priv->regs = dev_get_mem_region(dev, 0);
-	if (IS_ERR(priv->regs))
-		return PTR_ERR(priv->regs);
 	priv->phyaddr = gfar_info->phyaddr;
 	priv->tbicr = gfar_info->tbicr;
 	priv->tbiana = gfar_info->tbiana;
 
 	mdev = get_device_by_name("gfar-mdio0");
-	if (mdev == NULL) {
+	if (!mdev) {
 		pr_err("gfar-mdio0 was not found\n");
 		return -ENODEV;
 	}
@@ -492,22 +598,71 @@ static int gfar_probe(struct device *dev)
 	if (priv->mdiobus_tbi != 0) {
 		sprintf(devname, "%s%d", "gfar-tbiphy", priv->mdiobus_tbi);
 		mdev = get_device_by_name(devname);
-		if (mdev == NULL) {
+		if (!mdev) {
 			pr_err("%s was not found\n", devname);
 			return -ENODEV;
 		}
 	}
 	priv->gfar_tbi = mdev->priv;
-	/*
-	 * Allocate descriptors 64-bit aligned. Descriptors
-	 * are 8 bytes in size.
-	 */
+
+	return 0;
+}
+
+static int gfar_probe_dt(struct gfar_private *priv)
+{
+	return -ENODEV;
+}
+#endif
+
+/*
+ * PPC only as there is no device tree support.
+ * Initialize device structure. Returns success if
+ * initialization succeeded.
+ */
+static int gfar_probe(struct device *dev)
+{
+	struct gfar_private *priv;
+	struct eth_device *edev;
+	size_t size;
+	void *base;
+	int ret;
+
+	priv = xzalloc(sizeof(struct gfar_private));
+
+	ret = net_alloc_packets(priv->rx_buffer, ARRAY_SIZE(priv->rx_buffer));
+	if (ret)
+		goto free_priv;
+
+	priv->dev = dev;
+	edev = &priv->edev;
+
+	priv->regs = dev_get_mem_region(dev, 0);
+	if (IS_ERR(priv->regs)) {
+		ret = PTR_ERR(priv->regs);
+		goto free_received_packets;
+	}
+
+	if (dev->of_node) {
+		ret = gfar_probe_dt(priv);
+		if (ret)
+			goto free_received_packets;
+	} else {
+		ret = gfar_probe_pd(priv);
+		if (ret)
+			goto free_received_packets;
+	}
+
 	size = ((TX_BUF_CNT * sizeof(struct txbd8)) +
-		(RX_BUF_CNT * sizeof(struct rxbd8))) + BUF_ALIGN;
-	p = (char *)xmemalign(BUF_ALIGN, size);
-	priv->txbd = (struct txbd8 __iomem *)p;
-	priv->rxbd = (struct rxbd8 __iomem *)(p +
-			(TX_BUF_CNT * sizeof(struct txbd8)));
+			(RX_BUF_CNT * sizeof(struct rxbd8)));
+	if (IS_ENABLED(CONFIG_PPC)) {
+		base = xmemalign(BUF_ALIGN, size);
+	} else {
+		base = dma_alloc_coherent(DMA_DEVICE_BROKEN, size, DMA_ADDRESS_BROKEN);
+		dma_set_mask(dev, DMA_BIT_MASK(32));
+	}
+	priv->txbd = (struct txbd8 __iomem *)base;
+	base += TX_BUF_CNT * sizeof(struct txbd8);
+	priv->rxbd = (struct rxbd8 __iomem *)base;
 
 	edev->priv = priv;
 	edev->init = gfar_init;
@@ -526,19 +681,39 @@ static int gfar_probe(struct device *dev)
 	gfar_init_phy(edev);
 
 	return eth_register(edev);
+
+free_received_packets:
+	free(priv->rx_buffer);
+free_priv:
+	free(priv);
+
+	return ret;
 }
+
+static const struct of_device_id gfar_ids[] = {
+	{ .compatible = "fsl,etsec2" },
+	{ /* sentinel */ }
+};
 
 static struct driver gfar_eth_driver = {
 	.name  = "gfar",
+	.of_compatible = DRV_OF_COMPAT(gfar_ids),
 	.probe = gfar_probe,
 };
 device_platform_driver(gfar_eth_driver);
 
+static __maybe_unused const struct of_device_id gfar_mdio_ids[] = {
+	{ .compatible = "gianfar" },
+	{ /* sentinel */ }
+};
+
 static int gfar_phy_probe(struct device *dev)
 {
 	struct gfar_phy *phy;
+	struct fsl_pq_mdio_data *data;
 	int ret;
 
+	data = (struct fsl_pq_mdio_data *)device_get_match_data(dev);
 	phy = xzalloc(sizeof(*phy));
 	phy->dev = dev;
 	phy->regs = dev_get_mem_region(dev, 0);
@@ -561,10 +736,12 @@ static int gfar_phy_probe(struct device *dev)
 
 static struct driver gfar_phy_driver = {
 	.name  = "gfar-mdio",
+	.of_compatible = DRV_OF_COMPAT(gfar_mdio_ids),
 	.probe = gfar_phy_probe,
 };
 register_driver_macro(coredevice, platform, gfar_phy_driver);
 
+#ifndef CONFIG_OFDEVICE
 static int gfar_tbiphy_probe(struct device *dev)
 {
 	struct gfar_phy *phy;
@@ -594,3 +771,4 @@ static struct driver gfar_tbiphy_driver = {
 	.probe = gfar_tbiphy_probe,
 };
 register_driver_macro(coredevice, platform, gfar_tbiphy_driver);
+#endif

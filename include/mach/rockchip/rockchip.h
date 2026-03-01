@@ -23,6 +23,15 @@ static inline int rk3288_init(void)
 }
 #endif
 
+#ifdef CONFIG_ARCH_RK3562
+int rk3562_init(void);
+#else
+static inline int rk3562_init(void)
+{
+	return -ENOTSUPP;
+}
+#endif
+
 #ifdef CONFIG_ARCH_RK3568
 int rk3568_init(void);
 #define PMU_GRF		0xfdc20000
@@ -53,6 +62,7 @@ static inline int rk3588_init(void)
 }
 #endif
 
+void rk3562_lowlevel_init(void);
 void rk3568_lowlevel_init(void);
 void rk3576_lowlevel_init(void);
 void rk3588_lowlevel_init(void);

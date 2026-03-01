@@ -436,7 +436,7 @@ void rockchip_clk_register_branches(struct rockchip_clk_provider *ctx,
 				list->mux_shift, list->mux_width,
 				list->mux_flags, &ctx->lock);
 			break;
-		case branch_muxgrf:
+		case branch_grf_mux:
 			clk = rockchip_clk_register_muxgrf(list->name,
 				list->parent_names, list->num_parents,
 				flags, ctx->grfmap[list->grf_type],

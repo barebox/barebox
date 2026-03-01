@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2020-2021 Rockchip Electronics Co. Ltd.
+ * Copyright (c) 2020-2024 Rockchip Electronics Co., Ltd.
  *
  * Copyright (c) 2013 MundoReader S.L.
  * Author: Heiko Stuebner <heiko@sntech.de>
@@ -17,6 +17,8 @@
 
 #ifndef _PINCTRL_ROCKCHIP_H
 #define _PINCTRL_ROCKCHIP_H
+
+#include <linux/types.h>
 
 #define RK_GPIO0_A0	0
 #define RK_GPIO0_A1	1
@@ -193,47 +195,15 @@ enum rockchip_pinctrl_type {
 	RK3188,
 	RK3288,
 	RK3308,
+	RK3328,
 	RK3368,
 	RK3399,
+	RK3506,
+	RK3528,
+	RK3562,
 	RK3568,
 	RK3576,
 	RK3588,
-};
-
-/**
- * struct rockchip_gpio_regs
- * @port_dr: data register
- * @port_ddr: data direction register
- * @int_en: interrupt enable
- * @int_mask: interrupt mask
- * @int_type: interrupt trigger type, such as high, low, edge trriger type.
- * @int_polarity: interrupt polarity enable register
- * @int_bothedge: interrupt bothedge enable register
- * @int_status: interrupt status register
- * @int_rawstatus: int_status = int_rawstatus & int_mask
- * @debounce: enable debounce for interrupt signal
- * @dbclk_div_en: enable divider for debounce clock
- * @dbclk_div_con: setting for divider of debounce clock
- * @port_eoi: end of interrupt of the port
- * @ext_port: port data from external
- * @version_id: controller version register
- */
-struct rockchip_gpio_regs {
-	u32 port_dr;
-	u32 port_ddr;
-	u32 int_en;
-	u32 int_mask;
-	u32 int_type;
-	u32 int_polarity;
-	u32 int_bothedge;
-	u32 int_status;
-	u32 int_rawstatus;
-	u32 debounce;
-	u32 dbclk_div_en;
-	u32 dbclk_div_con;
-	u32 port_eoi;
-	u32 ext_port;
-	u32 version_id;
 };
 
 /**
@@ -257,6 +227,8 @@ enum rockchip_pin_drv_type {
 	DRV_TYPE_IO_1V8_ONLY,
 	DRV_TYPE_IO_1V8_3V0_AUTO,
 	DRV_TYPE_IO_3V3_ONLY,
+	DRV_TYPE_IO_LEVEL_2_BIT,
+	DRV_TYPE_IO_LEVEL_8_BIT,
 	DRV_TYPE_MAX
 };
 
@@ -301,15 +273,10 @@ struct rockchip_drv {
  * @valid: is all necessary information present
  * @of_node: dt node of this bank
  * @drvdata: common pinctrl basedata
- * @domain: irqdomain of the gpio bank
- * @gpio_chip: gpiolib chip
- * @grange: gpio range
- * @slock: spinlock for the gpio bank
  * @toggle_edge_mode: bit mask to toggle (falling/rising) edge mode
  * @recalced_mask: bit mask to indicate a need to recalulate the mask
  * @route_mask: bits describing the routing pins of per bank
  * @deferred_output: gpio output settings to be done after gpio bank probed
- * @deferred_lock: mutex for the deferred_output shared btw gpio and pinctrl
  */
 struct rockchip_pin_bank {
 	struct device			*dev;
@@ -445,6 +412,7 @@ struct rockchip_pinctrl {
 	int				reg_size;
 	struct regmap			*regmap_pull;
 	struct regmap			*regmap_pmu;
+	struct regmap			*regmap_ioc1;
 	struct device			*dev;
 	struct rockchip_pin_ctrl	*ctrl;
 	struct pinctrl_device		pctl_dev;

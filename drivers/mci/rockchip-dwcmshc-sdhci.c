@@ -353,6 +353,9 @@ static int rk_sdhci_probe(struct device *dev)
 
 static __maybe_unused struct of_device_id rk_sdhci_compatible[] = {
 	{
+		.compatible = "rockchip,rk3562-dwcmshc"
+	},
+	{
 		.compatible = "rockchip,rk3568-dwcmshc"
 	}, {
 		.compatible = "rockchip,rk3588-dwcmshc"

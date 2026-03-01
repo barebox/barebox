@@ -194,6 +194,10 @@ static const struct of_device_id rk_rng_dt_match[] = {
 		.data = &rk_rng_v1_soc_data,
 	},
 	{
+		.compatible = "rockchip,rk3562-rng",
+		.data = &rk_rng_v2_soc_data,
+	},
+	{
 		.compatible = "rockchip,rk3568-rng",
 		.data = &rk_rng_v2_soc_data,
 	},

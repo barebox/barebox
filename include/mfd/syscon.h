@@ -25,6 +25,8 @@ struct regmap *syscon_regmap_lookup_by_compatible(const char *s);
 extern struct regmap *syscon_regmap_lookup_by_phandle(
 					struct device_node *np,
 					const char *property);
+struct regmap *syscon_regmap_lookup_by_phandle_optional(struct device_node *np,
+							const char *property);
 #else
 static inline void __iomem *syscon_base_lookup_by_phandle
 	(struct device_node *np, const char *property)
@@ -49,6 +51,12 @@ static inline struct regmap *syscon_regmap_lookup_by_phandle(
 					const char *property)
 {
 	return ERR_PTR(-ENOSYS);
+}
+static inline struct regmap *syscon_regmap_lookup_by_phandle_optional(
+					struct device_node *np,
+					const char *property)
+{
+	return NULL;
 }
 #endif
 

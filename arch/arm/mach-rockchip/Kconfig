@@ -27,6 +27,10 @@ config ARCH_ROCKCHIP_V8
 	select CPU_V8
 	select ARM_ATF
 
+config ARCH_RK3562
+	bool
+	select ARCH_ROCKCHIP_V8
+
 config ARCH_RK3568
 	bool
 	select ARCH_ROCKCHIP_V8
@@ -59,6 +63,18 @@ config MACH_PHYTEC_SOM_RK3288
 endif
 
 if 64BIT
+
+config MACH_RK3562_EVB2
+	select ARCH_RK3562
+	bool "RK3562 EVB2"
+	help
+	  Say Y here if you are using a RK3562 EVB2
+
+config MACH_RK3562_KICKPI_K3
+	select ARCH_RK3562
+	bool "RK3562 KICKPI K3"
+	help
+	  Say Y here if you are using a RK3562 KICKPI K3
 
 config MACH_RK3568_EVB
 	select ARCH_RK3568

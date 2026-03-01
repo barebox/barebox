@@ -96,6 +96,9 @@ static int regulator_disable_rdev(struct regulator_dev *rdev)
 
 	rdev->enable_count--;
 
+	if (rdev->off_on_delay)
+		udelay(rdev->off_on_delay);
+
 	return regulator_disable(rdev->supply);
 }
 
@@ -294,6 +297,7 @@ int of_regulator_register(struct regulator_dev *rdev, struct device_node *node)
 {
 	const char *name;
 	int ret;
+	u32 val = 0;
 
 	if (!rdev || !node)
 		return -EINVAL;
@@ -309,13 +313,18 @@ int of_regulator_register(struct regulator_dev *rdev, struct device_node *node)
 	node->dev = rdev->dev;
 
 	if (rdev->desc->off_on_delay)
-		rdev->enable_time_us = rdev->desc->off_on_delay;
+		rdev->off_on_delay = rdev->desc->off_on_delay;
+	if (rdev->desc->enable_time_us)
+		rdev->enable_time_us = rdev->desc->enable_time_us;
 
 	if (rdev->desc->fixed_uV && rdev->desc->n_voltages == 1)
 		rdev->min_uv = rdev->max_uv = rdev->desc->fixed_uV;
 
-	of_property_read_u32(node, "regulator-enable-ramp-delay",
-			&rdev->enable_time_us);
+	/* might be set by the regulator implementation already. Use the bigger value */
+	of_property_read_u32(node, "regulator-enable-ramp-delay", &val);
+	if (val > rdev->enable_time_us)
+		rdev->enable_time_us = val;
+
 	of_property_read_u32(node, "regulator-min-microvolt",
 			&rdev->min_uv);
 	of_property_read_u32(node, "regulator-max-microvolt",

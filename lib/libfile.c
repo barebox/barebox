@@ -124,25 +124,59 @@ int read_full(int fd, void *buf, size_t size)
 }
 EXPORT_SYMBOL(read_full);
 
-int copy_fd(int in, int out)
+/*
+ * copy_fd - copy one file descriptor to another
+ * @in: input file descriptor
+ * @out: output file descriptor
+ * @size: size to copy
+ *
+ * This copies at @size bytes from @in file descriptor to @out
+ * file descriptor. If @size is zero then all data is copied until
+ * EOF is reached.
+ *
+ * @return: 0 for success and negatibe error code otherwise. If @size
+ * is non zero and not all data could be read from @in then -ENODATA
+ * is returned.
+ */
+int copy_fd(int in, int out, size_t size)
 {
-	int bs = 4096, ret;
+	size_t copied = 0, bs = 4096;
 	void *buf = malloc(bs);
+	int ret;
 
 	if (!buf)
 		return -ENOMEM;
 
 	while (1) {
-		ret = read(in, buf, bs);
+		size_t now;
+
+		if (size)
+			now = min(bs, size - copied);
+		else
+			now = bs;
+
+		if (!now) {
+			ret = 0;
+			break;
+		}
+
+		ret = read(in, buf, now);
 		if (ret <= 0)
 			break;
+
+		now = ret;
 
 		ret = write_full(out, buf, ret);
 		if (ret < 0)
 			break;
+
+		copied += now;
 	}
 
-        free(buf);
+	free(buf);
+
+	if (size && copied < size)
+		ret = -ENODATA;
 
 	return ret;
 }

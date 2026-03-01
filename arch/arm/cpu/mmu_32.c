@@ -302,7 +302,7 @@ static uint32_t get_pte_flags(maptype_t map_type)
 {
 	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
 		switch (map_type & MAP_TYPE_MASK) {
-		case ARCH_MAP_CACHED_RWX:
+		case MAP_CACHED_RWX:
 			return PTE_FLAGS_CACHED_V7_RWX;
 		case MAP_CACHED_RO:
 			return PTE_FLAGS_CACHED_RO_V7;
@@ -323,7 +323,7 @@ static uint32_t get_pte_flags(maptype_t map_type)
 		case MAP_CACHED_RO:
 		case MAP_CODE:
 			return PTE_FLAGS_CACHED_RO_V4;
-		case ARCH_MAP_CACHED_RWX:
+		case MAP_CACHED_RWX:
 		case MAP_CACHED:
 			return PTE_FLAGS_CACHED_V4;
 		case MAP_UNCACHED:
@@ -344,7 +344,6 @@ static uint32_t get_pmd_flags(maptype_t map_type)
 static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size,
 			       maptype_t map_type)
 {
-	bool force_pages = map_type & ARCH_MAP_FLAG_PAGEWISE;
 	bool mmu_on;
 	u32 virt_addr = (u32)_virt_addr;
 	u32 pte_flags, pmd_flags;
@@ -372,7 +371,7 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 
 		if (size >= PGDIR_SIZE && pgdir_size_aligned &&
 		    IS_ALIGNED(phys_addr, PGDIR_SIZE) &&
-		    !pgd_type_table(*pgd) && !force_pages) {
+		    !pgd_type_table(*pgd)) {
 			/*
 			 * TODO: Add code to discard a page table and
 			 * replace it with a section
@@ -607,10 +606,10 @@ void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned long barebox_start)
+void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
 	uint32_t *ttb = (uint32_t *)arm_mem_ttb(membase + memsize);
-	unsigned long barebox_size, optee_start;
+	unsigned long optee_start;
 
 	pr_debug("enabling MMU, ttb @ 0x%p\n", ttb);
 
@@ -627,29 +626,16 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 */
 	early_create_flat_mapping();
 
-	/* maps main memory as cachable */
 	optee_start = membase + memsize - OPTEE_SIZE;
-	barebox_size = optee_start - barebox_start;
 
 	/*
 	 * map the bulk of the memory as sections to avoid allocating too many page tables
 	 * at this early stage
 	 */
-	early_remap_range(membase, barebox_start - membase, ARCH_MAP_CACHED_RWX);
-	/*
-	 * Map the remainder of the memory explicitly with two level page tables. This is
-	 * the place where barebox proper ends at. In barebox proper we'll remap the code
-	 * segments readonly/executable and the ro segments readonly/execute never. For this
-	 * we need the memory being mapped pagewise. We can't do the split up from section
-	 * wise mapping to pagewise mapping later because that would require us to do
-	 * a break-before-make sequence which we can't do when barebox proper is running
-	 * at the location being remapped.
-	 */
-	early_remap_range(barebox_start, barebox_size,
-			  ARCH_MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
+	early_remap_range(membase, memsize - OPTEE_SIZE, MAP_CACHED_RWX);
 	early_remap_range(optee_start, OPTEE_SIZE, MAP_UNCACHED);
 	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext),
-			  ARCH_MAP_CACHED_RWX);
+			  MAP_CACHED_RWX);
 
 	__mmu_cache_on();
 }

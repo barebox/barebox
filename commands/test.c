@@ -10,6 +10,7 @@
 #include <common.h>
 #include <command.h>
 #include <fnmatch.h>
+#include <environment.h>
 #include <fs.h>
 #include <linux/stat.h>
 
@@ -34,6 +35,7 @@ typedef enum {
 	OPT_CHAR,
 	OPT_SYMBOLIC_LINK,
 	OPT_NONZERO_SIZE,
+	OPT_VAR_EXISTS,
 	OPT_MAX,
 } test_opts;
 
@@ -58,6 +60,7 @@ static char *test_options[] = {
 	[OPT_CHAR]			= "-c",
 	[OPT_SYMBOLIC_LINK]		= "-L",
 	[OPT_NONZERO_SIZE]		= "-s",
+	[OPT_VAR_EXISTS]		= "-v",
 };
 
 static int parse_opt(const char *opt)
@@ -197,6 +200,13 @@ static int do_test(int argc, char *argv[])
 			expr = (opt == OPT_ZERO) ? zero : !zero;
 			break;
 
+		case OPT_VAR_EXISTS:
+			adv = 2;
+			if (left < 2)
+				break;
+			expr = getenv(ap[1]) != NULL;
+			break;
+
 		case OPT_FILE:
 		case OPT_DIRECTORY:
 		case OPT_EXISTS:
@@ -302,7 +312,7 @@ static const char * const test_aliases[] = { "[", "[[", NULL};
 BAREBOX_CMD_HELP_START(test)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_TEXT("\t!, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e,")
-BAREBOX_CMD_HELP_TEXT("\t-s, -f, -L; see 'man test' on your PC for more information.")
+BAREBOX_CMD_HELP_TEXT("\t-s, -f, -L, -v; see 'man test' on your PC for more information.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(test)

@@ -63,6 +63,7 @@ struct regulator_bulk_data {
  * @volt_table: Voltage mapping table (if table based mapping)
  * @fixed_uV: Fixed voltage of rails.
  * @off_on_delay: guard time (in uS), before re-enabling a regulator
+ * @enable_time_us: Time taken for initial enable of regulator (in uS).
  */
 
 struct regulator_desc {
@@ -93,6 +94,7 @@ struct regulator_desc {
 	const unsigned int *volt_table;
 	int fixed_uV;
 	unsigned int off_on_delay;
+	unsigned int enable_time_us;
 };
 
 /**
@@ -123,6 +125,7 @@ struct regulator_dev {
 	struct device_node *node;
 	int enable_count;
 	int enable_time_us;
+	unsigned int off_on_delay;
 	int min_uv;
 	int max_uv;
 	struct list_head consumer_list;

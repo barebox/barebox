@@ -27,6 +27,7 @@ config ARCH_SOCFPGA_ARRIA10
 	select RESET_CONTROLLER
 	select OFDEVICE
 	select OFTREE
+	select MCI_DW_PBL
 
 comment "Cyclone5 boards"
 

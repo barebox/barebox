@@ -2153,7 +2153,9 @@ int of_device_is_available(const struct device_node *device)
 	const char *status;
 	int statlen;
 
-	status = of_get_property(device, "status", &statlen);
+	status = of_get_property(device, "barebox,status", &statlen);
+	if (status == NULL)
+		status = of_get_property(device, "status", &statlen);
 	if (status == NULL)
 		return 1;
 

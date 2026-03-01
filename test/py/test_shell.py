@@ -18,6 +18,38 @@ def test_barebox_false(barebox, barebox_config):
     assert returncode == 1
 
 
+def test_barebox_echo_cat(barebox, barebox_config):
+    skip_disabled(barebox_config, "CONFIG_CMD_ECHO", "CONFIG_CMD_CAT")
+
+    barebox.run_check('rm -f stanza*')
+
+    barebox.run_check('echo -o stanza-1 meow')
+    barebox.run_check('echo -o stanza-1 mau')
+    barebox.run_check('echo -o stanza-2 meow')
+    barebox.run_check('echo -a stanza-2 meow')
+    barebox.run_check('cat  -o stanza-3 /dev/null')
+    barebox.run_check('echo -a stanza-3 mau')
+    barebox.run_check('echo -a stanza-3 ma')
+
+    expected = ["mau", "meow", "meow", "mau", "ma"]
+
+    stdout = barebox.run_check('ls -l stanza-*')
+
+    assert len(stdout) == 3
+
+    assert barebox.run_check('cat stanza-*') == expected
+
+    barebox.run_check('rm -f stanza')
+
+    stdout = barebox.run_check('cat -o stanza stanza-*')
+    assert stdout == []
+    assert barebox.run_check('cat stanza') == expected
+
+    stdout = barebox.run_check('cat -a stanza stanza-*')
+    assert stdout == []
+    assert barebox.run_check('cat stanza') == expected + expected
+
+
 def test_barebox_md5sum(barebox, barebox_config):
     skip_disabled(barebox_config, "CONFIG_CMD_MD5SUM", "CONFIG_CMD_ECHO")
 
@@ -80,3 +112,46 @@ def test_cmd_clk(barebox, barebox_config):
     assert regions >= 0
 
     assert count_dicts_in_command_output(barebox, 'clk_dump -vj') == regions
+
+
+def test_barebox_test_var_exists(barebox, barebox_config):
+    skip_disabled(barebox_config, "CONFIG_CMD_TEST", "CONFIG_CMD_ECHO")
+
+    # Create a file with variable definitions
+    barebox.run_check('echo -o /tmp/testvars "TEST_VAR=value"')
+    barebox.run_check('echo -a /tmp/testvars "EMPTY_VAR="')
+
+    # Test with unset variable - should fail
+    _, _, returncode = barebox.run('test -v NONEXISTENT_VAR')
+    assert returncode == 1
+
+    _, _, returncode = barebox.run('[[ -v NONEXISTENT_VAR ]]')
+    assert returncode == 1
+
+    # Test with set variable - should succeed
+    _, _, returncode = barebox.run('. /tmp/testvars; test -v TEST_VAR')
+    assert returncode == 0
+
+    _, _, returncode = barebox.run('. /tmp/testvars; [[ -v TEST_VAR ]]')
+    assert returncode == 0
+
+    # Test with empty but set variable - should succeed
+    _, _, returncode = barebox.run('. /tmp/testvars; test -v EMPTY_VAR')
+    assert returncode == 0
+
+    _, _, returncode = barebox.run('. /tmp/testvars; [[ -v EMPTY_VAR ]]')
+    assert returncode == 0
+
+    # Test negation with !
+    _, _, returncode = barebox.run('test ! -v NONEXISTENT_VAR')
+    assert returncode == 0
+
+    _, _, returncode = barebox.run('. /tmp/testvars; test ! -v TEST_VAR')
+    assert returncode == 1
+
+    # Test in conditional context
+    barebox.run_check('. /tmp/testvars; [[ -v TEST_VAR ]] && echo ok')
+    barebox.run_check('[[ ! -v NONEXISTENT_VAR ]] && echo ok')
+
+    # Clean up
+    barebox.run_check('rm /tmp/testvars')

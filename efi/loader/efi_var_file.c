@@ -59,7 +59,7 @@ efi_status_t efi_var_to_file(void)
 	dirfd = efiloader_esp_mount_dir();
 	if (dirfd < 0) {
 		if (!once) {
-			pr_warn("Cannot persist EFI variables without system partition\n");
+			pr_notice("Cannot persist EFI variables without system partition\n");
 			once = true;
 		}
 		efiret = EFI_NO_MEDIA;

@@ -10,6 +10,7 @@
 #define MAP_FAULT		2
 #define MAP_CODE		3
 #define MAP_CACHED_RO		4
+#define MAP_CACHED_RWX		6
 
 #ifdef CONFIG_ARCH_HAS_DMA_WRITE_COMBINE
 #define MAP_WRITECOMBINE	5

@@ -83,14 +83,6 @@
 	};
 };
 
-&usbh_ehci {
-	status = "disabled";
-};
-
-&usbh_ohci {
-	status = "okay";
-};
-
 &baseboard_eeprom {
 	partitions {
 		compatible = "fixed-partitions";

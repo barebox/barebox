@@ -11,6 +11,7 @@
 #include <linux/nvmem-provider.h>
 #include <linux/arm-smccc.h>
 #include <linux/bitmap.h>
+#include <regulator.h>
 
 /*
  * These SIP calls are currently only supported in the TI downstream
@@ -27,6 +28,7 @@ struct ti_k3_otp_driver_data {
 
 struct ti_k3_otp {
 	struct device *dev;
+	struct regulator *regulator_fuse;
 	uint32_t *map;
 	const struct ti_k3_otp_driver_data *data;
 };
@@ -132,20 +134,29 @@ static int ti_k3_otp_write(void *ctx, unsigned int offset, unsigned int val)
 	unsigned int bank = 0;
 	unsigned int word = offset >> 2;
 	unsigned int mask = val;
+	int ret;
+
+	ret = regulator_enable(priv->regulator_fuse);
+	if (ret) {
+		dev_err(priv->dev, "Cannot enable regulator: %pe\n", ERR_PTR(ret));
+		return ret;
+	}
 
 	if (word == 0 && priv->data->skip_init) {
 		unsigned int skip_mask = GENMASK(priv->data->skip_init, 0);
 		if (val & skip_mask) {
 			dev_err(priv->dev, "Lower %d bits of word 0 cannot be written\n",
 				priv->data->skip_init);
-			return -EINVAL;
+			ret = -EINVAL;
+			goto err;
 		}
 	}
 
 	if (val & GENMASK(31, priv->data->bits_per_row)) {
 		dev_err(priv->dev, "Each row only has %d bits",
 			priv->data->bits_per_row);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto err;
 	}
 
 	arm_smccc_smc(K3_SIP_OTP_WRITE, bank, word,
@@ -154,10 +165,14 @@ static int ti_k3_otp_write(void *ctx, unsigned int offset, unsigned int val)
 	if (res.a0 != 0) {
 		dev_err(priv->dev, "Writing fuse 0x%08x failed with: %lu\n",
 			offset, res.a0);
-		return -EIO;
+		ret = -EIO;
+		goto err;
 	}
 
-	return 0;
+	ret = 0;
+err:
+	regulator_disable(priv->regulator_fuse);
+	return ret;
 }
 
 static struct regmap_bus ti_k3_otp_regmap_bus = {
@@ -176,6 +191,10 @@ static int ti_k3_otp_probe(struct device *dev)
 	priv->data = device_get_match_data(dev);
 	priv->dev = dev;
 	priv->map = xzalloc(sizeof(uint32_t) * priv->data->nrows);
+
+	priv->regulator_fuse = regulator_get(dev, "fuse");
+	if (IS_ERR(priv->regulator_fuse))
+		return PTR_ERR(priv->regulator_fuse);
 
 	config.name = "k3-otp";
 	config.reg_bits = 32;

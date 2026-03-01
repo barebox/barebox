@@ -2,8 +2,8 @@
 #define __TOOLS_LINUX_LIST_H
 
 #include <linux/types.h>
-#include <linux/kernel.h>
 #include <linux/compiler.h>
+#include <linux/container_of.h>
 
 /*
  * Simple doubly linked list implementation.

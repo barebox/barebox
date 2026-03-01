@@ -161,7 +161,7 @@ static unsigned long get_pte_attrs(maptype_t map_type)
 		return CACHED_MEM | PTE_BLOCK_RO;
 	case MAP_CACHED_RO:
 		return attrs_xn() | CACHED_MEM | PTE_BLOCK_RO;
-	case ARCH_MAP_CACHED_RWX:
+	case MAP_CACHED_RWX:
 		return CACHED_MEM;
 	default:
 		return ~0UL;
@@ -195,7 +195,6 @@ static void split_block(uint64_t *pte, int level, bool bbm)
 static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 			      maptype_t map_type, bool bbm)
 {
-	bool force_pages = map_type & ARCH_MAP_FLAG_PAGEWISE;
 	unsigned long attr = get_pte_attrs(map_type);
 	uint64_t *ttb = get_ttb();
 	uint64_t block_size;
@@ -237,7 +236,7 @@ static int __arch_remap_range(uint64_t virt, uint64_t phys, uint64_t size,
 				        IS_ALIGNED(addr, block_size) &&
 				        IS_ALIGNED(phys, block_size);
 
-			if ((force_pages && level == 3) || (!force_pages && block_aligned)) {
+			if (block_aligned) {
 				type = (level == 3) ?
 					PTE_TYPE_PAGE : PTE_TYPE_BLOCK;
 
@@ -379,11 +378,10 @@ static void early_init_range(size_t total_level0_tables)
 	}
 }
 
-void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned long barebox_start)
+void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
 	int el;
 	u64 optee_membase;
-	unsigned long barebox_size;
 	unsigned long ttb = arm_mem_ttb(membase + memsize);
 
 	if (get_cr() & CR_M)
@@ -404,20 +402,10 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	 */
 	early_init_range(2);
 
-	early_remap_range(membase, memsize, ARCH_MAP_CACHED_RWX);
+	early_remap_range(membase, memsize, MAP_CACHED_RWX);
 
 	/* Default location for OP-TEE: end of DRAM, leave OPTEE_SIZE space for it */
 	optee_membase = membase + memsize - OPTEE_SIZE;
-
-	barebox_size = optee_membase - barebox_start;
-
-	/*
-	 * map barebox area using pagewise mapping. We want to modify the XN/RO
-	 * attributes later, but can't switch from sections to pages later when
-	 * executing code from it
-	 */
-	early_remap_range(barebox_start, barebox_size,
-		     ARCH_MAP_CACHED_RWX | ARCH_MAP_FLAG_PAGEWISE);
 
 	/* OP-TEE might be at location specified in OP-TEE header */
 	optee_get_membase(&optee_membase);
@@ -425,7 +413,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize, unsigned lon
 	early_remap_range(optee_membase, OPTEE_SIZE, MAP_FAULT);
 
 	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext),
-			  ARCH_MAP_CACHED_RWX);
+			  MAP_CACHED_RWX);
 
 	mmu_enable();
 }

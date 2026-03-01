@@ -15,10 +15,6 @@
 #define ARCH_HAS_REMAP
 #define MAP_ARCH_DEFAULT MAP_CACHED
 
-/* Architecture-specific memory type flags */
-#define ARCH_MAP_CACHED_RWX		MAP_ARCH(2)	/* Cached, RWX (early boot) */
-#define ARCH_MAP_FLAG_PAGEWISE		(1 << 16)	/* Force page-wise mapping */
-
 /*
  * Remap a virtual address range with specified memory type (barebox proper).
  * Used by the generic remap infrastructure after barebox is fully relocated.

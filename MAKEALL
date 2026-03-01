@@ -60,6 +60,8 @@ usage() {
 	echo "TARGET      -t      Makefile target"
 	echo "V           -v      verbosity"
 	echo "INCREMENTAL -i"
+	echo "     	  -d	  (iterative development mode)"
+	echo "        	  -D	  (extended iterative development mode)"
 	echo ""
 }
 
@@ -131,7 +133,7 @@ do_build_defconfig() {
 	local log_err="${logdir}/${defconfig}/errors.log"
 	local err=0
 
-	[ "$INCREMENTAL" != "1" ] && rm -rf "${BUILDDIR}"
+	[ "$INCREMENTAL" != "1" ] && find "${BUILDDIR}" -mindepth 1 -delete
 	[ -n "$logdir" ] && mkdir -p "${logdir}/${defconfig}"
 
 	MAKE="make -j${JOBS} ARCH=${arch} O=${BUILDDIR}"
@@ -189,6 +191,9 @@ do_build_defconfig() {
 		report "Compile: " ${defconfig}
 
 		if [ "$compile_result" = "0" ]; then
+			if [ "$DEVEL" = "1" ]; then
+				${MAKE} $silent_flag compile_commands.json
+			fi
 			report "OK     \n"
 		else
 			report "FAILED \n"
@@ -288,7 +293,7 @@ do_build_all() {
 	return $nbuilds
 }
 
-while getopts "hc:j:O:l:a:e:k:t:v:i" Option
+while getopts "hc:j:O:l:a:e:k:t:v:idD" Option
 do
 case $Option in
 	a )
@@ -320,6 +325,16 @@ case $Option in
 		;;
 	i )
 		INCREMENTAL=1
+		;;
+	d | D)
+		DEVEL=1
+		INCREMENTAL=1
+		KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/devel.config"
+		BUILDDIR="build"
+		if [ "$Option" = D ]; then
+			KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/sanitizers.config"
+			export NO_MISSING_FIRMWARE_WARNING=1
+		fi
 		;;
 	h )
 		usage
@@ -369,6 +384,15 @@ then
 	mkdir "${logdir}" || exit 1
 fi
 
+# Take an exclusive lock on the build directory to prevent parallel builds
+# from corrupting each other.
+mkdir -p "${BUILDDIR}"
+exec 9<"${BUILDDIR}"
+if ! flock -n 9; then
+	echo "error: another MAKEALL is already using build directory '${BUILDDIR}'" >&2
+	exit 1
+fi
+
 if [ ! "${REGEX}" ]
 then
 	REGEX="*"
@@ -376,6 +400,10 @@ fi
 
 if [ $# -eq 0 ]
 then
+	if [ "$DEVEL" = "1" ]; then
+		echo "DEVEL mode build requires specifying the config as positional argument"
+		exit 1
+	fi
 	if [ ! "${ARCH}" ] || [ ! -d arch/${ARCH} ]
 	then
 		do_build_all
@@ -446,6 +474,12 @@ else
 				echo "Skipping test due to failed build"
 			fi
 		else
+			if [ ! "${ARCH}" ]; then
+				echo "ARCH must be specified via the -a option or environment"
+				usage
+				exit 1
+			fi
+
 			do_build_defconfig ${ARCH} $config
 		fi
 	done

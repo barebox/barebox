@@ -254,7 +254,8 @@ images: $(image-y-path) $(flash-link) $(flash-list) $(symlink-y-path) FORCE
 	@echo "images built:"
 	@for i in $(image-y); do \
 	  if [ -s $(obj)/$$i ]; then echo $$i; \
-	  else >&2 echo "** $$i skipped due to missing firmware **"; \
+	  else $(if $(NO_MISSING_FIRMWARE_WARNING),,>&2) \
+	  	echo "** $$i skipped due to missing firmware **"; \
 	  $(if $(CONFIG_MISSING_FIRMWARE_ERROR), >&2 sed 's/^/\t/' <$(obj)/$${i}.missing-firmware; missing=1;) \
 	  fi; done; if [ -n "$$missing" ]; then \
 	    echo >&2 "Firmware missing in CONFIG_MISSING_FIRMWARE_ERROR=y build"; exit 1; fi

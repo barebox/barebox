@@ -15,6 +15,7 @@
 #include <linux/list.h>
 #include <linux/ethtool.h>
 #include <linux/mii.h>
+#include <linux/iopoll.h>
 
 #define PHY_DEFAULT_FEATURES    (SUPPORTED_Autoneg | \
 				 SUPPORTED_TP | \
@@ -452,10 +453,26 @@ int phy_read_paged(struct phy_device *phydev, int page, u32 regnum);
 int phy_write_paged(struct phy_device *phydev, int page, u32 regnum, u16 val);
 int phy_modify_paged(struct phy_device *phydev, int page, u32 regnum,
 		     u16 mask, u16 set);
+int phy_modify_paged_changed(struct phy_device *phydev, int page, u32 regnum,
+			     u16 mask, u16 set);
 
 struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id);
 int phy_register_device(struct phy_device* dev);
 void phy_unregister_device(struct phy_device *phydev);
+
+#define phy_read_poll_timeout(phydev, regnum, val, cond, \
+				timeout_us) \
+({ \
+	int __ret, __val; \
+	__ret = read_poll_timeout(__val = phy_read, val, \
+				  __val < 0 || (cond), \
+		timeout_us, phydev, regnum); \
+	if (__val < 0) \
+		__ret = __val; \
+	if (__ret) \
+		dev_err(&((phydev)->dev), "%s failed: %d\n", __func__, __ret); \
+	__ret; \
+})
 
 /**
  * phy_read - Convenience function for reading a given PHY register
@@ -479,6 +496,7 @@ static inline int phy_write(struct phy_device *phydev, u32 regnum, u16 val)
 }
 
 int phy_modify(struct phy_device *phydev, u32 regnum, u16 mask, u16 set);
+int phy_modify_changed(struct phy_device *phydev, u32 regnum, u16 mask, u16 set);
 
 /**
  * phy_set_bits - Convenience function for setting bits in a PHY register
@@ -531,6 +549,7 @@ int phy_update_status(struct phy_device *phydev);
 int phy_wait_aneg_done(struct phy_device *phydev);
 
 /* Generic PHY support and helper functions */
+int genphy_soft_reset(struct phy_device *phydev);
 int genphy_config_init(struct phy_device *phydev);
 int genphy_restart_aneg(struct phy_device *phydev);
 int genphy_config_aneg(struct phy_device *phydev);

@@ -104,7 +104,7 @@ config QOICONV
 	  This enable converting png to qoi images to generate boot logo.
 
 config KEYTOC
-	bool "RSA to C converter" if COMPILE_HOST_TOOLS
+	bool "PEM to C converter" if COMPILE_HOST_TOOLS
 	help
 	  This utility converts public keys in PEM format to either C or
 	  device tree snippets. This requires OpenSSL on the build host

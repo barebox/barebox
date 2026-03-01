@@ -178,7 +178,7 @@ static int bootm_load_tee_from_fit(struct image_data *data)
 		const void *tee;
 		unsigned long tee_size;
 
-		ret = fit_open_image(data->os_fit, data->fit_config, "tee",
+		ret = fit_open_image(data->os_fit, data->fit_config, "tee", 0,
 				     &tee, &tee_size);
 		if (ret) {
 			pr_err("Error opening tee fit image: %pe\n", ERR_PTR(ret));
@@ -236,7 +236,8 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 {
 	unsigned long kernel;
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
-	const struct resource *initrd_res;
+	const struct resource *initrd_res, *sdram;
+	struct resource gap;
 	void *tee;
 	enum arm_security_state state = bootm_arm_security_state();
 	void *fdt_load_address = NULL;
@@ -255,7 +256,11 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 		}
 	}
 
-	initrd_res = bootm_load_initrd(data, initrd_start);
+	sdram = memory_bank_lookup_region(initrd_start, &gap);
+	if (sdram != &gap)
+		return sdram ? -EBUSY : -EINVAL;
+
+	initrd_res = bootm_load_initrd(data, initrd_start, gap.end);
 	if (IS_ERR(initrd_res)) {
 		return PTR_ERR(initrd_res);
 	} else if (initrd_res) {
@@ -277,13 +282,15 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 	}
 
 	if (fdt) {
+		const struct resource *fdt_res;
+
 		fdt_load_address = (void *)free_mem;
-		ret = bootm_load_devicetree(data, fdt, free_mem);
+		fdt_res = bootm_load_devicetree(data, fdt, free_mem, gap.end);
 
 		free(fdt);
 
-		if (ret)
-			return ret;
+		if (IS_ERR(fdt_res))
+			return PTR_ERR(fdt_res);
 	}
 
 	if (IS_ENABLED(CONFIG_BOOTM_OPTEE)) {
@@ -339,6 +346,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 
 static int do_bootm_linux(struct image_data *data)
 {
+	const struct resource *os_res;
 	unsigned long load_address, mem_free;
 	int ret;
 
@@ -349,9 +357,9 @@ static int do_bootm_linux(struct image_data *data)
 	if (ret)
 		return ret;
 
-	ret = bootm_load_os(data, load_address);
-	if (ret)
-		return ret;
+	os_res = bootm_load_os(data, load_address, mem_free - 1);
+	if (IS_ERR(os_res))
+		return PTR_ERR(os_res);
 
 	return __do_bootm_linux(data, mem_free, 0, NULL);
 }

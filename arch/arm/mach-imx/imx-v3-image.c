@@ -8,6 +8,7 @@
 
 static int do_bootm_imx_image_v3(struct image_data *data)
 {
+	const struct resource *os_res;
 	void (*bb)(void);
 	resource_size_t start, end;
 	struct flash_header_v3 *hdr;
@@ -18,9 +19,9 @@ static int do_bootm_imx_image_v3(struct image_data *data)
 	if (ret)
 		return ret;
 
-	ret = bootm_load_os(data, start);
-	if (ret)
-		return ret;
+	os_res = bootm_load_os(data, start, end);
+	if (IS_ERR(os_res))
+		return PTR_ERR(os_res);
 
 	hdr = (void *)start;
 	offset = hdr->img[0].offset;

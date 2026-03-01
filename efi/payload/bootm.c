@@ -129,7 +129,7 @@ static int efi_load_ramdisk(struct image_data *data, void **initrd)
 	int ret;
 
 	if (ramdisk_is_fit(data)) {
-		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk",
+		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk", 0,
 				     (const void **)&initrd_mem, &initrd_size);
 		if (ret) {
 			pr_err("Cannot open ramdisk image in FIT image: %m\n");
@@ -175,7 +175,7 @@ static int efi_load_fdt(struct image_data *data, void **fdt)
 	int ret;
 
 	if (fdt_is_fit(data)) {
-		ret = fit_open_image(data->os_fit, data->fit_config, "fdt",
+		ret = fit_open_image(data->os_fit, data->fit_config, "fdt", 0,
 				     (const void **)&of_tree, &of_size);
 		if (ret) {
 			pr_err("Cannot open FDT image in FIT image: %m\n");
@@ -252,15 +252,16 @@ static int do_bootm_efi_stub(struct image_data *data)
 		goto unload_oftree;
 
 	type = file_detect_type(loaded_image->image_base, PAGE_SIZE);
-	ret = efi_execute_image(handle, loaded_image, type);
-	if (ret)
+
+	if (data->dryrun)
 		goto unload_ramdisk;
 
-	return 0;
-
+	ret = efi_execute_image(handle, loaded_image, type);
 unload_ramdisk:
-	if (initrd)
+	if (initrd) {
 		efi_initrd_unregister();
+		free(initrd);
+	}
 unload_oftree:
 	efi_unload_fdt(fdt);
 unload_os:

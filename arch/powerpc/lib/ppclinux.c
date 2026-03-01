@@ -7,6 +7,7 @@
 #include <image.h>
 #include <init.h>
 #include <malloc.h>
+#include <memory.h>
 #include <environment.h>
 #include <asm/bitops.h>
 #include <asm/processor.h>
@@ -29,7 +30,7 @@ static struct fdt_header *bootm_relocate_fdt(struct image_data *data,
 		 */
 		if (os < (void *)fdt->totalsize) {
 			os = (void *)PAGE_ALIGN((phys_addr_t)os +
-					data->os->header.ih_size);
+					data->os_uimage->header.ih_size);
 			os += fdt->totalsize;
 			if (os < LINUX_TLB1_MAX_ADDR)
 				os = LINUX_TLB1_MAX_ADDR;
@@ -53,12 +54,18 @@ static int do_bootm_linux(struct image_data *data)
 {
 	void	(*kernel)(void *, void *, unsigned long,
 			unsigned long, unsigned long);
+	const struct resource *os_res, *sdram;
+	struct resource gap;
 	int ret;
 	struct fdt_header *fdt;
 
-	ret = bootm_load_os(data, data->os_address);
-	if (ret)
-		return ret;
+	sdram = memory_bank_lookup_region(data->os_address, &gap);
+	if (sdram != &gap)
+		return sdram ? -EBUSY : -EINVAL;
+
+	os_res = bootm_load_os(data, data->os_address, gap.end);
+	if (IS_ERR(os_res))
+		return PTR_ERR(os_res);
 
 	fdt = of_get_fixed_tree_for_boot(data->of_root_node);
 	if (!fdt) {

@@ -59,7 +59,7 @@ struct image_data {
 	struct resource *os_res;
 
 	/* if os is an uImage this will be provided */
-	struct uimage_handle *os;
+	struct uimage_handle *os_uimage;
 
 	/* if os is a FIT image this will be provided */
 	struct fit_handle *os_fit;
@@ -84,7 +84,7 @@ struct image_data {
 	struct resource *initrd_res;
 
 	/* if initrd is an uImage this will be provided */
-	struct uimage_handle *initrd;
+	struct uimage_handle *initrd_uimage;
 	char *initrd_part;
 
 	/* otherwise only the filename will be provided */
@@ -111,7 +111,11 @@ struct image_data {
 	char *tee_file;
 	struct resource *tee_res;
 
-	enum filetype os_type;
+	/* Type of OS image, e.g. filetype_fit or the same as kernel_type */
+	enum filetype image_type;
+	/* Type of kernel image that's going to be booted */
+	enum filetype kernel_type;
+
 	enum bootm_verify verify;
 	int verbose;
 	int force;
@@ -150,14 +154,19 @@ static inline int bootm_verbose(struct image_data *data)
 void bootm_data_init_defaults(struct bootm_data *data);
 void bootm_data_restore_defaults(const struct bootm_data *data);
 
-int bootm_load_os(struct image_data *data, unsigned long load_address);
+const struct resource *
+bootm_load_os(struct image_data *data,
+	      ulong load_address, ulong end_address);
 
 const struct resource *
-bootm_load_initrd(struct image_data *data, unsigned long load_address);
+bootm_load_initrd(struct image_data *data,
+		  ulong load_address, ulong end_address);
 
 void *bootm_get_devicetree(struct image_data *data);
-int bootm_load_devicetree(struct image_data *data, void *fdt,
-			  unsigned long load_address);
+
+const struct resource *
+bootm_load_devicetree(struct image_data *data, void *fdt,
+		      ulong load_address, ulong end_address);
 int bootm_get_os_size(struct image_data *data);
 
 enum bootm_verify bootm_get_verify_mode(void);
@@ -176,5 +185,7 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree);
 bool bootm_efi_check_image(struct image_handler *handler,
 			   struct image_data *data,
 			   enum filetype detected_filetype);
+
+int file_read_and_detect_boot_image_type(const char *os_file, void **os_header);
 
 #endif /* __BOOTM_H */

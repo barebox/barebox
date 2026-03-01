@@ -97,6 +97,8 @@ void memory_bank_find_space(struct memory_bank *bank, resource_size_t *retstart,
 int memory_bank_first_find_space(resource_size_t *retstart,
 				 resource_size_t *retend);
 
+struct resource *memory_bank_lookup_region(resource_size_t addr, struct resource *gap);
+
 static inline u64 memory_sdram_size(unsigned int cols,
 				    unsigned int rows,
 				    unsigned int banks,

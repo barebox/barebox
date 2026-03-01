@@ -5,6 +5,7 @@
 #include <bootm-fit.h>
 #include <memory.h>
 #include <zero_page.h>
+#include <filetype.h>
 
 /*
  * bootm_load_fit_os() - load OS from FIT to RAM
@@ -61,7 +62,7 @@ struct resource *bootm_load_fit_initrd(struct image_data *data, unsigned long lo
 	if (!fitconfig_has_ramdisk(data))
 		return NULL;
 
-	ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk",
+	ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk", 0,
 			     &initrd, &initrd_size);
 	if (ret) {
 		pr_err("Cannot open ramdisk image in FIT image: %pe\n",
@@ -96,7 +97,7 @@ void *bootm_get_fit_devicetree(struct image_data *data)
 	const void *of_tree;
 	unsigned long of_size;
 
-	ret = fit_open_image(data->os_fit, data->fit_config, "fdt",
+	ret = fit_open_image(data->os_fit, data->fit_config, "fdt", 0,
 			     &of_tree, &of_size);
 	if (ret)
 		return ERR_PTR(ret);
@@ -114,20 +115,24 @@ static bool bootm_fit_config_valid(struct fit_handle *fit,
 	return !!fit_has_image(fit, config, "kernel");
 }
 
+static enum filetype bootm_fit_update_os_header(struct image_data *data)
+{
+	if (data->fit_kernel_size < PAGE_SIZE)
+		return filetype_unknown;
+
+	free(data->os_header);
+	data->os_header = xmemdup(data->fit_kernel, PAGE_SIZE);
+
+	return file_detect_type(data->os_header, PAGE_SIZE);
+}
+
 int bootm_open_fit(struct image_data *data)
 {
 	struct fit_handle *fit;
-	struct fdt_header *header;
 	static const char *kernel_img = "kernel";
-	size_t flen, hlen;
 	int ret;
 
-	header = (struct fdt_header *)data->os_header;
-	flen = bootm_get_os_size(data);
-	hlen = fdt32_to_cpu(header->totalsize);
-
-	fit = fit_open(data->os_file, data->verbose, data->verify,
-		       min(flen, hlen));
+	fit = fit_open(data->os_file, data->verbose, data->verify);
 	if (IS_ERR(fit)) {
 		pr_err("Loading FIT image %s failed with: %pe\n", data->os_file, fit);
 		return PTR_ERR(fit);
@@ -144,10 +149,13 @@ int bootm_open_fit(struct image_data *data)
 		return PTR_ERR(data->fit_config);
 	}
 
-	ret = fit_open_image(data->os_fit, data->fit_config, kernel_img,
+	ret = fit_open_image(data->os_fit, data->fit_config, kernel_img, 0,
 			     &data->fit_kernel, &data->fit_kernel_size);
 	if (ret)
 		return ret;
+
+	data->kernel_type = bootm_fit_update_os_header(data);
+
 	if (data->os_address == UIMAGE_SOME_ADDRESS) {
 		ret = fit_get_image_address(data->os_fit,
 					    data->fit_config,

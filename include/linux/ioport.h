@@ -272,6 +272,8 @@ static inline void resource_set_range(struct resource *res,
 	resource_set_size(res, size);
 }
 
+int resize_region(struct resource *res, resource_size_t size);
+
 #define region_is_gap(region) ((region)->flags & IORESOURCE_UNSET)
 
 struct resource *resource_iter_first(struct resource *current, struct resource *gap);
@@ -279,14 +281,17 @@ struct resource *resource_iter_last(struct resource *current, struct resource *g
 struct resource *resource_iter_prev(struct resource *current, struct resource *gap);
 struct resource *resource_iter_next(struct resource *current, struct resource *gap);
 
+struct resource *lookup_region(struct resource *parent,
+			       resource_size_t addr, struct resource *gap);
+
 /**
  * for_each_resource_region - Iterate over child resources and gaps between them
  * @parent: parent resource
  * @region: pointer to child resource or gap
  */
 #define for_each_resource_region(parent, region) \
-	for (struct resource gap, *region = resource_iter_first((parent), &gap); \
-	     region; region = resource_iter_next(region, &gap))
+	for (struct resource __gap, *region = resource_iter_first((parent), &__gap); \
+	     region; region = resource_iter_next(region, &__gap))
 
 /**
  * for_each_resource_region_reverse - Reverse iterate over child resources and gaps between them
@@ -294,8 +299,8 @@ struct resource *resource_iter_next(struct resource *current, struct resource *g
  * @region: pointer to child resource or gap
  */
 #define for_each_resource_region_reverse(parent, region) \
-	for (struct resource gap, *region = resource_iter_last((parent), &gap); \
-	     region; region = resource_iter_prev(region, &gap))
+	for (struct resource __gap, *region = resource_iter_last((parent), &__gap); \
+	     region; region = resource_iter_prev(region, &__gap))
 
 #endif /* __ASSEMBLY__ */
 #endif	/* _LINUX_IOPORT_H */

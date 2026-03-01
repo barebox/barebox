@@ -13,6 +13,7 @@ EXPORT_SYMBOL(at91_bootsource);
 
 static int do_bootm_at91_barebox_image(struct image_data *data)
 {
+	const struct resource *os_res;
 	resource_size_t start, end;
 	int ret;
 
@@ -20,9 +21,9 @@ static int do_bootm_at91_barebox_image(struct image_data *data)
 	if (ret)
 		return ret;
 
-	ret = bootm_load_os(data, start);
-	if (ret)
-		return ret;
+	os_res = bootm_load_os(data, start, end);
+	if (IS_ERR(os_res))
+		return PTR_ERR(os_res);
 
 	if (data->verbose)
 		printf("Loaded barebox image to 0x%08zx\n", start);

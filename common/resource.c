@@ -92,6 +92,68 @@ ok:
 	return new;
 }
 
+/**
+ * resize_region - change the size of an allocated resource region
+ * @res: resource to resize (may be NULL for no-op)
+ * @size: new desired size in bytes (must be non-zero)
+ *
+ * Shrinking checks that no child extends past the new end.
+ * Growing checks that the new end does not overflow, stays within
+ * the parent region and does not collide with the next sibling.
+ *
+ * Return: 0 on success, negative error code on failure
+ */
+int resize_region(struct resource *res, resource_size_t size)
+{
+	struct resource *parent;
+	struct resource *next;
+	resource_size_t newend;
+
+	if (!res)
+		return 0;
+	if (!size)
+		return -EINVAL;
+
+	if (size == resource_size(res))
+		return 0;
+
+	if (size < resource_size(res)) {
+		struct resource *last;
+
+		last = list_last_entry_or_null(&res->children,
+					       struct resource, sibling);
+		if (last && last->end > res->start + size - 1)
+			return -EBUSY;
+		res->end = res->start + size - 1;
+		return 0;
+	}
+
+	parent = res->parent;
+	if (!parent)
+		return -EINVAL;
+
+	if (check_add_overflow(res->start, size - 1, &newend))
+		return -EINVAL;
+
+	if (newend > parent->end)
+		return -EINVAL;
+
+	/*
+	 * parent->children is the list_head that anchors the ordered list of
+	 * children. If res is not the last entry, the immediate next entry is
+	 * the only sibling we must check.
+	 */
+	if (res->sibling.next != &parent->children) {
+		next = list_next_entry(res, sibling);
+
+		if (newend >= next->start)
+			return -EBUSY;
+	}
+
+	res->end = newend;
+	return 0;
+}
+
 /*
  * release a region previously requested with request_*_region
  */
@@ -415,6 +477,39 @@ resource_iter_prev(struct resource *current,
 		return prev;
 
 	return resource_iter_gap(parent, prev, gap, current);
+}
+
+/**
+ * lookup_region - find the region containing a given address
+ * @parent: parent resource to search within
+ * @addr: address to look up
+ * @gap: if non-NULL and addr is in a gap, the gap info is copied here
+ *
+ * Searches the children of @parent (and gaps between them) for the region
+ * containing @addr.
+ *
+ * Return: pointer to the resource containing @addr, or @gap if @addr is in
+ *         a gap and @gap is non-NULL, or NULL if @addr is not found or is
+ *         in a gap and @gap is NULL
+ */
+struct resource *lookup_region(struct resource *parent,
+			       resource_size_t addr, struct resource *gap)
+{
+	for_each_resource_region(parent, region) {
+		if (addr < region->start || region->end < addr)
+			continue;
+
+		if (!region_is_gap(region))
+			return region;
+		if (!gap)
+			return NULL;
+
+		*gap = *region;
+		INIT_LIST_HEAD(&gap->sibling);
+		return gap;
+	}
+
+	return NULL;
 }
 
 struct resource_entry *resource_list_create_entry(struct resource *res,

@@ -410,6 +410,31 @@ int memory_bank_first_find_space(resource_size_t *retstart,
 	return -ENOENT;
 }
 
+/**
+ * memory_bank_lookup_region - find the memory region containing a given address
+ * @addr: physical address to look up
+ * @gap: if non-NULL and addr is in a gap, the gap info is copied here
+ *
+ * Searches all memory banks for the region containing @addr. If @addr falls
+ * within a gap between allocated regions and @gap is provided, the gap
+ * boundaries are returned via @gap.
+ *
+ * Return: pointer to the resource containing @addr, @gap if in a gap,
+ *         or NULL if not found in any memory bank
+ */
+struct resource *memory_bank_lookup_region(resource_size_t addr, struct resource *gap)
+{
+	struct memory_bank *bank;
+
+	for_each_memory_bank(bank) {
+		if (addr < bank->res->start || bank->res->end < addr)
+			continue;
+		return lookup_region(bank->res, addr, gap);
+	}
+
+	return NULL;
+}
+
 #ifdef CONFIG_OFTREE
 
 static int of_memory_fixup(struct device_node *root, void *unused)

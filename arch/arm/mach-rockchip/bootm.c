@@ -40,6 +40,7 @@ static int do_bootm_rkns_barebox_image(struct image_data *data)
 {
 	void (*barebox)(unsigned long x0, unsigned long x1, unsigned long x2,
 			unsigned long x3);
+	const struct resource *os_res;
 	resource_size_t start, end;
 	struct newidb *idb;
 	int ret, i, n_files;
@@ -50,14 +51,14 @@ static int do_bootm_rkns_barebox_image(struct image_data *data)
 	if (ret)
 		return ret;
 
-	ret = bootm_load_os(data, start);
-	if (ret)
-		return ret;
+	os_res = bootm_load_os(data, start, end);
+	if (IS_ERR(os_res))
+		return PTR_ERR(os_res);
 
-	idb = (void *)data->os_res->start;
-	buf = (void *)data->os_res->start;
+	idb = (void *)os_res->start;
+	buf = (void *)os_res->start;
 
-	image_size = resource_size(data->os_res);
+	image_size = resource_size(os_res);
 
 	if (image_size < SECTOR_SIZE)
 		return -EINVAL;

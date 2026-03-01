@@ -28,17 +28,40 @@ struct fit_handle {
 };
 
 struct fit_handle *fit_open(const char *filename, bool verbose,
-			    enum bootm_verify verify, loff_t max_size);
+			    enum bootm_verify verify);
 struct fit_handle *fit_open_buf(const void *buf, size_t len, bool verbose,
 				enum bootm_verify verify);
 void *fit_open_configuration(struct fit_handle *handle, const char *name,
 			     bool (*match_valid)(struct fit_handle *handle,
 						 struct device_node *config));
-bool fit_has_image(struct fit_handle *handle, void *configuration,
-		   const char *name);
+/**
+ * fit_count_images() - count images of a given type in a FIT configuration
+ * @handle: FIT handle as returned by fit_open() or fit_open_buf()
+ * @configuration: configuration node as returned by fit_open_configuration()
+ * @name: image type property name (e.g., "kernel", "fdt", "ramdisk")
+ *
+ * Return: number of images on success, negative error code on failure
+ */
+int fit_count_images(struct fit_handle *handle, void *configuration,
+		     const char *name);
+
+/**
+ * fit_has_image() - check if a FIT configuration contains an image type
+ * @handle: FIT handle as returned by fit_open() or fit_open_buf()
+ * @configuration: configuration node as returned by fit_open_configuration()
+ * @name: image type property name (e.g., "kernel", "fdt", "ramdisk")
+ *
+ * Return: true if at least one image of the given type exists, false otherwise
+ */
+static inline bool fit_has_image(struct fit_handle *handle, void *configuration,
+				 const char *name)
+{
+	return fit_count_images(handle, configuration, name) > 0;
+}
+
 int fit_open_image(struct fit_handle *handle, void *configuration,
-		   const char *name, const void **outdata,
-		   unsigned long *outsize);
+		   const char *name, int idx,
+		   const void **outdata, unsigned long *outsize);
 int fit_get_image_address(struct fit_handle *handle, void *configuration,
 			  const char *name, const char *property,
 			  unsigned long *address);

@@ -29,7 +29,7 @@ int bootm_load_uimage_os(struct image_data *data, unsigned long load_address)
 
 	num = uimage_part_num(data->os_part);
 
-	data->os_res = uimage_load_to_sdram(data->os,
+	data->os_res = uimage_load_to_sdram(data->os_uimage,
 		num, load_address);
 	if (!data->os_res)
 		return -ENOMEM;
@@ -42,21 +42,21 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 	int ret;
 
 	if (strcmp(data->os_file, data->initrd_file)) {
-		data->initrd = uimage_open(data->initrd_file);
-		if (!data->initrd)
+		data->initrd_uimage = uimage_open(data->initrd_file);
+		if (!data->initrd_uimage)
 			return -EINVAL;
 
 		if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
-			ret = uimage_verify(data->initrd);
+			ret = uimage_verify(data->initrd_uimage);
 			if (ret) {
 				pr_err("Checking data crc failed with %pe\n",
 					ERR_PTR(ret));
 				return ret;
 			}
 		}
-		uimage_print_contents(data->initrd);
+		uimage_print_contents(data->initrd_uimage);
 	} else {
-		data->initrd = data->os;
+		data->initrd_uimage = data->os_uimage;
 	}
 
 	return 0;
@@ -90,7 +90,7 @@ bootm_load_uimage_initrd(struct image_data *data, unsigned long load_address)
 
 	num = uimage_part_num(data->initrd_part);
 
-	res = uimage_load_to_sdram(data->initrd,
+	res = uimage_load_to_sdram(data->initrd_uimage,
 		num, load_address);
 	if (!res)
 		return ERR_PTR(-ENOMEM);
@@ -110,9 +110,9 @@ int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 	pr_info("Loading devicetree from '%s'@%d\n", oftree, num);
 
 	if (!strcmp(data->os_file, oftree)) {
-		of_handle = data->os;
+		of_handle = data->os_uimage;
 	} else if (!strcmp(data->initrd_file, oftree)) {
-		of_handle = data->initrd;
+		of_handle = data->initrd_uimage;
 	} else {
 		of_handle = uimage_open(oftree);
 		if (!of_handle)
@@ -141,12 +141,12 @@ int bootm_open_uimage(struct image_data *data)
 {
 	int ret;
 
-	data->os = uimage_open(data->os_file);
-	if (!data->os)
+	data->os_uimage = uimage_open(data->os_file);
+	if (!data->os_uimage)
 		return -EINVAL;
 
 	if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
-		ret = uimage_verify(data->os);
+		ret = uimage_verify(data->os_uimage);
 		if (ret) {
 			pr_err("Checking data crc failed with %pe\n",
 					ERR_PTR(ret));
@@ -154,23 +154,23 @@ int bootm_open_uimage(struct image_data *data)
 		}
 	}
 
-	uimage_print_contents(data->os);
+	uimage_print_contents(data->os_uimage);
 
-	if (IH_ARCH == IH_ARCH_INVALID || data->os->header.ih_arch != IH_ARCH) {
+	if (IH_ARCH == IH_ARCH_INVALID || data->os_uimage->header.ih_arch != IH_ARCH) {
 		pr_err("Unsupported Architecture 0x%x\n",
-		       data->os->header.ih_arch);
+		       data->os_uimage->header.ih_arch);
 		return -EINVAL;
 	}
 
 	if (data->os_address == UIMAGE_SOME_ADDRESS)
-		data->os_address = data->os->header.ih_load;
+		data->os_address = data->os_uimage->header.ih_load;
 
 	return 0;
 }
 
 void bootm_close_uimage(struct image_data *data)
 {
-	if (data->initrd && data->initrd != data->os)
-		uimage_close(data->initrd);
-	uimage_close(data->os);
+	if (data->initrd_uimage && data->initrd_uimage != data->os_uimage)
+		uimage_close(data->initrd_uimage);
+	uimage_close(data->os_uimage);
 }

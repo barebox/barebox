@@ -497,19 +497,15 @@ static int fit_image_verify_signature(struct fit_handle *handle,
 	return ret;
 }
 
-bool fit_has_image(struct fit_handle *handle, void *configuration,
-		   const char *name)
+int fit_count_images(struct fit_handle *handle, void *configuration,
+		     const char *name)
 {
-	const char *unit;
 	struct device_node *conf_node = configuration;
 
 	if (!conf_node)
-		return false;
+		return -EINVAL;
 
-	if (of_property_read_string(conf_node, name, &unit))
-		return false;
-
-	return true;
+	return of_property_count_strings(conf_node, name);
 }
 
 static int fit_get_address(struct device_node *image, const char *property,
@@ -528,24 +524,20 @@ static int fit_get_address(struct device_node *image, const char *property,
 	return 0;
 }
 
-static int
+static struct device_node *
 fit_get_image(struct fit_handle *handle, void *configuration,
-	      const char **unit, struct device_node **image)
+	      const char **unit, int idx)
 {
 	struct device_node *conf_node = configuration;
 
 	if (conf_node) {
-		if (of_property_read_string(conf_node, *unit, unit)) {
+		if (of_property_read_string_index(conf_node, *unit, idx, unit)) {
 			pr_err("No image named '%s'\n", *unit);
-			return -ENOENT;
+			return NULL;
 		}
 	}
 
-	*image = of_get_child_by_name(handle->images, *unit);
-	if (!*image)
-		return -ENOENT;
-
-	return 0;
+	return of_get_child_by_name(handle->images, *unit);
 }
 
 /**
@@ -575,9 +567,9 @@ int fit_get_image_address(struct fit_handle *handle, void *configuration,
 	if (!address || !property || !name)
 		return -EINVAL;
 
-	ret = fit_get_image(handle, configuration, &unit, &image);
-	if (ret)
-		return ret;
+	image = fit_get_image(handle, configuration, &unit, 0);
+	if (!image)
+		return -ENOENT;
 
 	/* Treat type = "kernel_noload" as if entry/load address is missing */
 	ret = of_property_read_string(image, "type", &type);
@@ -653,22 +645,22 @@ static int fit_handle_decompression(struct device_node *image,
 /**
  * fit_open_image - Open an image in a FIT image
  * @handle: The FIT image handle
+ * @configuration: configuration cookie from fit_open_configuration(), or NULL
  * @name: The name of the image to open
+ * @idx: The index of image to open (for multi-image properties like overlays)
  * @outdata: The returned image
  * @outsize: Size of the returned image
  *
  * Open an image in a FIT image. The returned image is freed during fit_close().
- * @configuration holds the cookie returned from fit_open_configuration() if
- * the image is opened as part of a configuration, or NULL if the image is
- * opened without a configuration. If @configuration is NULL then the RSA
- * signature of the image is checked if desired, if @configuration is non NULL,
- * then only the hash is checked (because opening the configuration already
- * checks the RSA signature of all involved nodes).
+ *
+ * If @configuration is NULL then the RSA signature of the image is checked
+ * if desired; otherwise only the hash is checked (because opening the
+ * configuration already checks the RSA signature of all involved nodes).
  *
  * Return: 0 for success, negative error code otherwise
  */
 int fit_open_image(struct fit_handle *handle, void *configuration,
-		   const char *name, const void **outdata,
+		   const char *name, int idx, const void **outdata,
 		   unsigned long *outsize)
 {
 	struct device_node *image;
@@ -677,9 +669,9 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 	int data_len;
 	int ret = 0;
 
-	ret = fit_get_image(handle, configuration, &unit, &image);
-	if (ret)
-		return ret;
+	image = fit_get_image(handle, configuration, &unit, idx);
+	if (!image)
+		return -ENOENT;
 
 	of_property_read_string(image, "description", &desc);
 	if (handle->verbose)
@@ -771,9 +763,11 @@ static int fit_fdt_is_compatible(struct fit_handle *handle,
 	if (!of_property_present(child, "fdt"))
 		return 0;
 
-	ret = fit_get_image(handle, child, &unit, &image);
-	if (ret)
+	image = fit_get_image(handle, child, &unit, 0);
+	if (!image) {
+		ret = -ENOENT;
 		goto err;
+	}
 
 	data = of_get_property(image, "data", &data_len);
 	if (!data)
@@ -1000,7 +994,6 @@ struct fit_handle *fit_open_buf(const void *buf, size_t size, bool verbose,
  * @filename:	The filename of the FIT image
  * @verbose:	If true, be more verbose
  * @verify:	The verify mode
- * @max_size:	maximum length to read from file
  *
  * This opens a FIT image found in @filename. The returned handle is used as
  * context for the other FIT functions.
@@ -1008,11 +1001,12 @@ struct fit_handle *fit_open_buf(const void *buf, size_t size, bool verbose,
  * Return: A handle to a FIT image or a ERR_PTR
  */
 struct fit_handle *fit_open(const char *_filename, bool verbose,
-			    enum bootm_verify verify, loff_t max_size)
+			    enum bootm_verify verify)
 {
 	struct fit_handle *handle;
+	ssize_t nbytes;
 	char *filename;
-	int ret;
+	int fd, ret;
 
 	filename = canonicalize_path(AT_FDCWD, _filename);
 	if (!filename) {
@@ -1032,14 +1026,29 @@ struct fit_handle *fit_open(const char *_filename, bool verbose,
 	handle->verbose = verbose;
 	handle->verify = verify;
 
-	ret = read_file_2(filename, &handle->size, &handle->fit_alloc,
-			  max_size);
-	if (ret && ret != -EFBIG) {
-		pr_err("unable to read %s: %pe\n", filename, ERR_PTR(ret));
-		free(handle);
-		free(filename);
-		return ERR_PTR(ret);
+	fd = open_fdt(filename, &handle->size);
+	if (fd < 0) {
+		ret = fd;
+		goto free_handle;
 	}
+
+	handle->fit_alloc = malloc(handle->size);
+	if (!handle->fit_alloc) {
+		ret = -ENOMEM;
+		goto close_fd;
+	}
+
+	nbytes = read_full(fd, handle->fit_alloc, handle->size);
+	if (nbytes < 0) {
+		ret = nbytes;
+		goto free_fit_alloc;
+	}
+	if (handle->size != nbytes) {
+		ret = -ENODATA;
+		goto free_fit_alloc;
+	}
+
+	close(fd);
 
 	handle->fit = handle->fit_alloc;
 	handle->filename = filename;
@@ -1054,6 +1063,17 @@ struct fit_handle *fit_open(const char *_filename, bool verbose,
 	}
 
 	return handle;
+
+free_fit_alloc:
+	free(handle->fit_alloc);
+close_fd:
+	close(fd);
+free_handle:
+	pr_err("unable to read %s: %pe\n", filename, ERR_PTR(ret));
+	free(filename);
+	free(handle);
+	return ERR_PTR(ret);
+
 }
 
 static bool __fit_close(struct fit_handle *handle)
@@ -1140,14 +1160,14 @@ static int fuzz_fit(const u8 *data, size_t size)
 		goto out;
 	}
 
-	ret = fit_open_image(&handle, config, imgname, &outdata, &outsize);
+	ret = fit_open_image(&handle, config, imgname, 0, &outdata, &outsize);
 	if (ret)
 		goto out;
 
 	fit_get_image_address(&handle, config, imgname, "load", &addr);
 	fit_get_image_address(&handle, config, imgname, "entry", &addr);
 
-	ret = fit_open_image(&handle, NULL, imgname, &outdata, &outsize);
+	ret = fit_open_image(&handle, NULL, imgname, 0, &outdata, &outsize);
 out:
 	__fit_close(&handle);
 

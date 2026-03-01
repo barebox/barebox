@@ -54,6 +54,16 @@ struct mipi_dbi {
 	 */
 	struct gpio_desc *dc;
 
+	/**
+	 * @tx_buf9: Buffer used for option 1 9-bit conversion
+	 */
+	void *tx_buf9;
+
+	/**
+	 * @tx_buf9_len: Size of tx_buf9
+	 */
+	size_t tx_buf9_len;
+
 	struct list_head list;
 };
 
@@ -112,6 +122,11 @@ struct mipi_dbi_dev {
 	void *driver_private;
 
 	/**
+	 * @rotation: initial rotation in degrees Counter Clock Wise
+	 */
+	unsigned int rotation;
+
+	/**
 	 * @damage: Damage rectangle.
 	 */
 	struct fb_rect damage;
@@ -143,6 +158,8 @@ int mipi_dbi_command_read(struct mipi_dbi *dbi, u8 cmd, u8 *val);
 int mipi_dbi_command_buf(struct mipi_dbi *dbi, u8 cmd, u8 *data, size_t len);
 int mipi_dbi_command_stackbuf(struct mipi_dbi *dbi, u8 cmd, const u8 *data,
 			      size_t len);
+int mipi_dbi_spi1_transfer(struct mipi_dbi *dbi, int dc, const void *buf,
+			   size_t len, unsigned int bpw);
 
 /**
  * mipi_dbi_command - MIPI DCS command with optional parameter(s)

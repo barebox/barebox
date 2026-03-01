@@ -110,3 +110,9 @@ void pbl_barebox_uncompress(void *dest, void *compressed_start, unsigned int len
 			NULL, NULL,
 			dest, NULL, errorfn);
 }
+
+int pbl_dtbz_uncompress(void *dest, void *compressed_start, unsigned long len)
+{
+	return decompress(compressed_start, len, NULL, NULL, dest, NULL,
+			  errorfn);
+}

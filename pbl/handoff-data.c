@@ -189,6 +189,8 @@ static const char *handoff_data_entry_name(struct handoff_data_entry *hde)
 		return "handoff FDT (external)";
 	case HANDOFF_DATA_ARM_MACHINE:
 		return "ARM machine number";
+	case HANDOFF_DATA_TEE_DT_OVL:
+		return "handoff TEE FDTO";
 	default:
 		sprintf(name, "handoff %08x", hde->cookie);
 		return name;

@@ -153,6 +153,7 @@ void __noreturn imx93_barebox_entry(void *boarddata);
 void imx_esdctl_disable(void);
 resource_size_t imx6_get_mmdc_sdram_size(void);
 resource_size_t imx8m_barebox_earlymem_size(unsigned buswidth);
+resource_size_t imx8m_ddrc_sdram_size(unsigned buswidth);
 resource_size_t imx9_ddrc_sdram_size(void);
 #endif
 

@@ -1,5 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+config BOARD_HGS
+	bool
+	select ARCH_IMX_ATF_PASS_BL_PARAMS
+	select ARM_SMCCC
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select I2C_IMX_EARLY
+	select IMX8M_DRAM
+	select MCI_IMX_ESDHC_PBL
+	select MFD_HGS_EFI
+
 config BOARD_QEMU
 	bool "Extra support for QEMU-emulated boards" if COMPILE_TEST
 

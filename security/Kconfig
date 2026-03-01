@@ -117,6 +117,15 @@ config HAVE_OPTEE
 	  bidirectional communication with OP-TEE is enabled via
 	  CONFIG_OPTEE.
 
+config OPTEE_APPLY_OVERLAY
+	bool "Apply OP-TEE DTBO to barebox and kernel DT"
+	depends on HAVE_OPTEE
+	help
+	  Apply the OP-TEE provided device-tree overlay to internal barebox DT
+	  and the kernel DT if this option is enabled. This requires barebox
+	  machine support and the board lowlevel code to pass the barebox
+	  internal DT to OP-TEE while booting.
+
 config OPTEE_SIZE
 	hex
 	default 0x02000000
@@ -177,6 +186,21 @@ config PBL_OPTEE
 	  OP-TEE versions older than 3.11.0 do not support jumping back from OP-TEE
 	  to barebox in THUMB2 mode. Make sure you do not compile barebox in THUMB2
 	  mode for OP-TEE versions older than this.
+
+config PBL_OPTEE_DTB_MAX_SIZE
+	hex
+	default 0x0
+	prompt "OP-TEE FDT Size"
+	help
+	  The size of the DTB which is passed by the PBL to OP-TEE. This option
+	  can be left unchanged if OP-TEE DTB support isn't required. If OP-TEE
+	  DTB support is used, this option must match OP-TEE's CFG_DTB_MAX_SIZE
+	  configuration.
+
+	  Note: passing the DTB from the PBL to OP-TEE requires platform
+	  support. Currently only the i.MX8MMini/Nano/Plus SoCs support this.
+	  Furthermore your board code must be modified to pass the FDT
+	  accordingly.
 
 endmenu
 

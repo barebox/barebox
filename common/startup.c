@@ -321,7 +321,6 @@ static int run_init(void)
 	if (!ret) {
 		for (i = 0; i < g.gl_pathc; i++) {
 			const char *path = g.gl_pathv[i];
-			char *scr;
 
 			ret = stat(path, &s);
 			if (ret)
@@ -331,9 +330,7 @@ static int run_init(void)
 				continue;
 
 			pr_debug("Executing '%s'...\n", path);
-			scr = basprintf("source %s", path);
-			run_command(scr);
-			free(scr);
+			run_command("source %s", path);
 		}
 
 		globfree(&g);

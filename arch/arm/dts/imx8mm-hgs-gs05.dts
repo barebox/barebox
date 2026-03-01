@@ -1,0 +1,320 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+// SPDX-FileCopyrightText: 2020 NXP
+// SPDX-FileCopyrightText: Leica Geosystems AG
+
+/dts-v1/;
+
+#include <arm64/freescale/imx8mm.dtsi>
+#include "imx8mm.dtsi"
+#include "imx8m-hgs-common.dtsi"
+
+/ {
+	/* compatible containing the correct revision and model is patched via board file */
+	compatible = "hgs,gs05", "fsl,imx8mm";
+	model = "Hexagon Geosystems GS05";
+
+	aliases {
+		efiwdt = &efi_wdt;
+	};
+
+	/*
+	 * Prohibit OP-TEE from turning of the UART output if enabled via
+	 * CFG_UART_BASE. To do so we need to specify a stdout-path which
+	 * doesn't exist else OP-TEE turns off the UART.
+	 */
+	secure-chosen {
+		stdout-path = "/this-path/does/not/exist";
+	};
+};
+
+&fec1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fec1>;
+	phy-mode = "rgmii-id";
+	phy-handle = <&ethphy0>;
+	status = "okay";
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy0: ethernet-phy@0 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <0>;
+
+			reset-gpios = <&gpio4 10 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			qca,disable-smarteee;
+		};
+	};
+};
+
+&flexspi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flexspi0>;
+	status = "okay";
+};
+
+/* Used in M4 */
+&gpio4 {
+	status = "disabled";
+};
+
+/* Used in M4 */
+&gpio5 {
+	status = "disabled";
+};
+
+&state {
+	devel {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		m4@14 {
+			reg = <0x14 0x4>;
+			type = "enum32";
+			names = "off", "on";
+			default = <0>;
+		};
+	};
+
+	product {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		hostname@18 {
+			reg = <0x18 0xf>;
+			type = "string";
+			default = "";
+		};
+
+		usb_model_name@28 {
+			reg = <0x28 0x1f>;
+			type = "string";
+			default = "";
+		};
+		usb_serial_number@48 {
+			reg = <0x48 0xf>;
+			type = "string";
+			default = "";
+		};
+		usb_pid@58 {
+			reg = <0x58 0x6>;
+			type = "string";
+			default = "";
+		};
+	};
+};
+
+/* console */
+&uart3 {
+	pinctrl-names = "default", "uart";
+	pinctrl-0 = <&pinctrl_uart3_gpio>;
+	pinctrl-1 = <&pinctrl_uart3>;
+	status = "okay";
+};
+
+&uart4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart4>;
+	status = "okay";
+
+	/* EFI */
+	mcu {
+		compatible = "hgs,efi-gs05";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_efi>;
+		current-speed = <19200>;
+		cpu-rdy-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		efi_wdt: watchdog {
+			compatible = "hgs,efi-gs05-wdt";
+		};
+	};
+};
+
+&usdhc3 { /* eMMC */
+	assigned-clocks = <&clk IMX8MM_CLK_USDHC3_ROOT>;
+	assigned-clock-rates = <400000000>;
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+	pinctrl-0 = <&pinctrl_usdhc3>;
+	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
+	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
+	bus-width = <8>;
+	non-removable;
+	no-sdio;
+	no-sd;
+	status = "okay";
+};
+
+&usbotg1 {
+	dr_mode = "otg";
+	disable-over-current;
+	samsung,picophy-pre-emp-curr-control = <3>;
+	samsung,picophy-dc-vol-level-adjust = <7>;
+	ci-disable-lpm;
+	status = "okay";
+};
+
+&usbotg2 {
+	dr_mode = "host";
+	disable-over-current;
+	status = "okay";
+};
+
+&wdog1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_wdog>;
+	fsl,ext-reset-output;
+	status = "okay";
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpio>;
+
+	pinctrl_efi: efigrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x100
+		>;
+	};
+
+	pinctrl_fec1: fec1grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_ENET_MDC_ENET1_MDC			0x3
+			MX8MM_IOMUXC_ENET_MDIO_ENET1_MDIO		0x3
+			MX8MM_IOMUXC_ENET_TD3_ENET1_RGMII_TD3		0x1f
+			MX8MM_IOMUXC_ENET_TD2_ENET1_RGMII_TD2		0x1f
+			MX8MM_IOMUXC_ENET_TD1_ENET1_RGMII_TD1		0x1f
+			MX8MM_IOMUXC_ENET_TD0_ENET1_RGMII_TD0		0x1f
+			MX8MM_IOMUXC_ENET_RD3_ENET1_RGMII_RD3		0x91
+			MX8MM_IOMUXC_ENET_RD2_ENET1_RGMII_RD2		0x91
+			MX8MM_IOMUXC_ENET_RD1_ENET1_RGMII_RD1		0x91
+			MX8MM_IOMUXC_ENET_RD0_ENET1_RGMII_RD0		0x91
+			MX8MM_IOMUXC_ENET_TXC_ENET1_RGMII_TXC		0x1f
+			MX8MM_IOMUXC_ENET_RXC_ENET1_RGMII_RXC		0x91
+			MX8MM_IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL	0x91
+			MX8MM_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x1f
+			MX8MM_IOMUXC_SAI1_TXFS_GPIO4_IO10		0x19
+		>;
+	};
+
+	pinctrl_usdhc3: usdhc3grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x190
+			MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d0
+			MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d0
+			MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d0
+			MX8MM_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d0
+			MX8MM_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d0
+			MX8MM_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d0
+			MX8MM_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d0
+			MX8MM_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d0
+			MX8MM_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d0
+			MX8MM_IOMUXC_NAND_CE1_B_USDHC3_STROBE		0x190
+		>;
+	};
+
+	pinctrl_usdhc3_100mhz: usdhc3-100mhzgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x194
+			MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d4
+			MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d4
+			MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d4
+			MX8MM_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d4
+			MX8MM_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d4
+			MX8MM_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d4
+			MX8MM_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d4
+			MX8MM_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d4
+			MX8MM_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d4
+			MX8MM_IOMUXC_NAND_CE1_B_USDHC3_STROBE		0x194
+		>;
+	};
+
+	pinctrl_usdhc3_200mhz: usdhc3-200mhzgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x196
+			MX8MM_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d6
+			MX8MM_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d6
+			MX8MM_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d6
+			MX8MM_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d6
+			MX8MM_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d6
+			MX8MM_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d6
+			MX8MM_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d6
+			MX8MM_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d6
+			MX8MM_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d6
+			MX8MM_IOMUXC_NAND_CE1_B_USDHC3_STROBE		0x196
+		>;
+	};
+
+	pinctrl_uart3: uart3grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_UART3_RXD_UART3_DCE_RX		0x0
+			MX8MM_IOMUXC_UART3_TXD_UART3_DCE_TX		0x140
+		>;
+	};
+
+	pinctrl_uart3_gpio: uart3-gpiogrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_UART3_RXD_GPIO5_IO26		0x20
+			MX8MM_IOMUXC_UART3_TXD_GPIO5_IO27		0x20
+		>;
+	};
+
+	pinctrl_uart4: uart4grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_UART4_RXD_UART4_DCE_RX		0x140
+			MX8MM_IOMUXC_UART4_TXD_UART4_DCE_TX		0x0
+		>;
+	};
+
+	pinctrl_flexspi0: flexspi0grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_NAND_ALE_QSPI_A_SCLK		0x1c2
+			MX8MM_IOMUXC_NAND_CE0_B_QSPI_A_SS0_B		0x82
+			MX8MM_IOMUXC_NAND_DATA00_QSPI_A_DATA0		0x82
+			MX8MM_IOMUXC_NAND_DATA01_QSPI_A_DATA1		0x82
+			MX8MM_IOMUXC_NAND_DATA02_QSPI_A_DATA2		0x82
+			MX8MM_IOMUXC_NAND_DATA03_QSPI_A_DATA3		0x82
+		>;
+	};
+
+	pinctrl_wdog: wdoggrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B		0x166
+		>;
+	};
+
+	pinctrl_gpio: gpiogrp {
+		fsl,pins = <
+			/* GS05_LTE_OCx */
+			MX8MM_IOMUXC_GPIO1_IO05_GPIO1_IO5		0x00
+			/* GS05_PRESSURE_INT */
+			MX8MM_IOMUXC_GPIO1_IO06_GPIO1_IO6		0x100
+			/* GS05_IMX8_CPU_RDY */
+			MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x100
+			/* GS05_IMX8_I2C_1_RSTx */
+			MX8MM_IOMUXC_GPIO1_IO11_GPIO1_IO11		0x140
+			/* GS05_IMX8_I2C_1_INTx */
+			MX8MM_IOMUXC_GPIO1_IO12_GPIO1_IO12		0x00
+			/* GS05_IMX8_USB1_OC_SOURCEx */
+			MX8MM_IOMUXC_GPIO1_IO13_GPIO1_IO13		0x00
+			/* GS05_IMX8_LTE_V180_ONx */
+			MX8MM_IOMUXC_GPIO1_IO14_GPIO1_IO14		0x140
+			/* GS05_IMX8_USB1_OC_SINKx */
+			MX8MM_IOMUXC_GPIO1_IO15_GPIO1_IO15		0x00
+			/* GS05_GNSS_RSTX */
+			MX8MM_IOMUXC_SAI5_RXFS_GPIO3_IO19		0x20
+			/* GS05_TPM_LP */
+			MX8MM_IOMUXC_SAI5_RXC_GPIO3_IO20		0x100
+			/* GS05_GNSS_EXTINT */
+			MX8MM_IOMUXC_SAI5_RXD0_GPIO3_IO21		0x20
+			/* GS05_TPM_IRQ */
+			MX8MM_IOMUXC_SAI5_RXD1_GPIO3_IO22		0x140
+			/* GS05_UHF_GPIO_0 */
+			MX8MM_IOMUXC_SAI5_RXD2_GPIO3_IO23		0x100
+		>;
+	};
+};

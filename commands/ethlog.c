@@ -12,7 +12,7 @@
 static void ethlog_rx_monitor(struct eth_device *edev, void *packet,
 			       int length)
 {
-	dev_print_hex_dump(&edev->dev, KERN_DEBUG, "rx data <: ",
+	dev_print_hex_dump(&edev->dev, MSG_DEBUG, "rx data <: ",
 			   DUMP_PREFIX_OFFSET, 16, 1, packet, length, true);
 	printk("\n");
 }
@@ -20,7 +20,7 @@ static void ethlog_rx_monitor(struct eth_device *edev, void *packet,
 static void ethlog_tx_monitor(struct eth_device *edev, void *packet,
 			       int length)
 {
-	dev_print_hex_dump(&edev->dev, KERN_DEBUG, "tx data >: ",
+	dev_print_hex_dump(&edev->dev, MSG_DEBUG, "tx data >: ",
 			   DUMP_PREFIX_OFFSET, 16, 1, packet, length, true);
 	printk("\n");
 }

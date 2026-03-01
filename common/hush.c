@@ -1925,7 +1925,7 @@ static char * make_string(char ** inp)
 	return str;
 }
 
-int run_command(const char *cmd)
+static int __run_command(const char *cmd)
 {
 	struct p_context ctx = {};
 	int ret;
@@ -1939,6 +1939,23 @@ int run_command(const char *cmd)
 	release_context(&ctx);
 
 	return ret;
+}
+
+int run_command(const char *fmt, ...)
+{
+	va_list vargs;
+	char *cmd;
+	int error;
+
+	va_start(vargs, fmt);
+	cmd = xvasprintf(fmt, vargs);
+	va_end(vargs);
+
+	error = __run_command(cmd);
+
+	free(cmd);
+
+	return error;
 }
 
 static int execute_script(const char *path, int argc, char *argv[])

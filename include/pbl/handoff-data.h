@@ -1,6 +1,7 @@
 #ifndef __PBL_HANDOFF_DATA_H
 #define __PBL_HANDOFF_DATA_H
 
+#include <linux/bug.h>
 #include <linux/list.h>
 
 struct handoff_data {
@@ -13,6 +14,7 @@ struct handoff_data {
 #define HANDOFF_DATA_EXTERNAL_DT	HANDOFF_DATA_BAREBOX(2)
 #define HANDOFF_DATA_ARM_MACHINE	HANDOFF_DATA_BAREBOX(3)
 #define HANDOFF_DATA_EFI		HANDOFF_DATA_BAREBOX(4)
+#define HANDOFF_DATA_TEE_DT_OVL		HANDOFF_DATA_BAREBOX(5)
 
 #define HANDOFF_DATA_BOARD(n)		(0x951726fb + (n))
 

@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
+#include <compressed-dtb.h>
 #include <linux/libfdt.h>
 #include <pbl.h>
 #include <linux/printk.h>
 #include <stdio.h>
+#include <uncompress.h>
 
 static const __be32 *fdt_parse_reg(const __be32 *reg, uint32_t n,
 				   uint64_t *val)
@@ -184,4 +186,81 @@ const void *fdt_device_get_match_data(const void *fdt, const char *nodepath,
 	}
 
 	return NULL;
+}
+
+static int pbl_open_dtbz_into(const void *fdt, void *buf, int bufsize)
+{
+	const struct barebox_boarddata_compressed_dtb *compressed_dtb;
+	int error;
+
+	if (!fdt_blob_can_be_decompressed(fdt)) {
+		pr_warn("DTB can't be decompressed\n");
+		return -EINVAL;
+	}
+
+	compressed_dtb = fdt;
+
+	if (IS_ENABLED(CONFIG_IMAGE_COMPRESSION_NONE)) {
+		error = fdt_open_into(compressed_dtb->data, buf, bufsize);
+		if (error) {
+			pr_warn("Failed to open uncompressed DTB with %s\n",
+				fdt_strerror(error));
+			return -EINVAL;
+		}
+		return 0;
+	}
+
+	if (bufsize < compressed_dtb->datalen_uncompressed) {
+		pr_warn("FDT buffer to small, min. %u bytes required\n",
+			compressed_dtb->datalen_uncompressed);
+		return -EINVAL;
+	}
+
+	/*
+	 * No error handling required, since this will hang() if uncompress
+	 * fails.
+	 */
+	pbl_dtbz_uncompress(buf, (void *)compressed_dtb->data,
+			    compressed_dtb->datalen);
+
+	if (!blob_is_fdt(buf)) {
+		pr_warn("Failed to determine FDT type for uncompressed DTB\n");
+		return -EINVAL;
+	}
+
+	/* Required to setup size data structures to allow runtime adaptions */
+	error = fdt_open_into(buf, buf, bufsize);
+	if (error) {
+		pr_warn("Failed to open decompressed DTB with %s\n",
+			fdt_strerror(error));
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int pbl_load_fdt(const void *fdt, void *dest, int destsize)
+{
+	if (destsize == 0 || !dest || !fdt) {
+		pr_warn("Skip early FDT load, invalid input\n");
+		return -EINVAL;
+	}
+
+	if (blob_is_fdt(fdt)) {
+		int error;
+
+		error = fdt_open_into(fdt, dest, destsize);
+		if (error) {
+			pr_warn("Failed to uncompressed DTB with %s\n",
+				fdt_strerror(error));
+			return -EINVAL;
+		}
+		return 0;
+	} else if (blob_is_compressed_fdt(fdt)) {
+		return pbl_open_dtbz_into(fdt, dest, destsize);
+	}
+
+	pr_warn("FDT detection failed\n");
+
+	return -EINVAL;
 }

@@ -49,6 +49,14 @@ config FIRMWARE_IMX93_ATF
 config FIRMWARE_AGILEX5_ATF
 	bool
 
+config FIRMWARE_IMX6_OPTEE
+	bool "install OP-TEE on i.MX6 boards"
+	depends on ARCH_IMX6 && PBL_OPTEE
+	help
+	  This enables OP-TEE loading and starting on i.MX6. Place the OP-TEE binary
+	  in CONFIG_EXTRA_FIRMWARE_DIR/imx6-optee.bin. If this is enabled, then
+	  the OP-TEE will automatically be loaded during boot.
+
 config FIRMWARE_IMX8MM_OPTEE
 	bool "install OP-TEE on i.MX8MM boards"
 	depends on FIRMWARE_IMX8MM_ATF && PBL_OPTEE

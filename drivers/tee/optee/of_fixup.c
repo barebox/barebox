@@ -1,7 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
+#define pr_fmt(fmt) "OP-TEE OF: " fmt
+
 #include <of.h>
 #include <linux/ioport.h>
+#include <linux/printk.h>
 #include <asm/barebox-arm.h>
 #include <tee/optee.h>
 
@@ -63,4 +66,43 @@ int of_optee_fixup(struct device_node *root, void *_data)
 	res_shm.name = "optee_shm";
 
 	return of_fixup_reserved_memory(root, &res_shm);
+}
+
+static bool optee_ovl_registered;
+
+void optee_register_overlay(void)
+{
+	struct device_node *overlay;
+	size_t size = 0;
+	void *fdto;
+	int err;
+
+	if (optee_ovl_registered) {
+		pr_warn("overlay already registered, skip\n");
+		return;
+	}
+
+	fdto = handoff_data_get_entry(HANDOFF_DATA_TEE_DT_OVL, &size);
+	if (!fdto || size == 0)
+		return;
+
+	overlay = of_unflatten_dtb(fdto, size);
+	if (IS_ERR(overlay)) {
+		pr_warn("failed to unflatten overlay: %pe\n", overlay);
+		return;
+	}
+
+	err = of_register_overlay(overlay);
+	if (err) {
+		pr_warn("failed to register overlay: %pe\n", ERR_PTR(err));
+		of_delete_node(overlay);
+		return;
+	}
+
+	optee_ovl_registered = true;
+}
+
+bool optee_overlay_registered(void)
+{
+	return optee_ovl_registered;
 }

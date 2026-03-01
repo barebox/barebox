@@ -52,7 +52,7 @@ enum {
 extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
 			      int groupsize, char *linebuf, size_t linebuflen,
 			      bool ascii);
-extern void dev_print_hex_dump(struct device *dev, const char *level,
+extern void dev_print_hex_dump(struct device *dev, int level,
 			       const char *prefix_str, int prefix_type,
 			       int rowsize, int groupsize, const void *buf,
 			       size_t len, bool ascii);

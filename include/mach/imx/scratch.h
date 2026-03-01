@@ -3,6 +3,7 @@
 #ifndef __MACH_IMX_SCRATCH_H
 #define __MACH_IMX_SCRATCH_H
 
+void imx_init_scratch_space(ulong endmem, bool zero_init);
 void imx8m_init_scratch_space(int ddr_buswidth, bool zero_init);
 void imx93_init_scratch_space(bool zero_init);
 
@@ -13,6 +14,8 @@ struct optee_header;
 
 const struct optee_header *imx_scratch_get_optee_hdr(void);
 void imx_scratch_save_optee_hdr(const struct optee_header *hdr);
+
+u8 *imx_scratch_get_fdt(unsigned int *fdt_sz);
 
 #define imx8mq_init_scratch_space() imx8m_init_scratch_space(32, true)
 #define imx8mm_init_scratch_space() imx8m_init_scratch_space(32, true)

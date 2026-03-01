@@ -228,7 +228,7 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
 
 /**
  * print_hex_dump - print a text hex dump to syslog for a binary blob of data
- * @level: kernel log level (e.g. KERN_DEBUG)
+ * @level: barebox log level (e.g. MSG_DEBUG)
  * @prefix_str: string to prefix each line with;
  *  caller supplies trailing spaces for alignment if desired
  * @prefix_type: controls whether prefix of an offset, address, or none
@@ -257,7 +257,7 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
  * Example output using %DUMP_PREFIX_ADDRESS and 4-byte mode:
  * ffffffff88089af0: 73727170 77767574 7b7a7978 7f7e7d7c  pqrstuvwxyz{|}~.
  */
-void dev_print_hex_dump(struct device *dev, const char *level,
+void dev_print_hex_dump(struct device *dev, int level,
 			const char *prefix_str, int prefix_type, int rowsize,
 			int groupsize, const void *buf, size_t len, bool ascii)
 {
@@ -284,16 +284,13 @@ void dev_print_hex_dump(struct device *dev, const char *level,
 
 		switch (prefix_type) {
 		case DUMP_PREFIX_ADDRESS:
-			printk("%s%s%s%p: %s\n", level, name, prefix_str,
-			       ptr + i, linebuf);
+			pr_print(level, "%s%s%p: %s\n", name, prefix_str, ptr + i, linebuf);
 			break;
 		case DUMP_PREFIX_OFFSET:
-			printk("%s%s%s%.8x: %s\n", level, name, prefix_str,
-			       i, linebuf);
+			pr_print(level, "%s%s%.8x: %s\n", name, prefix_str, i, linebuf);
 			break;
 		default:
-			printk("%s%s%s%s\n", level, name, prefix_str,
-			       linebuf);
+			pr_print(level, "%s%s%s\n", name, prefix_str, linebuf);
 			break;
 		}
 	}

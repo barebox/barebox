@@ -33,10 +33,10 @@ void __noreturn imx8mm_load_and_start_image_via_tfa(void);
 void __noreturn imx8mn_load_and_start_image_via_tfa(void);
 void __noreturn imx8mp_load_and_start_image_via_tfa(void);
 void __noreturn imx8mq_load_and_start_image_via_tfa(void);
-void __noreturn __imx8mm_load_and_start_image_via_tfa(void *bl33);
-void __noreturn __imx8mn_load_and_start_image_via_tfa(void *bl33);
-void __noreturn __imx8mp_load_and_start_image_via_tfa(void *bl33);
-void __noreturn __imx8mq_load_and_start_image_via_tfa(void *bl33);
+void __noreturn __imx8mm_load_and_start_image_via_tfa(void *fdt, void *bl33);
+void __noreturn __imx8mn_load_and_start_image_via_tfa(void *fdt, void *bl33);
+void __noreturn __imx8mp_load_and_start_image_via_tfa(void *fdt, void *bl33);
+void __noreturn __imx8mq_load_and_start_image_via_tfa(void *fdt, void *bl33);
 
 void __noreturn imx93_load_and_start_image_via_tfa(void);
 void __noreturn __imx93_load_and_start_image_via_tfa(void *bl33);

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <asm/atf_common.h>
 #include <asm/sections.h>
 #include <common.h>
 #include <firmware.h>
@@ -18,6 +19,87 @@
 #include <mach/imx/ele.h>
 #include <mach/imx/xload.h>
 #include <mach/imx/snvs.h>
+#include <pbl.h>
+
+static void imx_adjust_optee_memory(void **bl32, void **bl32_image, size_t *bl32_size)
+{
+	struct optee_header *hdr = *bl32_image;
+	u64 membase;
+
+	if (optee_verify_header(hdr))
+		return;
+
+	imx_scratch_save_optee_hdr(hdr);
+
+	membase = (u64)hdr->init_load_addr_hi << 32;
+	membase |= hdr->init_load_addr_lo;
+
+	*bl32 = (void *)membase;
+	*bl32_size -= sizeof(*hdr);
+	*bl32_image += sizeof(*hdr);
+}
+
+static __noreturn void bl31_via_bl_params(void *bl31, void *bl32, void *bl33,
+					  void *fdt)
+{
+	struct bl2_to_bl31_params_mem_v2 *params;
+
+	/* Prepare bl_params for BL32 */
+	params = bl2_plat_get_bl31_params_v2((uintptr_t)bl32,
+			(uintptr_t)bl33, (uintptr_t)fdt);
+
+	pr_debug("Jump to BL31 with bl-params (%s BL32-FDT)\n",
+		 fdt ? "including" : "excluding");
+	/*
+	 * Start BL31 without passing the FDT via x1 since the mainline
+	 * TF-A doesn't support it yet.
+	 */
+	bl31_entry_v2((uintptr_t)bl31, &params->bl_params, NULL);
+
+	__builtin_unreachable();
+}
+
+static __noreturn void start_bl31_via_bl_params(void *bl31, void *bl32,
+						void *bl33, void *fdt)
+{
+	unsigned long mem_base = MX8M_DDR_CSD1_BASE_ADDR;
+	unsigned long mem_sz;
+	unsigned int bufsz = 0;
+	int error;
+	u8 *buf;
+
+	if (!fdt)
+		bl31_via_bl_params(bl31, bl32, bl33, NULL);
+
+	buf = imx_scratch_get_fdt(&bufsz);
+	if (IS_ERR_OR_NULL(buf)) {
+		if (!buf)
+			pr_debug("No FDT scratch mem configured, continue without FDT\n");
+		else
+			pr_warn("Failed to get FDT scratch mem, continue without FDT\n");
+		bl31_via_bl_params(bl31, bl32, bl33, NULL);
+	}
+
+	error = pbl_load_fdt(fdt, buf, bufsz);
+	if (error) {
+		pr_warn("Failed to load FDT, continue without FDT\n");
+		bl31_via_bl_params(bl31, bl32, bl33, NULL);
+	}
+
+	if (cpu_is_mx8mn())
+		mem_sz = imx8m_ddrc_sdram_size(16);
+	else
+		mem_sz = imx8m_ddrc_sdram_size(32);
+
+	fdt = buf;
+	error = fdt_fixup_mem(fdt, &mem_base, &mem_sz, 1);
+	if (error) {
+		pr_warn("Failed to fixup FDT memory node, continue without FDT\n");
+		bl31_via_bl_params(bl31, bl32, bl33, NULL);
+	}
+
+	bl31_via_bl_params(bl31, bl32, bl33, fdt);
+}
 
 /**
  * imx8m_tfa_start_bl31 - Load TF-A BL31 blob and transfer control to it
@@ -25,24 +107,54 @@
  * @tfa:	Pointer to the BL31 blob
  * @tfa_size:	Size of the BL31 blob
  * @tfa_dest:	Place where the BL31 is copied to and executed
+ * @tee:	Pointer to the optional BL32 blob
+ * @tee_size:	Size of the optional BL32 blob
+ * @bl33:	Pointer to the already loaded BL33 blob
+ * @fdt:	Pointer to the barebox internal DT (either compressed or not
+ *		compressed)
  *
  * This function:
  *
- *     1. Copies built-in BL31 blob to an address i.MX8M's BL31
+ *     1. Copies built-in BL32 blob (if any) to the well-known OP-TEE address
+ *        (end of RAM) or the address specified via the OP-TEE v2 header if
+ *        found.
+ *
+ *     2. Copies built-in BL31 blob to an address i.MX8M's BL31
  *        expects to be placed (TF-A v2.8+ is position-independent)
  *
- *     2. Sets up temporary stack pointer for EL2, which is execution
+ *     3. Sets up temporary stack pointer for EL2, which is execution
  *        level that BL31 will drop us off at after it completes its
  *        initialization routine
  *
- *     3. Transfers control to BL31
+ *     4. Transfers control to BL31
  */
 
-static __noreturn void imx8m_tfa_start_bl31(const void *tfa_bin, size_t tfa_size, void *tfa_dest)
+static __noreturn void
+imx8m_tfa_start_bl31(const void *tfa_bin, size_t tfa_size, void *tfa_dest,
+		     void *tee_bin, size_t tee_size, void *bl33, void *fdt)
 {
 	void __noreturn (*bl31)(void) = tfa_dest;
+	unsigned long endmem;
+	void *bl32 = NULL;
 	int ret;
 
+	endmem = MX8M_DDR_CSD1_BASE_ADDR;
+	if (cpu_is_mx8mn())
+		endmem += imx8m_barebox_earlymem_size(16);
+	else
+		endmem += imx8m_barebox_earlymem_size(32);
+
+	/* TEE (BL32) handling */
+	if (tee_bin && tee_size) {
+		imx8m_tzc380_init();
+
+		bl32 = (void *)arm_mem_optee(endmem);
+		imx_adjust_optee_memory(&bl32, &tee_bin, &tee_size);
+
+		memcpy(bl32, tee_bin, tee_size);
+	}
+
+	/* TF-A (BL31) handling */
 	BUG_ON(tfa_size > MX8M_ATF_BL31_SIZE_LIMIT);
 
 	if (IS_ENABLED(CONFIG_FSL_CAAM_RNG_PBL_INIT)) {
@@ -70,11 +182,25 @@ static __noreturn void imx8m_tfa_start_bl31(const void *tfa_bin, size_t tfa_size
 	 */
 	pr_debug("and jumping with SP: %p\n", tfa_dest - 16);
 
-
+	/* Stack setup and BL31 jump */
 	asm volatile("msr sp_el2, %0" : :
 		     "r" (tfa_dest - 16) :
 		     "cc");
-	bl31();
+
+	/*
+	 * If enabled the bl_params are passed via x0 to the TF-A, except for
+	 * the i.MX8MQ which doesn't support bl_params yet.
+	 * Passing the bl_params must be explicit enabled to be backward
+	 * compatible with downstream TF-A versions, which may have problems
+	 * with the bl_params.
+	 */
+	if (!IS_ENABLED(CONFIG_ARCH_IMX_ATF_PASS_BL_PARAMS) || cpu_is_mx8mq()) {
+		pr_debug("Jump to BL31 without bl-params\n");
+		bl31();
+	} else {
+		start_bl31_via_bl_params(bl31, bl32, bl33, fdt);
+	}
+
 	__builtin_unreachable();
 }
 
@@ -140,34 +266,17 @@ void imx8mm_load_bl33(void *bl33)
 	memcpy(bl33, __image_start, barebox_pbl_size);
 }
 
-static void imx_adjust_optee_memory(void **bl32, void **bl32_image, size_t *bl32_size)
-{
-	struct optee_header *hdr = *bl32_image;
-	u64 membase;
-
-	if (optee_verify_header(hdr))
-		return;
-
-	imx_scratch_save_optee_hdr(hdr);
-
-	membase = (u64)hdr->init_load_addr_hi << 32;
-	membase |= hdr->init_load_addr_lo;
-
-	*bl32 = (void *)membase;
-	*bl32_size -= sizeof(*hdr);
-	*bl32_image += sizeof(*hdr);
-}
-
 __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 {
-	__imx8mm_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+	__imx8mm_load_and_start_image_via_tfa(NULL, (void *)MX8M_ATF_BL33_BASE_ADDR);
 }
 
-__noreturn void __imx8mm_load_and_start_image_via_tfa(void *bl33)
+__noreturn void __imx8mm_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
 	const void *bl31;
 	size_t bl31_size;
-	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
+	void *bl32 = NULL;
+	size_t bl32_size = 0;
 
 	imx_set_cpu_type(IMX_CPU_IMX8MM);
 	imx8mm_init_scratch_space();
@@ -176,25 +285,14 @@ __noreturn void __imx8mm_load_and_start_image_via_tfa(void *bl33)
 	imx8mm_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE)) {
-		void *bl32 = (void *)arm_mem_optee(endmem);
-		size_t bl32_size;
-		void *bl32_image;
-
-		imx8m_tzc380_init();
-		get_builtin_firmware_ext(imx8mm_bl32_bin,
-				bl33, &bl32_image,
-				&bl32_size);
-
-		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
-
-		memcpy(bl32, bl32_image, bl32_size);
-
+		get_builtin_firmware_ext(imx8mm_bl32_bin, bl33, &bl32, &bl32_size);
 		get_builtin_firmware(imx8mm_bl31_bin_optee, &bl31, &bl31_size);
 	} else {
 		get_builtin_firmware(imx8mm_bl31_bin, &bl31, &bl31_size);
 	}
 
-	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
+	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MM_ATF_BL31_BASE_ADDR,
+			     bl32, bl32_size, bl33, fdt);
 }
 
 void imx8mp_load_bl33(void *bl33)
@@ -235,14 +333,15 @@ void imx8mp_load_bl33(void *bl33)
 
 __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 {
-	__imx8mp_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+	__imx8mp_load_and_start_image_via_tfa(NULL, (void *)MX8M_ATF_BL33_BASE_ADDR);
 }
 
-__noreturn void __imx8mp_load_and_start_image_via_tfa(void *bl33)
+__noreturn void __imx8mp_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
 	const void *bl31;
 	size_t bl31_size;
-	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
+	void *bl32 = NULL;
+	size_t bl32_size = 0;
 
 	imx_set_cpu_type(IMX_CPU_IMX8MP);
 	imx8mp_init_scratch_space();
@@ -251,25 +350,14 @@ __noreturn void __imx8mp_load_and_start_image_via_tfa(void *bl33)
 	imx8mp_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE)) {
-		void *bl32 = (void *)arm_mem_optee(endmem);
-		size_t bl32_size;
-		void *bl32_image;
-
-		imx8m_tzc380_init();
-		get_builtin_firmware_ext(imx8mp_bl32_bin,
-				bl33, &bl32_image,
-				&bl32_size);
-
-		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
-
-		memcpy(bl32, bl32_image, bl32_size);
-
+		get_builtin_firmware_ext(imx8mp_bl32_bin, bl33, &bl32, &bl32_size);
 		get_builtin_firmware(imx8mp_bl31_bin_optee, &bl31, &bl31_size);
 	} else {
 		get_builtin_firmware(imx8mp_bl31_bin, &bl31, &bl31_size);
 	}
 
-	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);
+	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MP_ATF_BL31_BASE_ADDR,
+			     bl32, bl32_size, bl33, fdt);
 }
 
 void imx8mn_load_bl33(void *bl33)
@@ -310,14 +398,15 @@ void imx8mn_load_bl33(void *bl33)
 
 __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 {
-	__imx8mn_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+	__imx8mn_load_and_start_image_via_tfa(NULL, (void *)MX8M_ATF_BL33_BASE_ADDR);
 }
 
-__noreturn void __imx8mn_load_and_start_image_via_tfa(void *bl33)
+__noreturn void __imx8mn_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
 	const void *bl31;
 	size_t bl31_size;
-	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(16);
+	void *bl32 = NULL;
+	size_t bl32_size = 0;
 
 	imx_set_cpu_type(IMX_CPU_IMX8MN);
 	imx8mn_init_scratch_space();
@@ -326,25 +415,14 @@ __noreturn void __imx8mn_load_and_start_image_via_tfa(void *bl33)
 	imx8mn_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE)) {
-		void *bl32 = (void *)arm_mem_optee(endmem);
-		size_t bl32_size;
-		void *bl32_image;
-
-		imx8m_tzc380_init();
-		get_builtin_firmware_ext(imx8mn_bl32_bin,
-				bl33, &bl32_image,
-				&bl32_size);
-
-		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
-
-		memcpy(bl32, bl32_image, bl32_size);
-
+		get_builtin_firmware_ext(imx8mn_bl32_bin, bl33, &bl32, &bl32_size);
 		get_builtin_firmware(imx8mn_bl31_bin_optee, &bl31, &bl31_size);
 	} else {
 		get_builtin_firmware(imx8mn_bl31_bin, &bl31, &bl31_size);
 	}
 
-	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
+	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MN_ATF_BL31_BASE_ADDR,
+			     bl32, bl32_size, bl33, fdt);
 }
 
 void imx8mq_load_bl33(void *bl33)
@@ -379,14 +457,15 @@ void imx8mq_load_bl33(void *bl33)
 
 __noreturn void imx8mq_load_and_start_image_via_tfa(void)
 {
-	__imx8mq_load_and_start_image_via_tfa((void *)MX8M_ATF_BL33_BASE_ADDR);
+	__imx8mq_load_and_start_image_via_tfa(NULL, (void *)MX8M_ATF_BL33_BASE_ADDR);
 }
 
-__noreturn void __imx8mq_load_and_start_image_via_tfa(void *bl33)
+__noreturn void __imx8mq_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
 	const void *bl31;
 	size_t bl31_size;
-	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
+	void *bl32 = NULL;
+	size_t bl32_size = 0;
 
 	imx_set_cpu_type(IMX_CPU_IMX8MQ);
 	imx8mq_init_scratch_space();
@@ -395,25 +474,14 @@ __noreturn void __imx8mq_load_and_start_image_via_tfa(void *bl33)
 	imx8mq_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_OPTEE)) {
-		void *bl32 = (void *)arm_mem_optee(endmem);
-		size_t bl32_size;
-		void *bl32_image;
-
-		imx8m_tzc380_init();
-		get_builtin_firmware_ext(imx8mq_bl32_bin,
-				bl33, &bl32_image,
-				&bl32_size);
-
-		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
-
-		memcpy(bl32, bl32_image, bl32_size);
-
+		get_builtin_firmware_ext(imx8mq_bl32_bin, bl33, &bl32, &bl32_size);
 		get_builtin_firmware(imx8mq_bl31_bin_optee, &bl31, &bl31_size);
 	} else {
 		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
 	}
 
-	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
+	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR,
+			     bl32, bl32_size, bl33, fdt);
 }
 
 void __noreturn imx93_load_and_start_image_via_tfa(void)

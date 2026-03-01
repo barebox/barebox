@@ -6,6 +6,7 @@
 #include <common.h>
 #include <io.h>
 #include <errno.h>
+#include <firmware.h>
 #include <linux/sizes.h>
 #include <init.h>
 #include <of.h>
@@ -30,6 +31,7 @@
 #include <mach/imx/imx7-regs.h>
 #include <mach/imx/imx9-regs.h>
 #include <mach/imx/scratch.h>
+#include <mach/imx/tzasc.h>
 #include <tee/optee.h>
 
 struct imx_esdctl_data {
@@ -468,8 +470,9 @@ static void imx_ddrc_set_mstr_device_config(u32 *mstr, unsigned bits)
 	*mstr |= FIELD_PREP(DDRC_MSTR_DEVICE_CONFIG, fls(bits / 8));
 }
 
-static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc, unsigned buswidth)
+resource_size_t imx8m_ddrc_sdram_size(unsigned buswidth)
 {
+	void __iomem *ddrc = IOMEM(MX8M_DDRC_CTL_BASE_ADDR);
 	const u32 addrmap[DDRC_ADDRMAP_LENGTH] = {
 		readl(ddrc + DDRC_ADDRMAP(0)),
 		readl(ddrc + DDRC_ADDRMAP(1)),
@@ -519,10 +522,10 @@ static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc, unsigned buswid
 				   reduced_adress_space, mstr);
 }
 
-static int _imx8m_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data,
+static int _imx8m_ddrc_add_mem(const struct imx_esdctl_data *data,
 			       unsigned int buswidth)
 {
-	resource_size_t size = imx8m_ddrc_sdram_size(mmdcbase, buswidth);
+	resource_size_t size = imx8m_ddrc_sdram_size(buswidth);
 	resource_size_t size0, size1;
 	int ret;
 
@@ -556,12 +559,12 @@ static int _imx8m_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *dat
 
 static int imx8m_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
-	return _imx8m_ddrc_add_mem(mmdcbase, data, 32);
+	return _imx8m_ddrc_add_mem(data, 32);
 }
 
 static int imx8mn_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)
 {
-	return _imx8m_ddrc_add_mem(mmdcbase, data, 16);
+	return _imx8m_ddrc_add_mem(data, 16);
 }
 
 #define IMX9_DDRC_CS_CONFIG(n)	(0x80 + (n) * 4)
@@ -876,6 +879,45 @@ upper_or_coalesced_range(unsigned long base0, unsigned long size0,
 	}
 }
 
+static void imx_optee_handoff_overlay(void)
+{
+	unsigned int early_fdt_sz;
+	u8 *early_fdt;
+
+	/*
+	 * On ARMv8 i.MX SoCs CONFIG_ARCH_IMX_ATF_PASS_BL_PARAMS must be enabled
+	 * else no FDT is passed to OP-TEE.
+	 */
+	if (IS_ENABLED(CONFIG_CPU_V8) &&
+	    !IS_ENABLED(CONFIG_ARCH_IMX_ATF_PASS_BL_PARAMS))
+		return;
+
+	early_fdt = imx_scratch_get_fdt(&early_fdt_sz);
+	if (IS_ERR(early_fdt)) {
+		pr_warn("Failed to get FDT scratch mem, skip register OP-TEE DTBO\n");
+		return;
+	}
+
+	/* Early FDT is optional */
+	if (!early_fdt)
+		return;
+
+	/*
+	 * OP-TEE DT handling is really cumbersome. In case an external DT was
+	 * supplied, OP-TEE re-use this DT and appends overlays if enabled.
+	 *
+	 * Register the whole early FDT as overlay and let the barebox common
+	 * code extract the __fragment__'s from the early FDT which should be
+	 * faster than doing it here manually via libfdt and no MMU.
+	 *
+	 * Note: This assumes that OP-TEE is the only one adding __fragment__'s.
+	 * This is always the case on ARMv7, but on ARMv8 the BL31 (TF-A) could
+	 * add __fragment__'s too. Since the barebox i.MX port doesn't pass the
+	 * FDT to the TF-A this is fine for now.
+	 */
+	optee_handoff_overlay(early_fdt, early_fdt_sz);
+}
+
 void __noreturn imx1_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
@@ -976,18 +1018,58 @@ void __noreturn imx53_barebox_entry(void *boarddata)
 static void __noreturn
 imx6_barebox_entry(unsigned long membase, void *boarddata)
 {
-	barebox_arm_entry(membase,
-			  imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR)),
-			  boarddata);
+	ulong memsize = imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR));
+
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX6_OPTEE) &&
+	    IS_ENABLED(CONFIG_PBL_OPTEE) && imx6_can_access_tzasc()) {
+		void *fdto;
+		unsigned int fdto_size;
+		int tee_size;
+		void *tee;
+
+		get_builtin_firmware(imx6_optee_bin, &tee, &tee_size);
+
+		imx_init_scratch_space(membase + memsize, 1);
+		fdto = imx_scratch_get_fdt(&fdto_size);
+		if (IS_ERR(fdto)) {
+			pr_warn("Failed to get FDT scratch mem.\n");
+			fdto = NULL;
+		} else if (fdto == NULL)
+			pr_warn("No space configured for OP-TEE devicetree\n");
+
+		start_optee_early(fdto, tee);
+		if (!IS_ERR(fdto))
+			optee_handoff_overlay(fdto, fdto_size);
+	}
+
+	barebox_arm_entry(membase, memsize, boarddata);
 }
 
 void __noreturn imx6q_barebox_entry(void *boarddata)
 {
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX6_OPTEE) &&
+	    IS_ENABLED(CONFIG_PBL_OPTEE) && imx6_can_access_tzasc()) {
+		if (imx6q_tzc380_is_bypassed())
+			panic("TZC380 is bypassed, abort OP-TEE loading\n");
+
+		/* Add early non-secure TZASC region1 to pass DTO */
+		imx6q_tzc380_early_ns_region1();
+	}
+
 	imx6_barebox_entry(MX6_MMDC_PORT01_BASE_ADDR, boarddata);
 }
 
 void __noreturn imx6ul_barebox_entry(void *boarddata)
 {
+	if (IS_ENABLED(CONFIG_FIRMWARE_IMX6_OPTEE) &&
+	    IS_ENABLED(CONFIG_PBL_OPTEE) && imx6_can_access_tzasc()) {
+		if (imx6ul_tzc380_is_bypassed())
+			panic("TZC380 is bypassed, abort OP-TEE loading\n");
+
+		/* Add early non-secure TZASC region1 to pass DTO */
+		imx6ul_tzc380_early_ns_region1();
+	}
+
 	imx6_barebox_entry(MX6_MMDC_PORT0_BASE_ADDR, boarddata);
 }
 
@@ -1002,7 +1084,7 @@ resource_size_t imx8m_barebox_earlymem_size(unsigned buswidth)
 {
 	resource_size_t size;
 
-	size = imx8m_ddrc_sdram_size(IOMEM(MX8M_DDRC_CTL_BASE_ADDR), buswidth);
+	size = imx8m_ddrc_sdram_size(buswidth);
 	/*
 	 * We artificially limit detected memory size to force malloc
 	 * pool placement to be within 4GiB address space, so as to
@@ -1019,6 +1101,7 @@ static void __noreturn imx8m_barebox_entry(void *boarddata, unsigned buswidth)
 {
 	imx8m_init_scratch_space(buswidth, false);
 	optee_set_membase(imx_scratch_get_optee_hdr());
+	imx_optee_handoff_overlay();
 	barebox_arm_entry(MX8M_DDR_CSD1_BASE_ADDR,
 			  imx8m_barebox_earlymem_size(buswidth), boarddata);
 }

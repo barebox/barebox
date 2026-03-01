@@ -23,6 +23,7 @@
 #include <linux/ctype.h>
 #include <linux/err.h>
 #include <pm_domain.h>
+#include <tee/optee.h>
 
 static struct device_node *root_node;
 
@@ -2136,6 +2137,8 @@ int barebox_register_fdt(const void *dtb)
 		pr_err("Cannot unflatten dtb: %pe\n", root);
 		return PTR_ERR(root);
 	}
+
+	optee_register_overlay();
 
 	return barebox_register_of(root);
 }

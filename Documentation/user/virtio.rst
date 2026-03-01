@@ -101,7 +101,7 @@ The current working directory can be passed to the guest via the ``virtio-9p``
 device::
 
   qemu-system-aarch64 -kernel barebox-dt-2nd.img -machine virt,highmem=off \
-                       -fsdev local,security_model=mapped,id=fsdev0,path=. \
+                       -fsdev local,security_model=none,id=fsdev0,path=. \
                        -device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare
                        -cpu cortex-a57 -m 1024M -nographic \
                        -serial mon:stdio -trace file=/dev/null

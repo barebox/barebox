@@ -1161,14 +1161,17 @@ config CMD_READLINK
 	help
 	  Read value of a symbolic link
 
-	  Usage: readlink [-f] FILE [VARIABLE]
+	  Usage: readlink [-fe] FILE [VARIABLE]
 
 	  Read value of a symbolic link or canonical file name
 	  The value is either stored it into the specified VARIABLE
 	  or printed.
 
 	  Options:
-		  -f	canonicalize by following first symlink
+		-f	canonicalize by following symlinks
+			final component need not exist
+		-e	canonicalize by following symlinks
+			all components must exist
 
 config CMD_RM
 	tristate

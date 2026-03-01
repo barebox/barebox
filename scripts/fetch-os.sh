@@ -8,7 +8,7 @@ fi
 set -euo pipefail
 
 declare -A images=(
-	["debian-13-nocloud-arm64.qcow2"]="https://cloud.debian.org/images/cloud/trixie/latest/debian-13-nocloud-arm64.qcow2"
+	["debian-13.3.0-arm64-netinst.iso"]="https://cloud.debian.org/images/release/current/arm64/iso-cd/debian-13.3.0-arm64-netinst.iso"
 )
 
 found=0

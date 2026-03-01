@@ -1,16 +1,19 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import enum
+import time
 
 import attr
 import pytest
 import subprocess
 import re
 from contextlib import contextmanager
+import pexpect
 
 from labgrid import target_factory, step, driver
 from labgrid.strategy import Strategy, StrategyError
 from labgrid.util import labgrid_version
+from labgrid.util.timeout import Timeout
 
 match = re.match(r'^(\d+?)\.', labgrid_version())
 if match is None or int(match.group(1)) < 25:
@@ -74,11 +77,7 @@ class BareboxTestStrategy(Strategy):
             # interrupt barebox
             self.target.activate(self.barebox)
         elif status == Status.shell:
-            # transition to barebox
-            self.transition(Status.barebox)  # pylint: disable=missing-kwoa
-            self.barebox.boot("")
-            self.barebox.await_boot()
-            self.target.activate(self.shell)
+            self._boot_kernel("")
         else:
             raise StrategyError(
                 "no transition found from {} to {}".
@@ -99,6 +98,7 @@ class BareboxTestStrategy(Strategy):
         self.transition(Status.barebox)
 
         try:
+            self.barebox.run("global.bootm.efi=disabled # if it exists")
             if bootm:
                 self.barebox_bootm(boottarget)
             else:
@@ -112,18 +112,57 @@ class BareboxTestStrategy(Strategy):
             self.power.cycle()
             self.target.activate(self.barebox)
 
+    def skip_cdrom_installer(self):
+        # Wait for installer to boot. Send Enter every cycle to dismiss
+        # GRUB menu and any installer prompts. The screen TUI has a clock
+        # in the status bar that makes pattern matching unreliable, so
+        # avoid matching on it.
+        timeout = Timeout(float(self.shell.login_timeout))
+
+        while not timeout.expired:
+            self.console.sendline("")
+            index, _, _, _ = self.console.expect(
+                ["Starting system log daemon", pexpect.TIMEOUT],
+                timeout=self.shell.await_login_timeout)
+            if index == 0:
+                break
+
+        # Switch to screen window 3 (shell) and disable the status bar.
+        # Retry until the shell prompt appears.
+        while not timeout.expired:
+            self.console.sendline("\x013")
+            time.sleep(0.5)
+            self.console.sendline("\x01:hardstatus ignore")
+            time.sleep(0.5)
+            self.console.sendline("")
+            index, _, _, _ = self.console.expect(
+                [self.shell.prompt, pexpect.TIMEOUT],
+                timeout=self.shell.await_login_timeout)
+            if index == 0:
+                break
+
+    def _boot_kernel(self, boottarget=None, bootm=False, skip_cdrom_installer=True):
+        self.transition(Status.barebox)
+
+        if bootm:
+            self.barebox_bootm(boottarget)
+        else:
+            self.barebox.boot(boottarget)
+
+        self.barebox.await_boot()
+
+        if skip_cdrom_installer:
+            self.skip_cdrom_installer()
+
+        self.target.activate(self.shell)
+
     @contextmanager
-    def boot_kernel(self, boottarget=None, bootm=False):
+    def boot_kernel(self, boottarget=None, bootm=False, skip_cdrom_installer=True):
         self.transition(Status.barebox)
 
         try:
-            if bootm:
-                self.barebox_bootm(boottarget)
-            else:
-                self.barebox.boot(boottarget)
-
-            self.barebox.await_boot()
-            self.target.activate(self.shell)
+            self._boot_kernel(boottarget=boottarget, bootm=bootm,
+                              skip_cdrom_installer=skip_cdrom_installer)
             yield self.shell
         finally:
             self.target.deactivate(self.shell)

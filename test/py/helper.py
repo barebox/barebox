@@ -5,6 +5,7 @@ import pytest
 import os
 import re
 import shlex
+import subprocess
 
 
 def parse_config(lines):
@@ -86,6 +87,20 @@ def devinfo(barebox, device):
     return info
 
 
+def filter_errors(lines):
+    prefixes = (
+        "WARNING:",
+        "ERROR:",
+        "CRITICAL:",
+        "ALERT:",
+        "EMERG:",
+        "PANIC:",
+        "BUG:",
+    )
+
+    return [line for line in lines if line.startswith(prefixes)]
+
+
 def format_dict_with_prefix(varset: dict, prefix: str) -> str:
     parts = []
     for k, v in varset.items():
@@ -116,18 +131,64 @@ def getparam_int(info, var):
     return int(info["Parameters"][var].split()[0])
 
 
-def of_get_property(barebox, path):
+def of_scan_property(val, ncells=1):
+    if '/*' in val:
+        raise ValueError("Comments are not allowed")
+
+    # empty string
+    if val == '""':
+        return ""
+
+    items = []
+
+    # strings
+    for m in re.finditer(r'"([^"]*)"', val):
+        items.append(m.group(1))
+
+    # < ... > cells
+    for m in re.finditer(r'<([^>]*)>', val):
+        nums = [int(x, 16) for x in m.group(1).split()]
+
+        if ncells > 1 and len(nums) % ncells:
+            raise ValueError("Cell count not divisible by ncells")
+
+        if ncells == 0:
+            v = 0
+            for i, n in enumerate(nums):
+                v |= n << (32 * (len(nums) - i - 1))
+            items.append(v)
+        elif ncells == 1:
+            items.extend(nums)
+        else:
+            for i in range(0, len(nums), ncells):
+                v = 0
+                for j, n in enumerate(nums[i:i+ncells]):
+                    v |= n << (32 * (ncells - j - 1))
+                items.append(v)
+
+    # [ ... ] byte list
+    m = re.search(r'\[([0-9a-fA-F ]+)\]', val)
+    if m:
+        items.append(bytes(int(x, 16) for x in m.group(1).split()))
+
+    if not items:
+        return False
+    return items[0] if len(items) == 1 else items
+
+
+def of_get_property(barebox, path, ncells=1):
     node, prop = os.path.split(path)
 
     stdout = barebox.run_check(f"of_dump -p {node}")
     for line in stdout:
-        if line == '{prop};':
+        if line == f'{prop};':
             return True
 
         prefix = f'{prop} = '
         if line.startswith(prefix):
-            # Also drop the semicolon
-            return line[len(prefix):-1]
+            # Drop the prefix and semicolon, then parse the value
+            value_str = line[len(prefix):-1].strip()
+            return of_scan_property(value_str, ncells)
     return False
 
 
@@ -137,3 +198,41 @@ def skip_disabled(config, *options):
 
         if bool(undefined):
             pytest.skip("skipping test due to disabled " + (",".join(undefined)) + " dependency")
+
+
+def ensure_debian_iso(env, destdir):
+    """
+    Extract Debian kernel and initrd from ISO into destdir.
+
+    The debian_iso specified under images in the YAML will be used
+    Files are extracted into destdir/install.a64/{vmlinuz,initrd.gz}
+    and skipped if they already exist.
+
+    Returns destdir, or None if the ISO doesn't exist.
+    """
+    iso_path = env.config.get_image_path("debian_iso")
+    if iso_path is None:
+        return None
+
+    outdir = os.path.join(destdir, "install.a64")
+    vmlinuz_path = os.path.join(outdir, "vmlinuz")
+    initrd_path = os.path.join(outdir, "initrd.gz")
+
+    if os.path.exists(vmlinuz_path) and os.path.exists(initrd_path):
+        return destdir
+
+    os.makedirs(outdir, exist_ok=True)
+
+    with open(vmlinuz_path, "wb") as f:
+        subprocess.run(
+            ["isoinfo", "-i", iso_path, "-x", "/INSTALL.A64/VMLINUZ.;1"],
+            stdout=f, check=True,
+        )
+
+    with open(initrd_path, "wb") as f:
+        subprocess.run(
+            ["isoinfo", "-i", iso_path, "-x", "/INSTALL.A64/INITRD.GZ;1"],
+            stdout=f, check=True,
+        )
+
+    return destdir

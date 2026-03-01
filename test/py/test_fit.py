@@ -6,11 +6,7 @@ import pytest
 import shutil
 import subprocess
 from pathlib import Path
-from .helper import of_get_property
-
-
-def fit_name(suffix):
-    return f"/mnt/9p/testfs/barebox-{suffix}.fit"
+from .helper import of_get_property, filter_errors
 
 
 def generate_bootscript(barebox, image, name="test"):
@@ -58,42 +54,71 @@ def fit_testdata(barebox_config, testfs):
         pytest.skip(f"Skip dm tests due to missing dependency: {e}")
 
 
-def test_fit(barebox, strategy, testfs, fit_testdata):
-    _, _, returncode = barebox.run(f"ls {fit_name('gzipped')}")
+@pytest.fixture(scope="function")
+def fitimage(barebox, testfs, fit_testdata):
+    path = f"/mnt/9p/testfs/barebox-gzipped.fit"
+    _, _, returncode = barebox.run(f"ls {path}")
     if returncode != 0:
         pytest.xfail("skipping test due to missing FIT image")
 
+    return path
+
+
+def test_fit_dryrun(barebox, strategy, fitimage):
+    # Sanity check, this is only fixed up on first boot
+    assert of_get_property(barebox, "/chosen/barebox-version") is False
+    [ver] = barebox.run_check("echo barebox-$global.version")
+    assert ver.startswith('barebox-2')
+
+    barebox.run_check("global dryrun_attempts=5")
+    barebox.run_check('[ "$global.dryrun_attempts" = 5 ]')
+
+    [efi] = barebox.run_check("echo ${global.bootm.efi}")
+
+    try:
+        if efi:
+            barebox.run_check("global.bootm.efi=disabled")
+
+        for i in range(5):
+            stdout, _, _ = barebox.run(f"bootm -d -v {fitimage}")
+            errors = filter_errors(stdout)
+            assert errors == [], errors
+    finally:
+        if efi:
+            barebox.run_check(f"global.bootm.efi={efi}")
+
+    # If we actually did boot, this variable would be undefined
+    barebox.run_check('[ "$global.dryrun_attempts" = 5 ]')
+
+
+def test_fit(barebox, strategy, fitimage):
     # Sanity check, this is only fixed up on first boot
     assert of_get_property(barebox, "/chosen/barebox-version") is False
     [ver] = barebox.run_check("echo barebox-$global.version")
     assert ver.startswith('barebox-2')
 
     barebox.run_check("of_property -s /chosen barebox,boot-count '<0x0>'")
-    assert of_get_property(barebox, "/chosen/barebox,boot-count") == '<0x0>'
+    assert of_get_property(barebox, "/chosen/barebox,boot-count") == 0x0
 
     barebox.run_check("of_property -fs /chosen barebox,boot-count '<0x1>'")
-    assert of_get_property(barebox, "/chosen/barebox,boot-count") == '<0x0>'
+    assert of_get_property(barebox, "/chosen/barebox,boot-count") == 0x0
 
     barebox.run_check("global linux.bootargs.testarg=barebox.chainloaded")
 
-    boottarget = generate_bootscript(barebox, fit_name('gzipped'))
+    boottarget = generate_bootscript(barebox, fitimage)
 
     with strategy.boot_barebox(boottarget) as barebox:
-        assert of_get_property(barebox, "/chosen/barebox-version") == f'"{ver}"', \
+        assert of_get_property(barebox, "/chosen/barebox-version") == ver, \
                "/chosen/barebox-version suggests we did not chainload"
 
-        assert of_get_property(barebox, "/chosen/barebox,boot-count") == '<0x1>', \
+        assert of_get_property(barebox, "/chosen/barebox,boot-count") == 0x1, \
                "/chosen/barebox,boot-count suggests we got bultin DT"
 
         # Check that command line arguments were fixed up
         bootargs = of_get_property(barebox, "/chosen/bootargs")
         assert "barebox.chainloaded" in bootargs
 
-        initrd_start = of_get_property(barebox, "/chosen/linux,initrd-start")
-        initrd_end = of_get_property(barebox, "/chosen/linux,initrd-end")
+        initrd_start = of_get_property(barebox, "/chosen/linux,initrd-start", 0)
+        initrd_end = of_get_property(barebox, "/chosen/linux,initrd-end", 0)
 
-        addr_regex = r"<(0x[0-9a-f]{1,8} ?)+>"
-        assert re.search(addr_regex, initrd_start), \
-            f"initrd start {initrd_start} malformed"
-        assert re.search(addr_regex, initrd_end), \
-            f"initrd end {initrd_end} malformed"
+        assert initrd_start < initrd_end

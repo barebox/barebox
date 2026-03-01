@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include "barebox-info.h"
 #include <common.h>
 #include <net.h>
 #include <tlv/tlv.h>
+#include <param.h>
+#include <string.h>
+
 
 int tlv_handle_serial(struct tlv_device *dev, struct tlv_mapping *map, u16 len, const u8 *val)
 {
@@ -18,21 +22,26 @@ int tlv_handle_serial(struct tlv_device *dev, struct tlv_mapping *map, u16 len, 
 
 int tlv_handle_eth_address(struct tlv_device *dev, struct tlv_mapping *map, u16 len, const u8 *val)
 {
+	int ret;
 	int i;
 
 	if (len % ETH_ALEN != 0)
 		return -EINVAL;
 
-	for (i = 0; i < len / ETH_ALEN; i++)
+	for (i = 0; i < len / ETH_ALEN; i++) {
 		eth_register_ethaddr(i, val + i * ETH_ALEN);
-
-	return tlv_format_mac(dev, map, len, val);
+		ret = tlv_format_mac(dev, map, ETH_ALEN, val + i * ETH_ALEN);
+		if (ret < 0)
+			return ret;
+	}
+	return 0;
 }
 
 int tlv_handle_eth_address_seq(struct tlv_device *dev, struct tlv_mapping *map, u16 len, const u8 *val)
 {
 	u8 eth_addr[ETH_ALEN];
 	int eth_count;
+	int ret;
 
 	eth_count = *val;
 
@@ -43,7 +52,9 @@ int tlv_handle_eth_address_seq(struct tlv_device *dev, struct tlv_mapping *map, 
 
 	for (int i = 0; i < eth_count; i++, eth_addr_inc(eth_addr)) {
 		eth_register_ethaddr(i, eth_addr);
-		tlv_format_mac(dev, map, ETH_ALEN, eth_addr);
+		ret = tlv_format_mac(dev, map, ETH_ALEN, eth_addr);
+		if (ret < 0)
+			return ret;
 	}
 
 	return 0;
@@ -107,14 +118,15 @@ static struct device_node *of_append_node(struct device_node *root, const char *
 	return of_new_node(root, name);
 }
 
+/* add a single address-<num> entry to the property */
 int tlv_format_mac(struct tlv_device *dev, struct tlv_mapping *map, u16 len, const u8 *val)
 {
 	struct device_node *np = tlv_of_node(dev);
 	struct property *pp;
 	char propname[sizeof("address-4294967295")];
-	int base = 0, i, ret;
+	int base = 0, ret;
 
-	if (len % 6 != 0)
+	if (len != ETH_ALEN)
 		return -EINVAL;
 
 	np = of_append_node(np, map->prop);
@@ -124,12 +136,10 @@ int tlv_format_mac(struct tlv_device *dev, struct tlv_mapping *map, u16 len, con
 	for_each_property_of_node(np, pp)
 		base++;
 
-	for (i = base; i < base + len / 6; i++) {
-		snprintf(propname, sizeof(propname), "address-%u", i);
-		ret = of_property_sprintf(np, propname, "%*phC", 6, val);
-		if (ret)
-			return ret;
-	}
+	snprintf(propname, sizeof(propname), "address-%u", base);
+	ret = of_property_sprintf(np, propname, "%*phC", ETH_ALEN, val);
+	if (ret < 0)
+		return ret;
 
 	return 0;
 }
@@ -150,6 +160,23 @@ int tlv_format_dec(struct tlv_device *dev, struct tlv_mapping *map, u16 len, con
 	}
 }
 
+int tlv_bind_soc_uid(struct tlv_device *dev, struct tlv_mapping *map, u16 len, const u8 *val)
+{
+	const void *soc_uid = 0;
+	size_t soc_uid_len = 0;
+
+	if (barebox_get_soc_uid_bin(&soc_uid, &soc_uid_len))
+		return -EACCES;
+
+	if (soc_uid && (size_t)len == soc_uid_len && !memcmp(val, soc_uid, len))
+		return tlv_format(dev, map, "%*phN", len, val);
+
+	dev_err(&dev->dev, "%s: tlv bound to SoC UID %*phN, got %*phN\n", __func__,
+		len, val, (int)soc_uid_len, soc_uid);
+
+	return -EACCES;
+}
+
 struct tlv_mapping barebox_tlv_v1_mappings[] = {
 	/* Detailed release information string for the device */
 	{ 0x0002, tlv_format_str, "device-hardware-release" },
@@ -165,10 +192,12 @@ struct tlv_mapping barebox_tlv_v1_mappings[] = {
 	{ 0x0007, tlv_format_str, "pcba-serial-number"},
 	/* Printed Circuit Board Assembly hardware release */
 	{ 0x0008, tlv_format_str, "pcba-hardware-release"},
-	/* A single Ethernet address */
+	/* A list of Ethernet addresses or a single Ethernet address */
 	{ 0x0011, tlv_handle_eth_address, "ethernet-address" },
-	/* A sequence of multiple Ethernet addresses */
+	/* A sequence of subsequent Ethernet addresses, by number and starting address */
 	{ 0x0012, tlv_handle_eth_address_seq, "ethernet-address" },
+	/* Reject TLV if supplied binary data does not match UID SoC register */
+	{ 0x0024, tlv_bind_soc_uid, "bound-soc-uid"},
 	{ /* sentintel */ },
 };
 
@@ -212,4 +241,4 @@ static int tlv_register_default(void)
 	}
 	return 0;
 }
-device_initcall(tlv_register_default);
+late_initcall(tlv_register_default);

@@ -77,6 +77,11 @@ void imx8mn_cpu_lowlevel_init(void);
 void imx8mp_cpu_lowlevel_init(void);
 void imx93_cpu_lowlevel_init(void);
 
+static inline bool imx8mp_keep_compatible_soc_uid(void)
+{
+	return IS_ENABLED(CONFIG_ARCH_IMX8MP_KEEP_COMPATIBLE_SOC_UID);
+}
+
 /* There's a off-by-one betweem the gpio bank number and the gpiochip */
 /* range e.g. GPIO_1_5 is gpio 5 under linux */
 #define IMX_GPIO_NR(bank, nr)		(((bank) - 1) * 32 + (nr))

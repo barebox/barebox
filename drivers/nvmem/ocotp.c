@@ -31,6 +31,7 @@
 #ifdef CONFIG_ARCH_IMX
 #include <mach/imx/ocotp.h>
 #include <mach/imx/ocotp-fusemap.h>
+#include <mach/imx/generic.h>
 #else
 #include <mach/mxs/ocotp.h>
 #include <mach/mxs/ocotp-fusemap.h>
@@ -853,17 +854,49 @@ static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 	return imx8m_feat_ctrl_init(priv->dev.parent, tester3, tester4, priv->data->feat);
 }
 
+#ifndef CONFIG_ARCH_IMX
+static inline bool imx8mp_keep_compatible_soc_uid(void)
+{
+	return false;
+}
+#endif
+
+#define IMX8MP_OCOTP_UID(n)	\
+	(OCOTP_WORD(0x420 + 0x10 * (n)) | OCOTP_BIT(0) | OCOTP_WIDTH(32))
+#define IMX8MP_OCOTP_UID_2(n)	\
+	(OCOTP_WORD(0xe00 + 0x10 * (n)) | OCOTP_BIT(0) | OCOTP_WIDTH(32))
+
 static void imx_ocotp_set_unique_machine_id(void)
 {
-	uint32_t unique_id_parts[UNIQUE_ID_NUM];
-	int i;
+	bool is_imx8mp = of_machine_is_compatible("fsl,imx8mp");
+	uint32_t uid[4];
+	int len;
+	char *uidstr;
 
-	for (i = 0; i < UNIQUE_ID_NUM; i++)
-		if (imx_ocotp_read_field(OCOTP_UNIQUE_ID(i),
-					 &unique_id_parts[i]))
+	if (is_imx8mp && !imx8mp_keep_compatible_soc_uid()) {
+		if (imx_ocotp_read_field(IMX8MP_OCOTP_UID(0), &uid[0]))
+			return;
+		if (imx_ocotp_read_field(IMX8MP_OCOTP_UID(1), &uid[1]))
 			return;
 
-	machine_id_set_hashable(unique_id_parts, sizeof(unique_id_parts));
+		if (imx_ocotp_read_field(IMX8MP_OCOTP_UID_2(0), &uid[2]))
+			return;
+		if (imx_ocotp_read_field(IMX8MP_OCOTP_UID_2(1), &uid[3]))
+			return;
+		len = sizeof(uid);
+		uidstr = xasprintf("%08X%08X%08X%08X", uid[3], uid[2], uid[1], uid[0]);
+	} else {
+		if (imx_ocotp_read_field(OCOTP_UNIQUE_ID(0), &uid[0]))
+			return;
+		if (imx_ocotp_read_field(OCOTP_UNIQUE_ID(1), &uid[1]))
+			return;
+
+		len = sizeof(uid) / 2;
+		uidstr = xasprintf("%08X%08X", uid[1], uid[0]);
+	}
+
+	barebox_set_soc_uid(uidstr, &uid, len);
+	free(uidstr);
 }
 
 static int imx_ocotp_probe(struct device *dev)
@@ -939,8 +972,7 @@ static int imx_ocotp_probe(struct device *dev)
 				  ethaddr->value, ethaddr);
 	}
 
-	if (IS_ENABLED(CONFIG_MACHINE_ID))
-		imx_ocotp_set_unique_machine_id();
+	imx_ocotp_set_unique_machine_id();
 
 	ret = imx_ocotp_init_dt(priv);
 	if (ret)

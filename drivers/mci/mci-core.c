@@ -1155,6 +1155,8 @@ static void mci_correct_version_from_ext_csd(struct mci *mci)
 {
 	if (!IS_SD(mci) && (mci->version >= MMC_VERSION_4) && mci->ext_csd) {
 		switch (mci->ext_csd[EXT_CSD_REV]) {
+		case 0:
+			mci->version = MMC_VERSION_4;
 		case 1:
 			mci->version = MMC_VERSION_4_1;
 			break;
@@ -1178,6 +1180,9 @@ static void mci_correct_version_from_ext_csd(struct mci *mci)
 			break;
 		case 9:
 			mci->version = MMC_VERSION_5_1B;
+			break;
+		default:
+			mci->version = MMC_VERSION_MAX;
 			break;
 		}
 	}

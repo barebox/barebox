@@ -825,6 +825,9 @@ int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, con
 
 		case FDT_PROP:
 			fdt_prop = (const void *)fdt + dt_struct;
+			if (!dt_ptr_ok(fdt, fdt_prop))
+				return 0;
+
 			len = fdt32_to_cpu(fdt_prop->len);
 
 			name = dt_string(&f, dt_strings, fdt32_to_cpu(fdt_prop->nameoff));

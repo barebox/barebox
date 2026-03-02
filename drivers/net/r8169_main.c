@@ -3013,14 +3013,19 @@ static void rtl8169_eth_rx(struct eth_device *edev)
 {
 	struct rtl8169_private *tp = edev->priv;
 	struct device *dev = &tp->pci_dev->dev;
-	unsigned int entry, pkt_size = 0;
-	u8 status;
+	unsigned int entry, pkt_size;
+	u32 opts;
+	int budget = NUM_RX_DESC;
 
-	entry = tp->cur_rx % NUM_RX_DESC;
+	while (budget-- > 0) {
+		entry = tp->cur_rx % NUM_RX_DESC;
+		opts = le32_to_cpu(tp->RxDescArray[entry].opts1);
 
-	if ((le32_to_cpu(tp->RxDescArray[entry].opts1) & DescOwn) == 0) {
-		if (!(le32_to_cpu(tp->RxDescArray[entry].opts1) & RxRES)) {
-			pkt_size = (le32_to_cpu(tp->RxDescArray[entry].opts1) & 0x1fff) - 4;
+		if (opts & DescOwn)
+			break;
+
+		if (!(opts & RxRES)) {
+			pkt_size = (opts & 0x1fff) - 4;
 
 			dma_sync_single_for_cpu(dev, tp->rx_buf_phys + entry * PKT_BUF_SIZE,
 						pkt_size, DMA_FROM_DEVICE);
@@ -3030,24 +3035,20 @@ static void rtl8169_eth_rx(struct eth_device *edev)
 
 			dma_sync_single_for_device(dev, tp->rx_buf_phys + entry * PKT_BUF_SIZE,
 						   pkt_size, DMA_FROM_DEVICE);
-
-			if (entry == NUM_RX_DESC - 1)
-				tp->RxDescArray[entry].opts1 = cpu_to_le32(DescOwn |
-					RingEnd | PKT_BUF_SIZE);
-			else
-				tp->RxDescArray[entry].opts1 =
-					cpu_to_le32(DescOwn | PKT_BUF_SIZE);
-			tp->RxDescArray[entry].addr = cpu_to_le64(tp->rx_buf_phys +
-					    entry * PKT_BUF_SIZE);
 		} else {
 			dev_err(&edev->dev, "rx error\n");
 		}
 
+		if (entry == NUM_RX_DESC - 1)
+			tp->RxDescArray[entry].opts1 = cpu_to_le32(DescOwn |
+				RingEnd | PKT_BUF_SIZE);
+		else
+			tp->RxDescArray[entry].opts1 =
+				cpu_to_le32(DescOwn | PKT_BUF_SIZE);
+		tp->RxDescArray[entry].addr = cpu_to_le64(tp->rx_buf_phys +
+				    entry * PKT_BUF_SIZE);
+
 		tp->cur_rx++;
-	} else {
-		status = RTL_R8(tp, IntrStatus);
-		RTL_W8(tp, IntrStatus, status & ~(TxErr | RxErr | SYSErr));
-		udelay(100);	/* wait */
 	}
 }
 

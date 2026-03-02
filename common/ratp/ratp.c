@@ -329,7 +329,7 @@ static void ratp_command_run(struct work_struct *w)
 
 	pr_debug("running command: %s\n", rw->command);
 
-	ret = run_command(rw->command);
+	ret = run_command("%s", rw->command);
 
 	free(rw->command);
 	free(rw);

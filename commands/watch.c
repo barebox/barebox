@@ -68,7 +68,7 @@ static int do_watch(int argc , char *argv[])
 			printf("%s\n\n", header);
 		}
 
-		run_command(cmd);
+		run_command("%s", cmd);
 
 		start = get_time_ns();
 		while (!is_timeout(start, period_ns)) {

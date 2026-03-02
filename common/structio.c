@@ -18,12 +18,12 @@ int structio_run_command(struct bobject **bret, const char *cmd)
 	int ret;
 
 	if (!bret)
-		return run_command(cmd);
+		return run_command("%s", cmd);
 
 	active_capture = bobj = bobject_alloc("capture");
 	bobj->local = true;
 
-	ret = run_command(cmd);
+	ret = run_command("%s", cmd);
 
 	active_capture = NULL;
 

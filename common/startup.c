@@ -359,7 +359,7 @@ static int run_init(void)
 		path = &scr[strlen("source ")];
 		if (stat(path, &s) == 0) {
 			pr_info("Invoking '%s'...\n", path);
-			run_command(scr);
+			run_command("%s", scr);
 		}
 		free(scr);
 	}

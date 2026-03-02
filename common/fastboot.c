@@ -945,7 +945,7 @@ static void cb_oem_exec(struct fastboot *fb, const char *cmd)
 		return;
 	}
 
-	ret = run_command(cmd);
+	ret = run_command("%s", cmd);
 	if (ret < 0)
 		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "%pe", ERR_PTR(ret));
 	else if (ret > 0)

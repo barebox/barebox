@@ -25,7 +25,7 @@ static void __assert_eq(const char *expr, bool result, const char *func, int lin
 
 	total_tests++;
 
-	ret = run_command(expr);
+	ret = run_command("%s", expr);
 	if ((result && ret != 0) || (!result && ret != 1)) {
 		failed_tests++;
 		printf("%s:%d: %s: assertion failure, ret=%d\n", func, line, expr, ret);

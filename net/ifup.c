@@ -31,7 +31,7 @@ static int eth_discover(char *file)
 		goto out;
 	}
 
-	ret = run_command(file);
+	ret = run_command("%s", file);
 	if (ret) {
 		pr_err("Running '%s' failed with %d\n", file, ret);
 		goto out;

@@ -305,7 +305,7 @@ int run_shell(void)
 		if (len == -1) {
 			puts ("<INTERRUPT>\n");
 		} else {
-			const int rc = run_command(lastcommand);
+			const int rc = run_command("%s", lastcommand);
 			if (rc < 0) {
 				/* invalid command or not repeatable, forget it */
 				lastcommand[0] = 0;

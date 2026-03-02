@@ -3507,7 +3507,7 @@ static int automount_mount(struct dentry *dentry)
 
 		setenv("automount_path", am->path);
 		export("automount_path");
-		ret = run_command(am->cmd);
+		ret = run_command("%s", am->cmd);
 		unsetenv("automount_path");
 
 		if (ret) {

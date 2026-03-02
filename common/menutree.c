@@ -29,7 +29,7 @@ static void menutree_action(struct menu *m, struct menu_entry *me)
 {
 	struct menutree *mt = container_of(me, struct menutree, me);
 
-	run_command(mt->action);
+	run_command("%s", mt->action);
 }
 
 static void setenv_bool(const char *var, bool val)

@@ -107,7 +107,7 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	bootm_nattempts = bootm_command_attempts();
 
-	ret = run_command(bs->entry.path);
+	ret = run_command("%s", bs->entry.path);
 	if (ret) {
 		pr_err("Running script '%s' failed: %s\n", bs->entry.path, strerror(-ret));
 		goto out;

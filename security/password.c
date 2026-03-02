@@ -417,7 +417,7 @@ void login(void)
 
 		ret = password(passwd, PASSWD_MAX_LENGTH, LOGIN_MODE, login_timeout);
 		if (ret < 0)
-			run_command(login_fail_command);
+			run_command("%s", login_fail_command);
 
 		if (ret < 0)
 			continue;

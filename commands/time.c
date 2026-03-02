@@ -34,7 +34,7 @@ static int do_time(int argc, char *argv[])
 
 	start = get_time_ns();
 
-	run_command(buf);
+	run_command("%s", buf);
 
 	end = get_time_ns();
 

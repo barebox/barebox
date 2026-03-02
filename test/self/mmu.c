@@ -107,6 +107,10 @@ static void test_remap(void)
 	expect_success(ret, "asserting no mirror before remap");
 
 	ret = arch_remap_range(mirror, buffer_phys, TEST_BUFFER_SIZE, MAP_UNCACHED);
+	if (ret == -ENOSYS) {
+		skipped_tests += 6;
+		goto skip_mirroring;
+	}
 	expect_success(ret, "remapping with mirroring");
 
 	for (i = 0; i < TEST_BUFFER_SIZE; i += sizeof(u32)) {
@@ -149,6 +153,8 @@ static void test_remap(void)
 	}
 
 	expect_success(ret, "asserting mirroring after remap (virt += 4K)");
+
+skip_mirroring:
 
 	ret = remap_range(buffer, TEST_BUFFER_SIZE, MAP_DEFAULT);
 	expect_success(ret, "remapping buffer with default attrs");

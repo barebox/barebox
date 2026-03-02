@@ -1176,6 +1176,9 @@ static void mci_correct_version_from_ext_csd(struct mci *mci)
 		case 8:
 			mci->version = MMC_VERSION_5_1;
 			break;
+		case 9:
+			mci->version = MMC_VERSION_5_1B;
+			break;
 		}
 	}
 }
@@ -1436,7 +1439,7 @@ static char *mci_version_string(struct mci *mci)
 	n = sprintf(version, "%u.%u", major, minor);
 	/* Omit zero micro versions */
 	if (micro)
-		sprintf(version + n, "%u", micro);
+		sprintf(version + n, "%X", micro);
 
 	return version;
 }
@@ -2538,6 +2541,12 @@ static int mci_mmc_decode_cid(struct mci *card)
 	if (card->version >= MMC_VERSION_4_41) {
 		/* Adjust production date as per JEDEC JESD84-B451 */
 		if (card->cid.year < 2010)
+			card->cid.year += 16;
+	}
+
+	if (card->version >= MMC_VERSION_5_1B) {
+		/* eMMC 5.1b: y field rolls over again after 2025 */
+		if (card->cid.year < 2023)
 			card->cid.year += 16;
 	}
 

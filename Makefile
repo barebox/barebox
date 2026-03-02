@@ -1083,7 +1083,7 @@ endif
 	fi
 	@echo
 	@# This is intentionally not @suppressed, to make it easier to reproduce
-	(cd $(srctree); $(PYTEST))
+	(cd $(srctree); KBUILD_OUTPUT=$(abs_objtree) $(PYTEST))
 
 PHONY += check
 

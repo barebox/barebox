@@ -977,6 +977,8 @@ retry_scr:
 		break;
 	case 2:
 		mci->version = SD_VERSION_2;
+		if ((mci->scr[0] >> 15) & 0x1)
+			mci->version = SD_VERSION_3;
 		break;
 	default:
 		mci->version = SD_VERSION_1_0;

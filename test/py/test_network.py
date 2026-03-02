@@ -68,7 +68,12 @@ def tftp_conversation(barebox, barebox_interface, guestaddr):
     finally:
         # terminate a timed-out tftp
         barebox.console.sendcontrol("c")
+        saved_log_level = barebox.saved_log_level
         barebox._await_prompt()
+        # _await_prompt() re-queries global.loglevel, which has been
+        # silenced to 0 by _run(), and saves it. Restore the original
+        # level so subsequent run_check() calls still raise it.
+        barebox.saved_log_level = saved_log_level
         tftp_thread.join()
         barebox.run_check("ifdown eth0")
 

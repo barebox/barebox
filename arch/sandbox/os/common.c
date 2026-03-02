@@ -568,9 +568,10 @@ static inline size_t str_has_prefix(const char *str, const char *prefix)
 	return strncmp(str, prefix, len) == 0 ? len : 0;
 }
 
-static char *realpath_alloc(char *path)
+static char *selfpath_alloc(void)
 {
 	char *real;
+	int ret;
 
 	real = malloc(PATH_MAX);
 	if (!real) {
@@ -578,12 +579,16 @@ static char *realpath_alloc(char *path)
 		exit(3);
 	}
 
-	if (!realpath(path, real)) {
-		perror("realpath");
-		exit(EXIT_FAILURE);
-	}
+	/*
+	 * selfpath() only NUL-terminates the buffer when the link target
+	 * fit, so treat a result filling the whole buffer as failure.
+	 */
+	ret = selfpath(real, PATH_MAX);
+	if (ret > 0 && ret < PATH_MAX - 1)
+		return real;
 
-	return real;
+	perror("readlink /proc/self/exe");
+	exit(EXIT_FAILURE);
 }
 
 static void setup_external_fuzz_with_args(const char *fuzz, int *pargc, char **pargv[])
@@ -592,7 +597,7 @@ static void setup_external_fuzz_with_args(const char *fuzz, int *pargc, char **p
 	char *rlpath;
 	int ret;
 
-	rlpath = realpath_alloc(argv[0]);
+	rlpath = selfpath_alloc();
 
 	asprintf(&argv[optind - 1], "%s/fuzz-%s", dirname(rlpath), fuzz);
 
@@ -785,7 +790,6 @@ ENTRY_FUNCTION(sandbox_main, argc, argv)
 	char **args;
 	char *argv0;
 	size_t fuzz_off;
-	char *rlpath;
 
 	tcgetattr(0, &term_orig);
 
@@ -796,10 +800,7 @@ ENTRY_FUNCTION(sandbox_main, argc, argv)
 		if (!args)
 			exit(3);
 
-		rlpath = realpath_alloc(argv[0]);
-		asprintf(&args[0], "%s/barebox", dirname(rlpath));
-
-		free(rlpath);
+		args[0] = selfpath_alloc();
 
 		args[1] = "--fuzz";
 		args[2] = argv0 + fuzz_off;

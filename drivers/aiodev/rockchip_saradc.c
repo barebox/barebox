@@ -257,7 +257,7 @@ fail_data:
 }
 
 static const struct rockchip_saradc_cfg rk3562_saradc_cfg = {
-	.num_bits = 12,
+	.num_bits = 10,
 	.num_channels = 8,
 	.read = rockchip_saradc_read_v2,
 };

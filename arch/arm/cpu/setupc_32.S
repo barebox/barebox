@@ -7,17 +7,29 @@
 .section .text.setupc
 
 /*
- * setup_c: clear bss
+ * setup_c: clear bss if not yet done
  */
 ENTRY(setup_c)
 	push	{r4, lr}
+	ldr	r0, =bss_cleared
+	ldr	r1, [r0]
+	cmp	r1, #0
+	bne	1f			/* skip if already done */
 	ldr	r0, =__bss_start
 	mov	r1, #0
 	ldr	r2, =__bss_stop
 	sub	r2, r2, r0
 	bl	__memset		/* clear bss */
-	pop	{r4, pc}
+	ldr	r0, =bss_cleared
+	mov	r1, #1
+	str	r1, [r0]		/* mark bss cleared */
+1:	pop	{r4, pc}
 ENDPROC(setup_c)
+
+.section .data.bss_cleared
+.balign 4
+bss_cleared:
+	.word 	0
 
 /*
  * void relocate_to_adr(unsigned long targetadr)

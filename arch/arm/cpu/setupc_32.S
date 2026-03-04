@@ -7,33 +7,16 @@
 .section .text.setupc
 
 /*
- * setup_c: copy binary to link address, clear bss and
- * continue executing at new address.
- *
- * This function does not return to the address it is
- * called from, but to the same location in the copied
- * binary.
+ * setup_c: clear bss
  */
 ENTRY(setup_c)
-	push	{r4, r5}
-	mov	r5, lr
-	bl	get_runtime_offset
-	subs	r4, r0, #0
-	beq	1f			/* skip memcpy if already at correct address */
-	ldr	r0,=_text
-	ldr	r2,=__bss_start
-	sub	r2, r2, r0
-	add	r1, r0, r4
-	bl	__memcpy			/* memcpy(_text, _text + offset, __bss_start - _text) */
-1:	ldr	r0, =__bss_start
+	push	{r4, lr}
+	ldr	r0, =__bss_start
 	mov	r1, #0
 	ldr	r2, =__bss_stop
 	sub	r2, r2, r0
-	bl	__memset			/* clear bss */
-	bl	sync_caches_for_execution
-	sub	lr, r5, r4		/* adjust return address to new location */
-	pop	{r4, r5}
-	ret	lr
+	bl	__memset		/* clear bss */
+	pop	{r4, pc}
 ENDPROC(setup_c)
 
 /*

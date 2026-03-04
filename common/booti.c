@@ -59,8 +59,8 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 
 	kernel = get_kernel_address(data->os_address, text_offset, &end);
 
-	pr_debug("Kernel (size: %lx) to be loaded into %lx+%llx\n",
-		 image_size, kernel, end);
+	pr_debug("Kernel (size: %lx) to be loaded into %lx+%pa\n",
+		 image_size, kernel, &end);
 
 	if (kernel == UIMAGE_INVALID_ADDRESS)
 		return ERR_PTR(-ENOENT);

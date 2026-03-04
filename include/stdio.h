@@ -12,10 +12,8 @@
 /* stdin */
 int tstc(void);
 int getchar(void);
-int vprintf(const char *fmt, va_list args);
 #else
 static inline int tstc(void) { return 0; }
-static inline int vprintf(const char *fmt, va_list args) { return 0; }
 static inline int getchar(void) { return -EINVAL; }
 #endif
 
@@ -23,11 +21,13 @@ int readline(const char *prompt, char *buf, int len);
 
 #if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \
 	(IN_PBL && defined(CONFIG_PBL_CONSOLE))
+int vprintf(const char *fmt, va_list args);
 static inline int puts(const char *s) { return console_puts(CONSOLE_STDOUT, s); }
 static inline void putchar(char c) { console_putc(CONSOLE_STDOUT, c); }
 #else
 static inline int puts(const char *s) { return 0; }
 static inline void putchar(char c) {}
+static inline int vprintf(const char *fmt, va_list args) { return 0; }
 #endif
 
 int readline(const char *prompt, char *buf, int len);

@@ -175,6 +175,7 @@ config ARCH_ROCKCHIP_ATF
 config ARCH_ROCKCHIP_ATF_PASS_FDT
 	bool "Pass device tree to TF-A"
 	depends on ARCH_ROCKCHIP_ATF
+	select LIBFDT
 	help
 	  Enable this option if you are using an upstream OP-TEE that uses the
 	  device tree to initialize dynamic shared memory, which is passed

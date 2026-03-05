@@ -1133,7 +1133,6 @@ $(sort $(BAREBOX_OBJS)) $(BAREBOX_LDS) $(BAREBOX_PBL_OBJS): $(barebox-dirs) ;
 
 PHONY += $(barebox-dirs)
 $(barebox-dirs): prepare scripts
-	@find $(objtree)/$@ -name policy-list -exec rm -f {} \; 2>/dev/null || true
 	$(Q)$(MAKE) $(build)=$@
 
 # Store (new) KERNELRELASE string in include/config/kernel.release
@@ -1228,12 +1227,17 @@ targets += include/generated/security_autoconf.h
 targets += include/generated/sconfig_names.h
 
 KPOLICY = $(shell find $(objtree)/ -name policy-list -exec cat {} \;)
-KPOLICY.tmp = $(addsuffix .tmp,$(KPOLICY))
 
-PHONY += collect-policies
-collect-policies: KBUILD_MODULES :=
-collect-policies: KBUILD_BUILTIN :=
-collect-policies: $(barebox-dirs) FORCE
+collect-dirs    := $(addprefix _policy_collect_,$(barebox-alldirs))
+
+PHONY += _policy_collect_clean $(collect-dirs) collect-policies
+_policy_collect_clean:
+	$(Q)find $(objtree)/ -name policy-list -delete 2>/dev/null || true
+
+$(collect-policy-dirs): | _policy_collect_clean
+	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.policy obj=$(patsubst _policy_collect_%,%,$@)
+
+collect-policies: $(collect-policy-dirs)
 
 PHONY += security_listconfigs
 security_listconfigs: collect-policies FORCE
@@ -1241,16 +1245,20 @@ security_listconfigs: collect-policies FORCE
 	@$(foreach p, $(KPOLICY), echo $p ;)
 
 PHONY += security_checkconfigs
-security_checkconfigs: collect-policies $(KPOLICY.tmp) FORCE
+security_checkconfigs: collect-policies FORCE
+	+$(Q)$(foreach p, $(KPOLICY), \
+		$(MAKE) $(build)=$(patsubst %/,%,$(dir $p)) $p.tmp ;)
 	+$(Q)$(foreach p, $(KPOLICY), \
 		$(call loop_cmd,security_checkconfig,$p.tmp))
 
-security_%config: collect-policies $(KPOLICY.tmp) FORCE
+security_%config: collect-policies FORCE
+	+$(Q)$(foreach p, $(KPOLICY), \
+		$(MAKE) $(build)=$(patsubst %/,%,$(dir $p)) $p.tmp ;)
 	+$(Q)$(foreach p, $(KPOLICY), $(call loop_cmd,sconfig, \
 		$(@:security_%=%),$p.tmp))
 ifeq ($(KPOLICY_TMPUPDATE),)
 	+$(Q)$(foreach p, $(KPOLICY), \
-		cp 2>/dev/null $p.tmp $(call resolve-srctree,$p) || true;)
+		cp 2>/dev/null $p.tmp $(call resolve-external,$p) || true;)
 endif
 
 quiet_cmd_sconfigpost = SCONFPP $@

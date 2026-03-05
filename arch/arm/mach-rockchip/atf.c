@@ -230,6 +230,20 @@ static int rk3588_fixup_mem(void *fdt)
 	return fdt_fixup_mem(fdt, base, size, i);
 }
 
+static int rk3588_open_fdt(const void *fdt, void *buf, int bufsize)
+{
+	int root;
+
+	if (fdt_create_empty_tree(buf, bufsize) != 0)
+		return -1;
+	root = fdt_path_offset(buf, "/");
+
+	fdt_setprop_u32(buf, root, "#address-cells", 2);
+	fdt_setprop_u32(buf, root, "#size-cells", 2);
+
+	return 0;
+}
+
 void __noreturn rk3588_barebox_entry(void *fdt)
 {
 	phys_addr_t membase, memend;
@@ -250,7 +264,7 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_ATF_PASS_FDT)) {
 			pr_debug("Copy fdt to scratch area 0x%p (%zu bytes)\n",
 				 rk_scratch->fdt, sizeof(rk_scratch->fdt));
-			if (fdt_open_into(fdt, rk_scratch->fdt, sizeof(rk_scratch->fdt)) == 0)
+			if (rk3588_open_fdt(fdt, rk_scratch->fdt, sizeof(rk_scratch->fdt)) == 0)
 				fdt_scratch = rk_scratch->fdt;
 			else
 				pr_warn("Failed to copy fdt to scratch: Continue without fdt\n");

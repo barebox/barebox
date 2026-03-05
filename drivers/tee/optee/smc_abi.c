@@ -720,8 +720,6 @@ static int optee_probe(struct device *dev)
 		goto err_close_ctx;
 
 	rc = optee_enumerate_devices(PTA_CMD_GET_DEVICES);
-	if (!rc)
-		rc = optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP);
 	if (rc)
 		goto err_optee_unregister_devices;
 

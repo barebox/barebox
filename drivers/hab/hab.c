@@ -80,14 +80,12 @@ static int imx_hab_write_srk_hash_iim(const u8 *srk, unsigned flags)
 			return -EIO;
 	}
 
-	if (flags & IMX_SRK_HASH_WRITE_LOCK) {
-		ret = imx_iim_write_field(IMX25_IIM_SRK0_LOCK96, 1);
-		if (ret < 0)
-			return ret;
-		ret = imx_iim_write_field(IMX25_IIM_SRK0_LOCK160, 1);
-		if (ret < 0)
-			return ret;
-	}
+	ret = imx_iim_write_field(IMX25_IIM_SRK0_LOCK96, 1);
+	if (ret < 0)
+		return ret;
+	ret = imx_iim_write_field(IMX25_IIM_SRK0_LOCK160, 1);
+	if (ret < 0)
+		return ret;
 
 	return 0;
 }
@@ -150,11 +148,9 @@ static int imx6_hab_write_srk_hash_ocotp(const u8 *newsrk, unsigned flags)
 	if (ret)
 		return ret;
 
-	if (flags & IMX_SRK_HASH_WRITE_LOCK) {
-		ret = imx_ocotp_write_field(OCOTP_SRK_LOCK, 1);
-		if (ret < 0)
-			return ret;
-	}
+	ret = imx_ocotp_write_field(OCOTP_SRK_LOCK, 1);
+	if (ret < 0)
+		return ret;
 
 	return 0;
 }
@@ -167,11 +163,9 @@ static int imx8m_hab_write_srk_hash_ocotp(const u8 *newsrk, unsigned flags)
 	if (ret)
 		return ret;
 
-	if (flags & IMX_SRK_HASH_WRITE_LOCK) {
-		ret = imx_ocotp_write_field(MX8M_OCOTP_SRK_LOCK, 1);
-		if (ret < 0)
-			return ret;
-	}
+	ret = imx_ocotp_write_field(MX8M_OCOTP_SRK_LOCK, 1);
+	if (ret < 0)
+		return ret;
 
 	return 0;
 }

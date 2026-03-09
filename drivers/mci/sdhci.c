@@ -471,7 +471,7 @@ void sdhci_set_bus_width(struct sdhci *host, int width)
 	sdhci_write8(host, SDHCI_HOST_CONTROL, ctrl);
 }
 
-static void sdhci_set_uhs_signaling(struct sdhci *host, unsigned timing)
+void sdhci_set_uhs_signaling(struct sdhci *host, unsigned int timing)
 {
 	u16 ctrl_2;
 
@@ -997,7 +997,10 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 
 	host->mci->ios.clock = 0;
 
-	sdhci_set_uhs_signaling(host, host->mci->ios.timing);
+	if (host->mci->ops.set_uhs_signaling)
+		host->mci->ops.set_uhs_signaling(host->mci, host->mci->ios.timing);
+	else
+		sdhci_set_uhs_signaling(host, host->mci->ios.timing);
 
 	sdhci_wait_idle_data(host, NULL);
 

@@ -344,6 +344,7 @@ static inline void sdhci_write8(struct sdhci *host, int reg, u32 val)
 }
 
 #define SDHCI_NO_DMA DMA_ERROR_CODE
+void sdhci_set_uhs_signaling(struct sdhci *host, unsigned int timing);
 int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode);
 int sdhci_wait_idle_data(struct sdhci *host, struct mci_cmd *cmd);
 int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *data);

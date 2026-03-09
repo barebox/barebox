@@ -585,6 +585,7 @@ struct mci_ops {
 	int (*card_write_protected)(struct mci_host *);
 	/* The tuning command opcode value is different for SD and eMMC cards */
 	int (*execute_tuning)(struct mci_host *, u32);
+	void (*set_uhs_signaling)(struct mci_host *host, unsigned int timing);
 };
 
 /** host information */

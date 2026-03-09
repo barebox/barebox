@@ -62,7 +62,7 @@ static int sdhci_send_command_retry(struct sdhci *host, struct mci_cmd *cmd)
 		mdelay(1);
 	}
 
-	return host->mci->ops.send_cmd(host->mci, cmd, NULL);
+	return host->mci->ops.send_cmd(host->mci, cmd);
 }
 
 /*
@@ -74,7 +74,7 @@ static int sdhci_send_command_retry(struct sdhci *host, struct mci_cmd *cmd)
  */
 static int sdhci_send_tuning(struct sdhci *host, u32 opcode)
 {
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 	int ret;
 
 	cmd.cmdidx = opcode;

@@ -53,12 +53,11 @@ static int mmc_init_setup(struct mci_host *mci, struct device *dev)
 	return omap_hsmmc_init(hsmmc);
 }
 
-static int mmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-		struct mci_data *data)
+static int mmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct omap_hsmmc *hsmmc = to_hsmmc(mci);
 
-	return omap_hsmmc_send_cmd(hsmmc, cmd, data);
+	return omap_hsmmc_send_cmd(hsmmc, cmd, cmd->data);
 }
 
 static void mmc_set_ios(struct mci_host *mci, struct mci_ios *ios)

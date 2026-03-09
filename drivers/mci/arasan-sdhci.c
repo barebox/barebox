@@ -244,13 +244,13 @@ static void print_error(struct arasan_sdhci_host *host, int cmdidx, int ret)
 		sdhci_read32(&host->sdhci, SDHCI_INT_NORMAL_STATUS));
 }
 
-static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-				 struct mci_data *data)
+static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
 	u32 mask, command, xfer;
 	dma_addr_t dma;
 	int ret;
+	struct mci_data *data = cmd->data;
 
 	ret = sdhci_wait_idle(&host->sdhci, cmd, data);
 	if (ret)

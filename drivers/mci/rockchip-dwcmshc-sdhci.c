@@ -241,10 +241,10 @@ static void print_error(struct rk_sdhci_host *host, int cmdidx)
 		sdhci_read32(&host->sdhci, SDHCI_INT_NORMAL_STATUS));
 }
 
-static int rk_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-				 struct mci_data *data)
+static int rk_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
+	struct mci_data *data = cmd->data;
 	u32 command, xfer;
 	int ret;
 	dma_addr_t dma;

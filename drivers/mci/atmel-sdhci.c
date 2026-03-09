@@ -29,10 +29,9 @@ struct at91_sdhci_priv {
 
 #define to_priv(h) container_of(h, struct at91_sdhci_priv, mci)
 
-static int at91_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-				   struct mci_data *data)
+static int at91_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
-	return at91_sdhci_send_command(&to_priv(mci)->host, cmd, data);
+	return at91_sdhci_send_command(&to_priv(mci)->host, cmd, cmd->data);
 }
 
 static void at91_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)

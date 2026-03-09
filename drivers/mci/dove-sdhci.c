@@ -54,13 +54,13 @@ static int dove_sdhci_wait_for_done(struct dove_sdhci *host, u16 mask)
 	return 0;
 }
 
-static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-				struct mci_data *data)
+static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	u32 command, xfer;
 	int ret;
 	unsigned int num_bytes = 0;
 	struct dove_sdhci *host = priv_from_mci_host(mci);
+	struct mci_data *data = cmd->data;
 
 	ret = sdhci_wait_idle_data(&host->sdhci, cmd);
 	if (ret)

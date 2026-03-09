@@ -235,9 +235,10 @@ static uint mmc_spi_writedata(struct mmc_spi_host *host, const void *xbuf,
 	return r1;
 }
 
-static int mmc_spi_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
+static int mmc_spi_request(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct mmc_spi_host	*host = to_spi_host(mci);
+	struct mci_data *data = cmd->data;
 	uint8_t r1;
 	int i;
 	int ret = 0;

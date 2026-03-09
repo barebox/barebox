@@ -75,12 +75,11 @@
  * Sends a command out on the bus.  Takes the mci pointer,
  * a command pointer, and an optional data pointer.
  */
-static int
-esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
+static int esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 
-	return  __esdhc_send_cmd(host, cmd, data);
+	return  __esdhc_send_cmd(host, cmd, cmd->data);
 }
 
 static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)

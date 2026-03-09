@@ -491,6 +491,7 @@ struct mci_cmd {
 	unsigned cmdarg;	/**< Command's arguments */
 	unsigned busy_timeout;	/**< Busy timeout in ms */
 	unsigned response[4];	/**< card's response */
+	struct mci_data		*data;		/* data segment associated with cmd */
 };
 
 /**
@@ -577,7 +578,7 @@ struct mci_ops {
 	/** change host interface settings */
 	void (*set_ios)(struct mci_host*, struct mci_ios *);
 	/** handle a command */
-	int (*send_cmd)(struct mci_host*, struct mci_cmd*, struct mci_data*);
+	int (*send_cmd)(struct mci_host *host, struct mci_cmd *cmd);
 	/** check if a card is inserted */
 	int (*card_present)(struct mci_host *);
 	/** check if a card is write protected */
@@ -790,7 +791,7 @@ static inline int mci_send_abort_tuning(struct mci *mci, u32 opcode) { return -E
 int mmc_select_timing(struct mci *mci);
 int mci_set_blockcount(struct mci *mci, unsigned int cmdarg);
 int mci_blk_part_switch(struct mci_part *part);
-int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data);
+int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd);
 struct mci *mci_get_rpmb_dev(unsigned int id);
 int mci_rpmb_route_frames(struct mci *mci, void *req, unsigned long reqlen,
 			  void *rsp, unsigned long rsplen);

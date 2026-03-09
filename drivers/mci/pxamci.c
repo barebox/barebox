@@ -258,10 +258,10 @@ static int pxamci_mmccmd(struct pxamci_host *host, struct mci_cmd *cmd,
 	return ret;
 }
 
-static int pxamci_request(struct mci_host *mci, struct mci_cmd *cmd,
-			  struct mci_data *data)
+static int pxamci_request(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct pxamci_host *host = to_pxamci(mci);
+	struct mci_data *data = cmd->data;
 	unsigned int cmdat;
 	int ret;
 

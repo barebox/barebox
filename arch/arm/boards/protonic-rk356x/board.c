@@ -38,11 +38,6 @@ static int saradc_get_value(const char *chan)
 	return voltage;
 }
 
-static int prt_rk356x_get_vin_mv(void)
-{
-	return saradc_get_value("aiodev0.in_value2_mV") * 22;
-}
-
 static bool prt_rk356x_get_usb_boot(void)
 {
 	return saradc_get_value("aiodev0.in_value0_mV") < 74;
@@ -87,7 +82,6 @@ static void prt_rk356x_process_adc(struct device *dev)
 	}
 
 	pr_info("Board id: %d, revision %d\n", prt_priv.hw_id, prt_priv.hw_rev);
-	pr_info("VIN = %d V\n", prt_rk356x_get_vin_mv() / 1000);
 }
 
 static int mecsbc_sd_of_fixup(struct device_node *root, void *context)

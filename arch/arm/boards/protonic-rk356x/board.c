@@ -13,6 +13,8 @@
 #include <of_device.h>
 #include <aiodev.h>
 #include <globalvar.h>
+#include <net.h>
+#include <barebox-info.h>
 
 struct prt_rk356x_adc_chs {
 	int usb_boot;
@@ -24,6 +26,7 @@ struct prt_rk356x_model {
 	const char *name;
 	const char *shortname;
 	const struct prt_rk356x_adc_chs adc_channels;
+	const int mac_cnt;
 	int (*init)(void);
 };
 
@@ -97,6 +100,76 @@ static void prt_rk356x_process_adc(struct device *dev,
 	pr_info("Board id: %d, revision %d\n", prt_priv.hw_id, prt_priv.hw_rev);
 }
 
+static int prt_rk356x_inc_mac(u8 *mac)
+{
+	mac[5]++;
+	if (mac[5])
+		return 0;
+	mac[4]++;
+	if (mac[4])
+		return 0;
+	mac[3]++;
+	if (mac[3])
+		return 0;
+	pr_err("MAC address overflow!!\n");
+	return -EINVAL;
+}
+
+#define RK_GPT_RESERVED_SPACE (7680 * 512)
+
+static void prt_rk356x_board_info(void)
+{
+	struct cdev *cdev;
+	ssize_t size;
+	u8 buf[11];
+	int i;
+
+	cdev = cdev_by_name("mmc0");
+	if (!cdev) {
+		pr_warn("No eMMC device\n");
+		return;
+	}
+
+	/* Read and check TAG */
+	size = cdev_read(cdev, buf, 4, RK_GPT_RESERVED_SPACE, 0);
+	if (size != 4) {
+		pr_warn("Unable to read board data from eMMC\n");
+		return;
+	}
+	if (strncmp(buf, "PRTm", 4)) {
+		pr_warn("Board has no serial number and no MAC address\n");
+		return;
+	}
+
+	/* Read MAC at offset 4 */
+	if (prt_priv.model->mac_cnt > 0) {
+		size = cdev_read(cdev, buf, 6, RK_GPT_RESERVED_SPACE + 4, 0);
+		if (size != 6) {
+			pr_warn("Unable to read MAC address from eMMC\n");
+			return;
+		}
+		if (is_valid_ether_addr(buf)) {
+			eth_register_ethaddr(0, buf);
+			for (i = 1; i < prt_priv.model->mac_cnt; i++) {
+				prt_rk356x_inc_mac(buf);
+				eth_register_ethaddr(i, buf);
+			}
+		} else {
+			pr_warn("Board has invalid MAC address\n");
+		}
+	}
+
+	/* Read serial at offset 10 */
+	size = cdev_read(cdev, buf, 10, RK_GPT_RESERVED_SPACE + 10, 0);
+	if (size != 10) {
+		pr_warn("Unable to read serial number from eMMC\n");
+		return;
+	}
+	buf[10] = 0;
+	pr_info("Board serial number: %s\n", buf);
+	barebox_set_serial_number(buf);
+}
+
 static int mecsbc_sd_of_fixup(struct device_node *root, void *context)
 {
 	struct device *dev = context;
@@ -145,6 +218,7 @@ static int prt_rk356x_devices_init(void)
 		return 0;
 
 	prt_rk356x_bbu();
+	prt_rk356x_board_info();
 
 	if (prt_priv.model->init) {
 		ret = prt_priv.model->init();
@@ -201,6 +275,7 @@ static const struct prt_rk356x_model mecsbc = {
 	.name = "Protonic MECSBC board",
 	.shortname = "mecsbc",
 	.adc_channels = {0, 1, 3},
+	.mac_cnt = 3,
 	.init = prt_rk356x_mecsbc_init,
 };
 

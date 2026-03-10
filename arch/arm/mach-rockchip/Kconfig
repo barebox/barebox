@@ -109,11 +109,11 @@ config MACH_PINE64_QUARTZ64
 	help
 	  Say Y here if you are using a Pine64 Quartz64
 
-config MACH_PROTONIC_MECSBC
+config MACH_PROTONIC_RK356X
 	select ARCH_RK3568
-	bool "Protonic MECSBC"
+	bool "Protonic RK356x"
 	help
-	  Say Y here if you are using a Protonic MECSBC
+	  Say Y here if you are using a Protonic board with a RK356x cpu
 
 config MACH_PROTONIC_PRTPUK
 	select ARCH_RK3576

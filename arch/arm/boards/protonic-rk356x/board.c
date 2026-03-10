@@ -40,7 +40,7 @@ static int saradc_get_value(const char *chan)
 
 static bool prt_rk356x_get_usb_boot(void)
 {
-	return saradc_get_value("aiodev0.in_value0_mV") < 74;
+	return saradc_get_value("saradc.in_value0_mV") < 74;
 }
 
 static int prt_rk356x_adc_id_values[] = {
@@ -64,8 +64,8 @@ static int prt_rk356x_get_adc_id(const char *chan)
 
 static void prt_rk356x_process_adc(struct device *dev)
 {
-	prt_priv.hw_id = prt_rk356x_get_adc_id("aiodev0.in_value1_mV");
-	prt_priv.hw_rev = prt_rk356x_get_adc_id("aiodev0.in_value3_mV");
+	prt_priv.hw_id = prt_rk356x_get_adc_id("saradc.in_value1_mV");
+	prt_priv.hw_rev = prt_rk356x_get_adc_id("saradc.in_value3_mV");
 
 	dev_add_param_uint32_ro(dev, "boardrev", &prt_priv.hw_rev, "%u");
 	dev_add_param_uint32_ro(dev, "boardid", &prt_priv.hw_id, "%u");
@@ -123,14 +123,16 @@ static int prt_rk356x_of_fixup_hwrev(struct device *dev)
 
 static int prt_rk356x_probe(struct device *dev)
 {
-	int ret = 0;
+	int error;
 	enum bootsource bootsource = bootsource_get();
 	int instance = bootsource_get_instance();
 	const struct prt_rk356x_model *model;
-	struct device_node *np;
 
-	np = of_find_node_by_name_address(NULL, "saradc@fe720000");
-	of_device_ensure_probed(np);
+	error = of_device_ensure_probed_by_alias("saradc");
+	if (error) {
+		pr_err("saradc is not available\n");
+		return error;
+	}
 
 	model = device_get_match_data(dev);
 
@@ -148,7 +150,7 @@ static int prt_rk356x_probe(struct device *dev)
 	prt_rk356x_process_adc(dev);
 	prt_rk356x_of_fixup_hwrev(dev);
 
-	return ret;
+	return 0;
 }
 
 static const struct prt_rk356x_model mecsbc = {

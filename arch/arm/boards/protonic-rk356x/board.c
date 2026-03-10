@@ -24,11 +24,14 @@ struct prt_rk356x_model {
 	const char *name;
 	const char *shortname;
 	const struct prt_rk356x_adc_chs adc_channels;
+	int (*init)(void);
 };
 
 struct prt_rk356x_priv {
 	int hw_id;
 	int hw_rev;
+	struct device *dev;
+	const struct prt_rk356x_model *model;
 };
 
 static struct prt_rk356x_priv prt_priv;
@@ -112,6 +115,33 @@ static int mecsbc_sd_of_fixup(struct device_node *root, void *context)
 	return 0;
 }
 
+static int prt_rk356x_mecsbc_init(void)
+{
+	if (prt_priv.hw_id == 0 && prt_priv.hw_rev == 0)
+		of_register_fixup(mecsbc_sd_of_fixup, prt_priv.dev);
+
+	return 0;
+}
+
+static int prt_rk356x_devices_init(void)
+{
+	int ret;
+
+	if (!prt_priv.model)
+		return 0;
+
+	if (prt_priv.model->init) {
+		ret = prt_priv.model->init();
+		if (ret) {
+			pr_warn("Model init failed with %d\n", ret);
+			return ret;
+		}
+	}
+
+	return 0;
+}
+late_initcall(prt_rk356x_devices_init);
+
 static int prt_rk356x_of_fixup_hwrev(struct device *dev)
 {
 	const char *compat;
@@ -124,10 +154,6 @@ static int prt_rk356x_of_fixup_hwrev(struct device *dev)
 	barebox_set_of_machine_compatible(buf);
 
 	free(buf);
-
-	if (prt_priv.hw_id == 0 && prt_priv.hw_rev == 0)
-		of_register_fixup(mecsbc_sd_of_fixup, dev);
-
 	return 0;
 }
 
@@ -160,6 +186,8 @@ static int prt_rk356x_probe(struct device *dev)
 	prt_rk356x_process_adc(dev, &model->adc_channels);
 	prt_rk356x_of_fixup_hwrev(dev);
 
+	prt_priv.dev = dev;
+	prt_priv.model = model;
 	return 0;
 }
 
@@ -167,6 +195,7 @@ static const struct prt_rk356x_model mecsbc = {
 	.name = "Protonic MECSBC board",
 	.shortname = "mecsbc",
 	.adc_channels = {0, 1, 3},
+	.init = prt_rk356x_mecsbc_init,
 };
 
 static const struct of_device_id prt_rk356x_of_match[] = {

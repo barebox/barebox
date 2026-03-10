@@ -7,15 +7,23 @@
 #include <deep-probe.h>
 #include <init.h>
 #include <mach/rockchip/bbu.h>
+#include <mach/rockchip/rockchip.h>
 #include <environment.h>
 #include <param.h>
 #include <of_device.h>
 #include <aiodev.h>
 #include <globalvar.h>
 
+struct prt_rk356x_adc_chs {
+	int usb_boot;
+	int hw_id;
+	int hw_rev;
+};
+
 struct prt_rk356x_model {
 	const char *name;
 	const char *shortname;
+	const struct prt_rk356x_adc_chs adc_channels;
 };
 
 struct prt_rk356x_priv {
@@ -25,34 +33,35 @@ struct prt_rk356x_priv {
 
 static struct prt_rk356x_priv prt_priv;
 
-static int saradc_get_value(const char *chan)
+static int saradc_read_mv(int chan)
 {
-	int ret, voltage;
+	int error, voltage = 0;
+	char *name;
 
-	ret = aiochannel_name_get_value(chan, &voltage);
-	if (ret) {
-		pr_warn_once("Cannot read ADC %s: %pe\n", chan, ERR_PTR(ret));
-		return 0;
-	}
+	name = xasprintf("saradc.in_value%d_mV", chan);
+	error = aiochannel_name_get_value(name, &voltage);
+	if (error)
+		pr_warn_once("Cannot read ADC %s: %pe\n", name, ERR_PTR(error));
 
+	free(name);
 	return voltage;
 }
 
-static bool prt_rk356x_get_usb_boot(void)
+static bool prt_rk356x_get_usb_boot(int chan)
 {
-	return saradc_get_value("saradc.in_value0_mV") < 74;
+	return saradc_read_mv(chan) < 74;
 }
 
 static int prt_rk356x_adc_id_values[] = {
 	1800, 1662, 1521, 1354, 1214, 1059, 900, 742, 335, 589, 278, 137, 0
 };
 
-static int prt_rk356x_get_adc_id(const char *chan)
+static int prt_rk356x_get_adc_id(int chan)
 {
 	int val;
 	unsigned int t;
 
-	val = saradc_get_value(chan) + 74;
+	val = saradc_read_mv(chan) + 74;
 
 	for (t = 0; t < ARRAY_SIZE(prt_rk356x_adc_id_values); t++) {
 		if (val > prt_rk356x_adc_id_values[t])
@@ -62,16 +71,17 @@ static int prt_rk356x_get_adc_id(const char *chan)
 	return t;
 }
 
-static void prt_rk356x_process_adc(struct device *dev)
+static void prt_rk356x_process_adc(struct device *dev,
+				   const struct prt_rk356x_adc_chs *adc_chs)
 {
-	prt_priv.hw_id = prt_rk356x_get_adc_id("saradc.in_value1_mV");
-	prt_priv.hw_rev = prt_rk356x_get_adc_id("saradc.in_value3_mV");
+	prt_priv.hw_id = prt_rk356x_get_adc_id(adc_chs->hw_id);
+	prt_priv.hw_rev = prt_rk356x_get_adc_id(adc_chs->hw_rev);
 
 	dev_add_param_uint32_ro(dev, "boardrev", &prt_priv.hw_rev, "%u");
 	dev_add_param_uint32_ro(dev, "boardid", &prt_priv.hw_id, "%u");
 
 	/* Check if we need to enable the USB gadget instead of booting */
-	if (prt_rk356x_get_usb_boot()) {
+	if (prt_rk356x_get_usb_boot(adc_chs->usb_boot)) {
 		globalvar_add_simple("boot.default", "net");
 		globalvar_add_simple("usbgadget.acm", "1");
 		globalvar_add_simple("usbgadget.autostart", "1");
@@ -147,7 +157,7 @@ static int prt_rk356x_probe(struct device *dev)
 	rk3568_bbu_mmc_register("emmc", BBU_HANDLER_FLAG_DEFAULT, "/dev/mmc0");
 	rk3568_bbu_mmc_register("sd", 0, "/dev/mmc1");
 
-	prt_rk356x_process_adc(dev);
+	prt_rk356x_process_adc(dev, &model->adc_channels);
 	prt_rk356x_of_fixup_hwrev(dev);
 
 	return 0;
@@ -156,6 +166,7 @@ static int prt_rk356x_probe(struct device *dev)
 static const struct prt_rk356x_model mecsbc = {
 	.name = "Protonic MECSBC board",
 	.shortname = "mecsbc",
+	.adc_channels = {0, 1, 3},
 };
 
 static const struct of_device_id prt_rk356x_of_match[] = {

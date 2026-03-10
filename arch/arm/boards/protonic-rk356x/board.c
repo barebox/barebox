@@ -123,12 +123,28 @@ static int prt_rk356x_mecsbc_init(void)
 	return 0;
 }
 
+static void prt_rk356x_bbu(void)
+{
+	enum bootsource bootsource = bootsource_get();
+	int instance = bootsource_get_instance();
+
+	if (bootsource == BOOTSOURCE_MMC && instance == 1)
+		of_device_enable_path("/chosen/environment-sd");
+	else
+		of_device_enable_path("/chosen/environment-emmc");
+
+	rockchip_bbu_mmc_register("emmc", BBU_HANDLER_FLAG_DEFAULT, "/dev/mmc0");
+	rockchip_bbu_mmc_register("sd", 0, "/dev/mmc1");
+}
+
 static int prt_rk356x_devices_init(void)
 {
 	int ret;
 
 	if (!prt_priv.model)
 		return 0;
+
+	prt_rk356x_bbu();
 
 	if (prt_priv.model->init) {
 		ret = prt_priv.model->init();
@@ -160,8 +176,6 @@ static int prt_rk356x_of_fixup_hwrev(struct device *dev)
 static int prt_rk356x_probe(struct device *dev)
 {
 	int error;
-	enum bootsource bootsource = bootsource_get();
-	int instance = bootsource_get_instance();
 	const struct prt_rk356x_model *model;
 
 	error = of_device_ensure_probed_by_alias("saradc");
@@ -174,14 +188,6 @@ static int prt_rk356x_probe(struct device *dev)
 
 	barebox_set_model(model->name);
 	barebox_set_hostname(model->shortname);
-
-	if (bootsource == BOOTSOURCE_MMC && instance == 1)
-		of_device_enable_path("/chosen/environment-sd");
-	else
-		of_device_enable_path("/chosen/environment-emmc");
-
-	rockchip_bbu_mmc_register("emmc", BBU_HANDLER_FLAG_DEFAULT, "/dev/mmc0");
-	rockchip_bbu_mmc_register("sd", 0, "/dev/mmc1");
 
 	prt_rk356x_process_adc(dev, &model->adc_channels);
 	prt_rk356x_of_fixup_hwrev(dev);

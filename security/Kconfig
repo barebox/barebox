@@ -191,6 +191,7 @@ config PBL_OPTEE_DTB_MAX_SIZE
 	hex
 	default 0x0
 	prompt "OP-TEE FDT Size"
+	depends on PBL_OPTEE
 	help
 	  The size of the DTB which is passed by the PBL to OP-TEE. This option
 	  can be left unchanged if OP-TEE DTB support isn't required. If OP-TEE

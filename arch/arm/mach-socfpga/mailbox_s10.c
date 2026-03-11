@@ -319,7 +319,13 @@ retry:
 	/* HPS will directly control the QSPI controller, no longer mailbox */
 	ret = mbox_send_cmd(MBOX_ID_BAREBOX, MBOX_QSPI_DIRECT, MBOX_CMD_DIRECT,
 			    0, NULL, 0, &resp_buf_len, resp_buf);
-	if (ret) {
+	switch (ret) {
+	case MBOX_RESP_STATOK:
+		break;
+	case 0x8f:
+		pr_err("QSPI: SDM denied direct QSPI access\n");
+		goto error;
+	default:
 		pr_err("QSPI: QSPI_DIRECT failed: 0x%x\n", ret);
 		goto error;
 	}

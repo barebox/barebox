@@ -311,22 +311,29 @@ retry:
 		socfpga_mailbox_s10_qspi_close();
 		goto retry;
 	}
-	if (ret)
+	if (ret) {
+		pr_err("QSPI: QSPI_OPEN failed: 0x%x\n", ret);
 		return ret;
+	}
 
 	/* HPS will directly control the QSPI controller, no longer mailbox */
 	ret = mbox_send_cmd(MBOX_ID_BAREBOX, MBOX_QSPI_DIRECT, MBOX_CMD_DIRECT,
 			    0, NULL, 0, &resp_buf_len, resp_buf);
-	if (ret)
+	if (ret) {
+		pr_err("QSPI: QSPI_DIRECT failed: 0x%x\n", ret);
 		goto error;
+	}
 
 	/* Get the QSPI clock from SDM response and save for later use */
 	clk_khz = resp_buf[0];
-	if (clk_khz < 1000)
+	if (clk_khz < 1000) {
+		pr_err("QSPI: Unexpected reference clock rate: %d kHz\n",
+		       clk_khz);
 		return -EINVAL;
+	}
 
 	clk_khz /= 1000;
-	pr_info("QSPI: reference clock at %d kHZ\n", clk_khz);
+	pr_info("QSPI: reference clock at %d kHz\n", clk_khz);
 
 	reg = (readl(SOCFPGA_SYSMGR_ADDRESS + SYSMGR_SOC64_BOOT_SCRATCH_COLD0)) &
 			~(SYSMGR_SCRATCH_REG_0_QSPI_REFCLK_MASK);

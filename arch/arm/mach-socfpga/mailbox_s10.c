@@ -301,20 +301,18 @@ int socfpga_mailbox_s10_qspi_open(void)
 	u32 resp_buf_len;
 	u32 reg;
 	u32 clk_khz;
+	int try = 0;
 
+retry:
 	ret = mbox_send_cmd(MBOX_ID_BAREBOX, MBOX_QSPI_OPEN, MBOX_CMD_DIRECT,
 			    0, NULL, 0, 0, NULL);
-	if (ret) {
-		/* retry again by closing and reopen the QSPI again */
-		ret = socfpga_mailbox_s10_qspi_close();
-		if (ret)
-			return ret;
-
-		ret = mbox_send_cmd(MBOX_ID_BAREBOX, MBOX_QSPI_OPEN,
-				    MBOX_CMD_DIRECT, 0, NULL, 0, 0, NULL);
-		if (ret)
-			return ret;
+	if (ret != MBOX_RESP_STATOK && try++ < 2) {
+		/* retry after closing the QSPI */
+		socfpga_mailbox_s10_qspi_close();
+		goto retry;
 	}
+	if (ret)
+		return ret;
 
 	/* HPS will directly control the QSPI controller, no longer mailbox */
 	resp_buf_len = 1;

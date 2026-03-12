@@ -36,7 +36,7 @@ static void loadable_from_fit_os(struct image_data *data,
  * @fit:		handle of FIT image
  * @config:		config to look up kernel in
  *
- * This creates a loadable for the first initial ram disk in the config.
+ * This creates loadables for all initial ram disks in the config and chains them.
  *
  * Return: true if initrd booting is supported and a ramdisk exists or
  *         false otherwise.
@@ -45,17 +45,22 @@ static bool loadable_from_fit_initrd(struct image_data *data,
 				struct fit_handle *fit,
 				void *config)
 {
+	int nramdisks;
+
 	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
 		return false;
 
-	if (!fit_has_image(fit, config, "ramdisk"))
+	nramdisks = fit_count_images(fit, config, "ramdisk");
+	if (nramdisks < 0)
 		return false;
 
 	loadable_release(&data->initrd);
 
-	data->initrd = loadable_from_fit(fit, config, "ramdisk", 0, LOADABLE_INITRD);
+	for (int i = 0; i < nramdisks; i++)
+		loadable_chain(&data->initrd, loadable_from_fit(fit, config, "ramdisk",
+								i, LOADABLE_INITRD));
 
-	return true;
+	return nramdisks > 0;
 }
 
 /*

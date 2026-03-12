@@ -902,42 +902,45 @@ static int tftp_read(struct file *f, void *buf, size_t insize)
 
 static int tftp_lseek(struct file *f, loff_t pos)
 {
-	/* We cannot seek backwards without reloading or caching the file */
+	int ret = 0;
+	char *buf;
 	loff_t f_pos = f->f_pos;
 
-	if (pos >= f_pos) {
-		int ret = 0;
-		char *buf = xmalloc(1024);
+	/* We cannot seek backwards without reloading or caching the file */
+	if (pos < f_pos)
+		return -ENOSYS;
 
-		while (pos > f_pos) {
-			size_t len = min_t(size_t, 1024, pos - f_pos);
-
-			ret = tftp_read(f, buf, len);
-
-			if (!ret)
-				/* EOF, so the desired pos is invalid. */
-				ret = -EINVAL;
-			if (ret < 0)
-				goto out_free;
-
-			f_pos += ret;
-		}
-
-out_free:
-		free(buf);
-		if (ret < 0) {
-			/*
-			 * Update f->pos even if the overall request
-			 * failed since we can't move backwards
-			 */
-			f->f_pos = f_pos;
-			return ret;
-		}
-
+	if (pos == f_pos)
 		return 0;
+
+	buf = xmalloc(1024);
+
+	while (pos > f_pos) {
+		size_t len = min_t(size_t, 1024, pos - f_pos);
+
+		ret = tftp_read(f, buf, len);
+
+		if (!ret)
+			/* EOF, so the desired pos is invalid. */
+			ret = -EINVAL;
+		if (ret < 0)
+			goto out_free;
+
+		f_pos += ret;
 	}
 
-	return -ENOSYS;
+out_free:
+	free(buf);
+	if (ret < 0) {
+		/*
+		 * Update f->pos even if the overall request
+		 * failed since we can't move backwards
+		 */
+		f->f_pos = f_pos;
+		return ret;
+	}
+
+	return 0;
 }
 
 static const struct inode_operations tftp_file_inode_operations;

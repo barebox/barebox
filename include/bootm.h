@@ -52,7 +52,11 @@ struct bootm_data {
 	unsigned long os_entry;
 };
 
-int bootm_boot(struct bootm_data *data);
+int bootm_boot(const struct bootm_data *data);
+
+struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data);
+int bootm_boot_handler(struct image_data *data);
+void bootm_boot_cleanup(struct image_data *data);
 
 struct image_data {
 	/* simplest case. barebox has already loaded the os here */

@@ -86,6 +86,10 @@ struct image_data {
 	/* entry point to the os. relative to the start of the image */
 	unsigned long os_entry;
 
+	/* initial os_address/os_entry supplied at entry to bootm_boot */
+	unsigned long os_address_hint;
+	unsigned long os_entry_hint;
+
 	/* if initrd is already loaded this resource will be !NULL */
 	struct resource *initrd_res;
 

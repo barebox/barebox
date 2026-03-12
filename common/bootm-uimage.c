@@ -30,7 +30,7 @@ int bootm_load_uimage_os(struct image_data *data, unsigned long load_address)
 	num = uimage_part_num(data->os_part);
 
 	data->os_res = uimage_load_to_sdram(data->os_uimage,
-		num, load_address);
+		num, load_address, 0);
 	if (!data->os_res)
 		return -ENOMEM;
 
@@ -91,7 +91,7 @@ bootm_load_uimage_initrd(struct image_data *data, unsigned long load_address)
 	num = uimage_part_num(data->initrd_part);
 
 	res = uimage_load_to_sdram(data->initrd_uimage,
-		num, load_address);
+		num, load_address, 0);
 	if (!res)
 		return ERR_PTR(-ENOMEM);
 

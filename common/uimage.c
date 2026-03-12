@@ -338,10 +338,24 @@ EXPORT_SYMBOL(uimage_load);
 
 static void *uimage_buf;
 static size_t uimage_size;
+static size_t uimage_skip;
 static struct resource *uimage_resource;
 
 static long uimage_sdram_flush(void *buf, unsigned long len)
 {
+	unsigned long skip_now = 0;
+
+	/* Skip the first uimage_skip bytes of decompressed data */
+	if (uimage_skip > 0) {
+		skip_now = min_t(unsigned long, uimage_skip, len);
+		buf += skip_now;
+		len -= skip_now;
+		uimage_skip -= skip_now;
+
+		if (len == 0)
+			return skip_now;
+	}
+
 	if (uimage_size + len > resource_size(uimage_resource)) {
 		resource_size_t start = uimage_resource->start;
 		resource_size_t size = resource_size(uimage_resource) + len;
@@ -362,26 +376,41 @@ static long uimage_sdram_flush(void *buf, unsigned long len)
 
 	uimage_size += len;
 
-	return len;
+	return len + skip_now;
 }
 
 /*
  * Load an uImage to a dynamically allocated sdram resource.
  * the resource must be freed afterwards with release_sdram_region
+ *
+ * @handle: uImage handle
+ * @image_no: image number within the uImage
+ * @load_address: address to load the image to
+ * @offset: offset in bytes to skip from the beginning of the decompressed data
+ *
+ * Returns: SDRAM resource on success, NULL on error
  */
 struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
-		int image_no, unsigned long load_address)
+		int image_no, unsigned long load_address, loff_t offset)
 {
 	int ret;
-	ssize_t size;
+	ssize_t total_size;
+	size_t size;
 	resource_size_t start = (resource_size_t)load_address;
 
 	uimage_buf = (void *)load_address;
 	uimage_size = 0;
+	uimage_skip = offset;
 
-	size = uimage_get_size(handle, image_no);
-	if (size < 0)
+	total_size = uimage_get_size(handle, image_no);
+	if (total_size < 0)
 		return NULL;
+
+	if (offset > total_size)
+		return NULL;
+
+	/* Allocate for the data after offset: size = total_size - offset */
+	size = total_size - offset;
 
 	uimage_resource = request_sdram_region("uimage",
 				start, size, MEMTYPE_LOADER_CODE,

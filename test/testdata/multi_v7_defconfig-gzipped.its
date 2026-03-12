@@ -26,8 +26,30 @@
             };
         };
         ramdisk-1 {
-            description = "initramfs";
-            data = /incbin/("ramdisk.cpio.gz");
+            description = "initramfs 1 (compressed)";
+            data = /incbin/("testfs/ramdisk1.cpio.gz");
+            type = "ramdisk";
+            arch = "arm";
+            os = "linux";
+            compression = "none";
+            hash-1 {
+                algo = "sha256";
+            };
+        };
+        ramdisk-2 {
+            description = "initramfs 2 (uncompressed)";
+            data = /incbin/("testfs/ramdisk2.cpio");
+            type = "ramdisk";
+            arch = "arm";
+            os = "linux";
+            compression = "none";
+            hash-1 {
+                algo = "sha256";
+            };
+        };
+        ramdisk-3 {
+            description = "initramfs 3 (compressed)";
+            data = /incbin/("testfs/ramdisk3.cpio.gz");
             type = "ramdisk";
             arch = "arm";
             os = "linux";
@@ -44,7 +66,7 @@
             description = "Qemu Virt32";
             kernel = "kernel-1";
             fdt = "fdt-qemu-virt32.dtb";
-            ramdisk = "ramdisk-1";
+            ramdisk = "ramdisk-1", "ramdisk-2", "ramdisk-3";
             compatible = "linux,dummy-virt";
             signature-1 {
                 algo = "sha256,rsa2048";

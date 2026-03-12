@@ -463,9 +463,10 @@ static int bootm_open_files(struct image_data *data)
 	}
 
 	if (data->initrd_file) {
-		data->initrd = loadable_from_file(data->initrd_file, LOADABLE_INITRD);
-		if (IS_ERR(data->initrd))
-			return PTR_ERR(data->initrd);
+		int ret = loadables_from_files(&data->initrd, data->initrd_file, ":",
+					       LOADABLE_INITRD);
+		if (ret)
+			return ret;
 	}
 
 	if (data->tee_file) {

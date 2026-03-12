@@ -20,16 +20,12 @@ int bootm_apply_overrides(struct image_data *data,
 	if (bootm_signed_images_are_forced())
 		return 0;
 
-	if (overrides->initrd_file) {
-		loadable_release(&data->initrd);
-
-		/* Empty string means to mask the original initrd */
-		if (nonempty(overrides->initrd_file)) {
-			data->initrd = loadable_from_file(overrides->initrd_file,
-							   LOADABLE_INITRD);
-			if (IS_ERR(data->initrd))
-				return PTR_ERR(data->initrd);
-		}
+	if (IS_ENABLED(CONFIG_BOOTM_INITRD) && overrides->initrd_file) {
+		/* loadables_from_files() will set data->initrd on empty initrd_file */
+		int ret = loadables_from_files(&data->initrd, overrides->initrd_file, ":",
+					       LOADABLE_INITRD);
+		if (ret)
+			return ret;
 		data->is_override.initrd = true;
 	}
 
@@ -48,3 +44,4 @@ int bootm_apply_overrides(struct image_data *data,
 
 	return 0;
 }
+

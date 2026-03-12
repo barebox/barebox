@@ -902,6 +902,7 @@ static int tftp_read(struct file *f, void *buf, size_t insize)
 
 static int tftp_lseek(struct file *f, loff_t pos)
 {
+	static loff_t seek_discard_total;
 	int ret = 0;
 	char *buf;
 	loff_t f_pos = f->f_pos;
@@ -931,6 +932,13 @@ static int tftp_lseek(struct file *f, loff_t pos)
 
 out_free:
 	free(buf);
+
+	seek_discard_total += f_pos - f->f_pos;
+	if (seek_discard_total > SZ_4M)
+		pr_warn_once("excessive seeking (%lld bytes discarded so far);"
+			     " consider copying file to RAM first?\n",
+			     seek_discard_total);
+
 	if (ret < 0) {
 		/*
 		 * Update f->pos even if the overall request

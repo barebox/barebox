@@ -107,6 +107,9 @@ struct image_data {
 	char *oftree_file;
 	char *oftree_part;
 
+	/* if oftree is an uImage this will be provided */
+	struct uimage_handle *oftree_uimage;
+
 	const void *fit_kernel;
 	unsigned long fit_kernel_size;
 	void *fit_config;

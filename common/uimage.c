@@ -339,7 +339,8 @@ EXPORT_SYMBOL(uimage_load);
 static void *uimage_buf;
 static size_t uimage_size;
 static size_t uimage_skip;
-static struct resource *uimage_resource;
+static size_t uimage_maxsize;
+static bool uimage_extract_partial;
 
 static long uimage_sdram_flush(void *buf, unsigned long len)
 {
@@ -356,18 +357,14 @@ static long uimage_sdram_flush(void *buf, unsigned long len)
 			return skip_now;
 	}
 
-	if (uimage_size + len > resource_size(uimage_resource)) {
-		resource_size_t start = uimage_resource->start;
-		resource_size_t size = resource_size(uimage_resource) + len;
+	if (!uimage_extract_partial && uimage_size + len > uimage_maxsize)
+		return -ENOSPC;
 
-		release_sdram_region(uimage_resource);
+	/* Buffer full: discard excess data in partial mode */
+	if (uimage_size >= uimage_maxsize)
+		return len + skip_now;
 
-		uimage_resource = request_sdram_region("uimage",
-				start, size, MEMTYPE_LOADER_CODE,
-				MEMATTRS_RWX);
-		if (!uimage_resource)
-			return -ENOMEM;
-	}
+	len = min_t(unsigned long, len, uimage_maxsize - uimage_size);
 
 	if (zero_page_contains((unsigned long)uimage_buf + uimage_size))
 		zero_page_memcpy(uimage_buf + uimage_size, buf, len);
@@ -380,53 +377,34 @@ static long uimage_sdram_flush(void *buf, unsigned long len)
 }
 
 /*
- * Load an uImage to a dynamically allocated sdram resource.
- * the resource must be freed afterwards with release_sdram_region
+ * Load an uImage to a fixed buffer
  *
  * @handle: uImage handle
  * @image_no: image number within the uImage
  * @load_address: address to load the image to
  * @offset: offset in bytes to skip from the beginning of the decompressed data
  *
- * Returns: SDRAM resource on success, NULL on error
+ * Return: number of bytes written on success or negative error code
  */
-struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
-		int image_no, unsigned long load_address, loff_t offset)
+int uimage_load_into_fixed_buf(struct uimage_handle *handle, int image_no,
+			       void *load_address, size_t size,
+			       loff_t offset, bool partial)
 {
 	int ret;
-	ssize_t total_size;
-	size_t size;
-	resource_size_t start = (resource_size_t)load_address;
 
 	uimage_buf = (void *)load_address;
+	uimage_maxsize = size;
 	uimage_size = 0;
 	uimage_skip = offset;
-
-	total_size = uimage_get_size(handle, image_no);
-	if (total_size < 0)
-		return NULL;
-
-	if (offset > total_size)
-		return NULL;
-
-	/* Allocate for the data after offset: size = total_size - offset */
-	size = total_size - offset;
-
-	uimage_resource = request_sdram_region("uimage",
-				start, size, MEMTYPE_LOADER_CODE,
-				MEMATTRS_RWX);
-	if (!uimage_resource)
-		return NULL;
+	uimage_extract_partial = partial;
 
 	ret = uimage_load(handle, image_no, uimage_sdram_flush);
-	if (ret) {
-		release_sdram_region(uimage_resource);
-		return NULL;
-	}
+	if (ret)
+		return ret;
 
-	return uimage_resource;
+	return uimage_size;
 }
-EXPORT_SYMBOL(uimage_load_to_sdram);
+EXPORT_SYMBOL(uimage_load_into_fixed_buf);
 
 void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 		size_t *outsize)

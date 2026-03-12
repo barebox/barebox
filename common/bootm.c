@@ -11,6 +11,7 @@
 #include <block.h>
 #include <libfile.h>
 #include <bootm-fit.h>
+#include <bootm-overrides.h>
 #include <bootm-uimage.h>
 #include <globalvar.h>
 #include <init.h>
@@ -325,7 +326,9 @@ void *bootm_get_devicetree(struct image_data *data)
 		of_add_reserve_entry(data->initrd_res->start, data->initrd_res->end);
 	}
 
+	bootm_set_pending_oftree_overlays(data->oftree);
 	of_fix_tree(data->of_root_node);
+	bootm_clear_pending_oftree_overlays();
 
 	oftree = of_flatten_dtb(data->of_root_node);
 	if (!oftree)

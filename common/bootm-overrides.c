@@ -3,7 +3,9 @@
 #include <bootm.h>
 #include <bootm-overrides.h>
 #include <bootm-fit.h>
+#include <init.h>
 #include <libfile.h>
+#include <of.h>
 #include <linux/pagemap.h>
 
 /**
@@ -142,15 +144,11 @@ int bootm_apply_overrides(struct image_data *data,
 	}
 
 	if (overrides->oftree_file) {
-		loadable_release(&data->oftree);
-
-		/* Empty string means to mask the original FDT */
-		if (nonempty(overrides->oftree_file)) {
-			data->oftree = loadable_from_file(overrides->oftree_file,
-							   LOADABLE_FDT);
-			if (IS_ERR(data->oftree))
-				return PTR_ERR(data->oftree);
-		}
+		int ret = loadables_from_files(&data->oftree,
+					       overrides->oftree_file, ":",
+					       LOADABLE_FDT);
+		if (ret)
+			return ret;
 		data->is_override.oftree = true;
 	}
 
@@ -158,3 +156,52 @@ int bootm_apply_overrides(struct image_data *data,
 
 	return 0;
 }
+
+static struct loadable *pending_oftree_overlays;
+
+void bootm_set_pending_oftree_overlays(struct loadable *oftree)
+{
+	pending_oftree_overlays = oftree;
+}
+
+void bootm_clear_pending_oftree_overlays(void)
+{
+	pending_oftree_overlays = NULL;
+}
+
+static int bootm_override_overlay_fixup(struct device_node *root, void *ctx)
+{
+	struct loadable *ovl;
+
+	if (!pending_oftree_overlays)
+		return 0;
+
+	list_for_each_entry(ovl, &pending_oftree_overlays->chained_loadables, list) {
+		const void *dtbo;
+		size_t size;
+		int ret;
+
+		dtbo = loadable_view(ovl, &size);
+		if (IS_ERR(dtbo)) {
+			pr_err("could not load overlay \"%s\": %pe\n",
+			       ovl->name, dtbo);
+			continue;
+		}
+
+		ret = of_overlay_apply_dtbo(root, dtbo);
+		if (ret)
+			pr_err("failed to apply overlay \"%s\": %pe\n",
+			       ovl->name, ERR_PTR(ret));
+		loadable_view_free(ovl, dtbo, size);
+	}
+
+	return 0;
+}
+
+static int bootm_register_override_overlay_fixup(void)
+{
+	if (!IS_ENABLED(CONFIG_OF_OVERLAY))
+		return 0;
+	return of_register_fixup(bootm_override_overlay_fixup, NULL);
+}
+of_populate_initcall(bootm_register_override_overlay_fixup);

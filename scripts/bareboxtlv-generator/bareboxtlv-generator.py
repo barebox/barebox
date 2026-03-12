@@ -327,7 +327,7 @@ class FactoryDataset:
                     raise ValueError(f"{name}: Invalid hex string for bytes format")
                 if "length" in tag:
                     if tag["length"]!=len(bin):
-                        raise ValueError(f"{name}: schema requires this byte sequence to be {tag["length"]} bytes but the given sequence is {len(bin)} byte long.")
+                        raise ValueError(f"{name}: schema requires this byte sequence to be {tag['length']} bytes but the given sequence is {len(bin)} byte long.")
                 fmt = f"{len(bin)}s"
                 if len(bin) > 2**16 - 1:
                     raise ValueError(f"Bytes {name} is too long!")

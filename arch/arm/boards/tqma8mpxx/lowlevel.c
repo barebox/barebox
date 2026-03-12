@@ -81,7 +81,7 @@ static void power_init_board(void)
 	pmic_configure(i2c, 0x25, pca9450_cfg, ARRAY_SIZE(pca9450_cfg));
 }
 
-static __noreturn noinline void tqma8mpxl_start(void)
+static __noreturn noinline void tqma8mpxx_start(void)
 {
 	extern char __dtb_z_imx8mp_tqma8mpql_mba8mpxl_start[];
 
@@ -102,12 +102,12 @@ static __noreturn noinline void tqma8mpxl_start(void)
 	imx8mp_barebox_entry(__dtb_z_imx8mp_tqma8mpql_mba8mpxl_start);
 }
 
-ENTRY_FUNCTION(start_tqma8mpxl, x0, x1, x2)
+ENTRY_FUNCTION(start_tqma8mpxx, x0, x1, x2)
 {
 	imx8mp_cpu_lowlevel_init();
 
 	relocate_to_current_adr();
 	setup_c();
 
-	tqma8mpxl_start();
+	tqma8mpxx_start();
 }

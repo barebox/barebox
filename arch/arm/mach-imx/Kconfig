@@ -766,7 +766,7 @@ config MACH_SKOV_IMX8MP
 	select IMX8M_DRAM
 	select I2C_IMX_EARLY
 
-config MACH_TQ_MBA8MPXL
+config MACH_TQ_MBA8MPXX
 	bool "TQ i.MX8MP Dual/Quad on MBa8MPxL Board"
 	select ARCH_IMX8MP
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN

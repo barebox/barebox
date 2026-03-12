@@ -199,3 +199,56 @@ script is loaded. Make them persistent with:
 
 ``global.hostname`` is typically derived from the device tree, but can be
 overridden.
+
+Forwarding a remote build directory over the internet
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the build server is not reachable from the Device-Under-Test, one
+possibility is to forward the build artifacts to a local TFTP server
+via SSHFS::
+
+  sshfs -o follow_symlinks,allow_other buildserver:/tftpboot /tftpboot
+
+The local development host can then export /tftpboot via TFTP.
+
+If the TFTP server is not running on the local development host, the
+``dpipe`` utility can be used to connect a local SFTP server process to
+an SSH session that runs ``sshfs`` in slave mode on the remote machine:
+
+.. code-block:: sh
+
+  dpipe /usr/lib/openssh/sftp-server = ssh a3f@tftpserver.in-my.lan sshfs -o slave,follow_symlinks,allow_other -o idmap=user -o gid=1001 :/tftpboot /tftpboot
+
+This works as follows:
+
+- ``dpipe`` connects the standard input/output of both sides of ``=``.
+- The left side runs the local SFTP server, giving the remote end access
+  to the local filesystem.
+- The right side runs ``sshfs`` on the TFTP server host in ``slave``
+  mode, reading SFTP protocol directly from stdin instead of spawning its
+  own SSH connection.
+- ``follow_symlinks`` resolves symlinks on the build host, so the TFTP
+  server sees regular files even if the build tree uses symlinks.
+- ``allow_other`` permits the TFTP daemon (which typically runs as a
+  different user) to read the mounted files.
+- ``idmap=user`` maps the remote user's UID to the local user, avoiding
+  permission issues.
+- ``gid=1001`` sets the group ID for all files (adjust to match the
+  group that the TFTP daemon runs as on the server, e.g. ``tftp`` or
+  ``nogroup``).
+- The colon prefix in ``:/tftpboot`` refers to the root of the *local*
+  (build host) filesystem as exported by the SFTP server.
+
+The result is that ``/tftpboot`` on the remote TFTP server mirrors the
+``/tftpboot`` directory on the build host. Build output can be
+symlinked there and the board will fetch it directly over TFTP.
+
+To undo the mount, terminate the ``dpipe`` process and run
+``fusermount -u /tftpboot`` on the TFTP server.
+
+.. note::
+
+   On Debian/Ubuntu, ``dpipe`` can be installed via ``apt install vde2``
+   ``sshfs`` and ``fuse`` must be installed on the TFTP server.
+   ``/etc/fuse.conf`` on the server must have ``user_allow_other``
+   enabled for ``allow_other`` to work.

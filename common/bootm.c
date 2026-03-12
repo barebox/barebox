@@ -530,8 +530,8 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 	data->force = bootm_data->force;
 	data->dryrun = bootm_data->dryrun;
 	data->initrd_address = bootm_data->initrd_address;
-	data->os_address = bootm_data->os_address;
-	data->os_entry = bootm_data->os_entry;
+	data->os_address = data->os_address_hint = bootm_data->os_address;
+	data->os_entry = data->os_entry_hint = bootm_data->os_entry;
 	data->efi_boot = bootm_data->efi_boot;
 
 	ret = file_read_and_detect_boot_image_type(data->os_file, &data->os_header);

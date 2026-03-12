@@ -822,6 +822,9 @@ static int tftp_close(struct inode *inode, struct file *f)
 {
 	struct file_priv *priv = f->private_data;
 
+	if (!priv)
+		return 0;
+
 	return tftp_do_close(priv);
 }
 
@@ -830,6 +833,9 @@ static int tftp_write(struct file *f, const void *inbuf, size_t insize)
 	struct file_priv *priv = f->private_data;
 	size_t size, now;
 	int ret;
+
+	if (!priv)
+		return -EREMOTEIO;
 
 	pr_vdebug("%s: %zu\n", __func__, insize);
 
@@ -865,6 +871,9 @@ static int tftp_read(struct file *f, void *buf, size_t insize)
 	struct file_priv *priv = f->private_data;
 	size_t outsize = 0, now;
 	int ret = 0;
+
+	if (!priv)
+		return -EREMOTEIO;
 
 	pr_vdebug("%s %zu\n", __func__, insize);
 
@@ -902,14 +911,34 @@ static int tftp_read(struct file *f, void *buf, size_t insize)
 
 static int tftp_lseek(struct file *f, loff_t pos)
 {
+	struct file_priv *priv = f->private_data;
 	static loff_t seek_discard_total;
 	int ret = 0;
 	char *buf;
 	loff_t f_pos = f->f_pos;
 
+	if (!priv)
+		return -EREMOTEIO;
+
 	/* We cannot seek backwards without reloading or caching the file */
-	if (pos < f_pos)
-		return -ENOSYS;
+	if (pos < f_pos) {
+		/* We can reopen read streams, but not write streams */
+		if (priv->push)
+			return -ENOSYS;
+
+		tftp_do_close(priv);
+
+		priv = tftp_do_open(&f->fsdev->dev, f->f_flags,
+				    f->f_path.dentry, false);
+		if (IS_ERR(priv)) {
+			f->private_data = NULL;
+			return PTR_ERR(priv);
+		}
+
+		f->private_data = priv;
+		f->f_pos = 0;
+		f_pos = 0;
+	}
 
 	if (pos == f_pos)
 		return 0;

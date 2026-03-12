@@ -976,7 +976,7 @@ int open_fdt(const char *filename, size_t *size)
 	if (ret)
 		goto err;
 
-	ret = pread_full(fd, &fdt_hdr, sizeof(fdt_hdr), 0);
+	ret = read_full(fd, &fdt_hdr, sizeof(fdt_hdr));
 	if (ret >= 0 && ret < sizeof(fdt_hdr))
 		ret = -EILSEQ;
 	if (ret < 0)
@@ -988,13 +988,12 @@ int open_fdt(const char *filename, size_t *size)
 		goto err;
 	}
 
-	close(fd);
+	if (lseek(fd, 0, SEEK_SET) != 0) {
+		ret = -errno;
+		goto err;
+	}
 
-	/* HACK: TFTP doesn't support backwards seeking, so reopen afresh */
-	fd = open(filename, O_RDONLY);
-	if (fd >= 0)
-		*size = fdt_size;
-
+        *size = fdt_size;
 	return fd;
 err:
 	close(fd);

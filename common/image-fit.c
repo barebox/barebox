@@ -55,18 +55,6 @@ static char *dt_string(struct fdt_header *f, char *strstart, uint32_t ofs)
 		return strstart + ofs;
 }
 
-static int of_read_string_list(struct device_node *np, const char *name, struct string_list *sl)
-{
-	struct property *prop;
-	const char *s;
-
-	of_property_for_each_string(np, name, prop, s) {
-		string_list_add(sl, s);
-	}
-
-	return prop ? 0 : -EINVAL;
-}
-
 static int fit_digest(struct fit_handle *handle, struct digest *digest,
 		      struct string_list *inc_nodes, struct string_list *exc_props,
 		      uint32_t hashed_strings_start, uint32_t hashed_strings_size)
@@ -316,10 +304,106 @@ ok:
 	return 0;
 }
 
+static int fit_config_build_hash_nodes(struct fit_handle *handle,
+				       struct device_node *conf_node,
+				       struct string_list *node_list)
+{
+	struct device_node *image_node, *child;
+	struct property *prop;
+	const char *unit;
+	int i, ret, count;
+
+	ret = string_list_add(node_list, "/");
+	if (ret)
+		return ret;
+	ret = string_list_add_asprintf(node_list, "%s", conf_node->full_name);
+	if (ret)
+		return ret;
+
+	for_each_property_of_node(conf_node, prop) {
+		if (!strcmp(prop->name, "description") ||
+		    !strcmp(prop->name, "compatible") ||
+		    !strcmp(prop->name, "default"))
+			continue;
+
+		count = of_property_count_strings(conf_node, prop->name);
+		for (i = 0; i < count; i++) {
+			if (of_property_read_string_index(conf_node, prop->name,
+							  i, &unit))
+				return -EINVAL;
+
+			if (strchr(unit, '/'))
+				return -EINVAL;
+
+			ret = string_list_add_asprintf(node_list, "/images/%s", unit);
+			if (ret)
+				return ret;
+
+			image_node = of_get_child_by_name(handle->images, unit);
+			if (!image_node)
+				return -EINVAL;
+
+			for_each_child_of_node(image_node, child) {
+				if (!of_node_has_prefix(child, "hash"))
+					continue;
+				ret = string_list_add_asprintf(node_list, "/images/%s/%s",
+							       unit, child->name);
+				if (ret)
+					return ret;
+			}
+		}
+	}
+
+	return 0;
+}
+
+static int fit_config_check_hash_nodes(struct device_node *sig_node,
+				       struct string_list *inc_nodes)
+{
+	struct string_list *entry;
+	const char *node;
+	int ret, i = 0;
+
+	/*
+	 * Check if the hashed-nodes property matches the list of nodes we calculated.
+	 * We don't use the hashed-nodes property finally, but let's check for consistency
+	 * to inform the user if something is wrong.
+	 */
+
+	string_list_for_each_entry(entry, inc_nodes) {
+
+		ret = of_property_read_string_index(sig_node, "hashed-nodes", i, &node);
+		if (ret) {
+			pr_err("Cannot read hashed-node[%u]: %pe\n", i,
+			       ERR_PTR(ret));
+			return ret;
+		}
+
+		if (strcmp(entry->str, node)) {
+			pr_err("hashed-node[%u] doesn't match calculated node: %s != %s\n",
+			       i, entry->str, node);
+			return -EINVAL;
+		}
+
+		i++;
+	}
+
+	ret = of_property_read_string_index(sig_node, "hashed-nodes", i,
+					    &node);
+	if (!ret) {
+		pr_err("hashed-nodes property has more entries than we calculated\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 /*
  * The consistency of the FTD structure was already checked by of_unflatten_dtb()
  */
-static int fit_verify_signature(struct fit_handle *handle, struct device_node *sig_node)
+static int fit_verify_signature(struct fit_handle *handle,
+				struct device_node *sig_node,
+				struct device_node *conf_node)
 {
 	uint32_t hashed_strings_start, hashed_strings_size;
 	struct string_list inc_nodes, exc_props;
@@ -333,6 +417,7 @@ static int fit_verify_signature(struct fit_handle *handle, struct device_node *s
 		pr_err("hashed-strings start not found in %pOF\n", sig_node);
 		return -EINVAL;
 	}
+
 	if (of_property_read_u32_index(sig_node, "hashed-strings", 1,
 	    &hashed_strings_size)) {
 		pr_err("hashed-strings size not found in %pOF\n", sig_node);
@@ -342,11 +427,15 @@ static int fit_verify_signature(struct fit_handle *handle, struct device_node *s
 	string_list_init(&inc_nodes);
 	string_list_init(&exc_props);
 
-	if (of_read_string_list(sig_node, "hashed-nodes", &inc_nodes)) {
-		pr_err("hashed-nodes property not found in %pOF\n", sig_node);
-		ret = -EINVAL;
+	ret = fit_config_build_hash_nodes(handle, conf_node, &inc_nodes);
+	if (ret) {
+		pr_err("Failed to build hash node list for %pOF\n", conf_node);
 		goto out_sl;
 	}
+
+	ret = fit_config_check_hash_nodes(sig_node, &inc_nodes);
+	if (ret)
+		goto out_sl;
 
 	string_list_add(&exc_props, "data");
 
@@ -734,7 +823,7 @@ int fit_config_verify_signature(struct fit_handle *handle, struct device_node *c
 		if (handle->verbose)
 			of_print_nodes(sig_node, 0, ~0);
 
-		ret = fit_verify_signature(handle, sig_node);
+		ret = fit_verify_signature(handle, sig_node, conf_node);
 		if (ret < 0)
 			return ret;
 	}

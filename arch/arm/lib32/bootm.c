@@ -194,41 +194,34 @@ static int bootm_load_tee_from_fit(struct image_data *data)
 out:
 	return ret;
 }
-static int bootm_load_tee_from_file(struct image_data *data)
+static int bootm_load_tee(struct image_data *data)
 {
-	int fd, ret;
+	int ret;
 	struct optee_header hdr;
 
-	fd = open(data->tee_file, O_RDONLY);
-	if (fd < 0) {
-		pr_err("%m\n");
-		return -errno;
-	}
+	if (!data->tee)
+		return 0;
 
-	if (read_full(fd, &hdr, sizeof(hdr)) < 0) {
-		pr_err("%m\n");
-		ret = -errno;
-		goto out;
-	}
+	ret = loadable_extract_into_buf(data->tee, &hdr, sizeof(hdr), 0,
+					LOADABLE_EXTRACT_PARTIAL);
+	if (ret < 0)
+		return ret;
 
 	ret = optee_verify_header_request_region(data, &hdr);
 	if (ret < 0)
-		goto out;
+		return ret;
 
-	if (read_full(fd, (void *)data->tee_res->start, hdr.init_size) < 0) {
-		pr_err("%m\n");
-		ret = -errno;
+	ret = loadable_extract_into_buf(data->tee, (void *)data->tee_res->start,
+					hdr.init_size, sizeof(hdr), 0);
+	if (ret < 0) {
 		release_region(data->tee_res);
-		goto out;
+		return ret;
 	}
 
-	printf("Read optee file to %pa, size 0x%08x\n", (void *)data->tee_res->start, hdr.init_size);
+	printf("Loaded TEE image to %pa, size 0x%08x\n",
+	       (void *)data->tee_res->start, hdr.init_size);
 
-	ret = 0;
-out:
-	close(fd);
-
-	return ret;
+	return 0;
 }
 
 static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
@@ -295,7 +288,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 
 	if (IS_ENABLED(CONFIG_BOOTM_OPTEE)) {
 		if (data->tee_file && !bootm_signed_images_are_forced()) {
-			ret = bootm_load_tee_from_file(data);
+			ret = bootm_load_tee(data);
 			if (ret)
 				return ret;
 		} else if (IS_ENABLED(CONFIG_FITIMAGE)) {

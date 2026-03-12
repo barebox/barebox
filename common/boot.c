@@ -563,7 +563,6 @@ BAREBOX_MAGICVAR(global.boot.default, "default boot order");
  */
 int bootm_entry(struct bootentry *be, const struct bootm_data *bootm_data)
 {
-	struct bootm_overrides old;
 	struct image_data *data;
 	int ret;
 
@@ -571,12 +570,13 @@ int bootm_entry(struct bootentry *be, const struct bootm_data *bootm_data)
 	if (IS_ERR(data))
 		return PTR_ERR(data);
 
-	old = bootm_save_overrides(be->overrides);
+	ret = bootm_apply_overrides(data, &be->overrides);
+	if (ret)
+		goto out;
 
 	ret = bootm_boot_handler(data);
 
-	bootm_restore_overrides(old);
-
+out:
 	bootm_boot_cleanup(data);
 	return ret;
 }

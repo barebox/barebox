@@ -14,6 +14,7 @@ config LOADABLE
 	  Provides infrastructure for lazy-loadable resources that can be
 	  queried for metadata without loading data, and extracted to memory
 	  on demand.
+	  Used mainly by bootm for managing kernel/initrd/fdt loading.
 
 config LOADABLE_DECOMPRESS
 	bool "Decompression support for loadable resources" if COMPILE_TEST

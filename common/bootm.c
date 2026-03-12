@@ -569,19 +569,15 @@ int file_read_and_detect_boot_image_type(const char *os_file, void **os_header)
 	return file_detect_boot_image_type(*os_header, PAGE_SIZE);
 }
 
-/*
- * bootm_boot - Boot an application image described by bootm_data
- */
-int bootm_boot(struct bootm_data *bootm_data)
+struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 {
 	struct image_data *data;
-	struct image_handler *handler;
 	int ret;
 	const char *image_type_str;
 
 	if (!bootm_data->os_file) {
 		pr_err("no image given\n");
-		return -ENOENT;
+		return ERR_PTR(-ENOENT);
 	}
 
 	data = xzalloc(sizeof(*data));
@@ -759,6 +755,17 @@ int bootm_boot(struct bootm_data *bootm_data)
 		free(hostname_bootarg);
 	}
 
+	return data;
+err_out:
+	bootm_boot_cleanup(data);
+	return ERR_PTR(ret);
+}
+
+int bootm_boot_handler(struct image_data *data)
+{
+	struct image_handler *handler;
+	int ret;
+
 	pr_info("\nLoading %s '%s'", file_type_to_string(data->kernel_type),
 		data->os_file);
 	if (data->kernel_type == filetype_uimage &&
@@ -777,8 +784,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		       file_type_to_string(data->kernel_type));
 		if (data->kernel_type == filetype_uimage)
 			pr_err("and OS type: %d\n", data->os_uimage->header.ih_os);
-		ret = -ENODEV;
-		goto err_out;
+		return -ENODEV;
 	}
 
 	if (bootm_verbose(data)) {
@@ -797,7 +803,11 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (data->dryrun)
 		pr_info("Dryrun. Aborted\n");
 
-err_out:
+	return ret;
+}
+
+void bootm_boot_cleanup(struct image_data *data)
+{
 	release_sdram_region(data->os_res);
 	if (data->initrd_res)
 		of_del_reserve_entry(data->initrd_res->start, data->initrd_res->end);
@@ -819,7 +829,23 @@ err_out:
 	free(data->initrd_file);
 	free(data->tee_file);
 	free(data);
+}
 
+/*
+ * bootm_boot - Boot an application image described by bootm_data
+ */
+int bootm_boot(const struct bootm_data *bootm_data)
+{
+	struct image_data *data;
+	int ret;
+
+	data = bootm_boot_prep(bootm_data);
+	if (IS_ERR(data))
+		return PTR_ERR(data);
+
+	ret = bootm_boot_handler(data);
+
+	bootm_boot_cleanup(data);
 	return ret;
 }
 

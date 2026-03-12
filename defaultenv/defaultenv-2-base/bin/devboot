@@ -1,0 +1,48 @@
+#!/bin/sh
+
+devboot_path="${global.net.fetchdir}"
+
+# global.net.server and global.hostname may be set by DHCP, so trigger it first
+ifup -a1
+
+cd "${devboot_path}" || exit 1
+saved_pwd="$OLDPWD"
+
+devboot_script="${global.user}-devboot-${global.hostname}"
+if [ ! -f "${devboot_script}" ]; then
+	devboot_script2="${global.user}-devboot-${global.arch}"
+	if [ ! -f "${devboot_script2}" ]; then
+		echo "Error: Neither ${devboot_script} nor ${devboot_script2} found"
+		echo "Create one of them and set as needed:"
+		echo "  devboot_image, devboot_initrd, devboot_oftree"
+		cd "${saved_pwd}"
+		exit 1
+	fi
+	devboot_script="${devboot_script2}"
+fi
+
+echo Sourcing "${devboot_path}/${devboot_script}"
+source "${devboot_path}/${devboot_script}"
+if [ $? -ne 0 ]; then
+	cd "${saved_pwd}"
+	exit 1
+fi
+
+override_args=""
+
+if [[ -v devboot_image ]]; then
+	override_args="${override_args} -o bootm.image=\"${devboot_image}\""
+fi
+
+if [[ -v devboot_oftree ]]; then
+	override_args="${override_args} -o bootm.oftree=\"${devboot_oftree}\""
+fi
+
+if [[ -v devboot_initrd ]]; then
+	override_args="${override_args} -o bootm.initrd=\"${devboot_initrd}\""
+fi
+
+echo boot ${override_args} $*
+boot ${override_args} $*
+
+cd "${saved_pwd}"

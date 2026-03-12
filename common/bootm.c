@@ -400,7 +400,7 @@ static void bootm_print_info(struct image_data *data)
 		printf("OS image not yet relocated\n");
 }
 
-static int bootm_image_name_and_part(const char *name, char **filename, char **part)
+int bootm_image_name_and_part(const char *name, char **filename, char **part)
 {
 	char *at, *ret;
 
@@ -570,7 +570,7 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 
 	switch (data->image_type) {
 	case filetype_fit:
-		ret = bootm_open_fit(data);
+		ret = bootm_open_fit(data, false);
 		break;
 	case filetype_uimage:
 		ret = bootm_open_uimage(data);

@@ -4,6 +4,7 @@
 #include <image-fit.h>
 #include <bootm-fit.h>
 #include <memory.h>
+#include <string.h>
 #include <zero_page.h>
 #include <filetype.h>
 #include <fs.h>
@@ -143,7 +144,7 @@ static enum filetype bootm_fit_update_os_header(struct image_data *data)
 	return os_type;
 }
 
-int bootm_open_fit(struct image_data *data)
+int bootm_open_fit(struct image_data *data, bool override)
 {
 	struct fit_handle *fit;
 	void *fit_config;
@@ -164,8 +165,12 @@ int bootm_open_fit(struct image_data *data)
 	}
 
 	loadable_from_fit_os(data, fit, fit_config);
-	loadable_from_fit_initrd(data, fit, fit_config);
-	loadable_from_fit_oftree(data, fit, fit_config);
+	if (override)
+		data->is_override.os = true;
+	if (loadable_from_fit_initrd(data, fit, fit_config) && override)
+		data->is_override.initrd = true;
+	if (loadable_from_fit_oftree(data, fit, fit_config) && override)
+		data->is_override.oftree = true;
 	loadable_from_fit_tee(data, fit, fit_config);
 
 	data->kernel_type = bootm_fit_update_os_header(data);

@@ -53,6 +53,8 @@ struct bootm_data {
 	unsigned long os_entry;
 };
 
+int bootm_image_name_and_part(const char *name, char **filename, char **part);
+
 int bootm_boot(const struct bootm_data *data);
 
 struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data);

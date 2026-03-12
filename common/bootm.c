@@ -202,11 +202,6 @@ static int uimage_part_num(const char *partname)
 	return simple_strtoul(partname, NULL, 0);
 }
 
-static inline bool image_is_uimage(struct image_data *data)
-{
-	return IS_ENABLED(CONFIG_BOOTM_UIMAGE) && data->os_uimage;
-}
-
 /**
  * bootm_load_os() - load OS to RAM
  * @data:		image data context
@@ -244,8 +239,6 @@ const struct resource *bootm_load_os(struct image_data *data,
 
 	if (data->os_fit)
 		err = bootm_load_fit_os(data, load_address);
-	else if (image_is_uimage(data))
-		err = bootm_load_uimage_os(data, load_address);
 	else
 		err = -EINVAL;
 
@@ -278,9 +271,6 @@ const struct resource *
 bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address)
 {
 	struct resource *res = NULL;
-	const char *initrd, *initrd_part = NULL;
-	enum filetype type = filetype_unknown;
-	int ret;
 
 	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
 		return NULL;
@@ -300,24 +290,8 @@ bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address
 		return res;
 	}
 
-	initrd = data->initrd_file;
-	if (initrd) {
-		ret = file_name_detect_type(initrd, &type);
-		if (ret) {
-			pr_err("could not open initrd \"%s\": %pe\n",
-			       initrd, ERR_PTR(ret));
-			return ERR_PTR(ret);
-		}
-	}
-
-	if (type == filetype_uimage) {
-		res = bootm_load_uimage_initrd(data, load_address);
-		if (data->initrd_uimage->header.ih_type == IH_TYPE_MULTI)
-			initrd_part = data->initrd_part;
-	} else if (data->os_fit) {
+	if (data->os_fit)
 		res = bootm_load_fit_initrd(data, load_address);
-		type = filetype_fit;
-	}
 
 	if (IS_ERR_OR_NULL(res))
 		return res;
@@ -327,11 +301,6 @@ bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address
 	 */
 	if (WARN_ON(res->end > end_address))
 		return ERR_PTR(-ENOSPC);
-
-	pr_info("Loaded initrd from %s %s%s%s to %pa-%pa\n",
-		file_type_to_string(type), initrd ?: "",
-		initrd_part ? "@" : "", initrd_part ?: "",
-		&res->start, &res->end);
 
 	data->initrd_res = res;
 	return data->initrd_res;
@@ -351,9 +320,7 @@ bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address
  */
 void *bootm_get_devicetree(struct image_data *data)
 {
-	enum filetype type;
 	struct fdt_header *oftree;
-	int ret;
 
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return ERR_PTR(-ENOSYS);
@@ -380,37 +347,6 @@ void *bootm_get_devicetree(struct image_data *data)
 
 	} else if (bootm_fit_has_fdt(data)) {
 		data->of_root_node = bootm_get_fit_devicetree(data);
-	} else if (data->oftree_file) {
-		size_t size;
-
-		/* TODO: There's some duplication here, but that will go away
-		 * once we switch this over to the loadable API
-		 */
-
-		ret = file_name_detect_type(data->oftree_file, &type);
-		if (ret) {
-			pr_err("could not open device tree \"%s\": %pe\n", data->oftree_file,
-			       ERR_PTR(ret));
-			return ERR_PTR(ret);
-		}
-
-		if (type != filetype_uimage)
-			return ERR_PTR(-EINVAL);
-
-		ret = bootm_open_oftree_uimage(data, &size, &oftree);
-		if (ret)
-			return ERR_PTR(ret);
-
-		data->of_root_node = of_unflatten_dtb(oftree, size);
-
-		free(oftree);
-
-		if (IS_ERR(data->of_root_node)) {
-			data->of_root_node = NULL;
-			pr_err("unable to unflatten devicetree\n");
-			return ERR_PTR(-EINVAL);
-		}
-
 	} else {
 		data->of_root_node = of_dup_root_node_for_boot();
 		if (!data->of_root_node)
@@ -487,8 +423,6 @@ loff_t bootm_get_os_size(struct image_data *data)
 
 	if (data->os)
 		return loadable_get_size(data->os, &size) ?: size;
-	if (image_is_uimage(data))
-		return uimage_get_size(data->os_uimage, uimage_part_num(data->os_part));
 	if (data->os_fit)
 		return data->fit_kernel_size;
 
@@ -701,6 +635,12 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 		goto err_out;
 	}
 
+	if (IS_ENABLED(CONFIG_BOOTM_UIMAGE)) {
+		ret = bootm_collect_uimage_loadables(data);
+		if (ret)
+			goto err_out;
+	}
+
 	if (bootm_data->appendroot) {
 		const char *root = NULL;
 		const char *rootopts = NULL;
@@ -862,8 +802,6 @@ void bootm_boot_cleanup(struct image_data *data)
 	release_sdram_region(data->initrd_res);
 	release_sdram_region(data->oftree_res);
 	release_sdram_region(data->tee_res);
-	if (image_is_uimage(data))
-		bootm_close_uimage(data);
 	if (data->os_fit)
 		bootm_close_fit(data);
 	loadable_release(&data->oftree);

@@ -9,6 +9,7 @@ struct bootm_overrides {
 };
 
 struct image_data;
+struct loadable;
 
 #ifdef CONFIG_BOOT_OVERRIDE
 static inline void bootm_merge_overrides(struct bootm_overrides *dst,
@@ -24,6 +25,8 @@ static inline void bootm_merge_overrides(struct bootm_overrides *dst,
 
 int bootm_apply_overrides(struct image_data *data,
 			  const struct bootm_overrides *overrides);
+void bootm_set_pending_oftree_overlays(struct loadable *oftree);
+void bootm_clear_pending_oftree_overlays(void);
 #else
 
 static inline void bootm_merge_overrides(struct bootm_overrides *dst,
@@ -36,6 +39,9 @@ static inline int bootm_apply_overrides(struct image_data *data,
 {
 	return 0;
 }
+
+static inline void bootm_set_pending_oftree_overlays(struct loadable *o) {}
+static inline void bootm_clear_pending_oftree_overlays(void) {}
 #endif
 
 #endif

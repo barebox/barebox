@@ -31,6 +31,10 @@
 				     MX8MP_PAD_CTL_PUE | \
 				     MX8MP_PAD_CTL_PE)
 
+
+extern struct dram_timing_info *dram_timings_xs_no_ecc[];
+extern struct dram_timing_info *dram_timings_xl_no_ecc[];
+
 static void setup_uart(void *uart, iomux_v3_cfg_t tx_pad, iomux_v3_cfg_t rx_pad)
 {
 	imx8m_early_setup_uart_clock();
@@ -102,6 +106,7 @@ static noinline void tqma8mpxx_start(void)
 {
 	extern char __dtb_z_imx8mp_tqma8mpql_mba8mpxl_start[];
 	extern char __dtb_z_imx8mp_tqma8mpqs_mba8mpxs_start[];
+	struct dram_timing_info **dram_timings;
 
 	struct tq_eeprom *eeprom;
 	struct pbl_i2c *i2c;
@@ -121,6 +126,7 @@ static noinline void tqma8mpxx_start(void)
 		/* found xS board */
 		i2c = tqma_i2c2_init();
 		boarddata = __dtb_z_imx8mp_tqma8mpqs_mba8mpxs_start;
+		dram_timings = dram_timings_xs_no_ecc;
 		setup_uart(IOMEM(MX8M_UART3_BASE_ADDR),
 			   MX8MP_PAD_SD1_DATA6__UART3_DCE_TX,
 			   MX8MP_PAD_SD1_DATA7__UART3_DCE_RX);
@@ -131,6 +137,7 @@ static noinline void tqma8mpxx_start(void)
 
 		/* found xL board */
 		boarddata = __dtb_z_imx8mp_tqma8mpql_mba8mpxl_start;
+		dram_timings = dram_timings_xl_no_ecc;
 		setup_uart(IOMEM(MX8M_UART4_BASE_ADDR),
 			   MX8MP_PAD_UART4_TXD__UART4_DCE_TX,
 			   MX8MP_PAD_UART4_RXD__UART4_DCE_RX);
@@ -138,18 +145,32 @@ static noinline void tqma8mpxx_start(void)
 	}
 
 	if (current_el() == 3) {
-		extern struct dram_timing_info dram_timing_2gb_no_ecc;
-		int ramsize;
+		unsigned long ramsize;
+		int index = -1;
 
-		ramsize = tq_vard_ramsize(&eeprom->vard) / (SZ_1G);
-		if (ramsize != 2)
-			panic("RAMsize other then 2GB is not supported at the moment.\n");
+		ramsize = tq_vard_ramsize(&eeprom->vard);
+		switch (ramsize) {
+		case SZ_1G:
+			index = 0;
+			break;
+		case SZ_2G:
+			index = 1;
+			break;
+		case SZ_4G:
+			index = 2;
+			break;
+		case SZ_8G:
+			index = 3;
+			break;
+		default:
+			panic("RAMsize %lu is not supported.\n", ramsize);
+		}
 
 		imx8mp_early_clock_init();
 
 		pmic_configure(i2c, 0x25, pca9450_cfg, ARRAY_SIZE(pca9450_cfg));
 
-		imx8mp_ddr_init(&dram_timing_2gb_no_ecc, DRAM_TYPE_LPDDR4);
+		imx8mp_ddr_init(dram_timings[index], DRAM_TYPE_LPDDR4);
 
 		imx8mp_load_and_start_image_via_tfa();
 	}
@@ -157,6 +178,9 @@ static noinline void tqma8mpxx_start(void)
 	tq_vard_show(&eeprom->vard);
 	printf("Serial: %s\n", eeprom->id);
 	printf("ID:     %s\n", eeprom->serial);
+
+	if (tq_vard_has_ramecc(&eeprom->vard))
+		pr_err("ECC Configured, but treated as non ECC RAM\n");
 
 	imx8mp_barebox_entry(boarddata);
 }

@@ -406,7 +406,7 @@ static int prt_imx6_usb_boot(struct bootentry *entry, int verbose, int dryrun)
 	if (dryrun)
 		bootm_data.dryrun = dryrun;
 
-	ret = bootm_boot(&bootm_data);
+	ret = bootm_entry(entry, &bootm_data);
 	if (ret)
 		goto exit_usb_boot;
 

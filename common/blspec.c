@@ -156,7 +156,7 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	firmware_set_searchpath(fws);
 	free(fws);
 
-	ret = bootm_boot(&data);
+	ret = bootm_entry(be, &data);
 	if (ret)
 		pr_err("Booting failed\n");
 

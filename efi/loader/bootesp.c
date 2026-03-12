@@ -55,7 +55,7 @@ static int esp_boot(struct bootentry *be, int verbose, int dryrun)
 	 * 2) implement device tree overlay patching protocol using it?
 	 */
 
-	ret = bootm_boot(&data);
+	ret = bootm_entry(be, &data);
 	if (ret)
 		pr_err("Booting failed\n");
 

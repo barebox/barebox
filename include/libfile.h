@@ -55,9 +55,6 @@ char *make_temp(const char *template);
 
 int cache_file(const char *path, char **newpath);
 
-struct resource *file_to_sdram(const char *filename, unsigned long adr,
-			       enum resource_memtype memtype);
-
 int fixup_path_case(int dirfd, const char **path);
 
 int open_fdt(const char *filename, size_t *size);

@@ -10,11 +10,11 @@ struct image_data;
 
 #ifdef CONFIG_BOOTM_FITIMAGE
 
-int bootm_open_fit(struct image_data *data);
+int bootm_open_fit(struct image_data *data, bool override);
 
 #else
 
-static inline int bootm_open_fit(struct image_data *data)
+static inline int bootm_open_fit(struct image_data *data, bool override)
 {
 	return -ENOSYS;
 }

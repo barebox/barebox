@@ -572,6 +572,14 @@ config TIMESTAMP
 menuconfig BOOTM
 	default y if COMMAND_SUPPORT
 	bool "bootm support"
+	select LOADABLE
+
+config BOOTM_COMPRESSED
+	bool "bootm support for compressed images"
+	default y
+	depends on BOOTM
+	depends on UNCOMPRESS
+	select LOADABLE_DECOMPRESS
 
 config BOOT_OVERRIDE
 	bool "Support partial override of boot entries"

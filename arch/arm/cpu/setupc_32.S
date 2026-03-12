@@ -40,12 +40,12 @@ bss_cleared:
 .section .text.relocate_to_adr
 #ifdef __PBL__
 ENTRY(relocate_to_adr_full)
-	ldr	r2, =__image_end
+	ldr	r2, =__image_end	/* include piggy data */
 	b	1f
 #endif
 
 ENTRY(relocate_to_adr)
-	ldr	r2, =__bss_start
+	ldr	r2, =__bss_stop		/* skip piggy data */
 	b	1f
 
 1:

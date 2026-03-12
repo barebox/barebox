@@ -41,12 +41,12 @@ bss_cleared:
 					/* x0: target address */
 #ifdef __PBL__
 ENTRY(relocate_to_adr_full)
-	adr_l	x2, __image_end
+	adr_l	x2, __image_end		/* include piggy data */
 	b	1f
 #endif
 
 ENTRY(relocate_to_adr)
-	adr_l	x2, __bss_start
+	adr_l	x2, __bss_stop		/* skip piggy data */
 	b	1f
 
 1:

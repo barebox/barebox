@@ -64,14 +64,11 @@ struct image_data {
 	/* simplest case. barebox has already loaded the os here */
 	struct resource *os_res;
 
-	/* Future default case: A generic loadable object */
+	/* Generic loadable object for OS image */
 	struct loadable *os;
 
 	/* if os is an uImage this will be provided */
 	struct uimage_handle *os_uimage;
-
-	/* if os is a FIT image this will be provided */
-	struct fit_handle *os_fit;
 
 	char *os_part;
 
@@ -92,7 +89,7 @@ struct image_data {
 	/* if initrd is already loaded this resource will be !NULL */
 	struct resource *initrd_res;
 
-	/* Future default case: A generic loadable object */
+	/* Generic loadable object for initrd */
 	struct loadable *initrd;
 
 	/* if initrd is an uImage this will be provided */
@@ -110,14 +107,10 @@ struct image_data {
 	/* if oftree is an uImage this will be provided */
 	struct uimage_handle *oftree_uimage;
 
-	const void *fit_kernel;
-	unsigned long fit_kernel_size;
-	void *fit_config;
-
 	struct device_node *of_root_node;
 	struct resource *oftree_res;
 
-	/* Future default case: A generic loadable object */
+	/* Generic loadable object for oftree */
 	struct loadable *oftree;
 
 	/*

@@ -27,6 +27,13 @@ struct fit_handle {
 	struct device_node *configurations;
 };
 
+static inline struct fit_handle *fit_open_handle(struct fit_handle *handle)
+{
+	if (handle)
+		refcount_inc(&handle->users);
+	return handle;
+}
+
 struct fit_handle *fit_open(const char *filename, bool verbose,
 			    enum bootm_verify verify);
 struct fit_handle *fit_open_buf(const void *buf, size_t len, bool verbose,
@@ -66,6 +73,7 @@ int fit_get_image_address(struct fit_handle *handle, void *configuration,
 			  const char *name, const char *property,
 			  unsigned long *address);
 int fit_config_verify_signature(struct fit_handle *handle, struct device_node *conf_node);
+const char *fit_config_get_name(struct fit_handle *handle, void *config);
 
 void fit_close(struct fit_handle *handle);
 

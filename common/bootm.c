@@ -11,7 +11,6 @@
 #include <block.h>
 #include <libfile.h>
 #include <bootm-fit.h>
-#include <image-fit.h>
 #include <bootm-uimage.h>
 #include <globalvar.h>
 #include <init.h>
@@ -218,40 +217,19 @@ const struct resource *bootm_load_os(struct image_data *data,
 		ulong load_address, ulong end_address)
 {
 	struct resource *res;
-	int err;
 
 	if (data->os_res)
 		return data->os_res;
 
-	if (load_address == UIMAGE_INVALID_ADDRESS)
+	if (load_address == UIMAGE_INVALID_ADDRESS ||
+	    end_address <= load_address || !data->os)
 		return ERR_PTR(-EINVAL);
-	if (end_address <= load_address)
-		return ERR_PTR(-EINVAL);
 
-	if (data->os) {
-		res = loadable_extract_into_sdram_all(data->os, load_address, end_address);
-		if (!IS_ERR(res))
-			data->os_res = res;
-		return res;
-	}
+	res = loadable_extract_into_sdram_all(data->os, load_address, end_address);
+	if (!IS_ERR(res))
+		data->os_res = res;
 
-	/* TODO: eliminate below special cases */
-
-	if (data->os_fit)
-		err = bootm_load_fit_os(data, load_address);
-	else
-		err = -EINVAL;
-
-	if (err)
-		return ERR_PTR(err);
-
-	/* FIXME: We need some more rework to be able to detect this overflow
-	 * before it happens, but for now, let's at least detect it.
-	 */
-	if (WARN_ON(data->os_res->end > end_address))
-		return ERR_PTR(-ENOSPC);
-
-	return data->os_res;
+	return res;
 }
 
 /**
@@ -280,30 +258,17 @@ bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address
 	 */
 	if (WARN_ON(data->initrd_res))
 		return data->initrd_res;
+
+	if (!data->initrd)
+		return NULL;
+
 	if (end_address <= load_address)
 		return ERR_PTR(-EINVAL);
 
-	if (data->initrd) {
-		res = loadable_extract_into_sdram_all(data->initrd, load_address, end_address);
-		if (!IS_ERR(res))
-			data->initrd_res = res;
-		return res;
-	}
-
-	if (data->os_fit)
-		res = bootm_load_fit_initrd(data, load_address);
-
-	if (IS_ERR_OR_NULL(res))
-		return res;
-
-	/* FIXME: We need some more rework to be able to detect this overflow
-	 * before it happens, but for now, let's at least detect it.
-	 */
-	if (WARN_ON(res->end > end_address))
-		return ERR_PTR(-ENOSPC);
-
-	data->initrd_res = res;
-	return data->initrd_res;
+	res = loadable_extract_into_sdram_all(data->initrd, load_address, end_address);
+	if (!IS_ERR(res))
+		data->initrd_res = res;
+	return res;
 }
 
 /*
@@ -345,8 +310,6 @@ void *bootm_get_devicetree(struct image_data *data)
 			return ERR_PTR(-EINVAL);
 		}
 
-	} else if (bootm_fit_has_fdt(data)) {
-		data->of_root_node = bootm_get_fit_devicetree(data);
 	} else {
 		data->of_root_node = of_dup_root_node_for_boot();
 		if (!data->of_root_node)
@@ -421,12 +384,10 @@ loff_t bootm_get_os_size(struct image_data *data)
 {
 	loff_t size;
 
-	if (data->os)
-		return loadable_get_size(data->os, &size) ?: size;
-	if (data->os_fit)
-		return data->fit_kernel_size;
+	if (!data->os)
+		return -EINVAL;
 
-	return -EINVAL;
+	return loadable_get_size(data->os, &size) ?: size;
 }
 
 static void bootm_print_info(struct image_data *data)
@@ -802,8 +763,6 @@ void bootm_boot_cleanup(struct image_data *data)
 	release_sdram_region(data->initrd_res);
 	release_sdram_region(data->oftree_res);
 	release_sdram_region(data->tee_res);
-	if (data->os_fit)
-		bootm_close_fit(data);
 	loadable_release(&data->oftree);
 	loadable_release(&data->initrd);
 	loadable_release(&data->os);

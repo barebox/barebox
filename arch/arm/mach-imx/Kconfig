@@ -767,11 +767,12 @@ config MACH_SKOV_IMX8MP
 	select I2C_IMX_EARLY
 
 config MACH_TQ_MBA8MPXX
-	bool "TQ i.MX8MP Dual/Quad on MBa8MPxL Board"
+	bool "TQ i.MX8MP Dual/Quad on MBa8MPxL or MBa8MPxS Board"
 	select ARCH_IMX8MP
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MP_ATF
 	select ARM_SMCCC
+	select BOARD_TQ
 	select MCI_IMX_ESDHC_PBL
 	select IMX8M_DRAM
 	select I2C_IMX_EARLY

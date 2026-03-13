@@ -58,6 +58,8 @@ $(pbl-lds): $(obj)/../arch/$(SRCARCH)/lib/pbl.lds.S FORCE
 
 ifeq ($(CONFIG_PBL_IMAGE_NO_PIGGY),)
 BAREBOX_PIGGY_OBJS = $(obj)/piggy.o $(obj)/sha_sum.o
+else
+BAREBOX_PIGGY_OBJS = $(obj)/../$(BAREBOX_PROPER)
 endif
 
 quiet_cmd_elf__ ?= LD      $@

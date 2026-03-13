@@ -610,8 +610,8 @@ static void mdio_bus_remove(struct device *_dev)
 	if (drv->remove)
 		drv->remove(dev);
 
-	free(dev->cdev.name);
 	devfs_remove(&dev->cdev);
+	free(dev->cdev.name);
 	bus->phy_map[dev->addr] = NULL;
 }
 

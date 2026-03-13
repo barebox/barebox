@@ -36,6 +36,7 @@ config ARM32
 
 config ARM64
 	def_bool CPU_64
+	select ARCH_HAS_RELR
 
 config ARCH_TEXT_BASE
 	hex

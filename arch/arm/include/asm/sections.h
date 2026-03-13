@@ -11,6 +11,8 @@ extern char __rel_dyn_start[];
 extern char __rel_dyn_end[];
 extern char __dynsym_start[];
 extern char __dynsym_end[];
+extern char __relr_dyn_start[];
+extern char __relr_dyn_end[];
 extern char __exceptions_start[];
 extern char __exceptions_stop[];
 

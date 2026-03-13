@@ -57,6 +57,8 @@ int elf_parse_dynamic_section_rel(struct elf_image *elf, const void *dyn_seg,
 				  void **rel_out, u64 *relsz_out, void **symtab);
 int elf_parse_dynamic_section_rela(struct elf_image *elf, const void *dyn_seg,
 				   void **rel_out, u64 *relsz_out, void **symtab);
+int elf_parse_dynamic_section_relr(struct elf_image *elf, const void *dyn_seg,
+				   void **relr_out, u64 *relrsz_out);
 
 /*
  * Apply dynamic relocations to an ELF binary already loaded in memory.

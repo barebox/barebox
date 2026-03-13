@@ -95,14 +95,12 @@ static struct device *get_device_by_name_id(const char *name, int id)
 	return NULL;
 }
 
-int get_free_deviceid(const char *name_template)
+int get_free_deviceid_from(const char *name_template, int id_from)
 {
-	int i = 0;
-
 	while (1) {
-		if (!get_device_by_name_id(name_template, i))
-			return i;
-		i++;
+		if (!get_device_by_name_id(name_template, id_from))
+			return id_from;
+		id_from++;
 	};
 }
 

@@ -15,7 +15,7 @@ static int clps711x_gpio_probe(struct device *dev)
 	struct bgpio_chip *bgc;
 
 	if (id < 0 || id > 4)
-		return -ENODEV;
+		return -EINVAL;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

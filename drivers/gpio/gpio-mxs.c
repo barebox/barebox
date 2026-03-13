@@ -112,7 +112,7 @@ static int mxs_gpio_probe(struct device *dev)
 	if (dev->id < 0) {
 		id = of_alias_get_id(dev->of_node, "gpio");
 		if (id < 0)
-			return id;
+			return -ENOENT;
 		mxsgpio->base = dev_get_mem_region(dev->parent, 0);
 		mxsgpio->chip.base = id * 32;
 	} else {

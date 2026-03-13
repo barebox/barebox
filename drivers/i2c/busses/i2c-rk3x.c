@@ -462,7 +462,8 @@ static void rk3x_i2c_irq(struct rk3x_i2c *i2c)
 
 		ipd &= ~REG_INT_NAKRCV;
 
-		if (!(i2c->msg->flags & I2C_M_IGNORE_NAK))
+		if (!i2c->msg ||
+		    !(i2c->msg->flags & I2C_M_IGNORE_NAK))
 			rk3x_i2c_stop(i2c, -ENXIO);
 	}
 

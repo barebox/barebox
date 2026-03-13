@@ -38,10 +38,6 @@ static inline int habv4_get_state(void)
  * are written.
  */
 #define IMX_SRK_HASH_WRITE_PERMANENT	BIT(1)
-/* When writing the super root key hash, also burn the write protection
- * fuses so that the key hash can not be modified.
- */
-#define IMX_SRK_HASH_WRITE_LOCK		BIT(2)
 
 bool imx_hab_srk_hash_valid(const void *buf);
 int imx_hab_write_srk_hash(const void *buf, unsigned flags);

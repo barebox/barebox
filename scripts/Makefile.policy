@@ -1,5 +1,61 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+# When invoked standalone (make -f Makefile.policy obj=dir), bootstrap
+# the kbuild infrastructure and handle recursion. When included from
+# Makefile.build, skip straight to the rules.
+
+ifndef build
+# Standalone mode — collect policies without building
+
+src := $(obj)
+
+PHONY := __collect
+__collect:
+
+policy-y :=
+
+include scripts/Kbuild.include
+
+# Include Kconfig output so CONFIG_* symbols (e.g. CONFIG_SECURITY_POLICY_PATH)
+# are available when security/Makefile computes external-policy.
+-include include/config/auto.conf
+
+kbuild-dir := $(if $(filter /%,$(src)),$(src),$(srctree)/$(src))
+include $(if $(wildcard $(kbuild-dir)/Kbuild), $(kbuild-dir)/Kbuild, $(kbuild-dir)/Makefile)
+
+__subdir-y	:= $(patsubst %/,%,$(filter %/, $(obj-y)))
+subdir-y	+= $(__subdir-y)
+__subdir-m	:= $(patsubst %/,%,$(filter %/, $(obj-m)))
+subdir-m	+= $(__subdir-m)
+
+subdir-ym	:= $(sort $(subdir-y) $(subdir-m))
+subdir-ym	:= $(addprefix $(obj)/,$(subdir-ym))
+
+real-policy-y	:= $(addprefix $(obj)/,$(policy-y))
+
+# external-policy is set by security/Makefile from CONFIG_SECURITY_POLICY_PATH
+real-external-policy := $(addprefix $(obj)/,$(external-policy))
+all-policy	:= $(real-policy-y) $(real-external-policy)
+
+quiet_cmd_collect = COLLECT $(obj)
+      cmd_collect = { $(foreach p,$(all-policy),echo $(p);) :; } > $(obj)/policy-list
+
+__collect: $(subdir-ym)
+ifneq ($(strip $(all-policy)),)
+	$(Q)mkdir -p $(obj)
+	$(call cmd,collect)
+endif
+	@:
+
+PHONY += $(subdir-ym)
+$(subdir-ym):
+	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.policy obj=$@
+
+.PHONY: $(PHONY)
+
+else
+# Included from Makefile.build — provide build-time rules
+
 real-policy-y   := $(addprefix $(obj)/, $(policy-y))
 
 targets         += $(addsuffix .tmp, $(real-policy-y))
@@ -24,6 +80,13 @@ else
 	$(call if_changed,shipped)
 endif
 
+$(obj)/%.sconfig.tmp: $(obj)/%.sconfig FORCE
+ifeq ($(KPOLICY_TMPUPDATE),)
+	$(call filechk,cat)
+else
+	$(call if_changed,shipped)
+endif
+
 quiet_cmd_sconfigpost_c = SCONFPP $@
       cmd_sconfigpost_c = $(SCONFIGPOST) -o $@ -D$(depfile) $(2)
 
@@ -36,3 +99,5 @@ $(obj)/%.sconfig.c: $(obj)/%.sconfig.tmp FORCE
 # ---------------------------------------------------------------------------
 
 targets += $(always-y)
+
+endif # build

@@ -61,6 +61,9 @@ static int regulator_fixed_probe(struct device *dev)
 	if (!of_property_read_u32(np, "off-on-delay-us", &delay))
 		fix->rdesc.off_on_delay = delay;
 
+	if (!of_property_read_u32(np, "startup-delay-us", &delay))
+		fix->rdesc.enable_time_us = delay;
+
 	if (of_find_property(np, "vin-supply", NULL))
 		fix->rdesc.supply_name = "vin";
 

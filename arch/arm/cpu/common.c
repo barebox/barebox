@@ -36,6 +36,7 @@ void sync_caches_for_execution(void)
 	arm_early_mmu_cache_flush();
 }
 
+#define R_ARM_NONE 0
 #define R_ARM_RELATIVE 23
 #define R_AARCH64_RELATIVE 1027
 
@@ -78,14 +79,19 @@ void __prereloc relocate_to_current_adr(void)
 #if defined(CONFIG_CPU_64)
 	while (dstart < dend) {
 		struct elf64_rela *rel = dstart;
+		unsigned long *fixup;
 
-		if (ELF64_R_TYPE(rel->r_info) == R_AARCH64_RELATIVE) {
-			unsigned long *fixup = (unsigned long *)(rel->r_offset + offset);
+		switch(ELF64_R_TYPE(rel->r_info)) {
+		case R_AARCH64_RELATIVE:
+			fixup = (unsigned long *)(rel->r_offset + offset);
 
 			*fixup = rel->r_addend + offset;
 			rel->r_addend += offset;
 			rel->r_offset += offset;
-		} else {
+			break;
+		case R_ARM_NONE:
+			break;
+		default:
 			putc_ll('>');
 			puthex_ll(rel->r_info);
 			putc_ll(' ');
@@ -104,20 +110,26 @@ void __prereloc relocate_to_current_adr(void)
 
 	while (dstart < dend) {
 		struct elf32_rel *rel = dstart;
+		unsigned long r, *fixup;
 
-		if (ELF32_R_TYPE(rel->r_info) == R_ARM_RELATIVE) {
-			unsigned long *fixup = (unsigned long *)(rel->r_offset + offset);
+		switch (ELF32_R_TYPE(rel->r_info)) {
+		case R_ARM_RELATIVE:
+			fixup = (unsigned long *)(rel->r_offset + offset);
 
 			*fixup = *fixup + offset;
 
 			rel->r_offset += offset;
-		} else if (ELF32_R_TYPE(rel->r_info) == R_ARM_ABS32) {
-			unsigned long r = dynsym[ELF32_R_SYM(rel->r_info) * 4 + 1];
-			unsigned long *fixup = (unsigned long *)(rel->r_offset + offset);
+			break;
+		case R_ARM_ABS32:
+			r = dynsym[ELF32_R_SYM(rel->r_info) * 4 + 1];
+			fixup = (unsigned long *)(rel->r_offset + offset);
 
 			*fixup = *fixup + r + offset;
 			rel->r_offset += offset;
-		} else {
+			break;
+		case R_ARM_NONE:
+			break;
+		default:
 			putc_ll('>');
 			puthex_ll(rel->r_info);
 			putc_ll(' ');

@@ -1016,6 +1016,7 @@ struct fit_handle *fit_open(const char *_filename, bool verbose,
 
 	handle = fit_get_handle(filename);
 	if (handle) {
+		free(filename);
 		refcount_inc(&handle->users);
 		return handle;
 	}
@@ -1049,10 +1050,10 @@ struct fit_handle *fit_open(const char *_filename, bool verbose,
 	return handle;
 }
 
-static void __fit_close(struct fit_handle *handle)
+static bool __fit_close(struct fit_handle *handle)
 {
 	if (!refcount_dec_and_test(&handle->users))
-		return;
+		return false;
 
 	if (handle->root)
 		of_delete_node(handle->root);
@@ -1062,12 +1063,13 @@ static void __fit_close(struct fit_handle *handle)
 
 	free(handle->filename);
 	free(handle->fit_alloc);
+	return true;
 }
 
 void fit_close(struct fit_handle *handle)
 {
-	__fit_close(handle);
-	free(handle);
+	if (__fit_close(handle))
+		free(handle);
 }
 
 static int do_bootm_fit(struct image_data *data)

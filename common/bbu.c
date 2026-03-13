@@ -454,7 +454,7 @@ int bbu_std_file_handler(struct bbu_handler *handler,
 	if (ret)
 		return ret;
 
-	fd = open(data->devicefile, oflags);
+	fd = open(data->devicefile, oflags, 0666);
 	if (fd < 0)
 		return fd;
 

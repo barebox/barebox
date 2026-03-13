@@ -394,7 +394,7 @@ static int xy_await_header(struct xyz_ctxt *proto)
 	xy_dbg("header received, filename=%s, file length=%d\n",
 	       proto->filename, proto->file_len);
 	if (proto->filename[0])
-		proto->fd = open(proto->filename, O_WRONLY | O_CREAT);
+		proto->fd = open(proto->filename, O_WRONLY | O_CREAT, 0666);
 	else
 		proto->state = PROTO_STATE_FINISHED_XFER;
 	proto->nb_received = 0;

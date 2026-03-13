@@ -23,7 +23,7 @@ static int do_uncompress(int argc, char *argv[])
 		return 1;
 	}
 
-	to = open(argv[2], O_WRONLY | O_CREAT);
+	to = open(argv[2], O_WRONLY | O_CREAT, 0666);
 	if (to < 0) {
 		perror("open");
 		ret = 1;

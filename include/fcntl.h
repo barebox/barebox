@@ -53,7 +53,7 @@ static inline int open(const char *pathname, int flags, ...)
 
 static inline int creat(const char *pathname, mode_t mode)
 {
-	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC);
+	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
 }
 
 #endif /* __FCNTL_H */

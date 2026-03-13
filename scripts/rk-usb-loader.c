@@ -256,6 +256,11 @@ static int upload_image(const char *filename)
 		goto err;
 	}
 
+	log_info("Uploading header\n");
+	ret = upload(dev, 0x471, hdr, sizeof(*hdr));
+	if (ret)
+		goto err;
+
 	for (i = 0; i < n_files; i++) {
 		struct newidb_entry *entry = &hdr->entries[i];
 		int foffset, fsize, wIndex;

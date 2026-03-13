@@ -60,14 +60,14 @@ static void test_lxa_tlv(void)
 		return;
 	}
 
-	cpu_tlvdev = tlv_register_device(cpu_blob, NULL);
+	cpu_tlvdev = tlv_register_device(cpu_blob, cpu_bloblen, NULL);
 	if (IS_ERR(cpu_tlvdev)) {
 		free(cpu_blob);
 		failed_tests++;
 		skipped_tests++;
 	}
 
-	io_tlvdev = tlv_register_device(io_blob, NULL);
+	io_tlvdev = tlv_register_device(io_blob, io_bloblen, NULL);
 	if (IS_ERR(io_tlvdev)) {
 		free(io_blob);
 		failed_tests++;

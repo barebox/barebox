@@ -61,7 +61,8 @@ static inline struct device_node *tlv_of_node(struct tlv_device *tlvdev)
 	return tlvdev->dev.device_node;
 }
 
-struct tlv_device *tlv_register_device(struct tlv_header *header, struct device *parent);
+struct tlv_device *tlv_register_device(struct tlv_header *header, size_t size,
+				       struct device *parent);
 static inline struct tlv_header *tlv_device_header(struct tlv_device *tlvdev)
 {
 	return tlvdev->dev.platform_data;

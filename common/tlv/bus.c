@@ -14,9 +14,23 @@ static void tlv_devinfo(struct device *dev)
 	printf("Magic: %08x\n", tlvdev->magic);
 }
 
+static int tlv_header_check(struct tlv_header *header, size_t size)
+{
+	if (size < sizeof(*header))
+		return -ENODATA;
+
+	if (header->reserved != 0)
+		return -EINVAL;
+
+	if (size < tlv_total_len(header))
+		return -ENODATA;
+
+	return 0;
+}
+
 static struct device_node *tlv_parent_node;
 
-struct tlv_device *tlv_register_device(struct tlv_header *header,
+struct tlv_device *tlv_register_device(struct tlv_header *header, size_t size,
 				       struct device *parent)
 {
 	struct tlv_device *tlvdev;
@@ -24,6 +38,10 @@ struct tlv_device *tlv_register_device(struct tlv_header *header,
 	struct device *dev;
 	static int id = 0;
 	int ret;
+
+	ret = tlv_header_check(header, size);
+	if (ret)
+		return ERR_PTR(ret);
 
 	tlvdev = xzalloc(sizeof(*tlvdev));
 

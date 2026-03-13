@@ -79,8 +79,8 @@ END(longjmp)
 ENTRY(initjmp)
 	addi	r3,r3,7		# align to 8 byte boundary
 	rlwinm	r3,r3,0,0,28
-	stw	r5,0(r3)	# offset 0
-	stwu	r4,88(r3)	# offset 88
+	stw	r5,0(r3)	# offset 0 - stack pointer
+	stw	r4,84(r3)	# offset 84 - link register
 	li	r3,0
 	blr
 END(initjmp)

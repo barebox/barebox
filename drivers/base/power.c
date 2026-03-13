@@ -255,12 +255,14 @@ static struct generic_pm_domain *genpd_get_from_provider(
 					struct of_phandle_args *genpdspec)
 {
 	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
-	struct device_node *node = genpdspec->np;
 	struct of_genpd_provider *provider;
+	struct device_node *node;
 	int ret;
 
 	if (!genpdspec)
 		return ERR_PTR(-EINVAL);
+
+	node = genpdspec->np;
 
 	ret = of_device_ensure_probed(node);
 	if (ret) {

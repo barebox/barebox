@@ -369,6 +369,8 @@ static void *vring_alloc_queue(struct virtio_device *vdev,
 			phys_addr_t phys_addr = virt_to_phys(queue);
 			*dma_handle = (dma_addr_t)phys_addr;
 
+			memset(queue, 0x00, PAGE_ALIGN(size));
+
 			/*
 			 * Sanity check: make sure we dind't truncate
 			 * the address.  The only arches I can find that

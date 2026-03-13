@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <fcntl.h>
 
 typedef uint64_t __u64;
 typedef int64_t __s64;
@@ -14,6 +13,8 @@ typedef uint16_t __u16;
 typedef int16_t __s16;
 typedef uint8_t __u8;
 typedef int8_t __s8;
+
+#include <fcntl.h>
 
 #ifndef __linux__
 typedef long long loff_t;

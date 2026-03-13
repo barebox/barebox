@@ -488,7 +488,7 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 			return -EINVAL;
 		}
 
-		ret = asprintf(&str, ", 0x%08x 0x%08x 0x%08x \"%s\"", addr, off, size, data->outfile);
+		ret = asprintf(&str, ", \\\n 0x%08x 0x%08x 0x%08x \"%s\"", addr, off, size, data->outfile);
 		if (ret < 0)
 			return -ENOMEM;
 

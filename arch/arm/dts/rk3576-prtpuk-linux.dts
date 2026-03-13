@@ -444,6 +444,7 @@
 	status = "okay";
 };
 
+#if 0
 &vp0 {
 	vp0_out_dsi1: endpoint@ROCKCHIP_VOP2_EP_DP0 {
 		reg = <ROCKCHIP_VOP2_EP_DP0>;
@@ -451,7 +452,6 @@
 	};
 };
 
-/*
 &pwm1 {
 	status = "okay";
 };
@@ -459,4 +459,4 @@
 &pwm2 {
 	status = "okay";
 };
-*/
+#endif

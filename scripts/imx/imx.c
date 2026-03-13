@@ -430,6 +430,28 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 		ret = asprintf(&str, "Blocks = 0x%08x 0x%08x 0x%08x \"%s\"",
 			data->image_load_addr + data->image_ivt_offset, offset,
 			signed_size - data->image_ivt_offset, data->outfile);
+
+		if (data->dcd_usb_image && (data->cpu_type == IMX_CPU_IMX6)) {
+			char *str_dcd_blk;
+			uint32_t dcd_offset = offset + offsetof(struct imx_flash_header_v2, dcd_header);
+			uint32_t dcd_length = data->get_dcd_length();
+
+			if(!dcd_length) {
+				fprintf(stderr, "failed to get dcd length\n");
+				return -EINVAL;
+			}
+
+			ret |= asprintf(&str_dcd_blk, ", \\\n 0x00910000 0x%08x 0x%08x \"%s\"",
+				dcd_offset, dcd_length, data->outfile);
+
+			str = strcata(str, str_dcd_blk);
+			free(str_dcd_blk);
+
+			if(!str) {
+				return -ENOMEM;
+			}
+		}
+
 		if (data->flexspi_csf)
 			ret |= asprintf(&flexspi_str,
 					"Blocks = 0x%08x 0x%08x 0x%08x \"%s\"",

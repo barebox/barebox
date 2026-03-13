@@ -115,6 +115,7 @@ struct config_data {
 	int (*write_mem)(const struct config_data *data, uint32_t addr,
 			 uint32_t val, int width, int set_bits, int clear_bits);
 	int (*nop)(const struct config_data *data);
+	int (*get_dcd_length)(void);
 	char *csf;
 	char *flexspi_csf;
 	int sign_image;
@@ -122,6 +123,7 @@ struct config_data {
 	int encrypt_image;
 	size_t dek_size;
 	bool hab_qspi_support;
+	bool dcd_usb_image;
 };
 
 #define MAX_RECORDS_DCD_V2 1024

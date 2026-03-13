@@ -8,6 +8,7 @@
  */
 
 #include <arm/intel/socfpga/socfpga_cyclone5.dtsi>
+#include <dt-bindings/gpio/gpio.h>
 
 / {
 	barebox,deep-probe;
@@ -203,6 +204,12 @@
 			txen-skew-ps = <0>;
 		};
 	};
+};
+
+&usbphy0 {
+	/* HPS_GPIO0, active low */
+	reset-gpios = <&porta 0 GPIO_ACTIVE_LOW>;
+	status = "okay";
 };
 
 &usb1 {

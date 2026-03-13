@@ -297,40 +297,49 @@ int socfpga_mailbox_s10_qspi_close(void)
 int socfpga_mailbox_s10_qspi_open(void)
 {
 	int ret;
-	u32 resp_buf[1];
-	u32 resp_buf_len;
+	u32 resp_buf[1] = {};
+	u32 resp_buf_len = ARRAY_SIZE(resp_buf);
 	u32 reg;
 	u32 clk_khz;
+	int try = 0;
 
+retry:
 	ret = mbox_send_cmd(MBOX_ID_BAREBOX, MBOX_QSPI_OPEN, MBOX_CMD_DIRECT,
 			    0, NULL, 0, 0, NULL);
+	if (ret != MBOX_RESP_STATOK && try++ < 2) {
+		/* retry after closing the QSPI */
+		socfpga_mailbox_s10_qspi_close();
+		goto retry;
+	}
 	if (ret) {
-		/* retry again by closing and reopen the QSPI again */
-		ret = socfpga_mailbox_s10_qspi_close();
-		if (ret)
-			return ret;
-
-		ret = mbox_send_cmd(MBOX_ID_BAREBOX, MBOX_QSPI_OPEN,
-				    MBOX_CMD_DIRECT, 0, NULL, 0, 0, NULL);
-		if (ret)
-			return ret;
+		pr_err("QSPI: QSPI_OPEN failed: 0x%x\n", ret);
+		return ret;
 	}
 
 	/* HPS will directly control the QSPI controller, no longer mailbox */
-	resp_buf_len = 1;
 	ret = mbox_send_cmd(MBOX_ID_BAREBOX, MBOX_QSPI_DIRECT, MBOX_CMD_DIRECT,
-			    0, NULL, 0, (u32 *)&resp_buf_len,
-			    (u32 *)&resp_buf);
-	if (ret)
+			    0, NULL, 0, &resp_buf_len, resp_buf);
+	switch (ret) {
+	case MBOX_RESP_STATOK:
+		break;
+	case 0x8f:
+		pr_err("QSPI: SDM denied direct QSPI access\n");
 		goto error;
+	default:
+		pr_err("QSPI: QSPI_DIRECT failed: 0x%x\n", ret);
+		goto error;
+	}
 
 	/* Get the QSPI clock from SDM response and save for later use */
 	clk_khz = resp_buf[0];
-	if (clk_khz < 1000)
+	if (clk_khz < 1000) {
+		pr_err("QSPI: Unexpected reference clock rate: %d kHz\n",
+		       clk_khz);
 		return -EINVAL;
+	}
 
 	clk_khz /= 1000;
-	pr_info("QSPI: reference clock at %d kHZ\n", clk_khz);
+	pr_info("QSPI: reference clock at %d kHz\n", clk_khz);
 
 	reg = (readl(SOCFPGA_SYSMGR_ADDRESS + SYSMGR_SOC64_BOOT_SCRATCH_COLD0)) &
 			~(SYSMGR_SCRATCH_REG_0_QSPI_REFCLK_MASK);

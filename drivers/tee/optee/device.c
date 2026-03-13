@@ -155,9 +155,38 @@ out_ctx:
 	return rc;
 }
 
+static bool optee_ready;
+static bool rpmb_available;
+
+static void optee_scan_bus_rpmb(void)
+{
+	if (!optee_ready)
+		return;
+	if (!rpmb_available)
+		return;
+
+	__optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP);
+	__optee_enumerate_devices(PTA_CMD_GET_DEVICES_RPMB);
+}
+
 int optee_enumerate_devices(u32 func)
 {
-	return  __optee_enumerate_devices(func);
+	int ret;
+
+	ret = __optee_enumerate_devices(func);
+	if (ret)
+		return ret;
+
+	optee_ready = true;
+	optee_scan_bus_rpmb();
+
+	return 0;
+}
+
+void optee_rpmb_detected(void)
+{
+	rpmb_available = true;
+	optee_scan_bus_rpmb();
 }
 
 static int __optee_unregister_device(struct device *dev, void *data)

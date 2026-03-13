@@ -104,4 +104,10 @@ static inline int of_optee_fixup(struct device_node *root, void *fixup_data)
 #endif
 
 
+#ifdef CONFIG_OPTEE
+void optee_rpmb_detected(void);
+#else
+static inline void optee_rpmb_detected(void) {}
+#endif
+
 #endif /* _OPTEE_H */

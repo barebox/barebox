@@ -172,7 +172,7 @@ static uint mmc_spi_writedata(struct mmc_spi_host *host, const void *xbuf,
 			      uint32_t bcnt, uint32_t bsize, int multi)
 {
 	const uint8_t *buf = xbuf;
-	uint8_t r1;
+	uint8_t r1 = 0;
 	uint16_t crc = 0;
 	uint8_t tok[2];
 	int i;

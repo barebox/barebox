@@ -124,6 +124,7 @@ struct regulator_dev {
 	struct device_node *node;
 	int enable_count;
 	int enable_time_us;
+	unsigned int off_on_delay;
 	int min_uv;
 	int max_uv;
 	struct list_head consumer_list;

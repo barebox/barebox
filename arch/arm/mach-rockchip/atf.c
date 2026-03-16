@@ -35,19 +35,24 @@ static void *free_mem(void)
 	return (void *)PTR_ALIGN(&__image_end, SZ_1M);
 }
 
-static unsigned long load_elf64_image_phdr(const void *elf)
+static unsigned long load_elf64_image_phdr(struct fwobj *bl31)
 {
 	const Elf64_Ehdr *ehdr; /* Elf header structure pointer */
 	const Elf64_Phdr *phdr; /* Program header structure pointer */
-	int i;
+	int i, ret;
+	void *bl31_image = free_mem();
 
-	ehdr = elf;
-	phdr = elf + ehdr->e_phoff;
+	ret = fwobj_uncompress(bl31, bl31_image);
+	if (ret)
+		panic("Failed to uncompress TF-A\n");
+
+	ehdr = bl31_image;
+	phdr = bl31_image + ehdr->e_phoff;
 
 	/* Load each program header */
 	for (i = 0; i < ehdr->e_phnum; ++i) {
 		void *dst = (void *)(ulong)phdr->p_paddr;
-		const void *src = elf + phdr->p_offset;
+		const void *src = bl31_image + phdr->p_offset;
 
 		pr_debug("Loading phdr %i to 0x%p (%lu bytes)\n",
 			 i, dst, (ulong)phdr->p_filesz);
@@ -131,7 +136,7 @@ static struct fwobj bl32; /* OP-TEE in barebox image */
 	do {									\
 		barebox_load_address = SOC##_BAREBOX_LOAD_ADDRESS;		\
 		optee_load_address = SOC##_OPTEE_LOAD_ADDRESS;			\
-		get_builtin_firmware(atf_bin, &bl31);				\
+		get_builtin_firmware_compressed(atf_bin, &bl31);		\
 		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE))			\
 			get_builtin_firmware_compressed(tee_bin, &bl32);	\
 	} while (0)
@@ -141,7 +146,7 @@ static void rockchip_atf_load_bl31(void *fdt)
 {
 	unsigned long bl31_ep;
 
-	bl31_ep = load_elf64_image_phdr(bl31.data);
+	bl31_ep = load_elf64_image_phdr(&bl31);
 
 	if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE))
 		optee_load_address = rk_load_optee(optee_load_address, &bl32);

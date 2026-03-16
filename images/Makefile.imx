@@ -515,6 +515,8 @@ $(call build_imx8m_habv4img, CONFIG_MACH_POLYHEX_DEBIX, start_polyhex_debix_som_
 
 $(call build_imx8m_habv4img, CONFIG_MACH_PROTONIC_IMX8M, start_prt_prt8ml, protonic-imx8m/flash-header-prt8ml, prt-prt8ml)
 
+$(call build_imx8m_habv4img, CONFIG_MACH_PROTONIC_IMX8M, start_prt_prt8ml_ecc, protonic-imx8m/flash-header-prt8ml, prt-prt8ml-ecc)
+
 $(call build_imx8m_habv4img, CONFIG_MACH_VARISCITE_DT8MCUSTOMBOARD_IMX8MP, start_variscite_imx8mp_dart, variscite-dt8mcustomboard-imx8mp/flash-header-imx8mp-dart, variscite-imx8mp-dart-cb)
 
 # ----------------------- i.MX8mq based boards --------------------------

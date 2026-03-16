@@ -755,6 +755,7 @@ config MACH_PROTONIC_IMX8M
 	select MCI_IMX_ESDHC_PBL
 	select IMX8M_DRAM
 	select USB_GADGET_DRIVER_ARC_PBL
+	select IMX8MP_DRAM_ECC
 
 config MACH_SKOV_IMX8MP
 	bool "Skov i.MX8MP based boards"

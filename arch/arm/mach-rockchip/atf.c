@@ -8,6 +8,7 @@
 #include <asm/atf_common.h>
 #include <asm/barebox-arm.h>
 #include <asm-generic/memory_layout.h>
+#include <asm-generic/sections.h>
 #include <mach/rockchip/dmc.h>
 #include <mach/rockchip/rockchip.h>
 #include <mach/rockchip/bootrom.h>
@@ -27,6 +28,11 @@ static void rk_scratch_save_optee_hdr(const struct optee_header *hdr)
 
 	pr_debug("Saving optee-hdr to scratch area 0x%p\n", &rk_scratch->optee_hdr);
 	rk_scratch->optee_hdr = *hdr;
+}
+
+static void *free_mem(void)
+{
+	return (void *)PTR_ALIGN(&__image_end, SZ_1M);
 }
 
 static unsigned long load_elf64_image_phdr(const void *elf)
@@ -56,11 +62,17 @@ static unsigned long load_elf64_image_phdr(const void *elf)
 	return ehdr->e_entry;
 }
 
-static uintptr_t rk_load_optee(uintptr_t bl32, const void *bl32_image,
-			       size_t bl32_size)
+static uintptr_t rk_load_optee(uintptr_t bl32, struct fwobj *bl32_fw)
 {
-	const struct optee_header *hdr = bl32_image;
+	const struct optee_header *hdr;
 	struct optee_header dummy_hdr;
+	int ret;
+	void *bl32_image = free_mem();
+	size_t bl32_size = bl32_fw->uncompressed_size;
+
+	ret = fwobj_uncompress(bl32_fw, bl32_image);
+	if (ret)
+		panic("Failed to uncompress OP-TEE\n");
 
 	/* We already have ELF support for BL31, but adding it for BL32,
 	 * would require us to identify a range that fits all ELF
@@ -69,6 +81,8 @@ static uintptr_t rk_load_optee(uintptr_t bl32, const void *bl32_image,
 	 * actual user interested in this.
 	 */
 	BUG_ON(memcmp(bl32_image, ELFMAG, 4) == 0);
+
+	hdr = bl32_image;
 
 	if (optee_verify_header(hdr) == 0) {
 		bl32_size -= sizeof(*hdr);
@@ -119,7 +133,7 @@ static struct fwobj bl32; /* OP-TEE in barebox image */
 		optee_load_address = SOC##_OPTEE_LOAD_ADDRESS;			\
 		get_builtin_firmware(atf_bin, &bl31);				\
 		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE))			\
-			get_builtin_firmware(tee_bin, &bl32);			\
+			get_builtin_firmware_compressed(tee_bin, &bl32);	\
 	} while (0)
 
 
@@ -130,7 +144,7 @@ static void rockchip_atf_load_bl31(void *fdt)
 	bl31_ep = load_elf64_image_phdr(bl31.data);
 
 	if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE))
-		optee_load_address = rk_load_optee(optee_load_address, bl32.data, bl32.size);
+		optee_load_address = rk_load_optee(optee_load_address, &bl32);
 
 	/* Setup an initial stack for EL2 */
 	asm volatile("msr sp_el2, %0" : :

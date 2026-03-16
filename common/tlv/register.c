@@ -56,7 +56,7 @@ static int tlv_probe_from_compatible(struct device *dev)
 		goto err;
 	}
 
-	tlvdev = tlv_register_device(header, dev);
+	tlvdev = tlv_register_device(header, size, dev);
 	if (IS_ERR(tlvdev)) {
 		ret = PTR_ERR(tlvdev);
 		goto err;

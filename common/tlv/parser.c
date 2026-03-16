@@ -165,7 +165,7 @@ struct tlv_device *tlv_register_device_by_path(const char *path, struct device *
 	if (IS_ERR(header))
 		return ERR_CAST(header);
 
-	tlvdev = tlv_register_device(header, parent);
+	tlvdev = tlv_register_device(header, size, parent);
 	if (IS_ERR(tlvdev))
 		free(header);
 

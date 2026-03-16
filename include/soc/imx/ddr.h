@@ -101,6 +101,7 @@ struct dram_timing_info {
 		unsigned int ddrphy_pie_num;
 		/* initialized drate table */
 		unsigned int fsp_table[4];
+		resource_size_t ecc_full_size;
 	);
 };
 

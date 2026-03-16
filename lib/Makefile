@@ -16,6 +16,7 @@ obj-y			+= vsprintf.o
 obj-y			+= talloc.o
 obj-$(CONFIG_KASAN)	+= kasan/
 obj-pbl-$(CONFIG_STACKPROTECTOR)	+= stackprot.o
+obj-pbl-$(CONFIG_LIBRELOC)		+= reloc.o
 pbl-$(CONFIG_PBL_CONSOLE) += vsprintf.o
 obj-y			+= misc.o
 obj-$(CONFIG_PARAMETER)	+= parameter.o

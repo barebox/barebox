@@ -76,4 +76,6 @@ extern void *__compiletime_error(
 	"runtime_address() may only be called on linker defined symbols."
 ) __unsafe_runtime_address(void);
 
+void __prereloc relocate_relr(unsigned long offset, void *relr_start, void *relr_end);
+
 #endif

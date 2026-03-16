@@ -191,6 +191,43 @@ int elf_parse_dynamic_section_rela(struct elf_image *elf, const void *dyn_seg,
 					 true);
 }
 
+int elf_parse_dynamic_section_relr(struct elf_image *elf, const void *dyn_seg,
+				   void **relr_out, u64 *relrsz_out)
+{
+	const void *dyn = dyn_seg;
+	void *relr = NULL;
+	u64 relrsz = 0;
+	phys_addr_t base = (phys_addr_t)elf->reloc_offset;
+
+	if (!IS_ENABLED(CONFIG_RELR))
+		return -EINVAL;
+
+	while (elf_dyn_d_tag(elf, dyn) != DT_NULL) {
+		unsigned long tag = elf_dyn_d_tag(elf, dyn);
+
+		switch (tag) {
+		case DT_RELR:
+			relr = (void *)(unsigned long)(base + elf_dyn_d_ptr(elf, dyn));
+			break;
+		case DT_RELRSZ:
+			relrsz = elf_dyn_d_val(elf, dyn);
+			break;
+		default:
+			break;
+		}
+
+		dyn += elf_size_of_dyn(elf);
+	}
+
+	if (!relr || !relrsz)
+		return -EINVAL;
+
+	*relr_out = relr;
+	*relrsz_out = relrsz;
+
+	return 0;
+}
+
 /*
  * Weak default implementation for architectures that don't support
  * ELF relocations yet. Can be overridden by arch-specific implementation.

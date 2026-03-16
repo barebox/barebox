@@ -60,16 +60,25 @@ void __prereloc relocate_image(unsigned long offset,
  */
 int elf_apply_relocations(struct elf_image *elf, const void *dyn_seg)
 {
-	void *rel_ptr = NULL, *symtab = NULL;
-	u64 relsz;
+	void *rel_ptr = NULL, *relr_ptr = NULL, *symtab = NULL;
+	u64 relsz, relrsz;
 	phys_addr_t base = (phys_addr_t)elf->reloc_offset;
-	int ret;
+	bool have_rel, have_relr = false;
 
-	ret = elf_parse_dynamic_section_rel(elf, dyn_seg, &rel_ptr, &relsz, &symtab);
-	if (ret)
-		return ret;
+	have_rel = !elf_parse_dynamic_section_rel(elf, dyn_seg,
+						  &rel_ptr, &relsz, &symtab);
+	if (have_rel)
+		relocate_image(base, rel_ptr, rel_ptr + relsz, symtab, NULL);
 
-	relocate_image(base, rel_ptr, rel_ptr + relsz, symtab, NULL);
+	if (IS_ENABLED(CONFIG_RELR)) {
+		have_relr = !elf_parse_dynamic_section_relr(elf, dyn_seg,
+							    &relr_ptr, &relrsz);
+		if (have_relr)
+			relocate_relr(base, relr_ptr, relr_ptr + relrsz);
+	}
+
+	if (!have_rel && !have_relr)
+		return -EINVAL;
 
 	return 0;
 }

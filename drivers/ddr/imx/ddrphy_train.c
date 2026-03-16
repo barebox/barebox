@@ -10,103 +10,72 @@
 #include <soc/imx8m/ddr.h>
 #include <firmware.h>
 
-static const u16 *lpddr4_imem_1d;
-static size_t lpddr4_imem_1d_size;
-static const u16 *lpddr4_dmem_1d;
-static size_t lpddr4_dmem_1d_size;
-static const u16 *lpddr4_imem_2d;
-static size_t lpddr4_imem_2d_size;
-static const u16 *lpddr4_dmem_2d;
-static size_t lpddr4_dmem_2d_size;
+static struct fwobj lpddr4_imem_1d;
+static struct fwobj lpddr4_dmem_1d;
+static struct fwobj lpddr4_imem_2d;
+static struct fwobj lpddr4_dmem_2d;
 
 void ddr_get_firmware_lpddr4(void)
 {
-	get_builtin_firmware(lpddr4_pmu_train_1d_imem_bin, &lpddr4_imem_1d,
-			     &lpddr4_imem_1d_size);
-	get_builtin_firmware(lpddr4_pmu_train_1d_dmem_bin, &lpddr4_dmem_1d,
-			     &lpddr4_dmem_1d_size);
-	get_builtin_firmware(lpddr4_pmu_train_2d_imem_bin, &lpddr4_imem_2d,
-			     &lpddr4_imem_2d_size);
-	get_builtin_firmware(lpddr4_pmu_train_2d_dmem_bin, &lpddr4_dmem_2d,
-			     &lpddr4_dmem_2d_size);
+	get_builtin_firmware(lpddr4_pmu_train_1d_imem_bin, &lpddr4_imem_1d);
+	get_builtin_firmware(lpddr4_pmu_train_1d_dmem_bin, &lpddr4_dmem_1d);
+	get_builtin_firmware(lpddr4_pmu_train_2d_imem_bin, &lpddr4_imem_2d);
+	get_builtin_firmware(lpddr4_pmu_train_2d_dmem_bin, &lpddr4_dmem_2d);
 }
 
-static const u16 *ddr4_imem_1d;
-static size_t ddr4_imem_1d_size;
-static const u16 *ddr4_dmem_1d;
-static size_t ddr4_dmem_1d_size;
-static const u16 *ddr4_imem_2d;
-static size_t ddr4_imem_2d_size;
-static const u16 *ddr4_dmem_2d;
-static size_t ddr4_dmem_2d_size;
+static struct fwobj ddr4_imem_1d;
+static struct fwobj ddr4_dmem_1d;
+static struct fwobj ddr4_imem_2d;
+static struct fwobj ddr4_dmem_2d;
 
 void ddr_get_firmware_ddr4(void)
 {
-	get_builtin_firmware(ddr4_imem_1d_bin, &ddr4_imem_1d,
-			     &ddr4_imem_1d_size);
-	get_builtin_firmware(ddr4_dmem_1d_bin, &ddr4_dmem_1d,
-			     &ddr4_dmem_1d_size);
-	get_builtin_firmware(ddr4_imem_2d_bin, &ddr4_imem_2d,
-			     &ddr4_imem_2d_size);
-	get_builtin_firmware(ddr4_dmem_2d_bin, &ddr4_dmem_2d,
-			     &ddr4_dmem_2d_size);
+	get_builtin_firmware(ddr4_imem_1d_bin, &ddr4_imem_1d);
+	get_builtin_firmware(ddr4_dmem_1d_bin, &ddr4_dmem_1d);
+	get_builtin_firmware(ddr4_imem_2d_bin, &ddr4_imem_2d);
+	get_builtin_firmware(ddr4_dmem_2d_bin, &ddr4_dmem_2d);
 }
 
-static const u16 *ddr3_imem_1d;
-static size_t ddr3_imem_1d_size;
-static const u16 *ddr3_dmem_1d;
-static size_t ddr3_dmem_1d_size;
+static struct fwobj ddr3_imem_1d;
+static struct fwobj ddr3_dmem_1d;
 
 void ddr_get_firmware_ddr3(void)
 {
-	get_builtin_firmware(ddr3_imem_1d_bin, &ddr3_imem_1d,
-			     &ddr3_imem_1d_size);
-	get_builtin_firmware(ddr3_dmem_1d_bin, &ddr3_dmem_1d,
-			     &ddr3_dmem_1d_size);
+	get_builtin_firmware(ddr3_imem_1d_bin, &ddr3_imem_1d);
+	get_builtin_firmware(ddr3_dmem_1d_bin, &ddr3_dmem_1d);
 }
 
 void ddr_load_train_code(struct dram_controller *dram, enum dram_type dram_type,
 			 enum fw_type fw_type)
 {
-	const u16 *imem, *dmem;
-	size_t isize, dsize;
+	struct fwobj *imem, *dmem;
 
 	if (dram_is_lpddr4(dram_type)) {
 		if (fw_type == FW_1D_IMAGE) {
-			imem = lpddr4_imem_1d;
-			isize = lpddr4_imem_1d_size;
-			dmem = lpddr4_dmem_1d;
-			dsize = lpddr4_dmem_1d_size;
+			imem = &lpddr4_imem_1d;
+			dmem = &lpddr4_dmem_1d;
 		} else {
-			imem = lpddr4_imem_2d;
-			isize = lpddr4_imem_2d_size;
-			dmem = lpddr4_dmem_2d;
-			dsize = lpddr4_dmem_2d_size;
+			imem = &lpddr4_imem_2d;
+			dmem = &lpddr4_dmem_2d;
 		}
 	} else if (dram_is_ddr4(dram_type)) {
 		if (fw_type == FW_1D_IMAGE) {
-			imem = ddr4_imem_1d;
-			isize = ddr4_imem_1d_size;
-			dmem = ddr4_dmem_1d;
-			dsize = ddr4_dmem_1d_size;
+			imem = &ddr4_imem_1d;
+			dmem = &ddr4_dmem_1d;
 		} else {
-			imem = ddr4_imem_2d;
-			isize = ddr4_imem_2d_size;
-			dmem = ddr4_dmem_2d;
-			dsize = ddr4_dmem_2d_size;
+			imem = &ddr4_imem_2d;
+			dmem = &ddr4_dmem_2d;
 		}
 	} else if (dram_is_ddr3(dram_type)) {
-		imem = ddr3_imem_1d;
-		isize = ddr3_imem_1d_size;
-		dmem = ddr3_dmem_1d;
-		dsize = ddr3_dmem_1d_size;
+		imem = &ddr3_imem_1d;
+		dmem = &ddr3_dmem_1d;
 	} else {
 		panic("No matching DDR PHY firmware found");
 	}
 
-	ddrc_phy_load_firmware(dram, DDRC_PHY_IMEM, imem, isize);
+	ddrc_phy_load_firmware(dram, DDRC_PHY_IMEM, imem->data, imem->size);
 
-	ddrc_phy_load_firmware(dram, DDRC_PHY_DMEM, dmem, dsize);
+	ddrc_phy_load_firmware(dram, DDRC_PHY_DMEM, dmem->data, dmem->size);
 }
 
 int ddr_cfg_phy(struct dram_controller *dram, struct dram_timing_info *dram_timing)

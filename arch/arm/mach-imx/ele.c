@@ -191,8 +191,8 @@ int imx93_ele_load_fw(void *bl33)
 		.size = 4,
 		.command = ELE_FW_AUTH_REQ,
 	};
-	void *firmware;
-	int size, ret;
+	struct fwobj fw;
+	int ret;
 	int rev = 0;
 
 	ele_get_info(&info);
@@ -202,11 +202,11 @@ int imx93_ele_load_fw(void *bl33)
 	switch (rev) {
 #ifdef CONFIG_FIRMWARE_IMX93_OPTEE_A0
 	case 0xa0:
-		get_builtin_firmware_ext(mx93a0_ahab_container_img, bl33, &firmware, &size);
+		get_builtin_firmware_ext(mx93a0_ahab_container_img, bl33, &fw);
 		break;
 #endif
 	case 0xa1:
-		get_builtin_firmware_ext(mx93a1_ahab_container_img, bl33, &firmware, &size);
+		get_builtin_firmware_ext(mx93a1_ahab_container_img, bl33, &fw);
 		break;
 	default:
 		pr_err("Unknown unhandled SoC revision %2x\n", rev);
@@ -214,9 +214,9 @@ int imx93_ele_load_fw(void *bl33)
 	}
 
 	/* Address of the container header */
-	msg.data[0] = lower_32_bits((unsigned long)firmware);
+	msg.data[0] = lower_32_bits((unsigned long)fw.data);
 	/* Actual address of the container header */
-	msg.data[2] = lower_32_bits((unsigned long)firmware);
+	msg.data[2] = lower_32_bits((unsigned long)fw.data);
 
 	ret = ele_call(&msg);
 	if (ret)

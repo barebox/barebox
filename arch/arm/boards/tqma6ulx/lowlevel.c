@@ -71,8 +71,7 @@ out:
 static void noinline start_mba6ulx(void)
 {
 	void *fdt;
-	int tee_size;
-	void *tee;
+	struct fwobj tee;
 
 	setup_uart();
 
@@ -84,9 +83,9 @@ static void noinline start_mba6ulx(void)
 	 */
 	if (IS_ENABLED(CONFIG_FIRMWARE_TQMA6UL_OPTEE) && imx6_can_access_tzasc()) {
 
-		get_builtin_firmware(mba6ul_optee_bin, &tee, &tee_size);
+		get_builtin_firmware(mba6ul_optee_bin, &tee);
 
-		imx6ul_start_optee_early(NULL, tee, (void *)OPTEE_OVERLAY_LOCATION, 0x1000);
+		imx6ul_start_optee_early(NULL, tee.data, (void *)OPTEE_OVERLAY_LOCATION, 0x1000);
 	}
 
 	imx6ul_barebox_entry(fdt);

@@ -61,14 +61,18 @@ pbl-fwext-y := $(addsuffix .extgen.o, $(fw-external-y))
 
 FWNAME    = $(patsubst $(obj)/%.extgen.S,%,$(patsubst $(obj)/%.gen.S,%,$@))
 
-filechk_fwbin = $(srctree)/scripts/gen-fw-s $(FWNAME) $(FIRMWARE_DIR) .rodata
-filechk_fwbin_ext = $(srctree)/scripts/gen-fw-s $(FWNAME) $(FIRMWARE_DIR) .pblext a
+filechk_fwbin = $(srctree)/scripts/gen-fw-s $(FWNAME) $(FIRMWARE_DIR) .rodata '' $(fwobjdir)
+filechk_fwbin_ext = $(srctree)/scripts/gen-fw-s $(FWNAME) $(FIRMWARE_DIR) .pblext a $(fwobjdir)
 
 $(obj)/%.gen.S: FORCE
 	$(call filechk,fwbin)
 
 $(obj)/%.extgen.S: FORCE
 	$(call filechk,fwbin_ext)
+
+# Compress firmware files
+$(fwobjdir)/%.z: $(FIRMWARE_DIR)/% FORCE
+	$(call if_changed,$(suffix_y))
 
 # This dependency is used if missing firmware should fail the build immediately
 fwdep-required-y = $(FIRMWARE_DIR)/%
@@ -82,10 +86,17 @@ fwdep-required-y = $(FIRMWARE_DIR)/%
 # them to install all firmware for all platforms if only few are of interest.
 fwdep-required-n = $$(wildcard $(FIRMWARE_DIR)/%)
 
+# Compressed firmware dependency: only if the firmware binary exists.
+# Use $$* (stem) instead of % because % is not substituted inside $$(if ...).
+fwzdep-n = $$(if $$(wildcard $(FIRMWARE_DIR)/$$*),$(fwobjdir)/$$*.z)
+
 .SECONDEXPANSION:
+# .gen.S files depend on compressed firmware for correct size computation
+$(patsubst %.gen.o,$(obj)/%.gen.S, $(obj-pbl-y) $(pbl-y)): $(obj)/%.gen.S: $(fwzdep-n)
+$(patsubst %.extgen.o,$(obj)/%.extgen.S, $(pbl-fwext-y)): $(obj)/%.extgen.S: $(fwzdep-n)
 # The .o files depend on the binaries directly if available; the .S files don't.
-$(patsubst %.gen.o,$(obj)/%.gen.pbl.o, $(obj-pbl-y) $(pbl-y)): $(obj)/%.gen.pbl.o: $(fwdep-required-n)
-$(patsubst %.extgen.o,$(obj)/%.extgen.pbl.o, $(pbl-fwext-y)): $(obj)/%.extgen.pbl.o: $(fwdep-required-n)
+$(patsubst %.gen.o,$(obj)/%.gen.pbl.o, $(obj-pbl-y) $(pbl-y)): $(obj)/%.gen.pbl.o: $(fwdep-required-n) $(fwzdep-n)
+$(patsubst %.extgen.o,$(obj)/%.extgen.pbl.o, $(pbl-fwext-y)): $(obj)/%.extgen.pbl.o: $(fwdep-required-n) $(fwzdep-n)
 # For barebox proper, firmware existance is either checked here
 # or in driver code by checking whether size != 0
 $(patsubst %.gen.o,$(obj)/%.gen.o, $(obj-pbl-y)): $(obj)/%.gen.o: $(fwdep-required-$(CONFIG_MISSING_FIRMWARE_ERROR))
@@ -96,6 +107,8 @@ targets := $(patsubst $(obj)/%,%, \
 	                        $(shell find $(obj) -name \*.gen.S 2>/dev/null))
 targets += $(patsubst $(obj)/%,%, \
 	                        $(shell find $(obj) -name \*.extgen.S 2>/dev/null))
+targets += $(patsubst $(obj)/%,%, \
+	                        $(shell find $(obj) -name \*.z 2>/dev/null))
 
 # just to build a built-in.o. Otherwise compilation fails when no
 # firmware is built.

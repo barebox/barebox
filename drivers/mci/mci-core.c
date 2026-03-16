@@ -23,6 +23,7 @@
 #include <linux/log2.h>
 #include <linux/sizes.h>
 #include <dma.h>
+#include <tee/optee.h>
 
 #define MAX_BUFFER_NUMBER 0xffffffff
 
@@ -3121,6 +3122,9 @@ int mci_register(struct mci_host *host)
 	}
 
 	class_add_device(&mmc_class, &mci->dev);
+
+	if (mci->rpmb_part)
+		optee_rpmb_detected();
 
 	return 0;
 

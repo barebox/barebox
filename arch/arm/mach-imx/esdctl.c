@@ -264,7 +264,7 @@ static int imx_esdctl_v4_add_mem(void *esdctlbase, const struct imx_esdctl_data 
 }
 
 /*
- * On i.MX6 the adress space reserved for SDRAM is 0x10000000 to 0xFFFFFFFF
+ * On i.MX6 the address space reserved for SDRAM is 0x10000000 to 0xFFFFFFFF
  * which makes the maximum supported RAM size 0xF0000000.
  */
 #define IMX6_MAX_SDRAM_SIZE 0xF0000000
@@ -382,7 +382,7 @@ static resource_size_t
 imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[DDRC_ADDRMAP_LENGTH],
 		    u8 col_max, const u8 col_b[], unsigned int col_b_num,
 		    u8 row_max, const u8 row_b[], unsigned int row_b_num,
-		    bool reduced_adress_space, unsigned int mstr)
+		    bool reduced_address_space, unsigned int mstr)
 {
 	unsigned int banks, ranks, columns, rows, active_ranks, width;
 	resource_size_t size;
@@ -461,7 +461,7 @@ imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[DDRC_ADDRMAP_LENGTH],
 		size = memory_sdram_size(columns, rows, 1 << banks, 1) >> 1;
 	size <<= ranks;
 
-	return reduced_adress_space ? size * 3 / 4 : size;
+	return reduced_address_space ? size * 3 / 4 : size;
 }
 
 static void imx_ddrc_set_mstr_device_config(u32 *mstr, unsigned bits)
@@ -508,7 +508,7 @@ resource_size_t imx8m_ddrc_sdram_size(unsigned buswidth)
 		FIELD_GET(DDRC_ADDRMAP6_ROW_B12, addrmap[6]),
 		FIELD_GET(DDRC_ADDRMAP5_ROW_B11, addrmap[5]),
 	};
-	const bool reduced_adress_space =
+	const bool reduced_address_space =
 		FIELD_GET(DDRC_ADDRMAP6_LPDDR4_6GB_12GB_24GB, addrmap[6]);
 	u32 mstr = readl(ddrc + DDRC_MSTR);
 
@@ -519,7 +519,7 @@ resource_size_t imx8m_ddrc_sdram_size(unsigned buswidth)
 	return imx_ddrc_sdram_size(ddrc, addrmap,
 				   12, ARRAY_AND_SIZE(col_b),
 				   18, ARRAY_AND_SIZE(row_b),
-				   reduced_adress_space, mstr);
+				   reduced_address_space, mstr);
 }
 
 static int _imx8m_ddrc_add_mem(const struct imx_esdctl_data *data,
@@ -633,7 +633,7 @@ static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
 		FIELD_GET(DDRC_ADDRMAP6_ROW_B12, addrmap[6]),
 		FIELD_GET(DDRC_ADDRMAP5_ROW_B11, addrmap[5]),
 	};
-	const bool reduced_adress_space =
+	const bool reduced_address_space =
 		FIELD_GET(DDRC_ADDRMAP6_LPDDR3_6GB_12GB, addrmap[6]);
 	u32 mstr = readl(ddrc + DDRC_MSTR);
 
@@ -643,7 +643,7 @@ static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
 	return imx_ddrc_sdram_size(ddrc, addrmap,
 				   11, ARRAY_AND_SIZE(col_b),
 				   15, ARRAY_AND_SIZE(row_b),
-				   reduced_adress_space, mstr);
+				   reduced_address_space, mstr);
 }
 
 static int imx7d_ddrc_add_mem(void *mmdcbase, const struct imx_esdctl_data *data)

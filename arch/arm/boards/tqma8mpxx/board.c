@@ -16,7 +16,7 @@
 #include <envfs.h>
 #include <string.h>
 
-static int tqma8mpxl_probe(struct device *dev)
+static int tqma8mpxx_probe(struct device *dev)
 {
 	const char *emmc, *sd;
 	int emmc_bbu_flag = 0;
@@ -43,15 +43,16 @@ static int tqma8mpxl_probe(struct device *dev)
 	return 0;
 }
 
-static const struct of_device_id tqma8mpxl_of_match[] = {
+static const struct of_device_id tqma8mpxx_of_match[] = {
 	{ .compatible = "tq,imx8mp-tqma8mpql" },
+	{ .compatible = "tq,imx8mp-tqma8mpqs" },
 	{ /* sentinel */ },
 };
-BAREBOX_DEEP_PROBE_ENABLE(tqma8mpxl_of_match);
+BAREBOX_DEEP_PROBE_ENABLE(tqma8mpxx_of_match);
 
-static struct driver tqma8mpxl_board_driver = {
-	.name = "board-tqma8mpxl",
-	.probe = tqma8mpxl_probe,
-	.of_compatible = DRV_OF_COMPAT(tqma8mpxl_of_match),
+static struct driver tqma8mpxx_board_driver = {
+	.name = "board-tqma8mpxx",
+	.probe = tqma8mpxx_probe,
+	.of_compatible = DRV_OF_COMPAT(tqma8mpxx_of_match),
 };
-device_platform_driver(tqma8mpxl_board_driver);
+device_platform_driver(tqma8mpxx_board_driver);

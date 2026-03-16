@@ -479,8 +479,7 @@ struct hgs_fusemap {
  */
 static int hgs_run_first_boot_setup(void)
 {
-	unsigned int flags = IMX_SRK_HASH_WRITE_PERMANENT |
-			     IMX_SRK_HASH_WRITE_LOCK;
+	unsigned int flags = IMX_SRK_HASH_WRITE_PERMANENT;
 	const struct hgs_fusemap common_fusemap[] = {
 		/* Security */
 		/* MX8M_OCOTP_SEC_CONFIG[1] is done during imx_hab_lockdown_device() */

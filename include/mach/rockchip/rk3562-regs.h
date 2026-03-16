@@ -17,5 +17,6 @@
 
 #define RK3562_IRAM_BASE	0xfe480000
 #define RK3562_PMUGRF_BASE	0xff010000
+#define RK3562_CRU_BASE		0xff100000
 
 #endif /* __MACH_RK3562_REGS_H */

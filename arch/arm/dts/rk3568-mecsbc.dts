@@ -10,6 +10,7 @@
 
 	aliases {
 		state = &state_emmc;
+		saradc = &saradc;
 	};
 
 	chosen: chosen {

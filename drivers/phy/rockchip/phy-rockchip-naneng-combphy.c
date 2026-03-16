@@ -550,7 +550,7 @@ static const struct rockchip_combphy_grfcfg rk3562_combphy_grfcfgs = {
 };
 
 static const struct rockchip_combphy_cfg rk3562_combphy_cfgs = {
-	.num_phys = 2,
+	.num_phys = 1,
 	.phy_ids = {
 		0xff750000
 	},

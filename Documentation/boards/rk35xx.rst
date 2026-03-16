@@ -15,7 +15,7 @@ Supported Boards
 - Radxa ROCK5 (RK3588)
 - Radxa CM3 (RK3566) IO Board
 - QNAP TS-433 NAS
-- Protonic MECSBC
+- Protonic RK356x
 - Protonic PRTPUK
 
 .. toctree::

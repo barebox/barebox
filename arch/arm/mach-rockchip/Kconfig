@@ -109,11 +109,11 @@ config MACH_PINE64_QUARTZ64
 	help
 	  Say Y here if you are using a Pine64 Quartz64
 
-config MACH_PROTONIC_MECSBC
+config MACH_PROTONIC_RK356X
 	select ARCH_RK3568
-	bool "Protonic MECSBC"
+	bool "Protonic RK356x"
 	help
-	  Say Y here if you are using a Protonic MECSBC
+	  Say Y here if you are using a Protonic board with a RK356x cpu
 
 config MACH_PROTONIC_PRTPUK
 	select ARCH_RK3576
@@ -175,6 +175,7 @@ config ARCH_ROCKCHIP_ATF
 config ARCH_ROCKCHIP_ATF_PASS_FDT
 	bool "Pass device tree to TF-A"
 	depends on ARCH_ROCKCHIP_ATF
+	select LIBFDT
 	help
 	  Enable this option if you are using an upstream OP-TEE that uses the
 	  device tree to initialize dynamic shared memory, which is passed

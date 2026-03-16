@@ -108,34 +108,45 @@ static uintptr_t rk_load_optee(uintptr_t bl32, const void *bl32_image,
 	return bl32;
 }
 
-#define rockchip_atf_load_bl31(SOC, atf_bin, tee_bin, fdt) do {                 \
-	const void *bl31_elf, *optee;                                           \
-	unsigned long bl31;                                                     \
-	size_t bl31_elf_size, optee_size;                                       \
-	uintptr_t optee_load_address = 0;                                       \
-										\
-	get_builtin_firmware(atf_bin, &bl31_elf, &bl31_elf_size);               \
-										\
-	bl31 = load_elf64_image_phdr(bl31_elf);                                 \
-										\
-	if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE)) {                           \
-		get_builtin_firmware(tee_bin, &optee, &optee_size);             \
-		optee_load_address = rk_load_optee(SOC##_OPTEE_LOAD_ADDRESS,	\
-						   optee, optee_size);		\
-	}                                                                       \
-										\
-	/* Setup an initial stack for EL2 */                                    \
-	asm volatile("msr sp_el2, %0" : :                                       \
-			"r" ((ulong)SOC##_BAREBOX_LOAD_ADDRESS - 16) :		\
-			"cc");                                                  \
-										\
-	bl31_entry(bl31, optee_load_address,                                    \
-		   SOC##_BAREBOX_LOAD_ADDRESS, (uintptr_t)fdt);                 \
-} while (0)                                                                     \
+static uintptr_t barebox_load_address; /* where barebox is loaded and started */
+static uintptr_t optee_load_address; /* standard SoC specific OP-TEE load address */
+static const void *bl31; /* pointer to TF-A in barebox image */
+static size_t bl31_size; /* size of TF-A in barebox image */
+static const void *bl32; /* pointer to OP-TEE in barebox image */
+static size_t bl32_size; /* size of OP-TEE in barebox image */
+
+#define ROCKCHIP_GET_ADDRESSES(SOC, atf_bin, tee_bin)				\
+	do {									\
+		barebox_load_address = SOC##_BAREBOX_LOAD_ADDRESS;		\
+		optee_load_address = SOC##_OPTEE_LOAD_ADDRESS;			\
+		get_builtin_firmware(atf_bin, &bl31, &bl31_size);		\
+		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE))			\
+			get_builtin_firmware(tee_bin, &bl32, &bl32_size);	\
+	} while (0)
+
+
+static void rockchip_atf_load_bl31(void *fdt)
+{
+	unsigned long bl31_ep;
+
+	bl31_ep = load_elf64_image_phdr(bl31);
+
+	if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE))
+		optee_load_address = rk_load_optee(optee_load_address, bl32, bl32_size);
+
+	/* Setup an initial stack for EL2 */
+	asm volatile("msr sp_el2, %0" : :
+			"r" ((ulong)barebox_load_address - 16) :
+			"cc");
+
+	bl31_entry(bl31_ep, optee_load_address,
+		   barebox_load_address, (uintptr_t)fdt);
+}
 
 void rk3562_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3562, rk3562_bl31_bin, rk3562_bl32_bin, fdt);
+	ROCKCHIP_GET_ADDRESSES(RK3562, rk3562_bl31_bin, rk3562_bl32_bin);
+	rockchip_atf_load_bl31(fdt);
 }
 
 void __noreturn rk3562_barebox_entry(void *fdt)
@@ -172,7 +183,8 @@ void __noreturn rk3562_barebox_entry(void *fdt)
 
 void rk3568_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3568, rk3568_bl31_bin, rk3568_bl32_bin, fdt);
+	ROCKCHIP_GET_ADDRESSES(RK3568, rk3568_bl31_bin, rk3568_bl32_bin);
+	rockchip_atf_load_bl31(fdt);
 }
 
 void __noreturn rk3568_barebox_entry(void *fdt)
@@ -209,7 +221,8 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 
 void rk3588_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3588, rk3588_bl31_bin, rk3588_bl32_bin, fdt);
+	ROCKCHIP_GET_ADDRESSES(RK3588, rk3588_bl31_bin, rk3588_bl32_bin);
+	rockchip_atf_load_bl31(fdt);
 }
 
 static int rk3588_fixup_mem(void *fdt)
@@ -282,7 +295,8 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 
 void rk3576_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3576, rk3576_bl31_bin, rk3576_bl32_bin, fdt);
+	ROCKCHIP_GET_ADDRESSES(RK3576, rk3576_bl31_bin, rk3576_bl32_bin);
+	rockchip_atf_load_bl31(fdt);
 }
 
 void __noreturn rk3576_barebox_entry(void *fdt)

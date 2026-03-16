@@ -121,6 +121,8 @@ struct fwobj {
 #define get_builtin_firmware_ext(name, base, fwobj)			\
 	__get_builtin_firmware(name, (long)base - (long)_text, fwobj)
 
+int fwobj_uncompress(struct fwobj *fwobj, void *dest);
+
 #define get_builtin_firmware_compressed(name, fwobj)			\
 	do {								\
 		extern char _fw_z_##name##_start[];			\

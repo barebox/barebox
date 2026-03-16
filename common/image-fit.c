@@ -357,45 +357,36 @@ static int fit_config_build_hash_nodes(struct fit_handle *handle,
 	return 0;
 }
 
-static int fit_config_check_hash_nodes(struct device_node *sig_node,
-				       struct string_list *inc_nodes)
+/**
+ * fit_config_check_hash_nodes - Sanity check hashed-nodes
+ * @sig_node: Signature node of a FIT configuration
+ * @inc_nodes: String list of nodes included in the hash
+ *
+ * Check if the informational hashed-nodes property is cosistent with
+ * the list of nodes to hash that we calculated.
+ *
+ * We only do this if hash verification failed, so we can present a better
+ * error messages in some circumstances.
+ */
+static void fit_config_check_hash_nodes(struct device_node *sig_node,
+					struct string_list *inc_nodes)
 {
 	struct string_list *entry;
-	const char *node;
 	int ret, i = 0;
 
-	/*
-	 * Check if the hashed-nodes property matches the list of nodes we calculated.
-	 * We don't use the hashed-nodes property finally, but let's check for consistency
-	 * to inform the user if something is wrong.
-	 */
-
 	string_list_for_each_entry(entry, inc_nodes) {
-
-		ret = of_property_read_string_index(sig_node, "hashed-nodes", i, &node);
-		if (ret) {
-			pr_err("Cannot read hashed-node[%u]: %pe\n", i,
-			       ERR_PTR(ret));
-			return ret;
-		}
-
-		if (strcmp(entry->str, node)) {
-			pr_err("hashed-node[%u] doesn't match calculated node: %s != %s\n",
-			       i, entry->str, node);
-			return -EINVAL;
-		}
+		ret = of_property_match_string(sig_node, "hashed-nodes", entry->str);
+		if (ret < 0)
+			pr_err("%pOF/hashed-nodes: '%s' is missing\n", sig_node,
+			       entry->str);
 
 		i++;
 	}
 
-	ret = of_property_read_string_index(sig_node, "hashed-nodes", i,
-					    &node);
-	if (!ret) {
-		pr_err("hashed-nodes property has more entries than we calculated\n");
-		return -EINVAL;
-	}
-
-	return 0;
+	ret = of_property_count_strings(sig_node, "hashed-nodes");
+	if (ret != i)
+		pr_err("hashed-nodes property has more entries than calculated: %d != %d\n",
+		       ret, i);
 }
 
 /*
@@ -433,10 +424,6 @@ static int fit_verify_signature(struct fit_handle *handle,
 		goto out_sl;
 	}
 
-	ret = fit_config_check_hash_nodes(sig_node, &inc_nodes);
-	if (ret)
-		goto out_sl;
-
 	string_list_add(&exc_props, "data");
 
 	digest = fit_alloc_digest(sig_node, &algo);
@@ -454,8 +441,10 @@ static int fit_verify_signature(struct fit_handle *handle,
 	digest_final(digest, hash);
 
 	ret = fit_check_signature(handle, sig_node, algo, hash);
-	if (ret)
+	if (ret) {
+		fit_config_check_hash_nodes(sig_node, &inc_nodes);
 		goto out_free_hash;
+	}
 
 	ret = 0;
 

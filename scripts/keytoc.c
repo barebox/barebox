@@ -787,6 +787,11 @@ static bool parse_info(char *p, struct keyinfo *out)
 
 static bool parse_keyspec(const char *keyspec, struct keyinfo *out)
 {
+	if (!strncmp(keyspec, "pkcs11:", 7)) { /* legacy format of pkcs11 URI */
+		out->path = strdup(keyspec);
+		return true;
+	}
+
 	char *sep, *spec;
 
 	spec = strdup(keyspec);
@@ -863,13 +868,9 @@ int main(int argc, char *argv[])
 		if (!keyspec)
 			exit(1);
 
-		if (!strncmp(keyspec, "pkcs11:", 7)) { // legacy format of pkcs11 URI
-			info->path = strdup(keyspec);
-		} else {
-			if (!parse_keyspec(keyspec, info)) {
-				fprintf(stderr, "invalid keyspec %i: %s\n", optind, keyspec);
-				exit(1);
-			}
+		if (!parse_keyspec(keyspec, info)) {
+			fprintf(stderr, "invalid keyspec %i: %s\n", optind, keyspec);
+			exit(1);
 		}
 	}
 

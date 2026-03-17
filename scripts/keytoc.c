@@ -10,6 +10,8 @@
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" /* ENGINE deprecated in OpenSSL 3.0 */
 
+#include "include/string_util.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -30,6 +32,7 @@
 #include <ctype.h>
 
 struct keyinfo {
+	char *spec;
 	char *name_hint;
 	char *keyring;
 	char *path;
@@ -785,8 +788,10 @@ static bool parse_info(char *p, struct keyinfo *out)
 	}
 }
 
-static bool parse_keyspec(const char *keyspec, struct keyinfo *out)
+static bool parse_keyspec(struct keyinfo *out)
 {
+	const char *keyspec = out->spec;
+
 	if (!strncmp(keyspec, "pkcs11:", 7)) { /* legacy format of pkcs11 URI */
 		out->path = strdup(keyspec);
 		return true;
@@ -820,9 +825,9 @@ static bool parse_keyspec(const char *keyspec, struct keyinfo *out)
 
 int main(int argc, char *argv[])
 {
-	int keys_idx, opt, ret;
+	int keys_idx, arg_idx, opt, ret;
 	char *outfile = NULL;
-	int keycount;
+	size_t keycount, num_positionals;
 	struct keyinfo *keylist;
 
 	outfilep = stdout;
@@ -858,22 +863,53 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	keycount = argc - optind;
+
+	num_positionals = argc - optind;
+	keycount = num_positionals;
+
 	keylist = calloc(keycount, sizeof(*keylist));
 
 	if (!keylist)
 		enomem_exit("keylist");
 
+	keys_idx = 0;
+	/* expand arguments given as environment variables into one or multiple keyspecs */
+	for (arg_idx = 0; arg_idx < num_positionals; arg_idx++) {
+		char *arg = argv[optind + arg_idx];
+		const char *resolved = try_resolve_env(arg);
+
+		if (!resolved)
+			exit(1);
+
+		if (arg == resolved) {
+			keylist[keys_idx].spec = strdup(arg);
+			keys_idx++;
+		} else {
+			char *keyspecs = strdup(resolved);
+			char *keyspec;
+
+			/* Keyspec given as env Variable,
+			 * remove it and add an arbitrary number of keyspecs from its contents
+			 */
+			keycount--;
+			while ((keyspec = strsep_unescaped(&keyspecs, " ", NULL))) {
+				keycount++;
+				keylist = reallocarray(keylist, keycount, sizeof(*keylist));
+				if (!keylist)
+					enomem_exit("realloc keylist");
+				bzero(keylist + (keycount - 1), sizeof(*keylist));
+				keylist[keys_idx].spec = keyspec;
+				keys_idx++;
+			}
+		}
+	}
+
 	/* parse each keyspec */
 	for (keys_idx = 0; keys_idx < keycount; keys_idx++) {
 		struct keyinfo *info = &keylist[keys_idx];
-		const char *keyspec = try_resolve_env(argv[optind + keys_idx]);
-
-		if (!keyspec)
-			exit(1);
-
-		if (!parse_keyspec(keyspec, info)) {
-			fprintf(stderr, "invalid keyspec %i: %s\n", optind, keyspec);
+		if (!parse_keyspec(info)) {
+			fprintf(stderr, "invalid keyspec %i: %s\n", optind,
+				info->spec);
 			exit(1);
 		}
 
@@ -890,7 +926,7 @@ int main(int argc, char *argv[])
 
 		if (!info->keyring) {
 			info->keyring = strdup("fit");
-			fprintf(stderr, "Warning: No keyring provided in keyspec, defaulting to keyring=fit for %s\n", argv[optind + keys_idx]);
+			fprintf(stderr, "Warning: No keyring provided in keyspec, defaulting to keyring=fit for %s\n", info->path);
 		}
 	}
 

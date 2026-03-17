@@ -16,3 +16,7 @@ This only applies to the form:
 While the interpretation of environment variables specifying hint or URI remains unchanged:
 
   CONFIG_CRYPTO_PUBLIC_KEYS="keyring=kr:__ENV__B"
+
+Fit hints can no longer be specified by environment variables using the __ENV__
+syntax. This functionality was broken since the last change to the keyspec
+syntax in 2025.12.

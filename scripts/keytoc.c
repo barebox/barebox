@@ -720,8 +720,8 @@ static bool is_identifier(char **s)
 {
 	char *p = *s;
 
-	/* [a-zA-Z] */
-	if (!isalpha(*p))
+	/* [a-zA-Z_] */
+	if (!(isalpha(*p) || *p == '_'))
 		return false;
 	p++;
 

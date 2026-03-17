@@ -6,9 +6,10 @@
  * URI to a C struct suitable to compile with barebox.
  *
  * TODO: Find a better way for reimport_key()
- *
  */
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" /* ENGINE deprecated in OpenSSL 3.0 */
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -784,7 +785,7 @@ static bool parse_info(char *p, struct keyinfo *out)
 	}
 }
 
-static bool get_name_path(const char *keyspec, struct keyinfo *out)
+static bool parse_keyspec(const char *keyspec, struct keyinfo *out)
 {
 	char *sep, *spec;
 
@@ -814,7 +815,7 @@ static bool get_name_path(const char *keyspec, struct keyinfo *out)
 
 int main(int argc, char *argv[])
 {
-	int i, opt, ret;
+	int keys_idx, opt, ret;
 	char *outfile = NULL;
 	int keycount;
 	struct keyinfo *keylist;
@@ -855,9 +856,9 @@ int main(int argc, char *argv[])
 	keycount = argc - optind;
 	keylist = calloc(sizeof(struct keyinfo), keycount);
 
-	for (i = 0; i < keycount; i++) {
-		const char *keyspec = try_resolve_env(argv[optind + i]);
-		struct keyinfo *info = &keylist[i];
+	for (keys_idx = 0; keys_idx < keycount; keys_idx++) {
+		const char *keyspec = try_resolve_env(argv[optind + keys_idx]);
+		struct keyinfo *info = &keylist[keys_idx];
 
 		if (!keyspec)
 			exit(1);
@@ -865,7 +866,7 @@ int main(int argc, char *argv[])
 		if (!strncmp(keyspec, "pkcs11:", 7)) { // legacy format of pkcs11 URI
 			info->path = strdup(keyspec);
 		} else {
-			if (!get_name_path(keyspec, info)) {
+			if (!parse_keyspec(keyspec, info)) {
 				fprintf(stderr, "invalid keyspec %i: %s\n", optind, keyspec);
 				exit(1);
 			}
@@ -885,14 +886,14 @@ int main(int argc, char *argv[])
 	}
 
 
-	for (i = 0; i < keycount; i++) {
-		struct keyinfo *info = &keylist[i];
+	for (keys_idx = 0; keys_idx < keycount; keys_idx++) {
+		struct keyinfo *info = &keylist[keys_idx];
 
 		/* resolve __ENV__ for name_hint and path */
 		info->name_hint = try_resolve_env(info->name_hint);
 		info->path = try_resolve_env(info->path);
 
-		if (asprintf(&info->name_c, "key_%i", i + 1) < 0)
+		if (asprintf(&info->name_c, "key_%i", keys_idx + 1) < 0)
 			enomem_exit("asprintf");
 
 		/* unfortunately, the fit name hint is mandatory in the barebox codebase */
@@ -901,7 +902,7 @@ int main(int argc, char *argv[])
 
 		if (!info->keyring) {
 			info->keyring = strdup("fit");
-			fprintf(stderr, "Warning: No keyring provided in keyspec, defaulting to keyring=fit for %s\n", argv[optind + i]);
+			fprintf(stderr, "Warning: No keyring provided in keyspec, defaulting to keyring=fit for %s\n", argv[optind + keys_idx]);
 		}
 
 		ret = gen_key(info);

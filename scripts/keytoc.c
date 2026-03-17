@@ -859,11 +859,15 @@ int main(int argc, char *argv[])
 	}
 
 	keycount = argc - optind;
-	keylist = calloc(sizeof(struct keyinfo), keycount);
+	keylist = calloc(keycount, sizeof(*keylist));
 
+	if (!keylist)
+		enomem_exit("keylist");
+
+	/* parse each keyspec */
 	for (keys_idx = 0; keys_idx < keycount; keys_idx++) {
-		const char *keyspec = try_resolve_env(argv[optind + keys_idx]);
 		struct keyinfo *info = &keylist[keys_idx];
+		const char *keyspec = try_resolve_env(argv[optind + keys_idx]);
 
 		if (!keyspec)
 			exit(1);
@@ -872,23 +876,6 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "invalid keyspec %i: %s\n", optind, keyspec);
 			exit(1);
 		}
-	}
-
-	if (dts) {
-		fprintf(outfilep, "/dts-v1/;\n");
-		fprintf(outfilep, "/ {\n");
-		if (standalone)
-			fprintf(outfilep, "\tsignature-standalone {\n");
-		else
-			fprintf(outfilep, "\tsignature {\n");
-	} else if (standalone) {
-		fprintf(outfilep, "#include <crypto/ecdsa.h>\n");
-		fprintf(outfilep, "#include <crypto/rsa.h>\n");
-	}
-
-
-	for (keys_idx = 0; keys_idx < keycount; keys_idx++) {
-		struct keyinfo *info = &keylist[keys_idx];
 
 		/* resolve __ENV__ for name_hint and path */
 		info->name_hint = try_resolve_env(info->name_hint);
@@ -905,12 +892,27 @@ int main(int argc, char *argv[])
 			info->keyring = strdup("fit");
 			fprintf(stderr, "Warning: No keyring provided in keyspec, defaulting to keyring=fit for %s\n", argv[optind + keys_idx]);
 		}
+	}
+
+	/* write out C representation */
+	if (dts) {
+		fprintf(outfilep, "/dts-v1/;\n");
+		fprintf(outfilep, "/ {\n");
+		if (standalone)
+			fprintf(outfilep, "\tsignature-standalone {\n");
+		else
+			fprintf(outfilep, "\tsignature {\n");
+	} else if (standalone) {
+		fprintf(outfilep, "#include <crypto/ecdsa.h>\n");
+		fprintf(outfilep, "#include <crypto/rsa.h>\n");
+	}
+	for (keys_idx = 0; keys_idx < keycount; keys_idx++) {
+		struct keyinfo *info = &keylist[keys_idx];
 
 		ret = gen_key(info);
 		if (ret)
 			exit(1);
 	}
-
 	if (dts) {
 		fprintf(outfilep, "\t};\n");
 		fprintf(outfilep, "};\n");

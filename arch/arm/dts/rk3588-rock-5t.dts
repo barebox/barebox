@@ -65,6 +65,10 @@
 	status = "disabled";
 };
 
+&pcie3x2 {
+	status = "disabled";
+};
+
 &pcie2x1l0 {
 	/* Does not work in barebox */
 	status = "disabled";

@@ -21,7 +21,7 @@ struct rockchip_scratch_space *rk_scratch;
 static void rk_scratch_save_optee_hdr(const struct optee_header *hdr)
 {
 	if (!rk_scratch) {
-		pr_err("No scratch area initialized, skip saving optee-hdr");
+		pr_err("No scratch area initialized, skip saving optee-hdr\n");
 		return;
 	}
 

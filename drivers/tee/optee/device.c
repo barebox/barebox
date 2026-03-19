@@ -5,6 +5,7 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
+#include <stdio.h>
 #include <linux/kernel.h>
 #include <linux/slab.h>
 #include <linux/device.h>
@@ -57,14 +58,23 @@ static int get_devices(struct tee_context *ctx, u32 session,
 static int optee_register_device(const uuid_t *device_uuid)
 {
 	struct tee_client_device *optee_device = NULL;
+	struct device *dev;
+	char name[39];
 	int rc;
+
+	snprintf(name, sizeof(name), "optee-ta-%pUb", device_uuid);
+
+	dev = bus_find_device_by_name(&tee_bus_type, NULL, name);
+	if (dev)
+		return 0;
 
 	optee_device = kzalloc(sizeof(*optee_device), GFP_KERNEL);
 	if (!optee_device)
 		return -ENOMEM;
 
+	optee_device->dev.id = DEVICE_ID_SINGLE;
 	optee_device->dev.bus = &tee_bus_type;
-	if (dev_set_name(&optee_device->dev, "optee-ta-%pUb", device_uuid)) {
+	if (dev_set_name(&optee_device->dev, "%s", name)) {
 		kfree(optee_device);
 		return -ENOMEM;
 	}

@@ -644,6 +644,23 @@ static int rockchip_pd_regulator_enable(struct rockchip_pm_domain *pd)
 	return regulator_enable(pd->supply);
 }
 
+static void rockchip_pm_power_on_subdomain(struct rockchip_pm_domain *pd)
+{
+	struct device_node *np;
+	int ngpd = 0;
+
+	for_each_child_of_node(pd->node, np)
+		ngpd++;
+
+	/*
+	 * TODO: implement pm_genpd_add_subdomain() support for barebox.
+	 * Until we need to, just let the user know about it
+	 */
+	if (ngpd)
+		dev_info(pd->pmu->dev, "%s: skipping %u nested power domains\n",
+			 pd->node->name, ngpd);
+}
+
 static int rockchip_pd_power_on(struct generic_pm_domain *domain)
 {
 	struct rockchip_pm_domain *pd = to_rockchip_pd(domain);
@@ -660,6 +677,8 @@ static int rockchip_pd_power_on(struct generic_pm_domain *domain)
 	ret = rockchip_pd_power(pd, true);
 	if (ret)
 		rockchip_pd_regulator_disable(pd);
+
+	rockchip_pm_power_on_subdomain(pd);
 
 	return ret;
 }
@@ -873,19 +892,11 @@ static void rockchip_configure_pd_cnt(struct rockchip_pmu *pmu,
 static int rockchip_pm_add_subdomain(struct rockchip_pmu *pmu,
 				     struct device_node *parent)
 {
-	struct device_node *np;
-	int ngpd = 0;
-
-	for_each_child_of_node(parent, np)
-		ngpd++;
-
 	/*
 	 * TODO: implement pm_genpd_add_subdomain() support for barebox.
-	 * Until we need to, just let the user know about it
+	 * Until we need to, just let the user know about it when power domains
+	 * with subdomains are used.
 	 */
-	if (ngpd)
-		dev_info(pmu->dev, "%s: skipping %u nested power domains\n",
-			 parent->name, ngpd);
 
 	return 0;
 }

@@ -2984,6 +2984,9 @@ static int mci_card_probe(struct mci *mci)
 
 	mci_parse_cid(mci);
 
+	if (mci->rpmb_part)
+		optee_rpmb_detected();
+
 	dev_dbg(&mci->dev, "Card successfully added\n");
 
 on_error:
@@ -3122,9 +3125,6 @@ int mci_register(struct mci_host *host)
 	}
 
 	class_add_device(&mmc_class, &mci->dev);
-
-	if (mci->rpmb_part)
-		optee_rpmb_detected();
 
 	return 0;
 

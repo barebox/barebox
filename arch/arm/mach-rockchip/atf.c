@@ -127,6 +127,9 @@ static uintptr_t rk_load_optee(uintptr_t bl32, struct fwobj *bl32_fw)
 	return bl32;
 }
 
+static phys_addr_t membase[ROCKCHIP_MAX_DRAM_RESOURCES];
+static resource_size_t memsize[ROCKCHIP_MAX_DRAM_RESOURCES];
+static int n_mem_resources;
 static uintptr_t barebox_load_address; /* where barebox is loaded and started */
 static uintptr_t optee_load_address; /* standard SoC specific OP-TEE load address */
 static struct fwobj bl31; /* TF-A in barebox image */
@@ -168,11 +171,11 @@ void rk3562_atf_load_bl31(void *fdt)
 
 void __noreturn rk3562_barebox_entry(void *fdt)
 {
-	phys_addr_t membase, memend;
-	resource_size_t memsize;
+	phys_addr_t memend;
 
-	rk3562_ram_sizes(&membase, &memsize, 1);
-	memend = membase + memsize;
+	n_mem_resources = rk3562_ram_sizes(membase, memsize, ROCKCHIP_MAX_DRAM_RESOURCES);
+
+	memend = membase[0] + memsize[0];
 
 	rk_scratch = (void *)arm_mem_scratch(memend);
 
@@ -196,7 +199,7 @@ void __noreturn rk3562_barebox_entry(void *fdt)
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, memsize, fdt);
+	barebox_arm_entry(membase[0], memsize[0], fdt);
 }
 
 void rk3568_atf_load_bl31(void *fdt)
@@ -207,11 +210,11 @@ void rk3568_atf_load_bl31(void *fdt)
 
 void __noreturn rk3568_barebox_entry(void *fdt)
 {
-	phys_addr_t membase, memend;
-	resource_size_t memsize;
+	phys_addr_t memend;
 
-	rk3568_ram_sizes(&membase, &memsize, 1);
-	memend = membase + memsize;
+	n_mem_resources = rk3568_ram_sizes(membase, memsize, ROCKCHIP_MAX_DRAM_RESOURCES);
+
+	memend = membase[0] + memsize[0];
 
 	rk_scratch = (void *)arm_mem_scratch(memend);
 
@@ -235,7 +238,7 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, memsize, fdt);
+	barebox_arm_entry(membase[0], memsize[0], fdt);
 }
 
 void rk3588_atf_load_bl31(void *fdt)
@@ -278,12 +281,11 @@ static int rk3588_open_fdt(const void *fdt, void *buf, int bufsize)
 
 void __noreturn rk3588_barebox_entry(void *fdt)
 {
-	phys_addr_t membase, memend;
-	resource_size_t memsize;
+	phys_addr_t memend;
 
-	rk3588_ram_sizes(&membase, &memsize, 1);
+	n_mem_resources = rk3588_ram_sizes(membase, memsize, ROCKCHIP_MAX_DRAM_RESOURCES);
 
-	memend = membase + memsize;
+	memend = membase[0] + memsize[0];
 
 	rk_scratch = (void *)arm_mem_scratch(memend);
 
@@ -309,7 +311,7 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, memsize, fdt);
+	barebox_arm_entry(membase[0], memsize[0], fdt);
 }
 
 void rk3576_atf_load_bl31(void *fdt)
@@ -320,11 +322,11 @@ void rk3576_atf_load_bl31(void *fdt)
 
 void __noreturn rk3576_barebox_entry(void *fdt)
 {
-	phys_addr_t membase, memend;
-	resource_size_t memsize;
+	phys_addr_t memend;
 
-	rk3576_ram_sizes(&membase, &memsize, 1);
-	memend = membase + memsize;
+	n_mem_resources = rk3576_ram_sizes(membase, memsize, ROCKCHIP_MAX_DRAM_RESOURCES);
+
+	memend = membase[0] + memsize[0];
 
 	rk_scratch = (void *)arm_mem_scratch(memend);
 
@@ -348,5 +350,5 @@ void __noreturn rk3576_barebox_entry(void *fdt)
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, memsize, fdt);
+	barebox_arm_entry(membase[0], memsize[0], fdt);
 }

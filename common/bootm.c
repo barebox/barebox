@@ -3,7 +3,6 @@
 #include <common.h>
 #include <bootargs.h>
 #include <bootm.h>
-#include <bootm-overrides.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <efi/mode.h>
@@ -12,21 +11,18 @@
 #include <block.h>
 #include <libfile.h>
 #include <bootm-fit.h>
-#include <image-fit.h>
+#include <bootm-overrides.h>
 #include <bootm-uimage.h>
 #include <globalvar.h>
 #include <init.h>
 #include <environment.h>
 #include <linux/stat.h>
 #include <magicvar.h>
-#include <uncompress.h>
 #include <zero_page.h>
 #include <security/config.h>
 
 static LIST_HEAD(handler_list);
 static struct sconfig_notifier_block sconfig_notifier;
-
-static __maybe_unused struct bootm_overrides bootm_overrides;
 
 static bool uimage_check(struct image_handler *handler,
 			 struct image_data *data,
@@ -206,28 +202,6 @@ static int uimage_part_num(const char *partname)
 	return simple_strtoul(partname, NULL, 0);
 }
 
-static inline bool image_is_uimage(struct image_data *data)
-{
-	return IS_ENABLED(CONFIG_BOOTM_UIMAGE) && data->os_uimage;
-}
-
-static bool bootm_get_override(char **oldpath, const char *newpath)
-{
-	if (!IS_ENABLED(CONFIG_BOOT_OVERRIDE))
-		return false;
-	if (bootm_signed_images_are_forced())
-		return false;
-	if (!newpath)
-		return false;
-
-	if (oldpath && !streq_ptr(*oldpath, newpath)) {
-		free(*oldpath);
-		*oldpath = *newpath ? xstrdup(newpath) : NULL;
-	}
-
-	return true;
-}
-
 /**
  * bootm_load_os() - load OS to RAM
  * @data:		image data context
@@ -243,37 +217,20 @@ static bool bootm_get_override(char **oldpath, const char *newpath)
 const struct resource *bootm_load_os(struct image_data *data,
 		ulong load_address, ulong end_address)
 {
-	int err;
+	struct resource *res;
 
 	if (data->os_res)
 		return data->os_res;
 
-	if (load_address == UIMAGE_INVALID_ADDRESS)
+	if (load_address == UIMAGE_INVALID_ADDRESS ||
+	    end_address <= load_address || !data->os)
 		return ERR_PTR(-EINVAL);
-	if (end_address <= load_address)
-		return ERR_PTR(-EINVAL);
 
-	if (data->os_fit) {
-		err = bootm_load_fit_os(data, load_address);
-	} else if (image_is_uimage(data)) {
-		err = bootm_load_uimage_os(data, load_address);
-	} else if (data->os_file) {
-		data->os_res = file_to_sdram(data->os_file, load_address, MEMTYPE_LOADER_CODE);
-		err = data->os_res ? 0 : -EBUSY;
-	} else {
-		err = -EINVAL;
-	}
+	res = loadable_extract_into_sdram_all(data->os, load_address, end_address);
+	if (!IS_ERR(res))
+		data->os_res = res;
 
-	if (err)
-		return ERR_PTR(err);
-
-	/* FIXME: We need some more rework to be able to detect this overflow
-	 * before it happens, but for now, let's at least detect it.
-	 */
-	if (WARN_ON(data->os_res->end > end_address))
-		return ERR_PTR(-ENOSPC);
-
-	return data->os_res;
+	return res;
 }
 
 /**
@@ -293,9 +250,6 @@ const struct resource *
 bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address)
 {
 	struct resource *res = NULL;
-	const char *initrd, *initrd_part = NULL;
-	enum filetype type = filetype_unknown;
-	int ret;
 
 	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
 		return NULL;
@@ -305,51 +259,17 @@ bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address
 	 */
 	if (WARN_ON(data->initrd_res))
 		return data->initrd_res;
+
+	if (!data->initrd)
+		return NULL;
+
 	if (end_address <= load_address)
 		return ERR_PTR(-EINVAL);
 
-	bootm_get_override(&data->initrd_file, bootm_overrides.initrd_file);
-
-	initrd = data->initrd_file;
-	if (initrd) {
-		ret = file_name_detect_type(initrd, &type);
-		if (ret) {
-			pr_err("could not open initrd \"%s\": %pe\n",
-			       initrd, ERR_PTR(ret));
-			return ERR_PTR(ret);
-		}
-	}
-
-	if (type == filetype_uimage) {
-		res = bootm_load_uimage_initrd(data, load_address);
-		if (data->initrd_uimage->header.ih_type == IH_TYPE_MULTI)
-			initrd_part = data->initrd_part;
-
-	} else if (initrd) {
-		res = file_to_sdram(initrd, load_address, MEMTYPE_LOADER_DATA)
-			?: ERR_PTR(-EBUSY);
-
-	} else if (data->os_fit) {
-		res = bootm_load_fit_initrd(data, load_address);
-		type = filetype_fit;
-	}
-
-	if (IS_ERR_OR_NULL(res))
-		return res;
-
-	/* FIXME: We need some more rework to be able to detect this overflow
-	 * before it happens, but for now, let's at least detect it.
-	 */
-	if (WARN_ON(res->end > end_address))
-		return ERR_PTR(-ENOSPC);
-
-	pr_info("Loaded initrd from %s %s%s%s to %pa-%pa\n",
-		file_type_to_string(type), initrd ?: "",
-		initrd_part ? "@" : "", initrd_part ?: "",
-		&res->start, &res->end);
-
-	data->initrd_res = res;
-	return data->initrd_res;
+	res = loadable_extract_into_sdram_all(data->initrd, load_address, end_address);
+	if (!IS_ERR(res))
+		data->initrd_res = res;
+	return res;
 }
 
 /*
@@ -366,51 +286,24 @@ bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address
  */
 void *bootm_get_devicetree(struct image_data *data)
 {
-	enum filetype type;
 	struct fdt_header *oftree;
-	bool from_fit = false;
-	int ret;
 
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return ERR_PTR(-ENOSYS);
 
-	from_fit = bootm_fit_has_fdt(data);
-	if (bootm_get_override(&data->oftree_file, bootm_overrides.oftree_file))
-		from_fit = false;
-
-	if (from_fit) {
-		data->of_root_node = bootm_get_fit_devicetree(data);
-	} else if (data->oftree_file) {
+	if (data->oftree) {
+		const struct fdt_header *oftree_view;
 		size_t size;
 
-		ret = file_name_detect_type(data->oftree_file, &type);
-		if (ret) {
-			pr_err("could not open device tree \"%s\": %pe\n", data->oftree_file,
-			       ERR_PTR(ret));
-			return ERR_PTR(ret);
-		}
+		oftree_view = loadable_view(data->oftree, &size);
+		if (IS_ERR(oftree_view))
+			pr_err("could not open device tree \"%s\": %pe\n",
+			       data->oftree_file, oftree_view);
+		if (IS_ERR_OR_NULL(oftree_view))
+			return ERR_CAST(oftree_view);
 
-		switch (type) {
-		case filetype_uimage:
-			ret = bootm_open_oftree_uimage(data, &size, &oftree);
-			break;
-		case filetype_oftree:
-			pr_info("Loading devicetree from '%s'\n", data->oftree_file);
-			ret = read_file_2(data->oftree_file, &size, (void *)&oftree,
-					  FILESIZE_MAX);
-			break;
-		case filetype_empty:
-			return NULL;
-		default:
-			return ERR_PTR(-EINVAL);
-		}
-
-		if (ret)
-			return ERR_PTR(ret);
-
-		data->of_root_node = of_unflatten_dtb(oftree, size);
-
-		free(oftree);
+		data->of_root_node = of_unflatten_dtb(oftree_view, size);
+		loadable_view_free(data->oftree, oftree_view, size);
 
 		if (IS_ERR(data->of_root_node)) {
 			data->of_root_node = NULL;
@@ -433,7 +326,9 @@ void *bootm_get_devicetree(struct image_data *data)
 		of_add_reserve_entry(data->initrd_res->start, data->initrd_res->end);
 	}
 
+	bootm_set_pending_oftree_overlays(data->oftree);
 	of_fix_tree(data->of_root_node);
+	bootm_clear_pending_oftree_overlays();
 
 	oftree = of_flatten_dtb(data->of_root_node);
 	if (!oftree)
@@ -488,25 +383,14 @@ bootm_load_devicetree(struct image_data *data, void *fdt,
 	return data->oftree_res;
 }
 
-int bootm_get_os_size(struct image_data *data)
+loff_t bootm_get_os_size(struct image_data *data)
 {
-	const char *os_file;
-	struct stat s;
-	int ret;
+	loff_t size;
 
-	if (image_is_uimage(data))
-		return uimage_get_size(data->os_uimage, uimage_part_num(data->os_part));
-	if (data->os_fit)
-		return data->fit_kernel_size;
-	if (!data->os_file)
+	if (!data->os)
 		return -EINVAL;
-	os_file = data->os_file;
 
-	ret = stat(os_file, &s);
-	if (ret)
-		return ret;
-
-	return s.st_size;
+	return loadable_get_size(data->os, &size) ?: size;
 }
 
 static void bootm_print_info(struct image_data *data)
@@ -519,7 +403,7 @@ static void bootm_print_info(struct image_data *data)
 		printf("OS image not yet relocated\n");
 }
 
-static int bootm_image_name_and_part(const char *name, char **filename, char **part)
+int bootm_image_name_and_part(const char *name, char **filename, char **part)
 {
 	char *at, *ret;
 
@@ -569,19 +453,73 @@ int file_read_and_detect_boot_image_type(const char *os_file, void **os_header)
 	return file_detect_boot_image_type(*os_header, PAGE_SIZE);
 }
 
-/*
- * bootm_boot - Boot an application image described by bootm_data
- */
-int bootm_boot(struct bootm_data *bootm_data)
+static int bootm_open_files(struct image_data *data)
+{
+	data->os = loadable_from_file(data->os_file, LOADABLE_KERNEL);
+	if (IS_ERR(data->os))
+		return PTR_ERR(data->os);
+
+	if (data->oftree_file) {
+		data->oftree = loadable_from_file(data->oftree_file, LOADABLE_FDT);
+		if (IS_ERR(data->oftree))
+			return PTR_ERR(data->oftree);
+	}
+
+	if (data->initrd_file) {
+		int ret = loadables_from_files(&data->initrd, data->initrd_file, ":",
+					       LOADABLE_INITRD);
+		if (ret)
+			return ret;
+	}
+
+	if (data->tee_file) {
+		data->tee = loadable_from_file(data->tee_file, LOADABLE_TEE);
+		if (IS_ERR(data->tee))
+			return PTR_ERR(data->tee);
+	}
+
+	return 0;
+}
+
+int bootm_open_os_compressed(struct image_data *data)
+{
+	void *header;
+	ssize_t ret;
+
+	if (!IS_ENABLED(CONFIG_BOOTM_COMPRESSED))
+		return -ENOSYS;
+
+	/* Wrap the OS loadable with transparent decompression */
+	data->os = loadable_decompress(data->os);
+
+	/* Read decompressed header to detect actual kernel type */
+	header = xzalloc(PAGE_SIZE);
+	ret = loadable_extract_into_buf(data->os, header, PAGE_SIZE, 0,
+					LOADABLE_EXTRACT_PARTIAL);
+	if (ret < 0) {
+		free(header);
+		return ret;
+	}
+
+	/* Detect actual image type from decompressed content */
+	data->kernel_type = file_detect_boot_image_type(header, ret);
+
+	/* Replace the os_header with the decompressed header */
+	free(data->os_header);
+	data->os_header = header;
+
+	return 0;
+}
+
+struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 {
 	struct image_data *data;
-	struct image_handler *handler;
 	int ret;
 	const char *image_type_str;
 
 	if (!bootm_data->os_file) {
 		pr_err("no image given\n");
-		return -ENOENT;
+		return ERR_PTR(-ENOENT);
 	}
 
 	data = xzalloc(sizeof(*data));
@@ -596,8 +534,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 	data->force = bootm_data->force;
 	data->dryrun = bootm_data->dryrun;
 	data->initrd_address = bootm_data->initrd_address;
-	data->os_address = bootm_data->os_address;
-	data->os_entry = bootm_data->os_entry;
+	data->os_address = data->os_address_hint = bootm_data->os_address;
+	data->os_entry = data->os_entry_hint = bootm_data->os_entry;
 	data->efi_boot = bootm_data->efi_boot;
 
 	ret = file_read_and_detect_boot_image_type(data->os_file, &data->os_header);
@@ -635,19 +573,37 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	switch (data->image_type) {
 	case filetype_fit:
-		ret = bootm_open_fit(data);
+		ret = bootm_open_fit(data, false);
 		break;
 	case filetype_uimage:
 		ret = bootm_open_uimage(data);
 		break;
+	case filetype_gzip:
+	case filetype_bzip2:
+	case filetype_lzo_compressed:
+	case filetype_lz4_compressed:
+	case filetype_xz_compressed:
+	case filetype_zstd_compressed:
+		ret = bootm_open_files(data);
+		if (!ret)
+			ret = bootm_open_os_compressed(data);
+		image_type_str = "compressed boot";
+		break;
 	default:
-		ret = 0;
+		ret = bootm_open_files(data);
+		image_type_str = "boot";
 		break;
 	}
 
 	if (ret) {
 		pr_err("Loading %s image failed with: %pe\n", image_type_str, ERR_PTR(ret));
 		goto err_out;
+	}
+
+	if (IS_ENABLED(CONFIG_BOOTM_UIMAGE)) {
+		ret = bootm_collect_uimage_loadables(data);
+		if (ret)
+			goto err_out;
 	}
 
 	if (bootm_data->appendroot) {
@@ -759,6 +715,17 @@ int bootm_boot(struct bootm_data *bootm_data)
 		free(hostname_bootarg);
 	}
 
+	return data;
+err_out:
+	bootm_boot_cleanup(data);
+	return ERR_PTR(ret);
+}
+
+int bootm_boot_handler(struct image_data *data)
+{
+	struct image_handler *handler;
+	int ret;
+
 	pr_info("\nLoading %s '%s'", file_type_to_string(data->kernel_type),
 		data->os_file);
 	if (data->kernel_type == filetype_uimage &&
@@ -777,8 +744,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		       file_type_to_string(data->kernel_type));
 		if (data->kernel_type == filetype_uimage)
 			pr_err("and OS type: %d\n", data->os_uimage->header.ih_os);
-		ret = -ENODEV;
-		goto err_out;
+		return -ENODEV;
 	}
 
 	if (bootm_verbose(data)) {
@@ -786,28 +752,25 @@ int bootm_boot(struct bootm_data *bootm_data)
 		printf("Passing control to %s handler\n", handler->name);
 	}
 
-	bootm_get_override(&data->oftree_file, bootm_overrides.oftree_file);
-
-	if (bootm_get_override(&data->initrd_file, bootm_overrides.initrd_file)) {
-		release_sdram_region(data->initrd_res);
-		data->initrd_res = NULL;
-	}
-
 	ret = handler->bootm(data);
 	if (data->dryrun)
 		pr_info("Dryrun. Aborted\n");
 
-err_out:
+	return ret;
+}
+
+void bootm_boot_cleanup(struct image_data *data)
+{
 	release_sdram_region(data->os_res);
 	if (data->initrd_res)
 		of_del_reserve_entry(data->initrd_res->start, data->initrd_res->end);
 	release_sdram_region(data->initrd_res);
 	release_sdram_region(data->oftree_res);
 	release_sdram_region(data->tee_res);
-	if (image_is_uimage(data))
-		bootm_close_uimage(data);
-	if (data->os_fit)
-		bootm_close_fit(data);
+	loadable_release(&data->oftree);
+	loadable_release(&data->initrd);
+	loadable_release(&data->os);
+	loadable_release(&data->tee);
 	if (data->of_root_node)
 		of_delete_node(data->of_root_node);
 
@@ -819,23 +782,25 @@ err_out:
 	free(data->initrd_file);
 	free(data->tee_file);
 	free(data);
+}
 
+/*
+ * bootm_boot - Boot an application image described by bootm_data
+ */
+int bootm_boot(const struct bootm_data *bootm_data)
+{
+	struct image_data *data;
+	int ret;
+
+	data = bootm_boot_prep(bootm_data);
+	if (IS_ERR(data))
+		return PTR_ERR(data);
+
+	ret = bootm_boot_handler(data);
+
+	bootm_boot_cleanup(data);
 	return ret;
 }
-
-#ifdef CONFIG_BOOT_OVERRIDE
-struct bootm_overrides bootm_save_overrides(const struct bootm_overrides overrides)
-{
-	struct bootm_overrides old = bootm_overrides;
-	/* bootm_merge_overrides copies only actual (non-NULL) overrides */
-	bootm_merge_overrides(&bootm_overrides, &overrides);
-	return old;
-}
-void bootm_restore_overrides(const struct bootm_overrides overrides)
-{
-	bootm_overrides = overrides;
-}
-#endif
 
 bool bootm_efi_check_image(struct image_handler *handler,
 			   struct image_data *data,
@@ -860,92 +825,6 @@ bool bootm_efi_check_image(struct image_handler *handler,
 	/* If EFI is required, we enforce handlers to match exactly */
 	return detected_filetype == handler->filetype;
 }
-
-static int do_bootm_compressed(struct image_data *img_data)
-{
-	struct bootm_data bootm_data = {
-		.oftree_file = img_data->oftree_file,
-		.initrd_file = img_data->initrd_file,
-		.tee_file = img_data->tee_file,
-		.verbose = img_data->verbose,
-		.verify = img_data->verify,
-		.force = img_data->force,
-		.dryrun = img_data->dryrun,
-		.initrd_address = img_data->initrd_address,
-		.os_address = img_data->os_address,
-		.os_entry = img_data->os_entry,
-	};
-	int from, to, ret;
-	char *dstpath;
-
-	from = open(img_data->os_file, O_RDONLY);
-	if (from < 0)
-		return -ENODEV;
-
-	dstpath = make_temp("bootm-compressed");
-	if (!dstpath) {
-		ret = -ENOMEM;
-		goto fail_from;
-	}
-
-	to = open(dstpath, O_CREAT | O_WRONLY);
-	if (to < 0) {
-		ret = -ENODEV;
-		goto fail_make_temp;
-	}
-
-	ret = uncompress_fd_to_fd(from, to, uncompress_err_stdout);
-	if (ret)
-		goto fail_to;
-
-	bootm_data.os_file = dstpath;
-	ret = bootm_boot(&bootm_data);
-
-fail_to:
-	close(to);
-	unlink(dstpath);
-fail_make_temp:
-	free(dstpath);
-fail_from:
-	close(from);
-	return ret;
-}
-
-static struct image_handler bzip2_bootm_handler = {
-	.name = "BZIP2 compressed file",
-	.bootm = do_bootm_compressed,
-	.filetype = filetype_bzip2,
-};
-
-static struct image_handler gzip_bootm_handler = {
-	.name = "GZIP compressed file",
-	.bootm = do_bootm_compressed,
-	.filetype = filetype_gzip,
-};
-
-static struct image_handler lzo_bootm_handler = {
-	.name = "LZO compressed file",
-	.bootm = do_bootm_compressed,
-	.filetype = filetype_lzo_compressed,
-};
-
-static struct image_handler lz4_bootm_handler = {
-	.name = "LZ4 compressed file",
-	.bootm = do_bootm_compressed,
-	.filetype = filetype_lz4_compressed,
-};
-
-static struct image_handler xz_bootm_handler = {
-	.name = "XZ compressed file",
-	.bootm = do_bootm_compressed,
-	.filetype = filetype_xz_compressed,
-};
-
-static struct image_handler zstd_bootm_handler = {
-	.name = "ZSTD compressed file",
-	.bootm = do_bootm_compressed,
-	.filetype = filetype_zstd_compressed,
-};
 
 int linux_rootwait_secs = 10;
 
@@ -993,19 +872,6 @@ static int bootm_init(void)
 		globalvar_add_simple_enum("bootm.efi", &bootm_efi_mode,
 					  bootm_efi_loader_mode_names,
 					  ARRAY_SIZE(bootm_efi_loader_mode_names));
-
-	if (IS_ENABLED(CONFIG_BZLIB))
-		register_image_handler(&bzip2_bootm_handler);
-	if (IS_ENABLED(CONFIG_ZLIB))
-		register_image_handler(&gzip_bootm_handler);
-	if (IS_ENABLED(CONFIG_LZO_DECOMPRESS))
-		register_image_handler(&lzo_bootm_handler);
-	if (IS_ENABLED(CONFIG_LZ4_DECOMPRESS))
-		register_image_handler(&lz4_bootm_handler);
-	if (IS_ENABLED(CONFIG_XZ_DECOMPRESS))
-		register_image_handler(&xz_bootm_handler);
-	if (IS_ENABLED(CONFIG_ZSTD_DECOMPRESS))
-		register_image_handler(&zstd_bootm_handler);
 
 	return 0;
 }

@@ -5,6 +5,7 @@
 #include <image.h>
 #include <filetype.h>
 #include <linux/list.h>
+#include <loadable.h>
 
 enum bootm_verify {
 	BOOTM_VERIFY_NONE,
@@ -52,17 +53,24 @@ struct bootm_data {
 	unsigned long os_entry;
 };
 
-int bootm_boot(struct bootm_data *data);
+int bootm_image_name_and_part(const char *name, char **filename, char **part);
+
+int bootm_boot(const struct bootm_data *data);
+
+struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data);
+int bootm_open_os_compressed(struct image_data *data);
+int bootm_boot_handler(struct image_data *data);
+void bootm_boot_cleanup(struct image_data *data);
 
 struct image_data {
 	/* simplest case. barebox has already loaded the os here */
 	struct resource *os_res;
 
+	/* Generic loadable object for OS image */
+	struct loadable *os;
+
 	/* if os is an uImage this will be provided */
 	struct uimage_handle *os_uimage;
-
-	/* if os is a FIT image this will be provided */
-	struct fit_handle *os_fit;
 
 	char *os_part;
 
@@ -80,8 +88,15 @@ struct image_data {
 	/* entry point to the os. relative to the start of the image */
 	unsigned long os_entry;
 
+	/* initial os_address/os_entry supplied at entry to bootm_boot */
+	unsigned long os_address_hint;
+	unsigned long os_entry_hint;
+
 	/* if initrd is already loaded this resource will be !NULL */
 	struct resource *initrd_res;
+
+	/* Generic loadable object for initrd */
+	struct loadable *initrd;
 
 	/* if initrd is an uImage this will be provided */
 	struct uimage_handle *initrd_uimage;
@@ -95,12 +110,14 @@ struct image_data {
 	char *oftree_file;
 	char *oftree_part;
 
-	const void *fit_kernel;
-	unsigned long fit_kernel_size;
-	void *fit_config;
+	/* if oftree is an uImage this will be provided */
+	struct uimage_handle *oftree_uimage;
 
 	struct device_node *of_root_node;
 	struct resource *oftree_res;
+
+	/* Generic loadable object for oftree */
+	struct loadable *oftree;
 
 	/*
 	 * The first PAGE_SIZE bytes of the OS image. Can be used by the image
@@ -111,6 +128,9 @@ struct image_data {
 	char *tee_file;
 	struct resource *tee_res;
 
+	/* Future default case: A generic loadable object */
+	struct loadable *tee;
+
 	/* Type of OS image, e.g. filetype_fit or the same as kernel_type */
 	enum filetype image_type;
 	/* Type of kernel image that's going to be booted */
@@ -120,6 +140,11 @@ struct image_data {
 	int verbose;
 	int force;
 	int dryrun;
+	struct {
+		u8 os:1;
+		u8 initrd:1;
+		u8 oftree:1;
+	} is_override;
 	enum bootm_efi_mode efi_boot;
 };
 
@@ -167,7 +192,7 @@ void *bootm_get_devicetree(struct image_data *data);
 const struct resource *
 bootm_load_devicetree(struct image_data *data, void *fdt,
 		      ulong load_address, ulong end_address);
-int bootm_get_os_size(struct image_data *data);
+loff_t bootm_get_os_size(struct image_data *data);
 
 enum bootm_verify bootm_get_verify_mode(void);
 void bootm_set_verify_mode(enum bootm_verify mode);

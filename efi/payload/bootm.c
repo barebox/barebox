@@ -27,7 +27,6 @@
 #include <libfile.h>
 #include <binfmt.h>
 #include <wchar.h>
-#include <image-fit.h>
 #include <efi/payload.h>
 #include <efi/payload/driver.h>
 #include <efi/error.h>
@@ -35,73 +34,26 @@
 
 #include "image.h"
 
-static bool ramdisk_is_fit(struct image_data *data)
-{
-	struct stat st;
-
-	if (!IS_ENABLED(CONFIG_BOOTM_FITIMAGE))
-		return false;
-
-	if (bootm_signed_images_are_forced())
-		return true;
-
-	if (data->initrd_file) {
-		if (!stat(data->initrd_file, &st) && st.st_size > 0)
-			return false;
-	}
-
-	return data->os_fit ? fit_has_image(data->os_fit,
-			data->fit_config, "ramdisk") > 0 : false;
-}
-
-static bool fdt_is_fit(struct image_data *data)
-{
-	struct stat st;
-
-	if (!IS_ENABLED(CONFIG_BOOTM_FITIMAGE))
-		return false;
-
-	if (bootm_signed_images_are_forced())
-		return true;
-
-	if (data->oftree_file) {
-		if (!stat(data->oftree_file, &st) && st.st_size > 0)
-			return false;
-	}
-
-	return data->os_fit ? fit_has_image(data->os_fit,
-			data->fit_config, "fdt") > 0 : false;
-}
-
-static bool os_is_fit(struct image_data *data)
-{
-	if (!IS_ENABLED(CONFIG_BOOTM_FITIMAGE))
-		return false;
-
-	if (bootm_signed_images_are_forced())
-		return true;
-
-	return data->os_fit;
-}
-
 static int efi_load_os(struct image_data *data,
 		       struct efi_loaded_image **loaded_image,
 		       efi_handle_t *handle)
 {
 	efi_status_t efiret;
 	efi_handle_t h;
+	const void *view;
+	size_t size;
 
-	if (!os_is_fit(data))
-		return efi_load_image(data->os_file, loaded_image, handle);
-
-	if (!data->fit_kernel)
-		return -ENOENT;
+	view = loadable_view(data->os, &size) ?: ERR_PTR(-ENODATA);
+	if (IS_ERR(view)) {
+		pr_err("could not view kernel: %pe\n", view);
+		return PTR_ERR(view);
+	}
 
 	efiret = BS->load_image(false, efi_parent_image, efi_device_path,
-				(void *)data->fit_kernel, data->fit_kernel_size, &h);
+				(void *)view, size, &h);
 	if (EFI_ERROR(efiret)) {
 		pr_err("failed to LoadImage: %s\n", efi_strerror(efiret));
-		goto out_mem;
+		goto out_view_free;
 	};
 
 	efiret = BS->open_protocol(h, &efi_loaded_image_protocol_guid,
@@ -114,43 +66,33 @@ static int efi_load_os(struct image_data *data,
 
 	*handle = h;
 
+	loadable_view_free(data->os, view, size);
 	return 0;
 
 out_unload:
 	BS->unload_image(h);
-out_mem:
+out_view_free:
+	loadable_view_free(data->os, view, size);
 	return -efi_errno(efiret);
 }
 
-static int efi_load_ramdisk(struct image_data *data, void **initrd)
+static int efi_load_ramdisk(struct image_data *data,
+			    const void **initrd,
+			    size_t *initrd_size)
 {
-	unsigned long initrd_size;
-	void *initrd_mem;
+	const void *initrd_mem;
 	int ret;
 
-	if (ramdisk_is_fit(data)) {
-		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk", 0,
-				     (const void **)&initrd_mem, &initrd_size);
-		if (ret) {
-			pr_err("Cannot open ramdisk image in FIT image: %m\n");
-			return ret;
-		}
-	} else {
-		if (!data->initrd_file)
-			return 0;
+	if (!data->initrd)
+		return 0;
 
-		pr_info("Loading ramdisk from '%s'\n", data->initrd_file);
-
-		initrd_mem = read_file(data->initrd_file, &initrd_size);
-		if (!initrd_mem) {
-			ret = -errno;
-			pr_err("Failed to read initrd from file '%s': %m\n",
-			       data->initrd_file);
-			return ret;
-		}
+	initrd_mem = loadable_view(data->initrd, initrd_size);
+	if (IS_ERR(initrd_mem)) {
+		pr_err("Cannot open ramdisk image: %pe\n", initrd_mem);
+		return PTR_ERR(initrd_mem);
 	}
 
-	ret = efi_initrd_register(initrd_mem, initrd_size);
+	ret = efi_initrd_register(initrd_mem, *initrd_size);
 	if (ret) {
 		pr_err("Failed to register initrd: %pe\n", ERR_PTR(ret));
 		goto free_mem;
@@ -161,7 +103,7 @@ static int efi_load_ramdisk(struct image_data *data, void **initrd)
 	return 0;
 
 free_mem:
-	free(initrd_mem);
+	loadable_view_free(data->initrd, initrd_mem, *initrd_size);
 
 	return ret;
 }
@@ -170,45 +112,31 @@ static int efi_load_fdt(struct image_data *data, void **fdt)
 {
 	efi_physical_addr_t mem;
 	efi_status_t efiret;
-	void *of_tree, *vmem;
-	unsigned long of_size;
-	int ret;
+	void *vmem;
+	size_t bufsize = DIV_ROUND_UP(SZ_2M, EFI_PAGE_SIZE);
+	ssize_t ret;
 
-	if (fdt_is_fit(data)) {
-		ret = fit_open_image(data->os_fit, data->fit_config, "fdt", 0,
-				     (const void **)&of_tree, &of_size);
-		if (ret) {
-			pr_err("Cannot open FDT image in FIT image: %m\n");
-			return ret;
-		}
-	} else {
-		if (!data->oftree_file)
-			return 0;
+	if (!data->oftree)
+		return 0;
 
-		pr_info("Loading devicetree from '%s'\n", data->oftree_file);
-
-		of_tree = read_file(data->oftree_file, &of_size);
-		if (!of_tree) {
-			ret = -errno;
-			pr_err("Failed to read oftree: %m\n");
-			return ret;
-		}
-	}
-
-	efiret = BS->allocate_pages(EFI_ALLOCATE_ANY_PAGES,
-				    EFI_ACPI_RECLAIM_MEMORY,
-				    DIV_ROUND_UP(SZ_2M, EFI_PAGE_SIZE), &mem);
+	efiret = BS->allocate_pages(EFI_ALLOCATE_ANY_PAGES, EFI_ACPI_RECLAIM_MEMORY,
+				    bufsize, &mem);
 	if (EFI_ERROR(efiret)) {
 		pr_err("Failed to allocate pages for FDT: %s\n", efi_strerror(efiret));
-		goto free_mem;
+		return -efi_errno(efiret);
 	}
 
 	vmem = efi_phys_to_virt(mem);
-	memcpy(vmem, of_tree, of_size);
+
+	ret = loadable_extract_into_buf_full(data->oftree, vmem,
+					     bufsize * EFI_PAGE_SIZE);
+	if (ret < 0)
+		goto free_efi_mem;
 
 	efiret = BS->install_configuration_table(&efi_fdt_guid, vmem);
 	if (EFI_ERROR(efiret)) {
 		pr_err("Failed to install FDT: %s\n", efi_strerror(efiret));
+		ret = -efi_errno(efiret);
 		goto free_efi_mem;
 	}
 
@@ -216,10 +144,8 @@ static int efi_load_fdt(struct image_data *data, void **fdt)
 	return 0;
 
 free_efi_mem:
-	BS->free_pages(mem, DIV_ROUND_UP(SZ_2M, EFI_PAGE_SIZE));
-free_mem:
-	free(of_tree);
-	return -efi_errno(efiret);
+	BS->free_pages(mem, bufsize);
+	return ret;
 }
 
 static void efi_unload_fdt(void *fdt)
@@ -234,8 +160,10 @@ static void efi_unload_fdt(void *fdt)
 static int do_bootm_efi_stub(struct image_data *data)
 {
 	struct efi_loaded_image *loaded_image;
-	void *fdt = NULL, *initrd = NULL;
-	efi_handle_t handle;
+	void *fdt = NULL;
+	const void *initrd = NULL;
+	size_t initrd_size;
+	efi_handle_t handle = NULL; /* silence compiler warning */
 	enum filetype type;
 	int ret;
 
@@ -247,7 +175,7 @@ static int do_bootm_efi_stub(struct image_data *data)
 	if (ret)
 		goto unload_os;
 
-	ret = efi_load_ramdisk(data, &initrd);
+	ret = efi_load_ramdisk(data, &initrd, &initrd_size);
 	if (ret)
 		goto unload_oftree;
 
@@ -260,7 +188,7 @@ static int do_bootm_efi_stub(struct image_data *data)
 unload_ramdisk:
 	if (initrd) {
 		efi_initrd_unregister();
-		free(initrd);
+		loadable_view_free(data->initrd, initrd, initrd_size);
 	}
 unload_oftree:
 	efi_unload_fdt(fdt);

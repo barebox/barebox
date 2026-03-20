@@ -303,8 +303,9 @@ int uimage_load(struct uimage_handle *handle, unsigned int image_no,
 		long(*flush)(void*, unsigned long));
 void uimage_print_contents(struct uimage_handle *handle);
 ssize_t uimage_get_size(struct uimage_handle *handle, unsigned int image_no);
-struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
-		int image_no, unsigned long load_address);
+int uimage_load_into_fixed_buf(struct uimage_handle *handle, int image_no,
+			       void *load_address, size_t size, loff_t offset,
+			       bool partial);
 void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 		size_t *size);
 #define MAX_MULTI_IMAGE_COUNT 16

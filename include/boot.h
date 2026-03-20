@@ -55,4 +55,7 @@ void bootsources_menu(struct bootentries *bootentries, unsigned default_entry, i
 void bootsources_list(struct bootentries *bootentries);
 int boot_entry(struct bootentry *be, int verbose, int dryrun);
 
+struct bootm_data;
+int bootm_entry(struct bootentry *be, const struct bootm_data *data);
+
 #endif /* __BOOT_H */

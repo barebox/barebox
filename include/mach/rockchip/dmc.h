@@ -83,12 +83,12 @@ enum {
 #define SYS_REG_CS1_COL_SHIFT(ch)		(0 + (ch) * 2)
 #define SYS_REG_CS1_COL_MASK			3
 
-resource_size_t rk3399_ram0_size(void);
-resource_size_t rk3562_ram0_size(void);
-resource_size_t rk3568_ram0_size(void);
-resource_size_t rk3576_ram0_size(void);
-resource_size_t rk3588_ram0_size(void);
+#define ROCKCHIP_MAX_DRAM_RESOURCES	4
 
+size_t rk3399_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n);
+size_t rk3562_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n);
+size_t rk3568_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n);
+size_t rk3576_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n);
 size_t rk3588_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n);
 
 #endif

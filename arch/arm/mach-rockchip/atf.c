@@ -168,12 +168,13 @@ void rk3562_atf_load_bl31(void *fdt)
 
 void __noreturn rk3562_barebox_entry(void *fdt)
 {
-	unsigned long membase, endmem;
+	phys_addr_t membase, memend;
+	resource_size_t memsize;
 
-	membase = RK3562_DRAM_BOTTOM;
-	endmem = rk3562_ram0_size();
+	rk3562_ram_sizes(&membase, &memsize, 1);
+	memend = membase + memsize;
 
-	rk_scratch = (void *)arm_mem_scratch(endmem);
+	rk_scratch = (void *)arm_mem_scratch(memend);
 
 	if (current_el() == 3) {
 		rk3562_lowlevel_init();
@@ -195,7 +196,7 @@ void __noreturn rk3562_barebox_entry(void *fdt)
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, endmem - membase, fdt);
+	barebox_arm_entry(membase, memsize, fdt);
 }
 
 void rk3568_atf_load_bl31(void *fdt)
@@ -206,12 +207,13 @@ void rk3568_atf_load_bl31(void *fdt)
 
 void __noreturn rk3568_barebox_entry(void *fdt)
 {
-	unsigned long membase, endmem;
+	phys_addr_t membase, memend;
+	resource_size_t memsize;
 
-	membase = RK3568_DRAM_BOTTOM;
-	endmem = rk3568_ram0_size();
+	rk3568_ram_sizes(&membase, &memsize, 1);
+	memend = membase + memsize;
 
-	rk_scratch = (void *)arm_mem_scratch(endmem);
+	rk_scratch = (void *)arm_mem_scratch(memend);
 
 	if (current_el() == 3) {
 		rk3568_lowlevel_init();
@@ -233,7 +235,7 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, endmem - membase, fdt);
+	barebox_arm_entry(membase, memsize, fdt);
 }
 
 void rk3588_atf_load_bl31(void *fdt)
@@ -318,12 +320,13 @@ void rk3576_atf_load_bl31(void *fdt)
 
 void __noreturn rk3576_barebox_entry(void *fdt)
 {
-	unsigned long membase, endmem;
+	phys_addr_t membase, memend;
+	resource_size_t memsize;
 
-	membase = RK3576_DRAM_BOTTOM;
-	endmem = rk3576_ram0_size();
+	rk3576_ram_sizes(&membase, &memsize, 1);
+	memend = membase + memsize;
 
-	rk_scratch = (void *)arm_mem_scratch(endmem);
+	rk_scratch = (void *)arm_mem_scratch(memend);
 
 	if (current_el() == 3) {
 		void *fdt_scratch = NULL;
@@ -345,5 +348,5 @@ void __noreturn rk3576_barebox_entry(void *fdt)
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, endmem - membase, fdt);
+	barebox_arm_entry(membase, memsize, fdt);
 }

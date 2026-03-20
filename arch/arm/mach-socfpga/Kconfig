@@ -23,7 +23,6 @@ config ARCH_SOCFPGA_ARRIA10
 	bool
 	select CPU_V7
 	select ARM_SMP_TWD
-	select USE_COMPRESSED_DTB
 	select RESET_CONTROLLER
 	select OFDEVICE
 	select OFTREE
@@ -76,7 +75,6 @@ if 64BIT
 config ARCH_SOCFPGA_AGILEX5
 	bool
 	select CPU_V8
-	select USE_COMPRESSED_DTB
 	select RESET_CONTROLLER
 	select RESET_SIMPLE
 	select OFDEVICE

@@ -11,12 +11,11 @@
 void ls1046_start_tfa(void *barebox, struct dram_regions_info *dram_info)
 {
 	void (*bl31)(void) = (void *)0xfbe00000;
-	size_t bl31_size;
-	void *bl31_image;
+	struct fwobj bl31_fw;
 	struct bl2_to_bl31_params_mem_v2 *params;
 
-	get_builtin_firmware_ext(ls1046a_bl31_bin, barebox, &bl31_image, &bl31_size);
-	memcpy(bl31, bl31_image, bl31_size);
+	get_builtin_firmware_ext(ls1046a_bl31_bin, barebox, &bl31_fw);
+	memcpy(bl31, bl31_fw.data, bl31_fw.size);
 
 	sync_caches_for_execution();
 

@@ -9,6 +9,7 @@
 #include <crypto/sha.h>
 #include <crypto/pbl-sha.h>
 #include <digest.h>
+#include <firmware.h>
 #include <asm/sections.h>
 #include <pbl.h>
 #include <debug_ll.h>
@@ -114,5 +115,11 @@ void pbl_barebox_uncompress(void *dest, void *compressed_start, unsigned int len
 int pbl_dtbz_uncompress(void *dest, void *compressed_start, unsigned long len)
 {
 	return decompress(compressed_start, len, NULL, NULL, dest, NULL,
+			  errorfn);
+}
+
+int fwobj_uncompress(struct fwobj *fwobj, void *dest)
+{
+	return decompress(fwobj->data, fwobj->size, NULL, NULL, dest, NULL,
 			  errorfn);
 }

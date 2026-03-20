@@ -13,16 +13,15 @@ void __noreturn agilex5_load_and_start_image_via_tfa(unsigned long memsize)
 {
 	unsigned long atf_dest = AGILEX5_ATF_BL31_BASE_ADDR;
 	void __noreturn (*bl31)(void) = (void *)atf_dest;
-	const void *tfa;
-	size_t tfa_size;
+	struct fwobj tfa;
 
 	pr_debug("Load TFA\n");
 
 	memcpy((void *)AGILEX5_ATF_BL33_BASE_ADDR, __image_start, barebox_image_size);
 
-	get_builtin_firmware(agilex5_bl31_bin, &tfa, &tfa_size);
+	get_builtin_firmware(agilex5_bl31_bin, &tfa);
 
-	memcpy(bl31, tfa, tfa_size);
+	memcpy(bl31, tfa.data, tfa.size);
 
 	asm volatile("msr sp_el2, %0" : :
 		     "r" (AGILEX5_ATF_BL33_BASE_ADDR - 16) :

@@ -8,8 +8,8 @@
 #include <debug_ll.h>
 #include <mach/rockchip/rockchip.h>
 
-extern char __dtb_rk3588_rock_5b_start[];
-extern char __dtb_rk3588_rock_5t_start[];
+extern char __dtb_z_rk3588_rock_5b_start[];
+extern char __dtb_z_rk3588_rock_5t_start[];
 
 ENTRY_FUNCTION(start_rock5b, r0, r1, r2)
 {
@@ -22,7 +22,7 @@ ENTRY_FUNCTION(start_rock5b, r0, r1, r2)
 
 	setup_c();
 
-	rk3588_barebox_entry(__dtb_rk3588_rock_5b_start);
+	rk3588_barebox_entry(__dtb_z_rk3588_rock_5b_start);
 }
 
 ENTRY_FUNCTION(start_rock5t, r0, r1, r2)
@@ -36,5 +36,5 @@ ENTRY_FUNCTION(start_rock5t, r0, r1, r2)
 
 	setup_c();
 
-	rk3588_barebox_entry(__dtb_rk3588_rock_5t_start);
+	rk3588_barebox_entry(__dtb_z_rk3588_rock_5t_start);
 }

@@ -185,12 +185,6 @@ static void rockchip_atf_load_bl31(void *fdt)
 		   barebox_load_address, (uintptr_t)fdt);
 }
 
-void rk3562_atf_load_bl31(void *fdt)
-{
-	ROCKCHIP_GET_ADDRESSES(RK3562, rk3562_bl31_bin, rk3562_bl32_bin);
-	rockchip_atf_load_bl31(fdt);
-}
-
 void __noreturn rk3562_barebox_entry(void *fdt)
 {
 	phys_addr_t memend;
@@ -204,6 +198,7 @@ void __noreturn rk3562_barebox_entry(void *fdt)
 	if (current_el() == 3) {
 		rk3562_lowlevel_init();
 		rockchip_store_bootrom_iram(IOMEM(RK3562_IRAM_BASE));
+		ROCKCHIP_GET_ADDRESSES(RK3562, rk3562_bl31_bin, rk3562_bl32_bin);
 
 		/*
 		 * The downstream TF-A doesn't cope with our device tree when
@@ -216,18 +211,12 @@ void __noreturn rk3562_barebox_entry(void *fdt)
 		 * Pass NULL for now until we have a good reason to pass a real
 		 * device tree.
 		 */
-		rk3562_atf_load_bl31(NULL);
+		rockchip_atf_load_bl31(NULL);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
 	barebox_arm_entry(membase[0], memsize[0], fdt);
-}
-
-void rk3568_atf_load_bl31(void *fdt)
-{
-	ROCKCHIP_GET_ADDRESSES(RK3568, rk3568_bl31_bin, rk3568_bl32_bin);
-	rockchip_atf_load_bl31(fdt);
 }
 
 void __noreturn rk3568_barebox_entry(void *fdt)
@@ -243,6 +232,7 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 	if (current_el() == 3) {
 		rk3568_lowlevel_init();
 		rockchip_store_bootrom_iram(IOMEM(RK3568_IRAM_BASE));
+		ROCKCHIP_GET_ADDRESSES(RK3568, rk3568_bl31_bin, rk3568_bl32_bin);
 
 		/*
 		 * The downstream TF-A doesn't cope with our device tree when
@@ -255,18 +245,12 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 		 * Pass NULL for now until we have a good reason to pass a real
 		 * device tree.
 		 */
-		rk3568_atf_load_bl31(NULL);
+		rockchip_atf_load_bl31(NULL);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
 	barebox_arm_entry(membase[0], memsize[0], fdt);
-}
-
-void rk3588_atf_load_bl31(void *fdt)
-{
-	ROCKCHIP_GET_ADDRESSES(RK3588, rk3588_bl31_bin, rk3588_bl32_bin);
-	rockchip_atf_load_bl31(fdt);
 }
 
 void __noreturn rk3588_barebox_entry(void *fdt)
@@ -283,6 +267,7 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 	if (current_el() == 3) {
 		rk3588_lowlevel_init();
 		rockchip_store_bootrom_iram(IOMEM(RK3588_IRAM_BASE));
+		ROCKCHIP_GET_ADDRESSES(RK3588, rk3588_bl31_bin, rk3588_bl32_bin);
 
 		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_ATF_PASS_FDT)) {
 			pr_debug("Copy fdt to scratch area 0x%p (%zu bytes)\n",
@@ -292,18 +277,12 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 				pr_warn("Failed to create OP-TEE Device tree\n");
 		}
 
-		rk3588_atf_load_bl31(rk_scratch->fdt);
+		rockchip_atf_load_bl31(rk_scratch->fdt);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
 	barebox_arm_entry(membase[0], memsize[0], fdt);
-}
-
-void rk3576_atf_load_bl31(void *fdt)
-{
-	ROCKCHIP_GET_ADDRESSES(RK3576, rk3576_bl31_bin, rk3576_bl32_bin);
-	rockchip_atf_load_bl31(fdt);
 }
 
 void __noreturn rk3576_barebox_entry(void *fdt)
@@ -321,6 +300,7 @@ void __noreturn rk3576_barebox_entry(void *fdt)
 
 		rk3576_lowlevel_init();
 		rockchip_store_bootrom_iram(IOMEM(RK3576_IRAM_BASE));
+		ROCKCHIP_GET_ADDRESSES(RK3576, rk3576_bl31_bin, rk3576_bl32_bin);
 
 		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_ATF_PASS_FDT)) {
 			pr_debug("Copy fdt to scratch area 0x%p (%zu bytes)\n",
@@ -331,7 +311,7 @@ void __noreturn rk3576_barebox_entry(void *fdt)
 				pr_warn("Failed to copy fdt to scratch: Continue without fdt\n");
 		}
 
-		rk3576_atf_load_bl31(fdt_scratch);
+		rockchip_atf_load_bl31(fdt_scratch);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 

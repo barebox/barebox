@@ -42,20 +42,6 @@
 #define RK3576_BAREBOX_LOAD_ADDRESS	(RK3576_DRAM_BOTTOM + 1024*1024)
 #define RK3588_BAREBOX_LOAD_ADDRESS	(RK3588_DRAM_BOTTOM + 1024*1024)
 
-#ifndef __ASSEMBLY__
-#ifdef CONFIG_ARCH_ROCKCHIP_ATF
-void rk3562_atf_load_bl31(void *fdt);
-void rk3568_atf_load_bl31(void *fdt);
-void rk3576_atf_load_bl31(void *fdt);
-void rk3588_atf_load_bl31(void *fdt);
-#else
-static inline void rk3562_atf_load_bl31(void *fdt) { }
-static inline void rk3568_atf_load_bl31(void *fdt) { }
-static inline void rk3576_atf_load_bl31(void *fdt) { }
-static inline void rk3588_atf_load_bl31(void *fdt) { }
-#endif
-#endif
-
 void __noreturn rk3562_barebox_entry(void *fdt);
 void __noreturn rk3568_barebox_entry(void *fdt);
 void __noreturn rk3576_barebox_entry(void *fdt);

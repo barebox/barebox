@@ -68,17 +68,18 @@ static __noreturn void start_bl31_via_bl_params(void *bl31, void *bl32,
 	int error;
 	u8 *buf;
 
-	if (!fdt)
-		bl31_via_bl_params(bl31, bl32, bl33, NULL);
-
 	buf = imx_scratch_get_fdt(&bufsz);
 	if (IS_ERR_OR_NULL(buf)) {
-		if (!buf)
+		if (!buf && fdt)
 			pr_debug("No FDT scratch mem configured, continue without FDT\n");
-		else
+		else if (fdt)
 			pr_warn("Failed to get FDT scratch mem, continue without FDT\n");
 		bl31_via_bl_params(bl31, bl32, bl33, NULL);
 	}
+
+	if (!fdt)
+		bl31_via_bl_params(bl31, bl32, bl33, buf);
+
 
 	error = pbl_load_fdt(fdt, buf, bufsz);
 	if (error) {

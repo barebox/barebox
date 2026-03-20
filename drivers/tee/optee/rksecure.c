@@ -3,6 +3,8 @@
  * Copyright (C) Pengutronix, Michael Tretter <m.tretter@pengutronix.de>
  */
 
+#define pr_fmt(fmt) "rk-secure: " fmt
+
 #include <linux/tee_drv.h>
 #include <linux/uuid.h>
 #include <linux/array_size.h>
@@ -86,7 +88,8 @@ int rk_secure_boot_get_info(struct rk_secure_boot_info *out)
 	if (res)
 		goto out;
 	if (inv_arg.ret) {
-		pr_err("invoke func failed with 0x%08x\n", inv_arg.ret);
+		pr_err("invoke func PTA_RK_SECURE_BOOT_GET_INFO failed with 0x%08x\n",
+		        inv_arg.ret);
 		res = -EIO;
 	}
 
@@ -147,7 +150,8 @@ int rk_secure_boot_burn_hash(const u8 *hash, u32 key_size_bits)
 	if (res)
 		goto out;
 	if (inv_arg.ret) {
-		pr_err("invoke func failed with 0x%08x\n", inv_arg.ret);
+		pr_err("invoke func PTA_RK_SECURE_BOOT_BURN_HASH failed with 0x%08x\n",
+		        inv_arg.ret);
 		res = -EIO;
 	}
 
@@ -184,7 +188,8 @@ int rk_secure_boot_lockdown_device(void)
 	if (res)
 		goto close_session;
 	if (inv_arg.ret) {
-		pr_err("invoke func failed with 0x%08x\n", inv_arg.ret);
+		pr_err("invoke func PTA_RK_SECURE_BOOT_LOCKDOWN_DEVICE failed with 0x%08x\n",
+		        inv_arg.ret);
 		res = -EIO;
 	}
 

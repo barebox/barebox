@@ -160,13 +160,13 @@ static size_t rockchip_ram(phys_addr_t membase, resource_size_t memsize,
 		 * RK3576 has internal registers below the DRAM start and thus
 		 * doesn't need any gaps in the DRAM space.
 		 */
-		base[0] = membase;
+		base[0] = membase + ROCKCHIP_DRAM_TFA_CARVE_OUT;
 		size[0] = memsize;
 
 		return 1;
 	}
 
-	base[i] = membase;
+	base[i] = membase + ROCKCHIP_DRAM_TFA_CARVE_OUT;
 	size[i] = min_t(resource_size_t, RK3588_INT_REG_START, memsize) - membase;
 	i++;
 
@@ -202,7 +202,7 @@ size_t rk3399_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
 
 	pr_debug("%s() = %llu\n", __func__, (u64)size);
 
-	return rockchip_ram(RK3399_DRAM_BOTTOM, memsize, RK3399_INT_REG_START, base, size, n);
+	return rockchip_ram(RK3399_DRAM_START, memsize, RK3399_INT_REG_START, base, size, n);
 }
 
 size_t rk3562_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
@@ -218,7 +218,7 @@ size_t rk3562_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
 
 	pr_debug("%s() = %llu\n", __func__, (u64)memsize);
 
-	return rockchip_ram(RK3562_DRAM_BOTTOM, memsize, RK3562_INT_REG_START, base, size, n);
+	return rockchip_ram(RK3562_DRAM_START, memsize, RK3562_INT_REG_START, base, size, n);
 }
 
 size_t rk3568_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
@@ -234,7 +234,7 @@ size_t rk3568_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
 
 	pr_debug("%s() = %llu\n", __func__, (u64)memsize);
 
-	return rockchip_ram(RK3568_DRAM_BOTTOM, memsize, RK3568_INT_REG_START, base, size, n);
+	return rockchip_ram(RK3568_DRAM_START, memsize, RK3568_INT_REG_START, base, size, n);
 }
 
 size_t rk3576_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
@@ -250,7 +250,7 @@ size_t rk3576_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
 
 	pr_debug("%s() = %llu\n", __func__, (u64)size);
 
-	return rockchip_ram(RK3576_DRAM_BOTTOM, memsize, RK3576_INT_REG_START, base, size, n);
+	return rockchip_ram(RK3576_DRAM_START, memsize, RK3576_INT_REG_START, base, size, n);
 }
 
 #define RK3588_PMUGRF_BASE 0xfd58a000
@@ -277,7 +277,7 @@ size_t rk3588_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
 
 	memsize = size1 + size2;
 
-	return rockchip_ram(RK3588_DRAM_BOTTOM, memsize, RK3588_INT_REG_START, base, size, n);
+	return rockchip_ram(RK3588_DRAM_START, memsize, RK3588_INT_REG_START, base, size, n);
 }
 
 static int rockchip_dmc_probe(struct device *dev)
@@ -335,28 +335,28 @@ static const struct rockchip_dmc_drvdata rk3399_drvdata = {
 	.os_reg2 = RK3399_PMUGRF_OS_REG2,
 	.os_reg3 = RK3399_PMUGRF_OS_REG3,
 	.internal_registers_start = RK3399_INT_REG_START,
-	.membase = RK3399_DRAM_BOTTOM,
+	.membase = RK3399_DRAM_START,
 };
 
 static const struct rockchip_dmc_drvdata rk3562_drvdata = {
 	.os_reg2 = RK3562_PMUGRF_OS_REG2,
 	.os_reg3 = RK3562_PMUGRF_OS_REG3,
 	.internal_registers_start = RK3562_INT_REG_START,
-	.membase = RK3562_DRAM_BOTTOM,
+	.membase = RK3562_DRAM_START,
 };
 
 static const struct rockchip_dmc_drvdata rk3568_drvdata = {
 	.os_reg2 = RK3568_PMUGRF_OS_REG2,
 	.os_reg3 = RK3568_PMUGRF_OS_REG3,
 	.internal_registers_start = RK3568_INT_REG_START,
-	.membase = RK3568_DRAM_BOTTOM,
+	.membase = RK3568_DRAM_START,
 };
 
 static const struct rockchip_dmc_drvdata rk3576_drvdata = {
 	.os_reg2 = RK3576_PMUGRF_OS_REG2,
 	.os_reg3 = RK3576_PMUGRF_OS_REG3,
 	.internal_registers_start = RK3576_INT_REG_START,
-	.membase = RK3576_DRAM_BOTTOM,
+	.membase = RK3576_DRAM_START,
 };
 
 static const struct rockchip_dmc_drvdata rk3588_drvdata = {
@@ -365,7 +365,7 @@ static const struct rockchip_dmc_drvdata rk3588_drvdata = {
 	.os_reg4 = RK3588_PMUGRF_OS_REG4,
 	.os_reg5 = RK3588_PMUGRF_OS_REG5,
 	.internal_registers_start = RK3588_INT_REG_START,
-	.membase = RK3588_DRAM_BOTTOM,
+	.membase = RK3588_DRAM_START,
 };
 
 static struct of_device_id rockchip_dmc_dt_ids[] = {

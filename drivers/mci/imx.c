@@ -378,10 +378,10 @@ static int mxcmci_cmd_done(struct mxcmci_host *host, unsigned int stat)
 	return ret;
 }
 
-static int mxcmci_request(struct mci_host *mci, struct mci_cmd *cmd,
-		struct mci_data *data)
+static int mxcmci_request(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct mxcmci_host *host = to_mxcmci(mci);
+	struct mci_data *data = cmd->data;
 	unsigned int cmdat = host->cmdat;
 	u32 stat;
 	int ret;

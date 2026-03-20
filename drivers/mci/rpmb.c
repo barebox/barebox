@@ -71,6 +71,8 @@ static int mci_read_write_blocks(struct mci *mci, u32 opcode, int write_flag, vo
 	};
 	int ret;
 
+	cmd.data = &data;
+
 	if (write_flag) {
 		data.src = buf;
 		data.flags = MMC_DATA_WRITE;
@@ -83,7 +85,7 @@ static int mci_read_write_blocks(struct mci *mci, u32 opcode, int write_flag, vo
 	if (ret)
 		return ret;
 
-	return mci_send_cmd(mci, &cmd, &data);
+	return mci_send_cmd(mci, &cmd);
 }
 
 static int rpmb_route_frames(struct mci *mci, void *req,

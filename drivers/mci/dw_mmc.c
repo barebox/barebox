@@ -263,7 +263,7 @@ static int dwmci_write_data_pio(struct dwmci_host *host, struct mci_data *data)
 }
 
 static int
-dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
+dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct dwmci_host *host = to_dwmci_host(mci);
 	int flags = 0;
@@ -273,6 +273,7 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	int ret;
 	unsigned int num_bytes = 0;
 	dma_addr_t dma = 0;
+	struct mci_data *data = cmd->data;
 
 	start = get_time_ns();
 	while (1) {

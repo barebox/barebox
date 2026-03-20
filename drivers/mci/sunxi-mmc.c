@@ -20,14 +20,14 @@
 #include "sunxi-mmc.h"
 #include "sunxi-mmc-common.c"
 
-static int sdxc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
+static int sdxc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct sunxi_mmc_host *host = to_sunxi_mmc_host(mci);
 	struct device *dev = mci->hw_dev;
 	const char *why = "";
 	int ret;
 
-	ret = sunxi_mmc_send_cmd(host, cmd, data, &why);
+	ret = sunxi_mmc_send_cmd(host, cmd, cmd->data, &why);
 	if (ret && ret != -ETIMEDOUT && ret != -EINVAL)
 		dev_err(dev, "error %s CMD%d (%d)\n", why, cmd->cmdidx, ret);
 	if (ret == -ETIMEDOUT)

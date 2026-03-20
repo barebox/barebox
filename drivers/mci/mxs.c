@@ -461,16 +461,15 @@ static int mxs_mci_initialize(struct mci_host *host, struct device *mci_dev)
  * @param data The data to handle in the command (can be NULL)
  * @return 0 on success, negative value else
  */
-static int mxs_mci_request(struct mci_host *host, struct mci_cmd *cmd,
-			struct mci_data *data)
+static int mxs_mci_request(struct mci_host *host, struct mci_cmd *cmd)
 {
 	struct mxs_mci_host *mxs_mci = to_mxs_mci(host);
 	int rc;
 
-	if ((cmd->resp_type == 0) || (data == NULL))
+	if ((cmd->resp_type == 0) || (cmd->data == NULL))
 		rc = mxs_mci_std_cmds(mxs_mci, cmd);
 	else
-		rc = mxs_mci_adtc(mxs_mci, cmd, data);	/* with response and data */
+		rc = mxs_mci_adtc(mxs_mci, cmd, cmd->data);	/* with response and data */
 
 	mxs_mci_finish_request(mxs_mci);	/* TODO */
 	return rc;

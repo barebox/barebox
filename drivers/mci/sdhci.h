@@ -85,6 +85,11 @@
 #define  SDHCI_BUS_VOLTAGE_330			SDHCI_BUS_VOLTAGE(7)
 #define  SDHCI_BUS_VOLTAGE(v)			((v) << 1)
 #define  SDHCI_BUS_POWER_EN			BIT(0)
+#define SDHCI_BLOCK_GAP_CONTROL			0x2A
+#define SDHCI_WAKE_UP_CONTROL			0x2B
+#define  SDHCI_WAKE_ON_INT			0x01
+#define  SDHCI_WAKE_ON_INSERT			0x02
+#define  SDHCI_WAKE_ON_REMOVE			0x04
 #define SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET	0x2c
 #define SDHCI_CLOCK_CONTROL					0x2C
 #define  SDHCI_DIVIDER_SHIFT			8
@@ -177,6 +182,17 @@
 #define  SDHCI_CAN_DO_ADMA3			0x08000000
 #define  SDHCI_SUPPORT_HS400			0x80000000 /* Non-standard */
 
+#define SDHCI_MAX_CURRENT		0x48
+#define  SDHCI_MAX_CURRENT_LIMIT	GENMASK(7, 0)
+#define  SDHCI_MAX_CURRENT_330_MASK	GENMASK(7, 0)
+#define  SDHCI_MAX_CURRENT_300_MASK	GENMASK(15, 8)
+#define  SDHCI_MAX_CURRENT_180_MASK	GENMASK(23, 16)
+#define SDHCI_MAX_CURRENT_1		0x4C
+#define  SDHCI_MAX_CURRENT_VDD2_180_MASK	GENMASK(7, 0) /* UHS2 */
+#define   SDHCI_MAX_CURRENT_MULTIPLIER	4
+
+#define SDHCI_ADMA_ERROR	0x54
+
 #define SDHCI_PRESET_FOR_SDR12	0x66
 #define SDHCI_PRESET_FOR_SDR25	0x68
 #define SDHCI_PRESET_FOR_SDR50	0x6A
@@ -206,6 +222,8 @@
 #define SDHCI_ADMA_ADDRESS_HI					0x5c
 
 #define SDHCI_MMC_BOOT						0xC4
+
+#define SDHCI_SLOT_INT_STATUS	0xFC
 
 #define SDHCI_MAX_DIV_SPEC_200	256
 #define SDHCI_MAX_DIV_SPEC_300	2046
@@ -326,6 +344,7 @@ static inline void sdhci_write8(struct sdhci *host, int reg, u32 val)
 }
 
 #define SDHCI_NO_DMA DMA_ERROR_CODE
+void sdhci_set_uhs_signaling(struct sdhci *host, unsigned int timing);
 int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode);
 int sdhci_wait_idle_data(struct sdhci *host, struct mci_cmd *cmd);
 int sdhci_wait_idle(struct sdhci *host, struct mci_cmd *cmd, struct mci_data *data);
@@ -357,6 +376,9 @@ static inline void sdhci_read_caps(struct sdhci *host)
 {
 	__sdhci_read_caps(host, NULL, NULL, NULL);
 }
+
+void sdhci_dumpregs(struct sdhci *host);
+int sdhci_send_command(struct sdhci *host, struct mci_cmd *cmd);
 void sdhci_set_bus_width(struct sdhci *host, int width);
 
 #define sdhci_read8_poll_timeout(sdhci, reg, val, cond, timeout_us) \

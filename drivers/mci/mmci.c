@@ -421,12 +421,12 @@ static int do_data_transfer(struct mci_host *mci, struct mci_cmd *cmd, struct mc
 	return error;
 }
 
-static int mci_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
+static int mci_request(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	int result;
 
-	if (data)
-		result = do_data_transfer(mci, cmd, data);
+	if (cmd->data)
+		result = do_data_transfer(mci, cmd, cmd->data);
 	else
 		result = do_command(mci, cmd);
 

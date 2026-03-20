@@ -9,6 +9,7 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
+#include <crc.h>
 #include <of.h>
 #include <of_device.h>
 #include <linux/clk.h>
@@ -86,6 +87,7 @@ struct rockchip_data {
 	const char * const *clks;
 	int num_clks;
 	int (*reg_read)(void *ctx, unsigned int reg, void *val, size_t val_size);
+	int cpuid_offset;
 };
 
 struct rockchip_otp {
@@ -400,6 +402,7 @@ static const struct rockchip_data px30_data = {
 	.clks = px30_otp_clocks,
 	.num_clks = ARRAY_SIZE(px30_otp_clocks),
 	.reg_read = px30_otp_read,
+	.cpuid_offset = -1,
 };
 
 static const char * const rk3562_otp_clocks[] = {
@@ -411,6 +414,7 @@ static const struct rockchip_data rk3562_data = {
 	.clks = rk3562_otp_clocks,
 	.num_clks = ARRAY_SIZE(rk3562_otp_clocks),
 	.reg_read = rk3562_otp_read,
+	.cpuid_offset = -1,
 };
 
 static const char * const rk3568_otp_clocks[] = {
@@ -422,6 +426,7 @@ static const struct rockchip_data rk3568_data = {
 	.clks = rk3568_otp_clocks,
 	.num_clks = ARRAY_SIZE(rk3568_otp_clocks),
 	.reg_read = rk3568_otp_read,
+	.cpuid_offset = 0xa,
 };
 
 static const struct rockchip_data rk3576_data = {
@@ -429,6 +434,7 @@ static const struct rockchip_data rk3576_data = {
 	.clks = px30_otp_clocks,
 	.num_clks = ARRAY_SIZE(px30_otp_clocks),
 	.reg_read = rk3588_otp_read,
+	.cpuid_offset = 0xa,
 };
 
 static const char * const rk3588_otp_clocks[] = {
@@ -440,6 +446,7 @@ static const struct rockchip_data rk3588_data = {
 	.clks = rk3588_otp_clocks,
 	.num_clks = ARRAY_SIZE(rk3588_otp_clocks),
 	.reg_read = rk3588_otp_read,
+	.cpuid_offset = 0x7,
 };
 
 static __maybe_unused const struct of_device_id rockchip_otp_match[] = {
@@ -470,6 +477,42 @@ static __maybe_unused const struct of_device_id rockchip_otp_match[] = {
 	{ /* sentinel */ },
 };
 MODULE_DEVICE_TABLE(of, rockchip_otp_match);
+
+#define CPUID_SIZE 16
+
+static int rockchip_otp_read_socuid(struct rockchip_otp *otp, struct nvmem_device *nvmem)
+{
+	u8 low[CPUID_SIZE / 2], high[CPUID_SIZE / 2];
+	unsigned char cpuid[CPUID_SIZE];
+	char uidstr[CPUID_SIZE * 2 + 1];
+	u64 serialno;
+	int i, ret, offset;
+
+	offset = otp->data->cpuid_offset;
+	if (offset < 0)
+		return 0;
+
+	ret = rockchip_otp_read(otp, offset, cpuid, CPUID_SIZE);
+	if (ret < 0)
+		return ret;
+
+	/*
+	 * Do the same mangling as U-Boot and downstream Rockchip Linux does.
+	 */
+	for (i = 0; i < CPUID_SIZE / 2; i++) {
+		low[i] = cpuid[1 + (i << 1)];
+		high[i] = cpuid[i << 1];
+	}
+
+	serialno = crc32_no_comp(0, low, CPUID_SIZE / 2);
+	serialno |= (u64)crc32_no_comp(serialno, high, CPUID_SIZE / 2) << 32;
+
+	snprintf(uidstr, sizeof(uidstr), "%016llx", serialno);
+
+	barebox_set_soc_uid(uidstr, &serialno, sizeof(serialno));
+
+	return 0;
+}
 
 static int rockchip_otp_probe(struct device *dev)
 {
@@ -521,11 +564,16 @@ static int rockchip_otp_probe(struct device *dev)
 	otp_config.dev = dev;
 
 	nvmem = nvmem_register(&otp_config);
-	if (!IS_ERR(nvmem))
-		return 0;
+	if (IS_ERR(nvmem)) {
+		ret = PTR_ERR(nvmem);
+		goto err_register;
+	}
 
-	ret = PTR_ERR(nvmem);
+	rockchip_otp_read_socuid(otp, nvmem);
 
+	return 0;
+
+err_register:
 	reset_control_put(otp->rst);
 
 err_rst:

@@ -3111,6 +3111,8 @@ int mci_register(struct mci_host *host)
 	if (IS_ENABLED(CONFIG_MCI_INFO))
 		devinfo_add(&mci->dev, mci_info);
 
+	class_add_device(&mmc_class, &mci->dev);
+
 	/* if enabled, probe the attached card immediately */
 	if (IS_ENABLED(CONFIG_MCI_STARTUP) ||
 	   (IS_ENABLED(CONFIG_MCI_STARTUP_NONREMOVABLE) &&
@@ -3123,8 +3125,6 @@ int mci_register(struct mci_host *host)
 
 		of_register_fixup(of_broken_cd_fixup, host);
 	}
-
-	class_add_device(&mmc_class, &mci->dev);
 
 	return 0;
 

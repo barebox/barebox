@@ -148,7 +148,7 @@ struct regmap *regmap_init(struct device *dev,
  * @dev:         The device the maps is attached to
  * @name:        Optional name for the map. If given it must match.
  *
- * Returns a pointer to the regmap or a ERR_PTR value on failure
+ * Returns the regmap for the device if one is present, or NULL.
  */
 struct regmap *dev_get_regmap(struct device *dev, const char *name)
 {
@@ -163,7 +163,7 @@ struct regmap *dev_get_regmap(struct device *dev, const char *name)
 			return map;
 	}
 
-	return ERR_PTR(-ENOENT);
+	return NULL;
 }
 
 struct device *regmap_get_device(struct regmap *map)

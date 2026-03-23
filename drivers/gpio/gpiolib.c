@@ -292,12 +292,14 @@ EXPORT_SYMBOL_GPL(gpiod_set_config);
  * Set the raw value of the GPIO, i.e. the value of its physical line without
  * regard for its ACTIVE_LOW status.
  */
-void gpiod_set_raw_value(struct gpio_desc *desc, int value)
+int gpiod_set_raw_value(struct gpio_desc *desc, int value)
 {
-	VALIDATE_DESC_VOID(desc);
+	VALIDATE_DESC(desc);
 
-	if (desc->chip->ops->set)
-		desc->chip->ops->set(desc->chip, gpiodesc_chip_offset(desc), value);
+	if (!desc->chip->ops->set)
+		return -ENOSYS;
+
+	return desc->chip->ops->set(desc->chip, gpiodesc_chip_offset(desc), value);
 }
 EXPORT_SYMBOL(gpiod_set_raw_value);
 
@@ -323,10 +325,10 @@ EXPORT_SYMBOL(gpio_set_value);
  * Set the logical value of the GPIO, i.e. taking its ACTIVE_LOW,
  * OPEN_DRAIN and OPEN_SOURCE flags into account.
  */
-void gpiod_set_value(struct gpio_desc *desc, int value)
+int gpiod_set_value(struct gpio_desc *desc, int value)
 {
-	VALIDATE_DESC_VOID(desc);
-	gpiod_set_raw_value(desc, gpio_adjust_value(desc, value));
+	VALIDATE_DESC(desc);
+	return gpiod_set_raw_value(desc, gpio_adjust_value(desc, value));
 }
 EXPORT_SYMBOL_GPL(gpiod_set_value);
 
@@ -1191,14 +1193,18 @@ static int gpiod_set_array_value_complex(bool raw,
 					 struct gpio_array *array_info,
 					 unsigned long *value_bitmap)
 {
+	int ret, err = 0;
 	int i;
 
 	BUG_ON(array_info != NULL);
 
-	for (i = 0; i < array_size; i++)
-		gpiod_set_value(desc_array[i], test_bit(i, value_bitmap));
+	for (i = 0; i < array_size; i++) {
+		ret = gpiod_set_value(desc_array[i], test_bit(i, value_bitmap));
+		if (ret)
+			err = ret;
+	}
 
-	return 0;
+	return err;
 }
 
 /**

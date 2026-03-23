@@ -59,8 +59,8 @@ static int gpio_74164_get_value(struct gpio_chip *chip, unsigned off)
 	return (priv->buffer[bank] >> pin) & 1;
 }
 
-static void gpio_74164_set_value(struct gpio_chip *chip,
-				 unsigned off, int val)
+static int gpio_74164_set_value(struct gpio_chip *chip,
+				unsigned off, int val)
 {
 	struct gpio_74164 *priv = gc_to_gpio_74164(chip);
 	u8 bank = off / 8;
@@ -71,14 +71,13 @@ static void gpio_74164_set_value(struct gpio_chip *chip,
 	else
 		priv->buffer[bank] &= ~BIT(pin);
 
-	gpio_74164_update_buffers(priv);
+	return gpio_74164_update_buffers(priv);
 }
 
 static int gpio_74164_direction_output(struct gpio_chip *chip,
 				       unsigned off, int val)
 {
-	gpio_74164_set_value(chip, off, val);
-	return 0;
+	return gpio_74164_set_value(chip, off, val);
 }
 
 static struct gpio_ops gpio_74164_ops = {

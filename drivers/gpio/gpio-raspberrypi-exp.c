@@ -205,7 +205,7 @@ static int rpi_exp_gpio_get(struct gpio_chip *gc, unsigned int off)
 	return !!get->body.req.state;
 }
 
-static void rpi_exp_gpio_set(struct gpio_chip *gc, unsigned int off, int val)
+static int rpi_exp_gpio_set(struct gpio_chip *gc, unsigned int off, int val)
 {
 	struct rpi_exp_gpio *gpio;
 	int ret;
@@ -219,10 +219,13 @@ static void rpi_exp_gpio_set(struct gpio_chip *gc, unsigned int off, int val)
 	set->body.req.state = val;	/* Output state */
 
 	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &set->hdr);
-	if (ret || set->body.req.gpio != 0)
+	if (!ret && set->body.req.gpio != 0)
+		ret = -EREMOTEIO;
+	if (ret)
 		dev_err(gc->dev,
 			"Failed to set GPIO %u state (%d %x)\n", off, ret,
 			set->body.req.gpio);
+	return ret;
 }
 
 static struct gpio_ops rpi_exp_gpio_ops = {

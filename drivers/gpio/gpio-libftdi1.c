@@ -49,7 +49,7 @@ static int libftdi1_gpio_get_value(struct gpio_chip *chip, unsigned off)
 	return barebox_libftdi1_gpio_get_value(gpio->ftbb, off);
 }
 
-static void libftdi1_gpio_set_value(
+static int libftdi1_gpio_set_value(
 	struct gpio_chip *chip, unsigned off, int value)
 {
 	struct libftdi1_gpio_chip *gpio =
@@ -57,6 +57,7 @@ static void libftdi1_gpio_set_value(
 
 	barebox_libftdi1_gpio_set_value(gpio->ftbb, off, value);
 	barebox_libftdi1_update(gpio->ftbb);
+	return 0;
 }
 
 static struct gpio_ops libftdi1_gpio_ops = {

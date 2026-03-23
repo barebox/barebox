@@ -38,14 +38,14 @@ static struct imx_gpio_regs regs_imx31 = {
 	.psr = 0x08,
 };
 
-static void imx_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
+static int imx_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
 {
 	struct imx_gpio_chip *imxgpio = container_of(chip, struct imx_gpio_chip, chip);
 	void __iomem *base = imxgpio->base;
 	u32 val;
 
 	if (!base)
-		return;
+		return -EINVAL;
 
 	val = readl(base + imxgpio->regs->dr);
 
@@ -55,6 +55,7 @@ static void imx_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
 		val &= ~(1 << gpio);
 
 	writel(val, base + imxgpio->regs->dr);
+	return 0;
 }
 
 static int imx_gpio_direction_input(struct gpio_chip *chip, unsigned gpio)
@@ -79,8 +80,11 @@ static int imx_gpio_direction_output(struct gpio_chip *chip, unsigned gpio, int 
 	struct imx_gpio_chip *imxgpio = container_of(chip, struct imx_gpio_chip, chip);
 	void __iomem *base = imxgpio->base;
 	u32 val;
+	int ret;
 
-	imx_gpio_set_value(chip, gpio, value);
+	ret = imx_gpio_set_value(chip, gpio, value);
+	if (ret)
+		return ret;
 
 	val = readl(base + imxgpio->regs->gdir);
 	val |= 1 << gpio;

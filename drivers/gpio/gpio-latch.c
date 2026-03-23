@@ -62,7 +62,7 @@ static int gpio_latch_get_direction(struct gpio_chip *gc, unsigned int offset)
 	return 0;
 }
 
-static void gpio_latch_set(struct gpio_chip *gc, unsigned int offset, int val)
+static int gpio_latch_set(struct gpio_chip *gc, unsigned int offset, int val)
 {
 	struct gpio_latch_priv *priv = container_of(gc, struct gpio_latch_priv, gc);
 	int latch = offset / priv->n_latched_gpios;
@@ -78,6 +78,7 @@ static void gpio_latch_set(struct gpio_chip *gc, unsigned int offset, int val)
 	gpio_set_value(priv->clk_gpios[latch], 1);
 	ndelay(priv->clock_duration_ns);
 	gpio_set_value(priv->clk_gpios[latch], 0);
+	return 0;
 }
 static int gpio_latch_direction_output(struct gpio_chip *gc, unsigned gpio, int val)
 {

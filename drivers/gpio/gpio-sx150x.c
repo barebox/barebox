@@ -95,10 +95,10 @@ static int __sx150x_gpio_set(struct sx150x_gpio *sx150x, unsigned int offset,
 }
 
 
-static void sx150x_gpio_set(struct gpio_chip *gpio, unsigned int offset,
+static int sx150x_gpio_set(struct gpio_chip *gpio, unsigned int offset,
 			    int value)
 {
-	__sx150x_gpio_set(to_sx150x_gpio(gpio), offset, value);
+	return __sx150x_gpio_set(to_sx150x_gpio(gpio), offset, value);
 }
 
 static int sx150x_gpio_direction_input(struct gpio_chip *gpio,

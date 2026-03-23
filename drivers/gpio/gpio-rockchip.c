@@ -73,7 +73,7 @@ static int rockchip_gpiov2_get_direction(struct gpio_chip *gc, unsigned int gpio
 	return r & BIT(gpio % 16) ? GPIOF_DIR_OUT : GPIOF_DIR_IN;
 }
 
-static void rockchip_gpiov2_set_value(struct gpio_chip *gc, unsigned int gpio,
+static int rockchip_gpiov2_set_value(struct gpio_chip *gc, unsigned int gpio,
 				      int val)
 {
 	struct rockchip_gpiochip *rgc = gc_to_rockchip_pinctrl(gc);
@@ -87,6 +87,7 @@ static void rockchip_gpiov2_set_value(struct gpio_chip *gc, unsigned int gpio,
 		writel(mask | vval, rgc->reg_base + RK_GPIOV2_DR_L);
 	else
 		writel(mask | vval, rgc->reg_base + RK_GPIOV2_DR_H);
+	return 0;
 }
 
 static int rockchip_gpiov2_direction_output(struct gpio_chip *gc,

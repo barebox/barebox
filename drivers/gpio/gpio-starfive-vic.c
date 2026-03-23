@@ -93,14 +93,15 @@ static int starfive_get_value(struct gpio_chip *gc, unsigned offset)
 	}
 }
 
-static void starfive_set_value(struct gpio_chip *gc, unsigned offset, int value)
+static int starfive_set_value(struct gpio_chip *gc, unsigned offset, int value)
 {
 	struct starfive_gpio *chip = to_starfive_gpio(gc);
 
 	if (offset >= gc->ngpio)
-		return;
+		return -EINVAL;
 
 	writel(value, chip->base + GPIO_DOUT_X_REG + offset * 8);
+	return 0;
 }
 
 static struct gpio_ops starfive_gpio_ops = {

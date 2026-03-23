@@ -39,11 +39,12 @@ static int jz4740_gpio_get_value(struct gpio_chip *chip, unsigned gpio)
 	return !!(readl(CHIP_TO_REG(chip, JZ_REG_GPIO_PIN)) & BIT(gpio));
 }
 
-static void jz4740_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
+static int jz4740_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
 {
 	uint32_t __iomem *reg = CHIP_TO_REG(chip, JZ_REG_GPIO_DATA_SET);
 	reg += !value;
 	writel(BIT(gpio), reg);
+	return 0;
 }
 
 static int jz4740_gpio_get_direction(struct gpio_chip *chip, unsigned gpio)

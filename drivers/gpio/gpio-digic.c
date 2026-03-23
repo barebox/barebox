@@ -46,14 +46,14 @@ static int digic_gpio_get_value(struct gpio_chip *gc, unsigned offset)
 	return digic_gpio_readl(chip, offset) & DIGIC_GPIO_IN_LVL;
 }
 
-static void digic_gpio_set_value(struct gpio_chip *gc, unsigned offset,
+static int digic_gpio_set_value(struct gpio_chip *gc, unsigned offset,
 					int value)
 {
 	struct digic_gpio_chip *chip = to_digic_gpio_chip(gc);
 	uint32_t t;
 
 	if (offset >= gc->ngpio)
-		return;
+		return -EINVAL;
 
 	t = digic_gpio_readl(chip, offset);
 	/* Port direction (1 = OUT, 0 = IN) */
@@ -62,6 +62,8 @@ static void digic_gpio_set_value(struct gpio_chip *gc, unsigned offset,
 	else
 		t &= ~(DIGIC_GPIO_OUT_LVL);
 	digic_gpio_writel(chip, t, offset);
+
+	return 0;
 }
 
 static int digic_gpio_direction_input(struct gpio_chip *gc, unsigned offset)
@@ -94,9 +96,7 @@ static int digic_gpio_direction_output(struct gpio_chip *gc, unsigned offset,
 	t |= DIGIC_GPIO_DIR;
 	digic_gpio_writel(chip, t, offset);
 
-	digic_gpio_set_value(gc, offset, value);
-
-	return 0;
+	return digic_gpio_set_value(gc, offset, value);
 }
 
 static struct gpio_ops digic_gpio_ops = {

@@ -63,7 +63,7 @@ static int bcm2835_set_function(struct gpio_chip *chip, unsigned gpio, int funct
 	return 0;
 }
 
-static void bcm2835_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
+static int bcm2835_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
 {
 	struct bcm2835_gpio_chip *bcmgpio = container_of(chip, struct bcm2835_gpio_chip, chip);
 	void __iomem *base = bcmgpio->base;
@@ -74,6 +74,7 @@ static void bcm2835_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int va
 		writel(1 << gpio_field_offset, base + GPIOSET(gpio_bank));
 	else
 		writel(1 << gpio_field_offset, base + GPIOCLR(gpio_bank));
+	return 0;
 }
 
 static int bcm2835_gpio_get_value(struct gpio_chip *chip, unsigned gpio)

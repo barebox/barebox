@@ -226,11 +226,12 @@ static int stm32_gpio_get_direction(struct gpio_chip *chip, unsigned int gpio)
 	return ret;
 }
 
-static void stm32_gpio_set(struct gpio_chip *chip, unsigned gpio, int value)
+static int stm32_gpio_set(struct gpio_chip *chip, unsigned gpio, int value)
 {
 	struct stm32_gpio_bank *bank = to_stm32_gpio_bank(chip);
 
 	__stm32_pmx_gpio_set(bank->base, stm32_gpio_pin(gpio, NULL), value);
+	return 0;
 }
 
 static int stm32_gpio_get(struct gpio_chip *chip, unsigned gpio)

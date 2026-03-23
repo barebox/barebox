@@ -131,9 +131,9 @@ static int pcf857x_output(struct gpio_chip *chip, unsigned offset, int value)
 	return ret;
 }
 
-static void pcf857x_set(struct gpio_chip *chip, unsigned offset, int value)
+static int pcf857x_set(struct gpio_chip *chip, unsigned offset, int value)
 {
-	pcf857x_output(chip, offset, value);
+	return pcf857x_output(chip, offset, value);
 }
 
 /*-------------------------------------------------------------------------*/

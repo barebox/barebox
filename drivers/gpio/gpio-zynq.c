@@ -231,14 +231,14 @@ static int zynq_gpio_get_value(struct gpio_chip *chip, unsigned int pin)
  * upper 16 bits) based on the given pin number and sets the state of a
  * gpio pin to the specified value. The state is either 0 or non-zero.
  */
-static void zynq_gpio_set_value(struct gpio_chip *chip, unsigned int pin,
-				int state)
+static int zynq_gpio_set_value(struct gpio_chip *chip, unsigned int pin,
+			       int state)
 {
 	unsigned int reg_offset, bank_num, bank_pin_num;
 	struct zynq_gpio *gpio = container_of(chip, struct zynq_gpio, chip);
 
 	if (zynq_gpio_get_bank_pin(pin, &bank_num, &bank_pin_num, gpio) < 0)
-		return;
+		return -EINVAL;
 
 	if (bank_pin_num >= ZYNQ_GPIO_MID_PIN_NUM) {
 		bank_pin_num -= ZYNQ_GPIO_MID_PIN_NUM;
@@ -256,6 +256,7 @@ static void zynq_gpio_set_value(struct gpio_chip *chip, unsigned int pin,
 		((state << bank_pin_num) | ZYNQ_GPIO_UPPER_MASK);
 
 	writel_relaxed(state, gpio->base_addr + reg_offset);
+	return 0;
 }
 
 /**

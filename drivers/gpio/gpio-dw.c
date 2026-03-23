@@ -46,7 +46,7 @@ static int dw_gpio_get(struct gpio_chip *gc, unsigned offset)
 	return (readl(parent->regs + DW_GPIO_EXT) >> offset) & 1;
 }
 
-static void dw_gpio_set(struct gpio_chip *gc, unsigned offset, int value)
+static int dw_gpio_set(struct gpio_chip *gc, unsigned offset, int value)
 {
 	struct dw_gpio_instance *chip = to_dw_gpio(gc);
 	struct dw_gpio *parent = chip->parent;
@@ -55,6 +55,8 @@ static void dw_gpio_set(struct gpio_chip *gc, unsigned offset, int value)
 	data_reg = readl(parent->regs + DW_GPIO_DR);
 	data_reg = (data_reg & ~(1<<offset)) | (value << offset);
 	writel(data_reg, parent->regs + DW_GPIO_DR);
+
+	return 0;
 }
 
 static int dw_gpio_direction_input(struct gpio_chip *gc, unsigned offset)

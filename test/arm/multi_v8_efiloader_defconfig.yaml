@@ -9,7 +9,7 @@ targets:
         kernel: barebox-dt-2nd.img
         display: qemu-default
         extra_args: >
-          -drive if=virtio,snapshot=on,file=debian-13.3.0-arm64-netinst.iso
+          -drive if=virtio,snapshot=on,file=debian-13.4.0-arm64-netinst.iso
           -device virtio-rng
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
@@ -35,6 +35,6 @@ targets:
 
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
-  debian_iso: !template "../../debian-13.3.0-arm64-netinst.iso"
+  debian_iso: !template "../../debian-13.4.0-arm64-netinst.iso"
 imports:
   -  ../strategy.py

@@ -1292,7 +1292,7 @@ static inline struct clk *clk_get_enabled_if_available(struct device *dev,
 	ret = clk_enable(clk);
 	if (ret) {
 		clk_put(clk);
-		return ERR_PTR(ret);
+		return ret == -EPROTO ? NULL : ERR_PTR(ret);
 	}
 
 	return clk;

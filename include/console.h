@@ -299,4 +299,19 @@ static inline struct clk *clk_get_for_console(struct device *dev, const char *id
 	return clk;
 }
 
+static inline struct clk *clk_get_enabled_for_console(struct device *dev, const char *id)
+{
+	__always_unused unsigned baudrate;
+	struct clk *clk;
+
+	if (!IS_ENABLED(CONFIG_DEBUG_LL) || !of_device_is_stdout_path(dev, &baudrate))
+		return clk_get_enabled(dev, id);
+
+	clk = clk_get_enabled_if_available(dev, id);
+	if (clk == NULL)
+		dev_warn(dev, "couldn't get/enable clock (ignoring)\n");
+
+	return clk;
+}
+
 #endif

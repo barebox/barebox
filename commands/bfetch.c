@@ -244,7 +244,7 @@ static struct bobject *print_cpu_mem_info(unsigned *line)
 {
 	struct bobject *bret = NULL;
 	struct memory_bank *mem;
-	unsigned long memsize = 0;
+	u64 memsize = 0;
 	int nbanks = 0;
 	int ret;
 
@@ -565,9 +565,9 @@ static void print_storage(unsigned *line)
 	unsigned nmtds = 0, nnvmem =0;
 	struct block_device *blk;
 	unsigned nblkdevs[BLK_TYPE_COUNT] = {};
-	unsigned blkdev_sizes[BLK_TYPE_COUNT] = {};
+	u64 blkdev_sizes[BLK_TYPE_COUNT] = {};
 	struct mtd_info *mtd;
-	size_t mtd_size = 0, nvmem_size = 0;
+	u64 mtd_size = 0, nvmem_size = 0;
 	struct string_list sl;
 	struct device *dev;
 

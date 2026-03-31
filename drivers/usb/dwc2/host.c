@@ -168,7 +168,7 @@ static int transfer_chunk(struct dwc2 *dwc2, u8 hc,
 			  u8 *pid, int in, void *buffer, int num_packets,
 			  int xfer_len, int *actual_len, int odd_frame)
 {
-	uint32_t hctsiz, hcchar, sub;
+	uint32_t hctsiz, hcchar, sub = 0;
 	dma_addr_t dma_addr = 0;
 	int ret = 0;
 

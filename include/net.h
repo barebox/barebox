@@ -282,11 +282,6 @@ static inline struct iphdr *net_eth_to_iphdr(char *pkt)
 	return (struct iphdr *)(pkt + ETHER_HDR_SIZE);
 }
 
-static inline struct udphdr *net_eth_to_udphdr(char *pkt)
-{
-	return (struct udphdr *)(net_eth_to_iphdr(pkt) + 1);
-}
-
 static inline struct icmphdr *net_eth_to_icmphdr(char *pkt)
 {
 	return (struct icmphdr *)(net_eth_to_iphdr(pkt) + 1);
@@ -295,17 +290,6 @@ static inline struct icmphdr *net_eth_to_icmphdr(char *pkt)
 static inline char *net_eth_to_icmp_payload(char *pkt)
 {
 	return (char *)(net_eth_to_icmphdr(pkt) + 1);
-}
-
-static inline char *net_eth_to_udp_payload(char *pkt)
-{
-	return (char *)(net_eth_to_udphdr(pkt) + 1);
-}
-
-static inline int net_eth_to_udplen(char *pkt)
-{
-	struct udphdr *udp = net_eth_to_udphdr(pkt);
-	return ntohs(udp->uh_ulen) - 8;
 }
 
 struct net_udp_pkt {

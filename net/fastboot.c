@@ -351,16 +351,23 @@ static void fastboot_check_retransmit(struct fastboot_net *fbn,
 
 static void fastboot_handler(void *ctx, char *packet, unsigned int raw_len)
 {
-	unsigned int len = net_eth_to_udplen(packet);
 	struct ethernet *eth_header = (struct ethernet *)packet;
 	struct iphdr *ip_header = net_eth_to_iphdr(packet);
-	struct udphdr *udp_header = net_eth_to_udphdr(packet);
-	char *payload = net_eth_to_udp_payload(packet);
 	struct fastboot_net *fbn = ctx;
+	struct net_udp_pkt udp;
 	struct fastboot_header header;
-	char *fastboot_data = payload + sizeof(header);
-	u16 tot_len = ntohs(ip_header->tot_len);
+	char *payload, *fastboot_data;
+	unsigned int len;
+	u16 tot_len;
 	int ret;
+
+	if (net_eth_to_udp(packet, raw_len, &udp))
+		return;
+
+	payload = udp.payload;
+	len = udp.len;
+	fastboot_data = payload + sizeof(header);
+	tot_len = ntohs(ip_header->tot_len);
 
 	/* catch bogus tot_len values */
 	if ((char *)ip_header - packet + tot_len > raw_len)
@@ -392,7 +399,7 @@ static void fastboot_handler(void *ctx, char *packet, unsigned int raw_len)
 
 	memcpy(fbn->net_con->et->et_dest, eth_header->et_src, ETH_ALEN);
 	net_copy_ip(&fbn->net_con->ip->daddr, &ip_header->saddr);
-	fbn->net_con->udp->uh_dport = udp_header->uh_sport;
+	fbn->net_con->udp->uh_dport = udp.udp->uh_sport;
 
 	switch (header.id) {
 	case FASTBOOT_QUERY:
@@ -404,7 +411,7 @@ static void fastboot_handler(void *ctx, char *packet, unsigned int raw_len)
 			break;
 		}
 		fbn->host_addr = net_read_ip(&ip_header->saddr);
-		fbn->host_port = udp_header->uh_sport;
+		fbn->host_port = udp.udp->uh_sport;
 		memcpy(fbn->host_mac, eth_header->et_src, ETH_ALEN);
 		fastboot_net_abort(fbn);
 		/* poller just unregistered in fastboot_net_abort() */

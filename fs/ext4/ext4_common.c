@@ -514,6 +514,14 @@ int ext4fs_mount(struct ext_filesystem *fs)
 		goto fail;
 	}
 
+	if (le32_to_cpu(data->sblock.log2_block_size) >
+	    EXT2_MAX_BLOCK_LOG_SIZE - EXT2_MIN_BLOCK_LOG_SIZE) {
+		dev_err(fs->dev, "invalid block size %u\n",
+			le32_to_cpu(data->sblock.log2_block_size));
+		ret = -EINVAL;
+		goto fail;
+	}
+
 	if (le32_to_cpu(data->sblock.revision_level) == 0) {
 		fs->inodesz = 128;
 		fs->gdsize = 32;

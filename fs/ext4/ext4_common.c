@@ -38,6 +38,29 @@
 
 #include "ext4_common.h"
 
+/*
+ * Validate that eh_entries does not exceed the capacity of the buffer
+ * holding the extent block.  Returns 0 if valid, -EINVAL otherwise.
+ */
+static int ext4_check_eh_entries(struct ext4_extent_header *ext_block,
+				 char *buf, int blksz)
+{
+	int max_entries;
+	/* ext4_extent and ext4_extent_idx are both 12 bytes */
+	const int entry_size = sizeof(struct ext4_extent);
+
+	if ((char *)ext_block == buf)
+		max_entries = (blksz - sizeof(*ext_block)) / entry_size;
+	else
+		max_entries = (sizeof(((struct ext2_inode *)0)->b) -
+			       sizeof(*ext_block)) / entry_size;
+
+	if (le16_to_cpu(ext_block->eh_entries) > max_entries)
+		return -EINVAL;
+
+	return 0;
+}
+
 static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data,
 		char *buf, struct ext4_extent_header *ext_block,
 		uint32_t fileblock, int log2_blksz)
@@ -57,6 +80,10 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 
 		if (ext_block->eh_depth == 0)
 			return ext_block;
+
+		if (ext4_check_eh_entries(ext_block, buf, blksz))
+			return NULL;
+
 		i = -1;
 		do {
 			i++;
@@ -188,6 +215,11 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 		}
 
 		extent = (struct ext4_extent *)(ext_block + 1);
+
+		if (ext4_check_eh_entries(ext_block, buf, blksz)) {
+			free(buf);
+			return -EINVAL;
+		}
 
 		for (i = 0; i < le16_to_cpu(ext_block->eh_entries); i++) {
 			startblock = le32_to_cpu(extent[i].ee_block);

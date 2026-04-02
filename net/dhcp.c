@@ -173,6 +173,10 @@ static int dhcp_set_string_options(int option, const char *str, u8 *e)
 	if (!str_len)
 		return 0;
 
+	/* DHCP option length field is a single byte per RFC2132 */
+	if (str_len > 255)
+		str_len = 255;
+
 	*e++ = option;
 	*e++ = str_len;
 	memcpy(e, str, str_len);

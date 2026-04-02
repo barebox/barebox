@@ -79,6 +79,10 @@
 /* allocate this number of blocks more than needed in the fifo */
 #define TFTP_EXTRA_BLOCKS	2
 
+/* Maximum UDP payload that fits in a PKTSIZE packet buffer */
+#define TFTP_MAX_UDP_PAYLOAD	(PKTSIZE - ETHER_HDR_SIZE - \
+				 sizeof(struct iphdr) - sizeof(struct udphdr))
+
 /* marker for an emtpy 'tftp_cache' */
 #define TFTP_CACHE_NO_ID	(-1)
 
@@ -218,7 +222,9 @@ static int tftp_send(struct file_priv *priv)
 
 	switch (priv->state) {
 	case STATE_RRQ:
-	case STATE_WRQ:
+	case STATE_WRQ: {
+		int room, n;
+
 		if (priv->push || priv->is_getattr)
 			/* atm, windowsize is supported only for RRQ and there
 			   is no need to request a full window when we are
@@ -235,7 +241,9 @@ static int tftp_send(struct file_priv *priv)
 		else
 			*s++ = htons(TFTP_WRQ);
 		pkt = (unsigned char *)s;
-		pkt += sprintf((unsigned char *)pkt,
+		room = TFTP_MAX_UDP_PAYLOAD - (pkt - xp);
+
+		n = snprintf(pkt, room,
 				"%s%c"
 				"octet%c"
 				"timeout%c"
@@ -250,24 +258,38 @@ static int tftp_send(struct file_priv *priv)
 				/* use only a minimal blksize for getattr
 				   operations, */
 				priv->is_getattr ? TFTP_BLOCK_SIZE : TFTP_MTU_SIZE);
-		pkt++;
+		if (n >= room)
+			return -ENAMETOOLONG;
+		pkt += n + 1;
+		room -= n + 1;
 
-		if (!priv->push)
+		if (!priv->push) {
 			/* we do not know the filesize in WRQ requests and
 			   'priv->filesize' will always be zero */
-			pkt += sprintf((unsigned char *)pkt,
+			n = snprintf(pkt, room,
 				       "tsize%c%lld%c",
 				       '\0', priv->filesize,
 				       '\0');
+			if (n >= room)
+				return -ENAMETOOLONG;
+			pkt += n;
+			room -= n;
+		}
 
-		if (window_size > 1)
-			pkt += sprintf((unsigned char *)pkt,
+		if (window_size > 1) {
+			n = snprintf(pkt, room,
 				       "windowsize%c%u%c",
 				       '\0', window_size,
 				       '\0');
+			if (n >= room)
+				return -ENAMETOOLONG;
+			pkt += n;
+			room -= n;
+		}
 
 		len = pkt - xp;
 		break;
+	}
 
 	case STATE_RDATA:
 		xp = pkt;

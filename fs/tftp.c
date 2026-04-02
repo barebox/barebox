@@ -382,7 +382,8 @@ static int tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 		s = val + strlen(val) + 1;
 	}
 
-	if (priv->blocksize > TFTP_MTU_SIZE ||
+	if (priv->blocksize == 0 ||
+	    priv->blocksize > TFTP_MTU_SIZE ||
 	    priv->windowsize > TFTP_MAX_WINDOW_SIZE ||
 	    priv->windowsize == 0) {
 		pr_warn("tftp: invalid oack response\n");

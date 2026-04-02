@@ -391,16 +391,18 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
  */
 static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 {
-	char *pkt = net_eth_to_udp_payload(packet);
-	struct udphdr *udp = net_eth_to_udphdr(packet);
-	struct bootp *bp = (struct bootp *)pkt;
+	struct net_udp_pkt udp;
+	struct bootp *bp;
 
-	len = net_eth_to_udplen(packet);
+	if (net_eth_to_udp(packet, len, &udp))
+		return;
 
-	debug("DHCPHandler: got packet: (len=%d) state: %d\n",
-		len, dhcp_state);
+	bp = udp.payload;
 
-	if (bootp_check_packet(pkt, ntohs(udp->uh_sport), len)) /* Filter out pkts we don't want */
+	debug("DHCPHandler: got packet: (len=%u) state: %d\n",
+		udp.len, dhcp_state);
+
+	if (bootp_check_packet(udp.payload, ntohs(udp.udp->uh_sport), udp.len))
 		return;
 
 	switch (dhcp_state) {

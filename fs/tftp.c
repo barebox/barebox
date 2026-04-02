@@ -631,7 +631,9 @@ static void tftp_recv(struct file_priv *priv,
 		break;
 
 	case TFTP_ERROR:
-		pr_debug("error: '%s' (%d)\n", pkt + 2, ntohs(*(uint16_t *)pkt));
+		pr_debug("error: '%.*s' (%d)\n",
+			 len > 2 ? len - 2 : 0, pkt + 2,
+			 ntohs(*(uint16_t *)pkt));
 		switch (ntohs(*(uint16_t *)pkt)) {
 		case 1:
 			priv->err = -ENOENT;

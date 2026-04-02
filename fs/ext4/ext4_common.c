@@ -541,6 +541,15 @@ int ext4fs_mount(struct ext_filesystem *fs)
 	      le32_to_cpu(data->sblock.revision_level),
 	      fs->inodesz, fs->gdsize);
 
+	if (!fs->inodesz || !fs->gdsize ||
+	    !le32_to_cpu(data->sblock.inodes_per_group)) {
+		dev_err(fs->dev, "invalid superblock: inodesz=%u gdsize=%u inodes_per_group=%u\n",
+			fs->inodesz, fs->gdsize,
+			le32_to_cpu(data->sblock.inodes_per_group));
+		ret = -EINVAL;
+		goto fail;
+	}
+
 	data->diropen.data = data;
 	data->diropen.ino = 2;
 	data->diropen.inode_read = 1;

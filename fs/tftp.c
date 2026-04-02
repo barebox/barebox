@@ -628,11 +628,12 @@ static void tftp_recv(struct file_priv *priv,
 static void tftp_handler(void *ctx, char *packet, unsigned len)
 {
 	struct file_priv *priv = ctx;
-	char *pkt = net_eth_to_udp_payload(packet);
-	struct udphdr *udp = net_eth_to_udphdr(packet);
+	struct net_udp_pkt udp;
 
-	(void)len;
-	tftp_recv(priv, pkt, net_eth_to_udplen(packet), udp->uh_sport);
+	if (net_eth_to_udp(packet, len, &udp))
+		return;
+
+	tftp_recv(priv, udp.payload, udp.len, udp.udp->uh_sport);
 }
 
 static int tftp_start_transfer(struct file_priv *priv)

@@ -157,15 +157,20 @@ static int ext_iterate(struct file *file, struct dir_context *ctx)
 		goto out;
 	}
 
-	while (fpos < dir->i_size) {
+	while (fpos + sizeof(struct ext2_dirent) <= dir->i_size) {
 		const struct ext2_dirent *dirent = buf + fpos;
 		const char *filename = buf + fpos + sizeof(*dirent);
+		uint16_t direntlen = le16_to_cpu(dirent->direntlen);
 
-		if (dirent->namelen != 0)
+		if (direntlen < sizeof(struct ext2_dirent))
+			break;
+
+		if (dirent->namelen != 0 &&
+		    fpos + sizeof(*dirent) + dirent->namelen <= dir->i_size)
 			dir_emit(ctx, filename, dirent->namelen,
 				 le32_to_cpu(dirent->inode), DT_UNKNOWN);
 
-		fpos += le16_to_cpu(dirent->direntlen);
+		fpos += direntlen;
 	}
 	ret = 0;
 out:

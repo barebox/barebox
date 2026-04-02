@@ -1194,6 +1194,10 @@ static int nfs_read_req(struct file_priv *priv, uint64_t offset,
 	}
 
 	p = nfs_packet_read(nfs_packet, rlen);
+	if (!p) {
+		ret = -EINVAL;
+		goto err_free_packet;
+	}
 
 	kfifo_put(priv->fifo, (char *)p, rlen);
 

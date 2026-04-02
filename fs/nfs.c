@@ -534,6 +534,13 @@ static struct packet *rpc_req(struct nfs_priv *npriv, int rpc_prog,
 		pkt.vers = hton32(3);
 	}
 
+	if (sizeof(pkt) + datalen * sizeof(uint32_t) >
+	    PKTSIZE - ETHER_HDR_SIZE - sizeof(struct iphdr) - sizeof(struct udphdr)) {
+		dev_err(dev, "RPC request too large (%zu bytes)\n",
+			sizeof(pkt) + datalen * sizeof(uint32_t));
+		return ERR_PTR(-EMSGSIZE);
+	}
+
 	memcpy(payload, &pkt, sizeof(pkt));
 	memcpy(payload + sizeof(pkt), data, datalen * sizeof(uint32_t));
 
@@ -786,6 +793,11 @@ static int nfs_mount_req(struct nfs_priv *npriv)
 
 	pathlen = strlen(npriv->path);
 
+	if (pathlen > sizeof(data) - 11 * sizeof(uint32_t)) {
+		dev_err(dev, "path too long (%d bytes)\n", pathlen);
+		return -ENAMETOOLONG;
+	}
+
 	dev_dbg(dev, "%s: %s\n", __func__, npriv->path);
 
 	p = &(data[0]);
@@ -862,6 +874,8 @@ static void nfs_umount_req(struct nfs_priv *npriv)
 	struct packet *nfs_packet;
 
 	pathlen = strlen(npriv->path);
+	if (pathlen > sizeof(data) - 11 * sizeof(uint32_t))
+		return;
 
 	p = &(data[0]);
 	p = rpc_add_credentials(p);

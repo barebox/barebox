@@ -308,6 +308,15 @@ static inline int net_eth_to_udplen(char *pkt)
 	return ntohs(udp->uh_ulen) - 8;
 }
 
+struct net_udp_pkt {
+	struct udphdr *udp;
+	void *payload;
+	unsigned int len;
+};
+
+int net_eth_to_udp(char *pkt, unsigned int framelen,
+		   struct net_udp_pkt *udp_pkt);
+
 int net_checksum_ok(unsigned char *, int);	/* Return true if cksum OK	*/
 uint16_t net_checksum(unsigned char *, int);	/* Calculate the checksum	*/
 

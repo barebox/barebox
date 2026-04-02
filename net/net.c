@@ -60,6 +60,46 @@ const char *net_get_domainname(void)
 	return net_domainname;
 }
 
+/**
+ * net_eth_to_udp - extract and validate UDP payload from an ethernet frame
+ * @pkt:	pointer to start of ethernet frame
+ * @framelen:	total frame length as reported by the NIC
+ * @udp_pkt:	output struct, filled on success
+ *
+ * Validates that the frame is large enough to contain the ethernet, IP and
+ * UDP headers and clamps the reported UDP payload length to what is actually
+ * available in the frame.
+ *
+ * Return: 0 on success, negative error code on malformed/short packets.
+ */
+int net_eth_to_udp(char *pkt, unsigned int framelen,
+		   struct net_udp_pkt *udp_pkt)
+{
+	unsigned int hdr_len = ETHER_HDR_SIZE + sizeof(struct iphdr) +
+			       sizeof(struct udphdr);
+	struct udphdr *udp;
+	unsigned int payload_len;
+
+	if (framelen < hdr_len)
+		return -EINVAL;
+
+	udp = (struct udphdr *)((struct iphdr *)(pkt + ETHER_HDR_SIZE) + 1);
+
+	if (ntohs(udp->uh_ulen) < sizeof(struct udphdr))
+		return -EINVAL;
+
+	payload_len = ntohs(udp->uh_ulen) - sizeof(struct udphdr);
+
+	if (payload_len > framelen - hdr_len)
+		return -EINVAL;
+
+	udp_pkt->udp = udp;
+	udp_pkt->payload = (char *)(udp + 1);
+	udp_pkt->len = payload_len;
+
+	return 0;
+}
+
 int net_checksum_ok(unsigned char *ptr, int len)
 {
 	return net_checksum(ptr, len) == 0xffff;

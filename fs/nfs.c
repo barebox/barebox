@@ -1193,13 +1193,16 @@ err_free_packet:
 
 static void nfs_handler(void *ctx, char *p, unsigned len)
 {
-	char *pkt = net_eth_to_udp_payload(p);
 	struct nfs_priv *npriv = ctx;
+	struct net_udp_pkt udp;
 	struct packet *packet;
 
-	packet = xmalloc(sizeof(*packet) + len);
-	memcpy(packet->data, pkt, len);
-	packet->len = len;
+	if (net_eth_to_udp(p, len, &udp))
+		return;
+
+	packet = xmalloc(sizeof(*packet) + udp.len);
+	memcpy(packet->data, udp.payload, udp.len);
+	packet->len = udp.len;
 	packet->pos = 0;
 
 	list_add_tail(&packet->list, &npriv->packets);

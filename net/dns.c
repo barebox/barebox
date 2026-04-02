@@ -166,8 +166,13 @@ static void dns_recv(struct header *header, unsigned len)
 		continue;
 
 	/* We sent query class 1, query type 1 */
+	if (&p[5] > e) {
+		pr_debug("DNS response too short\n");
+		return;
+	}
+
 	tmp = p[1] | (p[2] << 8);
-	if (&p[5] > e || ntohs(tmp) != DNS_A_RECORD) {
+	if (ntohs(tmp) != DNS_A_RECORD) {
 		pr_debug("DNS response was not A record\n");
 		return;
 	}

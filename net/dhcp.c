@@ -318,15 +318,19 @@ static void dhcp_options_handle(unsigned char option, void *popt,
 	}
 }
 
-static void dhcp_options_process(unsigned char *popt, struct bootp *bp)
+static void dhcp_options_process(unsigned char *popt, struct bootp *bp,
+				 unsigned int len)
 {
-	unsigned char *end = popt + sizeof(*bp) + OPT_SIZE;
+	unsigned char *end = (unsigned char *)bp + len;
 	int oplen;
 	unsigned char option;
 
-	while (popt < end && *popt != 0xff) {
+	while (popt + 1 < end && *popt != 0xff) {
 		oplen = *(popt + 1);
 		option = *popt;
+
+		if (popt + 2 + oplen > end)
+			break;
 
 		dhcp_options_handle(option, popt + 2, oplen, bp);
 
@@ -334,14 +338,19 @@ static void dhcp_options_process(unsigned char *popt, struct bootp *bp)
 	}
 }
 
-static int dhcp_message_type(unsigned char *popt)
+static int dhcp_message_type(unsigned char *popt, unsigned int len)
 {
+	unsigned char *end = popt + len;
+
+	if (len < 4)
+		return -1;
+
 	if (net_read_uint32((uint32_t *)popt) != htonl(BOOTP_VENDOR_MAGIC))
 		return -1;
 
 	popt += 4;
-	while (*popt != 0xff) {
-		if (*popt == 53)	/* DHCP Message Type */
+	while (popt + 1 < end && *popt != 0xff) {
+		if (*popt == 53 && popt + 2 < end)
 			return *(popt + 2);
 		popt += *(popt + 1) + 2;	/* Scan through all options */
 	}
@@ -417,7 +426,7 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 		dhcp_state = REQUESTING;
 
 		if (net_read_uint32(&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
-			dhcp_options_process((u8 *)&bp->bp_vend[4], bp);
+			dhcp_options_process((u8 *)&bp->bp_vend[4], bp, len);
 
 		bootp_copy_net_params(bp); /* Store net params from reply */
 
@@ -428,9 +437,10 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 	case REQUESTING:
 		debug("%s: State REQUESTING\n", __func__);
 
-		if (dhcp_message_type((u8 *)bp->bp_vend) == DHCP_ACK ) {
+		if (dhcp_message_type((u8 *)bp->bp_vend,
+				      len - offsetof(struct bootp, bp_vend)) == DHCP_ACK) {
 			if (net_read_uint32(&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
-				dhcp_options_process(&bp->bp_vend[4], bp);
+				dhcp_options_process(&bp->bp_vend[4], bp, len);
 			bootp_copy_net_params(bp); /* Store net params from reply */
 			dhcp_state = BOUND;
 			dev_info(&dhcp_edev->dev, "DHCP client bound to address %pI4\n", &dhcp_result->ip);

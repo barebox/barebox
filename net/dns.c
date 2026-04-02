@@ -222,9 +222,12 @@ static void dns_recv(struct header *header, unsigned len)
 
 static void dns_handler(void *ctx, char *packet, unsigned len)
 {
-	(void)ctx;
-	dns_recv((struct header *)net_eth_to_udp_payload(packet),
-		net_eth_to_udplen(packet));
+	struct net_udp_pkt udp;
+
+	if (net_eth_to_udp(packet, len, &udp))
+		return;
+
+	dns_recv(udp.payload, udp.len);
 }
 
 int resolv(const char *host, IPaddr_t *ip)

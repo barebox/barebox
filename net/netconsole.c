@@ -33,9 +33,12 @@ static struct nc_priv *g_priv;
 static void nc_handler(void *ctx, char *pkt, unsigned len)
 {
 	struct nc_priv *priv = g_priv;
-	unsigned char *packet = net_eth_to_udp_payload(pkt);
+	struct net_udp_pkt udp;
 
-	kfifo_put(priv->fifo, packet, net_eth_to_udplen(pkt));
+	if (net_eth_to_udp(pkt, len, &udp))
+		return;
+
+	kfifo_put(priv->fifo, udp.payload, udp.len);
 }
 
 static int nc_getc(struct console_device *cdev)

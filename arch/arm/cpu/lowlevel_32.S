@@ -59,7 +59,7 @@ THUMB(	orr	r12, r12, #PSR_T_BIT	)
 	/* disable MMU stuff and data/unified caches */
 	mrc	p15, 0, r12, c1, c0, 0		/* SCTLR */
 	bic	r12, r12, #(CR_M | CR_C | CR_B)
-	bic	r12, r12, #(CR_S | CR_R | CR_V)
+	bic	r12, r12, #CR_V
 
 #ifndef CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND
 	/* enable instruction cache */
@@ -70,7 +70,8 @@ THUMB(	orr	r12, r12, #PSR_T_BIT	)
 	orr	r12, r12, #CR_U
 	bic	r12, r12, #CR_A
 #else
-	orr	r12, r12, #CR_S
+	bic	r12, r12, #CR_S
+	orr	r12, r12, #CR_R
 	orr	r12, r12, #CR_A
 #endif
 

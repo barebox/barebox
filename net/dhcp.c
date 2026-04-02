@@ -158,8 +158,8 @@ static void bootp_copy_net_params(struct bootp *bp)
 	dhcp_result->ip = net_read_ip(&bp->bp_yiaddr);
 	dhcp_result->serverip = net_read_ip(&bp->bp_siaddr);
 
-	if (strlen(bp->bp_file) > 0)
-		dhcp_result->bootfile = xstrdup(bp->bp_file);
+	if (bp->bp_file[0] != '\0')
+		dhcp_result->bootfile = xstrndup(bp->bp_file, sizeof(bp->bp_file));
 }
 
 static int dhcp_set_string_options(int option, const char *str, u8 *e)

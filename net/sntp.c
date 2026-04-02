@@ -75,18 +75,22 @@ static int sntp_send(void)
 
 static void sntp_handler(void *ctx, char *pkt, unsigned len)
 {
-	IPaddr_t ip_addr;
 	struct iphdr *ip = net_eth_to_iphdr(pkt);
-	struct ntp_packet *ntp =
-	    (struct ntp_packet *)net_eth_to_udp_payload(pkt);
+	struct net_udp_pkt udp;
+	struct ntp_packet *ntp;
+	IPaddr_t ip_addr;
 
 	ip_addr = net_read_ip((void *)&ip->saddr);
 	if (ip_addr != net_sntp_ip)
 		return;
 
-	len = net_eth_to_udplen(pkt);
-	if (len < sizeof(struct ntp_packet))
+	if (net_eth_to_udp(pkt, len, &udp))
 		return;
+
+	if (udp.len < sizeof(struct ntp_packet))
+		return;
+
+	ntp = udp.payload;
 
 	pr_debug("received SNTP response\n");
 

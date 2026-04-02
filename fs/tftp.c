@@ -370,7 +370,7 @@ static int tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 	while (s < pkt + len) {
 		opt = s;
 		val = s + strlen(s) + 1;
-		if (val > s + len)
+		if (val >= pkt + len)
 			break;
 		if (!strcmp(opt, "tsize"))
 			priv->filesize = simple_strtoull(val, NULL, 10);

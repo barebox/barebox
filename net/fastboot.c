@@ -23,8 +23,8 @@
 
 #define FASTBOOT_PORT 5554
 #define MAX_MTU 1500
-#define PACKET_SIZE (min(PKTSIZE, MAX_MTU + ETHER_HDR_SIZE) \
-		      - (net_eth_to_udp_payload(0) - (char *)0))
+#define NET_UDP_HDR_SIZE (ETHER_HDR_SIZE + sizeof(struct iphdr) + sizeof(struct udphdr))
+#define PACKET_SIZE (min(PKTSIZE, MAX_MTU + ETHER_HDR_SIZE) - NET_UDP_HDR_SIZE)
 
 enum {
 	FASTBOOT_ERROR = 0,

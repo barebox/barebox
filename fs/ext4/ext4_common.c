@@ -359,6 +359,8 @@ int ext4fs_iterate_dir(struct ext2fs_node *dir, char *name,
 
 			free(fdiro);
 		}
+		if (le16_to_cpu(dirent.direntlen) < sizeof(struct ext2_dirent))
+			return -EINVAL;
 		fpos += le16_to_cpu(dirent.direntlen);
 	}
 	return -ENOENT;

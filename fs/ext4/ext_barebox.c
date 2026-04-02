@@ -106,6 +106,8 @@ static int ext4fs_get_ino(struct ext2fs_node *dir, struct qstr *name, int *inum)
 				return 0;
 			}
 		}
+		if (le16_to_cpu(dirent.direntlen) < sizeof(struct ext2_dirent))
+			return -EINVAL;
 		fpos += le16_to_cpu(dirent.direntlen);
 	}
 

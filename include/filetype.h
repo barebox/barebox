@@ -5,6 +5,7 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <asm/byteorder.h>
+#include <asm/unaligned.h>
 
 /*
  * List of file types we know
@@ -170,7 +171,7 @@ static inline bool is_riscv_linux_bootimage(const void *header)
 
 static inline bool is_x86_linux_bootimage(const void *header)
 {
-	return le32_to_cpup(header + 0x202) == 0x53726448;
+	return get_unaligned_le32(header + 0x202) == 0x53726448;
 }
 
 #endif /* __FILE_TYPE_H */

@@ -30,6 +30,18 @@
 
 #define IOSSM_MAILBOX_HEADER_OFFSET			0x0
 #define IOSSM_MAILBOX_SPEC_VERSION_MASK			GENMASK(2, 0)
+#define IOSSM_MEM_INTF_INFO_0_OFFSET			0x200
+#define IOSSM_MEM_TECHNOLOGY_INTF0_OFFSET               0x210
+#define IOSSM_MEM_WIDTH_INFO_INTF0_OFFSET               0x230
+#define IOSSM_MEM_TOTAL_CAPACITY_INTF0_OFFSET           0x234
+#define IOSSM_MEM_INTF_INFO_1_OFFSET			0x280
+#define IOSSM_MEM_TECHNOLOGY_INTF1_OFFSET               0x290
+#define IOSSM_MEM_TOTAL_CAPACITY_INTF1_OFFSET           0x2B4
+#define IOSSM_MEM_WIDTH_INFO_INTF1_OFFSET               0x2B0
+#define IOSSM_ECC_ENABLE_INTF0_OFFSET			0x240
+#define IOSSM_ECC_ENABLE_INTF1_OFFSET			0x2C0
+#define IOSSM_MEM_INIT_STATUS_INTF0_OFFSET		0x260
+#define IOSSM_MEM_INIT_STATUS_INTF1_OFFSET		0x2E0
 
 /* supported DDR type list */
 static const char *ddr_type_list[7] = {
@@ -194,6 +206,7 @@ void io96b_mb_init(struct io96b_info *io96b_ctrl)
 	version = io96b_mb_version(io96b_ctrl);
 	switch (version) {
 	case 0:
+	case 1:
 		pr_debug("IOSSM: mailbox version %d\n", version);
 		break;
 	default:
@@ -210,12 +223,20 @@ void io96b_mb_init(struct io96b_info *io96b_ctrl)
 		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
 		pr_debug("%s: get memory interface IO96B %d\n", __func__, i);
 		/* Get memory interface IP type and instance ID (IP identifier) */
-		io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr, 0, 0,
-				      CMD_GET_SYS_INFO, GET_MEM_INTF_INFO, &usr_resp);
-		num_mem_interface =
-			IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status) & 0x3;
-		for (j = 0; j < num_mem_interface; j++)
-			mem_intf_info[j] = usr_resp.cmd_resp_data[j];
+		if (io96b_ctrl->version == 1) {
+			mem_intf_info[0] = readl(io96b_ctrl->io96b[i].io96b_csr_addr +
+						 IOSSM_MEM_INTF_INFO_0_OFFSET);
+			mem_intf_info[1] = readl(io96b_ctrl->io96b[i].io96b_csr_addr +
+						 IOSSM_MEM_INTF_INFO_1_OFFSET);
+			num_mem_interface = 2;
+		} else {
+			io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr, 0, 0,
+					      CMD_GET_SYS_INFO, GET_MEM_INTF_INFO, &usr_resp);
+			num_mem_interface =
+				IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status) & 0x3;
+			for (j = 0; j < num_mem_interface; j++)
+				mem_intf_info[j] = usr_resp.cmd_resp_data[j];
+		}
 
 		/* Retrieve memory interface IP type and instance ID (IP identifier) */
 		j = 0;
@@ -373,6 +394,11 @@ int io96b_get_mem_technology(struct io96b_info *io96b_ctrl)
 	u32 mem_technology_intf;
 	u8 ddr_type_ret;
 
+	u32 mem_technology_intf_offset[] = {
+		IOSSM_MEM_TECHNOLOGY_INTF0_OFFSET,
+		IOSSM_MEM_TECHNOLOGY_INTF1_OFFSET
+	};
+
 	/* Initialize ddr type */
 	io96b_ctrl->ddr_type = ddr_type_list[6];
 
@@ -380,12 +406,17 @@ int io96b_get_mem_technology(struct io96b_info *io96b_ctrl)
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
 		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
 		for (j = 0; j < mb_ctrl->num_mem_interface; j++) {
-			io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
-					      mb_ctrl->ip_type[j],
-					      mb_ctrl->ip_instance_id[j],
-					      CMD_GET_MEM_INFO, GET_MEM_TECHNOLOGY, &usr_resp);
+			if (io96b_ctrl->version == 1) {
+				mem_technology_intf = readl(io96b_ctrl->io96b[i].io96b_csr_addr +
+							    mem_technology_intf_offset[j]);
+			} else {
+				io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
+						      mb_ctrl->ip_type[j],
+						      mb_ctrl->ip_instance_id[j],
+						      CMD_GET_MEM_INFO, GET_MEM_TECHNOLOGY, &usr_resp);
 
-			mem_technology_intf = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
+				mem_technology_intf = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
+			}
 
 			ddr_type_ret = mem_technology_intf & GENMASK(2, 0);
 
@@ -411,17 +442,27 @@ int io96b_get_mem_width_info(struct io96b_info *io96b_ctrl)
 	u32 mem_width_info;
 	phys_size_t total_memory_size = 0;
 
+	u32 mem_total_capacity_intf_offset[] = {
+		IOSSM_MEM_TOTAL_CAPACITY_INTF0_OFFSET,
+		IOSSM_MEM_TOTAL_CAPACITY_INTF1_OFFSET
+	};
+
 	/* Get all memory interface(s) total memory size on all instance(s) */
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
 		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
 		memory_size = 0;
 
 		for (j = 0; j < mb_ctrl->num_mem_interface; j++) {
-			io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
-					      mb_ctrl->ip_type[j],
-					      mb_ctrl->ip_instance_id[j],
-					      CMD_GET_MEM_INFO, GET_MEM_WIDTH_INFO, &usr_resp);
-			mem_width_info = usr_resp.cmd_resp_data[1] & GENMASK(7, 0);
+			if (io96b_ctrl->version == 1) {
+				mem_width_info = readl(io96b_ctrl->io96b[i].io96b_csr_addr +
+						       mem_total_capacity_intf_offset[j]);
+			} else {
+				io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
+						      mb_ctrl->ip_type[j],
+						      mb_ctrl->ip_instance_id[j],
+						      CMD_GET_MEM_INFO, GET_MEM_WIDTH_INFO, &usr_resp);
+				mem_width_info = usr_resp.cmd_resp_data[1] & GENMASK(7, 0);
+			}
 
 			mb_ctrl->memory_size[j] = (phys_size_t)mem_width_info * (SZ_1G / SZ_8);
 
@@ -458,6 +499,11 @@ int io96b_ecc_enable_status(struct io96b_info *io96b_ctrl)
 	bool ecc_stat;
 	bool inline_ecc = false;
 
+	u32 ecc_enable_intf_offset[] = {
+		IOSSM_ECC_ENABLE_INTF0_OFFSET,
+		IOSSM_ECC_ENABLE_INTF1_OFFSET
+	};
+
 	/* Initialize ECC status */
 	io96b_ctrl->ecc_status = false;
 
@@ -465,13 +511,17 @@ int io96b_ecc_enable_status(struct io96b_info *io96b_ctrl)
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
 		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
 		for (j = 0; j < mb_ctrl->num_mem_interface; j++) {
-			io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
-					      mb_ctrl->ip_type[j],
-					      mb_ctrl->ip_instance_id[j],
-					      CMD_TRIG_CONTROLLER_OP, ECC_ENABLE_STATUS,
-					      &usr_resp);
-			ecc_enable_intf = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
-
+			if (io96b_ctrl->version == 1) {
+				ecc_enable_intf = readl(io96b_ctrl->io96b[i].io96b_csr_addr +
+							ecc_enable_intf_offset[j]);
+			} else {
+				io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
+						      mb_ctrl->ip_type[j],
+						      mb_ctrl->ip_instance_id[j],
+						      CMD_TRIG_CONTROLLER_OP, ECC_ENABLE_STATUS,
+						      &usr_resp);
+				ecc_enable_intf = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
+			}
 			ecc_stat = (ecc_enable_intf & GENMASK(1, 0)) == 0 ? false : true;
 			inline_ecc = FIELD_GET(BIT(8), ecc_enable_intf);
 
@@ -509,14 +559,23 @@ static int io96b_poll_bist_mem_init_status(struct io96b_info *io96b_ctrl,
 	struct io96b_mb_resp usr_resp;
 	u32 mem_init_status;
 
+	u32 mem_init_status_offset[] = {
+		IOSSM_MEM_INIT_STATUS_INTF0_OFFSET,
+		IOSSM_MEM_INIT_STATUS_INTF1_OFFSET
+	};
+
 	/* Polling for the initiated memory initialization BIST status */
 	while (!bist_success) {
-		io96b_mb_req_no_param(io96b_csr_addr,
-				      mb_ctrl->ip_type[interface],
-				      mb_ctrl->ip_instance_id[interface],
-				      CMD_TRIG_CONTROLLER_OP,
-				      BIST_MEM_INIT_STATUS, &usr_resp);
-		mem_init_status = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
+		if (io96b_ctrl->version == 1) {
+			mem_init_status = readl(io96b_csr_addr + mem_init_status_offset[interface]);
+		} else {
+			io96b_mb_req_no_param(io96b_csr_addr,
+					      mb_ctrl->ip_type[interface],
+					      mb_ctrl->ip_instance_id[interface],
+					      CMD_TRIG_CONTROLLER_OP,
+					      BIST_MEM_INIT_STATUS, &usr_resp);
+			mem_init_status = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
+		}
 
 		bist_success = FIELD_GET(BIT(0), mem_init_status);
 		bist_error = FIELD_GET(GENMASK(2, 1), mem_init_status);

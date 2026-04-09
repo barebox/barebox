@@ -471,13 +471,14 @@ static int sdhci_cdns_probe(struct device *dev)
 
 	dev->priv = priv;
 
+	priv->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
+	priv->mci.host_caps = MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA;
+	priv->mci.host_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ;
+
 	priv->mci.f_max = clk_get_rate(priv->biu_clk);
 	mci_of_parse(mci);
 	priv->mci.f_min = priv->mci.f_max / SDHCI_MAX_DIV_SPEC_300;
 
-	priv->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
-	priv->mci.host_caps = MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA;
-	priv->mci.host_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ;
 	if (is_sd4hc) {
 		ret = sdhci_cdns4_phy_probe(dev, priv);
 	} else {

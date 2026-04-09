@@ -79,6 +79,7 @@ struct io96b_mb_ctrl {
 	u32 num_mem_interface;
 	u32 ip_type[2];
 	u32 ip_instance_id[2];
+	phys_size_t memory_size[2];
 };
 
 /*
@@ -101,7 +102,7 @@ struct io96b_mb_resp {
  * @mb_ctrl:		IOSSM mailbox required information
  */
 struct io96b_instance {
-	u16 size;
+	phys_size_t size;
 	phys_addr_t io96b_csr_addr;
 	bool cal_status;
 	struct io96b_mb_ctrl mb_ctrl;
@@ -126,7 +127,7 @@ struct io96b_info {
 	bool			 overall_cal_status;
 	const char		*ddr_type;
 	bool			 ecc_status;
-	u16			 overall_size;
+	phys_size_t		 overall_size;
 	struct io96b_instance	 io96b[MAX_IO96B_SUPPORTED];
 	bool			 ckgen_lock;
 	u8			 num_port;

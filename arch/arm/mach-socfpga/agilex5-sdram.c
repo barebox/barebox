@@ -299,10 +299,6 @@ int agilex5_ddr_init_full(void)
 		return ret;
 	}
 
-	hw_size = (phys_size_t)io96b_ctrl.overall_size * SZ_1G / SZ_8;
-
-	pr_debug("%s: %lld MiB\n", io96b_ctrl.ddr_type, hw_size >> 20);
-
 	ret = io96b_ecc_enable_status(&io96b_ctrl);
 	if (ret) {
 		pr_debug("DDR: Failed to get DDR ECC status\n");
@@ -325,6 +321,9 @@ int agilex5_ddr_init_full(void)
 
 		pr_debug("SDRAM-ECC: Initialized success\n");
 	}
+
+	hw_size = io96b_ctrl.overall_size;
+	pr_debug("%s: %lld MiB\n", io96b_ctrl.ddr_type, hw_size / SZ_1M);
 
 	sdram_set_firewall(hw_size);
 

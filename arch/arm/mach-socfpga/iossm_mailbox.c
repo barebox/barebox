@@ -9,6 +9,7 @@
 #include <common.h>
 #include <io.h>
 #include <linux/bitfield.h>
+#include <linux/sizes.h>
 #include "iossm_mailbox.h"
 #include <mach/socfpga/generic.h>
 #include <mach/socfpga/soc64-regs.h>
@@ -404,21 +405,25 @@ int io96b_get_mem_width_info(struct io96b_info *io96b_ctrl)
 	struct io96b_mb_resp usr_resp;
 	struct io96b_mb_ctrl *mb_ctrl;
 	int i, j;
-	u16 memory_size;
-	u16 total_memory_size = 0;
+	phys_size_t memory_size;
+	u32 mem_width_info;
+	phys_size_t total_memory_size = 0;
 
 	/* Get all memory interface(s) total memory size on all instance(s) */
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
 		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
 		memory_size = 0;
+
 		for (j = 0; j < mb_ctrl->num_mem_interface; j++) {
 			io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
 					      mb_ctrl->ip_type[j],
 					      mb_ctrl->ip_instance_id[j],
 					      CMD_GET_MEM_INFO, GET_MEM_WIDTH_INFO, &usr_resp);
+			mem_width_info = usr_resp.cmd_resp_data[1] & GENMASK(7, 0);
 
-			memory_size = memory_size +
-				(usr_resp.cmd_resp_data[1] & GENMASK(7, 0));
+			mb_ctrl->memory_size[j] = (phys_size_t)mem_width_info * (SZ_1G / SZ_8);
+
+			memory_size += mb_ctrl->memory_size[j];
 		}
 
 		if (!memory_size) {

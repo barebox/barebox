@@ -204,26 +204,27 @@ void io96b_mb_init(struct io96b_info *io96b_ctrl)
 
 	pr_debug("%s: num_instance %d\n", __func__, io96b_ctrl->num_instance);
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
+		int num_mem_interface = 0;
+		u32 mem_intf_info[2];
+
 		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
 		pr_debug("%s: get memory interface IO96B %d\n", __func__, i);
 		/* Get memory interface IP type and instance ID (IP identifier) */
 		io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr, 0, 0,
 				      CMD_GET_SYS_INFO, GET_MEM_INTF_INFO, &usr_resp);
-		pr_debug("%s: get response from memory interface IO96B %d\n", __func__, i);
-		/* Retrieve number of memory interface(s) */
-		mb_ctrl->num_mem_interface =
+		num_mem_interface =
 			IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status) & 0x3;
-		pr_debug("%s: IO96B %d: num_mem_interface: %d\n", __func__,
-			 i, mb_ctrl->num_mem_interface);
+		for (j = 0; j < num_mem_interface; j++)
+			mem_intf_info[j] = usr_resp.cmd_resp_data[j];
 
 		/* Retrieve memory interface IP type and instance ID (IP identifier) */
 		j = 0;
-		for (k = 0; k < mb_ctrl->num_mem_interface; k++) {
-			ip_type_ret = FIELD_GET(INTF_IP_TYPE_MASK, usr_resp.cmd_resp_data[k]);
-			instance_id_ret = FIELD_GET(INTF_INSTANCE_ID_MASK,
-						    usr_resp.cmd_resp_data[k]);
+		for (k = 0; k < num_mem_interface; k++) {
+			ip_type_ret = FIELD_GET(INTF_IP_TYPE_MASK, mem_intf_info[k]);
+			instance_id_ret = FIELD_GET(INTF_INSTANCE_ID_MASK, mem_intf_info[k]);
 
 			if (ip_type_ret) {
+				mb_ctrl->num_mem_interface++;
 				mb_ctrl->ip_type[j] = ip_type_ret;
 				mb_ctrl->ip_instance_id[j] = instance_id_ret;
 				pr_debug("%s: IO96B %d mem_interface %d: ip_type_ret: 0x%x\n",

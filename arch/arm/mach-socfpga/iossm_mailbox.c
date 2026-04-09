@@ -27,6 +27,9 @@
 #define INTF_IP_TYPE_MASK	GENMASK(31, 29)
 #define INTF_INSTANCE_ID_MASK	GENMASK(28, 24)
 
+#define IOSSM_MAILBOX_HEADER_OFFSET			0x0
+#define IOSSM_MAILBOX_SPEC_VERSION_MASK			GENMASK(2, 0)
+
 /* supported DDR type list */
 static const char *ddr_type_list[7] = {
 		"DDR4", "DDR5", "DDR5_RDIMM", "LPDDR4", "LPDDR5", "QDRIV", "UNKNOWN"
@@ -163,6 +166,18 @@ int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
 	return 0;
 }
 
+static int io96b_mb_version(struct io96b_info *io96b_ctrl)
+{
+	phys_addr_t io96b_csr_addr = io96b_ctrl->io96b[0].io96b_csr_addr;
+	u32 mailbox_header;
+	int version;
+
+	mailbox_header = readl(io96b_csr_addr + IOSSM_MAILBOX_HEADER_OFFSET);
+	version = FIELD_GET(IOSSM_MAILBOX_SPEC_VERSION_MASK, mailbox_header);
+
+	return version;
+}
+
 /*
  * Initial function to be called to set memory interface IP type and instance ID
  * IP type and instance ID need to be determined before sending mailbox command
@@ -172,6 +187,18 @@ void io96b_mb_init(struct io96b_info *io96b_ctrl)
 	struct io96b_mb_resp usr_resp;
 	u8 ip_type_ret, instance_id_ret;
 	int i, j, k;
+	int version;
+
+	version = io96b_mb_version(io96b_ctrl);
+	switch (version) {
+	case 0:
+		pr_debug("IOSSM: mailbox version %d\n", version);
+		break;
+	default:
+		pr_warn("IOSSM: unsupported mailbox version %d\n", version);
+		break;
+	}
+	io96b_ctrl->version = version;
 
 	pr_debug("%s: num_instance %d\n", __func__, io96b_ctrl->num_instance);
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {

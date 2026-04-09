@@ -110,6 +110,7 @@ struct io96b_instance {
 /*
  * Overall IO96B instance(s) information
  *
+ * @version:		Version of the IO96B
  * @num_instance:	Number of instance(s) assigned to HPS
  * @overall_cal_status: Overall calibration status for all IO96B instance(s)
  * @ddr_type:		DDR memory type
@@ -120,6 +121,7 @@ struct io96b_instance {
  * @num_port:		Number of IO96B port.
  */
 struct io96b_info {
+	int			 version;
 	u8			 num_instance;
 	bool			 overall_cal_status;
 	const char		*ddr_type;

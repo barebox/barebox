@@ -491,19 +491,53 @@ int io96b_ecc_enable_status(struct io96b_info *io96b_ctrl)
 	return 0;
 }
 
+static int io96b_poll_bist_mem_init_status(struct io96b_info *io96b_ctrl,
+					   int instance, int interface)
+{
+	phys_addr_t io96b_csr_addr = io96b_ctrl->io96b[instance].io96b_csr_addr;
+	struct io96b_mb_ctrl *mb_ctrl = &io96b_ctrl->io96b[instance].mb_ctrl;
+	int timeout = 1 * USEC_PER_SEC;
+	bool bist_success = false;
+	int bist_error = 0;
+	struct io96b_mb_resp usr_resp;
+	u32 mem_init_status;
+
+	/* Polling for the initiated memory initialization BIST status */
+	while (!bist_success) {
+		io96b_mb_req_no_param(io96b_csr_addr,
+				      mb_ctrl->ip_type[interface],
+				      mb_ctrl->ip_instance_id[interface],
+				      CMD_TRIG_CONTROLLER_OP,
+				      BIST_MEM_INIT_STATUS, &usr_resp);
+		mem_init_status = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
+
+		bist_success = FIELD_GET(BIT(0), mem_init_status);
+		bist_error = FIELD_GET(GENMASK(2, 1), mem_init_status);
+
+		if (!bist_success && (timeout-- < 0)) {
+			pr_err("%s: Timeout initialize memory on IO96B_%d (Error 0x%x)\n",
+			       __func__, instance, bist_error);
+			return -ETIMEDOUT;
+		}
+
+		__udelay(1);
+	}
+
+	return 0;
+}
+
 int io96b_bist_mem_init_start(struct io96b_info *io96b_ctrl)
 {
 	struct io96b_mb_resp usr_resp;
 	int i, j;
-	bool bist_start, bist_success;
-	int timeout = 1000000;
+	bool bist_start;
 	u32 mem_init_status_intf;
+	int ret = 0;
 
 	/* Full memory initialization BIST performed on all memory interface(s) */
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
 		for (j = 0; j < io96b_ctrl->io96b[i].mb_ctrl.num_mem_interface; j++) {
 			bist_start = false;
-			bist_success = false;
 
 			/* Start memory initialization BIST on full memory address */
 			io96b_mb_req(io96b_ctrl->io96b[i].io96b_csr_addr,
@@ -523,29 +557,9 @@ int io96b_bist_mem_init_start(struct io96b_info *io96b_ctrl)
 				return -ENOEXEC;
 			}
 
-			/* Polling for the initiated memory initialization BIST status */
-			while (!bist_success) {
-				io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
-						      io96b_ctrl->io96b[i].mb_ctrl.ip_type[j],
-						      io96b_ctrl->io96b[i].mb_ctrl.ip_instance_id[j],
-						      CMD_TRIG_CONTROLLER_OP,
-						      BIST_MEM_INIT_STATUS, &usr_resp);
-				mem_init_status_intf = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
-
-				bist_success = mem_init_status_intf & BIT(0);
-
-				if (!bist_success && (timeout-- < 0)) {
-					pr_err("%s: Timeout initialize memory on IO96B_%d\n",
-					       __func__, i);
-					pr_err("%s: BIST_MEM_INIT_STATUS Error code 0x%x\n",
-					       __func__, (IOSSM_CMD_RESPONSE_DATA_SHORT
-							  (usr_resp.cmd_resp_status) &
-							  GENMASK(2, 1)) > 0x1);
-					return -ETIMEDOUT;
-				}
-
-				__udelay(1);
-			}
+			ret = io96b_poll_bist_mem_init_status(io96b_ctrl, i, j);
+			if (ret)
+				return ret;
 		}
 
 		pr_debug("%s: Memory initialized successfully on IO96B_%d\n", __func__, i);

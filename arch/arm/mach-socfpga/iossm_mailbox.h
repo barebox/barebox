@@ -127,6 +127,7 @@ struct io96b_info {
 	bool			 overall_cal_status;
 	const char		*ddr_type;
 	bool			 ecc_status;
+	bool			 inline_ecc;
 	phys_size_t		 overall_size;
 	struct io96b_instance	 io96b[MAX_IO96B_SUPPORTED];
 	bool			 ckgen_lock;

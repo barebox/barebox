@@ -456,6 +456,7 @@ int io96b_ecc_enable_status(struct io96b_info *io96b_ctrl)
 	u32 ecc_enable_intf;
 	bool ecc_stat_set = false;
 	bool ecc_stat;
+	bool inline_ecc = false;
 
 	/* Initialize ECC status */
 	io96b_ctrl->ecc_status = false;
@@ -472,13 +473,19 @@ int io96b_ecc_enable_status(struct io96b_info *io96b_ctrl)
 			ecc_enable_intf = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
 
 			ecc_stat = (ecc_enable_intf & GENMASK(1, 0)) == 0 ? false : true;
+			inline_ecc = FIELD_GET(BIT(8), ecc_enable_intf);
 
 			if (!ecc_stat_set) {
 				io96b_ctrl->ecc_status = ecc_stat;
+
+				if (io96b_ctrl->ecc_status)
+					io96b_ctrl->inline_ecc = inline_ecc;
+
 				ecc_stat_set = true;
 			}
 
-			if (ecc_stat != io96b_ctrl->ecc_status) {
+			if (ecc_stat != io96b_ctrl->ecc_status ||
+			    (io96b_ctrl->ecc_status && inline_ecc != io96b_ctrl->inline_ecc)) {
 				pr_err("%s: Mismatch DDR ECC status on IO96B_%d\n",
 				       __func__, i);
 				return -ENOEXEC;
@@ -541,9 +548,26 @@ static int bist_mem_init_by_addr(struct io96b_info *io96b_ctrl,
 #define BIST_FULL_MEM		BIT(6)
 	u32 cmd_param_0;
 
-	pr_debug("%s: Start memory initialization BIST on full memory address",
-		 __func__);
-	cmd_param_0 = BIST_FULL_MEM;
+	if (io96b_ctrl->inline_ecc) {
+		phys_size_t chunk_size;
+		u32 mem_exp = 0;
+
+		/* Check if size is a power of 2 */
+		if (size == 0 || (size & (size - 1)) != 0)
+			return -EINVAL;
+
+		chunk_size = size;
+		while (chunk_size >>= 1)
+			mem_exp++;
+
+		pr_debug("%s: Initializing memory: Addr=0x%llx, Size=2^%u\n",
+			 __func__, base_addr, mem_exp);
+		cmd_param_0 = FIELD_PREP(BIST_ADDR_SPACE, mem_exp);
+	} else {
+		pr_debug("%s: Start memory initialization BIST on full memory address",
+			 __func__);
+		cmd_param_0 = BIST_FULL_MEM;
+	}
 
 	ret = io96b_mb_req(io96b_csr_addr,
 			   mb_ctrl->ip_type[interface],

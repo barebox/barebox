@@ -323,6 +323,8 @@ int agilex5_ddr_init_full(void)
 	}
 
 	hw_size = io96b_ctrl.overall_size;
+	if (io96b_ctrl.inline_ecc)
+		hw_size -= hw_size / 8;
 	pr_debug("%s: %lld MiB\n", io96b_ctrl.ddr_type, hw_size / SZ_1M);
 
 	sdram_set_firewall(hw_size);

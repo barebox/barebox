@@ -370,6 +370,7 @@ int io96b_get_mem_technology(struct io96b_info *io96b_ctrl)
 	struct io96b_mb_resp usr_resp;
 	struct io96b_mb_ctrl *mb_ctrl;
 	int i, j;
+	u32 mem_technology_intf;
 	u8 ddr_type_ret;
 
 	/* Initialize ddr type */
@@ -384,9 +385,9 @@ int io96b_get_mem_technology(struct io96b_info *io96b_ctrl)
 					      mb_ctrl->ip_instance_id[j],
 					      CMD_GET_MEM_INFO, GET_MEM_TECHNOLOGY, &usr_resp);
 
-			ddr_type_ret =
-				IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status)
-				& GENMASK(2, 0);
+			mem_technology_intf = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
+
+			ddr_type_ret = mem_technology_intf & GENMASK(2, 0);
 
 			if (!strcmp(io96b_ctrl->ddr_type, "UNKNOWN"))
 				io96b_ctrl->ddr_type = ddr_type_list[ddr_type_ret];
@@ -452,6 +453,7 @@ int io96b_ecc_enable_status(struct io96b_info *io96b_ctrl)
 	struct io96b_mb_resp usr_resp;
 	struct io96b_mb_ctrl *mb_ctrl;
 	int i, j;
+	u32 ecc_enable_intf;
 	bool ecc_stat_set = false;
 	bool ecc_stat;
 
@@ -467,9 +469,9 @@ int io96b_ecc_enable_status(struct io96b_info *io96b_ctrl)
 					      mb_ctrl->ip_instance_id[j],
 					      CMD_TRIG_CONTROLLER_OP, ECC_ENABLE_STATUS,
 					      &usr_resp);
+			ecc_enable_intf = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
 
-			ecc_stat = ((IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status)
-				     & GENMASK(1, 0)) == 0 ? false : true);
+			ecc_stat = (ecc_enable_intf & GENMASK(1, 0)) == 0 ? false : true;
 
 			if (!ecc_stat_set) {
 				io96b_ctrl->ecc_status = ecc_stat;
@@ -495,6 +497,7 @@ int io96b_bist_mem_init_start(struct io96b_info *io96b_ctrl)
 	int i, j;
 	bool bist_start, bist_success;
 	int timeout = 1000000;
+	u32 mem_init_status_intf;
 
 	/* Full memory initialization BIST performed on all memory interface(s) */
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
@@ -508,18 +511,15 @@ int io96b_bist_mem_init_start(struct io96b_info *io96b_ctrl)
 				     io96b_ctrl->io96b[i].mb_ctrl.ip_instance_id[j],
 				     CMD_TRIG_CONTROLLER_OP, BIST_MEM_INIT_START,
 				     0x40, 0, 0, 0, 0, 0, 0, &usr_resp);
+			mem_init_status_intf = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
 
-			bist_start =
-				(IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status)
-				 & BIT(0));
+			bist_start = mem_init_status_intf & BIT(0);
 
 			if (!bist_start) {
 				pr_err("%s: Failed to initialized memory on IO96B_%d\n",
 				       __func__, i);
 				pr_err("%s: BIST_MEM_INIT_START Error code 0x%x\n",
-				       __func__,
-				       (IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status)
-					& GENMASK(2, 1)) > 0x1);
+				       __func__, (mem_init_status_intf & GENMASK(2, 1)) > 0x1);
 				return -ENOEXEC;
 			}
 
@@ -530,9 +530,9 @@ int io96b_bist_mem_init_start(struct io96b_info *io96b_ctrl)
 						      io96b_ctrl->io96b[i].mb_ctrl.ip_instance_id[j],
 						      CMD_TRIG_CONTROLLER_OP,
 						      BIST_MEM_INIT_STATUS, &usr_resp);
+				mem_init_status_intf = IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status);
 
-				bist_success = (IOSSM_CMD_RESPONSE_DATA_SHORT
-						(usr_resp.cmd_resp_status) & BIT(0));
+				bist_success = mem_init_status_intf & BIT(0);
 
 				if (!bist_success && (timeout-- < 0)) {
 					pr_err("%s: Timeout initialize memory on IO96B_%d\n",

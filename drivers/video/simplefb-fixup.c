@@ -124,8 +124,8 @@ static int simplefb_create_node(struct device_node *root,
 		return ret;
 
 	res.name = "simple-framebuffer";
-	res.flags |= IORESOURCE_BUSY;
 	resource_set_range(&res, screen_base, fbi->screen_size);
+	reserve_resource(&res);
 
 	of_fixup_reserved_memory(root, &res);
 

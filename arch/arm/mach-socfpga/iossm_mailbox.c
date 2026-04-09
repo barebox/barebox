@@ -185,6 +185,7 @@ static int io96b_mb_version(struct io96b_info *io96b_ctrl)
 void io96b_mb_init(struct io96b_info *io96b_ctrl)
 {
 	struct io96b_mb_resp usr_resp;
+	struct io96b_mb_ctrl *mb_ctrl;
 	u8 ip_type_ret, instance_id_ret;
 	int i, j, k;
 	int version;
@@ -202,27 +203,28 @@ void io96b_mb_init(struct io96b_info *io96b_ctrl)
 
 	pr_debug("%s: num_instance %d\n", __func__, io96b_ctrl->num_instance);
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
+		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
 		pr_debug("%s: get memory interface IO96B %d\n", __func__, i);
 		/* Get memory interface IP type and instance ID (IP identifier) */
 		io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr, 0, 0,
 				      CMD_GET_SYS_INFO, GET_MEM_INTF_INFO, &usr_resp);
 		pr_debug("%s: get response from memory interface IO96B %d\n", __func__, i);
 		/* Retrieve number of memory interface(s) */
-		io96b_ctrl->io96b[i].mb_ctrl.num_mem_interface =
+		mb_ctrl->num_mem_interface =
 			IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status) & 0x3;
-		pr_debug("%s: IO96B %d: num_mem_interface: 0x%x\n", __func__,
-			 i, io96b_ctrl->io96b[i].mb_ctrl.num_mem_interface);
+		pr_debug("%s: IO96B %d: num_mem_interface: %d\n", __func__,
+			 i, mb_ctrl->num_mem_interface);
 
 		/* Retrieve memory interface IP type and instance ID (IP identifier) */
 		j = 0;
-		for (k = 0; k < io96b_ctrl->io96b[i].mb_ctrl.num_mem_interface; k++) {
+		for (k = 0; k < mb_ctrl->num_mem_interface; k++) {
 			ip_type_ret = FIELD_GET(INTF_IP_TYPE_MASK, usr_resp.cmd_resp_data[k]);
 			instance_id_ret = FIELD_GET(INTF_INSTANCE_ID_MASK,
 						    usr_resp.cmd_resp_data[k]);
 
 			if (ip_type_ret) {
-				io96b_ctrl->io96b[i].mb_ctrl.ip_type[j] = ip_type_ret;
-				io96b_ctrl->io96b[i].mb_ctrl.ip_instance_id[j] = instance_id_ret;
+				mb_ctrl->ip_type[j] = ip_type_ret;
+				mb_ctrl->ip_instance_id[j] = instance_id_ret;
 				pr_debug("%s: IO96B %d mem_interface %d: ip_type_ret: 0x%x\n",
 					 __func__, i, j, ip_type_ret);
 				pr_debug("%s: IO96B %d mem_interface %d: instance_id_ret: 0x%x\n",
@@ -297,6 +299,7 @@ void io96b_init_mem_cal(struct io96b_info *io96b_ctrl)
 int io96b_trig_mem_cal(struct io96b_info *io96b_ctrl)
 {
 	struct io96b_mb_resp usr_resp;
+	struct io96b_mb_ctrl *mb_ctrl;
 	bool recal_success;
 	int i, j, k;
 	u32 cal_stat_offset;
@@ -305,10 +308,12 @@ int io96b_trig_mem_cal(struct io96b_info *io96b_ctrl)
 	int count = 0;
 
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
+		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
+
 		if (io96b_ctrl->io96b[i].cal_status)
 			continue;
 
-		for (j = 0; j < io96b_ctrl->io96b[i].mb_ctrl.num_mem_interface; j++) {
+		for (j = 0; j < mb_ctrl->num_mem_interface; j++) {
 			recal_success = false;
 
 			/* Re-calibration first memory interface with failed calibration */
@@ -326,8 +331,8 @@ int io96b_trig_mem_cal(struct io96b_info *io96b_ctrl)
 					break;
 				}
 				io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
-						      io96b_ctrl->io96b[i].mb_ctrl.ip_type[j],
-						      io96b_ctrl->io96b[i].mb_ctrl.ip_instance_id[j],
+						      mb_ctrl->ip_type[j],
+						      mb_ctrl->ip_instance_id[j],
 						      CMD_TRIG_MEM_CAL_OP,
 						      TRIG_MEM_CAL, &usr_resp);
 
@@ -361,6 +366,7 @@ int io96b_trig_mem_cal(struct io96b_info *io96b_ctrl)
 int io96b_get_mem_technology(struct io96b_info *io96b_ctrl)
 {
 	struct io96b_mb_resp usr_resp;
+	struct io96b_mb_ctrl *mb_ctrl;
 	int i, j;
 	u8 ddr_type_ret;
 
@@ -369,10 +375,11 @@ int io96b_get_mem_technology(struct io96b_info *io96b_ctrl)
 
 	/* Get and ensure all memory interface(s) same DDR type */
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
-		for (j = 0; j < io96b_ctrl->io96b[i].mb_ctrl.num_mem_interface; j++) {
+		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
+		for (j = 0; j < mb_ctrl->num_mem_interface; j++) {
 			io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
-					      io96b_ctrl->io96b[i].mb_ctrl.ip_type[j],
-					      io96b_ctrl->io96b[i].mb_ctrl.ip_instance_id[j],
+					      mb_ctrl->ip_type[j],
+					      mb_ctrl->ip_instance_id[j],
 					      CMD_GET_MEM_INFO, GET_MEM_TECHNOLOGY, &usr_resp);
 
 			ddr_type_ret =
@@ -395,17 +402,19 @@ int io96b_get_mem_technology(struct io96b_info *io96b_ctrl)
 int io96b_get_mem_width_info(struct io96b_info *io96b_ctrl)
 {
 	struct io96b_mb_resp usr_resp;
+	struct io96b_mb_ctrl *mb_ctrl;
 	int i, j;
 	u16 memory_size;
 	u16 total_memory_size = 0;
 
 	/* Get all memory interface(s) total memory size on all instance(s) */
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
+		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
 		memory_size = 0;
-		for (j = 0; j < io96b_ctrl->io96b[i].mb_ctrl.num_mem_interface; j++) {
+		for (j = 0; j < mb_ctrl->num_mem_interface; j++) {
 			io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
-					      io96b_ctrl->io96b[i].mb_ctrl.ip_type[j],
-					      io96b_ctrl->io96b[i].mb_ctrl.ip_instance_id[j],
+					      mb_ctrl->ip_type[j],
+					      mb_ctrl->ip_instance_id[j],
 					      CMD_GET_MEM_INFO, GET_MEM_WIDTH_INFO, &usr_resp);
 
 			memory_size = memory_size +
@@ -435,6 +444,7 @@ int io96b_get_mem_width_info(struct io96b_info *io96b_ctrl)
 int io96b_ecc_enable_status(struct io96b_info *io96b_ctrl)
 {
 	struct io96b_mb_resp usr_resp;
+	struct io96b_mb_ctrl *mb_ctrl;
 	int i, j;
 	bool ecc_stat_set = false;
 	bool ecc_stat;
@@ -444,10 +454,11 @@ int io96b_ecc_enable_status(struct io96b_info *io96b_ctrl)
 
 	/* Get and ensure all memory interface(s) same ECC status */
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
-		for (j = 0; j < io96b_ctrl->io96b[i].mb_ctrl.num_mem_interface; j++) {
+		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
+		for (j = 0; j < mb_ctrl->num_mem_interface; j++) {
 			io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr,
-					      io96b_ctrl->io96b[i].mb_ctrl.ip_type[j],
-					      io96b_ctrl->io96b[i].mb_ctrl.ip_instance_id[j],
+					      mb_ctrl->ip_type[j],
+					      mb_ctrl->ip_instance_id[j],
 					      CMD_TRIG_CONTROLLER_OP, ECC_ENABLE_STATUS,
 					      &usr_resp);
 

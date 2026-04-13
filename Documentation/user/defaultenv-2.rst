@@ -155,3 +155,32 @@ This contains the files to be sourced when barebox detects that the OS
 had requested a specific :ref:`reboot_mode` (via e.g. ``reboot bootloader``
 under Linux). After the ``/env/init`` scripts were executed, barebox will
 ``source /env/bmode/${global.system.reboot_mode.prev}`` if available.
+
+/env/mach.of_compatible/
+------------------------
+
+On devicetree enabled systems, this optional directory may contain
+environment overlays that should be applied onto ``/env``.
+
+Each subdirectory should be named after a device tree root compatible
+string and they will be applied from most generic to most specific match
+after the default environment is loaded.
+The ``match.of_compatible/`` directory is removed afterwards to keep
+``/env`` clean.
+
+For example, given ``CONFIG_DEFAULT_ENVIRONMENT_PATH`` pointing
+at an external ``barebox-defaultenv/`` directory::
+
+  barebox-defaultenv/
+    nv/boot.default     -> kernel-common
+    match.of_compatible/
+      fsl,imx8mm/
+        nv/boot.default -> kernel-mx8mm
+      fsl,imx8mm-evk/
+        nv/boot.default -> kernel-mx8mm-evk
+
+The final ``/env/nv/boot.default`` would be:
+
+- For ``compatible = "fsl,imx8mm-evk", "fsl,imx8mm";``,  ``kernel-mx8mm-evk``
+- For ``compatible = "fsl,imx8mm-evkb", "fsl,imx8mm";``, ``kernel-mx8mm``
+- For ``compatible = "fsl,imx8mp-evk", "fsl,imx8mp";``,  ``kernel-common``

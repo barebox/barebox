@@ -308,8 +308,6 @@ EXPORT_SYMBOL(vprintf);
 
 struct console_device *console_get_by_dev(struct device *dev)
 {
-	struct console_device *cdev;
-
 	for_each_console(cdev) {
 		if (cdev->dev == dev)
 			return cdev;
@@ -321,8 +319,6 @@ EXPORT_SYMBOL(console_get_by_dev);
 
 struct console_device *console_get_by_name(const char *name)
 {
-	struct console_device *cdev;
-
 	for_each_console(cdev) {
 		if (cdev->devname && !strcmp(cdev->devname, name))
 			return cdev;
@@ -340,7 +336,6 @@ EXPORT_SYMBOL(console_get_by_name);
  */
 struct console_device *console_get_first_interactive(void)
 {
-	struct console_device *cdev;
 	const unsigned char active = CONSOLE_STDIN | CONSOLE_STDOUT;
 
 	/* if no console input is allows, then we can't have STDIN on any. */

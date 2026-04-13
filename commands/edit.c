@@ -464,8 +464,6 @@ static int read_modal_key(bool is_modal)
 
 static bool is_efi_console_active(void)
 {
-	struct console_device *cdev;
-
 	if (!IS_ENABLED(CONFIG_DRIVER_SERIAL_EFI_STDIO))
 		return false;
 

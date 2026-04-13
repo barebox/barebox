@@ -257,7 +257,6 @@ void console_set_stdoutpath(struct console_device *cdev, unsigned baudrate)
 
 struct console_device *of_console_by_stdout_path(void)
 {
-	struct console_device *console;
 	struct device_node *stdout_np;
 
 	stdout_np = of_get_stdoutpath(NULL);
@@ -459,7 +458,6 @@ EXPORT_SYMBOL(console_unregister);
 static __maybe_unused int console_activate_all_fallback(void)
 {
 	int activate = CONSOLE_STDIOE;
-	struct console_device *cdev;
 
 	for_each_console(cdev) {
 		if (cdev->f_active & (CONSOLE_STDOUT | CONSOLE_STDERR))
@@ -487,7 +485,6 @@ postenvironment_initcall(console_activate_all_fallback);
 
 static int getc_raw(void)
 {
-	struct console_device *cdev;
 	int active = 0;
 
 	while (1) {
@@ -515,8 +512,6 @@ static int getc_raw(void)
 
 static int tstc_raw(void)
 {
-	struct console_device *cdev;
-
 	if (!IS_ALLOWED(SCONFIG_CONSOLE_INPUT))
 		return 0;
 
@@ -578,7 +573,6 @@ EXPORT_SYMBOL(tstc);
 
 int console_putc(unsigned int ch, char c)
 {
-	struct console_device *cdev;
 	int init = initialized;
 	bool crlf = c == '\n';
 
@@ -613,7 +607,6 @@ EXPORT_SYMBOL(console_putc);
 
 int console_puts(unsigned int ch, const char *str)
 {
-	struct console_device *cdev;
 	const char *s = str;
 	int n = 0;
 
@@ -636,8 +629,6 @@ EXPORT_SYMBOL(console_puts);
 
 void console_putbin(unsigned int ch, const u8 *str, size_t len)
 {
-	struct console_device *cdev;
-
 	switch (initialized) {
 	case CONSOLE_UNINITIALIZED:
 		console_init_early();
@@ -667,8 +658,6 @@ EXPORT_SYMBOL(console_putbin);
 
 void console_flush(void)
 {
-	struct console_device *cdev;
-
 	for_each_console(cdev) {
 		if (cdev->flush)
 			cdev->flush(cdev);

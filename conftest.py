@@ -168,8 +168,9 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
     try:
         main = target.env.config.data["targets"]["main"]
         qemu_bin = main["drivers"]["QEMUDriver"]["qemu_bin"]
+        features.append("qemu")
     except KeyError:
-        qemu_bin = None
+        pass
 
     virtio = None
 
@@ -202,7 +203,7 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
         else:
             pytest.exit("barebox currently supports only a single extra virtio console\n", 1)
 
-    if qemu_bin is not None:
+    if "qemu" in features:
         if not pytestconfig.option.qemu_graphics:
             graphics = '-nographic'
         elif qemu_bin == "qemu-system-x86_64":

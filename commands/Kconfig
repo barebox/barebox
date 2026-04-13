@@ -1550,6 +1550,13 @@ config CMD_CLEAR
 
 	  Send ANSI ESC sequence to clear the screen.
 
+config CMD_RESIZE
+	tristate
+	prompt "resize"
+	help
+	  Reset the terminal scroll region to the full window and clear
+	  the screen.
+
 config CMD_ECHO
 	tristate
 	default y

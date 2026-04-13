@@ -8,12 +8,7 @@
 
 #include <linux/usb/ch9.h>
 #include <linux/usb/gadget.h>
-
-static inline void put_unaligned_le16(u16 val, u8 *p)
-{
-	*p++ = val;
-	*p++ = val >> 8;
-}
+#include <asm/unaligned.h>
 
 static int utf8_to_utf16le(const char *s, __le16 *cp, unsigned len)
 {

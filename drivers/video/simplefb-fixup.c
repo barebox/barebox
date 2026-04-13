@@ -25,6 +25,16 @@
  */
 static const struct simplefb_format simplefb_formats[] = SIMPLEFB_FORMATS;
 
+enum simplefb_mode {
+	SIMPLEFB_DISABLED,
+	SIMPLEFB_ENABLED,
+	SIMPLEFB_STDOUT_PATH,
+};
+
+static const char * const simplefb_mode_names[] = {
+	"disabled", "enabled", "stdout-path",
+};
+
 static bool simplefb_bitfield_cmp(const struct fb_bitfield *a,
 					const struct fb_bitfield *b)
 {
@@ -64,7 +74,8 @@ static const struct simplefb_format *simplefb_find_mode(const struct fb_info *fb
 }
 
 static int simplefb_create_node(struct device_node *root,
-				const struct fb_info *fbi, const char *format)
+				const struct fb_info *fbi, const char *format,
+				bool set_stdout_path)
 {
 	struct device_node *node;
 	phys_addr_t screen_base;
@@ -124,7 +135,27 @@ static int simplefb_create_node(struct device_node *root,
 	if (ret < 0)
 		return ret;
 
-	return of_property_write_string(node, "status", "okay");
+	ret = of_property_write_string(node, "status", "okay");
+	if (ret < 0)
+		return ret;
+
+	/*
+	 * Set stdout-path in /chosen to point to this framebuffer if not
+	 * already set.  This lets the OS (e.g. OpenBSD) know to use
+	 * the framebuffer as its boot console rather than falling back to
+	 * serial.
+	 */
+	if (set_stdout_path) {
+		struct device_node *chosen;
+
+		chosen = of_create_node(root, "/chosen");
+		if (!chosen)
+			return -ENOMEM;
+
+		of_property_write_string(chosen, "stdout-path", "/framebuffer");
+	}
+
+	return 0;
 }
 
 static int simplefb_of_fixup(struct device_node *root, void *ctx)
@@ -134,7 +165,7 @@ static int simplefb_of_fixup(struct device_node *root, void *ctx)
 	int ret;
 
 	/* only create node if we are requested to */
-	if (!info->register_simplefb)
+	if (info->register_simplefb == SIMPLEFB_DISABLED)
 		return 0;
 
 	/* do not create node for disabled framebuffers */
@@ -147,7 +178,8 @@ static int simplefb_of_fixup(struct device_node *root, void *ctx)
 		return -EINVAL;
 	}
 
-	ret = simplefb_create_node(root, info, mode->name);
+	ret = simplefb_create_node(root, info, mode->name,
+				   info->register_simplefb == SIMPLEFB_STDOUT_PATH);
 	if (ret)
 		dev_err(&info->dev, "failed to create node: %d\n", ret);
 	else
@@ -158,8 +190,10 @@ static int simplefb_of_fixup(struct device_node *root, void *ctx)
 
 int fb_register_simplefb(struct fb_info *info)
 {
-	dev_add_param_bool(&info->dev, "register_simplefb",
-			NULL, NULL, &info->register_simplefb, NULL);
+	dev_add_param_enum(&info->dev, "register_simplefb",
+			   NULL, NULL, &info->register_simplefb,
+			   simplefb_mode_names, ARRAY_SIZE(simplefb_mode_names),
+			   NULL);
 
 	return of_register_fixup(simplefb_of_fixup, info);
 }

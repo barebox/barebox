@@ -186,9 +186,7 @@ struct fb_info {
 
 	int enabled;
 	int p_enable;
-	int register_simplefb;		/* If true a simplefb device node will
-					 * be created.
-					 */
+	int register_simplefb;		/* enum simplefb_mode */
 	int shadowfb;
 
 	struct fb_info *base_plane;

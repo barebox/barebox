@@ -175,6 +175,7 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
 
     if "virtio-mmio" in features:
         virtio = "device"
+        strategy.append_qemu_args('-global virtio-mmio.force-legacy=false')
     if "virtio-pci" in features:
         virtio = "pci,disable-modern=off"
         features.append("pci")
@@ -210,6 +211,7 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
             graphics = '-device VGA'
         elif virtio:
             graphics = '-vga none -device ramfb'
+            graphics += f' -device virtio-keyboard-{virtio}'
         else:
             pytest.exit("--graphics unsupported for target\n", 1)
 

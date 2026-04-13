@@ -193,7 +193,7 @@ static efi_status_t EFIAPI efi_cout_output_string(
 		end = utf16_to_utf8(utf8, p, is_high_surrogate ? 2 : 1);
 
 		/* console_puts turns \n into \r\n, which we want to avoid */
-		console_putbin(CONSOLE_STDOUT, utf8, end - utf8);
+		console_putbin(CONSOLE_DEV_STDOUT, utf8, end - utf8);
 
 		switch (*p) {
 		case '\b':	/* U+0008, backspace */

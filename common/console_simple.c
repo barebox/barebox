@@ -11,13 +11,13 @@ LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
 static struct console_device *console;
 
-int console_puts(unsigned int ch, const char *str)
+int console_puts(struct console_device *con, const char *str)
 {
 	const char *s = str;
 	int i = 0;
 
 	while (*s) {
-		i += console_putc(ch, *s);
+		i += console_putc(con, *s);
 		s++;
 	}
 
@@ -25,7 +25,7 @@ int console_puts(unsigned int ch, const char *str)
 }
 EXPORT_SYMBOL(console_puts);
 
-int console_putc(unsigned int ch, char c)
+int console_putc(struct console_device *con, char c)
 {
 	bool crlf = c == '\n';
 	if (!console) {

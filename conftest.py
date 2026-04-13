@@ -215,6 +215,10 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
         else:
             pytest.exit("--graphics unsupported for target\n", 1)
 
+        if graphics is not None and \
+                pytestconfig.option.lg_initial_state != 'qemu_interactive':
+            graphics += ' -display none'
+
         strategy.append_qemu_args(graphics)
 
     for i, blk in enumerate(pytestconfig.option.qemu_block):

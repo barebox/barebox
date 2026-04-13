@@ -266,7 +266,7 @@ int log_print(unsigned flags, unsigned levels)
 	return 0;
 }
 
-int printf(const char *fmt, ...)
+int console_printf(struct console_device *con, const char *fmt, ...)
 {
 	va_list args;
 	int i;
@@ -282,13 +282,13 @@ int printf(const char *fmt, ...)
 	va_end(args);
 
 	/* Print the string */
-	puts(printbuffer);
+	console_puts(con, printbuffer);
 
 	return i;
 }
-EXPORT_SYMBOL(printf);
+EXPORT_SYMBOL(console_printf);
 
-int vprintf(const char *fmt, va_list args)
+int console_vprintf(struct console_device *con, const char *fmt, va_list args)
 {
 	int i;
 	char printbuffer[CFG_PBSIZE];
@@ -300,9 +300,28 @@ int vprintf(const char *fmt, va_list args)
 	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 
 	/* Print the string */
-	puts(printbuffer);
+	console_puts(con, printbuffer);
 
 	return i;
+}
+EXPORT_SYMBOL(console_vprintf);
+
+int printf(const char *fmt, ...)
+{
+	va_list args;
+	int i;
+
+	va_start(args, fmt);
+	i = console_vprintf(CONSOLE_DEV_STDOUT, fmt, args);
+	va_end(args);
+
+	return i;
+}
+EXPORT_SYMBOL(printf);
+
+int vprintf(const char *fmt, va_list args)
+{
+	return console_vprintf(CONSOLE_DEV_STDOUT, fmt, args);
 }
 EXPORT_SYMBOL(vprintf);
 

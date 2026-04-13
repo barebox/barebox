@@ -247,6 +247,9 @@ int console_puts(struct console_device *con, const char *s);
 void console_putbin(struct console_device *con, const u8 *str, size_t len);
 void console_flush(void);
 
+int console_printf(struct console_device *con, const char *fmt, ...) __printf(2, 3);
+int console_vprintf(struct console_device *con, const char *fmt, va_list args);
+
 int ctrlc(void);
 int ctrlc_non_interruptible(void);
 void ctrlc_handled(void);

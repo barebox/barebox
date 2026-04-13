@@ -139,4 +139,33 @@ typedef unsigned short wchar_t;
 #define DECLARE_FLEX_ARRAY(TYPE, NAME) \
 	__DECLARE_FLEX_ARRAY(TYPE, NAME)
 
+#define __scoped_var(decl, _label)	 	\
+	for (decl; ; ({ goto _label; }))	\
+		if (0) {			\
+_label:						\
+			break;			\
+		} else
+
+/**
+ * scoped_var - declare a variable scoped to the following statement
+ * @type:       the full type (e.g. ``struct foo *`` or ``int``)
+ * @name:       the variable name to declare
+ *
+ * Declares @name as @type, initialized to 0, whose scope is limited
+ * to the immediately following statement. Works with both pointer and
+ * scalar types. Intended for use with existing loop macros to add scoped
+ * iterator variables without duplicating the loop body.
+ *
+ * Example with a list iterator:
+ *
+ * .. code-block:: c
+ *
+ *   scoped_var(struct foo *p)
+ *       list_for_each_entry(p, &head, member) {
+ *           // use p
+ *       }
+ *   // p is out of scope here
+ */
+#define scoped_var(decl) __scoped_var(decl, __UNIQUE_ID(label))
+
 #endif

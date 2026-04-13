@@ -706,6 +706,11 @@ efi_status_t efi_load_pe(struct efi_loaded_image_obj *handle,
 			memset(efi_reloc + sec->VirtualAddress, 0,
 			       sec->Misc.VirtualSize);
 		}
+		if (size_add(sec->PointerToRawData, copy_size) > efi_size) {
+			pr_err("Section %d exceeds image size\n", i);
+			ret = EFI_LOAD_ERROR;
+			goto err;
+		}
 		memcpy(efi_reloc + sec->VirtualAddress,
 		       efi + sec->PointerToRawData,
 		       copy_size);

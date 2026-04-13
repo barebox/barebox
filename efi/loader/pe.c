@@ -108,7 +108,8 @@ void efi_print_image_infos(void *pc)
  */
 static efi_status_t efi_loader_relocate(const IMAGE_BASE_RELOCATION *rel,
 			unsigned long rel_size, void *efi_reloc,
-			unsigned long pref_address)
+			unsigned long pref_address,
+			unsigned long image_size)
 {
 	unsigned long delta = (unsigned long)efi_reloc - pref_address;
 	const IMAGE_BASE_RELOCATION *end;
@@ -132,6 +133,11 @@ static efi_status_t efi_loader_relocate(const IMAGE_BASE_RELOCATION *rel,
 			uint64_t *x64 = efi_reloc + offset;
 			uint32_t *x32 = efi_reloc + offset;
 			uint16_t *x16 = efi_reloc + offset;
+
+			if (size_add(offset, sizeof(uint64_t)) > image_size) {
+				pr_err("Relocation offset exceeds image size\n");
+				return EFI_LOAD_ERROR;
+			}
 
 			switch (type) {
 			case IMAGE_REL_BASED_ABSOLUTE:
@@ -722,7 +728,8 @@ efi_status_t efi_load_pe(struct efi_loaded_image_obj *handle,
 
 	/* Run through relocations */
 	if (efi_loader_relocate(rel, rel_size, efi_reloc,
-				(unsigned long)image_base) != EFI_SUCCESS) {
+				(unsigned long)image_base,
+				virt_size) != EFI_SUCCESS) {
 		efi_free_pages((uintptr_t) efi_reloc,
 			       (virt_size + EFI_PAGE_MASK) >> EFI_PAGE_SHIFT);
 		ret = EFI_LOAD_ERROR;

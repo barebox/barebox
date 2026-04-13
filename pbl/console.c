@@ -32,12 +32,14 @@ static void __putc(void *ctx, int c)
 	putc(ctx, c);
 }
 
-void console_putc(unsigned int ch, char c)
+int console_putc(unsigned int ch, char c)
 {
 	if (putc_offset)
 		__putc(putc_ctx, c);
 	else
 		putc_ll(c);
+
+	return 1;
 }
 
 int console_puts(unsigned int ch, const char *str)
@@ -45,8 +47,10 @@ int console_puts(unsigned int ch, const char *str)
 	int n = 0;
 
 	while (*str) {
-		if (*str == '\n')
+		if (*str == '\n') {
 			console_putc(ch, '\r');
+			n++;
+		}
 
 		console_putc(ch, *str);
 		str++;

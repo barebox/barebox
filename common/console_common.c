@@ -423,7 +423,7 @@ int dputc(int fd, char c)
 	if (fd == 1)
 		putchar(c);
 	else if (fd == 2)
-		console_putc(CONSOLE_STDERR, c);
+		return console_putc(CONSOLE_STDERR, c);
 	else
 		return write(fd, &c, 1);
 

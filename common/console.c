@@ -576,10 +576,11 @@ int tstc(void)
 }
 EXPORT_SYMBOL(tstc);
 
-void console_putc(unsigned int ch, char c)
+int console_putc(unsigned int ch, char c)
 {
 	struct console_device *cdev;
 	int init = initialized;
+	bool crlf = c == '\n';
 
 	switch (init) {
 	case CONSOLE_UNINITIALIZED:
@@ -587,20 +588,20 @@ void console_putc(unsigned int ch, char c)
 		fallthrough;
 	case CONSOLE_INITIALIZED_BUFFER:
 		kfifo_putc(console_output_fifo, c);
-		if (c == '\n')
+		if (crlf)
 			putc_ll('\r');
 		putc_ll(c);
-		return;
+		return 1 + crlf;
 
 	case CONSOLE_INIT_FULL:
 		for_each_console(cdev) {
 			if (cdev->f_active & ch) {
-				if (c == '\n')
+				if (crlf)
 					cdev->putc(cdev, '\r');
 				cdev->putc(cdev, c);
 			}
 		}
-		return;
+		return 1 + crlf;
 	default:
 		/* If we have problems inititalizing our data
 		 * get them early
@@ -626,11 +627,7 @@ int console_puts(unsigned int ch, const char *str)
 	}
 
 	while (*s) {
-		if (*s == '\n')
-			n++;
-
-		console_putc(ch, *s);
-		n++;
+		n += console_putc(ch, *s);
 		s++;
 	}
 	return n;

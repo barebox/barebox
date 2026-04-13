@@ -228,7 +228,7 @@ int arch_ctrlc(void);
 
 #ifndef CONFIG_CONSOLE_NONE
 /* stdout */
-void console_putc(unsigned int ch, const char c);
+int console_putc(unsigned int ch, const char c);
 int console_puts(unsigned int ch, const char *s);
 void console_putbin(unsigned int ch, const u8 *str, size_t len);
 void console_flush(void);
@@ -240,7 +240,7 @@ void console_ctrlc_allow(void);
 void console_ctrlc_forbid(void);
 #else
 static inline int console_puts(unsigned int ch, const char *str) { return 0; }
-static inline void console_putc(unsigned int ch, char c) {}
+static inline int console_putc(unsigned int ch, char c) { return 0;}
 static inline void console_flush(void) {}
 
 /* test if ctrl-c was pressed */

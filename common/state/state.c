@@ -453,7 +453,7 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 		 * will be overwritten. Warn about this so people do not wonder why
 		 * changes in the kernels state node do not have any effect.
 		 */
-		if (root != of_get_root_node())
+		if (!of_property_read_bool(root, "$barebox,root-node"))
 			dev_warn(&state->dev, "Warning: Kernel devicetree contains state node, replacing it\n");
 	} else {
 		char *of_path, *c;

@@ -158,7 +158,7 @@ static int do_dmesg(int argc, char *argv[])
 		return 0;
 	}
 
-	ret = log_print(flags, levels);
+	ret = log_print(CONSOLE_DEV_STDOUT, flags, levels);
 	if (ret)
 		return 1;
 

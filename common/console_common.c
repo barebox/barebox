@@ -215,13 +215,14 @@ int log_writefile(const char *filepath)
 /**
  * log_print - print the log buffer
  *
+ * @con:	Console device to print to
  * @flags:	Flags selecting output formatting
  * @levels:	bitmask of loglevels to print, 0 for all
  *
  * This function prints the messages of the selected levels; optionally with
  * additional information and formatting.
  */
-int log_print(unsigned flags, unsigned levels)
+int log_print(struct console_device *con, unsigned flags, unsigned levels)
 {
 	struct log_entry *log;
 	unsigned long last = 0;
@@ -237,30 +238,30 @@ int log_print(unsigned flags, unsigned levels)
 
 		if (!(flags & (BAREBOX_LOG_PRINT_RAW | BAREBOX_LOG_PRINT_TIME
 			       | BAREBOX_LOG_DIFF_TIME)))
-			print_colored_log_level(CONSOLE_DEV_STDOUT, log->level);
+			print_colored_log_level(con, log->level);
 
 		if (flags & BAREBOX_LOG_PRINT_RAW)
-			printf("<%i>", log->level);
+			console_printf(con, "<%i>", log->level);
 
 		/* convert ns to us */
 		do_div(time_ns, 1000);
 		time = time_ns;
 
 		if (flags & (BAREBOX_LOG_PRINT_TIME | BAREBOX_LOG_DIFF_TIME))
-			printf("[");
+			console_printf(con, "[");
 
 		if (flags & BAREBOX_LOG_PRINT_TIME)
-			printf("%10luus", time);
+			console_printf(con, "%10luus", time);
 
 		if (flags & BAREBOX_LOG_DIFF_TIME) {
-			printf(" < %10luus", time - last);
+			console_printf(con, " < %10luus", time - last);
 			last = time;
 		}
 
 		if (flags & (BAREBOX_LOG_PRINT_TIME | BAREBOX_LOG_DIFF_TIME))
-			printf("] ");
+			console_printf(con, "] ");
 
-		printf("%s", log->msg);
+		console_printf(con, "%s", log->msg);
 	}
 
 	return 0;

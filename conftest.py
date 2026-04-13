@@ -226,25 +226,17 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
         else:
             pytest.exit("--blk unsupported for target\n", 1)
 
+    envopts = {}
+
     for i, fw_cfg in enumerate(pytestconfig.option.qemu_fw_cfg):
+        value = fw_cfg.pop()
+        envpath = fw_cfg.pop() if fw_cfg else f"data/fw_cfg{i}"
+
+        envopts[envpath] = value
+
+    for envpath, value in (yaml_env | envopts).items():
         if virtio:
-            value = fw_cfg.pop()
-            envpath = fw_cfg.pop() if fw_cfg else f"data/fw_cfg{i}"
-
-            if value.startswith('@'):
-                source = f"file='{value[1:]}'"
-            else:
-                source = f"string='{value}'"
-
-            strategy.append_qemu_args(
-                '-fw_cfg', f'name=opt/org.barebox.env/{envpath},{source}'
-            )
-        else:
-            pytest.exit("--env unsupported for target\n", 1)
-
-    for envpath, value in yaml_env.items():
-        if virtio:
-            if value.startswith('@'):
+            if isinstance(value, str) and value.startswith('@'):
                 source = f"file='{value[1:]}'"
             else:
                 source = f"string='{value}'"

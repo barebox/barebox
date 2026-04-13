@@ -297,6 +297,7 @@ static int do_fbtest(int argc, char *argv[])
 	} else {
 		pattern(sc, color);
 		gu_screen_blit(sc);
+		fb_flush(sc->info);
 	}
 done:
 	fb_close(sc);

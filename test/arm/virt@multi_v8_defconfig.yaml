@@ -17,6 +17,8 @@ targets:
       - network
       - barebox-state
       - testfs
+    env:
+      nv/dev.fb0.enable: 1
 images:
   barebox-qemu-virt.img: !template "$LG_BUILDDIR/images/barebox-qemu-virt.img"
 imports:

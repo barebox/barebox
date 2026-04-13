@@ -573,40 +573,14 @@ EXPORT_SYMBOL(tstc);
 
 int console_putc(struct console_device *con, char c)
 {
-	int init = initialized;
 	bool crlf = c == '\n';
-	unsigned int ch;
 
-	ch = console_dev_is_std(con);
-	if (!ch) {
-		if (crlf)
-			con->putc(con, '\r');
-		con->putc(con, c);
-	}
+	if (crlf)
+		console_putbin(con, "\r\n", 2);
+	else
+		console_putbin(con, &c, 1);
 
-	switch (init) {
-	case CONSOLE_UNINITIALIZED:
-		console_init_early();
-		fallthrough;
-	case CONSOLE_INITIALIZED_BUFFER:
-		kfifo_putc(console_output_fifo, c);
-		if (crlf)
-			putc_ll('\r');
-		putc_ll(c);
-		return 1 + crlf;
-
-	case CONSOLE_INIT_FULL:
-		for_each_console(cdev) {
-			if (cdev->f_active & ch)
-				console_putc(cdev, c);
-		}
-		return 1 + crlf;
-	default:
-		/* If we have problems inititalizing our data
-		 * get them early
-		 */
-		hang();
-	}
+	return 1 + crlf;
 }
 EXPORT_SYMBOL(console_putc);
 

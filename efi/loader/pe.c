@@ -23,6 +23,7 @@
 #include <pe.h>
 #include <qsort.h>
 #include <linux/err.h>
+#include <linux/overflow.h>
 
 static int machines[] = {
 #if defined(__aarch64__)
@@ -636,9 +637,15 @@ efi_status_t efi_load_pe(struct efi_loaded_image_obj *handle,
 	/* Calculate upper virtual address boundary */
 	for (i = num_sections - 1; i >= 0; i--) {
 		IMAGE_SECTION_HEADER *sec = &sections[i];
+		unsigned long vs;
 
-		virt_size = max_t(unsigned long, virt_size,
-				  sec->VirtualAddress + section_size(sec));
+		if (check_add_overflow((unsigned long)sec->VirtualAddress,
+				       (unsigned long)section_size(sec), &vs)) {
+			pr_err("Section %d virtual address overflow\n", i);
+			return EFI_LOAD_ERROR;
+		}
+
+		virt_size = max(virt_size, vs);
 	}
 
 	/* Read 32/64bit specific header bits */

@@ -104,7 +104,7 @@ int efi_execute_image(efi_handle_t handle,
 {
 	efi_status_t efiret;
 	const char *options;
-	bool is_driver;
+	bool is_driver, is_kernel = false;
 
 	is_driver = (loaded_image->image_code_type == EFI_BOOT_SERVICES_CODE) ||
 		(loaded_image->image_code_type == EFI_RUNTIME_SERVICES_CODE);
@@ -123,16 +123,23 @@ int efi_execute_image(efi_handle_t handle,
 		efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
 				      ktime_to_us(ktime_get()));
 
+		is_kernel = true;
 		shutdown_barebox();
 	}
 
 	efi_pause_devices();
 
 	efiret = BS->start_image(handle, NULL, NULL);
-	if (EFI_ERROR(efiret))
-		pr_err("failed to StartImage: %s\n", efi_strerror(efiret));
 
 	efi_continue_devices();
+
+	if (is_kernel) {
+		pr_emerg("Kernel image has unexpectedly returned\n");
+		BS->exit(efi_parent_image, efiret, 0, NULL);
+	}
+
+	if (EFI_ERROR(efiret))
+		pr_err("failed to StartImage: %s\n", efi_strerror(efiret));
 
 	if (!is_driver)
 		BS->unload_image(handle);

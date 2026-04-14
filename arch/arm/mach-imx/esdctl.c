@@ -702,7 +702,7 @@ static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
 
 	return imx_ddrc_sdram_size(ddrc, addrmap,
 				   11, ARRAY_AND_SIZE(col_b),
-				   15, ARRAY_AND_SIZE(row_b),
+				   16, ARRAY_AND_SIZE(row_b),
 				   reduced_address_space, mstr);
 }
 

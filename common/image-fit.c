@@ -891,7 +891,7 @@ static int fit_find_compatible_unit(struct fit_handle *handle,
 
 	ret = of_property_read_string(barebox_root, "compatible", &machine);
 	if (ret)
-		return -ENOENT;
+		goto default_unit;
 
 	for_each_child_of_node(conf_node, child) {
 		int score;

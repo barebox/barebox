@@ -550,6 +550,8 @@ int of_prepend_machine_compatible(struct device_node *root, const char *compat)
 		return 0;
 
 	curcompat = of_get_property(root, "compatible", &cclen);
+	if (!curcompat)
+		return -ENOENT;
 
 	buf = xzalloc(cclen + clen);
 

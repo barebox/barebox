@@ -336,14 +336,14 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 	if (!strcmp(devicetree, "none"))
 		return true;
 
-	/* If we don't have a root node every entry is compatible */
+	/* If we don't have a root node with a compatible, every entry is compatible */
 	barebox_root = of_get_root_node();
 	if (!barebox_root)
 		return true;
 
 	ret = of_property_read_string(barebox_root, "compatible", &compat);
 	if (ret)
-		return false;
+		return true;
 
 	if (entry->rootpath)
 		abspath = entry->rootpath;

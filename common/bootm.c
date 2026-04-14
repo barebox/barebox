@@ -845,7 +845,7 @@ bool bootm_efi_check_image(struct image_handler *handler,
 	 * and fallback to normal boot otherwise.
 	 */
 	if (data->efi_boot == BOOTM_EFI_AVAILABLE) {
-		if (IS_ENABLED(CONFIG_EFI_LOADER))
+		if (IS_ENABLED(CONFIG_EFI_LOADER) || efi_is_payload())
 			data->efi_boot = BOOTM_EFI_REQUIRED;
 		else
 			data->efi_boot = BOOTM_EFI_DISABLED;

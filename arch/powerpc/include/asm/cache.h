@@ -35,8 +35,10 @@ extern void clean_dcache_range(unsigned long start, unsigned long stop);
 extern void invalidate_dcache_range(unsigned long start, unsigned long stop);
 extern void flush_dcache(void);
 extern void invalidate_icache(void);
+#ifdef CONFIG_ARCH_MPC85XX
 #define sync_caches_for_execution sync_caches_for_execution
 extern void sync_caches_for_execution(void);
+#endif
 #ifdef CFG_INIT_RAM_LOCK
 extern void unlock_ram_in_cache(void);
 #endif /* CFG_INIT_RAM_LOCK */
@@ -87,5 +89,7 @@ extern void unlock_ram_in_cache(void);
 #define DC_DFWT		0x40000000	/* Data cache is forced write through */
 #define DC_LES		0x20000000	/* Caches are little endian mode */
 #endif /* CONFIG_8xx */
+
+#include <asm-generic/cache.h>
 
 #endif

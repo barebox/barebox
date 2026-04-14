@@ -8,6 +8,7 @@
 #include <asm/atf_common.h>
 #include <asm/barebox-arm.h>
 #include <asm-generic/memory_layout.h>
+#include <asm-generic/sections.h>
 #include <mach/rockchip/dmc.h>
 #include <mach/rockchip/rockchip.h>
 #include <mach/rockchip/bootrom.h>
@@ -29,19 +30,29 @@ static void rk_scratch_save_optee_hdr(const struct optee_header *hdr)
 	rk_scratch->optee_hdr = *hdr;
 }
 
-static unsigned long load_elf64_image_phdr(const void *elf)
+static void *free_mem(void)
+{
+	return (void *)PTR_ALIGN(&__image_end, SZ_1M);
+}
+
+static unsigned long load_elf64_image_phdr(struct fwobj *bl31)
 {
 	const Elf64_Ehdr *ehdr; /* Elf header structure pointer */
 	const Elf64_Phdr *phdr; /* Program header structure pointer */
-	int i;
+	int i, ret;
+	void *bl31_image = free_mem();
 
-	ehdr = elf;
-	phdr = elf + ehdr->e_phoff;
+	ret = fwobj_uncompress(bl31, bl31_image);
+	if (ret)
+		panic("Failed to uncompress TF-A\n");
+
+	ehdr = bl31_image;
+	phdr = bl31_image + ehdr->e_phoff;
 
 	/* Load each program header */
 	for (i = 0; i < ehdr->e_phnum; ++i) {
 		void *dst = (void *)(ulong)phdr->p_paddr;
-		const void *src = elf + phdr->p_offset;
+		const void *src = bl31_image + phdr->p_offset;
 
 		pr_debug("Loading phdr %i to 0x%p (%lu bytes)\n",
 			 i, dst, (ulong)phdr->p_filesz);
@@ -56,11 +67,17 @@ static unsigned long load_elf64_image_phdr(const void *elf)
 	return ehdr->e_entry;
 }
 
-static uintptr_t rk_load_optee(uintptr_t bl32, const void *bl32_image,
-			       size_t bl32_size)
+static uintptr_t rk_load_optee(uintptr_t bl32, struct fwobj *bl32_fw)
 {
-	const struct optee_header *hdr = bl32_image;
+	const struct optee_header *hdr;
 	struct optee_header dummy_hdr;
+	int ret;
+	void *bl32_image = free_mem();
+	size_t bl32_size = bl32_fw->uncompressed_size;
+
+	ret = fwobj_uncompress(bl32_fw, bl32_image);
+	if (ret)
+		panic("Failed to uncompress OP-TEE\n");
 
 	/* We already have ELF support for BL31, but adding it for BL32,
 	 * would require us to identify a range that fits all ELF
@@ -69,6 +86,8 @@ static uintptr_t rk_load_optee(uintptr_t bl32, const void *bl32_image,
 	 * actual user interested in this.
 	 */
 	BUG_ON(memcmp(bl32_image, ELFMAG, 4) == 0);
+
+	hdr = bl32_image;
 
 	if (optee_verify_header(hdr) == 0) {
 		bl32_size -= sizeof(*hdr);
@@ -108,34 +127,43 @@ static uintptr_t rk_load_optee(uintptr_t bl32, const void *bl32_image,
 	return bl32;
 }
 
-#define rockchip_atf_load_bl31(SOC, atf_bin, tee_bin, fdt) do {                 \
-	const void *bl31_elf, *optee;                                           \
-	unsigned long bl31;                                                     \
-	size_t bl31_elf_size, optee_size;                                       \
-	uintptr_t optee_load_address = 0;                                       \
-										\
-	get_builtin_firmware(atf_bin, &bl31_elf, &bl31_elf_size);               \
-										\
-	bl31 = load_elf64_image_phdr(bl31_elf);                                 \
-										\
-	if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE)) {                           \
-		get_builtin_firmware(tee_bin, &optee, &optee_size);             \
-		optee_load_address = rk_load_optee(SOC##_OPTEE_LOAD_ADDRESS,	\
-						   optee, optee_size);		\
-	}                                                                       \
-										\
-	/* Setup an initial stack for EL2 */                                    \
-	asm volatile("msr sp_el2, %0" : :                                       \
-			"r" ((ulong)SOC##_BAREBOX_LOAD_ADDRESS - 16) :		\
-			"cc");                                                  \
-										\
-	bl31_entry(bl31, optee_load_address,                                    \
-		   SOC##_BAREBOX_LOAD_ADDRESS, (uintptr_t)fdt);                 \
-} while (0)                                                                     \
+static uintptr_t barebox_load_address; /* where barebox is loaded and started */
+static uintptr_t optee_load_address; /* standard SoC specific OP-TEE load address */
+static struct fwobj bl31; /* TF-A in barebox image */
+static struct fwobj bl32; /* OP-TEE in barebox image */
+
+#define ROCKCHIP_GET_ADDRESSES(SOC, atf_bin, tee_bin)				\
+	do {									\
+		barebox_load_address = SOC##_BAREBOX_LOAD_ADDRESS;		\
+		optee_load_address = SOC##_OPTEE_LOAD_ADDRESS;			\
+		get_builtin_firmware_compressed(atf_bin, &bl31);		\
+		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE))			\
+			get_builtin_firmware_compressed(tee_bin, &bl32);	\
+	} while (0)
+
+
+static void rockchip_atf_load_bl31(void *fdt)
+{
+	unsigned long bl31_ep;
+
+	bl31_ep = load_elf64_image_phdr(&bl31);
+
+	if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE))
+		optee_load_address = rk_load_optee(optee_load_address, &bl32);
+
+	/* Setup an initial stack for EL2 */
+	asm volatile("msr sp_el2, %0" : :
+			"r" ((ulong)barebox_load_address - 16) :
+			"cc");
+
+	bl31_entry(bl31_ep, optee_load_address,
+		   barebox_load_address, (uintptr_t)fdt);
+}
 
 void rk3562_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3562, rk3562_bl31_bin, rk3562_bl32_bin, fdt);
+	ROCKCHIP_GET_ADDRESSES(RK3562, rk3562_bl31_bin, rk3562_bl32_bin);
+	rockchip_atf_load_bl31(fdt);
 }
 
 void __noreturn rk3562_barebox_entry(void *fdt)
@@ -172,7 +200,8 @@ void __noreturn rk3562_barebox_entry(void *fdt)
 
 void rk3568_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3568, rk3568_bl31_bin, rk3568_bl32_bin, fdt);
+	ROCKCHIP_GET_ADDRESSES(RK3568, rk3568_bl31_bin, rk3568_bl32_bin);
+	rockchip_atf_load_bl31(fdt);
 }
 
 void __noreturn rk3568_barebox_entry(void *fdt)
@@ -209,7 +238,8 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 
 void rk3588_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3588, rk3588_bl31_bin, rk3588_bl32_bin, fdt);
+	ROCKCHIP_GET_ADDRESSES(RK3588, rk3588_bl31_bin, rk3588_bl32_bin);
+	rockchip_atf_load_bl31(fdt);
 }
 
 static int rk3588_fixup_mem(void *fdt)
@@ -282,7 +312,8 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 
 void rk3576_atf_load_bl31(void *fdt)
 {
-	rockchip_atf_load_bl31(RK3576, rk3576_bl31_bin, rk3576_bl32_bin, fdt);
+	ROCKCHIP_GET_ADDRESSES(RK3576, rk3576_bl31_bin, rk3576_bl32_bin);
+	rockchip_atf_load_bl31(fdt);
 }
 
 void __noreturn rk3576_barebox_entry(void *fdt)

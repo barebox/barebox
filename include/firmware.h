@@ -90,30 +90,49 @@ static inline void firmware_ext_verify(const void *data_start, size_t data_size,
 	}
 }
 
-#define __get_builtin_firmware(name, offset, start, size)		\
+struct fwobj {
+	size_t size;
+	size_t uncompressed_size;
+	void *data;
+};
+
+#define __get_builtin_firmware(name, offset, fwobj)			\
 	do {								\
 		extern char _fw_##name##_start[];			\
 		extern char _fw_##name##_end[];				\
 		extern char _fw_##name##_sha_start[];			\
 		extern char _fw_##name##_sha_end[];			\
-		*start = (typeof(*start)) _fw_##name##_start;		\
-		*size = _fw_##name##_end - _fw_##name##_start;		\
+		(fwobj)->data = _fw_##name##_start;			\
+		(fwobj)->size = _fw_##name##_end - _fw_##name##_start;	\
 		if (!(offset))						\
 			break;						\
-		*start += (offset);					\
+		(fwobj)->data += (offset);				\
 		firmware_ext_verify(					\
-			*start, *size,					\
+			(fwobj)->data, (fwobj)->size,			\
 			_fw_##name##_sha_start,				\
 			_fw_##name##_sha_end - _fw_##name##_sha_start	\
 		);							\
 	} while (0)
 
 
-#define get_builtin_firmware(name, start, size) \
-	__get_builtin_firmware(name, 0, start, size)
+#define get_builtin_firmware(name, fwobj) \
+	__get_builtin_firmware(name, 0, fwobj)
 
-#define get_builtin_firmware_ext(name, base, start, size)		\
-	__get_builtin_firmware(name, (long)base - (long)_text, start, size)
+#define get_builtin_firmware_ext(name, base, fwobj)			\
+	__get_builtin_firmware(name, (long)base - (long)_text, fwobj)
+
+int fwobj_uncompress(struct fwobj *fwobj, void *dest);
+
+#define get_builtin_firmware_compressed(name, fwobj)			\
+	do {								\
+		extern char _fw_z_##name##_start[];			\
+		extern char _fw_z_##name##_end[];			\
+		extern char _fw_z_##name##_uncompressed_size[];		\
+		(fwobj)->data = _fw_z_##name##_start;			\
+		(fwobj)->size = _fw_z_##name##_end - _fw_z_##name##_start;\
+		(fwobj)->uncompressed_size =				\
+			(size_t)_fw_z_##name##_uncompressed_size;	\
+	} while (0)
 
 static inline int firmware_next_image_check_sha256(const void *hash, bool verbose)
 {

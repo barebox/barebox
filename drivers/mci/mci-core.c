@@ -1160,6 +1160,7 @@ static void mci_correct_version_from_ext_csd(struct mci *mci)
 		switch (mci->ext_csd[EXT_CSD_REV]) {
 		case 0:
 			mci->version = MMC_VERSION_4;
+			break;
 		case 1:
 			mci->version = MMC_VERSION_4_1;
 			break;

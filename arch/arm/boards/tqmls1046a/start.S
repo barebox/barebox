@@ -27,3 +27,16 @@ ENTRY_PROC(start_tqmls1046a_8g)
 	mov sp, x3
 	b tqmls1046a_8g_entry
 ENTRY_PROC_END(start_tqmls1046a_8g)
+
+ENTRY_PROC(start_arkona_at300)
+	switch_el x3, 3f, 2f, 1f
+3:
+	mov x3, #STACK_TOP
+	mov sp, x3
+	b arkona_at300_entry
+2:
+1:
+	mov x3, STACK_TOP_TMP_SDRAM
+	mov sp, x3
+	b arkona_at300_entry
+ENTRY_PROC_END(start_arkona_at300)

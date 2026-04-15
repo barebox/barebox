@@ -284,7 +284,7 @@ static int tqmls1046a_get_variant(void)
 
 	pr_debug("Board Variant: %s\n", buf);
 
-	if (!strcmp(buf, "TQMLS1046A-CA.0202")) {
+	if (!strcmp(buf, "TQMLS1046A-CA.0202") || !strcmp(buf, "TQMLS1046A-CA.0203")) {
 		variant = TQ_VARIANT_TQMLS1046A_CA;
 		goto out;
 	}
@@ -327,15 +327,14 @@ static struct dram_regions_info dram_info_8g = {
 
 extern char __dtb_z_fsl_ls1046a_tqmls1046a_mbls10xxa_start[];
 
-static noinline __noreturn void tqmls1046a_r_entry(bool is_8g)
+static noinline __noreturn void tqmls1046a_r_entry(void *boarddata, bool is_8g)
 {
 	unsigned long membase = LS1046A_DDR_SDRAM_BASE;
 	int board_variant = 0;
 	struct dram_regions_info *dram_info;
 
 	if (get_pc() >= membase)
-		barebox_arm_entry(membase, 0x80000000 - SZ_128M,
-				  __dtb_z_fsl_ls1046a_tqmls1046a_mbls10xxa_start);
+		barebox_arm_entry(membase, 0x80000000 - SZ_128M, boarddata);
 
 	arm_cpu_lowlevel_init();
 	ls1046a_init_lowlevel();
@@ -373,7 +372,7 @@ __noreturn void tqmls1046a_entry(void)
 	relocate_to_current_adr();
 	setup_c();
 
-	tqmls1046a_r_entry(false);
+	tqmls1046a_r_entry(__dtb_z_fsl_ls1046a_tqmls1046a_mbls10xxa_start, false);
 }
 
 void tqmls1046a_8g_entry(void);
@@ -383,5 +382,17 @@ __noreturn void tqmls1046a_8g_entry(void)
 	relocate_to_current_adr();
 	setup_c();
 
-	tqmls1046a_r_entry(true);
+	tqmls1046a_r_entry(__dtb_z_fsl_ls1046a_tqmls1046a_mbls10xxa_start, true);
+}
+
+extern char __dtb_z_fsl_tqmls1046a_arkona_at300_start[];
+
+void arkona_at300_entry(void);
+
+__noreturn void arkona_at300_entry(void)
+{
+	relocate_to_current_adr();
+	setup_c();
+
+	tqmls1046a_r_entry(__dtb_z_fsl_tqmls1046a_arkona_at300_start, true);
 }

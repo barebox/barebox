@@ -2140,6 +2140,14 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 	if (!*name)
 		return 0;
 
+	/*
+	 * If we are starting from a TFTP dentry (e.g. CWD is on a TFTP
+	 * mount), switch to the TFTP separator immediately so the first
+	 * component isn't mistakenly looked up as a directory.
+	 */
+	if (dentry_is_tftp(nd->path.dentry))
+		separator = 0x1;
+
 	/* At this point we know we have a real path component. */
 	for(;;) {
 		int len;

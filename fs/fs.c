@@ -874,7 +874,8 @@ static void fs_remove(struct device *dev)
 	list_for_each_entry_safe(inode, tmp, &sb->s_inodes, i_sb_list)
 		destroy_inode(inode);
 
-	mntput(fsdev->vfsmount.parent);
+	if (&fsdev->vfsmount != fsdev->vfsmount.parent)
+		mntput(fsdev->vfsmount.parent);
 
 	free(fsdev->backingstore);
 }

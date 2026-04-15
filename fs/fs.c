@@ -2099,9 +2099,12 @@ static void putname(struct filename *name)
 
 static struct fs_device *get_fsdevice_by_dentry(struct dentry *dentry)
 {
-	struct super_block *sb;
+	struct super_block *sb = NULL;
 
-	sb = dentry->d_sb;
+	if (dentry)
+		sb = dentry->d_sb;
+	if (!sb)
+		return NULL;
 
 	return container_of(sb, struct fs_device, sb);
 }

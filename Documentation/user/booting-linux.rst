@@ -182,7 +182,10 @@ and configure the overrides as arguments to the ``boot`` command:
 
 .. code-block:: sh
 
-  boot -o bootm.image=/mnt/tftp/oftree mmc
+  boot -o bootm.image=/mnt/tftp/zImage mmc
+
+See :ref:`devboot` for the full override syntax and the ``devboot``
+convenience script for network-based development.
 
 Generic Boot Targets
 ^^^^^^^^^^^^^^^^^^^^

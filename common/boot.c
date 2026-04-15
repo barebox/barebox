@@ -124,7 +124,7 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	if (dryrun >= 2)
 		data.dryrun = dryrun - 1;
 
-	ret = bootm_boot(&data);
+	ret = bootm_entry(entry, &data);
 out:
 	bootm_data_restore_defaults(&backup);
 	return ret;
@@ -182,7 +182,6 @@ BAREBOX_MAGICVAR(global.boot.watchdog_timeout,
 
 int boot_entry(struct bootentry *be, int verbose, int dryrun)
 {
-	struct bootm_overrides old;
 	int ret;
 
 	pr_info("Booting entry '%s'\n", be->title);
@@ -197,13 +196,9 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 		}
 	}
 
-	old = bootm_save_overrides(be->overrides);
-
 	ret = be->boot(be, verbose, dryrun);
 	if (ret && ret != -ENOMEDIUM)
 		pr_err("Booting entry '%s' failed: %pe\n", be->title, ERR_PTR(ret));
-
-	bootm_restore_overrides(old);
 
 	globalvar_set_match("linux.bootargs.dyn.", "");
 
@@ -555,3 +550,33 @@ void bootsources_list(struct bootentries *bootentries)
 }
 
 BAREBOX_MAGICVAR(global.boot.default, "default boot order");
+
+/**
+ * bootm_entry - invoke bootm while taking care of overrides
+ * @be: bootentry
+ * @bootm_data: prepopulated bootm data for bootm_boot()
+ *
+ * Compared to bootm_boot(), this takes an extra @be that allows
+ * applying boot entry specific info like overrides.
+ *
+ * Return: 0 on success, or negative error code otherwise
+ */
+int bootm_entry(struct bootentry *be, const struct bootm_data *bootm_data)
+{
+	struct image_data *data;
+	int ret;
+
+	data = bootm_boot_prep(bootm_data);
+	if (IS_ERR(data))
+		return PTR_ERR(data);
+
+	ret = bootm_apply_overrides(data, &be->overrides);
+	if (ret)
+		goto out;
+
+	ret = bootm_boot_handler(data);
+
+out:
+	bootm_boot_cleanup(data);
+	return ret;
+}

@@ -119,19 +119,32 @@ err_free_fdt:
 static int do_bootm_elf(struct image_data *data)
 {
 	struct elf_image *elf;
+	const void *view = NULL;
+	size_t size;
 	int ret;
 
-	if (data->fit_kernel)
-		elf = elf_open_binary((void *) data->fit_kernel);
-	else
-		elf = elf_open(data->os_file);
+	/* FIXME: whole function should be switched to loadables */
+	if (data->image_type == filetype_fit) {
+		view = loadable_view(data->os, &size) ?: ERR_PTR(-ENODATA);
+		if (IS_ERR(view))
+			return PTR_ERR(view);
 
-	if (IS_ERR(elf))
-		return PTR_ERR(elf);
+		elf = elf_open_binary((void *)view);
+	} else {
+		elf = elf_open(data->os_file);
+	}
+
+	if (IS_ERR(elf)) {
+		ret = PTR_ERR(elf);
+		goto out_view_free;
+	}
 
 	ret = do_boot_elf(data, elf);
 
 	elf_close(elf);
+
+out_view_free:
+	loadable_view_free(data->os, view, size);
 
 	return ret;
 }

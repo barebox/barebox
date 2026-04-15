@@ -14,7 +14,7 @@ int bootchooser_put(struct bootchooser *bootchooser);
 
 void bootchooser_info(struct bootchooser *bootchooser);
 
-int bootchooser_boot(struct bootchooser *bc);
+int bootchooser_boot(struct bootchooser *bc, struct bootentry *entry);
 
 struct bootchooser_target *bootchooser_get_last_chosen(struct bootchooser *bootchooser);
 void bootchooser_lock_attempts(bool locked);

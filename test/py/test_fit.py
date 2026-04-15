@@ -7,6 +7,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from .helper import of_get_property, filter_errors
+from .testfs import mkcpio
 
 
 def generate_bootscript(barebox, image, name="test"):
@@ -37,16 +38,9 @@ def fit_testdata(barebox_config, testfs):
             input=(builddir / "images" / "barebox-dt-2nd.img").read_bytes(),
             stdout=open(builddir / "barebox-dt-2nd.img.gz", "wb"))
 
-        find = subprocess.Popen(["find", "COPYING", "LICENSES/"],
-                                stdout=subprocess.PIPE)
-        cpio = subprocess.Popen(["cpio", "-o", "-H", "newc"],
-                                stdin=find.stdout, stdout=subprocess.PIPE)
-        gzip = subprocess.Popen(["gzip"], stdin=cpio.stdout,
-                                stdout=open(builddir / "ramdisk.cpio.gz", "wb"))
-
-        find.wait()
-        cpio.wait()
-        gzip.wait()
+        mkcpio("COPYING", outdir / "ramdisk1.cpio.gz")
+        mkcpio("LICENSES/exceptions/", outdir / "ramdisk2.cpio")
+        mkcpio("LICENSES/preferred/", outdir / "ramdisk3.cpio.gz")
 
         run(["mkimage", "-G", "test/self/development_rsa2048.pem", "-r", "-f",
              str(builddir / its_name), str(outfile)])
@@ -105,6 +99,15 @@ def test_fit(barebox, strategy, fitimage):
 
     barebox.run_check("global linux.bootargs.testarg=barebox.chainloaded")
 
+    barebox.run_check("cat -o /tmp/ramdisks.cpio /mnt/9p/testfs/ramdisk*.cpio*")
+    [hashsum1] = barebox.run_check("md5sum /tmp/ramdisks.cpio")
+
+    hashsum1 = re.split("/tmp/ramdisks.cpio", hashsum1, maxsplit=1)[0]
+    # Get the actual size of the concatenated ramdisks file
+    [fileinfo] = barebox.run_check("ls -l /tmp/ramdisks.cpio")
+    # Parse the size from ls -l output (format: permissions links user group size ...)
+    actual_size = int(fileinfo.split()[1])
+
     boottarget = generate_bootscript(barebox, fitimage)
 
     with strategy.boot_barebox(boottarget) as barebox:
@@ -118,7 +121,16 @@ def test_fit(barebox, strategy, fitimage):
         bootargs = of_get_property(barebox, "/chosen/bootargs")
         assert "barebox.chainloaded" in bootargs
 
-        initrd_start = of_get_property(barebox, "/chosen/linux,initrd-start", 0)
-        initrd_end = of_get_property(barebox, "/chosen/linux,initrd-end", 0)
+        initrd_start = of_get_property(barebox, "/chosen/linux,initrd-start", ncells=0)
+        initrd_end = of_get_property(barebox, "/chosen/linux,initrd-end", ncells=0)
+        initrd_size = initrd_end - initrd_start
 
-        assert initrd_start < initrd_end
+        # Verify the DT-reported size matches the actual file size
+        assert initrd_size == actual_size, \
+            f"Initrd size mismatch: DT says {initrd_size}, file is {actual_size}"
+
+        [hashsum2] = barebox.run_check(f"md5sum {initrd_start}+{initrd_size}")
+
+        hashsum2 = re.split("/dev/mem", hashsum2, maxsplit=1)[0]
+
+        assert hashsum1 == hashsum2

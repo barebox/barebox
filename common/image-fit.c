@@ -995,6 +995,12 @@ void *fit_open_configuration(struct fit_handle *handle, const char *name,
 	return conf_node;
 }
 
+const char *fit_config_get_name(struct fit_handle *handle, void *config)
+{
+	struct device_node *node = config;
+	return node->name;
+}
+
 static struct fit_handle *fit_get_handle(const char *filename)
 {
 	struct fit_handle *handle;

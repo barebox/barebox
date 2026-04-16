@@ -121,3 +121,7 @@
 		};
 	};
 };
+
+&{i2c1/pmic@25/regulators} {
+	barebox,allow-dummy-supply;
+};

@@ -13,3 +13,7 @@
 / {
 	barebox,deep-probe;
 };
+
+&{i2c1/pmic@4b/regulators} {
+	barebox,allow-dummy-supply;
+};

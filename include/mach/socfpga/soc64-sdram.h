@@ -189,16 +189,29 @@ void sdram_clear_mem(phys_addr_t addr, phys_size_t size);
 phys_size_t sdram_calculate_size(struct altera_sdram_plat *plat);
 int agilex5_ddr_init_full(void);
 
-static inline resource_size_t agilex5_mpfe_sdram_size(void)
+static inline phys_addr_t agilex5_mpfe_sdram_base(void)
 {
 	u32 lower;
-	resource_size_t mem = 0;
+	u32 upper;
+
+	lower = FW_MPU_DDR_DMI0_SCR_READL(FW_MPU_DDR_SCR_MPUREGION0ADDR_BASE);
+	upper = FW_MPU_DDR_DMI0_SCR_READL(FW_MPU_DDR_SCR_MPUREGION0ADDR_BASEEXT);
+
+	return ((u64)upper << 32) | lower;
+}
+
+static inline resource_size_t agilex5_mpfe_sdram_size(void)
+{
+	resource_size_t limit;
+	u32 lower;
+	u32 upper;
 
 	lower = FW_MPU_DDR_DMI0_SCR_READL(FW_MPU_DDR_SCR_MPUREGION0ADDR_LIMIT);
+	upper = FW_MPU_DDR_DMI0_SCR_READL(FW_MPU_DDR_SCR_MPUREGION0ADDR_LIMITEXT);
 
-	mem = lower;
+	limit = ((u64)upper << 32) | lower;
 
-	return mem;
+	return limit - agilex5_mpfe_sdram_base() + 1;
 }
 
 #endif /* _SDRAM_SOC64_H_ */

@@ -21,6 +21,8 @@ extern char __dtb_z_socfpga_agilex5_axe5_eagle_start[];
 static noinline void axe5_eagle_continue(void)
 {
 	void *fdt;
+	phys_addr_t membase;
+	phys_size_t memsize;
 
 	agilex5_clk_init();
 
@@ -68,7 +70,15 @@ static noinline void axe5_eagle_continue(void)
 
 	fdt = __dtb_z_socfpga_agilex5_axe5_eagle_start;
 
-	barebox_arm_entry(SOCFPGA_AGILEX5_DDR_BASE + SZ_1M, SZ_1G - SZ_1M, fdt);
+	membase = agilex5_mpfe_sdram_base();
+	memsize = agilex5_mpfe_sdram_size();
+
+	if (membase < SOCFPGA_AGILEX5_DDR_BASE || memsize == 0) {
+		pr_err("Invalid firewall configuration\n");
+		hang();
+	}
+
+	barebox_arm_entry(membase, memsize, fdt);
 }
 
 ENTRY_FUNCTION_WITHSTACK(start_socfpga_agilex5_axe5_eagle, AXE5_STACKTOP, r0, r1, r2)

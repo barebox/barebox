@@ -8,6 +8,8 @@
 
 #include <linux/sizes.h>
 
+#include <mach/socfpga/soc64-firewall.h>
+
 struct altera_sdram_plat {
 	void __iomem *mpfe_base_addr;
 	bool dualport;
@@ -192,8 +194,7 @@ static inline resource_size_t agilex5_mpfe_sdram_size(void)
 	u32 lower;
 	resource_size_t mem = 0;
 
-	lower = FW_MPU_DDR_DMI0_SCR_READL(SOCFPGA_FW_DDR_CCU_DMI0_ADDRESS +
-					  FW_MPU_DDR_SCR_MPUREGION0ADDR_LIMIT);
+	lower = FW_MPU_DDR_DMI0_SCR_READL(FW_MPU_DDR_SCR_MPUREGION0ADDR_LIMIT);
 
 	mem = lower;
 

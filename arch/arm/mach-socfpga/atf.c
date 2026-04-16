@@ -60,6 +60,7 @@ void __noreturn agilex5_barebox_entry(void *fdt)
 		socfpga_mailbox_s10_qspi_open();
 
 		agilex5_load_and_start_image_via_tfa();
+		__builtin_unreachable();
 	}
 
 	membase = agilex5_mpfe_sdram_base();

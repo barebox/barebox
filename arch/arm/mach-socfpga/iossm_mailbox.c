@@ -166,16 +166,59 @@ static int io96b_mb_version(struct io96b_info *io96b_ctrl)
 	return version;
 }
 
+static void io96b_mb_init_instance(struct io96b_info *io96b_ctrl, int instance)
+{
+	void __iomem *io96b_csr_addr = io96b_ctrl->io96b[instance].io96b_csr_addr;
+	struct io96b_mb_ctrl *mb_ctrl = &io96b_ctrl->io96b[instance].mb_ctrl;
+	struct io96b_mb_resp usr_resp;
+	u32 mem_intf_info[2];
+	int num_mem_interface = ARRAY_SIZE(mem_intf_info);
+	int i;
+
+	pr_debug("%s: Initialize IO96B_%d\n", __func__, instance);
+
+	/* Get memory interface IP type and instance ID (IP identifier) */
+	if (io96b_ctrl->version == 1) {
+		mem_intf_info[0] = readl(io96b_csr_addr + IOSSM_MEM_INTF_INFO_0_OFFSET);
+		mem_intf_info[1] = readl(io96b_csr_addr + IOSSM_MEM_INTF_INFO_1_OFFSET);
+	} else {
+		io96b_mb_req_no_param(io96b_csr_addr, 0, 0,
+				      CMD_GET_SYS_INFO, GET_MEM_INTF_INFO,
+				      &usr_resp);
+		num_mem_interface =
+			IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status) & 0x3;
+		for (i = 0; i < num_mem_interface; i++)
+			mem_intf_info[i] = usr_resp.cmd_resp_data[i];
+	}
+
+	/* Retrieve memory interface IP type and instance ID (IP identifier) */
+	for (i = 0; i < num_mem_interface; i++) {
+		int interface = mb_ctrl->num_mem_interface;
+		u8 ip_type;
+		u8 instance_id;
+
+		ip_type = FIELD_GET(INTF_IP_TYPE_MASK, mem_intf_info[i]);
+		instance_id = FIELD_GET(INTF_INSTANCE_ID_MASK, mem_intf_info[i]);
+
+		if (!ip_type)
+			continue;
+
+		mb_ctrl->num_mem_interface++;
+		mb_ctrl->ip_type[interface] = ip_type;
+		mb_ctrl->ip_instance_id[interface] = instance_id;
+
+		pr_debug("%s: IO96B_%d interface %d: ip_type=0x%x instance_id=0x%x\n",
+			 __func__, instance, interface, ip_type, instance_id);
+	}
+}
+
 /*
  * Initial function to be called to set memory interface IP type and instance ID
  * IP type and instance ID need to be determined before sending mailbox command
  */
 void io96b_mb_init(struct io96b_info *io96b_ctrl)
 {
-	struct io96b_mb_resp usr_resp;
-	struct io96b_mb_ctrl *mb_ctrl;
-	u8 ip_type_ret, instance_id_ret;
-	int i, j, k;
+	int i;
 	int version;
 
 	version = io96b_mb_version(io96b_ctrl);
@@ -191,46 +234,8 @@ void io96b_mb_init(struct io96b_info *io96b_ctrl)
 	io96b_ctrl->version = version;
 
 	pr_debug("%s: num_instance %d\n", __func__, io96b_ctrl->num_instance);
-	for (i = 0; i < io96b_ctrl->num_instance; i++) {
-		int num_mem_interface = 0;
-		u32 mem_intf_info[2];
-
-		mb_ctrl = &io96b_ctrl->io96b[i].mb_ctrl;
-		pr_debug("%s: get memory interface IO96B %d\n", __func__, i);
-		/* Get memory interface IP type and instance ID (IP identifier) */
-		if (io96b_ctrl->version == 1) {
-			mem_intf_info[0] = readl(io96b_ctrl->io96b[i].io96b_csr_addr +
-						 IOSSM_MEM_INTF_INFO_0_OFFSET);
-			mem_intf_info[1] = readl(io96b_ctrl->io96b[i].io96b_csr_addr +
-						 IOSSM_MEM_INTF_INFO_1_OFFSET);
-			num_mem_interface = 2;
-		} else {
-			io96b_mb_req_no_param(io96b_ctrl->io96b[i].io96b_csr_addr, 0, 0,
-					      CMD_GET_SYS_INFO, GET_MEM_INTF_INFO, &usr_resp);
-			num_mem_interface =
-				IOSSM_CMD_RESPONSE_DATA_SHORT(usr_resp.cmd_resp_status) & 0x3;
-			for (j = 0; j < num_mem_interface; j++)
-				mem_intf_info[j] = usr_resp.cmd_resp_data[j];
-		}
-
-		/* Retrieve memory interface IP type and instance ID (IP identifier) */
-		j = 0;
-		for (k = 0; k < num_mem_interface; k++) {
-			ip_type_ret = FIELD_GET(INTF_IP_TYPE_MASK, mem_intf_info[k]);
-			instance_id_ret = FIELD_GET(INTF_INSTANCE_ID_MASK, mem_intf_info[k]);
-
-			if (ip_type_ret) {
-				mb_ctrl->num_mem_interface++;
-				mb_ctrl->ip_type[j] = ip_type_ret;
-				mb_ctrl->ip_instance_id[j] = instance_id_ret;
-				pr_debug("%s: IO96B %d mem_interface %d: ip_type_ret: 0x%x\n",
-					 __func__, i, j, ip_type_ret);
-				pr_debug("%s: IO96B %d mem_interface %d: instance_id_ret: 0x%x\n",
-					 __func__, i, j, instance_id_ret);
-				j++;
-			}
-		}
-	}
+	for (i = 0; i < io96b_ctrl->num_instance; i++)
+		io96b_mb_init_instance(io96b_ctrl, i);
 }
 
 static int io96b_cal_status(void __iomem *io96b_csr_addr)

@@ -9,6 +9,7 @@
 #include <common.h>
 #include <io.h>
 #include <linux/bitfield.h>
+#include <linux/iopoll.h>
 #include <linux/sizes.h>
 #include "iossm_mailbox.h"
 #include <mach/socfpga/generic.h>
@@ -48,30 +49,13 @@ static const char *ddr_type_list[7] = {
 		"DDR4", "DDR5", "DDR5_RDIMM", "LPDDR4", "LPDDR5", "QDRIV", "UNKNOWN"
 };
 
-static int wait_for_timeout(const void __iomem *reg, u32 mask, bool set)
-{
-	int timeout = 1000000;
-	int val;
-
-	while (timeout > 0) {
-		val = readl(IOMEM(reg));
-		if (!set)
-			val = ~val;
-
-		if ((val & mask) == mask)
-			return 0;
-		__udelay(10);
-		timeout--;
-	}
-
-	return -ETIMEDOUT;
-}
-
 static int is_ddr_csr_clkgen_locked(u32 clkgen_mask, u8 num_port)
 {
 	int ret;
+	u32 tmp;
 
-	ret = wait_for_timeout(IOMEM(ECC_INTSTATUS_SERR), clkgen_mask, true);
+	ret = readl_poll_timeout(IOMEM(ECC_INTSTATUS_SERR),
+				 tmp, tmp & clkgen_mask, 10 * USEC_PER_SEC);
 	if (ret) {
 		pr_debug("%s: ddr csr clkgena locked is timeout\n", __func__);
 		return ret;
@@ -105,7 +89,9 @@ int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
 	memset(resp, 0x0, sizeof(*resp));
 
 	/* Ensure CMD_REQ is cleared before write any command request */
-	ret = wait_for_timeout((IOMEM(io96b_csr_addr) + IOSSM_CMD_REQ_OFFSET), GENMASK(31, 0), false);
+	ret = readl_poll_timeout(IOMEM(io96b_csr_addr) + IOSSM_CMD_REQ_OFFSET,
+				 cmd_req, !(cmd_req & GENMASK(31, 0)),
+				 10 * USEC_PER_SEC);
 	if (ret) {
 		pr_err("%s: CMD_REQ not ready\n", __func__);
 		return -1;
@@ -135,8 +121,10 @@ int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
 		 cmd_req, io96b_csr_addr + IOSSM_CMD_REQ_OFFSET);
 
 	/* Read CMD_RESPONSE_READY in CMD_RESPONSE_STATUS*/
-	ret = wait_for_timeout((IOMEM(io96b_csr_addr) + IOSSM_CMD_RESPONSE_STATUS_OFFSET),
-			       IOSSM_STATUS_COMMAND_RESPONSE_READY, true);
+	ret = readl_poll_timeout(IOMEM(io96b_csr_addr) + IOSSM_CMD_RESPONSE_STATUS_OFFSET,
+				 resp->cmd_resp_status,
+				 resp->cmd_resp_status & IOSSM_STATUS_COMMAND_RESPONSE_READY,
+				 10 * USEC_PER_SEC);
 	if (ret) {
 		pr_err("%s: CMD_RESPONSE ERROR:\n", __func__);
 		cmd_resp = readl(io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET);
@@ -262,9 +250,14 @@ static int io96b_cal_status(phys_addr_t addr)
 {
 	int ret;
 	u32 cal_success, cal_fail;
+	u32 cal_status;
 	phys_addr_t status_addr = addr + IOSSM_STATUS_OFFSET;
+
 	/* Ensure calibration completed */
-	ret = wait_for_timeout(IOMEM(status_addr), IOSSM_STATUS_CAL_BUSY, false);
+	ret = readl_poll_timeout(IOMEM(status_addr),
+				 cal_status,
+				 !(cal_status & IOSSM_STATUS_CAL_BUSY),
+				 10 * USEC_PER_SEC);
 	if (ret) {
 		pr_err("%s: SDRAM calibration IO96b instance 0x%llx timeout\n",
 		       __func__, status_addr);

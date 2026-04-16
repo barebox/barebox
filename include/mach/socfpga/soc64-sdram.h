@@ -175,18 +175,6 @@ struct altera_sdram_plat {
 #define FW_HMC_ADAPTOR_REG_ADDR			0xf8020004
 #define FW_HMC_ADAPTOR_MPU_MASK			BIT(0)
 
-u32 hmc_readl(struct altera_sdram_plat *plat, u32 reg);
-u32 hmc_ecc_readl(struct altera_sdram_plat *plat, u32 reg);
-u32 hmc_ecc_writel(struct altera_sdram_plat *plat,
-		   u32 data, u32 reg);
-u32 ddr_sch_writel(struct altera_sdram_plat *plat, u32 data,
-		   u32 reg);
-int emif_clear(struct altera_sdram_plat *plat);
-int emif_reset(struct altera_sdram_plat *plat);
-int poll_hmc_clock_status(void);
-void sdram_clear_mem(phys_addr_t addr, phys_size_t size);
-//void sdram_set_firewall(struct bd_info *bd);
-phys_size_t sdram_calculate_size(struct altera_sdram_plat *plat);
 int agilex5_ddr_init_full(void);
 
 static inline phys_addr_t agilex5_mpfe_sdram_base(void)

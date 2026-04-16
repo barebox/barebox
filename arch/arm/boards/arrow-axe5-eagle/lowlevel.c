@@ -63,7 +63,7 @@ static noinline void axe5_eagle_continue(void)
 		socfpga_mailbox_s10_init();
 		socfpga_mailbox_s10_qspi_open();
 
-		agilex5_load_and_start_image_via_tfa(SZ_1G);
+		agilex5_load_and_start_image_via_tfa();
 	}
 
 	fdt = __dtb_z_socfpga_agilex5_axe5_eagle_start;

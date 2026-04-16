@@ -9,7 +9,7 @@
 #include <mach/socfpga/generic.h>
 #include <mach/socfpga/soc64-regs.h>
 
-void __noreturn agilex5_load_and_start_image_via_tfa(unsigned long memsize)
+void __noreturn agilex5_load_and_start_image_via_tfa(void)
 {
 	void *bl31 = (void *)AGILEX5_ATF_BL31_BASE_ADDR;
 	void *bl33 = (void *)AGILEX5_ATF_BL33_BASE_ADDR;

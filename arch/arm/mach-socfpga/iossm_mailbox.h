@@ -150,7 +150,6 @@ static inline int io96b_mb_req_no_param(phys_addr_t io96b_csr_addr, u32 ip_type,
 
 /* Supported IOSSM mailbox function */
 void io96b_mb_init(struct io96b_info *io96b_ctrl);
-int io96b_cal_status(phys_addr_t addr);
 void io96b_init_mem_cal(struct io96b_info *io96b_ctrl);
 int io96b_trig_mem_cal(struct io96b_info *io96b_ctrl);
 int io96b_get_mem_technology(struct io96b_info *io96b_ctrl);

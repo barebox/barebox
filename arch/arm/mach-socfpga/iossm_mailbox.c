@@ -258,7 +258,7 @@ void io96b_mb_init(struct io96b_info *io96b_ctrl)
 	}
 }
 
-int io96b_cal_status(phys_addr_t addr)
+static int io96b_cal_status(phys_addr_t addr)
 {
 	int ret;
 	u32 cal_success, cal_fail;

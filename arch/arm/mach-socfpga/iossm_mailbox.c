@@ -83,7 +83,7 @@ int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
 		 struct io96b_mb_resp *resp)
 {
 	int ret;
-	u32 cmd_req, cmd_resp;
+	u32 cmd_req;
 
 	/* Initialized zeros for responses*/
 	memset(resp, 0x0, sizeof(*resp));
@@ -125,17 +125,14 @@ int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
 				 resp->cmd_resp_status,
 				 resp->cmd_resp_status & IOSSM_STATUS_COMMAND_RESPONSE_READY,
 				 10 * USEC_PER_SEC);
-	if (ret) {
-		pr_err("%s: CMD_RESPONSE ERROR:\n", __func__);
-		cmd_resp = readl(io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET);
-		pr_err("%s: STATUS_GENERAL_ERROR: 0x%x\n", __func__, (cmd_resp >> 1) & 0xF);
-		pr_err("%s: STATUS_CMD_RESPONSE_ERROR: 0x%x\n", __func__, (cmd_resp >> 5) & 0x7);
-	}
+	if (ret)
+		pr_warn("%s: CMD_RESPONSE_STATUS ERROR: 0x%lx 0x%lx\n", __func__,
+			FIELD_GET(GENMASK(4, 1), resp->cmd_resp_status),
+			FIELD_GET(GENMASK(7, 5), resp->cmd_resp_status));
 
-	/* read CMD_RESPONSE_STATUS*/
-	resp->cmd_resp_status = readl(io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET);
-	pr_debug("%s: CMD_RESPONSE_STATUS 0x%llx: 0x%x\n", __func__, io96b_csr_addr +
-		IOSSM_CMD_RESPONSE_STATUS_OFFSET, resp->cmd_resp_status);
+	pr_debug("%s: CMD_RESPONSE_STATUS 0x%p: 0x%x\n", __func__,
+		 io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET,
+		 resp->cmd_resp_status);
 
 	/* read CMD_RESPONSE_DATA_* */
 	resp->cmd_resp_data[0] = readl(io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_0_OFFSET);
@@ -151,18 +148,9 @@ int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
 		 __func__, io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_2_OFFSET,
 		 resp->cmd_resp_data[2]);
 
-	resp->cmd_resp_status = readl(io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET);
-	pr_debug("%s: CMD_RESPONSE_STATUS 0x%llx: 0x%x\n", __func__,
-		 io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET,
-		 resp->cmd_resp_status);
-
 	/* write CMD_RESPONSE_READY = 0 */
 	clrbits_le32((u32 *)(uintptr_t)(io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET),
 		     IOSSM_STATUS_COMMAND_RESPONSE_READY);
-
-	resp->cmd_resp_status = readl(io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET);
-	pr_debug("%s: CMD_RESPONSE_READY 0x%llx: 0x%x\n", __func__, io96b_csr_addr +
-		 IOSSM_CMD_RESPONSE_STATUS_OFFSET, resp->cmd_resp_status);
 
 	return 0;
 }

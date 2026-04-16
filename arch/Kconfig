@@ -54,12 +54,18 @@ config ARCH_HAS_RELR
 config RELR
 	bool "Use RELR relocation packing"
 	depends on ARCH_HAS_RELR && TOOLS_SUPPORT_RELR
-	default y
+	depends on EXPERIMENTAL
 	help
 	  Store the dynamic relocations in the RELR relocation packing
 	  format. Requires a compatible linker (LLD supports this feature), as
 	  well as compatible NM and OBJCOPY utilities (llvm-nm and llvm-objcopy
 	  are compatible).
+
+	  This can save ~10% of binary size, more if the final barebox image
+	  contains less external firmware blobs.
+
+	  This is marked experimental until the early hang for rock3a when
+	  this is enabled is understood and repaired.
 
 config ARCH_HAS_CTRLC
 	bool

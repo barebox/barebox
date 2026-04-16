@@ -120,9 +120,9 @@ static int populate_ddr_handoff(struct altera_sdram_plat *plat, struct io96b_inf
 
 	/* Assign IO96B CSR base address if it is valid */
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
-		io96b_ctrl->io96b[i].io96b_csr_addr = io96b_csr_reg_addr[i];
-		pr_debug("%s: IO96B 0x%llx CSR enabled\n", __func__
-			, io96b_ctrl->io96b[i].io96b_csr_addr);
+		io96b_ctrl->io96b[i].io96b_csr_addr = IOMEM(io96b_csr_reg_addr[i]);
+		pr_debug("%s: IO96B_%d: 0x%p CSR enabled\n", __func__,
+			 i, io96b_ctrl->io96b[i].io96b_csr_addr);
 	}
 
 	return 0;

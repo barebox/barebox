@@ -103,7 +103,7 @@ struct io96b_mb_resp {
  */
 struct io96b_instance {
 	phys_size_t size;
-	phys_addr_t io96b_csr_addr;
+	void __iomem *io96b_csr_addr;
 	bool cal_status;
 	struct io96b_mb_ctrl mb_ctrl;
 };
@@ -134,13 +134,13 @@ struct io96b_info {
 	u8			 num_port;
 };
 
-int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
+int io96b_mb_req(void __iomem *io96b_csr_addr, u32 ip_type, u32 instance_id,
 		 u32 usr_cmd_type, u32 usr_cmd_opcode, u32 cmd_param_0,
 		 u32 cmd_param_1, u32 cmd_param_2, u32 cmd_param_3,
 		 u32 cmd_param_4, u32 cmd_param_5, u32 cmd_param_6,
 		 struct io96b_mb_resp *resp);
 
-static inline int io96b_mb_req_no_param(phys_addr_t io96b_csr_addr, u32 ip_type,
+static inline int io96b_mb_req_no_param(void __iomem *io96b_csr_addr, u32 ip_type,
 					u32 instance_id, u32 usr_cmd_type,
 					u32 usr_cmd_opcode, struct io96b_mb_resp *resp)
 {

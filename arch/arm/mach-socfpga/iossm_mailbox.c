@@ -76,7 +76,7 @@ static int is_ddr_csr_clkgen_locked(u32 clkgen_mask, u8 num_port)
  * @resp:			Structure contain responses returned from the requested IOSSM
  *					mailbox command
  */
-int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
+int io96b_mb_req(void __iomem *io96b_csr_addr, u32 ip_type, u32 instance_id,
 		 u32 usr_cmd_type, u32 usr_cmd_opcode, u32 cmd_param_0,
 		 u32 cmd_param_1, u32 cmd_param_2, u32 cmd_param_3,
 		 u32 cmd_param_4, u32 cmd_param_5, u32 cmd_param_6,
@@ -89,7 +89,7 @@ int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
 	memset(resp, 0x0, sizeof(*resp));
 
 	/* Ensure CMD_REQ is cleared before write any command request */
-	ret = readl_poll_timeout(IOMEM(io96b_csr_addr) + IOSSM_CMD_REQ_OFFSET,
+	ret = readl_poll_timeout(io96b_csr_addr + IOSSM_CMD_REQ_OFFSET,
 				 cmd_req, !(cmd_req & GENMASK(31, 0)),
 				 10 * USEC_PER_SEC);
 	if (ret) {
@@ -117,11 +117,11 @@ int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
 	cmd_req = (usr_cmd_opcode << 0) | (usr_cmd_type << 16) | (instance_id << 24) |
 		(ip_type << 29);
 	writel(cmd_req, io96b_csr_addr + IOSSM_CMD_REQ_OFFSET);
-	pr_debug("%s: Write 0x%x to IOSSM_CMD_REQ_OFFSET 0x%llx\n", __func__,
+	pr_debug("%s: Write 0x%x to IOSSM_CMD_REQ_OFFSET 0x%p\n", __func__,
 		 cmd_req, io96b_csr_addr + IOSSM_CMD_REQ_OFFSET);
 
 	/* Read CMD_RESPONSE_READY in CMD_RESPONSE_STATUS*/
-	ret = readl_poll_timeout(IOMEM(io96b_csr_addr) + IOSSM_CMD_RESPONSE_STATUS_OFFSET,
+	ret = readl_poll_timeout(io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET,
 				 resp->cmd_resp_status,
 				 resp->cmd_resp_status & IOSSM_STATUS_COMMAND_RESPONSE_READY,
 				 10 * USEC_PER_SEC);
@@ -129,27 +129,26 @@ int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
 		pr_warn("%s: CMD_RESPONSE_STATUS ERROR: 0x%lx 0x%lx\n", __func__,
 			FIELD_GET(GENMASK(4, 1), resp->cmd_resp_status),
 			FIELD_GET(GENMASK(7, 5), resp->cmd_resp_status));
-
 	pr_debug("%s: CMD_RESPONSE_STATUS 0x%p: 0x%x\n", __func__,
 		 io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET,
 		 resp->cmd_resp_status);
 
 	/* read CMD_RESPONSE_DATA_* */
 	resp->cmd_resp_data[0] = readl(io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_0_OFFSET);
-	pr_debug("%s: IOSSM_CMD_RESPONSE_DATA_0_OFFSET 0x%llx: 0x%x\n",
-		 __func__, io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_0_OFFSET,
+	pr_debug("%s: IOSSM_CMD_RESPONSE_DATA_0_OFFSET 0x%p: 0x%x\n", __func__,
+		 io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_0_OFFSET,
 		 resp->cmd_resp_data[0]);
 	resp->cmd_resp_data[1] = readl(io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_1_OFFSET);
-	pr_debug("%s: IOSSM_CMD_RESPONSE_DATA_1_OFFSET 0x%llx: 0x%x\n",
-		 __func__, io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_1_OFFSET,
+	pr_debug("%s: IOSSM_CMD_RESPONSE_DATA_1_OFFSET 0x%p: 0x%x\n", __func__,
+		 io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_1_OFFSET,
 		 resp->cmd_resp_data[1]);
 	resp->cmd_resp_data[2] = readl(io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_2_OFFSET);
-	pr_debug("%s: IOSSM_CMD_RESPONSE_DATA_2_OFFSET 0x%llx: 0x%x\n",
-		 __func__, io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_2_OFFSET,
+	pr_debug("%s: IOSSM_CMD_RESPONSE_DATA_2_OFFSET 0x%p: 0x%x\n", __func__,
+		 io96b_csr_addr + IOSSM_CMD_RESPONSE_DATA_2_OFFSET,
 		 resp->cmd_resp_data[2]);
 
 	/* write CMD_RESPONSE_READY = 0 */
-	clrbits_le32((u32 *)(uintptr_t)(io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET),
+	clrbits_le32(io96b_csr_addr + IOSSM_CMD_RESPONSE_STATUS_OFFSET,
 		     IOSSM_STATUS_COMMAND_RESPONSE_READY);
 
 	return 0;
@@ -157,7 +156,7 @@ int io96b_mb_req(phys_addr_t io96b_csr_addr, u32 ip_type, u32 instance_id,
 
 static int io96b_mb_version(struct io96b_info *io96b_ctrl)
 {
-	phys_addr_t io96b_csr_addr = io96b_ctrl->io96b[0].io96b_csr_addr;
+	void __iomem *io96b_csr_addr = io96b_ctrl->io96b[0].io96b_csr_addr;
 	u32 mailbox_header;
 	int version;
 
@@ -234,19 +233,19 @@ void io96b_mb_init(struct io96b_info *io96b_ctrl)
 	}
 }
 
-static int io96b_cal_status(phys_addr_t addr)
+static int io96b_cal_status(void __iomem *io96b_csr_addr)
 {
 	int ret;
 	u32 cal_status;
 
 	/* Ensure calibration completed */
-	ret = readl_poll_timeout(IOMEM(addr) + IOSSM_STATUS_OFFSET,
+	ret = readl_poll_timeout(io96b_csr_addr + IOSSM_STATUS_OFFSET,
 				 cal_status,
 				 !(cal_status & IOSSM_STATUS_CAL_BUSY),
 				 10 * USEC_PER_SEC);
 	if (ret) {
-		pr_err("%s: SDRAM calibration IO96b instance 0x%llx timeout\n",
-		       __func__, addr);
+		pr_err("%s: SDRAM calibration IO96b instance 0x%p timeout\n",
+		       __func__, io96b_csr_addr);
 		hang();
 	}
 
@@ -527,7 +526,7 @@ int io96b_ecc_enable_status(struct io96b_info *io96b_ctrl)
 static int io96b_poll_bist_mem_init_status(struct io96b_info *io96b_ctrl,
 					   int instance, int interface)
 {
-	phys_addr_t io96b_csr_addr = io96b_ctrl->io96b[instance].io96b_csr_addr;
+	void __iomem *io96b_csr_addr = io96b_ctrl->io96b[instance].io96b_csr_addr;
 	struct io96b_mb_ctrl *mb_ctrl = &io96b_ctrl->io96b[instance].mb_ctrl;
 	int timeout = 1 * USEC_PER_SEC;
 	bool bist_success = false;
@@ -572,7 +571,7 @@ static int bist_mem_init_by_addr(struct io96b_info *io96b_ctrl,
 				 int instance, int interface,
 				 phys_addr_t base_addr, phys_size_t size)
 {
-	phys_addr_t io96b_csr_addr = io96b_ctrl->io96b[instance].io96b_csr_addr;
+	void __iomem *io96b_csr_addr = io96b_ctrl->io96b[instance].io96b_csr_addr;
 	struct io96b_mb_ctrl *mb_ctrl = &io96b_ctrl->io96b[instance].mb_ctrl;
 	struct io96b_mb_resp usr_resp;
 	bool bist_start = false;

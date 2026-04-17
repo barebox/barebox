@@ -6,9 +6,12 @@
  * URI to a C struct suitable to compile with barebox.
  *
  * TODO: Find a better way for reimport_key()
- *
  */
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" /* ENGINE deprecated in OpenSSL 3.0 */
+
+#include "include/string_util.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -29,6 +32,7 @@
 #include <ctype.h>
 
 struct keyinfo {
+	char *spec;
 	char *name_hint;
 	char *keyring;
 	char *path;
@@ -716,8 +720,8 @@ static bool is_identifier(char **s)
 {
 	char *p = *s;
 
-	/* [a-zA-Z] */
-	if (!isalpha(*p))
+	/* [a-zA-Z_] */
+	if (!(isalpha(*p) || *p == '_'))
 		return false;
 	p++;
 
@@ -784,8 +788,15 @@ static bool parse_info(char *p, struct keyinfo *out)
 	}
 }
 
-static bool get_name_path(const char *keyspec, struct keyinfo *out)
+static bool parse_keyspec(struct keyinfo *out)
 {
+	const char *keyspec = out->spec;
+
+	if (!strncmp(keyspec, "pkcs11:", 7)) { /* legacy format of pkcs11 URI */
+		out->path = strdup(keyspec);
+		return true;
+	}
+
 	char *sep, *spec;
 
 	spec = strdup(keyspec);
@@ -814,9 +825,9 @@ static bool get_name_path(const char *keyspec, struct keyinfo *out)
 
 int main(int argc, char *argv[])
 {
-	int i, opt, ret;
+	int keys_idx, arg_idx, opt, ret;
 	char *outfile = NULL;
-	int keycount;
+	size_t keycount, num_positionals;
 	struct keyinfo *keylist;
 
 	outfilep = stdout;
@@ -852,26 +863,74 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	keycount = argc - optind;
-	keylist = calloc(sizeof(struct keyinfo), keycount);
 
-	for (i = 0; i < keycount; i++) {
-		const char *keyspec = try_resolve_env(argv[optind + i]);
-		struct keyinfo *info = &keylist[i];
+	num_positionals = argc - optind;
+	keycount = num_positionals;
 
-		if (!keyspec)
+	keylist = calloc(keycount, sizeof(*keylist));
+
+	if (!keylist)
+		enomem_exit("keylist");
+
+	keys_idx = 0;
+	/* expand arguments given as environment variables into one or multiple keyspecs */
+	for (arg_idx = 0; arg_idx < num_positionals; arg_idx++) {
+		char *arg = argv[optind + arg_idx];
+		const char *resolved = try_resolve_env(arg);
+
+		if (!resolved)
 			exit(1);
 
-		if (!strncmp(keyspec, "pkcs11:", 7)) { // legacy format of pkcs11 URI
-			info->path = strdup(keyspec);
+		if (arg == resolved) {
+			keylist[keys_idx].spec = strdup(arg);
+			keys_idx++;
 		} else {
-			if (!get_name_path(keyspec, info)) {
-				fprintf(stderr, "invalid keyspec %i: %s\n", optind, keyspec);
-				exit(1);
+			char *keyspecs = strdup(resolved);
+			char *keyspec;
+
+			/* Keyspec given as env Variable,
+			 * remove it and add an arbitrary number of keyspecs from its contents
+			 */
+			keycount--;
+			while ((keyspec = strsep_unescaped(&keyspecs, " ", NULL))) {
+				keycount++;
+				keylist = reallocarray(keylist, keycount, sizeof(*keylist));
+				if (!keylist)
+					enomem_exit("realloc keylist");
+				bzero(keylist + (keycount - 1), sizeof(*keylist));
+				keylist[keys_idx].spec = keyspec;
+				keys_idx++;
 			}
 		}
 	}
 
+	/* parse each keyspec */
+	for (keys_idx = 0; keys_idx < keycount; keys_idx++) {
+		struct keyinfo *info = &keylist[keys_idx];
+		if (!parse_keyspec(info)) {
+			fprintf(stderr, "invalid keyspec %i: %s\n", optind,
+				info->spec);
+			exit(1);
+		}
+
+		/* resolve __ENV__ for name_hint and path */
+		info->name_hint = try_resolve_env(info->name_hint);
+		info->path = try_resolve_env(info->path);
+
+		if (asprintf(&info->name_c, "key_%i", keys_idx + 1) < 0)
+			enomem_exit("asprintf");
+
+		/* unfortunately, the fit name hint is mandatory in the barebox codebase */
+		if (!info->name_hint)
+			info->name_hint = info->name_c;
+
+		if (!info->keyring) {
+			info->keyring = strdup("fit");
+			fprintf(stderr, "Warning: No keyring provided in keyspec, defaulting to keyring=fit for %s\n", info->path);
+		}
+	}
+
+	/* write out C representation */
 	if (dts) {
 		fprintf(outfilep, "/dts-v1/;\n");
 		fprintf(outfilep, "/ {\n");
@@ -883,32 +942,13 @@ int main(int argc, char *argv[])
 		fprintf(outfilep, "#include <crypto/ecdsa.h>\n");
 		fprintf(outfilep, "#include <crypto/rsa.h>\n");
 	}
-
-
-	for (i = 0; i < keycount; i++) {
-		struct keyinfo *info = &keylist[i];
-
-		/* resolve __ENV__ for name_hint and path */
-		info->name_hint = try_resolve_env(info->name_hint);
-		info->path = try_resolve_env(info->path);
-
-		if (asprintf(&info->name_c, "key_%i", i + 1) < 0)
-			enomem_exit("asprintf");
-
-		/* unfortunately, the fit name hint is mandatory in the barebox codebase */
-		if (!info->name_hint)
-			info->name_hint = info->name_c;
-
-		if (!info->keyring) {
-			info->keyring = strdup("fit");
-			fprintf(stderr, "Warning: No keyring provided in keyspec, defaulting to keyring=fit for %s\n", argv[optind + i]);
-		}
+	for (keys_idx = 0; keys_idx < keycount; keys_idx++) {
+		struct keyinfo *info = &keylist[keys_idx];
 
 		ret = gen_key(info);
 		if (ret)
 			exit(1);
 	}
-
 	if (dts) {
 		fprintf(outfilep, "\t};\n");
 		fprintf(outfilep, "};\n");

@@ -1,39 +1,22 @@
 :orphan:
 
-Boards
-------
+CONFIG_CRYPTO_PUBLIC_KEYS
+-------------------------
 
-TQMA8MPxL
-^^^^^^^^^
+The syntax of keytoc keyspecs when fully provided via an environment variable
+was slightly changed to allow any number of keyspecs to be provided via an
+environment variable. Such environment variables are now split at spaces to be
+interpreted as multiple keyspecs. Any literal spaces and backslashes contained
+in such keyspecs need to be escaped with a backslash.
 
-The config option has been renamed from ``CONFIG_MACH_TQ_MBA8MPXL`` to
-``CONFIG_MACH_TQ_MBA8MPXX`` to accommodate the support for TQMA8MPxS
-boards with the same binary.
-The binary has been renamed from ``barebox-tqma8mpxl.img``
-to ``barebox-tqma8mpxx.img``.
+This only applies to the form:
 
-ZynqMP
-^^^^^^
+  CONFIG_CRYPTO_PUBLIC_KEYS="__ENV__A"
 
-The Linux v7.0 device trees imported into this barebox release no
-longer feature an unconditional `"linaro,optee-tz"` compatible OF node.
+While the interpretation of environment variables specifying hint or URI remains unchanged:
 
-If OP-TEE use in barebox is desired, this node must be added back to the
-barebox device tree.
+  CONFIG_CRYPTO_PUBLIC_KEYS="keyring=kr:__ENV__B"
 
-HABv4-enablement
-^^^^^^^^^^^^^^^^
-
-When the SRK hash is written, the corresponding fuse bank is now locked automatically.
-With that the ``IMX_SRK_HASH_WRITE_LOCK`` flag is removed.
-
-
-TF-A v2.14 compatibility
-------------------------
-
-TF-A v2.14 has `broken compatibility <https://lists.trustedfirmware.org/archives/list/tf-a@lists.trustedfirmware.org/thread/LKJVRDGRH7F73FWSTZC46I7IT3BRYQXC/>`_
-with SCMI consumers that implement only version 2.0 of the clock protocol.
-This includes barebox v2026.03.1, but also Linux v6.6.
-
-barebox v2026.04.0 is the first release that's compatible with both TF-A
-releases older than v2.14 as well as v2.14 itself.
+Fit hints can no longer be specified by environment variables using the __ENV__
+syntax. This functionality was broken since the last change to the keyspec
+syntax in 2025.12.

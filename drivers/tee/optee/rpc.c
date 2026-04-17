@@ -69,7 +69,12 @@ void optee_rpc_cmd(struct tee_context *ctx, struct optee *optee,
 		break;
 	default:
 		pr_notice_once("optee: No supplicant or RPC handler for command 0x%x\n", arg->cmd);
+		fallthrough;
+	case OPTEE_RPC_CMD_RPMB_PROBE_RESET:
+	case OPTEE_RPC_CMD_RPMB_PROBE_NEXT:
+	case OPTEE_RPC_CMD_RPMB_FRAMES:
 		arg->ret = TEEC_ERROR_NOT_IMPLEMENTED;
+		break;
 	}
 
 	arg->ret_origin = TEEC_ORIGIN_COMMS;

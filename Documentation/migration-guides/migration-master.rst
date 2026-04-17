@@ -17,3 +17,14 @@ HABv4-enablement
 
 When the SRK hash is written, the corresponding fuse bank is now locked automatically.
 With that the ``IMX_SRK_HASH_WRITE_LOCK`` flag is removed.
+
+
+TF-A v2.14 compatibility
+------------------------
+
+TF-A v2.14 has `broken compatibility <https://lists.trustedfirmware.org/archives/list/tf-a@lists.trustedfirmware.org/thread/LKJVRDGRH7F73FWSTZC46I7IT3BRYQXC/>`_
+with SCMI consumers that implement only version 2.0 of the clock protocol.
+This includes barebox v2026.03.1, but also Linux v6.6.
+
+barebox v2026.04.0 is the first release that's compatible with both TF-A
+releases older than v2.14 as well as v2.14 itself.

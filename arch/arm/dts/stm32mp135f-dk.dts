@@ -16,3 +16,8 @@
 		};
 	};
 };
+
+&{/gpio-keys/button-user} {
+	/* The button shared the same GPIO as led-red */
+	barebox,status = "disabled";
+};

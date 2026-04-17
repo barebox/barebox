@@ -755,6 +755,7 @@ config MACH_PROTONIC_IMX8M
 	select MCI_IMX_ESDHC_PBL
 	select IMX8M_DRAM
 	select USB_GADGET_DRIVER_ARC_PBL
+	select IMX8MP_DRAM_ECC
 
 config MACH_SKOV_IMX8MP
 	bool "Skov i.MX8MP based boards"
@@ -1060,6 +1061,16 @@ config HABV3_IMG_CRT_DER
 	default "../crts/IMG1_1_sha256_2048_65537_v3_usr_crt.der"
 
 endif
+
+config IMX8MP_DRAM_ECC
+	bool
+	depends on ARCH_IMX8MP
+	help
+	  This option is selected by boards that make use of the inline ECC
+	  support for LPDDR4 memory on i.MX8MP SoCs. For board images that
+	  configure ECC, the total amount of memory available will be reduced by
+	  1/8th.
+	  Boards that don't explicitly make use of it are not affected.
 
 endmenu
 

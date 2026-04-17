@@ -36,8 +36,9 @@ static void setup_uart(void)
 
 /* read piggydata via a bootrom callback and place it behind our copy in SDRAM */
 extern struct dram_timing_info prt8ml_dram_timing;
+extern struct dram_timing_info prt8ml_dram_ecc_timing;
 
-static void start_atf(void)
+static void start_atf(struct dram_timing_info *timing)
 {
 	/*
 	 * If we are in EL3 we are running for the first time and need to
@@ -51,7 +52,7 @@ static void start_atf(void)
 
 	imx8mp_early_clock_init();
 
-	imx8mp_ddr_init(&prt8ml_dram_timing, DRAM_TYPE_LPDDR4);
+	imx8mp_ddr_init(timing, DRAM_TYPE_LPDDR4);
 
 	imx8mp_load_and_start_image_via_tfa();
 }
@@ -76,7 +77,19 @@ static __noreturn noinline void prt_prt8ml_start(void)
 {
 	setup_uart();
 
-	start_atf();
+	start_atf(&prt8ml_dram_timing);
+
+	/*
+	 * Standard entry we hit once we initialized both DDR and ATF
+	 */
+	imx8mp_barebox_entry(__dtb_imx8mp_prt8ml_start);
+}
+
+static __noreturn noinline void prt_prt8ml_ecc_start(void)
+{
+	setup_uart();
+
+	start_atf(&prt8ml_dram_ecc_timing);
 
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
@@ -92,4 +105,14 @@ ENTRY_FUNCTION(start_prt_prt8ml, r0, r1, r2)
 	setup_c();
 
 	prt_prt8ml_start();
+}
+
+ENTRY_FUNCTION(start_prt_prt8ml_ecc, r0, r1, r2)
+{
+	imx8mp_cpu_lowlevel_init();
+
+	relocate_to_current_adr();
+	setup_c();
+
+	prt_prt8ml_ecc_start();
 }

@@ -20,8 +20,16 @@
 			status = "disabled";
 		};
 	};
-};
 
+	/* Minimum contiguous memory region is 1792MiB
+	 * The probe function of the ddrc will either expand this
+	 * to 6GiB (without ECC) or 5.25GiB (with inline ECC, in 3 regions).
+	 */
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x0 0x40000000 0x0 0x70000000>;
+	};
+};
 
 &usdhc2 {
 	#address-cells = <1>;

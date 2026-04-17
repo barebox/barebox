@@ -391,8 +391,7 @@ static int ls1028a_esdhc_start_image(void __iomem *base, struct dram_regions_inf
 	};
 	void *sdram = (void *)0x80000000;
 	void (*bl31)(void) = (void *)LS1028A_TFA_RESERVED_START;
-	size_t bl31_size;
-	void *bl31_image;
+	struct fwobj bl31_fw;
 	struct bl2_to_bl31_params_mem_v2 *params;
 	unsigned long size = ALIGN(barebox_image_size + LS1046A_SD_IMAGE_OFFSET, 512);
 	void (*barebox)(void) = (sdram + LS1046A_SD_IMAGE_OFFSET);
@@ -402,8 +401,8 @@ static int ls1028a_esdhc_start_image(void __iomem *base, struct dram_regions_inf
 	if (ret)
 		return ret;
 
-	get_builtin_firmware_ext(ls1028a_bl31_bin, barebox, &bl31_image, &bl31_size);
-	memcpy(bl31, bl31_image, bl31_size);
+	get_builtin_firmware_ext(ls1028a_bl31_bin, barebox, &bl31_fw);
+	memcpy(bl31, bl31_fw.data, bl31_fw.size);
 
 	/* Setup an initial stack for EL2 */
 	asm volatile("msr sp_el2, %0" : : "r" ((unsigned long)barebox - 16) : "cc");

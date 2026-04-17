@@ -273,10 +273,8 @@ __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 
 __noreturn void __imx8mm_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
-	const void *bl31;
-	size_t bl31_size;
-	void *bl32 = NULL;
-	size_t bl32_size = 0;
+	struct fwobj bl31;
+	struct fwobj bl32 = {};
 
 	imx_set_cpu_type(IMX_CPU_IMX8MM);
 	imx8mm_init_scratch_space();
@@ -285,14 +283,14 @@ __noreturn void __imx8mm_load_and_start_image_via_tfa(void *fdt, void *bl33)
 	imx8mm_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE)) {
-		get_builtin_firmware_ext(imx8mm_bl32_bin, bl33, &bl32, &bl32_size);
-		get_builtin_firmware(imx8mm_bl31_bin_optee, &bl31, &bl31_size);
+		get_builtin_firmware_ext(imx8mm_bl32_bin, bl33, &bl32);
+		get_builtin_firmware(imx8mm_bl31_bin_optee, &bl31);
 	} else {
-		get_builtin_firmware(imx8mm_bl31_bin, &bl31, &bl31_size);
+		get_builtin_firmware(imx8mm_bl31_bin, &bl31);
 	}
 
-	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MM_ATF_BL31_BASE_ADDR,
-			     bl32, bl32_size, bl33, fdt);
+	imx8m_tfa_start_bl31(bl31.data, bl31.size, (void *)MX8MM_ATF_BL31_BASE_ADDR,
+			     bl32.data, bl32.size, bl33, fdt);
 }
 
 void imx8mp_load_bl33(void *bl33)
@@ -338,10 +336,8 @@ __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 
 __noreturn void __imx8mp_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
-	const void *bl31;
-	size_t bl31_size;
-	void *bl32 = NULL;
-	size_t bl32_size = 0;
+	struct fwobj bl31;
+	struct fwobj bl32 = {};
 
 	imx_set_cpu_type(IMX_CPU_IMX8MP);
 	imx8mp_init_scratch_space();
@@ -350,14 +346,14 @@ __noreturn void __imx8mp_load_and_start_image_via_tfa(void *fdt, void *bl33)
 	imx8mp_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE)) {
-		get_builtin_firmware_ext(imx8mp_bl32_bin, bl33, &bl32, &bl32_size);
-		get_builtin_firmware(imx8mp_bl31_bin_optee, &bl31, &bl31_size);
+		get_builtin_firmware_ext(imx8mp_bl32_bin, bl33, &bl32);
+		get_builtin_firmware(imx8mp_bl31_bin_optee, &bl31);
 	} else {
-		get_builtin_firmware(imx8mp_bl31_bin, &bl31, &bl31_size);
+		get_builtin_firmware(imx8mp_bl31_bin, &bl31);
 	}
 
-	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MP_ATF_BL31_BASE_ADDR,
-			     bl32, bl32_size, bl33, fdt);
+	imx8m_tfa_start_bl31(bl31.data, bl31.size, (void *)MX8MP_ATF_BL31_BASE_ADDR,
+			     bl32.data, bl32.size, bl33, fdt);
 }
 
 void imx8mn_load_bl33(void *bl33)
@@ -403,10 +399,8 @@ __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 
 __noreturn void __imx8mn_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
-	const void *bl31;
-	size_t bl31_size;
-	void *bl32 = NULL;
-	size_t bl32_size = 0;
+	struct fwobj bl31;
+	struct fwobj bl32 = {};
 
 	imx_set_cpu_type(IMX_CPU_IMX8MN);
 	imx8mn_init_scratch_space();
@@ -415,14 +409,14 @@ __noreturn void __imx8mn_load_and_start_image_via_tfa(void *fdt, void *bl33)
 	imx8mn_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE)) {
-		get_builtin_firmware_ext(imx8mn_bl32_bin, bl33, &bl32, &bl32_size);
-		get_builtin_firmware(imx8mn_bl31_bin_optee, &bl31, &bl31_size);
+		get_builtin_firmware_ext(imx8mn_bl32_bin, bl33, &bl32);
+		get_builtin_firmware(imx8mn_bl31_bin_optee, &bl31);
 	} else {
-		get_builtin_firmware(imx8mn_bl31_bin, &bl31, &bl31_size);
+		get_builtin_firmware(imx8mn_bl31_bin, &bl31);
 	}
 
-	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MN_ATF_BL31_BASE_ADDR,
-			     bl32, bl32_size, bl33, fdt);
+	imx8m_tfa_start_bl31(bl31.data, bl31.size, (void *)MX8MN_ATF_BL31_BASE_ADDR,
+			     bl32.data, bl32.size, bl33, fdt);
 }
 
 void imx8mq_load_bl33(void *bl33)
@@ -462,10 +456,8 @@ __noreturn void imx8mq_load_and_start_image_via_tfa(void)
 
 __noreturn void __imx8mq_load_and_start_image_via_tfa(void *fdt, void *bl33)
 {
-	const void *bl31;
-	size_t bl31_size;
-	void *bl32 = NULL;
-	size_t bl32_size = 0;
+	struct fwobj bl31;
+	struct fwobj bl32 = {};
 
 	imx_set_cpu_type(IMX_CPU_IMX8MQ);
 	imx8mq_init_scratch_space();
@@ -474,14 +466,14 @@ __noreturn void __imx8mq_load_and_start_image_via_tfa(void *fdt, void *bl33)
 	imx8mq_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_OPTEE)) {
-		get_builtin_firmware_ext(imx8mq_bl32_bin, bl33, &bl32, &bl32_size);
-		get_builtin_firmware(imx8mq_bl31_bin_optee, &bl31, &bl31_size);
+		get_builtin_firmware_ext(imx8mq_bl32_bin, bl33, &bl32);
+		get_builtin_firmware(imx8mq_bl31_bin_optee, &bl31);
 	} else {
-		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
+		get_builtin_firmware(imx8mq_bl31_bin, &bl31);
 	}
 
-	imx8m_tfa_start_bl31(bl31, bl31_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR,
-			     bl32, bl32_size, bl33, fdt);
+	imx8m_tfa_start_bl31(bl31.data, bl31.size, (void *)MX8MQ_ATF_BL31_BASE_ADDR,
+			     bl32.data, bl32.size, bl33, fdt);
 }
 
 void __noreturn imx93_load_and_start_image_via_tfa(void)
@@ -493,8 +485,7 @@ void __noreturn __imx93_load_and_start_image_via_tfa(void *bl33)
 {
 	unsigned long atf_dest = MX93_ATF_BL31_BASE_ADDR;
 	void __noreturn (*bl31)(void) = (void *)atf_dest;
-	const void *tfa;
-	size_t tfa_size;
+	struct fwobj tfa;
 	unsigned long endmem = MX9_DDR_CSD1_BASE_ADDR + imx9_ddrc_sdram_size();
 
 	imx_set_cpu_type(IMX_CPU_IMX93);
@@ -503,22 +494,19 @@ void __noreturn __imx93_load_and_start_image_via_tfa(void *bl33)
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX93_OPTEE)) {
 		void *bl32 = (void *)arm_mem_optee(endmem);
-		size_t bl32_size;
-		void *bl32_image;
+		struct fwobj bl32_fw;
 
 		imx93_ele_load_fw(bl33);
 
-		get_builtin_firmware_ext(imx93_bl32_bin,
-				bl33, &bl32_image,
-				&bl32_size);
+		get_builtin_firmware_ext(imx93_bl32_bin, bl33, &bl32_fw);
 
-		imx_adjust_optee_memory(&bl32, &bl32_image, &bl32_size);
+		imx_adjust_optee_memory(&bl32, &bl32_fw.data, &bl32_fw.size);
 
-		memcpy(bl32, bl32_image, bl32_size);
+		memcpy(bl32, bl32_fw.data, bl32_fw.size);
 
-		get_builtin_firmware(imx93_bl31_bin_optee, &tfa, &tfa_size);
+		get_builtin_firmware(imx93_bl31_bin_optee, &tfa);
 	} else {
-		get_builtin_firmware(imx93_bl31_bin, &tfa, &tfa_size);
+		get_builtin_firmware(imx93_bl31_bin, &tfa);
 	}
 
 	handoff_data_move(bl33 - ALIGN(handoff_data_size(), 0x1000));
@@ -539,7 +527,7 @@ void __noreturn __imx93_load_and_start_image_via_tfa(void *bl33)
 	 */
 	memcpy(bl33, __image_start, ALIGN(barebox_pbl_size, 1024));
 
-	memcpy(bl31, tfa, tfa_size);
+	memcpy(bl31, tfa.data, tfa.size);
 
 	asm volatile("msr sp_el2, %0" : :
 		     "r" (bl33 - 16) :

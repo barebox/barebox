@@ -1024,10 +1024,9 @@ imx6_barebox_entry(unsigned long membase, void *boarddata)
 	    IS_ENABLED(CONFIG_PBL_OPTEE) && imx6_can_access_tzasc()) {
 		void *fdto;
 		unsigned int fdto_size;
-		int tee_size;
-		void *tee;
+		struct fwobj tee;
 
-		get_builtin_firmware(imx6_optee_bin, &tee, &tee_size);
+		get_builtin_firmware(imx6_optee_bin, &tee);
 
 		imx_init_scratch_space(membase + memsize, 1);
 		fdto = imx_scratch_get_fdt(&fdto_size);
@@ -1037,7 +1036,7 @@ imx6_barebox_entry(unsigned long membase, void *boarddata)
 		} else if (fdto == NULL)
 			pr_warn("No space configured for OP-TEE devicetree\n");
 
-		start_optee_early(fdto, tee);
+		start_optee_early(fdto, tee.data);
 		if (!IS_ERR(fdto))
 			optee_handoff_overlay(fdto, fdto_size);
 	}

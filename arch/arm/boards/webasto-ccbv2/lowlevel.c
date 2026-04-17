@@ -34,8 +34,7 @@ static void configure_uart(void)
 
 static void noinline start_ccbv2(unsigned long mem_size, char *fdt)
 {
-	int tee_size;
-	void *tee;
+	struct fwobj tee;
 
 	configure_uart();
 
@@ -44,9 +43,9 @@ static void noinline start_ccbv2(unsigned long mem_size, char *fdt)
 	 * if we can access the TZASC.
 	 */
 	if (IS_ENABLED(CONFIG_FIRMWARE_TQMA6UL_OPTEE) && imx6_can_access_tzasc()) {
-		get_builtin_firmware(ccbv2_optee_bin, &tee, &tee_size);
+		get_builtin_firmware(ccbv2_optee_bin, &tee);
 
-		imx6ul_start_optee_early(NULL, tee, (void *)OPTEE_OVERLAY_LOCATION, 0x1000);
+		imx6ul_start_optee_early(NULL, tee.data, (void *)OPTEE_OVERLAY_LOCATION, 0x1000);
 	}
 
 	imx6ul_barebox_entry(fdt);

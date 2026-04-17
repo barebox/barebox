@@ -207,12 +207,12 @@ static int da9063_gpio_get_direction(struct gpio_chip *chip, unsigned offset)
 	return -EINVAL;
 }
 
-static void da9063_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+static int da9063_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
 {
 	struct da9063 *priv = to_da9063(chip);
 
-	da906x_reg_update(priv, DA9062AA_GPIO_MODE0_4, BIT(offset),
-			  value << offset);
+	return da906x_reg_update(priv, DA9062AA_GPIO_MODE0_4, BIT(offset),
+				 value << offset);
 
 }
 

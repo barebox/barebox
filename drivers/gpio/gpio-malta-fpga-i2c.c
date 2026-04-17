@@ -97,7 +97,7 @@ static int malta_i2c_gpio_get_value(struct gpio_chip *chip, unsigned gpio)
 	return v;
 }
 
-static void malta_i2c_gpio_set_value(struct gpio_chip *chip,
+static int malta_i2c_gpio_set_value(struct gpio_chip *chip,
 					unsigned gpio, int v)
 {
 	struct malta_i2c_gpio *sc = chip_to_malta_i2c_gpio(chip);
@@ -106,6 +106,7 @@ static void malta_i2c_gpio_set_value(struct gpio_chip *chip,
 			__func__, chip, gpio, v);
 
 	malta_i2c_gpio_set_bit(sc, MALTA_I2COUT, gpio, v);
+	return 0;
 }
 
 static struct gpio_ops malta_i2c_gpio_ops = {

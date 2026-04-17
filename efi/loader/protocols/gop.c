@@ -558,7 +558,7 @@ static efi_status_t efi_gop_register(void *data)
 		pixel_information->blue_mask = 0x001f;
 	}
 	gopobj->info.pixels_per_scan_line = col;
-	gopobj->fb = fb_get_screen_base(fbi);
+	gopobj->fb = fbi->screen_base;
 	gopobj->fbi = fbi;
 
 	return EFI_SUCCESS;

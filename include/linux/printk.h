@@ -192,7 +192,8 @@ extern void log_clean(unsigned int limit);
 #define BAREBOX_LOG_PRINT_TIME		BIT(0)
 
 int log_writefile(const char *filepath);
-int log_print(unsigned flags, unsigned levels);
+struct console_device;
+int log_print(struct console_device *console, unsigned flags, unsigned levels);
 
 struct va_format {
 	const char *fmt;

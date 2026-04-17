@@ -21,6 +21,10 @@
 
 #define CONSOLE_STDIOE          (CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR)
 
+#define CONSOLE_DEV_STDIN       ((void *)CONSOLE_STDIN)
+#define CONSOLE_DEV_STDOUT      ((void *)CONSOLE_STDOUT)
+#define CONSOLE_DEV_STDERR      ((void *)CONSOLE_STDERR)
+
 enum console_mode {
 	CONSOLE_MODE_NORMAL,
 	CONSOLE_MODE_RS485,
@@ -85,6 +89,13 @@ console_is_serdev_node(struct console_device *cdev)
 		return dev->of_node;
 
 	return NULL;
+}
+
+static inline unsigned int console_dev_is_std(struct console_device *con)
+{
+	if ((uintptr_t)con > CONSOLE_STDERR)
+		return 0;
+	return (uintptr_t)con & CONSOLE_STDIOE;
 }
 
 int console_register(struct console_device *cdev);
@@ -197,7 +208,9 @@ bool console_allow_color(void);
 
 #ifndef CONFIG_CONSOLE_NONE
 extern struct list_head console_list;
-#define for_each_console(console) list_for_each_entry(console, &console_list, list)
+#define for_each_console(console)			\
+	scoped_var(struct console_device *console)	\
+		list_for_each_entry(console, &console_list, list)
 
 struct console_device *console_get_first_interactive(void);
 
@@ -209,7 +222,8 @@ static inline int barebox_set_loglevel(int loglevel)
 	return old_loglevel;
 }
 #else
-#define for_each_console(console) while (((void)console, 0))
+#define for_each_console(console) \
+	scoped_var(struct console_device *console) while (((void)console, 0))
 
 static inline struct console_device *console_get_first_interactive(void)
 {
@@ -228,10 +242,13 @@ int arch_ctrlc(void);
 
 #ifndef CONFIG_CONSOLE_NONE
 /* stdout */
-void console_putc(unsigned int ch, const char c);
-int console_puts(unsigned int ch, const char *s);
-void console_putbin(unsigned int ch, const u8 *str, size_t len);
+int console_putc(struct console_device *con, const char c);
+int console_puts(struct console_device *con, const char *s);
+void console_putbin(struct console_device *con, const u8 *str, size_t len);
 void console_flush(void);
+
+int console_printf(struct console_device *con, const char *fmt, ...) __printf(2, 3);
+int console_vprintf(struct console_device *con, const char *fmt, va_list args);
 
 int ctrlc(void);
 int ctrlc_non_interruptible(void);
@@ -239,8 +256,8 @@ void ctrlc_handled(void);
 void console_ctrlc_allow(void);
 void console_ctrlc_forbid(void);
 #else
-static inline int console_puts(unsigned int ch, const char *str) { return 0; }
-static inline void console_putc(unsigned int ch, char c) {}
+static inline int console_puts(struct console_device *con, const char *str) { return 0; }
+static inline int console_putc(struct console_device *con, char c) { return 0; }
 static inline void console_flush(void) {}
 
 /* test if ctrl-c was pressed */
@@ -278,6 +295,21 @@ static inline struct clk *clk_get_for_console(struct device *dev, const char *id
 	clk = clk_get_if_available(dev, id);
 	if (clk == NULL)
 		dev_warn(dev, "couldn't get clock (ignoring)\n");
+
+	return clk;
+}
+
+static inline struct clk *clk_get_enabled_for_console(struct device *dev, const char *id)
+{
+	__always_unused unsigned baudrate;
+	struct clk *clk;
+
+	if (!IS_ENABLED(CONFIG_DEBUG_LL) || !of_device_is_stdout_path(dev, &baudrate))
+		return clk_get_enabled(dev, id);
+
+	clk = clk_get_enabled_if_available(dev, id);
+	if (clk == NULL)
+		dev_warn(dev, "couldn't get/enable clock (ignoring)\n");
 
 	return clk;
 }

@@ -32,23 +32,27 @@ static void __putc(void *ctx, int c)
 	putc(ctx, c);
 }
 
-void console_putc(unsigned int ch, char c)
+int console_putc(struct console_device *con, char c)
 {
 	if (putc_offset)
 		__putc(putc_ctx, c);
 	else
 		putc_ll(c);
+
+	return 1;
 }
 
-int console_puts(unsigned int ch, const char *str)
+int console_puts(struct console_device *con, const char *str)
 {
 	int n = 0;
 
 	while (*str) {
-		if (*str == '\n')
-			console_putc(ch, '\r');
+		if (*str == '\n') {
+			console_putc(con, '\r');
+			n++;
+		}
 
-		console_putc(ch, *str);
+		console_putc(con, *str);
 		str++;
 		n++;
 	}
@@ -68,7 +72,7 @@ int vprintf(const char *fmt, va_list args)
 	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 
 	/* Print the string */
-	console_puts(CONSOLE_STDOUT, printbuffer);
+	console_puts(CONSOLE_DEV_STDOUT, printbuffer);
 
 	return i;
 }
@@ -95,7 +99,7 @@ int pr_print(int level, const char *fmt, ...)
 	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 	va_end(args);
 
-	console_puts(CONSOLE_STDERR, printbuffer);
+	console_puts(CONSOLE_DEV_STDERR, printbuffer);
 
 	return i;
 }

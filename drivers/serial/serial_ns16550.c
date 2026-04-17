@@ -529,15 +529,12 @@ static int ns16550_probe(struct device *dev)
 		priv->plat.clock = devtype->clk_default;
 
 	if (!priv->plat.clock) {
-		priv->clk = clk_get_for_console(dev, NULL);
+		priv->clk = clk_get_enabled_for_console(dev, NULL);
 		if (IS_ERR(priv->clk)) {
-			ret = PTR_ERR(priv->clk);
-			dev_err(dev, "failed to get clk (%d)\n", ret);
+			ret = dev_errp_probe(dev, priv->clk,
+					     "failed to get/enable clk\n");
 			goto release_region;
 		}
-		ret = clk_enable(priv->clk);
-		if (ret)
-			goto clk_put;
 		priv->plat.clock = clk_get_rate(priv->clk);
 	}
 
@@ -569,7 +566,6 @@ static int ns16550_probe(struct device *dev)
 
 clk_disable:
 	clk_disable(priv->clk);
-clk_put:
 	clk_put(priv->clk);
 release_region:
 	release_region(iores);

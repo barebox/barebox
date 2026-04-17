@@ -6,6 +6,7 @@
 #ifndef _ASM_RISCV_CACHE_H
 #define _ASM_RISCV_CACHE_H
 
+#include <asm/system.h>
 #include <asm/vendorid_list.h>
 
 static inline void thead_local_flush_icache_all(void)

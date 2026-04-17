@@ -26,6 +26,7 @@ Contents:
    usb
    ubi
    booting-linux
+   booting-openbsd
    devboot
    bootchooser
    remote-control

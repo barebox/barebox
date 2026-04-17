@@ -42,8 +42,8 @@ static inline int omap_get_gpio_index(int gpio)
 	return gpio & 0x1f;
 }
 
-static void omap_gpio_set_value(struct gpio_chip *chip,
-					unsigned gpio, int value)
+static int omap_gpio_set_value(struct gpio_chip *chip,
+			       unsigned gpio, int value)
 {
 	struct omap_gpio_chip *omapgpio =
 			container_of(chip, struct omap_gpio_chip, chip);
@@ -58,6 +58,7 @@ static void omap_gpio_set_value(struct gpio_chip *chip,
 	l = 1 << omap_get_gpio_index(gpio);
 
 	writel(l, base);
+	return 0;
 }
 
 static int omap_gpio_direction_input(struct gpio_chip *chip,

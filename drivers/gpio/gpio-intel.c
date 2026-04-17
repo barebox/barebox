@@ -65,7 +65,7 @@ static void intel_gpio_padcfg0_write(const struct intel_gpio_chip *chip,
 	writel(value, intel_gpio_padcfg0_reg(chip, gpio));
 }
 
-static void intel_gpio_set_value(struct gpio_chip *gc, unsigned int gpio,
+static int intel_gpio_set_value(struct gpio_chip *gc, unsigned int gpio,
 				 int value)
 {
 	struct intel_gpio_chip *chip = to_intel_gpio(gc);
@@ -77,6 +77,8 @@ static void intel_gpio_set_value(struct gpio_chip *gc, unsigned int gpio,
 	else
 		padcfg0 &= ~PADCFG0_GPIOTXSTATE;
 	intel_gpio_padcfg0_write(chip, gpio, padcfg0);
+
+	return 0;
 }
 
 static int intel_gpio_get_value(struct gpio_chip *gc, unsigned int gpio)

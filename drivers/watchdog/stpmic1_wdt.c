@@ -169,8 +169,8 @@ static int stpmic1_wdt_probe(struct device *dev)
 	wdt = xzalloc(sizeof(*wdt));
 
 	wdt->regmap = dev_get_regmap(dev->parent, NULL);
-	if (IS_ERR(wdt->regmap))
-		return PTR_ERR(wdt->regmap);
+	if (!wdt->regmap)
+		return -ENOENT;
 
 	wdd = &wdt->wdd;
 	wdd->hwdev = dev;

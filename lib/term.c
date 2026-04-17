@@ -15,7 +15,6 @@ void term_getsize(int *screenwidth, int *screenheight)
 {
 	int n;
 	char *endp;
-	struct console_device *cdev;
 	const char esc[] = "\e7" "\e[r" "\e[999;999H" "\e[6n";
 	char buf[64];
 

@@ -110,11 +110,12 @@ static int bgpio_get(struct gpio_chip *gc, unsigned int gpio)
 	return !!(bgc->read_reg(bgc->reg_dat) & bgpio_line2mask(bgc, gpio));
 }
 
-static void bgpio_set_none(struct gpio_chip *gc, unsigned int gpio, int val)
+static int bgpio_set_none(struct gpio_chip *gc, unsigned int gpio, int val)
 {
+	return 0;
 }
 
-static void bgpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+static int bgpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
 {
 	struct bgpio_chip *bgc = to_bgpio_chip(gc);
 	unsigned long mask = bgpio_line2mask(bgc, gpio);
@@ -125,10 +126,11 @@ static void bgpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
 		bgc->data &= ~mask;
 
 	bgc->write_reg(bgc->reg_dat, bgc->data);
+	return 0;
 }
 
-static void bgpio_set_with_clear(struct gpio_chip *gc, unsigned int gpio,
-				 int val)
+static int bgpio_set_with_clear(struct gpio_chip *gc, unsigned int gpio,
+				int val)
 {
 	struct bgpio_chip *bgc = to_bgpio_chip(gc);
 	unsigned long mask = bgpio_line2mask(bgc, gpio);
@@ -137,9 +139,10 @@ static void bgpio_set_with_clear(struct gpio_chip *gc, unsigned int gpio,
 		bgc->write_reg(bgc->reg_set, mask);
 	else
 		bgc->write_reg(bgc->reg_clr, mask);
+	return 0;
 }
 
-static void bgpio_set_set(struct gpio_chip *gc, unsigned int gpio, int val)
+static int bgpio_set_set(struct gpio_chip *gc, unsigned int gpio, int val)
 {
 	struct bgpio_chip *bgc = to_bgpio_chip(gc);
 	unsigned long mask = bgpio_line2mask(bgc, gpio);
@@ -150,6 +153,7 @@ static void bgpio_set_set(struct gpio_chip *gc, unsigned int gpio, int val)
 		bgc->data &= ~mask;
 
 	bgc->write_reg(bgc->reg_set, bgc->data);
+	return 0;
 }
 
 static int bgpio_simple_dir_in(struct gpio_chip *gc, unsigned int gpio)

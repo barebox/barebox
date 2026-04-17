@@ -196,7 +196,7 @@ struct gpio_ops {
 	int (*direction_output)(struct gpio_chip *chip, unsigned offset, int value);
 	int (*get_direction)(struct gpio_chip *chip, unsigned offset);
 	int (*get)(struct gpio_chip *chip, unsigned offset);
-	void (*set)(struct gpio_chip *chip, unsigned offset, int value);
+	int (*set)(struct gpio_chip *chip, unsigned offset, int value);
 	int (*set_config)(struct gpio_chip *chip, unsigned offset, unsigned long config);
 
 #if defined(CONFIG_OF_GPIO)

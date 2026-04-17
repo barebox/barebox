@@ -116,7 +116,7 @@ int console_set_active(struct console_device *cdev, unsigned flag)
 		puts_ll("]\n");
 		barebox_banner();
 		while (kfifo_getc(console_output_fifo, &ch) == 0)
-			console_putc(CONSOLE_STDOUT, ch);
+			console_putc(CONSOLE_DEV_STDOUT, ch);
 	} else if (IS_ENABLED(CONFIG_BANNER) && cdev->puts &&
 		   flag_new == CONSOLE_STDIOE) {
 		cdev->puts(cdev, version_string, strlen(version_string));
@@ -257,7 +257,6 @@ void console_set_stdoutpath(struct console_device *cdev, unsigned baudrate)
 
 struct console_device *of_console_by_stdout_path(void)
 {
-	struct console_device *console;
 	struct device_node *stdout_np;
 
 	stdout_np = of_get_stdoutpath(NULL);
@@ -459,7 +458,6 @@ EXPORT_SYMBOL(console_unregister);
 static __maybe_unused int console_activate_all_fallback(void)
 {
 	int activate = CONSOLE_STDIOE;
-	struct console_device *cdev;
 
 	for_each_console(cdev) {
 		if (cdev->f_active & (CONSOLE_STDOUT | CONSOLE_STDERR))
@@ -487,7 +485,6 @@ postenvironment_initcall(console_activate_all_fallback);
 
 static int getc_raw(void)
 {
-	struct console_device *cdev;
 	int active = 0;
 
 	while (1) {
@@ -515,8 +512,6 @@ static int getc_raw(void)
 
 static int tstc_raw(void)
 {
-	struct console_device *cdev;
-
 	if (!IS_ALLOWED(SCONFIG_CONSOLE_INPUT))
 		return 0;
 
@@ -576,70 +571,55 @@ int tstc(void)
 }
 EXPORT_SYMBOL(tstc);
 
-void console_putc(unsigned int ch, char c)
+int console_putc(struct console_device *con, char c)
 {
-	struct console_device *cdev;
-	int init = initialized;
+	bool crlf = c == '\n';
 
-	switch (init) {
-	case CONSOLE_UNINITIALIZED:
-		console_init_early();
-		fallthrough;
-	case CONSOLE_INITIALIZED_BUFFER:
-		kfifo_putc(console_output_fifo, c);
-		if (c == '\n')
-			putc_ll('\r');
-		putc_ll(c);
-		return;
+	if (crlf)
+		console_putbin(con, "\r\n", 2);
+	else
+		console_putbin(con, &c, 1);
 
-	case CONSOLE_INIT_FULL:
-		for_each_console(cdev) {
-			if (cdev->f_active & ch) {
-				if (c == '\n')
-					cdev->putc(cdev, '\r');
-				cdev->putc(cdev, c);
-			}
-		}
-		return;
-	default:
-		/* If we have problems inititalizing our data
-		 * get them early
-		 */
-		hang();
-	}
+	return 1 + crlf;
 }
 EXPORT_SYMBOL(console_putc);
 
-int console_puts(unsigned int ch, const char *str)
+int console_puts(struct console_device *con, const char *str)
 {
-	struct console_device *cdev;
 	const char *s = str;
+	unsigned int ch;
 	int n = 0;
+
+	ch = console_dev_is_std(con);
+	if (!ch)
+		return con->puts(con, str, strlen(str));
 
 	if (initialized == CONSOLE_INIT_FULL) {
 		for_each_console(cdev) {
-			if (cdev->f_active & ch) {
-				n = cdev->puts(cdev, str, strlen(str));
-			}
+			if (cdev->f_active & ch)
+				n = console_puts(cdev, str);
 		}
 		return n;
 	}
 
 	while (*s) {
-		if (*s == '\n')
-			n++;
-
-		console_putc(ch, *s);
-		n++;
+		n += console_putc(con, *s);
 		s++;
 	}
 	return n;
 }
 EXPORT_SYMBOL(console_puts);
 
-void console_putbin(unsigned int ch, const u8 *str, size_t len)
+void console_putbin(struct console_device *con, const u8 *str, size_t len)
 {
-	struct console_device *cdev;
+	unsigned int ch;
+
+	ch = console_dev_is_std(con);
+	if (!ch) {
+		for (size_t i = 0; i < len; i++)
+			con->putc(con, str[i]);
+		return;
+	}
 
 	switch (initialized) {
 	case CONSOLE_UNINITIALIZED:
@@ -652,11 +632,8 @@ void console_putbin(unsigned int ch, const u8 *str, size_t len)
 		return;
 	case CONSOLE_INIT_FULL:
 		for_each_console(cdev) {
-			if (!(cdev->f_active & ch))
-				continue;
-
-			for (size_t i = 0; i < len; i++)
-				cdev->putc(cdev, str[i]);
+			if (cdev->f_active & ch)
+				console_putbin(cdev, str, len);
 		}
 		return;
 	default:
@@ -670,8 +647,6 @@ EXPORT_SYMBOL(console_putbin);
 
 void console_flush(void)
 {
-	struct console_device *cdev;
-
 	for_each_console(cdev) {
 		if (cdev->flush)
 			cdev->flush(cdev);

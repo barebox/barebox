@@ -6,11 +6,19 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
+#include <asm/cache.h>
+
+static int mem_flush(struct cdev *cdev)
+{
+	sync_caches_for_execution();
+	return 0;
+}
 
 static struct cdev_operations memops = {
 	.read  = mem_read,
 	.write = mem_write,
 	.memmap = generic_memmap_rw,
+	.flush = mem_flush,
 };
 
 static int mem_probe(struct device *dev)

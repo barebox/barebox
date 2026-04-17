@@ -20,3 +20,14 @@ While the interpretation of environment variables specifying hint or URI remains
 Fit hints can no longer be specified by environment variables using the __ENV__
 syntax. This functionality was broken since the last change to the keyspec
 syntax in 2025.12.
+
+register_simplefb parameter
+---------------------------
+
+The ``register_simplefb`` parameter on framebuffer devices has changed from
+boolean to an enum with values ``disabled``, ``enabled``, and ``stdout-path``.
+
+Scripts that **read** the parameter will now receive ``"disabled"`` or
+``"enabled"`` instead of ``"0"`` or ``"1"``.
+
+Scripts that **write** ``"0"`` or ``"1"`` continue to work.

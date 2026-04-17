@@ -131,16 +131,10 @@ static int lpuart_serial_probe(struct device *dev)
 	}
 	lpuart->base = IOMEM(lpuart->io->start);
 
-	lpuart->clk = clk_get_for_console(dev, NULL);
+	lpuart->clk = clk_get_enabled_for_console(dev, NULL);
 	if (IS_ERR(lpuart->clk)) {
-		ret = PTR_ERR(lpuart->clk);
-		dev_err(dev, "Failed to get UART clock %d\n", ret);
-		goto io_release;
-	}
-
-	ret = clk_enable(lpuart->clk);
-	if (ret) {
-		dev_err(dev, "Failed to enable UART clock %d\n", ret);
+		ret = dev_errp_probe(dev, lpuart->clk,
+				     "Failed to get/enable UART clock\n");
 		goto io_release;
 	}
 

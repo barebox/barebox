@@ -195,7 +195,6 @@ static void dwc2_remove(struct device *dev)
 
 static const struct of_device_id dwc2_platform_dt_ids[] = {
 	{ .compatible = "brcm,bcm2835-usb", },
-	{ .compatible = "brcm,bcm2708-usb", },
 	{ .compatible = "snps,dwc2", },
 	{ .compatible = "st,stm32mp15-fsotg",
 	  .data = dwc2_set_stm32mp15_fsotg_params },

@@ -39,7 +39,7 @@ static struct mxs_gpio_regs regs_mxs28 = {
 	.doe = 0x0b00,
 };
 
-static void mxs_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
+static int mxs_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
 {
 	struct mxs_gpio_chip *mxsgpio = container_of(chip, struct mxs_gpio_chip, chip);
 
@@ -47,6 +47,7 @@ static void mxs_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
 		writel(0x1 << gpio, mxsgpio->dout + STMP_OFFSET_REG_SET);
 	else
 		writel(0x1 << gpio, mxsgpio->dout + STMP_OFFSET_REG_CLR);
+	return 0;
 }
 
 static int mxs_gpio_direction_input(struct gpio_chip *chip, unsigned gpio)

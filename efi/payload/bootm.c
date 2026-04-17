@@ -163,6 +163,7 @@ static int do_bootm_efi_stub(struct image_data *data)
 	void *fdt = NULL;
 	const void *initrd = NULL;
 	size_t initrd_size;
+	bool image_freed = false;
 	efi_handle_t handle = NULL; /* silence compiler warning */
 	enum filetype type;
 	int ret;
@@ -185,6 +186,13 @@ static int do_bootm_efi_stub(struct image_data *data)
 		goto unload_ramdisk;
 
 	ret = efi_execute_image(handle, loaded_image, type);
+
+	/* efi_execute_image takes care to unload the image on error,
+	 * so we set image_freed and fall through to freeing ramdisk
+	 * and oftree.
+	 */
+	image_freed = true;
+
 unload_ramdisk:
 	if (initrd) {
 		efi_initrd_unregister();
@@ -193,7 +201,8 @@ unload_ramdisk:
 unload_oftree:
 	efi_unload_fdt(fdt);
 unload_os:
-	BS->unload_image(handle);
+	if (!image_freed)
+		BS->unload_image(handle);
 
 	return ret;
 }

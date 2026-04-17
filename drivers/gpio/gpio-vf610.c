@@ -72,7 +72,7 @@ static int vf610_gpio_get_value(struct gpio_chip *chip, unsigned int gpio)
 	return !!(readl(port->gpio_base + offset) & BIT(gpio));
 }
 
-static void vf610_gpio_set_value(struct gpio_chip *chip,
+static int vf610_gpio_set_value(struct gpio_chip *chip,
 				  unsigned int gpio, int val)
 {
 	struct vf610_gpio_port *port =
@@ -80,6 +80,7 @@ static void vf610_gpio_set_value(struct gpio_chip *chip,
 	unsigned long mask = BIT(gpio);
 
 	writel(mask, port->gpio_base + ((val) ? GPIO_PSOR : GPIO_PCOR));
+	return 0;
 }
 
 static int vf610_gpio_direction_input(struct gpio_chip *chip, unsigned gpio)

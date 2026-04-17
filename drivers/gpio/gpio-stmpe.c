@@ -27,7 +27,7 @@ struct stmpe_gpio_chip {
 	struct stmpe_client_info *ci;
 };
 
-static void stmpe_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
+static int stmpe_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
 {
 	struct stmpe_gpio_chip *stmpegpio = container_of(chip, struct stmpe_gpio_chip, chip);
 	struct stmpe_client_info *ci = (struct stmpe_client_info *)stmpegpio->ci;
@@ -45,6 +45,8 @@ static void stmpe_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int valu
 
 	if (ret)
 		dev_err(chip->dev, "write failed!\n");
+
+	return ret;
 }
 
 static int stmpe_gpio_direction_input(struct gpio_chip *chip, unsigned gpio)
@@ -75,8 +77,8 @@ static int stmpe_gpio_direction_output(struct gpio_chip *chip, unsigned gpio, in
 	val |= 1 << (gpio % 8);
 	ret = ci->write_reg(ci->stmpe, GPIO_SET_DIR + OFFSET(gpio), val);
 
-	stmpe_gpio_set_value(chip, gpio, value);
-
+	if (!ret)
+		ret = stmpe_gpio_set_value(chip, gpio, value);
 	if (ret)
 		dev_err(chip->dev, "couldn't change direction. Write failed!\n");
 

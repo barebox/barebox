@@ -1270,4 +1270,32 @@ static inline struct clk *clk_get_if_available(struct device *dev, const char *i
 	return clk;
 }
 
+/**
+ * clk_get_enabled_if_available - get & enable clock, ignoring known unavailable clock controller
+ * @dev: device for clock "consumer"
+ * @id: clock consumer ID
+ *
+ * Return: a struct clk corresponding to the clock producer after enabling it, a
+ * valid IS_ERR() condition containing errno or NULL if it could
+ * be determined that the clock producer will never be probed in
+ * absence of modules.
+ */
+static inline struct clk *clk_get_enabled_if_available(struct device *dev,
+						       const char *id)
+{
+	struct clk *clk = clk_get_if_available(dev, id);
+	int ret;
+
+	if (IS_ERR_OR_NULL(clk))
+		return clk;
+
+	ret = clk_enable(clk);
+	if (ret) {
+		clk_put(clk);
+		return ret == -EPROTO ? NULL : ERR_PTR(ret);
+	}
+
+	return clk;
+}
+
 #endif

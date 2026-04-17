@@ -230,7 +230,7 @@ static int sunxi_gpio_get(struct gpio_chip *chip, unsigned gpio)
 	return val & BIT(bit);
 }
 
-static void sunxi_gpio_set(struct gpio_chip *chip, unsigned gpio, int value)
+static int sunxi_gpio_set(struct gpio_chip *chip, unsigned gpio, int value)
 {
 	struct sunxi_pinctrl *pinctrl = chip->dev->priv;
 	u32 reg = sunxi_data_reg(gpio);
@@ -242,6 +242,7 @@ static void sunxi_gpio_set(struct gpio_chip *chip, unsigned gpio, int value)
 	else
 		val &= ~BIT(bit);
 	writel(val, pinctrl->base + reg);
+	return 0;
 }
 
 static int sunxi_gpio_direction_output(struct gpio_chip *chip,

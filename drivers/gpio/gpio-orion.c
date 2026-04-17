@@ -56,7 +56,7 @@ static int orion_gpio_get_value(struct gpio_chip *chip, unsigned off)
 	return (readl(&gpio->regs->data_i) & BIT(off)) ? 1 : 0;
 }
 
-static void orion_gpio_set_value(
+static int orion_gpio_set_value(
 	struct gpio_chip *chip, unsigned off, int value)
 {
 	struct orion_gpio_chip *gpio =
@@ -69,6 +69,7 @@ static void orion_gpio_set_value(
 	else
 		val &= ~BIT(off);
 	writel(val, &gpio->regs->data_o);
+	return 0;
 }
 
 static struct gpio_ops orion_gpio_ops = {

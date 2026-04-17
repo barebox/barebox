@@ -163,7 +163,7 @@ static int sama5d2_piobu_get(struct gpio_chip *chip, unsigned int pin)
 /*
  * sama5d2_piobu_set() - gpiochip set
  */
-static void sama5d2_piobu_set(struct gpio_chip *chip, unsigned int pin,
+static int sama5d2_piobu_set(struct gpio_chip *chip, unsigned int pin,
 			      int value)
 {
 	if (!value)
@@ -171,7 +171,7 @@ static void sama5d2_piobu_set(struct gpio_chip *chip, unsigned int pin,
 	else
 		value = PIOBU_HIGH;
 
-	sama5d2_piobu_write_value(chip, pin, PIOBU_SOD, value);
+	return sama5d2_piobu_write_value(chip, pin, PIOBU_SOD, value);
 }
 
 static struct gpio_ops sama5d2_piobu_ops = {

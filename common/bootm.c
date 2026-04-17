@@ -653,7 +653,6 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 	}
 
 	if (bootm_earlycon) {
-		struct console_device *console;
 		const char *earlycon = NULL;
 
 		for_each_console(console) {

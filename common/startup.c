@@ -46,6 +46,7 @@
 #include <pbl/handoff-data.h>
 #include <libfile.h>
 #include <fuzz.h>
+#include <of.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -95,6 +96,50 @@ void autoload_external_env(bool endis)
 }
 #endif
 
+static void env_merge_of_compat_overlays(const char *dir)
+{
+	struct device_node *root;
+	const char *compat;
+	struct stat s;
+	char *ofdir, *src;
+	int count;
+
+	root = of_get_root_node();
+	if (!root)
+		return;
+
+	ofdir = xasprintf("%s/match.of_compatible", dir);
+
+	if (stat(ofdir, &s) || !S_ISDIR(s.st_mode))
+		goto out;
+
+	count = of_property_count_strings(root, "compatible");
+
+	/*
+	 * Apply overlays from most generic to most specific, so that
+	 * more specific entries take precedence.
+	 */
+	for (int i = count - 1; i >= 0; i--) {
+		if (of_property_read_string_index(root, "compatible",
+						  i, &compat))
+			continue;
+
+		src = xasprintf("%s/%s", ofdir, compat);
+
+		if (stat(src, &s) == 0 && S_ISDIR(s.st_mode)) {
+			pr_debug("Applying '%s'-compatible environment overlay\n",
+				 compat);
+			copy_recursive(src, dir, 0);
+		}
+
+		free(src);
+	}
+
+	unlink_recursive(ofdir, NULL);
+out:
+	free(ofdir);
+}
+
 static int load_environment(void)
 {
 	const char *default_environment_path;
@@ -114,6 +159,8 @@ static int load_environment(void)
 	else if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
 		pr_info("external environment support %s. Using default environment\n",
 			IS_ENABLED(CONFIG_ENV_HANDLING) ? "disallowed" : "disabled");
+
+	env_merge_of_compat_overlays("/env");
 
 	nvvar_load();
 

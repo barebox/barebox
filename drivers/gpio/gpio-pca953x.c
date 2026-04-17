@@ -308,7 +308,7 @@ static int pca953x_gpio_get_value(struct gpio_chip *gc, unsigned off)
 	return (reg_val & (1u << (off % BANK_SZ))) ? 1 : 0;
 }
 
-static void pca953x_gpio_set_value(struct gpio_chip *gc, unsigned off, int val)
+static int pca953x_gpio_set_value(struct gpio_chip *gc, unsigned off, int val)
 {
 	struct pca953x_chip *chip = to_pca(gc);
 	u8 reg_val;
@@ -331,11 +331,10 @@ static void pca953x_gpio_set_value(struct gpio_chip *gc, unsigned off, int val)
 	}
 	ret = pca953x_write_single(chip, offset, reg_val, off);
 	if (ret)
-		goto exit;
+		return ret;
 
 	chip->reg_output[off / BANK_SZ] = reg_val;
-exit:
-	return;
+	return 0;
 }
 
 static struct gpio_ops pca953x_gpio_ops = {

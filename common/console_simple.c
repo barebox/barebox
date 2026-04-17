@@ -11,34 +11,35 @@ LIST_HEAD(console_list);
 EXPORT_SYMBOL(console_list);
 static struct console_device *console;
 
-int console_puts(unsigned int ch, const char *str)
+int console_puts(struct console_device *con, const char *str)
 {
 	const char *s = str;
 	int i = 0;
 
 	while (*s) {
-		console_putc(ch, *s);
+		i += console_putc(con, *s);
 		s++;
-		i++;
 	}
 
 	return i;
 }
 EXPORT_SYMBOL(console_puts);
 
-void console_putc(unsigned int ch, char c)
+int console_putc(struct console_device *con, char c)
 {
+	bool crlf = c == '\n';
 	if (!console) {
-		if (c == '\n')
+		if (crlf)
 			putc_ll('\r');
 		putc_ll(c);
-		return;
+		return 1 + crlf;
 	}
 
-	if (c == '\n')
+	if (crlf)
 		console->putc(console, '\r');
 
 	console->putc(console, c);
+	return 1 + crlf;
 }
 EXPORT_SYMBOL(console_putc);
 

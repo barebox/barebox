@@ -79,9 +79,10 @@ static void tegra_gpio_free(struct gpio_chip *chip, unsigned offset)
 	tegra_gpio_disable(offset);
 }
 
-static void tegra_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+static int tegra_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
 {
 	tegra_gpio_mask_write(GPIO_MSK_OUT(offset), offset, value);
+	return 0;
 }
 
 static int tegra_gpio_get(struct gpio_chip *chip, unsigned offset)

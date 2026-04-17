@@ -118,13 +118,14 @@ static int davinci_gpio_get(struct gpio_chip *chip, unsigned offset)
 /*
  * Assuming the pin is muxed as a gpio output, set its output value.
  */
-static void
+static int
 davinci_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
 {
 	struct davinci_gpio_controller *d = chip2controller(chip);
 	struct davinci_gpio_regs __iomem *g = gpio2regs(d, offset);
 
 	writel_relaxed(__gpio_mask(offset), value ? &g->set_data : &g->clr_data);
+	return 0;
 }
 
 static struct gpio_ops davinci_gpio_ops = {

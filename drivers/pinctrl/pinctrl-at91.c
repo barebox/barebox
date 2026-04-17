@@ -519,13 +519,15 @@ static int at91_gpio_get(struct gpio_chip *chip, unsigned offset)
 	return at91_mux_gpio_get(pio, mask);
 }
 
-static void at91_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+static int at91_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
 {
 	struct at91_gpio_chip *at91_gpio = to_at91_gpio_chip(chip);
 	void __iomem *pio = at91_gpio->regbase;
 	unsigned mask = 1 << offset;
 
 	at91_mux_gpio_set(pio, mask, value);
+
+	return 0;
 }
 
 static int at91_gpio_direction_output(struct gpio_chip *chip, unsigned offset,

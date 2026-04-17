@@ -73,7 +73,7 @@ void log_clean(unsigned int limit)
 	}
 }
 
-static void print_colored_log_level(unsigned int ch, const int level)
+static void print_colored_log_level(struct console_device *con, const int level)
 {
 	if (!console_allow_color())
 		return;
@@ -82,7 +82,7 @@ static void print_colored_log_level(unsigned int ch, const int level)
 	if (!colored_log_level[level])
 		return;
 
-	console_puts(ch, colored_log_level[level]);
+	console_puts(con, colored_log_level[level]);
 }
 
 static void pr_puts(int level, const char *str)
@@ -116,8 +116,8 @@ nolog:
 	if (level > barebox_loglevel)
 		return;
 
-	print_colored_log_level(CONSOLE_STDERR, level);
-	console_puts(CONSOLE_STDERR, str);
+	print_colored_log_level(CONSOLE_DEV_STDERR, level);
+	console_puts(CONSOLE_DEV_STDERR, str);
 }
 
 int pr_print(int level, const char *fmt, ...)
@@ -215,13 +215,14 @@ int log_writefile(const char *filepath)
 /**
  * log_print - print the log buffer
  *
+ * @con:	Console device to print to
  * @flags:	Flags selecting output formatting
  * @levels:	bitmask of loglevels to print, 0 for all
  *
  * This function prints the messages of the selected levels; optionally with
  * additional information and formatting.
  */
-int log_print(unsigned flags, unsigned levels)
+int log_print(struct console_device *con, unsigned flags, unsigned levels)
 {
 	struct log_entry *log;
 	unsigned long last = 0;
@@ -237,36 +238,36 @@ int log_print(unsigned flags, unsigned levels)
 
 		if (!(flags & (BAREBOX_LOG_PRINT_RAW | BAREBOX_LOG_PRINT_TIME
 			       | BAREBOX_LOG_DIFF_TIME)))
-			print_colored_log_level(CONSOLE_STDOUT, log->level);
+			print_colored_log_level(con, log->level);
 
 		if (flags & BAREBOX_LOG_PRINT_RAW)
-			printf("<%i>", log->level);
+			console_printf(con, "<%i>", log->level);
 
 		/* convert ns to us */
 		do_div(time_ns, 1000);
 		time = time_ns;
 
 		if (flags & (BAREBOX_LOG_PRINT_TIME | BAREBOX_LOG_DIFF_TIME))
-			printf("[");
+			console_printf(con, "[");
 
 		if (flags & BAREBOX_LOG_PRINT_TIME)
-			printf("%10luus", time);
+			console_printf(con, "%10luus", time);
 
 		if (flags & BAREBOX_LOG_DIFF_TIME) {
-			printf(" < %10luus", time - last);
+			console_printf(con, " < %10luus", time - last);
 			last = time;
 		}
 
 		if (flags & (BAREBOX_LOG_PRINT_TIME | BAREBOX_LOG_DIFF_TIME))
-			printf("] ");
+			console_printf(con, "] ");
 
-		printf("%s", log->msg);
+		console_printf(con, "%s", log->msg);
 	}
 
 	return 0;
 }
 
-int printf(const char *fmt, ...)
+int console_printf(struct console_device *con, const char *fmt, ...)
 {
 	va_list args;
 	int i;
@@ -282,13 +283,13 @@ int printf(const char *fmt, ...)
 	va_end(args);
 
 	/* Print the string */
-	puts(printbuffer);
+	console_puts(con, printbuffer);
 
 	return i;
 }
-EXPORT_SYMBOL(printf);
+EXPORT_SYMBOL(console_printf);
 
-int vprintf(const char *fmt, va_list args)
+int console_vprintf(struct console_device *con, const char *fmt, va_list args)
 {
 	int i;
 	char printbuffer[CFG_PBSIZE];
@@ -300,16 +301,33 @@ int vprintf(const char *fmt, va_list args)
 	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 
 	/* Print the string */
-	puts(printbuffer);
+	console_puts(con, printbuffer);
 
 	return i;
+}
+EXPORT_SYMBOL(console_vprintf);
+
+int printf(const char *fmt, ...)
+{
+	va_list args;
+	int i;
+
+	va_start(args, fmt);
+	i = console_vprintf(CONSOLE_DEV_STDOUT, fmt, args);
+	va_end(args);
+
+	return i;
+}
+EXPORT_SYMBOL(printf);
+
+int vprintf(const char *fmt, va_list args)
+{
+	return console_vprintf(CONSOLE_DEV_STDOUT, fmt, args);
 }
 EXPORT_SYMBOL(vprintf);
 
 struct console_device *console_get_by_dev(struct device *dev)
 {
-	struct console_device *cdev;
-
 	for_each_console(cdev) {
 		if (cdev->dev == dev)
 			return cdev;
@@ -321,8 +339,6 @@ EXPORT_SYMBOL(console_get_by_dev);
 
 struct console_device *console_get_by_name(const char *name)
 {
-	struct console_device *cdev;
-
 	for_each_console(cdev) {
 		if (cdev->devname && !strcmp(cdev->devname, name))
 			return cdev;
@@ -340,7 +356,6 @@ EXPORT_SYMBOL(console_get_by_name);
  */
 struct console_device *console_get_first_interactive(void)
 {
-	struct console_device *cdev;
 	const unsigned char active = CONSOLE_STDIN | CONSOLE_STDOUT;
 
 	/* if no console input is allows, then we can't have STDIN on any. */
@@ -412,7 +427,7 @@ int dputs(int fd, const char *s)
 	if (fd == 1)
 		return puts(s);
 	else if (fd == 2)
-		return console_puts(CONSOLE_STDERR, s);
+		return console_puts(CONSOLE_DEV_STDERR, s);
 	else
 		return write(fd, s, strlen(s));
 }
@@ -423,7 +438,7 @@ int dputc(int fd, char c)
 	if (fd == 1)
 		putchar(c);
 	else if (fd == 2)
-		console_putc(CONSOLE_STDERR, c);
+		return console_putc(CONSOLE_DEV_STDERR, c);
 	else
 		return write(fd, &c, 1);
 

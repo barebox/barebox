@@ -290,7 +290,6 @@ static void print_shell_console(unsigned *line)
 	const char *shell;
 	struct command *cmd;
 	struct string_list sl;
-	struct console_device *console;
 
 	if (IS_ENABLED(CONFIG_SHELL_HUSH))
 		shell = "Hush";

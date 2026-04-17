@@ -43,10 +43,11 @@ static int ath79_gpio_get_value(struct gpio_chip *chip, unsigned offset)
 	return __ath79_gpio_get_value(offset);
 }
 
-static void ath79_gpio_set_value(struct gpio_chip *chip,
-				  unsigned offset, int value)
+static int ath79_gpio_set_value(struct gpio_chip *chip,
+				unsigned offset, int value)
 {
 	__ath79_gpio_set_value(offset, value);
+	return 0;
 }
 
 static int ath79_gpio_direction_input(struct gpio_chip *chip,

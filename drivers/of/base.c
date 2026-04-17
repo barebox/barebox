@@ -2084,6 +2084,7 @@ int of_set_root_node(struct device_node *node)
 
 	of_chosen = of_find_node_by_path("/chosen");
 	of_property_read_string(root_node, "model", &of_model);
+	of_property_write_bool(root_node, "$barebox,root-node", true);
 
 	if (of_model)
 		barebox_set_model(of_model);

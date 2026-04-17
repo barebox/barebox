@@ -202,11 +202,13 @@ static int at91_gpio4_get_direction(struct gpio_chip *chip,
 	return cfgr & PIO4_DIR_MASK ? GPIOF_DIR_OUT : GPIOF_DIR_IN;
 }
 
-static void at91_gpio4_set(struct gpio_chip *chip, unsigned offset, int value)
+static int at91_gpio4_set(struct gpio_chip *chip, unsigned offset, int value)
 {
 	void __iomem *gpio = pin_to_gpio4(chip, &offset);
 
 	at91_mux_gpio4_set(gpio, BIT(offset), value);
+
+	return 0;
 }
 
 static int at91_gpio4_get(struct gpio_chip *chip, unsigned offset)

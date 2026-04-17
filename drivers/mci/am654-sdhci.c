@@ -454,13 +454,13 @@ static void print_error(struct am654_sdhci_plat *host, int cmdidx)
 		sdhci_read32(&host->sdhci, SDHCI_INT_NORMAL_STATUS));
 }
 
-static int am654_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-				struct mci_data *data)
+static int am654_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct am654_sdhci_plat *host = container_of(mci, struct am654_sdhci_plat, mci);
 	u32 mask, command, xfer;
 	int ret;
 	dma_addr_t dma;
+	struct mci_data *data = cmd->data;
 
 	ret = sdhci_wait_idle(&host->sdhci, cmd, data);
 	if (ret)

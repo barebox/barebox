@@ -73,11 +73,11 @@ static inline unsigned mci_caps(struct mci *mci)
  * @param data The data according to the command (can be NULL)
  * @return Driver's answer (0 on success)
  */
-int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data)
+int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd)
 {
 	struct mci_host *host = mci->host;
 
-	return host->ops.send_cmd(mci->host, cmd, data);
+	return host->ops.send_cmd(mci->host, cmd);
 }
 
 /**
@@ -91,12 +91,12 @@ int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *data)
  * Return: 0 if ok, -ve on error
  */
 static int mci_send_cmd_retry(struct mci *mci, struct mci_cmd *cmd,
-			      struct mci_data *data, unsigned retries)
+			      unsigned int retries)
 {
 	int ret;
 
 	do
-		ret = mci_send_cmd(mci, cmd, data);
+		ret = mci_send_cmd(mci, cmd);
 	while (ret && retries--);
 
 	return ret;
@@ -109,11 +109,11 @@ static int mci_send_cmd_retry(struct mci *mci, struct mci_cmd *cmd,
  */
 static int mci_set_dsr(struct mci *mci)
 {
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 
 	mci_setup_cmd(&cmd, MMC_CMD_SET_DSR,
 			(mci->host->dsr_val >> 16) | 0xffff, MMC_RSP_NONE);
-	return mci_send_cmd(mci, &cmd, NULL);
+	return mci_send_cmd(mci, &cmd);
 }
 
 /**
@@ -124,13 +124,13 @@ static int mci_set_dsr(struct mci *mci)
  */
 static int mci_set_blocklen(struct mci *mci, unsigned len)
 {
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 
 	if (mci->host->ios.timing == MMC_TIMING_MMC_DDR52)
 		return 0;
 
 	mci_setup_cmd(&cmd, MMC_CMD_SET_BLOCKLEN, len, MMC_RSP_R1);
-	return mci_send_cmd_retry(mci, &cmd, NULL, 4);
+	return mci_send_cmd_retry(mci, &cmd, 4);
 }
 
 static void *sector_buf;
@@ -138,7 +138,7 @@ static void *sector_buf;
 static int mci_send_status(struct mci *mci, unsigned int *status)
 {
 	struct mci_host *host = mci->host;
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 	int ret;
 
 	/*
@@ -152,7 +152,7 @@ static int mci_send_status(struct mci *mci, unsigned int *status)
 	cmd.resp_type = MMC_RSP_R1;
 	cmd.cmdarg = mci->rca << 16;
 
-	ret = mci_send_cmd_retry(mci, &cmd, NULL, 4);
+	ret = mci_send_cmd_retry(mci, &cmd, 4);
 	if (!ret)
 		*status = cmd.response[0];
 
@@ -162,14 +162,13 @@ static int mci_send_status(struct mci *mci, unsigned int *status)
 static int mci_app_sd_status(struct mci *mci, __be32 *ssr)
 {
 	int err;
-	struct mci_cmd cmd = {};
-	struct mci_data data;
+	struct mci_cmd cmd = {0};
 
 	cmd.cmdidx = MMC_CMD_APP_CMD;
 	cmd.resp_type = MMC_RSP_R1;
 	cmd.cmdarg = mci->rca << 16;
 
-	err = mci_send_cmd_retry(mci, &cmd, NULL, 4);
+	err = mci_send_cmd_retry(mci, &cmd, 4);
 	if (err)
 		return err;
 
@@ -177,12 +176,14 @@ static int mci_app_sd_status(struct mci *mci, __be32 *ssr)
 	cmd.resp_type = MMC_RSP_R1;
 	cmd.cmdarg = 0;
 
-	data.dest = (u8 *)ssr;
-	data.blocksize = 64;
-	data.blocks = 1;
-	data.flags = MMC_DATA_READ;
+	cmd.data = xzalloc(sizeof(struct mci_data));
 
-	return mci_send_cmd_retry(mci, &cmd, &data, 3);
+	cmd.data->dest = (u8 *)ssr;
+	cmd.data->blocksize = 64;
+	cmd.data->blocks = 1;
+	cmd.data->flags = MMC_DATA_READ;
+
+	return mci_send_cmd_retry(mci, &cmd, 3);
 }
 
 static int mmc_switch_status_error(struct mci_host *host, u32 status)
@@ -263,7 +264,6 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 			   int blocks)
 {
 	struct mci_cmd cmd = {};
-	struct mci_data data;
 	unsigned mmccmd;
 	int ret;
 
@@ -288,16 +288,19 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 		mci->high_capacity != 0 ? blocknum : blocknum * mci->write_bl_len,
 		MMC_RSP_R1);
 
-	data.src = src;
-	data.blocks = blocks;
-	data.blocksize = mci->write_bl_len;
-	data.flags = MMC_DATA_WRITE;
+	cmd.data = xzalloc(sizeof(struct mci_data));
 
-	ret = mci_send_cmd(mci, &cmd, &data);
+	cmd.data->src = src;
+	cmd.data->blocks = blocks;
+	cmd.data->blocksize = mci->write_bl_len;
+	cmd.data->flags = MMC_DATA_WRITE;
+
+	ret = mci_send_cmd(mci, &cmd);
 
 	if (ret || blocks > 1) {
 		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0, MMC_RSP_R1b);
-		mci_send_cmd(mci, &cmd, NULL);
+		cmd.data = NULL;
+		mci_send_cmd(mci, &cmd);
         }
 
 	return ret;
@@ -314,7 +317,7 @@ static int mci_block_erase(struct mci *card, unsigned int from,
 			   unsigned int blkcnt, unsigned int arg)
 {
 	unsigned int to = from + blkcnt - 1;
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 	int err;
 
 	if (!card->high_capacity) {
@@ -325,7 +328,7 @@ static int mci_block_erase(struct mci *card, unsigned int from,
 	cmd.cmdidx = IS_SD(card) ? SD_ERASE_WR_BLK_START : MMC_ERASE_GROUP_START;
 	cmd.cmdarg = from;
 	cmd.resp_type = MMC_RSP_R1;
-	err = mci_send_cmd(card, &cmd, NULL);
+	err = mci_send_cmd(card, &cmd);
 	if (err)
 		goto err_out;
 
@@ -333,7 +336,7 @@ static int mci_block_erase(struct mci *card, unsigned int from,
 	cmd.cmdidx = IS_SD(card) ? SD_ERASE_WR_BLK_END : MMC_ERASE_GROUP_END;
 	cmd.cmdarg = to;
 	cmd.resp_type = MMC_RSP_SPI_R1 | MMC_RSP_R1 | MMC_CMD_AC;
-	err = mci_send_cmd(card, &cmd, NULL);
+	err = mci_send_cmd(card, &cmd);
 	if (err)
 		goto err_out;
 
@@ -341,8 +344,7 @@ static int mci_block_erase(struct mci *card, unsigned int from,
 	cmd.cmdidx = MMC_ERASE;
 	cmd.cmdarg = arg;
 	cmd.resp_type = MMC_RSP_R1b;
-
-	err = mci_send_cmd(card, &cmd, NULL);
+	err = mci_send_cmd(card, &cmd);
 	if (err)
 		goto err_out;
 
@@ -356,11 +358,11 @@ err_out:
 
 int mci_set_blockcount(struct mci *mci, unsigned int cmdarg)
 {
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 
 	mci_setup_cmd(&cmd, MMC_CMD_SET_BLOCK_COUNT, cmdarg, MMC_RSP_R1);
 
-	return mci_send_cmd(mci, &cmd, NULL);
+	return mci_send_cmd(mci, &cmd);
 }
 
 /**
@@ -374,7 +376,6 @@ static int mci_block_read(struct mci *mci, void *dst, int blocknum,
 			  int blocks)
 {
 	struct mci_cmd cmd = {};
-	struct mci_data data;
 	int ret;
 	unsigned mmccmd;
 
@@ -388,17 +389,20 @@ static int mci_block_read(struct mci *mci, void *dst, int blocknum,
 		mci->high_capacity != 0 ? blocknum : blocknum * mci->read_bl_len,
 		MMC_RSP_R1);
 
-	data.dest = dst;
-	data.blocks = blocks;
-	data.blocksize = mci->read_bl_len;
-	data.flags = MMC_DATA_READ;
+	cmd.data = xzalloc(sizeof(struct mci_data));
 
-	ret = mci_send_cmd(mci, &cmd, &data);
+	cmd.data->dest = dst;
+	cmd.data->blocks = blocks;
+	cmd.data->blocksize = mci->read_bl_len;
+	cmd.data->flags = MMC_DATA_READ;
+
+	ret = mci_send_cmd(mci, &cmd);
 
 	if (ret || blocks > 1) {
 		mci_setup_cmd(&cmd, MMC_CMD_STOP_TRANSMISSION, 0,
 			      IS_SD(mci) ? MMC_RSP_R1b : MMC_RSP_R1);
-		mci_send_cmd(mci, &cmd, NULL);
+		cmd.data = NULL;
+		mci_send_cmd(mci, &cmd);
 	}
 	return ret;
 }
@@ -410,13 +414,13 @@ static int mci_block_read(struct mci *mci, void *dst, int blocknum,
  */
 static int mci_go_idle(struct mci *mci)
 {
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 	int err;
 
 	udelay(1000);
 
 	mci_setup_cmd(&cmd, MMC_CMD_GO_IDLE_STATE, 0, MMC_RSP_NONE);
-	err = mci_send_cmd(mci, &cmd, NULL);
+	err = mci_send_cmd(mci, &cmd);
 
 	if (err) {
 		dev_dbg(&mci->dev, "Activating IDLE state failed: %d\n", err);
@@ -430,11 +434,11 @@ static int mci_go_idle(struct mci *mci)
 
 static int sdio_send_op_cond(struct mci *mci)
 {
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 
 	mci_setup_cmd(&cmd, SD_IO_SEND_OP_COND, 0, MMC_RSP_SPI_R4 | MMC_RSP_R4 | MMC_CMD_BCR);
 
-	return mci_send_cmd(mci, &cmd, NULL);
+	return mci_send_cmd(mci, &cmd);
 }
 
 /**
@@ -445,7 +449,7 @@ static int sdio_send_op_cond(struct mci *mci)
 static int sd_send_op_cond(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 	int timeout = 1000;
 	int err;
 	unsigned voltages;
@@ -463,7 +467,7 @@ static int sd_send_op_cond(struct mci *mci)
 
 	do {
 		mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, 0, MMC_RSP_R1);
-		err = mci_send_cmd(mci, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd);
 		if (err) {
 			dev_dbg(&mci->dev, "Preparing SD for operating conditions failed: %d\n", err);
 			return err;
@@ -475,7 +479,7 @@ static int sd_send_op_cond(struct mci *mci)
 			arg |= OCR_HCS;
 
 		mci_setup_cmd(&cmd, SD_CMD_APP_SEND_OP_COND, arg, MMC_RSP_R3);
-		err = mci_send_cmd(mci, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd);
 		if (err) {
 			dev_dbg(&mci->dev, "SD operation condition set failed: %d\n", err);
 			return err;
@@ -499,7 +503,7 @@ static int sd_send_op_cond(struct mci *mci)
 
 	if (mmc_host_is_spi(host)) { /* read OCR for spi */
 		mci_setup_cmd(&cmd, MMC_CMD_SPI_READ_OCR, 0, MMC_RSP_R3);
-		err = mci_send_cmd(mci, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd);
 		if (err)
 			return err;
 	}
@@ -520,7 +524,7 @@ static int sd_send_op_cond(struct mci *mci)
 static int mmc_send_op_cond(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 	int timeout = 1000;
 	int err;
 
@@ -530,7 +534,7 @@ static int mmc_send_op_cond(struct mci *mci)
 	do {
 		mci_setup_cmd(&cmd, MMC_CMD_SEND_OP_COND, OCR_HCS |
 				host->voltages, MMC_RSP_R3);
-		err = mci_send_cmd(mci, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd);
 
 		if (err) {
 			dev_dbg(&mci->dev, "Preparing MMC for operating conditions failed: %d\n", err);
@@ -566,17 +570,18 @@ static int mmc_send_op_cond(struct mci *mci)
 int mci_send_ext_csd(struct mci *mci, char *ext_csd)
 {
 	struct mci_cmd cmd = {};
-	struct mci_data data;
 
 	/* Get the Card Status Register */
 	mci_setup_cmd(&cmd, MMC_CMD_SEND_EXT_CSD, 0, MMC_RSP_R1);
 
-	data.dest = ext_csd;
-	data.blocks = 1;
-	data.blocksize = 512;
-	data.flags = MMC_DATA_READ;
+	cmd.data = xzalloc(sizeof(struct mci_data));
 
-	return mci_send_cmd(mci, &cmd, &data);
+	cmd.data->dest = ext_csd;
+	cmd.data->blocks = 1;
+	cmd.data->blocksize = 512;
+	cmd.data->flags = MMC_DATA_READ;
+
+	return mci_send_cmd(mci, &cmd);
 }
 
 /**
@@ -594,7 +599,7 @@ int mci_send_ext_csd(struct mci *mci, char *ext_csd)
 int mci_switch(struct mci *mci, unsigned index, unsigned value)
 {
 	unsigned int status;
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 	int ret;
 
 	mci_setup_cmd(&cmd, MMC_CMD_SWITCH,
@@ -603,7 +608,7 @@ int mci_switch(struct mci *mci, unsigned index, unsigned value)
 		(value << 8),
 		 MMC_RSP_R1b);
 
-	ret = mci_send_cmd(mci, &cmd, NULL);
+	ret = mci_send_cmd(mci, &cmd);
 	if (ret)
 		return ret;
 
@@ -854,7 +859,6 @@ static int sd_switch(struct mci *mci, unsigned mode, unsigned group,
 			unsigned value, uint8_t *resp)
 {
 	struct mci_cmd cmd = {};
-	struct mci_data data;
 	unsigned arg;
 
 	arg = (mode << 31) | 0xffffff;
@@ -864,12 +868,13 @@ static int sd_switch(struct mci *mci, unsigned mode, unsigned group,
 	/* Switch the frequency */
 	mci_setup_cmd(&cmd, SD_CMD_SWITCH_FUNC, arg, MMC_RSP_R1);
 
-	data.dest = resp;
-	data.blocksize = 64;
-	data.blocks = 1;
-	data.flags = MMC_DATA_READ;
+	cmd.data = xzalloc(sizeof(struct mci_data));
+	cmd.data->dest = resp;
+	cmd.data->blocksize = 64;
+	cmd.data->blocks = 1;
+	cmd.data->flags = MMC_DATA_READ;
 
-	return mci_send_cmd(mci, &cmd, &data);
+	return mci_send_cmd(mci, &cmd);
 }
 
 static int sd_read_ssr(struct mci *mci)
@@ -922,8 +927,7 @@ out:
  */
 static int sd_change_freq(struct mci *mci)
 {
-	struct mci_cmd cmd = {};
-	struct mci_data data;
+	struct mci_cmd cmd = {0};
 	struct mci_host *host = mci->host;
 	uint32_t *switch_status = sector_buf;
 	uint32_t *scr = sector_buf;
@@ -938,7 +942,7 @@ static int sd_change_freq(struct mci *mci)
 
 	/* Read the SCR to find out if this card supports higher speeds */
 	mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, mci->rca << 16, MMC_RSP_R1);
-	err = mci_send_cmd(mci, &cmd, NULL);
+	err = mci_send_cmd(mci, &cmd);
 	if (err) {
 		dev_dbg(&mci->dev, "Query SD card capabilities failed: %d\n", err);
 		return err;
@@ -948,14 +952,17 @@ static int sd_change_freq(struct mci *mci)
 
 	timeout = 3;
 
+	cmd.data = xzalloc(sizeof(struct mci_data));
+
 retry_scr:
 	dev_dbg(&mci->dev, "Trying to read the SCR (try %d of %d)\n", 4 - timeout, 3);
-	data.dest = (char *)scr;
-	data.blocksize = 8;
-	data.blocks = 1;
-	data.flags = MMC_DATA_READ;
 
-	err = mci_send_cmd(mci, &cmd, &data);
+	cmd.data->dest = (char *)scr;
+	cmd.data->blocksize = 8;
+	cmd.data->blocks = 1;
+	cmd.data->flags = MMC_DATA_READ;
+
+	err = mci_send_cmd(mci, &cmd);
 	if (err) {
 		dev_dbg(&mci->dev, " Catch error (%d)", err);
 		if (timeout--) {
@@ -1461,7 +1468,8 @@ static int mci_startup_sd(struct mci *mci)
 	if (mci_caps(mci) & MMC_CAP_4_BIT_DATA) {
 		dev_dbg(&mci->dev, "Prepare for bus width change\n");
 		mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, mci->rca << 16, MMC_RSP_R1);
-		err = mci_send_cmd(mci, &cmd, NULL);
+		cmd.data = NULL;
+		err = mci_send_cmd(mci, &cmd);
 		if (err) {
 			dev_dbg(&mci->dev, "Preparing SD for bus width change failed: %d\n", err);
 			return err;
@@ -1469,7 +1477,7 @@ static int mci_startup_sd(struct mci *mci)
 
 		dev_dbg(&mci->dev, "Set SD bus width to 4 bit\n");
 		mci_setup_cmd(&cmd, SD_CMD_APP_SET_BUS_WIDTH, 2, MMC_RSP_R1);
-		err = mci_send_cmd(mci, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd);
 		if (err) {
 			dev_warn(&mci->dev, "Changing SD bus width failed: %d\n", err);
 			/* TODO continue with 1 bit? */
@@ -1656,7 +1664,6 @@ static const u8 tuning_blk_pattern_8bit[] = {
 int mmc_send_tuning(struct mci *mci, u32 opcode)
 {
 	struct mci_cmd cmd = {};
-	struct mci_data data = {};
 	const u8 *tuning_block_pattern;
 	int size, err = 0;
 	u8 *data_buf;
@@ -1676,19 +1683,19 @@ int mmc_send_tuning(struct mci *mci, u32 opcode)
 
 	mci_setup_cmd(&cmd, opcode, 0, MMC_RSP_R1 | MMC_CMD_ADTC);
 
-
-	data.blocksize = size;
-	data.blocks = 1;
-	data.flags = MMC_DATA_READ;
+	cmd.data = xzalloc(sizeof(struct mci_data));
+	cmd.data->blocksize = size;
+	cmd.data->blocks = 1;
+	cmd.data->flags = MMC_DATA_READ;
 
 	/*
 	 * According to the tuning specs, Tuning process
 	 * is normally shorter 40 executions of CMD19,
 	 * and timeout value should be shorter than 150 ms
 	 */
-	data.timeout_ns = 150 * NSEC_PER_MSEC;
+	cmd.data->timeout_ns = 150 * NSEC_PER_MSEC;
 
-	err = mci_send_cmd(mci, &cmd, &data);
+	err = mci_send_cmd(mci, &cmd);
 	if (err)
 		goto out;
 
@@ -1703,7 +1710,7 @@ EXPORT_SYMBOL_GPL(mmc_send_tuning);
 
 int mci_send_abort_tuning(struct mci *mci, u32 opcode)
 {
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 
 	/*
 	 * eMMC specification specifies that CMD12 can be used to stop a tuning
@@ -1716,7 +1723,7 @@ int mci_send_abort_tuning(struct mci *mci, u32 opcode)
 	cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
 	cmd.resp_type = MMC_RSP_SPI_R1 | MMC_RSP_R1 | MMC_CMD_AC;
 
-	return mci_send_cmd(mci, &cmd, NULL);
+	return mci_send_cmd(mci, &cmd);
 }
 EXPORT_SYMBOL_GPL(mci_send_abort_tuning);
 
@@ -2034,13 +2041,13 @@ static void mci_init_erase(struct mci *card)
 static int mci_startup(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 	int err;
 
 	if (IS_ENABLED(CONFIG_MMC_SPI_CRC_ON) && mmc_host_is_spi(host)) { /* enable CRC check for spi */
 
 		mci_setup_cmd(&cmd, MMC_CMD_SPI_CRC_ON_OFF, 1, MMC_RSP_R1);
-		err = mci_send_cmd(mci, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd);
 
 		if (err) {
 			dev_dbg(&mci->dev, "Can't enable CRC check : %d\n", err);
@@ -2052,7 +2059,7 @@ static int mci_startup(struct mci *mci)
 
 	/* Put the Card in Identify Mode */
 	mci_setup_cmd(&cmd, mmc_host_is_spi(host) ? MMC_CMD_SEND_CID : MMC_CMD_ALL_SEND_CID, 0, MMC_RSP_R2);
-	err = mci_send_cmd(mci, &cmd, NULL);
+	err = mci_send_cmd(mci, &cmd);
 	if (err) {
 		dev_dbg(&mci->dev, "Can't bring card into identify mode: %d\n", err);
 		return err;
@@ -2071,7 +2078,7 @@ static int mci_startup(struct mci *mci)
 	if (!mmc_host_is_spi(host)) { /* cmd not supported in spi */
 		dev_dbg(&mci->dev, "Get/Set relative address\n");
 		mci_setup_cmd(&cmd, SD_CMD_SEND_RELATIVE_ADDR, mci->rca << 16, MMC_RSP_R6);
-		err = mci_send_cmd(mci, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd);
 		if (err) {
 			dev_dbg(&mci->dev, "Get/Set relative address failed: %d\n", err);
 			return err;
@@ -2084,7 +2091,7 @@ static int mci_startup(struct mci *mci)
 	dev_dbg(&mci->dev, "Get card's specific data\n");
 	/* Get the Card-Specific Data */
 	mci_setup_cmd(&cmd, MMC_CMD_SEND_CSD, mci->rca << 16, MMC_RSP_R2);
-	err = mci_send_cmd(mci, &cmd, NULL);
+	err = mci_send_cmd(mci, &cmd);
 	if (err) {
 		dev_dbg(&mci->dev, "Getting card's specific data failed: %d\n", err);
 		return err;
@@ -2123,7 +2130,7 @@ static int mci_startup(struct mci *mci)
 		dev_dbg(&mci->dev, "Select the card, and put it into Transfer Mode\n");
 		/* Select the card, and put it into Transfer Mode */
 		mci_setup_cmd(&cmd, MMC_CMD_SELECT_CARD, mci->rca << 16, MMC_RSP_R1b);
-		err = mci_send_cmd(mci, &cmd, NULL);
+		err = mci_send_cmd(mci, &cmd);
 		if (err) {
 			dev_dbg(&mci->dev, "Putting in transfer mode failed: %d\n", err);
 			return err;
@@ -2178,14 +2185,14 @@ static int mci_startup(struct mci *mci)
 static int sd_send_if_cond(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 	int err;
 
 	mci_setup_cmd(&cmd, SD_CMD_SEND_IF_COND,
 	/* We set the bit if the host supports voltages between 2.7 and 3.6 V */
 		((host->voltages & 0x00ff8000) != 0) << 8 | 0xaa,
 		MMC_RSP_R7);
-	err = mci_send_cmd(mci, &cmd, NULL);
+	err = mci_send_cmd(mci, &cmd);
 	if (err) {
 		dev_dbg(&mci->dev, "Query interface conditions failed: %d\n", err);
 		return err;

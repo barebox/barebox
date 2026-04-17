@@ -96,10 +96,10 @@ static int tegra_sdmmc_wait_inhibit(struct tegra_sdmmc_host *host,
 	return 0;
 }
 
-static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-				struct mci_data *data)
+static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct tegra_sdmmc_host *host = to_tegra_sdmmc_host(mci);
+	struct mci_data *data = cmd->data;
 	unsigned int num_bytes = 0;
 	u32 val = 0, command, xfer;
 	int ret;

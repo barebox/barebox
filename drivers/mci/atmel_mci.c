@@ -23,12 +23,11 @@ static void atmci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	atmci_common_set_ios(host, ios);
 }
 
-static int atmci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-		  struct mci_data *data)
+static int atmci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct atmel_mci *host = to_mci_host(mci);
 
-	return atmci_common_request(host, cmd, data);
+	return atmci_common_request(host, cmd, cmd->data);
 }
 
 static void atmci_info(struct device *mci_dev)

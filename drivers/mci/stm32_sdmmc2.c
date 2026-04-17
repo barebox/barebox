@@ -476,10 +476,10 @@ static int stm32_sdmmc2_end_data(struct stm32_sdmmc2_priv *priv,
 	return 0;
 }
 
-static int stm32_sdmmc2_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-				 struct mci_data *data)
+static int stm32_sdmmc2_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct stm32_sdmmc2_priv *priv = to_mci_host(mci);
+	struct mci_data *data = cmd->data;
 	u32 cmdat = data ? SDMMC_CMD_CMDTRANS : 0;
 	dma_addr_t dma_addr = DMA_ERROR_CODE;
 	u32 data_length = 0;

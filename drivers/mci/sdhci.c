@@ -11,6 +11,8 @@
 
 #define MAX_TUNING_LOOP 40
 
+#define DRIVER_NAME "sdhci"
+
 enum sdhci_reset_reason {
 	SDHCI_RESET_FOR_INIT,
 	SDHCI_RESET_FOR_REQUEST_ERROR,
@@ -24,6 +26,69 @@ static inline struct device *sdhci_dev(struct sdhci *host)
 {
 	return host->mci ? host->mci->hw_dev : NULL;
 }
+
+void sdhci_dumpregs(struct sdhci *sdhci)
+{
+	dev_err(sdhci_dev(sdhci), "============ SDHCI REGISTER DUMP ===========\n");
+
+	dev_err(sdhci_dev(sdhci), "Sys addr:  0x%08x | Version:  0x%08x\n",
+		   sdhci_read32(sdhci, SDHCI_DMA_ADDRESS),
+		   sdhci_read16(sdhci, SDHCI_HOST_VERSION));
+	dev_err(sdhci_dev(sdhci), "Blk size:  0x%08x | Blk cnt:  0x%08x\n",
+		   sdhci_read16(sdhci, SDHCI_BLOCK_SIZE),
+		   sdhci_read16(sdhci, SDHCI_BLOCK_COUNT));
+	dev_err(sdhci_dev(sdhci), "Argument:  0x%08x | Trn mode: 0x%08x\n",
+		   sdhci_read32(sdhci, SDHCI_ARGUMENT),
+		   sdhci_read16(sdhci, SDHCI_TRANSFER_MODE));
+	dev_err(sdhci_dev(sdhci), "Present:   0x%08x | Host ctl: 0x%08x\n",
+		   sdhci_read32(sdhci, SDHCI_PRESENT_STATE),
+		   sdhci_read8(sdhci, SDHCI_HOST_CONTROL));
+	dev_err(sdhci_dev(sdhci), "Power:     0x%08x | Blk gap:  0x%08x\n",
+		   sdhci_read8(sdhci, SDHCI_POWER_CONTROL),
+		   sdhci_read8(sdhci, SDHCI_BLOCK_GAP_CONTROL));
+	dev_err(sdhci_dev(sdhci), "Wake-up:   0x%08x | Clock:    0x%08x\n",
+		   sdhci_read8(sdhci, SDHCI_WAKE_UP_CONTROL),
+		   sdhci_read16(sdhci, SDHCI_CLOCK_CONTROL));
+	dev_err(sdhci_dev(sdhci), "Timeout:   0x%08x | Int stat: 0x%08x\n",
+		   sdhci_read8(sdhci, SDHCI_TIMEOUT_CONTROL),
+		   sdhci_read32(sdhci, SDHCI_INT_STATUS));
+	dev_err(sdhci_dev(sdhci), "Int enab:  0x%08x | Sig enab: 0x%08x\n",
+		   sdhci_read32(sdhci, SDHCI_INT_ENABLE),
+		   sdhci_read32(sdhci, SDHCI_SIGNAL_ENABLE));
+	dev_err(sdhci_dev(sdhci), "ACmd stat: 0x%08x | Slot int: 0x%08x\n",
+		   sdhci_read16(sdhci, SDHCI_ACMD12_ERR__HOST_CONTROL2),
+		   sdhci_read16(sdhci, SDHCI_SLOT_INT_STATUS));
+	dev_err(sdhci_dev(sdhci), "Caps:      0x%08x | Caps_1:   0x%08x\n",
+		   sdhci_read32(sdhci, SDHCI_CAPABILITIES),
+		   sdhci_read32(sdhci, SDHCI_CAPABILITIES_1));
+	dev_err(sdhci_dev(sdhci), "Cmd:       0x%08x | Max curr: 0x%08x\n",
+		   sdhci_read16(sdhci, SDHCI_COMMAND),
+		   sdhci_read32(sdhci, SDHCI_MAX_CURRENT));
+	dev_err(sdhci_dev(sdhci), "Resp[0]:   0x%08x | Resp[1]:  0x%08x\n",
+		   sdhci_read32(sdhci, SDHCI_RESPONSE_0),
+		   sdhci_read32(sdhci, SDHCI_RESPONSE_1));
+	dev_err(sdhci_dev(sdhci), "Resp[2]:   0x%08x | Resp[3]:  0x%08x\n",
+		   sdhci_read32(sdhci, SDHCI_RESPONSE_2),
+		   sdhci_read32(sdhci, SDHCI_RESPONSE_3));
+	dev_err(sdhci_dev(sdhci), "Host ctl2: 0x%08x\n",
+		   sdhci_read16(sdhci, SDHCI_HOST_CONTROL2));
+
+	if (sdhci->flags & SDHCI_USE_ADMA) {
+		if (sdhci->flags & SDHCI_USE_64_BIT_DMA) {
+			dev_err(sdhci_dev(sdhci), "ADMA Err:  0x%08x | ADMA Ptr: 0x%08x%08x\n",
+				   sdhci_read32(sdhci, SDHCI_ADMA_ERROR),
+				   sdhci_read32(sdhci, SDHCI_ADMA_ADDRESS_HI),
+				   sdhci_read32(sdhci, SDHCI_ADMA_ADDRESS));
+		} else {
+			dev_err(sdhci_dev(sdhci), "ADMA Err:  0x%08x | ADMA Ptr: 0x%08x\n",
+				   sdhci_read32(sdhci, SDHCI_ADMA_ERROR),
+				   sdhci_read32(sdhci, SDHCI_ADMA_ADDRESS));
+		}
+	}
+
+	dev_err(sdhci_dev(sdhci), "============================================\n");
+}
+EXPORT_SYMBOL_GPL(sdhci_dumpregs);
 
 static void sdhci_reset_for_reason(struct sdhci *host, enum sdhci_reset_reason reason)
 {
@@ -51,6 +116,69 @@ static void sdhci_reset_for_reason(struct sdhci *host, enum sdhci_reset_reason r
 
 #define sdhci_reset_for(h, r) sdhci_reset_for_reason((h), SDHCI_RESET_FOR_##r)
 
+int sdhci_send_command(struct sdhci *host, struct mci_cmd *cmd)
+{
+	u32 mask, command, xfer;
+	dma_addr_t dma;
+	int ret;
+
+	ret = sdhci_wait_idle(host, cmd, cmd->data);
+	if (ret)
+		return ret;
+
+	sdhci_write32(host, SDHCI_INT_STATUS, ~0);
+
+	mask = SDHCI_INT_CMD_COMPLETE;
+	if (cmd->resp_type & MMC_RSP_BUSY)
+		mask |= SDHCI_INT_XFER_COMPLETE;
+
+	sdhci_setup_data_dma(host, cmd->data, &dma);
+
+	sdhci_set_cmd_xfer_mode(host, cmd, cmd->data,
+				dma == SDHCI_NO_DMA ? false : true,
+				&command, &xfer);
+
+	sdhci_write8(host, SDHCI_TIMEOUT_CONTROL, 0xf);
+	if (xfer)
+		sdhci_write16(host, SDHCI_TRANSFER_MODE, xfer);
+	if (cmd->data) {
+		sdhci_write16(host, SDHCI_BLOCK_SIZE,
+			      SDHCI_DMA_BOUNDARY_512K |
+			      SDHCI_TRANSFER_BLOCK_SIZE(cmd->data->blocksize));
+		sdhci_write16(host, SDHCI_BLOCK_COUNT, cmd->data->blocks);
+	}
+	sdhci_write32(host, SDHCI_ARGUMENT, cmd->cmdarg);
+	sdhci_write16(host, SDHCI_COMMAND, command);
+
+	/* CMD19/21 generate _only_ Buffer Read Ready interrupt */
+	if (mmc_op_tuning(cmd->cmdidx))
+		mask = SDHCI_INT_DATA_AVAIL;
+
+	ret = sdhci_wait_for_done(host, mask);
+	if (ret) {
+		sdhci_teardown_data(host, cmd->data, dma);
+		sdhci_dumpregs(host);
+		goto error;
+	}
+
+	sdhci_read_response(host, cmd);
+	sdhci_write32(host, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);
+
+	if (cmd->data)
+		ret = sdhci_transfer_data_dma(host, cmd, cmd->data, dma);
+
+	return ret;
+
+error:
+	if (ret) {
+		sdhci_reset(host, SDHCI_RESET_CMD);
+		sdhci_reset(host, SDHCI_RESET_DATA);
+	}
+
+	sdhci_write32(host, SDHCI_INT_STATUS, ~0);
+	return ret;
+}
+
 static int sdhci_send_command_retry(struct sdhci *host, struct mci_cmd *cmd)
 {
 	int timeout = 10;
@@ -62,7 +190,7 @@ static int sdhci_send_command_retry(struct sdhci *host, struct mci_cmd *cmd)
 		mdelay(1);
 	}
 
-	return host->mci->ops.send_cmd(host->mci, cmd, NULL);
+	return host->mci->ops.send_cmd(host->mci, cmd);
 }
 
 /*
@@ -74,7 +202,7 @@ static int sdhci_send_command_retry(struct sdhci *host, struct mci_cmd *cmd)
  */
 static int sdhci_send_tuning(struct sdhci *host, u32 opcode)
 {
-	struct mci_cmd cmd = {};
+	struct mci_cmd cmd = {0};
 	int ret;
 
 	cmd.cmdidx = opcode;
@@ -343,7 +471,7 @@ void sdhci_set_bus_width(struct sdhci *host, int width)
 	sdhci_write8(host, SDHCI_HOST_CONTROL, ctrl);
 }
 
-static void sdhci_set_uhs_signaling(struct sdhci *host, unsigned timing)
+void sdhci_set_uhs_signaling(struct sdhci *host, unsigned int timing)
 {
 	u16 ctrl_2;
 
@@ -869,7 +997,10 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 
 	host->mci->ios.clock = 0;
 
-	sdhci_set_uhs_signaling(host, host->mci->ios.timing);
+	if (host->mci->ops.set_uhs_signaling)
+		host->mci->ops.set_uhs_signaling(host->mci, host->mci->ios.timing);
+	else
+		sdhci_set_uhs_signaling(host, host->mci->ios.timing);
 
 	sdhci_wait_idle_data(host, NULL);
 

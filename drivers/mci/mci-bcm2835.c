@@ -114,11 +114,12 @@ static void bcm2835_mci_reset_emmc(struct bcm2835_mci_host *host, u32 reset,
  * @param data The data to handle in the command (can be NULL)
  * @return 0 on success, negative value else
  */
-static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
-		struct mci_data *data) {
+static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd)
+{
 	u32 command, block_data = 0, transfer_mode = 0;
 	int ret;
 	struct bcm2835_mci_host *host = to_bcm2835_host(mci);
+	struct mci_data *data = cmd->data;
 
 	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data, false,
 				&command, &transfer_mode);

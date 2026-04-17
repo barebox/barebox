@@ -102,12 +102,11 @@ out:
 	return ret;
 }
 
-static int dwcmshc_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-				struct mci_data *data)
+static int dwcmshc_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 		return do_abort_sequence(mci, cmd);
-	return do_send_cmd(mci, cmd, data);
+	return do_send_cmd(mci, cmd, cmd->data);
 }
 
 static int do_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,

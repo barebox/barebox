@@ -521,10 +521,10 @@ static void bcm2835_set_clock(struct bcm2835_host *host, unsigned int clock)
 	writel(clock / 2, host->regs + SDTOUT);
 }
 
-static int bcm2835_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
-			    struct mci_data *data)
+static int bcm2835_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct bcm2835_host *host = to_bcm2835_host(mci);
+	struct mci_data *data = cmd->data;
 	u32 edm, fsm;
 	int ret = 0;
 

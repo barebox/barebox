@@ -12,7 +12,7 @@ static int pbl_atmci_common_request(struct pbl_mci *mci,
 				    struct mci_cmd *cmd,
 				    struct mci_data *data)
 {
-	return atmci_common_request(mci->priv, cmd, data);
+	return atmci_common_request(mci->priv, cmd, cmd->data);
 }
 
 static struct atmel_mci atmci_host;

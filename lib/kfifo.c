@@ -50,6 +50,9 @@ struct kfifo *kfifo_alloc(unsigned int size)
 	unsigned char *buffer;
 	struct kfifo *fifo;
 
+	if (size < 2)
+		return NULL;
+
 	/*
 	 * round up to the next power of 2, since our 'let the indices
 	 * wrap' tachnique works only in this case.

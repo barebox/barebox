@@ -83,6 +83,11 @@ static int tqmls1046a_postcore_init(void)
 	ls1046a_bbu_mmc_register_handler("sd", "/dev/mmc0.barebox", sd_bbu_flags);
 	ls1046a_bbu_qspi_register_handler("qspi", "/dev/qspiflash0.barebox", qspi_bbu_flags);
 
+	if (of_machine_is_compatible("arkona,at300"))
+		ls1046a_bbu_qspi_register_handler("qspi-alternate",
+						  "/dev/qspiflash1.barebox-alternate",
+						  0);
+
 	return 0;
 }
 

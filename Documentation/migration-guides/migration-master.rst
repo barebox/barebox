@@ -12,6 +12,15 @@ boards with the same binary.
 The binary has been renamed from ``barebox-tqma8mpxl.img``
 to ``barebox-tqma8mpxx.img``.
 
+ZynqMP
+^^^^^^
+
+The Linux v7.0 device trees imported into this barebox release no
+longer feature an unconditional `"linaro,optee-tz"` compatible OF node.
+
+If OP-TEE use in barebox is desired, this node must be added back to the
+barebox device tree.
+
 HABv4-enablement
 ^^^^^^^^^^^^^^^^
 

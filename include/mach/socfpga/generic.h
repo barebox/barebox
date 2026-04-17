@@ -100,7 +100,7 @@ static inline void arria10_watchdog_disable(void) {}
 #endif
 
 int agilex5_clk_init(void);
-void __noreturn agilex5_load_and_start_image_via_tfa(unsigned long memsize);
+void __noreturn agilex5_barebox_entry(void *fdt);
 
 static inline void __udelay(unsigned us)
 {

@@ -8,11 +8,7 @@
 #include <mach/socfpga/debug_ll.h>
 #include <mach/socfpga/init.h>
 #include <mach/socfpga/generic.h>
-#include <mach/socfpga/mailbox_s10.h>
-#include <mach/socfpga/soc64-firewall.h>
 #include <mach/socfpga/soc64-regs.h>
-#include <mach/socfpga/soc64-sdram.h>
-#include <mach/socfpga/soc64-system-manager.h>
 
 extern char __dtb_z_socfpga_agilex5_axe5_eagle_start[];
 
@@ -20,8 +16,6 @@ extern char __dtb_z_socfpga_agilex5_axe5_eagle_start[];
 
 static noinline void axe5_eagle_continue(void)
 {
-	void *fdt;
-
 	agilex5_clk_init();
 
 	socfpga_uart_setup_ll();
@@ -47,28 +41,7 @@ static noinline void axe5_eagle_continue(void)
 	mdelay(1000);
 	writel(0x410, 0x10c03300);
 
-	if (current_el() == 3) {
-		agilex5_initialize_security_policies();
-		pr_debug("Security policies initialized\n");
-
-		/*
-		 * need to set the bank select enable before the
-		 * agilex5_ddr_init_full() otherwise the serial doesn't show
-		 * anything.
-		 */
-		if (!IS_ENABLED(CONFIG_DEBUG_LL))
-			writel(LCR_BKSE, SOCFPGA_UART0_ADDRESS + LCR);
-		agilex5_ddr_init_full();
-
-		socfpga_mailbox_s10_init();
-		socfpga_mailbox_s10_qspi_open();
-
-		agilex5_load_and_start_image_via_tfa(SZ_1G);
-	}
-
-	fdt = __dtb_z_socfpga_agilex5_axe5_eagle_start;
-
-	barebox_arm_entry(SOCFPGA_AGILEX5_DDR_BASE + SZ_1M, SZ_1G - SZ_1M, fdt);
+	agilex5_barebox_entry(__dtb_z_socfpga_agilex5_axe5_eagle_start);
 }
 
 ENTRY_FUNCTION_WITHSTACK(start_socfpga_agilex5_axe5_eagle, AXE5_STACKTOP, r0, r1, r2)

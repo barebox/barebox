@@ -8,6 +8,8 @@
 
 #include <linux/sizes.h>
 
+#include <mach/socfpga/soc64-firewall.h>
+
 struct altera_sdram_plat {
 	void __iomem *mpfe_base_addr;
 	bool dualport;
@@ -173,31 +175,31 @@ struct altera_sdram_plat {
 #define FW_HMC_ADAPTOR_REG_ADDR			0xf8020004
 #define FW_HMC_ADAPTOR_MPU_MASK			BIT(0)
 
-u32 hmc_readl(struct altera_sdram_plat *plat, u32 reg);
-u32 hmc_ecc_readl(struct altera_sdram_plat *plat, u32 reg);
-u32 hmc_ecc_writel(struct altera_sdram_plat *plat,
-		   u32 data, u32 reg);
-u32 ddr_sch_writel(struct altera_sdram_plat *plat, u32 data,
-		   u32 reg);
-int emif_clear(struct altera_sdram_plat *plat);
-int emif_reset(struct altera_sdram_plat *plat);
-int poll_hmc_clock_status(void);
-void sdram_clear_mem(phys_addr_t addr, phys_size_t size);
-//void sdram_set_firewall(struct bd_info *bd);
-phys_size_t sdram_calculate_size(struct altera_sdram_plat *plat);
 int agilex5_ddr_init_full(void);
+
+static inline phys_addr_t agilex5_mpfe_sdram_base(void)
+{
+	u32 lower;
+	u32 upper;
+
+	lower = FW_MPU_DDR_DMI0_SCR_READL(FW_MPU_DDR_SCR_MPUREGION0ADDR_BASE);
+	upper = FW_MPU_DDR_DMI0_SCR_READL(FW_MPU_DDR_SCR_MPUREGION0ADDR_BASEEXT);
+
+	return ((u64)upper << 32) | lower;
+}
 
 static inline resource_size_t agilex5_mpfe_sdram_size(void)
 {
+	resource_size_t limit;
 	u32 lower;
-	resource_size_t mem = 0;
+	u32 upper;
 
-	lower = FW_MPU_DDR_DMI0_SCR_READL(SOCFPGA_FW_DDR_CCU_DMI0_ADDRESS +
-					  FW_MPU_DDR_SCR_MPUREGION0ADDR_LIMIT);
+	lower = FW_MPU_DDR_DMI0_SCR_READL(FW_MPU_DDR_SCR_MPUREGION0ADDR_LIMIT);
+	upper = FW_MPU_DDR_DMI0_SCR_READL(FW_MPU_DDR_SCR_MPUREGION0ADDR_LIMITEXT);
 
-	mem = lower;
+	limit = ((u64)upper << 32) | lower;
 
-	return mem;
+	return limit - agilex5_mpfe_sdram_base() + 1;
 }
 
 #endif /* _SDRAM_SOC64_H_ */

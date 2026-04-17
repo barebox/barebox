@@ -120,9 +120,9 @@ static int populate_ddr_handoff(struct altera_sdram_plat *plat, struct io96b_inf
 
 	/* Assign IO96B CSR base address if it is valid */
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
-		io96b_ctrl->io96b[i].io96b_csr_addr = io96b_csr_reg_addr[i];
-		pr_debug("%s: IO96B 0x%llx CSR enabled\n", __func__
-			, io96b_ctrl->io96b[i].io96b_csr_addr);
+		io96b_ctrl->io96b[i].io96b_csr_addr = IOMEM(io96b_csr_reg_addr[i]);
+		pr_debug("%s: IO96B_%d: 0x%p CSR enabled\n", __func__,
+			 i, io96b_ctrl->io96b[i].io96b_csr_addr);
 	}
 
 	return 0;
@@ -179,20 +179,14 @@ static bool ddr_ecc_dbe_status(void)
 	return false;
 }
 
-static void sdram_set_firewall(phys_size_t hw_size)
+static void sdram_set_firewall(phys_addr_t base, phys_size_t size)
 {
-	phys_size_t value;
+	phys_addr_t limit = base + size - 1;
 	u32 lower, upper;
 
-	value = SOCFPGA_AGILEX5_DDR_BASE;
-	/* Keep first 1MB of SDRAM memory region as secure region when
-	 * using ATF flow, where the ATF code is located.
-	 */
-	value += SZ_1M;
-
 	/* Setting non-secure MPU region base and base extended */
-	lower = lower_32_bits(value);
-	upper = upper_32_bits(value);
+	lower = lower_32_bits(base);
+	upper = upper_32_bits(base);
 	FW_MPU_DDR_SCR_WRITEL(lower, FW_MPU_DDR_SCR_MPUREGION0ADDR_BASE);
 	FW_MPU_DDR_SCR_WRITEL(upper & 0xff, FW_MPU_DDR_SCR_MPUREGION0ADDR_BASEEXT);
 	FW_F2SDRAM_DDR_SCR_WRITEL(lower, FW_F2SDRAM_DDR_SCR_REGION0ADDR_BASE);
@@ -203,11 +197,8 @@ static void sdram_set_firewall(phys_size_t hw_size)
 	FW_MPU_DDR_SCR_WRITEL(upper & 0xff, FW_MPU_DDR_SCR_NONMPUREGION0ADDR_BASEEXT);
 
 	/* Setting non-secure MPU limit and limit extended */
-	value = SOCFPGA_AGILEX5_DDR_BASE + hw_size - 1;
-
-	lower = lower_32_bits(value);
-	upper = upper_32_bits(value);
-
+	lower = lower_32_bits(limit);
+	upper = upper_32_bits(limit);
 	FW_MPU_DDR_SCR_WRITEL(lower, FW_MPU_DDR_SCR_MPUREGION0ADDR_LIMIT);
 	FW_MPU_DDR_SCR_WRITEL(upper & 0xff, FW_MPU_DDR_SCR_MPUREGION0ADDR_LIMITEXT);
 
@@ -299,10 +290,6 @@ int agilex5_ddr_init_full(void)
 		return ret;
 	}
 
-	hw_size = (phys_size_t)io96b_ctrl.overall_size * SZ_1G / SZ_8;
-
-	pr_debug("%s: %lld MiB\n", io96b_ctrl.ddr_type, hw_size >> 20);
-
 	ret = io96b_ecc_enable_status(&io96b_ctrl);
 	if (ret) {
 		pr_debug("DDR: Failed to get DDR ECC status\n");
@@ -326,7 +313,16 @@ int agilex5_ddr_init_full(void)
 		pr_debug("SDRAM-ECC: Initialized success\n");
 	}
 
-	sdram_set_firewall(hw_size);
+	hw_size = io96b_ctrl.overall_size;
+	if (io96b_ctrl.inline_ecc)
+		hw_size -= hw_size / 8;
+	pr_debug("%s: %lld MiB\n", io96b_ctrl.ddr_type, hw_size / SZ_1M);
+
+	/*
+	 * Keep first 1MB of SDRAM memory region as secure region when
+	 * using ATF flow, where the ATF code is located.
+	 */
+	sdram_set_firewall(SOCFPGA_AGILEX5_DDR_BASE + SZ_1M, hw_size - SZ_1M);
 
 	/* Firewall setting for MPFE CSR */
 	/* IO96B0_reg */

@@ -3,12 +3,14 @@
 #ifndef __MACH_ATF_H
 #define __MACH_ATF_H
 
-/* First usable DRAM address. Lower mem is used for ATF and OP-TEE */
-#define RK3399_DRAM_BOTTOM		0xa00000
-#define RK3562_DRAM_BOTTOM		0xa00000
-#define RK3568_DRAM_BOTTOM		0xa00000
-#define RK3576_DRAM_BOTTOM		0x40a00000
-#define RK3588_DRAM_BOTTOM		0xa00000
+/* The first 10MiB of DRAM are used by the TF-A */
+#define ROCKCHIP_DRAM_TFA_CARVE_OUT	0xa00000
+
+#define RK3399_DRAM_START		0x0
+#define RK3562_DRAM_START		0x0
+#define RK3568_DRAM_START		0x0
+#define RK3576_DRAM_START		0x40000000
+#define RK3588_DRAM_START		0x0
 
 /*
  * The tee.bin image has an OP-TEE specific header that describes the
@@ -36,25 +38,11 @@
  * board lowlevel code should relocate barebox here. This is where
  * OP-TEE jumps to after initialization.
  */
-#define RK3399_BAREBOX_LOAD_ADDRESS	(RK3399_DRAM_BOTTOM + 1024*1024)
-#define RK3562_BAREBOX_LOAD_ADDRESS	(RK3562_DRAM_BOTTOM + 1024*1024)
-#define RK3568_BAREBOX_LOAD_ADDRESS	(RK3568_DRAM_BOTTOM + 1024*1024)
-#define RK3576_BAREBOX_LOAD_ADDRESS	(RK3576_DRAM_BOTTOM + 1024*1024)
-#define RK3588_BAREBOX_LOAD_ADDRESS	(RK3588_DRAM_BOTTOM + 1024*1024)
-
-#ifndef __ASSEMBLY__
-#ifdef CONFIG_ARCH_ROCKCHIP_ATF
-void rk3562_atf_load_bl31(void *fdt);
-void rk3568_atf_load_bl31(void *fdt);
-void rk3576_atf_load_bl31(void *fdt);
-void rk3588_atf_load_bl31(void *fdt);
-#else
-static inline void rk3562_atf_load_bl31(void *fdt) { }
-static inline void rk3568_atf_load_bl31(void *fdt) { }
-static inline void rk3576_atf_load_bl31(void *fdt) { }
-static inline void rk3588_atf_load_bl31(void *fdt) { }
-#endif
-#endif
+#define RK3399_BAREBOX_LOAD_ADDRESS	(RK3399_DRAM_START + ROCKCHIP_DRAM_TFA_CARVE_OUT + 1024*1024)
+#define RK3562_BAREBOX_LOAD_ADDRESS	(RK3562_DRAM_START + ROCKCHIP_DRAM_TFA_CARVE_OUT + 1024*1024)
+#define RK3568_BAREBOX_LOAD_ADDRESS	(RK3568_DRAM_START + ROCKCHIP_DRAM_TFA_CARVE_OUT + 1024*1024)
+#define RK3576_BAREBOX_LOAD_ADDRESS	(RK3576_DRAM_START + ROCKCHIP_DRAM_TFA_CARVE_OUT + 1024*1024)
+#define RK3588_BAREBOX_LOAD_ADDRESS	(RK3588_DRAM_START + ROCKCHIP_DRAM_TFA_CARVE_OUT + 1024*1024)
 
 void __noreturn rk3562_barebox_entry(void *fdt);
 void __noreturn rk3568_barebox_entry(void *fdt);

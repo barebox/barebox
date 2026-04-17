@@ -53,6 +53,9 @@ struct rockchip_dmc_drvdata {
 	resource_size_t membase;
 };
 
+/*
+ * Return the physical size of a single bank
+ */
 static resource_size_t rockchip_sdram_size(u32 sys_reg2, u32 sys_reg3)
 {
 	u32 rank, cs0_col, bk, cs0_row, cs1_row, bw, row_3_4;
@@ -143,102 +146,28 @@ static resource_size_t rockchip_sdram_size(u32 sys_reg2, u32 sys_reg3)
 	return (resource_size_t)size_mb << 20;
 }
 
-resource_size_t rk3399_ram0_size(void)
+/*
+ * Split the total DRAM size into regions
+ */
+static size_t rockchip_ram(phys_addr_t membase, resource_size_t memsize,
+			   phys_addr_t int_reg_start, phys_addr_t *base,
+			   resource_size_t *size, size_t n)
 {
-	void __iomem *pmugrf = IOMEM(RK3399_PMUGRF_BASE);
-	u32 sys_reg2, sys_reg3;
-	resource_size_t size;
+	int i = 0;
 
-	sys_reg2 = readl(pmugrf + RK3399_PMUGRF_OS_REG2);
-	sys_reg3 = readl(pmugrf + RK3399_PMUGRF_OS_REG3);
+	if (membase > int_reg_start) {
+		/*
+		 * RK3576 has internal registers below the DRAM start and thus
+		 * doesn't need any gaps in the DRAM space.
+		 */
+		base[0] = membase + ROCKCHIP_DRAM_TFA_CARVE_OUT;
+		size[0] = memsize;
 
-	size = rockchip_sdram_size(sys_reg2, sys_reg3);
-	size = min_t(resource_size_t, RK3399_INT_REG_START, size);
+		return 1;
+	}
 
-	pr_debug("%s() = %llu\n", __func__, (u64)size);
-
-	return size;
-}
-
-resource_size_t rk3562_ram0_size(void)
-{
-	void __iomem *pmugrf = IOMEM(RK3562_PMUGRF_BASE);
-	u32 sys_reg2, sys_reg3;
-	resource_size_t size;
-
-	sys_reg2 = readl(pmugrf + RK3562_PMUGRF_OS_REG2);
-	sys_reg3 = readl(pmugrf + RK3562_PMUGRF_OS_REG3);
-
-	size = rockchip_sdram_size(sys_reg2, sys_reg3);
-	size = min_t(resource_size_t, RK3562_INT_REG_START, size);
-
-	pr_debug("%s() = %llu\n", __func__, (u64)size);
-
-	return size;
-}
-
-resource_size_t rk3568_ram0_size(void)
-{
-	void __iomem *pmugrf = IOMEM(RK3568_PMUGRF_BASE);
-	u32 sys_reg2, sys_reg3;
-	resource_size_t size;
-
-	sys_reg2 = readl(pmugrf + RK3568_PMUGRF_OS_REG2);
-	sys_reg3 = readl(pmugrf + RK3568_PMUGRF_OS_REG3);
-
-	size = rockchip_sdram_size(sys_reg2, sys_reg3);
-	size = min_t(resource_size_t, RK3568_INT_REG_START, size);
-
-	pr_debug("%s() = %llu\n", __func__, (u64)size);
-
-	return size;
-}
-
-resource_size_t rk3576_ram0_size(void)
-{
-	void __iomem *pmugrf = IOMEM(RK3576_PMUGRF_BASE);
-	u32 sys_reg2, sys_reg3;
-	resource_size_t size;
-
-	sys_reg2 = readl(pmugrf + RK3576_PMUGRF_OS_REG2);
-	sys_reg3 = readl(pmugrf + RK3576_PMUGRF_OS_REG3);
-
-	size = rockchip_sdram_size(sys_reg2, sys_reg3);
-	/* RK3576 has a different memory map...? */
-	/* size = min_t(resource_size_t, RK3576_INT_REG_START, size); */
-
-	pr_debug("%s() = %llu\n", __func__, (u64)size);
-
-	return size;
-}
-
-#define RK3588_PMUGRF_BASE 0xfd58a000
-#define RK3588_PMUGRF_OS_REG2           0x208
-#define RK3588_PMUGRF_OS_REG3           0x20c
-#define RK3588_PMUGRF_OS_REG4           0x210
-#define RK3588_PMUGRF_OS_REG5           0x214
-
-size_t rk3588_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
-{
-	void __iomem *pmugrf = IOMEM(RK3588_PMUGRF_BASE);
-	u32 sys_reg2, sys_reg3, sys_reg4, sys_reg5;
-	resource_size_t memsize, size1, size2;
-	size_t i = 0;
-
-	sys_reg2 = readl(pmugrf + RK3588_PMUGRF_OS_REG2);
-	sys_reg3 = readl(pmugrf + RK3588_PMUGRF_OS_REG3);
-	sys_reg4 = readl(pmugrf + RK3588_PMUGRF_OS_REG4);
-	sys_reg5 = readl(pmugrf + RK3588_PMUGRF_OS_REG5);
-
-	size1 = rockchip_sdram_size(sys_reg2, sys_reg3);
-	size2 = rockchip_sdram_size(sys_reg4, sys_reg5);
-
-	pr_info("%s() size1 = 0x%08llx, size2 = 0x%08llx\n", __func__, (u64)size1, (u64)size2);
-
-	memsize = size1 + size2;
-
-	base[i] = RK3588_DRAM_BOTTOM;
-	size[i] = min_t(resource_size_t, RK3588_INT_REG_START, memsize) - RK3588_DRAM_BOTTOM;
+	base[i] = membase + ROCKCHIP_DRAM_TFA_CARVE_OUT;
+	size[i] = min_t(resource_size_t, RK3588_INT_REG_START, memsize) - membase;
 	i++;
 
 	if (i < n && memsize > SZ_4G) {
@@ -260,22 +189,106 @@ size_t rk3588_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
 	return i;
 }
 
-resource_size_t rk3588_ram0_size(void)
+size_t rk3399_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
 {
-	phys_addr_t base;
-	resource_size_t size;
+	void __iomem *pmugrf = IOMEM(RK3399_PMUGRF_BASE);
+	u32 sys_reg2, sys_reg3;
+	resource_size_t memsize;
 
-	rk3588_ram_sizes(&base, &size, 1);
+	sys_reg2 = readl(pmugrf + RK3399_PMUGRF_OS_REG2);
+	sys_reg3 = readl(pmugrf + RK3399_PMUGRF_OS_REG3);
 
-	return size;
+	memsize = rockchip_sdram_size(sys_reg2, sys_reg3);
+
+	pr_debug("%s() = %llu\n", __func__, (u64)size);
+
+	return rockchip_ram(RK3399_DRAM_START, memsize, RK3399_INT_REG_START, base, size, n);
+}
+
+size_t rk3562_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
+{
+	void __iomem *pmugrf = IOMEM(RK3562_PMUGRF_BASE);
+	u32 sys_reg2, sys_reg3;
+	resource_size_t memsize;
+
+	sys_reg2 = readl(pmugrf + RK3562_PMUGRF_OS_REG2);
+	sys_reg3 = readl(pmugrf + RK3562_PMUGRF_OS_REG3);
+
+	memsize = rockchip_sdram_size(sys_reg2, sys_reg3);
+
+	pr_debug("%s() = %llu\n", __func__, (u64)memsize);
+
+	return rockchip_ram(RK3562_DRAM_START, memsize, RK3562_INT_REG_START, base, size, n);
+}
+
+size_t rk3568_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
+{
+	void __iomem *pmugrf = IOMEM(RK3568_PMUGRF_BASE);
+	u32 sys_reg2, sys_reg3;
+	resource_size_t memsize;
+
+	sys_reg2 = readl(pmugrf + RK3568_PMUGRF_OS_REG2);
+	sys_reg3 = readl(pmugrf + RK3568_PMUGRF_OS_REG3);
+
+	memsize = rockchip_sdram_size(sys_reg2, sys_reg3);
+
+	pr_debug("%s() = %llu\n", __func__, (u64)memsize);
+
+	return rockchip_ram(RK3568_DRAM_START, memsize, RK3568_INT_REG_START, base, size, n);
+}
+
+size_t rk3576_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
+{
+	void __iomem *pmugrf = IOMEM(RK3576_PMUGRF_BASE);
+	u32 sys_reg2, sys_reg3;
+	resource_size_t memsize;
+
+	sys_reg2 = readl(pmugrf + RK3576_PMUGRF_OS_REG2);
+	sys_reg3 = readl(pmugrf + RK3576_PMUGRF_OS_REG3);
+
+	memsize = rockchip_sdram_size(sys_reg2, sys_reg3);
+
+	pr_debug("%s() = %llu\n", __func__, (u64)size);
+
+	return rockchip_ram(RK3576_DRAM_START, memsize, RK3576_INT_REG_START, base, size, n);
+}
+
+#define RK3588_PMUGRF_BASE 0xfd58a000
+#define RK3588_PMUGRF_OS_REG2           0x208
+#define RK3588_PMUGRF_OS_REG3           0x20c
+#define RK3588_PMUGRF_OS_REG4           0x210
+#define RK3588_PMUGRF_OS_REG5           0x214
+
+size_t rk3588_ram_sizes(phys_addr_t *base, resource_size_t *size, size_t n)
+{
+	void __iomem *pmugrf = IOMEM(RK3588_PMUGRF_BASE);
+	u32 sys_reg2, sys_reg3, sys_reg4, sys_reg5;
+	resource_size_t memsize, size1, size2;
+
+	sys_reg2 = readl(pmugrf + RK3588_PMUGRF_OS_REG2);
+	sys_reg3 = readl(pmugrf + RK3588_PMUGRF_OS_REG3);
+	sys_reg4 = readl(pmugrf + RK3588_PMUGRF_OS_REG4);
+	sys_reg5 = readl(pmugrf + RK3588_PMUGRF_OS_REG5);
+
+	size1 = rockchip_sdram_size(sys_reg2, sys_reg3);
+	size2 = rockchip_sdram_size(sys_reg4, sys_reg5);
+
+	pr_info("%s() size1 = 0x%08llx, size2 = 0x%08llx\n", __func__, (u64)size1, (u64)size2);
+
+	memsize = size1 + size2;
+
+	return rockchip_ram(RK3588_DRAM_START, memsize, RK3588_INT_REG_START, base, size, n);
 }
 
 static int rockchip_dmc_probe(struct device *dev)
 {
 	const struct rockchip_dmc_drvdata *drvdata;
 	resource_size_t membase, memsize, regstart;
+	phys_addr_t base[ROCKCHIP_MAX_DRAM_RESOURCES];
+	resource_size_t size[ROCKCHIP_MAX_DRAM_RESOURCES];
 	struct regmap *regmap;
 	u32 sys_rega, sys_regb;
+	int i, n_res;
 
 	regmap = syscon_regmap_lookup_by_phandle(dev->of_node, "rockchip,pmu");
 	if (IS_ERR(regmap))
@@ -304,26 +317,15 @@ static int rockchip_dmc_probe(struct device *dev)
 	membase = drvdata->membase;
 	regstart = drvdata->internal_registers_start;
 
-	if (membase < regstart) {
-		/* ram0, from 0xa00000 up to SoC internal register space start */
-		arm_add_mem_device("ram0", membase,
-			min_t(resource_size_t, drvdata->internal_registers_start, memsize) - membase);
+	n_res = rockchip_ram(membase, memsize, regstart, base, size,
+			     ROCKCHIP_MAX_DRAM_RESOURCES);
 
-		/* ram1, RAM beyond 32bit space up to first gap */
-		if (memsize > SZ_4G)
-			arm_add_mem_device("ram1", SZ_4G,
-				min_t(resource_size_t, DRAM_GAP1_START, memsize) - SZ_4G);
+	for (i = 0; i < n_res; i++) {
+		char name[sizeof("ramx")];
 
-		/* ram2, RAM between first and second gap */
-		if (memsize > DRAM_GAP1_END)
-			arm_add_mem_device("ram2", DRAM_GAP1_END,
-				min_t(resource_size_t, DRAM_GAP2_START, memsize) - DRAM_GAP1_END);
+		sprintf(name, "ram%u", i);
 
-		/* ram3, remaining RAM after second gap */
-		if (memsize > DRAM_GAP2_END)
-			arm_add_mem_device("ram3", DRAM_GAP2_END, memsize - DRAM_GAP2_END);
-	} else {
-		arm_add_mem_device("ram0", membase, memsize - 0xa00000);
+		arm_add_mem_device(name, base[i], size[i]);
 	}
 
 	return 0;
@@ -333,28 +335,28 @@ static const struct rockchip_dmc_drvdata rk3399_drvdata = {
 	.os_reg2 = RK3399_PMUGRF_OS_REG2,
 	.os_reg3 = RK3399_PMUGRF_OS_REG3,
 	.internal_registers_start = RK3399_INT_REG_START,
-	.membase = RK3399_DRAM_BOTTOM,
+	.membase = RK3399_DRAM_START,
 };
 
 static const struct rockchip_dmc_drvdata rk3562_drvdata = {
 	.os_reg2 = RK3562_PMUGRF_OS_REG2,
 	.os_reg3 = RK3562_PMUGRF_OS_REG3,
 	.internal_registers_start = RK3562_INT_REG_START,
-	.membase = RK3562_DRAM_BOTTOM,
+	.membase = RK3562_DRAM_START,
 };
 
 static const struct rockchip_dmc_drvdata rk3568_drvdata = {
 	.os_reg2 = RK3568_PMUGRF_OS_REG2,
 	.os_reg3 = RK3568_PMUGRF_OS_REG3,
 	.internal_registers_start = RK3568_INT_REG_START,
-	.membase = RK3568_DRAM_BOTTOM,
+	.membase = RK3568_DRAM_START,
 };
 
 static const struct rockchip_dmc_drvdata rk3576_drvdata = {
 	.os_reg2 = RK3576_PMUGRF_OS_REG2,
 	.os_reg3 = RK3576_PMUGRF_OS_REG3,
 	.internal_registers_start = RK3576_INT_REG_START,
-	.membase = RK3576_DRAM_BOTTOM,
+	.membase = RK3576_DRAM_START,
 };
 
 static const struct rockchip_dmc_drvdata rk3588_drvdata = {
@@ -363,7 +365,7 @@ static const struct rockchip_dmc_drvdata rk3588_drvdata = {
 	.os_reg4 = RK3588_PMUGRF_OS_REG4,
 	.os_reg5 = RK3588_PMUGRF_OS_REG5,
 	.internal_registers_start = RK3588_INT_REG_START,
-	.membase = RK3588_DRAM_BOTTOM,
+	.membase = RK3588_DRAM_START,
 };
 
 static struct of_device_id rockchip_dmc_dt_ids[] = {

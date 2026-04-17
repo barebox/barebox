@@ -7,6 +7,7 @@
 #include <tee/optee.h>
 #include <asm/atf_common.h>
 #include <asm/barebox-arm.h>
+#include <asm/mmu.h>
 #include <asm-generic/memory_layout.h>
 #include <asm-generic/sections.h>
 #include <mach/rockchip/dmc.h>
@@ -22,7 +23,7 @@ struct rockchip_scratch_space *rk_scratch;
 static void rk_scratch_save_optee_hdr(const struct optee_header *hdr)
 {
 	if (!rk_scratch) {
-		pr_err("No scratch area initialized, skip saving optee-hdr");
+		pr_err("No scratch area initialized, skip saving optee-hdr\n");
 		return;
 	}
 
@@ -127,6 +128,9 @@ static uintptr_t rk_load_optee(uintptr_t bl32, struct fwobj *bl32_fw)
 	return bl32;
 }
 
+static phys_addr_t membase[ROCKCHIP_MAX_DRAM_RESOURCES];
+static resource_size_t memsize[ROCKCHIP_MAX_DRAM_RESOURCES];
+static int n_mem_resources;
 static uintptr_t barebox_load_address; /* where barebox is loaded and started */
 static uintptr_t optee_load_address; /* standard SoC specific OP-TEE load address */
 static struct fwobj bl31; /* TF-A in barebox image */
@@ -141,10 +145,33 @@ static struct fwobj bl32; /* OP-TEE in barebox image */
 			get_builtin_firmware_compressed(tee_bin, &bl32);	\
 	} while (0)
 
+static int rockchip_create_optee_fdt(void *buf, int bufsize)
+{
+	unsigned long base[ROCKCHIP_MAX_DRAM_RESOURCES];
+	unsigned long size[ARRAY_SIZE(base)];
+	int i, root;
+
+	if (fdt_create_empty_tree(buf, bufsize) != 0)
+		return -EINVAL;
+
+	root = fdt_path_offset(buf, "/");
+
+	fdt_setprop_u32(buf, root, "#address-cells", 2);
+	fdt_setprop_u32(buf, root, "#size-cells", 2);
+
+	for (i = 0; i < n_mem_resources; i++) {
+		base[i] = membase[i];
+		size[i] = memsize[i];
+	}
+
+	return fdt_fixup_mem(buf, base, size, n_mem_resources);
+}
 
 static void rockchip_atf_load_bl31(void *fdt)
 {
 	unsigned long bl31_ep;
+
+	mmu_early_enable(membase[0], membase[0] + memsize[0]);
 
 	bl31_ep = load_elf64_image_phdr(&bl31);
 
@@ -156,28 +183,26 @@ static void rockchip_atf_load_bl31(void *fdt)
 			"r" ((ulong)barebox_load_address - 16) :
 			"cc");
 
+	mmu_disable();
+
 	bl31_entry(bl31_ep, optee_load_address,
 		   barebox_load_address, (uintptr_t)fdt);
 }
 
-void rk3562_atf_load_bl31(void *fdt)
-{
-	ROCKCHIP_GET_ADDRESSES(RK3562, rk3562_bl31_bin, rk3562_bl32_bin);
-	rockchip_atf_load_bl31(fdt);
-}
-
 void __noreturn rk3562_barebox_entry(void *fdt)
 {
-	unsigned long membase, endmem;
+	phys_addr_t memend;
 
-	membase = RK3562_DRAM_BOTTOM;
-	endmem = rk3562_ram0_size();
+	n_mem_resources = rk3562_ram_sizes(membase, memsize, ROCKCHIP_MAX_DRAM_RESOURCES);
 
-	rk_scratch = (void *)arm_mem_scratch(endmem);
+	memend = membase[0] + memsize[0];
+
+	rk_scratch = (void *)arm_mem_scratch(memend);
 
 	if (current_el() == 3) {
 		rk3562_lowlevel_init();
 		rockchip_store_bootrom_iram(IOMEM(RK3562_IRAM_BASE));
+		ROCKCHIP_GET_ADDRESSES(RK3562, rk3562_bl31_bin, rk3562_bl32_bin);
 
 		/*
 		 * The downstream TF-A doesn't cope with our device tree when
@@ -190,32 +215,28 @@ void __noreturn rk3562_barebox_entry(void *fdt)
 		 * Pass NULL for now until we have a good reason to pass a real
 		 * device tree.
 		 */
-		rk3562_atf_load_bl31(NULL);
+		rockchip_atf_load_bl31(NULL);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, endmem - membase, fdt);
-}
-
-void rk3568_atf_load_bl31(void *fdt)
-{
-	ROCKCHIP_GET_ADDRESSES(RK3568, rk3568_bl31_bin, rk3568_bl32_bin);
-	rockchip_atf_load_bl31(fdt);
+	barebox_arm_entry(membase[0], memsize[0], fdt);
 }
 
 void __noreturn rk3568_barebox_entry(void *fdt)
 {
-	unsigned long membase, endmem;
+	phys_addr_t memend;
 
-	membase = RK3568_DRAM_BOTTOM;
-	endmem = rk3568_ram0_size();
+	n_mem_resources = rk3568_ram_sizes(membase, memsize, ROCKCHIP_MAX_DRAM_RESOURCES);
 
-	rk_scratch = (void *)arm_mem_scratch(endmem);
+	memend = membase[0] + memsize[0];
+
+	rk_scratch = (void *)arm_mem_scratch(memend);
 
 	if (current_el() == 3) {
 		rk3568_lowlevel_init();
 		rockchip_store_bootrom_iram(IOMEM(RK3568_IRAM_BASE));
+		ROCKCHIP_GET_ADDRESSES(RK3568, rk3568_bl31_bin, rk3568_bl32_bin);
 
 		/*
 		 * The downstream TF-A doesn't cope with our device tree when
@@ -228,108 +249,62 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 		 * Pass NULL for now until we have a good reason to pass a real
 		 * device tree.
 		 */
-		rk3568_atf_load_bl31(NULL);
+		rockchip_atf_load_bl31(NULL);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, endmem - membase, fdt);
-}
-
-void rk3588_atf_load_bl31(void *fdt)
-{
-	ROCKCHIP_GET_ADDRESSES(RK3588, rk3588_bl31_bin, rk3588_bl32_bin);
-	rockchip_atf_load_bl31(fdt);
-}
-
-static int rk3588_fixup_mem(void *fdt)
-{
-	/* Use 4 blocks since rk3588 has 3 gaps in the address space */
-	unsigned long base[4];
-	unsigned long size[ARRAY_SIZE(base)];
-	phys_addr_t base_tmp[ARRAY_SIZE(base)];
-	resource_size_t size_tmp[ARRAY_SIZE(base_tmp)];
-	int i, n;
-
-	n = rk3588_ram_sizes(base_tmp, size_tmp, ARRAY_SIZE(base_tmp));
-	for (i = 0; i < n; i++) {
-		base[i] = base_tmp[i];
-		size[i] = size_tmp[i];
-	}
-
-	return fdt_fixup_mem(fdt, base, size, i);
-}
-
-static int rk3588_open_fdt(const void *fdt, void *buf, int bufsize)
-{
-	int root;
-
-	if (fdt_create_empty_tree(buf, bufsize) != 0)
-		return -1;
-	root = fdt_path_offset(buf, "/");
-
-	fdt_setprop_u32(buf, root, "#address-cells", 2);
-	fdt_setprop_u32(buf, root, "#size-cells", 2);
-
-	return 0;
+	barebox_arm_entry(membase[0], memsize[0], fdt);
 }
 
 void __noreturn rk3588_barebox_entry(void *fdt)
 {
-	phys_addr_t membase, memend;
-	resource_size_t memsize;
+	phys_addr_t memend;
+	int ret;
 
-	rk3588_ram_sizes(&membase, &memsize, 1);
+	n_mem_resources = rk3588_ram_sizes(membase, memsize, ROCKCHIP_MAX_DRAM_RESOURCES);
 
-	memend = membase + memsize;
+	memend = membase[0] + memsize[0];
+
+	rk_scratch = (void *)arm_mem_scratch(memend);
+
+	if (current_el() == 3) {
+		rk3588_lowlevel_init();
+		rockchip_store_bootrom_iram(IOMEM(RK3588_IRAM_BASE));
+		ROCKCHIP_GET_ADDRESSES(RK3588, rk3588_bl31_bin, rk3588_bl32_bin);
+
+		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_ATF_PASS_FDT)) {
+			pr_debug("Copy fdt to scratch area 0x%p (%zu bytes)\n",
+				 rk_scratch->fdt, sizeof(rk_scratch->fdt));
+			ret = rockchip_create_optee_fdt(rk_scratch->fdt, sizeof(rk_scratch->fdt));
+			if (ret)
+				pr_warn("Failed to create OP-TEE Device tree\n");
+		}
+
+		rockchip_atf_load_bl31(rk_scratch->fdt);
+		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
+	}
+
+	optee_set_membase(rk_scratch_get_optee_hdr());
+	barebox_arm_entry(membase[0], memsize[0], fdt);
+}
+
+void __noreturn rk3576_barebox_entry(void *fdt)
+{
+	phys_addr_t memend;
+
+	n_mem_resources = rk3576_ram_sizes(membase, memsize, ROCKCHIP_MAX_DRAM_RESOURCES);
+
+	memend = membase[0] + memsize[0];
 
 	rk_scratch = (void *)arm_mem_scratch(memend);
 
 	if (current_el() == 3) {
 		void *fdt_scratch = NULL;
 
-		rk3588_lowlevel_init();
-		rockchip_store_bootrom_iram(IOMEM(RK3588_IRAM_BASE));
-
-		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_ATF_PASS_FDT)) {
-			pr_debug("Copy fdt to scratch area 0x%p (%zu bytes)\n",
-				 rk_scratch->fdt, sizeof(rk_scratch->fdt));
-			if (rk3588_open_fdt(fdt, rk_scratch->fdt, sizeof(rk_scratch->fdt)) == 0)
-				fdt_scratch = rk_scratch->fdt;
-			else
-				pr_warn("Failed to copy fdt to scratch: Continue without fdt\n");
-			if (fdt_scratch && rk3588_fixup_mem(fdt_scratch) != 0)
-				pr_warn("Failed to fixup memory nodes\n");
-		}
-
-		rk3588_atf_load_bl31(fdt_scratch);
-		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
-	}
-
-	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, memsize, fdt);
-}
-
-void rk3576_atf_load_bl31(void *fdt)
-{
-	ROCKCHIP_GET_ADDRESSES(RK3576, rk3576_bl31_bin, rk3576_bl32_bin);
-	rockchip_atf_load_bl31(fdt);
-}
-
-void __noreturn rk3576_barebox_entry(void *fdt)
-{
-	unsigned long membase, endmem;
-
-	membase = RK3576_DRAM_BOTTOM;
-	endmem = rk3576_ram0_size();
-
-	rk_scratch = (void *)arm_mem_scratch(endmem);
-
-	if (current_el() == 3) {
-		void *fdt_scratch = NULL;
-
 		rk3576_lowlevel_init();
 		rockchip_store_bootrom_iram(IOMEM(RK3576_IRAM_BASE));
+		ROCKCHIP_GET_ADDRESSES(RK3576, rk3576_bl31_bin, rk3576_bl32_bin);
 
 		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_ATF_PASS_FDT)) {
 			pr_debug("Copy fdt to scratch area 0x%p (%zu bytes)\n",
@@ -340,10 +315,10 @@ void __noreturn rk3576_barebox_entry(void *fdt)
 				pr_warn("Failed to copy fdt to scratch: Continue without fdt\n");
 		}
 
-		rk3576_atf_load_bl31(fdt_scratch);
+		rockchip_atf_load_bl31(fdt_scratch);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 
 	optee_set_membase(rk_scratch_get_optee_hdr());
-	barebox_arm_entry(membase, endmem - membase, fdt);
+	barebox_arm_entry(membase[0], memsize[0], fdt);
 }

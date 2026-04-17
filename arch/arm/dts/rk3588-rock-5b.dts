@@ -78,3 +78,7 @@
 	/* Does not work in barebox (missing phy driver) */
 	status = "disabled";
 };
+
+&sdmmc_det_pin {
+	rockchip,pins = <0 RK_PA4 1 &pcfg_pull_up>;
+};

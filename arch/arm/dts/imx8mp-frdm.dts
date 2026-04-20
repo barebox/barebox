@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2026 Pengutronix, Fabian Pfitzner <kernel@pengutronix.de>
+ */
+
+/dts-v1/;
+
+#include <arm64/freescale/imx8mp-frdm.dts>
+#include "imx8mp.dtsi"
+
+/ {
+	barebox,deep-probe;
+};

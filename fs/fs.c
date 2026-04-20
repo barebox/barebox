@@ -1244,8 +1244,9 @@ void fsdev_set_linux_root_options(struct fs_device *fsdev, const char *root, con
 
 	dev_add_param_fixed(&fsdev->dev, "linux.bootargs.root",
 			    "%s", fsdev->linux_root);
-	dev_add_param_fixed(&fsdev->dev, "linux.bootargs.rootopts",
-			    "%s", fsdev->linux_rootopts);
+	if (rootopts)
+		dev_add_param_fixed(&fsdev->dev, "linux.bootargs.rootopts",
+				"%s", fsdev->linux_rootopts);
 }
 
 void fsdev_get_linux_root_options(struct fs_device *fsdev,

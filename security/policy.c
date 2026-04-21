@@ -47,6 +47,7 @@ static const struct security_policy *active_policy;
 
 static LIST_HEAD(policy_list);
 NOTIFIER_HEAD(sconfig_notifier_list);
+NOTIFIER_HEAD(sconfig_name_notifier);
 
 static bool __is_allowed(const struct security_policy *policy, unsigned option)
 {
@@ -101,6 +102,8 @@ int security_policy_activate(const struct security_policy *policy)
 
 		notifier_call_chain(&sconfig_notifier_list, i, NULL);
 	}
+
+	notifier_call_chain(&sconfig_name_notifier, 0, NULL);
 
 	return 0;
 }

@@ -52,6 +52,8 @@ static bool __is_allowed(const struct security_policy *policy, unsigned option)
 {
 	if (!policy)
 		return true;
+	if (WARN(option >= SCONFIG_NUM))
+		return false;
 
 	return policy->policy[option];
 }
@@ -60,7 +62,7 @@ bool is_allowed(const struct security_policy *policy, unsigned option)
 {
 	policy = policy ?: active_policy;
 
-	if (WARN(option > SCONFIG_NUM))
+	if (WARN(option >= SCONFIG_NUM))
 		return false;
 
 	if (!policy && *CONFIG_SECURITY_POLICY_INIT) {

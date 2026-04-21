@@ -1571,6 +1571,49 @@ int of_property_write_u64_array(struct device_node *np,
 }
 
 /**
+ * of_property_write_string_array - Write strings to a property. If
+ * the property does not exist, it will be created and appended to the given
+ * device node.
+ *
+ * @np:		device node to which the property value is to be written.
+ * @propname:	name of the property to be written.
+ * @values:	pointer to array elements to write.
+ * @sz:		number of array elements to write.
+ *
+ * Search for a property in a device node and write a string to
+ * it. If the property does not exist, it will be created and appended to
+ * the device node. Returns 0 on success, -ENOMEM if the property or array
+ * of elements cannot be created, -EINVAL if no strings specified.
+ */
+int of_property_write_string_array(struct device_node *np,
+				   const char *propname, const char *const *values,
+				   size_t sz)
+{
+	char *buf = NULL, *next;
+	size_t len = 0;
+	int ret = 0, i;
+
+	for (i = 0; i < sz; i++)
+		len += strlen(values[i]) + 1;
+
+	if (!len)
+		return -EINVAL;
+
+	buf = malloc(len);
+	if (!buf)
+		return -ENOMEM;
+
+	next = buf;
+
+	for (i = 0; i < sz; i++)
+		next = stpcpy(next, values[i]) + 1;
+
+	ret = of_set_property(np, propname, buf, len, 1);
+	free(buf);
+	return ret;
+}
+
+/**
  * of_property_write_strings - Write strings to a property. If
  * the property does not exist, it will be created and appended to the given
  * device node.

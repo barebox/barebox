@@ -34,4 +34,9 @@
 		property-single = "ayy";
 		property-multi = "ayy", "bee", "sea";
 	};
+
+	np5 {
+		property-single = "ayy";
+		property-multi = "ayy", "bee", "sea";
+	};
 };

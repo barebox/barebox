@@ -310,6 +310,9 @@ extern int of_property_write_string(struct device_node *np, const char *propname
 				    const char *value);
 extern int of_property_write_strings(struct device_node *np, const char *propname,
 				    ...) __attribute__((__sentinel__));
+int of_property_write_string_array(struct device_node *np,
+				   const char *propname, const char * const *values,
+				   size_t sz);
 int of_property_sprintf(struct device_node *np, const char *propname, const char *fmt, ...)
 	__printf(3, 4);
 

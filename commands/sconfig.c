@@ -114,6 +114,7 @@ out:
 static struct security_policy *alloc_policy(void)
 {
 	struct security_policy *override;
+	const struct security_policy *active_policy = security_policy_get_active();
 
 	override = xmalloc(sizeof(*override));
 
@@ -137,6 +138,7 @@ static void free_policy(struct security_policy *policy)
 
 static int do_sconfig(int argc, char *argv[])
 {
+	const struct security_policy *active_policy = security_policy_get_active();
 	struct security_policy *override;
 	bool allow_color;
 	int i, ret;

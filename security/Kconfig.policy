@@ -49,7 +49,8 @@ config SECURITY_POLICY_INIT
 	prompt "Initial security policy"
 	help
 	  The policy named here will be automatically selected the first
-	  time a security policy is to be consulted.
+	  time a security policy is to be consulted or the currently active
+	  policy is queried.
 	  It's recommended to use a restrictive policy here and remove
 	  the restrictions if needed instead of the other way round.
 

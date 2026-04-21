@@ -43,7 +43,7 @@ struct policy_list_entry {
 	struct list_head list;
 };
 
-const struct security_policy *active_policy;
+static const struct security_policy *active_policy;
 
 static LIST_HEAD(policy_list);
 NOTIFIER_HEAD(sconfig_notifier_list);
@@ -60,15 +60,12 @@ static bool __is_allowed(const struct security_policy *policy, unsigned option)
 
 bool is_allowed(const struct security_policy *policy, unsigned option)
 {
-	policy = policy ?: active_policy;
-
 	if (WARN(option >= SCONFIG_NUM))
 		return false;
 
-	if (!policy && *CONFIG_SECURITY_POLICY_INIT) {
-		security_policy_select(CONFIG_SECURITY_POLICY_INIT);
-		policy = active_policy;
-	}
+	/* initialize and use active policy if none is selected */
+	if (!policy)
+		policy = security_policy_get_active();
 
 	if (policy) {
 		bool allow = __is_allowed(policy, option);
@@ -106,6 +103,13 @@ int security_policy_activate(const struct security_policy *policy)
 	}
 
 	return 0;
+}
+
+const struct security_policy *security_policy_get_active(void)
+{
+	if (!active_policy && *CONFIG_SECURITY_POLICY_INIT)
+		security_policy_select(CONFIG_SECURITY_POLICY_INIT);
+	return active_policy;
 }
 
 const struct security_policy *security_policy_get(const char *name)

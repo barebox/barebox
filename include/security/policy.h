@@ -25,9 +25,8 @@
 #define POLICY_TAMPER		"tamper"
 #define POLICY_FIELD_RETURN	"return"
 
-extern const struct security_policy *active_policy;
-
 const struct security_policy *security_policy_get(const char *name);
+const struct security_policy *security_policy_get_active(void);
 
 int security_policy_activate(const struct security_policy *policy);
 int security_policy_select(const char *name);

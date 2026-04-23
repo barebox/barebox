@@ -83,9 +83,9 @@ static int xgmac_probe_resources_socfpga(struct device *dev)
 		dev_err(dev, "Invalid reset line 'stmmaceth'.\n");
 		return PTR_ERR(xgmac->rst);
 	}
-	xgmac->rst_ocp = reset_control_get(dev, "stmmaceth-ocp");
+	xgmac->rst_ocp = reset_control_get(dev, "ahb");
 	if (IS_ERR(xgmac->rst_ocp)) {
-		dev_err(dev, "Invalid reset line 'stmmaceth-ocp'.\n");
+		dev_err(dev, "Invalid reset line 'ahb'.\n");
 		return PTR_ERR(xgmac->rst_ocp);
 	}
 
@@ -139,7 +139,7 @@ struct xgmac_config __maybe_unused xgmac_socfpga_config = {
 
 static __maybe_unused struct of_device_id xgmac_socfpga_compatible[] = {
 	{
-		.compatible = "intel,socfpga-dwxgmac",
+		.compatible = "altr,socfpga-stmmac-agilex5",
 		.data = &xgmac_socfpga_config
 	}, {
 		/* sentinel */

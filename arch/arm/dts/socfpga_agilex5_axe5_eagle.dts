@@ -4,7 +4,6 @@
  */
 
 #include <arm64/intel/socfpga_agilex5.dtsi>
-#include "socfpga_agilex5.dtsi"
 
 / {
 	model = "SoCFPGA Agilex5 AXE5-Eagle";

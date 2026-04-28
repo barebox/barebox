@@ -126,7 +126,7 @@ const char *default_environment_path_get(void)
 {
 	struct cdev *cdev;
 
-	if (default_environment_path)
+	if (default_environment_path && *default_environment_path)
 		return default_environment_path;
 
 	cdev = default_environment_path_search();
@@ -547,9 +547,13 @@ out:
 static int register_env_vars(void)
 {
 	globalvar_add_simple_bool("env.autoprobe", &global_env_autoprobe);
+	globalvar_add_simple_string("env.path", &default_environment_path);
+
 	return 0;
 }
 postcore_initcall(register_env_vars);
 BAREBOX_MAGICVAR(global.env.autoprobe,
                  "Automatically probe known block devices for environment");
+BAREBOX_MAGICVAR(global.env.path,
+                 "The path the environment is stored");
 #endif

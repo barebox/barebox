@@ -132,8 +132,6 @@ const char *default_environment_path_get(void)
 	cdev = default_environment_path_search();
 	if (cdev)
 		default_environment_path = basprintf("/dev/%s", cdev->name);
-	else
-		default_environment_path = xstrdup("/dev/env0");
 
 	return default_environment_path;
 }

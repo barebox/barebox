@@ -389,8 +389,8 @@ out:
 #else
 static int sign_newidb(struct newidb *idb, const char *path)
 {
-       fprintf(stderr, "Signing support requires at least OpenSSL 3.0\n");
-       return -ENOSYS;
+	fprintf(stderr, "Signing support requires at least OpenSSL 3.0\n");
+	return -ENOSYS;
 }
 #endif
 
@@ -481,6 +481,12 @@ int main(int argc, char *argv[])
 
 	n_code = argc - optind;
 
+	if (!outfile) {
+		fprintf(stderr, "No output file specified, use -o\n");
+		usage(argv[0]);
+		exit(1);
+	}
+
 	if (re_sign) {
 		if (n_code) {
 			fprintf(stderr, "unhandled non-opt arguments\n");
@@ -543,7 +549,7 @@ int main(int argc, char *argv[])
 
 	fd = creat(outfile, 0644);
 	if (fd < 0) {
-		fprintf(stderr, "Cannot open %s: %s\n", outfile, strerror(errno));
+		fprintf(stderr, "Cannot create %s: %s\n", outfile, strerror(errno));
 		exit(1);
 	}
 

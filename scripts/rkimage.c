@@ -13,15 +13,13 @@
 #include <stdbool.h>
 
 #include <openssl/bn.h>
-/*
- * TODO Switch from the OpenSSL ENGINE API to the PKCS#11 provider and the
- * PROVIDER API: https://github.com/latchset/pkcs11-provider
- */
+#include <openssl/err.h>
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <openssl/engine.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
+#include <openssl/store.h>
 
 #include "common.h"
 #include "common.c"
@@ -63,11 +61,41 @@ static void idb_hash(struct newidb *idb)
 		sha512(idbu8, size, idbu8 + size);
 }
 
-static __attribute__((unused)) EVP_PKEY *load_key_pkcs11(const char *path)
+static __attribute__((unused)) EVP_PKEY *load_key_pkcs11(const char *uri)
 {
+	OSSL_STORE_CTX *ctx;
+	OSSL_STORE_INFO *info;
 	const char *engine_id = "pkcs11";
 	ENGINE *e;
 	EVP_PKEY *pkey = NULL;
+
+	/* Try provider-based store first (requires pkcs11-provider) */
+	ctx = OSSL_STORE_open(uri, NULL, NULL, NULL, NULL);
+	if (ctx) {
+		while (!OSSL_STORE_eof(ctx)) {
+			info = OSSL_STORE_load(ctx);
+			if (!info)
+				break;
+			if (OSSL_STORE_INFO_get_type(info) ==
+			    OSSL_STORE_INFO_PKEY) {
+				pkey = OSSL_STORE_INFO_get1_PKEY(info);
+				OSSL_STORE_INFO_free(info);
+				break;
+			}
+			OSSL_STORE_INFO_free(info);
+		}
+		OSSL_STORE_close(ctx);
+		if (pkey)
+			return pkey;
+	}
+
+	/*
+	 * Fall back to legacy ENGINE API (requires libp11 pkcs11 engine).
+	 * The provider-based approach above requires pkcs11-provider, which is
+	 * not yet available in ptxdist environments. The deprecated ENGINE API
+	 * via libp11 remains functional there and is used as a fallback.
+	 */
+	ERR_clear_error();
 
 	ENGINE_load_builtin_engines();
 
@@ -81,7 +109,7 @@ static __attribute__((unused)) EVP_PKEY *load_key_pkcs11(const char *path)
 		goto err_engine_init;
 	}
 
-	pkey = ENGINE_load_private_key(e, path, NULL, NULL);
+	pkey = ENGINE_load_private_key(e, uri, NULL, NULL);
 
 	ENGINE_finish(e);
 err_engine_init:

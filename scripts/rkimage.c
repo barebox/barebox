@@ -473,8 +473,7 @@ int main(int argc, char *argv[])
 		close(fd);
 	}
 
-	if (!(n_code == 1 && has_magic(code[0].buf)))
-		create_newidb(&idb);
+	create_newidb(&idb);
 
 	if (key) {
 		int ret;

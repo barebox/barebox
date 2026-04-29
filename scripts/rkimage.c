@@ -394,6 +394,43 @@ static int sign_newidb(struct newidb *idb, const char *path)
 }
 #endif
 
+static int re_sign_image(const char *infile, const char *outfile, const char *key)
+{
+	void *buf;
+	size_t size;
+	int ret;
+
+	if (!key) {
+		fprintf(stderr, "Can't resign without key\n");
+		exit(1);
+	}
+
+	buf = read_file(infile, &size);
+	if (!buf) {
+		fprintf(stderr, "Cannot read %s\n", infile);
+		exit(1);
+	}
+
+	if (!has_magic(buf)) {
+		fprintf(stderr, "%s is not a rockchip image\n", infile);
+		exit(1);
+	}
+
+	ret = sign_newidb(buf, key);
+	if (ret) {
+		fprintf(stderr, "Cannot sign image: %s: %s\n", infile, strerror(-ret));
+		exit(1);
+	}
+
+	ret = write_file(outfile, buf, size);
+	if (ret) {
+		fprintf(stderr, "Cannot write %s: %s\n", outfile, strerror(errno));
+		exit(1);
+	}
+
+	return 0;
+}
+
 struct option cbootcmd[] = {
 	{"help", 0, NULL, 'h'},
 	{"o", 1, NULL, 'o'},
@@ -412,24 +449,29 @@ static void usage(const char *prgname)
 "Options:\n"
 "  -o <file>   Output image to <file>\n"
 "  -k <key>    Sign the image with <key> as PEM file or PKCS#11 uri\n"
+"  -r <file>   Re-sign the image\n"
 "  -h          This help\n",
 	prgname);
 }
 
 int main(int argc, char *argv[])
 {
-	int opt, i, fd;
+	int opt, i, fd, ret;
 	const char *outfile = NULL;
 	const char *key = NULL;
+	const char *re_sign = NULL;
 	struct newidb idb = {};
 
-	while ((opt = getopt_long(argc, argv, "ho:k:", cbootcmd, NULL)) > 0) {
+	while ((opt = getopt_long(argc, argv, "hr:o:k:", cbootcmd, NULL)) > 0) {
 		switch (opt) {
 		case 'o':
 			outfile = optarg;
 			break;
 		case 'k':
 			key = optarg;
+			break;
+		case 'r':
+			re_sign = optarg;
 			break;
 		case 'h':
 			usage(argv[0]);
@@ -438,6 +480,20 @@ int main(int argc, char *argv[])
 	}
 
 	n_code = argc - optind;
+
+	if (re_sign) {
+		if (n_code) {
+			fprintf(stderr, "unhandled non-opt arguments\n");
+			exit(1);
+		}
+
+		ret = re_sign_image(re_sign, outfile, key);
+		if (ret)
+			exit(1);
+		else
+			exit(0);
+	}
+
 	if (!n_code) {
 		usage(argv[0]);
 		exit(1);

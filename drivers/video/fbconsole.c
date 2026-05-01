@@ -88,6 +88,15 @@ static int fbc_tstc(struct console_device *cdev)
 	return 0;
 }
 
+static int fbc_get_size(struct console_device *cdev, int *width, int *height)
+{
+	struct fbc_priv *priv = container_of(cdev, struct fbc_priv, cdev);
+
+	*width = priv->cols;
+	*height = priv->rows;
+	return 0;
+}
+
 static void cls(struct fbc_priv *priv)
 {
 	void *buf = gui_screen_render_buffer(priv->sc);
@@ -842,6 +851,7 @@ int register_fbconsole(struct fb_info *fb)
 	cdev->tstc = fbc_tstc;
 	cdev->putc = fbc_putc;
 	cdev->getc = fbc_getc;
+	cdev->get_size = fbc_get_size;
 	cdev->devname = basprintf("fbconsole%s", fbname);
 	cdev->devid = DEVICE_ID_SINGLE;
 	cdev->open = fbc_open;

@@ -79,9 +79,13 @@ int term_cdev_get_size(struct console_device *cdev,
 	const char restore[] = "\e8";
 	int ret, params[2];
 
-	if (!(cdev->f_active & CONSOLE_STDIN))
-		return -ENOENT;
 	if (!(cdev->f_active & CONSOLE_STDOUT))
+		return -ENOENT;
+
+	if (cdev->get_size)
+		return cdev->get_size(cdev, screenwidth, screenheight);
+
+	if (!(cdev->f_active & CONSOLE_STDIN))
 		return -ENOENT;
 
 	term_cdev_drain(cdev);

@@ -43,6 +43,7 @@ struct console_device {
 	int (*set_mode)(struct console_device *cdev, enum console_mode mode);
 	int (*open)(struct console_device *cdev);
 	int (*close)(struct console_device *cdev);
+	int (*get_size)(struct console_device *cdev, int *width, int *height);
 
 	const char *devname;
 	int devid;

@@ -34,7 +34,7 @@ void term_getsize(int *screenwidth, int *screenheight)
 
 		memset(buf, 0, sizeof(buf));
 
-		cdev->puts(cdev, esc, sizeof(esc));
+		console_puts(cdev, esc);
 
 		n = 0;
 

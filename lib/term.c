@@ -11,20 +11,17 @@ void term_setpos(int x, int y)
 	printf("\x1b[%d;%dH", y + 2, x + 1);
 }
 
-void term_getsize(int *screenwidth, int *screenheight)
+int term_getsize(int *screenwidth, int *screenheight)
 {
 	int n;
+	int width = INT_MAX, height = INT_MAX;
+	bool found = false;
 	char *endp;
 	const char esc[] = "\e7" "\e[r" "\e[999;999H" "\e[6n";
 	char buf[64];
 
-	if (screenwidth)
-		*screenwidth = 256;
-	if (screenheight)
-		*screenheight = 256;
-
 	for_each_console(cdev) {
-		int width, height;
+		int w, h;
 		uint64_t start;
 
 		if (!(cdev->f_active & CONSOLE_STDIN))
@@ -60,14 +57,23 @@ void term_getsize(int *screenwidth, int *screenheight)
 		if (buf[1] != '[')
 			continue;
 
-		height = simple_strtoul(buf + 2, &endp, 10);
-		width = simple_strtoul(endp + 1, NULL, 10);
+		h = simple_strtoul(buf + 2, &endp, 10);
+		w = simple_strtoul(endp + 1, NULL, 10);
 
-		if (screenwidth)
-			*screenwidth = min(*screenwidth, width);
-		if (screenheight)
-			*screenheight = min(*screenheight, height);
+		width = min(w, width);
+		height = min(h, height);
+		found = true;
 	}
 
 	term_setpos(0, 0);
+
+	if (!found)
+		return -ENOENT;
+
+	if (screenwidth)
+		*screenwidth = width;
+	if (screenheight)
+		*screenheight = height;
+
+	return 0;
 }

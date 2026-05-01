@@ -39,6 +39,10 @@ struct efi_console_priv {
 	const char **mode_names;
 	int *mode_num;
 	unsigned int var_mode;
+
+	/* saved cursor position for \e7/\e8 */
+	unsigned long saved_row;
+	unsigned long saved_col;
 };
 
 static inline struct efi_console_priv *to_efi(struct console_device *cdev)
@@ -274,16 +278,26 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 
 static int efi_process_escape(struct efi_console_priv *priv, const char *inp)
 {
-	char c;
-
-	c = *inp;
-
+	/* skip ESC, so inp points at the char after it */
 	inp++;
 
-	if (*inp == '[')
+	switch (*inp) {
+	case '[':
 		return efi_process_square_bracket(priv, inp) + 1;
+	case '7':
+		/* DEC save cursor position */
+		priv->saved_row = priv->out->mode->cursor_row;
+		priv->saved_col = priv->out->mode->cursor_column;
+		break;
+	case '8':
+		/* DEC restore cursor position */
+		priv->out->set_cursor_position(priv->out,
+					       priv->saved_col, priv->saved_row);
+		break;
+	}
 
-	return 1;
+	/* We have consumed ESC + one character following it */
+	return 2;
 }
 
 static void efi_console_add_char(struct efi_console_priv *priv, int c)

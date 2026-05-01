@@ -76,6 +76,7 @@ int term_cdev_get_size(struct console_device *cdev,
 		       int *screenwidth, int *screenheight)
 {
 	const char esc[] = "\e7" "\e[r" "\e[999;999H" "\e[6n";
+	const char restore[] = "\e8";
 	int ret, params[2];
 
 	if (!(cdev->f_active & CONSOLE_STDIN))
@@ -88,6 +89,9 @@ int term_cdev_get_size(struct console_device *cdev,
 	console_puts(cdev, esc);
 
 	ret = term_cdev_read_reply(cdev, params, 2, 'R');
+
+	console_puts(cdev, restore);
+
 	if (ret)
 		return ret;
 
@@ -112,8 +116,6 @@ int term_getsize(int *screenwidth, int *screenheight)
 		height = min(h, height);
 		found = true;
 	}
-
-	term_setpos(0, 0);
 
 	if (!found)
 		return -ENOENT;

@@ -72,29 +72,41 @@ static int term_cdev_read_reply(struct console_device *cdev,
 	return 0;
 }
 
+int term_cdev_get_size(struct console_device *cdev,
+		       int *screenwidth, int *screenheight)
+{
+	const char esc[] = "\e7" "\e[r" "\e[999;999H" "\e[6n";
+	int ret, params[2];
+
+	if (!(cdev->f_active & CONSOLE_STDIN))
+		return -ENOENT;
+	if (!(cdev->f_active & CONSOLE_STDOUT))
+		return -ENOENT;
+
+	term_cdev_drain(cdev);
+
+	console_puts(cdev, esc);
+
+	ret = term_cdev_read_reply(cdev, params, 2, 'R');
+	if (ret)
+		return ret;
+
+	*screenheight = params[0];
+	*screenwidth = params[1];
+
+	return 0;
+}
+
 int term_getsize(int *screenwidth, int *screenheight)
 {
 	int width = INT_MAX, height = INT_MAX;
 	bool found = false;
-	const char esc[] = "\e7" "\e[r" "\e[999;999H" "\e[6n";
 
 	for_each_console(cdev) {
-		int w, h, params[2];
+		int w, h;
 
-		if (!(cdev->f_active & CONSOLE_STDIN))
+		if (term_cdev_get_size(cdev, &w, &h))
 			continue;
-		if (!(cdev->f_active & CONSOLE_STDOUT))
-			continue;
-
-		term_cdev_drain(cdev);
-
-		console_puts(cdev, esc);
-
-		if (term_cdev_read_reply(cdev, params, 2, 'R'))
-			continue;
-
-		h = params[0];
-		w = params[1];
 
 		width = min(w, width);
 		height = min(h, height);

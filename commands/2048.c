@@ -13,17 +13,22 @@ static uint32_t score;
 
 static void getColor(uint16_t value, char *color, size_t length)
 {
-	uint8_t original[] = {8,255,1,255,2,255,3,255,4,255,5,255,6,255,7,255,9,0,10,0,11,0,12,0,13,0,14,0,255,0,255,0};
+	uint8_t original[] = {
+		0,7, 1,7, 2,7, 3,0, 4,7, 5,7, 6,7, 7,0,
+		1,0, 2,0, 3,0, 4,0, 5,0, 6,0, 7,0, 0,7
+	};
 	uint8_t *scheme = original;
 	uint8_t *background = scheme+0;
 	uint8_t *foreground = scheme+1;
+
 	if (value > 0) while (value >>= 1) {
 		if (background+2<scheme+sizeof(original)) {
 			background+=2;
 			foreground+=2;
 		}
 	}
-	snprintf(color,length,"\033[38;5;%d;48;5;%dm",*foreground,*background);
+
+	snprintf(color, length, "\033[%d;%dm", 30 + *foreground, 40 + *background);
 }
 
 static void drawBoard(uint16_t board[SIZE][SIZE])

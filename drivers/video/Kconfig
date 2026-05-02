@@ -13,6 +13,20 @@ config FRAMEBUFFER_CONSOLE
 	select FONTS
 	prompt "framebuffer console support"
 
+config FRAMEBUFFER_CONSOLE_UTF8
+	bool "UTF-8 output for framebuffer console"
+	depends on FRAMEBUFFER_CONSOLE
+	select CHARSET
+	default y
+	help
+	  Maps UTF-8 console output to CP437 font positions, enabling
+	  the framebuffer console to render accented Latin characters,
+	  mathematical symbols, and additional box-drawing characters
+	  using the existing bitmap fonts.
+
+	  Say n here if your own output is intentionally CP437 or you want
+	  to save the few hundred bytes needed to do UTF-8 decoding.
+
 config DRIVER_VIDEO_FB_SSD1307
 	bool "Solomon SSD1307 framebuffer support"
 	depends on (I2C || SPI) && GPIOLIB

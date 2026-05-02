@@ -10,6 +10,8 @@
 #include <gui/image_renderer.h>
 #include <gui/graphic_utils.h>
 #include <linux/font.h>
+#include <linux/ctype.h>
+#include <charset.h>
 
 enum state_t {
 	LIT,				/* Literal input */
@@ -76,6 +78,8 @@ struct fbc_priv {
 
 	int active;
 	int in_console;
+
+	char utf8_buf[5];	/* UTF-8 stream decoder buffer */
 };
 
 static int fbc_getc(struct console_device *cdev)
@@ -630,10 +634,26 @@ static void fbc_putc(struct console_device *cdev, char c)
 	case LIT:
 		switch (c) {
 		case '\033':
+			priv->utf8_buf[0] = '\0';
 			priv->state = ESC;
 			break;
-		default:
-			printchar(priv, c);
+		case '\0':
+			break;
+		default: {
+			int cp = c;
+
+			if (IS_ENABLED(CONFIG_FRAMEBUFFER_CONSOLE_UTF8)) {
+				/* All our fonts are CP437, so convert it
+				 * directly to that code page.
+				 */
+				cp = utf8_to_cp437_stream(c, priv->utf8_buf);
+				if (!cp)
+					break;
+			}
+
+			printchar(priv, cp);
+			break;
+		}
 		}
 		break;
 	case ESC:

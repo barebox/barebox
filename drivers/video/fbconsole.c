@@ -558,7 +558,6 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		/* suffix for vt100 "[?25h" */
 		switch (priv->csi_cmd) {
 		case '?': /* cursor visible */
-			priv->csi_cmd = -1;
 			if (!(priv->flags & HIDE_CURSOR))
 				break;
 
@@ -572,8 +571,6 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		/* suffix for vt100 "[?25l" */
 		switch (priv->csi_cmd) {
 		case '?': /* cursor invisible */
-			priv->csi_cmd = -1;
-
 			/* hide cursor now */
 			video_invertchar(priv, priv->x, priv->y);
 			priv->flags |= HIDE_CURSOR;
@@ -658,13 +655,23 @@ static void fbc_putc(struct console_device *cdev, char c)
 			priv->csipos = 0;
 			memset(priv->csi, 0, 6);
 			break;
+		default:
+			priv->state = LIT;
+			break;
 		}
 		break;
 	case CSI:
+		if (c == '\033') {
+			priv->state = ESC;
+			priv->csi_cmd = -1;
+			break;
+		}
+
 		priv->csi[priv->csipos++] = c;
 		if (priv->csipos == 255) {
 			priv->csipos = 0;
 			priv->state = LIT;
+			priv->csi_cmd = -1;
 			return;
 		}
 
@@ -683,6 +690,7 @@ static void fbc_putc(struct console_device *cdev, char c)
 		default:
 			fbc_parse_csi(priv);
 			priv->state = LIT;
+			priv->csi_cmd = -1;
 		}
 		break;
 	}

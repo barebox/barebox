@@ -144,6 +144,8 @@ def pytest_addoption(parser):
                      help=('Pass all remaining options to QEMU as is'))
     parser.addoption('--bootarg', action='append', dest='bootarg', default=[],
                      help=('Pass boot arguments to barebox for debugging purposes'))
+    parser.addoption('--port-forward', metavar="PORT", action='append', dest='qemu_port', default=[],
+                     help=('Forward incoming TCP or UDP connections on specified PORT'))
 
 
 @pytest.fixture(scope="session")
@@ -259,12 +261,21 @@ def strategy(request, target, pytestconfig):  # noqa: max-complexity=30
     for arg in pytestconfig.option.qemu_arg:
         strategy.append_qemu_args(arg)
 
+    qemu_nic = "user,id=net0"
+
+    for port in pytestconfig.option.qemu_port:
+        qemu_nic += f",hostfwd=udp:127.0.0.2:{port}-:{port}"
+        qemu_nic += f",hostfwd=tcp:127.0.0.2:{port}-:{port}"
+
     if "testfs" in features:
         if not any(fs and fs[0] == "testfs" for fs in pytestconfig.option.qemu_fs):
             testfs_path = os.path.join(os.environ["LG_BUILDDIR"], "testfs")
             pytestconfig.option.qemu_fs.append(["testfs", testfs_path])
             os.makedirs(testfs_path, exist_ok=True)
-            strategy.append_qemu_args("-nic", f"user,id=net0,tftp={testfs_path}")
+            qemu_nic += f",tftp={testfs_path}"
+
+    if "qemu" in features:
+        strategy.append_qemu_args("-nic", qemu_nic)
 
     for i, fs in enumerate(pytestconfig.option.qemu_fs):
         if virtio:

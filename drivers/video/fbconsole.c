@@ -689,6 +689,10 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 			clear_chars(priv, 0, priv->cur.y,
 				    priv->cur.x, priv->cur.y);
 			break;
+		case 2:
+			clear_chars(priv, 0, priv->cur.y,
+				    priv->cols - 1, priv->cur.y);
+			break;
 		}
 		toggle_cursor_visibility(priv);
 		return true;

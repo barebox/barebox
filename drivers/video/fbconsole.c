@@ -602,11 +602,13 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 		break;
 	case 'h':
 		/* suffix for vt100 "[?25h" */
-		switch (priv->csi_cmd) {
-		case '?': /* cursor visible */
+		if (priv->csi_cmd != '?')
+			break;
+		pos = simple_strtoul(priv->csi + 1, NULL, 10);
+		switch (pos) {
+		case 25: /* cursor visible */
 			if (!(priv->cur.flags & HIDE_CURSOR))
 				break;
-
 			priv->cur.flags &= ~HIDE_CURSOR;
 			/* show cursor now */
 			toggle_cursor_visibility(priv);
@@ -615,10 +617,13 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 		break;
 	case 'l':
 		/* suffix for vt100 "[?25l" */
-		switch (priv->csi_cmd) {
-		case '?': /* cursor invisible */
-			/* hide cursor now */
+		if (priv->csi_cmd != '?')
+			break;
+		pos = simple_strtoul(priv->csi + 1, NULL, 10);
+		switch (pos) {
+		case 25: /* cursor invisible */
 			toggle_cursor_visibility(priv);
+			/* hide cursor now */
 			priv->cur.flags |= HIDE_CURSOR;
 			return true;
 		}

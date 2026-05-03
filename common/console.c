@@ -48,12 +48,12 @@ static struct kfifo __console_output_fifo;
 static struct kfifo *console_input_fifo = &__console_input_fifo;
 static struct kfifo *console_output_fifo = &__console_output_fifo;
 
-int console_open(struct console_device *cdev)
+int console_open(struct console_device *cdev, unsigned activate)
 {
 	int ret;
 
 	if (cdev->open && !cdev->open_count) {
-		ret = cdev->open(cdev);
+		ret = cdev->open(cdev, activate);
 		if (ret)
 			return ret;
 	}
@@ -102,7 +102,7 @@ int console_set_active(struct console_device *cdev, unsigned flag)
 		if (ret)
 			return ret;
 	} else {
-		ret = console_open(cdev);
+		ret = console_open(cdev, flag);
 		if (ret)
 			return ret;
 	}
@@ -311,7 +311,7 @@ static int fops_open(struct cdev *cdev, unsigned long flags)
 	if ((flags & (O_WRONLY | O_RDWR)) && !priv->puts )
 		return -EPERM;
 
-	return console_open(priv);
+	return console_open(priv, 0);
 }
 
 static int fops_close(struct cdev *dev)

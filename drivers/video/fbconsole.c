@@ -922,7 +922,7 @@ static int setup_font(struct fbc_priv *priv)
 	return 0;
 }
 
-static int fbc_open(struct console_device *cdev)
+static int fbc_open(struct console_device *cdev, unsigned activate)
 {
 	struct fbc_priv *priv = container_of(cdev,
 					struct fbc_priv, cdev);
@@ -941,10 +941,14 @@ static int fbc_open(struct console_device *cdev)
 
 	priv->state = LIT;
 
-	dev_info(priv->cdev.dev, "framebuffer console %dx%d activated\n",
-		priv->cols, priv->rows);
-
 	priv->active = true;
+
+	if (activate)
+		dev_info(priv->cdev.dev, "framebuffer console %dx%d activated\n",
+			priv->cols, priv->rows);
+
+	if (activate & CONSOLE_STDERR)
+		log_print(&priv->cdev, 0, GENMASK(LOGLEVEL, 0));
 
 	return 0;
 }

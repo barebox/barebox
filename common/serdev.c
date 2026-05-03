@@ -80,7 +80,7 @@ int serdev_device_open(struct serdev_device *serdev)
 	if (ret)
 		goto err_free_fifo;
 
-	ret = console_open(cdev);
+	ret = console_open(cdev, 0);
 	if (ret)
 		goto err_poller_unregister;
 

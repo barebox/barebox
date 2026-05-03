@@ -94,7 +94,7 @@ static void nc_putc(struct console_device *cdev, char c)
 	priv->busy = 0;
 }
 
-static int nc_open(struct console_device *cdev)
+static int nc_open(struct console_device *cdev, unsigned activate)
 {
 	struct nc_priv *priv = container_of(cdev,
 					struct nc_priv, cdev);

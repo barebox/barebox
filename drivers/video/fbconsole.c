@@ -68,6 +68,7 @@ struct fbc_priv {
 
 #define ANSI_FLAG_INVERT	(1 << 0)
 #define ANSI_FLAG_BRIGHT	(1 << 1)
+#define SGR_ATTRIBUTES		(ANSI_FLAG_INVERT | ANSI_FLAG_BRIGHT)
 #define HIDE_CURSOR		(1 << 2)
 	unsigned flags;
 
@@ -508,7 +509,7 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 		code = simple_strtoul(str, &str, 10);
 		switch (code) {
 		case 0:
-			priv->flags = 0;
+			priv->flags &= ~SGR_ATTRIBUTES;
 			priv->color = DEFAULT_COLOR;
 			priv->bgcolor = BLACK;
 			break;

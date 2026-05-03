@@ -21,6 +21,7 @@
 #ifndef _LINUX_KTIME_H
 #define _LINUX_KTIME_H
 
+#include <linux/types.h>
 #include <linux/math.h>
 #include <linux/time.h>
 #include <clock.h>
@@ -30,9 +31,6 @@
 #define KTIME_MIN			(-KTIME_MAX - 1)
 #define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
 #define KTIME_SEC_MIN			(KTIME_MIN / NSEC_PER_SEC)
-
-/* Nanosecond scalar representation for kernel time values */
-typedef s64	ktime_t;
 
 /**
  * ktime_set - Set a ktime_t variable from a seconds/nanoseconds value

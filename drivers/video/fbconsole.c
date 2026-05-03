@@ -641,7 +641,20 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 		}
 		break;
 	case 'J':
-		cls(priv);
+		pos = simple_strtoul(priv->csi, &end, 10);
+		toggle_cursor_visibility(priv);
+		switch (pos) {
+		case 0: /* clear from cursor to end of screen */
+			clear_chars(priv, priv->cur.x, priv->cur.y,
+				    priv->cols - 1, priv->rows - 1);
+			break;
+		case 1: /* clear from start of screen to cursor */
+			clear_chars(priv, 0, 0, priv->cur.x, priv->cur.y);
+			break;
+		case 2: /* clear entire screen */
+			cls(priv);
+			break;
+		}
 		toggle_cursor_visibility(priv);
 		return true;
 	case 'H':

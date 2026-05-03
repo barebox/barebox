@@ -542,7 +542,7 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 	}
 }
 
-static void fbc_parse_csi(struct fbc_priv *priv)
+static bool fbc_parse_csi(struct fbc_priv *priv)
 {
 	char *end;
 	unsigned char last;
@@ -553,7 +553,7 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 	switch (last) {
 	case 'm':
 		fbc_parse_colors(priv);
-		return;
+		break;
 	case 'h':
 		/* suffix for vt100 "[?25h" */
 		switch (priv->csi_cmd) {
@@ -564,7 +564,7 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 			priv->flags &= ~HIDE_CURSOR;
 			/* show cursor now */
 			toggle_cursor_visibility(priv);
-			break;
+			return true;
 		}
 		break;
 	case 'l':
@@ -574,14 +574,13 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 			/* hide cursor now */
 			toggle_cursor_visibility(priv);
 			priv->flags |= HIDE_CURSOR;
-
-			break;
+			return true;
 		}
 		break;
 	case 'J':
 		cls(priv);
 		toggle_cursor_visibility(priv);
-		return;
+		return true;
 	case 'H':
 		toggle_cursor_visibility(priv);
 
@@ -592,7 +591,7 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		priv->x = clamp(pos - 1, 0, (int) priv->cols - 1);
 
 		toggle_cursor_visibility(priv);
-		break;
+		return true;
 	case 'K':
 		pos = simple_strtoul(priv->csi, &end, 10);
 		toggle_cursor_visibility(priv);
@@ -607,9 +606,10 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 			break;
 		}
 		toggle_cursor_visibility(priv);
-
-		break;
+		return true;
 	}
+
+	return false;
 }
 
 static void fbc_putc(struct console_device *cdev, char c)
@@ -617,6 +617,7 @@ static void fbc_putc(struct console_device *cdev, char c)
 	struct fbc_priv *priv = container_of(cdev,
 					struct fbc_priv, cdev);
 	struct fb_info *fb = priv->fb;
+	bool queue_flush = false;
 
 	if (priv->in_console)
 		return;
@@ -644,6 +645,7 @@ static void fbc_putc(struct console_device *cdev, char c)
 			}
 
 			printchar(priv, cp);
+			queue_flush = true;
 			break;
 		}
 		}
@@ -688,7 +690,7 @@ static void fbc_putc(struct console_device *cdev, char c)
 		case ':':
 			break;
 		default:
-			fbc_parse_csi(priv);
+			queue_flush = fbc_parse_csi(priv);
 			priv->state = LIT;
 			priv->csi_cmd = -1;
 		}
@@ -696,7 +698,8 @@ static void fbc_putc(struct console_device *cdev, char c)
 	}
 	priv->in_console = 0;
 
-	fb_flush(fb);
+	if (queue_flush)
+		fb_flush(fb);
 }
 
 static int setup_font(struct fbc_priv *priv)

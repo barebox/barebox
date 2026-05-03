@@ -78,25 +78,28 @@ static void memsetl(void *s, u32 c, size_t n)
 		*tmp++ = c;
 }
 
-void gu_memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size)
+void gu_memset_pixel_native(struct fb_info *info, void* buf, u32 color_native,
+			    size_t size)
 {
-	u32 px;
 	u8 *screen = buf;
-
-	px = gu_hex_to_pixel(info, color);
 
 	switch (info->bits_per_pixel) {
 	case 8:
-		memset(screen, (uint8_t)px, size);
+		memset(screen, (uint8_t)color_native, size);
 		break;
 	case 16:
-		memsetw(screen, (uint16_t)px, size);
+		memsetw(screen, (uint16_t)color_native, size);
 		break;
 	case 32:
 	case 24:
-		memsetl(screen, px, size);
+		memsetl(screen, color_native, size);
 		break;
 	}
+}
+
+void gu_memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size)
+{
+	gu_memset_pixel_native(info, buf, gu_hex_to_pixel(info, color), size);
 }
 
 static void get_rgb_pixel(struct fb_info *info, void *adr, u8 *r ,u8 *g, u8 *b)

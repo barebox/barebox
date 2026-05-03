@@ -672,7 +672,7 @@ static void fbc_putc(struct console_device *cdev, char c)
 			priv->csipos = 0;
 			priv->state = LIT;
 			priv->csi_cmd = -1;
-			return;
+			break;
 		}
 
 		switch (c) {

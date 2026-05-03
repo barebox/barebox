@@ -149,6 +149,49 @@ static struct rgb colors[] = {
 	[BRIGHT + WHITE]	= { 255, 255, 255 },
 };
 
+static void fb_blit_area(struct fbc_priv *priv, int x, int y)
+{
+	int startx, starty, width, height, fw, fh;
+	int mx, my;
+
+	mx = priv->margin.left;
+	my = priv->margin.top;
+
+	fw = priv->font->width;
+	fh = priv->font->height;
+
+	switch (priv->rotation) {
+	case FBCONSOLE_ROTATE_0:
+		startx = mx + x * fw;
+		starty = my + y * fh;
+		width = fw;
+		height = fh;
+		break;
+	case FBCONSOLE_ROTATE_90:
+		startx = mx + (priv->rows - y - 1) * fh;
+		starty = my + x * fw;
+		width = fh;
+		height = fw;
+		break;
+	case FBCONSOLE_ROTATE_180:
+		startx = mx + (priv->cols - x - 1) * fw;
+		starty = my + (priv->rows - y - 1) * fh;
+		width = fw;
+		height = fh;
+		break;
+	case FBCONSOLE_ROTATE_270:
+		startx = mx + y * fh;
+		starty = my + (priv->cols - x - 1) * fw;
+		width = fh;
+		height = fw;
+		break;
+	default:
+		return;
+	}
+
+	gu_screen_blit_area(priv->sc, startx, starty, width, height);
+}
+
 static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 {
 	void *buf;
@@ -241,49 +284,8 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 		inbuf++;
 		mask = 0x80;
 	}
-}
 
-static void fb_blit_area(struct fbc_priv *priv, int x, int y)
-{
-	int startx, starty, width, height, fw, fh;
-	int mx, my;
-
-	mx = priv->margin.left;
-	my = priv->margin.top;
-
-	fw = priv->font->width;
-	fh = priv->font->height;
-
-	switch (priv->rotation) {
-	case FBCONSOLE_ROTATE_0:
-		startx = mx + x * fw;
-		starty = my + y * fh;
-		width = fw;
-		height = fh;
-		break;
-	case FBCONSOLE_ROTATE_90:
-		startx = mx + (priv->rows - y - 1) * fh;
-		starty = my + x * fw;
-		width = fh;
-		height = fw;
-		break;
-	case FBCONSOLE_ROTATE_180:
-		startx = mx + (priv->cols - x - 1) * fw;
-		starty = my + (priv->rows - y - 1) * fh;
-		width = fw;
-		height = fh;
-		break;
-	case FBCONSOLE_ROTATE_270:
-		startx = mx + y * fh;
-		starty = my + (priv->cols - x - 1) * fw;
-		width = fh;
-		height = fw;
-		break;
-	default:
-		return;
-	}
-
-	gu_screen_blit_area(priv->sc, startx, starty, width, height);
+	fb_blit_area(priv, x, y);
 }
 
 static void video_invertchar(struct fbc_priv *priv, int x, int y)
@@ -479,7 +481,6 @@ static void printchar(struct fbc_priv *priv, int c)
 
 	default:
 		drawchar(priv, priv->x, priv->y, c);
-		fb_blit_area(priv, priv->x, priv->y);
 
 		priv->x++;
 		if (priv->x >= priv->cols) {

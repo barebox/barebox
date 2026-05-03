@@ -638,6 +638,28 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 
 		toggle_cursor_visibility(priv);
 		return true;
+	case 'A' ... 'D': {
+		pos = simple_strtoul(priv->csi, &end, 10) ?: 1;
+		toggle_cursor_visibility(priv);
+
+		switch (last) {
+		case 'A': /* cursor up */
+			fbc_set_cursor_row(priv, priv->cur.y - pos);
+			break;
+		case 'B': /* cursor down */
+			fbc_set_cursor_row(priv, priv->cur.y + pos);
+			break;
+		case 'C': /* cursor forward */
+			fbc_set_cursor_col(priv, priv->cur.x + pos);
+			break;
+		case 'D': /* cursor back */
+			fbc_set_cursor_col(priv, priv->cur.x - pos);
+			break;
+		}
+
+		toggle_cursor_visibility(priv);
+		return true;
+	}
 	case 'K':
 		pos = simple_strtoul(priv->csi, &end, 10);
 		toggle_cursor_visibility(priv);

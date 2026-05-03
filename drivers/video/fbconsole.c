@@ -542,6 +542,16 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 	}
 }
 
+static void fbc_set_cursor_row(struct fbc_priv *priv, int y)
+{
+	priv->y = clamp_t(int, y, 0, priv->rows - 1);
+}
+
+static void fbc_set_cursor_col(struct fbc_priv *priv, unsigned int x)
+{
+	priv->x = clamp_t(int, x, 0, priv->cols - 1);
+}
+
 static bool fbc_parse_csi(struct fbc_priv *priv)
 {
 	char *end;
@@ -585,10 +595,10 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 		toggle_cursor_visibility(priv);
 
 		pos = simple_strtoul(priv->csi, &end, 10);
-		priv->y = clamp(pos - 1, 0, (int) priv->rows - 1);
+		fbc_set_cursor_row(priv, pos - 1);
 
 		pos = simple_strtoul(end + 1, NULL, 10);
-		priv->x = clamp(pos - 1, 0, (int) priv->cols - 1);
+		fbc_set_cursor_col(priv, pos - 1);
 
 		toggle_cursor_visibility(priv);
 		return true;

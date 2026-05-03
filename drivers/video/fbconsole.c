@@ -55,6 +55,8 @@ struct fbc_screen_state {
 #define SGR_ATTRIBUTES		(ANSI_FLAG_INVERT | ANSI_FLAG_BRIGHT)
 #define HIDE_CURSOR		(1 << 2)
 	unsigned flags;
+
+	bool pending_wrap;	/* deferred wrap: cursor at last column */
 };
 
 struct fbc_priv {
@@ -471,6 +473,7 @@ static void printchar(struct fbc_priv *priv, int c)
 	case '\007': /* bell: ignore */
 		break;
 	case '\b':
+		cur->pending_wrap = false;
 		if (cur->x > 0) {
 			cur->x--;
 		} else if (cur->y > 0) {
@@ -480,25 +483,47 @@ static void printchar(struct fbc_priv *priv, int c)
 		break;
 	case '\n':
 	case '\013': /* Vertical tab is the same as Line Feed */
+		cur->pending_wrap = false;
 		cur->y++;
 		break;
 
 	case '\r':
+		cur->pending_wrap = false;
 		cur->x = 0;
 		break;
 
 	case '\t':
+		cur->pending_wrap = false;
 		cur->x = (cur->x + 8) & ~0x3;
 		break;
 
 	default:
-		drawchar(priv, priv->cur.x, priv->cur.y, c);
+		/*
+		 * VT100 deferred wrap: if the previous character landed at
+		 * the last column, perform the wrap NOW before drawing the
+		 * next character.  This prevents a scroll from occurring
+		 * merely by writing to the bottom-right corner cell.
+		 */
+		if (cur->pending_wrap) {
+			cur->pending_wrap = false;
+			cur->x = 0;
+			cur->y++;
+
+			if (cur->y >= priv->rows) {
+				fb_scroll_up(priv);
+				cur->y = priv->rows - 1;
+			}
+		}
+
+		drawchar(priv, cur->x, cur->y, c);
 
 		cur->x++;
 		if (cur->x >= priv->cols) {
-			cur->y++;
-			cur->x = 0;
+			/* Defer the wrap to the next printable character */
+			cur->x = priv->cols - 1;
+			cur->pending_wrap = true;
 		}
+		break;
 	}
 
 	if (cur->y >= priv->rows) {
@@ -660,6 +685,7 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 		return true;
 	case 'H':
 		toggle_cursor_visibility(priv);
+		priv->cur.pending_wrap = false;
 
 		pos = simple_strtoul(priv->csi, &end, 10);
 		fbc_set_cursor_row(priv, pos - 1);
@@ -672,6 +698,7 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 	case 'A' ... 'D': {
 		pos = simple_strtoul(priv->csi, &end, 10) ?: 1;
 		toggle_cursor_visibility(priv);
+		priv->cur.pending_wrap = false;
 
 		switch (last) {
 		case 'A': /* cursor up */

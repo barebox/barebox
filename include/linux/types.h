@@ -120,6 +120,9 @@ typedef		__u64		u_int64_t;
 typedef		__s64		int64_t;
 #endif
 
+/* Nanosecond scalar representation for kernel time values */
+typedef s64	ktime_t;
+
 #endif /* __KERNEL_STRICT_NAMES */
 
 /*

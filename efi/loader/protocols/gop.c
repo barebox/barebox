@@ -11,6 +11,7 @@
 #include <efi/guid.h>
 #include <efi/loader.h>
 #include <efi/error.h>
+#include <efi/loader/devicepath.h>
 #include <efi/loader/object.h>
 #include <efi/loader/trace.h>
 #include <efi/protocol/gop.h>
@@ -481,6 +482,8 @@ static char *fbdev = "/dev/fb0";
 static efi_status_t efi_gop_register(void *data)
 {
 	struct efi_gop_obj *gopobj;
+	struct efi_device_path *dp;
+	efi_handle_t handle;
 	u32 col, row;
 	efi_status_t ret;
 	struct fb_info *fbi;
@@ -513,14 +516,20 @@ static efi_status_t efi_gop_register(void *data)
 		return EFI_OUT_OF_RESOURCES;
 	}
 
-	/* Hook up to the device list */
+	dp = efi_dp_from_cdev(&fbi->cdev, true);
+	if (!dp)
+		return EFI_OUT_OF_RESOURCES;
+
 	efi_add_handle(&gopobj->header);
 
-	/* Fill in object data */
-	ret = efi_add_protocol(&gopobj->header, &efi_gop_guid,
-			       &gopobj->ops);
+	handle = &gopobj->header;
+
+	ret = efi_install_multiple_protocol_interfaces(&handle,
+			&efi_device_path_protocol_guid, dp,
+			&efi_gop_guid, &gopobj->ops,
+			NULL);
 	if (ret != EFI_SUCCESS) {
-		pr_err("Failure adding GOP protocol\n");
+		pr_err("Failure installing GOP protocol\n");
 		return ret;
 	}
 	gopobj->ops.query_mode = gop_query_mode;

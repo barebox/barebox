@@ -331,10 +331,10 @@ static void video_invertchar(struct fbc_priv *priv, int x, int y)
 	fb_blit_area(priv, x, y);
 }
 
-static void show_cursor(struct fbc_priv *priv, int x, int y)
+static void toggle_cursor_visibility(struct fbc_priv *priv)
 {
 	if (!(priv->flags & HIDE_CURSOR))
-		video_invertchar(priv, x, y);
+		video_invertchar(priv, priv->x, priv->y);
 }
 
 static void fb_scroll_up_0(struct fbc_priv *priv, void *adr, int width, int height)
@@ -451,7 +451,7 @@ static void fb_scroll_up(struct fbc_priv *priv)
 
 static void printchar(struct fbc_priv *priv, int c)
 {
-	video_invertchar(priv, priv->x, priv->y);
+	toggle_cursor_visibility(priv);
 
 	switch (c) {
 	case '\007': /* bell: ignore */
@@ -493,9 +493,7 @@ static void printchar(struct fbc_priv *priv, int c)
 		priv->y = priv->rows - 1;
 	}
 
-	show_cursor(priv, priv->x, priv->y);
-
-	return;
+	toggle_cursor_visibility(priv);
 }
 
 static void fbc_parse_colors(struct fbc_priv *priv)
@@ -564,7 +562,7 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 
 			priv->flags &= ~HIDE_CURSOR;
 			/* show cursor now */
-			show_cursor(priv, priv->x, priv->y);
+			toggle_cursor_visibility(priv);
 			break;
 		}
 		break;
@@ -573,7 +571,7 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		switch (priv->csi_cmd) {
 		case '?': /* cursor invisible */
 			/* hide cursor now */
-			video_invertchar(priv, priv->x, priv->y);
+			toggle_cursor_visibility(priv);
 			priv->flags |= HIDE_CURSOR;
 
 			break;
@@ -581,10 +579,10 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		break;
 	case 'J':
 		cls(priv);
-		show_cursor(priv, priv->x, priv->y);
+		toggle_cursor_visibility(priv);
 		return;
 	case 'H':
-		show_cursor(priv, priv->x, priv->y);
+		toggle_cursor_visibility(priv);
 
 		pos = simple_strtoul(priv->csi, &end, 10);
 		priv->y = clamp(pos - 1, 0, (int) priv->rows - 1);
@@ -592,11 +590,11 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		pos = simple_strtoul(end + 1, NULL, 10);
 		priv->x = clamp(pos - 1, 0, (int) priv->cols - 1);
 
-		show_cursor(priv, priv->x, priv->y);
+		toggle_cursor_visibility(priv);
 		break;
 	case 'K':
 		pos = simple_strtoul(priv->csi, &end, 10);
-		video_invertchar(priv, priv->x, priv->y);
+		toggle_cursor_visibility(priv);
 		switch (pos) {
 		case 0:
 			for (i = priv->x; i < priv->cols; i++)
@@ -607,7 +605,7 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 				drawchar(priv, i, priv->y, ' ');
 			break;
 		}
-		video_invertchar(priv, priv->x, priv->y);
+		toggle_cursor_visibility(priv);
 
 		break;
 	}

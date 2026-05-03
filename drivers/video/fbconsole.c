@@ -77,6 +77,7 @@ struct fbc_priv {
 	unsigned int cols, rows;
 
 	struct fbc_screen_state cur;
+	struct fbc_screen_state saved; /* DEC cursor save (\e7) */
 
 	unsigned int rotation;
 	enum state_t state;
@@ -759,6 +760,17 @@ static void fbc_putc(struct console_device *cdev, char c)
 			priv->csipos = 0;
 			memset(priv->csi, 0, 6);
 			break;
+		case '7':	/* DEC save cursor position */
+			priv->saved = priv->cur;
+			priv->state = LIT;
+			break;
+		case '8':	/* DEC restore cursor position */
+			toggle_cursor_visibility(priv);
+			priv->cur = priv->saved;
+			toggle_cursor_visibility(priv);
+			priv->state = LIT;
+			queue_flush = true;
+			break;
 		default:
 			priv->state = LIT;
 			break;
@@ -837,6 +849,7 @@ static int setup_font(struct fbc_priv *priv)
 		priv->rows = newrows;
 		priv->cols = newcols;
 		priv->cur.x = priv->cur.y = 0;
+		priv->saved.x = priv->saved.y = 0;
 	}
 
 	return 0;
@@ -931,8 +944,8 @@ static int set_rotation(struct param_d *p, void *vpriv)
 	struct fbc_priv *priv = vpriv;
 
 	cls(priv);
-	priv->cur.x = 0;
-	priv->cur.y = 0;
+	priv->cur.x = priv->cur.y = 0;
+	priv->saved.x = priv->saved.y = 0;
 	setup_font(priv);
 
 	return 0;

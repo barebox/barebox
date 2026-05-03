@@ -285,6 +285,18 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	fb_blit_area(priv, x, y);
 }
 
+static void clear_chars(struct fbc_priv *priv,
+			int start_x, int start_y, int end_x, int end_y)
+{
+	for (int y = start_y; y <= end_y; y++) {
+		int xs = (y == start_y) ? start_x : 0;
+		int xe = (y == end_y) ? end_x : (int)priv->cols - 1;
+
+		for (int x = xs; x <= xe; x++)
+			drawchar(priv, x, y, ' ');
+	}
+}
+
 static void video_invertchar(struct fbc_priv *priv, int x, int y)
 {
 	int startx, starty, width, height, fw, fh;
@@ -592,7 +604,7 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 {
 	char *end;
 	unsigned char last;
-	int pos, i;
+	int pos;
 
 	last = priv->csi[priv->csipos - 1];
 
@@ -670,12 +682,12 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 		toggle_cursor_visibility(priv);
 		switch (pos) {
 		case 0:
-			for (i = priv->cur.x; i < priv->cols; i++)
-				drawchar(priv, i, priv->cur.y, ' ');
+			clear_chars(priv, priv->cur.x, priv->cur.y,
+				    priv->cols - 1, priv->cur.y);
 			break;
 		case 1:
-			for (i = 0; i <= priv->cur.x; i++)
-				drawchar(priv, i, priv->cur.y, ' ');
+			clear_chars(priv, 0, priv->cur.y,
+				    priv->cur.x, priv->cur.y);
 			break;
 		}
 		toggle_cursor_visibility(priv);

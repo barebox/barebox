@@ -17,7 +17,6 @@ enum state_t {
 	LIT,				/* Literal input */
 	ESC,				/* Start of escape sequence */
 	CSI,				/* Reading arguments in "CSI Pn ;...*/
-	CSI_CNT,
 };
 
 enum fbconsole_rotation {
@@ -555,10 +554,6 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 	case 'm':
 		fbc_parse_colors(priv);
 		return;
-	case '?': /* vt100: show/hide cursor */
-		priv->csi_cmd = last;
-		priv->state = CSI_CNT;
-		return;
 	case 'h':
 		/* suffix for vt100 "[?25h" */
 		switch (priv->csi_cmd) {
@@ -674,29 +669,22 @@ static void fbc_putc(struct console_device *cdev, char c)
 		}
 
 		switch (c) {
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
+		case '?':
+			/* DEC private sequences use '?' as a parameter prefix byte.
+			 * Record '?' in csi_cmd and continue CSI parameter
+			 * accumulation for digits and the final byte that follows.
+			 */
+			priv->csi_cmd = c;
+			break;
+		case '0' ... '9':
 		case ';':
 		case ':':
 			break;
 		default:
 			fbc_parse_csi(priv);
-			if (priv->state != CSI_CNT)
-				priv->state = LIT;
+			priv->state = LIT;
 		}
 		break;
-	case CSI_CNT:
-		priv->state = CSI;
-		break;
-
 	}
 	priv->in_console = 0;
 

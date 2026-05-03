@@ -39,6 +39,7 @@ enum ansi_color {
 };
 
 #define DEFAULT_COLOR	WHITE
+#define DEFAULT_BGCOLOR	BLACK
 
 struct fbc_priv {
 	struct console_device cdev;
@@ -65,6 +66,9 @@ struct fbc_priv {
 
 	int color;
 	int bgcolor;
+
+	u32 color_rgb;
+	u32 bgcolor_rgb;
 
 #define ANSI_FLAG_INVERT	(1 << 0)
 #define ANSI_FLAG_BRIGHT	(1 << 1)
@@ -200,8 +204,6 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	int i;
 	const uint8_t *inbuf;
 	int line_length;
-	u32 color, bgcolor;
-	struct rgb *rgb;
 	int xstep;
 	int ystep;
 	int startx;
@@ -213,18 +215,6 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	inbuf = priv->font->data + i;
 
 	line_length = priv->fb->line_length;
-
-	color = priv->flags & ANSI_FLAG_INVERT ? priv->bgcolor : priv->color;
-	bgcolor = priv->flags & ANSI_FLAG_INVERT ? priv->color : priv->bgcolor;
-
-	if (priv->flags & ANSI_FLAG_BRIGHT)
-		color += BRIGHT;
-
-	rgb = &colors[color];
-	color = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
-
-	rgb = &colors[bgcolor];
-	bgcolor = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0x0);
 
 	adr = buf;
 
@@ -271,9 +261,11 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 			}
 
 			if (*inbuf & mask)
-				gu_set_pixel(priv->fb, adr + j * xstep, color);
+				gu_set_pixel(priv->fb, adr + j * xstep,
+					     priv->color_rgb);
 			else
-				gu_set_pixel(priv->fb, adr + j * xstep, bgcolor);
+				gu_set_pixel(priv->fb, adr + j * xstep,
+					     priv->bgcolor_rgb);
 
 			mask >>= 1;
 
@@ -497,8 +489,41 @@ static void printchar(struct fbc_priv *priv, int c)
 	toggle_cursor_visibility(priv);
 }
 
+static void fbc_update_colors(struct fbc_priv *priv, int color, int bgcolor)
+{
+	struct rgb *rgb;
+
+	if (color >= 0)
+		priv->color = color;
+	if (bgcolor >= 0)
+		priv->bgcolor = bgcolor;
+
+	if (priv->flags & ANSI_FLAG_INVERT) {
+		color = priv->bgcolor;
+		bgcolor = priv->color;
+	} else {
+		color = priv->color;
+		bgcolor = priv->bgcolor;
+	}
+
+	if (priv->flags & ANSI_FLAG_BRIGHT)
+		color += BRIGHT;
+
+	rgb = &colors[color];
+	priv->color_rgb = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
+
+	rgb = &colors[bgcolor];
+	priv->bgcolor_rgb = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0x0);
+}
+
+static void fbc_reset_colors(struct fbc_priv *priv)
+{
+	fbc_update_colors(priv, DEFAULT_COLOR, DEFAULT_BGCOLOR);
+}
+
 static void fbc_parse_colors(struct fbc_priv *priv)
 {
+	int color = -1, bgcolor = -1;
 	int code;
 	char *str;
 
@@ -509,8 +534,8 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 		switch (code) {
 		case 0:
 			priv->flags &= ~SGR_ATTRIBUTES;
-			priv->color = DEFAULT_COLOR;
-			priv->bgcolor = BLACK;
+			color = DEFAULT_COLOR;
+			bgcolor = DEFAULT_BGCOLOR;
 			break;
 		case 1:
 			priv->flags |= ANSI_FLAG_BRIGHT;
@@ -519,20 +544,20 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 			priv->flags |= ANSI_FLAG_INVERT;
 			break;
 		case 30 ... 37:
-			priv->color = code - 30;
+			color = code - 30;
 			break;
 		case 39:
-			priv->color = DEFAULT_COLOR;
+			color = DEFAULT_COLOR;
 			break;
 		case 40 ... 47:
-			priv->bgcolor = code - 40;
+			bgcolor = code - 40;
 			break;
 		case 49:
-			priv->bgcolor = BLACK;
+			bgcolor = DEFAULT_BGCOLOR;
 			break;
 		case 90 ... 97:
 			priv->flags |= ANSI_FLAG_BRIGHT;
-			priv->color = code - 90;
+			color = code - 90;
 			break;
 		}
 
@@ -540,6 +565,8 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 			break;
 		str++;
 	}
+
+	fbc_update_colors(priv, color, bgcolor);
 }
 
 static void fbc_set_cursor_row(struct fbc_priv *priv, int y)
@@ -872,8 +899,8 @@ int register_fbconsole(struct fb_info *fb)
 	priv->fb = fb;
 	priv->x = 0;
 	priv->y = 0;
-	priv->color = WHITE;
-	priv->bgcolor = BLACK;
+
+	fbc_reset_colors(priv);
 
 	cdev = &priv->cdev;
 	cdev->dev = &fb->dev;

@@ -81,6 +81,10 @@ struct fbc_priv {
 	struct fbc_screen_state cur;
 	struct fbc_screen_state saved; /* DEC cursor save (\e7) */
 
+	struct fbc_screen_state altscreen_saved;
+	void *altscreen_buf;	/* pixel snapshot while in alternate screen */
+	size_t altscreen_size;
+
 	unsigned int rotation;
 	enum state_t state;
 
@@ -651,6 +655,21 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 			/* show cursor now */
 			toggle_cursor_visibility(priv);
 			return true;
+		case 1049: /* alternate screen: save pixel buffer and state */
+			if (!priv->altscreen_buf) {
+				void *src = gui_screen_render_buffer(priv->sc);
+				size_t sz = priv->fb->line_length * priv->fb->yres;
+
+				priv->altscreen_buf = memdup(src, sz);
+				if (priv->altscreen_buf) {
+					priv->altscreen_size  = sz;
+					priv->altscreen_saved = priv->cur;
+				}
+				priv->cur = (struct fbc_screen_state){};
+				fbc_reset_colors(priv);
+				cls(priv);
+			}
+			return true;
 		}
 		break;
 	case 'l':
@@ -663,6 +682,27 @@ static bool fbc_parse_csi(struct fbc_priv *priv)
 			toggle_cursor_visibility(priv);
 			/* hide cursor now */
 			priv->cur.flags |= HIDE_CURSOR;
+			return true;
+		case 1049: /* alternate screen: restore pixel buffer and state */
+			if (priv->altscreen_buf) {
+				void *dst = gui_screen_render_buffer(priv->sc);
+				size_t sz = priv->fb->line_length * priv->fb->yres;
+
+				if (sz == priv->altscreen_size) {
+					memcpy(dst, priv->altscreen_buf, sz);
+					gu_screen_blit(priv->sc);
+				} else {
+					cls(priv);
+				}
+				free(priv->altscreen_buf);
+				priv->altscreen_buf  = NULL;
+				priv->altscreen_size = 0;
+				priv->cur = priv->altscreen_saved;
+			} else {
+				priv->cur = (struct fbc_screen_state){};
+				fbc_reset_colors(priv);
+				cls(priv);
+			}
 			return true;
 		}
 		break;
@@ -913,6 +953,12 @@ static int fbc_close(struct console_device *cdev)
 {
 	struct fbc_priv *priv = container_of(cdev,
 					struct fbc_priv, cdev);
+
+	if (priv->altscreen_buf) {
+		free(priv->altscreen_buf);
+		priv->altscreen_buf  = NULL;
+		priv->altscreen_size = 0;
+	}
 
 	if (priv->active) {
 		fb_close(priv->sc);

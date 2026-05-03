@@ -589,6 +589,19 @@ int tstc(void)
 }
 EXPORT_SYMBOL(tstc);
 
+int pollchar(ktime_t duration)
+{
+	ktime_t start = get_time_ns();
+
+	while (!tstc()) {
+		if (is_timeout(start, duration))
+			return -ETIMEDOUT;
+	}
+
+	return getchar();
+}
+EXPORT_SYMBOL(pollchar);
+
 int console_putc(struct console_device *con, char c)
 {
 	bool crlf = c == '\n';

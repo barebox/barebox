@@ -118,7 +118,8 @@ static int nc_open(struct console_device *cdev, unsigned activate)
 
 	net_udp_bind(priv->con, priv->port);
 
-	pr_info("netconsole initialized with %pI4:%d\n", &priv->ip, priv->port);
+	if (activate)
+		pr_info("netconsole initialized with %pI4:%d\n", &priv->ip, priv->port);
 
 	return 0;
 }

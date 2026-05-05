@@ -89,14 +89,34 @@ with ``global.linux.bootargs.`` will be concatenated to the bootargs:
 
 .. code-block:: sh
 
+  global linux.bootargs.Loglevel="ignore_loglevel"
   global linux.bootargs.base="console=ttyO0,115200"
-  global linux.bootargs.debug="earlyprintk ignore_loglevel"
+  global linux.bootargs.debug="earlyprintk"
 
   bootm zImage
 
   ...
 
-  Kernel command line: console=ttymxc0,115200n8 earlyprintk ignore_loglevel
+  Kernel command line: ignore_loglevel console=ttyO0,115200 earlyprintk
+
+.. _bootargs_concat_order:
+
+Concatenation order
+"""""""""""""""""""
+
+The kernel command line arguments are concatenated in lexicographical order of
+their ``linux.bootargs.``-prefixed parameter names.
+
+Kernel command line arguments that barebox generates internally are not
+interleaved with externally provided command-line arguments:
+
+* Following arguments will be concatenated **after** all other options:
+  * ``root=`` and ``rootwait=`` controlled by :ref:`global.bootm.appendroot <magicvar_global_bootm_appendroot>`
+    :ref:`global.linux.rootwait <magicvar_global_linux_rootwait>`
+  * ``earlycon=`` controlled by :ref:`global.bootm.earlycon <magicvar_global_bootm_earlycon>`
+  * ``systemd.machine_id=`` controlled by :ref:`global.bootm.provide_machine_id <magicvar_global_bootm_provide_machine_id>`
+  * ``systemd.hostname=`` controlled by :ref:`global.bootm.provide_hostname <magicvar_global_bootm_provide_hostname>`
+  * ``barebox.security.policy=`` controlled by :ref:`global.bootm.provide_policy <magicvar_global_bootm_provide_policy>`
 
 Additionally all variables starting with ``global.linux.mtdparts.`` are concatenated
 to a ``mtdparts=`` parameter to the kernel. This makes it possible to consistently

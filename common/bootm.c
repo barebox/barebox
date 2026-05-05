@@ -22,6 +22,19 @@
 #include <security/config.h>
 #include <security/policy.h>
 
+/*
+ * All device parameter iteration happens in lexicographical order.
+ * To ensure that bootm options are consistently applied before or after
+ * other options from the environment or boot configuration files, we
+ * employ following convention for the prefix:
+ *
+ *   !		0x21 is less than any non-space printable character
+ *   ~		0x7e is greater than any printable character
+ *
+ * Users will never see those as bootm_boot_cleanup() will delete them again.
+ */
+#define LINUX_BOOTARGS_BOOTM_LATE	"linux.bootargs.~bootm."
+
 static LIST_HEAD(handler_list);
 static struct sconfig_notifier_block sconfig_notifier;
 
@@ -650,7 +663,7 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 
 			rootarg = format_root_bootarg(bootm_data->root_param, root, rootopts);
 			pr_info("Adding \"%s\" to Kernel commandline\n", rootarg);
-			globalvar_add_simple("linux.bootargs.bootm.appendroot",
+			globalvar_add_simple(LINUX_BOOTARGS_BOOTM_LATE "appendroot",
 					     rootarg);
 			free(rootarg);
 		}
@@ -672,7 +685,7 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 			earlycon = "earlycon";
 
 		pr_info("Adding \"%s\" to Kernel commandline\n", earlycon);
-		globalvar_add_simple("linux.bootargs.bootm.earlycon", earlycon);
+		globalvar_add_simple(LINUX_BOOTARGS_BOOTM_LATE "earlycon", earlycon);
 	}
 
 	if (bootm_data->provide_machine_id) {
@@ -686,7 +699,7 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 		}
 
 		machine_id_bootarg = basprintf("systemd.machine_id=%s", machine_id);
-		globalvar_add_simple("linux.bootargs.machine_id", machine_id_bootarg);
+		globalvar_add_simple(LINUX_BOOTARGS_BOOTM_LATE "machine_id", machine_id_bootarg);
 		free(machine_id_bootarg);
 	}
 
@@ -714,7 +727,7 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 					     hostname, suffix ? "-" : "",
 					     suffix ?: "");
 
-		globalvar_add_simple("linux.bootargs.hostname", hostname_bootarg);
+		globalvar_add_simple(LINUX_BOOTARGS_BOOTM_LATE "hostname", hostname_bootarg);
 		free(hostname_bootarg);
 	}
 
@@ -729,7 +742,7 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 		}
 
 		policy_bootargs = basprintf("barebox.security.policy=%s", active_policy->name);
-		globalvar_add_simple("linux.bootargs.dyn.policy", policy_bootargs);
+		globalvar_add_simple(LINUX_BOOTARGS_BOOTM_LATE "policy", policy_bootargs);
 		free(policy_bootargs);
 	}
 
@@ -792,8 +805,7 @@ void bootm_boot_cleanup(struct image_data *data)
 	if (data->of_root_node)
 		of_delete_node(data->of_root_node);
 
-	globalvar_remove("linux.bootargs.bootm.earlycon");
-	globalvar_remove("linux.bootargs.bootm.appendroot");
+	globalvar_remove(LINUX_BOOTARGS_BOOTM_LATE  "*");
 	free(data->os_header);
 	free(data->os_file);
 	free(data->oftree_file);

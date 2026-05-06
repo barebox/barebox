@@ -10,7 +10,6 @@
 #include <io.h>
 #include <mach/socfpga/mailbox_s10.h>
 #include <mach/socfpga/soc64-regs.h>
-#include <mach/socfpga/soc64-system-manager.h>
 
 #define MBOX_READL(reg)			\
 	 readl(SOCFPGA_MAILBOX_ADDRESS + (reg))
@@ -294,7 +293,7 @@ int socfpga_mailbox_s10_qspi_close(void)
 			     0, NULL, 0, 0, NULL);
 }
 
-int socfpga_mailbox_s10_qspi_open(void)
+int socfpga_mailbox_s10_qspi_open(unsigned long *master_ref_clk)
 {
 	int ret;
 	u32 resp_buf[1] = {};
@@ -339,9 +338,7 @@ retry:
 
 	pr_info("QSPI: reference clock at %d kHz\n", clk_rate / 1000);
 
-	ret = socfpga_agilex5_write_qspi_refclk(clk_rate);
-	if (ret)
-		return ret;
+	*master_ref_clk = clk_rate;
 
 	return 0;
 

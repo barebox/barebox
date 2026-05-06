@@ -14,6 +14,7 @@
 
 static void socfpga_agilex5_qspi_init(void)
 {
+	unsigned long master_ref_clk = 0;
 	int ret;
 
 	ret = socfpga_mailbox_s10_init();
@@ -22,9 +23,15 @@ static void socfpga_agilex5_qspi_init(void)
 		return;
 	}
 
-	ret = socfpga_mailbox_s10_qspi_open();
+	ret = socfpga_mailbox_s10_qspi_open(&master_ref_clk);
 	if (ret) {
 		pr_warn("Failed to request QSPI access: %d\n", ret);
+		return;
+	}
+
+	ret = socfpga_agilex5_write_qspi_refclk(master_ref_clk);
+	if (ret) {
+		pr_warn("Failed to store reference clock: %d\n", ret);
 		return;
 	}
 }

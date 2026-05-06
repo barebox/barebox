@@ -185,7 +185,7 @@ enum ALT_SDM_MBOX_RESP_CODE {
 int socfpga_mailbox_s10_init(void);
 
 int socfpga_mailbox_s10_qspi_close(void);
-int socfpga_mailbox_s10_qspi_open(void);
+int socfpga_mailbox_s10_qspi_open(unsigned long *master_ref_clk);
 int socfpga_mailbox_s10_qspi_get_device_info(u32 *resp_buf, u32 resp_buf_len);
 
 #endif /* _MAILBOX_S10_H_ */

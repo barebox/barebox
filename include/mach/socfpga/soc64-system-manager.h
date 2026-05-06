@@ -8,6 +8,8 @@
 
 #include <linux/bitops.h>
 
+#include <mach/socfpga/soc64-regs.h>
+
 #define SYSMGR_SOC64_SILICONID_1		0x00
 #define SYSMGR_SOC64_SILICONID_2		0x04
 #define SYSMGR_SOC64_WDDBG			0x08
@@ -172,5 +174,24 @@ void agilex5_security_interleaving_on(void);
 void agilex5_security_interleaving_off(void);
 void agilex5_initialize_security_policies(void);
 void agilex5_sysmgr_pinmux_init(void);
+
+static inline int socfpga_agilex5_write_qspi_refclk(unsigned long clkrate)
+{
+	unsigned long clkrate_khz;
+	u32 reg;
+
+	/* Follow U-Boot and store clock rate in kHz */
+	clkrate_khz = clkrate / 1000;
+	if (clkrate_khz & ~SYSMGR_SCRATCH_REG_0_QSPI_REFCLK_MASK)
+		return -EINVAL;
+
+	reg = readl(SOCFPGA_SYSMGR_ADDRESS + SYSMGR_SOC64_BOOT_SCRATCH_COLD0);
+	reg &= ~SYSMGR_SCRATCH_REG_0_QSPI_REFCLK_MASK;
+	reg |= (SYSMGR_SCRATCH_REG_0_QSPI_REFCLK_MASK & clkrate_khz);
+
+	writel(reg, SOCFPGA_SYSMGR_ADDRESS + SYSMGR_SOC64_BOOT_SCRATCH_COLD0);
+
+	return 0;
+}
 
 #endif /* _SOC64_SYSTEM_MANAGER_H_ */

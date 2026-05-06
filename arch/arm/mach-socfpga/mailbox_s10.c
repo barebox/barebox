@@ -299,7 +299,6 @@ int socfpga_mailbox_s10_qspi_open(void)
 	int ret;
 	u32 resp_buf[1] = {};
 	u32 resp_buf_len = ARRAY_SIZE(resp_buf);
-	u32 reg;
 	u32 clk_rate;
 	int try = 0;
 
@@ -340,11 +339,9 @@ retry:
 
 	pr_info("QSPI: reference clock at %d kHz\n", clk_rate / 1000);
 
-	reg = (readl(SOCFPGA_SYSMGR_ADDRESS + SYSMGR_SOC64_BOOT_SCRATCH_COLD0)) &
-			~(SYSMGR_SCRATCH_REG_0_QSPI_REFCLK_MASK);
-
-	writel(((clk_rate / 1000) & SYSMGR_SCRATCH_REG_0_QSPI_REFCLK_MASK) | reg,
-	       SOCFPGA_SYSMGR_ADDRESS + SYSMGR_SOC64_BOOT_SCRATCH_COLD0);
+	ret = socfpga_agilex5_write_qspi_refclk(clk_rate);
+	if (ret)
+		return ret;
 
 	return 0;
 

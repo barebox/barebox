@@ -12,6 +12,23 @@
 #include <mach/socfpga/soc64-sdram.h>
 #include <mach/socfpga/soc64-system-manager.h>
 
+static void socfpga_agilex5_qspi_init(void)
+{
+	int ret;
+
+	ret = socfpga_mailbox_s10_init();
+	if (ret) {
+		pr_warn("Failed to init s10 mailbox: %d\n", ret);
+		return;
+	}
+
+	ret = socfpga_mailbox_s10_qspi_open();
+	if (ret) {
+		pr_warn("Failed to request QSPI access: %d\n", ret);
+		return;
+	}
+}
+
 static void __noreturn agilex5_load_and_start_image_via_tfa(void)
 {
 	void *bl31 = (void *)AGILEX5_ATF_BL31_BASE_ADDR;
@@ -55,8 +72,7 @@ void __noreturn agilex5_barebox_entry(void *fdt)
 			writel(LCR_BKSE, SOCFPGA_UART0_ADDRESS + LCR);
 		agilex5_ddr_init_full();
 
-		socfpga_mailbox_s10_init();
-		socfpga_mailbox_s10_qspi_open();
+		socfpga_agilex5_qspi_init();
 
 		agilex5_load_and_start_image_via_tfa();
 		__builtin_unreachable();

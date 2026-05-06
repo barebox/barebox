@@ -353,7 +353,7 @@ int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode)
 
 	sdhci_start_tuning(sdhci);
 
-	sdhci->tuning_err = __sdhci_execute_tuning(sdhci, opcode);
+	err = __sdhci_execute_tuning(sdhci, opcode);
 
 	sdhci_end_tuning(sdhci);
 out:

@@ -24,7 +24,6 @@ pbl-$(CONFIG_ARCH_SOCFPGA_AGILEX5) += soc64-system-manager.o \
 				atf.o
 
 obj-$(CONFIG_ARCH_SOCFPGA_AGILEX5) += secure_reg_helper.o \
-			        mailbox_s10.o \
 				      smc_api.o
 
 ifdef CONFIG_ARCH_SOCFPGA_CYCLONE5

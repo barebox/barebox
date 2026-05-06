@@ -300,7 +300,7 @@ int socfpga_mailbox_s10_qspi_open(void)
 	u32 resp_buf[1] = {};
 	u32 resp_buf_len = ARRAY_SIZE(resp_buf);
 	u32 reg;
-	u32 clk_khz;
+	u32 clk_rate;
 	int try = 0;
 
 retry:
@@ -331,20 +331,19 @@ retry:
 	}
 
 	/* Get the QSPI clock from SDM response and save for later use */
-	clk_khz = resp_buf[0];
-	if (clk_khz < 1000) {
-		pr_err("QSPI: Unexpected reference clock rate: %d kHz\n",
-		       clk_khz);
+	clk_rate = resp_buf[0];
+	if (clk_rate < 1000) {
+		pr_err("QSPI: Unexpected reference clock rate: %d Hz\n",
+		       clk_rate);
 		return -EINVAL;
 	}
 
-	clk_khz /= 1000;
-	pr_info("QSPI: reference clock at %d kHz\n", clk_khz);
+	pr_info("QSPI: reference clock at %d kHz\n", clk_rate / 1000);
 
 	reg = (readl(SOCFPGA_SYSMGR_ADDRESS + SYSMGR_SOC64_BOOT_SCRATCH_COLD0)) &
 			~(SYSMGR_SCRATCH_REG_0_QSPI_REFCLK_MASK);
 
-	writel((clk_khz & SYSMGR_SCRATCH_REG_0_QSPI_REFCLK_MASK) | reg,
+	writel(((clk_rate / 1000) & SYSMGR_SCRATCH_REG_0_QSPI_REFCLK_MASK) | reg,
 	       SOCFPGA_SYSMGR_ADDRESS + SYSMGR_SOC64_BOOT_SCRATCH_COLD0);
 
 	return 0;

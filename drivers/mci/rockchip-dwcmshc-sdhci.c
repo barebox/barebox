@@ -146,6 +146,15 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 
 	clk_set_rate(host->clks[CLK_CORE].clk, clock);
 
+	extra = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL);
+
+	if (clock > 26000000)
+		extra |= SDHCI_CTRL_HISPD;
+	else
+		extra &= ~SDHCI_CTRL_HISPD;
+
+	sdhci_write8(&host->sdhci, SDHCI_HOST_CONTROL, extra);
+
 	sdhci_set_clock(&host->sdhci, clock, clk_get_rate(host->clks[CLK_CORE].clk));
 
 	/* Disable cmd conflict check */
@@ -212,7 +221,6 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 static void rk_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
-	u16 val;
 
 	/* stop clock */
 	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, 0);
@@ -221,15 +229,6 @@ static void rk_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 		rk_sdhci_set_clock(host, ios->clock);
 
 	sdhci_set_bus_width(&host->sdhci, ios->bus_width);
-
-	val = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL);
-
-	if (ios->clock > 26000000)
-		val |= SDHCI_CTRL_HISPD;
-	else
-		val &= ~SDHCI_CTRL_HISPD;
-
-	sdhci_write8(&host->sdhci, SDHCI_HOST_CONTROL, val);
 }
 
 static void print_error(struct rk_sdhci_host *host, int cmdidx)

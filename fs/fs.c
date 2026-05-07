@@ -3450,7 +3450,7 @@ EXPORT_SYMBOL(automount_remove);
 
 int automount_add(const char *pathname, const char *cmd)
 {
-	struct automount *am = xzalloc(sizeof(*am));
+	struct automount *am;
 	struct path path;
 	int ret;
 
@@ -3463,6 +3463,7 @@ int automount_add(const char *pathname, const char *cmd)
 		goto out;
 	}
 
+	am = xzalloc(sizeof(*am));
 	am->path = dpath(path.dentry, d_root);
 	am->dentry = dget(path.dentry);
 	am->dentry->d_flags |= DCACHE_NEED_AUTOMOUNT;

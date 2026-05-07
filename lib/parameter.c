@@ -593,7 +593,7 @@ static int param_enum_set(struct bobject *bobj, struct param_d *p,
 		char *endp;
 		unsigned long idx = simple_strtoul(val, &endp, 0);
 
-		if (*endp || idx >= pe->num_names || !pe->names[idx])
+		if (*endp || endp == val || idx >= pe->num_names || !pe->names[idx])
 			return -EINVAL;
 
 		pr_warn("setting %s.%s by index is not stable, use \"%s\" instead\n",

@@ -162,6 +162,9 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 	extra &= ~BIT(0);
 	sdhci_write32(&host->sdhci, DWCMSHC_HOST_CTRL3, extra);
 
+	/* Disable clock while config DLL */
+	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, 0);
+
 	if (clock <= 52000000) {
 		/*
 		 * Disable DLL and reset both of sample and drive clock.
@@ -181,7 +184,7 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 			DLL_STRBIN_DELAY_NUM_SEL |
 			DLL_STRBIN_DELAY_NUM_DEFAULT << DLL_STRBIN_DELAY_NUM_OFFSET;
 		sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_STRBIN, extra);
-		return;
+		goto enable_clock;
         }
 
 	/* Reset DLL */
@@ -199,7 +202,7 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 				 500 * USEC_PER_MSEC);
 	if (err) {
 		dev_err(host->mci.hw_dev, "DLL lock timeout!\n");
-		return;
+		goto enable_clock;
 	}
 
 	extra = 0x1 << 16 | /* tune clock stop en */
@@ -216,6 +219,8 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 		DLL_STRBIN_TAPNUM_DEFAULT |
 		DLL_STRBIN_TAPNUM_FROM_SW;
 	sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_STRBIN, extra);
+enable_clock:
+	sdhci_enable_clk(&host->sdhci, 0);
 }
 
 static void rk_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)

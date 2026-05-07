@@ -39,16 +39,91 @@ static unsigned long clk_composite_recalc_rate(struct clk_hw *hw,
 	return parent_rate;
 }
 
-static long clk_composite_round_rate(struct clk_hw *hw, unsigned long rate,
-				  unsigned long *prate)
+/*
+ * Walk all parents of a (rate_hw + mux_hw) composite and pick the one
+ * whose rate-clock can get closest to the requested rate. Returns the
+ * chosen parent's index in *out_idx (or -1 to mean "stay on current parent"),
+ * the parent's rate in *parent_rate, and the achievable output rate as the
+ * function value.
+ * Falls back to round_rate on the current parent when reparenting
+ * isn't possible (no mux, or CLK_SET_RATE_NO_REPARENT).
+ */
+static long clk_composite_pick_parent(struct clk_hw *hw, unsigned long rate,
+				      int *out_idx, unsigned long *parent_rate)
 {
 	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk_hw *rate_hw = composite->rate_hw;
 	struct clk_hw *mux_hw = composite->mux_hw;
+	unsigned long best_rate = 0, best_prate = 0, best_diff = ULONG_MAX;
+	int best_idx = -1;
+	int i;
 
-	if (rate_hw)
-		return rate_hw->clk.ops->round_rate(rate_hw, rate, prate);
+	if (!rate_hw || !rate_hw->clk.ops->round_rate)
+		return -ENOSYS;
 
+	if (!mux_hw || (hw->clk.flags & CLK_SET_RATE_NO_REPARENT)) {
+		unsigned long prate = *parent_rate;
+		long achievable;
+
+		achievable = rate_hw->clk.ops->round_rate(rate_hw, rate, &prate);
+		if (achievable < 0)
+			return achievable;
+
+		*out_idx = -1;
+		*parent_rate = prate;
+		return achievable;
+	}
+
+	for (i = 0; i < hw->clk.num_parents; i++) {
+		struct clk_hw *p_hw = clk_hw_get_parent_by_index(hw, i);
+		unsigned long prate, diff;
+		long achievable;
+
+		if (!p_hw)
+			continue;
+
+		prate = clk_hw_get_rate(p_hw);
+		achievable = rate_hw->clk.ops->round_rate(rate_hw, rate, &prate);
+		if (achievable < 0)
+			continue;
+
+		diff = (achievable >= rate) ? achievable - rate
+					    : rate - achievable;
+
+		if (diff < best_diff) {
+			best_idx = i;
+			best_prate = prate;
+			best_rate = achievable;
+			best_diff = diff;
+			if (!diff)
+				break;
+		}
+	}
+
+	if (best_idx < 0)
+		return -EINVAL;
+
+	*out_idx = best_idx;
+	*parent_rate = best_prate;
+	return best_rate;
+}
+
+static long clk_composite_round_rate(struct clk_hw *hw, unsigned long rate,
+				  unsigned long *prate)
+{
+	struct clk_composite *composite = to_clk_composite(hw);
+	struct clk_hw *mux_hw = composite->mux_hw;
+	int idx;
+	long achievable;
+
+	achievable = clk_composite_pick_parent(hw, rate, &idx, prate);
+	if (achievable >= 0)
+		return achievable;
+
+	if (achievable != -ENOSYS)
+		return achievable;
+
+	/* No rate_hw — fall back to mux's round_rate if available. */
 	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) &&
 	    mux_hw &&
 	    mux_hw->clk.ops->round_rate)
@@ -63,24 +138,29 @@ static int clk_composite_set_rate(struct clk_hw *hw, unsigned long rate,
 	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk_hw *rate_hw = composite->rate_hw;
 	struct clk_hw *mux_hw = composite->mux_hw;
+	int idx = -1;
+	long achievable;
+
+	achievable = clk_composite_pick_parent(hw, rate, &idx, &parent_rate);
+	if (achievable >= 0) {
+		if (idx >= 0 && mux_hw && mux_hw->clk.ops->set_parent) {
+			int ret = mux_hw->clk.ops->set_parent(mux_hw, idx);
+			if (ret)
+				return ret;
+		}
+		return rate_hw->clk.ops->set_rate(rate_hw, rate, parent_rate);
+	}
+
+	if (achievable != -ENOSYS)
+		return achievable;
 
 	/*
-	 * When the rate clock is present use that to set the rate,
-	 * otherwise try the mux clock. We currently do not support
-	 * to find the best rate using a combination of both.
+	 * No rate_hw. Fall back to letting the mux clk reparent itself,
+	 * preserving the existing enable-count handoff.
 	 */
-	if (rate_hw)
-		return rate_hw->clk.ops->set_rate(rate_hw, rate, parent_rate);
-
 	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) &&
 	    mux_hw &&
 	    mux_hw->clk.ops->set_rate) {
-		/*
-		 * We'll call set_rate on the mux clk which in turn results
-		 * in reparenting the mux clk. Make sure the enable count
-		 * (which is stored in the composite clk, not the mux clk)
-		 * is transferred correctly.
-		 */
 		mux_hw->clk.enable_count = hw->clk.enable_count;
 		return mux_hw->clk.ops->set_rate(mux_hw, rate, parent_rate);
 	}

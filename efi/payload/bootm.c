@@ -86,7 +86,7 @@ static int efi_load_ramdisk(struct image_data *data,
 	if (!data->initrd)
 		return 0;
 
-	initrd_mem = loadable_view(data->initrd, initrd_size);
+	initrd_mem = loadable_view(data->initrd, initrd_size) ?: ERR_PTR(-ENODATA);
 	if (IS_ERR(initrd_mem)) {
 		pr_err("Cannot open ramdisk image: %pe\n", initrd_mem);
 		return PTR_ERR(initrd_mem);

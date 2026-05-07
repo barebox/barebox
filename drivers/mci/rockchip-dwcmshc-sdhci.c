@@ -298,11 +298,19 @@ error:
 	return ret;
 }
 
+static int rk_sdhci_execute_tuning(struct mci_host *mci, u32 opcode)
+{
+	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
+
+	return sdhci_execute_tuning(&host->sdhci, opcode);
+}
+
 static const struct mci_ops rk_sdhci_ops = {
 	.send_cmd = rk_sdhci_send_cmd,
 	.set_ios = rk_sdhci_set_ios,
 	.init = rk_sdhci_init,
 	.card_present = rk_sdhci_card_present,
+	.execute_tuning = rk_sdhci_execute_tuning,
 };
 
 static int rk_sdhci_probe(struct device *dev)
@@ -348,9 +356,6 @@ static int rk_sdhci_probe(struct device *dev)
 	host->sdhci.max_clk = clk_get_rate(host->clks[CLK_CORE].clk);
 
 	mci_of_parse(&host->mci);
-
-	/* HS200 not supported by this driver at the moment */
-	host->sdhci.quirks2 = SDHCI_QUIRK2_BROKEN_HS200;
 
 	sdhci_setup_host(&host->sdhci);
 

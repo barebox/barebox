@@ -987,6 +987,20 @@ config ENV_HANDLING
 	  A safe use of the mutable environment may be possible if board code only
 	  mounts it after verifying a JSON Web Token that enables a debug mode.
 
+config ENV_HANDLING_AUTOPROBE
+	depends on ENV_HANDLING
+	bool "Autoprobe for environment devices"
+	default CONFIG_INSECURE
+	help
+	  There are two ways for specifying where the barebox environment is. The first one
+	  specifies the path explicitly in the device tree or board code. The other one is
+	  to automatically search it on block devices which is enabled with this option.
+	  Here a partition with the barebox environment GUID is searched. If this option
+	  is enabled and no environment is chosen by device tree or board code then a block
+	  device containing a partition with the barebox environment GUID is used for the
+	  environment. A block device barebox has booted from is preferred over other block
+	  devices.
+
 config DEFAULT_ENVIRONMENT
 	select CRC32
 	bool

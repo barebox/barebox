@@ -1,5 +1,13 @@
 :orphan:
 
+Removal of global.env.autoprobe
+===============================
+
+The global.env.autoprobe variable introduced with v2025.02.0 is removed and
+now replaced with CONFIG_ENV_HANDLING_AUTOPROBE. It has never worked. If you
+want to load a barebox environment based on its partition UUID enable
+CONFIG_ENV_HANDLING_AUTOPROBE.
+
 CONFIG_CRYPTO_PUBLIC_KEYS
 -------------------------
 

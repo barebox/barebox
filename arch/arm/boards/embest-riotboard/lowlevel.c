@@ -11,26 +11,35 @@
 #include <asm/cache.h>
 #include <asm/mmu.h>
 #include <mach/imx/imx6.h>
+#include <mach/imx/iomux-mx6.h>
+#include <mach/imx/esdctl.h>
 
 extern char __dtb_imx6s_riotboard_start[];
 
-ENTRY_FUNCTION(start_imx6s_riotboard, r0, r1, r2)
+static noinline void continue_imx6s_riotboard(void)
 {
-	void *fdt;
+	void __iomem *iomuxbase = IOMEM(MX6_IOMUXC_BASE_ADDR);
 
-	imx6_cpu_lowlevel_init();
+	writel(0x4, iomuxbase + 0x016c);
+
+	imx6_ungate_all_peripherals();
+	// if uart ist not set-up, then OP-TEE will fail if debugging is enabled.
+	imx6_uart_setup(IOMEM(MX6_UART2_BASE_ADDR));
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
-		/*
-		 * CONFIG_DEBUG_IMX6Q_UART=y
-		 * CONFIG_DEBUG_IMX_UART_PORT=2
-		 */
-		writel(0x4, 0x020e016c);
-		imx6_ungate_all_peripherals();
-		imx6_uart_setup_ll();
-		putc_ll('a');
+		pbl_set_putc(imx_uart_putc, IOMEM(MX6_UART2_BASE_ADDR));
+		putc_ll('>');
 	}
 
-	fdt = __dtb_imx6s_riotboard_start + get_runtime_offset();
-	barebox_arm_entry(0x10000000, SZ_1G, fdt);
+	imx6q_barebox_entry(__dtb_imx6s_riotboard_start);
+}
+
+ENTRY_FUNCTION(start_imx6s_riotboard, r0, r1, r2)
+{
+	imx6_cpu_lowlevel_init();
+
+	relocate_to_current_adr();
+	setup_c();
+
+	continue_imx6s_riotboard();
 }

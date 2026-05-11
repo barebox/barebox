@@ -4,4 +4,4 @@ if [ -n "$nv.boot.default" ]; then
 	exit
 fi
 
-global.boot.default=mshc1
+global.boot.default=mmc0

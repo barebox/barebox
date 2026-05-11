@@ -93,8 +93,7 @@ Build system
 Bisectability
 -------------
 
-Following regressions had a wider impact and could falsify
-falsify git bisect results:
+Following regressions had a wider impact and could falsify git bisect results:
 
 * Many users of ``read*_poll_is_timeout`` are broken between
   ``554bbc479c09..dea0ad02bbd6``.

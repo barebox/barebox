@@ -47,6 +47,14 @@ static int rockchip_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 
+	/* rk3188.dtsi lists compatible "rockchip,rk3188-timer", "rockchip,rk3288-timer",
+	 * but this driver is only RK3288-compatible and udelay hangs on RK3188.
+	 * Abort probe on RK3188, so another timer (Cortex-A9 SMP TWD) is taken instead.
+	 */
+	if (IS_ENABLED(CONFIG_ARCH_RK3188) &&
+	    of_device_is_compatible(dev->device_node, "rockchip,rk3188-timer"))
+		return -ENODEV;
+
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);

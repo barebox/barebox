@@ -139,10 +139,11 @@ static struct fwobj bl32; /* OP-TEE in barebox image */
 #define ROCKCHIP_GET_ADDRESSES(SOC, atf_bin, tee_bin)				\
 	do {									\
 		barebox_load_address = SOC##_BAREBOX_LOAD_ADDRESS;		\
-		optee_load_address = SOC##_OPTEE_LOAD_ADDRESS;			\
 		get_builtin_firmware_compressed(atf_bin, &bl31);		\
-		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE))			\
+		if (IS_ENABLED(CONFIG_ARCH_ROCKCHIP_OPTEE)) {			\
 			get_builtin_firmware_compressed(tee_bin, &bl32);	\
+			optee_load_address = SOC##_OPTEE_LOAD_ADDRESS;		\
+		}								\
 	} while (0)
 
 static int rockchip_create_optee_fdt(void *buf, int bufsize)

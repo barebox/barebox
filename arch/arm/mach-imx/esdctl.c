@@ -14,6 +14,7 @@
 #include <linux/bitfield.h>
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
+#include <mach/imx/generic.h>
 #include <mach/imx/esdctl.h>
 #include <mach/imx/esdctl-v4.h>
 #include <mach/imx/imx6-mmdc.h>
@@ -1151,7 +1152,11 @@ resource_size_t imx8m_barebox_earlymem_size(unsigned buswidth)
 {
 	resource_size_t size;
 
-	if (imx_esdctl_ecc_enabled(IOMEM(MX8M_DDRC_CTL_BASE_ADDR)))
+	/* NOTE: This expects that imx_set_cpu_type() has been called beforehand,
+	 * which the common entry points in atf.c all do. If this didn't happen,
+	 * we assume ECC to not be available, which is a safe bet.
+	 */
+	if (cpu_is_mx8mp() && imx_esdctl_ecc_enabled(IOMEM(MX8M_DDRC_CTL_BASE_ADDR)))
 		size = imx8m_ddrc_ecc_sdram_size(NULL, NULL, buswidth);
 	else
 		size = imx8m_ddrc_sdram_size(buswidth);

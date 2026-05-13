@@ -8,11 +8,19 @@
 #include <mach/socfpga/debug_ll.h>
 #include <mach/socfpga/init.h>
 #include <mach/socfpga/generic.h>
+#include <mach/socfpga/soc64-handoff.h>
 #include <mach/socfpga/soc64-regs.h>
 
 extern char __dtb_z_socfpga_agilex5_axe5_eagle_start[];
 
-#define AXE5_STACKTOP	(SZ_512K)
+/*
+ * The SDM firmware uses the last page in the OCRAM for handoff data. Put the
+ * stack below the handoff data.
+ *
+ * Note: U-Boot puts the stack at 0x71000 (0x80000 - 0xf000) and reserves even
+ * more space.
+ */
+#define AXE5_STACKTOP SOC64_HANDOFF_BASE
 
 static noinline void axe5_eagle_continue(void)
 {

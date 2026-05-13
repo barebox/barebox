@@ -87,8 +87,8 @@ config ARCH_SOCFPGA_AGILEX5
 comment "SoCFPGA Agilex5 boards"
 
 config MACH_SOCFPGA_ARROW_AXE5_EAGLE
-       bool "Arrow AXE5 Eagle"
-       select ARCH_SOCFPGA_AGILEX5
+	bool "Arrow AXE5 Eagle"
+	select ARCH_SOCFPGA_AGILEX5
 
 endif
 

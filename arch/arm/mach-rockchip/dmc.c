@@ -161,13 +161,13 @@ static size_t rockchip_ram(phys_addr_t membase, resource_size_t memsize,
 		 * doesn't need any gaps in the DRAM space.
 		 */
 		base[0] = membase + ROCKCHIP_DRAM_TFA_CARVE_OUT;
-		size[0] = memsize;
+		size[0] = memsize - ROCKCHIP_DRAM_TFA_CARVE_OUT;
 
 		return 1;
 	}
 
 	base[i] = membase + ROCKCHIP_DRAM_TFA_CARVE_OUT;
-	size[i] = min_t(resource_size_t, RK3588_INT_REG_START, memsize) - membase;
+	size[i] = min_t(resource_size_t, RK3588_INT_REG_START, memsize) - membase - ROCKCHIP_DRAM_TFA_CARVE_OUT;
 	i++;
 
 	if (i < n && memsize > SZ_4G) {

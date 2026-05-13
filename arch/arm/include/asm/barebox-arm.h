@@ -194,11 +194,15 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 						  unsigned long uncompressed_len,
 						  const struct handoff_data *handoff_data)
 {
+#ifdef __PBL__
 	unsigned long size = uncompressed_len + MAX_BSS_SIZE + __handoff_data_size(handoff_data);
 
 	endmem = arm_mem_ramoops(endmem);
 
 	return ALIGN_DOWN(endmem - size, SZ_1M);
+#else
+	return (unsigned long)__image_start;
+#endif
 }
 
 /*

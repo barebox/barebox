@@ -79,9 +79,13 @@ static inline unsigned long riscv_mem_barebox_image(unsigned long membase,
 						    unsigned long endmem,
 						    unsigned long size)
 {
+#ifdef __PBL__
 	endmem = riscv_mem_ramoops(membase, endmem);
 
 	return ALIGN_DOWN(endmem - size, SZ_1M);
+#else
+	return (unsigned long)__image_start;
+#endif
 }
 
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)                          \

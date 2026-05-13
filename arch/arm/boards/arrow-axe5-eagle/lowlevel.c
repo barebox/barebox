@@ -5,22 +5,13 @@
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <pbl.h>
+#include <mach/socfpga/barebox-arm.h>
 #include <mach/socfpga/debug_ll.h>
 #include <mach/socfpga/init.h>
 #include <mach/socfpga/generic.h>
-#include <mach/socfpga/soc64-handoff.h>
 #include <mach/socfpga/soc64-regs.h>
 
 extern char __dtb_z_socfpga_agilex5_axe5_eagle_start[];
-
-/*
- * The SDM firmware uses the last page in the OCRAM for handoff data. Put the
- * stack below the handoff data.
- *
- * Note: U-Boot puts the stack at 0x71000 (0x80000 - 0xf000) and reserves even
- * more space.
- */
-#define AXE5_STACKTOP SOC64_HANDOFF_BASE
 
 static noinline void axe5_eagle_continue(void)
 {
@@ -52,7 +43,7 @@ static noinline void axe5_eagle_continue(void)
 	agilex5_barebox_entry(__dtb_z_socfpga_agilex5_axe5_eagle_start);
 }
 
-ENTRY_FUNCTION_WITHSTACK(start_socfpga_agilex5_axe5_eagle, AXE5_STACKTOP, r0, r1, r2)
+ENTRY_FUNCTION_AGILEX5(start_socfpga_agilex5_axe5_eagle)
 {
 	if (current_el() == 3)
 		socfpga_agilex5_cpu_lowlevel_init();

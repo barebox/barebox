@@ -968,6 +968,21 @@ config HAB_CERTS_ENV
 	  CONFIG_HABV4_CSF_CRT_PEM
 	  CONFIG_HABV4_IMG_CRT_PEM
 
+	  For HABv4 with fast authentication:
+
+	  CONFIG_HABV4_TABLE_BIN
+	  CONFIG_HABV4_SRK_CRT_PEM
+
+config HABV4_FAST_AUTH
+	depends on HABV4
+	bool "Fast authentication"
+	help
+	  Use the SRK to verify the CSF and image data.
+	  This reduces the number of key pair authentications
+	  that occur during the ROM/HAB boot state, resulting in a decreased boot time.
+
+	  Requires HAB version >= 4.1.2
+
 config HABV4_SRK_INDEX
 	depends on HABV4
 	int "SRK index"

@@ -51,8 +51,8 @@ and their respective included directories in ``defaultenv/Makefile``:
 -------------
 
 The default init script is now written in C. However, you can still define
-your own ``/env/bin/init`` script and it will take precedence over the
-built-in C implementation.
+a legacy ``/env/bin/init`` script yourself and it will take precedence over
+the built-in C implementation.
 Example for simple init script:
 
 .. code-block:: sh
@@ -65,6 +65,15 @@ This script is also responsible for defining the boot timeout value
 (by default, three seconds), then printing the timeout prompt for the user.
 Be careful making changes to this script: since it is executed before any user
 intervention, it might lock the system.
+
+.. note::
+
+   The built-in init does not only source init scripts, but also does
+   extra work like sourcing the relevant scripts under ``/env/bmode/``
+   according to the active reboot mode or creating ``/cmdline`` and
+   ``/external-devicetree`` files as appropriate.
+   If you define your own legacy init, these features and more will
+   not be available, unless explicitly provided by the custom init.
 
 /env/init/
 ----------

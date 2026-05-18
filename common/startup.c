@@ -350,7 +350,7 @@ static int run_init(void)
 	/* Run legacy /env/bin/init if it exists */
 	env_bin_init_exists = stat(INITFILE, &s) == 0;
 	if (env_bin_init_exists) {
-		pr_info("running %s...\n", INITFILE);
+		pr_info("running legacy %s...\n", INITFILE);
 		run_command("source " INITFILE);
 		return 0;
 	}

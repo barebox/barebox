@@ -92,7 +92,7 @@ quiet_cmd_k3_am62x_image = K3_am62x_IMG   $@
 			$(SYSFW_$(@F)):2:0:0:00040000				\
 			$(SYSFWDATA_am625):18:0:0:00067000			\
 			$$inner							\
-			$(DMDATA_am625):17:16:0:43c3a800			\
+			$(DMDATA_am625):17:16:0:43c3d000			\
 			--key "$(KEY_$(@F))" --out $@
 
 ifdef CONFIG_FIRMWARE_K3_AM62L_OPTEE

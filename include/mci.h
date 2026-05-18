@@ -802,4 +802,9 @@ static inline bool mmc_card_hs200(struct mci *mci)
 	return mci->host->ios.timing == MMC_TIMING_MMC_HS200;
 }
 
+static inline bool mmc_card_hs400(struct mci *mci)
+{
+	return mci->host->ios.timing == MMC_TIMING_MMC_HS400;
+}
+
 #endif /* _MCI_H_ */

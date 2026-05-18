@@ -126,7 +126,8 @@ static int mci_set_blocklen(struct mci *mci, unsigned len)
 {
 	struct mci_cmd cmd = {0};
 
-	if (mci->host->ios.timing == MMC_TIMING_MMC_DDR52)
+	if (mci->host->ios.timing == MMC_TIMING_MMC_DDR52 ||
+	    mmc_card_hs400(mci))
 		return 0;
 
 	mci_setup_cmd(&cmd, MMC_CMD_SET_BLOCKLEN, len, MMC_RSP_R1);
@@ -1051,6 +1052,8 @@ static const char *mci_timing_tostr(unsigned timing)
 		return "MMC DDR52";
 	case MMC_TIMING_MMC_HS200:
 		return "HS200";
+	case MMC_TIMING_MMC_HS400:
+		return "HS400";
 	default:
 		return "unknown"; /* shouldn't happen */
 	}
@@ -1783,6 +1786,18 @@ static void mmc_select_max_dtr(struct mci *mci)
 		avail_type |= EXT_CSD_CARD_TYPE_HS200_1_2V;
 	}
 
+	if ((caps2 & MMC_CAP2_HS400_1_8V) &&
+	    (card_type & EXT_CSD_CARD_TYPE_HS400_1_8V)) {
+		hs200_max_dtr = MMC_HS200_MAX_DTR;
+		avail_type |= EXT_CSD_CARD_TYPE_HS400_1_8V;
+	}
+
+	if ((caps2 & MMC_CAP2_HS400_1_2V) &&
+	    (card_type & EXT_CSD_CARD_TYPE_HS400_1_2V)) {
+		hs200_max_dtr = MMC_HS200_MAX_DTR;
+		avail_type |= EXT_CSD_CARD_TYPE_HS400_1_2V;
+	}
+
 	mci->host->hs200_max_dtr = hs200_max_dtr;
 	mci->host->hs_max_dtr = hs_max_dtr;
 	mci->host->mmc_avail_type = avail_type;
@@ -1875,7 +1890,7 @@ static void mmc_set_bus_speed(struct mci *mci)
 {
 	unsigned int max_dtr = (unsigned int)-1;
 
-	if (mmc_card_hs200(mci) &&
+	if ((mmc_card_hs200(mci) || mmc_card_hs400(mci)) &&
 		max_dtr > mci->host->hs200_max_dtr)
 		max_dtr = mci->host->hs200_max_dtr;
 	else if (mmc_card_hs(mci) && max_dtr > mci->host->hs_max_dtr)
@@ -1921,6 +1936,62 @@ int mmc_hs200_tuning(struct mci *mci)
 	return mci_execute_tuning(mci);
 }
 
+/*
+ * Switch from HS200 to HS400 per JEDEC. The card must already be in HS200
+ * (with successful tuning) and 8-bit bus width. The transition sequence is:
+ *
+ *   1. Switch the card back to HS timing.
+ *   2. Drop the host clock to HS rate (<= 52 MHz).
+ *   3. Switch the card to 8-bit DDR bus width.
+ *   4. Switch the card to HS400 timing.
+ *   5. Switch the host to HS400 timing and ramp the clock back to HS200 rate
+ *      (200 MHz, used as DDR so effective 400 MHz / 8-bit data lane).
+ */
+static int mmc_select_hs400(struct mci *mci)
+{
+	struct mci_host *host = mci->host;
+	int err;
+	u8 val;
+
+	if (!(host->mmc_avail_type & EXT_CSD_CARD_TYPE_HS400) ||
+	    host->ios.bus_width != MMC_BUS_WIDTH_8)
+		return 0;
+
+	/* Step 1: switch card back to HS timing */
+	err = mci_switch(mci, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
+	if (err) {
+		dev_err(&mci->dev, "switch to HS from HS200 failed: %d\n", err);
+		return err;
+	}
+
+	/* Step 2: drop host clock to HS rate */
+	mci_set_timing(mci, MMC_TIMING_MMC_HS);
+	mci_set_clock(mci, host->hs_max_dtr);
+
+	/* Step 3: switch card to 8-bit DDR */
+	err = mci_switch(mci, EXT_CSD_BUS_WIDTH, EXT_CSD_DDR_BUS_WIDTH_8);
+	if (err) {
+		dev_err(&mci->dev, "switch to DDR for HS400 failed: %d\n", err);
+		return err;
+	}
+
+	/* Step 4: switch card to HS400 timing */
+	val = EXT_CSD_TIMING_HS400 | (host->drive_strength << EXT_CSD_DRV_STR_SHIFT);
+	err = mci_switch(mci, EXT_CSD_HS_TIMING, val);
+	if (err) {
+		dev_err(&mci->dev, "switch to HS400 failed: %d\n", err);
+		return err;
+	}
+
+	/* Step 5: switch host to HS400 timing and ramp clock */
+	mci_set_timing(mci, MMC_TIMING_MMC_HS400);
+	mmc_set_bus_speed(mci);
+
+	dev_dbg(&mci->dev, "HS400 selected\n");
+
+	return 0;
+}
+
 static int mci_startup_mmc(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
@@ -1947,6 +2018,10 @@ static int mci_startup_mmc(struct mci *mci)
 			ret = mmc_hs200_tuning(mci);
 			if (!ret) {
 				dev_dbg(&mci->dev, "HS200 tuning succeeded\n");
+
+				if (host->mmc_avail_type & EXT_CSD_CARD_TYPE_HS400)
+					mmc_select_hs400(mci);
+
 				return 0;
 			}
 
@@ -2490,7 +2565,7 @@ static int mci_sd_read(struct block_device *blk, void *buffer, sector_t block,
 
 static void mci_print_caps(unsigned caps, unsigned caps2)
 {
-	printf("  capabilities: %s%s%s%s%s%s%s%s%s%s\n",
+	printf("  capabilities: %s%s%s%s%s%s%s%s%s%s%s%s\n",
 		caps & MMC_CAP_4_BIT_DATA ? "4bit " : "",
 		caps & MMC_CAP_8_BIT_DATA ? "8bit " : "",
 		caps & MMC_CAP_SD_HIGHSPEED ? "sd-hs " : "",
@@ -2500,7 +2575,9 @@ static void mci_print_caps(unsigned caps, unsigned caps2)
 		caps & MMC_CAP_1_8V_DDR ? "ddr-1.8v " : "",
 		caps & MMC_CAP_1_2V_DDR ? "ddr-1.2v " : "",
 		caps2 & MMC_CAP2_HS200_1_8V_SDR ? "hs200-1.8v " : "",
-		caps2 & MMC_CAP2_HS200_1_2V_SDR ? "hs200-1.2v " : "");
+		caps2 & MMC_CAP2_HS200_1_2V_SDR ? "hs200-1.2v " : "",
+	        caps2 & MMC_CAP2_HS400_1_8V ? "hs400-1.8v " : "",
+	        caps2 & MMC_CAP2_HS400_1_2V ? "hs400-1.2v " : "");
 }
 
 /*

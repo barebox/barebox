@@ -1,4 +1,4 @@
-// SPDX-Comment: Origin-URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/crypto/ecc.c?id=b16510a530d1e6ab9683f04f8fb34f2e0f538275
+// SPDX-Comment: Origin-URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/crypto/ecc.c?id=d6ea871d73abbb6a1e00e71ed5762e394d06cb2b
 /*
  * Copyright (c) 2013, 2014 Kenneth MacKay. All rights reserved.
  * Copyright (c) 2019 Vitaly Chikunov <vt@altlinux.org>
@@ -78,33 +78,24 @@ void ecc_digits_from_bytes(const u8 *in, unsigned int nbytes,
 }
 EXPORT_SYMBOL(ecc_digits_from_bytes);
 
-static u64 *ecc_alloc_digits_space(unsigned int ndigits)
-{
-	size_t len = ndigits * sizeof(u64);
-
-	if (!len)
-		return NULL;
-
-	return kmalloc(len, GFP_KERNEL);
-}
-
-static void ecc_free_digits_space(u64 *space)
-{
-	kfree_sensitive(space);
-}
-
 struct ecc_point *ecc_alloc_point(unsigned int ndigits)
 {
-	struct ecc_point *p = kmalloc(sizeof(*p), GFP_KERNEL);
+	struct ecc_point *p;
+	size_t ndigits_sz;
 
+	if (!ndigits)
+		return NULL;
+
+	p = kmalloc(sizeof(*p), GFP_KERNEL);
 	if (!p)
 		return NULL;
 
-	p->x = ecc_alloc_digits_space(ndigits);
+	ndigits_sz = ndigits * sizeof(u64);
+	p->x = kmalloc(ndigits_sz, GFP_KERNEL);
 	if (!p->x)
 		goto err_alloc_x;
 
-	p->y = ecc_alloc_digits_space(ndigits);
+	p->y = kmalloc(ndigits_sz, GFP_KERNEL);
 	if (!p->y)
 		goto err_alloc_y;
 
@@ -113,7 +104,7 @@ struct ecc_point *ecc_alloc_point(unsigned int ndigits)
 	return p;
 
 err_alloc_y:
-	ecc_free_digits_space(p->x);
+	kfree(p->x);
 err_alloc_x:
 	kfree(p);
 	return NULL;

@@ -275,27 +275,33 @@ This is a typical barebox startup log:
 
 .. code-block:: console
 
-  barebox 2014.06.0-00232-g689dc27-dirty #406 Wed Jun 18 00:25:17 CEST 2014
+  barebox 2026.04.0 #1 2026-04-01T00:00:00+00:00
+  Buildsystem version: DistroKit-2026.04.0
 
 
-  Board: Genesi Efika MX Smartbook
-  detected i.MX51 revision 3.0
-  mc13xxx-spi mc13892@00: Found MC13892 ID: 0x0045d0 [Rev: 2.0a]
-  m25p80 m25p800: sst25vf032b (4096 Kbytes)
-  ata0: registered /dev/ata0
-  imx-esdhc 70004000.esdhc: registered as 70004000.esdhc
-  imx-esdhc 70008000.esdhc: registered as 70008000.esdhc
-  imx-ipuv3 40000000.ipu: IPUv3EX probed
-  netconsole: registered as cs2
-  malloc space: 0xabe00000 -> 0xafdfffff (size 64 MiB)
+  Board: Radxa ROCK 3A
+  rockchip-dmc memory-controller.of: Detected memory size: 0x80000000
+  netconsole: registered as netconsole-1
+  psci psci.of: detected version 1.1
+  xHCI xHCI0: USB XHCI 1.10
+  ehci fd800000.usb@fd800000.of: USB EHCI 1.00
+  ehci fd880000.usb@fd880000.of: USB EHCI 1.00
+  rk808 rk8090: chip id: 0x8090
+  dw_mmc fe000000.mmc@fe000000.of: registered as mmc2
+  mdio_bus: miibus0: probed
+  dw_mmc fe2b0000.mmc@fe2b0000.of: registered as mmc1
+  rk3568-dwcmshc-sdhci fe310000.mmc@fe310000.of: registered as mmc0
+  rockchip_saradc fe720000.saradc@fe720000.of: registered as aiodev0
   mmc1: detected SD card version 2.0
   mmc1: registered mmc1
-  barebox-environment environment-sd.7: setting default environment path to /dev/mmc1.barebox-environment
-  running /env/bin/init...
+  state: New state registered 'state'
+  state: Using bucket 0@0x00000000
+  malloc space: 0x40300000 -> 0x7fbfffff (size 1017 MiB)
+  found force-builtin environment, using defaultenv
 
-  Hit any key to stop autoboot:  3
+  Hit m for menu or any to stop autoboot:    3
 
-  barebox@Genesi Efika MX Smartbook:/
+  barebox@Radxa ROCK3 Model A:/
 
 Without intervention, barebox will continue booting after 3 seconds. If interrupted
 by pressing a key, you will find yourself at the :ref:`shell <hush>`.

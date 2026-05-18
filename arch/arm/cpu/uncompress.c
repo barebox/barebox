@@ -27,9 +27,6 @@
 
 #include "entry.h"
 
-unsigned long free_mem_ptr;
-unsigned long free_mem_end_ptr;
-
 extern unsigned char input_data[];
 extern unsigned char input_data_end[];
 
@@ -78,8 +75,7 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 
 	handoff_data = (void *)barebox_base + uncompressed_len + MAX_BSS_SIZE;
 
-	free_mem_ptr = barebox_base - PBL_MALLOC_SIZE;
-	free_mem_end_ptr = barebox_base;
+	pbl_malloc_init(barebox_base - PBL_MALLOC_SIZE, PBL_MALLOC_SIZE);
 
 #ifdef DEBUG
 	print_pbl_mem_layout(membase, endmem, barebox_base);

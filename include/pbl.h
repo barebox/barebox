@@ -12,9 +12,6 @@
 #include <linux/compiler.h>
 #include <linux/sizes.h>
 
-extern unsigned long free_mem_ptr;
-extern unsigned long free_mem_end_ptr;
-
 void pbl_barebox_uncompress(void *dest, void *compressed_start, unsigned int len);
 int pbl_dtbz_uncompress(void *dest, void *compressed_start, unsigned long len);
 
@@ -35,6 +32,10 @@ int pbl_barebox_verify(const void *compressed_start, unsigned int len,
 int pbl_load_fdt(const void *fdt, void *dest, int destsize);
 
 #define PBL_MALLOC_SIZE SZ_128K
+
+void *pbl_malloc(int size);
+void pbl_free(void *where);
+void pbl_malloc_init(unsigned long base, size_t size);
 
 #endif
 

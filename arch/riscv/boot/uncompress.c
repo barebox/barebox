@@ -23,9 +23,6 @@
 
 #include "entry.h"
 
-unsigned long free_mem_ptr;
-unsigned long free_mem_end_ptr;
-
 void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 				  void *fdt)
 {
@@ -63,8 +60,7 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
-	free_mem_ptr = riscv_mem_early_malloc(membase, endmem);
-	free_mem_end_ptr = riscv_mem_early_malloc_end(membase, endmem);
+	pbl_malloc_init(riscv_mem_early_malloc(), PBL_MALLOC_SIZE);
 
 	/*
 	 * Enable MMU early to enable caching for faster decompression.

@@ -5,6 +5,7 @@
 #
 pbl-y += misc.o
 pbl-y += string.o
+pbl-y += malloc.o
 pbl-$(CONFIG_HAVE_IMAGE_COMPRESSION) += decomp.o
 pbl-$(CONFIG_LIBFDT) += fdt.o
 pbl-$(CONFIG_PBL_CONSOLE) += console.o

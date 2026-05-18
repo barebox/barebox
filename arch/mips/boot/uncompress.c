@@ -16,9 +16,6 @@
 extern void *input_data;
 extern void *input_data_end;
 
-unsigned long free_mem_ptr;
-unsigned long free_mem_end_ptr;
-
 void barebox_pbl_start(void *fdt, void *fdt_end, unsigned long ram_size);
 
 void __section(.text_entry) barebox_pbl_start(void *fdt, void *fdt_end,
@@ -34,8 +31,7 @@ void __section(.text_entry) barebox_pbl_start(void *fdt, void *fdt_end,
 	memset(__bss_start, 0, __bss_stop - __bss_start);
 
 	/* set 128 KiB at the end of the MALLOC_BASE for early malloc */
-	free_mem_ptr = TEXT_BASE - PBL_MALLOC_SIZE;
-	free_mem_end_ptr = free_mem_ptr + PBL_MALLOC_SIZE;
+	pbl_malloc_init(barebox_base - TEXT_BASE - PBL_MALLOC_SIZE, PBL_MALLOC_SIZE);
 
 	piggy_len = (unsigned long)&input_data_end - (unsigned long)&input_data;
 

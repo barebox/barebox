@@ -14,6 +14,8 @@
 
 #ifdef STATIC
 
+#include <pbl.h>
+
 /* Code active when included from pre-boot environment: */
 
 /*
@@ -26,45 +28,11 @@
 #define STATIC_RW_DATA static
 #endif
 
-/* A trivial malloc implementation, adapted from
- *  malloc by Hannu Savolainen 1993 and Matthias Urlichs 1994
- */
-STATIC_RW_DATA unsigned long malloc_ptr;
-STATIC_RW_DATA int malloc_count;
+#define large_malloc(a) pbl_malloc(a)
+#define large_free(a) pbl_free(a)
 
-static __maybe_unused void *simple_malloc(int size)
-{
-	void *p;
-
-	if (size < 0)
-		return NULL;
-	if (!malloc_ptr)
-		malloc_ptr = free_mem_ptr;
-
-	malloc_ptr = (malloc_ptr + 3) & ~3;     /* Align */
-
-	p = (void *)malloc_ptr;
-	malloc_ptr += size;
-
-	if (free_mem_end_ptr && malloc_ptr >= free_mem_end_ptr)
-		return NULL;
-
-	malloc_count++;
-	return p;
-}
-
-static __maybe_unused void simple_free(void *where)
-{
-	malloc_count--;
-	if (!malloc_count)
-		malloc_ptr = free_mem_ptr;
-}
-
-#define large_malloc(a) simple_malloc(a)
-#define large_free(a) simple_free(a)
-
-#define MALLOC simple_malloc
-#define FREE simple_free
+#define MALLOC pbl_malloc
+#define FREE pbl_free
 
 #else
 

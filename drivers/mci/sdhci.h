@@ -220,6 +220,56 @@
 #define SDHCI_ADMA_ADDRESS					0x58
 #define SDHCI_ADMA_ADDRESS_HI					0x5c
 
+/* ADMA2 32-bit DMA descriptor size */
+#define SDHCI_ADMA2_32_DESC_SZ	8
+
+/* ADMA2 32-bit descriptor */
+struct sdhci_adma2_32_desc {
+	__le16	cmd;
+	__le16	len;
+	__le32	addr;
+} __packed __aligned(4);
+
+/*
+ * ADMA2 64-bit DMA descriptor size
+ * According to SD Host Controller spec v4.10, there are two kinds of
+ * descriptors for 64-bit addressing mode: 96-bit Descriptor and 128-bit
+ * Descriptor, if Host Version 4 Enable is set in the Host Control 2
+ * register, 128-bit Descriptor will be selected.
+ */
+#define SDHCI_ADMA2_64_DESC_SZ(host)	((host)->v4_mode ? 16 : 12)
+
+/*
+ * ADMA2 64-bit descriptor. Note 12-byte descriptor can't always be 8-byte
+ * aligned.
+ */
+struct sdhci_adma2_64_desc {
+	__le16	cmd;
+	__le16	len;
+	__le32	addr_lo;
+	__le32	addr_hi;
+} __packed __aligned(4);
+
+#define ADMA2_TRAN_VALID	0x21
+#define ADMA2_NOP_END_VALID	0x3
+#define ADMA2_END		0x2
+
+/*
+ * ADMA descriptor alignment.  Some controllers (e.g. Intel) require 8 byte
+ * alignment for the descriptor table even in 32-bit DMA mode.
+ */
+#define SDHCI_ADMA2_DESC_ALIGN	8
+
+/*
+ * Maximum length per ADMA2 descriptor. The length field in the descriptor
+ * is 16-bit wide; a value of 0 encodes 65536 bytes per the SD spec, so the
+ * effective per-descriptor maximum is 64 KiB.
+ */
+#define SDHCI_ADMA2_MAX_LEN	SZ_64K
+
+/* Default number of ADMA descriptors allocated by sdhci_setup_adma() */
+#define SDHCI_DEFAULT_ADMA_DESCS	128
+
 #define SDHCI_MMC_BOOT						0xC4
 
 #define SDHCI_SLOT_INT_STATUS	0xFC
@@ -276,6 +326,13 @@ struct sdhci {
 	u32 caps1;	/* CAPABILITY_1 */
 	bool read_caps;	/* Capability flags have been read */
 	u32 sdma_boundary;
+
+	/* ADMA descriptor table (allocated via sdhci_setup_adma()) */
+	void		*adma_table;
+	dma_addr_t	adma_addr;
+	unsigned int	adma_table_sz;	/* size of the descriptor table in bytes */
+	unsigned int	desc_sz;	/* per-descriptor size in bytes */
+	unsigned int	adma_table_cnt;	/* number of descriptor entries */
 
 	/* Delay (ms) between tuning commands */
 	int			tuning_delay;
@@ -356,6 +413,8 @@ int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_cmd *cmd,
 int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_cmd *cmd,
 			    struct mci_data *data, dma_addr_t dma);
 int sdhci_reset(struct sdhci *sdhci, u8 mask);
+int sdhci_setup_adma(struct sdhci *host);
+void sdhci_release_adma(struct sdhci *host);
 u16 sdhci_calc_clk(struct sdhci *host, unsigned int clock,
 		   unsigned int *actual_clock, unsigned int input_clock);
 void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_clock);

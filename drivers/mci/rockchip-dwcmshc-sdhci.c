@@ -19,6 +19,7 @@
 #define DWCMSHC_HOST_CTRL3		0x508
 #define DWCMSHC_EMMC_CONTROL		0x52c
 #define  DWCMSHC_CARD_IS_EMMC		BIT(0)
+#define  DWCMSHC_ENHANCED_STROBE	BIT(8)
 #define DWCMSHC_EMMC_ATCTRL		0x540
 
 /* Rockchip specific Registers */
@@ -361,12 +362,24 @@ static int rk_sdhci_execute_tuning(struct mci_host *mci, u32 opcode)
 	return sdhci_execute_tuning(&host->sdhci, opcode);
 }
 
+static void rk_sdhci_hs400_enhanced_strobe(struct mci_host *mci,
+					   struct mci_ios *ios)
+{
+	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
+	u32 val;
+
+	val = sdhci_read32(&host->sdhci, DWCMSHC_EMMC_CONTROL);
+	val |= DWCMSHC_ENHANCED_STROBE;
+	sdhci_write32(&host->sdhci, DWCMSHC_EMMC_CONTROL, val);
+}
+
 static const struct mci_ops rk_sdhci_ops = {
 	.send_cmd = rk_sdhci_send_cmd,
 	.set_ios = rk_sdhci_set_ios,
 	.init = rk_sdhci_init,
 	.card_present = rk_sdhci_card_present,
 	.execute_tuning = rk_sdhci_execute_tuning,
+	.hs400_enhanced_strobe = rk_sdhci_hs400_enhanced_strobe,
 };
 
 static int rk_sdhci_probe(struct device *dev)

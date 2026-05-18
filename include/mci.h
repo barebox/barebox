@@ -406,6 +406,7 @@
 #define EXT_CSD_DDR_BUS_WIDTH_4	5	/* Card is in 4 bit DDR mode */
 #define EXT_CSD_DDR_BUS_WIDTH_8	6	/* Card is in 8 bit DDR mode */
 #define EXT_CSD_DDR_FLAG	BIT(2)	/* Flag for DDR mode */
+#define EXT_CSD_BUS_WIDTH_STROBE BIT(7) /* Enhanced strobe mode (HS400ES) */
 
 #define EXT_CSD_TIMING_BC	0	/* Backwards compatility */
 #define EXT_CSD_TIMING_HS	1	/* High speed */
@@ -567,6 +568,7 @@ struct mci_ios {
 	enum mci_bus_width	bus_width;		/* data bus width */
 	enum mci_timing		timing;			/* timing specification used */
 	unsigned char		drv_type;		/* driver type (A, B, C, D) */
+	bool			enhanced_strobe;	/* HS400ES selected */
 };
 
 struct mci;
@@ -586,6 +588,8 @@ struct mci_ops {
 	/* The tuning command opcode value is different for SD and eMMC cards */
 	int (*execute_tuning)(struct mci_host *, u32);
 	void (*set_uhs_signaling)(struct mci_host *host, unsigned int timing);
+	/* Enable enhanced strobe in the controller (HS400ES) */
+	void (*hs400_enhanced_strobe)(struct mci_host *, struct mci_ios *);
 };
 
 /** host information */

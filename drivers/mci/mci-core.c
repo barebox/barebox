@@ -1798,6 +1798,16 @@ static void mmc_select_max_dtr(struct mci *mci)
 		avail_type |= EXT_CSD_CARD_TYPE_HS400_1_2V;
 	}
 
+	/*
+	 * HS400ES capability is reported in EXT_CSD_STROBE_SUPPORT (byte 184),
+	 * not in DEVICE_TYPE. Combine with one of the HS400 voltage variants;
+	 * which voltage is used follows the same negotiation as HS400.
+	 */
+	if ((caps2 & MMC_CAP2_HS400_ES) &&
+	    mci->ext_csd[EXT_CSD_STROBE_SUPPORT] &&
+	    (avail_type & EXT_CSD_CARD_TYPE_HS400))
+		avail_type |= EXT_CSD_CARD_TYPE_HS400ES;
+
 	mci->host->hs200_max_dtr = hs200_max_dtr;
 	mci->host->hs_max_dtr = hs_max_dtr;
 	mci->host->mmc_avail_type = avail_type;
@@ -1902,6 +1912,85 @@ static void mmc_set_bus_speed(struct mci *mci)
 }
 
 /*
+ * Switch directly to HS400 with Enhanced Strobe per JEDEC. Unlike plain
+ * HS400 this does not require HS200 tuning first - the controller samples
+ * data using the eMMC-driven strobe line. The transition is:
+ *
+ *   1. Negotiate 8-bit bus width in HS mode.
+ *   2. Switch the card to HS timing.
+ *   3. Set host to MMC_TIMING_MMC_HS at hs_max_dtr.
+ *   4. Switch card BUS_WIDTH to 8-bit DDR with the STROBE bit set, so
+ *      the card drives the strobe line.
+ *   5. Switch the card to HS400 timing.
+ *   6. Switch the host to MMC_TIMING_MMC_HS400 and ramp the clock to
+ *      hs200_max_dtr (200 MHz, DDR-sampled => 400 MT/s).
+ *   7. Tell the controller to enable enhanced strobe sampling.
+ */
+static int mmc_select_hs400es(struct mci *mci)
+{
+	struct mci_host *host = mci->host;
+	int err;
+	u8 val;
+
+	/* Step 1: 8-bit bus is mandatory for HS400ES */
+	err = mci_mmc_try_bus_width(mci, MMC_BUS_WIDTH_8, MMC_TIMING_MMC_HS);
+	if (err < 0) {
+		dev_err(&mci->dev, "HS400ES requires 8-bit bus width\n");
+		return err;
+	}
+
+	/* Step 2: switch card to HS timing */
+	err = mci_switch(mci, EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
+	if (err) {
+		dev_err(&mci->dev, "switch to HS for HS400ES failed: %d\n", err);
+		return err;
+	}
+
+	/* Step 3: host follows to HS rate */
+	mci_set_timing(mci, MMC_TIMING_MMC_HS);
+	mci_set_clock(mci, host->hs_max_dtr);
+
+	err = mci_switch_status(mci, true);
+	if (err)
+		return err;
+
+	/* Step 4: 8-bit DDR with strobe enabled */
+	val = EXT_CSD_DDR_BUS_WIDTH_8 | EXT_CSD_BUS_WIDTH_STROBE;
+	err = mci_switch(mci, EXT_CSD_BUS_WIDTH, val);
+	if (err) {
+		dev_err(&mci->dev, "switch to DDR8 with strobe failed: %d\n", err);
+		return err;
+	}
+
+	mmc_select_driver_type(mci);
+
+	/* Step 5: switch card to HS400 */
+	val = EXT_CSD_TIMING_HS400 | (host->drive_strength << EXT_CSD_DRV_STR_SHIFT);
+	err = mci_switch(mci, EXT_CSD_HS_TIMING, val);
+	if (err) {
+		dev_err(&mci->dev, "switch to HS400 for HS400ES failed: %d\n", err);
+		return err;
+	}
+
+	/* Step 6: host to HS400 timing and final clock */
+	mci_set_timing(mci, MMC_TIMING_MMC_HS400);
+	mmc_set_bus_speed(mci);
+
+	/* Step 7: enable enhanced strobe in the controller */
+	host->ios.enhanced_strobe = true;
+	if (host->ops.hs400_enhanced_strobe)
+		host->ops.hs400_enhanced_strobe(host, &host->ios);
+
+	err = mci_switch_status(mci, true);
+	if (err)
+		return err;
+
+	dev_dbg(&mci->dev, "HS400ES selected\n");
+
+	return 0;
+}
+
+/*
  * Activate HS200 or HS400ES mode if supported.
  */
 int mmc_select_timing(struct mci *mci)
@@ -1909,6 +1998,20 @@ int mmc_select_timing(struct mci *mci)
 	int err = 0;
 
 	mmc_select_max_dtr(mci);
+
+	/*
+	 * HS400ES is the preferred path when both card and host support it:
+	 * it ends up in HS400 without needing HS200 tuning. If the transition
+	 * fails for any reason, drop the flag and fall through to HS200/HS400.
+	 */
+	if (mci->host->mmc_avail_type & EXT_CSD_CARD_TYPE_HS400ES) {
+		err = mmc_select_hs400es(mci);
+		if (!err)
+			goto out;
+		dev_dbg(&mci->dev, "HS400ES failed (%d), trying HS200\n", err);
+		mci->host->mmc_avail_type &= ~EXT_CSD_CARD_TYPE_HS400ES;
+		err = 0;
+	}
 
 	if (mci->host->mmc_avail_type & EXT_CSD_CARD_TYPE_HS200) {
 		err = mmc_select_hs200(mci);
@@ -2013,6 +2116,10 @@ static int mci_startup_mmc(struct mci *mci)
 		ret = mmc_select_timing(mci);
 		if (ret)
 			return ret;
+
+		/* HS400ES took us straight to HS400 without tuning. Done. */
+		if (mmc_card_hs400(mci))
+			return 0;
 
 		if (mmc_card_hs200(mci)) {
 			ret = mmc_hs200_tuning(mci);
@@ -2565,7 +2672,7 @@ static int mci_sd_read(struct block_device *blk, void *buffer, sector_t block,
 
 static void mci_print_caps(unsigned caps, unsigned caps2)
 {
-	printf("  capabilities: %s%s%s%s%s%s%s%s%s%s%s%s\n",
+	printf("  capabilities: %s%s%s%s%s%s%s%s%s%s%s%s%s\n",
 		caps & MMC_CAP_4_BIT_DATA ? "4bit " : "",
 		caps & MMC_CAP_8_BIT_DATA ? "8bit " : "",
 		caps & MMC_CAP_SD_HIGHSPEED ? "sd-hs " : "",
@@ -2577,7 +2684,8 @@ static void mci_print_caps(unsigned caps, unsigned caps2)
 		caps2 & MMC_CAP2_HS200_1_8V_SDR ? "hs200-1.8v " : "",
 		caps2 & MMC_CAP2_HS200_1_2V_SDR ? "hs200-1.2v " : "",
 	        caps2 & MMC_CAP2_HS400_1_8V ? "hs400-1.8v " : "",
-	        caps2 & MMC_CAP2_HS400_1_2V ? "hs400-1.2v " : "");
+	        caps2 & MMC_CAP2_HS400_1_2V ? "hs400-1.2v " : "",
+	        caps2 & MMC_CAP2_HS400_ES ? "hs400-es " : "");
 }
 
 /*
@@ -2700,7 +2808,8 @@ static void mci_info(struct device *dev)
 		bw = 1;
 
 	printf("  current buswidth: %d\n", bw);
-	printf("  current timing: %s\n", mci_timing_tostr(host->ios.timing));
+	printf("  current timing: %s%s\n", mci_timing_tostr(host->ios.timing),
+	       host->ios.enhanced_strobe ? "ES" : "");
 	mci_print_caps(host->host_caps, host->caps2);
 
 	printf("Card information:\n");

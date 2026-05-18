@@ -4,6 +4,7 @@
 #include <common.h>
 #include <init.h>
 #include <elf.h>
+#include <pbl.h>
 #include <linux/sizes.h>
 #include <asm/system_info.h>
 #include <asm/barebox-arm.h>
@@ -114,7 +115,7 @@ void print_pbl_mem_layout(ulong membase, ulong endmem, ulong barebox_base)
 	printf("arm_mem_barebox_image = 0x%08lx+0x%08lx\n",
 	       barebox_base, arm_mem_barebox_image_end(endmem) - barebox_base);
 	printf("arm_mem_early_malloc  = 0x%08lx+0x%08x\n",
-	       barebox_base - ARM_MEM_EARLY_MALLOC_SIZE, ARM_MEM_EARLY_MALLOC_SIZE);
+	       barebox_base - PBL_MALLOC_SIZE, PBL_MALLOC_SIZE);
 	printf("membase               = 0x%08lx+0x%08lx\n",
 	       membase, endmem - membase);
 }

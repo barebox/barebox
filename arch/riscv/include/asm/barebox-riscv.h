@@ -54,7 +54,7 @@ static inline unsigned long riscv_mem_stack(unsigned long membase,
 static inline unsigned long riscv_mem_early_malloc(unsigned long membase,
 						   unsigned long endmem)
 {
-	return riscv_mem_stack(membase, endmem) - SZ_128K;
+	return riscv_mem_stack(membase, endmem) - PBL_MALLOC_SIZE;
 }
 
 static inline unsigned long riscv_mem_early_malloc_end(unsigned long membase,

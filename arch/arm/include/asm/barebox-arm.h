@@ -140,8 +140,6 @@ static inline unsigned long arm_mem_ttb(unsigned long endmem)
 	return endmem;
 }
 
-#define ARM_MEM_EARLY_MALLOC_SIZE	SZ_128K
-
 static inline unsigned long arm_mem_ramoops(unsigned long endmem)
 {
 	endmem = arm_mem_ttb(endmem);

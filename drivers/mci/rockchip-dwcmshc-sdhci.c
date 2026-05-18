@@ -78,10 +78,23 @@ enum {
 	CLK_MAX,
 };
 
+struct rk_sdhci_soc_data {
+	u8 revision;
+};
+
+static const struct rk_sdhci_soc_data rk_sdhci_rk3568_data = {
+	.revision = 0,
+};
+
+static const struct rk_sdhci_soc_data rk_sdhci_rk35xx_data = {
+	.revision = 1,
+};
+
 struct rk_sdhci_host {
 	struct mci_host		mci;
 	struct sdhci		sdhci;
 	struct clk_bulk_data	clks[CLK_MAX];
+	const struct rk_sdhci_soc_data *soc;
 };
 
 
@@ -132,9 +145,14 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 
 	host->mci.ios.clock = 0;
 
-	/* DO NOT TOUCH THIS SETTING */
-	extra = DWCMSHC_EMMC_DLL_DLYENA |
-		DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL;
+	/*
+	 * Revision 0 IPs (rk3568) need DLL_RXCLK_NO_INVERTER; revision 1
+	 * (rk3576, rk3588 and later) must leave the source-select field at
+	 * 0 (inverted).
+	 */
+	extra = DWCMSHC_EMMC_DLL_DLYENA;
+	if (host->soc->revision == 0)
+		extra |= DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL;
 	sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_RXCLK, extra);
 
 	if (clock == 0)
@@ -209,6 +227,23 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 		0x3 << 17 | /* pre-change delay */
 		0x3 << 19;  /* post-change delay */
 	sdhci_write32(&host->sdhci, DWCMSHC_EMMC_ATCTRL, extra);
+
+	/*
+	 * On revision 1 IPs, HS400 needs a 90-degree TX clock tap together
+	 * with a matching CMDOUT-tap programmed via DECMSHC_EMMC_DLL_CMDOUT.
+	 * Revision 0 keeps the default 0x10 TX tap and leaves CMDOUT alone.
+	 */
+	if (host->soc->revision == 1 &&
+	    host->mci.ios.timing == MMC_TIMING_MMC_HS400) {
+		txclk_tapnum = DLL_TXCLK_TAPNUM_90_DEGREES;
+
+		extra = DLL_CMDOUT_SRC_CLK_NEG |
+			DLL_CMDOUT_EN_SRC_CLK_NEG |
+			DWCMSHC_EMMC_DLL_DLYENA |
+			DLL_CMDOUT_TAPNUM_90_DEGREES |
+			DLL_CMDOUT_TAPNUM_FROM_SW;
+		sdhci_write32(&host->sdhci, DECMSHC_EMMC_DLL_CMDOUT, extra);
+	}
 
 	extra = DWCMSHC_EMMC_DLL_DLYENA |
 		DLL_TXCLK_TAPNUM_FROM_SW |
@@ -325,6 +360,10 @@ static int rk_sdhci_probe(struct device *dev)
 
 	mci = &host->mci;
 
+	host->soc = device_get_match_data(dev);
+	if (!host->soc)
+		return -ENODEV;
+
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
@@ -372,12 +411,17 @@ static int rk_sdhci_probe(struct device *dev)
 
 static __maybe_unused struct of_device_id rk_sdhci_compatible[] = {
 	{
-		.compatible = "rockchip,rk3562-dwcmshc"
-	},
-	{
-		.compatible = "rockchip,rk3568-dwcmshc"
+		.compatible = "rockchip,rk3562-dwcmshc",
+		.data = &rk_sdhci_rk3568_data,
 	}, {
-		.compatible = "rockchip,rk3588-dwcmshc"
+		.compatible = "rockchip,rk3568-dwcmshc",
+		.data = &rk_sdhci_rk3568_data,
+	}, {
+		.compatible = "rockchip,rk3576-dwcmshc",
+		.data = &rk_sdhci_rk35xx_data,
+	}, {
+		.compatible = "rockchip,rk3588-dwcmshc",
+		.data = &rk_sdhci_rk35xx_data,
 	}, {
 		/* sentinel */
 	}

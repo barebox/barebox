@@ -359,6 +359,11 @@ static int rk_sdhci_probe(struct device *dev)
 
 	sdhci_setup_host(&host->sdhci);
 
+	ret = sdhci_setup_adma(&host->sdhci);
+	if (ret && ret != -ENOTSUPP)
+		dev_warn(dev, "ADMA setup failed (%pe), falling back to SDMA\n",
+			 ERR_PTR(ret));
+
 	dev->priv = host;
 
 	return mci_register(&host->mci);

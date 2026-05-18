@@ -173,6 +173,7 @@ static void rockchip_atf_load_bl31(void *fdt)
 	unsigned long bl31_ep;
 
 	mmu_early_enable(membase[0], memsize[0]);
+	pbl_malloc_init(membase[0] + memsize[0] - PBL_MALLOC_SIZE, PBL_MALLOC_SIZE);
 
 	bl31_ep = load_elf64_image_phdr(&bl31);
 

@@ -18,6 +18,7 @@
 #define DWCMSHC_VER_TYPE		0x504
 #define DWCMSHC_HOST_CTRL3		0x508
 #define DWCMSHC_EMMC_CONTROL		0x52c
+#define  DWCMSHC_CARD_IS_EMMC		BIT(0)
 #define DWCMSHC_EMMC_ATCTRL		0x540
 
 /* Rockchip specific Registers */
@@ -182,6 +183,25 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 
 	/* Disable clock while config DLL */
 	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, 0);
+
+	/*
+	 * HS400 needs the dwcmshc-specific value (0x7) in HOST_CONTROL2's UHS
+	 * field rather than the standard SDHCI_CTRL_HS400 (0x5) the generic
+	 * sdhci_set_uhs_signaling() wrote. It also requires CARD_IS_EMMC in
+	 * EMMC_CONTROL to enable the data strobe sampling path.
+	 */
+	if (host->mci.ios.timing == MMC_TIMING_MMC_HS400) {
+		u16 ctrl_2;
+
+		ctrl_2 = sdhci_read16(&host->sdhci, SDHCI_HOST_CONTROL2);
+		ctrl_2 &= ~SDHCI_CTRL_UHS_MASK;
+		ctrl_2 |= DWCMSHC_CTRL_HS400;
+		sdhci_write16(&host->sdhci, SDHCI_HOST_CONTROL2, ctrl_2);
+
+		extra = sdhci_read16(&host->sdhci, DWCMSHC_EMMC_CONTROL);
+		extra |= DWCMSHC_CARD_IS_EMMC;
+		sdhci_write16(&host->sdhci, DWCMSHC_EMMC_CONTROL, extra);
+	}
 
 	if (clock <= 52000000) {
 		/*

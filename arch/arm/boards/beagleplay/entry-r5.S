@@ -3,7 +3,7 @@
 
 #define SRAM_BASE 0x43c00000
 
-#define STACK_TOP SRAM_BASE + 0x3d000
+#define STACK_TOP SRAM_BASE + 0x3e000
 
 .arm
 .section .text_head_entry_start_beagleplay_r5;

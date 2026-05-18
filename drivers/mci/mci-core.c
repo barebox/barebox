@@ -1684,6 +1684,7 @@ int mmc_send_tuning(struct mci *mci, u32 opcode)
 	mci_setup_cmd(&cmd, opcode, 0, MMC_RSP_R1 | MMC_CMD_ADTC);
 
 	cmd.data = xzalloc(sizeof(struct mci_data));
+	cmd.data->dest = data_buf;
 	cmd.data->blocksize = size;
 	cmd.data->blocks = 1;
 	cmd.data->flags = MMC_DATA_READ;

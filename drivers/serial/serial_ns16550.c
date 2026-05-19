@@ -413,11 +413,13 @@ static __maybe_unused struct ns16550_drvdata omap_drvdata = {
 static __maybe_unused struct ns16550_drvdata omap_clk48m_drvdata = {
 	.init_port = ns16550_omap_init_port,
 	.linux_console_name = "ttyS",
+	.linux_earlycon_name = "uart8250",
 	.clk_default = 48000000,
 };
 
 static __maybe_unused struct ns16550_drvdata jz_drvdata = {
 	.init_port = ns16550_jz_init_port,
+	.linux_console_name = "ttyS",
 	.linux_earlycon_name = "jz4740_uart",
 };
 

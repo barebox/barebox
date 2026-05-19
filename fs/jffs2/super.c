@@ -55,8 +55,11 @@ static void jffs2_destroy_inode(struct inode *inode)
 	kmem_cache_free(jffs2_inode_cachep, f);
 }
 
-static void jffs2_i_init_once(void *foo)
+static void jffs2_i_init_once(void *obj)
 {
+	struct jffs2_inode_info *f = obj;
+
+	memset(&f->vfs_inode, 0, sizeof(f->vfs_inode));
 }
 
 static const struct super_operations jffs2_super_operations =

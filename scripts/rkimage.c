@@ -13,15 +13,13 @@
 #include <stdbool.h>
 
 #include <openssl/bn.h>
-/*
- * TODO Switch from the OpenSSL ENGINE API to the PKCS#11 provider and the
- * PROVIDER API: https://github.com/latchset/pkcs11-provider
- */
+#include <openssl/err.h>
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <openssl/engine.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
+#include <openssl/store.h>
 
 #include "common.h"
 #include "common.c"
@@ -63,11 +61,41 @@ static void idb_hash(struct newidb *idb)
 		sha512(idbu8, size, idbu8 + size);
 }
 
-static __attribute__((unused)) EVP_PKEY *load_key_pkcs11(const char *path)
+static __attribute__((unused)) EVP_PKEY *load_key_pkcs11(const char *uri)
 {
+	OSSL_STORE_CTX *ctx;
+	OSSL_STORE_INFO *info;
 	const char *engine_id = "pkcs11";
 	ENGINE *e;
 	EVP_PKEY *pkey = NULL;
+
+	/* Try provider-based store first (requires pkcs11-provider) */
+	ctx = OSSL_STORE_open(uri, NULL, NULL, NULL, NULL);
+	if (ctx) {
+		while (!OSSL_STORE_eof(ctx)) {
+			info = OSSL_STORE_load(ctx);
+			if (!info)
+				break;
+			if (OSSL_STORE_INFO_get_type(info) ==
+			    OSSL_STORE_INFO_PKEY) {
+				pkey = OSSL_STORE_INFO_get1_PKEY(info);
+				OSSL_STORE_INFO_free(info);
+				break;
+			}
+			OSSL_STORE_INFO_free(info);
+		}
+		OSSL_STORE_close(ctx);
+		if (pkey)
+			return pkey;
+	}
+
+	/*
+	 * Fall back to legacy ENGINE API (requires libp11 pkcs11 engine).
+	 * The provider-based approach above requires pkcs11-provider, which is
+	 * not yet available in ptxdist environments. The deprecated ENGINE API
+	 * via libp11 remains functional there and is used as a fallback.
+	 */
+	ERR_clear_error();
 
 	ENGINE_load_builtin_engines();
 
@@ -81,7 +109,7 @@ static __attribute__((unused)) EVP_PKEY *load_key_pkcs11(const char *path)
 		goto err_engine_init;
 	}
 
-	pkey = ENGINE_load_private_key(e, path, NULL, NULL);
+	pkey = ENGINE_load_private_key(e, uri, NULL, NULL);
 
 	ENGINE_finish(e);
 err_engine_init:
@@ -361,10 +389,47 @@ out:
 #else
 static int sign_newidb(struct newidb *idb, const char *path)
 {
-       fprintf(stderr, "Signing support requires at least OpenSSL 3.0\n");
-       return -ENOSYS;
+	fprintf(stderr, "Signing support requires at least OpenSSL 3.0\n");
+	return -ENOSYS;
 }
 #endif
+
+static int re_sign_image(const char *infile, const char *outfile, const char *key)
+{
+	void *buf;
+	size_t size;
+	int ret;
+
+	if (!key) {
+		fprintf(stderr, "Can't resign without key\n");
+		exit(1);
+	}
+
+	buf = read_file(infile, &size);
+	if (!buf) {
+		fprintf(stderr, "Cannot read %s\n", infile);
+		exit(1);
+	}
+
+	if (!has_magic(buf)) {
+		fprintf(stderr, "%s is not a rockchip image\n", infile);
+		exit(1);
+	}
+
+	ret = sign_newidb(buf, key);
+	if (ret) {
+		fprintf(stderr, "Cannot sign image: %s: %s\n", infile, strerror(-ret));
+		exit(1);
+	}
+
+	ret = write_file(outfile, buf, size);
+	if (ret) {
+		fprintf(stderr, "Cannot write %s: %s\n", outfile, strerror(errno));
+		exit(1);
+	}
+
+	return 0;
+}
 
 struct option cbootcmd[] = {
 	{"help", 0, NULL, 'h'},
@@ -384,24 +449,29 @@ static void usage(const char *prgname)
 "Options:\n"
 "  -o <file>   Output image to <file>\n"
 "  -k <key>    Sign the image with <key> as PEM file or PKCS#11 uri\n"
+"  -r <file>   Re-sign the image\n"
 "  -h          This help\n",
 	prgname);
 }
 
 int main(int argc, char *argv[])
 {
-	int opt, i, fd;
+	int opt, i, fd, ret;
 	const char *outfile = NULL;
 	const char *key = NULL;
+	const char *re_sign = NULL;
 	struct newidb idb = {};
 
-	while ((opt = getopt_long(argc, argv, "ho:k:", cbootcmd, NULL)) > 0) {
+	while ((opt = getopt_long(argc, argv, "hr:o:k:", cbootcmd, NULL)) > 0) {
 		switch (opt) {
 		case 'o':
 			outfile = optarg;
 			break;
 		case 'k':
 			key = optarg;
+			break;
+		case 'r':
+			re_sign = optarg;
 			break;
 		case 'h':
 			usage(argv[0]);
@@ -410,6 +480,26 @@ int main(int argc, char *argv[])
 	}
 
 	n_code = argc - optind;
+
+	if (!outfile) {
+		fprintf(stderr, "No output file specified, use -o\n");
+		usage(argv[0]);
+		exit(1);
+	}
+
+	if (re_sign) {
+		if (n_code) {
+			fprintf(stderr, "unhandled non-opt arguments\n");
+			exit(1);
+		}
+
+		ret = re_sign_image(re_sign, outfile, key);
+		if (ret)
+			exit(1);
+		else
+			exit(0);
+	}
+
 	if (!n_code) {
 		usage(argv[0]);
 		exit(1);
@@ -445,8 +535,7 @@ int main(int argc, char *argv[])
 		close(fd);
 	}
 
-	if (!(n_code == 1 && has_magic(code[0].buf)))
-		create_newidb(&idb);
+	create_newidb(&idb);
 
 	if (key) {
 		int ret;
@@ -460,7 +549,7 @@ int main(int argc, char *argv[])
 
 	fd = creat(outfile, 0644);
 	if (fd < 0) {
-		fprintf(stderr, "Cannot open %s: %s\n", outfile, strerror(errno));
+		fprintf(stderr, "Cannot create %s: %s\n", outfile, strerror(errno));
 		exit(1);
 	}
 

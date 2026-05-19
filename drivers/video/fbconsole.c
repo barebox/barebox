@@ -10,12 +10,13 @@
 #include <gui/image_renderer.h>
 #include <gui/graphic_utils.h>
 #include <linux/font.h>
+#include <linux/ctype.h>
+#include <charset.h>
 
 enum state_t {
 	LIT,				/* Literal input */
 	ESC,				/* Start of escape sequence */
 	CSI,				/* Reading arguments in "CSI Pn ;...*/
-	CSI_CNT,
 };
 
 enum fbconsole_rotation {
@@ -38,6 +39,25 @@ enum ansi_color {
 };
 
 #define DEFAULT_COLOR	WHITE
+#define DEFAULT_BGCOLOR	BLACK
+
+struct fbc_screen_state {
+	unsigned int x, y; /* cursor position */
+
+	int color;
+	int bgcolor;
+
+	u32 color_rgb;
+	u32 bgcolor_rgb;
+
+#define ANSI_FLAG_INVERT	(1 << 0)
+#define ANSI_FLAG_BRIGHT	(1 << 1)
+#define SGR_ATTRIBUTES		(ANSI_FLAG_INVERT | ANSI_FLAG_BRIGHT)
+#define HIDE_CURSOR		(1 << 2)
+	unsigned flags;
+
+	bool pending_wrap;	/* deferred wrap: cursor at last column */
+};
 
 struct fbc_priv {
 	struct console_device cdev;
@@ -57,18 +77,16 @@ struct fbc_priv {
 	const struct font_desc *font;
 
 	unsigned int cols, rows;
-	unsigned int x, y; /* cursor position */
+
+	struct fbc_screen_state cur;
+	struct fbc_screen_state saved; /* DEC cursor save (\e7) */
+
+	struct fbc_screen_state altscreen_saved;
+	void *altscreen_buf;	/* pixel snapshot while in alternate screen */
+	size_t altscreen_size;
 
 	unsigned int rotation;
 	enum state_t state;
-
-	int color;
-	int bgcolor;
-
-#define ANSI_FLAG_INVERT	(1 << 0)
-#define ANSI_FLAG_BRIGHT	(1 << 1)
-#define HIDE_CURSOR		(1 << 2)
-	unsigned flags;
 
 	int csipos;
 	u8 csi[256];
@@ -76,6 +94,8 @@ struct fbc_priv {
 
 	int active;
 	int in_console;
+
+	char utf8_buf[5];	/* UTF-8 stream decoder buffer */
 };
 
 static int fbc_getc(struct console_device *cdev)
@@ -85,6 +105,15 @@ static int fbc_getc(struct console_device *cdev)
 
 static int fbc_tstc(struct console_device *cdev)
 {
+	return 0;
+}
+
+static int fbc_get_size(struct console_device *cdev, int *width, int *height)
+{
+	struct fbc_priv *priv = container_of(cdev, struct fbc_priv, cdev);
+
+	*width = priv->cols;
+	*height = priv->rows;
 	return 0;
 }
 
@@ -136,6 +165,49 @@ static struct rgb colors[] = {
 	[BRIGHT + WHITE]	= { 255, 255, 255 },
 };
 
+static void fb_blit_area(struct fbc_priv *priv, int x, int y)
+{
+	int startx, starty, width, height, fw, fh;
+	int mx, my;
+
+	mx = priv->margin.left;
+	my = priv->margin.top;
+
+	fw = priv->font->width;
+	fh = priv->font->height;
+
+	switch (priv->rotation) {
+	case FBCONSOLE_ROTATE_0:
+		startx = mx + x * fw;
+		starty = my + y * fh;
+		width = fw;
+		height = fh;
+		break;
+	case FBCONSOLE_ROTATE_90:
+		startx = mx + (priv->rows - y - 1) * fh;
+		starty = my + x * fw;
+		width = fh;
+		height = fw;
+		break;
+	case FBCONSOLE_ROTATE_180:
+		startx = mx + (priv->cols - x - 1) * fw;
+		starty = my + (priv->rows - y - 1) * fh;
+		width = fw;
+		height = fh;
+		break;
+	case FBCONSOLE_ROTATE_270:
+		startx = mx + y * fh;
+		starty = my + (priv->cols - x - 1) * fw;
+		width = fh;
+		height = fw;
+		break;
+	default:
+		return;
+	}
+
+	gu_screen_blit_area(priv->sc, startx, starty, width, height);
+}
+
 static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 {
 	void *buf;
@@ -144,8 +216,6 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	int i;
 	const uint8_t *inbuf;
 	int line_length;
-	u32 color, bgcolor;
-	struct rgb *rgb;
 	int xstep;
 	int ystep;
 	int startx;
@@ -157,18 +227,6 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 	inbuf = priv->font->data + i;
 
 	line_length = priv->fb->line_length;
-
-	color = priv->flags & ANSI_FLAG_INVERT ? priv->bgcolor : priv->color;
-	bgcolor = priv->flags & ANSI_FLAG_INVERT ? priv->color : priv->bgcolor;
-
-	if (priv->flags & ANSI_FLAG_BRIGHT)
-		color += BRIGHT;
-
-	rgb = &colors[color];
-	color = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
-
-	rgb = &colors[bgcolor];
-	bgcolor = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0x0);
 
 	adr = buf;
 
@@ -215,9 +273,11 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 			}
 
 			if (*inbuf & mask)
-				gu_set_pixel(priv->fb, adr + j * xstep, color);
+				gu_set_pixel(priv->fb, adr + j * xstep,
+					     priv->cur.color_rgb);
 			else
-				gu_set_pixel(priv->fb, adr + j * xstep, bgcolor);
+				gu_set_pixel(priv->fb, adr + j * xstep,
+					     priv->cur.bgcolor_rgb);
 
 			mask >>= 1;
 
@@ -228,49 +288,20 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 		inbuf++;
 		mask = 0x80;
 	}
+
+	fb_blit_area(priv, x, y);
 }
 
-static void fb_blit_area(struct fbc_priv *priv, int x, int y)
+static void clear_chars(struct fbc_priv *priv,
+			int start_x, int start_y, int end_x, int end_y)
 {
-	int startx, starty, width, height, fw, fh;
-	int mx, my;
+	for (int y = start_y; y <= end_y; y++) {
+		int xs = (y == start_y) ? start_x : 0;
+		int xe = (y == end_y) ? end_x : (int)priv->cols - 1;
 
-	mx = priv->margin.left;
-	my = priv->margin.top;
-
-	fw = priv->font->width;
-	fh = priv->font->height;
-
-	switch (priv->rotation) {
-	case FBCONSOLE_ROTATE_0:
-		startx = mx + x * fw;
-		starty = my + y * fh;
-		width = fw;
-		height = fh;
-		break;
-	case FBCONSOLE_ROTATE_90:
-		startx = mx + (priv->rows - y - 1) * fh;
-		starty = my + x * fw;
-		width = fh;
-		height = fw;
-		break;
-	case FBCONSOLE_ROTATE_180:
-		startx = mx + (priv->cols - x - 1) * fw;
-		starty = my + (priv->rows - y - 1) * fh;
-		width = fw;
-		height = fh;
-		break;
-	case FBCONSOLE_ROTATE_270:
-		startx = mx + y * fh;
-		starty = my + (priv->cols - x - 1) * fw;
-		width = fh;
-		height = fw;
-		break;
-	default:
-		return;
+		for (int x = xs; x <= xe; x++)
+			drawchar(priv, x, y, ' ');
 	}
-
-	gu_screen_blit_area(priv->sc, startx, starty, width, height);
 }
 
 static void video_invertchar(struct fbc_priv *priv, int x, int y)
@@ -318,10 +349,10 @@ static void video_invertchar(struct fbc_priv *priv, int x, int y)
 	fb_blit_area(priv, x, y);
 }
 
-static void show_cursor(struct fbc_priv *priv, int x, int y)
+static void toggle_cursor_visibility(struct fbc_priv *priv)
 {
-	if (!(priv->flags & HIDE_CURSOR))
-		video_invertchar(priv, x, y);
+	if (!(priv->cur.flags & HIDE_CURSOR))
+		video_invertchar(priv, priv->cur.x, priv->cur.y);
 }
 
 static void fb_scroll_up_0(struct fbc_priv *priv, void *adr, int width, int height)
@@ -438,55 +469,112 @@ static void fb_scroll_up(struct fbc_priv *priv)
 
 static void printchar(struct fbc_priv *priv, int c)
 {
-	video_invertchar(priv, priv->x, priv->y);
+	struct fbc_screen_state *cur = &priv->cur;
+
+	toggle_cursor_visibility(priv);
 
 	switch (c) {
 	case '\007': /* bell: ignore */
 		break;
 	case '\b':
-		if (priv->x > 0) {
-			priv->x--;
-		} else if (priv->y > 0) {
-			priv->x = priv->cols - 1;
-			priv->y--;
+		cur->pending_wrap = false;
+		if (cur->x > 0) {
+			cur->x--;
+		} else if (cur->y > 0) {
+			cur->x = priv->cols - 1;
+			cur->y--;
 		}
 		break;
 	case '\n':
 	case '\013': /* Vertical tab is the same as Line Feed */
-		priv->y++;
+		cur->pending_wrap = false;
+		cur->y++;
 		break;
 
 	case '\r':
-		priv->x = 0;
+		cur->pending_wrap = false;
+		cur->x = 0;
 		break;
 
 	case '\t':
-		priv->x = (priv->x + 8) & ~0x3;
+		cur->pending_wrap = false;
+		cur->x = (cur->x + 8) & ~0x3;
 		break;
 
 	default:
-		drawchar(priv, priv->x, priv->y, c);
-		fb_blit_area(priv, priv->x, priv->y);
+		/*
+		 * VT100 deferred wrap: if the previous character landed at
+		 * the last column, perform the wrap NOW before drawing the
+		 * next character.  This prevents a scroll from occurring
+		 * merely by writing to the bottom-right corner cell.
+		 */
+		if (cur->pending_wrap) {
+			cur->pending_wrap = false;
+			cur->x = 0;
+			cur->y++;
 
-		priv->x++;
-		if (priv->x >= priv->cols) {
-			priv->y++;
-			priv->x = 0;
+			if (cur->y >= priv->rows) {
+				fb_scroll_up(priv);
+				cur->y = priv->rows - 1;
+			}
 		}
+
+		drawchar(priv, cur->x, cur->y, c);
+
+		cur->x++;
+		if (cur->x >= priv->cols) {
+			/* Defer the wrap to the next printable character */
+			cur->x = priv->cols - 1;
+			cur->pending_wrap = true;
+		}
+		break;
 	}
 
-	if (priv->y >= priv->rows) {
+	if (cur->y >= priv->rows) {
 		fb_scroll_up(priv);
-		priv->y = priv->rows - 1;
+		cur->y = priv->rows - 1;
 	}
 
-	show_cursor(priv, priv->x, priv->y);
+	toggle_cursor_visibility(priv);
+}
 
-	return;
+static void fbc_update_colors(struct fbc_priv *priv, int color, int bgcolor)
+{
+	struct fbc_screen_state *cur = &priv->cur;
+	struct rgb *rgb;
+
+	if (color >= 0)
+		cur->color = color;
+	if (bgcolor >= 0)
+		cur->bgcolor = bgcolor;
+
+	if (cur->flags & ANSI_FLAG_INVERT) {
+		color = cur->bgcolor;
+		bgcolor = cur->color;
+	} else {
+		color = cur->color;
+		bgcolor = cur->bgcolor;
+	}
+
+	if (cur->flags & ANSI_FLAG_BRIGHT)
+		color += BRIGHT;
+
+	rgb = &colors[color];
+	cur->color_rgb = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
+
+	rgb = &colors[bgcolor];
+	cur->bgcolor_rgb = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0x0);
+}
+
+static void fbc_reset_colors(struct fbc_priv *priv)
+{
+	fbc_update_colors(priv, DEFAULT_COLOR, DEFAULT_BGCOLOR);
 }
 
 static void fbc_parse_colors(struct fbc_priv *priv)
 {
+	struct fbc_screen_state *cur = &priv->cur;
+	int color = -1, bgcolor = -1;
 	int code;
 	char *str;
 
@@ -496,31 +584,31 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 		code = simple_strtoul(str, &str, 10);
 		switch (code) {
 		case 0:
-			priv->flags = 0;
-			priv->color = DEFAULT_COLOR;
-			priv->bgcolor = BLACK;
+			cur->flags &= ~SGR_ATTRIBUTES;
+			color = DEFAULT_COLOR;
+			bgcolor = DEFAULT_BGCOLOR;
 			break;
 		case 1:
-			priv->flags |= ANSI_FLAG_BRIGHT;
+			cur->flags |= ANSI_FLAG_BRIGHT;
 			break;
 		case 7:
-			priv->flags |= ANSI_FLAG_INVERT;
+			cur->flags |= ANSI_FLAG_INVERT;
 			break;
 		case 30 ... 37:
-			priv->color = code - 30;
+			color = code - 30;
 			break;
 		case 39:
-			priv->color = DEFAULT_COLOR;
+			color = DEFAULT_COLOR;
 			break;
 		case 40 ... 47:
-			priv->bgcolor = code - 40;
+			bgcolor = code - 40;
 			break;
 		case 49:
-			priv->bgcolor = BLACK;
+			bgcolor = DEFAULT_BGCOLOR;
 			break;
 		case 90 ... 97:
-			priv->flags |= ANSI_FLAG_BRIGHT;
-			priv->color = code - 90;
+			cur->flags |= ANSI_FLAG_BRIGHT;
+			color = code - 90;
 			break;
 		}
 
@@ -528,83 +616,170 @@ static void fbc_parse_colors(struct fbc_priv *priv)
 			break;
 		str++;
 	}
+
+	fbc_update_colors(priv, color, bgcolor);
 }
 
-static void fbc_parse_csi(struct fbc_priv *priv)
+static void fbc_set_cursor_row(struct fbc_priv *priv, int y)
+{
+	priv->cur.y = clamp_t(int, y, 0, priv->rows - 1);
+}
+
+static void fbc_set_cursor_col(struct fbc_priv *priv, unsigned int x)
+{
+	priv->cur.x = clamp_t(int, x, 0, priv->cols - 1);
+}
+
+static bool fbc_parse_csi(struct fbc_priv *priv)
 {
 	char *end;
 	unsigned char last;
-	int pos, i;
+	int pos;
 
 	last = priv->csi[priv->csipos - 1];
 
 	switch (last) {
 	case 'm':
 		fbc_parse_colors(priv);
-		return;
-	case '?': /* vt100: show/hide cursor */
-		priv->csi_cmd = last;
-		priv->state = CSI_CNT;
-		return;
+		break;
 	case 'h':
 		/* suffix for vt100 "[?25h" */
-		switch (priv->csi_cmd) {
-		case '?': /* cursor visible */
-			priv->csi_cmd = -1;
-			if (!(priv->flags & HIDE_CURSOR))
-				break;
-
-			priv->flags &= ~HIDE_CURSOR;
-			/* show cursor now */
-			show_cursor(priv, priv->x, priv->y);
+		if (priv->csi_cmd != '?')
 			break;
+		pos = simple_strtoul(priv->csi + 1, NULL, 10);
+		switch (pos) {
+		case 25: /* cursor visible */
+			if (!(priv->cur.flags & HIDE_CURSOR))
+				break;
+			priv->cur.flags &= ~HIDE_CURSOR;
+			/* show cursor now */
+			toggle_cursor_visibility(priv);
+			return true;
+		case 1049: /* alternate screen: save pixel buffer and state */
+			if (!priv->altscreen_buf) {
+				void *src = gui_screen_render_buffer(priv->sc);
+				size_t sz = priv->fb->line_length * priv->fb->yres;
+
+				priv->altscreen_buf = memdup(src, sz);
+				if (priv->altscreen_buf) {
+					priv->altscreen_size  = sz;
+					priv->altscreen_saved = priv->cur;
+				}
+				priv->cur = (struct fbc_screen_state){};
+				fbc_reset_colors(priv);
+				cls(priv);
+			}
+			return true;
 		}
 		break;
 	case 'l':
 		/* suffix for vt100 "[?25l" */
-		switch (priv->csi_cmd) {
-		case '?': /* cursor invisible */
-			priv->csi_cmd = -1;
-
-			/* hide cursor now */
-			video_invertchar(priv, priv->x, priv->y);
-			priv->flags |= HIDE_CURSOR;
-
+		if (priv->csi_cmd != '?')
 			break;
+		pos = simple_strtoul(priv->csi + 1, NULL, 10);
+		switch (pos) {
+		case 25: /* cursor invisible */
+			toggle_cursor_visibility(priv);
+			/* hide cursor now */
+			priv->cur.flags |= HIDE_CURSOR;
+			return true;
+		case 1049: /* alternate screen: restore pixel buffer and state */
+			if (priv->altscreen_buf) {
+				void *dst = gui_screen_render_buffer(priv->sc);
+				size_t sz = priv->fb->line_length * priv->fb->yres;
+
+				if (sz == priv->altscreen_size) {
+					memcpy(dst, priv->altscreen_buf, sz);
+					gu_screen_blit(priv->sc);
+				} else {
+					cls(priv);
+				}
+				free(priv->altscreen_buf);
+				priv->altscreen_buf  = NULL;
+				priv->altscreen_size = 0;
+				priv->cur = priv->altscreen_saved;
+			} else {
+				priv->cur = (struct fbc_screen_state){};
+				fbc_reset_colors(priv);
+				cls(priv);
+			}
+			return true;
 		}
 		break;
 	case 'J':
-		cls(priv);
-		show_cursor(priv, priv->x, priv->y);
-		return;
-	case 'H':
-		show_cursor(priv, priv->x, priv->y);
-
 		pos = simple_strtoul(priv->csi, &end, 10);
-		priv->y = clamp(pos - 1, 0, (int) priv->rows - 1);
-
-		pos = simple_strtoul(end + 1, NULL, 10);
-		priv->x = clamp(pos - 1, 0, (int) priv->cols - 1);
-
-		show_cursor(priv, priv->x, priv->y);
-		break;
-	case 'K':
-		pos = simple_strtoul(priv->csi, &end, 10);
-		video_invertchar(priv, priv->x, priv->y);
+		toggle_cursor_visibility(priv);
 		switch (pos) {
-		case 0:
-			for (i = priv->x; i < priv->cols; i++)
-				drawchar(priv, i, priv->y, ' ');
+		case 0: /* clear from cursor to end of screen */
+			clear_chars(priv, priv->cur.x, priv->cur.y,
+				    priv->cols - 1, priv->rows - 1);
 			break;
-		case 1:
-			for (i = 0; i <= priv->x; i++)
-				drawchar(priv, i, priv->y, ' ');
+		case 1: /* clear from start of screen to cursor */
+			clear_chars(priv, 0, 0, priv->cur.x, priv->cur.y);
+			break;
+		case 2: /* clear entire screen */
+			cls(priv);
 			break;
 		}
-		video_invertchar(priv, priv->x, priv->y);
+		toggle_cursor_visibility(priv);
+		return true;
+	case 'H':
+		toggle_cursor_visibility(priv);
+		priv->cur.pending_wrap = false;
 
-		break;
+		pos = simple_strtoul(priv->csi, &end, 10);
+		fbc_set_cursor_row(priv, pos - 1);
+
+		pos = simple_strtoul(end + 1, NULL, 10);
+		fbc_set_cursor_col(priv, pos - 1);
+
+		toggle_cursor_visibility(priv);
+		return true;
+	case 'A' ... 'D': {
+		pos = simple_strtoul(priv->csi, &end, 10) ?: 1;
+		toggle_cursor_visibility(priv);
+		priv->cur.pending_wrap = false;
+
+		switch (last) {
+		case 'A': /* cursor up */
+			fbc_set_cursor_row(priv, priv->cur.y - pos);
+			break;
+		case 'B': /* cursor down */
+			fbc_set_cursor_row(priv, priv->cur.y + pos);
+			break;
+		case 'C': /* cursor forward */
+			fbc_set_cursor_col(priv, priv->cur.x + pos);
+			break;
+		case 'D': /* cursor back */
+			fbc_set_cursor_col(priv, priv->cur.x - pos);
+			break;
+		}
+
+		toggle_cursor_visibility(priv);
+		return true;
 	}
+	case 'K':
+		pos = simple_strtoul(priv->csi, &end, 10);
+		toggle_cursor_visibility(priv);
+		switch (pos) {
+		case 0:
+			clear_chars(priv, priv->cur.x, priv->cur.y,
+				    priv->cols - 1, priv->cur.y);
+			break;
+		case 1:
+			clear_chars(priv, 0, priv->cur.y,
+				    priv->cur.x, priv->cur.y);
+			break;
+		case 2:
+			clear_chars(priv, 0, priv->cur.y,
+				    priv->cols - 1, priv->cur.y);
+			break;
+		}
+		toggle_cursor_visibility(priv);
+		return true;
+	}
+
+	return false;
 }
 
 static void fbc_putc(struct console_device *cdev, char c)
@@ -612,6 +787,7 @@ static void fbc_putc(struct console_device *cdev, char c)
 	struct fbc_priv *priv = container_of(cdev,
 					struct fbc_priv, cdev);
 	struct fb_info *fb = priv->fb;
+	bool queue_flush = false;
 
 	if (priv->in_console)
 		return;
@@ -621,10 +797,27 @@ static void fbc_putc(struct console_device *cdev, char c)
 	case LIT:
 		switch (c) {
 		case '\033':
+			priv->utf8_buf[0] = '\0';
 			priv->state = ESC;
 			break;
-		default:
-			printchar(priv, c);
+		case '\0':
+			break;
+		default: {
+			int cp = c;
+
+			if (IS_ENABLED(CONFIG_FRAMEBUFFER_CONSOLE_UTF8)) {
+				/* All our fonts are CP437, so convert it
+				 * directly to that code page.
+				 */
+				cp = utf8_to_cp437_stream(c, priv->utf8_buf);
+				if (!cp)
+					break;
+			}
+
+			printchar(priv, cp);
+			queue_flush = true;
+			break;
+		}
 		}
 		break;
 	case ESC:
@@ -634,44 +827,60 @@ static void fbc_putc(struct console_device *cdev, char c)
 			priv->csipos = 0;
 			memset(priv->csi, 0, 6);
 			break;
+		case '7':	/* DEC save cursor position */
+			priv->saved = priv->cur;
+			priv->state = LIT;
+			break;
+		case '8':	/* DEC restore cursor position */
+			toggle_cursor_visibility(priv);
+			priv->cur = priv->saved;
+			toggle_cursor_visibility(priv);
+			priv->state = LIT;
+			queue_flush = true;
+			break;
+		default:
+			priv->state = LIT;
+			break;
 		}
 		break;
 	case CSI:
+		if (c == '\033') {
+			priv->state = ESC;
+			priv->csi_cmd = -1;
+			break;
+		}
+
 		priv->csi[priv->csipos++] = c;
 		if (priv->csipos == 255) {
 			priv->csipos = 0;
 			priv->state = LIT;
-			return;
+			priv->csi_cmd = -1;
+			break;
 		}
 
 		switch (c) {
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
+		case '?':
+			/* DEC private sequences use '?' as a parameter prefix byte.
+			 * Record '?' in csi_cmd and continue CSI parameter
+			 * accumulation for digits and the final byte that follows.
+			 */
+			priv->csi_cmd = c;
+			break;
+		case '0' ... '9':
 		case ';':
 		case ':':
 			break;
 		default:
-			fbc_parse_csi(priv);
-			if (priv->state != CSI_CNT)
-				priv->state = LIT;
+			queue_flush = fbc_parse_csi(priv);
+			priv->state = LIT;
+			priv->csi_cmd = -1;
 		}
 		break;
-	case CSI_CNT:
-		priv->state = CSI;
-		break;
-
 	}
 	priv->in_console = 0;
 
-	fb_flush(fb);
+	if (queue_flush)
+		fb_flush(fb);
 }
 
 static int setup_font(struct fbc_priv *priv)
@@ -706,13 +915,14 @@ static int setup_font(struct fbc_priv *priv)
 	if (priv->rows != newrows || priv->cols != newcols) {
 		priv->rows = newrows;
 		priv->cols = newcols;
-		priv->x = priv->y = 0;
+		priv->cur.x = priv->cur.y = 0;
+		priv->saved.x = priv->saved.y = 0;
 	}
 
 	return 0;
 }
 
-static int fbc_open(struct console_device *cdev)
+static int fbc_open(struct console_device *cdev, unsigned activate)
 {
 	struct fbc_priv *priv = container_of(cdev,
 					struct fbc_priv, cdev);
@@ -731,10 +941,14 @@ static int fbc_open(struct console_device *cdev)
 
 	priv->state = LIT;
 
-	dev_info(priv->cdev.dev, "framebuffer console %dx%d activated\n",
-		priv->cols, priv->rows);
-
 	priv->active = true;
+
+	if (activate)
+		dev_info(priv->cdev.dev, "framebuffer console %dx%d activated\n",
+			priv->cols, priv->rows);
+
+	if (activate & CONSOLE_STDERR)
+		log_print(&priv->cdev, 0, GENMASK(LOGLEVEL, 0));
 
 	return 0;
 }
@@ -743,6 +957,12 @@ static int fbc_close(struct console_device *cdev)
 {
 	struct fbc_priv *priv = container_of(cdev,
 					struct fbc_priv, cdev);
+
+	if (priv->altscreen_buf) {
+		free(priv->altscreen_buf);
+		priv->altscreen_buf  = NULL;
+		priv->altscreen_size = 0;
+	}
 
 	if (priv->active) {
 		fb_close(priv->sc);
@@ -801,8 +1021,8 @@ static int set_rotation(struct param_d *p, void *vpriv)
 	struct fbc_priv *priv = vpriv;
 
 	cls(priv);
-	priv->x = 0;
-	priv->y = 0;
+	priv->cur.x = priv->cur.y = 0;
+	priv->saved.x = priv->saved.y = 0;
 	setup_font(priv);
 
 	return 0;
@@ -832,16 +1052,17 @@ int register_fbconsole(struct fb_info *fb)
 		fbname += 2;
 
 	priv->fb = fb;
-	priv->x = 0;
-	priv->y = 0;
-	priv->color = WHITE;
-	priv->bgcolor = BLACK;
+	priv->cur.x = 0;
+	priv->cur.y = 0;
+
+	fbc_reset_colors(priv);
 
 	cdev = &priv->cdev;
 	cdev->dev = &fb->dev;
 	cdev->tstc = fbc_tstc;
 	cdev->putc = fbc_putc;
 	cdev->getc = fbc_getc;
+	cdev->get_size = fbc_get_size;
 	cdev->devname = basprintf("fbconsole%s", fbname);
 	cdev->devid = DEVICE_ID_SINGLE;
 	cdev->open = fbc_open;

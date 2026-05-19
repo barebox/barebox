@@ -34,3 +34,28 @@ Emulated targets can be started interactively with ``pytest --interactive``::
 The test suite can be run by omitting the ``--interactive``.
 For more information, see the :ref:`labgrid` section in the
 :ref:`contributing` guide.
+
+Netconsole over QEMU user networking
+------------------------------------
+
+barebox' UDP-based :ref:`network console <network_console>` can also
+be used in combination with QEMU. With user-mode networking (SLIRP),
+guest-to-host UDP works via NAT out of the box,
+but unsolicited host-to-guest UDP requires an explicit port forward::
+
+  pytest --lg-env test/arm/multi_v8_defconfig.yaml --interactive \
+    --env nv/dev.netconsole.ip=10.0.2.2                          \
+    --env nv/dev.netconsole.port=6666                            \
+    --env init/netconsole="ifup -a1; netconsole.active=ioe"      \
+    --port-forward=6666
+
+This will point netconsole at the SLIRP gateway (``10.0.2.2`` is the host
+as seen from the guest) and bring up the interface::
+
+  netconsole: netconsole initialized with 10.0.2.2:6666
+
+The ``i`` flag in ``netconsole.active`` is required for input; without it
+only output reaches the host. On the host, you can then interact with
+the netconsole via::
+
+  scripts/netconsole -s 127.0.0.1 127.0.0.2 6666

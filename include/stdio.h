@@ -12,9 +12,11 @@
 /* stdin */
 int tstc(void);
 int getchar(void);
+int pollchar(ktime_t duration);
 #else
 static inline int tstc(void) { return 0; }
 static inline int getchar(void) { return -EINVAL; }
+static inline int pollchar(ktime_t duration) { return -ENOSYS; }
 #endif
 
 int readline(const char *prompt, char *buf, int len);

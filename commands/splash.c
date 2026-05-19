@@ -63,10 +63,11 @@ static int do_splash(int argc, char *argv[])
 	buf = gui_screen_render_buffer(sc);
 
 	if (do_bg) {
-		int y;
-		for (y = 0; y < sc->s.height; y++) {
-			gu_memset_pixel(sc->info, buf + sc->info->line_length * y,
-					bg_color, sc->s.width);
+		u32 bg_color_native = gu_hex_to_pixel(sc->info, bg_color);
+
+		for (int y = 0; y < sc->s.height; y++) {
+			gu_memset_pixel_native(sc->info, buf + sc->info->line_length * y,
+					bg_color_native, sc->s.width);
 		}
 	}
 

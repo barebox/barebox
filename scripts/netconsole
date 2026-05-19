@@ -2,9 +2,14 @@
 
 usage() {
 	(
-	echo "Usage: $0 <board IP> [board port]"
+	echo "Usage: $0 [-sh] <board IP> [board port]"
 	echo ""
 	echo "If port is not specified, '6666' will be used"
+	echo ""
+	echo "Options:"
+	echo "  -s SADDR   Bind to SADDR on host side"
+	echo "  -h         Show this help text and exit"
+
 	[ -z "$*" ] && exit 0
 	echo ""
 	echo "ERROR: $*"
@@ -13,15 +18,25 @@ usage() {
 	exit $?
 }
 
-while [ -n "$1" ] ; do
-	case $1 in
-		-h|--help) usage;;
-		--)        break;;
-		-*)        usage "Invalid option $1";;
-		*)         break;;
+if [ "$1" = "--help" ]; then
+	usage
+fi
+
+while getopts ":hs:" opt; do
+	case "$opt" in
+		h) usage ;;
+		s) saddr="$OPTARG" ;;
+		\?) usage "Invalid option -$OPTARG" ;;
+		:)  usage "Option -$OPTARG requires an argument" ;;
 	esac
-	shift
 done
+
+shift $((OPTIND - 1))
+
+# handle end-of-options marker
+if [ "$1" = "--" ]; then
+	shift
+fi
 
 ip=$1
 port=${2:-6666}
@@ -34,26 +49,27 @@ for nc in netcat nc ; do
 	type ${nc} >/dev/null 2>&1 && break
 done
 
-trap "stty icanon echo intr ^C" 0 2 3 5 10 13 15
+cleanup() {
+	if [ -n "${listener_pid}" ] ; then
+		# The listener subshell is its own process group leader (see set -m
+		# below); kill the whole group so the netcat child dies with it.
+		kill -- -${listener_pid} 2>/dev/null
+		wait ${listener_pid} 2>/dev/null
+	fi
+	stty icanon echo intr ^C
+}
+trap cleanup EXIT INT QUIT TERM HUP
+
 echo "NOTE: the interrupt signal (normally ^C) has been remapped to ^T"
 
 stty -icanon -echo intr ^T
+set -m
 (
-if type ncb 2>/dev/null ; then
-	# see if ncb is in $PATH
-	exec ncb ${port}
-
-elif [ -x ${0%/*}/ncb ] ; then
-	# maybe it's in the same dir as the netconsole script
-	exec ${0%/*}/ncb ${port}
-
-else
-	# blah, just use regular netcat
-	while ${nc} -u -l -p ${port} < /dev/null ; do
+	while ${nc} ${saddr:+-s "$saddr"} -u -l -p ${port} < /dev/null ; do
 		:
 	done
-fi
 ) &
-pid=$!
+listener_pid=$!
+set +m
+
 ${nc} -u ${ip} ${port}
-kill ${pid} 2>/dev/null

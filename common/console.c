@@ -10,6 +10,7 @@
 #include <malloc.h>
 #include <param.h>
 #include <console.h>
+#include <term.h>
 #include <driver.h>
 #include <fs.h>
 #include <of.h>
@@ -47,12 +48,12 @@ static struct kfifo __console_output_fifo;
 static struct kfifo *console_input_fifo = &__console_input_fifo;
 static struct kfifo *console_output_fifo = &__console_output_fifo;
 
-int console_open(struct console_device *cdev)
+int console_open(struct console_device *cdev, unsigned activate)
 {
 	int ret;
 
 	if (cdev->open && !cdev->open_count) {
-		ret = cdev->open(cdev);
+		ret = cdev->open(cdev, activate);
 		if (ret)
 			return ret;
 	}
@@ -101,7 +102,7 @@ int console_set_active(struct console_device *cdev, unsigned flag)
 		if (ret)
 			return ret;
 	} else {
-		ret = console_open(cdev);
+		ret = console_open(cdev, flag);
 		if (ret)
 			return ret;
 	}
@@ -216,6 +217,20 @@ static int console_baudrate_set(struct param_d *param, void *priv)
 	return console_set_baudrate(cdev, cdev->baudrate_param);
 }
 
+static int console_size_get(struct param_d *param, void *priv)
+{
+	struct console_device *cdev = priv;
+	int rows = 0, cols = 0;
+
+	/* Parameter will just report 0x0 on errors) */
+	(void)term_cdev_get_size(cdev, &cols, &rows);
+
+	free(cdev->term_size);
+	cdev->term_size = xasprintf("%ux%u", cols, rows);
+
+	return 0;
+}
+
 static void console_init_early(void)
 {
 	kfifo_init(console_input_fifo, console_input_buffer,
@@ -296,7 +311,7 @@ static int fops_open(struct cdev *cdev, unsigned long flags)
 	if ((flags & (O_WRONLY | O_RDWR)) && !priv->puts )
 		return -EPERM;
 
-	return console_open(priv);
+	return console_open(priv, 0);
 }
 
 static int fops_close(struct cdev *dev)
@@ -390,6 +405,9 @@ int console_register(struct console_device *newcdev)
 
 	dev_add_param_string(dev, "active", console_active_set, console_active_get,
 			     &newcdev->active_string, newcdev);
+
+	dev_add_param_string(dev, "terminal.size", NULL, console_size_get,
+			     &newcdev->term_size, newcdev);
 
 	if (IS_ENABLED(CONFIG_CONSOLE_ACTIVATE_FIRST)) {
 		if (list_empty(&console_list))
@@ -570,6 +588,19 @@ int tstc(void)
 	return kfifo_len(console_input_fifo) || tstc_raw();
 }
 EXPORT_SYMBOL(tstc);
+
+int pollchar(ktime_t duration)
+{
+	ktime_t start = get_time_ns();
+
+	while (!tstc()) {
+		if (is_timeout(start, duration))
+			return -ETIMEDOUT;
+	}
+
+	return getchar();
+}
+EXPORT_SYMBOL(pollchar);
 
 int console_putc(struct console_device *con, char c)
 {

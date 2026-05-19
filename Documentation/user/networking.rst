@@ -173,6 +173,8 @@ variables:
   ``-o port=${global.nfs.port},mountport=${global.nfs.port}`` as argument
   to the :ref:`mount command <command_mount>`.
 
+.. _network_console:
+
 Network console
 ---------------
 

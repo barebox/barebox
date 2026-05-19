@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <debug_ll.h>
 #include <console.h>
+#include <clock.h>
 #include <security/config.h>
 
 LIST_HEAD(console_list);
@@ -65,6 +66,19 @@ int getchar(void)
 	return console->getc(console);
 }
 EXPORT_SYMBOL(getchar);
+
+int pollchar(ktime_t duration)
+{
+	ktime_t start = get_time_ns();
+
+	while (!tstc()) {
+		if (is_timeout(start, duration))
+			return -ETIMEDOUT;
+	}
+
+	return getchar();
+}
+EXPORT_SYMBOL(pollchar);
 
 void console_flush(void)
 {

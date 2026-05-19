@@ -18,7 +18,6 @@ struct ramfb {
 	int fd;
 	struct fb_info info;
 	dma_addr_t screen_dma;
-	struct fb_videomode mode;
 };
 
 struct fw_cfg_etc_ramfb {
@@ -29,22 +28,6 @@ struct fw_cfg_etc_ramfb {
 	u32 height;
 	u32 stride;
 } __packed;
-
-static void ramfb_populate_modes(struct ramfb *ramfb)
-{
-	struct fb_info *info = &ramfb->info;
-
-	ramfb->mode.name = "x8r8g8b8";
-	info->xres = ramfb->mode.xres = 640;
-	info->yres = ramfb->mode.yres = 480;
-
-	info->mode = &ramfb->mode;
-	info->bits_per_pixel = 32;
-	info->red	= (struct fb_bitfield) {16, 8};
-	info->green	= (struct fb_bitfield) {8, 8};
-	info->blue	= (struct fb_bitfield) {0, 8};
-	info->transp	= (struct fb_bitfield) {0, 0};
-}
 
 static int ramfb_activate_var(struct fb_info *fbi)
 {
@@ -81,6 +64,13 @@ static void ramfb_enable(struct fb_info *fbi)
 	dma_free(etc_ramfb);
 }
 
+static struct fb_videomode ramfb_modes[] = {
+	{ .name = "640x480",   .xres =  640, .yres =  480 },
+	{ .name = "800x600",   .xres =  800, .yres =  600 },
+	{ .name = "1280x720",  .xres = 1280, .yres =  720 },
+	{ .name = "1920x1080", .xres = 1920, .yres = 1080 },
+};
+
 static struct fb_ops ramfb_ops = {
 	.fb_activate_var = ramfb_activate_var,
 	.fb_enable = ramfb_enable,
@@ -101,7 +91,15 @@ static int ramfb_probe(struct device *dev)
 	fbi->fbops = &ramfb_ops;
 	fbi->dev.parent = dev;
 
-	ramfb_populate_modes(ramfb);
+	fbi->modes.modes = ramfb_modes;
+	fbi->modes.num_modes = ARRAY_SIZE(ramfb_modes);
+	/* current_mode = 0 (640x480) from xzalloc */
+
+	fbi->bits_per_pixel = 32;
+	fbi->red	= (struct fb_bitfield) {16, 8};
+	fbi->green	= (struct fb_bitfield) {8, 8};
+	fbi->blue	= (struct fb_bitfield) {0, 8};
+	fbi->transp	= (struct fb_bitfield) {0, 0};
 
 	ret = register_framebuffer(fbi);
 	if (ret < 0) {

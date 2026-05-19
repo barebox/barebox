@@ -17,6 +17,8 @@
  */
 
 #include <common.h>
+#include <clock.h>
+#include <linux/ktime.h>
 #include <linux/ctype.h>
 #include <readkey.h>
 
@@ -46,6 +48,18 @@ static const struct esc_cmds esccmds[] = {
 	{"[6~", BB_KEY_PAGEDOWN},// Cursor Key Page Down
 };
 
+static int poll_key_into_buf(unsigned char *key)
+{
+	int ret;
+
+	ret = pollchar(50 * MSECOND);
+	if (ret < 0)
+		return ret;
+
+	*key = ret;
+	return 0;
+}
+
 int read_key(void)
 {
 	unsigned char c;
@@ -54,8 +68,21 @@ int read_key(void)
 
 	if (c == 27) {
 		int i = 0;
-		esc[i++] = getchar();
-		esc[i++] = getchar();
+
+		/*
+		 * Escape sequences (arrow keys, etc.) arrive as a burst
+		 * of characters: ESC [ A, ESC [ 1 ~ etc.  A standalone
+		 * ESC keypress sends just the single 0x1b byte.
+		 *
+		 * Wait briefly for a follow-up character; if nothing
+		 * arrives it was a bare ESC.
+		 */
+		if (poll_key_into_buf(&esc[i++]))
+			return '\e';
+
+		if (poll_key_into_buf(&esc[i++]))
+			return -1;
+
 		if (isdigit(esc[1])) {
 			while(1) {
 				esc[i] = getchar();

@@ -41,8 +41,9 @@ struct console_device {
 	int (*setbrg)(struct console_device *cdev, int baudrate);
 	void (*flush)(struct console_device *cdev);
 	int (*set_mode)(struct console_device *cdev, enum console_mode mode);
-	int (*open)(struct console_device *cdev);
+	int (*open)(struct console_device *cdev, unsigned activate);
 	int (*close)(struct console_device *cdev);
+	int (*get_size)(struct console_device *cdev, int *width, int *height);
 
 	const char *devname;
 	int devid;
@@ -56,6 +57,8 @@ struct console_device {
 
 	unsigned int baudrate;
 	unsigned int baudrate_param;
+
+	char *term_size;
 
 	const char *linux_console_name;
 	const char *linux_earlycon_name;
@@ -107,7 +110,7 @@ struct console_device *of_console_get_by_alias(const char *alias);
 
 #define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16)
 
-int console_open(struct console_device *cdev);
+int console_open(struct console_device *cdev, unsigned activate);
 int console_close(struct console_device *cdev);
 int console_set_active(struct console_device *cdev, unsigned active);
 unsigned console_get_active(struct console_device *cdev);

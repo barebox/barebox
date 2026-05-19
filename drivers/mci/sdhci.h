@@ -175,9 +175,7 @@
 #define  SDHCI_DRIVER_TYPE_A			0x00000010
 #define  SDHCI_DRIVER_TYPE_C			0x00000020
 #define  SDHCI_DRIVER_TYPE_D			0x00000040
-#define  SDHCI_RETUNING_TIMER_COUNT_MASK	GENMASK(11, 8)
 #define  SDHCI_USE_SDR50_TUNING			0x00002000
-#define  SDHCI_RETUNING_MODE_MASK		GENMASK(15, 14)
 #define  SDHCI_CLOCK_MUL_MASK			GENMASK(23, 16)
 #define  SDHCI_CAN_DO_ADMA3			0x08000000
 #define  SDHCI_SUPPORT_HS400			0x80000000 /* Non-standard */
@@ -278,11 +276,6 @@ struct sdhci {
 	bool read_caps;	/* Capability flags have been read */
 	u32 sdma_boundary;
 
-	unsigned int		tuning_count;	/* Timer count for re-tuning */
-	unsigned int		tuning_mode;	/* Re-tuning mode supported by host */
-#define SDHCI_TUNING_MODE_1	0
-#define SDHCI_TUNING_MODE_2	1
-#define SDHCI_TUNING_MODE_3	2
 	/* Delay (ms) between tuning commands */
 	int			tuning_delay;
 	int			tuning_loop_count;

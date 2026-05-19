@@ -311,10 +311,6 @@ int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode)
 {
 	struct mci_host *host = sdhci->mci;
 	int err = 0;
-	unsigned int tuning_count = 0;
-
-	if (sdhci->tuning_mode == SDHCI_TUNING_MODE_1)
-		tuning_count = sdhci->tuning_count;
 
 	/*
 	 * The Host Controller needs tuning in case of SDR104 and DDR50
@@ -1196,20 +1192,6 @@ int sdhci_setup_host(struct sdhci *host)
 
 	host->tuning_delay = -1;
 	host->tuning_loop_count = MAX_TUNING_LOOP;
-
-	/* Initial value for re-tuning timer count */
-	host->tuning_count = FIELD_GET(SDHCI_RETUNING_TIMER_COUNT_MASK,
-				       host->caps1);
-
-	/*
-	 * In case Re-tuning Timer is not disabled, the actual value of
-	 * re-tuning timer will be 2 ^ (n - 1).
-	 */
-	if (host->tuning_count)
-		host->tuning_count = 1 << (host->tuning_count - 1);
-
-	/* Re-tuning mode supported by the Host Controller */
-	host->tuning_mode = FIELD_GET(SDHCI_RETUNING_MODE_MASK, host->caps1);
 
 	return 0;
 }

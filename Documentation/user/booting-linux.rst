@@ -98,31 +98,6 @@ with ``global.linux.bootargs.`` will be concatenated to the bootargs:
 
   Kernel command line: console=ttymxc0,115200n8 earlyprintk ignore_loglevel
 
-Additionally all variables starting with ``global.linux.mtdparts.`` are concatenated
-to a ``mtdparts=`` parameter to the kernel. This makes it possible to consistently
-partition devices with the :ref:`command_addpart` command and pass the same string as used
-with addpart to the Kernel:
-
-.. code-block:: sh
-
-  norparts="512k(bootloader),512k(env),4M(kernel),-(root)"
-  nandparts="1M(bootloader),1M(env),4M(kernel),-(root)"
-
-  global linux.mtdparts.nor0="physmap-flash.0:$norparts"
-  global linux.mtdparts.nand0="mxc_nand:$nandparts"
-
-  addpart /dev/nor0 $norparts
-  addpart /dev/nand0 $nandparts
-
-  ...
-
-  bootm zImage
-
-  ...
-
-  Kernel command line: mtdparts=physmap-flash.0:512k(bootloader),512k(env),4M(kernel),-(root);
-			mxc_nand:1M(bootloader),1M(env),4M(kernel),-(root)
-
 Creating root= options for the Kernel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -380,3 +355,33 @@ If the preconfigured paths or names are not suitable, they can be adjusted in
 
 ``boot net`` will then retrieve the kernel (and also the device tree and
 initramfs, if used) over TFTP and boot it.
+
+mtdparts/blkdevparts fixup
+--------------------------
+
+All variables starting with ``global.linux.mtdparts.`` or ``global.linux.blkdevparts``
+are concatenated to a ``mtdparts=`` or ``blkdevparts=`` parameter to the
+kernel, respectively.
+This makes it possible to consistently partition devices with the :ref:`command_addpart`
+command and pass the same string as used with addpart to the Kernel:
+
+.. code-block:: sh
+
+  norparts="512k(bootloader),512k(env),4M(kernel),-(root)"
+  nandparts="1M(bootloader),1M(env),4M(kernel),-(root)"
+
+  global linux.mtdparts.nor0="physmap-flash.0:$norparts"
+  global linux.mtdparts.nand0="mxc_nand:$nandparts"
+
+  addpart /dev/nor0 $norparts
+  addpart /dev/nand0 $nandparts
+
+  ...
+
+  bootm zImage
+
+  ...
+
+  Kernel command line: mtdparts=physmap-flash.0:512k(bootloader),512k(env),4M(kernel),-(root);
+			mxc_nand:1M(bootloader),1M(env),4M(kernel),-(root)
+

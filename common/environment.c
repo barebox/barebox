@@ -53,7 +53,6 @@ struct action_data {
 
 #define TMPDIR "/.defaultenv"
 
-static int global_env_autoprobe = IS_ENABLED(CONFIG_INSECURE);
 static char *default_environment_path;
 
 void default_environment_path_set(const char *path)
@@ -83,7 +82,7 @@ static struct cdev *default_environment_path_search(void)
 	struct cdev *env_cdev = NULL;
 	struct block_device *blk;
 
-	if (!IS_ENABLED(CONFIG_BLOCK) || !global_env_autoprobe)
+	if (!IS_ENABLED(CONFIG_BLOCK) || !IS_ENABLED(CONFIG_ENV_HANDLING_AUTOPROBE))
 		return NULL;
 
 	boot_node = bootsource_of_node_get(NULL);
@@ -126,14 +125,12 @@ const char *default_environment_path_get(void)
 {
 	struct cdev *cdev;
 
-	if (default_environment_path)
+	if (default_environment_path && *default_environment_path)
 		return default_environment_path;
 
 	cdev = default_environment_path_search();
 	if (cdev)
 		default_environment_path = basprintf("/dev/%s", cdev->name);
-	else
-		default_environment_path = xstrdup("/dev/env0");
 
 	return default_environment_path;
 }
@@ -548,10 +545,11 @@ out:
 #ifdef __BAREBOX__
 static int register_env_vars(void)
 {
-	globalvar_add_simple_bool("env.autoprobe", &global_env_autoprobe);
+	globalvar_add_simple_string("env.path", &default_environment_path);
+
 	return 0;
 }
 postcore_initcall(register_env_vars);
-BAREBOX_MAGICVAR(global.env.autoprobe,
-                 "Automatically probe known block devices for environment");
+BAREBOX_MAGICVAR(global.env.path,
+                 "The path the environment is stored");
 #endif

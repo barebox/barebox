@@ -84,6 +84,20 @@ void input_key_get_status(unsigned long *keys, int bits)
 		bitmap_or(keys, keys, idev->keys, bits);
 }
 
+bool input_is_key_pressed(int key)
+{
+	struct input_device *idev;
+
+	if (key > KEY_MAX)
+		return false;
+
+	list_for_each_entry(idev, &input_devices, list)
+		if (test_bit(key, idev->keys))
+			return true;
+
+	return false;
+}
+
 struct input_console {
 	struct console_device console;
 	struct input_notifier notifier;

@@ -740,21 +740,15 @@ static int prt_imx6_init_kvg_yaco(struct prt_imx6_priv *priv)
 
 static int prt_imx6_init_prtvt7(struct prt_imx6_priv *priv)
 {
-	unsigned long *keys;
-
 	of_devices_ensure_probed_by_compatible("gpio-keys");
 
 	/*
 	 * Prefer USB-boot and enable autoboot with timeout when CYCLE-F6 key
 	 * combination is pressed.
 	 */
-	keys = xzalloc((KEY_CYCLEWINDOWS / 8) + 1);
-	input_key_get_status(keys, KEY_CYCLEWINDOWS);
-
-	if (!(test_bit(KEY_CYCLEWINDOWS, keys) && test_bit(KEY_F6, keys)))
+	if (!(input_is_key_pressed(KEY_CYCLEWINDOWS) && input_is_key_pressed(KEY_F6)))
 		priv->no_usb_check = 1;
 
-	free(keys);
 	return 0;
 }
 

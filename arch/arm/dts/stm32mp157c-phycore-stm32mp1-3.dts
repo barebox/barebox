@@ -6,7 +6,7 @@
 
 /dts-v1/;
 
-#include <arm/st/stm32mp157c-phycore-stm32mp1-3.dts>
+#include <arm/st/stm32mp157c-phyboard-sargas-rdk.dts>
 #include "stm32mp151.dtsi"
 
 / {

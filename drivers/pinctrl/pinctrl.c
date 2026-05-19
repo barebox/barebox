@@ -10,10 +10,21 @@
 #include <linux/overflow.h>
 #include <errno.h>
 #include <of.h>
+#include <security/config.h>
+#include <security/policy.h>
 
 struct pinctrl {
 	struct device_node consumer_np;
 };
+
+LIST_HEAD(pinctrl_devices_name_list);
+
+struct pinctrl_devices_name_info {
+	struct device_node *node;
+	const char *name;
+	struct list_head list;
+};
+
 
 static LIST_HEAD(pinctrl_consumer_list);
 
@@ -218,15 +229,48 @@ err:
 	return ret;
 }
 
+static void of_pinctrl_policy_update_or_add(struct device_node *np, const char *name)
+{
+	struct pinctrl_devices_name_info *dev;
+
+	list_for_each_entry(dev, &pinctrl_devices_name_list, list) {
+		if (dev->node == np) {
+			free_const(dev->name);
+			dev->name = xstrdup_const(name);
+			return;
+		}
+	}
+	dev = xzalloc(sizeof(*dev));
+	dev->node = np;
+	dev->name = xstrdup_const(name);
+	list_add(&dev->list, &pinctrl_devices_name_list);
+}
+
 int of_pinctrl_select_state(struct device_node *np, const char *name)
 {
 	struct pinctrl *pinctrl = of_pinctrl_get(np);
-	struct pinctrl_state *state;
+	struct pinctrl_state *state = NULL;
 
 	if (!of_find_property(np, "pinctrl-0", NULL))
 		return 0;
 
-	state = pinctrl_lookup_state(pinctrl, name);
+	if (IS_ENABLED(CONFIG_SECURITY_POLICY_PINCTRL)) {
+		const struct security_policy *active_policy = security_policy_get_active();
+
+		of_pinctrl_policy_update_or_add(np, name);
+
+		if (active_policy && active_policy->name && name) {
+			char *policy_pinctrl;
+
+			policy_pinctrl = basprintf("barebox,policy-%s-%s",
+						   active_policy->name,
+						   name);
+			state = pinctrl_lookup_state(pinctrl, policy_pinctrl);
+			free(policy_pinctrl);
+		}
+	}
+	if (IS_ERR_OR_NULL(state))
+		state = pinctrl_lookup_state(pinctrl, name);
 	if (IS_ERR(state))
 		return PTR_ERR(state);
 
@@ -331,3 +375,28 @@ void of_pinctrl_unregister_consumer(struct device *dev)
 	}
 }
 #endif
+
+static int pinctrl_change_policy(struct notifier_block *nb,
+				  unsigned long _ignored,
+				  void *_data)
+{
+	struct pinctrl_devices_name_info *dev;
+
+	list_for_each_entry(dev, &pinctrl_devices_name_list, list) {
+		of_pinctrl_select_state(dev->node, dev->name);
+	}
+	return 0;
+}
+
+static struct notifier_block pinctrl_policy_notifier = {
+	.notifier_call = pinctrl_change_policy
+};
+
+static int pinctrl_policy_init(void)
+{
+	if (!IS_ENABLED(CONFIG_SECURITY_POLICY_PINCTRL))
+		return 0;
+
+	return notifier_chain_register(&sconfig_name_notifier, &pinctrl_policy_notifier);
+}
+pure_initcall(pinctrl_policy_init);

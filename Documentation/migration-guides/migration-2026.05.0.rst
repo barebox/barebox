@@ -40,3 +40,12 @@ Scripts that **read** the parameter will now receive ``"disabled"`` or
 ``"enabled"`` instead of ``"0"`` or ``"1"``.
 
 Scripts that **write** ``"0"`` or ``"1"`` continue to work.
+
+global.linux.bootargs.* appending order
+---------------------------------------
+
+If barebox was configured to automatically generate any of the ``root``,
+``rootwait``, ``earlycon``, ``systemd.machine_id``, ``systemd.hostname``
+or ``barebox.security.policy`` kernel command line options, they will be
+appended onto the final kernel command line
+:ref:`**after** all other options <bootargs_concat_order>`.

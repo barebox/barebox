@@ -37,7 +37,12 @@ static void sconfig_print(const struct security_policy *policy)
 static int sconfig_command_notify(struct notifier_block *nb,
 				  unsigned long opt, void *unused)
 {
-	bool allow = is_allowed(NULL, opt);
+	bool allow;
+
+	if (opt >= SCONFIG_NUM)
+		return 0;
+
+	allow = is_allowed(NULL, opt);
 
 	printf("%s%s%s%s\n", allow ? green : red, allow ? "+" : "-", nc,
 	       sconfig_names[opt]);
@@ -109,6 +114,7 @@ out:
 static struct security_policy *alloc_policy(void)
 {
 	struct security_policy *override;
+	const struct security_policy *active_policy = security_policy_get_active();
 
 	override = xmalloc(sizeof(*override));
 
@@ -132,6 +138,7 @@ static void free_policy(struct security_policy *policy)
 
 static int do_sconfig(int argc, char *argv[])
 {
+	const struct security_policy *active_policy = security_policy_get_active();
 	struct security_policy *override;
 	bool allow_color;
 	int i, ret;

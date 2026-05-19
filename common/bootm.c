@@ -20,6 +20,20 @@
 #include <magicvar.h>
 #include <zero_page.h>
 #include <security/config.h>
+#include <security/policy.h>
+
+/*
+ * All device parameter iteration happens in lexicographical order.
+ * To ensure that bootm options are consistently applied before or after
+ * other options from the environment or boot configuration files, we
+ * employ following convention for the prefix:
+ *
+ *   !		0x21 is less than any non-space printable character
+ *   ~		0x7e is greater than any printable character
+ *
+ * Users will never see those as bootm_boot_cleanup() will delete them again.
+ */
+#define LINUX_BOOTARGS_BOOTM_LATE	"linux.bootargs.~bootm."
 
 static LIST_HEAD(handler_list);
 static struct sconfig_notifier_block sconfig_notifier;
@@ -71,6 +85,7 @@ static int bootm_dryrun;
 static int bootm_earlycon;
 static int bootm_provide_machine_id;
 static int bootm_provide_hostname;
+static int bootm_provide_policy;
 static int bootm_verbosity;
 static int bootm_efi_mode = BOOTM_EFI_AVAILABLE;
 
@@ -93,6 +108,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->appendroot = bootm_appendroot;
 	data->provide_machine_id = bootm_provide_machine_id;
 	data->provide_hostname = bootm_provide_hostname;
+	data->provide_policy = bootm_provide_policy;
 	data->verbose = bootm_verbosity;
 	data->dryrun = bootm_dryrun;
 	data->efi_boot = bootm_efi_mode;
@@ -114,6 +130,7 @@ void bootm_data_restore_defaults(const struct bootm_data *data)
 	bootm_appendroot = data->appendroot;
 	bootm_provide_machine_id = data->provide_machine_id;
 	bootm_provide_hostname = data->provide_hostname;
+	bootm_provide_policy = data->provide_policy;
 	bootm_verbosity = data->verbose;
 	bootm_dryrun = data->dryrun;
 	bootm_efi_mode = data->efi_boot;
@@ -646,7 +663,7 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 
 			rootarg = format_root_bootarg(bootm_data->root_param, root, rootopts);
 			pr_info("Adding \"%s\" to Kernel commandline\n", rootarg);
-			globalvar_add_simple("linux.bootargs.bootm.appendroot",
+			globalvar_add_simple(LINUX_BOOTARGS_BOOTM_LATE "appendroot",
 					     rootarg);
 			free(rootarg);
 		}
@@ -668,7 +685,7 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 			earlycon = "earlycon";
 
 		pr_info("Adding \"%s\" to Kernel commandline\n", earlycon);
-		globalvar_add_simple("linux.bootargs.bootm.earlycon", earlycon);
+		globalvar_add_simple(LINUX_BOOTARGS_BOOTM_LATE "earlycon", earlycon);
 	}
 
 	if (bootm_data->provide_machine_id) {
@@ -682,7 +699,7 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 		}
 
 		machine_id_bootarg = basprintf("systemd.machine_id=%s", machine_id);
-		globalvar_add_simple("linux.bootargs.machine_id", machine_id_bootarg);
+		globalvar_add_simple(LINUX_BOOTARGS_BOOTM_LATE "machine_id", machine_id_bootarg);
 		free(machine_id_bootarg);
 	}
 
@@ -710,8 +727,23 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 					     hostname, suffix ? "-" : "",
 					     suffix ?: "");
 
-		globalvar_add_simple("linux.bootargs.hostname", hostname_bootarg);
+		globalvar_add_simple(LINUX_BOOTARGS_BOOTM_LATE "hostname", hostname_bootarg);
 		free(hostname_bootarg);
+	}
+
+	if (IS_ENABLED(CONFIG_SECURITY_POLICY) && bootm_data->provide_policy) {
+		char *policy_bootargs;
+		const struct security_policy *active_policy = security_policy_get_active();
+
+		if (!active_policy) {
+			pr_err("Providing policy is enabled but no policy is selected\n");
+			ret = -EINVAL;
+			goto err_out;
+		}
+
+		policy_bootargs = basprintf("barebox.security.policy=%s", active_policy->name);
+		globalvar_add_simple(LINUX_BOOTARGS_BOOTM_LATE "policy", policy_bootargs);
+		free(policy_bootargs);
 	}
 
 	return data;
@@ -773,8 +805,7 @@ void bootm_boot_cleanup(struct image_data *data)
 	if (data->of_root_node)
 		of_delete_node(data->of_root_node);
 
-	globalvar_remove("linux.bootargs.bootm.earlycon");
-	globalvar_remove("linux.bootargs.bootm.appendroot");
+	globalvar_remove(LINUX_BOOTARGS_BOOTM_LATE  "*");
 	free(data->os_header);
 	free(data->os_file);
 	free(data->oftree_file);
@@ -845,6 +876,8 @@ static int bootm_init(void)
 	globalvar_add_simple_bool("bootm.earlycon", &bootm_earlycon);
 	globalvar_add_simple_bool("bootm.provide_machine_id", &bootm_provide_machine_id);
 	globalvar_add_simple_bool("bootm.provide_hostname", &bootm_provide_hostname);
+	if (IS_ENABLED(CONFIG_SECURITY_POLICY))
+		globalvar_add_simple_bool("bootm.provide_policy", &bootm_provide_policy);
 	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
 		globalvar_add_simple("bootm.initrd", NULL);
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
@@ -895,3 +928,6 @@ BAREBOX_MAGICVAR(global.bootm.root_dev, "bootm default root device (overrides de
 BAREBOX_MAGICVAR(global.bootm.root_param, "bootm root parameter name (normally 'root' for root=/dev/...)");
 BAREBOX_MAGICVAR(global.bootm.provide_machine_id, "If true, append systemd.machine_id=$global.machine_id to Kernel command line");
 BAREBOX_MAGICVAR(global.bootm.provide_hostname, "If true, append systemd.hostname=$global.hostname to Kernel command line");
+#ifdef CONFIG_SECURITY_POLICY
+BAREBOX_MAGICVAR(global.bootm.provide_policy, "Add barebox.security.policy= option to Kernel");
+#endif

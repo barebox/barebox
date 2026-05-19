@@ -71,13 +71,19 @@ static void test_of_basics(struct device_node *root)
 
 static void test_of_property_strings(struct device_node *root)
 {
-	struct device_node *np1, *np2, *np3, *np4;
+	struct device_node *np1, *np2, *np3, *np4, *np5;
 	char properties[] = "ayy\0bee\0sea";
+	static const char * const prop_array[] = {
+		"ayy",
+		"bee\0\0\0",
+		"sea\0",
+	};
 
 	np1 = of_new_node(root, "np1");
 	np2 = of_new_node(root, "np2");
 	np3 = of_new_node(root, "np3");
 	np4 = of_new_node(root, "np4");
+	np5 = of_new_node(root, "np5");
 
 	of_property_sprintf(np1, "property-single", "%c%c%c", 'a', 'y', 'y');
 
@@ -108,6 +114,12 @@ static void test_of_property_strings(struct device_node *root)
 	of_prepend_property(np4, "property-multi", "ayy", 4);
 
 	assert_equal(np3, np4);
+
+	of_property_write_string_array(np5, "property-single", prop_array, 1);
+
+	of_property_write_string_array(np5, "property-multi", prop_array, 3);
+
+	assert_equal(np4, np5);
 }
 
 static void __init test_of_manipulation(void)

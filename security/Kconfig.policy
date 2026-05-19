@@ -49,7 +49,8 @@ config SECURITY_POLICY_INIT
 	prompt "Initial security policy"
 	help
 	  The policy named here will be automatically selected the first
-	  time a security policy is to be consulted.
+	  time a security policy is to be consulted or the currently active
+	  policy is queried.
 	  It's recommended to use a restrictive policy here and remove
 	  the restrictions if needed instead of the other way round.
 
@@ -67,6 +68,18 @@ config SECURITY_POLICY_DEFAULT_PERMISSIVE
 	  This is a development aid and unsuitable for use in the field:
 	  A security policy should always be selected, either early on by
 	  board code or via CONFIG_SECURITY_POLICY_INIT.
+
+config SECURITY_POLICY_PINCTRL
+	bool "Update pinctrl based on policy-name"
+	help
+	  When selecting a pinctrl with the name <pinctrlname>, if there exists
+	  a pinctrl with the name barebox,policy-<policyname>-<pinctrlname>,
+	  then this pinctrl will be used instead.
+	  This could be used for example to disable the RX (and TX) Pin in
+	  lockdown mode for the console or disable the usage of SPI.
+
+	  Enabling this option does increase the boottime.
+	  If unsure, say N.
 
 config SECURITY_POLICY_PATH
 	string

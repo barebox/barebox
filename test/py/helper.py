@@ -6,6 +6,7 @@ import os
 import re
 import shlex
 import subprocess
+import tempfile
 
 
 def parse_config(lines):
@@ -198,6 +199,58 @@ def skip_disabled(config, *options):
 
         if bool(undefined):
             pytest.skip("skipping test due to disabled " + (",".join(undefined)) + " dependency")
+
+
+def parse_ppm(path):
+    """Parse a PPM P6 (binary) image file.
+
+    Returns (width, height, data) where data is bytes of RGB pixel values.
+    Pixel (x, y) starts at offset (y * width + x) * 3.
+    """
+    with open(path, 'rb') as f:
+        magic = f.readline().strip()
+        assert magic == b'P6', f"Expected P6, got {magic}"
+
+        line = f.readline()
+        while line.startswith(b'#'):
+            line = f.readline()
+
+        width, height = map(int, line.split())
+        maxval = int(f.readline().strip())
+        assert maxval == 255
+
+        data = f.read()
+        expected = width * height * 3
+        assert len(data) == expected, \
+            f"Expected {expected} bytes, got {len(data)}"
+
+    return width, height, data
+
+
+def screendump(qemu, path=None):
+    """Capture a QEMU framebuffer screenshot via QMP screendump.
+
+    Args:
+        qemu: A labgrid QEMUDriver instance.
+        path: Optional host path for the PPM file. If None, a temp file is used.
+
+    Returns:
+        (width, height, data) tuple from parse_ppm().
+    """
+    if qemu is None:
+        pytest.skip("screendump requires a QEMU target")
+
+    cleanup = path is None
+    if path is None:
+        fd, path = tempfile.mkstemp(suffix='.ppm')
+        os.close(fd)
+
+    try:
+        qemu.monitor_command('screendump', {'filename': path})
+        return parse_ppm(path)
+    finally:
+        if cleanup:
+            os.unlink(path)
 
 
 def ensure_debian_iso(env, destdir):

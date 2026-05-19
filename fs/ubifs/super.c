@@ -1128,6 +1128,9 @@ static void kill_ubifs_super(struct super_block *s)
  */
 static void inode_slab_ctor(void *obj)
 {
+	struct ubifs_inode *ui = obj;
+
+	memset(&ui->vfs_inode, 0, sizeof(ui->vfs_inode));
 }
 
 static int __init ubifs_init(void)

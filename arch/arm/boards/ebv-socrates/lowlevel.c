@@ -9,7 +9,7 @@
 #include "sequencer_auto_ac_init.c"
 #include "iocsr_config_cyclone5.c"
 
-#include <mach/socfpga/lowlevel.h>
+#include <mach/socfpga/cyclone5-lowlevel.h>
 
 static inline void ledon(void)
 {

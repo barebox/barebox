@@ -4,7 +4,6 @@
  */
 
 #include <arm64/intel/socfpga_agilex5.dtsi>
-#include "socfpga_agilex5.dtsi"
 
 / {
 	model = "SoCFPGA Agilex5 AXE5-Eagle";
@@ -82,9 +81,10 @@
 		#size-cells = <0>;
 		compatible = "snps,dwmac-mdio";
 		emac2_phy0: ethernet-phy@1 {
-			snps,reset-gpio = <&portb 10 GPIO_ACTIVE_LOW>;
-			snps,reset-delays-us = <0 10000 10000>;
 			reg = <0x1>;
+			reset-gpios = <&portb 10 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <10000>;
 			adi,rx-internal-delay-ps = <2000>;
 			adi,tx-internal-delay-ps = <2000>;
 		};

@@ -1,15 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-if ARCH_SOCFPGA
-
-config ARCH_SOCFPGA_XLOAD
-	bool
-	depends on ARCH_SOCFPGA_CYCLONE5
-	prompt "Build SoCFPGA preloader image"
-
-menu "SoCFPGA boards"
-
-if 32BIT
+menu "SoCFPGA Features"
+	depends on ARCH_SOCFPGA
 
 config ARCH_SOCFPGA_CYCLONE5
 	bool
@@ -28,7 +20,20 @@ config ARCH_SOCFPGA_ARRIA10
 	select OFTREE
 	select MCI_DW_PBL
 
-comment "Cyclone5 boards"
+config ARCH_SOCFPGA_AGILEX5
+	bool
+	select CPU_V8
+	select RESET_CONTROLLER
+	select RESET_SIMPLE
+	select OFDEVICE
+	select OFTREE
+	select FIRMWARE_AGILEX5_ATF
+	select ARM_ATF
+	select ARM_SMCCC
+
+if 32BIT
+
+comment "Cyclone V boards"
 
 config MACH_SOCFPGA_ALTERA_SOCDK
 	select ARCH_SOCFPGA_CYCLONE5
@@ -58,7 +63,7 @@ config MACH_SOCFPGA_TERASIC_SOCKIT
 	select ARCH_SOCFPGA_CYCLONE5
 	bool "Terasic SoCKit"
 
-comment "Arria10 boards"
+comment "Arria 10 boards"
 
 config MACH_SOCFPGA_ENCLUSTRA_AA1
 	select ARCH_SOCFPGA_ARRIA10
@@ -72,26 +77,19 @@ endif
 
 if 64BIT
 
-config ARCH_SOCFPGA_AGILEX5
-	bool
-	select CPU_V8
-	select RESET_CONTROLLER
-	select RESET_SIMPLE
-	select OFDEVICE
-	select OFTREE
-	select FIRMWARE_AGILEX5_ATF
-	select ARM_ATF
-	select ARM_SMCCC
-
-
-comment "SoCFPGA Agilex5 boards"
+comment "Agilex 5 boards"
 
 config MACH_SOCFPGA_ARROW_AXE5_EAGLE
-       bool "Arrow AXE5 Eagle"
-       select ARCH_SOCFPGA_AGILEX5
+	bool "Arrow AXE5 Eagle"
+	select ARCH_SOCFPGA_AGILEX5
 
 endif
+
+comment "board features"
+
+config ARCH_SOCFPGA_XLOAD
+	bool
+	depends on ARCH_SOCFPGA_CYCLONE5
+	prompt "Build SoCFPGA preloader image"
 
 endmenu
-
-endif

@@ -9,6 +9,8 @@
 
 #include <linux/bitops.h>
 
+#include <mach/socfpga/soc64-regs.h>
+
 struct socfpga_firwall_l4_per {
 	u32	nand;		/* 0x00 */
 	u32	nand_data;

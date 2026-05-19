@@ -5,14 +5,13 @@
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <pbl.h>
+#include <mach/socfpga/barebox-arm.h>
 #include <mach/socfpga/debug_ll.h>
 #include <mach/socfpga/init.h>
 #include <mach/socfpga/generic.h>
 #include <mach/socfpga/soc64-regs.h>
 
 extern char __dtb_z_socfpga_agilex5_axe5_eagle_start[];
-
-#define AXE5_STACKTOP	(SZ_512K)
 
 static noinline void axe5_eagle_continue(void)
 {
@@ -23,28 +22,10 @@ static noinline void axe5_eagle_continue(void)
 
 	pr_debug("Lowlevel init done\n");
 
-	writel(0x14, SOCFPGA_PINMUX_ADDRESS + 0x224);
-	writel(0x14, SOCFPGA_PINMUX_ADDRESS + 0x228);
-	writel(0x14, SOCFPGA_PINMUX_ADDRESS + 0x23c);
-	writel(0x14, SOCFPGA_PINMUX_ADDRESS + 0x234);
-	writel(0x14, SOCFPGA_PINMUX_ADDRESS + 0x248);
-	writel(0x14, SOCFPGA_PINMUX_ADDRESS + 0x24c);
-
-	writel(0x410, 0x10c03304);
-	writel(0x410, 0x10c03300);
-	/*
-	 * reset the phy via GPIO10. We currently haven't got enough space
-	 * to enable the gpio driver in barebox.
-	 */
-	writel(0x000, 0x10c03300);
-	/* FIXME:  can this be decreased? */
-	mdelay(1000);
-	writel(0x410, 0x10c03300);
-
 	agilex5_barebox_entry(__dtb_z_socfpga_agilex5_axe5_eagle_start);
 }
 
-ENTRY_FUNCTION_WITHSTACK(start_socfpga_agilex5_axe5_eagle, AXE5_STACKTOP, r0, r1, r2)
+ENTRY_FUNCTION_AGILEX5(start_socfpga_agilex5_axe5_eagle)
 {
 	if (current_el() == 3)
 		socfpga_agilex5_cpu_lowlevel_init();

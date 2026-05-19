@@ -12,6 +12,7 @@
 #ifndef _BAREBOX_RISCV_H_
 #define _BAREBOX_RISCV_H_
 
+#include <pbl.h>
 #include <linux/sizes.h>
 #include <asm-generic/memory_layout.h>
 #include <linux/kernel.h>

@@ -12,8 +12,6 @@
 
 #define	ESDHC_CTRL_D3CD			0x08
 
-#define  SDHCI_CTRL_VDD_180         0x0008
-
 #define ESDHC_MIX_CTRL			0x48
 #define  ESDHC_MIX_CTRL_DDREN		(1 << 3)
 #define  ESDHC_MIX_CTRL_AC23EN		(1 << 7)

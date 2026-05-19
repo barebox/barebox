@@ -18,6 +18,8 @@
 #define DWCMSHC_VER_TYPE		0x504
 #define DWCMSHC_HOST_CTRL3		0x508
 #define DWCMSHC_EMMC_CONTROL		0x52c
+#define  DWCMSHC_CARD_IS_EMMC		BIT(0)
+#define  DWCMSHC_ENHANCED_STROBE	BIT(8)
 #define DWCMSHC_EMMC_ATCTRL		0x540
 
 /* Rockchip specific Registers */
@@ -78,10 +80,23 @@ enum {
 	CLK_MAX,
 };
 
+struct rk_sdhci_soc_data {
+	u8 revision;
+};
+
+static const struct rk_sdhci_soc_data rk_sdhci_rk3568_data = {
+	.revision = 0,
+};
+
+static const struct rk_sdhci_soc_data rk_sdhci_rk35xx_data = {
+	.revision = 1,
+};
+
 struct rk_sdhci_host {
 	struct mci_host		mci;
 	struct sdhci		sdhci;
 	struct clk_bulk_data	clks[CLK_MAX];
+	const struct rk_sdhci_soc_data *soc;
 };
 
 
@@ -132,9 +147,14 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 
 	host->mci.ios.clock = 0;
 
-	/* DO NOT TOUCH THIS SETTING */
-	extra = DWCMSHC_EMMC_DLL_DLYENA |
-		DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL;
+	/*
+	 * Revision 0 IPs (rk3568) need DLL_RXCLK_NO_INVERTER; revision 1
+	 * (rk3576, rk3588 and later) must leave the source-select field at
+	 * 0 (inverted).
+	 */
+	extra = DWCMSHC_EMMC_DLL_DLYENA;
+	if (host->soc->revision == 0)
+		extra |= DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL;
 	sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_RXCLK, extra);
 
 	if (clock == 0)
@@ -146,12 +166,43 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 
 	clk_set_rate(host->clks[CLK_CORE].clk, clock);
 
+	extra = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL);
+
+	if (clock > 26000000)
+		extra |= SDHCI_CTRL_HISPD;
+	else
+		extra &= ~SDHCI_CTRL_HISPD;
+
+	sdhci_write8(&host->sdhci, SDHCI_HOST_CONTROL, extra);
+
 	sdhci_set_clock(&host->sdhci, clock, clk_get_rate(host->clks[CLK_CORE].clk));
 
 	/* Disable cmd conflict check */
 	extra = sdhci_read32(&host->sdhci, DWCMSHC_HOST_CTRL3);
 	extra &= ~BIT(0);
 	sdhci_write32(&host->sdhci, DWCMSHC_HOST_CTRL3, extra);
+
+	/* Disable clock while config DLL */
+	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, 0);
+
+	/*
+	 * HS400 needs the dwcmshc-specific value (0x7) in HOST_CONTROL2's UHS
+	 * field rather than the standard SDHCI_CTRL_HS400 (0x5) the generic
+	 * sdhci_set_uhs_signaling() wrote. It also requires CARD_IS_EMMC in
+	 * EMMC_CONTROL to enable the data strobe sampling path.
+	 */
+	if (host->mci.ios.timing == MMC_TIMING_MMC_HS400) {
+		u16 ctrl_2;
+
+		ctrl_2 = sdhci_read16(&host->sdhci, SDHCI_HOST_CONTROL2);
+		ctrl_2 &= ~SDHCI_CTRL_UHS_MASK;
+		ctrl_2 |= DWCMSHC_CTRL_HS400;
+		sdhci_write16(&host->sdhci, SDHCI_HOST_CONTROL2, ctrl_2);
+
+		extra = sdhci_read16(&host->sdhci, DWCMSHC_EMMC_CONTROL);
+		extra |= DWCMSHC_CARD_IS_EMMC;
+		sdhci_write16(&host->sdhci, DWCMSHC_EMMC_CONTROL, extra);
+	}
 
 	if (clock <= 52000000) {
 		/*
@@ -172,7 +223,7 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 			DLL_STRBIN_DELAY_NUM_SEL |
 			DLL_STRBIN_DELAY_NUM_DEFAULT << DLL_STRBIN_DELAY_NUM_OFFSET;
 		sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_STRBIN, extra);
-		return;
+		goto enable_clock;
         }
 
 	/* Reset DLL */
@@ -190,16 +241,34 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 				 500 * USEC_PER_MSEC);
 	if (err) {
 		dev_err(host->mci.hw_dev, "DLL lock timeout!\n");
-		return;
+		goto enable_clock;
 	}
 
 	extra = 0x1 << 16 | /* tune clock stop en */
-		0x2 << 17 | /* pre-change delay */
+		0x3 << 17 | /* pre-change delay */
 		0x3 << 19;  /* post-change delay */
 	sdhci_write32(&host->sdhci, DWCMSHC_EMMC_ATCTRL, extra);
 
+	/*
+	 * On revision 1 IPs, HS400 needs a 90-degree TX clock tap together
+	 * with a matching CMDOUT-tap programmed via DECMSHC_EMMC_DLL_CMDOUT.
+	 * Revision 0 keeps the default 0x10 TX tap and leaves CMDOUT alone.
+	 */
+	if (host->soc->revision == 1 &&
+	    host->mci.ios.timing == MMC_TIMING_MMC_HS400) {
+		txclk_tapnum = DLL_TXCLK_TAPNUM_90_DEGREES;
+
+		extra = DLL_CMDOUT_SRC_CLK_NEG |
+			DLL_CMDOUT_EN_SRC_CLK_NEG |
+			DWCMSHC_EMMC_DLL_DLYENA |
+			DLL_CMDOUT_TAPNUM_90_DEGREES |
+			DLL_CMDOUT_TAPNUM_FROM_SW;
+		sdhci_write32(&host->sdhci, DECMSHC_EMMC_DLL_CMDOUT, extra);
+	}
+
 	extra = DWCMSHC_EMMC_DLL_DLYENA |
 		DLL_TXCLK_TAPNUM_FROM_SW |
+		DLL_RXCLK_NO_INVERTER << DWCMSHC_EMMC_DLL_RXCLK_SRCSEL |
 		txclk_tapnum;
 	sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_TXCLK, extra);
 
@@ -207,12 +276,13 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 		DLL_STRBIN_TAPNUM_DEFAULT |
 		DLL_STRBIN_TAPNUM_FROM_SW;
 	sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_STRBIN, extra);
+enable_clock:
+	sdhci_enable_clk(&host->sdhci, 0);
 }
 
 static void rk_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
-	u16 val;
 
 	/* stop clock */
 	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, 0);
@@ -221,15 +291,6 @@ static void rk_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 		rk_sdhci_set_clock(host, ios->clock);
 
 	sdhci_set_bus_width(&host->sdhci, ios->bus_width);
-
-	val = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL);
-
-	if (ios->clock > 26000000)
-		val |= SDHCI_CTRL_HISPD;
-	else
-		val &= ~SDHCI_CTRL_HISPD;
-
-	sdhci_write8(&host->sdhci, SDHCI_HOST_CONTROL, val);
 }
 
 static void print_error(struct rk_sdhci_host *host, int cmdidx)
@@ -245,7 +306,7 @@ static int rk_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
 	struct mci_data *data = cmd->data;
-	u32 command, xfer;
+	u32 mask, command, xfer;
 	int ret;
 	dma_addr_t dma;
 
@@ -254,6 +315,10 @@ static int rk_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 		return ret;
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
+
+	mask = SDHCI_INT_CMD_COMPLETE;
+	if (cmd->resp_type & MMC_RSP_BUSY)
+		mask |= SDHCI_INT_XFER_COMPLETE;
 
 	sdhci_write8(&host->sdhci, SDHCI_TIMEOUT_CONTROL, 0xe);
 
@@ -268,7 +333,7 @@ static int rk_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
 	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
 
-	ret = sdhci_wait_for_done(&host->sdhci, SDHCI_INT_CMD_COMPLETE);
+	ret = sdhci_wait_for_done(&host->sdhci, mask);
 	if (ret) {
 		sdhci_teardown_data(&host->sdhci, data, dma);
 		goto error;
@@ -290,11 +355,31 @@ error:
 	return ret;
 }
 
+static int rk_sdhci_execute_tuning(struct mci_host *mci, u32 opcode)
+{
+	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
+
+	return sdhci_execute_tuning(&host->sdhci, opcode);
+}
+
+static void rk_sdhci_hs400_enhanced_strobe(struct mci_host *mci,
+					   struct mci_ios *ios)
+{
+	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
+	u32 val;
+
+	val = sdhci_read32(&host->sdhci, DWCMSHC_EMMC_CONTROL);
+	val |= DWCMSHC_ENHANCED_STROBE;
+	sdhci_write32(&host->sdhci, DWCMSHC_EMMC_CONTROL, val);
+}
+
 static const struct mci_ops rk_sdhci_ops = {
 	.send_cmd = rk_sdhci_send_cmd,
 	.set_ios = rk_sdhci_set_ios,
 	.init = rk_sdhci_init,
 	.card_present = rk_sdhci_card_present,
+	.execute_tuning = rk_sdhci_execute_tuning,
+	.hs400_enhanced_strobe = rk_sdhci_hs400_enhanced_strobe,
 };
 
 static int rk_sdhci_probe(struct device *dev)
@@ -307,6 +392,10 @@ static int rk_sdhci_probe(struct device *dev)
 	host = xzalloc(sizeof(*host));
 
 	mci = &host->mci;
+
+	host->soc = device_get_match_data(dev);
+	if (!host->soc)
+		return -ENODEV;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
@@ -341,10 +430,12 @@ static int rk_sdhci_probe(struct device *dev)
 
 	mci_of_parse(&host->mci);
 
-	/* HS200 not supported by this driver at the moment */
-	host->sdhci.quirks2 = SDHCI_QUIRK2_BROKEN_HS200;
-
 	sdhci_setup_host(&host->sdhci);
+
+	ret = sdhci_setup_adma(&host->sdhci);
+	if (ret && ret != -ENOTSUPP)
+		dev_warn(dev, "ADMA setup failed (%pe), falling back to SDMA\n",
+			 ERR_PTR(ret));
 
 	dev->priv = host;
 
@@ -353,12 +444,17 @@ static int rk_sdhci_probe(struct device *dev)
 
 static __maybe_unused struct of_device_id rk_sdhci_compatible[] = {
 	{
-		.compatible = "rockchip,rk3562-dwcmshc"
-	},
-	{
-		.compatible = "rockchip,rk3568-dwcmshc"
+		.compatible = "rockchip,rk3562-dwcmshc",
+		.data = &rk_sdhci_rk3568_data,
 	}, {
-		.compatible = "rockchip,rk3588-dwcmshc"
+		.compatible = "rockchip,rk3568-dwcmshc",
+		.data = &rk_sdhci_rk3568_data,
+	}, {
+		.compatible = "rockchip,rk3576-dwcmshc",
+		.data = &rk_sdhci_rk35xx_data,
+	}, {
+		.compatible = "rockchip,rk3588-dwcmshc",
+		.data = &rk_sdhci_rk35xx_data,
 	}, {
 		/* sentinel */
 	}

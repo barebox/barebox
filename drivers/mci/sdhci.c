@@ -311,10 +311,6 @@ int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode)
 {
 	struct mci_host *host = sdhci->mci;
 	int err = 0;
-	unsigned int tuning_count = 0;
-
-	if (sdhci->tuning_mode == SDHCI_TUNING_MODE_1)
-		tuning_count = sdhci->tuning_count;
 
 	/*
 	 * The Host Controller needs tuning in case of SDR104 and DDR50
@@ -353,7 +349,7 @@ int sdhci_execute_tuning(struct sdhci *sdhci, u32 opcode)
 
 	sdhci_start_tuning(sdhci);
 
-	sdhci->tuning_err = __sdhci_execute_tuning(sdhci, opcode);
+	err = __sdhci_execute_tuning(sdhci, opcode);
 
 	sdhci_end_tuning(sdhci);
 out:
@@ -585,6 +581,13 @@ static void sdhci_config_dma(struct sdhci *host)
 	ctrl = sdhci_read8(host, SDHCI_HOST_CONTROL);
 	/* Note if DMA Select is zero then SDMA is selected */
 	ctrl &= ~SDHCI_CTRL_DMA_MASK;
+
+	if (host->flags & SDHCI_USE_ADMA) {
+		ctrl |= SDHCI_CTRL_ADMA32;
+		if (host->flags & SDHCI_USE_64_BIT_DMA && !host->v4_mode)
+			ctrl |= SDHCI_CTRL_ADMA64;
+	}
+
 	sdhci_write8(host, SDHCI_HOST_CONTROL, ctrl);
 
 	if (host->flags & SDHCI_USE_64_BIT_DMA) {
@@ -601,11 +604,69 @@ static void sdhci_config_dma(struct sdhci *host)
 	}
 }
 
+static int sdhci_adma_write_desc(struct sdhci *host, void **desc,
+				 dma_addr_t addr, int len, unsigned int cmd)
+{
+	void *desc_end = host->adma_table + host->adma_table_sz;
+	struct sdhci_adma2_64_desc *dma_desc = *desc;
+
+	if (*desc + host->desc_sz > desc_end)
+		return -ENOSPC;
+
+	/* 32-bit and 64-bit descriptors share these fields. */
+	dma_desc->cmd = cpu_to_le16(cmd);
+	dma_desc->len = cpu_to_le16(len);
+	dma_desc->addr_lo = cpu_to_le32(lower_32_bits(addr));
+
+	if (host->flags & SDHCI_USE_64_BIT_DMA)
+		dma_desc->addr_hi = cpu_to_le32(upper_32_bits(addr));
+
+	*desc += host->desc_sz;
+
+	return 0;
+}
+
+/*
+ * Build the ADMA2 descriptor table for a single contiguous DMA buffer.
+ * Each entry of the table covers up to SDHCI_ADMA2_MAX_LEN bytes; longer
+ * transfers are split across multiple descriptors.
+ */
+static int sdhci_adma_build_table(struct sdhci *host, dma_addr_t addr,
+				  unsigned int len)
+{
+	void *desc = host->adma_table;
+	int ret;
+
+	while (len) {
+		unsigned int chunk = min_t(unsigned int, len,
+					   SDHCI_ADMA2_MAX_LEN);
+
+		/*
+		 * The length field is 16-bit; a length of 0 encodes
+		 * SDHCI_ADMA2_MAX_LEN bytes per the SD Host Controller
+		 * specification.
+		 */
+		ret = sdhci_adma_write_desc(host, &desc, addr, chunk & 0xffff,
+					    ADMA2_TRAN_VALID);
+		if (ret)
+			return ret;
+
+		addr += chunk;
+		len -= chunk;
+	}
+
+	/* Append a terminating descriptor (nop, end, valid). */
+	ret = sdhci_adma_write_desc(host, &desc, 0, 0, ADMA2_NOP_END_VALID);
+
+	return ret;
+}
+
 void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			  dma_addr_t *dma)
 {
 	struct device *dev = sdhci_dev(sdhci);
 	int nbytes;
+	int ret;
 
 	if (!data) {
 		if (dma)
@@ -633,7 +694,22 @@ void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 	}
 
 	sdhci_config_dma(sdhci);
-	sdhci_set_sdma_addr(sdhci, *dma);
+
+	if (sdhci->flags & SDHCI_USE_ADMA) {
+		ret = sdhci_adma_build_table(sdhci, *dma, nbytes);
+		if (ret) {
+			dev_err(dev, "ADMA table build failed: %pe\n",
+				ERR_PTR(ret));
+			dma_unmap_single(dev, *dma, nbytes,
+					 (data->flags & MMC_DATA_READ) ?
+					 DMA_FROM_DEVICE : DMA_TO_DEVICE);
+			*dma = SDHCI_NO_DMA;
+			return;
+		}
+		sdhci_set_adma_addr(sdhci, sdhci->adma_addr);
+	} else {
+		sdhci_set_sdma_addr(sdhci, *dma);
+	}
 }
 
 void sdhci_teardown_data(struct sdhci *sdhci,
@@ -1197,19 +1273,80 @@ int sdhci_setup_host(struct sdhci *host)
 	host->tuning_delay = -1;
 	host->tuning_loop_count = MAX_TUNING_LOOP;
 
-	/* Initial value for re-tuning timer count */
-	host->tuning_count = FIELD_GET(SDHCI_RETUNING_TIMER_COUNT_MASK,
-				       host->caps1);
+	return 0;
+}
+
+/**
+ * sdhci_setup_adma() - allocate ADMA descriptor table and enable ADMA
+ * @host: sdhci host
+ *
+ * Allocate a DMA-coherent ADMA2 descriptor table and mark the host as
+ * ADMA-capable so subsequent calls to sdhci_setup_data_dma() use ADMA
+ * instead of SDMA. Drivers must call this after sdhci_setup_host() since
+ * it relies on the SDHCI_USE_64_BIT_DMA flag established there.
+ *
+ * The descriptor count defaults to SDHCI_DEFAULT_ADMA_DESCS, which caps
+ * the largest single transfer at SDHCI_DEFAULT_ADMA_DESCS *
+ * SDHCI_ADMA2_MAX_LEN bytes. Drivers can override host->adma_table_cnt
+ * before calling to allocate a different size.
+ *
+ * Returns 0 on success or a negative error code on failure. On failure
+ * the host falls back to SDMA.
+ */
+int sdhci_setup_adma(struct sdhci *host)
+{
+	struct device *dev = sdhci_dev(host);
+	struct mci_host *mci = host->mci;
+	dma_addr_t dma;
+	void *buf;
+
+	BUG_ON(!mci);
 
 	/*
-	 * In case Re-tuning Timer is not disabled, the actual value of
-	 * re-tuning timer will be 2 ^ (n - 1).
+	 * Without a controller capability bit ADMA2 cannot be used. Don't
+	 * fail loudly: the driver may have called us speculatively, just
+	 * leave SDMA as the fallback.
 	 */
-	if (host->tuning_count)
-		host->tuning_count = 1 << (host->tuning_count - 1);
+	if (!(host->caps & SDHCI_CAN_DO_ADMA2))
+		return -ENOTSUPP;
 
-	/* Re-tuning mode supported by the Host Controller */
-	host->tuning_mode = FIELD_GET(SDHCI_RETUNING_MODE_MASK, host->caps1);
+	if (host->flags & SDHCI_USE_64_BIT_DMA)
+		host->desc_sz = SDHCI_ADMA2_64_DESC_SZ(host);
+	else
+		host->desc_sz = SDHCI_ADMA2_32_DESC_SZ;
+
+	if (!host->adma_table_cnt)
+		host->adma_table_cnt = SDHCI_DEFAULT_ADMA_DESCS;
+
+	host->adma_table_sz = host->adma_table_cnt * host->desc_sz;
+
+	buf = dma_alloc_coherent(dev, host->adma_table_sz, &dma);
+	if (!buf)
+		return -ENOMEM;
+
+	host->adma_table = buf;
+	host->adma_addr = dma;
+	host->flags |= SDHCI_USE_ADMA;
+
+	/*
+	 * One descriptor handles up to SDHCI_ADMA2_MAX_LEN bytes; the last
+	 * one is reserved for the terminating entry.
+	 */
+	mci->max_req_size = (host->adma_table_cnt - 1) * SDHCI_ADMA2_MAX_LEN;
 
 	return 0;
 }
+EXPORT_SYMBOL_GPL(sdhci_setup_adma);
+
+void sdhci_release_adma(struct sdhci *host)
+{
+	if (!(host->flags & SDHCI_USE_ADMA))
+		return;
+
+	dma_free_coherent(sdhci_dev(host), host->adma_table, host->adma_addr,
+			  host->adma_table_sz);
+	host->adma_table = NULL;
+	host->adma_addr = 0;
+	host->flags &= ~SDHCI_USE_ADMA;
+}
+EXPORT_SYMBOL_GPL(sdhci_release_adma);

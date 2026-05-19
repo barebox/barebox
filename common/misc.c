@@ -268,6 +268,7 @@ const uuid_t *barebox_get_product_uuid(void)
 BAREBOX_MAGICVAR(global.product.uuid, "SMBIOS-reported product UUID");
 
 static char *soc_uid_str;
+static char *soc_uid_bin_str;
 static void *soc_uid;
 static size_t soc_uid_len;
 
@@ -295,18 +296,22 @@ void barebox_set_soc_uid(const char *uidstr, const void *uidbuf, size_t len)
 	soc_uid = xmemdup(uidbuf, len);
 	soc_uid_len = len;
 
+	soc_uid_bin_str = xzalloc(len * 2 + 1);
+	bin2hex(soc_uid_bin_str, uidbuf, len);
+
 	if (uidstr) {
 		soc_uid_str = xstrdup(uidstr);
 	} else {
-		soc_uid_str = xzalloc(len * 2 + 1);
-		bin2hex(soc_uid_str, uidbuf, len);
+		soc_uid_str = soc_uid_bin_str;
 	}
 
 	machine_id_set_hashable(uidbuf, len);
 
 	globalvar_add_simple_string("soc_uid", &soc_uid_str);
+	globalvar_add_simple_string("soc_uid_hex", &soc_uid_bin_str);
 }
 BAREBOX_MAGICVAR(global.soc_uid, "SoC Unique ID");
+BAREBOX_MAGICVAR(global.soc_uid_hex, "Raw SoC Unique ID representation");
 
 const char *barebox_get_soc_uid(void)
 {

@@ -501,6 +501,8 @@ $(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MN_EVK, start_nxp_imx8mn_evk, n
 # ----------------------- i.MX8mp based boards --------------------------
 $(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MP_EVK, start_nxp_imx8mp_evk, nxp-imx8mp-evk/flash-header-imx8mp-evk, nxp-imx8mp-evk)
 
+$(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MP_FRDM, start_nxp_imx8mp_frdm, nxp-imx8mp-frdm/flash-header-imx8mp-frdm, nxp-imx8mp-frdm)
+
 $(call build_imx8m_habv4img, CONFIG_MACH_KOENIGBAUER_ALPHAJET, start_koenigbauer_alphajet, congatec-qmx8p/flash-header-congatec-qmx8p, koenigbauer-alphajet)
 
 $(call build_imx8m_habv4img, CONFIG_MACH_KARO_QSXP_ML81, start_karo_qsxp_ml81, karo-qsxp-ml81/flash-header-karo-qsxp-ml81, karo-qsxp-ml81)

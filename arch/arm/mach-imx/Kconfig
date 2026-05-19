@@ -711,6 +711,16 @@ config MACH_NXP_IMX8MQ_EVK
 	select ARM_SMCCC
 	select MCI_IMX_ESDHC_PBL
 
+config MACH_NXP_IMX8MP_FRDM
+	bool "NXP i.MX8MP FRDM Board"
+	select ARCH_IMX8MP
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MP_ATF
+	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
+	select IMX8M_DRAM
+	select I2C_IMX_EARLY
+
 config MACH_PHYTEC_SOM_IMX8MM
 	bool "Phytec i.MX8MM SOM"
 	select ARCH_IMX8MM
@@ -920,18 +930,19 @@ config HABV4_CSF_UNLOCK_UID
 	depends on HABV4 && HABV4_CSF_UNLOCK_FIELD_RETURN
 	string "CSF Unlock UID"
 	help
-	  Device specific 64-bit UID required to unlock the field-return
+	  Device specific UID required to unlock the field-return
 	  feature. This value must match the per device UNIQUE_ID fuses.
 
 	  The below example shows the expected format. The UNIQUE_ID is
-	  printed during boot by barebox:
+	  stored in $global.soc_uid_hex, but must be split into bytes.
+	  The soc_uid_hex 0011223344556677 becomes:
+	    - 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77
+
+	  Alternatively, it is printed in reverse byte order during boot
 	    i.MX___ unique ID: 7766554433221100
-	  or it can be queried by Linux via:
+	  or it can be queried (in reverse byte order) by Linux via:
 	    - cat /sys/devices/soc0/serial_number
 	      7766554433221100
-
-	  So this value have to be set:
-	    - 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77
 
 	  Afterwards, the `hab -p -r` command can be used to burn the fuse.
 
@@ -956,6 +967,21 @@ config HAB_CERTS_ENV
 	  CONFIG_HABV4_TABLE_BIN
 	  CONFIG_HABV4_CSF_CRT_PEM
 	  CONFIG_HABV4_IMG_CRT_PEM
+
+	  For HABv4 with fast authentication:
+
+	  CONFIG_HABV4_TABLE_BIN
+	  CONFIG_HABV4_SRK_CRT_PEM
+
+config HABV4_FAST_AUTH
+	depends on HABV4
+	bool "Fast authentication"
+	help
+	  Use the SRK to verify the CSF and image data.
+	  This reduces the number of key pair authentications
+	  that occur during the ROM/HAB boot state, resulting in a decreased boot time.
+
+	  Requires HAB version >= 4.1.2
 
 config HABV4_SRK_INDEX
 	depends on HABV4

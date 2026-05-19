@@ -8,6 +8,7 @@
  * CONFIG_HABV4_TABLE_BIN
  * CONFIG_HABV4_CSF_CRT_PEM
  * CONFIG_HABV4_IMG_CRT_PEM
+ * CONFIG_HABV4_SRK_CRT_PEM
  */
 #if defined(CONFIG_HABV4) && defined(CONFIG_CPU_64)
 #if defined(CONFIG_HABV4_QSPI)
@@ -26,9 +27,14 @@ hab File = CONFIG_HABV4_TABLE_BIN
 hab # SRK index within SRK-Table 0..3
 hab Source index = CONFIG_HABV4_SRK_INDEX
 
+#if defined(CONFIG_HABV4_FAST_AUTH)
+hab [Install NOCAK]
+hab File = CONFIG_HABV4_SRK_CRT_PEM
+#else
 hab [Install CSFK]
 /* target key index in keystore 1 */
 hab File = CONFIG_HABV4_CSF_CRT_PEM
+#endif
 
 hab [Authenticate CSF]
 
@@ -49,12 +55,14 @@ hab Features = FIELD RETURN
 hab UID = HABV4_CSF_UNLOCK_UID
 #endif
 
+#if !defined(CONFIG_HABV4_FAST_AUTH)
 hab [Install Key]
 /* verification key index in key store (0, 2...4) */
 hab Verification index = 0
 /* target key index in key store (2...4) */
 hab Target index = 2
 hab File = CONFIG_HABV4_IMG_CRT_PEM
+#endif
 
 hab [Authenticate Data]
 /* verification key index in key store (2...4) */

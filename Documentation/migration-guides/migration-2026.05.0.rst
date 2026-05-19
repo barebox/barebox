@@ -1,4 +1,5 @@
-:orphan:
+Release v2026.05.0
+==================
 
 CONFIG_CRYPTO_PUBLIC_KEYS
 -------------------------

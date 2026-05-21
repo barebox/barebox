@@ -4,6 +4,7 @@
 #
 obj-y		+= pci.o bus.o pci_iomap.o host-bridge.o
 obj-$(CONFIG_OFDEVICE) += of.o
+obj-$(CONFIG_PCI_DYNAMIC_OF_NODES) += of-dynamic.o
 
 ccflags-$(CONFIG_PCI_DEBUG) := -DDEBUG
 

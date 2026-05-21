@@ -5,6 +5,7 @@
 #include <linux/sizes.h>
 #include <linux/pci.h>
 #include <linux/bitfield.h>
+#include <of_pci.h>
 
 static unsigned int pci_scan_bus(struct pci_bus *bus);
 
@@ -672,6 +673,7 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 
 			pci_read_config_word(dev, PCI_SUBSYSTEM_ID, &dev->subsystem_device);
 			pci_read_config_word(dev, PCI_SUBSYSTEM_VENDOR_ID, &dev->subsystem_vendor);
+			of_pci_make_dev_node(dev);
 			break;
 		case PCI_HEADER_TYPE_BRIDGE:
 			child_bus = pci_alloc_bus();
@@ -690,6 +692,12 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 
 			/* scan pci hierarchy behind bridge */
 			prescan_setup_bridge(dev);
+			/*
+			 * Materialize the bridge's OF node before recursing so
+			 * children below it can find their parent during their
+			 * own of_pci_make_dev_node() call.
+			 */
+			of_pci_make_dev_node(dev);
 			pci_scan_bus(child_bus);
 			postscan_setup_bridge(dev);
 

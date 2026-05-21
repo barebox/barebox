@@ -3413,7 +3413,14 @@ char *of_get_reproducible_name(struct device_node *node)
 
 	if (node->parent && of_get_property(node->parent, "ranges", NULL)) {
 		addr = of_translate_address(node, reg);
-		return basprintf("[0x%llx]", addr);
+		if (addr != OF_BAD_ADDR)
+			return basprintf("[0x%llx]", addr);
+		/*
+		 * Untranslatable - e.g. a PCI config-space address whose
+		 * tag (space=0) doesn't appear in the parent's ranges.
+		 * Fall through to the parent-prefixed encoding so distinct
+		 * untranslatable nodes don't all collide on OF_BAD_ADDR.
+		 */
 	}
 
 	na = of_n_addr_cells(node);

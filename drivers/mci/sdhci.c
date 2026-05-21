@@ -138,7 +138,7 @@ int sdhci_send_command(struct sdhci *host, struct mci_cmd *cmd)
 				dma == SDHCI_NO_DMA ? false : true,
 				&command, &xfer);
 
-	sdhci_write8(host, SDHCI_TIMEOUT_CONTROL, 0xf);
+	sdhci_write8(host, SDHCI_TIMEOUT_CONTROL, 0xe);
 	if (xfer)
 		sdhci_write16(host, SDHCI_TRANSFER_MODE, xfer);
 	if (cmd->data) {

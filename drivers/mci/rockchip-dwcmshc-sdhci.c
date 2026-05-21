@@ -293,70 +293,11 @@ static void rk_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	sdhci_set_bus_width(&host->sdhci, ios->bus_width);
 }
 
-static void print_error(struct rk_sdhci_host *host, int cmdidx)
-{
-	dev_dbg(host->mci.hw_dev,
-		"error while transfering data for command %d\n", cmdidx);
-	dev_dbg(host->mci.hw_dev, "state = 0x%08x , interrupt = 0x%08x\n",
-		sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE),
-		sdhci_read32(&host->sdhci, SDHCI_INT_NORMAL_STATUS));
-}
-
 static int rk_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd)
 {
 	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
-	struct mci_data *data = cmd->data;
-	u32 mask, command, xfer;
-	int ret;
-	dma_addr_t dma;
 
-	ret = sdhci_wait_idle_data(&host->sdhci, cmd);
-	if (ret)
-		return ret;
-
-	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
-
-	mask = SDHCI_INT_CMD_COMPLETE;
-	if (cmd->resp_type & MMC_RSP_BUSY)
-		mask |= SDHCI_INT_XFER_COMPLETE;
-
-	sdhci_write8(&host->sdhci, SDHCI_TIMEOUT_CONTROL, 0xe);
-
-	sdhci_setup_data_dma(&host->sdhci, data, &dma);
-
-	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data,
-				dma == SDHCI_NO_DMA ? false : true,
-				&command, &xfer);
-
-	sdhci_write16(&host->sdhci, SDHCI_TRANSFER_MODE, xfer);
-
-	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
-	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
-
-	/* CMD19/21 generate _only_ Buffer Read Ready interrupt */
-	if (mmc_op_tuning(cmd->cmdidx))
-		mask = SDHCI_INT_DATA_AVAIL;
-
-	ret = sdhci_wait_for_done(&host->sdhci, mask);
-	if (ret) {
-		sdhci_teardown_data(&host->sdhci, data, dma);
-		goto error;
-	}
-
-	sdhci_read_response(&host->sdhci, cmd);
-	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);
-
-	ret = sdhci_transfer_data_dma(&host->sdhci, cmd, data, dma);
-
-error:
-	if (ret) {
-		print_error(host, cmd->cmdidx);
-		sdhci_reset(&host->sdhci, SDHCI_RESET_CMD);
-		sdhci_reset(&host->sdhci, SDHCI_RESET_DATA);
-	}
-
-	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
-	return ret;
+	return sdhci_send_command(&host->sdhci, cmd);
 }
 
 static int rk_sdhci_execute_tuning(struct mci_host *mci, u32 opcode)

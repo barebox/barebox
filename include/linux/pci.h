@@ -123,6 +123,20 @@ struct pci_dev {
 };
 #define	to_pci_dev(d) container_of(d, struct pci_dev, dev)
 
+/**
+ * pci_is_bridge - check if the PCI device is a bridge
+ * @dev: PCI device
+ *
+ * Return true if the PCI device is a bridge of PCI-to-PCI type. Masks the
+ * multi-function flag so a multi-function bridge is still recognised.
+ */
+static inline bool pci_is_bridge(struct pci_dev *dev)
+{
+	u8 type = dev->hdr_type & PCI_HEADER_TYPE_MASK;
+
+	return type == PCI_HEADER_TYPE_BRIDGE;
+}
+
 #define pci_resource_start(dev, bar)	((dev)->resource[(bar)].start)
 #define pci_resource_end(dev, bar)	((dev)->resource[(bar)].end)
 #define pci_resource_flags(dev, bar)	((dev)->resource[(bar)].flags)

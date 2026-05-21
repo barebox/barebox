@@ -334,7 +334,7 @@ static void pci_ea_init(struct pci_dev *dev)
 	offset = ea + PCI_EA_FIRST_ENT;
 
 	/* Skip DWORD 2 for type 1 functions */
-	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE)
+	if (pci_is_bridge(dev))
 		offset += 4;
 
 	/* parse each EA entry */

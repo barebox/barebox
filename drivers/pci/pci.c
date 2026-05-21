@@ -558,7 +558,7 @@ pci_of_match_device(struct device *parent, unsigned int devfn)
 			 * address, other properties are defined by the
 			 * PCI/OF node topology.
 			 */
-			reg = (reg >> 8) & 0xffff;
+			reg = (reg >> 8) & 0xff;
 			if (reg == devfn)
 				return np;
 		}

@@ -76,7 +76,7 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	barebox_base = arm_mem_barebox_image(membase, endmem,
 					     uncompressed_len, NULL);
 
-	handoff_data = (void *)barebox_base + uncompressed_len + MAX_BSS_SIZE;
+	handoff_data = (void *)barebox_base + ALIGN(uncompressed_len, 8) + MAX_BSS_SIZE;
 
 	free_mem_ptr = barebox_base - ARM_MEM_EARLY_MALLOC_SIZE;
 	free_mem_end_ptr = barebox_base;

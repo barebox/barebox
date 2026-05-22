@@ -990,7 +990,7 @@ config ENV_HANDLING
 config ENV_HANDLING_AUTOPROBE
 	depends on ENV_HANDLING
 	bool "Autoprobe for environment devices"
-	default CONFIG_INSECURE
+	default INSECURE
 	help
 	  There are two ways for specifying where the barebox environment is. The first one
 	  specifies the path explicitly in the device tree or board code. The other one is

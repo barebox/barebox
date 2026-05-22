@@ -3,6 +3,7 @@
 #ifndef __INPUT_H
 #define __INPUT_H
 
+#include <linux/bitmap.h>
 #include <linux/types.h>
 #include <linux/list.h>
 #include <dt-bindings/input/linux-event-codes.h>

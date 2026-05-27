@@ -535,7 +535,7 @@ static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 		fprintf(stderr, "ERROR: generating a dts snippet for ECDSA keys is not yet supported\n");
 		return -EOPNOTSUPP;
 	} else {
-		fprintf(outfilep, "\nstatic unsigned char %s_hash[] = {\n\t", info->name_c);
+		fprintf(outfilep, "\nstatic const unsigned char %s_hash[] = {\n\t", info->name_c);
 
 		ret = print_hash(key);
 		if (ret)
@@ -557,24 +557,26 @@ static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static struct ecdsa_public_key %s = {\n", info->name_c);
+		fprintf(outfilep, "static const struct ecdsa_public_key %s = {\n", info->name_c);
 
 		fprintf(outfilep, "\t.curve_name = \"%s\",\n", group);
 		fprintf(outfilep, "\t.x = %s_x,\n", info->name_c);
 		fprintf(outfilep, "\t.y = %s_y,\n", info->name_c);
 		fprintf(outfilep, "};\n");
 		if (!standalone) {
-			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", info->name_c);
+			fprintf(outfilep, "\nstatic const struct public_key %s_public_key = {\n", info->name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_ECDSA,\n");
 			if (info->name_hint)
 				fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
-			fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyring);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", info->name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
 			fprintf(outfilep, "\t.ecdsa = &%s,\n", info->name_c);
 			fprintf(outfilep, "};\n");
 			fprintf(outfilep, "\n");
-			fprintf(outfilep, "const struct public_key *__%s_public_key __ll_elem(.public_keys.rodata.%s) = &%s_public_key;\n", info->name_c, info->name_c, info->name_c);
+			fprintf(outfilep, "static const struct public_key_record __%s_public_key __ll_elem(.public_keys.rodata.%s) = {\n", info->name_c, info->name_c);
+			fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyring);
+			fprintf(outfilep, "\t.key = &%s_public_key,\n", info->name_c);
+			fprintf(outfilep, "};\n");
 		}
 	}
 
@@ -635,7 +637,7 @@ static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 		fprintf(outfilep, "\t\t\tkey-name-hint = \"%s\";\n", info->name_c);
 		fprintf(outfilep, "\t\t};\n");
 	} else {
-		fprintf(outfilep, "\nstatic unsigned char %s_hash[] = {\n\t", info->name_c);
+		fprintf(outfilep, "\nstatic const unsigned char %s_hash[] = {\n\t", info->name_c);
 
 		ret = print_hash(key);
 		if (ret)
@@ -661,7 +663,7 @@ static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 			fprintf(outfilep, "struct rsa_public_key __key_%s;\n", info->name_c);
 			fprintf(outfilep, "struct rsa_public_key __key_%s = {\n", info->name_c);
 		} else {
-			fprintf(outfilep, "static struct rsa_public_key %s = {\n", info->name_c);
+			fprintf(outfilep, "static const struct rsa_public_key %s = {\n", info->name_c);
 		}
 
 		fprintf(outfilep, "\t.len = %d,\n", bits / 32);
@@ -672,17 +674,19 @@ static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 		fprintf(outfilep, "};\n");
 
 		if (!standalone) {
-			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", info->name_c);
+			fprintf(outfilep, "\nstatic const struct public_key %s_public_key = {\n", info->name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_RSA,\n");
 			if (info->name_hint)
 				fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
-			fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyring);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", info->name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
 			fprintf(outfilep, "\t.rsa = &%s,\n", info->name_c);
 			fprintf(outfilep, "};\n");
 			fprintf(outfilep, "\n");
-			fprintf(outfilep, "const struct public_key *__%s_public_key __ll_elem(.public_keys.rodata.%s) = &%s_public_key;\n", info->name_c, info->name_c, info->name_c);
+			fprintf(outfilep, "static const struct public_key_record __%s_public_key __ll_elem(.public_keys.rodata.%s) = {\n", info->name_c, info->name_c);
+			fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyring);
+			fprintf(outfilep, "\t.key = &%s_public_key,\n", info->name_c);
+			fprintf(outfilep, "};\n");
 		}
 	}
 

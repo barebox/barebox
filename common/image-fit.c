@@ -253,10 +253,11 @@ static int fit_check_signature(struct fit_handle *handle, struct device_node *si
 {
 	const char *fail_reason;
 	const struct public_key *key;
+	const struct keyring *fit_kr;
 	const char *key_name = NULL;
 	int sig_len;
 	const char *sig_value;
-	int id, ret;
+	int ret;
 
 	sig_value = of_get_property(sig_node, "value", &sig_len);
 	if (!sig_value) {
@@ -266,10 +267,16 @@ static int fit_check_signature(struct fit_handle *handle, struct device_node *si
 
 	fail_reason = "no matching keys";
 
+	fit_kr = keyring_find("fit");
+	if (!fit_kr) {
+		pr_err("fit keyring not registered\n");
+		return -ENOKEY;
+	}
+
 	of_property_read_string(sig_node, "key-name-hint", &key_name);
 	if (key_name) {
-		key = public_key_get(key_name, "fit");
-		if (key) {
+		key = keyring_find_key(fit_kr, key_name);
+		if (!IS_ERR(key)) {
 			fail_reason = "verification failed";
 			ret = public_key_verify(key, sig_value, sig_len, hash, algo);
 			if (handle->verbose)
@@ -280,7 +287,7 @@ static int fit_check_signature(struct fit_handle *handle, struct device_node *si
 		}
 	}
 
-	for_each_public_key_keyring(key, id, "fit") {
+	for_each_key_in_keyring(key, fit_kr) {
 
 		/* Don't recheck with same key as before */
 		if (key_name && streq_ptr(key->key_name_hint, key_name))

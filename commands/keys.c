@@ -9,7 +9,8 @@ static int do_keys(int argc, char *argv[])
 
 	for_each_public_key(key, id) {
 		printf("KEY: %*phN\tTYPE: %s\tKEYRING: %s\tHINT: %s\n", key->hashlen,
-		       key->hash, public_key_type_string(key->type), key->keyring, key->key_name_hint);
+		       key->hash, public_key_type_string(key->type), key->keyring,
+		       key->key_name_hint ?: "");
 	}
 
 	return 0;

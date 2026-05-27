@@ -566,7 +566,8 @@ static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 		if (!standalone) {
 			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", info->name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_ECDSA,\n");
-			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
+			if (info->name_hint)
+				fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
 			fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyring);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", info->name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
@@ -673,7 +674,8 @@ static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 		if (!standalone) {
 			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", info->name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_RSA,\n");
-			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
+			if (info->name_hint)
+				fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
 			fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyring);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", info->name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
@@ -919,10 +921,6 @@ int main(int argc, char *argv[])
 
 		if (asprintf(&info->name_c, "key_%i", keys_idx + 1) < 0)
 			enomem_exit("asprintf");
-
-		/* unfortunately, the fit name hint is mandatory in the barebox codebase */
-		if (!info->name_hint)
-			info->name_hint = info->name_c;
 
 		if (!info->keyring) {
 			info->keyring = strdup("fit");

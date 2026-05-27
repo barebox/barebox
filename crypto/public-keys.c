@@ -14,6 +14,8 @@ const struct public_key *public_key_get(const char *name, const char *keyring)
 	int id;
 
 	for_each_public_key_keyring(key, id, keyring) {
+		if (!key->key_name_hint)
+			continue;
 		if (!strcmp(key->key_name_hint, name))
 			return key;
 	}

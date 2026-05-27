@@ -29,7 +29,8 @@ int public_key_add(struct public_key *key)
 	}
 
 	if (public_key_get(key->key_name_hint, key->keyring)) {
-		pr_warn("Aborting addition of public key: Duplicate fit name hint\n");
+		pr_warn("Cannot add key: key_name_hint %s already exists in keyring %s\n",
+			key->key_name_hint, key->keyring);
 		return -EEXIST;
 	}
 

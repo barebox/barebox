@@ -40,7 +40,7 @@
 #define DLL_TXCLK_TAPNUM_DEFAULT	0x10
 #define DLL_TXCLK_TAPNUM_90_DEGREES	0xA
 #define DLL_TXCLK_TAPNUM_FROM_SW	BIT(24)
-#define DLL_STRBIN_TAPNUM_DEFAULT	0x8
+#define DLL_STRBIN_TAPNUM_DEFAULT	0x4
 #define DLL_STRBIN_TAPNUM_FROM_SW	BIT(24)
 #define DLL_STRBIN_DELAY_NUM_SEL	BIT(26)
 #define DLL_STRBIN_DELAY_NUM_OFFSET	16
@@ -177,9 +177,10 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 
 	sdhci_set_clock(&host->sdhci, clock, clk_get_rate(host->clks[CLK_CORE].clk));
 
-	/* Disable cmd conflict check */
+	/* Disable cmd conflict check and internal clock gate */
 	extra = sdhci_read32(&host->sdhci, DWCMSHC_HOST_CTRL3);
 	extra &= ~BIT(0);
+	extra |= BIT(4);
 	sdhci_write32(&host->sdhci, DWCMSHC_HOST_CTRL3, extra);
 
 	/* Disable clock while config DLL */

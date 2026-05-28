@@ -36,11 +36,35 @@
 #define STACK_SIZE  CONFIG_STACK_SIZE
 #define SCRATCH_SIZE	CONFIG_SCRATCH_SIZE
 
+#ifndef __ASSEMBLY__
+
+#include <linux/pagemap.h>
+#include <linux/minmax.h>
+#include <linux/sizes.h>
+
 /*
  * This generates a useless load from the specified symbol
  * to ensure linker garbage collection doesn't delete it
  */
 #define __keep_symbolref(sym)	\
 	__asm__ __volatile__("": :"r"(&sym) :)
+
+#ifdef CONFIG_BAREBOX_MEMORY_OFFSET
+static inline unsigned long barebox_malloc_base(unsigned long membase,
+						unsigned long memsize)
+ {
+	 unsigned long offset = CONFIG_BAREBOX_MEMORY_OFFSET;
+
+	 if (offset >= memsize)
+		 offset = 0;
+
+	 if (!offset)
+		 offset = memsize - min_t(unsigned long, memsize / 2, SZ_1G);
+
+	 return PAGE_ALIGN(membase + offset);
+}
+#endif
+
+#endif /* __ASSEMBLY__ */
 
 #endif /* __ASM_GENERIC_MEMORY_LAYOUT_H */

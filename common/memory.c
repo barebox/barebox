@@ -56,6 +56,10 @@ void mem_malloc_init(void *start, void *end)
 
 static_assert(PAGE_ALIGNED(CONFIG_MALLOC_SIZE));
 
+#ifdef CONFIG_BAREBOX_MEMORY_OFFSET
+static_assert(PAGE_ALIGNED(CONFIG_BAREBOX_MEMORY_OFFSET));
+#endif
+
 static struct resource *barebox_res;
 static resource_size_t barebox_start;
 static resource_size_t barebox_size;

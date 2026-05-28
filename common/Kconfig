@@ -300,6 +300,44 @@ config MALLOC_SIZE
 	default 0
 	prompt "malloc area size" if ARCH_HAS_MALLOC_SIZE
 
+config BAREBOX_MEMORY_OFFSET
+	hex
+	default 0
+	prompt "relative malloc base offset (optional)"
+	depends on ARCH_HAS_BAREBOX_MEMORY_OFFSET
+	help
+	  Most boards should just leave this at the default zero and barebox
+	  will dynamically determine the offset, from the start of the initial
+	  memory bank in DRAM, at which the barebox runtime region begins.
+
+	  Memory below this offset is reserved as the OS load region, used for
+	  placement of the kernel, initrd and device tree before boot.
+
+	  barebox itself, the relocated binary, BSS, stack and malloc area
+	  all live at and above this offset and will not allocate into the
+	  OS load region.
+
+	  When set to zero, following heuristic will be used:
+
+	    - If the prebootloader reports 2GiB of initial memory or more,
+	      start the barebox runtime region at offset 1GiB from
+	      start of initial memory.
+
+	    - Otherwise, start the barebox runtimer region right in the
+	      middle of the initial memory region.
+
+          This heuristic should be suitable for most boards with modern DRAM
+	  sizes. If you run into problems with it, adapt this option, so
+          it is large enough to hold the biggest OS image you expect to boot,
+	  plus initramfs and DTB.
+
+	  Note that this affects only the split in the initial memory reported
+	  by the bootloader. Placement of final boot artifacts can happen
+	  outside of the malloc area and are not restricted to this initial
+	  memory or even the first SDRAM bank.
+
+	  If unsure, keep the default of 0x0.
+
 config SCRATCH_SIZE
 	hex
 	default 0x8000

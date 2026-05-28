@@ -273,7 +273,8 @@ int main(int argc, char *argv[])
 	}
 
 	if (st.st_size > 192 * 1024) {
-		fprintf(stderr, "Image too big, will not fit in OCRAM!\n");
+		fprintf(stderr, "Image %s too big (%ld bytes), will not fit in OCRAM!\n",
+						   infile, (long)st.st_size);
 		exit(EXIT_FAILURE);
 	}
 

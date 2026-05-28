@@ -92,6 +92,12 @@ config ARCH_HAS_DATA_ABORT_MASK_PBL
 config ARCH_HAS_ZERO_PAGE
 	bool
 
+config ARCH_HAS_MALLOC_SIZE
+	bool
+	help
+	  This is selected by architectures, where CONFIG_MALLOC_SIZE
+	  can be used to specify an exact size of the malloc area.
+
 config HAVE_EFFICIENT_UNALIGNED_ACCESS
 	bool
 

@@ -12,6 +12,7 @@
 #include <init.h>
 #include <linux/ioport.h>
 #include <linux/err.h>
+#include <linux/pagemap.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <malloc.h>
@@ -52,6 +53,8 @@ void mem_malloc_init(void *start, void *end)
 #endif
 	mem_malloc_initialized = 1;
 }
+
+static_assert(PAGE_ALIGNED(CONFIG_MALLOC_SIZE));
 
 static struct resource *barebox_res;
 static resource_size_t barebox_start;

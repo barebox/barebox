@@ -21,6 +21,7 @@ config RISCV
 	select PBL_IMAGE_ELF
 	select HAVE_ARCH_BOARD_GENERIC_DT
 	select HAVE_ARCH_BOOTM_OFTREE
+	select ARCH_HAS_MALLOC_SIZE
 
 config ARCH_LINUX_NAME
 	string

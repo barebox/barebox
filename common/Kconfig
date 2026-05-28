@@ -296,8 +296,9 @@ config MALLOC_BASE
 
 config MALLOC_SIZE
 	hex
-	default 0x400000
-	prompt "malloc area size"
+	default 0x400000 if ARCH_HAS_MALLOC_SIZE
+	default 0
+	prompt "malloc area size" if ARCH_HAS_MALLOC_SIZE
 
 config SCRATCH_SIZE
 	hex

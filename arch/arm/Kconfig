@@ -20,6 +20,7 @@ config ARM
 	select ARCH_HAS_DMA_WRITE_COMBINE
 	select HAVE_EFI_LOADER if MMU # for payload unaligned accesses
 	select PBL_IMAGE_ELF
+	select ARCH_HAS_MALLOC_SIZE
 	default y
 
 config ARCH_LINUX_NAME

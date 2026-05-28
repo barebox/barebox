@@ -15,6 +15,7 @@
 #define PAGE_MASK	(PAGE_SIZE - 1)
 #define PAGE_ALIGN(s)	ALIGN(s, PAGE_SIZE)
 #define PAGE_ALIGN_DOWN(x) ALIGN_DOWN(x, PAGE_SIZE)
+#define PAGE_ALIGNED(addr)  IS_ALIGNED((unsigned long)(addr), PAGE_SIZE)
 
 #define PAGE_CACHE_SHIFT        PAGE_SHIFT
 #define PAGE_CACHE_SIZE         PAGE_SIZE

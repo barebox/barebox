@@ -114,8 +114,13 @@ void print_pbl_mem_layout(ulong membase, ulong endmem, ulong barebox_base)
 #endif
 	printf("arm_mem_barebox_image = 0x%08lx+0x%08lx\n",
 	       barebox_base, arm_mem_barebox_image_end(endmem) - barebox_base);
+#ifdef CONFIG_ARM64
+	printf("pbl_malloc area       = 0x%08lx+0x%08x\n",
+	       barebox_malloc_base(membase, endmem - membase), PBL_MALLOC_SIZE);
+#else
 	printf("arm_mem_early_malloc  = 0x%08lx+0x%08x\n",
 	       barebox_base - PBL_MALLOC_SIZE, PBL_MALLOC_SIZE);
+#endif
 	printf("membase               = 0x%08lx+0x%08lx\n",
 	       membase, endmem - membase);
 }

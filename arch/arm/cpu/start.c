@@ -156,6 +156,15 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 		armv7r_mpu_init_coherent(malloc_end, REGION_8MB);
 	}
 
+#ifdef CONFIG_ARM64
+	malloc_start = barebox_malloc_base(membase, memsize);
+#else
+	/* TODO: migrate ARM32 to barebox_malloc_base(), once legacy xload
+	 * code has been migrated to loadables; On boards like the beaglebone,
+	 * a separate first stage barebox loads the second stage into RAM
+	 * and executes it from there, so reusing the malloc area in second
+	 * stage PBL will mangle the second stage code.
+	 */
 	/*
 	 * Maximum malloc space is the Kconfig value if given
 	 * or 1GB.
@@ -169,6 +178,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 		if (malloc_end - malloc_start > SZ_1G)
 			malloc_start = malloc_end - SZ_1G;
 	}
+#endif
 
 	pr_debug("initializing malloc pool at 0x%08lx (size 0x%08lx)\n",
 			malloc_start, malloc_end - malloc_start);

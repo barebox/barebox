@@ -20,7 +20,6 @@ config ARM
 	select ARCH_HAS_DMA_WRITE_COMBINE
 	select HAVE_EFI_LOADER if MMU # for payload unaligned accesses
 	select PBL_IMAGE_ELF
-	select ARCH_HAS_MALLOC_SIZE
 	default y
 
 config ARCH_LINUX_NAME
@@ -34,10 +33,12 @@ config ARCH_MKIMAGE_NAME
 
 config ARM32
 	def_bool CPU_32
+	select ARCH_HAS_MALLOC_SIZE
 
 config ARM64
 	def_bool CPU_64
 	select ARCH_HAS_RELR
+	select ARCH_HAS_BAREBOX_MEMORY_OFFSET
 
 config ARCH_TEXT_BASE
 	hex

@@ -23,7 +23,7 @@
 #define ZYNQ_UART_STS_TFUL	(1 << 4)
 #define ZYNQ_UART_TXDIS		(1 << 5)
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	void __iomem *base = (void __iomem *)ZYNQ_DEBUG_LL_UART_BASE;
 

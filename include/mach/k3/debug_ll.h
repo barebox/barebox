@@ -41,7 +41,7 @@ static inline void debug_ll_init(void)
 	/* already configured */
 }
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	void __iomem *base = (void *)K3_UART_BASE(K3_DEBUG_SOC,
 					CONFIG_DEBUG_K3_UART_PORT);

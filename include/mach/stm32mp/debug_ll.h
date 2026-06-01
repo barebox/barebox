@@ -28,7 +28,7 @@ static inline void stm32_serial_putc(void *ctx, int c)
 	while ((readl(base + ISR_OFFSET) & USART_ISR_TXE) == 0);
 }
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	stm32_serial_putc(IOMEM(DEBUG_LL_UART_ADDR), c);
 }

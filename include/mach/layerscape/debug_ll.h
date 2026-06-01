@@ -72,7 +72,7 @@ static inline void ls102xa_debug_ll_init(void)
 	ls102xa_uart_setup(base);
 }
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	void __iomem *base = IOMEM(LS_UART_BASE(CONFIG_DEBUG_LAYERSCAPE_UART_PORT));
 

@@ -77,7 +77,7 @@ static inline void rockchip_debug_ll_init(void)
 	debug_ll_ns16550_init(base, divisor);
 }
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	void __iomem *base = IOMEM(RK_UART_BASE(RK_DEBUG_SOC,
 		CONFIG_DEBUG_ROCKCHIP_UART_PORT));

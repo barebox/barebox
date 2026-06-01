@@ -117,7 +117,7 @@ static inline void imx9_uart_setup_ll(void)
 	lpuart32_setup(base + 0x10, 24000000);
 }
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	void __iomem *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,
 						 CONFIG_DEBUG_IMX_UART_PORT));

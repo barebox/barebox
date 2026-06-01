@@ -26,7 +26,7 @@ static inline void debug_ll_init(void)
 	/* already configured */
 }
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	debug_ll_ns16550_putc(DEBUG_LL_UART_BASE, c);
 }

@@ -60,7 +60,7 @@ static inline void omap_debug_ll_init(void)
 	debug_ll_write_reg(base, NS16550_MDR, 0);
 }
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	void __iomem *base = (void *)OMAP_UART_BASE(OMAP_DEBUG_SOC,
 			CONFIG_DEBUG_OMAP_UART_PORT);

@@ -11,7 +11,7 @@
 # define TXFE (1 << 7)
 # define TXFF (1 << 5)
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	void __iomem *base = (void *)IMX_DBGUART_BASE;
 

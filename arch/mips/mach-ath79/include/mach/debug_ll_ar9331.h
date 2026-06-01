@@ -34,7 +34,7 @@ static inline u32 ar933x_debug_ll_readl(int offset)
 	return __raw_readl((u8 *)DEBUG_LL_UART_ADDR + offset);
 }
 
-static inline void PUTC_LL(int ch)
+static inline void PUTC_LL(char ch)
 {
 	u32 data;
 

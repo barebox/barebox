@@ -70,7 +70,7 @@ static inline void debug_ll_init(void)
 	debug_ll_ns16550_init(base, divisor);
 }
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	void __iomem  *base = IOMEM(BCM2836_MINIUART_BASE);
 
@@ -96,7 +96,7 @@ static inline void debug_ll_init(void)
 	/* Configured by ROM */
 }
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	void __iomem *base = IOMEM(BCM2711_MINIUART_BASE);
 

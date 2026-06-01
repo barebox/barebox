@@ -28,7 +28,7 @@ static inline void cdns_serial_putc(void *ctx, int c)
 	writel(c, base + 0x30);
 }
 
-static inline void PUTC_LL(int c)
+static inline void PUTC_LL(char c)
 {
 	cdns_serial_putc(IOMEM(ZYNQMP_DEBUG_LL_UART_BASE), c);
 }

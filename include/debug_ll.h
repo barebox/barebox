@@ -19,7 +19,9 @@
  * this initialization. Depending on the PUTC_LL implementation the board might
  * also hang in PUTC_LL without proper initialization.
  */
+#define DEFINE_PUTC_LL
 #include <asm/debug_ll.h>
+#undef DEFINE_PUTC_LL
 #endif
 
 #if defined (CONFIG_DEBUG_LL)

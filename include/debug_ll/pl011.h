@@ -16,11 +16,7 @@ static inline void debug_ll_pl011_putc(void __iomem *base, int c)
 	writel(c, base + UART01x_DR);
 }
 
-#ifdef CONFIG_DEBUG_LL
-
-#ifndef DEBUG_LL_UART_ADDR
-#error DEBUG_LL_UART_ADDR is undefined!
-#endif
+#if defined(CONFIG_DEBUG_LL) && defined(DEFINE_PUTC_LL)
 
 static inline void PUTC_LL(char c)
 {

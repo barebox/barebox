@@ -312,6 +312,10 @@ config DEBUG_RPI4_MINI_UART
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 4 board mini UART.
 
+config DEBUG_ZYNQ_UART
+	bool "Zynq debug UART"
+	depends on ARCH_ZYNQ
+
 config DEBUG_ZYNQMP_UART
 	bool "Zynqmp Debug UART"
 	depends on ARCH_ZYNQMP
@@ -389,6 +393,30 @@ config DEBUG_SEMIHOSTING
 config DEBUG_OPENRISC_NS16550
 	bool "OpenRISC NS16550 console"
 	depends on OPENRISC
+
+config DEBUG_MVEBU_UART
+	bool "mvebu console"
+	depends on ARCH_MVEBU
+
+config DEBUG_CLPS711X_UART
+	bool "CLPS711x debug UART"
+	depends on ARCH_CLPS711X
+
+config DEBUG_MXS_UART
+	bool "MXS debug UART"
+	depends on ARCH_MXS
+
+config DEBUG_VERSATILE_UART
+	bool "Versatile debug UART"
+	depends on ARCH_VERSATILE
+
+config DEBUG_TEGRA_UART
+	bool "Tegra debug UART"
+	depends on ARCH_TEGRA
+
+config DEBUG_SOCFPGA_UART
+	bool "SoCFPGA debug UART"
+	depends on ARCH_SOCFPGA
 
 endchoice
 

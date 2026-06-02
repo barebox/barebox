@@ -401,8 +401,8 @@ static int dwc2_submit_control_msg(struct usb_device *udev,
 		 * ClearFeature(ENDPOINT_HALT) request always results
 		 * in the data toggle being reinitialized to DATA0.
 		 */
-		int ep = le16_to_cpu(setup->index) & 0xf;
-		dwc2_endpoint_reset(dwc2, usb_pipein(pipe), devnum, ep);
+		int ep_addr = le16_to_cpu(setup->index);
+		dwc2_endpoint_reset(dwc2, ep_addr >> 7, devnum, ep_addr & 0xf);
 	}
 
 	udev->act_len = act_len;

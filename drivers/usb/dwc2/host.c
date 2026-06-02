@@ -134,9 +134,14 @@ static int wait_for_chhltd(struct dwc2 *dwc2, u8 hc, uint32_t *sub, u8 *tgl)
 
 	ret = dwc2_wait_bit_set(dwc2, HCINT(hc), HCINTMSK_CHHLTD, 10000);
 	if (ret) {
+		hcint = dwc2_readl(dwc2, HCINT(hc));
 		hcchar = dwc2_readl(dwc2, HCCHAR(hc));
 		dwc2_writel(dwc2, hcchar | HCCHAR_CHDIS, HCCHAR(hc));
-		dwc2_wait_bit_set(dwc2, HCINT(hc), HCINTMSK_CHHLTD, 10000);
+		if (dwc2_wait_bit_set(dwc2, HCINT(hc), HCINTMSK_CHHLTD, 10000))
+			dwc2_err(dwc2, "%s: channel abort timed out: HCINT=%08x HCCHAR=%08x\n",
+				 __func__, hcint, hcchar);
+		if (hcint & (HCINTMSK_NAK | HCINTMSK_FRMOVRUN))
+			return -EAGAIN;
 		return ret;
 	}
 

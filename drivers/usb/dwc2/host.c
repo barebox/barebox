@@ -435,7 +435,7 @@ static int dwc2_submit_bulk_msg(struct usb_device *udev, unsigned long pipe,
 					 buffer, len);
 	} while (ret == -EAGAIN && !is_timeout(start, timeout * MSECOND));
 	if (ret == -EAGAIN) {
-		dwc2_err(dwc2, "Timeout on bulk endpoint\n");
+		dwc2_dbg(dwc2, "Timeout on bulk endpoint\n");
 		ret = -ETIMEDOUT;
 	}
 

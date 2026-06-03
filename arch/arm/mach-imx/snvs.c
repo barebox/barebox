@@ -29,7 +29,7 @@ static void snvs_init(void __iomem *snvs)
 	writel(0xffffffff, snvs + SNVS_LPSR);
 }
 
-void imx7_snvs_init(void)
+void imx7_setup_snvs(void)
 {
 	void __iomem *snvs = IOMEM(MX7_SNVS_BASE_ADDR);
 

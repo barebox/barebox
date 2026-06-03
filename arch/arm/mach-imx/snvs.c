@@ -22,6 +22,11 @@ static void snvs_init(void __iomem *snvs)
 	val = readl(snvs + SNVS_HPCOMR);
 	val |= SNVS_HPCOMR_NPSWA_EN;
 	writel(val, snvs + SNVS_HPCOMR);
+
+	/* Initialize glitch detect */
+	writel(SNVS_LPPGDR_INIT, snvs + SNVS_LPLVDR);
+	/* Clear interrupt status */
+	writel(0xffffffff, snvs + SNVS_LPSR);
 }
 
 void imx7_snvs_init(void)
@@ -35,10 +40,5 @@ void imx8m_setup_snvs(void)
 {
 	void __iomem *snvs = IOMEM(MX8M_SNVS_BASE_ADDR);
 
-        /* Initialize glitch detect */
-        writel(SNVS_LPPGDR_INIT, snvs + SNVS_LPLVDR);
-        /* Clear interrupt status */
-        writel(0xffffffff, snvs + SNVS_LPSR);
-
-        snvs_init(snvs);
+	snvs_init(snvs);
 }

@@ -117,7 +117,6 @@ static int snvs_lpgpr_probe(struct device *dev)
 		return PTR_ERR(priv->regmap);
 
 	cfg = &priv->cfg;
-	cfg->name = dev_name(dev);
 	cfg->dev = dev;
 	cfg->priv = priv;
 	cfg->stride = 4;

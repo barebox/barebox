@@ -3,6 +3,7 @@
 #include <io.h>
 #include <linux/bits.h>
 #include <mach/imx/snvs.h>
+#include <mach/imx/imx6-regs.h>
 #include <mach/imx/imx7-regs.h>
 #include <mach/imx/imx8m-regs.h>
 
@@ -32,6 +33,13 @@ static void snvs_init(void __iomem *snvs)
 void imx7_setup_snvs(void)
 {
 	void __iomem *snvs = IOMEM(MX7_SNVS_BASE_ADDR);
+
+	snvs_init(snvs);
+}
+
+void imx6_setup_snvs(void)
+{
+	void __iomem *snvs = IOMEM(MX6_SNVS_BASE_ADDR);
 
 	snvs_init(snvs);
 }

@@ -12,6 +12,7 @@
 #include <mach/imx/imx8mq-regs.h>
 #include <mach/imx/imx8m-ccm-regs.h>
 #include <mach/imx/imx9-regs.h>
+#include <mach/imx/snvs.h>
 #include <mach/imx/trdc.h>
 #include <io.h>
 #include <asm/cache.h>
@@ -52,6 +53,7 @@ void imx6ul_cpu_lowlevel_init(void)
 {
 	cortex_a7_lowlevel_init();
 	arm_cpu_lowlevel_init();
+	imx6_setup_snvs();
 }
 
 void imx7_cpu_lowlevel_init(void)

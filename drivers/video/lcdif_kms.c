@@ -326,6 +326,11 @@ static void lcdif_crtc_atomic_enable(struct lcdif_drm_private *lcdif,
 
 	clk_set_rate(lcdif->clk, mode->clock * 1000);
 
+	/* no runtime PM; ungate the LCDIF clocks ourselves */
+	clk_prepare_enable(lcdif->clk_axi);
+	clk_prepare_enable(lcdif->clk_disp_axi);
+	clk_prepare_enable(lcdif->clk);
+
 	lcdif_crtc_mode_set_nofb(lcdif, mode, vcstate);
 
 	/* Write cur_buf as well to avoid an initial corrupt frame */

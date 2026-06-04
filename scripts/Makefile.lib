@@ -536,7 +536,6 @@ cmd_public_keys = \
 # ---------------------------------------------------------------------------
 
 # Process security Kconfig file
-# TODO: set KCONFIG_WARN_UNKNOWN_SYMBOLS & KCONFIG_WERROR once supported
 quiet_cmd_sconfig = SCONFIG $(notdir $(or $(4),$(3)))
       cmd_sconfig = \
            KBUILD_KCONFIG=Sconfig			\
@@ -545,6 +544,8 @@ quiet_cmd_sconfig = SCONFIG $(notdir $(or $(4),$(3)))
            KCONFIG_CONFIG_=SCONFIG_			\
            KBUILD_DEFCONFIG=allnoconfig			\
            KCONFIG_NOSILENTUPDATE=1			\
+           KCONFIG_WARN_UNKNOWN_SYMBOLS=1		\
+           KCONFIG_WERROR=1				\
            KCONFIG_AUTOCONFIG=/dev/null			\
            KCONFIG_AUTOHEADER=/dev/null			\
            $(MAKE) $(build)=scripts/kconfig $(2)	\

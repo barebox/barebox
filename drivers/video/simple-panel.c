@@ -36,13 +36,9 @@ static int simple_panel_enable(struct simple_panel *panel)
 
 	dev_dbg(panel->dev, "enabling\n");
 
-	if (panel->backlight_node && !panel->backlight) {
+	/* resolve lazily; backlight may probe after us */
+	if (panel->backlight_node && !panel->backlight)
 		panel->backlight = of_backlight_find(panel->backlight_node);
-		if (!panel->backlight) {
-			dev_err(panel->dev, "Cannot find backlight\n");
-			return -ENODEV;
-		}
-	}
 
 	regulator_enable(panel->power);
 

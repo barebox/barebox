@@ -36,6 +36,10 @@ mkdir -p "$tempdir"
 
 (cd $basedir
 for i in $*; do
+	if [ -n "${srctree}" ] && [ ! -e "$i" ] && [ -e "$srctree/$i" ]; then
+		i="$srctree/$i"
+	fi
+
 	if [ -d $i ]; then
 		cp -r $i/* $tempdir
 	else

@@ -664,7 +664,8 @@ quiet_cmd_sconfig = SCONFIG $(notdir $(or $(4),$(3)))
            KCONFIG_NOSILENTUPDATE=1			\
            KCONFIG_AUTOCONFIG=/dev/null			\
            KCONFIG_AUTOHEADER=/dev/null			\
-           $(MAKE) -f $(srctree)/Makefile $(2) quiet=silent_
+           $(MAKE) $(build)=scripts/kconfig $(2)	\
+		KCONFIG_DEFCONFIG_LIST= quiet=silent_
 
 # Check that a policy is up to date
 # NOTE: With KCONFIG_NOSILENTUPDATE=1, a simpler implementation is

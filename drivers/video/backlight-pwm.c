@@ -148,7 +148,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
 		pwm_backlight->backlight.brightness_max = pwm_backlight->scale;
 	}
 
-	pwm_backlight->enable_gpio = gpiod_get_optional(dev, "enable-gpios", 0);
+	pwm_backlight->enable_gpio = gpiod_get_optional(dev, "enable", GPIOD_ASIS);
 
 	return 0;
 }
@@ -160,10 +160,8 @@ static int backlight_pwm_of_probe(struct device *dev)
 	struct pwm_device *pwm;
 
 	pwm = of_pwm_request(dev->of_node, NULL);
-	if (IS_ERR(pwm)) {
-		dev_err(dev, "Cannot find PWM device\n");
-		return PTR_ERR(pwm);
-	}
+	if (IS_ERR(pwm))
+		return dev_errp_probe(dev, pwm, "Cannot find PWM device\n");
 
 	pwm_backlight = xzalloc(sizeof(*pwm_backlight));
 	pwm_backlight->pwm = pwm;
@@ -173,10 +171,12 @@ static int backlight_pwm_of_probe(struct device *dev)
 	if (ret)
 		return ret;
 
-	pwm_backlight->power = regulator_get(dev, "power");
+	pwm_backlight->power = regulator_get_optional(dev, "power");
 	if (IS_ERR(pwm_backlight->power)) {
-		dev_err(dev, "Cannot find regulator\n");
-		return PTR_ERR(pwm_backlight->power);
+		if (PTR_ERR(pwm_backlight->power) != -ENODEV)
+			return dev_errp_probe(dev, pwm_backlight->power,
+					      "power supply\n");
+		pwm_backlight->power = NULL;
 	}
 
 	pwm_backlight->backlight.slew_time_ms = 100;

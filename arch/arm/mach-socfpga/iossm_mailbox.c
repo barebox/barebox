@@ -158,10 +158,27 @@ static int io96b_mb_version(struct io96b_info *io96b_ctrl)
 {
 	void __iomem *io96b_csr_addr = io96b_ctrl->io96b[0].io96b_csr_addr;
 	u32 mailbox_header;
-	int version;
+	int version = 0;
+	int retry;
 
-	mailbox_header = readl(io96b_csr_addr + IOSSM_MAILBOX_HEADER_OFFSET);
-	version = FIELD_GET(IOSSM_MAILBOX_SPEC_VERSION_MASK, mailbox_header);
+	/*
+	 * There is a race between barebox on the HPS and the IOSSM firmware
+	 * initialization, which may cause barebox to read a mailbox version 0
+	 * from the IOSSM even though it's actually mailbox version 1, but the
+	 * register has not been updated, yet. Unfortunately, there is no
+	 * reliable synchronization point.
+	 *
+	 * Workaround this issue by reading the mailbox version more often. On
+	 * mailbox version 1, barebox waits until the firmware wrote the
+	 * version register. On mailbox version 0, barebox runs into the
+	 * timeout caused by the number of retries.
+	 *
+	 * The number of retries has been experimentally determined.
+	 */
+	for (retry = 100; version == 0 && retry > 0; retry--) {
+		mailbox_header = readl(io96b_csr_addr + IOSSM_MAILBOX_HEADER_OFFSET);
+		version = FIELD_GET(IOSSM_MAILBOX_SPEC_VERSION_MASK, mailbox_header);
+	}
 
 	return version;
 }

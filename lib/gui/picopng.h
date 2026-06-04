@@ -28,6 +28,13 @@ typedef struct {
 PNG_info_t *PNG_decode(const uint8_t *in, uint32_t size);
 void png_alloc_free_all(void);
 
+/*
+ * Remove @addr from the picopng allocator's bookkeeping without freeing it,
+ * transferring ownership of the buffer to the caller (who must free() it).
+ * Returns @addr on success or NULL if @addr was not tracked.
+ */
+void *png_alloc_detach(void *addr);
+
 unsigned picopng_zlib_decompress(unsigned char* out, size_t outsize,
 				 const unsigned char* in, size_t insize);
 

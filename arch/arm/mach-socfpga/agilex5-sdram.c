@@ -94,14 +94,8 @@ static int populate_ddr_handoff(struct altera_sdram_plat *plat, struct io96b_inf
 	/* Read handoff for DDR configuration */
 	socfpga_handoff_read((void *)SOC64_HANDOFF_SDRAM, handoff_table, len);
 
-	/* Read handoff - dual port
-	   FIXME: Intel u-boot has a patch that HACKs this to 0
-	   https://github.com/altera-opensource/meta-intel-fpga-refdes/ \
-	   blob/master/recipes-bsp/u-boot/files/v1-0001-HSD-15015933655-ddr-altera-agilex5-Hack-dual-port-DO-NOT-MERGE.patch
-	   Patch doesn't say why or what is broken here: handoff files? dualport RAM access?
-	 */
-	//plat->dualport = FIELD_GET(BIT(0), handoff_table[PORT_EMIF_CONFIG_OFFSET]);
-	plat->dualport = 0;
+	/* Read handoff - dual port */
+	plat->dualport = FIELD_GET(BIT(0), handoff_table[PORT_EMIF_CONFIG_OFFSET]);
 	pr_debug("%s: dualport from handoff: 0x%x\n", __func__, plat->dualport);
 
 	if (plat->dualport)

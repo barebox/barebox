@@ -68,13 +68,6 @@ static void agilex5_el3_init(void)
 	agilex5_initialize_security_policies();
 	pr_debug("Security policies initialized\n");
 
-	/*
-	 * need to set the bank select enable before the
-	 * agilex5_ddr_init_full() otherwise the serial doesn't show
-	 * anything.
-	 */
-	if (!IS_ENABLED(CONFIG_DEBUG_LL))
-		writel(LCR_BKSE, SOCFPGA_UART0_ADDRESS + LCR);
 	ret = agilex5_ddr_init_full();
 	if (ret)
 		panic("DDR initialization failed\n");

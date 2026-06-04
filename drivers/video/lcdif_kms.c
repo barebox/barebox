@@ -364,8 +364,11 @@ static void lcdif_enable_fb_controller(struct fb_info *info)
 
 	ret = vpl_ioctl(&lcdif->vpl, lcdif->id, VPL_GET_BUS_FORMAT, &vcstate.bus_format);
 	if (ret < 0) {
-		dev_err(lcdif->dev, "Cannot determine bus format\n");
-		return;
+		/* default for panel-lvds DTs lacking bus-format / bridges not answering */
+		dev_warn(lcdif->dev,
+			 "VPL_GET_BUS_FORMAT failed (%pe), defaulting to RGB888_1X24\n",
+			 ERR_PTR(ret));
+		vcstate.bus_format = MEDIA_BUS_FMT_RGB888_1X24;
 	}
 
 	ret = vpl_ioctl(&lcdif->vpl, lcdif->id, VPL_GET_DISPLAY_INFO, &display_info);

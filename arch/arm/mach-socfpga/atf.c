@@ -63,6 +63,8 @@ static void __noreturn agilex5_load_and_start_image_via_tfa(void)
 
 static void agilex5_el3_init(void)
 {
+	int ret;
+
 	agilex5_initialize_security_policies();
 	pr_debug("Security policies initialized\n");
 
@@ -73,7 +75,9 @@ static void agilex5_el3_init(void)
 	 */
 	if (!IS_ENABLED(CONFIG_DEBUG_LL))
 		writel(LCR_BKSE, SOCFPGA_UART0_ADDRESS + LCR);
-	agilex5_ddr_init_full();
+	ret = agilex5_ddr_init_full();
+	if (ret)
+		panic("DDR initialization failed\n");
 
 	socfpga_agilex5_qspi_init();
 

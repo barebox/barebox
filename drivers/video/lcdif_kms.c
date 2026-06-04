@@ -396,10 +396,17 @@ static void lcdif_disable_fb_controller(struct fb_info *info)
 	lcdif_disable_controller(lcdif);
 }
 
+static void lcdif_fb_damage(struct fb_info *info, const struct fb_rect *rect)
+{
+	/* readback drains the write-combine buffer (dsb() doesn't) */
+	(void)*(volatile u8 *)info->screen_base;
+}
+
 static struct fb_ops lcdif_fb_ops = {
 	.fb_enable = lcdif_enable_fb_controller,
 	.fb_disable = lcdif_disable_fb_controller,
 	.fb_flush = lcdif_crtc_atomic_flush,
+	.fb_damage = lcdif_fb_damage,
 };
 
 /* -----------------------------------------------------------------------------

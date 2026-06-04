@@ -112,6 +112,19 @@ static int simple_panel_get_modes(struct simple_panel *panel, struct display_tim
 		return 0;
 	}
 
+	/* panel-lvds DTs put the single mode in "panel-timing", not "display-timings" */
+	if (of_get_child_by_name(panel->dev->of_node, "panel-timing")) {
+		struct fb_videomode *mode = xzalloc(sizeof(*mode));
+
+		ret = of_get_display_timing(panel->dev->of_node, "panel-timing", mode);
+		if (!ret) {
+			timings->modes = mode;
+			timings->num_modes = 1;
+			return 0;
+		}
+		free(mode);
+	}
+
 	dev_err(panel->dev, "No modes found\n");
 
 	return -ENOENT;
@@ -162,9 +175,12 @@ static int simple_panel_probe(struct device *dev)
 
 	panel->backlight_node = of_parse_phandle(node, "backlight", 0);
 
-	panel->power = regulator_get(dev, "power");
-	if (IS_ERR(panel->power))
-		return dev_errp_probe(dev, panel->power, "Cannot find regulator\n");
+	panel->power = regulator_get_optional(dev, "power");
+	if (IS_ERR(panel->power)) {
+		if (PTR_ERR(panel->power) != -ENODEV)
+			return dev_errp_probe(dev, panel->power, "power supply\n");
+		panel->power = NULL;
+	}
 
 	ret = vpl_register(&panel->vpl);
 	if (ret)
@@ -175,6 +191,7 @@ static int simple_panel_probe(struct device *dev)
 
 static struct of_device_id simple_panel_of_ids[] = {
 	{ .compatible = "simple-panel", },
+	{ .compatible = "panel-lvds", },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, simple_panel_of_ids);

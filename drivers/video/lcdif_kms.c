@@ -216,18 +216,14 @@ static void lcdif_set_mode(struct lcdif_drm_private *lcdif,
 	       lcdif->base + LCDC_V8_CTRLDESCL0_1);
 
 	/*
-	 * Undocumented P_SIZE and T_SIZE register but those written in the
-	 * downstream kernel those registers control the AXI burst size. As of
-	 * now there are two known values:
-	 *  1 - 128Byte
-	 *  2 - 256Byte
-	 * Downstream set it to 256B burst size to improve the memory
-	 * efficiency so set it here too.
+	 * P_SIZE/T_SIZE are undocumented AXI-burst-size selectors:
+	 * 1 = 128 byte, 2 = 256 byte.  Use 128B so any 32 bpp row divides
+	 * into whole bursts; 256B on an 800-pixel row produces a partial
+	 * trailing burst and a ~32-pixel black strip at the right edge.
+	 *
+	 * Stride is fixed to hdisplay * 4 (DRM_FORMAT_XRGB8888).
 	 */
-	/* NOTE: Since this driver is currently fixed to DRM_FORMAT_XRGB8888
-	 * we asume a stride of vdisplay * 4
-	 */
-	ctrl = CTRLDESCL0_3_P_SIZE(2) | CTRLDESCL0_3_T_SIZE(2) |
+	ctrl = CTRLDESCL0_3_P_SIZE(1) | CTRLDESCL0_3_T_SIZE(1) |
 	       CTRLDESCL0_3_PITCH(m->hdisplay * 4);
 	writel(ctrl, lcdif->base + LCDC_V8_CTRLDESCL0_3);
 }

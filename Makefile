@@ -560,6 +560,10 @@ PHONY += scripts_sconfig
 scripts_sconfig: scripts_basic
 	$(Q)$(MAKE) $(build)=scripts/sconfig
 
+PHONY += scripts_kconfig
+scripts_kconfig: scripts_basic
+	$(Q)$(MAKE) $(build)=scripts/kconfig build_config
+
 PHONY += outputmakefile
 # Before starting out-of-tree build, make sure the source tree is clean.
 # outputmakefile generates a Makefile in the output directory, if using a
@@ -1220,7 +1224,7 @@ include/generated/utsrelease.h: include/config/kernel.release FORCE
 
 ifdef CONFIG_SECURITY_POLICY
 
-.security_config: $(KCONFIG_CONFIG) FORCE
+.security_config: $(KCONFIG_CONFIG) scripts_kconfig FORCE
 	+$(call cmd,sconfig,allyesconfig,$@.tmp,$@)
 	$(Q)if [ ! -r $@ ] || ! cmp -s $@.tmp $@; then	\
 		mv -f $@.tmp $@;			\

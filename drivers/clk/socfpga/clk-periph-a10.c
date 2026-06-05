@@ -17,7 +17,7 @@
 #define SOCFPGA_MPU_FREE_CLK		"mpu_free_clk"
 #define SOCFPGA_NOC_FREE_CLK		"noc_free_clk"
 #define SOCFPGA_SDMMC_FREE_CLK		"sdmmc_free_clk"
-#define to_socfpga_periph_clk(p) container_of(p, struct socfpga_periph_clk, hw)
+#define to_socfpga_periph_clk(p) container_of(p, struct socfpga_periph_clk, hw.hw)
 
 static unsigned long clk_periclk_recalc_rate(struct clk_hw *hw,
 					     unsigned long parent_rate)
@@ -32,7 +32,7 @@ static unsigned long clk_periclk_recalc_rate(struct clk_hw *hw,
 		div &= GENMASK(socfpgaclk->width - 1, 0);
 		div += 1;
 	} else {
-		div = ((readl(socfpgaclk->reg) & 0x7ff) + 1);
+		div = ((readl(socfpgaclk->hw.reg) & 0x7ff) + 1);
 	}
 
 	return parent_rate / div;
@@ -43,7 +43,7 @@ static int clk_periclk_get_parent(struct clk_hw *hw)
 	struct socfpga_periph_clk *socfpgaclk = to_socfpga_periph_clk(hw);
 	u32 clk_src;
 
-	clk_src = readl(socfpgaclk->reg);
+	clk_src = readl(socfpgaclk->hw.reg);
 	if (streq(clk_hw_get_name(hw), SOCFPGA_MPU_FREE_CLK) ||
 	    streq(clk_hw_get_name(hw), SOCFPGA_NOC_FREE_CLK) ||
 	    streq(clk_hw_get_name(hw), SOCFPGA_SDMMC_FREE_CLK))
@@ -59,7 +59,7 @@ static const struct clk_ops periclk_ops = {
 };
 
 static struct clk *__socfpga_periph_init(struct device_node *node,
-	const struct clk_ops *ops)
+					 const struct clk_ops *ops)
 {
 	u32 reg;
 	struct clk_hw *hw_clk;
@@ -75,7 +75,7 @@ static struct clk *__socfpga_periph_init(struct device_node *node,
 
 	periph_clk = xzalloc(sizeof(*periph_clk));
 
-	periph_clk->reg = clk_mgr_base_addr + reg;
+	periph_clk->hw.reg = clk_mgr_base_addr + reg;
 
 	rc = of_property_read_u32_array(node, "div-reg", div_reg, 3);
 	if (!rc) {
@@ -101,9 +101,9 @@ static struct clk *__socfpga_periph_init(struct device_node *node,
 	init.num_parents = of_clk_parent_fill(node, parent_name, SOCFPGA_MAX_PARENTS);
 	init.parent_names = parent_name;
 
-	periph_clk->hw.init = &init;
+	periph_clk->hw.hw.init = &init;
 
-	hw_clk = &periph_clk->hw;
+	hw_clk = &periph_clk->hw.hw;
 
 	rc = clk_hw_register(NULL, hw_clk);
 	if (rc)

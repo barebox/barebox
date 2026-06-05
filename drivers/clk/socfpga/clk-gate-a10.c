@@ -14,7 +14,7 @@
 
 #include "clk.h"
 
-#define to_socfpga_gate_clk(p) container_of(p, struct socfpga_gate_clk, hw)
+#define to_socfpga_gate_clk(p) container_of(p, struct socfpga_gate_clk, hw.hw)
 
 /* SDMMC Group for System Manager defines */
 #define SYSMGR_SDMMCGRP_CTRL_OFFSET	0x28
@@ -41,9 +41,9 @@ static int clk_socfpga_enable(struct clk_hw *hw)
 	struct socfpga_gate_clk *socfpga_clk = to_socfpga_gate_clk(hw);
 	u32 val;
 
-	val = readl(socfpga_clk->reg);
-	val |= 1 << socfpga_clk->bit_idx;
-	writel(val, socfpga_clk->reg);
+	val = readl(socfpga_clk->hw.reg);
+	val |= 1 << socfpga_clk->hw.bit_idx;
+	writel(val, socfpga_clk->hw.reg);
 
 	return 0;
 }
@@ -53,9 +53,9 @@ static void clk_socfpga_disable(struct clk_hw *hw)
 	struct socfpga_gate_clk *socfpga_clk = to_socfpga_gate_clk(hw);
 	u32 val;
 
-	val = readl(socfpga_clk->reg);
-	val &= ~(1 << socfpga_clk->shift);
-	writel(val, socfpga_clk->reg);
+	val = readl(socfpga_clk->hw.reg);
+	val &= ~(1 << socfpga_clk->hw.shift);
+	writel(val, socfpga_clk->hw.reg);
 }
 
 static struct clk_ops gateclk_ops = {
@@ -63,7 +63,7 @@ static struct clk_ops gateclk_ops = {
 };
 
 static struct clk *__socfpga_gate_init(struct device_node *node,
-	const struct clk_ops *ops)
+				       const struct clk_ops *ops)
 {
 	u32 clk_gate[2];
 	u32 div_reg[3];
@@ -82,8 +82,8 @@ static struct clk *__socfpga_gate_init(struct device_node *node,
 		clk_gate[0] = 0;
 
 	if (clk_gate[0]) {
-		socfpga_clk->reg = clk_mgr_base_addr + clk_gate[0];
-		socfpga_clk->bit_idx = clk_gate[1];
+		socfpga_clk->hw.reg = clk_mgr_base_addr + clk_gate[0];
+		socfpga_clk->hw.bit_idx = clk_gate[1];
 
 		gateclk_ops.enable = clk_socfpga_enable;
 		gateclk_ops.disable = clk_socfpga_disable;
@@ -112,14 +112,14 @@ static struct clk *__socfpga_gate_init(struct device_node *node,
 
 	init.num_parents = of_clk_parent_fill(node, parent_name, SOCFPGA_MAX_PARENTS);
 	init.parent_names = parent_name;
-	socfpga_clk->hw.init = &init;
-	hw_clk = &socfpga_clk->hw;
+	socfpga_clk->hw.hw.init = &init;
+	hw_clk = &socfpga_clk->hw.hw;
 
 	rc = clk_hw_register(NULL, hw_clk);
 	if (rc)
 		return ERR_PTR(rc);
 
-	return &socfpga_clk->hw.clk;
+	return &hw_clk->clk;
 }
 
 struct clk *socfpga_a10_gate_init(struct device_node *node)

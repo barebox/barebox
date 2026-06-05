@@ -4,97 +4,63 @@
 #define   __MACH_SOCFPGA_DEBUG_LL_H__
 
 #include <io.h>
-#include <errno.h>
 
 #ifdef CONFIG_DEBUG_LL
 #define UART_BASE	CONFIG_DEBUG_SOCFPGA_UART_PHYS_ADDR
+
+#if defined(CONFIG_ARCH_SOCFPGA_CYCLONE5)
+static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)
+{
+	return readb(base + (reg << 2));
+}
+
+static inline void debug_ll_write_reg(void __iomem *base, int reg, uint8_t val)
+{
+	writeb(val, base + (reg << 2));
+}
+#else
+static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)
+{
+	return readl(base + (reg << 2));
+}
+
+static inline void debug_ll_write_reg(void __iomem *base, int reg, uint8_t val)
+{
+	writel(val, base + (reg << 2));
+}
 #endif
 
-#define LSR_THRE	0x20	/* Xmit holding register empty */
-#define LSR_TEMT	0x40
+#include <debug_ll/ns16550.h>
 
-#define LCR_BKSE	0x80	/* Bank select enable */
-#define LCRVAL		0x3
-#define MCRVAL		0x3
-#define FCRVAL		0xc1
-
-#define RBR		0x0
-#define DLL		0x0
-#define IER		0x4
-#define DLM		0x4
-#define FCR		0x8
-#define LCR		0xc
-#define MCR		0x10
-#define LSR		0x14
-#define MSR		0x18
-#define SCR		0x1c
-#define THR		0x30
-
-static inline void socfpga_gen5_uart_putc(void *base, int c)
+static inline void socfpga_uart_setup(void *base)
 {
-	/* Wait until there is space in the FIFO */
-	while ((readb(base + LSR) & LSR_THRE) == 0);
-	/* Send the character */
-	writeb(c, base + THR);
-	/* Wait to make sure it hits the line, in case we die too soon. */
-	while ((readb(base + LSR) & LSR_THRE) == 0);
-}
+	unsigned int div;
 
-static inline void socfpga_uart_putc(void *base, int c)
-{
-	/* Wait until there is space in the FIFO */
-	while ((readl(base + LSR) & LSR_THRE) == 0);
-	/* Send the character */
-	writel(c, base + THR);
-	/* Wait to make sure it hits the line, in case we die too soon. */
-	while ((readl(base + LSR) & LSR_THRE) == 0);
-}
-
-#ifdef CONFIG_DEBUG_LL
-static inline unsigned int ns16550_calc_divisor(unsigned int clk,
-					 unsigned int baudrate)
-{
-	return (clk / 16 / baudrate);
+	div = debug_ll_ns16550_calc_divisor(CONFIG_DEBUG_SOCFPGA_UART_CLOCK);
+	debug_ll_ns16550_init(base, div);
 }
 
 static inline void socfpga_uart_setup_ll(void)
 {
-	unsigned int div = ns16550_calc_divisor(CONFIG_DEBUG_SOCFPGA_UART_CLOCK,
-						115200);
-
-	writel(0x00, UART_BASE + IER);
-
-	writel(LCR_BKSE, UART_BASE + LCR);
-	writel(div & 0xff, UART_BASE + DLL);
-	writel((div >> 8) & 0xff, UART_BASE + DLM);
-	writel(LCRVAL, UART_BASE + LCR);
-
-	writel(MCRVAL, UART_BASE + MCR);
-	writel(FCRVAL, UART_BASE + FCR);
-}
-
-#if defined(CONFIG_ARCH_SOCFPGA_CYCLONE5)
-static inline void PUTC_LL(char c)
-{
 	void __iomem *base = IOMEM(UART_BASE);
 
-	socfpga_gen5_uart_putc(base, c);
+	socfpga_uart_setup(base);
 }
-#else
+
+static inline void socfpga_uart_putc(void *base, int c)
+{
+	debug_ll_ns16550_putc(base, c);
+}
+
 static inline void PUTC_LL(char c)
 {
 	void __iomem *base = IOMEM(UART_BASE);
 
 	socfpga_uart_putc(base, c);
 }
-#endif
-
 #else
-static inline unsigned int ns16550_calc_divisor(unsigned int clk,
-					 unsigned int baudrate) {
-	return -ENOSYS;
-}
 static inline void socfpga_uart_setup_ll(void) {}
-static inline void PUTC_LL(char c) {}
+static inline void socfpga_uart_putc(void *base, int c) {}
+static inline void socfpga_uart_setup(void *base) {}
 #endif
 #endif /* __MACH_SOCFPGA_DEBUG_LL_H__ */

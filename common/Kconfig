@@ -768,6 +768,26 @@ config BLSPEC
 	  on a device and it allows the Operating System to install / update
 	  kernels.
 
+config EXTLINUX
+	bool
+	prompt "Support extlinux.conf"
+	depends on FLEXIBLE_BOOTARGS
+	depends on !SHELL_NONE
+	select BOOT
+	select BOOTM
+	select MMCBLKDEV_ROOTARG if MCI
+	help
+	  Enable this to let barebox parse extlinux.conf configuration files,
+	  commonly used by the Syslinux bootloader and many Linux distributions
+	  (e.g., on SD cards or USB drives).
+	  extlinux.conf is typically located at /boot/extlinux/extlinux.conf or
+	  /extlinux/extlinux.conf. It defines boot entries with kernel, initrd,
+	  device tree, and command line options.
+
+	  Note: barebox only uses the entry specified by the DEFAULT keyword.
+	  Additional LABEL sections are ignored. This allows a simple and
+	  portable way to define a single default boot option.
+
 config FLEXIBLE_BOOTARGS
 	bool
 	prompt "flexible Linux bootargs generation"

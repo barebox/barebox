@@ -117,10 +117,12 @@ static struct clk *__socfpga_gate_init(struct device_node *node,
 	u32 div_reg[3];
 	u32 clk_phase[2];
 	u32 fixed_div;
+	struct clk_hw *hw_clk;
 	struct socfpga_gate_clk *socfpga_clk;
 	const char *clk_name = node->name;
+	const char *parent_name[SOCFPGA_MAX_PARENTS];
+	struct clk_init_data init;
 	int rc;
-	int i;
 
 	socfpga_clk = xzalloc(sizeof(*socfpga_clk));
 
@@ -159,23 +161,18 @@ static struct clk *__socfpga_gate_init(struct device_node *node,
 
 	of_property_read_string(node, "clock-output-names", &clk_name);
 
-	socfpga_clk->hw.clk.name = xstrdup(clk_name);
-	socfpga_clk->hw.clk.ops = ops;
+	init.name = clk_name;
+	init.ops = ops;
+	init.flags = 0;
 
-	for (i = 0; i < SOCFPGA_MAX_PARENTS; i++) {
-		socfpga_clk->parent_names[i] = of_clk_get_parent_name(node, i);
-		if (!socfpga_clk->parent_names[i])
-			break;
-	}
+	init.num_parents = of_clk_parent_fill(node, parent_name, SOCFPGA_MAX_PARENTS);
+	init.parent_names = parent_name;
+	socfpga_clk->hw.init = &init;
+	hw_clk = &socfpga_clk->hw;
 
-	socfpga_clk->hw.clk.num_parents = i;
-	socfpga_clk->hw.clk.parent_names = socfpga_clk->parent_names;
-
-	rc = bclk_register(&socfpga_clk->hw.clk);
-	if (rc) {
-		free(socfpga_clk);
+	rc = clk_hw_register(NULL, hw_clk);
+	if (rc)
 		return ERR_PTR(rc);
-	}
 
 	return &socfpga_clk->hw.clk;
 }

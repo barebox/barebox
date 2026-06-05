@@ -62,12 +62,14 @@ static struct clk *__socfpga_periph_init(struct device_node *node,
 	const struct clk_ops *ops)
 {
 	u32 reg;
+	struct clk_hw *hw_clk;
 	struct socfpga_periph_clk *periph_clk;
 	const char *clk_name = node->name;
+	const char *parent_name[SOCFPGA_MAX_PARENTS];
+	struct clk_init_data init;
 	int rc;
 	u32 fixed_div;
 	u32 div_reg[3];
-	int i;
 
 	of_property_read_u32(node, "reg", &reg);
 
@@ -92,25 +94,22 @@ static struct clk *__socfpga_periph_init(struct device_node *node,
 
 	of_property_read_string(node, "clock-output-names", &clk_name);
 
-	for (i = 0; i < SOCFPGA_MAX_PARENTS; i++) {
-		periph_clk->parent_names[i] = of_clk_get_parent_name(node, i);
-		if (!periph_clk->parent_names[i])
-			break;
-	}
+	init.name = clk_name;
+	init.ops = ops;
+	init.flags = 0;
 
-	periph_clk->hw.clk.num_parents = i;
-	periph_clk->hw.clk.parent_names = periph_clk->parent_names;
+	init.num_parents = of_clk_parent_fill(node, parent_name, SOCFPGA_MAX_PARENTS);
+	init.parent_names = parent_name;
 
-	periph_clk->hw.clk.name = xstrdup(clk_name);
-	periph_clk->hw.clk.ops = ops;
+	periph_clk->hw.init = &init;
 
-	rc = bclk_register(&periph_clk->hw.clk);
-	if (rc) {
-		free(periph_clk);
+	hw_clk = &periph_clk->hw;
+
+	rc = clk_hw_register(NULL, hw_clk);
+	if (rc)
 		return ERR_PTR(rc);
-	}
 
-	return &periph_clk->hw.clk;
+	return &hw_clk->clk;
 }
 
 struct clk *socfpga_a10_periph_init(struct device_node *node)

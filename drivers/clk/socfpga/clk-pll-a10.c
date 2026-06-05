@@ -88,10 +88,13 @@ static struct clk *__socfpga_pll_init(struct device_node *node,
 	const struct clk_ops *ops)
 {
 	u32 reg;
+	struct clk_hw *hw_clk;
 	struct socfpga_pll *pll_clk;
 	const char *clk_name = node->name;
+	const char *parent_name[SOCFGPA_MAX_PARENTS];
+	struct clk_init_data init;
 	int rc;
-	int i;
+	int i = 0;
 
 	of_property_read_u32(node, "reg", &reg);
 
@@ -101,27 +104,25 @@ static struct clk *__socfpga_pll_init(struct device_node *node,
 
 	of_property_read_string(node, "clock-output-names", &clk_name);
 
-	pll_clk->hw.clk.name = xstrdup(clk_name);
-	pll_clk->hw.clk.ops = ops;
+	init.name = clk_name;
+	init.ops = ops;
+	init.flags = 0;
 
-	for (i = 0; i < SOCFPGA_MAX_PARENTS; i++) {
-		pll_clk->parent_names[i] = of_clk_get_parent_name(node, i);
-		if (!pll_clk->parent_names[i])
-			break;
-	}
+	while (i < SOCFGPA_MAX_PARENTS &&
+	       (parent_name[i] = of_clk_get_parent_name(node, i)) != NULL)
+		i++;
+	init.num_parents = i;
+	init.parent_names = parent_name;
 
 	pll_clk->bit_idx = SOCFPGA_PLL_EXT_ENA;
-	pll_clk->hw.clk.num_parents = i;
-	pll_clk->hw.clk.parent_names = pll_clk->parent_names;
+	hw_clk = &pll_clk->hw;
 
 	clk_pll_ops.enable = clk_socfpga_enable;
 	clk_pll_ops.disable = clk_socfpga_disable;
 
-	rc = bclk_register(&pll_clk->hw.clk);
-	if (rc) {
-		free(pll_clk);
-		return NULL;
-	}
+	rc = clk_hw_register(NULL, &pll_clk->hw);
+	if (rc)
+		ERR_PTR(rc);
 
 	return &pll_clk->hw.clk;
 }

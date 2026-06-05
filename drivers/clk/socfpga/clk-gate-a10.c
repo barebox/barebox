@@ -36,58 +36,10 @@ static unsigned long socfpga_gate_clk_recalc_rate(struct clk_hw *hw,
 	return parent_rate / div;
 }
 
-static int socfpga_clk_prepare(struct clk_hw *hw)
-{
-	struct socfpga_gate_clk *socfpgaclk = to_socfpga_gate_clk(hw);
-	int i;
-	u32 hs_timing;
-	u32 clk_phase[2];
-
-	if (socfpgaclk->clk_phase[0] || socfpgaclk->clk_phase[1]) {
-		for (i = 0; i < ARRAY_SIZE(clk_phase); i++) {
-			switch (socfpgaclk->clk_phase[i]) {
-			case 0:
-				clk_phase[i] = 0;
-				break;
-			case 45:
-				clk_phase[i] = 1;
-				break;
-			case 90:
-				clk_phase[i] = 2;
-				break;
-			case 135:
-				clk_phase[i] = 3;
-				break;
-			case 180:
-				clk_phase[i] = 4;
-				break;
-			case 225:
-				clk_phase[i] = 5;
-				break;
-			case 270:
-				clk_phase[i] = 6;
-				break;
-			case 315:
-				clk_phase[i] = 7;
-				break;
-			default:
-				clk_phase[i] = 0;
-				break;
-			}
-		}
-
-		hs_timing = SYSMGR_SDMMC_CTRL_SET(clk_phase[0], clk_phase[1]);
-		writel(hs_timing, ARRIA10_SYSMGR_SDMMC);
-	}
-	return 0;
-}
-
 static int clk_socfpga_enable(struct clk_hw *hw)
 {
 	struct socfpga_gate_clk *socfpga_clk = to_socfpga_gate_clk(hw);
 	u32 val;
-
-	socfpga_clk_prepare(hw);
 
 	val = readl(socfpga_clk->reg);
 	val |= 1 << socfpga_clk->bit_idx;
@@ -115,7 +67,6 @@ static struct clk *__socfpga_gate_init(struct device_node *node,
 {
 	u32 clk_gate[2];
 	u32 div_reg[3];
-	u32 clk_phase[2];
 	u32 fixed_div;
 	struct clk_hw *hw_clk;
 	struct socfpga_gate_clk *socfpga_clk;
@@ -151,12 +102,6 @@ static struct clk *__socfpga_gate_init(struct device_node *node,
 		socfpga_clk->width = div_reg[2];
 	} else {
 		socfpga_clk->div_reg = NULL;
-	}
-
-	rc = of_property_read_u32_array(node, "clk-phase", clk_phase, 2);
-	if (!rc) {
-		socfpga_clk->clk_phase[0] = clk_phase[0];
-		socfpga_clk->clk_phase[1] = clk_phase[1];
 	}
 
 	of_property_read_string(node, "clock-output-names", &clk_name);

@@ -4,9 +4,14 @@
 #define   __MACH_SOCFPGA_DEBUG_LL_H__
 
 #include <io.h>
+#include <mach/socfpga/soc64-regs.h>
 
-#ifdef CONFIG_DEBUG_LL
-#define UART_BASE	CONFIG_DEBUG_SOCFPGA_UART_PHYS_ADDR
+#define __SOCFPGA_UART_BASE(num)	SOCFPGA_UART##num##_ADDRESS
+#define SOCFPGA_UART_BASE(num)		__SOCFPGA_UART_BASE(num)
+
+#ifdef CONFIG_DEBUG_SOCFPGA_UART
+
+#define UART_BASE			SOCFPGA_UART_BASE(CONFIG_DEBUG_SOCFPGA_UART_PORT)
 
 #if defined(CONFIG_ARCH_SOCFPGA_CYCLONE5)
 static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)

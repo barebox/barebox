@@ -6,6 +6,7 @@
 
 #include <common.h>
 #include <debug_ll.h>
+#include <mach/socfpga/debug_ll.h>
 #include <mach/socfpga/arria10-regs.h>
 #include <mach/socfpga/arria10-clock-manager.h>
 #include <mach/socfpga/arria10-pinmux.h>

@@ -113,7 +113,7 @@ static const struct clk_ops clk_boot_ops = {
 	.enable = clk_pll_enable,
 };
 
-struct clk_hw *agilex5_register_pll(const struct stratix10_pll_clock *clks,
+struct clk_hw *agilex5_register_pll(const struct agilex5_pll_clock *clks,
 				    void __iomem *reg)
 {
 	struct clk_hw *hw_clk;
@@ -134,8 +134,7 @@ struct clk_hw *agilex5_register_pll(const struct stratix10_pll_clock *clks,
 	init.name = name;
 	init.flags = clks->flags;
 	init.num_parents = clks->num_parents;
-	init.parent_names = NULL;
-	init.parent_data = clks->parent_data;
+	init.parent_names = clks->parent_names;
 	pll_clk->hw.hw.init = &init;
 	pll_clk->hw.bit_idx = SOCFPGA_PLL_POWER;
 	hw_clk = &pll_clk->hw.hw;

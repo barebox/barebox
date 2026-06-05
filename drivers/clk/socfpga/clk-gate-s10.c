@@ -124,12 +124,11 @@ static const struct clk_ops dbgclk_ops = {
 	.get_parent = socfpga_gate_get_parent,
 };
 
-struct clk_hw *agilex_register_gate(const struct stratix10_gate_clock *clks, void __iomem *regbase)
+struct clk_hw *agilex5_register_gate(const struct agilex5_gate_clock *clks, void __iomem *regbase)
 {
 	struct clk_hw *hw_clk;
 	struct socfpga_gate_clk *socfpga_clk;
 	struct clk_init_data init;
-	const char *parent_name = clks->parent_name;
 	int ret;
 
 	socfpga_clk = xzalloc(sizeof(*socfpga_clk));
@@ -161,9 +160,7 @@ struct clk_hw *agilex_register_gate(const struct stratix10_gate_clock *clks, voi
 	init.name = clks->name;
 	init.flags = clks->flags;
 	init.num_parents = clks->num_parents;
-	init.parent_names = parent_name ? &parent_name : NULL;
-	if (init.parent_names == NULL)
-		init.parent_data = clks->parent_data;
+	init.parent_names = clks->parent_names;
 	socfpga_clk->hw.hw.init = &init;
 	hw_clk = &socfpga_clk->hw.hw;
 

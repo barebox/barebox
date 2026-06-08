@@ -25,6 +25,29 @@ config PCI_DEBUG
 
 	  When in doubt, say N.
 
+config PCI_DYNAMIC_OF_NODES
+	bool "Create devicetree nodes for runtime-enumerated PCI devices"
+	depends on PCI && OFDEVICE
+	help
+	  Synthesize a devicetree node for every PCI device discovered during
+	  bus scan that does not already have one in the static devicetree.
+	  Nodes are attached to the live tree under the host-bridge / parent
+	  bridge node, so they are visible to barebox itself and flow into the
+	  devicetree passed to the kernel at boot.
+
+	  This lets consumers (e.g. of_eth_register_ethaddr() for stamping a
+	  MAC address) reference PCI endpoints by node path without
+	  hand-writing the pci@D,F / dev@D,F hierarchy in the source DTS.
+
+	  Only the bare minimum is generated: a node with a "reg" property
+	  encoding the device/function so Linux's of_pci_find_child_device()
+	  can attach the node to the device it rediscovers from hardware.
+	  Linux recomputes everything else (compatible from VID/DID, bus-range
+	  and ranges from config space, etc.) so adding it here would just be
+	  duplicated state with no consumer.
+
+	  When in doubt, say N.
+
 config PCIE_DW
 	bool
 

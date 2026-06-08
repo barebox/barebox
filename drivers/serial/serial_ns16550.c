@@ -390,21 +390,15 @@ static void ns16550_probe_dt(struct device *dev, struct ns16550_priv *priv)
 
 static struct ns16550_drvdata ns16450_drvdata = {
 	.init_port = ns16450_serial_init_port,
-	.linux_console_name = "ttyS",
-	.linux_earlycon_name = "uart8250",
 };
 
 static struct ns16550_drvdata ns16550_drvdata = {
 	.init_port = ns16550_serial_init_port,
-	.linux_console_name = "ttyS",
-	.linux_earlycon_name = "uart8250",
 };
 
 static __maybe_unused struct ns16550_drvdata omap_drvdata = {
 	.init_port = ns16550_omap_init_port,
-#ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_TTYS
-	.linux_console_name = "ttyS",
-#else
+#ifndef CONFIG_DRIVER_SERIAL_NS16550_OMAP_TTYS
 	.linux_console_name = "ttyO",
 #endif
 	.linux_earlycon_name = "omap8250",
@@ -412,20 +406,16 @@ static __maybe_unused struct ns16550_drvdata omap_drvdata = {
 
 static __maybe_unused struct ns16550_drvdata omap_clk48m_drvdata = {
 	.init_port = ns16550_omap_init_port,
-	.linux_console_name = "ttyS",
-	.linux_earlycon_name = "uart8250",
 	.clk_default = 48000000,
 };
 
 static __maybe_unused struct ns16550_drvdata jz_drvdata = {
 	.init_port = ns16550_jz_init_port,
-	.linux_console_name = "ttyS",
 	.linux_earlycon_name = "jz4740_uart",
 };
 
 static __maybe_unused struct ns16550_drvdata rpi_drvdata = {
 	.init_port = rpi_init_port,
-	.linux_console_name = "ttyS",
 	.linux_earlycon_name = "bcm2835aux",
 };
 
@@ -510,6 +500,7 @@ static int ns16550_probe(struct device *dev)
 	struct NS16550_plat *plat = (struct NS16550_plat *)dev->platform_data;
 	const struct ns16550_drvdata *devtype;
 	struct resource *iores;
+	const char *linux_earlycon_name;
 	int ret;
 
 	devtype = device_get_match_data(dev) ?: &ns16550_drvdata;
@@ -550,8 +541,10 @@ static int ns16550_probe(struct device *dev)
 	cdev->getc = ns16550_getc;
 	cdev->setbrg = priv->plat.clock ? ns16550_setbaudrate : NULL;
 	cdev->flush = ns16550_flush;
-	cdev->linux_console_name = devtype->linux_console_name;
-	cdev->linux_earlycon_name = basprintf("%s,%s", devtype->linux_earlycon_name,
+	cdev->linux_console_name = devtype->linux_console_name ?: "ttyS";
+	linux_earlycon_name = devtype->linux_earlycon_name ?: "uart8250";
+
+	cdev->linux_earlycon_name = basprintf("%s,%s", linux_earlycon_name,
 					      priv->access_type);
 	cdev->phys_base = !strcmp(priv->access_type, "io") ?
 		IOMEM((ulong)priv->iobase) : priv->mmiobase;

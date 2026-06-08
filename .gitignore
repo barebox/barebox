@@ -46,6 +46,7 @@ policy-list
 *.dtb.*
 *.dtbo
 *.dtbo.*
+*.z
 
 #
 # Top-level generic files

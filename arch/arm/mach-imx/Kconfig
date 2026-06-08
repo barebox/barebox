@@ -70,7 +70,7 @@ config ARCH_IMX_TZASC
 
 config ARCH_IMX_SNVS
 	bool
-	depends on ARCH_IMX7 || ARCH_IMX8M
+	depends on ARCH_IMX6 || ARCH_IMX7 || ARCH_IMX8M
 	default y
 
 #

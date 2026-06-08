@@ -289,11 +289,6 @@ config STACK_SIZE
 	default 0x8000
 	prompt "Stack size"
 
-config MALLOC_BASE
-	depends on MEMORY_LAYOUT_FIXED
-	hex
-	prompt "MALLOC_BASE"
-
 config MALLOC_SIZE
 	hex
 	default 0x400000 if ARCH_HAS_MALLOC_SIZE

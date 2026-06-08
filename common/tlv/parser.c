@@ -49,15 +49,16 @@ static int tlv_verify_try_key(const struct public_key *key, const uint8_t *sig,
 	return ret;
 }
 
-static int tlv_verify(const struct tlv_header *header, const char *keyring)
+static int tlv_verify(const struct tlv_header *header, const char *keyring_name)
 {
 	const struct public_key *key;
+	const struct keyring *kr;
 	size_t payload_sz = tlv_spki_hash_offset(header);
 	const void *spki_tlv_ptr = (void *)header + payload_sz;
 	u32 spki_tlv = get_unaligned_le32(spki_tlv_ptr);
 	int SPKI_LEN = 4;
 	u32 sig_len = get_unaligned_be16(&header->length_sig);
-	int ret, id;
+	int ret;
 	int count_spki_matches = 0;
 
 	if (!IS_ENABLED(CONFIG_TLV_SIGNATURE)) {
@@ -68,7 +69,13 @@ static int tlv_verify(const struct tlv_header *header, const char *keyring)
 		return -EPROTO;
 	}
 
-	for_each_public_key_keyring(key, id, keyring) {
+	kr = keyring_find(keyring_name);
+	if (!kr) {
+		pr_warn("TLV keyring %s not found\n", keyring_name);
+		return -ENOKEY;
+	}
+
+	for_each_key_in_keyring(key, kr) {
 		u32 spki_key = get_unaligned_le32(key->hash);
 
 		if (spki_key == spki_tlv) {

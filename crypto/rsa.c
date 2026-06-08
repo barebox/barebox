@@ -468,8 +468,7 @@ static void rsa_init_keys_of(void)
 			continue;
 		}
 
-		key->keyring = "fit";
-		ret = public_key_add(key);
+		ret = public_key_add("fit", key);
 		if (ret)
 			pr_err("Cannot add rsa key %s: %pe\n",
 				key->key_name_hint, ERR_PTR(ret));

@@ -4,12 +4,23 @@
 
 static int do_keys(int argc, char *argv[])
 {
-	const struct public_key *key;
-	int id;
+	const struct keyring *kr;
+	const struct keyring_link *link;
 
-	for_each_public_key(key, id) {
-		printf("KEY: %*phN\tTYPE: %s\tKEYRING: %s\tHINT: %s\n", key->hashlen,
-		       key->hash, public_key_type_string(key->type), key->keyring, key->key_name_hint);
+	for_each_keyring(kr) {
+		printf("RING: %s\n", kr->name);
+		for_each_link_in_keyring(link, kr) {
+			if (link->type == KEYRING_LINK_KEY) {
+				const struct public_key *key = link->key;
+
+				printf("    KEY:    %*phN\tTYPE: %s\tHINT: %s\n",
+				       key->hashlen, key->hash,
+				       public_key_type_string(key->type),
+				       key->key_name_hint ?: "");
+			} else {
+				printf("    RING:   %s\n", link->keyring->name);
+			}
+		}
 	}
 
 	return 0;

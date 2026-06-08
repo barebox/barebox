@@ -34,7 +34,8 @@
 struct keyinfo {
 	char *spec;
 	char *name_hint;
-	char *keyring;
+	char **keyrings;
+	int nr_keyrings;
 	char *path;
 	char *name_c;
 };
@@ -535,7 +536,7 @@ static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 		fprintf(stderr, "ERROR: generating a dts snippet for ECDSA keys is not yet supported\n");
 		return -EOPNOTSUPP;
 	} else {
-		fprintf(outfilep, "\nstatic unsigned char %s_hash[] = {\n\t", info->name_c);
+		fprintf(outfilep, "\nstatic const unsigned char %s_hash[] = {\n\t", info->name_c);
 
 		ret = print_hash(key);
 		if (ret)
@@ -557,23 +558,31 @@ static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static struct ecdsa_public_key %s = {\n", info->name_c);
+		fprintf(outfilep, "static const struct ecdsa_public_key %s = {\n", info->name_c);
 
 		fprintf(outfilep, "\t.curve_name = \"%s\",\n", group);
 		fprintf(outfilep, "\t.x = %s_x,\n", info->name_c);
 		fprintf(outfilep, "\t.y = %s_y,\n", info->name_c);
 		fprintf(outfilep, "};\n");
 		if (!standalone) {
-			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", info->name_c);
+			int i;
+
+			fprintf(outfilep, "\nstatic const struct public_key %s_public_key = {\n", info->name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_ECDSA,\n");
-			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
-			fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyring);
+			if (info->name_hint)
+				fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", info->name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
 			fprintf(outfilep, "\t.ecdsa = &%s,\n", info->name_c);
 			fprintf(outfilep, "};\n");
-			fprintf(outfilep, "\n");
-			fprintf(outfilep, "const struct public_key *__%s_public_key __ll_elem(.public_keys.rodata.%s) = &%s_public_key;\n", info->name_c, info->name_c, info->name_c);
+			for (i = 0; i < info->nr_keyrings; i++) {
+				fprintf(outfilep, "\n");
+				fprintf(outfilep, "static const struct public_key_record __%s_record_%d __ll_elem(.public_keys.rodata.%s_record_%d) = {\n",
+					info->name_c, i, info->name_c, i);
+				fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyrings[i]);
+				fprintf(outfilep, "\t.key = &%s_public_key,\n", info->name_c);
+				fprintf(outfilep, "};\n");
+			}
 		}
 	}
 
@@ -634,7 +643,7 @@ static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 		fprintf(outfilep, "\t\t\tkey-name-hint = \"%s\";\n", info->name_c);
 		fprintf(outfilep, "\t\t};\n");
 	} else {
-		fprintf(outfilep, "\nstatic unsigned char %s_hash[] = {\n\t", info->name_c);
+		fprintf(outfilep, "\nstatic const unsigned char %s_hash[] = {\n\t", info->name_c);
 
 		ret = print_hash(key);
 		if (ret)
@@ -660,7 +669,7 @@ static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 			fprintf(outfilep, "struct rsa_public_key __key_%s;\n", info->name_c);
 			fprintf(outfilep, "struct rsa_public_key __key_%s = {\n", info->name_c);
 		} else {
-			fprintf(outfilep, "static struct rsa_public_key %s = {\n", info->name_c);
+			fprintf(outfilep, "static const struct rsa_public_key %s = {\n", info->name_c);
 		}
 
 		fprintf(outfilep, "\t.len = %d,\n", bits / 32);
@@ -671,16 +680,24 @@ static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 		fprintf(outfilep, "};\n");
 
 		if (!standalone) {
-			fprintf(outfilep, "\nstatic struct public_key %s_public_key = {\n", info->name_c);
+			int i;
+
+			fprintf(outfilep, "\nstatic const struct public_key %s_public_key = {\n", info->name_c);
 			fprintf(outfilep, "\t.type = PUBLIC_KEY_TYPE_RSA,\n");
-			fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
-			fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyring);
+			if (info->name_hint)
+				fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", info->name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
 			fprintf(outfilep, "\t.rsa = &%s,\n", info->name_c);
 			fprintf(outfilep, "};\n");
-			fprintf(outfilep, "\n");
-			fprintf(outfilep, "const struct public_key *__%s_public_key __ll_elem(.public_keys.rodata.%s) = &%s_public_key;\n", info->name_c, info->name_c, info->name_c);
+			for (i = 0; i < info->nr_keyrings; i++) {
+				fprintf(outfilep, "\n");
+				fprintf(outfilep, "static const struct public_key_record __%s_record_%d __ll_elem(.public_keys.rodata.%s_record_%d) = {\n",
+					info->name_c, i, info->name_c, i);
+				fprintf(outfilep, "\t.keyring = \"%s\",\n", info->keyrings[i]);
+				fprintf(outfilep, "\t.key = &%s_public_key,\n", info->name_c);
+				fprintf(outfilep, "};\n");
+			}
 		}
 	}
 
@@ -769,9 +786,21 @@ static bool parse_info(char *p, struct keyinfo *out)
 			v = strdup(v);
 			if (!v)
 				enomem_exit(__func__);
-			if (strcmp(k, "keyring") == 0)
-				out->keyring = strdup(v);
-			else if (strcmp(k, "fit-hint") == 0)
+			if (strcmp(k, "keyring") == 0) {
+				int i;
+				for (i = 0; i < out->nr_keyrings; i++) {
+					if (strcmp(out->keyrings[i], v) == 0) {
+						fprintf(stderr,
+							"duplicate keyring=%s in keyspec\n", v);
+						return false;
+					}
+				}
+				out->keyrings = realloc(out->keyrings,
+							(out->nr_keyrings + 1) * sizeof(char *));
+				if (!out->keyrings)
+					enomem_exit(__func__);
+				out->keyrings[out->nr_keyrings++] = strdup(v);
+			} else if (strcmp(k, "fit-hint") == 0)
 				out->name_hint = strdup(v);
 			else
 				return false;
@@ -856,7 +885,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind == argc) {
-		fprintf(stderr, "Usage: %s [-ods] keyring=<keyring>[,fit-hint=<hint>]:<crt> ...\n", argv[0]);
+		fprintf(stderr, "Usage: %s [-ods] keyring=<keyring>[,keyring=<keyring>...][,fit-hint=<hint>]:<crt> ...\n", argv[0]);
 		fprintf(stderr, "\t-o FILE\twrite output into FILE instead of stdout\n");
 		fprintf(stderr, "\t-d\tgenerate device tree snippet instead of C code\n");
 		fprintf(stderr, "\t-s\tgenerate standalone key outside FIT image keyring\n");
@@ -920,12 +949,12 @@ int main(int argc, char *argv[])
 		if (asprintf(&info->name_c, "key_%i", keys_idx + 1) < 0)
 			enomem_exit("asprintf");
 
-		/* unfortunately, the fit name hint is mandatory in the barebox codebase */
-		if (!info->name_hint)
-			info->name_hint = info->name_c;
-
-		if (!info->keyring) {
-			info->keyring = strdup("fit");
+		if (info->nr_keyrings == 0) {
+			info->keyrings = malloc(sizeof(char *));
+			if (!info->keyrings)
+				enomem_exit(__func__);
+			info->keyrings[0] = strdup("fit");
+			info->nr_keyrings = 1;
 			fprintf(stderr, "Warning: No keyring provided in keyspec, defaulting to keyring=fit for %s\n", info->path);
 		}
 	}

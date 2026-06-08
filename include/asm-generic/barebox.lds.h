@@ -129,7 +129,18 @@
 #endif
 
 
+/*
+ * GCC emits "const data with absolute relocations" into .data.rel.ro*
+ * (e.g. a `static const struct` that contains pointers to other symbols).
+ * In a statically linked image these are fully resolved at link time and
+ * never written at runtime, so place them with .rodata instead of letting
+ * them fall through into the writable .data section.
+ */
+#define BAREBOX_RELRO_DATA			\
+	*(.data.rel.ro .data.rel.ro.*)
+
 #define RO_DATA_SECTION				\
+	BAREBOX_RELRO_DATA			\
 	BAREBOX_INITCALLS			\
 	BAREBOX_EXITCALLS			\
 	BAREBOX_CMDS				\

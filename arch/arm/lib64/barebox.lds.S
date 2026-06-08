@@ -26,6 +26,7 @@ SECTIONS
 	.text      :
 	{
 		_stext = .;
+		. += 16;
 		*(.text*)
 	} :text
 

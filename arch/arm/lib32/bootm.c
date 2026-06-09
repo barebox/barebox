@@ -515,12 +515,14 @@ err_out:
 static struct image_handler zimage_handler = {
 	.name = "ARM zImage",
 	.bootm = do_bootz_linux,
+	.check_image = bootm_efi_check_image,
 	.filetype = filetype_arm_zimage,
 };
 
 static struct image_handler barebox_handler = {
 	.name = "ARM barebox",
 	.bootm = do_bootm_linux,
+	.check_image = bootm_efi_check_image,
 	.filetype = filetype_arm_barebox,
 };
 

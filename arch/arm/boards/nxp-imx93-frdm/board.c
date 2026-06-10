@@ -3,9 +3,9 @@
 #include <deep-probe.h>
 
 static const struct of_device_id frdm_imx93_of_match[] = {
-        {
-                .compatible = "fsl,imx93-11x11-frdm",
-        },
+	{
+		.compatible = "fsl,imx93-11x11-frdm",
+	},
         { /* sentinel */ },
 };
 

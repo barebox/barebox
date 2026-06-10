@@ -42,7 +42,7 @@ config ARM64
 	select ARCH_HAS_BAREBOX_MEMORY_OFFSET
 
 config ARM64_STRICT_BUILD_ARCH
-	bool
+	def_bool CC_IS_CLANG
 	depends on ARM64
 	help
 	  When selected, ARCH=arm64 is required for 64-bit builds and ARCH=arm

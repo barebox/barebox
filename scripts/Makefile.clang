@@ -2,8 +2,9 @@
 # Individual arch/{arch}/Makefiles should use -EL/-EB to set intended
 # endianness and -m32/-m64 to set word size based on Kconfigs instead of
 # relying on the target triple.
-CLANG_TARGET_FLAGS_arm		:= arm-linux-gnueabi
-CLANG_TARGET_FLAGS_arm64	:= aarch64-linux-gnu
+CLANG_TARGET_FLAGS-arm		:= arm-linux-gnueabi
+CLANG_TARGET_FLAGS-arm64	:= aarch64-linux-gnu
+CLANG_TARGET_FLAGS_arm		:= $(CLANG_TARGET_FLAGS-$(UTS_MACHINE))
 CLANG_TARGET_FLAGS_mips		:= mipsel-linux-gnu
 CLANG_TARGET_FLAGS_powerpc	:= powerpc64le-linux-gnu
 CLANG_TARGET_FLAGS_riscv	:= riscv64-linux-gnu

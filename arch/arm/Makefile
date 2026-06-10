@@ -18,10 +18,20 @@ KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
 ifeq ($(CONFIG_CPU_64),y)
 KBUILD_CPPFLAGS	+=$(call cc-option,-maarch64,)
+ifneq ($(UTS_MACHINE),arm64)
+ifdef CONFIG_ARM64_STRICT_BUILD_ARCH
+$(error Deprecated use of ARCH=arm in 64-bit ARM build! Set ARCH=arm64 instead.)
+else
+$(warning Deprecated use of ARCH=arm in 64-bit ARM build! Set ARCH=arm64 instead.)
+endif
+endif
 endif
 ifeq ($(CONFIG_CPU_32),y)
 KBUILD_CPPFLAGS	+=$(call cc-option,-marm,)
 KBUILD_CPPFLAGS	+= -msoft-float
+ifeq ($(UTS_MACHINE),arm64)
+$(error Erroneous use of ARCH=arm64 in 32-bit ARM build! Set ARCH=arm instead.)
+endif
 endif
 
 ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)

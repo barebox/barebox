@@ -89,7 +89,7 @@ Override rules
 
   .. tip::
 
-     The Linux kernel ``make cpio-modules-pkg`` target builds a CPIO archive
+     The Linux kernel ``make modules-cpio-pkg`` target builds a CPIO archive
      containing all kernel modules. This is useful for supplementing an existing
      initramfs with modules without modifying the root filesystem.
      Combined with initrd concatenation, a devboot script

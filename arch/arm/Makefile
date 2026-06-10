@@ -75,7 +75,7 @@ tune-$(CONFIG_CPU_ARM920T)	:=-mtune=arm9tdmi
 tune-$(CONFIG_CPU_ARM926T)	:=-mtune=arm9tdmi
 tune-$(CONFIG_CPU_XSCALE)	:=$(call cc-option,-mtune=xscale,-mtune=strongarm110) -Wa,-mcpu=xscale
 
-CFLAGS_ABI-$(CONFIG_CPU_64)	:=-mabi=lp64
+CFLAGS_ABI-$(CONFIG_CPU_64)	:=$(call cc-option,-mabi=lp64)
 CFLAGS_ABI-$(CONFIG_CPU_32)	:=$(call cc-option,-mapcs-32,-mabi=apcs-gnu) $(call cc-option,-mno-thumb-interwork,)
 CFLAGS_ABI-$(CONFIG_AEABI)	:=-mabi=aapcs-linux
 

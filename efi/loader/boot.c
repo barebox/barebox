@@ -370,7 +370,7 @@ static efi_status_t EFIAPI efi_get_memory_map_ext(
 	r = efi_get_memory_map(memory_map_size, memory_map, map_key,
 			       descriptor_size, descriptor_version);
 
-	__EFI_PRINT("%sEFI: Exit: %s(%zu@%p, %p, 0x%lx@%p, %zu@%p, %u@%p): %u\n",
+	__EFI_PRINT("%sEFI: Exit: %s(%zu@%p, %p, 0x%zx@%p, %zu@%p, %u@%p): %u\n",
 		    __efi_nesting_dec(), __func__,
 		    *memory_map_size, memory_map_size, memory_map,
 		    *map_key, map_key, *descriptor_size, descriptor_size,

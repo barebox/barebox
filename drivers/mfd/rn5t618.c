@@ -131,7 +131,9 @@ static int __init rn5t618_i2c_probe(struct device *dev)
 }
 
 static __maybe_unused const struct of_device_id rn5t618_of_match[] = {
-	{ .compatible = "ricoh,rn5t568", .data = NULL, },
+	{ .compatible = "ricoh,rn5t567" },
+	{ .compatible = "ricoh,rn5t618" },
+	{ .compatible = "ricoh,rc5t619" },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, rn5t618_of_match);

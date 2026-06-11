@@ -13,10 +13,16 @@
 #include <i2c/i2c.h>
 #include <init.h>
 #include <of.h>
+#include <linux/mfd/core.h>
 #include <linux/regmap.h>
 #include <reset_source.h>
 #include <restart.h>
 #include <mfd/rn5t618.h>
+
+static const struct mfd_cell rn5t618_cells[] = {
+        { .name = "rn5t618-regulator" },
+        { .name = "rn5t618-wdt" },
+};
 
 struct rn5t618 {
 	struct restart_handler restart;
@@ -129,7 +135,7 @@ static int __init rn5t618_i2c_probe(struct device *dev)
 	if (ret)
 		dev_warn(dev, "Failed to query reset reason\n");
 
-	return of_platform_populate(dev->of_node, NULL, dev);
+	return mfd_add_devices(dev, rn5t618_cells, ARRAY_SIZE(rn5t618_cells));
 }
 
 static __maybe_unused const struct of_device_id rn5t618_of_match[] = {

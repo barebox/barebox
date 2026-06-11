@@ -126,15 +126,10 @@ static int rn5t618_wdt_probe(struct device *dev)
 	return watchdog_register(wdd);
 }
 
-static __maybe_unused const struct of_device_id rn5t618_wdt_of_match[] = {
-	{ .compatible = "ricoh,rn5t568-wdt" },
-	{ /* sentinel */ }
-};
 MODULE_DEVICE_TABLE(of, rn5t618_wdt_of_match);
 
 static struct driver rn5t618_wdt_driver = {
 	.name  = "rn5t618-wdt",
 	.probe = rn5t618_wdt_probe,
-	.of_compatible = DRV_OF_COMPAT(rn5t618_wdt_of_match),
 };
 device_platform_driver(rn5t618_wdt_driver);

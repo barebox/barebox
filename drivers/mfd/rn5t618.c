@@ -29,6 +29,8 @@ static void rn5t618_restart(struct restart_handler *rst,
 	struct rn5t618 *rn5t618 = container_of(rst, struct rn5t618, restart);
 
 	regmap_write(rn5t618->regmap, RN5T618_SLPCNT, RN5T618_SLPCNT_SWPPWROFF);
+
+	mdelay(100);
 }
 
 static int rn5t618_reset_reason_detect(struct device *dev,

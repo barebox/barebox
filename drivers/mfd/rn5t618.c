@@ -111,7 +111,7 @@ static int __init rn5t618_i2c_probe(struct device *dev)
 		return ret;
 	}
 
-	dev_info(dev, "Found NMD RN5T567/618 LSI %x, OTP: %x\n", reg[0], reg[1]);
+	dev_dbg(dev, "Found NMD RN5T567/618 LSI %x, OTP: %x\n", reg[0], reg[1]);
 
 	/* Settings used to trigger software reset and by a watchdog trigger */
 	regmap_write(pmic_instance->regmap, RN5T618_REPCNT, RN5T618_REPCNT_OFF_RESETO_16MS |

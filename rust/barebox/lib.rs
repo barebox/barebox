@@ -12,6 +12,7 @@
 #![allow(internal_features)]
 
 pub mod allocator;
+pub mod log;
 pub mod print;
 
 pub use ffi;

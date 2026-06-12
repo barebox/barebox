@@ -145,9 +145,16 @@ def generate_crates(srctree, objtree, sysroot_src, external_src, cfgs, core_edit
     append_crate_with_generated("kernel", ["core", "macros", "build_error", "pin_init", "ffi", "bindings", "uapi"])
 
     append_crate(
+        "log",
+        srctree / "rust" / "vendor" / "log" / "src" / "lib.rs",
+        ["core", "compiler_builtins"],
+        cfg=crates_cfgs.get("log", []),
+    )
+
+    append_crate(
         "barebox",
         srctree / "rust" / "barebox" / "lib.rs",
-        ["core", "alloc", "macros", "build_error", "pin_init", "ffi", "bindings", "uapi"],
+        ["core", "alloc", "macros", "build_error", "pin_init", "ffi", "bindings", "uapi", "log", "kernel"],
         cfg=cfg,
     )
 

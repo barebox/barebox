@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # SPDX-Comment: Origin-URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/rust/Makefile?id=7d0a66e4bb9081d75c82ec4957c50034cb0ea449
 
-obj-$(CONFIG_RUST) += core.o compiler_builtins.o ffi.o
+obj-$(CONFIG_RUST) += core.o compiler_builtins.o ffi.o init.o log.o
 always-$(CONFIG_RUST) += exports_core_generated.h
 
 # Missing prototypes are expected in the helpers since these are exported
@@ -230,6 +230,7 @@ quiet_cmd_rustc_library = $(if $(skip_clippy),RUSTC,$(RUSTC_OR_CLIPPY_QUIET)) L 
 rust-analyzer:
 	$(Q)MAKEFLAGS= $(srctree)/scripts/generate_rust_analyzer.py \
 		--cfgs='alloc=$(alloc-cfgs)' \
+		--cfgs="log=$(log-cfgs)" \
 		--cfgs='core=$(core-cfgs)' $(core-edition) \
 		$(realpath $(srctree)) $(realpath $(objtree)) \
 		$(rustc_sysroot) $(RUST_LIB_SRC) $(if $(KBUILD_EXTMOD),$(srcroot)) \
@@ -326,10 +327,30 @@ $(obj)/kernel.o: $(src)/kernel/lib.rs $(obj)/build_error.o $(obj)/pin_init.o \
     $(obj)/$(libmacros_name) $(obj)/bindings.o $(obj)/uapi.o FORCE
 	+$(call if_changed_rule,rustc_library)
 
+# Compile out records above CONFIG_COMPILE_LOGLEVEL, trace is the default
+log-max-level := $(shell \
+	if [ $(CONFIG_COMPILE_LOGLEVEL) -ge 8 ]; then echo trace; \
+	elif [ $(CONFIG_COMPILE_LOGLEVEL) -ge 7 ]; then echo debug; \
+	elif [ $(CONFIG_COMPILE_LOGLEVEL) -ge 6 ]; then echo info; \
+	elif [ $(CONFIG_COMPILE_LOGLEVEL) -ge 4 ]; then echo warn; \
+	elif [ $(CONFIG_COMPILE_LOGLEVEL) -ge 3 ]; then echo error; \
+	else echo off; fi)
+log-cfgs := $(if $(filter-out trace,$(log-max-level)),--cfg feature=\"max_level_$(log-max-level)\")
+
+# Vendored as-is, so skip clippy and our extra lints
+$(obj)/log.o: private skip_clippy = 1
+$(obj)/log.o: private rustc_target_flags = $(log-cfgs)
+$(obj)/log.o: private skip_flags = -Dunsafe_op_in_unsafe_fn -Wmissing_docs \
+    -Wrust_2018_idioms -Wunreachable_pub
+$(obj)/log.o: $(src)/vendor/log/src/lib.rs $(obj)/compiler_builtins.o FORCE
+	+$(call if_changed_rule,rustc_library)
+
 $(obj)/barebox.o: private rustc_target_flags = --extern ffi --extern pin_init \
-    --extern build_error --extern macros --extern bindings --extern alloc
+    --extern build_error --extern macros --extern bindings --extern alloc \
+    --extern log --extern kernel
 $(obj)/barebox.o: $(src)/barebox/lib.rs $(obj)/build_error.o $(obj)/pin_init.o \
-    $(obj)/$(libmacros_name) $(obj)/bindings.o $(obj)/uapi.o $(obj)/alloc.o FORCE
+    $(obj)/$(libmacros_name) $(obj)/bindings.o $(obj)/uapi.o $(obj)/alloc.o \
+    $(obj)/log.o $(obj)/kernel.o FORCE
 	+$(call if_changed_rule,rustc_library)
 
 endif # CONFIG_RUST

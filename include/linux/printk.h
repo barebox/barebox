@@ -37,6 +37,9 @@ static inline __printf(2, 3) int pr_print(int level, const char *format, ...)
 }
 #endif
 
+/* Implemented in Rust, see rust/barebox/log.rs */
+int rust_setup_log(void);
+
 #define __dev_printf(level, dev, format, args...) \
 	({	\
 		(level) <= LOGLEVEL ? dev_printf((level), (dev), (format), ##args) : 0; \

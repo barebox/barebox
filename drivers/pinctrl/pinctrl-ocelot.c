@@ -478,7 +478,7 @@ out:
 	return ret;
 }
 
-static struct pinctrl_ops ocelot_pinctrl_ops = {
+static const struct pinctrl_ops ocelot_pinctrl_ops = {
 	.set_state = ocelot_pinctrl_set_state,
 };
 

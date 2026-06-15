@@ -114,7 +114,7 @@ static int pcs_set_state(struct pinctrl_device *pdev, struct device_node *np)
 	return 0;
 }
 
-static struct pinctrl_ops pcs_ops = {
+static const struct pinctrl_ops pcs_ops = {
 	.set_state = pcs_set_state,
 };
 

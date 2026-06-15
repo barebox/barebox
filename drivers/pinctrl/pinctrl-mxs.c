@@ -115,7 +115,7 @@ static int mxs_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node
 	return 0;
 }
 
-static struct pinctrl_ops mxs_pinctrl_ops = {
+static const struct pinctrl_ops mxs_pinctrl_ops = {
 	.set_state = mxs_pinctrl_set_state,
 };
 

@@ -853,7 +853,7 @@ static int pinctrl_tegra30_set_state(struct pinctrl_device *pdev,
 	return 0;
 }
 
-static struct pinctrl_ops pinctrl_tegra30_ops = {
+static const struct pinctrl_ops pinctrl_tegra30_ops = {
 	.set_state = pinctrl_tegra30_set_state,
 };
 

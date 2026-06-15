@@ -16,7 +16,7 @@ struct pinctrl_ops {
 
 struct pinctrl_device {
 	struct device *dev;
-	struct pinctrl_ops *ops;
+	const struct pinctrl_ops *ops;
 	struct list_head list;
 	struct device_node *node;
 	unsigned int base, npins;

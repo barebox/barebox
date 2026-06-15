@@ -376,7 +376,7 @@ static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,
 	return gpiochip_add(&bank->chip);
 }
 
-static struct pinctrl_ops stm32_pinctrl_ops = {
+static const struct pinctrl_ops stm32_pinctrl_ops = {
 	.set_state = stm32_pinctrl_set_state,
 };
 

@@ -3266,7 +3266,7 @@ static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 	return 0;
 }
 
-static struct pinctrl_ops rockchip_pinctrl_ops = {
+static const struct pinctrl_ops rockchip_pinctrl_ops = {
 	.set_state = rockchip_pinctrl_set_state,
 };
 

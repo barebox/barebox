@@ -266,7 +266,7 @@ static int pinctrl_at91_pio4_gpiochip_add(struct device *dev,
 	return 0;
 }
 
-static struct pinctrl_ops pinctrl_at91_pio4_ops = {
+static const struct pinctrl_ops pinctrl_at91_pio4_ops = {
 	.set_state = pinctrl_at91_pio4_set_state,
 };
 

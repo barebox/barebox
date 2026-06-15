@@ -138,7 +138,7 @@ static int bcm2835_pinctrl_set_state(struct pinctrl_device *pdev, struct device_
 	return 0;
 }
 
-static struct pinctrl_ops bcm2835_pinctrl_ops = {
+static const struct pinctrl_ops bcm2835_pinctrl_ops = {
 	.set_state = bcm2835_pinctrl_set_state,
 };
 

@@ -106,7 +106,7 @@ static int pinctrl_vf610_get_direction(struct pinctrl_device *pdev,
 	}
 }
 
-static struct pinctrl_ops pinctrl_vf610_ops = {
+static const struct pinctrl_ops pinctrl_vf610_ops = {
 	.set_state = pinctrl_vf610_set_state,
 	.set_direction = pinctrl_vf610_set_direction,
 	.get_direction = pinctrl_vf610_get_direction,

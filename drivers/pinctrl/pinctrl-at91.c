@@ -457,7 +457,7 @@ static int at91_pinctrl_set_state(struct pinctrl_device *pdev, struct device_nod
 	return ret;
 }
 
-static struct pinctrl_ops at91_pinctrl_ops = {
+static const struct pinctrl_ops at91_pinctrl_ops = {
 	.set_state = at91_pinctrl_set_state,
 };
 

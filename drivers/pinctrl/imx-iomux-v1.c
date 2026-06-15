@@ -247,7 +247,7 @@ static int imx_iomux_v1_set_state(struct pinctrl_device *pdev, struct device_nod
 	return 0;
 }
 
-static struct pinctrl_ops imx_iomux_v1_ops = {
+static const struct pinctrl_ops imx_iomux_v1_ops = {
 	.set_state = imx_iomux_v1_set_state,
 };
 

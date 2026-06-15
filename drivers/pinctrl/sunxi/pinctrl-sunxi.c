@@ -299,7 +299,7 @@ static int sunxi_gpio_of_xlate(struct gpio_chip *chip,
 	return pin;
 }
 
-static struct pinctrl_ops sunxi_pinctrl_ops = {
+static const struct pinctrl_ops sunxi_pinctrl_ops = {
 	.set_state = sunxi_pinctrl_set_state,
 	.set_direction = sunxi_pinctrl_set_direction,
 };

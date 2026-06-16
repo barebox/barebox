@@ -65,7 +65,7 @@ class PrivateKey:
             sys.exit(127)
 
         self.inkey = path
-        self.public_key = serialization.load_pem_public_key(openssl(["pkey", "-pubout", "-in", self.inkey]));
+        self.public_key = serialization.load_pem_public_key(openssl(["pkey", "-pubin", "-pubout", "-in", self.inkey]));
 
     def sign(self, message: bytes) -> bytes:
         """

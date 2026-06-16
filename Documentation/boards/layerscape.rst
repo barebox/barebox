@@ -27,11 +27,11 @@ The barebox binary is expected to be located 4K bytes into the SD-Card::
 From there on, ``barebox_update`` can be used to flash
 barebox to the QSPI NOR-Flash if required::
 
-  barebox_update -t qspi /mnt/tftp/barebox-${global.hostname}-qspi.imaag
+  barebox_update -t qspi /mnt/tftp/barebox-${global.hostname}-qspi.image
 
 Flashing to the eMMC is possible likewise::
 
-  barebox_update -t sd /mnt/tftp/barebox-${global.hostname}-sd.imaag
+  barebox_update -t sd /mnt/tftp/barebox-${global.hostname}-sd.image
 
 .. note:: Some SoCs like the LS1046A feature only a single eSDHC.
   In such a case, using eMMC and SD-Card at the same time is not possible.

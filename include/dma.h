@@ -69,8 +69,11 @@ static inline void dma_set_mask(struct device *dev, u64 dma_mask)
 
 static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
 {
-	return dma_addr == DMA_ERROR_CODE ||
-		(dev->dma_mask && dma_addr > dev->dma_mask);
+	if (dma_addr == DMA_ERROR_CODE)
+		return 1;
+	if (!dev)
+		return 0;
+	return dev->dma_mask && dma_addr > dev->dma_mask;
 }
 
 static inline dma_addr_t cpu_to_dma(struct device *dev, void *cpu_addr)

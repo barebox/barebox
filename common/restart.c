@@ -117,8 +117,13 @@ struct restart_handler *restart_handler_get_by_name(const char *name, int flags)
 
 	list_for_each_entry(tmp, &restart_handler_list, list) {
 		if (name) {
-			if ((tmp->name && strcmp(name, tmp->name)) &&
-			    (tmp->dev && strcmp(name, dev_name(tmp->dev))))
+			bool found = false;
+
+			if (tmp->name && !strcmp(name, tmp->name))
+				found = true;
+			if (tmp->dev && !strcmp(name, dev_name(tmp->dev)))
+				found = true;
+			if (!found)
 				continue;
 		}
 

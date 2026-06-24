@@ -328,13 +328,19 @@ void *bootm_get_devicetree(struct image_data *data)
 			return ERR_PTR(-EINVAL);
 		}
 
+		if (bootm_verbose(data))
+			printf("using %s as devicetree\n", data->oftree->name);
+
 	} else {
 		data->of_root_node = of_dup_root_node_for_boot();
-		if (!data->of_root_node)
+		if (!data->of_root_node) {
+			if (bootm_verbose(data))
+				printf("using no devicetree\n");
 			return NULL;
+		}
 
-		if (bootm_verbose(data) > 1)
-			printf("using internal devicetree\n");
+		if (bootm_verbose(data))
+			printf("using barebox's internal devicetree\n");
 	}
 
 	if (data->initrd_res) {

@@ -65,12 +65,16 @@ config STORAGE_BY_ALIAS
 	  Alias the device barebox was booted from. This is useful to have
 	  barebox-state come from the same device as barebox itself.
 
+	  This is deep-probe compatible as even though the target device
+	  may not have been probed yet, the bootsource itself is known very
+	  early and can be used to probe the device on demand.
+
 	  - "barebox,storage-by-uuid"
 
 	  Look for a storage device matching the given DISKUUID and when found
 	  registers a new cdev for the device.
 
-	  This driver solved a very specific problem. On EFI the storage devices
+	  This compatible solves a very specific problem. On EFI the storage devices
 	  are not connected to any device tree node. barebox-state however expects
 	  a node to use as its backend. The obvious solution would be to create
 	  a partition with a specific partuuid and use that for state, in our
@@ -80,7 +84,7 @@ config STORAGE_BY_ALIAS
 	  a partition in an unallocated are of the disk which is then used for
 	  state.
 
-	  This driver has the problem that it depends on storage devices which
+	  This compatible has the problem that it depends on storage devices which
 	  are not described in the device tree. This means it cannot work with
 	  deep probe. This is not a problem on EFI though. It's a special purpose
 	  driver, it's not recommended for general use.

@@ -128,7 +128,7 @@ static int do_loadx(int argc, char *argv[])
 	char *output_file = NULL, *cname = NULL;
 	struct console_device *cdev = NULL;
 
-	while ((opt = getopt(argc, argv, "f:b:t:o:c")) > 0) {
+	while ((opt = getopt(argc, argv, "f:b:t:o:")) > 0) {
 		switch (opt) {
 		case 'f':
 			output_file = optarg;
@@ -205,7 +205,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(loadx)
 	.cmd = do_loadx,
 	BAREBOX_CMD_DESC("load binary file over serial line (X-Modem)")
-	BAREBOX_CMD_OPTS("[-fptbc]")
+	BAREBOX_CMD_OPTS("[-ftbo]")
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_loadx_help)
 BAREBOX_CMD_END

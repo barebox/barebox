@@ -11,6 +11,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <dma.h>
+#include <disks.h>
 #include <errno.h>
 #include <scsi.h>
 #include <linux/usb/usb.h>
@@ -150,6 +151,22 @@ static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev, u64 timeout_n
 	return ret ? -ENODEV : 0;
 }
 
+static int usb_stor_set_capacity(struct us_blk_dev *usb_blkdev, sector_t lba,
+				 unsigned int sector_size)
+{
+	struct device *dev = &usb_blkdev->us->pusb_dev->dev;
+	int blockbits;
+
+	blockbits = block_size_bits(dev, sector_size);
+	if (blockbits < 0)
+		return blockbits;
+
+	usb_blkdev->blk.blockbits = blockbits;
+	usb_blkdev->blk.num_blocks = lba + 1;
+
+	return 0;
+}
+
 static int read_capacity_16(struct us_blk_dev *usb_blkdev)
 {
 	struct device *dev = &usb_blkdev->us->pusb_dev->dev;
@@ -186,10 +203,7 @@ static int read_capacity_16(struct us_blk_dev *usb_blkdev)
 		goto fail;
 	}
 
-	usb_blkdev->blk.blockbits = SECTOR_SHIFT;
-	usb_blkdev->blk.num_blocks = lba + 1;
-
-	ret = sector_size;
+	ret = usb_stor_set_capacity(usb_blkdev, lba, sector_size);
 fail:
 	dma_free(data);
 	return ret;
@@ -222,13 +236,7 @@ static int read_capacity_10(struct us_blk_dev *usb_blkdev)
 	dev_dbg(dev, "LBA (10) = 0x%llx w/ sector size = %u\n",
 		lba, sector_size);
 
-	if (sector_size != SECTOR_SIZE)
-		dev_warn(dev, "Support only %d bytes sectors\n", SECTOR_SIZE);
-
-	usb_blkdev->blk.num_blocks = lba + 1;
-	usb_blkdev->blk.blockbits = SECTOR_SHIFT;
-
-	ret = SECTOR_SIZE;
+	ret = usb_stor_set_capacity(usb_blkdev, lba, sector_size);
 fail:
 	dma_free(data);
 	return ret;
@@ -237,6 +245,7 @@ fail:
 static int usb_stor_io_16(struct us_blk_dev *usb_blkdev, u8 opcode,
 			  sector_t start, u8 *data, u16 blocks)
 {
+	u32 bytes = (u32)blocks << usb_blkdev->blk.blockbits;
 	u8 cmd[16];
 
 	memset(cmd, 0, sizeof(cmd));
@@ -244,13 +253,14 @@ static int usb_stor_io_16(struct us_blk_dev *usb_blkdev, u8 opcode,
 	put_unaligned_be64(start, &cmd[2]);
 	put_unaligned_be32(blocks, &cmd[10]);
 
-	return usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data,
-				  blocks * SECTOR_SIZE, 10, 0);
+	return usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data, bytes,
+				  10, 0);
 }
 
 static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 opcode,
 			  sector_t start, u8 *data, u16 blocks)
 {
+	u32 bytes = (u32)blocks << usb_blkdev->blk.blockbits;
 	u8 cmd[10];
 
 	memset(cmd, 0, sizeof(cmd));
@@ -258,8 +268,8 @@ static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 opcode,
 	put_unaligned_be32(start, &cmd[2]);
 	put_unaligned_be16(blocks, &cmd[7]);
 
-	return usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data,
-				  blocks * SECTOR_SIZE, 10, 0);
+	return usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data, bytes,
+				  10, 0);
 }
 
 /***********************************************************************
@@ -315,7 +325,7 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 
 		sector_start += n;
 		sector_count -= n;
-		buffer += n * SECTOR_SIZE;
+		buffer += (u32)n << disk_dev->blockbits;
 	}
 
 	return sector_count ? -EIO : 0;
@@ -420,7 +430,6 @@ static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
 	dev_info(dev, "registering as disk%d\n", result);
 
 	pblk_dev->blk.cdev.name = basprintf("disk%d", result);
-	pblk_dev->blk.blockbits = SECTOR_SHIFT;
 	pblk_dev->blk.type = BLK_TYPE_USB;
 	pblk_dev->blk.removable = true;
 	pblk_dev->blk.rootwait = true;
@@ -631,4 +640,3 @@ static int __init usb_stor_init(void)
 	return usb_driver_register(&usb_storage_driver);
 }
 device_initcall(usb_stor_init);
-

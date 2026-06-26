@@ -85,7 +85,8 @@ int boot_scan_cdev(struct bootscanner *scanner,
 		   bool autodiscover)
 {
 	int ret, found = 0;
-	void *buf = xzalloc(512);
+	size_t bufsize, readsize;
+	void *buf;
 	enum filetype type, filetype;
 	const char *rootpath;
 
@@ -96,14 +97,20 @@ int boot_scan_cdev(struct bootscanner *scanner,
 		return 0;
 	}
 
-	ret = cdev_read(cdev, buf, 512, 0, 0);
+	bufsize = FILE_TYPE_SAFE_BUFSIZE;
+
+	buf = xzalloc(bufsize);
+
+	ret = cdev_read(cdev, buf, bufsize, 0, 0);
 	if (ret < 0) {
 		free(buf);
 		return ret;
 	}
 
-	type = file_detect_partition_table(buf, 512);
-	filetype = file_detect_type(buf, 512);
+	readsize = ret;
+
+	type = file_detect_partition_table(buf, readsize);
+	filetype = file_detect_type(buf, readsize);
 	free(buf);
 
 	if (type == filetype_mbr || type == filetype_gpt) {

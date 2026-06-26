@@ -539,6 +539,14 @@ int usb_new_device(struct usb_device *dev)
 		       dev->act_len, dev->status);
 		goto err_out;
 	}
+
+	/*
+	 * Wait until the Set Configuration request gets processed by the
+	 * device. This is required by at least SanDisk Cruzer Pop USB 2.0
+	 * and Kingston DT Ultimate 32GB USB 3.0 on DWC2 OTG controller.
+	 */
+	mdelay(10);
+
 	dev_dbg(&dev->dev, "new device: Mfr=%d, Product=%d, SerialNumber=%d\n",
 		   dev->descriptor->iManufacturer, dev->descriptor->iProduct,
 		   dev->descriptor->iSerialNumber);

@@ -3,6 +3,7 @@
 #define __BLOCK_H
 
 #include <driver.h>
+#include <disks.h>
 #include <linux/list.h>
 #include <linux/types.h>
 
@@ -68,6 +69,28 @@ struct block_device {
 
 #define BLOCKSIZE(blk)	(1u << (blk)->blockbits)
 
+int block_size_bits(struct device *dev, unsigned block_size);
+
+static inline u64 blockdevice_size(const struct block_device *blk)
+{
+	return blk->num_blocks << blk->blockbits;
+}
+
+static inline blkcnt_t
+blockdevice_round_nblocks(const struct block_device *blk, u64 nbytes)
+{
+	if (nbytes == 0)
+		return 0;
+
+	return (((u64)nbytes - 1) >> blk->blockbits) + 1;
+}
+
+static inline u64
+blockdevice_round_block_nbytes(const struct block_device *blk, u64 nbytes)
+{
+	return blockdevice_round_nblocks(blk, nbytes) << blk->blockbits;
+}
+
 extern struct list_head block_device_list;
 
 #define for_each_block_device(bdev) list_for_each_entry(bdev, &block_device_list, list)
@@ -124,6 +147,17 @@ static inline bool cdev_is_block_disk(const struct cdev *cdev)
 static inline struct block_device *cdev_get_block_device(const struct cdev *cdev)
 {
 	return cdev_is_block_device(cdev) ? cdev->priv : NULL;
+}
+
+static inline unsigned cdev_blockbits(const struct cdev *cdev)
+{
+	struct block_device *bdev = cdev_get_block_device(cdev);
+	return bdev ? bdev->blockbits : SECTOR_SHIFT;
+}
+
+static inline unsigned cdev_blocksize(const struct cdev *cdev)
+{
+	return 1u << cdev_blockbits(cdev);
 }
 
 #endif /* __BLOCK_H */

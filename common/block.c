@@ -14,6 +14,7 @@
 #include <range.h>
 #include <bootargs.h>
 #include <file-list.h>
+#include <linux/log2.h>
 
 LIST_HEAD(block_device_list);
 EXPORT_SYMBOL(block_device_list);
@@ -52,6 +53,16 @@ static void blk_stats_record_read(struct block_device *blk, blkcnt_t count) { }
 static void blk_stats_record_write(struct block_device *blk, blkcnt_t count) { }
 static void blk_stats_record_erase(struct block_device *blk, blkcnt_t count) { }
 #endif
+
+int block_size_bits(struct device *dev, unsigned block_size)
+{
+       if (block_size < MIN_SECTOR_SIZE || !is_power_of_2(block_size)) {
+               dev_err(dev, "unsupported block size %u\n", block_size);
+               return -ENOTSUPP;
+       }
+
+       return ffs(block_size) - 1;
+}
 
 static int chunk_flush(struct block_device *blk, struct chunk *chunk)
 {

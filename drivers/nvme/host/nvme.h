@@ -89,11 +89,6 @@ static inline bool nvme_ctrl_ready(struct nvme_ctrl *ctrl)
 	return val & NVME_CSTS_RDY;
 }
 
-static inline u64 nvme_block_nr(struct nvme_ns *ns, sector_t sector)
-{
-	return (sector >> (ns->lba_shift - 9));
-}
-
 static inline void nvme_end_request(struct nvme_request *rq, __le16 status,
 		union nvme_result result)
 {

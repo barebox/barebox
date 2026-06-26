@@ -690,7 +690,7 @@ static __maybe_unused struct partition_desc *efi_partition_create_table(struct b
 	gpt_header *gpt;
 	unsigned int num_partition_entries = 128;
 	unsigned int gpt_size = (sizeof(gpt_entry) * num_partition_entries) / SECTOR_SIZE;
-	unsigned int first_usable_lba = partition_first_usable_lba();
+	unsigned int first_usable_lba = partition_first_usable_lba(blk);
 
 	partition_desc_init(&epd->pd, blk);
 

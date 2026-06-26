@@ -36,10 +36,10 @@ static int register_one_partition(struct block_device *blk, struct partition *pa
 	char *partition_name;
 	int ret;
 	struct cdev *cdev;
-	struct devfs_partition partinfo = {
-		.offset = part->first_sec * SECTOR_SIZE,
-		.size = part->size * SECTOR_SIZE,
-	};
+	struct devfs_partition partinfo = {};
+
+	partinfo.offset = part->first_sec * BLOCKSIZE(blk);
+	partinfo.size = part->size * BLOCKSIZE(blk);
 
 	partition_name = xasprintf("%s.%d", blk->cdev.name, part->num);
 
@@ -92,24 +92,26 @@ static int remove_one_partition(struct block_device *blk, int no)
 	return ret;
 }
 
-static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
+static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf,
+								 unsigned int blocksize)
 {
 	enum filetype type;
 	struct partition_parser *parser;
 
 	/* first new partition table as EFI GPT */
-	type = file_detect_partition_table(buf, SECTOR_SIZE * 2, SECTOR_SIZE);
+	type = file_detect_partition_table(buf, blocksize * 2, blocksize);
 
 	list_for_each_entry(parser, &partition_parser_list, list) {
 		if (parser->type == type)
 			return parser;
 	}
 
-	/* if not parser found search for old one
-	 * so if EFI GPT not enable take it as MBR
-	 * useful for compatibility
+	/* If no parser found search for old one, so if EFI GPT i
+	 * not enabled, probe for MBR. useful for compatibility.
+	 * 512 is hardcoded here as the MBR detection is not
+	 * block-size dependent.
 	 */
-	type = file_detect_partition_table(buf, SECTOR_SIZE, SECTOR_SIZE);
+	type = file_detect_partition_table(buf, 512, 512);
 	if (type == filetype_fat && !is_fat_boot_sector(buf))
 		type = filetype_mbr;
 
@@ -150,9 +152,11 @@ struct partition_desc *partition_table_read(struct block_device *blk)
 	struct partition_parser *parser;
 	struct partition_desc *pdesc = NULL;
 	uint8_t *buf;
+	unsigned int blocksize;
 	int ret;
 
-	buf = malloc(2 * SECTOR_SIZE);
+	blocksize = BLOCKSIZE(blk);
+	buf = malloc(2 * blocksize);
 
 	ret = block_read(blk, buf, 0, 2);
 	if (ret != 0) {
@@ -160,7 +164,7 @@ struct partition_desc *partition_table_read(struct block_device *blk)
 		goto err;
 	}
 
-	parser = partition_parser_get_by_filetype(buf);
+	parser = partition_parser_get_by_filetype(buf, blocksize);
 	if (!parser)
 		goto err;
 
@@ -187,7 +191,7 @@ bool partition_is_free(struct partition_desc *pdesc, uint64_t start, uint64_t si
 {
 	struct partition *p;
 
-	if (start < PARTITION_ALIGN_SECTORS)
+	if (start < partition_align_lba(pdesc->blk))
 		return false;
 
 	if (start + size >= pdesc->blk->num_blocks)
@@ -204,7 +208,7 @@ bool partition_is_free(struct partition_desc *pdesc, uint64_t start, uint64_t si
 int partition_find_free_space(struct partition_desc *pdesc, uint64_t sectors, uint64_t *start)
 {
 	struct partition *p;
-	uint64_t align = PARTITION_ALIGN_SECTORS;
+	uint64_t align = partition_align_lba(pdesc->blk);
 	uint64_t min_sec;
 
 	min_sec = max(align, partition_first_usable_lba(pdesc->blk));
@@ -371,19 +375,25 @@ static int fuzz_partition_table_parser(struct block_device *ramdisk)
 	struct partition *part;
 	int rc = 0;
 	struct partition_parser *parser;
-	u8 buf[2 * SECTOR_SIZE] __aligned(8);
+	u8 *buf;
+	unsigned int blocksize;
+
+	blocksize = BLOCKSIZE(ramdisk);
+	buf = malloc(2 * blocksize);
+	if (!buf)
+		return 0;
 
 	rc = block_read(ramdisk, buf, 0, 2);
 	if (rc != 0)
-		return 0;
+		goto out;
 
-	parser = partition_parser_get_by_filetype(buf);
+	parser = partition_parser_get_by_filetype(buf, blocksize);
 	if (!parser)
-		return 0;
+		goto out;
 
 	pdesc = parser->parse(buf, ramdisk);
 	if (!pdesc)
-		return 0;
+		goto out;
 
 	pdesc->parser = parser;
 
@@ -394,6 +404,8 @@ static int fuzz_partition_table_parser(struct block_device *ramdisk)
 
 	partition_table_free(pdesc);
 
+out:
+	free(buf);
 	return 0;
 }
 fuzz_test_ramdisk("partitions", fuzz_partition_table_parser);
@@ -428,6 +440,11 @@ loff_t cdev_unallocated_space(struct cdev *cdev)
 sector_t partition_first_usable_lba(const struct block_device *blk)
 {
 	return blockdevice_round_nblocks(blk, first_partition_offset);
+}
+
+sector_t partition_align_lba(const struct block_device *blk)
+{
+	return blockdevice_round_nblocks(blk, PARTITION_ALIGN_SIZE);
 }
 
 static int set_first_partition_offset(struct param_d *p, void *priv)

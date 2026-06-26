@@ -471,7 +471,7 @@ int blockdevice_register(struct block_device *blk)
 	dev_dbg(blk->dev, "rdbufsize: %d blockbits: %d blkmask: 0x%08x\n",
 		blk->rdbufsize, blk->blockbits, blk->blkmask);
 
-	if (!blk->rdbufsize) {
+	if (!blk->rdbufsize || blk->blockbits < MIN_SECTOR_SHIFT) {
 		pr_warn("block size of %u not supported\n", BLOCKSIZE(blk));
 		return -ENOSYS;
 	}

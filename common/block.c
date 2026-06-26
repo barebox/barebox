@@ -185,9 +185,9 @@ static int block_cache(struct block_device *blk, sector_t block)
 
 	len = writebuffer_io_nblocks(blk, chunk);
 	if (chunk->block_start * BLOCKSIZE(blk) >= blk->discard_start &&
-	    chunk->block_start * BLOCKSIZE(blk) + len
+	    (chunk->block_start + len) * BLOCKSIZE(blk)
 	    <= blk->discard_start + blk->discard_size) {
-		memset(chunk->data, 0, len);
+		memset(chunk->data, 0, len << blk->blockbits);
 		list_add(&chunk->list, &blk->buffered_blocks);
 		return 0;
 	}

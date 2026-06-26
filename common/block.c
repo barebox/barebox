@@ -29,7 +29,7 @@ struct chunk {
 
 #define BUFSIZE (PAGE_SIZE * 16)
 
-static int writebuffer_io_len(struct block_device *blk, struct chunk *chunk)
+static blkcnt_t writebuffer_io_nblocks(struct block_device *blk, struct chunk *chunk)
 {
 	return min_t(blkcnt_t, blk->rdbufsize, blk->num_blocks - chunk->block_start);
 }
@@ -55,7 +55,7 @@ static void blk_stats_record_erase(struct block_device *blk, blkcnt_t count) { }
 
 static int chunk_flush(struct block_device *blk, struct chunk *chunk)
 {
-	size_t len;
+	blkcnt_t len;
 	int ret;
 
 	if (!chunk->dirty)
@@ -64,7 +64,7 @@ static int chunk_flush(struct block_device *blk, struct chunk *chunk)
 	if (!blk->ops->write)
 		return 0;
 
-	len = writebuffer_io_len(blk, chunk);
+	len = writebuffer_io_nblocks(blk, chunk);
 	ret = blk->ops->write(blk, chunk->data, chunk->block_start, len);
 	if (ret < 0)
 		return ret;
@@ -171,7 +171,7 @@ static struct chunk *get_chunk(struct block_device *blk)
 static int block_cache(struct block_device *blk, sector_t block)
 {
 	struct chunk *chunk;
-	size_t len;
+	blkcnt_t len;
 	int ret;
 
 	chunk = get_chunk(blk);
@@ -183,7 +183,7 @@ static int block_cache(struct block_device *blk, sector_t block)
 	dev_vdbg(blk->dev, "%s: %llu to %d\n", __func__, chunk->block_start,
 		chunk->num);
 
-	len = writebuffer_io_len(blk, chunk);
+	len = writebuffer_io_nblocks(blk, chunk);
 	if (chunk->block_start * BLOCKSIZE(blk) >= blk->discard_start &&
 	    chunk->block_start * BLOCKSIZE(blk) + len
 	    <= blk->discard_start + blk->discard_size) {

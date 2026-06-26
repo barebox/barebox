@@ -522,6 +522,15 @@ int usb_new_device(struct usb_device *dev)
 	le16_to_cpus(&dev->descriptor->idVendor);
 	le16_to_cpus(&dev->descriptor->idProduct);
 	le16_to_cpus(&dev->descriptor->bcdDevice);
+
+	/*
+	 * Kingston DT Ultimate 32GB USB 3.0 seems to be extremely sensitive
+	 * about this first Get Descriptor request. If there are any other
+	 * requests in the first microframe, the stick crashes. Wait about
+	 * one microframe duration here (1mS for USB 1.x , 125uS for USB 2.0).
+	 */
+	mdelay(1);
+
 	/* only support for one config for now */
 	length = usb_get_configuration_no(dev, buf, 0);
 	if (length < 0) {

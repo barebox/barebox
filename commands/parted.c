@@ -392,6 +392,13 @@ static int do_parted(int argc, char *argv[])
 		goto err;
 	}
 
+	if (BLOCKSIZE(blk) != SECTOR_SIZE) {
+		printf("parted: device has block size of %u, but only 512 currently supported\n",
+		       BLOCKSIZE(blk));
+		ret = -ENOTSUPP;
+		goto err;
+	}
+
 	argc -= 2;
 	argv += 2;
 

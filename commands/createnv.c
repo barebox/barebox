@@ -69,6 +69,13 @@ static int do_createnv(int argc, char *argv[])
 		goto err;
 	}
 
+	if (BLOCKSIZE(blk) != SECTOR_SIZE) {
+		printf("parted: device has block size of %u, but only 512 currently supported\n",
+		       BLOCKSIZE(blk));
+		ret = -ENOTSUPP;
+		goto err;
+	}
+
 	buf = xzalloc(2 * BLOCKSIZE(blk));
 
 	ret = cdev_read(cdev, buf, 2 * BLOCKSIZE(blk), 0, 0);

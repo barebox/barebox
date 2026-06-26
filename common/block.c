@@ -326,7 +326,7 @@ static ssize_t block_op_write(struct cdev *cdev, const void *buf, size_t count,
 	 * written to LBA1, so LBA1 must change as well when the partioning
 	 * is changed.
 	 */
-	if (offset < 2 * SECTOR_SIZE)
+	if (offset < 2 * BLOCKSIZE(blk))
 		blk->need_reparse = true;
 
 	if (offset & mask) {

@@ -328,7 +328,7 @@ static int nvme_submit_sync_rw(struct nvme_ns *ns, struct nvme_command *cmnd,
 				break;
 
 			num_blocks -= chunk;
-			buffer += chunk;
+			buffer += chunk << ns->lba_shift;
 			block += chunk;
 		}
 

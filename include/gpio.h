@@ -8,6 +8,7 @@
 #include <linux/iopoll.h>
 #include <linux/bitops.h>
 #include <linux/bug.h>
+#include <linux/gpio/defs.h>
 
 #ifdef CONFIG_GENERIC_GPIO
 void gpio_set_value(unsigned gpio, int value);

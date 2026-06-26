@@ -2,6 +2,7 @@
 #ifndef __LINUX_GPIO_DRIVER_H
 #define __LINUX_GPIO_DRIVER_H
 
+#include <linux/gpio/defs.h>
 #include <gpio.h>
 
 /* get driver data */

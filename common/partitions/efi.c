@@ -689,7 +689,7 @@ static __maybe_unused struct partition_desc *efi_partition_create_table(struct b
 
 	partition_desc_init(&epd->pd, blk);
 
-	epd->gpt = xzalloc(SECTOR_SIZE);
+	epd->gpt = xzalloc(BLOCKSIZE(blk));
 	gpt = epd->gpt;
 
 	gpt->signature = cpu_to_le64(GPT_HEADER_SIGNATURE);
@@ -851,12 +851,12 @@ static int __efi_partition_write(struct efi_partition_desc *epd, bool primary)
 	uint64_t my_lba, partition_entry_lba;
 	int ret;
 
-	gpt = xmemdup(epd->gpt, SECTOR_SIZE);
+	gpt = xmemdup(epd->gpt, BLOCKSIZE(blk));
 
 	count = le32_to_cpu(gpt->num_partition_entries) *
 		le32_to_cpu(gpt->sizeof_partition_entry);
 
-	size = count / GPT_BLOCK_SIZE;
+	size = blockdevice_round_nblocks(blk, count);
 
 	if (primary) {
 		my_lba = 1;

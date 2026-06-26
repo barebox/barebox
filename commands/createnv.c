@@ -69,15 +69,16 @@ static int do_createnv(int argc, char *argv[])
 		goto err;
 	}
 
-	buf = xzalloc(2 * SECTOR_SIZE);
+	buf = xzalloc(2 * BLOCKSIZE(blk));
 
-	ret = cdev_read(cdev, buf, 2 * SECTOR_SIZE, 0, 0);
+	ret = cdev_read(cdev, buf, 2 * BLOCKSIZE(blk), 0, 0);
 	if (ret < 0) {
 		printf("Cannot read from %s: %pe\n", cdev->name, ERR_PTR(ret));
 		goto err;
 	}
 
-	filetype = file_detect_partition_table(buf, 2 * SECTOR_SIZE, SECTOR_SIZE);
+	filetype = file_detect_partition_table(buf, 2 * BLOCKSIZE(blk),
+					       BLOCKSIZE(blk));
 
 	switch (filetype) {
 	case filetype_gpt:
@@ -108,7 +109,7 @@ static int do_createnv(int argc, char *argv[])
 		}
 	}
 
-	size >>= SECTOR_SHIFT;
+	size = blockdevice_round_nblocks(blk, size);
 
 	ret = partition_find_free_space(pdesc, size, &start);
 	if (ret) {
@@ -123,7 +124,7 @@ static int do_createnv(int argc, char *argv[])
 	}
 
 	printf("Will create a barebox environment partition of size %llu bytes on %s\n",
-	       size << SECTOR_SHIFT, cdev->name);
+	       size * BLOCKSIZE(blk), cdev->name);
 
 	if (!force) {
 		char c;

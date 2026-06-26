@@ -109,15 +109,15 @@ static int do_print(struct block_device *blk, int argc, char *argv[])
 	}
 
 	printf("Disk /dev/%s: %s\n", blk->cdev.name,
-	       size_human_readable(blk->num_blocks << SECTOR_SHIFT));
+	       size_human_readable(blockdevice_size(blk)));
 	printf("Partition Table: %s\n", pdesc->parser->name);
 
 	printf("Number      Start           End          Size     Name\n");
 
 	list_for_each_entry(part, &pdesc->partitions, list) {
-		uint64_t start = part->first_sec << SECTOR_SHIFT;
-		uint64_t size = part->size << SECTOR_SHIFT;
-		uint64_t end = start + size - SECTOR_SIZE;
+		uint64_t start = part->first_sec << blk->blockbits;
+		uint64_t size = part->size << blk->blockbits;
+		uint64_t end = start + size - BLOCKSIZE(blk);
 
 		printf(" %3d   %10llu%-3s %10llu%-3s %10llu%-3s  %-36s\n",
 			part->num,
@@ -162,7 +162,7 @@ static int do_mkpart(struct block_device *blk, int argc, char *argv[])
 	start = ALIGN(start, SZ_1M);
 
 	/* convert to LBA */
-	start >>= SECTOR_SHIFT;
+	start = blockdevice_round_nblocks(blk, start);
 
 	if (!strcmp(argv[4], "max")) {
 		/* gpt requires 34 blocks at the end */
@@ -182,7 +182,7 @@ static int do_mkpart(struct block_device *blk, int argc, char *argv[])
 		end *= mult;
 
 		/* convert to LBA */
-		end >>= SECTOR_SHIFT;
+		end >>= blk->blockbits;
 
 		/*
 		 * When unit is >= KB then subtract one sector for user
@@ -235,7 +235,7 @@ static int do_mkpart_size(struct block_device *blk, int argc, char *argv[])
 	size = ALIGN(size, PARTITION_ALIGN_SIZE);
 
 	/* convert to LBA */
-	size >>= SECTOR_SHIFT;
+	size = blockdevice_round_nblocks(blk, size);
 
 	pdesc = pdesc_get(blk);
 	if (!pdesc)

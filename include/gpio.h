@@ -222,6 +222,7 @@ struct gpio_chip {
 		/* Linux name for the same thing */
 		struct device *parent;
 	};
+	void *gpiodev_data;
 
 	int base;
 	/* GPIO controller specific GPIO offset */

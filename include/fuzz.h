@@ -47,13 +47,14 @@ extern const struct fuzz_test __barebox_fuzz_tests_end;
 	static __always_unused void * _unused##_func = _func
 #endif
 
-#define fuzz_test_ramdisk(_name, _func)				\
-	static int _func##_ramdisk(const u8 *data, size_t size)	\
+#define fuzz_test_ramdisk(_name, _func, _sector_size)			\
+	static int _func##_ramdisk_##_sector_size(const u8 *data,	\
+						  size_t size)		\
 	{							\
 		static struct ramdisk *ramdisk;			\
 		int ret;					\
 		if (!ramdisk)					\
-			ramdisk = ramdisk_init(512);		\
+			ramdisk = ramdisk_init(_sector_size);	\
 		if (!ramdisk)					\
 			return -ENODEV;				\
 		ramdisk_setup_ro(ramdisk, data, size);		\
@@ -61,7 +62,7 @@ extern const struct fuzz_test __barebox_fuzz_tests_end;
 		ramdisk_setup_ro(ramdisk, NULL, 0);		\
 		return ret;					\
 	}							\
-	fuzz_test(_name, _func##_ramdisk)
+	fuzz_test(_name, _func##_ramdisk_##_sector_size)
 
 #define fuzz_test_str(_name, _func)				\
 	static int _func##_str(const u8 *_data, size_t size)	\

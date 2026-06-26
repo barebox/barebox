@@ -14,6 +14,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 	bison \
 	build-essential \
 	coreutils \
+	dosfstools \
 	flex \
 	gawk \
 	git \
@@ -32,6 +33,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 	lzma-alone \
 	lzop \
 	mount \
+	mtools \
 	musl-tools \
 	openssl \
 	pkg-config \

@@ -384,7 +384,7 @@ static int nvme_pci_submit_sync_cmd(struct nvme_ctrl *ctrl,
 				    union nvme_result *result,
 				    void *buffer,
 				    unsigned int buffer_len,
-				    unsigned timeout, int qid)
+				    ktime_t timeout, int qid)
 {
 	struct nvme_dev *dev = to_nvme_dev(ctrl);
 	struct nvme_queue *nvmeq = &dev->queues[qid];

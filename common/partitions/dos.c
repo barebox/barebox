@@ -318,7 +318,7 @@ static void dos_partition_free(struct partition_desc *pd)
 
 static __maybe_unused struct partition_desc *dos_partition_create_table(struct block_device *blk)
 {
-	struct dos_partition_desc *dpd = xzalloc(512);
+	struct dos_partition_desc *dpd = xzalloc(sizeof(*dpd));
 
 	partition_desc_init(&dpd->pd, blk);
 

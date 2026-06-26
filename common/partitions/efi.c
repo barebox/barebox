@@ -505,7 +505,8 @@ static int find_valid_gpt(struct efi_partition_desc *epd, void *buf)
 	lastlba = last_lba(blk);
 	if (force_gpt) {
 		/* This will be added to the EFI Spec. per Intel after v1.02. */
-		if (file_detect_partition_table(buf, SECTOR_SIZE * 2) != filetype_gpt)
+		if (file_detect_partition_table(buf, SECTOR_SIZE * 2,
+						SECTOR_SIZE) != filetype_gpt)
 			goto fail;
 	}
 

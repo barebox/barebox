@@ -97,7 +97,7 @@ static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
 	struct partition_parser *parser;
 
 	/* first new partition table as EFI GPT */
-	type = file_detect_partition_table(buf, SECTOR_SIZE * 2);
+	type = file_detect_partition_table(buf, SECTOR_SIZE * 2, SECTOR_SIZE);
 
 	list_for_each_entry(parser, &partition_parser_list, list) {
 		if (parser->type == type)
@@ -108,7 +108,7 @@ static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
 	 * so if EFI GPT not enable take it as MBR
 	 * useful for compatibility
 	 */
-	type = file_detect_partition_table(buf, SECTOR_SIZE);
+	type = file_detect_partition_table(buf, SECTOR_SIZE, SECTOR_SIZE);
 	if (type == filetype_fat && !is_fat_boot_sector(buf))
 		type = filetype_mbr;
 

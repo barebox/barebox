@@ -77,7 +77,7 @@ static int do_createnv(int argc, char *argv[])
 		goto err;
 	}
 
-	filetype = file_detect_partition_table(buf, 2 * SECTOR_SIZE);
+	filetype = file_detect_partition_table(buf, 2 * SECTOR_SIZE, SECTOR_SIZE);
 
 	switch (filetype) {
 	case filetype_gpt:

@@ -4,6 +4,7 @@
 #include <driver.h>
 #include <xfuncs.h>
 #include <block.h>
+#include <disks.h>
 #include <fs.h>
 #include <linux/stat.h>
 #include <linux/err.h>
@@ -109,7 +110,7 @@ int boot_scan_cdev(struct bootscanner *scanner,
 
 	readsize = ret;
 
-	type = file_detect_partition_table(buf, readsize);
+	type = file_detect_partition_table(buf, readsize, SECTOR_SIZE);
 	filetype = file_detect_type(buf, readsize);
 	free(buf);
 

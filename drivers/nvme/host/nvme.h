@@ -77,7 +77,7 @@ struct nvme_ctrl_ops {
 			       union nvme_result *result,
 			       void *buffer,
 			       unsigned bufflen,
-			       unsigned timeout, int qid);
+			       ktime_t timeout, int qid);
 };
 
 static inline bool nvme_ctrl_ready(struct nvme_ctrl *ctrl)
@@ -120,7 +120,7 @@ int __nvme_submit_sync_cmd(struct nvme_ctrl *ctrl,
 			   struct nvme_command *cmd,
 			   union nvme_result *result,
 			   void *buffer, unsigned bufflen,
-			   unsigned timeout, int qid);
+			   ktime_t timeout, int qid);
 int nvme_submit_sync_cmd(struct nvme_ctrl *ctrl,
 			 struct nvme_command *cmd,
 			 void *buffer, unsigned bufflen);

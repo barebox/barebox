@@ -56,6 +56,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 	python3-setuptools \
 	python3-virtualenv \
 	python3-yaml \
+	rustc rust-src bindgen rustfmt rust-clippy \
 	virtualenv \
 	sudo \
 	device-tree-compiler \
@@ -67,6 +68,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 
 ENV GCC_VERSION=15.2.0
 ENV LLVM_VERSION=20
+ENV LIBCLANG_PATH=/usr/lib/llvm-19/lib
 
 RUN apt-get update && apt-get install -y --no-install-recommends lsb-release gnupg \
 	&& wget https://apt.llvm.org/llvm.sh \

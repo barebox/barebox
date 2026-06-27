@@ -286,8 +286,16 @@ config STACK_BASE
 
 config STACK_SIZE
 	hex
+	range 0x20000 0xffffffff if EFI_LOADER
+	default 0x20000 if EFI_LOADER
 	default 0x8000
 	prompt "Stack size"
+	help
+	  Size of the barebox call stack.
+
+	  The UEFI specification requires at least 128 KiB of stack space
+	  when calling EFI applications. Enforce that minimum for builds
+	  that provide the EFI loader.
 
 config MALLOC_SIZE
 	hex

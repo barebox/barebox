@@ -66,50 +66,50 @@ out:
 	return EFI_EXIT(ret);
 }
 
-static __always_inline struct efi_pixel_bitmask efi_vid30_to_blt_col(u32 vid)
+static __always_inline struct efi_gop_pixel efi_vid30_to_blt_col(u32 vid)
 {
-	struct efi_pixel_bitmask blt = {
-		.reserved_mask = 0,
+	struct efi_gop_pixel blt = {
+		.reserved = 0,
 	};
 
-	blt.blue_mask  = (vid & 0x3ff) >> 2;
+	blt.blue  = (vid & 0x3ff) >> 2;
 	vid >>= 10;
-	blt.green_mask = (vid & 0x3ff) >> 2;
+	blt.green = (vid & 0x3ff) >> 2;
 	vid >>= 10;
-	blt.red_mask   = (vid & 0x3ff) >> 2;
+	blt.red   = (vid & 0x3ff) >> 2;
 	return blt;
 }
 
-static __always_inline u32 efi_blt_col_to_vid30(struct efi_pixel_bitmask *blt)
+static __always_inline u32 efi_blt_col_to_vid30(struct efi_gop_pixel *blt)
 {
-	return (u32)(blt->red_mask   << 2) << 20 |
-	       (u32)(blt->green_mask << 2) << 10 |
-	       (u32)(blt->blue_mask  << 2);
+	return (u32)(blt->red   << 2) << 20 |
+	       (u32)(blt->green << 2) << 10 |
+	       (u32)(blt->blue  << 2);
 }
 
-static __always_inline struct efi_pixel_bitmask efi_vid16_to_blt_col(u16 vid)
+static __always_inline struct efi_gop_pixel efi_vid16_to_blt_col(u16 vid)
 {
-	struct efi_pixel_bitmask blt = {
-		.reserved_mask = 0,
+	struct efi_gop_pixel blt = {
+		.reserved = 0,
 	};
 
-	blt.blue_mask  = (vid & 0x1f) << 3;
+	blt.blue  = (vid & 0x1f) << 3;
 	vid >>= 5;
-	blt.green_mask = (vid & 0x3f) << 2;
+	blt.green = (vid & 0x3f) << 2;
 	vid >>= 6;
-	blt.red_mask   = (vid & 0x1f) << 3;
+	blt.red   = (vid & 0x1f) << 3;
 	return blt;
 }
 
-static __always_inline u16 efi_blt_col_to_vid16(struct efi_pixel_bitmask *blt)
+static __always_inline u16 efi_blt_col_to_vid16(struct efi_gop_pixel *blt)
 {
-	return (u16)(blt->red_mask   >> 3) << 11 |
-	       (u16)(blt->green_mask >> 2) <<  5 |
-	       (u16)(blt->blue_mask  >> 3);
+	return (u16)(blt->red   >> 3) << 11 |
+	       (u16)(blt->green >> 2) <<  5 |
+	       (u16)(blt->blue  >> 3);
 }
 
 static __always_inline efi_status_t gop_blt_int(struct efi_graphics_output_protocol *this,
-						struct efi_pixel_bitmask *bufferp,
+						struct efi_gop_pixel *bufferp,
 						u32 operation, efi_uintn_t sx,
 						efi_uintn_t sy, efi_uintn_t dx,
 						efi_uintn_t dy,
@@ -122,7 +122,7 @@ static __always_inline efi_status_t gop_blt_int(struct efi_graphics_output_proto
 	efi_uintn_t i, j, linelen, slineoff = 0, dlineoff, swidth, dwidth;
 	u32 *fb32 = gopobj->fb;
 	u16 *fb16 = gopobj->fb;
-	struct efi_pixel_bitmask *buffer = __builtin_assume_aligned(bufferp, 4);
+	struct efi_gop_pixel *buffer = __builtin_assume_aligned(bufferp, 4);
 	bool blt_to_video = (operation != EFI_BLT_VIDEO_TO_BLT_BUFFER);
 
 	if (delta) {
@@ -200,7 +200,7 @@ static __always_inline efi_status_t gop_blt_int(struct efi_graphics_output_proto
 	dlineoff = dwidth * dy;
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
-			struct efi_pixel_bitmask pix;
+			struct efi_gop_pixel pix;
 
 			/* Read source pixel */
 			switch (operation) {
@@ -213,7 +213,7 @@ static __always_inline efi_status_t gop_blt_int(struct efi_graphics_output_proto
 			case EFI_BLT_VIDEO_TO_BLT_BUFFER:
 			case EFI_BLT_VIDEO_TO_VIDEO:
 				if (vid_bpp == 32)
-					pix = *(struct efi_pixel_bitmask *)&fb32[
+					pix = *(struct efi_gop_pixel *)&fb32[
 						slineoff + j + sx];
 				else if (vid_bpp == 30)
 					pix = efi_vid30_to_blt_col(fb32[
@@ -285,7 +285,7 @@ static efi_uintn_t gop_get_bpp(struct efi_graphics_output_protocol *this)
  * optimize for speed.
  */
 static efi_status_t gop_blt_video_fill(struct efi_graphics_output_protocol *this,
-				       struct efi_pixel_bitmask *buffer,
+				       struct efi_gop_pixel *buffer,
 				       u32 foo, efi_uintn_t sx,
 				       efi_uintn_t sy, efi_uintn_t dx,
 				       efi_uintn_t dy, efi_uintn_t width,
@@ -297,7 +297,7 @@ static efi_status_t gop_blt_video_fill(struct efi_graphics_output_protocol *this
 }
 
 static efi_status_t gop_blt_buf_to_vid16(struct efi_graphics_output_protocol *this,
-					 struct efi_pixel_bitmask *buffer,
+					 struct efi_gop_pixel *buffer,
 					 u32 foo, efi_uintn_t sx,
 					 efi_uintn_t sy, efi_uintn_t dx,
 					 efi_uintn_t dy, efi_uintn_t width,
@@ -308,7 +308,7 @@ static efi_status_t gop_blt_buf_to_vid16(struct efi_graphics_output_protocol *th
 }
 
 static efi_status_t gop_blt_buf_to_vid30(struct efi_graphics_output_protocol *this,
-					 struct efi_pixel_bitmask *buffer,
+					 struct efi_gop_pixel *buffer,
 					 u32 foo, efi_uintn_t sx,
 					 efi_uintn_t sy, efi_uintn_t dx,
 					 efi_uintn_t dy, efi_uintn_t width,
@@ -319,7 +319,7 @@ static efi_status_t gop_blt_buf_to_vid30(struct efi_graphics_output_protocol *th
 }
 
 static efi_status_t gop_blt_buf_to_vid32(struct efi_graphics_output_protocol *this,
-					 struct efi_pixel_bitmask *buffer,
+					 struct efi_gop_pixel *buffer,
 					 u32 foo, efi_uintn_t sx,
 					 efi_uintn_t sy, efi_uintn_t dx,
 					 efi_uintn_t dy, efi_uintn_t width,
@@ -330,7 +330,7 @@ static efi_status_t gop_blt_buf_to_vid32(struct efi_graphics_output_protocol *th
 }
 
 static efi_status_t gop_blt_vid_to_vid(struct efi_graphics_output_protocol *this,
-				       struct efi_pixel_bitmask *buffer,
+				       struct efi_gop_pixel *buffer,
 				       u32 foo, efi_uintn_t sx,
 				       efi_uintn_t sy, efi_uintn_t dx,
 				       efi_uintn_t dy, efi_uintn_t width,
@@ -342,7 +342,7 @@ static efi_status_t gop_blt_vid_to_vid(struct efi_graphics_output_protocol *this
 }
 
 static efi_status_t gop_blt_vid_to_buf(struct efi_graphics_output_protocol *this,
-				       struct efi_pixel_bitmask *buffer,
+				       struct efi_gop_pixel *buffer,
 				       u32 foo, efi_uintn_t sx,
 				       efi_uintn_t sy, efi_uintn_t dx,
 				       efi_uintn_t dy, efi_uintn_t width,
@@ -369,7 +369,7 @@ static efi_status_t EFIAPI gop_set_mode(struct efi_graphics_output_protocol *thi
 					u32 mode_number)
 {
 	struct efi_gop_obj *gopobj;
-	struct efi_pixel_bitmask buffer = {0, 0, 0, 0};
+	struct efi_gop_pixel buffer = {0, 0, 0, 0};
 	efi_uintn_t vid_bpp;
 	efi_status_t ret = EFI_SUCCESS;
 
@@ -412,7 +412,7 @@ out:
  * Return:	status code
  */
 static efi_status_t EFIAPI gop_blt(struct efi_graphics_output_protocol *this,
-				   struct efi_pixel_bitmask *buffer,
+				   struct efi_gop_pixel *buffer,
 				   u32 operation, efi_uintn_t sx,
 				   efi_uintn_t sy, efi_uintn_t dx,
 				   efi_uintn_t dy, efi_uintn_t width,

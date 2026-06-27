@@ -174,7 +174,7 @@ static __always_inline efi_status_t gop_blt_int(struct efi_graphics_output_proto
 		break;
 	case EFI_BLT_VIDEO_TO_BLT_BUFFER:
 	case EFI_BLT_VIDEO_TO_VIDEO:
-		swidth = gopobj->info.horizontal_resolution;
+		swidth = gopobj->info.pixels_per_scan_line;
 		if (!vid_bpp)
 			return EFI_UNSUPPORTED;
 		break;
@@ -187,7 +187,7 @@ static __always_inline efi_status_t gop_blt_int(struct efi_graphics_output_proto
 	case EFI_BLT_BUFFER_TO_VIDEO:
 	case EFI_BLT_VIDEO_FILL:
 	case EFI_BLT_VIDEO_TO_VIDEO:
-		dwidth = gopobj->info.horizontal_resolution;
+		dwidth = gopobj->info.pixels_per_scan_line;
 		if (!vid_bpp)
 			return EFI_UNSUPPORTED;
 		break;
@@ -489,6 +489,7 @@ static efi_status_t efi_gop_register(void *data)
 	struct fb_info *fbi;
 	struct screen *sc;
 	struct efi_pixel_bitmask *pixel_information;
+	u32 bytes_per_pixel, pixels_per_scan_line;
 
 	sc = fb_open(fbdev);
 	if (IS_ERR(sc)) {
@@ -509,6 +510,14 @@ static efi_status_t efi_gop_register(void *data)
 		pr_err("Unsupported video mode\n");
 		return EFI_UNSUPPORTED;
 	}
+
+	bytes_per_pixel = fbi->bits_per_pixel / BITS_PER_BYTE;
+	if (fbi->line_length % bytes_per_pixel)
+		return EFI_UNSUPPORTED;
+
+	pixels_per_scan_line = fbi->line_length / bytes_per_pixel;
+	if (pixels_per_scan_line < col)
+		return EFI_UNSUPPORTED;
 
 	gopobj = calloc(1, sizeof(*gopobj));
 	if (!gopobj) {
@@ -566,7 +575,7 @@ static efi_status_t efi_gop_register(void *data)
 		pixel_information->green_mask = 0x07e0;
 		pixel_information->blue_mask = 0x001f;
 	}
-	gopobj->info.pixels_per_scan_line = col;
+	gopobj->info.pixels_per_scan_line = pixels_per_scan_line;
 	gopobj->fb = fbi->screen_base;
 	gopobj->fbi = fbi;
 

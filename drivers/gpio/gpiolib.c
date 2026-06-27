@@ -315,6 +315,22 @@ void gpio_set_value(unsigned gpio, int value)
 }
 EXPORT_SYMBOL(gpio_set_value);
 
+static int gpio_set_open_drain_value_commit(struct gpio_desc *desc, bool value)
+{
+	if (value)
+		return gpiod_direction_input(desc);
+
+	return gpiod_direction_output_raw(desc, 0);
+}
+
+static int gpio_set_open_source_value_commit(struct gpio_desc *desc, bool value)
+{
+	if (value)
+		return gpiod_direction_output_raw(desc, 1);
+
+	return gpiod_direction_input(desc);
+}
+
 /**
  * gpiod_set_value() - assign a gpio's value
  * @desc: gpio whose value will be assigned
@@ -325,8 +341,22 @@ EXPORT_SYMBOL(gpio_set_value);
  */
 int gpiod_set_value(struct gpio_desc *desc, int value)
 {
+	int raw_value;
+
 	VALIDATE_DESC(desc);
-	return gpiod_set_raw_value(desc, gpio_adjust_value(desc, value));
+
+	raw_value = gpio_adjust_value(desc, value);
+
+	/* the emulation toggles the direction, so it needs both callbacks */
+	if (IS_ENABLED(CONFIG_GPIO_PINCONF) &&
+	    desc->chip->ops->direction_input && desc->chip->ops->direction_output) {
+		if (desc->flags & OF_GPIO_OPEN_DRAIN)
+			return gpio_set_open_drain_value_commit(desc, raw_value);
+		else if (desc->flags & OF_GPIO_SINGLE_ENDED)
+			return gpio_set_open_source_value_commit(desc, raw_value);
+	}
+
+	return gpiod_set_raw_value(desc, raw_value);
 }
 EXPORT_SYMBOL_GPL(gpiod_set_value);
 

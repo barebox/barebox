@@ -248,7 +248,7 @@ static __always_inline efi_status_t gop_blt_int(struct efi_graphics_output_proto
 	}
 
 	if (blt_to_video) {
-		struct fb_rect rect = { dx, dy, width, height };
+		struct fb_rect rect = { dx, dy, dx + width, dy + height };
 		fb_damage(gopobj->fbi, &rect);
 	}
 

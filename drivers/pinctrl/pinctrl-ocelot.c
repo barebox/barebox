@@ -256,7 +256,7 @@ struct ocelot_pinctrl_desc {
 
 struct ocelot_pinctrl {
 	struct device *dev;
-	struct pinctrl_device pctl;
+	struct pinctrl_dev pctl;
 	struct gpio_chip gpio_chip;
 	struct regmap *map;
 	struct regmap *pincfg;
@@ -429,7 +429,7 @@ static int ocelot_lookup_pin(struct ocelot_pinctrl *info, const char *name)
 	return -1;
 }
 
-static int ocelot_pinctrl_set_state(struct pinctrl_device *pdev,
+static int ocelot_pinctrl_set_state(struct pinctrl_dev *pdev,
 				    struct device_node *np)
 {
 	struct ocelot_pinctrl *info = to_ocelot_pctl(pdev);

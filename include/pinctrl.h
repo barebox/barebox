@@ -5,16 +5,16 @@
 #include <linux/types.h>
 #include <linux/pinctrl/consumer.h>
 
-struct pinctrl_device;
+struct pinctrl_dev;
 struct device_node;
 
 struct pinctrl_ops {
-	int (*set_state)(struct pinctrl_device *, struct device_node *);
-	int (*set_direction)(struct pinctrl_device *, unsigned int, bool);
-	int (*get_direction)(struct pinctrl_device *, unsigned int);
+	int (*set_state)(struct pinctrl_dev *, struct device_node *);
+	int (*set_direction)(struct pinctrl_dev *, unsigned int, bool);
+	int (*get_direction)(struct pinctrl_dev *, unsigned int);
 };
 
-struct pinctrl_device {
+struct pinctrl_dev {
 	struct device *dev;
 	const struct pinctrl_ops *ops;
 	struct list_head list;
@@ -22,8 +22,8 @@ struct pinctrl_device {
 	unsigned int base, npins;
 };
 
-int pinctrl_register(struct pinctrl_device *pdev);
-void pinctrl_unregister(struct pinctrl_device *pdev);
+int pinctrl_register(struct pinctrl_dev *pdev);
+void pinctrl_unregister(struct pinctrl_dev *pdev);
 
 #ifdef CONFIG_PINCTRL_STATE_PARAM
 void of_pinctrl_register_consumer(struct device *dev, struct device_node *np);

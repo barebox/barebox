@@ -15,7 +15,7 @@
 #define FUNC_GPIO_IN	0
 #define FUNC_GPIO_OUT	1
 
-static struct sunxi_pinctrl *to_sunxi_pinctrl(struct pinctrl_device *pdev)
+static struct sunxi_pinctrl *to_sunxi_pinctrl(struct pinctrl_dev *pdev)
 {
 	return container_of(pdev, struct sunxi_pinctrl, pdev);
 }
@@ -189,7 +189,7 @@ static int sunxi_pinctrl_set_func(struct sunxi_pinctrl *pinctrl,
 	return 0;
 }
 
-static int sunxi_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node *np)
+static int sunxi_pinctrl_set_state(struct pinctrl_dev *pdev, struct device_node *np)
 {
 	struct sunxi_pinctrl *pinctrl = to_sunxi_pinctrl(pdev);
 	struct device *dev = pinctrl->pdev.dev;
@@ -210,7 +210,7 @@ static int sunxi_pinctrl_set_state(struct pinctrl_device *pdev, struct device_no
 	return 0;
 }
 
-static int sunxi_pinctrl_set_direction(struct pinctrl_device *pdev, unsigned int gpio, bool in)
+static int sunxi_pinctrl_set_direction(struct pinctrl_dev *pdev, unsigned int gpio, bool in)
 {
 	struct sunxi_pinctrl *pinctrl = to_sunxi_pinctrl(pdev);
 	u32 func = in ? FUNC_GPIO_IN : FUNC_GPIO_OUT;

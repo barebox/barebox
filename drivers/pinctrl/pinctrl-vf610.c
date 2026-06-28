@@ -24,10 +24,10 @@ enum {
 
 struct pinctrl_vf610 {
 	void __iomem *base;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 };
 
-static int pinctrl_vf610_set_state(struct pinctrl_device *pdev,
+static int pinctrl_vf610_set_state(struct pinctrl_dev *pdev,
 				   struct device_node *np)
 {
 	const __be32 *list;
@@ -64,7 +64,7 @@ static int pinctrl_vf610_set_state(struct pinctrl_device *pdev,
 	return 0;
 }
 
-static int pinctrl_vf610_set_direction(struct pinctrl_device *pdev,
+static int pinctrl_vf610_set_direction(struct pinctrl_dev *pdev,
 				       unsigned int pin, bool input)
 {
 	u32 pad_cr;
@@ -87,7 +87,7 @@ static int pinctrl_vf610_set_direction(struct pinctrl_device *pdev,
 	return 0;
 }
 
-static int pinctrl_vf610_get_direction(struct pinctrl_device *pdev,
+static int pinctrl_vf610_get_direction(struct pinctrl_dev *pdev,
 				       unsigned int pin)
 {
 	const u32 off = pin * sizeof(u32);

@@ -14,7 +14,7 @@
 
 struct mvebu_pinctrl {
 	struct mvebu_pinctrl_soc_info *soc;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 };
 
 static struct mvebu_mpp_mode *mvebu_pinctrl_find_mode_by_name(
@@ -45,7 +45,7 @@ static struct mvebu_mpp_ctrl_setting *mvebu_pinctrl_find_setting_by_name(
 	return NULL;
 }
 
-static int mvebu_pinctrl_set_state(struct pinctrl_device *pdev,
+static int mvebu_pinctrl_set_state(struct pinctrl_dev *pdev,
 				   struct device_node *np)
 {
 	struct mvebu_pinctrl *pctl =

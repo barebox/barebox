@@ -39,7 +39,7 @@ enum {
 struct bcm2835_gpio_chip {
 	void __iomem *base;
 	struct gpio_chip chip;
-	struct pinctrl_device pctl;
+	struct pinctrl_dev pctl;
 };
 
 struct plat_data {
@@ -109,7 +109,7 @@ static struct gpio_ops bcm2835_gpio_ops = {
 	.set = bcm2835_gpio_set_value,
 };
 
-static int bcm2835_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node *np)
+static int bcm2835_pinctrl_set_state(struct pinctrl_dev *pdev, struct device_node *np)
 {
 	const __be32 *list;
 	u32 function;

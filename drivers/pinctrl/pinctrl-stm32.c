@@ -29,12 +29,12 @@ struct stm32_gpio_bank {
 };
 
 struct stm32_pinctrl {
-	struct pinctrl_device pdev;
+	struct pinctrl_dev pdev;
 	struct hwspinlock hws;
 	struct stm32_gpio_bank gpio_banks[];
 };
 
-static inline struct stm32_pinctrl *to_stm32_pinctrl(struct pinctrl_device *pdev)
+static inline struct stm32_pinctrl *to_stm32_pinctrl(struct pinctrl_dev *pdev)
 {
 	return container_of(pdev, struct stm32_pinctrl, pdev);
 }
@@ -176,7 +176,7 @@ static int __stm32_pinctrl_set_state(struct device *dev,
 	return 0;
 }
 
-static int stm32_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node *np)
+static int stm32_pinctrl_set_state(struct pinctrl_dev *pdev, struct device_node *np)
 {
 	struct stm32_pinctrl *pinctrl = to_stm32_pinctrl(pdev);
 	struct device *dev = pdev->dev;

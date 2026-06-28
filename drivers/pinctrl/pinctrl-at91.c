@@ -25,7 +25,7 @@
 #include <pinctrl.h>
 
 struct at91_pinctrl {
-	struct pinctrl_device pctl;
+	struct pinctrl_dev pctl;
 	const struct at91_pinctrl_mux_ops	*ops;
 };
 
@@ -412,7 +412,7 @@ static int at91_pinctrl_set_conf(struct at91_pinctrl *info, unsigned int pin_num
 	return 0;
 }
 
-static int at91_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node *np)
+static int at91_pinctrl_set_state(struct pinctrl_dev *pdev, struct device_node *np)
 {
 	struct at91_pinctrl *info;
 	const __be32 *list;

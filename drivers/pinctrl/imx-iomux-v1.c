@@ -34,7 +34,7 @@
 
 struct imx_iomux_v1 {
 	void __iomem *base;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 };
 
 void imx_gpio_mode(void __iomem *base, int gpio_mode)
@@ -200,7 +200,7 @@ static void imx1_write_bit(struct imx_iomux_v1 *iomux, unsigned int pin_id,
 	writel(new_val, reg);
 }
 
-static int imx_iomux_v1_set_state(struct pinctrl_device *pdev, struct device_node *np)
+static int imx_iomux_v1_set_state(struct pinctrl_dev *pdev, struct device_node *np)
 {
 	struct imx_iomux_v1 *iomux = container_of(pdev, struct imx_iomux_v1, pinctrl);
 	const __be32 *list;

@@ -22,7 +22,7 @@
 
 struct pinctrl_at91_pio4 {
 	void __iomem *base;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 	struct gpio_chip gpiochip;
 };
 
@@ -30,7 +30,7 @@ struct at91_pinctrl_data {
         unsigned nbanks;
 };
 
-static inline void __iomem *pin_to_pio4(struct pinctrl_device *pdev,
+static inline void __iomem *pin_to_pio4(struct pinctrl_dev *pdev,
 					unsigned int *pin)
 {
 	void __iomem *pio;
@@ -43,7 +43,7 @@ static inline void __iomem *pin_to_pio4(struct pinctrl_device *pdev,
 	return pio;
 }
 
-static int __pinctrl_at91_pio4_set_state(struct pinctrl_device *pdev,
+static int __pinctrl_at91_pio4_set_state(struct pinctrl_dev *pdev,
 					 struct device_node *np)
 {
 	u32 drive_strength, enable = 0, disable = ~0;
@@ -129,7 +129,7 @@ static int __pinctrl_at91_pio4_set_state(struct pinctrl_device *pdev,
 	return 0;
 }
 
-static int pinctrl_at91_pio4_set_state(struct pinctrl_device *pdev,
+static int pinctrl_at91_pio4_set_state(struct pinctrl_dev *pdev,
 				       struct device_node *np)
 {
 	struct device_node *child;

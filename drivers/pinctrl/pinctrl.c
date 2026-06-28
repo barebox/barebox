@@ -43,9 +43,9 @@ struct pinctrl_consumer_info {
 LIST_HEAD(pinctrl_list);
 EXPORT_SYMBOL(pinctrl_list);
 
-static struct pinctrl_device *pin_to_pinctrl(unsigned int pin)
+static struct pinctrl_dev *pin_to_pinctrl(unsigned int pin)
 {
-	struct pinctrl_device *pinctrl;
+	struct pinctrl_dev *pinctrl;
 
 	list_for_each_entry(pinctrl, &pinctrl_list, list)
 		if (pin >= pinctrl->base &&
@@ -56,7 +56,7 @@ static struct pinctrl_device *pin_to_pinctrl(unsigned int pin)
 
 static int pinctrl_gpio_direction_pin(unsigned pin, bool input)
 {
-	struct pinctrl_device *pinctrl = pin_to_pinctrl(pin);
+	struct pinctrl_dev *pinctrl = pin_to_pinctrl(pin);
 
 	if (!pinctrl)
 		return -EINVAL;
@@ -78,7 +78,7 @@ int pinctrl_gpio_direction_output_pin(unsigned int pin)
 
 int pinctrl_gpio_get_direction_pin(unsigned pin)
 {
-	struct pinctrl_device *pinctrl = pin_to_pinctrl(pin);
+	struct pinctrl_dev *pinctrl = pin_to_pinctrl(pin);
 
 	if (!pinctrl)
 		return -EINVAL;
@@ -88,9 +88,9 @@ int pinctrl_gpio_get_direction_pin(unsigned pin)
 	return pinctrl->ops->get_direction(pinctrl, pin);
 }
 
-static struct pinctrl_device *find_pinctrl(struct device_node *node)
+static struct pinctrl_dev *find_pinctrl(struct device_node *node)
 {
-	struct pinctrl_device *pdev;
+	struct pinctrl_dev *pdev;
 
 	list_for_each_entry(pdev, &pinctrl_list, list)
 		if (pdev->node == node)
@@ -100,7 +100,7 @@ static struct pinctrl_device *find_pinctrl(struct device_node *node)
 
 static int pinctrl_config_one(struct device_node *for_node, struct device_node *np)
 {
-	struct pinctrl_device *pdev;
+	struct pinctrl_dev *pdev;
 	struct device_node *pinctrl_node = np;
 
 	while (1) {
@@ -303,7 +303,7 @@ int pinctrl_select_state_default(struct device *dev)
 	return PTR_ERR_OR_ZERO(pinctrl_get_select(dev, "default"));
 }
 
-int pinctrl_register(struct pinctrl_device *pdev)
+int pinctrl_register(struct pinctrl_dev *pdev)
 {
 	if (!IS_ENABLED(CONFIG_PINCTRL))
 		return -ENOSYS;
@@ -319,7 +319,7 @@ int pinctrl_register(struct pinctrl_device *pdev)
 	return 0;
 }
 
-void pinctrl_unregister(struct pinctrl_device *pdev)
+void pinctrl_unregister(struct pinctrl_dev *pdev)
 {
 	list_del(&pdev->list);
 }

@@ -15,7 +15,7 @@
 
 struct mxs_pinctrl {
 	void __iomem *base;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 };
 
 #define PINID(bank, pin)	((bank) * 32 + (pin))
@@ -24,7 +24,7 @@ struct mxs_pinctrl {
 #define PINID_TO_BANK(p)	((p) >> 5)
 #define PINID_TO_PIN(p)		((p) % 32)
 
-static int mxs_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node *np)
+static int mxs_pinctrl_set_state(struct pinctrl_dev *pdev, struct device_node *np)
 {
 	struct mxs_pinctrl *iomux = container_of(pdev, struct mxs_pinctrl, pinctrl);
 	const __be32 *list;

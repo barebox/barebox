@@ -20,7 +20,7 @@ struct pinctrl_tegra30 {
 		u32 __iomem *ctrl;
 		u32 __iomem *mux;
 	} regs;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 	const struct pinctrl_tegra30_drvdata *drvdata;
 };
 
@@ -772,7 +772,7 @@ static void pinctrl_tegra30_set_ioreset(struct pinctrl_tegra30 *ctrl,
 	writel(val, regaddr);
 }
 
-static int pinctrl_tegra30_set_state(struct pinctrl_device *pdev,
+static int pinctrl_tegra30_set_state(struct pinctrl_dev *pdev,
 				     struct device_node *np)
 {
 	struct pinctrl_tegra30 *ctrl =

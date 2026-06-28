@@ -1,0 +1,13 @@
+
+#ifndef __MACH_H5_REGS_H
+#define __MACH_H5_REGS_H
+
+#define SUNXI_H5_UART0_BASE 0x01c28000
+#define SUNXI_H5_UART1_BASE 0x01c28400
+#define SUNXI_H5_UART2_BASE 0x01c28800
+#define SUNXI_H5_UART3_BASE 0x01c28c00
+
+#define SUNXI_H5_IRAMA1_BASE 0x00010000 //brom //srama1
+#define SUNXI_H5_IRAMA2_BASE 0x00044000 //tfa //srama2
+#define SUNXI_H5_IRAMC_BASE 0x00018000 //reserved /sramc
+#endif /* __MACH_H5_REGS_H */

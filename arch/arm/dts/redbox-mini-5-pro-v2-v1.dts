@@ -1,0 +1,66 @@
+/dts-v1/;
+#include "sun50i-h5.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "My Allwinner H5 TV Box (RY1314)";
+	compatible = "allwinner,sun50i-h5";
+
+	aliases {
+		serial0 = &uart0;
+		mmc0 = &mmc0;
+		mmc2 = &mmc2;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x00 0x40000000 0x00 0x40000000>; /* 1 ГБ DRAM */
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		tfa_reserved: tfa@40000000 {
+			reg = <0x00 0x40000000 0x00 0x01000000>; /* 16 МБ под TF-A */
+			no-map;
+		};
+	};
+
+	reg_vcc3v3: regulator-vcc3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+	};
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins>;
+	status = "okay";
+};
+
+&mmc0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc0_pins>;
+	vmmc = <&reg_vcc3v3>;
+	bus-width = <4>;
+	cd-gpios = <&pio 5 6 GPIO_ACTIVE_LOW>; /* PF6 */
+	status = "okay";
+};
+
+&mmc2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc2_pins>;
+	vmmc = <&reg_vcc3v3>;
+	bus-width = <8>;
+	non-removable;
+	status = "okay";
+};

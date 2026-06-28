@@ -1,12 +1,5 @@
-menu "Allwinner (sunxi) boards"
-        depends on ARCH_SUNXI
-
-config ARCH_SUN50I_A64
-	bool "Allwinner A64 SoC"
-	select CPU_V8
-	select CLOCKSOURCE_ARM_ARCHITECTED_TIMER
-	select PINCTRL_SUN50I_A64
-	depends on 64BIT
-	default y
-
-endmenu
+config MACH_REDBOXMINI
+	bool "RedBox Mini TV Box (Allwinner H5)"
+	select ARCH_ALLWINNER_SUN50I_H5
+	help
+	  Say Y here if you are using the RedBox Mini TV Box.

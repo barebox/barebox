@@ -90,6 +90,14 @@ config MCI_MMC_RPMB
 
 comment "--- MCI host drivers ---"
 
+config MCI_SDHCI_PCI
+	bool "PCI SDHCI controller"
+	depends on PCI && HAS_DMA
+	select MCI_SDHCI
+	help
+	  Enable support for PCI-attached SDHCI controllers, such as QEMU's
+	  sdhci-pci device used to attach emulated eMMC devices.
+
 config MCI_DWC_MSHC
 	bool "Synopsys DesignWare Cores MSHC"
 	depends on HAS_DMA

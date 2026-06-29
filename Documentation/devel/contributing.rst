@@ -134,7 +134,7 @@ it directly from PyPI instead of your distro's package repositories::
 Example usage::
 
   # Run x86 VM runnig the EFI payload from efi_defconfig
-  pytest --lg-env test/x86/efi_defconfig.yaml --interactive
+  scripts/qemu_interactive.py test/x86/efi_defconfig.yaml
 
   # Run the test suite against the same
   pytest --lg-env test/x86/efi_defconfig.yaml
@@ -145,10 +145,10 @@ built out-of-tree, the build directory must be pointed at by
 ``LG_BUILDDIR``, ``KBUILD_OUTPUT`` or a ``build`` symlink.
 
 Additional QEMU command-line options can be added by specifying
-them after the ``--qemu`` option::
+them after ``--qemu``::
 
   # appends -device ? to the command line. Add --dry-run to see the final result
-  pytest --lg-env test/riscv/rv64i_defconfig.yaml --interactive --qemu -device '?'
+  scripts/qemu_interactive.py test/riscv/rv64i_defconfig.yaml --qemu -device '?'
 
 Some of the QEMU options that are used more often also have explicit
 support in the test runner, so paravirtualized devices can be added
@@ -158,7 +158,7 @@ more easily::
   pytest --lg-env test/arm/virt@multi_v8_defconfig.yaml --blk=rootfs.ext4
 
   # Run interactively with graphics output
-  pytest --lg-env test/mips/qemu-malta_defconfig.yaml --interactive --graphics
+  scripts/qemu_interactive.py test/mips/qemu-malta_defconfig.yaml --graphics
 
 For testing, the QEMU fw_cfg and virtfs support is particularly useful::
 

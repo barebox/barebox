@@ -6,16 +6,25 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import argparse
+import atexit
 import glob
 import os
 import re
 import subprocess
 import sys
+import tempfile
 
 
 MODE_INTERACTIVE = "qemu_interactive"
 MODE_DRY_RUN = "qemu_dry_run"
 MODE_DUMP_DTB = "qemu_dump_dtb"
+
+EMMC_VMDK_SECTOR_SIZE = 512
+EMMC_BOOT_RPMB_ALIGNMENT = 128 * 1024
+EMMC_USER_ALIGNMENT = 1024 * 1024
+EMMC_PARTITION_HWPARTS = ("boot1", "boot2", "rpmb", "user")
+
+_temporary_emmc_vmdks = []
 
 
 class QemuInteractiveError(Exception):
@@ -35,6 +44,18 @@ def _assignment(arg):
     return arg.split("=", 1)
 
 
+def _cleanup_emmc_vmdks():
+    while _temporary_emmc_vmdks:
+        path = _temporary_emmc_vmdks.pop()
+        try:
+            os.unlink(path)
+        except FileNotFoundError:
+            pass
+
+
+atexit.register(_cleanup_emmc_vmdks)
+
+
 def register_shared_options(parser):
     _add_option(parser, "--graphic", "--graphics", action="store_true",
                 dest="qemu_graphics", help="enable QEMU graphics output")
@@ -49,6 +70,14 @@ def register_shared_options(parser):
     _add_option(parser, "--blk", action="append", dest="qemu_block",
                 default=[], metavar="FILE",
                 help="Pass block device to emulated barebox. Can be specified more than once")
+    _add_option(parser, "--sdblk", action="append", dest="qemu_sdblock",
+                default=[], metavar="FILE",
+                help="Pass SD-Card block device to emulated barebox. Can be specified more than once")
+    _add_option(parser, "--emmcblk", action="append", dest="qemu_emmcblock",
+                default=[], metavar="FILE|HWPART=FILE[,HWPART=FILE...]",
+                help="Pass eMMC block device to emulated barebox. Can be "
+                "specified more than once. HWPART may be boot1, boot2, rpmb, "
+                "or user")
     _add_option(parser, "--nvmeblk", action="append", dest="qemu_nvmeblock",
                 default=[], metavar="FILE",
                 help="Pass NVMe block device with 4K sector size to emulated barebox. Can be specified more than once")
@@ -182,6 +211,141 @@ def _append_qemu_bootargs(strategy, fail, args):
     strategy.console.boot_args += " ".join(args)
 
 
+def _alignment_name(alignment):
+    if alignment % (1024 * 1024) == 0:
+        return f"{alignment // (1024 * 1024)} MiB"
+
+    return f"{alignment // 1024} KiB"
+
+
+def _emmc_partition_alignment(hwpart):
+    if hwpart == "user":
+        return EMMC_USER_ALIGNMENT
+
+    return EMMC_BOOT_RPMB_ALIGNMENT
+
+
+def _parse_emmc_partition_spec(spec, fail):
+    partitions = {}
+
+    for entry in spec.split(","):
+        if not entry:
+            fail("--emmcblk: empty partition entry")
+
+        hwpart, sep, value = entry.partition("=")
+        if not sep:
+            fail(f"--emmcblk: partition entry '{entry}' lacks '='")
+        if hwpart not in EMMC_PARTITION_HWPARTS:
+            fail(f"--emmcblk: unknown partition '{hwpart}'")
+        if hwpart in partitions:
+            fail(f"--emmcblk: duplicate partition '{hwpart}'")
+        if not value:
+            fail(f"--emmcblk: missing path for '{hwpart}'")
+        if '"' in value or "\n" in value or "\r" in value:
+            fail(f"--emmcblk: unsupported character in path for '{hwpart}'")
+        if not os.path.exists(value):
+            fail(f"--emmcblk: file for '{hwpart}' does not exist: {value}")
+        if not os.path.isfile(value):
+            fail(f"--emmcblk: path for '{hwpart}' is not a regular file: {value}")
+
+        size = os.path.getsize(value)
+        if size == 0:
+            fail(f"--emmcblk: file for '{hwpart}' is empty: {value}")
+
+        alignment = _emmc_partition_alignment(hwpart)
+        if size % alignment:
+            fail(f"--emmcblk: size of '{hwpart}' must be aligned to "
+                 f"{_alignment_name(alignment)}: {value}")
+
+        partitions[hwpart] = {
+            "path": os.path.abspath(value),
+            "size": size,
+        }
+
+    if not partitions:
+        fail("--emmcblk: no partitions specified")
+
+    boot1 = partitions.get("boot1")
+    boot2 = partitions.get("boot2")
+
+    if boot1 and boot2 and boot1["size"] != boot2["size"]:
+        fail("--emmcblk: boot1 and boot2 must have the same size")
+
+    return partitions
+
+
+def _emmc_vmdk_escape_path(path):
+    if '"' in path or "\n" in path or "\r" in path:
+        raise QemuInteractiveError(
+            f"--emmcblk: unsupported character in VMDK path: {path}")
+
+    return path
+
+
+def _write_emmc_vmdk(extents):
+    with tempfile.NamedTemporaryFile(
+            mode="w", encoding="ascii", prefix="barebox-emmc-",
+            suffix=".vmdk", delete=False) as vmdk:
+        vmdk.write("# Disk DescriptorFile\n")
+        vmdk.write("version=1\n")
+        vmdk.write("CID=fffffffe\n")
+        vmdk.write("parentCID=ffffffff\n")
+        vmdk.write('createType="monolithicFlat"\n\n')
+        vmdk.write("# Extent description\n")
+
+        for path, size in extents:
+            sectors = size // EMMC_VMDK_SECTOR_SIZE
+            vmdk.write(
+                f'RW {sectors} FLAT "{_emmc_vmdk_escape_path(path)}" 0\n')
+
+        vmdk.write("\n# The Disk Data Base\n")
+        vmdk.write("#DDB\n")
+        vmdk.write('ddb.adapterType = "ide"\n')
+
+    _temporary_emmc_vmdks.append(vmdk.name)
+
+    return vmdk.name
+
+
+def _create_emmc_vmdk(partitions):
+    boot1 = partitions.get("boot1")
+    boot2 = partitions.get("boot2")
+    rpmb = partitions.get("rpmb")
+    user = partitions.get("user")
+    boot_size = 0
+    rpmb_size = 0
+    extents = []
+
+    if boot1 or boot2:
+        boot_size = (boot1 or boot2)["size"]
+        extents.append(((boot1 or {"path": "/dev/zero"})["path"], boot_size))
+        extents.append(((boot2 or {"path": "/dev/zero"})["path"], boot_size))
+
+    if rpmb:
+        rpmb_size = rpmb["size"]
+        extents.append((rpmb["path"], rpmb_size))
+
+    if user:
+        extents.append((user["path"], user["size"]))
+
+    return _write_emmc_vmdk(extents), boot_size, rpmb_size
+
+
+def _qemu_emmc_args(index, blk, fail):
+    if not ("=" in blk or "," in blk):
+        blk = f"user={blk}"
+
+    partitions = _parse_emmc_partition_spec(blk, fail)
+    vmdk, boot_size, rpmb_size = _create_emmc_vmdk(partitions)
+
+    return (
+        "-drive", f"if=none,format=vmdk,id=emmc{index},file={vmdk}",
+        "-device",
+        f"emmc,drive=emmc{index},boot-partition-size={boot_size},"
+        f"rpmb-partition-size={rpmb_size}",
+    )
+
+
 def apply_shared_options(strategy, target, options, *, interactive, fail=None):  # noqa: max-complexity=30
     if fail is None:
         fail = _fail
@@ -262,6 +426,16 @@ def apply_shared_options(strategy, target, options, *, interactive, fail=None): 
             )
         else:
             fail("--blk unsupported for target\n")
+
+    for i, blk in enumerate(_get_list_option(options, "qemu_sdblock")):
+        _append_qemu_args(
+            strategy, fail,
+            "-drive", f"if=none,format=raw,id=sdcard{i},file={blk}",
+            "-device", f"sd-card,drive=sdcard{i}"
+        )
+
+    for i, blk in enumerate(_get_list_option(options, "qemu_emmcblock")):
+        _append_qemu_args(strategy, fail, *_qemu_emmc_args(i, blk, fail))
 
     for i, blk in enumerate(_get_list_option(options, "qemu_nvmeblock")):
         _append_qemu_args(

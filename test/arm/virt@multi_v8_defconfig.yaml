@@ -8,6 +8,8 @@ targets:
         memory: 1024M
         bios: barebox-qemu-virt.img
         display: qemu-default
+        extra_args: >
+          -device qemu-xhci
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'

@@ -49,6 +49,9 @@ def register_shared_options(parser):
     _add_option(parser, "--blk", action="append", dest="qemu_block",
                 default=[], metavar="FILE",
                 help="Pass block device to emulated barebox. Can be specified more than once")
+    _add_option(parser, "--usbblk", action="append", dest="qemu_usbblock",
+                default=[], metavar="FILE",
+                help="Pass USB block device to emulated barebox. Can be specified more than once")
     _add_option(parser, "--env", action="append", dest="qemu_fw_cfg",
                 type=_assignment, default=[],
                 metavar="[envpath=]content | [envpath=]@filepath",
@@ -256,6 +259,13 @@ def apply_shared_options(strategy, target, options, *, interactive, fail=None): 
             )
         else:
             fail("--blk unsupported for target\n")
+
+    for i, blk in enumerate(_get_list_option(options, "qemu_usbblock")):
+        _append_qemu_args(
+            strategy, fail,
+            "-drive", f"if=none,format=raw,id=usbstorage{i},file={blk}",
+            "-device", f"usb-storage,drive=usbstorage{i},bus=usb-bus.0,removable=on"
+        )
 
     envopts = {}
 

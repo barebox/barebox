@@ -49,6 +49,9 @@ def register_shared_options(parser):
     _add_option(parser, "--blk", action="append", dest="qemu_block",
                 default=[], metavar="FILE",
                 help="Pass block device to emulated barebox. Can be specified more than once")
+    _add_option(parser, "--nvmeblk", action="append", dest="qemu_nvmeblock",
+                default=[], metavar="FILE",
+                help="Pass NVMe block device with 4K sector size to emulated barebox. Can be specified more than once")
     _add_option(parser, "--usbblk", action="append", dest="qemu_usbblock",
                 default=[], metavar="FILE",
                 help="Pass USB block device to emulated barebox. Can be specified more than once")
@@ -259,6 +262,13 @@ def apply_shared_options(strategy, target, options, *, interactive, fail=None): 
             )
         else:
             fail("--blk unsupported for target\n")
+
+    for i, blk in enumerate(_get_list_option(options, "qemu_nvmeblock")):
+        _append_qemu_args(
+            strategy, fail,
+            "-drive", f"if=none,format=raw,id=nvme{i},file={blk}",
+            "-device", f"nvme,drive=nvme{i},serial=0ba2eb08,logical_block_size=4096,physical_block_size=4096"
+        )
 
     for i, blk in enumerate(_get_list_option(options, "qemu_usbblock")):
         _append_qemu_args(

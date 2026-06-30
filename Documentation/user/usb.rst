@@ -168,6 +168,7 @@ The Fastboot gadget supports the following commands:
 - fastboot getvar
 - fastboot boot
 - fastboot reboot
+- fastboot erase
 
 ``fastboot flash`` additionally supports image types UBI and Barebox. For UBI
 Images and a MTD device as target, ubiformat is called. For a Barebox image

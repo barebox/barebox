@@ -399,6 +399,7 @@ static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
 	struct device *dev = &us->pusb_dev->dev;
 	struct us_blk_dev *pblk_dev;
 	int result;
+	char *diskname = NULL, *alias = NULL;
 
 	/* allocate a new USB block device */
 	pblk_dev = xzalloc(sizeof(struct us_blk_dev));
@@ -414,10 +415,12 @@ static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
 	if (result < 0)
 		goto BadDevice;
 
-	result = cdev_find_free_index("disk");
-	dev_info(dev, "registering as disk%d\n", result);
+	diskname = xasprintf("disk%d", cdev_find_free_index("disk"));
+	alias = xasprintf("usbdisk%d", cdev_find_free_index("usbdisk"));
 
-	pblk_dev->blk.cdev.name = basprintf("disk%d", result);
+	dev_info(dev, "registering as %s (%s)\n", diskname, alias);
+
+	pblk_dev->blk.cdev.name = diskname;
 	pblk_dev->blk.blockbits = SECTOR_SHIFT;
 	pblk_dev->blk.type = BLK_TYPE_USB;
 	pblk_dev->blk.removable = true;
@@ -429,6 +432,9 @@ static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
 		goto BadDevice;
 	}
 
+	devfs_add_alias(&pblk_dev->blk.cdev, alias);
+	free(alias);
+
 	list_add_tail(&pblk_dev->list, &us->blk_dev_list);
 	dev_dbg(dev, "USB disk device successfully added\n");
 
@@ -437,6 +443,9 @@ static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
 BadDevice:
 	dev_dbg(dev, "%s failed with %d\n", __func__, result);
 	free(pblk_dev);
+	free(diskname);
+	free(alias);
+
 	return result;
 }
 

@@ -384,7 +384,7 @@ static int skov_imx6_switch_port(struct device_node *root, const char *path)
 
 	ret = eth2_of_fixup_node_individually(root, buf, "eth0",
 					      "state.ethaddr.eth2",
-					      "/state/ethaddr/eth2");
+					      "/state/ethaddr/eth2@1e");
 	return ret;
 }
 
@@ -563,7 +563,7 @@ static void skov_init_board(const struct board_description *variant)
 
 static int skov_set_switch_lan2_mac(struct skov_imx6_priv *priv)
 {
-	const char *state = "/state/ethaddr/eth2";
+	const char *state = "/state/ethaddr/eth2@1e";
 	struct device_node *lan2_np;
 	u8 ethaddr[ETH_ALEN];
 	int ret;

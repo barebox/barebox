@@ -415,8 +415,6 @@ static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
 		goto BadDevice;
 
 	result = cdev_find_free_index("disk");
-	if (result == -1)
-		pr_err("Cannot find a free number for the disk node\n");
 	dev_info(dev, "registering as disk%d\n", result);
 
 	pblk_dev->blk.cdev.name = basprintf("disk%d", result);

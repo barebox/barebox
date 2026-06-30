@@ -223,7 +223,15 @@ int cdev_find_free_index(const char *basename)
 			return i;
 	}
 
-	return -EBUSY;	/* all indexes are used */
+	/*
+	 * We should never run out of free indexes in realistic scenarios.
+	 * Return 0 so that the caller's cdev registration fails with -EEXIST,
+	 * which is a normal error path. The message tells the user that
+	 * something is wrong here and not in the devfs registration itself.
+	 */
+	pr_err("Cannot find a free index for '%s'\n", basename);
+
+	return 0;
 }
 
 static struct cdev *cdev_get_master(struct cdev *cdev)

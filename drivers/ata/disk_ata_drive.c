@@ -238,8 +238,6 @@ static int ata_port_init(struct ata_port *port)
 		port->blk.cdev.name = xstrdup(port->devname);
 	} else {
 		rc = cdev_find_free_index("ata");
-		if (rc == -1)
-			pr_err("Cannot find a free index for the disk node\n");
 		port->blk.cdev.name = basprintf("ata%d", rc);
 	}
 

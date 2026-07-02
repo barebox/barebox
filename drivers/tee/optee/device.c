@@ -21,6 +21,20 @@ static int optee_ctx_match(struct tee_ioctl_version_data *ver, const void *data)
 		return 0;
 }
 
+static const char *pta_cmd_str(u32 func)
+{
+	switch (func) {
+	case PTA_CMD_GET_DEVICES:
+		return "PTA_CMD_GET_DEVICES";
+	case PTA_CMD_GET_DEVICES_SUPP:
+		return "PTA_CMD_GET_DEVICES_SUPP";
+	case PTA_CMD_GET_DEVICES_RPMB:
+		return "PTA_CMD_GET_DEVICES_RPMB";
+	default:
+		return "PTA command";
+	}
+}
+
 static int get_devices(struct tee_context *ctx, u32 session,
 		       struct tee_shm *device_shm, u32 *shm_size,
 		       u32 func)
@@ -45,8 +59,8 @@ static int get_devices(struct tee_context *ctx, u32 session,
 	ret = tee_client_invoke_func(ctx, &inv_arg, param);
 	if ((ret < 0) || ((inv_arg.ret != TEEC_SUCCESS) &&
 			  (inv_arg.ret != TEEC_ERROR_SHORT_BUFFER))) {
-		pr_err("PTA_CMD_GET_DEVICES invoke function err: %x\n",
-		       inv_arg.ret);
+		pr_err("%s invoke function err: %x\n",
+		       pta_cmd_str(func), inv_arg.ret);
 		return -EINVAL;
 	}
 

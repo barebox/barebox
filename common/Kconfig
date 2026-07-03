@@ -1358,7 +1358,7 @@ config SERIAL_NUMBER_FIXUP_SYSTEMD_HOSTNAME
 	  When a systemd.hostname= kernel command line argument is
 	  fixed up, append a `-${global.serial_number}' suffix.
 
-	  This option without effect if global.bootm.provide_hostname
+	  This option is without effect if global.bootm.provide_hostname
 	  is unset.
 
 config SYSTEMD_OF_WATCHDOG

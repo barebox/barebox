@@ -5,9 +5,9 @@
 menuconfig SECURITY_POLICY
 	bool "Security Policy Support"
 	help
-	  A Security policy is a collection of security configuration options
+	  A security policy is a collection of security configuration options
 	  that can be activated together at runtime.
-	  Together, the describe a security state that barebox should operate in.
+	  Together, they describe a security state that barebox should operate in.
 
 	  Policies can be registered by board code or supplied by
 	  an external build system. The policy name must be unique across
@@ -32,7 +32,7 @@ menuconfig SECURITY_POLICY
 	    lockdown  Factory bring up is done and device is ready for use
 	              in the field with barebox as part of the secure boot
 	              chain. This policy usually disallows booting unsigned
-	              images
+	              images.
 
 	    tamper    Tampering attempt was detected. The security policy would
 	              take steps to protect secrets (up to bricking the device).

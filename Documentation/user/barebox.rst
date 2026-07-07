@@ -225,7 +225,7 @@ Linux kernel:
 
 .. code-block:: console
 
-  U-Boot: tftp $fit_addr barebox-dt-2nd.fit
+  U-Boot: tftp $fit_addr barebox.fit
   U-Boot: bootm $fit_addr
 
 The FIT image has a kernel type of ``kernel_noload``, instructing the bootloader

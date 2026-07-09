@@ -93,13 +93,18 @@ static int nvme_pci_setup_prps(struct nvme_dev *dev,
 
 	nprps = DIV_ROUND_UP(length, page_size);
 	if (nprps > dev->prp_pool_size) {
-		dma_free_coherent(DMA_DEVICE_BROKEN,
-				  dev->prp_pool, dev->prp_dma,
-				  dev->prp_pool_size * sizeof(u64));
+		__le64 *prp_pool;
+
+		prp_pool = dma_realloc_coherent(DMA_DEVICE_BROKEN,
+						dev->prp_pool,
+						dev->prp_pool_size * sizeof(*prp_pool),
+						nprps * sizeof(*prp_pool),
+						&dev->prp_dma);
+		if (!prp_pool)
+			return -ENOMEM;
+
+		dev->prp_pool = prp_pool;
 		dev->prp_pool_size = nprps;
-		dev->prp_pool = dma_alloc_coherent(DMA_DEVICE_BROKEN,
-						   nprps * sizeof(u64),
-						   &dev->prp_dma);
 	}
 
 	prp_list = dev->prp_pool;

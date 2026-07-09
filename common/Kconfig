@@ -1423,6 +1423,7 @@ config FASTBOOT_SPARSE
 	bool
 	select IMAGE_SPARSE
 	prompt "Enable Fastboot sparse image support"
+	default y
 	help
 	  Sparse images are a way for the fastboot protocol to write
 	  images that are bigger than the available memory. If unsure,

@@ -95,7 +95,7 @@ static int nvme_pci_setup_prps(struct nvme_dev *dev,
 	if (nprps > dev->prp_pool_size) {
 		__le64 *prp_pool;
 
-		prp_pool = dma_realloc_coherent(DMA_DEVICE_BROKEN,
+		prp_pool = dma_realloc_coherent(dev->dev,
 						dev->prp_pool,
 						dev->prp_pool_size * sizeof(*prp_pool),
 						nprps * sizeof(*prp_pool),
@@ -164,13 +164,13 @@ static int nvme_alloc_queue(struct nvme_dev *dev, int qid, int depth)
 	if (dev->ctrl.queue_count > qid)
 		return 0;
 
-	nvmeq->cqes = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+	nvmeq->cqes = dma_alloc_coherent(dev->dev,
 					 CQ_SIZE(depth),
 					 &nvmeq->cq_dma_addr);
 	if (!nvmeq->cqes)
 		goto free_nvmeq;
 
-	nvmeq->sq_cmds = dma_alloc_coherent(DMA_DEVICE_BROKEN,
+	nvmeq->sq_cmds = dma_alloc_coherent(dev->dev,
 					    SQ_SIZE(depth),
 					    &nvmeq->sq_dma_addr);
 	if (!nvmeq->sq_cmds)
@@ -187,7 +187,7 @@ static int nvme_alloc_queue(struct nvme_dev *dev, int qid, int depth)
 	return 0;
 
  free_cqdma:
-	dma_free_coherent(DMA_DEVICE_BROKEN,
+	dma_free_coherent(dev->dev,
 			  (void *)nvmeq->cqes, nvmeq->cq_dma_addr,
 			  CQ_SIZE(depth));
  free_nvmeq:

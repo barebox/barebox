@@ -443,6 +443,9 @@ static int arc_emac_probe(struct device *dev)
 					DMA_ADDRESS_BROKEN);
 	priv->rxbuf = dma_alloc(RX_BD_NUM * PKTSIZE);
 
+	if (!priv->rxbd || !priv->txbd || !priv->rxbuf)
+		return -ENOMEM;
+
 	/* Set poll rate so that it polls every 1 ms */
 	arc_reg_set(priv, R_POLLRATE, clock_frequency / 1000000);
 

@@ -41,6 +41,8 @@ static int ramfb_activate_var(struct fb_info *fbi)
 	fbi->screen_size = fbi->xres * fbi->yres * fbi->bits_per_pixel / BITS_PER_BYTE;
 	fbi->screen_base = dma_alloc_coherent(hwdev, fbi->screen_size,
 					      &ramfb->screen_dma);
+	if (!fbi->screen_base)
+		return -ENOMEM;
 
 	return 0;
 }

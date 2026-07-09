@@ -865,6 +865,11 @@ static int fec_probe(struct device *dev)
 
 	base = dma_alloc_coherent(DMA_DEVICE_BROKEN, FEC_XBD_SIZE,
 				  DMA_ADDRESS_BROKEN);
+	if (!base) {
+		ret = -ENOMEM;
+		goto free_gpio;
+	}
+
 	fec->rbd_base = base;
 	base += FEC_RBD_NUM * sizeof(struct buffer_descriptor);
 	fec->tbd_base = base;

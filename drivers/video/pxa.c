@@ -520,9 +520,14 @@ static int pxafb_probe(struct device *dev)
 						     DMA_ADDRESS_BROKEN),
 				  PAGE_SIZE);
 
+	if (!fbi->info.screen_base)
+		return -ENOMEM;
+
 	fbi->dma_buff = PTR_ALIGN(dma_alloc_coherent(DMA_DEVICE_BROKEN,
 						     sizeof(struct pxafb_dma_buff) + 16,
 				DMA_ADDRESS_BROKEN), 16);
+	if (!fbi->dma_buff)
+		return -ENOMEM;
 
 	pxafb_activate_var(fbi);
 

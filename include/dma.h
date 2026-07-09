@@ -161,4 +161,9 @@ static inline bool dma_map_buf_is_aligned(struct device *dev, const void *buf, s
 	return PTR_IS_ALIGNED(buf, ARCH_DMA_MINALIGN) &&
 		IS_ALIGNED(size, ARCH_DMA_MINALIGN);
 }
+
+void *dma_realloc_coherent(struct device *dev, void *oldbuf,
+			   size_t oldsize, size_t newsize,
+			   dma_addr_t *dma_handle);
+
 #endif /* __DMA_H */

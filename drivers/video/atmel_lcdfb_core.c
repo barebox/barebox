@@ -476,10 +476,15 @@ int atmel_lcdc_register(struct device *dev, struct atmel_lcdfb_devdata *data)
 
 	atmel_lcdfb_start_clock(sinfo);
 
-	if (data->dma_desc_size)
+	if (data->dma_desc_size) {
 		sinfo->dma_desc = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 						     data->dma_desc_size,
 						     DMA_ADDRESS_BROKEN);
+		if (!sinfo->dma_desc) {
+			ret = -ENOMEM;
+			goto stop_clk;
+		}
+	}
 
 	info->dev.parent = dev;
 	ret = register_framebuffer(info);

@@ -215,9 +215,13 @@ static int am62l_udma_request(struct dma *dma)
 
 	if (uc->config.dir == DMA_MEM_TO_DEV) {
 		uc->desc_tx = dma_alloc_coherent(DMA_DEVICE_BROKEN, ucc->hdesc_size, DMA_ADDRESS_BROKEN);
+		if (!uc->desc_tx)
+			return -ENOMEM;
 	} else {
 		uc->desc_rx = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 						 ucc->hdesc_size * UDMA_RX_DESC_NUM, DMA_ADDRESS_BROKEN);
+		if (!uc->desc_rx)
+			return -ENOMEM;
 	}
 
 	uc->in_use = true;

@@ -30,7 +30,10 @@ static inline void *dma_alloc_coherent(struct device *dev,
 	void *ptr;
 	unsigned long virt;
 
-	ptr = xmemalign(PAGE_SIZE, size);
+	ptr = memalign(PAGE_SIZE, size);
+	if (!ptr)
+		return NULL;
+
 	memset(ptr, 0, size);
 
 	virt = (unsigned long)ptr;

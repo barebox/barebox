@@ -318,9 +318,14 @@ static int at91_ether_probe(struct device *dev)
 	ether_dev->rbf_framebuf = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 						     MAX_RX_DESCR * MAX_RBUFF_SZ,
 						     DMA_ADDRESS_BROKEN);
+	if (!ether_dev->rbf_framebuf)
+		return -ENOMEM;
+
 	ether_dev->rbfdt = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					      sizeof(struct rbf_t) * MAX_RX_DESCR,
 					      DMA_ADDRESS_BROKEN);
+	if (!ether_dev->rbfdt)
+		return -ENOMEM;
 
 	ether_dev->phy_addr = pdata->phy_addr;
 	miibus->read = at91_ether_mii_read;

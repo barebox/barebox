@@ -17,6 +17,7 @@
 
 #include <dt-bindings/power/imx8mp-power.h>
 
+/* HSIO blk-ctrl registers */
 #define GPR_REG0		0x0
 #define  PCIE_CLOCK_MODULE_EN	BIT(0)
 #define  USB_CLOCK_MODULE_EN	BIT(1)
@@ -32,6 +33,11 @@
 #define  PLL_CKE		BIT(17)
 #define  PLL_RST		BIT(31)
 
+/* Media blk-ctrl registers */
+#define LCDIF_ARCACHE_CTRL	0x40
+#define  LCDIF_1_RD_HURRY	GENMASK(6, 4)
+#define  LCDIF_0_RD_HURRY	GENMASK(2, 0)
+
 struct imx8mp_blk_ctrl_domain;
 
 struct imx8mp_blk_ctrl {
@@ -40,6 +46,7 @@ struct imx8mp_blk_ctrl {
 	struct regmap *regmap;
 	struct imx8mp_blk_ctrl_domain *domains;
 	struct genpd_onecell_data onecell_data;
+	int (*pre_power_on) (struct imx8mp_blk_ctrl *bc);
 	void (*power_off) (struct imx8mp_blk_ctrl *bc, struct imx8mp_blk_ctrl_domain *domain);
 	void (*power_on) (struct imx8mp_blk_ctrl *bc, struct imx8mp_blk_ctrl_domain *domain);
 };
@@ -51,7 +58,7 @@ struct imx8mp_blk_ctrl_domain_data {
 	const char *gpc_name;
 };
 
-#define DOMAIN_MAX_CLKS 2
+#define DOMAIN_MAX_CLKS 3
 
 struct imx8mp_blk_ctrl_domain {
 	struct generic_pm_domain genpd;
@@ -65,6 +72,7 @@ struct imx8mp_blk_ctrl_domain {
 struct imx8mp_blk_ctrl_data {
 	int max_reg;
 	int (*probe) (struct imx8mp_blk_ctrl *bc);
+	int (*pre_power_on) (struct imx8mp_blk_ctrl *bc);
 	void (*power_off) (struct imx8mp_blk_ctrl *bc, struct imx8mp_blk_ctrl_domain *domain);
 	void (*power_on) (struct imx8mp_blk_ctrl *bc, struct imx8mp_blk_ctrl_domain *domain);
 	const struct imx8mp_blk_ctrl_domain_data *domains;
@@ -253,10 +261,50 @@ static const struct imx8mp_blk_ctrl_domain_data imx8mp_hsio_domain_data[] = {
 static const struct imx8mp_blk_ctrl_data imx8mp_hsio_blk_ctl_dev_data = {
 	.max_reg = 0x24,
 	.probe = imx8mp_hsio_blk_ctrl_probe,
+	.pre_power_on = imx8mp_hsio_propagate_adb_handshake,
 	.power_on = imx8mp_hsio_blk_ctrl_power_on,
 	.power_off = imx8mp_hsio_blk_ctrl_power_off,
 	.domains = imx8mp_hsio_domain_data,
 	.num_domains = ARRAY_SIZE(imx8mp_hsio_domain_data),
+};
+
+/* Media blk-ctrl */
+
+/* MEDIAMIX BLK_CTRL register offsets (i.MX 8M Plus RM section 13) */
+#define BLK_SFT_RSTN		0x00
+#define BLK_CLK_EN		0x04
+
+/* MEDIAMIX bus/APB clock + reset */
+#define MEDIAMIX_BUS_CLK_RST	BIT(8)
+
+/* LCDIF2 in BLK_SFT_RSTN/BLK_CLK_EN: axi (11), apb (12), disp2 pixel (24) */
+#define LCDIF2_CLK_RST_MASK	(BIT(11) | BIT(12) | BIT(24))
+
+static int imx8mp_media_blk_ctrl_probe(struct imx8mp_blk_ctrl *bc)
+{
+	/* maximize LCDIF NoC AXI read priority to avoid scanout underflow */
+	regmap_update_bits(bc->regmap, LCDIF_ARCACHE_CTRL,
+			   FIELD_PREP(LCDIF_1_RD_HURRY, 7) |
+			   FIELD_PREP(LCDIF_0_RD_HURRY, 7),
+			   FIELD_PREP(LCDIF_1_RD_HURRY, 7) |
+			   FIELD_PREP(LCDIF_0_RD_HURRY, 7));
+
+	/* bring MEDIAMIX fabric up before any sub-module access */
+	regmap_set_bits(bc->regmap, BLK_CLK_EN,  MEDIAMIX_BUS_CLK_RST);
+	regmap_set_bits(bc->regmap, BLK_SFT_RSTN, MEDIAMIX_BUS_CLK_RST);
+	udelay(5); /* ADB handshake settle */
+
+	/* LCDIF2 registers AXI-hang until its own clocks + reset are de-asserted */
+	regmap_set_bits(bc->regmap, BLK_CLK_EN,  LCDIF2_CLK_RST_MASK);
+	regmap_set_bits(bc->regmap, BLK_SFT_RSTN, LCDIF2_CLK_RST_MASK);
+
+	return 0;
+}
+
+static const struct imx8mp_blk_ctrl_data imx8mp_media_blk_ctl_dev_data = {
+	.max_reg = 0x138,
+	.probe = imx8mp_media_blk_ctrl_probe,
+	/* num_domains = 0: skip genpd; MEDIAMIX is already on from SPL */
 };
 
 static int imx8mp_blk_ctrl_power_on(struct generic_pm_domain *genpd)
@@ -273,10 +321,12 @@ static int imx8mp_blk_ctrl_power_on(struct generic_pm_domain *genpd)
 		return ret;
 	}
 
-	ret = imx8mp_hsio_propagate_adb_handshake(bc);
-	if (ret) {
-		dev_err(bc->dev, "failed to propagate adb handshake\n");
-		goto bus_put;
+	if (bc->pre_power_on) {
+		ret = bc->pre_power_on(bc);
+		if (ret) {
+			dev_err(bc->dev, "pre_power_on failed: %d\n", ret);
+			goto bus_put;
+		}
 	}
 
 	/* enable upstream clocks */
@@ -287,7 +337,8 @@ static int imx8mp_blk_ctrl_power_on(struct generic_pm_domain *genpd)
 	}
 
 	/* domain specific blk-ctrl manipulation */
-	bc->power_on(bc, domain);
+	if (bc->power_on)
+		bc->power_on(bc, domain);
 
 	/* power up upstream GPC domain */
 	ret = pm_runtime_resume_and_get_genpd(domain->power_dev);
@@ -322,7 +373,8 @@ static int imx8mp_blk_ctrl_power_off(struct generic_pm_domain *genpd)
 	}
 
 	/* domain specific blk-ctrl manipulation */
-	bc->power_off(bc, domain);
+	if (bc->power_off)
+		bc->power_off(bc, domain);
 
 	clk_bulk_disable_unprepare(data->num_clks, domain->clks);
 
@@ -380,6 +432,27 @@ static int imx8mp_blk_ctrl_probe(struct device *dev)
 	if (!bc->onecell_data.domains)
 		return -ENOMEM;
 
+	/*
+	 * num_domains == 0: blk-ctrl instances (e.g. media) that only need
+	 * the regmap/probe side-effects and no genpd provider.  Power on
+	 * the bus domain so the blk-ctrl's own registers are accessible,
+	 * then run its probe and return.
+	 */
+	if (num_domains == 0) {
+		bc->bus_power_dev = dev_pm_domain_attach_by_name(dev, "bus");
+		if (!IS_ERR_OR_NULL(bc->bus_power_dev)) {
+			ret = pm_runtime_resume_and_get_genpd(bc->bus_power_dev);
+			if (ret < 0)
+				dev_warn(dev, "failed to power on MEDIAMIX (ignoring): %d\n", ret);
+		}
+		if (bc_data->probe) {
+			ret = bc_data->probe(bc);
+			if (ret)
+				return ret;
+		}
+		return 0;
+	}
+
 	bc->bus_power_dev = dev_pm_domain_attach_by_name(dev, "bus");
 	if (IS_ERR(bc->bus_power_dev))
 		return dev_err_probe(dev, PTR_ERR(bc->bus_power_dev),
@@ -387,6 +460,7 @@ static int imx8mp_blk_ctrl_probe(struct device *dev)
 
 	bc->power_off = bc_data->power_off;
 	bc->power_on = bc_data->power_on;
+	bc->pre_power_on = bc_data->pre_power_on;
 
 	for (i = 0; i < num_domains; i++) {
 		const struct imx8mp_blk_ctrl_domain_data *data = &bc_data->domains[i];
@@ -461,6 +535,9 @@ static const struct of_device_id imx8mp_blk_ctrl_of_match[] = {
 	{
 		.compatible = "fsl,imx8mp-hsio-blk-ctrl",
 		.data = &imx8mp_hsio_blk_ctl_dev_data,
+	}, {
+		.compatible = "fsl,imx8mp-media-blk-ctrl",
+		.data = &imx8mp_media_blk_ctl_dev_data,
 	}, {
 		/* Sentinel */
 	}

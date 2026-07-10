@@ -216,18 +216,14 @@ static void lcdif_set_mode(struct lcdif_drm_private *lcdif,
 	       lcdif->base + LCDC_V8_CTRLDESCL0_1);
 
 	/*
-	 * Undocumented P_SIZE and T_SIZE register but those written in the
-	 * downstream kernel those registers control the AXI burst size. As of
-	 * now there are two known values:
-	 *  1 - 128Byte
-	 *  2 - 256Byte
-	 * Downstream set it to 256B burst size to improve the memory
-	 * efficiency so set it here too.
+	 * P_SIZE/T_SIZE are undocumented AXI-burst-size selectors:
+	 * 1 = 128 byte, 2 = 256 byte.  Use 128B so any 32 bpp row divides
+	 * into whole bursts; 256B on an 800-pixel row produces a partial
+	 * trailing burst and a ~32-pixel black strip at the right edge.
+	 *
+	 * Stride is fixed to hdisplay * 4 (DRM_FORMAT_XRGB8888).
 	 */
-	/* NOTE: Since this driver is currently fixed to DRM_FORMAT_XRGB8888
-	 * we asume a stride of vdisplay * 4
-	 */
-	ctrl = CTRLDESCL0_3_P_SIZE(2) | CTRLDESCL0_3_T_SIZE(2) |
+	ctrl = CTRLDESCL0_3_P_SIZE(1) | CTRLDESCL0_3_T_SIZE(1) |
 	       CTRLDESCL0_3_PITCH(m->hdisplay * 4);
 	writel(ctrl, lcdif->base + LCDC_V8_CTRLDESCL0_3);
 }
@@ -326,6 +322,11 @@ static void lcdif_crtc_atomic_enable(struct lcdif_drm_private *lcdif,
 
 	clk_set_rate(lcdif->clk, mode->clock * 1000);
 
+	/* no runtime PM; ungate the LCDIF clocks ourselves */
+	clk_prepare_enable(lcdif->clk_axi);
+	clk_prepare_enable(lcdif->clk_disp_axi);
+	clk_prepare_enable(lcdif->clk);
+
 	lcdif_crtc_mode_set_nofb(lcdif, mode, vcstate);
 
 	/* Write cur_buf as well to avoid an initial corrupt frame */
@@ -363,8 +364,11 @@ static void lcdif_enable_fb_controller(struct fb_info *info)
 
 	ret = vpl_ioctl(&lcdif->vpl, lcdif->id, VPL_GET_BUS_FORMAT, &vcstate.bus_format);
 	if (ret < 0) {
-		dev_err(lcdif->dev, "Cannot determine bus format\n");
-		return;
+		/* default for panel-lvds DTs lacking bus-format / bridges not answering */
+		dev_warn(lcdif->dev,
+			 "VPL_GET_BUS_FORMAT failed (%pe), defaulting to RGB888_1X24\n",
+			 ERR_PTR(ret));
+		vcstate.bus_format = MEDIA_BUS_FMT_RGB888_1X24;
 	}
 
 	ret = vpl_ioctl(&lcdif->vpl, lcdif->id, VPL_GET_DISPLAY_INFO, &display_info);
@@ -392,10 +396,17 @@ static void lcdif_disable_fb_controller(struct fb_info *info)
 	lcdif_disable_controller(lcdif);
 }
 
+static void lcdif_fb_damage(struct fb_info *info, const struct fb_rect *rect)
+{
+	/* readback drains the write-combine buffer (dsb() doesn't) */
+	(void)*(volatile u8 *)info->screen_base;
+}
+
 static struct fb_ops lcdif_fb_ops = {
 	.fb_enable = lcdif_enable_fb_controller,
 	.fb_disable = lcdif_disable_fb_controller,
 	.fb_flush = lcdif_crtc_atomic_flush,
+	.fb_damage = lcdif_fb_damage,
 };
 
 /* -----------------------------------------------------------------------------

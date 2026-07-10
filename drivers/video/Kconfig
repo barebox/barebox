@@ -67,8 +67,8 @@ config DRIVER_VIDEO_IMX_IPU_OVERLAY
 	depends on DRIVER_VIDEO_IMX_IPU && (ARCH_IMX35 || ARCH_IMX31)
 
 config DRIVER_VIDEO_LCDIF
-	bool "i.MX9 framebuffer driver"
-	depends on ARCH_IMX9 || ARCH_IMX93
+	bool "i.MX8MP/9/93 LCDIFv3 framebuffer driver"
+	depends on ARCH_IMX8MP || ARCH_IMX9 || ARCH_IMX93
 	help
 	  Add support for the LCDIFv3 LCD controller found on
 	  i.MX8MP and i.MX93 SoCs.

@@ -28,6 +28,9 @@ static void flush_cacheable_pages(void *start, size_t size)
 	size_t block_size;
 	mmu_addr_t *ttb;
 
+	if (!size)
+		return;
+
 	region_start = PAGE_ALIGN_DOWN((ulong)start);
 	region_end = PAGE_ALIGN(region_start + size) - 1;
 

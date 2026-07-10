@@ -244,6 +244,9 @@ struct mii_bus {
 	bool is_multiplexed;
 
 	struct slice slice;
+
+	/* PHYs whose reset was asserted but which are not registered yet */
+	struct list_head deferred_phys;
 };
 #define to_mii_bus(d) container_of(d, struct mii_bus, dev)
 
@@ -269,6 +272,13 @@ struct mii_bus *of_mdio_find_bus(struct device_node *mdio_bus_np);
 
 int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum);
 int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val);
+void mdiobus_flush_deferred(struct mii_bus *bus);
+
+#ifdef CONFIG_PHYLIB
+void mdiobus_flush_deferred_all(void);
+#else
+static inline void mdiobus_flush_deferred_all(void) {}
+#endif
 
 /* phy_device: An instance of a PHY
  *

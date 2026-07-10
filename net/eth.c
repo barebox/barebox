@@ -576,6 +576,13 @@ void eth_open_all(void)
 {
 	struct eth_device *edev;
 
+	/*
+	 * PHY registration is deferred until an MDIO bus is first used. Flush
+	 * any pending registrations now so the PHY devices are present when
+	 * entering interactive mode, even for buses no netdev connects to.
+	 */
+	mdiobus_flush_deferred_all();
+
 	for_each_netdev(edev) {
 		if (edev->global_mode == ETH_MODE_DISABLED)
 			continue;

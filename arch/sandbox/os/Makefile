@@ -4,6 +4,8 @@ machine-y := sandbox
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
+LINUXINCLUDE :=
+
 KBUILD_CPPFLAGS = $(patsubst %,-I$(srctree)/%include,$(machdirs)) \
 		  -I$(srctree)/arch/sandbox/include
 

@@ -1,213 +1,94 @@
 # SPDX-License-Identifier: GPL-2.0
-# Backward compatibility
-asflags-y  += $(EXTRA_AFLAGS)
-ccflags-y  += $(EXTRA_CFLAGS)
-cppflags-y += $(EXTRA_CPPFLAGS)
-ldflags-y  += $(EXTRA_LDFLAGS)
-always-y   += $(always)
-hostprogs  += $(hostprogs-y) $(hostprogs-m)
 
-# Figure out what we need to build from the various variables
-# ===========================================================================
+# Finds the multi-part object the current object will be linked into.
+# If the object belongs to two or more multi-part objects, list them all.
+modname-multi = $(sort $(foreach m,$(multi-obj-ym),\
+		$(if $(filter $*.o, $(call suffix-search, $m, .o, -objs -y -m)),$(m:.o=))))
 
-# When an object is listed to be built compiled-in and modular,
-# only build the compiled-in version
+__modname = $(or $(modname-multi),$(basetarget))
 
-obj-m := $(filter-out $(obj-y),$(obj-m))
-
-# Libraries are always collected in one lib file.
-# Filter out objects already built-in
-
-lib-y := $(filter-out $(obj-y), $(sort $(lib-y) $(lib-m)))
-
-# Handle objects in subdirs
-# ---------------------------------------------------------------------------
-# o if we encounter foo/ in $(obj-y), replace it by foo/built-in.a
-#   and add the directory to the list of dirs to descend into: $(subdir-y)
-# o if we encounter foo/ in $(obj-m), remove it from $(obj-m)
-#   and add the directory to the list of dirs to descend into: $(subdir-m)
-
-# lowlevel is present in the PBL if enabled
-# otherwise in barebox
-ifeq ($(CONFIG_PBL_IMAGE), y)
-pbl-y		+= $(lwl-y)
-else
-obj-y		+= $(lwl-y)
-endif
-
-dtb- 		+= $(patsubst %.dtb.o,%.dtb,$(filter %.dtb.o,$(pbl-)  $(lwl-)))
-dtb-y		+= $(patsubst %.dtb.o,%.dtb,$(filter %.dtb.o,$(pbl-y) $(lwl-y)))
-
-obj-y		+= $(obj-pbl-y)
-pbl-y		+= $(obj-pbl-y)
-
-# pbl objects are suffixed with .pbl.o
-pbl-y		:= $(patsubst %.o,%.pbl.o,$(pbl-y))
-
-# add subdir from $(obj-y) too so we do not need to have the dir define in
-# both $(obj-y) and $(pbl-y)
-__pbl-y		:= $(filter-out $(pbl-y), $(filter %/, $(obj-y)))
-pbl-y		+= $(__pbl-y)
-
-pbl-y		:= $(sort $(patsubst %/, %/built-in.pbl.a, $(pbl-y)))
-
-__subdir-y	:= $(patsubst %/,%,$(filter %/, $(obj-y)))
-subdir-y	+= $(__subdir-y)
-__subdir-m	:= $(patsubst %/,%,$(filter %/, $(obj-m)))
-subdir-m	+= $(__subdir-m)
-obj-y		:= $(patsubst %/, %/built-in.a, $(obj-y))
-obj-m		:= $(filter-out %/, $(obj-m))
-
-# Subdirectories we need to descend into
-
-subdir-ym	:= $(sort $(subdir-y) $(subdir-m))
-
-# if $(foo-objs) exists, foo.o is a composite object
-multi-used-y := $(sort $(foreach m,$(obj-y), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y))), $(m))))
-multi-used-m := $(sort $(foreach m,$(obj-m), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y))), $(m))))
-multi-used   := $(multi-used-y) $(multi-used-m)
-single-used-m := $(sort $(filter-out $(multi-used-m),$(obj-m)))
-
-# Build list of the parts of our composite objects, our composite
-# objects depend on those (obviously)
-multi-objs-y := $(foreach m, $(multi-used-y), $($(m:.o=-objs)) $($(m:.o=-y)))
-multi-objs-m := $(foreach m, $(multi-used-m), $($(m:.o=-objs)) $($(m:.o=-y)))
-multi-objs   := $(multi-objs-y) $(multi-objs-m)
-
-# $(subdir-obj-y) is the list of objects in $(obj-y) which uses dir/ to
-# tell kbuild to descend
-__subdir-obj-y := $(filter %/built-in.pbl.a, $(pbl-y))
-subdir-obj-y := $(filter %/built-in.a, $(obj-y))
-subdir-obj-y += $(__subdir-obj-y)
-
-obj-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).o,$(bbenv-y))
-extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX),$(bbenv-y))
-extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).S,$(bbenv-y))
-extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).o,$(bbenv-y))
-
-ifdef CONFIG_SECURITY_POLICY
-obj-y	+= $(addsuffix .o, $(policy-y))
-extra-	+= $(patsubst %,%.c,$(policy-))
-extra-m	+= $(patsubst %,%.c,$(policy-m))
-extra-y	+= $(patsubst %,%.c,$(policy-y))
-endif
-
-# Replace multi-part objects by their individual parts,
-# including built-in.a from subdirectories
-real-obj-y := $(foreach m, $(obj-y), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y)) $($(m:.o=-))),$($(m:.o=-objs)) $($(m:.o=-y)),$(m)))
-real-obj-m := $(foreach m, $(obj-m), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y)) $($(m:.o=-m)) $($(m:.o=-))),$($(m:.o=-objs)) $($(m:.o=-y)) $($(m:.o=-m)),$(m)))
-
-always-y += $(always-m)
-
-# hostprogs-always-y += foo
-# ... is a shorthand for
-# hostprogs += foo
-# always-y  += foo
-hostprogs += $(hostprogs-always-y) $(hostprogs-always-m)
-always-y += $(hostprogs-always-y) $(hostprogs-always-m)
-
-# userprogs-always-y is likewise.
-userprogs += $(userprogs-always-y) $(userprogs-always-m)
-always-y += $(userprogs-always-y) $(userprogs-always-m)
-
-# Add subdir path
-
-extra-y		:= $(addprefix $(obj)/,$(extra-y))
-always-y	:= $(addprefix $(obj)/,$(always-y))
-targets		:= $(addprefix $(obj)/,$(targets))
-obj-y		:= $(addprefix $(obj)/,$(obj-y))
-obj-m		:= $(addprefix $(obj)/,$(obj-m))
-lib-y		:= $(addprefix $(obj)/,$(lib-y))
-pbl-y		:= $(addprefix $(obj)/,$(pbl-y))
-subdir-obj-y	:= $(addprefix $(obj)/,$(subdir-obj-y))
-real-obj-y	:= $(addprefix $(obj)/,$(real-obj-y))
-real-obj-m	:= $(addprefix $(obj)/,$(real-obj-m))
-single-used-m	:= $(addprefix $(obj)/,$(single-used-m))
-multi-used-y	:= $(addprefix $(obj)/,$(multi-used-y))
-multi-used-m	:= $(addprefix $(obj)/,$(multi-used-m))
-multi-objs-y	:= $(addprefix $(obj)/,$(multi-objs-y))
-multi-objs-m	:= $(addprefix $(obj)/,$(multi-objs-m))
-subdir-ym	:= $(addprefix $(obj)/,$(subdir-ym))
+modname = $(subst $(space),:,$(__modname))
+modfile = $(addprefix $(obj)/,$(__modname))
 
 # target with $(obj)/ and its suffix stripped
 target-stem = $(basename $(patsubst $(obj)/%,%,$@))
 
 # These flags are needed for modversions and compiling, so we define them here
-# already
-# $(modname_flags) #defines KBUILD_MODNAME as the name of the module it will
+# $(modname_flags) defines KBUILD_MODNAME as the name of the module it will
 # end up in (or would, if it gets compiled in)
-# Note: It's possible that one object gets potentially linked into more
-#       than one module. In that case KBUILD_MODNAME will be set to foo_bar,
-#       where foo and bar are the name of the modules.
-name-fix = $(subst $(comma),_,$(subst -,_,$1))
-basename_flags = -D"KBUILD_BASENAME=KBUILD_STR($(call name-fix,$(basetarget)))"
-modname_flags  = $(if $(filter 1,$(words $(modname))),\
-                 -D"KBUILD_MODNAME=KBUILD_STR($(call name-fix,$(modname)))")
+name-fix-token = $(subst $(comma),_,$(subst -,_,$1))
+name-fix = $(call stringify,$(call name-fix-token,$1))
+basename_flags = -DKBUILD_BASENAME=$(call name-fix,$(basetarget))
+modname_flags  = -DKBUILD_MODNAME=$(call name-fix,$(modname)) \
+		 -D__KBUILD_MODNAME=$(call name-fix-token,$(modname))
+modfile_flags  = -DKBUILD_MODFILE=$(call stringify,$(modfile))
 
-_c_flags       = $(KBUILD_CFLAGS) $(ccflags-y) $(CFLAGS_$(target-stem).o)
-_a_flags       = $(KBUILD_AFLAGS) $(asflags-y) $(AFLAGS_$(target-stem).o)
+_c_flags       = $(filter-out $(CFLAGS_REMOVE_$(target-stem).o), \
+                     $(filter-out $(ccflags-remove-y), \
+                         $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(ccflags-y)) \
+                     $(CFLAGS_$(target-stem).o))
+_a_flags       = $(filter-out $(AFLAGS_REMOVE_$(target-stem).o), \
+                     $(filter-out $(asflags-remove-y), \
+                         $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) $(asflags-y)) \
+                     $(AFLAGS_$(target-stem).o))
 _cpp_flags     = $(KBUILD_CPPFLAGS) $(cppflags-y) $(CPPFLAGS_$(target-stem).lds)
+
+#
+# Enable gcov profiling flags for a file, directory or for all files depending
+# on variables GCOV_PROFILE_obj.o, GCOV_PROFILE and CONFIG_GCOV_PROFILE_ALL
+# (in this order)
+#
+ifeq ($(CONFIG_GCOV_KERNEL),y)
+_c_flags += $(if $(patsubst n%,, \
+		$(GCOV_PROFILE_$(target-stem).o)$(GCOV_PROFILE)$(if $(is-kernel-object),$(CONFIG_GCOV_PROFILE_ALL))), \
+		$(CFLAGS_GCOV))
+endif
 
 #
 # Enable address sanitizer flags for kernel except some files or directories
 # we don't want to check (depends on variables KASAN_SANITIZE_obj.o, KASAN_SANITIZE)
 #
 ifeq ($(CONFIG_KASAN),y)
-_c_flags += $(if $(part-of-pbl),, $(if $(patsubst n%,, \
-		$(KASAN_SANITIZE_$(basetarget).o)$(KASAN_SANITIZE)y), \
-		$(CFLAGS_KASAN), $(CFLAGS_KASAN_NOSANITIZE)))
+_c_flags += $(if $(patsubst n%,, \
+		$(KASAN_SANITIZE_$(target-stem).o)$(KASAN_SANITIZE)$(is-kernel-object)), \
+		$(CFLAGS_KASAN), $(CFLAGS_KASAN_NOSANITIZE))
 endif
 
 ifeq ($(CONFIG_UBSAN),y)
-_CFLAGS_UBSAN   = $(eval _CFLAGS_UBSAN := $(CFLAGS_UBSAN))$(_CFLAGS_UBSAN)
-_c_flags       += $(if $(patsubst n%,, \
-		$(UBSAN_SANITIZE_$(basetarget).o)$(UBSAN_SANITIZE)$(CONFIG_UBSAN_SANITIZE_ALL)), \
-		$(_CFLAGS_UBSAN))
-PBL_CPPFLAGS   += $(call cc-option,-fno-sanitize=all)
+_c_flags += $(if $(patsubst n%,, \
+		$(UBSAN_SANITIZE_$(target-stem).o)$(UBSAN_SANITIZE)$(is-kernel-object)), \
+		$(CFLAGS_UBSAN))
+_c_flags += $(if $(patsubst n%,, \
+		$(UBSAN_INTEGER_WRAP_$(target-stem).o)$(UBSAN_SANITIZE_$(target-stem).o)$(UBSAN_INTEGER_WRAP)$(UBSAN_SANITIZE)$(is-kernel-object)), \
+		$(CFLAGS_UBSAN_INTEGER_WRAP))
 endif
 
-ifeq ($(CONFIG_DEBUG_PBL),y)
-PBL_CPPFLAGS   += -DDEBUG
+ifeq ($(CONFIG_KCOV),y)
+_c_flags += $(if $(patsubst n%,, \
+	$(KCOV_INSTRUMENT_$(target-stem).o)$(KCOV_INSTRUMENT)$(if $(is-kernel-object),$(CONFIG_KCOV_INSTRUMENT_ALL))), \
+	$(CFLAGS_KCOV))
 endif
 
-_stackp_flags-y                                        := -fno-stack-protector
-_stackp_flags-$(CONFIG_STACKPROTECTOR_STRONG)          := -fstack-protector-strong
-_stackp_flags-$(CONFIG_STACKPROTECTOR_ALL)             := -fstack-protector-all
-
-_stackp_flags_pbl-y                                    := -fno-stack-protector
-_stackp_flags_pbl-$(CONFIG_PBL_STACKPROTECTOR_STRONG)  := -fstack-protector-strong
-_stackp_flags_pbl-$(CONFIG_PBL_STACKPROTECTOR_ALL)     := -fstack-protector-all
-
-_c_flags += $(if $(part-of-pbl),$(_stackp_flags_pbl-y),$(_stackp_flags-y))
-
-ifeq ($(CONFIG_PBL_FULLY_PIC),y)
-include scripts/Makefile.pic
-PBL_CPPFLAGS	+= $(picflags-y)
+# $(src) for including checkin headers from generated source files
+# $(obj) for including generated headers from checkin source files
+ifdef building_out_of_srctree
+_c_flags   += $(addprefix -I, $(src) $(obj))
+_a_flags   += $(addprefix -I, $(src) $(obj))
+_cpp_flags += $(addprefix -I, $(src) $(obj))
 endif
 
-# If building barebox in a separate objtree expand all occurrences
-# of -Idir to -I$(srctree)/dir except for absolute paths (starting with '/').
+# If $(is-kernel-object) is 'y', this object will be linked to vmlinux or modules
+# Most importantly, this expands to nothing when processing PBL objects
+is-kernel-object = $(or $(part-of-builtin),$(part-of-module))
 
-ifndef building_out_of_srctree
-__c_flags	= $(_c_flags)
-__a_flags	= $(_a_flags)
-__cpp_flags     = $(_cpp_flags)
-else
-
-# -I$(obj) locates generated .h files
-# $(call addtree,-I$(obj)) locates .h files in srctree, from generated .c files
-#   and locates generated .h files
-# FIXME: Replace both with specific CFLAGS* statements in the makefiles
-__c_flags	= $(call addtree,-I$(obj)) $(call flags,_c_flags)
-__a_flags	=                          $(call flags,_a_flags)
-__cpp_flags     =                          $(call flags,_cpp_flags)
-endif
-
+part-of-builtin = $(if $(filter $(basename $@).o, $(real-obj-y) $(lib-y)),y)
+part-of-pbl = $(if $(filter $(basename $@).o, $(real-pbl-y)$(filter $@, $(targets-for-pbl))),y)
 part-of-module = $(if $(filter $(basename $@).o, $(real-obj-m)),y)
-part-of-pbl    = $(if $(filter $(basename $@).o, $(pbl-y))$(filter $@, $(pbl-target)),y)
 quiet_modtag = $(if $(part-of-pbl),[P],$(if $(part-of-module),[M],   ))
 
-pbl_cppflags = $(if $(part-of-pbl), -D__PBL__ $(PBL_CPPFLAGS))
+ifeq ($(CONFIG_PBL_IMAGE),y)
+include $(srctree)/scripts/Makefile.pbl
+endif
 
 modkern_cflags =                                          \
 	$(if $(part-of-module),                           \
@@ -216,18 +97,15 @@ modkern_cflags =                                          \
 
 modkern_aflags = $(if $(part-of-module),				\
 			$(KBUILD_AFLAGS_MODULE) $(AFLAGS_MODULE),	\
-			$(KBUILD_AFLAGS_KERNEL) $(AFLAGS_KERNEL))
+			$(KBUILD_AFLAGS_KERNEL) $(AFLAGS_KERNEL) $(modfile_flags))
 
-c_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
-		 $(__c_flags) $(modkern_cflags) $(pbl_cppflags) \
-		 -D"KBUILD_STR(s)=\#s" $(basename_flags) $(modname_flags)
+c_flags        = -Wp,-MMD,$(depfile) $(NOSTDINC_FLAGS) $(LINUXINCLUDE)     \
+		 -include $(srctree)/include/linux/compiler_types.h       \
+		 $(_c_flags) $(modkern_cflags)                           \
+		 $(basename_flags) $(modname_flags)
 
-a_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
-		 $(__a_flags) $(modkern_aflags) $(pbl_cppflags)
-
-cpp_flags      = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(__cpp_flags)
-
-ld_flags       = $(KBUILD_LDFLAGS) $(ldflags-y)
+a_flags        = -Wp,-MMD,$(depfile) $(NOSTDINC_FLAGS) $(LINUXINCLUDE)     \
+		 $(_a_flags) $(modkern_aflags) $(modname_flags)
 
 dtc_cpp_flags  = -Wp,-MD,$(depfile).pre -nostdinc                        \
 		 -Wp,-MT,$(basename $(notdir $@)).o                      \
@@ -238,20 +116,68 @@ dtc_cpp_flags  = -Wp,-MD,$(depfile).pre -nostdinc                        \
 		 $(DTC_CPP_FLAGS_$(basetarget)$(suffix $@))              \
 		 -undef -D__DTS__
 
-# Finds the multi-part object the current object will be linked into
-modname-multi = $(sort $(foreach m,$(multi-used),\
-		$(if $(filter $(subst $(obj)/,,$*.o), $($(m:.o=-objs)) $($(m:.o=-y))),$(m:.o=))))
+cpp_flags      = -Wp,-MMD,$(depfile) $(NOSTDINC_FLAGS) $(LINUXINCLUDE)     \
+		 $(_cpp_flags)
+
+ld_flags       = $(KBUILD_LDFLAGS) $(ldflags-y) $(LDFLAGS_$(@F))
 
 # Useful for describing the dependency of composite objects
 # Usage:
 #   $(call multi_depend, multi_used_targets, suffix_to_remove, suffix_to_add)
 define multi_depend
-$(foreach m, $(notdir $1), \
-	$(eval $(obj)/$m: \
-	$(addprefix $(obj)/, $(foreach s, $3, $($(m:%$(strip $2)=%$(s)))))))
+$(foreach m, $1, \
+	$(eval $m: \
+	$(addprefix $(obj)/, $(call suffix-search, $(patsubst $(obj)/%,%,$m), $2, $3))))
 endef
 
-# Shipped files
+# Remove ".." and "." from a path, without using "realpath"
+# Usage:
+#   $(call normalize_path,path/to/../file)
+define normalize_path
+$(strip $(eval elements :=) \
+$(foreach elem,$(subst /, ,$1), \
+	$(if $(filter-out .,$(elem)), \
+	     $(if $(filter ..,$(elem)), \
+		  $(eval elements := $(wordlist 2,$(words $(elements)),x $(elements))), \
+		  $(eval elements := $(elements) $(elem))))) \
+$(subst $(space),/,$(elements)))
+endef
+
+# Build commands
+# ===========================================================================
+# These are shared by some Makefile.* files.
+
+quiet_cmd_cc_o_c = CC $(quiet_modtag)  $@
+      cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $< \
+		$(cmd_ld_single) \
+		$(cmd_objtool)
+
+define rule_cc_o_c
+	$(call cmd_and_fixdep,cc_o_c)
+	$(call cmd,checksrc)
+	$(call cmd,warn_shared_object)
+endef
+
+quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
+      cmd_as_o_S = $(CC) $(a_flags) -c -o $@ $< $(cmd_objtool)
+
+define rule_as_o_S
+	$(call cmd_and_fixdep,as_o_S)
+	$(call cmd,warn_shared_object)
+endef
+
+# Copy a file
+# ===========================================================================
+# 'cp' preserves permissions. If you use it to copy a file in read-only srctree,
+# the copy would be read-only as well, leading to an error when executing the
+# rule next time. Use 'cat' instead in order to generate a writable file.
+quiet_cmd_copy = COPY    $@
+      cmd_copy = cat $< > $@
+
+$(obj)/%: $(src)/%_shipped
+	$(call cmd,copy)
+
+# Remove or truncate file
 # ===========================================================================
 
 quiet_cmd_0size = 0SIZE $@
@@ -260,11 +186,10 @@ cmd_0size = : > $@
 quiet_cmd_delete = DELETE  $@
       cmd_delete = rm -f $@
 
-quiet_cmd_shipped = SHIPPED $@
-cmd_shipped = cat $< > $@
-
-$(obj)/%:: $(src)/%_shipped
-	$(call cmd,shipped)
+# Touch a file
+# ===========================================================================
+quiet_cmd_touch = TOUCH   $(call normalize_path,$@)
+      cmd_touch = touch $@
 
 # Commands useful for building a boot image
 # ===========================================================================
@@ -274,7 +199,7 @@ $(obj)/%:: $(src)/%_shipped
 #	target: source(s) FORCE
 #		$(if_changed,ld/objcopy/gzip)
 #
-#	and add target to extra-y so that we know we have to
+#	and add target to 'targets' so that we know we have to
 #	read in the saved command line
 
 # Prelinking
@@ -292,8 +217,13 @@ quiet_cmd_prelink__ ?=
 # ---------------------------------------------------------------------------
 
 quiet_cmd_ld = LD      $@
-cmd_ld = $(LD) $(KBUILD_LDFLAGS) $(EXTRA_LDFLAGS) $(LDFLAGS_$(@F)) \
-	       $(filter-out FORCE,$^) -o $@
+      cmd_ld = $(LD) $(ld_flags) $(real-prereqs) -o $@
+
+# Archive
+# ---------------------------------------------------------------------------
+
+quiet_cmd_ar = AR      $@
+      cmd_ar = rm -f $@; $(AR) cDPrsT $@ $(real-prereqs)
 
 # Objcopy
 # ---------------------------------------------------------------------------
@@ -312,154 +242,11 @@ quiet_cmd_sha256bin ?= SHA-BIN $@
 quiet_cmd_sha256sum ?= SHA     $@
       cmd_sha256sum ?= sha256sum $2 > $@
 
-# Flat Image Tree (FIT)
-# This allows for packaging of barebox and all devicetrees files, using
-# compression.
-# ---------------------------------------------------------------------------
-
-MAKE_FIT := $(srctree)/scripts/make_fit.py
-
-# Use this to override the compression algorithm of the DTBs
-FIT_COMPRESSION ?= none
-
-quiet_cmd_fit = FIT     $@
-      cmd_fit = $(MAKE_FIT) -o $@ --arch $(CONFIG_ARCH_MKIMAGE_NAME) --os linux \
-		--name 'barebox-$(KERNELRELEASE)' \
-		$(if $(findstring 1,$(KBUILD_VERBOSE)),-v) \
-		$(if $(FIT_DECOMPOSE_DTBS),--decompose-dtbs) \
-		--dtb-compress $(FIT_COMPRESSION) -k $< @$(word 2,$^)
-
-# Decompressor for barebox proper binary when using PBL
-# ---------------------------------------------------------------------------
-
-suffix_y = comp_copy
-suffix_$(CONFIG_IMAGE_COMPRESSION_GZIP) = gzip
-suffix_$(CONFIG_IMAGE_COMPRESSION_LZO)  = lzo
-suffix_$(CONFIG_IMAGE_COMPRESSION_LZ4)	= lz4
-suffix_$(CONFIG_IMAGE_COMPRESSION_XZKERN) = xzkern
-suffix_$(CONFIG_IMAGE_COMPRESSION_NONE) = comp_copy
-
 # Gzip
 # ---------------------------------------------------------------------------
 
 quiet_cmd_gzip = GZIP    $@
-cmd_gzip = (cat $(filter-out FORCE,$^) | $(KGZIP) -n -f -9 > $@) || \
-	(rm -f $@ ; false)
-
-%.gz: %
-	$(call if_changed,gzip)
-
-# XZ
-# ---------------------------------------------------------------------------
-# Use xzkern to compress the kernel image and xzmisc to compress other things.
-#
-# xzkern uses a big LZMA2 dictionary since it doesn't increase memory usage
-# of the kernel decompressor. A BCJ filter is used if it is available for
-# the target architecture. xzkern also appends uncompressed size of the data
-# using size_append. The .xz format has the size information available at
-# the end of the file too, but it's in more complex format and it's good to
-# avoid changing the part of the boot code that reads the uncompressed size.
-# Note that the bytes added by size_append will make the xz tool think that
-# the file is corrupt. This is expected.
-#
-# xzmisc doesn't use size_append, so it can be used to create normal .xz
-# files. xzmisc uses smaller LZMA2 dictionary than xzkern, because a very
-# big dictionary would increase the memory usage too much in the multi-call
-# decompression mode. A BCJ filter isn't used either.
-quiet_cmd_xzkern = XZKERN  $@
-cmd_xzkern = (cat $(filter-out FORCE,$^) | \
-	sh $(srctree)/scripts/xz_wrap.sh && \
-	$(call size_append, $(filter-out FORCE,$^))) > $@ || \
-	(rm -f $@ ; false)
-
-quiet_cmd_xzmisc = XZMISC  $@
-cmd_xzmisc = (cat $(filter-out FORCE,$^) | \
-	$(XZ) --check=crc32 --lzma2=dict=1MiB) > $@ || \
-	(rm -f $@ ; false)
-
-%.xzkern: %
-	$(call if_changed,xzkern)
-
-# DTC
-# ---------------------------------------------------------------------------
-
-DTC_FLAGS += -Wno-unit_address_vs_reg \
-	 -Wno-unit_address_format \
-	 -Wno-avoid_unnecessary_addr_size \
-	 -Wno-alias_paths \
-	 -Wno-graph_child_address \
-	 -Wno-simple_bus_reg \
-	 -Wno-unique_unit_address \
-	 -Wno-pci_device_reg \
-	 -Wno-interrupt_provider
-
-ifeq ($(CONFIG_OF_OVERLAY_LIVE), y)
-DTC_FLAGS.dtb += -@
-endif
-
-DTC_FLAGS.dtbo += -Wno-avoid_default_addr_size -Wno-reg_format -Wno-graph_port
-
-# Generate an assembly file to wrap the output of the device tree compiler
-quiet_cmd_dt_S_dtb = DTB     $@
-cmd_dt_S_dtb = $(srctree)/scripts/gen-dtb-s $(subst -,_,$(*F)) $< $(CONFIG_IMD) > $@
-$(obj)/%.dtb.S: $(obj)/%.dtb $(obj)/%.dtb.z $(srctree)/scripts/gen-dtb-s FORCE
-	$(call if_changed,dt_S_dtb)
-
-quiet_cmd_dt_S_dtbo = DTBO    $@
-cmd_dt_S_dtbo = $(srctree)/scripts/gen-dtbo-s $(subst -,_,$(*F)) $< > $@
-$(obj)/%.dtbo.S: $(obj)/%.dtbo $(srctree)/scripts/gen-dtbo-s FORCE
-	$(call if_changed,dt_S_dtbo)
-
-$(obj)/%.dtb.z: $(obj)/%.dtb FORCE
-	$(call if_changed,$(suffix_y))
-
-dts-frags = $(subst $(quote),,$(CONFIG_EXTERNAL_DTS_FRAGMENTS))
-quiet_cmd_dtc = DTC     $@
-cmd_dtc = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
-	-D'$(subst -,_,$(*F))_dts=1' $(foreach f,$< $(2),-include '$(f)') /dev/null ; \
-	$(objtree)/scripts/dtc/dtc -O dtb -o $@ -b 0 \
-		-i $(srctree)/arch/$(SRCARCH)/dts $(DTC_FLAGS) $(DTC_FLAGS$(suffix $@)) \
-		-i $(srctree)/dts/src/$(SRCARCH) \
-		-i $(srctree)/dts/src/arm/ti/omap \
-		-d $(depfile).dtc $(dtc-tmp) ; \
-	cat $(depfile).pre $(depfile).dtc > $(depfile)
-
-$(obj)/%.dtb: $(src)/%.dts FORCE
-	$(call if_changed_dep,dtc,$(dts-frags))
-
-$(obj)/%.dtbo: $(src)/%.dtso $(DTC) FORCE
-	$(call if_changed_dep,dtc)
-
-dtc-tmp = $(subst $(comma),_,$(dot-target).dts)
-
-quiet_cmd_env_S = ENV.S   $@
-cmd_env_S =							\
-(								\
-	echo '\#include <asm/barebox.lds.h>';			\
-	echo '.section .note.GNU-stack,"",%progbits';		\
-	echo '.section .bbenv.rodata.$(subst -,_,$(*F)),"a"';	\
-	echo '.balign STRUCT_ALIGNMENT';			\
-	echo '.global __bbenv_$(subst -,_,$(*F))_start';	\
-	echo '__bbenv_$(subst -,_,$(*F))_start:';		\
-	echo '.incbin "$<" ';					\
-	echo '__bbenv_$(subst -,_,$(*F))_end:';			\
-	echo '.global __bbenv_$(subst -,_,$(*F))_end';		\
-	echo '.balign STRUCT_ALIGNMENT';			\
-) > $@
-
-$(obj)/%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).S: $(src)/%.bbenv$(DEFAULT_COMPRESSION_SUFFIX) FORCE
-	$(call if_changed,env_S)
-
-quiet_cmd_envgen = ENVGEN  $@
-cmd_envgen=$(srctree)/scripts/genenv $(objtree) $(objtree) $@ $2
-
-quiet_cmd_env = ENV     $@
-cmd_env=$(srctree)/scripts/genenv $(srctree) $(objtree) $@ $<
-
-# genenv is always called, but only generates output when the file actually
-# changes, so that the dependent targets are not unnecessarily rebuilt
-%.bbenv$(DEFAULT_COMPRESSION_SUFFIX): % FORCE
-	$(call cmd,env)
+      cmd_gzip = cat $(real-prereqs) | $(KGZIP) -n -f -9 > $@
 
 # Bzip2
 # ---------------------------------------------------------------------------
@@ -468,8 +255,8 @@ cmd_env=$(srctree)/scripts/genenv $(srctree) $(objtree) $@ $<
 # append the size as a 32-bit littleendian number as gzip does.
 size_append = printf $(shell						\
 dec_size=0;								\
-for F in $1; do								\
-	fsize=$$(${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $$F);\
+for F in $(real-prereqs); do					\
+	fsize=$$($(CONFIG_SHELL) $(srctree)/scripts/file-size.sh $$F);	\
 	dec_size=$$(expr $$dec_size + $$fsize);				\
 done;									\
 printf "%08x\n" $$dec_size |						\
@@ -481,46 +268,142 @@ printf "%08x\n" $$dec_size |						\
 	}								\
 )
 
-quiet_cmd_bzip2 = BZIP2   $@
-cmd_bzip2 = (cat $(filter-out FORCE,$^) | \
-	$(KBZIP2) -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
-	(rm -f $@ ; false)
+quiet_cmd_file_size = GEN     $@
+      cmd_file_size = $(size_append) > $@
 
-%.bz2: %
-	$(call if_changed,bzip2)
+quiet_cmd_bzip2 = BZIP2   $@
+      cmd_bzip2 = cat $(real-prereqs) | $(KBZIP2) -9 > $@
+
+quiet_cmd_bzip2_with_size = BZIP2   $@
+      cmd_bzip2_with_size = { cat $(real-prereqs) | $(KBZIP2) -9; $(size_append); } > $@
 
 # Lzma
 # ---------------------------------------------------------------------------
 
 quiet_cmd_lzma = LZMA    $@
-cmd_lzma = (cat $(filter-out FORCE,$^) | \
-	$(LZMA) -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
-	(rm -f $@ ; false)
+      cmd_lzma = cat $(real-prereqs) | $(LZMA) -9 > $@
 
-%.lzma: %
-	$(call if_changed,lzma)
+quiet_cmd_lzma_with_size = LZMA    $@
+      cmd_lzma_with_size = { cat $(real-prereqs) | $(LZMA) -9; $(size_append); } > $@
 
 quiet_cmd_lzo = LZO     $@
-cmd_lzo = (cat $(filter-out FORCE,$^) | \
-	$(KLZOP) -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
-	(rm -f $@ ; false)
+      cmd_lzo = cat $(real-prereqs) | $(KLZOP) -9 > $@
 
-%.lzo: %
-	$(call if_changed,lzo)
-
-# lz4
-# ---------------------------------------------------------------------------
+quiet_cmd_lzo_with_size = LZO     $@
+      cmd_lzo_with_size = { cat $(real-prereqs) | $(KLZOP) -9; $(size_append); } > $@
 
 quiet_cmd_lz4 = LZ4     $@
-cmd_lz4 = (cat $(filter-out FORCE,$^) | \
-	$(LZ4) -l --best stdin stdout && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
-	(rm -f $@ ; false)
+      cmd_lz4 = cat $(real-prereqs) | $(LZ4) -l -9 - - > $@
 
-%.lz4: %
-	$(call if_changed,lz4)
+quiet_cmd_lz4_with_size = LZ4     $@
+      cmd_lz4_with_size = { cat $(real-prereqs) | $(LZ4) -l -9 - -; \
+                  $(size_append); } > $@
 
-# comp_copy
+# Flat Image Tree (FIT)
+# This allows for packaging of a kernel and all devicetrees files, using
+# compression.
 # ---------------------------------------------------------------------------
+
+MAKE_FIT := $(srctree)/scripts/make_fit.py
+
+# Use this to override the compression algorithm
+FIT_COMPRESSION ?= none
+
+quiet_cmd_fit = FIT     $@
+      cmd_fit = $(MAKE_FIT) -o $@ --arch "$(CONFIG_ARCH_MKIMAGE_NAME)" --os linux \
+		--name 'barebox-$(KERNELRELEASE)' \
+		$(if $(findstring 1,$(KBUILD_VERBOSE)),-v) \
+		$(if $(FIT_DECOMPOSE_DTBS),--decompose-dtbs) \
+		--dtb-compress $(FIT_COMPRESSION) -k $< @$(word 2,$^)
+
+# XZ
+# ---------------------------------------------------------------------------
+# Use xzkern or xzkern_with_size to compress the kernel image and xzmisc to
+# compress other things.
+#
+# xzkern uses a big LZMA2 dictionary since it doesn't increase memory usage
+# of the kernel decompressor. A BCJ filter is used if it is available for
+# the target architecture.
+#
+# xzkern_with_size also appends uncompressed size of the data using
+# size_append. The .xz format has the size information available at the end
+# of the file too, but it's in more complex format and it's good to avoid
+# changing the part of the boot code that reads the uncompressed size.
+# Note that the bytes added by size_append will make the xz tool think that
+# the file is corrupt. This is expected.
+#
+# xzmisc doesn't use size_append, so it can be used to create normal .xz
+# files. xzmisc uses smaller LZMA2 dictionary than xzkern, because a very
+# big dictionary would increase the memory usage too much in the multi-call
+# decompression mode. A BCJ filter isn't used either.
+quiet_cmd_xzkern = XZKERN  $@
+      cmd_xzkern = cat $(real-prereqs) | sh $(srctree)/scripts/xz_wrap.sh > $@
+
+quiet_cmd_xzkern_with_size = XZKERN  $@
+      cmd_xzkern_with_size = { cat $(real-prereqs) | sh $(srctree)/scripts/xz_wrap.sh; \
+                     $(size_append); } > $@
+
+quiet_cmd_xzmisc = XZMISC  $@
+      cmd_xzmisc = cat $(real-prereqs) | $(XZ) --check=crc32 --lzma2=dict=1MiB > $@
+
+# ZSTD
+# ---------------------------------------------------------------------------
+# Appends the uncompressed size of the data using size_append. The .zst
+# format has the size information available at the beginning of the file too,
+# but it's in a more complex format and it's good to avoid changing the part
+# of the boot code that reads the uncompressed size.
+#
+# Note that the bytes added by size_append will make the zstd tool think that
+# the file is corrupt. This is expected.
+#
+# zstd uses a maximum window size of 8 MB. zstd22 uses a maximum window size of
+# 128 MB. zstd22 is used for kernel compression because it is decompressed in a
+# single pass, so zstd doesn't need to allocate a window buffer. When streaming
+# decompression is used, like initramfs decompression, zstd22 should likely not
+# be used because it would require zstd to allocate a 128 MB buffer.
+
+quiet_cmd_zstd = ZSTD    $@
+      cmd_zstd = cat $(real-prereqs) | $(ZSTD) -19 > $@
+
+quiet_cmd_zstd22 = ZSTD22  $@
+      cmd_zstd22 = cat $(real-prereqs) | $(ZSTD) -22 --ultra > $@
+
+quiet_cmd_zstd22_with_size = ZSTD22  $@
+      cmd_zstd22_with_size = { cat $(real-prereqs) | $(ZSTD) -22 --ultra; $(size_append); } > $@
+
+# ASM offsets
+# ---------------------------------------------------------------------------
+
+# Default sed regexp - multiline due to syntax constraints
+#
+# Use [:space:] because LLVM's integrated assembler inserts <tab> around
+# the .ascii directive whereas GCC keeps the <space> as-is.
+define sed-offsets
+	's:^[[:space:]]*\.ascii[[:space:]]*"\(.*\)".*:\1:; \
+	/^->/{s:->#\(.*\):/* \1 */:; \
+	s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; \
+	s:->::; p;}'
+endef
+
+# Use filechk to avoid rebuilds when a header changes, but the resulting file
+# does not
+define filechk_offsets
+	 echo "#ifndef $2"; \
+	 echo "#define $2"; \
+	 echo "/*"; \
+	 echo " * DO NOT MODIFY."; \
+	 echo " *"; \
+	 echo " * This file was generated by Kbuild"; \
+	 echo " */"; \
+	 echo ""; \
+	 sed -ne $(sed-offsets) < $<; \
+	 echo ""; \
+	 echo "#endif"
+endef
+
+# barebox-image specific
+# ---------------------------------------------------------------------------
+
 # Wrapper which only copies a file, but compatible to the compression
 # functions above. Appends the size to the result file
 quiet_cmd_comp_copy ?= SHIPPED_S $@
@@ -629,6 +512,9 @@ $(obj)/%.bct: $(obj)/%.bct.cfg
 quiet_cmd_b64dec = B64DEC  $@
       cmd_b64dec = base64 -d $< > $@
 
+%: %.base64
+	$(call cmd,b64dec)
+
 # public_keys
 # ---------------------------------------------------------------------------
 # Build a header file containing a rsa public key.
@@ -646,14 +532,10 @@ cmd_public_keys = \
 		mv $@.tmp $@;						\
 	fi
 
-%: %.base64
-	$(call cmd,b64dec)
-
 # Security Policy Handling
 # ---------------------------------------------------------------------------
 
 # Process security Kconfig file
-# TODO: set KCONFIG_WARN_UNKNOWN_SYMBOLS & KCONFIG_WERROR once supported
 quiet_cmd_sconfig = SCONFIG $(notdir $(or $(4),$(3)))
       cmd_sconfig = \
            KBUILD_KCONFIG=Sconfig			\
@@ -662,9 +544,12 @@ quiet_cmd_sconfig = SCONFIG $(notdir $(or $(4),$(3)))
            KCONFIG_CONFIG_=SCONFIG_			\
            KBUILD_DEFCONFIG=allnoconfig			\
            KCONFIG_NOSILENTUPDATE=1			\
+           KCONFIG_WARN_UNKNOWN_SYMBOLS=1		\
+           KCONFIG_WERROR=1				\
            KCONFIG_AUTOCONFIG=/dev/null			\
            KCONFIG_AUTOHEADER=/dev/null			\
-           $(MAKE) -f $(srctree)/Makefile $(2) quiet=silent_
+           $(MAKE) $(build)=scripts/kconfig $(2)	\
+		KCONFIG_DEFCONFIG_LIST= quiet=silent_
 
 # Check that a policy is up to date
 # NOTE: With KCONFIG_NOSILENTUPDATE=1, a simpler implementation is

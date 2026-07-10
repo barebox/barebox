@@ -64,7 +64,7 @@ targets         += $(addsuffix .tmp, $(real-policy-y))
 # ---------------------------------------------------------------------------
 
 ifneq ($(policy-y)$(policy-),)
-always-y        += $(obj)/policy-list
+always-y        += policy-list
 
 $(obj)/policy-list: $(real-policy-y) FORCE
 	$(call if_changed,gen_order_src)
@@ -77,7 +77,7 @@ $(obj)/%.sconfig.tmp: $(src)/%.sconfig FORCE
 ifeq ($(KPOLICY_TMPUPDATE),)
 	$(call filechk,cat)
 else
-	$(call if_changed,shipped)
+	$(call if_changed,copy)
 endif
 
 $(obj)/%.sconfig.tmp: $(obj)/%.sconfig FORCE
@@ -97,6 +97,13 @@ $(obj)/%.sconfig.c: $(obj)/%.sconfig.tmp FORCE
 
 # targets
 # ---------------------------------------------------------------------------
+
+ifdef CONFIG_SECURITY_POLICY
+obj-y	+= $(addsuffix .o, $(policy-y))
+extra-	+= $(patsubst %,%.c,$(policy-))
+extra-m	+= $(patsubst %,%.c,$(policy-m))
+extra-y	+= $(patsubst %,%.c,$(policy-y))
+endif
 
 targets += $(always-y)
 

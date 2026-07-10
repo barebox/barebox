@@ -15,20 +15,17 @@ simpleconsole_defconfig:
 libfuzzer_defconfig:
 	$(call merge_into_defconfig_named,sandbox_defconfig,libfuzzer,$@)
 
-KBUILD_CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing -fvisibility=hidden
+KBUILD_CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing
 
 
 machine-y := sandbox
-
-board-y := arch/sandbox/board
-BOARD	:= $(board-y)/
 
 HEADER_ARCH 	:= $(SUBARCH)
 HOST_DIR := arch/$(HEADER_ARCH)
 
 -include $(srctree)/$(HOST_DIR)/Makefile.um
 
-common-y += $(HOST_DIR)/um/
+pbl-y += $(HOST_DIR)/um/
 
 KBUILD_CPPFLAGS += -I$(srctree)/$(HOST_DIR)/include
 
@@ -90,8 +87,6 @@ endif
 
 SANDBOX_LIBS += $(SANDBOX_LIBS-y)
 
-common-y += $(BOARD) arch/sandbox/os/ arch/sandbox/lib/
-
 SANDBOX_PROPER2PBL_GLUE_SYMS := \
 	strsep_unescaped start_barebox linux_get_stickypage_path \
 	stickypage mem_malloc_init \
@@ -113,6 +108,4 @@ all: barebox
 KBUILD_IMAGE := barebox.o
 BAREBOX_PROPER := $(KBUILD_IMAGE)
 
-common-$(CONFIG_OFTREE) += arch/sandbox/dts/
-
-CLEAN_FILES += $(BOARD)/barebox.lds
+CLEAN_FILES += arch/sandbox/board/barebox.lds

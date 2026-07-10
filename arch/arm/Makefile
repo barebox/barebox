@@ -18,10 +18,20 @@ KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
 ifeq ($(CONFIG_CPU_64),y)
 KBUILD_CPPFLAGS	+=$(call cc-option,-maarch64,)
+ifneq ($(UTS_MACHINE),arm64)
+ifdef CONFIG_ARM64_STRICT_BUILD_ARCH
+$(error Deprecated use of ARCH=arm in 64-bit ARM build! Set ARCH=arm64 instead.)
+else
+$(warning Deprecated use of ARCH=arm in 64-bit ARM build! Set ARCH=arm64 instead.)
+endif
+endif
 endif
 ifeq ($(CONFIG_CPU_32),y)
 KBUILD_CPPFLAGS	+=$(call cc-option,-marm,)
 KBUILD_CPPFLAGS	+= -msoft-float
+ifeq ($(UTS_MACHINE),arm64)
+$(error Erroneous use of ARCH=arm64 in 32-bit ARM build! Set ARCH=arm instead.)
+endif
 endif
 
 ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)
@@ -53,7 +63,7 @@ endif
 # Note that GCC does not numerically define an architecture version
 # macro, but instead defines a whole series of macros which makes
 # testing for a specific architecture or later rather impossible.
-arch-y				:= -include asm/arch-check.h
+arch-y				:= -include $(srctree)/arch/arm/include/asm/arch-check.h
 arch-$(CONFIG_CPU_64v8)		:= -D__LINUX_ARM_ARCH__=8 $(call cc-option,-march=armv8-a)
 arch-$(CONFIG_CPU_32v7)		:=-D__LINUX_ARM_ARCH__=7 $(call cc-option,-march=armv7-a,-march=armv5t -Wa$(comma)-march=armv7-a)
 arch-$(CONFIG_CPU_32v6)		:=-D__LINUX_ARM_ARCH__=6 $(call cc-option,-march=armv6,-march=armv5t -Wa$(comma)-march=armv6)
@@ -65,7 +75,7 @@ tune-$(CONFIG_CPU_ARM920T)	:=-mtune=arm9tdmi
 tune-$(CONFIG_CPU_ARM926T)	:=-mtune=arm9tdmi
 tune-$(CONFIG_CPU_XSCALE)	:=$(call cc-option,-mtune=xscale,-mtune=strongarm110) -Wa,-mcpu=xscale
 
-CFLAGS_ABI-$(CONFIG_CPU_64)	:=-mabi=lp64
+CFLAGS_ABI-$(CONFIG_CPU_64)	:=$(call cc-option,-mabi=lp64)
 CFLAGS_ABI-$(CONFIG_CPU_32)	:=$(call cc-option,-mapcs-32,-mabi=apcs-gnu) $(call cc-option,-mno-thumb-interwork,)
 CFLAGS_ABI-$(CONFIG_AEABI)	:=-mabi=aapcs-linux
 
@@ -81,14 +91,15 @@ endif
 
 KBUILD_CPPFLAGS += $(CFLAGS_ABI-y) $(arch-y) $(tune-y)
 
+KBUILD_AFLAGS   += -include $(srctree)/arch/arm/include/asm/unified.h
+
 ifeq ($(CONFIG_CPU_64), y)
-KBUILD_AFLAGS   += -include asm/unified.h
 export S64_32 = 64
 export S64 = 64
 endif
 ifeq ($(CONFIG_CPU_32), y)
 KBUILD_CPPFLAGS += $(CFLAGS_THUMB2)
-KBUILD_AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)
+KBUILD_AFLAGS   += -msoft-float $(AFLAGS_THUMB2)
 export S64_32 = 32
 export S32 = 32
 endif
@@ -114,10 +125,8 @@ machine-$(CONFIG_ARCH_TEGRA)		+= tegra
 machine-$(CONFIG_ARCH_ZYNQ)		+= zynq
 machine-$(CONFIG_ARCH_ZYNQMP)		+= zynqmp
 
-# Add cleanup flags
-KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS_barebox += --gc-sections -pie
-LDFLAGS_pbl += --gc-sections -pie
+LDFLAGS_barebox += -pie
+LDFLAGS_pbl += -pie
 
 # early code often runs at addresses we are not linked at
 KBUILD_CFLAGS_KERNEL += -fPIE
@@ -134,34 +143,15 @@ dts := arch/arm/dts
 
 KBUILD_IMAGE ?= $(KBUILD_BINARY)
 
-ifneq ($(machine-y),)
-MACH := $(patsubst %,arch/arm/mach-%/,$(machine-y))
-else
-MACH :=
-endif
+core-y				+= arch/arm/boards/
 
-common-y += arch/arm/boards/ $(MACH)
-common-y += arch/arm/cpu/
-common-y += arch/arm/crypto/
-
+# If we have a machine-specific directory, then include it in the build.
+core-y				+= $(patsubst %,arch/arm/mach-%/,$(machine-y))
 # For cleaning
-common- += $(patsubst %,arch/arm/mach-%/,$(machine-))
+core-				+= $(patsubst %,arch/arm/mach-%/,$(machine-))
 
-ifeq ($(CONFIG_CPU_64), y)
-common-y += arch/arm/lib64/
-else
-common-y += arch/arm/lib32/
-endif
-
-common-$(CONFIG_OFTREE) += arch/arm/dts/
-
-ifeq ($(CONFIG_CPU_64), y)
-lds-y	:= arch/arm/lib64/barebox.lds
-else
-lds-y	:= arch/arm/lib32/barebox.lds
-endif
-
-common- += $(patsubst %,arch/arm/boards/%/,$(board-))
+lds-$(CONFIG_CPU_32)	:= arch/arm/lib32/barebox.lds
+lds-$(CONFIG_CPU_64)	:= arch/arm/lib64/barebox.lds
 
 CLEAN_FILES += barebox-flash-image
 CLEAN_FILES += arch/arm/lib64/barebox.lds

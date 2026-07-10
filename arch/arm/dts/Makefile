@@ -1,9 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-# just to build a built-in.o. Otherwise compilation fails when no devicetree is
-# created.
-obj- += dummy.o
-
 lwl-$(CONFIG_MACH_ADVANTECH_ROM_742X) += imx6dl-advantech-rom-7421.dtb.o
 lwl-$(CONFIG_MACH_AFI_GF) += am335x-afi-gf.dtb.o
 lwl-$(CONFIG_MACH_AM625_SK) += k3-am625-sk.dtb.o k3-am625-r5-sk.dtb.o k3-am625sip-r5-sk.dtb.o

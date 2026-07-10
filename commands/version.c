@@ -4,13 +4,14 @@
 #include <common.h>
 #include <command.h>
 #include <complete.h>
+#include <generated/compile.h>
 
 static int do_version(int argc, char *argv[])
 {
 	printf ("\n%s", version_string);
 	if (*CONFIG_NAME)
 		printf (" (%s)", CONFIG_NAME);
-	printf ("\n\n");
+	printf ("\nCompiled by: %s\n\n", BAREBOX_COMPILER);
 	return 0;
 }
 

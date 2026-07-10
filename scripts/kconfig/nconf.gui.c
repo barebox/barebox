@@ -4,6 +4,7 @@
  *
  * Derived from menuconfig.
  */
+#include <xalloc.h>
 #include "nconf.h"
 #include "lkc.h"
 
@@ -172,12 +173,10 @@ void fill_window(WINDOW *win, const char *text)
 	/* do not go over end of line */
 	total_lines = min(total_lines, y);
 	for (i = 0; i < total_lines; i++) {
-		char tmp[x+10];
 		const char *line = get_line(text, i);
-		int len = get_line_length(line);
-		strncpy(tmp, line, min(len, x));
-		tmp[len] = '\0';
-		mvwprintw(win, i, 0, "%s", tmp);
+		int len = min(get_line_length(line), x);
+
+		mvwprintw(win, i, 0, "%.*s", len, line);
 	}
 }
 
@@ -276,6 +275,15 @@ int btn_dialog(WINDOW *main_window, const char *msg, int btn_num, ...)
 		case KEY_RIGHT:
 			menu_driver(menu, REQ_RIGHT_ITEM);
 			break;
+		case 9: /* TAB */
+			if (btn_num > 1) {
+				/* cycle through buttons */
+				if (item_index(current_item(menu)) == btn_num - 1)
+					menu_driver(menu, REQ_FIRST_ITEM);
+				else
+					menu_driver(menu, REQ_NEXT_ITEM);
+			}
+			break;
 		case 10: /* ENTER */
 		case 27: /* ESCAPE */
 		case ' ':
@@ -349,6 +357,7 @@ int dialog_inputbox(WINDOW *main_window,
 	x = (columns-win_cols)/2;
 
 	strncpy(result, init, *result_len);
+	result[*result_len - 1] = '\0';
 
 	/* create the windows */
 	win = newwin(win_lines, win_cols, y, x);
@@ -497,10 +506,17 @@ void refresh_all_windows(WINDOW *main_window)
 	refresh();
 }
 
-/* layman's scrollable window... */
 void show_scroll_win(WINDOW *main_window,
 		const char *title,
 		const char *text)
+{
+	(void)show_scroll_win_ext(main_window, title, (char *)text, NULL, NULL, NULL, NULL);
+}
+
+/* layman's scrollable window... */
+int show_scroll_win_ext(WINDOW *main_window, const char *title, char *text,
+			int *vscroll, int *hscroll,
+			extra_key_cb_fn extra_key_cb, void *data)
 {
 	int res;
 	int total_lines = get_line_no(text);
@@ -514,6 +530,12 @@ void show_scroll_win(WINDOW *main_window,
 	WINDOW *win;
 	WINDOW *pad;
 	PANEL *panel;
+	bool done = false;
+
+	if (hscroll)
+		start_x = *hscroll;
+	if (vscroll)
+		start_y = *vscroll;
 
 	getmaxyx(stdscr, lines, columns);
 
@@ -549,8 +571,7 @@ void show_scroll_win(WINDOW *main_window,
 	panel = new_panel(win);
 
 	/* handle scrolling */
-	do {
-
+	while (!done) {
 		copywin(pad, win, start_y, start_x, 2, 2, text_lines,
 				text_cols, 0);
 		print_in_middle(win,
@@ -593,8 +614,18 @@ void show_scroll_win(WINDOW *main_window,
 		case 'l':
 			start_x++;
 			break;
+		default:
+			if (extra_key_cb) {
+				size_t start = (get_line(text, start_y) - text);
+				size_t end = (get_line(text, start_y + text_lines) - text);
+
+				if (extra_key_cb(res, start, end, data)) {
+					done = true;
+					break;
+				}
+			}
 		}
-		if (res == 10 || res == 27 || res == 'q' ||
+		if (res == 0 || res == 10 || res == 27 || res == 'q' ||
 			res == KEY_F(F_HELP) || res == KEY_F(F_BACK) ||
 			res == KEY_F(F_EXIT))
 			break;
@@ -606,9 +637,14 @@ void show_scroll_win(WINDOW *main_window,
 			start_x = 0;
 		if (start_x >= total_cols-text_cols)
 			start_x = total_cols-text_cols;
-	} while (res);
+	}
 
+	if (hscroll)
+		*hscroll = start_x;
+	if (vscroll)
+		*vscroll = start_y;
 	del_panel(panel);
 	delwin(win);
 	refresh_all_windows(main_window);
+	return res;
 }

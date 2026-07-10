@@ -3,6 +3,7 @@
 #include <common.h>
 #include <generated/compile.h>
 #include <generated/utsrelease.h>
+#include <generated/utsversion.h>
 #include <linux/kasan-enabled.h>
 
 const char version_string[] =

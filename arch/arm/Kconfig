@@ -4,6 +4,7 @@ config ARM
 	bool
 	select HAS_KALLSYMS
 	select HAVE_STACKPROTECTOR
+	select LD_DEAD_CODE_DATA_ELIMINATION
 	select HAVE_IMAGE_COMPRESSION
 	select HAVE_ARCH_KASAN
 	select ARCH_HAS_SJLJ
@@ -39,6 +40,13 @@ config ARM64
 	def_bool CPU_64
 	select ARCH_HAS_RELR
 	select ARCH_HAS_BAREBOX_MEMORY_OFFSET
+
+config ARM64_STRICT_BUILD_ARCH
+	def_bool CC_IS_CLANG
+	depends on ARM64
+	help
+	  When selected, ARCH=arm64 is required for 64-bit builds and ARCH=arm
+	  will fail.  When not selected, a deprecation warning is printed.
 
 config ARCH_TEXT_BASE
 	hex

@@ -31,12 +31,6 @@ TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 KBUILD_CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
 
-# Add cleanup flags
-ifndef CONFIG_MODULES
-KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS_barebox += --gc-sections
-endif
-
 machdirs := $(patsubst %,arch/powerpc/mach-%/,$(machine-y))
 
 KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
@@ -58,7 +52,8 @@ else
 MACH  :=
 endif
 
-common-y += $(BOARD) $(MACH) arch/powerpc/
+core-y += $(BOARD)
+core-y += $(MACH)
 
 ifdef CONFIG_MPC85xx
 lds-y += $(MACH)/barebox.lds

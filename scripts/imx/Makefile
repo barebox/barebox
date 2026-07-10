@@ -25,4 +25,4 @@ imx-image-objs := imx-image.o imx.o
 
 userprogs-always-$(CONFIG_ARCH_IMX_USBLOADER_TARGET)	+= imx-usb-loader-target
 
-userccflags += -I $(srctree)/$(src)/include -isystem $(srctree)/scripts/include
+userccflags += -I $(src)/include -isystem $(srctree)/scripts/include

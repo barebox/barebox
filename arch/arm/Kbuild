@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+obj-y += cpu/
+obj-y += crypto/
+obj-y += lib/
+
+obj-$(CONFIG_CPU_32) += lib32/
+obj-$(CONFIG_CPU_64) += lib64/
+
+obj-$(CONFIG_OFTREE) += dts/

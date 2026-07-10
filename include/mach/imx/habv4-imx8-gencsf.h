@@ -66,7 +66,11 @@ hab File = CONFIG_HABV4_IMG_CRT_PEM
 
 hab [Authenticate Data]
 /* verification key index in key store (2...4) */
+#if defined(CONFIG_HABV4_FAST_AUTH)
+hab Verification index = 0
+#else
 hab Verification index = 2
+#endif
 
 hab_blocks
 

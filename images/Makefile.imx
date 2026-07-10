@@ -495,6 +495,8 @@ $(call build_imx8m_habv4img, CONFIG_MACH_INNOCOMM_WB15, start_innocomm_wb15_evk,
 
 $(call build_imx8m_habv4img, CONFIG_MACH_HGS_GS05, start_hgs_gs05, hgs-gs05/flash-header-gs05, hgs-gs05)
 
+$(call build_imx8m_habv4img, CONFIG_MACH_GIRA_NCP, start_gira_ncp, gira-ncp/flash-header-gira-ncp, gira-ncp)
+
 # ----------------------- i.MX8mn based boards --------------------------
 $(call build_imx8m_habv4img, CONFIG_MACH_NXP_IMX8MN_EVK, start_nxp_imx8mn_evk, nxp-imx8mn-evk/flash-header-imx8mn-evk, nxp-imx8mn-evk)
 

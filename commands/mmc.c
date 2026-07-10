@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <command.h>
+#include <errno.h>
 #include <mci.h>
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
 #include <linux/kernel.h>
+#include <linux/kstrtox.h>
 #include <dma.h>
 
 static int mmc_enh_area_setmax(struct mci *mci, u8 *ext_csd)
@@ -56,6 +58,92 @@ static int mmc_enh_area_setmax(struct mci *mci, u8 *ext_csd)
 	return 0;
 }
 
+/*
+ * Provision a sized enhanced user data area at @start_kib of @length_kib
+ * bytes; length is rounded up to the device's WP-group unit. The one-shot
+ * PARTITION_SETTING_COMPLETED is not written here.
+ */
+static int mmc_enh_area_set(struct mci *mci, u8 *ext_csd,
+			    u64 start_kib, u64 length_kib)
+{
+	u32 hc_wp_grp = ext_csd[EXT_CSD_HC_WP_GRP_SIZE];
+	u32 hc_erase_grp = ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE];
+	u32 max_mult = (u32)ext_csd[EXT_CSD_MAX_ENH_SIZE_MULT] |
+		       (u32)ext_csd[EXT_CSD_MAX_ENH_SIZE_MULT + 1] << 8 |
+		       (u32)ext_csd[EXT_CSD_MAX_ENH_SIZE_MULT + 2] << 16;
+	u64 unit_kib, start_sectors, rem;
+	u32 size_mult;
+	int i, ret;
+
+	if (!hc_wp_grp || !hc_erase_grp) {
+		printf("Device reports zero HC_WP_GRP_SIZE / HC_ERASE_GRP_SIZE\n");
+		return -EINVAL;
+	}
+
+	/* JEDEC unit for ENH_START_ADDR / ENH_SIZE_MULT */
+	unit_kib = (u64)hc_wp_grp * hc_erase_grp * 512;
+
+	div64_u64_rem(start_kib, unit_kib, &rem);
+	if (rem) {
+		printf("Start %llu KiB not a multiple of unit %llu KiB\n",
+		       (unsigned long long)start_kib,
+		       (unsigned long long)unit_kib);
+		return -EINVAL;
+	}
+
+	/* Round length up so the requested region is fully covered */
+	size_mult = DIV_ROUND_UP_ULL(length_kib, unit_kib);
+
+	if (size_mult > max_mult) {
+		printf("Requested %llu KiB (mult=%u) exceeds MAX_ENH_SIZE_MULT=%u\n",
+		       (unsigned long long)length_kib, size_mult, max_mult);
+		return -EINVAL;
+	}
+
+	/* ENH_START_ADDR is in 512-byte sectors */
+	start_sectors = start_kib * 2;
+
+	ret = mci_switch(mci, EXT_CSD_ERASE_GROUP_DEF, 1);
+	if (ret) {
+		printf("Failure to write EXT_CSD_ERASE_GROUP_DEF\n");
+		return ret;
+	}
+
+	for (i = 0; i < 4; i++) {
+		ret = mci_switch(mci, EXT_CSD_ENH_START_ADDR + i,
+				 (start_sectors >> (8 * i)) & 0xff);
+		if (ret) {
+			printf("Failure to write EXT_CSD_ENH_START_ADDR[%d]\n", i);
+			return ret;
+		}
+	}
+
+	for (i = 0; i < 3; i++) {
+		ret = mci_switch(mci, EXT_CSD_ENH_SIZE_MULT + i,
+				 (size_mult >> (8 * i)) & 0xff);
+		if (ret) {
+			printf("Failure to write EXT_CSD_ENH_SIZE_MULT[%d]\n", i);
+			return ret;
+		}
+	}
+
+	ret = mci_switch(mci, EXT_CSD_PARTITIONS_ATTRIBUTE,
+			 ext_csd[EXT_CSD_PARTITIONS_ATTRIBUTE] |
+			 EXT_CSD_ENH_USR_MASK);
+	if (ret) {
+		printf("Failure to write EXT_CSD_PARTITIONS_ATTRIBUTE\n");
+		return ret;
+	}
+
+	printf("Enhanced user data area: start=%llu KiB, size=%llu KiB "
+	       "(mult=%u, unit=%llu KiB, max_mult=%u)\n",
+	       (unsigned long long)start_kib,
+	       (unsigned long long)size_mult * unit_kib,
+	       size_mult, (unsigned long long)unit_kib, max_mult);
+
+	return 0;
+}
+
 static int mmc_partitioning_complete(struct mci *mci)
 {
 	int ret;
@@ -67,16 +155,32 @@ static int mmc_partitioning_complete(struct mci *mci)
 	return ret;
 }
 
-/* enh_area [-c] /dev/mmcX */
+/*
+ * enh_area [-c] /dev/mmcX
+ *     -> fill the entire user area (legacy)
+ * enh_area set [-c] <start_KiB> <length_KiB> /dev/mmcX
+ *     -> sized, mmc-utils compatible
+ */
 static int do_mmc_enh_area(int argc, char *argv[])
 {
 	const char *devpath;
 	struct mci *mci;
 	u8 *ext_csd;
+	u64 start_kib = 0, length_kib = 0;
+	bool sized = false;
 	int set_completed = 0;
 	int opt;
 	int ret;
 
+	if (argc >= 2 && !strcmp(argv[1], "set")) {
+		sized = true;
+		/* Shift past "set" so getopt() and the trailing positional
+		 * arguments line up the same way as for the legacy form. */
+		argv++;
+		argc--;
+	}
+
+	optind = 1;
 	while ((opt = getopt(argc, argv, "c")) > 0) {
 		switch (opt) {
 		case 'c':
@@ -86,12 +190,24 @@ static int do_mmc_enh_area(int argc, char *argv[])
 		}
 	}
 
-	if (argc - optind != 1) {
-		printf("Usage: mmc enh_area [-c] /dev/mmcX\n");
-		return COMMAND_ERROR_USAGE;
+	if (sized) {
+		if (argc - optind != 3) {
+			printf("Usage: mmc enh_area set [-c] <start_KiB> <length_KiB> /dev/mmcX\n");
+			return COMMAND_ERROR_USAGE;
+		}
+		if (kstrtou64(argv[optind], 0, &start_kib) ||
+		    kstrtou64(argv[optind + 1], 0, &length_kib)) {
+			printf("Invalid start/length value\n");
+			return COMMAND_ERROR_USAGE;
+		}
+		devpath = argv[optind + 2];
+	} else {
+		if (argc - optind != 1) {
+			printf("Usage: mmc enh_area [-c] /dev/mmcX\n");
+			return COMMAND_ERROR_USAGE;
+		}
+		devpath = argv[optind];
 	}
-
-	devpath = argv[optind];
 
 	mci = mci_get_device_by_devpath(devpath);
 	if (!mci) {
@@ -113,7 +229,10 @@ static int do_mmc_enh_area(int argc, char *argv[])
 		goto error;
 	}
 
-	ret = mmc_enh_area_setmax(mci, ext_csd);
+	if (sized)
+		ret = mmc_enh_area_set(mci, ext_csd, start_kib, length_kib);
+	else
+		ret = mmc_enh_area_setmax(mci, ext_csd);
 	if (ret)
 		goto error;
 
@@ -273,8 +392,9 @@ static int do_mmc(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(mmc)
 BAREBOX_CMD_HELP_TEXT("Modifies mmc properties.")
 BAREBOX_CMD_HELP_TEXT("")
-BAREBOX_CMD_HELP_TEXT("The subcommand enh_area creates an enhanced area of")
-BAREBOX_CMD_HELP_TEXT("maximal size.")
+BAREBOX_CMD_HELP_TEXT("Subcommand enh_area without arguments creates an enhanced")
+BAREBOX_CMD_HELP_TEXT("area of maximal size; enh_area set provisions a region of the")
+BAREBOX_CMD_HELP_TEXT("requested length (rounded up to the device's enhanced-area unit).")
 BAREBOX_CMD_HELP_TEXT("Note, with -c this is an irreversible action.")
 BAREBOX_CMD_HELP_OPT("-c", "complete partitioning (deprecated)")
 BAREBOX_CMD_HELP_TEXT("")
@@ -285,7 +405,7 @@ BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(mmc)
 	.cmd = do_mmc,
-	BAREBOX_CMD_OPTS("partition_complete|write_reliability|enh_area [-c] /dev/mmcX")
+	BAREBOX_CMD_OPTS("partition_complete|write_reliability|enh_area [set [-c] <start_KiB> <length_KiB>|[-c]] /dev/mmcX")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_mmc_help)
 BAREBOX_CMD_END

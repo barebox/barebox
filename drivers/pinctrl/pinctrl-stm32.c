@@ -289,7 +289,7 @@ static int stm32_gpio_set_config(struct gpio_chip *chip,
 	case PIN_CONFIG_BIAS_PULL_DOWN:
 		__stm32_pmx_set_bias(bank->base, gpio, STM32_PIN_PULL_DOWN);
 		break;
-	case PIN_CONFIG_OUTPUT:
+	case PIN_CONFIG_LEVEL:
 		__stm32_pmx_gpio_output(bank->base, gpio, arg);
 		break;
 	default:

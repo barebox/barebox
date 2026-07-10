@@ -67,19 +67,12 @@ static int hwrng_register_cdev(struct hwrng *rng)
 	struct device *dev = rng->dev;
 	const char *alias;
 	char *devname;
-	int err;
 
 	alias = of_alias_get(dev->of_node);
-	if (alias) {
+	if (alias)
 		devname = xstrdup(alias);
-	} else {
-		err = cdev_find_free_index("hwrng");
-		if (err < 0) {
-			dev_err(dev, "no index found to name device\n");
-			return err;
-		}
-		devname = xasprintf("hwrng%d", err);
-	}
+	else
+		devname = xasprintf("hwrng%d", cdev_find_free_index("hwrng"));
 
 	rng->cdev.name = devname;
 	rng->cdev.flags = DEVFS_IS_CHARACTER_DEV;

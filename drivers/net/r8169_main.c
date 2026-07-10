@@ -2874,7 +2874,7 @@ static int rtl8169_init_dev(struct eth_device *edev)
 #define ETH_ZLEN        60              /* Min. octets in frame sans FCS */
 #define PKT_BUF_SIZE   1536
 
-static void rtl8169_init_ring(struct rtl8169_private *tp)
+static int rtl8169_init_ring(struct rtl8169_private *tp)
 {
 	struct eth_device *edev = &tp->edev;
 	int i;
@@ -2884,14 +2884,22 @@ static void rtl8169_init_ring(struct rtl8169_private *tp)
 	tp->TxDescArray = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					     NUM_TX_DESC * sizeof(struct TxDesc),
 					     &tp->TxPhyAddr);
+	if (!tp->TxDescArray)
+		return -ENOMEM;
+
 	tp->tx_buf = dma_alloc(NUM_TX_DESC * PKT_BUF_SIZE);
+
 	tp->tx_buf_phys = dma_map_single(edev->parent, tp->tx_buf,
 					   NUM_TX_DESC * PKT_BUF_SIZE, DMA_TO_DEVICE);
 
 	tp->RxDescArray = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					     NUM_RX_DESC * sizeof(struct RxDesc),
 					     &tp->RxPhyAddr);
+	if (!tp->RxDescArray)
+		return -ENOMEM;
+
 	tp->rx_buf = dma_alloc(NUM_RX_DESC * PKT_BUF_SIZE);
+
 	tp->rx_buf_phys = dma_map_single(edev->parent, tp->rx_buf,
 					   NUM_RX_DESC * PKT_BUF_SIZE, DMA_FROM_DEVICE);
 
@@ -2906,6 +2914,8 @@ static void rtl8169_init_ring(struct rtl8169_private *tp)
 		tp->RxDescArray[i].addr =
 				cpu_to_le64(tp->rx_buf_phys + i * PKT_BUF_SIZE);
 	}
+
+	return 0;
 }
 
 static void r8169_phylink_handler(struct eth_device *edev)
@@ -2922,7 +2932,10 @@ static int rtl8169_eth_open(struct eth_device *edev)
 
 	pci_set_master(tp->pci_dev);
 
-	rtl8169_init_ring(tp);
+	ret = rtl8169_init_ring(tp);
+	if (ret)
+		return ret;
+
 	rtl_hw_start(tp);
 
 	ret = phy_device_connect(edev, &tp->miibus, 0, r8169_phylink_handler, 0,

@@ -427,18 +427,18 @@ static int lcdif_register_fb(struct lcdif_drm_private *lcdif)
 		return ret;
 	}
 
-	if (info->modes.num_modes) {
-		for (i = 0; i < info->modes.num_modes; i++) {
-			xmax = max(xmax, info->modes.modes[i].xres);
-			ymax = max(ymax, info->modes.modes[i].yres);
-		}
-		info->xres = info->modes.modes[info->modes.native_mode].xres;
-		info->yres = info->modes.modes[info->modes.native_mode].yres;
-	} else {
-		dev_notice(lcdif->dev, "no modes found on lcdif%d\n", lcdif->id);
-		xmax = info->xres = 640;
-		ymax = info->yres = 480;
+	/* no panel downstream -> nothing to scan out; stay idle */
+	if (!info->modes.num_modes) {
+		dev_info(lcdif->dev, "no display modes from VPL, LCDIF stays idle\n");
+		return 0;
 	}
+
+	for (i = 0; i < info->modes.num_modes; i++) {
+		xmax = max(xmax, info->modes.modes[i].xres);
+		ymax = max(ymax, info->modes.modes[i].yres);
+	}
+	info->xres = info->modes.modes[info->modes.native_mode].xres;
+	info->yres = info->modes.modes[info->modes.native_mode].yres;
 
 	lcdif->line_length = xmax * (info->bits_per_pixel >> 3);
 	lcdif->max_yres = ymax;

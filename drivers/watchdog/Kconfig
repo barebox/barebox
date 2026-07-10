@@ -126,9 +126,9 @@ config STPMIC1_WATCHDOG
 	help
 	  Enable to support configuration of the stpmic1's built-in watchdog.
 
-config RN568_WATCHDOG
-	bool "Ricoh RN5t568 PMIC based Watchdog"
-	depends on MFD_RN568PMIC
+config RN5T618_WATCHDOG
+	bool "Ricoh RN5T618/567 PMIC based Watchdog"
+	depends on MFD_RN5T618
 	help
 	  Enable to support system control via the PMIC based watchdog.
 

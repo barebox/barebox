@@ -41,3 +41,10 @@ config USB_XHCI
 
 	  This driver currently only supports virtual USB 2.0 ports, if you
 	  plan to use USB 3.0 devices, use a USB 2.0 cable in between.
+
+config USB_XHCI_PCI
+	tristate "xHCI over PCI driver"
+	depends on USB_XHCI && PCI
+	help
+	  Say y here if your USB 3.0 controller is connected via PCI and
+	  you wish to access the USB devices on the bus from barebox.

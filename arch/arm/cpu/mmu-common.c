@@ -43,7 +43,9 @@ void *dma_alloc_map(struct device *dev,
 	void *ret;
 
 	size = PAGE_ALIGN(size);
-	ret = xmemalign(PAGE_SIZE, size);
+	ret = memalign(PAGE_SIZE, size);
+	if (!ret)
+		return NULL;
 	if (dma_handle)
 		*dma_handle = (dma_addr_t)ret;
 

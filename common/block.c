@@ -14,6 +14,7 @@
 #include <range.h>
 #include <bootargs.h>
 #include <file-list.h>
+#include <linux/log2.h>
 
 LIST_HEAD(block_device_list);
 EXPORT_SYMBOL(block_device_list);
@@ -29,7 +30,7 @@ struct chunk {
 
 #define BUFSIZE (PAGE_SIZE * 16)
 
-static int writebuffer_io_len(struct block_device *blk, struct chunk *chunk)
+static blkcnt_t writebuffer_io_nblocks(struct block_device *blk, struct chunk *chunk)
 {
 	return min_t(blkcnt_t, blk->rdbufsize, blk->num_blocks - chunk->block_start);
 }
@@ -53,9 +54,19 @@ static void blk_stats_record_write(struct block_device *blk, blkcnt_t count) { }
 static void blk_stats_record_erase(struct block_device *blk, blkcnt_t count) { }
 #endif
 
+int block_size_bits(struct device *dev, unsigned block_size)
+{
+       if (block_size < MIN_SECTOR_SIZE || !is_power_of_2(block_size)) {
+               dev_err(dev, "unsupported block size %u\n", block_size);
+               return -ENOTSUPP;
+       }
+
+       return ffs(block_size) - 1;
+}
+
 static int chunk_flush(struct block_device *blk, struct chunk *chunk)
 {
-	size_t len;
+	blkcnt_t len;
 	int ret;
 
 	if (!chunk->dirty)
@@ -64,7 +75,7 @@ static int chunk_flush(struct block_device *blk, struct chunk *chunk)
 	if (!blk->ops->write)
 		return 0;
 
-	len = writebuffer_io_len(blk, chunk);
+	len = writebuffer_io_nblocks(blk, chunk);
 	ret = blk->ops->write(blk, chunk->data, chunk->block_start, len);
 	if (ret < 0)
 		return ret;
@@ -171,7 +182,7 @@ static struct chunk *get_chunk(struct block_device *blk)
 static int block_cache(struct block_device *blk, sector_t block)
 {
 	struct chunk *chunk;
-	size_t len;
+	blkcnt_t len;
 	int ret;
 
 	chunk = get_chunk(blk);
@@ -183,11 +194,11 @@ static int block_cache(struct block_device *blk, sector_t block)
 	dev_vdbg(blk->dev, "%s: %llu to %d\n", __func__, chunk->block_start,
 		chunk->num);
 
-	len = writebuffer_io_len(blk, chunk);
+	len = writebuffer_io_nblocks(blk, chunk);
 	if (chunk->block_start * BLOCKSIZE(blk) >= blk->discard_start &&
-	    chunk->block_start * BLOCKSIZE(blk) + len
+	    (chunk->block_start + len) * BLOCKSIZE(blk)
 	    <= blk->discard_start + blk->discard_size) {
-		memset(chunk->data, 0, len);
+		memset(chunk->data, 0, len << blk->blockbits);
 		list_add(&chunk->list, &blk->buffered_blocks);
 		return 0;
 	}
@@ -326,7 +337,7 @@ static ssize_t block_op_write(struct cdev *cdev, const void *buf, size_t count,
 	 * written to LBA1, so LBA1 must change as well when the partioning
 	 * is changed.
 	 */
-	if (offset < 2 * SECTOR_SIZE)
+	if (offset < 2 * BLOCKSIZE(blk))
 		blk->need_reparse = true;
 
 	if (offset & mask) {
@@ -471,7 +482,7 @@ int blockdevice_register(struct block_device *blk)
 	dev_dbg(blk->dev, "rdbufsize: %d blockbits: %d blkmask: 0x%08x\n",
 		blk->rdbufsize, blk->blockbits, blk->blkmask);
 
-	if (!blk->rdbufsize) {
+	if (!blk->rdbufsize || blk->blockbits < MIN_SECTOR_SHIFT) {
 		pr_warn("block size of %u not supported\n", BLOCKSIZE(blk));
 		return -ENOSYS;
 	}

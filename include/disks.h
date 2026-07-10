@@ -8,6 +8,13 @@
 
 struct block_device;
 
+/** Minimum size of one sector in bytes */
+#define MIN_SECTOR_SIZE 512
+
+/** Minimum size of one sector in bit shift */
+#define MIN_SECTOR_SHIFT 9
+
+
 /** Size of one sector in bytes */
 #define SECTOR_SIZE 512
 

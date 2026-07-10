@@ -24,6 +24,7 @@
 #include <wchar.h>
 #include <string.h>
 #include <libfile.h>
+#include <block.h>
 #include <disks.h>
 #include <charset.h>
 #include <malloc.h>
@@ -743,7 +744,7 @@ static efi_status_t EFIAPI efi_file_get_info(struct efi_file_handle *file,
 		 * space. The volume size is the best upper bound we have.
 		 */
 		info->free_space = info->volume_size;
-		info->block_size = SECTOR_SIZE;
+		info->block_size = cdev_blocksize(fh->fs->cdev);
 		/*
 		 * TODO: The volume label is not available in barebox.
 		 */

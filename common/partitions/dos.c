@@ -60,7 +60,7 @@ static inline int is_extended_partition(struct partition *p)
 
 static void *read_mbr(struct block_device *blk)
 {
-	void *buf = xmalloc(SECTOR_SIZE);
+	void *buf = xmalloc(BLOCKSIZE(blk));
 	int ret;
 
 	ret = block_read(blk, buf, 0, 1);
@@ -126,7 +126,7 @@ static int dos_get_disk_signature(struct param_d *p, void *_priv)
 static void dos_extended_partition(struct block_device *blk, struct dos_partition_desc *dpd,
 		struct partition *partition, uint32_t signature)
 {
-	uint8_t *buf = xmalloc(SECTOR_SIZE);
+	uint8_t *buf = xmalloc(BLOCKSIZE(blk));
 	uint32_t ebr_sector = partition->first_sec;
 	struct partition_entry *table = (struct partition_entry *)&buf[0x1be];
 	unsigned partno = 4;
@@ -318,7 +318,7 @@ static void dos_partition_free(struct partition_desc *pd)
 
 static __maybe_unused struct partition_desc *dos_partition_create_table(struct block_device *blk)
 {
-	struct dos_partition_desc *dpd = xzalloc(512);
+	struct dos_partition_desc *dpd = xzalloc(sizeof(*dpd));
 
 	partition_desc_init(&dpd->pd, blk);
 

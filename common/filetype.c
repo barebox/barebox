@@ -157,16 +157,16 @@ static inline int pmbr_part_valid(const uint8_t *buf)
  * Validity depends on three things:
  *  1) MSDOS signature is in the last two bytes of the MBR
  *  2) One partition of type 0xEE is found
- *  3) EFI GPT signature is at offset 512
+ *  3) EFI GPT signature is at the next logical block
  */
-static int is_gpt_valid(const uint8_t *buf)
+static int is_gpt_valid(const uint8_t *buf, unsigned int sector_size)
 {
 	int i;
 
 	if (get_unaligned_le16(&buf[BS_55AA]) != 0xAA55)
 		return 0;
 
-	if (strncmp(&buf[512], "EFI PART", 8))
+	if (strncmp(buf + sector_size, "EFI PART", 8))
 		return 0;
 
 	buf += MBR_Table;
@@ -268,19 +268,21 @@ enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec)
 	return filetype_mbr;
 }
 
-enum filetype file_detect_partition_table(const void *_buf, size_t bufsize)
+enum filetype file_detect_partition_table(const void *_buf,
+					  size_t bufsize,
+					  unsigned int sector_size)
 {
 	const u8 *buf8 = _buf;
 	enum filetype type;
 
-	if (bufsize < 512)
+	if (bufsize < MIN_SECTOR_SIZE || sector_size < MIN_SECTOR_SIZE)
 		return filetype_unknown;
 
 	/*
 	 * EFI GPT need to be detected before MBR otherwise
 	 * we will detect a MBR
 	 */
-	if (bufsize >= 520 && is_gpt_valid(buf8))
+	if (bufsize >= sector_size + 8 && is_gpt_valid(buf8, sector_size))
 		return filetype_gpt;
 
 	type = is_fat_or_mbr(buf8, NULL);
@@ -468,7 +470,7 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (bufsize < 512)
 		return filetype_unknown;
 
-	type = file_detect_partition_table(_buf, bufsize);
+	type = file_detect_partition_table(_buf, bufsize, SECTOR_SIZE);
 	if (type != filetype_unknown)
 		return type;
 

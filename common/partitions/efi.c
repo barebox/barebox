@@ -199,31 +199,26 @@ static gpt_entry *alloc_read_gpt_entries(struct block_device *blk,
 {
 	u32 count = 0;
 	gpt_entry *pte = NULL;
-	unsigned long from, size;
+	unsigned long from;
+	blkcnt_t size;
 	int ret;
 
 	count = compute_partitions_entries_size(pgpt_head);
 	if (!count)
 		return NULL;
 
-	pte = calloc(count, 1);
+	pte = calloc(blockdevice_round_block_nbytes(blk, count), 1);
 	if (!pte)
 		return NULL;
 
 	from = le64_to_cpu(pgpt_head->partition_entry_lba);
-	size = count / GPT_BLOCK_SIZE;
+	size = blockdevice_round_nblocks(blk, count);
 	ret = block_read(blk, pte, from, size);
 	if (ret) {
 		free(pte);
 		return NULL;
 	}
 	return pte;
-}
-
-static inline unsigned short bdev_logical_block_size(struct block_device
-*bdev)
-{
-	return SECTOR_SIZE;
 }
 
 /**
@@ -239,7 +234,7 @@ static gpt_header *alloc_read_gpt_header(struct block_device *blk,
 					 u64 lba)
 {
 	gpt_header *gpt;
-	unsigned ssz = bdev_logical_block_size(blk);
+	unsigned ssz = BLOCKSIZE(blk);
 	int ret;
 
 	gpt = calloc(ssz, 1);
@@ -286,7 +281,7 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 	}
 
 	if (le32_to_cpu((*gpt)->header_size) < sizeof(struct _gpt_header) ||
-        le32_to_cpu((*gpt)->header_size) > bdev_logical_block_size(blk))
+	    le32_to_cpu((*gpt)->header_size) > BLOCKSIZE(blk))
 		goto fail;
 
 	/* Check the GUID Partition Table CRC */
@@ -505,7 +500,8 @@ static int find_valid_gpt(struct efi_partition_desc *epd, void *buf)
 	lastlba = last_lba(blk);
 	if (force_gpt) {
 		/* This will be added to the EFI Spec. per Intel after v1.02. */
-		if (file_detect_partition_table(buf, SECTOR_SIZE * 2) != filetype_gpt)
+		if (file_detect_partition_table(buf, 2 * BLOCKSIZE(blk),
+						BLOCKSIZE(blk)) != filetype_gpt)
 			goto fail;
 	}
 
@@ -689,11 +685,11 @@ static __maybe_unused struct partition_desc *efi_partition_create_table(struct b
 	gpt_header *gpt;
 	unsigned int num_partition_entries = 128;
 	unsigned int gpt_size = (sizeof(gpt_entry) * num_partition_entries) / SECTOR_SIZE;
-	unsigned int first_usable_lba = partition_first_usable_lba();
+	unsigned int first_usable_lba = partition_first_usable_lba(blk);
 
 	partition_desc_init(&epd->pd, blk);
 
-	epd->gpt = xzalloc(SECTOR_SIZE);
+	epd->gpt = xzalloc(BLOCKSIZE(blk));
 	gpt = epd->gpt;
 
 	gpt->signature = cpu_to_le64(GPT_HEADER_SIGNATURE);
@@ -855,12 +851,12 @@ static int __efi_partition_write(struct efi_partition_desc *epd, bool primary)
 	uint64_t my_lba, partition_entry_lba;
 	int ret;
 
-	gpt = xmemdup(epd->gpt, SECTOR_SIZE);
+	gpt = xmemdup(epd->gpt, BLOCKSIZE(blk));
 
 	count = le32_to_cpu(gpt->num_partition_entries) *
 		le32_to_cpu(gpt->sizeof_partition_entry);
 
-	size = count / GPT_BLOCK_SIZE;
+	size = blockdevice_round_nblocks(blk, count);
 
 	if (primary) {
 		my_lba = 1;

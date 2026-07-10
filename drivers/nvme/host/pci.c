@@ -384,7 +384,7 @@ static int nvme_pci_submit_sync_cmd(struct nvme_ctrl *ctrl,
 				    union nvme_result *result,
 				    void *buffer,
 				    unsigned int buffer_len,
-				    unsigned timeout, int qid)
+				    ktime_t timeout, int qid)
 {
 	struct nvme_dev *dev = to_nvme_dev(ctrl);
 	struct nvme_queue *nvmeq = &dev->queues[qid];
@@ -414,6 +414,9 @@ static int nvme_pci_submit_sync_cmd(struct nvme_ctrl *ctrl,
 		break;
 	case NVME_QID_IO:
 		switch (cmd->rw.opcode) {
+		case nvme_cmd_flush:
+			dma_dir = DMA_NONE;
+			break;
 		case nvme_cmd_write:
 			dma_dir = DMA_TO_DEVICE;
 			break;

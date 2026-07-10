@@ -15,10 +15,12 @@ extern char __dtb_z_socfpga_agilex5_axe5_eagle_start[];
 
 static noinline void axe5_eagle_continue(void)
 {
+	void __iomem *uart = IOMEM(SOCFPGA_UART_BASE(0));
+
 	agilex5_clk_init();
 
-	socfpga_uart_setup_ll();
-	pbl_set_putc(socfpga_uart_putc, (void *) SOCFPGA_UART0_ADDRESS);
+	socfpga_uart_setup(uart);
+	pbl_set_putc(socfpga_uart_putc, uart);
 
 	pr_debug("Lowlevel init done\n");
 

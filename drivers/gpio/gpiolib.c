@@ -514,7 +514,7 @@ int gpiod_direction_output(struct gpio_desc *desc, int value)
 	VALIDATE_DESC(desc);
 
 	if (IS_ENABLED(CONFIG_GPIO_PINCONF)) {
-		if (desc->flags & (OF_GPIO_OPEN_DRAIN | OF_GPIO_SINGLE_ENDED)) {
+		if (desc->flags & OF_GPIO_OPEN_DRAIN) {
 			/* First see if we can enable open drain in hardware */
 			ret = gpio_set_config(desc, PIN_CONFIG_DRIVE_OPEN_DRAIN);
 			if (!ret)

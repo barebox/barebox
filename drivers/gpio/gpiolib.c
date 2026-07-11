@@ -509,9 +509,11 @@ static int gpio_set_bias(struct gpio_desc *desc)
  */
 int gpiod_direction_output(struct gpio_desc *desc, int value)
 {
-	int ret;
+	int raw_value, ret;
 
 	VALIDATE_DESC(desc);
+
+	raw_value = gpio_adjust_value(desc, value);
 
 	if (IS_ENABLED(CONFIG_GPIO_PINCONF)) {
 		if (desc->flags & OF_GPIO_OPEN_DRAIN) {
@@ -520,14 +522,14 @@ int gpiod_direction_output(struct gpio_desc *desc, int value)
 			if (!ret)
 				goto set_output_value;
 			/* Emulate open drain by not actively driving the line high */
-			if (value)
+			if (raw_value)
 				return gpiod_direction_input(desc);
 		} else if (desc->flags & OF_GPIO_SINGLE_ENDED) {
 			ret = gpio_set_config(desc, PIN_CONFIG_DRIVE_OPEN_SOURCE);
 			if (!ret)
 				goto set_output_value;
 			/* Emulate open source by not actively driving the line low */
-			if (!value)
+			if (!raw_value)
 				return gpiod_direction_input(desc);
 		} else {
 			gpio_set_config(desc, PIN_CONFIG_DRIVE_PUSH_PULL);
@@ -539,7 +541,7 @@ set_output_value:
 			return ret;
 	}
 
-	return gpiod_direction_output_raw(desc, gpio_adjust_value(desc, value));
+	return gpiod_direction_output_raw(desc, raw_value);
 }
 
 int gpio_direction_active(unsigned gpio, bool value)

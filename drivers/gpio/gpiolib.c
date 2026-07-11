@@ -259,9 +259,7 @@ EXPORT_SYMBOL_GPL(gpiod_put_array);
 static int gpio_do_set_config(struct gpio_chip *gc, unsigned int offset,
 			      unsigned long config)
 {
-	if (!IS_ENABLED(CONFIG_GPIO_PINCONF))
-		return -ENOSYS;
-	if (!gc->ops->set_config)
+	if (!IS_ENABLED(CONFIG_GPIO_PINCONF) || !gc->ops->set_config)
 		return -ENOTSUPP;
 
 	return gc->ops->set_config(gc, offset, config);
@@ -575,7 +573,7 @@ int gpiod_direction_input(struct gpio_desc *desc)
 
 	ret = desc->chip->ops->direction_input(desc->chip,
 					       gpiodesc_chip_offset(desc));
-	if (ret == 0 && IS_ENABLED(CONFIG_GPIO_PINCONF))
+	if (ret == 0)
 		ret = gpio_set_bias(desc);
 
 	return ret;

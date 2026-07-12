@@ -22,9 +22,6 @@ struct pinctrl *pinctrl_get_select(struct device *dev, const char *state);
 int pinctrl_select_state_default(struct device *dev);
 int of_pinctrl_select_state(struct device_node *np, const char *state);
 int of_pinctrl_select_state_default(struct device_node *np);
-int pinctrl_gpio_direction_input(unsigned pin);
-int pinctrl_gpio_direction_output(unsigned int pin);
-int pinctrl_gpio_get_direction(unsigned pin);
 int pinctrl_single_probe(struct device *dev);
 #else
 static inline struct pinctrl_state *pinctrl_lookup_state(struct pinctrl *pinctrl,
@@ -54,21 +51,6 @@ static inline int of_pinctrl_select_state(struct device_node *np, const char *st
 static inline int of_pinctrl_select_state_default(struct device_node *np)
 {
 	return -ENODEV;
-}
-
-static inline int pinctrl_gpio_direction_input(unsigned pin)
-{
-	return -ENOTSUPP;
-}
-
-static inline int pinctrl_gpio_direction_output(unsigned int pin)
-{
-	return -ENOTSUPP;
-}
-
-static inline int pinctrl_gpio_get_direction(unsigned pin)
-{
-	return -ENOTSUPP;
 }
 
 static inline int pinctrl_single_probe(struct device *dev)

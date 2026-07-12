@@ -54,7 +54,7 @@ static struct pinctrl_device *pin_to_pinctrl(unsigned int pin)
 	return NULL;
 }
 
-static int pinctrl_gpio_direction(unsigned pin, bool input)
+static int pinctrl_gpio_direction_pin(unsigned pin, bool input)
 {
 	struct pinctrl_device *pinctrl = pin_to_pinctrl(pin);
 
@@ -66,17 +66,17 @@ static int pinctrl_gpio_direction(unsigned pin, bool input)
 	return pinctrl->ops->set_direction(pinctrl, pin, input);
 }
 
-int pinctrl_gpio_direction_input(unsigned int pin)
+int pinctrl_gpio_direction_input_pin(unsigned int pin)
 {
-	return pinctrl_gpio_direction(pin, true);
+	return pinctrl_gpio_direction_pin(pin, true);
 }
 
-int pinctrl_gpio_direction_output(unsigned int pin)
+int pinctrl_gpio_direction_output_pin(unsigned int pin)
 {
-	return pinctrl_gpio_direction(pin, false);
+	return pinctrl_gpio_direction_pin(pin, false);
 }
 
-int pinctrl_gpio_get_direction(unsigned pin)
+int pinctrl_gpio_get_direction_pin(unsigned pin)
 {
 	struct pinctrl_device *pinctrl = pin_to_pinctrl(pin);
 

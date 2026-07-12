@@ -35,4 +35,26 @@ static inline void of_pinctrl_register_consumer(struct device *dev, struct devic
 static inline void of_pinctrl_unregister_consumer(struct device *dev) {}
 #endif
 
+/* Legacy operations that take global pin number */
+#ifdef CONFIG_PINCTRL
+int pinctrl_gpio_direction_input_pin(unsigned pin);
+int pinctrl_gpio_direction_output_pin(unsigned int pin);
+int pinctrl_gpio_get_direction_pin(unsigned pin);
+#else
+static inline int pinctrl_gpio_direction_input_pin(unsigned pin)
+{
+	return -ENOTSUPP;
+}
+
+static inline int pinctrl_gpio_direction_output_pin(unsigned int pin)
+{
+	return -ENOTSUPP;
+}
+
+static inline int pinctrl_gpio_get_direction_pin(unsigned pin)
+{
+	return -ENOTSUPP;
+}
+#endif
+
 #endif /* PINCTRL_H */

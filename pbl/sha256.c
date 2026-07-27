@@ -21,5 +21,8 @@ static void pbl_sha256_generic(const void *buf, size_t len, u8 *out)
 
 void pbl_sha256(const void *buf, size_t len, u8 out[static SHA256_DIGEST_SIZE])
 {
+	if (!pbl_sha256_ce(buf, len, out))
+		return;
+
 	pbl_sha256_generic(buf, len, out);
 }

@@ -10,6 +10,7 @@
 #include <init.h>
 #include <crypto/sha.h>
 #include <crypto/sha256_base.h>
+#include <crypto/pbl-sha.h>
 #include <crypto/internal.h>
 #include <linux/linkage.h>
 #include <asm/byteorder.h>
@@ -32,6 +33,49 @@ extern const u32 sha256_ce_offsetof_finalize;
 
 asmlinkage int sha2_ce_transform(struct sha256_ce_state *sst, u8 const *src,
 				 int blocks);
+
+/*
+ * In the PBL there is no digest API and no NEON save/restore; expose a
+ * one-shot pbl_sha256_ce() that pbl_sha256() calls in preference to the
+ * generic C transform.
+ */
+static void pbl_sha2_ce_transform(struct sha256_state *sst, u8 const *src,
+				  int blocks)
+{
+	struct sha256_ce_state *s =
+		container_of(sst, struct sha256_ce_state, sst);
+
+	/* finalize == 0: C does the padding via sha256_base_do_finalize(). */
+	s->finalize = 0;
+	while (blocks) {
+		int rem = sha2_ce_transform(s, src, blocks);
+
+		src += (blocks - rem) * SHA256_BLOCK_SIZE;
+		blocks = rem;
+	}
+}
+
+int pbl_sha256_ce(const void *buf, size_t len, u8 out[SHA256_DIGEST_SIZE])
+{
+	struct sha256_ce_state s;
+	struct digest d = { .ctx = &s, .length = SHA256_DIGEST_SIZE };
+
+	/*
+	 * The Crypto Extensions are optional on ARMv8 and sha256h & co. trap
+	 * as undefined without them, so gate on ID_AA64ISAR0_EL1.SHA2 like the
+	 * digest registration below does and let the caller fall back to
+	 * generic C.
+	 */
+	if (!(read_sysreg(ID_AA64ISAR0_EL1) & ID_AA64ISAR0_EL1_SHA2_MASK))
+		return -EOPNOTSUPP;
+
+	sha256_base_init(&d);
+	sha256_base_do_update(&d, buf, len, pbl_sha2_ce_transform);
+	sha256_base_do_finalize(&d, pbl_sha2_ce_transform);
+	sha256_base_finish(&d, out);
+
+	return 0;
+}
 
 static void __sha2_ce_transform(struct sha256_state *sst, u8 const *src,
 				int blocks)

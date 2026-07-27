@@ -14,4 +14,14 @@ int sha256_final(struct digest *desc, u8 *out);
 /* One-shot SHA-256 that picks the best transform available in the PBL. */
 void pbl_sha256(const void *buf, size_t len, u8 out[SHA256_DIGEST_SIZE]);
 
+#ifdef CONFIG_DIGEST_SHA256_ARM64_CE
+/* ARMv8 Crypto Extensions transform; returns -EOPNOTSUPP if unavailable. */
+int pbl_sha256_ce(const void *buf, size_t len, u8 out[SHA256_DIGEST_SIZE]);
+#else
+static inline int pbl_sha256_ce(const void *buf, size_t len, u8 out[SHA256_DIGEST_SIZE])
+{
+	return -EOPNOTSUPP;
+}
+#endif
+
 #endif /* __PBL-SHA_H_ */

@@ -27,6 +27,6 @@ pbl-$(CONFIG_MCI_DW_PBL)	+= dw_mmc-pbl.o
 obj-$(CONFIG_MCI_DWC_MSHC)	+= dwcmshc-sdhci.o
 obj-$(CONFIG_MCI_MMCI)		+= mmci.o
 obj-$(CONFIG_MCI_STM32_SDMMC2)	+= stm32_sdmmc2.o
-obj-$(CONFIG_MCI_SUNXI_SMHC)	+= sunxi-mmc.o
+obj-$(CONFIG_MCI_SUNXI_SMHC)	+= /sunxi-mmc.o
 pbl-$(CONFIG_MCI_SUNXI_SMHC)	+= sunxi-mmc-pbl.o
 obj-pbl-$(CONFIG_MCI_SDHCI)	+= sdhci.o

@@ -1240,10 +1240,10 @@ PHONY += _policy_collect_clean $(collect-dirs) collect-policies
 _policy_collect_clean:
 	$(Q)find $(objtree)/ -name policy-list -delete 2>/dev/null || true
 
-$(collect-policy-dirs): | _policy_collect_clean
+$(collect-dirs): | _policy_collect_clean
 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.policy obj=$(patsubst _policy_collect_%,%,$@)
 
-collect-policies: $(collect-policy-dirs)
+collect-policies: $(collect-dirs)
 
 PHONY += security_listconfigs
 security_listconfigs: collect-policies FORCE

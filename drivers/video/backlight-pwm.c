@@ -12,6 +12,7 @@
 #include <linux/err.h>
 #include <of.h>
 #include <regulator.h>
+#include <linux/device.h>
 #include <linux/gpio/consumer.h>
 #include <linux/math64.h>
 
@@ -101,7 +102,9 @@ static int pwm_backlight_parse_dt(struct device *dev,
 {
 	struct device_node *node = dev->of_node;
 	struct property *prop;
-	int length;
+	unsigned int length;
+	unsigned int num_steps = 0;
+	unsigned int *table;
 	u32 value;
 	int ret, i;
 
@@ -134,6 +137,77 @@ static int pwm_backlight_parse_dt(struct device *dev,
 		if (ret < 0)
 			return ret;
 
+		/*
+		 * This property is optional, if is set enables linear
+		 * interpolation between each of the values of brightness levels
+		 * and creates a new pre-computed table.
+		 */
+		of_property_read_u32(node, "num-interpolated-steps",
+				     &num_steps);
+
+		if (num_steps) {
+			unsigned int num_input_levels = length;
+			unsigned int i;
+			u32 x1, x2, x, dx;
+			u32 y1, y2;
+			s64 dy;
+
+			/*
+			 * Make sure that there is at least two entries in the
+			 * brightness-levels table, otherwise we can't interpolate
+			 * between two points.
+			 */
+			if (num_input_levels < 2) {
+				dev_err(dev, "can't interpolate\n");
+				return -EINVAL;
+			}
+
+			/*
+			 * Recalculate the number of brightness levels, now
+			 * taking in consideration the number of interpolated
+			 * steps between two levels.
+			 */
+			length = (num_input_levels - 1) * num_steps + 1;
+			dev_dbg(dev, "new number of brightness levels: %d\n",
+				length);
+
+			/*
+			 * Create a new table of brightness levels with all the
+			 * interpolated steps.
+			 */
+			table = devm_kcalloc(dev, length, sizeof(*table),
+					     GFP_KERNEL);
+			if (!table)
+				return -ENOMEM;
+			/*
+			 * Fill the interpolated table[x] = y
+			 * by draw lines between each (x1, y1) to (x2, y2).
+			 */
+			dx = num_steps;
+			for (i = 0; i < num_input_levels - 1; i++) {
+				x1 = i * dx;
+				x2 = x1 + dx;
+				y1 = pwm_backlight->levels[i];
+				y2 = pwm_backlight->levels[i + 1];
+				dy = (s64)y2 - y1;
+
+				for (x = x1; x < x2; x++) {
+					table[x] =
+						y1 + div_s64(dy * (x - x1), dx);
+				}
+			}
+			/* Fill in the last point, since no line starts here. */
+			table[x2] = y2;
+
+			/*
+			 * As we use interpolation lets remove current
+			 * brightness levels table and replace for the
+			 * new interpolated table.
+			 */
+			devm_kfree(dev, pwm_backlight->levels);
+			pwm_backlight->levels = table;
+		}
+
 		pwm_backlight->backlight.brightness_max = length - 1;
 
 		for (i = 0; i < length; i++)
@@ -148,7 +222,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
 		pwm_backlight->backlight.brightness_max = pwm_backlight->scale;
 	}
 
-	pwm_backlight->enable_gpio = gpiod_get_optional(dev, "enable-gpios", 0);
+	pwm_backlight->enable_gpio = gpiod_get_optional(dev, "enable", GPIOD_ASIS);
 
 	return 0;
 }
@@ -160,10 +234,8 @@ static int backlight_pwm_of_probe(struct device *dev)
 	struct pwm_device *pwm;
 
 	pwm = of_pwm_request(dev->of_node, NULL);
-	if (IS_ERR(pwm)) {
-		dev_err(dev, "Cannot find PWM device\n");
-		return PTR_ERR(pwm);
-	}
+	if (IS_ERR(pwm))
+		return dev_errp_probe(dev, pwm, "Cannot find PWM device\n");
 
 	pwm_backlight = xzalloc(sizeof(*pwm_backlight));
 	pwm_backlight->pwm = pwm;
@@ -173,10 +245,12 @@ static int backlight_pwm_of_probe(struct device *dev)
 	if (ret)
 		return ret;
 
-	pwm_backlight->power = regulator_get(dev, "power");
+	pwm_backlight->power = regulator_get_optional(dev, "power");
 	if (IS_ERR(pwm_backlight->power)) {
-		dev_err(dev, "Cannot find regulator\n");
-		return PTR_ERR(pwm_backlight->power);
+		if (PTR_ERR(pwm_backlight->power) != -ENODEV)
+			return dev_errp_probe(dev, pwm_backlight->power,
+					      "power supply\n");
+		pwm_backlight->power = NULL;
 	}
 
 	pwm_backlight->backlight.slew_time_ms = 100;

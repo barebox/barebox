@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
+// SPDX-Comment: Origin-URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/socfpga/clk-gate-s10.c?id=2050b57ecda040010ec797fb07713889372c5041
 /*
  * Copyright (C) 2017, Intel Corporation
  */
@@ -13,7 +14,7 @@
 #include "clk.h"
 
 #define SOCFPGA_CS_PDBG_CLK	"cs_pdbg_clk"
-#define to_socfpga_gate_clk(p) container_of(p, struct socfpga_gate_clk, hw)
+#define to_socfpga_gate_clk(p) container_of(p, struct socfpga_gate_clk, hw.hw)
 
 #define SOCFPGA_EMAC0_CLK		"emac0_clk"
 #define SOCFPGA_EMAC1_CLK		"emac1_clk"
@@ -113,7 +114,7 @@ static int socfpga_agilex_gate_get_parent(struct clk_hw *hwclk)
 	return parent;
 }
 
-static struct clk_ops agilex_gateclk_ops = {
+static const struct clk_ops agilex_gateclk_ops = {
 	.recalc_rate = socfpga_gate_clk_recalc_rate,
 	.get_parent = socfpga_agilex_gate_get_parent,
 };
@@ -123,20 +124,17 @@ static const struct clk_ops dbgclk_ops = {
 	.get_parent = socfpga_gate_get_parent,
 };
 
-struct clk_hw *agilex_register_gate(const struct stratix10_gate_clock *clks, void __iomem *regbase)
+struct clk_hw *agilex5_register_gate(const struct agilex5_gate_clock *clks, void __iomem *regbase)
 {
 	struct clk_hw *hw_clk;
 	struct socfpga_gate_clk *socfpga_clk;
 	struct clk_init_data init;
-	const char *parent_name = clks->parent_name;
 	int ret;
 
 	socfpga_clk = xzalloc(sizeof(*socfpga_clk));
-	socfpga_clk->reg = regbase + clks->gate_reg;
-	socfpga_clk->bit_idx = clks->gate_idx;
 
-	agilex_gateclk_ops.enable = clk_gate_ops.enable;
-	agilex_gateclk_ops.disable = clk_gate_ops.disable;
+	socfpga_clk->hw.reg = regbase + clks->gate_reg;
+	socfpga_clk->hw.bit_idx = clks->gate_idx;
 
 	socfpga_clk->fixed_div = clks->fixed_div;
 
@@ -158,21 +156,17 @@ struct clk_hw *agilex_register_gate(const struct stratix10_gate_clock *clks, voi
 		init.ops = &dbgclk_ops;
 	else
 		init.ops = &agilex_gateclk_ops;
+
 	init.name = clks->name;
 	init.flags = clks->flags;
-
 	init.num_parents = clks->num_parents;
-	init.parent_names = parent_name ? &parent_name : NULL;
-	if (init.parent_names == NULL)
-		init.parent_data = clks->parent_data;
-	socfpga_clk->hw.init = &init;
+	init.parent_names = clks->parent_names;
+	socfpga_clk->hw.hw.init = &init;
+	hw_clk = &socfpga_clk->hw.hw;
 
-	hw_clk = &socfpga_clk->hw;
-
-	ret = clk_hw_register(NULL, &socfpga_clk->hw);
-	if (ret) {
-		kfree(socfpga_clk);
+	ret = clk_hw_register(NULL, &socfpga_clk->hw.hw);
+	if (ret)
 		return ERR_PTR(ret);
-	}
+
 	return hw_clk;
 }

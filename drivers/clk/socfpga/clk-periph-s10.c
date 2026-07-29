@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
+// SPDX-Comment: Origin-URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/socfpga/clk-periph-s10.c?id=2050b57ecda040010ec797fb07713889372c5041
 /*
  * Copyright (C) 2017, Intel Corporation
  */
@@ -15,7 +16,7 @@
 #define CLK_MGR_FREE_MASK		0x7
 #define SWCTRLBTCLKSEN_SHIFT		8
 
-#define to_periph_clk(p) container_of(p, struct socfpga_periph_clk, hw)
+#define to_periph_clk(p) container_of(p, struct socfpga_periph_clk, hw.hw)
 
 static unsigned long clk_peri_c_clk_recalc_rate(struct clk_hw *hwclk,
 					     unsigned long parent_rate)
@@ -23,7 +24,7 @@ static unsigned long clk_peri_c_clk_recalc_rate(struct clk_hw *hwclk,
 	struct socfpga_periph_clk *socfpgaclk = to_periph_clk(hwclk);
 	u32 val;
 
-	val = readl(socfpgaclk->reg);
+	val = readl(socfpgaclk->hw.reg);
 	val &= GENMASK(SWCTRLBTCLKSEN_SHIFT - 1, 0);
 	parent_rate /= val;
 
@@ -39,8 +40,8 @@ static unsigned long clk_peri_cnt_clk_recalc_rate(struct clk_hw *hwclk,
 	if (socfpgaclk->fixed_div) {
 		div = socfpgaclk->fixed_div;
 	} else {
-		if (socfpgaclk->reg)
-			div = ((readl(socfpgaclk->reg) & 0x7ff) + 1);
+		if (socfpgaclk->hw.reg)
+			div = ((readl(socfpgaclk->hw.reg) & 0x7ff) + 1);
 	}
 
 	return parent_rate / div;
@@ -61,8 +62,8 @@ static int clk_periclk_get_parent(struct clk_hw *hwclk)
 			return parent;
 	}
 
-	if (socfpgaclk->reg) {
-		clk_src = readl(socfpgaclk->reg);
+	if (socfpgaclk->hw.reg) {
+		clk_src = readl(socfpgaclk->hw.reg);
 		parent = (clk_src >> CLK_MGR_FREE_SHIFT) &
 			  CLK_MGR_FREE_MASK;
 	}
@@ -90,7 +91,8 @@ struct clk_hw *s10_register_periph(const struct stratix10_perip_c_clock *clks,
 	int ret;
 
 	periph_clk = xzalloc(sizeof(*periph_clk));
-	periph_clk->reg = reg + clks->offset;
+
+	periph_clk->hw.reg = reg + clks->offset;
 
 	init.name = name;
 	init.ops = &peri_c_clk_ops;
@@ -101,8 +103,8 @@ struct clk_hw *s10_register_periph(const struct stratix10_perip_c_clock *clks,
 	if (init.parent_names == NULL)
 		init.parent_data = clks->parent_data;
 
-	periph_clk->hw.init = &init;
-	hw_clk = &periph_clk->hw;
+	periph_clk->hw.hw.init = &init;
+	hw_clk = &periph_clk->hw.hw;
 
 	ret = clk_hw_register(NULL, hw_clk);
 	if (ret) {
@@ -125,9 +127,9 @@ struct clk_hw *s10_register_cnt_periph(const struct stratix10_perip_cnt_clock *c
 	periph_clk = xzalloc(sizeof(*periph_clk));
 
 	if (clks->offset)
-		periph_clk->reg = regbase + clks->offset;
+		periph_clk->hw.reg = regbase + clks->offset;
 	else
-		periph_clk->reg = NULL;
+		periph_clk->hw.reg = NULL;
 
 	if (clks->bypass_reg)
 		periph_clk->bypass_reg = regbase + clks->bypass_reg;
@@ -145,13 +147,51 @@ struct clk_hw *s10_register_cnt_periph(const struct stratix10_perip_cnt_clock *c
 	if (init.parent_names == NULL)
 		init.parent_data = clks->parent_data;
 
-	periph_clk->hw.init = &init;
-	hw_clk = &periph_clk->hw;
+	periph_clk->hw.hw.init = &init;
+	hw_clk = &periph_clk->hw.hw;
 
 	ret = clk_hw_register(NULL, hw_clk);
 	if (ret) {
 		kfree(periph_clk);
 		return ERR_PTR(ret);
 	}
+	return hw_clk;
+}
+
+struct clk_hw *agilex5_register_cnt_periph(const struct agilex5_perip_cnt_clock *clks,
+					   void __iomem *regbase)
+{
+	struct clk_hw *hw_clk;
+	struct socfpga_periph_clk *periph_clk;
+	struct clk_init_data init;
+	const char *name = clks->name;
+	int ret;
+
+	periph_clk = xzalloc(sizeof(*periph_clk));
+
+	if (clks->offset)
+		periph_clk->hw.reg = regbase + clks->offset;
+	else
+		periph_clk->hw.reg = NULL;
+
+	if (clks->bypass_reg)
+		periph_clk->bypass_reg = regbase + clks->bypass_reg;
+	else
+		periph_clk->bypass_reg = NULL;
+	periph_clk->bypass_shift = clks->bypass_shift;
+	periph_clk->fixed_div = clks->fixed_divider;
+
+	init.name = name;
+	init.ops = &peri_cnt_clk_ops;
+	init.flags = clks->flags;
+	init.num_parents = clks->num_parents;
+	init.parent_names = clks->parent_names;
+	periph_clk->hw.hw.init = &init;
+	hw_clk = &periph_clk->hw.hw;
+
+	ret = clk_hw_register(NULL, hw_clk);
+	if (ret)
+		return ERR_PTR(ret);
+
 	return hw_clk;
 }

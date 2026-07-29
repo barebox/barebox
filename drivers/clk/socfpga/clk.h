@@ -49,14 +49,11 @@ static inline struct clk *socfpga_a10_gate_init(struct device_node *node)
 #endif
 
 struct socfpga_pll {
-	struct clk_hw hw;
-	void __iomem *reg;
-	u32 bit_idx;
-	const char *parent_names[SOCFPGA_MAX_PARENTS];
+	struct clk_gate	hw;
 };
 
 struct socfpga_gate_clk {
-	struct clk_hw hw;
+	struct clk_gate hw;
 	char *parent_name;
 	u32 fixed_div;
 	void __iomem *div_reg;
@@ -64,16 +61,11 @@ struct socfpga_gate_clk {
 	struct regmap *sys_mgr_base_addr;
 	u32 width;	/* only valid if div_reg != 0 */
 	u32 shift;	/* only valid if div_reg != 0 */
-	u32 bit_idx;
-	void __iomem *reg;
 	u32 bypass_shift;      /* only valid if bypass_reg != 0 */
-	u32 clk_phase[2];
-	const char *parent_names[SOCFPGA_MAX_PARENTS];
 };
 
 struct socfpga_periph_clk {
-	struct clk_hw hw;
-	void __iomem *reg;
+	struct clk_gate hw;
 	char *parent_name;
 	u32 fixed_div;
 	void __iomem *div_reg;
@@ -81,7 +73,6 @@ struct socfpga_periph_clk {
 	u32 width;      /* only valid if div_reg != 0 */
 	u32 shift;      /* only valid if div_reg != 0 */
 	u32 bypass_shift;      /* only valid if bypass_reg != 0 */
-	const char *parent_names[SOCFPGA_MAX_PARENTS];
 };
 
 #endif /* SOCFPGA_CLK_H */

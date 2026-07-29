@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
+// SPDX-Comment: Origin-URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/socfpga/clk-pll-s10.c?id=2050b57ecda040010ec797fb07713889372c5041
 /*
  * Copyright (C) 2017, Intel Corporation
  */
@@ -31,7 +32,7 @@
 
 #define SOCFPGA_BOOT_CLK		"boot_clk"
 
-#define to_socfpga_clk(p) container_of(p, struct socfpga_pll, hw)
+#define to_socfpga_clk(p) container_of(p, struct socfpga_pll, hw.hw)
 
 static unsigned long agilex_clk_pll_recalc_rate(struct clk_hw *hwclk,
 						unsigned long parent_rate)
@@ -41,13 +42,13 @@ static unsigned long agilex_clk_pll_recalc_rate(struct clk_hw *hwclk,
 	unsigned long long vco_freq;
 
 	/* read VCO1 reg for numerator and denominator */
-	reg = readl(socfpgaclk->reg);
+	reg = readl(socfpgaclk->hw.reg);
 	arefdiv = (reg & SOCFPGA_PLL_AREFDIV_MASK) >> SOCFPGA_PLL_REFDIV_SHIFT;
 
 	vco_freq = (unsigned long long)parent_rate / arefdiv;
 
 	/* Read mdiv and fdiv from the fdbck register */
-	reg = readl(socfpgaclk->reg + 0x24);
+	reg = readl(socfpgaclk->hw.reg + 0x24);
 	mdiv = reg & SOCFPGA_AGILEX_PLL_MDIV_MASK;
 
 	vco_freq = (unsigned long long)vco_freq * mdiv;
@@ -60,7 +61,7 @@ static unsigned long clk_boot_clk_recalc_rate(struct clk_hw *hwclk,
 	struct socfpga_pll *socfpgaclk = to_socfpga_clk(hwclk);
 	u32 div;
 
-	div = ((readl(socfpgaclk->reg) &
+	div = ((readl(socfpgaclk->hw.reg) &
 		SWCTRLBTCLKSEL_MASK) >>
 		SWCTRLBTCLKSEL_SHIFT);
 	div += 1;
@@ -72,7 +73,7 @@ static int clk_pll_get_parent(struct clk_hw *hwclk)
 	struct socfpga_pll *socfpgaclk = to_socfpga_clk(hwclk);
 	u32 pll_src;
 
-	pll_src = readl(socfpgaclk->reg);
+	pll_src = readl(socfpgaclk->hw.reg);
 	return (pll_src >> CLK_MGR_PLL_CLK_SRC_SHIFT) &
 		CLK_MGR_PLL_CLK_SRC_MASK;
 }
@@ -82,25 +83,38 @@ static int clk_boot_get_parent(struct clk_hw *hwclk)
 	struct socfpga_pll *socfpgaclk = to_socfpga_clk(hwclk);
 	u32 pll_src;
 
-	pll_src = readl(socfpgaclk->reg);
+	pll_src = readl(socfpgaclk->hw.reg);
 	return (pll_src >> SWCTRLBTCLKSEL_SHIFT) &
 		SWCTRLBTCLKSEL_MASK;
 }
 
-/* TODO need to fix, Agilex5 SM requires change */
-static const struct clk_ops agilex5_clk_pll_ops = {
-	/* TODO This may require a custom Agilex5 implementation */
+static int clk_pll_enable(struct clk_hw *hwclk)
+{
+	struct socfpga_pll *socfpgaclk = to_socfpga_clk(hwclk);
+	u32 reg;
+
+	/* Bring PLL out of reset */
+	reg = readl(socfpgaclk->hw.reg);
+	reg |= SOCFPGA_PLL_RESET_MASK;
+	writel(reg, socfpgaclk->hw.reg);
+
+	return 0;
+}
+
+static const struct clk_ops agilex_clk_pll_ops = {
 	.recalc_rate = agilex_clk_pll_recalc_rate,
 	.get_parent = clk_pll_get_parent,
+	.enable = clk_pll_enable,
 };
 
 static const struct clk_ops clk_boot_ops = {
 	.recalc_rate = clk_boot_clk_recalc_rate,
 	.get_parent = clk_boot_get_parent,
+	.enable = clk_pll_enable,
 };
 
-struct clk_hw *agilex5_register_pll(const struct stratix10_pll_clock *clks,
-				void __iomem *reg)
+struct clk_hw *agilex5_register_pll(const struct agilex5_pll_clock *clks,
+				    void __iomem *reg)
 {
 	struct clk_hw *hw_clk;
 	struct socfpga_pll *pll_clk;
@@ -109,29 +123,26 @@ struct clk_hw *agilex5_register_pll(const struct stratix10_pll_clock *clks,
 	int ret;
 
 	pll_clk = xzalloc(sizeof(*pll_clk));
-	pll_clk->reg = reg + clks->offset;
+
+	pll_clk->hw.reg = reg + clks->offset;
 
 	if (streq(name, SOCFPGA_BOOT_CLK))
 		init.ops = &clk_boot_ops;
 	else
-		init.ops = &agilex5_clk_pll_ops;
+		init.ops = &agilex_clk_pll_ops;
 
 	init.name = name;
 	init.flags = clks->flags;
-
 	init.num_parents = clks->num_parents;
-	init.parent_names = NULL;
-	init.parent_data = clks->parent_data;
-	pll_clk->hw.init = &init;
-
-	pll_clk->bit_idx = SOCFPGA_PLL_POWER;
-	hw_clk = &pll_clk->hw;
+	init.parent_names = clks->parent_names;
+	pll_clk->hw.hw.init = &init;
+	pll_clk->hw.bit_idx = SOCFPGA_PLL_POWER;
+	hw_clk = &pll_clk->hw.hw;
 
 	ret = clk_hw_register(NULL, hw_clk);
-	if (ret) {
-		kfree(pll_clk);
+	if (ret)
 		return ERR_PTR(ret);
-	}
+
 	return hw_clk;
 }
 

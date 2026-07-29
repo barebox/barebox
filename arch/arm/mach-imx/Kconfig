@@ -628,6 +628,15 @@ config MACH_CONGATEC_QMX8P_SOM
 	select IMX8M_DRAM
 	select I2C_IMX_EARLY
 
+config MACH_GIRA_NCP
+	bool "Gira NCP"
+	select ARCH_IMX8MM
+	select ARM_SMCCC
+	select FIRMWARE_IMX_DDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MM_ATF
+	select MCI_IMX_ESDHC_PBL
+	select IMX8M_DRAM
+
 config MACH_HGS_GS05
 	bool "Hexagon Geosystems GS05 Board"
 	select ARCH_IMX8MM

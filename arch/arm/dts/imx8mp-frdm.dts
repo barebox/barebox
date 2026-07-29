@@ -11,3 +11,5 @@
 / {
 	barebox,deep-probe;
 };
+
+/delete-node/ &{/memory@40000000};

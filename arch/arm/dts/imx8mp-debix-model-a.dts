@@ -2,7 +2,7 @@
 
 /dts-v1/;
 
-#include "imx8mp-debix-model-a-upstream.dts"
+#include <arm64/freescale/imx8mp-debix-model-a.dts>
 #include "imx8mp.dtsi"
 
 / {

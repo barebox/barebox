@@ -2935,14 +2935,14 @@ static const char *mci_boot_names[] = {
 	"user",
 };
 
-static struct device_node *mci_get_partition_node(struct device_node *hwnode,
-						  unsigned int type,
-						  unsigned int index)
+static struct device_node *of_mci_get_partition(struct device_node *hwnode,
+						unsigned int type,
+						unsigned int index)
 {
 	struct device_node *np;
 	char partnodename[sizeof("bootx-partitions")];
 
-	if (index > 8)
+	if (!hwnode || index > 8)
 		return NULL;
 
 	switch (type) {
@@ -3004,7 +3004,7 @@ static int mci_register_partition(struct mci_part *part)
 	}
 	dev_info(&mci->dev, "registered %s\n", part->blk.cdev.name);
 
-	np = mci_get_partition_node(host->hw_dev->of_node, part->area_type, part->idx);
+	np = of_mci_get_partition(host->hw_dev->of_node, part->area_type, part->idx);
 	if (np) {
 		of_parse_partitions(&part->blk.cdev, np);
 

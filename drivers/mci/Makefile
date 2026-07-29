@@ -2,6 +2,7 @@
 obj-$(CONFIG_MCI)		+= mci-core.o
 pbl-$(CONFIG_MCI)		+= mci-pbl.o
 obj-$(CONFIG_MCI_MMC_RPMB)	+= rpmb.o
+obj-$(CONFIG_MCI_SDHCI_PCI)	+= sdhci-pci.o
 obj-$(CONFIG_MCI_AM654)		+= am654-sdhci.o
 obj-$(CONFIG_MCI_ARASAN)	+= arasan-sdhci.o
 obj-$(CONFIG_MCI_ATMEL)		+= atmel_mci.o atmel_mci_common.o

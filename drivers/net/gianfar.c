@@ -655,11 +655,17 @@ static int gfar_probe(struct device *dev)
 	size = ((TX_BUF_CNT * sizeof(struct txbd8)) +
 			(RX_BUF_CNT * sizeof(struct rxbd8)));
 	if (IS_ENABLED(CONFIG_PPC)) {
-		base = xmemalign(BUF_ALIGN, size);
+		base = memalign(BUF_ALIGN, size);
 	} else {
 		base = dma_alloc_coherent(DMA_DEVICE_BROKEN, size, DMA_ADDRESS_BROKEN);
 		dma_set_mask(dev, DMA_BIT_MASK(32));
 	}
+
+	if (!base) {
+		ret = -ENOMEM;
+		goto free_received_packets;
+	}
+
 	priv->txbd = (struct txbd8 __iomem *)base;
 	base += TX_BUF_CNT * sizeof(struct txbd8);
 	priv->rxbd = (struct rxbd8 __iomem *)base;

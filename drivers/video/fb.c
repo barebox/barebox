@@ -238,9 +238,22 @@ static int fb_set_modename(struct param_d *param, void *priv)
 	return 0;
 }
 
+static ssize_t fb_cdev_write(struct cdev *cdev, const void *buf, size_t count,
+			     loff_t offset, ulong flags)
+{
+	struct fb_info *info = cdev->priv;
+	ssize_t ret;
+
+	ret = mem_write(cdev, buf, count, offset, flags);
+	if (ret > 0 && info->screen_base_shadow)
+		memcpy(info->screen_base_shadow + offset, buf, ret);
+
+	return ret;
+}
+
 static struct cdev_operations fb_ops = {
 	.read	= mem_read,
-	.write	= mem_write,
+	.write	= fb_cdev_write,
 	.memmap	= generic_memmap_rw,
 	.ioctl	= fb_ioctl,
 	.close  = fb_close,

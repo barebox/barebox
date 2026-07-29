@@ -9,6 +9,7 @@ obj-y				+= clock.o
 pbl-$(CONFIG_PBL_CLOCKSOURCE)	+= clock.o
 obj-y				+= console_common.o
 obj-$(CONFIG_OFDEVICE)		+= deep-probe.o
+obj-$(CONFIG_EXTLINUX)		+= extlinux.o
 obj-y				+= startup.o
 obj-y				+= misc.o
 obj-pbl-y			+= memsize.o

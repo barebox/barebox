@@ -20,6 +20,7 @@
 #include <io.h>
 #include <io-64-nonatomic-lo-hi.h>
 #include <linux/list.h>
+#include <linux/usb/usb.h>
 
 #define MAX_EP_CTX_NUM		31
 #define XHCI_ALIGNMENT		64

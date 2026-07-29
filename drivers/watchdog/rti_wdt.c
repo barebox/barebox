@@ -107,18 +107,18 @@ static int rti_wdt_settimeout(struct watchdog *wdt, unsigned int timeout)
 }
 
 static unsigned int rti_wdt_get_timeleft_s(struct watchdog *wdt)
-{                       
+{
 	struct rti_wdt_priv *priv = container_of(wdt, struct rti_wdt_priv, wdt);
 	u32 timer_counter;
 	u32 val;
-                
+
 	/* if timeout has occurred then return 0 */
 	val = readl(priv->regs + RTIWDSTATUS);
 	if (val & DWDST)
 		return 0;
 
 	timer_counter = readl(priv->regs + RTIDWDCNTR);
-                        
+
 	return timer_counter / priv->clk_hz;
 }
 

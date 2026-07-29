@@ -81,12 +81,12 @@ config MFD_PCA9450
 	help
 	  Select this to support communication with the PCA9450 PMIC.
 
-config MFD_RN568PMIC
+config MFD_RN5T618
 	depends on I2C
 	select REGMAP_I2C
-	bool "Ricoh RN5T568 MFD driver"
+	bool "Ricoh RN5T567/618 MFD driver"
 	help
-	  Select this to support communication with the Ricoh RN5T568 PMIC.
+	  Select this to support communication with the Ricoh RN5T567/618 PMIC.
 
 config MFD_SUPERIO
 	bool

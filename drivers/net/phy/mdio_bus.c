@@ -18,6 +18,7 @@
 #include <gpio.h>
 #include <clock.h>
 #include <net.h>
+#include <sched.h>
 #include <errno.h>
 #include <linux/mdio.h>
 #include <linux/phy.h>
@@ -29,6 +30,18 @@
 #define DEFAULT_GPIO_RESET_DEASSERT     1000      /* us */
 
 DEFINE_DEV_CLASS(mii_class, "mii");
+
+/*
+ * A PHY whose reset GPIO has been deasserted but which has not been probed
+ * yet. The reset settle time elapses in the background; the PHY is only
+ * registered (and its ID read over MDIO) once the bus is first accessed.
+ */
+struct mdio_deferred_phy {
+	struct list_head list;
+	struct device_node *child;
+	u32 addr;
+	u64 settle_deadline;	/* get_time_ns() value, 0 if no reset GPIO */
+};
 
 static struct phy_device *mdio_device_create(struct mii_bus *bus, int addr)
 {
@@ -195,9 +208,14 @@ static bool of_mdiobus_child_is_phy(struct device_node *np)
  * Reset the PHY, based on DT info
  *
  * If np is a phy node, and the phy node contains a reset-gpios property
- * then reset the phy.
+ * then reset the phy. The (usually short) assert pulse is done inline,
+ * but the potentially long deassert settle time is not waited for here:
+ * instead the time at which the PHY becomes usable is returned so the
+ * caller can let it elapse in the background and only wait for the
+ * remainder right before the first access. Returns 0 if there is no
+ * reset GPIO.
  */
-static void of_mdiobus_reset_phy(struct mii_bus *bus, struct device_node *np)
+static u64 of_mdiobus_reset_phy(struct mii_bus *bus, struct device_node *np)
 {
 	enum of_gpio_flags of_flags;
 	u32 reset_deassert_delay;
@@ -208,7 +226,7 @@ static void of_mdiobus_reset_phy(struct mii_bus *bus, struct device_node *np)
 
 	gpio = of_get_named_gpio_flags(np, "reset-gpios", 0, &of_flags);
 	if (!gpio_is_valid(gpio))
-		return;
+		return 0;
 
 	flags = GPIOF_OUT_INIT_INACTIVE;
 	if (of_flags & OF_GPIO_ACTIVE_LOW)
@@ -218,7 +236,7 @@ static void of_mdiobus_reset_phy(struct mii_bus *bus, struct device_node *np)
 	if (ret) {
 		dev_err(&bus->dev, "failed to request reset gpio for: %s\n",
 			np->name);
-		return;
+		return 0;
 	}
 
 	reset_assert_delay = DEFAULT_GPIO_RESET_ASSERT;
@@ -232,7 +250,8 @@ static void of_mdiobus_reset_phy(struct mii_bus *bus, struct device_node *np)
 	gpio_set_active(gpio, 1);
 	udelay(reset_assert_delay);
 	gpio_set_active(gpio, 0);
-	udelay(reset_deassert_delay);
+
+	return get_time_ns() + (u64)reset_deassert_delay * 1000;
 }
 
 /**
@@ -267,14 +286,69 @@ static int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 		of_pinctrl_select_state_default(child);
 
 		if (of_mdiobus_child_is_phy(child)) {
-			of_mdiobus_reset_phy(mdio, child);
-			of_mdiobus_register_phy(mdio, child, addr);
+			struct mdio_deferred_phy *dp;
+			u64 settle_deadline;
+
+			/* Assert/deassert the reset now. */
+			settle_deadline = of_mdiobus_reset_phy(mdio, child);
+			if (!settle_deadline) {
+				/* No reset GPIO, nothing to wait for. */
+				of_mdiobus_register_phy(mdio, child, addr);
+				continue;
+			}
+
+			/*
+			 * Defer the settle wait and the actual registration
+			 * (which reads the PHY ID over MDIO) until the bus is
+			 * first accessed. This keeps the reset settle time off
+			 * the boot path.
+			 */
+			dp = xzalloc(sizeof(*dp));
+			dp->child = child;
+			dp->addr = addr;
+			dp->settle_deadline = settle_deadline;
+			list_add_tail(&dp->list, &mdio->deferred_phys);
 		} else {
 			of_mdiobus_register_device(mdio, child, addr);
 		}
 	}
 
 	return 0;
+}
+
+/**
+ * mdiobus_flush_deferred - register PHYs whose reset was deferred
+ * @bus: target mii_bus
+ *
+ * PHYs described in the device tree have their reset asserted during
+ * of_mdiobus_register(), but their registration (and the MDIO ID read that
+ * comes with it) is deferred until the bus is actually used. Wait for any
+ * outstanding reset settle time to elapse and register them now.
+ */
+void mdiobus_flush_deferred(struct mii_bus *bus)
+{
+	struct mdio_deferred_phy *dp, *tmp;
+
+	list_for_each_entry_safe(dp, tmp, &bus->deferred_phys, list) {
+		/* remove before registering so a reentrant flush is a no-op */
+		list_del(&dp->list);
+
+		/* usually already elapsed, so this does not wait at all */
+		while (!is_timeout_non_interruptible(dp->settle_deadline, 0))
+			resched();
+
+		of_mdiobus_register_phy(bus, dp->child, dp->addr);
+		free(dp);
+	}
+}
+EXPORT_SYMBOL(mdiobus_flush_deferred);
+
+void mdiobus_flush_deferred_all(void)
+{
+	struct mii_bus *mii;
+
+	for_each_mii_bus(mii)
+		mdiobus_flush_deferred(mii);
 }
 
 /**
@@ -294,6 +368,8 @@ int mdiobus_register(struct mii_bus *bus)
 			NULL == bus->read ||
 			NULL == bus->write)
 		return -EINVAL;
+
+	INIT_LIST_HEAD(&bus->deferred_phys);
 
 	bus->dev.priv = bus;
 	bus->dev.id = DEVICE_ID_DYNAMIC;
@@ -349,6 +425,9 @@ EXPORT_SYMBOL(mdiobus_unregister);
 struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr)
 {
 	struct phy_device *phydev;
+
+	/* deferred PHYs must be registered before we can find them */
+	mdiobus_flush_deferred(bus);
 
 	if (bus->phy_map[addr])
 		return bus->phy_map[addr];

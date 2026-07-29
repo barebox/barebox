@@ -323,10 +323,10 @@ static unsigned long parse_gpio_direction(struct device_node *np)
 	if (of_property_read_bool(np, "input-enable")) {
 		param = PIN_CONFIG_INPUT_ENABLE;
 	} else if (of_property_read_bool(np, "output-low")) {
-		param = PIN_CONFIG_OUTPUT;
+		param = PIN_CONFIG_LEVEL;
 		argument = 0;
 	} else if (of_property_read_bool(np, "output-high")) {
-		param = PIN_CONFIG_OUTPUT;
+		param = PIN_CONFIG_LEVEL;
 		argument = 1;
 	}
 
@@ -3188,7 +3188,7 @@ static void rockchip_set_gpio(struct rockchip_pin_bank *bank,
 	enum pin_config_param param = pinconf_to_config_param(config);
 	struct gpio_chip *gpio;
 
-	if (param != PIN_CONFIG_OUTPUT && param != PIN_CONFIG_INPUT_ENABLE)
+	if (param != PIN_CONFIG_LEVEL && param != PIN_CONFIG_INPUT_ENABLE)
 		return;
 
 	gpio = of_gpio_get_chip_by_alias(bank->name);
@@ -3202,7 +3202,7 @@ static void rockchip_set_gpio(struct rockchip_pin_bank *bank,
 	}
 
 	switch (param) {
-	case PIN_CONFIG_OUTPUT:
+	case PIN_CONFIG_LEVEL:
 		gpio->ops->direction_output(gpio, pin_num,
 					    pinconf_to_config_argument(config));
 		break;

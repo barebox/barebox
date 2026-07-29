@@ -3595,6 +3595,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 					 16 * sizeof(*hw->tx_base), &hw->tx_base_phys);
 	hw->rx_base = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					 16 * sizeof(*hw->rx_base), &hw->rx_base_phys);
+	if (!hw->tx_base || !hw->rx_base)
+		return -ENOMEM;
 
 	edev = &hw->edev;
 

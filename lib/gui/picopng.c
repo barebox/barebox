@@ -103,13 +103,24 @@ static void png_alloc_free(void *addr)
 	free(addr);
 }
 
-void png_alloc_free_all()
+void png_alloc_free_all(void)
 {
 	while (png_alloc_tail) {
 		void *addr = png_alloc_tail->addr;
 		png_alloc_remove_node(png_alloc_tail);
 		free(addr);
 	}
+}
+
+void *png_alloc_detach(void *addr)
+{
+	png_alloc_node_t *node = png_alloc_find_node(addr);
+
+	if (!node)
+		return NULL;
+
+	png_alloc_remove_node(node);
+	return addr;
 }
 
 /*************************************************************************************************/

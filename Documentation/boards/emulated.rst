@@ -23,15 +23,15 @@ VirtIO over PCI.
 Running in QEMU
 ---------------
 
-Emulated targets can be started interactively with ``pytest --interactive``::
+Emulated targets can be started interactively with ``scripts/qemu_interactive.py``::
 
   # Run x86 VM runnig the EFI payload from efi_defconfig
-  pytest --lg-env test/x86/efi_defconfig.yaml --interactive
+  scripts/qemu_interactive.py test/x86/efi_defconfig.yaml
 
   # Identical to above, provided the CONFIG_NAME=efi_defconfig
-  pytest --interactive
+  scripts/qemu_interactive.py
 
-The test suite can be run by omitting the ``--interactive``.
+The test suite can be run with ``pytest`` instead.
 For more information, see the :ref:`labgrid` section in the
 :ref:`contributing` guide.
 
@@ -43,7 +43,7 @@ be used in combination with QEMU. With user-mode networking (SLIRP),
 guest-to-host UDP works via NAT out of the box,
 but unsolicited host-to-guest UDP requires an explicit port forward::
 
-  pytest --lg-env test/arm/multi_v8_defconfig.yaml --interactive \
+  scripts/qemu_interactive.py test/arm/multi_v8_defconfig.yaml    \
     --env nv/dev.netconsole.ip=10.0.2.2                          \
     --env nv/dev.netconsole.port=6666                            \
     --env init/netconsole="ifup -a1; netconsole.active=ioe"      \

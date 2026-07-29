@@ -134,9 +134,14 @@ static int wait_for_chhltd(struct dwc2 *dwc2, u8 hc, uint32_t *sub, u8 *tgl)
 
 	ret = dwc2_wait_bit_set(dwc2, HCINT(hc), HCINTMSK_CHHLTD, 10000);
 	if (ret) {
+		hcint = dwc2_readl(dwc2, HCINT(hc));
 		hcchar = dwc2_readl(dwc2, HCCHAR(hc));
 		dwc2_writel(dwc2, hcchar | HCCHAR_CHDIS, HCCHAR(hc));
-		dwc2_wait_bit_set(dwc2, HCINT(hc), HCINTMSK_CHHLTD, 10000);
+		if (dwc2_wait_bit_set(dwc2, HCINT(hc), HCINTMSK_CHHLTD, 10000))
+			dwc2_err(dwc2, "%s: channel abort timed out: HCINT=%08x HCCHAR=%08x\n",
+				 __func__, hcint, hcchar);
+		if (hcint & (HCINTMSK_NAK | HCINTMSK_FRMOVRUN))
+			return -EAGAIN;
 		return ret;
 	}
 
@@ -396,8 +401,8 @@ static int dwc2_submit_control_msg(struct usb_device *udev,
 		 * ClearFeature(ENDPOINT_HALT) request always results
 		 * in the data toggle being reinitialized to DATA0.
 		 */
-		int ep = le16_to_cpu(setup->index) & 0xf;
-		dwc2_endpoint_reset(dwc2, usb_pipein(pipe), devnum, ep);
+		int ep_addr = le16_to_cpu(setup->index);
+		dwc2_endpoint_reset(dwc2, ep_addr >> 7, devnum, ep_addr & 0xf);
 	}
 
 	udev->act_len = act_len;
@@ -435,7 +440,7 @@ static int dwc2_submit_bulk_msg(struct usb_device *udev, unsigned long pipe,
 					 buffer, len);
 	} while (ret == -EAGAIN && !is_timeout(start, timeout * MSECOND));
 	if (ret == -EAGAIN) {
-		dwc2_err(dwc2, "Timeout on bulk endpoint\n");
+		dwc2_dbg(dwc2, "Timeout on bulk endpoint\n");
 		ret = -ETIMEDOUT;
 	}
 

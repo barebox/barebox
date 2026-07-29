@@ -3,12 +3,12 @@
 
 #include <ramdisk.h>
 #include <block.h>
+#include <disks.h>
 #include <driver.h>
 #include <fs.h>
 #include <string.h>
 #include <xfuncs.h>
 #include <linux/align.h>
-#include <linux/log2.h>
 
 struct ramdisk {
 	struct block_device blk;
@@ -101,39 +101,55 @@ static struct cdev_operations ramdisk_ops = {
 
 struct ramdisk *ramdisk_init(int sector_size)
 {
+	struct device *dev;
 	struct ramdisk *ramdisk;
 	struct block_device *blk;
-	int ret;
+	int blockbits, ret;
+
 
 	ramdisk = xzalloc(sizeof(*ramdisk));
+	dev = &ramdisk->dev;
 
-	dev_set_name(&ramdisk->dev, "ramdisk");
-	ramdisk->dev.id = DEVICE_ID_DYNAMIC;
+	dev_set_name(dev, "ramdisk");
+	dev->id = DEVICE_ID_DYNAMIC;
 
-	ret = register_device(&ramdisk->dev);
+	ret = register_device(dev);
 	if (ret)
-		return NULL;
+		goto free_ramdisk;
+
+	blockbits = block_size_bits(dev, sector_size);
+	if (blockbits < 0)
+		goto unregister_device;
 
 	blk = &ramdisk->blk;
-	blk->dev = &ramdisk->dev;
+	blk->dev = dev;
 	blk->type = BLK_TYPE_VIRTUAL;
 
 	blk->cdev.size = 0;
-	blk->cdev.name = xstrdup(dev_name(&ramdisk->dev));
+	blk->cdev.name = xstrdup(dev_name(dev));
 	blk->cdev.dev = blk->dev;
 	blk->cdev.ops = &ramdisk_ops;
 	blk->cdev.priv = ramdisk;
 	blk->cdev.flags |= DEVFS_IS_BLOCK_DEV;
-	blk->blockbits = ilog2(sector_size);
+	blk->blockbits = blockbits;
 
 	ret = devfs_create(&blk->cdev);
 	if (ret)
-		return NULL;
+		goto free_cdev_name;
 
 	INIT_LIST_HEAD(&blk->buffered_blocks);
 	INIT_LIST_HEAD(&blk->idle_blocks);
 
 	return ramdisk;
+
+free_cdev_name:
+	free(blk->cdev.name);
+unregister_device:
+	unregister_device(dev);
+free_ramdisk:
+	free(ramdisk);
+
+	return NULL;
 }
 
 struct block_device *ramdisk_get_block_device(struct ramdisk *ramdisk)

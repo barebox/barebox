@@ -81,7 +81,8 @@ struct cdev;
 
 const char *file_type_to_string(enum filetype f);
 const char *file_type_to_short_string(enum filetype f);
-enum filetype file_detect_partition_table(const void *_buf, size_t bufsize);
+enum filetype file_detect_partition_table(const void *_buf, size_t bufsize,
+					  unsigned int sector_size);
 enum filetype file_detect_compression_type(const void *_buf, size_t bufsize);
 enum filetype file_detect_fs_type(const void *_buf, size_t bufsize);
 enum filetype file_detect_type(const void *_buf, size_t bufsize);

@@ -14,6 +14,7 @@
 
 #define _USE_IOCTL	1	/* 1: Use disk_ioctl fucntion */
 
+#include "disks.h"
 #include "integer.h"
 
 
@@ -42,6 +43,14 @@ DRESULT disk_write (FATFS *fatfs, const BYTE*, DWORD, BYTE);
 #endif
 DRESULT disk_ioctl (FATFS *fatfs, BYTE, void*);
 
+#if IN_PROPER
+unsigned int disk_sector_size(FATFS *fat);
+#else
+static inline unsigned int disk_sector_size(FATFS *fat)
+{
+	return SECTOR_SIZE;
+}
+#endif
 
 
 /* Disk Status Bits (DSTATUS) */

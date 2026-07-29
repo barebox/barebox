@@ -23,7 +23,15 @@ DWORD get_fattime(void)
 
 DRESULT disk_ioctl (FATFS *fat, BYTE command, void *buf)
 {
-	return 0;
+	switch (command) {
+	case GET_SECTOR_SIZE:
+		*(WORD *)buf = disk_sector_size(fat);
+		return RES_OK;
+	case CTRL_SYNC:
+		return RES_OK;
+	default:
+		return RES_PARERR;
+	}
 }
 
 WCHAR ff_convert(WCHAR src, UINT dir)

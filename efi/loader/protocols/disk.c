@@ -22,6 +22,7 @@
 #include <malloc.h>
 #include <bootsource.h>
 #include <block.h>
+#include <disks.h>
 #include <fs.h>
 
 const efi_guid_t efi_system_partition_guid = PARTITION_SYSTEM_GUID;
@@ -194,6 +195,7 @@ static efi_status_t efi_disk_add_cdev(efi_handle_t parent,
 	struct efi_disk_obj *diskobj;
 	struct efi_object *handle;
 	const efi_guid_t *esp_guid = NULL;
+	unsigned int blockbits = cdev_blockbits(cdev);
 	int score = 0;
 	efi_status_t ret;
 
@@ -251,9 +253,9 @@ static efi_status_t efi_disk_add_cdev(efi_handle_t parent,
 	diskobj->media.removable_media = removable;
 	diskobj->media.media_present = true;
 	diskobj->media.read_only = cdev->flags & DEVFS_PARTITION_READONLY;
-	diskobj->media.block_size = 512;
-	diskobj->media.io_align = 512;
-	diskobj->media.last_block = cdev->size / diskobj->media.block_size - 1;
+	diskobj->media.block_size = diskobj->media.io_align = 1u << blockbits;
+	diskobj->media.last_block = (cdev->size >> blockbits) - 1;
+	diskobj->blockbits = blockbits;
 
 	diskobj->ops = block_io_disk_template;
 	diskobj->ops.media = &diskobj->media;
@@ -380,7 +382,6 @@ static efi_status_t efi_disk_register(void *data)
 			return ret;
 		}
 
-		disk->blockbits = bdev->blockbits;
 		ndisks++;
 
 		/* Partitions show up as block devices in EFI */

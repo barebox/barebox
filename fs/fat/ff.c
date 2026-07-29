@@ -292,7 +292,7 @@ int sync (	/* 0: successful, -EIO: failed */
 		if (fs->fs_type == FS_FAT32 && fs->fsi_flag) {
 			fs->winsect = 0;
 			/* Create FSInfo structure */
-			memset(fs->win, 0, 512);
+			memset(fs->win, 0, SS(fs));
 			ST_WORD(fs->win+BS_55AA, 0xAA55);
 			ST_DWORD(fs->win+FSI_LeadSig, 0x41615252);
 			ST_DWORD(fs->win+FSI_StrucSig, 0x61417272);

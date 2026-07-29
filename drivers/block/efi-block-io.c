@@ -34,7 +34,7 @@ static int efi_bio_read(struct block_device *blk, void *buffer, sector_t block,
 	efi_status_t efiret;
 
 	efiret = priv->protocol->read(priv->protocol, priv->media_id,
-			block, num_blocks * 512, buffer);
+			block, num_blocks << blk->blockbits, buffer);
 
 	if (EFI_ERROR(efiret))
 		return -efi_errno(efiret);
@@ -49,7 +49,7 @@ static int efi_bio_write(struct block_device *blk,
 	efi_status_t efiret;
 
 	efiret = priv->protocol->write(priv->protocol, priv->media_id,
-			block, num_blocks * 512, (void *)buffer);
+			block, num_blocks << blk->blockbits, (void *)buffer);
 	if (EFI_ERROR(efiret))
 		return -efi_errno(efiret);
 
@@ -115,7 +115,7 @@ static bool is_bio_usbdev(struct efi_device *efidev)
 static int efi_bio_probe(struct efi_device *efidev)
 {
 	bool is_usbdev;
-	int instance;
+	int blockbits, instance;
 	struct efi_bio_priv *priv;
 	struct efi_block_io_media *media;
 	struct device *dev = &efidev->dev;
@@ -124,13 +124,22 @@ static int efi_bio_probe(struct efi_device *efidev)
 
 	BS->handle_protocol(efidev->handle, &efi_block_io_protocol_guid,
 			(void **)&priv->protocol);
-	if (!priv->protocol)
+	if (!priv->protocol) {
+		free(priv);
 		return -ENODEV;
+	}
+
+
+	media = priv->protocol->media;
+	blockbits = block_size_bits(dev, media->block_size);
+	if (blockbits < 0) {
+		free(priv);
+		return blockbits;
+	}
 
 	dev->priv = priv;
 	devinfo_add(dev, efi_bio_print_info);
 
-	media = priv->protocol->media;
 	if (__is_defined(DEBUG))
 		efi_bio_print_info(dev);
 	priv->dev = &efidev->dev;
@@ -147,7 +156,7 @@ static int efi_bio_probe(struct efi_device *efidev)
 		priv->blk.cdev.name = xasprintf("disk%d", instance);
 	}
 
-	priv->blk.blockbits = ffs(media->block_size) - 1;
+	priv->blk.blockbits = blockbits;
 	priv->blk.num_blocks = media->last_block + 1;
 	priv->blk.ops = &efi_bio_ops;
 	priv->blk.dev = &efidev->dev;

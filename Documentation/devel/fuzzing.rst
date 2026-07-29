@@ -25,6 +25,7 @@ options to crash barebox on detection of memory safety issues::
   fuzz-dtb
   fuzz-fdt-compatible
   fuzz-partitions
+  fuzz-partitions-4k
 
 All fuzzers generated are symlinks to the same barebox executable. barebox
 will detect that it was invoked via symlink and switch to fuzzing mode.

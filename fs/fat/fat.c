@@ -25,6 +25,8 @@
 #include <linux/ctype.h>
 #include <xfuncs.h>
 #include <fcntl.h>
+#include <block.h>
+#include <linux/sizes.h>
 #include "ff.h"
 #include "integer.h"
 #include "diskio.h"
@@ -36,33 +38,44 @@ struct fat_priv {
 
 /* ---------------------------------------------------------------*/
 
+unsigned int disk_sector_size(FATFS *fat)
+{
+	struct fat_priv *priv = fat->userdata;
+
+	return cdev_blocksize(priv->cdev);
+}
+
 DRESULT disk_read(FATFS *fat, BYTE *buf, DWORD sector, BYTE count)
 {
 	struct fat_priv *priv = fat->userdata;
+	unsigned int sector_size = disk_sector_size(fat);
+	size_t len = count * sector_size;
 	int ret;
 
 	debug("%s: sector: %ld count: %d\n", __func__, sector, count);
 
-	ret = cdev_read(priv->cdev, buf, count << 9, (loff_t)sector * 512, 0);
-	if (ret != count << 9)
-		return ret;
+	ret = cdev_read(priv->cdev, buf, len, (loff_t)sector * sector_size, 0);
+	if (ret != len)
+		return RES_ERROR;
 
-	return 0;
+	return RES_OK;
 }
 
 DRESULT disk_write(FATFS *fat, const BYTE *buf, DWORD sector, BYTE count)
 {
 	struct fat_priv *priv = fat->userdata;
+	unsigned int sector_size = disk_sector_size(fat);
+	size_t len = count * sector_size;
 	int ret;
 
 	debug("%s: buf: %p sector: %ld count: %d\n",
 			__func__, buf, sector, count);
 
-	ret = cdev_write(priv->cdev, buf, count << 9, (loff_t)sector * 512, 0);
-	if (ret != count << 9)
-		return ret;
+	ret = cdev_write(priv->cdev, buf, len, (loff_t)sector * sector_size, 0);
+	if (ret != len)
+		return RES_ERROR;
 
-	return 0;
+	return RES_OK;
 }
 
 /* ---------------------------------------------------------------*/
@@ -342,14 +355,27 @@ static int fat_stat(struct device *dev, const char *filename, struct stat *s)
 static int fat_probe(struct device *dev)
 {
 	struct fs_device *fsdev = dev_to_fs_device(dev);
-	struct fat_priv *priv = xzalloc(sizeof(struct fat_priv));
+	struct fat_priv *priv;
+	unsigned int blocksize;
 	int ret;
-
-	dev->priv = priv;
 
 	ret = fsdev_open_cdev(fsdev);
 	if (ret)
-		goto err_open;
+		return ret;
+
+	/*
+	 * No need to cleanup fsdev_open_cdev(), only way to invoke this
+	 * probe function is via mount() and that will already take care
+	 * of calling fs_remove for us.
+	 */
+	blocksize = cdev_blocksize(fsdev->cdev);
+	if (blocksize > SZ_4K) {
+		dev_err(dev, "FAT on %u-byte block devices is unsupported\n",
+			blocksize);
+		return -ENOSYS;
+	}
+
+	priv = dev->priv = xzalloc(sizeof(struct fat_priv));
 
 	priv->cdev = fsdev->cdev;
 	fsdev->sb.s_casefold = true;
@@ -362,7 +388,6 @@ static int fat_probe(struct device *dev)
 	return 0;
 
 err_mount:
-err_open:
 	free(priv);
 
 	return ret;

@@ -8,7 +8,7 @@ int __nvme_submit_sync_cmd(struct nvme_ctrl *ctrl,
 			   struct nvme_command *cmd,
 			   union nvme_result *result,
 			   void *buffer, unsigned bufflen,
-			   unsigned timeout, int qid)
+			   ktime_t timeout, int qid)
 {
 	return ctrl->ops->submit_sync_cmd(ctrl, cmd, result, buffer, bufflen,
 					  timeout, qid);
@@ -293,7 +293,7 @@ static void nvme_setup_rw(struct nvme_ns *ns, struct nvme_command *cmnd,
 			  sector_t block, blkcnt_t num_block)
 {
 	cmnd->rw.nsid = cpu_to_le32(ns->head->ns_id);
-	cmnd->rw.slba = cpu_to_le64(nvme_block_nr(ns, block));
+	cmnd->rw.slba = cpu_to_le64(block);
 	cmnd->rw.length = cpu_to_le16(num_block - 1);
 	cmnd->rw.control = 0;
 	cmnd->rw.dsmgmt = 0;
@@ -328,7 +328,7 @@ static int nvme_submit_sync_rw(struct nvme_ns *ns, struct nvme_command *cmnd,
 				break;
 
 			num_blocks -= chunk;
-			buffer += chunk;
+			buffer += chunk << ns->lba_shift;
 			block += chunk;
 		}
 

@@ -22,6 +22,7 @@
 #include <magicvar.h>
 
 static LIST_HEAD(partition_parser_list);
+static uint64_t first_partition_offset = SZ_8M;
 
 /**
  * Register one partition on the given block device
@@ -35,10 +36,10 @@ static int register_one_partition(struct block_device *blk, struct partition *pa
 	char *partition_name;
 	int ret;
 	struct cdev *cdev;
-	struct devfs_partition partinfo = {
-		.offset = part->first_sec * SECTOR_SIZE,
-		.size = part->size * SECTOR_SIZE,
-	};
+	struct devfs_partition partinfo = {};
+
+	partinfo.offset = part->first_sec * BLOCKSIZE(blk);
+	partinfo.size = part->size * BLOCKSIZE(blk);
 
 	partition_name = xasprintf("%s.%d", blk->cdev.name, part->num);
 
@@ -91,24 +92,26 @@ static int remove_one_partition(struct block_device *blk, int no)
 	return ret;
 }
 
-static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
+static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf,
+								 unsigned int blocksize)
 {
 	enum filetype type;
 	struct partition_parser *parser;
 
 	/* first new partition table as EFI GPT */
-	type = file_detect_partition_table(buf, SECTOR_SIZE * 2);
+	type = file_detect_partition_table(buf, blocksize * 2, blocksize);
 
 	list_for_each_entry(parser, &partition_parser_list, list) {
 		if (parser->type == type)
 			return parser;
 	}
 
-	/* if not parser found search for old one
-	 * so if EFI GPT not enable take it as MBR
-	 * useful for compatibility
+	/* If no parser found search for old one, so if EFI GPT i
+	 * not enabled, probe for MBR. useful for compatibility.
+	 * 512 is hardcoded here as the MBR detection is not
+	 * block-size dependent.
 	 */
-	type = file_detect_partition_table(buf, SECTOR_SIZE);
+	type = file_detect_partition_table(buf, 512, 512);
 	if (type == filetype_fat && !is_fat_boot_sector(buf))
 		type = filetype_mbr;
 
@@ -149,9 +152,11 @@ struct partition_desc *partition_table_read(struct block_device *blk)
 	struct partition_parser *parser;
 	struct partition_desc *pdesc = NULL;
 	uint8_t *buf;
+	unsigned int blocksize;
 	int ret;
 
-	buf = malloc(2 * SECTOR_SIZE);
+	blocksize = BLOCKSIZE(blk);
+	buf = malloc(2 * blocksize);
 
 	ret = block_read(blk, buf, 0, 2);
 	if (ret != 0) {
@@ -159,7 +164,7 @@ struct partition_desc *partition_table_read(struct block_device *blk)
 		goto err;
 	}
 
-	parser = partition_parser_get_by_filetype(buf);
+	parser = partition_parser_get_by_filetype(buf, blocksize);
 	if (!parser)
 		goto err;
 
@@ -186,7 +191,7 @@ bool partition_is_free(struct partition_desc *pdesc, uint64_t start, uint64_t si
 {
 	struct partition *p;
 
-	if (start < PARTITION_ALIGN_SECTORS)
+	if (start < partition_align_lba(pdesc->blk))
 		return false;
 
 	if (start + size >= pdesc->blk->num_blocks)
@@ -203,12 +208,12 @@ bool partition_is_free(struct partition_desc *pdesc, uint64_t start, uint64_t si
 int partition_find_free_space(struct partition_desc *pdesc, uint64_t sectors, uint64_t *start)
 {
 	struct partition *p;
-	uint64_t min_sec = PARTITION_ALIGN_SECTORS;
+	uint64_t align = partition_align_lba(pdesc->blk);
+	uint64_t min_sec;
 
-	if (min_sec < partition_first_usable_lba())
-		min_sec = partition_first_usable_lba();
+	min_sec = max(align, partition_first_usable_lba(pdesc->blk));
 
-	min_sec = ALIGN(min_sec, PARTITION_ALIGN_SECTORS);
+	min_sec = ALIGN(min_sec, align);
 
 	if (partition_is_free(pdesc, min_sec, sectors)) {
 		*start = min_sec;
@@ -216,7 +221,7 @@ int partition_find_free_space(struct partition_desc *pdesc, uint64_t sectors, ui
 	}
 
 	list_for_each_entry(p, &pdesc->partitions, list) {
-		uint64_t s = ALIGN(p->first_sec + p->size, PARTITION_ALIGN_SECTORS);
+		uint64_t s = ALIGN(p->first_sec + p->size, align);
 
 		if (partition_is_free(pdesc, s, sectors)) {
 			*start = s;
@@ -245,9 +250,9 @@ int partition_create(struct partition_desc *pdesc, const char *name,
 		return -EINVAL;
 	}
 
-	if (lba_start < partition_first_usable_lba()) {
+	if (lba_start < partition_first_usable_lba(pdesc->blk)) {
 		pr_err("partition starts before first usable lba: %llu < %llu\n",
-		       lba_start, partition_first_usable_lba());
+		       lba_start, partition_first_usable_lba(pdesc->blk));
 		return -EINVAL;
 	}
 
@@ -370,19 +375,25 @@ static int fuzz_partition_table_parser(struct block_device *ramdisk)
 	struct partition *part;
 	int rc = 0;
 	struct partition_parser *parser;
-	u8 buf[2 * SECTOR_SIZE] __aligned(8);
+	u8 *buf;
+	unsigned int blocksize;
+
+	blocksize = BLOCKSIZE(ramdisk);
+	buf = malloc(2 * blocksize);
+	if (!buf)
+		return 0;
 
 	rc = block_read(ramdisk, buf, 0, 2);
 	if (rc != 0)
-		return 0;
+		goto out;
 
-	parser = partition_parser_get_by_filetype(buf);
+	parser = partition_parser_get_by_filetype(buf, blocksize);
 	if (!parser)
-		return 0;
+		goto out;
 
 	pdesc = parser->parse(buf, ramdisk);
 	if (!pdesc)
-		return 0;
+		goto out;
 
 	pdesc->parser = parser;
 
@@ -393,9 +404,12 @@ static int fuzz_partition_table_parser(struct block_device *ramdisk)
 
 	partition_table_free(pdesc);
 
+out:
+	free(buf);
 	return 0;
 }
-fuzz_test_ramdisk("partitions", fuzz_partition_table_parser);
+fuzz_test_ramdisk("partitions", fuzz_partition_table_parser, 512);
+fuzz_test_ramdisk("partitions-4k", fuzz_partition_table_parser, 4096);
 
 /**
  * cdev_unallocated_space - return unallocated space
@@ -424,21 +438,24 @@ loff_t cdev_unallocated_space(struct cdev *cdev)
 	return start;
 }
 
-static uint64_t first_usable_dma = SZ_8M / SECTOR_SIZE;
-
-uint64_t partition_first_usable_lba(void)
+sector_t partition_first_usable_lba(const struct block_device *blk)
 {
-	return first_usable_dma;
+	return blockdevice_round_nblocks(blk, first_partition_offset);
 }
 
-static int set_first_usable_lba(struct param_d *p, void *priv)
+sector_t partition_align_lba(const struct block_device *blk)
 {
-	if (first_usable_dma < 1) {
-		pr_err("Minimum is 1\n");
+	return blockdevice_round_nblocks(blk, PARTITION_ALIGN_SIZE);
+}
+
+static int set_first_partition_offset(struct param_d *p, void *priv)
+{
+	if (first_partition_offset < MIN_SECTOR_SIZE) {
+		pr_err("Minimum is 512 bytes\n");
 		return -EINVAL;
 	}
 
-	if (first_usable_dma % (SZ_1M / SECTOR_SIZE))
+	if (first_partition_offset % SZ_1M)
 		pr_warn("recommended to align to 1MiB\n");
 
 	return 0;
@@ -449,12 +466,12 @@ static int partitions_init(void)
 	struct param_d *p = NULL;
 
 	if (IS_ENABLED(CONFIG_GLOBALVAR))
-		p = dev_add_param_uint64(&global_device, "partitions.first_usable_lba",
-					 set_first_usable_lba, NULL,
-					 &first_usable_dma, "%llu", NULL);
+		p = dev_add_param_uint64(&global_device, "partitions.first_partition_offset",
+					 set_first_partition_offset, NULL,
+					 &first_partition_offset, "%llu", NULL);
 
 	return PTR_ERR_OR_ZERO(p);
 }
 core_initcall(partitions_init);
 
-BAREBOX_MAGICVAR(global.partitions.first_usable_lba, "first usable LBA used for creating partitions");
+BAREBOX_MAGICVAR(global.partitions.first_partition_offset, "byte offset used by free-space searches for new partitions");

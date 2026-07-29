@@ -10,3 +10,10 @@ The new variable is a byte offset used by free-space searches for new
 partitions, for example ``parted mkpart_size``. The default is
 ``8388608`` bytes (8 MiB). To keep an old configuration, multiply the
 old ``first_usable_lba`` value by 512.
+
+ARCH=arm64
+----------
+
+Use of ``ARCH=arm`` for 64-bit ARM builds is deprecated and now emits
+a warning. Users should change build scripts to use ``ARCH=arm64``
+instead when targetting ARMv8.

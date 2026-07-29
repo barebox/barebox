@@ -120,7 +120,7 @@ ARCH_DTBO	:= $(patsubst %.dtso,%.dtbo,$(ARCH_DTSO))
 src	:= src/$(ARCH)
 obj	:= src/$(ARCH)
 
-include scripts/Kbuild.include
+include $(srctree)/scripts/Kbuild.include
 
 cmd_files := $(wildcard $(foreach f,$(ARCH_DTB) $(ARCH_DTBO),$(dir $(f)).$(notdir $(f)).cmd))
 

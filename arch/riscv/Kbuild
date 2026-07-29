@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+obj-y += boards/
+obj-y += cpu/
+obj-y += lib/
+obj-y += boot/
+
+obj-$(CONFIG_OFTREE) += dts/

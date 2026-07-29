@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <linux/container_of.h>
+#include <array_size.h>
 
 #define __ALIGN_MASK(x, mask)	(((x) + (mask)) & ~(mask))
 #define ALIGN(x, a)		__ALIGN_MASK(x, (typeof(x))(a) - 1)
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)
 
 #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))

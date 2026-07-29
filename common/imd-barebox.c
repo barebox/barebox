@@ -4,6 +4,7 @@
 #include <image-metadata.h>
 #include <generated/compile.h>
 #include <generated/utsrelease.h>
+#include <generated/utsversion.h>
 
 /*
  * Mark a imd entry as used so that the linker cannot

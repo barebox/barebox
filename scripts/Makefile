@@ -58,7 +58,7 @@ omap4_usbboot-target-userldlibs += -lpthread `$(CROSS_PKG_CONFIG) --libs libusb-
 rk-usb-loader-target-userccflags += `$(CROSS_PKG_CONFIG) --cflags libusb-1.0`
 rk-usb-loader-target-userldlibs += `$(CROSS_PKG_CONFIG) --libs libusb-1.0`
 
-userccflags += -I $(srctree)/$(src)/include -isystem $(srctree)/scripts/include
+userccflags += -I $(src)/include -isystem $(srctree)/scripts/include
 
 subdir-y			+= mod
 subdir-y			+= imx

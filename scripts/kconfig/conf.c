@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <errno.h>
 
+#include "internal.h"
 #include "lkc.h"
 
 static void conf(struct menu *menu);
@@ -35,6 +36,7 @@ enum input_mode {
 	olddefconfig,
 	yes2modconfig,
 	mod2yesconfig,
+	mod2noconfig,
 };
 static enum input_mode input_mode = oldaskconfig;
 static int input_mode_opt;
@@ -112,67 +114,68 @@ static void set_randconfig_seed(void)
 	srand(seed);
 }
 
-static bool randomize_choice_values(struct symbol *csym)
+/**
+ * randomize_choice_values - randomize choice block
+ *
+ * @choice: menu entry for the choice
+ */
+static void randomize_choice_values(struct menu *choice)
 {
-	struct property *prop;
-	struct symbol *sym;
-	struct expr *e;
-	int cnt, def;
+	struct menu *menu;
+	int x;
+	int cnt = 0;
 
 	/*
-	 * If choice is mod then we may have more items selected
-	 * and if no then no-one.
-	 * In both cases stop.
+	 * First, count the number of symbols to randomize. If sym_has_value()
+	 * is true, it was specified by KCONFIG_ALLCONFIG. It needs to be
+	 * respected.
 	 */
-	if (csym->curr.tri != yes)
-		return false;
+	menu_for_each_sub_entry(menu, choice) {
+		struct symbol *sym = menu->sym;
 
-	prop = sym_get_choice_prop(csym);
-
-	/* count entries in choice block */
-	cnt = 0;
-	expr_list_for_each_sym(prop->expr, e, sym)
-		cnt++;
-
-	/*
-	 * find a random value and set it to yes,
-	 * set the rest to no so we have only one set
-	 */
-	def = rand() % cnt;
-
-	cnt = 0;
-	expr_list_for_each_sym(prop->expr, e, sym) {
-		if (def == cnt++) {
-			sym->def[S_DEF_USER].tri = yes;
-			csym->def[S_DEF_USER].val = sym;
-		} else {
-			sym->def[S_DEF_USER].tri = no;
-		}
-		sym->flags |= SYMBOL_DEF_USER;
-		/* clear VALID to get value calculated */
-		sym->flags &= ~SYMBOL_VALID;
+		if (sym && !sym_has_value(sym))
+			cnt++;
 	}
-	csym->flags |= SYMBOL_DEF_USER;
-	/* clear VALID to get value calculated */
-	csym->flags &= ~SYMBOL_VALID;
 
-	return true;
+	while (cnt > 0) {
+		x = rand() % cnt;
+
+		menu_for_each_sub_entry(menu, choice) {
+			struct symbol *sym = menu->sym;
+
+			if (sym && !sym_has_value(sym))
+				x--;
+
+			if (x < 0) {
+				sym->def[S_DEF_USER].tri = yes;
+				sym->flags |= SYMBOL_DEF_USER;
+				/*
+				 * Move the selected item to the _tail_ because
+				 * this needs to have a lower priority than the
+				 * user input from KCONFIG_ALLCONFIG.
+				 */
+				list_move_tail(&sym->choice_link,
+					       &choice->choice_members);
+
+				break;
+			}
+		}
+		cnt--;
+	}
 }
 
 enum conf_def_mode {
 	def_default,
 	def_yes,
 	def_mod,
-	def_y2m,
-	def_m2y,
 	def_no,
 	def_random
 };
 
-static bool conf_set_all_new_symbols(enum conf_def_mode mode)
+static void conf_set_all_new_symbols(enum conf_def_mode mode)
 {
-	struct symbol *sym, *csym;
-	int i, cnt;
+	struct menu *menu;
+	int cnt;
 	/*
 	 * can't go as the default in switch-case below, otherwise gcc whines
 	 * about -Wmaybe-uninitialized
@@ -180,7 +183,6 @@ static bool conf_set_all_new_symbols(enum conf_def_mode mode)
 	int pby = 50; /* probability of bool     = y */
 	int pty = 33; /* probability of tristate = y */
 	int ptm = 33; /* probability of tristate = m */
-	bool has_changed = false;
 
 	if (mode == def_random) {
 		int n, p[3];
@@ -227,89 +229,58 @@ static bool conf_set_all_new_symbols(enum conf_def_mode mode)
 		}
 	}
 
-	for_all_symbols(i, sym) {
-		if (sym_has_value(sym) || sym->flags & SYMBOL_VALID)
+	menu_for_each_entry(menu) {
+		struct symbol *sym = menu->sym;
+		tristate val;
+
+		if (!sym || !menu->prompt || sym_has_value(sym) ||
+		    (sym->type != S_BOOLEAN && sym->type != S_TRISTATE) ||
+		    sym_is_choice_value(sym))
 			continue;
-		switch (sym_get_type(sym)) {
-		case S_BOOLEAN:
-		case S_TRISTATE:
-			has_changed = true;
-			switch (mode) {
-			case def_yes:
-				sym->def[S_DEF_USER].tri = yes;
-				break;
-			case def_mod:
-				sym->def[S_DEF_USER].tri = mod;
-				break;
-			case def_no:
-				sym->def[S_DEF_USER].tri = no;
-				break;
-			case def_random:
-				sym->def[S_DEF_USER].tri = no;
-				cnt = rand() % 100;
-				if (sym->type == S_TRISTATE) {
-					if (cnt < pty)
-						sym->def[S_DEF_USER].tri = yes;
-					else if (cnt < pty + ptm)
-						sym->def[S_DEF_USER].tri = mod;
-				} else if (cnt < pby)
-					sym->def[S_DEF_USER].tri = yes;
-				break;
-			default:
-				continue;
-			}
-			if (!(sym_is_choice(sym) && mode == def_random))
-				sym->flags |= SYMBOL_DEF_USER;
-			break;
-		default:
-			break;
+
+		if (sym_is_choice(sym)) {
+			if (mode == def_random)
+				randomize_choice_values(menu);
+			continue;
 		}
 
+		switch (mode) {
+		case def_yes:
+			val = yes;
+			break;
+		case def_mod:
+			val = mod;
+			break;
+		case def_no:
+			val = no;
+			break;
+		case def_random:
+			val = no;
+			cnt = rand() % 100;
+			if (sym->type == S_TRISTATE) {
+				if (cnt < pty)
+					val = yes;
+				else if (cnt < pty + ptm)
+					val = mod;
+			} else if (cnt < pby) {
+				val = yes;
+			}
+			break;
+		default:
+			continue;
+		}
+		sym->def[S_DEF_USER].tri = val;
+		sym->flags |= SYMBOL_DEF_USER;
 	}
 
 	sym_clear_all_valid();
-
-	/*
-	 * We have different type of choice blocks.
-	 * If curr.tri equals to mod then we can select several
-	 * choice symbols in one block.
-	 * In this case we do nothing.
-	 * If curr.tri equals yes then only one symbol can be
-	 * selected in a choice block and we set it to yes,
-	 * and the rest to no.
-	 */
-	if (mode != def_random) {
-		for_all_symbols(i, csym) {
-			if ((sym_is_choice(csym) && !sym_has_value(csym)) ||
-			    sym_is_choice_value(csym))
-				csym->flags |= SYMBOL_NEED_SET_CHOICE_VALUES;
-		}
-	}
-
-	for_all_symbols(i, csym) {
-		if (sym_has_value(csym) || !sym_is_choice(csym))
-			continue;
-
-		sym_calc_value(csym);
-		if (mode == def_random)
-			has_changed |= randomize_choice_values(csym);
-		else {
-			set_all_choice_values(csym);
-			has_changed = true;
-		}
-	}
-
-	return has_changed;
 }
 
-static void conf_rewrite_mod_or_yes(enum conf_def_mode mode)
+static void conf_rewrite_tristates(tristate old_val, tristate new_val)
 {
 	struct symbol *sym;
-	int i;
-	tristate old_val = (mode == def_y2m) ? yes : mod;
-	tristate new_val = (mode == def_y2m) ? mod : yes;
 
-	for_all_symbols(i, sym) {
+	for_all_symbols(sym) {
 		if (sym_get_type(sym) == S_TRISTATE &&
 		    sym->def[S_DEF_USER].tri == old_val)
 			sym->def[S_DEF_USER].tri = new_val;
@@ -449,42 +420,17 @@ help:
 	}
 }
 
-static int conf_choice(struct menu *menu)
+static void conf_choice(struct menu *menu)
 {
-	struct symbol *sym, *def_sym;
+	struct symbol *def_sym;
 	struct menu *child;
-	bool is_new;
-
-	sym = menu->sym;
-	is_new = !sym_has_value(sym);
-	if (sym_is_changeable(sym)) {
-		conf_sym(menu);
-		sym_calc_value(sym);
-		switch (sym_get_tristate_value(sym)) {
-		case no:
-			return 1;
-		case mod:
-			return 0;
-		case yes:
-			break;
-		}
-	} else {
-		switch (sym_get_tristate_value(sym)) {
-		case no:
-			return 1;
-		case mod:
-			printf("%*s%s\n", indent - 1, "", menu_get_prompt(menu));
-			return 0;
-		case yes:
-			break;
-		}
-	}
+	bool is_new = false;
 
 	while (1) {
 		int cnt, def;
 
 		printf("%*s%s\n", indent - 1, "", menu_get_prompt(menu));
-		def_sym = sym_get_choice_value(sym);
+		def_sym = sym_calc_choice(menu);
 		cnt = def = 0;
 		line[0] = 0;
 		for (child = menu->list; child; child = child->next) {
@@ -500,11 +446,12 @@ static int conf_choice(struct menu *menu)
 				printf("%*c", indent, '>');
 			} else
 				printf("%*c", indent, ' ');
-			printf(" %d. %s", cnt, menu_get_prompt(child));
-			if (child->sym->name)
-				printf(" (%s)", child->sym->name);
-			if (!sym_has_value(child->sym))
+			printf(" %d. %s (%s)", cnt, menu_get_prompt(child),
+			       child->sym->name);
+			if (!sym_has_value(child->sym)) {
+				is_new = true;
 				printf(" (NEW)");
+			}
 			printf("\n");
 		}
 		printf("%*schoice", indent - 1, "");
@@ -554,13 +501,8 @@ static int conf_choice(struct menu *menu)
 			print_help(child);
 			continue;
 		}
-		sym_set_choice_value(sym, child->sym);
-		for (child = child->list; child; child = child->next) {
-			indent += 2;
-			conf(child);
-			indent -= 2;
-		}
-		return 1;
+		choice_set_value(menu, child->sym);
+		return;
 	}
 }
 
@@ -606,9 +548,7 @@ static void conf(struct menu *menu)
 
 	if (sym_is_choice(sym)) {
 		conf_choice(menu);
-		if (sym->curr.tri != mod)
-			return;
-		goto conf_childs;
+		return;
 	}
 
 	switch (sym->type) {
@@ -640,25 +580,11 @@ static void check_conf(struct menu *menu)
 		return;
 
 	sym = menu->sym;
-	if (sym && !sym_has_value(sym) &&
-	    (sym_is_changeable(sym) ||
-	     (sym_is_choice(sym) && sym_get_tristate_value(sym) == yes))) {
-
+	if (sym && !sym_has_value(sym) && sym_is_changeable(sym)) {
 		switch (input_mode) {
 		case listnewconfig:
-			if (sym->name) {
-				const char *str;
-
-				if (sym->type == S_STRING) {
-					str = sym_get_string_value(sym);
-					str = sym_escape_string_value(str);
-					printf("%s%s=%s\n", CONFIG_, sym->name, str);
-					free((void *)str);
-				} else {
-					str = sym_get_string_value(sym);
-					printf("%s%s=%s\n", CONFIG_, sym->name, str);
-				}
-			}
+			if (sym->name)
+				print_symbol_for_listconfig(sym);
 			break;
 		case helpnewconfig:
 			printf("-----\n");
@@ -668,7 +594,7 @@ static void check_conf(struct menu *menu)
 		default:
 			if (!conf_cnt++)
 				printf("*\n* Restart config...\n*\n");
-			rootEntry = menu_get_parent_menu(menu);
+			rootEntry = menu_get_menu_or_parent_menu(menu);
 			conf(rootEntry);
 			break;
 		}
@@ -678,7 +604,7 @@ static void check_conf(struct menu *menu)
 		check_conf(child);
 }
 
-static struct option long_opts[] = {
+static const struct option long_opts[] = {
 	{"help",          no_argument,       NULL,            'h'},
 	{"silent",        no_argument,       NULL,            's'},
 	{"oldaskconfig",  no_argument,       &input_mode_opt, oldaskconfig},
@@ -696,12 +622,13 @@ static struct option long_opts[] = {
 	{"olddefconfig",  no_argument,       &input_mode_opt, olddefconfig},
 	{"yes2modconfig", no_argument,       &input_mode_opt, yes2modconfig},
 	{"mod2yesconfig", no_argument,       &input_mode_opt, mod2yesconfig},
+	{"mod2noconfig",  no_argument,       &input_mode_opt, mod2noconfig},
 	{NULL, 0, NULL, 0}
 };
 
 static void conf_usage(const char *progname)
 {
-	printf("Usage: %s [options] <kconfig-file>\n", progname);
+	printf("Usage: %s [options] kconfig_file\n", progname);
 	printf("\n");
 	printf("Generic options:\n");
 	printf("  -h, --help              Print this message and exit.\n");
@@ -724,7 +651,11 @@ static void conf_usage(const char *progname)
 	printf("  --randconfig            New config with random answer to all options\n");
 	printf("  --yes2modconfig         Change answers from yes to mod if possible\n");
 	printf("  --mod2yesconfig         Change answers from mod to yes if possible\n");
+	printf("  --mod2noconfig          Change answers from mod to no if possible\n");
 	printf("  (If none of the above is given, --oldaskconfig is the default)\n");
+	printf("\n");
+	printf("Arguments:\n");
+	printf("  kconfig_file            Top-level Kconfig file.\n");
 }
 
 int main(int ac, char **av)
@@ -799,6 +730,7 @@ int main(int ac, char **av)
 	case olddefconfig:
 	case yes2modconfig:
 	case mod2yesconfig:
+	case mod2noconfig:
 		conf_read(NULL);
 		break;
 	case allnoconfig:
@@ -838,6 +770,9 @@ int main(int ac, char **av)
 		break;
 	}
 
+	if (conf_errors())
+		exit(1);
+
 	if (sync_kconfig) {
 		name = getenv("KCONFIG_NOSILENTUPDATE");
 		if (name && *name) {
@@ -864,8 +799,7 @@ int main(int ac, char **av)
 		conf_set_all_new_symbols(def_default);
 		break;
 	case randconfig:
-		/* Really nothing to do in this loop */
-		while (conf_set_all_new_symbols(def_random)) ;
+		conf_set_all_new_symbols(def_random);
 		break;
 	case defconfig:
 		conf_set_all_new_symbols(def_default);
@@ -873,10 +807,13 @@ int main(int ac, char **av)
 	case savedefconfig:
 		break;
 	case yes2modconfig:
-		conf_rewrite_mod_or_yes(def_y2m);
+		conf_rewrite_tristates(yes, mod);
 		break;
 	case mod2yesconfig:
-		conf_rewrite_mod_or_yes(def_m2y);
+		conf_rewrite_tristates(mod, yes);
+		break;
+	case mod2noconfig:
+		conf_rewrite_tristates(mod, no);
 		break;
 	case oldaskconfig:
 		rootEntry = &rootmenu;
@@ -897,6 +834,9 @@ int main(int ac, char **av)
 	default:
 		break;
 	}
+
+	if (sym_dep_errors())
+		exit(1);
 
 	if (input_mode == savedefconfig) {
 		if (conf_write_defconfig(defconfig_file)) {

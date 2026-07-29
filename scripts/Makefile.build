@@ -1,11 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0
 # ==========================================================================
 # Building
 # ==========================================================================
 
-src := $(obj)
+src := $(srcroot)/$(obj)
 
-PHONY := __build
-__build:
+PHONY := $(obj)/
+$(obj)/:
 
 # Init all relevant variables used in kbuild files so
 # 1) they have correct type
@@ -15,17 +16,13 @@ obj-m :=
 lib-y :=
 lib-m :=
 pbl-y :=
+lwl-y :=
 policy-y :=
-always :=
 always-y :=
 always-m :=
 targets :=
 subdir-y :=
 subdir-m :=
-EXTRA_AFLAGS   :=
-EXTRA_CFLAGS   :=
-EXTRA_CPPFLAGS :=
-EXTRA_LDFLAGS  :=
 asflags-y  :=
 ccflags-y  :=
 cppflags-y :=
@@ -35,31 +32,78 @@ subdir-asflags-y :=
 subdir-ccflags-y :=
 
 # Read auto.conf if it exists, otherwise ignore
--include include/config/auto.conf
+-include $(objtree)/include/config/auto.conf
 
-include scripts/Kbuild.include
-include scripts/Makefile.compiler
+include $(srctree)/scripts/Kbuild.include
+include $(srctree)/scripts/Makefile.compiler
+include $(kbuild-file)
+include $(srctree)/scripts/Makefile.lib
 
-# The filename Kbuild has precedence over Makefile
-kbuild-dir := $(if $(filter /%,$(src)),$(src),$(srctree)/$(src))
-include $(if $(wildcard $(kbuild-dir)/Kbuild), $(kbuild-dir)/Kbuild, $(kbuild-dir)/Makefile)
+# flags that take effect in current and sub directories
+KBUILD_AFLAGS += $(subdir-asflags-y)
+KBUILD_CFLAGS += $(subdir-ccflags-y)
 
-include scripts/Makefile.lib
+# barebox PBL handling
+# ===========================================================================
 
-# Do not include host rules unless needed
-ifneq ($(hostprogs),)
-include scripts/Makefile.host
+# lowlevel is present in the PBL if enabled
+# otherwise in barebox
+ifeq ($(CONFIG_PBL_IMAGE), y)
+pbl-y		+= $(lwl-y)
+else
+obj-y		+= $(lwl-y)
 endif
 
-# Do not include userprogs rules unless needed.
-userprogs := $(sort $(userprogs))
-ifneq ($(userprogs),)
-include scripts/Makefile.userprogs
+dtb- 		+= $(patsubst %.dtb.o,%.dtb,$(filter %.dtb.o,$(pbl-)  $(lwl-)))
+dtb-y		+= $(patsubst %.dtb.o,%.dtb,$(filter %.dtb.o,$(pbl-y) $(lwl-y)))
+
+obj-y		+= $(obj-pbl-y)
+pbl-y		+= $(obj-pbl-y)
+
+# pbl objects are suffixed with .pbl.o
+pbl-y		:= $(patsubst %.o,%.pbl.o,$(pbl-y))
+
+# add subdir from $(obj-y) too so we do not need to have the dir define in
+# both $(obj-y) and $(pbl-y)
+__pbl-y		:= $(filter-out $(pbl-y), $(filter %/, $(obj-y)))
+pbl-y		+= $(__pbl-y)
+
+ifdef need-pbl
+pbl-y		:= $(patsubst %/, %/built-in.pbl.a, $(pbl-y))
+else
+pbl-y		:= $(filter-out %/, $(pbl-y))
 endif
 
-ifneq ($(dtb-y)$(dtb-)$(filter %.dtb %.dtb.o %.dtbo.o,$(targets)),)
-include $(srctree)/scripts/Makefile.dtbs
+# Figure out what we need to build from the various variables
+# ===========================================================================
+
+# When an object is listed to be built compiled-in and modular,
+# only build the compiled-in version
+obj-m := $(filter-out $(obj-y),$(obj-m))
+
+# Libraries are always collected in one lib file.
+# Filter out objects already built-in
+lib-y := $(filter-out $(obj-y), $(sort $(lib-y) $(lib-m)))
+
+# Subdirectories we need to descend into
+subdir-ym := $(sort $(subdir-y) $(subdir-m) \
+			$(patsubst %/,%, $(filter %/, $(obj-y) $(obj-m) $(pbl-y))))
+
+# Handle objects in subdirs:
+# - If we encounter foo/ in $(obj-y), replace it by foo/built-in.a and
+#   foo/modules.order
+# - If we encounter foo/ in $(obj-m), replace it by foo/modules.order
+#
+# Generate modules.order to determine modorder. Unfortunately, we don't have
+# information about ordering between -y and -m subdirs. Just put -y's first.
+
+ifdef need-modorder
+obj-m := $(patsubst %/,%/modules.order, $(filter %/, $(obj-y)) $(obj-m))
+else
+obj-m := $(filter-out %/, $(obj-m))
 endif
+
+include $(srctree)/scripts/Makefile.env
 
 ifdef CONFIG_SECURITY_POLICY
 ifneq ($(policy-y)$(policy-)$(filter %.sconfig %.sconfig.tmp %.sconfig.c %.sconfig.o,$(targets)),)
@@ -67,46 +111,102 @@ include $(srctree)/scripts/Makefile.policy
 endif
 endif
 
+ifdef need-builtin
+obj-y		:= $(patsubst %/, %/built-in.a, $(obj-y))
+else
+obj-y		:= $(filter-out %/, $(obj-y))
+endif
+
+# Expand $(foo-objs) $(foo-y) etc. by replacing their individuals
+suffix-search = $(strip $(foreach s, $3, $($(1:%$(strip $2)=%$s))))
+# List composite targets that are constructed by combining other targets
+multi-search = $(sort $(foreach m, $1, $(if $(call suffix-search, $m, $2, $3 -), $m)))
+# List primitive targets that are compiled from source files
+real-search = $(foreach m, $1, $(if $(call suffix-search, $m, $2, $3 -), $(call suffix-search, $m, $2, $3), $m))
+
+# If $(foo-objs), $(foo-y), $(foo-m), or $(foo-) exists, foo.o is a composite object
+multi-obj-y := $(call multi-search, $(obj-y), .o, -objs -y)
+multi-pbl-y := $(call multi-search, $(pbl-y), .pbl.o, -objs -y)
+multi-obj-m := $(call multi-search, $(obj-m), .o, -objs -y -m)
+multi-obj-ym := $(multi-obj-y) $(multi-obj-m) \
+	        $(multi-pbl-y)
+
+# Replace multi-part objects by their individual parts,
+# including built-in.a from subdirectories
+real-obj-y := $(call real-search, $(obj-y), .o, -objs -y)
+real-pbl-y := $(call real-search, $(pbl-y), .pbl.o, -objs -y)
+real-obj-m := $(call real-search, $(obj-m), .o, -objs -y -m)
+
+always-y += $(always-m)
+
+# hostprogs-always-y += foo
+# ... is a shorthand for
+# hostprogs += foo
+# always-y  += foo
+hostprogs += $(hostprogs-always-y) $(hostprogs-always-m)
+always-y += $(hostprogs-always-y) $(hostprogs-always-m)
+
+# userprogs-always-y is likewise.
+userprogs += $(userprogs-always-y) $(userprogs-always-m)
+always-y += $(userprogs-always-y) $(userprogs-always-m)
+
+# Add subdir path
+
+ifneq ($(obj),.)
+extra-y		:= $(addprefix $(obj)/, $(extra-y))
+always-y	:= $(addprefix $(obj)/, $(always-y))
+targets		:= $(addprefix $(obj)/, $(targets))
+obj-m		:= $(addprefix $(obj)/, $(obj-m))
+lib-y		:= $(addprefix $(obj)/, $(lib-y))
+pbl-y		:= $(addprefix $(obj)/, $(pbl-y))
+real-obj-y	:= $(addprefix $(obj)/, $(real-obj-y))
+real-pbl-y	:= $(addprefix $(obj)/, $(real-pbl-y))
+real-obj-m	:= $(addprefix $(obj)/, $(real-obj-m))
+multi-obj-m	:= $(addprefix $(obj)/, $(multi-obj-m))
+subdir-ym	:= $(addprefix $(obj)/, $(subdir-ym))
+endif
+
 ifndef obj
 $(warning kbuild: Makefile.build is included improperly)
 endif
 
+ifeq ($(need-modorder),)
+ifneq ($(obj-m),)
+$(warning $(patsubst %.o,'%.ko',$(obj-m)) will not be built even though obj-m is specified.)
+$(warning You cannot use subdir-y/m to visit a module Makefile. Use obj-y/m instead.)
+endif
+endif
+
 # ===========================================================================
 
-# This is a list of build artifacts from the current Makefile and its
-# sub-directories. The timestamp should be updated when any of the member files.
+# subdir-builtin and subdir-modorder may contain duplications. Use $(sort ...)
+subdir-builtin := $(sort $(filter %/built-in.a, $(real-obj-y)))
+subdir-pbl := $(sort $(filter %/built-in.pbl.a, $(real-pbl-y)))
+subdir-modorder := $(sort $(filter %/modules.order, $(obj-m)))
 
-cmd_gen_order = { $(foreach m, $(real-prereqs), \
-	$(if $(filter %/$(notdir $@), $m), cat $m, echo $m);) :; } \
-	> $@
+targets-for-builtin := $(extra-y)
 
-# This is a list of source files from the current Makefile and its
-# sub-directories. The timestamp should be updated when any of the member files.
-
-cmd_gen_order_src = { $(foreach m, $(patsubst $(srctree)/%,%,$(real-prereqs)), \
-	$(if $(filter %/$(notdir $@), $m), cat $m, echo $m);) :; } \
-	> $@
-
-ifneq ($(strip $(lib-y) $(lib-m) $(lib-n) $(lib-)),)
-lib-target := $(obj)/lib.a
+ifneq ($(strip $(lib-y) $(lib-m) $(lib-)),)
+targets-for-builtin += $(obj)/lib.a
 endif
 
-ifneq ($(strip $(obj-y) $(obj-m) $(obj-) $(lib-target) $(pbl-y)),)
-builtin-target := $(obj)/built-in.a
+ifdef need-builtin
+targets-for-builtin += $(obj)/built-in.a
 endif
 
-ifeq ($(CONFIG_PBL_IMAGE), y)
-ifneq ($(strip $(pbl-y) $(builtin-target)),)
-pbl-target := $(obj)/built-in.pbl.a
-endif
+ifdef need-pbl
+targets-for-pbl := $(obj)/built-in.pbl.a
 endif
 
-# We keep a list of all modules in $(MODVERDIR)
+targets-for-modules := $(foreach x, o mod, \
+				$(patsubst %.o, %.$x, $(filter %.o, $(obj-m))))
 
-__build: $(if $(KBUILD_BUILTIN),$(builtin-target) $(lib-target) $(pbl-target) $(extra-y)) \
-	 $(if $(KBUILD_MODULES),$(obj-m)) \
-	 $(subdir-ym) $(always-y)
-	@:
+ifdef need-modorder
+targets-for-modules += $(obj)/modules.order
+endif
+
+targets += $(targets-for-builtin) $(targets-for-modules)
+targets += $(targets-for-pbl)
 
 # Linus' kernel sanity checking tool
 ifeq ($(KBUILD_CHECKSRC),1)
@@ -120,165 +220,200 @@ endif
 # Compile C sources (.c)
 # ---------------------------------------------------------------------------
 
-# Default for not multi-part modules
-modname = $(basetarget)
-
-$(multi-objs-m)         : modname = $(modname-multi)
-$(multi-objs-m:.o=.i)   : modname = $(modname-multi)
-$(multi-objs-m:.o=.s)   : modname = $(modname-multi)
-$(multi-objs-m:.o=.lst) : modname = $(modname-multi)
-$(multi-objs-y)         : modname = $(modname-multi)
-$(multi-objs-y:.o=.i)   : modname = $(modname-multi)
-$(multi-objs-y:.o=.s)   : modname = $(modname-multi)
-$(multi-objs-y:.o=.lst) : modname = $(modname-multi)
-
 quiet_cmd_cc_s_c = CC $(quiet_modtag)  $@
-cmd_cc_s_c       = $(CC) $(c_flags) -fverbose-asm -S -o $@ $<
+      cmd_cc_s_c = $(CC) $(filter-out $(DEBUG_CFLAGS) $(CC_FLAGS_LTO), $(c_flags)) -fverbose-asm -S -o $@ $<
 
-%.s: %.c FORCE
+$(obj)/%.pbl.s: $(obj)/%.c FORCE
 	$(call if_changed_dep,cc_s_c)
 
-quiet_cmd_cc_i_c = CPP $(quiet_modtag) $@
-cmd_cc_i_c       = $(CPP) $(c_flags)   -o $@ $<
+$(obj)/%.s: $(obj)/%.c FORCE
+	$(call if_changed_dep,cc_s_c)
 
-%.i: %.c FORCE
-	$(call if_changed_dep,cc_i_c)
+quiet_cmd_cpp_i_c = CPP $(quiet_modtag) $@
+cmd_cpp_i_c       = $(CPP) $(c_flags) -o $@ $<
+
+$(obj)/%.pbl.i: $(obj)/%.c FORCE
+	$(call if_changed_dep,cpp_i_c)
+
+$(obj)/%.i: $(obj)/%.c FORCE
+	$(call if_changed_dep,cpp_i_c)
+
+getexportsymbols = $(NM) $@ | sed -n 's/.* __export_symbol_\(.*\)/$(1)/p'
+
+# LLVM assembly
+# Generate .ll files from .c
+quiet_cmd_cc_ll_c = CC $(quiet_modtag)  $@
+      cmd_cc_ll_c = $(CC) $(c_flags) -emit-llvm -S -fno-discard-value-names -o $@ $<
+
+$(obj)/%.pbl.ll: $(obj)/%.c FORCE
+	$(call if_changed_dep,cc_ll_c)
+
+$(obj)/%.ll: $(obj)/%.c FORCE
+	$(call if_changed_dep,cc_ll_c)
 
 # C (.c) files
 # The C file is compiled and updated dependency information is generated.
 # (See cmd_cc_o_c + relevant part of rule_cc_o_c)
 
-quiet_cmd_cc_o_c = CC $(quiet_modtag)  $@
-      cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $<
+# 'OBJECT_FILES_NON_STANDARD := y': skip objtool checking for a directory
+# 'OBJECT_FILES_NON_STANDARD_foo.o := 'y': skip objtool checking for a file
+# 'OBJECT_FILES_NON_STANDARD_foo.o := 'n': override directory skip for a file
 
-define rule_cc_o_c
-	$(call cmd,checksrc)
-	$(call cmd_and_fixdep,cc_o_c)
-endef
+is-standard-object = $(if $(filter-out y%, $(OBJECT_FILES_NON_STANDARD_$(target-stem).o)$(OBJECT_FILES_NON_STANDARD)n),$(is-kernel-object))
 
-define rule_as_o_S
-	$(call cmd_and_fixdep,as_o_S)
-endef
+ifneq ($(findstring 1, $(KBUILD_EXTRA_WARN)),)
+cmd_warn_shared_object = $(if $(word 2, $(modname-multi)),$(warning $(kbuild-file): $*.o is added to multiple modules: $(modname-multi)))
+endif
 
 # Built-in and composite module parts
 
-%.pbl.o: %.c FORCE
-	$(call cmd,force_checksrc)
+$(obj)/%.pbl.o: $(obj)/%.c FORCE
 	$(call if_changed_rule,cc_o_c)
-
-%.o: %.c FORCE
 	$(call cmd,force_checksrc)
+
+$(obj)/%.o: $(obj)/%.c $(recordmcount_source) FORCE
 	$(call if_changed_rule,cc_o_c)
-
-# Single-part modules are special since we need to mark them in $(MODVERDIR)
-
-$(single-used-m): %.o: %.c FORCE
 	$(call cmd,force_checksrc)
-	$(call if_changed_rule,cc_o_c)
-	@{ echo $(@:.o=.ko); echo $@; } > $(MODVERDIR)/$(@F:.o=.mod)
+
+# To make this rule robust against "Argument list too long" error,
+# ensure to add $(obj)/ prefix by a shell command.
+cmd_mod = printf '%s\n' $(call real-search, $*.o, .o, -objs -y -m) | \
+	$(AWK) '!x[$$0]++ { print("$(obj)/"$$0) }' > $@
+
+$(obj)/%.mod: FORCE
+	$(call if_changed,mod)
 
 quiet_cmd_cc_lst_c = MKLST   $@
       cmd_cc_lst_c = $(CC) $(c_flags) -g -c -o $*.o $< && \
 		     $(CONFIG_SHELL) $(srctree)/scripts/makelst $*.o \
 				     System.map $(OBJDUMP) > $@
 
-%.lst: %.c FORCE
+$(obj)/%.pbl.lst: $(obj)/%.c FORCE
+	$(call if_changed_dep,cc_lst_c)
+
+$(obj)/%.lst: $(obj)/%.c FORCE
 	$(call if_changed_dep,cc_lst_c)
 
 # Compile assembler sources (.S)
 # ---------------------------------------------------------------------------
 
-quiet_cmd_as_s_S = CPP $(quiet_modtag) $@
-cmd_as_s_S       = $(CPP) $(a_flags)   -o $@ $<
+# .S file exports must have their C prototypes defined in asm/asm-prototypes.h
+# or a file that it includes, in order to get versioned symbols. We build a
+# dummy C file that includes asm-prototypes and the EXPORT_SYMBOL lines from
+# the .S file (with trailing ';'), and run genksyms on that, to extract vers.
+#
+# This is convoluted. The .S file must first be preprocessed to run guards and
+# expand names, then the resulting exports must be constructed into plain
+# EXPORT_SYMBOL(symbol); to build our dummy C file, and that gets preprocessed
+# to make the genksyms input or compiled into an object for gendwarfksyms.
+#
+# These mirror gensymtypes_c and co above, keep them in synch.
+getasmexports =								\
+   { echo "\#include <linux/kernel.h>" ;				\
+     echo "\#include <linux/string.h>" ;				\
+     echo "\#include <asm/asm-prototypes.h>" ;				\
+     $(call getexportsymbols,EXPORT_SYMBOL(\1);) ; }
 
-%.s: %.S FORCE
-	$(call if_changed_dep,as_s_S)
+cmd_gensymtypes_S =							\
+	$(getasmexports) |						\
+	$(CPP) -D__GENKSYMS__ $(c_flags) -xc - | $(genksyms)
 
-quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
-cmd_as_o_S       = $(CC) $(a_flags) -c -o $@ $<
+quiet_cmd_cpp_s_S = CPP $(quiet_modtag) $@
+cmd_cpp_s_S       = $(CPP) $(a_flags) -o $@ $<
 
-%.pbl.o: %.S FORCE
+$(obj)/%.pbl.s: $(obj)/%.S FORCE
+	$(call if_changed_dep,cpp_s_S)
+
+$(obj)/%.s: $(obj)/%.S FORCE
+	$(call if_changed_dep,cpp_s_S)
+
+$(obj)/%.pbl.o: $(obj)/%.S FORCE
 	$(call if_changed_rule,as_o_S)
 
-%.o: %.S FORCE
+$(obj)/%.o: $(obj)/%.S FORCE
 	$(call if_changed_rule,as_o_S)
 
-targets += $(filter-out $(subdir-obj-y), $(real-obj-y)) $(real-obj-m) $(lib-y)
-targets += $(pbl-y)
-targets += $(extra-y) $(always-y) $(MAKECMDGOALS)
+targets += $(filter-out $(subdir-builtin), $(real-obj-y))
+targets += $(filter-out $(subdir-pbl), $(real-pbl-y))
+targets += $(filter-out $(subdir-modorder), $(real-obj-m))
+targets += $(lib-y) $(always-y)
 
 # Linker scripts preprocessor (.lds.S -> .lds)
 # ---------------------------------------------------------------------------
 quiet_cmd_cpp_lds_S = LDS     $@
-      cmd_cpp_lds_S = $(CPP) $(cpp_flags) -P -D__ASSEMBLY__ -o $@ $<
+      cmd_cpp_lds_S = $(CPP) $(cpp_flags) -P -U$(ARCH) \
+	                     -D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
 
-%.lds: %.lds.S FORCE
+$(obj)/%.lds: $(src)/%.lds.S FORCE
 	$(call if_changed_dep,cpp_lds_S)
+
+# ASN.1 grammar
+# ---------------------------------------------------------------------------
+quiet_cmd_asn1_compiler = ASN.1   $(basename $@).[ch]
+      cmd_asn1_compiler = $(objtree)/scripts/asn1_compiler $< \
+				$(basename $@).c $(basename $@).h
+
+$(obj)/%.asn1.c $(obj)/%.asn1.h: $(src)/%.asn1 $(objtree)/scripts/asn1_compiler
+	$(call cmd,asn1_compiler)
 
 # Build the compiled-in targets
 # ---------------------------------------------------------------------------
 
 # To build objects in subdirs, we need to descend into the directories
-$(sort $(subdir-obj-y)): $(subdir-ym) ;
+$(subdir-builtin): $(obj)/%/built-in.a: $(obj)/% ;
+$(subdir-pbl): $(obj)/%/built-in.pbl.a: $(obj)/% ;
+$(subdir-modorder): $(obj)/%/modules.order: $(obj)/% ;
 
 #
 # Rule to compile a set of .o files into one .a file (without symbol table)
 #
-quiet_cmd_ar_builtin = AR $(quiet_modtag)  $@
-      cmd_ar_builtin = rm -f $@; $(AR) cDPrST $@ $(real-prereqs)
+# To make this rule robust against "Argument list too long" error,
+# remove $(obj)/ prefix, and restore it by a shell command.
 
-$(builtin-target): $(real-obj-y) FORCE
+quiet_cmd_ar_builtin = AR      $@
+      cmd_ar_builtin = rm -f $@; \
+	$(if $(real-prereqs), printf "$(obj)/%s " $(patsubst $(obj)/%,%,$(real-prereqs)) | xargs) \
+	$(AR) cDPrST $@
+
+$(obj)/built-in.pbl.a: $(real-pbl-y) FORCE
 	$(call if_changed,ar_builtin)
 
-targets += $(builtin-target)
-
-$(pbl-target): $(pbl-y) FORCE
+$(obj)/built-in.a: $(real-obj-y) FORCE
 	$(call if_changed,ar_builtin)
 
-targets += $(pbl-target)
+# This is a list of build artifacts from the current Makefile and its
+# sub-directories. The timestamp should be updated when any of the member files.
+
+cmd_gen_order = { $(foreach m, $(real-prereqs), \
+	$(if $(filter %/$(notdir $@), $m), cat $m, echo $m);) :; } \
+	> $@
+
+cmd_gen_order_src = { $(foreach m, $(patsubst $(srctree)/%,%,$(real-prereqs)), \
+	$(if $(filter %/$(notdir $@), $m), cat $m, echo $m);) :; } \
+	> $@
+
+$(obj)/modules.order: $(obj-m) FORCE
+	$(call if_changed,gen_order)
 
 #
-# Rule to compile a set of .o files into one .a file
+# Rule to compile a set of .o files into one .a file (with symbol table)
 #
-ifdef lib-target
-quiet_cmd_link_l_target = AR      $@
-cmd_link_l_target = rm -f $@; $(AR) rcs $@ $(lib-y)
 
-$(lib-target): $(lib-y) FORCE
-	$(call if_changed,link_l_target)
+$(obj)/lib.a: $(lib-y) FORCE
+	$(call if_changed,ar)
 
-targets += $(lib-target)
-endif
+quiet_cmd_ld_multi_m = LD [M]  $@
+      cmd_ld_multi_m = $(LD) $(ld_flags) -r -o $@ @$< $(cmd_objtool)
 
-#
-# Rule to link composite objects
-#
-#  Composite objects are specified in kbuild makefile as follows:
-#    <composite-object>-objs := <list of .o files>
-#  or
-#    <composite-object>-y    := <list of .o files>
-link_multi_deps =                     \
-$(filter $(addprefix $(obj)/,         \
-$($(subst $(obj)/,,$(@:.o=-objs)))    \
-$($(subst $(obj)/,,$(@:.o=-y)))), $^)
+define rule_ld_multi_m
+	$(call cmd_and_savecmd,ld_multi_m)
+endef
 
-quiet_cmd_link_multi-y = LD      $@
-cmd_link_multi-y = $(LD) $(ld_flags) -r -o $@ $(link_multi_deps)
-
-quiet_cmd_link_multi-m = LD [M]  $@
-cmd_link_multi-m = $(LD) $(ld_flags) $(LDFLAGS_MODULE) -o $@ $(link_multi_deps)
-
-$(multi-used-y): FORCE
-	$(call if_changed,link_multi-y)
-$(call multi_depend, $(multi-used-y), .o, -objs -y)
-
-$(multi-used-m): FORCE
-	$(call if_changed,link_multi-m)
-	@{ echo $(@:.o=.ko); echo $(link_multi_deps); } > $(MODVERDIR)/$(@F:.o=.mod)
-$(call multi_depend, $(multi-used-m), .o, -objs -y)
-
-targets += $(multi-used-y) $(multi-used-m)
-targets := $(filter-out $(PHONY), $(targets))
+$(multi-obj-m): private objtool-enabled := $(delay-objtool)
+$(multi-obj-m): private part-of-module := y
+$(multi-obj-m): %.o: %.mod FORCE
+	$(call if_changed_rule,ld_multi_m)
+$(call multi_depend, $(multi-obj-m), .o, -objs -y -m)
 
 # Add intermediate targets:
 # When building objects with specific suffix patterns, add intermediate
@@ -301,19 +436,65 @@ targets += $(call intermediate_targets, .asn1.o, .asn1.c .asn1.h) \
 	   $(call intermediate_targets, .tab.o, .tab.c .tab.h) \
 	   $(call intermediate_targets, .sconfig.o, .sconfig.c .sconfig.tmp)
 
+# Include additional build rules when necessary
+# ---------------------------------------------------------------------------
+
+# $(sort ...) is used here to remove duplicated words and excessive spaces.
+hostprogs := $(sort $(hostprogs))
+ifneq ($(hostprogs),)
+include $(srctree)/scripts/Makefile.host
+endif
+
+# $(sort ...) is used here to remove duplicated words and excessive spaces.
+userprogs := $(sort $(userprogs))
+ifneq ($(userprogs),)
+include $(srctree)/scripts/Makefile.userprogs
+endif
+
+# Single targets
+# ---------------------------------------------------------------------------
+
+single-subdirs := $(foreach d, $(subdir-ym), $(if $(filter $d/%, $(MAKECMDGOALS)), $d))
+single-subdir-goals := $(filter $(addsuffix /%, $(single-subdirs)), $(MAKECMDGOALS))
+
+$(single-subdir-goals): $(single-subdirs)
+	@:
+
 # Descending
 # ---------------------------------------------------------------------------
 
 PHONY += $(subdir-ym)
 $(subdir-ym):
-	$(Q)$(MAKE) $(build)=$@
+	$(Q)$(MAKE) $(build)=$@ \
+	need-builtin=$(if $(filter $@/built-in.a, $(subdir-builtin)),1) \
+	need-pbl=$(if $(filter $@/built-in.pbl.a, $(subdir-pbl)),1) \
+	need-modorder=$(if $(filter $@/modules.order, $(subdir-modorder)),1) \
+	$(filter $@/%, $(single-subdir-goals))
 
-# Add FORCE to the prequisites of a target to force it to be always rebuilt.
+# Add FORCE to the prerequisites of a target to force it to be always rebuilt.
 # ---------------------------------------------------------------------------
 
 PHONY += FORCE
 
 FORCE:
+
+targets += $(filter-out $(single-subdir-goals), $(MAKECMDGOALS))
+targets := $(filter-out $(PHONY), $(targets))
+
+# Now that targets is fully known, include dtb rules if needed
+ifneq ($(need-dtbslist)$(dtb-y)$(dtb-)$(filter %.dtb %.dtb.o %.dtbo.o,$(targets)),)
+include $(srctree)/scripts/Makefile.dtbs
+endif
+
+# Build
+# Needs to be after the include of Makefile.dtbs, which updates always-y
+# ---------------------------------------------------------------------------
+
+$(obj)/: $(if $(KBUILD_BUILTIN), $(targets-for-builtin)) \
+	 $(if $(KBUILD_BUILTIN), $(targets-for-pbl)) \
+	 $(if $(KBUILD_MODULES), $(targets-for-modules)) \
+	 $(subdir-ym) $(always-y)
+	@:
 
 # Read all saved command lines and dependencies for the $(targets) we
 # may be building above, using $(if_changed{,_dep}). As an
@@ -324,15 +505,13 @@ existing-targets := $(wildcard $(sort $(targets)))
 
 -include $(foreach f,$(existing-targets),$(dir $(f)).$(notdir $(f)).cmd)
 
-ifdef building_out_of_srctree
 # Create directories for object files if they do not exist
-obj-dirs := $(sort $(obj) $(patsubst %/,%, $(dir $(targets))))
+obj-dirs := $(sort $(patsubst %/,%, $(dir $(targets))))
 # If targets exist, their directories apparently exist. Skip mkdir.
 existing-dirs := $(sort $(patsubst %/,%, $(dir $(existing-targets))))
 obj-dirs := $(strip $(filter-out $(existing-dirs), $(obj-dirs)))
 ifneq ($(obj-dirs),)
 $(shell mkdir -p $(obj-dirs))
-endif
 endif
 
 .PHONY: $(PHONY)

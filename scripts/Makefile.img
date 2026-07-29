@@ -1,0 +1,111 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Wrapper which only copies a file, but compatible to the compression
+# functions above. Appends the size to the result file
+quiet_cmd_comp_copy ?= SHIPPED_S $@
+cmd_comp_copy ?= cat $(filter-out FORCE,$^) > $@; \
+                 $(call size_append, $(filter-out FORCE,$^)) >> $@
+
+quiet_cmd_disasm = DISASM  $@
+cmd_disasm = $(OBJDUMP) -d $< > $@
+
+quiet_cmd_symlink = LN      $@
+      cmd_symlink = mkdir -p $(dir $@) ; ln -fsn --relative $< $@
+
+cmd_symlink_quiet = mkdir -p $(dir $@) ; ln -fsn --relative $< $@
+
+quiet_cmd_check_size = CHKSIZE $2
+      cmd_check_size = set -e;						\
+	size=`printf "%d" $2`;						\
+	max_size=`printf "%d" $3`;					\
+	if [ $$size -gt $$max_size ] ;					\
+	then								\
+		echo "$@ size $$size > maximum size $$max_size" >&2;	\
+		exit 1 ;						\
+	fi
+
+# Check size of a file
+quiet_cmd_check_file_size = CHKFILESIZE $2
+      cmd_check_file_size = set -e;					\
+	size=`${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $2`;	\
+	max_size=`printf "%d" $3`;					\
+	if [ $$size -gt $$max_size ] ;					\
+	then								\
+		echo "$@ size $$size > maximum size $$max_size" >&2;	\
+		exit 1 ;						\
+	fi
+
+# Check for missing firmware
+quiet_cmd_check_missing_fw = # no message as we collect info for later
+      cmd_check_missing_fw = set -e;						    \
+	$(OBJCOPY) -O binary --only-section=.missing_fw	$3 $2.missing-firmware;	    \
+	[ -s $2.missing-firmware ] || rm -f $2.missing-firmware
+
+quiet_cmd_k3_cfg = K3CFG   $@
+      cmd_k3_cfg = $(srctree)/scripts/ti-board-config.py $@ $(filter-out FORCE,$^)
+
+quiet_cmd_imximage__S_dcd= DCD_S   $@
+cmd_imximage_S_dcd=						\
+(								\
+	echo '\#include <asm/barebox.lds.h>';			\
+	echo '.section .note.GNU-stack,"",%progbits';		\
+	echo '.balign STRUCT_ALIGNMENT';			\
+	echo '.global $(subst -,_,$(*F))_start';		\
+	echo '$(subst -,_,$(*F))_start:';			\
+	echo '.incbin "$<" ';					\
+	echo '$(subst -,_,$(*F))_end:';				\
+	echo '.global $(subst -,_,$(*F))_end';			\
+	echo '.balign STRUCT_ALIGNMENT';			\
+) > $@
+
+overwrite-hab-env = $(shell set -e; \
+      test -n "$(CONFIG_HAB_CERTS_ENV)"; \
+      test -n "$$$(1)"; \
+      echo -D$(1)=\''"$($(1))"'\')
+
+imxcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
+      -I $(srctree)/include -I $(srctree)/arch/arm/mach-imx/include \
+      -include include/generated/autoconf.h \
+      $(call overwrite-hab-env,CONFIG_HABV3_SRK_PEM) \
+      $(call overwrite-hab-env,CONFIG_HABV3_CSF_CRT_DER) \
+      $(call overwrite-hab-env,CONFIG_HABV3_IMG_CRT_DER) \
+      $(call overwrite-hab-env,CONFIG_HABV4_TABLE_BIN) \
+      $(call overwrite-hab-env,CONFIG_HABV4_CSF_CRT_PEM) \
+      $(call overwrite-hab-env,CONFIG_HABV4_CSF_UNLOCK_UID) \
+      $(call overwrite-hab-env,CONFIG_HABV4_IMG_CRT_PEM) \
+
+dcd-tmp = $(subst $(comma),_,$(dot-target).dcd.tmp)
+
+quiet_cmd_dcd = DCD     $@
+      cmd_dcd = $(CPP) $(imxcfg_cpp_flags) -o $(dcd-tmp) $< ; \
+		$(objtree)/scripts/imx/imx-image -d -o $@ -c $(dcd-tmp)
+
+$(obj)/%.dcd: $(obj)/%.imxcfg FORCE
+	$(call if_changed,dcd)
+
+$(obj)/%.dcd.S: $(obj)/%.dcd
+	$(call cmd,imximage_S_dcd)
+
+imximg-tmp = $(subst $(comma),_,$(dot-target).imxcfg.tmp)
+
+quiet_cmd_imx_image = IMX-IMG $@
+      cmd_imx_image = $(CPP) $(imxcfg_cpp_flags) -o $(imximg-tmp) $(2) ; \
+		      $(objtree)/scripts/imx/imx-image -o $@ -b -c $(imximg-tmp) $(3) -f $<
+
+quiet_cmd_kwb_image = KWB     $@
+      cmd_kwb_image = scripts/kwbimage -p $< $(OPTS_$(@F)) -o $@
+
+quiet_cmd_mvebu1_image = MVIMG   $@
+      cmd_mvebu1_image = scripts/mvebuimg -v 1 create -o $@ $(foreach b,$(BINHDR_$(@F)),-b $b) $(FLAGS_$(@F)) $(BOOTSRC_$(@F)) $<
+
+quiet_cmd_cboot_bct = BCT     $@
+      cmd_cboot_bct = $(objtree)/scripts/tegra/cbootimage -gbct -s $(soc) $< $@
+
+$(obj)/%.bct: $(obj)/%.bct.cfg
+	$(call cmd,cboot_bct)
+
+quiet_cmd_b64dec = B64DEC  $@
+      cmd_b64dec = base64 -d $< > $@
+
+%: %.base64
+	$(call cmd,b64dec)

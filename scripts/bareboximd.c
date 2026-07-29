@@ -90,7 +90,7 @@ close:
 	return ret;
 }
 
-#include "../include/xfuncs.h"
+#include <xalloc.h>
 #include "../crypto/crc32.c"
 #include "../common/imd.c"
 

@@ -43,7 +43,7 @@
 # both as entrypoint and as filename
 #
 
-include scripts/Makefile.lib
+include $(srctree)/scripts/Makefile.lib
 
 quiet_cmd_objcopy_bin = OBJCOPYB $@
       cmd_objcopy_bin = \
@@ -68,8 +68,6 @@ quiet_cmd_elf__ ?= LD      $@
 		--gc-sections --defsym=__pbl_board_entry=$(2)  		\
 		-T $(pbl-lds)						\
 		--whole-archive $(BAREBOX_PBL_OBJS) $(BAREBOX_PIGGY_OBJS) \
-
-PBL_CPPFLAGS	+= -fdata-sections -ffunction-sections
 
 define rule_elf
 	$(call cmd,elf__,$(*F))
@@ -162,7 +160,7 @@ $(obj)/barebox.z: $(obj)/../$(BAREBOX_PROPER) FORCE
 missing_fw = $(strip $(wildcard $(obj)/$(FILE_$(@F)).missing-firmware $(basename $(obj)/$(FILE_$(@F))).missing-firmware))
 
 quiet_cmd_report_missing_fw = # no message as we collect info for later
-      cmd_report_missing_fw = $(if $2,cat $2 >$@.missing-firmware;$(cmd_delete),rm -f $@.missing-firmware;$(cmd_shipped))
+      cmd_report_missing_fw = $(if $2,cat $2 >$@.missing-firmware;$(cmd_delete),rm -f $@.missing-firmware;$(cmd_copy))
 
 .SECONDEXPANSION:
 $(obj)/%.img: $(obj)/$$(FILE_$$(@F)) FORCE
@@ -206,7 +204,7 @@ pblb-$(CONFIG_BOARD_GENERIC_DT) += start_dt_2nd
 FILE_barebox-dt-2nd.img = start_dt_2nd.pblb
 image-$(CONFIG_BOARD_GENERIC_DT) += barebox-dt-2nd.img
 
-fit-image = barebox-$(call remove_quotes,$(CONFIG_ARCH_LINUX_NAME)).fit
+fit-image = barebox-$(CONFIG_ARCH_LINUX_NAME).fit
 FILE_$(fit-image) = barebox-dt-2nd.img
 image-$(CONFIG_BOARD_GENERIC_FIT) += $(fit-image)
 targets += $(fit-name)

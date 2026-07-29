@@ -225,14 +225,6 @@ cmd_and_fixdep =                                                             \
 # and if so will execute $(rule_foo).
 if_changed_rule = $(if $(if-changed-cond),$(rule_$(1)),@:)
 
-# Same as newer-prereqs, but allows to exclude specified extra dependencies
-newer_prereqs_except = $(filter-out $(PHONY) $(1),$?)
-
-# Same as if_changed, but allows to exclude specified extra dependencies
-if_changed_except = $(if $(call newer_prereqs_except,$(2))$(cmd-check),      \
-	$(cmd);                                                              \
-	printf '%s\n' 'savedcmd_$@ := $(make-cmd)' > $(dot-target).cmd, @:)
-
 ###
 # why - tell why a target got built
 #       enabled by make V=2

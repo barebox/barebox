@@ -87,30 +87,6 @@ static bool loadable_from_fit_oftree(struct image_data *data,
 	return true;
 }
 
-/*
- * loadable_from_fit_tee() - create tee loadable from FIT
- * @data:		image data context
- * @fit:		handle of FIT image
- * @config:		config to look up kernel in
- *
- * This creates a loadable for the first trusted execution environment
- * in the config.
- *
- * Return: true if a TEE exists or
- *         false otherwise.
- */
-static bool loadable_from_fit_tee(struct image_data *data,
-				struct fit_handle *fit,
-				void *config)
-{
-	if (!fit_has_image(fit, config, "tee"))
-		return false;
-
-	loadable_release(&data->tee);
-	data->tee = loadable_from_fit(fit, config, "tee", 0, LOADABLE_TEE);
-	return true;
-}
-
 static bool bootm_fit_config_valid(struct fit_handle *fit,
 				   struct device_node *config)
 {
@@ -164,6 +140,12 @@ int bootm_open_fit(struct image_data *data, bool override)
 		goto err;
 	}
 
+	if (fit_has_image(fit, fit_config, "tee")) {
+		pr_err("Late-loaded tee is insecure and no longer supported\n");
+		ret = -ENOSYS;
+		goto err;
+	}
+
 	loadable_from_fit_os(data, fit, fit_config);
 	if (override)
 		data->is_override.os = true;
@@ -171,7 +153,6 @@ int bootm_open_fit(struct image_data *data, bool override)
 		data->is_override.initrd = true;
 	if (loadable_from_fit_oftree(data, fit, fit_config) && override)
 		data->is_override.oftree = true;
-	loadable_from_fit_tee(data, fit, fit_config);
 
 	data->kernel_type = bootm_fit_update_os_header(data);
 

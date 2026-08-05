@@ -63,6 +63,6 @@ struct image_data;
 
 void start_linux(void *adr, int swap, unsigned long initrd_address,
 		 unsigned long initrd_size, void *oftree,
-		 enum arm_security_state, void *optee);
+		 enum arm_security_state);
 
 #endif /* __ARCH_ARMLINUX_H */

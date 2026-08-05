@@ -36,7 +36,7 @@ static int do_bootu(int argc, char *argv[])
 	if (ret)
 		return ret;
 
-	start_linux(kernel, 0, 0, 0, oftree, ARM_STATE_SECURE, NULL);
+	start_linux(kernel, 0, 0, 0, oftree, ARM_STATE_SECURE);
 
 	return 1;
 }

@@ -31,8 +31,6 @@ const char *loadable_type_tostr(enum loadable_type type)
 		return "initrd";
 	case LOADABLE_FDT:
 		return "fdt";
-	case LOADABLE_TEE:
-		return "tee";
 	default:
 		return NULL;
 	}

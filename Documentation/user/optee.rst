@@ -39,15 +39,11 @@ main barebox start function.
 Before Linux start
 ^^^^^^^^^^^^^^^^^^
 
-.. warning:: Late loading of OP-TEE is deprecated, greatly increases the
-   attack surface and is only supported on 32-bit ARM systems.
-   Systems should prefer early loading OP-TEE whenever possible.
+The support for late loading of OP-TEE had been deprecated and ultimately
+removed as it greatly increased the attack surface and was only supported
+on 32-bit ARM systems.
+OP-TEE loading is now only supported :ref:`in the prebootloader <optee_early_loading>`.
 
-Enable the `CONFIG_BOOTM_OPTEE` configuration variable and configure the
-`CONFIG_OPTEE_SIZE` variable. This will reserve a memory area at the end
-of memory for OP-TEE to run, usually Barebox would relocate itself there. To
-load OP-TEE before the kernel is started, configure the global ``bootm.tee``
-variable to point to a valid OPTEE v1 binary.
 
 Communication with OP-TEE
 -------------------------

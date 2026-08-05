@@ -69,9 +69,6 @@ Firmware) should happen as early as possible, i.e., within the barebox
 barebox will run with elevated permission, which greatly increases the attack
 surface.
 
-In concrete terms, the deprecated ``CONFIG_BOOTM_OPTEE`` option should be
-disabled in favor of :ref:`loading OP-TEE early <optee_early_loading>`.
-
 Ensuring the kernel is verified
 -------------------------------
 

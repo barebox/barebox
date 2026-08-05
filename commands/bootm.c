@@ -28,7 +28,7 @@
 #include <magicvar.h>
 #include <asm-generic/memory_layout.h>
 
-#define BOOTM_OPTS_COMMON "sca:e:vo:fdt:"
+#define BOOTM_OPTS_COMMON "sca:e:vo:fd"
 
 #ifdef CONFIG_BOOTM_INITRD
 #define BOOTM_OPTS BOOTM_OPTS_COMMON "L:r:"
@@ -88,9 +88,6 @@ static int do_bootm(int argc, char *argv[])
 		case 'd':
 			data.dryrun = 1;
 			break;
-		case 't':
-			data.tee_file = optarg;
-			break;
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
@@ -129,9 +126,6 @@ BAREBOX_CMD_HELP_OPT ("-e OFFS\t","entry point to the image relative to start (0
 #ifdef CONFIG_OFTREE
 BAREBOX_CMD_HELP_OPT ("-o DTB\t","specify open firmware device tree")
 #endif
-#ifdef CONFIG_BOOTM_OPTEE
-BAREBOX_CMD_HELP_OPT ("-t TEE\t","specify TEE image")
-#endif
 #ifdef CONFIG_BOOTM_VERBOSE
 BAREBOX_CMD_HELP_OPT ("-v\t","verbose")
 #endif
@@ -150,9 +144,6 @@ BAREBOX_CMD_START(bootm)
 #endif
 #ifdef CONFIG_BOOTM_VERBOSE
 					  "v"
-#endif
-#ifdef CONFIG_BOOTM_OPTEE
-					  "t"
 #endif
 					  "] IMAGE")
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)

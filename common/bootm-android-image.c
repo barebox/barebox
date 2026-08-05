@@ -54,7 +54,6 @@ static int do_bootm_aimage(struct image_data *img_data)
 	struct bootm_data bootm_data = {
 		.oftree_file = img_data->oftree_file,
 		.initrd_file = img_data->initrd_file,
-		.tee_file = img_data->tee_file,
 		.verbose = img_data->verbose,
 		.verify = img_data->verify,
 		.force = img_data->force,

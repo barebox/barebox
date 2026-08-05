@@ -120,7 +120,7 @@ static int do_bootz(int argc, char *argv[])
 	if (ret)
 		return ret;
 
-	start_linux(zimage, swap, 0, 0, oftree, ARM_STATE_SECURE, NULL);
+	start_linux(zimage, swap, 0, 0, oftree, ARM_STATE_SECURE);
 
 	return 0;
 

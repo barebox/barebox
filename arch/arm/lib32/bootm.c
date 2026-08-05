@@ -21,7 +21,6 @@
 #include <binfmt.h>
 #include <restart.h>
 #include <globalvar.h>
-#include <tee/optee.h>
 #include <asm/byteorder.h>
 #include <asm/setup.h>
 #include <asm/barebox-arm.h>
@@ -149,54 +148,6 @@ static int get_kernel_addresses(size_t image_size,
 	return 0;
 }
 
-static int optee_verify_header_request_region(struct image_data *data, struct optee_header *hdr)
-{
-	int ret;
-
-	ret = optee_verify_header(hdr);
-	if (ret < 0) {
-		pr_err("Could not verify header: %pe", ERR_PTR(ret));
-		return ret;
-	}
-
-	data->tee_res = request_sdram_region("TEE", hdr->init_load_addr_lo, hdr->init_size,
-					     MEMTYPE_RESERVED, MEMATTRS_RW_DEVICE);
-	if (!data->tee_res)
-		return -EINVAL;
-
-	return 0;
-}
-
-static int bootm_load_tee(struct image_data *data)
-{
-	int ret;
-	struct optee_header hdr;
-
-	if (!data->tee)
-		return 0;
-
-	ret = loadable_extract_into_buf(data->tee, &hdr, sizeof(hdr), 0,
-					LOADABLE_EXTRACT_PARTIAL);
-	if (ret < 0)
-		return ret;
-
-	ret = optee_verify_header_request_region(data, &hdr);
-	if (ret < 0)
-		return ret;
-
-	ret = loadable_extract_into_buf(data->tee, (void *)data->tee_res->start,
-					hdr.init_size, sizeof(hdr), 0);
-	if (ret < 0) {
-		release_region(data->tee_res);
-		return ret;
-	}
-
-	printf("Loaded TEE image to %pa, size 0x%08x\n",
-	       (void *)data->tee_res->start, hdr.init_size);
-
-	return 0;
-}
-
 static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 			    int swap, void *fdt)
 {
@@ -204,7 +155,6 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
 	const struct resource *initrd_res, *sdram;
 	struct resource gap;
-	void *tee;
 	enum arm_security_state state = bootm_arm_security_state();
 	void *fdt_load_address = NULL;
 	int ret;
@@ -259,13 +209,6 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 			return PTR_ERR(fdt_res);
 	}
 
-	if (IS_ENABLED(CONFIG_BOOTM_OPTEE)) {
-		ret = bootm_load_tee(data);
-		if (ret)
-			return ret;
-	}
-
-
 	if (bootm_verbose(data)) {
 		printf("\nStarting kernel at 0x%08lx", kernel);
 		if (initrd_size)
@@ -291,13 +234,8 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 	if (ret)
 		return ret;
 
-	if (data->tee_res)
-		tee = (void *)data->tee_res->start;
-	else
-		tee = NULL;
-
 	start_linux((void *)kernel, swap, initrd_start, initrd_size,
-		    fdt_load_address, state, tee);
+		    fdt_load_address, state);
 
 	restart_machine(0);
 

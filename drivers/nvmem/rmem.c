@@ -74,7 +74,7 @@ static int rmem_protect(void *context, unsigned int offset, size_t bytes,
 			int prot_mode)
 {
 	struct rmem *rmem = context;
-	int ret;
+	int ret = 0;
 
 	if (offset + bytes > rmem->size)
 		return -EINVAL;
@@ -97,7 +97,7 @@ static int rmem_protect(void *context, unsigned int offset, size_t bytes,
 		"Protection op complete [0x%x, len %zu], mode %d\n", offset,
 		bytes, prot_mode);
 
-	return 0;
+	return ret;
 }
 
 static int rmem_probe(struct device *dev)

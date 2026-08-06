@@ -19,16 +19,27 @@ options to crash barebox on detection of memory safety issues::
   # [snip]
   images built:
   barebox
+  fuzz-dtb
+  fuzz-dtb-overlay
+  fuzz-fat
+  fuzz-fdt-compatible
   fuzz-filetype
   fuzz-fit
   fuzz-jwt
-  fuzz-dtb
-  fuzz-fdt-compatible
   fuzz-partitions
   fuzz-partitions-4k
+  fuzz-pe
+  fuzz-state-direct
+  fuzz-tlv
+  fuzz-uncompress
 
 All fuzzers generated are symlinks to the same barebox executable. barebox
 will detect that it was invoked via symlink and switch to fuzzing mode.
+``images/barebox --list-fuzzers`` prints the fuzzers of a given build.
+
+Which fuzzers are built depends on the configuration: each one is tied to
+the option enabling the code it exercises, so a fuzzer for a disabled
+subsystem is not generated.
 
 Fuzzing
 ^^^^^^^

@@ -22,6 +22,7 @@ config KVX
 	select OFDEVICE
 	select PARTITION
 	select RESET_SOURCE
+	select LD_DEAD_CODE_DATA_ELIMINATION
 	default y
 
 config 64BIT

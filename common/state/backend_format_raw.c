@@ -17,6 +17,7 @@
 
 #include <common.h>
 #include <crypto/keystore.h>
+#include <fuzz.h>
 #include <digest.h>
 #include <linux/kernel.h>
 #include <malloc.h>
@@ -113,8 +114,10 @@ static int backend_format_raw_verify(struct state_backend_format *format,
 
 	header = (struct backend_raw_header *)buf;
 	crc = crc32(0, header, sizeof(*header) - sizeof(uint32_t));
-	if (crc != header->header_crc)
-		return dev_err_state_init(backend_raw->dev, header->header_crc ? -EINVAL : -ENOMEDIUM,
+	if (crc != header->header_crc &&
+	    !fuzz_insecure_checksum_accepted(crc, header->header_crc))
+		return dev_err_state_init(backend_raw->dev,
+			header->header_crc ? -EINVAL : -ENOMEDIUM,
 			"header crc in raw format, calculated 0x%08x, found 0x%08x\n",
 			crc, header->header_crc);
 
@@ -142,7 +145,8 @@ static int backend_format_raw_verify(struct state_backend_format *format,
 	data = buf + sizeof(*header);
 
 	crc = crc32(0, data, header->data_len);
-	if (crc != header->data_crc) {
+	if (crc != header->data_crc &&
+	    !fuzz_insecure_checksum_accepted(crc, header->data_crc)) {
 		dev_err(backend_raw->dev, "invalid data crc, calculated 0x%08x, found 0x%08x\n",
 			crc, header->data_crc);
 		return -EINVAL;

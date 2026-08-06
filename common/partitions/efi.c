@@ -22,6 +22,7 @@
 #include <state.h>
 #include <fcntl.h>
 #include <linux/ctype.h>
+#include <fuzz.h>
 
 #include <efi/partition.h>
 #include <partitions.h>
@@ -263,7 +264,7 @@ static gpt_header *alloc_read_gpt_header(struct block_device *blk,
 static int is_gpt_valid(struct block_device *blk, u64 lba,
 			gpt_header **gpt, gpt_entry **ptes)
 {
-	u32 crc, origcrc, count;
+	u32 crc, origcrc, count, ptescrc;
 	u64 lastlba;
 
 	if (!ptes)
@@ -289,7 +290,7 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 	(*gpt)->header_crc32 = 0;
 	crc = efi_crc32((const unsigned char *) (*gpt), le32_to_cpu((*gpt)->header_size));
 
-	if (crc != origcrc) {
+	if (crc != origcrc && !fuzz_insecure_checksum_accepted(crc, origcrc)) {
 		dev_dbg(blk->dev, "GUID Partition Table Header CRC is wrong: %x != %x\n",
 			 crc, origcrc);
 		goto fail;
@@ -343,9 +344,10 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 	/* Check the GUID Partition Table Entry Array CRC */
 	crc = efi_crc32((const unsigned char *)*ptes, count);
 
-	if (crc != le32_to_cpu((*gpt)->partition_entry_array_crc32)) {
+	ptescrc = le32_to_cpu((*gpt)->partition_entry_array_crc32);
+	if (crc != ptescrc && !fuzz_insecure_checksum_accepted(crc, ptescrc)) {
 		dev_dbg(blk->dev, "GUID Partitition Entry Array CRC check failed: 0x%08x 0x%08x\n",
-			crc, le32_to_cpu((*gpt)->partition_entry_array_crc32));
+			crc, ptescrc);
 		goto fail_ptes;
 	}
 
@@ -392,8 +394,9 @@ compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 	     u64 lastlba)
 {
 	struct device *dev = blk->dev;
-
+	u32 pgptcrc, agptcrc;
 	int error_found = 0;
+
 	if (!pgpt || !agpt)
 		return;
 	if (le64_to_cpu(pgpt->my_lba) != le64_to_cpu(agpt->alternate_lba)) {
@@ -449,13 +452,13 @@ compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 		       le32_to_cpu(agpt->sizeof_partition_entry));
 		error_found++;
 	}
-	if (le32_to_cpu(pgpt->partition_entry_array_crc32) !=
-	    le32_to_cpu(agpt->partition_entry_array_crc32)) {
+	pgptcrc = le32_to_cpu(pgpt->partition_entry_array_crc32);
+	agptcrc = le32_to_cpu(agpt->partition_entry_array_crc32);
+	if (pgptcrc != agptcrc &&
+	    !fuzz_insecure_checksum_accepted(pgptcrc, agptcrc)) {
 		dev_warn(dev,
 		       "GPT:partition_entry_array_crc32 values don't match: "
-		       "0x%x != 0x%x\n",
-		       le32_to_cpu(pgpt->partition_entry_array_crc32),
-		       le32_to_cpu(agpt->partition_entry_array_crc32));
+		       "0x%x != 0x%x\n", pgptcrc, agptcrc);
 		error_found++;
 	}
 	if (le64_to_cpu(pgpt->alternate_lba) != lastlba) {

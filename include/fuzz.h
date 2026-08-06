@@ -27,6 +27,48 @@ struct fuzz_test {
 extern const struct fuzz_test __barebox_fuzz_tests_start;
 extern const struct fuzz_test __barebox_fuzz_tests_end;
 
+static inline bool fuzz_insecure_partial_digest_enabled(void)
+{
+	return IS_ENABLED(CONFIG_FUZZ) && IS_ENABLED(CONFIG_INSECURE) &&
+	       IS_ENABLED(CONFIG_FUZZ_INSECURE_PARTIAL_DIGEST);
+}
+
+/**
+ * fuzz_insecure_checksum_accepted() - accept a mismatching checksum
+ *
+ * Returns true if a fuzzing build should treat two differing checksums
+ * as equal. Callers compare normally first and only consult this helper
+ * for the mismatch case, so that non-fuzzing builds are unaffected.
+ *
+ * Only the lowest bit is compared: a fuzzer reaches the code behind the
+ * check within a few mutations, while the rejection path stays
+ * reachable for half of all inputs.
+ */
+static inline bool fuzz_insecure_checksum_accepted(u64 expected, u64 actual)
+{
+	if (!fuzz_insecure_partial_digest_enabled())
+		return false;
+
+	return ((expected ^ actual) & 1) == 0;
+}
+
+/**
+ * fuzz_insecure_digest_accepted() - accept a mismatching digest
+ *
+ * Same as fuzz_insecure_checksum_accepted(), but for byte buffers, of
+ * which only the lowest bit of the last byte is compared.
+ */
+static inline bool fuzz_insecure_digest_accepted(const void *expected,
+						 const void *actual, size_t len)
+{
+	const u8 *a = expected, *b = actual;
+
+	if (!fuzz_insecure_partial_digest_enabled() || !len)
+		return false;
+
+	return ((a[len - 1] ^ b[len - 1]) & 1) == 0;
+}
+
 #if IS_ENABLED(CONFIG_FUZZ) && IN_PROPER
 /**
  * fuzz_test() - register a fuzz test

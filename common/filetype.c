@@ -416,7 +416,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 			for (i = 0; i <= 0x1e; ++i)
 				sum += buf8[i];
 
-			if (sum == buf8[0x1f])
+			if (sum == buf8[0x1f] ||
+			    fuzz_insecure_checksum_accepted(sum, buf8[0x1f]))
 				return filetype_kwbimage_v0;
 		} else if (buf8[0x8] == 1) {
 			if (buf8[0x1d] == 0 &&

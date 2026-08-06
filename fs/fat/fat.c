@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <block.h>
 #include <linux/sizes.h>
+#include <fuzz.h>
 #include "ff.h"
 #include "integer.h"
 #include "diskio.h"
@@ -397,6 +398,68 @@ static void fat_remove(struct device *dev)
 {
 	free(dev->priv);
 }
+
+static int fuzz_fat(struct block_device *ramdisk)
+{
+	FATFS fat = {};
+	struct fat_priv priv = {};
+	FF_DIR dir;
+	FILINFO finfo;
+	FIL fil;
+	BYTE buf[512];
+	UINT br;
+	int ret, i;
+	char lfname[256];
+
+	priv.cdev = &ramdisk->cdev;
+	fat.userdata = &priv;
+
+	ret = f_mount(&fat);
+	if (ret)
+		return 0;
+
+	ret = f_opendir(&fat, &dir, "/");
+	if (ret)
+		return 0;
+
+	/*
+	 * Bound the number of entries and the number of reads per file:
+	 * a crafted image can otherwise describe an arbitrarily long
+	 * directory or a cyclic cluster chain.
+	 */
+	for (i = 0; i < 64; i++) {
+		memset(&finfo, 0, sizeof(finfo));
+
+		if (IS_ENABLED(CONFIG_FS_FAT_LFN)) {
+			finfo.lfname = lfname;
+			finfo.lfsize = sizeof(lfname);
+		}
+
+		ret = f_readdir(&dir, &finfo);
+		if (ret || finfo.fname[0] == '\0')
+			break;
+
+		if (!(finfo.fattrib & AM_DIR)) {
+			char path[14];
+
+			snprintf(path, sizeof(path), "/%s", finfo.fname);
+			ret = f_open(&fat, &fil, path, FA_READ);
+			if (ret == 0) {
+				int reads = 0;
+
+				do {
+					ret = f_read(&fil, buf, sizeof(buf),
+						     &br);
+				} while (!ret && br == sizeof(buf) &&
+					 ++reads < 1024);
+				f_close(&fil);
+			}
+		}
+	}
+
+	return 0;
+}
+fuzz_test_ramdisk("fat", fuzz_fat, 512);
 
 static const struct fs_legacy_ops fat_ops = {
 	.open      = fat_open,

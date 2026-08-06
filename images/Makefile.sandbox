@@ -13,6 +13,7 @@ fuzzer-$(CONFIG_PARTITION)	+= partitions-4k
 fuzzer-$(CONFIG_UNCOMPRESS)	+= uncompress
 fuzzer-$(CONFIG_OF_OVERLAY)	+= dtb-overlay
 fuzzer-$(CONFIG_TLV)		+= tlv
+fuzzer-$(CONFIG_FS_FAT)		+= fat
 
 ifeq ($(CONFIG_SANDBOX),y)
 

@@ -21,10 +21,12 @@
 #include <efi/guid.h>
 #include <efi/error.h>
 #include <pe.h>
+#include <linux/string.h>
 #include <qsort.h>
 #include <linux/err.h>
 #include <linux/overflow.h>
 
+#ifdef CONFIG_EFI_LOADER
 static int machines[] = {
 #if defined(__aarch64__)
 	IMAGE_FILE_MACHINE_ARM64,
@@ -214,6 +216,7 @@ static void efi_set_code_and_data_type(
 		break;
 	}
 }
+#endif
 
 /**
  * efi_image_region_add() - add an entry of region
@@ -517,10 +520,12 @@ err:
 	return false;
 }
 
+#ifdef CONFIG_EFI_LOADER
 static bool efi_image_authenticate(void *efi, size_t efi_size)
 {
 	return true;
 }
+#endif
 
 /**
  * efi_check_pe() - check if a memory buffer contains a PE-COFF image
@@ -561,6 +566,7 @@ efi_status_t efi_check_pe(void *buffer, size_t size, void **nt_header)
 	return EFI_SUCCESS;
 }
 
+#ifdef CONFIG_EFI_LOADER
 /**
  * section_size() - determine size of section
  *
@@ -748,3 +754,4 @@ efi_status_t efi_load_pe(struct efi_loaded_image_obj *handle,
 err:
 	return ret;
 }
+#endif

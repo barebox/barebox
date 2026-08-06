@@ -395,14 +395,11 @@ int ftruncate(int fd, loff_t length)
 
 int ioctl(int fd, unsigned int request, void *buf)
 {
-	struct fs_driver *fsdrv;
 	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
 		return -errno;
-
-	fsdrv = f->fsdev->driver;
 
 	if (f->f_inode->i_fop->ioctl)
 		ret = f->f_inode->i_fop->ioctl(f, request, buf);
@@ -543,14 +540,12 @@ EXPORT_SYMBOL(write);
 
 int flush(int fd)
 {
-	struct fs_driver *fsdrv;
 	struct file *f = fd_to_file(fd, false);
 	int ret;
 
 	if (IS_ERR(f))
 		return -errno;
 
-	fsdrv = f->fsdev->driver;
 	if (f->f_inode->i_fop->flush)
 		ret = f->f_inode->i_fop->flush(f);
 	else

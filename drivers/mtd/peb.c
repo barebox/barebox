@@ -331,7 +331,7 @@ int mtd_peb_verify(struct mtd_info *mtd, const void *buf, int pnum,
 	for (i = 0; i < len; i++) {
 		uint8_t c = ((uint8_t *)buf)[i];
 		uint8_t c1 = ((uint8_t *)buf1)[i];
-		int dump_len;
+		int __maybe_unused dump_len;
 
 		if (c == c1)
 			continue;
@@ -339,8 +339,8 @@ int mtd_peb_verify(struct mtd_info *mtd, const void *buf, int pnum,
 		dev_err(&mtd->dev, "self-check failed for PEB %d:%d, len %d\n",
 			pnum, offset, len);
 		dev_info(&mtd->dev, "data differs at position %d\n", i);
-		dump_len = max_t(int, 128, len - i);
 #ifdef DEBUG
+		dump_len = max_t(int, 128, len - i);
 		dev_info(&mtd->dev, "hex dump of the original buffer from %d to %d\n",
 			i, i + dump_len);
 		memory_display(buf + i, i, dump_len, 4, 0);
@@ -704,7 +704,6 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 	int i;
 	int ret;
 	void *buf = NULL, *oobbuf = NULL;
-	int step;
 
 	if (offset < 0 || offset + len > mtd->erasesize)
 		return -EINVAL;
@@ -746,11 +745,6 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 			goto err;
 		}
 	}
-
-	if (random)
-		step = random32() % num_bitflips;
-	else
-		step = len / num_bitflips;
 
 	for (i = 0; i < num_bitflips; i++) {
 		int offs;

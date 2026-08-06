@@ -96,7 +96,6 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 		const struct fdt_node_header *fnh;
 		const char *name;
 		int include = 0;
-		int stop_at = 0;
 		int offset = dt_struct;
 		int maxlen, len;
 
@@ -126,14 +125,10 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 			strcpy(end, name);
 			end += len;
 			stack[depth] = want;
-			if (want == 1)
-				stop_at = offset;
 			if (string_list_contains(inc_nodes, path))
 				want = 2;
 			else if (want)
 				want--;
-			else
-				stop_at = offset;
 			include = want;
 
 			break;
@@ -163,7 +158,6 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 						      sizeof(struct fdt_property) + len);
 
 			include = want >= 2;
-			stop_at = offset;
 			if (string_list_contains(exc_props, name))
 				include = 0;
 
@@ -173,7 +167,6 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE);
 
 			include = want >= 2;
-			stop_at = offset;
 
 			break;
 
@@ -837,7 +830,6 @@ static int fit_fdt_is_compatible(struct fit_handle *handle,
 	const char *unit = "fdt";
 	int data_len;
 	const void *data;
-	int ret;
 
 	if (of_property_present(child, "compatible"))
 		return 0;
@@ -845,10 +837,8 @@ static int fit_fdt_is_compatible(struct fit_handle *handle,
 		return 0;
 
 	image = fit_get_image(handle, child, &unit, 0);
-	if (!image) {
-		ret = -ENOENT;
+	if (!image)
 		goto err;
-	}
 
 	data = of_get_property(image, "data", &data_len);
 	if (!data)

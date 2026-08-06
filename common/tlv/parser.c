@@ -100,16 +100,11 @@ int tlv_parse(struct tlv_device *tlvdev,
 	const struct tlv *tlv = NULL;
 	struct tlv_mapping *map = NULL;
 	struct tlv_header *header = tlv_device_header(tlvdev);
-	u32 magic;
-	u16 reserved;
 	size_t size;
 	int ret = 0;
 	u32 crc = ~0;
 
-	magic = be32_to_cpu(header->magic);
-
 	size = tlv_total_len(header);
-	reserved = get_unaligned_be16(&header->reserved);
 
 	if (size == SIZE_MAX) {
 		pr_warn("Invalid TLV header, overflows\n");

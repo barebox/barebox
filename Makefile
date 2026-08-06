@@ -685,6 +685,12 @@ LDFLAGS_barebox += $(call ld-option,--pack-dyn-relocs=relr,-z pack-relative-relo
 LDFLAGS_pbl += $(call ld-option,--pack-dyn-relocs=relr,-z pack-relative-relocs)
 endif
 
+ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
+KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
+LDFLAGS_barebox += --gc-sections
+LDFLAGS_pbl += --gc-sections
+endif
+
 # We need some generic definitions.
 include $(srctree)/scripts/Makefile.lib
 

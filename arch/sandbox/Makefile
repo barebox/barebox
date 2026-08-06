@@ -46,7 +46,15 @@ archprepare: maketools
 
 PHONY += maketools
 
-export SANDBOX_LIBS BAREBOX_LDFLAGS
+# sandbox links via the compiler driver rather than $(LD) directly.
+# Pass --ld-path so that LLVM= and LD= overrides take effect for
+# sandbox linking, same as KBUILD_USERLDFLAGS in the Linux kernel.
+sandbox-ld-path := $(call try-run,\
+	$(CC) --ld-path=$(LD) -nostdlib -x c /dev/null -o "$$TMP",--ld-path=$(LD))
+
+BAREBOX_LDFLAGS += $(sandbox-ld-path) -no-pie
+BAREBOX_RELOC_LDFLAGS += $(sandbox-ld-path)
+export SANDBOX_LIBS BAREBOX_LDFLAGS BAREBOX_RELOC_LDFLAGS
 
 SANDBOX_LIBS-$(CONFIG_SDL) += $(shell $(CROSS_PKG_CONFIG) sdl2 --libs)
 SANDBOX_LIBS-$(CONFIG_GPIO_LIBFTDI1) += $(shell $(CROSS_PKG_CONFIG) libftdi1 --libs)

@@ -406,23 +406,26 @@ static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 	data->limit = blob + size;
 	INIT_LIST_HEAD(&data->var_list);
 
-	while (*blob) {
-		var = xmalloc(sizeof(*var));
+	while (size && *blob) {
 		len = strnlen(blob, size);
+		if (len == size) {
+			pr_err("Unterminated data @ 0x%08tx. Skipped.\n",
+			       blob - start);
+			break;
+		}
 
-		var->name = blob;
-		var->end  = blob + len;
-
-		sep = strchr(blob, '=');
-		if (sep) {
+		sep = memchr(blob, '=', len);
+		if (sep && sep != blob) {
+			var = xmalloc(sizeof(*var));
+			var->name = blob;
+			var->end  = blob + len;
 			var->start = sep + 1;
 			var->name_len = sep - blob;
 
 			list_add_tail(&var->list, &data->var_list);
 		} else {
-			pr_err("No separator in data @ 0x%08tx. Skipped.",
+			pr_err("No separator in data @ 0x%08tx. Skipped.\n",
 			       blob - start);
-			free(var);
 		}
 
 		len++; /* account for '\0' */

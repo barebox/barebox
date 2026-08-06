@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <memory.h>
+#include <fuzz.h>
 #include <linux/align.h>
 #include <efi/services.h>
 #include <efi/memory.h>
@@ -755,6 +756,29 @@ err:
 
 	return false;
 }
+
+static int fuzz_pe(const u8 *data, size_t size)
+{
+	struct efi_image_regions *regs;
+	WIN_CERTIFICATE *auth;
+	size_t auth_len;
+	void *image;
+
+	if (!size)
+		return 0;
+
+	image = memdup(data, size);
+	if (!image)
+		return 0;
+
+	efi_image_parse(image, size, &regs, &auth, &auth_len);
+
+	free(regs);
+	free(image);
+
+	return 0;
+}
+fuzz_test("pe", fuzz_pe);
 
 #ifdef CONFIG_EFI_LOADER
 static bool efi_image_authenticate(void *efi, size_t efi_size)

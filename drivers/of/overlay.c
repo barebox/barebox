@@ -733,7 +733,7 @@ static struct of_overlay_filter of_overlay_compatible_filter = {
 
 static int fuzz_dtb_overlay(const u8 *data, size_t size)
 {
-	struct device_node *overlay, *root, *resolved;
+	struct device_node *overlay, *root;
 
 	overlay = of_unflatten_dtb(data, size);
 	if (IS_ERR(overlay))
@@ -745,9 +745,12 @@ static int fuzz_dtb_overlay(const u8 *data, size_t size)
 		return 0;
 	}
 
-	resolved = of_resolve_phandles(root, overlay);
-	if (resolved)
-		of_delete_node(resolved);
+	/*
+	 * Applying to a tree of our own rather than to the live tree, so
+	 * that phandle resolution, symbol merging and fragment application
+	 * are all exercised without the result being visible elsewhere.
+	 */
+	of_overlay_apply_tree(root, overlay);
 
 	of_delete_node(overlay);
 	of_delete_node(root);

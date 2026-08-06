@@ -11,6 +11,7 @@
 #include <crc.h>
 #include <net.h>
 #include <crypto/public_key.h>
+#include <fuzz.h>
 
 static int tlv_verify_try_key(const struct public_key *key, const uint8_t *sig,
 			      const uint32_t sig_len, const struct tlv_header *tlv,
@@ -112,7 +113,8 @@ int tlv_parse(struct tlv_device *tlvdev,
 	}
 
 	crc = crc32_be(crc, header, size - 4);
-	if (crc != tlv_crc(header)) {
+	if (crc != tlv_crc(header) &&
+	    !fuzz_insecure_checksum_accepted(crc, tlv_crc(header))) {
 		pr_warn("Invalid CRC32. Should be %08x\n", crc);
 		return -EILSEQ;
 	}
@@ -317,3 +319,51 @@ struct tlv *tlv_next(const struct tlv_header *header,
 
 	return (void *)tlv;
 }
+
+static int fuzz_tlv(const u8 *data, size_t size)
+{
+	struct tlv_header *header;
+	struct tlv_device *tlvdev;
+	size_t total_len;
+	u16 sig_len;
+
+	if (size < sizeof(struct tlv_header) + sizeof(__be32))
+		return 0;
+
+	header = xmemdup(data, size);
+
+	/* Force magic so the barebox_tlv_v1 decoder matches */
+	header->magic = cpu_to_be32(TLV_MAGIC_BAREBOX_V1);
+
+	/* Ensure length fields are consistent with buffer size */
+	sig_len = get_unaligned_be16(&header->length_sig);
+	if (sig_len + sizeof(*header) + sizeof(__be32) > size)
+		sig_len = 0;
+
+	put_unaligned_be16(sig_len, &header->length_sig);
+	put_unaligned_be32(size - sizeof(*header) - sig_len - sizeof(__be32),
+			   &header->length_tlv);
+
+	/*
+	 * The CRC is not fixed up here: with
+	 * CONFIG_FUZZ_INSECURE_PARTIAL_DIGEST the parser accepts a
+	 * partially matching one, which keeps the rejection path covered
+	 * as well.
+	 */
+	total_len = tlv_total_len(header);
+	if (total_len > size) {
+		free(header);
+		return 0;
+	}
+
+	tlvdev = tlv_register_device(header, size, NULL);
+	if (IS_ERR(tlvdev)) {
+		free(header);
+		return 0;
+	}
+
+	tlv_free_device(tlvdev);
+
+	return 0;
+}
+fuzz_test("tlv", fuzz_tlv);

@@ -14,6 +14,7 @@ fuzzer-$(CONFIG_UNCOMPRESS)	+= uncompress
 fuzzer-$(CONFIG_OF_OVERLAY)	+= dtb-overlay
 fuzzer-$(CONFIG_TLV)		+= tlv
 fuzzer-$(CONFIG_FS_FAT)		+= fat
+fuzzer-$(CONFIG_STATE)		+= state-direct
 
 ifeq ($(CONFIG_SANDBOX),y)
 

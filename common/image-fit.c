@@ -1203,6 +1203,18 @@ static int bootm_fit_register(void)
 }
 late_initcall(bootm_fit_register);
 
+/*
+ * Verification modes selected by the control byte. All of them are
+ * reachable in practice, and which one is in effect decides whether
+ * hashes and signatures are merely checked when present or required.
+ */
+static const enum bootm_verify fuzz_verify_modes[] = {
+	BOOTM_VERIFY_NONE,
+	BOOTM_VERIFY_HASH,
+	BOOTM_VERIFY_SIGNATURE,
+	BOOTM_VERIFY_AVAILABLE,
+};
+
 static int fuzz_fit(const u8 *data, size_t size)
 {
 	const char *unit, *imgname = "kernel";
@@ -1211,9 +1223,27 @@ static int fuzz_fit(const u8 *data, size_t size)
 	unsigned long outsize, addr;
 	int ret;
 	void *config;
+	u8 ctrl = 0;
+
+	if (size < sizeof(struct fdt_header))
+		return 0;
+
+	/*
+	 * If the buffer is larger than the FDT claims to be, take the
+	 * first trailing byte as a control byte to vary what the fuzzer
+	 * exercises. Corpus entries that are exactly one FDT get 0.
+	 */
+	if (fdt_magic(data) == FDT_MAGIC) {
+		uint32_t fdt_size = fdt_totalsize(data);
+
+		if (fdt_size >= sizeof(struct fdt_header) && fdt_size < size) {
+			ctrl = data[fdt_size];
+			size = fdt_size;
+		}
+	}
 
 	handle.verbose = false;
-	handle.verify = BOOTM_VERIFY_AVAILABLE;
+	handle.verify = fuzz_verify_modes[ctrl % ARRAY_SIZE(fuzz_verify_modes)];
 
 	handle.size = size;
 	handle.fit = data;

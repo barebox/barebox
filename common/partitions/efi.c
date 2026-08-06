@@ -320,6 +320,18 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 		goto fail;
 	}
 
+	/*
+	 * The entry array is allocated from sizeof_partition_entry, but
+	 * walked as an array of gpt_entry, so anything else than the
+	 * size of that structure would index past the allocation.
+	 */
+	if (le32_to_cpu((*gpt)->sizeof_partition_entry) != sizeof(gpt_entry)) {
+		dev_dbg(blk->dev, "GUID Partition Entry Size check failed: %u != %zu\n",
+			le32_to_cpu((*gpt)->sizeof_partition_entry),
+			sizeof(gpt_entry));
+		goto fail;
+	}
+
 	if (!(*ptes = alloc_read_gpt_entries(blk, *gpt)))
 		goto fail;
 

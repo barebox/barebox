@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <memory.h>
 #include <linux/align.h>
-#include <linux/sizes.h>
 #include <efi/services.h>
 #include <efi/memory.h>
 #include <efi/loader.h>
@@ -22,9 +21,8 @@
 #include <efi/error.h>
 #include <pe.h>
 #include <linux/string.h>
-#include <qsort.h>
-#include <linux/err.h>
 #include <linux/overflow.h>
+#include <qsort.h>
 
 #ifdef CONFIG_EFI_LOADER
 static int machines[] = {
@@ -218,6 +216,36 @@ static void efi_set_code_and_data_type(
 }
 #endif
 
+static bool pe_range_ok(size_t len, size_t off, size_t size)
+{
+	return off <= len && size <= len - off;
+}
+
+static bool pe_align_size(u32 size, u32 align, size_t *aligned)
+{
+	size_t val = size;
+
+	if (!align || (align & (align - 1)))
+		return false;
+
+	if (check_add_overflow(val, (size_t)align - 1, &val))
+		return false;
+
+	*aligned = val & ~((size_t)align - 1);
+
+	return true;
+}
+
+static bool pe_header_offset(const void *efi, const void *ptr, size_t *off)
+{
+	if ((const u8 *)ptr < (const u8 *)efi)
+		return false;
+
+	*off = (const u8 *)ptr - (const u8 *)efi;
+
+	return true;
+}
+
 /**
  * efi_image_region_add() - add an entry of region
  * @regs:	Pointer to array of regions
@@ -340,6 +368,170 @@ void *efi_prepare_aligned_image(void *efi, u64 *efi_size)
 }
 
 /**
+ * efi_check_pe() - check if a memory buffer contains a PE-COFF image
+ *
+ * @buffer:	buffer to check
+ * @size:	size of buffer
+ * @nt_header:	on return pointer to NT header of PE-COFF image
+ * Return:	EFI_SUCCESS if the buffer contains a PE-COFF image
+ */
+efi_status_t efi_check_pe(void *buffer, size_t size, void **nt_header)
+{
+	struct mz_hdr *dos = buffer;
+	IMAGE_NT_HEADERS32 *nt;
+
+	if (size < sizeof(*dos))
+		return EFI_INVALID_PARAMETER;
+
+	/* Check for DOS magic */
+	if (dos->magic != MZ_MAGIC)
+		return EFI_INVALID_PARAMETER;
+
+	/*
+	 * Check if the image section header fits into the file. Knowing that at
+	 * least one section header follows we only need to check for the length
+	 * of the 64bit header which is longer than the 32bit header.
+	 */
+	if (!pe_range_ok(size, dos->peaddr, sizeof(IMAGE_NT_HEADERS64)))
+		return EFI_INVALID_PARAMETER;
+	nt = (IMAGE_NT_HEADERS32 *)((u8 *)buffer + dos->peaddr);
+
+	/* Check for PE-COFF magic */
+	if (nt->FileHeader.magic != PE_MAGIC)
+		return EFI_INVALID_PARAMETER;
+
+	if (nt_header)
+		*nt_header = nt;
+
+	return EFI_SUCCESS;
+}
+
+static bool efi_image_parse_header(void *efi, size_t len,
+				   IMAGE_NT_HEADERS32 **ntp,
+				   IMAGE_SECTION_HEADER **sectionsp,
+				   u32 *header_sizep, u32 *file_alignp,
+				   u32 *authoffp, u32 *authszp)
+{
+	IMAGE_NT_HEADERS32 *nt;
+	size_t opt_off, opt_size, sections_off, sections_size;
+	size_t csum_off, subsys_off, dir_off, dir_end;
+	int ctidx = IMAGE_DIRECTORY_ENTRY_SECURITY;
+	u16 opt_magic, min_opt_size;
+	u32 data_dirs;
+
+	/* Not every image has a certificate table data directory entry */
+	*authoffp = 0;
+	*authszp = 0;
+
+	if (efi_check_pe(efi, len, (void **)&nt) != EFI_SUCCESS)
+		return false;
+
+	if (!pe_header_offset(efi, &nt->OptionalHeader, &opt_off))
+		return false;
+	if (!pe_range_ok(len, opt_off, sizeof(opt_magic)))
+		return false;
+
+	opt_magic = nt->OptionalHeader.magic;
+	opt_size = nt->FileHeader.opt_hdr_size;
+
+	if (opt_magic == PE_OPT_MAGIC_PE32PLUS) {
+		IMAGE_NT_HEADERS64 *nt64 = (void *)nt;
+
+		min_opt_size = sizeof(nt64->OptionalHeader);
+		data_dirs = nt64->OptionalHeader.data_dirs;
+		*header_sizep = nt64->OptionalHeader.header_size;
+		*file_alignp = nt64->OptionalHeader.file_align;
+
+		if (!pe_header_offset(efi, &nt64->OptionalHeader.csum,
+				      &csum_off))
+			return false;
+		if (!pe_header_offset(efi, &nt64->OptionalHeader.subsys,
+				      &subsys_off))
+			return false;
+		if (!pe_header_offset(efi, &nt64->DataDirectory[ctidx],
+				      &dir_off))
+			return false;
+		if (!pe_header_offset(efi, &nt64->DataDirectory[ctidx + 1],
+				      &dir_end))
+			return false;
+
+		if (data_dirs > ctidx) {
+			*authoffp = nt64->DataDirectory[ctidx].virtual_address;
+			*authszp = nt64->DataDirectory[ctidx].size;
+		}
+	} else if (opt_magic == PE_OPT_MAGIC_PE32) {
+		min_opt_size = sizeof(nt->OptionalHeader);
+		data_dirs = nt->OptionalHeader.data_dirs;
+		*header_sizep = nt->OptionalHeader.header_size;
+		*file_alignp = nt->OptionalHeader.file_align;
+
+		if (!pe_header_offset(efi, &nt->OptionalHeader.csum,
+				      &csum_off))
+			return false;
+		if (!pe_header_offset(efi, &nt->OptionalHeader.subsys,
+				      &subsys_off))
+			return false;
+		if (!pe_header_offset(efi, &nt->DataDirectory[ctidx],
+				      &dir_off))
+			return false;
+		if (!pe_header_offset(efi, &nt->DataDirectory[ctidx + 1],
+				      &dir_end))
+			return false;
+
+		if (data_dirs > ctidx) {
+			*authoffp = nt->DataDirectory[ctidx].virtual_address;
+			*authszp = nt->DataDirectory[ctidx].size;
+		}
+	} else {
+		pr_err("%s: Invalid optional header magic %x\n", __func__,
+		       nt->OptionalHeader.magic);
+		return false;
+	}
+
+	if (opt_size < min_opt_size)
+		return false;
+	if (!pe_range_ok(len, opt_off, opt_size))
+		return false;
+	if (data_dirs > ctidx && opt_off + opt_size < dir_end)
+		return false;
+
+	sections_off = opt_off + opt_size;
+	sections_size = array_size(nt->FileHeader.sections,
+				   sizeof(IMAGE_SECTION_HEADER));
+	if (sections_size == SIZE_MAX)
+		return false;
+	if (!pe_range_ok(len, sections_off, sections_size))
+		return false;
+	if (*header_sizep < sections_off + sections_size)
+		return false;
+	if (!pe_range_ok(len, 0, *header_sizep))
+		return false;
+	if (*authszp && !pe_range_ok(len, *authoffp, *authszp))
+		return false;
+
+	if (!pe_range_ok(len, 0, csum_off) ||
+	    !pe_range_ok(len, subsys_off, 0) ||
+	    (data_dirs > ctidx && !pe_range_ok(len, dir_off, dir_end - dir_off)))
+		return false;
+
+	*ntp = nt;
+	*sectionsp = (IMAGE_SECTION_HEADER *)((u8 *)efi + sections_off);
+
+	return true;
+}
+
+static efi_status_t efi_image_region_add_checked(
+		struct efi_image_regions *regs, const void *efi, size_t len,
+		size_t start, size_t size, int nocheck)
+{
+	if (!pe_range_ok(len, start, size))
+		return EFI_INVALID_PARAMETER;
+
+	return efi_image_region_add(regs, efi + start, efi + start + size,
+				    nocheck);
+}
+
+/**
  * efi_image_parse() - parse a PE image
  * @efi:	Pointer to image
  * @len:	Size of @efi
@@ -357,27 +549,35 @@ void *efi_prepare_aligned_image(void *efi, u64 *efi_size)
 bool efi_image_parse(void *efi, size_t len, struct efi_image_regions **regp,
 		     WIN_CERTIFICATE **auth, size_t *auth_len)
 {
-	struct efi_image_regions *regs;
-	struct mz_hdr *dos;
+	struct efi_image_regions *regs = NULL;
 	IMAGE_NT_HEADERS32 *nt;
-	IMAGE_SECTION_HEADER *sections, **sorted;
+	IMAGE_SECTION_HEADER *sections, **sorted = NULL;
 	int num_regions, num_sections, i;
-	int ctidx = IMAGE_DIRECTORY_ENTRY_SECURITY;
-	u32 align, size, authsz, authoff;
-	size_t bytes_hashed;
+	u32 align, authsz, authoff, header_size;
+	size_t bytes_hashed, csum_off, subsys_off, dir_off, dir_end;
 
-	dos = (void *)efi;
-	nt = (void *)(efi + dos->peaddr);
-	authoff = 0;
-	authsz = 0;
+	if (regp)
+		*regp = NULL;
+	if (auth)
+		*auth = NULL;
+	if (auth_len)
+		*auth_len = 0;
+
+	if (!regp || !auth || !auth_len)
+		return false;
+
+	if (!efi_image_parse_header(efi, len, &nt, &sections, &header_size,
+				    &align, &authoff, &authsz))
+		return false;
 
 	/*
 	 * Count maximum number of regions to be digested.
 	 * We don't have to have an exact number here.
 	 * See efi_image_region_add()'s in parsing below.
 	 */
+	num_sections = nt->FileHeader.sections;
 	num_regions = 3; /* for header */
-	num_regions += nt->FileHeader.sections;
+	num_regions += num_sections;
 	num_regions++; /* for extra */
 
 	regs = calloc(sizeof(*regs) + sizeof(struct image_region) * num_regions,
@@ -394,60 +594,90 @@ bool efi_image_parse(void *efi, size_t len, struct efi_image_regions **regp,
 		IMAGE_NT_HEADERS64  *nt64 = (void *)nt;
 		struct pe32plus_opt_hdr *opt = &nt64->OptionalHeader;
 
+		if (!pe_header_offset(efi, &opt->csum, &csum_off))
+			goto err;
+		if (!pe_header_offset(efi, &opt->subsys, &subsys_off))
+			goto err;
+		if (!pe_header_offset(efi,
+				      &nt64->DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY],
+				      &dir_off))
+			goto err;
+		if (!pe_header_offset(efi,
+				      &nt64->DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY] + 1,
+				      &dir_end))
+			goto err;
+
 		/* Skip CheckSum */
-		efi_image_region_add(regs, efi, &opt->csum, 0);
-		if (nt64->OptionalHeader.data_dirs <= ctidx) {
-			efi_image_region_add(regs,
-					     &opt->subsys,
-					     efi + opt->header_size, 0);
+		if (efi_image_region_add_checked(regs, efi, len, 0,
+						 csum_off, 0) != EFI_SUCCESS)
+			goto err;
+		if (nt64->OptionalHeader.data_dirs <=
+		    IMAGE_DIRECTORY_ENTRY_SECURITY) {
+			if (efi_image_region_add_checked(regs, efi, len,
+							 subsys_off,
+							 header_size - subsys_off,
+							 0) != EFI_SUCCESS)
+				goto err;
 		} else {
 			/* Skip Certificates Table */
-			efi_image_region_add(regs,
-					     &opt->subsys,
-					     &nt64->DataDirectory[ctidx], 0);
-			efi_image_region_add(regs,
-					     &nt64->DataDirectory[ctidx] + 1,
-					     efi + opt->header_size, 0);
-
-			authoff = nt64->DataDirectory[ctidx].virtual_address;
-			authsz = nt64->DataDirectory[ctidx].size;
+			if (efi_image_region_add_checked(regs, efi, len,
+							 subsys_off,
+							 dir_off - subsys_off,
+							 0) != EFI_SUCCESS)
+				goto err;
+			if (efi_image_region_add_checked(regs, efi, len,
+							 dir_end,
+							 header_size - dir_end,
+							 0) != EFI_SUCCESS)
+				goto err;
 		}
 
 		bytes_hashed = opt->header_size;
-		align = opt->file_align;
-	} else if (nt->OptionalHeader.magic == PE_OPT_MAGIC_PE32) {
+	} else {
 		struct pe32_opt_hdr *opt = &nt->OptionalHeader;
 
+		if (!pe_header_offset(efi, &opt->csum, &csum_off))
+			goto err;
+		if (!pe_header_offset(efi, &opt->subsys, &subsys_off))
+			goto err;
+		if (!pe_header_offset(efi,
+				      &nt->DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY],
+				      &dir_off))
+			goto err;
+		if (!pe_header_offset(efi,
+				      &nt->DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY] + 1,
+				      &dir_end))
+			goto err;
+
 		/* Skip CheckSum */
-		efi_image_region_add(regs, efi, &opt->csum, 0);
-		if (nt->OptionalHeader.data_dirs <= ctidx) {
-			efi_image_region_add(regs,
-					     &opt->subsys,
-					     efi + opt->header_size, 0);
+		if (efi_image_region_add_checked(regs, efi, len, 0,
+						 csum_off, 0) != EFI_SUCCESS)
+			goto err;
+		if (nt->OptionalHeader.data_dirs <=
+		    IMAGE_DIRECTORY_ENTRY_SECURITY) {
+			if (efi_image_region_add_checked(regs, efi, len,
+							 subsys_off,
+							 header_size - subsys_off,
+							 0) != EFI_SUCCESS)
+				goto err;
 		} else {
 			/* Skip Certificates Table */
-			efi_image_region_add(regs, &opt->subsys,
-					     &nt->DataDirectory[ctidx], 0);
-			efi_image_region_add(regs,
-					     &nt->DataDirectory[ctidx] + 1,
-					     efi + opt->header_size, 0);
-
-			authoff = nt->DataDirectory[ctidx].virtual_address;
-			authsz = nt->DataDirectory[ctidx].size;
+			if (efi_image_region_add_checked(regs, efi, len,
+							 subsys_off,
+							 dir_off - subsys_off,
+							 0) != EFI_SUCCESS)
+				goto err;
+			if (efi_image_region_add_checked(regs, efi, len,
+							 dir_end,
+							 header_size - dir_end,
+							 0) != EFI_SUCCESS)
+				goto err;
 		}
 
 		bytes_hashed = opt->header_size;
-		align = opt->file_align;
-	} else {
-		pr_err("%s: Invalid optional header magic %x\n", __func__,
-			nt->OptionalHeader.magic);
-		goto err;
 	}
 
 	/* 2. Sections */
-	num_sections = nt->FileHeader.sections;
-	sections = (void *)((uint8_t *)&nt->OptionalHeader +
-			    nt->FileHeader.opt_hdr_size);
 	sorted = calloc(sizeof(IMAGE_SECTION_HEADER *), num_sections);
 	if (!sorted) {
 		pr_err("%s: Out of memory\n", __func__);
@@ -462,52 +692,57 @@ bool efi_image_parse(void *efi, size_t len, struct efi_image_regions **regp,
 	qsort(sorted, num_sections, sizeof(sorted[0]), cmp_pe_section);
 
 	for (i = 0; i < num_sections; i++) {
+		size_t size;
+
 		if (!sorted[i]->SizeOfRawData)
 			continue;
 
-		size = (sorted[i]->SizeOfRawData + align - 1) & ~(align - 1);
-		efi_image_region_add(regs, efi + sorted[i]->PointerToRawData,
-				     efi + sorted[i]->PointerToRawData + size,
-				     0);
-		pr_debug("section[%d](%s): raw: 0x%x-0x%x, virt: %x-%x\n",
-			  i, sorted[i]->Name,
-			  sorted[i]->PointerToRawData,
-			  sorted[i]->PointerToRawData + size,
-			  sorted[i]->VirtualAddress,
-			  sorted[i]->VirtualAddress
+		if (!pe_align_size(sorted[i]->SizeOfRawData, align, &size))
+			goto err;
+		if (!pe_range_ok(len, sorted[i]->PointerToRawData, size))
+			goto err;
+		if (efi_image_region_add_checked(regs, efi, len,
+						 sorted[i]->PointerToRawData,
+						 size, 0) != EFI_SUCCESS)
+			goto err;
+		pr_debug("section[%d](%s): raw: 0x%x-0x%zx, virt: %x-%x\n",
+			 i, sorted[i]->Name,
+			 sorted[i]->PointerToRawData,
+			 sorted[i]->PointerToRawData + size,
+			 sorted[i]->VirtualAddress,
+			 sorted[i]->VirtualAddress
 			    + sorted[i]->Misc.VirtualSize);
 
-		bytes_hashed += size;
+		if (check_add_overflow(bytes_hashed, size, &bytes_hashed))
+			goto err;
 	}
 	free(sorted);
+	sorted = NULL;
 
 	/* 3. Extra data excluding Certificates Table */
+	if (bytes_hashed > len)
+		goto err;
 	if (bytes_hashed + authsz < len) {
 		pr_debug("extra data for hash: %zu\n",
-			  len - (bytes_hashed + authsz));
-		efi_image_region_add(regs, efi + bytes_hashed,
-				     efi + len - authsz, 0);
+			 len - (bytes_hashed + authsz));
+		if (efi_image_region_add_checked(regs, efi, len,
+						 bytes_hashed,
+						 len - bytes_hashed - authsz,
+						 0) != EFI_SUCCESS)
+			goto err;
 	}
 
 	/* Return Certificates Table */
 	if (authsz) {
-		if (len < authoff + authsz) {
-			pr_err("%s: Size for auth too large: %u >= %zu\n",
-				__func__, authsz, len - authoff);
-			goto err;
-		}
-		if (authsz < sizeof(*auth)) {
+		if (authsz < sizeof(**auth)) {
 			pr_err("%s: Size for auth too small: %u < %zu\n",
-				__func__, authsz, sizeof(*auth));
+			       __func__, authsz, sizeof(**auth));
 			goto err;
 		}
 		*auth = efi + authoff;
 		*auth_len = authsz;
 		pr_debug("WIN_CERTIFICATE: 0x%x, size: 0x%x\n", authoff,
-			  authsz);
-	} else {
-		*auth = NULL;
-		*auth_len = 0;
+			 authsz);
 	}
 
 	*regp = regs;
@@ -515,6 +750,7 @@ bool efi_image_parse(void *efi, size_t len, struct efi_image_regions **regp,
 	return true;
 
 err:
+	free(sorted);
 	free(regs);
 
 	return false;
@@ -525,48 +761,7 @@ static bool efi_image_authenticate(void *efi, size_t efi_size)
 {
 	return true;
 }
-#endif
 
-/**
- * efi_check_pe() - check if a memory buffer contains a PE-COFF image
- *
- * @buffer:	buffer to check
- * @size:	size of buffer
- * @nt_header:	on return pointer to NT header of PE-COFF image
- * Return:	EFI_SUCCESS if the buffer contains a PE-COFF image
- */
-efi_status_t efi_check_pe(void *buffer, size_t size, void **nt_header)
-{
-	struct mz_hdr *dos = buffer;
-	IMAGE_NT_HEADERS32 *nt;
-
-	if (size < sizeof(*dos))
-		return EFI_INVALID_PARAMETER;
-
-	/* Check for DOS magix */
-	if (dos->magic != MZ_MAGIC)
-		return EFI_INVALID_PARAMETER;
-
-	/*
-	 * Check if the image section header fits into the file. Knowing that at
-	 * least one section header follows we only need to check for the length
-	 * of the 64bit header which is longer than the 32bit header.
-	 */
-	if (size < dos->peaddr + sizeof(IMAGE_NT_HEADERS32))
-		return EFI_INVALID_PARAMETER;
-	nt = (IMAGE_NT_HEADERS32 *)((u8 *)buffer + dos->peaddr);
-
-	/* Check for PE-COFF magic */
-	if (nt->FileHeader.magic != PE_MAGIC)
-		return EFI_INVALID_PARAMETER;
-
-	if (nt_header)
-		*nt_header = nt;
-
-	return EFI_SUCCESS;
-}
-
-#ifdef CONFIG_EFI_LOADER
 /**
  * section_size() - determine size of section
  *
@@ -668,6 +863,7 @@ efi_status_t efi_load_pe(struct efi_loaded_image_obj *handle,
 	if (nt->OptionalHeader.magic == PE_OPT_MAGIC_PE32PLUS) {
 		IMAGE_NT_HEADERS64 *nt64 = (void *)nt;
 		struct pe32plus_opt_hdr *opt = &nt64->OptionalHeader;
+
 		image_base = opt->image_base;
 		efi_set_code_and_data_type(loaded_image_info, opt->subsys);
 		handle->image_type = opt->subsys;
@@ -684,6 +880,7 @@ efi_status_t efi_load_pe(struct efi_loaded_image_obj *handle,
 		rel = efi_reloc + nt64->DataDirectory[rel_idx].virtual_address;
 	} else if (nt->OptionalHeader.magic == PE_OPT_MAGIC_PE32) {
 		struct pe32_opt_hdr *opt = &nt->OptionalHeader;
+
 		image_base = opt->image_base;
 		efi_set_code_and_data_type(loaded_image_info, opt->subsys);
 		handle->image_type = opt->subsys;

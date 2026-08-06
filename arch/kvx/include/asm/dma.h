@@ -13,20 +13,18 @@
 struct device;
 
 #define dma_alloc_coherent dma_alloc_coherent
-static inline void *dma_alloc_coherent(struct device *dev,
-				       size_t size, dma_addr_t *dma_handle)
-{
-	BUILD_BUG_ON_MSG(1, "dma_alloc_coherent not supported: "
-			"MMU support is required to map uncached pages");
-	return NULL;
-}
+
+/* dma_alloc_coherent is not supported as MMU support is required to map
+ * uncached pages. To avoid compile-time errors for ultimately unreferenced
+ * code, we declare the prototype here and let the lack of definition cause
+ * a linker error if either function ends up being used.
+ */
+extern void *dma_alloc_coherent(struct device *dev,
+			 size_t size, dma_addr_t *dma_handle);
 
 #define dma_free_coherent dma_free_coherent
-static inline void dma_free_coherent(struct device *dev,
-				     void *mem, dma_addr_t dma_handle,
-				     size_t size)
-{
-	free(mem);
-}
+extern void dma_free_coherent(struct device *dev,
+		       void *mem, dma_addr_t dma_handle,
+		       size_t size);
 
 #endif /* __ASM_DMA_H */

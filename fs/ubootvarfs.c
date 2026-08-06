@@ -201,10 +201,18 @@ static void ubootvarfs_relocate_tail(struct ubootvarfs_inode *node,
 {
 	struct ubootvarfs_var *var = node->var;
 	struct ubootvarfs_data *data = node->data;
-	const size_t n = data->end - var->start;
-	void *src = var->end + 1;
+	char *src = var->end + 1;
+	const char *tail_end;
 
-	memmove(src + delta, src, n);
+	/*
+	 * Move everything up to and including the terminating NUL at
+	 * data->end. When the environment completely fills the device,
+	 * the last entry's NUL is the final byte and data->end points
+	 * one past the mapping, so there is no terminator to carry along.
+	 */
+	tail_end = min_t(const char *, data->end + 1, data->limit);
+
+	memmove(src + delta, src, tail_end - src);
 
 	data->end += delta;
 

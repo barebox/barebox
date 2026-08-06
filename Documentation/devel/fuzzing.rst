@@ -97,6 +97,28 @@ which can be inspected by a web browser:
 
 	firefox barebox.coverage_html/index.html
 
+Automated Coverage Checking
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For CI or scripted workflows, the ``coverage-check`` Makefile target can verify
+that coverage is 100% for a given set of functions without manual inspection:
+
+.. code-block:: bash
+
+	make coverage-check \
+		COVERAGE_SOURCES="common/filetype.c" \
+		COVERAGE_FUNCTIONS="file_detect|fuzz_filetype|fat_valid|is_fat|is_gpt|pmbr_part"
+
+``COVERAGE_SOURCES`` lists the source files to check. ``COVERAGE_FUNCTIONS`` is
+an optional regex that filters which functions are considered. This is important
+when a source file contains functions not exercised by the fuzzer — without the
+filter, those would show up as uncovered and fail the check.
+
+On success, the target prints a per-file summary and exits with 0. On failure,
+it lists each function that has uncovered regions or lines along with their
+counts and exits with 1. Use ``make coverage-html`` to inspect the specific
+source lines that were not hit.
+
 Adding a fuzzer
 ^^^^^^^^^^^^^^^
 

@@ -20,6 +20,7 @@
 #include <fs.h>
 #include <libbb.h>
 #include <fnmatch.h>
+#include <fuzz.h>
 
 static struct device_node *find_target(struct device_node *root,
 				       struct device_node *fragment)
@@ -729,6 +730,31 @@ static struct of_overlay_filter of_overlay_compatible_filter = {
 	.name = "compatible",
 	.filter_content = of_overlay_filter_compatible,
 };
+
+static int fuzz_dtb_overlay(const u8 *data, size_t size)
+{
+	struct device_node *overlay, *root, *resolved;
+
+	overlay = of_unflatten_dtb(data, size);
+	if (IS_ERR(overlay))
+		return 0;
+
+	root = of_new_node(NULL, NULL);
+	if (!root) {
+		of_delete_node(overlay);
+		return 0;
+	}
+
+	resolved = of_resolve_phandles(root, overlay);
+	if (resolved)
+		of_delete_node(resolved);
+
+	of_delete_node(overlay);
+	of_delete_node(root);
+
+	return 0;
+}
+fuzz_test("dtb-overlay", fuzz_dtb_overlay);
 
 static int of_overlay_init(void)
 {

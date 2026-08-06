@@ -388,10 +388,20 @@ static int ubootvarfs_truncate(struct file *f, loff_t size)
 	return 0;
 }
 
+static int ubootvarfs_flush(struct file *f)
+{
+	struct inode *inode = f->f_inode;
+	struct ubootvarfs_inode *node = inode_to_node(inode);
+	struct ubootvarfs_data *data = node->data;
+
+	return flush(data->fd);
+}
+
 static const struct file_operations ubootvarfs_file_operations = {
 	.truncate = ubootvarfs_truncate,
 	.read = ubootvarfs_read,
 	.write = ubootvarfs_write,
+	.flush = ubootvarfs_flush,
 };
 
 static void ubootvarfs_free_vars(struct ubootvarfs_data *data)

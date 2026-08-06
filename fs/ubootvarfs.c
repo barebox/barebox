@@ -331,7 +331,6 @@ static void ubootvarfs_destroy_inode(struct inode *inode)
 {
 	struct ubootvarfs_inode *node = inode_to_node(inode);
 
-	free(node->var);
 	free(node);
 }
 
@@ -395,6 +394,16 @@ static const struct file_operations ubootvarfs_file_operations = {
 	.write = ubootvarfs_write,
 };
 
+static void ubootvarfs_free_vars(struct ubootvarfs_data *data)
+{
+	struct ubootvarfs_var *var, *tmp;
+
+	list_for_each_entry_safe(var, tmp, &data->var_list, list) {
+		list_del(&var->list);
+		free(var);
+	}
+}
+
 static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 			     size_t size)
 {
@@ -447,6 +456,7 @@ static int ubootvarfs_probe(struct device *dev)
 	int ret;
 
 	dev->priv = data;
+	INIT_LIST_HEAD(&data->var_list);
 
 	data->fd = open(fsdev->backingstore, O_RDWR);
 	if (data->fd < 0) {
@@ -479,6 +489,7 @@ static int ubootvarfs_probe(struct device *dev)
 
 	return 0;
 exit:
+	ubootvarfs_free_vars(data);
 	close(data->fd);
 free_data:
 	free(data);
@@ -488,9 +499,12 @@ free_data:
 static void ubootvarfs_remove(struct device *dev)
 {
 	struct ubootvarfs_data *data = dev->priv;
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 
 	flush(data->fd);
 	close(data->fd);
+	fsdev->cdev = NULL;
+	ubootvarfs_free_vars(data);
 	free(data);
 }
 

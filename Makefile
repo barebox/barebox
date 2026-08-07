@@ -1691,8 +1691,22 @@ $(DOC_TARGETS):
 # Code Coverage
 # ---------------------------------------------------------------------------
 
+# lcov 2.0 turned inconsistencies in the input into hard errors. The lcov
+# data llvm-cov exports trips two of them: it attributes lines to functions
+# it reports as not hit, and it refers to lines past the end of headers that
+# were included from several places. Neither affects the generated report,
+# so tell genhtml to carry on. Expanded lazily, so that older genhtml, which
+# does not know these categories, is only consulted when it is actually run.
+# lcov 1.x needs no such treatment.
+genhtml-lcov-major = $(shell $(GENHTML) --version 2>/dev/null | \
+			sed -ne 's/.*LCOV version \([0-9]\+\).*/\1/p')
+# in its own variable, as $(if) would split the list at the comma
+genhtml-ignore := inconsistent,range
+GENHTML_FLAGS = $(if $(filter-out 0 1,$(genhtml-lcov-major)),\
+		 --ignore-errors $(genhtml-ignore))
+
 barebox.coverage_html: barebox.coverage-info
-	$(GENHTML) -o $@ $<
+	$(GENHTML) $(GENHTML_FLAGS) -o $@ $<
 
 barebox.coverage-info: default.profdata
 	$(COV) export --format=lcov -instr-profile $< $(objtree)/barebox >$@

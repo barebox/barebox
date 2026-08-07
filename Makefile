@@ -1692,7 +1692,7 @@ $(DOC_TARGETS):
 # ---------------------------------------------------------------------------
 
 barebox.coverage_html: barebox.coverage-info
-	genhtml -o $@ $<
+	$(GENHTML) -o $@ $<
 
 barebox.coverage-info: default.profdata
 	$(COV) export --format=lcov -instr-profile $< $(objtree)/barebox >$@

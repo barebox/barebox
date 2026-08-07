@@ -79,19 +79,23 @@ barebox will produce coverage information.
 	images/fuzz-filetype -max_total_time=60 -max_len=2048
 
 After the process exists regularly (i.e., not aborted with ctrl+C!),
-it will produce a ``default.profraw`` file, which needs to be further
-processed:
+it will produce a ``default.profraw`` file in its working directory,
+which needs to be further processed:
 
 .. code-block:: bash
 
 	make coverage-html
 
-This will produce a ``${KBUILD_OUTPUT}/coverage_html/`` directory, which can be
-inspected by a web browser:
+Note that every run of an instrumented binary overwrites the profile, so
+collect it before running anything else, ``images/barebox --list-fuzzers``
+included.
+
+This will produce a ``${KBUILD_OUTPUT}/barebox.coverage_html/`` directory,
+which can be inspected by a web browser:
 
 .. code-block:: bash
 
-	firefox coverage_html/index.html
+	firefox barebox.coverage_html/index.html
 
 Adding a fuzzer
 ^^^^^^^^^^^^^^^

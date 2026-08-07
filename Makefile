@@ -1697,7 +1697,12 @@ barebox.coverage_html: barebox.coverage-info
 barebox.coverage-info: default.profdata
 	$(COV) export --format=lcov -instr-profile $< $(objtree)/barebox >$@
 
-default.profdata: $(srctree)/default.profraw
+# The instrumented binary writes the profile into its working directory,
+# which is the build directory for the usual out-of-tree build. Override
+# PROFRAW to merge a profile collected elsewhere.
+PROFRAW ?= default.profraw
+
+default.profdata: $(PROFRAW)
 	$(PROFDATA) merge -sparse $< -o $@
 
 # We intentionally don't depend on barebox being built as that can take >10

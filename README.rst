@@ -273,6 +273,11 @@ are the release rules:
   We think that there is no need for pre releases, but if it's ever
   necessary, this is the scheme we follow.
 
+- Occasionally, a release may be designated a long term stable (LTS)
+  release and will continue to receive fixes for a longer period of
+  time. Refer to ``SECURITY.md`` in this directory to see, what
+  releases, besides the most recent, are actively maintained.
+
 - Only the monthly releases are archived on the web site. The tarballs
   are located in https://www.barebox.org/download/ and this location
   does never change, in order to make life easier for distribution

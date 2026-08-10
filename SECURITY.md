@@ -2,11 +2,17 @@
 
 ## Supported Versions
 
-The barebox project does not, at the moment, maintain any longer term
-support branches.
 Please update to new [barebox releases](https://github.com/barebox/barebox/releases)
 as they become available.
 Compatibility with old kernels is maintained over barebox releases.
+
+The [migration guides](https://www.barebox.org/doc/latest/migration-guides/index.html)
+can be helpful in adapting configuration to new releases.
+
+In addition, the barebox project currently maintains following long term stable (LTS)
+releases:
+
+  * [v2026.04.y](https://github.com/barebox/barebox/tree/stable/v2026.04)
 
 ## Reporting a Vulnerability
 

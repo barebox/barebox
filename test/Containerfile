@@ -118,4 +118,17 @@ ENV LLVM_SUFFIX=-${LLVM_VERSION}
 RUN ln -Ts /usr/lib/llvm-${LLVM_VERSION}/lib/clang/${LLVM_VERSION}/lib/linux/ \
            /usr/lib/llvm-${LLVM_VERSION}/lib/clang/${LLVM_VERSION}/lib/x86_64-pc-linux-gnu
 
+ENV OPENSSL_VERSION=3.5.6
+ENV PKG_CONFIG_PATH=/opt/openssl-musl/lib64/pkgconfig
+RUN cd /tmp && \
+	wget https://github.com/openssl/openssl/releases/download/openssl-$OPENSSL_VERSION/openssl-$OPENSSL_VERSION.tar.gz && \
+	echo "deae7c80cba99c4b4f940ecadb3c3338b13cb77418409238e57d7f31f2a3b736 openssl-$OPENSSL_VERSION.tar.gz" | sha256sum --check --status && \
+	tar -xzf openssl-$OPENSSL_VERSION.tar.gz && \
+	cd openssl-$OPENSSL_VERSION && \
+	./Configure linux-x86_64 no-shared no-tests no-secure-memory no-afalgeng \
+		--prefix=/opt/openssl-musl --openssldir=/opt/openssl-musl/ssl CC=musl-gcc && \
+	make -j$(nproc) && make install_sw && \
+	ln -s /opt/openssl-musl/include/openssl /usr/include/x86_64-linux-musl && \
+	rm -rf /tmp/openssl-$OPENSSL_VERSION.tar.gz /tmp/openssl-$OPENSSL_VERSION
+
 USER barebox:barebox

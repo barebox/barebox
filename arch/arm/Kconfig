@@ -272,6 +272,21 @@ config ARCH_ZYNQMP
 	select GPIOLIB
 	select HAS_MACB
 
+config ARCH_MICROCHIP
+	bool "Microchip ARM64 SoC support"
+	depends on ARCH_MULTIARCH
+	depends on 64BIT
+	select OFDEVICE
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select PINCTRL
+	select GPIOLIB
+	help
+	  This enables support for Microchip ARM64-based SoCs,
+	  including the LAN969X Ethernet switch family.
+
+	  For ARM32 Microchip/Atmel SoCs (AT91, SAMA5), use ARCH_AT91.
+
 source "arch/arm/cpu/Kconfig"
 source "arch/arm/mach-at91/Kconfig"
 source "arch/arm/mach-bcm283x/Kconfig"

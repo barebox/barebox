@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+/*
+ * Copyright (C) 2026 Oleksij Rempel <o.rempel@pengutronix.de>
+ *
+ * Barebox-only overlay for the LAN9691 SoC. dts/src/arm64/microchip/
+ * lan9691.dtsi is a wholesale snapshot of the Linux device trees and
+ * must not be patched locally, so SoC nodes barebox needs but that
+ * snapshot does not carry are added here instead - currently the qspi
+ * controllers.
+ *
+ * Once a dts/ sync brings a node in, drop it from here. When nothing is
+ * left, delete the file; nothing else needs touching.
+ */
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <arm64/microchip/clk-lan9691.h>
+
+&axi {
+	qspi0: spi@e0804000 {
+		compatible = "microchip,lan9691-qspi", "microchip,lan966x-qspi";
+		reg = <0xe0804000 0x00000100>,
+		      <0x20000000 0x08000000>;
+		reg-names = "qspi_base", "qspi_mmap";
+		interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&fabric_clk>, <&clks GCK_ID_QSPI0>;
+		clock-names = "pclk", "gclk";
+		assigned-clocks = <&clks GCK_ID_QSPI0>;
+		assigned-clock-rates = <100000000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+	};
+
+	qspi2: spi@e0834000 {
+		compatible = "microchip,lan9691-qspi", "microchip,lan966x-qspi";
+		reg = <0xe0834000 0x00000100>,
+		      <0x30000000 0x04000000>;
+		reg-names = "qspi_base", "qspi_mmap";
+		interrupts = <GIC_SPI 66 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&fabric_clk>, <&clks GCK_ID_QSPI2>;
+		clock-names = "pclk", "gclk";
+		assigned-clocks = <&clks GCK_ID_QSPI2>;
+		assigned-clock-rates = <100000000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+	};
+};

@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# barebox image generation Makefile for Microchip ARM64 SoCs
+#
+
+# Novarq Tactical 1000 (Microchip LAN9696)
+pblb-$(CONFIG_MACH_NOVARQ_TACTICAL_1000) += start_novarq_tactical_1000
+FILE_barebox-novarq-tactical-1000.img = start_novarq_tactical_1000.pblb
+image-$(CONFIG_MACH_NOVARQ_TACTICAL_1000) += barebox-novarq-tactical-1000.img

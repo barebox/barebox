@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+/*
+ * Copyright (C) 2026 Oleksij Rempel <o.rempel@pengutronix.de>
+ */
+
+/dts-v1/;
+
+/*
+ * This is the pre-production Tactical 1000, which is laid out as a close
+ * copy of the Microchip EV23X71A reference design. So rather than carry a
+ * board device tree of our own, include the upstream EV23X71A one and
+ * correct the identity on top of it. That describes the hardware
+ * accurately and keeps the delta reviewable.
+ *
+ * The shipping Tactical 1000 is a different board - it gains fans, an
+ * RTC and more - and has its own device tree, lan9696-tactical-1000.dts.
+ * Production hardware should get its own board entry including that
+ * file instead; this one stays for the pre-production boards.
+ */
+#include <arm64/microchip/lan9696-ev23x71a.dts>
+
+#include "lan9691-bb.dtsi"
+
+/ {
+	model = "Novarq Tactical 1000 (pre-production, EV23X71A based)";
+	/*
+	 * microchip,ev23x71a is kept as a fallback on purpose: this board
+	 * really is that design, so anything keyed on the eval board applies.
+	 */
+	compatible = "novarq,tactical-1000-alpha", "microchip,ev23x71a",
+		     "microchip,lan9696", "microchip,lan9691";
+};
+
+&{/leds/led-status} {
+	barebox,default-trigger = "heartbeat";
+};
+
+&qspi0 {
+	status = "okay";
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <50000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <4>;
+		m25p,fast-read;
+	};
+};

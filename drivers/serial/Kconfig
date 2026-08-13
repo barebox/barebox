@@ -90,9 +90,13 @@ config DRIVER_SERIAL_NS16550_OMAP_TTYS
 	  used.
 
 config DRIVER_SERIAL_ATMEL
-	depends on ARCH_AT91
+	bool "Atmel USART support"
+	depends on ARCH_AT91 || ARCH_MICROCHIP
 	default y
-	bool "Atmel serial driver"
+	help
+	  This enables the driver for the on-chip UARTs of Atmel/Microchip
+	  AT91, SAMA5, and LAN969X SoC families. The driver supports device
+	  tree configuration and clock framework integration.
 
 config DRIVER_SERIAL_NS16550_PCI
 	depends on DRIVER_SERIAL_NS16550

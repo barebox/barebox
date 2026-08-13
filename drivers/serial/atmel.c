@@ -442,8 +442,9 @@ static int atmel_serial_probe(struct device *dev)
 }
 
 static const struct of_device_id __maybe_unused atmel_serial_dt_ids[] = {
-	{ .compatible = "atmel,at91rm9200-usart" },
+	{ .compatible = "microchip,lan9691-usart" },
 	{ .compatible = "atmel,at91sam9260-usart" },
+	{ .compatible = "atmel,at91rm9200-usart" },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, atmel_serial_dt_ids);

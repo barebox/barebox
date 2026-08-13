@@ -63,4 +63,14 @@ config RESET_SOCFPGA32
 	help
 	  This enables the reset controller driver for 32-bit SoCFPGA platforms.
 
+config RESET_MICROCHIP_SPARX5
+	bool "Microchip Sparx5 / LAN969X / LAN966X switch reset driver"
+	depends on OFDEVICE
+	select MFD_SYSCON
+	help
+	  This enables the switch reset controller driver for the Microchip
+	  Sparx5 / LAN969X / LAN966X switch SoCs. The reset is asserted once
+	  at probe time so downstream peripherals (SGPIO, MDIO, switch core)
+	  see a clean IP state.
+
 endif

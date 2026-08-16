@@ -14,11 +14,11 @@
 #include <pwm.h>
 
 #include <mach/pxa/hardware.h>
-#include <mach/pxa/clock.h>
 #include <mach/pxa/pxa-regs.h>
 #include <mach/pxa/regs-pwm.h>
 #include <linux/math64.h>
 #include <linux/compiler.h>
+#include <linux/clk.h>
 
 /* PWM registers and bits definitions */
 #define PWMCR		(0x00)
@@ -31,6 +31,7 @@
 struct pxa_pwm_chip {
 	struct pwm_chip chip;
 	void __iomem *iobase;
+	struct clk *clk;
 	int id;
 };
 
@@ -41,35 +42,12 @@ static struct pxa_pwm_chip *to_pxa_pwm_chip(struct pwm_chip *chip)
 
 static int pxa_pwm_enable(struct pxa_pwm_chip *pxa_pwm)
 {
-	switch (pxa_pwm->id) {
-	case 0:
-	case 2:
-		CKEN |= CKEN_PWM0;
-		break;
-	case 1:
-	case 3:
-		CKEN |= CKEN_PWM1;
-		break;
-	default:
-		return -EINVAL;
-	}
-	return 0;
+	return clk_enable(pxa_pwm->clk);
 }
 
 static void pxa_pwm_disable(struct pxa_pwm_chip *pxa_pwm)
 {
-	switch (pxa_pwm->id) {
-	case 0:
-	case 2:
-		CKEN &= ~CKEN_PWM0;
-		break;
-	case 1:
-	case 3:
-		CKEN &= ~CKEN_PWM1;
-		break;
-	default:
-		break;
-	}
+	clk_disable(pxa_pwm->clk);
 }
 
 /*
@@ -93,7 +71,7 @@ static int pxa_pwm_apply(struct pwm_chip *chip,
 		return 0;
 	}
 
-	c = pxa_get_pwmclk();
+	c = clk_get_rate(pxa_pwm->clk);
 	c = c * state->period;
 	do_div(c, 1000000000);
 	period_cycles = c;
@@ -142,6 +120,11 @@ static int pxa_pwm_probe(struct device *dev)
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	chip->iobase = IOMEM(iores->start);
+
+	chip->clk = clk_get(dev, NULL);
+	if (IS_ERR(chip->clk))
+		return PTR_ERR(chip->clk);
+
 	chip->id = dev->id;
 	chip->chip.dev = dev;
 	dev->priv = chip;
@@ -156,7 +139,6 @@ static struct driver pxa_pwm_driver = {
 
 static int __init pxa_pwm_init_driver(void)
 {
-	CKEN &= ~CKEN_PWM0 & ~CKEN_PWM1;
 	platform_driver_register(&pxa_pwm_driver);
 	return 0;
 }

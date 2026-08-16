@@ -181,6 +181,7 @@ static int pxa_serial_probe(struct device *dev)
 	cdev->getc = pxa_serial_getc;
 	cdev->flush = pxa_serial_flush;
 	cdev->setbrg = pxa_serial_setbaudrate;
+	cdev->linux_console_name = "ttyS";
 
 	console_register(cdev);
 

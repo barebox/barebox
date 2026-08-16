@@ -1,0 +1,108 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+
+#include <arm/intel/pxa/pxa300-raumfeld-common.dtsi>
+
+/ {
+	/*
+	 * The Raumfeld speakers differ in their enclosure and speaker
+	 * assembly, not in anything barebox cares about, so one image
+	 * covers all of them. Only the parts shared by all models are
+	 * included here; the audio clock generator is left to the kernel.
+	 */
+	model = "Raumfeld Speaker";
+	/*
+	 * All models are listed, because barebox boots whichever kernel
+	 * device tree sits next to it: the bootloader spec code refuses an
+	 * entry whose device tree is not compatible with the running board,
+	 * and upstream has one compatible per model.
+	 */
+	compatible = "raumfeld,raumfeld-speaker-m-pxa303",
+		     "raumfeld,raumfeld-speaker-l-pxa303",
+		     "raumfeld,raumfeld-speaker-s-pxa303",
+		     "raumfeld,raumfeld-speaker-one-pxa303",
+		     "marvell,pxa300",
+		     "marvell,pxa3xx";
+
+	barebox,deep-probe;
+
+	leds {
+		left {
+			barebox,default-trigger = "heartbeat";
+		};
+	};
+
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &{/pxabus/nand-controller@43100000/nand@0},
+				      "partname:barebox-environment";
+		};
+	};
+};
+
+/*
+ * vmmc-supply points at V6 of the MAX8660, for which there is no driver here.
+ * A supply that a node declares is mandatory, so pxamci would be left waiting
+ * for a regulator that is never going to appear. Nothing in barebox uses the
+ * SDIO wifi behind it anyway, and V6 comes up disabled, so it is Linux' PMIC
+ * driver that has to turn it on either way.
+ */
+&mmc0 {
+	/delete-property/ vmmc-supply;
+};
+
+/*
+ * The Raumfeld layout was built around the U-Boot in NAND: 640K for it, an
+ * environment and a splash screen partition, then UBI. barebox replaces that
+ * U-Boot, does not fit in 640K and keeps its environment in flash of its own,
+ * so lay the device out for barebox instead.
+ *
+ * This is what the kernel sees as well. barebox rewrites the partition nodes
+ * in the kernel device tree from the ones it uses itself, so these are the
+ * only ones there are.
+ */
+&{/pxabus/nand-controller@43100000/nand@0} {
+	/delete-node/ partitions;
+
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x200000>;
+		};
+
+		partition@200000 {
+			label = "barebox-environment";
+			reg = <0x200000 0x100000>;
+		};
+
+		partition@300000 {
+			label = "UBI";
+			reg = <0x300000 0x6d00000>;
+		};
+
+		/*
+		 * Everything the running system writes: WLAN credentials, radio
+		 * stations, the mixer state. A partition rather than a second
+		 * volume in the UBI above, so that updating the root filesystem
+		 * is a write to a whole MTD partition and cannot take the
+		 * settings with it.
+		 *
+		 * The size is not driven by the data, which is well under
+		 * 100KiB. A read-only root never erases a block, so all of the
+		 * wear lands here, and UBI only levels within its own
+		 * partition; 128 erase blocks are also what keeps UBI's fixed
+		 * overhead - layout volume, wear levelling and bad block
+		 * reserve, then UBIFS' own - from dominating the partition.
+		 */
+		partition@7000000 {
+			label = "Data";
+			reg = <0x7000000 0x1000000>;
+		};
+	};
+};

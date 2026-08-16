@@ -3,6 +3,20 @@
 # barebox image generation Makefile for PXA images
 #
 
+pblb-$(CONFIG_MACH_RAUMFELD_SPEAKER) += start_raumfeld_speaker
+FILE_barebox-raumfeld-speaker.img = start_raumfeld_speaker.pblb
+image-$(CONFIG_MACH_RAUMFELD_SPEAKER) += barebox-raumfeld-speaker.img
+
+# First stage: runs from internal SRAM, so keep it well inside the 128K the
+# Boot ROM leaves us above the OBM load address.
+pblb-$(CONFIG_MACH_RAUMFELD_SPEAKER) += start_raumfeld_speaker_obm
+MAX_PBL_MEMORY_SIZE_start_raumfeld_speaker_obm = 0x10000
+# the OBM loads the ordinary second stage image into DRAM and enters it
+PXA_PAYLOAD_start_raumfeld_speaker_obm.pblb.pxaimg = start_raumfeld_speaker.pblb
+PXA_BOOT_LOAD_start_raumfeld_speaker_obm.pblb.pxaimg = 0xa0008000
+FILE_barebox-raumfeld-speaker-nand.img = start_raumfeld_speaker_obm.pblb.pxaimg
+image-$(CONFIG_MACH_RAUMFELD_SPEAKER) += barebox-raumfeld-speaker-nand.img
+
 # A first stage image: the NTIM header the Boot ROM reads from NAND, the OBM
 # it loads into internal SRAM, and barebox for the OBM to load into DRAM.
 quiet_cmd_pxa_image = PXAIMG  $@

@@ -72,6 +72,7 @@ enum filetype {
 	filetype_rockchip_rkss_image,
 	filetype_x86_linux_image,
 	filetype_x86_efi_linux_image,
+	filetype_pxa_ntim,
 	filetype_max,
 };
 

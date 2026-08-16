@@ -6,13 +6,17 @@ if ARCH_PXA
 
 config ARCH_PXA3XX
 	bool
-	default y
 	select CPU_XSC3
 	select HAVE_CLK
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 
+config ARCH_PXA300
+	bool
+	select ARCH_PXA3XX
+
 config ARCH_PXA310
 	bool
+	select ARCH_PXA3XX
 
 endif

@@ -9,7 +9,7 @@
 #include <init.h>
 #include <malloc.h>
 
-#include <mach/pxa/clock.h>
+#include <linux/clk.h>
 #include <asm/io.h>
 
 #define RBR		0x00	/* Receive Buffer Register (read only) */
@@ -90,6 +90,7 @@
 struct pxa_serial_priv {
 	void __iomem *regs;
 	struct console_device cdev;
+	struct clk *clk;
 };
 
 static void __iomem *to_regs(struct console_device *cdev)
@@ -124,6 +125,8 @@ static void pxa_serial_flush(struct console_device *cdev)
 
 static int pxa_serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
+	struct pxa_serial_priv *priv =
+		container_of(cdev, struct pxa_serial_priv, cdev);
 	unsigned char cval = LCR_WLEN8;			/* 8N1 */
 	unsigned int quot;
 
@@ -131,7 +134,7 @@ static int pxa_serial_setbaudrate(struct console_device *cdev, int baudrate)
 	writel(IER_UUE, to_regs(cdev) + IER);
 
 	/* write divisor */
-	quot = (pxa_get_uartclk() + (8 * baudrate)) / (16 * baudrate);
+	quot = (clk_get_rate(priv->clk) + (8 * baudrate)) / (16 * baudrate);
 
 	writel(cval | LCR_DLAB, to_regs(cdev) + LCR);	/* set DLAB */
 	writel(quot & 0xff, to_regs(cdev) + DLL);
@@ -154,6 +157,7 @@ static int pxa_serial_probe(struct device *dev)
 	struct resource *iores;
 	struct console_device *cdev;
 	struct pxa_serial_priv *priv;
+	int ret;
 
 	priv = xzalloc(sizeof(*priv));
 	cdev = &priv->cdev;
@@ -161,6 +165,14 @@ static int pxa_serial_probe(struct device *dev)
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	priv->regs = IOMEM(iores->start);
+
+	priv->clk = clk_get(dev, NULL);
+	if (IS_ERR(priv->clk))
+		return PTR_ERR(priv->clk);
+
+	ret = clk_enable(priv->clk);
+	if (ret)
+		return ret;
 
 	dev->priv = priv;
 	cdev->dev = dev;

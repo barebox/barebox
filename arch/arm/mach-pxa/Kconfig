@@ -19,4 +19,13 @@ config ARCH_PXA310
 	bool
 	select ARCH_PXA3XX
 
+config BAREBOX_UPDATE_PXA_NAND
+	prompt "barebox update NAND handler"
+	bool
+	depends on ARCH_PXA3XX && BAREBOX_UPDATE && MTD
+	help
+	  Say Y here for an update handler that writes the image built by
+	  scripts/pxa-image - the NTIM header, the OBM and barebox - to the
+	  mtd partition the Boot ROM boots from.
+
 endif

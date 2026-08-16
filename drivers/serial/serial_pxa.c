@@ -187,8 +187,18 @@ static int pxa_serial_probe(struct device *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id pxa_serial_dt_ids[] = {
+	{
+		.compatible = "mrvl,pxa-uart",
+	}, {
+		/* sentinel */
+	}
+};
+MODULE_DEVICE_TABLE(of, pxa_serial_dt_ids);
+
 static struct driver pxa_serial_driver = {
 	.name = "pxa_serial",
 	.probe = pxa_serial_probe,
+	.of_compatible = DRV_OF_COMPAT(pxa_serial_dt_ids),
 };
 console_platform_driver(pxa_serial_driver);

@@ -472,8 +472,9 @@ static unsigned int mrvl_datasize(struct mrvl_nand_host *host)
  * We enable all the interrupt at the same time, and
  * let mrvl_nand_irq to handle all logic.
  */
-static void mrvl_nand_start(struct mrvl_nand_host *host)
+static void mrvl_nand_start(struct mrvl_nand_host *host, unsigned command)
 {
+	uint32_t ndsr_clear = NDSR_MASK;
 	uint32_t ndcr;
 
 	if (host->hwflags & HWFLAGS_ECC_BCH) {
@@ -503,9 +504,27 @@ static void mrvl_nand_start(struct mrvl_nand_host *host)
 	ndcr &= ~NDCR_ND_RUN;
 	ndcr |= NDCR_INT_MASK;
 
+	/*
+	 * NDSR's per-chipselect ready bits latch the flash's busy-to-ready
+	 * transition, they do not report its current level. nand_wait() polls
+	 * them through mrvl_nand_ready() to find out when an erase or a page
+	 * program has finished - but it issues a STATUS command first, and
+	 * clearing the latch here would wipe the very transition it is about
+	 * to wait for. It would then never see a ready chip and spend its
+	 * full 400ms timeout on every block erase and every page program
+	 * before falling through to read the status byte, which is why this
+	 * only ever showed up as NAND writes being unusably slow rather than
+	 * as an error.
+	 *
+	 * So leave the latch alone for STATUS, and keep clearing it for the
+	 * commands that make the flash busy in the first place.
+	 */
+	if (command == NAND_CMD_STATUS)
+		ndsr_clear &= ~(NDSR_RDY | NDSR_FLASH_RDY);
+
 	/* clear status bits and run */
 	nand_writel(host, NDCR, ndcr);
-	nand_writel(host, NDSR, NDSR_MASK);
+	nand_writel(host, NDSR, ndsr_clear);
 	nand_writel(host, NDCR, ndcr | NDCR_ND_RUN);
 
 	if (wait_on_timeout(host->chip.legacy.chip_delay * USECOND,
@@ -817,7 +836,7 @@ static void mrvl_nand_cmdfunc(struct nand_chip *chip, unsigned command,
 
 	prepare_start_command(host, command);
 	if (prepare_set_command(host, command, 0, column, page_addr)) {
-		mrvl_nand_start(host);
+		mrvl_nand_start(host, command);
 		mrvl_data_stage(host);
 		mrvl_nand_wait_cmd_done(host, command);
 	}

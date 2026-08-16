@@ -13,6 +13,7 @@
  */
 
 #include <common.h>
+#include <of.h>
 #include <init.h>
 #include <poweroff.h>
 #include <reset_source.h>
@@ -47,8 +48,6 @@ void pxa_clear_reset_source(void)
 	ARSR = ARSR_GPR | ARSR_LPMR | ARSR_WDT | ARSR_HWR;
 }
 
-device_initcall(pxa_detect_reset_source);
-
 static void __noreturn pxa3xx_poweroff(struct poweroff_handler *handler,
 				       unsigned long flags)
 {
@@ -62,6 +61,9 @@ static void __noreturn pxa3xx_poweroff(struct poweroff_handler *handler,
 
 static int pxa3xx_init(void)
 {
+	if (!of_machine_is_compatible("marvell,pxa3xx"))
+		return 0;
+
 	poweroff_handler_register_fn(pxa3xx_poweroff);
 
 	pxa_detect_reset_source();

@@ -13,6 +13,7 @@
  */
 
 #include <common.h>
+#include <of.h>
 #include <init.h>
 #include <restart.h>
 #include <mach/pxa/pxa-regs.h>
@@ -42,6 +43,9 @@ static void __noreturn pxa_restart_soc(struct restart_handler *rst,
 
 static int restart_register_feature(void)
 {
+	if (!of_machine_is_compatible("marvell,pxa3xx"))
+		return 0;
+
 	restart_handler_register_fn("soc-wdt", pxa_restart_soc);
 
 	return 0;

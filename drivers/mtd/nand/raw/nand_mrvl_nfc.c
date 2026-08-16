@@ -343,10 +343,19 @@ static struct mrvl_nand_timing timings[] = {
 static void mrvl_nand_set_timing(struct mrvl_nand_host *host, bool use_default)
 {
 	struct nand_chip *chip = &host->chip;
-	unsigned long nand_clk = clk_get_rate(host->core_clk);
 	struct mrvl_nand_timing *t;
+	unsigned long nand_clk;
 	uint32_t ndtr0, ndtr1;
 	u16 id;
+
+	/*
+	 * The previous stage has set up timings that are known to work,
+	 * keep them instead of calculating our own.
+	 */
+	if (host->keep_config)
+		return;
+
+	nand_clk = clk_get_rate(host->core_clk);
 
 	if (use_default) {
 		id = 0;

@@ -20,18 +20,6 @@
 # define __REG2(x, y)	((x) + (y))
 #endif
 
-#ifdef CONFIG_ARCH_PXA2XX
-#include <mach/pxa/pxa2xx-regs.h>
-#endif
-
-#if defined(CONFIG_ARCH_PXA27X)
-#include <mach/pxa/pxa27x-regs.h>
-#elif defined(CONFIG_ARCH_PXA3XX)
 #include <mach/pxa/pxa3xx-regs.h>
-#elif defined(CONFIG_ARCH_PXA25X)
-#include <mach/pxa/pxa25x-regs.h>
-#else
-#error "unknown PXA soc type"
-#endif
 
 #endif	/* !__MACH_PXA_REGS_H */

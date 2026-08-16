@@ -4,33 +4,14 @@ if ARCH_PXA
 
 # ----------------------------------------------------------
 
-config ARCH_PXA2XX
-	bool
-	select CPU_XSCALE
-
 config ARCH_PXA3XX
-       bool
-       select CPU_XSC3
-       select HAVE_CLK
-       select COMMON_CLK
+	bool
+	default y
+	select CPU_XSC3
+	select HAVE_CLK
+	select COMMON_CLK
 
 config ARCH_PXA310
-       bool
-
-choice
-	prompt "Intel/Marvell PXA Processor"
-
-config ARCH_PXA25X
-	bool "PXA25x"
-	select ARCH_PXA2XX
-
-config ARCH_PXA27X
-	bool "PXA27x"
-	select ARCH_PXA2XX
-
-config ARCH_PXA3XX
-	bool "PXA3xx"
-
-endchoice
+	bool
 
 endif

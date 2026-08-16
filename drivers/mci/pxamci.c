@@ -216,20 +216,8 @@ static int pxamci_cmd_response(struct pxamci_host *host, struct mci_cmd *cmd)
 	stat = mmc_readl(MMC_STAT);
 	if (stat & STAT_TIME_OUT_RESPONSE)
 		return -ETIMEDOUT;
-	if (stat & STAT_RES_CRC_ERR && cmd->resp_type & MMC_RSP_CRC) {
-		/*
-		 * workaround for erratum #42:
-		 * Intel PXA27x Family Processor Specification Update Rev 001
-		 * A bogus CRC error can appear if the msb of a 136 bit
-		 * response is a one.
-		 */
-		if (cpu_is_pxa27x() && cmd->resp_type & MMC_RSP_136 &&
-		    cmd->response[0] & 0x80000000)
-			pr_debug("ignoring CRC from command %d - *risky*\n",
-				 cmd->cmdidx);
-		else
-			return -EILSEQ;
-	}
+	if (stat & STAT_RES_CRC_ERR && cmd->resp_type & MMC_RSP_CRC)
+		return -EILSEQ;
 
 	return 0;
 }

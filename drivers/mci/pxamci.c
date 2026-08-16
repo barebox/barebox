@@ -13,10 +13,10 @@
 #include <clock.h>
 #include <init.h>
 #include <mci.h>
+#include <of.h>
 #include <linux/err.h>
 #include <linux/clk.h>
 
-#include <mach/pxa/mci_pxa2xx.h>
 #include <mach/pxa/pxa-regs.h>
 #include "pxamci.h"
 
@@ -25,18 +25,6 @@
 #define RX_TIMEOUT (100 * MSECOND)
 #define TX_TIMEOUT (250 * MSECOND)
 #define CMD_TIMEOUT (100 * MSECOND)
-
-static int pxamci_set_power(struct pxamci_host *host, int on)
-{
-	mci_dbg("on=%d\n", on);
-	if (host->pdata && host->pdata->gpio_power > 0)
-		gpio_set_value(host->pdata->gpio_power,
-			       !!on ^ host->pdata->gpio_power_invert);
-	else if (host->pdata && host->pdata->setpower)
-		host->pdata->setpower(&host->mci, on);
-	mdelay(250);
-	return 0;
-}
 
 static void pxamci_start_clock(struct pxamci_host *host)
 {
@@ -297,17 +285,16 @@ static void pxamci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 	host->cmdat |= CMDAT_INIT;
 
-	pxamci_set_power(host, 1);
 	pxamci_stop_clock(host);
 	mmc_writel(host->clkrt, MMC_CLKRT);
 }
 
+/*
+ * The MCI core calls this unconditionally, so it has to exist even though
+ * there is nothing left to do here since the platform data went away.
+ */
 static int pxamci_init(struct mci_host *mci, struct device *dev)
 {
-	struct pxamci_host *host = to_pxamci(mci);
-
-	if (host->pdata && host->pdata->init)
-		return host->pdata->init(mci, dev);
 	return 0;
 }
 
@@ -322,7 +309,6 @@ static int pxamci_probe(struct device *dev)
 	struct resource *iores;
 	struct pxamci_host *host;
 	unsigned long rate;
-	int gpio_power = -1;
 	int ret;
 
 	host = xzalloc(sizeof(*host));
@@ -344,6 +330,8 @@ static int pxamci_probe(struct device *dev)
 	host->mci.hw_dev = dev;
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 
+	mci_of_parse(&host->mci);
+
 	/*
 	 * Calculate minimum clock rate, rounding up.
 	 */
@@ -360,20 +348,21 @@ static int pxamci_probe(struct device *dev)
 	mmc_writel(64, MMC_RESTO);
 	mmc_writel(0, MMC_I_MASK);
 
-	host->pdata = dev->platform_data;
-	if (host->pdata)
-		gpio_power = host->pdata->gpio_power;
-
-	if (gpio_power > 0)
-		gpio_direction_output(gpio_power,
-				      host->pdata->gpio_power_invert);
-
-	mci_register(&host->mci);
-	return 0;
+	return mci_register(&host->mci);
 }
+
+static __maybe_unused struct of_device_id pxamci_dt_ids[] = {
+	{
+		.compatible = "marvell,pxa-mmc",
+	}, {
+		/* sentinel */
+	}
+};
+MODULE_DEVICE_TABLE(of, pxamci_dt_ids);
 
 static struct driver pxamci_driver = {
 	.name  = DRIVER_NAME,
 	.probe = pxamci_probe,
+	.of_compatible = DRV_OF_COMPAT(pxamci_dt_ids),
 };
 device_platform_driver(pxamci_driver);

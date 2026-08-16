@@ -15,7 +15,6 @@
 #include <common.h>
 #include <driver.h>
 #include <mach/pxa/devices.h>
-#include <mach/pxa/pxafb.h>
 
 static inline struct device *pxa_add_device(char *name, int id, void *base,
 					      int size, void *pdata)
@@ -33,11 +32,6 @@ struct device *pxa_add_i2c(void *base, int id,
 struct device *pxa_add_uart(void *base, int id)
 {
 	return pxa_add_device("pxa_serial", id, base, 0x1000, NULL);
-}
-
-struct device *pxa_add_fb(void *base, struct pxafb_platform_data *pdata)
-{
-	return pxa_add_device("pxafb", -1, base, 0x1000, pdata);
 }
 
 struct device *pxa_add_mmc(void *base, int id, void *pdata)

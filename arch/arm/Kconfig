@@ -122,6 +122,7 @@ config ARCH_PXA
 	bool "Intel/Marvell PXA based"
 	depends on 32BIT
 	select GPIOLIB
+	select HAS_DEBUG_LL
 
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA"

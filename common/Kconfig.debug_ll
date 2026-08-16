@@ -393,12 +393,25 @@ config DEBUG_TEGRA_UART
 	bool "Tegra debug UART"
 	depends on ARCH_TEGRA
 
+config DEBUG_PXA_UART
+	bool "PXA debug UART"
+	depends on ARCH_PXA
+
 endchoice
 
 config DEBUG_LL_NS16550
 	bool
 	help
 	  Selected by RISC-V and PowerPC platforms that use ns16550 for debug_ll
+
+config DEBUG_PXA_UART_PORT
+	int "PXA Debug UART Port Selection" if DEBUG_PXA_UART
+	default 0
+	depends on ARCH_PXA
+	help
+	  Choose UART port on which barebox low-level debug messages
+	  should be output. Possible values are:
+	  0 - FFUART, 1 - BTUART, 2 - STUART
 
 config DEBUG_IMX_UART_PORT
 	int "i.MX Debug UART Port Selection" if DEBUG_IMX1_UART || \

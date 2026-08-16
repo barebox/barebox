@@ -42,6 +42,8 @@
 #include <mach/zynq/debug_ll.h>
 #elif defined CONFIG_DEBUG_SOCFPGA_UART
 #include <mach/socfpga/debug_ll.h>
+#elif defined CONFIG_DEBUG_PXA_UART
+#include <mach/pxa/debug_ll.h>
 #endif
 
 #endif

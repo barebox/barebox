@@ -133,6 +133,5 @@ static inline int __gpio_is_inverted(unsigned gpio) { return 0; }
  */
 extern int pxa_last_gpio;
 
-extern int pxa_init_gpio(int start, int end);
 
 #endif

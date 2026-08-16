@@ -121,7 +121,7 @@ config ARCH_MXS
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"
 	depends on 32BIT
-	select GENERIC_GPIO
+	select GPIOLIB
 
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA"

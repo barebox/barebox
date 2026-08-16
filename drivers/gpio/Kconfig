@@ -163,6 +163,12 @@ config GPIO_PL061
 	help
 	  Say yes here to support the PrimeCell PL061 GPIO device
 
+config GPIO_PXA
+	bool "GPIO support for Intel/Marvell PXA"
+	depends on ARCH_PXA || COMPILE_TEST
+	help
+	  Say yes here to enable the GPIO driver for the PXA SoCs
+
 config GPIO_RASPBERRYPI_EXP
 	bool "Raspberry Pi 3 GPIO Expander"
 	depends on ARCH_BCM283X

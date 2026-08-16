@@ -813,7 +813,7 @@ static void mrvl_nand_wait_cmd_done(struct mrvl_nand_host *host,
 	wait_on_timeout(host->chip.legacy.chip_delay * USECOND,
 			(nand_readl(host, NDSR) & mask) == mask);
 	if ((nand_readl(host, NDSR) & mask) != mask) {
-		dev_err(host->dev, "Waiting end of command %dth %d timeout, ndsr=0x%08x ndcr=0x%08x\n",
+		dev_dbg(host->dev, "Waiting end of command %dth %d timeout, ndsr=0x%08x ndcr=0x%08x\n",
 			nb_done++, command, nand_readl(host, NDSR),
 			nand_readl(host, NDCR));
 	}

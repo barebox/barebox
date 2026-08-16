@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-obj-y += clocksource.o
 obj-y += sleep.o
 obj-y += common.o
 obj-y += devices.o

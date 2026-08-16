@@ -14,8 +14,8 @@
 #include <init.h>
 #include <mci.h>
 #include <linux/err.h>
+#include <linux/clk.h>
 
-#include <mach/pxa/clock.h>
 #include <mach/pxa/mci_pxa2xx.h>
 #include <mach/pxa/pxa-regs.h>
 #include "pxamci.h"
@@ -25,11 +25,6 @@
 #define RX_TIMEOUT (100 * MSECOND)
 #define TX_TIMEOUT (250 * MSECOND)
 #define CMD_TIMEOUT (100 * MSECOND)
-
-static void mmc_clk_enable(void)
-{
-	CKEN |= CKEN_MMC;
-}
 
 static int pxamci_set_power(struct pxamci_host *host, int on)
 {
@@ -272,7 +267,7 @@ static int pxamci_request(struct mci_host *mci, struct mci_cmd *cmd)
 static void pxamci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct pxamci_host *host = to_pxamci(mci);
-	unsigned int clk_in = pxa_get_mmcclk();
+	unsigned int clk_in = clk_get_rate(host->clk);
 	int fact;
 
 	mci_dbg("bus_width=%d, clock=%u\n", ios->bus_width, ios->clock);
@@ -326,14 +321,23 @@ static int pxamci_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct pxamci_host *host;
+	unsigned long rate;
 	int gpio_power = -1;
+	int ret;
 
-	mmc_clk_enable();
 	host = xzalloc(sizeof(*host));
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	host->base = IOMEM(iores->start);
+
+	host->clk = clk_get(dev, NULL);
+	if (IS_ERR(host->clk))
+		return PTR_ERR(host->clk);
+
+	ret = clk_enable(host->clk);
+	if (ret)
+		return ret;
 
 	host->mci.ops = pxamci_ops;
 	host->mci.host_caps = MMC_CAP_4_BIT_DATA;
@@ -343,8 +347,9 @@ static int pxamci_probe(struct device *dev)
 	/*
 	 * Calculate minimum clock rate, rounding up.
 	 */
-	host->mci.f_min = pxa_get_mmcclk() >> 6;
-	host->mci.f_max = pxa_get_mmcclk();
+	rate = clk_get_rate(host->clk);
+	host->mci.f_min = rate >> 6;
+	host->mci.f_max = rate;
 
 	/*
 	 * Ensure that the host controller is shut down, and setup

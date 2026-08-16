@@ -132,6 +132,12 @@
 
 struct mrvl_nand_variant {
 	unsigned int	hwflags;
+	/*
+	 * True for the "nand-controller" bindings, where the chip properties
+	 * live in per chip select child nodes instead of in the controller
+	 * node itself.
+	 */
+	bool		chip_subnodes;
 };
 
 struct mrvl_nand_host {
@@ -288,7 +294,26 @@ static const struct mrvl_nand_variant armada370_variant = {
 	.hwflags	= HWFLAGS_ECC_BCH | HWFLAGS_HAS_NDCB3,
 };
 
+static const struct mrvl_nand_variant pxa3xx_controller_variant = {
+	.hwflags	= 0,
+	.chip_subnodes	= true,
+};
+
+static const struct mrvl_nand_variant armada370_controller_variant = {
+	.hwflags	= HWFLAGS_ECC_BCH | HWFLAGS_HAS_NDCB3,
+	.chip_subnodes	= true,
+};
+
 static struct of_device_id mrvl_nand_dt_ids[] = {
+	{
+		.compatible = "marvell,pxa3xx-nand-controller",
+		.data = &pxa3xx_controller_variant,
+	},
+	{
+		.compatible = "marvell,armada370-nand-controller",
+		.data = &armada370_controller_variant,
+	},
+	/* Deprecated bindings, the chip properties are in the controller node */
 	{
 		.compatible = "marvell,pxa3xx-nand",
 		.data = &pxa3xx_variant,
@@ -1199,32 +1224,54 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device *dev)
 static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 {
 	struct device_node *np = host->dev->of_node;
-	const struct of_device_id *match;
 	const struct mrvl_nand_variant *variant;
+	struct device_node *chip_np;
 
 	if (!IS_ENABLED(CONFIG_OFTREE) || host->dev->platform_data)
 		return 0;
 
-	match = of_match_node(mrvl_nand_dt_ids, np);
-	if (!match)
+	variant = device_get_match_data(host->dev);
+	if (!variant)
 		return -EINVAL;
-	variant = match->data;
 
-	if (of_get_property(np, "marvell,nand-keep-config", NULL))
-		host->keep_config = 1;
+	host->hwflags = variant->hwflags;
+
 	of_property_read_u32(np, "num-cs", &host->num_cs);
-	if (of_get_nand_on_flash_bbt(np))
+
+	/*
+	 * With the "nand-controller" bindings the chip lives in a child node
+	 * of the controller. Only a single chip is supported, so take the
+	 * first one. The deprecated bindings have the chip properties in the
+	 * controller node itself.
+	 */
+	if (variant->chip_subnodes) {
+		chip_np = of_get_next_available_child(np, NULL);
+		if (!chip_np) {
+			dev_err(host->dev, "no chip node found\n");
+			return -ENODEV;
+		}
+	} else {
+		chip_np = np;
+	}
+
+	/*
+	 * Hand the chip node to the NAND core so that the generic properties
+	 * and the partitions below it are evaluated.
+	 */
+	nand_set_flash_node(&host->chip, chip_np);
+
+	if (of_get_property(chip_np, "marvell,nand-keep-config", NULL))
+		host->keep_config = 1;
+	if (of_get_nand_on_flash_bbt(chip_np))
 		host->flash_bbt = 1;
 
-	host->ecc_strength = of_get_nand_ecc_strength(np);
+	host->ecc_strength = of_get_nand_ecc_strength(chip_np);
 	if (host->ecc_strength < 0)
 		host->ecc_strength = 0;
 
-	host->ecc_step = of_get_nand_ecc_step_size(np);
+	host->ecc_step = of_get_nand_ecc_step_size(chip_np);
 	if (host->ecc_step < 0)
 		host->ecc_step = 0;
-
-	host->hwflags = variant->hwflags;
 
 	return 0;
 }

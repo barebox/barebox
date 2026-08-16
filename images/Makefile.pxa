@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# barebox image generation Makefile for PXA images
+#
+
+# A first stage image: the NTIM header the Boot ROM reads from NAND, the OBM
+# it loads into internal SRAM, and barebox for the OBM to load into DRAM.
+quiet_cmd_pxa_image = PXAIMG  $@
+      cmd_pxa_image = $(objtree)/scripts/pxa-image \
+	-b $< -f $(obj)/$(PXA_PAYLOAD_$(@F)) -o $@ \
+	$(if $(PXA_OBM_OFFSET_$(@F)),-O $(PXA_OBM_OFFSET_$(@F))) \
+	$(if $(PXA_OBM_LOAD_$(@F)),-L $(PXA_OBM_LOAD_$(@F))) \
+	$(if $(PXA_BOOT_OFFSET_$(@F)),-F $(PXA_BOOT_OFFSET_$(@F))) \
+	$(if $(PXA_BOOT_LOAD_$(@F)),-A $(PXA_BOOT_LOAD_$(@F))) \
+	$(if $(PXA_MAX_SIZE_$(@F)),-M $(PXA_MAX_SIZE_$(@F)))
+
+$(obj)/%.pxaimg: $(obj)/% $(obj)/$$(PXA_PAYLOAD_$$(@F)) FORCE
+	$(call if_changed,pxa_image)

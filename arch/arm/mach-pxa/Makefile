@@ -6,3 +6,5 @@ obj-y += common.o
 obj-y += devices.o
 
 obj-$(CONFIG_ARCH_PXA3XX) += mfp-pxa3xx.o pxa3xx.o
+
+pbl-$(CONFIG_ARCH_PXA3XX) += xload-nand.o

@@ -4,6 +4,7 @@
 #include <init.h>
 #include <asm/mmu.h>
 #include <asm/cache.h>
+#include <asm/cputype.h>
 #include <asm/system_info.h>
 
 #include "mmu_32.h"
@@ -39,10 +40,35 @@ DEFINE_CPU_FNS(v5)
 DEFINE_CPU_FNS(v6)
 DEFINE_CPU_FNS(v7)
 
+/*
+ * XSC3 reports ARMv5TE, and it is - but its cache is not the one the ARMv5
+ * code drives. v5_mmu_cache_flush() cleans the D-cache with the ARM926
+ * test-and-clean operation (c7, c14, 3), which XSC3 does not implement, so
+ * the loop waiting for it to report the cache clean never ends. The ARMv4
+ * code flushes by reading through the cache instead and uses nothing XScale
+ * is missing, so send these cores there.
+ *
+ * This only ever comes up in a build that has another ARMv5 core in it. On
+ * its own CPU_XSC3 selects CPU_32v4T and no other CPU_32v*, which leaves
+ * cpu_architecture() a compile time ARMv4T and lands on the same functions
+ * by accident.
+ */
+static struct cache_fns *cache_fns_by_core(void)
+{
+	if (IS_ENABLED(CONFIG_CPU_32v4T) && cpu_is_xsc3())
+		return &cache_fns_armv4;
+
+	return NULL;
+}
+
 static struct cache_fns *cache_functions(void)
 {
 	static struct cache_fns *cache_fns;
 
+	if (cache_fns)
+		return cache_fns;
+
+	cache_fns = cache_fns_by_core();
 	if (cache_fns)
 		return cache_fns;
 
@@ -119,6 +145,12 @@ void __mmu_cache_flush(void)
  */
 void arm_early_mmu_cache_flush(void)
 {
+	/* see cache_fns_by_core() */
+	if (IS_ENABLED(CONFIG_CPU_32v4T) && cpu_is_xsc3()) {
+		v4_mmu_cache_flush();
+		return;
+	}
+
 	switch (arm_early_get_cpu_architecture()) {
 #ifdef CONFIG_CPU_32v4T
 	case CPU_ARCH_ARMv4T:

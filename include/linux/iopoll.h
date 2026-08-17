@@ -12,7 +12,7 @@
 #include <clock.h>
 #include <pbl.h>
 
-#if IN_PROPER
+#if IN_PROPER || IS_ENABLED(CONFIG_PBL_CLOCKSOURCE)
 # define read_poll_get_time_ns()	get_time_ns()
 # define read_poll_is_timeout(s, t)	is_timeout(s, t)
 #else
@@ -38,8 +38,8 @@
  * When available, you'll probably want to use one of the specialized
  * macros defined below rather than this macro directly.
  *
- * We do not have timing functions in the PBL, so ignore the timeout value and
- * loop infinitely here.
+ * We might not have timing functions in the PBL, so ignore the timeout value
+ * and loop infinitely here.
  */
 #define read_poll_timeout(op, val, cond, timeout_us, args...)	\
 ({ \

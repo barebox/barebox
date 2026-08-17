@@ -79,6 +79,7 @@ config CLOCKSOURCE_ARM_ARCHITECTED_TIMER
 	bool "ARM architected timer clock source" if COMPILE_TEST
 	default y
 	depends on ARM && (CPU_64v8 || CPU_V7)
+	select PBL_CLOCKSOURCE if CPU_64v8
 
 config CLOCKSOURCE_ARM_GLOBAL_TIMER
 	bool "ARM global timer clock source" if COMPILE_TEST

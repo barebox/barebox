@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 #include <common.h>
 #include <io.h>
+#include <asm/hardware/arm_architected_timer.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
 #include <mach/layerscape/errata.h>
@@ -222,11 +223,13 @@ void ls1046a_init_lowlevel(void)
 {
 	struct ccsr_cci400 __iomem *cci = IOMEM(LSCH2_CCI400_ADDR);
 	struct ccsr_scfg *scfg = IOMEM(LSCH2_SCFG_ADDR);
+	const uint64_t cntfrq = 25000000;
 
 	scfg_init(SCFG_ENDIANESS_BIG);
 	init_csu();
 	ls1046a_init_l2_latency();
-	set_cntfrq(25000000);
+	set_cntfrq(cntfrq);
+	arm_arch_timer_init(cntfrq);
 	syscnt_enable(IOMEM(LSCH2_SYS_COUNTER_ADDR));
 
 	/* Make DMA master reads and writes snoopable */

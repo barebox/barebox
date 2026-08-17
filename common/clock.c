@@ -216,7 +216,8 @@ void clocksource_srand(void)
 
 int init_clock(struct clocksource *cs)
 {
-	if (current_clock && cs->priority <= current_clock->priority)
+	if (current_clock && cs != current_clock &&
+	    cs->priority <= current_clock->priority)
 		return 0;
 
 	if (cs->init) {

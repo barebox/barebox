@@ -49,4 +49,6 @@ static inline bool in_barebox_efi_runtime(unsigned long addr)
 	       addr < (unsigned long)__efi_runtime_stop;
 }
 
+void pbl_do_ctors(void);
+
 #endif /* _ASM_GENERIC_SECTIONS_H_ */

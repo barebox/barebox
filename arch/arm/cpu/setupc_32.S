@@ -23,6 +23,9 @@ ENTRY(setup_c)
 	ldr	r0, =bss_cleared
 	mov	r1, #1
 	str	r1, [r0]		/* mark bss cleared */
+#ifdef __PBL__
+	bl	pbl_do_ctors
+#endif
 1:	pop	{r4, pc}
 ENDPROC(setup_c)
 

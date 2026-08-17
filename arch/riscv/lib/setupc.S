@@ -23,6 +23,9 @@ ENTRY(setup_c)
 	lla	a0, bss_cleared
 	li	a1, 1
 	sw	a1, 0(a0)
+#ifdef __PBL__
+	jal	pbl_do_ctors
+#endif
 zeroed:
 	REG_L	ra, SZREG(sp)
 	addi	sp, sp, SZREG * 2

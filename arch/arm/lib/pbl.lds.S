@@ -78,6 +78,14 @@ SECTIONS
 	. = ALIGN(4);
 	.rodata : { *(.rodata*) }
 
+	. = ALIGN(ASM_SZPTR);
+	__ctors_start = .;
+	.init_array : {
+		KEEP(*(SORT_BY_INIT_PRIORITY(.init_array.*)))
+		KEEP(*(.init_array))
+	}
+	__ctors_end = .;
+
 	.barebox_imd : { BAREBOX_IMD }
 
 	. = ALIGN(PBL_SEGMENT_ALIGN);

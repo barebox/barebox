@@ -33,7 +33,7 @@ class BBSymbols(gdb.Command):
         symbol = section.get_symbol_by_name("pbl_barebox_break")
         if not symbol:
             gdb.write("Symbol pbl_barebox_break in section {} in file {} not found\n"
-                      .format(section.name, self.path), gdb.STDERR)
+                      .format(section.name, path), gdb.STDERR)
             return
         symbol = symbol[0]
         pc = gdb.parse_and_eval("$pc")

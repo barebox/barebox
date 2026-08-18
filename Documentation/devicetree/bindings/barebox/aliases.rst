@@ -27,15 +27,15 @@ property:
 
    / {
    	aliases {
-		mmc0 = &sdmmc0;
-		mmc1 = &sdhci;
-	};
+   		mmc0 = &sdmmc0;
+   		mmc1 = &sdhci;
+   	};
 
    	chosen {
-		barebox,bootsource-mmc0 = &sdhci;
-		barebox,bootsource-mmc1 = &sdmmc0;
-	};
-  };
+   		barebox,bootsource-mmc0 = &sdhci;
+   		barebox,bootsource-mmc1 = &sdmmc0;
+   	};
+   };
 
 This will ensure that when booting from MMC, ``/dev/mmc${bootsource_instance}``
 will point at the correct boot device, despite bootrom and board DT alias

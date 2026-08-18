@@ -14,9 +14,9 @@ The iBASE MI991AF Mini-ITX motherboard has
 Running barebox
 ---------------
 
-Building the barebox image for this target is covered by the ``efi_defconfig``
+Building the barebox image for this target is covered by the ``efi_defconfig``.
 
-BIOS should be configured as follow:
+BIOS should be configured as follows:
 
   * When you turn on the computer, the BIOS is immediately activated. Pressing
     the <Del> key immediately allows you to enter the BIOS Setup utility. If you are
@@ -25,14 +25,14 @@ BIOS should be configured as follow:
     In this case restart the system by pressing the ”Reset” button or simultaneously
     pressing the <Ctrl>, <Alt> and <Delete> keys. You can also restart by turning the
     system Off and back On again.
-  * Reset BIOS settings. With this step we wont to make sure BIOS has defined common state to avoid
-    undocumented issues. Switch to "Save & Exit" tab, choice "Restore Defaults"
-    and press Enter. Answer "Yes" and press Enter again. Then choice "Save Changes and Exit"
+  * Reset BIOS settings. With this step we want to make sure BIOS has defined common state to avoid
+    undocumented issues. Switch to "Save & Exit" tab, choose "Restore Defaults"
+    and press Enter. Answer "Yes" and press Enter again. Then choose "Save Changes and Exit"
     and press Enter.
-  * Enable UEFI support. Switch to "Boot" tab. Choice "Boot mode select" and set it to "UEFI".
+  * Enable UEFI support. Switch to "Boot" tab. Choose "Boot mode select" and set it to "UEFI".
     Switch in the "Save & Exit" tab to "Save Changes and Exit" and press Enter.
 
-To make network work in barebox you will need to prepare efi binary network drivers and put them in to
+To make network work in barebox you will need to prepare efi binary network drivers and put them into
 "network-drivers" directory.
 
 To continue please proceed with barebox :ref:`barebox_on_uefi` documentation.

@@ -33,8 +33,8 @@ MPPA3-80 SoC contains the following features:
  - 1 x OTP memory
 
 The Kalray VLIW architecture barebox port allows to boot it as a second stage
-bootloader (SSBL). It is loaded after the FSBL which initialize DDR and needed
-peripherals. FSBL always start on the Security Core of Cluster 0
+bootloader (SSBL). It is loaded after the FSBL which initializes DDR and needed
+peripherals. FSBL always starts on the Security Core of Cluster 0.
 
 The FSBL can load elf files and pass them a device tree loaded from SPI NOR
 flash. As such, barebox should be flashed as an elf file into the SSBL
@@ -52,7 +52,7 @@ KVX boards
 Getting a toolchain
 -------------------
 
-Pre-built toolchain are available from github ([#f1]_). In order to build one
+Pre-built toolchains are available from github ([#f1]_). In order to build one
 from scratch, build scripts are available on github too ([#f2]_).
 Once built or downloaded, a ``kvx-elf-`` toolchain will be available and should
 be added to your ``PATH``.

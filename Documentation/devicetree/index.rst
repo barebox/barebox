@@ -5,7 +5,7 @@ Barebox devicetree handling and bindings
 
 The preferred way of adding board support to barebox is to have devices
 on non-enumerable buses probed from device tree.
-barebox provide both the Linux OpenFirmware ``of_*`` and the libfdt ``fdt_`` APIs
+barebox provides both the Linux OpenFirmware ``of_*`` and the libfdt ``fdt_`` APIs
 for device tree parsing. The former makes porting the device tree specific
 bits from Linux device drivers very straight forward, while the latter can be
 used for very early (PBL) handling of flattened device trees, should this be
@@ -38,7 +38,7 @@ environment or boot-time device configuration.
 Device Tree probing largely happens via compatible properties with no special
 meaning to the node names themselves. It's thus paramount that any device tree
 nodes extended in the barebox device tree are referenced by label (e.g.
-``<&phandle>``, not by path, to avoid run-time breakage like this::
+``<&phandle>``), not by path, to avoid run-time breakage like this::
 
   # Upstream dts/src/$ARCH/board.dts
   / {
@@ -172,7 +172,7 @@ In the ``chosen``-node, barebox fixes up
  * bootsource
  * boot-hartid (only on RISC-V)
 
-These values can be read from the booted linux system in ``/proc/device-tree/``
+These values can be read from the booted Linux system in ``/proc/device-tree/``
 or ``/sys/firmware/devicetree/base``.
 
 .. _of_diff:

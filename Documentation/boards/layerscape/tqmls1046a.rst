@@ -4,7 +4,7 @@ TQ-Group TQMLS1046A Module
 Ethernet Ports
 --------------
 
-There two RGMII ports are the two closest to the RS-232 socket.
+The two RGMII ports are the two closest to the RS-232 socket.
 They are ``eth2`` for the lower port and ``eth3`` for the upper port.
 
 MBLS10xxA (Base Board) Boot DIP Switches

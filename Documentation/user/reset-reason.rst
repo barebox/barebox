@@ -11,7 +11,7 @@ In these cases the hardware restarts and runs the bootloader again. Depending on
 the root cause of the hang or crash, the bootloader sometimes should not just
 re-start the main system again. Maybe it should do some kind of recovery instead.
 For example it should wait for another update (for the case the cause of a
-crash is a failed update) or should start into a fall back system instead.
+crash is a failed update) or should start into a fallback system instead.
 
 In order to handle failing systems gracefully the bootloader needs the
 information why it runs. This is called the "reset reason". It is available

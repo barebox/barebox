@@ -24,7 +24,7 @@ barebox itself uses a *state* driver to access the variables in the
 persistent memory.
 
 Currently there is only one implementation, enabled by
-``CONFIG_STATE_DRV=y``. Without driver, the state framework will silently
+``CONFIG_STATE_DRV=y``. Without a driver, the state framework will silently
 fail and be non-functional.
 
 For the Linux run-time there is a userspace tool_ to do
@@ -49,7 +49,7 @@ Some non-volatile memory is needed for storing a *state* variable set:
 - all kinds of NAND and NOR flash memories (mtd)
 - MRAM
 - EEPROM
-- all kind of SRAMs (backup battery assumed)
+- all kinds of SRAMs (backup battery assumed)
 
 For classic MTDs (NOR/NAND/SRAM), a partition is required and understood by
 the Linux kernel as well to define the location inside the device where to store
@@ -113,7 +113,7 @@ embedded *state* variable set. Refer to
 
 .. important:: It is important to share this layout definition in all
    'worlds' which want to read or manipulate the *state* variable set. This
-   includes offsets, sizes and endianesses of the binary data. Refer to
+   includes offsets, sizes and endiannesses of the binary data. Refer to
    :ref:`Configuring the state variable set <barebox,state_setup>` on how to
    setup barebox to ensure this is done automatically for devicetree based
    operating systems.
@@ -160,7 +160,7 @@ EEPROMs.
 These media are characterized by:
 
 - memory cells can be simply written at any time (no previous erase required).
-- memory cells can be written as often as required (unlimted or very high endurance).
+- memory cells can be written as often as required (unlimited or very high endurance).
 - memory cells can be written on a byte-by-byte manner.
 
 Example: MRAM with 64 bytes at device's offset 0:
@@ -267,7 +267,7 @@ the eraseblock again. This reduces the need for a flash memory erase by factors.
 **NAND type flash memory is additionally characterized by**
 
 - it is organized in pages (size is a detectable, physical value).
-- writes can only happen in multiples of the page size (which much less than the eraseblock size).
+- writes can only happen in multiples of the page size (which is much less than the eraseblock size).
 - partially writing a page can be limited in count or be entirely forbidden (in
   the case of *MLC* NANDs).
 
@@ -324,7 +324,7 @@ Changing the *state* variable set the 64th time:
 
 The next time the *state* variable set changes again, the eraseblock will be
 erased and the *state* variable set gets stored at the first position inside
-the eraseblock again. This significantly reduces the need for a block erases.
+the eraseblock again. This significantly reduces the need for block erases.
 
 .. important:: One copy of the *state* variable set is limited to the page size
    of the used backend (e.g. NAND type flash memory)
@@ -470,7 +470,7 @@ must happen on an eraseblock basis. Typical eraseblock sizes are 128 kiB or
 (much) larger for parallel NOR flashes and 4 kiB or larger for serial NOR
 flashes.
 
-From the Linux kernel perspective this type of memory is a *Memory Technologie
+From the Linux kernel perspective this type of memory is a *Memory Technology
 Device* (aka 'MTD') and handled by barebox in the same manner. It needs a
 partition configuration.
 
@@ -520,7 +520,7 @@ This type of memory can be written on a *page* base (typically 512 bytes,
 erasing must happen on an eraseblock base. Typical eraseblock sizes are
 64 kiB or (much) larger.
 
-From the Linux kernel perspective this type of memory is a *Memory Technologie
+From the Linux kernel perspective this type of memory is a *Memory Technology
 Device* (aka 'MTD') and handled by barebox in the same manner. It needs a
 partition configuration.
 
@@ -635,7 +635,7 @@ Here is an abridged example:
 		};
 	};
 
-This is the recommended approach for device tree enabled system with state
+This is the recommended approach for device tree enabled systems with state
 located on SD or eMMC.
 
 Referencing the partition by *partuuid*
@@ -684,7 +684,7 @@ SRAM
 This type of memory can be written on a byte base and there is no need for an
 erase prior writing a new value.
 
-From the Linux kernel perspective this type of memory is a *Memory Technologie
+From the Linux kernel perspective this type of memory is a *Memory Technology
 Device* (aka 'MTD') and handled by barebox in the same manner. It needs a
 partition definition.
 
@@ -731,7 +731,7 @@ EEPROM
 
 This type of memory can be written on a byte base and must be erased prior
 writing, but in contrast to the other flash memories, an EEPROM does the erase
-of the address to be written to by its own, so its transparent to the
+of the address to be written to by its own, so it's transparent to the
 application.
 
 While from the Linux kernel perspective this type of memory does not support

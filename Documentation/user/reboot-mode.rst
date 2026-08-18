@@ -34,7 +34,7 @@ Devices registered with the reboot mode API gain two parameters:
    system is reset. Its initial value after startup is 0 which corresponds
    to ``normal`` by default.
 
-The reboot mode driver core use the alias name if available to name
+The reboot mode driver core uses the alias name if available to name
 the device. By convention, this should end with ``.reboot_mode``, e.g.::
 
 	/ {
@@ -94,7 +94,7 @@ In cases where the reboot mode is used to communicate with the BootROM,
 :ref:`bootsource_instance <magicvar_bootsource_instance>` may describe the same
 device as the reboot mode.
 
-For cases, where the communication instead happens between barebox and an OS,
+For cases where the communication instead happens between barebox and an OS,
 they can be completely different, e.g. :ref:`bootsource <magicvar_bootsource>`
 may say barebox was booted from ``spi-nor``, while the reboot mode describes
 that barebox should boot the Kernel off a USB flash drive.

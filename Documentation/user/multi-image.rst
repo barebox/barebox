@@ -4,7 +4,7 @@ Multi Image Support
 ===================
 
 Traditionally a single configuration only works for a single board. Sometimes
-even variants of a single board like different amount of memory require a new
+even variants of a single board like different amounts of memory require a new
 config. This has the effect that the number of defconfig files increases dramatically.
 All the configs have to be kept in sync manually. Multi Image Support solves this
 problem.

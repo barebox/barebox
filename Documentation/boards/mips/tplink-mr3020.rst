@@ -8,7 +8,7 @@ The TP-LINK MR3020 wireless router has
   * 4 MiB NOR type SPI Flash Memory;
   * RS232 serial interface (LV-TTL levels on board!);
   * 1 USB interface;
-  * 1 Ethernet interfaces;
+  * 1 Ethernet interface;
   * 802.11b/g/n (WiFi) interface;
   * LEDs & buttons.
 
@@ -45,13 +45,13 @@ use this command sequence:
   $ ./mktplinkfw -c -H 0x07200103 -W 1 -N TL-WR720N-v3 \
       -s -F 4Mlzma -k barebox.lzma -o 6F01A8C0.img
 
-You must setup tftp-server on host 192.168.0.1.
+You must set up a tftp-server on host 192.168.0.1.
 Put your ``6F01A8C0.img`` to tftp-server directory
-(usual ``/tftpboot`` or ``/srv/tftp``).
+(usually ``/tftpboot`` or ``/srv/tftp``).
 
 Connect your board to your tftp-server network via Ethernet.
 
-Next, setup network on MR3020 and run ``6F01A8C0.img``, e.g.:
+Next, set up the network on MR3020 and run ``6F01A8C0.img``, e.g.:
 
 .. code-block:: console
 

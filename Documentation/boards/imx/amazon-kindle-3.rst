@@ -2,7 +2,7 @@ Amazon Kindle 3 "Kindle Keyboard" Model No. D00901
 ==================================================
 
 This e-book reader is based on a Freescale i.MX35 SOC.
-The device is equiped with:
+The device is equipped with:
 
 * 256MiB synchronous dynamic RAM
 * 4GiB eMMC
@@ -23,7 +23,7 @@ Note: a USB serial ACM console will be launched by a barebox init script
 when the cursor select key is pressed during startup (e.g. before running
 imx-usb-loader)
 
-Barebox may be used as drop-in replacement for the shipped bootloader.
+Barebox may be used as a drop-in replacement for the shipped bootloader.
 When installing the barebox imximg on the eMMC take care not to overwrite
 the partition table and vendor supplied serial numbers stored on the eMMC.
 e.g. just write the imx-header and the application section:

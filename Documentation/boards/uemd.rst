@@ -11,11 +11,11 @@ See https://github.com/RC-MODULE/mboot for details.
 Running barebox
 ^^^^^^^^^^^^^^^
 
-  1. Connect to the boards's UART (38400 8N1);
+  1. Connect to the board's UART (38400 8N1);
 
   2. Turn board's power on;
 
-  3. Wait ``Hit any key (in 2 sec) to skip autoload...`` prompt and press the space key;
+  3. Wait for the ``Hit any key (in 2 sec) to skip autoload...`` prompt and press the space key;
 
   4. Compile ``zbarebox.bin`` image and upload it to the board via tftp
 

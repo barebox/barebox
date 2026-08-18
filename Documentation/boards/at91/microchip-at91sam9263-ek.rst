@@ -11,7 +11,7 @@ Building barebox:
 
 Notes while working on at91sam9263ek bootstrap support
 
-The at91sam9263 have support for a boot program,
+The at91sam9263 has support for a boot program,
 like the other members in the Atmel at91 series.
 
 The boot program (ROMBOOT) will try to load the
@@ -23,7 +23,7 @@ partition in a FAT16/32 filesystem.
 
 To generate the SD Card image I used genimage:
 (https://github.com/pengutronix/genimage)
-Onle 2 GB SD card works, 4 GB did not work. ROMBOOT do not
+Only 2 GB SD card works, 4 GB did not work. ROMBOOT does not
 support high capacity SD cards.
 
 Configuration file:
@@ -122,4 +122,4 @@ This is the reset vector and exception vectors. Must be the very first in the fi
 
 ``.text_bare_init*:``
 Everything in this section, and , is checked at link time.
-Size most be less than BAREBOX_MAX_BARE_INIT_SIZE / ARCH_BAREBOX_MAX_BARE_INIT_SIZE
+Size must be less than BAREBOX_MAX_BARE_INIT_SIZE / ARCH_BAREBOX_MAX_BARE_INIT_SIZE

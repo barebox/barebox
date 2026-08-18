@@ -7,7 +7,7 @@ Access to all file systems goes through the virtual file system
 layer, which provides uniform access to all mounted file systems
 under the same root.
 
-As power-fail safe writing of file system couldn't be guaranteed,
+As power-fail safe writing of file systems couldn't be guaranteed,
 most file systems supported by barebox are read-only.
 Safe writing is possible, however, via the :ref:`state_framework`.
 

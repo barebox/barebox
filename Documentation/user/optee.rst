@@ -23,7 +23,7 @@ enable the ``CONFIG_PBL_OPTEE`` configuration variable. Your board should then
 call the function ``start_optee_early(void *fdt, void *tee)`` with a valid tee
 and FDT. If you're running on an i.MX6 platform your board code should call
 ``imx6q_start_optee_early()`` or ``imx6ul_start_optee_early()`` instead since it
-validates that the TZASC not bypassed and is configured as expected by OP-TEE.
+validates that the TZASC is not bypassed and is configured as expected by OP-TEE.
 
 Ensure that your OP-TEE is compiled with ``CFG_NS_ENTRY_ADDR`` unset, otherwise
 OP-TEE will not correctly return to barebox after startup. Since OP-TEE in the
@@ -51,5 +51,5 @@ Controlled by the ``CONFIG_OPTEE`` option, barebox has support for
 communicating with OP-TEE via secure monitor calls and dynamic shared memory.
 This is possible independently of whether OP-TEE was loaded by barebox or not.
 
-The primary use cases currently is SCMI-over-OP-TEE, which is required on
+The primary use case currently is SCMI-over-OP-TEE, which is required on
 the STM32MP13.

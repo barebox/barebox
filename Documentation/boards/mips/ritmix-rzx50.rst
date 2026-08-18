@@ -20,10 +20,10 @@ Running barebox
 ---------------
 
   1. Connect to the game console's UART
-     (see. http://a320.emulate.su/2012/01/19/uart-na-ritmix-rzx-50/);
+     (see http://a320.emulate.su/2012/01/19/uart-na-ritmix-rzx-50/);
 
   2. Unblock U-Boot console
-     (see. http://a320.emulate.su/2012/01/25/rzx-50-dostup-k-konsoli-u-boot/);
+     (see http://a320.emulate.su/2012/01/25/rzx-50-dostup-k-konsoli-u-boot/);
      Please note that U-Boot's Zmodem support does not work;
 
   3. Boot Ritmix linux and login;

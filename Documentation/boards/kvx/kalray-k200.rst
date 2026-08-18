@@ -1,7 +1,7 @@
 Kalray K200
 ===========
 
-This board is based on a MPPA3-80 SoC. The board is shipped with:
+This board is based on an MPPA3-80 SoC. The board is shipped with:
 
   - 128MiB NOR flash Memory
   - 8GiB DDR4 SDRAM

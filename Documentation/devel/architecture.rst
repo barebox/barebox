@@ -33,7 +33,7 @@ be passed information about an initial memory region for use as stack
 and for dynamic allocations. When barebox has probed the memory banks,
 the whole memory will become available.
 
-As result of this design, the same barebox proper binary can be reused for
+As a result of this design, the same barebox proper binary can be reused for
 many different boards. Unlike Linux, which can expect a bootloader to pass
 it the device tree, barebox *is* the bootloader. For this reason, barebox
 proper is prefixed with what is called a prebootloader (PBL). The PBL
@@ -71,7 +71,7 @@ In a typical build, the barebox build process generates multiple images
 same barebox proper binary and then the resulting images are processed to be
 in the format expected by the loader.
 
-The loader is often a BootROM, but maybe another first stage bootloader
+The loader is often a BootROM, but may be another first stage bootloader
 or a hardware debugger.
 
 Ideally, a single image is all that's needed to boot into barebox.
@@ -94,7 +94,7 @@ very small non-interactive barebox for use as first stage.
 Due to size constraints, the first stage config is usually board-specific, while
 the second-stage config can target multiple boards at once.
 
-In this setup, each of the first and second stage each consist of their own
+In this setup, the first and second stage each consist of their own
 prebootloader and barebox proper.
 
 * first stage prebootloader: Does DRAM setup and extracts first stage
@@ -108,7 +108,7 @@ prebootloader and barebox proper.
 * second stage barebox proper: your usual barebox experience, which can have an
   interactive shell and boot an operating system
 
-An Example for this is ``am335x_mlo_defconfig``.
+An example for this is ``am335x_mlo_defconfig``.
 
 New way: single config
 ----------------------
@@ -173,7 +173,7 @@ is processed as follows:
   or at a lower exception level and will then proceed to extract barebox
   proper to the end of the initial memory region and execute it.
 
-And example for this is the ``imx_v8_defconfig``.
+An example for this is the ``imx_v8_defconfig``.
 
 .. note:: Some SoCs like the i.MX8M Nano and Plus provide a boot API in ROM
   that can be used by the prebootloader to effortlessly chainload the second stage

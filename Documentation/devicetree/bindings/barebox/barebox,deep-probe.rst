@@ -9,7 +9,7 @@ For drivers to support deep probe, they must not rely on initcall ordering.
 Resources needed by drivers should be referenced via device tree, e.g.,
 instead of direct use of hardcoded GPIO numbers, GPIOs must either be:
 
-* described in the device's device tree node and requested using API that
+* described in the device's device tree node and requested using API
   that takes the device or the device tree node as argument
 
 * probe of the GPIO controller be ensured via ``of_device_ensure_probed``,

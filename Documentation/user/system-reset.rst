@@ -7,15 +7,15 @@ When running the reset command barebox restarts the SoC somehow. Restart can
 be done in software, but a more reliable way is to use a hard reset line, which
 really resets the whole machine.
 The most common way to force such a hard reset is by using a watchdog. Its
-trigger time will be setup as short as possible and after that the software just
+trigger time will be set up as short as possible and after that the software just
 waits for its reset. Very simple and most of the time it does what's expected.
 
 But there are some drawbacks within this simple approach.
 
 * most used watchdogs are built-in units in the SoCs. There is nothing wrong
   with that, but these units can mostly reset the CPU core and sometimes a little
-  bit more of the SoC. This means this reset is not exactly the same than the
-  real POR (e.g. power on reset). In this case you must still handle different
+  bit more of the SoC. This means this reset is not exactly the same as the
+  real POR (i.e. power on reset). In this case you must still handle different
   hardware in a special way because it hasn't seen the reset the CPU has seen.
   Enabled DMA units for example can continue to run and transfer data while the
   CPU core runs through its reset code. This can trigger very strange failures.
@@ -34,21 +34,21 @@ But there are some drawbacks within this simple approach.
   important to boot the SoC successfully. If external devices are connected to
   these multi purpose pins they can disturb the reset values, and so parametrizing
   the boot behaviour differently and hence crashing the SoC until the next real
-  POR happens which also resets the external devices (and keep them away from the
+  POR happens which also resets the external devices (and keeps them away from the
   multi purpose pins).
 
 * when power management comes into play another level of failure is
   possible. To save power the software can lower the clock(s), but to really
   save power, the power supply voltages must be lowered as well. Most PMICs
-  (e.g. power management controllers) are dedicated external companion devices,
+  (i.e. power management controllers) are dedicated external companion devices,
   loosely connected to their SoC. If the SoC's internal reset source now resets
-  the CPU it may increases its clock(s) back to the frequencies after a POR, but
+  the CPU it may increase its clock(s) back to the frequencies after a POR, but
   the external PMIC still provides voltages related to lower frequencies. The
   system isn't consistent any more. If you are in luck, the SoC still works
   somehow, even if the voltages are out of their specifications for the
   currently used clock speeds. But don't rely on it.
 
-To workaround these issues the reset signal triggered by a SoC internal source
+To work around these issues the reset signal triggered by a SoC internal source
 must be 'visible' to the external devices to also reset them like a real POR does.
 But many SoCs do not provide such a signal. So you can't use the internal reset
 source if you face one of the above listed issues!

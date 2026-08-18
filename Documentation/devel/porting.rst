@@ -16,7 +16,7 @@ Introduction
 ************
 
 Before starting your barebox port, you'll want to familiarize yourself with
-key concepts of the :ref:`barebox architecture <architecture>`  namely the
+key concepts of the :ref:`barebox architecture <architecture>`, namely the
 prebootloader, barebox proper and the multi-image support.
 
 Once you've read through, let us now put these new concepts into practice.
@@ -34,7 +34,7 @@ Porting to a new board
 
 Chances are there's already a supported board similar to yours, e.g.
 an evaluation kit from the vendor. Take a look at ``arch/$ARCH/boards/``
-and do likewise for you board. The main steps would be:
+and do likewise for your board. The main steps would be:
 
 Entry point
 ===========
@@ -60,7 +60,7 @@ call the common PBL code with a memory region and your device tree blob::
   	barebox_arm_entry(0x80000000, SZ_256M, __dtb_my_board_start);
   }
 
-Lets look at this line by line:
+Let's look at this line by line:
 
 ``ENTRY_FUNCTION_WITHSTACK(start_my_board, MY_STACK_TOP, r0, r1, r2)``
    The entry point is special: It needs to be located at the beginning of the
@@ -95,7 +95,7 @@ Lets look at this line by line:
    is zeroed. This is what ``setup_c()`` does.
 
 ``pbl_set_putc(my_serial_putc, (void *)BASE_ADDR);``
-   Now that we have a C environment set up, lets set our first global
+   Now that we have a C environment set up, let's set our first global
    variable. ``pbl_set_putc`` saves a pointer to a function
    (``my_serial_putc``) that is called by the ``pr_*`` functions to output a
    single character. This can be used for the early PBL console to output
@@ -138,7 +138,7 @@ Looking at other boards you might see some different patterns:
 
 ``arm_setup_stack``
    For 32-bit ARM, ``arm_setup_stack`` initializes the stack
-   top when called from a naked C function, which allowed to write the entry point
+   top when called from a naked C function, which allowed writing the entry point
    directly in C. Modern code should use ``ENTRY_FUNCTION_WITHSTACK`` instead.
    Note that in both cases the stack pointer will be decremented before pushing values.
    Avoid interleaving with C-code. See ``__naked`` above for more details.
@@ -155,11 +155,11 @@ Looking at other boards you might see some different patterns:
    this, you should use them.
 
 ``get_runtime_offset()/global_variable_offset()``
-   This functions return the difference
+   These functions return the difference
    between the link and load address. This is zero after relocation, but the
    function can be useful to pass along the correct address of a variable when
    relocation has not yet occurred. If you need to use this for anything more
-   then passing along the FDT address, you should reconsider and probably rather
+   than passing along the FDT address, you should reconsider and probably rather
    call ``relocate_to_current_adr();``.
 
 ``*_start_image(...)/*_load_image(...)/*_xload_*(...)``
@@ -196,7 +196,7 @@ tree binding, you can write a driver that matches against your board's
   };
   device_platform_driver(my_board_driver);
 
-Keep what you do here to a minimum. Many thing traditionally done here
+Keep what you do here to a minimum. Many things traditionally done here
 should rather happen in the respective drivers (e.g. PHY fixups).
 
 Device-Tree
@@ -226,7 +226,7 @@ Here, the upstream device tree is included, then a barebox-specific
 SoC device tree ``"stm32mp151.dtsi"`` customizes it. The device tree
 adds some barebox-specific info like the environment used for storing
 persistent data during development. If the upstream device tree lacks
-some info which are necessary for barebox there can be added here
+some info which are necessary for barebox they can be added here
 as well. Refer to :ref:`bareboxdt` for more information.
 
 Boilerplate
@@ -279,7 +279,7 @@ For example, the new fancy network controller is lacking support.
 
 .. note::
    If your new SoC requires early boot drivers, like e.g. memory
-   controller setup. Refer to the next section.
+   controller setup, refer to the next section.
 
 Often drivers can be ported from other projects. Candidates are
 the Linux kernel, the bootloader maintained by the vendor or other
@@ -332,14 +332,14 @@ If the C compiler for that platform supports ``__attribute__((naked))``, it
 can be written in inline assembly inside such a naked function. See for
 example ``__barebox_arm_head`` for ARM32 or ``__barebox_riscv_header`` for RISC-V.
 
-For platforms, without naked function support, inline assembly may not be used
+For platforms without naked function support, inline assembly may not be used
 and the entry point should be written in a dedicated assembly file.
 This is the case with ARM64, see for example ``__barebox_arm64_head`` and the
 ``ENTRY_PROC`` macro.
 
 Another way, which is often used for non-executable headers with extra
 meta-information like a checksum, is adding a new tool to ``scripts/``
-and have it run as part the image build process. ``images/`` contains
+and have it run as part of the image build process. ``images/`` contains
 various examples.
 
 Memory controller setup
@@ -464,12 +464,12 @@ This can be done by implementing three functions:
    ``relocate_to_adr()`` does and in addition moves the piggy data
    (the usually compressed barebox appended to the prebootloader).
 
-Of course, for these functions to work. The linker script needs
+Of course, for these functions to work, the linker script needs
 to ensure that the ELF relocation records are included in the
 final image and define start and end markers so code can iterate
 over them.
 
-To ease debugging, even when relocation has no yet happened,
+To ease debugging, even when relocation has not yet happened,
 barebox supports ``DEBUG_LL``, which acts similarly to the
 PBL console, but does not require relocation. This is incompatible
 with multi-image, so this should only be considered while debugging.

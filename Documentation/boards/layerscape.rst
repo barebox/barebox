@@ -15,7 +15,7 @@ The barebox PBL then loads the complete barebox image and runs the PBL again,
 this time from SDRAM after it has been set up.
 
 For each board, a barebox image per supported boot medium is generated.
-They may differ in the RCW, PBI and endianess depending on the boot medium.
+They may differ in the RCW, PBI and endianness depending on the boot medium.
 
 Flashing barebox
 ----------------

@@ -13,7 +13,7 @@ in this window, so there is no way to determine the location afterwards.
 RAM initialisation
 ------------------
 
-Traditionally the RAM initialisation happens with a binary blob that have to be
+Traditionally the RAM initialisation happens with a binary blob that has to be
 extracted from the vendor U-Boot:
 
 .. code-block:: sh

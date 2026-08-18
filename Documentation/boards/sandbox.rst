@@ -43,7 +43,7 @@ Available sandbox invocation options include:
       be a multiple of the barebox sector size of 512 bytes.
 
     * ``,cdev``: The host file is mapped as character device. This is the default,
-      unless the the host file is a block device.
+      unless the host file is a block device.
 
     Multiple options can be appended if they don't clash. Literal commas within the
     file path can be escaped with a backslash. Example: ``-i './0\,0.hdimg,blkdev,ro'``.

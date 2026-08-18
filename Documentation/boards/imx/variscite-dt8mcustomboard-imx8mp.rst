@@ -3,7 +3,7 @@ Variscite DT8MCustomBoard with DART-MX8M-PLUS SOM
 
 This board is an eval-kit for the Variscite DART-MX8M-PLUS SOM. The latter is a
 SOM based on the i.MX8M Plus processor. As seen in official Variscite documents there exist
-several hardware revisions for this board. Currently only revision 3.0 could was tested
+several hardware revisions for this board. Currently only revision 3.0 was tested
 with Barebox.
 
 The Variscite DART-MX8M-PLUS SOM is available in different configurations. For a rough overview,
@@ -36,7 +36,7 @@ Providing necessary binary files
 Barebox requires some blobs to successfully bringup the system. These blobs
 serve different use cases. Barebox's build system will look for these files
 in the configured firmware directory (``firmware`` by default). The build
-systems expects these files to have certain names.
+system expects these files to have certain names.
 
 Hence the very first thing before building Barebox is to obtain these files and
 placing them in the firmware folder.
@@ -58,8 +58,8 @@ the necessary DDR4 training files can simply be hardlinked (or copied)::
    $ ln firmware-imx-8.10/firmware/ddr/synopsys/lpddr4_pmu_train_2d_dmem_202006.bin firmware/lpddr4_pmu_train_2d_dmem.bin
    $ ln firmware-imx-8.10/firmware/ddr/synopsys/lpddr4_pmu_train_2d_imem_202006.bin firmware/lpddr4_pmu_train_2d_imem.bin
 
-Another required binary is the Secure Monitor Firmware (BL31). This is build by some ARM Trusted Firmware project (ATF).
-One fork is provided by NXP and can be downloaded from https://github.com/nxp-imx/imx-atf. Variscite does maintain it's
+Another required binary is the Secure Monitor Firmware (BL31). This is built by some ARM Trusted Firmware project (ATF).
+One fork is provided by NXP and can be downloaded from https://github.com/nxp-imx/imx-atf. Variscite does maintain its
 own fork of NXP's ATF project. This can be found at https://github.com/varigit/imx-atf/.
 
 Once the ATF has been built successfully, the resulting BL31 binary needs to be placed in the ``firmware`` directory

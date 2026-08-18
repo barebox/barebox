@@ -178,7 +178,7 @@ It must be included in the board's flash header, e.g. for i.MX6:
 
   #include <mach/imx/habv4-imx6-gencsf.h>
 
-Analogous to HABv4 options and a template exist for HABv3.
+Analogous to HABv4, options and a template exist for HABv3.
 
 To verify HAB working as intended, install the ``barebox-*-s.img`` onto the
 boot medium and trigger a power-on reset. barebox will read the HAB log on
@@ -196,7 +196,7 @@ instead of direct device access to not risk writing unrelated fuses::
   barebox$ hab -p -s SRK_1_2_3_4_fuse.bin
 
 Afterwards, images signed with a different key will trigger errors at barebox
-startup, but system will still be able to boot to shell.
+startup, but the system will still be able to boot to shell.
 
 To have the BootROM refuse booting differently signed images, the ``SRK_LOCK``
 fuse needs to be burnt::
@@ -230,7 +230,7 @@ device is closed. Example output after booting via ``imx-usb-loader``::
 Secure Boot on i.MX6
 ~~~~~~~~~~~~~~~~~~~~
 
-For most boards, the secure boot process on i.MX6 consist of the following image
+For most boards, the secure boot process on i.MX6 consists of the following image
 constellation::
 
     0x0 +---------------------------------+
@@ -287,9 +287,9 @@ For i.MX8MQ the image has the following design::
 In contrast to i.MX6, for the i.MX8MQ the piggydata can not be signed together
 with the PBL binary. The DDR memory is initialized during the start of the PBL,
 previous to this no access to the DDR memory is possible. Since the Tightly
-Coupled Memory used for early startup on i.MX8MQ has only 256Kib, the whole
+Coupled Memory used for early startup on i.MX8MQ has only 256KiB, the whole
 barebox can't be loaded and verified at once, since the complete barebox with
-firmware has a size of ~500Kib.
+firmware has a size of ~500KiB.
 
 The bootrom loads the HDMI firmware unconditionally, since it is signed by NXP.
 Afterwards the Prebootloader (PBL) is loaded into SRAM and the bootrom proceeds
@@ -325,7 +325,7 @@ Information about the ``imx-image`` tool
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The imx-image tool can be used to generate imximages from raw binaries.
-It requires an configuration file describing how to setup the SDRAM on
+It requires a configuration file describing how to setup the SDRAM on
 a particular board. This mainly consists of a poke table. The recognized
 options in this file are:
 
@@ -415,11 +415,11 @@ There are two different headers, one for the i.MX8MM and one for the i.MX8MP/N.
 It's important to use the correct one because the BootROM expects the IVT and
 flash configuration block (FCB) on different offsets.
 
-Barebox doesn't generate a separate FlexSPI image instead the same image used
+Barebox doesn't generate a separate FlexSPI image; instead the same image used
 for SD/MMC/USB is extended to support FlexSPI boot. This is done by adding a 2nd
 IVT header and the required FCB at the required boot offsets.
 
-Barebox also support `High Assurance Boot`_ images for QSPI boot mediums. This
+Barebox also supports `High Assurance Boot`_ images for QSPI boot mediums. This
 feature must be enabled via the ``CONFIG_HABV4_QSPI`` option. The below figures
 show a fully featured MMC/SD/USB/FlexSPI image with enabled HAB support for the
 i.MX8M family.

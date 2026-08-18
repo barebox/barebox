@@ -27,7 +27,7 @@ Kickstarting a board using USB
 
 The tool needed to transfer and start a bootloader image to any Tegra board
 using the USB boot mode is called TegraRCM. Most likely this isn't available
-from your distributions repositories. You can get and install it by running the
+from your distribution's repositories. You can get and install it by running the
 following commands:
 
 .. code-block:: sh

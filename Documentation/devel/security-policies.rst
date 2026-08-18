@@ -14,7 +14,7 @@ Key principles:
 
 - Except for the name, symbols are always ``bool``.
 - Policies are board-specific and described in ``.sconfig`` files at build-time.
-- Every policy is complete and no implicit defaults are applied by mere building
+- Every policy is complete and no implicit defaults are applied by mere building.
 - Policy ``.sconfig`` files are post-processed into ``.sconfig.c`` files and
   then compiled and linked into the final barebox binary.
 

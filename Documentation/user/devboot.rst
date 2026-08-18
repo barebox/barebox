@@ -317,7 +317,7 @@ To undo the mount, terminate the ``dpipe`` process and run
 
 .. note::
 
-   On Debian/Ubuntu, ``dpipe`` can be installed via ``apt install vde2``
+   On Debian/Ubuntu, ``dpipe`` can be installed via ``apt install vde2``.
    ``sshfs`` and ``fuse`` must be installed on the TFTP server.
    ``/etc/fuse.conf`` on the server must have ``user_allow_other``
    enabled for ``allow_other`` to work.

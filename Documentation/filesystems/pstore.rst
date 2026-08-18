@@ -44,7 +44,8 @@ To use *pstore/RAMOOPS* both Barebox and Kernel have to be compiled with *pstore
 and RAM backend support. The kernel receives the parameters describing the
 layout via devicetree or - as a fallback - over the kernel command line.
 To ensure both worlds are using the same memory layout, the required
-configuration data for the kernel is generated on-the-fly prior booting a kernel.
+configuration data for the kernel is generated on-the-fly prior to booting a
+kernel.
 For the devicetree use case Barebox adapts the kernel's devicetree, for the
 kernel command line fallback the variable ``global.linux.bootargs.ramoops`` is
 created and its content used to build the kernel command line.
@@ -75,7 +76,7 @@ in the Barebox shell. The RAMOOPS area is listed as 'persistent ram':
 
 If the menu entry ``FS_PSTORE_CONSOLE`` is enabled, Barebox itself will add all
 its own console output to the *ramoops:console* part, which enables the regular
-userland later on to have access to the bootloaders output.
+userland later on to have access to the bootloader's output.
 
 All pstore files that could be found are added to the /pstore directory. This is
 a read-only filesystem with the only supported operation being unlinking:

@@ -54,7 +54,7 @@ Board support
   Users should migrate to FIP images with barebox as nontrusted firmware
   (BL33) and the barebox device tree as hardware config.
 
-  Use of multiple device trees is not support directly by the FIP format
+  Use of multiple device trees is not supported directly by the FIP format
   and can be substituted by a barebox image embedding multiple device trees
   and using the hardware config FIP slot only as dummy.
   See the lxa-tac board for an example.

@@ -14,7 +14,7 @@ Not including booting via serial, the device can boot from either SD or eMMC.
 Downloading DDR PHY and HDMI/eDP Firmware
 -----------------------------------------
 
-As a part of DDR intialization routine NXP i.MX8MQ EVK requires and
+As a part of DDR initialization routine NXP i.MX8MQ EVK requires and
 uses several binary firmware blobs that are distributed under a
 separate EULA and cannot be included in Barebox. In order to obtain
 them do the following::
@@ -119,7 +119,7 @@ Bootsource is the SD2 slot::
   +---------+
 
 
-Serial boot SW802 setting needed for i.MX8 DDR Tool is as follows::
+Serial boot SW802 setting needed for i.MX 8M DDR Tool is as follows::
 
   +-----+
   |     |

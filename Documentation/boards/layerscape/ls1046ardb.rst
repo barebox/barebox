@@ -4,7 +4,7 @@ NXP LS1046A Reference Design Board
 Boot DIP Switches
 -----------------
 
-Boot source selection happens via the the bottom most DIP switch (near the micro-usb port)::
+Boot source selection happens via the bottom most DIP switch (near the micro-usb port)::
 
      OFF -> ON
     +---------+

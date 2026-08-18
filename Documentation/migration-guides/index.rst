@@ -6,7 +6,7 @@ release of barebox from the previous one.
 
 The goal is to help integrators and users of barebox to adapt their
 configuration and downstream board support. barebox API breakage that
-cause build errors are generally out-of-scope for these documents.
+causes build errors is generally out-of-scope for these documents.
 
 .. toctree::
    :glob:

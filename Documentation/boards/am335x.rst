@@ -2,7 +2,7 @@ Texas Instruments AM335x
 ========================
 
 The Texas Instruments AM335x SoCs have a two-stage boot process. The first stage
-loader, also known as MLO is loaded by the ROM code. The MLO loads the second stage
+loader, also known as MLO, is loaded by the ROM code. The MLO loads the second stage
 loader from the same medium.
 
 Building barebox
@@ -39,8 +39,8 @@ Some boards come in different variants, make sure to pick the correct one.
 Size Constraints
 ^^^^^^^^^^^^^^^^
 
-As the MLO needs to setup DRAM first, it must fit into the 109KiB
-of available on-Chip SRAM. Depending on the boards, drivers and general
+As the MLO needs to set up DRAM first, it must fit into the 109KiB
+of available on-chip SRAM. Depending on the boards, drivers and general
 features enabled by your config, barebox may exceed this size resulting
 in an error message during build, e.g.::
 

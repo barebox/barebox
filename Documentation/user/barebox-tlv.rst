@@ -3,7 +3,7 @@ barebox TLV - Non-Volatile Factory Data Storage
 
 barebox TLV ("Tag Length Value" format) is a system to store and
 retrieve a device's (read-only) meta-data from non-volatile memory.
-It is intended to handle information that are usually only set in
+It is intended to handle information that is usually only set in
 the factory - like serial number, MAC-addresses, analog calibration
 data, etc.
 Data is stored in a tag-length-value format (hence the name) and read
@@ -169,7 +169,7 @@ An example can be found in ``scripts/bareboxtlv-generator/data-example.yaml``.
      generator   -> signed_bin
    }
 
-With these information in place a TLV binary can be created:
+With this information in place a TLV binary can be created:
 
 .. code-block:: shell
 
@@ -239,7 +239,7 @@ A custom TLV format can be created for example like this:
       { 0x0024, tlv_bind_soc_uid, "bound-soc-uid" },
       /* Custom key */
       { 0x8001, tlv_format_str, "custom-key"},
-      { /* sentintel */ },
+      { /* sentinel */ },
     };
 
     static struct tlv_mapping *mappings[] = {

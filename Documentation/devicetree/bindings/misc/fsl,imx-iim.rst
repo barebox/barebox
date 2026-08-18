@@ -1,4 +1,4 @@
-Freescale i.MX IIM (Ic Identification Module)
+Freescale i.MX IIM (IC Identification Module)
 =============================================
 
 Required properties:

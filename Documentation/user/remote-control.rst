@@ -15,7 +15,7 @@ host:
   bbremote --port /dev/ttyUSB0 run "ls"
 
 Additionally files can be transferred from/to barebox and a regular
-console offers interactive access to barebox on flawy serial
+console offers interactive access to barebox on flaky serial
 connections.
 
 In addition to the bbremote tool provided with barebox, other third
@@ -47,7 +47,7 @@ installed with the following additional packages:
 +----------------+---------------------+
 
 If your distribution does not provide aforementioned packages, you can
-use 'pip' in order to install the dependencies localy to your user
+use 'pip' in order to install the dependencies locally to your user
 account via:
 
 .. code-block:: sh
@@ -109,7 +109,7 @@ interactive console
 -------------------
 
 The bbremote tool also offers a regular interactive console to barebox.
-This is especially useful for flawy serial connections.
+This is especially useful for flaky serial connections.
 
 .. code-block:: sh
 
@@ -117,10 +117,10 @@ This is especially useful for flawy serial connections.
   barebox@Phytec phyFLEX-i.MX6 Quad Carrier-Board:/ ls
   .      ..     dev    env    mnt
 
-**NOTE** To terminate resulting Barebox console session press 'Ctrl-T'
+**NOTE** To terminate the resulting barebox console session press 'Ctrl-T'
 
-**NOTE** You can also send 'ping' request to the target without
-closing console session by pressint 'Ctrl-P'
+**NOTE** You can also send a 'ping' request to the target without
+closing the console session by pressing 'Ctrl-P'
 
 transferring files
 ------------------

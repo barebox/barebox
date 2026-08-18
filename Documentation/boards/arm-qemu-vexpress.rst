@@ -1,7 +1,7 @@
 QEMU vexpress
 =============
 
-ARM Qemu vexpress
+ARM QEMU vexpress
 -----------------
 
 Running barebox on QEMU vexpress machine

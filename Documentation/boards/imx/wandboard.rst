@@ -8,8 +8,8 @@ the Wandboard Dual (i.MX6DL, 1GiB DDR3) and Wandboard Quad (i.MX6Q, 2GiB DDR3).
 The device boots from the SD card slot on the System-on-Module board, it
 will not boot from the slot on the carrier board.
 
-To boot barebox on any wandboard, build ``imx_v7_defconfig``
-and copy the barebox imx-image to the i.MX boot location of a SD card, e.g.::
+To boot barebox on any Wandboard, build ``imx_v7_defconfig``
+and copy the barebox imx-image to the i.MX boot location of an SD card, e.g.::
 
         dd bs=1024 skip=1 seek=1 if=images/barebox-imx6-wandboard.img of=/dev/mmcblk0
 

@@ -25,7 +25,7 @@ Running in QEMU
 
 Emulated targets can be started interactively with ``scripts/qemu_interactive.py``::
 
-  # Run x86 VM runnig the EFI payload from efi_defconfig
+  # Run x86 VM running the EFI payload from efi_defconfig
   scripts/qemu_interactive.py test/x86/efi_defconfig.yaml
 
   # Identical to above, provided the CONFIG_NAME=efi_defconfig

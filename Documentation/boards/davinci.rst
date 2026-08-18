@@ -9,7 +9,7 @@ or Internet controllable smart devices.
 
 The board has
 
-  * TI DaVinchi DM365 running at 300 MHz;
+  * TI DaVinci DM365 running at 300 MHz;
   * 128 MiB DDR2 SDRAM;
   * 256 MiB NAND Flash Memory;
   * 2 x UART serial interfaces;
@@ -23,7 +23,7 @@ The board uses U-Boot as bootloader.
 Running barebox
 ^^^^^^^^^^^^^^^
 
-  1. Connect to the boards's UART0 (115200 8N1);
+  1. Connect to the board's UART0 (115200 8N1);
      Use J2.2 (GND), J2.4 (UART0_TXD), J2.6 (UART0_RXD) pins.
 
   2. Turn board's power on;

@@ -44,7 +44,7 @@ subsystem is not generated.
 Fuzzing
 ^^^^^^^
 
-Fuzzers can be run directly or by invoked the main barebox binary with the
+Fuzzers can be run directly or by invoking the main barebox binary with the
 ``--fuzz`` option. The latter is mostly useful for debugging.
 
 Examples of running the fuzzers::
@@ -89,7 +89,7 @@ barebox will produce coverage information.
 
 	images/fuzz-filetype -max_total_time=60 -max_len=2048
 
-After the process exists regularly (i.e., not aborted with ctrl+C!),
+After the process exits regularly (i.e., not aborted with ctrl+C!),
 it will produce a ``default.profraw`` file in its working directory,
 which needs to be further processed:
 
@@ -134,10 +134,10 @@ Adding a fuzzer
 ^^^^^^^^^^^^^^^
 
 The barebox integration of libfuzzer is a bit unusual; barebox supplies
-its own ``main()`` and calls into libfuzzer instead of the over way round.
+its own ``main()`` and calls into libfuzzer instead of the other way round.
 
 This allows us to write fuzz tests naturally inline without having
-to setup things beforehand as barebox will have already executed all
+to set up things beforehand as barebox will have already executed all
 of its initcalls for example.
 
 To add a new fuzz test, just add a function next to the parser that
@@ -178,7 +178,7 @@ The callback may be called more than once, e.g. once per invocation of the
 that back a test with a ramdisk take such a callback as their last argument
 and run it after creating the device.
 
-This function than needs to be registered by name in
+This function then needs to be registered by name in
 ``images/Makefile.sandbox``::
 
   fuzzer-$(CONFIG_OFTREE)	+= dtb

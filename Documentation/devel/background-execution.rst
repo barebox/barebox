@@ -34,7 +34,7 @@ calls ``is_timeout()``.  A special poller can be registered with
 ``poller_async_register()``. A poller registered this way won't be called right
 away, instead running it can be triggered by calling ``poller_call_async()``.
 This will execute the poller after the ``@delay_ns`` argument.
-``poller_call_async()`` may also be called from with the poller, so with this
+``poller_call_async()`` may also be called from within the poller, so with this
 it's possible to run a poller regularly with configurable delays.
 
 Pollers are limited in the things they can do. Poller code must always be
@@ -127,7 +127,7 @@ take too long. When barebox reacts sluggishly to key presses, then probably
 pollers take too long to execute. A first test if this is the case can
 be done by executing ``poller -t`` on the command line. This command will print
 how many times we can execute all registered pollers in one second. When this
-number is too low then pollers are guilty responsible. Workqueues help to run
+number is too low then pollers are responsible. Workqueues help to
 schedule/execute longer running code, but during the time while workqueues are
 executed nothing else happens. This means that when fastboot flashes an image
 in a workqueue then barebox won't react to any key presses on the command line.
@@ -135,7 +135,7 @@ The usage of the interfaces described in this document is not yet very
 widespread in barebox. The interfaces are used in the places where we need
 them, but there are other places which do not use them but should.
 
-For example using a LED driven by a I2C GPIO expander used as hearbeat LED
+For example using a LED driven by an I2C GPIO expander used as heartbeat LED
 used to not work properly before addition of slices.
 Consider the I2C driver accesses an unrelated I2C device,
 like an EEPROM. After having initiated the transfer the driver polls for the

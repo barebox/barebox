@@ -27,14 +27,14 @@ Status
 
 VirtIO can use various different buses, aka transports as described in the
 spec. While VirtIO devices are commonly implemented as PCI devices on x86,
-embedded devices models like ARM/RISC-V, which does not normally come with
+embedded device models like ARM/RISC-V, which do not normally come with
 PCI support might use simple memory mapped device (MMIO) instead of the PCI
 device. The memory mapped virtio device behaviour is based on the PCI device
 specification. Therefore most operations including device initialization,
 queues configuration and buffer transfers are nearly identical. Both MMIO
 and non-legacy PCI are supported in barebox.
 
-The VirtIO spec defines a lots of VirtIO device types. barebox currently
+The VirtIO spec defines a lot of VirtIO device types. barebox currently
 supports the following:
 
   * Block
@@ -85,7 +85,7 @@ malta VM with one HWRNG and 2 block VirtIO PCI devices::
   	-drive if=none,file=image2.hdimg,format=raw,id=hd1  \
   	-device virtio-blk-pci,drive=hd1
 
-Note that barebox does not support non-transitional legacy Virt I/O devices.
+Note that barebox does not support non-transitional legacy VirtIO devices.
 Depending on QEMU version used, it may be required to add
 ``disable-legacy=on``, ``disable-modern=off`` or both, e.g.::
 
@@ -106,11 +106,11 @@ device::
                        -cpu cortex-a57 -m 1024M -nographic \
                        -serial mon:stdio -trace file=/dev/null
 
-The file system can then be mounted in bareboxvia::
+The file system can then be mounted in barebox via::
 
   mkdir -p /mnt/9p/hostshare
   mount -t 9p -o trans=virtio hostshare /mnt/9p/hostshare
 
-For ease of use, automounts units will automatically be created in ``/mnt/9p/``,
-so for a given ``mount_tag``, the file system wil automatically be mounted
+For ease of use, automount units will automatically be created in ``/mnt/9p/``,
+so for a given ``mount_tag``, the file system will automatically be mounted
 on first access to ``/mnt/9p/$mount_tag`` in barebox.

@@ -6,12 +6,12 @@ Allwinner sunxi
 Boot process
 ------------
 
-On power-up Allwinner SoC starts in boot ROM, aka BROM, which will search
+On power-up the Allwinner SoC starts in boot ROM, aka BROM, which will search
 for a bootable image (eGON header): first from the SD card, then from eMMC.
 If no image is found then the boot ROM will enter into FEL mode that can be
 used for programming and recovery through USB.
 
-Some board may have a button to enter FEL mode at startup. If not, another
+Some boards may have a button to enter FEL mode at startup. If not, another
 way to enter FEL mode is to not have a valid bootable eGON image, this can
 be achieved by erasing existing eGON image headers.
 
@@ -19,7 +19,7 @@ be achieved by erasing existing eGON image headers.
 
    Currently Barebox cannot boot directly on Allwinner sunxi SoC and can
    only be used as a secondary bootloader, requiring u-boot to initialize
-   the SDRAM controller and starting the TF-A and optionally Crust.
+   the SDRAM controller and start the TF-A and optionally Crust.
 
 
 Building barebox second stage
@@ -65,7 +65,7 @@ U-Boot for the SDRAM initialisation and to start the TF-A.
 .. note::
 
    A FIT image might be built and used instead of directly using the `barebox-dt-2nd.img`,
-   this hasn't been tested yet, but using a FIT image sound like a better option.
+   this hasn't been tested yet, but using a FIT image sounds like a better option.
 
 See also the general documentation on :ref:`second_stage`.
 
@@ -75,9 +75,9 @@ Building Arm Trusted Firmware (TF-A)
 .. note::
 
    This step is currently only needed when building U-Boot.
-   This step is also documented in U-Boot documention.
+   This step is also documented in U-Boot documentation.
 
-Boards using a 64-bit Soc (A64, H5, H6, H616, R329) require the BL31 stage of
+Boards using a 64-bit SoC (A64, H5, H6, H616, R329) require the BL31 stage of
 the Arm Trusted Firmware-A firmware. This provides the reference
 implementation of secure software for Armv8-A, offering PSCI and SMCCC
 services. Allwinner support is fully mainlined. To build bl31.bin:
@@ -95,7 +95,7 @@ sun50i_h6, for the H616 sun50i_h616, and for the R329 sun50i_r329.
 Building U-Boot image
 ---------------------
 
-Please refere to the relevant U-Boot_ build documentation (or ``/doc/board/allwinner/sunxi.rst`` in u-boot src tree).
+Please refer to the relevant U-Boot_ build documentation (or ``/doc/board/allwinner/sunxi.rst`` in u-boot src tree).
 
 .. _U-Boot: https://docs.u-boot.org/en/latest/board/allwinner/sunxi.html#building-the-u-boot-image
 
@@ -106,7 +106,7 @@ Installing the first stage bootloader
 Installing on a (micro-) SD card
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The bootable image, a eGON header followed by the actual image, must be
+The bootable image, an eGON header followed by the actual image, must be
 located at the fixed offset of 8192 bytes (8KB) from the start of the
 disk (sector 16).
 

@@ -4,7 +4,7 @@ Meerkat 96
 The Meerkat96 is a single board computer based on an i.MX7D SoC by NXP,
 featuring a dual core ARM Cortex-A7 at 1 GHz and a Cortex-M4 at 266MHz
 and 512 MB DRAM. For further details on the board's features check the
-manufacturers page at https://www.96boards.org/product/imx7-96
+manufacturer's page at https://www.96boards.org/product/imx7-96
 
 Serial console
 --------------
@@ -30,10 +30,10 @@ To build Barebox for the meerkat96 board do the following:
 Bringup
 -------
 
-flash the resulting barebox-meerkat96.img to an sdcard at address 0.
+Flash the resulting barebox-meerkat96.img to an sdcard at address 0.
 
 Make sure the pmic is set to power-on state by setting the dipswitch
-SW3 on the boards bottom side to 1-1 (i.e. all switches on, which is
+SW3 on the board's bottom side to 1-1 (i.e. all switches on, which is
 the factory default).
 
 Schematics

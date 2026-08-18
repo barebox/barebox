@@ -47,7 +47,7 @@ the opposite effect.  Performance depends on:
 
    for example.
 
- - the target network driver: datagrams from server will arive faster
+ - the target network driver: datagrams from server will arrive faster
    than they can be processed and must be buffered internally.  For
    example, the `fec-imx` driver reserves place for
 
@@ -58,5 +58,5 @@ the opposite effect.  Performance depends on:
    packets before they are dropped
 
  - partially the workload: copying downloaded files to ram will be
-   faster than burning them into flash.  Latter can consume internal
+   faster than burning them into flash.  The latter can consume internal
    buffers quicker so that windowsize might be reduced

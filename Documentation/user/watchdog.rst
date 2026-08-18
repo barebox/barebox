@@ -15,7 +15,7 @@ Disabling for development
 
 The shorthand command ``wd -x`` will disable all watchdogs.
 If hardware (or driver) doesn't support turning off the watchdog,
-an autpoller will be registered to periodically feed watchdogs.
+an autopoller will be registered to periodically feed watchdogs.
 This should only be needed for development.
 See :ref:`boot-watchdog-timeout` for how to use the watchdog in the field.
 
@@ -28,7 +28,7 @@ with short-time watchdogs. For example the Atheros ar9331 watchdog has a
 maximal timeout of 7 seconds, so it may reset even on netboot.
 Or it can be used on systems where the watchdog is already running and can't be
 disabled, an example for that is the watchdog of the i.MX2 series.
-This functionally can be seen as a threat, since in error cases barebox will
+This functionality can be seen as a threat, since in error cases barebox will
 continue to feed the watchdog even if that is not desired. So, depending on
 your needs ``CONFIG_WATCHDOG_POLLER`` can be enabled or disabled at compile
 time. Even if barebox was built with watchdog polling support, it is not
@@ -90,7 +90,7 @@ In that case, the parameter will contain the value ``unknown``.
 Watchdogs started by barebox can be monitored using the
 ``seconds_to_expire`` parameter. A well-behaving system of watchdog
 device, watchdog driver and clocksource should reset as soon as the
-count down reaches zero.
+countdown reaches zero.
 
 To manually start a watchdog, :ref:`command_wd` can be used.
 

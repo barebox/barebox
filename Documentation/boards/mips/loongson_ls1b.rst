@@ -24,11 +24,11 @@ The board uses PMON2000 as bootloader.
 Running barebox
 ---------------
 
-  1. Connect to the boards's UART2 (115200 8N1);
+  1. Connect to the board's UART2 (115200 8N1);
 
   2. Turn board's power on;
 
-  3. Wait ``Press <Enter> to execute loading image`` prompt and press the space key.
+  3. Wait for the ``Press <Enter> to execute loading image`` prompt and press the space key.
 
   4. Build barebox and upload ``images/barebox-loongson-ls1b.img`` via Ymodem to the board:
 

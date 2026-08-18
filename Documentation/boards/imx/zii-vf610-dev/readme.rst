@@ -33,7 +33,7 @@ A custom OpenOCD binary and options can be specified as follows:
 Writing Barebox to NVM
 ----------------------
 
-With exception of Dev boards, all of ZII's VF610 based boards should
+With the exception of Dev boards, all of ZII's VF610 based boards should
 come with eMMC. To permanently write Barebox to it do:
 
 .. code-block:: sh
@@ -43,7 +43,7 @@ come with eMMC. To permanently write Barebox to it do:
 This should also automatically configure your board to boot that
 image. Note that the original ZII stack's bootloader in eMMC should be
 left intact. Barebox is configured to be programmed to one of the MMC boot
-partitions, whereas the original bootloader is located in user partition.
+partitions, whereas the original bootloader is located in the user partition.
 
 To restore the board to booting using the original bootloader do:
 

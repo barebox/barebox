@@ -19,7 +19,7 @@ A barebox binary consists of two main components:
    At the very least, this is decompressing barebox proper and jumping
    to it while passing it a device tree.
    Depending on platform, it may also need to setup DRAM, install a secure
-   monitory like TF-A or a secure operating system like OP-TEE and chainload
+   monitor like TF-A or a secure operating system like OP-TEE and chainload
    barebox from a boot medium.
 2. **barebox proper**: The main bootloader logic. This is always loaded
    by a prebootloader passing a device tree and including drivers for
@@ -29,7 +29,7 @@ Refer to the :ref:`barebox architecture <architecture>` for more background
 information on the two components and how they map to different boot stages
 and images.
 
-If barebox hangs, it's essential to identify *where* at which boot stage,
+If barebox hangs, it's essential to identify *where*, at which boot stage,
 this failure occurs:
 
 - Does the hang happen in the first stage, i.e., while executing from
@@ -54,7 +54,7 @@ options:
 
   This enables very early low-level UART debugging.
   It bypasses console frameworks and writes directly to UART registers.
-  Many boards in barebox, print a ``>`` character, when ``CONFIG_DEBUG_LL``
+  Many boards in barebox print a ``>`` character when ``CONFIG_DEBUG_LL``
   is enabled. If you see such a character after enabling ``DEBUG_LL``, it
   indicates that the barebox prebootloader has been found and control was
   successfully handed over to it. Note that on some SoCs, ``DEBUG_LL``
@@ -64,7 +64,7 @@ options:
 
   .. note::
      Make sure the correct UART index or address is selected under
-     **Kernel low-level debugging por** in ``menuconfig``.
+     **Kernel low-level debugging port** in ``menuconfig``.
      Configuring the wrong UART might hang your system, because barebox would
      be tricked into accessing hardware that's not there or is powered off.
      The numbering/addresses of ports are described in the System-on-Chip
@@ -174,11 +174,11 @@ The first stage prebootloader handles:
 
 - Check where hang occurs
 
-  If you get just some early output, you'll need to pinpoint, where the issue
+  If you get just some early output, you'll need to pinpoint where the issue
   occurs. If enabling ``CONFIG_PBL_CONSOLE`` along with a correctly configured
   ``CONFIG_DEBUG_PBL`` doesn't help, try adding ``putc_ll('@')`` (or any other
-  character) to find out, where the startup is stuck. ``putc_ll`` has the
-  benefit of being usable everywhere, even before ``setup_c()`` is or
+  character) to find out where the startup is stuck. ``putc_ll`` has the
+  benefit of being usable everywhere, even before ``setup_c()`` or
   ``relocate_to_current_adr()`` is called. Once these are called, you may
   also use ``puts_ll()`` or just normal ``printf`` if ``CONFIG_PBL_CONSOLE=y``.
 
@@ -302,7 +302,7 @@ the compiled in initcalls.
   This option prints each driver probe attempt and can help isolate the
   problematic peripheral.
 
-- Check what was the last executed function was
+- Check what the last executed function was
 
   Each ``initcall->`` log message is followed by a barebox function name.
   Each ``probe->`` log message is followed by the name of the device about
@@ -360,7 +360,7 @@ Kernel Hang
 - Hang after a line like
   ``Loaded kernel to 0x40000000, devicetree at 0x41730000``
 
-With kernel hangs, it's important to find out, whether the hang happens in barebox
+With kernel hangs, it's important to find out whether the hang happens in barebox
 still or already while executing the kernel.
 Without EFI loader support in barebox, there is no calling back from kernel to barebox,
 so a kernel hanging is usually indicative of an issue within the kernel itself.
@@ -370,7 +370,7 @@ to verify that the hang is not just a very slow network connection for example.
 The ``-v`` option to :ref:`command_cp` is useful for that.
 The file size copied may differ from the original if the mean of transport rounds
 up to a specific block size. In that case, round up the size on the host system
-and run a digest function like :ref:`command_md5sum` to check  that the image
+and run a digest function like :ref:`command_md5sum` to check that the image
 was transferred successfully.
 
 If the image is transferred correctly, the :ref:`command_boot` verbosity is increased
@@ -426,7 +426,7 @@ Some hangs might be caused by heap corruption, stack overflows, or use-after-fre
   invalid memory accesses.
 
   .. warning::
-     KASAN gratly increases memory usage and may itself cause hangs in
+     KASAN greatly increases memory usage and may itself cause hangs in
      constrained environments.
 
 

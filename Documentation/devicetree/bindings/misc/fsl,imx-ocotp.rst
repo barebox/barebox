@@ -10,7 +10,7 @@ Deprecated properties:
 
 * ``barebox,provide-mac-address``: Provide MAC addresses for Ethernet devices. This
   can be multiple entries in the form <&phandle regofs> to assign a MAC
-  address to an Ethernet device. This has been deprecated in favor or the upstream
+  address to an Ethernet device. This has been deprecated in favor of the upstream
   nvmem cell binding.
 
 Legacy example:

@@ -1,7 +1,7 @@
 Ka-Ro TX6x
 ==========
 
-This CPU cards are based on a Freescale i.MX6 SoC.
+These CPU cards are based on a Freescale i.MX6 SoC.
 There are currently six variants of this module, that are distinguished
 by the suffix: 'Q' use an i.MX6Q and 'U' an i.MX6DL.
 

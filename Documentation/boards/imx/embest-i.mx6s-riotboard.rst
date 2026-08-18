@@ -10,7 +10,7 @@ General Features:
   * Product Dimensions: 75mm x 120mm
   * Operating Temperature: 0 ~ 50℃
   * Operating Humidity: 20% ~ 90% (non-condensing)
-  * DC-in：5V/4A
+  * DC-in: 5V/4A
 
 Processor:
   * i.MX 6Solo based on ARM Cortex™-A9
@@ -23,7 +23,7 @@ On-Board Memories:
   * 4GByte eMMC
   * 2*512MB DDR3 SDRAM
 
-One-Board Interfaces/Buttons:
+On-Board Interfaces/Buttons:
 
   * Audio input/output interfaces
   * A LVDS interface
@@ -69,11 +69,11 @@ The resulting binary image to be flashed will be ``images/barebox-embest-imx6s-r
 Replacing U-Boot with barebox
 -----------------------------
 
-  1. Connect to the boards's UART (115200 8N1);
+  1. Connect to the board's UART (115200 8N1);
 
   2. Turn board's power on;
 
-  3. Wait ``Hit any key to stop autoboot: 2`` prompt and press any key;
+  3. Wait for the ``Hit any key to stop autoboot: 2`` prompt and press any key;
 
   4. Upload barebox image to the board via tftp and start it
 

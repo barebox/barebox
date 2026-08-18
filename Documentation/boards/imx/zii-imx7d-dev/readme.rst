@@ -31,7 +31,7 @@ A custom OpenOCD binary and options can be specified as follows:
     Documentation/boards/imx/zii-imx7d-dev/bootstrap.sh
 
 
-Disabling DSA in Embedeed Switch
+Disabling DSA in Embedded Switch
 --------------------------------
 
 Booting the Linux kernel that the device ships with will re-configure the on-board

@@ -50,14 +50,14 @@ Optional Properties
 * ``backend-stridesize``: stride counted in bytes. See note below.
 * ``backend-storage-type``: Defines the backend storage type to ``direct``,
   ``circular`` or ``noncircular``. If the backend memory needs to be erased
-  prior a write it defaults to the ``circular`` storage backend type, for backend
+  prior to a write it defaults to the ``circular`` storage backend type, for backend
   memories like RAMs or EEPROMs it defaults to the ``direct`` storage backend type.
 * ``algo``: An HMAC algorithm used to detect manipulation of the data
   or header, sensible values follow this pattern ``hmac(<HASH>)``,
   e.g. ``hmac(sha256)``. Only available for the ``backend-type`` ``raw``.
-* ``keep-previous-content``: Check if a the bucket meta magic field contains
+* ``keep-previous-content``: Check if the bucket meta magic field contains
   other data than the magic value. If so, the backend will not write the state
-  to prevent unconditionally overwrites of existing data.
+  to prevent unconditional overwrites of existing data.
 
 .. note:: For the ``backend-storage-type`` the keyword ``noncircular`` is still
    supported as a fall back to an old storage format. Recommendation is to not
@@ -66,7 +66,7 @@ Optional Properties
 .. _barebox,state_backend_stridesize:
 
 The ``backend-stridesize`` is still optional but required whenever the
-underlying backend doesn't provide an information how to pad an instance of a
+underlying backend doesn't provide information how to pad an instance of a
 *state* variable set. This is valid for all underlying backends which don't
 have eraseblocks (EEPROM, SRAM, MRAM and block devices like eMMC and SD cards).
 The ``backend-stridesize`` value is used by the ``direct`` backend storage type
@@ -99,7 +99,7 @@ These are subnodes of a *state* node each describing a single
 variable. The node name may end with ``@<ADDRESS>``, but the suffix is
 stripped from the variable name.
 
-State variables have a type. Currenty supported types are: ``uint8``,
+State variables have a type. Currently supported types are: ``uint8``,
 ``uint32``, ``enum32``, ``mac`` address or ``string`` (fixed length string).
 Variable length strings are not planned.
 
@@ -124,7 +124,7 @@ Optional Properties
 
 .. note:: Since the ``default`` property is optional, keep in mind you may need
    a valid default value if other instances (like the bootchooser for example)
-   depends on it. Due to this, a ``default`` might be a required property instead.
+   depend on it. Due to this, a ``default`` might be a required property instead.
 
 Variable Examples
 #################
@@ -196,7 +196,7 @@ algorithm have to be compiled into barebox.
 The shared secret for the HMAC is requested via
 ``keystore_get_secret()``, using the state's name, from the barebox
 simple keystore. It's up to the developer to populate the keystore via
-``keystore_set_secret()`` in beforehand. Refer :ref:`command_keystore` for
+``keystore_set_secret()`` beforehand. Refer :ref:`command_keystore` for
 further details.
 
 .. _barebox,state_setup:
@@ -233,7 +233,7 @@ with:
 
 Example:
 
-Lets assume the barebox's devicetree uses the name ``persistent_state_memory@01``
+Let's assume the barebox's devicetree uses the name ``persistent_state_memory@01``
 to define its own *state* variable set backend.
 
 Barebox's devicetree defines:

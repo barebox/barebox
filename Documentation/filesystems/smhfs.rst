@@ -28,9 +28,9 @@ Example:
 Host Side Setup
 ---------------
 
-FIXME: Currently OpenOCD does not work correctly if Barebox is built
+FIXME: Currently OpenOCD does not work correctly if barebox is built
 with MMU enabled, so before using this feature, please make sure that
-MMU is disabled in your particular configuration
+MMU is disabled in your particular configuration.
 
 To make semihosting work host machine connected to the target via
 JTAG/SWD must have semihosting capable debug software running. One
@@ -39,7 +39,7 @@ release of OpenOCD should suffice, however for ARMv7A based devices
 patched version from here http://openocd.zylin.com/#/c/2908/ has to be
 used.
 
-The following steps are required to set up a operational semihosting
+The following steps are required to set up an operational semihosting
 channel:
 
       1. In a terminal start OpenOCD and specify your particular board

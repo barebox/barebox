@@ -11,9 +11,9 @@ barebox supports both variants with the same image.
 Downloading DDR PHY Firmware
 ----------------------------
 
-As a part of DDR intialization routine NXP i.MX8MN EVK requires and
+As a part of DDR initialization routine NXP i.MX8MN EVK requires and
 uses several binary firmware blobs that are distributed under a
-separate EULA and cannot be included in Barebox. In order to obtain
+separate EULA and cannot be included in barebox. In order to obtain
 them do the following::
 
  wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.12.bin
@@ -89,7 +89,7 @@ The following steps are required to write the image to the QSPI NOR flash:
 
   - The QSPI NOR partition ``barebox`` must be erased before the stripped
     image is written. The erase size depends on the stripped image size but
-    always start at offset 0.
+    always starts at offset 0.
 
   - Write the stripped barebox image to the QSPI NOR partition ``barebox``
     at offset 0.

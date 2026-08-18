@@ -11,9 +11,9 @@ Not including booting via serial, the device can boot from either SD or eMMC.
 Downloading DDR PHY Firmware
 ----------------------------
 
-As a part of DDR intialization routine NXP i.MX8MM EVK requires and
+As a part of DDR initialization routine NXP i.MX8MM EVK requires and
 uses several binary firmware blobs that are distributed under a
-separate EULA and cannot be included in Barebox. In order to obtain
+separate EULA and cannot be included in barebox. In order to obtain
 them do the following::
 
  wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.0.bin
@@ -52,7 +52,7 @@ were obtained by running i.MX 8M DDR Tool that can be found here:
 
 https://community.nxp.com/docs/DOC-340179
 
-Only minimal amount of necessary changes were made to those files.
+Only a minimal amount of necessary changes were made to those files.
 All of the "impedance matching" code is located in "ddr.h".
 
 Build barebox
@@ -89,14 +89,14 @@ installation to the eMMC boot partition requires special handling:
 
 The following steps are required to write the image to the QSPI NOR flash:
 
-  - The 32KiB preamble MMC preamble must be stripped.
+  - The 32KiB MMC preamble must be stripped.
 
   - The QSPI NOR partition ``barebox`` must be erased before the stripped
     image is written. The erase size depends on the stripped image size but
-    always start at offset 0.
+    always starts at offset 0.
 
   - Write the stripped barebox image to the QSPI NOR partition ``barebox``
     at offset 0.
 
-The ``barebox_update`` command takes care of this and need just be
+The ``barebox_update`` command takes care of this and just needs to be
 supplied a barebox image as argument.

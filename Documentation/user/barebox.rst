@@ -233,7 +233,7 @@ The FIT image has a kernel type of ``kernel_noload``, instructing the bootloader
 to ignore the load address. The first stage bootloader must thus either support
 ``kernel_noload`` or always ignore load addresses.
 
-For non-DT enabled-bootloaders or other architectures, often the normal barebox
+For non-DT-enabled bootloaders or other architectures, often the normal barebox
 binaries can also be used as they are designed to be startable second stage
 from another bootloader, where possible. For example, if you have U-Boot running
 on your board, you can start barebox with U-Boot's ``bootm`` command. The bootm
@@ -265,7 +265,7 @@ another barebox. For instance, if you mounted a TFTP server to ``/mnt/tftp``
 
 At least ``barebox.bin`` (with :ref:`pbl` support enabled ``images/*.pblb``)
 should be startable second stage. The final binaries (``images/*.img``) may or may not
-be startable second stage as it may have SoC specific headers which prevent running second
+be startable second stage as they may have SoC specific headers which prevent running second
 stage. barebox will usually have handlers in-place to skip these headers, so
 it can chainload itself regardless.
 
@@ -336,9 +336,9 @@ for native and cross build respectively. Their default values are:
 
 These can be overridden using environment or make variables.
 
-As use of pkg-config both for host and target tool in the same build can
-complicate build system integration. There are two ``ARCH=sandbox`` configuration
-to make this more straight forward:
+As use of pkg-config both for host and target tools in the same build can
+complicate build system integration, there are two ``ARCH=sandbox`` configurations
+to make this more straightforward:
 
 Host Tools
 ^^^^^^^^^^

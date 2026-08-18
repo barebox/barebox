@@ -87,7 +87,7 @@ GitHub Actions. The CI performs a range of checks, including:
 * Building host tools against musl
 * Shuffle make dependency build order to find missing dependencies
 
-You can run the exact same tests yourself by forking the
+You can run the exact same tests yourself by forking
 `the project on Github <https://github.com/barebox/barebox>`_.
 
 Read along for instructions on reproducing locally.
@@ -106,7 +106,7 @@ When cross-compiling, you need to set one of::
   CROSS_COMPILE_<arch>
   CROSS_COMPILE_<defconfig>
 
-You can also also build all configs for an architecture by omitting
+You can also build all configs for an architecture by omitting
 configs or just build everything at once::
 
   ./MAKEALL
@@ -144,7 +144,7 @@ it directly from PyPI instead of your distro's package repositories::
 
 Example usage::
 
-  # Run x86 VM runnig the EFI payload from efi_defconfig
+  # Run x86 VM running the EFI payload from efi_defconfig
   scripts/qemu_interactive.py test/x86/efi_defconfig.yaml
 
   # Run the test suite against the same
@@ -207,7 +207,7 @@ The CI performs randomized build ordering checks using ``make --shuffle``
 to detect missing dependencies between build targets.
 
 This may lead to occasional build failures, which is a good thing, because
-it allows us to fix issues, before downstream uns into them.
+it allows us to fix issues, before downstream runs into them.
 
 If a failure occurs, the log will include a ``shuffle=`` value::
 

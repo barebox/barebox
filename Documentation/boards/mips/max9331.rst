@@ -13,10 +13,10 @@ The USELESS Board seems useless
   * 3 User LEDs;
   * 1 GPIO Button;
 
-The useless board always shiped with the lastest barebox and kernel. OpenWRT
+The useless board always shipped with the latest barebox and kernel. OpenWRT
 is supported too.
 
-Perparing Hardware
+Preparing Hardware
 ------------------
 
 solder the board in the back, use a TTL dongle connect to JP1.
@@ -45,7 +45,7 @@ solder the board in the back, use a TTL dongle connect to JP1.
 Running barebox
 ---------------
 
-Barebox can be program to the board with:
+Barebox can be programmed to the board with:
 
  * run by u-boot from tftp server
  * run barebox from RAM or burn to flash by barebox
@@ -120,10 +120,10 @@ max9331 has 16MiB spi flash on board, layout is like this
 
    | boot0 | ... | barebox | ... | art |
 
-by default, the barebox bootloader is not located in the begginning of flash,
+by default, the barebox bootloader is not located in the beginning of flash,
 instead we have a so called program boot0, it is a very simple program,
-it jump to 0x9f020000 where the first instruction of barebox.
-This is usefull when debug with jtag or choosing different bootloaders.
+it jumps to 0x9f020000 where the first instruction of barebox is.
+This is useful when debugging with jtag or choosing different bootloaders.
 or even boot kernel without bootloader.
 
 .. code-block:: asm

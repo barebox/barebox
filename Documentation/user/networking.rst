@@ -166,9 +166,9 @@ variables:
 - ``/mnt/nfs``: will use :ref:`global.net.server <magicvar_global_net_server>`
   as NFS server
   and ``/home/${global.user}/nfsroot/${global.hostname}`` as nfsroot.
-  By default, a RPC lookup will be conducted to determine mount and
+  By default, an RPC lookup will be conducted to determine mount and
   NFS ports, but these can be overridden together using a user-specified
-  by means of :ref:`global.nfs.port <magicvar_global_nfs_port>`.
+  port by means of :ref:`global.nfs.port <magicvar_global_nfs_port>`.
   The latter is equivalent to specifying
   ``-o port=${global.nfs.port},mountport=${global.nfs.port}`` as argument
   to the :ref:`mount command <command_mount>`.
@@ -214,7 +214,7 @@ Fastboot over UDP
 When built with ``CONFIG_NET_FASTBOOT=y`` and the global variable
 ``fastboot.net.autostart`` is set to true, barebox will
 listen for fastboot commands on UDP port 5554.
-You might need to configure a IP address first in order to use fastboot (e.g.
+You might need to configure an IP address first in order to use fastboot (e.g.
 via DHCP or statically; see above).
 
 Additionally, you have to configure at least the ``fastboot.partitions``
@@ -224,10 +224,10 @@ On your development host, use fastboot with the ``-s udp:<IP-address>``
 parameter, specifying the IP address of your board.
 See :ref:`fastboot` for more information about Fastboot usage.
 
-DSA (Distributed Switch Architecture) Support in Barebox
+DSA (Distributed Switch Architecture) Support in barebox
 --------------------------------------------------------
 
-Barebox includes support for DSA (Distributed Switch Architecture), allowing
+barebox includes support for DSA (Distributed Switch Architecture), allowing
 for basic configuration and management of network switches within the
 bootloader.
 
@@ -290,7 +290,7 @@ Integration with Network Interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each port of the DSA switch is exposed as an independent network interface in
-Barebox. However, when forwarding is enabled, packets can be forwarded between
+barebox. However, when forwarding is enabled, packets can be forwarded between
 these interfaces without requiring intervention from the CPU.
 
 To configure network settings for individual ports, use standard network

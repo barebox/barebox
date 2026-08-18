@@ -7,7 +7,7 @@ Shell
 * An optional parameter was added to the `-c` option of `dmesg` allowing
   configuration of the number of lines to remain in the log buffer after
   clearing. When no parameter is provided to `-c`, zero is assumed, and no
-  lines are retained. Earlier versions always left 10 lines of logs remain in
+  lines are retained. Earlier versions always let 10 lines of logs remain in
   the log buffer.
 
 Configuration options
@@ -22,5 +22,5 @@ Configuration options
   fitimage public keys to ``keyring=fit[,fit-hint=<fit_hint>]:<crt>``
 * The fit-hints in ``CONFIG_CRYPTO_PUBLIC_KEYS`` are now limited to identifiers
   matching the regular expression ``[a-zA-Z][a-zA-Z0-9_-]*``. Public keys with
-  a ``fit-hint`` not conforming to this results in an error, affected key-hints
+  a ``fit-hint`` not conforming to this result in an error, affected key-hints
   must be changed. Please reach out to the mailing list if this causes issues.

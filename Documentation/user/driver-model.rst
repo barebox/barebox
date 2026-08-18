@@ -97,7 +97,7 @@ The parameters can be used as shell variables:
   of a shell variable assignment. :ref:`command_setenv`, if enabled,
   can still be used to write such a variable though.
 
-device variables may have a type, so assigning wrong values may fail:
+Device variables may have a type, so assigning wrong values may fail:
 
 .. code-block:: console
 

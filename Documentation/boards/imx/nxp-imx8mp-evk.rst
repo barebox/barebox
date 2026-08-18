@@ -11,7 +11,7 @@ Not including booting via serial, the device can boot from either SD or eMMC.
 Downloading DDR PHY firmware
 ----------------------------
 
-As a part of DDR intialization routine NXP i.MX8MP EVK requires and
+As a part of the DDR initialization routine NXP i.MX8MP EVK requires and
 uses several binary firmware blobs that are distributed under a
 separate EULA and cannot be included in Barebox. In order to obtain
 them do the following::
@@ -55,7 +55,7 @@ checkout version v2.7::
 Build Barebox
 -------------
 
-i.MX8MP-EVK support is contained in the imx_v8_defconfig to build it use::
+i.MX8MP-EVK support is contained in the imx_v8_defconfig, to build it use::
 
   make imx_v8_defconfig
   make
@@ -95,7 +95,7 @@ The following steps are required to write the image to the QSPI NOR flash:
 
   - The QSPI NOR partition ``barebox`` must be erased before the stripped
     image is written. The erase size depends on the stripped image size but
-    always start at offset 0.
+    always starts at offset 0.
 
   - Write the stripped barebox image to the QSPI NOR partition ``barebox``
     at offset 0.

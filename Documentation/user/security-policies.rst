@@ -42,7 +42,7 @@ Usage
    (i.e., with the ``security/`` prefix) are added to
    ``CONFIG_SECURITY_POLICY_PATH``.
 
-   Alternatively, policies can also be be referenced in a board's
+   Alternatively, policies can also be referenced in a board's
    Makefile:
 
    .. code-block:: make

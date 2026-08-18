@@ -40,7 +40,7 @@ How to prepare an MCI card to boot the "chumby one" with barebox
   * Create four primary partitions on the MCI card
 
     * the first one for the bootlets (about 256 kiB)
-    * the second one for the persistant environment (size is up to you, at least 256k)
+    * the second one for the persistent environment (size is up to you, at least 256k)
     * the third one for the kernel (2 MiB ... 4 MiB in size)
     * the fourth one for the root filesystem which can fill the rest of the available space
 

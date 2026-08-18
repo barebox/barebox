@@ -3,10 +3,10 @@ Amazon Kindle 4/5 (Wi-Fi/No-Touch, Touch and Paperwhite)
 
 The Kindle Models No. D01100 (Kindle Wi-Fi, also known as No-Touch or K4NT),
 D01200 (Kindle Touch)
-and EY21 (Paperwhite) are refered as the Kindle 4th and 5th generation.
+and EY21 (Paperwhite) are referred to as the Kindle 4th and 5th generation.
 Those e-book readers share a common set of hardware:
 
-* a Freescale i.MX50 SOC
+* a Freescale i.MX50 SoC
 * 2 or 4GiB eMMC
 * a MC13892 PMIC
 
@@ -59,7 +59,7 @@ when:
   (If you press the home button during startup, you will enter USB boot mode.)
 * the EY21 has no keys to press, a USB console will be launched for 10s.
 
-Barebox may be used as drop-in replacement for the shipped bootloader, when
+Barebox may be used as a drop-in replacement for the shipped bootloader, when
 the imximg fits into 258048 bytes. When installing the barebox imximg on
 the eMMC, take care not to overwrite the vendor supplied serial numbers stored
 on the eMMC,

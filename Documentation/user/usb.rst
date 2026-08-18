@@ -47,8 +47,8 @@ barebox supports several different USB gadget drivers:
 
 The recommended way to use USB gadget is with the :ref:`command_usbgadget` command.
 While there are individual commands for :ref:`command_dfu` and :ref:`command_usbserial`,
-the :ref:`command_usbgadget` commands supports registering composite gadgets, which
-exports multiple functions at once. This happens in the "background" without impacting
+the :ref:`command_usbgadget` command supports registering composite gadgets, which
+export multiple functions at once. This happens in the "background" without impacting
 use of the shell.
 
 .. _usbgadget_partitions:
@@ -269,9 +269,9 @@ USB OTG support
 
 barebox does not have true USB OTG support. However, barebox supports some USB cores in
 both host and device mode. If these are specified for otg in the device tree
-(dr_mode = "otg";) barebox registers a OTG device which can be used to decide which
+(dr_mode = "otg";) barebox registers an OTG device which can be used to decide which
 mode shall be used. The device has a ``mode`` parameter which by default has the
-value ``otg``. setting this to ``host`` or ``peripheral`` puts the device in the corresponding
+value ``otg``. Setting this to ``host`` or ``peripheral`` puts the device in the corresponding
 mode. Once a specific mode has been selected it can't be changed later anymore.
 
 .. code-block:: sh
@@ -305,7 +305,7 @@ USB Gadget autostart Support
 ----------------------------
 
 Barebox can be configured to start usbgadget automatically by using global variables,
-instead of creating boot script. This can be useful if autostart policy should be
+instead of creating a boot script. This can be useful if autostart policy should be
 chosen at boot time from other driver or script.
 To get usbgadget autostart support barebox has to be compiled with
 CONFIG_USB_GADGET_AUTOSTART enabled.

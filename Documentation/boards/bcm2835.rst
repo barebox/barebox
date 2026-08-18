@@ -22,7 +22,7 @@ over SD or Ethernet on the Raspberry Pi 4.
      - ``images/barebox-raspberry-pi-2.img`` for the BCM2836/CORTEX-A7 (Raspberry Pi 2)
      - ``images/barebox-raspberry-pi-3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi 3)
      - ``images/barebox-raspberry-pi-cm3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi CM3)
-     - ``images/barebox-raspberry-pi.img``, which is a super set of all the other images,
+     - ``images/barebox-raspberry-pi.img``, which is a superset of all the other images,
        including Raspberry Pi 4 32-bit support.
 
      Copy the respective image for your model to your SD card and name it
@@ -55,13 +55,13 @@ over SD or Ethernet on the Raspberry Pi 4.
 
   6. Turn board's power on.
 
-VideoCore firmware creates a device tree based on the entries in ``config.txt``. This file is available to the Barebox environment in the file ``/vc.dtb``. For example, to boot a kernel shipped with Raspbian::
+VideoCore firmware creates a device tree based on the entries in ``config.txt``. This file is available to the barebox environment in the file ``/vc.dtb``. For example, to boot a kernel shipped with Raspbian::
 
     bootm -o /vc.dtb /boot/kernel7.img
 
-VideoCore device tree also contains the kernel command-line that is constructed from ``cmdline.txt`` and other parameters internally determined by the VideoCore firmware. Normally in Barebox this command-line gets overwritten on boot by the Linux bootargs (see :ref:`booting_linux`).
+VideoCore device tree also contains the kernel command-line that is constructed from ``cmdline.txt`` and other parameters internally determined by the VideoCore firmware. Normally in barebox this command-line gets overwritten on boot by the Linux bootargs (see :ref:`booting_linux`).
 
-The original command-line from VideoCore device tree is available to the Barebox environment in the ``vc.bootargs`` global variable. For example, to append it to the Linux bootargs::
+The original command-line from VideoCore device tree is available to the barebox environment in the ``vc.bootargs`` global variable. For example, to append it to the Linux bootargs::
 
     global linux.bootargs.vc="$global.vc.bootargs"
 

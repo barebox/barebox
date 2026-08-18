@@ -31,7 +31,7 @@ the partition table node is named appropriately:
 * ``boot1-partitions`` : boot1 partition
 
 ``boot0-partitions`` and ``boot1-partitions`` are deprecated. Use ``partitions-boot1``
-and ``partitions-boot2`` instead which is supported under Linux as well.
+and ``partitions-boot2`` instead which are supported under Linux as well.
 
 In addition to the upstream ``fixed-partitions`` compatible binding,
 barebox also supports a ``barebox,fixed-partitions`` binding.

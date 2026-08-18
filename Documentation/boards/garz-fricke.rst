@@ -3,7 +3,7 @@ Garz & Fricke based boards
 
 Garz & Fricke have a variety of Freescale i.MX based boards. Most boards are
 shipped with the redboot bootloader, newer boards are shipped with a combination
-of a shim (U-Boot based) non interactive loader and a Linux based rescue system
+of a shim (U-Boot based) non-interactive loader and a Linux based rescue system
 called 'Flash-N-Go'.
 
 Santaro (i.MX6)
@@ -12,7 +12,7 @@ Santaro (i.MX6)
 This board comes with Flash-N-Go. It boots from the internal eMMC boot0 partition.
 To put barebox on this board boot the system up in the Flash-N-Go system by holding
 the user button pressed during startup. The barebox image can be transferred via
-network or any other medium the Santaro supports. You can backup the original bootloader
+network or any other medium the Santaro supports. You can back up the original bootloader
 with:
 
 .. code-block:: sh

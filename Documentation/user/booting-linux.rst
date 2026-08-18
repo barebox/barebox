@@ -71,7 +71,7 @@ It's also possible to select a specific configuration explicitly:
 
   global.bootm.image=/dev/mmc0.fit@conf-imx8mm-evk.dtb
 
-**NOTE:** it may happen that barebox is probed from the devicetree, but you have
+**NOTE:** it may happen that barebox is probed from the devicetree, but you
 want to start a Kernel without passing a devicetree. In this case set the
 :ref:`global.bootm.boot_atag <magicvar_global_bootm_boot_atag_arm>` variable to
 ``true``.
@@ -130,7 +130,7 @@ to the Kernel command line. This is done when
 is true. How the root= option is appended depends on the device type
 and filesystem the kernel is booted from. For disk like devices (SD/MMC,
 ATA) the partition UUID will be used, the root= option will be something
-like ``root=PARTUUID=deadbeef-1``. For UBIFS fileystems it will be
+like ``root=PARTUUID=deadbeef-1``. For UBIFS filesystems it will be
 ``root=ubi0:volname ubi.mtd=mtdpartname rootfstype=ubifs``. NFS
 filesystems will result in ``root=/dev/nfs nfsroot=ip:/path/to/nfsroot,v3,tcp``.
 The ``v3,tcp`` part is configurable in ``global.linux.rootnfsopts``.
@@ -200,7 +200,7 @@ A single boot target can yield multiple entries, e.g., one for each
 bootloader spec file detected at runtime as described in the next section.
 
 There is also a number of generic default boot targets available, when
-``CONFIG_BOOT_DEFAULTS`` is enabled. These expands to a single device at most:
+``CONFIG_BOOT_DEFAULTS`` is enabled. These expand to a single device at most:
 
 * :ref:`bootsource <magicvar_bootsource>`: expands to the device barebox booted from
 * ``diskuuid.*``: expands to the device with specified ``*`` diskuuid
@@ -209,7 +209,7 @@ For these targets that expand to a single device, a partition can also be specif
 e.g., ``bootsource.esp`` to reference the partition with the ``esp`` partition
 label within the bootsource.
 
-Following target can expand to multiple devices:
+Following targets can expand to multiple devices:
 
 * ``storage.removable``: expands to removable storage devices,
   like USB flash drives or SD-Cards in slots
@@ -308,7 +308,7 @@ Additional notes about keys in the bootloader spec entries:
    other Bootloader Spec entries will be ignored.
 
 ``linux-appendroot``
-   This boolean option is understood by Barebox although it is not part of the
+   This boolean option is understood by barebox although it is not part of the
    original specification. If set to ``true``, barebox will automatically append
    a ``root=`` string to the Linux commandline based on the device where the
    entry is found on. This makes it possible to use the same rootfs image on
@@ -365,12 +365,12 @@ Network boot
 With the following steps, barebox can start the kernel and root filesystem
 over the network, a standard development case.
 
-See :ref:`networking` for informations how to configure your network interfaces.
+See :ref:`networking` for information how to configure your network interfaces.
 
 Note that barebox will pass the same IP settings to the kernel, i.e. it passes
 ``ip=$ipaddr:$serverip:$gateway:$netmask::<linuxdevname>:`` for a static IP setup
 and ``ip=dhcp`` for a dynamic DHCP setup. ``<linuxdevname>`` is a configurable value.
-set ``nv.dev.<ethdev>.linuxdevname`` to the name the device has in Linux.
+Set ``nv.dev.<ethdev>.linuxdevname`` to the name the device has in Linux.
 
 By default, barebox uses the variables ``global.user`` and
 :ref:`global.hostname <magicvar_global_hostname>`

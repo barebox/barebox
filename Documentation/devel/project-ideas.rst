@@ -4,7 +4,7 @@ barebox Project Ideas
 
 This section collects ideas to improve barebox and should serve as a pool
 of ideas for people who want to enter the field of firmware development
-but need some guidance what to work on.
+but need some guidance on what to work on.
 
 These tasks can be adopted as part of programs like Google Summer of Code
 or by motivated individuals outside such programs.
@@ -13,14 +13,14 @@ If you find a project interesting and would like to work on it, reach out
 to the :ref:`mailing list <feedback>` and we can together
 try to figure out whether you are a good match for the project.
 
-For GSoC, following barebox developers are mentoring:
+For GSoC, the following barebox developers are mentoring:
 
   - Ahmad Fatoum (IRC: ``a3f``)
   - Sascha Hauer (IRC: ``_sha_``)
   - Rouven Czerwinski (IRC: ``Emantor``)
 
 This list can be edited and extended by sending patches to the mailing list.
-Other interesting ideas: Support for new file systems (EROFS, extfat, btrfs),
+Other interesting ideas: Support for new file systems (EROFS, exFAT, btrfs),
 improvements for barebox-efi (e.g. as a coreboot payload), ... etc.
 
 Ideas listed below should contain a title, description, expected outcomes,
@@ -60,7 +60,7 @@ so it's the right time now to future-proof and learn more about networking
 internals. One major complication with IPv6 support is neighbor discovery
 protocols that require networking to be possible "in the background".
 barebox' recent improvements of resource sharing and cooperative scheduling
-makes it possible to integrate an IPv6 stack, e.g. lwIP.
+make it possible to integrate an IPv6 stack, e.g. lwIP.
 
 There are also community patches to integrate a TCP stack into barebox.
 These can be evaluated as time allows.
@@ -102,9 +102,9 @@ Porting barebox to new hardware
 Skills: C, low-level affinity. Difficulty: Medium
 
 While Linux and Linux userspace can be quite generic with respect to the
-hardware it runs on, the bucket needs to stop somewhere: barebox needs
+hardware it runs on, the buck needs to stop somewhere: barebox needs
 detailed knowledge of the hardware to initialize it and to pass this
-along information to Linux. In this project, familiarity with barebox
+information along to Linux. In this project, familiarity with barebox
 and a new unsupported SoC will be established with the goal of porting
 barebox to run on it. Prospective developers can suggest suitable
 hardware (boards/SoCs) they are interested in. Preference is for
@@ -129,7 +129,7 @@ Improve barebox RISC-V support
 
 Skills: C, RISC-V interest, low-level affinity. Difficulty: Medium
 
-barebox supports a number of both soft and hardRISC-V targets,
+barebox supports a number of both soft and hard RISC-V targets,
 e.g.: BeagleV, HiFive, LiteX and the QEMU/TinyEMU Virt machine.
 
 Unlike e.g. ARM and MIPS, RISC-V support is still in its formative
@@ -176,11 +176,11 @@ Improve JSBarebox, the barebox web demo
 Skills: C (Basics), Javascript/Web-assembly, Browser-Profiling. Difficulty: Medium
 
 While Linux and Linux userspace can be quite generic with respect to the
-hardware it runs on, the bucket needs to stop somewhere: barebox needs
+hardware it runs on, the buck needs to stop somewhere: barebox needs
 detailed knowledge of the hardware to initialize it and to pass this
-along information to Linux. JSBarebox removes the hurdle of porting
+information along to Linux. JSBarebox removes the hurdle of porting
 barebox to a new board, for new users who are only interested in
-trying it out: The browser runs Tinyemu, a virtual machine in which
+trying it out: The browser runs TinyEMU, a virtual machine in which
 barebox executes as if on real hardware and the user can manipulate the
 (virtual) hardware from the barebox shell and learn about barebox
 conveniences: barebox.org/demo/
@@ -189,12 +189,12 @@ The project is about streamlining this demo: CPU usage currently is
 quite high and teaching barebox to idle the CPU (as we do on sandbox)
 didn't help. This needs to be analyzed with the profiling tools
 provided with modern browsers. The remainder of the project can then
-focus on improving the tutorial inside the demo. e.g. by adding new
+focus on improving the tutorial inside the demo, e.g. by adding new
 peripherals to the virtual machine.
 
-Expected outcome is snappier and less CPU-intensive barebox demo.
+Expected outcome is a snappier and less CPU-intensive barebox demo.
 TinyEMU is extended, so the RISC-V machine is more like real
-hardware and tutorial is extended to make use of the new peripherals.
+hardware and the tutorial is extended to make use of the new peripherals.
 
 This project does not require dedicated hardware. The development
 machine need only support a recent browser.
@@ -204,7 +204,7 @@ Add Sandbox SDL input support
 
 Skills: C (Basics). Difficulty: Lowest
 
-barebox on real hardware has multiple possible input method: buttons,
+barebox on real hardware has multiple possible input methods: buttons,
 keypads and even USB keyboards allow controlling barebox beyond what
 a serial console provides.
 

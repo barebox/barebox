@@ -55,7 +55,7 @@ wildcard globbing:
 	echo ???
 
 There is no support in hush for input/output redirection or pipes.
-Some commands work around this limitation with additional arguments. for
+Some commands work around this limitation with additional arguments. For
 example the :ref:`command_echo` command has the ``-a FILE`` option for appending
 a file and the ``-o FILE`` option for overwriting a file. The readline
 command requires a variable name as argument in which the line will be

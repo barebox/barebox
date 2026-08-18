@@ -13,7 +13,7 @@ configuration -0000REU is shipped with:
   * 64 MiB NAND flash
   * 32 MiB NOR flash
   * 512 kiB SRAM
-  * 4kiB EEPROM
+  * 4 kiB EEPROM
   * MMU, FPU
   * Serial, Ethernet, USB (OTG), I2C, SPI, MMC/SD/SDIO, PCMCIA/CF, RTC
 

@@ -4,7 +4,7 @@ ZII i.MX8MQ Based Boards
 Building Barebox
 ----------------
 
-To build Barebox of ZII i.MX8MQ based board do the following:
+To build Barebox for a ZII i.MX8MQ based board do the following:
 
 .. code-block:: sh
 

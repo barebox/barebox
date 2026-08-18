@@ -5,7 +5,7 @@ Image MetaData (IMD)
 ====================
 
 barebox images can be enriched with metadata. This is useful to get information
-the board an image is compiled for and which barebox version an image contains.
+about the board an image is compiled for and which barebox version an image contains.
 
 There are predefined tags for:
 
@@ -18,10 +18,10 @@ Additionally there is a generic key/value tag to add information which does not
 fit into the above categories, for example the memory size for boards which come
 with different memory sizes which can't be automatically detected.
 
-The informations can be extracted with the ``bareboximd`` tool which lives under
+The information can be extracted with the ``bareboximd`` tool which lives under
 ``scripts/`` in the barebox sourcecode. If enabled it is compiled for the compile
 host and also for the target architecture. barebox itself has the :ref:`command_imd`
-command to extract the informations. Here is an example output of the tool called
+command to extract the information. Here is an example output of the tool called
 without additional options:
 
 .. code-block:: none
@@ -33,15 +33,15 @@ without additional options:
   of_compatible: phytec,imx6x-pbab01 phytec,imx6dl-pfla02 fsl,imx6dl
   model: Phytec phyFLEX-i.MX6 Duallite Carrier-Board
 
-Single informations can be extracted with the ``-t <type>`` option:
+Single pieces of information can be extracted with the ``-t <type>`` option:
 
 .. code-block:: none
 
   # imd barebox-phytec-pbab01dl-1gib.img -t release
   2014.07.0-00167-ge6632a9-dirty
 
-Since the barebox hush does not have output redirection the barebox too has the
-``-s <var>`` option to assign the output to a variable for later evaluation.
+Since the barebox hush does not have output redirection the barebox command has
+the ``-s <var>`` option to assign the output to a variable for later evaluation.
 
 Limitations
 -----------

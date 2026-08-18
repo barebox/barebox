@@ -1,7 +1,7 @@
 OpenRISC
 ========
 
-Optaining an OpenRISC toolchain
+Obtaining an OpenRISC toolchain
 -------------------------------
 
 Toolchain binaries can be obtained from openrisc.io or our github releases page.
@@ -24,7 +24,7 @@ Example of downloading and installing a toolchain::
 Running OpenRISC barebox on qemu
 --------------------------------
 
-Running barebox on qemu is similar to running linux on qemu see more details on
+Running barebox on qemu is similar to running linux on qemu, see more details on
 the qemu wiki site at https://wiki.qemu.org/Documentation/Platforms/OpenRISC
 
 Compile the qemu emulator::

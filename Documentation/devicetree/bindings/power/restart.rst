@@ -1,7 +1,7 @@
 System Restart Controllers
 ==========================
 
-In addition to upstream bindings, following properties are understood:
+In addition to upstream bindings, the following properties are understood:
 
 Optional properties:
 

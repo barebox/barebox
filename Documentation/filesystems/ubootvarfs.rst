@@ -6,7 +6,7 @@ U-Boot environment filesystem
 =============================
 
 barebox supports accessing U-Boot environment contents as a regular
-filesystems in both read and write modes.  U-Boot environment data
+filesystem in both read and write modes.  U-Boot environment data
 (ubootvar) device supports automount, so no explicit mount command
 should be necessary and accessing the environment should be as easy
 as:
@@ -25,4 +25,4 @@ command:
 **NOTE** Current implementation of the filesystem driver uses lazy
 synchronization, any changes made to the environment will not be
 written to the medium until the filesystem is unmounted (will happen
-automatically on Barebox shutdown)
+automatically on barebox shutdown).

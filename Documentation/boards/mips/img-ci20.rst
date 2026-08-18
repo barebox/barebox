@@ -13,7 +13,7 @@ Major hardware features include:
   * Davicom dm9000 10/100 Ethernet controller;
   * 2 x USB (host and OTG);
   * HDMI output;
-  * 14-pin ETAG connector;
+  * 14-pin EJTAG connector;
   * GPIO, SPI, I2C, ADC, expansion headers.
 
 
@@ -23,7 +23,7 @@ The board uses U-Boot 2013.10 as bootloader.
 Running barebox
 ---------------
 
-  1. Boot the board with UART0 serial console. Stop the auto boot during U-boot.
+  1. Boot the board with UART0 serial console. Stop the auto boot during U-Boot.
 
   2. Upload ``images/barebox-img-ci20.img`` via Ymodem to the board and then run:
 

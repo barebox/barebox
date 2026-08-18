@@ -72,7 +72,7 @@ Known issues
 ------------
 
 - eMMC can't be operated at HS200 under Linux, when it should be possible.
-- eMMC accesses times out occasionally under barebox. If an error message
+- eMMC accesses time out occasionally under barebox. If an error message
   is reported during flashing, retry the operation.
 - second USB port doesn't work in barebox
 - Having multiple images per variant could be avoided by having barebox

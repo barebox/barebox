@@ -5,7 +5,7 @@ barebox on (U)EFI
 
 barebox can be built as an EFI application for X86 PCs. This makes
 barebox a bootloader running on PC type hardware. In EFI jargon barebox
-would be a EFI shell. Due to the barebox :ref:`bootloader_spec` support
+would be an EFI shell. Due to the barebox :ref:`bootloader_spec` support
 it can act as a replacement for gummiboot.
 
 For accessing hardware the EFI drivers and abstractions are used. barebox
@@ -16,7 +16,7 @@ be available as ``/efi*``. Networking may be available if the BIOS provides
 the necessary drivers, but most likely you'll have to download/compile
 network drivers yourself, see below.
 
-Depending on the ``CONFIG_64BIT`` option either a ia32 binary or a x86_64
+Depending on the ``CONFIG_64BIT`` option either an ia32 binary or an x86_64
 binary is built. Due to the lack of 32bit UEFI testing hardware only the
 x86_64 binary currently is tested.
 
@@ -36,7 +36,7 @@ The resulting EFI image is ``barebox.efi`` (or the barebox-flash-image link).
 Running barebox on EFI systems
 ------------------------------
 
-The simplest way to run barebox on a USB memory stick. (U)EFI only supports
+The simplest way to run barebox is on a USB memory stick. (U)EFI only supports
 FAT filesystems, so make sure you either have a FAT16 or FAT32 filesystem on
 the memory stick. Put ``barebox.efi`` into the ``EFI/BOOT/`` directory and
 name it ``BOOTx64.EFI`` on 64bit architectures and ``BOOTIA32.EFI`` on 32bit
@@ -49,8 +49,8 @@ has to be put into the ``EFI/barebox/`` directory.
 Supported backends for EFI are raw partitions that can be discovered via a
 partition UUID.
 
-With this sample script you can create bootable image and transfer it to the
-flash driver:
+With this sample script you can create a bootable image and transfer it to the
+flash drive:
 
 .. code-block:: sh
 
@@ -90,13 +90,13 @@ To start it create a USB memory stick like above and execute:
 
   qemu-system-x86_64 -pflash OVMF.fd -nographic /dev/sdx
 
-A plain VFAT image will work aswell, but in this case the UEFI BIOS won't
+A plain VFAT image will work as well, but in this case the UEFI BIOS won't
 recognize it as ESP and ``/boot`` won't be mounted.
 
 Loading EFI applications
 ------------------------
 
-EFI supports loading applications aswell as drivers. barebox does not differentiate
+EFI supports loading applications as well as drivers. barebox does not differentiate
 between both. Both types can be simply executed by typing the path on the command
 line. When an application/driver returns barebox iterates over the handle database
 and will initialize all new devices.
@@ -128,7 +128,7 @@ Drivers can be loaded under barebox simply by executing them:
 
   barebox:/ /boot/network-drivers/0001-SnpDxe.efi
 
-Should the drivers instanciate new devices these are automatically registered
+Should the drivers instantiate new devices these are automatically registered
 after the driver has been loaded.
 
 Simple Network Protocol (SNP)
@@ -145,7 +145,7 @@ https://downloadcenter.intel.com/Detail_Desc.aspx?agr=Y&DwnldID=19186
 
 Once instantiated the EFI drivers take some time to bring up the link, so
 it's best to only load the network drivers when needed. This can be
-archieved with the following script to put under ``/env/network/eth0-discover``:
+achieved with the following script to put under ``/env/network/eth0-discover``:
 
 .. code-block:: sh
 
@@ -193,7 +193,7 @@ under barebox and can be accessed like any other device:
 
 Care must be taken that a partition is only accessed either via the Block IO Protocol *or*
 the File IO Interface. Doing both at the same time will most likely result in data
-corruption on the partition
+corruption on the partition.
 
 EFI device paths
 ----------------
@@ -265,7 +265,7 @@ seen in the ``devinfo`` output of such a device:
     devpath: pci_root(0)/Pci(0x1c,0x3)/Pci(0x0,0x0)/Mac(e03f4914f157)
 
 The protocols section in the output shows the different protocols this
-handle implements. One of this Protocols (here the first) is the Simple
+handle implements. One of these Protocols (here the first) is the Simple
 Network Protocol GUID:
 
 .. code-block:: c

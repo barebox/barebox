@@ -25,7 +25,7 @@ TF-A. Prepare these separately using the respective instructions.
 
 Use bootgen_ or ``mkimage -T zynqmpbif`` from the U-boot tools to build the
 final BOOT.BIN image that can be loaded by the ROM code. Check the
-instructions for these tools how to prepare the BOOT.BIN image.
+instructions for these tools on how to prepare the BOOT.BIN image.
 
 Create a FAT partition as the first partition of the SD card and copy the
 produced BOOT.BIN into this partition.

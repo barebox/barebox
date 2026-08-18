@@ -7,7 +7,7 @@ In addition to the usual barebox release (e.g. ``v2025.03.0``), the
 version number can be extended to encode integration-specific version
 information:
 
-* When built from git, ``scripts/setlocalversion`` will factor in
+* When built from git, ``scripts/setlocalversion`` will factor
   git revision information into the version string.
 * The ``EXTRAVERSION =`` in the top-level ``Makefile`` can be used
   to add a suffix to the version. This is useful if patches are applied
@@ -43,7 +43,7 @@ after boot by different means:
 * If the system is booted through barebox as EFI application (payload),
   a ``LoaderInfo`` EFI variable with the systemd vendor GUID will
   be set to the version string. Under Linux, the string is shown in
-  ``bootctl`` output
+  ``bootctl`` output.
 
 Query without booting
 ^^^^^^^^^^^^^^^^^^^^^

@@ -18,7 +18,7 @@ U-Boot environment. It is advised to boot the board using the shipped U-Boot
 Bootloader and to read out and save the MAC addresses for the board.
 The environment variables which contain the addresses are `$ethaddr` and
 `$eth1addr`.
-The MAC addresses can than be persisted to the barebox environment by using
+The MAC addresses can then be persisted to the barebox environment by using
 
 .. code-block:: sh
 

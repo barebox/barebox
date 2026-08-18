@@ -11,7 +11,7 @@ configuration that excludes some images from the signature.
 Previously, it was possible to generate readily exploitable FIT images
 by omitting them from ``sign-images`` in the ITS.
 
-If a FIT fails to boot with **v2025.09.3**, when it succesfully booted
+If a FIT fails to boot with **v2025.09.3**, when it successfully booted
 v2025.09.2 or earlier, it's likely that it was vulnerable even without
 knowledge of CVE-2026-33243.
 

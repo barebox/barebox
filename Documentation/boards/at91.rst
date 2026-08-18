@@ -1,23 +1,23 @@
 Microchip (Atmel) AT91
 ======================
 
-The Microchip (former Atmel) AT91 architecure has very good support within
+The Microchip (former Atmel) AT91 architecture has very good support within
 barebox.
 Most boards today have their description in their board files, but
 boards are slowly migrating to use DT.
 Likewise most boards are not yet migrated to multi image support, but
 this is also ongoing.
 
-The boot process of the AT91 CPU's is a two step process.
+The boot process of the AT91 CPUs is a two step process.
 The first step is named the bootstrap and at91bootstrap
 is often used (https://github.com/linux4sam/at91bootstrap).
 barebox supports bootstrapping some at91 boards as documented
 in the following.
 
-The bootstrap program are loaded by a boot program and can be loaded
+The bootstrap program is loaded by a boot program and can be loaded
 from DataFlash, NAND Flash, SD Card or via USB.
-The bootstrap program do the low-level configuration of the
-processor and then load and execute barebox.
+The bootstrap program does the low-level configuration of the
+processor and then loads and executes barebox.
 
 AT91 boards
 -----------
@@ -61,6 +61,6 @@ TODO
 This is a list of AT91 specific TODO items, listed in no particular order.
 
 * Update remaining boards to DT
-* Update remaing boards to support multi image boot
+* Update remaining boards to support multi image boot
 * Introduce defaultenv2 for all boards
 * Add pwm driver (required to support backlight)

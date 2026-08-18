@@ -28,4 +28,4 @@ Example:
   linux.bootargs.rootopts: nfsroot=192.168.23.4:/home/sha/nfsroot/generic-v7,v3,tcp
 
 The options default to ``v3,tcp`` but can be adjusted before mounting the NFS share with
-the ``global.linux.rootnfsopts`` variable
+the ``global.linux.rootnfsopts`` variable.

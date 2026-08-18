@@ -7,7 +7,7 @@ as well.
 
 The boot process of the STM32MP1 SoC is a two step process.
 The first stage boot loader (FSBL) is loaded by the ROM code into the built-in
-SYSRAM and executed. The FSBL sets up the SDRAM, install a secure monitor and
+SYSRAM and executed. The FSBL sets up the SDRAM, installs a secure monitor and
 then the second stage boot loader (SSBL) is loaded into DRAM.
 
 When barebox is built, a ``barebox-stm32mp-generic-bl33.img`` is generated, which is

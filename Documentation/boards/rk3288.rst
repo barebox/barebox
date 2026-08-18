@@ -9,7 +9,7 @@ SPL is a non-interactive loader and is only used to boot the 2nd stage loader.
 
 At this moment barebox can only be used as a 2nd stage bootloader.
 Starting barebox requires another bootloader which will do the very basic
-SDRAM initialization for us. We can use the u-boot for that.
+SDRAM initialization for us. We can use U-Boot for that.
 
 Building barebox
 ----------------
@@ -28,7 +28,7 @@ Starting and updating barebox
 SD/MMC
 ^^^^^^
 
-For the first stage bootloader we will need an u-boot image. A detailed
+For the first stage bootloader we will need a U-Boot image. A detailed
 description on how to build and flash an RK3288 SPL image can be found in the
 u-boot source ``u-boot/doc/README.rockchip``.
 

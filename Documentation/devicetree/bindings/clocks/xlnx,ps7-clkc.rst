@@ -1,7 +1,7 @@
 Xilinx PS7 clkc
 ===============
 
-In addition to the upstream bindings, following properties are understood:
+In addition to the upstream bindings, the following properties are understood:
 
 Optional properties:
 

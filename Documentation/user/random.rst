@@ -15,7 +15,7 @@ Barebox provides two types of RNG sources - PRNG and HWRNG:
   for cryptographic operations, so please use with caution.
 
 - The HWRNG framework is software that makes use of a special hardware feature on
-  your CPU, SoC or motherboard. It can‘t provide any guarantee about cryptographic
+  your CPU, SoC or motherboard. It can't provide any guarantee about cryptographic
   security of used HW. Please refer to vendor documentation and/or RNG certification.
 
 API

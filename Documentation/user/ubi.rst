@@ -13,8 +13,8 @@ device:
   ubiformat /dev/nand0.root
 
 If you intend to use a device with UBI you should always use ``ubiformat`` instead of plain
-:ref:`command_erase`. ``ubiformat`` will make sure the erasecounters are preserved and also
-:ref:`ubi_fastmap` won't work when a flash is erased with ``erase``
+:ref:`command_erase`. ``ubiformat`` will make sure the erase counters are preserved and also
+:ref:`ubi_fastmap` won't work when a flash is erased with ``erase``.
 
 **NOTE:** when using the :ref:`ubi_fastmap` feature make sure that the UBI is attached and detached
 once after using ``ubiformat``. This makes sure the Fastmap is written.
@@ -66,7 +66,7 @@ To build a UBIFS image for this device the following command is suitable:
 
 The ``--max-leb-cnt`` parameter specifies the maximum number of logical erase blocks
 the UBIFS image can ever have. For this particular device a number of 3713 would be
-enough. If the image shall be used for multiple boards the maximim peb count of all
+enough. If the image shall be used for multiple boards the maximum peb count of all
 boards must be used.
 
 The UBIFS image can be transferred to the board for example with TFTP:
@@ -106,10 +106,10 @@ When attaching UBI to a flash device the UBI code has to scan all eraseblocks on
 flash. Since this can take some time the Fastmap feature has been introduced. It has
 been merged in Linux 3.7. barebox has support for the Fastmap feature, but to use
 it some care must be taken. The Fastmap feature reduces scanning time by adding
-informations to one of the first blocks of a flash. For technical details see
+information to one of the first blocks of a flash. For technical details see
 http://www.linux-mtd.infradead.org/doc/ubi.html#L_fastmap. Since the Fastmap can
 only live near the beginning of a flash the Fastmap code relies on finding a free
-eraseblock there. The above example command make that sure, but Fastmap is incompatible
+eraseblock there. The above example command makes that sure, but Fastmap is incompatible
 with creating a UBI image on a host and directly flashing the UBI image to the
 raw NAND/NOR device. In this case the Fastmap code will not find a free eraseblock
 and the following message will occur during ``ubidetach``:

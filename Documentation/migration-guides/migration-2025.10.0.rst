@@ -8,7 +8,7 @@ The i.MX SNVS device file is now simply called ``snvs`` instead of the
 previous unwieldy name derived from device tree,
 e.g., ``/dev/30370000.snvs@30370000:snvs-lpgpr.of0``.
 
-EEPROMs that are pointed at by a device tree alias do no longer have
+EEPROMs that are pointed at by a device tree alias no longer have
 an extra 0 at the end, e.g., ``/dev/eeprom00`` has become ``/dev/eeprom0``.
 
 AM62L DT Bindings

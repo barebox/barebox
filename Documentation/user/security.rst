@@ -3,7 +3,7 @@
 Security Considerations
 =======================
 
-As bootloader, barebox is often used as part of a cryptographically verified
+As a bootloader, barebox is often used as part of a cryptographically verified
 boot chain. Such a boot chain is only as secure as its weakest link and
 special care needs to be taken while configuring and deploying barebox.
 
@@ -17,7 +17,7 @@ At the start of the verification chain lies some hardware root of trust, most
 often a public key (or its hash) that's programmed into one-time-programmable
 (OTP) eFuses while the board is still in the factory.
 
-The SoC's mask ROM (sometime called BootROM) will consult the eFuses and
+The SoC's mask ROM (sometimes called BootROM) will consult the eFuses and
 use them to verify the first stage bootloader image. From there on, it's
 expected that every boot stage will only boot the next one after verification.
 
@@ -52,7 +52,7 @@ The latter is often done by writing a different set of eFuses, see for
 example the barebox :ref:`hab command <command_hab>` which does the necessary
 fusing for both HABv4 and AHAB.
 
-.. warning:: barebox commands like :ref:`hab command <command_hab>` do only
+.. warning:: barebox commands like :ref:`hab command <command_hab>` only
    touch the subset of fuses relevant to most users. It's up to the integrators
    to fuse away unneeded functionality like USB recovery or JTAG as needed.
 
@@ -60,7 +60,7 @@ Loading firmware
 ----------------
 
 In systems utilizing the ARM TrustZone, barebox is often tasked with loading
-the secure OS (Usually OP-TEE). After OP-TEE is loaded, the rest of the
+the secure OS (usually OP-TEE). After OP-TEE is loaded, the rest of the
 software runs in a less-privileged non-secure or "normal" world.
 
 The installation of OP-TEE (and any higher privileged firmware like ARM Trusted
@@ -76,12 +76,12 @@ barebox can embed one or more RSA or ECDSA public keys that it will use to
 verify signed FIT images. In a verified boot system, barebox should not
 be allowed to boot any images that have not been signed by the correct key.
 This can be enforced by setting ``CONFIG_BOOTM_FORCE_SIGNED_IMAGES=y``
-and disabling any ways that could use used to override this.
+and disabling any ways that could be used to override this.
 
-For development convenience ``CONFIG_CRYPTO_BUILTIN_DEVELOPMENT_KEYS`` keys
-can be used to compile in well known development keys into the barebox binary.
+For development convenience ``CONFIG_CRYPTO_BUILTIN_DEVELOPMENT_KEYS``
+can be used to compile well known development keys into the barebox binary.
 The private keys for these keys can be found
-`[here] <https://git.pengutronix.de/cgit/ptx-code-signing-dev>`__
+`[here] <https://git.pengutronix.de/cgit/ptx-code-signing-dev>`__.
 
 Pinning the FIT configuration
 -----------------------------
@@ -99,11 +99,11 @@ per FIT, or name the configuration explicitly, e.g.
 Prevent the kernel from booting the rootfs in verity boots
 ----------------------------------------------------------
 
-In systems, where barebox loads an initramfs that setups a dm-verity rootfs and
+In systems, where barebox loads an initramfs that sets up a dm-verity rootfs and
 passes the location of the root file system on the kernel command-line, make
 sure not to use ``root=``!
 ``root=`` is also interpreted by the kernel and can lead to the kernel mounting
-the rootfs without dm-verity, if the initramfs failed to load, e.g. due to
+the rootfs without dm-verity, if the initramfs failed to load, e.g. due to a
 different compression algorithm.
 
 The fail-safe alternative is to use a parameter name understood only by the

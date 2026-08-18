@@ -1,7 +1,7 @@
 QEMU Malta
 ==========
 
-Building barebox for Qemu Malta:
+Building barebox for QEMU Malta:
 
 .. code-block:: sh
 

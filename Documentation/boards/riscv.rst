@@ -68,7 +68,7 @@ barebox has second-stage support for the BeagleV Starlight::
   make ARCH=riscv rv64i_defconfig
   make
 
-Thie resulting ``./images/barebox-beaglev-starlight.img`` can be used as payload
+The resulting ``./images/barebox-beaglev-starlight.img`` can be used as payload
 to opensbi::
 
   git clone https://github.com/starfive-tech/opensbi
@@ -172,7 +172,7 @@ to load barebox image into board's DRAM, e.g.::
 
   # ./scripts/nmon-loader barebox.erizo.nmon /dev/ttyUSB0 115200
 
-Wait several munutes for 'nmon> ' prompt.
+Wait several minutes for 'nmon> ' prompt.
 
 Next, start barebox from DRAM::
 
@@ -224,8 +224,8 @@ initial dtb can be taken from u-boot::
 Make will print two warnings at the end of this command but those can be ignored
 since we only want the devicetree blob which can be found under ``./u-boot.dtb``.
 
-The final image is build by mkimage. It is some sort of a self-defined toc1
-format. So we need to compile the mkimage with the toc1 format support as
+The final image is built by mkimage. It is some sort of a self-defined toc1
+format. So we need to compile the mkimage with the toc1 format support
 first::
 
   cd u-boot
@@ -236,13 +236,13 @@ by the 1st stage bootloader from the mmc interface. To build the final toc1 imag
 we need to specify a toc1.cfg like::
 
   [opensbi]
-  file = <ABSOLUT_PATH_TO>/opensbi/build/platform/generic/firmware/fw_dynamic.bin
+  file = <ABSOLUTE_PATH_TO>/opensbi/build/platform/generic/firmware/fw_dynamic.bin
   addr = 0x40000000
   [dtb]
-  file = <ABSOLUT_PATH_TO>/u-boot/u-boot.dtb
+  file = <ABSOLUTE_PATH_TO>/u-boot/u-boot.dtb
   addr = 0x44000000
   [u-boot]
-  file = <ABSOLUT_PATH_TO>/barebox/images/barebox-allwinner-d1.img
+  file = <ABSOLUTE_PATH_TO>/barebox/images/barebox-allwinner-d1.img
   addr = 0x4a000000
 
 Then we need to call::

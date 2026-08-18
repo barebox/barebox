@@ -20,7 +20,7 @@ The devices boot up in internal boot mode from eMMC boot partition 1
 and are shipped with a vendor modified u-boot imximage based on u-boot
 v2009.08.
 
-According to the availability of source code tarballs on the amazon website
+According to the availability of source code tarballs on the Amazon website
 "Source Code Notice for Kindle E-Readers and Fire Tablets", factory image
 updates seem to have been terminated between 2021 and 2023.
 
@@ -42,7 +42,7 @@ Similar to the 4/5 gen devices, console access to gen 6/7 kindles is
 available via the Micro-USB connector when a 30k Ohm resistor to GND
 is used on the sense pin: USB D- will become TXD, D+ RXD.
 
-From the uboot shell, the barebox image may be chainloaded e.g. like
+From the u-boot shell, the barebox image may be chainloaded e.g. like
 
    .. code-block:: console
 
@@ -81,7 +81,7 @@ for 10 seconds after boot.
 Installing barebox
 ------------------
 
-Barebox may be used as drop-in replacement for the shipped bootloader, when
+Barebox may be used as a drop-in replacement for the shipped bootloader, when
 the imximg fits into 384000 bytes, compression like IMAGE_COMPRESSION_XZKERN
 might be required for this. When installing the barebox imximg on
 the eMMC, take care not to overwrite the vendor supplied serial numbers and

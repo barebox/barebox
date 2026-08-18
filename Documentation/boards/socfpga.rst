@@ -123,7 +123,7 @@ Now run the command:
 
   scripts/socfpga_import_preloader -e <EMBEDDED_SDK> -i <ISW_HANDOFF> -b <BOARD_DIRECTORY>
 
-where `<SPL_GENERATED_DIR>` is the directory where the bsp-editor generated the files,
+where `<EMBEDDED_SDK>` is the directory containing the Altera embedded SDK,
 `<ISW_HANDOFF>` is the directory where Quartus generated the handoff files, and
 `<BOARD_DIRECTORY>` is your board directory under `arch/arm/boards`.
 
@@ -134,7 +134,7 @@ Integrating new SDRAM driver
 This step must only be executed if the SDRAM driver needs updates. It is not necessary
 for adding a new board to barebox.
 
-The following files are generic and belong into the `arch/arm/mach-socfpga` directory
+The following files are generic and belong into the `include/mach/socfpga` directory
 tree:
 
 * sdram_io.h

@@ -21,4 +21,4 @@ Currently, barebox supports the following SOMs and boards:
 Building phycore-som-rk3288
 ---------------------------
 
-The phycore-som-rk3288 boards are covered by the ``rk3288_defconfig``.
+The phycore-som-rk3288 boards are covered by the ``rockchip_v7a_defconfig``.

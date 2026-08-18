@@ -7,9 +7,9 @@ This is meant to allow the OS to use the boot firmware's virtual memory
 mapping to access device resources early in the kernel boot process.
 
 When barebox is compiled with ``CONFIG_MMU`` support and the
-implementation supports remapping, devices with ``virtual_reg`` will have
+implementation supports remapping, devices with ``virtual-reg`` will have
 all their resources remapped at the physical/virtual address offset calculated
-by subtracting ``virtual-reg`` from the first address in ``reg``.
+by subtracting the first address in ``reg`` from ``virtual-reg``.
 
 This is normally used to map I/O memory away from the zero page, so it
 can be used again to trap null pointer dereferences, while allowing
@@ -24,6 +24,6 @@ full access to the device memory.
         flash@0 {
              reg = <0 0x10000>;
              virtual-reg = <0x1000>;
-	     /* => memory region remapped from [0x1000, 0x11000] to [0x0000, 0x10000] */
+	     /* => memory region remapped from [0x0000, 0x10000] to [0x1000, 0x11000] */
         };
   };

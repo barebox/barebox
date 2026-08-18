@@ -118,7 +118,7 @@ Disabling the shell
 While useful for development, the barebox shell can be used in creative
 ways to circumvent boot restrictions. It's thus advisable to disable
 the shell completely (``CONFIG_SHELL_NONE=y``) or make it non-interactive
-(``CONSOLE_DISABLE_INPUT=y``). This may be coupled with muxing UART RX
+(``CONFIG_CONSOLE_DISABLE_INPUT=y``). This may be coupled with muxing UART RX
 pin as GPIO for maximum effectiveness.
 
 In addition, there are alternative methods of accessing the shell like

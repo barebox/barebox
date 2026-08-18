@@ -102,7 +102,7 @@ prebootloader and barebox proper.
 
 * first stage barebox proper: runs in DRAM and chainloads the second stage binary.
 
-* first stage prebootloader: is already running in DRAM, so it doesn't need to do
+* second stage prebootloader: is already running in DRAM, so it doesn't need to do
   any hardware setup and instead directly extract second stage barebox proper
 
 * second stage barebox proper: your usual barebox experience, which can have an

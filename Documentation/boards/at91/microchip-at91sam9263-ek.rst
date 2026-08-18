@@ -7,7 +7,7 @@ Building barebox:
 
 .. code-block:: sh
 
-  make ARCH=arm at91sam9263ek_defconfig
+  make ARCH=arm at91_multi_defconfig
 
 Notes while working on at91sam9263ek bootstrap support
 

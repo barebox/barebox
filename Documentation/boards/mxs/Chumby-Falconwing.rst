@@ -24,7 +24,7 @@ Using the default configuration:
 
 .. code-block:: sh
 
-  make ARCH=arm chumbyone_defconfig
+  make ARCH=arm imx23_defconfig
 
 Build the bootloader binary image:
 

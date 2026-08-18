@@ -13,7 +13,7 @@ Using the default configuration:
 
 .. code-block:: sh
 
-  make ARCH=arm imx233-olinuxino_defconfig
+  make ARCH=arm imx23_defconfig
 
 Build the binary image:
 

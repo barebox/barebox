@@ -30,7 +30,7 @@ can be used for e.g. an extra console or to pass in a virtio-blk device::
   barebox@riscv-virtio,qemu:/ filetype /dev/virtioblk0
   /dev/virtioblk0: RISC-V Linux image (riscv-linux)
 
-Note that the ``board-dt-2nd.img`` uses the Linux RISC-V kernel image
+Note that the ``barebox-dt-2nd.img`` uses the Linux RISC-V kernel image
 format and boot protocol. It thus requires the device tree to be passed
 from outside in ``a1`` and must be loaded at an offset as indicated in
 the header for the initial stack to work. Using the ``-kernel`` option

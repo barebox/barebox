@@ -175,8 +175,8 @@ configuration script can source to set up common overrides, e.g.
 ``. /env/devboot/defaults``. It is available when
 ``CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_DEVBOOT`` is enabled.
 
-/env/mach.of_compatible/
-------------------------
+/env/match.of_compatible/
+-------------------------
 
 On devicetree enabled systems, this optional directory may contain
 environment overlays that should be applied onto ``/env``.

@@ -211,8 +211,8 @@ loss.
 Fastboot over UDP
 -----------------
 
-When built with ``CONFIG_NET_FASTBOOT=y`` and the environment variable
-``fastboot.net.autostart`` is set to any non-empty value, barebox will
+When built with ``CONFIG_NET_FASTBOOT=y`` and the global variable
+``fastboot.net.autostart`` is set to true, barebox will
 listen for fastboot commands on UDP port 5554.
 You might need to configure a IP address first in order to use fastboot (e.g.
 via DHCP or statically; see above).

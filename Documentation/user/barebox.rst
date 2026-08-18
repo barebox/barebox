@@ -53,6 +53,7 @@ variable and the cross compiler with the ``CROSS_COMPILE`` environment
 variable. Currently, ``ARCH`` must be one of:
 
 * arm
+* kvx
 * mips
 * openrisc
 * ppc

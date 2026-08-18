@@ -37,8 +37,8 @@ after boot by different means:
   ``/chosen/barebox-version`` property into the kernel device tree with
   the version string. Under Linux, this can be accessed at:
 
- * ``/sys/firmware/devicetree/base/chosen/barebox-version``
- * ``/proc/device-tree/base/chosen/barebox-version``
+  * ``/sys/firmware/devicetree/base/chosen/barebox-version``
+  * ``/proc/device-tree/chosen/barebox-version``
 
 * If the system is booted through barebox as EFI application (payload),
   a ``LoaderInfo`` EFI variable with the systemd vendor GUID will

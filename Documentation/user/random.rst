@@ -24,10 +24,10 @@ API
 .. code-block:: c
 
         /* mix extra entropy into the PRNG state. */
-        void srand_xor(u64 seed);
+        void srand_xor(u64 entropy);
 
         /* Fill the buffer with PRNG bits. */
-        void get_noncrypto_bytes(void *buf, int len);
+        void get_noncrypto_bytes(void *buf, size_t len);
 
         /* Fill the buffer with bits provided by HWRNG.
          * This function may fail with a message “error: no HWRNG available!”

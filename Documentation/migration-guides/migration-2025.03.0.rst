@@ -12,7 +12,7 @@ fixed-partitions on SD/MMC
 --------------------------
 
 Linux v6.13-rc1 added ``CONFIG_OF_PARTITION``, which interprets
-``fixed partitions`` nodes in SD/MMC nods differently to the barebox
+``fixed-partitions`` nodes in SD/MMC nodes differently to the barebox
 behavior: It ignores the GPT/MBR if fixed-partitions are specified,
 instead of allowing them to co-exist like in barebox.
 

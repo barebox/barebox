@@ -46,9 +46,9 @@ let the common binary determine the board type.
 
 The board specific PBL images are generated from a single set of object files
 using the linker. The basic trick here is that the PBL objects have multiple
-entry points, specified with the ENTRY_POINT macro. For each PBL binary
+entry points, specified with the ENTRY_FUNCTION macro. For each PBL binary
 generated a different entry point is selected using the ``-e`` option to ld.
 The linker will throw away all unused entry points and only keep the functions
 used by a particular entry point.
 
-The Multi Image PBL files can be disassembled with ``make images/<entry-function-name>.pbl.S``
+The Multi Image PBL files can be disassembled with ``make images/<entry-function-name>.pbl.s``

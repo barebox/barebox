@@ -66,8 +66,8 @@ Usage
 
      #include <security/policy.h>
 
-     security_policy_add(myboard_lockdown)
-     security_policy_add(myboard_devel)
+     security_policy_add(myboard_lockdown);
+     security_policy_add(myboard_devel);
 
 5. **Runtime selection**:
 

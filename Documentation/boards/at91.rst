@@ -40,9 +40,9 @@ The resulting images will be placed under ``images/``:
   barebox-sama5d3-xplained.img
   barebox-sama5d3-xplained-xload-mmc.img
   barebox-sama5d27-som1-ek.img
-  barebox-sama5d27-som1-ek-xload-mmc.img
+  barebox-sama5d27-som1-ek-xload.img
   barebox-groboards-sama5d27-giantboard.img
-  barebox-groboards-sama5d27-giantboard-xload-mmc.img
+  barebox-groboards-sama5d27-giantboard-xload.img
   barebox-skov-arm9cpu.img
 
 Older supported boards have yet to be migrated to multi-image and device tree.

@@ -34,7 +34,7 @@ be any volumes present. A volume can be created with:
   ubimkvol /dev/nand0.root.ubi root 0
 
 The first parameter is the controlling node. The second parameter is the name of the volume.
-In this case the volume can be found under ``/dev/dev/nand0.root.ubi.root``. The third
+In this case the volume can be found under ``/dev/nand0.root.ubi.root``. The third
 parameter contains the size. A size of zero means that all available space shall be used.
 
 The next step is to write a UBIFS image to the volume. The image must be created on a host using

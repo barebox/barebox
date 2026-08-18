@@ -622,6 +622,7 @@ Here is an abridged example:
 				mmc1: mmc@2190000 {
 					// … MMC device definition …
 				};
+			};
 		};
 
 		aliases {

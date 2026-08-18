@@ -39,7 +39,7 @@ the device. By convention, this should end with ``.reboot_mode``, e.g.::
 
 	/ {
 		aliases {
-			gpr.reboot_name = &reboot_name_gpr;
+			gpr.reboot_mode = &reboot_mode_gpr;
 		};
 	};
 
@@ -51,7 +51,7 @@ After executing the init scripts,
 barebox startup will ``source /env/bmode/${global.system.reboot_mode.prev}``
 if available. Example usage::
 
-	gpr.reboot_mode=serial reset -w
+	gpr.reboot_mode.next=serial reset -w
 
 Reset
 =====
@@ -62,7 +62,7 @@ power management IC, the registers may lose their value.
 
 If such reboot mode storage is used, users must take care to use the correct
 reset provider. In barebox, multiple reset providers may co-exist. The
-``reset`` command allows listing and choosing a specific reboot mode.
+``reset`` command allows listing and choosing a specific reset handler.
 
 For communication with the SoC's BootROM, a warm reset can be triggered
 with ``reset -w`` if a suitable reset handler has been registered.

@@ -9,8 +9,8 @@ where storage space is sparse. Another usecase of PBL is on SoCs on which the
 ROM code loads the initial bootloader to (limited) SRAM. With self extracting
 binaries, more binary space becomes available.
 
-PBL is available for ARM and MIPS. It can be enabled in ``make menuconfig`` with
-the ``[*] Pre-Bootloader image`` option.
+PBL is available for ARM, MIPS, RISC-V and sandbox. It can be enabled in
+``make menuconfig`` with the ``[*] Pre-Bootloader image`` option.
 
 The user visible difference is that with PBL support ``barebox.bin`` is no longer
 the final binary image, but instead the images are placed in ``images/``.

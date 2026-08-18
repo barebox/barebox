@@ -71,7 +71,7 @@ Flashing barebox
   host$ imx-usb-loader images/barebox-embest-imx6q-marsboard.img
 ..
 
-  4. Flash barebox to SPI-NOR Flash via Android Fastboot
+  5. Flash barebox to SPI-NOR Flash via Android Fastboot
 
 .. code-block:: none
 
@@ -79,4 +79,4 @@ Flashing barebox
 
 ..
 
-  5. Restore ``SW1 = 10`` for internal (SPI-NOR) boot (see above)
+  6. Restore ``SW1 = 10`` for internal (SPI-NOR) boot (see above)

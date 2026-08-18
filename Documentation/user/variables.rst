@@ -35,7 +35,7 @@ Non volatile variables
 ----------------------
 
 Additionally to global variables barebox also has non volatile (nv) variables.
-Unlike the global variables the config variables are persistent over reboots.
+Unlike the global variables the nv variables are persistent over reboots.
 
 Each nv variable is linked with the global variable of the same name.
 Whenever the nv variable changes its value the corresponding global
@@ -84,7 +84,7 @@ This example changes the partitioning of the nand0 device:
 
 .. code-block:: sh
 
-  barebox@Phytec phyCARD-i.MX27:/ nv dev.nand0.partitions: 4M(barebox),1M(barebox-environment),-(root)
+  barebox@Phytec phyCARD-i.MX27:/ nv dev.nand0.partitions=4M(barebox),1M(barebox-environment),-(root)
   barebox@Phytec phyCARD-i.MX27:/ devinfo nand0
     Parameters:
     [...]

@@ -332,8 +332,8 @@ options in this file are:
 Header:
 
 +--------------------+--------------------------------------------------------------+
-| ``soc <soctype>``  | soctype can be one of imx35, imx51, imx53, imx6, imx7, vf610,|
-|                    |                             imx8mq                           |
+| ``soc <soctype>``  | soctype can be one of imx25, imx35, imx50, imx51, imx53,     |
+|                    | imx6, imx7, imx8mm, imx8mn, imx8mp, imx8mq, vf610            |
 +--------------------+--------------------------------------------------------------+
 | ``loadaddr <adr>`` |     The address the binary is uploaded to                    |
 +--------------------+--------------------------------------------------------------+

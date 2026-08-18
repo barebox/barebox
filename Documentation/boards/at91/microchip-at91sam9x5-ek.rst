@@ -7,4 +7,4 @@ Building barebox:
 
 .. code-block:: sh
 
-  make ARCH=arm at91sam9x5ek_defconfig
+  make ARCH=arm at91_multi_defconfig

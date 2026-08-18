@@ -10,7 +10,7 @@ The first stage boot loader (FSBL) is loaded by the ROM code into the built-in
 SYSRAM and executed. The FSBL sets up the SDRAM, install a secure monitor and
 then the second stage boot loader (SSBL) is loaded into DRAM.
 
-When barebox is built, a ``barebox-stm32mp-generic.img`` is generated, which is
+When barebox is built, a ``barebox-stm32mp-generic-bl33.img`` is generated, which is
 a header-less image for use as part of a Firmware Image Package (FIP).
 This image can be used together with the device tree of any enabled board.
 This is very similar to ``barebox-dt-2nd.img`` with the difference that
@@ -19,7 +19,7 @@ of the DRAM out of the DRAM controller.
 
 Depending on enabled options, the build may also generate a number of
 ``barebox-${board}.img`` images. These images ship multiple device trees,
-which is not feasible when using ``barebox-stm32mp-generic.img`` with
+which is not feasible when using ``barebox-stm32mp-generic-bl33.img`` with
 a single device tree. It's up to the integrator which image they want
 to use depending on whether supporting multiple boards with the same
 FIP is desired or not.
@@ -67,7 +67,7 @@ with SP_min (no OP-TEE):
         BL33_CFG=$BAREBOX_BUILDDIR/arch/arm/dts/stm32mp157c-dk2.dtb \
         fip
 
-For different boards, adjust ``DTB_FILENAME`` and ``BL33_CFG`` as appropriate.
+For different boards, adjust ``DTB_FILE_NAME`` and ``BL33_CFG`` as appropriate.
 
 If OP-TEE is used, ensure ``CONFIG_OPTEE_SIZE`` is set appropriately, so
 early barebox code does not attempt accessing secure memory.

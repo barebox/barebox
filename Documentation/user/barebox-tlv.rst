@@ -64,7 +64,7 @@ The TLV binary has the following format:
 Tags
 ----
 
-Tags are defined as 32-bit integers.
+Tags are defined as 16-bit integers.
 A tag defines the following attributes:
 
 * **Data format:**
@@ -160,7 +160,7 @@ An example can be found in ``scripts/bareboxtlv-generator/data-example.yaml``.
          }"]
 
      tlv_key     [label="{tlv.key | PRIVATE KEY}"]
-     generator   [label="barebox-tlv-generator.py"]
+     generator   [label="bareboxtlv-generator.py"]
      signed_bin  [label="{TLV_signed.bin | Signed TLV data}"]
 
      schema_yaml -> generator
@@ -272,7 +272,7 @@ A custom TLV format can be created for example like this:
 * line 29: The compatible string of the partition, that will contain the data.
 * line 5,34: Some randomly generated 32bit value to uniquely identify the
   mapping-table.
-* line 38: The keyring tlv-stange should be used to validate the signature.
+* line 38: The keyring ``tlv-custom`` should be used to validate the signature.
   Keys for the keyring are specified in the barebox config
   ``CONFIG_CRYPTO_PUBLIC_KEYS`` with for example:
   ``keyring=tlv-custom:__ENV__TLV_KEY``.

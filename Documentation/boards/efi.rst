@@ -227,11 +227,11 @@ has the same format as the Linux Kernels efivarfs. It can be mounted with:
 
 .. code-block:: sh
 
-  mkdir efivarfs
+  mkdir /efivarfs
   mount -tefivarfs none /efivarfs
 
-In efivarfs each variable is represented by a file named <varname>-<guid>. Access to EFI variables
-is currently readonly. Since the variables have binary content using :ref:`command_md` is often
+In efivarfs each variable is represented by a file named <varname>-<guid>. Since
+the variables have binary content using :ref:`command_md` is often
 more suitable than :ref:`command_cat`.
 
 EFI driver model and barebox

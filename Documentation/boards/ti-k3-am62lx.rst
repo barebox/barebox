@@ -5,7 +5,7 @@ TI K3 AM62lx based boards
 
 The TI AM62lx is a SoC in the line of TI K3 64-bit ARM SoCs.
 
-The boot process of the TI AM62x SoCs is a two step process. The first stage boot loader
+The boot process of the TI AM62lx SoCs is a two step process. The first stage boot loader
 is loaded by the ROM code and executed on the Cortex-A53 processor. This stage contains
 some firmware files and a BL1 which is responsible for setting up the initial clocks,
 power domains and DRAM. When this is done the BL1 branches back to the ROM which loads
@@ -57,7 +57,7 @@ Building barebox
 
 The am62lx images are built as part of the ``multi_v8_defconfig``::
 
-  export ARCH=arm CROSS_COMPILE=CROSS_COMPILE_64
+  export ARCH=arm CROSS_COMPILE=$CROSS_COMPILE_64
   make multi_v8_defconfig
   make
   cp images/barebox-am62lx-evm-tiboot3.img $TI_BOOT/tiboot3.bin

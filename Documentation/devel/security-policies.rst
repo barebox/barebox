@@ -27,7 +27,7 @@ Creating New Symbols
 
       config ENV_HANDLING
           bool "Allow persisting and loading the environment from storage"
-          depends on $(kconfig-enabled ENV_HANDLING)
+          depends on $(kconfig-enabled,ENV_HANDLING)
 
 2. **Reference it in code** using:
 
@@ -67,7 +67,7 @@ Makefile:
    policy-y += myboard-lockdown.sconfig
 
 As policies are enforced to be complete, they may require resynchronization
-(e.g., with ``make olddefconfig``) if the config changes. A build failure
+(e.g., with ``make security_olddefconfig``) if the config changes. A build failure
 will alert the user to this fact.
 
 ``virt32_secure_defconfig`` is maintained as reference configuration for
@@ -85,12 +85,12 @@ Tips for Symbol Design
 Validation & Maintenance
 ------------------------
 
-Always run ``make security_olddconfig`` for the security policy reference
-configuration ``virt32_policy_defconfig``::
+Always run ``make security_olddefconfig`` for the security policy reference
+configuration ``virt32_secure_defconfig``::
 
   export ARCH=arm
   export CROSS_COMPILE=...
-  make virt32_policy_defconfig
+  make virt32_secure_defconfig
   make security_olddefconfig
 
 CI also checks this configuration and verifies that it's up-to-date.

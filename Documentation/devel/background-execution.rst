@@ -95,7 +95,7 @@ Slices
 
 Slices are a way to check if a device is currently busy and thus may not be
 called into currently. Pollers wanting to access a device must call
-``slice_busy()`` on the slice provided by the device before calling into it.
+``slice_acquired()`` on the slice provided by the device before calling into it.
 When the slice is acquired (which can only happen inside a poller) the poller
 can't continue at this moment and must try again next time it is executed.
 Drivers whose devices provide a slice must call ``slice_acquire()`` before
@@ -104,7 +104,7 @@ dependencies to other slices, for example a USB network controller uses the
 corresponding USB host controller. A dependency can be expressed with
 ``slice_depends_on()``. With this the USB network controller can add a
 dependency from the network device it provides itself to the USB host
-controller it depends on.  With this ``slice_busy()`` on the network device
+controller it depends on.  With this ``slice_acquired()`` on the network device
 will return ``true`` when the USB host controller is busy.
 
 The usual pattern for using slices is that the device driver for a device
@@ -113,7 +113,7 @@ before leaving the driver. The driver also provides a function returning
 the slice for a device, for example the ethernet support code provides
 ``struct slice *eth_device_slice(struct eth_device *edev)``. Poller code
 which wants to use the ethernet device checks for the availability doing
-``slice_busy(eth_device_slice(edev))`` before accessing the ethernet
+``slice_acquired(eth_device_slice(edev))`` before accessing the ethernet
 device. When the slice is not busy the poller can continue with accessing
 that device. Otherwise the poller must return and try again next time it
 is called.

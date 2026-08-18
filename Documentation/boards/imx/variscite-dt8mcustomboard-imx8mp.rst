@@ -128,7 +128,7 @@ serial console.
 Currently Supported Features
 ----------------------------
 
-The Barebox binary configured by the `variscite_imx8mp_dart_cb_defconfig` does currently
+The Barebox binary configured by the `imx_v8_defconfig` does currently
 not support all possible features of the DT8MCustomBoard. Yet the binary does contain
 everything necessary to boot an operating system on the i.MX8MP.
 

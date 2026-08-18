@@ -20,7 +20,7 @@ During the PBL
 
 To start OP-TEE during the lowlevel initialization of your board in the ``PBL``,
 enable the ``CONFIG_PBL_OPTEE`` configuration variable. Your board should then
-call the function ``start_optee_early(void* tee, void* fdt)`` with a valid tee
+call the function ``start_optee_early(void *fdt, void *tee)`` with a valid tee
 and FDT. If you're running on an i.MX6 platform your board code should call
 ``imx6q_start_optee_early()`` or ``imx6ul_start_optee_early()`` instead since it
 validates that the TZASC not bypassed and is configured as expected by OP-TEE.

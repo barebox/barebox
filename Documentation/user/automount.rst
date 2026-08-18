@@ -18,7 +18,7 @@ TFTP server, the following is required:
   automount /mnt/tftp 'ifup -a1 && mount -t tftp $global.net.server /mnt/tftp'
 
 This creates an automountpoint on ``/mnt/tftp``. Whenever this directory is accessed,
-the command ``ifup eth0 && mount -t tftp $eth0.serverip /mnt/tftp`` is executed.
+the command ``ifup -a1 && mount -t tftp $global.net.server /mnt/tftp`` is executed.
 It will bring up the network device using :ref:`command_ifup` and mount a TFTP filesystem
 using :ref:`command_mount`.
 

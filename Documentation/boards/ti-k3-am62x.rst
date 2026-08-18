@@ -56,7 +56,7 @@ Bulding OP-TEE
 
 OP-TEE is built from https://github.com/OP-TEE/optee_os.git::
 
-  make CROSS_COMPILE64=$CC64 CFG_ARM64_core=y CFG_WITH_SOFTWARE_PRNG=y \
+  make CROSS_COMPILE64=$CROSS_COMPILE_64 CFG_ARM64_core=y CFG_WITH_SOFTWARE_PRNG=y \
         PLATFORM=k3-am62x
   cp out/arm-plat-k3/core/tee-raw.bin $TI_BOOT/optee.bin
 

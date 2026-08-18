@@ -5,4 +5,4 @@ Building barebox:
 
 .. code-block:: sh
 
-  make ARCH=arm sama5d3xek_defconfig
+  make ARCH=arm at91_multi_defconfig

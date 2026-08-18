@@ -26,7 +26,7 @@ Put your barebox-dlink-dir-320.img to tftp-server directory
 Connect your DIR-320 to your tftp-server network via
 one of four <LAN> sockets.
 
-Next, setup network on DIR-320 and run barebox.bin, e.g.:
+Next, set up network on DIR-320 and run barebox-dlink-dir-320.img, e.g.:
 
 .. code-block:: console
 

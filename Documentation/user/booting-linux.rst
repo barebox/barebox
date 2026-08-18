@@ -432,7 +432,7 @@ initramfs, if used) over TFTP and boot it.
 mtdparts/blkdevparts fixup
 --------------------------
 
-All variables starting with ``global.linux.mtdparts.`` or ``global.linux.blkdevparts``
+All variables starting with ``global.linux.mtdparts.`` or ``global.linux.blkdevparts.``
 are concatenated to a ``mtdparts=`` or ``blkdevparts=`` parameter to the
 kernel, respectively.
 This makes it possible to consistently partition devices with the :ref:`command_addpart`

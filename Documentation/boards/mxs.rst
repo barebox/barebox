@@ -36,7 +36,7 @@ SRAM, which has a limited size of 128 KB. Its purpose is to setup the internal
 PMIC and the SDRAM, and then jump back to the MXS ROM code, which then maps the
 second executable (the full bootloader) into SDRAM and executes it.
 In case of barebox, the bootstream (``*-bootstream.img``) is composed of the
-self extracting barebox image (``*.pblx``) and the prepare stage
+self extracting barebox image (``*.pblb``) and the prepare stage
 (``prep_*.pblb``). The file name of those images reflects the name of the
 respective entry points.
 
@@ -54,10 +54,9 @@ Since some of the bootstream images are encrypted, they are not suitable for
 Booting from USB
 ----------------
 
-If enabled in *menuconfig* → *System Type*, barebox builds the *imx-usb-loader*
-tool (derived from the *sbloader* tool from the rockbox project), which can
-load images onto MXS SoCs over USB. (Refer to the documentation of your board
-how to get it into USB boot mode.)
+If enabled in *menuconfig* → *Host Tools*, barebox builds the *imx-usb-loader*
+tool, which can load images onto MXS SoCs over USB. (Refer to the
+documentation of your board how to get it into USB boot mode.)
 
 If the board is connected to the PC and started in USB boot mode, it should
 show up in lsusb::
@@ -66,7 +65,7 @@ show up in lsusb::
 
 The bootstream images can then directly be booted with::
 
-  ./scripts/imx-usb-loader images/barebox-karo-tx28-bootstream.img
+  ./scripts/imx/imx-usb-loader images/barebox-karo-tx28-bootstream.img
 
 You might require appropriate udev rules or *sudo* to gain the rights to
 access the USB device.

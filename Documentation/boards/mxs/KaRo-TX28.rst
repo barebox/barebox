@@ -28,7 +28,7 @@ Using the default configuration:
 
 .. code-block:: sh
 
-  make ARCH=arm tx28stk5_defconfig
+  make ARCH=arm imx28_defconfig
 
 Build the binary image:
 

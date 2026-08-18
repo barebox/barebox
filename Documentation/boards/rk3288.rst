@@ -14,7 +14,7 @@ SDRAM initialization for us. We can use the u-boot for that.
 Building barebox
 ----------------
 
-The RK3288 boards in barebox are covered by the ``rk3288_defconfig``.
+The RK3288 boards in barebox are covered by the ``rockchip_v7a_defconfig``.
 The resulting images will be placed under ``images/``:
 
 ::

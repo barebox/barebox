@@ -1,5 +1,5 @@
-Cirrus Logic EP9301
-===================
+Cirrus Logic EDB9301
+====================
 
 This board is based on a Cirrus Logic EP9301 CPU. The board is shipped with:
 

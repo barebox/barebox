@@ -25,7 +25,7 @@ Running barebox
 
   1. Boot the board with UART0 serial console. Stop the auto boot during U-boot.
 
-  2. Upload ``zbarebox.bin`` via Ymodem to the board and then run:
+  2. Upload ``images/barebox-img-ci20.img`` via Ymodem to the board and then run:
 
 .. code-block:: none
 

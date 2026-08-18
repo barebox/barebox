@@ -32,5 +32,5 @@ Examples:
 			regulator-min-microvolt = <730000>;
 			regulator-max-microvolt = <1380000>;
 		};
-	}
-  }
+	};
+  };

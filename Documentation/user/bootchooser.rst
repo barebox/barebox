@@ -114,7 +114,7 @@ on the :ref:`reset reason <reset_reason>` (i.e. != WDG) using the
   bootchooser -s
 
 This will reset the ``remaining_attempts`` counter of the *last chosen* slot to
-its default value (``reset_attempts``).
+its default value (``default_attempts``).
 
 An additional option is to use :ref:`boot attempts locking <bootchooser,attempts_lock>`
 to fully disable automatic fallback.
@@ -125,7 +125,7 @@ Boot Attempts Locking
 #####################
 
 In scenarios where the system is rebooted too frequently (after the ``remaining_attempts``
-counter is decremented, but before it is incremented again after a successful boot), it can unintentionally fall
+counter is decremented, but before it is reset again after a successful boot), it can unintentionally fall
 back to the other boot target.
 This can be avoided by enabling boot attempt locking.
 If enabled, bootchooser is prevented from decrementing the ``remaining_attempts`` counter and falling back

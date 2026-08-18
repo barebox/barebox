@@ -347,7 +347,7 @@ Interactive Console
 
   This will fall back to activating all consoles, when no console was activated
   by normal means (e.g., via the environment or the device tree
-  ``/chosen/stdout`` property).
+  ``/chosen/stdout-path`` property).
 
   This should make it easier to debug similar issues in future should you
   run into them.

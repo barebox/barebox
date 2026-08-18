@@ -2,7 +2,7 @@ Release v2026.05.0
 ==================
 
 Removal of global.env.autoprobe
-===============================
+-------------------------------
 
 The global.env.autoprobe variable introduced with v2025.02.0 is removed and
 now replaced with CONFIG_ENV_HANDLING_AUTOPROBE. It has never worked. If you
@@ -18,11 +18,11 @@ environment variable. Such environment variables are now split at spaces to be
 interpreted as multiple keyspecs. Any literal spaces and backslashes contained
 in such keyspecs need to be escaped with a backslash.
 
-This only applies to the form:
+This only applies to the form::
 
   CONFIG_CRYPTO_PUBLIC_KEYS="__ENV__A"
 
-While the interpretation of environment variables specifying hint or URI remains unchanged:
+While the interpretation of environment variables specifying hint or URI remains unchanged::
 
   CONFIG_CRYPTO_PUBLIC_KEYS="keyring=kr:__ENV__B"
 

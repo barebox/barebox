@@ -8,9 +8,9 @@ The legacy way of adding FIT keys to the barebox build was having mkimage
 generate a device tree snippet and including it in the barebox board device
 tree::
 
-#ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
-#include CONFIG_BOOTM_FITIMAGE_PUBKEY
-#endif
+  #ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
+  #include CONFIG_BOOTM_FITIMAGE_PUBKEY
+  #endif
 
 This has now been removed in favor of ``CONFIG_CRYPTO_PUBLIC_KEYS``.
 This option doesn't consume device tree snippets, but file paths to

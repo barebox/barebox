@@ -23,7 +23,7 @@ The default environment is composed from different directories during compilatio
   defaultenv/defaultenv-2-dfu                  -> overlay for DFU
   defaultenv/defaultenv-2-reboot-mode          -> overlay for reboot modes
   defaultenv/defaultenv-2-menu                 -> overlay for menus
-  defaultenv/defaultenv-2-security-policy       -> overlay for security policy
+  defaultenv/defaultenv-2-security-policy      -> overlay for security policy
   defaultenv/defaultenv-2-devboot              -> overlay for devboot snippets
   arch/$ARCH/boards/<board>/defaultenv-<board> -> board specific overlay
   $(CONFIG_DEFAULT_ENVIRONMENT_PATH)           -> config specific overlay

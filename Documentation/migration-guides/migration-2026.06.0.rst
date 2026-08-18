@@ -8,7 +8,7 @@ If barebox was configured to automatically generate any of the ``root``,
 ``rootwait``, ``earlycon``, ``systemd.machine_id``, ``systemd.hostname``
 or ``barebox.security.policy`` kernel command line options, they will be
 appended onto the final kernel command line
-:ref:`**after** all other options <bootargs_concat_order>`.
+:ref:`after all other options <bootargs_concat_order>`.
 
 Removal of global.env.autoprobe
 -------------------------------

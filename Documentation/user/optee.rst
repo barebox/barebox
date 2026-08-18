@@ -44,7 +44,6 @@ removed as it greatly increased the attack surface and was only supported
 on 32-bit ARM systems.
 OP-TEE loading is now only supported :ref:`in the prebootloader <optee_early_loading>`.
 
-
 Communication with OP-TEE
 -------------------------
 

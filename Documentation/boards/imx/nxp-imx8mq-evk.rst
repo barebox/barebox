@@ -8,7 +8,7 @@ Board comes with:
 
 Not including booting via serial, the device can boot from either SD or eMMC.
 
-.. warning:: Barebox is currently not compatible with the MCIMX8M-EVK**B**
+.. warning:: Barebox is currently not compatible with the MCIMX8M-EVK\ **B**
    variant with 4GiB of RAM.
 
 Downloading DDR PHY and HDMI/eDP Firmware
@@ -54,7 +54,7 @@ use the HDMI and/or eDP display output::
   done
 
 DDR Configuration Code
-======================
+----------------------
 
 The following two files:
 
@@ -69,13 +69,15 @@ Only minimal amount of necessary changes were made to those files.
 All of the "impedance matching" code is located in "ddr.h".
 
 Build Barebox
-=============
+-------------
+
+::
 
  make imx_v8_defconfig
  make
 
 Boot Configuration
-==================
+------------------
 
 The NXP i.MX8MQ EVK Evaluation Board has two switches responsible for
 configuring bootsource/boot mode:

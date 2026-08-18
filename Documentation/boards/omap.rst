@@ -38,6 +38,6 @@ but a USB Ethernet dongle can be used for networking. The PandaBoard has an
 integrated USB Ethernet converter which behaves exactly like an external dongle.
 Barebox does not automatically detect USB devices as this would have bad effects
 on boot time when USB is not needed.
-So you have to use the [[commands:usb|usb]] command to trigger USB detection.
+So you have to use the :ref:`usb <command_usb>` command to trigger USB detection.
 After this a network device should be present which can be used with the normal
-[[commands:dhcp|dhcp]] and [[commands:tftp|tftp]] commands.
+:ref:`dhcp <command_dhcp>` and :ref:`tftp <command_tftp>` commands.

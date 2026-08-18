@@ -155,6 +155,7 @@ Hang after First Stage PBL Console Output
 =========================================
 
 The first stage prebootloader handles:
+
 - Basic initialization (e.g., clocks, SDRAM)
 - Installation of secure firmware if applicable
 - Invocation of the second stage

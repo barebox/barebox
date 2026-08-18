@@ -111,8 +111,9 @@ Kernel command line arguments that barebox generates internally are not
 interleaved with externally provided command-line arguments:
 
 * Following arguments will be concatenated **after** all other options:
+
   * ``root=`` and ``rootwait=`` controlled by :ref:`global.bootm.appendroot <magicvar_global_bootm_appendroot>`
-    :ref:`global.linux.rootwait <magicvar_global_linux_rootwait>`
+    and :ref:`global.linux.rootwait <magicvar_global_linux_rootwait>`
   * ``earlycon=`` controlled by :ref:`global.bootm.earlycon <magicvar_global_bootm_earlycon>`
   * ``systemd.machine_id=`` controlled by :ref:`global.bootm.provide_machine_id <magicvar_global_bootm_provide_machine_id>`
   * ``systemd.hostname=`` controlled by :ref:`global.bootm.provide_hostname <magicvar_global_bootm_provide_hostname>`
@@ -325,6 +326,7 @@ many Linux distributions. This format is often found on SD cards, USB drives,
 or disk partitions prepared with tools like ``extlinux --install``.
 
 The configuration file is named ``extlinux.conf`` and can be located at:
+
 * ``/boot/extlinux/extlinux.conf``
 * ``/extlinux/extlinux.conf``
 
@@ -421,7 +423,7 @@ If the preconfigured paths or names are not suitable, they can be adjusted in
 
   nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
   ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
-  
+
   global.linux.bootargs.dyn.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"
 
 ``boot net`` will then retrieve the kernel (and also the device tree and

@@ -56,6 +56,8 @@ As a last step of this process those files need to be placed in
 Build barebox
 =============
 
+::
+
  make imx_v8_defconfig
  make
 

@@ -21,6 +21,7 @@ Supported baseboards
 --------------------
 
 Supported baseboards are:
+
   * Silica / Phytec PCM-970 via phyMAP-i.MX31, PMA-001
 
 How to get barebox for Phytec's phyCORE-i.MX31

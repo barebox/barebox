@@ -101,7 +101,7 @@ Override rules
      just that.
 
      To make use of the modules, the initramfs init will need to make initramfs
-     /modules available to the rootfs, e.g. via a bind mount:
+     /modules available to the rootfs, e.g. via a bind mount::
 
        mount -n --bind /lib/modules ${ROOT_MOUNT}/lib/modules
 

@@ -184,7 +184,7 @@ that is correctly configured, can be used as KEY.
 
 .. note::
   The ``FactoryDataset`` class in ``bareboxtlv-generator.py``
-   is intended to be used as a library.
+  is intended to be used as a library.
 
 Data Location
 -------------

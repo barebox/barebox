@@ -101,7 +101,7 @@ booted successfully on its own.
 
 In case only the booted system itself knows when it is in a good state,
 it can report this to bootchooser from Linux userspace using the
-*barebox-state* tool from the dt-utils_ package.::
+*barebox-state* tool from the dt-utils_ package::
 
   barebox-state [-n <state variable set>] -s [<prefix>.]<target>.remaining_attempts=<reset-value>
   barebox-state -n system_state -s bootstate.system0.remaining_attempts=3

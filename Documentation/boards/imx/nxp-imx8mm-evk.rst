@@ -58,6 +58,8 @@ All of the "impedance matching" code is located in "ddr.h".
 Build barebox
 =============
 
+::
+
  make imx_v8_defconfig
  make
 
@@ -66,9 +68,9 @@ Start barebox
 
 The resulting image file is images/barebox-nxp-imx8mm-evk.img. Configure the
 board for serial download mode as printed on the PCB. You can start barebox with
-the imx-usb-loader tool that comes with barebox like this:
+the imx-usb-loader tool that comes with barebox like this::
 
-./scripts/imx/imx-usb-loader images/barebox-nxp-imx8mm-evk.img
+ ./scripts/imx/imx-usb-loader images/barebox-nxp-imx8mm-evk.img
 
 Installing barebox
 ==================

@@ -45,11 +45,11 @@ channel:
       1. In a terminal start OpenOCD and specify your particular board
          and debug adapter used.
 
-      2. In a separate terminal connect to OpenOCD via telnet
+      2. In a separate terminal connect to OpenOCD via telnet::
 
 	   telnet localhost 4444
 
-      3. In resulting telnet session execute the following commands:
+      3. In resulting telnet session execute the following commands::
 
            halt
 	   arm semihosting on

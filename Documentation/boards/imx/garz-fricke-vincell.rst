@@ -42,4 +42,4 @@ Once in barebox, the bootloader can now be persisted to NAND:
 
 .. code-block:: sh
 
-  barebox_update -t nand /mnt/tftp/barebox-guf-vincell-lt.img``
+  barebox_update -t nand /mnt/tftp/barebox-guf-vincell-lt.img

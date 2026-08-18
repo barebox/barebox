@@ -8,7 +8,7 @@ Building
 --------
 
 The build process needs two binary files which have to be copied from the
-`rkbin https://github.com/rockchip-linux/rkbin` repository to the barebox source tree:
+`rkbin <https://github.com/rockchip-linux/rkbin>`_ repository to the barebox source tree:
 
 .. code-block:: sh
 

@@ -54,6 +54,11 @@ obj-$(CONFIG_GREGORIAN_CALENDER) += date.o
 obj-$(CONFIG_KALLSYMS)		+= kallsyms.o
 obj-$(CONFIG_MALLOC_TLSF)	+= tlsf_malloc.o tlsf.o calloc.o
 KASAN_SANITIZE_tlsf.o := n
+ifeq ($(CONFIG_ASAN),y)
+# TLSF pokes into redzones and freed memory by design, e.g. to read and
+# write block headers, so it must not be instrumented itself
+CFLAGS_tlsf.o += -fno-sanitize=address
+endif
 obj-$(CONFIG_MALLOC_DUMMY)	+= dummy_malloc.o calloc.o
 obj-y				+= malloc.o
 obj-$(CONFIG_MEMINFO)		+= meminfo.o

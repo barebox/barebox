@@ -705,8 +705,13 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 	 * the next transfer. It is the responsibility of the upper layer to
 	 * have dealt with whatever caused the error.
 	 */
-	if ((le32_to_cpu(ep_ctx->ep_info) & EP_STATE_MASK) == EP_STATE_HALTED)
+	if ((le32_to_cpu(ep_ctx->ep_info) & EP_STATE_MASK) == EP_STATE_HALTED) {
 		reset_ep(udev, ep_index);
+		/* reset_ep() updates the context via DMA. Re-fetch it here. */
+		xhci_inval_cache((uintptr_t)virt_dev->out_ctx->bytes,
+				 virt_dev->out_ctx->size);
+		ep_ctx = xhci_get_ep_ctx(ctrl, virt_dev->out_ctx, ep_index);
+	}
 
 	ring = virt_dev->eps[ep_index].ring;
 	/*

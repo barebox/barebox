@@ -275,6 +275,16 @@ config DEBUG_RPI2_3_UART
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 2 and 3 boards.
 
+config DEBUG_RPI4_UART
+	bool "RaspberryPi 4 PL011 UART"
+	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
+	help
+	  Say Y here if you want low-level debugging support on
+	  RaspberryPi 4 / CM4 boards using the PL011 UART (uart0),
+	  e.g. when the disable-bt overlay routes it onto the GPIO
+	  header pins instead of the mini UART.
+
 config DEBUG_RPI3_MINI_UART
 	bool "RaspberryPi 3 mini UART"
 	depends on ARCH_BCM283X

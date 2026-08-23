@@ -40,6 +40,16 @@ static inline void debug_ll_init(void)
 #define DEBUG_LL_UART_ADDR BCM2836_PL011_BASE
 #include <debug_ll/pl011.h>
 
+#elif defined CONFIG_DEBUG_RPI4_UART
+
+static inline void debug_ll_init(void)
+{
+	/* Configured by ROM */
+}
+
+#define DEBUG_LL_UART_ADDR BCM2711_PL011_BASE
+#include <debug_ll/pl011.h>
+
 #elif defined CONFIG_DEBUG_RPI3_MINI_UART
 
 static inline uint8_t debug_ll_read_reg(void __iomem *base, int reg)

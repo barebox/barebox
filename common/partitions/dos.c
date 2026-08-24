@@ -129,11 +129,11 @@ static void dos_extended_partition(struct block_device *blk, struct dos_partitio
 	uint8_t *buf = xmalloc(BLOCKSIZE(blk));
 	uint32_t ebr_sector = partition->first_sec;
 	struct partition_entry *table = (struct partition_entry *)&buf[0x1be];
-	unsigned partno = 4;
+	unsigned partno;
 	struct dos_partition *dpart;
 	struct partition *pentry;
 
-	while (1) {
+	for (partno = 4; partno < MAX_PARTITION; partno++) {
 		int rc, i;
 
 		dev_dbg(blk->dev, "expect EBR in sector 0x%x\n", ebr_sector);
@@ -176,14 +176,18 @@ static void dos_extended_partition(struct block_device *blk, struct dos_partitio
 
 		list_add_tail(&pentry->list, &dpd->pd.partitions);
 
-		partno++;
-
 		/* the second entry defines the start of the next ebr if != 0 */
 		if (get_unaligned_le32(&table[1].partition_start))
 			ebr_sector = partition->first_sec +
 				get_unaligned_le32(&table[1].partition_start);
 		else
 			break;
+	}
+
+	/* bound the EBR chain: a cyclic link would loop forever */
+	if (partno == MAX_PARTITION) {
+		dev_err(blk->dev, "too many logical partitions\n");
+		goto out;
 	}
 
 out:

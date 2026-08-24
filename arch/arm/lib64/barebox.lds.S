@@ -12,6 +12,10 @@ PHDRS
 	text PT_LOAD FLAGS(5);		/* PF_R | PF_X */
 	rodata PT_LOAD FLAGS(4);	/* PF_R */
 	dynamic PT_DYNAMIC FLAGS(4);	/* PF_R */
+#ifdef CONFIG_EFI_RUNTIME
+	efirt_text PT_LOAD FLAGS(5);	/* PF_R | PF_X */
+	efirt_data PT_LOAD FLAGS(6);	/* PF_R | PF_W */
+#endif
 	data PT_LOAD FLAGS(6);		/* PF_R | PF_W */
 }
 
@@ -43,13 +47,14 @@ SECTIONS
 
 	__end_rodata = .;
 	_etext = .;
+
+	BAREBOX_EFI_RUNTIME
+
 	_sdata = .;
 
 	.data : { *(.data*) } :data
 
 	_edata = .;
-
-	BAREBOX_EFI_RUNTIME
 
 	.image_end : { *(.__image_end) } :data
 
@@ -61,4 +66,5 @@ SECTIONS
 	_barebox_image_size = __bss_start;
 }
 
-NOCROSSREFS_FROM(.efi_runtime)
+NOCROSSREFS_FROM(.efi_runtime.text)
+NOCROSSREFS_FROM(.efi_runtime.data)

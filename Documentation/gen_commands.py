@@ -57,7 +57,7 @@ def parse_c(name):
 
         elif x := HELP_TEXT.match(line):
             last = cmd['h_post' if 'h_opts' in cmd else 'h_pre']
-            last.append(string_escape_literal(x.group(1)).strip())
+            last.append(string_escape_literal(x.group(1)).rstrip())
 
         elif x := HELP_OPT.match(line):
             last = cmd['h_opts']
@@ -97,6 +97,17 @@ def parse_c(name):
                 cmd = last = None
 
 
+def uniq(seq):
+    seen = set()
+    out = []
+    for x in seq:
+        key = tuple(x) if isinstance(x, list) else x
+        if key not in seen:
+            seen.add(key)
+            out.append(x)
+    return out
+
+
 def gen_rst(name, cmd):
     out = []
     out.append('.. index:: %s (command)' % name)
@@ -104,7 +115,7 @@ def gen_rst(name, cmd):
     out.append('.. _command_%s:' % name)
     out.append('')
     if 'c_desc' in cmd:
-        out.append("%s - %s" % (string_escape(name), ''.join(cmd['c_desc']).strip()))
+        out.append("%s - %s" % (string_escape(name), ''.join(uniq(cmd['c_desc'])).strip()))
     else:
         out.append("%s" % (string_escape(name),))
     out.append('=' * len(out[-1]))
@@ -112,7 +123,7 @@ def gen_rst(name, cmd):
     if 'c_opts' in cmd:
         out.append('Usage')
         out.append('^' * len(out[-1]))
-        out.append('``%s %s``' % (name, ''.join(cmd['c_opts']).strip()))
+        out.append('``%s %s``' % (name, ' '.join(uniq(cmd['c_opts'])).strip()))
         out.append('')
     if 'h_pre' in cmd:
         pre = cmd['h_pre']
@@ -129,7 +140,7 @@ def gen_rst(name, cmd):
     if 'h_opts' in cmd:
         out.append('Options')
         out.append('^' * len(out[-1]))
-        for o, d in cmd['h_opts']:
+        for o, d in uniq(cmd['h_opts']):
             o = o.strip()
             d = d.strip()
             if o:

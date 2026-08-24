@@ -1,4 +1,5 @@
-:orphan:
+Release v2026.08.0
+==================
 
 global.partitions.first_usable_lba removed
 ------------------------------------------

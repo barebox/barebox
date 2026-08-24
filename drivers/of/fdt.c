@@ -173,6 +173,12 @@ static int fdt_parse_header(const struct fdt_header *fdt, size_t fdt_size,
 	return 0;
 }
 
+/*
+ * Maximum node nesting depth we are willing to unflatten.
+ * Matches the limit Linux uses in its own drivers/of/fdt.c.
+ */
+#define FDT_MAX_DEPTH	64
+
 /**
  * of_unflatten_dtb - unflatten a dtb binary blob
  * @infdt - the fdt blob to unflatten
@@ -196,6 +202,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 	struct fdt_header f;
 	int ret;
 	int maxlen;
+	unsigned int depth = 0;
 	const struct fdt_header *fdt = infdt;
 
 	ret = fdt_parse_header(infdt, size, &f);
@@ -247,6 +254,12 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 				goto err;
 			}
 
+			if (++depth > FDT_MAX_DEPTH) {
+				pr_err("unflatten: node nesting too deep\n");
+				ret = -EINVAL;
+				goto err;
+			}
+
 			if (!node) {
 				/* The root node must have an empty name */
 				if (*pathp) {
@@ -272,6 +285,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 				goto err;
 			}
 
+			depth--;
 			node = node->parent;
 
 			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE, 0);

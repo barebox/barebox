@@ -53,7 +53,7 @@ static int do_cd(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(cd)
 BAREBOX_CMD_HELP_TEXT("If called without an argument, change to the root directory '/'.")
 BAREBOX_CMD_HELP_TEXT("Use 'cd -' to change to the previous directory.")
-BAREBOX_CMD_HELP_TEXT("Sets OLDPWD environment variables.")
+BAREBOX_CMD_HELP_TEXT("Sets OLDPWD environment variable.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(cd)

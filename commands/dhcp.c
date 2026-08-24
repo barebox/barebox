@@ -80,7 +80,7 @@ BAREBOX_CMD_HELP_OPT("-c ID\t", "DHCP Client ID (code 61) submitted in DHCP requ
 BAREBOX_CMD_HELP_OPT("-u UUID\t", "DHCP Client UUID (code 97) submitted in DHCP requests")
 BAREBOX_CMD_HELP_OPT("-U CLASS", "DHCP User class (code 77) submitted in DHCP requests")
 BAREBOX_CMD_HELP_OPT("-r RETRY", "retry limit (default 20)")
-BAREBOX_CMD_HELP_OPT("-o PRIVATE DATA", "private data (code 224) submitted in DHCP requests");
+BAREBOX_CMD_HELP_OPT("-o PRIVATE DATA", "private data (code 224) submitted in DHCP requests")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(dhcp)

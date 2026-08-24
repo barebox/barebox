@@ -56,13 +56,13 @@ static int do_timeout(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(timeout)
-BAREBOX_CMD_HELP_TEXT("Wait SECONDS for a timeout. Return 1 if the user intervented.")
+BAREBOX_CMD_HELP_TEXT("Wait SECONDS for a timeout. Return 1 if the user intervened.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-a", "interrupt on any key")
 BAREBOX_CMD_HELP_OPT("-c", "interrupt on Ctrl-C")
 BAREBOX_CMD_HELP_OPT("-r", "interrupt on RETURN")
-BAREBOX_CMD_HELP_OPT("-e", "interrupt on external commands (i.e. fastboot")
+BAREBOX_CMD_HELP_OPT("-e", "interrupt on external commands (i.e. fastboot)")
 BAREBOX_CMD_HELP_OPT("-s", "silent mode")
 BAREBOX_CMD_HELP_OPT("-v <VARIABLE>", "export pressed key to environment")
 BAREBOX_CMD_HELP_END

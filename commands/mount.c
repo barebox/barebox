@@ -123,7 +123,7 @@ BAREBOX_CMD_HELP_TEXT("If no FSTYPE is specified, try to detect it automatically
 BAREBOX_CMD_HELP_TEXT("With -a the mount command mounts all block devices whose filesystem")
 BAREBOX_CMD_HELP_TEXT("can be detected automatically to /mnt/PARTNAME")
 BAREBOX_CMD_HELP_TEXT("If mountpoint is not given, a standard mountpoint of /mnt/DEVICE")
-BAREBOX_CMD_HELP_TEXT("is used. This directoy is created automatically if necessary.")
+BAREBOX_CMD_HELP_TEXT("is used. This directory is created automatically if necessary.")
 BAREBOX_CMD_HELP_TEXT("With -o loop the mount command mounts a file instead of a device.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")

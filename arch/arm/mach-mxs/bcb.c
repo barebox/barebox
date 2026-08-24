@@ -389,7 +389,7 @@ BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(bcb)
 	.cmd = update_bcb,
-	BAREBOX_CMD_DESC("writes a i.MX23/28 BCB data structure to flash")
+	BAREBOX_CMD_DESC("writes an i.MX23/28 BCB data structure to flash")
 	BAREBOX_CMD_OPTS("BOOTSTREAM [BOOTSTREAM]")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_bcb_help)

@@ -682,7 +682,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default image.bin)")
 BAREBOX_CMD_HELP_OPT("-o OFFS", "destination file OFFSet (default 0)")
 BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate)")
-BAREBOX_CMD_HELP_OPT("-c CONSOLE", "Specify console (default: first active console")
+BAREBOX_CMD_HELP_OPT("-c CONSOLE", "Specify console (default: first active console)")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(loadb)

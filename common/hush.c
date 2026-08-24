@@ -2089,8 +2089,8 @@ static int do_dummy_command(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(exit)
-BAREBOX_CMD_HELP_TEXT("Exit script with status ERRLVL n. If ERRLVL is omitted, the exit status is")
-BAREBOX_CMD_HELP_TEXT("of the last command executed")
+BAREBOX_CMD_HELP_TEXT("Exit script with status ERRLVL. If ERRLVL is omitted, the exit status is")
+BAREBOX_CMD_HELP_TEXT("that of the last command executed")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(exit)
@@ -2103,7 +2103,7 @@ BAREBOX_CMD_END
 
 #ifdef CONFIG_CMD_GETOPT
 BAREBOX_CMD_HELP_START(getopt)
-BAREBOX_CMD_HELP_TEXT("OPTSTRING contains the option letters. Add a colon to an options if this")
+BAREBOX_CMD_HELP_TEXT("OPTSTRING contains the option letters. Add a colon to an option if this")
 BAREBOX_CMD_HELP_TEXT("option has a required argument or two colons for an optional argument. The")
 BAREBOX_CMD_HELP_TEXT("current option is saved in VAR, arguments are saved in $OPTARG. Any")
 BAREBOX_CMD_HELP_TEXT("non-option arguments can be accessed starting from $1.")

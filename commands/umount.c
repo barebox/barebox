@@ -18,7 +18,7 @@ static int do_umount(int argc, char *argv[])
 
 
 BAREBOX_CMD_HELP_START(umount)
-BAREBOX_CMD_HELP_TEXT("Unmount a filesystem mounted on a specific MOINTPOINT")
+BAREBOX_CMD_HELP_TEXT("Unmount a filesystem mounted on a specific MOUNTPOINT")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(umount)

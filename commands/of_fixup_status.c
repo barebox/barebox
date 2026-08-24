@@ -49,7 +49,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-d",  "disable node")
 BAREBOX_CMD_HELP_OPT("path",  "Node path")
 BAREBOX_CMD_HELP_TEXT("Register a fixup to enable or disable a device tree node.")
-BAREBOX_CMD_HELP_TEXT("Nodes are enabled on default. Disabled with -d.")
+BAREBOX_CMD_HELP_TEXT("Nodes are enabled by default. Disabled with -d.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(of_fixup_status)

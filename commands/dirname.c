@@ -36,7 +36,7 @@ static int do_dirname(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(dirname)
-BAREBOX_CMD_HELP_TEXT("Strip last componext of NAME and store into $DIRNAME")
+BAREBOX_CMD_HELP_TEXT("Strip last component of NAME and store into $DIRNAME")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-V", "return the path relative to the mountpoint.")

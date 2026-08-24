@@ -429,7 +429,7 @@ static int do_ifup(int argc, char *argv[])
 
 
 BAREBOX_CMD_HELP_START(ifup)
-BAREBOX_CMD_HELP_TEXT("Network interfaces are configured with a NV variables or a")
+BAREBOX_CMD_HELP_TEXT("Network interfaces are configured with NV variables or a")
 BAREBOX_CMD_HELP_TEXT("/env/network/<intf> file. See Documentation/user/networking.rst")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")

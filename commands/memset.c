@@ -73,7 +73,7 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(memset)
-BAREBOX_CMD_HELP_TEXT("Fills the first COUNT bytes at offset ADDR with byte DATA,")
+BAREBOX_CMD_HELP_TEXT("Fills the first COUNT bytes at offset ADDR with byte DATA.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-b",  "byte access")

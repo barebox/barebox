@@ -2637,7 +2637,7 @@ config CMD_OF_FIXUP_STATUS
 		  path		Node path or alias
 
 	  Register a fixup to enable or disable a device tree node.
-	  Nodes are enabled on default. Disabled with -d.
+	  Nodes are enabled by default. Disabled with -d.
 
 config CMD_OF_OVERLAY
 	tristate

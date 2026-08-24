@@ -399,7 +399,7 @@ BAREBOX_CMD_HELP_OPT ("-t",  "Really do a nandtest on device")
 BAREBOX_CMD_HELP_OPT ("-r",  "Readonly nandtest on device")
 BAREBOX_CMD_HELP_OPT ("-m",  "Mark blocks bad if they appear so")
 BAREBOX_CMD_HELP_OPT ("-s SEED",   "supply random seed")
-BAREBOX_CMD_HELP_OPT ("-i ITERATIONS",  "nNumber of iterations")
+BAREBOX_CMD_HELP_OPT ("-i ITERATIONS",  "Number of iterations")
 BAREBOX_CMD_HELP_OPT ("-o OFFS",  "start offset on flash")
 BAREBOX_CMD_HELP_OPT ("-l LEN",   "length of flash to test")
 BAREBOX_CMD_HELP_END

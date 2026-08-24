@@ -29,7 +29,7 @@ static int do_setenv(int argc, char *argv[])
 
 BAREBOX_CMD_HELP_START(setenv)
 BAREBOX_CMD_HELP_TEXT("Set environment variable NAME to VALUE.")
-BAREBOX_CMD_HELP_TEXT("If VALUE is ommitted, then the variable is deleted.")
+BAREBOX_CMD_HELP_TEXT("If VALUE is omitted, then the variable is deleted.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(setenv)

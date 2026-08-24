@@ -183,7 +183,7 @@ BAREBOX_CMD_HELP_OPT ("-l <loglevel>",	"Restrict output to the given (comma-sepa
 BAREBOX_CMD_HELP_OPT ("-p <loglevel>",	"Restrict output to specified log level at most")
 BAREBOX_CMD_HELP_OPT ("-n <loglevel>",	"Set level at which printing of messages is done to the console")
 BAREBOX_CMD_HELP_OPT ("-r",		"Print timestamp and log-level prefixes")
-BAREBOX_CMD_HELP_OPT ("-t",		"Show timestamp informations")
+BAREBOX_CMD_HELP_OPT ("-t",		"Show timestamp information")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(dmesg)

@@ -72,7 +72,7 @@ BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(clk_set_rate)
 	.cmd		= do_clk_set_rate,
-	BAREBOX_CMD_DESC("set a clocks rate")
+	BAREBOX_CMD_DESC("set a clock's rate")
 	BAREBOX_CMD_OPTS("CLK HZ")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_clk_set_rate_help)

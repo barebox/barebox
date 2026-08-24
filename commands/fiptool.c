@@ -588,7 +588,7 @@ static int do_fiptool(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(fiptool)
-BAREBOX_CMD_HELP_TEXT("List information about the specified files or directories")
+BAREBOX_CMD_HELP_TEXT("Inspect and manipulate TF-A firmware image packages")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Global options:")
 BAREBOX_CMD_HELP_OPT ("-v",  "verbose output")

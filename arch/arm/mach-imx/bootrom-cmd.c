@@ -212,7 +212,7 @@ static int do_bootrom(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(bootrom)
-BAREBOX_CMD_HELP_TEXT("List information about the specified files or directories.")
+BAREBOX_CMD_HELP_TEXT("Decode and print the BootROM event log on i.MX8M.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-l",  "list event log")

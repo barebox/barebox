@@ -144,7 +144,7 @@ BAREBOX_CMD_HELP_TEXT("If called without arguments, devinfo shows a summary of t
 BAREBOX_CMD_HELP_TEXT("devices.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("If called with a device path being the argument, devinfo shows more")
-BAREBOX_CMD_HELP_TEXT("default information about this device and its parameters.")
+BAREBOX_CMD_HELP_TEXT("detailed information about this device and its parameters.")
 BAREBOX_CMD_HELP_END
 
 

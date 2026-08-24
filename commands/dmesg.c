@@ -171,7 +171,7 @@ static int do_dmesg(int argc, char *argv[])
 
 BAREBOX_CMD_HELP_START(dmesg)
 BAREBOX_CMD_HELP_TEXT("print or control the barebox message buffer")
-BAREBOX_CMD_HELP_TEXT("Loglevels can be specified as number (0=emerg, 7=vdebug)")
+BAREBOX_CMD_HELP_TEXT("Loglevels can be specified as number (0=emerg, 8=vdebug)")
 BAREBOX_CMD_HELP_TEXT("Known debug loglevels are: emerg, alert, crit, err, warn, notice, info, debug,")
 BAREBOX_CMD_HELP_TEXT("vdebug")
 BAREBOX_CMD_HELP_TEXT("")

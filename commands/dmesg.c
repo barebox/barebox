@@ -189,7 +189,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(dmesg)
 	.cmd	= do_dmesg,
 	BAREBOX_CMD_DESC("Print or control log messages")
-	BAREBOX_CMD_OPTS("[-cdelprt]")
+	BAREBOX_CMD_OPTS("[-cdelnprt]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_dmesg_help)
 BAREBOX_CMD_END

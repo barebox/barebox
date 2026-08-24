@@ -356,7 +356,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(efiexit)
 	.cmd = do_efiexit,
 	BAREBOX_CMD_DESC("Leave barebox and return to the calling EFI process")
-	BAREBOX_CMD_OPTS("[-flrw]")
+	BAREBOX_CMD_OPTS("[-f]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_efiexit_help)
 BAREBOX_CMD_END

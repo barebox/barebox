@@ -97,7 +97,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(splash)
 	.cmd		= do_splash,
 	BAREBOX_CMD_DESC("display a BMP or PNG splash image")
-	BAREBOX_CMD_OPTS("[-fxyno] FILE")
+	BAREBOX_CMD_OPTS("[-fxyb] FILE")
 	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_splash_help)
 BAREBOX_CMD_END

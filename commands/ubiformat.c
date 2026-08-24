@@ -192,7 +192,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(ubiformat)
 	.cmd		= do_ubiformat,
 	BAREBOX_CMD_DESC("format an ubi volume")
-	BAREBOX_CMD_OPTS("[-sOnfexQqv] MTDEVICE")
+	BAREBOX_CMD_OPTS("[-sOnfexQyqv] MTDEVICE")
 	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubiformat_help)
 BAREBOX_CMD_END

@@ -92,7 +92,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(at91_boot_test)
 	.cmd		= do_at91_boot_test,
 	BAREBOX_CMD_DESC("load and execute from SRAM")
-	BAREBOX_CMD_OPTS("at91_boot_test [-js] FILE")
+	BAREBOX_CMD_OPTS("[-js] FILE")
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_at91_boot_test_help)
 BAREBOX_CMD_END

@@ -97,37 +97,7 @@
 
 #define gpio_to_bank(gpio)	((gpio) >> 5)
 
-#ifdef CONFIG_CPU_PXA26x
-/* GPIO86/87/88/89 on PXA26x have their direction bits in GPDR2 inverted,
- * as well as their Alternate Function value being '1' for GPIO in GAFRx.
- */
-static inline int __gpio_is_inverted(unsigned gpio)
-{
-	return cpu_is_pxa25x() && gpio > 85;
-}
-#else
 static inline int __gpio_is_inverted(unsigned gpio) { return 0; }
-#endif
-
-/*
- * On PXA25x and PXA27x, GAFRx and GPDRx together decide the alternate
- * function of a GPIO, and GPDRx cannot be altered once configured. It
- * is attributed as "occupied" here (I know this terminology isn't
- * accurate, you are welcome to propose a better one :-)
- */
-static inline int __gpio_is_occupied(unsigned gpio)
-{
-	if (cpu_is_pxa27x() || cpu_is_pxa25x()) {
-		int af = (GAFR(gpio) >> ((gpio & 0xf) * 2)) & 0x3;
-		int dir = GPDR(gpio) & GPIO_bit(gpio);
-
-		if (__gpio_is_inverted(gpio))
-			return af != 1 || dir == 0;
-		else
-			return af != 0 || dir != 0;
-	} else
-		return GPDR(gpio) & GPIO_bit(gpio);
-}
 
 /*
  * We handle the GPIOs by banks, each bank covers up to 32 GPIOs with
@@ -163,6 +133,5 @@ static inline int __gpio_is_occupied(unsigned gpio)
  */
 extern int pxa_last_gpio;
 
-extern int pxa_init_gpio(int start, int end);
 
 #endif

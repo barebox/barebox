@@ -10,24 +10,6 @@
 #ifndef __MACH_HARDWARE_H
 #define __MACH_HARDWARE_H
 
-#ifdef CONFIG_ARCH_PXA2XX
-#define cpu_is_pxa2xx()	(1)
-#else
-#define cpu_is_pxa2xx()	(0)
-#endif
-
-#ifdef CONFIG_ARCH_PXA25X
-#define cpu_is_pxa25x()	(1)
-#else
-#define cpu_is_pxa25x()	(0)
-#endif
-
-#ifdef CONFIG_ARCH_PXA27X
-#define cpu_is_pxa27x()	(1)
-#else
-#define cpu_is_pxa27x()	(0)
-#endif
-
 #ifdef CONFIG_ARCH_PXA3XX
 #define cpu_is_pxa3xx()	(1)
 # ifdef CONFIG_ARCH_PXA320

@@ -91,6 +91,7 @@ static const struct filetype_str filetype_str[] = {
 					   "rk-image" },
 	[filetype_x86_linux_image] = { "x86 Linux image", "x86-linux" },
 	[filetype_x86_efi_linux_image] = { "x86 Linux/EFI image", "x86-efi-linux" },
+	[filetype_pxa_ntim] = { "Marvell PXA3xx NTIM image", "pxa-ntim" },
 };
 
 static const char *file_type_to_nr_string(enum filetype f)
@@ -385,6 +386,16 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_mips_barebox;
 	if (buf[0] == be32_to_cpu(0x534F4659))
 		return filetype_bpk;
+
+	/*
+	 * The NTIM header the PXA3xx Boot ROM reads from the start of the boot
+	 * device. It has no magic of its own, so match the version the images
+	 * barebox builds carry along with the identifier of the header itself,
+	 * which is the first of the image entries behind it.
+	 */
+	if (le32_to_cpu(buf[0]) == 0x00030102 &&
+	    le32_to_cpu(buf[1]) == 0x54494d48)	/* 'TIMH' */
+		return filetype_pxa_ntim;
 
 	if (strncmp(buf8, "RKNS", 4) == 0)
 		return filetype_rockchip_rkns_image;

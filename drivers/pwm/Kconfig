@@ -11,11 +11,10 @@ menuconfig PWM
 if PWM
 config PWM_PXA
 	bool "PXA PWM Support"
-	default y if ARCH_PXA2XX
-	depends on ARCH_PXA2XX
+	default y if ARCH_PXA
+	depends on ARCH_PXA
 	help
-	  This enables PWM support for Intel/Marvell PXA chips, such
-	  as the PXA25x, PXA27x.
+	  This enables PWM support for Intel/Marvell PXA chips.
 
 config PWM_ATMEL
 	bool "Atmel PWM Support"

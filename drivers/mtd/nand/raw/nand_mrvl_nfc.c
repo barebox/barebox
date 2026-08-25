@@ -132,6 +132,12 @@
 
 struct mrvl_nand_variant {
 	unsigned int	hwflags;
+	/*
+	 * True for the "nand-controller" bindings, where the chip properties
+	 * live in per chip select child nodes instead of in the controller
+	 * node itself.
+	 */
+	bool		chip_subnodes;
 };
 
 struct mrvl_nand_host {
@@ -288,7 +294,26 @@ static const struct mrvl_nand_variant armada370_variant = {
 	.hwflags	= HWFLAGS_ECC_BCH | HWFLAGS_HAS_NDCB3,
 };
 
+static const struct mrvl_nand_variant pxa3xx_controller_variant = {
+	.hwflags	= 0,
+	.chip_subnodes	= true,
+};
+
+static const struct mrvl_nand_variant armada370_controller_variant = {
+	.hwflags	= HWFLAGS_ECC_BCH | HWFLAGS_HAS_NDCB3,
+	.chip_subnodes	= true,
+};
+
 static struct of_device_id mrvl_nand_dt_ids[] = {
+	{
+		.compatible = "marvell,pxa3xx-nand-controller",
+		.data = &pxa3xx_controller_variant,
+	},
+	{
+		.compatible = "marvell,armada370-nand-controller",
+		.data = &armada370_controller_variant,
+	},
+	/* Deprecated bindings, the chip properties are in the controller node */
 	{
 		.compatible = "marvell,pxa3xx-nand",
 		.data = &pxa3xx_variant,
@@ -343,10 +368,19 @@ static struct mrvl_nand_timing timings[] = {
 static void mrvl_nand_set_timing(struct mrvl_nand_host *host, bool use_default)
 {
 	struct nand_chip *chip = &host->chip;
-	unsigned long nand_clk = clk_get_rate(host->core_clk);
 	struct mrvl_nand_timing *t;
+	unsigned long nand_clk;
 	uint32_t ndtr0, ndtr1;
 	u16 id;
+
+	/*
+	 * The previous stage has set up timings that are known to work,
+	 * keep them instead of calculating our own.
+	 */
+	if (host->keep_config)
+		return;
+
+	nand_clk = clk_get_rate(host->core_clk);
 
 	if (use_default) {
 		id = 0;
@@ -438,8 +472,9 @@ static unsigned int mrvl_datasize(struct mrvl_nand_host *host)
  * We enable all the interrupt at the same time, and
  * let mrvl_nand_irq to handle all logic.
  */
-static void mrvl_nand_start(struct mrvl_nand_host *host)
+static void mrvl_nand_start(struct mrvl_nand_host *host, unsigned command)
 {
+	uint32_t ndsr_clear = NDSR_MASK;
 	uint32_t ndcr;
 
 	if (host->hwflags & HWFLAGS_ECC_BCH) {
@@ -469,9 +504,27 @@ static void mrvl_nand_start(struct mrvl_nand_host *host)
 	ndcr &= ~NDCR_ND_RUN;
 	ndcr |= NDCR_INT_MASK;
 
+	/*
+	 * NDSR's per-chipselect ready bits latch the flash's busy-to-ready
+	 * transition, they do not report its current level. nand_wait() polls
+	 * them through mrvl_nand_ready() to find out when an erase or a page
+	 * program has finished - but it issues a STATUS command first, and
+	 * clearing the latch here would wipe the very transition it is about
+	 * to wait for. It would then never see a ready chip and spend its
+	 * full 400ms timeout on every block erase and every page program
+	 * before falling through to read the status byte, which is why this
+	 * only ever showed up as NAND writes being unusably slow rather than
+	 * as an error.
+	 *
+	 * So leave the latch alone for STATUS, and keep clearing it for the
+	 * commands that make the flash busy in the first place.
+	 */
+	if (command == NAND_CMD_STATUS)
+		ndsr_clear &= ~(NDSR_RDY | NDSR_FLASH_RDY);
+
 	/* clear status bits and run */
 	nand_writel(host, NDCR, ndcr);
-	nand_writel(host, NDSR, NDSR_MASK);
+	nand_writel(host, NDSR, ndsr_clear);
 	nand_writel(host, NDCR, ndcr | NDCR_ND_RUN);
 
 	if (wait_on_timeout(host->chip.legacy.chip_delay * USECOND,
@@ -760,7 +813,7 @@ static void mrvl_nand_wait_cmd_done(struct mrvl_nand_host *host,
 	wait_on_timeout(host->chip.legacy.chip_delay * USECOND,
 			(nand_readl(host, NDSR) & mask) == mask);
 	if ((nand_readl(host, NDSR) & mask) != mask) {
-		dev_err(host->dev, "Waiting end of command %dth %d timeout, ndsr=0x%08x ndcr=0x%08x\n",
+		dev_dbg(host->dev, "Waiting end of command %dth %d timeout, ndsr=0x%08x ndcr=0x%08x\n",
 			nb_done++, command, nand_readl(host, NDSR),
 			nand_readl(host, NDCR));
 	}
@@ -783,7 +836,7 @@ static void mrvl_nand_cmdfunc(struct nand_chip *chip, unsigned command,
 
 	prepare_start_command(host, command);
 	if (prepare_set_command(host, command, 0, column, page_addr)) {
-		mrvl_nand_start(host);
+		mrvl_nand_start(host, command);
 		mrvl_data_stage(host);
 		mrvl_nand_wait_cmd_done(host, command);
 	}
@@ -1190,32 +1243,54 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device *dev)
 static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 {
 	struct device_node *np = host->dev->of_node;
-	const struct of_device_id *match;
 	const struct mrvl_nand_variant *variant;
+	struct device_node *chip_np;
 
 	if (!IS_ENABLED(CONFIG_OFTREE) || host->dev->platform_data)
 		return 0;
 
-	match = of_match_node(mrvl_nand_dt_ids, np);
-	if (!match)
+	variant = device_get_match_data(host->dev);
+	if (!variant)
 		return -EINVAL;
-	variant = match->data;
 
-	if (of_get_property(np, "marvell,nand-keep-config", NULL))
-		host->keep_config = 1;
+	host->hwflags = variant->hwflags;
+
 	of_property_read_u32(np, "num-cs", &host->num_cs);
-	if (of_get_nand_on_flash_bbt(np))
+
+	/*
+	 * With the "nand-controller" bindings the chip lives in a child node
+	 * of the controller. Only a single chip is supported, so take the
+	 * first one. The deprecated bindings have the chip properties in the
+	 * controller node itself.
+	 */
+	if (variant->chip_subnodes) {
+		chip_np = of_get_next_available_child(np, NULL);
+		if (!chip_np) {
+			dev_err(host->dev, "no chip node found\n");
+			return -ENODEV;
+		}
+	} else {
+		chip_np = np;
+	}
+
+	/*
+	 * Hand the chip node to the NAND core so that the generic properties
+	 * and the partitions below it are evaluated.
+	 */
+	nand_set_flash_node(&host->chip, chip_np);
+
+	if (of_get_property(chip_np, "marvell,nand-keep-config", NULL))
+		host->keep_config = 1;
+	if (of_get_nand_on_flash_bbt(chip_np))
 		host->flash_bbt = 1;
 
-	host->ecc_strength = of_get_nand_ecc_strength(np);
+	host->ecc_strength = of_get_nand_ecc_strength(chip_np);
 	if (host->ecc_strength < 0)
 		host->ecc_strength = 0;
 
-	host->ecc_step = of_get_nand_ecc_step_size(np);
+	host->ecc_step = of_get_nand_ecc_step_size(chip_np);
 	if (host->ecc_step < 0)
 		host->ecc_step = 0;
-
-	host->hwflags = variant->hwflags;
 
 	return 0;
 }

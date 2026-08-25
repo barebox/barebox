@@ -119,11 +119,6 @@ config ARCH_MXS
 	select COMMON_CLK
 	select HAS_DEBUG_LL
 
-config ARCH_PXA
-	bool "Intel/Marvell PXA based"
-	depends on 32BIT
-	select GENERIC_GPIO
-
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA"
 	select HAS_DEBUG_LL
@@ -185,6 +180,14 @@ config ARCH_K3
 	select HAS_DEBUG_LL
 	select COMMON_CLK_OF_PROVIDER
 	select PM_GENERIC_DOMAINS
+
+config ARCH_PXA
+	bool "Intel/Marvell PXA based"
+	depends on 32BIT
+	select GPIOLIB
+	select HAS_DEBUG_LL
+	select OFTREE
+	select OFDEVICE
 
 config ARCH_SUNXI
 	bool "Allwinner (sunxi) SoCs"

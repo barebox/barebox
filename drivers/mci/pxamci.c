@@ -13,10 +13,10 @@
 #include <clock.h>
 #include <init.h>
 #include <mci.h>
+#include <of.h>
 #include <linux/err.h>
+#include <linux/clk.h>
 
-#include <mach/pxa/clock.h>
-#include <mach/pxa/mci_pxa2xx.h>
 #include <mach/pxa/pxa-regs.h>
 #include "pxamci.h"
 
@@ -25,23 +25,6 @@
 #define RX_TIMEOUT (100 * MSECOND)
 #define TX_TIMEOUT (250 * MSECOND)
 #define CMD_TIMEOUT (100 * MSECOND)
-
-static void mmc_clk_enable(void)
-{
-	CKEN |= CKEN_MMC;
-}
-
-static int pxamci_set_power(struct pxamci_host *host, int on)
-{
-	mci_dbg("on=%d\n", on);
-	if (host->pdata && host->pdata->gpio_power > 0)
-		gpio_set_value(host->pdata->gpio_power,
-			       !!on ^ host->pdata->gpio_power_invert);
-	else if (host->pdata && host->pdata->setpower)
-		host->pdata->setpower(&host->mci, on);
-	mdelay(250);
-	return 0;
-}
 
 static void pxamci_start_clock(struct pxamci_host *host)
 {
@@ -216,20 +199,8 @@ static int pxamci_cmd_response(struct pxamci_host *host, struct mci_cmd *cmd)
 	stat = mmc_readl(MMC_STAT);
 	if (stat & STAT_TIME_OUT_RESPONSE)
 		return -ETIMEDOUT;
-	if (stat & STAT_RES_CRC_ERR && cmd->resp_type & MMC_RSP_CRC) {
-		/*
-		 * workaround for erratum #42:
-		 * Intel PXA27x Family Processor Specification Update Rev 001
-		 * A bogus CRC error can appear if the msb of a 136 bit
-		 * response is a one.
-		 */
-		if (cpu_is_pxa27x() && cmd->resp_type & MMC_RSP_136 &&
-		    cmd->response[0] & 0x80000000)
-			pr_debug("ignoring CRC from command %d - *risky*\n",
-				 cmd->cmdidx);
-		else
-			return -EILSEQ;
-	}
+	if (stat & STAT_RES_CRC_ERR && cmd->resp_type & MMC_RSP_CRC)
+		return -EILSEQ;
 
 	return 0;
 }
@@ -284,7 +255,7 @@ static int pxamci_request(struct mci_host *mci, struct mci_cmd *cmd)
 static void pxamci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct pxamci_host *host = to_pxamci(mci);
-	unsigned int clk_in = pxa_get_mmcclk();
+	unsigned int clk_in = clk_get_rate(host->clk);
 	int fact;
 
 	mci_dbg("bus_width=%d, clock=%u\n", ios->bus_width, ios->clock);
@@ -314,17 +285,16 @@ static void pxamci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 	host->cmdat |= CMDAT_INIT;
 
-	pxamci_set_power(host, 1);
 	pxamci_stop_clock(host);
 	mmc_writel(host->clkrt, MMC_CLKRT);
 }
 
+/*
+ * The MCI core calls this unconditionally, so it has to exist even though
+ * there is nothing left to do here since the platform data went away.
+ */
 static int pxamci_init(struct mci_host *mci, struct device *dev)
 {
-	struct pxamci_host *host = to_pxamci(mci);
-
-	if (host->pdata && host->pdata->init)
-		return host->pdata->init(mci, dev);
 	return 0;
 }
 
@@ -338,25 +308,36 @@ static int pxamci_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct pxamci_host *host;
-	int gpio_power = -1;
+	unsigned long rate;
+	int ret;
 
-	mmc_clk_enable();
 	host = xzalloc(sizeof(*host));
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	host->base = IOMEM(iores->start);
 
+	host->clk = clk_get(dev, NULL);
+	if (IS_ERR(host->clk))
+		return PTR_ERR(host->clk);
+
+	ret = clk_enable(host->clk);
+	if (ret)
+		return ret;
+
 	host->mci.ops = pxamci_ops;
 	host->mci.host_caps = MMC_CAP_4_BIT_DATA;
 	host->mci.hw_dev = dev;
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 
+	mci_of_parse(&host->mci);
+
 	/*
 	 * Calculate minimum clock rate, rounding up.
 	 */
-	host->mci.f_min = pxa_get_mmcclk() >> 6;
-	host->mci.f_max = pxa_get_mmcclk();
+	rate = clk_get_rate(host->clk);
+	host->mci.f_min = rate >> 6;
+	host->mci.f_max = rate;
 
 	/*
 	 * Ensure that the host controller is shut down, and setup
@@ -367,20 +348,21 @@ static int pxamci_probe(struct device *dev)
 	mmc_writel(64, MMC_RESTO);
 	mmc_writel(0, MMC_I_MASK);
 
-	host->pdata = dev->platform_data;
-	if (host->pdata)
-		gpio_power = host->pdata->gpio_power;
-
-	if (gpio_power > 0)
-		gpio_direction_output(gpio_power,
-				      host->pdata->gpio_power_invert);
-
-	mci_register(&host->mci);
-	return 0;
+	return mci_register(&host->mci);
 }
+
+static __maybe_unused struct of_device_id pxamci_dt_ids[] = {
+	{
+		.compatible = "marvell,pxa-mmc",
+	}, {
+		/* sentinel */
+	}
+};
+MODULE_DEVICE_TABLE(of, pxamci_dt_ids);
 
 static struct driver pxamci_driver = {
 	.name  = DRIVER_NAME,
 	.probe = pxamci_probe,
+	.of_compatible = DRV_OF_COMPAT(pxamci_dt_ids),
 };
 device_platform_driver(pxamci_driver);

@@ -77,7 +77,7 @@
 struct pxamci_host {
 	struct mci_host			mci;
 	void __iomem			*base;
-	struct pxamci_platform_data	*pdata;
+	struct clk			*clk;
 
 	unsigned int			cmdat;
 	int				clkrt;

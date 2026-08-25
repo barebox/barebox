@@ -121,6 +121,13 @@ config ARMV7M_SYSTICK
 	help
 	  This option enables support for the ARMv7M system timer unit.
 
+config CLOCKSOURCE_PXA
+	bool "Clocksource for PXA SoCs"
+	depends on OFDEVICE && (ARCH_PXA || COMPILE_TEST)
+	default ARCH_PXA
+	help
+	  This option enables support for the OS timer found on PXA SoCs.
+
 config CLKSRC_STM32
 	bool "Clocksource for STM32 SoCs"
 	depends on OFDEVICE && (ARCH_STM32 || COMPILE_TEST)

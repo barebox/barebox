@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# barebox image generation Makefile for PXA images
+#
+
+pblb-$(CONFIG_MACH_RAUMFELD_SPEAKER) += start_raumfeld_speaker
+FILE_barebox-raumfeld-speaker.img = start_raumfeld_speaker.pblb
+image-$(CONFIG_MACH_RAUMFELD_SPEAKER) += barebox-raumfeld-speaker.img
+
+# First stage: runs from internal SRAM, so keep it well inside the 128K the
+# Boot ROM leaves us above the OBM load address.
+pblb-$(CONFIG_MACH_RAUMFELD_SPEAKER) += start_raumfeld_speaker_obm
+MAX_PBL_MEMORY_SIZE_start_raumfeld_speaker_obm = 0x10000
+# the OBM loads the ordinary second stage image into DRAM and enters it
+PXA_PAYLOAD_start_raumfeld_speaker_obm.pblb.pxaimg = start_raumfeld_speaker.pblb
+PXA_BOOT_LOAD_start_raumfeld_speaker_obm.pblb.pxaimg = 0xa0008000
+FILE_barebox-raumfeld-speaker-nand.img = start_raumfeld_speaker_obm.pblb.pxaimg
+image-$(CONFIG_MACH_RAUMFELD_SPEAKER) += barebox-raumfeld-speaker-nand.img
+
+# A first stage image: the NTIM header the Boot ROM reads from NAND, the OBM
+# it loads into internal SRAM, and barebox for the OBM to load into DRAM.
+quiet_cmd_pxa_image = PXAIMG  $@
+      cmd_pxa_image = $(objtree)/scripts/pxa-image \
+	-b $< -f $(obj)/$(PXA_PAYLOAD_$(@F)) -o $@ \
+	$(if $(PXA_OBM_OFFSET_$(@F)),-O $(PXA_OBM_OFFSET_$(@F))) \
+	$(if $(PXA_OBM_LOAD_$(@F)),-L $(PXA_OBM_LOAD_$(@F))) \
+	$(if $(PXA_BOOT_OFFSET_$(@F)),-F $(PXA_BOOT_OFFSET_$(@F))) \
+	$(if $(PXA_BOOT_LOAD_$(@F)),-A $(PXA_BOOT_LOAD_$(@F))) \
+	$(if $(PXA_MAX_SIZE_$(@F)),-M $(PXA_MAX_SIZE_$(@F)))
+
+$(obj)/%.pxaimg: $(obj)/% $(obj)/$$(PXA_PAYLOAD_$$(@F)) FORCE
+	$(call if_changed,pxa_image)

@@ -34,3 +34,4 @@ obj-$(CONFIG_COMMON_CLK_GPIO)   += clk-gpio.o
 obj-$(CONFIG_TI_SCI_CLK)	+= ti-sci-clk.o
 obj-$(CONFIG_ARCH_K3)		+= k3/
 obj-$(CONFIG_COMMON_CLK_LAN966X)	+= clk-lan966x.o
+obj-$(CONFIG_ARCH_PXA)		+= pxa/

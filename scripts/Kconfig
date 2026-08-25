@@ -21,6 +21,13 @@ config SOCFPGA_MKIMAGE
 	help
 	  This enables building the image creation tool for SoCFPGA
 
+config PXA_IMAGE
+	bool "PXA image" if COMPILE_HOST_TOOLS
+	depends on ARCH_PXA || COMPILE_HOST_TOOLS
+	default y if ARCH_PXA
+	help
+	  This enables building the image creation tool for PXA3xx
+
 config ZYNQ_MKIMAGE
 	bool "Zynq mkimage" if COMPILE_HOST_TOOLS
 	depends on ARCH_ZYNQ || COMPILE_HOST_TOOLS

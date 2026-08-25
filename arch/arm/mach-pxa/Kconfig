@@ -4,33 +4,38 @@ if ARCH_PXA
 
 # ----------------------------------------------------------
 
-config ARCH_PXA2XX
-	bool
-	select CPU_XSCALE
-
 config ARCH_PXA3XX
-       bool
-       select CPU_XSC3
-       select HAVE_CLK
-       select COMMON_CLK
+	bool
+	select CPU_XSC3
+	select HAVE_CLK
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+
+config ARCH_PXA300
+	bool
+	select ARCH_PXA3XX
 
 config ARCH_PXA310
-       bool
+	bool
+	select ARCH_PXA3XX
 
-choice
-	prompt "Intel/Marvell PXA Processor"
+config BAREBOX_UPDATE_PXA_NAND
+	prompt "barebox update NAND handler"
+	bool
+	depends on ARCH_PXA3XX && BAREBOX_UPDATE && MTD
+	help
+	  Say Y here for an update handler that writes the image built by
+	  scripts/pxa-image - the NTIM header, the OBM and barebox - to the
+	  mtd partition the Boot ROM boots from.
 
-config ARCH_PXA25X
-	bool "PXA25x"
-	select ARCH_PXA2XX
+comment "Intel/Marvell PXA boards"
 
-config ARCH_PXA27X
-	bool "PXA27x"
-	select ARCH_PXA2XX
-
-config ARCH_PXA3XX
-	bool "PXA3xx"
-
-endchoice
+config MACH_RAUMFELD_SPEAKER
+	bool "Raumfeld Speaker"
+	select ARCH_PXA300
+	help
+	  Say Y here if you are using the Raumfeld Speaker, a PXA303
+	  based WLAN speaker. The Boot ROM loads barebox from NAND, so
+	  it does the pinmuxing, clock and DRAM setup itself.
 
 endif

@@ -14,40 +14,12 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 #include <mach/pxa/hardware.h>
-#include <mach/pxa/pxa2xx-regs.h>
 
 #define MDREFR_KDIV	0x200a4000	// all banks
 #define CCCR_SLEEP	0x00000107	// L=7 2N=2 A=0 PPDIS=0 CPDIS=0
 #define UNCACHED_PHYS_0	0
 		.text
 
-#if (defined CONFIG_ARCH_PXA27X || defined CONFIG_ARCH_PXA25X)
-/*
- * pxa27x_finish_suspend()
- *
- * Forces CPU into sleep state.
- *
- * r0 = value for PWRMODE M field for desired sleep state
- */
-ENTRY(pxa_suspend)
-	@ Put the processor to sleep
-	@ (also workaround for sighting 28071)
-
-	@ prepare value for sleep mode
-	mov	r1, r0				@ sleep mode
-
-	@ Intel PXA270 Specification Update notes problems sleeping
-	@ with core operating above 91 MHz
-	@ (see Errata 50, ...processor does not exit from sleep...)
-	ldr	r6, =CCCR
-	ldr	r8, [r6]		@ keep original value for resume
-
-	ldr	r7, =CCCR_SLEEP		@ prepare CCCR sleep value
-	mov	r0, #0x2		@ prepare value for CLKCFG
-
-	@ align execution to a cache line
-	b	pxa_cpu_do_suspend
-#endif
 
 
 	.ltorg

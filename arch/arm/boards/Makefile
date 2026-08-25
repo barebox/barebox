@@ -203,3 +203,4 @@ obj-$(CONFIG_MACH_RADXA_CM3)			+= radxa-cm3/
 obj-$(CONFIG_MACH_TQMA93XX)			+= tqma93xx/
 obj-$(CONFIG_MACH_WOLFVISION_PF5)		+= wolfvision-pf5/
 obj-$(CONFIG_MACH_XUNLONG_ORANGEPI_5_PLUS)	+= xunlong-orangepi-5-plus/
+obj-$(CONFIG_MACH_RAUMFELD_SPEAKER)		+= raumfeld-speaker/

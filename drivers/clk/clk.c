@@ -387,11 +387,6 @@ static long clk_determine_round(struct clk *clk, unsigned long rate)
 		return req.rate;
 	}
 
-	if (clk->ops->round_rate) {
-		return clk->ops->round_rate(hw, rate,
-					    &req.best_parent_rate);
-	}
-
 	if (clk->flags & CLK_SET_RATE_PARENT)
 		return clk_round_rate(clk_get_parent(clk), rate);
 
@@ -474,9 +469,6 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 					return ret;
 			}
 		}
-	} else if (clk->ops->round_rate) {
-		if (current_rate == clk_round_rate(clk, rate))
-			return 0;
 	} else {
 		if (current_rate == rate)
 			return 0;

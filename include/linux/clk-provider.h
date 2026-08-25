@@ -12,27 +12,6 @@
 
 struct clk_div_table;
 
-long divider_round_rate_parent(struct clk_hw *hw, struct clk_hw *parent,
-			       unsigned long rate, unsigned long *prate,
-			       const struct clk_div_table *table,
-			       u8 width, unsigned long flags);
-
-long divider_ro_round_rate_parent(struct clk_hw *hw, struct clk_hw *parent,
-				  unsigned long rate, unsigned long *prate,
-				  const struct clk_div_table *table, u8 width,
-				  unsigned long flags, unsigned int val);
-
-static inline long divider_ro_round_rate(struct clk_hw *hw, unsigned long rate,
-					 unsigned long *prate,
-					 const struct clk_div_table *table,
-					 u8 width, unsigned long flags,
-					 unsigned int val)
-{
-	return divider_ro_round_rate_parent(hw, clk_hw_get_parent(hw),
-					    rate, prate, table, width, flags,
-					    val);
-}
-
 /***
  * struct clk_composite - aggregate clock of mux, divider and gate clocks
  *

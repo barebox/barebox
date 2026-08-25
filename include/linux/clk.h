@@ -290,14 +290,9 @@ static inline void clk_put(struct clk *clk)
  *		calculated rate. Optional, but recommended - if this op is not
  *		set then clock rate will be initialized to 0.
  *
- * @round_rate:	Given a target rate as input, returns the closest rate actually
- *		supported by the clock. The parent rate is an input/output
- *		parameter.
- *
  * @determine_rate: Given a target rate, determines the closest rate actually
  *		supported by the clock. The rate, best parent rate and best
  *		parent hw are stored in the clk_rate_request structure.
- *		Preferred over @round_rate when both are present.
  *
  * @set_parent:	Change the input source of this clock; for clocks with multiple
  *		possible parents specify a new parent by passing in the index
@@ -315,7 +310,7 @@ static inline void clk_put(struct clk *clk)
  *
  * @set_rate:	Change the rate of this clock. The requested rate is specified
  *		by the second argument, which should typically be the return
- *		of .round_rate call.  The third argument gives the parent rate
+ *		of .determine_rate call.  The third argument gives the parent rate
  *		which is likely helpful for most .set_rate implementation.
  *		Returns 0 on success, -EERROR otherwise.
  *
@@ -346,8 +341,6 @@ struct clk_ops {
 	};
 	unsigned long	(*recalc_rate)(struct clk_hw *hw,
 					unsigned long parent_rate);
-	long		(*round_rate)(struct clk_hw *hw, unsigned long,
-					unsigned long *);
 	int		(*determine_rate)(struct clk_hw *hw,
 					  struct clk_rate_request *req);
 	int		(*set_parent)(struct clk_hw *hw, u8 index);
@@ -498,10 +491,6 @@ unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
 		unsigned int val,
 		const struct clk_div_table *table,
 		unsigned long flags, unsigned long width);
-
-long divider_round_rate(struct clk *clk, unsigned long rate,
-			unsigned long *prate, const struct clk_div_table *table,
-			u8 width, unsigned long flags);
 
 int divider_get_val(unsigned long rate, unsigned long parent_rate,
 		    const struct clk_div_table *table, u8 width,

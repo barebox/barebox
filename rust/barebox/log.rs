@@ -2,12 +2,14 @@
 
 //! Backend for the [`log`] crate, forwarding records to `pr_print()`.
 
-use core::ffi::c_int;
+use core::ffi::{c_int, CStr};
 use core::fmt::Arguments;
 
+use kernel::str::CStrExt;
 use log::{Level, LevelFilter, Metadata, Record, SetLoggerError};
 use macros::export;
 
+use crate::ffi::c_char;
 #[cfg(CONFIG_PRINTK)]
 use crate::ffi::c_void;
 
@@ -69,6 +71,27 @@ impl log::Log for BareboxLogger {
     }
 
     fn flush(&self) {}
+}
+
+/// Logs `msg` at barebox loglevel `level`, for the `rustlog` command.
+///
+/// # Safety
+///
+/// `msg` must point to a NUL-terminated string that is valid for the duration of the call.
+#[export]
+unsafe extern "C" fn rust_log(level: c_int, msg: *const c_char) -> c_int {
+    let level = match level {
+        ..=3 => Level::Error,
+        4..=5 => Level::Warn,
+        6 => Level::Info,
+        7 => Level::Debug,
+        _ => Level::Trace,
+    };
+    // SAFETY: the caller passes a valid NUL-terminated string that outlives the call.
+    let msg = unsafe { CStr::from_char_ptr(msg) };
+
+    log::log!(target: "rustlog", level, "{}", msg.to_str().unwrap_or("<invalid utf-8>"));
+    0
 }
 
 /// Installs [`BareboxLogger`] with the static max level from `CONFIG_COMPILE_LOGLEVEL`.

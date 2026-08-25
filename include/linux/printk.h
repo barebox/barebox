@@ -186,6 +186,7 @@ struct log_entry {
 extern struct list_head barebox_logbuf;
 
 extern void log_clean(unsigned int limit);
+extern void log_set_max_messages(int max);
 
 #define BAREBOX_LOG_PRINT_RAW		BIT(2)
 #define BAREBOX_LOG_DIFF_TIME		BIT(1)

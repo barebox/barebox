@@ -69,6 +69,8 @@ static int fuzzer_run(const uint8_t *buf, size_t len)
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+	fuzz_test_setup(fuzz);
+
 	return fuzzer_run(data, size);
 }
 
@@ -78,6 +80,8 @@ static int fuzz_main(void)
 
 	/* buffering would make coverage depend on earlier inputs */
 	log_set_max_messages(-1);
+
+	fuzz_test_setup(fuzz);
 
 	if (IS_ENABLED(CONFIG_FUZZ_EXTERNAL)) {
 		ret = LLVMFuzzerRunDriver(saved_argc, saved_argv, fuzzer_run);

@@ -459,7 +459,7 @@ static int fuzz_fat(struct block_device *ramdisk)
 
 	return 0;
 }
-fuzz_test_ramdisk("fat", fuzz_fat, 512);
+fuzz_test_ramdisk("fat", fuzz_fat, 512, NULL);
 
 static const struct fs_legacy_ops fat_ops = {
 	.open      = fat_open,

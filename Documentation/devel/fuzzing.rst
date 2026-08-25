@@ -161,6 +161,23 @@ parses a memory buffer::
 .. note:: Fuzz tests should not leak memory, otherwise
  the fuzzing process may abort eventually due to memory exhaustion.
 
+Anything the test needs only once, like registering a device to run the
+parser against, does not belong into that function: it would be executed
+while the first input is measured and its coverage would be credited to
+whatever input happens to run first. Register such a test with
+``fuzz_test_init()`` instead and do the setup in the callback::
+
+  static void fuzz_dtb_init(void)
+  {
+  	/* runs once, before the first input */
+  }
+  fuzz_test_init("dtb", fuzz_dtb, fuzz_dtb_init);
+
+The callback may be called more than once, e.g. once per invocation of the
+``fuzz`` command, so it has to cope with being called again. The wrappers
+that back a test with a ramdisk take such a callback as their last argument
+and run it after creating the device.
+
 This function than needs to be registered by name in
 ``images/Makefile.sandbox``::
 

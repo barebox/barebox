@@ -196,6 +196,7 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 
 	div_hw = &div->hw;
 	div->reg = reg;
+	div->flags = CLK_DIVIDER_ROUND_CLOSEST;
 	if (composite_flags & IMX_COMPOSITE_CORE) {
 		div->shift = PCG_DIV_SHIFT;
 		div->width = PCG_CORE_DIV_WIDTH;

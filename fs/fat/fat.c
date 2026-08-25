@@ -89,7 +89,7 @@ static int fat_create(struct device *dev, const char *pathname, mode_t mode)
 
 	ret = f_open(&priv->fat, &f_file, pathname, FA_OPEN_ALWAYS);
 	if (ret)
-		return -EINVAL;
+		return ret;
 
 	f_close(&f_file);
 
@@ -204,7 +204,7 @@ static int fat_open(struct device *dev, struct file *file, const char *filename)
 	ret = f_open(&priv->fat, f_file, filename, flags);
 	if (ret) {
 		free(f_file);
-		return -EINVAL;
+		return ret;
 	}
 
 	if (file->f_flags & O_APPEND) {
@@ -212,7 +212,7 @@ static int fat_open(struct device *dev, struct file *file, const char *filename)
 		if (ret) {
 			f_close(f_file);
 			free(f_file);
-			return -EINVAL;
+			return ret;
 		}
 	}
 

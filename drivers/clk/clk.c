@@ -237,6 +237,8 @@ void clk_hw_forward_rate_request(const struct clk_hw *hw,
 	req->max_rate = old_req->max_rate;
 }
 
+static int clk_core_round_rate(struct clk *clk, struct clk_rate_request *req);
+
 static bool mux_is_better_rate(unsigned long rate, unsigned long now,
 			       unsigned long best, unsigned long flags)
 {
@@ -246,21 +248,15 @@ static bool mux_is_better_rate(unsigned long rate, unsigned long now,
 	return now <= rate && now > best;
 }
 
-/*
- * Unlike Linux, which recurses through clk_core_round_rate_nolock to
- * preserve the full request context (including best_parent_hw for
- * grandparent reparenting), barebox uses clk_hw_round_rate which only
- * returns a rate.  This is sufficient for current barebox clock trees.
- */
 static int clk_core_determine_rate_no_reparent(struct clk_hw *hw,
 					       struct clk_rate_request *req)
 {
 	struct clk_hw *parent = clk_hw_get_parent(hw);
 	unsigned long best;
+	int ret;
 
 	if (hw->clk.flags & CLK_SET_RATE_PARENT) {
 		struct clk_rate_request parent_req;
-		long ret;
 
 		if (!parent) {
 			req->rate = 0;
@@ -270,11 +266,11 @@ static int clk_core_determine_rate_no_reparent(struct clk_hw *hw,
 		clk_hw_forward_rate_request(hw, req, parent, &parent_req,
 					    req->rate);
 
-		ret = clk_round_rate(&parent->clk, parent_req.rate);
-		if (ret < 0)
+		ret = clk_core_round_rate(&parent->clk, &parent_req);
+		if (ret)
 			return ret;
 
-		best = ret;
+		best = parent_req.rate;
 	} else if (parent) {
 		best = clk_hw_get_rate(parent);
 	} else {
@@ -330,10 +326,10 @@ int clk_mux_determine_rate_flags(struct clk_hw *hw,
 
 			clk_hw_forward_rate_request(hw, req, parent,
 						    &parent_req, req->rate);
-			parent_rate = clk_hw_round_rate(parent,
-							parent_req.rate);
-			if (!parent_rate)
+			if (clk_core_round_rate(&parent->clk, &parent_req))
 				continue;
+
+			parent_rate = parent_req.rate;
 		} else {
 			parent_rate = clk_hw_get_rate(parent);
 		}
@@ -369,49 +365,90 @@ int __clk_mux_determine_rate_closest(struct clk_hw *hw,
 }
 EXPORT_SYMBOL_GPL(__clk_mux_determine_rate_closest);
 
-static long clk_determine_round(struct clk *clk, unsigned long rate)
+/*
+ * Determine the rate @clk would settle on for the request @req, without
+ * touching the hardware.  Mirrors Linux' clk_core_round_rate_nolock().
+ */
+static int clk_core_round_rate(struct clk *clk, struct clk_rate_request *req)
 {
-	struct clk_hw *hw;
-	struct clk_rate_request req;
+	struct clk_hw *hw = clk_to_clk_hw(clk);
+	struct clk *parent;
 
-	hw = clk_to_clk_hw(clk);
+	if (clk->ops->determine_rate)
+		return clk->ops->determine_rate(hw, req);
 
-	clk_hw_init_rate_request(hw, &req, rate);
+	parent = clk_get_parent(clk);
 
-	if (clk->ops->determine_rate) {
-		int ret = clk->ops->determine_rate(hw, &req);
+	if ((clk->flags & CLK_SET_RATE_PARENT) && !IS_ERR_OR_NULL(parent)) {
+		struct clk_rate_request parent_req;
+		int ret;
 
+		clk_hw_forward_rate_request(hw, req, clk_to_clk_hw(parent),
+					    &parent_req, req->rate);
+
+		ret = clk_core_round_rate(parent, &parent_req);
 		if (ret)
 			return ret;
 
-		return req.rate;
+		req->best_parent_rate = parent_req.rate;
+		req->rate = parent_req.rate;
+
+		return 0;
 	}
 
-	if (clk->flags & CLK_SET_RATE_PARENT)
-		return clk_round_rate(clk_get_parent(clk), rate);
+	req->rate = clk_get_rate(clk);
 
-	return clk_get_rate(clk);
+	return 0;
 }
+
+/**
+ * __clk_determine_rate - get the closest rate actually supported by a clock
+ * @hw: determine the rate of this clock
+ * @req: target rate request
+ *
+ * Useful for clk_ops such as .set_rate and .determine_rate.
+ */
+int __clk_determine_rate(struct clk_hw *hw, struct clk_rate_request *req)
+{
+	if (!hw) {
+		req->rate = 0;
+		return 0;
+	}
+
+	return clk_core_round_rate(&hw->clk, req);
+}
+EXPORT_SYMBOL_GPL(__clk_determine_rate);
 
 long clk_round_rate(struct clk *clk, unsigned long rate)
 {
-	if (!clk)
+	struct clk_rate_request req;
+	int ret;
+
+	if (IS_ERR_OR_NULL(clk))
 		return 0;
 
-	if (IS_ERR(clk))
-		return 0;
+	clk_hw_init_rate_request(clk_to_clk_hw(clk), &req, rate);
 
-	return clk_determine_round(clk, rate);
+	ret = clk_core_round_rate(clk, &req);
+	if (ret)
+		return ret;
+
+	return req.rate;
 }
 
 unsigned long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate)
 {
-	long ret = clk_round_rate(&hw->clk, rate);
+	struct clk_rate_request req;
 
-	if (ret < 0)
+	if (IS_ERR_OR_NULL(hw))
 		return 0;
 
-	return ret;
+	clk_hw_init_rate_request(hw, &req, rate);
+
+	if (clk_core_round_rate(&hw->clk, &req))
+		return 0;
+
+	return req.rate;
 }
 
 int clk_set_rate(struct clk *clk, unsigned long rate)

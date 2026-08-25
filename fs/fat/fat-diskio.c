@@ -28,7 +28,11 @@ DRESULT disk_ioctl (FATFS *fat, BYTE command, void *buf)
 		*(WORD *)buf = disk_sector_size(fat);
 		return RES_OK;
 	case CTRL_SYNC:
+#if	_READONLY == 0
+		return disk_flush(fat);
+#else
 		return RES_OK;
+#endif
 	default:
 		return RES_PARERR;
 	}

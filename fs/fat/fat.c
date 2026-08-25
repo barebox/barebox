@@ -78,6 +78,13 @@ DRESULT disk_write(FATFS *fat, const BYTE *buf, DWORD sector, BYTE count)
 	return RES_OK;
 }
 
+DRESULT disk_flush(FATFS *fat)
+{
+	struct fat_priv *priv = fat->userdata;
+
+	return cdev_flush(priv->cdev) ? RES_ERROR : RES_OK;
+}
+
 /* ---------------------------------------------------------------*/
 
 #ifdef CONFIG_FS_FAT_WRITE
@@ -91,51 +98,28 @@ static int fat_create(struct device *dev, const char *pathname, mode_t mode)
 	if (ret)
 		return ret;
 
-	f_close(&f_file);
-
-	return 0;
+	return f_close(&f_file);
 }
 
 static int fat_unlink(struct device *dev, const char *pathname)
 {
 	struct fat_priv *priv = dev->priv;
-	int ret;
 
-	ret = f_unlink(&priv->fat, pathname);
-	if (ret)
-		return ret;
-
-	cdev_flush(priv->cdev);
-
-	return 0;
+	return f_unlink(&priv->fat, pathname);
 }
 
 static int fat_mkdir(struct device *dev, const char *pathname)
 {
 	struct fat_priv *priv = dev->priv;
-	int ret;
 
-	ret = f_mkdir(&priv->fat, pathname);
-	if (ret)
-		return ret;
-
-	cdev_flush(priv->cdev);
-
-	return 0;
+	return f_mkdir(&priv->fat, pathname);
 }
 
 static int fat_rmdir(struct device *dev, const char *pathname)
 {
 	struct fat_priv *priv = dev->priv;
-	int ret;
 
-	ret = f_unlink(&priv->fat, pathname);
-	if (ret)
-		return ret;
-
-	cdev_flush(priv->cdev);
-
-	return 0;
+	return f_unlink(&priv->fat, pathname);
 }
 
 static int fat_write(struct file *f, const void *buf, size_t insize)
@@ -224,16 +208,14 @@ static int fat_open(struct device *dev, struct file *file, const char *filename)
 
 static int fat_close(struct device *dev, struct file *f)
 {
-	struct fat_priv *priv = dev->priv;
 	FIL *f_file = f->private_data;
+	int ret;
 
-	f_close(f_file);
+	ret = f_close(f_file);
 
 	free(f_file);
 
-	cdev_flush(priv->cdev);
-
-	return 0;
+	return ret;
 }
 
 static int fat_read(struct file *f, void *buf, size_t insize)

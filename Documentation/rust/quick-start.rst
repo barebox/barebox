@@ -56,3 +56,21 @@ Rust code in barebox is ``no_std``: ``core`` and ``alloc`` can be used,
 ``std`` can't. A global allocator on top of barebox' heap backs ``Box``,
 ``Vec``, ``String`` and the other ``alloc`` types. ``Rc``, ``Arc`` and
 ``CString`` are left out to save space.
+
+External crates
+---------------
+
+The build doesn't use cargo, so crates from crates.io need to be
+vendored into ``rust/vendor/`` and checked in unmodified.
+Addition of new crates must be well-reasoned. To add one, list it
+in the dummy package ``rust/Cargo.toml`` and run::
+
+	cd rust && cargo vendor
+
+Then add a build rule for the crate to ``rust/Makefile`` and an entry
+to ``scripts/generate_rust_analyzer.py``, so rust-analyzer finds it.
+
+This doesn't apply to crates that have been vendored into the
+Linux kernel:
+Those should be imported with the least amount of modification,
+to simplify future syncs against the Linux Rust support.

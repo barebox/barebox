@@ -9,3 +9,6 @@ uapi_generated.rs
 exports_*_generated.h
 target/
 test/
+
+# check in vendored crates unmodified
+!vendor/**

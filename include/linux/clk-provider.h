@@ -65,6 +65,7 @@ void clk_hw_forward_rate_request(const struct clk_hw *hw,
 				 struct clk_rate_request *req,
 				 unsigned long parent_rate);
 
+int __clk_determine_rate(struct clk_hw *hw, struct clk_rate_request *req);
 int clk_hw_determine_rate_no_reparent(struct clk_hw *hw,
 				      struct clk_rate_request *req);
 int clk_mux_determine_rate_flags(struct clk_hw *hw,

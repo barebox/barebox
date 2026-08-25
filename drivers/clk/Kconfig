@@ -84,4 +84,13 @@ config COMMON_CLK_GPIO
 
 source "drivers/clk/sifive/Kconfig"
 
+config COMMON_CLK_LAN966X
+	bool "Generic Clock Controller driver for LAN966X SoC"
+	depends on OFDEVICE
+	depends on COMMON_CLK
+	help
+	  Microchip LAN966X and LAN969X SoC Generic Clock Controller (GCK).
+	  GCK generates and supplies clocks to various peripherals within the
+	  SoC.
+
 endif

@@ -111,6 +111,16 @@ config PINCTRL_STM32
 	help
 	  Pinmux and GPIO controller found on STM32 family
 
+config PINCTRL_OCELOT
+	bool "Pinctrl driver for the Microsemi Ocelot family of SoCs"
+	depends on OFDEVICE
+	select GPIOLIB
+	help
+	  Pinmux + GPIO controller driver for the Microsemi/Microchip Ocelot
+	  family. Currently implements the LAN969X (lan9691) subset matched
+	  with the same identifiers as Linux's drivers/pinctrl/pinctrl-ocelot.c
+	  so future Linux patches backport with minimal churn.
+
 source "drivers/pinctrl/sunxi/Kconfig"
 endif
 

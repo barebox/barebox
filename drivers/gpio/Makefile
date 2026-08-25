@@ -32,3 +32,4 @@ obj-$(CONFIG_GPIO_STARFIVE)	+= gpio-starfive-vic.o
 obj-$(CONFIG_GPIO_ZYNQ)		+= gpio-zynq.o
 obj-$(CONFIG_GPIO_LATCH)	+= gpio-latch.o
 obj-$(CONFIG_GPIO_INTEL)	+= gpio-intel.o
+obj-$(CONFIG_GPIO_MICROCHIP_SGPIO) += gpio-microchip-sgpio.o

@@ -251,6 +251,14 @@ config GPIO_INTEL
 	help
 	  Say Y here to build support for the Intel GPIO driver.
 
+config GPIO_MICROCHIP_SGPIO
+	bool "Microchip SGPIO (serial GPIO) driver"
+	depends on OFDEVICE
+	help
+	  Say yes here to support the Microchip serial GPIO controller
+	  used on the sparx5 / LAN969X switch SoCs to drive LED chains and
+	  per-port signals (SFP TX-disable, presence, etc.).
+
 endmenu
 
 endif

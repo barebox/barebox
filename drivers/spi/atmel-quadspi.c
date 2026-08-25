@@ -52,6 +52,7 @@
 #define QSPI_VERSION 0x00FC  /* Version Register */
 
 #define SAMA7G5_QSPI0_MAX_SPEED_HZ	200000000
+#define LAN966x_QSPI0_MAX_SPEED_HZ	100000000
 #define SAMA7G5_QSPI1_SDR_MAX_SPEED_HZ	133000000
 
 /* Bitfields in QSPI_CR (Control Register) */
@@ -210,6 +211,11 @@
 #define QSPI_WPMR_WPKEY_MASK            GENMASK(31, 8)
 #define QSPI_WPMR_WPKEY(wpkey)          (((wpkey) << 8) & QSPI_WPMR_WPKEY_MASK)
 
+/* Used by the LAN966X-style init sequence */
+#define QSPI_DLYBS			0x2
+#define QSPI_DLYCS			0x7
+#define QSPI_WPKEY			0x515350
+
 /* Bitfields in QSPI_WPSR (Write Protection Status Register) */
 #define QSPI_WPSR_WPVS                  BIT(0)
 #define QSPI_WPSR_WPVSRC_MASK           GENMASK(15, 8)
@@ -250,6 +256,7 @@ struct atmel_qspi_caps {
 	bool has_gclk;
 	bool has_ricr;
 	bool octal;
+	bool has_lan966x;
 };
 
 struct atmel_qspi_ops;
@@ -883,12 +890,100 @@ static int atmel_qspi_sama7g5_init(struct atmel_qspi *aq)
 	return ret;
 }
 
+static int lan966x_qspi_init(struct atmel_qspi *aq)
+{
+	u32 val;
+	int ret;
+
+	atmel_qspi_write(QSPI_CR_DLLOFF, aq, QSPI_CR);
+
+	ret = readl_poll_timeout(aq->regs + QSPI_SR2, val,
+				 !(val & QSPI_SR2_DLOCK),
+				 ATMEL_QSPI_TIMEOUT);
+	if (ret) {
+		dev_err(aq->ctlr.dev, "QSPI_SR2_DLOCK not cleared\n");
+		return ret;
+	}
+
+	ret = clk_set_rate(aq->gclk, aq->target_max_speed_hz);
+	if (ret) {
+		dev_err(aq->ctlr.dev, "Failed to set generic clock rate.\n");
+		return ret;
+	}
+
+	ret = clk_prepare_enable(aq->gclk);
+	if (ret) {
+		dev_err(aq->ctlr.dev, "Failed to enable generic clock.\n");
+		return ret;
+	}
+
+	/* DLL on + stop calibration; wait for DLOCK */
+	atmel_qspi_write(QSPI_CR_DLLON | QSPI_CR_STPCAL, aq, QSPI_CR);
+	ret = readl_poll_timeout(aq->regs + QSPI_SR2, val,
+				 (val & QSPI_SR2_DLOCK),
+				 ATMEL_QSPI_TIMEOUT);
+	if (ret) {
+		dev_err(aq->ctlr.dev, "QSPI_SR2_DLOCK not set\n");
+		return ret;
+	}
+
+	/* Disable then soft-reset, synchronizing each step */
+	atmel_qspi_write(QSPI_CR_QSPIDIS, aq, QSPI_CR);
+	ret = atmel_qspi_reg_sync(aq);
+	if (ret)
+		return ret;
+
+	atmel_qspi_write(QSPI_CR_SWRST, aq, QSPI_CR);
+	ret = atmel_qspi_reg_sync(aq);
+	if (ret)
+		return ret;
+
+	/* Disable write protection */
+	atmel_qspi_write(QSPI_WPMR_WPKEY(QSPI_WPKEY), aq, QSPI_WPMR);
+
+	/* LAN966X variant lacks pad-calibration; just DLL-on + STPCAL again. */
+	atmel_qspi_write(QSPI_CR_DLLON | QSPI_CR_STPCAL, aq, QSPI_CR);
+	ret = readl_poll_timeout(aq->regs + QSPI_SR2, val,
+				 (val & QSPI_SR2_DLOCK),
+				 ATMEL_QSPI_TIMEOUT);
+	if (ret) {
+		dev_err(aq->ctlr.dev, "QSPI_SR2_DLOCK not set (post-WPMR)\n");
+		return ret;
+	}
+
+	/* Serial Memory Mode, with chip-select delay */
+	atmel_qspi_write(QSPI_MR_SMM | QSPI_MR_DLYCS(QSPI_DLYCS), aq, QSPI_MR);
+	aq->mr = QSPI_MR_SMM;
+
+	/* Apply DLYBS in SCR */
+	atmel_qspi_write(QSPI_SCR_DLYBS(QSPI_DLYBS), aq, QSPI_SCR);
+
+	ret = atmel_qspi_update_config(aq);
+	if (ret)
+		return ret;
+
+	/* Enable the controller and wait for it to come up */
+	atmel_qspi_write(QSPI_CR_QSPIEN, aq, QSPI_CR);
+	ret = readl_poll_timeout(aq->regs + QSPI_SR2, val,
+				 val & QSPI_SR2_QSPIENS,
+				 ATMEL_QSPI_TIMEOUT);
+	if (ret) {
+		dev_err(aq->ctlr.dev, "QSPI_SR2_QSPIENS not set\n");
+		return ret;
+	}
+
+	return 0;
+}
+
 static int atmel_qspi_sama7g5_setup(struct spi_device *spi)
 {
 	struct atmel_qspi *aq = spi_controller_get_devdata(spi->controller);
 
 	/* The controller can communicate with a single peripheral device (target). */
 	aq->target_max_speed_hz = spi->max_speed_hz;
+
+	if (aq->caps->has_lan966x)
+		return lan966x_qspi_init(aq);
 
 	return atmel_qspi_sama7g5_init(aq);
 }
@@ -1112,6 +1207,12 @@ static __maybe_unused const struct atmel_qspi_caps atmel_sama7g5_qspi_caps = {
 	.has_gclk = true,
 };
 
+static __maybe_unused const struct atmel_qspi_caps atmel_lan966x_qspi_caps = {
+	.max_speed_hz = LAN966x_QSPI0_MAX_SPEED_HZ,
+	.has_gclk = true,
+	.has_lan966x = true,
+};
+
 static __maybe_unused const struct of_device_id atmel_qspi_dt_ids[] = {
 	{
 		.compatible = "atmel,sama5d2-qspi",
@@ -1128,6 +1229,10 @@ static __maybe_unused const struct of_device_id atmel_qspi_dt_ids[] = {
 	{
 		.compatible = "microchip,sama7g5-qspi",
 		.data = &atmel_sama7g5_qspi_caps,
+	},
+	{
+		.compatible = "microchip,lan966x-qspi",
+		.data = &atmel_lan966x_qspi_caps,
 	},
 	{ /* sentinel */ }
 };

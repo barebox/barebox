@@ -193,6 +193,7 @@ include $(srctree)/images/Makefile.versatile
 include $(srctree)/images/Makefile.vexpress
 include $(srctree)/images/Makefile.xburst
 include $(srctree)/images/Makefile.at91
+include $(srctree)/images/Makefile.microchip
 include $(srctree)/images/Makefile.zynq
 include $(srctree)/images/Makefile.zynqmp
 include $(srctree)/images/Makefile.layerscape

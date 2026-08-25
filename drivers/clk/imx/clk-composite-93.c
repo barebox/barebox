@@ -185,7 +185,7 @@ struct clk *imx93_clk_composite_flags(const char *name, const char * const *pare
 	div->reg = reg;
 	div->shift = CCM_DIV_SHIFT;
 	div->width = CCM_DIV_WIDTH;
-//	div->flags = CLK_DIVIDER_ROUND_CLOSEST;
+	div->flags = CLK_DIVIDER_ROUND_CLOSEST;
 
 	authen = readl(reg + AUTHEN_OFFSET);
 	if (!(authen & TZ_NS_MASK) || !(authen & BIT(WHITE_LIST_SHIFT + domain_id)))

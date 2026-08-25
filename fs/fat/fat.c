@@ -52,7 +52,7 @@ DRESULT disk_read(FATFS *fat, BYTE *buf, DWORD sector, BYTE count)
 	size_t len = count * sector_size;
 	int ret;
 
-	debug("%s: sector: %ld count: %d\n", __func__, sector, count);
+	debug("%s: sector: %u count: %d\n", __func__, sector, count);
 
 	ret = cdev_read(priv->cdev, buf, len, (loff_t)sector * sector_size, 0);
 	if (ret != len)
@@ -68,7 +68,7 @@ DRESULT disk_write(FATFS *fat, const BYTE *buf, DWORD sector, BYTE count)
 	size_t len = count * sector_size;
 	int ret;
 
-	debug("%s: buf: %p sector: %ld count: %d\n",
+	debug("%s: buf: %p sector: %u count: %d\n",
 			__func__, buf, sector, count);
 
 	ret = cdev_write(priv->cdev, buf, len, (loff_t)sector * sector_size, 0);

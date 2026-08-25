@@ -10,10 +10,10 @@
  * setup_c: clear bss if not yet done
  */
 ENTRY(setup_c)
+	str x30, [sp, #-16]!
 	adr_l	x0, bss_cleared
 	ldr	w1, [x0]
 	cbnz	w1, 1f			/* skip if already done */
-	mov	x15, x30
 	adr_l	x0, __bss_start
 	mov	x1, #0
 	adr_l	x2, __bss_stop
@@ -22,8 +22,12 @@ ENTRY(setup_c)
 	adr_l	x0, bss_cleared
 	mov	w1, #1
 	str	w1, [x0]		/* mark bss cleared */
-	mov	x30, x15
-1:	ret
+#ifdef __PBL__
+	bl	pbl_do_ctors
+#endif
+1:
+	ldr x30, [sp], #16
+	ret
 ENDPROC(setup_c)
 
 .section .data.bss_cleared

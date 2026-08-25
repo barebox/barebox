@@ -5,6 +5,7 @@
 
 #include <common.h>
 #include <io.h>
+#include <asm/hardware/arm_architected_timer.h>
 #include <asm/system.h>
 #include <dt-bindings/clock/intel,agilex5-clkmgr.h>
 #include <linux/bitops.h>
@@ -252,8 +253,6 @@ static void clk_basic_init(struct socfpga_clk_plat *plat,
 {
 	u32 vcocalib;
 	u32 cntfrq = COUNTER_FREQUENCY_REAL;
-	u32 counter_freq = 0;
-
 
 	if (!cfg)
 		return;
@@ -361,8 +360,8 @@ static void clk_basic_init(struct socfpga_clk_plat *plat,
 
 	/* Update with accurate clock frequency */
 	if (current_el() == 3) {
-		asm volatile("msr cntfrq_el0, %0" : : "r" (cntfrq) : "memory");
-		asm volatile("mrs %0, cntfrq_el0" : "=r" (counter_freq));
+		set_cntfrq(cntfrq);
+		arm_arch_timer_init(cntfrq);
 	}
 
 	/* Out of boot mode */

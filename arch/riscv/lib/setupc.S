@@ -10,12 +10,32 @@
  */
 .section .text.setup_c
 ENTRY(setup_c)
+	addi	sp, sp, -SZREG * 2
+	REG_S	ra, SZREG(sp)
+	lla	a0, bss_cleared
+	lw	a1, 0(a0)
+	bnez	a1, zeroed
 	lla	a0, __bss_start
 	li	a1, 0
 	lla	a2, __bss_stop
 	sub	a2, a2, a0
-	j	__memset
+	jal	__memset
+	lla	a0, bss_cleared
+	li	a1, 1
+	sw	a1, 0(a0)
+#ifdef __PBL__
+	jal	pbl_do_ctors
+#endif
+zeroed:
+	REG_L	ra, SZREG(sp)
+	addi	sp, sp, SZREG * 2
+	ret
 ENDPROC(setup_c)
+
+.section .data.bss_cleared
+.balign 4
+bss_cleared:
+	.word 	0
 
 /*
  * void relocate_to_adr(unsigned long targetadr)

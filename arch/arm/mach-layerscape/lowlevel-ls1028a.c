@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 #include <common.h>
 #include <io.h>
+#include <asm/hardware/arm_architected_timer.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
 #include <mach/layerscape/errata.h>
@@ -35,8 +36,11 @@ static void ls1028a_timer_init(void)
 
 void ls1028a_init_lowlevel(void)
 {
+	const uint64_t cntfrq = 25000000;
+
 	scfg_init(SCFG_ENDIANESS_LITTLE);
-	set_cntfrq(25000000);
+	set_cntfrq(cntfrq);
+	arm_arch_timer_init(cntfrq);
 	ls1028a_timer_init();
 	ls1028a_errata();
 }

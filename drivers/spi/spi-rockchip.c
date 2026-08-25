@@ -514,7 +514,7 @@ static int rockchip_spi_probe(struct device *dev)
 		goto err_put_ctlr;
 	}
 
-//	ctlr->bus_num = pdev->id;
+	ctlr->bus_num = -1;
 //	ctlr->mode_bits = SPI_CPOL | SPI_CPHA | SPI_LOOP | SPI_LSB_FIRST;
 
 	/*

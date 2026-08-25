@@ -17,14 +17,12 @@ struct loadable;
  * @LOADABLE_KERNEL: kernel image
  * @LOADABLE_INITRD: initial ramdisk
  * @LOADABLE_FDT: flattened device tree
- * @LOADABLE_TEE: trusted execution environment
  */
 enum loadable_type {
 	LOADABLE_UNSPECIFIED,
 	LOADABLE_KERNEL,
 	LOADABLE_INITRD,
 	LOADABLE_FDT,
-	LOADABLE_TEE,
 };
 
 /**
@@ -130,7 +128,7 @@ struct loadable_ops {
 /**
  * struct loadable - lazy-loadable boot component
  * @name: descriptive name for debugging
- * @type: type of component (kernel, initrd, fdt, tee)
+ * @type: type of component (kernel, initrd, fdt)
  * @ops: operations for this loadable
  * @priv: format-specific private data
  * @info: cached metadata populated by get_info()
@@ -139,7 +137,7 @@ struct loadable_ops {
  * @chained_loadables: list of additional loadables chained to this one
  * @list: list node for chained_loadables
  *
- * Represents something that can be loaded to RAM (kernel, initrd, fdt, tee).
+ * Represents something that can be loaded to RAM (kernel, initrd, fdt).
  * Metadata can be queried without loading. Actual loading happens on extract
  * or via mmap.
  */

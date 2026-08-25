@@ -18,7 +18,7 @@ config OPTEE
 	  For more information see: https://www.op-tee.org
 
 	  This driver doesn't actually load OP-TEE. For that see
-	  CONFIG_BOOTM_OPTEE and PBL_OPTEE.
+	  CONFIG_PBL_OPTEE.
 
 	  If unsure, say n here.
 

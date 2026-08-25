@@ -156,24 +156,6 @@ config OPTEE_SHM_SIZE
 	  mode supported by barebox anyway, but support needs to be enabled
 	  in OP-TEE at compile-time.
 
-config BOOTM_OPTEE
-	bool
-	prompt "support booting OP-TEE"
-	depends on BOOTM && ARM32
-	select HAVE_OPTEE
-	select HAS_INSECURE_DEFAULTS
-	help
-	  OP-TEE is a trusted execution environment (TEE). With this option
-	  enabled barebox supports starting optee_os as part of the bootm command.
-	  Instead of the kernel bootm starts the optee_os binary which then starts
-	  the kernel in nonsecure mode. Pass the optee_os binary with the -t option
-	  or in the global.bootm.tee variable.
-
-	  This mode of late loading OP-TEE just before the kernel is deprecated
-	  in favor of early loading OP-TEE in the PBL (CONFIG_PBL_OPTEE).
-	  Early-loading greatly reduces the attack surface and is the only mode
-	  supported outside of ARMv7.
-
 config PBL_OPTEE
 	bool "Enable OP-TEE early start"
 	depends on ARM

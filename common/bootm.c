@@ -95,7 +95,6 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->os_address = UIMAGE_SOME_ADDRESS;
 	data->os_entry = UIMAGE_SOME_ADDRESS;
 	data->oftree_file = getenv_nonempty("global.bootm.oftree");
-	data->tee_file = getenv_nonempty("global.bootm.tee");
 	data->os_file = getenv_nonempty("global.bootm.image");
 	getenv_ul("global.bootm.image.loadaddr", &data->os_address);
 	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
@@ -117,7 +116,6 @@ void bootm_data_init_defaults(struct bootm_data *data)
 void bootm_data_restore_defaults(const struct bootm_data *data)
 {
 	globalvar_set("bootm.oftree", data->oftree_file);
-	globalvar_set("bootm.tee", data->tee_file);
 	globalvar_set("bootm.image", data->os_file);
 	pr_setenv("global.bootm.image.loadaddr", "0x%lx", data->os_address);
 	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
@@ -495,12 +493,6 @@ static int bootm_open_files(struct image_data *data)
 			return ret;
 	}
 
-	if (data->tee_file) {
-		data->tee = loadable_from_file(data->tee_file, LOADABLE_TEE);
-		if (IS_ERR(data->tee))
-			return PTR_ERR(data->tee);
-	}
-
 	return 0;
 }
 
@@ -545,13 +537,16 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 		return ERR_PTR(-ENOENT);
 	}
 
+	if (nonempty(globalvar_get("bootm.tee"))) {
+		pr_err("Late-loaded tee is insecure and no longer supported\n");
+		return ERR_PTR(-ENOSYS);
+	}
+
 	data = xzalloc(sizeof(*data));
 
 	bootm_image_name_and_part(bootm_data->os_file, &data->os_file, &data->os_part);
 	bootm_image_name_and_part(bootm_data->oftree_file, &data->oftree_file, &data->oftree_part);
 	bootm_image_name_and_part(bootm_data->initrd_file, &data->initrd_file, &data->initrd_part);
-	if (bootm_data->tee_file)
-		data->tee_file = xstrdup(bootm_data->tee_file);
 	data->verbose = bootm_data->verbose;
 	data->verify = bootm_data->verify;
 	data->force = bootm_data->force;
@@ -581,7 +576,6 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 		 */
 		data->oftree_file = NULL;
 		data->initrd_file = NULL;
-		data->tee_file = NULL;
 		if (data->image_type != filetype_fit) {
 			pr_err("Signed boot and image is no FIT image, aborting\n");
 			ret = -EINVAL;
@@ -803,11 +797,9 @@ void bootm_boot_cleanup(struct image_data *data)
 		of_del_reserve_entry(data->initrd_res->start, data->initrd_res->end);
 	release_sdram_region(data->initrd_res);
 	release_sdram_region(data->oftree_res);
-	release_sdram_region(data->tee_res);
 	loadable_release(&data->oftree);
 	loadable_release(&data->initrd);
 	loadable_release(&data->os);
-	loadable_release(&data->tee);
 	if (data->of_root_node)
 		of_delete_node(data->of_root_node);
 
@@ -816,7 +808,6 @@ void bootm_boot_cleanup(struct image_data *data)
 	free(data->os_file);
 	free(data->oftree_file);
 	free(data->initrd_file);
-	free(data->tee_file);
 	free(data);
 }
 
@@ -921,7 +912,6 @@ BAREBOX_MAGICVAR(global.bootm.image.loadaddr, "bootm default boot image loadaddr
 BAREBOX_MAGICVAR(global.bootm.initrd, "bootm default initrd");
 BAREBOX_MAGICVAR(global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
 BAREBOX_MAGICVAR(global.bootm.oftree, "bootm default oftree");
-BAREBOX_MAGICVAR(global.bootm.tee, "bootm default tee image");
 BAREBOX_MAGICVAR(global.bootm.dryrun, "bootm default dryrun level");
 BAREBOX_MAGICVAR(global.bootm.verify, "bootm default verify level");
 #ifdef CONFIG_EFI_LOADER

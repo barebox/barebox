@@ -24,7 +24,6 @@ struct bootm_data {
 	const char *os_file;
 	const char *initrd_file;
 	const char *oftree_file;
-	const char *tee_file;
 	const char *root_dev;
 	const char *root_param;
 	int verbose;
@@ -130,11 +129,6 @@ struct image_data {
 	 * it.
 	 */
 	void *os_header;
-	char *tee_file;
-	struct resource *tee_res;
-
-	/* Future default case: A generic loadable object */
-	struct loadable *tee;
 
 	/* Type of OS image, e.g. filetype_fit or the same as kernel_type */
 	enum filetype image_type;

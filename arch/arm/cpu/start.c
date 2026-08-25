@@ -192,9 +192,6 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 	handoff_data_set(hd);
 
-	if (IS_ENABLED(CONFIG_BOOTM_OPTEE))
-		of_add_reserve_entry(endmem - OPTEE_SIZE, endmem - 1);
-
 	pr_debug("starting barebox...\n");
 
 	start_barebox();

@@ -19,6 +19,7 @@
 #include <of.h>
 #include <linux/bitfield.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/err.h>
 #include <linux/spinlock.h>
 
@@ -156,26 +157,35 @@ static unsigned long lan966x_gck_recalc_rate(struct clk_hw *hw,
 	return parent_rate / (div + 1);
 }
 
-/*
- * Linux uses .determine_rate, which barebox does not have. round_rate is
- * called against the already-selected parent, so we just clamp the divider.
- * Source selection happens via .set_parent / .get_parent.
- */
-static long lan966x_gck_round_rate(struct clk_hw *hw, unsigned long rate,
-				   unsigned long *parent_rate)
+static int lan966x_gck_determine_rate(struct clk_hw *hw,
+				      struct clk_rate_request *req)
 {
-	unsigned long div;
+	struct clk_hw *parent;
+	int i;
 
-	if (!rate || !*parent_rate)
-		return 0;
+	/*
+	 * Unlike in Linux, clk_round_rate() and clk_set_rate() are reachable
+	 * from the shell here, so a rate of zero has to be rejected before
+	 * the division below.
+	 */
+	if (!req->rate)
+		return -EINVAL;
 
-	div = DIV_ROUND_CLOSEST(*parent_rate, rate);
-	if (div > DIV_MAX + 1)
-		div = DIV_MAX + 1;
-	if (div < 1)
-		div = 1;
+	for (i = 0; i < clk_hw_get_num_parents(hw); ++i) {
+		parent = clk_hw_get_parent_by_index(hw, i);
+		if (!parent)
+			continue;
 
-	return *parent_rate / div;
+		/* Allowed prescaler divider range is 0-255 */
+		if (clk_hw_get_rate(parent) / req->rate <= DIV_MAX) {
+			req->best_parent_hw = parent;
+			req->best_parent_rate = clk_hw_get_rate(parent);
+
+			return 0;
+		}
+	}
+
+	return -EINVAL;
 }
 
 static int lan966x_gck_get_parent(struct clk_hw *hw)
@@ -203,7 +213,7 @@ static const struct clk_ops lan966x_gck_ops = {
 	.disable	= lan966x_gck_disable,
 	.set_rate	= lan966x_gck_set_rate,
 	.recalc_rate	= lan966x_gck_recalc_rate,
-	.round_rate	= lan966x_gck_round_rate,
+	.determine_rate	= lan966x_gck_determine_rate,
 	.set_parent	= lan966x_gck_set_parent,
 	.get_parent	= lan966x_gck_get_parent,
 };

@@ -58,8 +58,6 @@ extern unsigned char sha_sum_end[];
 int pbl_barebox_verify(const void *compressed_start, unsigned int len,
 		       const void *hash, unsigned int hash_len)
 {
-	struct sha256_state sha_state = { 0 };
-	struct digest d = { .ctx = &sha_state };
 	char computed_hash[SHA256_DIGEST_SIZE];
 	int i;
 	const char *char_hash = hash;
@@ -67,9 +65,7 @@ int pbl_barebox_verify(const void *compressed_start, unsigned int len,
 	if (hash_len != SHA256_DIGEST_SIZE)
 		return -1;
 
-	sha256_init(&d);
-	sha256_update(&d, compressed_start, len);
-	sha256_final(&d, computed_hash);
+	pbl_sha256(compressed_start, len, computed_hash);
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		puts_ll("CH ");
 

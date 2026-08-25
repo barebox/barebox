@@ -7,6 +7,7 @@ pbl-$(CONFIG_PBL_CONSTRUCTORS) += ctors.o
 pbl-y += misc.o
 pbl-y += string.o
 pbl-y += malloc.o
+pbl-y += sha256.o
 pbl-$(CONFIG_HAVE_IMAGE_COMPRESSION) += decomp.o
 pbl-$(CONFIG_LIBFDT) += fdt.o
 pbl-$(CONFIG_PBL_CONSOLE) += console.o

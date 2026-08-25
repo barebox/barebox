@@ -5,7 +5,7 @@
  */
 
 #include <common.h>
-#include <kallsyms.h>
+#include <linux/kallsyms.h>
 #include <command.h>
 #include <malloc.h>
 #include <complete.h>

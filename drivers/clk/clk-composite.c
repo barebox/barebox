@@ -148,7 +148,20 @@ static int clk_composite_determine_rate(struct clk_hw *hw,
 	    mux_hw->clk.ops->determine_rate)
 		return mux_hw->clk.ops->determine_rate(mux_hw, req);
 
-	req->rate = req->best_parent_rate;
+	/*
+	 * Nothing here can influence the rate.  Linux builds its clk_ops at
+	 * registration time and just leaves out determine_rate in this case,
+	 * so clk_core_round_rate_nolock() forwards the request to the parent
+	 * for CLK_SET_RATE_PARENT and otherwise answers with the clock's own
+	 * rate.  barebox' clk_ops are static, so do both here.  Reporting the
+	 * parent rate instead would be wrong for a composite whose rate clock
+	 * divides or multiplies it.
+	 */
+	if (hw->clk.flags & CLK_SET_RATE_PARENT)
+		return clk_hw_determine_rate_no_reparent(hw, req);
+
+	req->rate = clk_hw_get_rate(hw);
+
 	return 0;
 }
 

@@ -18,6 +18,7 @@
 #include <asm/secure.h>
 #include <asm/cache.h>
 #include <asm/mmu.h>
+#include <asm/armv7r-mpu.h>
 #include <asm/unaligned.h>
 #include <compressed-dtb.h>
 #include <elf.h>
@@ -87,7 +88,7 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	if (IS_ENABLED(CONFIG_MMU))
 		mmu_early_enable(membase, memsize);
 	else if (IS_ENABLED(CONFIG_ARMV7R_MPU))
-		set_cr(get_cr() | CR_C);
+		armv7r_cache_enable();
 
 	pr_debug("uncompressing barebox ELF at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x)\n",
 			pg_start, pg_len, barebox_base, uncompressed_len);

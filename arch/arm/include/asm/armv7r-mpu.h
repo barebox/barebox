@@ -91,6 +91,8 @@ struct mpu_region_config {
 	enum size reg_size;
 };
 
+void armv7r_cache_enable(void);
+
 void armv7r_mpu_disable(void);
 void armv7r_mpu_enable(void);
 int armv7r_mpu_enabled(void);

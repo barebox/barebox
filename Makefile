@@ -1014,20 +1014,23 @@ define rule_barebox__
 	$(Q)echo 'savedcmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
 	$(call cmd,prelink__)
 	$(call cmd,sysmap)
+	$(if $(CONFIG_KALLSYMS),$(call verify_kallsyms))
 endef
 endif
 
-# Old kallsyms support
+# kallsyms support
 # ---------------------------------------------------------------------------
 
 ifdef CONFIG_KALLSYMS
 # Generate section listing all symbols and add it into barebox $(kallsyms.o)
-# It's a three stage process:
-# o .tmp_barebox1 has all symbols and sections, but __kallsyms is
-#   empty
+# It's a four stage process:
+# o .tmp_kallsyms0.o is an empty table, so that the kallsyms_* symbols
+#   exist in all passes.
+# o .tmp_barebox1 has all symbols and sections, but the kallsyms table is
+#   empty.
 #   Running kallsyms on that gives us .tmp_kallsyms1.o with
 #   the right size - barebox version is updated during this step
-# o .tmp_barebox2 now has a __kallsyms section of the right size,
+# o .tmp_barebox2 now has a kallsyms table of the right size,
 #   but due to the added section, some addresses have shifted.
 #   From here, we generate a correct .tmp_kallsyms2.o
 # o The correct .tmp_kallsyms2.o is linked into the final barebox.
@@ -1035,7 +1038,7 @@ ifdef CONFIG_KALLSYMS
 #   .tmp_barebox2, just in case we did not generate kallsyms correctly.
 # o If CONFIG_KALLSYMS_EXTRA_PASS is set, do an extra pass using
 #   .tmp_barebox3 and .tmp_kallsyms3.o.  This is only meant as a
-#   temporary bypass to allow the kernel to be built while the
+#   temporary bypass to allow barebox to be built while the
 #   maintainers work out what went wrong with kallsyms.
 
 ifdef CONFIG_KALLSYMS_EXTRA_PASS
@@ -1047,12 +1050,8 @@ endif
 kallsyms.o := .tmp_kallsyms$(last_kallsyms).o
 
 define verify_kallsyms
-	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
-	  echo '  $($(quiet)cmd_sysmap)  .tmp_System.map' &&)                \
-	  $(cmd_sysmap) .tmp_barebox$(last_kallsyms) .tmp_System.map
-	$(Q)cmp -s System.map .tmp_System.map ||                             \
-		(echo Inconsistent kallsyms data;                            \
-		 echo Try setting CONFIG_KALLSYMS_EXTRA_PASS;                \
+	$(Q)cmp -s System.map .tmp_kallsyms$(last_kallsyms).S.syms ||         \
+		(echo >&2 Inconsistent kallsyms data;                        \
 		 rm .tmp_kallsyms* ; false )
 endef
 
@@ -1072,18 +1071,29 @@ kallsyms_a_flags = -Wp,-MD,$(depfile) $(KBUILD_AFLAGS) $(AFLAGS_KERNEL) \
 quiet_cmd_kallsyms_as_o_S = AS      $@
       cmd_kallsyms_as_o_S = $(CC) $(kallsyms_a_flags) -c -o $@ $<
 
-# Generate .S file with all kernel symbols
-quiet_cmd_kallsyms = KSYM    $@
-      cmd_kallsyms = $(NM) -n $< | $(KALLSYMS) --all-symbols > $@
+# barebox is relocated at runtime, so always use --pc-relative
+kallsyms_opts := --all-symbols --pc-relative
 
-.tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
+# Generate .S file with all barebox symbols, as filtered by mksysmap
+quiet_cmd_kallsyms = KSYM    $@
+      cmd_kallsyms = $(CONFIG_SHELL) $(srctree)/scripts/mksysmap $< $@.syms && \
+		     $(KALLSYMS) $(kallsyms_opts) $@.syms > $@
+
+quiet_cmd_kallsyms0 = KSYM    $@
+      cmd_kallsyms0 = : > $@.syms && $(KALLSYMS) $(kallsyms_opts) $@.syms > $@
+
+.tmp_kallsyms0.o .tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
 	$(call if_changed_dep,kallsyms_as_o_S)
+
+# Empty table for the first pass, overrides the pattern rule below
+.tmp_kallsyms0.S: $(KALLSYMS)
+	$(call cmd,kallsyms0)
 
 .tmp_kallsyms%.S: .tmp_barebox% $(KALLSYMS)
 	$(call cmd,kallsyms)
 
 # .tmp_barebox1 must be complete except kallsyms, so update barebox version
-.tmp_barebox1: $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE
+.tmp_barebox1: $(BAREBOX_LDS) $(BAREBOX_OBJS) .tmp_kallsyms0.o FORCE
 	$(call if_changed_rule,ksym_ld)
 
 .tmp_barebox2: $(BAREBOX_LDS) $(BAREBOX_OBJS) .tmp_kallsyms1.o FORCE

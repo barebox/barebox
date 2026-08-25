@@ -19,5 +19,6 @@
 #define R_MIPS_HIGHEST		29
 #define R_MIPS_PC21_S2		60
 #define R_MIPS_PC26_S2		61
+#define R_MIPS_PC32		248
 
 #endif /* __ASM_MIPS_RELOCS_H__ */

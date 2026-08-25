@@ -261,7 +261,12 @@ static char *symbol_string(char *buf, const char *end, const void *ptr, int fiel
 	unsigned long value = (unsigned long) ptr;
 #ifdef CONFIG_KALLSYMS
 	char sym[KSYM_SYMBOL_LEN];
-	sprint_symbol(sym, value, with_offset);
+
+	if (with_offset)
+		sprint_symbol(sym, value);
+	else
+		sprint_symbol_no_offset(sym, value);
+
 	return string(buf, end, sym, field_width, precision, flags);
 #else
 	field_width = 2*sizeof(void *);

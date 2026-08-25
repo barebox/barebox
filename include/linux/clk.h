@@ -468,6 +468,7 @@ struct clk_divider {
 #define CLK_DIVIDER_POWER_OF_TWO	(1 << 1)
 #define CLK_DIVIDER_ALLOW_ZERO		(1 << 2)
 #define CLK_DIVIDER_HIWORD_MASK		(1 << 3)
+#define CLK_DIVIDER_ROUND_CLOSEST	(1 << 4)
 #define CLK_DIVIDER_READ_ONLY		(1 << 5)
 
 #define CLK_MUX_HIWORD_MASK		(1 << 2)

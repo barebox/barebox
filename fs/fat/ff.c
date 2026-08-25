@@ -1957,7 +1957,6 @@ int f_write (
 				fp->clust = clst;		/* Update current cluster */
 			}
 			if (fp->flag & FA__DIRTY) {		/* Write-back sector cache */
-				printf("wr sector cache\n");
 				if (disk_write(fp->fs, fp->buf, fp->dsect, 1) != RES_OK)
 					ABORT(fp->fs, -EIO);
 				fp->flag &= ~FA__DIRTY;

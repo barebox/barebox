@@ -76,6 +76,9 @@ static int fuzz_main(void)
 {
 	int ret = -1;
 
+	/* buffering would make coverage depend on earlier inputs */
+	log_set_max_messages(-1);
+
 	if (IS_ENABLED(CONFIG_FUZZ_EXTERNAL)) {
 		ret = LLVMFuzzerRunDriver(saved_argc, saved_argv, fuzzer_run);
 		pr_emerg("libfuzzer unexpectedly ended: %d\n", ret);

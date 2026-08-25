@@ -17,6 +17,8 @@ static int smh_serial_probe(struct device *dev)
 
 	cdev->dev = dev;
 	cdev->putc = smh_serial_putc;
+	cdev->devname = "semihosting";
+	cdev->devid = DEVICE_ID_SINGLE;
 
 	return console_register(cdev);
 }

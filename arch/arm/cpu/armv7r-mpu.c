@@ -34,6 +34,7 @@
 
 void armv7r_cache_enable(void)
 {
+	cache_invalidate_stale();
 	set_cr(get_cr() | CR_C);
 }
 

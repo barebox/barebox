@@ -616,6 +616,8 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 	if (get_cr() & CR_M)
 		return;
 
+	cache_invalidate_stale();
+
 	set_ttbr(ttb);
 
 	set_domain(DOMAIN_CLIENT);

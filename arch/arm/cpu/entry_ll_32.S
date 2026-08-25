@@ -12,12 +12,5 @@
 .section .text.__barebox_arm_entry
 ENTRY(__barebox_arm_entry)
 	mov	sp, r3
-	mov	r4, r0
-	mov	r5, r1
-	mov	r6, r2
-	bl	cache_invalidate_stale
-	mov	r0, r4
-	mov	r1, r5
-	mov	r2, r6
 	b	barebox_pbl_start
 ENDPROC(__barebox_arm_entry)

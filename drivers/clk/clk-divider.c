@@ -12,13 +12,14 @@
 #include <linux/log2.h>
 #include <linux/math64.h>
 
-static unsigned int _get_table_maxdiv(const struct clk_div_table *table)
+static unsigned int _get_table_maxdiv(const struct clk_div_table *table,
+				      u8 width)
 {
-	unsigned int maxdiv = 0;
+	unsigned int maxdiv = 0, mask = clk_div_mask(width);
 	const struct clk_div_table *clkt;
 
 	for (clkt = table; clkt->div; clkt++)
-		if (clkt->div > maxdiv)
+		if (clkt->div > maxdiv && clkt->val <= mask)
 			maxdiv = clkt->div;
 	return maxdiv;
 }
@@ -31,7 +32,7 @@ static unsigned int _get_maxdiv(const struct clk_div_table *table, u8 width,
 	if (flags & CLK_DIVIDER_POWER_OF_TWO)
 		return 1 << clk_div_mask(width);
 	if (table)
-		return _get_table_maxdiv(table);
+		return _get_table_maxdiv(table, width);
 	return clk_div_mask(width) + 1;
 }
 

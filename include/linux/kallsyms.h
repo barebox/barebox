@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef __KALLSYMS_H
-#define __KALLSYMS_H
+#ifndef _LINUX_KALLSYMS_H
+#define _LINUX_KALLSYMS_H
 
 #include <linux/types.h>
 
@@ -16,4 +16,4 @@ const char *kallsyms_lookup(unsigned long addr,
 /* Look up a kernel symbol and return it in a text buffer. */
 int sprint_symbol(char *buffer, unsigned long address, bool with_offset);
 
-#endif /* __KALLSYMS_H */
+#endif /* _LINUX_KALLSYMS_H */

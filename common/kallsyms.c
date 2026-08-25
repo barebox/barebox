@@ -2,7 +2,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <kallsyms.h>
+#include <linux/kallsyms.h>
 #include <asm/sections.h>
 
 /* These will be re-linked against their real values during the second link stage */

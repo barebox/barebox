@@ -18,7 +18,7 @@
 #include <linux/math64.h>
 #include <linux/clk.h>
 #include <malloc.h>
-#include <kallsyms.h>
+#include <linux/kallsyms.h>
 #include <wchar.h>
 #include <of.h>
 #include <efi/devicepath.h>

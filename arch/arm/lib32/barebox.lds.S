@@ -27,7 +27,7 @@ SECTIONS
 
 	. = ALIGN(4);
 
-	._text : { *(._text) } :text
+	._text : { KEEP(*(._text)) } :text
 	.text      :
 	{
 		_stext = .;

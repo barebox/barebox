@@ -26,13 +26,7 @@ def get_dmesg(shell, grep=None):
     return stdout
 
 
-@pytest.mark.lg_feature(['bootable', 'efi', 'testfs'])
-@pytest.mark.parametrize('efiloader', [False, True])
-def test_boot_manual_with_initrd(strategy, barebox, env, efiloader, debian_iso):
-    """Test booting Debian kernel directly without GRUB"""
-
-    barebox.run_check(f"global.bootm.efi={'required' if efiloader else 'disabled'}")
-
+def configure_bootm(strategy, barebox):
     def get_option(strategy, opt):
         config = strategy.target.env.config
         return config.get_target_option(strategy.target.name, opt)
@@ -56,6 +50,16 @@ def test_boot_manual_with_initrd(strategy, barebox, env, efiloader, debian_iso):
     barebox.run_check(f"global.bootm.image={kernel_path}")
     # Speed up subsequent runs a bit
     barebox.run_check("global linux.bootargs.noapparmor=apparmor=0")
+
+
+@pytest.mark.lg_feature(['bootable', 'efi', 'testfs'])
+@pytest.mark.parametrize('efiloader', [False, True])
+def test_boot_manual_with_initrd(strategy, barebox, env, efiloader, debian_iso):
+    """Test booting Debian kernel directly without GRUB"""
+
+    barebox.run_check(f"global.bootm.efi={'required' if efiloader else 'disabled'}")
+
+    configure_bootm(strategy, barebox)
 
     # Boot the kernel - it should use EFI stub by default
     with strategy.boot_kernel(bootm=True) as shell:
@@ -127,3 +131,42 @@ def check_efivars_filesystem_not_empty(shell):
     assert ret == 0
 
     assert len(stdout), "EFI variables directory is empty"
+
+
+@pytest.mark.lg_feature(['bootable', 'efi', 'testfs'])
+def test_efi_reset_system(strategy, barebox, env, debian_iso):
+    """Test rebooting Linux via barebox's EFI ResetSystem runtime service
+
+    arm64 machine_restart() calls efi_reboot() before falling back to
+    PSCI whenever EFI runtime services are available, so a reboot from
+    the booted kernel calls into the barebox .efi_runtime code section
+    after ExitBootServices.
+    """
+
+    barebox.run_check("global.bootm.efi=required")
+
+    configure_bootm(strategy, barebox)
+
+    with strategy.boot_kernel(bootm=True) as shell:
+        # ensure the kernel did not give up on EFI runtime services
+        check_expected_efi_messages(shell, env)
+        stdout, _, _ = shell.run("dmesg | grep 'Runtime Services are disabled'")
+        assert stdout == [], "kernel disabled EFI runtime services"
+
+        strategy.console.sendline("reboot -f")
+
+        # QEMU reboots the VM on a successful reset, so barebox comes
+        # back up on the same console
+        _, before, _, _ = strategy.console.expect(
+            [r"barebox 2\d{3}"], timeout=120)
+
+        # A faulting ResetSystem would be caught by the kernel, which
+        # then complains and falls back to PSCI. That also reboots, so
+        # check the console log to tell the two apart.
+        before = before.decode("utf-8", errors="replace")
+        for pattern in ["Synchronous exception in EFI runtime service",
+                        "Unable to handle kernel",
+                        "Internal error",
+                        "Runtime Services are disabled"]:
+            assert pattern not in before, \
+                   f"kernel reported EFI runtime fault: {pattern}"

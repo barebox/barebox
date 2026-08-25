@@ -7,13 +7,34 @@
 #include <linux/sprintf.h>
 #include <efi/loader.h>
 #include <efi/error.h>
+#include <efi/mode.h>
 #include <init.h>
 #include <memory.h>
+#include <mmu.h>
 #include <linux/list_sort.h>
 #include <linux/sizes.h>
 #include <dma.h>
 
 efi_uintn_t efi_memory_map_key;
+
+/*
+ * EFI images and the code pages they allocate expect to be mapped RWX,
+ * matching the attributes we advertise in the memory map for the code
+ * memory types. The page tables set up from the ELF segments only cover
+ * the barebox image itself, so allocations from conventional memory are
+ * mapped non-executable when ARM_MMU_PERMISSIONS is enabled.
+ */
+static void efi_remap_pages(u64 addr, size_t size, maptype_t map_type)
+{
+	if (!arch_can_remap())
+		return;
+
+	/* EFI_ALLOCATE_ADDRESS may pass through an unaligned address */
+	if (!IS_ALIGNED(addr, PAGE_SIZE) || !IS_ALIGNED(size, PAGE_SIZE))
+		return;
+
+	remap_range((void *)(uintptr_t)addr, size, map_type);
+}
 
 static efi_status_t find_pages_max(struct list_head *banks, size_t npages, size_t *page)
 {
@@ -199,6 +220,12 @@ efi_status_t efi_allocate_pages(enum efi_allocate_type type,
 
 	res->flags |= IORESOURCE_EFI_ALLOC;
 
+	if (memory_type == EFI_LOADER_CODE ||
+	    memory_type == EFI_BOOT_SERVICES_CODE ||
+	    memory_type == EFI_RUNTIME_SERVICES_CODE)
+		efi_remap_pages(new_addr, npages << EFI_PAGE_SHIFT,
+				MAP_CACHED_RWX);
+
 	*memory = new_addr;
 	return EFI_SUCCESS;
 }
@@ -300,6 +327,9 @@ efi_status_t efi_free_pages(uint64_t memory, size_t pages)
 		pr_warn("can't free %llx: not found\n", memory);
 	if (nfreed <= 0)
 		return EFI_INVALID_PARAMETER;
+
+	/* Revert a possible executable mapping of code-type allocations */
+	efi_remap_pages(memory, size, MAP_CACHED);
 
 	++efi_memory_map_key;
 

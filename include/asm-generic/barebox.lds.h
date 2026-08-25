@@ -157,7 +157,7 @@
 #ifdef CONFIG_EFI_RUNTIME
 #define BAREBOX_EFI_RUNTIME			\
 	. = ALIGN(4096);			\
-	.efi_runtime : {			\
+	.efi_runtime.text : {			\
 		__efi_runtime_start = .;	\
 		__efi_runtime_text_start = .;	\
 		*(.efi_runtime.text*)		\
@@ -166,12 +166,14 @@
 		*(.efi_runtime.rodata*)		\
 		__efi_runtime_rodata_stop = .;	\
 		. = ALIGN(4096);		\
+	} :efirt_text				\
+	.efi_runtime.data : {			\
 		__efi_runtime_data_start = .;	\
 		*(.efi_runtime.data*)		\
 		*(.efi_runtime.bss*)		\
 		__efi_runtime_data_stop = .;	\
 		__efi_runtime_stop = .;		\
-	}					\
+	} :efirt_data				\
 	. = ALIGN(4096);
 #else
 #define BAREBOX_EFI_RUNTIME

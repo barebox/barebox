@@ -115,8 +115,8 @@ static void virtio_blk_remove(struct virtio_device *vdev)
 {
 	struct virtio_blk_priv *priv = vdev->priv;
 
-	vdev->config->reset(vdev);
 	blockdevice_unregister(&priv->blk);
+	vdev->config->reset(vdev);
 	vdev->config->del_vqs(vdev);
 
 	free(priv);

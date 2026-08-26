@@ -210,6 +210,7 @@ int pread_full(int fd, void *buf, size_t size, loff_t offset)
 			return now;
 		size -= now;
 		buf += now;
+		offset += now;
 	}
 
 	return insize - size;

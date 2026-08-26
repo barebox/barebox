@@ -283,7 +283,7 @@ BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(cpuinfo)
 	.cmd            = do_cpuinfo,
-	BAREBOX_CMD_DESC("show info about CPU")
+	BAREBOX_CMD_DESC("show CPU information")
 	BAREBOX_CMD_OPTS("[-sm]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_COMPLETE(empty_complete)

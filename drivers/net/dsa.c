@@ -311,7 +311,7 @@ static int dsa_rx_preprocessor(struct eth_device *edev, unsigned char **packet,
 	*packet += ds->needed_headroom;
 	*length -= ds->needed_rx_tailroom;
 
-	if (port > DSA_MAX_PORTS)
+	if (port >= DSA_MAX_PORTS)
 		return -ERANGE;
 
 	dp = ds->dp[port];

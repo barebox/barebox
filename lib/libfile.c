@@ -869,7 +869,12 @@ int fixup_path_case(int fd, const char **path)
 		free(imatch);
 
 next_component:
-		fd = openat(fd, curr, next ? O_DIRECTORY : 0);
+		/*
+		 * The final component may be a directory as well, which
+		 * can't be opened without O_DIRECTORY, but O_PATH suffices
+		 * for the fstat() callers usually follow up with.
+		 */
+		fd = openat(fd, curr, next ? O_DIRECTORY : O_PATH);
 		closedir(dir);
 
 		if (fd < 0)

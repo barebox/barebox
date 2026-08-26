@@ -788,7 +788,7 @@ static const struct efi_device_path *
 device_path_next_compatible_node(const struct efi_device_path *dev_path,
 				 u8 type, u8 subtype)
 {
-	for (; !is_device_path_end(dev_path);
+	for (; dev_path && !is_device_path_end(dev_path);
 	     dev_path = next_device_path_node(dev_path)) {
 
 		if (device_path_type(dev_path) != type)

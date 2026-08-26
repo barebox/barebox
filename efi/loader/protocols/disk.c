@@ -253,7 +253,13 @@ static efi_status_t efi_disk_add_cdev(efi_handle_t parent,
 	diskobj->media.removable_media = removable;
 	diskobj->media.media_present = true;
 	diskobj->media.read_only = cdev->flags & DEVFS_PARTITION_READONLY;
-	diskobj->media.block_size = diskobj->media.io_align = 1u << blockbits;
+	diskobj->media.block_size = 1u << blockbits;
+	/*
+	 * Reads and writes go through cdev_read()/cdev_write(), which
+	 * always copy through the block layer cache, so any buffer
+	 * alignment is acceptable.
+	 */
+	diskobj->media.io_align = 1;
 	diskobj->media.last_block = (cdev->size >> blockbits) - 1;
 	diskobj->blockbits = blockbits;
 

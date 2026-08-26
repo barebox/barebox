@@ -52,7 +52,7 @@ efi_status_t efi_var_to_file(void)
 
 	efiret = efi_var_collect(&buf, &len, EFI_VARIABLE_NON_VOLATILE);
 	if (efiret != EFI_SUCCESS) {
-		err = ENOMEM;
+		err = -ENOMEM;
 		goto error;
 	}
 

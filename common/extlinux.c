@@ -132,7 +132,7 @@ static struct extlinux_entry *parse_extlinux_conf(const char *abspath,
 		}
 
 		if (entry) {
-			if (!strcasecmp(key, "KERNEL"))
+			if (!strcasecmp(key, "KERNEL") || !strcasecmp(key, "LINUX"))
 				entry->kernel = xstrdup(val);
 			else if (!strcasecmp(key, "INITRD"))
 				entry->initrd = xstrdup(val);

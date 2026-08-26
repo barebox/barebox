@@ -2748,8 +2748,11 @@ int openat(int dirfd, const char *pathname, int flags)
 	if (d_is_negative(dentry)) {
 		if (flags & O_CREAT) {
 			error = create(path.dentry, dentry);
-			if (error)
+			if (error) {
+				dput(dentry);
+				path_put(&path);
 				goto out1;
+			}
 			/* repoint path.dentry from parent to newly created entry.
 			 * path.mnt already points at the correct vfsmount, even
 			 * for a dirfd of the root directory, so that's fine.
@@ -2757,12 +2760,13 @@ int openat(int dirfd, const char *pathname, int flags)
 			dput(path.dentry);
 			path.dentry = dentry;
 		} else {
-			dput(dentry);
+			path_put(&path);
 			error = -ENOENT;
 			goto out1;
 		}
 	} else if (d_is_dir(dentry)) {
 		if (!(flags & (O_PATH | O_DIRECTORY)) && !dentry_is_tftp(dentry)) {
+			path_put(&path);
 			error = -EISDIR;
 			goto out1;
 		}

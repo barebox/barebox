@@ -38,6 +38,7 @@ config EFI_LOADER
 	select PARTITION_DISK
 	select MEMORY_ATTRIBUTES
 	select CRC32
+	select PRINTF_WCHAR
 	help
 	  Select this option if you want to run UEFI applications (like GNU
 	  GRUB or an EFI-stubbed kernel) on top of barebox.

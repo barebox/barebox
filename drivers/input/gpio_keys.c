@@ -96,10 +96,9 @@ static int gpio_keys_probe_pdata(struct gpio_keys *gk, struct device *dev)
 			flags |= GPIOF_ACTIVE_LOW;
 
 		gpio = gpiod_request_one(pdata->buttons[i].gpio, flags, "gpio_keys");
-		if (IS_ERR(gpio)) {
-			pr_err("gpio_keys: gpio #%d can not be requested\n", i);
-			return PTR_ERR(gpio);
-		}
+		if (IS_ERR(gpio))
+			return dev_errp_probe(dev, gpio,
+					      "requesting gpio #%d\n", i);
 
 		gk->buttons[i].gpio = gpio;
 		gk->buttons[i].code = pdata->buttons[i].code;
@@ -128,10 +127,9 @@ static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device *dev)
 		of_property_read_string(npkey, "label", &label);
 
 		gpio = dev_gpiod_get(dev, npkey, NULL, GPIOD_IN, label);
-		if (IS_ERR(gpio)) {
-			pr_err("gpio_keys: gpio #%d can not be requested\n", i);
-			return PTR_ERR(gpio);
-		}
+		if (IS_ERR(gpio))
+			return dev_errp_probe(dev, gpio,
+					      "requesting gpio #%d\n", i);
 
 		gk->buttons[i].gpio = gpio;
 

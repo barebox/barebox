@@ -33,6 +33,10 @@ jobs:
             lgargs: --runxfail --graphics
 
           - ARCH: arm
+            lgenv: test/arm/virt32_secure_defconfig.yaml
+            defconfig: virt32_secure_defconfig
+
+          - ARCH: arm
             lgenv: test/arm/multi_v8_efiloader_defconfig.yaml
             defconfig: multi_v8_efiloader_defconfig
             osimg: debian-13.6.0-arm64-netinst.iso

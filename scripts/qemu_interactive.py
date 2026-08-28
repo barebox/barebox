@@ -504,7 +504,18 @@ def apply_shared_options(strategy, target, options, *, interactive, fail=None): 
             qemu_nic += f",tftp={testfs_path}"
 
     if "qemu" in features:
-        _append_qemu_args(strategy, fail, "-nic", qemu_nic)
+        if virtio:
+            # -nic instantiates the machine's default NIC model, which
+            # some machines - the RISC-V virt machine among them - do not
+            # define at all.  Those would silently end up without any
+            # network interface, so name the device explicitly.
+            _append_qemu_args(
+                strategy, fail,
+                "-netdev", qemu_nic,
+                "-device", f"virtio-net-{virtio},netdev=net0"
+            )
+        else:
+            _append_qemu_args(strategy, fail, "-nic", qemu_nic)
 
     for i, fs in enumerate(qemu_fs):
         if virtio:

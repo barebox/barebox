@@ -89,13 +89,13 @@ static void extlinux_entry_free(struct bootentry *entry)
  * Parse extlinux.conf. Only the entry pointed to by the DEFAULT keyword
  * is extracted; all other LABEL sections are ignored.
  */
-static struct extlinux_entry *parse_extlinux_conf(const char *abspath,
+static struct extlinux_entry *parse_extlinux_conf(const char *cfgpath,
 						  const char *rootpath)
 {
 	char *buf, *bufptr, *line, *default_label = NULL;
 	struct extlinux_entry *entry = NULL;
 
-	bufptr = read_file(abspath, NULL);
+	bufptr = read_file(cfgpath, NULL);
 	if (!bufptr)
 		return ERR_PTR(-errno);
 
@@ -124,7 +124,7 @@ static struct extlinux_entry *parse_extlinux_conf(const char *abspath,
 			if (!strcmp(val, default_label)) {
 				entry = xzalloc(sizeof(*entry));
 				entry->label = xstrdup(val);
-				entry->rootpath = dirname(xstrdup(abspath));
+				entry->rootpath = dirname(xstrdup(cfgpath));
 			} else if (entry) {
 				break;
 			}
@@ -161,21 +161,21 @@ static struct extlinux_entry *parse_extlinux_conf(const char *abspath,
 
 static int _extlinux_scan_file(struct bootscanner *scanner,
 			       struct bootentries *bootentries,
-			       const char *configname,
+			       const char *cfgpath,
 			       const char *rootpath)
 {
 	struct extlinux_entry *e;
 
-	if (!strends(configname, "extlinux.conf"))
+	if (!strends(cfgpath, "extlinux.conf"))
 		return 0;
 
-	e = parse_extlinux_conf(configname, rootpath);
+	e = parse_extlinux_conf(cfgpath, rootpath);
 	if (IS_ERR(e))
 		return PTR_ERR(e);
 
 	e->entry.boot = extlinux_boot;
 	e->entry.release = extlinux_entry_free;
-	e->entry.path = xstrdup_const(configname);
+	e->entry.path = xstrdup_const(cfgpath);
 	e->entry.title = basprintf("extlinux: %s", e->label);
 	e->entry.description = basprintf("extlinux entry \'%s\" on %s",
 					 e->label, rootpath);
@@ -188,37 +188,37 @@ static int _extlinux_scan_file(struct bootscanner *scanner,
 
 static int extlinux_scan_file(struct bootscanner *scanner,
 			      struct bootentries *bootentries,
-			      const char *configname)
+			      const char *cfgpath)
 {
-	const char *rootpath = get_mounted_path(configname);
+	const char *rootpath = get_mounted_path(cfgpath);
 
 	if (IS_ERR(rootpath))
 		return PTR_ERR(rootpath);
 
-	return _extlinux_scan_file(scanner, bootentries, configname, rootpath);
+	return _extlinux_scan_file(scanner, bootentries, cfgpath, rootpath);
 }
 
 static int extlinux_scan_directory(struct bootscanner *scanner,
 				   struct bootentries *bootentries,
 				   const char *rootpath)
 {
-	char *path;
+	char *cfgpath;
 	struct stat s;
 	int ret;
 
-	path = basprintf("%s/boot/extlinux/extlinux.conf", rootpath);
-	ret = stat(path, &s);
+	cfgpath = basprintf("%s/boot/extlinux/extlinux.conf", rootpath);
+	ret = stat(cfgpath, &s);
 	if (!ret && S_ISREG(s.st_mode))
-		ret = _extlinux_scan_file(scanner, bootentries, path, rootpath);
-	free(path);
+		ret = _extlinux_scan_file(scanner, bootentries, cfgpath, rootpath);
+	free(cfgpath);
 	if (ret > 0)
 		return ret;
 
-	path = basprintf("%s/extlinux/extlinux.conf", rootpath);
-	ret = stat(path, &s);
+	cfgpath = basprintf("%s/extlinux/extlinux.conf", rootpath);
+	ret = stat(cfgpath, &s);
 	if (!ret && S_ISREG(s.st_mode))
-		ret = _extlinux_scan_file(scanner, bootentries, path, rootpath);
-	free(path);
+		ret = _extlinux_scan_file(scanner, bootentries, cfgpath, rootpath);
+	free(cfgpath);
 
 	return ret;
 }

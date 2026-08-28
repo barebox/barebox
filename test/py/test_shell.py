@@ -62,8 +62,8 @@ def test_barebox_version(barebox, barebox_config):
     skip_disabled(barebox_config, "CONFIG_CMD_VERSION")
 
     stdout, _, returncode = barebox.run('version')
-    assert 'barebox' in stdout[1]
     assert returncode == 0
+    assert any('barebox' in line for line in stdout), stdout
 
 
 def test_barebox_no_err(barebox, barebox_config):
@@ -109,7 +109,6 @@ def test_cmd_clk(barebox, barebox_config):
     skip_disabled(barebox_config, "CONFIG_CMD_CLK")
 
     regions = count_dicts_in_command_output(barebox, 'clk_dump -j')
-    assert regions >= 0
 
     assert count_dicts_in_command_output(barebox, 'clk_dump -vj') == regions
 

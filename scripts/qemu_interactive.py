@@ -355,14 +355,21 @@ def apply_shared_options(strategy, target, options, *, interactive, fail=None): 
     except KeyError:
         main = {}
 
-    features = list(main.get("features", []))
+    # Mutate the environment's feature list in place, so that the features
+    # synthesized below are also visible to tests via
+    # env.get_target_features() and not only to the QEMU argument
+    # construction here.  This only covers lookups done while the tests
+    # run: labgrid resolves pytest.mark.lg_feature during collection,
+    # before this function is called.
+    features = main.setdefault("features", [])
     yaml_env = dict(main.get("env", {}))
     qemu_driver = main.get("drivers", {}).get("QEMUDriver")
     qemu_bin = None
 
     if qemu_driver is not None:
         qemu_bin = qemu_driver.get("qemu_bin")
-        features.append("qemu")
+        if "qemu" not in features:
+            features.append("qemu")
 
     virtio = None
 
@@ -371,7 +378,8 @@ def apply_shared_options(strategy, target, options, *, interactive, fail=None): 
         _append_qemu_args(strategy, fail, '-global virtio-mmio.force-legacy=false')
     if "virtio-pci" in features:
         virtio = "pci,disable-modern=off"
-        features.append("pci")
+        if "pci" not in features:
+            features.append("pci")
 
     qemu_rng = _get_option(options, "qemu_rng", 0) or 0
     for _ in range(qemu_rng):

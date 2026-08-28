@@ -738,8 +738,7 @@ static void do_glob_in_argv(glob_t *globbuf, int argc, char **argv)
 	flags = GLOB_DOOFFS | GLOB_NOCHECK;
 
 	for (i = 0; i < argc; i++) {
-		int ret;
-		ret = do_glob(argv[i], flags, NULL, globbuf);
+		do_glob(argv[i], flags, NULL, globbuf);
 		flags |= GLOB_APPEND;
 	}
 }
@@ -1043,9 +1042,8 @@ static __maybe_unused char *indenter(int i)
 /* return code is the exit status of the pipe */
 static int free_pipe(struct pipe *pi, int indent)
 {
-	char **p;
 	struct child_prog *child;
-	int a, i, ret_code = 0;
+	int i, ret_code = 0;
 
 	for (i = 0; i < pi->num_progs; i++) {
 
@@ -1053,10 +1051,15 @@ static int free_pipe(struct pipe *pi, int indent)
 		final_printf("%s  command %d:\n", indenter(indent), i);
 
 		if (child->argv) {
+#ifdef HUSH_DEBUG
+			char **p;
+			int a;
+
 			for (a = 0,p = child->argv; *p; a++,p++) {
 				final_printf("%s   argv[%d] = %s\n",
 						indenter(indent),a,*p);
 			}
+#endif
 			globfree(&child->glob_result);
 			child->argv = NULL;
 		} else if (child->group) {

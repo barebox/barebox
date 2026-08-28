@@ -360,6 +360,9 @@ static int at91_soc_device(void)
 	struct device *dev;
 
 	dev = add_generic_device_res("soc", DEVICE_ID_SINGLE, NULL, 0, NULL);
+	if (!dev)
+		return -ENODEV;
+
 	dev_add_param_fixed(dev, "name", soc_name[at91_soc_initdata.type]);
 	dev_add_param_fixed(dev, "subname", soc_subtype_name[at91_soc_initdata.subtype]);
 

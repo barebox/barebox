@@ -388,12 +388,14 @@ JSMN_API jsmntok_t *jsmn_parse_alloc(const char *js, const size_t len,
 
 	/* Figure out how many tokens we need. */
 	ret = jsmn_parse(&parser, js, len, NULL, 0);
-	if (ret < 0)
+	if (ret <= 0)
 		return NULL;
 
 	token_count = ret;
 
-	tokens = malloc(size_mul(token_count, sizeof(jsmntok_t)));
+	/* Allocate two extra slots for sentinel tokens */
+	tokens = malloc(size_add(size_mul(token_count, sizeof(jsmntok_t)),
+				 2 * sizeof(jsmntok_t)));
 	if (!tokens)
 		return NULL;
 
@@ -403,6 +405,9 @@ JSMN_API jsmntok_t *jsmn_parse_alloc(const char *js, const size_t len,
 		free(tokens);
 		return NULL;
 	}
+
+	/* Add sentinels so navigation functions can't walk past the array */
+	memset(&tokens[ret], 0, 2 * sizeof(jsmntok_t));
 
 	if (num_tokens)
 		*num_tokens = ret;
@@ -434,9 +439,16 @@ JSMN_API bool jsmn_strcase_eq(const char *str, const char *json, const jsmntok_t
 
 JSMN_API const jsmntok_t *jsmn_skip_value(const jsmntok_t *tokens)
 {
-	int max_index = tokens[0].end;
+	int max_index;
+
+	if (tokens[0].type == JSMN_UNDEFINED)
+		return NULL;
+
+	max_index = tokens[0].end;
 	do {
 		++tokens;
+		if (tokens[0].type == JSMN_UNDEFINED)
+			return NULL;
 	} while (tokens[0].start < max_index);
 	return &tokens[0];
 }
@@ -452,6 +464,8 @@ JSMN_API const jsmntok_t *jsmn_find_value(const char *key, const char *json,
 	++tokens;
 
 	do {
+		if (tokens[0].type == JSMN_UNDEFINED)
+			return NULL;
 		if (jsmn_str_eq(key, json, tokens))
 			return &tokens[1];
 		tokens = --items ? jsmn_skip_value(&tokens[1]) : NULL;

@@ -131,7 +131,7 @@ int bobject_set_param(bobject_t _bobj, const char *name, const char *val)
  * used during deregistration of the parameter to free the alloctated
  * memory.
  */
-int bobject_param_set_generic(bobject_t _bobj, struct param_d *p,
+int bobject_param_set_generic(struct bobject *bobj, struct param_d *p,
 			  const char *val)
 {
 	if (val == p->value)

@@ -2,6 +2,16 @@
 
 menu "EFI (Extensible Firmware Interface) Support"
 
+config EFI_PE_PARSER
+	bool "PE/COFF image parser" if COMPILE_TEST
+	select QSORT
+	help
+	  Build the PE/COFF parser used by the EFI loader to inspect image
+	  headers, digest regions and certificate data.
+
+	  This can be enabled without the full EFI loader to compile-test and
+	  fuzz PE image parsing.
+
 config EFI_PAYLOAD
 	bool "barebox as EFI payload/app (consumer)"
 	depends on HAVE_EFI_PAYLOAD || COMPILE_TEST
@@ -30,6 +40,7 @@ config EFI_LOADER
 	bool "barebox as EFI loader (provider)"
 	depends on HAVE_EFI_LOADER
 	select EFI
+	select EFI_PE_PARSER
 	select EFI_RUNTIME
 	select EFI_GUID
 	select EFI_DEVICEPATH
@@ -59,6 +70,14 @@ endif
 
 config EFI
 	bool
+
+config EFI_BUILD
+	bool
+	default y if EFI || EFI_PE_PARSER
+
+config EFI_LOADER_BUILD
+	bool
+	default y if EFI_LOADER || EFI_PE_PARSER
 
 if EFI
 

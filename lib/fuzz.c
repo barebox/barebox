@@ -57,9 +57,31 @@ static int fuzzer_run(const uint8_t *buf, size_t len)
 	return fuzz_test_once(fuzz, buf, len);
 }
 
+/*
+ * barebox supplies its own main() and enters libFuzzer via
+ * LLVMFuzzerRunDriver(), so the fuzzing engine's own main() is never
+ * executed. It is still linked in when an external engine (e.g.
+ * OSS-Fuzz's LIB_FUZZING_ENGINE) is used, because the C runtime's
+ * reference to main() extracts the engine's main object file before
+ * --defsym=main=sandbox_main takes effect. Define the entry point it
+ * references, so the link succeeds.
+ */
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+{
+	fuzz_test_setup(fuzz);
+
+	return fuzzer_run(data, size);
+}
+
 static int fuzz_main(void)
 {
 	int ret = -1;
+
+	/* buffering would make coverage depend on earlier inputs */
+	log_set_max_messages(-1);
+
+	fuzz_test_setup(fuzz);
 
 	if (IS_ENABLED(CONFIG_FUZZ_EXTERNAL)) {
 		ret = LLVMFuzzerRunDriver(saved_argc, saved_argv, fuzzer_run);

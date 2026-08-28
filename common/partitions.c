@@ -408,8 +408,9 @@ out:
 	free(buf);
 	return 0;
 }
-fuzz_test_ramdisk("partitions", fuzz_partition_table_parser, 512);
-fuzz_test_ramdisk("partitions-4k", fuzz_partition_table_parser, 4096);
+fuzz_test_ramdisk("partitions", fuzz_partition_table_parser, 512, NULL);
+fuzz_test_ramdisk("partitions-4k", fuzz_partition_table_parser, 4096,
+		  NULL);
 
 /**
  * cdev_unallocated_space - return unallocated space

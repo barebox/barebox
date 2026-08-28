@@ -1188,7 +1188,8 @@ ifndef CONFIG_PBL_IMAGE
 endif
 
 quiet_cmd_barebox_proper__ = CC      $@
-      cmd_barebox_proper__ = $(CC) -r -o $@ -Wl,--whole-archive $(BAREBOX_OBJS)
+      cmd_barebox_proper__ = $(CC) $(BAREBOX_RELOC_LDFLAGS) -r -o $@ \
+			     -Wl,--whole-archive $(BAREBOX_OBJS)
 
 .tmp_barebox.o: $(BAREBOX_OBJS) $(kallsyms.o) FORCE
 	$(if $(CONFIG_KALLSYMS),,+$(call cmd,barebox_version))
@@ -1690,13 +1691,32 @@ $(DOC_TARGETS):
 # Code Coverage
 # ---------------------------------------------------------------------------
 
+# lcov 2.0 turned inconsistencies in the input into hard errors. The lcov
+# data llvm-cov exports trips two of them: it attributes lines to functions
+# it reports as not hit, and it refers to lines past the end of headers that
+# were included from several places. Neither affects the generated report,
+# so tell genhtml to carry on. Expanded lazily, so that older genhtml, which
+# does not know these categories, is only consulted when it is actually run.
+# lcov 1.x needs no such treatment.
+genhtml-lcov-major = $(shell $(GENHTML) --version 2>/dev/null | \
+			sed -ne 's/.*LCOV version \([0-9]\+\).*/\1/p')
+# in its own variable, as $(if) would split the list at the comma
+genhtml-ignore := inconsistent,range
+GENHTML_FLAGS = $(if $(filter-out 0 1,$(genhtml-lcov-major)),\
+		 --ignore-errors $(genhtml-ignore))
+
 barebox.coverage_html: barebox.coverage-info
-	genhtml -o $@ $<
+	$(GENHTML) $(GENHTML_FLAGS) -o $@ $<
 
 barebox.coverage-info: default.profdata
 	$(COV) export --format=lcov -instr-profile $< $(objtree)/barebox >$@
 
-default.profdata: $(srctree)/default.profraw
+# The instrumented binary writes the profile into its working directory,
+# which is the build directory for the usual out-of-tree build. Override
+# PROFRAW to merge a profile collected elsewhere.
+PROFRAW ?= default.profraw
+
+default.profdata: $(PROFRAW)
 	$(PROFDATA) merge -sparse $< -o $@
 
 # We intentionally don't depend on barebox being built as that can take >10
@@ -1830,6 +1850,16 @@ clean: $(clean-dirs)
 		\) -type f -print \
 		-o -name '.tmp_*' -print \
 		| xargs rm -rf
+
+PHONY += coverage-check
+coverage-check: default.profdata
+	$(PYTHON3) $(srctree)/scripts/check-coverage.py \
+		--llvm-cov "$(COV)" \
+		--profdata $< \
+		--binary $(objtree)/barebox \
+		--srctree $(srctree) \
+		--sources $(COVERAGE_SOURCES) \
+		$(if $(COVERAGE_FUNCTIONS),--functions "$(COVERAGE_FUNCTIONS)")
 
 # Generate tags for editors
 # ---------------------------------------------------------------------------

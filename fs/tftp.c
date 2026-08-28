@@ -88,7 +88,7 @@
 
 #define TFTP_ERR_RESEND	1
 
-#if defined(DEBUG) || IS_ENABLED(CONFIG_SELFTEST_TFTP)
+#ifdef DEBUG
 #  define debug_assert(_cond)	BUG_ON(!(_cond))
 #else
 #  define debug_assert(_cond) do {			\

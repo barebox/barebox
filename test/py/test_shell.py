@@ -66,12 +66,11 @@ def test_barebox_version(barebox, barebox_config):
     assert any('barebox' in line for line in stdout), stdout
 
 
-def test_barebox_no_err(barebox, barebox_config):
+def test_barebox_no_err(boot_log, barebox_config):
     skip_disabled(barebox_config, "CONFIG_CMD_DMESG")
 
-    # TODO extend by err once all qemu platforms conform
-    stdout, _, _ = barebox.run('dmesg -l crit,alert,emerg')
-    assert stdout == []
+    assert boot_log is not None, "could not read the boot log"
+    assert boot_log == [], "\n".join(boot_log)
 
 
 def count_dicts_in_command_output(barebox, cmd):

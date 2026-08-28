@@ -30,7 +30,7 @@ jobs:
           - ARCH: arm
             lgenv: test/arm/multi_v8_defconfig.yaml
             defconfig: multi_v8_defconfig
-            lgargs: --runxfail
+            lgargs: --runxfail --graphics
 
           - ARCH: arm
             lgenv: test/arm/multi_v8_efiloader_defconfig.yaml

@@ -52,7 +52,8 @@ static int fec5xxx_miibus_read(struct mii_bus *bus, int phyAddr, int regAddr)
 	/*
 	 * wait for the related interrupt
 	 */
-	while ((timeout--) && (!(fec->eth->ievent & FEC_IEVENT_MII))) ;
+	while ((timeout--) && (!(fec->eth->ievent & FEC_IEVENT_MII)))
+		;
 
 	if (timeout == 0) {
 		debug("Read MDIO failed...\n");
@@ -88,7 +89,8 @@ static int fec5xxx_miibus_write(struct mii_bus *bus, int phyAddr,
 	/*
 	 * wait for the MII interrupt
 	 */
-	while ((timeout--) && (!(fec->eth->ievent & FEC_IEVENT_MII))) ;
+	while ((timeout--) && (!(fec->eth->ievent & FEC_IEVENT_MII)))
+		;
 
 	if (timeout == 0) {
 		debug("Write MDIO failed...\n");

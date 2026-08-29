@@ -135,7 +135,8 @@ void imx_esdctlv4_do_zq_calibration(void)
 	/* force ZQ calibration */
 	writel(val, base + ESDCTL_V4_ZQHWCTRL);
 
-	while (readl(base + ESDCTL_V4_ZQHWCTRL) & ESDCTL_V4_ESDZQHWC_ZQ_HW_FOR);
+	while (readl(base + ESDCTL_V4_ZQHWCTRL) & ESDCTL_V4_ESDZQHWC_ZQ_HW_FOR)
+		;
 }
 
 /*

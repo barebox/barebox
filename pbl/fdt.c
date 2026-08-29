@@ -73,7 +73,8 @@ void fdt_find_mem(const void *fdt, unsigned long *membase, unsigned long *memsiz
 	return;
 err:
 	pr_err("No memory, cannot continue\n");
-	while (1);
+	while (1)
+		;
 }
 
 static int fdt_find_or_add_memory(void *fdt, int parentoffset, const char *name)

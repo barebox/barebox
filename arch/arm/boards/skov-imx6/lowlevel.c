@@ -467,7 +467,8 @@ static void skov_imx6_init(int cpu_type, unsigned board_variant)
 	default:
 		pr_err("Unsupported board variant: 0x%x\n", board_variant);
 		/* don't continue */
-		while(1);
+		while(1)
+			;
 		break;
 	}
 
@@ -500,7 +501,8 @@ static noinline void skov_imx6_start(void)
 		pr_info("Starting to init IMX6 system...\n");
 		skov_imx6_init(cpu_type, board_variant);
 		pr_err("Unable to start bootloader\n");
-		while (1);
+		while (1)
+			;
 	}
 
 	/* boot this platform (second call) */

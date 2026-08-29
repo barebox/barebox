@@ -16,7 +16,8 @@ static inline void PUTC_LL(char c)
 	void __iomem *base = (void *)IMX_DBGUART_BASE;
 
 	/* Wait for room in TX FIFO */
-	while (!(readl(base + UARTDBGFR) & TXFE));
+	while (!(readl(base + UARTDBGFR) & TXFE))
+		;
 
 	writel(c, base + UARTDBGDR);
 }

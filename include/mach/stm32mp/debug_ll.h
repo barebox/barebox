@@ -25,7 +25,8 @@ static inline void stm32_serial_putc(void *ctx, int c)
 
 	writel(c, base + TDR_OFFSET);
 
-	while ((readl(base + ISR_OFFSET) & USART_ISR_TXE) == 0);
+	while ((readl(base + ISR_OFFSET) & USART_ISR_TXE) == 0)
+		;
 }
 
 static inline void PUTC_LL(char c)

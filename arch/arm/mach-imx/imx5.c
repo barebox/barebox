@@ -32,7 +32,8 @@ void imx5_setup_pll(void __iomem *base, int freq, u32 op, u32 mfd, u32 mfn)
 
 	writel(0x00001232, base + MX5_PLL_DP_CTL);
 
-	while (!(readl(base + MX5_PLL_DP_CTL) & 1));
+	while (!(readl(base + MX5_PLL_DP_CTL) & 1))
+		;
 }
 
 void imx5_init_lowlevel(void)

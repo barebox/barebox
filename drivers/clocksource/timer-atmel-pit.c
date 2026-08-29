@@ -45,7 +45,8 @@ static void at91_pit_stop(void)
 	pit_write(AT91_PIT_MR, 0);
 
 	/* Clear any pending interrupts, wait for PIT to stop counting */
-	while (PIT_CPIV(pit_read(AT91_PIT_PIVR)) != 0);
+	while (PIT_CPIV(pit_read(AT91_PIT_PIVR)) != 0)
+		;
 }
 
 static void at91sam926x_pit_reset(void)

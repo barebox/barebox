@@ -13,6 +13,26 @@
 
 #include "lowlevel.h"
 
+// when booting with the open firmware, the firmware will search the binary for the INTER_ARCH_MAGIC
+// once found, the dtb_base field will be populated
+// the entire binary is then just dropped at arm physical 0, and launched on all 4 arm cores at once
+// end_of_ram is a hint to the firmware, on how much space the stack/bss will occupy, so the DTB gets put after all of that
+typedef struct {
+	uint64_t magic;
+	uint32_t header_size;
+	uint32_t dtb_base;
+	uint32_t mmio_base;
+	uint32_t end_of_ram;
+} inter_core_header;
+
+#define INTER_ARCH_MAGIC 0xa8ca67068216ddbbULL
+
+inter_core_header hdr __attribute__((aligned(16))) = {
+	.magic = INTER_ARCH_MAGIC,
+	.header_size = sizeof(inter_core_header),
+	.end_of_ram = 2 << 20, // so the firmware doesnt put the DTB in the .bss
+};
+
 static void copy_vc_fdt(void *dest, void *src, unsigned long max_size)
 {
 	struct fdt_header *oftree_src = src;
@@ -169,10 +189,13 @@ RPI_ENTRY_FUNCTION(start_raspberry_pi_generic, SZ_128M, vc_fdt)
 	}
 
 	rev = rpi_get_board_rev();
-	if (rev >= 0) {
+	if (hdr.dtb_base) {
+		fdt = (void*)hdr.dtb_base;
+	} else if (rev >= 0) {
 		pr_debug("Detected revision %08x\n", rev);
 		fdt = rpi_get_board_fdt(rev);
 	}
+
 
 	if (!fdt) {
 		fdt = (void *)vc_fdt;

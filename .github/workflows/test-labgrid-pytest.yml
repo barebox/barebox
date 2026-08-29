@@ -116,7 +116,8 @@ jobs:
                             common/boards/configs/disable_target_tools.config"
 
         if [ ${{matrix.arch}} = sandbox ] && [ ${{matrix.defconfig}} = allyesconfig ]; then
-          KCONFIG_ADD="${KCONFIG_ADD} CONFIG_CONSOLE_DISABLE_INPUT=n CONFIG_MALLOC_LIBC=y"
+          KCONFIG_ADD="${KCONFIG_ADD} CONFIG_CONSOLE_DISABLE_INPUT=n CONFIG_MALLOC_LIBC=y \
+                       CONFIG_CONSOLE_ACTIVATE_ALL=y"
         fi
 
         if [ "${{ steps.used-features.outputs.testfs }}" = "true" ]; then

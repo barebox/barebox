@@ -169,7 +169,8 @@ static int omap3_spi_write(struct spi_device *spi, unsigned int len, const u8 *t
 	if (flags & SPI_XFER_END) {
 		/* wait to finish of transfer */
 		while (!(readl(regs + OMAP3_MCSPI_CHSTAT0 + spi->chip_select * OMAP3_MCSPI_CH_SIZE) &
-			 OMAP3_MCSPI_CHSTAT_EOT));
+			 OMAP3_MCSPI_CHSTAT_EOT))
+			;
 
 		chconf &= ~OMAP3_MCSPI_CHCONF_FORCE;
 		writel(chconf, regs + OMAP3_MCSPI_CHCONF0 + spi->chip_select * OMAP3_MCSPI_CH_SIZE);
@@ -178,9 +179,11 @@ static int omap3_spi_write(struct spi_device *spi, unsigned int len, const u8 *t
 	}
 
 	while (!(readl(regs + OMAP3_MCSPI_CHSTAT0 + spi->chip_select * OMAP3_MCSPI_CH_SIZE) &
-			 OMAP3_MCSPI_CHSTAT_TXS));
+			 OMAP3_MCSPI_CHSTAT_TXS))
+		;
 	while (!(readl(regs + OMAP3_MCSPI_CHSTAT0 + spi->chip_select * OMAP3_MCSPI_CH_SIZE) &
-			 OMAP3_MCSPI_CHSTAT_EOT));
+			 OMAP3_MCSPI_CHSTAT_EOT))
+		;
 
 	return 0;
 }

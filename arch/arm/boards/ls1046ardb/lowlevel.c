@@ -229,7 +229,8 @@ static noinline __noreturn void ls1046ardb_r_entry(void)
 err:
 	pr_err("Booting failed\n");
 
-	while (1);
+	while (1)
+		;
 }
 
 void ls1046ardb_entry(void);

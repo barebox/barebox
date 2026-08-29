@@ -80,7 +80,8 @@ static int lpuart32_serial_getc(struct console_device *cdev)
 {
 	struct lpuart32 *lpuart32 = cdev_to_lpuart32(cdev);
 
-	while (!lpuart32_serial_tstc(cdev));
+	while (!lpuart32_serial_tstc(cdev))
+		;
 
 	return readl(lpuart32->base + LPUART32_UARTDATA) & 0xff;
 }

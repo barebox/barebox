@@ -39,7 +39,8 @@ static u32 ddrc_phy_get_message(struct dram_controller *dram, int type)
 	 * When BIT0 set to 0, the PMU has a message for the user
 	 * Wait for it indefinitely.
 	 */
-	while (dwc_ddrphy_apb_rd(dram, 0xd0004) & BIT(0));
+	while (dwc_ddrphy_apb_rd(dram, 0xd0004) & BIT(0))
+		;
 
 	switch (type) {
 	case PMC_MESSAGE_ID:
@@ -63,7 +64,8 @@ static u32 ddrc_phy_get_message(struct dram_controller *dram, int type)
 	/*
 	 * When BIT0 set to 0, the PMU has a message for the user
 	 */
-	while (!(dwc_ddrphy_apb_rd(dram, 0xd0004) & BIT(0)));
+	while (!(dwc_ddrphy_apb_rd(dram, 0xd0004) & BIT(0)))
+		;
 
 	dwc_ddrphy_apb_wr(dram, 0xd0031, 0x00000001);
 

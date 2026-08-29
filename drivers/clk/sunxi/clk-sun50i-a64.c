@@ -157,7 +157,8 @@ static inline void sunxi_clk_set_pll(void __iomem *reg, u32 src, u32 freq)
 	writel(cfg, reg);
 
 	/* wait for pll lock */
-	while (!(readl(reg) & BIT(28)));
+	while (!(readl(reg) & BIT(28)))
+		;
 }
 
 static void sun50i_a64_clocks_init(void __iomem *regs)

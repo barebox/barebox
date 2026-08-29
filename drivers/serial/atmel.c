@@ -315,7 +315,8 @@ static void atmel_serial_putc(struct console_device *cdev, char c)
 {
 	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
 
-	while (!(readl(uart->base + USART3_CSR) & USART3_BIT(TXRDY)));
+	while (!(readl(uart->base + USART3_CSR) & USART3_BIT(TXRDY)))
+		;
 
 	writel(c, uart->base + USART3_THR);
 }
@@ -331,7 +332,8 @@ static int atmel_serial_getc(struct console_device *cdev)
 {
 	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
 
-	while (!(readl(uart->base + USART3_CSR) & USART3_BIT(RXRDY))) ;
+	while (!(readl(uart->base + USART3_CSR) & USART3_BIT(RXRDY)))
+		;
 	return readl(uart->base + USART3_RHR);
 }
 

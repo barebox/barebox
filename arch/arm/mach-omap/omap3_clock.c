@@ -89,10 +89,12 @@ static u32 get_osc_clk_speed(void)
 	/* determine sys_clk via gauging */
 
 	start = 20 + readl(S32K_CR);	/* start time in 20 cycles */
-	while (readl(S32K_CR) < start) ;	/* dead loop till start time */
+	while (readl(S32K_CR) < start)
+		; /* dead loop till start time */
 	/* get start sys_clk count */
 	cstart = readl(OMAP3_GPTIMER1_BASE + TCRR);
-	while (readl(S32K_CR) < (start + 20)) ;	/* wait for 40 cycles */
+	while (readl(S32K_CR) < (start + 20))
+		;	/* wait for 40 cycles */
 	/* get end sys_clk count */
 	cend = readl(OMAP3_GPTIMER1_BASE + TCRR);
 	cdiff = cend - cstart;	/* get elapsed ticks */

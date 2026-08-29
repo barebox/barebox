@@ -90,7 +90,8 @@ static void stm32_serial_putc(struct console_device *cdev, char c)
 	void __iomem *base = stm32->base;
 	bool stm32f4 = stm32->stm32f4;
 
-	while ((readl(base + ISR_OFFSET(stm32f4)) & USART_ISR_TXE) == 0);
+	while ((readl(base + ISR_OFFSET(stm32f4)) & USART_ISR_TXE) == 0)
+		;
 
 	writel(c, base + TDR_OFFSET(stm32f4));
 }
@@ -110,7 +111,8 @@ static void stm32_serial_flush(struct console_device *cdev)
 	void __iomem *base = stm32->base;
 	bool stm32f4 = stm32->stm32f4;
 
-	while (!(readl(base + ISR_OFFSET(stm32f4)) & USART_ISR_TXE));
+	while (!(readl(base + ISR_OFFSET(stm32f4)) & USART_ISR_TXE))
+		;
 }
 
 static void stm32_serial_init(struct console_device *cdev)

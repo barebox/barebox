@@ -61,8 +61,10 @@ static int clk_div_set_rate(struct clk_hw *hw, unsigned long rate,
 	if (ret)
 		return ret;
 
-	if (clk_hw_is_enabled(hw))
-		while (readl(div->reg) & 1 << div->busy);
+	if (clk_hw_is_enabled(hw)) {
+		while (readl(div->reg) & 1 << div->busy)
+			;
+	}
 
 	return 0;
 }

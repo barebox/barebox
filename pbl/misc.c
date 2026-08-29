@@ -9,7 +9,8 @@
 
 void __noreturn hang(void)
 {
-	while (1);
+	while (1)
+		;
 }
 
 void __noreturn panic(const char *fmt, ...)
@@ -20,7 +21,8 @@ void __noreturn panic(const char *fmt, ...)
 	vprintf(fmt, args);
 	va_end(args);
 
-	while(1);
+	while(1)
+		;
 }
 
 void __noreturn panic_no_stacktrace(const char *fmt, ...)

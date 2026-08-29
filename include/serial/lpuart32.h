@@ -150,7 +150,8 @@ static inline void lpuart32_setup(void __iomem *base,
 
 static inline void lpuart32_putc(void __iomem *base, int c)
 {
-	while (!(readl(base + LPUART32_UARTSTAT) & LPUART32_UARTSTAT_TDRE));
+	while (!(readl(base + LPUART32_UARTSTAT) & LPUART32_UARTSTAT_TDRE))
+		;
 
 	writel(c, base + LPUART32_UARTDATA);
 }

@@ -19,7 +19,8 @@ static void w1_delay(unsigned long usecs)
 {
 	uint64_t start = get_time_ns();
 
-	while(!is_timeout_non_interruptible(start, usecs * USECOND));
+	while(!is_timeout_non_interruptible(start, usecs * USECOND))
+		;
 }
 
 static u8 w1_crc8_table[] = {

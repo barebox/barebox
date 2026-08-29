@@ -23,13 +23,15 @@
 
 static inline void cm_wait_for_lock(void __iomem *cm, uint32_t mask)
 {
-	while ((readl(cm + CLKMGR_INTER_ADDRESS) & mask) != mask);
+	while ((readl(cm + CLKMGR_INTER_ADDRESS) & mask) != mask)
+		;
 }
 
 /* function to poll in the fsm busy bit */
 static inline void cm_wait4fsm(void __iomem *cm)
 {
-	while (readl(cm + CLKMGR_STAT_ADDRESS) & 1);
+	while (readl(cm + CLKMGR_STAT_ADDRESS) & 1)
+		;
 }
 
 /*
@@ -54,11 +56,13 @@ static inline void cm_write_with_phase(uint32_t value,
 	void __iomem *reg, uint32_t mask)
 {
 	/* poll until phase is zero */
-	while (readl(reg) & mask);
+	while (readl(reg) & mask)
+		;
 
 	writel(value, reg);
 
-	while (readl(reg) & mask);
+	while (readl(reg) & mask)
+		;
 }
 
 /*

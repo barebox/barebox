@@ -185,7 +185,8 @@ static void ti_pd_wait(void __iomem *base, int id)
 		ptstatreg = PSC_PTSTAT_H;
 	}
 
-	while (readl(base + ptstatreg) & BIT(id - pdoffset));
+	while (readl(base + ptstatreg) & BIT(id - pdoffset))
+		;
 }
 
 void am625_early_init(void)

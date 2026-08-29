@@ -362,7 +362,8 @@ static noinline __noreturn void tqmls1046a_r_entry(void *boarddata, bool is_8g)
 
 	pr_err("Booting failed\n");
 
-	while (1);
+	while (1)
+		;
 }
 
 void tqmls1046a_entry(void);

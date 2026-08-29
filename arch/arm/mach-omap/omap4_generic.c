@@ -328,7 +328,8 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 
 	/* No IDLE: BUG in SDC */
 	sr32(CM_MEMIF_CLKSTCTRL, 0, 32, 0x2);
-	while ((readl(CM_MEMIF_CLKSTCTRL) & 0x700) != 0x700);
+	while ((readl(CM_MEMIF_CLKSTCTRL) & 0x700) != 0x700)
+		;
 
 	writel(0x0, OMAP44XX_EMIF1_BASE + EMIF_PWR_MGMT_CTRL);
 	writel(0x0, OMAP44XX_EMIF2_BASE + EMIF_PWR_MGMT_CTRL);
@@ -346,7 +347,8 @@ void omap4_ddr_init(const struct ddr_regs *ddr_regs,
 
 	/* Check for DDR PHY ready for EMIF1 & EMIF2 */
 	while (((readl(OMAP44XX_EMIF1_BASE + EMIF_STATUS) & 0x04) != 0x04) \
-		|| ((readl(OMAP44XX_EMIF2_BASE + EMIF_STATUS) & 0x04) != 0x04));
+		|| ((readl(OMAP44XX_EMIF2_BASE + EMIF_STATUS) & 0x04) != 0x04))
+		;
 
 	/* Reprogram the DDR PYHY Control register */
 	/* PHY control values */

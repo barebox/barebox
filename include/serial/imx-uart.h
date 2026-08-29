@@ -213,7 +213,8 @@ static inline void imx_uart_putc(void *base, int c)
 	if (!(readl(base + UCR1) & UCR1_UARTEN))
 		return;
 
-	while (!(readl(base + USR2) & USR2_TXDC));
+	while (!(readl(base + USR2) & USR2_TXDC))
+		;
 
 	writel(c, base + URTX0);
 }

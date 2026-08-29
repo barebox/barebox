@@ -129,7 +129,8 @@ void imx53_init_lowlevel_early(unsigned int cpufreq_mhz)
 	writel(cbcdr, ccm + MX5_CCM_CBCDR);
 
 	/* make sure change is effective */
-	while (readl(ccm + MX5_CCM_CDHIPR));
+	while (readl(ccm + MX5_CCM_CDHIPR))
+		;
 
 	imx5_setup_pll_400((void __iomem *)MX53_PLL2_BASE_ADDR);
 
@@ -154,7 +155,8 @@ void imx53_init_lowlevel_early(unsigned int cpufreq_mhz)
 	writel(r, ccm + MX5_CCM_CSCMR1);
 
 	/* make sure change is effective */
-	while (readl(ccm + MX5_CCM_CDHIPR));
+	while (readl(ccm + MX5_CCM_CDHIPR))
+		;
 
 	imx5_setup_pll_216((void __iomem *)MX53_PLL3_BASE_ADDR);
 	imx5_setup_pll_455((void __iomem *)MX53_PLL4_BASE_ADDR);

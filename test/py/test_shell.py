@@ -85,7 +85,7 @@ def count_dicts_in_command_output(barebox, cmd):
                 count += count_dicts(item)
         return count
 
-    stdout = "\n".join(barebox.run_check(cmd))
+    stdout = "".join(barebox.run_check(cmd))
     return count_dicts(json.loads(stdout))
 
 

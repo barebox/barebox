@@ -47,6 +47,10 @@ SECTIONS
 
 	.data : { *(.data*) }
 
+	. = ALIGN(ASM_SZPTR);
+	.got : { *(.got) *(.got.plt) }
+	.dynamic : { *(.dynamic) }
+
 	__shasum_start = .;
 	.shasum : {
 		KEEP(*(.shasum))

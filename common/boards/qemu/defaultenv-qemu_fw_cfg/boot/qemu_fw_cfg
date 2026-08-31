@@ -7,6 +7,6 @@ if [ -s /dev/fw_cfg.initrd ]; then
 fi
 
 if [ -s /dev/fw_cfg.cmdline ]; then
-        readf /dev/fw_cfg.initrd qemu_fw_cfg_cmdline
+        readf /dev/fw_cfg.cmdline qemu_fw_cfg_cmdline
         global linux.bootargs.dyn.qemu="${qemu_fw_cfg_cmdline}"
 fi

@@ -25,7 +25,7 @@ HOST_DIR := arch/$(HEADER_ARCH)
 
 -include $(srctree)/$(HOST_DIR)/Makefile.um
 
-pbl-y += $(HOST_DIR)/um/
+core-y += $(HOST_DIR)/um/
 
 KBUILD_CPPFLAGS += -I$(srctree)/$(HOST_DIR)/include
 

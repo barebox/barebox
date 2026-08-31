@@ -680,7 +680,7 @@ static void fsl_free_request(struct usb_ep *_ep, struct usb_request *_req)
 	req = container_of(_req, struct fsl_req, req);
 
 	if (!list_empty(&req->queue)) {
-		printk("%s: Freeing queued request\n", __func__);
+		pr_err("%s: Freeing queued request\n", __func__);
 		dump_stack();
 	}
 

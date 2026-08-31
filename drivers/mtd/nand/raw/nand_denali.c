@@ -1011,7 +1011,6 @@ static int denali_attach_chip(struct nand_chip *chip)
 	ret = nand_ecc_choose_conf(chip, denali->ecc_caps,
 				   mtd->oobsize - denali->oob_skip_bytes);
 	if (ret) {
-		printk("%s: %d\n", __func__, ret);
 		dev_err(denali->dev, "Failed to setup ECC settings.\n");
 		return ret;
 	}

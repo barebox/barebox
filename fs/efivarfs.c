@@ -58,7 +58,7 @@ static int efivars_create(struct device *dev, const char *pathname,
 	struct efivarfs_inode *inode;
 	efi_guid_t vendor;
 	efi_status_t efiret;
-	u8 dummydata;
+	u8 dummydata = 0;
 	char *name8;
 	s16 *name;
 	int ret;

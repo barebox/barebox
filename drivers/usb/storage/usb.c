@@ -86,6 +86,13 @@ static int usb_stor_transport(struct us_blk_dev *usb_blkdev,
 		if (ret == USB_STOR_TRANSPORT_GOOD)
 			return 0;
 
+		/* Retrying is pointless once the device has been unplugged */
+		if (usb_device_disconnected(us->pusb_dev)) {
+			dev_dbg(dev, "%s: device is gone\n",
+				usb_stor_opcode_name(cmd[0]));
+			return -ENODEV;
+		}
+
 		if (request_sense_delay_ms == USB_STOR_NO_REQUEST_SENSE)
 			continue;
 

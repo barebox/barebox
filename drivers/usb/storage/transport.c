@@ -220,6 +220,10 @@ int usb_stor_Bulk_reset(struct us_data *us)
 
 	dev_dbg(dev, "%s called\n", __func__);
 
+	/* Nothing to reset if the device isn't there anymore */
+	if (usb_device_disconnected(us->pusb_dev))
+		return -ENODEV;
+
 	/* issue the command */
 	result = usb_control_msg(us->pusb_dev,
 	                         usb_sndctrlpipe(us->pusb_dev, 0),

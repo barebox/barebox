@@ -550,7 +550,17 @@ static int usb_hub_configure(struct usb_device *dev)
 	for (i = 0; i < ((hub->desc.bNbrPorts + 1 + 7)/8); i++)
 		hub->desc.u.hs.PortPwrCtrlMask[i] = descriptor->u.hs.PortPwrCtrlMask[i];
 
+	/*
+	 * bNbrPorts comes from the device, while children[] and
+	 * overcurrent_count[] are sized after USB_MAXCHILDREN. Don't let a
+	 * hub that reports more ports than that write past their ends.
+	 */
 	dev->maxchild = descriptor->bNbrPorts;
+	if (dev->maxchild > USB_MAXCHILDREN) {
+		dev_warn(&dev->dev, "hub reports %d ports, only using %d\n",
+			 dev->maxchild, USB_MAXCHILDREN);
+		dev->maxchild = USB_MAXCHILDREN;
+	}
 	dev_dbg(&dev->dev, "%d ports detected\n", dev->maxchild);
 
 	switch (hub->desc.wHubCharacteristics & HUB_CHAR_LPSM) {

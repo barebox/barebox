@@ -583,6 +583,7 @@ static void devfs_remove_aliases(struct cdev *cdev)
 
 	list_for_each_entry_safe(alias, tmp, &cdev->aliases, list) {
 		devfs_unlink(alias->name);
+		list_del(&alias->list);
 		free(alias->name);
 		free(alias);
 	}

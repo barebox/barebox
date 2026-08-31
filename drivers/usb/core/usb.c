@@ -751,6 +751,73 @@ int usb_rescan(void)
  *
  */
 
+/**
+ * usb_mark_disconnected - remember that a device and its children are gone
+ * @dev: the device that has been unplugged
+ */
+static void usb_mark_disconnected(struct usb_device *dev)
+{
+	int i;
+
+	if (usb_device_disconnected(dev))
+		return;
+
+	dev->disconnected = true;
+	dev_info(&dev->dev, "disconnected\n");
+
+	/* everything behind an unplugged hub is gone as well */
+	for (i = 0; i < dev->maxchild; i++)
+		if (dev->children[i])
+			usb_mark_disconnected(dev->children[i]);
+}
+
+/**
+ * usb_device_check_gone - find out whether a failed transfer means "unplugged"
+ * @dev: the device a transfer just failed on
+ *
+ * A transfer can fail for all kinds of reasons, so ask the hub the device
+ * is attached to whether the port still sees a device. Without this the
+ * only thing telling a stale device from a flaky one is a scan, and until
+ * somebody runs one we keep resetting endpoints of a device that is not
+ * there anymore.
+ *
+ * The result is remembered, so this asks the bus once and all further
+ * transfers fail right away.
+ */
+static bool usb_device_check_gone(struct usb_device *dev)
+{
+	struct usb_device *parent = dev->parent;
+
+	if (usb_device_disconnected(dev))
+		return true;
+
+	/*
+	 * A root hub has no hub to ask. It goes away with its controller,
+	 * which is not something we can detect here.
+	 */
+	if (!parent)
+		return false;
+
+	/* If the hub itself is gone, so is everything below it */
+	if (usb_device_check_gone(parent)) {
+		usb_mark_disconnected(dev);
+		return true;
+	}
+
+	/*
+	 * Only believe a hub that positively says the port is empty. If it
+	 * doesn't answer we have learned nothing, and declaring the device
+	 * gone on a transfer that failed for some other reason would be
+	 * worse than leaving it alone.
+	 */
+	if (usb_hub_port_connected(parent, dev->portnr) != 0)
+		return false;
+
+	usb_mark_disconnected(dev);
+
+	return true;
+}
+
 /*
  * submits an Interrupt Message
  */
@@ -760,6 +827,9 @@ int usb_submit_int_msg(struct usb_device *dev, unsigned long pipe,
 	struct usb_host *host = dev->host;
 	int ret;
 
+	if (usb_device_disconnected(dev))
+		return -ENODEV;
+
 	ret = usb_host_acquire(host);
 	if (ret)
 		return ret;
@@ -767,6 +837,9 @@ int usb_submit_int_msg(struct usb_device *dev, unsigned long pipe,
 	ret = host->submit_int_msg(dev, pipe, buffer, transfer_len, interval);
 
 	usb_host_release(host);
+
+	if (ret && usb_device_check_gone(dev))
+		return -ENODEV;
 
 	return ret;
 }
@@ -788,6 +861,9 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 	int ret;
 	struct devrequest *setup_packet = dev->setup_packet;
 
+	if (usb_device_disconnected(dev))
+		return -ENODEV;
+
 	ret = usb_host_acquire(host);
 	if (ret)
 		return ret;
@@ -808,8 +884,11 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 
 	usb_host_release(host);
 
-	if (ret)
+	if (ret) {
+		if (usb_device_check_gone(dev))
+			return -ENODEV;
 		return ret;
+	}
 
 	return dev->act_len;
 }
@@ -828,6 +907,9 @@ int usb_bulk_msg(struct usb_device *dev, unsigned int pipe,
 	if (len < 0)
 		return -1;
 
+	if (usb_device_disconnected(dev))
+		return -ENODEV;
+
 	ret = usb_host_acquire(host);
 	if (ret)
 		return ret;
@@ -837,8 +919,11 @@ int usb_bulk_msg(struct usb_device *dev, unsigned int pipe,
 
 	usb_host_release(host);
 
-	if (ret)
+	if (ret) {
+		if (usb_device_check_gone(dev))
+			return -ENODEV;
 		return ret;
+	}
 
 	*actual_length = dev->act_len;
 

@@ -261,6 +261,28 @@ static int hub_port_reset(struct usb_device *hub, int port,
 
 
 /**
+ * usb_hub_port_connected - ask a hub whether a port still has a device
+ * @hub: the hub to ask
+ * @port: 1-based port number
+ *
+ * Return: 1 if the port reports a device, 0 if it doesn't and a negative
+ * error code when the hub could not be asked. Do not treat the latter as
+ * "no device": a hub that doesn't answer tells us nothing about what is
+ * plugged into it.
+ */
+int usb_hub_port_connected(struct usb_device *hub, int port)
+{
+	struct usb_port_status portsts;
+	int ret;
+
+	ret = usb_get_port_status(hub, port, &portsts);
+	if (ret < 0)
+		return ret;
+
+	return !!(le16_to_cpu(portsts.wPortStatus) & USB_PORT_STAT_CONNECTION);
+}
+
+/**
  * usb_hub_cancel_scans - drop pending port scans of a hub that goes away
  * @dev: the USB device that is about to be removed
  *

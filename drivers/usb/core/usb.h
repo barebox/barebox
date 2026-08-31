@@ -7,5 +7,6 @@ void usb_free_device(struct usb_device *dev);
 int usb_new_device(struct usb_device *dev);
 void usb_remove_device(struct usb_device *dev);
 void usb_hub_cancel_scans(struct usb_device *dev);
+int usb_hub_port_connected(struct usb_device *hub, int port);
 
 #endif /* __CORE_USB_H */

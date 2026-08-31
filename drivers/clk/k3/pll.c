@@ -95,7 +95,7 @@ static int ti_pll_wait_for_lock(struct ti_pll_clk *pll)
 	int i;
 	u32 pllfm;
 	u32 pll_type;
-	int success;
+	int success = 0;
 
 	for (i = 0; i < 100000; i++) {
 		stat = readl(pll->reg + PLL_16FFT_STAT);

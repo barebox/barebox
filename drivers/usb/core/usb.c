@@ -620,6 +620,9 @@ void usb_remove_device(struct usb_device *usbdev)
 
 	for (i = 0; i < usbdev->maxchild; i++)
 		usb_remove_device(usbdev->children[i]);
+
+	usb_hub_cancel_scans(usbdev);
+
 	if (usbdev->parent && usbdev->portnr)
 		usbdev->parent->children[usbdev->portnr - 1] = NULL;
 	list_del(&usbdev->list);

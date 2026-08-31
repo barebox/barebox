@@ -260,6 +260,30 @@ static int hub_port_reset(struct usb_device *hub, int port,
 }
 
 
+/**
+ * usb_hub_cancel_scans - drop pending port scans of a hub that goes away
+ * @dev: the USB device that is about to be removed
+ *
+ * The scan list is filled by usb_hub_configure_ports() and drained by
+ * usb_device_list_scan(). As the latter is not reentrant, a hub found
+ * during a scan queues its ports and leaves them for the loop that is
+ * already running. If that hub is removed before its entries have been
+ * processed, they would be left pointing at the freed usb_device and its
+ * freed usb_hub_device.
+ */
+void usb_hub_cancel_scans(struct usb_device *dev)
+{
+	struct usb_device_scan *usb_scan, *tmp;
+
+	list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list) {
+		if (usb_scan->dev != dev)
+			continue;
+
+		list_del(&usb_scan->list);
+		free(usb_scan);
+	}
+}
+
 static void usb_hub_port_connect_change(struct usb_device *dev, int port,
 					uint16_t portstatus, uint16_t portchange)
 {

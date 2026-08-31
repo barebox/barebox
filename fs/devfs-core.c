@@ -605,6 +605,8 @@ int devfs_remove(struct cdev *cdev)
 
 	devfs_remove_aliases(cdev);
 
+	cdev_remove_default_automount(cdev);
+
 	list_for_each_entry_safe(c, tmp, &cdev->partitions, partition_entry)
 		cdevfs_del_partition(c);
 

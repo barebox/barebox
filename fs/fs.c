@@ -3493,9 +3493,27 @@ void cdev_create_default_automount(struct cdev *cdev)
 	cmd = basprintf("mount %s", cdev->name);
 
 	make_directory(path);
-	automount_add(path, cmd);
+	if (!automount_add(path, cmd))
+		cdev->flags |= DEVFS_HAS_AUTOMOUNT;
 
 	free(cmd);
+	free(path);
+}
+
+void cdev_remove_default_automount(struct cdev *cdev)
+{
+	char *path;
+
+	if (!(cdev->flags & DEVFS_HAS_AUTOMOUNT))
+		return;
+
+	path = basprintf("/mnt/%s", cdev->name);
+
+	automount_remove(path);
+	rmdir(path);
+
+	cdev->flags &= ~DEVFS_HAS_AUTOMOUNT;
+
 	free(path);
 }
 

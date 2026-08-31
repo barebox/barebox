@@ -34,24 +34,25 @@ const char *__efi_nesting_dec(void);
  */
 #ifndef EFI_EXIT
 #define EFI_EXIT(ret) ({ \
-	typeof(ret) _r = ret; \
+	typeof(ret) __efi_r = ret; \
 	__EFI_PRINT("%sEFI: Exit: %s: %s (%u)\n", __efi_nesting_dec(), \
-		__func__, efi_strerror((uintptr_t)_r), (u32)((uintptr_t) _r & ~EFI_ERROR_MASK)); \
-	_r; \
+		__func__, efi_strerror((uintptr_t)__efi_r), \
+		(u32)((uintptr_t) __efi_r & ~EFI_ERROR_MASK)); \
+	__efi_r; \
 	})
 #endif
 
 #ifndef EFI_EXIT2
 #define EFI_EXIT2(ret, val) ({ \
-	typeof(ret) _r = ret; \
-	if (EFI_ERROR(_r)) \
-		EFI_EXIT(_r); \
+	typeof(ret) __efi_r2 = ret; \
+	if (EFI_ERROR(__efi_r2)) \
+		EFI_EXIT(__efi_r2); \
 	else \
 		__EFI_PRINT("%sEFI: Exit: %s: %s (%u) = 0x%llx\n", __efi_nesting_dec(), \
-			__func__, efi_strerror((uintptr_t)_r), \
-			(u32)((uintptr_t) _r & ~EFI_ERROR_MASK), \
+			__func__, efi_strerror((uintptr_t)__efi_r2), \
+			(u32)((uintptr_t) __efi_r2 & ~EFI_ERROR_MASK), \
 			(u64)(uintptr_t)(val)); \
-	_r; \
+	__efi_r2; \
 	})
 #endif
 

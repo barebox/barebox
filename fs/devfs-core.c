@@ -249,6 +249,7 @@ static struct cdev *cdev_get_master(struct cdev *cdev)
 int cdev_open(struct cdev *cdev, unsigned long flags)
 {
 	struct cdev *master = cdev_get_master(cdev);
+	struct cdev *c;
 	int ret;
 
 	if (cdev->ops->open) {
@@ -257,7 +258,14 @@ int cdev_open(struct cdev *cdev, unsigned long flags)
 			return ret;
 	}
 
-	cdev->open++;
+	/*
+	 * A device with an open partition is in use itself, so count the
+	 * open along the whole chain up to the device the partition lives
+	 * on. Without that a disk with a mounted partition looks idle and
+	 * could be removed from under the filesystem.
+	 */
+	for (c = cdev; c; c = c->master)
+		c->open++;
 
 	return 0;
 }
@@ -314,6 +322,7 @@ struct cdev *cdev_open_by_path_name(const char *name, unsigned long flags)
 int cdev_close(struct cdev *cdev)
 {
 	struct cdev *master = cdev_get_master(cdev);
+	struct cdev *c;
 
 	if (cdev->ops->close) {
 		int ret = cdev->ops->close(master);
@@ -321,7 +330,8 @@ int cdev_close(struct cdev *cdev)
 			return ret;
 	}
 
-	cdev->open--;
+	for (c = cdev; c; c = c->master)
+		c->open--;
 
 	return 0;
 }

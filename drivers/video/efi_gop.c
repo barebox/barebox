@@ -47,7 +47,7 @@ static void find_bits(unsigned long mask, u32 *pos, u32 *size)
 	*size = len;
 }
 
-static void setup_pixel_info(struct fb_info *fb, u32 pixels_per_scan_line,
+static int setup_pixel_info(struct fb_info *fb, u32 pixels_per_scan_line,
 		 struct efi_pixel_bitmask pixel_info, int pixel_format)
 {
 	if (pixel_format == PIXEL_RGB_RESERVED_8BIT_PER_COLOR) {
@@ -83,17 +83,15 @@ static void setup_pixel_info(struct fb_info *fb, u32 pixels_per_scan_line,
 			fb->blue.length + fb->transp.length;
 		fb->line_length = (pixels_per_scan_line * fb->bits_per_pixel) / 8;
 	} else {
-		fb->bits_per_pixel = 4;
-		fb->line_length = fb->xres / 2;
-		fb->red.length = 0;
-		fb->red.offset = 0;
-		fb->green.length = 0;
-		fb->green.offset = 0;
-		fb->blue.length = 0;
-		fb->blue.offset = 0;
-		fb->transp.length = 0;
-		fb->transp.offset = 0;
+		/*
+		 * PixelBltOnly modes have no pixel layout and no linear
+		 * framebuffer, so there is nothing we could draw into. Any
+		 * other value is a format we don't know about.
+		 */
+		return -EOPNOTSUPP;
 	}
+
+	return 0;
 }
 
 static int efi_gop_query(struct efi_gop_priv *priv)
@@ -131,11 +129,24 @@ static int efi_gop_fb_activate_var(struct fb_info *fb_info)
 {
 	struct efi_gop_priv *priv = fb_info->priv;
 	struct efi_graphics_output_mode_info *info;
-	int num;
+	int num, ret;
 	size_t size = 0;
 	efi_status_t efiret;
 
 	num = simple_strtoul(fb_info->mode->name, NULL, 0);
+
+	efiret = priv->gop->query_mode(priv->gop, num, &size, &info);
+	if (EFI_ERROR(efiret))
+		return -efi_errno(efiret);
+
+	/* Don't switch to a mode we would not be able to draw into */
+	ret = setup_pixel_info(&priv->fb, info->pixels_per_scan_line,
+			       info->pixel_information, info->pixel_format);
+
+	BS->free_pool(info);
+
+	if (ret)
+		return ret;
 
 	if (priv->mode != num) {
 		efiret = priv->gop->set_mode(priv->gop, num);
@@ -143,13 +154,6 @@ static int efi_gop_fb_activate_var(struct fb_info *fb_info)
 			return -efi_errno(efiret);
 		priv->mode = num;
 	}
-
-	efiret = priv->gop->query_mode(priv->gop, num, &size, &info);
-	if (EFI_ERROR(efiret))
-		return -efi_errno(efiret);
-
-	setup_pixel_info(&priv->fb, info->pixels_per_scan_line,
-			 info->pixel_information, info->pixel_format);
 
 	return 0;
 }
@@ -160,6 +164,7 @@ static struct fb_ops efi_gop_ops = {
 
 static int efi_gop_probe(struct efi_device *efidev)
 {
+	struct efi_graphics_output_mode_info *info;
 	struct efi_gop_priv *priv;
 	int ret = 0;
 	efi_status_t efiret;
@@ -173,8 +178,23 @@ static int efi_gop_probe(struct efi_device *efidev)
 	priv->gop = protocol;
 	priv->dev = &efidev->dev;
 
-	if (!priv->gop) {
+	if (!priv->gop || !priv->gop->mode || !priv->gop->mode->info) {
 		ret = -EINVAL;
+		goto err;
+	}
+
+	/*
+	 * register_framebuffer() ignores the error from the initial mode
+	 * setup, so run the same check here to avoid registering a
+	 * framebuffer we can't use. EDK II's VirtioGpuDxe is Blt-only and
+	 * ends up here.
+	 */
+	info = priv->gop->mode->info;
+	ret = setup_pixel_info(&priv->fb, info->pixels_per_scan_line,
+			       info->pixel_information, info->pixel_format);
+	if (ret) {
+		dev_warn(priv->dev, "no usable framebuffer (pixel format %d)\n",
+			 info->pixel_format);
 		goto err;
 	}
 

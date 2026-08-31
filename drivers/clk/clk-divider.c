@@ -161,7 +161,7 @@ static int _div_round_up(const struct clk_div_table *table,
 			 unsigned long parent_rate, unsigned long rate,
 			 unsigned long flags)
 {
-	int div = DIV_ROUND_UP(parent_rate, rate);
+	int div = DIV_ROUND_UP_ULL((u64)parent_rate, rate);
 
 	if (flags & CLK_DIVIDER_POWER_OF_TWO)
 		div = __roundup_pow_of_two(div);
@@ -292,7 +292,7 @@ int divider_get_val(unsigned long rate, unsigned long parent_rate,
 {
 	unsigned int div, value;
 
-	div = DIV_ROUND_UP(parent_rate, rate);
+	div = DIV_ROUND_UP_ULL((u64)parent_rate, rate);
 
 	if (!_is_valid_div(table, div, flags))
 		return -EINVAL;

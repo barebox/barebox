@@ -554,12 +554,11 @@ static int ns16550_probe(struct device *dev)
 	devtype->init_port(cdev);
 
 	ret = console_register(cdev);
-	if (ret)
-		goto clk_disable;
+	if (!ret)
+		return 0;
 
-	return 0;
+	free_const(cdev->linux_earlycon_name);
 
-clk_disable:
 	clk_disable(priv->clk);
 	clk_put(priv->clk);
 release_region:

@@ -213,7 +213,7 @@ static int clk_divider_bestdiv(struct clk *clk, unsigned long rate,
 		}
 		parent_rate = clk_round_rate(clk_get_parent(clk),
 				MULT_ROUND_UP(rate, i));
-		now = parent_rate / i;
+		now = DIV_ROUND_UP_ULL((u64)parent_rate, i);
 		if (now <= rate && now > best) {
 			bestdiv = i;
 			best = now;

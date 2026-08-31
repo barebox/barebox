@@ -1659,7 +1659,7 @@ static struct clk_hw *stm32_register_aux_clk(const char *name,
 
 		mux->reg = base + offset_mux;
 		mux->shift = shift;
-		mux->width = hweight8(mask);
+		mux->mask = mask;
 		mux->flags = 0;
 		mux_hw = &mux->hw;
 		mux_ops = &clk_mux_ops;

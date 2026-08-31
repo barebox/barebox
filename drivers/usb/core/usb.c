@@ -704,6 +704,7 @@ int usb_host_detect(struct usb_host *host)
 		ret = usb_new_device(host->root_dev);
 		if (ret) {
 			usb_free_device(host->root_dev);
+			host->root_dev = NULL;
 			return ret;
 		}
 	}

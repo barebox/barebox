@@ -41,6 +41,8 @@ SECTIONS
 		RO_DATA_SECTION
 	} :rodata
 
+	BAREBOX_RELOCATION_TABLE
+
 	.dynamic : { *(.dynamic) } :rodata :dynamic
 
 	. = ALIGN(4096);

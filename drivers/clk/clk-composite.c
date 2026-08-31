@@ -239,7 +239,7 @@ struct clk *clk_register_composite(const char *name,
 
 err:
 	kfree(composite);
-	return 0;
+	return ERR_PTR(ret);
 }
 
 struct clk_hw *clk_hw_register_composite(struct device *dev,

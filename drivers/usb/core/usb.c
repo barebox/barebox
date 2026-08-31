@@ -38,6 +38,7 @@
 #include <init.h>
 #include <dma.h>
 
+#include <linux/bitmap.h>
 #include <linux/usb/usb.h>
 #include <linux/usb/ch9.h>
 
@@ -46,7 +47,33 @@
 #define USB_BUFSIZ	512
 
 static int dev_count;
-static int dev_index;
+
+/*
+ * USB addresses are 7 bit wide and 0 is reserved for the default address,
+ * so the usable range is 1..127. Track them in a bitmap rather than just
+ * counting up, otherwise a board that sees enough plug/unplug cycles
+ * eventually hands out addresses a device cannot have.
+ */
+static DECLARE_BITMAP(usb_addresses, 128);
+
+static int usb_alloc_address(void)
+{
+	int addr;
+
+	addr = find_next_zero_bit(usb_addresses, 128, 1);
+	if (addr >= 128)
+		return -EADDRNOTAVAIL;
+
+	set_bit(addr, usb_addresses);
+
+	return addr;
+}
+
+static void usb_free_address(int addr)
+{
+	if (addr > 0)
+		clear_bit(addr, usb_addresses);
+}
 
 LIST_HEAD(usb_host_list);
 LIST_HEAD(usb_device_list);
@@ -487,7 +514,12 @@ int usb_new_device(struct usb_device *dev)
 
 	usb_setup_descriptor(dev, !host->no_desc_before_addr);
 
-	dev->devnum = ++dev_index;
+	err = usb_alloc_address();
+	if (err < 0) {
+		dev_err(&dev->dev, "out of USB addresses\n");
+		goto err_out;
+	}
+	dev->devnum = err;
 
 	err = usb_set_address(dev); /* set address */
 
@@ -605,6 +637,7 @@ err_out:
 
 void usb_free_device(struct usb_device *usbdev)
 {
+	usb_free_address(usbdev->devnum);
 	dma_free(usbdev->descriptor);
 	dma_free(usbdev->setup_packet);
 	free_device_res(&usbdev->dev);

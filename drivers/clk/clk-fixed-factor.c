@@ -9,13 +9,17 @@
 #include <malloc.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/math64.h>
 
 static unsigned long clk_fixed_factor_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
 {
 	struct clk_fixed_factor *f = to_clk_fixed_factor(hw);
+	unsigned long long int rate;
 
-	return (parent_rate / f->div) * f->mult;
+	rate = (unsigned long long int)parent_rate * f->mult;
+	do_div(rate, f->div);
+	return (unsigned long)rate;
 }
 
 static long clk_factor_round_rate(struct clk_hw *hw, unsigned long rate,

@@ -24,7 +24,7 @@ static u32 imx9_read_shadow_fuse(int fuse)
 
 static u32 imx9_cpu_speed_grade_hz(void)
 {
-	u32 speed, max_speed;
+	u32 speed, max_speed = U32_MAX;
 	u32 val;
 
 	val = imx9_read_shadow_fuse(19);

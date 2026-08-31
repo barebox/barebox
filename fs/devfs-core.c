@@ -520,6 +520,35 @@ static void devfs_unlink(const char *name)
 	free(path);
 }
 
+/*
+ * A cdev with a default automount is mounted by walking into
+ * /mnt/<cdevname>. Link the aliases next to it so that an alias can be used
+ * for mounting just as well.
+ */
+static void cdev_mnt_symlink(struct cdev *cdev, const char *linkname)
+{
+	char *path;
+
+	if (!(cdev->flags & DEVFS_HAS_AUTOMOUNT))
+		return;
+
+	path = xasprintf("/mnt/%s", linkname);
+	symlink(cdev->name, path);
+	free(path);
+}
+
+static void cdev_mnt_unlink(struct cdev *cdev, const char *linkname)
+{
+	char *path;
+
+	if (!(cdev->flags & DEVFS_HAS_AUTOMOUNT))
+		return;
+
+	path = xasprintf("/mnt/%s", linkname);
+	unlink(path);
+	free(path);
+}
+
 void devfs_init(void)
 {
 	struct cdev *cdev;
@@ -588,6 +617,7 @@ static int __devfs_add_alias(struct cdev *cdev, const char *name,
 	list_add_tail(&alias->list, &cdev->aliases);
 
 	cdev_symlink(cdev, name);
+	cdev_mnt_symlink(cdev, name);
 
 	return 0;
 }
@@ -686,6 +716,7 @@ static void devfs_remove_aliases(struct cdev *cdev)
 
 	list_for_each_entry_safe(alias, tmp, &cdev->aliases, list) {
 		devfs_unlink(alias->name);
+		cdev_mnt_unlink(cdev, alias->name);
 		list_del(&alias->list);
 		free(alias->name);
 		free(alias);
@@ -706,6 +737,7 @@ int devfs_remove(struct cdev *cdev)
 
 	devfs_unlink(cdev->name);
 
+	/* Must happen before the automount is dropped below */
 	devfs_remove_aliases(cdev);
 
 	cdev_remove_default_automount(cdev);

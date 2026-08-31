@@ -519,6 +519,15 @@ int blockdevice_register(struct block_device *blk)
 int blockdevice_unregister(struct block_device *blk)
 {
 	struct chunk *chunk, *tmp;
+	int ret;
+
+	/*
+	 * Do this first: once the cdev is gone there is no way for the
+	 * caller to retry, so give up while everything is still intact.
+	 */
+	ret = devfs_remove(&blk->cdev);
+	if (ret)
+		return ret;
 
 	writebuffer_flush(blk);
 
@@ -532,7 +541,6 @@ int blockdevice_unregister(struct block_device *blk)
 		free(chunk);
 	}
 
-	devfs_remove(&blk->cdev);
 	list_del(&blk->list);
 
 	return 0;

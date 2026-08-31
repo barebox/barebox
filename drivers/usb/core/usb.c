@@ -625,10 +625,13 @@ void usb_remove_device(struct usb_device *usbdev)
 	list_del(&usbdev->list);
 	dev_count--;
 
-	if (unregister_device(&usbdev->dev))
-		dev_err(&usbdev->dev, "failed to unregister\n");
-	else
-		dev_info(&usbdev->dev, "removed\n");
+	/*
+	 * unregister_device() frees the device name, so there is nothing
+	 * left to print afterwards.
+	 */
+	dev_info(&usbdev->dev, "removed\n");
+
+	unregister_device(&usbdev->dev);
 
 	usb_free_device(usbdev);
 }

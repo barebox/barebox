@@ -9,6 +9,8 @@
 #include <linux/clk-provider.h>
 #include <linux/clkdev.h>
 #include <linux/clk/at91_pmc.h>
+#include <linux/math.h>
+#include <linux/math64.h>
 #include <of.h>
 #include <mfd/syscon.h>
 #include <linux/regmap.h>

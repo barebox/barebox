@@ -458,6 +458,7 @@ struct cdev_alias {
 	char *name;
 	struct device_node *device_node;
 	struct list_head list;
+	bool derived; /* automatically derived from an alias of the master cdev */
 };
 
 static inline struct device_node *cdev_of_node(const struct cdev *cdev)

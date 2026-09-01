@@ -7,3 +7,8 @@
 &clk_uart {
 	clock-frequency = <44236800>;
 };
+
+/* WiFi SDIO */
+&sdio2 {
+	status = "disabled";
+};

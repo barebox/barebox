@@ -3,3 +3,7 @@
 / {
 	barebox,deep-probe;
 };
+
+&clk_uart {
+	clock-frequency = <44236800>;
+};

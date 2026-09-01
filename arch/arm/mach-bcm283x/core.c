@@ -13,7 +13,7 @@ void __iomem *bcm2835_get_mmio_base_by_cpuid(void)
 		pr_debug("ARM CPUID: %08x\n", cpuid);
 	}
 
-	/* We know ARM1167, Cortex A-7, A-53 and A-72 CPUID mask is identical */
+	/* We know ARM1167, Cortex A-7, A-53, A-72, A-76 CPUID mask is identical */
 	switch(cpuid & CPU_IS_ARM1176_MASK) {
 	case CPU_IS_ARM1176:	/* bcm2835 */
 		return IOMEM(0x20000000);
@@ -22,6 +22,8 @@ void __iomem *bcm2835_get_mmio_base_by_cpuid(void)
 		return IOMEM(0x3f000000);
 	case CPU_IS_CORTEX_A72:	/* bcm2711 */
 		return IOMEM(0xfe000000);
+	case CPU_IS_CORTEX_A76:	/* bcm2712 */
+		return IOMEM(0x107c008000UL);
 	}
 
 	pr_err("Couldn't determine rpi by CPUID %08x\n", cpuid);

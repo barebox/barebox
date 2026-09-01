@@ -50,6 +50,9 @@
 #define CPU_IS_CORTEX_A72	0x410fd080
 #define CPU_IS_CORTEX_A72_MASK	0xff0ffff0
 
+#define CPU_IS_CORTEX_A76	0x410fd0b0
+#define CPU_IS_CORTEX_A76_MASK	0xff0ffff0
+
 #define CPU_IS_PXA250		0x69052100
 #define CPU_IS_PXA250_MASK	0xfffff7f0
 

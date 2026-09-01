@@ -32,7 +32,7 @@ $(obj)/barebox_default_env.h: $(obj)/barebox_default_env$(bbenv-suffix-y) FORCE
 	$(call if_changed,env_h)
 
 quiet_cmd_env_zero = ENVZ    $@
-cmd_env_zero = ($(objtree)/scripts/bareboxenv -z "$(CONFIG_DEFAULT_ENVIRONMENT_PATH)" $@)
+cmd_env_zero = $(objtree)/scripts/bareboxenv -z "" $@
 
 $(obj)/barebox_zero_env: FORCE
 	$(call if_changed,env_zero)

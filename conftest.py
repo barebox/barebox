@@ -32,6 +32,27 @@ def shell(strategy, target):
     return target.get_driver('ShellDriver')
 
 
+@pytest.fixture(scope="session", autouse=True)
+def boot_log(request, strategy, target):
+    """Error level and worse messages logged during the target's first boot.
+
+    Tests are free to reboot the target - test_fit chainloads barebox into
+    itself, for example - which discards the log of the boot we actually
+    want to look at, so snapshot it before the first test runs.
+
+    None if the log could not be read at all, e.g. because the target has
+    no dmesg command.
+    """
+    transition_to_barebox(request, strategy)
+    command = target.get_driver("BareboxDriver")
+
+    stdout, _, returncode = command.run("dmesg -l emerg,alert,crit,err")
+    if returncode != 0:
+        return None
+
+    return stdout
+
+
 @pytest.fixture(scope="session")
 def barebox_config(request, strategy, target):
     transition_to_barebox(request, strategy)

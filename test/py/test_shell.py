@@ -62,16 +62,15 @@ def test_barebox_version(barebox, barebox_config):
     skip_disabled(barebox_config, "CONFIG_CMD_VERSION")
 
     stdout, _, returncode = barebox.run('version')
-    assert 'barebox' in stdout[1]
     assert returncode == 0
+    assert any('barebox' in line for line in stdout), stdout
 
 
-def test_barebox_no_err(barebox, barebox_config):
+def test_barebox_no_err(boot_log, barebox_config):
     skip_disabled(barebox_config, "CONFIG_CMD_DMESG")
 
-    # TODO extend by err once all qemu platforms conform
-    stdout, _, _ = barebox.run('dmesg -l crit,alert,emerg')
-    assert stdout == []
+    assert boot_log is not None, "could not read the boot log"
+    assert boot_log == [], "\n".join(boot_log)
 
 
 def count_dicts_in_command_output(barebox, cmd):
@@ -86,7 +85,7 @@ def count_dicts_in_command_output(barebox, cmd):
                 count += count_dicts(item)
         return count
 
-    stdout = "\n".join(barebox.run_check(cmd))
+    stdout = "".join(barebox.run_check(cmd))
     return count_dicts(json.loads(stdout))
 
 
@@ -109,7 +108,6 @@ def test_cmd_clk(barebox, barebox_config):
     skip_disabled(barebox_config, "CONFIG_CMD_CLK")
 
     regions = count_dicts_in_command_output(barebox, 'clk_dump -j')
-    assert regions >= 0
 
     assert count_dicts_in_command_output(barebox, 'clk_dump -vj') == regions
 

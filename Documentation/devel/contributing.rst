@@ -47,7 +47,9 @@ Patch series can be sent and fetched from the list using `b4 <https://pypi.org/p
 
    b4 shazam -M https://lore.barebox.org/$messageid # replace with link
 
-Fixes should apply on master and new features on the next branch.
+Base your work on ``master``. Fixes are applied there directly, new features
+go to ``next`` first. See :ref:`patch_flow` for the branches involved and
+what happens to a patch after it has been picked up from the list.
 
 If a series fails to apply, ``b4`` can determine/guess the base
 and have ``FETCH_HEAD`` point at it::
@@ -64,6 +66,15 @@ patches can be sent with::
   b4 send
 
 See the `b4 documentation <https://b4.docs.kernel.org/en/latest/>`_ for details.
+
+GitHub Pull Requests
+--------------------
+
+Besides the mailing list, contributions are also accepted as pull requests
+against `the project on GitHub <https://github.com/barebox/barebox>`_. The
+same rules apply: base your work on ``master`` and target the pull request
+at ``next``, so that GitHub can detect when it has been applied. See
+:ref:`patch_flow` for details.
 
 Continuous Integration
 ----------------------

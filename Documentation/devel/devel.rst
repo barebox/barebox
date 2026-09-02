@@ -10,6 +10,7 @@ Contents:
 
    architecture
    contributing
+   patch-flow
    porting
    troubleshooting
    filesystems

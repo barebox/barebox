@@ -256,9 +256,10 @@ are the release rules:
   to get patches in on a very short time scale (usually a month at most).
 
 - New features are applied to the ``next`` branch. Fixes directly to the
-  ``master`` branch. Releases are always branched from ``master`` and then
-  ``next`` is merged into ``master``. Thus new features take 1-2 months
-  until they hit a release.
+  ``master`` branch. Releases are always branched from ``master``, and only
+  afterwards is the material queued in ``next`` merged into ``master``. Thus
+  new features take 1-2 months until they hit a release. See
+  ``Documentation/devel/patch-flow.rst`` for the details.
 
 - Usually, there are no bugfix releases, so z=0. If there is a need
   to make a bugfix release, z is the right place to increment.

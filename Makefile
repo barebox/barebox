@@ -560,6 +560,10 @@ PHONY += scripts_sconfig
 scripts_sconfig: scripts_basic
 	$(Q)$(MAKE) $(build)=scripts/sconfig
 
+PHONY += scripts_kconfig
+scripts_kconfig: scripts_basic
+	$(Q)$(MAKE) $(build)=scripts/kconfig build_config
+
 PHONY += outputmakefile
 # Before starting out-of-tree build, make sure the source tree is clean.
 # outputmakefile generates a Makefile in the output directory, if using a
@@ -679,6 +683,12 @@ ifeq ($(CONFIG_RELR),y)
 # ld.lld before 15 did not support -z pack-relative-relocs.
 LDFLAGS_barebox += $(call ld-option,--pack-dyn-relocs=relr,-z pack-relative-relocs)
 LDFLAGS_pbl += $(call ld-option,--pack-dyn-relocs=relr,-z pack-relative-relocs)
+endif
+
+ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
+KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
+LDFLAGS_barebox += --gc-sections
+LDFLAGS_pbl += --gc-sections
 endif
 
 # We need some generic definitions.
@@ -1220,7 +1230,7 @@ include/generated/utsrelease.h: include/config/kernel.release FORCE
 
 ifdef CONFIG_SECURITY_POLICY
 
-.security_config: $(KCONFIG_CONFIG) FORCE
+.security_config: $(KCONFIG_CONFIG) scripts_kconfig FORCE
 	+$(call cmd,sconfig,allyesconfig,$@.tmp,$@)
 	$(Q)if [ ! -r $@ ] || ! cmp -s $@.tmp $@; then	\
 		mv -f $@.tmp $@;			\
@@ -1240,10 +1250,10 @@ PHONY += _policy_collect_clean $(collect-dirs) collect-policies
 _policy_collect_clean:
 	$(Q)find $(objtree)/ -name policy-list -delete 2>/dev/null || true
 
-$(collect-policy-dirs): | _policy_collect_clean
+$(collect-dirs): | _policy_collect_clean
 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.policy obj=$(patsubst _policy_collect_%,%,$@)
 
-collect-policies: $(collect-policy-dirs)
+collect-policies: $(collect-dirs)
 
 PHONY += security_listconfigs
 security_listconfigs: collect-policies FORCE

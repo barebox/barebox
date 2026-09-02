@@ -6,7 +6,6 @@
 
 #include <linux/string.h>
 #include <linux/compiler.h>
-#include <xfuncs.h>
 #include <malloc.h>
 
 struct device;
@@ -19,7 +18,9 @@ struct device;
 static inline void *dma_alloc_coherent(struct device *dev,
 				       size_t size, dma_addr_t *dma_handle)
 {
-	void *ret = xmemalign(4096, size);
+	void *ret = memalign(4096, size);
+	if (!ret)
+		return NULL;
 	if (dma_handle)
 		*dma_handle = (dma_addr_t)ret;
 

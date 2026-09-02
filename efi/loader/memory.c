@@ -301,6 +301,8 @@ efi_status_t efi_free_pages(uint64_t memory, size_t pages)
 	if (nfreed <= 0)
 		return EFI_INVALID_PARAMETER;
 
+	++efi_memory_map_key;
+
 	return EFI_SUCCESS;
 }
 

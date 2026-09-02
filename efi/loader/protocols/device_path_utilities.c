@@ -143,7 +143,8 @@ static struct efi_device_path * EFIAPI get_next_device_path_instance(
 	struct efi_device_path **device_path_instance,
 	efi_uintn_t *device_path_instance_size)
 {
-	EFI_ENTRY("%pD, %p", device_path_instance, device_path_instance_size);
+	EFI_ENTRY("%pD, %p", device_path_instance ? *device_path_instance : NULL,
+		  device_path_instance_size);
 	return EFI_EXIT(efi_dp_get_next_instance(device_path_instance,
 						 device_path_instance_size));
 }

@@ -1342,7 +1342,7 @@ static int print_field(u8 *reg, int index)
 
 	case EXT_CSD_ENH_SIZE_MULT:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
-		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
+		tmp = tmp * get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
 		tmp64 *= tmp;
 		tmp64 *= SZ_512K;
 		printf("\tEnhanced User Data Area %i Size: %llu B\n",
@@ -1351,7 +1351,7 @@ static int print_field(u8 *reg, int index)
 
 	case EXT_CSD_GP_SIZE_MULT3:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
-		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
+		tmp = tmp * get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
 		tmp64 *= tmp;
 		tmp64 *= SZ_512K;
 		printf("\tGeneral_Purpose_Partition_3 Size: %llu B\n", tmp64);
@@ -1359,7 +1359,7 @@ static int print_field(u8 *reg, int index)
 
 	case EXT_CSD_GP_SIZE_MULT2:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
-		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
+		tmp = tmp * get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
 		tmp64 *= tmp;
 		tmp64 *= SZ_512K;
 		printf("\tGeneral_Purpose_Partition_2 Size: %llu B\n", tmp64);
@@ -1367,7 +1367,7 @@ static int print_field(u8 *reg, int index)
 
 	case EXT_CSD_GP_SIZE_MULT1:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
-		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
+		tmp = tmp * get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
 		tmp64 *= tmp;
 		tmp64 *= SZ_512K;
 		printf("\tGeneral_Purpose_Partition_1 Size: %llu B\n", tmp64);
@@ -1375,7 +1375,7 @@ static int print_field(u8 *reg, int index)
 
 	case EXT_CSD_GP_SIZE_MULT0:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
-		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
+		tmp = tmp * get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
 		tmp64 *= tmp;
 		tmp64 *= SZ_512K;
 		printf("\tGeneral_Purpose_Partition_0 Size: %llu B\n", tmp64);

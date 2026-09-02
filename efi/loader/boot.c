@@ -370,7 +370,7 @@ static efi_status_t EFIAPI efi_get_memory_map_ext(
 	r = efi_get_memory_map(memory_map_size, memory_map, map_key,
 			       descriptor_size, descriptor_version);
 
-	__EFI_PRINT("%sEFI: Exit: %s(%zu@%p, %p, 0x%lx@%p, %zu@%p, %u@%p): %u\n",
+	__EFI_PRINT("%sEFI: Exit: %s(%zu@%p, %p, 0x%zx@%p, %zu@%p, %u@%p): %u\n",
 		    __efi_nesting_dec(), __func__,
 		    *memory_map_size, memory_map_size, memory_map,
 		    *map_key, map_key, *descriptor_size, descriptor_size,
@@ -736,6 +736,27 @@ static efi_status_t EFIAPI efi_create_event_ext(
 }
 
 /**
+ * efi_timer_rearm_periodic() - re-arm a periodic timer after it fired
+ * @evt:	timer event
+ * @now:	current time in ns
+ *
+ * Timers are polled. If a periodic timer is serviced late, signal it once
+ * and skip missed intervals so clients do not drain a backlog of stale ticks.
+ */
+static void efi_timer_rearm_periodic(struct efi_event *evt, u64 now)
+{
+	u64 periods;
+
+	if (!evt->trigger_time) {
+		evt->trigger_next = now;
+		return;
+	}
+
+	periods = div64_u64(now - evt->trigger_next, evt->trigger_time) + 1;
+	evt->trigger_next += periods * evt->trigger_time;
+}
+
+/**
  * efi_timer_check() - check if a timer event has occurred
  *
  * Check if a timer event has occurred or a queued notification function should
@@ -760,7 +781,7 @@ void efi_timer_check(void)
 			evt->trigger_type = EFI_TIMER_CANCEL;
 			break;
 		case EFI_TIMER_PERIODIC:
-			evt->trigger_next += evt->trigger_time;
+			efi_timer_rearm_periodic(evt, now);
 			break;
 		default:
 			continue;
@@ -1983,7 +2004,7 @@ efi_status_t EFIAPI efiloader_load_image(bool boot_policy,
 	struct efi_loaded_image_obj **image_obj =
 		(struct efi_loaded_image_obj **)image_handle;
 	efi_status_t ret;
-	void *dest_buffer;
+	void *dest_buffer = NULL;
 
 	EFI_ENTRY("%d, %p, %pD, %p, %zu, %p", boot_policy, parent_image,
 		  file_path, source_buffer, source_size, image_handle);
@@ -1996,6 +2017,7 @@ efi_status_t EFIAPI efiloader_load_image(bool boot_policy,
 		goto error;
 	}
 
+	*image_handle = NULL;
 	if (!source_buffer) {
 		ret = efi_load_image_from_path(boot_policy, file_path,
 					       &dest_buffer, &source_size);
@@ -2005,10 +2027,13 @@ efi_status_t EFIAPI efiloader_load_image(bool boot_policy,
 		dest_buffer = source_buffer;
 	}
 	/* split file_path which contains both the device and file parts */
-	efi_dp_split_file_path(file_path, &dp, &fp);
-	ret = efi_setup_loaded_image(dp, fp, image_obj, &info);
-	if (ret == EFI_SUCCESS)
-		ret = efi_load_pe(*image_obj, dest_buffer, source_size, info);
+	ret = efi_dp_split_file_path(file_path, &dp, &fp);
+	if (ret == EFI_SUCCESS) {
+		ret = efi_setup_loaded_image(dp, fp, image_obj, &info);
+		if (ret == EFI_SUCCESS)
+			ret = efi_load_pe(*image_obj, dest_buffer, source_size, info);
+	}
+
 	if (!source_buffer)
 		/* Release buffer to which file was loaded */
 		efi_free_pages((uintptr_t)dest_buffer,
@@ -2016,7 +2041,7 @@ efi_status_t EFIAPI efiloader_load_image(bool boot_policy,
 	if (ret == EFI_SUCCESS || ret == EFI_SECURITY_VIOLATION) {
 		info->system_table = &systab;
 		info->parent_handle = parent_image;
-	} else {
+	} else if (*image_handle) {
 		/* The image is invalid. Release all associated resources. */
 		efi_delete_handle(*image_handle);
 		*image_handle = NULL;

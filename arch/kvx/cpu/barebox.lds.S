@@ -8,6 +8,7 @@
 #include <asm/barebox.lds.h>
 
 OUTPUT_FORMAT("elf64-kvx")
+ENTRY(kvx_start)
 
 SECTIONS
 {
@@ -15,7 +16,7 @@ SECTIONS
 	.text ALIGN(4) : {
 		*(.startup);
 		_stext = .;
-		*(.text)
+		*(.text*)
 	}
 
 	/* Exception vector must be aligned on a huge frontier */
@@ -59,7 +60,7 @@ SECTIONS
 	.data ALIGN(4): {
 		sdata = .;
 		_sdata = .;
-		*(.data)
+		*(.data*)
 		. = ALIGN(8);
 		__stack_end = .;
 		. += CONFIG_STACK_SIZE;
@@ -79,7 +80,7 @@ SECTIONS
 	.bss ALIGN(16):
 	{
 		__bss_start = .;
-		*(.bss)
+		*(.bss*)
 		. = ALIGN(16);
 		__bss_stop = .;
 	}

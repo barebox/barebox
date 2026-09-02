@@ -915,6 +915,8 @@ static int ehci_init(struct usb_host *host)
 		 */
 		ehci->periodic_list = dma_alloc_coherent(DMA_DEVICE_BROKEN, 1024 * 4,
 						&ehci->periodic_list_dma);
+	if (ehci->periodic_list == NULL)
+		return -ENOMEM;
 	for (i = 0; i < 1024; i++) {
 		ehci->periodic_list[i] = cpu_to_hc32((unsigned long)ehci->periodic_queue_dma
 						| QH_LINK_TYPE_QH);
@@ -1134,11 +1136,16 @@ static struct int_queue *ehci_create_int_queue(struct usb_device *dev,
 	result->first = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					   sizeof(struct QH) * queuesize,
 					   &result->first_dma);
+	if (!result->first)
+		return NULL;
+
 	result->current = result->first;
 	result->last = result->first + queuesize - 1;
 	result->tds = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					 sizeof(struct qTD) * queuesize,
 					 &result->tds_dma);
+	if (!result->tds)
+		return NULL;
 
 	for (i = 0; i < queuesize; i++) {
 		struct QH *qh = result->first + i;
@@ -1378,6 +1385,9 @@ struct ehci_host *ehci_register(struct device *dev, struct ehci_data *data)
 	ehci->td = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 				      sizeof(struct qTD) * NUM_TD,
 				      &ehci->td_dma);
+
+	if (!ehci->qh_list || !ehci->periodic_queue || !ehci->td)
+		return NULL;
 
 	host->hw_dev = dev;
 	host->init = ehci_init;

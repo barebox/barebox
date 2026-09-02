@@ -142,7 +142,7 @@ static u32 compute_partitions_entries_size(const gpt_header *gpt)
 {
 	u32 nb_parts, sz_parts, total_size;
 
-	nb_parts = min_t(u32, MAX_PARTITION, le32_to_cpu(gpt->num_partition_entries));
+	nb_parts = le32_to_cpu(gpt->num_partition_entries);
 	sz_parts = le32_to_cpu(gpt->sizeof_partition_entry);
 
 	if (check_mul_overflow(nb_parts, sz_parts, &total_size))

@@ -10,11 +10,17 @@
 #include <tee/optee.h>
 #include <pbl.h>
 
+#ifdef CONFIG_ARCH_ROCKCHIP_ATF_FDT_SIZE
+#define ROCKCHIP_ATF_FDT_SIZE CONFIG_ARCH_ROCKCHIP_ATF_FDT_SIZE
+#else
+#define ROCKCHIP_ATF_FDT_SIZE 0
+#endif
+
 struct rockchip_scratch_space {
 	u32 iram[16];
 	struct optee_header optee_hdr;
 	/* FDT needs an 8 byte alignment */
-	u8 fdt[CONFIG_ARCH_ROCKCHIP_ATF_FDT_SIZE] __aligned(8);
+	u8 fdt[ROCKCHIP_ATF_FDT_SIZE] __aligned(8);
 };
 static_assert(sizeof(struct rockchip_scratch_space) <= CONFIG_SCRATCH_SIZE);
 

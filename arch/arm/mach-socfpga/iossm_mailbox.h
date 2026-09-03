@@ -119,6 +119,7 @@ struct io96b_instance {
  * @overall_size:	Total DDR memory size
  * @io96b[]:		IO96B instance specific information
  * @ckgen_lock:		IO96B GEN PLL lock (false = not locked, true = locked)
+ * @selected_plls:	Selected IO96B PLLs
  */
 struct io96b_info {
 	int			 version;
@@ -130,6 +131,7 @@ struct io96b_info {
 	phys_size_t		 overall_size;
 	struct io96b_instance	 io96b[MAX_IO96B_SUPPORTED];
 	bool			 ckgen_lock;
+	unsigned int		 selected_plls;
 };
 
 int io96b_mb_req(void __iomem *io96b_csr_addr, u32 ip_type, u32 instance_id,

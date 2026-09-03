@@ -272,7 +272,8 @@ endif
 need-compiler := $(may-sync-config)
 
 ifeq ($(KBUILD_EXTMOD),)
-    ifneq ($(filter %config,$(MAKECMDGOALS)),)
+    # security_%config targets configure security policies, not .config
+    ifneq ($(filter-out security_%,$(filter %config,$(MAKECMDGOALS))),)
         config-build := 1
         ifneq ($(words $(MAKECMDGOALS)),1)
             mixed-build := 1
@@ -1339,7 +1340,7 @@ targets += include/generated/sconfig_names.h
 
 KPOLICY = $(shell find $(objtree)/ -name policy-list -exec cat {} \;)
 
-collect-dirs    := $(addprefix _policy_collect_,$(barebox-alldirs))
+collect-dirs    := $(addprefix _policy_collect_,$(build-dir))
 
 PHONY += _policy_collect_clean $(collect-dirs) collect-policies
 _policy_collect_clean:

@@ -7,21 +7,20 @@
 ifndef build
 # Standalone mode — collect policies without building
 
-src := $(obj)
+src := $(srcroot)/$(obj)
 
 PHONY := __collect
 __collect:
 
 policy-y :=
 
-include scripts/Kbuild.include
+include $(srctree)/scripts/Kbuild.include
 
 # Include Kconfig output so CONFIG_* symbols (e.g. CONFIG_SECURITY_POLICY_PATH)
 # are available when security/Makefile computes external-policy.
 -include include/config/auto.conf
 
-kbuild-dir := $(if $(filter /%,$(src)),$(src),$(srctree)/$(src))
-include $(if $(wildcard $(kbuild-dir)/Kbuild), $(kbuild-dir)/Kbuild, $(kbuild-dir)/Makefile)
+include $(kbuild-file)
 
 __subdir-y	:= $(patsubst %/,%,$(filter %/, $(obj-y)))
 subdir-y	+= $(__subdir-y)

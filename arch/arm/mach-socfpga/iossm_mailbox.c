@@ -16,11 +16,11 @@
 #include <mach/socfpga/soc64-regs.h>
 #include <mach/socfpga/soc64-system-manager.h>
 
-#define ECC_INTSTATUS_SERR SOCFPGA_SYSMGR_ADDRESS + 0x9C
-#define ECC_INISTATUS_DERR SOCFPGA_SYSMGR_ADDRESS + 0xA0
+#define ECC_INTSTATUS_SERR				0x9C
+#define ECC_INISTATUS_DERR				0xA0
 
-#define DDR_CSR_CLKGEN_LOCKED_IO96B0_MASK BIT(16)
-#define DDR_CSR_CLKGEN_LOCKED_IO96B1_MASK BIT(17)
+#define DDR_CSR_CLKGEN_LOCKED_IO96B0_MASK		BIT(16)
+#define DDR_CSR_CLKGEN_LOCKED_IO96B1_MASK		BIT(17)
 #define DDR_CSR_CLKGEN_LOCKED_IO96B_MASK(i)		\
 	(i == 0 ?					\
 	 DDR_CSR_CLKGEN_LOCKED_IO96B0_MASK :		\
@@ -57,7 +57,7 @@ static int is_ddr_csr_clkgen_locked(u32 clkgen_mask)
 	int ret;
 	u32 tmp;
 
-	ret = readl_poll_timeout(IOMEM(ECC_INTSTATUS_SERR),
+	ret = readl_poll_timeout(IOMEM(SOCFPGA_SYSMGR_ADDRESS) + ECC_INTSTATUS_SERR,
 				 tmp, tmp & clkgen_mask, 10 * USEC_PER_SEC);
 	if (ret) {
 		pr_debug("%s: ddr csr clkgena locked is timeout\n", __func__);

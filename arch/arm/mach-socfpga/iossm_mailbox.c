@@ -49,7 +49,7 @@ static const char *ddr_type_list[7] = {
 		"DDR4", "DDR5", "DDR5_RDIMM", "LPDDR4", "LPDDR5", "QDRIV", "UNKNOWN"
 };
 
-static int is_ddr_csr_clkgen_locked(u32 clkgen_mask, u8 num_port)
+static int is_ddr_csr_clkgen_locked(u32 clkgen_mask)
 {
 	int ret;
 	u32 tmp;
@@ -289,8 +289,7 @@ void io96b_init_mem_cal(struct io96b_info *io96b_ctrl)
 	count = 0;
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
 		if (io96b_ctrl->ckgen_lock) {
-			ret = is_ddr_csr_clkgen_locked(DDR_CSR_CLKGEN_LOCKED_IO96B_MASK(i),
-						       io96b_ctrl->num_port);
+			ret = is_ddr_csr_clkgen_locked(DDR_CSR_CLKGEN_LOCKED_IO96B_MASK(i));
 			if (ret) {
 				pr_err("%s: ckgena_lock iossm IO96B_%d is not locked\n",
 				       __func__, i);

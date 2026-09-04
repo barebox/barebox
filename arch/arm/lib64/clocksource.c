@@ -5,6 +5,5 @@
 
 __attribute__((constructor)) static void init_arch_clock(void)
 {
-	if (arm_arch_timer_init(0))
-		puts_ll("Failed to setup architected timer\n");
+	arm_arch_timer_init(0);
 }

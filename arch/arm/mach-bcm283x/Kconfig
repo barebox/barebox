@@ -47,6 +47,12 @@ config MACH_RPI4
 	select MACH_RPI_AARCH_32_64
 	select MACH_RPI_COMMON
 
+config MACH_RPI5
+	bool "RaspberryPi 5 (BCM2712/CORTEX-A76)"
+	depends on 64BIT
+	select CPU_V8
+	select MACH_RPI_COMMON
+
 endmenu
 
 endif

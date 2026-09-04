@@ -113,6 +113,16 @@ static inline void PUTC_LL(char c)
 	debug_ll_ns16550_putc(base, c);
 }
 
+#elif defined CONFIG_DEBUG_RPI5_UART
+
+static inline void debug_ll_init(void)
+{
+	/* Configured by ROM */
+}
+
+#define DEBUG_LL_UART_ADDR BCM2712_PL011_BASE
+#include <debug_ll/pl011.h>
+
 #else
 
 static inline void debug_ll_init(void)

@@ -1,5 +1,7 @@
 #!/bin/sh
 
 for i in /boot/network-drivers/*; do
-	$i;
+	if [ -e "$i" ]; then
+		$i
+	fi
 done

@@ -641,18 +641,18 @@ static struct partition_desc *efi_partition(void *buf, struct block_device *blk)
 
 	nb_part = le32_to_cpu(gpt->num_partition_entries);
 
-	if (nb_part > MAX_PARTITION) {
-		dev_warn(blk->dev, "GPT has more partitions than we support (%d) > max partition number (%d)\n",
-			 nb_part, MAX_PARTITION);
-		nb_part = MAX_PARTITION;
-	}
-
 	snprintf(blk->cdev.diskuuid, sizeof(blk->cdev.diskuuid), "%pUl", &gpt->disk_guid);
 	add_gpt_diskuuid_param(epd, blk);
 
 	for (i = 0; i < nb_part; i++) {
 		if (!is_pte_valid(&ptes[i], last_lba(blk))) {
 			dev_dbg(blk->dev, "Invalid pte %d\n", i);
+			continue;
+		}
+
+		if (i >= MAX_PARTITION) {
+			dev_warn(blk->dev, "ignoring GPT partition %d beyond the %d we support\n",
+				 i + 1, MAX_PARTITION);
 			continue;
 		}
 

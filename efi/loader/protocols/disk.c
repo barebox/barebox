@@ -160,16 +160,14 @@ efi_fs_from_path(struct efi_device_path *full_path)
 
 static bool efi_fs_exists(struct cdev *cdev)
 {
+	enum filetype filetype;
 	struct driver *drv;
 
+	if (cdev_detect_type(cdev, &filetype))
+		return false;
+
 	bus_for_each_driver(&fs_bus, drv) {
-		struct fs_driver *fdrv;
-		enum filetype filetype;
-
-		fdrv = drv_to_fs_driver(drv);
-
-		if (cdev_detect_type(cdev, &filetype) == 0 &&
-		    filetype == fdrv->type)
+		if (drv_to_fs_driver(drv)->type == filetype)
 			return true;
 	}
 

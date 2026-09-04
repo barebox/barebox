@@ -148,7 +148,7 @@ static int efi_barebox_populate_mmap(void)
 	void *mmap_buf = NULL, *desc;
 	efi_status_t efiret;
 	size_t mmap_size;
-	ulong mapkey;
+	efi_uintn_t mapkey;
 	size_t descsz;
 	u32 descver;
 	int ret = 0;

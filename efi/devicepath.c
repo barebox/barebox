@@ -788,7 +788,7 @@ static const struct efi_device_path *
 device_path_next_compatible_node(const struct efi_device_path *dev_path,
 				 u8 type, u8 subtype)
 {
-	for (; !is_device_path_end(dev_path);
+	for (; dev_path && !is_device_path_end(dev_path);
 	     dev_path = next_device_path_node(dev_path)) {
 
 		if (device_path_type(dev_path) != type)
@@ -810,11 +810,11 @@ char *device_path_to_partuuid(const struct efi_device_path *dev_path)
 		struct efi_device_path_hard_drive_path *hd =
 			(struct efi_device_path_hard_drive_path *)dev_path;
 
-		if (hd->signature_type != SIGNATURE_TYPE_GUID &&
-		    hd->signature_type != SIGNATURE_TYPE_MBR)
-			continue;
+		if (hd->signature_type == SIGNATURE_TYPE_GUID ||
+		    hd->signature_type == SIGNATURE_TYPE_MBR)
+			return xasprintf("%pUl", (efi_guid_t *)&(hd->signature[0]));
 
-		return xasprintf("%pUl", (efi_guid_t *)&(hd->signature[0]));
+		dev_path = next_device_path_node(dev_path);
 	}
 
 	return NULL;

@@ -126,7 +126,23 @@ struct usb_device {
 
 	/* slot_id - for xHCI enabled devices */
 	unsigned int slot_id;
+
+	/* device is physically gone, don't talk to it anymore */
+	bool disconnected;
 };
+
+/**
+ * usb_device_disconnected - has the device been unplugged?
+ * @dev: the USB device
+ *
+ * Set once a transfer to the device failed and the hub it is attached to
+ * confirmed that the port has no connection anymore. Transfers to such a
+ * device fail with -ENODEV without touching the bus.
+ */
+static inline bool usb_device_disconnected(struct usb_device *dev)
+{
+	return dev->disconnected;
+}
 
 struct usb_device_id;
 

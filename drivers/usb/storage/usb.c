@@ -86,6 +86,13 @@ static int usb_stor_transport(struct us_blk_dev *usb_blkdev,
 		if (ret == USB_STOR_TRANSPORT_GOOD)
 			return 0;
 
+		/* Retrying is pointless once the device has been unplugged */
+		if (usb_device_disconnected(us->pusb_dev)) {
+			dev_dbg(dev, "%s: device is gone\n",
+				usb_stor_opcode_name(cmd[0]));
+			return -ENODEV;
+		}
+
 		if (request_sense_delay_ms == USB_STOR_NO_REQUEST_SENSE)
 			continue;
 
@@ -608,16 +615,34 @@ static void usb_stor_disconnect(struct usb_device *usbdev)
 {
 	struct us_data *us = (struct us_data *)usbdev->drv_data;
 	struct us_blk_dev *bdev, *bdev_tmp;
+	bool busy = false;
+	int ret;
 
 	list_for_each_entry_safe(bdev, bdev_tmp, &us->blk_dev_list, list) {
+		ret = blockdevice_unregister_removed(&bdev->blk);
+		if (ret) {
+			/*
+			 * Something still holds the disk open. Leaking it is
+			 * not nice, but freeing it would leave the cdev that
+			 * is still in use pointing at freed memory.
+			 */
+			dev_err(&usbdev->dev, "%s is still in use, leaking it: %pe\n",
+				bdev->blk.cdev.name, ERR_PTR(ret));
+			busy = true;
+			continue;
+		}
+
 		list_del(&bdev->list);
-		blockdevice_unregister(&bdev->blk);
+		free(bdev->blk.cdev.name);
 		free(bdev);
 	}
 
 	/* release device's private data */
-	usbdev->drv_data = 0;
-	free(us);
+	usbdev->drv_data = NULL;
+
+	/* a leaked disk still refers to us, so that has to stay as well */
+	if (!busy)
+		free(us);
 }
 
 #define USUAL_DEV(use_proto, use_trans, drv_info) \

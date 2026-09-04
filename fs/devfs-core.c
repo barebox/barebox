@@ -249,6 +249,7 @@ static struct cdev *cdev_get_master(struct cdev *cdev)
 int cdev_open(struct cdev *cdev, unsigned long flags)
 {
 	struct cdev *master = cdev_get_master(cdev);
+	struct cdev *c;
 	int ret;
 
 	if (cdev->ops->open) {
@@ -257,7 +258,14 @@ int cdev_open(struct cdev *cdev, unsigned long flags)
 			return ret;
 	}
 
-	cdev->open++;
+	/*
+	 * A device with an open partition is in use itself, so count the
+	 * open along the whole chain up to the device the partition lives
+	 * on. Without that a disk with a mounted partition looks idle and
+	 * could be removed from under the filesystem.
+	 */
+	for (c = cdev; c; c = c->master)
+		c->open++;
 
 	return 0;
 }
@@ -314,6 +322,7 @@ struct cdev *cdev_open_by_path_name(const char *name, unsigned long flags)
 int cdev_close(struct cdev *cdev)
 {
 	struct cdev *master = cdev_get_master(cdev);
+	struct cdev *c;
 
 	if (cdev->ops->close) {
 		int ret = cdev->ops->close(master);
@@ -321,7 +330,8 @@ int cdev_close(struct cdev *cdev)
 			return ret;
 	}
 
-	cdev->open--;
+	for (c = cdev; c; c = c->master)
+		c->open--;
 
 	return 0;
 }
@@ -520,6 +530,35 @@ static void devfs_unlink(const char *name)
 	free(path);
 }
 
+/*
+ * A cdev with a default automount is mounted by walking into
+ * /mnt/<cdevname>. Link the aliases next to it so that an alias can be used
+ * for mounting just as well.
+ */
+static void cdev_mnt_symlink(struct cdev *cdev, const char *linkname)
+{
+	char *path;
+
+	if (!(cdev->flags & DEVFS_HAS_AUTOMOUNT))
+		return;
+
+	path = xasprintf("/mnt/%s", linkname);
+	symlink(cdev->name, path);
+	free(path);
+}
+
+static void cdev_mnt_unlink(struct cdev *cdev, const char *linkname)
+{
+	char *path;
+
+	if (!(cdev->flags & DEVFS_HAS_AUTOMOUNT))
+		return;
+
+	path = xasprintf("/mnt/%s", linkname);
+	unlink(path);
+	free(path);
+}
+
 void devfs_init(void)
 {
 	struct cdev *cdev;
@@ -553,7 +592,26 @@ int devfs_create(struct cdev *new)
 	return 0;
 }
 
-int devfs_add_alias_node(struct cdev *cdev, const char *name, struct device_node *np)
+/*
+ * An alias for a cdev is only half of the work when the cdev is partitioned:
+ * The partitions are named after their master cdev, so they have to become
+ * reachable under the alias as well. Registering "disk0" as "usbdisk0" thus
+ * results in:
+ *
+ *	/dev/disk0
+ *	/dev/disk0.0
+ *	/dev/disk0.data		-> disk0.0
+ *	/dev/usbdisk0		-> disk0
+ *	/dev/usbdisk0.0		-> disk0.0
+ *	/dev/usbdisk0.data	-> disk0.0
+ *
+ * The alias of the master and the partitions can show up in any order: USB
+ * mass storage registers the alias only once the whole device including its
+ * partitions is there, while repartitioning at runtime adds partitions to a
+ * master that already has aliases. Both directions are handled below.
+ */
+static int __devfs_add_alias(struct cdev *cdev, const char *name,
+			     struct device_node *np, bool derived)
 {
 	struct cdev *conflict;
 	struct cdev_alias *alias;
@@ -565,9 +623,94 @@ int devfs_add_alias_node(struct cdev *cdev, const char *name, struct device_node
 	alias = xzalloc(sizeof(*alias));
 	alias->name = xstrdup(name);
 	alias->device_node = np;
+	alias->derived = derived;
 	list_add_tail(&alias->list, &cdev->aliases);
 
 	cdev_symlink(cdev, name);
+	cdev_mnt_symlink(cdev, name);
+
+	return 0;
+}
+
+/*
+ * Add an alias for @cdev derived from @name by replacing the leading @stem
+ * with @alias, i.e. stem "disk0", alias "usbdisk0" and name "disk0.data"
+ * yields the alias "usbdisk0.data".
+ */
+static void devfs_add_derived_alias(struct cdev *cdev, const char *stem,
+				    const char *alias, const char *name)
+{
+	size_t stemlen = strlen(stem);
+	char *derived;
+
+	/* Only names of the form "<stem>.<partition>" can be translated */
+	if (strncmp(name, stem, stemlen) || name[stemlen] != '.')
+		return;
+
+	derived = xasprintf("%s%s", alias, name + stemlen);
+
+	/* A name clash only means we can't offer this alias, that's ok */
+	__devfs_add_alias(cdev, derived, NULL, true);
+
+	free(derived);
+}
+
+/*
+ * The partition @cdev has become known as @name. Make it known under the
+ * aliases of its master as well.
+ */
+static void devfs_inherit_master_aliases(struct cdev *cdev, const char *name)
+{
+	struct cdev *master = cdev->master;
+	struct cdev_alias *alias;
+
+	if (!master)
+		return;
+
+	cdev_for_each_alias(alias, master)
+		devfs_add_derived_alias(cdev, master->name, alias->name, name);
+}
+
+/*
+ * The master @cdev has become known as @alias. Make its partitions known
+ * under that alias as well, both by their name and by their own aliases.
+ */
+static void devfs_propagate_alias(struct cdev *cdev, const char *alias)
+{
+	struct cdev_alias *partalias;
+	struct cdev *partcdev;
+
+	for_each_cdev_partition(partcdev, cdev) {
+		devfs_add_derived_alias(partcdev, cdev->name, alias,
+					partcdev->name);
+
+		/*
+		 * Appending to the list we are walking is fine here: the
+		 * aliases added above and below are derived ones and those
+		 * are skipped. Without that, an alias containing a dot
+		 * itself (like "diskuuid.<uuid>") would endlessly derive
+		 * new aliases from the ones it just created.
+		 */
+		cdev_for_each_alias(partalias, partcdev) {
+			if (partalias->derived)
+				continue;
+
+			devfs_add_derived_alias(partcdev, cdev->name, alias,
+						partalias->name);
+		}
+	}
+}
+
+int devfs_add_alias_node(struct cdev *cdev, const char *name, struct device_node *np)
+{
+	int ret;
+
+	ret = __devfs_add_alias(cdev, name, np, false);
+	if (ret)
+		return ret;
+
+	devfs_inherit_master_aliases(cdev, name);
+	devfs_propagate_alias(cdev, name);
 
 	return 0;
 }
@@ -583,6 +726,8 @@ static void devfs_remove_aliases(struct cdev *cdev)
 
 	list_for_each_entry_safe(alias, tmp, &cdev->aliases, list) {
 		devfs_unlink(alias->name);
+		cdev_mnt_unlink(cdev, alias->name);
+		list_del(&alias->list);
 		free(alias->name);
 		free(alias);
 	}
@@ -602,7 +747,10 @@ int devfs_remove(struct cdev *cdev)
 
 	devfs_unlink(cdev->name);
 
+	/* Must happen before the automount is dropped below */
 	devfs_remove_aliases(cdev);
+
+	cdev_remove_default_automount(cdev);
 
 	list_for_each_entry_safe(c, tmp, &cdev->partitions, partition_entry)
 		cdevfs_del_partition(c);
@@ -732,6 +880,9 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 			return (void *)mtd;
 
 		list_add_tail(&mtd->cdev.partition_entry, &cdev->partitions);
+
+		devfs_inherit_master_aliases(&mtd->cdev, mtd->cdev.name);
+
 		return &mtd->cdev;
 	}
 
@@ -753,6 +904,8 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 	devfs_create(new);
 
 	cdev_create_default_automount(new);
+
+	devfs_inherit_master_aliases(new, new->name);
 
 	return new;
 }

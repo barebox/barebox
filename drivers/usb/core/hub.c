@@ -260,6 +260,52 @@ static int hub_port_reset(struct usb_device *hub, int port,
 }
 
 
+/**
+ * usb_hub_port_connected - ask a hub whether a port still has a device
+ * @hub: the hub to ask
+ * @port: 1-based port number
+ *
+ * Return: 1 if the port reports a device, 0 if it doesn't and a negative
+ * error code when the hub could not be asked. Do not treat the latter as
+ * "no device": a hub that doesn't answer tells us nothing about what is
+ * plugged into it.
+ */
+int usb_hub_port_connected(struct usb_device *hub, int port)
+{
+	struct usb_port_status portsts;
+	int ret;
+
+	ret = usb_get_port_status(hub, port, &portsts);
+	if (ret < 0)
+		return ret;
+
+	return !!(le16_to_cpu(portsts.wPortStatus) & USB_PORT_STAT_CONNECTION);
+}
+
+/**
+ * usb_hub_cancel_scans - drop pending port scans of a hub that goes away
+ * @dev: the USB device that is about to be removed
+ *
+ * The scan list is filled by usb_hub_configure_ports() and drained by
+ * usb_device_list_scan(). As the latter is not reentrant, a hub found
+ * during a scan queues its ports and leaves them for the loop that is
+ * already running. If that hub is removed before its entries have been
+ * processed, they would be left pointing at the freed usb_device and its
+ * freed usb_hub_device.
+ */
+void usb_hub_cancel_scans(struct usb_device *dev)
+{
+	struct usb_device_scan *usb_scan, *tmp;
+
+	list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list) {
+		if (usb_scan->dev != dev)
+			continue;
+
+		list_del(&usb_scan->list);
+		free(usb_scan);
+	}
+}
+
 static void usb_hub_port_connect_change(struct usb_device *dev, int port,
 					uint16_t portstatus, uint16_t portchange)
 {
@@ -268,20 +314,29 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port,
 	/* Clear the connection change status */
 	usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_C_CONNECTION);
 
-	/* Disconnect any existing devices under this port */
-	if (dev->children[port] && !(portstatus & USB_PORT_STAT_CONNECTION)) {
+	/*
+	 * The connection changed, so whatever we knew about this port is
+	 * gone. That covers a plain unplug as well as a device that has been
+	 * replaced while we were not looking: the port reports a connection
+	 * again in that case, but not the one we have a device for.
+	 *
+	 * Note we must not test for USB_PORT_STAT_ENABLE here to tell the
+	 * two apart. An xHCI root hub enables a SuperSpeed port on its own
+	 * during link training, so the port is already enabled the first
+	 * time we see it.
+	 */
+	if (dev->children[port]) {
 		dev_dbg(&dev->dev, "port%d: disconnect detected\n", port + 1);
 		usb_remove_device(dev->children[port]);
+		dev->children[port] = NULL;
 
 		if (!dev->parent && dev->host->usbphy)
 			usb_phy_notify_disconnect(dev->host->usbphy, dev->speed);
-
-		return;
 	}
 
-	/* Remove disabled but connected devices */
-	if (dev->children[port] && !(portstatus & USB_PORT_STAT_ENABLE))
-		usb_remove_device(dev->children[port]);
+	/* Nothing connected anymore, we are done */
+	if (!(portstatus & USB_PORT_STAT_CONNECTION))
+		return;
 
 	/* Allocate a new device struct for the port */
 	usb = usb_alloc_new_device();
@@ -356,8 +411,15 @@ static void usb_scan_port(struct usb_device_scan *usb_scan)
 	dev_dbg(&dev->dev, "port%d: Status 0x%04x Change 0x%04x\n",
 			port + 1, portstatus, portchange);
 
+	/*
+	 * A connection change on a port we have a device for has to be
+	 * handled even when the port reports no connection: that is how a
+	 * disconnect looks. An empty port on the other hand keeps its change
+	 * bit set from the power-on, so leave it in the scan list until the
+	 * connect timeout expires to give slow devices time to show up.
+	 */
 	if (!(portchange & USB_PORT_STAT_C_CONNECTION) ||
-	    !(portstatus & USB_PORT_STAT_CONNECTION)) {
+	    (!(portstatus & USB_PORT_STAT_CONNECTION) && !dev->children[port])) {
 		if (get_time_ns() >= hub->connect_timeout) {
 			dev_dbg(&dev->dev, "port%d: timeout\n", port + 1);
 			/* Remove this device from scanning list */
@@ -378,8 +440,7 @@ static void usb_scan_port(struct usb_device_scan *usb_scan)
 		usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_C_BH_PORT_RESET);
 	}
 
-	/* A new USB device is ready at this point */
-	dev_dbg(&dev->dev, "port%d: USB dev found\n", port + 1);
+	dev_dbg(&dev->dev, "port%d: connection change\n", port + 1);
 
 	usb_hub_port_connect_change(dev, port, portstatus, portchange);
 
@@ -511,7 +572,17 @@ static int usb_hub_configure(struct usb_device *dev)
 	for (i = 0; i < ((hub->desc.bNbrPorts + 1 + 7)/8); i++)
 		hub->desc.u.hs.PortPwrCtrlMask[i] = descriptor->u.hs.PortPwrCtrlMask[i];
 
+	/*
+	 * bNbrPorts comes from the device, while children[] and
+	 * overcurrent_count[] are sized after USB_MAXCHILDREN. Don't let a
+	 * hub that reports more ports than that write past their ends.
+	 */
 	dev->maxchild = descriptor->bNbrPorts;
+	if (dev->maxchild > USB_MAXCHILDREN) {
+		dev_warn(&dev->dev, "hub reports %d ports, only using %d\n",
+			 dev->maxchild, USB_MAXCHILDREN);
+		dev->maxchild = USB_MAXCHILDREN;
+	}
 	dev_dbg(&dev->dev, "%d ports detected\n", dev->maxchild);
 
 	switch (hub->desc.wHubCharacteristics & HUB_CHAR_LPSM) {

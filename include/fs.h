@@ -112,6 +112,7 @@ static inline bool is_tftp_fs(const char *path)
 
 int flush(int fd);
 int umount_by_cdev(struct cdev *cdev);
+int cdev_umount_all(struct cdev *cdev);
 
 /* not-so-standard functions */
 #define ERASE_SIZE_ALL	((loff_t) - 1)

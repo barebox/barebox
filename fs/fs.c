@@ -1028,6 +1028,37 @@ int umount_by_cdev(struct cdev *cdev)
 }
 EXPORT_SYMBOL(umount_by_cdev);
 
+/**
+ * cdev_umount_all - unmount everything mounted from a cdev
+ * @cdev: cdev to unmount
+ *
+ * Unmounts the filesystems mounted from @cdev and from its partitions.
+ * Useful for a medium that is gone, where the mounts cannot be used
+ * anymore anyway.
+ *
+ * Return: 0 on success or if nothing was mounted, the first error
+ *         otherwise
+ */
+int cdev_umount_all(struct cdev *cdev)
+{
+	struct cdev *partcdev;
+	int first_error = 0;
+	int ret;
+
+	for_each_cdev_partition(partcdev, cdev) {
+		ret = cdev_umount_all(partcdev);
+		if (ret && !first_error)
+			first_error = ret;
+	}
+
+	ret = umount_by_cdev(cdev);
+	if (ret && !first_error)
+		first_error = ret;
+
+	return first_error;
+}
+EXPORT_SYMBOL(cdev_umount_all);
+
 struct readdir_entry {
 	struct dirent d;
 	struct list_head list;
@@ -3488,9 +3519,27 @@ void cdev_create_default_automount(struct cdev *cdev)
 	cmd = basprintf("mount %s", cdev->name);
 
 	make_directory(path);
-	automount_add(path, cmd);
+	if (!automount_add(path, cmd))
+		cdev->flags |= DEVFS_HAS_AUTOMOUNT;
 
 	free(cmd);
+	free(path);
+}
+
+void cdev_remove_default_automount(struct cdev *cdev)
+{
+	char *path;
+
+	if (!(cdev->flags & DEVFS_HAS_AUTOMOUNT))
+		return;
+
+	path = basprintf("/mnt/%s", cdev->name);
+
+	automount_remove(path);
+	rmdir(path);
+
+	cdev->flags &= ~DEVFS_HAS_AUTOMOUNT;
+
 	free(path);
 }
 

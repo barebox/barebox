@@ -27,7 +27,7 @@ unsigned lodepng_custom_zlib_decompress(unsigned char** out, size_t* outsize,
 
 	err = zlib_inflateReset(&png_stream);
 	if (err != Z_OK) {
-		printk("zlib_inflateReset error %d\n", err);
+		pr_warn("zlib_inflateReset error %d\n", err);
 		zlib_inflateEnd(&png_stream);
 		zlib_inflateInit(&png_stream);
 	}
@@ -38,8 +38,8 @@ unsigned lodepng_custom_zlib_decompress(unsigned char** out, size_t* outsize,
 	return 0;
 
 err:
-	printk("Error %d while decompressing!\n", err);
-	printk("%p(%zd)->%p(%zd)\n", in, insize, *out, *outsize);
+	pr_err("Error %d while decompressing: %p(%zd)->%p(%zd)\n",
+	       err, in, insize, *out, *outsize);
 	return -EIO;
 }
 

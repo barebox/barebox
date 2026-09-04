@@ -229,8 +229,7 @@ ENTRY(v8_invalidate_icache_all)
 ENDPROC(v8_invalidate_icache_all)
 
 .section .text.v8_flush_l3_cache
-ENTRY(v8_flush_l3_cache)
+WEAK(v8_flush_l3_cache)
 	mov	x0, #0			/* return status as success */
 	ret
 ENDPROC(v8_flush_l3_cache)
-	.weak	v8_flush_l3_cache

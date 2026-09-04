@@ -454,6 +454,14 @@ efi_status_t __maybe_unused efi_var_collect(struct efi_var_file **bufp, loff_t *
 		ret = efi_get_variable_int(var->name, &var->guid,
 					   &var->attr, &data_length, data,
 					   &var->time);
+		/*
+		 * The attributes are valid even when the value did not fit.
+		 * Variables we are not going to keep may thus be skipped
+		 * without their value ever being copied, e.g. VarToFile.
+		 */
+		if (ret == EFI_BUFFER_TOO_SMALL &&
+		    (var->attr & check_attr_mask) != check_attr_mask)
+			continue;
 		if (ret != EFI_SUCCESS) {
 			free(buf);
 			return ret;

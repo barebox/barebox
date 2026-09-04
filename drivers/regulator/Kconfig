@@ -90,4 +90,11 @@ config REGULATOR_RK808
 	  through regulator interface. The device supports multiple DCDC/LDO
 	  outputs which can be controlled by i2c communication.
 
+config REGULATOR_PCA9450
+	tristate "NXP PCA9450A/PCA9450B/PCA9450C regulator driver"
+	depends on MFD_PCA9450
+	help
+	  Say y here to support the NXP PCA9450A/PCA9450B/PCA9450C PMIC
+	  regulator driver.
+
 endif

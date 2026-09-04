@@ -27,6 +27,7 @@ extern efi_guid_t efi_null_guid;
 extern efi_guid_t efi_global_variable_guid;
 extern const efi_guid_t efi_guid_image_security_database;
 extern efi_guid_t efi_block_io_protocol_guid;
+extern efi_guid_t efi_usb_io_protocol_guid;
 extern efi_guid_t efi_rng_protocol_guid;
 extern efi_guid_t efi_barebox_vendor_guid;
 extern efi_guid_t efi_file_store_vars_guid;

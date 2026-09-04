@@ -22,6 +22,16 @@ config USB_EHCI_ZYNQ
 	help
 	  Enable support for Zynq on-chip EHCI USB controller
 
+config USB_EFI_IO_PROTOCOL
+	bool "EFI USB I/O Protocol"
+	depends on EFI_PAYLOAD
+	help
+	  Enable support for usb devices, initialized by the UEFI BIOS.
+	  Use this with caution, as devices may afterwards have multiple drivers.
+	  For example can a USB-Stick be treated as an IO Blockdevice by UEFI and
+	  have a driver for it, but can also be initiated as a USB-Storage device,
+	  which could lead to errors in handling the USB-Device.
+
 config USB_OHCI
 	bool "OHCI driver"
 	depends on !MMU && HAS_DMA

@@ -15,6 +15,7 @@ efi_guid_t efi_null_guid = EFI_NULL_GUID;
 efi_guid_t efi_global_variable_guid = EFI_GLOBAL_VARIABLE_GUID;
 const efi_guid_t efi_guid_image_security_database = EFI_IMAGE_SECURITY_DATABASE_GUID;
 efi_guid_t efi_block_io_protocol_guid = EFI_BLOCK_IO_PROTOCOL_GUID;
+efi_guid_t efi_usb_io_protocol_guid = EFI_USB_IO_PROTOCOL_GUID;
 efi_guid_t efi_rng_protocol_guid = EFI_RNG_PROTOCOL_GUID;
 efi_guid_t efi_barebox_vendor_guid = EFI_BAREBOX_VENDOR_GUID;
 efi_guid_t efi_file_store_vars_guid = EFI_FILE_STORE_VARS_GUID;

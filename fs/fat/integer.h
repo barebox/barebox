@@ -7,6 +7,8 @@
 #ifndef _INTEGER
 #define _INTEGER
 
+#include <linux/types.h>
+
 /* These types must be 16-bit, 32-bit or larger integer */
 typedef int		INT;
 typedef unsigned int	UINT;
@@ -23,8 +25,8 @@ typedef unsigned short	WORD;
 typedef unsigned short	WCHAR;
 
 /* These types must be 32-bit integer */
-typedef long		LONG;
-typedef unsigned long	ULONG;
-typedef unsigned long	DWORD;
+typedef s32		LONG;
+typedef u32		ULONG;
+typedef u32		DWORD;
 
 #endif

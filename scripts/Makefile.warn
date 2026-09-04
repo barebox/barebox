@@ -43,6 +43,11 @@ endif
 # disable pointer signed / unsigned warnings in gcc 4.0
 KBUILD_CFLAGS += -Wno-pointer-sign
 
+# Some diagnostics enabled by default are noisy. Unlike GCC, Clang re-enables
+# them when -Wall is passed later on the command line, so the -Wno... options
+# must come after -Wall
+KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
+
 #
 # W=e and CONFIG_WERROR - error out on warnings
 #

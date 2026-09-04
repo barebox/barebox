@@ -59,9 +59,11 @@ static int jwt_part_parse(struct jwt_part *part, const char *content, size_t len
 	decoded_len = decode_base64url(part->content, len, content);
 	part->content[decoded_len] = '\0';
 	part->tokens = jsmn_parse_alloc(part->content, decoded_len, &part->token_count);
-	if (!part->tokens) {
+	if (!part->tokens || !part->token_count) {
 		free(part->content);
 		part->content = NULL;
+		free(part->tokens);
+		part->tokens = NULL;
 		return -EILSEQ;
 	}
 

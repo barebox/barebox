@@ -19,16 +19,27 @@ options to crash barebox on detection of memory safety issues::
   # [snip]
   images built:
   barebox
+  fuzz-dtb
+  fuzz-dtb-overlay
+  fuzz-fat
+  fuzz-fdt-compatible
   fuzz-filetype
   fuzz-fit
-  fuzz-fs
-  fuzz-dtb
-  fuzz-fdt-compatible
+  fuzz-jwt
   fuzz-partitions
   fuzz-partitions-4k
+  fuzz-pe
+  fuzz-state-direct
+  fuzz-tlv
+  fuzz-uncompress
 
 All fuzzers generated are symlinks to the same barebox executable. barebox
 will detect that it was invoked via symlink and switch to fuzzing mode.
+``images/barebox --list-fuzzers`` prints the fuzzers of a given build.
+
+Which fuzzers are built depends on the configuration: each one is tied to
+the option enabling the code it exercises, so a fuzzer for a disabled
+subsystem is not generated.
 
 Fuzzing
 ^^^^^^^
@@ -45,8 +56,8 @@ Examples of running the fuzzers::
   images/fuzz-dtb -rss_limit_mb=10000 -max_len=51200 -jobs=64 \
 	../barebox-fuzz-corpora/dtb
 
-  # Some fuzzers still leak, so disable leak detection till resolved
-  images/fuzz-fit -max_total_time=600 -rss_limit_mb=20000 -max_len=128000 -detect_leaks=0
+  # Run fuzz-fit with a time limit
+  images/fuzz-fit -max_total_time=600 -rss_limit_mb=20000 -max_len=128000
 
   # Debug a crash
   gdb --args images/fuzz-fit crash-$HASH
@@ -79,19 +90,45 @@ barebox will produce coverage information.
 	images/fuzz-filetype -max_total_time=60 -max_len=2048
 
 After the process exists regularly (i.e., not aborted with ctrl+C!),
-it will produce a ``default.profraw`` file, which needs to be further
-processed:
+it will produce a ``default.profraw`` file in its working directory,
+which needs to be further processed:
 
 .. code-block:: bash
 
 	make coverage-html
 
-This will produce a ``${KBUILD_OUTPUT}/coverage_html/`` directory, which can be
-inspected by a web browser:
+Note that every run of an instrumented binary overwrites the profile, so
+collect it before running anything else, ``images/barebox --list-fuzzers``
+included.
+
+This will produce a ``${KBUILD_OUTPUT}/barebox.coverage_html/`` directory,
+which can be inspected by a web browser:
 
 .. code-block:: bash
 
-	firefox coverage_html/index.html
+	firefox barebox.coverage_html/index.html
+
+Automated Coverage Checking
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For CI or scripted workflows, the ``coverage-check`` Makefile target can verify
+that coverage is 100% for a given set of functions without manual inspection:
+
+.. code-block:: bash
+
+	make coverage-check \
+		COVERAGE_SOURCES="common/filetype.c" \
+		COVERAGE_FUNCTIONS="file_detect|fuzz_filetype|fat_valid|is_fat|is_gpt|pmbr_part"
+
+``COVERAGE_SOURCES`` lists the source files to check. ``COVERAGE_FUNCTIONS`` is
+an optional regex that filters which functions are considered. This is important
+when a source file contains functions not exercised by the fuzzer — without the
+filter, those would show up as uncovered and fail the check.
+
+On success, the target prints a per-file summary and exits with 0. On failure,
+it lists each function that has uncovered regions or lines along with their
+counts and exits with 1. Use ``make coverage-html`` to inspect the specific
+source lines that were not hit.
 
 Adding a fuzzer
 ^^^^^^^^^^^^^^^
@@ -123,6 +160,23 @@ parses a memory buffer::
 
 .. note:: Fuzz tests should not leak memory, otherwise
  the fuzzing process may abort eventually due to memory exhaustion.
+
+Anything the test needs only once, like registering a device to run the
+parser against, does not belong into that function: it would be executed
+while the first input is measured and its coverage would be credited to
+whatever input happens to run first. Register such a test with
+``fuzz_test_init()`` instead and do the setup in the callback::
+
+  static void fuzz_dtb_init(void)
+  {
+  	/* runs once, before the first input */
+  }
+  fuzz_test_init("dtb", fuzz_dtb, fuzz_dtb_init);
+
+The callback may be called more than once, e.g. once per invocation of the
+``fuzz`` command, so it has to cope with being called again. The wrappers
+that back a test with a ramdisk take such a callback as their last argument
+and run it after creating the device.
 
 This function than needs to be registered by name in
 ``images/Makefile.sandbox``::

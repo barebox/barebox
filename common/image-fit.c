@@ -96,7 +96,6 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 		const struct fdt_node_header *fnh;
 		const char *name;
 		int include = 0;
-		int stop_at = 0;
 		int offset = dt_struct;
 		int maxlen, len;
 
@@ -126,14 +125,10 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 			strcpy(end, name);
 			end += len;
 			stack[depth] = want;
-			if (want == 1)
-				stop_at = offset;
 			if (string_list_contains(inc_nodes, path))
 				want = 2;
 			else if (want)
 				want--;
-			else
-				stop_at = offset;
 			include = want;
 
 			break;
@@ -163,7 +158,6 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 						      sizeof(struct fdt_property) + len);
 
 			include = want >= 2;
-			stop_at = offset;
 			if (string_list_contains(exc_props, name))
 				include = 0;
 
@@ -173,7 +167,6 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE);
 
 			include = want >= 2;
-			stop_at = offset;
 
 			break;
 
@@ -442,21 +435,17 @@ static int fit_verify_signature(struct fit_handle *handle,
 	ret = fit_digest(handle, digest, &inc_nodes, &exc_props, hashed_strings_start,
 			 hashed_strings_size);
 	if (ret)
-		goto out_sl;
+		goto out_digest;
 
 	hash = xzalloc(digest_length(digest));
 	digest_final(digest, hash);
 
 	ret = fit_check_signature(handle, sig_node, algo, hash);
-	if (ret) {
+	if (ret)
 		fit_config_check_hash_nodes(sig_node, &inc_nodes);
-		goto out_free_hash;
-	}
 
-	ret = 0;
-
- out_free_hash:
 	free(hash);
+ out_digest:
 	digest_free(digest);
  out_sl:
 	string_list_free(&inc_nodes);
@@ -841,7 +830,6 @@ static int fit_fdt_is_compatible(struct fit_handle *handle,
 	const char *unit = "fdt";
 	int data_len;
 	const void *data;
-	int ret;
 
 	if (of_property_present(child, "compatible"))
 		return 0;
@@ -849,10 +837,8 @@ static int fit_fdt_is_compatible(struct fit_handle *handle,
 		return 0;
 
 	image = fit_get_image(handle, child, &unit, 0);
-	if (!image) {
-		ret = -ENOENT;
+	if (!image)
 		goto err;
-	}
 
 	data = of_get_property(image, "data", &data_len);
 	if (!data)
@@ -1217,50 +1203,151 @@ static int bootm_fit_register(void)
 }
 late_initcall(bootm_fit_register);
 
+/*
+ * Verification modes selected by the control byte. All of them are
+ * reachable in practice, and which one is in effect decides whether
+ * hashes and signatures are merely checked when present or required.
+ */
+static const enum bootm_verify fuzz_verify_modes[] = {
+	BOOTM_VERIFY_NONE,
+	BOOTM_VERIFY_HASH,
+	BOOTM_VERIFY_SIGNATURE,
+	BOOTM_VERIFY_AVAILABLE,
+};
+
+/*
+ * The image types a configuration can name. Each of these properties may
+ * list any number of images, so cap how many of them are opened.
+ */
+static const char * const fuzz_image_names[] = {
+	"kernel", "fdt", "ramdisk", "tee", "loadables",
+};
+
+#define FUZZ_FIT_MAX_IMAGES	8
+#define FUZZ_FIT_FILE		"/fuzz.fit"
+
+/* The candidate filter bootm applies while a configuration is picked */
+static bool fuzz_fit_has_kernel(struct fit_handle *handle,
+				struct device_node *config)
+{
+	return fit_has_image(handle, config, "kernel");
+}
+
+/*
+ * bootm opens a FIT by name: open_fdt() checks the header against the file
+ * size and a second open of the same name is served from the handle cache.
+ */
+static struct fit_handle *fuzz_fit_open_file(const u8 *data, size_t size,
+					     enum bootm_verify verify)
+{
+	struct fit_handle *handle, *cached;
+	int ret;
+
+	ret = write_file(FUZZ_FIT_FILE, data, size);
+	if (ret)
+		return ERR_PTR(ret);
+
+	handle = fit_open(FUZZ_FIT_FILE, false, verify);
+	if (!IS_ERR(handle)) {
+		cached = fit_open(FUZZ_FIT_FILE, false, verify);
+		if (!IS_ERR(cached))
+			fit_close(cached);
+	}
+
+	unlink(FUZZ_FIT_FILE);
+
+	return handle;
+}
+
+static void fuzz_fit_open_images(struct fit_handle *handle, void *config)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(fuzz_image_names); i++) {
+		const char *name = fuzz_image_names[i];
+		const void *outdata;
+		unsigned long outsize, addr;
+		int idx, count;
+
+		/*
+		 * Without a configuration the image is looked up by its
+		 * own name, so there is exactly one to open.
+		 */
+		count = config ? clamp(fit_count_images(handle, config, name),
+				       0, FUZZ_FIT_MAX_IMAGES) : 1;
+
+		for (idx = 0; idx < count; idx++)
+			fit_open_image(handle, config, name, idx,
+				       &outdata, &outsize);
+
+		fit_get_image_address(handle, config, name, "load", &addr);
+		fit_get_image_address(handle, config, name, "entry", &addr);
+	}
+}
+
+/*
+ * A FIT that verifies goes on to run a kernel of its choosing, so what it
+ * does afterwards is not attack surface: this stops at fit_open_image(),
+ * where the hash and the image signature are checked. The hash comparison
+ * including its success path does matter, as a hash is trivially recomputed
+ * for modified data wherever signatures are not enforced.
+ */
 static int fuzz_fit(const u8 *data, size_t size)
 {
-	const char *unit, *imgname = "kernel";
-	struct fit_handle handle = {};
-	const void *outdata;
-	unsigned long outsize, addr;
-	int ret;
+	struct fit_handle *handle;
+	enum bootm_verify verify;
+	const char *unit;
 	void *config;
+	u8 ctrl = 0;
 
-	handle.verbose = false;
-	handle.verify = BOOTM_VERIFY_AVAILABLE;
+	if (size < sizeof(struct fdt_header))
+		return 0;
 
-	handle.size = size;
-	handle.fit = data;
-	handle.fit_alloc = NULL;
+	/*
+	 * If the buffer is larger than the FDT claims to be, take the
+	 * first trailing byte as a control byte to vary what the fuzzer
+	 * exercises. Corpus entries that are exactly one FDT get 0.
+	 * Input that is no FDT at all has no structure worth preserving,
+	 * so there the last byte selects.
+	 */
+	if (fdt_magic(data) == FDT_MAGIC) {
+		uint32_t fdt_size = fdt_totalsize(data);
 
-	refcount_set(&handle.users, 1);
-
-	ret = fit_do_open(&handle);
-	if (ret)
-		goto out;
-
-	config = fit_open_configuration(&handle, NULL, NULL);
-	if (IS_ERR(config)) {
-		ret = fit_find_last_unit(&handle, &unit);
-		if (ret)
-			goto out;
-		config = fit_open_configuration(&handle, unit, NULL);
-	}
-	if (IS_ERR(config)) {
-		ret = PTR_ERR(config);
-		goto out;
+		if (fdt_size >= sizeof(struct fdt_header) && fdt_size < size) {
+			ctrl = data[fdt_size];
+			size = fdt_size;
+		}
+	} else {
+		ctrl = data[size - 1];
 	}
 
-	ret = fit_open_image(&handle, config, imgname, 0, &outdata, &outsize);
-	if (ret)
-		goto out;
+	verify = fuzz_verify_modes[ctrl % ARRAY_SIZE(fuzz_verify_modes)];
 
-	fit_get_image_address(&handle, config, imgname, "load", &addr);
-	fit_get_image_address(&handle, config, imgname, "entry", &addr);
+	if (ctrl & BIT(2))
+		handle = fuzz_fit_open_file(data, size, verify);
+	else
+		handle = fit_open_buf(data, size, false, verify);
+	if (IS_ERR(handle))
+		return 0;
 
-	ret = fit_open_image(&handle, NULL, imgname, 0, &outdata, &outsize);
-out:
-	__fit_close(&handle);
+	/*
+	 * Opening without a name picks the configuration matching barebox'
+	 * own compatible. Fall back to the last one, so images that describe
+	 * a different machine are explored as well.
+	 */
+	config = fit_open_configuration(handle, NULL, fuzz_fit_has_kernel);
+	if (IS_ERR(config) && !fit_find_last_unit(handle, &unit))
+		config = fit_open_configuration(handle, unit, NULL);
+
+	if (!IS_ERR(config)) {
+		fit_config_get_name(handle, config);
+		fuzz_fit_open_images(handle, config);
+	}
+
+	/* Without a configuration an image's own signature is checked */
+	fuzz_fit_open_images(handle, NULL);
+
+	fit_close(handle);
 
 	return 0;
 }

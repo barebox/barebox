@@ -69,7 +69,11 @@ struct device *add_child_device(struct device *parent,
 	dev->platform_data = pdata;
 	device_add_resource(dev, resname, start, size, flags);
 
-	platform_device_register(dev);
+	if (platform_device_register(dev)) {
+		free(dev->resource);
+		free_device(dev);
+		return NULL;
+	}
 
 	return dev;
 }
@@ -84,7 +88,11 @@ struct device *add_generic_device_res(const char* devname, int id,
 	dev->platform_data = pdata;
 	device_add_resources(dev, res, nb);
 
-	platform_device_register(dev);
+	if (platform_device_register(dev)) {
+		free(dev->resource);
+		free_device(dev);
+		return NULL;
+	}
 
 	return dev;
 }

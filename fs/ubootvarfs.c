@@ -201,10 +201,18 @@ static void ubootvarfs_relocate_tail(struct ubootvarfs_inode *node,
 {
 	struct ubootvarfs_var *var = node->var;
 	struct ubootvarfs_data *data = node->data;
-	const size_t n = data->end - var->start;
-	void *src = var->end + 1;
+	char *src = var->end + 1;
+	const char *tail_end;
 
-	memmove(src + delta, src, n);
+	/*
+	 * Move everything up to and including the terminating NUL at
+	 * data->end. When the environment completely fills the device,
+	 * the last entry's NUL is the final byte and data->end points
+	 * one past the mapping, so there is no terminator to carry along.
+	 */
+	tail_end = min_t(const char *, data->end + 1, data->limit);
+
+	memmove(src + delta, src, tail_end - src);
 
 	data->end += delta;
 
@@ -323,7 +331,6 @@ static void ubootvarfs_destroy_inode(struct inode *inode)
 {
 	struct ubootvarfs_inode *node = inode_to_node(inode);
 
-	free(node->var);
 	free(node);
 }
 
@@ -381,11 +388,31 @@ static int ubootvarfs_truncate(struct file *f, loff_t size)
 	return 0;
 }
 
+static int ubootvarfs_flush(struct file *f)
+{
+	struct inode *inode = f->f_inode;
+	struct ubootvarfs_inode *node = inode_to_node(inode);
+	struct ubootvarfs_data *data = node->data;
+
+	return flush(data->fd);
+}
+
 static const struct file_operations ubootvarfs_file_operations = {
 	.truncate = ubootvarfs_truncate,
 	.read = ubootvarfs_read,
 	.write = ubootvarfs_write,
+	.flush = ubootvarfs_flush,
 };
+
+static void ubootvarfs_free_vars(struct ubootvarfs_data *data)
+{
+	struct ubootvarfs_var *var, *tmp;
+
+	list_for_each_entry_safe(var, tmp, &data->var_list, list) {
+		list_del(&var->list);
+		free(var);
+	}
+}
 
 static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 			     size_t size)
@@ -398,23 +425,26 @@ static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 	data->limit = blob + size;
 	INIT_LIST_HEAD(&data->var_list);
 
-	while (*blob) {
-		var = xmalloc(sizeof(*var));
+	while (size && *blob) {
 		len = strnlen(blob, size);
+		if (len == size) {
+			pr_err("Unterminated data @ 0x%08tx. Skipped.\n",
+			       blob - start);
+			break;
+		}
 
-		var->name = blob;
-		var->end  = blob + len;
-
-		sep = strchr(blob, '=');
-		if (sep) {
+		sep = memchr(blob, '=', len);
+		if (sep && sep != blob) {
+			var = xmalloc(sizeof(*var));
+			var->name = blob;
+			var->end  = blob + len;
 			var->start = sep + 1;
 			var->name_len = sep - blob;
 
 			list_add_tail(&var->list, &data->var_list);
 		} else {
-			pr_err("No separator in data @ 0x%08tx. Skipped.",
+			pr_err("No separator in data @ 0x%08tx. Skipped.\n",
 			       blob - start);
-			free(var);
 		}
 
 		len++; /* account for '\0' */
@@ -436,6 +466,7 @@ static int ubootvarfs_probe(struct device *dev)
 	int ret;
 
 	dev->priv = data;
+	INIT_LIST_HEAD(&data->var_list);
 
 	data->fd = open(fsdev->backingstore, O_RDWR);
 	if (data->fd < 0) {
@@ -468,6 +499,7 @@ static int ubootvarfs_probe(struct device *dev)
 
 	return 0;
 exit:
+	ubootvarfs_free_vars(data);
 	close(data->fd);
 free_data:
 	free(data);
@@ -477,9 +509,12 @@ free_data:
 static void ubootvarfs_remove(struct device *dev)
 {
 	struct ubootvarfs_data *data = dev->priv;
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 
 	flush(data->fd);
 	close(data->fd);
+	fsdev->cdev = NULL;
+	ubootvarfs_free_vars(data);
 	free(data);
 }
 

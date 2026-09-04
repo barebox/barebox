@@ -545,10 +545,8 @@ static void print_devices_drivers(unsigned *line)
 
 	for_each_bus(bus) {
 		struct driver *drv;
-		bool has_drivers = false;
 
 		bus_for_each_driver(bus, drv) {
-			has_drivers = true;
 			ndrvs++;
 		}
 

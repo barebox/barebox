@@ -39,6 +39,10 @@ static int nvmem_create_dynamic_rmem(unsigned long create_size,
 				 (resource_size_t)(uintptr_t)buffer,
 				 (resource_size_t)create_size,
 				 IORESOURCE_MEM, NULL);
+	if (!dev) {
+		free(buffer);
+		return -ENODEV;
+	}
 
 	if (var_name)
 		ret = pr_setenv(var_name, "rmem%u", dynamic_rmem_idx);

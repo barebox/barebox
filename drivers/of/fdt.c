@@ -385,10 +385,15 @@ struct device_node *of_unflatten_dtb_const(const void *infdt, int size)
 static int fuzz_dtb(const u8 *data, size_t size)
 {
 	struct device_node *np;
+	void *fdt;
 
-	np = of_unflatten_dtb_const(data, size);
-	if (!IS_ERR(np))
-		of_delete_node(np);
+	np = of_unflatten_dtb(data, size);
+	if (IS_ERR(np))
+		return 0;
+
+	fdt = of_flatten_dtb(np);
+	free(fdt);
+	of_delete_node(np);
 
 	return 0;
 }
@@ -871,13 +876,8 @@ int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, con
 			if (!dt_struct)
 				return 0;
 			break;
-
-		default:
-			return 0;
 		}
 	}
-
-	return 0;
 }
 
 /*

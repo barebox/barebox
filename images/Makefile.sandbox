@@ -10,6 +10,12 @@ fuzzer-$(CONFIG_OFTREE)		+= dtb
 fuzzer-$(CONFIG_OFTREE)		+= fdt-compatible
 fuzzer-$(CONFIG_PARTITION)	+= partitions
 fuzzer-$(CONFIG_PARTITION)	+= partitions-4k
+fuzzer-$(CONFIG_UNCOMPRESS)	+= uncompress
+fuzzer-$(CONFIG_OF_OVERLAY)	+= dtb-overlay
+fuzzer-$(CONFIG_EFI_PE_PARSER)	+= pe
+fuzzer-$(CONFIG_TLV)		+= tlv
+fuzzer-$(CONFIG_FS_FAT)		+= fat
+fuzzer-$(CONFIG_STATE)		+= state-direct
 
 ifeq ($(CONFIG_SANDBOX),y)
 

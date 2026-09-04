@@ -63,6 +63,8 @@ static int run_fuzz_test(const char *match, bool list, const u8 *buf, size_t len
 	else if (!test)
 		return COMMAND_ERROR;
 
+	fuzz_test_setup(test);
+
 	return fuzz_test_once(test, buf, len);
 }
 

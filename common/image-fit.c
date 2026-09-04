@@ -408,6 +408,41 @@ static void fit_config_check_hash_nodes(struct device_node *sig_node,
 }
 
 /*
+ * Hash algorithms in order of precedence. Only the hash with the strongest
+ * algorithm is verified. The insecure algorithms are only good for detecting
+ * accidental corruption and are never used for verified boot.
+ */
+static const struct fit_hash_algo {
+	const char *name;
+	bool secure;
+} fit_hash_algos[] = {
+	{ .name = "sha512", .secure = true },
+	{ .name = "sha384", .secure = true },
+	{ .name = "sha256", .secure = true },
+	{ .name = "sha1", .secure = false },
+	{ .name = "md5", .secure = false },
+	{ .name = "crc32", .secure = false },
+};
+
+static struct device_node *fit_find_hash_node(struct device_node *image,
+					      const char *name)
+{
+	struct device_node *hash;
+	const char *algo;
+
+	for_each_child_of_node(image, hash) {
+		if (!of_node_has_prefix(hash, "hash"))
+			continue;
+
+		if (!of_property_read_string(hash, "algo", &algo) &&
+		    !strcmp(algo, name))
+			return hash;
+	}
+
+	return NULL;
+}
+
+/*
  * The consistency of the FTD structure was already checked by of_unflatten_dtb()
  */
 static int fit_verify_signature(struct fit_handle *handle,
@@ -480,33 +515,12 @@ static int fit_verify_signature(struct fit_handle *handle,
 	return ret;
 }
 
-static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
-			   const void *data, int data_len)
+static int fit_verify_hash_node(struct fit_handle *handle,
+				struct device_node *hash, struct digest *d,
+				const void *data, int data_len)
 {
-	struct digest *d;
-	const char *algo;
 	const char *value_read;
-	int hash_len, ret;
-	struct device_node *hash;
-
-	switch (handle->verify) {
-	case BOOTM_VERIFY_NONE:
-		return 0;
-	case BOOTM_VERIFY_AVAILABLE:
-		ret = 0;
-		break;
-	default:
-		ret = -EINVAL;
-	}
-
-	hash = fit_get_child_by_name_exact(image, "hash-1");
-	if (!hash)
-		hash = fit_get_child_by_name_exact(image, "hash@1");
-	if (!hash) {
-		if (ret)
-			pr_err("image %pOF does not have hashes\n", image);
-		return ret;
-	}
+	int hash_len;
 
 	value_read = of_get_property(hash, "value", &hash_len);
 	if (!value_read) {
@@ -514,21 +528,9 @@ static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
 		return -EINVAL;
 	}
 
-	if (of_property_read_string(hash, "algo", &algo)) {
-		pr_err("%pOF: \"algo\" property not found\n", hash);
-		return -EINVAL;
-	}
-
-	d = digest_alloc(algo);
-	if (!d) {
-		pr_err("%pOF: unsupported algo %s\n", hash, algo);
-		return -EINVAL;
-	}
-
 	if (hash_len != digest_length(d)) {
 		pr_err("%pOF: invalid hash length %d\n", hash, hash_len);
-		ret = -EINVAL;
-		goto err_digest_free;
+		return -EINVAL;
 	}
 
 	digest_init(d);
@@ -536,17 +538,59 @@ static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
 
 	if (digest_verify(d, value_read)) {
 		pr_err("%pOF: hash BAD\n", hash);
-		ret =  -EBADMSG;
-	} else {
-		if (handle->verbose)
-			pr_info("%pOF: hash OK\n", hash);
-		ret = 0;
+		return -EBADMSG;
 	}
 
-err_digest_free:
-	digest_free(d);
+	if (handle->verbose)
+		pr_info("%pOF: hash OK\n", hash);
 
-	return ret;
+	return 0;
+}
+
+static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
+			   const void *data, int data_len)
+{
+	const struct fit_hash_algo *algo;
+	struct device_node *hash;
+	struct digest *d;
+	int i, ret;
+
+	if (handle->verify == BOOTM_VERIFY_NONE)
+		return 0;
+
+	for (i = 0; i < ARRAY_SIZE(fit_hash_algos); i++) {
+		algo = &fit_hash_algos[i];
+
+		if (handle->verify == BOOTM_VERIFY_SIGNATURE && !algo->secure)
+			break;
+
+		hash = fit_find_hash_node(image, algo->name);
+		if (!hash)
+			continue;
+
+		d = digest_alloc(algo->name);
+		if (!d) {
+			pr_debug("%pOF: unsupported algo %s, skipping\n",
+				 hash, algo->name);
+			continue;
+		}
+
+		ret = fit_verify_hash_node(handle, hash, d, data, data_len);
+		digest_free(d);
+
+		return ret;
+	}
+
+	if (handle->verify == BOOTM_VERIFY_AVAILABLE)
+		return 0;
+
+	if (handle->verify == BOOTM_VERIFY_SIGNATURE)
+		pr_err("image %pOF has no supported hash allowed for verified boot\n",
+		       image);
+	else
+		pr_err("image %pOF has no supported hash\n", image);
+
+	return -EINVAL;
 }
 
 static int fit_image_verify_signature(struct fit_handle *handle,

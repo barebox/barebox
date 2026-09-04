@@ -32,6 +32,12 @@
  * [1] http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0460d/I1002400.html
  */
 
+void armv7r_cache_enable(void)
+{
+	cache_invalidate_stale();
+	set_cr(get_cr() | CR_C);
+}
+
 void armv7r_mpu_disable(void)
 {
 	u32 reg;

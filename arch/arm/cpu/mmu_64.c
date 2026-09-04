@@ -392,6 +392,8 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 	if (get_cr() & CR_M)
 		return;
 
+	cache_invalidate_stale();
+
 	pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
 
 	el = current_el();

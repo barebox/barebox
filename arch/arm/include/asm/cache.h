@@ -26,6 +26,9 @@ static inline void icache_invalidate(void)
 #endif
 }
 
+
+void cache_invalidate_stale(void);
+
 void arm_early_mmu_cache_flush(void);
 void arm_early_mmu_cache_invalidate(void);
 

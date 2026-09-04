@@ -886,7 +886,6 @@ static int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32
 	const char *platform;
 
 	int container = -1;
-	int cont_img_count = 0; /* indexes to arrange the container */
 
 	if (image_stack == NULL) {
 		fprintf(stderr, "Empty image stack ");
@@ -948,7 +947,6 @@ static int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32
 			img_sp->src = file_off;
 
 			file_off += ALIGN(sbuf.st_size, sector_size);
-			cont_img_count++;
 			break;
 
 		case DUMMY_V2X:
@@ -966,7 +964,6 @@ static int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32
 						images_hash);
 			img_sp->src = file_off;
 
-			cont_img_count++;
 			break;
 
 		case SECO:
@@ -986,7 +983,6 @@ static int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32
 			img_sp->src = file_off;
 
 			file_off += sbuf.st_size;
-			cont_img_count++;
 			break;
 
 		case NEW_CONTAINER:
@@ -995,7 +991,6 @@ static int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32
 					CONTAINER_ALIGNMENT,
 					CONTAINER_FLAGS_DEFAULT,
 					fuse_version);
-			cont_img_count = 0; /* reset img count when moving to new container */
 			scfw_flags = 0;
 			break;
 
@@ -1260,12 +1255,12 @@ static void print_image_array_fields(struct flash_header_v3 *container_hdrs, soc
 			if ((soc == ULP) || (soc == IMX9)) {
 				if (img_flags.core_id == CORE_ULP_UPOWER)
 					strcpy(img_name, "uPower FW");
-				else if ((img_flags.core_id == CORE_ULP_CA35))
+				else if (img_flags.core_id == CORE_ULP_CA35)
 					if (app_cntr)
 						strcpy(img_name, "A core Image");
 					else
 						strcpy(img_name, "Bootloader");
-				else if ((img_flags.core_id == CORE_ULP_CM33))
+				else if (img_flags.core_id == CORE_ULP_CM33)
 					strcpy(img_name, "M33");
 
 			} else {

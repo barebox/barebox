@@ -85,7 +85,7 @@ def testfs_hostname(testfs):
 
 
 @pytest.fixture(scope="function")
-def barebox_interfaces(barebox, env, testfs):
+def barebox_interfaces(barebox, env):
     # on DUTs without network feature, this is expected to fail
     # set xfail_strict=True to enforce specifying the network feature
     # if available
@@ -113,31 +113,25 @@ def barebox_interfaces(barebox, env, testfs):
 def test_barebox_network_mock_tftp(barebox, barebox_config, barebox_interfaces):
     skip_disabled(barebox_config, "CONFIG_CMD_TFTP")
 
-    for iface in barebox_interfaces:
-        ifname = iface[0]
-        ifaddr = iface[1]
-
+    for ifname, ifaddr in barebox_interfaces:
         assert ifaddr != "0.0.0.0"
         assert ifaddr == barebox.run_check(f"echo ${ifname}.ipaddr")[0]
 
-        # Attempt a conversation with the DUT, which needs to succeed
-        # only on one interface
-        success = False
-
+    # Attempt a conversation with the DUT, which needs to succeed
+    # only on one interface
+    for ifname, ifaddr in barebox_interfaces:
         try:
             tftp_conversation(barebox, ifname, ifaddr)
-            success = True
             break
         except Exception as e:
             warnings.warn(f"Could not connect to DUT on {ifname} ({ifaddr}): {e}")
-
-        if not success:
-            pytest.fail("Could not converse with DUT on any of the found DHCP interfaces!")
+    else:
+        pytest.fail("Could not converse with DUT on any of the found DHCP interfaces!")
 
 
 def test_barebox_network_real_tftp(barebox, barebox_config,
                                    testfs_hostname, barebox_interfaces):
     skip_disabled(barebox_config, "CONFIG_CMD_TFTP")
 
-    barebox.run_check(f"tftp hostname", timeout=3)
+    barebox.run_check("tftp hostname", timeout=3)
     assert barebox.run_check(f"cat hostname") == ["QEMU"]

@@ -160,7 +160,15 @@ struct partition_desc *partition_table_read(struct block_device *blk)
 
 	ret = block_read(blk, buf, 0, 2);
 	if (ret != 0) {
-		dev_err(blk->dev, "Cannot read MBR/partition table: %pe\n", ERR_PTR(ret));
+		/*
+		 * A removable drive without medium - an empty CD-ROM drive,
+		 * for example - is a normal situation, not an error.
+		 */
+		if (ret == -ENOMEDIUM)
+			dev_dbg(blk->dev, "no medium, skipping partition scan\n");
+		else
+			dev_err(blk->dev, "Cannot read MBR/partition table: %pe\n",
+				ERR_PTR(ret));
 		goto err;
 	}
 

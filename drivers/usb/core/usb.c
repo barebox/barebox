@@ -585,8 +585,7 @@ int usb_new_device(struct usb_device *dev)
 			dev->descriptor->idVendor, "%04x");
 	dev_add_param_uint32_fixed(&dev->dev, "idProduct",
 			dev->descriptor->idProduct, "%04x");
-	list_add_tail(&dev->list, &usb_device_list);
-	dev_count++;
+	usb_add_device(dev);
 
 	err = 0;
 
@@ -601,6 +600,15 @@ void usb_free_device(struct usb_device *usbdev)
 	dma_free(usbdev->setup_packet);
 	free_device_res(&usbdev->dev);
 	free(usbdev);
+}
+
+void usb_add_device(struct usb_device *usbdev)
+{
+	if (!usbdev)
+		return;
+
+	list_add_tail(&usbdev->list, &usb_device_list);
+	dev_count++;
 }
 
 void usb_remove_device(struct usb_device *usbdev)

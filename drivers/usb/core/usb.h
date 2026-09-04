@@ -5,6 +5,7 @@
 struct usb_device *usb_alloc_new_device(void);
 void usb_free_device(struct usb_device *dev);
 int usb_new_device(struct usb_device *dev);
+void usb_add_device(struct usb_device *dev);
 void usb_remove_device(struct usb_device *dev);
 void usb_set_maxpacket_ep(struct usb_device *dev,
 			  struct usb_endpoint_descriptor *ep);

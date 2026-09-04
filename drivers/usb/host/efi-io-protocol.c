@@ -273,6 +273,8 @@ static int create_usb_device(struct efi_usb_io_priv *priv)
 	/* register as root device for host */
 	host->root_dev = dev;
 
+	usb_add_device(dev);
+
 	return 0;
 
 out_err:

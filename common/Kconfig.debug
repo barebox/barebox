@@ -39,11 +39,11 @@ config DEFAULT_LOGLEVEL
 config DEBUG_INFO
 	bool "Debug information in ELF"
 	help
-	  Say here if the ELF files produced by the build
+	  Say Y here if the ELF files produced by the build
 	  (barebox and images/*.pbl) should contain debug symbols.
 
 	  This is needed if you intend to use binary object tools like
-	  gdb, decode-stacktrace.sh, ... etc on the kernel.
+	  gdb, decode-stacktrace.sh, ... etc. on the barebox binary.
 
 if DEBUG_INFO
 

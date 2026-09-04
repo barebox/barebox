@@ -146,6 +146,16 @@ static int efi_get_usb_string(struct efi_usb_io_protocol *protocol, u16 lang_id,
 	return 0;
 }
 
+static void print_usb_device_info(struct device *dev)
+{
+	struct usb_device *usb_dev = container_of(dev, struct usb_device, dev);
+
+	dev_info(dev, "Bus %03d Device %03d: ID %04x:%04x %s\n",
+		 usb_dev->host->busnum, usb_dev->devnum,
+		 usb_dev->descriptor->idVendor, usb_dev->descriptor->idProduct,
+		 usb_dev->prod);
+}
+
 static int create_usb_device(struct efi_usb_io_priv *priv)
 {
 	struct usb_host *host = &priv->host;
@@ -250,9 +260,8 @@ static int create_usb_device(struct efi_usb_io_priv *priv)
 				   sizeof(dev->serial));
 	}
 
-	dev_info(&dev->dev, "Bus %03d Device %03d: ID %04x:%04x %s\n",
-		 dev->host->busnum, dev->devnum, dev->descriptor->idVendor,
-		 dev->descriptor->idProduct, dev->prod);
+	print_usb_device_info(&dev->dev);
+	devinfo_add(&dev->dev, print_usb_device_info);
 
 	err = register_device(&dev->dev);
 	if (err) {

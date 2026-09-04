@@ -98,11 +98,6 @@ static int populate_ddr_handoff(struct altera_sdram_plat *plat, struct io96b_inf
 	plat->dualport = FIELD_GET(BIT(0), handoff_table[PORT_EMIF_CONFIG_OFFSET]);
 	pr_debug("%s: dualport from handoff: 0x%x\n", __func__, plat->dualport);
 
-	if (plat->dualport)
-		io96b_ctrl->num_port = 2;
-	else
-		io96b_ctrl->num_port = 1;
-
 	/* Read handoff - dual EMIF */
 	plat->dualemif = FIELD_GET(BIT(1), handoff_table[PORT_EMIF_CONFIG_OFFSET]);
 	pr_debug("%s: dualemif from handoff: 0x%x\n", __func__, plat->dualemif);
@@ -111,6 +106,12 @@ static int populate_ddr_handoff(struct altera_sdram_plat *plat, struct io96b_inf
 		io96b_ctrl->num_instance = 2;
 	else
 		io96b_ctrl->num_instance = 1;
+
+	/* Read PLL from handoff */
+	io96b_ctrl->selected_plls = FIELD_GET(GENMASK(19, 16),
+					      handoff_table[PORT_EMIF_CONFIG_OFFSET]);
+	pr_debug("%s: selected PLLs from handoff: 0x%x\n",
+		 __func__, io96b_ctrl->selected_plls);
 
 	/* Assign IO96B CSR base address if it is valid */
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {

@@ -107,6 +107,15 @@ jobs:
         done
         echo "testfs=false" >> $GITHUB_OUTPUT
 
+    - name: Check security policy configurator
+      if: matrix.defconfig == 'virt32_secure_defconfig'
+      run: |
+        export ARCH=${{matrix.arch}}
+
+        # Run the configurator before the build step below has generated
+        # any policy lists. The reference platform has four policies.
+        ./test/check-security-policies.sh ${{matrix.defconfig}} 4
+
     - name: Build
       id: build
       run: |

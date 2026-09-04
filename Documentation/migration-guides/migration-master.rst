@@ -12,3 +12,9 @@ OP-TEE loading is now only supported
 
 For i.MX6 boards, this can be enabled by enabling
 ``CONFIG_FIRMWARE_IMX6_OPTEE``.
+
+sha1 no longer accepted for secure boot
+---------------------------------------
+
+FIT images using sha1 are no longer accepted as secure boot images. sha1 has
+been proven insecure in 2017.

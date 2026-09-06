@@ -163,8 +163,22 @@ int handoff_data_show(void)
 	return 0;
 }
 
+/**
+ * handoff_data_add_dt - hand a device tree to barebox proper
+ * @fdt: the device tree, plain or a compressed __dtb_z_ blob
+ *
+ * Only the first device tree added is handed over, so a board choosing
+ * its device tree at runtime can add it ahead of the one passed to
+ * barebox_pbl_start(), and a PBL entered again doesn't add another one.
+ */
 void handoff_data_add_dt(void *fdt)
 {
+	size_t size;
+
+	if (handoff_data_get_entry(HANDOFF_DATA_INTERNAL_DT, &size) ||
+	    handoff_data_get_entry(HANDOFF_DATA_INTERNAL_DT_Z, &size))
+		return;
+
 	if (blob_is_fdt(fdt)) {
 		handoff_data_add(HANDOFF_DATA_INTERNAL_DT, fdt,
 				 get_unaligned_be32(fdt + 4));

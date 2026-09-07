@@ -2370,7 +2370,7 @@ config CMD_SCONFIG_MODIFY
 	  command to support selecting a different active policy and
 	  modifying it.
 
-	  This is an very priviliged operation and the recommendation is
+	  This is a very priviliged operation and the recommendation is
 	  to hardcode policy transitions in board code and not from scripts.
 
 	  Say n here if unsure.

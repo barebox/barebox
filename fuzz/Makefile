@@ -14,7 +14,7 @@ QEMU += -display none -monitor none -serial stdio -no-reboot -kernel $(IMAGE)
 
 .PHONY: fuzz run coverage build clean
 
-fuzz: build
+fuzz:
 	AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1 AFL_SKIP_BIN_CHECK=1 \
 	AFL_PRELOAD=$(FORKSERVER) AFL_SKIP_CPUFREQ=1 afl-fuzz \
 		-i $(CORPUS) -o $(OUT) -m none -t 1000 -- \
@@ -22,12 +22,12 @@ fuzz: build
 		-drive if=none,id=fuzzdisk,file=@@,format=raw,readonly=on \
 		-device virtio-blk-device,drive=fuzzdisk
 
-run: build
+run:
 	cp '$(INPUT)' $(BUILD)/input
 	$(QEMU) -drive if=none,id=fuzzdisk,file=$(BUILD)/input,format=raw,readonly=on \
 		-device virtio-blk-device,drive=fuzzdisk
 
-coverage: build
+coverage:
 	cp '$(INPUT)' $(BUILD)/input
 	rm -f $(BUILD)/coverage.pcs
 	BAREBOX_COVERAGE=$(BUILD)/coverage.pcs $(QEMU) -plugin $(PLUGIN) \

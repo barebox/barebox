@@ -90,7 +90,7 @@ config SECURITY_POLICY_PATH
 	  compiled into barebox and registered. This option currently
 	  requires each security policy to match security/*.sconfig, i.e.
 	  be directly located in the security/ directory of the source
-	  source tree and have the .sconfig extension.
+	  tree and have the .sconfig extension.
 	  If left empty, only security policies explicitly provided
 	  and registered by board code will be available.
 

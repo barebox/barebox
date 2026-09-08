@@ -506,7 +506,7 @@ union xhci_trb *xhci_wait_for_event(struct xhci_ctrl *ctrl, trb_type expected,
  * Send reset endpoint command for given endpoint. This recovers from a
  * halted endpoint (e.g. due to a stall error).
  */
-static void reset_ep(struct usb_device *udev, int ep_index, unsigned int timeout_ms)
+static void reset_ep(struct usb_device *udev, int ep_index)
 {
 	struct xhci_ctrl *ctrl = xhci_get_ctrl(udev);
 	struct xhci_ring *ring =  ctrl->devs[udev->slot_id]->eps[ep_index].ring;
@@ -517,7 +517,7 @@ static void reset_ep(struct usb_device *udev, int ep_index, unsigned int timeout
 	dev_info(&udev->dev, "Resetting EP %d...\n", ep_index);
 
 	xhci_queue_command(ctrl, 0, udev->slot_id, ep_index, TRB_RESET_EP);
-	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, timeout_ms);
+	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
 	if (!event)
 		return;
 
@@ -525,10 +525,10 @@ static void reset_ep(struct usb_device *udev, int ep_index, unsigned int timeout
 	BUG_ON(TRB_TO_SLOT_ID(field) != udev->slot_id);
 	xhci_acknowledge_event(ctrl);
 
-	addr = xhci_trb_virt_to_dma(ring->enq_seg,
-		(void *)((uintptr_t)ring->enqueue | ring->cycle_state));
+	addr = xhci_trb_virt_to_dma(ring->enq_seg, ring->enqueue);
+	addr |= ring->cycle_state;
 	xhci_queue_command(ctrl, addr, udev->slot_id, ep_index, TRB_SET_DEQ);
-	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, timeout_ms);
+	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
 	if (!event)
 		return;
 
@@ -594,9 +594,13 @@ static void abort_td(struct usb_device *udev, int ep_index)
 	if (!event)
 		return;
 
+	comp = GET_COMP_CODE(le32_to_cpu(event->event_cmd.status));
+	if (comp == COMP_CTX_STATE)
+		dev_dbg(ctrl->dev, "%s: Set TR Dequeue Pointer got CTX_STATE, endpoint was already in the target state\n",
+			__func__);
 	BUG_ON(TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags))
-		!= udev->slot_id || GET_COMP_CODE(le32_to_cpu(
-		event->event_cmd.status)) != COMP_SUCCESS);
+		!= udev->slot_id || (comp != COMP_SUCCESS && comp
+		!= COMP_CTX_STATE));
 	xhci_acknowledge_event(ctrl);
 }
 
@@ -701,8 +705,13 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 	 * the next transfer. It is the responsibility of the upper layer to
 	 * have dealt with whatever caused the error.
 	 */
-	if ((le32_to_cpu(ep_ctx->ep_info) & EP_STATE_MASK) == EP_STATE_HALTED)
-		reset_ep(udev, ep_index, timeout_ms);
+	if ((le32_to_cpu(ep_ctx->ep_info) & EP_STATE_MASK) == EP_STATE_HALTED) {
+		reset_ep(udev, ep_index);
+		/* reset_ep() updates the context via DMA. Re-fetch it here. */
+		xhci_inval_cache((uintptr_t)virt_dev->out_ctx->bytes,
+				 virt_dev->out_ctx->size);
+		ep_ctx = xhci_get_ep_ctx(ctrl, virt_dev->out_ctx, ep_index);
+	}
 
 	ring = virt_dev->eps[ep_index].ring;
 	/*
@@ -1051,7 +1060,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 		dma_unmap_single(ctrl->host.hw_dev, map, length, direction);
 
 	if (udev->status == USB_ST_STALLED) {
-		reset_ep(udev, ep_index, timeout_ms);
+		reset_ep(udev, ep_index);
 		return -EPIPE;
 	}
 

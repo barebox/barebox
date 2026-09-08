@@ -52,7 +52,16 @@ EXPORT_SYMBOL(free);
 
 size_t malloc_usable_size(void *mem)
 {
-	return tlsf_block_size(mem);
+	size_t size = tlsf_block_size(mem);
+
+	/*
+	 * Callers like free_sensitive() may access the whole usable
+	 * size, so unpoison the padding beyond the requested size.
+	 */
+	if (size)
+		kasan_unpoison_shadow(mem, size);
+
+	return size;
 }
 EXPORT_SYMBOL(malloc_usable_size);
 

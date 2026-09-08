@@ -52,7 +52,7 @@ efi_status_t efi_var_to_file(void)
 
 	efiret = efi_var_collect(&buf, &len, EFI_VARIABLE_NON_VOLATILE);
 	if (efiret != EFI_SUCCESS) {
-		err = ENOMEM;
+		err = -ENOMEM;
 		goto error;
 	}
 
@@ -191,8 +191,8 @@ error:
 
 efi_status_t efi_init_runtime_variable_supported(void)
 {
+	efi_status_t ret;
 	u8 s = 0;
-	int ret;
 
 	if (!IS_ENABLED(CONFIG_EFI_RT_VOLATILE_STORE))
 		return EFI_SUCCESS;

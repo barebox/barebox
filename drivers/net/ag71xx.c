@@ -635,13 +635,17 @@ static int ag71xx_probe(struct device *dev)
 	ag71xx_wr(priv, AG71XX_REG_FIFO_CFG5, (0x66b82) | (1 << 19));
 	ag71xx_wr(priv, AG71XX_REG_FIFO_CFG3, 0x1f00140);
 
-	priv->rx_buffer = xmemalign(PAGE_SIZE, NO_OF_RX_FIFOS * MAX_RBUFF_SZ);
+	priv->rx_buffer = memalign(PAGE_SIZE, NO_OF_RX_FIFOS * MAX_RBUFF_SZ);
 	priv->fifo_tx = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					   NO_OF_TX_FIFOS * sizeof(ag7240_desc_t),
 					   &priv->addr_tx);
 	priv->fifo_rx = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					   NO_OF_RX_FIFOS * sizeof(ag7240_desc_t),
 					   &priv->addr_rx);
+
+	if (!priv->rx_buffer || !priv->fifo_tx || !priv->fifo_rx)
+		return -ENOMEM;
+
 	priv->next_tx = 0;
 
 	mac_l = 0x3344;

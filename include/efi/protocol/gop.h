@@ -21,6 +21,13 @@ struct efi_pixel_bitmask {
 	u32 reserved_mask;
 };
 
+struct efi_gop_pixel {
+	u8 blue;
+	u8 green;
+	u8 red;
+	u8 reserved;
+};
+
 #define EFI_BLT_VIDEO_FILL		0
 #define EFI_BLT_VIDEO_TO_BLT_BUFFER	1
 #define EFI_BLT_BUFFER_TO_VIDEO		2
@@ -51,7 +58,7 @@ struct efi_graphics_output_protocol {
 	efi_status_t (EFIAPI *set_mode) (struct efi_graphics_output_protocol *This,
 			uint32_t mode_number);
 	efi_status_t (EFIAPI *blt)(struct efi_graphics_output_protocol *This,
-			struct efi_pixel_bitmask *buffer,
+			struct efi_gop_pixel *buffer,
 			u32 operation,
 			size_t sourcex, size_t sourcey,
 			size_t destinationx, size_t destinationy,

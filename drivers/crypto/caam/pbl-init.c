@@ -454,11 +454,14 @@ int early_caam_init(struct caam_ctrl __iomem *_caam, bool is_imx)
 	 * PBL will only enable MMU right before unpacking, so all memory
 	 * is uncached and thus coherent here
 	 */
-	if (IN_PBL)
+	if (IN_PBL) {
 		g_jrdata = &pbl_jrdata;
-	else
+	} else {
 		g_jrdata = dma_alloc_coherent(DMA_DEVICE_BROKEN, sizeof(*g_jrdata),
 					      DMA_ADDRESS_BROKEN);
+		if (!g_jrdata)
+			return -ENOMEM;
+	}
 
 	jr = IOMEM(caam) + 0x1000;
 	r4tst = &caam->r4tst[0];

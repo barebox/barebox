@@ -9,6 +9,10 @@
  *
  */
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
+/* OpenSSL 4.0 removed the ENGINE symbols; ask for the no-op stubs instead */
+#define OPENSSL_ENGINE_STUBS
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>

@@ -208,9 +208,22 @@ static int hub_port_reset(struct usb_device *hub, int port,
 			(portstatus & USB_PORT_STAT_CONNECTION) ? 1 : 0,
 			(portstatus & USB_PORT_STAT_ENABLE) ? 1 : 0);
 
-		if ((portchange & USB_PORT_STAT_C_CONNECTION) ||
-		    !(portstatus & USB_PORT_STAT_CONNECTION))
-			return -1;
+		/*
+		 * Perhaps we should check for the following here:
+		 * - C_CONNECTION hasn't been set.
+		 * - CONNECTION is still set.
+		 *
+		 * Doing so would ensure that the device is still connected
+		 * to the bus, and hasn't been unplugged or replaced while the
+		 * USB bus reset was going on.
+		 *
+		 * However, if we do that, then (at least) a San Disk Ultra
+		 * USB 3.0 16GB device fails to reset on (at least) an NVIDIA
+		 * Tegra Jetson TK1 board. For some reason, the device appears
+		 * to briefly drop off the bus when this second bus reset is
+		 * executed, yet if we retry this loop, it'll eventually come
+		 * back after another reset or two.
+		 */
 
 		if (portstatus & USB_PORT_STAT_ENABLE)
 			break;
@@ -281,6 +294,13 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port,
 		usb_free_device(usb);
 		return;
 	}
+
+	/*
+	 * USB 2.0 7.1.7.5: devices must be able to accept a SetAddress()
+	 * request (refer to Section 11.24.2 and Section 9.4 respectively)
+	 * after the reset recovery time 10 ms
+	 */
+	mdelay(10);
 
 	dev->children[port] = usb;
 	usb->parent = dev;

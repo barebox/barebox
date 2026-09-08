@@ -54,6 +54,7 @@ struct eqos {
 
 	struct eqos_desc *tx_descs, *rx_descs;
 	dma_addr_t dma_rx_buf[EQOS_DESCRIPTORS_RX];
+	void *rx_bufs;
 
 	void __iomem *regs;
 	struct eqos_mac_regs __iomem *mac_regs;

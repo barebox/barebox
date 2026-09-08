@@ -17,6 +17,7 @@
 #include <linux/iopoll.h>
 #include <linux/time.h>
 #include <linux/sizes.h>
+#include <linux/bitfield.h>
 
 #include "designware_eqos.h"
 
@@ -416,6 +417,7 @@ static int eqos_start(struct eth_device *edev)
 	u32 val, tx_fifo_sz, rx_fifo_sz, tqs, rqs, pbl;
 	unsigned long last_rx_rf_desc;
 	unsigned long rate;
+	dma_addr_t dma_addr;
 	u32 mode_set;
 	int ret;
 	int i;
@@ -632,13 +634,15 @@ static int eqos_start(struct eth_device *edev)
 		writel(EQOS_DESC3_BUF1V | EQOS_DESC3_OWN, &rx_rf_desc->des3);
 	}
 
-	writel(0, &eqos->dma_regs->ch0_txdesc_list_haddress);
-	writel((ulong)eqos->tx_descs, &eqos->dma_regs->ch0_txdesc_list_address);
+	dma_addr = (dma_addr_t)eqos->tx_descs;
+	writel(upper_32_bits(dma_addr), &eqos->dma_regs->ch0_txdesc_list_haddress);
+	writel(lower_32_bits(dma_addr), &eqos->dma_regs->ch0_txdesc_list_address);
 	writel(EQOS_DESCRIPTORS_TX - 1,
 	       &eqos->dma_regs->ch0_txdesc_ring_length);
 
-	writel(0, &eqos->dma_regs->ch0_rxdesc_list_haddress);
-	writel((ulong)eqos->rx_descs, &eqos->dma_regs->ch0_rxdesc_list_address);
+	dma_addr = (dma_addr_t)eqos->rx_descs;
+	writel(upper_32_bits(dma_addr), &eqos->dma_regs->ch0_rxdesc_list_haddress);
+	writel(lower_32_bits(dma_addr), &eqos->dma_regs->ch0_rxdesc_list_address);
 	writel(EQOS_DESCRIPTORS_RX - 1,
 	       &eqos->dma_regs->ch0_rxdesc_ring_length);
 
@@ -720,8 +724,8 @@ static int eqos_send(struct eth_device *edev, void *packet, int length)
 	if (dma_mapping_error(edev->parent, dma))
 		return -EFAULT;
 
-	tx_desc->des0 = (unsigned long)dma;
-	tx_desc->des1 = 0;
+	tx_desc->des0 = lower_32_bits(dma);
+	tx_desc->des1 = upper_32_bits(dma);
 	tx_desc->des2 = length;
 	/*
 	 * Make sure the compiler doesn't reorder the _OWN write below, before
@@ -780,9 +784,10 @@ static void eqos_recv(struct eth_device *edev)
 
 	/* Read Format RX descriptor */
 	rx_rf_desc = &eqos->rx_descs[eqos->rx_currdescnum];
-	rx_rf_desc->des0 = dma;
-	rx_rf_desc->des1 = 0;
+	rx_rf_desc->des0 = lower_32_bits(dma);
+	rx_rf_desc->des1 = upper_32_bits(dma);
 	rx_rf_desc->des2 = 0;
+
 	/*
 	 * Make sure that if HW sees the _OWN write below, it will see all the
 	 * writes to the rest of the descriptor too.
@@ -817,6 +822,8 @@ static int eqos_init_resources(struct eqos *eqos)
 	if (!p)
 		goto err_free_desc;
 
+	eqos->rx_bufs = p;
+
 	for (i = 0; i < EQOS_DESCRIPTORS_RX; i++) {
 		struct eqos_desc *rx_rf_desc = &eqos->rx_descs[i];
 		dma_addr_t dma;
@@ -827,7 +834,8 @@ static int eqos_init_resources(struct eqos *eqos)
 			goto err_free_rx_bufs;
 		}
 
-		rx_rf_desc->des0 = dma;
+		rx_rf_desc->des0 = lower_32_bits(dma);
+		rx_rf_desc->des1 = upper_32_bits(dma);
 		eqos->dma_rx_buf[i] = dma;
 
 		p += EQOS_MAX_PACKET_SIZE;
@@ -836,7 +844,7 @@ static int eqos_init_resources(struct eqos *eqos)
 	return 0;
 
 err_free_rx_bufs:
-	dma_free(phys_to_virt(eqos->rx_descs[0].des0));
+	dma_free(eqos->rx_bufs);
 err_free_desc:
 	dma_free_coherent(DMA_DEVICE_BROKEN,
 			  descs, 0, EQOS_DESCRIPTORS_SIZE);
@@ -948,7 +956,7 @@ void eqos_remove(struct device *dev)
 
 	mdiobus_unregister(&eqos->miibus);
 
-	dma_free(phys_to_virt(eqos->rx_descs[0].des0));
+	dma_free(eqos->rx_bufs);
 	dma_free_coherent(DMA_DEVICE_BROKEN,
 			  eqos->tx_descs, 0, EQOS_DESCRIPTORS_SIZE);
 }

@@ -907,9 +907,16 @@ static int macb_probe(struct device *dev)
 	macb->tx_ring = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					   TX_RING_BYTES, &macb->tx_ring_phys);
 
-	if (macb->is_gem)
+	if (!macb->rx_ring || !macb->tx_ring)
+		return -ENOMEM;
+
+
+	if (macb->is_gem) {
 		macb->gem_q1_descs = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 				GEM_Q1_DESC_BYTES, &macb->gem_q1_descs_phys);
+		if (!macb->gem_q1_descs)
+			return -ENOMEM;
+	}
 
 	macb->rx_packet_buf = net_alloc_packet();
 

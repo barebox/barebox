@@ -494,6 +494,9 @@ int bclk_register(struct clk *clk)
 
 	clk->parents = xzalloc(sizeof(struct clk *) * clk->num_parents);
 
+	if (!clk->name)
+		return -EINVAL;
+
 	ret = __bclk_register(clk);
 	if (ret)
 		free(clk->parents);

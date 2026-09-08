@@ -14,7 +14,9 @@ static void *__dma_alloc_coherent(struct device *dev,
 {
 	void *ret;
 
-	ret = xmemalign(PAGE_SIZE, size);
+	ret = memalign(PAGE_SIZE, size);
+	if (!ret)
+		return NULL;
 
 	memset(ret, 0, size);
 

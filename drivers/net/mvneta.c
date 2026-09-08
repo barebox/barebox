@@ -576,7 +576,7 @@ static void mvneta_init_rx_ring(struct mvneta_port *priv)
 	priv->curr_rxdesc = 0;
 }
 
-static void mvneta_setup_tx_rx(struct mvneta_port *priv)
+static int mvneta_setup_tx_rx(struct mvneta_port *priv)
 {
 	u32 val;
 
@@ -589,6 +589,9 @@ static void mvneta_setup_tx_rx(struct mvneta_port *priv)
 					  ALIGN(sizeof(*priv->rxdesc), 32),
 					  DMA_ADDRESS_BROKEN);
 	priv->rxbuf = dma_alloc(RX_RING_SIZE * ALIGN(PKTSIZE, 8));
+
+	if (!priv->txdesc || !priv->rxdesc || !priv->rxbuf)
+		return -ENOMEM;
 
 	mvneta_init_rx_ring(priv);
 
@@ -610,6 +613,8 @@ static void mvneta_setup_tx_rx(struct mvneta_port *priv)
 	/* Set the number of available Rx descriptors */
 	writel(RX_RING_SIZE << MVNETA_RXQ_ADD_NON_OCCUPIED_SHIFT,
 	       priv->reg + MVNETA_RXQ_STATUS_UPDATE_REG(0));
+
+	return 0;
 }
 
 static int mvneta_port_config(struct mvneta_port *priv)
@@ -730,7 +735,9 @@ static int mvneta_probe(struct device *dev)
 		return ret;
 
 	mvneta_conf_mbus_windows(priv);
-	mvneta_setup_tx_rx(priv);
+	ret = mvneta_setup_tx_rx(priv);
+	if (ret)
+		return ret;
 
 	/* register eth device */
 	priv->edev.priv = priv;

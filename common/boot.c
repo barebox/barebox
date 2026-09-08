@@ -473,8 +473,6 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 		bootentries_merge(bootentries, &provider_bootentries);
 	}
 
-	free(nfspath);
-
 	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT) && !found) {
 		const char *path;
 
@@ -489,6 +487,8 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 
 		free_const(path);
 	}
+
+	free(nfspath);
 
 	return found;
 }

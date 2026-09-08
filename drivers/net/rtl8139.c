@@ -386,6 +386,9 @@ static int rtl8139_eth_open(struct eth_device *edev)
 					   &priv->tx_bufs_dma);
 	priv->rx_ring = dma_alloc_coherent(DMA_DEVICE_BROKEN, RX_BUF_TOT_LEN,
 					   &priv->rx_ring_dma);
+	if (!priv->tx_bufs || !priv->rx_ring)
+		return -ENOMEM;
+
 	priv->tx_flag = (TX_FIFO_THRESH << 11) & 0x003f0000;
 
 	rtl8139_init_ring(priv);

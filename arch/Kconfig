@@ -67,6 +67,9 @@ config RELR
 	  This is marked experimental until the early hang for rock3a when
 	  this is enabled is understood and repaired.
 
+config LD_DEAD_CODE_DATA_ELIMINATION
+	bool
+
 config ARCH_HAS_CTRLC
 	bool
 

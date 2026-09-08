@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
+
+/* OpenSSL 4.0 removed the ENGINE symbols; ask for the no-op stubs instead */
+#define OPENSSL_ENGINE_STUBS
+
 #include <stdio.h>
 #include <unistd.h>
 #include <getopt.h>

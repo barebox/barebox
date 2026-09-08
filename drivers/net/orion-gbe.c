@@ -409,6 +409,10 @@ static int port_probe(struct device *parent, struct port_priv *port)
 					  RX_RING_SIZE *
 					  ALIGN(sizeof(*port->rxdesc), 16),
 					  DMA_ADDRESS_BROKEN);
+
+	if (!port->txdesc || !port->rxdesc)
+		return -ENOMEM;
+
 	port->rxbuf = dma_alloc(RX_RING_SIZE * ALIGN(PKTSIZE, 8));
 
 	port_stop(port);

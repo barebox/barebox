@@ -67,7 +67,13 @@ struct image *png_open(char *inbuf, int insize)
 	img->width = png_info->width;
 	img->height = png_info->height;
 	img->bits_per_pixel = 4 << 3;
-	img->data = png_info->image->data;
+
+	/* detach so png_alloc_free_all() below leaves the pixel buffer alive */
+	img->data = png_alloc_detach(png_info->image->data);
+	if (!img->data) {
+		ret = -EINVAL;
+		goto err;
+	}
 
 	pr_debug("png: %d x %d data@0x%p\n", img->width, img->height, img->data);
 

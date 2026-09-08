@@ -444,7 +444,8 @@ struct efi_device_path *efi_dp_append_node(const struct efi_device_path *dp,
  *
  * @full_path:      device path including device and file path
  * @device_path:    path of the device
- * @file_path:      relative path of the file or NULL if there is none
+ * @file_path:      relative path of the file or an empty device path if there
+ *                  is none
  * Return:      status code
  */
 efi_status_t efi_dp_split_file_path(struct efi_device_path *full_path,
@@ -474,6 +475,14 @@ efi_status_t efi_dp_split_file_path(struct efi_device_path *full_path,
 	p->length = sizeof(*p);
 
 out:
+	if (!fp) {
+		fp = efi_dp_append_node(NULL, NULL);
+		if (!fp) {
+			free(dp);
+			return EFI_OUT_OF_RESOURCES;
+		}
+	}
+
 	*device_path = dp;
 	*file_path = fp;
 	return EFI_SUCCESS;

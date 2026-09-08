@@ -187,10 +187,9 @@ config ARCH_ROCKCHIP_ATF_PASS_FDT
 	  enabled.
 
 config ARCH_ROCKCHIP_ATF_FDT_SIZE
-	hex
-	default 0x0
-	default 0x60000 if ARCH_ROCKCHIP_ATF_PASS_FDT
-	prompt "Reserved size for the FDT blob passed to the TF-A"
+	hex "Reserved size for the FDT blob passed to the TF-A"
+	depends on ARCH_ROCKCHIP_ATF_PASS_FDT
+	default 0x60000
 	help
 	  Set this size to CFG_DTB_MAX_SIZE in the OP-TEE configuration. OP-TEE
 	  may modify the passed device tree and increase it's size. This

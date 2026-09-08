@@ -69,6 +69,9 @@ static int _regmap_bus_reg_read(void *context, unsigned int reg,
 {
 	struct regmap *map = context;
 
+	if (!IS_ALIGNED(reg, map->reg_stride))
+		return -EINVAL;
+
 	return map->bus->reg_read(map->bus_context, reg, val);
 }
 
@@ -78,6 +81,9 @@ static int _regmap_bus_reg_write(void *context, unsigned int reg,
 {
 	struct regmap *map = context;
 
+	if (!IS_ALIGNED(reg, map->reg_stride))
+		return -EINVAL;
+
 	return map->bus->reg_write(map->bus_context, reg, val);
 }
 
@@ -86,6 +92,8 @@ static int _regmap_bus_reg_seal(void *context, unsigned int reg,
 {
 	struct regmap *map = context;
 
+	if (!IS_ALIGNED(reg, map->reg_stride))
+		return -EINVAL;
 	if (!map->bus->reg_seal)
 		return -EOPNOTSUPP;
 
@@ -182,6 +190,8 @@ struct device *regmap_get_device(struct regmap *map)
  */
 int regmap_write(struct regmap *map, unsigned int reg, unsigned int val)
 {
+	if (!IS_ALIGNED(reg, map->reg_stride))
+		return -EINVAL;
 	return map->reg_write(map, reg, val);
 }
 
@@ -196,6 +206,8 @@ int regmap_write(struct regmap *map, unsigned int reg, unsigned int val)
  */
 int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val)
 {
+	if (!IS_ALIGNED(reg, map->reg_stride))
+		return -EINVAL;
 	return map->reg_read(map, reg, val);
 }
 
@@ -213,6 +225,8 @@ int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val)
  */
 int regmap_seal(struct regmap *map, unsigned int reg, unsigned int flags)
 {
+	if (!IS_ALIGNED(reg, map->reg_stride))
+		return -EINVAL;
 	return map->reg_seal(map, reg, flags);
 }
 

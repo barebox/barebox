@@ -267,6 +267,14 @@ static int efi_loader_bootm(struct image_data *data)
 		goto out;
 	}
 
+	/*
+	 * efi_load_pe() copied the executable image into EFI-managed memory.
+	 * The bootm staging buffer is no longer needed, and keeping it in the
+	 * memory map can block payloads from using their normal load address.
+	 */
+	release_sdram_region(data->os_res);
+	data->os_res = NULL;
+
 	efiret = efi_set_load_options(handle, load_option_size, load_option);
 	if (efiret)
 		goto out;

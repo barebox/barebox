@@ -5,6 +5,7 @@ menu "EFI (Extensible Firmware Interface) Support"
 config EFI_PAYLOAD
 	bool "barebox as EFI payload/app (consumer)"
 	depends on HAVE_EFI_PAYLOAD || COMPILE_TEST
+	depends on !HAVE_OPTEE
 	select PBL_FULLY_PIC if ARM64
 	select EFI
 	select EFI_GUID
@@ -37,6 +38,7 @@ config EFI_LOADER
 	select PARTITION_DISK
 	select MEMORY_ATTRIBUTES
 	select CRC32
+	select PRINTF_WCHAR
 	help
 	  Select this option if you want to run UEFI applications (like GNU
 	  GRUB or an EFI-stubbed kernel) on top of barebox.

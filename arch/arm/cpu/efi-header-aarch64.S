@@ -94,8 +94,17 @@
 	.long	0					// PointerToLineNumbers
 	.short	0					// NumberOfRelocations
 	.short	0					// NumberOfLineNumbers
+	/*
+	 * TODO: drop the WRITE here and set NX_COMPAT flag
+	 *
+	 * Before we can do this however, we will need a restructure of the PBL:
+	 * early relocation code will need to go into its own section that's
+	 * enforced at build-time to be clear of any relocations and only then
+	 * we can set RX for it and RW for the data.
+	 */
 	.long	IMAGE_SCN_CNT_CODE | \
 		IMAGE_SCN_MEM_READ | \
+		IMAGE_SCN_MEM_WRITE | \
 		IMAGE_SCN_MEM_EXECUTE			// Characteristics
 
 	.ascii	".data\0\0\0"

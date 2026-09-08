@@ -77,7 +77,7 @@ struct nvme_ctrl_ops {
 			       union nvme_result *result,
 			       void *buffer,
 			       unsigned bufflen,
-			       unsigned timeout, int qid);
+			       ktime_t timeout, int qid);
 };
 
 static inline bool nvme_ctrl_ready(struct nvme_ctrl *ctrl)
@@ -87,11 +87,6 @@ static inline bool nvme_ctrl_ready(struct nvme_ctrl *ctrl)
 	if (ctrl->ops->reg_read32(ctrl, NVME_REG_CSTS, &val))
 		return false;
 	return val & NVME_CSTS_RDY;
-}
-
-static inline u64 nvme_block_nr(struct nvme_ns *ns, sector_t sector)
-{
-	return (sector >> (ns->lba_shift - 9));
 }
 
 static inline void nvme_end_request(struct nvme_request *rq, __le16 status,
@@ -120,7 +115,7 @@ int __nvme_submit_sync_cmd(struct nvme_ctrl *ctrl,
 			   struct nvme_command *cmd,
 			   union nvme_result *result,
 			   void *buffer, unsigned bufflen,
-			   unsigned timeout, int qid);
+			   ktime_t timeout, int qid);
 int nvme_submit_sync_cmd(struct nvme_ctrl *ctrl,
 			 struct nvme_command *cmd,
 			 void *buffer, unsigned bufflen);

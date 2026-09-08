@@ -12,16 +12,31 @@
 static int nvmem_regmap_write(void *ctx, unsigned offset, const void *val, size_t bytes)
 {
 	struct regmap *map = ctx;
+	unsigned int tmp;
 
-	/*
-	 * eFuse writes going through this function may be irreversible,
-	 * so expect users to observe alignment.
-	 */
-	if (bytes % regmap_get_val_bytes(map))
+	if (bytes > regmap_get_val_bytes(map)) {
+		if (bytes % regmap_get_val_bytes(map))
+			return -EINVAL;
+
+		return regmap_bulk_write(map, offset, val,
+					 bytes / regmap_get_val_bytes(map));
+	}
+
+	switch (bytes) {
+	case 1:
+		tmp = *(u8 *)val;
+		break;
+	case 2:
+		tmp = *(u16 *)val;
+		break;
+	case 4:
+		tmp = *(u32 *)val;
+		break;
+	default:
 		return -EINVAL;
+	}
 
-	return regmap_bulk_write(map, offset, val,
-				 bytes / regmap_get_val_bytes(map));
+	return regmap_write(map, offset, tmp);
 }
 
 static int nvmem_regmap_read(void *ctx, unsigned offset, void *buf, size_t bytes)

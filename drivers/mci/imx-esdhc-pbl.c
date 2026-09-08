@@ -129,6 +129,9 @@ static void imx_esdhc_init(struct fsl_esdhc_host *host,
 	host->socdata = data;
 	esdhc_populate_sdhci(host);
 
+	/* Discard any interrupt bits the BootROM left set. */
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0u);
+
 	sdhci_write32(&host->sdhci, IMX_SDHCI_WML,
 		      FIELD_PREP(WML_WR_BRST_LEN, 16)         |
 		      FIELD_PREP(WML_WR_WML_MASK, SECTOR_WML) |

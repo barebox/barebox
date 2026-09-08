@@ -146,7 +146,13 @@ static int do_bootm_efi(struct image_data *data)
 			ret = -errno;
 			goto err_free;
 		}
-		initrd = xmemalign(PAGE_SIZE, PAGE_ALIGN(size));
+		initrd = memalign(PAGE_SIZE, PAGE_ALIGN(size));
+		if (!initrd) {
+			free(tmp);
+			ret = -ENOMEM;
+			goto err_free;
+		}
+
 		memcpy(initrd, tmp, size);
 		memset(initrd + size, 0, PAGE_ALIGN(size) - size);
 		free(tmp);

@@ -86,12 +86,23 @@ static inline bool imx8mp_keep_compatible_soc_uid(void)
 /* range e.g. GPIO_1_5 is gpio 5 under linux */
 #define IMX_GPIO_NR(bank, nr)		(((bank) - 1) * 32 + (nr))
 
+#if IN_PROPER || defined(CONFIG_ARCH_IMX_ATF)
 extern unsigned int __imx_cpu_type;
 
 static __always_inline void imx_set_cpu_type(unsigned int cpu_type)
 {
 	__imx_cpu_type = cpu_type;
 }
+#else
+/*
+ * If you need this in your PBL entry point, consider using functions
+ * that only query the hardware directly like __cpu_mx6_is_*().
+ */
+extern int __imx_cpu_type(void) __compiletime_error("This API is not available in PBL");
+
+#define __imx_cpu_type __imx_cpu_type()
+#endif
+
 
 #ifdef CONFIG_ARCH_IMX1
 # ifdef imx_cpu_type

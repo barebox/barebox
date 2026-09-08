@@ -68,3 +68,24 @@ void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
 	debug_dma_unmap(dev, dma_addr, size, dir);
 }
 EXPORT_SYMBOL(dma_unmap_single);
+
+void *dma_realloc_coherent(struct device *dev, void *oldbuf,
+			   size_t oldsize, size_t newsize,
+			   dma_addr_t *dma_handle)
+{
+	dma_addr_t newdma = DMA_ERROR_CODE;
+	void *newbuf = ZERO_SIZE_PTR;
+
+	if (newsize) {
+		newbuf = dma_alloc_coherent(dev, newsize, &newdma);
+		if (!newbuf)
+			return NULL;
+	}
+
+	if (oldbuf)
+		dma_free_coherent(dev, oldbuf, *dma_handle, oldsize);
+
+	*dma_handle = newdma;
+	return newbuf;
+}
+EXPORT_SYMBOL(dma_realloc_coherent);

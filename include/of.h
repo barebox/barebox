@@ -1341,6 +1341,23 @@ static inline bool of_property_present(const struct device_node *np, const char 
 	return of_property_read_bool(np, propname);
 }
 
+/**
+ * of_node_is_type - Test if a node has a given device_type
+ * @np:		device node to test
+ * @type:	device_type value to look for
+ *
+ * Return: true if the node's device_type property matches @type
+ */
+static inline bool of_node_is_type(struct device_node *np, const char *type)
+{
+	const char *device_type;
+
+	if (of_property_read_string(np, "device_type", &device_type))
+		return false;
+
+	return type && !strcmp(device_type, type);
+}
+
 static inline int of_property_read_u8(const struct device_node *np,
 				       const char *propname,
 				       u8 *out_value)

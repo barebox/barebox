@@ -998,6 +998,7 @@ int fsdev_open_cdev(struct fs_device *fsdev)
 static void init_super(struct super_block *sb)
 {
 	INIT_LIST_HEAD(&sb->s_inodes);
+	sb->s_maxbytes = MAX_LFS_FILESIZE;
 }
 
 static int fsdev_umount(struct fs_device *fsdev)
@@ -2627,6 +2628,14 @@ out:
 	return errno_set(error);
 }
 
+static bool i_size_valid(struct inode *inode)
+{
+	if (inode->i_stream)
+		return true;
+
+	return (u64)inode->i_size <= inode->i_sb->s_maxbytes;
+}
+
 static int do_dentry_open(struct file *f)
 {
 	int error;
@@ -2640,6 +2649,12 @@ static int do_dentry_open(struct file *f)
 		error = f->f_inode->i_fop->open(f->f_inode, f);
 		if (error)
 			return error;
+	}
+
+	if (!i_size_valid(f->f_inode)) {
+		dev_warn(&f->fsdev->dev, "%s: bad i_size value: %lld\n",
+			 f->path, f->f_size);
+		return -EUCLEAN;
 	}
 
 	if (f->f_flags & O_TRUNC) {

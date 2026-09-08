@@ -3647,7 +3647,7 @@ struct device_node *of_graph_get_remote_port_parent(
 	/* Walk 3 levels up only if there is 'ports' node. */
 	for (depth = 3; depth && np; depth--) {
 		np = np->parent;
-		if (depth == 2 && of_node_cmp(np->name, "ports"))
+		if (depth == 2 && !of_node_name_eq(np, "ports"))
 			break;
 	}
 	return np;

@@ -36,6 +36,18 @@
 
 static LIST_HEAD(open_fits);
 
+static struct device_node *fit_get_child_by_name_exact(const struct device_node *node,
+						       const char *name)
+{
+	struct device_node *child;
+
+	for_each_child_of_node(node, child)
+		if (child->name && (strcmp(child->name, name) == 0))
+			return child;
+
+	return NULL;
+}
+
 static uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, int size)
 {
 	dt += size;
@@ -346,7 +358,7 @@ static int fit_config_build_hash_nodes(struct fit_handle *handle,
 			if (ret)
 				return ret;
 
-			image_node = of_get_child_by_name(handle->images, unit);
+			image_node = fit_get_child_by_name_exact(handle->images, unit);
 			if (!image_node)
 				return -EINVAL;
 
@@ -484,9 +496,9 @@ static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
 		ret = -EINVAL;
 	}
 
-	hash = of_get_child_by_name(image, "hash-1");
+	hash = fit_get_child_by_name_exact(image, "hash-1");
 	if (!hash)
-		hash = of_get_child_by_name(image, "hash@1");
+		hash = fit_get_child_by_name_exact(image, "hash@1");
 	if (!hash) {
 		if (ret)
 			pr_err("image %pOF does not have hashes\n", image);
@@ -557,9 +569,9 @@ static int fit_image_verify_signature(struct fit_handle *handle,
 		ret = -EINVAL;
 	}
 
-	sig_node = of_get_child_by_name(image, "signature-1");
+	sig_node = fit_get_child_by_name_exact(image, "signature-1");
 	if (!sig_node)
-		sig_node = of_get_child_by_name(image, "signature@1");
+		sig_node = fit_get_child_by_name_exact(image, "signature@1");
 	if (!sig_node) {
 		pr_err("Image %pOF has no signature\n", image);
 		return ret;
@@ -622,7 +634,7 @@ fit_get_image(struct fit_handle *handle, void *configuration,
 		}
 	}
 
-	return of_get_child_by_name(handle->images, *unit);
+	return fit_get_child_by_name_exact(handle->images, *unit);
 }
 
 /**
@@ -986,7 +998,7 @@ void *fit_open_configuration(struct fit_handle *handle, const char *name,
 		}
 	}
 
-	conf_node = of_get_child_by_name(conf_node, unit);
+	conf_node = fit_get_child_by_name_exact(conf_node, unit);
 	if (!conf_node) {
 		pr_err("configuration '%s' not found\n", unit);
 		return ERR_PTR(-ENOENT);
@@ -1031,12 +1043,11 @@ static int fit_do_open(struct fit_handle *handle)
 
 	handle->root = root;
 
-	handle->images = of_get_child_by_name(handle->root, "images");
+	handle->images = fit_get_child_by_name_exact(handle->root, "images");
 	if (!handle->images)
 		return -ENOENT;
 
-	handle->configurations = of_get_child_by_name(handle->root,
-						      "configurations");
+	handle->configurations = fit_get_child_by_name_exact(handle->root, "configurations");
 
 	of_property_read_string(handle->root, "description", &desc);
 	pr_info("Opened FIT image: %s\n", desc);

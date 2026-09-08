@@ -56,8 +56,8 @@ config BOOT_UNSIGNED_IMAGES
 	  Say y here if you want to allow booting of images with
 	  an invalid signature or no signature at all.
 
-	  Systems with verified boot chains should say y here
+	  Systems with verified boot chains should say n here
 	  or force it at compile time irrespective of policy
-	  with CONFIG_BOOTM_FORCE_SIGNED_IMAGES
+	  with CONFIG_BOOTM_FORCE_SIGNED_IMAGES.
 
 endmenu

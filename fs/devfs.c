@@ -110,7 +110,12 @@ static int devfs_open(struct inode *inode, struct file *f)
 			return -ENOENT;
 	}
 
-	f->f_size = cdev_size(cdev);
+	if (cdev_size(cdev) == FILE_SIZE_STREAM) {
+		inode->i_stream = true;
+		f->f_size = 0;
+	} else {
+		f->f_size = cdev->size;
+	}
 	f->private_data = cdev;
 
 	return cdev_open(cdev, f->f_flags);

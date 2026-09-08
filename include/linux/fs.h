@@ -129,6 +129,8 @@ struct inode {
 	gid_t			i_gid;
 	u64			i_version;
 	loff_t			i_size;
+	bool			i_stream;	/* sizeless stream, e.g. a character device */
+	bool			i_size_unknown;	/* real size, not known until read, e.g. tftp */
 	struct timespec		i_atime;
 	struct timespec		i_mtime;
 	struct timespec		i_ctime;

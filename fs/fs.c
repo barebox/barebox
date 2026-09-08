@@ -373,6 +373,18 @@ static int fsdev_truncate(struct file *f, loff_t length)
 		f->f_inode->i_fop->truncate(f, length) : -EROFS;
 }
 
+/*
+ * Reads, writes and seeks are clamped to i_size, but only when i_size is a
+ * meaningful bound. A character device is a sizeless stream, and a file whose
+ * size is only discovered while reading (e.g. a tftp transfer without a
+ * negotiated size) starts out with i_size zero; for both, i_size must not clamp
+ * I/O and the driver reports the end of the file itself.
+ */
+static bool i_size_is_bound(const struct inode *inode)
+{
+	return !inode->i_stream && !inode->i_size_unknown;
+}
+
 int ftruncate(int fd, loff_t length)
 {
 	struct file *f = fd_to_file(fd, false);
@@ -381,7 +393,7 @@ int ftruncate(int fd, loff_t length)
 	if (IS_ERR(f))
 		return -errno;
 
-	if (f->f_size == FILE_SIZE_STREAM)
+	if (!i_size_is_bound(f->f_inode))
 		return 0;
 
 	ret = fsdev_truncate(f, length);
@@ -427,7 +439,7 @@ static ssize_t __read(struct file *f, void *buf, size_t count)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (f->f_size != FILE_SIZE_STREAM && f->f_pos + count > f->f_size)
+	if (i_size_is_bound(f->f_inode) && f->f_pos + count > f->f_size)
 		count = f->f_size - f->f_pos;
 
 	if (!count)
@@ -487,7 +499,7 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (f->f_size != FILE_SIZE_STREAM && f->f_pos + count > f->f_size) {
+	if (i_size_is_bound(f->f_inode) && f->f_pos + count > f->f_size) {
 		ret = fsdev_truncate(f, f->f_pos + count);
 		if (ret) {
 			if (ret == -EPERM)
@@ -592,7 +604,7 @@ loff_t lseek(int fd, loff_t offset, int whence)
 
 	pos += offset;
 
-	if (f->f_size != FILE_SIZE_STREAM && (pos < 0 || pos > f->f_size))
+	if (i_size_is_bound(f->f_inode) && (pos < 0 || pos > f->f_size))
 		goto out;
 
 	if (f->f_inode->i_fop->lseek) {
@@ -1105,6 +1117,8 @@ static void stat_inode(struct inode *inode, struct stat *s)
 		cdev = cdev_by_name(inode->cdevname);
 
 		s->st_size = cdev ? cdev_size(cdev) : 0;
+	} else if (!i_size_is_bound(inode)) {
+		s->st_size = FILE_SIZE_STREAM;
 	} else {
 		s->st_size = inode->i_size;
 	}

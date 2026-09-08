@@ -69,11 +69,14 @@ static int ecdsa_key_size(const char *curve_name)
 }
 
 int ecdsa_verify(const struct ecdsa_public_key *key, const uint8_t *sig,
-		 const uint32_t sig_len, const uint8_t *hash)
+		 const uint32_t sig_len, const uint8_t *hash,
+		 enum hash_algo algo)
 {
 	struct ecc_ctx _ctx = {};
 	struct ecc_ctx *ctx = &_ctx;
 	unsigned int curve_id = ECC_CURVE_NIST_P256;
+	struct digest *d;
+	int hash_len;
 	int ret;
 	const void *r, *s;
 	u64 rh[4], sh[4];
@@ -82,6 +85,21 @@ int ecdsa_verify(const struct ecdsa_public_key *key, const uint8_t *sig,
 
 	key_size_bits = ecdsa_key_size(key->curve_name);
 	key_size_bytes = key_size_bits / 8;
+	if (!key_size_bytes)
+		return -EINVAL;
+
+	if (sig_len != 2 * key_size_bytes)
+		return -EINVAL;
+
+	d = digest_alloc_by_algo(algo);
+	if (!d)
+		return -EOPNOTSUPP;
+
+	hash_len = digest_length(d);
+	digest_free(d);
+
+	if (hash_len < key_size_bytes)
+		return -EINVAL;
 
 	ctx->curve_id = curve_id;
 	ctx->curve = ecc_get_curve(curve_id);

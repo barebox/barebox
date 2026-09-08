@@ -4,6 +4,7 @@
 
 #include <linux/types.h>
 #include <linux/list.h>
+#include <digest.h>
 #include <errno.h>
 
 struct ecdsa_public_key {
@@ -14,11 +15,13 @@ struct ecdsa_public_key {
 
 #ifdef CONFIG_CRYPTO_ECDSA
 int ecdsa_verify(const struct ecdsa_public_key *key, const uint8_t *sig,
-		 const uint32_t sig_len, const uint8_t *hash);
+		 const uint32_t sig_len, const uint8_t *hash,
+		 enum hash_algo algo);
 struct ecdsa_public_key *ecdsa_key_dup(const struct ecdsa_public_key *key);
 #else
 static inline int ecdsa_verify(const struct ecdsa_public_key *key, const uint8_t *sig,
-		 const uint32_t sig_len, const uint8_t *hash)
+		 const uint32_t sig_len, const uint8_t *hash,
+		 enum hash_algo algo)
 {
 	return -ENOSYS;
 }

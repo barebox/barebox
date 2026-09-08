@@ -44,7 +44,7 @@ int public_key_verify(const struct public_key *key, const uint8_t *sig,
 	case PUBLIC_KEY_TYPE_RSA:
 		return rsa_verify(key->rsa, sig, sig_len, hash, algo);
 	case PUBLIC_KEY_TYPE_ECDSA:
-		return ecdsa_verify(key->ecdsa, sig, sig_len, hash);
+		return ecdsa_verify(key->ecdsa, sig, sig_len, hash, algo);
 	}
 
 	return -ENOKEY;

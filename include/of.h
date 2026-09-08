@@ -10,10 +10,15 @@
 #include <linux/err.h>
 #include <asm/byteorder.h>
 
-/* Default string compare functions */
+/*
+ * Default string compare functions
+ *
+ * Unlike Linux, which kept in part the case-insensitive Open Firmware semantics
+ * of of_node_cmp(), barebox compares node names case-sensitively.
+ */
 #define of_compat_cmp(s1, s2, l)	strcasecmp((s1), (s2))
 #define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
-#define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
+#define of_node_cmp(s1, s2)		strcmp((s1), (s2))
 
 #define OF_BAD_ADDR      ((u64)-1)
 

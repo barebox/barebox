@@ -322,7 +322,7 @@ int of_alias_get_id_from(struct device_node *root, struct device_node *np,
 		if (id < 0)
 			continue;
 
-		if (strncasecmp(start, stem, len))
+		if (strncmp(start, stem, len))
 			continue;
 
 		return id;

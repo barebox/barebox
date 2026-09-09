@@ -359,9 +359,13 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 static inline int
 is_pte_valid(const gpt_entry *pte, const u64 lastlba)
 {
+	u64 start = le64_to_cpu(pte->starting_lba);
+	u64 end = le64_to_cpu(pte->ending_lba);
+
 	if (guid_is_null(&pte->partition_type_guid) ||
-	    le64_to_cpu(pte->starting_lba) > lastlba	 ||
-	    le64_to_cpu(pte->ending_lba)   > lastlba)
+	    start > lastlba ||
+	    end > lastlba ||
+	    start > end)
 		return 0;
 	return 1;
 }

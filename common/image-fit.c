@@ -331,7 +331,15 @@ static int fit_config_build_hash_nodes(struct fit_handle *handle,
 		    !strcmp(prop->name, "default"))
 			continue;
 
+		/* permit neither empty properties, nor unterminated strings.
+		 * Should we choose to support e.g. the boolean load-only
+		 * property in future, we should handle it specially and
+		 * allow that only it can be empty and not all properties.
+		 */
 		count = of_property_count_strings(conf_node, prop->name);
+		if (count < 0)
+			return count;
+
 		for (i = 0; i < count; i++) {
 			if (of_property_read_string_index(conf_node, prop->name,
 							  i, &unit))

@@ -83,6 +83,19 @@ can be used to compile in well known development keys into the barebox binary.
 The private keys for these keys can be found
 `[here] <https://git.pengutronix.de/cgit/ptx-code-signing-dev>`__
 
+Pinning the FIT configuration
+-----------------------------
+
+A FIT signature covers the configuration node it is placed in, the images
+that configuration refers to and their hashes. It does not cover the
+``default`` property of the top-level ``/configurations`` node, which is
+what barebox falls back to when no configuration matches the board compatible.
+
+An attacker can therefore select which of the signed configurations of a FIT is
+booted without altering any image. If that matters, ship only one configuration
+per FIT, or name the configuration explicitly, e.g.
+``bootm /dev/mmc0.kernel@conf-production``.
+
 Prevent the kernel from booting the rootfs in verity boots
 ----------------------------------------------------------
 

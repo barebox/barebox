@@ -35,7 +35,9 @@ static struct clocksource dummy_cs = {
 	.priority = -1,
 };
 
-static struct clocksource *current_clock = IN_PROPER ? &dummy_cs : NULL;
+/* in .data, so clocksource_registered() reads NULL even before BSS is cleared */
+struct clocksource *current_clock __section(.data) =
+	IN_PROPER ? &dummy_cs : NULL;
 
 static int dummy_csrc_warn(void)
 {

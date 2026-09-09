@@ -53,6 +53,11 @@ static inline int is_timeout_interruptible(uint64_t start_ns,
 
 void arm_architected_timer_udelay(unsigned long us);
 
+extern struct clocksource *current_clock;
+
+/* implemented in assembly, so usable before relocation and stack setup */
+bool clocksource_registered(void);
+
 void ndelay(unsigned long nsecs);
 void udelay(unsigned long usecs);
 void mdelay(unsigned long msecs);

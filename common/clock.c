@@ -50,7 +50,7 @@ late_initcall(dummy_csrc_warn);
 /**
  * get_time_ns - get current timestamp in nanoseconds
  */
-uint64_t get_time_ns(void)
+uint64_t clocksource_current_get_time_ns(void)
 {
 	struct clocksource *cs = current_clock;
 	uint64_t cycle_now, cycle_delta;
@@ -73,6 +73,8 @@ uint64_t get_time_ns(void)
 	time_ns += ns_offset;
 	return time_ns;
 }
+
+uint64_t get_time_ns(void) __weak __alias(clocksource_current_get_time_ns);
 EXPORT_SYMBOL(get_time_ns);
 
 /**
@@ -165,7 +167,7 @@ int is_timeout_non_interruptible(uint64_t start_ns, uint64_t time_offset_ns)
 }
 EXPORT_SYMBOL(is_timeout_non_interruptible);
 
-int is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
+int clocksource_current_is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
 {
 	int ret = is_timeout_non_interruptible(start_ns, time_offset_ns);
 
@@ -174,6 +176,9 @@ int is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
 
 	return ret;
 }
+
+int is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
+	__weak __alias(clocksource_current_is_timeout);
 EXPORT_SYMBOL(is_timeout);
 
 void ndelay(unsigned long nsecs)
@@ -184,12 +189,14 @@ void ndelay(unsigned long nsecs)
 }
 EXPORT_SYMBOL(ndelay);
 
-void udelay(unsigned long usecs)
+void clocksource_current_udelay(unsigned long usecs)
 {
 	uint64_t start = get_time_ns();
 
 	while(!is_timeout(start, usecs * USECOND));
 }
+
+void udelay(unsigned long usecs) __weak __alias(clocksource_current_udelay);
 EXPORT_SYMBOL(udelay);
 
 void mdelay(unsigned long msecs)

@@ -1249,10 +1249,9 @@ static int tegra_pcie_probe(struct device *dev)
 	pcie->soc_data = device_get_match_data(dev);
 
 	err = tegra_pcie_parse_dt(pcie);
-	if (err < 0) {
-		printk("parse DT failed\n");
-		return err;
-	}
+	if (err < 0)
+		return dev_err_probe(dev, err,
+				     "failed to parse device tree\n");
 
 	err = tegra_pcie_get_resources(pcie);
 	if (err < 0) {

@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0
+
+/ {
+	barebox,deep-probe;
+};
+
+&clk_uart {
+	clock-frequency = <44236800>;
+};
+
+/* WiFi SDIO */
+&sdio2 {
+	status = "disabled";
+};

@@ -46,6 +46,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 	qemu-system-ppc \
 	qemu-system-common \
 	qemu-efi-aarch64 \
+	qemu-efi-riscv64 \
 	ovmf \
 	python3 \
 	python3-crcmod \

@@ -154,6 +154,11 @@ config MCI_BCM283X_SDHOST
 	depends on ARCH_BCM283X || COMPILE_TEST
 	select MCI_SDHCI
 
+config MCI_BCMSTB
+	bool "MCI support for BCMSTB"
+	depends on ARCH_BCM283X || COMPILE_TEST
+	select MCI_SDHCI
+
 config MCI_DOVE
 	bool "Marvell Dove SDHCI"
 	depends on ARCH_DOVE || COMPILE_TEST

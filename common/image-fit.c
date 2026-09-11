@@ -533,8 +533,13 @@ static int fit_image_verify_signature(struct fit_handle *handle,
 	void *hash;
 	int ret;
 
-	if (!IS_ENABLED(CONFIG_FITIMAGE_SIGNATURE))
-		return 0;
+	if (!IS_ENABLED(CONFIG_FITIMAGE_SIGNATURE)) {
+		if (handle->verify != BOOTM_VERIFY_SIGNATURE)
+			return 0;
+
+		pr_err("signature verification required but support is disabled\n");
+		return -ENOSYS;
+	}
 
 	switch (handle->verify) {
 	case BOOTM_VERIFY_NONE:
@@ -786,8 +791,13 @@ int fit_config_verify_signature(struct fit_handle *handle, struct device_node *c
 	struct device_node *sig_node;
 	int ret = -EINVAL;
 
-	if (!IS_ENABLED(CONFIG_FITIMAGE_SIGNATURE))
-		return 0;
+	if (!IS_ENABLED(CONFIG_FITIMAGE_SIGNATURE)) {
+		if (handle->verify != BOOTM_VERIFY_SIGNATURE)
+			return 0;
+
+		pr_err("signature verification required but support is disabled\n");
+		return -ENOSYS;
+	}
 
 	switch (handle->verify) {
 	case BOOTM_VERIFY_NONE:

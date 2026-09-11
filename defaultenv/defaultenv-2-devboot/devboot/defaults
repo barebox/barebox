@@ -1,0 +1,22 @@
+# Use ${global.user}-{image,oftree,initrd}-${global.hostname} from the
+# fetch directory as overrides
+
+devboot_default="${global.user}-image-${global.hostname}"
+if [ -f "${devboot_default}" ]; then
+	devboot_image="${devboot_default}"
+fi
+
+devboot_default="${global.user}-oftree-${global.hostname}"
+if [ -f "${devboot_default}" ]; then
+	devboot_oftree="${devboot_default}"
+fi
+
+devboot_default="${global.user}-ofoverlay-${global.hostname}"
+if [ -f "${devboot_default}" ]; then
+	devboot_oftree="${devboot_oftree}:${devboot_default}"
+fi
+
+devboot_default="${global.user}-initrd-${global.hostname}"
+if [ -f "${devboot_default}" ]; then
+	devboot_initrd="${devboot_default}"
+fi

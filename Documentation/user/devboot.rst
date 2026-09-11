@@ -97,6 +97,9 @@ Override rules
 
        devboot_initrd=":afa-modules-arm64"
 
+     The ``/env/devboot/rsinit-modules`` snippet described below does
+     just that.
+
      To make use of the modules, the initramfs init will need to make initramfs
      /modules available to the rootfs, e.g. via a bind mount:
 
@@ -168,23 +171,72 @@ kernel command line fragments:
   # /tftpboot/afa-devboot-rock3a
   devboot_image=afa-fit-rock3a
   devboot_oftree=
-  devboot_initrd=":afa-rsinit-arm64"
+  devboot_initrd=":afa-modules-arm64"
 
-  global linux.bootargs.dyn.rsinit="rsinit.bind=/lib/modules"
+  global linux.bootargs.devboot.rsinit="rsinit.bind=/lib/modules"
 
 With this script in place and ``global.user=afa``, ``global.hostname=rock3a``,
 running ``devboot mmc`` on the board expands to::
 
   boot -o bootm.image="afa-fit-rock3a" \
        -o bootm.oftree="" \
-       -o bootm.initrd=":afa-rsinit-arm64" \
+       -o bootm.initrd=":afa-modules-arm64" \
        mmc
 
 This fetches the FIT image ``afa-fit-rock3a`` from the fetch directory,
 discards the FIT's device tree (falling back to the barebox-internal one
 when ``CONFIG_BOOTM_OFTREE_FALLBACK`` is enabled), and appends the
-``afa-rsinit-arm64`` CPIO archive to whatever initrd the FIT already
+``afa-modules-arm64`` CPIO archive to whatever initrd the FIT already
 contains.
+
+Kernel command line fragments set by the script should use the
+``global.linux.bootargs.devboot.`` namespace. Unlike
+``global.linux.bootargs.dyn.``, which is cleared whenever a boot entry
+returns, it survives falling through to the next boot target, e.g. for
+``devboot system0 system1``. The ``devboot`` command removes the
+namespace after the boot command returns, so a subsequent plain
+``boot`` is unaffected by it.
+
+Snippets under /env/devboot/
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With ``CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_DEVBOOT`` enabled, the
+environment ships snippets under ``/env/devboot/`` for common setups,
+which the configuration script can source instead of spelling them out:
+
+``/env/devboot/defaults``
+  Sets ``devboot_image``, ``devboot_oftree`` and ``devboot_initrd`` to
+  ``${global.user}-image-${global.hostname}``,
+  ``${global.user}-oftree-${global.hostname}`` and
+  ``${global.user}-initrd-${global.hostname}`` respectively, but only
+  for those files that exist in the fetch directory. Symlink the build
+  artifacts under these names into the TFTP directory and the script
+  needs no further configuration.
+
+``/env/devboot/bootchooser``
+  Prepares booting a :ref:`bootchooser` target without affecting its
+  state: it locks the remaining attempts, so the boot is not counted
+  against the target, and adds ``rauc.external`` to the kernel command
+  line, so RAUC neither marks the slot as booted nor as good.
+
+``/env/devboot/rsinit-modules``
+  Appends the ``${global.user}-modules-${global.arch}`` CPIO archive to
+  the initrd, as built by the Linux kernel ``make modules-cpio-pkg``
+  target, and adds ``rsinit.bind=/lib/modules`` to the kernel command
+  line, so that the rsinit init in the initramfs bind mounts the modules
+  over the root file system's ``/lib/modules``.
+
+The example above can thus be reduced to:
+
+.. code-block:: sh
+
+  # /tftpboot/afa-devboot-rock3a
+  . /env/devboot/defaults
+  . /env/devboot/rsinit-modules
+  devboot_oftree=
+
+Snippets are applied in order, so a variable set by a later snippet or
+by the script itself takes precedence, like ``devboot_oftree`` here.
 
 Setting up the variables
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -199,6 +251,23 @@ script is loaded. Make them persistent with:
 
 ``global.hostname`` is typically derived from the device tree, but can be
 overridden.
+
+devboot boot target
+^^^^^^^^^^^^^^^^^^^
+
+``devboot`` is available as boot entry as well, so it can be used
+wherever a boot target is expected. The boot target to hand the
+overrides to is appended after an ``@``:
+
+.. code-block:: sh
+
+   boot devboot@system0
+
+This is most useful to boot with the overrides by default:
+
+.. code-block:: sh
+
+   nv boot.default=devboot@system0
 
 Forwarding a remote build directory over the internet
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

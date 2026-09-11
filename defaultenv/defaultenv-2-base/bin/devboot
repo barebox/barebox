@@ -45,4 +45,5 @@ fi
 echo boot ${override_args} $*
 boot ${override_args} $*
 
+global -r "linux.bootargs.devboot.*"
 cd "${saved_pwd}"

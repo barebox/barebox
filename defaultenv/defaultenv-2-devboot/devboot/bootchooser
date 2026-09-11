@@ -1,0 +1,4 @@
+# Boot a bootchooser target without decrementing boot attempts
+
+bootchooser -l
+global linux.bootargs.devboot.rauc="rauc.external"

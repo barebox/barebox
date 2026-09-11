@@ -1,0 +1,4 @@
+# Append the module CPIO archive and rsinit bind mount them over /lib/modules
+
+devboot_initrd="${devboot_initrd}:${global.user}-modules-${global.arch}"
+global linux.bootargs.devboot.rsinit="rsinit.bind=/lib/modules"

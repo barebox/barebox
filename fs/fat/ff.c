@@ -1544,14 +1544,21 @@ static enum filetype check_fs (	/* 0:The FAT BR, 1:Valid BR but not an FAT, 2:No
 	DWORD *bootsec
 )
 {
+	unsigned long bootsec_ul = 0;
 	DRESULT ret;
+	enum filetype type;
 
 	/* Load boot record */
 	ret = disk_read(fs, fs->win, sect, 1);
 	if (ret)
 		return filetype_unknown;
 
-	return is_fat_or_mbr(fs->win, bootsec);
+	type = is_fat_or_mbr(fs->win, &bootsec_ul);
+
+	if (bootsec)
+		*bootsec = bootsec_ul;
+
+	return type;
 }
 
 /*
@@ -1962,7 +1969,6 @@ int f_write (
 				fp->clust = clst;		/* Update current cluster */
 			}
 			if (fp->flag & FA__DIRTY) {		/* Write-back sector cache */
-				printf("wr sector cache\n");
 				if (disk_write(fp->fs, fp->buf, fp->dsect, 1) != RES_OK)
 					ABORT(fp->fs, -EIO);
 				fp->flag &= ~FA__DIRTY;

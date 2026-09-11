@@ -40,6 +40,7 @@ DSTATUS disk_status (FATFS *fatfs);
 DRESULT disk_read (FATFS *fatfs, BYTE*, DWORD, BYTE);
 #if	_READONLY == 0
 DRESULT disk_write (FATFS *fatfs, const BYTE*, DWORD, BYTE);
+DRESULT disk_flush (FATFS *fatfs);
 #endif
 DRESULT disk_ioctl (FATFS *fatfs, BYTE, void*);
 

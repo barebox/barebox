@@ -8,7 +8,11 @@ targets:
         memory: 1024M
         kernel: barebox.efi
         display: qemu-default
-        extra_args: '-bios OVMF.fd'
+        extra_args: >
+          -bios OVMF.fd
+          -device qemu-xhci,id=xhci
+          -device usb-net,netdev=usb0,bus=xhci.0
+          -netdev user,id=usb0
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'
@@ -16,6 +20,7 @@ targets:
     features:
       - pci
     devices:
+      usb1: 'usb1: Bus 001 Device 000: ID 0525:a4a2 RNDIS/QEMU USB Network Device'
       fb0: 'Type: primary'
       fbconsole0: 'Parent: fb0'
       wdog0: 'Parent: efi-wdt'
@@ -25,6 +30,8 @@ targets:
       acpi-APIC0: 'Signature: APIC (Multiple APIC Description Table)'
     runner:
       kconfig_add:
+        - CONFIG_USB_HOST=y
+        - CONFIG_USB_EFI_IO_PROTOCOL=y
         - CONFIG_DRIVER_SERIAL_NS16550=y
         - CONFIG_CONSOLE_ACTIVATE_FIRST=y # avoid duplicate output
 images:

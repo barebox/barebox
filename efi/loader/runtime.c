@@ -173,8 +173,8 @@ static efi_status_t EFIAPI efi_get_time_boottime(
 	}
 
 	memset(time, 0, sizeof(*time));
-	time->year = tm.tm_year;
-	time->month = tm.tm_mon;
+	time->year = tm.tm_year + 1900;
+	time->month = tm.tm_mon + 1;
 	time->day = tm.tm_mday;
 	time->hour = tm.tm_hour;
 	time->minute = tm.tm_min;
@@ -257,8 +257,8 @@ static efi_status_t EFIAPI efi_set_time_boottime(struct efi_time *time)
 	}
 
 	memset(&tm, 0, sizeof(tm));
-	tm.tm_year = time->year;
-	tm.tm_mon = time->month;
+	tm.tm_year = time->year - 1900;
+	tm.tm_mon = time->month - 1;
 	tm.tm_mday = time->day;
 	tm.tm_hour = time->hour;
 	tm.tm_min = time->minute;

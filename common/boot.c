@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <boot.h>
+#include <binfmt.h>
 #include <globalvar.h>
 #include <magicvar.h>
 #include <watchdog.h>
@@ -18,6 +19,7 @@
 #include <fs.h>
 
 #include <linux/stat.h>
+#include <linux/ctype.h>
 
 int bootentries_add_entry(struct bootentries *entries, struct bootentry *entry)
 {
@@ -82,6 +84,7 @@ void bootentries_free(struct bootentries *bootentries)
 
 struct bootentry_script {
 	struct bootentry entry;
+	char *args;
 };
 
 /*
@@ -90,13 +93,15 @@ struct bootentry_script {
 static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 {
 	struct bootentry_script *bs = container_of(entry, struct bootentry_script, entry);
+	char *argv[] = { (char *)bs->entry.path, bs->args, NULL };
 	int bootm_nattempts;
 	int ret;
 
 	struct bootm_data backup = {}, data = {};
 
 	if (dryrun == 1) {
-		printf("Would run %s\n", bs->entry.path);
+		printf("Would run %s%s%s\n", bs->entry.path,
+		       bs->args ? " " : "", bs->args ?: "");
 		return 0;
 	}
 
@@ -107,7 +112,11 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	bootm_nattempts = bootm_command_attempts();
 
-	ret = run_command("%s", bs->entry.path);
+	/*
+	 * Not run_command(), so that the argument reaches the script verbatim
+	 * without the shell expanding or splitting it first.
+	 */
+	ret = execute_binfmt(bs->args ? 2 : 1, argv);
 	if (ret) {
 		pr_err("Running script '%s' failed: %s\n", bs->entry.path, strerror(-ret));
 		goto out;
@@ -218,13 +227,19 @@ static void bootsource_action(struct menu *m, struct menu_entry *me)
 
 static void bootscript_entry_release(struct bootentry *entry)
 {
-	free(entry);
+	struct bootentry_script *bs = container_of(entry, struct bootentry_script, entry);
+
+	free(bs->args);
+	free(bs);
 }
 
 /*
  * bootscript_create_entry - create a boot entry from a script name
+ *
+ * args, if non-NULL, is passed to the script as argument when booting.
  */
-static int bootscript_create_entry(struct bootentries *bootentries, const char *name)
+static int bootscript_create_entry(struct bootentries *bootentries,
+				   const char *name, const char *args)
 {
 	struct bootentry_script *bs;
 	enum filetype type;
@@ -242,8 +257,16 @@ static int bootscript_create_entry(struct bootentries *bootentries, const char *
 	bs->entry.release = bootscript_entry_release;
 	bs->entry.boot = bootscript_boot;
 	bs->entry.path = xstrdup_const(name);
-	bs->entry.title = xstrdup_const(kbasename(bs->entry.path));
-	bs->entry.description = basprintf("script: %s", name);
+
+	if (args) {
+		bs->args = xstrdup(args);
+		bs->entry.title = basprintf("%s@%s", kbasename(bs->entry.path), args);
+		bs->entry.description = basprintf("script: %s %s", name, args);
+	} else {
+		bs->entry.title = xstrdup_const(kbasename(bs->entry.path));
+		bs->entry.description = basprintf("script: %s", name);
+	}
+
 	bootentries_add_entry(bootentries, &bs->entry);
 
 	return 0;
@@ -253,9 +276,10 @@ static int bootscript_create_entry(struct bootentries *bootentries, const char *
  * bootscript_scan_path - create boot entries from a path
  *
  * path can either be a full path to a bootscript or a full path to a directory
- * containing bootscripts.
+ * containing bootscripts. args is passed along to bootscript_create_entry().
  */
-static int bootscript_scan_path(struct bootentries *bootentries, const char *path)
+static int bootscript_scan_path(struct bootentries *bootentries, const char *path,
+				const char *args)
 {
 	struct stat s;
 	char *files;
@@ -268,7 +292,7 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
 		return ret;
 
 	if (!S_ISDIR(s.st_mode)) {
-		ret = bootscript_create_entry(bootentries, path);
+		ret = bootscript_create_entry(bootentries, path, args);
 		if (ret)
 			return ret;
 		return 1;
@@ -284,7 +308,7 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
 		if (*basename(bootscript_path) == '.')
 			continue;
 
-		bootscript_create_entry(bootentries, bootscript_path);
+		bootscript_create_entry(bootentries, bootscript_path, args);
 		found++;
 	}
 
@@ -292,6 +316,66 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
 	free(files);
 
 	ret = found;
+
+	return ret;
+}
+
+/*
+ * Only the first character of a boot script argument is restricted, so
+ * that other forms can be added later without changing the meaning of
+ * existing targets, e.g. devboot@@mmc0@mmc1 or devboot@[some-condition].
+ * Paths and URLs are fine as arguments.
+ */
+static bool is_valid_bootarg(const char *s)
+{
+	return isalnum(*s) || *s == '/' || *s == '-' || *s == '_' || *s == '.';
+}
+
+/*
+ * bootscript_scan_name - create boot entries from a boot script name
+ *
+ * name is either an absolute path or a name relative to /env/boot. A name
+ * of the form SCRIPT@ARGUMENT refers to the boot script SCRIPT and has
+ * ARGUMENT passed to it as first argument, e.g. devboot@system0 runs
+ * /env/boot/devboot with argument system0. A name that exists as-is takes
+ * precedence, so scripts and directories with an @ in their name keep
+ * working. An empty SCRIPT is rejected, so that @ARGUMENT doesn't expand
+ * to every script in /env/boot.
+ */
+static int bootscript_scan_name(struct bootentries *bootentries, const char *name)
+{
+	const char *args = NULL;
+	char *path, *at;
+	struct stat s;
+	int ret;
+
+	if (*name != '/')
+		path = basprintf("/env/boot/%s", name);
+	else
+		path = xstrdup(name);
+
+	at = strchr(path, '@');
+	if (at && !stat(path, &s))
+		at = NULL;
+
+	if (at) {
+		if (at[-1] == '/') {
+			ret = -EINVAL;
+			goto out;
+		}
+
+		*at = '\0';
+		args = at + 1;
+
+		if (!is_valid_bootarg(args)) {
+			ret = -EINVAL;
+			goto out;
+		}
+	}
+
+	ret = bootscript_scan_path(bootentries, path, args);
+out:
+	free(path);
 
 	return ret;
 }
@@ -438,6 +522,8 @@ out:
  *
  * name can be:
  * - a name of a boot script under /env/boot
+ * - a name of a boot script under /env/boot followed by an @ and an
+ *   argument to pass to the script, e.g. devboot@system0
  * - a full path of a boot script
  * - a full path of a bootloader spec entry
  * - a device name
@@ -474,18 +560,9 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 	}
 
 	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT) && !found) {
-		const char *path;
-
-		if (*name != '/')
-			path = basprintf("/env/boot/%s", name);
-		else
-			path = xstrdup_const(name);
-
-		ret = bootscript_scan_path(bootentries, path);
+		ret = bootscript_scan_name(bootentries, name);
 		if (ret > 0)
 			found += ret;
-
-		free_const(path);
 	}
 
 	free(nfspath);

@@ -149,6 +149,8 @@ static int defaultenv_init(void)
 		defaultenv_append_directory(defaultenv_2_reboot_mode);
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_SECURITY_POLICY))
 		defaultenv_append_directory(defaultenv_2_security_policy);
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_DEVBOOT))
+		defaultenv_append_directory(defaultenv_2_devboot);
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_IKCONFIG))
 		defaultenv_append_directory(defaultenv_2_ikconfig);
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))

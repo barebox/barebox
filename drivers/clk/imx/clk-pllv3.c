@@ -192,7 +192,12 @@ static unsigned long clk_pllv3_av_recalc_rate(struct clk_hw *hw,
 	u32 mfd = readl(pll->base + PLL_DENOM_OFFSET);
 	u32 div = readl(pll->base) & pll->div_mask;
 
-	return (parent_rate * div) + ((parent_rate / mfd) * mfn);
+	u64 temp64 = (u64)parent_rate;
+
+	temp64 *= mfn;
+	do_div(temp64, mfd);
+
+	return parent_rate * div + (unsigned long)temp64;
 }
 
 static long clk_pllv3_av_round_rate(struct clk_hw *hw, unsigned long rate,
@@ -293,7 +298,12 @@ static unsigned long clk_pllv3_sys_vf610_recalc_rate(struct clk_hw *hw,
 	u32 mfd = readl(pll->base + SYS_VF610_PLL_OFFSET + PLL_DENOM_OFFSET);
 	u32 div = (readl(pll->base) & pll->div_mask) ? 22 : 20;
 
-	return (parent_rate * div) + ((parent_rate / mfd) * mfn);
+	u64 temp64 = (u64)parent_rate;
+
+	temp64 *= mfn;
+	do_div(temp64, mfd);
+
+	return parent_rate * div + (unsigned long)temp64;
 }
 
 static long clk_pllv3_sys_vf610_round_rate(struct clk_hw *hw, unsigned long rate,

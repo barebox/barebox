@@ -119,7 +119,9 @@ embedded *state* variable set. Refer to
    operating systems.
 
 .. note:: When calculating the ``backend-stridesize`` take the header overhead
-   into account. The header overhead is always 16 bytes.
+   into account. The header overhead is always 16 bytes. On block devices
+   the stride must additionally be a multiple of the block size, refer
+   :ref:`Direct Storage Backend Redundancy <state_framework,direct_redundancy>`.
 
 .. _state_framework,dtb:
 
@@ -337,6 +339,8 @@ In the case of an interruption and/or power loss resulting in an incomplete
 write to the backend, the system can fall back to a different *state* variable
 set copy (previous *state* variable set).
 
+.. _state_framework,direct_redundancy:
+
 Direct Storage Backend Redundancy
 #################################
 
@@ -366,6 +370,21 @@ size of a partition).
    It's a good idea though to increase stride size beyond the minimum to leave
    some free space for in-place addition of new variables in future.
 
+.. important:: The redundancy only helps if an interrupted write can damage
+   just the copy being written.
+   The stride size must therefore be a multiple of the block size and the
+   backend partition must start on a block boundary, otherwise two copies
+   share a block and a power loss during a write can corrupt both.
+   barebox warns at startup when this is the case.
+   Increasing the stride size on an already deployed device is deemed safe,
+   even across a power loss: the first copy always stays at the start of
+   the backend and is not rewritten during the migration, so it
+   remains readable while the other copies are rewritten at their new
+   positions on the next load. This requires the new stride size to be a
+   multiple of that atomically written block size, otherwise rewriting a copy
+   during the migration can damage the first copy.
+   Byte-writable backends like EEPROM, SRAM or MRAM have no such constraint.
+
 Circular Storage Backend Redundancy
 ###################################
 
@@ -373,11 +392,10 @@ Circular Storage Backend Redundancy
 
 Redundant copies of the *state* variable set are stored based on the memory's
 eraseblocks and this size is automatically detected at run-time.
-It needs a stride size as well, because a NOR type flash memory can be written
-on a byte-by-byte manner.
-In contrast to the ``direct`` storage backend redundancy, the
-stride size for the ``circular`` storage backend redundancy defines the
-side-by-side location of the *state* variable set copies.
+The stride size is not used. Since NOR type flash memory can be written on a
+byte-by-byte manner, the *state* variable set copies are packed back to back
+inside the eraseblock, each padded to the write granularity reported by the
+MTD device (at least 8 bytes).
 
 .. code-block:: text
 
@@ -388,7 +406,8 @@ side-by-side location of the *state* variable set copies.
     |<--------- eraseblock --------->|<--------- eraseblock --------->|<-
     |<------- redundant area ------->|<------- redundant area ------->|<-
 
-*<X>* defines the stride size, *C#1*, *C#2* the *state* variable set copies.
+*<X>* is the size of one copy rounded up to the write granularity, *C#1*, *C#2*
+the *state* variable set copies.
 
 Since these kinds of MTD devices are partitioned, it's a good practice to always
 reserve multiple eraseblocks for the barebox' *state* feature. Keep in mind:
@@ -567,7 +586,7 @@ as follows:
 		magic = <0xab67421f>;
 		backend-type = "raw";
 		backend = <&backend_state_sd>;
-		backend-stridesize = <0x40>;
+		backend-stridesize = <0x200>;
 
 		variable@0 {
 			reg = <0x0 0x1>;

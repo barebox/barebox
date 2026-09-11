@@ -431,7 +431,7 @@ static struct xyz_ctxt *xymodem_open(struct console_device *cdev,
 
 static int xymodem_handle(struct xyz_ctxt *proto)
 {
-	int rc = 0, xfer_max, len = 0, again = 1, remain;
+	int rc = 0, xfer_max, again = 1, remain;
 	int crc_tries = 0, same_blk_retries = 0;
 	unsigned char invite;
 	struct xy_block blk;
@@ -505,7 +505,6 @@ static int xymodem_handle(struct xyz_ctxt *proto)
 			rc = write(proto->fd, blk.buf, xfer_max);
 			proto->next_blk = ((blk.seq + 1) % 256);
 			proto->nb_received += rc;
-			len += rc;
 			xy_block_ack(proto);
 			break;
 		}

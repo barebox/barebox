@@ -50,7 +50,7 @@ static inline int unlz4(u8 *input, long in_len,
 	u8 *inp;
 	u8 *inp_start;
 	u8 *outp;
-	int size = in_len;
+	long size = in_len;
 #ifdef PREBOOT
 	size_t out_len = get_unaligned_le32(input + in_len);
 #endif
@@ -122,6 +122,9 @@ static inline int unlz4(u8 *input, long in_len,
 				error("data corrupted");
 				goto exit_2;
 			}
+		} else if (size < 4) {
+			/* empty or end-of-file */
+			goto exit_3;
 		}
 
 		chunksize = get_unaligned_le32(inp);
@@ -136,12 +139,22 @@ static inline int unlz4(u8 *input, long in_len,
 		}
 
 
+		if (!fill && chunksize == 0) {
+			/* empty or end-of-file */
+			goto exit_3;
+		}
+
 		if (posp)
 			*posp += 4;
 
 		if (!fill) {
 			inp += 4;
 			size -= 4;
+
+			if (chunksize > size) {
+				error("chunk length exceeds remaining data");
+				goto exit_2;
+			}
 		} else {
 			if (chunksize > lz4_compressbound(uncomp_chunksize)) {
 				error("chunk length is longer than allocated");
@@ -190,6 +203,7 @@ static inline int unlz4(u8 *input, long in_len,
 		}
 	}
 
+exit_3:
 	ret = 0;
 exit_2:
 	if (!input)

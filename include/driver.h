@@ -200,6 +200,10 @@ int device_add_resource(struct device *dev, const char *resname,
 
 int device_add_data(struct device *dev, const void *data, size_t size);
 
+/*
+ * register a device with a single resource as child of parent
+ * returns NULL if registering the device fails
+ */
 struct device *add_child_device(struct device *parent,
 				const char* devname, int id, const char *resname,
 				resource_size_t start, resource_size_t size, unsigned int flags,
@@ -219,6 +223,7 @@ static inline struct device *of_add_child_device(struct device *parent,
 /*
  * register a generic device
  * with only one resource
+ * returns NULL if registering the device fails
  */
 static inline struct device *add_generic_device(const char* devname, int id, const char *resname,
 		resource_size_t start, resource_size_t size, unsigned int flags,
@@ -230,6 +235,7 @@ static inline struct device *add_generic_device(const char* devname, int id, con
 /*
  * register a generic device
  * with multiple resources
+ * returns NULL if registering the device fails
  */
 struct device *add_generic_device_res(const char* devname, int id,
 		struct resource *res, int nb, void *pdata);

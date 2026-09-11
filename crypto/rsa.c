@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <crypto/rsa.h>
 #include <crypto/public_key.h>
+#include <fuzz.h>
 #include <asm/unaligned.h>
 
 #define UINT64_MULT32(v, multby)  (((uint64_t)(v)) * ((uint32_t)(multby)))
@@ -316,6 +317,20 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 
 	if (!d)
 		return -EOPNOTSUPP;
+
+	/*
+	 * A fuzzer cannot produce a signature that survives the PKCS#1
+	 * padding checks below, so replace the whole verification with a
+	 * comparison of the lowest bit of the hash against the signature.
+	 */
+	if (fuzz_insecure_partial_digest_enabled()) {
+		if (!sig_len ||
+		    !fuzz_insecure_checksum_accepted(hash[digest_length(d) - 1],
+						     sig[sig_len - 1]))
+			ret = -EKEYREJECTED;
+
+		goto out_free_digest;
+	}
 
 	if (sig_len != (key->len * sizeof(uint32_t))) {
 		pr_debug("Signature is of incorrect length %u, should be %zu\n", sig_len,

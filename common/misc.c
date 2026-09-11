@@ -156,7 +156,6 @@ static bool barebox_valid_ldh_char(char c)
 
 bool barebox_hostname_is_valid(const char *s)
 {
-	unsigned int n_dots = 0;
 	const char *p;
 	bool dot, hyphen;
 
@@ -178,7 +177,6 @@ bool barebox_hostname_is_valid(const char *s)
 
 			dot = true;
 			hyphen = false;
-			n_dots++;
 
 		} else if (*p == '-') {
 			if (dot)

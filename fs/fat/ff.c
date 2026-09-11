@@ -1397,14 +1397,19 @@ static void get_fileinfo (		/* No return code */
 )
 {
 	UINT i;
-	BYTE nt, *dir;
+	BYTE *dir;
+#ifdef FS_FAT_LFN
+	BYTE nt;
+#endif
 	TCHAR *p, c;
 
 
 	p = fno->fname;
 	if (dj->sect) {
 		dir = dj->dir;
+#ifdef FS_FAT_LFN
 		nt = dir[DIR_NTres];		/* NT flag */
+#endif
 		for (i = 0; i < 8; i++) {	/* Copy name body */
 			c = dir[i];
 			if (c == ' ')

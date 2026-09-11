@@ -10,8 +10,19 @@
 
 #define CHAR_BIT	8
 
-#ifndef CONFIG_KASAN
+#ifdef CONFIG_ASAN
+/*
+ * tlsf_realloc() copies up to the old block size, which may exceed the
+ * originally requested size that memory was unpoisoned with. The
+ * instrumented memcpy would report the copy of the poisoned padding,
+ * so use an uninstrumented implementation.
+ */
+#define __memcpy __nokasan_default_memcpy
+#elif !defined(CONFIG_KASAN)
 #define __memcpy memcpy
+#endif
+
+#ifndef CONFIG_KASAN
 /* This is only an optimization: On sandbox, with ASan, we don't have
  * an asan-less memset implementation, so we must unpoison memory anyhow.
  */

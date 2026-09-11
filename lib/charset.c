@@ -537,7 +537,6 @@ int utf8_to_cp437_stream(u8 c, char *buffer)
 	char *end;
 	const char *pos;
 	s32 s;
-	int ret;
 
 	for (;;) {
 		pos = buffer;
@@ -547,7 +546,7 @@ int utf8_to_cp437_stream(u8 c, char *buffer)
 		s = utf8_get(&pos);
 		if (s > 0) {
 			*buffer = 0;
-			ret = utf_to_cp(&s, codepage_437);
+			utf_to_cp(&s, codepage_437);
 			return s;
 			}
 		if (pos == end)

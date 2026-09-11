@@ -11,7 +11,7 @@ KBUILD_CPPFLAGS = $(patsubst %,-I$(srctree)/%include,$(machdirs)) \
 
 KBUILD_CPPFLAGS += -D_FILE_OFFSET_BITS=64 -include $(objtree)/include/generated/autoconf.h
 
-KBUILD_CFLAGS := -Wall
+KBUILD_CFLAGS := -Wall $(DEBUG_CFLAGS)
 
 NOSTDINC_FLAGS :=
 

@@ -11,4 +11,5 @@ obj-pbl-y   += setjmp.o
 obj-pbl-y   += reloc.o
 obj-y += io.o
 pbl-$(CONFIG_CLOCKSOURCE_ARM_ARCHITECTED_TIMER)	+= clocksource.o
+pbl-$(CONFIG_PBL_CLOCKSOURCE)	+= delay.o clocksource-registered.o
 pbl-y	+= div0.o

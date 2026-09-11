@@ -37,6 +37,22 @@ void sync_caches_for_execution(void)
 	arm_early_mmu_cache_flush();
 }
 
+/**
+ * cache_invalidate_stale - invalidate caches prior to enabling them
+ *
+ * Some SoCs can come up with invalid entries, but with the valid bit set.
+ * This function discards them, as that would lead to memory corruption
+ * otherwise.
+ */
+void cache_invalidate_stale(void)
+{
+	/* if caches are already enabled, don't cause data loss */
+	if (get_cr() & CR_C)
+		return;
+
+	arm_early_mmu_cache_invalidate();
+}
+
 void pbl_barebox_break(void)
 {
 	__asm__ __volatile__ (

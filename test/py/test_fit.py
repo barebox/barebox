@@ -74,7 +74,10 @@ def test_fit_dryrun(barebox, strategy, fitimage):
             barebox.run_check("global.bootm.efi=disabled")
 
         for i in range(5):
-            stdout, _, _ = barebox.run(f"bootm -d -v {fitimage}")
+            stdout, _, returncode = barebox.run(f"bootm -d -v {fitimage}")
+            # bootm reports its own failures without a log level prefix,
+            # so filter_errors() alone would not notice them
+            assert returncode == 0, "\n".join(stdout)
             errors = filter_errors(stdout)
             assert errors == [], errors
     finally:

@@ -19,7 +19,15 @@ static void copy_vc_fdt(void *dest, void *src, unsigned long max_size)
 	struct fdt_header *oftree_dest = dest;
 	unsigned long size;
 
-	if (!src) {
+	/*
+	 * Anything may be handed to us here: firmware that was not asked
+	 * for a device tree and QEMU pass an ATAGS pointer in the same
+	 * register. Validate the magic before trusting the size, otherwise
+	 * we either copy a bogus amount of data or report a spurious error.
+	 * Both are indistinguishable from "no device tree", so report them
+	 * the same way.
+	 */
+	if (!src || be32_to_cpu(oftree_src->magic) != FDT_MAGIC) {
 		oftree_dest->magic = cpu_to_be32(VIDEOCORE_FDT_ERROR);
 		oftree_dest->totalsize = cpu_to_be32(0);
 		return;

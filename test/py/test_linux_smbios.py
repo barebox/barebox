@@ -2,18 +2,6 @@
 
 import pytest
 
-from .helper import ensure_debian_iso
-
-fetchdir = "/mnt/9p/testfs"
-
-
-@pytest.fixture(scope="module")
-def debian_iso(env, testfs):
-    result = ensure_debian_iso(env, testfs)
-    if result is None:
-        pytest.skip("Debian ISO not found")
-    return result
-
 
 @pytest.mark.lg_feature(['bootable', 'smbios', 'testfs'])
 def test_smbios3_tables_present(shell):

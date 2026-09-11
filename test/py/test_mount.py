@@ -16,6 +16,7 @@ def test_findmnt_umount(barebox, barebox_config):
 def test_echo_umount(barebox):
     barebox.run_check("mount -t ramfs none /tmp")
     barebox.run_check("echo -o /tmp/file test")
-    barebox.run_check("umount /tmp")
 
-    # Nothing to assert, we are happy if this is reached without exception
+    assert barebox.run_check("cat /tmp/file") == ["test"]
+
+    barebox.run_check("umount /tmp")

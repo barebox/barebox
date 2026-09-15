@@ -310,10 +310,18 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 	uint8_t buf[RSA_MAX_SIG_BITS / 8];
 	int i;
 	unsigned PS_end, T_offset;
-	const u8 *asn1_template = RSA_ASN1_templates[algo].data;
-	size_t asn1_size = RSA_ASN1_templates[algo].size;
-	struct digest *d = digest_alloc_by_algo(algo);
+	const u8 *asn1_template;
+	size_t asn1_size;
+	struct digest *d;
 
+	if (algo >= ARRAY_SIZE(RSA_ASN1_templates) ||
+	    !RSA_ASN1_templates[algo].data)
+		return -EOPNOTSUPP;
+
+	asn1_template = RSA_ASN1_templates[algo].data;
+	asn1_size = RSA_ASN1_templates[algo].size;
+
+	d = digest_alloc_by_algo(algo);
 	if (!d)
 		return -EOPNOTSUPP;
 
@@ -332,11 +340,27 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 		goto out_free_digest;
 	}
 
+	/*
+	 * EM is 0x00 0x01 PS 0x00 T with at least eight octets of padding,
+	 * so anything shorter cannot be a valid encoding.
+	 */
+	if (sig_len < asn1_size + digest_length(d) + 11) {
+		pr_debug("Signature too short for %s\n", digest_name(d));
+		ret = -EBADMSG;
+		goto out_free_digest;
+	}
+
 	memcpy(buf, sig, sig_len);
 
 	ret = pow_mod(key, buf);
 	if (ret)
 		goto out_free_digest;
+
+	if (buf[0] != 0x00 || buf[1] != 0x01) {
+		pr_debug(" = -EBADMSG [EM[0..1] == %02x %02x]\n", buf[0], buf[1]);
+		ret = -EBADMSG;
+		goto out_free_digest;
+	}
 
 	T_offset = sig_len - (asn1_size + digest_length(d));
 

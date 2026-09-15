@@ -69,7 +69,7 @@ static char *dt_string(struct fdt_header *f, char *strstart, uint32_t ofs)
 
 static int fit_digest(struct fit_handle *handle, struct digest *digest,
 		      struct string_list *inc_nodes, struct string_list *exc_props,
-		      uint32_t hashed_strings_start, uint32_t hashed_strings_size)
+		      uint32_t hashed_strings_size)
 {
 	const struct fdt_header *fdt = handle->fit;
 	const void *fit = handle->fit;
@@ -90,9 +90,7 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 	f.off_dt_strings = fdt32_to_cpu(fdt->off_dt_strings);
 	f.size_dt_strings = fdt32_to_cpu(fdt->size_dt_strings);
 
-	if (hashed_strings_start > f.size_dt_strings ||
-	    hashed_strings_size > f.size_dt_strings ||
-	    hashed_strings_start + hashed_strings_size > f.size_dt_strings) {
+	if (hashed_strings_size > f.size_dt_strings) {
 		pr_err("%s: hashed-strings too large\n", __func__);
 		return -EINVAL;
 	}
@@ -220,8 +218,8 @@ static int fit_digest(struct fit_handle *handle, struct digest *digest,
 	pr_debug("region: 0x%p+0x%x\n", fit + start, dt_struct - start);
 	digest_update(digest, fit + start, dt_struct - start);
 
-	pr_debug("strings: 0x%p+0x%x\n", dt_strings+hashed_strings_start, hashed_strings_size);
-	digest_update(digest, dt_strings + hashed_strings_start, hashed_strings_size);
+	pr_debug("strings: 0x%p+0x%x\n", dt_strings, hashed_strings_size);
+	digest_update(digest, dt_strings, hashed_strings_size);
 
 	return 0;
 }
@@ -345,7 +343,15 @@ static int fit_config_build_hash_nodes(struct fit_handle *handle,
 		    !strcmp(prop->name, "default"))
 			continue;
 
+		/* permit neither empty properties, nor unterminated strings.
+		 * Should we choose to support e.g. the boolean load-only
+		 * property in future, we should handle it specially and
+		 * allow that only it can be empty and not all properties.
+		 */
 		count = of_property_count_strings(conf_node, prop->name);
+		if (count < 0)
+			return count;
+
 		for (i = 0; i < count; i++) {
 			if (of_property_read_string_index(conf_node, prop->name,
 							  i, &unit))
@@ -463,6 +469,11 @@ static int fit_verify_signature(struct fit_handle *handle,
 		return -EINVAL;
 	}
 
+	if (hashed_strings_start != 0) {
+		pr_err("%pOF: hashed-strings offset must be 0\n", sig_node);
+		return -EINVAL;
+	}
+
 	if (of_property_read_u32_index(sig_node, "hashed-strings", 1,
 	    &hashed_strings_size)) {
 		pr_err("hashed-strings size not found in %pOF\n", sig_node);
@@ -486,8 +497,7 @@ static int fit_verify_signature(struct fit_handle *handle,
 		goto out_sl;
 	}
 
-	ret = fit_digest(handle, digest, &inc_nodes, &exc_props, hashed_strings_start,
-			 hashed_strings_size);
+	ret = fit_digest(handle, digest, &inc_nodes, &exc_props, hashed_strings_size);
 	if (ret)
 		goto out_sl;
 

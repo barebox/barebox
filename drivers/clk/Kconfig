@@ -42,6 +42,8 @@ config CLK_SOCFPGA
 
 if COMMON_CLK
 
+source "drivers/clk/meson/Kconfig"
+
 config COMMON_CLK_STM32F
 	bool "STM32F4 and STM32F7 clock driver"
 	depends on ARCH_STM32 || COMPILE_TEST

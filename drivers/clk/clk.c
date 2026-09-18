@@ -673,9 +673,35 @@ int clk_hw_set_parent(struct clk_hw *hw, struct clk_hw *newparent)
 	return clk_set_parent(&hw->clk, &newparent->clk);
 }
 
+/*
+ * clk_parent_data.fw_name names a clock in the clock-names property of the
+ * providing device, as in Linux. The global clock name is the fallback.
+ */
+static struct clk *clk_get_parent_by_fw_name(struct clk *clk, u8 idx)
+{
+	struct device_node *np = clk->dev ? clk->dev->of_node : NULL;
+	const char *fw_name;
+	int index;
+
+	if (!clk->parent_data || !np)
+		return ERR_PTR(-ENODEV);
+
+	fw_name = clk->parent_data[idx].fw_name;
+	if (!fw_name)
+		return ERR_PTR(-ENODEV);
+
+	index = of_property_match_string(np, "clock-names", fw_name);
+	if (index < 0)
+		return ERR_PTR(index);
+
+	return of_clk_get(np, index);
+}
+
 static struct clk *clk_get_parent_by_index(struct clk *clk, u8 idx)
 {
 	if (IS_ERR_OR_NULL(clk->parents[idx]))
+		clk->parents[idx] = clk_get_parent_by_fw_name(clk, idx);
+	if (IS_ERR_OR_NULL(clk->parents[idx]) && clk->parent_names)
 		clk->parents[idx] = clk_lookup(clk->parent_names[idx]);
 
 	return clk->parents[idx];
@@ -855,12 +881,42 @@ static int clk_cpy_name(const char **dst_p, const char *src, bool must_exist)
 	return 0;
 }
 
+/*
+ * Linux drivers commonly build parent_data on the stack, so it is
+ * copied: the parents are only looked up when first needed.
+ */
+static struct clk_parent_data *
+clk_cpy_parent_data(const struct clk_parent_data *src, unsigned int num)
+{
+	struct clk_parent_data *pd;
+	unsigned int i;
+
+	pd = xmemdup(src, num * sizeof(*pd));
+	for (i = 0; i < num; i++)
+		pd[i].fw_name = xstrdup_const(pd[i].fw_name);
+
+	return pd;
+}
+
+static void clk_free_parent_data(const struct clk_parent_data *pd,
+				 unsigned int num)
+{
+	unsigned int i;
+
+	if (!pd)
+		return;
+
+	for (i = 0; i < num; i++)
+		free_const(pd[i].fw_name);
+	free((void *)pd);
+}
+
 struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 {
 	struct clk *clk;
 	const struct clk_init_data *init = hw->init;
 	const char **parent_names = NULL;
-	int i, ret;
+	int i, ret = 0;
 
 	if (!hw->init)
 		return ERR_PTR(-EINVAL);
@@ -886,24 +942,30 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 				if (ret)
 					return ERR_PTR(ret);
 			} else if (init->parent_data) {
-				/* Linux copies fw_name and if successful also name.
-				 * As fw_name is not handled in barebox, just copy the
-				 * name field and fallback to hw->clk.name if it doesn't
-				 * exist.
+				/*
+				 * fw_name is looked up when the parent
+				 * is first needed, else name or hw.
 				 */
-				ret = clk_cpy_name(&parent_names[i],
-						   init->parent_data[i].name,
-						   true);
-				if (ret) {
-					ret = clk_cpy_name(&parent_names[i],
-							   init->parent_data[i].hw->clk.name,
-							   false);
-					if (ret)
-						return ERR_PTR(ret);
-				}
+				const struct clk_parent_data *pd = &init->parent_data[i];
+
+				if (pd->name)
+					ret = clk_cpy_name(&parent_names[i], pd->name, true);
+				else if (pd->hw)
+					ret = clk_cpy_name(&parent_names[i], pd->hw->clk.name, false);
+				else if (!pd->fw_name)
+					ret = -EINVAL;
+				if (ret)
+					return ERR_PTR(ret);
 			}
 		}
 		clk->parent_names = (const char *const *)parent_names;
+		/*
+		 * Linux consults parent_data only without parent_names, so
+		 * drivers giving names leave it uninitialised.
+		 */
+		if (!init->parent_names && init->parent_data)
+			clk->parent_data = clk_cpy_parent_data(init->parent_data,
+							       init->num_parents);
 	} else {
 		for (i = 0; i < init->num_parents; i++)
 			clk->parents[i] = clk_hw_to_clk(init->parent_hws[i]);
@@ -918,6 +980,7 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 				free_const(parent_names[i]);
 			free(parent_names);
 		}
+		clk_free_parent_data(clk->parent_data, init->num_parents);
 		free(clk->parents);
 		return ERR_PTR(ret);
 	}

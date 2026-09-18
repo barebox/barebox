@@ -979,7 +979,9 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 			} else if (init->parent_data) {
 				/*
 				 * fw_name is looked up when the parent
-				 * is first needed, else name or hw.
+				 * is first needed, else name or hw. None
+				 * of them and a negative index is a mux
+				 * input that must not be used.
 				 */
 				const struct clk_parent_data *pd = &init->parent_data[i];
 
@@ -987,7 +989,7 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 					ret = clk_cpy_name(&parent_names[i], pd->name, true);
 				else if (pd->hw)
 					ret = clk_cpy_name(&parent_names[i], pd->hw->clk.name, false);
-				else if (!pd->fw_name)
+				else if (!pd->fw_name && pd->index >= 0)
 					ret = -EINVAL;
 				if (ret)
 					return ERR_PTR(ret);
@@ -1515,9 +1517,9 @@ static const char *clk_hw_stat(struct clk *clk)
 
 static const char *clk_parent_name_by_index(struct clk *clk, u8 idx)
 {
-	if (clk->parent_names)
+	if (clk->parent_names && clk->parent_names[idx])
 		return clk->parent_names[idx];
-	if (clk->parents[idx])
+	if (!IS_ERR_OR_NULL(clk->parents[idx]))
 		return clk->parents[idx]->name;
 	return "unknown";
 }

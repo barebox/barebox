@@ -679,24 +679,29 @@ int clk_hw_set_parent(struct clk_hw *hw, struct clk_hw *newparent)
 
 /*
  * clk_parent_data.fw_name names a clock in the clock-names property of the
- * providing device, as in Linux. The global clock name is the fallback.
+ * providing device, index one in its clocks property, as in Linux. The global
+ * clock name is the fallback.
  */
-static struct clk *clk_get_parent_by_fw_name(struct clk *clk, u8 idx)
+static struct clk *clk_get_parent_from_dt(struct clk *clk, u8 idx)
 {
 	struct device_node *np = clk->dev ? clk->dev->of_node : NULL;
-	const char *fw_name;
+	const struct clk_parent_data *pd;
 	int index;
 
 	if (!clk->parent_data || !np)
 		return ERR_PTR(-ENODEV);
 
-	fw_name = clk->parent_data[idx].fw_name;
-	if (!fw_name)
-		return ERR_PTR(-ENODEV);
+	pd = &clk->parent_data[idx];
 
-	index = of_property_match_string(np, "clock-names", fw_name);
-	if (index < 0)
-		return ERR_PTR(index);
+	if (pd->fw_name) {
+		index = of_property_match_string(np, "clock-names", pd->fw_name);
+		if (index < 0)
+			return ERR_PTR(index);
+	} else if (!pd->hw && !pd->name && pd->index >= 0) {
+		index = pd->index;
+	} else {
+		return ERR_PTR(-ENODEV);
+	}
 
 	return of_clk_get(np, index);
 }
@@ -704,7 +709,7 @@ static struct clk *clk_get_parent_by_fw_name(struct clk *clk, u8 idx)
 static struct clk *clk_get_parent_by_index(struct clk *clk, u8 idx)
 {
 	if (IS_ERR_OR_NULL(clk->parents[idx]))
-		clk->parents[idx] = clk_get_parent_by_fw_name(clk, idx);
+		clk->parents[idx] = clk_get_parent_from_dt(clk, idx);
 	if (IS_ERR_OR_NULL(clk->parents[idx]) && clk->parent_names)
 		clk->parents[idx] = clk_lookup(clk->parent_names[idx]);
 
@@ -978,10 +983,10 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 					return ERR_PTR(ret);
 			} else if (init->parent_data) {
 				/*
-				 * fw_name is looked up when the parent
-				 * is first needed, else name or hw. None
-				 * of them and a negative index is a mux
-				 * input that must not be used.
+				 * fw_name and index are looked up when
+				 * the parent is first needed, else name.
+				 * None of them and a negative index is a
+				 * mux input that must not be used.
 				 */
 				const struct clk_parent_data *pd = &init->parent_data[i];
 
@@ -989,8 +994,6 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 					ret = clk_cpy_name(&parent_names[i], pd->name, true);
 				else if (pd->hw)
 					ret = clk_cpy_name(&parent_names[i], pd->hw->clk.name, false);
-				else if (!pd->fw_name && pd->index >= 0)
-					ret = -EINVAL;
 				if (ret)
 					return ERR_PTR(ret);
 			}

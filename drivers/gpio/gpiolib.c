@@ -1384,7 +1384,7 @@ EXPORT_SYMBOL_GPL(gpiod_set_consumer_name);
 
 int gpiochip_add(struct gpio_chip *chip)
 {
-	int i;
+	int i, ret;
 
 	if (chip->base >= 0) {
 		for (i = 0; i < chip->ngpio; i++) {
@@ -1405,7 +1405,21 @@ int gpiochip_add(struct gpio_chip *chip)
 	for (i = chip->base; i < chip->base + chip->ngpio; i++)
 		gpio_desc[i].chip = chip;
 
-	return of_gpiochip_add(chip);
+	ret = of_gpiochip_add(chip);
+	if (ret) {
+		for (i = chip->base; i < chip->base + chip->ngpio; i++) {
+			/* releases the hogs requested so far */
+			gpiodesc_free(&gpio_desc[i]);
+			gpio_desc[i].name = NULL;
+			gpio_desc[i].chip = NULL;
+		}
+		gpiochip_remove_pin_ranges(chip);
+		list_del(&chip->list);
+		slice_exit(&chip->slice);
+		return ret;
+	}
+
+	return 0;
 }
 
 void gpiochip_remove(struct gpio_chip *chip)

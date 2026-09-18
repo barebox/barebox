@@ -35,6 +35,10 @@ static int clk_parent_enable(struct clk *clk)
 {
 	struct clk *parent = clk_get_parent(clk);
 
+	/* the parent exists, but can't be enabled yet */
+	if (PTR_ERR(parent) == -EPROBE_DEFER)
+		return -EPROBE_DEFER;
+
 	if (!IS_ERR_OR_NULL(parent))
 		return clk_enable(parent);
 
@@ -704,6 +708,13 @@ static struct clk *clk_get_parent_by_index(struct clk *clk, u8 idx)
 	if (IS_ERR_OR_NULL(clk->parents[idx]) && clk->parent_names)
 		clk->parents[idx] = clk_lookup(clk->parent_names[idx]);
 
+	/*
+	 * Linux drivers register their clocks in ID order, not in dependency
+	 * order, so a clk_hw parent may not be registered yet.
+	 */
+	if (!IS_ERR_OR_NULL(clk->parents[idx]) && !clk->parents[idx]->ops)
+		return ERR_PTR(-EPROBE_DEFER);
+
 	return clk->parents[idx];
 }
 
@@ -818,6 +829,28 @@ int clk_get_phase(struct clk *clk)
 	return ret;
 }
 
+/*
+ * A critical clock whose parent is not registered yet retries after every
+ * following registration.
+ */
+static void clk_enable_critical(struct clk *clk)
+{
+	int ret;
+
+	ret = clk_enable(clk);
+	clk->enable_deferred = ret == -EPROBE_DEFER;
+}
+
+static void clk_enable_deferred(void)
+{
+	struct clk *c;
+
+	list_for_each_entry(c, &clks, list) {
+		if (c->enable_deferred)
+			clk_enable_critical(c);
+	}
+}
+
 static int __bclk_register(struct clk *clk)
 {
 	struct clk_hw *hw = clk_to_clk_hw(clk);
@@ -841,7 +874,9 @@ static int __bclk_register(struct clk *clk)
 	}
 
 	if (clk->flags & CLK_IS_CRITICAL)
-		clk_enable(clk);
+		clk_enable_critical(clk);
+
+	clk_enable_deferred();
 
 	return 0;
 out:

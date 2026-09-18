@@ -394,6 +394,7 @@ struct clk {
 	struct list_head list;
 	const char *name;
 	const char * const *parent_names;
+	const struct clk_parent_data *parent_data;
 	int num_parents;
 
 	struct clk **parents;

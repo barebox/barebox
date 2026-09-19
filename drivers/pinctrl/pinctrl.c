@@ -141,6 +141,123 @@ void *pinctrl_dev_get_drvdata(struct pinctrl_dev *pctldev)
 EXPORT_SYMBOL_GPL(pinctrl_dev_get_drvdata);
 
 /**
+ * pin_get_from_name() - look up a pin number from a name
+ * @pctldev: the pin control device to lookup the pin on
+ * @name: the name of the pin to look up
+ */
+int pin_get_from_name(struct pinctrl_dev *pctldev, const char *name)
+{
+	unsigned int i, pin;
+
+	if (!pctldev->desc)
+		return -EINVAL;
+
+	/* The pin number can be retrived from the pin controller descriptor */
+	for (i = 0; i < pctldev->desc->npins; i++) {
+		const struct pinctrl_pin_desc *desc = &pctldev->desc->pins[i];
+
+		pin = desc->number;
+		/* Pin space may be sparse */
+		if (desc->name && !strcmp(name, desc->name))
+			return pin;
+	}
+
+	return -EINVAL;
+}
+
+/**
+ * pinctrl_get_group_selector() - returns the group selector for a group
+ * @pctldev: the pin controller handling the group
+ * @pin_group: the pin group to look up
+ */
+int pinctrl_get_group_selector(struct pinctrl_dev *pctldev,
+			       const char *pin_group)
+{
+	const struct pinctrl_ops *pctlops = pctldev->ops;
+	unsigned int group_selector = 0;
+	unsigned int ngroups;
+
+	if (!pctlops->get_groups_count || !pctlops->get_group_name) {
+		dev_err(pctldev->dev, "does not support pin groups\n");
+		return -EINVAL;
+	}
+
+	ngroups = pctlops->get_groups_count(pctldev);
+
+	while (group_selector < ngroups) {
+		const char *gname = pctlops->get_group_name(pctldev,
+							    group_selector);
+		if (gname && !strcmp(gname, pin_group)) {
+			dev_dbg(pctldev->dev,
+				"found group selector %u for %s\n",
+				group_selector,
+				pin_group);
+			return group_selector;
+		}
+
+		group_selector++;
+	}
+
+	dev_err(pctldev->dev, "does not have pin group %s\n",
+		pin_group);
+
+	return -EINVAL;
+}
+
+/**
+ * pinctrl_get_group_pins() - return all pins for a group
+ * @pctldev: the pin controller device
+ * @pin_group: the name of the pin group
+ * @pins: the pins in the group
+ * @num_pins: the number of pins in the group
+ */
+int pinctrl_get_group_pins(struct pinctrl_dev *pctldev, const char *pin_group,
+			   const unsigned int **pins, unsigned int *num_pins)
+{
+	const struct pinctrl_ops *pctlops = pctldev->ops;
+	int gs;
+
+	if (!pctlops->get_group_pins)
+		return -EINVAL;
+
+	gs = pinctrl_get_group_selector(pctldev, pin_group);
+	if (gs < 0)
+		return gs;
+
+	return pctlops->get_group_pins(pctldev, gs, pins, num_pins);
+}
+EXPORT_SYMBOL_GPL(pinctrl_get_group_pins);
+
+/**
+ * pinmux_func_name_to_selector() - returns the function selector for a name
+ * @pctldev: the pin controller handling the function
+ * @function: the name of the function to look up
+ */
+int pinmux_func_name_to_selector(struct pinctrl_dev *pctldev,
+				 const char *function)
+{
+	const struct pinmux_ops *ops = pctldev->pmxops;
+	unsigned int nfuncs, selector = 0;
+
+	if (!ops || !ops->get_functions_count || !ops->get_function_name)
+		return -EINVAL;
+
+	nfuncs = ops->get_functions_count(pctldev);
+
+	/* See if this pctldev has this function */
+	while (selector < nfuncs) {
+		const char *fname = ops->get_function_name(pctldev, selector);
+
+		if (fname && !strcmp(function, fname))
+			return selector;
+
+		selector++;
+	}
+
+	return -EINVAL;
+}
+
+/**
  * pinctrl_add_gpio_range() - register a GPIO range for a controller
  * @pctldev: pin controller device to add the range to
  * @range: the GPIO range to add
@@ -620,7 +737,7 @@ static int pinctrl_config_one(struct device_node *for_node, struct device_node *
 	if (!pdev)
 		return -ENODEV;
 	if (!pdev->ops->set_state)
-		return -ENOSYS;
+		return pinctrl_map_set_state(pdev, np);
 
 	return pdev->ops->set_state(pdev, np);
 }
@@ -1096,26 +1213,6 @@ pinmux_generic_get_function(struct pinctrl_dev *pctldev, unsigned int selector)
 	return &pctldev->functions[selector];
 }
 EXPORT_SYMBOL_GPL(pinmux_generic_get_function);
-
-static int pinmux_func_name_to_selector(struct pinctrl_dev *pctldev,
-					const char *function)
-{
-	const struct pinmux_ops *ops = pctldev->pmxops;
-	unsigned int nfuncs = ops->get_functions_count(pctldev);
-	unsigned int selector = 0;
-
-	/* See if this pctldev has this function */
-	while (selector < nfuncs) {
-		const char *fname = ops->get_function_name(pctldev, selector);
-
-		if (fname && !strcmp(function, fname))
-			return selector;
-
-		selector++;
-	}
-
-	return -EINVAL;
-}
 
 /**
  * pinmux_generic_add_pinfunction() - adds a function group

@@ -25,6 +25,10 @@ int pinmux_gpio_direction(struct pinctrl_dev *pctldev,
 			  struct pinctrl_gpio_range *range,
 			  unsigned int pin, bool input);
 
+/* barebox: shared between the generic functions and the map applier */
+int pinmux_func_name_to_selector(struct pinctrl_dev *pctldev,
+				 const char *function);
+
 #ifdef CONFIG_GENERIC_PINMUX_FUNCTIONS
 
 /**

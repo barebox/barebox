@@ -56,6 +56,13 @@ config GENERIC_PINCTRL_GROUPS
 config GENERIC_PINMUX_FUNCTIONS
 	bool
 
+config GENERIC_PINCONF
+	bool
+	select OFTREE
+	help
+	  Linux' generic parser for the pinctrl and pinconf device tree
+	  bindings, used by pinctrl_map_set_state().
+
 config PINCTRL_AT91PIO4
 	bool "AT91 PIO4 pinctrl driver"
 	depends on ARCH_AT91

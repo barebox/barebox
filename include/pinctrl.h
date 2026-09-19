@@ -59,6 +59,16 @@ struct pinctrl_dev {
 
 int pinctrl_register(struct pinctrl_dev *pdev);
 
+#ifdef CONFIG_GENERIC_PINCONF
+int pinctrl_map_set_state(struct pinctrl_dev *pctldev, struct device_node *np);
+#else
+static inline int pinctrl_map_set_state(struct pinctrl_dev *pctldev,
+					struct device_node *np)
+{
+	return -ENOSYS;
+}
+#endif
+
 /* Legacy operations that take a global pin number */
 #ifdef CONFIG_PINCTRL
 int pinctrl_gpio_direction_input_pin(unsigned int pin);

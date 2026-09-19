@@ -51,6 +51,9 @@ struct pinctrl_gpio_range;
  *	to the GPIO controllers that need pin muxing.
  * @gpio_get_direction: barebox-specific: read back the direction of a GPIO
  *	pin, returns GPIO_LINE_DIRECTION_IN or GPIO_LINE_DIRECTION_OUT
+ * @pinmux_property_set: barebox-specific, from U-Boot: mux the pin one
+ *	pinmux cell describes and return its pin number or a negative
+ *	error code
  */
 struct pinmux_ops {
 	int (*request) (struct pinctrl_dev *pctldev, unsigned int offset);
@@ -73,6 +76,7 @@ struct pinmux_ops {
 	int (*gpio_get_direction)(struct pinctrl_dev *pctldev,
 				  struct pinctrl_gpio_range *range,
 				  unsigned int offset);
+	int (*pinmux_property_set)(struct pinctrl_dev *pctldev, u32 pinmux_group);
 };
 
 #endif /* __LINUX_PINCTRL_PINMUX_H */

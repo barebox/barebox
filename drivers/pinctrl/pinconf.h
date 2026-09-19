@@ -13,6 +13,7 @@
 
 #include <linux/errno.h>
 
+struct device;
 struct device_node;
 
 struct pinctrl_dev;
@@ -20,7 +21,7 @@ struct pinctrl_dev;
 int pinconf_set_config(struct pinctrl_dev *pctldev, unsigned int pin,
 		       unsigned long *configs, size_t nconfigs);
 
-#if defined(CONFIG_GENERIC_PINCONF) && defined(CONFIG_OF)
+#if defined(CONFIG_GENERIC_PINCONF) && defined(CONFIG_OFTREE)
 int pinconf_generic_parse_dt_config(struct device_node *np,
 				    struct pinctrl_dev *pctldev,
 				    unsigned long **configs,

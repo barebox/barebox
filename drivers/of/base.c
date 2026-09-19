@@ -2309,6 +2309,9 @@ EXPORT_SYMBOL(of_get_parent);
 struct device_node *of_get_next_available_child(const struct device_node *node,
 	struct device_node *prev)
 {
+	if (!node)
+		return NULL;
+
 	prev = list_prepare_entry(prev, &node->children, parent_list);
 	list_for_each_entry_continue(prev, &node->children, parent_list)
 		if (of_device_is_available(prev))
@@ -2329,6 +2332,9 @@ struct device_node *of_get_next_child(const struct device_node *node,
 {
 	if (prev)
 		node = prev->parent;
+
+	if (!node)
+		return NULL;
 
 	prev = list_prepare_entry(prev, &node->children, parent_list);
 	list_for_each_entry_continue(prev, &node->children, parent_list)

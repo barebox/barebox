@@ -1,0 +1,172 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+
+/ {
+	/* pinmux cells are TEST_PINMUX(pin, func) from test/self/pinctrl.c */
+	pinmux-state {
+		pinmux = <0x0101>;
+		bias-pull-up;
+		drive-strength = <8>;
+		input-enable;
+		test,custom-bool;
+		vendor,ignored;
+	};
+
+	multi-pinmux-state {
+		pinmux = <0x0101>, <0x0700>;
+		bias-pull-up;
+	};
+
+	named-pin-state {
+		pins = "pin0", "pin1";
+		bias-disable;
+		output-low;
+	};
+
+	sparse-pin-state {
+		pins = "pin7";
+		bias-disable;
+	};
+
+	named-pin-function-state {
+		pins = "pin0";
+		function = "func1";
+		bias-disable;
+	};
+
+	named-group-state {
+		groups = "grp0";
+		function = "func0";
+		slew-rate = <2>;
+		test,custom-value = <9>;
+	};
+
+	group-function-state {
+		groups = "grp0";
+		function = "func1";
+	};
+
+	string-value-state {
+		pinmux = <0x0000>;
+		test,custom-enum = "two";
+	};
+
+	string-value-zero-state {
+		pinmux = <0x0000>;
+		test,custom-enum = "zero";
+	};
+
+	string-value-error-state {
+		pinmux = <0x0000>;
+		test,custom-enum = "bad";
+	};
+
+	bad-function-state {
+		pins = "pin0";
+		function = "nofunc";
+	};
+
+	bad-group-mux-state {
+		groups = "nogroup";
+		function = "func0";
+	};
+
+	bad-group-conf-state {
+		groups = "nogroup";
+		bias-disable;
+	};
+
+	generic-group-state {
+		groups = "grp01";
+		function = "func0";
+		bias-disable;
+	};
+
+	map-dummy-state {
+		test,dummy-map;
+	};
+
+	map-parser-error-state {
+		pins = "pin0";
+		test,custom-enum = "bad";
+	};
+
+	map-child-state {
+		child-pins {
+			pins = "pin0";
+			bias-disable;
+		};
+	};
+
+	child-state {
+		child-pins {
+			pinmux = <0x0001>;
+			output-high;
+		};
+	};
+
+	disabled-child-state {
+		a-pins {
+			pins = "pin0";
+			bias-disable;
+		};
+
+		b-pins {
+			pins = "pin1";
+			bias-disable;
+			status = "disabled";
+		};
+	};
+
+	unknown-state {
+		pinmux = <0x0000>;
+		vendor,ignored;
+	};
+
+	pins-and-groups-state {
+		pins = "pin0";
+		groups = "grp0";
+		bias-disable;
+	};
+
+	error-state {
+		pinmux = <0x0000>;
+		test,custom-value = <42>;
+	};
+
+	error-pins-state {
+		pins = "pin0", "pin1";
+		bias-disable;
+		test,custom-value = <42>;
+	};
+
+	group1-conf-state {
+		groups = "pin0";
+		slew-rate = <3>;
+	};
+
+	group-error-state {
+		groups = "grp01";
+		function = "func0";
+		bias-disable;
+		test,custom-value = <42>;
+	};
+
+	map-two-children-state {
+		a-pins {
+			pins = "pin0";
+			bias-disable;
+		};
+
+		b-pins {
+			pins = "pin1";
+			bias-pull-up;
+		};
+	};
+
+	pinmux-decode-error-state {
+		pinmux = <0xffff0000>; /* TEST_PINMUX_DECODE_ERROR */
+		bias-disable;
+	};
+};

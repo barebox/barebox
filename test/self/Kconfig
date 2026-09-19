@@ -55,6 +55,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_UBI if MTD_UBI && MTD_WRITE
 	select SELFTEST_TALLOC
 	select SELFTEST_BLSPEC if BLSPEC && DEFAULT_ENVIRONMENT
+	select SELFTEST_PINCTRL if PINCTRL
 	help
 	  Selects all self-tests compatible with current configuration
 
@@ -107,6 +108,16 @@ config SELFTEST_OF_OVERLAY
 
 config SELFTEST_PROGRESS_NOTIFIER
 	bool "progress notifier selftest"
+
+config SELFTEST_PINCTRL
+	bool "pinctrl selftest"
+	depends on PINCTRL
+	select OFTREE
+	select GENERIC_PINCONF
+	select GENERIC_PINCTRL_GROUPS
+	select GENERIC_PINMUX_FUNCTIONS
+	help
+	  Tests the generic pinctrl and pinconf device tree parsing.
 
 config SELFTEST_ENVIRONMENT_VARIABLES
 	bool "environment variable selftest"

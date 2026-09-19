@@ -106,6 +106,37 @@ struct pinctrl_dev *of_pinctrl_get(struct device_node *np)
 	return get_pinctrl_dev_from_of_node(np);
 }
 
+struct pinctrl_dev *get_pinctrl_dev_from_devname(const char *devname)
+{
+	struct pinctrl_dev *pdev;
+
+	if (!devname)
+		return NULL;
+
+	list_for_each_entry(pdev, &pinctrl_list, list)
+		if (!strcmp(dev_name(pdev->dev), devname))
+			return pdev;
+	return NULL;
+}
+
+const char *pinctrl_dev_get_name(struct pinctrl_dev *pctldev)
+{
+	return pctldev->desc ? pctldev->desc->name : dev_name(pctldev->dev);
+}
+EXPORT_SYMBOL_GPL(pinctrl_dev_get_name);
+
+const char *pinctrl_dev_get_devname(struct pinctrl_dev *pctldev)
+{
+	return dev_name(pctldev->dev);
+}
+EXPORT_SYMBOL_GPL(pinctrl_dev_get_devname);
+
+void *pinctrl_dev_get_drvdata(struct pinctrl_dev *pctldev)
+{
+	return pctldev->driver_data;
+}
+EXPORT_SYMBOL_GPL(pinctrl_dev_get_drvdata);
+
 static int pinctrl_config_one(struct device_node *for_node, struct device_node *np)
 {
 	struct pinctrl_dev *pdev;
@@ -313,26 +344,103 @@ int pinctrl_select_state_default(struct device *dev)
 	return PTR_ERR_OR_ZERO(pinctrl_get_select(dev, "default"));
 }
 
-int pinctrl_register(struct pinctrl_dev *pdev)
+static int pinctrl_init_controller(struct pinctrl_dev *pdev)
 {
 	if (!IS_ENABLED(CONFIG_PINCTRL))
 		return -ENOSYS;
 
 	BUG_ON(!pdev->dev->of_node);
 
-	list_add_tail(&pdev->list, &pinctrl_list);
+	if (pdev->desc) {
+		if (!pdev->ops)
+			pdev->ops = pdev->desc->pctlops;
+		if (!pdev->pmxops)
+			pdev->pmxops = pdev->desc->pmxops;
+		if (!pdev->confops)
+			pdev->confops = pdev->desc->confops;
+	}
+
+	if (!pdev->ops)
+		return -EINVAL;
 
 	pdev->node = pdev->dev->of_node;
 
-	pinctrl_select_state_default(pdev->dev);
+	list_add_tail(&pdev->list, &pinctrl_list);
 
 	return 0;
 }
+
+/**
+ * pinctrl_enable() - enable a pin controller
+ * @pdev: the pin controller to enable
+ *
+ * Applies the pin controller's own default state (hogs).
+ */
+int pinctrl_enable(struct pinctrl_dev *pdev)
+{
+	return pinctrl_select_state_default(pdev->dev);
+}
+EXPORT_SYMBOL_GPL(pinctrl_enable);
+
+/**
+ * pinctrl_register() - register a driver-allocated pin controller
+ * @pdev: the pin controller with dev set, and ops or desc
+ *
+ * barebox-specific, also enables the controller. Operations missing in
+ * @pdev are taken from @pdev->desc, if set.
+ */
+int pinctrl_register(struct pinctrl_dev *pdev)
+{
+	int ret;
+
+	ret = pinctrl_init_controller(pdev);
+	if (ret)
+		return ret;
+
+	pinctrl_enable(pdev);
+
+	return 0;
+}
+
+/**
+ * pinctrl_register_and_init() - register and init pin controller
+ * @pctldesc: descriptor for this pin controller
+ * @dev: parent device for this pin controller
+ * @driver_data: private pin controller data for this pin controller
+ * @pctldev: pin controller device
+ *
+ * Note that pinctrl_enable() still needs to be manually called after
+ * this once the driver is ready.
+ */
+int pinctrl_register_and_init(const struct pinctrl_desc *pctldesc,
+			      struct device *dev, void *driver_data,
+			      struct pinctrl_dev **pctldev)
+{
+	struct pinctrl_dev *pdev;
+	int ret;
+
+	pdev = xzalloc(sizeof(*pdev));
+	pdev->desc = pctldesc;
+	pdev->dev = dev;
+	pdev->driver_data = driver_data;
+
+	ret = pinctrl_init_controller(pdev);
+	if (ret) {
+		free(pdev);
+		return ret;
+	}
+
+	*pctldev = pdev;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(pinctrl_register_and_init);
 
 void pinctrl_unregister(struct pinctrl_dev *pdev)
 {
 	list_del(&pdev->list);
 }
+EXPORT_SYMBOL_GPL(pinctrl_unregister);
 
 
 #ifdef CONFIG_PINCTRL_STATE_PARAM

@@ -10,6 +10,8 @@
 #include <linux/pinctrl/pinconf.h>
 
 struct device_node;
+struct group_desc;
+struct function_desc;
 
 /**
  * struct pinctrl_dev - pin controller device
@@ -24,6 +26,10 @@ struct device_node;
  * @base: first pin handled by this controller in the global GPIO number
  *	space, only used for pinctrl_gpio_direction_*_pin()
  * @npins: number of pins starting at @base
+ * @groups: pin groups registered with pinctrl_generic_add_group()
+ * @num_groups: number of entries in @groups
+ * @functions: functions registered with pinmux_generic_add_pinfunction()
+ * @num_functions: number of entries in @functions
  *
  * Unlike in Linux, this is public, so drivers can embed it and call
  * pinctrl_register().
@@ -38,6 +44,14 @@ struct pinctrl_dev {
 	const struct pinconf_ops *confops;
 	struct device_node *node;
 	unsigned int base, npins;
+#ifdef CONFIG_GENERIC_PINCTRL_GROUPS
+	struct group_desc *groups;
+	unsigned int num_groups;
+#endif
+#ifdef CONFIG_GENERIC_PINMUX_FUNCTIONS
+	struct function_desc *functions;
+	unsigned int num_functions;
+#endif
 };
 
 int pinctrl_register(struct pinctrl_dev *pdev);

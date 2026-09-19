@@ -8,6 +8,7 @@
 #include <malloc.h>
 #include <pinctrl.h>
 #include "core.h"
+#include "pinmux.h"
 #include <linux/overflow.h>
 #include <errno.h>
 #include <of.h>
@@ -439,8 +440,251 @@ EXPORT_SYMBOL_GPL(pinctrl_register_and_init);
 void pinctrl_unregister(struct pinctrl_dev *pdev)
 {
 	list_del(&pdev->list);
+#ifdef CONFIG_GENERIC_PINCTRL_GROUPS
+	free(pdev->groups);
+#endif
+#ifdef CONFIG_GENERIC_PINMUX_FUNCTIONS
+	free(pdev->functions);
+#endif
 }
 EXPORT_SYMBOL_GPL(pinctrl_unregister);
+
+#ifdef CONFIG_GENERIC_PINCTRL_GROUPS
+
+/**
+ * pinctrl_generic_get_group_count() - returns the number of pin groups
+ * @pctldev: pin controller device
+ */
+int pinctrl_generic_get_group_count(struct pinctrl_dev *pctldev)
+{
+	return pctldev->num_groups;
+}
+EXPORT_SYMBOL_GPL(pinctrl_generic_get_group_count);
+
+/**
+ * pinctrl_generic_get_group_name() - returns the name of a pin group
+ * @pctldev: pin controller device
+ * @selector: group number
+ */
+const char *pinctrl_generic_get_group_name(struct pinctrl_dev *pctldev,
+					   unsigned int selector)
+{
+	struct group_desc *group;
+
+	group = pinctrl_generic_get_group(pctldev, selector);
+	if (!group)
+		return NULL;
+
+	return group->grp.name;
+}
+EXPORT_SYMBOL_GPL(pinctrl_generic_get_group_name);
+
+/**
+ * pinctrl_generic_get_group_pins() - gets the pin group pins
+ * @pctldev: pin controller device
+ * @selector: group number
+ * @pins: pins in the group
+ * @num_pins: number of pins in the group
+ */
+int pinctrl_generic_get_group_pins(struct pinctrl_dev *pctldev,
+				   unsigned int selector,
+				   const unsigned int **pins,
+				   unsigned int *num_pins)
+{
+	struct group_desc *group;
+
+	group = pinctrl_generic_get_group(pctldev, selector);
+	if (!group) {
+		dev_err(pctldev->dev, "%s could not find pingroup%i\n",
+			__func__, selector);
+		return -EINVAL;
+	}
+
+	*pins = group->grp.pins;
+	*num_pins = group->grp.npins;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(pinctrl_generic_get_group_pins);
+
+/**
+ * pinctrl_generic_get_group() - returns a pin group based on the number
+ * @pctldev: pin controller device
+ * @selector: group number
+ *
+ * Unlike in Linux, the pointer is only valid until the next
+ * pinctrl_generic_add_group().
+ */
+struct group_desc *pinctrl_generic_get_group(struct pinctrl_dev *pctldev,
+					     unsigned int selector)
+{
+	if (selector >= pctldev->num_groups)
+		return NULL;
+
+	return &pctldev->groups[selector];
+}
+EXPORT_SYMBOL_GPL(pinctrl_generic_get_group);
+
+static int pinctrl_generic_group_name_to_selector(struct pinctrl_dev *pctldev,
+						  const char *function)
+{
+	const struct pinctrl_ops *ops = pctldev->ops;
+	int selector = 0;
+	int ngroups;
+
+	if (!ops->get_groups_count || !ops->get_group_name)
+		return -EINVAL;
+
+	ngroups = ops->get_groups_count(pctldev);
+
+	/* See if this pctldev has this group */
+	while (selector < ngroups) {
+		const char *gname = ops->get_group_name(pctldev, selector);
+
+		if (gname && !strcmp(function, gname))
+			return selector;
+
+		selector++;
+	}
+
+	return -EINVAL;
+}
+
+/**
+ * pinctrl_generic_add_group() - adds a new pin group
+ * @pctldev: pin controller device
+ * @name: name of the pin group
+ * @pins: pins in the pin group
+ * @num_pins: number of pins in the pin group
+ * @data: pin controller driver specific data
+ *
+ * Note that the caller must take care of locking.
+ */
+int pinctrl_generic_add_group(struct pinctrl_dev *pctldev, const char *name,
+			      const unsigned int *pins, int num_pins, void *data)
+{
+	int selector;
+
+	if (!name)
+		return -EINVAL;
+
+	selector = pinctrl_generic_group_name_to_selector(pctldev, name);
+	if (selector >= 0)
+		return selector;
+
+	selector = pctldev->num_groups;
+
+	pctldev->groups = xrealloc(pctldev->groups,
+				   (selector + 1) * sizeof(*pctldev->groups));
+	pctldev->groups[selector] = PINCTRL_GROUP_DESC(name, pins, num_pins, data);
+
+	pctldev->num_groups++;
+
+	return selector;
+}
+EXPORT_SYMBOL_GPL(pinctrl_generic_add_group);
+
+#endif /* CONFIG_GENERIC_PINCTRL_GROUPS */
+
+#ifdef CONFIG_GENERIC_PINMUX_FUNCTIONS
+
+/**
+ * pinmux_generic_get_function_count() - returns number of functions
+ * @pctldev: pin controller device
+ */
+int pinmux_generic_get_function_count(struct pinctrl_dev *pctldev)
+{
+	return pctldev->num_functions;
+}
+EXPORT_SYMBOL_GPL(pinmux_generic_get_function_count);
+
+/**
+ * pinmux_generic_get_function_name() - returns the function name
+ * @pctldev: pin controller device
+ * @selector: function number
+ */
+const char *
+pinmux_generic_get_function_name(struct pinctrl_dev *pctldev,
+				 unsigned int selector)
+{
+	const struct function_desc *function;
+
+	function = pinmux_generic_get_function(pctldev, selector);
+	if (!function)
+		return NULL;
+
+	return function->func->name;
+}
+EXPORT_SYMBOL_GPL(pinmux_generic_get_function_name);
+
+/**
+ * pinmux_generic_get_function() - returns a function based on the number
+ * @pctldev: pin controller device
+ * @selector: function number
+ *
+ * The pointer is only valid until the next pinmux_generic_add_pinfunction().
+ */
+const struct function_desc *
+pinmux_generic_get_function(struct pinctrl_dev *pctldev, unsigned int selector)
+{
+	if (selector >= pctldev->num_functions)
+		return NULL;
+
+	return &pctldev->functions[selector];
+}
+EXPORT_SYMBOL_GPL(pinmux_generic_get_function);
+
+static int pinmux_func_name_to_selector(struct pinctrl_dev *pctldev,
+					const char *function)
+{
+	const struct pinmux_ops *ops = pctldev->pmxops;
+	unsigned int nfuncs = ops->get_functions_count(pctldev);
+	unsigned int selector = 0;
+
+	/* See if this pctldev has this function */
+	while (selector < nfuncs) {
+		const char *fname = ops->get_function_name(pctldev, selector);
+
+		if (fname && !strcmp(function, fname))
+			return selector;
+
+		selector++;
+	}
+
+	return -EINVAL;
+}
+
+/**
+ * pinmux_generic_add_pinfunction() - adds a function group
+ * @pctldev: pin controller device
+ * @func: pinfunction structure describing the function group
+ * @data: pin controller driver specific data
+ */
+int pinmux_generic_add_pinfunction(struct pinctrl_dev *pctldev,
+				   const struct pinfunction *func, void *data)
+{
+	struct function_desc *function;
+	int selector;
+
+	selector = pinmux_func_name_to_selector(pctldev, func->name);
+	if (selector >= 0)
+		return selector;
+
+	selector = pctldev->num_functions;
+
+	pctldev->functions = xrealloc(pctldev->functions,
+				      (selector + 1) * sizeof(*pctldev->functions));
+	function = &pctldev->functions[selector];
+	function->func = xmemdup(func, sizeof(*func));
+	function->data = data;
+
+	pctldev->num_functions++;
+
+	return selector;
+}
+EXPORT_SYMBOL_GPL(pinmux_generic_add_pinfunction);
+
+#endif /* CONFIG_GENERIC_PINMUX_FUNCTIONS */
 
 
 #ifdef CONFIG_PINCTRL_STATE_PARAM

@@ -50,6 +50,12 @@ comment "OFDEVICE is not enabled."
 comment "Without device tree support PINCTRL won't do anything"
 endif
 
+config GENERIC_PINCTRL_GROUPS
+	bool
+
+config GENERIC_PINMUX_FUNCTIONS
+	bool
+
 config PINCTRL_AT91PIO4
 	bool "AT91 PIO4 pinctrl driver"
 	depends on ARCH_AT91

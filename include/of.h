@@ -1250,6 +1250,14 @@ static inline struct device_node *of_find_matching_node(
 	for (child = of_get_next_available_child(parent, NULL); child != NULL; \
 	     child = of_get_next_available_child(parent, child))
 
+/* no node refcounting in barebox, so these only declare the iterator */
+#define for_each_child_of_node_scoped(parent, child) \
+	for (struct device_node *child = of_get_next_child(parent, NULL); \
+	     child != NULL; child = of_get_next_child(parent, child))
+#define for_each_available_child_of_node_scoped(parent, child) \
+	for (struct device_node *child = of_get_next_available_child(parent, NULL); \
+	     child != NULL; child = of_get_next_available_child(parent, child))
+
 /**
  * of_property_read_string_array() - Read an array of strings from a multiple
  * strings property.

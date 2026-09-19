@@ -838,7 +838,7 @@ void bitmap_copy_le(void *dst, const unsigned long *src, int nbits)
 }
 EXPORT_SYMBOL(bitmap_copy_le);
 
-unsigned long *bitmap_zalloc(unsigned int nbits)
+unsigned long *bitmap_zalloc(unsigned int nbits, gfp_t flags)
 {
 	return calloc(BITS_TO_LONGS(nbits), sizeof(unsigned long));
 }
@@ -846,6 +846,11 @@ unsigned long *bitmap_zalloc(unsigned int nbits)
 unsigned long *bitmap_xzalloc(unsigned int nbits)
 {
 	return xzalloc(BITS_TO_LONGS(nbits) * sizeof(unsigned long));
+}
+
+void bitmap_free(const unsigned long *bitmap)
+{
+	free_const(bitmap);
 }
 
 #if BITS_PER_LONG == 64

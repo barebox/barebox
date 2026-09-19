@@ -567,6 +567,8 @@ int clk_hw_set_rate(struct clk_hw *hw, unsigned long rate)
 	return clk_set_rate(&hw->clk, rate);
 }
 
+static struct clk *clk_get_parent_by_index(struct clk *clk, u8 idx);
+
 static int clk_fetch_parent_index(struct clk *clk,
 				  struct clk *parent)
 {
@@ -576,12 +578,8 @@ static int clk_fetch_parent_index(struct clk *clk,
 		return -EINVAL;
 
 	for (i = 0; i < clk->num_parents; i++) {
-		if (IS_ERR_OR_NULL(clk->parents[i]))
-			clk->parents[i] = clk_lookup(clk->parent_names[i]);
-
-		if (!IS_ERR_OR_NULL(clk->parents[i]))
-			if (clk->parents[i] == parent)
-				break;
+		if (clk_get_parent_by_index(clk, i) == parent)
+			break;
 	}
 
 	if (i == clk->num_parents)

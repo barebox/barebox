@@ -10,6 +10,7 @@
 #include <linux/gpio/consumer.h>
 #include <linux/gpio/driver.h>
 #include <linux/pinctrl/consumer.h>
+#include <linux/pinctrl/pinctrl.h>
 #include <linux/pinctrl/pinconf-generic.h>
 #include <linux/overflow.h>
 #include <errno.h>
@@ -982,6 +983,100 @@ static int of_gpio_simple_xlate(struct gpio_chip *gc,
 	return gc->base + gpio;
 }
 
+static int of_gpiochip_add_pin_range(struct gpio_chip *chip)
+{
+	struct of_phandle_args pinspec;
+	struct pinctrl_dev *pctldev;
+	struct device_node *np;
+	int index = 0, ret;
+	int offset; /* Offset of the first GPIO line on the chip */
+	int pin; /* Pin base number in the range */
+	int count; /* Number of pins/GPIO lines to map */
+	int trim;
+
+	if (!IS_ENABLED(CONFIG_PINCTRL))
+		return 0;
+
+	np = dev_of_node(chip->dev);
+	if (!np)
+		return 0;
+
+	for (;; index++) {
+		/*
+		 * Ordinary phandles contain 2-3 cells:
+		 * gpios = <&gpio [instance] offset flags>;
+		 * Ranges always contain one more cell:
+		 * gpio-ranges <&pinctrl [gpio_instance] gpio_offet pin_offet count>;
+		 * This is why we parse chip->of_gpio_n_cells + 1 cells
+		 */
+		ret = __of_parse_phandle_with_args(np, "gpio-ranges", NULL,
+						   chip->of_gpio_n_cells + 1,
+						   index, &pinspec);
+		if (ret)
+			break;
+
+		/*
+		 * Unlike Linux, skip a pin controller that isn't registered
+		 * yet, only pinctrl_gpio_*() users need the range.
+		 */
+		pctldev = of_pinctrl_get(pinspec.np);
+		if (!pctldev) {
+			of_device_ensure_probed(pinspec.np);
+			pctldev = of_pinctrl_get(pinspec.np);
+		}
+		if (!pctldev) {
+			dev_dbg(chip->dev, "%pOF: no pin controller for gpio-ranges[%d]\n",
+				np, index);
+			continue;
+		}
+
+		if (chip->of_gpio_n_cells == 3) {
+			/* First cell is the gpiochip instance number */
+			offset = pinspec.args[1];
+			pin = pinspec.args[2];
+			count = pinspec.args[3];
+		} else {
+			offset = pinspec.args[0];
+			pin = pinspec.args[1];
+			count = pinspec.args[2];
+		}
+
+		if (!count) {
+			dev_warn(chip->dev, "%pOF: GPIO group ranges are not supported\n",
+				 np);
+			continue;
+		}
+
+		/* Ignore ranges outside of this GPIO chip */
+		if (offset >= (chip->gpio_offset + chip->ngpio))
+			continue;
+		if (offset + count <= chip->gpio_offset)
+			continue;
+
+		/* Trim the range to fit this GPIO chip */
+		if (chip->gpio_offset > offset) {
+			trim = chip->gpio_offset - offset;
+			count -= trim;
+			pin += trim;
+			offset = 0;
+		} else {
+			offset -= chip->gpio_offset;
+		}
+		if ((offset + count) > chip->ngpio)
+			count = chip->ngpio - offset;
+
+		ret = gpiochip_add_pin_range(chip,
+				pinctrl_dev_get_devname(pctldev),
+				offset,
+				pin,
+				count);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
 static int of_gpiochip_add(struct gpio_chip *chip)
 {
 	struct device_node *np;
@@ -1004,6 +1099,10 @@ static int of_gpiochip_add(struct gpio_chip *chip)
 
 	if (chip->of_gpio_n_cells > MAX_PHANDLE_ARGS)
 		return -EINVAL;
+
+	ret = of_gpiochip_add_pin_range(chip);
+	if (ret)
+		return ret;
 
 	ret = of_gpiochip_set_names(chip);
 	if (ret)

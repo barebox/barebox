@@ -18,10 +18,7 @@
 struct device;
 struct device_node;
 struct gpio_chip;
-struct module;
-struct seq_file;
 
-struct pin_config_item;
 struct pinconf_generic_params;
 struct pinconf_ops;
 struct pinctrl_dev;
@@ -95,8 +92,6 @@ struct pinctrl_gpio_range {
  * @get_group_name: return the group name of the pin group
  * @get_group_pins: return an array of pins corresponding to a certain
  *	group selector @pins, and the size of the array in @num_pins
- * @pin_dbg_show: optional debugfs display hook that will provide per-device
- *	info for a certain pin in debugfs
  * @dt_node_to_map: parse a device tree "pin configuration node", and create
  *	mapping table entries for it. These are returned through the @map and
  *	@num_maps output parameters. This function is optional, and may be
@@ -115,8 +110,6 @@ struct pinctrl_ops {
 			       unsigned int selector,
 			       const unsigned int **pins,
 			       unsigned int *num_pins);
-	void (*pin_dbg_show) (struct pinctrl_dev *pctldev, struct seq_file *s,
-			      unsigned int offset);
 	int (*dt_node_to_map) (struct pinctrl_dev *pctldev,
 			       struct device_node *np_config,
 			       struct pinctrl_map **map, unsigned int *num_maps);
@@ -137,17 +130,10 @@ struct pinctrl_ops {
  * @pmxops: pinmux operations vtable, if you support pinmuxing in your driver
  * @confops: pin config operations vtable, if you support pin configuration in
  *	your driver
- * @owner: module providing the pin controller, used for refcounting
  * @num_custom_params: Number of driver-specific custom parameters to be parsed
  *	from the hardware description
  * @custom_params: List of driver_specific custom parameters to be parsed from
  *	the hardware description
- * @custom_conf_items: Information how to print @params in debugfs, must be
- *	the same size as the @custom_params, i.e. @num_custom_params
- * @link_consumers: If true create a device link between pinctrl and its
- *	consumers (i.e. the devices requesting pin control states). This is
- *	sometimes necessary to ascertain the right suspend/resume order for
- *	example.
  */
 struct pinctrl_desc {
 	const char *name;
@@ -156,13 +142,10 @@ struct pinctrl_desc {
 	const struct pinctrl_ops *pctlops;
 	const struct pinmux_ops *pmxops;
 	const struct pinconf_ops *confops;
-	struct module *owner;
 #ifdef CONFIG_GENERIC_PINCONF
 	unsigned int num_custom_params;
 	const struct pinconf_generic_params *custom_params;
-	const struct pin_config_item *custom_conf_items;
 #endif
-	bool link_consumers;
 };
 
 /* External interface to pin controller */
@@ -172,21 +155,7 @@ extern int pinctrl_register_and_init(const struct pinctrl_desc *pctldesc,
 				     struct pinctrl_dev **pctldev);
 extern int pinctrl_enable(struct pinctrl_dev *pctldev);
 
-/* Please use pinctrl_register_and_init() and pinctrl_enable() instead */
-extern struct pinctrl_dev *pinctrl_register(const struct pinctrl_desc *pctldesc,
-				struct device *dev, void *driver_data);
-
 extern void pinctrl_unregister(struct pinctrl_dev *pctldev);
-
-extern int devm_pinctrl_register_and_init(struct device *dev,
-				const struct pinctrl_desc *pctldesc,
-				void *driver_data,
-				struct pinctrl_dev **pctldev);
-
-/* Please use devm_pinctrl_register_and_init() instead */
-extern struct pinctrl_dev *devm_pinctrl_register(struct device *dev,
-				const struct pinctrl_desc *pctldesc,
-				void *driver_data);
 
 extern void pinctrl_add_gpio_range(struct pinctrl_dev *pctldev,
 				struct pinctrl_gpio_range *range);

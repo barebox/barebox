@@ -14,6 +14,8 @@
 
 #include <linux/pinctrl/machine.h>
 
+#include <pinctrl.h>
+
 struct device;
 struct device_node;
 

@@ -37,6 +37,7 @@ struct pinctrl_gpio_range;
  *	are handled by the pinmux subsystem. The @func_selector selects a
  *	certain function whereas @group_selector selects a certain set of pins
  *	to be used. On simple controllers the latter argument may be ignored
+ *	(barebox: U-Boot's pinmux_group_set() takes the selectors swapped)
  * @gpio_request_enable: requests and enables GPIO on a certain pin.
  *	Implement this only if you can mux every pin individually as GPIO. The
  *	affected GPIO range is passed along with an offset(pin number) into that
@@ -48,6 +49,8 @@ struct pinctrl_gpio_range;
  *	depending on whether the GPIO is configured as input or output,
  *	a direction selector function may be implemented as a backing
  *	to the GPIO controllers that need pin muxing.
+ * @gpio_get_direction: barebox-specific: read back the direction of a GPIO
+ *	pin, returns GPIO_LINE_DIRECTION_IN or GPIO_LINE_DIRECTION_OUT
  */
 struct pinmux_ops {
 	int (*request) (struct pinctrl_dev *pctldev, unsigned int offset);
@@ -67,6 +70,9 @@ struct pinmux_ops {
 				   struct pinctrl_gpio_range *range,
 				   unsigned int offset,
 				   bool input);
+	int (*gpio_get_direction)(struct pinctrl_dev *pctldev,
+				  struct pinctrl_gpio_range *range,
+				  unsigned int offset);
 };
 
 #endif /* __LINUX_PINCTRL_PINMUX_H */

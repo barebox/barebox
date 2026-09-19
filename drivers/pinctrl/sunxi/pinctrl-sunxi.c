@@ -210,7 +210,9 @@ static int sunxi_pinctrl_set_state(struct pinctrl_dev *pdev, struct device_node 
 	return 0;
 }
 
-static int sunxi_pinctrl_set_direction(struct pinctrl_dev *pdev, unsigned int gpio, bool in)
+static int sunxi_pinctrl_set_direction(struct pinctrl_dev *pdev,
+				       struct pinctrl_gpio_range *range,
+				       unsigned int gpio, bool in)
 {
 	struct sunxi_pinctrl *pinctrl = to_sunxi_pinctrl(pdev);
 	u32 func = in ? FUNC_GPIO_IN : FUNC_GPIO_OUT;
@@ -301,7 +303,10 @@ static int sunxi_gpio_of_xlate(struct gpio_chip *chip,
 
 static const struct pinctrl_ops sunxi_pinctrl_ops = {
 	.set_state = sunxi_pinctrl_set_state,
-	.set_direction = sunxi_pinctrl_set_direction,
+};
+
+static const struct pinmux_ops sunxi_pinmux_ops = {
+	.gpio_set_direction = sunxi_pinctrl_set_direction,
 };
 
 static struct gpio_ops sunxi_gpio_ops = {
@@ -336,6 +341,7 @@ int sunxi_pinctrl_probe(struct device *dev)
 	pinctrl->desc = desc;
 	pinctrl->pdev.dev = dev;
 	pinctrl->pdev.ops = &sunxi_pinctrl_ops;
+	pinctrl->pdev.pmxops = &sunxi_pinmux_ops;
 
 	ret = pinctrl_register(&pinctrl->pdev);
 	if (ret) {

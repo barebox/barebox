@@ -61,14 +61,9 @@ static inline int pinctrl_single_probe(struct device *dev)
 
 static inline void pinctrl_put(struct pinctrl *pinctrl) {}
 
-static inline struct pinctrl *of_pinctrl_get(struct device_node *np)
-{
-	return (struct pinctrl *)np;
-}
-
 static inline struct pinctrl *pinctrl_get(struct device *dev)
 {
-	return of_pinctrl_get(dev_of_node(dev));
+	return (struct pinctrl *)dev_of_node(dev);
 }
 
 #endif /* LINUX_PINCTRL_CONSUMER_H */

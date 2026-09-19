@@ -101,6 +101,8 @@ struct pinctrl_gpio_range {
  *	allocated members of the mapping table entries themselves. This
  *	function is optional, and may be omitted for pinctrl drivers that do
  *	not support device tree.
+ * @set_state: barebox-specific: apply a device tree pin configuration node
+ *	directly instead of going through @dt_node_to_map
  */
 struct pinctrl_ops {
 	int (*get_groups_count) (struct pinctrl_dev *pctldev);
@@ -115,6 +117,7 @@ struct pinctrl_ops {
 			       struct pinctrl_map **map, unsigned int *num_maps);
 	void (*dt_free_map) (struct pinctrl_dev *pctldev,
 			     struct pinctrl_map *map, unsigned int num_maps);
+	int (*set_state)(struct pinctrl_dev *pctldev, struct device_node *np);
 };
 
 /**
@@ -207,7 +210,8 @@ struct pinfunction {
 		.flags = PINFUNCTION_FLAG_GPIO,			\
 	}
 
-#if IS_ENABLED(CONFIG_OF) && IS_ENABLED(CONFIG_PINCTRL)
+/* barebox: pinctrl.c defines it without CONFIG_OF, which needs OFDEVICE */
+#if IS_ENABLED(CONFIG_PINCTRL)
 extern struct pinctrl_dev *of_pinctrl_get(struct device_node *np);
 #else
 static inline
@@ -215,7 +219,7 @@ struct pinctrl_dev *of_pinctrl_get(struct device_node *np)
 {
 	return NULL;
 }
-#endif /* CONFIG_OF */
+#endif /* CONFIG_PINCTRL */
 
 extern const char *pinctrl_dev_get_name(struct pinctrl_dev *pctldev);
 extern const char *pinctrl_dev_get_devname(struct pinctrl_dev *pctldev);

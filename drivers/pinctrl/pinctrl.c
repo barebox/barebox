@@ -7,6 +7,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <pinctrl.h>
+#include "core.h"
 #include <linux/overflow.h>
 #include <errno.h>
 #include <of.h>
@@ -61,9 +62,10 @@ static int pinctrl_gpio_direction_pin(unsigned pin, bool input)
 	if (!pinctrl)
 		return -EINVAL;
 
-	BUG_ON(!pinctrl->ops->set_direction);
+	if (!pinctrl->pmxops || !pinctrl->pmxops->gpio_set_direction)
+		return -ENOTSUPP;
 
-	return pinctrl->ops->set_direction(pinctrl, pin, input);
+	return pinctrl->pmxops->gpio_set_direction(pinctrl, NULL, pin, input);
 }
 
 int pinctrl_gpio_direction_input_pin(unsigned int pin)
@@ -83,19 +85,25 @@ int pinctrl_gpio_get_direction_pin(unsigned pin)
 	if (!pinctrl)
 		return -EINVAL;
 
-	BUG_ON(!pinctrl->ops->get_direction);
+	if (!pinctrl->pmxops || !pinctrl->pmxops->gpio_get_direction)
+		return -ENOTSUPP;
 
-	return pinctrl->ops->get_direction(pinctrl, pin);
+	return pinctrl->pmxops->gpio_get_direction(pinctrl, NULL, pin);
 }
 
-static struct pinctrl_dev *find_pinctrl(struct device_node *node)
+struct pinctrl_dev *get_pinctrl_dev_from_of_node(struct device_node *np)
 {
 	struct pinctrl_dev *pdev;
 
 	list_for_each_entry(pdev, &pinctrl_list, list)
-		if (pdev->node == node)
+		if (pdev->node == np)
 			return pdev;
 	return NULL;
+}
+
+struct pinctrl_dev *of_pinctrl_get(struct device_node *np)
+{
+	return get_pinctrl_dev_from_of_node(np);
 }
 
 static int pinctrl_config_one(struct device_node *for_node, struct device_node *np)
@@ -114,11 +122,13 @@ static int pinctrl_config_one(struct device_node *for_node, struct device_node *
 	if (pinctrl_node != for_node)
 		of_device_ensure_probed(pinctrl_node);
 
-	pdev = find_pinctrl(pinctrl_node);
-	if (pdev)
-		return pdev->ops->set_state(pdev, np);
-	else
+	pdev = get_pinctrl_dev_from_of_node(pinctrl_node);
+	if (!pdev)
 		return -ENODEV;
+	if (!pdev->ops->set_state)
+		return -ENOSYS;
+
+	return pdev->ops->set_state(pdev, np);
 }
 
 static inline struct pinctrl_state *
@@ -248,7 +258,7 @@ static void of_pinctrl_policy_update_or_add(struct device_node *np, const char *
 
 int of_pinctrl_select_state(struct device_node *np, const char *name)
 {
-	struct pinctrl *pinctrl = of_pinctrl_get(np);
+	struct pinctrl *pinctrl = (struct pinctrl *)np;
 	struct pinctrl_state *state = NULL;
 
 	if (!of_find_property(np, "pinctrl-0", NULL))

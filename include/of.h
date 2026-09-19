@@ -289,6 +289,10 @@ extern int of_property_read_string(struct device_node *np,
 extern int of_property_match_string(const struct device_node *np,
 				    const char *propname,
 				    const char *string);
+extern int of_property_match_property_string(const struct device_node *np,
+					     const char *propname,
+					     const char * const *array,
+					     size_t n);
 extern int of_property_read_string_helper(const struct device_node *np,
 					      const char *propname,
 					      const char **out_strs, size_t sz, int index);
@@ -854,6 +858,13 @@ static inline int of_property_read_string(struct device_node *np,
 
 static inline int of_property_match_string(const struct device_node *np,
 				const char *propname, const char *string)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_match_property_string(const struct device_node *np,
+				const char *propname, const char * const *array,
+				size_t n)
 {
 	return -ENOSYS;
 }

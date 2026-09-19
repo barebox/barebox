@@ -48,7 +48,7 @@ static struct pinctrl_device *pin_to_pinctrl(unsigned int pin)
 	struct pinctrl_device *pinctrl;
 
 	list_for_each_entry(pinctrl, &pinctrl_list, list)
-		if (pin > pinctrl->base &&
+		if (pin >= pinctrl->base &&
 		    pin < pinctrl->base + pinctrl->npins)
 			return pinctrl;
 	return NULL;

@@ -243,6 +243,9 @@ struct gpio_chip {
 
 	struct slice slice;
 
+	/* struct gpio_pin_range::node, see gpiochip_add_pin_range() */
+	struct list_head pin_ranges;
+
 	struct list_head list;
 };
 
@@ -253,6 +256,31 @@ static inline struct slice *gpiochip_slice(struct gpio_chip *chip)
 
 int gpiochip_add(struct gpio_chip *chip);
 void gpiochip_remove(struct gpio_chip *chip);
+
+int gpiochip_generic_request(struct gpio_chip *gc, unsigned int offset);
+void gpiochip_generic_free(struct gpio_chip *gc, unsigned int offset);
+int gpiochip_generic_config(struct gpio_chip *gc, unsigned int offset,
+			    unsigned long config);
+
+#ifdef CONFIG_PINCTRL
+int gpiochip_add_pin_range(struct gpio_chip *gc, const char *pinctl_name,
+			   unsigned int gpio_offset, unsigned int pin_offset,
+			   unsigned int npins);
+void gpiochip_remove_pin_ranges(struct gpio_chip *gc);
+#else /* ! CONFIG_PINCTRL */
+static inline int
+gpiochip_add_pin_range(struct gpio_chip *gc, const char *pinctl_name,
+		       unsigned int gpio_offset, unsigned int pin_offset,
+		       unsigned int npins)
+{
+	return 0;
+}
+
+static inline void
+gpiochip_remove_pin_ranges(struct gpio_chip *gc)
+{
+}
+#endif /* CONFIG_PINCTRL */
 
 int gpio_get_num(struct device *dev, int gpio);
 struct gpio_chip *gpio_get_chip(int gpio);

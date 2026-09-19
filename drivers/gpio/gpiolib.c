@@ -8,6 +8,8 @@
 #include <gpio.h>
 #include <of_gpio.h>
 #include <linux/gpio/consumer.h>
+#include <linux/gpio/driver.h>
+#include <linux/pinctrl/consumer.h>
 #include <linux/pinctrl/pinconf-generic.h>
 #include <linux/overflow.h>
 #include <errno.h>
@@ -1297,6 +1299,7 @@ int gpiochip_add(struct gpio_chip *chip)
 	}
 
 	slice_init(&chip->slice, dev_name(chip->dev));
+	INIT_LIST_HEAD(&chip->pin_ranges);
 
 	list_add_tail(&chip->list, &chip_list);
 
@@ -1308,8 +1311,131 @@ int gpiochip_add(struct gpio_chip *chip)
 
 void gpiochip_remove(struct gpio_chip *chip)
 {
+	gpiochip_remove_pin_ranges(chip);
 	list_del(&chip->list);
 }
+
+#ifdef CONFIG_PINCTRL
+
+/**
+ * gpiochip_add_pin_range() - add a range for GPIO <-> pin mapping
+ * @gc: the gpiochip to add the range for
+ * @pinctl_name: the dev_name() of the pin controller to map to
+ * @gpio_offset: the start offset in the current gpio_chip number space
+ * @pin_offset: the start offset in the pin controller number space
+ * @npins: the number of pins from the offset of each pin space (GPIO and
+ *	pin controller) to accumulate in this range
+ *
+ * Calling this function directly from a DeviceTree-supported
+ * pinctrl driver is DEPRECATED. Please see Section 2.1 of
+ * Documentation/devicetree/bindings/gpio/gpio.txt on how to
+ * bind pinctrl and gpio drivers via the "gpio-ranges" property.
+ *
+ * Returns:
+ * 0 on success, or a negative errno on failure.
+ */
+int gpiochip_add_pin_range(struct gpio_chip *gc, const char *pinctl_name,
+			   unsigned int gpio_offset, unsigned int pin_offset,
+			   unsigned int npins)
+{
+	struct gpio_pin_range *pin_range;
+	int ret;
+
+	pin_range = xzalloc(sizeof(*pin_range));
+
+	/* Use local offset as range ID */
+	pin_range->range.id = gpio_offset;
+	pin_range->range.gc = gc;
+	pin_range->range.name = dev_name(gc->dev);
+	pin_range->range.base = gc->base + gpio_offset;
+	pin_range->range.pin_base = pin_offset;
+	pin_range->range.npins = npins;
+	pin_range->pctldev = pinctrl_find_and_add_gpio_range(pinctl_name,
+			&pin_range->range);
+	if (IS_ERR(pin_range->pctldev)) {
+		ret = PTR_ERR(pin_range->pctldev);
+		dev_err(gc->dev, "could not create pin range\n");
+		free(pin_range);
+		return ret;
+	}
+	dev_dbg(gc->dev, "created GPIO range %d->%d ==> %s PIN %d->%d\n",
+		gpio_offset, gpio_offset + npins - 1, pinctl_name,
+		pin_offset, pin_offset + npins - 1);
+
+	list_add_tail(&pin_range->node, &gc->pin_ranges);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(gpiochip_add_pin_range);
+
+/**
+ * gpiochip_remove_pin_ranges() - remove all the GPIO <-> pin mappings
+ * @gc: the chip to remove all the mappings for
+ */
+void gpiochip_remove_pin_ranges(struct gpio_chip *gc)
+{
+	struct gpio_pin_range *pin_range, *tmp;
+
+	list_for_each_entry_safe(pin_range, tmp, &gc->pin_ranges, node) {
+		list_del(&pin_range->node);
+		pinctrl_remove_gpio_range(pin_range->pctldev,
+				&pin_range->range);
+		free(pin_range);
+	}
+}
+EXPORT_SYMBOL_GPL(gpiochip_remove_pin_ranges);
+
+#endif /* CONFIG_PINCTRL */
+
+/**
+ * gpiochip_generic_request() - request the gpio function for a pin
+ * @gc: the gpiochip owning the GPIO
+ * @offset: the offset of the GPIO to request for GPIO function
+ *
+ * Returns:
+ * 0 on success, or negative errno on failure.
+ */
+int gpiochip_generic_request(struct gpio_chip *gc, unsigned int offset)
+{
+	if (list_empty(&gc->pin_ranges))
+		return 0;
+
+	return pinctrl_gpio_request(gc, offset);
+}
+EXPORT_SYMBOL_GPL(gpiochip_generic_request);
+
+/**
+ * gpiochip_generic_free() - free the gpio function from a pin
+ * @gc: the gpiochip to request the gpio function for
+ * @offset: the offset of the GPIO to free from GPIO function
+ */
+void gpiochip_generic_free(struct gpio_chip *gc, unsigned int offset)
+{
+	if (list_empty(&gc->pin_ranges))
+		return;
+
+	pinctrl_gpio_free(gc, offset);
+}
+EXPORT_SYMBOL_GPL(gpiochip_generic_free);
+
+/**
+ * gpiochip_generic_config() - apply configuration for a pin
+ * @gc: the gpiochip owning the GPIO
+ * @offset: the offset of the GPIO to apply the configuration
+ * @config: the configuration to be applied
+ *
+ * Returns:
+ * 0 on success, or negative errno on failure.
+ */
+int gpiochip_generic_config(struct gpio_chip *gc, unsigned int offset,
+			    unsigned long config)
+{
+	if (list_empty(&gc->pin_ranges))
+		return -ENOTSUPP;
+
+	return pinctrl_gpio_set_config(gc, offset, config);
+}
+EXPORT_SYMBOL_GPL(gpiochip_generic_config);
 
 struct gpio_chip *gpio_get_chip_by_dev(struct device *dev)
 {

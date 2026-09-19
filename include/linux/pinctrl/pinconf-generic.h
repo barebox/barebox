@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-Comment: Origin-URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/pinctrl/pinconf-generic.h?id=00a5d1e71c928edb1e7de211a82e87858105dd47 */
 /*
  * Interface the generic pinconfig portions of the pinctrl subsystem
  *
@@ -12,6 +13,13 @@
 #define __LINUX_PINCTRL_PINCONF_GENERIC_H
 
 #include <linux/types.h>
+
+#include <linux/pinctrl/machine.h>
+
+struct device_node;
+
+struct pinctrl_dev;
+struct pinctrl_map;
 
 /**
  * enum pin_config_param - possible pin configuration parameters
@@ -74,6 +82,10 @@
  * @PIN_CONFIG_INPUT_SCHMITT_ENABLE: control schmitt-trigger mode on the pin.
  *      If the argument != 0, schmitt-trigger mode is enabled. If it's 0,
  *      schmitt-trigger mode is disabled.
+ * @PIN_CONFIG_INPUT_SCHMITT_UV: this will configure an input pin to run in
+ *	schmitt-trigger mode. The argument is in uV.
+ * @PIN_CONFIG_INPUT_VOLTAGE_UV: this will configure the input voltage level of
+ * the pin. The argument is specified in microvolts.
  * @PIN_CONFIG_MODE_LOW_POWER: this will configure the pin for low power
  *	operation, if several modes of operation are supported these can be
  *	passed in the argument on a custom form, else just use argument 1
@@ -103,6 +115,12 @@
  *	or latch delay (on outputs) this parameter (in a custom format)
  *	specifies the clock skew or latch delay. It typically controls how
  *	many double inverters are put in front of the line.
+ * @PIN_CONFIG_SKEW_DELAY_INPUT_PS: if the pin has independent values for the
+ *	programmable skew rate (on inputs) and latch delay (on outputs), then
+ *	this parameter specifies the clock skew only. The argument is in ps.
+ * @PIN_CONFIG_SKEW_DELAY_OUTPUT_PS: if the pin has independent values for the
+ *	programmable skew rate (on inputs) and latch delay (on outputs), then
+ *	this parameter specifies the latch delay only. The argument is in ps.
  * @PIN_CONFIG_SLEEP_HARDWARE_STATE: indicate this is sleep related state.
  * @PIN_CONFIG_SLEW_RATE: if the pin can select slew rate, the argument to
  *	this parameter (on a custom format) tells the driver which alternative
@@ -129,6 +147,8 @@ enum pin_config_param {
 	PIN_CONFIG_INPUT_ENABLE,
 	PIN_CONFIG_INPUT_SCHMITT,
 	PIN_CONFIG_INPUT_SCHMITT_ENABLE,
+	PIN_CONFIG_INPUT_SCHMITT_UV,
+	PIN_CONFIG_INPUT_VOLTAGE_UV,
 	PIN_CONFIG_MODE_LOW_POWER,
 	PIN_CONFIG_MODE_PWM,
 	PIN_CONFIG_LEVEL,
@@ -137,6 +157,8 @@ enum pin_config_param {
 	PIN_CONFIG_PERSIST_STATE,
 	PIN_CONFIG_POWER_SOURCE,
 	PIN_CONFIG_SKEW_DELAY,
+	PIN_CONFIG_SKEW_DELAY_INPUT_PS,
+	PIN_CONFIG_SKEW_DELAY_OUTPUT_PS,
 	PIN_CONFIG_SLEEP_HARDWARE_STATE,
 	PIN_CONFIG_SLEW_RATE,
 	PIN_CONFIG_END = 0x7F,
@@ -171,4 +193,65 @@ static inline unsigned long pinconf_to_config_packed(enum pin_config_param param
 	return PIN_CONF_PACKED(param, argument);
 }
 
-#endif
+#define PCONFDUMP_WITH_VALUES(a, b, c, d, e, f) {		\
+	.param = a, .display = b, .format = c, .has_arg = d,	\
+	.values = e, .num_values = f				\
+	}
+
+#define PCONFDUMP(a, b, c, d)	PCONFDUMP_WITH_VALUES(a, b, c, d, NULL, 0)
+
+struct pin_config_item {
+	const enum pin_config_param param;
+	const char * const display;
+	const char * const format;
+	bool has_arg;
+	const char * const *values;
+	size_t num_values;
+};
+
+struct pinconf_generic_params {
+	const char * const property;
+	enum pin_config_param param;
+	u32 default_value;
+	const char * const *values;
+	size_t num_values;
+};
+
+int pinconf_generic_dt_subnode_to_map(struct pinctrl_dev *pctldev,
+		struct device_node *np, struct pinctrl_map **map,
+		unsigned int *reserved_maps, unsigned int *num_maps,
+		enum pinctrl_map_type type);
+int pinconf_generic_dt_node_to_map(struct pinctrl_dev *pctldev,
+		struct device_node *np_config, struct pinctrl_map **map,
+		unsigned int *num_maps, enum pinctrl_map_type type);
+void pinconf_generic_dt_free_map(struct pinctrl_dev *pctldev,
+		struct pinctrl_map *map, unsigned int num_maps);
+
+static inline int pinconf_generic_dt_node_to_map_group(struct pinctrl_dev *pctldev,
+		struct device_node *np_config, struct pinctrl_map **map,
+		unsigned int *num_maps)
+{
+	return pinconf_generic_dt_node_to_map(pctldev, np_config, map, num_maps,
+			PIN_MAP_TYPE_CONFIGS_GROUP);
+}
+
+static inline int pinconf_generic_dt_node_to_map_pin(struct pinctrl_dev *pctldev,
+		struct device_node *np_config, struct pinctrl_map **map,
+		unsigned int *num_maps)
+{
+	return pinconf_generic_dt_node_to_map(pctldev, np_config, map, num_maps,
+			PIN_MAP_TYPE_CONFIGS_PIN);
+}
+
+static inline int pinconf_generic_dt_node_to_map_all(struct pinctrl_dev *pctldev,
+		struct device_node *np_config, struct pinctrl_map **map,
+		unsigned *num_maps)
+{
+	/*
+	 * passing the type as PIN_MAP_TYPE_INVALID causes the underlying parser
+	 * to infer the map type from the DT properties used.
+	 */
+	return pinconf_generic_dt_node_to_map(pctldev, np_config, map, num_maps,
+			PIN_MAP_TYPE_INVALID);
+}
+#endif /* __LINUX_PINCTRL_PINCONF_GENERIC_H */

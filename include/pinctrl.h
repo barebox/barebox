@@ -19,6 +19,8 @@ struct function_desc;
  * @desc: the pin controller descriptor, optional
  * @dev: the device entry for this pin controller
  * @driver_data: driver data for the pin controller driver
+ * @gpio_ranges: a list of GPIO ranges that is handled by this pin controller,
+ *	ranges are added to this list at runtime
  * @ops: pin control operations
  * @pmxops: pinmux operations, optional
  * @confops: pin configuration operations, optional
@@ -39,6 +41,7 @@ struct pinctrl_dev {
 	const struct pinctrl_desc *desc;
 	struct device *dev;
 	void *driver_data;
+	struct list_head gpio_ranges;
 	const struct pinctrl_ops *ops;
 	const struct pinmux_ops *pmxops;
 	const struct pinconf_ops *confops;

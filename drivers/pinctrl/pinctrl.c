@@ -6,8 +6,10 @@
  */
 #include <common.h>
 #include <malloc.h>
+#include <gpio.h>
 #include <pinctrl.h>
 #include "core.h"
+#include "pinconf.h"
 #include "pinmux.h"
 #include <linux/overflow.h>
 #include <errno.h>
@@ -137,6 +139,466 @@ void *pinctrl_dev_get_drvdata(struct pinctrl_dev *pctldev)
 	return pctldev->driver_data;
 }
 EXPORT_SYMBOL_GPL(pinctrl_dev_get_drvdata);
+
+/**
+ * pinctrl_add_gpio_range() - register a GPIO range for a controller
+ * @pctldev: pin controller device to add the range to
+ * @range: the GPIO range to add
+ *
+ * This adds a range of GPIOs to be handled by a certain pin controller. Call
+ * this to register handled ranges after registering your pin controller.
+ */
+void pinctrl_add_gpio_range(struct pinctrl_dev *pctldev,
+			    struct pinctrl_gpio_range *range)
+{
+	list_add_tail(&range->node, &pctldev->gpio_ranges);
+}
+EXPORT_SYMBOL_GPL(pinctrl_add_gpio_range);
+
+void pinctrl_add_gpio_ranges(struct pinctrl_dev *pctldev,
+			     struct pinctrl_gpio_range *ranges,
+			     unsigned int nranges)
+{
+	int i;
+
+	for (i = 0; i < nranges; i++)
+		pinctrl_add_gpio_range(pctldev, &ranges[i]);
+}
+EXPORT_SYMBOL_GPL(pinctrl_add_gpio_ranges);
+
+/**
+ * pinctrl_remove_gpio_range() - remove a range of GPIOs from a pin controller
+ * @pctldev: pin controller device to remove the range from
+ * @range: the GPIO range to remove
+ */
+void pinctrl_remove_gpio_range(struct pinctrl_dev *pctldev,
+			       struct pinctrl_gpio_range *range)
+{
+	list_del(&range->node);
+}
+EXPORT_SYMBOL_GPL(pinctrl_remove_gpio_range);
+
+struct pinctrl_dev *pinctrl_find_and_add_gpio_range(const char *devname,
+		struct pinctrl_gpio_range *range)
+{
+	struct pinctrl_dev *pctldev;
+
+	pctldev = get_pinctrl_dev_from_devname(devname);
+
+	/*
+	 * If we can't find this device, let's assume that is because
+	 * it has not probed yet, so the driver trying to register this
+	 * range need to defer probing.
+	 */
+	if (!pctldev)
+		return ERR_PTR(-EPROBE_DEFER);
+
+	pinctrl_add_gpio_range(pctldev, range);
+
+	return pctldev;
+}
+EXPORT_SYMBOL_GPL(pinctrl_find_and_add_gpio_range);
+
+/**
+ * pinctrl_find_gpio_range_from_pin_nolock() - locate the GPIO range for a pin
+ * @pctldev: the pin controller device to look in
+ * @pin: a controller-local number to find the range for
+ */
+struct pinctrl_gpio_range *
+pinctrl_find_gpio_range_from_pin_nolock(struct pinctrl_dev *pctldev,
+					unsigned int pin)
+{
+	struct pinctrl_gpio_range *range;
+
+	/* Loop over the ranges */
+	list_for_each_entry(range, &pctldev->gpio_ranges, node) {
+		/* Check if we're in the valid range */
+		if (range->pins) {
+			int a;
+			for (a = 0; a < range->npins; a++) {
+				if (range->pins[a] == pin)
+					return range;
+			}
+		} else if (pin >= range->pin_base &&
+			   pin < range->pin_base + range->npins)
+			return range;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL_GPL(pinctrl_find_gpio_range_from_pin_nolock);
+
+struct pinctrl_gpio_range *
+pinctrl_find_gpio_range_from_pin(struct pinctrl_dev *pctldev,
+				 unsigned int pin)
+{
+	return pinctrl_find_gpio_range_from_pin_nolock(pctldev, pin);
+}
+EXPORT_SYMBOL_GPL(pinctrl_find_gpio_range_from_pin);
+
+/* ranges use global GPIO numbers, chip offsets start at gc->gpio_offset */
+static unsigned int gpiochip_gpio_number(struct gpio_chip *gc,
+					 unsigned int offset)
+{
+	return gc->base + offset - gc->gpio_offset;
+}
+
+/**
+ * pinctrl_match_gpio_range() - check if a certain GPIO pin is in range
+ * @pctldev: pin controller device to check
+ * @gc: GPIO chip structure from the GPIO subsystem
+ * @offset: hardware offset of the GPIO relative to the controller
+ *
+ * Tries to match a GPIO pin number to the ranges handled by a certain pin
+ * controller, return the range or NULL
+ */
+static struct pinctrl_gpio_range *
+pinctrl_match_gpio_range(struct pinctrl_dev *pctldev, struct gpio_chip *gc,
+			 unsigned int offset)
+{
+	unsigned int gpio = gpiochip_gpio_number(gc, offset);
+	struct pinctrl_gpio_range *range;
+
+	/* Loop over the ranges */
+	list_for_each_entry(range, &pctldev->gpio_ranges, node) {
+		/* Check if we're in the valid range */
+		if (gpio >= range->base && gpio < range->base + range->npins)
+			return range;
+	}
+
+	return NULL;
+}
+
+/**
+ * pinctrl_ready_for_gpio_range() - check if other GPIO pins of
+ * the same GPIO chip are in range
+ * @gc: GPIO chip structure from the GPIO subsystem
+ * @offset: hardware offset of the GPIO relative to the controller
+ *
+ * This function is complement of pinctrl_match_gpio_range(). If the return
+ * value of pinctrl_match_gpio_range() is NULL, this function could be used
+ * to check whether pinctrl device is ready or not. Maybe some GPIO pins
+ * of the same GPIO chip don't have back-end pinctrl interface.
+ * If the return value is true, it means that pinctrl device is ready & the
+ * certain GPIO pin doesn't have back-end pinctrl device. If the return value
+ * is false, it means that pinctrl device may not be ready.
+ */
+static bool pinctrl_ready_for_gpio_range(struct gpio_chip *gc,
+					 unsigned int offset)
+{
+	struct pinctrl_dev *pctldev;
+	struct pinctrl_gpio_range *range = NULL;
+
+	/* Loop over the pin controllers */
+	list_for_each_entry(pctldev, &pinctrl_list, list) {
+		/* Loop over the ranges */
+		list_for_each_entry(range, &pctldev->gpio_ranges, node) {
+			/* Check if any gpio range overlapped with gpio chip */
+			if (range->base + range->npins - 1 < gc->base ||
+			    range->base > gc->base + gc->ngpio - 1)
+				continue;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * pinctrl_get_device_gpio_range() - find device for GPIO range
+ * @gc: GPIO chip structure from the GPIO subsystem
+ * @offset: hardware offset of the GPIO relative to the controller
+ * @outdev: the pin control device if found
+ * @outrange: the GPIO range if found
+ *
+ * Find the pin controller handling a certain GPIO pin from the pinspace of
+ * the GPIO subsystem, return the device and the matching GPIO range. Returns
+ * -EPROBE_DEFER if the GPIO range could not be found in any device since it
+ * may still have not been registered.
+ */
+static int pinctrl_get_device_gpio_range(struct gpio_chip *gc,
+					 unsigned int offset,
+					 struct pinctrl_dev **outdev,
+					 struct pinctrl_gpio_range **outrange)
+{
+	struct pinctrl_dev *pctldev;
+
+	/* Loop over the pin controllers */
+	list_for_each_entry(pctldev, &pinctrl_list, list) {
+		struct pinctrl_gpio_range *range;
+
+		range = pinctrl_match_gpio_range(pctldev, gc, offset);
+		if (range) {
+			*outdev = pctldev;
+			*outrange = range;
+			return 0;
+		}
+	}
+
+	return -EPROBE_DEFER;
+}
+
+/**
+ * gpio_to_pin() - GPIO range GPIO number to pin number translation
+ * @range: GPIO range used for the translation
+ * @gc: GPIO chip structure from the GPIO subsystem
+ * @offset: hardware offset of the GPIO relative to the controller
+ *
+ * Finds the pin number for a given GPIO using the specified GPIO range
+ * as a base for translation. The distinction between linear GPIO ranges
+ * and pin list based GPIO ranges is managed correctly by this function.
+ *
+ * This function assumes the gpio is part of the specified GPIO range, use
+ * only after making sure this is the case (e.g. by calling it on the
+ * result of successful pinctrl_get_device_gpio_range calls)!
+ */
+static inline int gpio_to_pin(struct pinctrl_gpio_range *range,
+			      struct gpio_chip *gc, unsigned int offset)
+{
+	unsigned int pin = gpiochip_gpio_number(gc, offset) - range->base;
+	if (range->pins)
+		return range->pins[pin];
+	else
+		return range->pin_base + pin;
+}
+
+/**
+ * pinmux_request_gpio() - request pinmuxing for a GPIO pin
+ * @pctldev: pin controller device affected
+ * @pin: the pin to mux in for GPIO
+ * @range: the applicable GPIO range
+ * @gpio: number of requested GPIO
+ */
+int pinmux_request_gpio(struct pinctrl_dev *pctldev,
+			struct pinctrl_gpio_range *range,
+			unsigned int pin, unsigned int gpio)
+{
+	const struct pinmux_ops *ops = pctldev->pmxops;
+
+	if (!ops)
+		return 0;
+
+	/*
+	 * If there is no kind of request function for the pin we just assume
+	 * we got it by default and proceed.
+	 */
+	if (range && ops->gpio_request_enable)
+		/* This requests and enables a single GPIO pin */
+		return ops->gpio_request_enable(pctldev, range, pin);
+	else if (ops->request)
+		return ops->request(pctldev, pin);
+	else
+		return 0;
+}
+
+/**
+ * pinmux_free_gpio() - release a pin from GPIO muxing
+ * @pctldev: the pin controller device for the pin
+ * @pin: the affected currently GPIO-muxed in pin
+ * @range: applicable GPIO range
+ */
+void pinmux_free_gpio(struct pinctrl_dev *pctldev, unsigned int pin,
+		      struct pinctrl_gpio_range *range)
+{
+	const struct pinmux_ops *ops = pctldev->pmxops;
+
+	if (!ops)
+		return;
+
+	if (range && ops->gpio_disable_free)
+		ops->gpio_disable_free(pctldev, range, pin);
+	else if (ops->free)
+		ops->free(pctldev, pin);
+}
+
+/**
+ * pinmux_gpio_direction() - set the direction of a single muxed-in GPIO pin
+ * @pctldev: the pin controller handling this pin
+ * @range: applicable GPIO range
+ * @pin: the affected GPIO pin in this controller
+ * @input: true if we set the pin as input, false for output
+ */
+int pinmux_gpio_direction(struct pinctrl_dev *pctldev,
+			  struct pinctrl_gpio_range *range,
+			  unsigned int pin, bool input)
+{
+	const struct pinmux_ops *ops = pctldev->pmxops;
+
+	if (ops && ops->gpio_set_direction)
+		return ops->gpio_set_direction(pctldev, range, pin, input);
+
+	return 0;
+}
+
+int pinconf_set_config(struct pinctrl_dev *pctldev, unsigned int pin,
+		       unsigned long *configs, size_t nconfigs)
+{
+	const struct pinconf_ops *ops = pctldev->confops;
+
+	if (!ops || !ops->pin_config_set)
+		return -ENOTSUPP;
+
+	return ops->pin_config_set(pctldev, pin, configs, nconfigs);
+}
+
+/**
+ * pinctrl_gpio_request() - request a single pin to be used as GPIO
+ * @gc: GPIO chip structure from the GPIO subsystem
+ * @offset: hardware offset of the GPIO relative to the controller
+ *
+ * This function should *ONLY* be used from gpiolib-based GPIO drivers,
+ * as part of their gpio_request() semantics, platforms and individual drivers
+ * shall *NOT* request GPIO pins to be muxed in.
+ */
+int pinctrl_gpio_request(struct gpio_chip *gc, unsigned int offset)
+{
+	struct pinctrl_gpio_range *range;
+	struct pinctrl_dev *pctldev;
+	int ret, pin;
+
+	ret = pinctrl_get_device_gpio_range(gc, offset, &pctldev, &range);
+	if (ret) {
+		if (pinctrl_ready_for_gpio_range(gc, offset))
+			ret = 0;
+		return ret;
+	}
+
+	/* Convert to the pin controllers number space */
+	pin = gpio_to_pin(range, gc, offset);
+
+	return pinmux_request_gpio(pctldev, range, pin,
+				   gpiochip_gpio_number(gc, offset));
+}
+EXPORT_SYMBOL_GPL(pinctrl_gpio_request);
+
+/**
+ * pinctrl_gpio_free() - free control on a single pin, currently used as GPIO
+ * @gc: GPIO chip structure from the GPIO subsystem
+ * @offset: hardware offset of the GPIO relative to the controller
+ *
+ * This function should *ONLY* be used from gpiolib-based GPIO drivers,
+ * as part of their gpio_request() semantics, platforms and individual drivers
+ * shall *NOT* request GPIO pins to be muxed in.
+ */
+void pinctrl_gpio_free(struct gpio_chip *gc, unsigned int offset)
+{
+	struct pinctrl_gpio_range *range;
+	struct pinctrl_dev *pctldev;
+	int ret, pin;
+
+	ret = pinctrl_get_device_gpio_range(gc, offset, &pctldev, &range);
+	if (ret)
+		return;
+
+	/* Convert to the pin controllers number space */
+	pin = gpio_to_pin(range, gc, offset);
+
+	pinmux_free_gpio(pctldev, pin, range);
+}
+EXPORT_SYMBOL_GPL(pinctrl_gpio_free);
+
+static int pinctrl_gpio_direction(struct gpio_chip *gc, unsigned int offset,
+				  bool input)
+{
+	struct pinctrl_dev *pctldev;
+	struct pinctrl_gpio_range *range;
+	int ret;
+	int pin;
+
+	ret = pinctrl_get_device_gpio_range(gc, offset, &pctldev, &range);
+	if (ret) {
+		return ret;
+	}
+
+	/* Convert to the pin controllers number space */
+	pin = gpio_to_pin(range, gc, offset);
+
+	return pinmux_gpio_direction(pctldev, range, pin, input);
+}
+
+/**
+ * pinctrl_gpio_direction_input() - request a GPIO pin to go into input mode
+ * @gc: GPIO chip structure from the GPIO subsystem
+ * @offset: hardware offset of the GPIO relative to the controller
+ *
+ * This function should *ONLY* be used from gpiolib-based GPIO drivers,
+ * as part of their gpio_direction_input() semantics, platforms and individual
+ * drivers shall *NOT* touch pin control GPIO calls.
+ */
+int pinctrl_gpio_direction_input(struct gpio_chip *gc, unsigned int offset)
+{
+	return pinctrl_gpio_direction(gc, offset, true);
+}
+EXPORT_SYMBOL_GPL(pinctrl_gpio_direction_input);
+
+/**
+ * pinctrl_gpio_direction_output() - request a GPIO pin to go into output mode
+ * @gc: GPIO chip structure from the GPIO subsystem
+ * @offset: hardware offset of the GPIO relative to the controller
+ *
+ * This function should *ONLY* be used from gpiolib-based GPIO drivers,
+ * as part of their gpio_direction_output() semantics, platforms and individual
+ * drivers shall *NOT* touch pin control GPIO calls.
+ */
+int pinctrl_gpio_direction_output(struct gpio_chip *gc, unsigned int offset)
+{
+	return pinctrl_gpio_direction(gc, offset, false);
+}
+EXPORT_SYMBOL_GPL(pinctrl_gpio_direction_output);
+
+/**
+ * pinctrl_gpio_get_direction() - read back the direction of a GPIO pin
+ * @gc: GPIO chip structure from the GPIO subsystem
+ * @offset: hardware offset of the GPIO relative to the controller
+ *
+ * barebox-specific counterpart to pinctrl_gpio_direction_input/output().
+ */
+int pinctrl_gpio_get_direction(struct gpio_chip *gc, unsigned int offset)
+{
+	struct pinctrl_dev *pctldev;
+	struct pinctrl_gpio_range *range;
+	int ret, pin;
+
+	ret = pinctrl_get_device_gpio_range(gc, offset, &pctldev, &range);
+	if (ret)
+		return ret;
+
+	if (!pctldev->pmxops || !pctldev->pmxops->gpio_get_direction)
+		return -ENOTSUPP;
+
+	pin = gpio_to_pin(range, gc, offset);
+
+	return pctldev->pmxops->gpio_get_direction(pctldev, range, pin);
+}
+EXPORT_SYMBOL_GPL(pinctrl_gpio_get_direction);
+
+/**
+ * pinctrl_gpio_set_config() - Apply config to given GPIO pin
+ * @gc: GPIO chip structure from the GPIO subsystem
+ * @offset: hardware offset of the GPIO relative to the controller
+ * @config: the configuration to apply to the GPIO
+ *
+ * This function should *ONLY* be used from gpiolib-based GPIO drivers, if
+ * they need to call the underlying pin controller to change GPIO config
+ * (for example set debounce time).
+ */
+int pinctrl_gpio_set_config(struct gpio_chip *gc, unsigned int offset,
+				unsigned long config)
+{
+	unsigned long configs[] = { config };
+	struct pinctrl_gpio_range *range;
+	struct pinctrl_dev *pctldev;
+	int ret, pin;
+
+	ret = pinctrl_get_device_gpio_range(gc, offset, &pctldev, &range);
+	if (ret)
+		return ret;
+
+	pin = gpio_to_pin(range, gc, offset);
+
+	return pinconf_set_config(pctldev, pin, configs, ARRAY_SIZE(configs));
+}
+EXPORT_SYMBOL_GPL(pinctrl_gpio_set_config);
 
 static int pinctrl_config_one(struct device_node *for_node, struct device_node *np)
 {
@@ -365,6 +827,7 @@ static int pinctrl_init_controller(struct pinctrl_dev *pdev)
 		return -EINVAL;
 
 	pdev->node = pdev->dev->of_node;
+	INIT_LIST_HEAD(&pdev->gpio_ranges);
 
 	list_add_tail(&pdev->list, &pinctrl_list);
 

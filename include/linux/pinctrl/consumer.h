@@ -9,6 +9,7 @@
 
 struct device;
 struct device_node;
+struct gpio_chip;
 
 struct pinctrl;
 
@@ -23,6 +24,17 @@ int pinctrl_select_state_default(struct device *dev);
 int of_pinctrl_select_state(struct device_node *np, const char *state);
 int of_pinctrl_select_state_default(struct device_node *np);
 int pinctrl_single_probe(struct device *dev);
+
+/* External interface to pin control */
+int pinctrl_gpio_request(struct gpio_chip *gc, unsigned int offset);
+void pinctrl_gpio_free(struct gpio_chip *gc, unsigned int offset);
+int pinctrl_gpio_direction_input(struct gpio_chip *gc,
+				 unsigned int offset);
+int pinctrl_gpio_direction_output(struct gpio_chip *gc,
+				  unsigned int offset);
+int pinctrl_gpio_get_direction(struct gpio_chip *gc, unsigned int offset);
+int pinctrl_gpio_set_config(struct gpio_chip *gc, unsigned int offset,
+				unsigned long config);
 #else
 static inline struct pinctrl_state *pinctrl_lookup_state(struct pinctrl *pinctrl,
 							 const char *name)
@@ -56,6 +68,42 @@ static inline int of_pinctrl_select_state_default(struct device_node *np)
 static inline int pinctrl_single_probe(struct device *dev)
 {
 	return -ENOSYS;
+}
+
+static inline int
+pinctrl_gpio_request(struct gpio_chip *gc, unsigned int offset)
+{
+	return 0;
+}
+
+static inline void
+pinctrl_gpio_free(struct gpio_chip *gc, unsigned int offset)
+{
+}
+
+static inline int
+pinctrl_gpio_direction_input(struct gpio_chip *gc, unsigned int offset)
+{
+	return 0;
+}
+
+static inline int
+pinctrl_gpio_direction_output(struct gpio_chip *gc, unsigned int offset)
+{
+	return 0;
+}
+
+static inline int
+pinctrl_gpio_get_direction(struct gpio_chip *gc, unsigned int offset)
+{
+	return -ENOTSUPP;
+}
+
+static inline int
+pinctrl_gpio_set_config(struct gpio_chip *gc, unsigned int offset,
+			    unsigned long config)
+{
+	return 0;
 }
 #endif
 

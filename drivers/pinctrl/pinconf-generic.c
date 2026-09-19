@@ -12,14 +12,11 @@
 #define pr_fmt(fmt) "generic pinconfig core: " fmt
 
 #include <linux/array_size.h>
-#include <linux/debugfs.h>
 #include <linux/device.h>
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/of.h>
-#include <linux/property.h>
 #include <linux/slab.h>
-#include <linux/seq_file.h>
 
 #include <linux/pinctrl/pinconf-generic.h>
 #include <linux/pinctrl/pinconf.h>
@@ -28,149 +25,6 @@
 #include "core.h"
 #include "pinconf.h"
 #include "pinctrl-utils.h"
-
-#ifdef CONFIG_DEBUG_FS
-static const struct pin_config_item conf_items[] = {
-	PCONFDUMP(PIN_CONFIG_BIAS_BUS_HOLD, "input bias bus hold", NULL, false),
-	PCONFDUMP(PIN_CONFIG_BIAS_DISABLE, "input bias disabled", NULL, false),
-	PCONFDUMP(PIN_CONFIG_BIAS_HIGH_IMPEDANCE, "input bias high impedance", NULL, false),
-	PCONFDUMP(PIN_CONFIG_BIAS_PULL_DOWN, "input bias pull down", "ohms", true),
-	PCONFDUMP(PIN_CONFIG_BIAS_PULL_PIN_DEFAULT,
-				"input bias pull to pin specific state", "ohms", true),
-	PCONFDUMP(PIN_CONFIG_BIAS_PULL_UP, "input bias pull up", "ohms", true),
-	PCONFDUMP(PIN_CONFIG_DRIVE_OPEN_DRAIN, "output drive open drain", NULL, false),
-	PCONFDUMP(PIN_CONFIG_DRIVE_OPEN_SOURCE, "output drive open source", NULL, false),
-	PCONFDUMP(PIN_CONFIG_DRIVE_PUSH_PULL, "output drive push pull", NULL, false),
-	PCONFDUMP(PIN_CONFIG_DRIVE_STRENGTH, "output drive strength", "mA", true),
-	PCONFDUMP(PIN_CONFIG_DRIVE_STRENGTH_UA, "output drive strength", "uA", true),
-	PCONFDUMP(PIN_CONFIG_INPUT_DEBOUNCE, "input debounce", "usec", true),
-	PCONFDUMP(PIN_CONFIG_INPUT_ENABLE, "input enabled", NULL, false),
-	PCONFDUMP(PIN_CONFIG_INPUT_SCHMITT, "input schmitt trigger", NULL, false),
-	PCONFDUMP(PIN_CONFIG_INPUT_SCHMITT_UV, "input schmitt threshold", "uV", true),
-	PCONFDUMP(PIN_CONFIG_INPUT_SCHMITT_ENABLE, "input schmitt enabled", NULL, false),
-	PCONFDUMP(PIN_CONFIG_MODE_LOW_POWER, "pin low power", "mode", true),
-	PCONFDUMP(PIN_CONFIG_OUTPUT_ENABLE, "output enabled", NULL, false),
-	PCONFDUMP(PIN_CONFIG_LEVEL, "pin output", "level", true),
-	PCONFDUMP(PIN_CONFIG_OUTPUT_IMPEDANCE_OHMS, "output impedance", "ohms", true),
-	PCONFDUMP(PIN_CONFIG_POWER_SOURCE, "pin power source", "selector", true),
-	PCONFDUMP(PIN_CONFIG_SLEEP_HARDWARE_STATE, "sleep hardware state", NULL, false),
-	PCONFDUMP(PIN_CONFIG_SLEW_RATE, "slew rate", NULL, true),
-	PCONFDUMP(PIN_CONFIG_SKEW_DELAY, "skew delay", NULL, true),
-	PCONFDUMP(PIN_CONFIG_SKEW_DELAY_INPUT_PS, "input skew delay", "ps", true),
-	PCONFDUMP(PIN_CONFIG_SKEW_DELAY_OUTPUT_PS, "output skew delay", "ps", true),
-	PCONFDUMP(PIN_CONFIG_INPUT_VOLTAGE_UV, "input voltage in microvolt", "uV", true),
-};
-
-static void pinconf_generic_dump_one(struct pinctrl_dev *pctldev,
-				     struct seq_file *s, const char *gname,
-				     unsigned int pin,
-				     const struct pin_config_item *items,
-				     int nitems, int *print_sep)
-{
-	int i;
-
-	for (i = 0; i < nitems; i++) {
-		const struct pin_config_item *item = &items[i];
-		unsigned long config;
-		int ret;
-
-		/* We want to check out this parameter */
-		config = pinconf_to_config_packed(item->param, 0);
-		if (gname)
-			ret = pin_config_group_get(dev_name(pctldev->dev),
-						   gname, &config);
-		else
-			ret = pin_config_get_for_pin(pctldev, pin, &config);
-		/* These are legal errors */
-		if (ret == -EINVAL || ret == -ENOTSUPP)
-			continue;
-		if (ret) {
-			seq_printf(s, "ERROR READING CONFIG SETTING %d ", i);
-			continue;
-		}
-		/* comma between multiple configs */
-		if (*print_sep)
-			seq_puts(s, ", ");
-		*print_sep = 1;
-		seq_puts(s, item->display);
-		/* Print unit if available */
-		if (item->has_arg) {
-			u32 val = pinconf_to_config_argument(config);
-
-			if (item->format)
-				seq_printf(s, " (%u %s)", val, item->format);
-			else
-				seq_printf(s, " (0x%x)", val);
-
-			if (item->values && item->num_values) {
-				if (val < item->num_values)
-					seq_printf(s, " \"%s\"", item->values[val]);
-				else
-					seq_puts(s, " \"(unknown)\"");
-			}
-		}
-	}
-}
-
-/**
- * pinconf_generic_dump_pins - Print information about pin or group of pins
- * @pctldev:	Pincontrol device
- * @s:		File to print to
- * @gname:	Group name specifying pins
- * @pin:	Pin number specifying pin
- *
- * Print the pinconf configuration for the requested pin(s) to @s. Pins can be
- * specified either by pin using @pin or by group using @gname. Only one needs
- * to be specified the other can be NULL/0.
- */
-void pinconf_generic_dump_pins(struct pinctrl_dev *pctldev, struct seq_file *s,
-			       const char *gname, unsigned int pin)
-{
-	const struct pinconf_ops *ops = pctldev->desc->confops;
-	int print_sep = 0;
-
-	if (!ops->is_generic)
-		return;
-
-	/* generic parameters */
-	pinconf_generic_dump_one(pctldev, s, gname, pin, conf_items,
-				 ARRAY_SIZE(conf_items), &print_sep);
-	/* driver-specific parameters */
-	if (pctldev->desc->num_custom_params &&
-	    pctldev->desc->custom_conf_items)
-		pinconf_generic_dump_one(pctldev, s, gname, pin,
-					 pctldev->desc->custom_conf_items,
-					 pctldev->desc->num_custom_params,
-					 &print_sep);
-}
-
-void pinconf_generic_dump_config(struct pinctrl_dev *pctldev,
-				 struct seq_file *s, unsigned long config)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(conf_items); i++) {
-		if (pinconf_to_config_param(config) != conf_items[i].param)
-			continue;
-		seq_printf(s, "%s: 0x%x", conf_items[i].display,
-			   pinconf_to_config_argument(config));
-	}
-
-	if (!pctldev->desc->num_custom_params ||
-	    !pctldev->desc->custom_conf_items)
-		return;
-
-	for (i = 0; i < pctldev->desc->num_custom_params; i++) {
-		if (pinconf_to_config_param(config) !=
-		    pctldev->desc->custom_conf_items[i].param)
-			continue;
-		seq_printf(s, "%s: 0x%x",
-				pctldev->desc->custom_conf_items[i].display,
-				pinconf_to_config_argument(config));
-	}
-}
-EXPORT_SYMBOL_GPL(pinconf_generic_dump_config);
-#endif
 
 #ifdef CONFIG_OF
 static const struct pinconf_generic_params dt_params[] = {

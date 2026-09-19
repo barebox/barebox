@@ -13,12 +13,16 @@
 #include <gpio.h>
 #include <mach/at91/gpio.h>
 #include <linux/clk.h>
+#include <linux/pinctrl/pinconf-generic.h>
 
 #include <dt-bindings/pinctrl/at91.h>
 
 #define ATMEL_GET_PIN_NO(pinfunc)	((pinfunc) & 0xff)
 #define ATMEL_GET_PIN_FUNC(pinfunc)	((pinfunc >> 16) & 0xf)
 #define ATMEL_GET_PIN_IOSET(pinfunc)	((pinfunc >> 20) & 0xf)
+
+/* Custom pinconf parameters */
+#define ATMEL_PIN_CONFIG_DRIVE_STRENGTH	(PIN_CONFIG_END + 1)
 
 struct pinctrl_at91_pio4 {
 	void __iomem *base;
@@ -28,6 +32,10 @@ struct pinctrl_at91_pio4 {
 
 struct at91_pinctrl_data {
         unsigned nbanks;
+};
+
+static const struct pinconf_generic_params atmel_custom_bindings[] = {
+	{"atmel,drive-strength", ATMEL_PIN_CONFIG_DRIVE_STRENGTH, 0},
 };
 
 static inline void __iomem *pin_to_pio4(struct pinctrl_dev *pdev,
@@ -43,105 +51,117 @@ static inline void __iomem *pin_to_pio4(struct pinctrl_dev *pdev,
 	return pio;
 }
 
-static int __pinctrl_at91_pio4_set_state(struct pinctrl_dev *pdev,
-					 struct device_node *np)
+static void pinctrl_at91_pio4_update_config(struct pinctrl_dev *pdev,
+					    unsigned int pin, u32 clear, u32 set)
 {
-	u32 drive_strength, enable = 0, disable = ~0;
-	int output = -1;
+	void __iomem *pio;
+	u32 cfgr;
 
-	int npins, i;
-	int ret;
+	pio = pin_to_pio4(pdev, &pin);
 
-	ret = of_property_read_u32(np, "drive-strength", &drive_strength);
-	if (!ret && ATMEL_PIO_DRVSTR_LO <= drive_strength
-	    && drive_strength <= ATMEL_PIO_DRVSTR_HI) {
-		disable &= ~PIO4_DRVSTR_MASK;
-		enable |= drive_strength << PIO4_DRVSTR_OFFSET;
-	}
+	writel(BIT(pin), pio + PIO4_MSKR);
+	cfgr = readl(pio + PIO4_CFGR);
+	cfgr &= ~clear;
+	cfgr |= set;
+	writel(cfgr, pio + PIO4_CFGR);
+}
 
-	if (of_get_property(np, "bias-disable", NULL)) {
-		disable &= ~PIO4_PUEN_MASK;
-		disable &= ~PIO4_PDEN_MASK;
-	}
+static int pinctrl_at91_pio4_pinmux_property_set(struct pinctrl_dev *pdev,
+						 u32 pinmux_group)
+{
+	unsigned int pin = ATMEL_GET_PIN_NO(pinmux_group);
+	unsigned int func = ATMEL_GET_PIN_FUNC(pinmux_group);
 
-	if (of_get_property(np, "bias-pull-up", NULL)) {
-		enable |= PIO4_PUEN_MASK;
-		disable &= ~PIO4_PDEN_MASK;
-	}
+	pinctrl_at91_pio4_update_config(pdev, pin, PIO4_CFGR_FUNC_MASK,
+					func & PIO4_CFGR_FUNC_MASK);
 
-	if (of_get_property(np, "bias-pull-down", NULL)) {
-		enable |= PIO4_PDEN_MASK;
-		disable &= ~PIO4_PUEN_MASK;
-	}
+	return pin;
+}
 
-	if (of_get_property(np, "drive-open-drain", NULL))
-		enable |= PIO4_OPD_MASK;
+static int pinctrl_at91_pio4_set_config(struct pinctrl_dev *pdev,
+					unsigned int pin, unsigned int param,
+					u32 arg)
+{
+	unsigned int offset = pin;
+	void __iomem *pio;
 
-	if (of_get_property(np, "input-schmitt-enable", NULL))
-		enable |= PIO4_SCHMITT_MASK;
-
-	if (of_get_property(np, "input-enable", NULL))
-		disable &= ~PIO4_DIR_MASK;
-
-	if (of_get_property(np, "output-enable", NULL))
-		enable |= PIO4_DIR_MASK;
-
-	if (of_get_property(np, "output-low", NULL))
-		output = GPIOF_OUT_INIT_LOW;
-
-	if (of_get_property(np, "output-high", NULL))
-		output = GPIOF_OUT_INIT_HIGH;
-
-	of_get_property(np, "pinmux", &npins);
-	npins /= sizeof(__be32);
-
-	if (!npins) {
-		dev_err(pdev->dev, "Invalid pinmux property in %pOF\n", np);
-		return -EINVAL;
-	}
-
-	for (i = 0; i < npins; i++) {
-		void __iomem *pio;
-		u32 conf, no, func, cfgr;
-
-		ret = of_property_read_u32_index(np, "pinmux", i, &conf);
-		if (ret)
-			return ret;
-
-		no    = ATMEL_GET_PIN_NO(conf);
-		func  = ATMEL_GET_PIN_FUNC(conf);
-
-		pio = pin_to_pio4(pdev, &no);
-
-		if (output == GPIOF_OUT_INIT_HIGH)
-			at91_mux_gpio4_set(pio, BIT(no), true);
-
-		if (output == GPIOF_OUT_INIT_LOW)
-			at91_mux_gpio4_set(pio, BIT(no), false);
-
-		writel(BIT(no), pio + PIO4_MSKR);
-		cfgr = readl(pio + PIO4_CFGR);
-		cfgr &= disable;
-		cfgr |= enable;
-		writel(func | cfgr, pio + PIO4_CFGR);
+	switch (param) {
+	case PIN_CONFIG_BIAS_DISABLE:
+		pinctrl_at91_pio4_update_config(pdev, pin,
+						PIO4_PUEN_MASK | PIO4_PDEN_MASK, 0);
+		break;
+	case PIN_CONFIG_BIAS_PULL_UP:
+		pinctrl_at91_pio4_update_config(pdev, pin, PIO4_PDEN_MASK,
+						PIO4_PUEN_MASK);
+		break;
+	case PIN_CONFIG_BIAS_PULL_DOWN:
+		pinctrl_at91_pio4_update_config(pdev, pin, PIO4_PUEN_MASK,
+						PIO4_PDEN_MASK);
+		break;
+	case PIN_CONFIG_DRIVE_OPEN_DRAIN:
+		pinctrl_at91_pio4_update_config(pdev, pin, 0, PIO4_OPD_MASK);
+		break;
+	case PIN_CONFIG_DRIVE_PUSH_PULL:
+		pinctrl_at91_pio4_update_config(pdev, pin, PIO4_OPD_MASK, 0);
+		break;
+	case PIN_CONFIG_INPUT_SCHMITT_ENABLE:
+		/* the bit disables the trigger, so it's set for arg == 0 */
+		pinctrl_at91_pio4_update_config(pdev, pin, PIO4_SCHMITT_MASK,
+						arg ? 0 : PIO4_SCHMITT_MASK);
+		break;
+	case PIN_CONFIG_INPUT_ENABLE:
+		if (!arg)
+			return -ENOTSUPP;
+		pinctrl_at91_pio4_update_config(pdev, pin, PIO4_DIR_MASK, 0);
+		break;
+	case PIN_CONFIG_OUTPUT_ENABLE:
+		pinctrl_at91_pio4_update_config(pdev, pin, PIO4_DIR_MASK,
+						arg ? PIO4_DIR_MASK : 0);
+		break;
+	case PIN_CONFIG_LEVEL:
+		pio = pin_to_pio4(pdev, &offset);
+		at91_mux_gpio4_set(pio, BIT(offset), arg);
+		pinctrl_at91_pio4_update_config(pdev, pin, 0, PIO4_DIR_MASK);
+		break;
+	case PIN_CONFIG_DRIVE_STRENGTH:
+	case ATMEL_PIN_CONFIG_DRIVE_STRENGTH:
+		switch (arg) {
+		case ATMEL_PIO_DRVSTR_LO:
+		case ATMEL_PIO_DRVSTR_ME:
+		case ATMEL_PIO_DRVSTR_HI:
+			pinctrl_at91_pio4_update_config(pdev, pin,
+							PIO4_DRVSTR_MASK,
+							arg << PIO4_DRVSTR_OFFSET);
+			break;
+		default:
+			dev_warn(pdev->dev, "drive strength not updated (incorrect value)\n");
+		}
+		break;
+	default:
+		return -ENOTSUPP;
 	}
 
 	return 0;
 }
 
-static int pinctrl_at91_pio4_set_state(struct pinctrl_dev *pdev,
-				       struct device_node *np)
+static int pinctrl_at91_pio4_pin_config_set(struct pinctrl_dev *pdev,
+					    unsigned int pin,
+					    unsigned long *configs,
+					    unsigned int num_configs)
 {
-	struct device_node *child;
-	void *prop;
-	int ret;
+	int i, ret;
 
-	prop = of_find_property(np, "pinmux", NULL);
-	if (prop)
-		return __pinctrl_at91_pio4_set_state(pdev, np);
+	for (i = 0; i < num_configs; i++) {
+		unsigned int param = pinconf_to_config_param(configs[i]);
 
-	for_each_child_of_node(np, child) {
-		ret = __pinctrl_at91_pio4_set_state(pdev, child);
+		ret = pinctrl_at91_pio4_set_config(pdev, pin, param,
+						   pinconf_to_config_argument(configs[i]));
+		if (ret == -ENOTSUPP) {
+			dev_warn(pdev->dev,
+				 "unsupported configuration parameter: %u\n",
+				 param);
+			continue;
+		}
 		if (ret)
 			return ret;
 	}
@@ -266,8 +286,23 @@ static int pinctrl_at91_pio4_gpiochip_add(struct device *dev,
 	return 0;
 }
 
+static const struct pinmux_ops pinctrl_at91_pio4_pmxops = {
+	.pinmux_property_set = pinctrl_at91_pio4_pinmux_property_set,
+};
+
+static const struct pinconf_ops pinctrl_at91_pio4_confops = {
+	.pin_config_set = pinctrl_at91_pio4_pin_config_set,
+};
+
 static const struct pinctrl_ops pinctrl_at91_pio4_ops = {
-	.set_state = pinctrl_at91_pio4_set_state,
+};
+
+static const struct pinctrl_desc pinctrl_at91_pio4_desc = {
+	.pctlops = &pinctrl_at91_pio4_ops,
+	.pmxops = &pinctrl_at91_pio4_pmxops,
+	.confops = &pinctrl_at91_pio4_confops,
+	.custom_params = atmel_custom_bindings,
+	.num_custom_params = ARRAY_SIZE(atmel_custom_bindings),
 };
 
 static int pinctrl_at91_pio4_probe(struct device *dev)
@@ -285,7 +320,7 @@ static int pinctrl_at91_pio4_probe(struct device *dev)
 
 	pinctrl->base = IOMEM(io->start);
 	pinctrl->pinctrl.dev = dev;
-	pinctrl->pinctrl.ops = &pinctrl_at91_pio4_ops;
+	pinctrl->pinctrl.desc = &pinctrl_at91_pio4_desc;
 
 	ret = pinctrl_register(&pinctrl->pinctrl);
 	if (ret)

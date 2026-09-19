@@ -217,7 +217,11 @@ struct gpio_ops {
 };
 
 struct gpio_chip {
-	struct device *dev;
+	union {
+		struct device *dev;
+		/* Linux name for the same thing */
+		struct device *parent;
+	};
 
 	int base;
 	/* GPIO controller specific GPIO offset */

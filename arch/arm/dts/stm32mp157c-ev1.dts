@@ -3,8 +3,6 @@
 #include <arm/st/stm32mp157c-ev1.dts>
 
 / {
-	barebox,deep-probe;
-
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";

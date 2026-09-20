@@ -2,7 +2,3 @@
 /dts-v1/;
 
 #include <arm/st/stm32mp151c-mect1s.dts>
-
-/ {
-	barebox,deep-probe;
-};

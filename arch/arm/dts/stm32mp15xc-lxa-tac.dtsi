@@ -5,8 +5,6 @@
 
 
 / {
-	barebox,deep-probe;
-
 	chosen {
 		stdout-path = "serial0:115200n8";
 

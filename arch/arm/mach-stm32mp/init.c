@@ -13,6 +13,7 @@
 #include <mach/stm32mp/revision.h>
 #include <mach/stm32mp/bootsource.h>
 #include <bootsource.h>
+#include <deep-probe.h>
 #include <fiptool.h>
 #include <dt-bindings/pinctrl/stm32-pinfunc.h>
 
@@ -253,6 +254,7 @@ static const struct of_device_id stm32mp_of_match[] = {
 	{ .compatible = "st,stm32mp157", .data = (void *)0x32157 },
 	{ /* sentinel */ }
 };
+BAREBOX_DEEP_PROBE_ENABLE(stm32mp_of_match);
 
 static int stm32mp_init(void)
 {

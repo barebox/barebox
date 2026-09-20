@@ -34,7 +34,14 @@
 };
 
 &bsec {
-	barebox,provide-mac-address = <&ethernet0 0x39>;
+	ethernet_mac_address: mac@e4 {
+		reg = <0xe4 0x6>;
+	};
+};
+
+&ethernet0 {
+	nvmem-cells = <&ethernet_mac_address>;
+	nvmem-cell-names = "mac-address";
 };
 
 &iwdg2 {

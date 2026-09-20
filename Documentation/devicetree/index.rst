@@ -164,6 +164,16 @@ without a target, an alias pointing at nothing or an unresolvable label
 fails the build instead of the boot. Whether the nodes are *enabled* is up
 to the board, so the overlay can still be skipped at runtime.
 
+Building an Upstream Device Tree
+--------------------------------
+
+A board whose additions are all overlays needs no device tree of its own in
+``arch/$ARCH/dts``: the one the kernel uses will do. Device trees in the
+``dts/`` subtree can be built by name, e.g. to hand to the board as a FIP
+``--hw-config`` next to a generic barebox image::
+
+  make dts/src/arm/st/stm32mp157c-dk2.dtb
+
 Device Tree Compiler
 --------------------
 

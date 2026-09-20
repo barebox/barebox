@@ -21,6 +21,8 @@ struct pinctrl_state *pinctrl_lookup_state(struct pinctrl *pinctrl,
 int pinctrl_select_state(struct pinctrl *pinctrl, struct pinctrl_state *state);
 struct pinctrl *pinctrl_get_select(struct device *dev, const char *state);
 int pinctrl_select_state_default(struct device *dev);
+int pinctrl_select_state_init(struct device *dev);
+int pinctrl_init_done(struct device *dev);
 int of_pinctrl_select_state(struct device_node *np, const char *state);
 int of_pinctrl_select_state_default(struct device_node *np);
 int pinctrl_single_probe(struct device *dev);
@@ -53,6 +55,16 @@ static inline struct pinctrl *pinctrl_get_select(struct device *dev, const char 
 static inline int pinctrl_select_state_default(struct device *dev)
 {
 	return -ENODEV;
+}
+
+static inline int pinctrl_select_state_init(struct device *dev)
+{
+	return -ENODEV;
+}
+
+static inline int pinctrl_init_done(struct device *dev)
+{
+	return 0;
 }
 
 static inline int of_pinctrl_select_state(struct device_node *np, const char *state)

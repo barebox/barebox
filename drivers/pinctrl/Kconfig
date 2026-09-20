@@ -21,6 +21,15 @@ config PINCTRL_STATE_PARAM
 	depends on PARAMETER && PINCTRL
 	select PINCTRL_STATE_TRACKING
 
+config PINCTRL_INIT_STATE
+	bool "Apply init pin state before probe"
+	depends on PINCTRL
+	select PINCTRL_STATE_TRACKING
+	help
+	  Apply a device's "barebox,init" or "init" pin state instead of
+	  "default" before probe and switch to "default" afterwards, unless
+	  the driver selected another state meanwhile.
+
 # The following drivers are needed even without PINCTRL because
 # the either have a legacy iomux interface or also register a gpio
 # chip.

@@ -4,11 +4,13 @@
 
 #include <common.h>
 #include <bselftest.h>
+#include <driver.h>
 #include <malloc.h>
 #include <linux/limits.h>
 #include <linux/pinctrl/pinconf-generic.h>
 #include <linux/pinctrl/pinctrl.h>
 #include <of.h>
+#include <param.h>
 #include <pinctrl.h>
 
 #include "core.h"
@@ -1119,6 +1121,52 @@ static void test_no_desc_node(struct device_node *root)
 	assert_inteq(test.nevents, 0);
 }
 
+/*
+ * A consumer on @path: the pin state it probes in and the one it ends up in.
+ * The states are empty, as phandles only resolve in the live tree.
+ */
+static void test_init_state_consumer(struct device_node *root, const char *path,
+				     const char *probe_state,
+				     const char *final_state)
+{
+	struct device_node *np;
+	struct device *dev;
+
+	np = test_node(root, path);
+	if (!np)
+		return;
+
+	dev = device_alloc("pinctrl-test", DEVICE_ID_DYNAMIC);
+	dev->of_node = np;
+	if (!assert_inteq(register_device(dev), 0)) {
+		free_device(dev);
+		return;
+	}
+
+	assert_inteq(pinctrl_select_state_init(dev), 0);
+	assert_streq(dev_get_param(dev, "pinctrl_state"), probe_state);
+	assert_inteq(pinctrl_init_done(dev), 0);
+	assert_streq(dev_get_param(dev, "pinctrl_state"), final_state);
+
+	unregister_device(dev);
+	free_device(dev);
+}
+
+static void test_init_state(struct device_node *root)
+{
+	/* the state is only visible through the pinctrl_state parameter */
+	if (!IS_ENABLED(CONFIG_PINCTRL_INIT_STATE) ||
+	    !IS_ENABLED(CONFIG_PINCTRL_STATE_PARAM))
+		return;
+
+	test_init_state_consumer(root, "/init-consumer", "init", "default");
+	test_init_state_consumer(root, "/barebox-init-consumer",
+				 "barebox,init", "default");
+	/* as in Linux, a name without pinctrl-N is no init state */
+	test_init_state_consumer(root, "/init-without-state-consumer",
+				 "default", "default");
+}
+
 static void test_pinctrl_generic(void)
 {
 	extern char __dtb_pinctrl_start[], __dtb_pinctrl_end[];
@@ -1147,6 +1195,7 @@ static void test_pinctrl_generic(void)
 	test_pins_and_groups(root);
 	test_callback_error(root);
 	test_pinmux_decode_error(root);
+	test_init_state(root);
 
 	of_delete_node(root);
 }

@@ -36,10 +36,15 @@ struct pinctrl_state {
 	struct property prop;
 };
 
+/*
+ * Last selected state of a consumer, for the pinctrl_state parameter and
+ * the init -> default handover.
+ */
 struct pinctrl_consumer_info {
 	struct device *dev;
 	struct device_node *np;
 	int state;
+	int init_state;		/* PARAM_ENUM_UNKNOWN if none was applied */
 	struct list_head list;
 	const char *states[];
 };
@@ -903,6 +908,27 @@ int of_pinctrl_select_state_default(struct device_node *np)
 	return of_pinctrl_select_state(np, "default");
 }
 
+/*
+ * "init" replaces "default" until probe is done. "barebox,init" goes first,
+ * as Linux doesn't know it. As in Linux, a name without pinctrl-N is no state.
+ */
+static const char *of_pinctrl_init_state(struct device_node *np)
+{
+	static const char * const names[] = { "barebox,init", "init" };
+	struct pinctrl *pinctrl = (struct pinctrl *)np;
+	int i;
+
+	if (!IS_ENABLED(CONFIG_PINCTRL_INIT_STATE) || !np)
+		return NULL;
+
+	for (i = 0; i < ARRAY_SIZE(names); i++) {
+		if (!IS_ERR(pinctrl_lookup_state(pinctrl, names[i])))
+			return names[i];
+	}
+
+	return NULL;
+}
+
 struct pinctrl *pinctrl_get_select(struct device *dev, const char *name)
 {
 	struct device_node *np;
@@ -922,6 +948,71 @@ struct pinctrl *pinctrl_get_select(struct device *dev, const char *name)
 int pinctrl_select_state_default(struct device *dev)
 {
 	return PTR_ERR_OR_ZERO(pinctrl_get_select(dev, "default"));
+}
+
+/* by device: a driver may register more devices on its node, e.g. I2C adapters */
+static struct pinctrl_consumer_info *pinctrl_consumer_find_dev(struct device *dev)
+{
+	struct pinctrl_consumer_info *info;
+
+	list_for_each_entry(info, &pinctrl_consumer_list, list)
+		if (info->dev == dev)
+			return info;
+
+	return NULL;
+}
+
+/**
+ * pinctrl_select_state_init() - apply the pin state a device probes in
+ * @dev: the device that is about to be probed
+ *
+ * Applies the init state if there is one, else the default state.
+ */
+int pinctrl_select_state_init(struct device *dev)
+{
+	struct pinctrl_consumer_info *info;
+	struct device_node *np = dev->of_node;
+	const char *init;
+	int ret;
+
+	if (!np)
+		return -ENODEV;
+
+	init = of_pinctrl_init_state(np);
+
+	ret = of_pinctrl_select_state(np, init ?: "default");
+	if (ret || !init)
+		return ret;
+
+	info = pinctrl_consumer_find_dev(dev);
+	if (info)
+		info->init_state = info->state;
+
+	return 0;
+}
+
+/**
+ * pinctrl_init_done() - move a device on from the state it probed in
+ * @dev: the device that has just been probed
+ *
+ * Switches from the init to the default state, unless the driver selected
+ * another state meanwhile.
+ */
+int pinctrl_init_done(struct device *dev)
+{
+	struct pinctrl_consumer_info *info;
+
+	if (!IS_ENABLED(CONFIG_PINCTRL_INIT_STATE) || !dev->of_node)
+		return 0;
+
+	info = pinctrl_consumer_find_dev(dev);
+	if (!info || info->init_state == PARAM_ENUM_UNKNOWN)
+		return 0;
+
+	if (info->state != info->init_state)
+		return 0;
+
+	return pinctrl_select_state_default(dev);
 }
 
 static int pinctrl_init_controller(struct pinctrl_dev *pdev)
@@ -1261,6 +1352,10 @@ void of_pinctrl_register_consumer(struct device *dev,
 	struct pinctrl_consumer_info *info;
 	int ret, nstates;
 
+	/* only needed for the pinctrl_state parameter and the init handover */
+	if (!IS_ENABLED(CONFIG_PINCTRL_STATE_PARAM) && !of_pinctrl_init_state(np))
+		return;
+
 	nstates = of_property_count_strings(np, "pinctrl-names");
 	if (nstates <= 0)
 		return;
@@ -1272,6 +1367,7 @@ void of_pinctrl_register_consumer(struct device *dev,
 	info->dev = dev;
 	info->np = np;
 	info->state = PARAM_ENUM_UNKNOWN;
+	info->init_state = PARAM_ENUM_UNKNOWN;
 
 	ret = of_property_read_string_array(np, "pinctrl-names", info->states, nstates);
 	if (ret < 0)
@@ -1289,13 +1385,9 @@ void of_pinctrl_unregister_consumer(struct device *dev)
 {
 	struct pinctrl_consumer_info *info;
 
-	list_for_each_entry(info, &pinctrl_consumer_list, list) {
-		if (info->dev != dev)
-			continue;
-
+	info = pinctrl_consumer_find_dev(dev);
+	if (info)
 		list_del(&info->list);
-		return;
-	}
 }
 #endif
 

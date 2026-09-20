@@ -169,4 +169,22 @@
 		pinmux = <0xffff0000>; /* TEST_PINMUX_DECODE_ERROR */
 		bias-disable;
 	};
+
+	init-consumer {
+		pinctrl-names = "default", "init";
+		pinctrl-0 = <>;
+		pinctrl-1 = <>;
+	};
+
+	barebox-init-consumer {
+		pinctrl-names = "default", "init", "barebox,init";
+		pinctrl-0 = <>;
+		pinctrl-1 = <>;
+		pinctrl-2 = <>;
+	};
+
+	init-without-state-consumer {
+		pinctrl-names = "default", "init";
+		pinctrl-0 = <>;
+	};
 };

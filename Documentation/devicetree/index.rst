@@ -138,6 +138,27 @@ the overlay as a whole when that node is missing or disabled, see
 :ref:`devicetree-barebox-assert-available`. Targets have to be paths:
 ``&label`` is a phandle, which a foreign device tree can't resolve.
 
+Overlay Base Device Trees
+-------------------------
+
+Rather than hardcoding those paths, an overlay can name the device tree it
+is written against, normally the SoC ``.dtsi`` compiled on its own::
+
+  overlay-$(CONFIG_ARCH_MYSOC) += mysoc.dtbo
+  DTBO_BASE_mysoc := mysoc-symbols
+
+barebox compiles ``arch/$ARCH/dts/mysoc-symbols.dts`` with ``dtc -@`` and
+writes the path behind each of its labels to ``mysoc-symbols-paths.h``::
+
+  #include "mysoc-symbols-paths.h"
+
+  BASE_NODE(sdmmc1) { barebox,restart-warm-bootrom; };
+  &{/} { aliases { mmc0 = BASE_PATH(sdmmc1); }; };
+
+``BASE_NODE(label)`` is the node labelled ``label``, ``BASE_SUBNODE(label,
+name)`` an unlabelled child of it; ``BASE_PATH()``/``BASE_SUBPATH()`` are
+the same as a path string.
+
 Device Tree Compiler
 --------------------
 

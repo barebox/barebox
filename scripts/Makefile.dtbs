@@ -23,6 +23,7 @@ $(obj)/dtbs-list: $(dtb-y) FORCE
 # ---------------------------------------------------------------------------
 
 DTC ?= $(objtree)/scripts/dtc/dtc
+FDTGET ?= $(objtree)/scripts/dtc/fdtget
 DTC_FLAGS += -Wno-unique_unit_address
 
 DTC_FLAGS += -Wno-unit_address_vs_reg \
@@ -57,6 +58,22 @@ DTC_FLAGS.dtb += -@
 endif
 
 DTC_FLAGS.dtbo += -Wno-avoid_default_addr_size -Wno-reg_format -Wno-graph_port
+
+# Overlay base device tree
+# ---------------------------------------------------------------------------
+
+# DTBO_BASE_<overlay> names the device tree an overlay is written against: it
+# is compiled with -@ and its label paths written to <base>-paths.h, so the
+# overlay can target a node by label rather than by hardcoded path.
+dtbo-base = $(DTBO_BASE_$(basename $(1)))
+dtbo-bases := $(sort $(foreach o, $(overlay-y), $(call dtbo-base,$(o))))
+
+always-y += $(addprefix $(obj)/, $(addsuffix .dtb, $(dtbo-bases)))
+base-dtb-y += $(addsuffix .dtb, $(dtbo-bases))
+targets += $(addprefix $(obj)/, $(addsuffix -paths.h, $(dtbo-bases)))
+
+$(foreach o, $(overlay-y), $(if $(call dtbo-base,$(o)), \
+	$(eval $(obj)/$(o): $(obj)/$(call dtbo-base,$(o))-paths.h)))
 
 # DT Build Rules
 # ---------------------------------------------------------------------------
@@ -93,6 +110,13 @@ $(obj)/%.dtb: $(src)/%.dts FORCE
 
 $(obj)/%.dtbo: $(src)/%.dtso $(DTC) FORCE
 	$(call if_changed_dep,dtc)
+
+quiet_cmd_dt_paths = DTPATH  $@
+cmd_dt_paths = $(srctree)/scripts/gen-dt-paths $(FDTGET) $< > $@ || \
+	{ rm -f $@; false; }
+
+$(obj)/%-paths.h: $(obj)/%.dtb $(FDTGET) $(srctree)/scripts/gen-dt-paths FORCE
+	$(call if_changed,dt_paths)
 
 dtc-tmp = $(subst $(comma),_,$(dot-target).dts)
 

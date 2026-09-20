@@ -113,6 +113,7 @@ dtc_cpp_flags  = -Wp,-MD,$(depfile).pre -nostdinc                        \
 		 -I$(srctree)/include                                    \
 		 -I$(srctree)/dts/include                                \
 		 -I$(srctree)/dts/src/                                   \
+		 -I$(obj)                                                \
 		 $(DTC_CPP_FLAGS_$(basetarget)$(suffix $@))              \
 		 -undef -D__DTS__
 

@@ -67,8 +67,10 @@ cmd_dt_S_dtb = $(srctree)/scripts/gen-dtb-s $(subst -,_,$(*F)) $< $(CONFIG_IMD) 
 $(obj)/%.dtb.S: $(obj)/%.dtb $(obj)/%.dtb.z $(srctree)/scripts/gen-dtb-s FORCE
 	$(call if_changed,dt_S_dtb)
 
+# Overlays in overlay-y are registered for the live tree, the rest only linked in
 quiet_cmd_dt_S_dtbo = DTBO    $@
-cmd_dt_S_dtbo = $(srctree)/scripts/gen-dtbo-s $(subst -,_,$(*F)) $< > $@
+cmd_dt_S_dtbo = $(srctree)/scripts/gen-dtbo-s $(subst -,_,$(*F)) $< \
+	$(if $(filter $(patsubst $(obj)/%,%,$*).dtbo, $(overlay-y)),y) > $@
 $(obj)/%.dtbo.S: $(obj)/%.dtbo $(srctree)/scripts/gen-dtbo-s FORCE
 	$(call if_changed,dt_S_dtbo)
 

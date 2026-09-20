@@ -2161,7 +2161,11 @@ int barebox_register_of(struct device_node *root)
 		root_node = NULL;
 	}
 
+	/* of_set_root_node() consumes /chosen, model and aliases, so patch first */
+	of_overlay_apply_builtin(root);
+
 	of_set_root_node(root);
+
 	of_fix_tree(root);
 
 	if (IS_ENABLED(CONFIG_OFDEVICE)) {

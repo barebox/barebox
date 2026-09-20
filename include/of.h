@@ -1619,4 +1619,13 @@ static inline void of_overlay_set_basedir(const char *path)
 
 #endif
 
+#ifdef CONFIG_OF_OVERLAY_BUILTIN
+int of_overlay_apply_builtin(struct device_node *root);
+#else
+static inline int of_overlay_apply_builtin(struct device_node *root)
+{
+	return 0;
+}
+#endif
+
 #endif /* __OF_H */

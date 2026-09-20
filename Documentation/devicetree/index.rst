@@ -111,6 +111,33 @@ and ``cpus``, but **not** ``memory``.
 
 .. _specification: https://www.devicetree.org/specifications/
 
+Built-in Device Tree Overlays
+-----------------------------
+
+Extending the upstream device tree in ``arch/$ARCH/dts`` only works for the
+device tree barebox has built in, not for one passed in by the boot firmware
+or appended to a generic image. Additions that aren't tied to a particular
+device tree can be built as an overlay instead: have the board select
+``CONFIG_OF_OVERLAY_BUILTIN`` and list the overlay in ``overlay-y``, which
+works in any kbuild Makefile::
+
+  overlay-$(CONFIG_MACH_MYBOARD) += myboard.dtbo
+
+The overlay needs the compatible of the board or SoC it belongs to::
+
+  / {
+  	compatible = "myvendor,myboard";
+  	barebox,assert-available = "/soc/mmc@5b010000";
+  };
+
+barebox applies it before probing any device if one of those compatibles is
+in the live tree's root compatible. Fragments that find no target are
+skipped: the tree at hand just describes a board without that node. What the
+overlay can't do without goes into ``barebox,assert-available``, which drops
+the overlay as a whole when that node is missing or disabled, see
+:ref:`devicetree-barebox-assert-available`. Targets have to be paths:
+``&label`` is a phandle, which a foreign device tree can't resolve.
+
 Device Tree Compiler
 --------------------
 

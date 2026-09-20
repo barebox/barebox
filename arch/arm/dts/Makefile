@@ -267,6 +267,10 @@ lwl-$(CONFIG_MACH_TQMA93XX) += imx93-tqma9352-mba93xxca.dtb.o \
 
 obj-$(CONFIG_MACH_WOLFVISION_PF5) += rk3568-wolfvision-pf5-io-expander.dtbo.o \
 				     rk3568-wolfvision-pf5-display-vz.dtbo.o
+
+overlay-$(CONFIG_ARCH_STM32MP157) += stm32mp151.dtbo
+DTBO_BASE_stm32mp151 := stm32mp151-symbols
+
 clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts *.dtb.z
-clean-files += *.dtbo *.dtbo.S .*.dtso
+clean-files += *.dtbo *.dtbo.S .*.dtso *-paths.h
 lwl-$(CONFIG_MACH_RAUMFELD_SPEAKER) += pxa300-raumfeld-speaker.dtb.o

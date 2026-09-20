@@ -1,3 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/*
+ * The barebox additions to a STM32MP15 device tree. In-tree boards get them as
+ * a built-in overlay; this is kept for out-of-tree boards that include it.
+ */
 
 / {
 	aliases {

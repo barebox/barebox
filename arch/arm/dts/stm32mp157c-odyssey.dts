@@ -4,7 +4,6 @@
  */
 
 #include <arm/st/stm32mp157c-odyssey.dts>
-#include "stm32mp151.dtsi"
 
 / {
 	barebox,disable-deep-probe;

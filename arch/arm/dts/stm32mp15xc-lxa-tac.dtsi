@@ -3,7 +3,6 @@
  * Copyright (C) 2020 Ahmad Fatoum, Pengutronix
  */
 
-#include "stm32mp151.dtsi"
 
 / {
 	barebox,deep-probe;

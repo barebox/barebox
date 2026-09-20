@@ -7,7 +7,6 @@
 /dts-v1/;
 
 #include <arm/st/stm32mp157c-phyboard-sargas-rdk.dts>
-#include "stm32mp151.dtsi"
 
 / {
 	model = "PHYTEC phyCORE-STM32MP1-3 SoM";

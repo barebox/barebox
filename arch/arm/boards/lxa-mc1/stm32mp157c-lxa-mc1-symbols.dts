@@ -1,0 +1,4 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/* The upstream MC-1 device tree with dtc -@, for the overlay's label paths */
+
+#include <arm/st/stm32mp157c-lxa-mc1.dts>

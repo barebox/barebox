@@ -109,6 +109,7 @@ a_flags        = -Wp,-MMD,$(depfile) $(NOSTDINC_FLAGS) $(LINUXINCLUDE)     \
 
 dtc_cpp_flags  = -Wp,-MD,$(depfile).pre -nostdinc                        \
 		 -Wp,-MT,$(basename $(notdir $@)).o                      \
+		 -I$(srctree)/arch/$(SRCARCH)/dts			 \
 		 -I$(srctree)/arch/$(SRCARCH)/dts/include		 \
 		 -I$(srctree)/include                                    \
 		 -I$(srctree)/dts/include                                \

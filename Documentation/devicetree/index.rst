@@ -159,6 +159,11 @@ writes the path behind each of its labels to ``mysoc-symbols-paths.h``::
 name)`` an unlabelled child of it; ``BASE_PATH()``/``BASE_SUBPATH()`` are
 the same as a path string.
 
+The finished overlay is applied to the base at build time, so a fragment
+without a target, an alias pointing at nothing or an unresolvable label
+fails the build instead of the boot. Whether the nodes are *enabled* is up
+to the board, so the overlay can still be skipped at runtime.
+
 Device Tree Compiler
 --------------------
 

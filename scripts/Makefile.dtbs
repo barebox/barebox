@@ -24,6 +24,7 @@ $(obj)/dtbs-list: $(dtb-y) FORCE
 
 DTC ?= $(objtree)/scripts/dtc/dtc
 FDTGET ?= $(objtree)/scripts/dtc/fdtget
+FDTOVERLAY ?= $(objtree)/scripts/dtc/fdtoverlay
 DTC_FLAGS += -Wno-unique_unit_address
 
 DTC_FLAGS += -Wno-unit_address_vs_reg \
@@ -63,8 +64,8 @@ DTC_FLAGS.dtbo += -Wno-avoid_default_addr_size -Wno-reg_format -Wno-graph_port
 # ---------------------------------------------------------------------------
 
 # DTBO_BASE_<overlay> names the device tree an overlay is written against: it
-# is compiled with -@ and its label paths written to <base>-paths.h, so the
-# overlay can target a node by label rather than by hardcoded path.
+# is compiled with -@, its label paths written to <base>-paths.h for the
+# overlay to target by path, and the overlay applied to it at build time.
 dtbo-base = $(DTBO_BASE_$(basename $(1)))
 dtbo-bases := $(sort $(foreach o, $(overlay-y), $(call dtbo-base,$(o))))
 
@@ -72,8 +73,9 @@ always-y += $(addprefix $(obj)/, $(addsuffix .dtb, $(dtbo-bases)))
 base-dtb-y += $(addsuffix .dtb, $(dtbo-bases))
 targets += $(addprefix $(obj)/, $(addsuffix -paths.h, $(dtbo-bases)))
 
-$(foreach o, $(overlay-y), $(if $(call dtbo-base,$(o)), \
-	$(eval $(obj)/$(o): $(obj)/$(call dtbo-base,$(o))-paths.h)))
+$(foreach o, $(overlay-y), $(if $(call dtbo-base,$(o)), $(eval \
+	$(obj)/$(o): $(obj)/$(call dtbo-base,$(o))-paths.h \
+		     $(obj)/$(call dtbo-base,$(o)).dtb $(FDTOVERLAY))))
 
 # DT Build Rules
 # ---------------------------------------------------------------------------
@@ -108,8 +110,13 @@ cmd_dtc = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
 $(obj)/%.dtb: $(src)/%.dts FORCE
 	$(call if_changed_dep,dtc,$(dts-frags))
 
+quiet_cmd_dtco = DTCO    $@
+cmd_dtco = $(cmd_dtc) $(if $(DTBO_BASE_$(target-stem)), ; \
+	$(srctree)/scripts/check-dt-overlay $(FDTOVERLAY) $(FDTGET) \
+		$(obj)/$(DTBO_BASE_$(target-stem)).dtb $@)
+
 $(obj)/%.dtbo: $(src)/%.dtso $(DTC) FORCE
-	$(call if_changed_dep,dtc)
+	$(call if_changed_dep,dtco)
 
 quiet_cmd_dt_paths = DTPATH  $@
 cmd_dt_paths = $(srctree)/scripts/gen-dt-paths $(FDTGET) $< > $@ || \

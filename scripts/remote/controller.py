@@ -1,22 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-
 import struct
 import logging
 import sys
 import os
+from time import monotonic
 from threading import Thread
 from queue import Queue, Empty
 from .ratpfs import RatpFSServer
 from .messages import *
 from .ratp import RatpError
-
-try:
-    from time import monotonic
-except:
-    from .missing import monotonic
 
 
 def unpack(data):

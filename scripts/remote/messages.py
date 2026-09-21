@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-
 import struct
 import binascii
 
@@ -220,7 +218,6 @@ class BBPacketMdReturn(BBPacket):
     def _pack_payload(self):
         # header size is always 4 bytes (HH) and we have 10 bytes of fixed data (HLHH), so buffer offset is 14
         return struct.pack("!HLHH%ds" % len(self.data), 14, self.exit_code, len(self.data), 0, self.data)
-        return self.text
 
 
 class BBPacketMw(BBPacket):
@@ -319,7 +316,6 @@ class BBPacketI2cReadReturn(BBPacket):
     def _pack_payload(self):
         # header size is always 4 bytes (HH) and we have 10 bytes of fixed data (HLHH), so buffer offset is 14
         return struct.pack("!HLHH%ds" % len(self.data), 14, self.exit_code, len(self.data), 0, self.data)
-        return self.text
 
 
 class BBPacketI2cWrite(BBPacket):

@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-
 import crcmod
 import logging
 import struct
 from enum import Enum
-from time import sleep
+from time import monotonic, sleep
 
-try:
-    from time import monotonic
-except:
-    from .missing import monotonic
 
 csum_func = crcmod.predefined.mkCrcFun('xmodem')
 

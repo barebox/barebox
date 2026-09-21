@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import absolute_import, division, print_function
-
 import sys
 import os
 import argparse
@@ -15,14 +13,6 @@ try:
 except:
     print("error: No python-serial package found", file=sys.stderr)
     exit(2)
-
-
-def versiontuple(v):
-    return tuple(map(int, (v.split("."))))
-
-if versiontuple(serial.VERSION) < (2, 7):
-    print("warning: python-serial package is buggy in RFC2217 mode,",
-          "consider updating to at least 2.7", file=sys.stderr)
 
 from .ratp import SerialRatpConnection
 from .controller import Controller

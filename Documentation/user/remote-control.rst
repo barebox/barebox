@@ -30,7 +30,12 @@ Enabling remote control support
 
 To get remote control support barebox has to be compiled with
 CONFIG_RATP and CONFIG_CONSOLE_RATP enabled. Optionally CONFIG_FS_RATP
-can also be enabled.
+can also be enabled for file transfers and CONFIG_RATP_CMD_GPIO and
+CONFIG_RATP_CMD_I2C for the GPIO and I2C subcommands.
+
+barebox switches into RATP mode by itself when the shell reads the
+start of a RATP packet, so nothing has to be prepared on the target.
+When bbremote closes the connection, the console returns to normal.
 
 Running the bbremote tool
 -------------------------
@@ -65,6 +70,11 @@ string of the form: ``rfc2217://host:port``. The baudrate can be given
 with the ``--baudrate`` option or the ``BBREMOTE_BAUDRATE`` environment
 variable. For the rest of this document it is assumed that ``bbremote``
 has been configured using environment variables.
+
+Every invocation opens its own RATP connection and closes it again when
+it is done. The connection a killed bbremote leaves behind can make the
+next one fail while it resets the stale link, so scripts are better off
+passing ``--wait``, which retries until the target answers.
 
 running commands on the target
 ------------------------------
@@ -136,3 +146,66 @@ This can be mounted on barebox using the regular mount command using
   bbremote --export=somedir console
   mkdir -p /ratpfs; mount -t ratpfs none /ratpfs
   ls /ratpfs
+
+``--export`` works with ``run`` as well, which is the easier way to
+script a transfer:
+
+.. code-block:: sh
+
+  bbremote --export=somedir run "mount -t ratpfs none /ratpfs; cp /ratpfs/zImage /tmp/"
+
+The filesystem is served by the bbremote process, so the mount only
+lives as long as that invocation. The target may write to it as well,
+which is how files are copied back to the host.
+
+reading and writing memory
+--------------------------
+
+``md`` and ``mw`` read and write a file or device on the target without
+going through the shell. Both take the path, the offset within it and
+the size or the data to write, the latter as a hex string:
+
+.. code-block:: sh
+
+  bbremote md /dev/mem 0x100 16
+  00000000000000000000000000000000
+  bbremote mw /dev/mem 0x100 deadbeef
+  4 bytes written
+
+The offset is transferred in 16 bits, so only the first 64 KiB of a
+file are reachable this way.
+
+GPIOs and I2C
+-------------
+
+With CONFIG_RATP_CMD_GPIO and CONFIG_RATP_CMD_I2C barebox serves GPIO
+and I2C requests as well. The GPIO number is the one ``gpioinfo``
+prints, the direction is 0 for input and 1 for output:
+
+.. code-block:: sh
+
+  bbremote gpio-set-direction 499 1 1
+  bbremote gpio-get-value 499
+  1
+  bbremote gpio-set-value 499 0
+
+The I2C subcommands take bus, device address, register, flags and the
+size to read or the data to write. Bit 0 of the flags selects a 16 bit
+register address, bit 1 selects a plain master transfer without a
+register address:
+
+.. code-block:: sh
+
+  bbremote i2c-read 0 0x50 0x10 0 4
+  bbremote i2c-write 0 0x50 0x10 0 affe
+
+resetting the target
+--------------------
+
+.. code-block:: sh
+
+  bbremote reset
+
+This is the equivalent of the ``reset`` command: barebox shuts down
+cleanly and restarts. ``--force`` skips the shutdown and restarts right
+away.

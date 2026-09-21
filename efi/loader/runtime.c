@@ -72,8 +72,10 @@ efi_status_t efi_init_runtime_supported(void)
 		CHECK_RT_FLAG(QUERY_VARIABLE_INFO);
 
 	ret = efi_init_runtime_variable_supported();
-	if (ret != EFI_SUCCESS)
-		return ret;
+	if (ret != EFI_SUCCESS) {
+		pr_warn("no runtime variable store: %s\n", efi_strerror(ret));
+		rt_table->runtime_services_supported &= ~EFI_RT_SUPPORTED_SET_VARIABLE;
+	}
 
 	return efi_install_configuration_table(&efi_rt_properties_table_guid, rt_table);
 }

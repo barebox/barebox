@@ -17,16 +17,13 @@
 static const struct amba_id *
 amba_lookup(const struct amba_id *table, struct amba_device *dev)
 {
-	int ret = 0;
-
 	while (table->mask) {
-		ret = (dev->periphid & table->mask) == table->id;
-		if (ret)
-			break;
+		if ((dev->periphid & table->mask) == table->id)
+			return table;
 		table++;
 	}
 
-	return ret ? table : NULL;
+	return NULL;
 }
 
 static int amba_match(struct device *dev, const struct driver *drv)

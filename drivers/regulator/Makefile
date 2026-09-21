@@ -12,3 +12,4 @@ obj-$(CONFIG_REGULATOR_STM32_VREFBUF) += stm32-vrefbuf.o
 obj-$(CONFIG_REGULATOR_ARM_SCMI) += scmi-regulator.o
 obj-$(CONFIG_REGULATOR_RK808)   += rk808-regulator.o
 obj-$(CONFIG_REGULATOR_TPS65219) += tps65219-regulator.o
+obj-$(CONFIG_REGULATOR_PCA9450)	+= pca9450-regulator.o

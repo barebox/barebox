@@ -188,6 +188,10 @@ int virtqueue_add_sgs(struct virtqueue *vq, struct scatterlist *sgs[],
 		      unsigned int out_sgs, unsigned int in_sgs,
 		      void *data);
 
+int virtqueue_add(struct virtqueue *vq, struct scatterlist *sgs[],
+		  unsigned int total_sg, unsigned int out_sgs,
+		  unsigned int in_sgs, void *data);
+
 /**
  * virtqueue_add_outbuf - expose output buffers to other end
  * @vq: the struct virtqueue we're talking about.
@@ -204,7 +208,7 @@ static inline int virtqueue_add_outbuf(struct virtqueue *vq,
 				       struct scatterlist *sg, unsigned int num,
 				       void *data)
 {
-	return virtqueue_add_sgs(vq, &sg, num, 0, data);
+	return virtqueue_add(vq, &sg, num, 1, 0, data);
 }
 
 /**
@@ -223,7 +227,7 @@ static inline int virtqueue_add_inbuf(struct virtqueue *vq,
 				      struct scatterlist *sg, unsigned int num,
 				      void *data)
 {
-	return virtqueue_add_sgs(vq, &sg, 0, num, data);
+	return virtqueue_add(vq, &sg, num, 0, 1, data);
 }
 
 /**

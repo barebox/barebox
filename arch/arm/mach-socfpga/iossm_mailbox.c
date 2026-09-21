@@ -16,13 +16,16 @@
 #include <mach/socfpga/soc64-regs.h>
 #include <mach/socfpga/soc64-system-manager.h>
 
-#define ECC_INTSTATUS_SERR SOCFPGA_SYSMGR_ADDRESS + 0x9C
-#define ECC_INISTATUS_DERR SOCFPGA_SYSMGR_ADDRESS + 0xA0
-#define DDR_CSR_CLKGEN_LOCKED_IO96B0_MASK BIT(16)
-#define DDR_CSR_CLKGEN_LOCKED_IO96B1_MASK BIT(17)
+#define ECC_INTSTATUS_SERR				0x9C
+#define ECC_INTSTATUS_DERR				0xA0
 
-#define DDR_CSR_CLKGEN_LOCKED_IO96B_MASK(x)	(i == 0 ? DDR_CSR_CLKGEN_LOCKED_IO96B0_MASK : \
-							DDR_CSR_CLKGEN_LOCKED_IO96B1_MASK)
+#define DDR_CSR_CLKGEN_LOCKED_IO96B0_MASK		BIT(16)
+#define DDR_CSR_CLKGEN_LOCKED_IO96B1_MASK		BIT(17)
+#define DDR_CSR_CLKGEN_LOCKED_IO96B_MASK(i)		\
+	(i == 0 ?					\
+	 DDR_CSR_CLKGEN_LOCKED_IO96B0_MASK :		\
+	 DDR_CSR_CLKGEN_LOCKED_IO96B1_MASK)
+
 #define MAX_RETRY_COUNT 3
 #define NUM_CMD_RESPONSE_DATA 3
 
@@ -44,21 +47,49 @@
 #define IOSSM_MEM_INIT_STATUS_INTF0_OFFSET		0x260
 #define IOSSM_MEM_INIT_STATUS_INTF1_OFFSET		0x2E0
 
+#define IO96B0_PLL_A BIT(0)
+#define IO96B0_PLL_B BIT(1)
+#define IO96B1_PLL_A BIT(2)
+#define IO96B1_PLL_B BIT(3)
+
+static const unsigned int plls[] = {
+	IO96B0_PLL_A, IO96B0_PLL_B, IO96B1_PLL_A, IO96B1_PLL_B
+};
+
+#define IO96B_PLL_REG(pll) \
+	(pll & (IO96B0_PLL_A | IO96B1_PLL_A) ? ECC_INTSTATUS_SERR : ECC_INTSTATUS_DERR)
+#define IO96B_PLL_INSTANCE(pll) \
+	(pll & (IO96B0_PLL_A | IO96B0_PLL_B) ? 0 : 1)
+#define IO96B_PLL_LOCATION(pll) \
+	(pll & (IO96B0_PLL_A | IO96B1_PLL_A) ? "A" : "B")
+
 /* supported DDR type list */
 static const char *ddr_type_list[7] = {
 		"DDR4", "DDR5", "DDR5_RDIMM", "LPDDR4", "LPDDR5", "QDRIV", "UNKNOWN"
 };
 
-static int is_ddr_csr_clkgen_locked(u32 clkgen_mask, u8 num_port)
+static int io96b_pll_locked_poll_timeout(unsigned int pll)
 {
-	int ret;
+	u32 mask = DDR_CSR_CLKGEN_LOCKED_IO96B_MASK(IO96B_PLL_INSTANCE(pll));
+	void __iomem *reg = IOMEM(SOCFPGA_SYSMGR_ADDRESS) + IO96B_PLL_REG(pll);
 	u32 tmp;
 
-	ret = readl_poll_timeout(IOMEM(ECC_INTSTATUS_SERR),
-				 tmp, tmp & clkgen_mask, 10 * USEC_PER_SEC);
-	if (ret) {
-		pr_debug("%s: ddr csr clkgena locked is timeout\n", __func__);
-		return ret;
+	pr_debug("poll for locked PLL: instance %d, location %s\n",
+		 IO96B_PLL_INSTANCE(pll), IO96B_PLL_LOCATION(pll));
+	return readl_poll_timeout(reg, tmp, tmp & mask, 10 * USEC_PER_SEC);
+}
+
+static int is_ddr_csr_clkgen_locked(unsigned int selected_plls)
+{
+	int ret;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(plls); i++) {
+		if (!(selected_plls & plls[i]))
+			continue;
+		ret = io96b_pll_locked_poll_timeout(plls[i]);
+		if (ret)
+			return ret;
 	}
 
 	return 0;
@@ -285,18 +316,15 @@ void io96b_init_mem_cal(struct io96b_info *io96b_ctrl)
 	/* Initialize overall calibration status */
 	io96b_ctrl->overall_cal_status = false;
 
+	if (io96b_ctrl->ckgen_lock) {
+		ret = is_ddr_csr_clkgen_locked(io96b_ctrl->selected_plls);
+		if (ret)
+			hang();
+	}
+
 	/* Check initial calibration status for the assigned IO96B*/
 	count = 0;
 	for (i = 0; i < io96b_ctrl->num_instance; i++) {
-		if (io96b_ctrl->ckgen_lock) {
-			ret = is_ddr_csr_clkgen_locked(DDR_CSR_CLKGEN_LOCKED_IO96B_MASK(i),
-						       io96b_ctrl->num_port);
-			if (ret) {
-				pr_err("%s: ckgena_lock iossm IO96B_%d is not locked\n",
-				       __func__, i);
-				hang();
-			}
-		}
 		ret = io96b_cal_status(io96b_ctrl->io96b[i].io96b_csr_addr);
 		if (ret) {
 			io96b_ctrl->io96b[i].cal_status = false;

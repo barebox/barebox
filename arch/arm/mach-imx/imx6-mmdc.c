@@ -829,10 +829,10 @@ int mmdc_do_software_calibration(void)
 			mmdc_sw_read_calib(ch, s);
 	}
 
-	printk("ch0 total lower: %d upper: %d avg: 0x%02x\n",
+	printf("ch0 total lower: %d upper: %d avg: 0x%02x\n",
 			total_lower[0], total_upper[0],
 			(total_lower[0] + total_upper[0]) / 2);
-	printk("ch1 total lower: %d upper: %d avg: 0x%02x\n",
+	printf("ch1 total lower: %d upper: %d avg: 0x%02x\n",
 			total_lower[1], total_upper[1],
 			(total_lower[1] + total_upper[1]) / 2);
 
@@ -857,10 +857,10 @@ int mmdc_do_software_calibration(void)
 			mmdc_sw_write_calib(ch, s);
 	}
 
-	printk("ch0 total lower: %d upper: %d avg: 0x%02x\n",
+	printf("ch0 total lower: %d upper: %d avg: 0x%02x\n",
 			total_lower[0], total_upper[0],
 			(total_lower[0] + total_upper[0]) / 2);
-	printk("ch1 total lower: %d upper: %d avg: 0x%02x\n",
+	printf("ch1 total lower: %d upper: %d avg: 0x%02x\n",
 			total_lower[1], total_upper[1],
 			(total_lower[1] + total_upper[1]) / 2);
 

@@ -63,12 +63,11 @@ static void vring_unmap_one(struct virtqueue *vq,
 		       DMA_FROM_DEVICE : DMA_TO_DEVICE);
 }
 
-int virtqueue_add_sgs(struct virtqueue *vq, struct scatterlist *sgs[],
-		      unsigned int out_sgs, unsigned int in_sgs,
-		      void *data)
+int virtqueue_add(struct virtqueue *vq, struct scatterlist *sgs[],
+		  unsigned int total_sg, unsigned int out_sgs,
+		  unsigned int in_sgs, void *data)
 {
 	struct vring_desc *desc;
-	unsigned int total_sg = out_sgs + in_sgs;
 	struct scatterlist *sg;
 	unsigned int i, err_idx, n, avail, descs_used, uninitialized_var(prev);
 	int head;
@@ -165,6 +164,7 @@ int virtqueue_add_sgs(struct virtqueue *vq, struct scatterlist *sgs[],
 
 unmap_release:
 	err_idx = i;
+	i = head;
 
 	for (n = 0; n < total_sg; n++) {
 		if (i == err_idx)
@@ -174,7 +174,23 @@ unmap_release:
 	}
 
 	return -ENOMEM;
+}
 
+int virtqueue_add_sgs(struct virtqueue *vq, struct scatterlist *sgs[],
+		      unsigned int out_sgs, unsigned int in_sgs,
+		      void *data)
+{
+	unsigned int i, total_sg = 0;
+
+	/* Count them first. */
+	for (i = 0; i < out_sgs + in_sgs; i++) {
+		struct scatterlist *sg;
+
+		for (sg = sgs[i]; sg; sg = sg_next(sg))
+			total_sg++;
+	}
+
+	return virtqueue_add(vq, sgs, total_sg, out_sgs, in_sgs, data);
 }
 
 static bool virtqueue_kick_prepare(struct virtqueue *vq)

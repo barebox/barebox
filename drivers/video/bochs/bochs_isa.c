@@ -17,8 +17,9 @@ static int bochs_isa_detect(void)
 	outw(0, VBE_DISPI_IOPORT_INDEX);
 	ret = inw(VBE_DISPI_IOPORT_DATA);
 
+	/* Nothing to drive here is not an error, so don't report one */
 	if ((ret & 0xB0C0) != 0xB0C0)
-		return -ENODEV;
+		return 0;
 
 	dev = device_alloc("bochs-dispi", 0);
 

@@ -273,6 +273,30 @@ static int of_register_bootargs_fixup(void)
 }
 late_initcall(of_register_bootargs_fixup);
 
+/*
+ * A live tree without barebox,dtbname was built elsewhere, which is supported,
+ * but describes only the bindings barebox shares with Linux of its vintage.
+ */
+static int of_check_dtbname(void)
+{
+	struct device_node *root = of_get_root_node();
+	const char *dtbname;
+
+	/* A tree without any nodes is a placeholder, not a device tree */
+	if (!root || list_empty(&root->children))
+		return 0;
+
+	if (!of_property_read_string(root, "barebox,dtbname", &dtbname)) {
+		pr_debug("live device tree is %s\n", dtbname);
+		return 0;
+	}
+
+	pr_warn("live device tree was not built by barebox, bindings may disagree\n");
+
+	return 0;
+}
+late_initcall(of_check_dtbname);
+
 int of_fixup_reserved_memory(struct device_node *root, void *_res)
 {
 	struct resource *res = _res;

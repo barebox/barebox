@@ -6,7 +6,7 @@ import argparse
 import binascii
 import logging
 from queue import Queue
-from .ratp import RatpError
+from .ratp import RatpError, RatpState
 
 try:
     import serial
@@ -166,8 +166,16 @@ def handle_gpio_set_direction(args):
 
 def handle_reset(args):
     ctrl = get_controller(args)
-    ctrl.reset(args.force)
-    ctrl.close()
+    try:
+        ctrl.reset(args.force)
+        ctrl.close()
+    except RatpError as detail:
+        # barebox tears the link down while it restarts, which leaves the
+        # connection in any state but established. A request that was never
+        # acknowledged does not.
+        if ctrl.conn.status() == RatpState.established:
+            raise
+        logging.info("reset: %s", detail)
     return 0
 
 

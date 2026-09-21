@@ -1088,7 +1088,7 @@ static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
 	if (filesize)
 		inode->i_size = filesize;
 	else
-		inode->i_size = FILE_SIZE_STREAM;
+		inode->i_size_unknown = true;
 
 	d_add(dentry, inode);
 

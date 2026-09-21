@@ -28,7 +28,7 @@
 #include <magicvar.h>
 #include <asm-generic/memory_layout.h>
 
-#define BOOTM_OPTS_COMMON "sca:e:vo:fd"
+#define BOOTM_OPTS_COMMON "a:e:vo:fd"
 
 #ifdef CONFIG_BOOTM_INITRD
 #define BOOTM_OPTS BOOTM_OPTS_COMMON "L:r:"
@@ -55,13 +55,6 @@ static int do_bootm(int argc, char *argv[])
 
 	while ((opt = getopt(argc, argv, BOOTM_OPTS)) > 0) {
 		switch(opt) {
-		case 'c':
-			if (data.verify < BOOTM_VERIFY_HASH)
-				data.verify = BOOTM_VERIFY_HASH;
-			break;
-		case 's':
-			data.verify = BOOTM_VERIFY_SIGNATURE;
-			break;
 #ifdef CONFIG_BOOTM_INITRD
 		case 'L':
 			data.initrd_address = simple_strtoul(optarg, NULL, 0);
@@ -113,8 +106,6 @@ err_out:
 
 BAREBOX_CMD_HELP_START(bootm)
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT ("-c\t",  "hash check image integrity")
-BAREBOX_CMD_HELP_OPT ("-s\t",  "check signature of image")
 BAREBOX_CMD_HELP_OPT ("-d\t",  "dry run: check data, but do not run")
 BAREBOX_CMD_HELP_OPT ("-f\t",  "load images even if type is undetectable")
 #ifdef CONFIG_BOOTM_INITRD
@@ -134,7 +125,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(bootm)
 	.cmd		= do_bootm,
 	BAREBOX_CMD_DESC("boot an application image")
-	BAREBOX_CMD_OPTS("[-cdf"
+	BAREBOX_CMD_OPTS("[-df"
 #ifdef CONFIG_BOOTM_INITRD
 					  "rL"
 #endif

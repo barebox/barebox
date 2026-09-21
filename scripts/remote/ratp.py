@@ -583,7 +583,7 @@ class RatpConnection(object):
     def _common_i1(self, r):
         if r.c_so:
             self._r_sn = r.c_sn
-            self._rx_buf.append(chr(r.length))
+            self._rx_buf.append(bytes([r.length]))
         elif r.length and not r.c_syn and not r.c_rst and not r.c_fin:
             self._r_sn = r.c_sn
             self._rx_buf.append(r.payload)

@@ -191,7 +191,7 @@ def handle_console(args):
                 if data is None:  # shutdown
                     cons.join()
                     break
-                elif data == '\x10':  # CTRL-P
+                elif data == b'\x10':  # CTRL-P
                     ctrl.send_async_ping()
                 else:
                     ctrl.send_async_console(data)

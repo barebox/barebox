@@ -96,10 +96,30 @@ $(obj)/%.dtbo.S: $(obj)/%.dtbo $(srctree)/scripts/gen-dtbo-s FORCE
 $(obj)/%.dtb.z: $(obj)/%.dtb FORCE
 	$(call if_changed,$(suffix_y))
 
+# Device tree name
+# ---------------------------------------------------------------------------
+#
+# Stamp every device tree with the name barebox knows it by: the blob's path
+# relative to $(obj), but without the arch directory under dts/src, so that the
+# name is the one Linux uses too. Overlays are known by the tree they end up in.
+#
+#   arch/arm/dts/imx6q-foo.dts        -> imx6q-foo.dtb
+#   dts/src/arm/nxp/imx/imx6q-foo.dts -> nxp/imx/imx6q-foo.dtb
+dtbname-strip-arch = $(subst $(space),/,$(wordlist 2,$(words $(1)),$(1)))
+dtbname-path = $(patsubst $(obj)/%,%,$@)
+dtbname.dtb = $(if $(filter dts/src,$(obj)),\
+		$(call dtbname-strip-arch,$(subst /, ,$(dtbname-path))),$(dtbname-path))
+
+# indirection: the comma in the property name would split the $(if) arguments
+dtbname-stamp = / { barebox,dtbname = "$(dtbname$(suffix $@))"; };
+cmd_dtbname = $(if $(dtbname$(suffix $@)), \
+	echo '$(dtbname-stamp)' >> $(dtc-tmp) ;)
+
 dts-frags = $(CONFIG_EXTERNAL_DTS_FRAGMENTS)
 quiet_cmd_dtc = DTC     $@
 cmd_dtc = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
 	-D'$(subst -,_,$(*F))_dts=1' $(foreach f,$< $(2),-include '$(f)') /dev/null ; \
+	$(cmd_dtbname) \
 	$(objtree)/scripts/dtc/dtc -O dtb -o $@ -b 0 \
 		-i $(srctree)/arch/$(SRCARCH)/dts $(DTC_FLAGS) $(DTC_FLAGS$(suffix $@)) \
 		-i $(srctree)/dts/src/$(SRCARCH) \

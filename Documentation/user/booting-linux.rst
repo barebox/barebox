@@ -65,6 +65,8 @@ To use an initramfs, use the ``-r`` option or the
 
 FIT image configurations will be matched by comparing the ``compatible`` property
 inside the configuration node with the barebox live tree's ``/compatible``.
+If several configurations match equally well, the one named by the
+``/configurations`` node's ``default`` property is preferred.
 It's also possible to select a specific configuration explicitly:
 
 .. code-block:: sh

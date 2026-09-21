@@ -232,7 +232,12 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 		int rsp_len = 0;
 
 		ret = cmd->cmd(rbb, len, &rsp, &rsp_len);
-		if (!ret)
+		/*
+		 * The response carries the error code, so it needs to be
+		 * sent even if the command itself failed. Otherwise the
+		 * remote side would wait for a response until it times out.
+		 */
+		if (rsp)
 			ret = ratp_send(&ctx->ratp, rsp, rsp_len);
 
 		free(rsp);

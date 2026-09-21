@@ -76,9 +76,14 @@
 
 /* This is what we know about each Huffman coding group */
 struct group_data {
-	/* We have an extra slot at the end of limit[] for a sentinal value. */
-	int limit[MAX_HUFCODE_BITS+1];
-	int base[MAX_HUFCODE_BITS];
+	/*
+	 * Both arrays are indexed by code length, which starts at 1, and
+	 * limit[] has an extra slot at the end for a sentinel value.
+	 * Entry 0 is unused rather than biasing the pointers by -1, which
+	 * would be undefined behaviour.
+	 */
+	int limit[MAX_HUFCODE_BITS+2];
+	int base[MAX_HUFCODE_BITS+1];
 	int permute[MAX_SYMBOLS];
 	int minLen, maxLen;
 };
@@ -117,11 +122,11 @@ static unsigned int get_bits(struct bunzip_data *bd, char bits_wanted)
 	   (Loop getting one byte at a time to enforce endianness and avoid
 	   unaligned access.) */
 	while (bd->inbufBitCount < bits_wanted) {
+		if (bd->io_error)
+			return 0;
 		/* If we need to read more data from file into byte buffer, do
 		   so */
 		if (bd->inbufPos == bd->inbufCount) {
-			if (bd->io_error)
-				return 0;
 			bd->inbufCount = bd->fill(bd->inbuf, BZIP2_IOBUF_SIZE);
 			if (bd->inbufCount <= 0) {
 				bd->io_error = RETVAL_UNEXPECTED_INPUT_EOF;
@@ -292,12 +297,10 @@ static int get_next_block(struct bunzip_data *bd)
 		hufGroup = bd->groups+j;
 		hufGroup->minLen = minLen;
 		hufGroup->maxLen = maxLen;
-		/* Note that minLen can't be smaller than 1, so we
-		   adjust the base and limit array pointers so we're
-		   not always wasting the first entry.  We do this
-		   again when using them (during symbol decoding).*/
-		base = hufGroup->base-1;
-		limit = hufGroup->limit-1;
+		/* Note that minLen can't be smaller than 1, so entry 0
+		   of both arrays stays unused. */
+		base = hufGroup->base;
+		limit = hufGroup->limit;
 		/* Calculate permute[].  Concurrently, initialize
 		 * temp[] and limit[]. */
 		pp = 0;
@@ -358,8 +361,8 @@ static int get_next_block(struct bunzip_data *bd)
 			if (selector >= nSelectors)
 				return RETVAL_DATA_ERROR;
 			hufGroup = bd->groups+selectors[selector++];
-			base = hufGroup->base-1;
-			limit = hufGroup->limit-1;
+			base = hufGroup->base;
+			limit = hufGroup->limit;
 		}
 		/* Read next Huffman-coded symbol. */
 		/* Note: It is far cheaper to read maxLen bits and
@@ -374,7 +377,8 @@ static int get_next_block(struct bunzip_data *bd)
 		   equivalent to j = get_bits(bd, hufGroup->maxLen);
 		 */
 		while (bd->inbufBitCount < hufGroup->maxLen) {
-			if (bd->inbufPos == bd->inbufCount) {
+			if (bd->io_error ||
+			    bd->inbufPos == bd->inbufCount) {
 				j = get_bits(bd, hufGroup->maxLen);
 				goto got_huff_bits;
 			}
@@ -420,6 +424,17 @@ got_huff_bits:
 			   would use no symbols, but a run of length 0
 			   doesn't mean anything in this context).
 			   Thus space is saved. */
+
+			/* runPos doubles for every run symbol, so a
+			   long enough sequence of them shifts it out
+			   of range and makes t overflow into negative
+			   values, which pass the dbufSize check
+			   below.  A run cannot be longer than the
+			   output buffer, so refuse it before the
+			   shift. */
+			if (runPos > dbufSize || t > dbufSize)
+				return RETVAL_DATA_ERROR;
+
 			t += (runPos << nextSym);
 			/* +runPos if RUNA; +2*runPos if RUNB */
 

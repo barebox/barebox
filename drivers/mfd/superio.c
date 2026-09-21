@@ -75,6 +75,10 @@ void superio_chip_add(struct superio_chip *siochip)
 	siochip->dev = add_generic_device(chipname, DEVICE_ID_SINGLE, NULL,
 					  siochip->sioaddr, 2, IORESOURCE_IO,
 					  NULL);
+	if (!siochip->dev) {
+		free(chipname);
+		return;
+	}
 
 	siochip->dev->priv = siochip;
 

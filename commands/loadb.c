@@ -349,7 +349,6 @@ static int k_recv(void)
 	int done;
 	int length;
 	int n, last_n;
-	int z = 0;
 	int len_lo, len_hi;
 
 	/* initialize some protocol parameters */
@@ -529,7 +528,6 @@ packet_error:
 				done = 1;
 			}
 		}
-		++z;
 	}
 	return ((ulong) os_data_total);
 }

@@ -56,8 +56,10 @@ int bobject_set_param(bobject_t bobj, const char *name, const char *val);
 struct param_d *get_param_by_name(bobject_t bobj, const char *name);
 
 struct param_d *bobject_add_param(bobject_t bobj, const char *name,
-			      int (*set)(bobject_t bobj, struct param_d *p, const char *val),
-			      const char *(*get)(bobject_t, struct param_d *p),
+			      int (*set)(struct bobject *, struct param_d *p,
+					 const char *val),
+			      const char *(*get)(struct bobject *,
+						 struct param_d *p),
 			      unsigned long flags);
 
 struct param_d *bobject_add_param_string(bobject_t bobj, const char *name,
@@ -124,7 +126,7 @@ struct param_d *bobject_add_param_fixed(bobject_t bobj, const char *name,
 
 void param_remove(struct param_d *p);
 
-int bobject_param_set_generic(bobject_t bobj, struct param_d *p,
+int bobject_param_set_generic(struct bobject *bobj, struct param_d *p,
 			  const char *val);
 
 int param_int_set_scale(struct param_d *p, uint64_t max);
@@ -147,8 +149,11 @@ static inline struct param_d *get_param_by_name(bobject_t bobj,
 
 static inline struct param_d *bobject_add_param(bobject_t bobj,
 					    const char *name,
-					    int (*set)(bobject_t bobj, struct param_d *p, const char *val),
-					    const char *(*get)(bobject_t, struct param_d *p),
+					    int (*set)(struct bobject *,
+						       struct param_d *p,
+						       const char *val),
+					    const char *(*get)(struct bobject *,
+							       struct param_d *p),
 					    unsigned long flags)
 {
 	return NULL;
@@ -268,8 +273,8 @@ struct param_d *bobject_add_param_fixed(bobject_t bobj,
 
 static inline void param_remove(struct param_d *p) {}
 
-static inline int bobject_param_set_generic(bobject_t bobj, struct param_d *p,
-					const char *val)
+static inline int bobject_param_set_generic(struct bobject *bobj,
+					struct param_d *p, const char *val)
 {
 	return 0;
 }

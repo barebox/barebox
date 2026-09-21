@@ -46,7 +46,15 @@ archprepare: maketools
 
 PHONY += maketools
 
-export SANDBOX_LIBS BAREBOX_LDFLAGS
+# sandbox links via the compiler driver rather than $(LD) directly.
+# Pass --ld-path so that LLVM= and LD= overrides take effect for
+# sandbox linking, same as KBUILD_USERLDFLAGS in the Linux kernel.
+sandbox-ld-path := $(call try-run,\
+	$(CC) --ld-path=$(LD) -nostdlib -x c /dev/null -o "$$TMP",--ld-path=$(LD))
+
+BAREBOX_LDFLAGS += $(sandbox-ld-path) -no-pie
+BAREBOX_RELOC_LDFLAGS += $(sandbox-ld-path)
+export SANDBOX_LIBS BAREBOX_LDFLAGS BAREBOX_RELOC_LDFLAGS
 
 SANDBOX_LIBS-$(CONFIG_SDL) += $(shell $(CROSS_PKG_CONFIG) sdl2 --libs)
 SANDBOX_LIBS-$(CONFIG_GPIO_LIBFTDI1) += $(shell $(CROSS_PKG_CONFIG) libftdi1 --libs)
@@ -67,8 +75,17 @@ LIBARCH-y = $(UNAME_M)
 LIBARCH-$(CONFIG_SANDBOX_LINUX_I386) = i386
 
 KBUILD_CPPFLAGS += -fsanitize=fuzzer-no-link
+# OSS-Fuzz and compatible harnesses export LIB_FUZZING_ENGINE, which is
+# either a static archive providing LLVMFuzzerRunDriver or a compiler
+# driver flag like -fsanitize=fuzzer. Both work as link command line
+# tokens. Fall back to the clang runtime's fuzzer_no_main archive for
+# local builds.
+ifneq ($(LIB_FUZZING_ENGINE),)
+SANDBOX_LIBS-y += $(LIB_FUZZING_ENGINE)
+else
 SANDBOX_LIBS-y += -Wl,-Bstatic -L"$(CONFIG_CLANG_RUNTIME_DIR)" \
 		-lclang_rt.fuzzer_no_main-$(LIBARCH-y) -Wl,-Bdynamic
+endif
 endif
 
 ifeq ($(CONFIG_GCOV),y)
@@ -91,7 +108,8 @@ SANDBOX_PROPER2PBL_GLUE_SYMS := \
 	strsep_unescaped start_barebox linux_get_stickypage_path \
 	stickypage mem_malloc_init \
 	barebox_register_filedev barebox_register_dtb barebox_register_console \
-	barebox_errno barebox_loglevel list_fuzz_tests setup_external_fuzz
+	barebox_errno barebox_loglevel list_fuzz_tests setup_external_fuzz \
+	LLVMFuzzerTestOneInput
 
 OBJCOPYFLAGS_barebox.o := $(addprefix --keep-global-symbol=, $(SANDBOX_PROPER2PBL_GLUE_SYMS))
 

@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include <fs.h>
 #include <libfile.h>
+#include <fuzz.h>
 
 static void *uncompress_buf;
 static unsigned long uncompress_size;
@@ -217,3 +218,33 @@ close_fd:
 
 	return ret ?: size;
 }
+
+static long fuzz_uncompress_flush(void *buf, unsigned long len)
+{
+	return len;
+}
+
+static void fuzz_uncompress_error(char *x)
+{
+}
+
+static int fuzz_uncompress(const u8 *data, size_t size)
+{
+	void *buf;
+
+	/*
+	 * Some decompressors write to their input buffer, so hand them a
+	 * copy instead of the buffer owned by the fuzzing engine.
+	 */
+	buf = memdup(data, size);
+	if (!buf)
+		return 0;
+
+	uncompress(buf, size, NULL, fuzz_uncompress_flush,
+		   NULL, NULL, fuzz_uncompress_error);
+
+	free(buf);
+
+	return 0;
+}
+fuzz_test("uncompress", fuzz_uncompress);

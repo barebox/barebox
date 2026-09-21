@@ -416,7 +416,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 			for (i = 0; i <= 0x1e; ++i)
 				sum += buf8[i];
 
-			if (sum == buf8[0x1f])
+			if (sum == buf8[0x1f] ||
+			    fuzz_insecure_checksum_accepted(sum, buf8[0x1f]))
 				return filetype_kwbimage_v0;
 		} else if (buf8[0x8] == 1) {
 			if (buf8[0x1d] == 0 &&
@@ -443,10 +444,10 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (is_arm64_linux_bootimage(buf))
 		return is_dos_exe(buf8) ? filetype_arm64_efi_linux_image : filetype_arm64_linux_image;
+	if (is_barebox_riscv_head(buf))
+		return filetype_riscv_barebox_image;
 	if (is_riscv_linux_bootimage(buf))
 		return is_dos_exe(buf8) ? filetype_riscv_efi_linux_image : filetype_riscv_linux_image;
-	if (is_riscv_linux_bootimage(buf) && !memcmp(&buf[12], "barebox", 8))
-		return filetype_riscv_barebox_image;
 	if (bufsize > 0x206 && is_x86_linux_bootimage(buf))
 		return is_dos_exe(buf8) ? filetype_x86_efi_linux_image : filetype_x86_linux_image;
 

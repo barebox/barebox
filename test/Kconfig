@@ -26,6 +26,21 @@ config FUZZ_EXTERNAL
 
 if FUZZ
 
+config FUZZ_INSECURE_PARTIAL_DIGEST
+	bool "accept partial checksums and digests during fuzzing"
+	depends on INSECURE
+	help
+	  Coverage-guided fuzzing cannot realistically mutate its way
+	  through a CRC, hash or signature check, so fuzz tests stop at
+	  the integrity gate instead of reaching the parser behind it.
+
+	  Say y here to compare only the lowest bit of selected checksums
+	  and digests, which makes the protected code reachable while
+	  keeping the rejection path live for half of all inputs.
+
+	  This deliberately weakens integrity checks and must not be
+	  enabled outside fuzzing.
+
 config CMD_FUZZ
 	bool "fuzz command"
 	depends on COMMAND_SUPPORT

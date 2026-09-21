@@ -24,6 +24,7 @@
 #include <linux/err.h>
 #include <crypto.h>
 #include <crypto/internal.h>
+#include <fuzz.h>
 
 static LIST_HEAD(digests);
 
@@ -46,7 +47,8 @@ int digest_generic_verify(struct digest *d, const unsigned char *md)
 	if (ret)
 		goto end;
 
-	if (crypto_memneq(md, tmp, len))
+	if (crypto_memneq(md, tmp, len) &&
+	    !fuzz_insecure_digest_accepted(md, tmp, len))
 		ret = -EINVAL;
 	else
 		ret = 0;

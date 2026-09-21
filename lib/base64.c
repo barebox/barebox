@@ -89,7 +89,6 @@ EXPORT_SYMBOL(uuencode);
  */
 static int __decode_base64(char *p_dst, int dst_len, const char *src, bool url)
 {
-	const char *src_tail;
 	char *dst = p_dst;
 	int length = 0;
 	bool end_reached = false;
@@ -99,7 +98,6 @@ static int __decode_base64(char *p_dst, int dst_len, const char *src, bool url)
 		int count = 0;
 
 		/* Fetch up to four 6-bit values */
-		src_tail = src;
 		while (count < 4) {
 			const char *table_ptr;
 			int ch;
@@ -121,9 +119,7 @@ static int __decode_base64(char *p_dst, int dst_len, const char *src, bool url)
 					 * because we did fully decode
 					 * the string (to "ABC").
 					 */
-					if (count == 0) {
-						src_tail = src;
-					} else if (url) {
+					if (count != 0 && url) {
 						end_reached = true;
 						goto out;
 					}

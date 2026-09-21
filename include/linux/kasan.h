@@ -75,6 +75,43 @@ int kasan_is_poisoned_shadow(const void *address, size_t size);
 bool kasan_save_enable_multi_shot(void);
 void kasan_restore_multi_shot(bool enabled);
 
+#elif defined(CONFIG_ASAN) && IN_PROPER
+
+/*
+ * Sandbox links against the host's libasan, which exposes a manual
+ * poisoning interface. Dispatch to it, so allocators (i.e. TLSF) can
+ * poison redzones and freed memory with the same calls they use for
+ * KASAN. ASan tracks the poison reason itself, so the shadow value
+ * chosen by the caller is ignored.
+ */
+void __asan_poison_memory_region(void const volatile *addr, size_t size);
+void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
+void *__asan_region_is_poisoned(void *beg, size_t size);
+
+static inline void kasan_poison_shadow(const void *address, size_t size, u8 value)
+{
+	__asan_poison_memory_region(address, size);
+}
+
+static inline void kasan_unpoison_shadow(const void *address, size_t size)
+{
+	__asan_unpoison_memory_region(address, size);
+}
+
+static inline int kasan_is_poisoned_shadow(const void *address, size_t size)
+{
+	if (!size)
+		return -1;
+
+	return __asan_region_is_poisoned((void *)address, size) ? 1 : 0;
+}
+
+static inline void kasan_enable_current(void) {}
+static inline void kasan_disable_current(void) {}
+
+static inline void kasan_init(unsigned long membase, unsigned long memsize,
+		unsigned long shadow_base) {}
+
 #else /* CONFIG_KASAN */
 
 static inline void kasan_poison_shadow(const void *address, size_t size, u8 value) {}

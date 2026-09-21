@@ -171,6 +171,17 @@ static inline bool is_riscv_linux_bootimage(const void *header)
 	return le32_to_cpup(header + 56) == 0x05435352;
 }
 
+/*
+ * barebox RISC-V images share the layout, but not the magic numbers of
+ * Linux images: they carry "barebox" where Linux has "RISCV\0\0\0" and
+ * "RSCV" where Linux has RISCV_IMAGE_MAGIC2 ("RSC\x05").
+ */
+static inline bool is_barebox_riscv_head(const void *header)
+{
+	return le32_to_cpup(header + 56) == 0x56435352 &&
+	       !memcmp(header + 48, "barebox", 8);
+}
+
 static inline bool is_x86_linux_bootimage(const void *header)
 {
 	return get_unaligned_le32(header + 0x202) == 0x53726448;

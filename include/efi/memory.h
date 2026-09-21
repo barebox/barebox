@@ -71,7 +71,7 @@ static inline void resource_set_efi_memory_type_attrs(struct resource *res,
 						u64 attrs)
 {
 	res->type = type;
-	res->runtime = attrs & EFI_MEMORY_RUNTIME;
+	res->runtime = !!(attrs & EFI_MEMORY_RUNTIME);
 	res->attrs = attrs & ~EFI_MEMORY_RUNTIME;
 	res->flags |= IORESOURCE_TYPE_VALID;
 }

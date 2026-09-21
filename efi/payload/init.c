@@ -246,11 +246,12 @@ static int efi_postcore_init(void)
 	efi_set_variable_uint64_le("LoaderFeatures", &efi_systemd_vendor_guid,
 				   loader_features);
 
+	/*
+	 * The image may have been loaded from memory, e.g. QEMU's fw_cfg.
+	 * There is no partition to report then, but the rest should still run.
+	 */
 	loaded_image_dp = device_path_from_handle(efi_loaded_image->device_handle);
 	pr_debug("loaded-image: %pD\n", loaded_image_dp);
-
-	if (!loaded_image_dp)
-		return -EINVAL;
 
 	uuid = device_path_to_partuuid(loaded_image_dp);
 	if (uuid) {

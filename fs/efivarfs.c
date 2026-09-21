@@ -66,12 +66,17 @@ static int efivars_create(struct device *dev, const char *pathname,
 	if (pathname[0] == '/')
 		pathname++;
 
-	/* deny creating files with other vendor GUID than our own */
 	ret = efivarfs_parse_filename(pathname, &vendor, &name);
 	if (ret)
 		return -ENOENT;
 
-	if (efi_guidcmp(vendor, EFI_BAREBOX_VENDOR_GUID))
+	/*
+	 * As a payload, barebox is a guest on somebody else's firmware and
+	 * confines itself to its own vendor GUID when creating variables.
+	 * As the loader, the variable store is barebox' own and anything it
+	 * boots may already create variables under any GUID.
+	 */
+	if (!efi_is_loader() && efi_guidcmp(vendor, EFI_BAREBOX_VENDOR_GUID))
 		return -EPERM;
 
 	inode = xzalloc(sizeof(*inode));

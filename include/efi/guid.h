@@ -27,6 +27,7 @@ extern efi_guid_t efi_null_guid;
 extern efi_guid_t efi_global_variable_guid;
 extern const efi_guid_t efi_guid_image_security_database;
 extern efi_guid_t efi_block_io_protocol_guid;
+extern efi_guid_t efi_usb_io_protocol_guid;
 extern efi_guid_t efi_rng_protocol_guid;
 extern efi_guid_t efi_barebox_vendor_guid;
 extern efi_guid_t efi_file_store_vars_guid;
@@ -119,6 +120,9 @@ extern const efi_guid_t efi_debug_image_info_table_guid;
 
 #define EFI_USB_IO_PROTOCOL_GUID \
     EFI_GUID(0x2B2F68D6, 0x0CD2, 0x44cf, 0x8E, 0x8B, 0xBB, 0xA2, 0x0B, 0x1B, 0x5B, 0x75)
+
+#define EFI_USB2_HC_PROTOCOL_GUID \
+    EFI_GUID(0x3e745226, 0x9818, 0x45b6, 0xa2, 0xac, 0xd7, 0xcd, 0x0e, 0x8b, 0xa2, 0xbc)
 
 #define EFI_FILE_INFO_GUID \
     EFI_GUID(  0x9576e92, 0x6d3f, 0x11d2, 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b )

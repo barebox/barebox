@@ -250,9 +250,9 @@ static int efifs_truncate(struct file *f, loff_t size)
 	efi_status_t efiret;
 	struct efi_file_info *info;
 	size_t bufsize = 1024;
-	int ret;
+	int ret = 0;
 
-	info = xzalloc(1024);
+	info = xzalloc(bufsize);
 
 	efiret = ufile->entry->get_info(ufile->entry, &efi_file_info_id, &bufsize, info);
 	if (EFI_ERROR(efiret)) {
@@ -262,7 +262,7 @@ static int efifs_truncate(struct file *f, loff_t size)
 	}
 
 	if (size > info->FileSize)
-		return 0;
+		goto out;
 
 	info->FileSize = size;
 
@@ -270,11 +270,11 @@ static int efifs_truncate(struct file *f, loff_t size)
 	if (EFI_ERROR(efiret)) {
 		pr_err("%s: unable to SetInfo: %s\n", __func__, efi_strerror(efiret));
 		ret = -efi_errno(efiret);
-		goto out;
 	}
 
-	return 0;
 out:
+	free(info);
+
 	return ret;
 }
 

@@ -154,16 +154,8 @@ static int usb_set_configuration(struct usb_device *dev, int configuration)
 		return res;
 }
 
-/* The routine usb_set_maxpacket_ep() is extracted from the loop of routine
- * usb_set_maxpacket(), because the optimizer of GCC 4.x chokes on this routine
- * when it is inlined in 1 single routine. What happens is that the register r3
- * is used as loop-count 'i', but gets overwritten later on.
- * This is clearly a compiler bug, but it is easier to workaround it here than
- * to update the compiler (Occurs with at least several GCC 4.{1,2},x
- * CodeSourcery compilers like e.g. 2007q3, 2008q1, 2008q3 lite editions on ARM)
- */
-static void  noinline
-usb_set_maxpacket_ep(struct usb_device *dev, struct usb_endpoint_descriptor *ep)
+void usb_set_maxpacket_ep(struct usb_device *dev,
+			  struct usb_endpoint_descriptor *ep)
 {
 	int b;
 
@@ -625,8 +617,7 @@ int usb_new_device(struct usb_device *dev)
 			dev->descriptor->idVendor, "%04x");
 	dev_add_param_uint32_fixed(&dev->dev, "idProduct",
 			dev->descriptor->idProduct, "%04x");
-	list_add_tail(&dev->list, &usb_device_list);
-	dev_count++;
+	usb_add_device(dev);
 
 	err = 0;
 
@@ -642,6 +633,15 @@ void usb_free_device(struct usb_device *usbdev)
 	dma_free(usbdev->setup_packet);
 	free_device_res(&usbdev->dev);
 	free(usbdev);
+}
+
+void usb_add_device(struct usb_device *usbdev)
+{
+	if (!usbdev)
+		return;
+
+	list_add_tail(&usbdev->list, &usb_device_list);
+	dev_count++;
 }
 
 void usb_remove_device(struct usb_device *usbdev)

@@ -246,7 +246,7 @@ class BBPacketMw(BBPacket):
         # header size is always 4 bytes (HH) and we have 12 bytes of fixed data (HHHHHH), so buffer offset is 16
         path_size = len(self.path)
         data_size = len(self.data)
-        return struct.pack("!HHHHHH%ds%ds" % (path_size, path_size), 16, self.addr, path_size, 0, data_size, path_size, self.path, self.data)
+        return struct.pack("!HHHHHH%ds%ds" % (path_size, data_size), 16, self.addr, path_size, 0, data_size, path_size, self.path, self.data)
 
 
 class BBPacketMwReturn(BBPacket):

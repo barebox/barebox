@@ -3,6 +3,7 @@
 #define __AT91_AIC_H_
 
 #include <linux/compiler.h>
+#include <linux/types.h>
 
 void at91_aic_redir(void __iomem *sfr, u32 key);
 

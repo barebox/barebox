@@ -35,7 +35,7 @@
 		/* backend is fixed up by board code */
 		backend-type = "raw";
 		backend-storage-type = "direct";
-		backend-stridesize = <0x40>;
+		backend-stridesize = <0x1000>;
 
 		#include "bootstate.dtsi"
 	};

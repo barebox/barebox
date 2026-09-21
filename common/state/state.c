@@ -597,6 +597,43 @@ static char *cdev_to_devpath(struct cdev *cdev, off_t *offset, size_t *size)
 
 	return basprintf("/dev/%s", cdev->name);
 }
+
+/*
+ * state_check_stride_alignment - warn about strides that share a write unit
+ *
+ * The direct storage backend relies on a torn write only ever damaging the
+ * bucket being written. On block devices the smallest independently
+ * writable unit is a block, so both the stride and the backend offset must
+ * be block aligned for the redundant copies to be really independent.
+ * Byte-writable backends like EEPROMs or SRAM have no such constraint.
+ */
+static void state_check_stride_alignment(struct state *state, struct cdev *cdev,
+					 uint32_t stridesize)
+{
+	struct block_device *blk = cdev_get_block_device(cdev);
+	unsigned int blocksize;
+
+	if (!blk || !stridesize)
+		return;
+
+	blocksize = BLOCKSIZE(blk);
+
+	if (!IS_ALIGNED(stridesize, blocksize))
+		dev_warn(&state->dev,
+			 "backend-stridesize %u is not a multiple of the %u byte block size of %s, interrupted writes may corrupt more than one copy\n",
+			 stridesize, blocksize, cdev->name);
+
+	if (!IS_ALIGNED(cdev->offset, blocksize))
+		dev_warn(&state->dev,
+			 "backend offset %llu on %s is not aligned to its %u byte block size, interrupted writes may corrupt more than one copy\n",
+			 (unsigned long long)cdev->offset, cdev->name, blocksize);
+}
+#else
+static inline void state_check_stride_alignment(struct state *state,
+						struct cdev *cdev,
+						uint32_t stridesize)
+{
+}
 #endif
 
 static guid_t barebox_state_partition_guid = BAREBOX_STATE_PARTITION_GUID;
@@ -679,6 +716,8 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 	}
 
 	of_property_read_string(node, "backend-storage-type", &storage_type);
+
+	state_check_stride_alignment(state, cdev, stridesize);
 
 	state->keep_prev_content = of_property_read_bool(node,
 							"keep-previous-content");

@@ -39,97 +39,130 @@ static unsigned long clk_composite_recalc_rate(struct clk_hw *hw,
 	return parent_rate;
 }
 
-/*
- * Walk all parents of a (rate_hw + mux_hw) composite and pick the one
- * whose rate-clock can get closest to the requested rate. Returns the
- * chosen parent's index in *out_idx (or -1 to mean "stay on current parent"),
- * the parent's rate in *parent_rate, and the achievable output rate as the
- * function value.
- * Falls back to round_rate on the current parent when reparenting
- * isn't possible (no mux, or CLK_SET_RATE_NO_REPARENT).
- */
-static long clk_composite_pick_parent(struct clk_hw *hw, unsigned long rate,
-				      int *out_idx, unsigned long *parent_rate)
+static int clk_composite_determine_rate_for_parent(struct clk_hw *rate_hw,
+						   struct clk_rate_request *req,
+						   struct clk_hw *parent_hw)
+{
+	req->best_parent_hw = parent_hw;
+	req->best_parent_rate = clk_hw_get_rate(parent_hw);
+
+	return rate_hw->clk.ops->determine_rate(rate_hw, req);
+}
+
+static int clk_composite_determine_rate(struct clk_hw *hw,
+					struct clk_rate_request *req)
 {
 	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk_hw *rate_hw = composite->rate_hw;
 	struct clk_hw *mux_hw = composite->mux_hw;
-	unsigned long best_rate = 0, best_prate = 0, best_diff = ULONG_MAX;
-	int best_idx = -1;
-	int i;
+	struct clk_hw *parent;
+	unsigned long rate_diff;
+	unsigned long best_rate_diff = ULONG_MAX;
+	unsigned long best_rate = 0;
+	int i, ret;
 
-	if (!rate_hw || !rate_hw->clk.ops->round_rate)
-		return -ENOSYS;
+	/*
+	 * When both a mux and a rate clock are present, iterate all mux
+	 * parents and ask the rate clock for the best rate it can achieve
+	 * with each, then pick the (parent, rate) pair closest to the
+	 * request.  Trying only one of the two independently would miss
+	 * the globally optimal combination.
+	 *
+	 * Note: Linux uses __clk_hw_set_clk() so the rate clock inherits
+	 * the composite's flags (including CLK_SET_RATE_PARENT).  barebox
+	 * has no clk_core abstraction, so the rate clock retains its own
+	 * flags.  If the composite has CLK_SET_RATE_PARENT but the rate
+	 * clock doesn't, the rate clock won't negotiate parent rates in
+	 * clk_divider_bestdiv().  The best (parent, divider) pair is still
+	 * found using each parent's current rate, which is the common case.
+	 */
+	if (rate_hw && rate_hw->clk.ops->determine_rate &&
+	    mux_hw && mux_hw->clk.ops->set_parent) {
+		req->best_parent_hw = NULL;
 
-	if (!mux_hw || (hw->clk.flags & CLK_SET_RATE_NO_REPARENT)) {
-		unsigned long prate = *parent_rate;
-		long achievable;
+		if (hw->clk.flags & CLK_SET_RATE_NO_REPARENT) {
+			struct clk_rate_request tmp_req;
 
-		achievable = rate_hw->clk.ops->round_rate(rate_hw, rate, &prate);
-		if (achievable < 0)
-			return achievable;
+			parent = clk_hw_get_parent(hw);
 
-		*out_idx = -1;
-		*parent_rate = prate;
-		return achievable;
-	}
+			clk_hw_forward_rate_request(hw, req, parent,
+						    &tmp_req, req->rate);
+			ret = clk_composite_determine_rate_for_parent(
+					rate_hw, &tmp_req, parent);
+			if (ret)
+				return ret;
 
-	for (i = 0; i < hw->clk.num_parents; i++) {
-		struct clk_hw *p_hw = clk_hw_get_parent_by_index(hw, i);
-		unsigned long prate, diff;
-		long achievable;
+			req->rate = tmp_req.rate;
+			req->best_parent_hw = tmp_req.best_parent_hw;
+			req->best_parent_rate = tmp_req.best_parent_rate;
 
-		if (!p_hw)
-			continue;
-
-		prate = clk_hw_get_rate(p_hw);
-		achievable = rate_hw->clk.ops->round_rate(rate_hw, rate, &prate);
-		if (achievable < 0)
-			continue;
-
-		diff = (achievable >= rate) ? achievable - rate
-					    : rate - achievable;
-
-		if (diff < best_diff) {
-			best_idx = i;
-			best_prate = prate;
-			best_rate = achievable;
-			best_diff = diff;
-			if (!diff)
-				break;
+			return 0;
 		}
+
+		for (i = 0; i < hw->clk.num_parents; i++) {
+			struct clk_rate_request tmp_req;
+
+			parent = clk_hw_get_parent_by_index(hw, i);
+			if (!parent)
+				continue;
+
+			clk_hw_forward_rate_request(hw, req, parent,
+						    &tmp_req, req->rate);
+			ret = clk_composite_determine_rate_for_parent(
+					rate_hw, &tmp_req, parent);
+			if (ret)
+				continue;
+
+			if (req->rate >= tmp_req.rate)
+				rate_diff = req->rate - tmp_req.rate;
+			else
+				rate_diff = tmp_req.rate - req->rate;
+
+			if (!rate_diff || !req->best_parent_hw
+				       || best_rate_diff > rate_diff) {
+				req->best_parent_hw = parent;
+				req->best_parent_rate =
+					tmp_req.best_parent_rate;
+				best_rate_diff = rate_diff;
+				best_rate = tmp_req.rate;
+			}
+
+			if (!rate_diff)
+				return 0;
+		}
+
+		req->rate = best_rate;
+		return 0;
 	}
 
-	if (best_idx < 0)
-		return -EINVAL;
+	/*
+	 * Otherwise delegate directly to the sub-clock ops, passing
+	 * through the same req.  This works because composite sub-clocks
+	 * share the composite's parent topology, so req->best_parent_hw
+	 * and req->best_parent_rate remain valid for the sub-clock.
+	 */
+	if (rate_hw && rate_hw->clk.ops->determine_rate)
+		return rate_hw->clk.ops->determine_rate(rate_hw, req);
 
-	*out_idx = best_idx;
-	*parent_rate = best_prate;
-	return best_rate;
-}
+	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) && mux_hw &&
+	    mux_hw->clk.ops->determine_rate)
+		return mux_hw->clk.ops->determine_rate(mux_hw, req);
 
-static long clk_composite_round_rate(struct clk_hw *hw, unsigned long rate,
-				  unsigned long *prate)
-{
-	struct clk_composite *composite = to_clk_composite(hw);
-	struct clk_hw *mux_hw = composite->mux_hw;
-	int idx;
-	long achievable;
+	/*
+	 * Nothing here can influence the rate.  Linux builds its clk_ops at
+	 * registration time and just leaves out determine_rate in this case,
+	 * so clk_core_round_rate_nolock() forwards the request to the parent
+	 * for CLK_SET_RATE_PARENT and otherwise answers with the clock's own
+	 * rate.  barebox' clk_ops are static, so do both here.  Reporting the
+	 * parent rate instead would be wrong for a composite whose rate clock
+	 * divides or multiplies it.
+	 */
+	if (hw->clk.flags & CLK_SET_RATE_PARENT)
+		return clk_hw_determine_rate_no_reparent(hw, req);
 
-	achievable = clk_composite_pick_parent(hw, rate, &idx, prate);
-	if (achievable >= 0)
-		return achievable;
+	req->rate = clk_hw_get_rate(hw);
 
-	if (achievable != -ENOSYS)
-		return achievable;
-
-	/* No rate_hw — fall back to mux's round_rate if available. */
-	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) &&
-	    mux_hw &&
-	    mux_hw->clk.ops->round_rate)
-		return mux_hw->clk.ops->round_rate(mux_hw, rate, prate);
-
-	return *prate;
+	return 0;
 }
 
 static int clk_composite_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -137,33 +170,15 @@ static int clk_composite_set_rate(struct clk_hw *hw, unsigned long rate,
 {
 	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk_hw *rate_hw = composite->rate_hw;
-	struct clk_hw *mux_hw = composite->mux_hw;
-	int idx = -1;
-	long achievable;
-
-	achievable = clk_composite_pick_parent(hw, rate, &idx, &parent_rate);
-	if (achievable >= 0) {
-		if (idx >= 0 && mux_hw && mux_hw->clk.ops->set_parent) {
-			int ret = mux_hw->clk.ops->set_parent(mux_hw, idx);
-			if (ret)
-				return ret;
-		}
-		return rate_hw->clk.ops->set_rate(rate_hw, rate, parent_rate);
-	}
-
-	if (achievable != -ENOSYS)
-		return achievable;
 
 	/*
-	 * No rate_hw. Fall back to letting the mux clk reparent itself,
-	 * preserving the existing enable-count handoff.
+	 * Linux assembles its clk_composite_ops at registration time and
+	 * only installs set_rate when the rate clock has one. barebox'
+	 * clk_composite_ops is static, so check here instead: a rate clock
+	 * without set_rate has nothing to program.
 	 */
-	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) &&
-	    mux_hw &&
-	    mux_hw->clk.ops->set_rate) {
-		mux_hw->clk.enable_count = hw->clk.enable_count;
-		return mux_hw->clk.ops->set_rate(mux_hw, rate, parent_rate);
-	}
+	if (rate_hw && rate_hw->clk.ops->set_rate)
+		return rate_hw->clk.ops->set_rate(rate_hw, rate, parent_rate);
 
 	return 0;
 }
@@ -197,7 +212,7 @@ static struct clk_ops clk_composite_ops = {
 	.get_parent = clk_composite_get_parent,
 	.set_parent = clk_composite_set_parent,
 	.recalc_rate = clk_composite_recalc_rate,
-	.round_rate = clk_composite_round_rate,
+	.determine_rate = clk_composite_determine_rate,
 	.set_rate = clk_composite_set_rate,
 	.is_enabled = clk_composite_is_enabled,
 	.enable = clk_composite_enable,
@@ -239,7 +254,7 @@ struct clk *clk_register_composite(const char *name,
 
 err:
 	kfree(composite);
-	return 0;
+	return ERR_PTR(ret);
 }
 
 struct clk_hw *clk_hw_register_composite(struct device *dev,

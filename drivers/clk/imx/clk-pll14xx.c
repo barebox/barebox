@@ -15,6 +15,7 @@
 #include <clock.h>
 #include <soc/imx8m/clk-early.h>
 #include <linux/math64.h>
+#include <linux/clk-provider.h>
 
 #include "clk.h"
 
@@ -95,20 +96,24 @@ static const struct imx_pll14xx_rate_table *imx_get_pll_settings(
 	return NULL;
 }
 
-static long clk_pll14xx_round_rate(struct clk_hw *hw, unsigned long rate,
-			unsigned long *prate)
+static int clk_pll14xx_determine_rate(struct clk_hw *hw,
+				      struct clk_rate_request *req)
 {
 	struct clk_pll14xx *pll = to_clk_pll14xx(hw);
 	const struct imx_pll14xx_rate_table *rate_table = pll->rate_table;
 	int i;
 
 	/* Assumming rate_table is in descending order */
-	for (i = 0; i < pll->rate_count; i++)
-		if (rate >= rate_table[i].rate)
-			return rate_table[i].rate;
+	for (i = 0; i < pll->rate_count; i++) {
+		if (req->rate >= rate_table[i].rate) {
+			req->rate = rate_table[i].rate;
+			return 0;
+		}
+	}
 
 	/* return minimum supported value */
-	return rate_table[i - 1].rate;
+	req->rate = rate_table[i - 1].rate;
+	return 0;
 }
 
 static unsigned long clk_pll1416x_recalc_rate(struct clk_hw *hw,
@@ -377,7 +382,7 @@ static const struct clk_ops clk_pll1416x_ops = {
 	.disable	= clk_pll14xx_unprepare,
 	.is_enabled	= clk_pll14xx_is_prepared,
 	.recalc_rate	= clk_pll1416x_recalc_rate,
-	.round_rate	= clk_pll14xx_round_rate,
+	.determine_rate	= clk_pll14xx_determine_rate,
 	.set_rate	= clk_pll1416x_set_rate,
 };
 
@@ -390,7 +395,7 @@ static const struct clk_ops clk_pll1443x_ops = {
 	.disable	= clk_pll14xx_unprepare,
 	.is_enabled	= clk_pll14xx_is_prepared,
 	.recalc_rate	= clk_pll1443x_recalc_rate,
-	.round_rate	= clk_pll14xx_round_rate,
+	.determine_rate	= clk_pll14xx_determine_rate,
 	.set_rate	= clk_pll1443x_set_rate,
 };
 

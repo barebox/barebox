@@ -30,6 +30,7 @@ struct device;
  */
 struct clk;
 struct clk_hw;
+struct clk_rate_request;
 
 /**
  * struct clk_bulk_data - Data used for bulk clk operations.
@@ -111,7 +112,7 @@ unsigned long clk_hw_get_rate(struct clk_hw *hw);
  * Returns rounded clock rate in Hz, or negative errno.
  */
 long clk_round_rate(struct clk *clk, unsigned long rate);
-long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate);
+unsigned long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate);
 /**
  * clk_set_rate - set the clock rate for a clock source
  * @clk: clock source
@@ -289,9 +290,9 @@ static inline void clk_put(struct clk *clk)
  *		calculated rate. Optional, but recommended - if this op is not
  *		set then clock rate will be initialized to 0.
  *
- * @round_rate:	Given a target rate as input, returns the closest rate actually
- *		supported by the clock. The parent rate is an input/output
- *		parameter.
+ * @determine_rate: Given a target rate, determines the closest rate actually
+ *		supported by the clock. The rate, best parent rate and best
+ *		parent hw are stored in the clk_rate_request structure.
  *
  * @set_parent:	Change the input source of this clock; for clocks with multiple
  *		possible parents specify a new parent by passing in the index
@@ -309,7 +310,7 @@ static inline void clk_put(struct clk *clk)
  *
  * @set_rate:	Change the rate of this clock. The requested rate is specified
  *		by the second argument, which should typically be the return
- *		of .round_rate call.  The third argument gives the parent rate
+ *		of .determine_rate call.  The third argument gives the parent rate
  *		which is likely helpful for most .set_rate implementation.
  *		Returns 0 on success, -EERROR otherwise.
  *
@@ -340,8 +341,8 @@ struct clk_ops {
 	};
 	unsigned long	(*recalc_rate)(struct clk_hw *hw,
 					unsigned long parent_rate);
-	long		(*round_rate)(struct clk_hw *hw, unsigned long,
-					unsigned long *);
+	int		(*determine_rate)(struct clk_hw *hw,
+					  struct clk_rate_request *req);
 	int		(*set_parent)(struct clk_hw *hw, u8 index);
 	int		(*get_parent)(struct clk_hw *hw);
 	int		(*set_rate)(struct clk_hw *hw, unsigned long,
@@ -467,10 +468,12 @@ struct clk_divider {
 #define CLK_DIVIDER_POWER_OF_TWO	(1 << 1)
 #define CLK_DIVIDER_ALLOW_ZERO		(1 << 2)
 #define CLK_DIVIDER_HIWORD_MASK		(1 << 3)
+#define CLK_DIVIDER_ROUND_CLOSEST	(1 << 4)
 #define CLK_DIVIDER_READ_ONLY		(1 << 5)
 
 #define CLK_MUX_HIWORD_MASK		(1 << 2)
 #define CLK_MUX_READ_ONLY		(1 << 3) /* mux can't be changed */
+#define CLK_MUX_ROUND_CLOSEST		(1 << 4)
 
 extern const struct clk_ops clk_divider_ops;
 extern const struct clk_ops clk_divider_ro_ops;
@@ -489,10 +492,6 @@ unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
 		unsigned int val,
 		const struct clk_div_table *table,
 		unsigned long flags, unsigned long width);
-
-long divider_round_rate(struct clk *clk, unsigned long rate,
-			unsigned long *prate, const struct clk_div_table *table,
-			u8 width, unsigned long flags);
 
 int divider_get_val(unsigned long rate, unsigned long parent_rate,
 		    const struct clk_div_table *table, u8 width,
@@ -698,8 +697,10 @@ int clk_mux_val_to_index(struct clk_hw *hw, u32 *table, unsigned int flags,
 			 unsigned int val);
 unsigned int clk_mux_index_to_val(u32 *table, unsigned int flags, u8 index);
 
-long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
-			unsigned long *prate);
+int __clk_mux_determine_rate(struct clk_hw *hw,
+			     struct clk_rate_request *req);
+int __clk_mux_determine_rate_closest(struct clk_hw *hw,
+				     struct clk_rate_request *req);
 
 /**
  * struct clk_gate - gating clock
@@ -775,10 +776,6 @@ int clk_is_enabled(struct clk *clk);
 int clk_hw_is_enabled(struct clk_hw *hw);
 
 int clk_is_enabled_always(struct clk_hw *hw);
-long clk_parent_round_rate(struct clk_hw *hw, unsigned long rate,
-				unsigned long *prate);
-int clk_parent_set_rate(struct clk_hw *hw, unsigned long rate,
-				unsigned long parent_rate);
 
 int bclk_register(struct clk *clk);
 struct clk *clk_register(struct device *dev, struct clk_hw *hw);

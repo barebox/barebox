@@ -154,6 +154,10 @@ def handle_gpio_set_value(args):
 def handle_gpio_set_direction(args):
     ctrl = get_controller(args)
     res = ctrl.gpio_set_direction(args.gpio, args.direction, args.value)
+    if res != 0:
+        print("gpio-set-direction: %u: %s" % (args.gpio, strerror(res)),
+              file=sys.stderr)
+        res = 1
     ctrl.close()
     return res
 

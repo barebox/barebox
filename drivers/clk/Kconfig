@@ -43,8 +43,8 @@ config CLK_SOCFPGA
 if COMMON_CLK
 
 config COMMON_CLK_STM32F
-	bool "STM32F4 and STM32F7 clock driver" if COMPILE_TEST
-	depends on ARCH_STM32
+	bool "STM32F4 and STM32F7 clock driver"
+	depends on ARCH_STM32 || COMPILE_TEST
 	help
 	  Support for stm32f4 and stm32f7 SoC families clocks
 

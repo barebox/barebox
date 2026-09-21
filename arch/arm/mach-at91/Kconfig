@@ -44,7 +44,7 @@ config HAVE_AT91_I2S_MUX_CLK
 	bool
 
 config HAVE_AT91_SAM9X60_PLL
-	bool
+	bool "SAM9X60 PLL support" if COMPILE_TEST
 
 config HAVE_AT91_SDRAMC
 	bool

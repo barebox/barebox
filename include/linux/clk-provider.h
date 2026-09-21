@@ -6,6 +6,8 @@
 #ifndef __LINUX_CLK_PROVIDER_H
 #define __LINUX_CLK_PROVIDER_H
 
+#ifdef CONFIG_COMMON_CLK
+
 #include <linux/clk.h>
 
 struct clk_div_table;
@@ -223,5 +225,7 @@ int divider_ro_determine_rate(struct clk_hw *hw, struct clk_rate_request *req,
 						      &clk_fixed_factor_ops, \
 						      _flags),		\
 	}
+
+#endif
 
 #endif

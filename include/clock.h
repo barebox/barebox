@@ -53,10 +53,20 @@ static inline int is_timeout_interruptible(uint64_t start_ns,
 
 void arm_architected_timer_udelay(unsigned long us);
 
+extern struct clocksource *current_clock;
+
+/* implemented in assembly, so usable before relocation and stack setup */
+bool clocksource_registered(void);
+
 void ndelay(unsigned long nsecs);
 void udelay(unsigned long usecs);
 void mdelay(unsigned long msecs);
 void mdelay_non_interruptible(unsigned long msecs);
+
+/* the clocksource based implementations the weak functions above alias */
+void clocksource_current_udelay(unsigned long usecs);
+uint64_t clocksource_current_get_time_ns(void);
+int clocksource_current_is_timeout(uint64_t start_ns, uint64_t time_offset_ns);
 
 #if IN_PROPER
 void clocksource_srand(void);

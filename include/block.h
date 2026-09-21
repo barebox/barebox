@@ -97,6 +97,7 @@ extern struct list_head block_device_list;
 
 int blockdevice_register(struct block_device *blk);
 int blockdevice_unregister(struct block_device *blk);
+int blockdevice_unregister_removed(struct block_device *blk);
 
 int block_read(struct block_device *blk, void *buf, sector_t block, blkcnt_t num_blocks);
 int block_write(struct block_device *blk, void *buf, sector_t block, blkcnt_t num_blocks);

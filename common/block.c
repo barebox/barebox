@@ -7,6 +7,7 @@
 #include <common.h>
 #include <block.h>
 #include <disks.h>
+#include <fs.h>
 #include <malloc.h>
 #include <linux/err.h>
 #include <linux/list.h>
@@ -519,6 +520,15 @@ int blockdevice_register(struct block_device *blk)
 int blockdevice_unregister(struct block_device *blk)
 {
 	struct chunk *chunk, *tmp;
+	int ret;
+
+	/*
+	 * Do this first: once the cdev is gone there is no way for the
+	 * caller to retry, so give up while everything is still intact.
+	 */
+	ret = devfs_remove(&blk->cdev);
+	if (ret)
+		return ret;
 
 	writebuffer_flush(blk);
 
@@ -532,10 +542,34 @@ int blockdevice_unregister(struct block_device *blk)
 		free(chunk);
 	}
 
-	devfs_remove(&blk->cdev);
 	list_del(&blk->list);
 
 	return 0;
+}
+
+/**
+ * blockdevice_unregister_removed - remove a block device whose medium is gone
+ * @blk: the block device
+ *
+ * For media that can disappear while barebox is running: a USB stick that
+ * has been unplugged, an SD card that has been ejected. The filesystems
+ * mounted from the device or from one of its partitions cannot be used
+ * anymore, and would only keep the device from going away, so drop them.
+ *
+ * Use blockdevice_unregister() instead when the device is still there and
+ * the removal is not forced upon us. That one leaves the mounts alone and
+ * fails when the device is in use.
+ *
+ * Return: 0 when the device has been removed, a negative error code when
+ *         something still holds it open. In the latter case the caller
+ *         must not free the block device: the cdevs are still registered
+ *         and refer to it.
+ */
+int blockdevice_unregister_removed(struct block_device *blk)
+{
+	cdev_umount_all(&blk->cdev);
+
+	return blockdevice_unregister(blk);
 }
 
 int block_read(struct block_device *blk, void *buf, sector_t block, blkcnt_t num_blocks)

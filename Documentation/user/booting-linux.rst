@@ -171,6 +171,16 @@ This entry can be booted with ``boot mmc``. It can also be made the default by
 setting the :ref:`global.boot.default <magicvar_global_boot_default>` variable
 to ``mmc`` and then calling ``boot`` without arguments.
 
+A boot target of the form ``SCRIPT@ARGUMENT`` runs the boot entry
+``SCRIPT`` and passes ``ARGUMENT`` to it as first argument, so ``boot
+mmc@1`` runs ``/env/boot/mmc 1``. ``ARGUMENT`` must start with a slash,
+dash, underscore, dot or alphanumeric character and is passed to the
+script as is, so paths and URLs work as arguments. Device names,
+partitions and paths are resolved before boot scripts are looked up, and
+a script or directory that exists under the literal name takes
+precedence, so neither the ``DEVICE.PARTITION`` boot targets described
+below nor an existing path is mistaken for a script with an argument.
+
 Especially for development, it can be useful to override only parts of
 the images used in a boot. To do so, set ``CONFIG_BOOT_OVERRIDE=y``
 and configure the overrides as arguments to the ``boot`` command:

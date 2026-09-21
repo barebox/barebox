@@ -686,6 +686,9 @@ class RatpConnection(object):
         self._write(syn)
         self._state = RatpState.syn_sent
         self.wait(deadline)
+        if self._state != RatpState.established:
+            raise RatpError("connection timed out in state %s" %
+                            self._state.value)
 
     def send_one(self, data, eor=True, timeout=1.0):
         deadline = monotonic() + timeout

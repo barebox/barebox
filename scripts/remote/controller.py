@@ -132,6 +132,7 @@ class Controller(Thread):
                 return bbpkt
             else:
                 self._handle_packet(bbpkt)
+        raise RatpError("timeout waiting for %s" % bbtype.__name__)
 
     def export(self, path):
         self.fsserver = RatpFSServer(path)
@@ -140,11 +141,8 @@ class Controller(Thread):
         self._send(BBPacketPing())
         r = self._expect(BBPacketPong)
         logging.info("Ping: %r", r)
-        if not r:
-            return 1
-        else:
-            print("pong")
-            return 0
+        print("pong")
+        return 0
 
     def command(self, cmd):
         self._send(BBPacketCommand(cmd=cmd.encode()))

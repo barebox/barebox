@@ -77,11 +77,21 @@ def handle_getenv(args):
     return res
 
 
+def strerror(code):
+    """turn the errno of a failed remote command into a message"""
+    if code >= 0x80000000:
+        code -= 0x100000000
+    return os.strerror(abs(code))
+
+
 def handle_md(args):
     ctrl = get_controller(args)
     (res,data) = ctrl.md(args.path, args.address, args.size)
     if res == 0:
         print(binascii.hexlify(data).decode())
+    else:
+        print("md: %s: %s" % (args.path, strerror(res)), file=sys.stderr)
+        res = 1
     ctrl.close()
     return res
 
@@ -94,6 +104,9 @@ def handle_mw(args):
     (res,written) = ctrl.mw(args.path, args.address, binascii.unhexlify(data))
     if res == 0:
         print("%i bytes written" % written)
+    else:
+        print("mw: %s: %s" % (args.path, strerror(res)), file=sys.stderr)
+        res = 1
     ctrl.close()
     return res
 
@@ -102,7 +115,10 @@ def handle_i2c_read(args):
     ctrl = get_controller(args)
     (res,data) = ctrl.i2c_read(args.bus, args.address, args.reg, args.flags, args.size)
     if res == 0:
-        print(binascii.hexlify(data))
+        print(binascii.hexlify(data).decode())
+    else:
+        print("i2c-read: %s" % strerror(res), file=sys.stderr)
+        res = 1
     ctrl.close()
     return res
 
@@ -115,6 +131,9 @@ def handle_i2c_write(args):
     (res,written) = ctrl.i2c_write(args.bus, args.address, args.reg, args.flags, binascii.unhexlify(data))
     if res == 0:
         print("%i bytes written" % written)
+    else:
+        print("i2c-write: %s" % strerror(res), file=sys.stderr)
+        res = 1
     ctrl.close()
     return res
 

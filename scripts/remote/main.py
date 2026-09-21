@@ -82,6 +82,18 @@ def strerror(code):
     return os.strerror(abs(code))
 
 
+def hexdata(cmd, data):
+    """turn a hex string argument into the bytes to send"""
+    if len(data) % 2:
+        data = "0" + data
+    data = binascii.unhexlify(data)
+    if len(data) > 0xffff:
+        print("%s: %u bytes of data do not fit into the protocol's 16 bit"
+              % (cmd, len(data)), file=sys.stderr)
+        return None
+    return data
+
+
 def handle_md(args):
     ctrl = get_controller(args)
     (res,data) = ctrl.md(args.path, args.address, args.size)
@@ -95,11 +107,11 @@ def handle_md(args):
 
 
 def handle_mw(args):
+    data = hexdata("mw", args.data)
+    if data is None:
+        return 1
     ctrl = get_controller(args)
-    data=args.data
-    if ((len(data) % 2) != 0):
-        data="0"+data
-    (res,written) = ctrl.mw(args.path, args.address, binascii.unhexlify(data))
+    (res,written) = ctrl.mw(args.path, args.address, data)
     if res == 0:
         print("%i bytes written" % written)
     else:
@@ -122,11 +134,11 @@ def handle_i2c_read(args):
 
 
 def handle_i2c_write(args):
+    data = hexdata("i2c-write", args.data)
+    if data is None:
+        return 1
     ctrl = get_controller(args)
-    data=args.data
-    if ((len(data) % 2) != 0):
-        data="0"+data
-    (res,written) = ctrl.i2c_write(args.bus, args.address, args.reg, args.flags, binascii.unhexlify(data))
+    (res,written) = ctrl.i2c_write(args.bus, args.address, args.reg, args.flags, data)
     if res == 0:
         print("%i bytes written" % written)
     else:
@@ -215,6 +227,18 @@ def handle_console(args):
 def auto_int(x):
     return int(x, 0)
 
+
+def uint(bits):
+    """argparse type for a number that has to fit the field it is sent in"""
+    def parse(x):
+        value = auto_int(x)
+        if not 0 <= value < 1 << bits:
+            raise argparse.ArgumentTypeError(
+                "%s does not fit into the protocol's %u bit" % (x, bits))
+        return value
+
+    return parse
+
 VERBOSITY = {
     0: logging.WARN,
     1: logging.INFO,
@@ -243,45 +267,45 @@ parser_getenv.set_defaults(func=handle_getenv)
 
 parser_md = subparsers.add_parser('md', help="run md command")
 parser_md.add_argument('path', help="path")
-parser_md.add_argument('address', type=auto_int, help="address")
-parser_md.add_argument('size', type=auto_int, help="size")
+parser_md.add_argument('address', type=uint(16), help="address")
+parser_md.add_argument('size', type=uint(16), help="size")
 parser_md.set_defaults(func=handle_md)
 
 parser_mw = subparsers.add_parser('mw', help="run mw command")
 parser_mw.add_argument('path', help="path")
-parser_mw.add_argument('address', type=auto_int, help="address")
+parser_mw.add_argument('address', type=uint(16), help="address")
 parser_mw.add_argument('data', help="data")
 parser_mw.set_defaults(func=handle_mw)
 
 parser_i2c_read = subparsers.add_parser('i2c-read', help="run i2c read command")
-parser_i2c_read.add_argument('bus', type=auto_int, help="bus")
-parser_i2c_read.add_argument('address', type=auto_int, help="address")
-parser_i2c_read.add_argument('reg', type=auto_int, help="reg")
-parser_i2c_read.add_argument('flags', type=auto_int, help="flags")
-parser_i2c_read.add_argument('size', type=auto_int, help="size")
+parser_i2c_read.add_argument('bus', type=uint(8), help="bus")
+parser_i2c_read.add_argument('address', type=uint(8), help="address")
+parser_i2c_read.add_argument('reg', type=uint(16), help="reg")
+parser_i2c_read.add_argument('flags', type=uint(8), help="flags")
+parser_i2c_read.add_argument('size', type=uint(16), help="size")
 parser_i2c_read.set_defaults(func=handle_i2c_read)
 
 parser_i2c_write = subparsers.add_parser('i2c-write', help="run i2c write command")
-parser_i2c_write.add_argument('bus', type=auto_int, help="bus")
-parser_i2c_write.add_argument('address', type=auto_int, help="address")
-parser_i2c_write.add_argument('reg', type=auto_int, help="reg")
-parser_i2c_write.add_argument('flags', type=auto_int, help="flags")
+parser_i2c_write.add_argument('bus', type=uint(8), help="bus")
+parser_i2c_write.add_argument('address', type=uint(8), help="address")
+parser_i2c_write.add_argument('reg', type=uint(16), help="reg")
+parser_i2c_write.add_argument('flags', type=uint(8), help="flags")
 parser_i2c_write.add_argument('data', help="data")
 parser_i2c_write.set_defaults(func=handle_i2c_write)
 
 parser_gpio_get_value = subparsers.add_parser('gpio-get-value', help="run gpio get value command")
-parser_gpio_get_value.add_argument('gpio', type=auto_int, help="gpio")
+parser_gpio_get_value.add_argument('gpio', type=uint(32), help="gpio")
 parser_gpio_get_value.set_defaults(func=handle_gpio_get_value)
 
 parser_gpio_set_value = subparsers.add_parser('gpio-set-value', help="run gpio set value command")
-parser_gpio_set_value.add_argument('gpio', type=auto_int, help="gpio")
-parser_gpio_set_value.add_argument('value', type=auto_int, help="value")
+parser_gpio_set_value.add_argument('gpio', type=uint(32), help="gpio")
+parser_gpio_set_value.add_argument('value', type=uint(8), help="value")
 parser_gpio_set_value.set_defaults(func=handle_gpio_set_value)
 
 parser_gpio_set_direction = subparsers.add_parser('gpio-set-direction', help="run gpio set direction command")
-parser_gpio_set_direction.add_argument('gpio', type=auto_int, help="gpio")
-parser_gpio_set_direction.add_argument('direction', type=auto_int, help="direction (0: input, 1: output)")
-parser_gpio_set_direction.add_argument('value', type=auto_int, help="value (if output)")
+parser_gpio_set_direction.add_argument('gpio', type=uint(32), help="gpio")
+parser_gpio_set_direction.add_argument('direction', type=uint(8), help="direction (0: input, 1: output)")
+parser_gpio_set_direction.add_argument('value', type=uint(8), help="value (if output)")
 parser_gpio_set_direction.set_defaults(func=handle_gpio_set_direction)
 
 parser_reset = subparsers.add_parser('reset', help="run reset command")

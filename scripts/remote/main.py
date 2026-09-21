@@ -38,9 +38,7 @@ def get_controller(args):
             ctrl = Controller(conn)
             break
         except (RatpError):
-            if args.wait == True:
-                pass
-            else:
+            if not args.wait:
                 raise
 
     return ctrl
@@ -224,7 +222,7 @@ parser.add_argument('-v', '--verbose', action='count', default=0)
 parser.add_argument('--port', type=str, default=os.environ.get('BBREMOTE_PORT', None))
 parser.add_argument('--baudrate', type=int, default=os.environ.get('BBREMOTE_BAUDRATE', 115200))
 parser.add_argument('--export', type=str, default=os.environ.get('BBREMOTE_EXPORT', None))
-parser.add_argument('-w', '--wait', action='count', default=0)
+parser.add_argument('-w', '--wait', action='store_true')
 parser.set_defaults(func=None)
 subparsers = parser.add_subparsers(help='sub-command help')
 
@@ -295,7 +293,7 @@ parser_console = subparsers.add_parser('console', help="connect to the console")
 parser_console.set_defaults(func=handle_console)
 
 args = parser.parse_args()
-logging.basicConfig(level=VERBOSITY[args.verbose],
+logging.basicConfig(level=VERBOSITY[min(args.verbose, 2)],
                     format='%(levelname)-8s %(module)-8s %(funcName)-16s %(message)s')
 
 if args.func is None:

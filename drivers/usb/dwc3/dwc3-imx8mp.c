@@ -114,7 +114,7 @@ static int dwc3_imx8mp_probe(struct device *dev)
 		return PTR_ERR(dwc3_imx->hsio_blk_base);
 
 	res = dev_request_mem_resource(dev, 1);
-	if (!res)
+	if (IS_ERR(res))
 		dev_warn(dev, "Base address for glue layer missing. Continuing without, some features are missing though.");
 	else
 		dwc3_imx->glue_base = IOMEM(res->start);

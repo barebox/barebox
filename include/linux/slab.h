@@ -4,6 +4,8 @@
 #define _LINUX_SLAB_H
 
 #include <dma.h>
+#include <linux/cleanup.h>
+#include <linux/err.h>
 #include <linux/overflow.h>
 #include <linux/string.h>
 #include <linux/gfp.h>
@@ -115,5 +117,8 @@ static inline char *kstrdup(const char *str, gfp_t flags)
 }
 
 #define kstrdup_const(str, flags) strdup_const(str)
+
+DEFINE_FREE(kfree, void *, if (!IS_ERR_OR_NULL(_T)) kfree(_T))
+DEFINE_FREE(kfree_sensitive, void *, if (!IS_ERR_OR_NULL(_T)) kfree_sensitive(_T))
 
 #endif /* _LINUX_SLAB_H */

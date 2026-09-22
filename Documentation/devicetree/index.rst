@@ -174,6 +174,9 @@ A board whose additions are all overlays needs no device tree of its own in
 
   make dts/src/arm/st/stm32mp157c-dk2.dtb
 
+It is stamped with its name, see :ref:`barebox,dtbname`; a device tree from
+elsewhere works too, but barebox warns about it at startup.
+
 Device Tree Compiler
 --------------------
 

@@ -140,6 +140,11 @@ static void test_malloc(void)
 	__expect_cond(p == ZERO_SIZE_PTR, true, "get ZERO_SIZE_PTR for 0-size buffers", __func__, __LINE__);
 
 	free(p);
-	free(tmp);
+
+	/*
+	 * free_sensitive() asks the allocator for the usable size before it
+	 * zeroes the buffer, so ZERO_SIZE_PTR has to survive that path too
+	 */
+	free_sensitive(tmp);
 }
 bselftest(core, test_malloc);

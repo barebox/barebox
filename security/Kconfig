@@ -88,7 +88,7 @@ config CRYPTO_BUILTIN_DEVELOPMENT_KEYS
 	  used to authenticate FIT images during development. The private keys can
 	  be found at [1]. This option should never be enabled in a production build.
 
-	  [1] https://git.pengutronix.de/cgit/ptx-code-signing-dev/
+	  [1] https://github.com/pengutronix/ptx-code-signing-dev
 
 config CRYPTO_KEYSTORE
 	bool "Keystore"

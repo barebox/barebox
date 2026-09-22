@@ -18,15 +18,15 @@ can be checked out as follows:
 
 .. code-block:: console
 
-  $ git clone https://git.pengutronix.de/git/barebox
+  $ git clone https://github.com/barebox/barebox
   Cloning into 'barebox'...
-  remote: Enumerating objects: 330649, done.
-  remote: Counting objects: 100% (3932/3932), done.
-  remote: Compressing objects: 100% (2203/2203), done.
-  remote: Total 330649 (delta 2421), reused 2217 (delta 1706), pack-reused 326717
-  Receiving objects: 100% (330649/330649), 82.03 MiB | 14.88 MiB/s, done.
-  Resolving deltas: 100% (265076/265076), done.
-  Updating files: 100% (19054/19054), done.
+  remote: Enumerating objects: 363788, done.
+  remote: Counting objects: 100% (2704/2704), done.
+  remote: Compressing objects: 100% (605/605), done.
+  remote: Total 363788 (delta 2251), reused 2132 (delta 2098), pack-reused 361084 (from 3)
+  Receiving objects: 100% (363788/363788), 126.86 MiB | 8.19 MiB/s, done.
+  Resolving deltas: 100% (279758/279758), done.
+  Updating files: 100% (21470/21470), done.
 
 By default, the master branch is checked out. If you want to develop for
 barebox, this is the right branch to send patches against.
@@ -39,6 +39,9 @@ you can look at the ``next`` branch:
   $ git checkout -b next remotes/origin/next
 
 A web interface to the repository is available at
+https://github.com/barebox/barebox
+
+as well as at:
 https://git.pengutronix.de/cgit/barebox
 
 .. _configuration:

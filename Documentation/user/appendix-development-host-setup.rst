@@ -31,7 +31,7 @@ A good alternative terminal program is microcom. On Debian it can be installed
 with ``apt-get install microcom``, on other distributions it can be installed
 from source:
 
-https://git.pengutronix.de/cgit/tools/microcom
+https://github.com/pengutronix/microcom
 
 Usage is simple:
 

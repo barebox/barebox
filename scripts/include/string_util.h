@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 // SPDX-SnippetBegin
-// SPDX-Snippet-Comment: Origin-URL: https://git.pengutronix.de/cgit/barebox/tree/lib/string.c?id=dfcf686f94a5a5387660f2afab79a714baab828a
+// SPDX-Snippet-Comment: Origin-URL: https://github.com/barebox/barebox/blob/dfcf686f94a5a5387660f2afab79a714baab828a/lib/string.c
 
 /**
  * strsep_unescaped - Split a string into tokens, while ignoring escaped delimiters

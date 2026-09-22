@@ -5,7 +5,7 @@ set -euo pipefail
 
 # Some very early hashes to identify the projects by
 declare -A repos=(
-    ["a3ffa97f40dc81f2d6b07ee964f2340fe0c1ba97"]="https://git.pengutronix.de/cgit/barebox"
+    ["a3ffa97f40dc81f2d6b07ee964f2340fe0c1ba97"]="https://github.com/barebox/barebox"
     ["1da177e4c3f41524e886b7f1b8a0c1fc7321cac2"]="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
     ["cc8ed39b240180b58810784f844e253263594ac3"]="https://git.busybox.net/busybox"
     ["7e492d8258182e31c988bbf9917d4a3d41949d56"]="https://github.com/u-boot/u-boot"

@@ -8,7 +8,8 @@
 /* For use when unrelocated */
 static inline __noreturn void __hang(void)
 {
-	while (1);
+	while (1)
+		;
 }
 void __noreturn hang (void);
 

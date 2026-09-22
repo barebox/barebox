@@ -85,7 +85,8 @@ int mmdc_do_write_level_calibration(void)
 	writel(0x00000001, P0_IPS + MPWLGCR);
 
 	/* Upon completion of this process the MMDC de-asserts the MPWLGCR[HW_WL_EN] */
-	while (readl(P0_IPS + MPWLGCR) & 0x00000001);
+	while (readl(P0_IPS + MPWLGCR) & 0x00000001)
+		;
 
 	/* check for any errors on both PHYs */
 	if (wlcalib_failed(P0_IPS) || wlcalib_failed(P1_IPS)) {
@@ -201,14 +202,16 @@ static void mmdc_reset_read_data_fifos(void)
 	v |= 0x80000000;
 	writel(v, P0_IPS + MPDGCTRL0);
 
-	while (readl((P0_IPS + MPDGCTRL0)) & 0x80000000);
+	while (readl((P0_IPS + MPDGCTRL0)) & 0x80000000)
+		;
 
 	/* read data FIFOs reset2 */
 	v = readl(P0_IPS + MPDGCTRL0);
 	v |= 0x80000000;
 	writel(v, P0_IPS + MPDGCTRL0);
 
-	while (readl((P0_IPS + MPDGCTRL0)) & 0x80000000);
+	while (readl((P0_IPS + MPDGCTRL0)) & 0x80000000)
+		;
 }
 
 int mmdc_do_dqs_calibration(void)
@@ -280,7 +283,8 @@ int mmdc_do_dqs_calibration(void)
 		writel(0x00008028, P0_IPS + MDSCR);
 
 	/* poll to make sure the con_ack bit was asserted */
-	while (!(readl(P0_IPS + MDSCR) & 0x00004000)) ;
+	while (!(readl(P0_IPS + MDSCR) & 0x00004000))
+		;
 
 	/*
 	 * check MDMISC register CALIB_PER_CS to see which CS calibration is
@@ -320,7 +324,8 @@ int mmdc_do_dqs_calibration(void)
 	v |= (1 << 0);
 	writel(v, P0_IPS + MPSWDAR);
 
-	while (readl(P0_IPS + MPSWDAR) & 0x00000001);
+	while (readl(P0_IPS + MPSWDAR) & 0x00000001)
+		;
 
 	/*
 	 * Set the RD_DL_ABS# bits to their default values (will be calibrated later in
@@ -362,7 +367,8 @@ int mmdc_do_dqs_calibration(void)
 	 * Poll for completion
 	 * MPDGCTRL0[HW_DG_EN] should be 0
 	 */
-	while (readl(P0_IPS + MPDGCTRL0) & 0x10000000);
+	while (readl(P0_IPS + MPDGCTRL0) & 0x10000000)
+		;
 
 	/*
 	 * Check to see if any errors were encountered during calibration
@@ -423,7 +429,8 @@ int mmdc_do_dqs_calibration(void)
 	 * MPRDDLHWCTL[HW_RD_DL_EN] = 0
 	 * Also, ensure that no error bits were set
 	 */
-	while (readl(P0_IPS + MPRDDLHWCTL) & 0x00000010) ;
+	while (readl(P0_IPS + MPRDDLHWCTL) & 0x00000010)
+		;
 
 	/* check both PHYs for x64 configuration, if x32, check only PHY0 */
 	if (data_bus_size == 0x2) {
@@ -468,7 +475,8 @@ int mmdc_do_dqs_calibration(void)
 	 * MPWRDLHWCTL[HW_WR_DL_EN] = 0
 	 * Also, ensure that no error bits were set
 	 */
-	while (readl(P0_IPS + MPWRDLHWCTL) & 0x00000010) ;
+	while (readl(P0_IPS + MPWRDLHWCTL) & 0x00000010)
+		;
 
 	/* check both PHYs for x64 configuration, if x32, check only PHY0 */
 	if (data_bus_size == 0x2) {
@@ -537,7 +545,8 @@ int mmdc_do_dqs_calibration(void)
 	writel(0x0, P0_IPS + MDSCR); /* CS0 */
 
 	/* poll to make sure the con_ack bit is clear */
-	while (readl(P0_IPS + MDSCR) & 0x00004000) ;
+	while (readl(P0_IPS + MDSCR) & 0x00004000)
+		;
 
 	return errorcount;
 }
@@ -618,7 +627,8 @@ static void mmdc_issue_write_access(void __iomem *base)
 	v |= (1 << 0);
 	writel(v, P0_IPS + MPSWDAR);
 
-	while (readl(P0_IPS + MPSWDAR) & 0x00000001);
+	while (readl(P0_IPS + MPSWDAR) & 0x00000001)
+		;
 }
 
 static void mmdc_issue_read_access(void __iomem *base)
@@ -633,7 +643,8 @@ static void mmdc_issue_read_access(void __iomem *base)
 	v |= (1 << 1);
 	writel(v, P0_IPS + MPSWDAR);
 
-	while (readl(P0_IPS + MPSWDAR) & 0x00000002);
+	while (readl(P0_IPS + MPSWDAR) & 0x00000002)
+		;
 }
 
 static int total_lower[2] = { 0x0, 0x0 };

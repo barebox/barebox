@@ -187,12 +187,14 @@ static int smc911x_phy_read(struct mii_bus *bus, int phy_addr, int reg)
 {
 	struct eth_device *edev = bus->priv;
 
-	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
+	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY)
+		;
 
 	smc911x_set_mac_csr(edev, MII_ACC, phy_addr << 11 | reg << 6 |
 			MII_ACC_MII_BUSY);
 
-	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
+	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY)
+		;
 
 	return smc911x_get_mac_csr(edev, MII_DATA);
 }
@@ -202,14 +204,16 @@ static int smc911x_phy_write(struct mii_bus *bus, int phy_addr,
 {
 	struct eth_device *edev = bus->priv;
 
-	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
+	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY)
+		;
 
 	smc911x_set_mac_csr(edev, MII_DATA, val);
 	smc911x_set_mac_csr(edev, MII_ACC,
 		phy_addr << 11 | reg << 6 | MII_ACC_MII_BUSY |
 		MII_ACC_MII_WRITE);
 
-	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY);
+	while (smc911x_get_mac_csr(edev, MII_ACC) & MII_ACC_MII_BUSY)
+		;
 
 	return 0;
 }

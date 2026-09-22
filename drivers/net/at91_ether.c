@@ -184,7 +184,8 @@ static int at91_ether_open(struct eth_device *edev)
 
 static int at91_ether_send(struct eth_device *edev, void *packet, int length)
 {
-	while (!(at91_emac_read(AT91_EMAC_TSR) & AT91_EMAC_TSR_BNQ));
+	while (!(at91_emac_read(AT91_EMAC_TSR) & AT91_EMAC_TSR_BNQ))
+		;
 
 	dma_sync_single_for_device(edev->parent, (unsigned long)packet,
 				   length, DMA_TO_DEVICE);
@@ -194,7 +195,8 @@ static int at91_ether_send(struct eth_device *edev, void *packet, int length)
 	/* Set length of the packet in the Transmit Control register */
 	at91_emac_write(AT91_EMAC_TCR, length);
 
-	while (at91_emac_read(AT91_EMAC_TCR) & 0x7ff);
+	while (at91_emac_read(AT91_EMAC_TCR) & 0x7ff)
+		;
 
 	at91_emac_write(AT91_EMAC_TSR,
 		at91_emac_read(AT91_EMAC_TSR) | AT91_EMAC_TSR_COMP);

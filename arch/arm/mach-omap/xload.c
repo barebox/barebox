@@ -340,7 +340,8 @@ static __noreturn int omap_xload(void)
 
 	if (!func) {
 		printf("booting failed\n");
-		while (1);
+		while (1)
+			;
 	}
 
 	omap_start_barebox(func);

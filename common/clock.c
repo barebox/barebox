@@ -187,7 +187,8 @@ void ndelay(unsigned long nsecs)
 {
 	uint64_t start = get_time_ns();
 
-	while(!is_timeout_non_interruptible(start, nsecs));
+	while(!is_timeout_non_interruptible(start, nsecs))
+		;
 }
 EXPORT_SYMBOL(ndelay);
 
@@ -195,7 +196,8 @@ void clocksource_current_udelay(unsigned long usecs)
 {
 	uint64_t start = get_time_ns();
 
-	while(!is_timeout(start, usecs * USECOND));
+	while(!is_timeout(start, usecs * USECOND))
+		;
 }
 
 void udelay(unsigned long usecs) __weak __alias(clocksource_current_udelay);

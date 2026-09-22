@@ -20,5 +20,6 @@ void bootstrap_boot(kernel_entry_func func, bool barebox)
 	shutdown_barebox();
 	func(0, 0, NULL);
 
-	while (1);
+	while (1)
+		;
 }

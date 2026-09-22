@@ -784,7 +784,8 @@ static int doc_write_erase_wait_status(struct docg3 *docg3)
 	int status, ret = 0;
 	uint64_t start = get_time_ns();
 
-	while (!is_timeout(start, 3000 * MSECOND) && !doc_is_ready(docg3));
+	while (!is_timeout(start, 3000 * MSECOND) && !doc_is_ready(docg3))
+		;
 	if (!doc_is_ready(docg3)) {
 		doc_dbg("Timeout reached and the chip is still not ready\n");
 		ret = -EAGAIN;

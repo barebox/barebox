@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Apply an overlay to its base device tree, so a target or an alias that isn't
+# there fails the build instead of the boot.
+
+set -e
+
+fdtoverlay=$1
+fdtget=$2
+base=$3
+dtbo=$4
+
+merged=$(mktemp)
+trap 'rm -f "$merged"' EXIT
+
+fail() {
+	echo "$dtbo: $*" >&2
+	exit 1
+}
+
+# A label the overlay didn't resolve itself needs __symbols__ in the base
+labels=$("$fdtget" -p "$dtbo" /__fixups__ 2>/dev/null) || labels=
+if [ -n "$labels" ]; then
+	fail "refers to the label(s) $labels of the base device tree," \
+	     "which a device tree built without dtc -@ can't resolve"
+fi
+
+# Asserted nodes have to exist; enabling them is up to the board
+for path in $("$fdtget" -t s "$dtbo" / barebox,assert-available 2>/dev/null); do
+	"$fdtget" -p "$base" "$path" >/dev/null 2>&1 ||
+		fail "asserts $path, which $base doesn't have"
+done
+
+# Name the fragment that doesn't fit before fdtoverlay reports an errno
+for fragment in $("$fdtget" -l "$dtbo" /); do
+	path=$("$fdtget" -t s "$dtbo" "/$fragment" target-path 2>/dev/null) || continue
+	"$fdtget" -p "$base" "$path" >/dev/null 2>&1 ||
+		fail "/$fragment targets $path, which $base doesn't have"
+done
+
+"$fdtoverlay" -i "$base" -o "$merged" "$dtbo" ||
+	fail "does not apply to $base"
+
+# /aliases is resolved by name, so nothing but this notices a typo
+for alias in $("$fdtget" -p "$merged" /aliases 2>/dev/null); do
+	path=$("$fdtget" -t s "$merged" /aliases "$alias")
+	case $path in
+	/*)	;;
+	*)	fail "alias $alias is $path, which is no node path" ;;
+	esac
+	"$fdtget" -p "$merged" "$path" >/dev/null 2>&1 ||
+		fail "alias $alias points at $path, which nothing creates"
+done

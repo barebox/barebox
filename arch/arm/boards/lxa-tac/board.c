@@ -5,7 +5,6 @@
 #include <asm/memory.h>
 #include <mach/stm32mp/bbu.h>
 #include <bootsource.h>
-#include <deep-probe.h>
 #include <of.h>
 #include <tlv/tlv.h>
 
@@ -31,7 +30,6 @@ static const struct of_device_id tac_of_match[] = {
 	{ .compatible = "lxa,stm32mp153c-tac-gen3" },
 	{ /* sentinel */ },
 };
-BAREBOX_DEEP_PROBE_ENABLE(tac_of_match);
 
 static struct driver tac_board_driver = {
 	.name = "board-lxa-tac",

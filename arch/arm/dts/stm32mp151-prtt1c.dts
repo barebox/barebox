@@ -5,11 +5,8 @@
 
 #include <arm/st/stm32mp151a-prtt1c.dts>
 
-#include "stm32mp151.dtsi"
 
 / {
-	barebox,deep-probe;
-
 	chosen {
 		stdout-path = "serial0:115200n8";
 

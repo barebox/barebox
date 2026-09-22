@@ -150,7 +150,7 @@ It can also be controlled from barebox via the :ref:`bootchooser command <comman
   bootchooser -L # unlock
 
 
-.. _dt-utils: https://git.pengutronix.de/cgit/tools/dt-utils
+.. _dt-utils: https://github.com/barebox/dt-utils
 
 General Bootchooser Options
 ---------------------------

@@ -84,7 +84,7 @@ and disabling any ways that could use used to override this.
 For development convenience ``CONFIG_CRYPTO_BUILTIN_DEVELOPMENT_KEYS`` keys
 can be used to compile in well known development keys into the barebox binary.
 The private keys for these keys can be found
-`[here] <https://git.pengutronix.de/cgit/ptx-code-signing-dev>`__
+`[here] <https://github.com/pengutronix/ptx-code-signing-dev>`__.
 
 Prevent the kernel from booting the rootfs in verity boots
 ----------------------------------------------------------

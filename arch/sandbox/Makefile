@@ -33,7 +33,8 @@ TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 SANDBOX_PBL2PROPER_GLUE_SYMS := \
 	putchar errno setjmp longjmp \
-	malloc_stats memalign malloc free realloc calloc memleak_check brk sbrk
+	malloc_stats memalign malloc free realloc calloc malloc_usable_size \
+	memleak_check brk sbrk
 
 KBUILD_CFLAGS += $(foreach s,$(SANDBOX_PBL2PROPER_GLUE_SYMS),-D$(s)=barebox_$(s))
 

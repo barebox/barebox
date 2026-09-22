@@ -93,7 +93,9 @@ static int do_rksecure(int argc, char *argv[])
 			hash = optarg;
 			break;
 		case 'b':
-			kstrtouint(optarg, 10, &key_size_bits);
+			ret = kstrtouint(optarg, 10, &key_size_bits);
+			if (ret)
+				return ret;
 			break;
 		case 'l':
 			lockdown = 1;

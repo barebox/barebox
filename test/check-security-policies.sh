@@ -71,5 +71,18 @@ for O in "" "$builddir"; do
 	make O="$O" mrproper
 done
 
+# The CI container runs as root, while the checkout belongs to the user
+# the runner uses, so git refuses the repository over its ownership. git
+# diff doesn't fail loudly in that case: it falls back to --no-index and
+# exits 129 with a usage message instead of comparing anything.
+srctree_git() {
+	git -c safe.directory="$PWD" "$@"
+}
+
+if ! srctree_git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+	echo >&2 "$0: not a git work tree, cannot look for modified policies"
+	exit 1
+fi
+
 # Catches security_oldconfig rewriting a committed policy.
-git diff --exit-code -- '*.sconfig'
+srctree_git diff --exit-code -- '*.sconfig'

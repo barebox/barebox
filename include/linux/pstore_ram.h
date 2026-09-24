@@ -1,28 +1,15 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-Comment: Origin-URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/pstore_ram.h?id=8bd4da0f0626ae9a82099d3d99cd6efd4355879b */
 /*
  * Copyright (C) 2010 Marco Stornelli <marco.stornelli@gmail.com>
  * Copyright (C) 2011 Kees Cook <keescook@chromium.org>
  * Copyright (C) 2011 Google, Inc.
- *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 
 #ifndef __LINUX_PSTORE_RAM_H__
 #define __LINUX_PSTORE_RAM_H__
 
-#include <linux/kernel.h>
-#include <linux/list.h>
-#include <linux/types.h>
-
-struct persistent_ram_buffer;
-struct rs_control;
+#include <linux/pstore.h>
 
 struct persistent_ram_ecc_info {
 	int block_size;
@@ -38,15 +25,18 @@ struct persistent_ram_ecc_info {
  * @mem_address	physical memory address to contain ramoops
  */
 
+#define RAMOOPS_FLAG_FTRACE_PER_CPU	BIT(0)
+
 struct ramoops_platform_data {
 	unsigned long	mem_size;
-	unsigned long	mem_address;
+	phys_addr_t	mem_address;
 	unsigned int	mem_type;
 	unsigned long	record_size;
 	unsigned long	console_size;
 	unsigned long	ftrace_size;
 	unsigned long	pmsg_size;
-	int		dump_oops;
+	int		max_reason;
+	u32		flags;
 	struct persistent_ram_ecc_info ecc_info;
 };
 

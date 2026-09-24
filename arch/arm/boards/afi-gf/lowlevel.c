@@ -127,7 +127,8 @@ static void board_config_vtp(void)
 		AM33XX_VTP0_CTRL_REG);
 
 	/* Poll for READY */
-	while ((__raw_readl(AM33XX_VTP0_CTRL_REG) & VTP_CTRL_READY) != VTP_CTRL_READY);
+	while ((__raw_readl(AM33XX_VTP0_CTRL_REG) & VTP_CTRL_READY) != VTP_CTRL_READY)
+		;
 }
 
 static void board_config_emif_ddr(void)

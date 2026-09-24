@@ -31,6 +31,19 @@ config FS_PSTORE_RAMOOPS
 
 if FS_PSTORE_RAMOOPS
 
+config FS_PSTORE_RAMOOPS_ALWAYS
+	bool
+	prompt "Enable pstore RAM backend without a device tree node"
+	default y
+	help
+	  Enables the RAM backend for pstore automatically instead of
+	  requiring an explicit "ramoops"-compatible node. barebox will
+	  take care to fix up the device tree node into the kernel device
+	  tree. This is skipped when barebox runs as EFI payload.
+
+	  Opt out is possible by adding a ramoops-compatible node with
+	  status = "disabled".
+
 config FS_PSTORE_RAMOOPS_RO
 	bool
 	default y

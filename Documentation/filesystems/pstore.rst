@@ -47,6 +47,14 @@ Barebox adapts the kernel's devicetree on-the-fly prior booting a kernel.
 
 You can adapt the *pstore* parameters in Barebox menuconfig.
 
+The RAM backend is enabled if barebox' device tree has a node compatible with
+``ramoops``, usually ``/reserved-memory/ramoops``. Its location and size are
+taken from menuconfig all the same. If the device tree has no such node, e.g.
+because it's passed by the boot firmware, barebox creates it, unless
+``CONFIG_FS_PSTORE_RAMOOPS_ALWAYS`` is disabled or barebox runs as EFI payload.
+To keep the RAM backend disabled on a board, add a ramoops-compatible node with
+``status = "disabled"``.
+
 To see where the RAMOOPS area is located, you can execute the ``iomem`` command
 in the Barebox shell. The RAMOOPS area is listed as 'persistent ram':
 

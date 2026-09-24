@@ -19,6 +19,7 @@
 #include <linux/slab.h>
 #include <linux/compiler.h>
 #include <linux/log2.h>
+#include <efi/mode.h>
 #include <of.h>
 #include <of_address.h>
 #include <linux/ctype.h>
@@ -925,6 +926,26 @@ static struct driver ramoops_driver = {
 	.of_match_table = dt_match,
 };
 
+static void __init ramoops_create_dev(void)
+{
+	struct device_node *root = of_get_root_node();
+	struct device_node *np;
+
+	if (!IS_ENABLED(CONFIG_FS_PSTORE_RAMOOPS_ALWAYS) || !root || efi_is_payload())
+		return;
+
+	/* A node the device tree has, enabled or not, takes precedence */
+	if (of_find_compatible_node(NULL, NULL, "ramoops"))
+		return;
+
+	np = of_create_node(root, "/reserved-memory/ramoops");
+	if (!np)
+		return;
+
+	of_property_write_string(np, "compatible", "ramoops");
+	of_platform_device_create(np, NULL);
+}
+
 static void __init ramoops_register_dummy(void)
 {
 	struct ramoops_platform_data pdata;
@@ -967,6 +988,8 @@ static void __init ramoops_register_dummy(void)
 	 * so a ramoops node in our device tree only enables the driver.
 	 */
 	dummy = xmemdup(&pdata, sizeof(pdata));
+
+	ramoops_create_dev();
 }
 
 static int __init ramoops_init(void)

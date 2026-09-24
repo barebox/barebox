@@ -28,10 +28,10 @@
 #include <common.h>
 
 struct persistent_ram_buffer {
-	uint32_t sig;
-	atomic_t start;
-	atomic_t size;
-	uint8_t data[];
+	uint32_t    sig;
+	atomic_t    start;
+	atomic_t    size;
+	uint8_t     data[];
 };
 static_assert(sizeof(struct persistent_ram_buffer) == 12);
 

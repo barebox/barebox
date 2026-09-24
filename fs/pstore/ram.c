@@ -454,19 +454,19 @@ static int ramoops_parse_dt(struct device *dev,
 #define parse_size(name, field) {					\
 		ret = ramoops_parse_dt_size(dev, name, &value);		\
 		if (ret < 0)						\
-		return ret;						\
+			return ret;					\
 		field = value;						\
 	}
 
-       parse_size("record-size", pdata->record_size);
-       parse_size("console-size", pdata->console_size);
-       parse_size("ftrace-size", pdata->ftrace_size);
-       parse_size("pmsg-size", pdata->pmsg_size);
-       parse_size("ecc-size", pdata->ecc_info.ecc_size);
+	parse_size("record-size", pdata->record_size);
+	parse_size("console-size", pdata->console_size);
+	parse_size("ftrace-size", pdata->ftrace_size);
+	parse_size("pmsg-size", pdata->pmsg_size);
+	parse_size("ecc-size", pdata->ecc_info.ecc_size);
 
 #undef parse_size
 
-       return 0;
+	return 0;
 }
 
 static int ramoops_of_fixup(struct device_node *root, void *data)

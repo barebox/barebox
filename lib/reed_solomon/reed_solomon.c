@@ -177,6 +177,7 @@ void free_rs(struct rs_control *rs)
 		kfree(rs);
 	}
 }
+EXPORT_SYMBOL_GPL(free_rs);
 
 /**
  * init_rs_internal - Find a matching or allocate a new rs control structure
@@ -255,6 +256,7 @@ struct rs_control *init_rs(int symsize, int gfpoly, int fcr, int prim,
 {
 	return init_rs_internal(symsize, gfpoly, NULL, fcr, prim, nroots);
 }
+EXPORT_SYMBOL_GPL(init_rs);
 
 /**
  * init_rs_non_canonical - Find a matching or allocate a new rs control
@@ -274,6 +276,7 @@ struct rs_control *init_rs_non_canonical(int symsize, int (*gffunc)(int),
 {
 	return init_rs_internal(symsize, 0, gffunc, fcr, prim, nroots);
 }
+EXPORT_SYMBOL_GPL(init_rs_non_canonical);
 
 /**
  *  encode_rs8 - Calculate the parity for data values (8bit data width)
@@ -358,10 +361,6 @@ int decode_rs16(struct rs_control *rs, uint16_t *data, uint16_t *par, int len,
 #include "decode_rs.c"
 }
 EXPORT_SYMBOL_GPL(decode_rs16);
-
-EXPORT_SYMBOL_GPL(init_rs);
-EXPORT_SYMBOL_GPL(init_rs_non_canonical);
-EXPORT_SYMBOL_GPL(free_rs);
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Reed Solomon encoder/decoder");

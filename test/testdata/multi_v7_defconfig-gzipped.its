@@ -68,6 +68,7 @@
             fdt = "fdt-qemu-virt32.dtb";
             ramdisk = "ramdisk-1", "ramdisk-2", "ramdisk-3";
             compatible = "linux,dummy-virt";
+            cmdline = "fit.param";
             signature-1 {
                 algo = "sha256,rsa2048";
                 sign-images = "kernel", "fdt", "ramdisk";

@@ -123,6 +123,7 @@ def test_fit(barebox, strategy, fitimage):
         # Check that command line arguments were fixed up
         bootargs = of_get_property(barebox, "/chosen/bootargs")
         assert "barebox.chainloaded" in bootargs
+        assert "fit.param" in bootargs
 
         initrd_start = of_get_property(barebox, "/chosen/linux,initrd-start", ncells=0)
         initrd_end = of_get_property(barebox, "/chosen/linux,initrd-end", ncells=0)

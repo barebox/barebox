@@ -188,12 +188,14 @@ static ssize_t ramoops_pstore_read(struct pstore_record *record)
 		header_length = ramoops_read_kmsg_hdr(persistent_ram_old(prz),
 						      &record->time,
 						      &record->compressed);
-		/* Clear and skip this DMESG record if it has no valid header */
-		if (!header_length) {
-			persistent_ram_free_old(prz);
-			persistent_ram_zap(prz);
-			prz = NULL;
-		}
+		/*
+		 * Unlike Linux, don't clear and skip a DMESG record without a
+		 * valid header: it may just have partly decayed, so show it
+		 * as-is and leave it for the kernel to look at as well.
+		 */
+		if (!header_length)
+			pr_info("%s: no valid header, showing raw record\n",
+				prz->label);
 	}
 
 	if (!prz_ok(prz) && !cxt->console_read_cnt++)

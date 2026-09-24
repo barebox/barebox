@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-
 import struct
 import binascii
 
@@ -220,7 +218,6 @@ class BBPacketMdReturn(BBPacket):
     def _pack_payload(self):
         # header size is always 4 bytes (HH) and we have 10 bytes of fixed data (HLHH), so buffer offset is 14
         return struct.pack("!HLHH%ds" % len(self.data), 14, self.exit_code, len(self.data), 0, self.data)
-        return self.text
 
 
 class BBPacketMw(BBPacket):
@@ -246,7 +243,7 @@ class BBPacketMw(BBPacket):
         # header size is always 4 bytes (HH) and we have 12 bytes of fixed data (HHHHHH), so buffer offset is 16
         path_size = len(self.path)
         data_size = len(self.data)
-        return struct.pack("!HHHHHH%ds%ds" % (path_size, path_size), 16, self.addr, path_size, 0, data_size, path_size, self.path, self.data)
+        return struct.pack("!HHHHHH%ds%ds" % (path_size, data_size), 16, self.addr, path_size, 0, data_size, path_size, self.path, self.data)
 
 
 class BBPacketMwReturn(BBPacket):
@@ -275,7 +272,7 @@ class BBPacketReset(BBPacket):
         return "BBPacketReset(force=%c)" % (self.force)
 
     def _unpack_payload(self, payload):
-        self.force = struct.unpack("?", payload[:1])
+        self.force, = struct.unpack("?", payload[:1])
 
     def _pack_payload(self):
         return struct.pack("?", self.force)
@@ -319,7 +316,6 @@ class BBPacketI2cReadReturn(BBPacket):
     def _pack_payload(self):
         # header size is always 4 bytes (HH) and we have 10 bytes of fixed data (HLHH), so buffer offset is 14
         return struct.pack("!HLHH%ds" % len(self.data), 14, self.exit_code, len(self.data), 0, self.data)
-        return self.text
 
 
 class BBPacketI2cWrite(BBPacket):
@@ -372,7 +368,7 @@ class BBPacketGpioGetValue(BBPacket):
         return "BBPacketGpioGetValue(gpio=%u)" % (self.gpio)
 
     def _unpack_payload(self, payload):
-        self.gpio = struct.unpack("!L", payload[:4])
+        self.gpio, = struct.unpack("!L", payload[:4])
 
     def _pack_payload(self):
         return struct.pack("!L", self.gpio)
@@ -387,7 +383,7 @@ class BBPacketGpioGetValueReturn(BBPacket):
         return "BBPacketGpioGetValueReturn(value=%u)" % (self.value)
 
     def _unpack_payload(self, payload):
-        self.value = struct.unpack("!B", payload[:1])
+        self.value, = struct.unpack("!B", payload[:1])
 
     def _pack_payload(self):
         return struct.pack("!B", self.value)
@@ -403,7 +399,7 @@ class BBPacketGpioSetValue(BBPacket):
         return "BBPacketGpioSetValue(gpio=%u,value=%u)" % (self.gpio, self.value)
 
     def _unpack_payload(self, payload):
-        self.gpio = struct.unpack("!LB", payload[:5])
+        self.gpio, self.value = struct.unpack("!LB", payload[:5])
 
     def _pack_payload(self):
         return struct.pack("!LB", self.gpio, self.value)
@@ -429,7 +425,7 @@ class BBPacketGpioSetDirection(BBPacket):
         return "BBPacketGpioSetDirection(gpio=%u,direction=%u,value=%u)" % (self.gpio, self.direction, self.value)
 
     def _unpack_payload(self, payload):
-        self.gpio = struct.unpack("!LBB", payload[:6])
+        self.gpio, self.direction, self.value = struct.unpack("!LBB", payload[:6])
 
     def _pack_payload(self):
         return struct.pack("!LBB", self.gpio, self.direction, self.value)
@@ -444,7 +440,7 @@ class BBPacketGpioSetDirectionReturn(BBPacket):
         return "BBPacketGpioSetDirectionReturn(exit_code=%u)" % (self.exit_code)
 
     def _unpack_payload(self, payload):
-        self.exit_code = struct.unpack("!L", payload[:4])
+        self.exit_code, = struct.unpack("!L", payload[:4])
 
     def _pack_payload(self):
         return struct.pack("!L", self.exit_code)

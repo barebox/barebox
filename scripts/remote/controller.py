@@ -1,22 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-
 import struct
 import logging
 import sys
 import os
+from time import monotonic
 from threading import Thread
 from queue import Queue, Empty
 from .ratpfs import RatpFSServer
 from .messages import *
 from .ratp import RatpError
-
-try:
-    from time import monotonic
-except:
-    from .missing import monotonic
 
 
 def unpack(data):
@@ -111,7 +105,7 @@ class Controller(Thread):
     def _send(self, bbpkt):
         self.conn.send(bbpkt.pack())
 
-    def _handle(self, bbpkt):
+    def _handle_packet(self, bbpkt):
         if isinstance(bbpkt, BBPacketConsoleMsg):
             os.write(sys.stdout.fileno(), bbpkt.text)
         elif isinstance(bbpkt, BBPacketPong):
@@ -131,7 +125,8 @@ class Controller(Thread):
             if isinstance(bbpkt, bbtype):
                 return bbpkt
             else:
-                self._handle(bbpkt)
+                self._handle_packet(bbpkt)
+        raise RatpError("timeout waiting for %s" % bbtype.__name__)
 
     def export(self, path):
         self.fsserver = RatpFSServer(path)
@@ -140,11 +135,8 @@ class Controller(Thread):
         self._send(BBPacketPing())
         r = self._expect(BBPacketPong)
         logging.info("Ping: %r", r)
-        if not r:
-            return 1
-        else:
-            print("pong")
-            return 0
+        print("pong")
+        return 0
 
     def command(self, cmd):
         self._send(BBPacketCommand(cmd=cmd.encode()))
@@ -216,7 +208,7 @@ class Controller(Thread):
                     if isinstance(bbpkt, BBPacketConsoleMsg):
                         self.rxq.put((self, bbpkt.text))
                     else:
-                        self._handle(bbpkt)
+                        self._handle_packet(bbpkt)
                 # send
                 try:
                     pkt = self._txq.get(block=False)

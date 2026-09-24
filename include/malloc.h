@@ -2,7 +2,9 @@
 #ifndef __MALLOC_H
 #define __MALLOC_H
 
+#include <linux/cleanup.h>
 #include <linux/compiler.h>
+#include <linux/err.h>
 #include <types.h>
 
 #define MALLOC_SHIFT_MAX	30
@@ -80,6 +82,9 @@ static inline int mem_malloc_is_initialized(void)
 	return 0;
 }
 #endif
+
+DEFINE_FREE(free, void *, if (!IS_ERR_OR_NULL(_T)) free(_T))
+DEFINE_FREE(free_sensitive, void *, if (!IS_ERR_OR_NULL(_T)) free_sensitive(_T))
 
 static inline bool want_init_on_alloc(void)
 {

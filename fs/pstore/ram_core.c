@@ -295,7 +295,8 @@ void persistent_ram_save_old(struct persistent_ram_zone *prz)
 	size_t size = buffer_size(prz);
 	size_t start = buffer_start(prz);
 
-	if (!size)
+	/* Its header is invalid or its contents were saved already */
+	if (!size || prz->zap_pending)
 		return;
 
 	/*
@@ -330,6 +331,9 @@ int notrace persistent_ram_write(struct persistent_ram_zone *prz,
 	int c = count;
 	size_t start;
 
+	if (unlikely(prz->zap_pending))
+		persistent_ram_zap(prz);
+
 	if (unlikely(c > prz->buffer_size)) {
 		s += c - prz->buffer_size;
 		c = prz->buffer_size;
@@ -358,6 +362,9 @@ int notrace persistent_ram_write_user(struct persistent_ram_zone *prz,
 {
 	int rem, ret = 0, c = count;
 	size_t start;
+
+	if (unlikely(prz->zap_pending))
+		persistent_ram_zap(prz);
 
 	if (unlikely(c > prz->buffer_size)) {
 		s += c - prz->buffer_size;
@@ -402,9 +409,11 @@ void persistent_ram_free_old(struct persistent_ram_zone *prz)
 
 void persistent_ram_zap(struct persistent_ram_zone *prz)
 {
+	prz->buffer->sig = prz->sig;
 	atomic_set(&prz->buffer->start, 0);
 	atomic_set(&prz->buffer->size, 0);
 	persistent_ram_update_header_ecc(prz);
+	prz->zap_pending = false;
 }
 
 static int persistent_ram_buffer_map(phys_addr_t start, phys_addr_t size,
@@ -446,6 +455,7 @@ static int persistent_ram_post_init(struct persistent_ram_zone *prz, u32 sig,
 	}
 
 	sig ^= PERSISTENT_RAM_SIG;
+	prz->sig = sig;
 
 	if (prz->buffer->sig == sig) {
 		if (buffer_size(prz) == 0 && buffer_start(prz) == 0) {
@@ -466,13 +476,15 @@ static int persistent_ram_post_init(struct persistent_ram_zone *prz, u32 sig,
 	} else {
 		pr_debug("no valid data in buffer (sig = 0x%08x)\n",
 			 prz->buffer->sig);
-		prz->buffer->sig = sig;
 		zap = true;
 	}
 
-	/* Reset missing, invalid, or single-use memory area. */
-	if (zap)
-		persistent_ram_zap(prz);
+	/*
+	 * Reset missing, invalid, or single-use memory area, but only once
+	 * it is written to: unlike Linux, barebox is not the last to read
+	 * it, so merely reading must leave it intact for the kernel.
+	 */
+	prz->zap_pending = zap;
 
 	return 0;
 }

@@ -36,9 +36,12 @@ config FS_PSTORE_RAMOOPS_RO
 	default y
 	prompt "pstore RAM backend read only"
 	help
-	  This prevents the data from being erased by reinitializing the ramoops
-	  area with new empty ECCs. Select this if you want to see the same
-	  ramoops in the kernel.
+	  This keeps the old contents of the console area when barebox writes
+	  its own console output to it, instead of erasing it first. Select
+	  this if you want to see the same ramoops in the kernel.
+
+	  Either way, barebox only resets an area when writing to it, never
+	  when merely reading it.
 
 config FS_PSTORE_RAMOOPS_SIZE
 	int

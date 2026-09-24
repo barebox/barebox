@@ -16,7 +16,8 @@
 #define PRZ_FLAG_NO_LOCK	BIT(0)
 /*
  * If a PRZ should only have a single-boot lifetime, this marks it as
- * getting wiped after its contents get copied out after boot.
+ * getting wiped before it is first written after its contents get
+ * copied out after boot.
  */
 #define PRZ_FLAG_ZAP_OLD	BIT(1)
 
@@ -36,6 +37,12 @@
  *	pointer to actual RAM area managed by this PRZ
  * @buffer_size:
  *	bytes in @buffer->data (not including any trailing ECC bytes)
+ * @sig:
+ *	signature @buffer carries once initialized
+ * @zap_pending:
+ *	@buffer has no valid header or single-use contents and must be reset
+ *	before it is written. Merely reading the zone never resets it, so the
+ *	kernel gets to see what barebox saw
  *
  * @par_buffer:
  *	pointer into @buffer->data containing ECC bytes for @buffer->data
@@ -69,6 +76,8 @@ struct persistent_ram_zone {
 	raw_spinlock_t buffer_lock;
 	struct persistent_ram_buffer *buffer;
 	size_t buffer_size;
+	u32 sig;
+	bool zap_pending;
 
 	char *par_buffer;
 	char *par_header;

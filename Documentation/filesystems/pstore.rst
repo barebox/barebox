@@ -77,9 +77,15 @@ All pstore files that could be found are added to the /pstore directory. This is
 a read-only filesystem with the only supported operation being unlinking:
 This resets (zaps) the RAMOOPS area and recalculates the ECC.
 
-Zapping is done automatically, if the menu entry ``FS_PSTORE_RAMOOPS_RO`` is
-disabled. In this case, only the barebox log will be available to the kernel
-and ramoops from previous boots will not survive.
+Reading never zaps an area, so the kernel gets to see the same data as
+barebox. Records barebox can't parse, like a dmesg record whose header has
+partly decayed, are shown as-is. An area with a missing or invalid header is
+not shown and only zapped once barebox writes to it.
+
+If the menu entry ``FS_PSTORE_RAMOOPS_RO`` is disabled, barebox also zaps the
+console area before writing its own console output to it. In this case, only
+the barebox log will be available to the kernel as console ramoops and the
+console log of the previous boot will not survive.
 
 The usual setup is to not zap any buffers, i.e. ``CONFIG_FS_PSTORE_RAMOOPS_RO=y``
 and no manual unlinking of files in ``/pstore``.

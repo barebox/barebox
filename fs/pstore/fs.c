@@ -26,100 +26,66 @@
 #include <linux/stat.h>
 #include <linux/err.h>
 #include <linux/pstore.h>
+#include <linux/slab.h>
 #include <libbb.h>
 #include <rtc.h>
 #include <libfile.h>
 #include "internal.h"
+
+#define PSTORE_NAMELEN	64
 
 struct list_head allpstore = LIST_HEAD_INIT(allpstore);
 
 struct pstore_private {
 	char name[PSTORE_NAMELEN];
 	struct list_head list;
-	struct pstore_info *psi;
-	enum pstore_type_id type;
-	u64	id;
-	int	count;
+	struct pstore_record *record;
 	ssize_t	size;
 	ssize_t pos;
-	char	data[];
 };
+
+static void free_pstore_private(struct pstore_private *private)
+{
+	struct pstore_record *record = private->record;
+
+	kvfree(record->buf);
+	kfree(record->priv);
+	kfree(record);
+	free(private);
+}
 
 /*
  * Make a regular file in the root directory of our file system.
  * Load it up with "size" bytes of data from "buf".
- * Set the mtime & ctime to the date that this record was originally stored.
+ * On success, the file takes ownership of the record.
  */
-int pstore_mkfile(struct pstore_record *record)
+int pstore_mkfile(struct dentry *root, struct pstore_record *record)
 {
 	struct pstore_private	*private, *pos;
-	size_t			size = record->size;
 
 	list_for_each_entry(pos, &allpstore, list) {
-		if (pos->type == record->type &&
-		    pos->id == record->id &&
-		    pos->psi == record->psi)
+		if (pos->record->type == record->type &&
+		    pos->record->id == record->id &&
+		    pos->record->psi == record->psi)
 			return -EEXIST;
 	}
 
-	private = xzalloc(struct_size(private, data, size));
-	private->type = record->type;
-	private->id = record->id;
-	private->count = record->count;
-	private->psi = record->psi;
+	private = xzalloc(sizeof(*private));
+	private->record = record;
+	private->size = record->size + record->ecc_notice_size;
 
-	switch (record->type) {
-	case PSTORE_TYPE_DMESG:
-		scnprintf(private->name, sizeof(private->name),
-			  "dmesg-%s-%lld%s", record->psi->name, record->id,
-			  record->compressed ? ".enc.z" : "");
-		break;
-	case PSTORE_TYPE_CONSOLE:
-		scnprintf(private->name, sizeof(private->name),
-			  "console-%s-%lld", record->psi->name, record->id);
-		break;
-	case PSTORE_TYPE_FTRACE:
-		scnprintf(private->name, sizeof(private->name),
-			  "ftrace-%s-%lld", record->psi->name, record->id);
-		break;
-	case PSTORE_TYPE_MCE:
-		scnprintf(private->name, sizeof(private->name),
-			  "mce-%s-%lld", record->psi->name, record->id);
-		break;
-	case PSTORE_TYPE_PPC_RTAS:
-		scnprintf(private->name, sizeof(private->name),
-			  "rtas-%s-%lld", record->psi->name, record->id);
-		break;
-	case PSTORE_TYPE_PPC_OF:
-		scnprintf(private->name, sizeof(private->name),
-			  "powerpc-ofw-%s-%lld", record->psi->name, record->id);
-		break;
-	case PSTORE_TYPE_PPC_COMMON:
-		scnprintf(private->name, sizeof(private->name),
-			  "powerpc-common-%s-%lld", record->psi->name,
-			  record->id);
-		break;
-	case PSTORE_TYPE_PMSG:
-		scnprintf(private->name, sizeof(private->name),
-			  "pmsg-%s-%lld", record->psi->name, record->id);
-		break;
-	case PSTORE_TYPE_UNKNOWN:
-		scnprintf(private->name, sizeof(private->name),
-			  "unknown-%s-%lld", record->psi->name, record->id);
-		break;
-	default:
-		scnprintf(private->name, sizeof(private->name),
-			  "type%d-%s-%lld", record->type, record->psi->name,
-			  record->id);
-		break;
-	}
-
-	memcpy(private->data, record->buf, size);
-	private->size = size;
+	scnprintf(private->name, sizeof(private->name), "%s-%s-%llu%s",
+		  pstore_type_to_name(record->type), record->psi->name,
+		  record->id, record->compressed ? ".enc.z" : "");
 
 	list_add(&private->list, &allpstore);
 
 	return 0;
+}
+
+void pstore_get_records(int quiet)
+{
+	pstore_get_backend_records(psinfo, NULL, quiet);
 }
 
 static struct pstore_private *pstore_get_by_name(struct list_head *head,
@@ -167,7 +133,7 @@ static int pstore_read(struct file *file, void *buf,
 {
 	struct pstore_private *d = file->private_data;
 
-	memcpy(buf, &d->data[d->pos], insize);
+	memcpy(buf, &d->record->buf[d->pos], insize);
 	d->pos += insize;
 
 	return insize;
@@ -192,15 +158,15 @@ static int pstore_unlink(struct device *dev, const char *filename)
 	if (!d)
 		return -ENOENT;
 
-	if (!d->psi->erase)
+	if (!d->record->psi->erase)
 		return -EPERM;
 
-	ret = d->psi->erase(d->type, d->id, d->count, d->psi);
+	ret = d->record->psi->erase(d->record);
 	if (ret)
 		return ret;
 
 	list_del(&d->list);
-	free(d);
+	free_pstore_private(d);
 
 	return 0;
 }
@@ -259,7 +225,7 @@ static void pstore_remove(struct device *dev)
 	struct pstore_private *d, *tmp;
 
 	list_for_each_entry_safe(d, tmp, &allpstore, list) {
-		free(d);
+		free_pstore_private(d);
 	}
 }
 

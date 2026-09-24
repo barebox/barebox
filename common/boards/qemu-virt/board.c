@@ -10,7 +10,6 @@
 #include <compressed-dtb.h>
 #include <deep-probe.h>
 #include <security/policy.h>
-#include "qemu-virt-flash.h"
 #include "commandline.h"
 
 #ifdef CONFIG_64BIT
@@ -39,9 +38,6 @@ static inline void arm_virt_init(void)
 static inline void arm_virt_init(void) {}
 #endif
 
-extern char __dtbo_qemu_virt_flash_start[];
-extern char __dtbo_qemu_virt_flash_nonsecure_start[];
-
 static const struct of_device_id virt_of_match[] = {
 	{ .compatible = "linux,dummy-virt", .data = arm_virt_init },
 	{ .compatible = "riscv-virtio" },
@@ -60,7 +56,6 @@ static bool is_qemu_virt;
 static int virt_board_driver_init(void)
 {
 	struct device_node *root = of_get_root_node();
-	struct device_node *flash;
 	const struct of_device_id *id;
 	void (*init)(void);
 
@@ -74,23 +69,6 @@ static int virt_board_driver_init(void)
 		init = id->data;
 		init();
 	}
-
-	/*
-	 * Catch both old Qemu versions that place /flash in /soc and
-	 * configurations, where the first flash bank is secure-world only
-	 */
-	flash = of_find_node_by_path(PARTS_TARGET_PATH_STR);
-	if (flash && of_device_is_available(flash)) {
-		of_overlay_apply_dtbo(root, __dtbo_qemu_virt_flash_start);
-	} else if (IS_ENABLED(CONFIG_ARM)) {
-		flash = of_find_node_by_path("/flash@4000000");
-		if (flash && of_device_is_available(flash))
-			of_overlay_apply_dtbo(root, __dtbo_qemu_virt_flash_nonsecure_start);
-	}
-
-
-	/* fragment may have added aliases to the DT */
-	of_alias_scan();
 
 	/* of_probe() will happen later at of_populate_initcall */
 

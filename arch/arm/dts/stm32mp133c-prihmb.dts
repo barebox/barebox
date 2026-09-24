@@ -6,8 +6,6 @@
 #include "stm32mp131.dtsi"
 
 / {
-	barebox,deep-probe;
-
 	aliases {
 		state = &state_emmc;
 	};

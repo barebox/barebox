@@ -8,7 +8,6 @@
 #include <arm/st/stm32mp15-pinctrl.dtsi>
 #include <arm/st/stm32mp15xxad-pinctrl.dtsi>
 
-#include "stm32mp151.dtsi"
 
 / {
 	chosen {

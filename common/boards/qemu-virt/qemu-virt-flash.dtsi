@@ -5,6 +5,13 @@
 
 #include "qemu-virt-flash.h"
 
+/ {
+	compatible = "linux,dummy-virt", "riscv-virtio";
+
+	/* Qemu only splits the banks on a secure machine; assert ours */
+	barebox,assert-available = PARTS_TARGET_PATH_STR;
+};
+
 &{PARTS_TARGET_PATH} {
 #ifdef VIRTUAL_REG
 	virtual-reg = <VIRTUAL_REG>;

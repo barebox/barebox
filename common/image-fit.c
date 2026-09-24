@@ -333,6 +333,7 @@ static int fit_config_build_hash_nodes(struct fit_handle *handle,
 	for_each_property_of_node(conf_node, prop) {
 		if (!strcmp(prop->name, "description") ||
 		    !strcmp(prop->name, "compatible") ||
+		    !strcmp(prop->name, "cmdline") ||
 		    !strcmp(prop->name, "default"))
 			continue;
 

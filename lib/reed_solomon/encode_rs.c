@@ -1,23 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0
+// SPDX-Comment: Origin-URL: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/lib/reed_solomon/encode_rs.c?id=2e4b28c48f88ce9e263957b1d944cf5349952f88
 /*
- * lib/reed_solomon/encode_rs.c
- *
- * Overview:
- *   Generic Reed Solomon encoder / decoder library
+ * Generic Reed Solomon encoder / decoder library
  *
  * Copyright 2002, Phil Karn, KA9Q
  * May be used under the terms of the GNU General Public License (GPL)
  *
- * Adaption to the kernel by Thomas Gleixner (tglx@linutronix.de)
+ * Adaption to the kernel by Thomas Gleixner (tglx@kernel.org)
  *
- * $Id: encode_rs.c,v 1.5 2005/11/07 11:14:59 gleixner Exp $
- *
- */
-
-/* Generic data width independent code which is included by the
- * wrappers.
- * int encode_rsX (struct rs_control *rs, uintX_t *data, int len, uintY_t *par)
+ * Generic data width independent code which is included by the wrappers.
  */
 {
+	struct rs_codec *rs = rsc->codec;
 	int i, j, pad;
 	int nn = rs->nn;
 	int nroots = rs->nroots;

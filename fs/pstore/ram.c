@@ -639,6 +639,19 @@ fail_out:
 	kfree(pdata);
 	return err;
 }
+
+static const struct of_device_id ramoops_dt_ids[] = {
+	{ .compatible = "ramoops" },
+	{ },
+};
+MODULE_DEVICE_TABLE(of, ramoops_dt_ids);
+
+static struct driver ramoops_driver = {
+	.name = "ramoops",
+	.probe = ramoops_probe,
+	.of_compatible = DRV_OF_COMPAT(ramoops_dt_ids),
+};
+
 unsigned long arm_mem_ramoops_get(void);
 
 static void ramoops_register_dummy(void)
@@ -663,18 +676,6 @@ static void ramoops_register_dummy(void)
 	 */
 	dummy_data->ecc_info.ecc_size = ramoops_ecc == 1 ? 16 : ramoops_ecc;
 }
-
-static const struct of_device_id ramoops_dt_ids[] = {
-	{ .compatible = "ramoops" },
-	{ },
-};
-MODULE_DEVICE_TABLE(of, ramoops_dt_ids);
-
-static struct driver ramoops_driver = {
-	.name = "ramoops",
-	.probe = ramoops_probe,
-	.of_compatible = DRV_OF_COMPAT(ramoops_dt_ids),
-};
 
 static int __init ramoops_init(void)
 {

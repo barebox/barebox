@@ -22,6 +22,8 @@ config FS_PSTORE_RAMOOPS
 	depends on ARM
 	depends on OFTREE
 	select REED_SOLOMON
+	select REED_SOLOMON_ENC8
+	select REED_SOLOMON_DEC8
 	prompt "pstore RAM backend"
 	help
 	  Here the data is stored in a specific memory area that is neither

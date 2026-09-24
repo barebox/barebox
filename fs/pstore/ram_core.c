@@ -19,13 +19,14 @@
 #include <linux/kernel.h>
 #include <linux/list.h>
 #include <linux/rslib.h>
-#include <linux/pstore_ram.h>
 #include <linux/string.h>
 #include <linux/atomic.h>
 #include <stdio.h>
 #include <malloc.h>
 #include <memory.h>
 #include <common.h>
+
+#include "ram_internal.h"
 
 struct persistent_ram_buffer {
 	uint32_t    sig;

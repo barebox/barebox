@@ -25,7 +25,6 @@
 #include <linux/time.h>
 #include <linux/ioport.h>
 #include <linux/compiler.h>
-#include <linux/pstore_ram.h>
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/log2.h>
@@ -37,6 +36,8 @@
 #include <common.h>
 #include <of.h>
 #include <of_address.h>
+
+#include "ram_internal.h"
 
 #define RAMOOPS_KERNMSG_HDR "===="
 #define MIN_MEM_SIZE 4096UL

@@ -49,6 +49,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_IDR
 	select SELFTEST_TLV
 	select SELFTEST_DM
+	select SELFTEST_LVM if BLOCK
 	select SELFTEST_TALLOC
 	select SELFTEST_BLSPEC if BLSPEC && DEFAULT_ENVIRONMENT
 	help
@@ -152,6 +153,19 @@ config SELFTEST_TLV
 	select TLV
 	select BASE64
 	select BOARD_LXA
+
+config SELFTEST_LVM
+	bool "LVM selftest"
+	depends on BLOCK
+	select DM_LVM
+	select RAMDISK_BLK
+	help
+	  Tests the parsing of LVM2 metadata, using physical volume
+	  images that are assembled in memory and backed by ramdisks.
+	  This covers the tokenizer, the recovery from damaged labels
+	  and metadata areas, the selection of the most recent metadata
+	  when the physical volumes of a group disagree, and the mapping
+	  of logical volumes onto the extents they are made of.
 
 config SELFTEST_DM
 	bool "Device mapper selftest"

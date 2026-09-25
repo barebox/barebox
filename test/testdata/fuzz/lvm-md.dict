@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# libfuzzer dictionary for the "lvm-md" fuzzer, which exercises the
+# LVM2 metadata tokenizer. Pass it with -dict=, e.g.
+#
+#   images/fuzz-lvm-md -dict=test/testdata/fuzz/lvm-md.dict
+
+# Separators
+# (libfuzzer only supports escaping backslash, quote and xAB)
+"#"
+" "
+"\x09"
+"\x0a"
+"\x0d"
+"="
+"{"
+"}"
+"["
+"]"
+","
+"\""
+
+"sec_name {"
+"prim"
+"complex+prim.0"
+"\"string literal\""
+"\"FLAG\""
+"\"unterminated"
+"unopened\""

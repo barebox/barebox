@@ -808,6 +808,17 @@ config CMD_VERITYSETUP
 	  commands:
 	        open <data-dev> <name> <hash-dev> <root-hash>
 
+config CMD_LVM
+	tristate
+	depends on DM_LVM
+	prompt "lvm"
+	help
+	  lvm - inspect and activate LVM2 logical volumes
+
+	  commands:
+	        info
+	        activate <vg> <lv> [<name>]
+
 # end Partition commands
 endmenu
 

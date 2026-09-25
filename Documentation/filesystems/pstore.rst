@@ -110,3 +110,29 @@ Logs (including barebox log messages if enabled) will then be written to
 journal by default and are accessible via::
 
   journalctl -b -o verbose -a -t systemd-pstore
+
+Testing RAM retention
+---------------------
+
+*pstore/RAMOOPS* only works if the RAM contents survive the reset in between,
+which depends on the way the board is reset: A watchdog or PMIC reset may cut
+the power to the RAM, and firmware running early may reinitialize the RAM
+controller or use parts of the RAM.
+
+To find out what survives, enable ``CONFIG_FS_PSTORE_RAMOOPS_TEST``. The RAM
+area then no longer serves pstore. Instead, barebox compares it against a
+fixed pseudo-random pattern on every start, reports the result and fills the
+area with the pattern again for the next reset:
+
+.. code-block:: none
+
+  ramoops: retention test: 2093061 of 2097152 bytes intact (99.80%)
+  ramoops: 16404 bits flipped from 1 to 0, 7 from 0 to 1
+  ramoops: lost 0x7fd80008 - 0x7fd8000b (0x4 bytes)
+  ramoops: lost 0x7fe00004 - 0x7fe00004 (0x1 bytes)
+  ramoops: lost 0x7ff20100 - 0x7ff210ff (0x1000 bytes)
+  ramoops: wrote retention test pattern to 0x200000@0x7fd80000, pstore disabled
+
+The kernel only gets the area as reserved memory, so it's possible to boot an
+OS and have it reset the board. The first start after power-on reports what
+survived with the power off, usually next to nothing.

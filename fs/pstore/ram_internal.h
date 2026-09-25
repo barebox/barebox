@@ -107,3 +107,6 @@ void *persistent_ram_old(struct persistent_ram_zone *prz);
 void persistent_ram_free_old(struct persistent_ram_zone *prz);
 ssize_t persistent_ram_ecc_string(struct persistent_ram_zone *prz,
 	char *str, size_t len);
+
+/* barebox: see ram_test.c */
+int ramoops_retention_test(phys_addr_t start, size_t size);

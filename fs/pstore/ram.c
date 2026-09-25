@@ -806,6 +806,10 @@ static int ramoops_probe(struct device *dev)
 		goto fail_out;
 	}
 
+	if (IS_ENABLED(CONFIG_FS_PSTORE_RAMOOPS_TEST))
+		return ramoops_retention_test(pdata->mem_address,
+					      pdata->mem_size);
+
 	if (pdata->record_size && !is_power_of_2(pdata->record_size))
 		pdata->record_size = rounddown_pow_of_two(pdata->record_size);
 	if (pdata->console_size && !is_power_of_2(pdata->console_size))

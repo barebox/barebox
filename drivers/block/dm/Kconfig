@@ -18,3 +18,13 @@ config DM_BLK_VERITY
 	help
 	  Transparent integrity checking of underlying device using a
 	  pre-computed Merkle tree.
+
+config DM_LVM
+	bool "LVM2 support"
+	depends on DM_BLK_LINEAR
+	select QSORT
+	help
+	  Support for the Logical Volume Manager (LVM2) on-disk format.
+	  Parses the metadata of physical volumes to assemble volume
+	  groups and lets logical volumes be activated as device mapper
+	  devices. Only linear logical volumes are currently supported.

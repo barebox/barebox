@@ -2,3 +2,4 @@
 obj-$(CONFIG_DM_BLK) += dm-core.o
 obj-$(CONFIG_DM_BLK_LINEAR) += dm-linear.o
 obj-$(CONFIG_DM_BLK_VERITY) += dm-verity.o
+obj-$(CONFIG_DM_LVM) += lvm/

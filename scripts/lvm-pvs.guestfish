@@ -1,0 +1,55 @@
+#!/usr/bin/guestfish -f
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Create a single disk image that holds two LVM PVs. This is used by
+# the LVM labgrid tests.
+
+alloc lvm-pvs.disk 8M
+launch
+
+part-init /dev/sda gpt
+part-add /dev/sda p 34 8191
+part-add /dev/sda p 8192 -34
+part-set-name /dev/sda 1 pv1
+part-set-name /dev/sda 2 pv2
+
+# Keep sizes reasonably small
+debug sh "lvm pvcreate --metadatasize 4k /dev/sda1"
+debug sh "lvm pvcreate --metadatasize 4k --pvmetadatacopies 2 /dev/sda2"
+debug sh "lvm vgcreate -s 4k testvg /dev/sda1 /dev/sda2"
+
+# Create an LV with three segments that span both PVs
+debug sh "lvm lvcreate -y -n testlv -l 8 testvg /dev/sda1:8-15"
+debug sh "lvm lvextend -l +8 testvg/testlv /dev/sda2:0-7"
+debug sh "lvm lvextend -l +8 testvg/testlv /dev/sda1:0-7"
+
+debug sh "lvm lvs -o lv_name,seg_le_ranges --segments testvg"
+
+mkfs vfat /dev/testvg/testlv
+mount /dev/testvg/testlv /
+
+# Generate a test file that:
+# 1. Is big enough to be spread over all three segments
+# 2. Contains data that is sensitive to reordering
+# 3. Compresses well, since we're checking it in
+debug sh "printf \'0%*s0\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'1%*s1\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'2%*s2\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'3%*s3\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'4%*s4\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'5%*s5\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'6%*s6\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'7%*s7\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'8%*s8\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'9%*s9\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'a%*sa\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'b%*sb\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'c%*sc\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'d%*sd\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'e%*se\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'f%*sf\' 4094 >>/sysroot/bigfile"
+debug sh "printf \'g%*sg\' 4094 >>/sysroot/bigfile"
+debug sh "md5sum </sysroot/bigfile >/sysroot/bigfile.md5sum"
+
+umount /
+

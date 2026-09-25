@@ -33,7 +33,6 @@
 #include <malloc.h>
 #include <linux/printk.h>
 #include <stdio.h>
-#include <globalvar.h>
 #include <init.h>
 #include <common.h>
 #include <of.h>
@@ -536,9 +535,8 @@ static int ramoops_probe(struct device *dev)
 	size_t dump_mem_sz;
 	phys_addr_t paddr;
 	int err = -EINVAL;
-	char kernelargs[512];
 
-	if (IS_ENABLED(CONFIG_OFTREE) && !pdata) {
+	if (!pdata) {
 		pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
 		if (!pdata) {
 			err = -ENOMEM;
@@ -620,26 +618,7 @@ static int ramoops_probe(struct device *dev)
 		cxt->size, (unsigned long long)cxt->phys_addr,
 		cxt->ecc_info.ecc_size, cxt->ecc_info.block_size);
 
-	if (!IS_ENABLED(CONFIG_OFTREE)) {
-		scnprintf(kernelargs, sizeof(kernelargs),
-			  "ramoops.record_size=0x%zx "
-			  "ramoops.console_size=0x%zx "
-			  "ramoops.ftrace_size=0x%zx "
-			  "ramoops.pmsg_size=0x%zx "
-			  "ramoops.mem_address=0x%llx "
-			  "ramoops.mem_size=0x%lx "
-			  "ramoops.ecc=%d",
-			  cxt->record_size,
-			  cxt->console_size,
-			  cxt->ftrace_size,
-			  cxt->pmsg_size,
-			  (unsigned long long)cxt->phys_addr,
-			  mem_size,
-			  ramoops_ecc);
-		globalvar_add_simple("linux.bootargs.ramoops", kernelargs);
-	} else {
-		of_register_fixup(ramoops_of_fixup, pdata);
-	}
+	of_register_fixup(ramoops_of_fixup, pdata);
 
 	device_add_resource(dev, "mem", pdata->mem_address, pdata->mem_size,
 			    IORESOURCE_MEM);
@@ -682,9 +661,6 @@ static void ramoops_register_dummy(void)
 	 * (using 1 byte for ECC isn't much of use anyway).
 	 */
 	dummy_data->ecc_info.ecc_size = ramoops_ecc == 1 ? 16 : ramoops_ecc;
-
-	if (!IS_ENABLED(CONFIG_OFTREE))
-		ramoops_probe(NULL);
 }
 
 static const struct of_device_id ramoops_dt_ids[] = {

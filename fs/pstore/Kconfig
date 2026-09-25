@@ -20,6 +20,7 @@ config FS_PSTORE_RAMOOPS
 	bool
 	depends on RELOCATABLE
 	depends on ARM
+	depends on OFTREE
 	select REED_SOLOMON
 	prompt "pstore RAM backend"
 	help

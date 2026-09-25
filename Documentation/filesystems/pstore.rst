@@ -42,13 +42,8 @@ written):
 
 To use *pstore/RAMOOPS* both Barebox and Kernel have to be compiled with *pstore*
 and RAM backend support. The kernel receives the parameters describing the
-layout via devicetree or - as a fallback - over the kernel command line.
-To ensure both worlds are using the same memory layout, the required
-configuration data for the kernel is generated on-the-fly prior to booting a
-kernel.
-For the devicetree use case Barebox adapts the kernel's devicetree, for the
-kernel command line fallback the variable ``global.linux.bootargs.ramoops`` is
-created and its content used to build the kernel command line.
+layout via devicetree. To ensure both worlds are using the same memory layout,
+Barebox adapts the kernel's devicetree on-the-fly prior booting a kernel.
 
 You can adapt the *pstore* parameters in Barebox menuconfig.
 

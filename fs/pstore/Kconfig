@@ -44,6 +44,22 @@ config FS_PSTORE_RAMOOPS_ALWAYS
 	  Opt out is possible by adding a ramoops-compatible node with
 	  status = "disabled".
 
+config FS_PSTORE_RAMOOPS_TEST
+	bool
+	prompt "Test RAM retention instead of storing records"
+	help
+	  Use the RAM area to test how much of it survives a reset instead
+	  of for pstore: On every start, barebox compares the area against
+	  a fixed pseudo-random pattern, reports how many bytes survived
+	  and which ranges were lost, and then fills it with the pattern
+	  again for the next reset.
+
+	  The kernel only gets the area as reserved memory, so this also
+	  covers resets triggered by the kernel. The first start after
+	  power-on reports what survived with the power off.
+
+	  pstore is not available with this option enabled.
+
 config FS_PSTORE_RAMOOPS_RO
 	bool
 	default y

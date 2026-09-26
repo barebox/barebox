@@ -484,7 +484,8 @@ int complete(char *instr, char **outstr)
 
 	first_entry = list_first_entry(&sl.list, struct string_list, list);
 
-	while (1) {
+	/* leave room for the terminating NUL */
+	while (outpos < sizeof(out) - 1) {
 		entry = first_entry;
 		ch = entry->str[pos];
 		if (!ch)

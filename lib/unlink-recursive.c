@@ -12,7 +12,8 @@ static int file_action(const char *filename, struct stat *statbuf,
 			    void *userdata, int depth)
 {
 	if (unlink(filename)) {
-		strcpy(unlink_recursive_failedpath, filename);
+		strscpy(unlink_recursive_failedpath, filename,
+			sizeof(unlink_recursive_failedpath));
 		return 0;
 	}
 
@@ -23,7 +24,8 @@ static int dir_action(const char *dirname, struct stat *statbuf,
 			    void *userdata, int depth)
 {
 	if (rmdir(dirname)) {
-		strcpy(unlink_recursive_failedpath, dirname);
+		strscpy(unlink_recursive_failedpath, dirname,
+			sizeof(unlink_recursive_failedpath));
 		return 0;
 	}
 

@@ -1,0 +1,109 @@
+name: OSS-Fuzz
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      image: ghcr.io/barebox/barebox/barebox-ci:latest
+      options: --user=root
+
+    outputs:
+      targets: ${{ steps.targets.outputs.targets }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        path: barebox
+
+    # Next to the source tree, where oss-fuzz.sh looks for it
+    - name: Checkout corpora
+      uses: actions/checkout@v4
+      with:
+        repository: barebox/barebox-fuzz-corpora
+        path: barebox-fuzz-corpora
+
+    - name: Install zip
+      run: apt-get update && apt-get install -y --no-install-recommends zip
+
+    - name: Build fuzzers
+      working-directory: barebox
+      run: ./scripts/oss-fuzz.sh
+
+    - name: List fuzz targets
+      id: targets
+      working-directory: barebox/oss-fuzz-work/out
+      run: |
+        targets=$(ls | sed -n 's/^fuzz-\([^.]*\)$/\1/p' | jq -Rnc '[inputs]')
+        echo "targets=$targets" >> "$GITHUB_OUTPUT"
+
+    - name: Upload fuzzers
+      uses: actions/upload-artifact@v4
+      with:
+        name: oss-fuzz-out
+        path: barebox/oss-fuzz-work/out/
+        retention-days: 1
+
+  # The configuration OSS-Fuzz generates coverage reports with
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      image: ghcr.io/barebox/barebox/barebox-ci:latest
+      options: --user=root
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build fuzzers
+      run: SANITIZER=coverage ./scripts/oss-fuzz.sh
+
+  fuzz:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: ghcr.io/barebox/barebox/barebox-ci:latest
+      options: --user=root
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.build.outputs.targets) }}
+
+    env:
+      FUZZER: out/fuzz-${{ matrix.target }}
+
+    steps:
+    - name: Download fuzzers
+      uses: actions/download-artifact@v4
+      with:
+        name: oss-fuzz-out
+        path: out
+
+    - name: Fuzz for a minute
+      run: |
+        # Artifacts drop the exec bit
+        chmod +x "$FUZZER"
+        mkdir -p corpus artifacts
+
+        # Unpack the seeds with Python's zipfile, like ClusterFuzz does
+        if [ -e "${FUZZER}_seed_corpus.zip" ]; then
+          python3 -m zipfile -e "${FUZZER}_seed_corpus.zip" corpus
+        fi
+
+        # Like OSS-Fuzz, which reports inputs taking over ~25s as timeouts
+        "$FUZZER" -max_total_time=60 -timeout=25 -print_final_stats=1 \
+          -artifact_prefix="$PWD/artifacts/" corpus
+
+    - name: Upload crashes
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: crashes-${{ matrix.target }}
+        path: artifacts/
+        if-no-files-found: ignore

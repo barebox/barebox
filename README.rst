@@ -149,7 +149,7 @@ just like every other program::
   # ./barebox -i squashfs.bin
 
   add fd0 backed by file squashfs.bin
-  add stickypage backed by file /run/user/1000/barebox/stickypage.1661112
+  add stickypage backed by file /proc/self/fd/3
 
   barebox 2024.07.0 #0 Wed Jul 18 11:36:31 CEST 2024
   [...]

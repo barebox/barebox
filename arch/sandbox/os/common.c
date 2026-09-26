@@ -97,13 +97,9 @@ static void cookmode(void)
 	tcsetattr(0, TCSANOW, &term_orig);
 }
 
-static char *stickypage_path;
-
 static void prepare_exit(void)
 {
 	cookmode();
-	if (stickypage_path)
-		remove(stickypage_path);
 }
 
 int linux_tstc(int fd)
@@ -159,6 +155,60 @@ void __attribute__((noreturn)) linux_exit(void)
 
 static char **saved_argv;
 
+/*
+ * The stickypage is kept in an anonymous memfd, so it's released by the
+ * kernel however barebox terminates and needs no cleanup on our side.
+ * To have it survive a reexec, the file descriptor is inherited over
+ * execv() and its number is passed along in the environment.
+ */
+#define STICKYPAGE_FD_ENV	"BAREBOX_STICKYPAGE_FD"
+
+extern uint8_t stickypage[4096];
+
+static int stickypage_fd = -1;
+static char *stickypage_path;
+
+static void stickypage_pass_on(void)
+{
+	char buf[16];
+
+	if (stickypage_fd < 0)
+		return;
+
+	/* clear FD_CLOEXEC, so the memfd stays open across execv() */
+	if (fcntl(stickypage_fd, F_SETFD, 0) < 0)
+		return;
+
+	snprintf(buf, sizeof(buf), "%d", stickypage_fd);
+	setenv(STICKYPAGE_FD_ENV, buf, 1);
+}
+
+static int stickypage_inherit(void)
+{
+	const char *env;
+	struct stat s;
+	char *end;
+	long fd;
+
+	env = getenv(STICKYPAGE_FD_ENV);
+	if (!env)
+		return -1;
+
+	fd = strtol(env, &end, 10);
+	unsetenv(STICKYPAGE_FD_ENV);
+
+	if (end == env || *end || fd < 0 || fd > INT_MAX)
+		return -1;
+
+	if (fstat(fd, &s) || !S_ISREG(s.st_mode) || s.st_size != sizeof(stickypage))
+		return -1;
+
+	if (fcntl(fd, F_SETFD, FD_CLOEXEC) < 0)
+		return -1;
+
+	return fd;
+}
+
 static int selfpath(char *buf, size_t len)
 {
 	int ret;
@@ -180,6 +230,8 @@ void linux_reexec(void)
 	ssize_t ret;
 
 	cookmode();
+
+	stickypage_pass_on();
 
 	/* we must follow the symlink, so we can exec an updated executable */
 	ret = selfpath(buf, sizeof(buf));
@@ -365,34 +417,23 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	return ret;
 }
 
-extern uint8_t stickypage[4096];
-
 char *linux_get_stickypage_path(void)
 {
 	size_t nwritten;
 	ssize_t ret;
 	int fd;
 
-	ret = asprintf(&stickypage_path, "%s/barebox/stickypage.%lu",
-		       getenv("XDG_RUNTIME_DIR") ?: "/run", (long)getpid());
-	if (ret < 0)
-		goto err_asprintf;
+	if (stickypage_path)
+		return stickypage_path;
 
-	ret = mkdir(dirname(stickypage_path), 0755);
-	if (ret < 0 && errno != EEXIST) {
-		perror("mkdir");
-		goto err_creat;
-	}
+	fd = stickypage_inherit();
+	if (fd >= 0)
+		goto out;
 
-	stickypage_path[strlen(stickypage_path)] = '/';
-
-	fd = open(stickypage_path, O_CREAT | O_WRONLY | O_TRUNC | O_EXCL, 0644);
+	fd = memfd_create("barebox-stickypage", MFD_CLOEXEC);
 	if (fd < 0) {
-		if (errno == EEXIST)
-			return stickypage_path;
-
-		perror("open");
-		goto err_creat;
+		perror("memfd_create");
+		return NULL;
 	}
 
 	for (nwritten = 0; nwritten < sizeof(stickypage); ) {
@@ -401,22 +442,24 @@ char *linux_get_stickypage_path(void)
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
 			perror("write");
-			goto err_write;
+			goto err;
 		}
 
 		nwritten += ret;
 	}
 
-	close(fd);
+out:
+	if (asprintf(&stickypage_path, "/proc/self/fd/%d", fd) < 0) {
+		stickypage_path = NULL;
+		goto err;
+	}
+
+	stickypage_fd = fd;
 
 	return stickypage_path;
 
-err_write:
+err:
 	close(fd);
-err_creat:
-	free(stickypage_path);
-err_asprintf:
-	stickypage_path = NULL;
 
 	return NULL;
 }

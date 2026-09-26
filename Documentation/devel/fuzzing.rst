@@ -189,3 +189,20 @@ with code that requires block devices.
 
 When adding a new fuzzing test, please also `submit a pullrequest
 with a corpus <https://github.com/barebox/barebox-fuzz-corpora/compare>`_.
+
+OSS-Fuzz
+^^^^^^^^
+
+``scripts/oss-fuzz.sh`` builds the fuzzers the way `OSS-Fuzz
+<https://github.com/google/oss-fuzz>`_ expects. It works outside of
+OSS-Fuzz as well, e.g. to reproduce its builds locally::
+
+  ./scripts/oss-fuzz.sh
+  ./oss-fuzz-work/out/fuzz-filetype
+
+``SANITIZER`` selects ``address``, ``undefined``, ``coverage``, ``none`` or
+the default ``all``, which combines ASan and UBSan in one build. Seed
+corpora are packaged from the barebox-fuzz-corpora checkout next to the
+barebox tree, or from ``CORPORA`` if set. New fuzzers are picked up via
+``--list-fuzzers``, so the script needs no changes for them. Only
+libFuzzer is supported as fuzzing engine.

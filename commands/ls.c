@@ -11,6 +11,8 @@
 #include <malloc.h>
 #include <getopt.h>
 #include <stringlist.h>
+#include <console.h>
+#include <xfuncs.h>
 
 /*
  * SIZELEN = strlen(itoa(MAX_LFS_FILESIZE)) + 1;
@@ -52,11 +54,18 @@ static void ls_one(const char *path, const char* fullname)
 	puts("\n");
 }
 
-int ls(const char *path, ulong flags)
+/*
+ * Every level of ls -R costs stack. A crafted file system can nest
+ * directories deeper than it has room for, or even loop back into a
+ * parent directory, so give up at some point.
+ */
+#define LS_MAX_DEPTH	32
+
+static int __ls(const char *path, ulong flags, unsigned int depth)
 {
 	DIR *dir;
 	struct dirent *d;
-	char tmp[PATH_MAX];
+	char *tmp;
 	struct stat s;
 	struct string_list sl;
 	struct string_list *entry;
@@ -93,37 +102,48 @@ int ls(const char *path, ulong flags)
 		string_list_print_by_column(&sl);
 	} else {
 		string_list_for_each_entry(entry, &sl) {
-			sprintf(tmp, "%s/%s", path, entry->str);
+			tmp = xasprintf("%s/%s", path, entry->str);
 			ret = lstat(tmp, &s);
-			if (ret) {
+			if (ret)
 				printf("%s: %pe\n", tmp, ERR_PTR(ret));
-				continue;
-			}
-
-			ls_one(entry->str, tmp);
+			else
+				ls_one(entry->str, tmp);
+			free(tmp);
 		}
 	}
 
 	if (!(flags & LS_RECURSIVE))
 		goto out;
 
+	if (depth >= LS_MAX_DEPTH) {
+		printf("%s: directory nesting too deep, not descending\n", path);
+		goto out;
+	}
+
 	string_list_for_each_entry(entry, &sl) {
-		sprintf(tmp, "%s/%s", path, entry->str);
+		if (ctrlc())
+			break;
+
+		tmp = xasprintf("%s/%s", path, entry->str);
 
 		ret = lstat(tmp, &s);
-		if (ret) {
+		if (ret)
 			printf("%s: %pe\n", tmp, ERR_PTR(ret));
-			continue;
-		}
+		else if (S_ISDIR(s.st_mode))
+			__ls(tmp, flags, depth + 1);
 
-		if (S_ISDIR(s.st_mode))
-			ls(tmp, flags);
+		free(tmp);
 	}
 
 out:
 	string_list_free(&sl);
 
 	return 0;
+}
+
+int ls(const char *path, ulong flags)
+{
+	return __ls(path, flags, 0);
 }
 
 static int do_ls(int argc, char *argv[])

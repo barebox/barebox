@@ -15,6 +15,10 @@ as:
 
   barebox:/ ls -l /mnt/ubootvar0
 
+Each variable is a file in the root directory. Variables whose name
+cannot be a file name, because it contains a ``/`` or is ``.`` or
+``..``, are not listed, but are kept in the environment unchanged.
+
 However the filesystem can be explicitly mounted with the following
 command:
 

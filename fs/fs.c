@@ -1134,6 +1134,13 @@ static int fillonedir(struct dir_context *ctx, const char *name, int namlen,
 		return 0;
 	}
 
+	if (!namlen || memchr(name, '/', namlen) ||
+	    memchr(name, '\0', namlen)) {
+		pr_warn("skipping directory entry '%.*s': invalid name\n",
+			namlen, name);
+		return 0;
+	}
+
 	entry = xzalloc(sizeof(*entry));
 	memcpy(entry->d.d_name, name, namlen);
 	list_add_tail(&entry->list, &rd->dir->entries);

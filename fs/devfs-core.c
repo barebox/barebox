@@ -550,6 +550,13 @@ int devfs_add_alias_node(struct cdev *cdev, const char *name, struct device_node
 	struct cdev *conflict;
 	struct cdev_alias *alias;
 
+	/*
+	 * The alias becomes a file name in /dev and /mnt, and it may come
+	 * from untrusted media, e.g. as a GPT partition name
+	 */
+	if (strchr(name, '/'))
+		return -EINVAL;
+
 	conflict = cdev_by_name(name);
 	if (conflict)
 		return -EEXIST;

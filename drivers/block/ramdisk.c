@@ -168,6 +168,7 @@ static void ramdisk_setup_size(struct ramdisk *ramdisk, size_t size)
 {
 	ramdisk->size = size;
 	ramdisk->blk.cdev.size = ALIGN(size, 1 << ramdisk->blk.blockbits);
+	ramdisk->blk.num_blocks = ramdisk->blk.cdev.size >> ramdisk->blk.blockbits;
 }
 
 void ramdisk_setup_ro(struct ramdisk *ramdisk, const void *data, size_t size)

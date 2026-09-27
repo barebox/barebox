@@ -66,6 +66,7 @@ SANDBOX_LIBS-y += -fsanitize=address
 ifeq ($(CONFIG_CC_IS_CLANG),y)
 KBUILD_CPPFLAGS += -fno-sanitize-address-globals-dead-stripping
 SANDBOX_LIBS-y += -fno-sanitize-address-globals-dead-stripping
+SANDBOX_LIBS-$(CONFIG_SANDBOX_LINK_CXX) += -fno-sanitize-link-c++-runtime
 endif
 endif
 

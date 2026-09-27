@@ -173,7 +173,7 @@ static int nvme_wait_ready(struct nvme_ctrl *ctrl, u64 cap, bool enabled)
 		if ((csts & NVME_CSTS_RDY) == bit)
 			break;
 
-		mdelay(100);
+		udelay(1000);
 
 		if (is_timeout(start, timeout)) {
 			dev_err(ctrl->dev,

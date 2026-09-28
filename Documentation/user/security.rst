@@ -84,6 +84,8 @@ devicetree from the previous stage. It's thus only suitable for verified
 boot if that stage verified the devicetree as well, e.g. because both are
 part of the same signed FIP image.
 
+.. _loading_firmware:
+
 Loading firmware
 ----------------
 
@@ -96,6 +98,8 @@ Firmware) should happen as early as possible, i.e., within the barebox
 :ref:`prebootloader <pbl>`. Delaying installation of OP-TEE means that most of
 barebox will run with elevated permission, which greatly increases the attack
 surface.
+
+.. _pinning_fit_config:
 
 Pinning the FIT configuration
 -----------------------------
@@ -138,6 +142,8 @@ development keys into the barebox binary.
 The private keys for these keys can be found
 `[here] <https://github.com/pengutronix/ptx-code-signing-dev>`__.
 
+.. _disabling_shell:
+
 Disabling the shell
 ^^^^^^^^^^^^^^^^^^^
 
@@ -156,6 +162,8 @@ a partition, sets a variable or applies a devicetree overlay does exactly
 that. Whoever reaches the shell is as trusted as the boot chain, so any
 remaining way of reaching it is part of the boot chain. A console kept for
 diagnostics should be output-only.
+
+.. _disabling_env:
 
 Disabling the non-builtin environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -185,6 +193,8 @@ way to arbitrarily set global variables, be it a writable environment,
 a script on media or a shell, defeats verified boot regardless of how well
 the images are signed.
 
+.. _avoiding_filesystems:
+
 Avoiding use of file systems
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -202,6 +212,8 @@ unsigned file on an unsigned file system that can both be tampered with.
 If file system use is desired anyway, its integrity should be ensured by
 other means, e.g. by being mounted from a dm-verity block device that was
 setup with a correctly signed root hash.
+
+.. _verity_root_param:
 
 Prevent the kernel from booting the rootfs in verity boots
 ----------------------------------------------------------
@@ -247,6 +259,8 @@ Any code that's eliminated at compile-time is code that can't be exploited by
 an attacker. It's thus strongly advisable to keep a separate secure
 configuration that disables all features that are used for development and
 are not absolutely necessary for booting in the field.
+
+.. _runtime_configuration:
 
 Run-time configuration
 ^^^^^^^^^^^^^^^^^^^^^^

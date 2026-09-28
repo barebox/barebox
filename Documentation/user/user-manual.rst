@@ -30,6 +30,7 @@ Contents:
    devboot
    bootchooser
    remote-control
+   threat-model
    security
    security-policies
    reset-reason

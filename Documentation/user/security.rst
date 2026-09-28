@@ -190,14 +190,18 @@ Avoiding use of file systems
 
 File systems are among the most complex parser code in barebox and a common
 source of bugs.
-Unlike Linux with its dm-verity support, barebox currently has no way to
-verify a file system before mounting it.
 
 The consequence is that in a verified boot setup, barebox should **never**
 be allowed to mount file systems.
-Especially, :ref:`bootloader spec files <bootloader_spec>` should not be used
+Especially, :ref:`bootloader spec files <bootloader_spec>` or
+:ref:`extlinux.conf <extlinux_conf>` should not be used
 in verified boot setups and signed FIT images **must** be located outside
-a file system and directly in a raw partition.
+a file system and directly in a raw partition and not pointed at by a plain
+unsigned file on an unsigned file system that can both be tampered with.
+
+If file system use is desired anyway, its integrity should be ensured by
+other means, e.g. by being mounted from a dm-verity block device that was
+setup with a correctly signed root hash.
 
 Prevent the kernel from booting the rootfs in verity boots
 ----------------------------------------------------------

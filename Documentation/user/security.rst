@@ -56,6 +56,23 @@ fusing for both HABv4 and AHAB.
    touch the subset of fuses relevant to most users. It's up to the integrators
    to fuse away unneeded functionality like USB recovery or JTAG as needed.
 
+Ensuring the barebox devicetree is verified
+-------------------------------------------
+
+Whoever controls the devicetree barebox uses for itself can inject RSA keys
+to be used for FIT verification and control what drivers are probed.
+
+The devicetree must therefore be either:
+
+- verified by the previous boot stage before passing it to barebox
+
+- part of a barebox image and thus verified by the previous boot stage
+
+``barebox-dt-2nd.img`` is bootable like a Linux kernel and takes its
+devicetree from the previous stage. It's thus only suitable for verified
+boot if that stage verified the devicetree as well, e.g. because both are
+part of the same signed FIP image.
+
 Loading firmware
 ----------------
 

@@ -130,6 +130,14 @@ config CRYPTO_BUILTIN_KEYS
 	bool "builtin keys"
 	select KEYTOC
 	select IDR
+	help
+	  Compile public keys into barebox. See CRYPTO_PUBLIC_KEYS for how to
+	  specify them and their keyrings.
+
+	  This also enables reading RSA keys from /signature of the devicetree
+	  barebox runs on, like U-Boot does with its control FDT. Such keys
+	  always end up in the "fit" keyring. Prefer compiled-in keys. Either
+	  way, the devicetree must be verified together with barebox.
 
 config CRYPTO_PUBLIC_KEYS
 	depends on CRYPTO_BUILTIN_KEYS

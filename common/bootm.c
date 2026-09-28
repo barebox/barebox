@@ -330,7 +330,9 @@ void *bootm_get_devicetree(struct image_data *data)
 			printf("using %s as devicetree\n", data->oftree->name);
 
 	} else {
-		data->of_root_node = of_dup_root_node_for_boot();
+		/* image handlers may preset barebox' own device tree */
+		if (!data->of_root_node)
+			data->of_root_node = of_dup_root_node_for_boot();
 		if (!data->of_root_node) {
 			if (bootm_verbose(data))
 				printf("using no devicetree\n");

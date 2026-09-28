@@ -56,6 +56,17 @@ fusing for both HABv4 and AHAB.
    touch the subset of fuses relevant to most users. It's up to the integrators
    to fuse away unneeded functionality like USB recovery or JTAG as needed.
 
+Any verified boot setup that doesn't ensure that barebox was correctly signed
+before execution is thus fundamentally flawed. A corollary to this is that
+it's not enough to restrict the ways that barebox can be updated: An attacker
+can often overwrite barebox without its knowledge, via physical access or
+after having booted into the OS. barebox's signature being validated by the
+previous boot stage is thus paramount.
+
+Specifically, the checks :ref:`barebox update <update>` performs on an image,
+e.g. that it targets the right board, exist to reduce the risk of bricking
+the board and can be skipped with ``-f``. They are not a security measure.
+
 Ensuring the barebox devicetree is verified
 -------------------------------------------
 

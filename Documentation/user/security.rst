@@ -140,13 +140,14 @@ In addition, there are alternative methods of accessing the shell like
 netconsole, or fastboot. These should preferably be disabled or at least
 not activated by default.
 
-Disabling mutable environment handling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Disabling the non-builtin environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Anything done interactively by the shell can also be done automatically by
 means of init scripts in the environment. Even without shell support, the
 non-volatile variables in the environment could be used to reconfigure
-barebox in an insecure manner.
+barebox in an insecure manner or to influence the command line and device
+tree passed to the kernel on boot.
 
 A secure barebox should thus only consult the environment that it has built
 in and not parse an externally located environment.

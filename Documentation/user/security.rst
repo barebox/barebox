@@ -69,20 +69,6 @@ Firmware) should happen as early as possible, i.e., within the barebox
 barebox will run with elevated permission, which greatly increases the attack
 surface.
 
-Ensuring the kernel is verified
--------------------------------
-
-barebox can embed one or more RSA or ECDSA public keys that it will use to
-verify signed FIT images. In a verified boot system, barebox should not
-be allowed to boot any images that have not been signed by the correct key.
-This can be enforced by setting ``CONFIG_BOOTM_FORCE_SIGNED_IMAGES=y``
-and disabling any ways that could be used to override this.
-
-For development convenience ``CONFIG_CRYPTO_BUILTIN_DEVELOPMENT_KEYS``
-can be used to compile well known development keys into the barebox binary.
-The private keys for these keys can be found
-`[here] <https://github.com/pengutronix/ptx-code-signing-dev>`__.
-
 Pinning the FIT configuration
 -----------------------------
 
@@ -96,21 +82,19 @@ booted without altering any image. If that matters, ship only one configuration
 per FIT, or name the configuration explicitly, e.g.
 ``bootm /dev/mmc0.kernel@conf-production``.
 
-Prevent the kernel from booting the rootfs in verity boots
-----------------------------------------------------------
+Ensuring the kernel is verified
+-------------------------------
 
-In systems, where barebox loads an initramfs that sets up a dm-verity rootfs and
-passes the location of the root file system on the kernel command-line, make
-sure not to use ``root=``!
-``root=`` is also interpreted by the kernel and can lead to the kernel mounting
-the rootfs without dm-verity, if the initramfs failed to load, e.g. due to a
-different compression algorithm.
+barebox can embed one or more RSA or ECDSA public keys that it will use to
+verify signed FIT images. In a verified boot system, barebox should not
+be allowed to boot any images that have not been signed by the correct key.
+This can be enforced by setting ``CONFIG_BOOTM_FORCE_SIGNED_IMAGES=y``
+and disabling any ways that could be used to override this.
 
-The fail-safe alternative is to use a parameter name understood only by the
-initramfs (e.g. ``verity_root=``) in all bootloader scripts. If the
-``root=$dev`` is fixed up by barebox dynamically, the
-:ref:`global.bootm.root_param <magicvar_global_bootm_root_param>` variable can
-be used to customize the name of the parameter passed to Linux.
+For development convenience ``CONFIG_CRYPTO_BUILTIN_DEVELOPMENT_KEYS``
+can be used to compile well known development keys into the barebox binary.
+The private keys for these keys can be found
+`[here] <https://github.com/pengutronix/ptx-code-signing-dev>`__.
 
 Disabling the shell
 ^^^^^^^^^^^^^^^^^^^
@@ -153,6 +137,22 @@ be allowed to mount file systems.
 Especially, :ref:`bootloader spec files <bootloader_spec>` should not be used
 in verified boot setups and signed FIT images **must** be located outside
 a file system and directly in a raw partition.
+
+Prevent the kernel from booting the rootfs in verity boots
+----------------------------------------------------------
+
+In systems, where barebox loads an initramfs that sets up a dm-verity rootfs and
+passes the location of the root file system on the kernel command-line, make
+sure not to use ``root=``!
+``root=`` is also interpreted by the kernel and can lead to the kernel mounting
+the rootfs without dm-verity, if the initramfs failed to load, e.g. due to a
+different compression algorithm.
+
+The fail-safe alternative is to use a parameter name understood only by the
+initramfs (e.g. ``verity_root=``) in all bootloader scripts. If the
+``root=$dev`` is fixed up by barebox dynamically, the
+:ref:`global.bootm.root_param <magicvar_global_bootm_root_param>` variable can
+be used to customize the name of the parameter passed to Linux.
 
 Configuring barebox
 -------------------

@@ -312,7 +312,8 @@ void *bootm_get_devicetree(struct image_data *data)
 		}
 
 	} else {
-		data->of_root_node = of_dup_root_node_for_boot();
+		if (!data->of_root_node)
+			data->of_root_node = of_dup_root_node_for_boot();
 		if (!data->of_root_node)
 			return NULL;
 

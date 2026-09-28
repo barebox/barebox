@@ -92,7 +92,8 @@ This can be enforced by setting ``CONFIG_BOOTM_FORCE_SIGNED_IMAGES=y``
 and disabling any ways that could be used to override this.
 
 For development convenience ``CONFIG_CRYPTO_BUILTIN_DEVELOPMENT_KEYS``
-can be used to compile well known development keys into the barebox binary.
+can be enabled after enabling ``CONFIG_INSECURE`` to compile well known
+development keys into the barebox binary.
 The private keys for these keys can be found
 `[here] <https://github.com/pengutronix/ptx-code-signing-dev>`__.
 

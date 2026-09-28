@@ -284,6 +284,16 @@ are the release rules:
   does never change, in order to make life easier for distribution
   people.
 
+Security
+--------
+
+The `threat model <https://www.barebox.org/doc/latest/user/threat-model.html>`_
+describes what barebox does and does not protect against and which bugs are
+considered security vulnerabilities. The
+`Security Considerations <https://www.barebox.org/doc/latest/user/security.html>`_
+chapter describes how to configure barebox for verified boot. Refer to
+``SECURITY.md`` for how to report vulnerabilities.
+
 .. _contributing:
 
 Contributing

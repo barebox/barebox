@@ -19,7 +19,13 @@ releases:
 Please report security vulnerabilities to security@barebox.org.
 We will work with the reporter to create a fix and to coordinate the disclosure.
 
+The [threat model](https://www.barebox.org/doc/latest/user/threat-model.html)
+describes what barebox does and does not protect against and which classes of
+bugs are not vulnerabilities. Report those as ordinary bugs on the
+[mailing list](https://www.barebox.org/doc/latest/user/introduction.html#feedback).
+
 ## Securing barebox
 
 Refer to the [Security Considerations](https://www.barebox.org/doc/latest/user/security.html)
 chapter of the documentation for information on how to configure barebox securely.
+That advice relies on the assumptions listed in the threat model.

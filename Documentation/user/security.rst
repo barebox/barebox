@@ -91,6 +91,19 @@ be allowed to boot any images that have not been signed by the correct key.
 This can be enforced by setting ``CONFIG_BOOTM_FORCE_SIGNED_IMAGES=y``
 and disabling any ways that could be used to override this.
 
+How thoroughly an image is checked is controlled by
+:ref:`global.bootm.verify <magicvar_global_bootm_verify>`. Only ``signature``
+is suitable for verified boot. ``hash`` checks the image hashes, but not the
+configuration signature, so it detects corruption, not tampering. The default
+``available`` verifies whatever the image carries and accepts an image
+carrying nothing.
+
+As a global variable, the setting may be changeable at runtime unless barebox
+is built with ``CONFIG_BOOTM_FORCE_SIGNED_IMAGES=y`` or the
+:ref:`security policy <use_security-policies>` denies
+``SCONFIG_BOOT_UNSIGNED_IMAGES``. Either pins it to ``signature``. This
+will also result in :ref:`command_bootm` refusing to boot any non-FIT images.
+
 For development convenience ``CONFIG_CRYPTO_BUILTIN_DEVELOPMENT_KEYS``
 can be enabled after enabling ``CONFIG_INSECURE`` to compile well known
 development keys into the barebox binary.

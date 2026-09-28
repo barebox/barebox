@@ -190,6 +190,17 @@ int socfpga_mailbox_s10_qspi_close(void);
 int socfpga_mailbox_s10_qspi_open(unsigned long *master_ref_clk);
 int socfpga_mailbox_s10_qspi_get_device_info(u32 *resp_buf, u32 resp_buf_len);
 
+struct config_status {
+	u32 state;
+	u32 version;
+	u32 pin_status;
+	u32 soft_function_status;
+	u32 error_location;
+	u32 error_details;
+};
+
+int mbox_config_status(struct config_status *config_status);
+
 struct rsu_spt_offset {
 	u32 spt0_hi;
 	u32 spt0_lo;

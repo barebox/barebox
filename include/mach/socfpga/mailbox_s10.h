@@ -7,6 +7,8 @@
 #ifndef _MAILBOX_S10_H_
 #define _MAILBOX_S10_H_
 
+#include <linux/types.h>
+
 /* user define barebox ID */
 #include <linux/bitops.h>
 #define MBOX_CLIENT_ID_BAREBOX	0x2
@@ -187,5 +189,26 @@ int socfpga_mailbox_s10_init(void);
 int socfpga_mailbox_s10_qspi_close(void);
 int socfpga_mailbox_s10_qspi_open(unsigned long *master_ref_clk);
 int socfpga_mailbox_s10_qspi_get_device_info(u32 *resp_buf, u32 resp_buf_len);
+
+struct rsu_spt_offset {
+	u32 spt0_hi;
+	u32 spt0_lo;
+	u32 spt1_hi;
+	u32 spt1_lo;
+};
+
+int mbox_rsu_get_spt(struct rsu_spt_offset *rsu_spt_offset);
+
+struct rsu_status_info {
+	u64 current_image;
+	u64 fail_image;
+	u32 state;
+	u32 version;
+	u32 error_location;
+	u32 error_details;
+	u32 retry_counter;
+};
+
+int mbox_rsu_status(struct rsu_status_info *status_info);
 
 #endif /* _MAILBOX_S10_H_ */

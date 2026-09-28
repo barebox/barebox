@@ -347,3 +347,45 @@ error:
 
 	return ret;
 }
+
+int mbox_rsu_get_spt(struct rsu_spt_offset *rsu_spt_offset)
+{
+	int ret;
+	u32 *resp_buf = (u32 *)rsu_spt_offset;
+	u32 resp_buf_len = sizeof(*rsu_spt_offset)/sizeof(*resp_buf);
+
+	ret = mbox_send_cmd(MBOX_ID_BAREBOX,
+			    MBOX_GET_SUBPARTITION_TABLE,
+			    MBOX_CMD_DIRECT,
+			    0, NULL, 0, &resp_buf_len, resp_buf);
+	switch (ret) {
+	case MBOX_RESP_STATOK:
+		break;
+	default:
+		pr_err("MBOX_GET_SUBPARTITION_TABLE failed: %d\n", ret);
+		return ret;
+	}
+
+	return 0;
+}
+
+int mbox_rsu_status(struct rsu_status_info *status_info)
+{
+	int ret;
+	u32 *resp_buf = (u32 *)status_info;
+	u32 resp_buf_len = sizeof(*status_info)/sizeof(*resp_buf);
+
+	ret = mbox_send_cmd(MBOX_ID_BAREBOX,
+			    MBOX_RSU_STATUS,
+			    MBOX_CMD_DIRECT,
+			    0, NULL, 0, &resp_buf_len, resp_buf);
+	switch (ret) {
+	case MBOX_RESP_STATOK:
+		break;
+	default:
+		pr_err("MBOX_RSU_STATUS failed: %d\n", ret);
+		return ret;
+	}
+
+	return 0;
+}

@@ -140,6 +140,12 @@ In addition, there are alternative methods of accessing the shell like
 netconsole, or fastboot. These should preferably be disabled or at least
 not activated by default.
 
+barebox places no restrictions on what the shell does: a command that writes
+a partition, sets a variable or applies a devicetree overlay does exactly
+that. Whoever reaches the shell is as trusted as the boot chain, so any
+remaining way of reaching it is part of the boot chain. A console kept for
+diagnostics should be output-only.
+
 Disabling the non-builtin environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -155,6 +161,18 @@ in and not parse an externally located environment.
 This can be enforced by disabling ``CONFIG_ENV_HANDLING``.
 This does not preclude the use of :ref:`Bootchooser` as the
 :ref:`barebox-state framework <state_framework>` can be used independently.
+
+If environment handling is needed for other purposes, denying
+``SCONFIG_ENVIRONMENT_LOAD`` in the
+:ref:`security policy <use_security-policies>` keeps barebox from loading an
+environment from media.
+
+What matters is not the environment itself, but the global variables it sets.
+They select the boot source, end up on the kernel command line and, unless
+signature checking is pinned, decide whether images are verified at all. Any
+way to arbitrarily set global variables, be it a writable environment,
+a script on media or a shell, defeats verified boot regardless of how well
+the images are signed.
 
 Avoiding use of file systems
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

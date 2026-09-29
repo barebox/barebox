@@ -8,7 +8,7 @@ from threading import Thread
 from queue import Queue, Empty
 
 class ConsoleInput(Thread):
-    def __init__(self, queue, exit='\x14'):
+    def __init__(self, queue, exit=b'\x14'):
         Thread.__init__(self)
         self.daemon = True
         self.q = queue
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     while True:
         event = q.get(block=True)
         src, c = event
-        if c == '\x04':
+        if c == b'\x04':
             break
         os.write(sys.stdout.fileno(), c.upper())
 

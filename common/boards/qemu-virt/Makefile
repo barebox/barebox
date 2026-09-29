@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 obj-y += board.o commandline.o
-obj-y += qemu-virt-flash.dtbo.o
-obj-$(CONFIG_ARM) += qemu-virt-flash-nonsecure.dtbo.o
+overlay-y += qemu-virt-flash.dtbo
+overlay-$(CONFIG_ARM) += qemu-virt-flash-nonsecure.dtbo
 ifeq ($(CONFIG_RISCV),y)
 DTC_CPP_FLAGS_qemu-virt-flash.dtbo := -DCONFIG_RISCV
 endif

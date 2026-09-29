@@ -15,12 +15,8 @@ config BOARD_QEMU
 
 config BOARD_QEMU_VIRT
 	bool
-	select OF_OVERLAY
+	select OF_OVERLAY_BUILTIN
 	select BOARD_QEMU
-
-config BOARD_QEMU_VIRT
-	bool
-	select OF_OVERLAY
 
 config BOARD_PHYTEC_SOM_DETECTION
 	bool

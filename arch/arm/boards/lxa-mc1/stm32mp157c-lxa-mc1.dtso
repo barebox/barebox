@@ -1,35 +1,39 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
  * Copyright (C) 2020 Ahmad Fatoum, Pengutronix
+ *
+ * What barebox adds to the MC-1 device tree, by path, so it fits any of them.
  */
 
-#include <arm/st/stm32mp157c-lxa-mc1.dts>
-#include "stm32mp151.dtsi"
+/dts-v1/;
+/plugin/;
+
+#include "stm32mp157c-lxa-mc1-symbols-paths.h"
 
 / {
-	barebox,deep-probe;
+	compatible = "lxa,stm32mp157c-mc1";
+};
 
+&{/chosen} {
+	environment-sd {
+		compatible = "barebox,environment";
+		device-path = BASE_PATH(sdmmc1), "partname:barebox-environment";
+		status = "disabled";
+	};
+
+	environment-emmc {
+		compatible = "barebox,environment";
+		device-path = BASE_PATH(sdmmc2), "partname:barebox-environment";
+		status = "disabled";
+	};
+};
+
+&{/} {
 	aliases {
-		state = &state;
+		state = "/state";
 	};
 
-	chosen {
-		stdout-path = "serial0:115200n8";
-
-		environment-sd {
-			compatible = "barebox,environment";
-			device-path = &sdmmc1, "partname:barebox-environment";
-			status = "disabled";
-		};
-
-		environment-emmc {
-			compatible = "barebox,environment";
-			device-path = &sdmmc2, "partname:barebox-environment";
-			status = "disabled";
-		};
-	};
-
-	state: state {
+	state {
 		compatible = "barebox,state";
 		magic = <0x778ec0f4>;
 		/* backend is fixed up by board code */
@@ -41,7 +45,7 @@
 	};
 };
 
-&panel {
+BASE_NODE(panel) {
 	display-timings {
 		timing { /* edt,etm0700g0dh6 */
 			clock-frequency = <33260000>;

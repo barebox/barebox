@@ -5,7 +5,6 @@
 #include <asm/memory.h>
 #include <mach/stm32mp/bbu.h>
 #include <bootsource.h>
-#include <deep-probe.h>
 #include <of.h>
 #include <tlv/tlv.h>
 
@@ -30,7 +29,6 @@ static const struct of_device_id fairytux2_of_match[] = {
 	{ .compatible = "lxa,stm32mp153c-fairytux2-gen2" },
 	{ /* sentinel */ },
 };
-BAREBOX_DEEP_PROBE_ENABLE(fairytux2_of_match);
 
 static struct driver fairytux2_board_driver = {
 	.name = "board-lxa-fairytux2",

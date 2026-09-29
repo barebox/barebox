@@ -83,6 +83,12 @@
 	KEEP(*(.dtb.rodata.*));			\
 	__dtb_end = .;
 
+#define BAREBOX_OF_OVERLAYS			\
+	STRUCT_ALIGN();				\
+	__barebox_of_overlay_start = .;		\
+	KEEP(*(SORT_BY_NAME(.barebox_of_overlay*)))	\
+	__barebox_of_overlay_end = .;
+
 #define BAREBOX_IMD				\
 	STRUCT_ALIGN();				\
 	KEEP(*(.barebox_imd_start))		\
@@ -149,6 +155,7 @@
 	BAREBOX_MAGICVARS			\
 	BAREBOX_CLK_TABLE			\
 	BAREBOX_DTB				\
+	BAREBOX_OF_OVERLAYS			\
 	BAREBOX_PUBLIC_KEYS			\
 	BAREBOX_PCI_FIXUP			\
 	BAREBOX_DEEP_PROBE			\

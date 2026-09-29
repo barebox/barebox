@@ -4,7 +4,6 @@
 
 #include <bootsource.h>
 #include <common.h>
-#include <deep-probe.h>
 #include <gpio.h>
 #include <init.h>
 #include <linux/bitfield.h>
@@ -292,7 +291,6 @@ static const struct of_device_id prt_stm32_of_match[] = {
 	{ .compatible = "prt,mect1sr1", .data = &prt_stm32_mect1sr1 },
 	{ /* sentinel */ },
 };
-BAREBOX_DEEP_PROBE_ENABLE(prt_stm32_of_match);
 
 static struct driver prt_stm32_board_driver = {
 	.name = "board-protonic-stm32mp13",

@@ -86,7 +86,8 @@ static void imx_gpcv2_set_core_power(int core, bool pdn)
 	val |= 1 << core;
 	writel(val, gpc + reg);
 
-	while (readl(gpc + reg) & (1 << core));
+	while (readl(gpc + reg) & (1 << core))
+		;
 
 	writel(0, pgc + PGC_CTRL);
 }
@@ -124,7 +125,8 @@ static int imx7_cpu_off(void)
 
 	imx_gpcv2_set_core_power(cpu_id, false);
 
-	while (1);
+	while (1)
+		;
 
 	return 0;
 }

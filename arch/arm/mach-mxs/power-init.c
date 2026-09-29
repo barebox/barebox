@@ -75,7 +75,8 @@ void mxs_early_delay(int delay)
 
 	st += delay;
 
-	while (st > readl(digctl_regs + 0xc0));
+	while (st > readl(digctl_regs + 0xc0))
+		;
 }
 
 static inline void charger_4p2_disable(void)

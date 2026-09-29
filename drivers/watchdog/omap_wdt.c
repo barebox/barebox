@@ -67,13 +67,15 @@ static void omap_wdt_reload(struct omap_wdt_dev *wdev)
 	void __iomem *base = wdev->base;
 
 	/* wait for posted write to complete */
-	while ((readl(base + OMAP_WATCHDOG_WPS)) & 0x08);
+	while ((readl(base + OMAP_WATCHDOG_WPS)) & 0x08)
+		;
 
 	wdev->wdt_trgr_pattern = ~wdev->wdt_trgr_pattern;
 	writel(wdev->wdt_trgr_pattern, (base + OMAP_WATCHDOG_TGR));
 
 	/* wait for posted write to complete */
-	while ((readl(base + OMAP_WATCHDOG_WPS)) & 0x08);
+	while ((readl(base + OMAP_WATCHDOG_WPS)) & 0x08)
+		;
 	/* reloaded WCRR from WLDR */
 }
 
@@ -83,10 +85,12 @@ static void omap_wdt_enable(struct omap_wdt_dev *wdev)
 
 	/* Sequence to enable the watchdog */
 	writel(0xBBBB, base + OMAP_WATCHDOG_SPR);
-	while ((readl(base + OMAP_WATCHDOG_WPS)) & 0x10);
+	while ((readl(base + OMAP_WATCHDOG_WPS)) & 0x10)
+		;
 
 	writel(0x4444, base + OMAP_WATCHDOG_SPR);
-	while ((readl(base + OMAP_WATCHDOG_WPS)) & 0x10);
+	while ((readl(base + OMAP_WATCHDOG_WPS)) & 0x10)
+		;
 }
 
 static void omap_wdt_disable(struct omap_wdt_dev *wdev)
@@ -95,10 +99,12 @@ static void omap_wdt_disable(struct omap_wdt_dev *wdev)
 
 	/* sequence required to disable watchdog */
 	writel(0xAAAA, base + OMAP_WATCHDOG_SPR);	/* TIMER_MODE */
-	while (readl(base + OMAP_WATCHDOG_WPS) & 0x10);
+	while (readl(base + OMAP_WATCHDOG_WPS) & 0x10)
+		;
 
 	writel(0x5555, base + OMAP_WATCHDOG_SPR);	/* TIMER_MODE */
-	while (readl(base + OMAP_WATCHDOG_WPS) & 0x10);
+	while (readl(base + OMAP_WATCHDOG_WPS) & 0x10)
+		;
 }
 
 static void omap_wdt_set_timer(struct omap_wdt_dev *wdev,
@@ -108,10 +114,12 @@ static void omap_wdt_set_timer(struct omap_wdt_dev *wdev,
 	void __iomem *base = wdev->base;
 
 	/* just count up at 32 KHz */
-	while (readl(base + OMAP_WATCHDOG_WPS) & 0x04);
+	while (readl(base + OMAP_WATCHDOG_WPS) & 0x04)
+		;
 
 	writel(pre_margin, base + OMAP_WATCHDOG_LDR);
-	while (readl(base + OMAP_WATCHDOG_WPS) & 0x04);
+	while (readl(base + OMAP_WATCHDOG_WPS) & 0x04)
+		;
 
 }
 
@@ -127,10 +135,12 @@ static void omap_wdt_init(struct omap_wdt_dev *wdev)
 	omap_wdt_disable(wdev);
 
 	/* initialize prescaler */
-	while (readl(base + OMAP_WATCHDOG_WPS) & 0x01);
+	while (readl(base + OMAP_WATCHDOG_WPS) & 0x01)
+		;
 
 	writel((1 << 5) | (PTV << 2), base + OMAP_WATCHDOG_CNTRL);
-	while (readl(base + OMAP_WATCHDOG_WPS) & 0x01);
+	while (readl(base + OMAP_WATCHDOG_WPS) & 0x01)
+		;
 
 	omap_wdt_set_timer(wdev, wdev->timeout);
 	omap_wdt_reload(wdev); /* trigger loading of new timeout value */

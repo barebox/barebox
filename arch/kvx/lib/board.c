@@ -100,7 +100,8 @@ static void of_find_mem(void *fdt, u64 addr, u64 *membase, u64 *memsize)
 	}
 err:
 	pr_err("No memory, cannot continue\n");
-	while (1);
+	while (1)
+		;
 }
 
 /**

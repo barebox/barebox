@@ -481,8 +481,10 @@ static int cspi_2_3_do_transfer(struct spi_device *spi)
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
 	u32 ctrl;
 
-	if (imx->bits_per_word == 8 && !(spi->mode & SPI_LSB_FIRST))
-		while (cspi_2_3_xchg_burst(spi) > 0);
+	if (imx->bits_per_word == 8 && !(spi->mode & SPI_LSB_FIRST)) {
+		while (cspi_2_3_xchg_burst(spi) > 0)
+			;
+	}
 
 	if (!imx->xfer_len)
 		return 0;

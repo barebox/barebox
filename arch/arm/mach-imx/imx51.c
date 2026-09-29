@@ -105,7 +105,8 @@ static void imx51_setup_pll800_bug(void)
 	writel(0x00001236, base + MX5_PLL_DP_CTL);
 
 	/* Wait for lock */
-	while (!(readl(base + MX5_PLL_DP_CTL) & 1));
+	while (!(readl(base + MX5_PLL_DP_CTL) & 1))
+		;
 
 	/* Modify MFN value */
 	writel(DP_MFN_800_DIT, base + MX5_PLL_DP_MFN);
@@ -114,7 +115,8 @@ static void imx51_setup_pll800_bug(void)
 	/* Reload MFN value */
 	writel(0x1, base + MX5_PLL_DP_CONFIG);
 
-	while (readl(base + MX5_PLL_DP_CONFIG) & 1);
+	while (readl(base + MX5_PLL_DP_CONFIG) & 1)
+		;
 
 	/* Wait at least 4 us */
 	for (i = 0; i < 100; i++);
@@ -157,7 +159,8 @@ void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 	/* Make sure to switch the DDR away from PLL 1 */
 	writel(0x19239145, ccm + MX5_CCM_CBCDR);
 	/* make sure divider effective */
-	while (readl(ccm + MX5_CCM_CDHIPR));
+	while (readl(ccm + MX5_CCM_CDHIPR))
+		;
 
 	/* Switch ARM to step clock */
 	writel(0x4, ccm + MX5_CCM_CCSR);
@@ -218,7 +221,8 @@ void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 	writel(0x00C30321, ccm + MX5_CCM_CSCDR1);
 
 	/* make sure divider effective */
-	while (readl(ccm + MX5_CCM_CDHIPR));
+	while (readl(ccm + MX5_CCM_CDHIPR))
+		;
 
 	writel(0x0, ccm + MX5_CCM_CCDR);
 }

@@ -97,7 +97,8 @@ static int do_go(int argc, char *argv[])
 	 * we know nothing about the state of the cpu/memory we can't
 	 * do anything here.
 	 */
-	while (1);
+	while (1)
+		;
 out:
 	if (fd > 0)
 		close(fd);

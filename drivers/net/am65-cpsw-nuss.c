@@ -130,7 +130,8 @@ static int am65_cpsw_macsl_reset(struct am65_cpsw_port *slave)
 	       slave->macsl_base + AM65_CPSW_MACSL_RESET_REG);
 
 	while ((readl(slave->macsl_base + AM65_CPSW_MACSL_RESET_REG) &
-		AM65_CPSW_MACSL_RESET_REG_RESET) && i--);
+		AM65_CPSW_MACSL_RESET_REG_RESET) && i--)
+		;
 
 	/* Timeout on the reset */
 	return i;
@@ -141,7 +142,8 @@ static int am65_cpsw_macsl_wait_for_idle(struct am65_cpsw_port *slave)
 	u32 i = 100;
 
 	while ((readl(slave->macsl_base + AM65_CPSW_MACSL_STATUS_REG) &
-		AM65_CPSW_MACSL_RESET_REG_IDLE_MASK) && i--);
+		AM65_CPSW_MACSL_RESET_REG_IDLE_MASK) && i--)
+		;
 
 	return i;
 }

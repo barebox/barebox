@@ -136,10 +136,12 @@ void am35xx_emif4_init(const void __iomem *emif4)
 	writel(regval, emif4 + EMIF4_IODFT_TLGC);
 
 	/* Wait till that bit clears*/
-	while (readl(emif4 + EMIF4_IODFT_TLGC) & (1 << 10));
+	while (readl(emif4 + EMIF4_IODFT_TLGC) & (1 << 10))
+		;
 
 	/* Re-verify the DDR PHY status*/
-	while ((readl(emif4 + EMIF4_STATUS) & (1 << 2)) == 0x0);
+	while ((readl(emif4 + EMIF4_STATUS) & (1 << 2)) == 0x0)
+		;
 
 	regval |= (1 << 0);
 	writel(regval, emif4 + EMIF4_IODFT_TLGC);

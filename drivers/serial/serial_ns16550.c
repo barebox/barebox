@@ -312,7 +312,8 @@ static void ns16550_putc(struct console_device *cdev, char c)
 static int ns16550_getc(struct console_device *cdev)
 {
 	/* Loop Doing Nothing */
-	while ((ns16550_read(cdev, lsr) & LSR_DR) == 0) ;
+	while ((ns16550_read(cdev, lsr) & LSR_DR) == 0)
+		;
 	return ns16550_read(cdev, rbr);
 }
 
@@ -336,7 +337,8 @@ static int ns16550_tstc(struct console_device *cdev)
 static void ns16550_flush(struct console_device *cdev)
 {
 	/* Loop Doing Nothing */
-	while ((ns16550_read(cdev, lsr) & LSR_TEMT) == 0) ;
+	while ((ns16550_read(cdev, lsr) & LSR_TEMT) == 0)
+		;
 }
 
 static void ns16550_probe_dt(struct device *dev, struct ns16550_priv *priv)

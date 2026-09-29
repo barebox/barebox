@@ -123,7 +123,8 @@ static void imx50_init_lowlevel_early(unsigned int cpufreq_mhz)
 	writel(0x04880945 | (1<<16), ccm + MX5_CCM_CBCDR);
 
 	/* make sure change is effective */
-	while (readl(ccm + MX5_CCM_CDHIPR));
+	while (readl(ccm + MX5_CCM_CDHIPR))
+		;
 
 	imx5_setup_pll_400(IOMEM(MX50_PLL2_BASE_ADDR));
 
@@ -144,7 +145,8 @@ static void imx50_init_lowlevel_early(unsigned int cpufreq_mhz)
 	writel(r, ccm + MX5_CCM_CSCMR1);
 
 	/* make sure change is effective */
-	while (readl(ccm + MX5_CCM_CDHIPR));
+	while (readl(ccm + MX5_CCM_CDHIPR))
+		;
 
 	/* Set the platform clock dividers */
 	writel(0x00000124, MX50_ARM_BASE_ADDR + 0x14);

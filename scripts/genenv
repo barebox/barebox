@@ -42,6 +42,8 @@ for i in $*; do
 	fi
 done
 
+chmod -R u+w "$tempdir"
+
 find $tempdir -name '.svn' -o -name '*~' -delete
 
 scripts/bareboxenv -s $tempdir ${tmpfile}

@@ -214,7 +214,7 @@ static int do_sconfig(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(sconfig)
-BAREBOX_CMD_HELP_TEXT("Interact with security policies")
+BAREBOX_CMD_HELP_TEXT("Interact with security policies.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-l",  "list registered security policies")
@@ -222,13 +222,18 @@ BAREBOX_CMD_HELP_OPT ("-i POLICY",  "show security options of specified POLICY")
 #ifdef CONFIG_CMD_SCONFIG_MODIFY
 BAREBOX_CMD_HELP_OPT ("-v",  "verbose output: report options as they are modified")
 BAREBOX_CMD_HELP_OPT ("-s POLICY",  "select specified POLICY")
+BAREBOX_CMD_HELP_OPT ("<+->SCONFIG_*",  "enable/disable listed SCONFIG symbol")
 #endif
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(sconfig)
         .cmd            = do_sconfig,
         BAREBOX_CMD_DESC("interact with security policies")
-        BAREBOX_CMD_OPTS("[-vlsi] [<+->SCONFIG_*]...")
+#ifdef CONFIG_CMD_SCONFIG_MODIFY
+        BAREBOX_CMD_OPTS("[-l] [-i POLICY] [-v] [-s POLICY]  |  [<+->SCONFIG_*]...")
+#else
+        BAREBOX_CMD_OPTS("[-l] [-i POLICY]")
+#endif
         BAREBOX_CMD_GROUP(CMD_GRP_SECURITY)
         BAREBOX_CMD_HELP(cmd_sconfig_help)
 BAREBOX_CMD_END

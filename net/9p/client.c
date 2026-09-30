@@ -732,6 +732,7 @@ struct p9_client *p9_client_create(const char *dev_name, char *options)
 
 	clnt->trans_mod = NULL;
 	clnt->trans = NULL;
+	clnt->trans_tag = NULL;
 
 	memcpy(clnt->name, release_string, strlen(release_string) + 1);
 

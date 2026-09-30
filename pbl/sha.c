@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * pbl_sha256() - one-shot SHA-256 for the PBL, picking the best available
+ * pbl_sha*() - one-shot SHA functions for the PBL, picking the best available
  * implementation.
  */
 

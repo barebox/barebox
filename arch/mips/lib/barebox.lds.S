@@ -26,8 +26,6 @@ SECTIONS
 	}
 	BAREBOX_BARE_INIT_SIZE
 
-	PRE_IMAGE
-
 	. = ALIGN(4);
 	__start_rodata = .;
 	.rodata : {

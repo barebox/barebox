@@ -20,6 +20,7 @@
 
 #include <crypto/sha.h>
 #include <crypto/internal.h>
+#include <crypto/pbl-sha.h>
 
 static inline u64 Ch(u64 x, u64 y, u64 z)
 {
@@ -126,7 +127,7 @@ sha512_transform(u64 *state, const u8 *input)
 	state[4] += e; state[5] += f; state[6] += g; state[7] += h;
 }
 
-static int
+int
 sha512_init(struct digest *desc)
 {
 	struct sha512_state *sctx = digest_ctx(desc);
@@ -143,7 +144,7 @@ sha512_init(struct digest *desc)
 	return 0;
 }
 
-static int sha384_init(struct digest *desc)
+int sha384_init(struct digest *desc)
 {
 	struct sha512_state *sctx = digest_ctx(desc);
 	sctx->state[0] = SHA384_H0;
@@ -159,7 +160,7 @@ static int sha384_init(struct digest *desc)
 	return 0;
 }
 
-static int sha512_update(struct digest *desc, const void *in,
+int sha512_update(struct digest *desc, const void *in,
 				unsigned long len)
 {
 	struct sha512_state *sctx = digest_ctx(desc);
@@ -195,7 +196,7 @@ static int sha512_update(struct digest *desc, const void *in,
 	return 0;
 }
 
-static int sha512_final(struct digest *desc, u8 *hash)
+int sha512_final(struct digest *desc, u8 *hash)
 {
 	struct sha512_state *sctx = digest_ctx(desc);
         static u8 padding[128] = { 0x80, };
@@ -226,7 +227,7 @@ static int sha512_final(struct digest *desc, u8 *hash)
 	return 0;
 }
 
-static int sha384_final(struct digest *desc, u8 *hash)
+int sha384_final(struct digest *desc, u8 *hash)
 {
 	u8 D[64];
 

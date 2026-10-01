@@ -41,6 +41,7 @@
 &fec {
 	/delete-property/ phy-supply;
 	phy-reset-duration = <10>; /* in msecs */
+	phy-reset-post-delay = <5>;
 };
 
 &gpmi {
@@ -75,6 +76,30 @@
 		watchdog-priority = <500>;
 		restart-priority = <500>;
 		reset-source-priority = <500>;
+	};
+};
+
+&iomuxc {
+	pinctrl_enet: enetgrp {
+		fsl,pins = <
+			MX6QDL_PAD_ENET_MDIO__ENET_MDIO		0x1b0b0
+			MX6QDL_PAD_ENET_MDC__ENET_MDC		0x1b0b0
+			MX6QDL_PAD_RGMII_TXC__RGMII_TXC		0x1b020
+			MX6QDL_PAD_RGMII_TD0__RGMII_TD0		0x1b018
+			MX6QDL_PAD_RGMII_TD1__RGMII_TD1		0x1b018
+			MX6QDL_PAD_RGMII_TD2__RGMII_TD2		0x1b018
+			MX6QDL_PAD_RGMII_TD3__RGMII_TD3		0x1b018
+			MX6QDL_PAD_RGMII_TX_CTL__RGMII_TX_CTL	0x1b018
+			MX6QDL_PAD_ENET_REF_CLK__ENET_TX_CLK	0x180b0
+			MX6QDL_PAD_RGMII_RXC__RGMII_RXC		0x180b0
+			MX6QDL_PAD_RGMII_RD0__RGMII_RD0		0x180b0
+			MX6QDL_PAD_RGMII_RD1__RGMII_RD1		0x180b0
+			MX6QDL_PAD_RGMII_RD2__RGMII_RD2		0x180b0
+			MX6QDL_PAD_RGMII_RD3__RGMII_RD3		0x180b0
+			MX6QDL_PAD_RGMII_RX_CTL__RGMII_RX_CTL	0x180b0
+			MX6QDL_PAD_ENET_TX_EN__ENET_TX_EN	0x1b0b0
+			MX6QDL_PAD_SD2_DAT1__GPIO1_IO14		0x1b0b0
+		>;
 	};
 };
 

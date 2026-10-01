@@ -24,4 +24,17 @@ static inline int pbl_sha256_ce(const void *buf, size_t len, u8 out[SHA256_DIGES
 }
 #endif
 
+int sha512_init(struct digest *desc);
+int sha512_update(struct digest *desc, const void *data, unsigned long len);
+int sha512_final(struct digest *desc, u8 *out);
+
+/* One-shot SHA-512 that picks the best transform available in the PBL. */
+void pbl_sha512(const void *buf, size_t len, u8 out[SHA512_DIGEST_SIZE]);
+
+int sha384_init(struct digest *desc);
+int sha384_final(struct digest *desc, u8 *out);
+
+/* One-shot SHA-384 that picks the best transform available in the PBL. */
+void pbl_sha384(const void *buf, size_t len, u8 out[SHA384_DIGEST_SIZE]);
+
 #endif /* __PBL-SHA_H_ */

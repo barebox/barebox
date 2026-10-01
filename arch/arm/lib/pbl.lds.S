@@ -40,9 +40,6 @@ SECTIONS
 
 	.image_start : { *(.__image_start) }
 
-	PRE_IMAGE
-
-	. = ALIGN(4);
 	._text : { *(._text) }
 	.text      :
 	{
@@ -154,4 +151,6 @@ SECTIONS
 
 	_barebox_image_size = __image_end;
 	_barebox_pbl_size = __bss_start;
+
+	ASSERT(_stext == __image_start, "PBL entry code must be at the image start")
 }

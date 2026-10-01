@@ -749,7 +749,6 @@ static int fit_handle_decompression(struct device_node *image,
 				    int *data_len)
 {
 	const char *compression;
-	struct property *pp;
 	void *uc_data;
 	int ret;
 
@@ -769,21 +768,18 @@ static int fit_handle_decompression(struct device_node *image,
 		return -ENOSYS;
 	}
 
-	pp = of_find_property(image, "$uncompressed-data", NULL);
-	if (!pp) {
-		ret = uncompress_buf_to_buf(*data, *data_len, &uc_data,
-					    fit_uncompress_error_fn);
-		if (ret < 0) {
-			pr_err("%s data couldn't be decompressed\n", compression);
-			return ret;
-		}
-
-		/* associate buffer with FIT, so it's not leaked */
-		pp = __of_new_property(image, "$uncompressed-data", uc_data, ret);
+	ret = uncompress_buf_to_buf(*data, *data_len, &uc_data,
+				    fit_uncompress_error_fn);
+	if (ret < 0) {
+		pr_err("%s data couldn't be decompressed\n", compression);
+		return ret;
 	}
 
-	*data = of_property_get_value(pp);
-	*data_len = pp->length;
+	*data = uc_data;
+	*data_len = ret;
+
+	/* associate buffer with FIT, so it's not leaked */
+	__of_new_property(image, "$uncompressed-data", uc_data, *data_len);
 
 	return 0;
 }

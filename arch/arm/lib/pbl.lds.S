@@ -40,8 +40,6 @@ SECTIONS
 
 	.image_start : { *(.__image_start) }
 
-	PRE_IMAGE
-
 	. = ALIGN(4);
 	._text : { *(._text) }
 	.text      :

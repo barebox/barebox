@@ -67,4 +67,16 @@ config USB_GADGET_MASS_STORAGE
 	  device. Multiple storages can be specified at once on
 	  instantiation time.
 
+config USB_GADGET_EEM
+	bool
+	depends on NET
+	select USB_GADGET_ETHER
+	select CRC32
+	prompt "CDC EEM Ethernet Gadget"
+	help
+	  CDC EEM (Ethernet Emulation Model) is a lightweight USB Ethernet
+	  protocol that doesn't require a control endpoint. It supports
+	  multiple Ethernet frames per USB transfer and is simpler than
+	  CDC ECM or RNDIS.
+
 endif

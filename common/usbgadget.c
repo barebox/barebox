@@ -23,6 +23,7 @@
 static int autostart;
 static int nv_loaded;
 static int acm;
+static int eem;
 static char *dfu_function;
 
 static inline struct file_list *get_dfu_function(void)
@@ -66,7 +67,8 @@ struct f_multi_opts *usbgadget_prepare(const struct usbgadget_funcs *funcs)
 		opts->fastboot_opts.export_bbu = flags & USBGADGET_EXPORT_BBU;
 	}
 
-	opts->create_acm = flags & USBGADGET_ACM;
+	opts->create_acm = !!(flags & USBGADGET_ACM);
+	opts->create_eem = !!(flags & USBGADGET_ETH_EEM);
 
 	if (usb_multi_count_functions(opts) == 0) {
 		pr_warn("No functions to register\n");
@@ -144,6 +146,8 @@ static int usbgadget_do_autostart(void)
 		funcs.flags |= USBGADGET_EXPORT_BBU;
 	if (acm)
 		funcs.flags |= USBGADGET_ACM;
+	if (eem)
+		funcs.flags |= USBGADGET_ETH_EEM;
 
 	funcs.flags |= USBGADGET_DFU | USBGADGET_FASTBOOT | USBGADGET_MASS_STORAGE;
 
@@ -186,6 +190,7 @@ static struct sconfig_notifier_block sconfig_notifier;
 static int usbgadget_globalvars_init(void)
 {
 	globalvar_add_simple_bool("usbgadget.acm", &acm);
+	globalvar_add_simple_bool("usbgadget.eem", &eem);
 	globalvar_add_simple_string("usbgadget.dfu_function", &dfu_function);
 	if (IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART))
 		globalvar_add_bool("usbgadget.autostart", usbgadget_autostart_set,
@@ -213,5 +218,7 @@ BAREBOX_MAGICVAR(global.usbgadget.autostart,
 		 "usbgadget: Automatically start usbgadget on boot");
 BAREBOX_MAGICVAR(global.usbgadget.acm,
 		 "usbgadget: Create CDC ACM function");
+BAREBOX_MAGICVAR(global.usbgadget.eem,
+		 "usbgadget: Create CDC EEM function");
 BAREBOX_MAGICVAR(global.usbgadget.dfu_function,
 		 "usbgadget: Create DFU function");

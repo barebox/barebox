@@ -58,6 +58,8 @@ static struct usb_function_instance *fi_fastboot;
 static struct usb_function *f_fastboot;
 static struct usb_function_instance *fi_ums;
 static struct usb_function *f_ums;
+static struct usb_function_instance *fi_eem;
+static struct usb_function *f_eem;
 
 static struct usb_configuration config = {
 	.bConfigurationValue	= 1,
@@ -66,25 +68,27 @@ static struct usb_configuration config = {
 
 struct f_multi_opts *gadget_multi_opts;
 
-static int multi_bind_acm(struct usb_composite_dev *cdev)
+static int multi_bind_simple(const char *name,
+			     struct usb_function_instance **fi,
+			     struct usb_function **f)
 {
 	int ret;
 
-	fi_acm = usb_get_function_instance("acm");
-	if (IS_ERR(fi_acm)) {
-		ret = PTR_ERR(fi_acm);
-		fi_acm = NULL;
+	*fi = usb_get_function_instance(name);
+	if (IS_ERR(*fi)) {
+		ret = PTR_ERR(*fi);
+		*fi = NULL;
 		return ret;
 	}
 
-	f_acm = usb_get_function(fi_acm);
-	if (IS_ERR(f_acm)) {
-		ret = PTR_ERR(f_acm);
-		f_acm = NULL;
+	*f = usb_get_function(*fi);
+	if (IS_ERR(*f)) {
+		ret = PTR_ERR(*f);
+		*f = NULL;
 		return ret;
 	}
 
-	return usb_add_function(&config, f_acm);
+	return usb_add_function(&config, *f);
 }
 
 static int multi_bind_dfu(struct usb_composite_dev *cdev)
@@ -175,6 +179,11 @@ static int multi_unbind(struct usb_composite_dev *cdev)
 		usb_put_function_instance(fi_acm);
 	}
 
+	if (gadget_multi_opts->create_eem) {
+		usb_put_function(f_eem);
+		usb_put_function_instance(fi_eem);
+	}
+
 	if (gadget_multi_opts->ums_opts.files) {
 		usb_put_function(f_ums);
 		usb_put_function_instance(fi_ums);
@@ -248,9 +257,16 @@ static int multi_bind(struct usb_composite_dev *cdev)
 
 	if (gadget_multi_opts->create_acm) {
 		printf("%s: creating ACM function\n", __func__);
-		ret = multi_bind_acm(cdev);
+		ret = multi_bind_simple("acm", &fi_acm, &f_acm);
 		if (ret)
 			goto unbind_ums;
+	}
+
+	if (gadget_multi_opts->create_eem) {
+		printf("%s: creating EEM function\n", __func__);
+		ret = multi_bind_simple("eem", &fi_eem, &f_eem);
+		if (ret)
+			goto unbind_acm;
 	}
 
 	usb_ep_autoconfig_reset(cdev->gadget);
@@ -258,6 +274,9 @@ static int multi_bind(struct usb_composite_dev *cdev)
 	dev_info(&gadget->dev, DRIVER_DESC "\n");
 
 	return 0;
+unbind_acm:
+	if (gadget_multi_opts->create_acm)
+		usb_put_function_instance(fi_acm);
 unbind_ums:
 	if (gadget_multi_opts->ums_opts.files)
 		usb_put_function_instance(fi_ums);
@@ -320,6 +339,7 @@ unsigned usb_multi_count_functions(struct f_multi_opts *opts)
 	count += !file_list_empty(opts->dfu_opts.files);
 	count += !file_list_empty(opts->ums_opts.files);
 	count += opts->create_acm;
+	count += opts->create_eem;
 
 	return count;
 }

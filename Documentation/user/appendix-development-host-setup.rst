@@ -46,6 +46,8 @@ Having network connectivity between your host and your target will save you a
 lot of time otherwise spent on writing SD cards or using JTAG. The main
 protocols used with barebox are DHCP, TFTP and NFS.
 
+.. _dnsmasq_dhcp_tftp:
+
 Configuration of dnsmasq for DHCP and TFTP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

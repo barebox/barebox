@@ -21,11 +21,14 @@ static int do_usbgadget(int argc, char *argv[])
 	struct usbgadget_funcs funcs = {};
 	int opt;
 
-	while ((opt = getopt(argc, argv, "asdA::D::S::b")) > 0) {
+	while ((opt = getopt(argc, argv, "aesdA::D::S::b")) > 0) {
 		switch (opt) {
 		case 'a':
 		case 's':
 			funcs.flags |= USBGADGET_ACM;
+			break;
+		case 'e':
+			funcs.flags |= USBGADGET_ETH_EEM;
 			break;
 		case 'D':
 			funcs.flags |= USBGADGET_DFU;
@@ -58,6 +61,7 @@ BAREBOX_CMD_HELP_TEXT("Enable / disable a USB composite gadget on the USB device
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-a\t", "Create CDC ACM function")
+BAREBOX_CMD_HELP_OPT ("-e\t", "Create CDC EEM function")
 BAREBOX_CMD_HELP_OPT ("-A <desc>", "Create Android Fastboot function. If 'desc' is not provided, "
 				   "try to use 'global.fastboot.partitions' variable.")
 BAREBOX_CMD_HELP_OPT ("-b\t", "include registered barebox update handlers (fastboot specific, "
@@ -72,7 +76,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(usbgadget)
 	.cmd		= do_usbgadget,
 	BAREBOX_CMD_DESC("Create USB Gadget multifunction device")
-	BAREBOX_CMD_OPTS("[-adADS]")
+	BAREBOX_CMD_OPTS("[-aedADS]")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_usbgadget_help)
 BAREBOX_CMD_END

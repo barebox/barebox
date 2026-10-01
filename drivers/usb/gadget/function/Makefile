@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 
 obj-$(CONFIG_USB_GADGET_ETHER) += u_ether.o
+obj-$(CONFIG_USB_GADGET_EEM) += f_eem.o
 obj-$(CONFIG_USB_GADGET_SERIAL) += u_serial.o f_serial.o f_acm.o
 obj-$(CONFIG_USB_GADGET_DFU) += dfu.o
 obj-$(CONFIG_USB_GADGET_FASTBOOT) += f_fastboot.o

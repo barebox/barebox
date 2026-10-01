@@ -8,6 +8,7 @@
 #include <asm/atf_common.h>
 #include <asm/barebox-arm.h>
 #include <asm/mmu.h>
+#include <asm/cache.h>
 #include <asm-generic/memory_layout.h>
 #include <asm-generic/sections.h>
 #include <mach/rockchip/dmc.h>
@@ -131,6 +132,27 @@ static uintptr_t rk_load_optee(uintptr_t bl32, struct fwobj *bl32_fw)
 static phys_addr_t membase[ROCKCHIP_MAX_DRAM_RESOURCES];
 static resource_size_t memsize[ROCKCHIP_MAX_DRAM_RESOURCES];
 static int n_mem_resources;
+
+/*
+ * The BootROM starts us at the beginning of DRAM, where TF-A and OP-TEE go.
+ * Copy ourselves to @load_address with the MMU enabled and restart there.
+ * The SoC lowlevel init clears SCTLR_EL3.M, so it must run before this.
+ */
+static void rockchip_move_to_load_address(ulong load_address)
+{
+	void (*restart)(void) = (void *)load_address;
+
+	if ((ulong)__image_start == load_address)
+		return;
+
+	mmu_early_enable(membase[0], memsize[0]);
+	memcpy((void *)load_address, __image_start, barebox_image_size);
+	sync_caches_for_execution();
+
+	restart();
+	__builtin_unreachable();
+}
+
 static uintptr_t barebox_load_address; /* where barebox is loaded and started */
 static uintptr_t optee_load_address; /* standard SoC specific OP-TEE load address */
 static struct fwobj bl31; /* TF-A in barebox image */
@@ -202,7 +224,9 @@ void __noreturn rk3562_barebox_entry(void *fdt)
 	rk_scratch = (void *)arm_mem_scratch(memend);
 
 	if (current_el() == 3) {
-		rk3562_lowlevel_init();
+		if (!(get_cr() & CR_M))
+			rk3562_lowlevel_init();
+		rockchip_move_to_load_address(RK3562_BAREBOX_LOAD_ADDRESS);
 		rockchip_store_bootrom_iram(IOMEM(RK3562_IRAM_BASE));
 		ROCKCHIP_GET_ADDRESSES(RK3562, rk3562_bl31_bin, rk3562_bl32_bin);
 
@@ -236,7 +260,9 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 	rk_scratch = (void *)arm_mem_scratch(memend);
 
 	if (current_el() == 3) {
-		rk3568_lowlevel_init();
+		if (!(get_cr() & CR_M))
+			rk3568_lowlevel_init();
+		rockchip_move_to_load_address(RK3568_BAREBOX_LOAD_ADDRESS);
 		rockchip_store_bootrom_iram(IOMEM(RK3568_IRAM_BASE));
 		ROCKCHIP_GET_ADDRESSES(RK3568, rk3568_bl31_bin, rk3568_bl32_bin);
 
@@ -273,7 +299,9 @@ void __noreturn rk3588_barebox_entry(void *fdt)
 	if (current_el() == 3) {
 		void *fdt_bl31 = NULL;
 
-		rk3588_lowlevel_init();
+		if (!(get_cr() & CR_M))
+			rk3588_lowlevel_init();
+		rockchip_move_to_load_address(RK3588_BAREBOX_LOAD_ADDRESS);
 		rockchip_store_bootrom_iram(IOMEM(RK3588_IRAM_BASE));
 		ROCKCHIP_GET_ADDRESSES(RK3588, rk3588_bl31_bin, rk3588_bl32_bin);
 
@@ -308,7 +336,9 @@ void __noreturn rk3576_barebox_entry(void *fdt)
 	if (current_el() == 3) {
 		void *fdt_scratch = NULL;
 
-		rk3576_lowlevel_init();
+		if (!(get_cr() & CR_M))
+			rk3576_lowlevel_init();
+		rockchip_move_to_load_address(RK3576_BAREBOX_LOAD_ADDRESS);
 		rockchip_store_bootrom_iram(IOMEM(RK3576_IRAM_BASE));
 		ROCKCHIP_GET_ADDRESSES(RK3576, rk3576_bl31_bin, rk3576_bl32_bin);
 

@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-
 import crcmod
 import logging
 import struct
 from enum import Enum
-from time import sleep
+from time import monotonic, sleep
 
-try:
-    from time import monotonic
-except:
-    from .missing import monotonic
 
 csum_func = crcmod.predefined.mkCrcFun('xmodem')
 
@@ -583,7 +577,7 @@ class RatpConnection(object):
     def _common_i1(self, r):
         if r.c_so:
             self._r_sn = r.c_sn
-            self._rx_buf.append(chr(r.length))
+            self._rx_buf.append(bytes([r.length]))
         elif r.length and not r.c_syn and not r.c_rst and not r.c_fin:
             self._r_sn = r.c_sn
             self._rx_buf.append(r.payload)
@@ -686,6 +680,9 @@ class RatpConnection(object):
         self._write(syn)
         self._state = RatpState.syn_sent
         self.wait(deadline)
+        if self._state != RatpState.established:
+            raise RatpError("connection timed out in state %s" %
+                            self._state.value)
 
     def send_one(self, data, eor=True, timeout=1.0):
         deadline = monotonic() + timeout

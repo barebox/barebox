@@ -172,7 +172,7 @@ static int rockchip_create_optee_fdt(void *buf, int bufsize)
 {
 	unsigned long base[ROCKCHIP_MAX_DRAM_RESOURCES];
 	unsigned long size[ARRAY_SIZE(base)];
-	int i, root;
+	int i, root, ret;
 
 	if (fdt_create_empty_tree(buf, bufsize) != 0)
 		return -EINVAL;
@@ -187,7 +187,12 @@ static int rockchip_create_optee_fdt(void *buf, int bufsize)
 		size[i] = memsize[i];
 	}
 
-	return fdt_fixup_mem(buf, base, size, n_mem_resources);
+	ret = fdt_fixup_mem(buf, base, size, n_mem_resources);
+	if (ret)
+		return ret;
+
+	/* TF-A and OP-TEE copy the whole totalsize, keep it small */
+	return fdt_pack(buf);
 }
 
 static void rockchip_atf_load_bl31(void *fdt)

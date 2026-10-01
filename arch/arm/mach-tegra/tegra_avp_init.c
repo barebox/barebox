@@ -225,7 +225,8 @@ static void power_up_partition(u32 partid)
 		       TEGRA_PMC_BASE + PMC_PWRGATE_TOGGLE);
 
 		while (!(readl(TEGRA_PMC_BASE + PMC_PWRGATE_STATUS) &
-			(1 << partid)));
+			(1 << partid)))
+			;
 
 		reg = readl(TEGRA_PMC_BASE + PMC_REMOVE_CLAMPING_CMD);
 		reg |= (1 << partid);

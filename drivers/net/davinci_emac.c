@@ -104,7 +104,8 @@ static void davinci_eth_mdio_enable(struct davinci_mdio_priv *priv)
 	dev_dbg(priv->dev, "mdio_enable - 0x%08x\n",
 		readl(priv->adap_mdio + EMAC_MDIO_CONTROL));
 
-	while (readl(priv->adap_mdio + EMAC_MDIO_CONTROL) & MDIO_CONTROL_IDLE);
+	while (readl(priv->adap_mdio + EMAC_MDIO_CONTROL) & MDIO_CONTROL_IDLE)
+		;
 }
 
 /* wait until hardware is ready for another user access */
@@ -236,9 +237,11 @@ static int davinci_emac_open(struct eth_device *edev)
 
 	/* Reset EMAC module and disable interrupts in wrapper */
 	writel(1, priv->adap_emac + EMAC_SOFTRESET);
-	while (readl(priv->adap_emac + EMAC_SOFTRESET) != 0);
+	while (readl(priv->adap_emac + EMAC_SOFTRESET) != 0)
+		;
 	writel(1, priv->adap_ewrap + EMAC_EWRAP_SOFTRESET);
-	while (readl(priv->adap_ewrap + EMAC_EWRAP_SOFTRESET) != 0);
+	while (readl(priv->adap_ewrap + EMAC_EWRAP_SOFTRESET) != 0)
+		;
 
 	writel(0, priv->adap_ewrap + EMAC_EWRAP_C0RXEN);
 	writel(0, priv->adap_ewrap + EMAC_EWRAP_C1RXEN);

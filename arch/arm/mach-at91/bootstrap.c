@@ -248,7 +248,8 @@ static int at91_bootstrap(void)
 	boot_seq(false);
 
 	bootstrap_err("bootstrap_booting failed\n");
-	while (1);
+	while (1)
+		;
 
 	return 0;
 }

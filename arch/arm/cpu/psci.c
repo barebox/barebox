@@ -132,7 +132,8 @@ static unsigned long psci_system_off(void)
 	if (psci_ops->system_off)
 		psci_ops->system_off();
 
-	while(1);
+	while(1)
+		;
 
 	return 0;
 }
@@ -210,7 +211,8 @@ int psci_cpu_entry_c(void)
 
 	entry(context_id);
 
-	while (1);
+	while (1)
+		;
 }
 
 static int armv7_psci_init(void)

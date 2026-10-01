@@ -241,7 +241,8 @@ void tegra_ll_delay_usec(int delay)
 {
 	int timeout = (int)readl(TEGRA_TMRUS_BASE + TIMER_CNTR_1US) + delay;
 
-	while ((int)readl(TEGRA_TMRUS_BASE + TIMER_CNTR_1US) - timeout < 0);
+	while ((int)readl(TEGRA_TMRUS_BASE + TIMER_CNTR_1US) - timeout < 0)
+		;
 }
 
 /* reset vector for the AVP, to be called from board reset vector */

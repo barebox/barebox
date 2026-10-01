@@ -102,7 +102,8 @@ static void __iomem *to_regs(struct console_device *cdev)
 
 static void pxa_serial_putc(struct console_device *cdev, char c)
 {
-	while (!(readl(to_regs(cdev) + LSR) & LSR_TEMT));
+	while (!(readl(to_regs(cdev) + LSR) & LSR_TEMT))
+		;
 
 	writel(c, to_regs(cdev) + THR);
 }
@@ -114,7 +115,8 @@ static int pxa_serial_tstc(struct console_device *cdev)
 
 static int pxa_serial_getc(struct console_device *cdev)
 {
-	while (!(readl(to_regs(cdev) + LSR) & LSR_DR));
+	while (!(readl(to_regs(cdev) + LSR) & LSR_DR))
+		;
 
 	return readl(to_regs(cdev) + RBR) & 0xff;
 }

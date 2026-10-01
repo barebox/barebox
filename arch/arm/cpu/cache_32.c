@@ -97,7 +97,8 @@ static struct cache_fns *cache_functions(void)
 		break;
 #endif
 	default:
-		while(1);
+		while(1)
+			;
 	}
 
 	return cache_fns;

@@ -109,7 +109,8 @@ static void pl011_putc(struct console_device *cdev, char c)
 	struct amba_uart_port *uart = to_amba_uart_port(cdev);
 
 	/* Wait until there is space in the FIFO */
-	while (readl(uart->base + UART01x_FR) & UART01x_FR_TXFF);
+	while (readl(uart->base + UART01x_FR) & UART01x_FR_TXFF)
+		;
 
 	/* Send the character */
 	writel(c, uart->base + UART01x_DR);
@@ -121,7 +122,8 @@ static int pl011_getc(struct console_device *cdev)
 	unsigned int data;
 
 	/* Wait until there is data in the FIFO */
-	while (readl(uart->base + UART01x_FR) & UART01x_FR_RXFE);
+	while (readl(uart->base + UART01x_FR) & UART01x_FR_RXFE)
+		;
 
 	data = readl(uart->base + UART01x_DR);
 

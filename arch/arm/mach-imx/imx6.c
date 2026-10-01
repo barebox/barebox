@@ -400,5 +400,6 @@ void __noreturn imx6_pm_stby_poweroff(struct poweroff_handler *handler,
 
 	asm("wfi");
 
-	while(1);
+	while(1)
+		;
 }

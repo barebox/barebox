@@ -391,7 +391,8 @@ void print_autowrap(WINDOW * win, const char *prompt, int width, int y, int x)
 
 			if (sp && *sp == ' ') {
 				cur_x++;	/* double space */
-				while (*++sp == ' ') ;
+				while (*++sp == ' ')
+					;
 				newl = 1;
 			} else
 				newl = 0;

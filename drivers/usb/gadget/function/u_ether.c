@@ -593,7 +593,13 @@ int gether_register_netdev(struct eth_device *net)
 		return status;
 	}
 
-	INFO(dev, "HOST MAC %pM, DEV MAC %pM\n", dev->host_mac, dev->dev_mac);
+	/* Linux names USB gadget ethernet interfaces "usb%d" */
+	if (!*net->linuxdevname) {
+		free(net->linuxdevname);
+		net->linuxdevname = xstrdup("usb0");
+	}
+
+	INFO(dev, "HOST MAC %pM\n", dev->host_mac);
 
 	return status;
 }

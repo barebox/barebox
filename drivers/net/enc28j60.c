@@ -931,6 +931,8 @@ static int enc28j60_probe(struct device *dev)
 
 	priv->spi = (struct spi_device *)dev->type_data;
 	priv->rx_buffer = net_alloc_packet();
+	if (!priv->rx_buffer)
+		return -ENOMEM;
 
 	edev = &priv->edev;
 	edev->priv = priv;

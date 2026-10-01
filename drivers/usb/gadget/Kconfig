@@ -36,6 +36,10 @@ config USB_GADGET_AUTOSTART
 	  the global.usbgadget.dfu_function, global.system.partitions
 	  and global.fastboot.* variables.
 
+config USB_GADGET_ETHER
+	bool
+	depends on NET
+
 comment "USB Gadget drivers"
 
 config USB_GADGET_DFU

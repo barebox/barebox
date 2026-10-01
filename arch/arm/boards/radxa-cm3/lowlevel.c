@@ -21,10 +21,7 @@ ENTRY_FUNCTION(start_radxa_cm3_io, r0, r1, r2)
 
 	putc_ll('>');
 
-	if (current_el() == 3)
-		relocate_to_adr_full(RK3568_BAREBOX_LOAD_ADDRESS);
-	else
-		relocate_to_current_adr();
+	relocate_to_current_adr();
 
 	setup_c();
 

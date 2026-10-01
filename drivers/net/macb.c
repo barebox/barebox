@@ -919,6 +919,8 @@ static int macb_probe(struct device *dev)
 	}
 
 	macb->rx_packet_buf = net_alloc_packet();
+	if (!macb->rx_packet_buf)
+		return -ENOMEM;
 
 	macb_reset_hw(macb);
 	ncfgr = macb_mdc_clk_div(macb);

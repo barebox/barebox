@@ -322,7 +322,7 @@ int of_alias_get_id_from(struct device_node *root, struct device_node *np,
 		if (id < 0)
 			continue;
 
-		if (strncasecmp(start, stem, len))
+		if (strncmp(start, stem, len))
 			continue;
 
 		return id;
@@ -714,12 +714,9 @@ struct device_node *of_find_node_by_type(struct device_node *from,
 		const char *type)
 {
 	struct device_node *np;
-	const char *device_type;
-	int ret;
 
 	of_tree_for_each_node_from(np, from) {
-		ret = of_property_read_string(np, "device_type", &device_type);
-		if (!ret && !of_node_cmp(device_type, type))
+		if (of_node_is_type(np, type))
 			return np;
 	}
 	return NULL;
@@ -2901,12 +2898,10 @@ static int mem_bank_num;
 
 int of_add_memory(struct device_node *node, bool dump)
 {
-	const char *device_type;
 	struct resource res;
-	int n = 0, ret;
+	int n = 0, ret = 0;
 
-	ret = of_property_read_string(node, "device_type", &device_type);
-	if (ret || of_node_cmp(device_type, "memory"))
+	if (!of_node_is_type(node, "memory"))
 		return -ENXIO;
 
 	while (!of_address_to_resource(node, n, &res)) {
@@ -3647,7 +3642,7 @@ struct device_node *of_graph_get_remote_port_parent(
 	/* Walk 3 levels up only if there is 'ports' node. */
 	for (depth = 3; depth && np; depth--) {
 		np = np->parent;
-		if (depth == 2 && of_node_cmp(np->name, "ports"))
+		if (depth == 2 && !of_node_name_eq(np, "ports"))
 			break;
 	}
 	return np;

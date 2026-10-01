@@ -461,10 +461,7 @@ static int of_memory_fixup(struct device_node *root, void *unused)
 	 */
 
 	for_each_child_of_node_safe(root, tmp, np) {
-		const char *device_type;
-
-		err = of_property_read_string(np, "device_type", &device_type);
-		if (err || of_node_cmp("memory", device_type))
+		if (!of_node_is_type(np, "memory"))
 			continue;
 
 		/* delete every found memory node */

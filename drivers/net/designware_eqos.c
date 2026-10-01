@@ -879,7 +879,7 @@ static void eqos_probe_dt(struct device *dev, struct eqos *eqos)
 	/* Set MDIO bus device node, if present. */
 	for_each_child_of_node(dev->of_node, child) {
 		if (of_device_is_compatible(child, "snps,dwmac-mdio") ||
-		    (child->name && !of_node_cmp(child->name, "mdio"))) {
+		    of_node_name_eq(child, "mdio")) {
 			eqos->miibus.dev.of_node = child;
 			break;
 		}

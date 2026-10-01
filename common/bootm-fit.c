@@ -3,6 +3,7 @@
 #include <bootm.h>
 #include <image-fit.h>
 #include <bootm-fit.h>
+#include <globalvar.h>
 #include <memory.h>
 #include <string.h>
 #include <zero_page.h>
@@ -97,6 +98,21 @@ static bool bootm_fit_config_valid(struct fit_handle *fit,
 	return !!fit_has_image(fit, config, "kernel");
 }
 
+static void bootm_fit_config_cmdline(struct device_node *config)
+{
+	const char *cmdline;
+
+	if (!IS_ENABLED(CONFIG_FLEXIBLE_BOOTARGS))
+		return;
+
+	if (of_property_read_string(config, "cmdline", &cmdline))
+		return;
+
+	globalvar_add_simple("linux.bootargs.dyn.bootentries.fit", cmdline);
+
+	pr_info("Using command line from FIT configuration: %s\n", cmdline);
+}
+
 static enum filetype bootm_fit_update_os_header(struct image_data *data)
 {
 	size_t size;
@@ -145,6 +161,8 @@ int bootm_open_fit(struct image_data *data, bool override)
 		ret = -ENOSYS;
 		goto err;
 	}
+
+	bootm_fit_config_cmdline(fit_config);
 
 	loadable_from_fit_os(data, fit, fit_config);
 	if (override)

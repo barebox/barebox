@@ -460,7 +460,10 @@ int console_unregister(struct console_device *cdev)
 	if (console_is_serdev_node(cdev))
 		return -EBUSY;
 
-	devfs_remove(&cdev->devfs);
+	/* the device file is still open, e.g. by a 9P mount */
+	status = devfs_remove(&cdev->devfs);
+	if (status)
+		return status;
 
 	list_del(&cdev->list);
 	if (list_empty(&console_list))

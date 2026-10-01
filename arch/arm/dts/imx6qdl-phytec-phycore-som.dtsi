@@ -41,6 +41,7 @@
 &fec {
 	/delete-property/ phy-supply;
 	phy-reset-duration = <10>; /* in msecs */
+	phy-reset-post-delay = <5>;
 };
 
 &gpmi {

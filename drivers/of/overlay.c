@@ -22,8 +22,10 @@
 #include <fnmatch.h>
 #include <fuzz.h>
 
+/* @optional: only an overlay applied on request has to fit the tree */
 static struct device_node *find_target(struct device_node *root,
-				       struct device_node *fragment)
+				       struct device_node *fragment,
+				       bool optional)
 {
 	struct device_node *node;
 	const char *path;
@@ -34,8 +36,9 @@ static struct device_node *find_target(struct device_node *root,
 	if (!ret) {
 		node = of_find_node_by_phandle_from(phandle, root);
 		if (!node)
-			pr_err("fragment %pOF: phandle 0x%x not found\n",
-			       fragment, phandle);
+			__pr_printk(optional ? MSG_DEBUG : MSG_ERR,
+				    pr_fmt("fragment %pOF: phandle 0x%x not found\n"),
+				    fragment, phandle);
 		return node;
 	}
 
@@ -43,8 +46,9 @@ static struct device_node *find_target(struct device_node *root,
 	if (!ret) {
 		node = of_find_node_by_path_from(root, path);
 		if (!node)
-			pr_err("fragment %pOF: path '%s' not found\n",
-			       fragment, path);
+			__pr_printk(optional ? MSG_DEBUG : MSG_ERR,
+				    pr_fmt("fragment %pOF: path '%s' not found\n"),
+				    fragment, path);
 		return node;
 	}
 
@@ -110,7 +114,7 @@ static char *of_overlay_fix_path(struct device_node *root,
 		return NULL;
 	}
 
-	target = find_target(root, fragment);
+	target = find_target(root, fragment, false);
 	if (!target)
 		return NULL;
 
@@ -161,7 +165,8 @@ static int of_overlay_apply_symbols(struct device_node *root,
 }
 
 static int of_overlay_apply_fragment(struct device_node *root,
-				     struct device_node *fragment)
+				     struct device_node *fragment,
+				     bool optional)
 {
 	struct device_node *target;
 	struct device_node *overlay;
@@ -170,22 +175,45 @@ static int of_overlay_apply_fragment(struct device_node *root,
 	if (!overlay)
 		return 0;
 
-	target = find_target(root, fragment);
+	target = find_target(root, fragment, optional);
 	if (!target)
-		return -EINVAL;
+		return -ENOENT;
 
 	return of_overlay_apply(target, overlay);
 }
 
 static char *of_overlay_compatible;
 
-/**
- * Apply the overlay on the passed devicetree root
- * @root: the devicetree onto which the overlay will be applied
- * @overlay: the devicetree to apply as an overlay
+/*
+ * A built-in overlay is applied to whatever device tree barebox was started
+ * with, so a fragment that finds no target is just skipped. What the overlay
+ * can't do without goes into barebox,assert-available and drops it as a whole.
  */
-int of_overlay_apply_tree(struct device_node *root,
-			  struct device_node *overlay)
+static int of_overlay_assert_available(struct device_node *root,
+				       struct device_node *overlay)
+{
+	struct device_node *node;
+	struct property *prop;
+	const char *path;
+
+	if (!IS_ENABLED(CONFIG_OF_OVERLAY_BUILTIN))
+		return 0;
+
+	of_property_for_each_string(overlay, "barebox,assert-available",
+				    prop, path) {
+		node = of_find_node_by_path_from(root, path);
+		if (!node || !of_device_is_available(node)) {
+			pr_debug("asserted %s is missing or disabled\n", path);
+			return -ENODEV;
+		}
+	}
+
+	return 0;
+}
+
+static int __of_overlay_apply_tree(struct device_node *root,
+				   struct device_node *overlay,
+				   bool builtin)
 {
 	struct device_node *resolved;
 	struct device_node *fragment;
@@ -194,6 +222,12 @@ int of_overlay_apply_tree(struct device_node *root,
 	resolved = of_resolve_phandles(root, overlay);
 	if (!resolved)
 		return -EINVAL;
+
+	if (builtin) {
+		err = of_overlay_assert_available(root, resolved);
+		if (err)
+			goto out_err;
+	}
 
 	err = of_overlay_pre_load_firmware(root, resolved);
 	if (err)
@@ -206,9 +240,16 @@ int of_overlay_apply_tree(struct device_node *root,
 
 	/* Copy nodes and properties from resolved overlay to root */
 	for_each_child_of_node(resolved, fragment) {
-		err = of_overlay_apply_fragment(root, fragment);
-		if (err)
-			pr_warn("failed to apply %s\n", fragment->name);
+		int ret = of_overlay_apply_fragment(root, fragment, builtin);
+		if (!ret)
+			continue;
+
+		/* A built-in overlay applies the fragments that do fit */
+		if (builtin && ret == -ENOENT)
+			continue;
+
+		pr_warn("failed to apply %s\n", fragment->name);
+		err = err ?: ret;
 	}
 
 	/* We are patching the live tree, reload aliases */
@@ -219,6 +260,17 @@ out_err:
 	of_delete_node(resolved);
 
 	return err;
+}
+
+/**
+ * Apply the overlay on the passed devicetree root
+ * @root: the devicetree onto which the overlay will be applied
+ * @overlay: the devicetree to apply as an overlay
+ */
+int of_overlay_apply_tree(struct device_node *root,
+			  struct device_node *overlay)
+{
+	return __of_overlay_apply_tree(root, overlay, false);
 }
 
 static char *of_overlay_filter;
@@ -361,6 +413,83 @@ int of_overlay_apply_dtbo(struct device_node *root, const void *dtbo)
 	return ret;
 }
 
+/* Picked like a driver for a device: any compatible in common is a match */
+static const char *of_overlay_matches_machine(struct device_node *root,
+					     struct device_node *overlay)
+{
+	const char *compat;
+	struct property *prop;
+
+	of_property_for_each_string(overlay, "compatible", prop, compat)
+		if (of_device_is_compatible(root, compat))
+			return compat;
+
+	return NULL;
+}
+
+extern const void * const __barebox_of_overlay_start[];
+extern const void * const __barebox_of_overlay_end[];
+
+static __maybe_unused int of_overlay_apply_builtin_one(struct device_node *root,
+						       const void *dtbo)
+{
+	struct device_node *overlay;
+	const char *compat;
+	int ret;
+
+	overlay = of_unflatten_dtb(dtbo, INT_MAX);
+	if (IS_ERR(overlay))
+		return PTR_ERR(overlay);
+
+	ret = 0;
+
+	compat = of_overlay_matches_machine(root, overlay);
+	if (!compat)
+		goto out;
+
+	/* A tree from the boot firmware has no __symbols__ to resolve against */
+	if (of_get_child_by_name(overlay, "__fixups__") &&
+	    !of_get_child_by_name(root, "__symbols__")) {
+		pr_info("skipping %s overlay: devicetree has no __symbols__\n",
+			compat);
+		goto out;
+	}
+
+	ret = __of_overlay_apply_tree(root, overlay, true);
+	if (ret == -ENODEV) {
+		pr_debug("skipping %s overlay: hardware not available\n", compat);
+		ret = 0;
+	} else if (ret) {
+		pr_err("cannot apply %s overlay: %pe\n", compat, ERR_PTR(ret));
+	}
+out:
+	of_delete_node(overlay);
+
+	return ret;
+}
+
+#ifdef CONFIG_OF_OVERLAY_BUILTIN
+/**
+ * of_overlay_apply_builtin - apply the overlay-y overlays @root asks for
+ * @root: the devicetree to patch, normally the live tree
+ */
+int of_overlay_apply_builtin(struct device_node *root)
+{
+	const void * const *dtbo;
+	int err, ret = 0;
+
+	for (dtbo = __barebox_of_overlay_start;
+	     dtbo < __barebox_of_overlay_end; dtbo++) {
+		err = of_overlay_apply_builtin_one(root, *dtbo);
+		if (err)
+			ret = err;
+	}
+
+	return ret;
+}
+
+#endif
+
 static int of_overlay_fixup(struct device_node *root, void *data)
 {
 	struct device_node *overlay = data;
@@ -391,7 +520,8 @@ int of_process_overlay(struct device_node *root,
 		if (!ovl)
 			continue;
 
-		target = find_target(root, fragment);
+		/* A scan, not the apply: a missing target is reported there */
+		target = find_target(root, fragment, true);
 		if (!target)
 			pr_debug("cannot find target for fragment %s\n",
 				 fragment->name);

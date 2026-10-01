@@ -1437,6 +1437,14 @@ ifneq ($(dtstree),)
 %.dtbo: dtbs_prepare
 	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
 
+# Build an upstream device tree by name, e.g.
+#   make dts/src/arm/st/stm32mp157c-dk2.dtb
+dts/src/%.dtb: dtbs_prepare
+	$(Q)$(MAKE) $(build)=dts/src $@
+
+dts/src/%.dtbo: dtbs_prepare
+	$(Q)$(MAKE) $(build)=dts/src $@
+
 PHONY += dtbs dtbs_prepare dtbs_install
 dtbs: dtbs_prepare
 	$(Q)$(MAKE) $(build)=$(dtstree) need-dtbslist=1
@@ -1629,6 +1637,7 @@ endif
 		echo 'Devicetree:'; \
 		echo '* dtbs               - Build device tree blobs for enabled boards'; \
 		echo '  dtbs_install       - Install dtbs to $(INSTALL_DTBS_PATH)'; \
+		echo '  dts/src/PATH.dtb   - Build a device tree of the dts/ subtree'; \
 		echo '')
 	@echo  'Architecture-specific targets ($(SRCARCH)):'
 	@$(or $(archhelp),\

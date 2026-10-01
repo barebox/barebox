@@ -6,8 +6,6 @@
 #include "stm32mp131.dtsi"
 
 / {
-	barebox,deep-probe;
-
 	chosen {
 		stdout-path = "serial0:1500000n8";
 

@@ -12,6 +12,7 @@ config ARCH_STM32MP13
 
 config ARCH_STM32MP157
 	select ARM_PSCI_CLIENT
+	select OF_OVERLAY_BUILTIN
 	bool "Support STM32MP157-based chips"
 
 config MACH_STM32MP13XX_DK

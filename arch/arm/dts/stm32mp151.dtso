@@ -1,0 +1,75 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/*
+ * The barebox additions to a STM32MP15 device tree, as an overlay, so one
+ * handed over by TF-A gets them too. Targets are paths, from the header.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "stm32mp151-symbols-paths.h"
+
+/ {
+	compatible = "st,stm32mp151", "st,stm32mp153", "st,stm32mp157";
+};
+
+&{/} {
+	aliases {
+		mmc0 = BASE_PATH(sdmmc1);
+		mmc1 = BASE_PATH(sdmmc2);
+		mmc2 = BASE_PATH(sdmmc3);
+		pwm1 = BASE_SUBPATH(timers1, pwm);
+		pwm2 = BASE_SUBPATH(timers2, pwm);
+		pwm3 = BASE_SUBPATH(timers3, pwm);
+		pwm4 = BASE_SUBPATH(timers4, pwm);
+		pwm5 = BASE_SUBPATH(timers5, pwm);
+		pwm8 = BASE_SUBPATH(timers8, pwm);
+		pwm12 = BASE_SUBPATH(timers12, pwm);
+		pwm13 = BASE_SUBPATH(timers13, pwm);
+		pwm14 = BASE_SUBPATH(timers14, pwm);
+		pwm15 = BASE_SUBPATH(timers15, pwm);
+		pwm16 = BASE_SUBPATH(timers16, pwm);
+		pwm17 = BASE_SUBPATH(timers17, pwm);
+		tamp.reboot_mode = BASE_SUBPATH(tamp, reboot-mode);
+	};
+};
+
+&{/clocks} {
+	/* Needed to let barebox find the clock nodes */
+	compatible = "simple-bus";
+};
+
+&{/soc} {
+	memory-controller@5a003000 {
+		compatible = "st,stm32mp1-ddr";
+		reg = <0x5a003000 0x1000>;
+	};
+};
+
+BASE_NODE(tamp) {
+	reboot-mode {
+		compatible = "syscon-reboot-mode";
+		offset = <0x150>; /* reg20 */
+		mask = <0xffff>;
+		mode-normal = <0>;
+		mode-loader = <0xBB>;
+		mode-recovery = <0xBC>;
+		barebox,mode-serial = <0xFF>;
+	};
+};
+
+/* Nothing to assert: a property on a node nothing probes does nothing */
+BASE_NODE(iwdg2) {
+	barebox,restart-warm-bootrom;
+};
+
+BASE_NODE(bsec) {
+	ethernet_mac_address: mac@e4 {
+		reg = <0xe4 0x6>;
+	};
+};
+
+BASE_NODE(ethernet0) {
+	nvmem-cells = <&ethernet_mac_address>;
+	nvmem-cell-names = "mac-address";
+};

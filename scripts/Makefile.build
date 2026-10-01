@@ -17,6 +17,7 @@ lib-y :=
 lib-m :=
 pbl-y :=
 lwl-y :=
+overlay-y :=
 policy-y :=
 always-y :=
 always-m :=
@@ -56,6 +57,13 @@ endif
 
 dtb- 		+= $(patsubst %.dtb.o,%.dtb,$(filter %.dtb.o,$(pbl-)  $(lwl-)))
 dtb-y		+= $(patsubst %.dtb.o,%.dtb,$(filter %.dtb.o,$(pbl-y) $(lwl-y)))
+
+# Device tree overlays barebox applies to the live tree on its own
+ifdef CONFIG_OF_OVERLAY_BUILTIN
+obj-y		+= $(addsuffix .o, $(overlay-y))
+else ifneq ($(overlay-y),)
+$(error $(obj) lists overlay-y, but nothing selects CONFIG_OF_OVERLAY_BUILTIN)
+endif
 
 obj-y		+= $(obj-pbl-y)
 pbl-y		+= $(obj-pbl-y)

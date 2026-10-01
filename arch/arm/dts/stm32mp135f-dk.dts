@@ -5,7 +5,6 @@
 
 / {
 	model = "STM32MP135F-DK";
-	barebox,deep-probe;
 
 	chosen {
 		stdout-path = "serial0:115200n8";

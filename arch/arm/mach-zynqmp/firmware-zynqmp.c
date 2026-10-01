@@ -712,7 +712,11 @@ EXPORT_SYMBOL_GPL(zynqmp_pm_get_eemi_ops);
 static bool parse_reg(const char *reg, unsigned *idx)
 {
 	bool pggs = reg[0] == 'p';
-	kstrtouint(reg + pggs + sizeof("ggs") - 1, 10, idx);
+
+	/* the names are registered by this driver as ggs%u and pggs%u */
+	if (WARN_ON(kstrtouint(reg + pggs + sizeof("ggs") - 1, 10, idx)))
+		*idx = 0;
+
 	return pggs;
 }
 

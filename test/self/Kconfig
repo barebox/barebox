@@ -32,6 +32,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_RANGE
 	select SELFTEST_PRINTF
 	select SELFTEST_MALLOC
+	select SELFTEST_CLEANUP
 	select SELFTEST_PROGRESS_NOTIFIER
 	select SELFTEST_OF_MANIPULATION
 	select SELFTEST_ENVIRONMENT_VARIABLES if ENVIRONMENT_VARIABLES
@@ -69,6 +70,15 @@ config SELFTEST_MALLOC
 	bool "malloc() selftest"
 	help
 	  Tests barebox memory allocator
+
+config SELFTEST_CLEANUP
+	bool "scope-based cleanup selftest"
+	help
+	  Tests the __free() cleanup handlers the barebox allocators define,
+	  i.e. that leaving a scope frees the buffer, that NULL and error
+	  pointers are never freed and that no_free_ptr() inhibits cleanup.
+
+	  If unsure, say n.
 
 config SELFTEST_TALLOC
 	bool "talloc() selftest"

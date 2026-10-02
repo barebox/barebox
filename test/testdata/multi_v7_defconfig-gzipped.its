@@ -69,7 +69,7 @@
             ramdisk = "ramdisk-1", "ramdisk-2", "ramdisk-3";
             compatible = "linux,dummy-virt";
             signature-1 {
-                algo = "sha256,rsa2048";
+                algo = "sha256,rsa4096";
                 sign-images = "kernel", "fdt", "ramdisk";
                 signer-name = "None";
                 signer-version = "None";

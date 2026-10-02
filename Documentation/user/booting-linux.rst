@@ -110,6 +110,10 @@ their ``linux.bootargs.``-prefixed parameter names.
 Kernel command line arguments that barebox generates internally are not
 interleaved with externally provided command-line arguments:
 
+* Following arguments will be concatenated **before** all other options:
+
+  * the ``cmdline`` property of the booted FIT image configuration
+
 * Following arguments will be concatenated **after** all other options:
 
   * ``root=`` and ``rootwait=`` controlled by :ref:`global.bootm.appendroot <magicvar_global_bootm_appendroot>`

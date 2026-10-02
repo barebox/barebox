@@ -59,20 +59,6 @@ static void __imx8m_early_clock_init(int cpu_type)
 	void __iomem *ana = IOMEM(MX8M_ANATOP_BASE_ADDR);
 	u32 val;
 
-	imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_DDR1);
-
-	imx8m_clock_set_target_val(IMX8M_DRAM_ALT_CLK_ROOT,
-				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
-
-	/* change the clock source of dram_apb_clk_root: source 4 800MHz /4 = 200MHz */
-	imx8m_clock_set_target_val(IMX8M_DRAM_APB_CLK_ROOT,
-				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-				   IMX8M_CCM_TARGET_ROOTn_MUX(4) |
-				   IMX8M_CCM_TARGET_ROOTn_POST_DIV(4 - 1));
-
-	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_DDR1);
-
 	/*
 	 * The gate is not exported to clk tree, so configure them here.
 	 * According to ANAMIX SPEC
@@ -95,6 +81,19 @@ static void __imx8m_early_clock_init(int cpu_type)
 		INTPLL_DIV8_CLKE_MASK | INTPLL_DIV10_CLKE_MASK |
 		INTPLL_DIV20_CLKE_MASK;
 	writel(val, ana + IMX8MM_CCM_ANALOG_SYS_PLL2_GEN_CTRL);
+
+	imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_DDR1);
+
+	imx8m_clock_set_target_val(IMX8M_DRAM_ALT_CLK_ROOT,
+				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
+
+	/* change the clock source of dram_apb_clk_root: source 1 sys_pll2_200m */
+	imx8m_clock_set_target_val(IMX8M_DRAM_APB_CLK_ROOT,
+				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
+
+	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_DDR1);
 
 	if (cpu_type != IMX_CPU_IMX8MP) {
 		/* 8MP ROM already set GIC to 400Mhz, system_pll1_800m with div = 2 */

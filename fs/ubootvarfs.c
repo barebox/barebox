@@ -197,7 +197,7 @@ static const struct file_operations ubootvarfs_dir_operations = {
  * zeroed out
  */
 static void ubootvarfs_relocate_tail(struct ubootvarfs_inode *node,
-				     int delta)
+				     ptrdiff_t delta)
 {
 	struct ubootvarfs_var *var = node->var;
 	struct ubootvarfs_data *data = node->data;
@@ -235,7 +235,7 @@ static void ubootvarfs_relocate_tail(struct ubootvarfs_inode *node,
  * ubootvarfs_var's in varaible linked list
  */
 static void ubootvarfs_adjust(struct ubootvarfs_inode *node,
-			      int delta)
+			      ptrdiff_t delta)
 {
 	struct ubootvarfs_var *var = node->var;
 	struct ubootvarfs_data *data = node->data;
@@ -260,7 +260,7 @@ static int ubootvarfs_unlink(struct inode *dir, struct dentry *dentry)
 		 * -1 at the end is to account for '\0' at the end
 		 * that needs to be removed as well
 		 */
-		const int delta = var->name - var->end - 1;
+		const ptrdiff_t delta = var->name - var->end - 1;
 
 		ubootvarfs_adjust(node, delta);
 
@@ -369,12 +369,16 @@ static int ubootvarfs_truncate(struct file *f, loff_t size)
 	struct ubootvarfs_inode *node = inode_to_node(inode);
 	struct ubootvarfs_data *data = node->data;
 	struct ubootvarfs_var *var = node->var;
-	const int delta = size - inode->i_size;
+	loff_t delta;
+
+	if (size < 0)
+		return -EINVAL;
 
 	if (size == inode->i_size)
 		return 0;
 
-	if (data->end + delta >= data->limit)
+	delta = size - inode->i_size;
+	if (delta >= data->limit - data->end)
 		return -ENOSPC;
 
 	ubootvarfs_adjust(node, delta);

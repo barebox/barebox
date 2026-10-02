@@ -42,15 +42,18 @@ written):
 
 To use *pstore/RAMOOPS* both Barebox and Kernel have to be compiled with *pstore*
 and RAM backend support. The kernel receives the parameters describing the
-layout via devicetree or - as a fallback - over the kernel command line.
-To ensure both worlds are using the same memory layout, the required
-configuration data for the kernel is generated on-the-fly prior to booting a
-kernel.
-For the devicetree use case Barebox adapts the kernel's devicetree, for the
-kernel command line fallback the variable ``global.linux.bootargs.ramoops`` is
-created and its content used to build the kernel command line.
+layout via devicetree. To ensure both worlds are using the same memory layout,
+Barebox adapts the kernel's devicetree on-the-fly prior booting a kernel.
 
 You can adapt the *pstore* parameters in Barebox menuconfig.
+
+The RAM backend is enabled if barebox' device tree has a node compatible with
+``ramoops``, usually ``/reserved-memory/ramoops``. Its location and size are
+taken from menuconfig all the same. If the device tree has no such node, e.g.
+because it's passed by the boot firmware, barebox creates it, unless
+``CONFIG_FS_PSTORE_RAMOOPS_ALWAYS`` is disabled or barebox runs as EFI payload.
+To keep the RAM backend disabled on a board, add a ramoops-compatible node with
+``status = "disabled"``.
 
 To see where the RAMOOPS area is located, you can execute the ``iomem`` command
 in the Barebox shell. The RAMOOPS area is listed as 'persistent ram':
@@ -82,9 +85,15 @@ All pstore files that could be found are added to the /pstore directory. This is
 a read-only filesystem with the only supported operation being unlinking:
 This resets (zaps) the RAMOOPS area and recalculates the ECC.
 
-Zapping is done automatically, if the menu entry ``FS_PSTORE_RAMOOPS_RO`` is
-disabled. In this case, only the barebox log will be available to the kernel
-and ramoops from previous boots will not survive.
+Reading never zaps an area, so the kernel gets to see the same data as
+barebox. Records barebox can't parse, like a dmesg record whose header has
+partly decayed, are shown as-is. An area with a missing or invalid header is
+not shown and only zapped once barebox writes to it.
+
+If the menu entry ``FS_PSTORE_RAMOOPS_RO`` is disabled, barebox also zaps the
+console area before writing its own console output to it. In this case, only
+the barebox log will be available to the kernel as console ramoops and the
+console log of the previous boot will not survive.
 
 The usual setup is to not zap any buffers, i.e. ``CONFIG_FS_PSTORE_RAMOOPS_RO=y``
 and no manual unlinking of files in ``/pstore``.
@@ -101,3 +110,29 @@ Logs (including barebox log messages if enabled) will then be written to
 journal by default and are accessible via::
 
   journalctl -b -o verbose -a -t systemd-pstore
+
+Testing RAM retention
+---------------------
+
+*pstore/RAMOOPS* only works if the RAM contents survive the reset in between,
+which depends on the way the board is reset: A watchdog or PMIC reset may cut
+the power to the RAM, and firmware running early may reinitialize the RAM
+controller or use parts of the RAM.
+
+To find out what survives, enable ``CONFIG_FS_PSTORE_RAMOOPS_TEST``. The RAM
+area then no longer serves pstore. Instead, barebox compares it against a
+fixed pseudo-random pattern on every start, reports the result and fills the
+area with the pattern again for the next reset:
+
+.. code-block:: none
+
+  ramoops: retention test: 2093061 of 2097152 bytes intact (99.80%)
+  ramoops: 16404 bits flipped from 1 to 0, 7 from 0 to 1
+  ramoops: lost 0x7fd80008 - 0x7fd8000b (0x4 bytes)
+  ramoops: lost 0x7fe00004 - 0x7fe00004 (0x1 bytes)
+  ramoops: lost 0x7ff20100 - 0x7ff210ff (0x1000 bytes)
+  ramoops: wrote retention test pattern to 0x200000@0x7fd80000, pstore disabled
+
+The kernel only gets the area as reserved memory, so it's possible to boot an
+OS and have it reset the board. The first start after power-on reports what
+survived with the power off, usually next to nothing.

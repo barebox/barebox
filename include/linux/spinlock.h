@@ -18,6 +18,15 @@ typedef int   spinlock_t;
 
 #define DEFINE_SPINLOCK(lock) spinlock_t __always_unused lock
 
+typedef spinlock_t raw_spinlock_t;
+#define raw_spin_lock_init spin_lock_init
+#define raw_spin_lock spin_lock
+#define raw_spin_unlock spin_unlock
+#define raw_spin_lock_irqsave spin_lock_irqsave
+#define raw_spin_unlock_irqrestore spin_unlock_irqrestore
+
+#define DEFINE_RAW_SPINLOCK(lock) raw_spinlock_t __always_unused lock
+
 DEFINE_DUMMY_GUARD_1(spinlock, spinlock_t,
 		     spin_lock(_T->lock),
 		     spin_unlock(_T->lock))

@@ -11,4 +11,8 @@
 #define GFP_NOWAIT	0
 #define __GFP_NOWARN	0
 
+/* Helper macro to avoid gfp flags if they are the default one */
+#define __default_gfp(a,b,...) b
+#define default_gfp(...) __default_gfp(,##__VA_ARGS__,GFP_KERNEL)
+
 #endif

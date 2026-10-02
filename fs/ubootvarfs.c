@@ -281,6 +281,11 @@ static int ubootvarfs_create(struct inode *dir, struct dentry *dentry,
 	struct inode *inode;
 	struct ubootvarfs_var *var;
 	size_t len = strlen(dentry->name);
+
+	/* U-Boot splits a variable at its first '=' */
+	if (strchr(dentry->name, '='))
+		return -EINVAL;
+
 	/*
 	 * We'll be adding <varname>=\0\0 to the end of our data, so
 	 * we need to make sure there's enough room for it. Note that

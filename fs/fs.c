@@ -1088,6 +1088,11 @@ static int fillonedir(struct dir_context *ctx, const char *name, int namlen,
 	struct readdir_callback *rd = container_of(ctx, struct readdir_callback, ctx);
 	struct readdir_entry *entry;
 
+	if (namlen >= sizeof(entry->d.d_name)) {
+		pr_warn("skipping directory entry %.32s...: name too long\n", name);
+		return 0;
+	}
+
 	entry = xzalloc(sizeof(*entry));
 	memcpy(entry->d.d_name, name, namlen);
 	list_add_tail(&entry->list, &rd->dir->entries);

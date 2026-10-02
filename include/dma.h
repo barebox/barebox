@@ -28,16 +28,22 @@
 
 #ifdef CONFIG_HAS_DMA
 void *dma_alloc(size_t size);
+void *dma_try_alloc(size_t size);
 void *dma_zalloc(size_t size);
 #else
 static inline void *dma_alloc(size_t size)
+{
+	return xmalloc(size);
+}
+
+static inline void *dma_try_alloc(size_t size)
 {
 	return malloc(size);
 }
 
 static inline void *dma_zalloc(size_t size)
 {
-	return calloc(size, 1);
+	return xzalloc(size);
 }
 #endif
 

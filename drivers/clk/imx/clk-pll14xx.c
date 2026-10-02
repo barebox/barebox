@@ -238,8 +238,8 @@ static int clk_pll1416x_set_rate(struct clk_hw *hw, unsigned long drate,
 	return 0;
 }
 
-int clk_pll1416x_early_set_rate(void __iomem *base, unsigned long drate,
-			  unsigned long prate)
+int clk_pll1416x_early_configure(void __iomem *base, unsigned long drate,
+				 unsigned long prate)
 {
 	struct clk_pll14xx pll = {
 		.hw.clk = {
@@ -249,8 +249,16 @@ int clk_pll1416x_early_set_rate(void __iomem *base, unsigned long drate,
 		.rate_table = imx_pll1416x_tbl,
 		.rate_count = ARRAY_SIZE(imx_pll1416x_tbl),
 	};
+	int ret;
 
-	return clk_pll1416x_set_rate(&pll.hw, drate, prate);
+	ret = clk_pll1416x_set_rate(&pll.hw, drate, prate);
+	if (ret)
+		return ret;
+
+	/* enable the PLL output */
+	setbits_le32(base + GNRL_CTL, CLKE_MASK);
+
+	return 0;
 }
 
 static int clk_pll1443x_set_rate(struct clk_hw *hw, unsigned long drate,

@@ -116,8 +116,8 @@ static void __imx8m_early_clock_init(int cpu_type)
 		pll3_freq = 750000000UL;
 
 	/* Configure SYS_PLL3 */
-	clk_pll1416x_early_set_rate(ana + IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL,
-				    pll3_freq, 25000000UL);
+	clk_pll1416x_early_configure(ana + IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL,
+				     pll3_freq, 25000000UL);
 
 	if (cpu_type == IMX_CPU_IMX8MP) {
 		/* 8MP ROM already set NOC to 800Mhz, only need to configure NOC_IO clk to 600Mhz */
@@ -131,11 +131,8 @@ static void __imx8m_early_clock_init(int cpu_type)
 			IMX8M_CCM_TARGET_ROOTn_MUX(2));
 
 	/* Configure ARM PLL to 1.2GHz */
-	clk_pll1416x_early_set_rate(ana + IMX8MM_CCM_ANALOG_ARM_PLL_GEN_CTRL,
-				    1200000000UL, 25000000UL);
-
-	clrsetbits_le32(ana + IMX8MM_CCM_ANALOG_ARM_PLL_GEN_CTRL, 0,
-			INTPLL_CLKE_MASK);
+	clk_pll1416x_early_configure(ana + IMX8MM_CCM_ANALOG_ARM_PLL_GEN_CTRL,
+				     1200000000UL, 25000000UL);
 
 	clrsetbits_le32(ccm + IMX8M_CCM_TARGET_ROOTn(IMX8M_ARM_A53_CLK_ROOT),
 			IMX8M_CCM_TARGET_ROOTn_MUX(7),

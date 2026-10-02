@@ -381,6 +381,9 @@ int ftruncate(int fd, loff_t length)
 	if (IS_ERR(f))
 		return -errno;
 
+	if (length < 0)
+		return errno_set(-EINVAL);
+
 	if (f->f_size == FILE_SIZE_STREAM)
 		return 0;
 

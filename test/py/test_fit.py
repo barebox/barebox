@@ -87,6 +87,13 @@ def test_fit_dryrun(barebox, strategy, fitimage):
     # If we actually did boot, this variable would be undefined
     barebox.run_check('[ "$global.dryrun_attempts" = 5 ]')
 
+    # Apply fixups and check the FIT's cmdline did not outlive bootm -d
+    stdout = barebox.run_check("of_dump -F -p /chosen")
+    for line in stdout:
+        if line.startswith("bootargs"):
+            assert "fit.param" not in line, \
+                   f"FIT cmdline survived bootm dry run: {line}"
+
 
 def test_fit(barebox, strategy, fitimage):
     # Sanity check, this is only fixed up on first boot
@@ -112,6 +119,7 @@ def test_fit(barebox, strategy, fitimage):
     actual_size = int(fileinfo.split()[1])
 
     boottarget = generate_bootscript(barebox, fitimage)
+    barebox.run_check("global linux.bootargs.dyn.bootentries=entry.param")
 
     with strategy.boot_barebox(boottarget) as barebox:
         assert of_get_property(barebox, "/chosen/barebox-version") == ver, \
@@ -124,6 +132,12 @@ def test_fit(barebox, strategy, fitimage):
         bootargs = of_get_property(barebox, "/chosen/bootargs")
         assert "barebox.chainloaded" in bootargs
         assert "fit.param" in bootargs
+
+        # The FIT's cmdline comes first, so everything else can override it
+        assert bootargs.index("fit.param") < bootargs.index("barebox.chainloaded"), \
+               "fit.param found later than bootargs set by scripts"
+        assert bootargs.index("fit.param") < bootargs.index("entry.param"), \
+               "fit.param found later than bootargs set by boot entries"
 
         initrd_start = of_get_property(barebox, "/chosen/linux,initrd-start", ncells=0)
         initrd_end = of_get_property(barebox, "/chosen/linux,initrd-end", ncells=0)

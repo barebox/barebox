@@ -82,6 +82,46 @@ static void __imx8m_early_clock_init(int cpu_type)
 		INTPLL_DIV20_CLKE_MASK;
 	writel(val, ana + IMX8MM_CCM_ANALOG_SYS_PLL2_GEN_CTRL);
 
+	/* Configure ARM at 1.2GHz */
+	imx8m_clock_set_target_val(IMX8M_ARM_A53_CLK_ROOT,
+				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+				   IMX8M_CCM_TARGET_ROOTn_MUX(2));
+
+	clk_pll1416x_early_configure(ana + IMX8MM_CCM_ANALOG_ARM_PLL_GEN_CTRL,
+				     1200000000UL, 25000000UL);
+
+	/* Bypass the A53 root and feed the cores from arm_pll_out directly */
+	imx8m_clock_set_target_val(IMX8M_CORE_SEL_CFG,
+				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
+
+	if (cpu_type == IMX_CPU_IMX8MN || cpu_type == IMX_CPU_IMX8MP)
+		pll3_freq = 600000000UL;
+	else
+		pll3_freq = 750000000UL;
+
+	/* Configure SYS_PLL3 */
+	clk_pll1416x_early_configure(ana + IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL,
+				     pll3_freq, 25000000UL);
+
+	if (cpu_type == IMX_CPU_IMX8MP) {
+		/* NOC_IO from sys_pll3_out, barebox proper sets NOC and GIC */
+		imx8m_clock_set_target_val(IMX8M_NOC_IO_CLK_ROOT,
+					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+					   IMX8M_CCM_TARGET_ROOTn_MUX(2));
+	} else {
+		/* NOC from undivided sys_pll3_out */
+		imx8m_clock_set_target_val(IMX8M_NOC_CLK_ROOT,
+					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+					   IMX8M_CCM_TARGET_ROOTn_MUX(2));
+
+		/* config GIC to sys_pll2_100m */
+		imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_GIC);
+		imx8m_clock_set_target_val(IMX8M_GIC_CLK_ROOT,
+					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+					   IMX8M_CCM_TARGET_ROOTn_MUX(3));
+		imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_GIC);
+	}
+
 	imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_DDR1);
 
 	imx8m_clock_set_target_val(IMX8M_DRAM_ALT_CLK_ROOT,
@@ -94,49 +134,6 @@ static void __imx8m_early_clock_init(int cpu_type)
 				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
 
 	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_DDR1);
-
-	if (cpu_type != IMX_CPU_IMX8MP) {
-		/* 8MP ROM already set GIC to 400Mhz, system_pll1_800m with div = 2 */
-		/* For everything else, config GIC to sys_pll2_100m */
-		imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_GIC);
-		imx8m_clock_set_target_val(IMX8M_GIC_CLK_ROOT,
-					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-					   IMX8M_CCM_TARGET_ROOTn_MUX(3));
-		imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_GIC);
-	}
-
-	if (cpu_type == IMX_CPU_IMX8MN || cpu_type == IMX_CPU_IMX8MP)
-		pll3_freq = 600000000UL;
-	else
-		pll3_freq = 750000000UL;
-
-	/* Configure SYS_PLL3 */
-	clk_pll1416x_early_configure(ana + IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL,
-				     pll3_freq, 25000000UL);
-
-	if (cpu_type == IMX_CPU_IMX8MP) {
-		/* 8MP ROM already set NOC to 800Mhz, only need to configure NOC_IO clk to 600Mhz */
-		imx8m_clock_set_target_val(IMX8M_NOC_IO_CLK_ROOT,
-					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-					   IMX8M_CCM_TARGET_ROOTn_MUX(2));
-	} else {
-		/* NOC from undivided sys_pll3_out */
-		imx8m_clock_set_target_val(IMX8M_NOC_CLK_ROOT,
-					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-					   IMX8M_CCM_TARGET_ROOTn_MUX(2));
-	}
-
-	imx8m_clock_set_target_val(IMX8M_ARM_A53_CLK_ROOT,
-				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-				   IMX8M_CCM_TARGET_ROOTn_MUX(2));
-
-	/* Configure ARM PLL to 1.2GHz */
-	clk_pll1416x_early_configure(ana + IMX8MM_CCM_ANALOG_ARM_PLL_GEN_CTRL,
-				     1200000000UL, 25000000UL);
-
-	/* Bypass the A53 root and feed the cores from arm_pll_out directly */
-	imx8m_clock_set_target_val(IMX8M_CORE_SEL_CFG,
-				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
 }
 
 void imx8mm_early_clock_init(void)

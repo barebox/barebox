@@ -539,7 +539,7 @@ static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 		fprintf(stderr, "ERROR: generating a dts snippet for ECDSA keys is not yet supported\n");
 		return -EOPNOTSUPP;
 	} else {
-		fprintf(outfilep, "\nstatic const unsigned char %s_hash[] = {\n\t", info->name_c);
+		fprintf(outfilep, "\nstatic const unsigned char %s_hash[] __attribute__((unused)) = {\n\t", info->name_c);
 
 		ret = print_hash(key);
 		if (ret)
@@ -646,7 +646,7 @@ static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 		fprintf(outfilep, "\t\t\tkey-name-hint = \"%s\";\n", info->name_c);
 		fprintf(outfilep, "\t\t};\n");
 	} else {
-		fprintf(outfilep, "\nstatic const unsigned char %s_hash[] = {\n\t", info->name_c);
+		fprintf(outfilep, "\nstatic const unsigned char %s_hash[] __attribute__((unused)) = {\n\t", info->name_c);
 
 		ret = print_hash(key);
 		if (ret)

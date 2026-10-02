@@ -266,7 +266,9 @@ static int ubootvarfs_unlink(struct inode *dir, struct dentry *dentry)
 
 		list_del(&var->list);
 		free(var);
+		/* open files keep the inode, see ubootvarfs_io() */
 		node->var = NULL;
+		inode->i_size = 0;
 	}
 
 	return simple_unlink(dir, dentry);
@@ -348,7 +350,13 @@ static int ubootvarfs_io(struct file *f, void *buf, size_t insize, bool read)
 {
 	struct inode *inode = f->f_inode;
 	struct ubootvarfs_inode *node = inode_to_node(inode);
-	void *ptr = node->var->start + f->f_pos;
+	void *ptr;
+
+	/* the variable was removed while the file was open */
+	if (!node->var)
+		return -ENOENT;
+
+	ptr = node->var->start + f->f_pos;
 
 	if (read)
 		memcpy(buf, ptr, insize);
@@ -375,6 +383,9 @@ static int ubootvarfs_truncate(struct file *f, loff_t size)
 	struct ubootvarfs_data *data = node->data;
 	struct ubootvarfs_var *var = node->var;
 	loff_t delta;
+
+	if (!var)
+		return -ENOENT;
 
 	if (size < 0)
 		return -EINVAL;

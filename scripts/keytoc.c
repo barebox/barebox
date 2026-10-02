@@ -561,7 +561,12 @@ static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static const struct ecdsa_public_key %s = {\n", info->name_c);
+		if (standalone) {
+			fprintf(outfilep, "struct ecdsa_public_key __key_%s;\n", info->name_c);
+			fprintf(outfilep, "struct ecdsa_public_key __key_%s = {\n", info->name_c);
+		} else {
+			fprintf(outfilep, "static const struct ecdsa_public_key %s = {\n", info->name_c);
+		}
 
 		fprintf(outfilep, "\t.curve_name = \"%s\",\n", group);
 		fprintf(outfilep, "\t.x = %s_x,\n", info->name_c);

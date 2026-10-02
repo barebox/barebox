@@ -30,8 +30,8 @@ bbenv-$(CONFIG_SELFTEST_BLSPEC) += defaultenv-blspec-test
 
 ifdef REGENERATE_KEYTOC
 
-$(obj)/snakeoil_rsa4096.pem.c_shipped: $(srctree)/crypto/snakeoil-4096-development.pem FORCE
-	$(call if_changed,public_keys,symbol=__key_$(basename $(target-stem)):$<,-s)
+$(src)/snakeoil_rsa4096.pem.c_shipped: $(srctree)/crypto/snakeoil-4096-development.pem FORCE
+	$(call cmd,public_keys,symbol=__key_snakeoil_rsa4096:$<,-s)
 
 endif
 

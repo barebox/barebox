@@ -16,27 +16,32 @@ a device tree fragment. Its main purpose is to process the
 ``CONFIG_CRYPTO_PUBLIC_KEYS`` option during the barebox build. Each KEYSPEC
 is an entry as described in :ref:`public_keys`.
 
+In addition, a KEYSPEC may contain ``symbol=<symbol>`` to name the C structure
+holding the key. It must be a C identifier and defaults to ``__key_<n>``, where
+``<n>`` is the key's position on the command line, starting at 1.
+
 Options
 -------
 
 -o FILE  Write the output to FILE instead of standard output.
 -d       Emit a device tree fragment instead of C source.
--s       Emit stand-alone keys, which are not added to any keyring.
+-s       Export the keys as global symbols instead of adding them to keyrings.
 
 Output
 ------
 
 For every key, keytoc emits a ``struct rsa_public_key`` or
-``struct ecdsa_public_key``, a ``struct public_key`` with the FIT
-key-name-hint and the SHA-256 hash of the DER-encoded public key, and a
-``struct public_key_record`` per keyring. The records are placed in the
+``struct ecdsa_public_key`` named ``<symbol>``, a ``struct public_key`` with
+the FIT key-name-hint and the SHA-256 hash of the DER-encoded public key, and
+a ``struct public_key_record`` per keyring. The records are placed in the
 linker list, from which barebox registers the keys on startup.
 All identifiers have internal linkage by default.
 
-With ``-s``, no ``struct public_key`` and no records are emitted, and the
-key is exported globally as ``struct rsa_public_key __key_key_<n>`` or
-``struct ecdsa_public_key __key_key_<n>``, so that code can reference it
-directly.
+With ``-s``, no ``struct public_key`` and no records are emitted, and
+``<symbol>`` is exported globally, so that code can reference the key
+directly, e.g. ``symbol=__key_mykey`` defines
+``const struct rsa_public_key __key_mykey``. Keyrings and FIT key-name-hints
+are ignored.
 
 With ``-d``, RSA keys are emitted as ``key-key_<n>`` nodes below
 ``/signature``, or ``/signature-standalone`` with ``-s``, in the format barebox

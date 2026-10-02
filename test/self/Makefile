@@ -31,7 +31,7 @@ bbenv-$(CONFIG_SELFTEST_BLSPEC) += defaultenv-blspec-test
 ifdef REGENERATE_KEYTOC
 
 $(obj)/development_rsa2048.pem.c_shipped: $(src)/development_rsa2048.pem FORCE
-	$(call if_changed,public_keys,$(basename $(target-stem)):$<,-s)
+	$(call if_changed,public_keys,symbol=__key_$(basename $(target-stem)):$<,-s)
 
 endif
 

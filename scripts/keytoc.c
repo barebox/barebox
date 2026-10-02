@@ -41,6 +41,7 @@ struct keyinfo {
 	int nr_keyrings;
 	char *path;
 	char *name_c;
+	char *symbol;
 };
 
 static int dts, standalone;
@@ -509,6 +510,16 @@ err:
 	return ret ? -EINVAL : 0;
 }
 
+static void print_key_struct(const char *type, struct keyinfo *info)
+{
+	if (standalone) {
+		fprintf(outfilep, "const struct %s %s;\n", type, info->symbol);
+		fprintf(outfilep, "const struct %s %s = {\n", type, info->symbol);
+	} else {
+		fprintf(outfilep, "static const struct %s %s = {\n", type, info->symbol);
+	}
+}
+
 static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 {
 	char group[128];
@@ -561,12 +572,7 @@ static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 
 		fprintf(outfilep, "\n};\n\n");
 
-		if (standalone) {
-			fprintf(outfilep, "struct ecdsa_public_key __key_%s;\n", info->name_c);
-			fprintf(outfilep, "struct ecdsa_public_key __key_%s = {\n", info->name_c);
-		} else {
-			fprintf(outfilep, "static const struct ecdsa_public_key %s = {\n", info->name_c);
-		}
+		print_key_struct("ecdsa_public_key", info);
 
 		fprintf(outfilep, "\t.curve_name = \"%s\",\n", group);
 		fprintf(outfilep, "\t.x = %s_x,\n", info->name_c);
@@ -581,7 +587,7 @@ static int gen_key_ecdsa(EVP_PKEY *key, struct keyinfo *info)
 				fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", info->name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
-			fprintf(outfilep, "\t.ecdsa = &%s,\n", info->name_c);
+			fprintf(outfilep, "\t.ecdsa = &%s,\n", info->symbol);
 			fprintf(outfilep, "};\n");
 			for (i = 0; i < info->nr_keyrings; i++) {
 				fprintf(outfilep, "\n");
@@ -673,12 +679,7 @@ static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 
 		fprintf(outfilep, "\n};\n\n");
 
-		if (standalone) {
-			fprintf(outfilep, "struct rsa_public_key __key_%s;\n", info->name_c);
-			fprintf(outfilep, "struct rsa_public_key __key_%s = {\n", info->name_c);
-		} else {
-			fprintf(outfilep, "static const struct rsa_public_key %s = {\n", info->name_c);
-		}
+		print_key_struct("rsa_public_key", info);
 
 		fprintf(outfilep, "\t.len = %d,\n", bits / 32);
 		fprintf(outfilep, "\t.n0inv = 0x%0x,\n", n0_inv);
@@ -696,7 +697,7 @@ static int gen_key_rsa(EVP_PKEY *key, struct keyinfo *info)
 				fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", info->name_hint);
 			fprintf(outfilep, "\t.hash = %s_hash,\n", info->name_c);
 			fprintf(outfilep, "\t.hashlen = %u,\n", SHA256_DIGEST_LENGTH);
-			fprintf(outfilep, "\t.rsa = &%s,\n", info->name_c);
+			fprintf(outfilep, "\t.rsa = &%s,\n", info->symbol);
 			fprintf(outfilep, "};\n");
 			for (i = 0; i < info->nr_keyrings; i++) {
 				fprintf(outfilep, "\n");
@@ -808,10 +809,13 @@ static bool parse_info(char *p, struct keyinfo *out)
 				if (!out->keyrings)
 					enomem_exit(__func__);
 				out->keyrings[out->nr_keyrings++] = strdup(v);
-			} else if (strcmp(k, "fit-hint") == 0)
+			} else if (strcmp(k, "fit-hint") == 0) {
 				out->name_hint = strdup(v);
-			else
+			} else if (strcmp(k, "symbol") == 0 && !strchr(v, '-')) {
+				out->symbol = strdup(v);
+			} else {
 				return false;
+			}
 
 			if (d == '\0')
 				return true;
@@ -893,10 +897,10 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind == argc) {
-		fprintf(stderr, "Usage: %s [-ods] keyring=<keyring>[,keyring=<keyring>...][,fit-hint=<hint>]:<crt> ...\n", argv[0]);
+		fprintf(stderr, "Usage: %s [-ods] keyring=<keyring>[,keyring=<keyring>...][,fit-hint=<hint>][,symbol=<symbol>]:<crt> ...\n", argv[0]);
 		fprintf(stderr, "\t-o FILE\twrite output into FILE instead of stdout\n");
 		fprintf(stderr, "\t-d\tgenerate device tree snippet instead of C code\n");
-		fprintf(stderr, "\t-s\tgenerate standalone key outside FIT image keyring\n");
+		fprintf(stderr, "\t-s\tgenerate standalone key outside of any keyring, exported as <symbol>\n");
 		exit(1);
 	}
 
@@ -957,7 +961,11 @@ int main(int argc, char *argv[])
 		if (asprintf(&info->name_c, "key_%i", keys_idx + 1) < 0)
 			enomem_exit("asprintf");
 
-		if (info->nr_keyrings == 0) {
+		if (!info->symbol &&
+		    asprintf(&info->symbol, "__key_%i", keys_idx + 1) < 0)
+			enomem_exit("asprintf");
+
+		if (!standalone && info->nr_keyrings == 0) {
 			info->keyrings = malloc(sizeof(char *));
 			if (!info->keyrings)
 				enomem_exit(__func__);

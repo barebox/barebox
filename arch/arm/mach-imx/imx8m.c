@@ -124,6 +124,11 @@ static void __imx8m_early_clock_init(int cpu_type)
 		imx8m_clock_set_target_val(IMX8M_NOC_IO_CLK_ROOT,
 					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
 					   IMX8M_CCM_TARGET_ROOTn_MUX(2));
+	} else {
+		/* NOC from undivided sys_pll3_out */
+		imx8m_clock_set_target_val(IMX8M_NOC_CLK_ROOT,
+					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+					   IMX8M_CCM_TARGET_ROOTn_MUX(2));
 	}
 
 	clrsetbits_le32(ccm + IMX8M_CCM_TARGET_ROOTn(IMX8M_ARM_A53_CLK_ROOT),

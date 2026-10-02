@@ -210,7 +210,7 @@ static void ubootvarfs_relocate_tail(struct ubootvarfs_inode *node,
 	 * the last entry's NUL is the final byte and data->end points
 	 * one past the mapping, so there is no terminator to carry along.
 	 */
-	tail_end = min_t(const char *, data->end + 1, data->limit);
+	tail_end = data->end == data->limit ? data->end : data->end + 1;
 
 	memmove(src + delta, src, tail_end - src);
 
@@ -286,7 +286,7 @@ static int ubootvarfs_create(struct inode *dir, struct dentry *dentry,
 	 * we need to make sure there's enough room for it. Note that
 	 * + 3 is to accoutn for '=', and two '\0' from above
 	 */
-	if (data->end + len + 3 > data->limit)
+	if (len + 3 > data->limit - data->end)
 		return -ENOSPC;
 
 	var = xmalloc(sizeof(*var));

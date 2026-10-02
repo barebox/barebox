@@ -32,6 +32,7 @@ Contents:
    remote-control
    threat-model
    security
+   public-keys
    security-policies
    reset-reason
    system-reset

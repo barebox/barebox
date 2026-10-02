@@ -393,6 +393,9 @@ int ftruncate(int fd, loff_t length)
 	if (IS_ERR(f))
 		return -errno;
 
+	if (length < 0)
+		return errno_set(-EINVAL);
+
 	if (!i_size_is_bound(f->f_inode))
 		return 0;
 

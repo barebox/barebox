@@ -132,6 +132,18 @@ jobs:
 
         ./MAKEALL -O ${KBUILD_OUTPUT} -l "" -v 0 ${{matrix.defconfig}}
 
+    - name: Regenerate Shipped Files
+      if: steps.build.outcome == 'success' && matrix.defconfig == 'allyesconfig'
+      run: |
+        export KBUILD_OUTPUT=build-${{matrix.arch}}-${{matrix.defconfig}}
+
+        make -j$(nproc) ARCH=${{matrix.arch}} REGENERATE_KEYTOC=1
+
+        if ! git -c safe.directory="$PWD" diff --exit-code; then
+          echo "::error::Shipped files differ from their regenerated versions, see diff above"
+          exit 1
+        fi
+
     - name: labgrid-pytest
       if: steps.build.outcome == 'success'
       run: |

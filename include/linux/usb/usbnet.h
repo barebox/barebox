@@ -21,6 +21,7 @@
 
 #include <net.h>
 #include <linux/phy.h>
+#include <linux/skbuff.h>
 
 /* interface from usbnet core to each USB networking link we handle */
 struct usbnet {
@@ -104,6 +105,11 @@ struct driver_info {
 
 	int	(*tx_fixup)(struct usbnet *dev, void *buf, int len, void *nbuf, int *nlen);
 
+	/* the same with Linux' sk_buff based signatures */
+	int	(*rx_fixup_skb)(struct usbnet *dev, struct sk_buff *skb);
+	struct sk_buff	*(*tx_fixup_skb)(struct usbnet *dev,
+				struct sk_buff *skb, gfp_t flags);
+
 	/* early initialization code, can sleep. This is for minidrivers
 	 * having 'subminidrivers' that need to do extra initialization
 	 * right after minidriver have initialized hardware. */
@@ -166,9 +172,9 @@ struct skb_data {	/* skb->cb is one of these */
 
 
 extern int usbnet_get_endpoints(struct usbnet *dev);
+extern void usbnet_skb_return (struct usbnet *, struct sk_buff *);
 #if 0
 extern void usbnet_defer_kevent (struct usbnet *, int);
-extern void usbnet_skb_return (struct usbnet *, struct sk_buff *);
 extern void usbnet_unlink_rx_urbs(struct usbnet *);
 
 extern int usbnet_get_settings (struct net_device *net, struct ethtool_cmd *cmd);

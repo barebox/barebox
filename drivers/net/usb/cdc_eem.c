@@ -7,7 +7,7 @@
  */
 
 #include <linux/module.h>
-#include <linux/netdevice.h>
+#include <net.h>
 #include <linux/etherdevice.h>
 #include <linux/ctype.h>
 #include <linux/ethtool.h>

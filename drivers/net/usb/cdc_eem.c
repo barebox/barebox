@@ -11,6 +11,8 @@
 #include <linux/ctype.h>
 #include <linux/ethtool.h>
 #include <linux/mii.h>
+#include <linux/usb/usb.h>
+#include <crc.h>
 #include <linux/usb/cdc.h>
 #include <linux/usb/usbnet.h>
 #include <linux/gfp.h>
@@ -52,16 +54,16 @@ static void eem_linkcmd(struct usbnet *dev, struct sk_buff *skb)
 		usb_free_urb(urb);
 fail:
 		dev_kfree_skb(skb);
-		netdev_warn(dev->net, "link cmd failure\n");
+		dev_warn(&dev->edev.dev, "link cmd failure\n");
 		return;
 	}
 }
 
-static int eem_bind(struct usbnet *dev, struct usb_interface *intf)
+static int eem_bind(struct usbnet *dev)
 {
 	int status = 0;
 
-	status = usbnet_get_endpoints(dev, intf);
+	status = usbnet_get_endpoints(dev);
 	if (status < 0)
 		return status;
 
@@ -110,7 +112,7 @@ static struct sk_buff *eem_tx_fixup(struct usbnet *dev, struct sk_buff *skb,
 		}
 	}
 
-	skb2 = skb_copy_expand(skb, EEM_HEAD, ETH_FCS_LEN + padlen, flags);
+	skb2 = skb_copy_expand(skb, EEM_HEAD, ETH_FCS_LEN + padlen);
 	dev_kfree_skb_any(skb);
 	if (!skb2)
 		return NULL;
@@ -119,7 +121,7 @@ static struct sk_buff *eem_tx_fixup(struct usbnet *dev, struct sk_buff *skb,
 
 done:
 	/* we don't use the "no Ethernet CRC" option */
-	crc = crc32_le(~0, skb->data, skb->len);
+	crc = crc32_no_comp(~0, skb->data, skb->len);
 	crc = ~crc;
 
 	put_unaligned_le32(crc, skb_put(skb, 4));
@@ -186,7 +188,7 @@ static int eem_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 			 * b15:		1 (EEM command)
 			 */
 			if (header & BIT(14)) {
-				netdev_dbg(dev->net, "reserved command %04x\n",
+				dev_dbg(&dev->edev.dev, "reserved command %04x\n",
 					   header);
 				continue;
 			}
@@ -202,7 +204,7 @@ static int eem_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 				if (skb->len < len)
 					return 0;
 
-				skb2 = skb_clone(skb, GFP_ATOMIC);
+				skb2 = skb_clone(skb);
 				if (unlikely(!skb2))
 					goto next;
 				skb_trim(skb2, len);
@@ -231,7 +233,7 @@ static int eem_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 			case 1:		/* Echo response */
 			case 5:		/* Tickle */
 			default:	/* reserved */
-				netdev_warn(dev->net,
+				dev_warn(&dev->edev.dev,
 					    "unexpected link command %d\n",
 					    bmEEMCmd);
 				continue;
@@ -272,7 +274,7 @@ static int eem_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 			if (is_last)
 				skb2 = skb;
 			else {
-				skb2 = skb_clone(skb, GFP_ATOMIC);
+				skb2 = skb_clone(skb);
 				if (unlikely(!skb2))
 					return 0;
 			}
@@ -286,7 +288,7 @@ static int eem_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 			if (header & BIT(14)) {
 				crc = get_unaligned_le32(skb2->data
 						+ len - ETH_FCS_LEN);
-				crc2 = ~crc32_le(~0, skb2->data, skb2->len
+				crc2 = ~crc32_no_comp(~0, skb2->data, skb2->len
 						- ETH_FCS_LEN);
 			} else {
 				crc = get_unaligned_be32(skb2->data
@@ -313,10 +315,10 @@ next:
 
 static const struct driver_info eem_info = {
 	.description =	"CDC EEM Device",
-	.flags =	FLAG_ETHER | FLAG_POINTTOPOINT,
+	.flags =	FLAG_ETHER,
 	.bind =		eem_bind,
-	.rx_fixup =	eem_rx_fixup,
-	.tx_fixup =	eem_tx_fixup,
+	.rx_fixup_skb =	eem_rx_fixup,
+	.tx_fixup_skb =	eem_tx_fixup,
 };
 
 /*-------------------------------------------------------------------------*/
@@ -325,7 +327,7 @@ static const struct usb_device_id products[] = {
 {
 	USB_INTERFACE_INFO(USB_CLASS_COMM, USB_CDC_SUBCLASS_EEM,
 			USB_CDC_PROTO_EEM),
-	.driver_info = (unsigned long) &eem_info,
+	.driver_info = &eem_info,
 },
 {
 	/* EMPTY == end of list */

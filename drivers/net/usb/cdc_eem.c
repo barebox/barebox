@@ -39,24 +39,24 @@
 
 static void eem_linkcmd(struct usbnet *dev, struct sk_buff *skb)
 {
-	struct urb		*urb;
+	int			len = skb->len;
+	int			alen;
 	int			status;
 
-	urb = usb_alloc_urb(0, GFP_ATOMIC);
-	if (!urb)
-		goto fail;
+	/* the skb points into the receive buffer, send from a DMA-safe one */
+	memcpy(dev->tx_buf, skb->data, len);
 
-	usb_fill_bulk_urb(urb, dev->udev, dev->out,
-			skb->data, skb->len, eem_linkcmd_complete, skb);
-
-	status = usb_submit_urb(urb, GFP_ATOMIC);
-	if (status) {
-		usb_free_urb(urb);
-fail:
-		dev_kfree_skb(skb);
-		dev_warn(&dev->edev.dev, "link cmd failure\n");
-		return;
+	/* like eem_tx_fixup(), a zero length EEM packet instead of a ZLP */
+	if (!(len % dev->maxpacket)) {
+		put_unaligned_le16(0, dev->tx_buf + len);
+		len += 2;
 	}
+
+	status = usb_bulk_msg(dev->udev, dev->out,
+			dev->tx_buf, len, &alen, 1000);
+	dev_kfree_skb_any(skb);
+	if (status)
+		dev_warn(&dev->edev.dev, "link cmd failure\n");
 }
 
 static int eem_bind(struct usbnet *dev)
@@ -68,6 +68,12 @@ static int eem_bind(struct usbnet *dev)
 		return status;
 
 	/* no jumbogram (16K) support for now */
+
+	/*
+	 * Room for the longest echo command (2 + 2047 bytes), a multiple
+	 * of the packet size, so longer transfers don't babble.
+	 */
+	dev->rx_urb_size = 4096;
 
 	return 0;
 }

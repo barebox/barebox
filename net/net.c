@@ -460,6 +460,23 @@ int generate_ether_addr(u8 *ethaddr, int ethid)
 	return 0;
 }
 
+static void net_ensure_ethaddr(struct eth_device *edev)
+{
+	int ret;
+
+	if (is_valid_ether_addr(edev->ethaddr))
+		return;
+
+	ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
+	if (ret)
+		random_ether_addr(edev->ethaddr);
+
+	dev_warn(&edev->dev, "No MAC address set. Using %s %pM\n",
+		 ret ? "random address" : "address computed from unique ID",
+		 edev->ethaddr);
+	eth_set_ethaddr(edev, edev->ethaddr);
+}
+
 static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 				      rx_handler_f *handler, void *ctx)
 {
@@ -474,16 +491,7 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 			return ERR_PTR(-EHOSTUNREACH);
 	}
 
-	if (!is_valid_ether_addr(edev->ethaddr)) {
-		ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
-		if (ret)
-			random_ether_addr(edev->ethaddr);
-
-		dev_warn(&edev->dev, "No MAC address set. Using %s %pM\n",
-			 ret == 1 ? "address computed from unique ID" : "random address",
-			 edev->ethaddr);
-		eth_set_ethaddr(edev, edev->ethaddr);
-	}
+	net_ensure_ethaddr(edev);
 
 	/* If we don't have an ip only broadcast is allowed */
 	if (!edev->ipaddr && dest != IP_BROADCAST)
@@ -871,6 +879,9 @@ int net_receive(struct eth_device *edev, unsigned char *pkt, int len)
 			return ret;
 		}
 	}
+
+	/* replies must not go out with an all-zero source address */
+	net_ensure_ethaddr(edev);
 
 	switch (et_protlen) {
 	case PROT_ARP:

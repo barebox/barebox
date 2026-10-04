@@ -175,8 +175,23 @@ static int usbnet_open(struct eth_device *edev)
 
 	dev_dbg(&edev->dev, "%s\n",__func__);
 
+	/* without a MDIO bus there is no PHY, the link is the USB connection */
+	if (!dev->miibus.parent)
+		return 0;
+
 	return phy_device_connect(edev, &dev->miibus, dev->phy_addr, usbnet_adjust_link,
 				0, PHY_INTERFACE_MODE_NA);
+}
+
+/* no MAC address of its own, the network core assigns one on first use */
+static int usbnet_get_ethaddr(struct eth_device *edev, unsigned char *adr)
+{
+	return -ENODEV;
+}
+
+static int usbnet_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
+{
+	return 0;
 }
 
 static void usbnet_halt(struct eth_device *edev)
@@ -205,6 +220,8 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 	edev->send = usbnet_send;
 	edev->recv = usbnet_recv;
 	edev->halt = usbnet_halt;
+	edev->get_ethaddr = usbnet_get_ethaddr;
+	edev->set_ethaddr = usbnet_set_ethaddr;
 	edev->priv = undev;
 	edev->parent = &usbdev->dev;
 

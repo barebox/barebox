@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <linux/phy.h>
+#include <linux/gfp.h>
 #include <dma.h>
 
 /* handles CDC Ethernet and many other network "bulk data" interfaces */
@@ -79,6 +80,32 @@ int usbnet_get_endpoints(struct usbnet *dev)
 }
 EXPORT_SYMBOL(usbnet_get_endpoints);
 
+/* head- and tailroom for the framing, so tx_fixup_skb need not copy */
+#define USBNET_SKB_PAD	32
+
+static int usbnet_tx_fixup_skb(struct usbnet *dev, void *buf, int len,
+			       void *nbuf, int *nlen)
+{
+	struct sk_buff *skb;
+
+	skb = dev_alloc_skb(USBNET_SKB_PAD + len + USBNET_SKB_PAD);
+	if (!skb)
+		return -ENOMEM;
+
+	skb_reserve(skb, USBNET_SKB_PAD);
+	memcpy(skb_put(skb, len), buf, len);
+
+	skb = dev->driver_info->tx_fixup_skb(dev, skb, GFP_ATOMIC);
+	if (!skb)
+		return -EINVAL;
+
+	memcpy(nbuf, skb->data, skb->len);
+	*nlen = skb->len;
+	dev_kfree_skb_any(skb);
+
+	return 0;
+}
+
 static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 {
 	struct usbnet		*dev = edev->priv;
@@ -90,7 +117,12 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 	/* some devices want funky USB-level framing, for
 	 * win32 driver (usually) and/or hardware quirks
 	 */
-        if(info->tx_fixup) {
+        if(info->tx_fixup_skb) {
+		if (usbnet_tx_fixup_skb(dev, eth_data, data_length, dev->tx_buf, &len)) {
+			dev_dbg(&edev->dev, "can't tx_fixup packet");
+			return 0;
+		}
+        } else if(info->tx_fixup) {
                 if(info->tx_fixup(dev, eth_data, data_length, dev->tx_buf, &len)) {
 			dev_dbg(&edev->dev, "can't tx_fixup packet");
                         return 0;
@@ -115,6 +147,34 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 	return ret;
 }
 
+void usbnet_skb_return(struct usbnet *dev, struct sk_buff *skb)
+{
+	/* the network stack's buffers hold at most PKTSIZE bytes */
+	if (skb->len <= PKTSIZE)
+		net_receive(&dev->edev, skb->data, skb->len);
+	else
+		dev_dbg(&dev->edev.dev, "rx length %d\n", skb->len);
+
+	dev_kfree_skb_any(skb);
+}
+EXPORT_SYMBOL(usbnet_skb_return);
+
+static void usbnet_rx_fixup_skb(struct usbnet *dev, void *buf, int len)
+{
+	struct sk_buff *skb;
+
+	skb = dev_alloc_skb(len);
+	if (!skb)
+		return;
+
+	memcpy(skb_put(skb, len), buf, len);
+
+	if (dev->driver_info->rx_fixup_skb(dev, skb) && skb->len)
+		usbnet_skb_return(dev, skb);
+	else
+		dev_kfree_skb_any(skb);
+}
+
 static void usbnet_recv(struct eth_device *edev)
 {
 	struct usbnet		*dev = (struct usbnet*) edev->priv;
@@ -133,7 +193,9 @@ static void usbnet_recv(struct eth_device *edev)
 		len, alen);
 
 	if (alen) {
-		if (info->rx_fixup)
+		if (info->rx_fixup_skb)
+			usbnet_rx_fixup_skb(dev, dev->rx_buf, alen);
+		else if (info->rx_fixup)
 			info->rx_fixup(dev, dev->rx_buf, alen);
 		else
 			net_receive(edev, dev->rx_buf, alen);

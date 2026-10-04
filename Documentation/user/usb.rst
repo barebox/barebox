@@ -13,9 +13,11 @@ devices are not disconnected while barebox is running.
 USB Networking
 ^^^^^^^^^^^^^^
 
-barebox supports r8152, ASIX-compatible devices and the SMSC95xx. After
-detection, the device shows up as an extra network device (e.g. eth1) and
-can be used like a regular network device.
+barebox supports r8152, ASIX-compatible devices, the SMSC95xx and CDC EEM
+devices. After detection, the device shows up as an extra network device
+(e.g. eth1) and can be used like a regular network device.
+
+For CDC EEM host support, see :ref:`cdc_eem_host`.
 
 To use a USB network device together with the :ref:`command_ifup` command, add the
 following to ``/env/network/eth0-discover``:
@@ -258,6 +260,9 @@ Unlike CDC ECM or RNDIS, EEM requires only bulk endpoints and no separate
 control interface, making it simpler to implement and more efficient for
 embedded use cases.
 
+barebox supports EEM both as a USB gadget (device mode) and as a USB host
+driver.
+
 EEM gadget
 """"""""""
 
@@ -299,6 +304,25 @@ Its ``linux.devname`` device parameter defaults to ``usb0`` as well, so the
 ``ip=`` kernel command line constructed by barebox names the right device
 when the booted kernel brings up an EEM gadget itself (see NFS root over EEM
 below).
+
+.. _cdc_eem_host:
+
+EEM host
+""""""""
+
+barebox can also drive EEM devices from a USB host port, e.g. another
+board running barebox or Linux with an EEM gadget.
+
+To use, enable ``CONFIG_USB_NET_CDC_EEM`` and probe the USB bus:
+
+.. code-block:: sh
+
+  usb
+
+Any connected EEM device will appear as a network interface (e.g. ``eth1``)
+and can be used like any other network device. This can be combined with the
+:ref:`command_ifup` command by adding a ``usb`` call to
+``/env/network/eth0-discover`` (see `USB Networking`_ above).
 
 .. _cdc_eem_linux_host:
 

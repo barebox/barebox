@@ -1259,12 +1259,41 @@ static int usb_match_device(struct usb_device *dev, const struct usb_device_id *
 }
 
 
+/* returns the first interface matching the interface info of id, or NULL */
+struct usb_interface *usb_match_interface(struct usb_device *usbdev,
+					  const struct usb_device_id *id)
+{
+	int ifno;
+
+	if (!(id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO))
+		return NULL;
+
+	for (ifno = 0; ifno < usbdev->config.no_of_if; ifno++) {
+		struct usb_interface *intf = &usbdev->config.interface[ifno];
+
+		if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_CLASS) &&
+		    (id->bInterfaceClass != intf->desc.bInterfaceClass))
+			continue;
+
+		if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_SUBCLASS) &&
+		    (id->bInterfaceSubClass != intf->desc.bInterfaceSubClass))
+			continue;
+
+		if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_PROTOCOL) &&
+		    (id->bInterfaceProtocol != intf->desc.bInterfaceProtocol))
+			continue;
+
+		return intf;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(usb_match_interface);
+
 /* returns 0 if no match, 1 if match */
 static int usb_match_one_id(struct usb_device *usbdev,
 		     const struct usb_device_id *id)
 {
-	int ifno;
-
 	/* proc_connectinfo in devio.c may call us with id == NULL. */
 	if (id == NULL)
 		return 0;
@@ -1280,28 +1309,9 @@ static int usb_match_one_id(struct usb_device *usbdev,
 			(id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO))
 		return 0;
 
-	if ( (id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO) ) {
-		/* match any interface */
-		for (ifno=0; ifno<usbdev->config.no_of_if; ifno++) {
-			struct usb_interface_descriptor *intf;
-			intf = &usbdev->config.interface[ifno].desc;
-
-			if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_CLASS) &&
-			    (id->bInterfaceClass != intf->bInterfaceClass))
-				continue;
-
-			if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_SUBCLASS) &&
-			    (id->bInterfaceSubClass != intf->bInterfaceSubClass))
-				continue;
-
-			if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_PROTOCOL) &&
-			    (id->bInterfaceProtocol != intf->bInterfaceProtocol))
-				continue;
-			break;
-		}
-		if (ifno >= usbdev->config.no_of_if)
-			return 0;
-	}
+	if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO) &&
+	    !usb_match_interface(usbdev, id))
+		return 0;
 
 	return 1;
 }

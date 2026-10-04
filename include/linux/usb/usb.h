@@ -160,6 +160,9 @@ extern struct bus_type usb_bus_type;
 
 int usb_driver_register(struct usb_driver *);
 
+struct usb_interface *usb_match_interface(struct usb_device *usbdev,
+					  const struct usb_device_id *id);
+
 #define module_usb_driver(drv)	\
 	register_driver_macro(device, usb, drv)
 

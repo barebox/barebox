@@ -23,6 +23,8 @@ int usbnet_get_endpoints(struct usbnet *dev)
 
 		in = out = status = NULL;
 		alt = &udev->config.interface[tmp];
+		if (dev->intf && alt != dev->intf)
+			continue;
 
 		/* take the first altsetting with in-bulk + out-bulk;
 		 * remember any status endpoint, just in case;
@@ -289,6 +291,8 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 
 	info = (struct driver_info *)prod->driver_info;
 	undev->driver_info = info;
+	/* like in Linux, a class match binds to the matching interface only */
+	undev->intf = usb_match_interface(usbdev, prod);
 
 	if (info->bind) {
 		status = info->bind (undev);

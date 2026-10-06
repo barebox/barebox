@@ -89,7 +89,7 @@ static void start_atf(void)
 	if (current_el() != 3)
 		return;
 
-	imx8mm_early_clock_init();
+	imx8mp_early_clock_init();
 
 	power_init_board();
 

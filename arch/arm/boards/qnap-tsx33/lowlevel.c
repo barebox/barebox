@@ -13,14 +13,7 @@ extern char __dtb_rk3568_qnap_ts433eu_start[];
 
 ENTRY_FUNCTION(start_rk3568_qnap_ts433, r0, r1, r2)
 {
-	/*
-	 * Image execution starts at 0x0, but this is used for ATF and
-	 * OP-TEE later, so move away from here.
-	 */
-	if (current_el() == 3)
-		relocate_to_adr_full(RK3568_BAREBOX_LOAD_ADDRESS);
-	else
-		relocate_to_current_adr();
+	relocate_to_current_adr();
 
 	setup_c();
 
@@ -35,14 +28,7 @@ ENTRY_FUNCTION(start_rk3568_qnap_ts433, r0, r1, r2)
  */
 ENTRY_FUNCTION(start_rk3568_qnap_ts433eu, r0, r1, r2)
 {
-	/*
-	 * Image execution starts at 0x0, but this is used for ATF and
-	 * OP-TEE later, so move away from here.
-	 */
-	if (current_el() == 3)
-		relocate_to_adr_full(RK3568_BAREBOX_LOAD_ADDRESS);
-	else
-		relocate_to_current_adr();
+	relocate_to_current_adr();
 
 	setup_c();
 

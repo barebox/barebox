@@ -26,10 +26,7 @@ ENTRY_FUNCTION(start_rk3568_bpi_r2pro, r0, r1, r2)
 	//clear bit 6 for 3v3 as it was set to 1v8
 	writel(RK_CLRBITS(BIT(6)), PMU_GRF_IO_VSEL1);
 
-	if (current_el() == 3)
-		relocate_to_adr_full(RK3568_BAREBOX_LOAD_ADDRESS);
-	else
-		relocate_to_current_adr();
+	relocate_to_current_adr();
 
 	setup_c();
 

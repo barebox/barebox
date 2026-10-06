@@ -2,6 +2,7 @@
 
 obj-y			+= lib.o
 obj-$(CONFIG_NET)	+= eth.o
+obj-$(CONFIG_NET)	+= skbuff.o
 obj-$(CONFIG_NET)	+= net.o
 obj-$(CONFIG_NET_DHCP)	+= dhcp.o
 obj-$(CONFIG_NET_SNTP)	+= sntp.o

@@ -9,6 +9,12 @@ void *dma_alloc(size_t size)
 }
 EXPORT_SYMBOL(dma_alloc);
 
+void *dma_try_alloc(size_t size)
+{
+	return memalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
+}
+EXPORT_SYMBOL(dma_try_alloc);
+
 void *dma_zalloc(size_t size)
 {
 	void *buf;

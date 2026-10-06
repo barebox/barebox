@@ -491,6 +491,10 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 
 	con = xzalloc(sizeof(*con));
 	con->packet = net_alloc_packet();
+	if (!con->packet) {
+		free(con);
+		return ERR_PTR(-ENOMEM);
+	}
 	con->priv = ctx;
 	con->edev = edev;
 	memset(con->packet, 0, PKTSIZE);

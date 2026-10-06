@@ -34,7 +34,7 @@ static int do_mkdir(int argc, char *argv[])
 			if (ret == -EEXIST)
 				ret = 0;
 		} else {
-			ret = mkdir(argv[optind], 0);
+			ret = mkdir(argv[optind], 0777);
 		}
 		if (ret) {
 			printf("could not create %s: %m\n", argv[optind]);

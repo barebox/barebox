@@ -16,6 +16,7 @@ Contents:
    filesystems
    background-execution
    security-policies
+   keytoc
    project-ideas
    fuzzing
 

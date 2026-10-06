@@ -15,7 +15,7 @@ obj-$(CONFIG_SELFTEST_FS_RAMFS) += ramfs.o
 obj-$(CONFIG_SELFTEST_DIRFD) += dirfd.o
 obj-$(CONFIG_SELFTEST_JSON) += json.o
 obj-$(CONFIG_SELFTEST_JWT) += jwt.o
-obj-$(CONFIG_TEST_KEY_RSA2048) += development_rsa2048.pem.o
+obj-$(CONFIG_TEST_KEY_RSA4096) += snakeoil_rsa4096.pem.o
 obj-$(CONFIG_SELFTEST_DIGEST) += digest.o
 obj-$(CONFIG_SELFTEST_MMU) += mmu.o
 obj-$(CONFIG_SELFTEST_STRING) += string.o
@@ -31,8 +31,8 @@ bbenv-$(CONFIG_SELFTEST_BLSPEC) += defaultenv-blspec-test
 
 ifdef REGENERATE_KEYTOC
 
-$(obj)/development_rsa2048.pem.c_shipped: $(src)/development_rsa2048.pem FORCE
-	$(call if_changed,public_keys,$(basename $(target-stem)):$<,-s)
+$(src)/snakeoil_rsa4096.pem.c_shipped: $(srctree)/crypto/snakeoil-4096-development.pem FORCE
+	$(call cmd,public_keys,symbol=__key_snakeoil_rsa4096:$<,-s)
 
 endif
 

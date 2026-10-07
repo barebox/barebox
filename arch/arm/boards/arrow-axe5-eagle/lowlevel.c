@@ -13,7 +13,7 @@
 
 extern char __dtb_z_socfpga_agilex5_axe5_eagle_start[];
 
-static noinline void axe5_eagle_continue(void)
+static void axe5_eagle_lowlevel_init(void)
 {
 	void __iomem *uart = IOMEM(SOCFPGA_UART_BASE(0));
 
@@ -21,8 +21,11 @@ static noinline void axe5_eagle_continue(void)
 
 	socfpga_uart_setup(uart);
 	pbl_set_putc(socfpga_uart_putc, uart);
+}
 
-	pr_debug("Lowlevel init done\n");
+static noinline void axe5_eagle_continue(void)
+{
+	axe5_eagle_lowlevel_init();
 
 	agilex5_barebox_entry(__dtb_z_socfpga_agilex5_axe5_eagle_start);
 }

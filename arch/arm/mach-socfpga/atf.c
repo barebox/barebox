@@ -13,29 +13,46 @@
 #include <mach/socfpga/soc64-system-manager.h>
 
 #include <pbl/bio.h>
+#include <pbl/mtd.h>
 
-static void socfpga_agilex5_qspi_init(void)
+static struct pbl_bio *socfpga_agilex5_qspi_init(struct pbl_bio *bio)
 {
+	void __iomem *iobase = IOMEM(SOCFPGA_HPS2SDM_QSPI_REGS);
+	void __iomem *ahb_base = IOMEM(SOCFPGA_HPS2SDM_QSPI_DATA);
+	struct cadence_qspi_platform_data pdata = {
+		.is_decoded_cs = 0,
+		.fifo_depth = 128,
+	};
 	unsigned long master_ref_clk = 0;
 	int ret;
 
 	ret = socfpga_mailbox_s10_init();
 	if (ret) {
 		pr_warn("Failed to init s10 mailbox: %d\n", ret);
-		return;
+		return ERR_PTR(-ENODEV);
 	}
 
 	ret = socfpga_mailbox_s10_qspi_open(&master_ref_clk);
 	if (ret) {
 		pr_warn("Failed to request QSPI access: %d\n", ret);
-		return;
+		return ERR_PTR(-ENODEV);
 	}
 
+	/*
+	 * Failing to store the reference clock may result in an unavailable
+	 * QSPI flash later, but is not fatal.
+	 */
 	ret = socfpga_agilex5_write_qspi_refclk(master_ref_clk);
-	if (ret) {
+	if (ret)
 		pr_warn("Failed to store reference clock: %d\n", ret);
-		return;
+
+	ret = cqspi_bio_init(bio, iobase, ahb_base, master_ref_clk, &pdata);
+	if (ret) {
+		pr_warn("failed to initialize bio for qspi\n");
+		return ERR_PTR(-ENODEV);
 	}
+
+	return bio;
 }
 
 static int agilex5_load_bl33_piggy(void *bl33)
@@ -92,6 +109,7 @@ static void __noreturn agilex5_start_image_via_tfa(void *bl33)
 static void agilex5_el3_init(void)
 {
 	void *bl33 = (void *)AGILEX5_ATF_BL33_BASE_ADDR;
+	struct pbl_bio tmp, *bio;
 	int ret;
 
 	agilex5_initialize_security_policies();
@@ -101,9 +119,11 @@ static void agilex5_el3_init(void)
 	if (ret)
 		panic("DDR initialization failed\n");
 
-	socfpga_agilex5_qspi_init();
+	bio = socfpga_agilex5_qspi_init(&tmp);
+	if (IS_ERR_OR_NULL(bio))
+		bio = NULL;
 
-	agilex5_load_bl33(NULL, bl33);
+	agilex5_load_bl33(bio, bl33);
 
 	agilex5_start_image_via_tfa(bl33);
 }

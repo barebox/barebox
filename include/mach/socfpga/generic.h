@@ -101,6 +101,7 @@ static inline void arria10_watchdog_disable(void) {}
 
 int agilex5_clk_init(void);
 void __noreturn agilex5_barebox_entry(void *fdt);
+void __noreturn agilex5_barebox_entry_xload(void);
 
 static inline void __udelay(unsigned us)
 {

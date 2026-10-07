@@ -128,6 +128,16 @@ static void agilex5_el3_init(void)
 	agilex5_start_image_via_tfa(bl33);
 }
 
+void __noreturn agilex5_barebox_entry_xload(void)
+{
+	/* Using xload in EL1 is not supported */
+	if (current_el() != 3)
+		hang();
+
+	agilex5_el3_init();
+	__builtin_unreachable();
+}
+
 void __noreturn agilex5_barebox_entry(void *fdt)
 {
 	phys_addr_t membase;

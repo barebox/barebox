@@ -12,6 +12,8 @@
 #include <mach/socfpga/soc64-sdram.h>
 #include <mach/socfpga/soc64-system-manager.h>
 
+#include <pbl/bio.h>
+
 static void socfpga_agilex5_qspi_init(void)
 {
 	unsigned long master_ref_clk = 0;
@@ -36,15 +38,37 @@ static void socfpga_agilex5_qspi_init(void)
 	}
 }
 
-static void __noreturn agilex5_load_and_start_image_via_tfa(void)
+static int agilex5_load_bl33_piggy(void *bl33)
 {
-	void *bl31 = (void *)AGILEX5_ATF_BL31_BASE_ADDR;
-	void *bl33 = (void *)AGILEX5_ATF_BL33_BASE_ADDR;
-	struct fwobj tfa;
+	/*
+	 * Do not use input_data and input_data_end, to ensure that the
+	 * piggydata can be stripped in the FSBL.
+	 */
+	if (barebox_image_size <= barebox_pbl_size)
+		return -EINVAL;
 
 	pr_debug("copy bl33 to %p from %p (%zu bytes)\n",
 		 bl33, __image_start, barebox_image_size);
 	memcpy(bl33, __image_start, barebox_image_size);
+
+	return 0;
+}
+
+static void agilex5_load_bl33(struct pbl_bio *bio, void *bl33)
+{
+	int ret;
+
+	ret = agilex5_load_bl33_piggy(bl33);
+	if (ret == 0)
+		return;
+
+	panic("No barebox image found!\n");
+}
+
+static void __noreturn agilex5_start_image_via_tfa(void *bl33)
+{
+	void *bl31 = (void *)AGILEX5_ATF_BL31_BASE_ADDR;
+	struct fwobj tfa;
 
 	get_builtin_firmware(agilex5_bl31_bin, &tfa);
 
@@ -63,6 +87,7 @@ static void __noreturn agilex5_load_and_start_image_via_tfa(void)
 
 static void agilex5_el3_init(void)
 {
+	void *bl33 = (void *)AGILEX5_ATF_BL33_BASE_ADDR;
 	int ret;
 
 	agilex5_initialize_security_policies();
@@ -74,7 +99,9 @@ static void agilex5_el3_init(void)
 
 	socfpga_agilex5_qspi_init();
 
-	agilex5_load_and_start_image_via_tfa();
+	agilex5_load_bl33(NULL, bl33);
+
+	agilex5_start_image_via_tfa(bl33);
 }
 
 void __noreturn agilex5_barebox_entry(void *fdt)

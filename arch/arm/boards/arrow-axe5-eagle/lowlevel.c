@@ -13,6 +13,11 @@
 
 extern char __dtb_z_socfpga_agilex5_axe5_eagle_start[];
 
+static struct socfpga_barebox_part axe5_eagle_barebox_part = {
+	.nor_offset = CONFIG_MACH_SOCFPGA_ARROW_AXE5_EAGLE_XLOAD_ADDR,
+	.nor_size = CONFIG_MACH_SOCFPGA_ARROW_AXE5_EAGLE_XLOAD_SIZE,
+};
+
 static void axe5_eagle_lowlevel_init(void)
 {
 	void __iomem *uart = IOMEM(SOCFPGA_UART_BASE(0));
@@ -30,6 +35,14 @@ static noinline void axe5_eagle_continue(void)
 	agilex5_barebox_entry(__dtb_z_socfpga_agilex5_axe5_eagle_start);
 }
 
+static noinline void axe5_eagle_continue_xload(void)
+{
+	axe5_eagle_lowlevel_init();
+
+	agilex5_set_barebox_part(&axe5_eagle_barebox_part);
+	agilex5_barebox_entry_xload();
+}
+
 ENTRY_FUNCTION_AGILEX5(start_socfpga_agilex5_axe5_eagle)
 {
 	if (current_el() == 3)
@@ -39,4 +52,15 @@ ENTRY_FUNCTION_AGILEX5(start_socfpga_agilex5_axe5_eagle)
 	setup_c();
 
 	axe5_eagle_continue();
+}
+
+ENTRY_FUNCTION_AGILEX5(start_socfpga_agilex5_axe5_eagle_xload)
+{
+	if (current_el() == 3)
+		socfpga_agilex5_cpu_lowlevel_init();
+
+	relocate_to_current_adr();
+	setup_c();
+
+	axe5_eagle_continue_xload();
 }

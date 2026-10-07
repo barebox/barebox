@@ -80,9 +80,37 @@ if 64BIT
 
 comment "Agilex 5 boards"
 
-config MACH_SOCFPGA_ARROW_AXE5_EAGLE
+menuconfig MACH_SOCFPGA_ARROW_AXE5_EAGLE
 	bool "Arrow AXE5 Eagle"
 	select ARCH_SOCFPGA_AGILEX5
+
+config MACH_SOCFPGA_ARROW_AXE5_EAGLE_XLOAD
+	bool "Build Arrow AXE5 Eagle FSBL without piggy data"
+	depends on MACH_SOCFPGA_ARROW_AXE5_EAGLE
+	select SOCFPGA_AGILEX5_XLOAD
+	select SPI_CADENCE_QUADSPI_PBL
+	help
+	  This option reduces the binary size of the FSBL and makes it
+	  independent of the enabled features of the SSBL, but requires SSBL
+	  xload support.
+
+config MACH_SOCFPGA_ARROW_AXE5_EAGLE_XLOAD_ADDR
+	prompt "Start address of the Arrow AXE5 SSBL on flash"
+	hex
+	default 0x01000000
+	help
+	  barebox tries to load an SSBL from this address in the QSPI flash.
+
+	  Keep this address in sync with your QSPI image configuration.
+
+config MACH_SOCFPGA_ARROW_AXE5_EAGLE_XLOAD_SIZE
+	prompt "Maximum size of the Arrow AXE5 SSBL on flash"
+	hex
+	default 0x00400000
+	help
+	  The maximum size of the SSBL in the QSPI flash.
+
+	  Keep this size in sync with your QSPI image configuration.
 
 endif
 

@@ -58,6 +58,10 @@ static void agilex5_load_bl33(struct pbl_bio *bio, void *bl33)
 {
 	int ret;
 
+	ret = agilex5_xload_bl33(bio, bl33);
+	if (ret == 0)
+		return;
+
 	ret = agilex5_load_bl33_piggy(bl33);
 	if (ret == 0)
 		return;

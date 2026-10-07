@@ -3,4 +3,5 @@ obj-$(CONFIG_MTD_SPI_NOR)		+= spi-nor.o
 pbl-$(CONFIG_MTD_SPI_NOR_PBL)		+= spi-nor.o
 obj-$(CONFIG_SPI_CADENCE_QUADSPI)	+= cadence-quadspi.o
 obj-$(CONFIG_SPI_CADENCE_QUADSPI)	+= cadence-quadspi.o cadence-quadspi-common.o
+pbl-$(CONFIG_SPI_CADENCE_QUADSPI_PBL)	+= cadence-quadspi-pbl.o cadence-quadspi-common.o
 obj-$(CONFIG_SPI_SYNOPSYS_OCTALSPI_NOR) += dw-ospi-nor.o

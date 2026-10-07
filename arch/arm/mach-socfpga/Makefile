@@ -22,6 +22,9 @@ pbl-$(CONFIG_ARCH_SOCFPGA_AGILEX5) += soc64-system-manager.o \
 				agilex5-secreg.o \
 				agilex5-clock-manager.o \
 				atf.o
+ifdef CONFIG_SOCFPGA_AGILEX5_XLOAD
+pbl-$(CONFIG_ARCH_SOCFPGA_AGILEX5) += agilex5-xload.o
+endif
 
 obj-$(CONFIG_ARCH_SOCFPGA_AGILEX5) += secure_reg_helper.o \
 				      smc_api.o

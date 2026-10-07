@@ -93,4 +93,15 @@ config ARCH_SOCFPGA_XLOAD
 	depends on ARCH_SOCFPGA_CYCLONE5
 	prompt "Build SoCFPGA preloader image"
 
+config SOCFPGA_AGILEX5_XLOAD
+	bool
+	depends on ARCH_SOCFPGA_AGILEX5
+	prompt "Support SSBL xloading on Agilex 5"
+	help
+	  On Agilex 5, the FSBL binary is limited to a size of ~256k. Enable
+	  XLOAD support to load the SSBL from a separate medium and allow
+	  larger bootloader images.
+
+	  Note that the SSBL loading has to be configured in the board code.
+
 endmenu

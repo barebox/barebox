@@ -134,4 +134,19 @@ struct socfpga_barebox_part {
 /* Partition/device for xloader to load main bootloader from */
 extern const struct socfpga_barebox_part *barebox_part;
 
+struct pbl_bio;
+#ifdef CONFIG_SOCFPGA_AGILEX5_XLOAD
+void agilex5_set_barebox_part(struct socfpga_barebox_part *part);
+int agilex5_xload_bl33(struct pbl_bio *bio, void *bl33);
+#else
+static inline void agilex5_set_barebox_part(struct socfpga_barebox_part *part)
+{
+}
+
+static inline int agilex5_xload_bl33(struct pbl_bio *bio, void *bl33)
+{
+	return -ENODEV;
+}
+#endif
+
 #endif /* __MACH_SOCFPGA_GENERIC_H */

@@ -1086,8 +1086,7 @@ static int spansion_quad_enable(struct spi_nor *nor)
 
 static int spi_nor_check(struct spi_nor *nor)
 {
-	if (!nor->dev || !nor->read || !nor->write ||
-		!nor->read_reg || !nor->write_reg) {
+	if (!nor->read || !nor->write || !nor->read_reg || !nor->write_reg) {
 		pr_err("spi-nor: please fill all the necessary fields!\n");
 		return -EINVAL;
 	}

@@ -137,7 +137,7 @@ static int envfs_load_data_pass(struct envfs_super *super, void *buf, size_t siz
 		}
 
 		if (S_ISLNK(ENVFS_32(inode_end->mode)) &&
-		    !memchr(buf, '\0', inode_size))
+		    !memchr(buf, '\0', PAD4(inode_size)))
 			goto invalid;
 
 		if (dryrun)

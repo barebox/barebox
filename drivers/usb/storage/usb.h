@@ -34,6 +34,8 @@
 
 struct us_data;
 struct us_blk_dev;
+struct bulk_cb_wrap;
+struct bulk_cs_wrap;
 
 typedef int (trans_cmnd)(struct us_blk_dev *usb_blkdev,
 			 const u8 *cmd, u8 cmdlen,
@@ -56,6 +58,9 @@ struct us_data {
 	trans_cmnd		*transport;	/* transport function */
 	trans_reset		transport_reset;/* transport device reset */
 
+	struct bulk_cb_wrap	*cbw;		/* transport command wrapper */
+	struct bulk_cs_wrap	*csw;		/* transport status wrapper */
+
 	/* SCSI interfaces */
 	struct list_head	blk_dev_list;
 };
@@ -65,6 +70,7 @@ struct us_blk_dev {
 	struct us_data		*us;		/* LUN's enclosing dev */
 	struct block_device	blk;		/* the blockdevice for the dev */
 	unsigned char 		lun;		/* the LUN of this blk dev */
+	bool			ready;
 	struct list_head	list;		/* siblings */
 };
 

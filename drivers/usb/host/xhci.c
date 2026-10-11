@@ -671,10 +671,6 @@ static int xhci_address_device(struct usb_device *udev, int root_portnr)
 	xhci_acknowledge_event(ctrl);
 
 	if (ret < 0)
-		/*
-		 * TODO: Unsuccessful Address Device command shall leave the
-		 * slot in default state. So, issue Disable Slot command now.
-		 */
 		return ret;
 
 	xhci_inval_cache((uintptr_t)virt_dev->out_ctx->bytes,
@@ -685,6 +681,39 @@ static int xhci_address_device(struct usb_device *udev, int root_portnr)
 		le32_to_cpu(slot_ctx->dev_state) & DEV_ADDR_MASK);
 
 	return 0;
+}
+
+static int xhci_disable_slot(struct xhci_ctrl *ctrl, unsigned int slot_id)
+{
+	union xhci_trb *event;
+	u32 flags;
+	int ret = 0;
+	u32 comp;
+
+	if (!slot_id)
+		return 0;
+
+	xhci_queue_command(ctrl, 0, slot_id, 0, TRB_DISABLE_SLOT);
+	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
+	if (!event)
+		return -ETIMEDOUT;
+
+	flags = le32_to_cpu(event->event_cmd.flags);
+	comp = GET_COMP_CODE(le32_to_cpu(event->event_cmd.status));
+
+	if (TRB_TO_SLOT_ID(flags) != slot_id) {
+		dev_err(ctrl->dev, "Disable Slot returned event for slot %u, expected %u\n",
+			TRB_TO_SLOT_ID(flags), slot_id);
+		ret = -EINVAL;
+	} else if (comp != COMP_SUCCESS) {
+		dev_err(ctrl->dev, "Disable Slot command for slot %u failed: %u\n",
+			slot_id, comp);
+		ret = -EINVAL;
+	}
+
+	xhci_acknowledge_event(ctrl);
+
+	return ret;
 }
 
 /**
@@ -701,6 +730,7 @@ static int _xhci_alloc_device(struct usb_device *udev)
 	struct xhci_ctrl *ctrl = xhci_get_ctrl(udev);
 	union xhci_trb *event;
 	int ret;
+	u32 comp;
 
 	/*
 	 * Root hub will be first device to be initailized.
@@ -717,8 +747,12 @@ static int _xhci_alloc_device(struct usb_device *udev)
 	if (!event)
 		return -ETIMEDOUT;
 
-	BUG_ON(GET_COMP_CODE(le32_to_cpu(event->event_cmd.status))
-		!= COMP_SUCCESS);
+	comp = GET_COMP_CODE(le32_to_cpu(event->event_cmd.status));
+	if (comp != COMP_SUCCESS) {
+		dev_err(ctrl->dev, "Enable Slot command failed: %u\n", comp);
+		xhci_acknowledge_event(ctrl);
+		return comp == COMP_ENOSLOTS ? -ENOSPC : -EINVAL;
+	}
 
 	udev->slot_id = TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags));
 
@@ -726,10 +760,9 @@ static int _xhci_alloc_device(struct usb_device *udev)
 
 	ret = xhci_alloc_virt_device(ctrl, udev->slot_id);
 	if (ret < 0) {
-		/*
-		 * TODO: Unsuccessful Address Device command shall leave
-		 * the slot in default. So, issue Disable Slot command now.
-		 */
+		xhci_disable_slot(ctrl, udev->slot_id);
+		xhci_free_virt_device(ctrl, udev->slot_id);
+		udev->slot_id = 0;
 		dev_err(ctrl->dev, "Could not allocate xHCI USB device data structures\n");
 		return ret;
 	}
@@ -1283,6 +1316,19 @@ static int xhci_alloc_device(struct usb_device *udev)
 	return _xhci_alloc_device(udev);
 }
 
+static void xhci_free_device(struct usb_device *udev)
+{
+	struct xhci_ctrl *ctrl = xhci_get_ctrl(udev);
+	unsigned int slot_id = udev->slot_id;
+
+	if (!slot_id)
+		return;
+
+	xhci_disable_slot(ctrl, slot_id);
+	xhci_free_virt_device(ctrl, slot_id);
+	udev->slot_id = 0;
+}
+
 static int xhci_update_hub_device(struct usb_device *udev)
 {
 	struct usb_host *host = udev->host;
@@ -1389,6 +1435,7 @@ int xhci_register(struct xhci_ctrl *ctrl)
 	host->submit_control_msg = xhci_submit_control_msg;
 	host->submit_bulk_msg = xhci_submit_bulk_msg;
 	host->alloc_device = xhci_alloc_device;
+	host->free_device = xhci_free_device;
 	host->update_hub_device = xhci_update_hub_device;
 
 	ret = xhci_reset(ctrl);

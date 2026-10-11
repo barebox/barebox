@@ -178,6 +178,7 @@ struct usb_host {
 			int transfer_len, int interval);
 	void (*usb_event_poll)(void);
 	int (*alloc_device)(struct usb_device *dev);
+	void (*free_device)(struct usb_device *dev);
 	int (*update_hub_device)(struct usb_device *dev);
 
 	bool no_desc_before_addr;

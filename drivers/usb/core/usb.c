@@ -633,6 +633,9 @@ err_out:
 
 void usb_free_device(struct usb_device *usbdev)
 {
+	if (usbdev->host && usbdev->host->free_device)
+		usbdev->host->free_device(usbdev);
+
 	usb_free_address(usbdev->devnum);
 	dma_free(usbdev->descriptor);
 	dma_free(usbdev->setup_packet);

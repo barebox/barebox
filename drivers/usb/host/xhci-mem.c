@@ -170,36 +170,45 @@ static void xhci_free_container_ctx(struct xhci_ctrl *ctrl,
  * @param ptr	pointer to "xhci_ctrl" whose virtual devices are to be freed
  * @return none
  */
-static void xhci_free_virt_devices(struct xhci_ctrl *ctrl)
+void xhci_free_virt_device(struct xhci_ctrl *ctrl, unsigned int slot_id)
 {
 	int i;
-	int slot_id;
 	struct xhci_virt_device *virt_dev;
+
+	if (slot_id >= MAX_HC_SLOTS)
+		return;
+
+	virt_dev = ctrl->devs[slot_id];
+	if (!virt_dev)
+		return;
+
+	ctrl->dcbaa->dev_context_ptrs[slot_id] = 0;
+	xhci_flush_cache((uintptr_t)&ctrl->dcbaa->dev_context_ptrs[slot_id],
+			 sizeof(__le64));
+
+	for (i = 0; i < 31; ++i)
+		if (virt_dev->eps[i].ring)
+			xhci_ring_free(ctrl, virt_dev->eps[i].ring);
+
+	if (virt_dev->in_ctx)
+		xhci_free_container_ctx(ctrl, virt_dev->in_ctx);
+	if (virt_dev->out_ctx)
+		xhci_free_container_ctx(ctrl, virt_dev->out_ctx);
+
+	free(virt_dev);
+	ctrl->devs[slot_id] = NULL;
+}
+
+static void xhci_free_virt_devices(struct xhci_ctrl *ctrl)
+{
+	int slot_id;
 
 	/*
 	 * refactored here to loop through all virt_dev
 	 * Slot ID 0 is reserved
 	 */
-	for (slot_id = 0; slot_id < MAX_HC_SLOTS; slot_id++) {
-		virt_dev = ctrl->devs[slot_id];
-		if (!virt_dev)
-			continue;
-
-		ctrl->dcbaa->dev_context_ptrs[slot_id] = 0;
-
-		for (i = 0; i < 31; ++i)
-			if (virt_dev->eps[i].ring)
-				xhci_ring_free(ctrl, virt_dev->eps[i].ring);
-
-		if (virt_dev->in_ctx)
-			xhci_free_container_ctx(ctrl, virt_dev->in_ctx);
-		if (virt_dev->out_ctx)
-			xhci_free_container_ctx(ctrl, virt_dev->out_ctx);
-
-		free(virt_dev);
-		/* make sure we are pointing to NULL */
-		ctrl->devs[slot_id] = NULL;
-	}
+	for (slot_id = 0; slot_id < MAX_HC_SLOTS; slot_id++)
+		xhci_free_virt_device(ctrl, slot_id);
 }
 
 /**

@@ -76,6 +76,16 @@ static void xhci_free(struct xhci_ctrl *ctrl, void *ptr)
 	dev_dbg(ctrl->dev, "%s: 0x%p\n", __func__, ptr);
 }
 
+/*
+ * Rings and device contexts are allocated and freed again for every device
+ * that comes and goes, so unlike the rest they must really be freed.
+ */
+static void xhci_free_sized(struct xhci_ctrl *ctrl, void *ptr, dma_addr_t dma,
+			    size_t size)
+{
+	dma_free_coherent(DMA_DEVICE_BROKEN, ptr, dma, size);
+}
+
 /**
  * alloc coherent memory for xhci
  *
@@ -103,7 +113,7 @@ static void *xhci_malloc(struct xhci_ctrl *ctrl, unsigned int size, dma_addr_t *
  */
 static void xhci_segment_free(struct xhci_ctrl *ctrl, struct xhci_segment *seg)
 {
-	xhci_free(ctrl, seg->trbs);
+	xhci_free_sized(ctrl, seg->trbs, seg->dma, SEGMENT_SIZE);
 	seg->trbs = NULL;
 
 	free(seg);
@@ -160,7 +170,7 @@ static void xhci_scratchpad_free(struct xhci_ctrl *ctrl)
 static void xhci_free_container_ctx(struct xhci_ctrl *ctrl,
 				    struct xhci_container_ctx *ctx)
 {
-	xhci_free(ctrl, ctx->bytes);
+	xhci_free_sized(ctrl, ctx->bytes, ctx->dma, ctx->size);
 	free(ctx);
 }
 

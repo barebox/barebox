@@ -1324,7 +1324,12 @@ static void xhci_free_device(struct usb_device *udev)
 	if (!slot_id)
 		return;
 
-	xhci_disable_slot(ctrl, slot_id);
+	/* the controller may still be using the contexts, so leak them */
+	if (xhci_disable_slot(ctrl, slot_id) == -ETIMEDOUT) {
+		dev_warn(ctrl->dev, "Disable Slot %u timed out\n", slot_id);
+		return;
+	}
+
 	xhci_free_virt_device(ctrl, slot_id);
 	udev->slot_id = 0;
 }

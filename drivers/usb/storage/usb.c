@@ -309,6 +309,18 @@ static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 opcode,
 
 #define US_MAX_IO_BLK 32
 
+static blkcnt_t usb_stor_max_io_blocks(struct us_blk_dev *pblk_dev)
+{
+	size_t max_xfer_size = pblk_dev->us->pusb_dev->host->max_xfer_size;
+	blkcnt_t blocks = US_MAX_IO_BLK;
+
+	if (max_xfer_size)
+		blocks = min_t(blkcnt_t, blocks,
+			       max_xfer_size >> pblk_dev->blk.blockbits);
+
+	return max_t(blkcnt_t, blocks, 1);
+}
+
 /* Read / write a chunk of sectors on media */
 static int usb_stor_blk_io(struct block_device *disk_dev,
 			   sector_t sector_start, blkcnt_t sector_count, void *buffer,
@@ -319,6 +331,7 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 						   blk);
 	struct us_data *us = pblk_dev->us;
 	struct device *dev = &us->pusb_dev->dev;
+	blkcnt_t max_blocks = usb_stor_max_io_blocks(pblk_dev);
 	int result;
 
 	/* ensure unit ready */
@@ -331,7 +344,7 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 		sector_count, sector_start);
 
 	while (sector_count > 0) {
-		u16 n = min_t(blkcnt_t, sector_count, US_MAX_IO_BLK);
+		u16 n = min_t(blkcnt_t, sector_count, max_blocks);
 
 		if (disk_dev->num_blocks > 0xffffffff) {
 			result = usb_stor_io_16(pblk_dev,

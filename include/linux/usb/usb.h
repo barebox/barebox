@@ -182,6 +182,8 @@ struct usb_host {
 	int (*update_hub_device)(struct usb_device *dev);
 
 	bool no_desc_before_addr;
+	/* largest transfer the controller can do, 0 if there's no limit */
+	size_t max_xfer_size;
 
 	struct list_head list;
 

@@ -425,17 +425,18 @@ static LIST_HEAD(connection_list);
 
 /**
  * generate_ether_addr - Generates stable software assigned Ethernet address
- * @addr: Pointer to a six-byte array to contain the Ethernet address
- * @ethid: index of the Ethernet interface
+ * @edev: the network device to generate the address for
+ * @ethaddr: Pointer to a six-byte array to contain the Ethernet address
  *
- * Derives an Ethernet address (MAC) from the machine ID, that's stable
- * per board that is not multicast and has the local assigned bit set.
+ * Derives an Ethernet address (MAC) from the machine ID and the device name,
+ * that's stable per board and network device, is not multicast and has the
+ * local assigned bit set.
  *
  * Return 0 if an address could be generated or a negative error code otherwise.
  */
-int generate_ether_addr(u8 *ethaddr, int ethid)
+int generate_ether_addr(struct eth_device *edev, u8 *ethaddr)
 {
-	const char *hostname;
+	const char *hostname, *name = dev_name(&edev->dev);
 	uuid_t id;
 	int ret;
 
@@ -447,12 +448,12 @@ int generate_ether_addr(u8 *ethaddr, int ethid)
 		return -EINVAL;
 
 	ret = machine_id_get_app_specific(&id, ARRAY_AND_SIZE("barebox-macaddr:"),
-					  hostname, strlen(hostname), NULL);
+					  hostname, strlen(hostname),
+					  name, strlen(name), NULL);
 	if (ret)
 		return ret;
 
 	memcpy(ethaddr, &id.b, ETH_ALEN);
-	eth_addr_add(ethaddr, ethid);
 
 	ethaddr[0] &= 0xfe;	/* clear multicast bit */
 	ethaddr[0] |= 0x02;	/* set local assignment bit (IEEE802) */
@@ -467,7 +468,7 @@ static void net_ensure_ethaddr(struct eth_device *edev)
 	if (is_valid_ether_addr(edev->ethaddr))
 		return;
 
-	ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
+	ret = generate_ether_addr(edev, edev->ethaddr);
 	if (ret)
 		random_ether_addr(edev->ethaddr);
 

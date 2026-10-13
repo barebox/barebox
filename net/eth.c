@@ -620,7 +620,7 @@ static int populate_ethaddr(void)
 		ret = of_get_mac_addr_nvmem(edev->parent->of_node,
 					    edev->ethaddr);
 		if (IS_ENABLED(CONFIG_NET_ETHADDR_FROM_MACHINE_ID) && ret) {
-			ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
+			ret = generate_ether_addr(edev, edev->ethaddr);
 			generated = true;
 		}
 		if (ret)

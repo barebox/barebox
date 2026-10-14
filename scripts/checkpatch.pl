@@ -3775,6 +3775,8 @@ sub process {
 
 				next if $compat !~ /^([a-zA-Z0-9\-]+)\,/;
 				my $vendor = $1;
+				# barebox' own prefix isn't in the Linux list
+				next if $vendor eq "barebox";
 				`grep -Eq "\\"\\^\Q$vendor\E,\\.\\*\\":" $vp_file`;
 				if ( $? >> 8 ) {
 					WARN("UNDOCUMENTED_DT_STRING",

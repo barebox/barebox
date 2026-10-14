@@ -827,13 +827,13 @@ int fdt_machine_is_compatible(const struct fdt_header *fdt, size_t fdt_size, con
 		case FDT_BEGIN_NODE:
 			fnh = (const void *)fdt + dt_struct;
 
-			/* The root node must have an empty name */
-			if (fnh->name[0] != '\0')
-				return 0;
-
 			dt_struct = dt_struct_advance(&f, dt_struct,
 					sizeof(struct fdt_node_header), 1);
 			if (!dt_struct)
+				return 0;
+
+			/* The root node must have an empty name */
+			if (fnh->name[0] != '\0')
 				return 0;
 
 			/*

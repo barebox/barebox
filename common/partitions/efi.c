@@ -309,13 +309,13 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 	/* Check the first_usable_lba and last_usable_lba are within the disk. */
 	lastlba = last_lba(blk);
 	if (le64_to_cpu((*gpt)->first_usable_lba) > lastlba) {
-		dev_dbg(blk->dev, "GPT: first_usable_lba incorrect: %lld > %lld\n",
+		dev_dbg(blk->dev, "GPT: first_usable_lba incorrect: %llu > %llu\n",
 			 (unsigned long long)le64_to_cpu((*gpt)->first_usable_lba),
 			 (unsigned long long)lastlba);
 		goto fail;
 	}
 	if (le64_to_cpu((*gpt)->last_usable_lba) > lastlba) {
-		dev_dbg(blk->dev, "GPT: last_usable_lba incorrect: %lld > %lld\n",
+		dev_dbg(blk->dev, "GPT: last_usable_lba incorrect: %llu > %llu\n",
 			 (unsigned long long)le64_to_cpu((*gpt)->last_usable_lba),
 			 (unsigned long long)lastlba);
 		goto fail;
@@ -406,7 +406,7 @@ compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 	if (le64_to_cpu(pgpt->my_lba) != le64_to_cpu(agpt->alternate_lba)) {
 		dev_warn(dev,
 		       "GPT:Primary header LBA != Alt. header alternate_lba\n");
-		dev_warn(dev, "GPT:%lld != %lld\n",
+		dev_warn(dev, "GPT:%llu != %llu\n",
 		       (unsigned long long)le64_to_cpu(pgpt->my_lba),
 		       (unsigned long long)le64_to_cpu(agpt->alternate_lba));
 		error_found++;
@@ -414,7 +414,7 @@ compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 	if (le64_to_cpu(pgpt->alternate_lba) != le64_to_cpu(agpt->my_lba)) {
 		dev_warn(dev,
 		       "GPT:Primary header alternate_lba != Alt. header my_lba\n");
-		dev_warn(dev, "GPT:%lld != %lld\n",
+		dev_warn(dev, "GPT:%llu != %llu\n",
 		       (unsigned long long)le64_to_cpu(pgpt->alternate_lba),
 		       (unsigned long long)le64_to_cpu(agpt->my_lba));
 		error_found++;
@@ -422,7 +422,7 @@ compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 	if (le64_to_cpu(pgpt->first_usable_lba) !=
 	    le64_to_cpu(agpt->first_usable_lba)) {
 		dev_warn(dev, "GPT:first_usable_lbas don't match.\n");
-		dev_warn(dev, "GPT:%lld != %lld\n",
+		dev_warn(dev, "GPT:%llu != %llu\n",
 		       (unsigned long long)le64_to_cpu(pgpt->first_usable_lba),
 		       (unsigned long long)le64_to_cpu(agpt->first_usable_lba));
 		error_found++;
@@ -430,7 +430,7 @@ compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 	if (le64_to_cpu(pgpt->last_usable_lba) !=
 	    le64_to_cpu(agpt->last_usable_lba)) {
 		dev_warn(dev, "GPT:last_usable_lbas don't match.\n");
-		dev_warn(dev, "GPT:%lld != %lld\n",
+		dev_warn(dev, "GPT:%llu != %llu\n",
 		       (unsigned long long)le64_to_cpu(pgpt->last_usable_lba),
 		       (unsigned long long)le64_to_cpu(agpt->last_usable_lba));
 		error_found++;
@@ -468,7 +468,7 @@ compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 	if (le64_to_cpu(pgpt->alternate_lba) != lastlba) {
 		dev_warn(dev,
 		       "GPT:Primary header thinks Alt. header is not at the end of the disk.\n");
-		dev_warn(dev, "GPT:%lld != %lld\n",
+		dev_warn(dev, "GPT:%llu != %llu\n",
 			(unsigned long long)le64_to_cpu(pgpt->alternate_lba),
 			(unsigned long long)lastlba);
 		error_found++;
@@ -477,7 +477,7 @@ compare_gpts(struct block_device *blk, gpt_header *pgpt, gpt_header *agpt,
 	if (le64_to_cpu(agpt->my_lba) != lastlba) {
 		dev_warn(dev,
 		       "GPT:Alternate GPT header not at the end of the disk.\n");
-		dev_warn(dev, "GPT:%lld != %lld\n",
+		dev_warn(dev, "GPT:%llu != %llu\n",
 			(unsigned long long)le64_to_cpu(agpt->my_lba),
 			(unsigned long long)lastlba);
 		error_found++;
@@ -771,12 +771,12 @@ static __maybe_unused int efi_partition_mkpart(struct partition_desc *pd,
 	const guid_t *guid;
 
 	if (start_lba < 34) {
-		pr_err("invalid start LBA %lld, minimum is 34\n", start_lba);
+		pr_err("invalid start LBA %llu, minimum is 34\n", start_lba);
 		return -EINVAL;
 	}
 
 	if (end_lba >= last_lba(pd->blk) - 33) {
-		pr_err("invalid end LBA %lld, maximum is %lld\n", end_lba,
+		pr_err("invalid end LBA %llu, maximum is %llu\n", end_lba,
 		       last_lba(pd->blk) - 34);
 		return -EINVAL;
 	}

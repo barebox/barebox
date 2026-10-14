@@ -850,10 +850,6 @@ our %deprecated_apis = (
 	"kunmap"				=> "kunmap_local",
 	"kmap_atomic"				=> "kmap_local_page",
 	"kunmap_atomic"				=> "kunmap_local",
-	#These should be enough to drive away new IDR users
-	"DEFINE_IDR"				=> "DEFINE_XARRAY",
-	"idr_init"				=> "xa_init",
-	"idr_init_base"				=> "xa_init_flags",
 );
 
 #Create a search pattern for all these strings to speed up a loop below
@@ -6601,14 +6597,9 @@ sub process {
 			}
 		}
 
-# prefer usleep_range over udelay
+# prefer mdelay over long udelay
 		if ($line =~ /\budelay\s*\(\s*(\d+)\s*\)/) {
 			my $delay = $1;
-			# ignore udelay's < 10, however
-			if (! ($delay < 10) ) {
-				CHK("USLEEP_RANGE",
-				    "usleep_range is preferred over udelay; see function description of usleep_range() and udelay().\n" . $herecurr);
-			}
 			if ($delay > 2000) {
 				WARN("LONG_UDELAY",
 				     "long udelay - prefer mdelay; see function description of mdelay().\n" . $herecurr);
@@ -6766,17 +6757,14 @@ sub process {
 				"assume_aligned"		=> "__assume_aligned",
 				"cold"				=> "__cold",
 				"const"				=> "__attribute_const__",
-				"copy"				=> "__copy",
 				"designated_init"		=> "__designated_init",
 				"externally_visible"		=> "__visible",
 				"format"			=> "printf|scanf",
 				"gnu_inline"			=> "__gnu_inline",
 				"malloc"			=> "__malloc",
 				"mode"				=> "__mode",
-				"no_caller_saved_registers"	=> "__no_caller_saved_registers",
 				"noclone"			=> "__noclone",
 				"noinline"			=> "noinline",
-				"nonstring"			=> "__nonstring",
 				"noreturn"			=> "__noreturn",
 				"packed"			=> "__packed",
 				"pure"				=> "__pure",
@@ -7019,10 +7007,10 @@ sub process {
 			     "Prefer strscpy over strlcpy - see: https://github.com/KSPP/linux/issues/89\n" . $herecurr);
 		}
 
-# strncpy uses that should likely be strscpy or strscpy_pad
+# strncpy uses that should likely be strscpy
 		if ($line =~ /\bstrncpy\s*\(/ && !is_userspace($realfile)) {
 			WARN("STRNCPY",
-			     "Prefer strscpy, strscpy_pad, or __nonstring over strncpy - see: https://github.com/KSPP/linux/issues/90\n" . $herecurr);
+			     "Prefer strscpy over strncpy - see: https://github.com/KSPP/linux/issues/90\n" . $herecurr);
 		}
 
 # ethtool_sprintf uses that should likely be ethtool_puts

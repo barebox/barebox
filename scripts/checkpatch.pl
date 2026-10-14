@@ -39,7 +39,6 @@ my $file = 0;
 my $git = 0;
 my %git_commits = ();
 my $check = 0;
-my $check_orig = 0;
 my $summary = 1;
 my $mailback = 0;
 my $summary_file = 0;
@@ -411,7 +410,6 @@ load_docs() if ($verbose);
 list_types(0) if ($list_types);
 
 $fix = 1 if ($fix_inplace);
-$check_orig = $check;
 
 my $exit = 0;
 
@@ -2938,11 +2936,6 @@ sub process {
 			if (is_maintained_obsolete($realfile)) {
 				WARN("OBSOLETE",
 				     "$realfile is marked as 'obsolete' in the MAINTAINERS hierarchy.  No unnecessary modifications please.\n");
-			}
-			if ($realfile =~ m@^(?:drivers/net/|net/|drivers/staging/)@) {
-				$check = 1;
-			} else {
-				$check = $check_orig;
 			}
 			$checklicenseline = 1;
 

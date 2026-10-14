@@ -4977,17 +4977,9 @@ sub process {
 			     "Do not use $1() in production code (this can be ignored if built only with a debug config option)\n" . $herecurr);
 		}
 
-# ENOSYS means "bad syscall nr" and nothing else.  This will have a small
-# number of false positives, but assembly files are not checked, so at
-# least the arch entry code will not trigger this warning.
-		if ($line =~ /\bENOSYS\b/) {
-			WARN("ENOSYS",
-			     "ENOSYS means 'invalid syscall nr' and nothing else\n" . $herecurr);
-		}
-
 # ENOTSUPP is not a standard error code and should be avoided in new patches.
 # Folks usually mean EOPNOTSUPP (also called ENOTSUP), when they type ENOTSUPP.
-# Similarly to ENOSYS warning a small number of false positives is expected.
+# A small number of false positives is expected.
 		if (!$file && $line =~ /\bENOTSUPP\b/) {
 			if (WARN("ENOTSUPP",
 				 "ENOTSUPP is not a SUSV4 error code, prefer EOPNOTSUPP\n" . $herecurr) &&

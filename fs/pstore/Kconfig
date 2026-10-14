@@ -20,7 +20,10 @@ config FS_PSTORE_RAMOOPS
 	bool
 	depends on RELOCATABLE
 	depends on ARM
+	depends on OFTREE
 	select REED_SOLOMON
+	select REED_SOLOMON_ENC8
+	select REED_SOLOMON_DEC8
 	prompt "pstore RAM backend"
 	help
 	  Here the data is stored in a specific memory area that is neither
@@ -28,14 +31,46 @@ config FS_PSTORE_RAMOOPS
 
 if FS_PSTORE_RAMOOPS
 
+config FS_PSTORE_RAMOOPS_ALWAYS
+	bool
+	prompt "Enable pstore RAM backend without a device tree node"
+	default y
+	help
+	  Enables the RAM backend for pstore automatically instead of
+	  requiring an explicit "ramoops"-compatible node. barebox will
+	  take care to fix up the device tree node into the kernel device
+	  tree. This is skipped when barebox runs as EFI payload.
+
+	  Opt out is possible by adding a ramoops-compatible node with
+	  status = "disabled".
+
+config FS_PSTORE_RAMOOPS_TEST
+	bool
+	prompt "Test RAM retention instead of storing records"
+	help
+	  Use the RAM area to test how much of it survives a reset instead
+	  of for pstore: On every start, barebox compares the area against
+	  a fixed pseudo-random pattern, reports how many bytes survived
+	  and which ranges were lost, and then fills it with the pattern
+	  again for the next reset.
+
+	  The kernel only gets the area as reserved memory, so this also
+	  covers resets triggered by the kernel. The first start after
+	  power-on reports what survived with the power off.
+
+	  pstore is not available with this option enabled.
+
 config FS_PSTORE_RAMOOPS_RO
 	bool
 	default y
 	prompt "pstore RAM backend read only"
 	help
-	  This prevents the data from being erased by reinitializing the ramoops
-	  area with new empty ECCs. Select this if you want to see the same
-	  ramoops in the kernel.
+	  This keeps the old contents of the console area when barebox writes
+	  its own console output to it, instead of erasing it first. Select
+	  this if you want to see the same ramoops in the kernel.
+
+	  Either way, barebox only resets an area when writing to it, never
+	  when merely reading it.
 
 config FS_PSTORE_RAMOOPS_SIZE
 	int

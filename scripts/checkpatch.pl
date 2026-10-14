@@ -675,30 +675,6 @@ foreach my $entry (@link_tags) {
 }
 $link_tags_search = "(?:${link_tags_search})";
 
-our $tracing_logging_tags = qr{(?xi:
-	[=-]*> |
-	<[=-]* |
-	\[ |
-	\] |
-	start |
-	called |
-	entered |
-	entry |
-	enter |
-	in |
-	inside |
-	here |
-	begin |
-	exit |
-	end |
-	done |
-	leave |
-	completed |
-	out |
-	return |
-	[\.\!:\s]*
-)};
-
 # Device ID types like found in include/linux/mod_devicetable.h.
 our $dev_id_types = qr{\b[a-z]\w*_device_id\b};
 
@@ -6382,17 +6358,6 @@ sub process {
 			     "Prefer using '\"%s...\", __func__' to using '$context_function', this function's name, in a string\n" . $herecurr);
 		}
 
-# check for unnecessary function tracing like uses
-# This does not use $logFunctions because there are many instances like
-# 'dprintk(FOO, "%s()\n", __func__);' which do not match $logFunctions
-		if ($rawline =~ /^\+.*\([^"]*"$tracing_logging_tags{0,3}%s(?:\s*\(\s*\)\s*)?$tracing_logging_tags{0,3}(?:\\n)?"\s*,\s*__func__\s*\)\s*;/) {
-			if (WARN("TRACING_LOGGING",
-				 "Unnecessary ftrace-like logging - prefer using ftrace\n" . $herecurr) &&
-			    $fix) {
-                                fix_delete_line($fixlinenr, $rawline);
-			}
-		}
-
 # check for spaces before a quoted newline
 		if ($rawline =~ /^.*\".*\s\\n/) {
 			if (WARN("QUOTED_WHITESPACE_BEFORE_NEWLINE",
@@ -6502,24 +6467,6 @@ sub process {
 						$fixed[$fixlinenr] =~ s/^\+$new_leading_tabs/\+$leading_tabs/;
 					}
 				}
-			}
-		}
-
-# check for unnecessary "Out of Memory" messages
-		if ($line =~ /^\+.*\b$logFunctions\s*\(/ &&
-		    $prevline =~ /^[ \+]\s*if\s*\(\s*(\!\s*|NULL\s*==\s*)?($Lval)(\s*==\s*NULL\s*)?\s*\)/ &&
-		    (defined $1 || defined $3) &&
-		    $linenr > 3) {
-			my $testval = $2;
-			my $testline = $lines[$linenr - 3];
-
-			my ($s, $c) = ctx_statement_block($linenr - 3, $realcnt, 0);
-#			print("line: <$line>\nprevline: <$prevline>\ns: <$s>\nc: <$c>\n\n\n");
-
-			if ($s =~ /(?:^|\n)[ \+]\s*(?:$Type\s*)?\Q$testval\E\s*=\s*(?:\([^\)]*\)\s*)?\s*$allocFunctions\s*\(/ &&
-			    $s !~ /\b__GFP_NOWARN\b/ ) {
-				WARN("OOM_MESSAGE",
-				     "Possible unnecessary 'out of memory' message\n" . $hereprev);
 			}
 		}
 
@@ -6967,8 +6914,6 @@ sub process {
 		    defined $stat &&
 		    $stat =~ /^\+(?![^\{]*\{\s*).*\b(\w+)\s*\(.*$String\s*,/s &&
 		    $1 !~ /^_*volatile_*$/) {
-			my $stat_real;
-
 			my $lc = $stat =~ tr@\n@@;
 			$lc = $lc + $linenr;
 		        for (my $count = $linenr; $count <= $lc; $count++) {
@@ -6991,13 +6936,6 @@ sub process {
 					     defined $qualifier && $qualifier !~ /^c(?:[hlbc]|hR)$/)) {
 						$bad_specifier = $specifier;
 						last;
-					}
-					if ($extension eq "x" && !defined($stat_real)) {
-						if (!defined($stat_real)) {
-							$stat_real = get_stat_real($linenr, $lc);
-						}
-						WARN("VSPRINTF_SPECIFIER_PX",
-						     "Using vsprintf specifier '\%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '\%p'.\n" . "$here\n$stat_real\n");
 					}
 				}
 				if ($bad_specifier ne "") {

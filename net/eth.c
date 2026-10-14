@@ -593,10 +593,11 @@ void eth_open_all(void)
 static int populate_ethaddr(void)
 {
 	struct eth_device *edev;
-	bool generated = false;
 	int ret;
 
 	for_each_netdev(edev) {
+		bool generated = false;
+
 		if (!edev->parent || is_valid_ether_addr(edev->ethaddr))
 			continue;
 

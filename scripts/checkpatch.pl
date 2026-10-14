@@ -3856,8 +3856,9 @@ sub process {
 			}
 		}
 
-# check for embedded filenames
-		if ($rawline =~ /^\+.*\b\Q$realfile\E\b/) {
+# check for embedded filenames, except in the Origin-URL of imported code
+		if ($rawline =~ /^\+.*\b\Q$realfile\E\b/ &&
+		    $rawline !~ /\bSPDX-[\w-]*Comment: Origin-URL:/) {
 			WARN("EMBEDDED_FILENAME",
 			     "It's generally not useful to have the filename in the file\n" . $herecurr);
 		}
@@ -3876,7 +3877,8 @@ sub process {
 # check for disallowed SPDX file tags
 		if ($rawline =~ /\bSPDX-.*:/ &&
 		    $rawline !~ /\bSPDX-License-Identifier:/ &&
-		    $rawline !~ /\bSPDX-FileCopyrightText:/) {
+		    $rawline !~ /\bSPDX-FileCopyrightText:/ &&
+		    $rawline !~ /\bSPDX-(?:Comment|Snippet[\w-]*):/) {
 			WARN("SPDX_LICENSE_TAG",
 			     "Disallowed SPDX tag\n" . $herecurr);
 		}

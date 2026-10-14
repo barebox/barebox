@@ -2701,7 +2701,6 @@ sub process {
 	my $commit_log_possible_stack_dump = 0;
 	my $commit_log_long_line = 0;
 	my $commit_log_has_diff = 0;
-	my $reported_maintainer_file = 0;
 	my $non_utf8_charset = 0;
 
 	my $last_git_commit_id_linenr = -1;
@@ -3069,12 +3068,6 @@ sub process {
 		if ($line =~ /^---$/) {
 			$has_patch_separator = 1;
 			$in_commit_log = 0;
-		}
-
-# Check if MAINTAINERS is being updated.  If so, there's probably no need to
-# emit the "does MAINTAINERS need updating?" message on file add/move/delete
-		if ($line =~ /^\s*MAINTAINERS\s*\|/) {
-			$reported_maintainer_file = 1;
 		}
 
 # Check signature styles
@@ -3483,15 +3476,12 @@ sub process {
 		}
 
 # Check for added, moved or deleted files
-		if (!$reported_maintainer_file && !$in_commit_log &&
+		if (!$in_commit_log &&
 		    ($line =~ /^(?:new|deleted) file mode\s*\d+\s*$/ ||
 		     $line =~ /^rename (?:from|to) [\w\/\.\-]+\s*$/ ||
 		     ($line =~ /\{\s*([\w\/\.\-]*)\s*\=\>\s*([\w\/\.\-]*)\s*\}/ &&
 		      (defined($1) || defined($2))))) {
 			$is_patch = 1;
-			$reported_maintainer_file = 1;
-			WARN("FILE_PATH_CHANGES",
-			     "added, moved or deleted file(s), does MAINTAINERS need updating?\n" . $herecurr);
 		}
 
 # Check for adding new DT bindings not in schema format

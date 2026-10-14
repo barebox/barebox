@@ -121,7 +121,7 @@ Options:
   --min-conf-desc-length=n   set the minimum description length for config symbols
                              in lines, if shorter, warn (default $min_conf_desc_length)
   --tab-size=n               set the number of spaces for tab (default $tabsize)
-  --root=PATH                PATH to the kernel tree root
+  --root=PATH                PATH to the barebox tree root
   --no-summary               suppress the per-file summary
   --mailback                 only produce a report in case of warnings/errors
   --summary-file             include the filename in summary
@@ -494,7 +494,7 @@ if ($tree) {
 	}
 
 	if (!defined $root) {
-		print "Must be run from the top-level dir. of a kernel tree\n";
+		print "Must be run from the top-level dir. of a barebox tree\n";
 		exit(2);
 	}
 }
@@ -1412,9 +1412,9 @@ sub top_of_kernel_tree {
 	my ($root) = @_;
 
 	my @tree_check = (
-		"COPYING", "CREDITS", "Kbuild", "MAINTAINERS", "Makefile",
-		"README", "Documentation", "arch", "include", "drivers",
-		"fs", "init", "ipc", "kernel", "lib", "scripts",
+		"arch", "commands", "common", "COPYING", "defaultenv",
+		"Documentation", "drivers", "fs", "include", "lib",
+		"MAKEALL", "Makefile", "net", "README.rst", "scripts"
 	);
 
 	foreach my $check (@tree_check) {

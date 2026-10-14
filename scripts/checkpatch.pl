@@ -3779,8 +3779,12 @@ sub process {
 
 			my @compats = $rawline =~ /\"([a-zA-Z0-9\-\,\.\+_]+)\"/g;
 
-			my $dt_path = $root . "/Documentation/devicetree/bindings/";
+			# linux device tree files
+			my $dt_path = $root . "/dts/Bindings/";
 			my $vp_file = $dt_path . "vendor-prefixes.yaml";
+
+			# barebox-specific bindings
+			$dt_path = $dt_path . " " . $root . "/Documentation/devicetree/bindings/";
 
 			foreach my $compat (@compats) {
 				# Skip ID-based PCI and USB compatible patterns.

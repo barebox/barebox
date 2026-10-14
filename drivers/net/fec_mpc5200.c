@@ -644,8 +644,8 @@ static int mpc5xxx_fec_probe(struct device *dev)
 	struct eth_device *edev;
 	mpc5xxx_fec_priv *fec;
 
-	edev = (struct eth_device *)xmalloc(sizeof(struct eth_device));
-	fec = (mpc5xxx_fec_priv *)xmalloc(sizeof(*fec));
+	edev = xzalloc(sizeof(*edev));
+	fec = xzalloc(sizeof(*fec));
 	dev->priv = edev;
 	edev->priv = fec;
 	edev->open = mpc5xxx_fec_open;

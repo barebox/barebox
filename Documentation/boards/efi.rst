@@ -44,10 +44,8 @@ architectures. Switching to USB boot in the BIOS should then be enough to
 start barebox via USB. Some BIOSes allow to specify a path to a binary to
 be executed, others have a "start UEFI shell" entry which executes
 EFI/Shellx64.efi on the :term:`ESP`. This can be a barebox binary as well.
-To use the :ref:`state_framework`, the describing devicetree file ``state.dtb``
-has to be put into the ``EFI/barebox/`` directory.
-Supported backends for EFI are raw partitions that can be discovered via a
-partition UUID.
+See `Device tree`_ below on how to describe barebox-specific configuration,
+like a :ref:`state_framework` partition, to barebox.
 
 With this sample script you can create a bootable image and transfer it to the
 flash drive:
@@ -215,6 +213,76 @@ has a device parameter ``devpath`` which contains its device path:
 
   barebox:/ echo ${handle-00000000d0012198.devpath}
   pci_root(0)/Pci(0x1d,0x0)/Usb(0x1,0x0)/Usb(0x2,0x0)
+
+Device tree
+-----------
+
+EFI systems describe their hardware to barebox via EFI protocols and ACPI, so
+barebox needs no device tree to drive them. Some barebox functionality is
+configured by device tree nevertheless, most prominently the
+:ref:`state_framework`. For that reason, the empty fallback device tree from
+``common/fallback.dts`` is compiled into the EFI payload, which can be
+populated at build time with the ``CONFIG_EXTERNAL_DTS_FRAGMENTS`` option,
+e.g.::
+
+  CONFIG_EXTERNAL_DTS_FRAGMENTS="/path/to/barebox-state.dtsi"
+
+The fragments listed there are appended to every device tree built, so a
+fragment meant for the EFI payload only should be guarded with the
+``fallback_dts`` macro, which is defined while the fallback device tree
+is compiled:
+
+.. code-block:: text
+
+  #ifdef fallback_dts
+  / {
+          aliases {
+                  state = &state;
+          };
+
+          state: state {
+                  compatible = "barebox,state";
+                  magic = <0x27031977>;
+                  backend-type = "raw";
+                  backend = <&backend_state>;
+                  backend-stridesize = <0x40>;
+
+                  #address-cells = <1>;
+                  #size-cells = <1>;
+
+                  vars {
+                          /* ... */
+                  };
+          };
+
+          partitions {
+                  compatible = "fixed-partitions";
+
+                  backend_state: state {
+                          partuuid = "9ba1c1c5-6ad7-4e8a-8d69-b1c4b0d1e1e1";
+                  };
+          };
+  };
+  #endif
+
+Supported *state* backends for EFI are raw partitions that can be discovered
+via a partition UUID as done above.
+
+Should the device tree be empty, barebox falls back to reading a devicetree
+file ``state.dtb`` out of the ``EFI/barebox/`` directory on the :term:`ESP`.
+If the built-in device tree is populated, an existing ``state.dtb`` is
+ignored with a warning.
+
+When barebox runs as EFI payload, its internal device tree is exported in
+flattened form in the ``barebox-dtb`` EFI variable under the barebox vendor
+GUID just before barebox starts an EFI image or boots a kernel, so the
+operating system can be configured by the same description. Under Linux,
+it's readable at
+``/sys/firmware/efi/efivars/barebox-dtb-5b91f69c-8b88-4a2b-9269-5f1d802b5175``,
+where the blob is prefixed by a four byte EFI variable attribute word.
+
+Unlike the `Load options`_, this is not done when barebox acts as EFI
+loader for the application.
 
 EFI variables
 -------------

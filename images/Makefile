@@ -125,15 +125,6 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 $(obj)/%.s: $(obj)/% FORCE
 	$(call if_changed,disasm)
 
-quiet_cmd_itb = FIT.ITS $@
-cmd_itb = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) \
-	-D'$(subst -,_,$(*F))_dts=1' $(foreach f,$< $(2),-include '$(f)') /dev/null ; \
-	$(MKIMAGE) -f $(dtc-tmp) $@ -E \
-	cat $(depfile).pre $(depfile).dtc > $(depfile)
-
-$(obj)/%.itb: $(obj)/%.its FORCE
-	$(call if_changed,itb)
-
 .SECONDEXPANSION:
 $(obj)/%.fit: $(obj)/$$(FILE_$$(@F)) $(dtstree)/dtbs-list FORCE
 	$(call if_changed,fit)

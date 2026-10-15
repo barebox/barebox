@@ -140,3 +140,18 @@ For upstream device trees, this is currently done on a case-by-case basis in the
 Makefiles::
 
   DTC_FLAGS_bcm2711-rpi-4-b := -@
+
+.. _of_overlay_fit:
+
+Overlays in a FIT image
+^^^^^^^^^^^^^^^^^^^^^^^
+
+If :ref:`global.of.overlay.path <magicvar_global_of_overlay_path>` points at a
+file, barebox opens it as a FIT image and applies, in order, the first ``fdt``
+image of each configuration that has neither ``kernel`` nor ``firmware``.
+:ref:`global.of.overlay.pattern <magicvar_global_of_overlay_pattern>` is
+matched against the configuration name, not the image name. The FIT is
+verified according to
+:ref:`global.bootm.verify <magicvar_global_bootm_verify>`; overlays in a
+directory are not verified at all. Processing stops at the first configuration
+that fails to verify or apply, but the kernel is still booted.

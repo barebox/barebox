@@ -928,6 +928,22 @@ void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len)
 }
 EXPORT_SYMBOL_GPL(nvmem_cell_read);
 
+/**
+ * nvmem_cell_nbits() - Get the width of a nvmem cell in bits
+ *
+ * @cell: nvmem cell to be queried.
+ *
+ * Return: the number of bits in the cell, which can be less than its size in
+ * bytes times 8 if the cell has a bits property.
+ */
+unsigned int nvmem_cell_nbits(struct nvmem_cell *cell)
+{
+	struct nvmem_cell_entry *entry = cell->entry;
+
+	return entry->nbits ?: entry->bytes * BITS_PER_BYTE;
+}
+EXPORT_SYMBOL_GPL(nvmem_cell_nbits);
+
 static inline const void *nvmem_cell_prepare_write_buffer(struct nvmem_cell_entry *cell,
 							  const u8 *_buf, int len)
 {

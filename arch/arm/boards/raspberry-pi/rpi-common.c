@@ -61,8 +61,9 @@ struct rpi_priv {
 };
 
 struct rpi_property_fixup_data {
-    const struct device_node* vc_node;
-    const char *propname;
+	const struct device_node* vc_node;
+	const char *propname;
+	const char *alias;
 };
 
 static void rpi_set_usbethaddr(void)
@@ -314,9 +315,23 @@ static int rpi_vc_fdt_fixup_property(struct device_node *root, void *data)
 	struct device_node *node;
 	struct property *prop;
 
-	node = of_create_node(root, fixup->vc_node->full_name);
-	if (!node)
-		return -ENOMEM;
+	if (fixup->alias) {
+		/*
+		 * The node name need not be the same in the VideoCore FDT
+		 * and in the DT we fix up (e.g. /emmc2bus was renamed to
+		 * /emmc2-bus@fe000000 in Linux v7.0), so look it up via
+		 * the alias like the firmware does and don't create it.
+		 */
+		node = of_find_node_by_alias(root, fixup->alias);
+		if (!node) {
+			pr_debug("no '%s' alias found in fdt\n", fixup->alias);
+			return 0;
+		}
+	} else {
+		node = of_create_node(root, fixup->vc_node->full_name);
+		if (!node)
+			return -ENOMEM;
+	}
 
 	prop = of_find_property(fixup->vc_node, fixup->propname, NULL);
 	if (!prop)
@@ -332,13 +347,15 @@ static int register_vc_property_fixup(struct device_node *root,
 	struct device_node *node, *tmp;
 	struct rpi_property_fixup_data* fixup_data;
 
-	node = of_find_node_by_path_from(root, path);
+	node = of_find_node_by_path_or_alias(root, path);
 	if (node) {
 		tmp = of_dup(node);
 		tmp->full_name = xstrdup(node->full_name);
 		fixup_data = xzalloc(sizeof(*fixup_data));
 		fixup_data->vc_node = tmp;
 		fixup_data->propname = xstrdup(propname);
+		if (*path != '/')
+			fixup_data->alias = xstrdup(path);
 
 		of_register_fixup(rpi_vc_fdt_fixup_property, fixup_data);
 	} else {
@@ -377,7 +394,7 @@ static void rpi_vc_fdt_parse(struct device_node *root)
 	register_vc_property_fixup(root, "/reserved-memory/nvram@0", "reg");
 	register_vc_property_fixup(root, "/reserved-memory/nvram@0", "status");
 	register_vc_fixup(root, "/hat");
-	register_vc_property_fixup(root, "/emmc2bus", "dma-ranges");
+	register_vc_property_fixup(root, "emmc2bus", "dma-ranges");
 	register_vc_fixup(root, "/chosen/bootloader");
 	chosen = register_vc_fixup(root, "/chosen");
 	if (!chosen) {

@@ -3035,7 +3035,7 @@ int of_probe(void)
 
 	node = of_find_node_by_path("/firmware");
 	if (node)
-		of_platform_populate(node, NULL, NULL);
+		of_platform_populate(node, of_default_bus_match_table, NULL);
 
 	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 

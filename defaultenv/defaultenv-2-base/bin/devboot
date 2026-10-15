@@ -49,4 +49,4 @@ ret=$?
 global -r "linux.bootargs.devboot.*"
 cd "${saved_pwd}"
 
-ecit $ret
+exit $ret

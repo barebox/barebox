@@ -5,9 +5,34 @@
 #include <common.h>
 #include <init.h>
 #include <libfile.h>
+#include <of.h>
 #include <efi/payload.h>
 #include <efi/payload/init.h>
 #include <efi/guid.h>
+
+extern char __dtb_fallback_start[];
+
+/*
+ * EFI systems have no device tree, but barebox may still need one for its
+ * own purposes, e.g. to describe a state partition. Register a tree that's
+ * empty unless populated via CONFIG_EXTERNAL_DTS_FRAGMENTS.
+ */
+static __maybe_unused int efi_of_init(void)
+{
+	int ret;
+
+	ret = barebox_register_fdt(__dtb_fallback_start);
+	if (ret == -EBUSY) {
+		/* architecture code registered a device tree already */
+		pr_debug("keeping already registered device tree\n");
+		return 0;
+	}
+
+	return ret;
+}
+#ifdef CONFIG_OFDEVICE
+core_efi_initcall(efi_of_init);
+#endif
 
 static int efi_fdt_probe(void)
 {

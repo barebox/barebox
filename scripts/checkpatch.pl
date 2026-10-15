@@ -3451,6 +3451,9 @@ sub process {
 				$herecurr) if (!$emitted_corrupt++);
 		}
 
+# dts/ is imported as-is from Linux, so there's nothing to fix there
+		next if (!$in_commit_log && $realfile =~ m@^dts/@);
+
 # UTF-8 regex found at http://www.w3.org/International/questions/qa-forms-utf-8.en.php
 		if (($realfile =~ /^$/ || $line =~ /^\+/) &&
 		    $rawline !~ m/^$UTF8*$/) {

@@ -48,4 +48,4 @@ ret=$?
 
 cd "${saved_pwd}"
 
-ecit $ret
+exit $ret

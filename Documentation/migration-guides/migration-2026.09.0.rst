@@ -1,3 +1,6 @@
+Release v2026.09.0
+==================
+
 Removal of deprecated CONFIG_BOOTM_OPTEE
 ----------------------------------------
 

@@ -12,3 +12,4 @@ causes build errors is generally out-of-scope for these documents.
    :glob:
 
    migration-20*
+   migration-master

@@ -22,6 +22,7 @@
 #include <linux/clk.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
+#include <linux/string_helpers.h>
 #include <pm_domain.h>
 #include <tee/optee.h>
 
@@ -178,13 +179,18 @@ static void of_alias_add(struct alias_prop *ap, struct device_node *np,
 
 static struct device_node *of_alias_resolve(struct device_node *root, struct property *pp)
 {
+	const char *path = of_property_get_value(pp);
+
 	/* Skip those we do not want to proceed */
 	if (!of_prop_cmp(pp->name, "name") ||
 	    !of_prop_cmp(pp->name, "phandle") ||
 	    !of_prop_cmp(pp->name, "linux,phandle"))
 		return NULL;
 
-	return of_find_node_by_path_from(root, of_property_get_value(pp));
+	if (!path || !string_is_terminated(path, pp->length))
+		return NULL;
+
+	return of_find_node_by_path_from(root, path);
 }
 
 static int of_alias_id_parse(const char *start, int *len)

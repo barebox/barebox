@@ -173,7 +173,7 @@ kernel command line fragments:
   devboot_oftree=
   devboot_initrd=":afa-modules-arm64"
 
-  global linux.bootargs.devboot.rsinit="rsinit.bind=/lib/modules"
+  global linux.bootargs.devboot.rsinit="rsinit.bind_modules"
 
 With this script in place and ``global.user=afa``, ``global.hostname=rock3a``,
 running ``devboot mmc`` on the board expands to::
@@ -222,7 +222,7 @@ which the configuration script can source instead of spelling them out:
 ``/env/devboot/rsinit-modules``
   Appends the ``${global.user}-modules-${global.arch}`` CPIO archive to
   the initrd, as built by the Linux kernel ``make modules-cpio-pkg``
-  target, and adds ``rsinit.bind=/lib/modules`` to the kernel command
+  target, and adds ``rsinit.bind_modules`` to the kernel command
   line, so that the rsinit init in the initramfs bind mounts the modules
   over the root file system's ``/lib/modules``.
 

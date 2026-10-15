@@ -38,7 +38,7 @@ static int linux_console_getc(struct console_device *cdev)
 
 	linux_read(d->stdinfd, &c, 1);
 
-	if (old_c == 0x1c && c == 'q')
+	if ((cdev->f_active & CONSOLE_STDIN) && old_c == 0x1c && c == 'q')
 		panic("^\\q pressed - exiting");
 
 	old_c = c;

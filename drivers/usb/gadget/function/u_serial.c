@@ -101,6 +101,7 @@ struct gs_port {
 	unsigned		read_nb_queued;
 
 	struct list_head	write_pool;
+	bool			host_reading;	/* write done since last timeout */
 
 	/* REVISIT this state ... */
 	struct usb_cdc_line_coding port_line_coding;	/* 8-N-1 etc */
@@ -181,9 +182,10 @@ static void gs_write_complete(struct usb_ep *ep, struct usb_request *req)
 		/* presumably a transient fault */
 		pr_warning("%s: unexpected %s status %d\n",
 				__func__, ep->name, req->status);
-		fallthrough;
+		break;
 	case 0:
 		/* normal completion */
+		port->host_reading = true;
 		break;
 
 	case -ESHUTDOWN:
@@ -405,11 +407,14 @@ static void serial_putc(struct console_device *cdev, char c)
 	*(unsigned char *)req->buf = c;
 	status = usb_ep_queue(in, req);
 
+	/* wait for a free request only if the host is reading */
 	to = get_time_ns();
-	while (status >= 0 && list_empty(pool)) {
+	while (status >= 0 && port->host_reading && list_empty(pool)) {
 		status = usb_gadget_poll();
-		if (is_timeout(to, 300 * MSECOND))
+		if (is_timeout(to, 300 * MSECOND)) {
+			port->host_reading = false;
 			break;
+		}
 	}
 }
 
@@ -515,6 +520,7 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 	gser->port_line_coding = port->port_line_coding;
 
 	port->recv_fifo = kfifo_alloc(RECV_FIFO_SIZE);
+	port->host_reading = false;
 
 	/*printf("gserial_connect: start ttyGS%d\n", port->port_num);*/
 	gs_start_io(port);

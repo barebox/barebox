@@ -257,9 +257,11 @@ static struct blspec_entry *blspec_entry_open(struct bootentries *bootentries,
 
 		val = end;
 
-		if (!strcmp(name, "options")) {
-			/* If there was a previous "options" key given, prepend its value
-			 * (as per spec). */
+		if (!strcmp(name, "options") ||
+		    !strcmp(name, "devicetree-overlay")) {
+			/* If there was a previous key of the same name given,
+			 * prepend its value (as per spec for options and like
+			 * systemd's bootctl for overlays). */
 			const char *prev_val = blspec_entry_var_get(entry, name);
 			if (prev_val) {
 				char *opts = xasprintf("%s %s", prev_val, val);

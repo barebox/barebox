@@ -9,6 +9,7 @@
 #include <efi/payload.h>
 #include <efi/payload/init.h>
 #include <efi/guid.h>
+#include <efi/variable.h>
 
 extern char __dtb_fallback_start[];
 
@@ -67,3 +68,33 @@ static int efi_fdt_probe(void)
 	return 0;
 }
 late_efi_initcall(efi_fdt_probe);
+
+/*
+ * Export barebox' device tree, so the OS can learn about barebox-specific
+ * configuration like the state partition layout. Called just before handing
+ * over control, so the variable describes the final device tree.
+ */
+void efi_export_dtb(void)
+{
+	struct fdt_header *fdt;
+	int ret;
+
+	/* SetVariable() won't change attributes, so drop any existing variable */
+	efi_set_variable("barebox-dtb", &efi_barebox_vendor_guid, 0, NULL, 0);
+
+	if (!of_get_root_node())
+		return;
+
+	fdt = of_get_flattened_tree(NULL, false);
+	if (!fdt)
+		return;
+
+	ret = efi_set_variable("barebox-dtb", &efi_barebox_vendor_guid,
+			       EFI_VARIABLE_BOOTSERVICE_ACCESS |
+			       EFI_VARIABLE_RUNTIME_ACCESS,
+			       fdt, fdt32_to_cpu(fdt->totalsize));
+	if (ret)
+		pr_warn("Cannot export device tree: %pe\n", ERR_PTR(ret));
+
+	free(fdt);
+}

@@ -15,10 +15,7 @@ ENTRY_FUNCTION(start_rock5b, r0, r1, r2)
 {
 	putc_ll('>');
 
-	if (current_el() == 3)
-		relocate_to_adr_full(RK3588_BAREBOX_LOAD_ADDRESS);
-	else
-		relocate_to_current_adr();
+	relocate_to_current_adr();
 
 	setup_c();
 
@@ -29,10 +26,7 @@ ENTRY_FUNCTION(start_rock5t, r0, r1, r2)
 {
 	putc_ll('>');
 
-	if (current_el() == 3)
-		relocate_to_adr_full(RK3588_BAREBOX_LOAD_ADDRESS);
-	else
-		relocate_to_current_adr();
+	relocate_to_current_adr();
 
 	setup_c();
 

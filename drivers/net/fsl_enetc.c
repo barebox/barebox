@@ -356,7 +356,7 @@ static void enetc_setup_rx_bdr(struct eth_device *edev)
 	       rx_bdr->bd_count * sizeof(union enetc_rx_bd));
 
 	for (i = 0; i < rx_bdr->bd_count; i++) {
-		priv->rx_pkg[i] = dma_alloc(PKTSIZE);
+		priv->rx_pkg[i] = dma_xalloc(PKTSIZE);
 		priv->rx_pkg_phys[i] = dma_map_single(priv->dev, priv->rx_pkg[i],
 						      PKTSIZE, DMA_FROM_DEVICE);
 		priv->enetc_rxbd[i].w.addr = priv->rx_pkg_phys[i];

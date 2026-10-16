@@ -207,7 +207,7 @@ static int ata_port_init(struct ata_port *port)
 			return rc;
 	}
 
-	port->id = dma_alloc(SECTOR_SIZE);
+	port->id = dma_xalloc(SECTOR_SIZE);
 
 	port->blk.dev = dev;
 	port->blk.ops = &ata_ops;

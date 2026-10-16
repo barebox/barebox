@@ -208,7 +208,7 @@ gs_alloc_req(struct usb_ep *ep, unsigned len)
 
 	if (req != NULL) {
 		req->length = len;
-		req->buf = dma_alloc(len);
+		req->buf = dma_xalloc(len);
 	}
 
 	return req;

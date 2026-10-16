@@ -52,7 +52,7 @@ static void ramfb_enable(struct fb_info *fbi)
 	struct ramfb *ramfb = fbi->priv;
 	struct fw_cfg_etc_ramfb *etc_ramfb;
 
-	etc_ramfb = dma_alloc(sizeof(*etc_ramfb));
+	etc_ramfb = dma_xalloc(sizeof(*etc_ramfb));
 
 	etc_ramfb->addr = cpu_to_be64(ramfb->screen_dma);
 	etc_ramfb->fourcc = cpu_to_be32(DRM_FORMAT_XRGB8888);

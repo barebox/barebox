@@ -721,7 +721,7 @@ static int smsc95xx_bind(struct usbnet *dev)
 		return -ENOMEM;
 	}
 
-	pdata->iobuf = dma_alloc(4);
+	pdata->iobuf = dma_xalloc(4);
 
 	/* Init all registers */
 	ret = smsc95xx_reset(dev);

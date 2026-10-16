@@ -22,7 +22,7 @@ ENTRY(__barebox_arm64_head)
 	nop
 	nop
 #endif
-	b __pbl_board_entry
+	b 2f
 	.org 0x20
 	.asciz "barebox"
 	.word 0xffffffff
@@ -30,4 +30,15 @@ ENTRY(__barebox_arm64_head)
 	.rept 8
 	.word 0x55555555
 	.endr
+2:
+	// detect which core we are on, and only allow core0 to pass thru to __pbl_board_entry
+	mrs x0, mpidr_el1
+	and x0, x0, #3
+	cbz x0, 1f
+0:
+	// TODO, actual spin-tables, that allow the cores to be reclaimed
+	wfe
+	b 0b
+1:
+	b __pbl_board_entry
 ENDPROC(__barebox_arm64_head)

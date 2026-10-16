@@ -24,13 +24,62 @@
 
 static LIST_HEAD(defaultenv_list);
 
+/*
+ * defaultenv_list is kept sorted by ascending priority, overlays of the same
+ * priority stay in the order they were added. defaultenv_load() applies them
+ * in list order, so a file from a later overlay replaces the same file of an
+ * earlier one, unless ENV_FLAG_NO_OVERWRITE is passed.
+ */
+enum defaultenv_prio {
+	/* base and board specific overlays, added with defaultenv_append() */
+	DEFAULTENV_PRIO_BOARD,
+	/* the environment given with CONFIG_DEFAULT_ENVIRONMENT_PATH */
+	DEFAULTENV_PRIO_EXTERNAL,
+	/* overlays added with defaultenv_append_runtime_directory() */
+	DEFAULTENV_PRIO_RUNTIME,
+};
+
 struct defaultenv {
 	struct list_head list;
+	enum defaultenv_prio prio;
 	const char *srcdir;
 	const char *name;
 	void *buf;
 	size_t size;
 };
+
+static void defaultenv_add(struct defaultenv *df)
+{
+	struct defaultenv *pos;
+
+	/*
+	 * Insert behind all entries of the same priority. list_add_sort()
+	 * would insert in front of them and thus reverse the order in which
+	 * overlays of the same priority were added.
+	 */
+	list_for_each_entry(pos, &defaultenv_list, list) {
+		if (pos->prio > df->prio) {
+			list_add_tail(&df->list, &pos->list);
+			return;
+		}
+	}
+
+	list_add_tail(&df->list, &defaultenv_list);
+}
+
+static void __defaultenv_append(void *buf, unsigned int size, const char *name,
+				enum defaultenv_prio prio)
+{
+	struct defaultenv *df;
+
+	df = xzalloc(sizeof(*df));
+	df->buf = buf;
+	df->size = size;
+	df->name = name;
+	df->prio = prio;
+
+	defaultenv_add(df);
+}
 
 /*
  * defaultenv_append - append a envfs buffer to the default environment
@@ -39,20 +88,24 @@ struct defaultenv {
  * @size:	The length of the buffer
  *
  * This adds an overlay to the default environment. New files will be created,
- * existing files will be overwritten with the overlay.
+ * existing files will be overwritten with the overlay. The environment given
+ * with CONFIG_DEFAULT_ENVIRONMENT_PATH is applied after all overlays added
+ * with this function and can thus overwrite their files.
  */
 void defaultenv_append(void *buf, unsigned int size, const char *name)
 {
-	struct defaultenv *df;
-
-	df = xzalloc(sizeof(*df));
-	df->buf = buf;
-	df->size = size;
-	df->name = name;
-
-	list_add_tail(&df->list, &defaultenv_list);
+	__defaultenv_append(buf, size, name, DEFAULTENV_PRIO_BOARD);
 }
 
+/*
+ * defaultenv_append_runtime_directory - append a directory to the default
+ *                                       environment
+ * @srcdir:	The directory whose contents should be added
+ *
+ * This adds an overlay that is copied from @srcdir when the default environment
+ * is loaded. It is applied after the environment given with
+ * CONFIG_DEFAULT_ENVIRONMENT_PATH and can thus overwrite its files.
+ */
 void defaultenv_append_runtime_directory(const char *srcdir)
 {
 	struct defaultenv *df;
@@ -60,8 +113,9 @@ void defaultenv_append_runtime_directory(const char *srcdir)
 	df = xzalloc(sizeof(*df));
 	df->srcdir = srcdir;
 	df->name = srcdir;
+	df->prio = DEFAULTENV_PRIO_RUNTIME;
 
-	list_add_tail(&df->list, &defaultenv_list);
+	defaultenv_add(df);
 }
 
 static int defaultenv_load_one(struct defaultenv *df, const char *dir,
@@ -158,10 +212,12 @@ static int defaultenv_init(void)
 
 	/*
 	 * The traditional or external environment given with
-	 * CONFIG_DEFAULT_ENVIRONMENT_PATH.
+	 * CONFIG_DEFAULT_ENVIRONMENT_PATH. It is added here already, but
+	 * still applied after the board specific overlays added later on.
 	 */
-	defaultenv_append((void *)default_environment,
-			default_environment_size, "defaultenv");
+	__defaultenv_append((void *)default_environment,
+			    default_environment_size, "defaultenv",
+			    DEFAULTENV_PRIO_EXTERNAL);
 
 	return 0;
 }

@@ -20,3 +20,18 @@ points at a FIT.
 Existing users, if any, will fail-secure: The command will now exit with a failure::
 
   bootm: invalid option -- s
+
+Default environment overlay order
+---------------------------------
+
+Releases since v2026.01.0 applied board specific default environment overlays
+added with ``defaultenv_append_directory()`` after the environment given
+with ``CONFIG_DEFAULT_ENVIRONMENT_PATH`` and thus overwrote its files.
+
+The documented order has been restored: ``CONFIG_DEFAULT_ENVIRONMENT_PATH``
+is applied after the board specific overlays again and can overwrite their
+files. Overlays only available at runtime, like an environment passed via
+QEMU fw_cfg, are still applied last.
+
+BSPs that started to rely on the board specific overlay taking precedence
+need to remove the conflicting files from their external environment.

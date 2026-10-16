@@ -34,6 +34,11 @@ board specific overlay, or overlays, could be at any path, but usually follows
 the form given.  They must be added to a Makefile in ``bbenv-y`` and
 ``defaultenv_append_directory()`` used to add them in board init code.
 
+Overlays that are only available at runtime, like an environment passed
+via QEMU fw_cfg as ``opt/org.barebox.env``, are applied after all of the
+above and can thus also overwrite files from
+``$(CONFIG_DEFAULT_ENVIRONMENT_PATH)``.
+
 Note that not all of the above directories will necessarily be
 included in your default environment, it depends on your barebox
 configuration settings. You can see the configuration variables

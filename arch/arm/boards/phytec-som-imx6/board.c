@@ -99,6 +99,19 @@ static int ksz8081_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
+static int ksz9131_phy_fixup(struct phy_device *phydev)
+{
+	/*
+	 * The KSZ9131 needs the 2 ns RXC delay of its internal DLL, but with
+	 * the "rgmii" phy-mode shared with the KSZ9031 and ADIN1300 the driver
+	 * disables it. Switch the KSZ9131 to RGMII-RXID before its
+	 * config_init runs, the pad skews are set from the device tree.
+	 */
+	phydev->interface = PHY_INTERFACE_MODE_RGMII_RXID;
+
+	return 0;
+}
+
 static int phycore_da9062_setup_buck_mode(void)
 {
 	struct i2c_adapter *adapter = NULL;
@@ -215,6 +228,9 @@ static int physom_imx6_probe(struct device *dev)
 	} else {
 		return -EINVAL;
 	}
+
+	phy_register_fixup_for_uid(PHY_ID_KSZ9131, MICREL_PHY_ID_MASK,
+			ksz9131_phy_fixup);
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:

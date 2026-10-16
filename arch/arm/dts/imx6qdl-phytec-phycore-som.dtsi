@@ -38,6 +38,24 @@
 
 /delete-node/ &{/memory@10000000};
 
+&ethphy {
+	/*
+	 * Pad skews for the KSZ9131, which can be populated instead of the
+	 * KSZ9031. Only the KSZ9131 driver evaluates the *-psec properties.
+	 */
+	txen-skew-psec = <(-600)>;
+	txc-skew-psec = <2400>;
+	txd0-skew-psec = <(-600)>;
+	txd1-skew-psec = <(-600)>;
+	txd2-skew-psec = <(-600)>;
+	txd3-skew-psec = <(-600)>;
+	rxdv-skew-psec = <800>;
+	rxd0-skew-psec = <800>;
+	rxd1-skew-psec = <800>;
+	rxd2-skew-psec = <800>;
+	rxd3-skew-psec = <800>;
+};
+
 &fec {
 	/delete-property/ phy-supply;
 	phy-reset-duration = <10>; /* in msecs */

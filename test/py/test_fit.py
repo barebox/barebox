@@ -42,8 +42,8 @@ def fit_testdata(barebox_config, testfs):
         mkcpio("LICENSES/exceptions/", outdir / "ramdisk2.cpio")
         mkcpio("LICENSES/preferred/", outdir / "ramdisk3.cpio.gz")
 
-        run(["mkimage", "-G", "test/self/development_rsa2048.pem", "-r", "-f",
-             str(builddir / its_name), str(outfile)])
+        run(["mkimage", "-G", "crypto/snakeoil-4096-development.pem",
+             "-r", "-f", str(builddir / its_name), str(outfile)])
     except FileNotFoundError as e:
         pytest.skip(f"Skip dm tests due to missing dependency: {e}")
 

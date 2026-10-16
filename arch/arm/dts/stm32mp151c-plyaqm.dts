@@ -2,11 +2,8 @@
 /dts-v1/;
 
 #include "stm32mp151c-plyaqm.dtsi"
-#include "stm32mp151.dtsi"
 
 / {
-	barebox,deep-probe;
-
 	aliases {
 		state = &state_emmc;
 	};

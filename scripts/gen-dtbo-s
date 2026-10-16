@@ -2,8 +2,10 @@
 
 name=$1
 dtbo=$2
+live=$3
 
 echo "#include <asm/barebox.lds.h>"
+echo "#include <asm-generic/pointer.h>"
 echo ".section .note.GNU-stack,\"\",%progbits"
 
 echo ".section .dtb.rodata.${name}_dtbo,\"a\""
@@ -13,3 +15,9 @@ echo "__dtbo_${name}_start:"
 echo ".incbin \"$dtbo\""
 echo "__dtbo_${name}_end:"
 echo ".global __dtbo_${name}_end"
+
+if [ "$live" = "y" ]; then
+	echo ".section .barebox_of_overlay.${name},\"a\""
+	echo ".balign ASM_SZPTR"
+	echo "ASM_PTR __dtbo_${name}_start"
+fi

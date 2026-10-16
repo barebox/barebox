@@ -100,6 +100,13 @@ config OF_OVERLAY
 	  the devicetree. Furthermore, overlays cannot be removed after they
 	  have been applied.
 
+config OF_OVERLAY_BUILTIN
+	bool
+	select OF_OVERLAY
+	help
+	  Link the overlays listed in overlay-y into barebox and apply them to
+	  the device tree it is started with. Selected by boards using them.
+
 config OF_OVERLAY_LIVE
 	depends on OF_OVERLAY
 	bool "Support devicetree overlays on live devicetree"

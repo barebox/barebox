@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Print the node path behind every label of a dtc -@ device tree, as a header.
+
+set -e -o pipefail
+
+export LC_ALL=C
+
+fdtget=$1
+dtb=$2
+name=$(basename "$dtb" .dtb)
+guard=__${name//[^a-zA-Z0-9]/_}_PATHS_H
+
+labels=$("$fdtget" -p "$dtb" /__symbols__)
+
+args=()
+for label in $labels; do
+	args+=(/__symbols__ "$label")
+done
+
+cat <<-EOF
+	/* SPDX-License-Identifier: GPL-2.0-only */
+	/* Generated from $dtb by $(basename "$0"). Do not edit. */
+	#ifndef $guard
+	#define $guard
+
+	/*
+	 * BASE_NODE(label)/BASE_SUBNODE(label, name): base tree node by label,
+	 * BASE_PATH()/BASE_SUBPATH(): the same as a path string.
+	 */
+	#ifndef BASE_NODE
+	#define __BASE_STR1(path...)		#path
+	#define __BASE_STR(path...)		__BASE_STR1(path)
+	#define BASE_NODE(label)		&{__BASE_PATH_##label}
+	#define BASE_SUBNODE(label, name)	&{__BASE_PATH_##label/name}
+	#define BASE_PATH(label)		__BASE_STR(__BASE_PATH_##label)
+	#define BASE_SUBPATH(label, name)	__BASE_STR(__BASE_PATH_##label/name)
+	#endif
+
+EOF
+
+"$fdtget" -t s "$dtb" "${args[@]}" |
+	paste -d '\t' <(printf '%s\n' $labels) - |
+	while IFS=$'\t' read -r label path; do
+		printf '#define __BASE_PATH_%s\t%s\n' "$label" "$path"
+	done | sort
+
+echo
+echo "#endif"

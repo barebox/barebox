@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
-#include "stm32mp157c-lxa-mc1.dts"
+#include <arm/st/stm32mp157c-lxa-mc1.dts>
 #include "stm32mp1-scmi-smc.dtsi"
 
 / {
 	model = "Linux Automation MC-1 SCMI board";
 	compatible = "lxa,stm32mp157c-mc1-scmi", "lxa,stm32mp157c-mc1",
 			   "oct,stm32mp15xx-osd32", "st,stm32mp157";
-	barebox,deep-probe;
-
 };
 
 &cpu0 {

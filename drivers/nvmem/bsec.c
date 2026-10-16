@@ -10,7 +10,6 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <init.h>
-#include <net.h>
 #include <io.h>
 #include <of.h>
 #include <linux/regmap.h>
@@ -59,8 +58,14 @@ static int bsec_smc(enum bsec_op op, u32 field,
 	return -ENXIO;
 }
 
-static int stm32_bsec_read_shadow(void *ctx, unsigned reg, unsigned *val)
+static int stm32_bsec_reg_read(void *ctx, unsigned reg, unsigned *val)
 {
+	struct bsec_priv *priv = ctx;
+
+	/* TF-A since v2.4 leaves the upper shadow registers zero */
+	if (reg >= priv->lower * 4)
+		return bsec_smc(BSEC_SMC_READ_OTP, reg, 0, val);
+
 	return bsec_smc(BSEC_SMC_READ_SHADOW, reg, 0, val);
 }
 
@@ -70,8 +75,16 @@ static int stm32_bsec_reg_write(void *ctx, unsigned reg, unsigned val)
 
 	if (priv->permanent_write_enable)
 		return bsec_smc(BSEC_SMC_PROG_OTP, reg, val, NULL);
-	else
-		return bsec_smc(BSEC_SMC_WRITE_SHADOW, reg, val, NULL);
+
+	/* An upper shadow write is not what stm32_bsec_reg_read() reads back */
+	if (reg >= priv->lower * 4) {
+		dev_warn(&priv->dev,
+			 "OTP word %u is upper, writing it needs permanent_write_enable\n",
+			 reg / 4);
+		return -EACCES;
+	}
+
+	return bsec_smc(BSEC_SMC_WRITE_SHADOW, reg, val, NULL);
 }
 
 static int stm32_bsec_do_reg_seal_otp(void *ctx, unsigned int reg,
@@ -102,7 +115,7 @@ static int stm32_bsec_do_reg_seal_otp(void *ctx, unsigned int reg,
 
 static struct regmap_bus stm32_bsec_regmap_bus = {
 	.reg_write = stm32_bsec_reg_write,
-	.reg_read = stm32_bsec_read_shadow,
+	.reg_read = stm32_bsec_reg_read,
 	.reg_seal = stm32_bsec_do_reg_seal_otp,
 };
 
@@ -120,62 +133,6 @@ static void stm32_bsec_set_unique_machine_id(struct regmap *map)
 	uidstr = xasprintf("%08X%08X%08X", unique_id[0], unique_id[1], unique_id[2]);
 	barebox_set_soc_uid(uidstr, unique_id, sizeof(unique_id));
 	free(uidstr);
-}
-
-static int stm32_bsec_read_mac(struct bsec_priv *priv, int offset, u8 *mac)
-{
-	u32 val[2];
-	int ret;
-
-	if (priv->ctx) {
-		ret = stm32_bsec_optee_ta_read(priv->ctx, offset * 4, val, sizeof(val));
-	} else {
-		/* Some TF-A does not copy all of OTP into shadow registers, so make
-		 * sure we read the _real_ OTP bits here.
-		 */
-		ret = bsec_smc(BSEC_SMC_READ_OTP, offset * 4, 0, &val[0]);
-		if (!ret)
-			ret = bsec_smc(BSEC_SMC_READ_OTP, offset * 4 + 4, 0, &val[1]);
-	}
-
-	if (ret)
-		return ret;
-
-	memcpy(mac, val, ETH_ALEN);
-	return 0;
-}
-
-static void stm32_bsec_init_dt(struct bsec_priv *priv, struct device *dev,
-			       struct regmap *map)
-{
-	struct device_node *node = dev->of_node;
-	struct device_node *rnode;
-	u32 phandle, offset;
-	char mac[ETH_ALEN];
-	const __be32 *prop;
-
-	int len;
-	int ret;
-
-	prop = of_get_property(node, "barebox,provide-mac-address", &len);
-	if (!prop)
-		return;
-
-	if (len != 2 * sizeof(__be32))
-		return;
-
-	phandle = be32_to_cpup(prop++);
-
-	rnode = of_find_node_by_phandle(phandle);
-	offset = be32_to_cpup(prop++);
-
-	ret = stm32_bsec_read_mac(priv, offset, mac);
-	if (ret) {
-		dev_warn(dev, "error setting MAC address: %pe\n", ERR_PTR(ret));
-		return;
-	}
-
-	of_eth_register_ethaddr(rnode, mac);
 }
 
 static int stm32_bsec_pta_read(void *context, unsigned int offset, unsigned int *val)
@@ -282,8 +239,6 @@ static int stm32_bsec_probe(struct device *dev)
 		return PTR_ERR(nvmem);
 
 	stm32_bsec_set_unique_machine_id(map);
-
-	stm32_bsec_init_dt(priv, dev, map);
 
 	dev_dbg(dev, "using %s API\n", priv->ctx ? "OP-TEE" : "SiP");
 

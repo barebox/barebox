@@ -333,6 +333,7 @@ static int fit_config_build_hash_nodes(struct fit_handle *handle,
 	for_each_property_of_node(conf_node, prop) {
 		if (!strcmp(prop->name, "description") ||
 		    !strcmp(prop->name, "compatible") ||
+		    !strcmp(prop->name, "cmdline") ||
 		    !strcmp(prop->name, "default"))
 			continue;
 
@@ -748,7 +749,6 @@ static int fit_handle_decompression(struct device_node *image,
 				    int *data_len)
 {
 	const char *compression;
-	struct property *pp;
 	void *uc_data;
 	int ret;
 
@@ -768,21 +768,18 @@ static int fit_handle_decompression(struct device_node *image,
 		return -ENOSYS;
 	}
 
-	pp = of_find_property(image, "$uncompressed-data", NULL);
-	if (!pp) {
-		ret = uncompress_buf_to_buf(*data, *data_len, &uc_data,
-					    fit_uncompress_error_fn);
-		if (ret < 0) {
-			pr_err("%s data couldn't be decompressed\n", compression);
-			return ret;
-		}
-
-		/* associate buffer with FIT, so it's not leaked */
-		pp = __of_new_property(image, "$uncompressed-data", uc_data, ret);
+	ret = uncompress_buf_to_buf(*data, *data_len, &uc_data,
+				    fit_uncompress_error_fn);
+	if (ret < 0) {
+		pr_err("%s data couldn't be decompressed\n", compression);
+		return ret;
 	}
 
-	*data = of_property_get_value(pp);
-	*data_len = pp->length;
+	*data = uc_data;
+	*data_len = ret;
+
+	/* associate buffer with FIT, so it's not leaked */
+	__of_new_property(image, "$uncompressed-data", uc_data, *data_len);
 
 	return 0;
 }
@@ -948,11 +945,18 @@ static int fit_find_compatible_unit(struct fit_handle *handle,
 				    bool (*config_node_valid)(struct fit_handle *handle,
 							      struct device_node *config))
 {
-	struct device_node *child = NULL;
+	struct device_node *child = NULL, *dflt = NULL, *best = NULL;
 	struct device_node *barebox_root;
 	int best_score = 0;
-	const char *machine;
+	const char *machine, *dfltname = NULL;
+	bool dflt_pending = false;
 	int ret;
+
+	if (!of_property_read_string(conf_node, "default", &dfltname)) {
+		dflt = fit_get_child_by_name_exact(conf_node, dfltname);
+		if (dflt)
+			dflt_pending = true;
+	}
 
 	barebox_root = of_get_root_node();
 	if (!barebox_root)
@@ -965,6 +969,9 @@ static int fit_find_compatible_unit(struct fit_handle *handle,
 	for_each_child_of_node(conf_node, child) {
 		int score;
 
+		if (child == dflt)
+			dflt_pending = false;
+
 		if (config_node_valid && !config_node_valid(handle, child))
 			continue;
 
@@ -973,26 +980,42 @@ static int fit_find_compatible_unit(struct fit_handle *handle,
 		if (!score)
 			score = fit_fdt_is_compatible(handle, child, machine);
 
-		if (score > best_score) {
-			best_score = score;
-			*unit = child->name;
+		if (!score)
+			continue;
 
-			if (score == OF_DEVICE_COMPATIBLE_MAX_SCORE)
-				break;
+		/*
+		 * A FIT may carry one base devicetree plus a number of
+		 * overlay combinations with multiple configurations matching the
+		 * board equally well. Allow the image author to influences who
+		 * wins ties by means of the default property.
+		 */
+		if (score > best_score || (score == best_score && child == dflt)) {
+			best_score = score;
+			best = child;
 		}
+
+		/* Nothing left to walk into that could do better */
+		if (best_score == OF_DEVICE_COMPATIBLE_MAX_SCORE && !dflt_pending)
+			break;
 	}
 
-	if (best_score) {
+	if (best) {
+		*unit = best->name;
 		pr_info("matching unit '%s' found\n", *unit);
 		return 0;
 	}
 
 default_unit:
 	pr_info("No match found. Trying default.\n");
-	if (of_property_read_string(conf_node, "default", unit) == 0)
-		return 0;
+	if (!dflt) {
+		if (dfltname)
+			pr_err("default configuration '%s' not found\n", dfltname);
+		return -ENOENT;
+	}
 
-	return -ENOENT;
+	*unit = dflt->name;
+
+	return 0;
 }
 
 static int fit_find_last_unit(struct fit_handle *handle,

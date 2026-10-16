@@ -22,19 +22,6 @@
 #include <security/config.h>
 #include <security/policy.h>
 
-/*
- * All device parameter iteration happens in lexicographical order.
- * To ensure that bootm options are consistently applied before or after
- * other options from the environment or boot configuration files, we
- * employ following convention for the prefix:
- *
- *   !		0x21 is less than any non-space printable character
- *   ~		0x7e is greater than any printable character
- *
- * Users will never see those as bootm_boot_cleanup() will delete them again.
- */
-#define LINUX_BOOTARGS_BOOTM_LATE	"linux.bootargs.~bootm."
-
 static LIST_HEAD(handler_list);
 static struct sconfig_notifier_block sconfig_notifier;
 
@@ -803,6 +790,7 @@ void bootm_boot_cleanup(struct image_data *data)
 	if (data->of_root_node)
 		of_delete_node(data->of_root_node);
 
+	globalvar_remove(LINUX_BOOTARGS_BOOTM_EARLY "*");
 	globalvar_remove(LINUX_BOOTARGS_BOOTM_LATE  "*");
 	free(data->os_header);
 	free(data->os_file);

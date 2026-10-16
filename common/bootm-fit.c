@@ -3,6 +3,7 @@
 #include <bootm.h>
 #include <image-fit.h>
 #include <bootm-fit.h>
+#include <globalvar.h>
 #include <memory.h>
 #include <string.h>
 #include <zero_page.h>
@@ -97,6 +98,21 @@ static bool bootm_fit_config_valid(struct fit_handle *fit,
 	return !!fit_has_image(fit, config, "kernel");
 }
 
+static void bootm_fit_config_cmdline(struct device_node *config)
+{
+	const char *cmdline;
+
+	if (!IS_ENABLED(CONFIG_FLEXIBLE_BOOTARGS))
+		return;
+
+	if (of_property_read_string(config, "cmdline", &cmdline))
+		return;
+
+	globalvar_add_simple(LINUX_BOOTARGS_BOOTM_EARLY "fit", cmdline);
+
+	pr_info("Using command line from FIT configuration: %s\n", cmdline);
+}
+
 static enum filetype bootm_fit_update_os_header(struct image_data *data)
 {
 	size_t size;
@@ -146,6 +162,8 @@ int bootm_open_fit(struct image_data *data, bool override)
 		goto err;
 	}
 
+	bootm_fit_config_cmdline(fit_config);
+
 	loadable_from_fit_os(data, fit, fit_config);
 	if (override)
 		data->is_override.os = true;
@@ -194,23 +212,38 @@ struct fit_loadable_priv {
 	struct device_node *config;
 	const char *image_name;
 	int index;
+	const void *data;
+	unsigned long size;
 };
+
+/*
+ * fit_loadable_open() - verify and decompress the image on first use
+ * @priv: FIT loadable private data
+ *
+ * The result is cached, so hashing and decompression happen only once.
+ * The data is owned by the FIT handle, which we hold a reference to.
+ */
+static int fit_loadable_open(struct fit_loadable_priv *priv)
+{
+	if (priv->data)
+		return 0;
+
+	return fit_open_image(priv->fit, priv->config, priv->image_name,
+			      priv->index, &priv->data, &priv->size);
+}
 
 static int fit_loadable_get_info(struct loadable *l, struct loadable_info *info)
 {
 	struct fit_loadable_priv *priv = l->priv;
-	const void *data;
-	unsigned long size;
 	int ret;
 
 	/* Open image to get size */
-	ret = fit_open_image(priv->fit, priv->config, priv->image_name,
-			     priv->index, &data, &size);
+	ret = fit_loadable_open(priv);
 	if (ret)
 		return ret;
 
 	/* TODO: This will trigger an uncompression currently.. */
-	info->final_size = size;
+	info->final_size = priv->size;
 
 	return 0;
 }
@@ -218,17 +251,14 @@ static int fit_loadable_get_info(struct loadable *l, struct loadable_info *info)
 static const void *fit_loadable_mmap(struct loadable *l, size_t *size)
 {
 	struct fit_loadable_priv *priv = l->priv;
-	const void *data;
-	unsigned long image_size;
 	int ret;
 
-	ret = fit_open_image(priv->fit, priv->config, priv->image_name,
-			     priv->index, &data, &image_size);
+	ret = fit_loadable_open(priv);
 	if (ret)
 		return MAP_FAILED;
 
-	*size = image_size;
-	return data;
+	*size = priv->size;
+	return priv->data;
 }
 
 /**
@@ -264,10 +294,12 @@ static ssize_t fit_loadable_extract_into_buf(struct loadable *l, void *load_addr
 	/* TODO: optimize, so it decompresses directly to load address */
 
 	/* Open image to get data */
-	ret = fit_open_image(priv->fit, priv->config, priv->image_name,
-			     priv->index, &data, &size);
+	ret = fit_loadable_open(priv);
 	if (ret)
 		return ret;
+
+	data = priv->data;
+	size = priv->size;
 
 	/* Check if buffer is large enough */
 	if (offset > size)

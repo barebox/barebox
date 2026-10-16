@@ -16,6 +16,8 @@ fuzzer-$(CONFIG_EFI_PE_PARSER)	+= pe
 fuzzer-$(CONFIG_TLV)		+= tlv
 fuzzer-$(CONFIG_FS_FAT)		+= fat
 fuzzer-$(CONFIG_STATE)		+= state-direct
+fuzzer-$(CONFIG_DM_LVM)		+= lvm
+fuzzer-$(CONFIG_DM_LVM)		+= lvm-md
 
 ifeq ($(CONFIG_SANDBOX),y)
 

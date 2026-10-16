@@ -84,8 +84,7 @@ static int clk_gpio_mux_set_parent(struct clk_hw *hw, u8 index)
 static const struct clk_ops clk_gpio_mux_ops = {
 	.get_parent = clk_gpio_mux_get_parent,
 	.set_parent = clk_gpio_mux_set_parent,
-	.set_rate = clk_parent_set_rate,
-	.round_rate = clk_parent_round_rate,
+	.determine_rate = __clk_mux_determine_rate,
 };
 
 static struct clk_hw *clk_register_gpio(struct device *dev, u8 num_parents,

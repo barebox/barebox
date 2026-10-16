@@ -13,9 +13,12 @@ devices are not disconnected while barebox is running.
 USB Networking
 ^^^^^^^^^^^^^^
 
-barebox supports r8152, ASIX-compatible devices and the SMSC95xx. After
-detection, the device shows up as an extra network device (e.g. eth1) and
-can be used like a regular network device.
+barebox supports r8152, ASIX-compatible devices, the SMSC95xx and CDC EEM
+devices.
+After detection, the device shows up as an extra network device
+(e.g. eth1) and can be used like a regular network device.
+
+For CDC EEM host support, see :ref:`cdc_eem_host`.
 
 To use a USB network device together with the :ref:`command_ifup` command, add the
 following to ``/env/network/eth0-discover``:
@@ -42,6 +45,7 @@ barebox supports several different USB gadget drivers:
 
 - Device Firmware Upgrade (DFU)
 - Android Fastboot
+- CDC EEM (Ethernet Emulation Model)
 - USB mass storage
 - serial gadget
 
@@ -246,6 +250,187 @@ Example exporting barebox block devices to a USB host:
   usbgadget -S /dev/mmc0(emmc),/dev/mmc1(sd)
 
 
+.. _cdc_eem:
+
+CDC EEM (Ethernet Emulation Model)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CDC EEM is a lightweight USB Ethernet protocol defined in the USB CDC EEM
+specification (`CDC_EEM10.pdf <https://usb.org/sites/default/files/CDC_EEM10.pdf>`_).
+Unlike CDC ECM or RNDIS, EEM requires only bulk endpoints and no separate
+control interface, making it simpler to implement and more efficient for
+embedded use cases.
+
+barebox supports EEM both as a USB gadget (device mode) and as a USB host
+driver.
+
+EEM gadget
+""""""""""
+
+The EEM gadget creates a network interface on the barebox device, allowing
+Ethernet communication with a connected USB host. This is useful for
+network boot, firmware updates, or any scenario requiring network access
+during early boot.
+
+To start an EEM gadget:
+
+.. code-block:: sh
+
+  usbgadget -e
+
+This creates a network interface (e.g. ``eth0``) on the barebox side. The
+gadget can be combined with other USB functions, for example with a serial
+console:
+
+.. code-block:: sh
+
+  usbgadget -e -a
+
+Once the gadget is running and a host is connected, configure the IP addresses
+on both sides and use the link like a regular network interface:
+
+.. code-block:: sh
+
+  eth0.mode=static
+  eth0.ipaddr=172.20.0.2
+  eth0.netmask=255.255.255.0
+  eth0.serverip=172.20.0.1
+  ifup eth0
+  ping 172.20.0.1
+
+On a Linux host, the device will appear as a ``usb0`` (or similar) network
+interface after loading the ``cdc_eem`` kernel module.
+
+The EEM network interface defaults its ``linux.devname`` device parameter to
+``usb0``, the name Linux gives the network interface of its own USB Ethernet
+gadget, so the ``ip=`` kernel command line constructed by barebox names the
+right device when the booted kernel brings up an EEM gadget itself (see
+NFS root over EEM below).
+
+.. _cdc_eem_host:
+
+EEM host
+""""""""
+
+barebox can also act as a USB host for EEM devices. This is useful when
+barebox runs on a system with a USB host port with a USB Ethernet adapter
+(or a barebox/Linux system) that implements an EEM gadget.
+
+To use, enable ``CONFIG_NET_USB_CDC_EEM`` and probe the USB bus:
+
+.. code-block:: sh
+
+  usb
+
+Any connected EEM device will appear as a network interface (e.g. ``eth1``)
+and can be used like any other network device. This can be combined with the
+:ref:`command_ifup` command by adding a ``usb`` call to
+``/env/network/eth0-discover`` (see `USB Networking`_ above).
+
+.. _cdc_eem_linux_host:
+
+Linux host setup for EEM
+""""""""""""""""""""""""
+
+When barebox runs an EEM gadget, the connected Linux host needs to be
+configured to communicate over the USB link. The Linux kernel's ``cdc_eem``
+driver (``CONFIG_USB_NET_CDC_EEM``) is included in most distribution kernels
+and loads automatically when the gadget is connected. See
+``Documentation/usb/gadget-testing.rst`` in the Linux kernel source for
+general USB gadget Ethernet testing information.
+
+The interface is typically named ``usb0``. On systems with predictable
+network interface names (systemd v197+), it may be renamed based on the MAC
+address (e.g. ``enx1a5589a26942``). Check ``ip link`` or ``dmesg`` output to
+find the actual name. EEM carries no MAC address, so the host picks a random
+one each time the gadget connects.
+
+**Quick static setup** for development use:
+
+.. code-block:: sh
+
+  # On the Linux host:
+  sudo ip link set usb0 up
+  sudo ip addr add 172.20.0.1/24 dev usb0
+
+  # In barebox:
+  usbgadget -e
+  eth0.mode=static
+  eth0.ipaddr=172.20.0.2
+  eth0.netmask=255.255.255.0
+  ifup eth0
+  ping 172.20.0.1
+
+With NetworkManager, a connection profile matched by driver instead of
+interface name or MAC address configures the host side whenever the gadget
+appears:
+
+.. code-block:: sh
+
+  nmcli connection add type ethernet con-name barebox-eem match.driver cdc_eem \
+    ipv4.method manual ipv4.addresses 172.20.0.1/24
+
+**DHCP with dnsmasq** -- useful when Linux will be booted with ``ip=dhcp``
+on the kernel command line (see also
+:ref:`dnsmasq_dhcp_tftp`):
+
+.. code-block:: sh
+
+  sudo ip addr add 172.20.0.1/24 dev usb0
+  sudo ip link set usb0 up
+  dnsmasq --port=0 --interface=usb0 --bind-interfaces --no-daemon \
+    --log-queries --dhcp-range=172.20.0.10,172.20.0.50 \
+    --dhcp-leasefile=/tmp/dnsmasq-usb0.leases --pid-file=/tmp/dnsmasq-usb0.pid
+
+**Internet sharing via NAT** -- allows barebox or a Linux kernel booted via
+barebox to reach the internet through the host:
+
+.. code-block:: sh
+
+  sudo sysctl -w net.ipv4.ip_forward=1
+  sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+  sudo iptables -A FORWARD -i usb0 -o eth0 -j ACCEPT
+  sudo iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+Replace ``eth0`` with the host's internet-facing interface.
+
+**NFS root over EEM** -- the embedded device boots Linux and mounts its root
+filesystem from the host. On the host, export the root filesystem:
+
+.. code-block:: sh
+
+  # /etc/exports
+  /srv/nfs/rootfs 172.20.0.0/24(rw,no_root_squash,no_subtree_check)
+
+  sudo exportfs -ra
+  sudo systemctl restart nfs-server
+
+The USB link goes down while barebox hands over to Linux, so the kernel has
+to bring up an EEM gadget of its own before it mounts the root filesystem,
+e.g. with the legacy Ethernet gadget built in (``CONFIG_USB_ETH=y`` and
+``CONFIG_USB_ETH_EEM=y``), which Linux names ``usb0``.
+
+barebox constructs the kernel ``ip=`` parameter automatically, including
+``usb0`` as the device name (see
+``Documentation/admin-guide/nfs/nfsroot.rst`` in the Linux kernel source for
+the full ``ip=`` syntax). A typical barebox boot setup:
+
+.. code-block:: sh
+
+  usbgadget -e
+  eth0.mode=static
+  eth0.ipaddr=172.20.0.2
+  eth0.netmask=255.255.255.0
+  eth0.serverip=172.20.0.1
+  ifup eth0
+
+  global linux.bootargs.nfsroot="root=/dev/nfs nfsroot=172.20.0.1:/srv/nfs/rootfs,v3,tcp"
+
+When booting Linux, barebox will append the ``ip=`` parameter with the
+configured addresses and ``usb0`` as the network device::
+
+  ip=172.20.0.2:172.20.0.1:0.0.0.0:255.255.255.0::usb0:
+
 USB Composite Multifunction Gadget
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -260,6 +445,13 @@ console. This combination can be created with:
 The ``-A`` option will create a Fastboot function providing ``/dev/mmc2.0`` as root
 partition and ``/dev/mmc2.1`` as data partition. The ``-a`` option will create a
 USB CDC ACM compliant serial device.
+
+An EEM network interface can also be part of a composite gadget, for example
+combining Fastboot with EEM for network-based workflows:
+
+.. code-block:: sh
+
+  usbgadget -A /dev/mmc2.0(root) -e
 
 Unlike the :ref:`command_dfu` command the ``usbgadget`` command returns immediately
 after creating the gadget. The gadget can be removed with ``usbgadget -d``.
@@ -321,6 +513,9 @@ USB Gadget autostart Options
 :ref:`global.usbgadget.acm <magicvar_global_usbgadget_acm>`
   Boolean flag. If set to 1, CDC ACM function will be created.
   See :ref:`command_usbgadget` -a. (Default 0).
+:ref:`global.usbgadget.eem <magicvar_global_usbgadget_eem>`
+  Boolean flag. If set to 1, CDC EEM function will be created.
+  See :ref:`command_usbgadget` -e and :ref:`cdc_eem`. (Default 0).
 :ref:`global.system.partitions <magicvar_global_system_partitions>`
   Common function description for all of DFU, fastboot and USB mass storage
   gadgets.

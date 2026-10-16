@@ -411,7 +411,7 @@ int mipi_dbi_dev_init(struct mipi_dbi_dev *dbidev, struct fb_ops *ops,
 	info->bits_per_pixel = 16;
 	info->line_length = info->xres * 2;
 	info->screen_size = info->line_length * info->yres;
-	info->screen_base = dma_zalloc(info->screen_size);
+	info->screen_base = dma_xzalloc(info->screen_size);
 
 	info->red.length = 5;
 	info->red.offset = 11;
@@ -420,7 +420,7 @@ int mipi_dbi_dev_init(struct mipi_dbi_dev *dbidev, struct fb_ops *ops,
 	info->blue.length = 5;
 	info->blue.offset = 0;
 
-	dbidev->tx_buf = dma_alloc(info->screen_size);
+	dbidev->tx_buf = dma_xalloc(info->screen_size);
 
 	return 0;
 }

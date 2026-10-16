@@ -30,4 +30,12 @@ config NET_USB_RTL8152
 	  USB Ethernet Devices. This driver also supports compatible devices
 	  from Samsung, Lenovo, TP-LINK and Nvidia.
 
+config NET_USB_CDC_EEM
+	bool "CDC EEM (Ethernet Emulation Model) support"
+	select CRC32
+	help
+	  This option adds host-side support for USB CDC EEM (Ethernet
+	  Emulation Model) devices. EEM is a simpler alternative to
+	  CDC ECM for USB Ethernet, requiring only bulk endpoints.
+
 endif

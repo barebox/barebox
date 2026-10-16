@@ -35,7 +35,7 @@ static int usb_stor_request_sense(struct us_blk_dev *usb_blkdev)
 	struct device *dev = &us->pusb_dev->dev;
 	u8 cmd[6];
 	const u8 datalen = 18;
-	u8 *data = dma_alloc(datalen);
+	u8 *data = dma_xalloc(datalen);
 
 	dev_dbg(dev, "SCSI_REQ_SENSE\n");
 
@@ -113,7 +113,7 @@ static int usb_stor_inquiry(struct us_blk_dev *usb_blkdev)
 	int ret;
 	u8 cmd[6];
 	const u16 datalen = 36;
-	u8 *data = dma_alloc(datalen);
+	u8 *data = dma_xalloc(datalen);
 
 	memset(cmd, 0, sizeof(cmd));
 	cmd[0] = SCSI_INQUIRY;
@@ -179,7 +179,7 @@ static int read_capacity_16(struct us_blk_dev *usb_blkdev)
 	struct device *dev = &usb_blkdev->us->pusb_dev->dev;
 	unsigned char cmd[16];
 	const u8 datalen = 32;
-	u8 *data = dma_alloc(datalen);
+	u8 *data = dma_xalloc(datalen);
 	int ret;
 	sector_t lba;
 	unsigned sector_size;
@@ -221,7 +221,7 @@ static int read_capacity_10(struct us_blk_dev *usb_blkdev)
 	struct device *dev = &usb_blkdev->us->pusb_dev->dev;
 	unsigned char cmd[16];
 	const u32 datalen = 8;
-	__be32 *data = dma_alloc(datalen);
+	__be32 *data = dma_xalloc(datalen);
 	int ret;
 	sector_t lba;
 	unsigned sector_size;

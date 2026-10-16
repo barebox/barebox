@@ -160,7 +160,7 @@ static int usb_kbd_probe(struct usb_device *usbdev,
 
 	data = xzalloc(sizeof(struct usb_kbd_pdata));
 	usbdev->drv_data = data;
-	data->new = dma_alloc(USB_KBD_BOOT_REPORT_SIZE);
+	data->new = dma_xalloc(USB_KBD_BOOT_REPORT_SIZE);
 
 	data->usbdev = usbdev;
 

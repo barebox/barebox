@@ -28,7 +28,7 @@
 
 static inline void *kmalloc(size_t size, gfp_t flags)
 {
-	return dma_alloc(size);
+	return dma_xalloc(size);
 }
 
 struct kmem_cache {
@@ -90,7 +90,7 @@ static inline void kmem_cache_free(struct kmem_cache *cache, void *mem)
 
 static inline void *kzalloc(size_t size, gfp_t flags)
 {
-	return dma_zalloc(size);
+	return dma_xzalloc(size);
 }
 
 /**
@@ -106,7 +106,7 @@ static inline void *kmalloc_array(size_t n, size_t size, gfp_t flags)
 
 static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
 {
-	return dma_zalloc(size_mul(n, size));
+	return dma_xzalloc(size_mul(n, size));
 }
 
 static inline char *kstrdup(const char *str, gfp_t flags)

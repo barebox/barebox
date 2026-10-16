@@ -90,8 +90,10 @@ static int clk_frac_set_rate(struct clk_hw *hw, unsigned long rate,
 	val |= div << frac->shift;
 	writel(val, frac->reg);
 
-	if (clk_hw_is_enabled(hw))
-		while (readl(frac->reg) & 1 << frac->busy);
+	if (clk_hw_is_enabled(hw)) {
+		while (readl(frac->reg) & 1 << frac->busy)
+			;
+	}
 
 	return 0;
 }

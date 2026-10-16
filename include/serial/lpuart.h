@@ -261,7 +261,8 @@ static inline void lpuart_putc(void __iomem *base, int c)
 	if (!(readb(base + UARTCR2) & UARTCR2_TE))
 		return;
 
-	while (!(readb(base + UARTSR1) & UARTSR1_TDRE));
+	while (!(readb(base + UARTSR1) & UARTSR1_TDRE))
+		;
 
 	writeb(c, base + UARTDR);
 }

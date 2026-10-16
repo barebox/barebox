@@ -473,7 +473,8 @@ static int dram_frac_pll_init(enum ddr_rate drate)
 	writel(tmp, pll_base);
 
 	/* Wait Lock*/
-	while (!(readl(pll_base) & LOCK_STATUS));
+	while (!(readl(pll_base) & LOCK_STATUS))
+		;
 
 	/* Bypass */
 	tmp &= ~BYPASS_MASK;

@@ -74,12 +74,11 @@ int envfs_check_data(struct envfs_super *super, const void *buf, size_t size)
 	return 0;
 }
 
-int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
-		const char *dir, unsigned flags)
+static int envfs_load_data_pass(struct envfs_super *super, void *buf, size_t size,
+		const char *dir, unsigned int flags, bool dryrun)
 {
 	int fd, ret = 0;
 	char *str, *tmp;
-	int headerlen_full;
 	/* for envfs < 1.0 */
 	struct envfs_inode_end inode_end_dummy;
 	struct stat s;
@@ -90,10 +89,14 @@ int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
 	while (size) {
 		struct envfs_inode *inode;
 		struct envfs_inode_end *inode_end;
-		uint32_t inode_size, inode_headerlen, namelen;
+		size_t inode_size, inode_headerlen, namelen, headerlen_full;
+
+		if (size < sizeof(*inode))
+			goto invalid;
 
 		inode = buf;
 		buf += sizeof(struct envfs_inode);
+		size -= sizeof(struct envfs_inode);
 
 		if (ENVFS_32(inode->magic) != ENVFS_INODE_MAGIC) {
 			pr_warn("wrong magic\n");
@@ -102,25 +105,48 @@ int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
 		}
 		inode_size = ENVFS_32(inode->size);
 		inode_headerlen = ENVFS_32(inode->headerlen);
-		namelen = strlen(inode->data) + 1;
+
+		/* Bound the lengths before padding to avoid overflow on 32-bit. */
+		if (inode_headerlen > (size & ~(size_t)3))
+			goto invalid;
+		headerlen_full = PAD4(inode_headerlen);
+		if (inode_size > ((size - headerlen_full) & ~(size_t)3))
+			goto invalid;
+
+		namelen = strnlen(inode->data, inode_headerlen);
+		if (namelen == inode_headerlen)
+			goto invalid;
+		namelen++;
+
 		if (super->major < 1)
 			inode_end = &inode_end_dummy;
-		else
+		else {
+			if (PAD4(namelen) > inode_headerlen ||
+			    inode_headerlen - PAD4(namelen) < sizeof(*inode_end))
+				goto invalid;
 			inode_end = buf + PAD4(namelen);
+		}
 
-		debug("loading %s size %d namelen %d headerlen %d\n", inode->data,
-			inode_size, namelen, inode_headerlen);
-
-		str = concat_path_file(dir, inode->data);
-
-		headerlen_full = PAD4(inode_headerlen);
 		buf += headerlen_full;
+		size -= headerlen_full;
 
 		if (ENVFS_32(inode_end->magic) != ENVFS_INODE_END_MAGIC) {
 			printf("envfs: wrong inode_end_magic\n");
 			ret = -EIO;
 			goto out;
 		}
+
+		if (S_ISLNK(ENVFS_32(inode_end->mode)) &&
+		    !memchr(buf, '\0', inode_size))
+			goto invalid;
+
+		if (dryrun)
+			goto skip;
+
+		debug("loading %s size %zu namelen %zu headerlen %zu\n", inode->data,
+			inode_size, namelen, inode_headerlen);
+
+		str = concat_path_file(dir, inode->data);
 
 		tmp = strdup(str);
 		make_directory(dirname(tmp));
@@ -166,9 +192,11 @@ int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
 		}
 skip:
 		buf += PAD4(inode_size);
-		size -= headerlen_full + PAD4(inode_size) +
-				sizeof(struct envfs_inode);
+		size -= PAD4(inode_size);
 	}
+
+	if (dryrun)
+		return 0;
 
 	recursive_action(dir, ACTION_RECURSE | ACTION_DEPTHFIRST, NULL,
 			dir_remove_action, NULL, 0);
@@ -176,6 +204,22 @@ skip:
 	ret = 0;
 out:
 	return ret;
+invalid:
+	pr_warn("malformed inode\n");
+	return -EINVAL;
+}
+
+int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
+		const char *dir, unsigned int flags)
+{
+	int ret;
+
+	/* Validate the entire image before making any filesystem changes. */
+	ret = envfs_load_data_pass(super, buf, size, dir, flags, true);
+	if (ret)
+		return ret;
+
+	return envfs_load_data_pass(super, buf, size, dir, flags, false);
 }
 
 int envfs_load_from_buf(void *buf, int len, const char *dir, unsigned flags)
@@ -184,11 +228,17 @@ int envfs_load_from_buf(void *buf, int len, const char *dir, unsigned flags)
 	size_t size;
 	struct envfs_super *super = buf;
 
+	if (len < 0 || (size_t)len < sizeof(*super))
+		return -EINVAL;
+
 	buf = super + 1;
 
 	ret = envfs_check_super(super, &size);
 	if (ret)
 		return ret;
+
+	if (size > (size_t)len - sizeof(*super))
+		return -EINVAL;
 
 	ret = envfs_check_data(super, buf, size);
 	if (ret)

@@ -127,7 +127,7 @@ static int ratp_cmd_gpio_set_direction(const struct ratp_bb *req, int req_len,
 	gpio_rsp_len = sizeof(struct ratp_bb_gpio_set_direction_response);
 	gpio_rsp = xzalloc(gpio_rsp_len);
 	gpio_rsp->header.type = cpu_to_be16(BB_RATP_TYPE_GPIO_SET_DIRECTION_RETURN);
-	gpio_rsp->errno = (ret == 0 ? 0 : EIO);
+	gpio_rsp->errno = cpu_to_be32(ret == 0 ? 0 : EIO);
 
 	*rsp_len = gpio_rsp_len;
 	*rsp = (struct ratp_bb *)gpio_rsp;

@@ -1,28 +1,18 @@
 #!/usr/bin/env python3
 
-from __future__ import absolute_import, division, print_function
-
 import sys
 import os
 import argparse
 import binascii
 import logging
 from queue import Queue
-from .ratp import RatpError
+from .ratp import RatpError, RatpState
 
 try:
     import serial
 except:
     print("error: No python-serial package found", file=sys.stderr)
     exit(2)
-
-
-def versiontuple(v):
-    return tuple(map(int, (v.split("."))))
-
-if versiontuple(serial.VERSION) < (2, 7):
-    print("warning: python-serial package is buggy in RFC2217 mode,",
-          "consider updating to at least 2.7", file=sys.stderr)
 
 from .ratp import SerialRatpConnection
 from .controller import Controller
@@ -38,9 +28,7 @@ def get_controller(args):
             ctrl = Controller(conn)
             break
         except (RatpError):
-            if args.wait == True:
-                pass
-            else:
+            if not args.wait:
                 raise
 
     return ctrl
@@ -77,23 +65,48 @@ def handle_getenv(args):
     return res
 
 
+def strerror(code):
+    """turn the errno of a failed remote command into a message"""
+    if code >= 0x80000000:
+        code -= 0x100000000
+    return os.strerror(abs(code))
+
+
+def hexdata(cmd, data):
+    """turn a hex string argument into the bytes to send"""
+    if len(data) % 2:
+        data = "0" + data
+    data = binascii.unhexlify(data)
+    if len(data) > 0xffff:
+        print("%s: %u bytes of data do not fit into the protocol's 16 bit"
+              % (cmd, len(data)), file=sys.stderr)
+        return None
+    return data
+
+
 def handle_md(args):
     ctrl = get_controller(args)
     (res,data) = ctrl.md(args.path, args.address, args.size)
     if res == 0:
         print(binascii.hexlify(data).decode())
+    else:
+        print("md: %s: %s" % (args.path, strerror(res)), file=sys.stderr)
+        res = 1
     ctrl.close()
     return res
 
 
 def handle_mw(args):
+    data = hexdata("mw", args.data)
+    if data is None:
+        return 1
     ctrl = get_controller(args)
-    data=args.data
-    if ((len(data) % 2) != 0):
-        data="0"+data
-    (res,written) = ctrl.mw(args.path, args.address, binascii.unhexlify(data))
+    (res,written) = ctrl.mw(args.path, args.address, data)
     if res == 0:
         print("%i bytes written" % written)
+    else:
+        print("mw: %s: %s" % (args.path, strerror(res)), file=sys.stderr)
+        res = 1
     ctrl.close()
     return res
 
@@ -102,19 +115,25 @@ def handle_i2c_read(args):
     ctrl = get_controller(args)
     (res,data) = ctrl.i2c_read(args.bus, args.address, args.reg, args.flags, args.size)
     if res == 0:
-        print(binascii.hexlify(data))
+        print(binascii.hexlify(data).decode())
+    else:
+        print("i2c-read: %s" % strerror(res), file=sys.stderr)
+        res = 1
     ctrl.close()
     return res
 
 
 def handle_i2c_write(args):
+    data = hexdata("i2c-write", args.data)
+    if data is None:
+        return 1
     ctrl = get_controller(args)
-    data=args.data
-    if ((len(data) % 2) != 0):
-        data="0"+data
-    (res,written) = ctrl.i2c_write(args.bus, args.address, args.reg, args.flags, binascii.unhexlify(data))
+    (res,written) = ctrl.i2c_write(args.bus, args.address, args.reg, args.flags, data)
     if res == 0:
         print("%i bytes written" % written)
+    else:
+        print("i2c-write: %s" % strerror(res), file=sys.stderr)
+        res = 1
     ctrl.close()
     return res
 
@@ -137,14 +156,26 @@ def handle_gpio_set_value(args):
 def handle_gpio_set_direction(args):
     ctrl = get_controller(args)
     res = ctrl.gpio_set_direction(args.gpio, args.direction, args.value)
+    if res != 0:
+        print("gpio-set-direction: %u: %s" % (args.gpio, strerror(res)),
+              file=sys.stderr)
+        res = 1
     ctrl.close()
     return res
 
 
 def handle_reset(args):
     ctrl = get_controller(args)
-    ctrl.reset(args.force)
-    ctrl.close()
+    try:
+        ctrl.reset(args.force)
+        ctrl.close()
+    except RatpError as detail:
+        # barebox tears the link down while it restarts, which leaves the
+        # connection in any state but established. A request that was never
+        # acknowledged does not.
+        if ctrl.conn.status() == RatpState.established:
+            raise
+        logging.info("reset: %s", detail)
     return 0
 
 
@@ -172,7 +203,7 @@ def handle_console(args):
                 if data is None:  # shutdown
                     cons.join()
                     break
-                elif data == '\x10':  # CTRL-P
+                elif data == b'\x10':  # CTRL-P
                     ctrl.send_async_ping()
                 else:
                     ctrl.send_async_console(data)
@@ -194,6 +225,18 @@ def handle_console(args):
 def auto_int(x):
     return int(x, 0)
 
+
+def uint(bits):
+    """argparse type for a number that has to fit the field it is sent in"""
+    def parse(x):
+        value = auto_int(x)
+        if not 0 <= value < 1 << bits:
+            raise argparse.ArgumentTypeError(
+                "%s does not fit into the protocol's %u bit" % (x, bits))
+        return value
+
+    return parse
+
 VERBOSITY = {
     0: logging.WARN,
     1: logging.INFO,
@@ -205,7 +248,7 @@ parser.add_argument('-v', '--verbose', action='count', default=0)
 parser.add_argument('--port', type=str, default=os.environ.get('BBREMOTE_PORT', None))
 parser.add_argument('--baudrate', type=int, default=os.environ.get('BBREMOTE_BAUDRATE', 115200))
 parser.add_argument('--export', type=str, default=os.environ.get('BBREMOTE_EXPORT', None))
-parser.add_argument('-w', '--wait', action='count', default=0)
+parser.add_argument('-w', '--wait', action='store_true')
 parser.set_defaults(func=None)
 subparsers = parser.add_subparsers(help='sub-command help')
 
@@ -222,45 +265,45 @@ parser_getenv.set_defaults(func=handle_getenv)
 
 parser_md = subparsers.add_parser('md', help="run md command")
 parser_md.add_argument('path', help="path")
-parser_md.add_argument('address', type=auto_int, help="address")
-parser_md.add_argument('size', type=auto_int, help="size")
+parser_md.add_argument('address', type=uint(16), help="address")
+parser_md.add_argument('size', type=uint(16), help="size")
 parser_md.set_defaults(func=handle_md)
 
 parser_mw = subparsers.add_parser('mw', help="run mw command")
 parser_mw.add_argument('path', help="path")
-parser_mw.add_argument('address', type=auto_int, help="address")
+parser_mw.add_argument('address', type=uint(16), help="address")
 parser_mw.add_argument('data', help="data")
 parser_mw.set_defaults(func=handle_mw)
 
 parser_i2c_read = subparsers.add_parser('i2c-read', help="run i2c read command")
-parser_i2c_read.add_argument('bus', type=auto_int, help="bus")
-parser_i2c_read.add_argument('address', type=auto_int, help="address")
-parser_i2c_read.add_argument('reg', type=auto_int, help="reg")
-parser_i2c_read.add_argument('flags', type=auto_int, help="flags")
-parser_i2c_read.add_argument('size', type=auto_int, help="size")
+parser_i2c_read.add_argument('bus', type=uint(8), help="bus")
+parser_i2c_read.add_argument('address', type=uint(8), help="address")
+parser_i2c_read.add_argument('reg', type=uint(16), help="reg")
+parser_i2c_read.add_argument('flags', type=uint(8), help="flags")
+parser_i2c_read.add_argument('size', type=uint(16), help="size")
 parser_i2c_read.set_defaults(func=handle_i2c_read)
 
 parser_i2c_write = subparsers.add_parser('i2c-write', help="run i2c write command")
-parser_i2c_write.add_argument('bus', type=auto_int, help="bus")
-parser_i2c_write.add_argument('address', type=auto_int, help="address")
-parser_i2c_write.add_argument('reg', type=auto_int, help="reg")
-parser_i2c_write.add_argument('flags', type=auto_int, help="flags")
+parser_i2c_write.add_argument('bus', type=uint(8), help="bus")
+parser_i2c_write.add_argument('address', type=uint(8), help="address")
+parser_i2c_write.add_argument('reg', type=uint(16), help="reg")
+parser_i2c_write.add_argument('flags', type=uint(8), help="flags")
 parser_i2c_write.add_argument('data', help="data")
 parser_i2c_write.set_defaults(func=handle_i2c_write)
 
 parser_gpio_get_value = subparsers.add_parser('gpio-get-value', help="run gpio get value command")
-parser_gpio_get_value.add_argument('gpio', type=auto_int, help="gpio")
+parser_gpio_get_value.add_argument('gpio', type=uint(32), help="gpio")
 parser_gpio_get_value.set_defaults(func=handle_gpio_get_value)
 
 parser_gpio_set_value = subparsers.add_parser('gpio-set-value', help="run gpio set value command")
-parser_gpio_set_value.add_argument('gpio', type=auto_int, help="gpio")
-parser_gpio_set_value.add_argument('value', type=auto_int, help="value")
+parser_gpio_set_value.add_argument('gpio', type=uint(32), help="gpio")
+parser_gpio_set_value.add_argument('value', type=uint(8), help="value")
 parser_gpio_set_value.set_defaults(func=handle_gpio_set_value)
 
 parser_gpio_set_direction = subparsers.add_parser('gpio-set-direction', help="run gpio set direction command")
-parser_gpio_set_direction.add_argument('gpio', type=auto_int, help="gpio")
-parser_gpio_set_direction.add_argument('direction', type=auto_int, help="direction (0: input, 1: output)")
-parser_gpio_set_direction.add_argument('value', type=auto_int, help="value (if output)")
+parser_gpio_set_direction.add_argument('gpio', type=uint(32), help="gpio")
+parser_gpio_set_direction.add_argument('direction', type=uint(8), help="direction (0: input, 1: output)")
+parser_gpio_set_direction.add_argument('value', type=uint(8), help="value (if output)")
 parser_gpio_set_direction.set_defaults(func=handle_gpio_set_direction)
 
 parser_reset = subparsers.add_parser('reset', help="run reset command")
@@ -276,7 +319,7 @@ parser_console = subparsers.add_parser('console', help="connect to the console")
 parser_console.set_defaults(func=handle_console)
 
 args = parser.parse_args()
-logging.basicConfig(level=VERBOSITY[args.verbose],
+logging.basicConfig(level=VERBOSITY[min(args.verbose, 2)],
                     format='%(levelname)-8s %(module)-8s %(funcName)-16s %(message)s')
 
 if args.func is None:

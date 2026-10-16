@@ -393,6 +393,9 @@ int ftruncate(int fd, loff_t length)
 	if (IS_ERR(f))
 		return -errno;
 
+	if (length < 0)
+		return errno_set(-EINVAL);
+
 	if (!i_size_is_bound(f->f_inode))
 		return 0;
 
@@ -1087,6 +1090,11 @@ static int fillonedir(struct dir_context *ctx, const char *name, int namlen,
 {
 	struct readdir_callback *rd = container_of(ctx, struct readdir_callback, ctx);
 	struct readdir_entry *entry;
+
+	if (namlen >= sizeof(entry->d.d_name)) {
+		pr_warn("skipping directory entry %.32s...: name too long\n", name);
+		return 0;
+	}
 
 	entry = xzalloc(sizeof(*entry));
 	memcpy(entry->d.d_name, name, namlen);

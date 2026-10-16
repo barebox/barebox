@@ -30,6 +30,7 @@ config ARCH_SOCFPGA_AGILEX5
 	select FIRMWARE_AGILEX5_ATF
 	select ARM_ATF
 	select ARM_SMCCC
+	select GPIOLIB
 
 if 32BIT
 

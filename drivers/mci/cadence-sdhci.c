@@ -424,9 +424,9 @@ static int sdhci_cdns_probe(struct device *dev)
 		return PTR_ERR(priv->rst);
 	}
 
-	priv->softphy_rst = reset_control_get(dev, "softphy-reset");
+	priv->softphy_rst = reset_control_get(dev, "combophy");
 	if (IS_ERR(priv->softphy_rst)) {
-		dev_err(dev, "Invalid reset line 'softphy-reset'.\n");
+		dev_err(dev, "Invalid reset line 'combophy'.\n");
 		return PTR_ERR(priv->softphy_rst);
 	}
 

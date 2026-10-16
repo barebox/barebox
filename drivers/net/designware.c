@@ -496,8 +496,8 @@ struct dw_eth_dev *dwc_drv_probe(struct device *dev)
 	if (!priv->rx_mac_descrtable_cpu)
 		return ERR_PTR(-EFAULT);
 
-	priv->txbuffs = dma_alloc(TX_TOTAL_BUFSIZE);
-	priv->rxbuffs = dma_alloc(RX_TOTAL_BUFSIZE);
+	priv->txbuffs = dma_xalloc(TX_TOTAL_BUFSIZE);
+	priv->rxbuffs = dma_xalloc(RX_TOTAL_BUFSIZE);
 
 	edev = &priv->netdev;
 	miibus = &priv->miibus;

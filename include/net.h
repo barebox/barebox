@@ -549,7 +549,7 @@ struct net_connection {
 
 static inline char *net_alloc_packet(void)
 {
-	return dma_alloc(PKTSIZE);
+	return dma_xalloc(PKTSIZE);
 }
 
 static inline void net_free_packet(char *pkt)

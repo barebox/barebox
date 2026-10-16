@@ -275,11 +275,11 @@ static int dsa_switch_register_edev(struct dsa_switch *ds,
 
 	/* DMA is done on buffer in receive ring allocated by network
 	 * driver. This is then copied into this buffer, so we don't
-	 * strictly need to use dma_alloc() here, unlike ds->tx_buf.
+	 * strictly need to use dma_xalloc() here, unlike ds->tx_buf.
 	 * We do it anyway as we don't want DSA buffers to be subtly
 	 * different to that of a directly used network interface.
 	 */
-	dp->rx_buf = dma_alloc(DSA_PKTSIZE);
+	dp->rx_buf = dma_xalloc(DSA_PKTSIZE);
 
 	edev = &dp->edev;
 	edev->priv = dp;
@@ -473,7 +473,7 @@ int dsa_register_switch(struct dsa_switch *ds)
 			return ret;
 	}
 
-	ds->tx_buf = dma_alloc(DSA_PKTSIZE);
+	ds->tx_buf = dma_xalloc(DSA_PKTSIZE);
 
 	list_add_tail(&ds->list, &dsa_switch_list);
 

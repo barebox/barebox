@@ -263,7 +263,8 @@ static int of_hostfile_map_fixup(struct device_node *root, void *ctx)
 		}
 
 		of_property_write_string(node, "barebox,filename", filename);
-		of_property_write_string(node, "compatible", "barebox,hostfile");
+		of_property_write_strings(node, "compatible", "barebox,hostfile",
+					  "syscon", NULL);
 	}
 
 	for_each_compatible_node_from(node, root, NULL, "barebox,hostfile") {

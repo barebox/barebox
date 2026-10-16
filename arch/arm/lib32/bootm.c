@@ -457,9 +457,24 @@ static struct image_handler zimage_handler = {
 	.filetype = filetype_arm_zimage,
 };
 
+static int do_bootm_barebox(struct image_data *data)
+{
+	/*
+	 * Unlike a kernel, barebox doesn't ship a device tree that should be
+	 * preferred over ours: Images like barebox-dt-2nd.img and the
+	 * STM32MP generic BL33 image learn about the hardware solely from
+	 * the device tree they are passed. So pass along ours if none was
+	 * supplied, regardless of CONFIG_BOOTM_OFTREE_FALLBACK.
+	 */
+	if (!data->oftree)
+		data->of_root_node = of_dup(of_get_root_node());
+
+	return do_bootm_linux(data);
+}
+
 static struct image_handler barebox_handler = {
 	.name = "ARM barebox",
-	.bootm = do_bootm_linux,
+	.bootm = do_bootm_barebox,
 	.check_image = bootm_efi_check_image,
 	.filetype = filetype_arm_barebox,
 };

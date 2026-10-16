@@ -272,6 +272,10 @@ static int ltdc_probe(struct device *dev)
 	if (IS_ERR(hw->pclk))
 		return dev_errp_probe(dev, hw->pclk, "peripheral clock get\n");
 
+	ret = device_reset_us(dev, 10);
+	if (ret)
+		return dev_err_probe(dev, ret, "peripheral reset\n");
+
 	for_each_available_child_of_node(dev->of_node, np) {
 		struct ltdc_fb *priv;
 		struct of_endpoint ep;

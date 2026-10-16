@@ -388,10 +388,6 @@ cmd_gen_order = { $(foreach m, $(real-prereqs), \
 	$(if $(filter %/$(notdir $@), $m), cat $m, echo $m);) :; } \
 	> $@
 
-cmd_gen_order_src = { $(foreach m, $(patsubst $(srctree)/%,%,$(real-prereqs)), \
-	$(if $(filter %/$(notdir $@), $m), cat $m, echo $m);) :; } \
-	> $@
-
 $(obj)/modules.order: $(obj-m) FORCE
 	$(call if_changed,gen_order)
 

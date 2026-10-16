@@ -47,7 +47,6 @@ real-external-policy-tmp := $(addprefix $(obj)/,$(external-policy-tmp))
 ifneq ($(external-policy),)
 obj-y	+= default.sconfig.o
 extra-y	+= default.sconfig.c
-always-y += policy-list
 $(foreach p, $(external-policy), \
 	$(if $(findstring /,$p),$(error \
 	CONFIG_SECURITY_POLICY_PATH contains path separators.\
@@ -57,12 +56,6 @@ $(foreach p, $(external-policy), \
 	CONFIG_SECURITY_POLICY_PATH contains non-existent files.\
 	$(newline)"$p" does not exist in $$(srctree)/security or $$(objtree)/security)))
 endif
-
-external-policy-src = $(foreach p,$(external-policy),\
-    $(if $(wildcard $(srctree)/$(src)/$p),$(src)/$p,$(obj)/$p))
-
-$(obj)/policy-list: $(external-policy-src) FORCE
-	$(call if_changed,gen_order_src)
 
 targets += $(external-policy-tmp)
 

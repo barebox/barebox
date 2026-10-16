@@ -1,22 +1,12 @@
-:orphan:
+Pending changes
+===============
 
-Removal of bootm -c/-s options
-------------------------------
+This sections lists possibly backwards-incompatible changes that have been committed
+to the barebox source tree, but have not yet been included into a release.
+If you have concerns about any of them, now's a good time to reach out to the
+:ref:`mailing list <feedback>`.
 
-The :ref:`command_bootm` options ``-c`` and ``-s`` used to selectively
-enable checksum/hash and signature verification, respectively.
+.. toctree::
+   :glob:
 
-They have been removed in favor of the global toggle
-:ref:`global.bootm.verify <magicvar_global_bootm_verify>`.
-This can be restricted at build-time via setting ``CONFIG_BOOTM_FORCE_SIGNED_IMAGES``
-or loosened :ref:`at runtime <use_security-policies>`
-via setting ``SCONFIG_BOOT_UNSIGNED_IMAGES``.
-
-The removal is motivated by making it easier to reason about what the active
-verification level is, especially as there are now other uses for verified
-images like when :ref:`global.of.overlay.path <magicvar_global_of_overlay_path>`
-points at a FIT.
-
-Existing users, if any, will fail-secure: The command will now exit with a failure::
-
-  bootm: invalid option -- s
+   migration-master/*

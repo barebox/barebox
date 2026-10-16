@@ -395,7 +395,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 		status = -ENOMEM;
 		goto out;
 	}
-	dfu->dnreq->buf = dma_alloc(CONFIG_USBD_DFU_XFER_SIZE);
+	dfu->dnreq->buf = dma_xalloc(CONFIG_USBD_DFU_XFER_SIZE);
 	dfu->dnreq->complete = dn_complete;
 	dfu->dnreq->zero = 0;
 

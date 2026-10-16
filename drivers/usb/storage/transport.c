@@ -51,7 +51,7 @@ int usb_stor_Bulk_max_lun(struct us_data *us)
 {
 	struct device *dev = &us->pusb_dev->dev;
 	int len, ret = 0;
-	unsigned char *iobuf = dma_alloc(1);
+	unsigned char *iobuf = dma_xalloc(1);
 
 	/* issue the command */
 	iobuf[0] = 0;
@@ -96,8 +96,8 @@ int usb_stor_Bulk_transport(struct us_blk_dev *usb_blkdev,
 	int dir_in = US_DIRECTION(cmd[0]);
 	int ret = 0;
 
-	cbw = dma_alloc(sizeof(*cbw));
-	csw = dma_alloc(sizeof(*csw));
+	cbw = dma_xalloc(sizeof(*cbw));
+	csw = dma_xalloc(sizeof(*csw));
 
 	/* set up the command wrapper */
 	cbw->Signature = cpu_to_le32(US_BULK_CB_SIGN);

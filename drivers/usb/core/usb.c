@@ -493,7 +493,7 @@ int usb_new_device(struct usb_device *dev)
 
 	dev->dev.id = DEVICE_ID_SINGLE;
 
-	buf = dma_alloc(USB_BUFSIZ);
+	buf = dma_xalloc(USB_BUFSIZ);
 
 	if (parent)
 		dev->level = parent->level + 1;
@@ -678,8 +678,8 @@ struct usb_device *usb_alloc_new_device(void)
 
 	usbdev->maxchild = 0;
 	usbdev->dev.bus = &usb_bus_type;
-	usbdev->setup_packet = dma_alloc(sizeof(*usbdev->setup_packet));
-	usbdev->descriptor = dma_alloc(sizeof(*usbdev->descriptor));
+	usbdev->setup_packet = dma_xalloc(sizeof(*usbdev->setup_packet));
+	usbdev->descriptor = dma_xalloc(sizeof(*usbdev->descriptor));
 
 	return usbdev;
 }
@@ -1192,7 +1192,7 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 	if (size <= 0 || !buf || !index)
 		return -1;
 
-	tbuf = dma_alloc(USB_BUFSIZ);
+	tbuf = dma_xalloc(USB_BUFSIZ);
 	buf[0] = 0;
 
 	/* get langid for strings if it's not yet known */
@@ -1259,12 +1259,41 @@ static int usb_match_device(struct usb_device *dev, const struct usb_device_id *
 }
 
 
+/* returns the first interface matching the interface info of id, or NULL */
+struct usb_interface *usb_match_interface(struct usb_device *usbdev,
+					  const struct usb_device_id *id)
+{
+	int ifno;
+
+	if (!(id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO))
+		return NULL;
+
+	for (ifno = 0; ifno < usbdev->config.no_of_if; ifno++) {
+		struct usb_interface *intf = &usbdev->config.interface[ifno];
+
+		if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_CLASS) &&
+		    (id->bInterfaceClass != intf->desc.bInterfaceClass))
+			continue;
+
+		if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_SUBCLASS) &&
+		    (id->bInterfaceSubClass != intf->desc.bInterfaceSubClass))
+			continue;
+
+		if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_PROTOCOL) &&
+		    (id->bInterfaceProtocol != intf->desc.bInterfaceProtocol))
+			continue;
+
+		return intf;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(usb_match_interface);
+
 /* returns 0 if no match, 1 if match */
 static int usb_match_one_id(struct usb_device *usbdev,
 		     const struct usb_device_id *id)
 {
-	int ifno;
-
 	/* proc_connectinfo in devio.c may call us with id == NULL. */
 	if (id == NULL)
 		return 0;
@@ -1280,28 +1309,9 @@ static int usb_match_one_id(struct usb_device *usbdev,
 			(id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO))
 		return 0;
 
-	if ( (id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO) ) {
-		/* match any interface */
-		for (ifno=0; ifno<usbdev->config.no_of_if; ifno++) {
-			struct usb_interface_descriptor *intf;
-			intf = &usbdev->config.interface[ifno].desc;
-
-			if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_CLASS) &&
-			    (id->bInterfaceClass != intf->bInterfaceClass))
-				continue;
-
-			if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_SUBCLASS) &&
-			    (id->bInterfaceSubClass != intf->bInterfaceSubClass))
-				continue;
-
-			if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_PROTOCOL) &&
-			    (id->bInterfaceProtocol != intf->bInterfaceProtocol))
-				continue;
-			break;
-		}
-		if (ifno >= usbdev->config.no_of_if)
-			return 0;
-	}
+	if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_INFO) &&
+	    !usb_match_interface(usbdev, id))
+		return 0;
 
 	return 1;
 }

@@ -628,7 +628,7 @@ u8 *mci_get_ext_csd(struct mci *mci)
 	u8 *ext_csd;
 	int ret;
 
-	ext_csd = dma_alloc(512);
+	ext_csd = dma_xalloc(512);
 
 	ret = mci_send_ext_csd(mci, ext_csd);
 	if (ret) {
@@ -757,7 +757,7 @@ static int mmc_change_freq(struct mci *mci)
 	char cardtype;
 	int err;
 
-	mci->ext_csd = dma_alloc(512);
+	mci->ext_csd = dma_xalloc(512);
 	mci->card_caps = 0;
 
 	/* Only version 4 supports high-speed */
@@ -895,7 +895,7 @@ static int sd_read_ssr(struct mci *mci)
 	if (!IS_ENABLED(CONFIG_MCI_ERASE))
 		return -ENOSYS;
 
-	ssr = dma_alloc(64);
+	ssr = dma_xalloc(64);
 
 	err = mci_app_sd_status(mci, ssr);
 	if (err)
@@ -1392,7 +1392,7 @@ static int mmc_compare_ext_csds(struct mci *mci, enum mci_bus_width bus_width)
 	if (bus_width == MMC_BUS_WIDTH_1)
 		return 0;
 
-	bw_ext_csd = dma_alloc(512);
+	bw_ext_csd = dma_xalloc(512);
 	err = mci_send_ext_csd(mci, bw_ext_csd);
 	if (err) {
 		dev_info(&mci->dev, "mci_send_ext_csd failed with %d\n", err);
@@ -3137,7 +3137,7 @@ static int mci_card_probe(struct mci *mci)
 	}
 
 	if (!sector_buf)
-		sector_buf = dma_alloc(SECTOR_SIZE);
+		sector_buf = dma_xalloc(SECTOR_SIZE);
 
 	/* FIXME we don't check sector_buf against the device dma mask here */
 

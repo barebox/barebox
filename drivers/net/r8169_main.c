@@ -2887,7 +2887,7 @@ static int rtl8169_init_ring(struct rtl8169_private *tp)
 	if (!tp->TxDescArray)
 		return -ENOMEM;
 
-	tp->tx_buf = dma_alloc(NUM_TX_DESC * PKT_BUF_SIZE);
+	tp->tx_buf = dma_xalloc(NUM_TX_DESC * PKT_BUF_SIZE);
 
 	tp->tx_buf_phys = dma_map_single(edev->parent, tp->tx_buf,
 					   NUM_TX_DESC * PKT_BUF_SIZE, DMA_TO_DEVICE);
@@ -2898,7 +2898,7 @@ static int rtl8169_init_ring(struct rtl8169_private *tp)
 	if (!tp->RxDescArray)
 		return -ENOMEM;
 
-	tp->rx_buf = dma_alloc(NUM_RX_DESC * PKT_BUF_SIZE);
+	tp->rx_buf = dma_xalloc(NUM_RX_DESC * PKT_BUF_SIZE);
 
 	tp->rx_buf_phys = dma_map_single(edev->parent, tp->rx_buf,
 					   NUM_RX_DESC * PKT_BUF_SIZE, DMA_FROM_DEVICE);

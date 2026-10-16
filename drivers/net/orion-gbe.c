@@ -413,7 +413,7 @@ static int port_probe(struct device *parent, struct port_priv *port)
 	if (!port->txdesc || !port->rxdesc)
 		return -ENOMEM;
 
-	port->rxbuf = dma_alloc(RX_RING_SIZE * ALIGN(PKTSIZE, 8));
+	port->rxbuf = dma_xalloc(RX_RING_SIZE * ALIGN(PKTSIZE, 8));
 
 	port_stop(port);
 	port_init_rxdesc_ring(port);

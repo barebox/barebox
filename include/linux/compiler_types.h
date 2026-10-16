@@ -357,11 +357,7 @@ struct ftrace_likely_data {
 #endif
 
 
-#ifdef CONFIG_ENABLE_MUST_CHECK
 #define __must_check		__attribute__((warn_unused_result))
-#else
-#define __must_check
-#endif
 
 #if defined(CC_USING_HOTPATCH) && !defined(__CHECKER__)
 #define notrace			__attribute__((hotpatch(0, 0)))

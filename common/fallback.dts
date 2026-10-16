@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/dts-v1/;
+
+/*
+ * Fallback device tree for images not tied to a board, like the EFI payload.
+ * Empty, but can be populated via CONFIG_EXTERNAL_DTS_FRAGMENTS.
+ */
+
+/ {
+};

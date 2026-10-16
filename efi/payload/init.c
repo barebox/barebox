@@ -284,12 +284,26 @@ static int efi_late_init(void)
 {
 	const char *state_desc = "/boot/EFI/barebox/state.dtb";
 	struct device_node *state_root = NULL;
+	struct device_node *root;
 	size_t size;
 	void *fdt;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_STATE))
 		return 0;
+
+	/*
+	 * A device tree built into barebox takes precedence: any state it
+	 * describes has been instantiated by the state driver already.
+	 */
+	root = of_get_root_node();
+	if (root && !list_empty(&root->children)) {
+		struct stat s;
+
+		if (!stat(state_desc, &s))
+			pr_warn("device tree is populated, ignoring %s\n", state_desc);
+		return 0;
+	}
 
 	if (!get_mounted_path("/boot")) {
 		pr_warn("boot device couldn't be determined%s\n",
@@ -319,6 +333,10 @@ static int efi_late_init(void)
 			pr_warn("No state alias in %s\n", state_desc);
 			return 0;
 		}
+
+		/* probing the registered tree may have instantiated it already */
+		if (state_by_node(np))
+			return 0;
 
 		state = state_new_from_node(np, false);
 		if (IS_ERR(state))

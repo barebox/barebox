@@ -27,6 +27,12 @@ extern struct efi_loaded_image *efi_loaded_image;
 void *efi_earlymem_alloc(const struct efi_system_table *sys_table,
 			 size_t memsize, enum efi_memory_type mem_type);
 
+#ifdef CONFIG_OFTREE
+void efi_export_dtb(void);
+#else
+static inline void efi_export_dtb(void) {}
+#endif
+
 __attribute__((noreturn)) void efi_main(efi_handle_t, struct efi_system_table *);
 
 #define for_each_efi_config_table(t) \

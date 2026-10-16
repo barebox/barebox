@@ -108,6 +108,8 @@ int efi_execute_image(efi_handle_t handle,
 
 	is_driver = (loaded_image->image_code_type == EFI_BOOT_SERVICES_CODE) ||
 		(loaded_image->image_code_type == EFI_RUNTIME_SERVICES_CODE);
+ 
+	efi_export_dtb();
 
 	if (filetype_is_linux_efi_image(filetype)) {
 		options = linux_bootargs_get();

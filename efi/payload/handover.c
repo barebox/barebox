@@ -183,6 +183,8 @@ static int do_bootm_efi(struct image_data *data)
 		goto err_free;
 	}
 
+	efi_export_dtb();
+
 	efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
 			      ktime_to_us(ktime_get()));
 

@@ -5,7 +5,7 @@
 
 void *dma_alloc(size_t size)
 {
-	return xmemalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
+	return memalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
 }
 EXPORT_SYMBOL(dma_alloc);
 

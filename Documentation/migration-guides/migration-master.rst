@@ -40,9 +40,10 @@ EFI payload reported inverted Secure Boot state
 -----------------------------------------------
 
 As EFI payload, barebox reported the inverse of the firmware's Secure Boot
-state in ``efi.secure_boot`` and a wrong ``efi.secure_mode`` derived from it.
-Both are now ``1`` if Secure Boot is enabled, ``efi.secure_mode`` only if the
-firmware is additionally not in Setup Mode.
+state in :ref:`efi.secure_boot <magicvar_efi_secure_boot>` and a wrong
+:ref:`efi.secure_mode <magicvar_efi_secure_mode>` derived from it. Both are
+now ``1`` if Secure Boot is enabled, ``efi.secure_mode`` only if the firmware
+is additionally not in Setup Mode.
 
 In general, this should have no security implications: barebox doesn't
 evaluate the parameters itself, the firmware enforces Secure Boot according

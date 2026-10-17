@@ -28,4 +28,5 @@ TFTP
 The default TFTP window size has been reverted to 1 as many network
 drivers couldn't cope with the increased throughput.
 This can be reverted by setting ``CONFIG_FS_TFTP_MAX_WINDOW_SIZE``
-or at runtime via the ``global.tftp.windowsize`` variable.
+or at runtime via the
+:ref:`global.tftp.windowsize <magicvar_global_tftp_windowsize>` variable.

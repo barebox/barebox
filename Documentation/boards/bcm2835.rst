@@ -61,7 +61,7 @@ VideoCore firmware creates a device tree based on the entries in ``config.txt``.
 
 VideoCore device tree also contains the kernel command-line that is constructed from ``cmdline.txt`` and other parameters internally determined by the VideoCore firmware. Normally in barebox this command-line gets overwritten on boot by the Linux bootargs (see :ref:`booting_linux`).
 
-The original command-line from VideoCore device tree is available to the barebox environment in the ``vc.bootargs`` global variable. For example, to append it to the Linux bootargs::
+The original command-line from VideoCore device tree is available to the barebox environment in the :ref:`global.vc.bootargs <magicvar_global_vc_bootargs_raspberry-pi>` global variable. For example, to append it to the Linux bootargs::
 
     global linux.bootargs.vc="$global.vc.bootargs"
 

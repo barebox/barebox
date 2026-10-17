@@ -133,7 +133,8 @@ ATA) the partition UUID will be used, the root= option will be something
 like ``root=PARTUUID=deadbeef-1``. For UBIFS filesystems it will be
 ``root=ubi0:volname ubi.mtd=mtdpartname rootfstype=ubifs``. NFS
 filesystems will result in ``root=/dev/nfs nfsroot=ip:/path/to/nfsroot,v3,tcp``.
-The ``v3,tcp`` part is configurable in ``global.linux.rootnfsopts``.
+The ``v3,tcp`` part is configurable in
+:ref:`global.linux.rootnfsopts <magicvar_global_linux_rootnfsopts>`.
 
 The boot command
 ----------------
@@ -302,9 +303,11 @@ NFS URIs, when passed to the :ref:`boot command <command_boot>`:
 Additional notes about keys in the bootloader spec entries:
 
 ``machine-id``
-   This key is optional. If the ``global.boot.machine_id`` variable is set to a
-   non-empty value, barebox will only boot the Bootloader Spec Entry whose
-   ``machine-id`` key matches the ``global.boot.machine_id`` variable.  All
+   This key is optional. If the
+   :ref:`global.boot.machine_id <magicvar_global_boot_machine_id>` variable is
+   set to a non-empty value, barebox will only boot the Bootloader Spec Entry
+   whose ``machine-id`` key matches the
+   :ref:`global.boot.machine_id <magicvar_global_boot_machine_id>` variable.  All
    other Bootloader Spec entries will be ignored.
 
 ``linux-appendroot``
@@ -372,7 +375,8 @@ Note that barebox will pass the same IP settings to the kernel, i.e. it passes
 and ``ip=dhcp`` for a dynamic DHCP setup. ``<linuxdevname>`` is a configurable value.
 Set ``nv.dev.<ethdev>.linuxdevname`` to the name the device has in Linux.
 
-By default, barebox uses the variables ``global.user`` and
+By default, barebox uses the variables
+:ref:`global.user <magicvar_global_user>` and
 :ref:`global.hostname <magicvar_global_hostname>`
 to retrieve its kernel image over TFTP, which makes it possible to use multiple
 boards for multiple users with one single server.

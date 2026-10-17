@@ -26,10 +26,12 @@ Network devices are configured with a set of device specific variables:
 +-------------------+--------------+----------------------------------------------------+
 | <devname>.netmask | ipv4 address | The netmask when using static configuration        |
 +-------------------+--------------+----------------------------------------------------+
-| <devname>.gateway | ipv4 address | Alias for global.net.gateway. For                  |
+| <devname>.gateway | ipv4 address | Alias for :ref:`global.net.gateway                 |
+|                   |              | <magicvar_global_net_gateway>`. For                |
 |                   |              | compatibility, do not use.                         |
 +-------------------+--------------+----------------------------------------------------+
-| <devname>.serverip| ipv4 address | Alias for global.net.server. For                   |
+| <devname>.serverip| ipv4 address | Alias for :ref:`global.net.server                  |
+|                   |              | <magicvar_global_net_server>`. For                 |
 |                   |              | compatibility, do not use.                         |
 +-------------------+--------------+----------------------------------------------------+
 | <devname>.ethaddr | MAC address  | The MAC address of this device                     |
@@ -38,25 +40,25 @@ Network devices are configured with a set of device specific variables:
 Additionally there are some more variables that are not specific to a
 device:
 
-+------------------------------+--------------+------------------------------------------------+
-| name                         | type         |                                                |
-+==============================+==============+================================================+
-| global.net.gateway           | ipv4 host    | The network gateway used when a host is not in |
-|                              |              | any directly visible subnet. May be set        |
-|                              |              | automatically by DHCP.                         |
-+------------------------------+--------------+------------------------------------------------+
-| global.net.server            | hostname or  | The default server used by the defaultenv boot |
-|                              | ipv4 address | scripts for NFS and TFTP; see                  |
-|                              |              | :ref:`booting_linux_net`.                      |
-|                              |              | If unspecified, may be set by DHCP.            |
-+------------------------------+--------------+------------------------------------------------+
-| global.net.nameserver        | ipv4 address | The DNS server used for resolving host names.  |
-|                              |              | May be set by DHCP.                            |
-+------------------------------+--------------+------------------------------------------------+
-| global.net.ifup_force_detect | boolean      | Set to true if your network device is not      |
-|                              |              | detected automatically during start (i.e. for  |
-|                              |              | USB network adapters).                         |
-+------------------------------+--------------+------------------------------------------------+
++-------------------------------------------+--------------+------------------------------------------------+
+| name                                      | type         |                                                |
++===========================================+==============+================================================+
+| :ref:`global.net.gateway                  | ipv4 host    | The network gateway used when a host is not in |
+| <magicvar_global_net_gateway>`            |              | any directly visible subnet. May be set        |
+|                                           |              | automatically by DHCP.                         |
++-------------------------------------------+--------------+------------------------------------------------+
+| :ref:`global.net.server                   | hostname or  | The default server used by the defaultenv boot |
+| <magicvar_global_net_server>`             | ipv4 address | scripts for NFS and TFTP; see                  |
+|                                           |              | :ref:`booting_linux_net`.                      |
+|                                           |              | If unspecified, may be set by DHCP.            |
++-------------------------------------------+--------------+------------------------------------------------+
+| :ref:`global.net.nameserver               | ipv4 address | The DNS server used for resolving host names.  |
+| <magicvar_global_net_nameserver>`         |              | May be set by DHCP.                            |
++-------------------------------------------+--------------+------------------------------------------------+
+| :ref:`global.net.ifup_force_detect        | boolean      | Set to true if your network device is not      |
+| <magicvar_global_net_ifup_force_detect>`  |              | detected automatically during start (i.e. for  |
+|                                           |              | USB network adapters).                         |
++-------------------------------------------+--------------+------------------------------------------------+
 
 The first step for networking is configuring the network device. The network
 device is usually ``eth0``. The current configuration can be viewed with the
@@ -212,12 +214,13 @@ Fastboot over UDP
 -----------------
 
 When built with ``CONFIG_NET_FASTBOOT=y`` and the global variable
-``fastboot.net.autostart`` is set to true, barebox will
-listen for fastboot commands on UDP port 5554.
+:ref:`global.fastboot.net.autostart <magicvar_global_fastboot_net_autostart>`
+is set to true, barebox will listen for fastboot commands on UDP port 5554.
 You might need to configure an IP address first in order to use fastboot (e.g.
 via DHCP or statically; see above).
 
-Additionally, you have to configure at least the ``fastboot.partitions``
+Additionally, you have to configure at least the
+:ref:`global.fastboot.partitions <magicvar_global_fastboot_partitions>`
 variable, see :ref:`usbgadget_variables`.
 
 On your development host, use fastboot with the ``-s udp:<IP-address>``

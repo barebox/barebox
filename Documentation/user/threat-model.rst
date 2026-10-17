@@ -149,10 +149,11 @@ for it.
    Some data is only referenced by name, not included. For example, a
    devicetree overlay in a signed FIT may have an ``fpga-region`` node with a
    ``firmware-name`` property. barebox loads that file from
-   ``global.firmware.path`` and programs it into the FPGA. The signature
-   covers the name, not the file, so such paths must point at trusted
-   storage, e.g. the built-in environment or a file system protected by other
-   means, like dm-verity with a signed root hash.
+   :ref:`global.firmware.path <magicvar_global_firmware_path>` and programs
+   it into the FPGA. The signature covers the name, not the file, so such
+   paths must point at trusted storage, e.g. the built-in environment or a
+   file system protected by other means, like dm-verity with a signed root
+   hash.
 
 **barebox is configured securely**
    Beyond the above, barebox must be configured securely at build time via

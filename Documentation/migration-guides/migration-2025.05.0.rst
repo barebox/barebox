@@ -15,7 +15,8 @@ Configuration options
   barebox to append ``rootwait`` when booting from SD/eMMC/USB/NFS if
   barebox is already configured to generate the ``root=`` option dynamically.
 
-  This can be customized via setting the ``global`` ``linux.rootwait``
+  This can be customized via setting the
+  :ref:`global.linux.rootwait <magicvar_global_linux_rootwait>`
   variable or by disabling the option.
 
 Bootloader Specification

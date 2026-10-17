@@ -69,6 +69,13 @@ int elf_parse_dynamic_section_relr(struct elf_image *elf, const void *dyn_seg,
 				   void **relr_out, u64 *relrsz_out);
 
 /*
+ * Return the memory an image occupies from its start when loaded with
+ * elf_load_inplace(), i.e. the maximum of p_offset + p_memsz over all
+ * PT_LOAD segments.
+ */
+u64 elf_inplace_size(struct elf_image *elf);
+
+/*
  * Apply dynamic relocations to an ELF binary already loaded in memory.
  * This modifies the ELF image in place without allocating new memory.
  * Useful for self-relocating loaders or externally loaded binaries.

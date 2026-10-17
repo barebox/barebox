@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <linux/string.h>
 #include <linux/printk.h>
+#include <linux/minmax.h>
 
 int elf_check_image(struct elf_image *elf, void *buf)
 {
@@ -84,6 +85,23 @@ void *elf_find_segment(struct elf_image *elf, u32 type, u64 *memsz)
 void *elf_find_dynamic_segment(struct elf_image *elf)
 {
 	return elf_find_segment(elf, PT_DYNAMIC, NULL);
+}
+
+u64 elf_inplace_size(struct elf_image *elf)
+{
+	void *buf = elf->hdr_buf;
+	void *phdr;
+	u64 size = 0;
+
+	elf_for_each_segment(phdr, elf, buf) {
+		if (elf_phdr_p_type(elf, phdr) != PT_LOAD)
+			continue;
+
+		size = max(size, elf_phdr_p_offset(elf, phdr) +
+				 elf_phdr_p_memsz(elf, phdr));
+	}
+
+	return size;
 }
 
 /**

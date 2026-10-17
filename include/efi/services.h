@@ -162,6 +162,8 @@ enum efi_reset_type {
 #define EFI_RUNTIME_SERVICES_SIGNATURE ((u64)0x56524553544e5552ULL)
 #define EFI_RUNTIME_SERVICES_REVISION  0x00010000
 
+#define EFI_OPTIONAL_PTR	0x00000001
+
 struct efi_capsule_header;
 
 struct efi_runtime_services {

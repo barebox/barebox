@@ -32,7 +32,6 @@
 #include "entry.h"
 
 unsigned long arm_stack_top;
-static unsigned long arm_barebox_size;
 static unsigned long arm_endmem;
 static unsigned long arm_membase;
 
@@ -147,7 +146,6 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 	arm_membase = membase;
 	arm_endmem = endmem;
 	arm_stack_top = arm_mem_stack_top(endmem);
-	arm_barebox_size = barebox_image_size + MAX_BSS_SIZE;
 	malloc_end = barebox_base;
 
 	if (IS_ENABLED(CONFIG_ARMV7R_MPU)) {

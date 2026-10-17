@@ -41,9 +41,6 @@ void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, 
 
 u32 barebox_arm_machine(void);
 
-unsigned long arm_mem_membase_get(void);
-unsigned long arm_mem_endmem_get(void);
-
 #ifdef CONFIG_ARM_EXCEPTIONS
 ulong arm_get_vector_table(void);
 #else
@@ -160,7 +157,7 @@ static inline unsigned long arm_mem_stack_top(unsigned long endmem)
 
 static inline const void *arm_mem_scratch_get(void)
 {
-	return (const void *)arm_mem_scratch(arm_mem_endmem_get());
+	return (const void *)barebox_layout.scratch.start;
 }
 
 static inline bool inside_stack_guard_page(ulong addr)

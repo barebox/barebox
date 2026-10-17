@@ -93,18 +93,6 @@ void *barebox_arm_boot_dtb(void)
 	return boot_dtb;
 }
 
-unsigned long arm_mem_endmem_get(void)
-{
-	return barebox_layout.membase + barebox_layout.memsize;
-}
-EXPORT_SYMBOL_GPL(arm_mem_endmem_get);
-
-unsigned long arm_mem_membase_get(void)
-{
-	return barebox_layout.membase;
-}
-EXPORT_SYMBOL_GPL(arm_mem_membase_get);
-
 static int barebox_memory_areas_init(void)
 {
 	if (kasan_enabled())

@@ -51,8 +51,9 @@ static int do_cpuinfo(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "sm")) > 0) {
 		switch (opt) {
 		case 'm':
-			print_pbl_mem_layout(arm_mem_membase_get(),
-					     arm_mem_endmem_get(),
+			print_pbl_mem_layout(barebox_layout.membase,
+					     barebox_layout.membase +
+					     barebox_layout.memsize,
 					     mem_malloc_end() + 1);
 			return 0;
 		case 's':

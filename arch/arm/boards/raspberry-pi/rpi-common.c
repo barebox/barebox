@@ -474,7 +474,7 @@ static struct device_node *rpi_vc_fdt(void)
 	unsigned long magic, size;
 
 	/* VideoCore FDT was copied in PBL just above Barebox memory */
-	saved_vc_fdt = (void *)(arm_mem_endmem_get());
+	saved_vc_fdt = (void *)(barebox_layout.membase + barebox_layout.memsize);
 
 	oftree = saved_vc_fdt;
 	magic = be32_to_cpu(oftree->magic);

@@ -21,14 +21,13 @@
 #include <malloc.h>
 #include <compressed-dtb.h>
 #include <asm/irq.h>
+#include <pbl/layout.h>
 
 #include <debug_ll.h>
 
 #include "entry.h"
 
-unsigned long riscv_stack_top;
 static unsigned long riscv_barebox_size;
-static unsigned long riscv_endmem;
 static void *barebox_boarddata;
 static unsigned long barebox_boarddata_size;
 
@@ -88,18 +87,6 @@ static inline unsigned long riscv_mem_boarddata(unsigned long membase,
 	return mem;
 }
 
-unsigned long riscv_mem_ramoops_get(void)
-{
-	return riscv_mem_ramoops(0, riscv_stack_top);
-}
-EXPORT_SYMBOL_GPL(riscv_mem_ramoops_get);
-
-unsigned long riscv_mem_endmem_get(void)
-{
-	return riscv_endmem;
-}
-EXPORT_SYMBOL_GPL(riscv_mem_endmem_get);
-
 static int barebox_memory_areas_init(void)
 {
 	if(barebox_boarddata)
@@ -127,8 +114,6 @@ void barebox_non_pbl_start(unsigned long membase, unsigned long memsize,
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
-	riscv_endmem = endmem;
-	riscv_stack_top = riscv_mem_stack_top(membase, endmem);
 	riscv_barebox_size = barebox_size;
 	malloc_end = barebox_base;
 

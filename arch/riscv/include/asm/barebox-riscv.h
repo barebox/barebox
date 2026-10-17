@@ -35,9 +35,6 @@ void __noreturn __naked barebox_riscv_entry(unsigned long membase, unsigned long
 	barebox_riscv_entry(membase, memsize, boarddata, RISCV_S_MODE); \
 } while (0)
 
-unsigned long riscv_mem_ramoops_get(void);
-unsigned long riscv_mem_endmem_get(void);
-
 void *barebox_riscv_boot_dtb(void);
 
 static inline unsigned long riscv_mem_stack_top(unsigned long membase,

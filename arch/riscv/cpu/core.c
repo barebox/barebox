@@ -24,13 +24,15 @@
 #include <magicvar.h>
 #include <asm/system.h>
 #include <io.h>
+#include <pbl/layout.h>
 
 static int riscv_request_stack(void)
 {
-	extern unsigned long riscv_stack_top;
-	return request_barebox_region("stack",
-				      riscv_stack_top - STACK_SIZE,
-				      STACK_SIZE, MEMATTRS_RW) ? 0 : -EINVAL;
+	ulong start = barebox_layout.stack.start;
+
+	return request_barebox_region("stack", start,
+				      barebox_layout.stack.end - start,
+				      MEMATTRS_RW) ? 0 : -EINVAL;
 }
 coredevice_initcall(riscv_request_stack);
 

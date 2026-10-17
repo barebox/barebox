@@ -40,7 +40,6 @@ void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, 
 
 u32 barebox_arm_machine(void);
 
-unsigned long arm_mem_ramoops_get(void);
 unsigned long arm_mem_membase_get(void);
 unsigned long arm_mem_endmem_get(void);
 

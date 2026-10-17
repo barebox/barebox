@@ -9,6 +9,7 @@
 #include <driver.h>
 #include <asm/psci.h>
 #include <asm/secure.h>
+#include <magicvar.h>
 #include <poweroff.h>
 #include <restart.h>
 #include <linux/arm-smccc.h>
@@ -219,3 +220,6 @@ static struct driver psci_driver = {
 	.of_compatible = DRV_OF_COMPAT(psci_dt_ids),
 };
 coredevice_platform_driver(psci_driver);
+
+BAREBOX_MAGICVAR(psci.version, "PSCI version implemented by the firmware");
+BAREBOX_MAGICVAR(psci.method, "PSCI conduit: smc or hvc");

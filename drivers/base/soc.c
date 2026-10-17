@@ -8,6 +8,7 @@
 #include <common.h>
 #include <init.h>
 #include <of.h>
+#include <magicvar.h>
 
 #include <linux/slab.h>
 #include <linux/sys_soc.h>
@@ -121,3 +122,9 @@ static int __init soc_bus_register(void)
 	return 0;
 }
 core_initcall(soc_bus_register);
+
+BAREBOX_MAGICVAR(soc0.machine, "Machine model, defaults to the device tree model property");
+BAREBOX_MAGICVAR(soc0.family, "SoC family");
+BAREBOX_MAGICVAR(soc0.revision, "SoC silicon revision");
+BAREBOX_MAGICVAR(soc0.serial_number, "SoC unique ID");
+BAREBOX_MAGICVAR(soc0.soc_id, "SoC model");

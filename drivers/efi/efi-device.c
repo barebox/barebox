@@ -445,6 +445,12 @@ static int efi_init_devices(void)
 core_efi_initcall(efi_init_devices);
 
 BAREBOX_MAGICVAR(efi.payload_default_path, "The arch-specific removable media path");
+BAREBOX_MAGICVAR(efi.fw_vendor, "Vendor of the EFI firmware");
+BAREBOX_MAGICVAR(efi.fw_revision, "Revision of the EFI firmware");
+BAREBOX_MAGICVAR(efi.major, "Major version of the EFI specification implemented by the firmware");
+BAREBOX_MAGICVAR(efi.minor, "Minor version of the EFI specification implemented by the firmware");
+BAREBOX_MAGICVAR(efi.secure_boot, "UEFI Secure Boot is enabled");
+BAREBOX_MAGICVAR(efi.secure_mode, "UEFI Secure Boot is enabled and the firmware is not in Setup Mode");
 
 void efi_pause_devices(void)
 {

@@ -16,6 +16,7 @@
 #include <common.h>
 #include <deep-probe.h>
 #include <driver.h>
+#include <magicvar.h>
 #include <malloc.h>
 #include <xfuncs.h>
 #include <errno.h>
@@ -1228,3 +1229,12 @@ static struct driver imx_ocotp_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx_ocotp_dt_ids),
 };
 postcore_platform_driver(imx_ocotp_driver);
+
+BAREBOX_MAGICVAR(ocotp0.permanent_write_enable,
+		 "Enable permanent writes (fuse blowing) to the OCOTP");
+BAREBOX_MAGICVAR(ocotp0.sense_enable,
+		 "Read the fuses directly instead of from the shadow registers");
+BAREBOX_MAGICVAR(ocotp0.mac_addr0, "MAC address of the first Ethernet controller in the fuses");
+BAREBOX_MAGICVAR(ocotp0.mac_addr1,
+		 "MAC address of the second Ethernet controller in the fuses (SoCs with two MACs only)");
+BAREBOX_MAGICVAR(ocotp0.mac_addr, "Alias for ocotp0.mac_addr0");

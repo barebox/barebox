@@ -3,6 +3,7 @@
 #include <common.h>
 #include <driver.h>
 #include <linux/usb/usb.h>
+#include <magicvar.h>
 
 struct otg_mode {
 	struct device dev;
@@ -109,3 +110,5 @@ static int otg_bus_init(void)
 	return bus_register(&otg_bus_type);
 }
 pure_initcall(otg_bus_init);
+
+BAREBOX_MAGICVAR(otg.mode, "Mode of the first USB OTG port: otg, host or peripheral");

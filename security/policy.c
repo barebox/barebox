@@ -5,6 +5,7 @@
 #include <init.h>
 #include <linux/printk.h>
 #include <linux/bitmap.h>
+#include <magicvar.h>
 #include <param.h>
 #include <device.h>
 #include <stdio.h>
@@ -247,3 +248,5 @@ static int security_init(void)
 	return 0;
 }
 pure_initcall(security_init);
+
+BAREBOX_MAGICVAR(security.policy, "Name of the active security policy (read-only)");

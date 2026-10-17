@@ -7,6 +7,7 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
+#include <magicvar.h>
 #include <xfuncs.h>
 #include <errno.h>
 #include <param.h>
@@ -224,6 +225,9 @@ static struct driver mxs_ocotp_driver = {
 };
 
 coredevice_platform_driver(mxs_ocotp_driver);
+
+BAREBOX_MAGICVAR(ocotp0.permanent_write_enable,
+		 "Enable permanent writes (fuse blowing) to the OCOTP");
 
 int mxs_ocotp_read(void *buf, int count, int offset)
 {

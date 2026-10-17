@@ -12,6 +12,7 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
+#include <magicvar.h>
 #include <xfuncs.h>
 #include <errno.h>
 #include <param.h>
@@ -603,3 +604,10 @@ static struct driver imx_iim_driver = {
 };
 
 coredevice_platform_driver(imx_iim_driver);
+
+BAREBOX_MAGICVAR(iim.permanent_write_enable,
+		 "Enable permanent writes (fuse blowing) to the IIM");
+BAREBOX_MAGICVAR(iim.explicit_sense_enable,
+		 "Read the fuses by explicit sensing instead of from the shadow registers");
+BAREBOX_MAGICVAR(iim.ethaddr*,
+		 "MAC addresses in the fuses, one per barebox,provide-mac-address entry");

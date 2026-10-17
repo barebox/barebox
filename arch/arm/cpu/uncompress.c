@@ -23,6 +23,7 @@
 #include <compressed-dtb.h>
 #include <elf.h>
 #include <pbl/mmu.h>
+#include <pbl/layout.h>
 
 #include <debug_ll.h>
 
@@ -30,6 +31,30 @@
 
 extern unsigned char input_data[];
 extern unsigned char input_data_end[];
+
+static void arm_fill_barebox_layout(struct elf_image *elf,
+				    unsigned long membase, unsigned long memsize)
+{
+	unsigned long endmem = membase + memsize;
+	struct barebox_layout *layout;
+
+	layout = pbl_barebox_layout(elf, membase, memsize);
+
+	layout->scratch.start = arm_mem_scratch(endmem);
+	layout->scratch.end = arm_mem_optee(endmem);
+	layout->stack.start = arm_mem_stack(endmem);
+	layout->stack.end = arm_mem_stack_top(endmem);
+
+	if (IS_ENABLED(CONFIG_STACK_GUARD_PAGE)) {
+		layout->guard_page.start = arm_mem_guard_page(endmem);
+		layout->guard_page.end = layout->guard_page.start + PAGE_SIZE;
+	}
+
+#ifdef CONFIG_FS_PSTORE_RAMOOPS
+	layout->ramoops.start = arm_mem_ramoops(endmem);
+	layout->ramoops.end = layout->ramoops.start + CONFIG_FS_PSTORE_RAMOOPS_SIZE;
+#endif
+}
 
 void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 				  void *boarddata)
@@ -117,6 +142,9 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	ret = elf_load_inplace(&elf);
 	if (ret)
 		panic("Failed to relocate ELF: %d\n", ret);
+
+	/* must be done before the layout segment is mapped read-only */
+	arm_fill_barebox_layout(&elf, membase, memsize);
 
 	/*
 	 * Now that the ELF image is relocated, we know the exact addresses

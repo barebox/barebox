@@ -11,6 +11,7 @@
 #include <linux/sizes.h>
 #include <pbl.h>
 #include <pbl/mmu.h>
+#include <pbl/layout.h>
 #include <asm/barebox-riscv.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
@@ -22,6 +23,18 @@
 #include <debug_ll.h>
 
 #include "entry.h"
+
+static void riscv_fill_barebox_layout(struct elf_image *elf,
+				      unsigned long membase, unsigned long memsize)
+{
+	unsigned long endmem = membase + memsize;
+	struct barebox_layout *layout;
+
+	layout = pbl_barebox_layout(elf, membase, memsize);
+
+	layout->stack.start = riscv_mem_stack(membase, endmem);
+	layout->stack.end = riscv_mem_stack_top(membase, endmem);
+}
 
 void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 				  void *fdt)
@@ -88,6 +101,9 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	ret = elf_load_inplace(&elf);
 	if (ret)
 		panic("Failed to relocate ELF: %d\n", ret);
+
+	/* must be done before the layout segment is mapped read-only */
+	riscv_fill_barebox_layout(&elf, membase, memsize);
 
 	/*
 	 * Now that the ELF image is relocated, we know the exact addresses

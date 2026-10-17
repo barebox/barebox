@@ -2,6 +2,7 @@
 /* SPDX-FileCopyrightText: 2000-2004 Wolfgang Denk <wd@denx.de>, DENX Software Engineering */
 
 #include <asm/barebox.lds.h>
+#include <pbl/layout.h>
 
 OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
 OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
@@ -12,6 +13,7 @@ PHDRS
 	text PT_LOAD FLAGS(5);		/* PF_R | PF_X */
 	rodata PT_LOAD FLAGS(4);	/* PF_R */
 	dynamic PT_DYNAMIC FLAGS(4);	/* PF_R */
+	layout PT_BAREBOX_LAYOUT FLAGS(4); /* PF_R */
 #ifdef CONFIG_EFI_RUNTIME
 	efirt_text PT_LOAD FLAGS(5);	/* PF_R | PF_X */
 	efirt_data PT_LOAD FLAGS(6);	/* PF_R | PF_W */
@@ -36,6 +38,7 @@ SECTIONS
 
 	. = ALIGN(4096);
 	__start_rodata = .;
+	.barebox_layout : { KEEP(*(.barebox_layout)) } :rodata :layout
 	.rodata : {
 		*(.rodata*)
 		RO_DATA_SECTION

@@ -120,7 +120,7 @@ void barebox_non_pbl_start(unsigned long membase, unsigned long memsize,
 {
 	unsigned long endmem = membase + memsize;
 	unsigned long malloc_start, malloc_end;
-	unsigned long barebox_size = barebox_image_size + MAX_BSS_SIZE;
+	unsigned long barebox_size = barebox_image_size;
 	unsigned long barebox_base = riscv_mem_barebox_image(membase, endmem, barebox_size);
 
 	irq_init_vector(riscv_mode());

@@ -43,7 +43,7 @@ static const struct fdt_device_id console_ids[] = {
 static void noinline __noreturn start_dt_2nd_nonnaked(unsigned long hartid,
 						      unsigned long _fdt)
 {
-	unsigned long membase, memsize, endmem, endfdt, uncompressed_len;
+	unsigned long membase, memsize, endmem, endfdt, barebox_size;
 	struct fdt_header *fdt = (void *)_fdt;
 	void (*pbl_uart_init)(void);
 
@@ -74,9 +74,9 @@ static void noinline __noreturn start_dt_2nd_nonnaked(unsigned long hartid,
 	 * would normally extract itself to. Accommodate this by moving
 	 * memory end, so it doesn't overlap FDT
 	 */
-	uncompressed_len = input_data_len() + MAX_BSS_SIZE;
+	barebox_size = pbl_barebox_memsz(input_data_len());
 
-	if (riscv_mem_barebox_image(membase, endmem, uncompressed_len) < endfdt &&
+	if (riscv_mem_barebox_image(membase, endmem, barebox_size) < endfdt &&
 	    _fdt < riscv_mem_stack_top(membase, endmem))
 		memsize = ALIGN_DOWN(_fdt - membase, SZ_1M);
 

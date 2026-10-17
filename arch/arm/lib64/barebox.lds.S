@@ -6,7 +6,7 @@
 
 OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
 OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
-ENTRY(barebox_non_pbl_start)
+ENTRY(arm_barebox_non_pbl_start)
 
 PHDRS
 {

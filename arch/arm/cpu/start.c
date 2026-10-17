@@ -19,10 +19,9 @@
 #include <asm/unaligned.h>
 #include <asm/cache.h>
 #include <asm/mmu.h>
-#include <linux/kasan.h>
 #include <memory.h>
+#include <pbl/barebox-proper.h>
 #include <pbl/handoff-data.h>
-#include <malloc.h>
 #include <asm/armv7r-mpu.h>
 
 #include <debug_ll.h>
@@ -42,23 +41,20 @@ u32 barebox_arm_machine(void)
 	return 0;
 }
 
-static int barebox_memory_areas_init(void)
+#ifdef CONFIG_ARMV7R_MPU
+void arch_adjust_malloc_end(unsigned long *malloc_end)
 {
-	if (kasan_enabled())
-		request_sdram_region("kasan shadow", kasan_shadow_base,
-				     mem_malloc_start() - kasan_shadow_base,
-				     MEMTYPE_BOOT_SERVICES_DATA, MEMATTRS_RW);
+	*malloc_end = ALIGN_DOWN(*malloc_end - SZ_8M, SZ_8M);
 
-	return 0;
+	armv7r_mpu_init_coherent(*malloc_end, REGION_8MB);
 }
-device_initcall(barebox_memory_areas_init);
+#endif
 
-__noreturn void barebox_non_pbl_start(unsigned long membase,
-				      unsigned long memsize,
-				      struct handoff_data *hd)
+__noreturn void arm_barebox_non_pbl_start(unsigned long membase,
+					  unsigned long memsize,
+					  struct handoff_data *hd)
 {
 	unsigned long endmem = membase + memsize;
-	unsigned long malloc_start, malloc_end;
 	unsigned long barebox_base = arm_mem_barebox_image(membase, endmem,
 							   barebox_image_size,
 							   hd);
@@ -68,53 +64,8 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 	pbl_barebox_break();
 
-	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
-
-	malloc_end = barebox_base;
-
-	if (IS_ENABLED(CONFIG_ARMV7R_MPU)) {
-		malloc_end = ALIGN_DOWN(malloc_end - SZ_8M, SZ_8M);
-
-		armv7r_mpu_init_coherent(malloc_end, REGION_8MB);
-	}
-
-#ifdef CONFIG_ARM64
-	malloc_start = barebox_malloc_base(membase, memsize);
-#else
-	/* TODO: migrate ARM32 to barebox_malloc_base(), once legacy xload
-	 * code has been migrated to loadables; On boards like the beaglebone,
-	 * a separate first stage barebox loads the second stage into RAM
-	 * and executes it from there, so reusing the malloc area in second
-	 * stage PBL will mangle the second stage code.
-	 */
-	/*
-	 * Maximum malloc space is the Kconfig value if given
-	 * or 1GB.
-	 */
-	if (MALLOC_SIZE > 0) {
-		malloc_start = malloc_end - MALLOC_SIZE;
-		if (malloc_start < membase)
-			malloc_start = membase;
-	} else {
-		malloc_start = malloc_end - (malloc_end - membase) / 2;
-		if (malloc_end - malloc_start > SZ_1G)
-			malloc_start = malloc_end - SZ_1G;
-	}
-#endif
-
-	pr_debug("initializing malloc pool at 0x%08lx (size 0x%08lx)\n",
-			malloc_start, malloc_end - malloc_start);
-
 	register_barebox_area(barebox_base,
 			      arm_mem_barebox_image_end(endmem) - barebox_base);
 
-	kasan_init(membase, memsize, malloc_start - (memsize >> KASAN_SHADOW_SCALE_SHIFT));
-
-	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
-
-	handoff_data_set(hd);
-
-	pr_debug("starting barebox...\n");
-
-	start_barebox();
+	barebox_non_pbl_start(membase, memsize, hd);
 }

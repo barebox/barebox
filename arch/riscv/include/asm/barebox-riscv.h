@@ -23,6 +23,7 @@
 #include <asm/system.h>
 #include <asm/cache.h>
 #include <asm/reloc.h>
+#include <pbl/handoff-data.h>
 
 void __noreturn __naked barebox_riscv_entry(unsigned long membase, unsigned long memsize,
 					    void *boarddata, unsigned int flags);
@@ -34,8 +35,6 @@ void __noreturn __naked barebox_riscv_entry(unsigned long membase, unsigned long
 	__asm__ volatile("mv tp, %0\n" : : "r"(hartid)); \
 	barebox_riscv_entry(membase, memsize, boarddata, RISCV_S_MODE); \
 } while (0)
-
-void *barebox_riscv_boot_dtb(void);
 
 static inline unsigned long riscv_mem_stack_top(unsigned long membase,
 						unsigned long endmem)
@@ -67,17 +66,20 @@ static inline unsigned long riscv_mem_ramoops(unsigned long membase,
 	return endmem;
 }
 
+/*
+ * Where the PBL places the barebox proper image, followed by the handoff
+ * data. @memsz is how much memory the image needs, see pbl_barebox_memsz().
+ */
 static inline unsigned long riscv_mem_barebox_image(unsigned long membase,
 						    unsigned long endmem,
-						    unsigned long size)
+						    unsigned long memsz,
+						    const struct handoff_data *handoff_data)
 {
-#ifdef __PBL__
+	unsigned long size = ALIGN(memsz, 8) + __handoff_data_size(handoff_data);
+
 	endmem = riscv_mem_ramoops(membase, endmem);
 
 	return ALIGN_DOWN(endmem - size, SZ_1M);
-#else
-	return (unsigned long)__image_start;
-#endif
 }
 
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)                          \

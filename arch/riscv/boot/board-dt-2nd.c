@@ -76,11 +76,14 @@ static void noinline __noreturn start_dt_2nd_nonnaked(unsigned long hartid,
 	 */
 	barebox_size = pbl_barebox_memsz(input_data_len());
 
-	if (riscv_mem_barebox_image(membase, endmem, barebox_size) < endfdt &&
+	/* The FDT is handed over behind barebox proper, so account for it */
+	handoff_data_add_dt(fdt);
+
+	if (riscv_mem_barebox_image(membase, endmem, barebox_size, NULL) < endfdt &&
 	    _fdt < riscv_mem_stack_top(membase, endmem))
 		memsize = ALIGN_DOWN(_fdt - membase, SZ_1M);
 
-	barebox_riscv_supervisor_entry(membase, memsize, hartid, fdt);
+	barebox_riscv_supervisor_entry(membase, memsize, hartid, NULL);
 }
 
 ENTRY_FUNCTION(start_dt_2nd, hartid, _fdt, a2)

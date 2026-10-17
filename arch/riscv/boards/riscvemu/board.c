@@ -11,6 +11,7 @@
 #include <deep-probe.h>
 #include <asm/system.h>
 #include <asm/barebox-riscv.h>
+#include <pbl/barebox-proper.h>
 
 struct riscvemu_priv {
 	struct restart_handler rst;
@@ -31,7 +32,7 @@ static void __noreturn riscvemu_restart(struct restart_handler *rst,
 	 * something explicitly scrubbed the initial PBL, we can jump back to
 	 * the reset vector to "reset".
 	 */
-	priv->restart(riscv_hartid(), barebox_riscv_boot_dtb());
+	priv->restart(riscv_hartid(), barebox_boot_dtb());
 }
 
 extern char __dtbo_riscvemu_sram_start[];

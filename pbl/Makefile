@@ -14,4 +14,4 @@ pbl-$(CONFIG_PBL_CONSOLE) += console.o
 obj-pbl-y += handoff-data.o
 obj-pbl-$(CONFIG_PBL_IMAGE_ELF) += layout.o
 obj-pbl-$(CONFIG_MMU) += mmu.o
-obj-$(CONFIG_ARM) += barebox-proper.o
+obj-$(CONFIG_PBL_IMAGE_ELF) += barebox-proper.o

@@ -66,6 +66,8 @@ SECTIONS
 	.__bss_stop :  { *(.__bss_stop) } :data
 	_end = .;
 	_barebox_image_size = __bss_start;
+	/* the PBL loads the file, where the first segment follows the headers */
+	barebox_memory_size = ALIGN(SIZEOF_HEADERS, CONSTANT(MAXPAGESIZE)) + .;
 }
 
 NOCROSSREFS_FROM(.efi_runtime.text)

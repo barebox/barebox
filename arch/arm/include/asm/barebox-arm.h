@@ -19,6 +19,7 @@
 #include <linux/types.h>
 #include <linux/compiler.h>
 #include <pbl/handoff-data.h>
+#include <pbl/layout.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/common.h>
 #include <asm/sections.h>
@@ -162,21 +163,10 @@ static inline const void *arm_mem_scratch_get(void)
 	return (const void *)arm_mem_scratch(arm_mem_endmem_get());
 }
 
-static inline unsigned long arm_mem_guard_page_get(void)
-{
-	return arm_mem_guard_page(arm_mem_endmem_get());
-}
-
 static inline bool inside_stack_guard_page(ulong addr)
 {
-	if (IS_ENABLED(CONFIG_STACK_GUARD_PAGE) && IN_PROPER) {
-		ulong guard_page = arm_mem_guard_page_get();
-
-		if (guard_page <= addr && addr < guard_page + PAGE_SIZE)
-			return true;
-	}
-
-	return false;
+	return IN_PROPER && barebox_layout.guard_page.start <= addr &&
+	       addr < barebox_layout.guard_page.end;
 }
 
 /*

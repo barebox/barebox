@@ -31,10 +31,6 @@
 
 #include "entry.h"
 
-unsigned long arm_stack_top;
-static unsigned long arm_endmem;
-static unsigned long arm_membase;
-
 u32 barebox_arm_machine(void)
 {
 	size_t size;
@@ -99,13 +95,13 @@ void *barebox_arm_boot_dtb(void)
 
 unsigned long arm_mem_endmem_get(void)
 {
-	return arm_endmem;
+	return barebox_layout.membase + barebox_layout.memsize;
 }
 EXPORT_SYMBOL_GPL(arm_mem_endmem_get);
 
 unsigned long arm_mem_membase_get(void)
 {
-	return arm_membase;
+	return barebox_layout.membase;
 }
 EXPORT_SYMBOL_GPL(arm_mem_membase_get);
 
@@ -137,9 +133,6 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
-	arm_membase = membase;
-	arm_endmem = endmem;
-	arm_stack_top = arm_mem_stack_top(endmem);
 	malloc_end = barebox_base;
 
 	if (IS_ENABLED(CONFIG_ARMV7R_MPU)) {

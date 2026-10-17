@@ -22,8 +22,6 @@
 #include <linux/kasan.h>
 #include <memory.h>
 #include <pbl/handoff-data.h>
-#include <uncompress.h>
-#include <compressed-dtb.h>
 #include <malloc.h>
 #include <asm/armv7r-mpu.h>
 
@@ -42,55 +40,6 @@ u32 barebox_arm_machine(void)
 		return *machine;
 
 	return 0;
-}
-
-void *barebox_arm_boot_dtb(void)
-{
-	void *dtb;
-	int ret = 0;
-	struct barebox_boarddata_compressed_dtb *compressed_dtb;
-	static void *boot_dtb;
-	void *blob;
-	size_t size;
-
-	if (boot_dtb)
-		return boot_dtb;
-
-	blob = handoff_data_get_entry(HANDOFF_DATA_INTERNAL_DT, &size);
-	if (blob)
-		return blob;
-
-	blob = handoff_data_get_entry(HANDOFF_DATA_INTERNAL_DT_Z, &size);
-	if (!blob)
-		return NULL;
-
-	if (!fdt_blob_can_be_decompressed(blob))
-		return NULL;
-
-	compressed_dtb = blob;
-
-	pr_debug("%s: using compressed_dtb\n", __func__);
-
-	dtb = malloc(ALIGN(compressed_dtb->datalen_uncompressed, 4));
-	if (!dtb)
-		return NULL;
-
-	if (IS_ENABLED(CONFIG_IMAGE_COMPRESSION_NONE))
-		memcpy(dtb, compressed_dtb->data,
-		       compressed_dtb->datalen_uncompressed);
-	else
-		ret = uncompress(compressed_dtb->data, compressed_dtb->datalen,
-				 NULL, NULL, dtb, NULL, NULL);
-
-	if (ret) {
-		pr_err("uncompressing dtb failed\n");
-		free(dtb);
-		return NULL;
-	}
-
-	boot_dtb = dtb;
-
-	return boot_dtb;
 }
 
 static int barebox_memory_areas_init(void)

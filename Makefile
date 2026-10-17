@@ -1168,7 +1168,8 @@ barebox.fit: images/barebox-$(CONFIG_ARCH_LINUX_NAME).fit
 barebox.srec: barebox
 	$(OBJCOPY) -O srec $< $@
 
-OBJCOPYFLAGS_vmbarebox = $(call objcopy-option,--strip-section-headers,--strip-all)  \
+OBJCOPYFLAGS_vmbarebox = $(call objcopy-option,--strip-section-headers,\
+			   $(call objcopy-option,--strip-sections,--strip-all)) \
 			 --remove-section=.comment \
 			 --remove-section=.note* \
 			 --remove-section=.gnu.hash

@@ -35,9 +35,9 @@ static char *kvx_mppa_id;
 static char *kvx_arch_rev;
 static char *kvx_board_sn;
 
-BAREBOX_MAGICVAR(kvx.arch_rev, "KVX architecture revision");
-BAREBOX_MAGICVAR(kvx.mppa_id, "KVX MPPA chip id");
-BAREBOX_MAGICVAR(kvx.board_sn, "KVX board sn");
+BAREBOX_MAGICVAR(global.kvx.arch_rev, "KVX architecture revision");
+BAREBOX_MAGICVAR(global.kvx.mppa_id, "KVX MPPA chip id");
+BAREBOX_MAGICVAR(global.kvx.board_sn, "KVX board sn");
 
 static void kvx_soc_info_read_revision(void)
 {

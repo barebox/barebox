@@ -45,7 +45,7 @@ static struct sam9_smc_config skov_nor_smc_config = {
 	.tdf_cycles		= 1,
 };
 
-BAREBOX_MAGICVAR(board.mem, "The detected memory size in MiB");
+BAREBOX_MAGICVAR(global.board.mem, "The detected memory size in MiB");
 
 static int mem;
 

@@ -349,7 +349,7 @@ static int efi_is_secure_boot(void)
 		free(val);
 	}
 
-	return ret != 1;
+	return ret == 1;
 }
 
 static int efi_is_setup_mode(void)
@@ -363,7 +363,7 @@ static int efi_is_setup_mode(void)
 		free(val);
 	}
 
-	return ret != 1;
+	return ret == 1;
 }
 
 static bool is_bio_usbdev(struct efi_device *efidev)
@@ -430,7 +430,7 @@ static int efi_init_devices(void)
 	dev_add_param_uint32_fixed(&efi_bus.dev, "fw_revision", efi_sys_table->fw_revision, "%u");
 	dev_add_param_bool_fixed(&efi_bus.dev, "secure_boot", secure_boot);
 	dev_add_param_bool_fixed(&efi_bus.dev, "secure_mode",
-				 secure_boot & setup_mode);
+				 secure_boot && !setup_mode);
 	dev_add_param_fixed(&efi_bus.dev, "payload_default_path",
 			    CONFIG_EFI_PAYLOAD_DEFAULT_PATH);
 

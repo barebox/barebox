@@ -293,7 +293,7 @@ out:
  * the runtime services will be replaced by the detached implementation,
  * so we need not take any special consideration here.
  */
-struct efi_runtime_services efi_runtime_services = {
+struct efi_runtime_services efi_runtime_services_boot = {
 	.hdr = {
 		.signature = EFI_RUNTIME_SERVICES_SIGNATURE,
 		.revision = EFI_SPECIFICATION_VERSION,

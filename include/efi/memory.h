@@ -91,4 +91,10 @@ struct efi_memory_desc {
 
 #define EFI_MEMORY_DESCRIPTOR_VERSION	1
 
+static inline ptrdiff_t
+efi_memory_desc_relocation_offset(const struct efi_memory_desc *md)
+{
+	return efi_virt_to_phys(md->virt_start) - md->phys_start;
+}
+
 #endif

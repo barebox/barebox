@@ -40,6 +40,14 @@ int elf_open_binary_into(struct elf_image *elf, void *buf);
 void elf_set_load_address(struct elf_image *elf, void *addr);
 
 /*
+ * Find the first segment of the given p_type and return its address,
+ * relocated if the image was loaded with elf_load_inplace(). If @memsz
+ * is not NULL, it's set to the segment's p_memsz.
+ * Returns NULL if there is no such segment.
+ */
+void *elf_find_segment(struct elf_image *elf, u32 type, u64 *memsz);
+
+/*
  * Parse the dynamic section and extract relocation information.
  * This is a generic function that works for both 32-bit and 64-bit ELF files,
  * and handles both REL and RELA relocation formats.

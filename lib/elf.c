@@ -63,17 +63,27 @@ void elf_set_load_address(struct elf_image *elf, void *addr)
 	elf->load_address = addr;
 }
 
-void *elf_find_dynamic_segment(struct elf_image *elf)
+void *elf_find_segment(struct elf_image *elf, u32 type, u64 *memsz)
 {
 	void *buf = elf->hdr_buf;
-	void *phdr = buf + elf_hdr_e_phoff(elf, buf);
+	void *phdr;
 
 	elf_for_each_segment(phdr, elf, buf) {
-		if (elf_phdr_p_type(elf, phdr) == PT_DYNAMIC)
-			return elf_phdr_relocated_paddr(elf, phdr);
+		if (elf_phdr_p_type(elf, phdr) != type)
+			continue;
+
+		if (memsz)
+			*memsz = elf_phdr_p_memsz(elf, phdr);
+
+		return elf_phdr_relocated_paddr(elf, phdr);
 	}
 
-	return NULL;  /* No PT_DYNAMIC segment */
+	return NULL;
+}
+
+void *elf_find_dynamic_segment(struct elf_image *elf)
+{
+	return elf_find_segment(elf, PT_DYNAMIC, NULL);
 }
 
 /**

@@ -6,6 +6,7 @@
 #include <common.h>
 #include <command.h>
 #include <environment.h>
+#include <magicvar.h>
 #include <s_record.h>
 #include <net.h>
 
@@ -262,6 +263,8 @@ BAREBOX_CMD_START(loads)
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_loads_help)
 BAREBOX_CMD_END
+
+BAREBOX_MAGICVAR(loads_echo, "If false, loads prints a dot every 100 lines instead of echoing them");
 
 /*
  * SAVES always requires LOADS support, but not vice versa

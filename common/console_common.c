@@ -211,6 +211,12 @@ static int console_common_init(void)
 }
 core_initcall(console_common_init);
 
+BAREBOX_MAGICVAR(global.loglevel,
+		 "Console log level: only messages up to this level are printed");
+BAREBOX_MAGICVAR(global.log_max_messages,
+		 "Maximum number of messages kept in the log buffer");
+BAREBOX_MAGICVAR(global.allow_color, "Allow colored console output");
+
 int log_writefile(const char *filepath)
 {
 	int ret = 0, nbytes = 0, fd = -1;

@@ -5,6 +5,7 @@
 #include <deep-probe.h>
 #include <init.h>
 #include <fs.h>
+#include <magicvar.h>
 #include <of.h>
 #include <of_device.h>
 #include <linux/stat.h>
@@ -800,3 +801,11 @@ static struct driver rpi_board_driver = {
 	.of_compatible = DRV_OF_COMPAT(rpi_of_match),
 };
 late_platform_driver(rpi_board_driver);
+
+BAREBOX_MAGICVAR(global.vc.bootargs, "Kernel command line from the VideoCore device tree");
+BAREBOX_MAGICVAR(global.vc.overlay_prefix, "overlay_prefix from the VideoCore device tree");
+BAREBOX_MAGICVAR(global.vc.os_prefix, "os_prefix from the VideoCore device tree");
+BAREBOX_MAGICVAR(global.vc.boot_mode, "Boot mode reported by the VideoCore firmware");
+BAREBOX_MAGICVAR(global.vc.boot_partition, "Boot partition reported by the VideoCore firmware");
+BAREBOX_MAGICVAR(global.vc.kernel,
+		 "Default kernel image name for the CPU: kernel.img, kernel7.img or kernel8.img");

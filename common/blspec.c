@@ -4,6 +4,7 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <firmware.h>
+#include <magicvar.h>
 #include <malloc.h>
 #include <fcntl.h>
 #include <libfile.h>
@@ -704,3 +705,6 @@ static int blspec_init(void)
 	return bootentry_register_provider(&blspec_bootentry_provider);
 }
 device_initcall(blspec_init);
+
+BAREBOX_MAGICVAR(global.boot.machine_id,
+		 "If set, only boot bootloader spec entries with a matching machine-id");

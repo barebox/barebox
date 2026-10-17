@@ -13,6 +13,7 @@
 #include <fs.h>
 #include <errno.h>
 #include <environment.h>
+#include <magicvar.h>
 
 static int do_cd(int argc, char *argv[])
 {
@@ -63,3 +64,5 @@ BAREBOX_CMD_START(cd)
 	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_cd_help)
 BAREBOX_CMD_END
+
+BAREBOX_MAGICVAR(OLDPWD, "Previous working directory, set by cd and used by 'cd -'");

@@ -293,7 +293,8 @@ void efi_runtime_detach(struct efi_system_table *systab)
 	systab->std_err = NULL;
 	systab->boottime = NULL;
 
-	systab->runtime = &efi_runtime_services_detached;
+	/* Payloads may have cached systab->runtime, so patch it in place */
+	*systab->runtime = efi_runtime_services_detached;
 
 	/* Recalculate CRC32 */
 	efi_update_table_header_crc32(&systab->hdr);

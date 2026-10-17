@@ -155,11 +155,6 @@ static inline unsigned long arm_mem_stack_top(unsigned long endmem)
 	return arm_mem_stack(endmem) + STACK_SIZE;
 }
 
-static inline const void *arm_mem_scratch_get(void)
-{
-	return (const void *)barebox_layout.scratch.start;
-}
-
 static inline bool inside_stack_guard_page(ulong addr)
 {
 	return IN_PROPER && barebox_layout.guard_page.start <= addr &&

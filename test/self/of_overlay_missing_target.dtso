@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	fragment@0 {
+		target-path = "/does-not-exist";
+
+		__overlay__ {
+			never-applied {
+			};
+		};
+	};
+
+	fragment@1 {
+		target-path = "/target-node";
+
+		__overlay__ {
+			applied-anyway {
+			};
+		};
+	};
+};

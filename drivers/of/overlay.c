@@ -125,6 +125,8 @@ static char *of_overlay_fix_path(struct device_node *root,
 		return NULL;
 	}
 
+	pr_debug("using fragment %pOF\n", fragment);
+
 	target = find_target(root, fragment, false);
 	if (!target)
 		return ERR_PTR(-EINVAL);
@@ -167,8 +169,8 @@ static int of_overlay_apply_symbols(struct device_node *root,
 		if (!new_path)
 			continue;
 
-		pr_debug("add symbol %s with new path %s\n",
-			 prop->name, new_path);
+		pr_debug("add symbol %s with new path %s (was %s)\n",
+			 prop->name, new_path, old_path);
 		of_property_write_string(root_symbols, prop->name, new_path);
 		free(new_path);
 	}

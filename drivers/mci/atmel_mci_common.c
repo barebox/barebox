@@ -243,7 +243,9 @@ static int atmci_read_response(struct atmel_mci *host, unsigned int stat)
 	resp = (u32 *)cmd->response;
 
 	if (stat & (ATMCI_RTOE | ATMCI_DTOE)) {
-		dev_err(host->hw_dev, "command/data timeout\n");
+		dev_err(host->hw_dev, "CMD%u: %s timeout (SR=0x%08x)\n",
+			cmd->cmdidx, stat & ATMCI_RTOE ? "response" : "data",
+			stat);
 		return -ETIMEDOUT;
 	} else if ((stat & ATMCI_RCRCE) && (cmd->resp_type & MMC_RSP_CRC)) {
 		dev_err(host->hw_dev, "cmd crc error\n");

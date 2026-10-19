@@ -34,6 +34,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_MALLOC
 	select SELFTEST_PROGRESS_NOTIFIER
 	select SELFTEST_OF_MANIPULATION
+	select SELFTEST_OF_OVERLAY
 	select SELFTEST_ENVIRONMENT_VARIABLES if ENVIRONMENT_VARIABLES
 	select SELFTEST_FS_RAMFS if FS_RAMFS
 	select SELFTEST_DIRFD if FS_RAMFS && FS_DEVFS
@@ -85,6 +86,12 @@ config SELFTEST_OF_MANIPULATION
 	select OFTREE
 	help
 	  Tests barebox device tree manipulation functionality
+
+config SELFTEST_OF_OVERLAY
+	bool "OF overlay selftest"
+	select OF_OVERLAY
+	help
+	  Tests devicetree overlay application
 
 config SELFTEST_PROGRESS_NOTIFIER
 	bool "progress notifier selftest"

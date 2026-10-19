@@ -266,7 +266,7 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 {
 	struct mci_cmd cmd = {};
 	unsigned mmccmd;
-	int ret;
+	int ret, err;
 
 	/*
 	 * Quoting eMMC Spec v5.1 (JEDEC Standard No. 84-B51):
@@ -303,6 +303,15 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 		cmd.data = NULL;
 		mci_send_cmd(mci, &cmd);
         }
+
+	/*
+	 * The card stays in prg state for a while after the write. Polling
+	 * before the next write is not enough: a read sent in prg state is
+	 * an illegal command, which the card does not answer at all.
+	 */
+	err = mci_poll_until_ready(mci, 1000 /* ms */);
+	if (!ret && err != -ENOSYS)
+		ret = err;
 
 	return ret;
 }

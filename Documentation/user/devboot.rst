@@ -175,7 +175,8 @@ kernel command line fragments:
 
   global linux.bootargs.devboot.rsinit="rsinit.bind_modules"
 
-With this script in place and ``global.user=afa``, ``global.hostname=rock3a``,
+With this script in place and :ref:`global.user=afa <magicvar_global_user>`,
+:ref:`global.hostname=rock3a <magicvar_global_hostname>`,
 running ``devboot mmc`` on the board expands to::
 
   boot -o bootm.image="afa-fit-rock3a" \
@@ -241,7 +242,8 @@ by the script itself takes precedence, like ``devboot_oftree`` here.
 Setting up the variables
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``global.user`` and ``global.hostname`` variables control which
+The :ref:`global.user <magicvar_global_user>` and
+:ref:`global.hostname <magicvar_global_hostname>` variables control which
 script is loaded. Make them persistent with:
 
 .. code-block:: sh
@@ -249,8 +251,8 @@ script is loaded. Make them persistent with:
   nv user=afa
   nv hostname=rock3a
 
-``global.hostname`` is typically derived from the device tree, but can be
-overridden.
+:ref:`global.hostname <magicvar_global_hostname>` is typically derived from
+the device tree, but can be overridden.
 
 devboot boot target
 ^^^^^^^^^^^^^^^^^^^

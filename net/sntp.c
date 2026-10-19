@@ -6,6 +6,7 @@
 #include <linux/math64.h>
 #include <command.h>
 #include <clock.h>
+#include <magicvar.h>
 #include <net.h>
 #include <sntp.h>
 #include <errno.h>
@@ -164,3 +165,5 @@ out_unreg:
 out:
 	return ret;
 }
+
+BAREBOX_MAGICVAR(global.dhcp.ntpserver, "NTP server used when none is given explicitly");

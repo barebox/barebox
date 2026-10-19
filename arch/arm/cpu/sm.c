@@ -19,6 +19,7 @@
 #include <linux/arm-smccc.h>
 #include <asm-generic/sections.h>
 #include <asm/secure.h>
+#include <magicvar.h>
 #include "mmu_32.h"
 
 static unsigned int read_id_pfr1(void)
@@ -228,3 +229,6 @@ static int sm_init(void)
 	return 0;
 }
 device_initcall(sm_init);
+
+BAREBOX_MAGICVAR(global.bootm.secure_state,
+		 "ARM security state to start the kernel in: secure, nonsecure or hyp");

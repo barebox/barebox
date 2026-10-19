@@ -22,9 +22,11 @@ can start it via::
 
   boot bootchooser
 
-or by e.g. setting ``boot.default`` to ``bootchooser``.
+or by e.g. setting :ref:`global.boot.default <magicvar_global_boot_default>`
+to ``bootchooser``.
 
-.. note:: As ``boot.default`` accepts multiple values, it can also be used to
+.. note:: As :ref:`global.boot.default <magicvar_global_boot_default>`
+  accepts multiple values, it can also be used to
   specify a fallback boot target in case bootchooser fails booting, e.g.
   ``bootchooser recovery``.
 
@@ -45,7 +47,9 @@ following configuration variables describe a *bootchooser* boot target:
 
 ``global.bootchooser.<targetname>.default_attempts``
   The default number of attempts that a boot target shall be tried before skipping it.
-  Defaults to ``bootchooser.default_attempts``, see below.
+  Defaults to
+  :ref:`global.bootchooser.default_attempts <magicvar_global_bootchooser_default_attempts>`,
+  see below.
 ``global.bootchooser.<targetname>.default_priority``
   The default priority of a boot target.
   Defaults to
@@ -308,11 +312,11 @@ start, the procedure repeats.
 
 Settings
 ^^^^^^^^
-- ``global.bootchooser.reset_attempts="all-zero"``
-- ``global.bootchooser.reset_priorities="all-zero"``
-- ``global.bootchooser.disable_on_zero_attempts=0``
-- ``global.bootchooser.retry=1``
-- ``global.boot.default="bootchooser recovery"``
+- :ref:`global.bootchooser.reset_attempts="all-zero" <magicvar_global_bootchooser_reset_attempts>`
+- :ref:`global.bootchooser.reset_priorities="all-zero" <magicvar_global_bootchooser_reset_priorities>`
+- :ref:`global.bootchooser.disable_on_zero_attempts=0 <magicvar_global_bootchooser_disable_on_zero_attempts>`
+- :ref:`global.bootchooser.retry=1 <magicvar_global_bootchooser_retry>`
+- :ref:`global.boot.default="bootchooser recovery" <magicvar_global_boot_default>`
 - Userspace marks as good.
 
 Deployment
@@ -347,11 +351,11 @@ Requirements:
 Settings
 ^^^^^^^^
 
-- ``global.bootchooser.reset_attempts=""``
-- ``global.bootchooser.reset_priorities=""``
-- ``global.bootchooser.disable_on_zero_attempts=0``
-- ``global.bootchooser.retry=1``
-- ``global.boot.default="bootchooser recovery"``
+- :ref:`global.bootchooser.reset_attempts="" <magicvar_global_bootchooser_reset_attempts>`
+- :ref:`global.bootchooser.reset_priorities="" <magicvar_global_bootchooser_reset_priorities>`
+- :ref:`global.bootchooser.disable_on_zero_attempts=0 <magicvar_global_bootchooser_disable_on_zero_attempts>`
+- :ref:`global.bootchooser.retry=1 <magicvar_global_bootchooser_retry>`
+- :ref:`global.boot.default="bootchooser recovery" <magicvar_global_boot_default>`
 - Userspace marks as good.
 
 Deployment
@@ -383,11 +387,11 @@ Requirements:
 Settings
 ^^^^^^^^
 
-- ``global.bootchooser.reset_attempts="power-on"``
-- ``global.bootchooser.reset_priorities=""``
-- ``global.bootchooser.disable_on_zero_attempts=1``
-- ``global.bootchooser.retry=1``
-- ``global.boot.default="bootchooser recovery"``
+- :ref:`global.bootchooser.reset_attempts="power-on" <magicvar_global_bootchooser_reset_attempts>`
+- :ref:`global.bootchooser.reset_priorities="" <magicvar_global_bootchooser_reset_priorities>`
+- :ref:`global.bootchooser.disable_on_zero_attempts=1 <magicvar_global_bootchooser_disable_on_zero_attempts>`
+- :ref:`global.bootchooser.retry=1 <magicvar_global_bootchooser_retry>`
+- :ref:`global.boot.default="bootchooser recovery" <magicvar_global_boot_default>`
 - Userspace marks as good.
 
 Deployment
@@ -414,8 +418,9 @@ Alternatively the :ref:`state_framework` can be used for this data, which
 allows to store this data redundantly in some kind of persistent memory.
 
 In order to let *bootchooser* use the *state* framework for its storage
-backend, configure the ``bootchooser.state_prefix`` variable with the *state*
-variable set instance name.
+backend, configure the
+:ref:`global.bootchooser.state_prefix <magicvar_global_bootchooser_state_prefix>`
+variable with the *state* variable set instance name.
 
 Usually a generic *state* variable set in the devicetree is defined like this
 (refer to :ref:`barebox,state` for more details):
@@ -502,9 +507,10 @@ used to setup the corresponding run-time environment variables in the
 .. important:: It is important to provide a ``default`` value for each variable
    for the case when the *state* variable set backend memory is uninitialized.
    This is also true if default values through *bootchooser's* environment
-   variables are defined (e.g. ``bootchooser.default_attempts``,
-   ``bootchooser.default_priority`` and their corresponding boot target specific
-   variables). The former ones are forwarded to *bootchooser* to make a
+   variables are defined (e.g.
+   :ref:`global.bootchooser.default_attempts <magicvar_global_bootchooser_default_attempts>`,
+   :ref:`global.bootchooser.default_priority <magicvar_global_bootchooser_default_priority>`
+   and their corresponding boot target specific variables). The former ones are forwarded to *bootchooser* to make a
    decision, the latter ones are used by *bootchooser* to make a decision
    the next time.
 

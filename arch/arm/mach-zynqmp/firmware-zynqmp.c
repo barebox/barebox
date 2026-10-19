@@ -15,6 +15,7 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
+#include <magicvar.h>
 #include <param.h>
 #include <linux/arm-smccc.h>
 
@@ -831,3 +832,12 @@ static struct driver zynqmp_firmware_driver = {
 };
 
 core_platform_driver(zynqmp_firmware_driver);
+
+BAREBOX_MAGICVAR(zynqmp_fw.ggs0, "Global general storage register 0");
+BAREBOX_MAGICVAR(zynqmp_fw.ggs1, "Global general storage register 1");
+BAREBOX_MAGICVAR(zynqmp_fw.ggs2, "Global general storage register 2");
+BAREBOX_MAGICVAR(zynqmp_fw.ggs3, "Global general storage register 3");
+BAREBOX_MAGICVAR(zynqmp_fw.pggs0, "Persistent global general storage register 0");
+BAREBOX_MAGICVAR(zynqmp_fw.pggs1, "Persistent global general storage register 1");
+BAREBOX_MAGICVAR(zynqmp_fw.pggs2, "Persistent global general storage register 2");
+BAREBOX_MAGICVAR(zynqmp_fw.pggs3, "Persistent global general storage register 3");

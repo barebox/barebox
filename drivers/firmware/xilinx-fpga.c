@@ -12,6 +12,7 @@
  */
 
 #include <firmware.h>
+#include <magicvar.h>
 #include <xilinx-firmware.h>
 #include <common.h>
 #include <init.h>
@@ -368,3 +369,5 @@ static struct driver xilinx_fpga_driver = {
 	.probe = xilinx_fpga_probe,
 };
 device_platform_driver(xilinx_fpga_driver);
+
+BAREBOX_MAGICVAR(xilinx_fpga.programmed, "Whether the FPGA is programmed");

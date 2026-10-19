@@ -16,6 +16,7 @@
 #include <linux/qemu_fw_cfg.h>
 #include <asm/unaligned.h>
 #include <io-64-nonatomic-lo-hi.h>
+#include <magicvar.h>
 
 /* arch-specific ctrl & data register offsets are not available in ACPI, DT */
 #ifdef CONFIG_X86
@@ -397,3 +398,6 @@ static int qemu_fw_cfg_init(void)
 	return of_devices_ensure_probed_by_dev_id(qemu_fw_cfg_of_match);
 }
 device_initcall(qemu_fw_cfg_init);
+
+BAREBOX_MAGICVAR(fw_cfg.selector, "QEMU fw_cfg item accessed through /dev/fw_cfg");
+BAREBOX_MAGICVAR(fw_cfg.pio, "Access QEMU fw_cfg via port I/O instead of DMA");

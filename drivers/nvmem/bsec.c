@@ -6,6 +6,7 @@
 
 #include <common.h>
 #include <driver.h>
+#include <magicvar.h>
 #include <malloc.h>
 #include <xfuncs.h>
 #include <errno.h>
@@ -323,3 +324,6 @@ static struct driver stm32_bsec_driver = {
 	.of_compatible = DRV_OF_COMPAT(stm32_bsec_dt_ids),
 };
 postcore_platform_driver(stm32_bsec_driver);
+
+BAREBOX_MAGICVAR(bsec0.permanent_write_enable,
+		 "Enable permanent writes (fuse blowing) to the BSEC OTP");

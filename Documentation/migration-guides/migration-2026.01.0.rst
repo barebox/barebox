@@ -27,7 +27,7 @@ becomes::
 Scripts that access these parameters will need to be adapted to replace
 ``{linux.bootargs}`` with ``root={linux.bootargs.root} {linux.bootargs.rootopts}``.
 
-``global.linux.bootargs.*`` is unaffected by this change.
+:ref:`global.linux.bootargs.* <magicvar_global_linux_bootargs_*>` is unaffected by this change.
 
 Boards
 ------

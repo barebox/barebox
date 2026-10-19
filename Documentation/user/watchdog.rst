@@ -98,8 +98,10 @@ Default Watchdog
 ~~~~~~~~~~~~~~~~
 
 barebox supports multiple concurrent watchdogs. The default watchdog used
-with :ref:`command_wd`, ``boot.watchdog_timeout`` and :ref:`command_boot`'s
-``-w`` option is the one with the highest positive priority.
+with :ref:`command_wd`,
+:ref:`global.boot.watchdog_timeout <magicvar_global_boot_watchdog_timeout>`
+and :ref:`command_boot`'s ``-w`` option is the one with the highest positive
+priority.
 If multiple watchdogs share the same priority, only one will be affected.
 
 The priority is initially set by drivers and can be overridden in the

@@ -9,6 +9,7 @@
 #include <fpga-mgr.h>
 #include <command.h>
 #include <common.h>
+#include <magicvar.h>
 #include <malloc.h>
 #include <clock.h>
 #include <fcntl.h>
@@ -471,3 +472,5 @@ static struct driver socfpga_fpgamgr_driver = {
 	.probe = socfpga_fpgamgr_probe,
 };
 device_platform_driver(socfpga_fpgamgr_driver);
+
+BAREBOX_MAGICVAR(fpga.programmed, "Whether the FPGA is configured and in user mode");

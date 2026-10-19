@@ -930,4 +930,5 @@ postcore_initcall(net_init);
 BAREBOX_MAGICVAR(global.net.nameserver, "The DNS server used for resolving host names");
 BAREBOX_MAGICVAR(global.net.domainname, "Domain name used for DNS requests");
 BAREBOX_MAGICVAR(global.net.server, "Standard server used for NFS/TFTP");
+BAREBOX_MAGICVAR(global.net.gateway, "The network gateway used when a host is not in any directly visible subnet");
 BAREBOX_MAGICVAR(global.net.fetchdir, "The directory within which artifacts are fetched for network boot targets (/mnt/tftp by default)");

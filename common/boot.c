@@ -188,6 +188,8 @@ late_initcall(init_boot);
 
 BAREBOX_MAGICVAR(global.boot.watchdog_timeout,
 		"Watchdog enable timeout in seconds before booting");
+BAREBOX_MAGICVAR(global.user,
+		"Username used by the default environment to construct network boot paths");
 
 int boot_entry(struct bootentry *be, int verbose, int dryrun)
 {

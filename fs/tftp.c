@@ -18,6 +18,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <magicvar.h>
 #include <net.h>
 #include <driver.h>
 #include <clock.h>
@@ -1175,3 +1176,6 @@ static int tftp_init(void)
 	return register_fs_driver(&tftp_driver);
 }
 coredevice_initcall(tftp_init);
+
+BAREBOX_MAGICVAR(global.tftp.windowsize,
+		 "TFTP windowsize to request for downloads, capped at CONFIG_FS_TFTP_MAX_WINDOW_SIZE");

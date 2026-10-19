@@ -1754,3 +1754,5 @@ coredevice_initcall(nfs_init);
 
 BAREBOX_MAGICVAR(global.nfs.port,
 		 "Sets both NFS -o {port.mountport}= to the specified non-zero value");
+BAREBOX_MAGICVAR(global.linux.rootnfsopts,
+		 "Options appended to the nfsroot= Linux parameter (default: v3,tcp)");

@@ -20,6 +20,7 @@ To accommodate both the existing barebox and the new kernel functionality,
 users should replace ``fixed-partitions``-compatible device tree subnodes
 of SD/eMMC with ``barebox,fixed-partitions``.
 
-Similarly, the default for ``global.of_partition_binding`` has been changed
-to the new ``adaptive`` option, which fixes up ``barebox,fixed-partitions``
-except for MTD.
+Similarly, the default for
+:ref:`global.of_partition_binding <magicvar_global_of_partition_binding>`
+has been changed to the new ``adaptive`` option, which fixes up
+``barebox,fixed-partitions`` except for MTD.

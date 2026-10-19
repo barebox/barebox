@@ -7,6 +7,7 @@
  * based on Linux devicetree support
  */
 #include <common.h>
+#include <magicvar.h>
 #include <of.h>
 #include <malloc.h>
 #include <linux/mtd/mtd.h>
@@ -338,3 +339,6 @@ static int of_partition_init(void)
 	return 0;
 }
 device_initcall(of_partition_init);
+
+BAREBOX_MAGICVAR(global.of_partition_binding,
+		 "Partition binding for kernel device tree fixups: new, legacy, donttouch or adaptive");

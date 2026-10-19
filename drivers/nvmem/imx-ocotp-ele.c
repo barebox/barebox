@@ -10,6 +10,7 @@
 #include <linux/regmap.h>
 #include <mach/imx/ele.h>
 #include <machine_id.h>
+#include <magicvar.h>
 
 #define UNIQUE_ID_NUM 4
 #define OCOTP_UNIQUE_ID(n) (0xc0 + (n) * 4)
@@ -242,6 +243,9 @@ static struct driver imx_ele_ocotp_driver = {
 	.probe = imx_ele_ocotp_probe,
 };
 core_platform_driver(imx_ele_ocotp_driver);
+
+BAREBOX_MAGICVAR(imx_ocotp0.permanent_write_enable,
+		 "Enable permanent writes (fuse blowing) to the OCOTP via the ELE");
 
 MODULE_DESCRIPTION("i.MX OCOTP/ELE driver");
 MODULE_AUTHOR("Peng Fan <peng.fan@nxp.com>");

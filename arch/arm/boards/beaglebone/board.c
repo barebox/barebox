@@ -14,6 +14,7 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <linux/sizes.h>
+#include <magicvar.h>
 #include <net.h>
 #include <bootsource.h>
 #include <asm/armlinux.h>
@@ -99,3 +100,5 @@ static int beaglebone_devices_init(void)
 	return 0;
 }
 coredevice_initcall(beaglebone_devices_init);
+
+BAREBOX_MAGICVAR(global.board.variant, "The board variant");

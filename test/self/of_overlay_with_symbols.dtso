@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	/* label that ends up in no fragment at all */
+	toplevel: toplevel-node {};
+
+	fragment@0 {
+		target-path = "/target-node";
+
+		__overlay__ {
+			/* label that resolves into an __overlay__ */
+			added: added-by-fragment0 {};
+		};
+	};
+
+	fragment@1 {
+		target-path = "/target-node";
+
+		localinfo {
+			/* label below a fragment but outside its __overlay__ */
+			local: subnode {};
+		};
+
+		__overlay__ {
+			added-by-fragment1 {};
+		};
+	};
+
+	fragment@2 {
+		target-path = "/target-node";
+
+		__overlay__ {
+			added-by-fragment2 {};
+		};
+
+		__overlay__extra {
+			outside: subnode {};
+		};
+	};
+};

@@ -10,6 +10,9 @@ CFLAGS_printf.o += -Wno-format-security -Wno-format
 obj-$(CONFIG_SELFTEST_PROGRESS_NOTIFIER) += progress-notifier.o
 obj-$(CONFIG_SELFTEST_OF_MANIPULATION) += of_manipulation.o of_manipulation.dtb.o
 obj-$(CONFIG_SELFTEST_OF_OVERLAY) += of_overlay.o
+# Enforce generation of __symbols__ table for overlay tests
+DTC_FLAGS_of_overlay_with_symbols := -@
+obj-$(CONFIG_SELFTEST_OF_OVERLAY) += of_overlay_with_symbols.dtb.o of_overlay_with_symbols.dtbo.o
 obj-$(CONFIG_SELFTEST_ENVIRONMENT_VARIABLES) += envvar.o
 obj-$(CONFIG_SELFTEST_FS_RAMFS) += ramfs.o
 obj-$(CONFIG_SELFTEST_DIRFD) += dirfd.o

@@ -3,3 +3,7 @@
 
 #include <arm64/freescale/imx93-11x11-frdm.dts>
 #include "imx93.dtsi"
+
+&{lpi2c2/pmic@25/regulators} {
+	barebox,allow-dummy-supply;
+};

@@ -61,22 +61,28 @@ static const jsmntok_t *jwt_check_claim(const struct jwt *jwt,
 static const char jwt_rs256[] =
 	"  eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9."
 	"eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0."
-	"NHVaYe26MbtOYhSKkoKYdFVomg4i8ZJd8_-RU8VNbftc4TSMb4bXP3l3YlNWACwyXPGf"
-	"fz5aXHc6lty1Y2t4SWRqGteragsVdZufDn5BlnJl9pdR_kdVFUsra2rWKEofkZeIC4yW"
-	"ytE58sMIihvo9H1ScmmVwBcQP6XETqYd0aSHp1gOa9RdUPDvoXQ5oqygTqVtxaDr6wUF"
-	"KrKItgBMzWIdNZ6y7O9E0DhEPTbE9rfBo6KTFsHAZnMg4k68CDp2woYIaXbmYTWcvbzI"
-	"uHO7_37GT79XdIwkm95QJ7hYC9RiwrV7mesbY4PAahERJawntho0my942XheVLmGwLMBkQ\n \n";
+	"kj1ohbJY6bF_UcbM3FeAR_89XE0wlgNeDOAAG6vCbWzANMUYmljyfDB3z-n3_HVSGtTd"
+	"uStyT0KCivZE-AjEn8D5deiLmr9cWiQPU2Uy68JqrTW6gYm8NYOEPQ7EkSGERxwH61KN"
+	"MC-h3MO5rV7sVXrI4slt0fs2HSwLwZQdPNrelPW72IPI8eatxDYzxNz4BXtwr-CgM-ws"
+	"HAcMObE1vEv4S-gpj9oSwAo9ld9_mvwR9c7VthiMXllprEVlDoq9XrbWssFfx-zbEMMr"
+	"YFaCuB8OQfLyV16hSy-Z-VUUOy9rED06f5M3IZ3NoHfoG3eUEg3Yx74XjkeNlG-QFJus"
+	"XaZ5e4WcYi29IOo1JQbqMIVCT1smjpDaMYvpiaYY0mxGQsF6yLXPM5WQqWDX5a0-8Oyh"
+	"0FWsc3T5IeCA3ztkouaJ6YvxCFIdk4JLi31e3MYkiT41oUx65BBpj4GO4Xha6gy0DqT4"
+	"bnoqkIYol1TycewSrkNSnkiP6ZSywpsWh3-ahzW7OSEEeU06vqxRG-mDxL7uFdDc2VTR"
+	"gogWiHqCMsTRVQP3BycX2X7_tm22fCxCH1Y6fsWaoc68sz3uzk05npuXSs7L8MYDe-im"
+	"2Kzp3czXHBiHU_kgwbN1D2Qh-MkXHO7I-Pv8wI-cn9JaD7fx-upMODOqzkB6ER1mxGqv"
+	"qyk\n \n";
 
 static void test_jwt(void)
 {
 	char *jwt_rs256_mangled, *ch;
 	struct jwt_key jwt_key;
 	struct jwt *jwt;
-	extern const struct rsa_public_key __key_development_rsa2048;
+	extern const struct rsa_public_key __key_snakeoil_rsa4096;
 	int old_loglevel;
 
 	jwt_key.alg = JWT_ALG_RS256;
-	jwt_key.material.rsa_pub = &__key_development_rsa2048;
+	jwt_key.material.rsa_pub = &__key_snakeoil_rsa4096;
 	total_tests++;
 
 	jwt = jwt_decode(jwt_rs256, &jwt_key);

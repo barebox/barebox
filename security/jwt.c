@@ -232,10 +232,10 @@ static int fuzz_jwt(char *data, size_t size)
 {
 	struct jwt_key jwt_key;
 	struct jwt *jwt;
-	extern const struct rsa_public_key __key_development_rsa2048;
+	extern const struct rsa_public_key __key_snakeoil_rsa4096;
 
 	jwt_key.alg = JWT_ALG_RS256;
-	jwt_key.material.rsa_pub = &__key_development_rsa2048;
+	jwt_key.material.rsa_pub = &__key_snakeoil_rsa4096;
 
 	jwt = jwt_decode(data, &jwt_key);
 	if (!IS_ERR(jwt))

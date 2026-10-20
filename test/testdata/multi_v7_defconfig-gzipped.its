@@ -70,7 +70,7 @@
             compatible = "linux,dummy-virt";
             cmdline = "fit.param";
             signature-1 {
-                algo = "sha256,rsa2048";
+                algo = "sha256,rsa4096";
                 sign-images = "kernel", "fdt", "ramdisk";
                 signer-name = "None";
                 signer-version = "None";

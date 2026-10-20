@@ -7,6 +7,20 @@
 #include <linux/list.h>
 #include <loadable.h>
 
+/*
+ * All device parameter iteration happens in lexicographical order.
+ * To ensure that bootm options are consistently applied before or after
+ * other options from the environment or boot configuration files, we
+ * employ following convention for the prefix:
+ *
+ *   !		0x21 is less than any non-space printable character
+ *   ~		0x7e is greater than any printable character
+ *
+ * Users will never see those as bootm_boot_cleanup() will delete them again.
+ */
+#define LINUX_BOOTARGS_BOOTM_EARLY	"linux.bootargs.!bootm."
+#define LINUX_BOOTARGS_BOOTM_LATE	"linux.bootargs.~bootm."
+
 enum bootm_verify {
 	BOOTM_VERIFY_NONE,
 	BOOTM_VERIFY_HASH,

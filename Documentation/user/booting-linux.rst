@@ -65,6 +65,8 @@ To use an initramfs, use the ``-r`` option or the
 
 FIT image configurations will be matched by comparing the ``compatible`` property
 inside the configuration node with the barebox live tree's ``/compatible``.
+If several configurations match equally well, the one named by the
+``/configurations`` node's ``default`` property is preferred.
 It's also possible to select a specific configuration explicitly:
 
 .. code-block:: sh
@@ -109,6 +111,10 @@ their ``linux.bootargs.``-prefixed parameter names.
 
 Kernel command line arguments that barebox generates internally are not
 interleaved with externally provided command-line arguments:
+
+* Following arguments will be concatenated **before** all other options:
+
+  * the ``cmdline`` property of the booted FIT image configuration
 
 * Following arguments will be concatenated **after** all other options:
 

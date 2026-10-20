@@ -178,6 +178,7 @@ static int ramfs_symlink(struct inode *dir, struct dentry *dentry,
 	inode->i_link = xstrdup(symname);
 	inode->i_size = strlen(symname);
 	d_instantiate(dentry, inode);
+	dget(dentry);   /* Extra count - pin the dentry in core */
 
 	return 0;
 }

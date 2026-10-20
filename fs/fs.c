@@ -2981,6 +2981,9 @@ int symlink(const char *pathname, const char *newpath)
 	}
 
 	error = vfs_symlink(path.dentry->d_inode, dentry, pathname);
+
+	dput(dentry);
+	path_put(&path);
 out:
 	return errno_set(error);
 }

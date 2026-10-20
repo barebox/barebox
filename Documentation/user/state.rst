@@ -35,6 +35,11 @@ the same.
 To define a *state* variable set, a devicetree based description is used. Refer to
 :ref:`barebox,state` for further details.
 
+On systems that boot the operating system without a device tree, the
+description can't be shared with it by fixing up the OS device tree. barebox
+running as EFI payload exports its device tree in an EFI variable instead, see
+:ref:`barebox_on_uefi`.
+
 There are several software components involved, which are described in this
 section.
 

@@ -261,16 +261,22 @@ static struct dirent *efivarfs_readdir(struct device *dev, DIR *dir)
 	struct efivarfs_dir *edir = container_of(dir, struct efivarfs_dir, dir);
 	struct efivarfs_inode *inode;
 
-	if (edir->current == &priv->inodes)
-		return NULL;
+	while (edir->current != &priv->inodes) {
+		inode = list_entry(edir->current, struct efivarfs_inode, node);
+		edir->current = edir->current->next;
 
-	inode = list_entry(edir->current, struct efivarfs_inode, node);
+		if (strlen(inode->full_name) >= sizeof(dir->d.d_name)) {
+			pr_warn("skipping variable %.32s...: name too long\n",
+				inode->full_name);
+			continue;
+		}
 
-	strcpy(dir->d.d_name, inode->full_name);
+		strcpy(dir->d.d_name, inode->full_name);
 
-	edir->current = edir->current->next;
+		return &dir->d;
+	}
 
-	return &dir->d;
+	return NULL;
 }
 
 static int efivarfs_closedir(struct device *dev, DIR *dir)

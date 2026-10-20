@@ -3879,6 +3879,8 @@ static struct efi_boot_services efi_boot_services = {
 
 static __efi_runtime_data u16 firmware_vendor[] = L"barebox";
 
+static __efi_runtime_data struct efi_runtime_services efi_runtime_services;
+
 __efi_runtime_data struct efi_system_table systab = {
 	.hdr = {
 		.signature = EFI_SYSTEM_TABLE_SIGNATURE,
@@ -3925,8 +3927,9 @@ efi_status_t efi_initialize_system_table(void)
 	systab.boottime = &efi_boot_services;
 
 	/*
-	 * This will be overwritten dynamically at detach time.
+	 * This must be overwritten dynamically at detach time.
 	 */
+	efi_runtime_services = efi_runtime_services_boot;
 	systab.runtime = &efi_runtime_services;
 
 	/* Set CRC32 field in table headers */

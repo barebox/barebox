@@ -199,7 +199,8 @@ void omap4_lock_core_dpll_shadow(const struct dpll_param *param)
 	*(volatile int*)0x4A004260 = 0x70D | (param->m2 << 11);
 
 	/* Wait for Freq_Update to get cleared: CM_SHADOW_FREQ_CONFIG1 */
-	while( ( (*(volatile int*)0x4A004260) & 0x1) == 0x1 );
+	while( ( (*(volatile int*)0x4A004260) & 0x1) == 0x1 )
+		;
 
 	/* Wait for DPLL to Lock : CM_IDLEST_DPLL_CORE */
 	wait_on_value((1 << 0), 1, CM_IDLEST_DPLL_CORE, LDELAY);

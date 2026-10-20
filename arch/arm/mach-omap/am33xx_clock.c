@@ -32,41 +32,52 @@ static void interface_clocks_enable(void)
 {
 	/* Enable all the Interconnect Modules */
 	__raw_writel(PRCM_MOD_EN, CM_PER_L3_CLKCTRL);
-	while (__raw_readl(CM_PER_L3_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_L3_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	__raw_writel(PRCM_MOD_EN, CM_PER_L4LS_CLKCTRL);
-	while (__raw_readl(CM_PER_L4LS_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_L4LS_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	__raw_writel(PRCM_MOD_EN, CM_PER_L4FW_CLKCTRL);
-	while (__raw_readl(CM_PER_L4FW_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_L4FW_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	__raw_writel(PRCM_MOD_EN, CM_WKUP_L4WKUP_CLKCTRL);
-	while (__raw_readl(CM_WKUP_L4WKUP_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_WKUP_L4WKUP_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	__raw_writel(PRCM_MOD_EN, CM_PER_L3_INSTR_CLKCTRL);
-	while (__raw_readl(CM_PER_L3_INSTR_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_L3_INSTR_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	__raw_writel(PRCM_MOD_EN, CM_PER_L4HS_CLKCTRL);
-	while (__raw_readl(CM_PER_L4HS_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_L4HS_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	__raw_writel(PRCM_MOD_EN, CM_PER_SPI1_CLKCTRL);
-	while (__raw_readl(CM_PER_SPI1_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_SPI1_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* GPIO0 */
 	__raw_writel(PRCM_MOD_EN, CM_WKUP_GPIO0_CLKCTRL);
-	while (__raw_readl(CM_WKUP_GPIO0_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_WKUP_GPIO0_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* GPIO1 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_GPIO1_CLKCTRL);
-	while (__raw_readl(CM_PER_GPIO1_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_GPIO1_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* GPIO2 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_GPIO2_CLKCTRL);
-	while (__raw_readl(CM_PER_GPIO2_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_GPIO2_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* GPIO3 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_GPIO3_CLKCTRL);
-	while (__raw_readl(CM_PER_GPIO3_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_GPIO3_CLKCTRL) != PRCM_MOD_EN)
+		;
 }
 
 static void power_domain_transition_enable(void)
@@ -96,88 +107,109 @@ void am33xx_enable_per_clocks(void)
 
 	/* Enable the module clock */
 	__raw_writel(PRCM_MOD_EN, CM_PER_TIMER2_CLKCTRL);
-	while (__raw_readl(CM_PER_TIMER2_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_TIMER2_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* Select the Master osc 24 MHZ as Timer2 clock source */
 	__raw_writel(0x1, CLKSEL_TIMER2_CLK);
 
 	/* UART0 */
 	__raw_writel(PRCM_MOD_EN, CM_WKUP_UART0_CLKCTRL);
-	while (__raw_readl(CM_WKUP_UART0_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_WKUP_UART0_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* UART1 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_UART1_CLKCTRL);
-	while (__raw_readl(CM_PER_UART1_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_UART1_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* UART2 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_UART2_CLKCTRL);
-	while (__raw_readl(CM_PER_UART2_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_UART2_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* UART3 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_UART3_CLKCTRL);
-	while (__raw_readl(CM_PER_UART3_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_UART3_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* GPMC */
 	__raw_writel(PRCM_MOD_EN, CM_PER_GPMC_CLKCTRL);
-	while (__raw_readl(CM_PER_GPMC_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_GPMC_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* ELM */
 	__raw_writel(PRCM_MOD_EN, CM_PER_ELM_CLKCTRL);
-	while (__raw_readl(CM_PER_ELM_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_ELM_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* i2c0 */
 	__raw_writel(PRCM_MOD_EN, CM_WKUP_I2C0_CLKCTRL);
-	while (__raw_readl(CM_WKUP_I2C0_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_WKUP_I2C0_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* i2c1 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_I2C1_CLKCTRL);
-	while (__raw_readl(CM_PER_I2C1_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_I2C1_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* i2c2 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_I2C2_CLKCTRL);
-	while (__raw_readl(CM_PER_I2C2_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_I2C2_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* Ethernet */
 	__raw_writel(PRCM_MOD_EN, CM_PER_CPGMAC0_CLKCTRL);
 	__raw_writel(PRCM_MOD_EN, CM_PER_CPSW_CLKSTCTRL);
-	while ((__raw_readl(CM_PER_CPGMAC0_CLKCTRL) & 0x30000) != 0x0);
+	while ((__raw_readl(CM_PER_CPGMAC0_CLKCTRL) & 0x30000) != 0x0)
+		;
 
 	/* MMC 0, 1 & 2 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_MMC0_CLKCTRL);
-	while (__raw_readl(CM_PER_MMC0_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_MMC0_CLKCTRL) != PRCM_MOD_EN)
+		;
 	__raw_writel(PRCM_MOD_EN, CM_PER_MMC1_CLKCTRL);
-	while (__raw_readl(CM_PER_MMC1_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_MMC1_CLKCTRL) != PRCM_MOD_EN)
+		;
 	__raw_writel(PRCM_MOD_EN, CM_PER_MMC2_CLKCTRL);
-	while (__raw_readl(CM_PER_MMC2_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_MMC2_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* Enable the control module though RBL would have done it*/
 	__raw_writel(PRCM_MOD_EN, CM_WKUP_CONTROL_CLKCTRL);
-	while (__raw_readl(CM_WKUP_CONTROL_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_WKUP_CONTROL_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* SPI 0 & 1 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_SPI0_CLKCTRL);
-	while (__raw_readl(CM_PER_SPI0_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_SPI0_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	__raw_writel(PRCM_MOD_EN, CM_PER_SPI1_CLKCTRL);
-	while (__raw_readl(CM_PER_SPI1_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_PER_SPI1_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	/* USB */
 	__raw_writel(PRCM_MOD_EN, CM_PER_USB0_CLKCTRL);
-	while ((__raw_readl(CM_PER_USB0_CLKCTRL) & 0x30000) != 0x0);
+	while ((__raw_readl(CM_PER_USB0_CLKCTRL) & 0x30000) != 0x0)
+		;
 
 	/* TSC & ADC */
 	__raw_writel(PRCM_MOD_EN, CM_WKUP_ADC_TSC_CLKCTRL);
-	while (__raw_readl(CM_WKUP_ADC_TSC_CLKCTRL) != PRCM_MOD_EN);
+	while (__raw_readl(CM_WKUP_ADC_TSC_CLKCTRL) != PRCM_MOD_EN)
+		;
 
 	if (IS_ENABLED(CONFIG_HW_RANDOM_OMAP)) {
 		__raw_writel(PRCM_MOD_EN, CM_PER_RNG_CLKCTRL);
-		while ((__raw_readl(CM_PER_RNG_CLKCTRL) & 0x30000) != 0x0);
+		while ((__raw_readl(CM_PER_RNG_CLKCTRL) & 0x30000) != 0x0)
+			;
 	}
 
 	clkdcoldo = __raw_readl(CM_CLKDCOLDO_DPLL_PER);
 	clkdcoldo = clkdcoldo | 0x100;
 	__raw_writel(clkdcoldo, CM_CLKDCOLDO_DPLL_PER);
-	while ((__raw_readl(CM_CLKDCOLDO_DPLL_PER) & 0x00000200) != 0x200);
+	while ((__raw_readl(CM_CLKDCOLDO_DPLL_PER) & 0x00000200) != 0x200)
+		;
 }
 
 static void mpu_pll_config(int mpupll_M, int osc)
@@ -191,7 +223,8 @@ static void mpu_pll_config(int mpupll_M, int osc)
 	/* Set the PLL to bypass Mode */
 	__raw_writel(PLL_BYPASS_MODE, CM_CLKMODE_DPLL_MPU);
 
-	while(__raw_readl(CM_IDLEST_DPLL_MPU) != 0x00000100);
+	while(__raw_readl(CM_IDLEST_DPLL_MPU) != 0x00000100)
+		;
 
 	clksel = clksel & (~0x7ffff);
 	clksel = clksel | ((mpupll_M << 0x8) | (osc - 1));
@@ -204,7 +237,8 @@ static void mpu_pll_config(int mpupll_M, int osc)
 	clkmode = clkmode | 0x7;
 	__raw_writel(clkmode, CM_CLKMODE_DPLL_MPU);
 
-	while(__raw_readl(CM_IDLEST_DPLL_MPU) != 0x1);
+	while(__raw_readl(CM_IDLEST_DPLL_MPU) != 0x1)
+		;
 }
 
 static void core_pll_config(int osc)
@@ -220,7 +254,8 @@ static void core_pll_config(int osc)
 	/* Set the PLL to bypass Mode */
 	__raw_writel(PLL_BYPASS_MODE, CM_CLKMODE_DPLL_CORE);
 
-	while(__raw_readl(CM_IDLEST_DPLL_CORE) != 0x00000100);
+	while(__raw_readl(CM_IDLEST_DPLL_CORE) != 0x00000100)
+		;
 
 	clksel = clksel & (~0x7ffff);
 	clksel = clksel | ((COREPLL_M << 0x8) | (osc - 1));
@@ -242,7 +277,8 @@ static void core_pll_config(int osc)
 	clkmode = clkmode | 0x7;
 	__raw_writel(clkmode, CM_CLKMODE_DPLL_CORE);
 
-	while(__raw_readl(CM_IDLEST_DPLL_CORE) != 0x1);
+	while(__raw_readl(CM_IDLEST_DPLL_CORE) != 0x1)
+		;
 }
 
 static void per_pll_config(int osc)
@@ -256,7 +292,8 @@ static void per_pll_config(int osc)
 	/* Set the PLL to bypass Mode */
 	__raw_writel(PLL_BYPASS_MODE, CM_CLKMODE_DPLL_PER);
 
-	while(__raw_readl(CM_IDLEST_DPLL_PER) != 0x00000100);
+	while(__raw_readl(CM_IDLEST_DPLL_PER) != 0x00000100)
+		;
 
 	clksel = clksel & (~0x7ffff);
 	clksel = clksel | ((PERPLL_M << 0x8) | (osc - 1));
@@ -269,7 +306,8 @@ static void per_pll_config(int osc)
 	clkmode = clkmode | 0x7;
 	__raw_writel(clkmode, CM_CLKMODE_DPLL_PER);
 
-	while(__raw_readl(CM_IDLEST_DPLL_PER) != 0x1);
+	while(__raw_readl(CM_IDLEST_DPLL_PER) != 0x1)
+		;
 }
 
 static void ddr_pll_config(int osc, int ddrpll_M)
@@ -284,7 +322,8 @@ static void ddr_pll_config(int osc, int ddrpll_M)
 	clkmode = (clkmode & 0xfffffff8) | 0x00000004;
 	__raw_writel(clkmode, CM_CLKMODE_DPLL_DDR);
 
-	while ((__raw_readl(CM_IDLEST_DPLL_DDR) & 0x00000100) != 0x00000100);
+	while ((__raw_readl(CM_IDLEST_DPLL_DDR) & 0x00000100) != 0x00000100)
+		;
 
 	clksel = clksel & (~0x7ffff);
 	clksel = clksel | ((ddrpll_M << 0x8) | (osc - 1));
@@ -297,7 +336,8 @@ static void ddr_pll_config(int osc, int ddrpll_M)
 	clkmode = (clkmode & 0xfffffff8) | 0x7;
 	__raw_writel(clkmode, CM_CLKMODE_DPLL_DDR);
 
-	while ((__raw_readl(CM_IDLEST_DPLL_DDR) & 0x00000001) != 0x1);
+	while ((__raw_readl(CM_IDLEST_DPLL_DDR) & 0x00000001) != 0x1)
+		;
 }
 
 void am33xx_enable_ddr_clocks(void)
@@ -309,9 +349,11 @@ void am33xx_enable_ddr_clocks(void)
 	/* Poll for emif_gclk  & L3_G clock  are active */
 	while ((__raw_readl(CM_PER_L3_CLKSTCTRL) & (PRCM_EMIF_CLK_ACTIVITY |
 		PRCM_L3_GCLK_ACTIVITY)) != (PRCM_EMIF_CLK_ACTIVITY |
-		PRCM_L3_GCLK_ACTIVITY));
+		PRCM_L3_GCLK_ACTIVITY))
+		;
 	/* Poll if module is functional */
-	while ((__raw_readl(CM_PER_EMIF_CLKCTRL)) != PRCM_MOD_EN);
+	while ((__raw_readl(CM_PER_EMIF_CLKCTRL)) != PRCM_MOD_EN)
+		;
 }
 
 /*

@@ -28,6 +28,7 @@ extern struct class nvmem_class;
 struct nvmem_cell *nvmem_cell_get(struct device *dev, const char *name);
 void nvmem_cell_put(struct nvmem_cell *cell);
 void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len);
+unsigned int nvmem_cell_nbits(struct nvmem_cell *cell);
 void *nvmem_cell_get_and_read(struct device_node *np, const char *cell_name,
 			      size_t bytes);
 int nvmem_cell_read_variable_le_u32(struct device *dev, const char *cell_id,
@@ -66,6 +67,11 @@ static inline void nvmem_cell_put(struct nvmem_cell *cell)
 static inline char *nvmem_cell_read(struct nvmem_cell *cell, size_t *len)
 {
 	return ERR_PTR(-EOPNOTSUPP);
+}
+
+static inline unsigned int nvmem_cell_nbits(struct nvmem_cell *cell)
+{
+	return 0;
 }
 
 static inline void *nvmem_cell_get_and_read(struct device_node *np,

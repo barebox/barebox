@@ -64,7 +64,7 @@ static int do_truncate(int argc, char *argv[])
 		if (modify) {
 			struct stat st;
 
-			if (fstat(fd, &st) == -1) {
+			if (fstat(fd, &st) < 0) {
 				perror("fstat");
 				ret = 1;
 				close(fd);
@@ -74,7 +74,7 @@ static int do_truncate(int argc, char *argv[])
 			target_size = st.st_size + size;
 		}
 
-		if (ftruncate(fd, target_size) == -1) {
+		if (ftruncate(fd, target_size) < 0) {
 			perror("truncate");
 			ret = 1;
 		}

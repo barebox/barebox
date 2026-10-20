@@ -8,10 +8,6 @@
 #define STRUCT_ALIGNMENT 32
 #define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
 
-#ifndef PRE_IMAGE
-#define PRE_IMAGE
-#endif
-
 #define BAREBOX_INITCALLS			\
 	STRUCT_ALIGN();				\
 	__barebox_initcalls_start = .;		\

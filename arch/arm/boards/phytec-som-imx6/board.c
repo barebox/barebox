@@ -45,6 +45,9 @@
 #define DA9062_BUCK4_CFG		0x9f
 #define DA9062_BUCKx_MODE_SYNCHRONOUS	(2 << 6)
 
+#define PHY_ID_ADIN1300			0x0283bc30
+#define ADIN_PHY_ID_MASK		0x0fffffff
+
 static void phyflex_err006282_workaround(void)
 {
 	/*
@@ -108,6 +111,33 @@ static int ksz9131_phy_fixup(struct phy_device *phydev)
 	 * config_init runs, the pad skews are set from the device tree.
 	 */
 	phydev->interface = PHY_INTERFACE_MODE_RGMII_RXID;
+
+	return 0;
+}
+
+static int adin1300_phy_fixup(struct phy_device *phydev)
+{
+	u16 val;
+	/*
+	 * Enable 125 MHz PHY clock at GP_CLK pin to the ENET_REF_CLK pin
+	 * of the i.MX 6
+	 */
+
+	phy_write(phydev, 0x1c, 0x2109);
+	phy_write(phydev, 0x1b, 0x401);
+	phy_write(phydev, 0x10, 0xff1f);
+	phy_write(phydev, 0x11, 0x28);
+	phy_write(phydev, 0x10, 0xff3c);
+	phy_write(phydev, 0x11, 0x1);
+
+	/*
+	 * Disable advertisement of 100BASE-TX and 1000BASE-T EEE capabilities
+	 * by clearing EEE_100_ADV and EEE_1000_ADV bits in EEE_ADV (0x8001) reg.
+	 */
+	phy_write(phydev, 0x10, 0x8001);
+	val = phy_read(phydev, 0x11);
+	val &= ~(BIT(1) | BIT(2));
+	phy_write(phydev, 0x11, 0x0);
 
 	return 0;
 }
@@ -231,6 +261,8 @@ static int physom_imx6_probe(struct device *dev)
 
 	phy_register_fixup_for_uid(PHY_ID_KSZ9131, MICREL_PHY_ID_MASK,
 			ksz9131_phy_fixup);
+	phy_register_fixup_for_uid(PHY_ID_ADIN1300, ADIN_PHY_ID_MASK,
+			adin1300_phy_fixup);
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:

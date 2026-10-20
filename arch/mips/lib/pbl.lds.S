@@ -15,8 +15,6 @@ SECTIONS
 {
 	. = BASE;
 
-	PRE_IMAGE
-
 	. = ALIGN(4);
 	.text      :
 	{

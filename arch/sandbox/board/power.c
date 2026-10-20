@@ -2,6 +2,8 @@
 
 #include <common.h>
 #include <driver.h>
+#include <init.h>
+#include <of.h>
 #include <poweroff.h>
 #include <restart.h>
 #include <mach/linux.h>
@@ -68,6 +70,9 @@ static int sandbox_power_probe(struct device *dev)
 	if (IS_ENABLED(CONFIG_SANDBOX_REEXEC))
 		restart_handler_register(&power->rst_reexec);
 
+	if (!dev->of_node)
+		return 0;
+
 	power->reset_source_cell = of_nvmem_cell_get(dev->of_node,
 						     "reset-source");
 	if (IS_ERR(power->reset_source_cell)) {
@@ -100,3 +105,18 @@ static struct driver sandbox_power_drv = {
 	.probe = sandbox_power_probe,
 };
 coredevice_platform_driver(sandbox_power_drv);
+
+/*
+ * A device tree passed with --dtb need not have a sandbox-power node.
+ * Without one, poweroff and reset end in hang(), which busy-loops forever,
+ * so register the device ourselves in this case.
+ */
+static int sandbox_power_fallback(void)
+{
+	if (!of_find_compatible_node(NULL, NULL, "barebox,sandbox-power"))
+		add_generic_device("sandbox-power", DEVICE_ID_SINGLE, NULL, 0,
+				   0, 0, NULL);
+
+	return 0;
+}
+coredevice_initcall(sandbox_power_fallback);

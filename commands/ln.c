@@ -10,10 +10,14 @@
 #include <fs.h>
 #include <errno.h>
 #include <getopt.h>
+#include <libbb.h>
 
 static int do_ln(int argc, char *argv[])
 {
-	int opt;
+	const char *target, *dest;
+	char *linkname = NULL;
+	struct stat s;
+	int opt, ret;
 
 	while ((opt = getopt(argc, argv, "s")) > 0) {
 		switch (opt) {
@@ -31,7 +35,22 @@ static int do_ln(int argc, char *argv[])
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
-	if (symlink(argv[0], argv[1]) < 0) {
+	target = argv[0];
+	dest = argv[1];
+
+	/* like Linux, create the link inside DEST when it is a directory */
+	if (!stat(dest, &s) && S_ISDIR(s.st_mode)) {
+		char *tmp = xstrdup(target);
+
+		linkname = concat_path_file(dest, posix_basename(tmp));
+		free(tmp);
+		dest = linkname;
+	}
+
+	ret = symlink(target, dest);
+	free(linkname);
+
+	if (ret < 0) {
 		perror("ln");
 		return 1;
 	}
@@ -39,7 +58,9 @@ static int do_ln(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(ln)
-BAREBOX_CMD_HELP_TEXT("Create a symbolic link DEST pointing to SRC.")
+BAREBOX_CMD_HELP_TEXT("Create a symbolic link DEST pointing to SRC. If DEST is an existing")
+BAREBOX_CMD_HELP_TEXT("directory, the link is created in it, named after the last component")
+BAREBOX_CMD_HELP_TEXT("of SRC.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-s", "ignored, all links are symbolic links")

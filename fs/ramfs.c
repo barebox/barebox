@@ -171,7 +171,7 @@ static int ramfs_symlink(struct inode *dir, struct dentry *dentry,
 {
 	struct inode *inode;
 
-	inode = ramfs_get_inode(dir->i_sb, dir, S_IFLNK | S_IRWXG);
+	inode = ramfs_get_inode(dir->i_sb, dir, S_IFLNK | S_IRWXUGO);
 	if (!inode)
 		return -ENOSPC;
 

@@ -2,7 +2,6 @@
 
 #include <bootsource.h>
 #include <common.h>
-#include <deep-probe.h>
 #include <init.h>
 #include <mach/stm32mp/bbu.h>
 
@@ -31,7 +30,6 @@ static const struct of_device_id ed1_of_match[] = {
 	{ .compatible = "st,stm32mp157c-ed1" },
 	{ /* sentinel */ },
 };
-BAREBOX_DEEP_PROBE_ENABLE(ed1_of_match);
 
 static struct driver ed1_board_driver = {
 	.name = "board-stm32mp15x-ed1",

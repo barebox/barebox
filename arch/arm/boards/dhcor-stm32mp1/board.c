@@ -37,7 +37,6 @@ static const struct of_device_id dhcor_stm32mp1_of_match[] = {
 	{ /* sentinel */ },
 };
 MODULE_DEVICE_TABLE(of, dhcor_stm32mp1_of_match);
-BAREBOX_DEEP_PROBE_ENABLE(dhcor_stm32mp1_of_match);
 
 static struct driver dhcor_stm32mp1_driver = {
 	.name = "dhcor_stm32mp1",

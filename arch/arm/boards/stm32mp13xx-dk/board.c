@@ -3,7 +3,6 @@
 #include <driver.h>
 #include <init.h>
 #include <mach/stm32mp/bbu.h>
-#include <deep-probe.h>
 #include <asm/mach-types.h>
 
 static int stm32mp13xx_dk_probe(struct device *dev)
@@ -18,7 +17,6 @@ static const struct of_device_id stm32mp13xx_dk_of_match[] = {
 	{ .compatible = "st,stm32mp135f-dk" },
 	{ /* sentinel */ },
 };
-BAREBOX_DEEP_PROBE_ENABLE(stm32mp13xx_dk_of_match);
 
 static struct driver stm32mp13xx_dk_board_driver = {
 	.name = "board-stm32mp13xx_dk",

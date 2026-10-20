@@ -13,6 +13,7 @@
 #include <mach/stm32mp/revision.h>
 #include <mach/stm32mp/bootsource.h>
 #include <bootsource.h>
+#include <deep-probe.h>
 #include <fiptool.h>
 #include <dt-bindings/pinctrl/stm32-pinfunc.h>
 
@@ -244,24 +245,27 @@ static const struct fip_binding stm32mp_fip_handler[] = {
 	{ /* sentinel */ }
 };
 
+static const struct of_device_id stm32mp_of_match[] = {
+	{ .compatible = "st,stm32mp131", .data = (void *)0x32131 },
+	{ .compatible = "st,stm32mp133", .data = (void *)0x32133 },
+	{ .compatible = "st,stm32mp135", .data = (void *)0x32135 },
+	{ .compatible = "st,stm32mp151", .data = (void *)0x32151 },
+	{ .compatible = "st,stm32mp153", .data = (void *)0x32153 },
+	{ .compatible = "st,stm32mp157", .data = (void *)0x32157 },
+	{ /* sentinel */ }
+};
+BAREBOX_DEEP_PROBE_ENABLE(stm32mp_of_match);
+
 static int stm32mp_init(void)
 {
+	const struct of_device_id *id;
 	u32 boot_ctx;
 
-	if (of_machine_is_compatible("st,stm32mp131"))
-		__st32mp_soc = 0x32131;
-	else if (of_machine_is_compatible("st,stm32mp133"))
-		__st32mp_soc = 0x32133;
-	else if (of_machine_is_compatible("st,stm32mp135"))
-		__st32mp_soc = 0x32135;
-	else if (of_machine_is_compatible("st,stm32mp151"))
-		__st32mp_soc = 0x32151;
-	else if (of_machine_is_compatible("st,stm32mp153"))
-		__st32mp_soc = 0x32153;
-	else if (of_machine_is_compatible("st,stm32mp157"))
-		__st32mp_soc = 0x32157;
-	else
+	id = of_match_node(stm32mp_of_match, of_get_root_node());
+	if (!id)
 		return 0;
+
+	__st32mp_soc = (uintptr_t)id->data;
 
 	if ((__st32mp_soc & 0xFF0) == 0x130) {
 		boot_ctx = readl(STM32MP13_TAMP_BOOT_CONTEXT);

@@ -1,0 +1,127 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Create the GitHub release for a pushed release tag from the announcement
+# mail on the mailing list, see scripts/fetch-release-mail.py.
+#
+# The mail usually follows the tag by a while, so the first attempt waits an
+# hour. GitHub Actions can't schedule a run for later, so a failing attempt
+# dispatches this workflow again with a wait time and the new run sleeps
+# before trying. That repeats every six hours until the tag is a day old.
+# A manual run tries right away and doesn't retry, unless told otherwise.
+
+name: GitHub release
+
+on:
+  push:
+    tags:
+      # In GitHub's filter syntax, + repeats the preceding character
+      - 'v[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9]+'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (default is the newest one reachable from the branch)
+        type: string
+      wait:
+        description: Seconds to wait before looking for the announcement
+        type: number
+        default: 0
+      deadline:
+        description: Retry every six hours until this UNIX time (default is to not retry)
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  FIRST_DELAY: 3600
+  # GitHub kills jobs after six hours, leave ten minutes for the attempt itself
+  RETRY_DELAY: 21000
+  RETRY_WINDOW: 86400
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    # Checkout and lei install happen before the wait, so the job time limit
+    # can't run out while they are in progress. A job that is killed by the
+    # limit is cancelled, not failed, and would not schedule the retry.
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install lei
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends lei
+
+    - name: Wait for the announcement
+      id: setup
+      env:
+        TAG: ${{ inputs.tag }}
+        WAIT: ${{ inputs.wait }}
+        DEADLINE: ${{ inputs.deadline }}
+      run: |
+        if [ "$GITHUB_EVENT_NAME" = push ]; then
+          TAG=$GITHUB_REF_NAME
+          WAIT=$FIRST_DELAY
+          DEADLINE=$(( $(date +%s) + RETRY_WINDOW ))
+        fi
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        echo "deadline=$DEADLINE" >> "$GITHUB_OUTPUT"
+        echo "Waiting ${WAIT:-0} seconds for the announcement mail"
+        sleep "${WAIT:-0}"
+
+    # actions/checkout replaces the pushed annotated tag with a lightweight
+    # one pointing at the commit (actions/checkout#290), which would make the
+    # script skip its check that the mail was sent by the tagger. Fetching
+    # the tags again with --force restores it.
+    - name: Restore annotated tags
+      run: git fetch --force --tags
+
+    - name: Create release
+      id: create
+      env:
+        GH_TOKEN: ${{ github.token }}
+        TAG: ${{ steps.setup.outputs.tag }}
+      run: |
+        if [ -z "$TAG" ]; then
+          TAG=$(git describe --abbrev=0 --match 'v????.??.?*')
+        fi
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+        if gh release view "$TAG" >/dev/null 2>&1; then
+          echo "::notice::Release $TAG exists already, nothing to do"
+          exit 0
+        fi
+
+        scripts/fetch-release-mail.py -o notes.md "$TAG"
+        cat notes.md
+
+        # A point release for an older series must not become "Latest"
+        latest=false
+        if [ "$(git tag --list 'v????.??.?*' | sort -V | tail -1)" = "$TAG" ]; then
+          latest=true
+        fi
+
+        gh release create "$TAG" --verify-tag --title "$TAG" \
+          --notes-file notes.md --latest=$latest
+
+    - name: Schedule retry
+      if: failure() && steps.setup.outputs.deadline != ''
+      env:
+        GH_TOKEN: ${{ github.token }}
+        TAG: ${{ steps.create.outputs.tag || steps.setup.outputs.tag }}
+        DEADLINE: ${{ steps.setup.outputs.deadline }}
+      run: |
+        if [ "$(date +%s)" -ge "$DEADLINE" ]; then
+          echo "::warning::No release created for $TAG a day after the tag push, giving up"
+          exit 0
+        fi
+        args=(-f "wait=$RETRY_DELAY" -f "deadline=$DEADLINE")
+        if [ -n "$TAG" ]; then
+          args+=(-f "tag=$TAG")
+        fi
+        workflow=${GITHUB_WORKFLOW_REF%@*}
+        gh workflow run "${workflow##*/}" "${args[@]}"

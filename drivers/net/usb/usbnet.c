@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <linux/phy.h>
+#include <linux/gfp.h>
 #include <dma.h>
 
 /* handles CDC Ethernet and many other network "bulk data" interfaces */
@@ -22,6 +23,8 @@ int usbnet_get_endpoints(struct usbnet *dev)
 
 		in = out = status = NULL;
 		alt = &udev->config.interface[tmp];
+		if (dev->intf && alt != dev->intf)
+			continue;
 
 		/* take the first altsetting with in-bulk + out-bulk;
 		 * remember any status endpoint, just in case;
@@ -79,6 +82,32 @@ int usbnet_get_endpoints(struct usbnet *dev)
 }
 EXPORT_SYMBOL(usbnet_get_endpoints);
 
+/* head- and tailroom for the framing, so tx_fixup_skb need not copy */
+#define USBNET_SKB_PAD	32
+
+static int usbnet_tx_fixup_skb(struct usbnet *dev, void *buf, int len,
+			       void *nbuf, int *nlen)
+{
+	struct sk_buff *skb;
+
+	skb = dev_alloc_skb(USBNET_SKB_PAD + len + USBNET_SKB_PAD);
+	if (!skb)
+		return -ENOMEM;
+
+	skb_reserve(skb, USBNET_SKB_PAD);
+	memcpy(skb_put(skb, len), buf, len);
+
+	skb = dev->driver_info->tx_fixup_skb(dev, skb, GFP_ATOMIC);
+	if (!skb)
+		return -EINVAL;
+
+	memcpy(nbuf, skb->data, skb->len);
+	*nlen = skb->len;
+	dev_kfree_skb_any(skb);
+
+	return 0;
+}
+
 static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 {
 	struct usbnet		*dev = edev->priv;
@@ -90,7 +119,12 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 	/* some devices want funky USB-level framing, for
 	 * win32 driver (usually) and/or hardware quirks
 	 */
-        if(info->tx_fixup) {
+        if(info->tx_fixup_skb) {
+		if (usbnet_tx_fixup_skb(dev, eth_data, data_length, dev->tx_buf, &len)) {
+			dev_dbg(&edev->dev, "can't tx_fixup packet");
+			return 0;
+		}
+        } else if(info->tx_fixup) {
                 if(info->tx_fixup(dev, eth_data, data_length, dev->tx_buf, &len)) {
 			dev_dbg(&edev->dev, "can't tx_fixup packet");
                         return 0;
@@ -115,6 +149,34 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 	return ret;
 }
 
+void usbnet_skb_return(struct usbnet *dev, struct sk_buff *skb)
+{
+	/* the network stack's buffers hold at most PKTSIZE bytes */
+	if (skb->len <= PKTSIZE)
+		net_receive(&dev->edev, skb->data, skb->len);
+	else
+		dev_dbg(&dev->edev.dev, "rx length %d\n", skb->len);
+
+	dev_kfree_skb_any(skb);
+}
+EXPORT_SYMBOL(usbnet_skb_return);
+
+static void usbnet_rx_fixup_skb(struct usbnet *dev, void *buf, int len)
+{
+	struct sk_buff *skb;
+
+	skb = dev_alloc_skb(len);
+	if (!skb)
+		return;
+
+	memcpy(skb_put(skb, len), buf, len);
+
+	if (dev->driver_info->rx_fixup_skb(dev, skb) && skb->len)
+		usbnet_skb_return(dev, skb);
+	else
+		dev_kfree_skb_any(skb);
+}
+
 static void usbnet_recv(struct eth_device *edev)
 {
 	struct usbnet		*dev = (struct usbnet*) edev->priv;
@@ -133,7 +195,9 @@ static void usbnet_recv(struct eth_device *edev)
 		len, alen);
 
 	if (alen) {
-		if (info->rx_fixup)
+		if (info->rx_fixup_skb)
+			usbnet_rx_fixup_skb(dev, dev->rx_buf, alen);
+		else if (info->rx_fixup)
 			info->rx_fixup(dev, dev->rx_buf, alen);
 		else
 			net_receive(edev, dev->rx_buf, alen);
@@ -175,8 +239,23 @@ static int usbnet_open(struct eth_device *edev)
 
 	dev_dbg(&edev->dev, "%s\n",__func__);
 
+	/* without a MDIO bus there is no PHY, the link is the USB connection */
+	if (!dev->miibus.parent)
+		return 0;
+
 	return phy_device_connect(edev, &dev->miibus, dev->phy_addr, usbnet_adjust_link,
 				0, PHY_INTERFACE_MODE_NA);
+}
+
+/* no MAC address of its own, the network core assigns one on first use */
+static int usbnet_get_ethaddr(struct eth_device *edev, unsigned char *adr)
+{
+	return -ENODEV;
+}
+
+static int usbnet_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
+{
+	return 0;
 }
 
 static void usbnet_halt(struct eth_device *edev)
@@ -205,11 +284,15 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 	edev->send = usbnet_send;
 	edev->recv = usbnet_recv;
 	edev->halt = usbnet_halt;
+	edev->get_ethaddr = usbnet_get_ethaddr;
+	edev->set_ethaddr = usbnet_set_ethaddr;
 	edev->priv = undev;
 	edev->parent = &usbdev->dev;
 
 	info = (struct driver_info *)prod->driver_info;
 	undev->driver_info = info;
+	/* like in Linux, a class match binds to the matching interface only */
+	undev->intf = usb_match_interface(usbdev, prod);
 
 	if (info->bind) {
 		status = info->bind (undev);
@@ -233,10 +316,14 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 		goto out1;
 	}
 
-	eth_register(edev);
+	status = eth_register(edev);
+	if (status)
+		goto out1;
 
 	slice_depends_on(eth_device_slice(edev), usb_device_slice(usbdev));
-	slice_depends_on(mdiobus_slice(&undev->miibus), usb_device_slice(usbdev));
+	/* drivers without a PHY don't register a MDIO bus */
+	if (undev->miibus.parent)
+		slice_depends_on(mdiobus_slice(&undev->miibus), usb_device_slice(usbdev));
 
 	return 0;
 out1:

@@ -5,9 +5,15 @@
 
 void *dma_alloc(size_t size)
 {
-	return xmemalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
+	return memalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
 }
 EXPORT_SYMBOL(dma_alloc);
+
+void *dma_xalloc(size_t size)
+{
+	return xmemalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
+}
+EXPORT_SYMBOL(dma_xalloc);
 
 void *dma_zalloc(size_t size)
 {
@@ -20,6 +26,17 @@ void *dma_zalloc(size_t size)
 	return buf;
 }
 EXPORT_SYMBOL(dma_zalloc);
+
+void *dma_xzalloc(size_t size)
+{
+	void *buf;
+
+	buf = dma_xalloc(size);
+	memset(buf, 0x00, size);
+
+	return buf;
+}
+EXPORT_SYMBOL(dma_xzalloc);
 
 void dma_sync_single_for_cpu(struct device *dev, dma_addr_t address,
 			     size_t size, enum dma_data_direction dir)

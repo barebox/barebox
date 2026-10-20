@@ -26,6 +26,15 @@ EXPORT_SYMBOL(eth_class);
 
 LIST_HEAD(ethaddr_list);
 
+/*
+ * Only network devices named ethX are numbered after the ethernetX device
+ * tree aliases, so only they are what an ethid refers to.
+ */
+static bool eth_has_ethid(struct eth_device *edev)
+{
+	return !strcmp(edev->dev.name, "eth");
+}
+
 int eth_set_promisc(struct eth_device *edev, bool enable)
 {
 	if (!edev->set_promisc)
@@ -66,7 +75,7 @@ static int eth_get_registered_ethaddr(struct eth_device *edev, void *buf)
 
 	list_for_each_entry(addr, &ethaddr_list, list) {
 		if ((node && node == addr->node) ||
-				addr->ethid == edev->dev.id) {
+		    (eth_has_ethid(edev) && addr->ethid == edev->dev.id)) {
 			memcpy(buf, addr->ethaddr, ETH_ALEN);
 			return 0;
 		}
@@ -95,7 +104,7 @@ void eth_register_ethaddr(int ethid, const char *ethaddr)
 	eth_drop_ethaddr(ethid);
 
 	for_each_netdev(edev) {
-		if (edev->dev.id == ethid) {
+		if (eth_has_ethid(edev) && edev->dev.id == ethid) {
 			register_preset_mac_address(edev, ethaddr);
 			break;
 		}
@@ -375,8 +384,12 @@ static int eth_of_fixup(struct device_node *root, void *unused)
 		eth_of_fixup_node(root, addr->node ? addr->node->full_name : NULL,
 				  addr->ethid, addr->ethaddr);
 
-	for_each_netdev(edev)
+	for_each_netdev(edev) {
+		if (!edev->nodepath && !eth_has_ethid(edev))
+			continue;
+
 		eth_of_fixup_node(root, edev->nodepath, edev->dev.id, edev->ethaddr);
+	}
 
 	return 0;
 }
@@ -435,12 +448,15 @@ int eth_register(struct eth_device *edev)
 		return -1;
 	}
 
-	dev_set_name(&edev->dev, "eth");
+	/* Drivers may name the device, e.g. like its Linux counterpart */
+	if (!dev->name)
+		dev_set_name(dev, "eth");
 
 	if (edev->parent)
 		edev->dev.parent = edev->parent;
 
-	if (edev->dev.parent && edev->dev.parent->of_node) {
+	if (eth_has_ethid(edev) && edev->dev.parent &&
+	    edev->dev.parent->of_node) {
 		edev->dev.id = of_alias_get_id(edev->dev.parent->of_node,
 					       "ethernet");
 		if (edev->dev.id < 0)
@@ -593,17 +609,18 @@ void eth_open_all(void)
 static int populate_ethaddr(void)
 {
 	struct eth_device *edev;
-	bool generated = false;
 	int ret;
 
 	for_each_netdev(edev) {
+		bool generated = false;
+
 		if (!edev->parent || is_valid_ether_addr(edev->ethaddr))
 			continue;
 
 		ret = of_get_mac_addr_nvmem(edev->parent->of_node,
 					    edev->ethaddr);
 		if (IS_ENABLED(CONFIG_NET_ETHADDR_FROM_MACHINE_ID) && ret) {
-			ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
+			ret = generate_ether_addr(edev, edev->ethaddr);
 			generated = true;
 		}
 		if (ret)

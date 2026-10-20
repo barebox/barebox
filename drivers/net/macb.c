@@ -901,7 +901,7 @@ static int macb_probe(struct device *dev)
 		edev->recv = macb_recv;
 
 	macb_init_rx_buffer_size(macb, PKTSIZE);
-	macb->rx_buffer = dma_alloc(macb->rx_buffer_size * macb->rx_ring_size);
+	macb->rx_buffer = dma_xalloc(macb->rx_buffer_size * macb->rx_ring_size);
 	macb->rx_ring = dma_alloc_coherent(DMA_DEVICE_BROKEN,
 					   RX_RING_BYTES(macb), &macb->rx_ring_phys);
 	macb->tx_ring = dma_alloc_coherent(DMA_DEVICE_BROKEN,
@@ -919,6 +919,8 @@ static int macb_probe(struct device *dev)
 	}
 
 	macb->rx_packet_buf = net_alloc_packet();
+	if (!macb->rx_packet_buf)
+		return -ENOMEM;
 
 	macb_reset_hw(macb);
 	ncfgr = macb_mdc_clk_div(macb);

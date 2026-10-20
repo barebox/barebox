@@ -17,8 +17,9 @@ config NET_ETHADDR_FROM_MACHINE_ID
 
 	  Say y here, to randomize Ethernet addresses only if no machine ID
 	  is available. Should barebox have a machine ID, it will be used
-	  alongside the hostname to generate MAC addresses that are unlikely
-	  to change between subsequent runs of barebox.
+	  alongside the hostname and the network device name to generate
+	  MAC addresses that are unlikely to change between subsequent runs
+	  of barebox.
 
 	  This is not recommended for use in production as it may leak
 	  information about the machine ID.

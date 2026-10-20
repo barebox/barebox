@@ -425,17 +425,18 @@ static LIST_HEAD(connection_list);
 
 /**
  * generate_ether_addr - Generates stable software assigned Ethernet address
- * @addr: Pointer to a six-byte array to contain the Ethernet address
- * @ethid: index of the Ethernet interface
+ * @edev: the network device to generate the address for
+ * @ethaddr: Pointer to a six-byte array to contain the Ethernet address
  *
- * Derives an Ethernet address (MAC) from the machine ID, that's stable
- * per board that is not multicast and has the local assigned bit set.
+ * Derives an Ethernet address (MAC) from the machine ID and the device name,
+ * that's stable per board and network device, is not multicast and has the
+ * local assigned bit set.
  *
  * Return 0 if an address could be generated or a negative error code otherwise.
  */
-int generate_ether_addr(u8 *ethaddr, int ethid)
+int generate_ether_addr(struct eth_device *edev, u8 *ethaddr)
 {
-	const char *hostname;
+	const char *hostname, *name = dev_name(&edev->dev);
 	uuid_t id;
 	int ret;
 
@@ -447,17 +448,34 @@ int generate_ether_addr(u8 *ethaddr, int ethid)
 		return -EINVAL;
 
 	ret = machine_id_get_app_specific(&id, ARRAY_AND_SIZE("barebox-macaddr:"),
-					  hostname, strlen(hostname), NULL);
+					  hostname, strlen(hostname),
+					  name, strlen(name), NULL);
 	if (ret)
 		return ret;
 
 	memcpy(ethaddr, &id.b, ETH_ALEN);
-	eth_addr_add(ethaddr, ethid);
 
 	ethaddr[0] &= 0xfe;	/* clear multicast bit */
 	ethaddr[0] |= 0x02;	/* set local assignment bit (IEEE802) */
 
 	return 0;
+}
+
+static void net_ensure_ethaddr(struct eth_device *edev)
+{
+	int ret;
+
+	if (is_valid_ether_addr(edev->ethaddr))
+		return;
+
+	ret = generate_ether_addr(edev, edev->ethaddr);
+	if (ret)
+		random_ether_addr(edev->ethaddr);
+
+	dev_warn(&edev->dev, "No MAC address set. Using %s %pM\n",
+		 ret ? "random address" : "address computed from unique ID",
+		 edev->ethaddr);
+	eth_set_ethaddr(edev, edev->ethaddr);
 }
 
 static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
@@ -474,16 +492,7 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 			return ERR_PTR(-EHOSTUNREACH);
 	}
 
-	if (!is_valid_ether_addr(edev->ethaddr)) {
-		ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
-		if (ret)
-			random_ether_addr(edev->ethaddr);
-
-		dev_warn(&edev->dev, "No MAC address set. Using %s %pM\n",
-			 ret == 1 ? "address computed from unique ID" : "random address",
-			 edev->ethaddr);
-		eth_set_ethaddr(edev, edev->ethaddr);
-	}
+	net_ensure_ethaddr(edev);
 
 	/* If we don't have an ip only broadcast is allowed */
 	if (!edev->ipaddr && dest != IP_BROADCAST)
@@ -491,6 +500,10 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 
 	con = xzalloc(sizeof(*con));
 	con->packet = net_alloc_packet();
+	if (!con->packet) {
+		free(con);
+		return ERR_PTR(-ENOMEM);
+	}
 	con->priv = ctx;
 	con->edev = edev;
 	memset(con->packet, 0, PKTSIZE);
@@ -871,6 +884,9 @@ int net_receive(struct eth_device *edev, unsigned char *pkt, int len)
 			return ret;
 		}
 	}
+
+	/* replies must not go out with an all-zero source address */
+	net_ensure_ethaddr(edev);
 
 	switch (et_protlen) {
 	case PROT_ARP:

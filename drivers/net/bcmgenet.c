@@ -536,7 +536,7 @@ static int bcmgenet_probe(struct device *dev)
 	}
 	priv->mac_reg = IOMEM(iores->start);
 	priv->dev = dev;
-	priv->rxbuffer = dma_alloc(RX_TOTAL_BUFSIZE);
+	priv->rxbuffer = dma_xalloc(RX_TOTAL_BUFSIZE);
 
 	edev->open = bcmgenet_gmac_eth_start;
 	edev->send = bcmgenet_gmac_eth_send;

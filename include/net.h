@@ -416,8 +416,9 @@ static inline int is_broadcast_ether_addr(const u8 *addr)
 
 #define ETH_ALEN	6	/* Octets in an Ethernet address */
 #define ETH_HLEN	14	/* Total octets in header.*/
+#define ETH_FCS_LEN	4	/* Octets in the FCS */
 
-int generate_ether_addr(u8 *addr, int ethid);
+int generate_ether_addr(struct eth_device *edev, u8 *addr);
 
 /**
  * random_ether_addr - Generate software assigned random Ethernet address

@@ -490,7 +490,7 @@ int blockdevice_register(struct block_device *blk)
 
 	for (i = 0; i < 8; i++) {
 		struct chunk *chunk = xzalloc(sizeof(*chunk));
-		chunk->data = dma_alloc(BUFSIZE);
+		chunk->data = dma_xalloc(BUFSIZE);
 		chunk->num = i;
 		list_add_tail(&chunk->list, &blk->idle_blocks);
 	}

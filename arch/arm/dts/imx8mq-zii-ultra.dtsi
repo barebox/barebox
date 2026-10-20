@@ -42,16 +42,9 @@
 	nvmem-cell-names = "mac-address";
 };
 
-&pcie1 {
-	host@0 {
-		reg = <0 0 0 0 0>;
-
-		#address-cells = <3>;
-		#size-cells = <2>;
-
-		i210: i210@0 {
-			reg = <0 0 0 0 0>;
-		};
+&pcie1_port0 {
+	i210: i210@0 {
+		reg = <0x10000 0 0 0 0>;
 	};
 };
 

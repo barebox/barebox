@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-
 import logging
 import os
 import stat
@@ -79,7 +77,7 @@ class RatpFSServer(object):
     def _resolve(self, path):
         assert isinstance(path, bytes)
         components = path.split(b'/')
-        components = [x for x in components if x and x != '..']
+        components = [x for x in components if x and x != b'..']
         return os.path.join(self.path, *components)
 
     def handle_stat(self, path):

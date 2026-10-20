@@ -176,6 +176,7 @@ static int ramfs_symlink(struct inode *dir, struct dentry *dentry,
 		return -ENOSPC;
 
 	inode->i_link = xstrdup(symname);
+	inode->i_size = strlen(symname);
 	d_instantiate(dentry, inode);
 
 	return 0;

@@ -94,6 +94,12 @@ config XZ_DEC_ARM64
 config REED_SOLOMON
 	bool
 
+config REED_SOLOMON_ENC8
+	bool
+
+config REED_SOLOMON_DEC8
+	bool
+
 config BASE64
 	bool "include base64 encode/decode support"
 

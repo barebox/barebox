@@ -122,11 +122,42 @@ static void test_of_property_strings(struct device_node *root)
 	assert_equal(np4, np5);
 }
 
+static void assert_lookup(struct device_node *found, struct device_node *expected,
+			  const char *name)
+{
+	total_tests++;
+
+	if (found == expected)
+		return;
+
+	pr_warn("lookup of '%s' returned '%s', expected '%s'\n", name,
+		found ? found->name : "<none>", expected ? expected->name : "<none>");
+	failed_tests++;
+}
+
+static void test_of_node_lookup(void)
+{
+	struct device_node *root = of_new_node(NULL, NULL);
+	struct device_node *upper, *lower;
+
+	upper = of_new_node(root, "NODE");
+	lower = of_new_node(root, "node");
+
+	/* node names are compared case-sensitively */
+	assert_lookup(of_get_child_by_name(root, "node"), lower, "node");
+	assert_lookup(of_get_child_by_name(root, "NODE"), upper, "NODE");
+	assert_lookup(of_get_child_by_name(root, "Node"), NULL, "Node");
+
+	of_delete_node(root);
+}
+
 static void __init test_of_manipulation(void)
 {
 	extern char __dtb_of_manipulation_start[], __dtb_of_manipulation_end[];
 	struct device_node *root = of_new_node(NULL, NULL);
 	struct device_node *expected;
+
+	test_of_node_lookup();
 
 	test_of_basics(root);
 	test_of_property_strings(root);

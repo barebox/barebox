@@ -10,10 +10,15 @@
 #include <linux/err.h>
 #include <asm/byteorder.h>
 
-/* Default string compare functions */
+/*
+ * Default string compare functions
+ *
+ * Unlike Linux, which kept in part the case-insensitive Open Firmware semantics
+ * of of_node_cmp(), barebox compares node names case-sensitively.
+ */
 #define of_compat_cmp(s1, s2, l)	strcasecmp((s1), (s2))
 #define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
-#define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
+#define of_node_cmp(s1, s2)		strcmp((s1), (s2))
 
 #define OF_BAD_ADDR      ((u64)-1)
 
@@ -1339,6 +1344,23 @@ static inline bool of_property_read_bool(const struct device_node *np,
 static inline bool of_property_present(const struct device_node *np, const char *propname)
 {
 	return of_property_read_bool(np, propname);
+}
+
+/**
+ * of_node_is_type - Test if a node has a given device_type
+ * @np:		device node to test
+ * @type:	device_type value to look for
+ *
+ * Return: true if the node's device_type property matches @type
+ */
+static inline bool of_node_is_type(struct device_node *np, const char *type)
+{
+	const char *device_type;
+
+	if (of_property_read_string(np, "device_type", &device_type))
+		return false;
+
+	return type && !strcmp(device_type, type);
 }
 
 static inline int of_property_read_u8(const struct device_node *np,

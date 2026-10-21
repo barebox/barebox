@@ -1,8 +1,12 @@
-:orphan:
+Pending changes
+===============
 
-Deep probe is now the default on STM32MP13 and STM32MP15
---------------------------------------------------------
+This sections lists possibly backwards-incompatible changes that have been committed
+to the barebox source tree, but have not yet been included into a release.
+If you have concerns about any of them, now's a good time to reach out to the
+:ref:`mailing list <feedback>`.
 
-barebox now enables deep probe for every ``st,stm32mp1xx`` compatible, even
-over ``barebox,disable-deep-probe``. Report to the mailing list if that
-breaks your board.
+.. toctree::
+   :glob:
+
+   migration-master/*

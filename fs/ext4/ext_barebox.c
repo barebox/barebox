@@ -79,7 +79,7 @@ struct inode *ext_get_inode(struct super_block *sb, int ino);
 
 static int ext4fs_get_ino(struct ext2fs_node *dir, struct qstr *name, int *inum)
 {
-	unsigned int fpos = 0;
+	loff_t fpos = 0;
 	int ret;
 
 	while (fpos < le32_to_cpu(dir->inode.size)) {
@@ -144,37 +144,43 @@ static int ext_iterate(struct file *file, struct dir_context *ctx)
 {
 	struct dentry *dentry = file->f_path.dentry;
 	struct inode *dir = d_inode(dentry);
-	unsigned int fpos = 0;
-	int status, ret;
 	struct ext2fs_node *diro = to_ext2_node(dir);
+	unsigned int blksz = EXT2_BLOCK_SIZE(diro->data);
+	loff_t pos;
+	int status, ret = 0;
 	void *buf;
 
-	buf = malloc(dir->i_size);
+	buf = malloc(blksz);
 	if (!buf)
 		return -ENOMEM;
 
-	status = ext4fs_read_file(diro, 0, dir->i_size, buf);
-	if (status < 1) {
-		ret = -EINVAL;
-		goto out;
+	/* Directory entries do not cross block boundaries */
+	for (pos = 0; pos < dir->i_size; pos += blksz) {
+		unsigned int len = min_t(loff_t, blksz, dir->i_size - pos);
+		unsigned int fpos = 0;
+
+		status = ext4fs_read_file(diro, pos, len, buf);
+		if (status < 1) {
+			ret = -EINVAL;
+			goto out;
+		}
+
+		while (fpos + sizeof(struct ext2_dirent) <= len) {
+			const struct ext2_dirent *dirent = buf + fpos;
+			const char *filename = buf + fpos + sizeof(*dirent);
+			uint16_t direntlen = le16_to_cpu(dirent->direntlen);
+
+			if (direntlen < sizeof(struct ext2_dirent))
+				goto out;
+
+			if (dirent->namelen != 0 &&
+			    fpos + sizeof(*dirent) + dirent->namelen <= len)
+				dir_emit(ctx, filename, dirent->namelen,
+					 le32_to_cpu(dirent->inode), DT_UNKNOWN);
+
+			fpos += direntlen;
+		}
 	}
-
-	while (fpos + sizeof(struct ext2_dirent) <= dir->i_size) {
-		const struct ext2_dirent *dirent = buf + fpos;
-		const char *filename = buf + fpos + sizeof(*dirent);
-		uint16_t direntlen = le16_to_cpu(dirent->direntlen);
-
-		if (direntlen < sizeof(struct ext2_dirent))
-			break;
-
-		if (dirent->namelen != 0 &&
-		    fpos + sizeof(*dirent) + dirent->namelen <= dir->i_size)
-			dir_emit(ctx, filename, dirent->namelen,
-				 le32_to_cpu(dirent->inode), DT_UNKNOWN);
-
-		fpos += direntlen;
-	}
-	ret = 0;
 out:
 	free(buf);
 

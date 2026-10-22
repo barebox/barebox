@@ -28,6 +28,7 @@ DEFAULT_INBOXES = [
     'https://lore.kernel.org/barebox/',
 ]
 TAG_GLOB = 'v????.??.?*'
+GUIDES_DIR = 'Documentation/migration-guides'
 
 
 def die(*lines):
@@ -184,6 +185,27 @@ def announcement_text(msg):
     return lines
 
 
+def has_migration_guide(tag, release):
+    """Return whether the tagged tree has a migration guide for release.
+
+    The guide is migration-<release>.rst, but the pending notes are
+    sometimes only turned into it right after the tag, so these count too.
+    They used to be a single migration-master.rst and are now one file per
+    change in a migration-master/ directory. A migration-master.rst that
+    just includes the directory is there even without pending notes.
+    """
+    files = git('ls-tree', '-r', '--name-only', tag, '--',
+                f'{GUIDES_DIR}/').splitlines()
+    if f'{GUIDES_DIR}/migration-{release}.rst' in files:
+        return True
+    if any(f.startswith(f'{GUIDES_DIR}/migration-master/') and
+           f.endswith('.rst') for f in files):
+        return True
+    page = f'{GUIDES_DIR}/migration-master.rst'
+    return (page in files and
+            'migration-master/' not in git('show', f'{tag}:{page}'))
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='generate GitHub release notes from the announcement mail')
@@ -240,12 +262,7 @@ def main():
     out += [f'> {line}'.rstrip() for line in announcement_text(msg)]
     out.append('')
 
-    # The guide is usually still named migration-master.rst at the tag and
-    # renamed right after it, so either name counts
-    guides = (f'Documentation/migration-guides/migration-{n}.rst'
-              for n in (release, 'master'))
-    if any(git('cat-file', '-e', f'{tag}:{g}', check=False) is not None
-           for g in guides):
+    if is_tag and has_migration_guide(tag, release):
         out.append('**Migration Guide**: https://barebox.org/doc/latest/'
                    f'migration-guides/migration-{release}.html')
 

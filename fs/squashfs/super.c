@@ -331,6 +331,13 @@ check_directory_table:
 		goto failed_mount;
 	}
 
+	if (!S_ISDIR(root->i_mode)) {
+		ERROR("root inode is not a directory\n");
+		iput(root);
+		err = -EINVAL;
+		goto failed_mount;
+	}
+
 	sb->s_root = d_make_root(root);
 	if (sb->s_root == NULL) {
 		ERROR("Root inode create failed\n");

@@ -280,6 +280,9 @@ static int usb_parse_config(struct usb_device *dev, int cfgno,
 				/* found alternate setting for the interface */
 				dev->config.interface[ifno].num_altsetting++;
 			}
+			/* companions must follow an endpoint of this interface */
+			epno = -1;
+			skip_comp = false;
 			break;
 		case USB_DT_ENDPOINT:
 			if (head->bLength != USB_DT_ENDPOINT_SIZE) {

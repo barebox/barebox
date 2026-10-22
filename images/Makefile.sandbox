@@ -20,6 +20,7 @@ fuzzer-$(CONFIG_FS_EXT4)	+= ext4
 fuzzer-$(CONFIG_STATE)		+= state-direct
 fuzzer-$(CONFIG_DM_LVM)		+= lvm
 fuzzer-$(CONFIG_DM_LVM)		+= lvm-md
+fuzzer-$(CONFIG_USB_HOST)	+= usb-config
 
 ifeq ($(CONFIG_SANDBOX),y)
 

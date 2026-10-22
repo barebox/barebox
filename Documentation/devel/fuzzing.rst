@@ -34,6 +34,7 @@ options to crash barebox on detection of memory safety issues::
   fuzz-state-direct
   fuzz-tlv
   fuzz-uncompress
+  fuzz-usb-config
 
 All fuzzers generated are symlinks to the same barebox executable. barebox
 will detect that it was invoked via symlink and switch to fuzzing mode.

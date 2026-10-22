@@ -38,6 +38,7 @@
 #include <xfuncs.h>
 #include <init.h>
 #include <dma.h>
+#include <fuzz.h>
 
 #include <linux/bitmap.h>
 #include <linux/usb/usb.h>
@@ -394,6 +395,43 @@ out:
 
 	return 0;
 }
+
+static int fuzz_usb_config(const u8 *data, size_t size)
+{
+	struct usb_device *dev;
+	u8 *buf;
+	int i, j;
+
+	/* usb_get_configuration_no() reads at most USB_BUFSIZ bytes */
+	if (!size || size > USB_BUFSIZ)
+		return 0;
+
+	dev = xzalloc(sizeof(*dev));
+	buf = xmemdup(data, size);
+
+	if (!usb_parse_config(dev, 0, buf, size)) {
+		BUG_ON(dev->config.no_of_if > USB_MAXINTERFACES);
+		BUG_ON(dev->config.desc.bNumInterfaces > dev->config.no_of_if);
+
+		for (i = 0; i < dev->config.no_of_if; i++) {
+			struct usb_interface *intf = &dev->config.interface[i];
+
+			BUG_ON(intf->no_of_ep > USB_MAXENDPOINTS);
+			BUG_ON(intf->desc.bNumEndpoints > intf->no_of_ep);
+
+			for (j = 0; j < intf->no_of_ep; j++)
+				BUG_ON(!usb_endpoint_num(&intf->ep_desc[j]));
+		}
+
+		usb_set_maxpacket(dev);
+	}
+
+	free(buf);
+	free(dev);
+
+	return 0;
+}
+fuzz_test("usb-config", fuzz_usb_config);
 
 static int usb_get_descriptor(struct usb_device *dev, unsigned char type,
 			unsigned char index, void *buf, int size)

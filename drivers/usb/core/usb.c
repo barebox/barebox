@@ -341,6 +341,28 @@ static int usb_parse_config(struct usb_device *dev, int cfgno,
 		index += head->bLength;
 		head = (struct usb_descriptor_header *)&buffer[index];
 	}
+
+	/*
+	 * The interfaces and endpoints are walked by the counts in their
+	 * descriptors later on, so don't let these claim more than we stored.
+	 */
+	if (dev->config.desc.bNumInterfaces > dev->config.no_of_if) {
+		dev_dbg(&dev->dev, "%d interface descriptors, configuration says %d\n",
+			dev->config.no_of_if, dev->config.desc.bNumInterfaces);
+		dev->config.desc.bNumInterfaces = dev->config.no_of_if;
+	}
+
+	for (i = 0; i < dev->config.no_of_if; i++) {
+		if_desc = &dev->config.interface[i];
+
+		if (if_desc->desc.bNumEndpoints > if_desc->no_of_ep) {
+			dev_dbg(&dev->dev, "interface %d: %d endpoint descriptors, interface says %d\n",
+				if_desc->desc.bInterfaceNumber, if_desc->no_of_ep,
+				if_desc->desc.bNumEndpoints);
+			if_desc->desc.bNumEndpoints = if_desc->no_of_ep;
+		}
+	}
+
 	return 1;
 }
 
@@ -1051,7 +1073,7 @@ int usb_set_interface(struct usb_device *dev, int interface, int alternate)
 	struct usb_interface *if_face = NULL;
 	int ret, i;
 
-	for (i = 0; i < dev->config.desc.bNumInterfaces; i++) {
+	for (i = 0; i < dev->config.no_of_if; i++) {
 		if (dev->config.interface[i].desc.bInterfaceNumber == interface) {
 			if_face = &dev->config.interface[i];
 			break;

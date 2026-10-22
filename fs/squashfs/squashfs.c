@@ -180,10 +180,10 @@ static int squashfs_close(struct inode *inode, struct file *f)
 	return 0;
 }
 
-static int squashfs_read_buf(struct squashfs_page *page, int pos, void **buf)
+static int squashfs_read_buf(struct squashfs_page *page, loff_t pos, void **buf)
 {
-	unsigned int data_block = pos / (32 * PAGE_CACHE_SIZE);
-	unsigned int data_block_pos = pos % (32 * PAGE_CACHE_SIZE);
+	pgoff_t data_block = pos >> (PAGE_CACHE_SHIFT + 5);
+	unsigned int data_block_pos = pos & (32 * PAGE_CACHE_SIZE - 1);
 	unsigned int idx = data_block_pos / PAGE_CACHE_SIZE;
 
 	if (data_block != page->data_block || page->idx == 0) {
@@ -201,14 +201,14 @@ static int squashfs_read_buf(struct squashfs_page *page, int pos, void **buf)
 static int squashfs_read(struct file *f, void *buf, size_t insize)
 {
 	unsigned int size = insize;
-	unsigned int pos = f->f_pos;
+	loff_t pos = f->f_pos;
 	unsigned int ofs;
 	unsigned int now;
 	void *pagebuf;
 	struct squashfs_page *page = f->private_data;
 
 	/* Read till end of current buffer page */
-	ofs = pos % PAGE_CACHE_SIZE;
+	ofs = pos & (PAGE_CACHE_SIZE - 1);
 	if (ofs) {
 		squashfs_read_buf(page, pos, &pagebuf);
 

@@ -6,30 +6,11 @@
 #ifndef __LINUX_CLK_PROVIDER_H
 #define __LINUX_CLK_PROVIDER_H
 
+#ifdef CONFIG_COMMON_CLK
+
 #include <linux/clk.h>
 
 struct clk_div_table;
-
-long divider_round_rate_parent(struct clk_hw *hw, struct clk_hw *parent,
-			       unsigned long rate, unsigned long *prate,
-			       const struct clk_div_table *table,
-			       u8 width, unsigned long flags);
-
-long divider_ro_round_rate_parent(struct clk_hw *hw, struct clk_hw *parent,
-				  unsigned long rate, unsigned long *prate,
-				  const struct clk_div_table *table, u8 width,
-				  unsigned long flags, unsigned int val);
-
-static inline long divider_ro_round_rate(struct clk_hw *hw, unsigned long rate,
-					 unsigned long *prate,
-					 const struct clk_div_table *table,
-					 u8 width, unsigned long flags,
-					 unsigned int val)
-{
-	return divider_ro_round_rate_parent(hw, clk_hw_get_parent(hw),
-					    rate, prate, table, width, flags,
-					    val);
-}
 
 /***
  * struct clk_composite - aggregate clock of mux, divider and gate clocks
@@ -55,7 +36,7 @@ struct clk_composite {
  *
  * Should be initialized by calling clk_hw_init_rate_request().
  *
- * @core: 		Pointer to the struct clk_core affected by this request
+ * @hw:		Pointer to the struct clk_hw affected by this request
  * @rate:		Requested clock rate. This field will be adjusted by
  *			clock drivers according to hardware capabilities.
  * @min_rate:		Minimum rate imposed by clk users.
@@ -67,13 +48,36 @@ struct clk_composite {
  *
  */
 struct clk_rate_request {
-	struct clk_core *core;
+	struct clk_hw *hw;
 	unsigned long rate;
 	unsigned long min_rate;
 	unsigned long max_rate;
 	unsigned long best_parent_rate;
 	struct clk_hw *best_parent_hw;
 };
+
+void clk_hw_init_rate_request(const struct clk_hw *hw,
+			      struct clk_rate_request *req,
+			      unsigned long rate);
+void clk_hw_forward_rate_request(const struct clk_hw *hw,
+				 const struct clk_rate_request *old_req,
+				 const struct clk_hw *parent,
+				 struct clk_rate_request *req,
+				 unsigned long parent_rate);
+
+int __clk_determine_rate(struct clk_hw *hw, struct clk_rate_request *req);
+int clk_hw_determine_rate_no_reparent(struct clk_hw *hw,
+				      struct clk_rate_request *req);
+int clk_mux_determine_rate_flags(struct clk_hw *hw,
+				 struct clk_rate_request *req,
+				 unsigned long flags);
+
+int divider_determine_rate(struct clk_hw *hw, struct clk_rate_request *req,
+			   const struct clk_div_table *table, u8 width,
+			   unsigned long flags);
+int divider_ro_determine_rate(struct clk_hw *hw, struct clk_rate_request *req,
+			      const struct clk_div_table *table, u8 width,
+			      unsigned long flags, unsigned int val);
 
 #define CLK_HW_INIT(_name, _parent, _ops, _flags)		\
 	(&(struct clk_init_data) {				\
@@ -201,5 +205,7 @@ struct clk_rate_request {
 						      &clk_fixed_factor_ops, \
 						      _flags),		\
 	}
+
+#endif
 
 #endif

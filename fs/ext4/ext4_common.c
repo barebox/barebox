@@ -262,11 +262,23 @@ int64_t read_allocated_block(struct ext2fs_node *node, uint64_t fileblock)
 		}
 
 		for (i = 0; i < le16_to_cpu(ext_block->eh_entries); i++) {
+			unsigned int len = le16_to_cpu(extent[i].ee_len);
+			bool unwritten = len > EXT_INIT_MAX_LEN;
+
+			if (unwritten)
+				len -= EXT_INIT_MAX_LEN;
+
 			startblock = le32_to_cpu(extent[i].ee_block);
-			endblock = startblock + le16_to_cpu(extent[i].ee_len);
+			endblock = startblock + len;
 
 			if (startblock > fileblock) {
 				/* Sparse file */
+				free(buf);
+				return 0;
+			}
+
+			if (fileblock < endblock && unwritten) {
+				/* Allocated, but never written: reads as zeroes */
 				free(buf);
 				return 0;
 			}

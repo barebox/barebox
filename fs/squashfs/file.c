@@ -425,7 +425,7 @@ int squashfs_readpage(struct file *file, struct page *page)
 	int expected = index == file_end ?
 			(i_size_read(inode) & (msblk->block_size - 1)) :
 			 msblk->block_size;
-	int res;
+	int res, i;
 
 	TRACE("Entered squashfs_readpage, page index %lx, start block %llx\n",
 				page->index, squashfs_i(inode)->start);
@@ -452,7 +452,8 @@ int squashfs_readpage(struct file *file, struct page *page)
 		return 0;
 
 out:
-	memset(page->addr, 0, PAGE_CACHE_SIZE);
+	for (i = 0; i < 32; i++)
+		memset(squashfs_page(page)->buf[i], 0, PAGE_CACHE_SIZE);
 
 	return 0;
 }

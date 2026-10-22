@@ -94,6 +94,8 @@ struct inode *squashfs_iget(struct super_block *sb, long long ino,
 		return ERR_PTR(err);
 	}
 
+	inode->i_state &= ~I_NEW;
+
 	return inode;
 }
 

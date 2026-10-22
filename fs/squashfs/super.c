@@ -82,11 +82,6 @@ void squashfs_put_super(struct super_block *sb)
 		kfree(sb->s_fs_info);
 		sb->s_fs_info = NULL;
 	}
-
-	if (sb->s_root) {
-		kfree(sb->s_root);
-		sb->s_root = NULL;
-	}
 }
 
 /*

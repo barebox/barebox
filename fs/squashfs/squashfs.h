@@ -39,7 +39,7 @@ struct squashfs_page {
 	struct page real_page;
 	char **buf;
 	int idx;
-	int data_block;
+	pgoff_t data_block;
 };
 
 static inline struct squashfs_page *squashfs_page(struct page *page)

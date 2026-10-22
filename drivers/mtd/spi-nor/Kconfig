@@ -21,10 +21,20 @@ config MTD_SPI_NOR_USE_4K_SECTORS
 	  Please note that some tools/drivers/filesystems may not work with
 	  4096 B erase size (e.g. UBIFS requires 15 KiB as a minimum).
 
+config MTD_SPI_NOR_PBL
+	bool
+	help
+	  Build the SPI-NOR framework into the PBL. Selected by PBL drivers
+	  that use it.
+
 config SPI_CADENCE_QUADSPI
 	tristate "Cadence Quad SPI controller"
 	help
 	  This enables support for the Cadence Quad SPI controller and NOR flash.
+
+config SPI_CADENCE_QUADSPI_PBL
+	bool
+	select MTD_SPI_NOR_PBL
 
 config SPI_SYNOPSYS_OCTALSPI_NOR
 	tristate "Synopsys DesignWare Octal SPI controller"

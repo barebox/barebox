@@ -30,6 +30,7 @@ config ARCH_SOCFPGA_AGILEX5
 	select FIRMWARE_AGILEX5_ATF
 	select ARM_ATF
 	select ARM_SMCCC
+	select GPIOLIB
 
 if 32BIT
 
@@ -79,9 +80,37 @@ if 64BIT
 
 comment "Agilex 5 boards"
 
-config MACH_SOCFPGA_ARROW_AXE5_EAGLE
+menuconfig MACH_SOCFPGA_ARROW_AXE5_EAGLE
 	bool "Arrow AXE5 Eagle"
 	select ARCH_SOCFPGA_AGILEX5
+
+config MACH_SOCFPGA_ARROW_AXE5_EAGLE_XLOAD
+	bool "Build Arrow AXE5 Eagle FSBL without piggy data"
+	depends on MACH_SOCFPGA_ARROW_AXE5_EAGLE
+	select SOCFPGA_AGILEX5_XLOAD
+	select SPI_CADENCE_QUADSPI_PBL
+	help
+	  This option reduces the binary size of the FSBL and makes it
+	  independent of the enabled features of the SSBL, but requires SSBL
+	  xload support.
+
+config MACH_SOCFPGA_ARROW_AXE5_EAGLE_XLOAD_ADDR
+	prompt "Start address of the Arrow AXE5 SSBL on flash"
+	hex
+	default 0x01000000
+	help
+	  barebox tries to load an SSBL from this address in the QSPI flash.
+
+	  Keep this address in sync with your QSPI image configuration.
+
+config MACH_SOCFPGA_ARROW_AXE5_EAGLE_XLOAD_SIZE
+	prompt "Maximum size of the Arrow AXE5 SSBL on flash"
+	hex
+	default 0x00400000
+	help
+	  The maximum size of the SSBL in the QSPI flash.
+
+	  Keep this size in sync with your QSPI image configuration.
 
 endif
 
@@ -91,5 +120,16 @@ config ARCH_SOCFPGA_XLOAD
 	bool
 	depends on ARCH_SOCFPGA_CYCLONE5
 	prompt "Build SoCFPGA preloader image"
+
+config SOCFPGA_AGILEX5_XLOAD
+	bool
+	depends on ARCH_SOCFPGA_AGILEX5
+	prompt "Support SSBL xloading on Agilex 5"
+	help
+	  On Agilex 5, the FSBL binary is limited to a size of ~256k. Enable
+	  XLOAD support to load the SSBL from a separate medium and allow
+	  larger bootloader images.
+
+	  Note that the SSBL loading has to be configured in the board code.
 
 endmenu

@@ -298,7 +298,8 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 			return ret;
 
 		ret = ext4fs_get_indir_block(node, &data->indir3,
-				le32_to_cpu(data->indir2.data[rblock / perblock_child]) << log2_blksz);
+				le32_to_cpu(data->indir2.data[(rblock / perblock_child) %
+							      perblock_child]) << log2_blksz);
 		if (ret)
 			return ret;
 

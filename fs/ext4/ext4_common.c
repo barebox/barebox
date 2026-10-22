@@ -166,7 +166,7 @@ int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)
 }
 
 static int ext4fs_get_indir_block(struct ext2fs_node *node,
-				struct ext4fs_indir_block *indir, sector_t blkno)
+				struct ext4fs_indir_block *indir, uint32_t blkno)
 {
 	struct ext_filesystem *fs = node->data->fs;
 	int blksz;
@@ -177,7 +177,8 @@ static int ext4fs_get_indir_block(struct ext2fs_node *node,
 	if (indir->blkno == blkno)
 		return 0;
 
-	ret = ext4fs_devread(fs, blkno, 0, blksz, (void *)indir->data);
+	ret = ext4fs_devread(fs, (sector_t)blkno << LOG2_EXT2_BLOCK_SIZE(node->data),
+			     0, blksz, (void *)indir->data);
 	if (ret) {
 		dev_err(fs->dev, "** SI ext2fs read block (indir 1)"
 			"failed. **\n");
@@ -187,9 +188,9 @@ static int ext4fs_get_indir_block(struct ext2fs_node *node,
 	return 0;
 }
 
-long int read_allocated_block(struct ext2fs_node *node, uint64_t fileblock)
+int64_t read_allocated_block(struct ext2fs_node *node, uint64_t fileblock)
 {
-	long int blknr;
+	int64_t blknr;
 	int blksz;
 	int log2_blksz;
 	uint32_t rblock;
@@ -263,7 +264,7 @@ long int read_allocated_block(struct ext2fs_node *node, uint64_t fileblock)
 	} else if (fileblock < (INDIRECT_BLOCKS + (blksz / 4))) {
 		/* Indirect. */
 		ret = ext4fs_get_indir_block(node, &data->indir1,
-				le32_to_cpu(inode->b.blocks.indir_block) << log2_blksz);
+				le32_to_cpu(inode->b.blocks.indir_block));
 		if (ret)
 			return ret;
 		blknr = le32_to_cpu(data->indir1.data[fileblock - INDIRECT_BLOCKS]);
@@ -275,12 +276,12 @@ long int read_allocated_block(struct ext2fs_node *node, uint64_t fileblock)
 		rblock = fileblock - (INDIRECT_BLOCKS + blksz / 4);
 
 		ret = ext4fs_get_indir_block(node, &data->indir1,
-				le32_to_cpu(inode->b.blocks.double_indir_block) << log2_blksz);
+				le32_to_cpu(inode->b.blocks.double_indir_block));
 		if (ret)
 			return ret;
 
 		ret = ext4fs_get_indir_block(node, &data->indir2,
-				le32_to_cpu(data->indir1.data[rblock / perblock]) << log2_blksz);
+				le32_to_cpu(data->indir1.data[rblock / perblock]));
 		if (ret)
 			return ret;
 
@@ -297,18 +298,18 @@ long int read_allocated_block(struct ext2fs_node *node, uint64_t fileblock)
 			return -EINVAL;
 
 		ret = ext4fs_get_indir_block(node, &data->indir1,
-				le32_to_cpu(inode->b.blocks.triple_indir_block) << log2_blksz);
+				le32_to_cpu(inode->b.blocks.triple_indir_block));
 		if (ret)
 			return ret;
 
 		ret = ext4fs_get_indir_block(node, &data->indir2,
-				le32_to_cpu(data->indir1.data[rblock / perblock_parent]) << log2_blksz);
+				le32_to_cpu(data->indir1.data[rblock / perblock_parent]));
 		if (ret)
 			return ret;
 
 		ret = ext4fs_get_indir_block(node, &data->indir3,
 				le32_to_cpu(data->indir2.data[(rblock / perblock_child) %
-							      perblock_child]) << log2_blksz);
+							      perblock_child]));
 		if (ret)
 			return ret;
 

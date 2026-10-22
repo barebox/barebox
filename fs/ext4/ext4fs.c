@@ -69,16 +69,17 @@ loff_t ext4fs_read_file(struct ext2fs_node *node, loff_t pos,
 	blockcnt = ((len + pos) + blocksize - 1) >> blockshift;
 
 	for (i = pos >> blockshift; i < blockcnt; i++) {
+		int64_t blk;
 		sector_t blknr;
 		loff_t blockoff = pos - (blocksize * i);
 		loff_t blockend = blocksize;
 		loff_t skipfirst = 0;
 
-		ret = read_allocated_block(node, i);
-		if (ret < 0)
-			return ret;
+		blk = read_allocated_block(node, i);
+		if (blk < 0)
+			return blk;
 
-		blknr = ret << log2blocksize;
+		blknr = (sector_t)blk << log2blocksize;
 
 		/* Last block.  */
 		if (i == blockcnt - 1) {

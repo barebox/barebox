@@ -217,9 +217,12 @@ struct ext2fs_node {
 	int inode_read;
 };
 
+/* No block cached in a struct ext4fs_indir_block */
+#define EXT4FS_INDIR_NONE		((int64_t)-1)
+
 struct ext4fs_indir_block {
 	int size;
-	int blkno;
+	int64_t blkno;
 	uint32_t *data;
 };
 

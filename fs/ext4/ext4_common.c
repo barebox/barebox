@@ -177,13 +177,21 @@ static int ext4fs_get_indir_block(struct ext2fs_node *node,
 	if (indir->blkno == blkno)
 		return 0;
 
-	ret = ext4fs_devread(fs, (sector_t)blkno << LOG2_EXT2_BLOCK_SIZE(node->data),
-			     0, blksz, (void *)indir->data);
-	if (ret) {
-		dev_err(fs->dev, "** SI ext2fs read block (indir 1)"
-			"failed. **\n");
-		return ret;
+	if (!blkno) {
+		/* A hole, so are all blocks the indirect block would map */
+		memset(indir->data, 0, blksz);
+	} else {
+		ret = ext4fs_devread(fs, (sector_t)blkno << LOG2_EXT2_BLOCK_SIZE(node->data),
+				     0, blksz, (void *)indir->data);
+		if (ret) {
+			indir->blkno = EXT4FS_INDIR_NONE;
+			dev_err(fs->dev, "** SI ext2fs read block (indir 1)"
+				"failed. **\n");
+			return ret;
+		}
 	}
+
+	indir->blkno = blkno;
 
 	return 0;
 }
@@ -640,6 +648,10 @@ int ext4fs_mount(struct ext_filesystem *fs)
 		ret = -ENOMEM;
 		goto fail;
 	}
+
+	fs->data->indir1.blkno = EXT4FS_INDIR_NONE;
+	fs->data->indir2.blkno = EXT4FS_INDIR_NONE;
+	fs->data->indir3.blkno = EXT4FS_INDIR_NONE;
 
 	ret = ext4fs_read_inode(data, 2, data->inode);
 	if (ret)

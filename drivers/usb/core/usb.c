@@ -626,7 +626,10 @@ int usb_new_device(struct usb_device *dev)
 		goto err_out;
 	}
 
-	usb_parse_config(dev, 0, buf, length);
+	err = usb_parse_config(dev, 0, buf, length);
+	if (err)
+		goto err_out;
+
 	usb_set_maxpacket(dev);
 	/* we set the default configuration here */
 	err = usb_set_configuration(dev, dev->config.desc.bConfigurationValue);

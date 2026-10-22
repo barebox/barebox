@@ -560,7 +560,7 @@ int ext4fs_mount(struct ext_filesystem *fs)
 	}
 
 	if (le32_to_cpu(data->sblock.revision_level) == 0) {
-		fs->inodesz = 128;
+		fs->inodesz = EXT2_GOOD_OLD_INODE_SIZE;
 		fs->gdsize = EXT4_MIN_DESC_SIZE;
 	} else {
 		debug("EXT4 features COMPAT: %08x INCOMPAT: %08x RO_COMPAT: %08x\n",
@@ -569,6 +569,15 @@ int ext4fs_mount(struct ext_filesystem *fs)
 		      le32_to_cpu(data->sblock.feature_ro_compat));
 
 		fs->inodesz = le16_to_cpu(data->sblock.inode_size);
+		if (fs->inodesz < EXT2_GOOD_OLD_INODE_SIZE ||
+		    fs->inodesz > EXT2_BLOCK_SIZE(data) ||
+		    !is_power_of_2(fs->inodesz)) {
+			dev_err(fs->dev, "unsupported inode size %u\n",
+				fs->inodesz);
+			ret = -EINVAL;
+			goto fail;
+		}
+
 		fs->gdsize = EXT4_MIN_DESC_SIZE;
 
 		if (le32_to_cpu(data->sblock.feature_incompat) &
@@ -590,10 +599,8 @@ int ext4fs_mount(struct ext_filesystem *fs)
 	      le32_to_cpu(data->sblock.revision_level),
 	      fs->inodesz, fs->gdsize);
 
-	if (!fs->inodesz || !le32_to_cpu(data->sblock.inodes_per_group)) {
-		dev_err(fs->dev, "invalid superblock: inodesz=%u gdsize=%u inodes_per_group=%u\n",
-			fs->inodesz, fs->gdsize,
-			le32_to_cpu(data->sblock.inodes_per_group));
+	if (!le32_to_cpu(data->sblock.inodes_per_group)) {
+		dev_err(fs->dev, "invalid superblock: inodes_per_group=0\n");
 		ret = -EINVAL;
 		goto fail;
 	}

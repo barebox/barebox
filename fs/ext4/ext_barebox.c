@@ -300,13 +300,15 @@ static int ext_probe(struct device *dev)
 	inode = ext_get_inode(sb, 2);
 	if (!inode) {
 		ret = -EINVAL;
-		goto err;
+		goto err_umount;
 	}
 
 	sb->s_root = d_make_root(inode);
 
 	return 0;
 
+err_umount:
+	ext4fs_umount(fs);
 err:
 	free(fs);
 

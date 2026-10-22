@@ -30,7 +30,6 @@
  */
 struct page {
 	pgoff_t index;
-	void *addr;
 	struct inode *inode;
 };
 

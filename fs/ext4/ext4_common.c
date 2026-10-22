@@ -139,6 +139,12 @@ int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)
 	sector_t blkno;
 	unsigned int blkoff;
 
+	if (ino < EXT2_ROOT_INO ||
+	    (uint32_t)ino > le32_to_cpu(sblock->total_inodes)) {
+		dev_err(fs->dev, "invalid inode number %u\n", (uint32_t)ino);
+		return -EINVAL;
+	}
+
 	/* It is easier to calculate if the first inode is 0. */
 	ino--;
 	ret = ext4fs_blockgroup(data, ino / le32_to_cpu

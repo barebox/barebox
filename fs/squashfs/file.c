@@ -353,7 +353,7 @@ static int squashfs_fill_page(char *dest, struct squashfs_cache_entry *buffer,
 	int copied;
 
 	copied = squashfs_copy_data(dest, buffer, offset, avail);
-	memset(dest + avail, 0, PAGE_CACHE_SIZE - avail);
+	memset(dest + copied, 0, PAGE_CACHE_SIZE - copied);
 
 	return copied == avail ? 0 : -EILSEQ;
 }

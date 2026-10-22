@@ -89,8 +89,10 @@ struct inode *squashfs_iget(struct super_block *sb, long long ino,
 		return inode;
 
 	err = squashfs_read_inode(inode, ino);
-	if (err)
+	if (err) {
+		iget_failed(inode);
 		return ERR_PTR(err);
+	}
 
 	return inode;
 }

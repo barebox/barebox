@@ -297,8 +297,8 @@ check_directory_table:
 
 	/* allocate root */
 	root = squashfs_iget(sb, root_inode, 1);
-	if (!root) {
-		err = -ENOMEM;
+	if (IS_ERR(root)) {
+		err = PTR_ERR(root);
 		goto failed_mount;
 	}
 

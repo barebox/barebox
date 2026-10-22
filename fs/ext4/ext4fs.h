@@ -30,6 +30,7 @@
 #define EXT4_FEATURE_INCOMPAT_EXTENTS	0x0040
 #define EXT4_FEATURE_INCOMPAT_64BIT	0x0080
 #define EXT4_INDIRECT_BLOCKS		12
+#define EXT_MAX_BLOCKS			0xffffffff
 
 #define EXT2_GOOD_OLD_INODE_SIZE	128
 
@@ -102,6 +103,6 @@ void ext4fs_umount(struct ext_filesystem *fs);
 char *ext4fs_read_symlink(struct ext2fs_node *node);
 void ext4fs_free_node(struct ext2fs_node *node, struct ext2fs_node *currroot);
 ssize_t ext4fs_devread(struct ext_filesystem *fs, sector_t sector, int byte_offset, size_t byte_len, char *buf);
-long int read_allocated_block(struct ext2fs_node *node, int fileblock);
+long int read_allocated_block(struct ext2fs_node *node, uint64_t fileblock);
 
 #endif

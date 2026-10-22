@@ -187,14 +187,14 @@ static int ext4fs_get_indir_block(struct ext2fs_node *node,
 	return 0;
 }
 
-long int read_allocated_block(struct ext2fs_node *node, int fileblock)
+long int read_allocated_block(struct ext2fs_node *node, uint64_t fileblock)
 {
 	long int blknr;
 	int blksz;
 	int log2_blksz;
-	long int rblock;
-	long int perblock_parent;
-	long int perblock_child;
+	uint32_t rblock;
+	uint32_t perblock_parent;
+	uint32_t perblock_child;
 	unsigned long long start;
 	struct ext2_inode *inode = &node->inode;
 	struct ext2_data *data = node->data;
@@ -204,8 +204,12 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 	blksz = EXT2_BLOCK_SIZE(node->data);
 	log2_blksz = LOG2_EXT2_BLOCK_SIZE(node->data);
 
+	/* Block numbers within a file are 32 bit wide, as in Linux */
+	if (fileblock >= EXT_MAX_BLOCKS)
+		return -EINVAL;
+
 	if (le32_to_cpu(inode->flags) & EXT4_EXTENTS_FL) {
-		long int startblock, endblock;
+		uint64_t startblock, endblock;
 		char *buf = zalloc(blksz);
 		struct ext4_extent_header *ext_block;
 		struct ext4_extent *extent;
@@ -266,8 +270,9 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 	} else if (fileblock < (INDIRECT_BLOCKS + (blksz / 4 *
 					(blksz / 4 + 1)))) {
 		/* Double indirect. */
-		long int perblock = blksz / 4;
-		long int rblock = fileblock - (INDIRECT_BLOCKS + blksz / 4);
+		uint32_t perblock = blksz / 4;
+
+		rblock = fileblock - (INDIRECT_BLOCKS + blksz / 4);
 
 		ret = ext4fs_get_indir_block(node, &data->indir1,
 				le32_to_cpu(inode->b.blocks.double_indir_block) << log2_blksz);
@@ -286,6 +291,10 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 				      (blksz / 4 * blksz / 4));
 		perblock_child = blksz / 4;
 		perblock_parent = ((blksz / 4) * (blksz / 4));
+
+		/* Beyond what the triple indirect block can map */
+		if (rblock / perblock_parent >= perblock_child)
+			return -EINVAL;
 
 		ret = ext4fs_get_indir_block(node, &data->indir1,
 				le32_to_cpu(inode->b.blocks.triple_indir_block) << log2_blksz);

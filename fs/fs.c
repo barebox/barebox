@@ -3098,7 +3098,9 @@ int readlinkat(int dirfd, const char *pathname, char *buf, size_t bufsiz)
 		goto out_put;
 	}
 
-	link = inode->i_op->get_link(dentry, inode);
+	link = inode->i_link;
+	if (!link)
+		link = inode->i_op->get_link(dentry, inode);
 	if (IS_ERR(link)) {
 		ret =  PTR_ERR(link);
 		goto out_put;

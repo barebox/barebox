@@ -93,6 +93,10 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 		if (ext4_check_eh_entries(ext_block, buf, blksz))
 			return NULL;
 
+		/* An index node without entries leads nowhere */
+		if (!ext_block->eh_entries)
+			return NULL;
+
 		i = -1;
 		do {
 			i++;
@@ -100,8 +104,12 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 				break;
 		} while (fileblock >= le32_to_cpu(index[i].ei_block));
 
-		if (--i < 0)
-			return NULL;
+		/*
+		 * A block before the first index is in a hole, which the
+		 * leaf the first index leads to maps as such.
+		 */
+		if (i > 0)
+			i--;
 
 		block = le16_to_cpu(index[i].ei_leaf_hi);
 		block = (block << 32) + le32_to_cpu(index[i].ei_leaf_lo);

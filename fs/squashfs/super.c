@@ -89,6 +89,26 @@ void squashfs_put_super(struct super_block *sb)
 	}
 }
 
+/*
+ * Xattrs are not supported, but the xattr table directly follows the id
+ * table: read where it starts from the xattr id table, so the id table can
+ * be checked against its end.
+ */
+static int squashfs_read_xattr_table_start(struct super_block *sb, u64 start,
+					   u64 *xattr_table_start)
+{
+	struct squashfs_xattr_id_table *id_table;
+
+	id_table = squashfs_read_table(sb, start, sizeof(*id_table));
+	if (IS_ERR(id_table))
+		return PTR_ERR(id_table);
+
+	*xattr_table_start = le64_to_cpu(id_table->xattr_table_start);
+	kfree(id_table);
+
+	return 0;
+}
+
 static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
 {
 	struct squashfs_sb_info *msblk;
@@ -98,7 +118,7 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
 	long long root_inode;
 	unsigned short flags;
 	unsigned int fragments;
-	u64 lookup_table_start, next_table;
+	u64 lookup_table_start, xattr_id_table_start, next_table;
 	int err;
 
 	TRACE("Entered squashfs_fill_superblock\n");
@@ -241,8 +261,22 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
 		goto failed_mount;
 	}
 
-	next_table = msblk->bytes_used;
+	/* Handle xattrs */
+	xattr_id_table_start = le64_to_cpu(sblk->xattr_id_table_start);
+	if (xattr_id_table_start == SQUASHFS_INVALID_BLK) {
+		next_table = msblk->bytes_used;
+		goto allocate_id_index_table;
+	}
 
+	err = squashfs_read_xattr_table_start(sb, xattr_id_table_start,
+					      &msblk->xattr_table);
+	if (err) {
+		ERROR("unable to read xattr id table\n");
+		goto failed_mount;
+	}
+	next_table = msblk->xattr_table;
+
+allocate_id_index_table:
 	/* Allocate and read id index table */
 	msblk->id_table = squashfs_read_id_index_table(sb,
 		le64_to_cpu(sblk->id_table_start), next_table,

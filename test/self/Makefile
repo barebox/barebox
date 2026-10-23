@@ -35,6 +35,8 @@ obj-$(CONFIG_SELFTEST_BLSPEC) += blspec.o
 bbenv-$(CONFIG_SELFTEST_BLSPEC) += defaultenv-blspec-test
 obj-$(CONFIG_SELFTEST_LVM) += lvm.o
 CFLAGS_lvm.o += -I$(srctree)/drivers/block/dm/lvm
+obj-$(CONFIG_SELFTEST_UBI) += ubi.o
+CFLAGS_ubi.o += -I$(srctree)/drivers/mtd/ubi
 
 ifdef REGENERATE_KEYTOC
 

@@ -52,6 +52,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_TLV
 	select SELFTEST_DM
 	select SELFTEST_LVM if BLOCK
+	select SELFTEST_UBI if MTD_UBI && MTD_WRITE
 	select SELFTEST_TALLOC
 	select SELFTEST_BLSPEC if BLSPEC && DEFAULT_ENVIRONMENT
 	help
@@ -183,6 +184,16 @@ config SELFTEST_LVM
 	  and metadata areas, the selection of the most recent metadata
 	  when the physical volumes of a group disagree, and the mapping
 	  of logical volumes onto the extents they are made of.
+
+config SELFTEST_UBI
+	bool "UBI selftest"
+	depends on MTD_UBI && MTD_WRITE
+	help
+	  Tests attaching UBI to images that UBI itself wrote to an
+	  in-memory NAND device and that were then changed in one field:
+	  a static volume's last LEB larger than the usable LEB size and,
+	  with fastmap support, PEB numbers in the fastmap outside the
+	  device.
 
 config SELFTEST_DM
 	bool "Device mapper selftest"

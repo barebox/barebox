@@ -2688,20 +2688,27 @@ static int do_dentry_open(struct file *f)
 	if (!i_size_valid(f->f_inode)) {
 		dev_warn(&f->fsdev->dev, "%s: bad i_size value: %lld\n",
 			 f->path, f->f_size);
-		return -EUCLEAN;
+		error = -EUCLEAN;
+		goto err_release;
 	}
 
 	if (f->f_flags & O_TRUNC) {
 		error = fsdev_truncate(f, 0);
 		f->f_size = 0;
 		if (error)
-			return error;
+			goto err_release;
 	}
 
 	if (f->f_flags & O_APPEND)
 		f->f_pos = f->f_size;
 
 	return 0;
+
+err_release:
+	if (f->f_inode->i_fop->release)
+		f->f_inode->i_fop->release(f->f_inode, f);
+
+	return error;
 }
 
 /**
@@ -3098,7 +3105,9 @@ int readlinkat(int dirfd, const char *pathname, char *buf, size_t bufsiz)
 		goto out_put;
 	}
 
-	link = inode->i_op->get_link(dentry, inode);
+	link = inode->i_link;
+	if (!link)
+		link = inode->i_op->get_link(dentry, inode);
 	if (IS_ERR(link)) {
 		ret =  PTR_ERR(link);
 		goto out_put;
@@ -3421,6 +3430,8 @@ err_no_driver:
 	unregister_device(&fsdev->dev);
 err_register:
 	fs_remove(&fsdev->dev);
+	free(fsdev);
+	mntput(path.mnt);
 out:
 	path_put(&path);
 

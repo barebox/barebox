@@ -953,7 +953,10 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 
 	status = ntoh32(net_read_uint32(p));
 	if (status != NFS3_OK) {
-		dev_dbg(dev, "Lookup failed: %s\n", nfserrstr(status, &ret));
+		/* dev_dbg() doesn't evaluate its arguments without DEBUG */
+		const char *errstr = nfserrstr(status, &ret);
+
+		dev_dbg(dev, "Lookup failed: %s\n", errstr);
 		goto err_free_packet;
 	}
 

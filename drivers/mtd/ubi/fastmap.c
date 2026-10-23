@@ -26,6 +26,30 @@ size_t ubi_calc_fm_size(struct ubi_device *ubi)
 	return roundup(size, ubi->leb_size);
 }
 
+/**
+ * read_pnum - read a PEB number from the fastmap and check it.
+ * @ubi: UBI device description object
+ * @pnum_be: the PEB number as stored on flash
+ * @out_pnum: the PEB number is stored here if it is valid
+ *
+ * The fastmap is read from flash, so a PEB number in it may be outside the
+ * device, and such a number must not be used as an index into UBI's tables.
+ *
+ * Returns %true and stores the PEB number in @out_pnum if it is valid,
+ * %false otherwise.
+ */
+static bool read_pnum(struct ubi_device *ubi, __be32 pnum_be, int *out_pnum)
+{
+	int pnum = be32_to_cpu(pnum_be);
+
+	if (pnum < 0 || pnum >= ubi->peb_count) {
+		ubi_err(ubi, "fastmap references PEB out of range: %i", pnum);
+		return false;
+	}
+
+	*out_pnum = pnum;
+	return true;
+}
 
 /**
  * new_fm_vhdr - allocate a new volume header for fastmap usage.
@@ -365,7 +389,10 @@ static int scan_pool(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		int scrub = 0;
 		int image_seq;
 
-		pnum = be32_to_cpu(pebs[i]);
+		if (!read_pnum(ubi, pebs[i], &pnum)) {
+			ret = UBI_BAD_FASTMAP;
+			goto out;
+		}
 
 		if (ubi_io_is_bad(ubi, pnum)) {
 			ubi_err(ubi, "bad PEB in fastmap pool!");
@@ -492,7 +519,7 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 	struct ubi_fm_ec *fmec;
 	struct ubi_fm_volhdr *fmvhdr;
 	struct ubi_fm_eba *fm_eba;
-	int ret, i, j, pool_size, wl_pool_size;
+	int ret, i, j, pool_size, wl_pool_size, pnum;
 	size_t fm_pos = 0, fm_size = ubi->fm_size;
 	unsigned long long max_sqnum = 0;
 	void *fm_raw = ubi->fm_buf;
@@ -574,8 +601,10 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 		if (fm_pos >= fm_size)
 			goto fail_bad;
 
-		add_aeb(ai, &ai->free, be32_to_cpu(fmec->pnum),
-			be32_to_cpu(fmec->ec), 0);
+		if (!read_pnum(ubi, fmec->pnum, &pnum))
+			goto fail_bad;
+
+		add_aeb(ai, &ai->free, pnum, be32_to_cpu(fmec->ec), 0);
 	}
 
 	/* read EC values from used list */
@@ -585,8 +614,10 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 		if (fm_pos >= fm_size)
 			goto fail_bad;
 
-		add_aeb(ai, &used, be32_to_cpu(fmec->pnum),
-			be32_to_cpu(fmec->ec), 0);
+		if (!read_pnum(ubi, fmec->pnum, &pnum))
+			goto fail_bad;
+
+		add_aeb(ai, &used, pnum, be32_to_cpu(fmec->ec), 0);
 	}
 
 	/* read EC values from scrub list */
@@ -596,8 +627,10 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 		if (fm_pos >= fm_size)
 			goto fail_bad;
 
-		add_aeb(ai, &used, be32_to_cpu(fmec->pnum),
-			be32_to_cpu(fmec->ec), 1);
+		if (!read_pnum(ubi, fmec->pnum, &pnum))
+			goto fail_bad;
+
+		add_aeb(ai, &used, pnum, be32_to_cpu(fmec->ec), 1);
 	}
 
 	/* read EC values from erase list */
@@ -607,8 +640,10 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 		if (fm_pos >= fm_size)
 			goto fail_bad;
 
-		add_aeb(ai, &ai->erase, be32_to_cpu(fmec->pnum),
-			be32_to_cpu(fmec->ec), 1);
+		if (!read_pnum(ubi, fmec->pnum, &pnum))
+			goto fail_bad;
+
+		add_aeb(ai, &ai->erase, pnum, be32_to_cpu(fmec->ec), 1);
 	}
 
 	ai->mean_ec = div_u64(ai->ec_sum, ai->ec_count);
@@ -658,7 +693,7 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 		}
 
 		for (j = 0; j < be32_to_cpu(fm_eba->reserved_pebs); j++) {
-			int pnum = be32_to_cpu(fm_eba->pnum[j]);
+			pnum = be32_to_cpu(fm_eba->pnum[j]);
 
 			if (pnum < 0)
 				continue;
@@ -880,7 +915,10 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 	for (i = 0; i < used_blocks; i++) {
 		int image_seq;
 
-		pnum = be32_to_cpu(fmsb->block_loc[i]);
+		if (!read_pnum(ubi, fmsb->block_loc[i], &pnum)) {
+			ret = UBI_BAD_FASTMAP;
+			goto free_hdr;
+		}
 
 		if (ubi_io_is_bad(ubi, pnum)) {
 			ret = UBI_BAD_FASTMAP;
@@ -985,6 +1023,14 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 	for (i = 0; i < used_blocks; i++) {
 		struct ubi_wl_entry *e;
 
+		if (!read_pnum(ubi, fmsb2->block_loc[i], &pnum)) {
+			while (i--)
+				kfree(fm->e[i]);
+
+			ret = UBI_BAD_FASTMAP;
+			goto free_hdr;
+		}
+
 		e = kzalloc(sizeof(*e), GFP_KERNEL);
 		if (!e) {
 			while (i--)
@@ -994,7 +1040,7 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 			goto free_hdr;
 		}
 
-		e->pnum = be32_to_cpu(fmsb2->block_loc[i]);
+		e->pnum = pnum;
 		e->ec = be32_to_cpu(fmsb2->block_ec[i]);
 		fm->e[i] = e;
 	}

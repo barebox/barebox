@@ -170,7 +170,6 @@ static int mmu_init(void)
 		return 0;
 
 	if (list_empty(&memory_banks)) {
-		resource_size_t start;
 		int ret;
 
 		/*
@@ -181,9 +180,8 @@ static int mmu_init(void)
 		 */
 		pr_emerg("No memory bank registered. Limping along with initial memory\n");
 
-		start = arm_mem_membase_get();
-		ret = barebox_add_memory_bank("initmem", start,
-					      arm_mem_endmem_get() - start);
+		ret = barebox_add_memory_bank("initmem", barebox_layout.membase,
+					      barebox_layout.memsize);
 		if (ret)
 			panic("");
 	}

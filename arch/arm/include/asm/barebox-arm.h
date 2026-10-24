@@ -19,6 +19,7 @@
 #include <linux/types.h>
 #include <linux/compiler.h>
 #include <pbl/handoff-data.h>
+#include <pbl/layout.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/common.h>
 #include <asm/sections.h>
@@ -40,10 +41,6 @@ void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, 
 
 u32 barebox_arm_machine(void);
 
-unsigned long arm_mem_ramoops_get(void);
-unsigned long arm_mem_membase_get(void);
-unsigned long arm_mem_endmem_get(void);
-
 #ifdef CONFIG_ARM_EXCEPTIONS
 ulong arm_get_vector_table(void);
 #else
@@ -60,8 +57,6 @@ static inline void arm_pbl_init_exceptions(void)
 {
 }
 #endif
-
-void *barebox_arm_boot_dtb(void);
 
 /*
  *  ----------------------------- endmem ------------------------------
@@ -91,8 +86,8 @@ void *barebox_arm_boot_dtb(void);
  *                                   ↓
  *  ------------------------- arm_mem_ramoops() ------------------------
  *                                   ↑
- *                   (barebox uncompressed image size
- *                       + BSS) rounded to SZ_1M
+ *                  (barebox image size in memory)
+ *                        rounded to SZ_1M
  *                                   ↓
  *  ---------------------- arm_mem_barebox_image() ---------------------
  *     ARM32      ↑                  |                ↕         ARM64
@@ -158,45 +153,23 @@ static inline unsigned long arm_mem_stack_top(unsigned long endmem)
 	return arm_mem_stack(endmem) + STACK_SIZE;
 }
 
-static inline const void *arm_mem_scratch_get(void)
-{
-	return (const void *)arm_mem_scratch(arm_mem_endmem_get());
-}
-
-static inline unsigned long arm_mem_guard_page_get(void)
-{
-	return arm_mem_guard_page(arm_mem_endmem_get());
-}
-
 static inline bool inside_stack_guard_page(ulong addr)
 {
-	if (IS_ENABLED(CONFIG_STACK_GUARD_PAGE) && IN_PROPER) {
-		ulong guard_page = arm_mem_guard_page_get();
-
-		if (guard_page <= addr && addr < guard_page + PAGE_SIZE)
-			return true;
-	}
-
-	return false;
+	return IN_PROPER && barebox_layout.guard_page.start <= addr &&
+	       addr < barebox_layout.guard_page.end;
 }
 
 /*
- * When using compressed images in conjunction with relocatable images
- * the PBL code must pick a suitable place where to uncompress the barebox
- * image. For doing this the PBL code must know the size of the final
- * image including the BSS segment. The BSS size is unknown to the PBL
- * code, so define a maximum BSS size here.
+ * Where the PBL places the barebox proper image. @memsz is how much memory
+ * the image needs, see pbl_barebox_memsz().
  */
-#define MAX_BSS_SIZE SZ_1M
-
 static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 						  unsigned long endmem,
-						  unsigned long uncompressed_len,
+						  unsigned long memsz,
 						  const struct handoff_data *handoff_data)
 {
 #ifdef __PBL__
-	unsigned long size = ALIGN(uncompressed_len, 8) +
-		MAX_BSS_SIZE + __handoff_data_size(handoff_data);
+	unsigned long size = ALIGN(memsz, 8) + __handoff_data_size(handoff_data);
 
 	endmem = arm_mem_ramoops(endmem);
 

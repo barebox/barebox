@@ -18,6 +18,7 @@
 #include <asm/cache.h>
 #include <asm/ptrace.h>
 #include <efi/mode.h>
+#include <pbl/layout.h>
 
 /**
  * Enable processor's instruction cache
@@ -100,15 +101,15 @@ static void arch_shutdown(void)
 }
 archshutdown_exitcall(arch_shutdown);
 
-extern unsigned long arm_stack_top;
-
 static int arm_request_stack(void)
 {
+	ulong start = barebox_layout.stack.start;
+
 	if (efi_is_payload())
 		return 0;
 
-	if (!request_barebox_region("stack", arm_stack_top - STACK_SIZE, STACK_SIZE,
-				    MEMATTRS_RW))
+	if (!request_barebox_region("stack", start,
+				    barebox_layout.stack.end - start, MEMATTRS_RW))
 		pr_err("Error: Cannot request SDRAM region for stack\n");
 
 	return 0;

@@ -11,6 +11,16 @@
 #include <linux/types.h>
 #include <linux/compiler.h>
 #include <linux/sizes.h>
+#include <linux/minmax.h>
+
+/* memory barebox proper occupies once loaded in place, see images/piggy.S */
+extern const u32 piggy_memsz;
+
+/* objcopy < binutils 2.41 keeps section headers past the last segment */
+static inline u32 pbl_barebox_memsz(u32 uncompressed_len)
+{
+	return max(piggy_memsz, uncompressed_len);
+}
 
 void pbl_barebox_uncompress(void *dest, void *compressed_start, unsigned int len);
 int pbl_dtbz_uncompress(void *dest, void *compressed_start, unsigned long len);

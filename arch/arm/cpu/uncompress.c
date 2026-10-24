@@ -23,6 +23,7 @@
 #include <compressed-dtb.h>
 #include <elf.h>
 #include <pbl/mmu.h>
+#include <pbl/layout.h>
 
 #include <debug_ll.h>
 
@@ -31,10 +32,34 @@
 extern unsigned char input_data[];
 extern unsigned char input_data_end[];
 
+static void arm_fill_barebox_layout(struct elf_image *elf,
+				    unsigned long membase, unsigned long memsize)
+{
+	unsigned long endmem = membase + memsize;
+	struct barebox_layout *layout;
+
+	layout = pbl_barebox_layout(elf, membase, memsize);
+
+	layout->scratch.start = arm_mem_scratch(endmem);
+	layout->scratch.end = arm_mem_optee(endmem);
+	layout->stack.start = arm_mem_stack(endmem);
+	layout->stack.end = arm_mem_stack_top(endmem);
+
+	if (IS_ENABLED(CONFIG_STACK_GUARD_PAGE)) {
+		layout->guard_page.start = arm_mem_guard_page(endmem);
+		layout->guard_page.end = layout->guard_page.start + PAGE_SIZE;
+	}
+
+#ifdef CONFIG_FS_PSTORE_RAMOOPS
+	layout->ramoops.start = arm_mem_ramoops(endmem);
+	layout->ramoops.end = layout->ramoops.start + CONFIG_FS_PSTORE_RAMOOPS_SIZE;
+#endif
+}
+
 void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 				  void *boarddata)
 {
-	uint32_t pg_len, uncompressed_len;
+	uint32_t pg_len, uncompressed_len, barebox_size;
 	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
 	unsigned long endmem = membase + memsize;
 	unsigned long barebox_base;
@@ -71,10 +96,11 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	if (boarddata)
 		handoff_data_add_dt(boarddata);
 
+	barebox_size = pbl_barebox_memsz(uncompressed_len);
 	barebox_base = arm_mem_barebox_image(membase, endmem,
-					     uncompressed_len, NULL);
+					     barebox_size, NULL);
 
-	handoff_data = (void *)barebox_base + ALIGN(uncompressed_len, 8) + MAX_BSS_SIZE;
+	handoff_data = (void *)barebox_base + ALIGN(barebox_size, 8);
 
 #ifdef CONFIG_ARM64
 	pbl_malloc_init(barebox_malloc_base(membase, memsize), PBL_MALLOC_SIZE);
@@ -98,8 +124,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 		cache_invalidate_stale();
 	}
 
-	pr_debug("uncompressing barebox ELF at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x)\n",
-			pg_start, pg_len, barebox_base, uncompressed_len);
+	pr_debug("uncompressing barebox ELF at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x, in memory: 0x%08x)\n",
+			pg_start, pg_len, barebox_base, uncompressed_len, barebox_size);
 
 	pbl_barebox_uncompress((void*)barebox_base, pg_start, pg_len);
 
@@ -109,9 +135,16 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	if (ret)
 		panic("Failed to open ELF binary: %d\n", ret);
 
+	if (elf_inplace_size(&elf) > barebox_size)
+		panic("barebox proper needs 0x%llx bytes, but only 0x%x are reserved\n",
+		      elf_inplace_size(&elf), barebox_size);
+
 	ret = elf_load_inplace(&elf);
 	if (ret)
 		panic("Failed to relocate ELF: %d\n", ret);
+
+	/* must be done before the layout segment is mapped read-only */
+	arm_fill_barebox_layout(&elf, membase, memsize);
 
 	/*
 	 * Now that the ELF image is relocated, we know the exact addresses

@@ -3258,7 +3258,7 @@ EXPORT_SYMBOL(getcwd);
 int chdir(const char *pathname)
 {
 	char *realpath;
-	struct path path;
+	struct path path, oldpwd;
 	int ret;
 
 	ret = filename_lookup(AT_FDCWD, getname(pathname), LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
@@ -3266,6 +3266,7 @@ int chdir(const char *pathname)
 		goto out;
 
 	if (!d_is_dir(path.dentry)) {
+		path_put(&path);
 		ret = -ENOTDIR;
 		goto out;
 	}
@@ -3273,6 +3274,11 @@ int chdir(const char *pathname)
 	realpath = dpath(path.dentry, d_root);
 	strcpy(cwd, realpath);
 	free(realpath);
+
+	oldpwd.dentry = cwd_dentry;
+	oldpwd.mnt = cwd_mnt;
+	path_put(&oldpwd);
+
 	cwd_dentry = path.dentry;
 	cwd_mnt = path.mnt;
 
@@ -3398,8 +3404,8 @@ int mount(const char *device, const char *fsname, const char *pathname,
 		fsdev->vfsmount.parent = &fsdev->vfsmount;
 		fsdev->path = xstrdup("/");
 
-		cwd_dentry = d_root;
-		cwd_mnt = mnt_root;
+		cwd_dentry = dget(d_root);
+		cwd_mnt = mntget(mnt_root);
 	}
 
 	fsdev->vfsmount.mnt_root = fsdev->sb.s_root;

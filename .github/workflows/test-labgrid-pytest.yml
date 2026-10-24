@@ -127,7 +127,8 @@ jobs:
         export ARCH=${{matrix.arch}}
         export KCONFIG_ADD="common/boards/configs/enable_self_test.config \
                             common/boards/configs/disable_target_tools.config \
-                            common/boards/configs/enable_werror.config"
+                            common/boards/configs/enable_werror.config \
+                            common/boards/configs/full.config"
 
         if [ ${{matrix.arch}} = sandbox ] && [ ${{matrix.defconfig}} = allyesconfig ]; then
           KCONFIG_ADD="${KCONFIG_ADD} CONFIG_CONSOLE_DISABLE_INPUT=n CONFIG_MALLOC_LIBC=y \

@@ -79,12 +79,11 @@ static void bthread_printer(void *_arg)
 	start = get_time_ns();
 
 	while (!bthread_should_stop()) {
-		if (!is_timeout_non_interruptible(start, 225 * MSECOND))
-			continue;
-
-		if (arg->in == i++)
-			printf("%s yield #%lu\n", bthread_name(current), i);
-		start = get_time_ns();
+		while (is_timeout_non_interruptible(start, 225 * MSECOND)) {
+			if (arg->in == i++)
+				printf("%s yield #%lu\n", bthread_name(current), i);
+			start += 225 * MSECOND;
+		}
 	}
 
 	arg->out = i;
@@ -121,7 +120,7 @@ cleanup:
 		arg = bthread_data(bthread[i]);
 		__bthread_stop(bthread[i]);
 
-		if (!ret && (arg->out != 4 || yields < arg->out))
+		if (!ret && (arg->out < 4 || yields < arg->out))
 			ret = -EIO;
 		free(arg);
 	}

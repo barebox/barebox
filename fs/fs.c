@@ -3499,6 +3499,7 @@ static void automount_remove_dentry(struct dentry *dentry)
 
 	return;
 found:
+	am->dentry->d_flags &= ~DCACHE_NEED_AUTOMOUNT;
 	list_del(&am->list);
 	dput(am->dentry);
 	free(am->path);
@@ -3536,13 +3537,13 @@ int automount_add(const char *pathname, const char *cmd)
 		goto out;
 	}
 
+	automount_remove_dentry(path.dentry);
+
 	am = xzalloc(sizeof(*am));
 	am->path = dpath(path.dentry, d_root);
 	am->dentry = dget(path.dentry);
 	am->dentry->d_flags |= DCACHE_NEED_AUTOMOUNT;
 	am->cmd = xstrdup(cmd);
-
-	automount_remove_dentry(am->dentry);
 
 	list_add_tail(&am->list, &automount_list);
 

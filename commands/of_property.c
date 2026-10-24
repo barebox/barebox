@@ -386,6 +386,10 @@ static int do_of_property(int argc, char *argv[])
 
 	if (root && !fixup) {
 		fdt = of_flatten_dtb(root);
+		if (!fdt) {
+			ret = -EINVAL;
+			goto out;
+		}
 
 		ret = write_file(dtbfile, fdt, fdt32_to_cpu(fdt->totalsize));
 

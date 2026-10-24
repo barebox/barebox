@@ -186,7 +186,7 @@ static int get_next_block(struct bunzip_data *bd)
 	if (get_bits(bd, 1))
 		return RETVAL_OBSOLETE_INPUT;
 	origPtr = get_bits(bd, 24);
-	if (origPtr > dbufSize)
+	if (origPtr >= dbufSize)
 		return RETVAL_DATA_ERROR;
 	/* mapping table: if some byte values are never used (encoding things
 	   like ascii text), the compression code removes the gaps to have fewer
@@ -233,7 +233,8 @@ static int get_next_block(struct bunzip_data *bd)
 	   RUNB) */
 	symCount = symTotal+2;
 	for (j = 0; j < groupCount; j++) {
-		unsigned char length[MAX_SYMBOLS], temp[MAX_HUFCODE_BITS+1];
+		unsigned char length[MAX_SYMBOLS];
+		unsigned short temp[MAX_HUFCODE_BITS+1];
 		int	minLen,	maxLen, pp;
 		/* Read Huffman code lengths for each symbol.  They're
 		   stored in a way similar to mtf; record a starting
@@ -380,6 +381,8 @@ static int get_next_block(struct bunzip_data *bd)
 			if (bd->io_error ||
 			    bd->inbufPos == bd->inbufCount) {
 				j = get_bits(bd, hufGroup->maxLen);
+				if (bd->io_error)
+					return bd->io_error;
 				goto got_huff_bits;
 			}
 			bd->inbufBits =

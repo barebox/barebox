@@ -380,6 +380,8 @@ static int get_next_block(struct bunzip_data *bd)
 			if (bd->io_error ||
 			    bd->inbufPos == bd->inbufCount) {
 				j = get_bits(bd, hufGroup->maxLen);
+				if (bd->io_error)
+					return bd->io_error;
 				goto got_huff_bits;
 			}
 			bd->inbufBits =

@@ -392,7 +392,7 @@ static u32 xhci_get_endpoint_max_burst(struct usb_device *udev,
 	if (udev->speed == USB_SPEED_HIGH &&
 	    (usb_endpoint_xfer_isoc(endpt_desc) ||
 	     usb_endpoint_xfer_int(endpt_desc)))
-		return usb_endpoint_maxp_mult(endpt_desc) - 1;
+		return USB_EP_MAXP_MULT(get_unaligned(&endpt_desc->wMaxPacketSize));
 
 	return 0;
 }
@@ -408,6 +408,7 @@ static u32 xhci_get_max_esit_payload(struct usb_device *udev,
 {
 	int max_burst;
 	int max_packet;
+	u16 maxp;
 
 	/* Only applies for interrupt or isochronous endpoints */
 	if (usb_endpoint_xfer_control(endpt_desc) ||
@@ -418,8 +419,10 @@ static u32 xhci_get_max_esit_payload(struct usb_device *udev,
 	if (udev->speed >= USB_SPEED_SUPER)
 		return le16_to_cpu(ss_ep_comp_desc->wBytesPerInterval);
 
-	max_packet = usb_endpoint_maxp(endpt_desc);
-	max_burst = usb_endpoint_maxp_mult(endpt_desc);
+	/* unlike in Linux, usb_parse_config() has converted it to CPU order */
+	maxp = get_unaligned(&endpt_desc->wMaxPacketSize);
+	max_packet = maxp & USB_ENDPOINT_MAXP_MASK;
+	max_burst = USB_EP_MAXP_MULT(maxp) + 1;
 
 	/* A 0 in max burst means 1 transfer per ESIT */
 	return max_packet * max_burst;

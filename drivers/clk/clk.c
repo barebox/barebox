@@ -382,7 +382,8 @@ struct clk *clk_get_parent(struct clk *clk)
 
 		idx = clk->ops->get_parent(hw);
 
-		if (idx >= clk->num_parents)
+		/* an error means the register selects no known parent */
+		if (idx < 0 || idx >= clk->num_parents)
 			return ERR_PTR(-ENODEV);
 	} else {
 		idx = 0;

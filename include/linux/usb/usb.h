@@ -113,6 +113,7 @@ struct usb_device {
 	int maxchild;			/* Number of ports if hub */
 	int portnr;
 	int level;
+	u32 route;			/* xHCI route string */
 	struct usb_device *parent;
 	struct usb_device *children[USB_MAXCHILDREN];
 

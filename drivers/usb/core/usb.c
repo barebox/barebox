@@ -495,8 +495,13 @@ int usb_new_device(struct usb_device *dev)
 
 	buf = dma_xalloc(USB_BUFSIZ);
 
-	if (parent)
+	if (parent) {
 		dev->level = parent->level + 1;
+		/* Root ports are not counted in route string */
+		if (!usb_hub_is_root_hub(parent))
+			dev->route = parent->route |
+				min(dev->portnr, 15) << ((parent->level - 1) * 4);
+	}
 
 	if (host->alloc_device) {
 		err = host->alloc_device(dev);

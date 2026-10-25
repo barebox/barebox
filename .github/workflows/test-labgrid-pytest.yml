@@ -81,6 +81,21 @@ jobs:
             lgenv: 'test/sandbox/allyesconfig.yaml'
             defconfig: allyesconfig
 
+          - ARCH: arm
+            lgenv: test/arm/multi_v7_defconfig.yaml
+            defconfig: multi_v7_defconfig
+            fragment: rust
+
+          - ARCH: arm
+            lgenv: test/arm/multi_v8_defconfig.yaml
+            defconfig: multi_v8_defconfig
+            fragment: rust
+
+          - ARCH: sandbox
+            lgenv: test/sandbox/sandbox_defconfig.yaml
+            defconfig: sandbox_defconfig
+            fragment: rust
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -134,6 +149,10 @@ jobs:
           KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/allyestest.config"
         fi
 
+        if [ -n "${{matrix.fragment}}" ]; then
+          KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/${{matrix.fragment}}.config"
+        fi
+
         if [ "${{ steps.used-features.outputs.testfs }}" = "true" ]; then
           KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/enable_dm_testing.config"
           KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/enable_tlv_sig_testing.config"
@@ -183,5 +202,5 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: steps.build.outcome == 'success'
       with:
-        check_name: "Test Results (${{matrix.defconfig}})"
+        check_name: "Test Results (${{matrix.defconfig}}${{matrix.fragment && format(' + {0}', matrix.fragment) || ''}})"
         files: ./*.tests.xml

@@ -91,7 +91,7 @@ static inline int pinctrl_gpio_get_direction_pin(unsigned int pin)
 }
 #endif
 
-#ifdef CONFIG_PINCTRL_STATE_PARAM
+#ifdef CONFIG_PINCTRL_STATE_TRACKING
 void of_pinctrl_register_consumer(struct device *dev, struct device_node *np);
 void of_pinctrl_unregister_consumer(struct device *dev);
 #else

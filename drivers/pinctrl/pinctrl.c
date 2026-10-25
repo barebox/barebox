@@ -748,8 +748,8 @@ of_property_pinctrl_get_state(struct property *prop)
 	return container_of(prop, struct pinctrl_state, prop);
 }
 
-static void pinctrl_update_state_param(struct pinctrl *pinctrl,
-				       struct pinctrl_state *state)
+static void pinctrl_record_state(struct pinctrl *pinctrl,
+				 struct pinctrl_state *state)
 {
 	struct device_node *np = &pinctrl->consumer_np;
 	struct property *prop = &state->prop;
@@ -757,7 +757,7 @@ static void pinctrl_update_state_param(struct pinctrl *pinctrl,
 	u16 idx;
 	int ret;
 
-	if (!IS_ENABLED(CONFIG_PINCTRL_STATE_PARAM))
+	if (!IS_ENABLED(CONFIG_PINCTRL_STATE_TRACKING))
 		return;
 
 	if (!strstarts(prop->name, "pinctrl-"))
@@ -845,7 +845,7 @@ int pinctrl_select_state(struct pinctrl *pinctrl, struct pinctrl_state *state)
 			goto err;
 	}
 
-	pinctrl_update_state_param(pinctrl, state);
+	pinctrl_record_state(pinctrl, state);
 err:
 	return ret;
 }
@@ -1247,7 +1247,7 @@ EXPORT_SYMBOL_GPL(pinmux_generic_add_pinfunction);
 #endif /* CONFIG_GENERIC_PINMUX_FUNCTIONS */
 
 
-#ifdef CONFIG_PINCTRL_STATE_PARAM
+#ifdef CONFIG_PINCTRL_STATE_TRACKING
 static int pinctrl_state_param_set(struct param_d *p, void *priv)
 {
 	struct pinctrl_consumer_info *info = priv;
@@ -1279,9 +1279,10 @@ void of_pinctrl_register_consumer(struct device *dev,
 
 	list_add(&info->list, &pinctrl_consumer_list);
 
-	dev_add_param_enum(dev, "pinctrl_state",
-			   pinctrl_state_param_set, NULL,
-			   &info->state, info->states, nstates, info);
+	if (IS_ENABLED(CONFIG_PINCTRL_STATE_PARAM))
+		dev_add_param_enum(dev, "pinctrl_state",
+				   pinctrl_state_param_set, NULL,
+				   &info->state, info->states, nstates, info);
 }
 
 void of_pinctrl_unregister_consumer(struct device *dev)

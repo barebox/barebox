@@ -10,9 +10,16 @@ config PINCTRL
 	  from the devicetree. Legacy drivers here may not need this core
 	  support but instead provide their own SoC specific APIs
 
+config PINCTRL_STATE_TRACKING
+	bool
+	depends on PINCTRL
+	help
+	  Record the pin state each device tree consumer was last switched to.
+
 config PINCTRL_STATE_PARAM
 	bool "pinctrl state control via device parameters"
 	depends on PARAMETER && PINCTRL
+	select PINCTRL_STATE_TRACKING
 
 # The following drivers are needed even without PINCTRL because
 # the either have a legacy iomux interface or also register a gpio

@@ -38,3 +38,18 @@ def test_dcache_stale_dir(barebox, testfs):
 
     # the cached child must not keep the old directory alive
     barebox.run_check("test -f /mnt/9p/testfs/dcache-stale/x")
+
+
+def test_dcache_mountpoint(barebox, testfs):
+    hostdir = Path(testfs) / "dcache-mnt"
+    shutil.rmtree(hostdir, ignore_errors=True)
+    hostdir.mkdir()
+
+    barebox.run_check("mount -t ramfs none /mnt/9p/testfs/dcache-mnt")
+    barebox.run_check("echo -o /mnt/9p/testfs/dcache-mnt/file test")
+
+    time.sleep(NETFS_INODE_VALID_TIME + 0.5)
+
+    # revalidating the mountpoint must not hide the mount on top of it
+    assert barebox.run_check("cat /mnt/9p/testfs/dcache-mnt/file") == ["test"]
+    barebox.run_check("umount /mnt/9p/testfs/dcache-mnt")

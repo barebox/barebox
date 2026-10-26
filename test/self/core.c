@@ -7,9 +7,15 @@
 
 LIST_HEAD(selftests);
 
-int selftest_run(struct selftest *test)
+int selftest_run(struct selftest *test, bool destructive)
 {
 	int err;
+
+	if (test->destructive && !destructive) {
+		pr_notice("Skipping potentially destructive self test: %s\n",
+			  test->name);
+		return 0;
+	}
 
 	test->running = true;
 	err = test->func();
@@ -31,7 +37,7 @@ bool selftest_is_running(struct selftest *test)
 	return false;
 }
 
-void selftests_run(void)
+void selftests_run(bool destructive)
 {
 	struct selftest *test;
 	int err = 0;
@@ -39,7 +45,7 @@ void selftests_run(void)
 	pr_notice("Configured tests will run now\n");
 
 	list_for_each_entry(test, &selftests, list)
-		err |= selftest_run(test);
+		err |= selftest_run(test, destructive);
 
 	if (err)
 		pr_err("Some selftests failed\n");

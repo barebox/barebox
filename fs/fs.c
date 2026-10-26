@@ -3038,9 +3038,11 @@ DIR *fdopendir(int fd)
 
 	ret = __opendir(dir);
 	if (ret)
-		goto err;
+		goto err_free;
 
 	return dir;
+err_free:
+	free(dir);
 err:
 	errno_set(ret);
 	return NULL;

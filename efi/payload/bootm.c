@@ -220,6 +220,11 @@ static int efi_app_execute(struct image_data *data)
 
 	type = file_detect_type(loaded_image->image_base, PAGE_SIZE);
 
+	if (data->dryrun) {
+		BS->unload_image(handle);
+		return 0;
+	}
+
 	return efi_execute_image(handle, loaded_image, type);
 }
 

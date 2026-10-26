@@ -92,6 +92,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_x86_linux_image] = { "x86 Linux image", "x86-linux" },
 	[filetype_x86_efi_linux_image] = { "x86 Linux/EFI image", "x86-efi-linux" },
 	[filetype_pxa_ntim] = { "Marvell PXA3xx NTIM image", "pxa-ntim" },
+	[filetype_zboot_efi_linux_image] = { "Linux/EFI zboot image", "zboot-efi-linux" },
 };
 
 static const char *file_type_to_nr_string(enum filetype f)
@@ -460,7 +461,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return is_dos_exe(buf8) ? filetype_arm_efi_zimage : filetype_arm_zimage;
 
 	if (is_dos_exe(buf8))
-		return filetype_exe;
+		return is_zboot_efi_linux_image(buf) ?
+			filetype_zboot_efi_linux_image : filetype_exe;
 
 	if (bufsize < 256)
 		return filetype_unknown;
@@ -605,6 +607,7 @@ bool filetype_is_linux_efi_image(enum filetype ft)
 	case filetype_arm64_efi_linux_image:
 	case filetype_riscv_efi_linux_image:
 	case filetype_x86_efi_linux_image:
+	case filetype_zboot_efi_linux_image:
 		return true;
 	default:
 		return false;

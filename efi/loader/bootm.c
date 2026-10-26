@@ -353,6 +353,12 @@ static struct image_handler arm32_linux_efi_handler = {
 	.filetype = filetype_arm_efi_zimage,
 };
 
+static struct image_handler zboot_linux_efi_handler = {
+	.name = "Linux/EFI zboot image",
+	.bootm = efi_loader_bootm,
+	.filetype = filetype_zboot_efi_linux_image,
+};
+
 static struct image_handler efi_image_loader = {
 	.name = "EFI Application",
 	.bootm = efi_loader_bootm,
@@ -367,6 +373,7 @@ static int efiloader_bootm_register(void)
 		register_image_handler(&aarch64_linux_efi_handler);
 	if (IS_ENABLED(CONFIG_RISCV))
 		register_image_handler(&riscv_linux_efi_handler);
+	register_image_handler(&zboot_linux_efi_handler);
 	return register_image_handler(&efi_image_loader);
 }
 late_initcall(efiloader_bootm_register);

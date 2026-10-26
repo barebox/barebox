@@ -200,9 +200,15 @@ static struct binfmt_hook binfmt_x86_efi_hook = {
 	.hook = efi_execute,
 };
 
+static struct binfmt_hook binfmt_zboot_efi_hook = {
+	.type = filetype_zboot_efi_linux_image,
+	.hook = efi_execute,
+};
+
 static int efi_register_image_handler(void)
 {
 	binfmt_register(&binfmt_efi_hook);
+	binfmt_register(&binfmt_zboot_efi_hook);
 
 	if (IS_ENABLED(CONFIG_X86)) {
 		register_image_handler(&non_efi_handle_linux_x86);

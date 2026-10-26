@@ -258,12 +258,19 @@ static struct image_handler efi_arm64_handle_tr = {
 	.filetype = filetype_arm64_efi_linux_image,
 };
 
+static struct image_handler efi_zboot_handle_tr = {
+	.name = "EFI zboot Linux kernel",
+	.bootm = do_bootm_efi_stub,
+	.filetype = filetype_zboot_efi_linux_image,
+};
+
 BAREBOX_MAGICVAR(global.linux.efi.handover,
 		 "Use legacy x86 handover protocol instead of StartImage BootService");
 
 static int efi_register_bootm_handler(void)
 {
 	register_image_handler(&efi_app_handle_tr);
+	register_image_handler(&efi_zboot_handle_tr);
 
 	if (IS_ENABLED(CONFIG_X86)) {
 		if (IS_ENABLED(CONFIG_EFI_HANDOVER_PROTOCOL))

@@ -1461,15 +1461,15 @@ static int nfs_iterate(struct file *file, struct dir_context *ctx)
 	ret = 0;
 
 out:
-	free(ndir->stream.buf);
+	free(buf);
 	free(ndir);
 
 	return ret;
 
 err_eop:
 	pr_err("Unexpected end of packet\n");
-
-	return -EIO;
+	ret = -EIO;
+	goto out;
 }
 
 static struct inode *nfs_alloc_inode(struct super_block *sb)

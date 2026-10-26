@@ -8,7 +8,7 @@
 #include <bselftest.h>
 #include <complete.h>
 
-static int run_selftest(const char *match, bool list)
+static int run_selftest(const char *match, bool list, bool destructive)
 {
 	struct selftest *test;
 	int matches = 0;
@@ -24,7 +24,7 @@ static int run_selftest(const char *match, bool list)
 		if (match && strcmp(test->name, match))
 			continue;
 
-		err |= selftest_run(test);
+		err |= selftest_run(test, destructive);
 		matches++;
 	}
 
@@ -42,14 +42,18 @@ static int run_selftest(const char *match, bool list)
 
 static int do_selftest(int argc, char *argv[])
 {
+	bool run_destructive = false;
 	bool list = false;
 	int i, err = 0;
 	int opt;
 
-	while((opt = getopt(argc, argv, "l")) > 0) {
+	while((opt = getopt(argc, argv, "ld")) > 0) {
 		switch(opt) {
 		case 'l':
 			list = true;
+			break;
+		case 'd':
+			run_destructive = true;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -57,10 +61,10 @@ static int do_selftest(int argc, char *argv[])
 	}
 
 	if (optind == argc) {
-		err = run_selftest(NULL, list);
+		err = run_selftest(NULL, list, run_destructive);
 	} else {
 		for (i = optind; i < argc; i++) {
-			err = run_selftest(argv[i], list);
+			err = run_selftest(argv[i], list, run_destructive);
 			if (err)
 				goto out;
 		}
@@ -76,12 +80,13 @@ BAREBOX_CMD_HELP_TEXT("If run without arguments, all tests are run")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-l",     "list available tests")
+BAREBOX_CMD_HELP_OPT ("-d",     "run destructive tests")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(selftest)
 	.cmd		= do_selftest,
 	BAREBOX_CMD_DESC("Run selftests")
-	BAREBOX_CMD_OPTS("[-l] [tests..]")
+	BAREBOX_CMD_OPTS("[-ld] [tests..]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 	BAREBOX_CMD_HELP(cmd_selftest_help)

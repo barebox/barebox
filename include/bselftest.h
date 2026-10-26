@@ -18,6 +18,7 @@ struct selftest {
 	int (*func)(void);
 	struct list_head list;
 	bool running;
+	bool destructive;
 };
 
 static inline int selftest_report(unsigned int total_tests, unsigned int failed_tests,
@@ -44,15 +45,15 @@ static unsigned int skipped_tests __initdata
 
 #ifdef CONFIG_SELFTEST
 #define __bselftest_initcall(func) late_initcall(func)
-void selftests_run(void);
+void selftests_run(bool destructive);
 #else
 #define __bselftest_initcall(func)
-static inline void selftests_run(void)
+static inline void selftests_run(bool deststructive)
 {
 }
 #endif
 
-#define bselftest(_group, _func)				\
+ #define __bselftest(_group, _func, _destructive)	\
 	static int __bselftest_##_func(void)			\
 	{							\
 		total_tests = failed_tests = skipped_tests = 0;	\
@@ -68,14 +69,17 @@ static inline void selftests_run(void)
 			.group = BSELFTEST_##_group,		\
 			.name = KBUILD_MODNAME,			\
 			.func = __bselftest_##_func,		\
+			.destructive = _destructive,		\
 		};						\
 		list_add_tail(&this.list, &selftests);		\
 		return 0;					\
 	}							\
 	__bselftest_initcall(_func##_bselftest_register);
 
+#define bselftest(_group, _func)	__bselftest(_group, _func, false)
+#define bselftest_destructive(_group, _func)	__bselftest(_group, _func, true)
 
-int selftest_run(struct selftest *test);
+int selftest_run(struct selftest *test, bool destructive);
 bool selftest_is_running(struct selftest *test);
 
 #define __assert_cond(cond) ({ total_tests++; cond || (failed_tests++, false); })

@@ -86,8 +86,10 @@ The simple method to pass bootargs to the kernel is with
 takes the bootargs from the :ref:`bootargs <magicvar_bootargs>` environment variable.
 
 With ``CONFIG_FLEXIBLE_BOOTARGS`` enabled, the bootargs are composed
-from different :ref:`global device<global_device>` variables. All variables beginning
-with ``global.linux.bootargs.`` will be concatenated to the bootargs:
+from different :ref:`global device<global_device>` variables and the
+:ref:`bootargs <magicvar_bootargs>` environment variable is ignored.
+All variables beginning with ``global.linux.bootargs.`` will be concatenated
+to the bootargs:
 
 .. code-block:: sh
 

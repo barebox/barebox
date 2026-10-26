@@ -886,8 +886,10 @@ static void fs_remove(struct device *dev)
 	list_for_each_entry_safe(inode, tmp, &sb->s_inodes, i_sb_list)
 		destroy_inode(inode);
 
-	if (&fsdev->vfsmount != fsdev->vfsmount.parent)
+	if (&fsdev->vfsmount != fsdev->vfsmount.parent) {
+		dput(fsdev->vfsmount.mountpoint);
 		mntput(fsdev->vfsmount.parent);
+	}
 
 	free(fsdev->backingstore);
 }
@@ -3418,7 +3420,7 @@ int mount(const char *device, const char *fsname, const char *pathname,
 	}
 
 	if (d_root) {
-		fsdev->vfsmount.mountpoint = path.dentry;
+		fsdev->vfsmount.mountpoint = dget(path.dentry);
 		fsdev->vfsmount.parent = mntget(path.mnt);
 		fsdev->vfsmount.mountpoint->d_flags |= DCACHE_MOUNTED;
 	} else {

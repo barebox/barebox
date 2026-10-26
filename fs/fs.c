@@ -3429,6 +3429,7 @@ err_no_driver:
 	unregister_device(&fsdev->dev);
 err_register:
 	fs_remove(&fsdev->dev);
+	free(fsdev);
 out:
 	path_put(&path);
 

@@ -1467,13 +1467,7 @@ EXPORT_SYMBOL(ihold);
 
 /* dcache.c */
 
-/*
- * refcounting is implemented but right now we do not do anything with
- * the refcounting information. Dentries are never freed unless the
- * filesystem they are on is unmounted. In this case we do not care
- * about the refcounts so we may free up a dentry that is actually used
- * (file is opened). This leaves room for improvements.
- */
+/* an unused dentry is freed on failed revalidation or on unmount */
 void dput(struct dentry *dentry)
 {
 	if (!dentry)
@@ -1640,8 +1634,16 @@ static struct dentry *d_lookup(struct dentry *parent, const struct qstr *name)
 	return NULL;
 }
 
+/* free the unused descendants, they would keep the stale dentry alive */
 static void d_invalidate(struct dentry *dentry)
 {
+	struct dentry *child, *tmp;
+
+	list_for_each_entry_safe(child, tmp, &dentry->d_subdirs, d_child) {
+		d_invalidate(child);
+		if (!child->d_count)
+			dentry_kill(child);
+	}
 }
 
 static int d_no_revalidate(struct dentry *dir, unsigned int flags)
@@ -1676,6 +1678,15 @@ static struct dentry *lookup_dcache(const struct qstr *name,
 			if (!error)
 				d_invalidate(dentry);
 			dput(dentry);
+
+			/*
+			 * A dentry still referenced, e.g. by a symlink being
+			 * followed, an open file or a child in use, must not
+			 * be freed. Keep using it until it is unused.
+			 */
+			if (dentry->d_count)
+				return error ? ERR_PTR(error) : dget(dentry);
+
 			dentry_kill(dentry);
 			return ERR_PTR(error);
 		}

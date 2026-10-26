@@ -3051,6 +3051,7 @@ EXPORT_SYMBOL(fdopendir);
 
 DIR *opendir(const char *pathname)
 {
+	DIR *dir;
 	int fd;
 
 	fd = open(pathname, O_DIRECTORY);
@@ -3059,7 +3060,12 @@ DIR *opendir(const char *pathname)
 		return NULL;
 	}
 
-	return fdopendir(fd);
+	/* fdopendir() takes over the descriptor only on success */
+	dir = fdopendir(fd);
+	if (!dir)
+		close(fd);
+
+	return dir;
 }
 EXPORT_SYMBOL(opendir);
 

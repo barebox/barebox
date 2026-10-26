@@ -100,16 +100,25 @@ out:
 
 int efi_execute_image(efi_handle_t handle,
 		      struct efi_loaded_image *loaded_image,
+		      bool is_bootm,
 		      enum filetype filetype)
 {
 	efi_status_t efiret;
 	const char *options;
-	bool is_driver, is_kernel = false;
+	bool is_driver;
+	bool no_return;
 
 	is_driver = (loaded_image->image_code_type == EFI_BOOT_SERVICES_CODE) ||
 		(loaded_image->image_code_type == EFI_RUNTIME_SERVICES_CODE);
  
 	efi_export_dtb();
+
+	/*
+	 * A bootm handler is the point of no return, but an EFI-stubbed kernel
+	 * started from the shell takes over the machine just the same, so
+	 * barebox needs to be shut down in both cases.
+	 */
+	no_return = is_bootm || filetype_is_linux_efi_image(filetype);
 
 	if (filetype_is_linux_efi_image(filetype)) {
 		options = linux_bootargs_get();
@@ -121,11 +130,11 @@ int efi_execute_image(efi_handle_t handle,
 				(strlen(options) + 1) * sizeof(wchar_t);
 		}
 		printf("...\n");
+	}
 
+	if (no_return) {
 		efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
 				      ktime_to_us(ktime_get()));
-
-		is_kernel = true;
 		shutdown_barebox();
 	}
 
@@ -135,8 +144,8 @@ int efi_execute_image(efi_handle_t handle,
 
 	efi_continue_devices();
 
-	if (is_kernel) {
-		pr_emerg("Kernel image has unexpectedly returned\n");
+	if (no_return) {
+		pr_emerg("Boot image has unexpectedly returned\n");
 		BS->exit(efi_parent_image, efiret, 0, NULL);
 	}
 
@@ -162,7 +171,7 @@ static int efi_execute(struct binfmt_hook *b, char *file, int argc, char **argv)
 	if (ret)
 		return ret;
 
-	return efi_execute_image(handle, loaded_image, b->type);
+	return efi_execute_image(handle, loaded_image, false, b->type);
 }
 
 static struct binfmt_hook binfmt_efi_hook = {

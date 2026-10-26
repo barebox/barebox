@@ -185,7 +185,7 @@ static int do_bootm_efi_stub(struct image_data *data)
 	if (data->dryrun)
 		goto unload_ramdisk;
 
-	ret = efi_execute_image(handle, loaded_image, type);
+	ret = efi_execute_image(handle, loaded_image, true, type);
 
 	/* efi_execute_image takes care to unload the image on error,
 	 * so we set image_freed and fall through to freeing ramdisk
@@ -225,7 +225,7 @@ static int efi_app_execute(struct image_data *data)
 		return 0;
 	}
 
-	return efi_execute_image(handle, loaded_image, type);
+	return efi_execute_image(handle, loaded_image, true, type);
 }
 
 static int linux_efi_handover = true;

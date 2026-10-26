@@ -13,6 +13,7 @@ int efi_load_image(const char *file, struct efi_loaded_image **loaded_image,
 
 int efi_execute_image(efi_handle_t handle,
 		      struct efi_loaded_image *loaded_image,
+		      bool is_bootm,
 		      enum filetype filetype);
 
 extern struct image_handler efi_x86_linux_handle_tr;

@@ -143,7 +143,7 @@ extern char __dtbo_of_overlay_missing_target_start[],
 static void test_of_overlay_missing_target(void)
 {
 	struct device_node *root, *overlay, *node;
-	int ret;
+	int ret, old_loglevel;
 
 	if (!test_setup(&root, &overlay, __dtb_of_overlay_with_symbols_start,
 			__dtb_of_overlay_with_symbols_end,
@@ -151,7 +151,15 @@ static void test_of_overlay_missing_target(void)
 			__dtbo_of_overlay_missing_target_end))
 		return;
 
+	/* Applying an overlay with a missing target prints an expected error, silence it
+	 * by decreasing the log level.
+	 */
+	old_loglevel = barebox_set_loglevel(MSG_CRIT);
+
 	ret = of_overlay_apply_tree(root, overlay);
+
+	barebox_set_loglevel(old_loglevel);
+
 	assert_inteq(ret, -ENOENT);
 
 	node = of_find_node_by_path_from(root, "/does-not-exist");

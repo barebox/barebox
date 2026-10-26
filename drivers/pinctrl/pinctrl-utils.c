@@ -29,9 +29,9 @@ int pinctrl_utils_reserve_map(struct pinctrl_dev *pctldev,
 	if (old_num >= new_num)
 		return 0;
 
-	new_map = krealloc_array(*map, new_num, sizeof(*new_map), GFP_KERNEL);
+	new_map = realloc(*map, array_size(new_num, sizeof(*new_map)));
 	if (!new_map) {
-		dev_err(pctldev->dev, "krealloc(map) failed\n");
+		dev_err(pctldev->dev, "realloc(map) failed\n");
 		return -ENOMEM;
 	}
 
@@ -71,8 +71,7 @@ int pinctrl_utils_add_map_configs(struct pinctrl_dev *pctldev,
 	if (WARN_ON(*num_maps == *reserved_maps))
 		return -ENOSPC;
 
-	dup_configs = kmemdup_array(configs, num_configs,
-				sizeof(*dup_configs), GFP_KERNEL);
+	dup_configs = memdup_array(configs, num_configs);
 	if (!dup_configs)
 		return -ENOMEM;
 
@@ -94,10 +93,9 @@ int pinctrl_utils_add_config(struct pinctrl_dev *pctldev,
 	unsigned int new_num = old_num + 1;
 	unsigned long *new_configs;
 
-	new_configs = krealloc(*configs, sizeof(*new_configs) * new_num,
-			       GFP_KERNEL);
+	new_configs = realloc(*configs, sizeof(*new_configs) * new_num);
 	if (!new_configs) {
-		dev_err(pctldev->dev, "krealloc(configs) failed\n");
+		dev_err(pctldev->dev, "realloc(configs) failed\n");
 		return -ENOMEM;
 	}
 

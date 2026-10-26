@@ -18,7 +18,6 @@
 #include <malloc.h>
 #include <string.h>
 #include <linux/err.h>
-#include <bootargs.h>
 #include <bootm.h>
 #include <fs.h>
 #include <libfile.h>
@@ -101,10 +100,10 @@ out:
 int efi_execute_image(efi_handle_t handle,
 		      struct efi_loaded_image *loaded_image,
 		      bool is_bootm,
-		      enum filetype filetype)
+		      enum filetype filetype, const char *options)
 {
 	efi_status_t efiret;
-	const char *options;
+	wchar_t *load_options = NULL;
 	bool is_driver;
 	bool no_return;
 
@@ -120,17 +119,18 @@ int efi_execute_image(efi_handle_t handle,
 	 */
 	no_return = is_bootm || filetype_is_linux_efi_image(filetype);
 
-	if (filetype_is_linux_efi_image(filetype)) {
-		options = linux_bootargs_get();
-		printf("Booting kernel via StartImage");
-		if (options) {
-			printf("with options '%s'", options);
-			loaded_image->load_options = xstrdup_char_to_wchar(options);
-			loaded_image->load_options_size =
-				(strlen(options) + 1) * sizeof(wchar_t);
-		}
-		printf("...\n");
+	if (options && *options) {
+		load_options = xstrdup_char_to_wchar(options);
+		loaded_image->load_options = load_options;
+		loaded_image->load_options_size =
+			(strlen(options) + 1) * sizeof(wchar_t);
 	}
+
+	printf("Booting %s", filetype_is_linux_efi_image(filetype) ?
+	       "kernel via StartImage" : "EFI image");
+	if (load_options)
+		printf(" with options '%s'", options);
+	printf("...\n");
 
 	if (no_return) {
 		efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
@@ -152,8 +152,24 @@ int efi_execute_image(efi_handle_t handle,
 	if (EFI_ERROR(efiret))
 		pr_err("failed to StartImage: %s\n", efi_strerror(efiret));
 
-	if (!is_driver)
+	/*
+	 * load_options is freed below, so a driver that started successfully
+	 * and thus stays loaded must drop its reference to it. The firmware
+	 * already unloaded an application that returned and a driver that
+	 * failed to start, so their loaded image protocol must not be touched.
+	 * Unloading an application that already returned just fails, but is
+	 * still needed when StartImage failed before running it.
+	 */
+	if (is_driver) {
+		if (!EFI_ERROR(efiret)) {
+			loaded_image->load_options = NULL;
+			loaded_image->load_options_size = 0;
+		}
+	} else {
 		BS->unload_image(handle);
+	}
+
+	free(load_options);
 
 	efi_connect_all();
 	efi_register_devices();
@@ -165,13 +181,21 @@ static int efi_execute(struct binfmt_hook *b, char *file, int argc, char **argv)
 {
 	struct efi_loaded_image *loaded_image;
 	efi_handle_t handle;
+	char *options;
 	int ret;
 
 	ret = efi_load_image(file, &loaded_image, &handle);
 	if (ret)
 		return ret;
 
-	return efi_execute_image(handle, loaded_image, false, b->type);
+	/* argv[0] is the image itself, the rest become the load options */
+	options = strjoin(" ", &argv[1], argc - 1);
+
+	ret = efi_execute_image(handle, loaded_image, false, b->type, options);
+
+	free(options);
+
+	return ret;
 }
 
 static struct binfmt_hook binfmt_efi_hook = {

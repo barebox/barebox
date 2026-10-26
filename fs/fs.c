@@ -861,6 +861,8 @@ static void fs_remove(struct device *dev)
 
 	free(fsdev->path);
 	free(fsdev->options);
+	free(fsdev->linux_root);
+	free(fsdev->linux_rootopts);
 
 	if (fsdev->cdev)
 		cdev_close(fsdev->cdev);

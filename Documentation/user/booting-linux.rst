@@ -103,6 +103,9 @@ to the bootargs. Variables without a value are skipped:
 
   Kernel command line: ignore_loglevel console=ttyO0,115200 earlyprintk
 
+When booting an EFI-stubbed kernel as EFI application, the
+:ref:`EFI load options <efi_load_options>` precede the Linux bootargs.
+
 .. _bootargs_concat_order:
 
 Concatenation order
@@ -175,7 +178,8 @@ This takes the kernel from ``/mnt/mmc1/zImage`` (which could be an
 boot entries should always add Kernel command line parameters to variables with
 ``.dyn`` in it. These will be cleared before booting different boot entries.
 This is done so that following boot entries do not leak command line
-parameters from the previous boot entries.
+parameters from the previous boot entries. The same applies to the
+:ref:`EFI load options <efi_load_options>` in ``global.efi.bootargs.dyn.*``.
 
 This entry can be booted with ``boot mmc``. It can also be made the default by
 setting the :ref:`global.boot.default <magicvar_global_boot_default>` variable

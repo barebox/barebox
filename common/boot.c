@@ -229,6 +229,7 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 		pr_err("Booting entry '%s' failed: %pe\n", be->title, ERR_PTR(ret));
 
 	globalvar_set_match("linux.bootargs.dyn.", "");
+	globalvar_set_match("efi.bootargs.dyn.", "");
 
 	return ret;
 }

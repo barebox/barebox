@@ -13,7 +13,6 @@
 #include <init.h>
 #include <driver.h>
 #include <io.h>
-#include <bootargs.h>
 #include <malloc.h>
 #include <string.h>
 #include <linux/err.h>
@@ -34,6 +33,7 @@
 #include <efi/services.h>
 #include <efi/error.h>
 #include <efi/initrd.h>
+#include <efi/bootargs.h>
 #include <efi/devicepath.h>
 
 /**
@@ -199,6 +199,7 @@ static int efi_loader_bootm(struct image_data *data)
 	resource_size_t start, end;
 	void *load_option = NULL;
 	u32 load_option_size = 0;
+	char *options;
 	efi_handle_t handle;
 	struct efi_device_path *file_path = NULL;
 	struct efi_event *evt;
@@ -215,19 +216,19 @@ static int efi_loader_bootm(struct image_data *data)
 	if (IS_ERR(os_res))
 		return PTR_ERR(os_res);
 
-	if (filetype_is_linux_efi_image(data->kernel_type)) {
-		const char *options;
-
-		options = linux_bootargs_get();
-		if (options) {
-			load_option = xstrdup_char_to_wchar(options);
-			load_option_size = (strlen(options) + 1) * sizeof(wchar_t);
-		}
+	options = efi_bootargs_get(filetype_is_linux_efi_image(data->kernel_type));
+	if (options) {
+		load_option = xstrdup_char_to_wchar(options);
+		load_option_size = (strlen(options) + 1) * sizeof(wchar_t);
 	}
 
 	file_path = efi_dp_from_file(AT_FDCWD, data->os_file);
 
 	pr_info("Loading %pD\n", file_path);
+	if (data->verbose && options)
+		pr_info("Load options: %s\n", options);
+
+	free(options);
 
 	/* Initialize EFI drivers */
 	efiret = efi_init_obj_list();
@@ -320,6 +321,14 @@ static int efi_loader_bootm(struct image_data *data)
 
 	/* Control is returned to us, disable EFI watchdog */
 	efi_set_watchdog(0);
+
+	/*
+	 * A still loaded driver would keep referencing the load options.
+	 * efi_set_load_options() tolerates the already deleted handle of an
+	 * application.
+	 */
+	efi_set_load_options(handle, 0, NULL);
+	free(load_option);
 
 	return -efi_errno(efiret);
 

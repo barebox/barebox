@@ -22,7 +22,6 @@
 #include <string.h>
 #include <linux/err.h>
 #include <boot.h>
-#include <bootargs.h>
 #include <bootm.h>
 #include <fs.h>
 #include <libfile.h>
@@ -32,6 +31,7 @@
 #include <efi/payload/driver.h>
 #include <efi/error.h>
 #include <efi/initrd.h>
+#include <efi/bootargs.h>
 
 #include "image.h"
 
@@ -167,6 +167,7 @@ static int do_bootm_efi_stub(struct image_data *data)
 	bool image_freed = false;
 	efi_handle_t handle = NULL; /* silence compiler warning */
 	enum filetype type;
+	char *options;
 	int ret;
 
 	ret = efi_load_os(data, &loaded_image, &handle);
@@ -186,9 +187,11 @@ static int do_bootm_efi_stub(struct image_data *data)
 	if (data->dryrun)
 		goto unload_ramdisk;
 
-	ret = efi_execute_image(handle, loaded_image, true, type,
-				filetype_is_linux_efi_image(type) ?
-				linux_bootargs_get() : NULL);
+	options = efi_bootargs_get(filetype_is_linux_efi_image(type));
+
+	ret = efi_execute_image(handle, loaded_image, true, type, options);
+
+	free(options);
 
 	/* efi_execute_image takes care to unload the image on error,
 	 * so we set image_freed and fall through to freeing ramdisk
@@ -215,6 +218,7 @@ static int efi_app_execute(struct image_data *data)
 	struct efi_loaded_image *loaded_image;
 	efi_handle_t handle;
 	enum filetype type;
+	char *options;
 	int ret;
 
 	ret = efi_load_image(data->os_file, &loaded_image, &handle);
@@ -228,9 +232,13 @@ static int efi_app_execute(struct image_data *data)
 		return 0;
 	}
 
-	return efi_execute_image(handle, loaded_image, true, type,
-				 filetype_is_linux_efi_image(type) ?
-				 linux_bootargs_get() : NULL);
+	options = efi_bootargs_get(filetype_is_linux_efi_image(type));
+
+	ret = efi_execute_image(handle, loaded_image, true, type, options);
+
+	free(options);
+
+	return ret;
 }
 
 static int linux_efi_handover = true;

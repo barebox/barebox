@@ -89,7 +89,7 @@ With ``CONFIG_FLEXIBLE_BOOTARGS`` enabled, the bootargs are composed
 from different :ref:`global device<global_device>` variables and the
 :ref:`bootargs <magicvar_bootargs>` environment variable is ignored.
 All variables beginning with ``global.linux.bootargs.`` will be concatenated
-to the bootargs:
+to the bootargs. Variables without a value are skipped:
 
 .. code-block:: sh
 

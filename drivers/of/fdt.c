@@ -483,10 +483,7 @@ static int fdt_ensure_space(struct fdt *fdt, int dtsize)
 
 	if (fdt->dt_size - fdt->dt_nextofs < 1024 + dtsize) {
 		previous = fdt->dt;
-		new_size = fdt->dt_size * 2;
-
-		if (new_size <= dtsize)
-			new_size = roundup_pow_of_two(fdt->dt_size + dtsize);
+		new_size = roundup_pow_of_two(fdt->dt_nextofs + 1024 + dtsize);
 
 		fdt->dt = memalign_realloc(previous, fdt->dt_size, new_size);
 		if (!fdt->dt) {
@@ -524,15 +521,18 @@ static int __of_flatten_dtb(struct fdt *fdt, struct device_node *node)
 	struct property *p;
 	struct device_node *n;
 	int ret;
-	unsigned int len;
+	int len;
 	struct fdt_node_header *nh;
 
-	if (fdt_ensure_space(fdt, 0) < 0)
+	/* a node without properties and children writes both tags in one go */
+	if (fdt_ensure_space(fdt, 2 * sizeof(*nh)) < 0)
 		return -ENOMEM;
 
 	nh = fdt->dt + fdt->dt_nextofs;
 	nh->tag = cpu_to_fdt32(FDT_BEGIN_NODE);
 	len = lstrcpy(nh->name, node->name);
+	if (len < 0)
+		return len;
 	fdt->dt_nextofs = dt_next_ofs(fdt->dt_nextofs, 4 + len + 1);
 
 	list_for_each_entry(p, &node->properties, list) {
@@ -544,11 +544,15 @@ static int __of_flatten_dtb(struct fdt *fdt, struct device_node *node)
 		if (fdt_ensure_space(fdt, p->length) < 0)
 			return -ENOMEM;
 
+		ret = dt_add_string(fdt, p->name);
+		if (ret < 0)
+			return ret;
+
 		fp = fdt->dt + fdt->dt_nextofs;
 
 		fp->tag = cpu_to_fdt32(FDT_PROP);
 		fp->len = cpu_to_fdt32(p->length);
-		fp->nameoff = cpu_to_fdt32(dt_add_string(fdt, p->name));
+		fp->nameoff = cpu_to_fdt32(ret);
 		memcpy(fp->data, p->value, p->length);
 		fdt->dt_nextofs = dt_next_ofs(fdt->dt_nextofs,
 				sizeof(struct fdt_property) + p->length);

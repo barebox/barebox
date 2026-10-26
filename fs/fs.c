@@ -3375,9 +3375,6 @@ int mount(const char *device, const char *fsname, const char *pathname,
 
 	init_super(&fsdev->sb);
 
-	if (path.mnt)
-		mntget(path.mnt);
-
 	if (d_root)
 		fsdev->path = dpath(path.dentry, d_root);
 
@@ -3396,7 +3393,7 @@ int mount(const char *device, const char *fsname, const char *pathname,
 
 	if (d_root) {
 		fsdev->vfsmount.mountpoint = path.dentry;
-		fsdev->vfsmount.parent = path.mnt;
+		fsdev->vfsmount.parent = mntget(path.mnt);
 		fsdev->vfsmount.mountpoint->d_flags |= DCACHE_MOUNTED;
 	} else {
 		d_root = fsdev->sb.s_root;

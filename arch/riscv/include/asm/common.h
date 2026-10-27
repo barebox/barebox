@@ -5,10 +5,19 @@
 
 #include <linux/compiler.h>
 
+/*
+ * Taking the address of a label is not guaranteed to yield the runtime
+ * address: clang materializes it through the GOT when compiling with
+ * -fpic, which still holds the link-time address before relocation.
+ * Use auipc, which is PC-relative by definition.
+ */
 static __always_inline unsigned long get_pc(void)
 {
-label:
-	return (unsigned long)&&label;
+	unsigned long pc;
+
+	__asm__ __volatile__("auipc %0, 0" : "=r"(pc));
+
+	return pc;
 }
 
 #endif /* ASM_RISCV_COMMON_H */

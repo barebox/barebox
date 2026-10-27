@@ -4,24 +4,15 @@
 
 #include <linux/list.h>
 #include <linux/compiler.h>
+#include <linux/kern_levels.h>
 #include <linux/err.h>
 #include <printf.h>
 #include <stdarg.h>
 
-#define MSG_EMERG      0    /* system is unusable */
-#define MSG_ALERT      1    /* action must be taken immediately */
-#define MSG_CRIT       2    /* critical conditions */
-#define MSG_ERR        3    /* error conditions */
-#define MSG_WARNING    4    /* warning conditions */
-#define MSG_NOTICE     5    /* normal but significant condition */
-#define MSG_INFO       6    /* informational */
-#define MSG_DEBUG      7    /* debug-level messages */
-#define MSG_VDEBUG     8    /* verbose debug messages */
-
 #ifdef VERBOSE_DEBUG
-#define LOGLEVEL	MSG_VDEBUG
+#define LOGLEVEL	LOGLEVEL_VDEBUG
 #elif defined DEBUG
-#define LOGLEVEL	MSG_DEBUG
+#define LOGLEVEL	LOGLEVEL_DEBUG
 #elif !defined(LOGLEVEL)
 #define LOGLEVEL	CONFIG_COMPILE_LOGLEVEL
 #endif
@@ -45,6 +36,10 @@ static inline __printf(2, 3) int pr_print(int level, const char *format, ...)
 	return 0;
 }
 #endif
+
+/* Implemented in Rust, see rust/barebox/log.rs */
+int rust_setup_log(void);
+int rust_log(int level, const char *msg);
 
 #define __dev_printf(level, dev, format, args...) \
 	({	\
@@ -98,7 +93,7 @@ static inline __printf(2, 3) int pr_print(int level, const char *format, ...)
 #define dev_vdbg_once(dev, format, arg...)		\
 	__dev_printf_once(8, (dev) , format , ## arg)
 
-#if LOGLEVEL >= MSG_ERR
+#if LOGLEVEL >= LOGLEVEL_ERR
 int dev_err_probe(struct device *dev, int err, const char *fmt, ...)
 	__printf(3, 4);
 #elif !defined(dev_err_probe)
@@ -164,6 +159,43 @@ static inline __printf(3, 4) int dev_err_probe(struct device *dev,
 #define pr_warn			pr_warning
 #define pr_warn_once		pr_warning_once
 
+static inline int printk_get_level(const char *buffer)
+{
+	if (buffer[0] == KERN_SOH_ASCII && buffer[1]) {
+		switch (buffer[1]) {
+		case '0' ... '9':
+		case 'c':	/* KERN_CONT */
+			return buffer[1];
+		}
+	}
+	return 0;
+}
+
+static inline const char *printk_skip_level(const char *buffer)
+{
+	if (printk_get_level(buffer))
+		return buffer + 2;
+
+	return buffer;
+}
+
+#if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \
+	(IN_PBL && defined(CONFIG_PBL_CONSOLE))
+int _printk(const char *fmt, ...) __printf(1, 2);
+#else
+static inline __printf(1, 2) int _printk(const char *fmt, ...)
+{
+	return 0;
+}
+#endif
+
+/* without KERN_<LEVEL> prefix, print like pr_cont() */
+#define printk(fmt, ...) \
+	((fmt)[0] == KERN_SOH_ASCII ? _printk(fmt, ##__VA_ARGS__) : \
+		pr_print(LOGLEVEL_DEFAULT, fmt, ##__VA_ARGS__))
+
+#define no_printk no_printf
+
 int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size,
 		   int swab);
 int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbytes,
@@ -201,10 +233,10 @@ struct va_format {
 	va_list *va;
 };
 
-#if LOGLEVEL >= MSG_DEBUG
+#if LOGLEVEL >= LOGLEVEL_DEBUG
 #define print_hex_dump_debug(prefix_str, prefix_type, rowsize,		\
 			     groupsize, buf, len, ascii)		\
-	print_hex_dump(MSG_DEBUG, prefix_str, prefix_type, rowsize,	\
+	print_hex_dump(LOGLEVEL_DEBUG, prefix_str, prefix_type, rowsize,	\
 		       groupsize, buf, len, ascii)
 #else
 static inline void print_hex_dump_debug(const char *prefix_str, int prefix_type,
@@ -223,7 +255,7 @@ static inline void print_hex_dump_debug(const char *prefix_str, int prefix_type,
  * @buf: data blob to dump
  * @len: number of bytes in the @buf
  *
- * Calls print_hex_dump(), with log level of MSG_DEBUG,
+ * Calls print_hex_dump(), with log level of LOGLEVEL_DEBUG,
  * rowsize of 16, groupsize of 1, and ASCII output included.
  */
 #define print_hex_dump_bytes(prefix_str, prefix_type, buf, len)	\

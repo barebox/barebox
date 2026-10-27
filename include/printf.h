@@ -7,16 +7,6 @@
 
 struct device;
 
-#define KERN_EMERG      ""   /* system is unusable                   */
-#define KERN_ALERT      ""   /* action must be taken immediately     */
-#define KERN_CRIT       ""   /* critical conditions                  */
-#define KERN_ERR        ""   /* error conditions                     */
-#define KERN_WARNING    ""   /* warning conditions                   */
-#define KERN_NOTICE     ""   /* normal but significant condition     */
-#define KERN_INFO       ""   /* informational                        */
-#define KERN_DEBUG      ""   /* debug-level messages                 */
-#define KERN_CONT       ""
-
 #if (IN_PROPER && !defined(CONFIG_CONSOLE_NONE)) || \
 	(IN_PBL && defined(CONFIG_PBL_CONSOLE))
 int printf(const char *fmt, ...) __printf(1, 2);
@@ -40,9 +30,6 @@ void __noreturn panic_no_stacktrace(const char *fmt, ...) __printf(1, 2);
 		printf(fmt, ##__VA_ARGS__);		\
 	0;						\
 })
-
-#define printk			printf
-#define no_printk		no_printf
 
 enum {
 	DUMP_PREFIX_NONE,

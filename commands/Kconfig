@@ -119,6 +119,15 @@ config CMD_DMESG
 	help
 	  Print or control the log message buffer.
 
+config CMD_RUSTLOG
+	tristate
+	prompt "rustlog"
+	depends on RUST
+	default y
+	help
+	  Emit a message through the Rust log crate, to exercise
+	  the Rust logging support.
+
 config CMD_DRVINFO
 	tristate
 	default y

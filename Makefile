@@ -119,7 +119,15 @@ endif
 
 export KBUILD_CHECKSRC
 
+# Enable "clippy" (a linter) as part of the Rust compilation.
+#
+# Use 'make CLIPPY=1' to enable it.
+ifeq ("$(origin CLIPPY)", "command line")
+  KBUILD_CLIPPY := $(CLIPPY)
+endif
+
 export quiet Q KBUILD_VERBOSE KPOLICY_TMPUPDATE
+export KBUILD_CLIPPY
 
 ifeq ("$(origin W)", "command line")
   KBUILD_EXTRA_WARN := $(W)
@@ -246,7 +254,7 @@ no-dot-config-targets := $(clean-targets) \
 			 cscope gtags TAGS tags help% %docs \
 			 $(version_h) \
 			 bareboxversion \
-			 outputmakefile
+			 outputmakefile rustavailable rustfmt rustfmtcheck
 no-sync-config-targets := $(no-dot-config-targets) %install bareboxrelease \
 			  image_name
 single-targets := %.a %.i %.ko %.lds %.ll %.lst %.mod %.o %.rsi %.s %/
@@ -406,6 +414,7 @@ else
 HOSTCC	= gcc
 HOSTCXX	= g++
 endif
+HOSTRUSTC = rustc
 
 PKG_CONFIG ?= pkg-config
 HOSTPKG_CONFIG = $(PKG_CONFIG)
@@ -425,10 +434,42 @@ KBUILD_USERHOSTCFLAGS := -Wall -Wmissing-prototypes -Wstrict-prototypes \
 KBUILD_USERCFLAGS  := $(KBUILD_USERHOSTCFLAGS) $(USERCFLAGS)
 KBUILD_USERLDFLAGS := $(USERLDFLAGS)
 
+# These flags apply to all Rust code in the tree, including the kernel and
+# host programs.
+export rust_common_flags := --edition=2021 \
+			    -Zbinary_dep_depinfo=y \
+			    -Astable_features \
+			    -Aunused_features \
+			    -Dnon_ascii_idents \
+			    -Dunsafe_op_in_unsafe_fn \
+			    -Wmissing_docs \
+			    -Wrust_2018_idioms \
+			    -Wunreachable_pub \
+			    -Wclippy::all \
+			    -Wclippy::as_ptr_cast_mut \
+			    -Wclippy::as_underscore \
+			    -Wclippy::cast_lossless \
+			    -Wclippy::ignored_unit_patterns \
+			    -Aclippy::incompatible_msrv \
+			    -Wclippy::mut_mut \
+			    -Wclippy::needless_bitwise_bool \
+			    -Aclippy::needless_lifetimes \
+			    -Wclippy::no_mangle_with_rust_abi \
+			    -Wclippy::ptr_as_ptr \
+			    -Wclippy::ptr_cast_constness \
+			    -Wclippy::ref_as_ptr \
+			    -Wclippy::undocumented_unsafe_blocks \
+			    -Wclippy::unnecessary_safety_comment \
+			    -Wclippy::unnecessary_safety_doc \
+			    -Wrustdoc::missing_crate_level_docs \
+			    -Wrustdoc::unescaped_backticks
+
 KBUILD_HOSTCFLAGS   := $(KBUILD_USERHOSTCFLAGS) $(HOST_LFS_CFLAGS) \
 		       $(HOSTCFLAGS) -I $(srctree)/scripts/include
 KBUILD_HOSTCXXFLAGS := -Wall -O2 $(HOST_LFS_CFLAGS) $(HOSTCXXFLAGS) \
 		       -I $(srctree)/scripts/include
+KBUILD_HOSTRUSTFLAGS := $(rust_common_flags) -O -Cstrip=debuginfo \
+			-Zallow-features=
 KBUILD_HOSTLDFLAGS  := $(HOST_LFS_LDFLAGS) $(HOSTLDFLAGS)
 KBUILD_HOSTLDLIBS   := $(HOST_LFS_LIBS) $(HOSTLDLIBS)
 
@@ -460,6 +501,11 @@ OBJDUMP		= $(CROSS_COMPILE)objdump
 READELF		= $(CROSS_COMPILE)readelf
 STRIP		= $(CROSS_COMPILE)strip
 endif
+RUSTC		= rustc
+RUSTDOC		= rustdoc
+RUSTFMT		= rustfmt
+CLIPPY_DRIVER	= clippy-driver
+BINDGEN		= bindgen
 PAHOLE		= pahole
 LEX		= flex
 YACC		= bison
@@ -490,9 +536,11 @@ CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void -Wno-unknown-attribute $(CF)
 NOSTDINC_FLAGS :=
 CFLAGS_MODULE   =
+RUSTFLAGS_MODULE =
 AFLAGS_MODULE   =
 LDFLAGS_MODULE  =
 CFLAGS_KERNEL	=
+RUSTFLAGS_KERNEL =
 AFLAGS_KERNEL	=
 CFLAGS_MODULE	= -fshort-wchar -std=gnu11
 AFLAGS_MODULE	=
@@ -535,17 +583,43 @@ KBUILD_CFLAGS += -fno-strict-aliasing
 KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CPPFLAGS += -D__BAREBOX__ -fno-builtin -ffreestanding -Ulinux -Uunix
 
+KBUILD_RUSTFLAGS := $(rust_common_flags) \
+		    -Cpanic=abort -Cembed-bitcode=n -Clto=n \
+		    -Cforce-unwind-tables=n -Ccodegen-units=1 \
+		    -Csymbol-mangling-version=v0 \
+		    -Crelocation-model=static \
+		    -Zfunction-sections=n \
+		    -Wclippy::float_arithmetic
+
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
+KBUILD_RUSTFLAGS_KERNEL :=
 KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE
+KBUILD_RUSTFLAGS_MODULE := --cfg MODULE
 KBUILD_LDFLAGS_MODULE :=
 KBUILD_LDFLAGS :=
 CLANG_FLAGS :=
 
+ifeq ($(KBUILD_CLIPPY),1)
+	RUSTC_OR_CLIPPY_QUIET := CLIPPY
+	RUSTC_OR_CLIPPY = $(CLIPPY_DRIVER)
+else
+	RUSTC_OR_CLIPPY_QUIET := RUSTC
+	RUSTC_OR_CLIPPY = $(RUSTC)
+endif
+
+# Allows the usage of unstable features in stable compilers.
+export RUSTC_BOOTSTRAP := 1
+
+# Allows finding `.clippy.toml` in out-of-srctree builds.
+export CLIPPY_CONF_DIR := $(srctree)
+
 export ARCH SRCARCH CONFIG_SHELL BASH HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE LD CC HOSTPKG_CONFIG
 export CXX CROSS_PKG_CONFIG PKG_CONFIG GENKSYMS MKIMAGE SCONFIGPOST
 export PROFDATA COV GENHTML
+export RUSTC RUSTDOC RUSTFMT RUSTC_OR_CLIPPY_QUIET RUSTC_OR_CLIPPY BINDGEN
+export HOSTRUSTC KBUILD_HOSTRUSTFLAGS
 export CPP AR NM STRIP OBJCOPY OBJDUMP READELF PAHOLE LEX YACC AWK INSTALLKERNEL
 export PERL PYTHON3 CHECK CHECKFLAGS MAKE UTS_MACHINE HOSTCXX
 export KGZIP KBZIP2 KLZOP LZMA LZ4 XZ ZSTD TAR
@@ -554,9 +628,10 @@ export KBUILD_USERCFLAGS KBUILD_USERLDFLAGS
 
 export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS KBUILD_LDFLAGS
 export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE
+export KBUILD_RUSTFLAGS RUSTFLAGS_KERNEL RUSTFLAGS_MODULE
 export KBUILD_AFLAGS AFLAGS_KERNEL AFLAGS_MODULE
-export KBUILD_AFLAGS_MODULE KBUILD_CFLAGS_MODULE
-export KBUILD_AFLAGS_KERNEL KBUILD_CFLAGS_KERNEL
+export KBUILD_AFLAGS_MODULE KBUILD_CFLAGS_MODULE KBUILD_RUSTFLAGS_MODULE KBUILD_LDFLAGS_MODULE
+export KBUILD_AFLAGS_KERNEL KBUILD_CFLAGS_KERNEL KBUILD_RUSTFLAGS_KERNEL
 export LDFLAGS_barebox LDFLAGS_pbl LDFLAGS_elf
 
 # Files to ignore in find ... statements
@@ -620,10 +695,11 @@ endif # building_out_of_srctree
 
 # The expansion should be delayed until arch/$(SRCARCH)/Makefile is included.
 # Some architectures define CROSS_COMPILE in arch/$(SRCARCH)/Makefile.
-# CC_VERSION_TEXT is referenced from Kconfig (so they
+# CC_VERSION_TEXT and RUSTC_VERSION_TEXT are referenced from Kconfig (so they
 # need export), and from include/config/auto.conf.cmd to detect the compiler
 # upgrade.
 CC_VERSION_TEXT = $(subst $(pound),,$(shell LC_ALL=C $(CC) --version 2>/dev/null | head -n 1))
+RUSTC_VERSION_TEXT = $(subst $(pound),,$(shell $(RUSTC) --version 2>/dev/null))
 
 ifneq ($(findstring clang,$(CC_VERSION_TEXT)),)
 include $(srctree)/scripts/Makefile.clang
@@ -655,7 +731,7 @@ include $(srctree)/scripts/Makefile.defconf
 # KBUILD_DEFCONFIG may point out an alternative default configuration
 # used for 'make defconfig'
 include $(srctree)/arch/$(SRCARCH)/Makefile
-export KBUILD_DEFCONFIG KBUILD_KCONFIG CC_VERSION_TEXT
+export KBUILD_DEFCONFIG KBUILD_KCONFIG CC_VERSION_TEXT RUSTC_VERSION_TEXT
 endif
 
 %_efiloader_defconfig: FORCE
@@ -718,6 +794,7 @@ endif
 
 ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
 KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
+KBUILD_RUSTFLAGS_KERNEL += -Zfunction-sections=y
 LDFLAGS_barebox += --gc-sections
 LDFLAGS_pbl += --gc-sections
 endif
@@ -733,6 +810,20 @@ ifdef CONFIG_CC_IS_GCC
 CFLAGS_GCOV	+= -fno-tree-loop-im
 endif
 export CFLAGS_GCOV
+
+# Per-version Rust flags. These are like `rust_common_flags`, but may
+# depend on the Rust compiler version (e.g. using `rustc-min-version`).
+#
+# `-Aclippy::precedence`: the lint was extended in Rust 1.85.0 to
+# include bitmasking and shift operations. However, because it generated
+# many hits, in Rust 1.86.0 it was split into a new `precedence_bits`
+# lint which is not enabled by default.
+rust_common_flags_per_version := \
+    $(if $(call rustc-min-version,108600),,-Aclippy::precedence)
+
+rust_common_flags += $(rust_common_flags_per_version)
+KBUILD_HOSTRUSTFLAGS += $(rust_common_flags_per_version) $(HOSTRUSTFLAGS)
+KBUILD_RUSTFLAGS += $(rust_common_flags_per_version)
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
 
@@ -792,9 +883,16 @@ KBUILD_CFLAGS	+= -fno-delete-null-pointer-checks
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
 KBUILD_CFLAGS += -O2
+KBUILD_RUSTFLAGS += -Copt-level=2
 else ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS += -Os
+KBUILD_RUSTFLAGS += -Copt-level=s
 endif
+
+# Always set `debug-assertions` and `overflow-checks` because their default
+# depends on `opt-level` and `debug-assertions`, respectively.
+KBUILD_RUSTFLAGS += -Cdebug-assertions=$(if $(CONFIG_RUST_DEBUG_ASSERTIONS),y,n)
+KBUILD_RUSTFLAGS += -Coverflow-checks=$(if $(CONFIG_RUST_OVERFLOW_CHECKS),y,n)
 
 # Tell gcc to never replace conditional load with a non-conditional one
 ifdef CONFIG_CC_IS_GCC
@@ -812,6 +910,7 @@ KBUILD_CFLAGS += $(stackp-flags-y)
 
 ifdef CONFIG_FRAME_POINTER
 KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+KBUILD_RUSTFLAGS += -Cforce-frame-pointers=y
 endif
 
 # Initialize all stack variables with a 0xAA pattern.
@@ -900,10 +999,11 @@ include-$(CONFIG_UBSAN)		+= scripts/Makefile.ubsan
 
 include $(addprefix $(srctree)/, $(include-y))
 
-# Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
+# Add user supplied CPPFLAGS, AFLAGS, CFLAGS and RUSTFLAGS as the last assignments
 KBUILD_CPPFLAGS += $(KCPPFLAGS)
 KBUILD_AFLAGS   += $(KAFLAGS)
 KBUILD_CFLAGS   += $(KCFLAGS)
+KBUILD_RUSTFLAGS += $(KRUSTFLAGS)
 
 LDFLAGS_barebox	+= -Map barebox.map
 
@@ -1014,20 +1114,23 @@ define rule_barebox__
 	$(Q)echo 'savedcmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
 	$(call cmd,prelink__)
 	$(call cmd,sysmap)
+	$(if $(CONFIG_KALLSYMS),$(call verify_kallsyms))
 endef
 endif
 
-# Old kallsyms support
+# kallsyms support
 # ---------------------------------------------------------------------------
 
 ifdef CONFIG_KALLSYMS
 # Generate section listing all symbols and add it into barebox $(kallsyms.o)
-# It's a three stage process:
-# o .tmp_barebox1 has all symbols and sections, but __kallsyms is
-#   empty
+# It's a four stage process:
+# o .tmp_kallsyms0.o is an empty table, so that the kallsyms_* symbols
+#   exist in all passes.
+# o .tmp_barebox1 has all symbols and sections, but the kallsyms table is
+#   empty.
 #   Running kallsyms on that gives us .tmp_kallsyms1.o with
 #   the right size - barebox version is updated during this step
-# o .tmp_barebox2 now has a __kallsyms section of the right size,
+# o .tmp_barebox2 now has a kallsyms table of the right size,
 #   but due to the added section, some addresses have shifted.
 #   From here, we generate a correct .tmp_kallsyms2.o
 # o The correct .tmp_kallsyms2.o is linked into the final barebox.
@@ -1035,7 +1138,7 @@ ifdef CONFIG_KALLSYMS
 #   .tmp_barebox2, just in case we did not generate kallsyms correctly.
 # o If CONFIG_KALLSYMS_EXTRA_PASS is set, do an extra pass using
 #   .tmp_barebox3 and .tmp_kallsyms3.o.  This is only meant as a
-#   temporary bypass to allow the kernel to be built while the
+#   temporary bypass to allow barebox to be built while the
 #   maintainers work out what went wrong with kallsyms.
 
 ifdef CONFIG_KALLSYMS_EXTRA_PASS
@@ -1047,12 +1150,8 @@ endif
 kallsyms.o := .tmp_kallsyms$(last_kallsyms).o
 
 define verify_kallsyms
-	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
-	  echo '  $($(quiet)cmd_sysmap)  .tmp_System.map' &&)                \
-	  $(cmd_sysmap) .tmp_barebox$(last_kallsyms) .tmp_System.map
-	$(Q)cmp -s System.map .tmp_System.map ||                             \
-		(echo Inconsistent kallsyms data;                            \
-		 echo Try setting CONFIG_KALLSYMS_EXTRA_PASS;                \
+	$(Q)cmp -s System.map .tmp_kallsyms$(last_kallsyms).S.syms ||         \
+		(echo >&2 Inconsistent kallsyms data;                        \
 		 rm .tmp_kallsyms* ; false )
 endef
 
@@ -1072,18 +1171,29 @@ kallsyms_a_flags = -Wp,-MD,$(depfile) $(KBUILD_AFLAGS) $(AFLAGS_KERNEL) \
 quiet_cmd_kallsyms_as_o_S = AS      $@
       cmd_kallsyms_as_o_S = $(CC) $(kallsyms_a_flags) -c -o $@ $<
 
-# Generate .S file with all kernel symbols
-quiet_cmd_kallsyms = KSYM    $@
-      cmd_kallsyms = $(NM) -n $< | $(KALLSYMS) --all-symbols > $@
+# barebox is relocated at runtime, so always use --pc-relative
+kallsyms_opts := --all-symbols --pc-relative
 
-.tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
+# Generate .S file with all barebox symbols, as filtered by mksysmap
+quiet_cmd_kallsyms = KSYM    $@
+      cmd_kallsyms = $(CONFIG_SHELL) $(srctree)/scripts/mksysmap $< $@.syms && \
+		     $(KALLSYMS) $(kallsyms_opts) $@.syms > $@
+
+quiet_cmd_kallsyms0 = KSYM    $@
+      cmd_kallsyms0 = : > $@.syms && $(KALLSYMS) $(kallsyms_opts) $@.syms > $@
+
+.tmp_kallsyms0.o .tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
 	$(call if_changed_dep,kallsyms_as_o_S)
+
+# Empty table for the first pass, overrides the pattern rule below
+.tmp_kallsyms0.S: $(KALLSYMS)
+	$(call cmd,kallsyms0)
 
 .tmp_kallsyms%.S: .tmp_barebox% $(KALLSYMS)
 	$(call cmd,kallsyms)
 
 # .tmp_barebox1 must be complete except kallsyms, so update barebox version
-.tmp_barebox1: $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE
+.tmp_barebox1: $(BAREBOX_LDS) $(BAREBOX_OBJS) .tmp_kallsyms0.o FORCE
 	$(call if_changed_rule,ksym_ld)
 
 .tmp_barebox2: $(BAREBOX_LDS) $(BAREBOX_OBJS) .tmp_kallsyms1.o FORCE
@@ -1238,7 +1348,10 @@ prepare0: archprepare
 
 # All the preparing..
 prepare: prepare0
-	@:
+ifdef CONFIG_RUST
+	+$(Q)$(CONFIG_SHELL) $(srctree)/scripts/rust_is_available.sh
+	$(Q)$(MAKE) $(build)=rust
+endif
 
 # Leave this as default for preprocessing barebox.lds.S, which is now
 # done in arch/$(SRCARCH)/kernel/Makefile
@@ -1544,7 +1657,9 @@ MRPROPER_FILES += include/config include/generated          \
 		  .config .config.old .version .old_version \
 		  Module.symvers \
 		  certs/signing_key.pem \
-		  certs/x509.genkey
+		  certs/x509.genkey \
+		  rust/libmacros.so rust/libmacros.dylib \
+		  rust/libpin_init_internal.so rust/libpin_init_internal.dylib
 
 MRPROPER_FILES += .security_config *.sconfig.old Documentation/commands
 
@@ -1630,8 +1745,18 @@ endif
 	@echo  'Documentation targets:'
 	@$(MAKE) -f $(srctree)/Documentation/Makefile dochelp
 	@echo  ''
+	@echo  'Rust targets:'
+	@echo  '  rustavailable   - Checks whether the Rust toolchain is'
+	@echo  '		    available and, if not, explains why.'
+	@echo  '  rustfmt	  - Reformat all the Rust code in barebox'
+	@echo  '  rustfmtcheck	  - Checks if all the Rust code in barebox'
+	@echo  '		    is formatted, printing a diff otherwise.'
+	@echo  '  rust-analyzer	  - Generate rust-project.json rust-analyzer support file'
 	@echo  '		    (requires kernel .config)'
 	@echo  '  dir/file.[os]   - Build specified target only'
+	@echo  '  dir/file.rsi    - Build macro expanded source, similar to C preprocessing.'
+	@echo  '                    Run with RUSTFMT=n to skip reformatting if needed.'
+	@echo  '                    The output is not intended to be compilable.'
 	@echo  '  dir/file.ll     - Build the LLVM assembly file'
 	@echo  ''
 	@$(if $(dtstree), \
@@ -1731,6 +1856,26 @@ default.profdata: $(PROFRAW)
 PHONY += coverage-html
 coverage-html: barebox.coverage_html
 	@echo "HTML coverage generated to $(objtree)/$<"
+
+# Rust targets
+# ---------------------------------------------------------------------------
+
+# "Is Rust available?" target
+PHONY += rustavailable
+rustavailable:
+	+$(Q)$(CONFIG_SHELL) $(srctree)/scripts/rust_is_available.sh && echo "Rust is available!"
+
+# Formatting targets
+PHONY += rustfmt rustfmtcheck
+
+rustfmt:
+	$(Q)find $(srctree) $(RCS_FIND_IGNORE) \
+		-path $(srctree)/rust/vendor -prune -o \
+		-type f -a -name '*.rs' -a ! -name '*generated*' -print \
+		| xargs $(RUSTFMT) $(rustfmt_flags)
+
+rustfmtcheck: rustfmt_flags = --check
+rustfmtcheck: rustfmt
 
 # Misc
 # ---------------------------------------------------------------------------
@@ -1874,6 +2019,14 @@ quiet_cmd_tags = GEN     $@
 
 tags TAGS cscope gtags: FORCE
 	$(call cmd,tags)
+
+# Generate rust-project.json (a file that describes the structure of non-Cargo
+# Rust projects) for rust-analyzer (an implementation of the Language Server
+# Protocol).
+PHONY += rust-analyzer
+rust-analyzer:
+	+$(Q)$(CONFIG_SHELL) $(srctree)/scripts/rust_is_available.sh
+	$(Q)$(MAKE) $(build)=rust $@
 
 # Single targets
 # ---------------------------------------------------------------------------

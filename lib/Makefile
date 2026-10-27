@@ -48,6 +48,7 @@ obj-$(CONFIG_CMDLINE_EDITING)	+= readline.o
 obj-$(CONFIG_SIMPLE_READLINE)	+= readline_simple.o
 obj-$(CONFIG_FNMATCH)		+= fnmatch.o
 obj-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
+obj-y += find_last_bit.o
 obj-$(CONFIG_GLOB)	+= glob.o
 obj-y			+= notifier.o
 obj-y			+= random.o

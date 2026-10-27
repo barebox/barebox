@@ -10,6 +10,7 @@ extern int errno;
 #if IN_PROPER
 void perror(const char *s);
 const char *strerror(int errnum);
+const char *strerror_r(int errnum, char *buf, size_t buflen);
 #else
 static inline void perror(const char *s)
 {
@@ -17,6 +18,10 @@ static inline void perror(const char *s)
 static inline const char *strerror(int errnum)
 {
 	return "unknown error";
+}
+static inline const char *strerror_r(int errnum, char *buf, size_t buflen)
+{
+	return buf ? "unknown error" : NULL;
 }
 #endif
 

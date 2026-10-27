@@ -40,6 +40,7 @@ size_t malloc_usable_size(void *);
 void free(void *);
 void free_sensitive(void *);
 void *realloc(void *, size_t) __realloc_size(2);
+void *aligned_realloc(void *mem, size_t alignment, size_t size) __realloc_size(3);
 void *memalign(size_t, size_t) __alloc_size(2);
 void *calloc(size_t, size_t) __alloc_size(1, 2);
 void malloc_stats(void);
@@ -58,6 +59,10 @@ static inline void free_sensitive(void *buf)
 {
 }
 static inline void *realloc(void *orig, size_t nbytes)
+{
+	return NULL;
+}
+static inline void *aligned_realloc(void *mem, size_t alignment, size_t size)
 {
 	return NULL;
 }

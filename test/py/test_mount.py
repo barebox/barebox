@@ -20,3 +20,17 @@ def test_echo_umount(barebox):
     assert barebox.run_check("cat /tmp/file") == ["test"]
 
     barebox.run_check("umount /tmp")
+
+
+def test_failed_mount_umount(barebox, barebox_config):
+    skip_disabled(barebox_config, "CONFIG_FS_NFS")
+
+    barebox.run_check("mount -t ramfs none /tmp")
+    barebox.run_check("mkdir /tmp/sub")
+
+    # the NFS probe fails at once, as there is no path after the host
+    _, _, ret = barebox.run("mount -t nfs nonsense /tmp/sub")
+    assert ret != 0
+
+    # the failed mount must not have kept /tmp busy
+    barebox.run_check("umount /tmp")

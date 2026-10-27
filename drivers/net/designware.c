@@ -92,7 +92,7 @@ static int mac_reset(struct eth_device *dev)
 
 	start = get_time_ns();
 	while (readl(&dma_p->busmode) & DMAMAC_SRST) {
-		if (is_timeout(start, 10 * MSECOND)) {
+		if (is_timeout(start, 200 * MSECOND)) {
 			dev_err(&priv->netdev.dev, "MAC reset timeout\n");
 			return -EIO;
 		}
@@ -262,7 +262,9 @@ static int dwc_ether_open(struct eth_device *dev)
 	if (ret)
 		return ret;
 
-	dwc_ether_init(dev);
+	ret = dwc_ether_init(dev);
+	if (ret)
+		return ret;
 
 	descs_init(dev);
 

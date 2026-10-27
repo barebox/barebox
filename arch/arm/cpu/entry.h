@@ -7,9 +7,9 @@
 
 struct handoff_data;
 
-void __noreturn barebox_non_pbl_start(unsigned long membase,
-				      unsigned long memsize,
-				      struct handoff_data *hd);
+void __noreturn arm_barebox_non_pbl_start(unsigned long membase,
+					  unsigned long memsize,
+					  struct handoff_data *hd);
 
 void __noreturn barebox_pbl_start(unsigned long membase,
 				  unsigned long memsize,

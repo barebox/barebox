@@ -8,6 +8,7 @@
 #include <io.h>
 #include <malloc.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/err.h>
 #include <linux/math64.h>
 
@@ -22,38 +23,39 @@ static unsigned long clk_fixed_factor_recalc_rate(struct clk_hw *hw,
 	return (unsigned long)rate;
 }
 
-static long clk_factor_round_rate(struct clk_hw *hw, unsigned long rate,
-		unsigned long *prate)
+static int clk_factor_determine_rate(struct clk_hw *hw,
+				     struct clk_rate_request *req)
 {
 	struct clk_fixed_factor *fix = to_clk_fixed_factor(hw);
-	struct clk *clk = clk_hw_to_clk(hw);
 
-	if (clk->flags & CLK_SET_RATE_PARENT) {
+	if (clk_hw_get_flags(hw) & CLK_SET_RATE_PARENT) {
 		unsigned long best_parent;
 
-		best_parent = (rate / fix->mult) * fix->div;
-		*prate = clk_round_rate(clk_get_parent(clk), best_parent);
+		best_parent = (req->rate / fix->mult) * fix->div;
+		req->best_parent_rate = clk_hw_round_rate(
+				clk_hw_get_parent(hw), best_parent);
 	}
 
-	return (*prate / fix->div) * fix->mult;
+	req->rate = (req->best_parent_rate / fix->div) * fix->mult;
+
+	return 0;
 }
 
 static int clk_factor_set_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long parent_rate)
 {
-	struct clk_fixed_factor *fix = to_clk_fixed_factor(hw);
-	struct clk *clk = clk_hw_to_clk(hw);
-
-	if (clk->flags & CLK_SET_RATE_PARENT) {
-		return clk_set_rate(clk_get_parent(clk), rate * fix->div / fix->mult);
-	}
+	/*
+	 * We must report success but we can do so unconditionally because
+	 * clk_factor_determine_rate returns values that ensure this call is a
+	 * nop.
+	 */
 
 	return 0;
 }
 
 struct clk_ops clk_fixed_factor_ops = {
 	.set_rate = clk_factor_set_rate,
-	.round_rate = clk_factor_round_rate,
+	.determine_rate = clk_factor_determine_rate,
 	.recalc_rate = clk_fixed_factor_recalc_rate,
 };
 

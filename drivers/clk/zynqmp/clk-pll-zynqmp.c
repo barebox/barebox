@@ -11,6 +11,7 @@
 
 #include <common.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <mach/zynqmp/firmware-zynqmp.h>
 
 #include "clk-zynqmp.h"
@@ -53,14 +54,15 @@ static inline void zynqmp_pll_set_mode(struct zynqmp_pll *pll, enum pll_mode mod
 	pll->ops->ioctl(0, IOCTL_SET_PLL_FRAC_MODE, pll->clk_id, mode, NULL);
 }
 
-static long zynqmp_pll_round_rate(struct clk_hw *hw, unsigned long rate,
-				  unsigned long *prate)
+static int zynqmp_pll_determine_rate(struct clk_hw *hw,
+				     struct clk_rate_request *req)
 {
 	struct zynqmp_pll *pll = to_zynqmp_pll(hw);
 	u32 fbdiv;
 	long rate_div;
+	unsigned long rate = req->rate;
 
-	rate_div = (rate * FRAC_DIV) / *prate;
+	rate_div = (rate * FRAC_DIV) / req->best_parent_rate;
 	if (rate_div % FRAC_DIV)
 		zynqmp_pll_set_mode(pll, PLL_MODE_FRAC);
 	else
@@ -76,12 +78,14 @@ static long zynqmp_pll_round_rate(struct clk_hw *hw, unsigned long rate,
 			rate = rate * fbdiv;
 		}
 	} else {
-		fbdiv = DIV_ROUND_CLOSEST(rate, *prate);
+		fbdiv = DIV_ROUND_CLOSEST(rate, req->best_parent_rate);
 		fbdiv = clamp_t(u32, fbdiv, PLL_FBDIV_MIN, PLL_FBDIV_MAX);
-		rate = *prate * fbdiv;
+		rate = req->best_parent_rate * fbdiv;
 	}
 
-	return rate;
+	req->rate = rate;
+
+	return 0;
 }
 
 static unsigned long zynqmp_pll_recalc_rate(struct clk_hw *hw,
@@ -175,7 +179,7 @@ static const struct clk_ops zynqmp_pll_ops = {
 	.enable = zynqmp_pll_enable,
 	.disable = zynqmp_pll_disable,
 	.is_enabled = zynqmp_pll_is_enabled,
-	.round_rate = zynqmp_pll_round_rate,
+	.determine_rate = zynqmp_pll_determine_rate,
 	.recalc_rate = zynqmp_pll_recalc_rate,
 	.set_rate = zynqmp_pll_set_rate,
 };

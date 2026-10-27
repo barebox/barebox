@@ -445,10 +445,10 @@ static int fastboot_write_usb(struct fastboot *fb, const char *buffer, unsigned 
 	return 0;
 }
 
-static int rx_bytes_expected(struct f_fastboot *f_fb)
+static unsigned rx_bytes_expected(struct f_fastboot *f_fb)
 {
-	int remaining = f_fb->fastboot.download_size
-		      - f_fb->fastboot.download_bytes;
+	size_t remaining = f_fb->fastboot.download_size
+			 - f_fb->fastboot.download_bytes;
 
 	if (remaining >= EP_BUFFER_SIZE)
 		return EP_BUFFER_SIZE;

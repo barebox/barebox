@@ -92,11 +92,6 @@ RUN korg_crosstool_dl() { wget -nv -O - https://mirrors.edge.kernel.org/pub/tool
     korg_crosstool_dl x86_64 ${GCC_VERSION} powerpc-linux     && \
     korg_crosstool_dl x86_64 ${GCC_VERSION} riscv64-linux
 
-RUN tgz_checksum_dl() { set -e; wget -nv -O archive.tgz "$1"; \
-                        echo "$2 archive.tgz" | sha256sum --check --status; tar -C /opt -xzf archive.tgz; rm archive.tgz; } && \
-    tgz_checksum_dl https://github.com/kalray/build-scripts/releases/download/v5.2.0/gcc-kalray-kvx-ubuntu-22.04-v5.2.0.tar.gz \
-		    f59964cac188f1e5a8f628d0abef68e3b6ceebdae18dff51625472329fe6ec40
-
 # Create our user/group
 RUN useradd -m -U barebox
 RUN echo barebox ALL=NOPASSWD: ALL > /etc/sudoers.d/barebox
@@ -112,8 +107,6 @@ ENV CROSS_COMPILE_mips=/opt/gcc-${GCC_VERSION}-nolibc/mips-linux/bin/mips-linux-
 ENV CROSS_COMPILE_openrisc=/opt/gcc-${GCC_VERSION}-nolibc/or1k-linux/bin/or1k-linux-
 ENV CROSS_COMPILE_powerpc=/opt/gcc-${GCC_VERSION}-nolibc/powerpc-linux/bin/powerpc-linux-
 ENV CROSS_COMPILE_riscv=/opt/gcc-${GCC_VERSION}-nolibc/riscv64-linux/bin/riscv64-linux-
-ENV CROSS_COMPILE_kvx=/opt/gcc-kalray-kvx-v5.2.0/bin/kvx-elf-
-
 ENV LLVM_SUFFIX=-${LLVM_VERSION}
 # Workaround for https://github.com/llvm/llvm-project/issues/112458
 RUN ln -Ts /usr/lib/llvm-${LLVM_VERSION}/lib/clang/${LLVM_VERSION}/lib/linux/ \

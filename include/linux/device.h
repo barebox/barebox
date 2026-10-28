@@ -101,6 +101,44 @@ static inline unsigned long *devm_bitmap_zalloc(struct device *dev,
 			    gfp);
 }
 
+/**
+ * devm_add_action() - add a custom action to the managed resources
+ * @dev: device that owns the action
+ * @action: function to call when the device is unbound, unregistered
+ *          or shut down
+ * @data: argument to pass to @action
+ *
+ * Actions run in reverse order of registration, interleaved with the
+ * freeing of managed memory.
+ *
+ * Return: 0 on success, -ENOMEM if the action could not be registered.
+ */
+int devm_add_action(struct device *dev, void (*action)(void *), void *data);
+
+/**
+ * devm_add_action_or_reset() - add a custom action, running it on failure
+ * @dev: device that owns the action
+ * @action: function to call when the device is unbound, unregistered
+ *          or shut down
+ * @data: argument to pass to @action
+ *
+ * Like devm_add_action(), but @action is called right away if it could
+ * not be registered.
+ *
+ * Return: 0 on success, -ENOMEM if the action could not be registered.
+ */
+static inline int devm_add_action_or_reset(struct device *dev,
+					   void (*action)(void *), void *data)
+{
+	int ret;
+
+	ret = devm_add_action(dev, action, data);
+	if (ret)
+		action(data);
+
+	return ret;
+}
+
 #define device_register register_device
 #define device_unregister unregister_device
 

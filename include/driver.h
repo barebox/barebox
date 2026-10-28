@@ -112,6 +112,7 @@ void free_device_res(struct device *dev);
 void free_device(struct device *dev);
 
 void devres_release_all(struct device *dev);
+void devres_run_actions(struct device *dev);
 
 static inline void device_rescan(struct device *dev)
 {

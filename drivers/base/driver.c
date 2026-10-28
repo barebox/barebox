@@ -723,6 +723,7 @@ static void devices_shutdown(void)
 			pr_report_probe("%*sremove-> %s\n", 1 * 4, "", dev_name(dev));
 			remove(dev);
 		}
+		devres_run_actions(dev);
 		dev->driver = NULL;
 	}
 }

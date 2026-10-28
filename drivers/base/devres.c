@@ -36,6 +36,18 @@ void devres_release_all(struct device *dev)
 	dev->devres = NULL;
 }
 
+/**
+ * devres_run_actions() - run the managed actions of a device
+ * @dev: device that is shut down
+ *
+ * Like devres_release_all(), but keeps the managed memory, which may
+ * still be referenced after shutdown.
+ */
+void devres_run_actions(struct device *dev)
+{
+	talloc_run_destructors(dev->devres);
+}
+
 /*
  * Memory must be DMA-safe like kmalloc()'s, so align it within the chunk
  * and store the chunk pointer in front of it for devm_kfree().
@@ -145,3 +157,14 @@ char *devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt, ...)
 	return p;
 }
 EXPORT_SYMBOL(devm_kasprintf);
+
+int devm_add_action(struct device *dev, void (*action)(void *), void *data)
+{
+	void *ctx = devres_ctx(dev);
+
+	if (!ctx)
+		return -ENOMEM;
+
+	return talloc_add_destructor(ctx, action, data);
+}
+EXPORT_SYMBOL(devm_add_action);

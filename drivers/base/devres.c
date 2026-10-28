@@ -7,6 +7,7 @@
 
 #include <barebox.h>
 #include <driver.h>
+#include <io.h>
 #include <dma.h>
 #include <talloc.h>
 #include <xfuncs.h>
@@ -204,3 +205,34 @@ struct resource *devm_request_mem_resource(struct device *dev, int num)
 	return res;
 }
 EXPORT_SYMBOL(devm_request_mem_resource);
+
+/**
+ * dev_platform_ioremap_resource() - request and map resource 'num' for a device
+ * @dev: device to request the memory resource for
+ * @num: index of the memory resource
+ *
+ * barebox maps everything outside the RAM banks suitably for MMIO, so this
+ * only requests the device-managed region.
+ *
+ * Return: a pointer to the registers or an ERR_PTR() on failure.
+ */
+void __iomem *dev_platform_ioremap_resource(struct device *dev, int num)
+{
+	struct resource *res;
+
+	res = devm_request_mem_resource(dev, num);
+	if (IS_ERR(res))
+		return IOMEM_ERR_PTR(PTR_ERR(res));
+
+	/* As everything is mapped 1:1 by default, drivers on unlucky
+	 * platforms can end up successfully requesting memory, but
+	 * getting a base address that looks like an error pointer.
+	 * Let's warn loudly about this case, as these drivers
+	 * should be using devm_request_mem_resource instead.
+	 */
+	if (WARN_ON(IS_ERR_VALUE(res->start)))
+		return IOMEM_ERR_PTR(-EINVAL);
+
+	return IOMEM(res->start);
+}
+EXPORT_SYMBOL(dev_platform_ioremap_resource);

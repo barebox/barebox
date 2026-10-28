@@ -27,6 +27,61 @@ char *devm_kvasprintf(struct device *dev, gfp_t gfp, const char *fmt,
 char *devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt, ...)
 	__printf(3, 4);
 
+/**
+ * __devm_alloc_objs - Device-managed allocation of objects of a given type
+ * @DEVM_ALLOC: which device-managed size-based allocator to use.
+ * @DEV: device to scope the allocation lifetime to.
+ * @GFP: GFP flags for the allocation.
+ * @TYPE: type to allocate space for.
+ * @COUNT: how many @TYPE objects to allocate.
+ *
+ * Device-managed counterpart of __alloc_objs().
+ * @DEVM_ALLOC takes (@DEV, size, gfp).
+ *
+ * Returns: Newly allocated pointer to (first) @TYPE of @COUNT-many allocated
+ * @TYPE objects.
+ */
+#define __devm_alloc_objs(DEVM_ALLOC, DEV, GFP, TYPE, COUNT)		\
+({									\
+	const size_t __obj_size = size_mul(sizeof(TYPE), COUNT);	\
+	(TYPE *)DEVM_ALLOC(DEV, __obj_size, GFP);			\
+})
+
+/**
+ * devm_kmalloc_obj - Device-managed allocation of a single typed object
+ * @DEV: Device to scope the allocation lifetime to.
+ * @VAR_OR_TYPE: Variable or type to allocate.
+ * @GFP: Optional GFP flags (defaults to %GFP_KERNEL).
+ *
+ * Device-managed counterpart of kmalloc_obj(): the allocation is sized from
+ * @VAR_OR_TYPE and returned as a pointer to that type, not void *.
+ *
+ * Returns: newly allocated pointer to a @VAR_OR_TYPE.
+ */
+#define devm_kmalloc_obj(DEV, VAR_OR_TYPE, ...)				\
+	__devm_alloc_objs(devm_kmalloc, DEV, default_gfp(__VA_ARGS__),	\
+			  typeof(VAR_OR_TYPE), 1)
+
+/**
+ * devm_kmalloc_objs - Device-managed allocation of an array of a typed object
+ * @DEV: Device to scope the allocation lifetime to.
+ * @VAR_OR_TYPE: Variable or type to allocate an array of.
+ * @COUNT: How many elements in the array.
+ * @GFP: Optional GFP flags (defaults to %GFP_KERNEL).
+ *
+ * Returns: newly allocated pointer to an array of @VAR_OR_TYPE.
+ */
+#define devm_kmalloc_objs(DEV, VAR_OR_TYPE, COUNT, ...) \
+	__devm_alloc_objs(devm_kmalloc, DEV, default_gfp(__VA_ARGS__), \
+			  typeof(VAR_OR_TYPE), COUNT)
+
+/* All devm_kzalloc aliases for devm_kmalloc_(obj|objs). */
+#define devm_kzalloc_obj(DEV, P, ...) \
+	__devm_alloc_objs(devm_kzalloc, DEV, default_gfp(__VA_ARGS__), typeof(P), 1)
+#define devm_kzalloc_objs(DEV, P, COUNT, ...) \
+	__devm_alloc_objs(devm_kzalloc, DEV, default_gfp(__VA_ARGS__), \
+			  typeof(P), COUNT)
+
 static inline void *devm_kmalloc_array(struct device *dev, size_t n,
 				       size_t size, gfp_t gfp)
 {

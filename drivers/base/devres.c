@@ -207,7 +207,7 @@ struct resource *devm_request_mem_resource(struct device *dev, int num)
 EXPORT_SYMBOL(devm_request_mem_resource);
 
 /**
- * dev_platform_ioremap_resource() - request and map resource 'num' for a device
+ * devm_platform_ioremap_resource() - request and map resource 'num' for a device
  * @dev: device to request the memory resource for
  * @num: index of the memory resource
  *
@@ -216,7 +216,7 @@ EXPORT_SYMBOL(devm_request_mem_resource);
  *
  * Return: a pointer to the registers or an ERR_PTR() on failure.
  */
-void __iomem *dev_platform_ioremap_resource(struct device *dev, int num)
+void __iomem *devm_platform_ioremap_resource(struct device *dev, int num)
 {
 	struct resource *res;
 
@@ -235,4 +235,4 @@ void __iomem *dev_platform_ioremap_resource(struct device *dev, int num)
 
 	return IOMEM(res->start);
 }
-EXPORT_SYMBOL(dev_platform_ioremap_resource);
+EXPORT_SYMBOL(devm_platform_ioremap_resource);

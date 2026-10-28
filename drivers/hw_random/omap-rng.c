@@ -373,7 +373,7 @@ static int omap_rng_probe(struct device *dev)
 	dev->priv = priv;
 	priv->dev = dev;
 
-	priv->base = dev_platform_ioremap_resource(dev, 0);
+	priv->base = devm_platform_ioremap_resource(dev, 0);
 	if (IS_ERR(priv->base)) {
 		ret = PTR_ERR(priv->base);
 		goto err_ioremap;

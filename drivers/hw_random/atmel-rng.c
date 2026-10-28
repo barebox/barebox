@@ -106,7 +106,7 @@ static int atmel_trng_probe(struct device *dev)
 	if (!trng)
 		return -ENOMEM;
 
-	trng->base = dev_platform_ioremap_resource(dev, 0);
+	trng->base = devm_platform_ioremap_resource(dev, 0);
 	if (IS_ERR(trng->base))
 		return PTR_ERR(trng->base);
 

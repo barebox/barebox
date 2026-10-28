@@ -169,7 +169,7 @@ static int iproc_rng200_probe(struct device *dev)
 		return -ENOMEM;
 
 	/* Map peripheral */
-	priv->base = dev_platform_ioremap_resource(dev, 0);
+	priv->base = devm_platform_ioremap_resource(dev, 0);
 	if (IS_ERR(priv->base)) {
 		dev_err(dev, "failed to remap rng regs\n");
 		return PTR_ERR(priv->base);

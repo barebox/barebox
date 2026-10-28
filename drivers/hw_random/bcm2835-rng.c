@@ -146,7 +146,7 @@ static int bcm2835_rng_probe(struct device *dev)
 		return -ENOMEM;
 
 	/* map peripheral */
-	priv->base = dev_platform_ioremap_resource(dev, 0);
+	priv->base = devm_platform_ioremap_resource(dev, 0);
 	if (IS_ERR(priv->base))
 		return PTR_ERR(priv->base);
 

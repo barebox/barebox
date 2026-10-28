@@ -261,7 +261,7 @@ static int rockchip_pwm_probe(struct device *dev)
 	if (!pc)
 		return -ENOMEM;
 
-	pc->base = dev_platform_ioremap_resource(dev, 0);
+	pc->base = devm_platform_ioremap_resource(dev, 0);
 	if (IS_ERR(pc->base))
 		return PTR_ERR(pc->base);
 

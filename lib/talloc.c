@@ -34,7 +34,6 @@
 #include <asm/sections.h>
 #include "talloc.h"
 
-// TODO difference between set_parent and steal?
 // TODO use a bit from TLSF for extra safety to differentiate talloc
 // TODO allow leaf nodes (that have no children to be destructors!!)
 #define  is_root(hdr) (!(hdr)->prev)
@@ -69,7 +68,7 @@ static void *talloc_ctx_init(struct talloc *hdr, const void *parent)
 	memset(hdr, 0, sizeof(*hdr));
 
 	mem = hdr2mem(hdr);
-	talloc_steal(parent, mem);
+	mem_set_parent(hdr, mem2hdr(parent));
 	return mem;
 }
 
@@ -261,7 +260,7 @@ void talloc_free(void *mem)
 	if (ZERO_OR_NULL_PTR(mem))
 		return;
 
-	talloc_steal(NULL, mem);
+	mem_set_parent(hdr, NULL);
 
 	__tfree(hdr->child);
 
@@ -334,68 +333,6 @@ void mem_set_parent(struct talloc *hdr, struct talloc *parent_hdr)
 	}
 }
 EXPORT_SYMBOL(mem_set_parent);
-
-/**
- * talloc_steal() - Reparent talloc'ed memory chunk
- *
- * @parent: pointer to previously talloc'ed memory chunk from which this
- *          chunk depends, or NULL.
- * @mem: pointer to previously talloc'ed memory chunk.
- *
- * Change the parent of a talloc'ed memory chunk. This will affect the
- * dependencies of the entire subtree rooted at the given chunk.
- */
-void talloc_steal(const void *parent, void *mem)
-{
-	struct talloc *hdr = mem2hdr(mem);
-	struct talloc *parent_hdr = mem2hdr(parent);
-
-	mem_set_parent(hdr, parent_hdr);
-}
-EXPORT_SYMBOL(talloc_steal);
-
-/**
- * talloc_steal_children() - Remove a talloc'ed memory chunk from the dependency tree
- *
- * @parent: pointer to previously talloc'ed memory chunk from which this
- *          chunk's children will depend, or NULL.
- * @mem: pointer to previously talloc'ed memory chunk.
- *
- * Removing a talloc'ed memory chunk from the dependency tree takes care of its
- * children (they will depend on the specified parent).
- */
-void talloc_steal_children(const void *parent, void *mem)
-{
-	struct talloc *hdr = mem2hdr(mem);
-	struct talloc *parent_hdr = mem2hdr(parent);
-
-	if (ZERO_OR_NULL_PTR(hdr))
-		return;
-
-	talloc_steal(NULL, mem);
-
-	if (!hdr->child)
-		return;
-
-	if (parent_hdr) {
-		/* Insert mem children in front of the list of parent children. */
-		if (parent_hdr->child) {
-			struct talloc *last = hdr->child;
-
-			while (last->next)
-				last = last->next;
-
-			parent_hdr->child->prev = last;
-			last->next = parent_hdr->child;
-		}
-
-		parent_hdr->child = hdr->child;
-	}
-
-	hdr->child->parent = parent_hdr;
-	hdr->child = NULL;
-}
-EXPORT_SYMBOL(talloc_steal_children);
 
 size_t talloc_total_blocks(const void *mem)
 {

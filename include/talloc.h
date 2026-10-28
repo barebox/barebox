@@ -35,8 +35,6 @@ const char *talloc_strdup_const(const void *parent, const char *str);
 void talloc_free_const(const void *ptr);
 
 void *talloc_parent(const void *mem);
-void talloc_steal(const void *parent, void *mem);
-void talloc_steal_children(const void *parent, void *mem);
 
 size_t talloc_total_blocks(const void *mem);
 

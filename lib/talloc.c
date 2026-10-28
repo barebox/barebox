@@ -320,6 +320,58 @@ int talloc_add_destructor(const void *parent, void (*fn)(void *), void *data)
 }
 EXPORT_SYMBOL(talloc_add_destructor);
 
+/*
+ * Like __talloc_free(), but children are parked in @kept instead of being
+ * freed. @hdr and @kept are marked, so destructors can't free them.
+ */
+static void talloc_run_child_destructors(struct talloc *hdr)
+{
+	struct talloc kept = {};
+
+	kept.next = &kept;
+	hdr->next = hdr;
+
+	while (hdr->child) {
+		struct talloc *child = hdr->child;
+
+		if (is_destructor(child)) {
+			__talloc_free(child);
+			continue;
+		}
+
+		mem_set_parent(child, NULL);
+		talloc_run_child_destructors(child);
+		mem_set_parent(child, &kept);
+	}
+
+	while (kept.child)
+		mem_set_parent(kept.child, hdr);
+}
+
+/**
+ * talloc_run_destructors() - Run destructors without freeing any memory
+ *
+ * @mem: pointer to previously talloc'ed memory chunk without parent.
+ *
+ * Runs the destructors of @mem and its descendants in the order
+ * talloc_free() would and drops them, but keeps all chunks.
+ */
+void talloc_run_destructors(void *mem)
+{
+	struct talloc *hdr = mem2hdr(mem);
+
+	if (ZERO_OR_NULL_PTR(mem) || is_freeing(hdr))
+		return;
+
+	/* A destructor could free the parent and @mem along with it */
+	if (WARN_ON(!is_root(hdr)))
+		return;
+
+	talloc_run_child_destructors(hdr);
+	hdr->next = NULL;
+}
+EXPORT_SYMBOL(talloc_run_destructors);
+
 /**
  * talloc_free_const() - call talloc_free, unless read/only memory
  *

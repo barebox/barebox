@@ -6,6 +6,7 @@ obj-$(CONFIG_SELFTEST_RANGE) += range.o
 obj-$(CONFIG_SELFTEST_MALLOC) += malloc.o
 obj-$(CONFIG_SELFTEST_CLEANUP) += cleanup.o
 obj-$(CONFIG_SELFTEST_TALLOC) += talloc.o
+obj-$(CONFIG_SELFTEST_DEVRES) += devres.o
 obj-$(CONFIG_SELFTEST_PRINTF) += printf.o
 CFLAGS_printf.o += -Wno-format-security -Wno-format
 obj-$(CONFIG_SELFTEST_PROGRESS_NOTIFIER) += progress-notifier.o

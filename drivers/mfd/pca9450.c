@@ -100,21 +100,19 @@ static int __init pca9450_probe(struct device *dev)
 	pca9450->type = (enum pca9450_chip_type)(uintptr_t)device_get_match_data(dev);
 
 	regmap = regmap_init_i2c(to_i2c_client(dev), &pca9450_regmap_i2c_config);
-	if (IS_ERR(regmap)) {
-		ret = PTR_ERR(regmap);
-		goto free;
-	}
+	if (IS_ERR(regmap))
+		return PTR_ERR(regmap);
 
 	pca9450->regmap = regmap;
 
 	ret = regmap_register_cdev(regmap, NULL);
 	if (ret)
-		goto free;
+		return ret;
 
 	ret = regmap_read(regmap, PCA9450_REG_DEV_ID, &reg);
 	if (ret) {
 		dev_err(dev, "Unable to read PMIC Chip ID\n");
-		goto free;
+		return ret;
 	}
 
 	/* Chip ID defined in bits [7:4] */
@@ -138,15 +136,7 @@ static int __init pca9450_probe(struct device *dev)
 
 	pca9450_get_reset_source(dev, regmap);
 
-	ret = mfd_add_devices(dev, pca9450_cells, ARRAY_SIZE(pca9450_cells));
-	if (ret)
-		goto free;
-
-	return 0;
-
-free:
-	free(pca9450);
-	return ret;
+	return mfd_add_devices(dev, pca9450_cells, ARRAY_SIZE(pca9450_cells));
 }
 
 static __maybe_unused struct of_device_id pca9450_dt_ids[] = {

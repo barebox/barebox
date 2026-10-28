@@ -156,7 +156,7 @@ static int stm32_serial_probe(struct device *dev)
 	stm32 = xzalloc(sizeof(*stm32));
 	cdev = &stm32->cdev;
 
-	res = dev_request_mem_resource(dev, 0);
+	res = devm_request_mem_resource(dev, 0);
 	if (IS_ERR(res)) {
 		ret = PTR_ERR(res);
 		goto err_free;
@@ -171,7 +171,7 @@ static int stm32_serial_probe(struct device *dev)
 	if (IS_ERR(stm32->clk)) {
 		ret = dev_err_probe(dev, PTR_ERR(stm32->clk),
 				    "Failed to get/enable UART clock\n");
-		goto io_release;
+		goto err_free;
 	}
 
 	cdev->dev    = dev;
@@ -197,8 +197,6 @@ static int stm32_serial_probe(struct device *dev)
 		return 0;
 
 	clk_put(stm32->clk);
-io_release:
-	release_region(res);
 err_free:
 	free(stm32);
 

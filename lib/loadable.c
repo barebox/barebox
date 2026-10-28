@@ -133,9 +133,26 @@ out:
 static ssize_t __loadable_extract_into_sdram(struct loadable *l,
 					     unsigned long *adr,
 					     unsigned long *size,
-					     unsigned long end)
+					     unsigned long end,
+					     loadable_fixup_adr_t fixup_adr)
 {
-	ssize_t nbyts = loadable_extract_into_buf_full(l, (void *)*adr, *size);
+	ssize_t nbyts;
+
+	if (fixup_adr) {
+		unsigned long new_adr = fixup_adr(l, *adr);
+		unsigned long gap = new_adr - *adr;
+
+		if (WARN_ON(new_adr < *adr))
+			return -EINVAL;
+		if (gap > *size)
+			return -EBUSY;
+
+		memset((void *)*adr, 0, gap);
+		*adr = new_adr;
+		*size -= gap;
+	}
+
+	nbyts = loadable_extract_into_buf_full(l, (void *)*adr, *size);
 	if (nbyts < 0)
 		return nbyts;
 
@@ -153,16 +170,19 @@ static ssize_t __loadable_extract_into_sdram(struct loadable *l,
  * @main: main loadable with optional chained loadables
  * @adr: start address of the SDRAM region
  * @end: end address of the SDRAM region (inclusive)
+ * @fixup_adr: optional callback returning the address to extract a chained
+ *	       loadable to, given the address right after its predecessor
  *
  * Extracts the main loadable and all chained loadables into a contiguous SDRAM
  * region. Registers the region with the appropriate memory type based on
- * the loadable type.
+ * the loadable type. Gaps inserted by @fixup_adr are zero-filled.
  *
  * Return: SDRAM resource on success, or error pointer on failure
  */
 struct resource *loadable_extract_into_sdram_all(struct loadable *main,
 						 unsigned long adr,
-						 unsigned long end)
+						 unsigned long end,
+						 loadable_fixup_adr_t fixup_adr)
 {
 	struct loadable *lc;
 	unsigned long adr_orig = adr;
@@ -187,12 +207,13 @@ struct resource *loadable_extract_into_sdram_all(struct loadable *main,
 	if (!res)
 		return ERR_PTR(-EBUSY);
 
-	ret = __loadable_extract_into_sdram(main, &adr, &size, end);
+	ret = __loadable_extract_into_sdram(main, &adr, &size, end, NULL);
 	if (ret < 0)
 		goto err;
 
 	list_for_each_entry(lc, &main->chained_loadables, list) {
-		ret = __loadable_extract_into_sdram(lc, &adr, &size, end);
+		ret = __loadable_extract_into_sdram(lc, &adr, &size, end,
+						    fixup_adr);
 		if (ret < 0)
 			goto err;
 	}

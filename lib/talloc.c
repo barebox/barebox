@@ -229,22 +229,18 @@ void *talloc_realloc_size(const void *parent, void *mem, size_t size)
 EXPORT_SYMBOL(talloc_realloc_size);
 
 /**
- * __tfree() - Deallocate all the descendants of given parent recursively.
+ * __talloc_free() - Deallocate a memory chunk and all its descendants.
  *
  * @hdr: pointer to previously talloc'ed memory chunk.
  */
-static void __tfree(struct talloc *hdr)
+static void __talloc_free(struct talloc *hdr)
 {
-	if (ZERO_OR_NULL_PTR(hdr))
-		return;
+	/* Unlink first so cycles terminate */
+	mem_set_parent(hdr, NULL);
 
-	/* Fail if the tree hierarchy has cycles. */
+	while (hdr->child)
+		__talloc_free(hdr->child);
 
-	ASSERT(hdr->prev);
-	hdr->prev = NULL;
-
-	__tfree(hdr->child);
-	__tfree(hdr->next);
 	free(hdr);
 }
 
@@ -260,11 +256,7 @@ void talloc_free(void *mem)
 	if (ZERO_OR_NULL_PTR(mem))
 		return;
 
-	mem_set_parent(hdr, NULL);
-
-	__tfree(hdr->child);
-
-	free(hdr);
+	__talloc_free(hdr);
 }
 EXPORT_SYMBOL(talloc_free);
 

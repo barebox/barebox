@@ -207,16 +207,18 @@ struct resource *devm_request_mem_resource(struct device *dev, int num)
 EXPORT_SYMBOL(devm_request_mem_resource);
 
 /**
- * devm_platform_ioremap_resource() - request and map resource 'num' for a device
+ * devm_platform_get_and_ioremap_resource() - request and map resource 'num'
  * @dev: device to request the memory resource for
  * @num: index of the memory resource
+ * @out_res: where to store the requested resource, may be NULL
  *
  * barebox maps everything outside the RAM banks suitably for MMIO, so this
  * only requests the device-managed region.
  *
  * Return: a pointer to the registers or an ERR_PTR() on failure.
  */
-void __iomem *devm_platform_ioremap_resource(struct device *dev, int num)
+void __iomem *devm_platform_get_and_ioremap_resource(struct device *dev, int num,
+						     struct resource **out_res)
 {
 	struct resource *res;
 
@@ -233,6 +235,25 @@ void __iomem *devm_platform_ioremap_resource(struct device *dev, int num)
 	if (WARN_ON(IS_ERR_VALUE(res->start)))
 		return IOMEM_ERR_PTR(-EINVAL);
 
+	if (out_res)
+		*out_res = res;
+
 	return IOMEM(res->start);
+}
+EXPORT_SYMBOL(devm_platform_get_and_ioremap_resource);
+
+/**
+ * devm_platform_ioremap_resource() - request and map resource 'num' for a device
+ * @dev: device to request the memory resource for
+ * @num: index of the memory resource
+ *
+ * Like devm_platform_get_and_ioremap_resource(), but without handing the
+ * resource out.
+ *
+ * Return: a pointer to the registers or an ERR_PTR() on failure.
+ */
+void __iomem *devm_platform_ioremap_resource(struct device *dev, int num)
+{
+	return devm_platform_get_and_ioremap_resource(dev, num, NULL);
 }
 EXPORT_SYMBOL(devm_platform_ioremap_resource);

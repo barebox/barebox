@@ -35,7 +35,7 @@ static int atmel_flexcom_probe(struct device *dev)
 	if (opmode < ATMEL_FLEXCOM_MODE_USART || opmode > ATMEL_FLEXCOM_MODE_TWI)
 		return -EINVAL;
 
-	base = dev_platform_get_and_ioremap_resource(dev, 0, NULL);
+	base = devm_platform_get_and_ioremap_resource(dev, 0, NULL);
 	if (IS_ERR(base))
 		return dev_err_probe(dev, PTR_ERR(base), "Could not get memory region\n");
 

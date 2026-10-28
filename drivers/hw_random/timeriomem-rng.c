@@ -93,7 +93,7 @@ static int timeriomem_rng_probe(struct device *dev)
 	if (!priv)
 		return -ENOMEM;
 
-	priv->io_base = dev_platform_get_and_ioremap_resource(dev, 0, &res);
+	priv->io_base = devm_platform_get_and_ioremap_resource(dev, 0, &res);
 	if (IS_ERR(priv->io_base))
 		return PTR_ERR(priv->io_base);
 

@@ -246,8 +246,13 @@ const void *loadable_mmap(struct loadable *l, size_t *size);
 const void *loadable_view(struct loadable *l, size_t *size);
 void loadable_view_free(struct loadable *l, const void *buf, size_t size);
 void loadable_munmap(struct loadable *l, const void *, size_t size);
+
+typedef unsigned long (*loadable_fixup_adr_t)(struct loadable *l,
+					      unsigned long adr);
+
 struct resource *loadable_extract_into_sdram_all(struct loadable *l, unsigned long adr,
-						 unsigned long end);
+						 unsigned long end,
+						 loadable_fixup_adr_t fixup_adr);
 
 void loadable_release(struct loadable **l);
 

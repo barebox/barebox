@@ -65,7 +65,7 @@ static int do_devunbind(int argc, char *argv[])
 		}
 
 		dev->driver = NULL;
-		list_del(&dev->active);
+		list_del_init(&dev->active);
 	}
 
 	return ret;

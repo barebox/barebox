@@ -31,6 +31,7 @@ void *talloc_realloc_size(const void *parent, void *mem, size_t size);
 void talloc_free(void *mem);
 
 int talloc_add_destructor(const void *parent, void (*fn)(void *), void *data);
+void talloc_run_destructors(void *mem);
 
 char *talloc_strdup(const void *parent, const char *str);
 const char *talloc_strdup_const(const void *parent, const char *str);

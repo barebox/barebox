@@ -172,6 +172,13 @@ static void other_free_destructor(void *data)
 	talloc_free(other_to_free);
 }
 
+static void other_parent_free_destructor(void *data)
+{
+	log_destructor(data);
+	/* Must do nothing, other_to_free is parked while we run */
+	talloc_free(talloc_parent(other_to_free));
+}
+
 /* Chunk holding @c, with a destructor that is passed the chunk */
 static void *talloc_char(const void *parent, char c, void (*fn)(void *))
 {
@@ -265,6 +272,81 @@ static void talloc_destructor_tests(void)
 	talloc_free(root);
 }
 
+static void talloc_run_destructors_tests(void)
+{
+	void *root, *a, *b, *c, *d, *x;
+
+	root = talloc_new(NULL);
+
+	/* Same order as talloc_free(), but everything stays */
+	reset_destructor_log();
+	a = talloc_char(root, 'a', log_destructor);
+	b = talloc_char(a, 'b', log_destructor);
+	selftest_check(talloc_add_destructor(a, log_destructor, "1") == 0);
+	c = talloc_char(a, 'c', log_destructor);
+	d = talloc_char(c, 'd', log_destructor);
+	if (!a || !b || !c || !d)
+		return;
+
+	talloc_run_destructors(root);
+	selftest_check(!strcmp(destructor_log, "dc1ba"));
+	selftest_check(talloc_parent(a) == root);
+	selftest_check(talloc_parent(b) == a && talloc_parent(c) == a);
+	selftest_check(talloc_parent(d) == c && *(char *)d == 'd');
+	selftest_check(talloc_total_blocks(a) == 3);
+
+	/* Destructors that ran are gone, new ones run */
+	selftest_check(talloc_add_destructor(c, log_destructor, "2") == 0);
+	talloc_run_destructors(root);
+	talloc_free(a);
+	selftest_check(!strcmp(destructor_log, "dc1ba2"));
+
+	/* Chunks being walked can't be freed from destructors */
+	reset_destructor_log();
+	a = talloc_char(root, 'a', log_destructor);
+	b = talloc_char(a, 'b', self_free_destructor);
+	c = talloc_char(b, 'c', other_free_destructor);
+	other_to_free = a;
+	talloc_run_destructors(root);
+	selftest_check(!strcmp(destructor_log, "cba"));
+	selftest_check(talloc_parent(c) == b && talloc_parent(b) == a);
+	selftest_check(talloc_parent(a) == root);
+	talloc_free(a);
+
+	/* Nor the parent of a chunk that was walked already */
+	reset_destructor_log();
+	a = talloc_char(root, 'a', log_destructor);
+	c = talloc_char(a, 'c', other_parent_free_destructor);
+	other_to_free = talloc_char(a, 'b', log_destructor);
+	talloc_run_destructors(root);
+	selftest_check(!strcmp(destructor_log, "bca"));
+	selftest_check(talloc_parent(other_to_free) == a && talloc_parent(c) == a);
+	talloc_free(a);
+
+	/* Other chunks can, even siblings that are still to be walked */
+	reset_destructor_log();
+	a = talloc_char(root, 'a', log_destructor);
+	other_to_free = talloc_char(a, 'b', log_destructor);
+	c = talloc_char(a, 'c', other_free_destructor);
+	talloc_run_destructors(root);
+	selftest_check(!strcmp(destructor_log, "cba"));
+	selftest_check(talloc_total_blocks(a) == 2 && *(char *)c == 'c');
+	talloc_free(a);
+
+	selftest_check(talloc_total_blocks(root) == 1);
+	talloc_free(root);
+
+	/* @mem can't be freed from its destructors and is usable after */
+	reset_destructor_log();
+	x = talloc_char(NULL, 'x', self_free_destructor);
+	talloc_run_destructors(x);
+	selftest_check(!strcmp(destructor_log, "x"));
+	selftest_check(*(char *)x == 'x' && !talloc_parent(x));
+	selftest_check(talloc_add_destructor(x, log_destructor, "X") == 0);
+	talloc_free(x);
+	selftest_check(!strcmp(destructor_log, "xX"));
+}
+
 static void test_talloc(void)
 {
 	talloc_basic_tests();
@@ -272,5 +354,6 @@ static void test_talloc(void)
 	talloc_stress_tests();
 	talloc_corner_cases();
 	talloc_destructor_tests();
+	talloc_run_destructors_tests();
 }
 bselftest(core, test_talloc);

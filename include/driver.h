@@ -193,6 +193,9 @@ struct resource *dev_request_mem_resource(struct device *dev, int num);
 struct resource *dev_request_mem_resource_by_name(struct device *dev,
 						  const char *name);
 
+/* Like dev_request_mem_resource(), but released when the device goes away */
+struct resource *devm_request_mem_resource(struct device *dev, int num);
+
 void __iomem *dev_platform_get_and_ioremap_resource(struct device *dev,
 						    int num,
 						    struct resource **out_res);

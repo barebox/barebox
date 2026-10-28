@@ -5,6 +5,7 @@
  * Managed resources are children of a per-device talloc context.
  */
 
+#include <barebox.h>
 #include <driver.h>
 #include <dma.h>
 #include <talloc.h>
@@ -168,3 +169,38 @@ int devm_add_action(struct device *dev, void (*action)(void *), void *data)
 	return talloc_add_destructor(ctx, action, data);
 }
 EXPORT_SYMBOL(devm_add_action);
+
+static void devm_region_release(void *res)
+{
+	/* No need to release regions when shutting down */
+	if (barebox_system_state == BAREBOX_EXITING)
+		return;
+
+	release_region(res);
+}
+
+/**
+ * devm_request_mem_resource() - exclusively request resource 'num' for a device
+ * @dev: device to request the memory resource for
+ * @num: index of the memory resource
+ *
+ * Like dev_request_mem_resource(), but device-managed.
+ *
+ * Return: the requested resource or an ERR_PTR() on failure.
+ */
+struct resource *devm_request_mem_resource(struct device *dev, int num)
+{
+	struct resource *res;
+	int ret;
+
+	res = dev_request_mem_resource(dev, num);
+	if (IS_ERR(res))
+		return res;
+
+	ret = devm_add_action_or_reset(dev, devm_region_release, res);
+	if (ret)
+		return ERR_PTR(ret);
+
+	return res;
+}
+EXPORT_SYMBOL(devm_request_mem_resource);

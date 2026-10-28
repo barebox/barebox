@@ -8,6 +8,7 @@
 #include <linux/bitmap.h>
 #include <driver.h>
 #include <linux/device.h>
+#include <linux/sizes.h>
 
 BSELFTEST_GLOBALS();
 
@@ -133,6 +134,42 @@ static void test_devres_shutdown(void)
 	/* Releasing doesn't run them again */
 	unregister_device(dev);
 	selftest_check(!strcmp(action_log, "ba"));
+	free_device(dev);
+}
+
+static void test_devres_region(void)
+{
+	/* The last page of the address space, skipped if it's in use */
+	resource_size_t start = iomem_resource.end - SZ_4K + 1;
+	enum system_states state = barebox_system_state;
+	struct device *dev = device_alloc("devres-test", DEVICE_ID_DYNAMIC);
+	struct resource *res;
+
+	device_add_resource(dev, NULL, start, SZ_4K, IORESOURCE_MEM);
+	if (selftest_check(register_device(dev) == 0) == false)
+		return;
+
+	res = devm_request_mem_resource(dev, 0);
+	if (IS_ERR(res)) {
+		skipped_tests++;
+		goto out;
+	}
+
+	/* Shutdown keeps the region, but drops the action all the same */
+	barebox_system_state = BAREBOX_EXITING;
+	devres_run_actions(dev);
+	barebox_system_state = state;
+	if (selftest_check(IS_ERR(devm_request_mem_resource(dev, 0))))
+		release_region(res);
+
+	/* Releasing frees it */
+	selftest_check(!IS_ERR(devm_request_mem_resource(dev, 0)));
+	devres_release_all(dev);
+	res = request_iomem_region("devres-test", start, iomem_resource.end);
+	if (selftest_check(!IS_ERR(res)))
+		release_region(res);
+out:
+	unregister_device(dev);
 	free_device(dev);
 }
 
@@ -282,6 +319,7 @@ static void test_devres(void)
 	test_devres_alloc();
 	test_devres_action();
 	test_devres_shutdown();
+	test_devres_region();
 	test_devres_probe();
 	test_devres_unbind();
 	test_devres_child();

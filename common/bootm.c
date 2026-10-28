@@ -236,6 +236,13 @@ const struct resource *bootm_load_os(struct image_data *data,
 	return res;
 }
 
+/* Linux only detects uncompressed cpio archives at 4-byte aligned offsets */
+static unsigned long bootm_initrd_fixup_adr(struct loadable *l,
+					    unsigned long adr)
+{
+	return ALIGN(adr, 4);
+}
+
 /**
  * bootm_load_initrd() - load initrd to RAM
  * @data:		image data context
@@ -270,7 +277,7 @@ bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address
 		return ERR_PTR(-EINVAL);
 
 	res = loadable_extract_into_sdram_all(data->initrd, load_address,
-					      end_address, NULL);
+					      end_address, bootm_initrd_fixup_adr);
 	if (!IS_ERR(res))
 		data->initrd_res = res;
 	return res;

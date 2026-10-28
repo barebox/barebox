@@ -74,6 +74,8 @@ Override rules
 ``bootm.initrd``
   A colon-separated list of initrd/CPIO files. Linux can transparently
   extract any number of concatenated CPIOs, even if individually compressed.
+  barebox zero-pads each file to a 4-byte boundary, as Linux requires before
+  an uncompressed CPIO.
   A leading colon appends to the initrd that the boot entry already provides:
 
   .. code-block:: sh

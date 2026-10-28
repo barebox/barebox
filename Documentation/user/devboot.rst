@@ -209,9 +209,9 @@ which the configuration script can source instead of spelling them out:
 
 ``/env/devboot/defaults``
   Sets ``devboot_image``, ``devboot_oftree`` and ``devboot_initrd`` to
-  ``${global.user}-image-${global.hostname}``,
+  ``${global.user}-linux-${global.hostname}``,
   ``${global.user}-oftree-${global.hostname}`` and
-  ``${global.user}-initrd-${global.hostname}`` respectively, but only
+  ``${global.user}-initramfs-${global.hostname}`` respectively, but only
   for those files that exist in the fetch directory. Symlink the build
   artifacts under these names into the TFTP directory and the script
   needs no further configuration.

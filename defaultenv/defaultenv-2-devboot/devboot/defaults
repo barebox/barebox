@@ -1,7 +1,7 @@
-# Use ${global.user}-{image,oftree,initrd}-${global.hostname} from the
+# Use ${global.user}-{linux,oftree,initramfs}-${global.hostname} from the
 # fetch directory as overrides
 
-devboot_default="${global.user}-image-${global.hostname}"
+devboot_default="${global.user}-linux-${global.hostname}"
 if [ -f "${devboot_default}" ]; then
 	devboot_image="${devboot_default}"
 fi
@@ -16,7 +16,7 @@ if [ -f "${devboot_default}" ]; then
 	devboot_oftree="${devboot_oftree}:${devboot_default}"
 fi
 
-devboot_default="${global.user}-initrd-${global.hostname}"
+devboot_default="${global.user}-initramfs-${global.hostname}"
 if [ -f "${devboot_default}" ]; then
 	devboot_initrd="${devboot_default}"
 fi

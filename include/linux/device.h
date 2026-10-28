@@ -5,23 +5,46 @@
 #include <driver.h>
 #include <linux/slab.h>
 #include <linux/bug.h>
+#include <linux/bitops.h>
+#include <linux/overflow.h>
+#include <stdarg.h>
 #include <mmu.h>
 
 #define device_driver driver
 
-#define __devm_wrapper(fn, dev, ...) ({ BUG_ON(!dev); fn(__VA_ARGS__); })
+/*
+ * Managed memory is DMA-safe and can't fail to allocate. It's freed when
+ * the device is unbound, unregistered or fails to probe.
+ */
+void *devm_kmalloc(struct device *dev, size_t size, gfp_t gfp);
+void *devm_kzalloc(struct device *dev, size_t size, gfp_t gfp);
+void devm_kfree(struct device *dev, const void *mem);
+void *devm_kmemdup(struct device *dev, const void *src, size_t len, gfp_t gfp);
+char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp);
+const char *devm_kstrdup_const(struct device *dev, const char *s, gfp_t gfp);
+char *devm_kvasprintf(struct device *dev, gfp_t gfp, const char *fmt,
+		      va_list ap);
+char *devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt, ...)
+	__printf(3, 4);
 
-#define devm_kmalloc(...)		__devm_wrapper(kmalloc, __VA_ARGS__)
-#define devm_kvasprintf(...)		__devm_wrapper(kvasprintf, __VA_ARGS__)
-#define devm_kasprintf(...)		__devm_wrapper(kasprintf, __VA_ARGS__)
-#define devm_kzalloc(...)		__devm_wrapper(kzalloc, __VA_ARGS__)
-#define devm_kmalloc_array(...)		__devm_wrapper(kmalloc_array, __VA_ARGS__)
-#define devm_kcalloc(...)		__devm_wrapper(kcalloc, __VA_ARGS__)
-#define devm_kfree(...)			__devm_wrapper(kfree, __VA_ARGS__)
-#define devm_kstrdup(...)		__devm_wrapper(kstrdup, __VA_ARGS__)
-#define devm_kstrdup_const(...)		__devm_wrapper(kstrdup_const, __VA_ARGS__)
-#define devm_kmemdup(...)		__devm_wrapper(kmemdup, __VA_ARGS__)
-#define devm_bitmap_zalloc(...)		__devm_wrapper(bitmap_zalloc, __VA_ARGS__)
+static inline void *devm_kmalloc_array(struct device *dev, size_t n,
+				       size_t size, gfp_t gfp)
+{
+	return devm_kmalloc(dev, size_mul(n, size), gfp);
+}
+
+static inline void *devm_kcalloc(struct device *dev, size_t n, size_t size,
+				 gfp_t gfp)
+{
+	return devm_kzalloc(dev, size_mul(n, size), gfp);
+}
+
+static inline unsigned long *devm_bitmap_zalloc(struct device *dev,
+						unsigned int nbits, gfp_t gfp)
+{
+	return devm_kcalloc(dev, BITS_TO_LONGS(nbits), sizeof(unsigned long),
+			    gfp);
+}
 
 #define device_register register_device
 #define device_unregister unregister_device

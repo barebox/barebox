@@ -58,12 +58,13 @@ static int do_devunbind(int argc, char *argv[])
 			continue;
 		}
 
-		if (!device_remove(dev)) {
+		if (!device_has_remove(dev)) {
 			printf("no remove callback registered for %s\n", argv[i]);
 			ret = COMMAND_ERROR;
 			continue;
 		}
 
+		device_remove(dev);
 		dev->driver = NULL;
 		list_del_init(&dev->active);
 	}

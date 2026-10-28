@@ -61,6 +61,7 @@ struct of_device_id;
  *          should actually detect client devices.
  * @rescan: Callback to rescan the device.
  * @deferred_probe_reason: If a driver probe is deferred, this stores the last error.
+ * @devres: talloc context of managed resources, see devm_kmalloc().
  */
 struct device {
 	union {
@@ -122,6 +123,8 @@ struct device {
 	void (*rescan)(struct device *);
 
 	char *deferred_probe_reason;
+
+	void *devres;
 };
 
 #define bobj_to_dev(__bobj)	container_of_const(__bobj, struct device, bobject)

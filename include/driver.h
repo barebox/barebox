@@ -78,10 +78,23 @@ int device_probe(struct device *dev);
  *
  * @dev: Device
  *
+ * Runs the bus or driver specific removal code, if any, and releases the
+ * device's managed resources either way.
+ *
  * Returns true if there was any bus or driver specific removal
- * code that was executed and false if the function was a no-op.
+ * code that was executed and false if there was none.
  */
 bool device_remove(struct device *dev);
+
+/**
+ * device_has_remove - Check if a device has removal code to run
+ *
+ * @dev: Device
+ *
+ * Returns true if device_remove() would execute bus or driver specific
+ * removal code for @dev.
+ */
+bool device_has_remove(struct device *dev);
 
 /* detect devices attached to this device (cards, disks,...) */
 int device_detect(struct device *dev);
@@ -97,6 +110,8 @@ static inline void put_device(struct device *dev) {}
 
 void free_device_res(struct device *dev);
 void free_device(struct device *dev);
+
+void devres_release_all(struct device *dev);
 
 static inline void device_rescan(struct device *dev)
 {

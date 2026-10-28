@@ -152,6 +152,9 @@ int device_probe(struct device *dev)
 
 	depth--;
 
+	if (ret)
+		devres_release_all(dev);
+
 	switch (ret) {
 	case 0:
 		return 0;
@@ -295,6 +298,8 @@ int register_device(struct device *new_device)
 }
 EXPORT_SYMBOL(register_device);
 
+static bool __device_remove(struct device *dev);
+
 int unregister_device(struct device *old_dev)
 {
 	struct device_alias *alias, *at;
@@ -308,8 +313,9 @@ int unregister_device(struct device *old_dev)
 
 	of_pinctrl_unregister_consumer(old_dev);
 
+	/* Children may live in managed memory, free_device_res() releases it */
 	if (old_dev->driver)
-		device_remove(old_dev);
+		__device_remove(old_dev);
 
 	list_for_each_entry_safe(alias, at, &device_alias_list, list) {
 		if(alias->dev == old_dev)
@@ -356,6 +362,7 @@ EXPORT_SYMBOL(unregister_device);
  */
 void free_device_res(struct device *dev)
 {
+	devres_release_all(dev);
 	devinfo_del(dev, NULL);
 	free(dev->unique_name);
 	dev->unique_name = NULL;
@@ -680,16 +687,31 @@ static dev_remove_op_t get_device_remove(struct device *dev)
 		return NULL;
 }
 
-bool device_remove(struct device *dev)
+static bool __device_remove(struct device *dev)
 {
 	dev_remove_op_t remove = get_device_remove(dev);
-	if (!remove)
-		return false;  /* nothing to do */
 
-	remove(dev);
-	return true;
+	if (remove)
+		remove(dev);
+
+	return remove != NULL;
+}
+
+bool device_remove(struct device *dev)
+{
+	bool ret = __device_remove(dev);
+
+	devres_release_all(dev);
+
+	return ret;
 }
 EXPORT_SYMBOL_GPL(device_remove);
+
+bool device_has_remove(struct device *dev)
+{
+	return get_device_remove(dev) != NULL;
+}
+EXPORT_SYMBOL_GPL(device_has_remove);
 
 static void devices_shutdown(void)
 {

@@ -223,7 +223,7 @@ which the configuration script can source instead of spelling them out:
   line, so RAUC neither marks the slot as booted nor as good.
 
 ``/env/devboot/rsinit-modules``
-  Appends the ``${global.user}-modules-${global.arch}`` CPIO archive to
+  Appends the ``${global.user}-modules-${global.hostname}`` CPIO archive to
   the initrd, as built by the Linux kernel ``make modules-cpio-pkg``
   target, and adds ``rsinit.bind_modules`` to the kernel command
   line, so that the rsinit init in the initramfs bind mounts the modules

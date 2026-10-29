@@ -154,5 +154,11 @@ arm_ignore_data_abort:
 .global arm_data_abort_occurred
 arm_data_abort_occurred:
 .word 0 /* set != 0 by the data abort handler */
+.global arm_ignore_serror_exception
+arm_ignore_serror_exception:
+.word 0 /* When != 0 serror exceptions are ignored */
+.global arm_serror_exception_occurred
+arm_serror_exception_occurred:
+.word 0 /* set != 0 by the serror exception handler */
 abort_stack:
 .space 8

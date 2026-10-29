@@ -12,7 +12,9 @@
 #include <asm/ptrace.h>
 #include <asm/barebox-arm.h>
 #include <asm/unwind.h>
+#include <asm/system.h>
 #include <asm/system_info.h>
+#include <asm/proc-armv/system.h>
 #include <init.h>
 
 #include "mmu_32.h"
@@ -163,6 +165,8 @@ void do_irq (struct pt_regs *pt_regs)
 
 extern volatile int arm_ignore_data_abort;
 extern volatile int arm_data_abort_occurred;
+extern volatile int arm_ignore_async_abort;
+extern volatile int arm_async_abort_occurred;
 
 void data_abort_mask(void)
 {
@@ -175,6 +179,27 @@ int data_abort_unmask(void)
 	arm_ignore_data_abort = 0;
 
 	return arm_data_abort_occurred != 0;
+}
+
+/*
+ * AArch32 has no separate asynchronous abort vector: an asynchronous
+ * external abort is taken as a data abort, so the data abort handler
+ * records it while async_abort_mask() is in effect.
+ */
+void async_abort_mask(void)
+{
+	arm_async_abort_occurred = 0;
+	arm_ignore_async_abort = 1;
+}
+
+int async_abort_unmask(void)
+{
+	dsb();
+	isb();
+
+	arm_ignore_async_abort = 0;
+
+	return arm_async_abort_occurred != 0;
 }
 
 static unsigned long arm_vbar = ~0;
@@ -232,14 +257,14 @@ static __maybe_unused int arm_init_vectors(void)
 	 * on ARMv7 and later.
 	 */
 	if (!set_vector_table((unsigned long)__exceptions_start))
-		return 0;
+		goto out;
 
 	/*
 	 * Next try high vectors at 0xffff0000.
 	 */
 	if (!set_vector_table(ARM_HIGH_VECTORS)) {
 		create_vector_table(ARM_HIGH_VECTORS);
-		return 0;
+		goto out;
 	}
 
 	/*
@@ -249,6 +274,8 @@ static __maybe_unused int arm_init_vectors(void)
 	 */
 	set_vector_table(ARM_LOW_VECTORS);
 	create_vector_table(ARM_LOW_VECTORS);
+out:
+	local_async_abort_enable();
 
 	return 0;
 }
@@ -263,5 +290,6 @@ void arm_pbl_init_exceptions(void)
 		return;
 
 	set_vbar((unsigned long)__exceptions_start);
+	local_async_abort_enable();
 }
 #endif

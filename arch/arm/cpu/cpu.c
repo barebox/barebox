@@ -7,11 +7,13 @@
  */
 
 #include <common.h>
+#include <abort.h>
 #include <init.h>
 #include <command.h>
 #include <cache.h>
 #include <asm/mmu.h>
 #include <asm/system.h>
+#include <asm/sysreg.h>
 #include <asm/memory.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/cputype.h>
@@ -74,6 +76,13 @@ static void disable_interrupts(void)
 	__asm__ __volatile__("mrs %0, cpsr" : "=r"(r));
 	r |= PSR_I_BIT;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
+#else
+	/*
+	 * The arm64 boot protocol requires all of PSTATE.DAIF to be masked
+	 * on kernel entry.
+	 */
+	write_sysreg(0xf, daif);
+	set_exception_level_routing(false);
 #endif
 }
 

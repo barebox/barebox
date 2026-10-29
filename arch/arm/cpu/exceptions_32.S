@@ -73,8 +73,32 @@
 	ldr	r13, =arm_ignore_data_abort	@ check try mode
 	ldr	r13, [r13]
 	cmp	r13, #0
+	bne	1f
+
+#if __LINUX_ARM_ARCH__ >= 6
+	@ An asynchronous external abort is only ignored while an async abort
+	@ window is open. It is imprecise, so LR is already the resume address
+	@ and stays as is.
+	ldr	r13, =arm_ignore_async_abort
+	ldr	r13, [r13]
+	cmp	r13, #0
 	beq	do_abort_\@
-	ldr	r13, =arm_data_abort_occurred
+
+	mrc	p15, 0, r13, c5, c0, 0		@ read DFSR
+	tst	r13, #(1 << 10)			@ DFSR.FS[4]
+	beq	do_abort_\@
+	and	r13, r13, #0xf			@ DFSR.FS[3:0]
+	cmp	r13, #6				@ FS 0b10110: async external abort
+	bne	do_abort_\@
+
+	ldr	r13, =arm_async_abort_occurred
+	str	r13, [r13]
+	movs	pc, lr
+#else
+	b	do_abort_\@
+#endif
+
+1:	ldr	r13, =arm_data_abort_occurred
 	str	r13, [r13]
 	mrs	r13, spsr			@ read saved CPSR
 	tst	r13, #1<<5			@ check Thumb mode
@@ -157,5 +181,11 @@ arm_ignore_data_abort:
 .global arm_data_abort_occurred
 arm_data_abort_occurred:
 .word 0 /* set != 0 by the data abort handler */
+.global arm_ignore_async_abort
+arm_ignore_async_abort:
+.word 0 /* When != 0 asynchronous aborts are ignored */
+.global arm_async_abort_occurred
+arm_async_abort_occurred:
+.word 0 /* set != 0 by the asynchronous abort handler */
 abort_stack:
 .space 8

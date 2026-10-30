@@ -86,8 +86,8 @@ int usb_stor_Bulk_transport(struct us_blk_dev *usb_blkdev,
 {
 	struct us_data *us = usb_blkdev->us;
 	struct device *dev = &us->pusb_dev->dev;
-	struct bulk_cb_wrap *cbw;
-	struct bulk_cs_wrap *csw;
+	struct bulk_cb_wrap *cbw = us->cbw;
+	struct bulk_cs_wrap *csw = us->csw;
 	int actlen, data_actlen;
 	int result;
 	unsigned int residue;
@@ -95,9 +95,6 @@ int usb_stor_Bulk_transport(struct us_blk_dev *usb_blkdev,
 	unsigned int pipeout = usb_sndbulkpipe(us->pusb_dev, us->send_bulk_ep);
 	int dir_in = US_DIRECTION(cmd[0]);
 	int ret = 0;
-
-	cbw = dma_xalloc(sizeof(*cbw));
-	csw = dma_xalloc(sizeof(*csw));
 
 	/* set up the command wrapper */
 	cbw->Signature = cpu_to_le32(US_BULK_CB_SIGN);
@@ -202,8 +199,6 @@ int usb_stor_Bulk_transport(struct us_blk_dev *usb_blkdev,
 	}
 
 fail:
-	dma_free(cbw);
-	dma_free(csw);
 	return ret;
 }
 

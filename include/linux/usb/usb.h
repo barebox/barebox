@@ -113,6 +113,7 @@ struct usb_device {
 	int maxchild;			/* Number of ports if hub */
 	int portnr;
 	int level;
+	u32 route;			/* xHCI route string */
 	struct usb_device *parent;
 	struct usb_device *children[USB_MAXCHILDREN];
 
@@ -177,9 +178,12 @@ struct usb_host {
 			int transfer_len, int interval);
 	void (*usb_event_poll)(void);
 	int (*alloc_device)(struct usb_device *dev);
+	void (*free_device)(struct usb_device *dev);
 	int (*update_hub_device)(struct usb_device *dev);
 
 	bool no_desc_before_addr;
+	/* largest transfer the controller can do, 0 if there's no limit */
+	size_t max_xfer_size;
 
 	struct list_head list;
 

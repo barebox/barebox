@@ -383,6 +383,7 @@ static void usb_scan_port(struct usb_device_scan *usb_scan)
 	unsigned short portstatus, portchange;
 	struct usb_device *dev;
 	struct usb_hub_device *hub;
+	bool connect_change;
 	int port;
 
 	dev = usb_scan->dev;
@@ -417,9 +418,19 @@ static void usb_scan_port(struct usb_device_scan *usb_scan)
 	 * disconnect looks. An empty port on the other hand keeps its change
 	 * bit set from the power-on, so leave it in the scan list until the
 	 * connect timeout expires to give slow devices time to show up.
+	 *
+	 * Some root hubs report a connected device without setting the
+	 * connection change bit, so enumerate a connected port we have no
+	 * device for in any case.
 	 */
-	if (!(portchange & USB_PORT_STAT_C_CONNECTION) ||
-	    (!(portstatus & USB_PORT_STAT_CONNECTION) && !dev->children[port])) {
+	if (portchange & USB_PORT_STAT_C_CONNECTION)
+		connect_change = (portstatus & USB_PORT_STAT_CONNECTION) ||
+				 dev->children[port];
+	else
+		connect_change = (portstatus & USB_PORT_STAT_CONNECTION) &&
+				 !dev->children[port];
+
+	if (!connect_change) {
 		if (get_time_ns() >= hub->connect_timeout) {
 			dev_dbg(&dev->dev, "port%d: timeout\n", port + 1);
 			/* Remove this device from scanning list */

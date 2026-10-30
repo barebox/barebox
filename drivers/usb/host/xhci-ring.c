@@ -873,6 +873,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 			struct devrequest *req,	int length,
 			void *buffer, unsigned int timeout_ms)
 {
+	xhci_comp_code comp;
 	int ret;
 	int start_cycle;
 	int num_trbs;
@@ -1052,6 +1053,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 		dev_err(&udev->dev, "Unexpected ep_index %d, expected %d\n",
 			TRB_TO_EP_INDEX(field), ep_index);
 
+	comp = GET_COMP_CODE(le32_to_cpu(event->trans_event.transfer_len));
 	record_transfer_result(udev, event, length);
 	xhci_acknowledge_event(ctrl);
 
@@ -1059,13 +1061,25 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 	if (length > 0)
 		dma_unmap_single(ctrl->host.hw_dev, map, length, direction);
 
-	if (udev->status == USB_ST_STALLED) {
+	switch (comp) {
+	case COMP_STALL:
 		reset_ep(udev, ep_index);
 		return -EPIPE;
+	case COMP_TX_ERR:
+	case COMP_SPLIT_ERR:
+	case COMP_BABBLE:
+		/* 0.95 controllers don't halt a babbling control endpoint */
+		xhci_inval_cache((uintptr_t)virt_dev->out_ctx->bytes,
+				 virt_dev->out_ctx->size);
+		ep_ctx = xhci_get_ep_ctx(ctrl, virt_dev->out_ctx, ep_index);
+		if ((le32_to_cpu(ep_ctx->ep_info) & EP_STATE_MASK) == EP_STATE_HALTED)
+			reset_ep(udev, ep_index);
+		return comp == COMP_BABBLE ? -EOVERFLOW : -EPROTO;
+	default:
+		break;
 	}
 
-	if (GET_COMP_CODE(le32_to_cpu(event->trans_event.transfer_len))
-			== COMP_SHORT_TX) {
+	if (comp == COMP_SHORT_TX) {
 		/* Short data stage, clear up additional status stage event */
 		event = xhci_wait_for_event(ctrl, TRB_TRANSFER, timeout_ms);
 		if (!event)

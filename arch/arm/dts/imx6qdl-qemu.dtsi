@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * QEMU's sabrelite machine models neither the display pipeline nor the
+ * APBH DMA controller. Their drivers would only fail probing and clutter
+ * the boot log with errors that say nothing about the real board.
+ */
+
+&ipu1 {
+	status = "disabled";
+};
+
+&ldb {
+	status = "disabled";
+};
+
+&hdmi {
+	status = "disabled";
+};
+
+&dma_apbh {
+	status = "disabled";
+};

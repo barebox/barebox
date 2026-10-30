@@ -8,6 +8,7 @@
 #include <common.h>
 #include <driver.h>
 #include <watchdog.h>
+#include <reset_source.h>
 #include <superio.h>
 #include <linux/gpio/consumer.h>
 
@@ -18,6 +19,7 @@ enum {
 
 struct gpio_wdt_priv {
 	struct gpio_desc *gpiod;
+	struct gpio_desc *wdt_reset;
 	bool		state;
 	bool		always_running;
 	bool		started;
@@ -121,6 +123,20 @@ static int gpio_wdt_probe(struct device *dev)
 	priv->gpiod = gpiod_get(dev, NULL, gflags);
 	if (IS_ERR(priv->gpiod))
 		return PTR_ERR(priv->gpiod);
+
+	priv->wdt_reset = gpiod_get_optional(dev, "reset-from-wdt", GPIOD_IN);
+	if (IS_ERR(priv->wdt_reset))
+		return dev_errp_probe(dev, priv->wdt_reset, "no reset-from-wdt found");
+
+	if (priv->wdt_reset) {
+		int val = gpiod_get_value(priv->wdt_reset);
+
+		if (val < 0)
+			return val;
+
+		if (val)
+			reset_source_set_device(dev, RESET_WDG, 200);
+	}
 
 	priv->always_running = of_property_read_bool(dev->of_node, "always-running");
 

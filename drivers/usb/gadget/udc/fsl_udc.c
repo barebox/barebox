@@ -1187,11 +1187,14 @@ static void ch9getstatus(struct fsl_udc *udc, u8 request_type, u16 value,
 		tmp = 0;
 	} else if ((request_type & USB_RECIP_MASK) == USB_RECIP_ENDPOINT) {
 		/* Get endpoint status */
+		int pipe = get_pipe_by_windex(index);
 		struct fsl_ep *target_ep;
 
-		target_ep = get_ep_by_pipe(udc, get_pipe_by_windex(index));
-
 		/* stall if endpoint doesn't exist */
+		if (pipe >= udc->max_ep)
+			goto stall;
+
+		target_ep = get_ep_by_pipe(udc, pipe);
 		if (!target_ep->desc)
 			goto stall;
 		tmp = dr_ep_get_stall(ep_index(target_ep), ep_is_in(target_ep))

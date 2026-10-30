@@ -88,6 +88,20 @@ DRESULT disk_flush(FATFS *fat)
 
 /* ---------------------------------------------------------------*/
 
+/*
+ * FatFs keeps a file position of its own, which pread() and pwrite()
+ * don't update when they read or write at another position.
+ */
+static int fat_sync_pos(struct file *f)
+{
+	FIL *f_file = f->private_data;
+
+	if (f_file->fptr == f->f_pos)
+		return 0;
+
+	return f_lseek(f_file, f->f_pos);
+}
+
 #ifdef CONFIG_FS_FAT_WRITE
 static int fat_create(struct device *dev, const char *pathname, mode_t mode)
 {
@@ -128,6 +142,10 @@ static int fat_write(struct file *f, const void *buf, size_t insize)
 	FIL *f_file = f->private_data;
 	int outsize;
 	int ret;
+
+	ret = fat_sync_pos(f);
+	if (ret)
+		return ret;
 
 	ret = f_write(f_file, buf, insize, &outsize);
 
@@ -224,6 +242,10 @@ static int fat_read(struct file *f, void *buf, size_t insize)
 	int ret;
 	FIL *f_file = f->private_data;
 	int outsize;
+
+	ret = fat_sync_pos(f);
+	if (ret)
+		return ret;
 
 	ret = f_read(f_file, buf, insize, &outsize);
 

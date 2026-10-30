@@ -993,6 +993,27 @@ static void check_status(struct td *td_list)
 	}
 }
 
+/*
+ * Empty the TD queue of an ED the controller no longer looks at. The first
+ * TD may have moved data without being retired, so take the toggle from it.
+ */
+static void ed_drop_tds(struct ed *ed)
+{
+	struct td *td = (struct td *)(m32_swap(ed->hwHeadP) & ~0xf);
+	__u32 carry = ed->hwHeadP & m32_swap(0x2);
+
+	if (td != (struct td *)(m32_swap(ed->hwTailP) & ~0xf)) {
+		__u32 info = m32_swap(td->hwINFO);
+
+		if ((info & TD_T) == TD_T_DATA0)
+			carry = 0;
+		else if ((info & TD_T) == TD_T_DATA1)
+			carry = m32_swap(0x2);
+	}
+
+	ed->hwHeadP = ed->hwTailP | carry;
+}
+
 /* replies to the request have to be on a FIFO basis so
  * we reverse the reversed done-list */
 static struct td *dl_reverse_done_list(struct ohci *ohci)
@@ -1508,6 +1529,13 @@ static int submit_common_msg(struct usb_device *dev, unsigned long pipe, void *b
 			debug("%s: TO status %x\n", __func__, stat);
 			urb->finished = 1;
 			ep_unlink(ohci, urb->ed);
+			/*
+			 * Wait for the next frame, when the controller no
+			 * longer looks at the skipped ED, and drop the TDs not
+			 * done yet, so the next transfer here doesn't run them.
+			 */
+			mdelay(1);
+			ed_drop_tds(urb->ed);
 			stat = USB_ST_CRC_ERR;
 			break;
 		}

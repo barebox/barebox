@@ -29,6 +29,7 @@
 #define pr_fmt(fmt) "usb: " fmt
 
 #include <common.h>
+#include <clock.h>
 #include <command.h>
 #include <malloc.h>
 #include <driver.h>
@@ -45,6 +46,9 @@
 #include "usb.h"
 
 #define USB_BUFSIZ	512
+
+/* Some devices miss a SETUP sent within a microframe of the previous one */
+#define USB_CONTROL_GAP_NS	(125 * USECOND)
 
 static int dev_count;
 
@@ -860,6 +864,7 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 	struct usb_host *host = dev->host;
 	int ret;
 	struct devrequest *setup_packet = dev->setup_packet;
+	u64 elapsed;
 
 	if (usb_device_disconnected(dev))
 		return -ENODEV;
@@ -879,8 +884,14 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 		   request, requesttype, value, index, size);
 	dev->status = USB_ST_NOT_PROC; /*not yet processed */
 
+	elapsed = get_time_ns() - dev->last_control_ns;
+	if (elapsed < USB_CONTROL_GAP_NS)
+		ndelay(USB_CONTROL_GAP_NS - elapsed);
+
 	ret = host->submit_control_msg(dev, pipe, data, size, setup_packet,
 			timeout_ms);
+
+	dev->last_control_ns = get_time_ns();
 
 	usb_host_release(host);
 

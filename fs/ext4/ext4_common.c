@@ -122,8 +122,10 @@ static ssize_t ext4fs_blockgroup(struct ext2_data *data, int group,
 	dev_dbg(fs->dev, "read %d group descriptor (blkno %llu blkoff %u)\n",
 	      group, blkno, blkoff);
 
-	return ext4fs_devread(fs, blkno << LOG2_EXT2_BLOCK_SIZE(data),
-				blkoff, desc_size, (char *)blkgrp);
+	/* Descriptors can be larger than the fields we know about */
+	return ext4fs_devread(fs, blkno << LOG2_EXT2_BLOCK_SIZE(data), blkoff,
+			      min_t(int, desc_size, sizeof(*blkgrp)),
+			      (char *)blkgrp);
 }
 
 int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)

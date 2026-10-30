@@ -33,6 +33,11 @@ jobs:
             lgargs: --runxfail --graphics
 
           - ARCH: arm
+            lgenv: test/arm/qemu-imx8mp-evk@multi_v8_defconfig.yaml
+            defconfig: multi_v8_defconfig
+            check: multi_v8_defconfig imx8mp-evk
+
+          - ARCH: arm
             lgenv: test/arm/virt32_secure_defconfig.yaml
             defconfig: virt32_secure_defconfig
 
@@ -183,5 +188,5 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: steps.build.outcome == 'success'
       with:
-        check_name: "Test Results (${{matrix.defconfig}})"
+        check_name: "Test Results (${{matrix.check || matrix.defconfig}})"
         files: ./*.tests.xml

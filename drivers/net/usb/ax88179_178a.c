@@ -421,6 +421,8 @@ static void ax88179_unbind(struct usbnet *dev)
 
 	poller_unregister(&priv->poller);
 
+	mdiobus_unregister(&dev->miibus);
+
 	/* Configure RX control register => stop operation */
 	tmp16 = AX_RX_CTL_STOP;
 	ax88179_write_cmd(dev, AX_ACCESS_MAC, AX_RX_CTL, 2, 2, &tmp16);

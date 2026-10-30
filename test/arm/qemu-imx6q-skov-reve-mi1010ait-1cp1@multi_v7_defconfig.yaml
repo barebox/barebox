@@ -1,0 +1,26 @@
+targets:
+  main:
+    drivers:
+      QEMUDriver:
+        qemu_bin: qemu-system-arm
+        machine: sabrelite
+        cpu: cortex-a9
+        memory: 1024M
+        kernel: barebox-dt-2nd.img
+        dtb: imx6q-skov-reve-mi1010ait-1cp1-qemu.dtb
+        display: qemu-default
+        extra_args: '-serial null -smp 4'
+      BareboxDriver:
+        prompt: 'barebox@[^:]+:[^ ]+ '
+        bootstring: 'commandline:'
+      BareboxTestStrategy:
+        # i.MX6Q TO1.2 DIGPROG instead of QEMU's TO1.0
+        qemu_writel: {0x020c8260: 0x00630002}
+    options:
+      tests:
+        - test_clk.py::test_clk_assigned_check
+images:
+  barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
+  imx6q-skov-reve-mi1010ait-1cp1-qemu.dtb: !template "$LG_BUILDDIR/arch/arm/dts/imx6q-skov-reve-mi1010ait-1cp1-qemu.dtb"
+imports:
+  -  ../strategy.py

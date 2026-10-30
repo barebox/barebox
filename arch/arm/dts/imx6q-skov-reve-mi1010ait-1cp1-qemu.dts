@@ -1,0 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+#include <arm/nxp/imx/imx6q-skov-reve-mi1010ait-1cp1.dts>
+#include "imx6q-qemu.dtsi"

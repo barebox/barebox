@@ -787,14 +787,11 @@ EXPORT_SYMBOL(file_exists_type);
 char *make_temp(const char *template)
 {
 	char *name = NULL;
-	struct stat s;
-	int ret;
 
 	do {
 		free(name);
 		name = basprintf("/tmp/%s-%08x", template, random32());
-		ret = stat(name, &s);
-	} while (!ret);
+	} while (file_exists(name));
 
 	return name;
 }

@@ -1,0 +1,240 @@
+{
+  "enet_ref_pad": {"rate": 50000000, "enable_count": 0},
+  "anaclk2": {"rate": 0, "enable_count": 0},
+  "anaclk1": {"rate": 0, "enable_count": 0},
+  "osc": {"rate": 24000000, "enable_count": 4,
+    "pll1_sys": {"rate": 792000000, "enable_count": 0,
+      "pll1_sw": {"rate": 792000000, "enable_count": 0,
+        "arm": {"rate": 792000000, "enable_count": 0,
+          "twd": {"rate": 396000000, "enable_count": 0},
+          "cko2_sel": {"rate": 792000000, "enable_count": 0,
+            "cko2_podf": {"rate": 792000000, "enable_count": 0,
+              "cko2": {"rate": 792000000, "enable_count": 0}
+            }
+          }
+        }
+      }
+    },
+    "pll2_bus": {"rate": 528000000, "enable_count": 1,
+      "pll2_pfd0_352m": {"rate": 306580645, "enable_count": 0},
+      "pll2_pfd1_594m": {"rate": 528000000, "enable_count": 0},
+      "pll2_pfd2_396m": {"rate": 396000000, "enable_count": 4,
+        "pll2_198m": {"rate": 198000000, "enable_count": 0},
+        "step": {"rate": 396000000, "enable_count": 0},
+        "periph_pre": {"rate": 396000000, "enable_count": 1,
+          "periph": {"rate": 396000000, "enable_count": 2,
+            "axi_sel": {"rate": 396000000, "enable_count": 0,
+              "axi": {"rate": 198000000, "enable_count": 0,
+                "vdo_axi_sel": {"rate": 198000000, "enable_count": 0},
+                "pcie_axi_sel": {"rate": 198000000, "enable_count": 0,
+                  "pcie_axi": {"rate": 198000000, "enable_count": 0}
+                }
+              }
+            },
+            "mmdc_ch0_axi_podf": {"rate": 396000000, "enable_count": 2,
+              "ipu1_sel": {"rate": 396000000, "enable_count": 1,
+                "ipu1_podf": {"rate": 198000000, "enable_count": 1,
+                  "ipu1": {"rate": 198000000, "enable_count": 2,
+                    "2400000.ipu@2400000.of_di0_pixel": {"rate": 33000000, "enable_count": 1},
+                    "2400000.ipu@2400000.of_di1_pixel": {"rate": 198000000, "enable_count": 0}
+                  }
+                }
+              },
+              "ipu2_sel": {"rate": 396000000, "enable_count": 0,
+                "ipu2_podf": {"rate": 198000000, "enable_count": 0,
+                  "ipu2": {"rate": 198000000, "enable_count": 0}
+                }
+              }
+            },
+            "ahb": {"rate": 132000000, "enable_count": 3,
+              "ipg": {"rate": 66000000, "enable_count": 5,
+                "ipg_per": {"rate": 66000000, "enable_count": 1,
+                  "gpt_ipg_per": {"rate": 66000000, "enable_count": 0},
+                  "i2c1": {"rate": 66000000, "enable_count": 0},
+                  "i2c2": {"rate": 66000000, "enable_count": 0},
+                  "i2c3": {"rate": 66000000, "enable_count": 1},
+                  "pwm1": {"rate": 66000000, "enable_count": 0},
+                  "pwm2": {"rate": 66000000, "enable_count": 0},
+                  "pwm3": {"rate": 66000000, "enable_count": 0},
+                  "pwm4": {"rate": 66000000, "enable_count": 0}
+                },
+                "caam_ipg": {"rate": 66000000, "enable_count": 1},
+                "enet": {"rate": 66000000, "enable_count": 2},
+                "gpt_ipg": {"rate": 66000000, "enable_count": 0},
+                "iim": {"rate": 66000000, "enable_count": 0},
+                "sata": {"rate": 66000000, "enable_count": 0},
+                "uart_ipg": {"rate": 66000000, "enable_count": 0},
+                "usboh3": {"rate": 66000000, "enable_count": 2}
+              },
+              "caam_mem": {"rate": 132000000, "enable_count": 1},
+              "caam_aclk": {"rate": 132000000, "enable_count": 1},
+              "hdmi_iahb": {"rate": 132000000, "enable_count": 0}
+            }
+          }
+        },
+        "periph2_pre": {"rate": 396000000, "enable_count": 0,
+          "periph2": {"rate": 396000000, "enable_count": 0,
+            "mmdc_ch1_axi_podf": {"rate": 396000000, "enable_count": 0}
+          }
+        },
+        "usdhc1_sel": {"rate": 396000000, "enable_count": 0,
+          "usdhc1_podf": {"rate": 198000000, "enable_count": 0,
+            "usdhc1": {"rate": 198000000, "enable_count": 0}
+          }
+        },
+        "usdhc2_sel": {"rate": 396000000, "enable_count": 0,
+          "usdhc2_podf": {"rate": 198000000, "enable_count": 0,
+            "usdhc2": {"rate": 198000000, "enable_count": 0}
+          }
+        },
+        "usdhc3_sel": {"rate": 396000000, "enable_count": 1,
+          "usdhc3_podf": {"rate": 198000000, "enable_count": 1,
+            "usdhc3": {"rate": 198000000, "enable_count": 2,
+              "apbh_dma": {"rate": 198000000, "enable_count": 1},
+              "per1_bch": {"rate": 198000000, "enable_count": 0},
+              "gpmi_bch_apb": {"rate": 198000000, "enable_count": 0},
+              "gpmi_apb": {"rate": 198000000, "enable_count": 0}
+            }
+          }
+        },
+        "usdhc4_sel": {"rate": 396000000, "enable_count": 0,
+          "usdhc4_podf": {"rate": 198000000, "enable_count": 0,
+            "usdhc4": {"rate": 198000000, "enable_count": 0,
+              "gpmi_bch": {"rate": 198000000, "enable_count": 0}
+            }
+          }
+        },
+        "enfc_sel": {"rate": 396000000, "enable_count": 1,
+          "enfc_pred": {"rate": 99000000, "enable_count": 1,
+            "enfc_podf": {"rate": 99000000, "enable_count": 1,
+              "enfc": {"rate": 99000000, "enable_count": 1,
+                "gpmi_io": {"rate": 99000000, "enable_count": 1}
+              }
+            }
+          }
+        },
+        "eim_sel": {"rate": 396000000, "enable_count": 0,
+          "eim_podf": {"rate": 198000000, "enable_count": 0}
+        },
+        "eim_slow_sel": {"rate": 396000000, "enable_count": 1,
+          "eim_slow_podf": {"rate": 198000000, "enable_count": 1,
+            "eim_slow": {"rate": 198000000, "enable_count": 1}
+          }
+        }
+      },
+      "cko1_sel": {"rate": 528000000, "enable_count": 0,
+        "cko1_podf": {"rate": 528000000, "enable_count": 0,
+          "cko1": {"rate": 528000000, "enable_count": 0,
+            "cko": {"rate": 528000000, "enable_count": 0}
+          }
+        }
+      }
+    },
+    "pll3_usb_otg": {"rate": 480000000, "enable_count": 3,
+      "usbphy1": {"rate": 480000000, "enable_count": 1},
+      "pll3_pfd0_720m": {"rate": 720000000, "enable_count": 0},
+      "pll3_pfd1_540m": {"rate": 540000000, "enable_count": 0,
+        "video_27m": {"rate": 27000000, "enable_count": 0,
+          "mipi_core_cfg": {"rate": 27000000, "enable_count": 0,
+            "hdmi_isfr": {"rate": 27000000, "enable_count": 0}
+          }
+        }
+      },
+      "pll3_pfd2_508m": {"rate": 508235294, "enable_count": 0},
+      "pll3_pfd3_454m": {"rate": 454736842, "enable_count": 0},
+      "pll3_120m": {"rate": 120000000, "enable_count": 0},
+      "pll3_80m": {"rate": 80000000, "enable_count": 1,
+        "uart_serial_podf": {"rate": 80000000, "enable_count": 1,
+          "uart_serial": {"rate": 80000000, "enable_count": 1}
+        }
+      },
+      "pll3_60m": {"rate": 60000000, "enable_count": 1,
+        "ecspi_root": {"rate": 60000000, "enable_count": 2,
+          "ecspi1": {"rate": 60000000, "enable_count": 1},
+          "ecspi2": {"rate": 60000000, "enable_count": 1},
+          "ecspi3": {"rate": 60000000, "enable_count": 0},
+          "ecspi4": {"rate": 60000000, "enable_count": 0},
+          "ecspi5": {"rate": 60000000, "enable_count": 0}
+        }
+      },
+      "periph2_clk2_sel": {"rate": 480000000, "enable_count": 0,
+        "periph2_clk2": {"rate": 480000000, "enable_count": 0}
+      },
+      "can_root": {"rate": 240000000, "enable_count": 0}
+    },
+    "pll4_audio": {"rate": 147456000, "enable_count": 0},
+    "pll5_video": {"rate": 296600000, "enable_count": 0,
+      "pll5_post_div": {"rate": 74150000, "enable_count": 0,
+        "pll5_video_div": {"rate": 74150000, "enable_count": 0,
+          "ldb_di0_sel": {"rate": 74150000, "enable_count": 0,
+            "ldb_di0_div_3_5": {"rate": 21185714, "enable_count": 0,
+              "ldb_di0_podf": {"rate": 10592857, "enable_count": 0,
+                "ldb_di0": {"rate": 10592857, "enable_count": 0}
+              }
+            }
+          },
+          "ldb_di1_sel": {"rate": 74150000, "enable_count": 0,
+            "ldb_di1_div_3_5": {"rate": 21185714, "enable_count": 0,
+              "ldb_di1_podf": {"rate": 10592857, "enable_count": 0,
+                "ldb_di1": {"rate": 10592857, "enable_count": 0}
+              }
+            }
+          },
+          "ipu1_di0_pre_sel": {"rate": 74150000, "enable_count": 0,
+            "ipu1_di0_pre": {"rate": 24716667, "enable_count": 0,
+              "ipu1_di0_sel": {"rate": 24716667, "enable_count": 0,
+                "ipu1_di0": {"rate": 24716667, "enable_count": 0}
+              }
+            }
+          },
+          "ipu1_di1_pre_sel": {"rate": 74150000, "enable_count": 0,
+            "ipu1_di1_pre": {"rate": 24716667, "enable_count": 0,
+              "ipu1_di1_sel": {"rate": 24716667, "enable_count": 0,
+                "ipu1_di1": {"rate": 24716667, "enable_count": 0}
+              }
+            }
+          },
+          "ipu2_di0_pre_sel": {"rate": 74150000, "enable_count": 0,
+            "ipu2_di0_pre": {"rate": 24716667, "enable_count": 0,
+              "ipu2_di0_sel": {"rate": 24716667, "enable_count": 0,
+                "ipu2_di0": {"rate": 24716667, "enable_count": 0}
+              }
+            }
+          },
+          "ipu2_di1_pre_sel": {"rate": 74150000, "enable_count": 0,
+            "ipu2_di1_pre": {"rate": 37075000, "enable_count": 0,
+              "ipu2_di1_sel": {"rate": 37075000, "enable_count": 0,
+                "ipu2_di1": {"rate": 37075000, "enable_count": 0}
+              }
+            }
+          }
+        }
+      }
+    },
+    "pll8_mlb": {"rate": 24000000, "enable_count": 0},
+    "pll7_usb_host": {"rate": 480000000, "enable_count": 1,
+      "usbphy2": {"rate": 480000000, "enable_count": 1}
+    },
+    "pll6_enet": {"rate": 500000000, "enable_count": 3,
+      "sata_ref": {"rate": 100000000, "enable_count": 1,
+        "sata_ref_100m": {"rate": 100000000, "enable_count": 1,
+          "lvds1_sel": {"rate": 100000000, "enable_count": 0,
+            "lvds1_gate": {"rate": 100000000, "enable_count": 0}
+          }
+        }
+      },
+      "pcie_ref": {"rate": 125000000, "enable_count": 0,
+        "pcie_ref_125m": {"rate": 125000000, "enable_count": 0}
+      },
+      "enet_ref": {"rate": 50000000, "enable_count": 1}
+    },
+    "periph_clk2_sel": {"rate": 24000000, "enable_count": 0,
+      "periph_clk2": {"rate": 24000000, "enable_count": 0}
+    }
+  },
+  "ckih1": {"rate": 0, "enable_count": 0},
+  "ckil": {"rate": 32768, "enable_count": 0},
+  "lvds2_sel": {"rate": 0, "enable_count": 0,
+    "lvds2_gate": {"rate": 0, "enable_count": 0}
+  }
+}

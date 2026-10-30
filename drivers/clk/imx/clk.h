@@ -307,7 +307,7 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 #define __imx8m_clk_composite(name, parent_names, reg, flags) \
 		imx8m_clk_composite_flags(name, parent_names, \
 			ARRAY_SIZE(parent_names), reg, 0, \
-			flags | CLK_OPS_PARENT_ENABLE)
+			flags | IMX_COMPOSITE_CLK_FLAGS_DEFAULT)
 
 #define imx8m_clk_composite(name, parent_names, reg) \
 	__imx8m_clk_composite(name, parent_names, reg, 0)

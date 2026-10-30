@@ -227,6 +227,17 @@ key of the target::
         assigned_check:
           ignore: [sp810_0_0]
 
+If ``dump`` has a ``clk_dump -j`` ``reference``, e.g. from the real
+board, every clock enabled in it must have the same rate and parent in
+barebox, unless listed in ``ignore``::
+
+  targets:
+    main:
+      clk_tests:
+        dump:
+          reference: !template "$LG_SRCDIR/test/testdata/skov/imx6q-skov-imx6-revc-lt6.json"
+          ignore: [2400000.ipu@2400000.of_di0_pixel]
+
 The barebox-ci container already ships with labgrid and pytest.
 
 ``MAKEALL`` can also be passed a Labgrid environment file to

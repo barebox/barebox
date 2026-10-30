@@ -187,6 +187,7 @@ lwl-$(CONFIG_MACH_NXP_IMX6ULL_EVK) += imx6ull-14x14-evk.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX8MM_EVK) += imx8mm-evk.dtb.o imx8mm-evkb.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX8MN_EVK) += imx8mn-evk.dtb.o imx8mn-ddr4-evk.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX8MP_EVK) += imx8mp-evk.dtb.o
+dtb-$(CONFIG_MACH_NXP_IMX8MP_EVK) += imx8mp-evk-qemu.dtb
 lwl-$(CONFIG_MACH_NXP_IMX8MP_FRDM) += imx8mp-frdm.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += imx8mq-evk.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX93_FRDM) += imx93-frdm.dtb.o

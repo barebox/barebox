@@ -121,6 +121,10 @@ static void dwc2_hc_init(struct dwc2 *dwc2, struct usb_device *dev, u8 hc,
 
 static void dwc2_endpoint_reset(struct dwc2 *dwc2, int in, int devnum, int ep)
 {
+	/* no toggles kept, bulk and interrupt transfers refuse these */
+	if (devnum >= MAX_DEVICE)
+		return;
+
 	if (in)
 		dwc2->in_data_toggle[devnum][ep] = TSIZ_SC_MC_PID_DATA0;
 	else

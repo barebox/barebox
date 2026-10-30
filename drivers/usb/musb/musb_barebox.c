@@ -73,19 +73,15 @@ static int submit_urb(struct usb_device *dev, struct urb *urb, int timeout_ms)
 	do {
 		musb->isr(musb);
 
-		if (!urb->status)
-			return 0;
+		/* given back, successfully or not */
+		if (!urb->hcpriv)
+			return urb->status;
 
 	} while (!is_timeout(start, timeout * MSECOND));
 
-	if (urb->dev->status & USB_ST_NOT_PROC)
-		ret = -ETIMEDOUT;
-	else
-		ret = urb->status;
-
 	musb_urb_dequeue(musb->hcd, urb, -ECONNRESET);
 
-	return ret;
+	return -ETIMEDOUT;
 }
 
 static int

@@ -856,6 +856,7 @@ const struct of_device_id __clk_of_table_##name				\
 	= { .compatible = compat, .data = fn }
 
 void of_clk_del_provider(struct device_node *np);
+bool of_clk_provider_registered(const struct device_node *np);
 
 typedef int (*of_clk_init_cb_t)(struct device_node *);
 
@@ -926,6 +927,11 @@ static inline struct clk *of_clk_get_by_name(struct device_node *np,
 static inline struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec)
 {
 	return ERR_PTR(-ENOENT);
+}
+
+static inline bool of_clk_provider_registered(const struct device_node *np)
+{
+	return false;
 }
 
 static inline unsigned int of_clk_get_parent_count(struct device_node *np)

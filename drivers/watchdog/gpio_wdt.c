@@ -19,6 +19,7 @@ enum {
 struct gpio_wdt_priv {
 	struct gpio_desc *gpiod;
 	bool		state;
+	bool		always_running;
 	bool		started;
 	unsigned int	hw_algo;
 	struct watchdog	wdd;
@@ -63,13 +64,17 @@ static void gpio_wdt_start(struct gpio_wdt_priv *priv)
 	priv->state = false;
 	gpiod_direction_output(priv->gpiod, priv->state);
 	priv->started = true;
+
+	priv->wdd.running = WDOG_HW_RUNNING;
 }
 
 static int gpio_wdt_set_timeout(struct watchdog *wdd, unsigned int new_timeout)
 {
 	struct gpio_wdt_priv *priv = to_gpio_wdt_priv(wdd);
 
-	if (!new_timeout) {
+	if (!new_timeout && priv->always_running) {
+		return -ENOSYS;
+	} else if (!new_timeout) {
 		gpio_wdt_disable(priv);
 		return 0;
 	}
@@ -117,10 +122,15 @@ static int gpio_wdt_probe(struct device *dev)
 	if (IS_ERR(priv->gpiod))
 		return PTR_ERR(priv->gpiod);
 
+	priv->always_running = of_property_read_bool(dev->of_node, "always-running");
+
 	priv->wdd.hwdev		= dev;
 	priv->wdd.timeout_max	= hw_margin / 1000;
 	priv->wdd.priority	= 129;
 	priv->wdd.set_timeout	= gpio_wdt_set_timeout;
+
+	if (priv->always_running)
+		gpio_wdt_start(priv);
 
 	return watchdog_register(&priv->wdd);
 }

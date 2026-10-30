@@ -353,22 +353,31 @@ static int usb_get_descriptor(struct usb_device *dev, unsigned char type,
 
 static int get_descriptor_len(struct usb_device *dev, int len, int expect_len)
 {
+	void *buf;
 	int err;
 
-	err = usb_get_descriptor(dev, USB_DT_DEVICE, 0, dev->descriptor, len);
+	/* len may exceed the descriptor and the device may send all of it */
+	buf = dma_xalloc(len);
+
+	err = usb_get_descriptor(dev, USB_DT_DEVICE, 0, buf, len);
 	if (err < expect_len) {
 		if (err < 0) {
 			dev_err(&dev->dev, "unable to get device descriptor (error=%d)\n",
 				err);
-			return err;
 		} else {
 			dev_err(&dev->dev, "USB device descriptor short read (expected %i, got %i)\n",
 				expect_len, err);
-			return -EIO;
+			err = -EIO;
 		}
+		goto out;
 	}
 
-        return 0;
+	memcpy(dev->descriptor, buf,
+	       min_t(int, err, sizeof(*dev->descriptor)));
+	err = 0;
+out:
+	dma_free(buf);
+	return err;
 }
 
 static int usb_setup_descriptor(struct usb_device *dev, bool do_read)

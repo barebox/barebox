@@ -236,11 +236,9 @@ void firmware_set_searchpath(const char *path)
 	firmware_path = strdup(path);
 }
 
-static bool file_exists(const char *filename)
+static bool firmware_exists(const char *filename)
 {
-	struct stat s;
-
-	return !stat(filename, &s);
+	return file_exists(filename);
 }
 
 /*
@@ -266,7 +264,7 @@ int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *firmware)
 	dst = basprintf("/dev/%s", mgr->handler->id);
 
 	if (*firmware != '/') {
-		fw = find_path(firmware_path, firmware, file_exists);
+		fw = find_path(firmware_path, firmware, firmware_exists);
 		if (fw)
 			firmware = fw;
 	}

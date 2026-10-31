@@ -121,6 +121,11 @@ def repo_root():
     return os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 
+def resolve_lg_srcdir():
+    os.environ["LG_SRCDIR"] = repo_root()
+    return os.environ["LG_SRCDIR"]
+
+
 def resolve_lg_builddir():
     if "LG_BUILDDIR" not in os.environ:
         if "KBUILD_OUTPUT" in os.environ:
@@ -626,6 +631,7 @@ def main(argv=None):
     env = None
 
     try:
+        resolve_lg_srcdir()
         resolve_lg_builddir()
         lg_env = resolve_lg_env(args.lg_env)
         if lg_env is None:

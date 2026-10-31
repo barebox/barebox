@@ -72,6 +72,7 @@ def pytest_configure(config):
     global lg_env
     global lg_builddir
 
+    qemu_interactive.resolve_lg_srcdir()
     lg_builddir = qemu_interactive.resolve_lg_builddir()
     lg_env = config.option.lg_env
     if lg_env is None:

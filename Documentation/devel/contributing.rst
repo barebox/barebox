@@ -155,6 +155,10 @@ configuration and that labgrid is available. If barebox has been
 built out-of-tree, the build directory must be pointed at by
 ``LG_BUILDDIR``, ``KBUILD_OUTPUT`` or a ``build`` symlink.
 
+Environment files can refer to build artifacts with
+``!template "$LG_BUILDDIR/..."`` and to files in the source tree,
+e.g. test data, with ``$LG_SRCDIR``.
+
 Additional QEMU command-line options can be added by specifying
 them after ``--qemu``::
 

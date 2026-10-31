@@ -208,6 +208,15 @@ Unlike ``--env``, this doesn't need QEMU fw_cfg::
           init_commands:
             - fb0.enable=1
 
+Registers that QEMU emulates differently than the board, e.g. the SoC
+revision, can be overridden via qtest with ``qemu_writel``::
+
+  targets:
+    main:
+      drivers:
+        BareboxTestStrategy:
+          qemu_writel: {0x020c8260: 0x00630002}
+
 The barebox-ci container already ships with labgrid and pytest.
 
 ``MAKEALL`` can also be passed a Labgrid environment file to

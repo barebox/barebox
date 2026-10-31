@@ -10,6 +10,7 @@ import atexit
 import glob
 import os
 import re
+import socket
 import subprocess
 import sys
 import tempfile
@@ -620,7 +621,35 @@ def run_qemu(strategy, mode):
 
     with open("/dev/tty", "r+b", buffering=0) as tty:
         tty.write(bytes(command, "UTF-8"))
+        if mode == MODE_INTERACTIVE and strategy.qemu_writel:
+            return run_qemu_writel(strategy, cmd, tty)
         return subprocess.run(cmd, stdin=tty, stdout=tty, stderr=tty).returncode
+
+
+def run_qemu_writel(strategy, cmd, tty):
+    """Start QEMU stopped, apply qemu_writel via QMP and let it run"""
+    from labgrid.util.qmp import QMPMonitor
+
+    with tempfile.TemporaryDirectory() as tmpdir, \
+         socket.socket(socket.AF_UNIX) as server:
+        path = os.path.join(tmpdir, "qmp")
+        server.bind(path)
+        server.listen(1)
+        server.settimeout(10)
+
+        proc = subprocess.Popen(cmd + ["-S", "-qmp", f"unix:{path}"],
+                                stdin=tty, stdout=tty, stderr=tty)
+        try:
+            conn, _ = server.accept()
+        except TimeoutError:
+            proc.kill()
+            return proc.wait()
+
+        with conn, conn.makefile("rb") as qmp_out, conn.makefile("wb") as qmp_in:
+            qmp = QMPMonitor(qmp_out, qmp_in)
+            strategy.qemu_write_registers(qmp.execute)
+            qmp.execute("cont")
+            return proc.wait()
 
 
 def main(argv=None):

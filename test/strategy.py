@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import enum
+import os
+import socket
+import tempfile
 import time
 
 import attr
@@ -45,12 +48,21 @@ class BareboxTestStrategy(Strategy):
         validator=attr.validators.deep_iterable(
             member_validator=attr.validators.instance_of(str),
             iterable_validator=attr.validators.instance_of(list)))
+    qemu_writel = attr.ib(
+        factory=dict,
+        validator=attr.validators.deep_mapping(
+            key_validator=attr.validators.instance_of(int),
+            value_validator=attr.validators.instance_of(int),
+            mapping_validator=attr.validators.instance_of(dict)))
     qemu = None
+    qtest_dir = None
 
     def __attrs_post_init__(self):
         super().__attrs_post_init__()
         if isinstance(self.console, driver.QEMUDriver):
             self.qemu = self.console
+        elif self.qemu_writel:
+            raise StrategyError("qemu_writel needs a QEMU target")
 
     @step(args=['status'])
     def transition(self, status, *, step):
@@ -71,8 +83,7 @@ class BareboxTestStrategy(Strategy):
         elif status == Status.on:
             self.transition(Status.off)  # pylint: disable=missing-kwoa
             self.target.activate(self.console)
-            # cycle power
-            self.power.cycle()
+            self.power_cycle()
         elif status == Status.barebox:
             self.transition(Status.on)  # pylint: disable=missing-kwoa
             # interrupt barebox
@@ -85,6 +96,41 @@ class BareboxTestStrategy(Strategy):
                 format(self.status, status)
             )
         self.status = status
+
+    def power_cycle(self):
+        if not self.qemu_writel:
+            self.power.cycle()
+            return
+
+        # Write after the reset, but before the CPUs run
+        self.power.off()
+        self.qemu_write_registers(self.qemu.monitor_command)
+        self.power.on()
+
+    def qemu_write_registers(self, monitor_command):
+        """Write qemu_writel to the stopped machine via qtest"""
+        if self.qtest_dir is None:
+            self.qtest_dir = tempfile.TemporaryDirectory(prefix="barebox-qtest-")
+        path = os.path.join(self.qtest_dir.name, "qtest")
+
+        # QEMU only replies via the first qtest object, so reuse it
+        chardevs = monitor_command("query-chardev")
+        if not any(chardev["label"] == "qtest" for chardev in chardevs):
+            monitor_command("chardev-add", {"id": "qtest", "backend": {
+                "type": "socket", "data": {"server": True, "wait": False, "addr": {
+                    "type": "unix", "data": {"path": path}}}}})
+            monitor_command("object-add", {"qom-type": "qtest", "id": "qtest",
+                                           "chardev": "qtest", "log": "none"})
+
+        with socket.socket(socket.AF_UNIX) as sock:
+            sock.connect(path)
+            with sock.makefile("rw") as qtest:
+                for addr, value in self.qemu_writel.items():
+                    qtest.write(f"writel {addr:#x} {value:#x}\n")
+                    qtest.flush()
+                    reply = qtest.readline()
+                    if reply != "OK\n":
+                        raise StrategyError(f"writel {addr:#x}: {reply!r}")
 
     def activate_barebox(self):
         self.target.activate(self.barebox)
@@ -115,7 +161,7 @@ class BareboxTestStrategy(Strategy):
             yield self.barebox
         finally:
             self.target.deactivate(self.barebox)
-            self.power.cycle()
+            self.power_cycle()
             self.activate_barebox()
 
     def skip_cdrom_installer(self):
@@ -172,6 +218,6 @@ class BareboxTestStrategy(Strategy):
             yield self.shell
         finally:
             self.target.deactivate(self.shell)
-            self.power.cycle()
+            self.power_cycle()
             self.activate_barebox()
 

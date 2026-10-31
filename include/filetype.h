@@ -74,6 +74,7 @@ enum filetype {
 	filetype_x86_efi_linux_image,
 	filetype_pxa_ntim,
 	filetype_zboot_efi_linux_image,
+	filetype_amlogic_fip,
 	filetype_max,
 };
 

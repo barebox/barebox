@@ -198,6 +198,16 @@ Environments can restrict the tests they run with the ``tests`` option::
           - test_shell.py
           - test_fit.py::test_fit
 
+Commands to run after every boot can be listed in ``init_commands``.
+Unlike ``--env``, this doesn't need QEMU fw_cfg::
+
+  targets:
+    main:
+      drivers:
+        BareboxTestStrategy:
+          init_commands:
+            - fb0.enable=1
+
 The barebox-ci container already ships with labgrid and pytest.
 
 ``MAKEALL`` can also be passed a Labgrid environment file to

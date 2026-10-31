@@ -40,6 +40,11 @@ class BareboxTestStrategy(Strategy):
     }
 
     status = attr.ib(default=Status.unknown)
+    init_commands = attr.ib(
+        factory=list,
+        validator=attr.validators.deep_iterable(
+            member_validator=attr.validators.instance_of(str),
+            iterable_validator=attr.validators.instance_of(list)))
     qemu = None
 
     def __attrs_post_init__(self):
@@ -71,7 +76,7 @@ class BareboxTestStrategy(Strategy):
         elif status == Status.barebox:
             self.transition(Status.on)  # pylint: disable=missing-kwoa
             # interrupt barebox
-            self.target.activate(self.barebox)
+            self.activate_barebox()
         elif status == Status.shell:
             self._boot_kernel("")
         else:
@@ -80,6 +85,11 @@ class BareboxTestStrategy(Strategy):
                 format(self.status, status)
             )
         self.status = status
+
+    def activate_barebox(self):
+        self.target.activate(self.barebox)
+        for cmd in self.init_commands:
+            self.barebox.run_check(cmd)
 
     def barebox_bootm(self, image=None):
         self.barebox._run(f"global.loglevel={self.barebox.saved_log_level}",
@@ -106,7 +116,7 @@ class BareboxTestStrategy(Strategy):
         finally:
             self.target.deactivate(self.barebox)
             self.power.cycle()
-            self.target.activate(self.barebox)
+            self.activate_barebox()
 
     def skip_cdrom_installer(self):
         # Wait for installer to boot. Send Enter every cycle to dismiss
@@ -163,5 +173,5 @@ class BareboxTestStrategy(Strategy):
         finally:
             self.target.deactivate(self.shell)
             self.power.cycle()
-            self.target.activate(self.barebox)
+            self.activate_barebox()
 

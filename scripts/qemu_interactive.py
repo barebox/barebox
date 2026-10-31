@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.9"
-# dependencies = ["labgrid"]
+# dependencies = ["labgrid>=25.0"]
 # ///
 # SPDX-License-Identifier: GPL-2.0-only
 
@@ -591,9 +591,6 @@ def quote_cmd(cmd):
 def build_qemu_command(strategy, mode):
     if strategy.qemu is None:
         raise QemuInteractiveError(f"Can't enter {mode} for non-QEMU target")
-
-    if mode != MODE_DRY_RUN:
-        strategy.transition("off")
 
     if mode == MODE_DUMP_DTB:
         strategy.qemu.machine += f",dumpdtb={strategy.target.name}.dtb"

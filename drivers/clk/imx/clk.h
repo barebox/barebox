@@ -331,6 +331,10 @@ struct clk *imx93_clk_gate(struct device *dev, const char *name, const char *par
 			   unsigned long flags, void __iomem *reg, u32 bit_idx, u32 val,
 			   u32 mask, u32 domain_id, unsigned int *share_count);
 
+struct clk *imx_clk_gpr_mux(const char *name, const char *compatible,
+			    u32 reg, const char **parent_names,
+			    u8 num_parents, const u32 *mux_table, u32 mask);
+
 /*
  * Names of the above functions used in the Linux Kernel. Added here
  * to be able to use the same names in barebox to reduce the diffs

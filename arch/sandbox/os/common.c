@@ -76,7 +76,6 @@ int sdl_xres;
 int sdl_yres;
 
 static struct termios term_orig, term_vi;
-static char erase_char;	/* the users erase character */
 
 static void rawmode(void)
 {
@@ -87,7 +86,6 @@ static void rawmode(void)
 	term_vi.c_oflag |= (ONLCR);
 	term_vi.c_cc[VMIN] = 1;
 	term_vi.c_cc[VTIME] = 0;
-	erase_char = term_vi.c_cc[VERASE];
 	tcsetattr(0, TCSANOW, &term_vi);
 }
 

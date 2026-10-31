@@ -12,6 +12,10 @@ targets:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'
       BareboxTestStrategy: {}
+    clk_tests:
+      assigned_check:
+        # QEMU doesn't model the SP810 timer clock muxes
+        ignore: [sp810_0_0, sp810_0_1, sp810_0_3]
 images:
   barebox-vexpress-ca15.img: !template "$LG_BUILDDIR/images/barebox-vexpress-ca15.img"
 imports:

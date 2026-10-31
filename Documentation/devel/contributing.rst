@@ -217,6 +217,16 @@ revision, can be overridden via qtest with ``qemu_writel``::
         BareboxTestStrategy:
           qemu_writel: {0x020c8260: 0x00630002}
 
+``test_clk.py`` runs ``clk_assigned_check`` on every target. Clocks
+that QEMU doesn't model correctly can be ignored via the ``clk_tests``
+key of the target::
+
+  targets:
+    main:
+      clk_tests:
+        assigned_check:
+          ignore: [sp810_0_0]
+
 The barebox-ci container already ships with labgrid and pytest.
 
 ``MAKEALL`` can also be passed a Labgrid environment file to

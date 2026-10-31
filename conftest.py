@@ -3,6 +3,7 @@ import pytest
 import os
 import argparse
 from labgrid.exceptions import NoDriverFoundError
+from labgrid.pytestplugin.hooks import LABGRID_ENV_KEY
 from scripts import qemu_interactive
 from test.py import helper
 
@@ -80,6 +81,22 @@ def pytest_configure(config):
     if lg_env is None:
         if lg_env := qemu_interactive.guess_lg_env(lg_builddir):
             os.environ['LG_ENV'] = lg_env
+
+
+def pytest_collection_modifyitems(config, items):
+    # Environments may restrict the tests to run with the tests option
+    env = config.stash[LABGRID_ENV_KEY]
+    tests = env.config.get_target_option("main", "tests", []) if env else []
+    if not tests:
+        return
+
+    def selected(item):
+        name = item.path.name
+        return name in tests or f"{name}::{item.originalname}" in tests
+
+    config.hook.pytest_deselected(
+        items=[item for item in items if not selected(item)])
+    items[:] = [item for item in items if selected(item)]
 
 
 def pytest_report_header(config):

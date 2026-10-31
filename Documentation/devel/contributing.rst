@@ -189,6 +189,15 @@ For testing, the QEMU fw_cfg and virtfs support is particularly useful::
 
 For a complete listing of possible options run ``pytest --help``.
 
+Environments can restrict the tests they run with the ``tests`` option::
+
+  targets:
+    main:
+      options:
+        tests:
+          - test_shell.py
+          - test_fit.py::test_fit
+
 The barebox-ci container already ships with labgrid and pytest.
 
 ``MAKEALL`` can also be passed a Labgrid environment file to

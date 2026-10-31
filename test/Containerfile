@@ -67,16 +67,12 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 
-ENV GCC_VERSION=15.2.0
-ENV LLVM_VERSION=20
+ENV GCC_VERSION=16.2.0
+ENV LLVM_VERSION=23
 ENV LIBCLANG_PATH=/usr/lib/llvm-19/lib
 
 RUN apt-get update && apt-get install -y --no-install-recommends lsb-release gnupg \
 	&& wget https://apt.llvm.org/llvm.sh \
-	&& mkdir -p /etc/crypto-policies/back-ends/ \
-	&& sed 's/\(sha1\.second_preimage_resistance = \)2026-02-01/\12026-06-01/' \
-	    < /usr/share/apt/default-sequoia.config \
-	    > /etc/crypto-policies/back-ends/apt-sequoia.config \
 	&& chmod +x llvm.sh && ./llvm.sh ${LLVM_VERSION} \
 	&& apt-get remove -y lsb-release gnupg \
 	&& apt-get autoremove -y --purge \

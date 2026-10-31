@@ -1,0 +1,76 @@
+#!/bin/sh
+# Compare two barebox `clk_dump -j` outputs, ignoring disabled clocks.
+#
+# Usage: clk-dump-diff A B [REL]
+#
+# A and B must start with the JSON object; whatever follows it (prompt,
+# further console output) is ignored. Only clocks with enable_count > 0
+# are compared, by rate and parent. REL is a relative tolerance as in
+# pytest.approx(rel=...), e.g. 0.001: rates match if
+# |rateB - rateA| <= REL * |rateA|. Default is exact match.
+#
+# Output lines:
+#   - NAME rate=R parent=P          enabled only in A
+#   + NAME rate=R parent=P          enabled only in B
+#   ~ NAME rate RA -> RB            rate differs beyond tolerance
+#   ~ NAME parent PA -> PB          parent differs
+#
+# Exit status: 0 if equal, 1 if different, 2 on error.
+
+usage() {
+	echo "usage: ${0##*/} A B [REL]" >&2
+	exit 2
+}
+
+[ $# -eq 2 ] || [ $# -eq 3 ] || usage
+
+rel=${3:-0}
+case $rel in
+*[!0-9.]* | *.*.* | . | "")
+	echo "${0##*/}: REL must be a non-negative decimal number, e.g. 0.001" >&2
+	exit 2 ;;
+esac
+
+first_json() {
+	jq -c -n input "$1" ||
+		{ echo "${0##*/}: no JSON at start of $1" >&2; exit 2; }
+}
+
+a=$(first_json "$1") || exit 2
+b=$(first_json "$2") || exit 2
+
+out=$(printf '%s\n%s\n' "$a" "$b" | jq -r -n --arg rel "$rel" '
+	($rel | tonumber) as $rel |
+	# clk_dump -j nests children as objects keyed by clock name next to
+	# the "rate" and "enable_count" scalars of their parent.
+	def flatten($parent):
+		to_entries[] | select(.value | type == "object") |
+		.key as $name | .value as $v |
+		{($name): {rate: $v.rate, enable_count: $v.enable_count,
+			   parent: $parent}},
+		($v | flatten($name));
+
+	def enabled: [flatten(null)] | add // {} |
+		with_entries(select(.value.enable_count > 0));
+
+	def rate_eq($a; $b):
+		if $rel == 0 then $a == $b
+		else ($b - $a | fabs) <= $rel * ($a | fabs) end;
+
+	def show: "rate=\(.rate) parent=\(.parent)";
+
+	(input | enabled) as $a | (input | enabled) as $b |
+	[$a, $b | keys[]] | unique[] as $n |
+	if $b[$n] == null then "- \($n) \($a[$n] | show)"
+	elif $a[$n] == null then "+ \($n) \($b[$n] | show)"
+	else
+		(select(rate_eq($a[$n].rate; $b[$n].rate) | not) |
+		 "~ \($n) rate \($a[$n].rate) -> \($b[$n].rate)"),
+		(select($a[$n].parent != $b[$n].parent) |
+		 "~ \($n) parent \($a[$n].parent) -> \($b[$n].parent)")
+	end
+') || exit 2
+
+[ -z "$out" ] && exit 0
+printf '%s\n' "$out"
+exit 1

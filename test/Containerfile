@@ -67,16 +67,12 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 
-ENV GCC_VERSION=15.2.0
-ENV LLVM_VERSION=20
+ENV GCC_VERSION=16.2.0
+ENV LLVM_VERSION=23
 ENV LIBCLANG_PATH=/usr/lib/llvm-19/lib
 
 RUN apt-get update && apt-get install -y --no-install-recommends lsb-release gnupg \
 	&& wget https://apt.llvm.org/llvm.sh \
-	&& mkdir -p /etc/crypto-policies/back-ends/ \
-	&& sed 's/\(sha1\.second_preimage_resistance = \)2026-02-01/\12026-06-01/' \
-	    < /usr/share/apt/default-sequoia.config \
-	    > /etc/crypto-policies/back-ends/apt-sequoia.config \
 	&& chmod +x llvm.sh && ./llvm.sh ${LLVM_VERSION} \
 	&& apt-get remove -y lsb-release gnupg \
 	&& apt-get autoremove -y --purge \
@@ -103,7 +99,7 @@ RUN echo barebox ALL=NOPASSWD: ALL > /etc/sudoers.d/barebox
 
 # install labgrid
 RUN pip3 install -q --no-cache-dir --break-system-packages \
-    git+https://github.com/labgrid-project/labgrid.git@v25.0.1 && \
+    git+https://github.com/labgrid-project/labgrid.git@302171b28650a99d5938ae46a2f2b4f9cfa7d907 && \
     ln -s $(which pytest) /usr/local/bin/labgrid-pytest
 
 ENV CROSS_COMPILE_arm=/opt/gcc-${GCC_VERSION}-nolibc/arm-linux-gnueabi/bin/arm-linux-gnueabi-
@@ -119,14 +115,14 @@ ENV LLVM_SUFFIX=-${LLVM_VERSION}
 RUN ln -Ts /usr/lib/llvm-${LLVM_VERSION}/lib/clang/${LLVM_VERSION}/lib/linux/ \
            /usr/lib/llvm-${LLVM_VERSION}/lib/clang/${LLVM_VERSION}/lib/x86_64-pc-linux-gnu
 
-ENV OPENSSL_VERSION=3.5.6
+ENV OPENSSL_VERSION=4.1.0
 ENV PKG_CONFIG_PATH=/opt/openssl-musl/lib64/pkgconfig
 RUN cd /tmp && \
 	wget https://github.com/openssl/openssl/releases/download/openssl-$OPENSSL_VERSION/openssl-$OPENSSL_VERSION.tar.gz && \
-	echo "deae7c80cba99c4b4f940ecadb3c3338b13cb77418409238e57d7f31f2a3b736 openssl-$OPENSSL_VERSION.tar.gz" | sha256sum --check --status && \
+	echo "50c17baf54cb008f6ce42d50deb4b28050a1aad711636cabd4b241c7e90cc2fd openssl-$OPENSSL_VERSION.tar.gz" | sha256sum --check --status && \
 	tar -xzf openssl-$OPENSSL_VERSION.tar.gz && \
 	cd openssl-$OPENSSL_VERSION && \
-	./Configure linux-x86_64 no-shared no-tests no-secure-memory no-afalgeng \
+	./Configure linux-x86_64 no-shared no-tests no-secure-memory \
 		--prefix=/opt/openssl-musl --openssldir=/opt/openssl-musl/ssl CC=musl-gcc && \
 	make -j$(nproc) && make install_sw && \
 	ln -s /opt/openssl-musl/include/openssl /usr/include/x86_64-linux-musl && \

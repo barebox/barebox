@@ -5,7 +5,6 @@ import time
 
 import attr
 import pytest
-import subprocess
 import re
 from contextlib import contextmanager
 import pexpect
@@ -26,10 +25,7 @@ class Status(enum.Enum):
     off = 1
     on = 2
     barebox = 3
-    qemu_dry_run = 4
-    qemu_interactive = 5
-    qemu_dump_dtb = 6
-    shell = 7
+    shell = 4
 
 
 @target_factory.reg_driver
@@ -169,47 +165,3 @@ class BareboxTestStrategy(Strategy):
             self.power.cycle()
             self.target.activate(self.barebox)
 
-    def force(self, state):
-        self.transition(Status.off)  # pylint: disable=missing-kwoa
-
-        if state.startswith("qemu_"):
-            if state == "qemu_dump_dtb":
-                self.qemu.machine += f",dumpdtb={self.target.name}.dtb"
-
-            if self.qemu is None:
-                pytest.exit(f"Can't enter {state} for non-QEMU target")
-
-            cmd = self.qemu.get_qemu_base_args()
-
-            cmd.append("-serial")
-            cmd.append("mon:stdio")
-            cmd.append("-trace")
-            cmd.append("file=/dev/null")
-
-            with open("/dev/tty", "r+b", buffering=0) as tty:
-                tty.write(bytes("running: \n{}\n".format(quote_cmd(cmd)), "UTF-8"))
-                if state == "qemu_dry_run":
-                    pytest.exit('Dry run. Terminating.')
-                subprocess.run(cmd, stdin=tty, stdout=tty, stderr=tty)
-
-            pytest.exit('Interactive session terminated')
-        else:
-            pytest.exit('Can only force to: qemu_dry_run, qemu_interactive, qemu_dump_dtb')
-
-    def append_qemu_args(self, *args):
-        if self.qemu is None:
-            pytest.exit('Qemu option supplied for non-Qemu target')
-        for arg in args:
-            self.console.extra_args += " " + arg
-
-    def append_qemu_bootargs(self, args):
-        if self.qemu is None:
-            pytest.exit('Qemu option supplied for non-Qemu target')
-        if self.console.boot_args is None:
-            self.console.boot_args = ""
-        self.console.boot_args += " ".join(args)
-
-
-def quote_cmd(cmd):
-    quoted = map(lambda s : s if s.find(" ") == -1 else "'" + s + "'", cmd)
-    return " ".join(quoted)

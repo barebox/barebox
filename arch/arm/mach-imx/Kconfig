@@ -153,6 +153,7 @@ config ARCH_IMX6
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
 	select COMMON_CLK_OF_PROVIDER
+	select MFD_SYSCON
 	select PBL_VERIFY_PIGGY if HABV4
 
 config ARCH_IMX6SL

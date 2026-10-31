@@ -93,6 +93,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_x86_efi_linux_image] = { "x86 Linux/EFI image", "x86-efi-linux" },
 	[filetype_pxa_ntim] = { "Marvell PXA3xx NTIM image", "pxa-ntim" },
 	[filetype_zboot_efi_linux_image] = { "Linux/EFI zboot image", "zboot-efi-linux" },
+	[filetype_amlogic_fip] = { "Amlogic Firmware Image Package", "amlogic-fip" },
 };
 
 static const char *file_type_to_nr_string(enum filetype f)
@@ -403,6 +404,14 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_rockchip_rkss_image;
 	if (le32_to_cpu(buf[0]) == le32_to_cpu(0xaa640001))
 		return filetype_fip;
+	/* Amlogic's FIP has 16 bytes in front of the ToC */
+	if (!buf[0] && !buf[1] && !buf[2] && !buf[3] &&
+	    le32_to_cpu(buf[4]) == 0xaa640001)
+		return filetype_amlogic_fip;
+	/* the Amlogic G12 boot image starts with BL2, 64 KiB as its header says */
+	if (le32_to_cpu(buf[4]) == 0x4c4d4140 /* @AML */ &&
+	    le32_to_cpu(buf[5]) == 0x10000 - 0x10)
+		return filetype_amlogic_fip;
 
 	if ((buf8[0] == 0x5a || buf8[0] == 0x69 || buf8[0] == 0x78 ||
 	     buf8[0] == 0x8b || buf8[0] == 0x9c) &&
@@ -598,6 +607,7 @@ bool filetype_is_barebox_image(enum filetype ft)
 	case filetype_layerscape_qspi_image:
 	case filetype_stm32_image_fsbl_v1:
 	case filetype_fip:
+	case filetype_amlogic_fip:
 		return true;
 	default:
 		return false;

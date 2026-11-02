@@ -181,7 +181,9 @@ struct inode *jffs2_iget(struct super_block *sb, unsigned long ino)
 
 	case S_IFLNK:
 		inode->i_op = &simple_symlink_inode_operations;
+		/* the VFS frees i_link when destroying the inode */
 		inode->i_link = f->target;
+		f->target = NULL;
 		break;
 
 	case S_IFDIR:

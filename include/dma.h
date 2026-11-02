@@ -41,6 +41,9 @@ static inline void *dma_zalloc(size_t size)
 }
 #endif
 
+#define dma_xalloc	dma_alloc
+#define dma_xzalloc	dma_zalloc
+
 static inline void dma_free(void *mem)
 {
 	free(mem);

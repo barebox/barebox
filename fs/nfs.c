@@ -1413,6 +1413,8 @@ static int nfs_iterate(struct file *file, struct dir_context *ctx)
 	void *buf = NULL;
 	struct nfs_dir *ndir;
 	struct xdr_stream *xdr;
+	uint64_t *cookies = NULL;
+	unsigned int ncookies = 0, i;
 	int ret;
 	uint32_t *p, len;
 
@@ -1420,6 +1422,10 @@ static int nfs_iterate(struct file *file, struct dir_context *ctx)
 	ndir->fh = nfsi(dir)->fh;
 
 	while (1) {
+		/* remember the cookies we requested to detect loops */
+		cookies = xrealloc(cookies, (ncookies + 1) * sizeof(*cookies));
+		cookies[ncookies++] = ndir->cookie;
+
 		/* cookie == 0 and cookieverf == 0 means start of dir */
 		buf = nfs_readdirattr_req(npriv, ndir);
 		if (!buf) {
@@ -1469,11 +1475,26 @@ static int nfs_iterate(struct file *file, struct dir_context *ctx)
 			ndir->cookie = ntoh64(net_read_uint64(p));
 		}
 		free(buf);
+		buf = NULL;
+
+		/*
+		 * A reply without eof that has no entries, or that leads back
+		 * to a cookie we already requested, would make us request the
+		 * same entries again and again.
+		 */
+		for (i = 0; i < ncookies; i++) {
+			if (cookies[i] == ndir->cookie) {
+				pr_err("%s: READDIR doesn't make progress\n", __func__);
+				ret = -EIO;
+				goto out;
+			}
+		}
 	}
 
 	ret = 0;
 
 out:
+	free(cookies);
 	free(buf);
 	free(ndir);
 

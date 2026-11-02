@@ -211,7 +211,9 @@ struct inode *ubifs_iget(struct super_block *sb, unsigned long inum)
 		}
 		memcpy(ui->data, ino->data, ui->data_len);
 		((char *)ui->data)[ui->data_len] = '\0';
+		/* the VFS frees i_link when destroying the inode */
 		inode->i_link = ui->data;
+		ui->data = NULL;
 		break;
 	case S_IFBLK:
 	case S_IFCHR:

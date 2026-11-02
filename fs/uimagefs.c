@@ -445,14 +445,23 @@ static int __uimage_open(struct uimagefs_handle *priv)
 		do {
 			u32 size;
 
-			ret = read(fd, &size, sizeof(size));
+			ret = read_full(fd, &size, sizeof(size));
 			if (ret < 0)
 				goto err_out;
+			if (ret != sizeof(size)) {
+				ret = -EINVAL;
+				goto err_out;
+			}
 
 			offset += sizeof(size);
 
 			if (!size)
 				break;
+
+			if (priv->nb_data_entries >= MAX_MULTI_IMAGE_COUNT) {
+				ret = -EINVAL;
+				goto err_out;
+			}
 
 			ret = uimagefs_add_data_entry(priv, 0, uimage_to_cpu(size));
 			if (ret)

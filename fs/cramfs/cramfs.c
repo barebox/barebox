@@ -46,7 +46,7 @@ struct cramfs_priv {
 	struct cramfs_super super;
 	int curr_base;
 	char buf[4096];
-	size_t curr_block_len;
+	int curr_block_len;
 	struct cdev *cdev;
 };
 
@@ -149,7 +149,7 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 			priv->curr_base = base;
 		}
 
-		copy = min(priv->curr_block_len, size);
+		copy = min_t(size_t, priv->curr_block_len, size);
 
 		memcpy(buf, priv->buf + ofs, copy);
 		ofs = 0;

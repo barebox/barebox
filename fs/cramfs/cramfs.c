@@ -476,18 +476,21 @@ static int cramfs_probe(struct device *dev)
 	if (cramfs_read_super(priv)) {
 		dev_info(dev, "no valid cramfs found\n");
 		ret =  -EINVAL;
+		goto err_out;
 	}
 
 	priv->curr_base = -1;
 
-	cramfs_uncompress_init ();
-
 	sb->s_op = &cramfs_ops;
 
 	root = get_cramfs_inode(sb, &priv->super.root, 0);
-	if (IS_ERR(root))
-		return PTR_ERR(root);
+	if (!root) {
+		ret = -EINVAL;
+		goto err_out;
+	}
 	sb->s_root = d_make_root(root);
+
+	cramfs_uncompress_init();
 
 	return 0;
 

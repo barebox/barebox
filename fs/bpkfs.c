@@ -157,8 +157,6 @@ static int bpkfs_open(struct device *dev, struct file *f, const char *filename)
 			ret = d->fd;
 			goto out;
 		}
-
-		lseek(d->fd, d->offset, SEEK_SET);
 	}
 
 	f->f_size = d->size;
@@ -186,23 +184,11 @@ static int bpkfs_read(struct file *file, void *buf,
 	struct bpkfs_handle_data *d = file->private_data;
 
 	if (bpkfs_is_crc_file(d)) {
-		memcpy(buf, &d->data[d->pos], insize);
+		memcpy(buf, &d->data[file->f_pos], insize);
 		return insize;
 	} else {
-		return read(d->fd, buf, insize);
+		return pread(d->fd, buf, insize, d->offset + file->f_pos);
 	}
-}
-
-static int bpkfs_lseek(struct file *file, loff_t pos)
-{
-	struct bpkfs_handle_data *d = file->private_data;
-
-	if (!bpkfs_is_crc_file(d))
-		lseek(d->fd, d->offset + pos, SEEK_SET);
-
-	d->pos = pos;
-
-	return 0;
 }
 
 struct somfy_readdir {
@@ -505,7 +491,6 @@ static const struct fs_legacy_ops bpkfs_ops = {
 	.closedir  = bpkfs_closedir,
 	.stat      = bpkfs_stat,
 	.read      = bpkfs_read,
-	.lseek     = bpkfs_lseek,
 };
 
 static struct fs_driver bpkfs_driver = {

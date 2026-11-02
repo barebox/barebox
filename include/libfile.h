@@ -37,6 +37,19 @@ int copy_recursive(const char *src, const char *dst, unsigned flags);
 
 int compare_file(const char *f1, const char *f2);
 
+bool file_exists_type(const char *path, umode_t type);
+
+/**
+ * file_exists - check whether a file of any type exists
+ * @path: path of the file to check
+ *
+ * Return: true if @path exists, false otherwise
+ */
+static inline bool file_exists(const char *path)
+{
+	return file_exists_type(path, 0);
+}
+
 #if IN_PROPER
 int open_and_lseek(const char *filename, int mode, loff_t pos);
 #else

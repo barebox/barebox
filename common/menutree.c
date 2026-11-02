@@ -139,8 +139,7 @@ int menutree(const char *path, int toplevel)
 
 		mt->action = basprintf("%s/action", g.gl_pathv[i]);
 
-		ret = stat(mt->action, &s);
-		if (ret) {
+		if (!file_exists(mt->action)) {
 			mt->me.action = menutree_action_subdir;
 			free(mt->action);
 			mt->action = xstrdup(g.gl_pathv[i]);

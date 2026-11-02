@@ -128,19 +128,28 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 	while (size) {
 		uint32_t base;
 		int copy, ofs;
+		ssize_t ret;
 
 		blocknr = (offset + outsize) >> 12;
 		ofs = (offset + outsize) % 4096;
-		if (blocknr)
-			cdev_read(priv->cdev, &base, 4,
-				  OFFSET(inode) + (blocknr - 1) * 4, 0);
-		else
+		if (blocknr) {
+			ret = cdev_read(priv->cdev, &base, 4,
+					OFFSET(inode) + (blocknr - 1) * 4, 0);
+			if (ret < 0)
+				return ret;
+			if (ret != 4)
+				return -EIO;
+		} else {
 			base = (CRAMFS_GET_OFFSET(cramfs_inode) +
 				(((CRAMFS_24 (cramfs_inode->size)) + 4095) >> 12)) << 2;
+		}
 
 		if (priv->curr_base < 0 || priv->curr_base != base) {
 
-			cdev_read(priv->cdev, cramfs_read_buf, 4096, base, 0);
+			ret = cdev_read(priv->cdev, cramfs_read_buf, 4096, base, 0);
+			if (ret < 0)
+				return ret;
+
 			priv->curr_block_len = cramfs_uncompress_block(priv->buf, 4096,
 					cramfs_read_buf, 4096);
 			if (priv->curr_block_len <= 0)

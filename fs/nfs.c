@@ -1587,17 +1587,28 @@ static struct dentry *nfs_lookup(struct inode *dir, struct dentry *dentry,
 	int ret;
 
 	if (!inode)
-		return NULL;
+		return ERR_PTR(-ENOMEM);
 
 	ret = nfs_lookup_req(npriv, &ndir->fh, dentry->name, inode);
 	if (ret)
-		return NULL;
+		goto err;
 
-	nfs_init_inode(npriv, inode, inode->i_mode);
+	ret = nfs_init_inode(npriv, inode, inode->i_mode);
+	if (ret)
+		goto err;
 
 	d_add(dentry, inode);
 
 	return NULL;
+
+err:
+	iput(inode);
+
+	/* leave a negative dentry for files that don't exist */
+	if (ret == -ENOENT)
+		return NULL;
+
+	return ERR_PTR(ret);
 }
 
 static const struct file_operations nfs_dir_operations = {

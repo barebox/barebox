@@ -282,14 +282,25 @@ static int bootp_request(void)
 static void dhcp_options_handle(unsigned char option, void *popt,
 			       int optlen, struct bootp *bp)
 {
+	/*
+	 * The options read with a fixed size below are skipped when the
+	 * server announces less than that, as reading them would run past
+	 * the packet.
+	 */
 	switch (option) {
 		case 1:
+			if (optlen < 4)
+				break;
 			dhcp_result->netmask = net_read_ip(popt);
 			break;
 		case 3:
+			if (optlen < 4)
+				break;
 			dhcp_result->gateway = net_read_ip(popt);
 			break;
 		case 6:
+			if (optlen < 4)
+				break;
 			dhcp_result->nameserver = net_read_ip(popt);
 			break;
 		case DHCP_HOSTNAME:
@@ -302,9 +313,13 @@ static void dhcp_options_handle(unsigned char option, void *popt,
 			dhcp_result->rootpath = xstrndup(popt, optlen);
 			break;
 		case 51:
+			if (optlen < 4)
+				break;
 			net_copy_uint32(&dhcp_result->leasetime, popt);
 			break;
 		case 54:
+			if (optlen < 4)
+				break;
 			dhcp_result->dhcp_serverip = net_read_ip(popt);
 			break;
 		case 66:
@@ -320,6 +335,18 @@ static void dhcp_options_handle(unsigned char option, void *popt,
 		default:
 			debug("*** Unhandled DHCP Option in OFFER/ACK: %d\n", option);
 	}
+}
+
+/*
+ * The BOOTP header is followed by a variable length vendor area, which
+ * may be empty: check it holds the magic cookie before reading it.
+ */
+static bool bootp_has_vendor_magic(struct bootp *bp, unsigned int len)
+{
+	if (len < offsetof(struct bootp, bp_vend) + 4)
+		return false;
+
+	return net_read_uint32(&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC);
 }
 
 static void dhcp_options_process(unsigned char *popt, struct bootp *bp,
@@ -429,8 +456,8 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 		debug("%s: state SELECTING, bp_file: \"%s\"\n", __func__, bp->bp_file);
 		dhcp_state = REQUESTING;
 
-		if (net_read_uint32(&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
-			dhcp_options_process((u8 *)&bp->bp_vend[4], bp, len);
+		if (bootp_has_vendor_magic(bp, udp.len))
+			dhcp_options_process((u8 *)&bp->bp_vend[4], bp, udp.len);
 
 		bootp_copy_net_params(bp); /* Store net params from reply */
 
@@ -442,9 +469,9 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 		debug("%s: State REQUESTING\n", __func__);
 
 		if (dhcp_message_type((u8 *)bp->bp_vend,
-				      len - offsetof(struct bootp, bp_vend)) == DHCP_ACK) {
-			if (net_read_uint32(&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
-				dhcp_options_process(&bp->bp_vend[4], bp, len);
+				      udp.len - offsetof(struct bootp, bp_vend)) == DHCP_ACK) {
+			if (bootp_has_vendor_magic(bp, udp.len))
+				dhcp_options_process(&bp->bp_vend[4], bp, udp.len);
 			bootp_copy_net_params(bp); /* Store net params from reply */
 			dhcp_state = BOUND;
 			dev_info(&dhcp_edev->dev, "DHCP client bound to address %pI4\n", &dhcp_result->ip);

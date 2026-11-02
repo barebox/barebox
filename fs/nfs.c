@@ -405,7 +405,8 @@ static void *nfs_packet_read(struct packet *nfs_packet, unsigned int len)
 {
 	void *ret;
 
-	if (nfs_packet->pos + len > nfs_packet->len) {
+	/* the length comes from the server, so pos + len may wrap */
+	if (len > nfs_packet->len - nfs_packet->pos) {
 		nfs_packet->pos = nfs_packet->len;
 		return NULL;
 	}
@@ -439,7 +440,7 @@ static void *nfs_packet_memdup_rest(struct packet *nfs_packet, unsigned int *len
  */
 static void nfs_read_align(struct packet *nfs_packet, unsigned int align)
 {
-	nfs_packet->pos = ALIGN(nfs_packet->pos, align);
+	nfs_packet->pos = min(ALIGN(nfs_packet->pos, align), nfs_packet->len);
 }
 
 /*
@@ -1461,15 +1462,15 @@ static int nfs_iterate(struct file *file, struct dir_context *ctx)
 	ret = 0;
 
 out:
-	free(ndir->stream.buf);
+	free(buf);
 	free(ndir);
 
 	return ret;
 
 err_eop:
 	pr_err("Unexpected end of packet\n");
-
-	return -EIO;
+	ret = -EIO;
+	goto out;
 }
 
 static struct inode *nfs_alloc_inode(struct super_block *sb)

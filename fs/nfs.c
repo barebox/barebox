@@ -786,7 +786,7 @@ static int nfs_mount_req(struct nfs_priv *npriv)
 {
 	struct device *dev = npriv->dev;
 	uint32_t data[1024];
-	uint32_t *p, status;
+	uint32_t *p, status, fhsize;
 	int len;
 	int pathlen;
 	int ret;
@@ -839,13 +839,13 @@ static int nfs_mount_req(struct nfs_priv *npriv)
 		goto err_free_packet;
 	}
 
-	npriv->rootfh.size = ntoh32(net_read_uint32(p));
-	if (npriv->rootfh.size > NFS3_FHSIZE) {
-		dev_err(dev, "%s: file handle too big: %lu\n",
-		       __func__, (unsigned long)npriv->rootfh.size);
+	fhsize = ntoh32(net_read_uint32(p));
+	if (fhsize > NFS3_FHSIZE) {
+		dev_err(dev, "%s: file handle too big: %u\n", __func__, fhsize);
 		ret = -EIO;
 		goto err_free_packet;
 	}
+	npriv->rootfh.size = fhsize;
 
 	p = nfs_packet_read(nfs_packet, npriv->rootfh.size);
 	if (!p) {
@@ -902,7 +902,7 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 	struct device *dev = npriv->dev;
 	struct nfs_inode *ninode = nfsi(inode);
 	uint32_t data[1024];
-	uint32_t *p, status;
+	uint32_t *p, status, fhsize;
 	int len;
 	int ret = 0;
 	struct packet *nfs_packet;
@@ -963,13 +963,13 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 		goto err_free_packet;
 	}
 
-	ninode->fh.size = ntoh32(net_read_uint32(p));
-	if (ninode->fh.size > NFS3_FHSIZE) {
-		dev_dbg(dev, "%s: file handle too big: %u\n", __func__,
-		      ninode->fh.size);
+	fhsize = ntoh32(net_read_uint32(p));
+	if (fhsize > NFS3_FHSIZE) {
+		dev_dbg(dev, "%s: file handle too big: %u\n", __func__, fhsize);
 		ret = -EIO;
 		goto err_free_packet;
 	}
+	ninode->fh.size = fhsize;
 
 	p = nfs_packet_read(nfs_packet, ninode->fh.size);
 	if (!p) {
@@ -1189,6 +1189,13 @@ static int nfs_read_req(struct file_priv *priv, uint64_t offset,
 	 */
 	nfs_packet_read(nfs_packet, sizeof(uint32_t));
 
+	if (rlen > readlen) {
+		dev_err(dev, "%s: server returned more than requested: %u > %u\n",
+			__func__, rlen, readlen);
+		ret = -EIO;
+		goto err_free_packet;
+	}
+
 	if (readlen && !rlen && !eof) {
 		ret = -EIO;
 		goto err_free_packet;
@@ -1303,6 +1310,11 @@ static int nfs_readlink_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 	}
 
 	len = ntoh32(net_read_uint32(p)); /* new path length */
+	if (len >= PATH_MAX) {
+		dev_err(dev, "%s: link target too long: %u\n", __func__, len);
+		ret = -ENAMETOOLONG;
+		goto err_free_packet;
+	}
 
 	p = nfs_packet_read(nfs_packet, len);
 	if (!p) {

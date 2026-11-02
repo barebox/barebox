@@ -867,6 +867,8 @@ static void fs_remove(struct device *dev)
 
 	free(fsdev->path);
 	free(fsdev->options);
+	free(fsdev->linux_root);
+	free(fsdev->linux_rootopts);
 
 	if (fsdev->cdev)
 		cdev_close(fsdev->cdev);
@@ -890,8 +892,10 @@ static void fs_remove(struct device *dev)
 	list_for_each_entry_safe(inode, tmp, &sb->s_inodes, i_sb_list)
 		destroy_inode(inode);
 
-	if (&fsdev->vfsmount != fsdev->vfsmount.parent)
+	if (&fsdev->vfsmount != fsdev->vfsmount.parent) {
+		dput(fsdev->vfsmount.mountpoint);
 		mntput(fsdev->vfsmount.parent);
+	}
 
 	free(fsdev->backingstore);
 }
@@ -1471,13 +1475,7 @@ EXPORT_SYMBOL(ihold);
 
 /* dcache.c */
 
-/*
- * refcounting is implemented but right now we do not do anything with
- * the refcounting information. Dentries are never freed unless the
- * filesystem they are on is unmounted. In this case we do not care
- * about the refcounts so we may free up a dentry that is actually used
- * (file is opened). This leaves room for improvements.
- */
+/* an unused dentry is freed on failed revalidation or on unmount */
 void dput(struct dentry *dentry)
 {
 	if (!dentry)
@@ -1644,8 +1642,16 @@ static struct dentry *d_lookup(struct dentry *parent, const struct qstr *name)
 	return NULL;
 }
 
+/* free the unused descendants, they would keep the stale dentry alive */
 static void d_invalidate(struct dentry *dentry)
 {
+	struct dentry *child, *tmp;
+
+	list_for_each_entry_safe(child, tmp, &dentry->d_subdirs, d_child) {
+		d_invalidate(child);
+		if (!child->d_count)
+			dentry_kill(child);
+	}
 }
 
 static int d_no_revalidate(struct dentry *dir, unsigned int flags)
@@ -1680,6 +1686,15 @@ static struct dentry *lookup_dcache(const struct qstr *name,
 			if (!error)
 				d_invalidate(dentry);
 			dput(dentry);
+
+			/*
+			 * A dentry still referenced, e.g. by a symlink being
+			 * followed, an open file or a child in use, must not
+			 * be freed. Keep using it until it is unused.
+			 */
+			if (dentry->d_count)
+				return error ? ERR_PTR(error) : dget(dentry);
+
 			dentry_kill(dentry);
 			return ERR_PTR(error);
 		}
@@ -2710,20 +2725,27 @@ static int do_dentry_open(struct file *f)
 	if (!i_size_valid(f->f_inode)) {
 		dev_warn(&f->fsdev->dev, "%s: bad i_size value: %lld\n",
 			 f->path, f->f_size);
-		return -EUCLEAN;
+		error = -EUCLEAN;
+		goto err_release;
 	}
 
 	if (f->f_flags & O_TRUNC) {
 		error = fsdev_truncate(f, 0);
 		f->f_size = 0;
 		if (error)
-			return error;
+			goto err_release;
 	}
 
 	if (f->f_flags & O_APPEND)
 		f->f_pos = f->f_size;
 
 	return 0;
+
+err_release:
+	if (f->f_inode->i_fop->release)
+		f->f_inode->i_fop->release(f->f_inode, f);
+
+	return error;
 }
 
 /**
@@ -3050,9 +3072,11 @@ DIR *fdopendir(int fd)
 
 	ret = __opendir(dir);
 	if (ret)
-		goto err;
+		goto err_free;
 
 	return dir;
+err_free:
+	free(dir);
 err:
 	errno_set(ret);
 	return NULL;
@@ -3061,6 +3085,7 @@ EXPORT_SYMBOL(fdopendir);
 
 DIR *opendir(const char *pathname)
 {
+	DIR *dir;
 	int fd;
 
 	fd = open(pathname, O_DIRECTORY);
@@ -3069,7 +3094,12 @@ DIR *opendir(const char *pathname)
 		return NULL;
 	}
 
-	return fdopendir(fd);
+	/* fdopendir() takes over the descriptor only on success */
+	dir = fdopendir(fd);
+	if (!dir)
+		close(fd);
+
+	return dir;
 }
 EXPORT_SYMBOL(opendir);
 
@@ -3283,7 +3313,7 @@ EXPORT_SYMBOL(getcwd);
 int chdir(const char *pathname)
 {
 	char *realpath;
-	struct path path;
+	struct path path, oldpwd;
 	int ret;
 
 	ret = filename_lookup(AT_FDCWD, getname(pathname), LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
@@ -3291,6 +3321,7 @@ int chdir(const char *pathname)
 		goto out;
 
 	if (!d_is_dir(path.dentry)) {
+		path_put(&path);
 		ret = -ENOTDIR;
 		goto out;
 	}
@@ -3298,6 +3329,11 @@ int chdir(const char *pathname)
 	realpath = dpath(path.dentry, d_root);
 	strcpy(cwd, realpath);
 	free(realpath);
+
+	oldpwd.dentry = cwd_dentry;
+	oldpwd.mnt = cwd_mnt;
+	path_put(&oldpwd);
+
 	cwd_dentry = path.dentry;
 	cwd_mnt = path.mnt;
 
@@ -3392,9 +3428,6 @@ int mount(const char *device, const char *fsname, const char *pathname,
 
 	init_super(&fsdev->sb);
 
-	if (path.mnt)
-		mntget(path.mnt);
-
 	if (d_root)
 		fsdev->path = dpath(path.dentry, d_root);
 
@@ -3412,8 +3445,8 @@ int mount(const char *device, const char *fsname, const char *pathname,
 	}
 
 	if (d_root) {
-		fsdev->vfsmount.mountpoint = path.dentry;
-		fsdev->vfsmount.parent = path.mnt;
+		fsdev->vfsmount.mountpoint = dget(path.dentry);
+		fsdev->vfsmount.parent = mntget(path.mnt);
 		fsdev->vfsmount.mountpoint->d_flags |= DCACHE_MOUNTED;
 	} else {
 		d_root = fsdev->sb.s_root;
@@ -3423,8 +3456,8 @@ int mount(const char *device, const char *fsname, const char *pathname,
 		fsdev->vfsmount.parent = &fsdev->vfsmount;
 		fsdev->path = xstrdup("/");
 
-		cwd_dentry = d_root;
-		cwd_mnt = mnt_root;
+		cwd_dentry = dget(d_root);
+		cwd_mnt = mntget(mnt_root);
 	}
 
 	fsdev->vfsmount.mnt_root = fsdev->sb.s_root;
@@ -3446,6 +3479,7 @@ err_no_driver:
 	unregister_device(&fsdev->dev);
 err_register:
 	fs_remove(&fsdev->dev);
+	free(fsdev);
 out:
 	path_put(&path);
 
@@ -3518,6 +3552,7 @@ static void automount_remove_dentry(struct dentry *dentry)
 
 	return;
 found:
+	am->dentry->d_flags &= ~DCACHE_NEED_AUTOMOUNT;
 	list_del(&am->list);
 	dput(am->dentry);
 	free(am->path);
@@ -3555,13 +3590,13 @@ int automount_add(const char *pathname, const char *cmd)
 		goto out;
 	}
 
+	automount_remove_dentry(path.dentry);
+
 	am = xzalloc(sizeof(*am));
 	am->path = dpath(path.dentry, d_root);
 	am->dentry = dget(path.dentry);
 	am->dentry->d_flags |= DCACHE_NEED_AUTOMOUNT;
 	am->cmd = xstrdup(cmd);
-
-	automount_remove_dentry(am->dentry);
 
 	list_add_tail(&am->list, &automount_list);
 

@@ -39,6 +39,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_ENVIRONMENT_VARIABLES if ENVIRONMENT_VARIABLES
 	select SELFTEST_FS_RAMFS if FS_RAMFS
 	select SELFTEST_DIRFD if FS_RAMFS && FS_DEVFS
+	select SELFTEST_GLOB if GLOB && FS_RAMFS
 	select SELFTEST_JSON if JSMN
 	select SELFTEST_JWT if JWT
 	select SELFTEST_DIGEST if DIGEST
@@ -117,6 +118,10 @@ config SELFTEST_FS_RAMFS
 config SELFTEST_DIRFD
 	bool "dirfd selftest"
 	depends on FS_RAMFS && FS_DEVFS
+
+config SELFTEST_GLOB
+	bool "glob selftest"
+	depends on GLOB && FS_RAMFS
 
 config SELFTEST_JSON
 	bool "JSON selftest"

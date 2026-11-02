@@ -18,6 +18,7 @@ obj-$(CONFIG_SELFTEST_OF_OVERLAY) += of_overlay.dtbo.o of_overlay_missing_target
 obj-$(CONFIG_SELFTEST_ENVIRONMENT_VARIABLES) += envvar.o
 obj-$(CONFIG_SELFTEST_FS_RAMFS) += ramfs.o
 obj-$(CONFIG_SELFTEST_DIRFD) += dirfd.o
+obj-$(CONFIG_SELFTEST_GLOB) += glob.o
 obj-$(CONFIG_SELFTEST_JSON) += json.o
 obj-$(CONFIG_SELFTEST_JWT) += jwt.o
 obj-$(CONFIG_TEST_KEY_RSA4096) += snakeoil_rsa4096.pem.o

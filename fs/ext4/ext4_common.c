@@ -71,7 +71,11 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 	struct ext_filesystem *fs = data->fs;
 	int blksz = EXT2_BLOCK_SIZE(data);
 	ssize_t ret;
+	int depth = le16_to_cpu(ext_block->eh_depth);
 	int i;
+
+	if (depth > EXT4_MAX_EXTENT_DEPTH)
+		return NULL;
 
 	while (1) {
 		index = (struct ext4_extent_idx *)(ext_block + 1);
@@ -79,7 +83,11 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 		if (le16_to_cpu(ext_block->eh_magic) != EXT4_EXT_MAGIC)
 			return NULL;
 
-		if (ext_block->eh_depth == 0)
+		/* each level must be exactly one below its parent */
+		if (le16_to_cpu(ext_block->eh_depth) != depth)
+			return NULL;
+
+		if (depth == 0)
 			return ext_block;
 
 		if (ext4_check_eh_entries(ext_block, buf, blksz))
@@ -103,6 +111,8 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 			return NULL;
 		else
 			ext_block = (struct ext4_extent_header *)buf;
+
+		depth--;
 	}
 }
 

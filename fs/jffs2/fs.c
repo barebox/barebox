@@ -76,8 +76,11 @@ static int jffs2_get_block(struct jffs2_file *jf, unsigned int pos)
 	if (pos != jf->offset) {
 		ret = jffs2_read_inode_range(c, f, jf->buf, pos,
 					     JFFS2_BLOCK_SIZE);
-		if (ret && ret != -ENOENT)
+		if (ret && ret != -ENOENT) {
+			/* jf->buf has been partly overwritten */
+			jf->offset = -1;
 			return ret;
+		}
 		jf->offset = pos;
 	}
 

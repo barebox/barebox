@@ -40,6 +40,12 @@ ssize_t ext4fs_devread(struct ext_filesystem *fs, sector_t __sector, int byte_of
 		return size;
 	}
 
+	if (size != byte_len) {
+		dev_err(fs->dev, "short read at sector %llu: %zd of %zu bytes\n",
+			__sector, size, byte_len);
+		return -EIO;
+	}
+
 	return 0;
 }
 

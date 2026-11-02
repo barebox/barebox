@@ -33,6 +33,7 @@
 #include <linux/stat.h>
 #include <linux/time.h>
 #include <linux/magic.h>
+#include <linux/log2.h>
 #include <asm/byteorder.h>
 #include <dma.h>
 
@@ -586,14 +587,30 @@ int ext4fs_mount(struct ext_filesystem *fs)
 		goto fail;
 	}
 
+	blksz = EXT2_BLOCK_SIZE(data);
+
+	if (fs->inodesz < EXT2_GOOD_OLD_INODE_SIZE || fs->inodesz > blksz ||
+	    !is_power_of_2(fs->inodesz)) {
+		dev_err(fs->dev, "invalid inode size %u\n", fs->inodesz);
+		ret = -EINVAL;
+		goto fail;
+	}
+
+	if ((le32_to_cpu(data->sblock.feature_incompat) &
+	     EXT4_FEATURE_INCOMPAT_64BIT) &&
+	    (fs->gdsize < EXT4_MIN_DESC_SIZE_64BIT ||
+	     fs->gdsize > EXT4_MAX_DESC_SIZE || !is_power_of_2(fs->gdsize))) {
+		dev_err(fs->dev, "invalid descriptor size %u\n", fs->gdsize);
+		ret = -EINVAL;
+		goto fail;
+	}
+
 	data->diropen.data = data;
 	data->diropen.ino = 2;
 	data->diropen.inode_read = 1;
 	data->inode = &data->diropen.inode;
 	data->fs = fs;
 	fs->data = data;
-
-	blksz = EXT2_BLOCK_SIZE(data);
 
 	fs->data->indir1.data = malloc(blksz);
 	fs->data->indir2.data = malloc(blksz);

@@ -59,15 +59,24 @@ static int jffs2_zlib_decompress(unsigned char *data_in,
 
 	if (Z_OK != zlib_inflateInit2(&inf_strm, wbits)) {
 		pr_warn("inflateInit failed\n");
-		return 1;
+		return -EIO;
 	}
 
 	while((ret = zlib_inflate(&inf_strm, Z_FINISH)) == Z_OK)
 		;
+	zlib_inflateEnd(&inf_strm);
+
 	if (ret != Z_STREAM_END) {
 		pr_notice("inflate returned %d\n", ret);
+		return -EIO;
 	}
-	zlib_inflateEnd(&inf_strm);
+
+	if (inf_strm.total_out != destlen) {
+		pr_notice("inflate returned %lu bytes, expected %u\n",
+			  inf_strm.total_out, destlen);
+		return -EIO;
+	}
+
 	return 0;
 }
 

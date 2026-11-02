@@ -1564,6 +1564,12 @@ static int nfs_init_inode(struct nfs_priv *npriv, struct inode *inode,
 	case S_IFLNK:
 		inode->i_op = &nfs_symlink_inode_operations;
 		break;
+	case S_IFBLK:
+	case S_IFCHR:
+	case S_IFSOCK:
+	case S_IFIFO:
+		/* No special files in barebox */
+		break;
 	}
 
 	return 0;

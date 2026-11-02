@@ -262,6 +262,7 @@ static struct inode *get_cramfs_inode(struct super_block *sb,
 		inode->i_op = &cramfs_symlink_inode_operations;
 		break;
 	default:
+		iput(inode);
 		return NULL;
 	}
 

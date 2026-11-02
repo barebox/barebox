@@ -320,6 +320,9 @@ static int uimagefs_add_os(struct uimagefs_handle *priv)
 	struct image_header *header = &priv->header;
 	char *val = xstrdup(image_get_os_name(header->ih_os));
 
+	if (!val)
+		return uimagefs_add_hex(priv, UIMAGEFS_OS, header->ih_os);
+
 	return uimagefs_add_str(priv, UIMAGEFS_OS, val);
 }
 
@@ -327,6 +330,9 @@ static int uimagefs_add_arch(struct uimagefs_handle *priv)
 {
 	struct image_header *header = &priv->header;
 	char *val = xstrdup(image_get_arch_name(header->ih_arch));
+
+	if (!val)
+		return uimagefs_add_hex(priv, UIMAGEFS_ARCH, header->ih_arch);
 
 	return uimagefs_add_str(priv, UIMAGEFS_ARCH, val);
 }
@@ -336,6 +342,9 @@ static int uimagefs_add_type(struct uimagefs_handle *priv)
 	struct image_header *header = &priv->header;
 	char *val = xstrdup(image_get_type_name(header->ih_type));
 
+	if (!val)
+		return uimagefs_add_hex(priv, UIMAGEFS_TYPE, header->ih_type);
+
 	return uimagefs_add_str(priv, UIMAGEFS_TYPE, val);
 }
 
@@ -343,6 +352,9 @@ static int uimagefs_add_comp(struct uimagefs_handle *priv)
 {
 	struct image_header *header = &priv->header;
 	char *val = xstrdup(image_get_comp_name(header->ih_comp));
+
+	if (!val)
+		return uimagefs_add_hex(priv, UIMAGEFS_COMP, header->ih_comp);
 
 	return uimagefs_add_str(priv, UIMAGEFS_COMP, val);
 }

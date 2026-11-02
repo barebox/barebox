@@ -126,6 +126,7 @@ int v9fs_mount(struct device *dev)
 
 	root = d_make_root(inode);
 	if (!root) {
+		iput(inode);
 		retval = -ENOMEM;
 		goto release_sb;
 	}
@@ -146,12 +147,13 @@ free_session:
 
 release_sb:
 	/*
-	 * we will do the session_close and root dentry release
-	 * in the below call. But we need to clunk fid, because we haven't
-	 * attached the fid to dentry so it won't get clunked
-	 * automatically.
+	 * The fid isn't attached to a dentry yet, so clunk it before the
+	 * session and with it the client and its transport go away.
 	 */
 	p9_fid_put(fid);
+	v9fs_session_close(v9ses);
+	sb->s_fs_info = NULL;
+	kfree(v9ses);
 	return retval;
 }
 

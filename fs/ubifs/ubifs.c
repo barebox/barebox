@@ -370,10 +370,10 @@ int ubifs_close(struct inode *inode, struct file *f)
 	return 0;
 }
 
-static int ubifs_get_block(struct ubifs_file *uf, unsigned int pos)
+static int ubifs_get_block(struct ubifs_file *uf, loff_t pos)
 {
 	int ret;
-	unsigned int block = pos / UBIFS_BLOCK_SIZE;
+	unsigned int block = pos >> UBIFS_BLOCK_SHIFT;
 
 	if (block != uf->block) {
 		ret = read_block(uf->inode, uf->buf, block, uf->dn);
@@ -388,14 +388,14 @@ static int ubifs_get_block(struct ubifs_file *uf, unsigned int pos)
 int ubifs_read(struct file *f, void *buf, size_t insize)
 {
 	struct ubifs_file *uf = f->private_data;
-	unsigned int pos = f->f_pos;
+	loff_t pos = f->f_pos;
 	unsigned int ofs;
 	unsigned int now;
 	unsigned int size = insize;
 	int ret;
 
 	/* Read till end of current block */
-	ofs = f->f_pos % UBIFS_BLOCK_SIZE;
+	ofs = pos & (UBIFS_BLOCK_SIZE - 1);
 	if (ofs) {
 		ret = ubifs_get_block(uf, pos);
 		if (ret)

@@ -124,6 +124,13 @@ int v9fs_mount(struct device *dev)
 		goto release_sb;
 	}
 
+	if (!S_ISDIR(inode->i_mode)) {
+		dev_err(dev, "root is not a directory\n");
+		iput(inode);
+		retval = -ENOTDIR;
+		goto release_sb;
+	}
+
 	root = d_make_root(inode);
 	if (!root) {
 		iput(inode);

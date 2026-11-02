@@ -219,7 +219,7 @@ struct ext2fs_node {
 
 struct ext4fs_indir_block {
 	int size;
-	int blkno;
+	sector_t blkno;
 	uint32_t *data;
 };
 

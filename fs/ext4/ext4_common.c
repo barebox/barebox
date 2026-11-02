@@ -169,6 +169,12 @@ int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)
 	return 0;
 }
 
+/*
+ * Read the indirect block at sector @blkno into @indir->data, unless it's
+ * already there. Returns 0 on success, a negative error code on failure,
+ * or 1 without reading anything if @blkno is 0, i.e. if the indirect
+ * block is a hole.
+ */
 static int ext4fs_get_indir_block(struct ext2fs_node *node,
 				struct ext4fs_indir_block *indir, sector_t blkno)
 {
@@ -178,15 +184,21 @@ static int ext4fs_get_indir_block(struct ext2fs_node *node,
 
 	blksz = EXT2_BLOCK_SIZE(node->data);
 
+	if (!blkno)
+		return 1;
+
 	if (indir->blkno == blkno)
 		return 0;
 
 	ret = ext4fs_devread(fs, blkno, 0, blksz, (void *)indir->data);
 	if (ret) {
+		indir->blkno = 0;
 		dev_err(fs->dev, "** SI ext2fs read block (indir 1)"
 			"failed. **\n");
 		return ret;
 	}
+
+	indir->blkno = blkno;
 
 	return 0;
 }
@@ -265,7 +277,7 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 		ret = ext4fs_get_indir_block(node, &data->indir1,
 				le32_to_cpu(inode->b.blocks.indir_block) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 		blknr = le32_to_cpu(data->indir1.data[fileblock - INDIRECT_BLOCKS]);
 	} else if (fileblock < (INDIRECT_BLOCKS + (blksz / 4 *
 					(blksz / 4 + 1)))) {
@@ -276,12 +288,12 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 		ret = ext4fs_get_indir_block(node, &data->indir1,
 				le32_to_cpu(inode->b.blocks.double_indir_block) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 
 		ret = ext4fs_get_indir_block(node, &data->indir2,
 				le32_to_cpu(data->indir1.data[rblock / perblock]) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 
 		blknr = le32_to_cpu(data->indir2.data[rblock % perblock]);
 	} else {
@@ -294,17 +306,17 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 		ret = ext4fs_get_indir_block(node, &data->indir1,
 				le32_to_cpu(inode->b.blocks.triple_indir_block) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 
 		ret = ext4fs_get_indir_block(node, &data->indir2,
 				le32_to_cpu(data->indir1.data[rblock / perblock_parent]) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 
 		ret = ext4fs_get_indir_block(node, &data->indir3,
 				le32_to_cpu(data->indir2.data[rblock / perblock_child]) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 
 		blknr = le32_to_cpu(data->indir3.data[rblock % perblock_child]);
 	}

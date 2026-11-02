@@ -457,7 +457,7 @@ static int bpkfs_probe(struct device *dev)
 		list_add_tail(&d->list, &h->list_data);
 		priv->nb_data_entries++;
 
-		if (lseek(fd, d->size, SEEK_CUR) != d->size) {
+		if (lseek(fd, d->size, SEEK_CUR) < 0) {
 			dev_err(dev, "could not seek: %m\n");
 			ret = -errno;
 			goto err;

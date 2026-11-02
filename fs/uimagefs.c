@@ -84,8 +84,6 @@ static int uimagefs_open(struct device *dev, struct file *file, const char *file
 		d->fd = open(priv->filename, O_RDONLY);
 		if (d->fd < 0)
 			return d->fd;
-
-		lseek(d->fd, d->offset, SEEK_SET);
 	}
 
 	file->f_size = d->size;
@@ -108,23 +106,11 @@ static int uimagefs_read(struct file *file, void *buf, size_t insize)
 	struct uimagefs_handle_data *d = file->private_data;
 
 	if (!uimagefs_is_data_file(d)) {
-		memcpy(buf, &d->data[d->pos], insize);
+		memcpy(buf, &d->data[file->f_pos], insize);
 		return insize;
 	} else {
-		return read(d->fd, buf, insize);
+		return pread(d->fd, buf, insize, d->offset + file->f_pos);
 	}
-}
-
-static int uimagefs_lseek(struct file *file, loff_t pos)
-{
-	struct uimagefs_handle_data *d = file->private_data;
-
-	if (uimagefs_is_data_file(d))
-		lseek(d->fd, d->offset + pos, SEEK_SET);
-
-	d->pos = pos;
-
-	return 0;
 }
 
 static DIR *uimagefs_opendir(struct device *dev, const char *pathname)
@@ -535,7 +521,6 @@ static const struct fs_legacy_ops uimagefs_ops = {
 	.closedir  = uimagefs_closedir,
 	.stat      = uimagefs_stat,
 	.read      = uimagefs_read,
-	.lseek     = uimagefs_lseek,
 	.ioctl	   = uimagefs_ioctl,
 };
 

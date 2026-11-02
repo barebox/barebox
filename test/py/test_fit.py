@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+import hashlib
 import re
 import os
 import pytest
@@ -95,7 +96,16 @@ def test_fit_dryrun(barebox, strategy, fitimage):
                    f"FIT cmdline survived bootm dry run: {line}"
 
 
-def test_fit(barebox, strategy, fitimage):
+def padded_ramdisks(testfs):
+    # bootm pads every ramdisk to a 4-byte boundary before the next one
+    data = b""
+    for name in ["ramdisk1.cpio.gz", "ramdisk2.cpio", "ramdisk3.cpio.gz"]:
+        data += bytes(-len(data) % 4)
+        data += (Path(testfs) / name).read_bytes()
+    return data
+
+
+def test_fit(barebox, strategy, testfs, fitimage):
     # Sanity check, this is only fixed up on first boot
     assert of_get_property(barebox, "/chosen/barebox-version") is False
     [ver] = barebox.run_check("echo barebox-$global.version")
@@ -109,14 +119,7 @@ def test_fit(barebox, strategy, fitimage):
 
     barebox.run_check("global linux.bootargs.testarg=barebox.chainloaded")
 
-    barebox.run_check("cat -o /tmp/ramdisks.cpio /mnt/9p/testfs/ramdisk*.cpio*")
-    [hashsum1] = barebox.run_check("md5sum /tmp/ramdisks.cpio")
-
-    hashsum1 = re.split("/tmp/ramdisks.cpio", hashsum1, maxsplit=1)[0]
-    # Get the actual size of the concatenated ramdisks file
-    [fileinfo] = barebox.run_check("ls -l /tmp/ramdisks.cpio")
-    # Parse the size from ls -l output (format: permissions links user group size ...)
-    actual_size = int(fileinfo.split()[1])
+    ramdisks = padded_ramdisks(testfs)
 
     boottarget = generate_bootscript(barebox, fitimage)
     barebox.run_check("global linux.bootargs.dyn.bootentries=entry.param")
@@ -143,12 +146,11 @@ def test_fit(barebox, strategy, fitimage):
         initrd_end = of_get_property(barebox, "/chosen/linux,initrd-end", ncells=0)
         initrd_size = initrd_end - initrd_start
 
-        # Verify the DT-reported size matches the actual file size
-        assert initrd_size == actual_size, \
-            f"Initrd size mismatch: DT says {initrd_size}, file is {actual_size}"
+        assert initrd_size == len(ramdisks), \
+            f"Initrd size mismatch: DT says {initrd_size}, expected {len(ramdisks)}"
 
-        [hashsum2] = barebox.run_check(f"md5sum {initrd_start}+{initrd_size}")
+        [hashsum] = barebox.run_check(f"md5sum {initrd_start}+{initrd_size}")
 
-        hashsum2 = re.split("/dev/mem", hashsum2, maxsplit=1)[0]
+        hashsum = re.split("/dev/mem", hashsum, maxsplit=1)[0].strip()
 
-        assert hashsum1 == hashsum2
+        assert hashsum == hashlib.md5(ramdisks).hexdigest()

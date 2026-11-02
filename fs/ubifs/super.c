@@ -1082,6 +1082,13 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
 		goto out_umount;
 	}
 
+	if (!S_ISDIR(root->i_mode)) {
+		ubifs_err(c, "root inode is not a directory");
+		iput(root);
+		err = -EINVAL;
+		goto out_umount;
+	}
+
 	sb->s_root = d_make_root(root);
 	if (!sb->s_root) {
 		err = -ENOMEM;

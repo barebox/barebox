@@ -149,7 +149,7 @@ static inline struct crypto_comp
 static inline int
 crypto_comp_decompress(const struct ubifs_info *c, struct crypto_comp *tfm,
 		       const u8 *src, unsigned int slen, u8 *dst,
-		       unsigned int *dlen)
+		       size_t *dlen)
 {
 	struct ubifs_compressor *compr = ubifs_compressors[tfm->compressor];
 	int err;
@@ -160,7 +160,7 @@ crypto_comp_decompress(const struct ubifs_info *c, struct crypto_comp *tfm,
 		return 0;
 	}
 
-	err = compr->decompress(src, slen, dst, (size_t *)dlen);
+	err = compr->decompress(src, slen, dst, dlen);
 	if (err)
 		ubifs_err(c, "cannot decompress %d bytes, compressor %s, "
 			  "error %d", slen, compr->name, err);
@@ -193,6 +193,7 @@ int ubifs_decompress(const struct ubifs_info *c, const void *in_buf,
 {
 	int err;
 	struct ubifs_compressor *compr;
+	size_t dlen = *out_len;
 
 	if (unlikely(compr_type < 0 || compr_type >= UBIFS_COMPR_TYPES_CNT)) {
 		ubifs_err(c, "invalid compression type %d", compr_type);
@@ -215,12 +216,14 @@ int ubifs_decompress(const struct ubifs_info *c, const void *in_buf,
 	if (compr->decomp_mutex)
 		mutex_lock(compr->decomp_mutex);
 	err = crypto_comp_decompress(c, compr->cc, in_buf, in_len, out_buf,
-				     (unsigned int *)out_len);
+				     &dlen);
 	if (compr->decomp_mutex)
 		mutex_unlock(compr->decomp_mutex);
 	if (err)
 		ubifs_err(c, "cannot decompress %d bytes, compressor %s,"
 			  " error %d", in_len, compr->name, err);
+	else
+		*out_len = dlen;
 
 	return err;
 }

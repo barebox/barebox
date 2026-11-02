@@ -325,6 +325,13 @@ int jffs2_do_fill_super(struct super_block *sb, int silent)
 		goto out_root;
 	}
 
+	if (!S_ISDIR(root_i->i_mode)) {
+		pr_err("root inode is not a directory\n");
+		iput(root_i);
+		ret = -EINVAL;
+		goto out_root;
+	}
+
 	ret = -ENOMEM;
 
 	jffs2_dbg(1, "%s(): d_make_root()\n", __func__);

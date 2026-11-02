@@ -1743,7 +1743,8 @@ static int nfs_probe(struct device *dev)
 	} else {
 		if (nfsport_default > U16_MAX) {
 			dev_err(dev, "invalid NFS port: %d\n", nfsport_default);
-			return -EINVAL;
+			ret = -EINVAL;
+			goto err2;
 		}
 
 		npriv->mount_port = npriv->nfs_port = nfsport_default;

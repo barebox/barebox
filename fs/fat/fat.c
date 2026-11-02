@@ -179,7 +179,8 @@ static int fat_truncate(struct file *f, loff_t size)
 	if (ret)
 		return ret;
 
-	ret = f_lseek(f_file, lastofs);
+	/* don't extend the file again in case it was shrunk */
+	ret = f_lseek(f_file, min_t(loff_t, lastofs, size));
 	if (ret)
 		return ret;
 

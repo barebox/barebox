@@ -1740,6 +1740,7 @@ struct nameidata {
 	struct filename	*name;
 	struct inode	*link_inode;
 	struct dentry   *d_root;
+	struct vfsmount *mnt_root;
 };
 
 struct filename {
@@ -1754,6 +1755,7 @@ static void set_nameidata(struct nameidata *p, struct filename *name)
 	p->name = name;
 	p->total_link_count = 0;
 	p->d_root = d_root;
+	p->mnt_root = mnt_root;
 }
 
 static void path_get(const struct path *path)
@@ -2017,6 +2019,19 @@ static inline void path_to_nameidata(const struct path *path,
 	nd->path.dentry = path->dentry;
 }
 
+static void nd_jump_root(struct nameidata *nd)
+{
+	struct path root = {
+		.mnt = nd->mnt_root,
+		.dentry = nd->d_root,
+	};
+
+	path_get(&root);
+	path_put(&nd->path);
+	nd->path = root;
+	nd->flags |= LOOKUP_JUMPED;
+}
+
 static const char *get_link(struct nameidata *nd)
 {
 	struct saved *last = nd->stack + nd->depth - 1;
@@ -2032,6 +2047,7 @@ static const char *get_link(struct nameidata *nd)
 			return res;
 	}
 	if (*res == '/') {
+		nd_jump_root(nd);
 		while (unlikely(*++res == '/'))
 			;
 	}
@@ -2193,8 +2209,6 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 	int err;
 	char separator = '/';
 
-	if (!*name)
-		return -ENOENT;
 	while (*name=='/')
 		name++;
 	if (!*name)
@@ -2337,8 +2351,10 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 
 		if (*s == '/')
 			nd->path.dentry = nd->path.mnt->mnt_root;
-		if (chroot)
+		if (chroot) {
 			nd->d_root = nd->path.mnt->mnt_root;
+			nd->mnt_root = nd->path.mnt;
+		}
 	}
 
 	return s;
@@ -2971,6 +2987,9 @@ int symlink(const char *pathname, const char *newpath)
 	}
 
 	error = vfs_symlink(path.dentry->d_inode, dentry, pathname);
+
+	dput(dentry);
+	path_put(&path);
 out:
 	return errno_set(error);
 }

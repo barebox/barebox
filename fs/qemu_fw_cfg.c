@@ -241,6 +241,7 @@ static int fw_cfg_fs_parse(struct super_block *sb)
 						    (ndirs + 1) * 3, "", buf);
 
 				parent->inode.i_link = s;
+				parent->inode.i_size = strlen(s);
 				while (*s == ' ')
 					s = mempcpy(s, "../", 3);
 			}

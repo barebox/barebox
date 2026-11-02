@@ -4,7 +4,7 @@
 #include <common.h>
 #include <init.h>
 #include <of.h>
-#include <asm/barebox-arm.h>
+#include <pbl/barebox-proper.h>
 
 static int of_arm_init(void)
 {
@@ -17,7 +17,7 @@ static int of_arm_init(void)
 		return 0;
 
 	/* See if we are provided a dtb in boarddata */
-	fdt = barebox_arm_boot_dtb();
+	fdt = barebox_boot_dtb();
 	if (!fdt) {
 		pr_debug("No DTB found\n");
 		return 0;

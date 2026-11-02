@@ -434,6 +434,11 @@ static ssize_t __read(struct file *f, void *buf, size_t count)
 		goto out;
 	}
 
+	if (!f->f_inode->i_fop->read) {
+		ret = -EINVAL;
+		goto out;
+	}
+
 	fsdrv = f->fsdev->driver;
 
 	if (fsdrv != ramfs_driver)
@@ -3021,6 +3026,9 @@ static int __opendir(DIR *d)
 
 	INIT_LIST_HEAD(&d->entries);
 	rd.dir = d;
+
+	if (!file->f_inode->i_fop->iterate)
+		return -ENOTDIR;
 
 	ret = file->f_inode->i_fop->iterate(file, &rd.ctx);
 	if (ret)

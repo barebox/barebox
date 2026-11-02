@@ -7,8 +7,11 @@
 
 static __always_inline unsigned long get_pc(void)
 {
-label:
-	return (unsigned long)&&label;
+	unsigned long pc;
+
+	__asm__ __volatile__("auipc %0, 0" : "=r"(pc));
+
+	return pc;
 }
 
 #endif /* ASM_RISCV_COMMON_H */

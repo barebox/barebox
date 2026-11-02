@@ -175,11 +175,15 @@ static int legacy_dir_is_empty(struct dentry *dentry)
 	pathname = dpath(dentry, fsdev->vfsmount.mnt_root);
 
 	d = legacy_ops->opendir(&fsdev->dev, pathname);
+
+	free(pathname);
+
+	if (!d)
+		return -EIO;
+
 	dirent = legacy_ops->readdir(&fsdev->dev, d);
 
 	legacy_ops->closedir(&fsdev->dev, d);
-
-	free(pathname);
 
 	return dirent ? 0 : 1;
 }
@@ -195,7 +199,10 @@ static int legacy_rmdir(struct inode *dir, struct dentry *dentry)
 	if (!legacy_ops->rmdir)
 		return -EROFS;
 
-	if (!legacy_dir_is_empty(dentry))
+	ret = legacy_dir_is_empty(dentry);
+	if (ret < 0)
+		return ret;
+	if (!ret)
 		return -ENOTEMPTY;
 
 	pathname = dpath(dentry, fsdev->vfsmount.mnt_root);

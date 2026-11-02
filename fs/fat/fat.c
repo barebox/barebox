@@ -284,8 +284,10 @@ static DIR* fat_opendir(struct device *dev, const char *pathname)
 	else
 		ret = f_opendir(&priv->fat, ff_dir, "/");
 
-	if (ret)
+	if (ret) {
+		free(ff_dir);
 		return NULL;
+	}
 
 	dir = xzalloc(sizeof(*dir));
 

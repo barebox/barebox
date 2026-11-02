@@ -165,6 +165,10 @@ static int fat_truncate(struct file *f, loff_t size)
 	unsigned long lastofs;
 	int ret;
 
+	/* FAT can't hold files of 4 GiB or more */
+	if (size > U32_MAX)
+		return -EFBIG;
+
 	lastofs = f_file->fptr;
 
 	ret = f_lseek(f_file, size);

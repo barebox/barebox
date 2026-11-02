@@ -432,8 +432,11 @@ static const char *cramfs_get_link(struct dentry *dentry, struct inode *inode)
 	inode->i_link = xzalloc(size_add(inode->i_size, 1));
 
 	ret = cramfs_read_file(inode, 0, inode->i_link, inode->i_size);
-	if (ret < 0)
-		return NULL;
+	if (ret != inode->i_size) {
+		free(inode->i_link);
+		inode->i_link = NULL;
+		return ERR_PTR(-EIO);
+	}
 
 	return inode->i_link;
 }

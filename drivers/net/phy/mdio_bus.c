@@ -418,7 +418,7 @@ void mdiobus_unregister(struct mii_bus *bus)
 
 	slice_exit(&bus->slice);
 
-	list_del_init(&bus->dev.class_list);
+	unregister_device(&bus->dev);
 }
 EXPORT_SYMBOL(mdiobus_unregister);
 

@@ -30,6 +30,8 @@ struct usb_device_scan {
 };
 
 static LIST_HEAD(usb_scan_list);
+/* set while usb_device_list_scan() walks usb_scan_list */
+static bool usb_scan_running;
 
 static bool usb_hub_is_superspeed(struct usb_device *hdev)
 {
@@ -292,6 +294,10 @@ int usb_hub_port_connected(struct usb_device *hub, int port)
  * already running. If that hub is removed before its entries have been
  * processed, they would be left pointing at the freed usb_device and its
  * freed usb_hub_device.
+ *
+ * The running loop may already have picked one of these entries as the
+ * next one to visit, so while it runs, they are only marked and the loop
+ * frees them.
  */
 void usb_hub_cancel_scans(struct usb_device *dev)
 {
@@ -300,6 +306,11 @@ void usb_hub_cancel_scans(struct usb_device *dev)
 	list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list) {
 		if (usb_scan->dev != dev)
 			continue;
+
+		if (usb_scan_running) {
+			usb_scan->dev = NULL;
+			continue;
+		}
 
 		list_del(&usb_scan->list);
 		free(usb_scan);
@@ -491,21 +502,28 @@ static int usb_device_list_scan(void)
 {
 	struct usb_device_scan *usb_scan;
 	struct usb_device_scan *tmp;
-	static int running;
 
 	/* Only run this loop once for each controller */
-	if (running)
+	if (usb_scan_running)
 		return 0;
 
-	running = 1;
+	usb_scan_running = true;
 
 	while (1) {
 		/* We're done, once the list is empty again */
 		if (list_empty(&usb_scan_list))
 			goto out;
 
-		list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list)
+		list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list) {
+			/* cancelled by usb_hub_cancel_scans() */
+			if (!usb_scan->dev) {
+				list_del(&usb_scan->list);
+				free(usb_scan);
+				continue;
+			}
+
 			usb_scan_port(usb_scan);
+		}
 
 		/* Avoid hammering the HUB with port scans */
 		mdelay(25);
@@ -514,10 +532,10 @@ static int usb_device_list_scan(void)
 out:
 	/*
 	 * This USB controller has finished scanning all its connected
-	 * USB devices. Set "running" back to 0, so that other USB controllers
+	 * USB devices. Clear usb_scan_running, so that other USB controllers
 	 * will scan their devices too.
 	 */
-	running = 0;
+	usb_scan_running = false;
 
 	return 0;
 }

@@ -650,7 +650,7 @@ int cdev_get_linux_root_and_opts(const struct cdev *partcdev, const char **root,
 	if (!blk)
 		return -EINVAL;
 
-	if (blk->ops->get_root)
+	if (blk->ops && blk->ops->get_root)
 		root_local = blk->ops->get_root(blk, partcdev);
 	if (!root_local && partcdev->partuuid[0] != 0)
 		root_local = xasprintf("PARTUUID=%s", partcdev->partuuid);

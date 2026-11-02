@@ -29,6 +29,7 @@ options to crash barebox on detection of memory safety issues::
   fuzz-partitions
   fuzz-partitions-4k
   fuzz-pe
+  fuzz-squashfs
   fuzz-state-direct
   fuzz-tlv
   fuzz-uncompress

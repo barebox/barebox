@@ -7,6 +7,9 @@
 #include <errno.h>
 #include <fs.h>
 #include <xfuncs.h>
+#include <libfile.h>
+#include <block.h>
+#include <fuzz.h>
 
 #include <linux/fs.h>
 #include <linux/stat.h>
@@ -34,6 +37,7 @@ char *squashfs_devread(struct squashfs_sb_info *fs, int byte_offset,
 	size = cdev_read(fs->cdev, buf, byte_len, byte_offset, 0);
 	if (size < 0) {
 		dev_err(fs->dev, "read error: %pe\n", ERR_PTR(size));
+		free(buf);
 		return NULL;
 	}
 
@@ -179,10 +183,10 @@ static int squashfs_close(struct inode *inode, struct file *f)
 	return 0;
 }
 
-static int squashfs_read_buf(struct squashfs_page *page, int pos, void **buf)
+static int squashfs_read_buf(struct squashfs_page *page, loff_t pos, void **buf)
 {
-	unsigned int data_block = pos / (32 * PAGE_CACHE_SIZE);
-	unsigned int data_block_pos = pos % (32 * PAGE_CACHE_SIZE);
+	pgoff_t data_block = pos >> (PAGE_CACHE_SHIFT + 5);
+	unsigned int data_block_pos = pos & (32 * PAGE_CACHE_SIZE - 1);
 	unsigned int idx = data_block_pos / PAGE_CACHE_SIZE;
 
 	if (data_block != page->data_block || page->idx == 0) {
@@ -200,14 +204,14 @@ static int squashfs_read_buf(struct squashfs_page *page, int pos, void **buf)
 static int squashfs_read(struct file *f, void *buf, size_t insize)
 {
 	unsigned int size = insize;
-	unsigned int pos = f->f_pos;
+	loff_t pos = f->f_pos;
 	unsigned int ofs;
 	unsigned int now;
 	void *pagebuf;
 	struct squashfs_page *page = f->private_data;
 
 	/* Read till end of current buffer page */
-	ofs = pos % PAGE_CACHE_SIZE;
+	ofs = pos & (PAGE_CACHE_SIZE - 1);
 	if (ofs) {
 		squashfs_read_buf(page, pos, &pagebuf);
 
@@ -244,6 +248,93 @@ const struct file_operations squashfs_file_operations = {
 	.release = squashfs_close,
 	.read = squashfs_read,
 };
+
+#define FUZZ_SQUASHFS_MNT	"/mnt/fuzz-squashfs"
+
+/* Bound the work per input: a crafted image can describe any tree */
+static int fuzz_squashfs_budget;
+
+static void fuzz_squashfs_read(const char *path, loff_t size)
+{
+	char buf[4096];
+	int fd, i;
+
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
+		return;
+
+	/*
+	 * Read the start of the file, then its end, which goes through the
+	 * block list index cache for large files.
+	 */
+	for (i = 0; i < 64; i++)
+		if (read(fd, buf, sizeof(buf)) < (ssize_t)sizeof(buf))
+			break;
+
+	if (size > (loff_t)sizeof(buf) &&
+	    lseek(fd, size - sizeof(buf), SEEK_SET) >= 0)
+		read(fd, buf, sizeof(buf));
+
+	close(fd);
+}
+
+static void fuzz_squashfs_walk(const char *path, int depth)
+{
+	char buf[PATH_MAX];
+	struct dirent *d;
+	struct stat s;
+	DIR *dir;
+
+	dir = opendir(path);
+	if (!dir)
+		return;
+
+	while (fuzz_squashfs_budget > 0 && (d = readdir(dir))) {
+		char *p;
+
+		if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
+			continue;
+
+		fuzz_squashfs_budget--;
+		p = basprintf("%s/%s", path, d->d_name);
+
+		if (!lstat(p, &s)) {
+			if (S_ISDIR(s.st_mode)) {
+				if (depth < 8)
+					fuzz_squashfs_walk(p, depth + 1);
+			} else if (S_ISLNK(s.st_mode)) {
+				readlink(p, buf, sizeof(buf));
+			} else {
+				fuzz_squashfs_read(p, s.st_size);
+			}
+		}
+
+		free(p);
+	}
+
+	closedir(dir);
+}
+
+static int fuzz_squashfs(struct block_device *ramdisk)
+{
+	char *dev = basprintf("/dev/%s", cdev_name(&ramdisk->cdev));
+
+	if (!mount(dev, "squashfs", FUZZ_SQUASHFS_MNT, NULL)) {
+		fuzz_squashfs_budget = 256;
+		fuzz_squashfs_walk(FUZZ_SQUASHFS_MNT, 0);
+		BUG_ON(umount(FUZZ_SQUASHFS_MNT));
+	}
+
+	free(dev);
+
+	return 0;
+}
+
+static void fuzz_squashfs_init(void)
+{
+	make_directory(FUZZ_SQUASHFS_MNT);
+}
+fuzz_test_ramdisk("squashfs", fuzz_squashfs, 512, fuzz_squashfs_init);
 
 static struct fs_driver squashfs_driver = {
 	.type		= filetype_squashfs,

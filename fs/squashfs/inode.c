@@ -71,6 +71,10 @@ static int squashfs_new_inode(struct super_block *sb, struct inode *inode,
 	inode->i_mode = le16_to_cpu(sqsh_ino->mode);
 	inode->i_size = 0;
 
+	/* File type must not be set at this moment, for it will later be set by the caller. */
+	if (inode->i_mode & S_IFMT)
+		err = -EIO;
+
 	return err;
 }
 
@@ -89,8 +93,12 @@ struct inode *squashfs_iget(struct super_block *sb, long long ino,
 		return inode;
 
 	err = squashfs_read_inode(inode, ino);
-	if (err)
+	if (err) {
+		iget_failed(inode);
 		return ERR_PTR(err);
+	}
+
+	inode->i_state &= ~I_NEW;
 
 	return inode;
 }

@@ -301,12 +301,21 @@ static struct dentry *cramfs_lookup(struct inode *dir, struct dentry *dentry,
 		char *name;
 		int namelen, retval;
 		int dir_off = OFFSET(dir) + offset;
+		ssize_t ret;
 
-		cdev_read(priv->cdev, de, sizeof(*de) + CRAMFS_MAXPATHLEN, dir_off, 0);
+		ret = cdev_read(priv->cdev, de, sizeof(*de) + CRAMFS_MAXPATHLEN, dir_off, 0);
+		if (ret < 0) {
+			inode = ERR_PTR(ret);
+			goto out;
+		}
 
 		name = (char *)(de + 1);
 
 		namelen = de->namelen << 2;
+		if (ret < (ssize_t)(sizeof(*de) + namelen)) {
+			inode = ERR_PTR(-EIO);
+			goto out;
+		}
 		offset += sizeof(*de) + namelen;
 
 		/* Quick check that the name is roughly the right length */
@@ -389,9 +398,14 @@ static int cramfs_iterate(struct file *file, struct dir_context *ctx)
 		ino_t ino;
 		umode_t mode;
 		int namelen;
+		ssize_t len;
 
-		cdev_read(priv->cdev, de, sizeof(*de) + CRAMFS_MAXPATHLEN,
-			  OFFSET(dir) + offset, 0);
+		len = cdev_read(priv->cdev, de, sizeof(*de) + CRAMFS_MAXPATHLEN,
+				OFFSET(dir) + offset, 0);
+		if (len < 0) {
+			ret = len;
+			goto out;
+		}
 		name = (char *)(de + 1);
 
 		/*
@@ -400,6 +414,10 @@ static int cramfs_iterate(struct file *file, struct dir_context *ctx)
 		 * with zeroes.
 		 */
 		namelen = de->namelen << 2;
+		if (len < (ssize_t)(sizeof(*de) + namelen)) {
+			ret = -EIO;
+			goto out;
+		}
 		memcpy(buf, name, namelen);
 		ino = cramino(de, OFFSET(dir) + offset);
 		mode = de->mode;

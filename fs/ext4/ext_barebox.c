@@ -203,9 +203,10 @@ static const char *ext_get_link(struct dentry *dentry, struct inode *inode)
 	inode->i_link = dma_xzalloc(size_add(inode->i_size, 1));
 
 	ret = ext4fs_read_file(node, 0, inode->i_size, inode->i_link);
-	if (ret == 0) {
+	if (ret < 0) {
 		free(inode->i_link);
 		inode->i_link = NULL;
+		return ERR_PTR(ret);
 	}
 
 	return inode->i_link;

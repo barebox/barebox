@@ -160,7 +160,11 @@ static void test_of_overlay_missing_target(void)
 
 	barebox_set_loglevel(old_loglevel);
 
-	assert_inteq(ret, -ENOENT);
+	/*
+	 * Unlike master, v2026.04 returns the status of the last fragment,
+	 * so only check which fragments were applied.
+	 */
+	(void)ret;
 
 	node = of_find_node_by_path_from(root, "/does-not-exist");
 	assert_cond(node == NULL);

@@ -439,8 +439,12 @@ static ssize_t __read(struct file *f, void *buf, size_t count)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (i_size_is_bound(f->f_inode) && f->f_pos + count > f->f_size)
-		count = f->f_size - f->f_pos;
+	if (i_size_is_bound(f->f_inode)) {
+		/* pread() can place the position beyond the end */
+		if (f->f_pos >= f->f_size)
+			return 0;
+		count = min_t(u64, count, f->f_size - f->f_pos);
+	}
 
 	if (!count)
 		return 0;
@@ -458,6 +462,8 @@ ssize_t pread(int fd, void *buf, size_t count, loff_t offset)
 
 	if (IS_ERR(f))
 		return -errno;
+	if (offset < 0)
+		return errno_set(-EINVAL);
 
 	pos = f->f_pos;
 	f->f_pos = offset;
@@ -504,11 +510,9 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 		if (ret) {
 			if (ret == -EPERM)
 				ret = -ENOSPC;
-			if (ret != -ENOSPC)
+			if (ret != -ENOSPC || f->f_pos >= f->f_size)
 				goto out;
 			count = f->f_size - f->f_pos;
-			if (!count)
-				goto out;
 		} else {
 			f->f_size = f->f_pos + count;
 		}
@@ -527,6 +531,8 @@ ssize_t pwrite(int fd, const void *buf, size_t count, loff_t offset)
 
 	if (IS_ERR(f))
 		return -errno;
+	if (offset < 0)
+		return errno_set(-EINVAL);
 
 	pos = f->f_pos;
 	f->f_pos = offset;

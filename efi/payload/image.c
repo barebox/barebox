@@ -18,7 +18,6 @@
 #include <malloc.h>
 #include <string.h>
 #include <linux/err.h>
-#include <bootargs.h>
 #include <bootm.h>
 #include <fs.h>
 #include <libfile.h>
@@ -100,32 +99,42 @@ out:
 
 int efi_execute_image(efi_handle_t handle,
 		      struct efi_loaded_image *loaded_image,
-		      enum filetype filetype)
+		      bool is_bootm,
+		      enum filetype filetype, const char *options)
 {
 	efi_status_t efiret;
-	const char *options;
-	bool is_driver, is_kernel = false;
+	wchar_t *load_options = NULL;
+	bool is_driver;
+	bool no_return;
 
 	is_driver = (loaded_image->image_code_type == EFI_BOOT_SERVICES_CODE) ||
 		(loaded_image->image_code_type == EFI_RUNTIME_SERVICES_CODE);
  
 	efi_export_dtb();
 
-	if (filetype_is_linux_efi_image(filetype)) {
-		options = linux_bootargs_get();
-		printf("Booting kernel via StartImage");
-		if (options) {
-			printf("with options '%s'", options);
-			loaded_image->load_options = xstrdup_char_to_wchar(options);
-			loaded_image->load_options_size =
-				(strlen(options) + 1) * sizeof(wchar_t);
-		}
-		printf("...\n");
+	/*
+	 * A bootm handler is the point of no return, but an EFI-stubbed kernel
+	 * started from the shell takes over the machine just the same, so
+	 * barebox needs to be shut down in both cases.
+	 */
+	no_return = is_bootm || filetype_is_linux_efi_image(filetype);
 
+	if (options && *options) {
+		load_options = xstrdup_char_to_wchar(options);
+		loaded_image->load_options = load_options;
+		loaded_image->load_options_size =
+			(strlen(options) + 1) * sizeof(wchar_t);
+	}
+
+	printf("Booting %s", filetype_is_linux_efi_image(filetype) ?
+	       "kernel via StartImage" : "EFI image");
+	if (load_options)
+		printf(" with options '%s'", options);
+	printf("...\n");
+
+	if (no_return) {
 		efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
 				      ktime_to_us(ktime_get()));
-
-		is_kernel = true;
 		shutdown_barebox();
 	}
 
@@ -135,16 +144,32 @@ int efi_execute_image(efi_handle_t handle,
 
 	efi_continue_devices();
 
-	if (is_kernel) {
-		pr_emerg("Kernel image has unexpectedly returned\n");
+	if (no_return) {
+		pr_emerg("Boot image has unexpectedly returned\n");
 		BS->exit(efi_parent_image, efiret, 0, NULL);
 	}
 
 	if (EFI_ERROR(efiret))
 		pr_err("failed to StartImage: %s\n", efi_strerror(efiret));
 
-	if (!is_driver)
+	/*
+	 * load_options is freed below, so a driver that started successfully
+	 * and thus stays loaded must drop its reference to it. The firmware
+	 * already unloaded an application that returned and a driver that
+	 * failed to start, so their loaded image protocol must not be touched.
+	 * Unloading an application that already returned just fails, but is
+	 * still needed when StartImage failed before running it.
+	 */
+	if (is_driver) {
+		if (!EFI_ERROR(efiret)) {
+			loaded_image->load_options = NULL;
+			loaded_image->load_options_size = 0;
+		}
+	} else {
 		BS->unload_image(handle);
+	}
+
+	free(load_options);
 
 	efi_connect_all();
 	efi_register_devices();
@@ -156,13 +181,21 @@ static int efi_execute(struct binfmt_hook *b, char *file, int argc, char **argv)
 {
 	struct efi_loaded_image *loaded_image;
 	efi_handle_t handle;
+	char *options;
 	int ret;
 
 	ret = efi_load_image(file, &loaded_image, &handle);
 	if (ret)
 		return ret;
 
-	return efi_execute_image(handle, loaded_image, b->type);
+	/* argv[0] is the image itself, the rest become the load options */
+	options = strjoin(" ", &argv[1], argc - 1);
+
+	ret = efi_execute_image(handle, loaded_image, false, b->type, options);
+
+	free(options);
+
+	return ret;
 }
 
 static struct binfmt_hook binfmt_efi_hook = {
@@ -200,9 +233,15 @@ static struct binfmt_hook binfmt_x86_efi_hook = {
 	.hook = efi_execute,
 };
 
+static struct binfmt_hook binfmt_zboot_efi_hook = {
+	.type = filetype_zboot_efi_linux_image,
+	.hook = efi_execute,
+};
+
 static int efi_register_image_handler(void)
 {
 	binfmt_register(&binfmt_efi_hook);
+	binfmt_register(&binfmt_zboot_efi_hook);
 
 	if (IS_ENABLED(CONFIG_X86)) {
 		register_image_handler(&non_efi_handle_linux_x86);

@@ -665,7 +665,8 @@ int cdev_get_linux_root_and_opts(const struct cdev *partcdev, const char **root,
 	return 0;
 }
 
-char *cdev_get_linux_rootarg(const struct cdev *partcdev)
+char *cdev_get_linux_rootarg(const struct cdev *partcdev,
+			     const char *root_param)
 {
 	int err;
 	const char *root = NULL;
@@ -675,5 +676,5 @@ char *cdev_get_linux_rootarg(const struct cdev *partcdev)
 	if (err)
 		return NULL;
 
-	return format_root_bootarg("root", root, rootopts);
+	return format_root_bootarg(root_param, root, rootopts);
 }

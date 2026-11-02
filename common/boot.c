@@ -127,8 +127,13 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	 * without the shell expanding or splitting it first.
 	 */
 	ret = execute_binfmt(bs->args ? 2 : 1, argv);
-	if (ret) {
-		pr_err("Running script '%s' failed: %s\n", bs->entry.path, strerror(-ret));
+	if (ret > 0) {
+		pr_err("Running script '%s' failed with exit status %d\n",
+		       bs->entry.path, ret);
+		ret = -EINVAL;
+		goto out;
+	} else if (ret) {
+		pr_err("Running script '%s' failed: %pe\n", bs->entry.path, ERR_PTR(ret));
 		goto out;
 	}
 
@@ -229,6 +234,7 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 		pr_err("Booting entry '%s' failed: %pe\n", be->title, ERR_PTR(ret));
 
 	globalvar_set_match("linux.bootargs.dyn.", "");
+	globalvar_set_match("efi.bootargs.dyn.", "");
 
 	return ret;
 }

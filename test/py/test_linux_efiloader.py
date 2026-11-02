@@ -50,6 +50,8 @@ def configure_bootm(strategy, barebox):
     barebox.run_check(f"global.bootm.image={kernel_path}")
     # Speed up subsequent runs a bit
     barebox.run_check("global linux.bootargs.noapparmor=apparmor=0")
+    # EFI load options are only used with the EFI stub
+    barebox.run_check("global efi.bootargs.test=efibootargs=1")
 
 
 @pytest.mark.lg_feature(['bootable', 'efi', 'testfs'])
@@ -76,6 +78,8 @@ def test_boot_manual_with_initrd(strategy, barebox, env, efiloader, debian_iso):
                                    "\n".join(dmesg)) is not None
 
         if efiloader:
+            # global.efi.bootargs.* must precede global.linux.bootargs.*
+            shell.run_check("grep -q 'efibootargs=1.* apparmor=0' /proc/cmdline")
             check_efi_kernel_no_warn(shell)
             check_expected_efi_messages(shell, env)
             check_efi_systab(shell, env)
@@ -87,6 +91,8 @@ def test_boot_manual_with_initrd(strategy, barebox, env, efiloader, debian_iso):
             # Verify that EFI was NOT used
             assert uefi_not_found, \
                    "EFI stub was used despite global.bootm.efi=disabled"
+            _, _, ret = shell.run("grep -q efibootargs=1 /proc/cmdline")
+            assert ret != 0, "EFI load options passed despite non-EFI boot"
 
 
 def check_efi_kernel_no_warn(shell):

@@ -150,6 +150,8 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 			if (ret < 0)
 				return ret;
 
+			/* priv->buf won't hold the cached block anymore */
+			priv->curr_base = -1;
 			priv->curr_block_len = cramfs_uncompress_block(priv->buf, 4096,
 					cramfs_read_buf, 4096);
 			if (priv->curr_block_len <= 0)

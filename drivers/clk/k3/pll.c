@@ -275,10 +275,16 @@ static int __ti_pll_clk_set_rate(struct clk_hw *hw, unsigned long rate,
 	return ti_pll_clk_set_rate(pll, rate, parent_rate);
 }
 
-static long ti_pll_clk_round_rate(struct clk_hw *hw, unsigned long rate,
-				  unsigned long *prate)
+static int ti_pll_clk_determine_rate(struct clk_hw *hw,
+				     struct clk_rate_request *req)
 {
-	return rate; /* FIXME */
+	/*
+	 * FIXME: The rate the PLL ends up at is only known once
+	 * ti_pll_clk_set_rate() has run rational_best_approximation() over
+	 * the request, so accept whatever was asked for and let
+	 * ti_pll_clk_recalc_rate() report the truth afterwards.
+	 */
+	return 0;
 }
 
 static int ti_pll_clk_enable(struct clk_hw *hw)
@@ -306,7 +312,7 @@ static void ti_pll_clk_disable(struct clk_hw *hw)
 
 static const struct clk_ops ti_pll_clk_ops = {
 	.recalc_rate = ti_pll_clk_recalc_rate,
-	.round_rate = ti_pll_clk_round_rate,
+	.determine_rate = ti_pll_clk_determine_rate,
 	.set_rate = __ti_pll_clk_set_rate,
 	.enable = ti_pll_clk_enable,
 	.disable = ti_pll_clk_disable,

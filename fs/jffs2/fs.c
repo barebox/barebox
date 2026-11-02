@@ -438,7 +438,8 @@ static int jffs2_probe(struct device *dev)
 	return 0;
 
 err_compressors:
-	jffs2_compressors_exit();
+	if (!jffs2_probe_cnt)
+		jffs2_compressors_exit();
 err_out:
 
 	return ret;

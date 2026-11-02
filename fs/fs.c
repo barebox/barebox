@@ -1444,6 +1444,11 @@ struct inode *iget_locked(struct super_block *sb, unsigned long ino)
 	return inode;
 }
 
+void unlock_new_inode(struct inode *inode)
+{
+	inode->i_state &= ~I_NEW;
+}
+
 void iget_failed(struct inode *inode)
 {
 	iput(inode);

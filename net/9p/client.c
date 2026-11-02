@@ -1359,6 +1359,14 @@ p9_client_write(struct p9_fid *fid, u64 offset, struct iov_iter *from, int *err)
 			p9_req_put(clnt, req);
 			break;
 		}
+		if (written <= 0) {
+			/* would resend the same data forever or revert too much */
+			pr_err("bogus RWRITE count %d\n", written);
+			iov_iter_revert(from, count - iov_iter_count(from));
+			p9_req_put(clnt, req);
+			*err = -EIO;
+			break;
+		}
 		if (rsize < written) {
 			pr_err("bogus RWRITE count (%d > %d)\n", written, rsize);
 			written = rsize;

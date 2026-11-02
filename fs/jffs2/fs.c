@@ -221,6 +221,8 @@ struct inode *jffs2_iget(struct super_block *sb, unsigned long ino)
 
 	mutex_unlock(&f->sem);
 
+	unlock_new_inode(inode);
+
 	jffs2_dbg(1, "jffs2_read_inode() returning\n");
 	return inode;
 

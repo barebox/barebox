@@ -500,6 +500,14 @@ static void nfs_free_packet(struct packet *packet)
 	free(packet);
 }
 
+static void nfs_free_packets(struct nfs_priv *npriv)
+{
+	struct packet *packet, *tmp;
+
+	list_for_each_entry_safe(packet, tmp, &npriv->packets, list)
+		nfs_free_packet(packet);
+}
+
 /*
  * rpc_req - synchronous RPC request
  */
@@ -1767,6 +1775,7 @@ static int nfs_probe(struct device *dev)
 
 err2:
 	net_unregister(npriv->con);
+	nfs_free_packets(npriv);
 err1:
 	free(npriv->path);
 err:
@@ -1783,6 +1792,7 @@ static void nfs_remove(struct device *dev)
 	nfs_umount_req(npriv);
 
 	net_unregister(npriv->con);
+	nfs_free_packets(npriv);
 	free(npriv->path);
 	free(npriv);
 }

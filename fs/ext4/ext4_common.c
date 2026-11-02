@@ -655,6 +655,9 @@ int ext4fs_mount(struct ext_filesystem *fs)
 
 	return 0;
 fail:
+	free(data->indir1.data);
+	free(data->indir2.data);
+	free(data->indir3.data);
 	free(data);
 
 	return ret;

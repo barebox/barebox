@@ -74,6 +74,10 @@ loff_t ext4fs_read_file(struct ext2fs_node *node, loff_t pos,
 		loff_t blockend = blocksize;
 		loff_t skipfirst = 0;
 
+		/* ext2/3/4 logical block numbers are 32 bit */
+		if (i > U32_MAX)
+			return -EFBIG;
+
 		ret = read_allocated_block(node, i);
 		if (ret < 0)
 			return ret;

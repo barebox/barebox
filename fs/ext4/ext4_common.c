@@ -203,14 +203,14 @@ static int ext4fs_get_indir_block(struct ext2fs_node *node,
 	return 0;
 }
 
-long int read_allocated_block(struct ext2fs_node *node, int fileblock)
+long read_allocated_block(struct ext2fs_node *node, uint32_t fileblock)
 {
 	long int blknr;
 	int blksz;
 	int log2_blksz;
-	long int rblock;
-	long int perblock_parent;
-	long int perblock_child;
+	unsigned long rblock;
+	unsigned long perblock_parent;
+	unsigned long perblock_child;
 	unsigned long long start;
 	struct ext2_inode *inode = &node->inode;
 	struct ext2_data *data = node->data;
@@ -303,6 +303,10 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 		perblock_child = blksz / 4;
 		perblock_parent = ((blksz / 4) * (blksz / 4));
 
+		/* beyond what triple indirection can map */
+		if (rblock / perblock_parent >= perblock_child)
+			return -EFBIG;
+
 		ret = ext4fs_get_indir_block(node, &data->indir1,
 				le32_to_cpu(inode->b.blocks.triple_indir_block) << log2_blksz);
 		if (ret)
@@ -314,7 +318,8 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 			return ret < 0 ? ret : 0;
 
 		ret = ext4fs_get_indir_block(node, &data->indir3,
-				le32_to_cpu(data->indir2.data[rblock / perblock_child]) << log2_blksz);
+				le32_to_cpu(data->indir2.data[(rblock / perblock_child) %
+							      perblock_child]) << log2_blksz);
 		if (ret)
 			return ret < 0 ? ret : 0;
 

@@ -1932,7 +1932,9 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 	dir = base->d_inode;
 	old = dir->i_op->lookup(dir, dentry, flags);
 	if (IS_ERR(old)) {
+		/* don't leave the name cached as nonexistent */
 		dput(dentry);
+		dentry_kill(dentry);
 		return old;
 	}
 

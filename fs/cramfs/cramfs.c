@@ -123,14 +123,14 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 	struct cramfs_priv *priv = fsdev->dev.priv;
 	unsigned int blocknr;
 	int outsize = 0;
-	int ofs = offset % 4096;
 	static char cramfs_read_buf[4096];
 
 	while (size) {
 		uint32_t base;
-		int copy;
+		int copy, ofs;
 
 		blocknr = (offset + outsize) >> 12;
+		ofs = (offset + outsize) % 4096;
 		if (blocknr)
 			cdev_read(priv->cdev, &base, 4,
 				  OFFSET(inode) + (blocknr - 1) * 4, 0);
@@ -149,10 +149,13 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 			priv->curr_base = base;
 		}
 
-		copy = min_t(size_t, priv->curr_block_len, size);
+		/* only the last block of a file may be short */
+		if (ofs >= priv->curr_block_len)
+			break;
+
+		copy = min_t(size_t, priv->curr_block_len - ofs, size);
 
 		memcpy(buf, priv->buf + ofs, copy);
-		ofs = 0;
 
 		outsize += copy;
 		size -= copy;

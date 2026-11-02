@@ -48,11 +48,6 @@ static inline void i_gid_write(struct inode *inode, gid_t gid)
 	inode->i_gid = gid;
 }
 
-static void unlock_new_inode(struct inode *inode)
-{
-	return;
-}
-
 /*
  * Maximum amount of memory we may 'kmalloc()' without worrying that we are
  * allocating too much.

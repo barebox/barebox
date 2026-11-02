@@ -56,41 +56,53 @@ v9fs_fid_iget_dotl(struct super_block *sb, struct p9_fid *fid, bool new)
 	struct p9_stat_dotl *st;
 	struct v9fs_session_info *v9ses = sb->s_fs_info;
 
-	inode = iget_locked(sb, QID2INO(&fid->qid));
-	if (unlikely(!inode))
-		return ERR_PTR(-ENOMEM);
-	if (!(inode->i_state & I_NEW)) {
-		if (!new)
-			goto done;
-		else /* deal with race condition in inode number reuse */
-			return ERR_PTR(-EBUSY);
-	}
-
-	/*
-	 * initialize the inode with the stat info
-	 * FIXME!! we may need support for stale inodes
-	 * later.
-	 */
 	st = p9_client_getattr_dotl(fid, P9_STATS_BASIC | P9_STATS_GEN);
-	if (IS_ERR(st)) {
-		retval = PTR_ERR(st);
-		goto error;
+	if (IS_ERR(st))
+		return ERR_CAST(st);
+
+	while (1) {
+		inode = iget_locked(sb, QID2INO(&fid->qid));
+		if (unlikely(!inode)) {
+			inode = ERR_PTR(-ENOMEM);
+			goto out;
+		}
+
+		if (inode->i_state & I_NEW)
+			break;
+
+		/*
+		 * The dentry cache can keep the inode of a file that is gone
+		 * on the server, which may have given its number to another
+		 * file since. Keep using the cached inode only while it has
+		 * the same type, and refresh its attributes. Otherwise set up
+		 * a new inode, but leave the cached one alone, it may still
+		 * be in use.
+		 */
+		if (!new && V9FS_I(inode)->qid.type == fid->qid.type &&
+		    !((inode->i_mode ^ st->st_mode) & S_IFMT)) {
+			v9fs_stat2inode_dotl(st, inode);
+			v9fs_set_netfs_context(inode);
+			goto out;
+		}
+
+		remove_inode_hash(inode);
+		iput(inode);
 	}
 
 	retval = v9fs_init_inode(v9ses, inode, &fid->qid,
 				 st->st_mode, new_decode_dev(st->st_rdev));
 	v9fs_stat2inode_dotl(st, inode);
-	kfree(st);
-	if (retval)
-		goto error;
+	if (retval) {
+		iget_failed(inode);
+		inode = ERR_PTR(retval);
+		goto out;
+	}
 
 	v9fs_set_netfs_context(inode);
-
-done:
+	unlock_new_inode(inode);
+out:
+	kfree(st);
 	return inode;
-error:
-	iget_failed(inode);
-	return ERR_PTR(retval);
 }
 
 struct dotl_openflag_map {

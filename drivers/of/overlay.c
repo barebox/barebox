@@ -36,7 +36,7 @@ static struct device_node *find_target(struct device_node *root,
 	if (!ret) {
 		node = of_find_node_by_phandle_from(phandle, root);
 		if (!node)
-			__pr_printk(optional ? MSG_DEBUG : MSG_ERR,
+			__pr_printk(optional ? LOGLEVEL_DEBUG : LOGLEVEL_ERR,
 				    pr_fmt("fragment %pOF: phandle 0x%x not found\n"),
 				    fragment, phandle);
 		return node;
@@ -46,7 +46,7 @@ static struct device_node *find_target(struct device_node *root,
 	if (!ret) {
 		node = of_find_node_by_path_from(root, path);
 		if (!node)
-			__pr_printk(optional ? MSG_DEBUG : MSG_ERR,
+			__pr_printk(optional ? LOGLEVEL_DEBUG : LOGLEVEL_ERR,
 				    pr_fmt("fragment %pOF: path '%s' not found\n"),
 				    fragment, path);
 		return node;

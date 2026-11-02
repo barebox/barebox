@@ -47,5 +47,7 @@ char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
 		  int precision, int flags, const char *fmt);
 const char *size_human_readable(unsigned long long size);
 
+/* Used for Rust formatting ('%pA') */
+char *rust_fmt_argument(char *buf, char *end, const void *ptr);
 
 #endif	/* _LINUX_KERNEL_SPRINTF_H */

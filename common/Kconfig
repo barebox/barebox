@@ -67,6 +67,29 @@ config LLD_VERSION
 	int
 	default $(ld-version) if LD_IS_LLD
 	default 0
+
+config RUSTC_VERSION
+	int
+	default $(rustc-version)
+	help
+	  It does not depend on `RUST` since that one may need to use the version
+	  in a `depends on`.
+
+config RUST_IS_AVAILABLE
+	def_bool $(success,$(srctree)/scripts/rust_is_available.sh)
+	help
+	  This shows whether a suitable Rust toolchain is available (found).
+
+	  Please see Documentation/rust/quick-start.rst for instructions on how
+	  to satisfy the build requirements of Rust support.
+
+	  In particular, the Makefile target 'rustavailable' is useful to check
+	  why the Rust toolchain is not being detected.
+
+config RUSTC_LLVM_VERSION
+	int
+	default $(rustc-llvm-version)
+
 config CC_OPTIMIZE_FOR_SIZE
 	def_bool y
 
@@ -203,6 +226,32 @@ config LOCALVERSION_AUTO
 	    $ git rev-parse --verify HEAD
 
 	  which is done within the script "scripts/setlocalversion".)
+
+config RUST
+	bool "Rust support"
+	depends on HAVE_RUST
+	depends on RUST_IS_AVAILABLE
+	# aligned_realloc() needs realloc()
+	depends on !MALLOC_DUMMY
+	help
+	  Enables Rust support in barebox.
+
+	  This doesn't currently do much, but it should prove useful for
+	  implementing new security-relevant features.
+
+	  If unsure, say N.
+
+config RUSTC_VERSION_TEXT
+	string
+	depends on RUST
+	default "$(RUSTC_VERSION_TEXT)"
+	help
+	  See `CC_VERSION_TEXT`.
+
+config BINDGEN_VERSION_TEXT
+	string
+	depends on RUST
+	default "$(shell,$(BINDGEN) --version 2>/dev/null)"
 
 config BANNER
 	bool "display banner"
@@ -949,6 +998,9 @@ config CONSOLE_NONE
 
 endchoice
 
+config PRINTK
+	def_bool !CONSOLE_NONE
+
 choice
 	prompt "Console activation strategy"
 	depends on CONSOLE_FULL
@@ -1521,3 +1573,18 @@ config K3_KEYWRITER_LITE
 	select DIGEST
 	select DIGEST_SHA512_GENERIC
 	depends on MACH_AM62LX
+
+config RUSTC_HAS_SPAN_FILE
+	def_bool RUSTC_VERSION >= 108800
+
+config RUSTC_HAS_UNNECESSARY_TRANSMUTES
+	def_bool RUSTC_VERSION >= 108800
+
+config RUSTC_HAS_FILE_WITH_NUL
+	def_bool RUSTC_VERSION >= 108900
+
+config RUSTC_HAS_FILE_AS_C_STR
+	def_bool RUSTC_VERSION >= 109100
+
+config RUSTC_HAS_SUSPICIOUS_RUNTIME_SYMBOL_DEFINITIONS
+	def_bool RUSTC_VERSION >= 109800

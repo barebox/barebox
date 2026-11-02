@@ -93,13 +93,25 @@ int pr_print(int level, const char *fmt, ...)
 {
 	va_list args;
 	uint i;
-	char printbuffer[CFG_PBSIZE];
 
 	va_start(args, fmt);
-	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
+	i = vprintf(fmt, args);
 	va_end(args);
 
-	console_puts(CONSOLE_DEV_STDERR, printbuffer);
+	return i;
+}
+
+int _printk(const char *fmt, ...)
+{
+	va_list args;
+	uint i;
+
+	/* no loglevel filtering in PBL */
+	fmt = printk_skip_level(fmt);
+
+	va_start(args, fmt);
+	i = vprintf(fmt, args);
+	va_end(args);
 
 	return i;
 }

@@ -48,11 +48,11 @@ static const char *dir2name[] = {
 	if (level > LOGLEVEL)			\
 		break;				\
 	dev_printf((level), args);		\
-	if ((level) <= MSG_WARNING)		\
+	if ((level) <= LOGLEVEL_WARNING)		\
 		dump_stack();			\
 } while (0)
 
-#define dma_dev_warn(args...)	dma_dev_printf(MSG_WARNING, args)
+#define dma_dev_warn(args...)	dma_dev_printf(LOGLEVEL_WARNING, args)
 
 static void dma_printf(int level, struct dma_debug_entry *entry,
 		       const char *fmt, ...)
@@ -72,8 +72,8 @@ static void dma_printf(int level, struct dma_debug_entry *entry,
 	va_end(va);
 }
 
-#define dma_warn(args...)	dma_printf(MSG_WARNING, args)
-#define dma_debug(args...)	dma_printf(MSG_DEBUG, args)
+#define dma_warn(args...)	dma_printf(LOGLEVEL_WARNING, args)
+#define dma_debug(args...)	dma_printf(LOGLEVEL_DEBUG, args)
 
 static inline int region_contains(struct dma_debug_entry *entry,
 				  dma_addr_t buf_start, size_t buf_size)

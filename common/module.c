@@ -12,7 +12,7 @@
 #include <xfuncs.h>
 #include <command.h>
 #include <fs.h>
-#include <kallsyms.h>
+#include <linux/kallsyms.h>
 #include <linux/list.h>
 
 static unsigned int find_sec(Elf_Ehdr *hdr,

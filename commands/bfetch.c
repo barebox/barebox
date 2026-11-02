@@ -435,6 +435,8 @@ static void print_features(unsigned *line)
 		string_list_add(&sl, "RSA");
 	if (IS_ENABLED(CONFIG_CRYPTO_ECDSA))
 		string_list_add(&sl, "ECDSA");
+	if (IS_ENABLED(CONFIG_RUST))
+		string_list_add(&sl, "RUST");
 	if (IS_ENABLED(CONFIG_SDL))
 		string_list_add(&sl, "SDL");
 	if (IS_ENABLED(CONFIG_ARM_MMU_PERMISSIONS))

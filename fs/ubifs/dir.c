@@ -145,6 +145,8 @@ static struct dentry *ubifs_lookup(struct inode *dir, struct dentry *dentry,
 done:
 	kfree(dent);
 	fscrypt_free_filename(&nm);
+	if (IS_ERR(inode))
+		return ERR_CAST(inode);
 	d_add(dentry, inode);
 	return NULL;
 }

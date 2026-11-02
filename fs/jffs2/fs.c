@@ -349,6 +349,7 @@ int jffs2_do_fill_super(struct super_block *sb, int silent)
 out_root:
 	jffs2_free_ino_caches(c);
 	jffs2_free_raw_node_refs(c);
+	kfree(c->blocks);
 out_inohash:
 	kfree(c->inocache_list);
 out_wbuf:
@@ -433,7 +434,7 @@ static int jffs2_probe(struct device *dev)
 		ret = jffs2_compressors_init();
 		if (ret) {
 			pr_err("error: Failed to initialise compressors\n");
-			goto err_out;
+			goto err_free;
 		}
 	}
 
@@ -450,6 +451,9 @@ static int jffs2_probe(struct device *dev)
 err_compressors:
 	if (!jffs2_probe_cnt)
 		jffs2_compressors_exit();
+err_free:
+	sb->s_fs_info = NULL;
+	kfree(ctx);
 err_out:
 
 	return ret;

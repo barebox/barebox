@@ -385,6 +385,10 @@ static int bpkfs_probe(struct device *dev)
 	if (ret < 0) {
 		dev_err(dev, "could not read: %m\n");
 		goto err;
+	} else if (ret < sizeof(*header)) {
+		dev_err(dev, "EOF: short header\n");
+		ret = -EINVAL;
+		goto err;
 	}
 
 	dev_dbg(dev, "header.magic = 0x%x\n", be32_to_cpu(header->magic));
@@ -411,8 +415,9 @@ static int bpkfs_probe(struct device *dev)
 		if (ret < 0) {
 			dev_err(dev, "could not read: %m\n");
 			goto err;
-		} else if (ret == 0) {
+		} else if (ret < sizeof(data_header)) {
 			dev_err(dev, "EOF: to_read %llu\n", size);
+			ret = -EINVAL;
 			goto err;
 		}
 
@@ -475,6 +480,7 @@ static int bpkfs_probe(struct device *dev)
 
 	if (crc != checksum) {
 		dev_err(dev, "invalid crc (0x%x != 0x%x)\n", checksum, crc);
+		ret = -EINVAL;
 		goto err;
 	}
 

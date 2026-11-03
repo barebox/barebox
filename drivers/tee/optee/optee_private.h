@@ -27,6 +27,10 @@
 #define TEEC_ERROR_BUSY			0xFFFF000D
 #define TEEC_ERROR_SHORT_BUFFER		0xFFFF0010
 
+/* API Return Codes are from the GP TEE Internal Core API Specification */
+#define TEE_ERROR_TIMEOUT		0xFFFF3001
+#define TEE_ERROR_STORAGE_NOT_AVAILABLE	0xF0100003
+
 #define TEEC_ORIGIN_COMMS		0x00000002
 
 /*

@@ -59,6 +59,13 @@ static int get_devices(struct tee_context *ctx, u32 session,
 	ret = tee_client_invoke_func(ctx, &inv_arg, param);
 	if ((ret < 0) || ((inv_arg.ret != TEEC_SUCCESS) &&
 			  (inv_arg.ret != TEEC_ERROR_SHORT_BUFFER))) {
+		/*
+		 * TEE_ERROR_STORAGE_NOT_AVAILABLE is returned when getting
+		 * the list of device TAs that depends on RPMB but a usable
+		 * RPMB device isn't found.
+		 */
+		if (inv_arg.ret == TEE_ERROR_STORAGE_NOT_AVAILABLE)
+			return -ENODEV;
 		pr_err("%s invoke function err: %x\n",
 		       pta_cmd_str(func), inv_arg.ret);
 		return -EINVAL;
@@ -184,13 +191,18 @@ static bool rpmb_available;
 
 static void optee_scan_bus_rpmb(void)
 {
+	int ret;
+
 	if (!optee_ready)
 		return;
 	if (!rpmb_available)
 		return;
 
 	__optee_enumerate_devices(PTA_CMD_GET_DEVICES_SUPP);
-	__optee_enumerate_devices(PTA_CMD_GET_DEVICES_RPMB);
+
+	ret = __optee_enumerate_devices(PTA_CMD_GET_DEVICES_RPMB);
+	if (ret == -ENODEV)
+		pr_info("RPMB unavailable (auth key not programmed?), skipping RPMB-dependent TAs\n");
 }
 
 int optee_enumerate_devices(u32 func)

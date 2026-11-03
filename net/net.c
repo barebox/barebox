@@ -460,6 +460,23 @@ int generate_ether_addr(u8 *ethaddr, int ethid)
 	return 0;
 }
 
+static void net_ensure_ethaddr(struct eth_device *edev)
+{
+	int ret;
+
+	if (is_valid_ether_addr(edev->ethaddr))
+		return;
+
+	ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
+	if (ret)
+		random_ether_addr(edev->ethaddr);
+
+	dev_warn(&edev->dev, "No MAC address set. Using %s %pM\n",
+		 ret ? "random address" : "address computed from unique ID",
+		 edev->ethaddr);
+	eth_set_ethaddr(edev, edev->ethaddr);
+}
+
 static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 				      rx_handler_f *handler, void *ctx)
 {
@@ -474,16 +491,7 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 			return ERR_PTR(-EHOSTUNREACH);
 	}
 
-	if (!is_valid_ether_addr(edev->ethaddr)) {
-		ret = generate_ether_addr(edev->ethaddr, edev->dev.id);
-		if (ret)
-			random_ether_addr(edev->ethaddr);
-
-		dev_warn(&edev->dev, "No MAC address set. Using %s %pM\n",
-			 ret == 1 ? "address computed from unique ID" : "random address",
-			 edev->ethaddr);
-		eth_set_ethaddr(edev, edev->ethaddr);
-	}
+	net_ensure_ethaddr(edev);
 
 	/* If we don't have an ip only broadcast is allowed */
 	if (!edev->ipaddr && dest != IP_BROADCAST)
@@ -654,7 +662,7 @@ static int net_handle_arp(struct eth_device *edev, unsigned char *pkt, int len)
 	 *   the server ethernet address
 	 */
 	arp = (struct arprequest *)(pkt + ETHER_HDR_SIZE);
-	if (len < ARP_HDR_SIZE)
+	if (len < ETHER_HDR_SIZE + ARP_HDR_SIZE)
 		goto bad;
 	if (ntohs(arp->ar_hrd) != ARP_ETHER)
 		goto bad;
@@ -708,11 +716,16 @@ static struct iphdr *ip_verify_size(unsigned char *pkt, int *total_len_nic)
 	struct iphdr *ip = (struct iphdr *)(pkt + ETHER_HDR_SIZE);
 	int total_len_pkt;
 
+	/* The IP header has to be there before its length can be read */
+	if (*total_len_nic < sizeof(struct ethernet) + sizeof(struct iphdr)) {
+		net_bad_packet(pkt, *total_len_nic);
+		return NULL;
+	}
+
 	total_len_pkt = ntohs(ip->tot_len) + ETHER_HDR_SIZE;
 
 	/* Only trust the packet's size if it's within bounds */
-	if (*total_len_nic < sizeof(struct ethernet) + sizeof(struct iphdr) ||
-	    *total_len_nic < total_len_pkt) {
+	if (*total_len_nic < total_len_pkt) {
 		net_bad_packet(pkt, *total_len_nic);
 		return NULL;
 	}
@@ -834,8 +847,14 @@ static int net_handle_ip(struct eth_device *edev, unsigned char *pkt, int len)
 
 	switch (ip->protocol) {
 	case IPPROTO_ICMP:
+		if (len < ETHER_HDR_SIZE + sizeof(struct iphdr) +
+			  sizeof(struct icmphdr))
+			goto bad;
 		return net_handle_icmp(edev, pkt, len);
 	case IPPROTO_UDP:
+		if (len < ETHER_HDR_SIZE + sizeof(struct iphdr) +
+			  sizeof(struct udphdr))
+			goto bad;
 		return net_handle_udp(pkt, len);
 	}
 
@@ -847,8 +866,8 @@ bad:
 
 int net_receive(struct eth_device *edev, unsigned char *pkt, int len)
 {
-	struct ethernet *et = (struct ethernet *)pkt;
-	int et_protlen = ntohs(et->et_protlen);
+	struct ethernet *et;
+	int et_protlen;
 	int ret;
 
 	led_trigger_network(LED_TRIGGER_NET_RX);
@@ -870,7 +889,19 @@ int net_receive(struct eth_device *edev, unsigned char *pkt, int len)
 				 ERR_PTR(ret));
 			return ret;
 		}
+
+		/* the preprocessor may have stripped a header */
+		if (len < ETHER_HDR_SIZE) {
+			ret = 0;
+			goto out;
+		}
 	}
+
+	/* replies must not go out with an all-zero source address */
+	net_ensure_ethaddr(edev);
+
+	et = (struct ethernet *)pkt;
+	et_protlen = ntohs(et->et_protlen);
 
 	switch (et_protlen) {
 	case PROT_ARP:

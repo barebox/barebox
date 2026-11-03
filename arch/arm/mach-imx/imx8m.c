@@ -10,7 +10,6 @@
 #include <mach/imx/imx8m-ccm-regs.h>
 #include <soc/imx8m/clk-early.h>
 
-#include <linux/bitfield.h>
 #include <linux/iopoll.h>
 
 #define IMX_SIP_BUILDINFO			0xC2000003
@@ -49,8 +48,6 @@ void imx8m_ccgr_clock_disable(int index)
 #define INTPLL_DIV2_CLKE_MASK                   BIT(13)
 #define INTPLL_CLKE_MASK                        BIT(11)
 
-#define CCM_TARGET_ROOT0_DIV  GENMASK(1, 0)
-
 #define IMX8MM_CCM_ANALOG_ARM_PLL_GEN_CTRL	0x84
 #define IMX8MM_CCM_ANALOG_SYS_PLL1_GEN_CTRL	0x94
 #define IMX8MM_CCM_ANALOG_SYS_PLL2_GEN_CTRL	0x104
@@ -60,22 +57,7 @@ static void __imx8m_early_clock_init(int cpu_type)
 {
 	unsigned long pll3_freq;
 	void __iomem *ana = IOMEM(MX8M_ANATOP_BASE_ADDR);
-	void __iomem *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
 	u32 val;
-
-	imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_DDR1);
-
-	imx8m_clock_set_target_val(IMX8M_DRAM_ALT_CLK_ROOT,
-				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
-
-	/* change the clock source of dram_apb_clk_root: source 4 800MHz /4 = 200MHz */
-	imx8m_clock_set_target_val(IMX8M_DRAM_APB_CLK_ROOT,
-				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-				   IMX8M_CCM_TARGET_ROOTn_MUX(4) |
-				   IMX8M_CCM_TARGET_ROOTn_POST_DIV(4 - 1));
-
-	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_DDR1);
 
 	/*
 	 * The gate is not exported to clk tree, so configure them here.
@@ -100,15 +82,17 @@ static void __imx8m_early_clock_init(int cpu_type)
 		INTPLL_DIV20_CLKE_MASK;
 	writel(val, ana + IMX8MM_CCM_ANALOG_SYS_PLL2_GEN_CTRL);
 
-	if (cpu_type != IMX_CPU_IMX8MP) {
-		/* 8MP ROM already set GIC to 400Mhz, system_pll1_800m with div = 2 */
-		/* For everything else, config GIC to sys_pll2_100m */
-		imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_GIC);
-		imx8m_clock_set_target_val(IMX8M_GIC_CLK_ROOT,
-					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-					   IMX8M_CCM_TARGET_ROOTn_MUX(3));
-		imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_GIC);
-	}
+	/* Configure ARM at 1.2GHz */
+	imx8m_clock_set_target_val(IMX8M_ARM_A53_CLK_ROOT,
+				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+				   IMX8M_CCM_TARGET_ROOTn_MUX(2));
+
+	clk_pll1416x_early_configure(ana + IMX8MM_CCM_ANALOG_ARM_PLL_GEN_CTRL,
+				     1200000000UL, 25000000UL);
+
+	/* Bypass the A53 root and feed the cores from arm_pll_out directly */
+	imx8m_clock_set_target_val(IMX8M_CORE_SEL_CFG,
+				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
 
 	if (cpu_type == IMX_CPU_IMX8MN || cpu_type == IMX_CPU_IMX8MP)
 		pll3_freq = 600000000UL;
@@ -116,35 +100,40 @@ static void __imx8m_early_clock_init(int cpu_type)
 		pll3_freq = 750000000UL;
 
 	/* Configure SYS_PLL3 */
-	clk_pll1416x_early_set_rate(ana + IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL,
-				    pll3_freq, 25000000UL);
+	clk_pll1416x_early_configure(ana + IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL,
+				     pll3_freq, 25000000UL);
 
 	if (cpu_type == IMX_CPU_IMX8MP) {
-		/* 8MP ROM already set NOC to 800Mhz, only need to configure NOC_IO clk to 600Mhz */
+		/* NOC_IO from sys_pll3_out, barebox proper sets NOC and GIC */
 		imx8m_clock_set_target_val(IMX8M_NOC_IO_CLK_ROOT,
 					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
 					   IMX8M_CCM_TARGET_ROOTn_MUX(2));
+	} else {
+		/* NOC from undivided sys_pll3_out */
+		imx8m_clock_set_target_val(IMX8M_NOC_CLK_ROOT,
+					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+					   IMX8M_CCM_TARGET_ROOTn_MUX(2));
+
+		/* config GIC to sys_pll2_100m */
+		imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_GIC);
+		imx8m_clock_set_target_val(IMX8M_GIC_CLK_ROOT,
+					   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+					   IMX8M_CCM_TARGET_ROOTn_MUX(3));
+		imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_GIC);
 	}
 
-	clrsetbits_le32(ccm + IMX8M_CCM_TARGET_ROOTn(IMX8M_ARM_A53_CLK_ROOT),
-			IMX8M_CCM_TARGET_ROOTn_MUX(7),
-			IMX8M_CCM_TARGET_ROOTn_MUX(2));
+	imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_DDR1);
 
-	/* Configure ARM PLL to 1.2GHz */
-	clk_pll1416x_early_set_rate(ana + IMX8MM_CCM_ANALOG_ARM_PLL_GEN_CTRL,
-				    1200000000UL, 25000000UL);
+	imx8m_clock_set_target_val(IMX8M_DRAM_ALT_CLK_ROOT,
+				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
 
-	clrsetbits_le32(ana + IMX8MM_CCM_ANALOG_ARM_PLL_GEN_CTRL, 0,
-			INTPLL_CLKE_MASK);
+	/* change the clock source of dram_apb_clk_root: source 1 sys_pll2_200m */
+	imx8m_clock_set_target_val(IMX8M_DRAM_APB_CLK_ROOT,
+				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
 
-	clrsetbits_le32(ccm + IMX8M_CCM_TARGET_ROOTn(IMX8M_ARM_A53_CLK_ROOT),
-			IMX8M_CCM_TARGET_ROOTn_MUX(7),
-			IMX8M_CCM_TARGET_ROOTn_MUX(1));
-
-	/* Configure DIV to 1.2GHz */
-	clrsetbits_le32(ccm + IMX8M_CCM_TARGET_ROOTn(IMX8M_ARM_A53_CLK_ROOT),
-			CCM_TARGET_ROOT0_DIV,
-			FIELD_PREP(CCM_TARGET_ROOT0_DIV, 0));
+	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_DDR1);
 }
 
 void imx8mm_early_clock_init(void)

@@ -35,7 +35,7 @@ jobs:
           - ARCH: arm
             lgenv: test/arm/multi_v8_efiloader_defconfig.yaml
             defconfig: multi_v8_efiloader_defconfig
-            osimg: debian-13.7.0-arm64-netinst.iso
+            osimg: debian-13.x.y-arm64-netinst.iso
 
           - ARCH: mips
             lgenv: test/mips/qemu-malta_defconfig.yaml
@@ -116,7 +116,7 @@ jobs:
                             common/boards/configs/disable_target_tools.config"
 
         if [ ${{matrix.arch}} = sandbox ] && [ ${{matrix.defconfig}} = allyesconfig ]; then
-          KCONFIG_ADD="${KCONFIG_ADD} CONFIG_CONSOLE_DISABLE_INPUT=n CONFIG_MALLOC_LIBC=y"
+          KCONFIG_ADD="${KCONFIG_ADD} common/boards/configs/allyestest.config"
         fi
 
         if [ "${{ steps.used-features.outputs.testfs }}" = "true" ]; then

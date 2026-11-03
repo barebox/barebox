@@ -1187,11 +1187,14 @@ static void ch9getstatus(struct fsl_udc *udc, u8 request_type, u16 value,
 		tmp = 0;
 	} else if ((request_type & USB_RECIP_MASK) == USB_RECIP_ENDPOINT) {
 		/* Get endpoint status */
+		int pipe = get_pipe_by_windex(index);
 		struct fsl_ep *target_ep;
 
-		target_ep = get_ep_by_pipe(udc, get_pipe_by_windex(index));
-
 		/* stall if endpoint doesn't exist */
+		if (pipe >= udc->max_ep)
+			goto stall;
+
+		target_ep = get_ep_by_pipe(udc, pipe);
 		if (!target_ep->desc)
 			goto stall;
 		tmp = dr_ep_get_stall(ep_index(target_ep), ep_is_in(target_ep))
@@ -1261,7 +1264,7 @@ static void setup_received_irq(struct fsl_udc *udc,
 			int pipe = get_pipe_by_windex(wIndex);
 			struct fsl_ep *ep;
 
-			if (wValue != 0 || wLength != 0 || pipe > udc->max_ep)
+			if (wValue != 0 || wLength != 0 || pipe >= udc->max_ep)
 				break;
 			ep = get_ep_by_pipe(udc, pipe);
 
@@ -1541,7 +1544,7 @@ static void dtd_complete_irq(struct fsl_udc *udc)
 	if (!bit_pos)
 		return;
 
-	for (i = 0; i < udc->max_ep * 2; i++) {
+	for (i = 0; i < udc->max_ep; i++) {
 		ep_num = i >> 1;
 		direction = i % 2;
 

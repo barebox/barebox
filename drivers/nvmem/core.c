@@ -464,8 +464,8 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	if (!nvmem)
 		return ERR_PTR(-ENOMEM);
 
-	nvmem->stride = config->stride;
-	nvmem->word_size = config->word_size;
+	nvmem->stride = config->stride ?: 1;
+	nvmem->word_size = config->word_size ?: 1;
 	nvmem->size = config->size;
 	nvmem->dev.parent = config->dev;
 	nvmem->reg_read = config->reg_read;

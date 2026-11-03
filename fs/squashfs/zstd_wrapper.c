@@ -86,9 +86,16 @@ static int zstd_uncompress(struct squashfs_sb_info *msblk, void *strm,
 	out_buf.dst = squashfs_first_page(output);
 
 	do {
-		if (in_buf.pos == in_buf.size && k < b) {
-			int avail = min(length, msblk->devblksize - offset);
+		if (in_buf.pos == in_buf.size) {
+			int avail;
 
+			if (k == b) {
+				/* The input ends before the stream does */
+				squashfs_finish_page(output);
+				goto out;
+			}
+
+			avail = min(length, msblk->devblksize - offset);
 			length -= avail;
 			in_buf.src = bh[k] + offset;
 			in_buf.size = avail;

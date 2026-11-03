@@ -199,11 +199,11 @@ failure:
  * If the skip factor is limited in this way then the file will use multiple
  * slots.
  */
-static inline int calculate_skip(int blocks)
+static inline int calculate_skip(u64 blocks)
 {
-	int skip = blocks / ((SQUASHFS_META_ENTRIES + 1)
+	u64 skip = blocks / ((SQUASHFS_META_ENTRIES + 1)
 		 * SQUASHFS_META_INDEXES);
-	return min(SQUASHFS_CACHED_BLKS - 1, skip + 1);
+	return min((u64) SQUASHFS_CACHED_BLKS - 1, skip + 1);
 }
 
 
@@ -353,7 +353,7 @@ static int squashfs_fill_page(char *dest, struct squashfs_cache_entry *buffer,
 	int copied;
 
 	copied = squashfs_copy_data(dest, buffer, offset, avail);
-	memset(dest + avail, 0, PAGE_CACHE_SIZE - avail);
+	memset(dest + copied, 0, PAGE_CACHE_SIZE - copied);
 
 	return copied == avail ? 0 : -EILSEQ;
 }
@@ -425,7 +425,7 @@ int squashfs_readpage(struct file *file, struct page *page)
 	int expected = index == file_end ?
 			(i_size_read(inode) & (msblk->block_size - 1)) :
 			 msblk->block_size;
-	int res;
+	int res, i;
 
 	TRACE("Entered squashfs_readpage, page index %lx, start block %llx\n",
 				page->index, squashfs_i(inode)->start);
@@ -452,7 +452,8 @@ int squashfs_readpage(struct file *file, struct page *page)
 		return 0;
 
 out:
-	memset(page->addr, 0, PAGE_CACHE_SIZE);
+	for (i = 0; i < 32; i++)
+		memset(squashfs_page(page)->buf[i], 0, PAGE_CACHE_SIZE);
 
 	return 0;
 }

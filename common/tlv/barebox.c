@@ -69,8 +69,12 @@ static const char *__tlv_format(struct tlv_device *dev, struct tlv_mapping *map,
 		return NULL;
 
 	param = dev_add_param_fixed(&dev->dev, map->prop, NULL);
-	if (!IS_ERR(param))
-		param->value = buf; /* pass ownership */
+	if (IS_ERR(param)) {
+		free(buf);
+		return NULL;
+	}
+
+	param->value = buf; /* pass ownership */
 
 	ret = of_append_property(tlv_of_node(dev), map->prop, buf, strlen(buf) + 1);
 	if (ret)
@@ -118,6 +122,12 @@ static struct device_node *of_append_node(struct device_node *root, const char *
 	return of_new_node(root, name);
 }
 
+/*
+ * Each address is looked up among all previous ones when added, so limit
+ * their number to keep a crafted TLV from taking ages to parse
+ */
+#define TLV_MAX_ETH_ADDRESSES	256
+
 /* add a single address-<num> entry to the property */
 int tlv_format_mac(struct tlv_device *dev, struct tlv_mapping *map, u16 len, const u8 *val)
 {
@@ -135,6 +145,9 @@ int tlv_format_mac(struct tlv_device *dev, struct tlv_mapping *map, u16 len, con
 
 	for_each_property_of_node(np, pp)
 		base++;
+
+	if (base >= TLV_MAX_ETH_ADDRESSES)
+		return -E2BIG;
 
 	snprintf(propname, sizeof(propname), "address-%u", base);
 	ret = of_property_sprintf(np, propname, "%*phC", ETH_ALEN, val);

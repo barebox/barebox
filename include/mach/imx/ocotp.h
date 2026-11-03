@@ -5,6 +5,7 @@
 
 #include <linux/bitfield.h>
 #include <linux/types.h>
+#include <linux/io.h>
 
 #define OCOTP_SHADOW_OFFSET		0x400
 #define OCOTP_SHADOW_SPACING		0x10

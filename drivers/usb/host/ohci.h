@@ -393,7 +393,7 @@ struct urb_priv {
  * a subset of what the full implementation needs. (Linus)
  */
 
-#define NUM_EDS 8		/* num of preallocated endpoint descriptors */
+#define NUM_EDS 32		/* num of preallocated endpoint descriptors */
 
 struct ohci_device {
 	struct ed ed[NUM_EDS];

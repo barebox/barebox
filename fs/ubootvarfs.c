@@ -197,14 +197,22 @@ static const struct file_operations ubootvarfs_dir_operations = {
  * zeroed out
  */
 static void ubootvarfs_relocate_tail(struct ubootvarfs_inode *node,
-				     int delta)
+				     ptrdiff_t delta)
 {
 	struct ubootvarfs_var *var = node->var;
 	struct ubootvarfs_data *data = node->data;
-	const size_t n = data->end - var->start;
-	void *src = var->end + 1;
+	char *src = var->end + 1;
+	const char *tail_end;
 
-	memmove(src + delta, src, n);
+	/*
+	 * Move everything up to and including the terminating NUL at
+	 * data->end. When the environment completely fills the device,
+	 * the last entry's NUL is the final byte and data->end points
+	 * one past the mapping, so there is no terminator to carry along.
+	 */
+	tail_end = data->end == data->limit ? data->end : data->end + 1;
+
+	memmove(src + delta, src, tail_end - src);
 
 	data->end += delta;
 
@@ -227,7 +235,7 @@ static void ubootvarfs_relocate_tail(struct ubootvarfs_inode *node,
  * ubootvarfs_var's in varaible linked list
  */
 static void ubootvarfs_adjust(struct ubootvarfs_inode *node,
-			      int delta)
+			      ptrdiff_t delta)
 {
 	struct ubootvarfs_var *var = node->var;
 	struct ubootvarfs_data *data = node->data;
@@ -252,13 +260,15 @@ static int ubootvarfs_unlink(struct inode *dir, struct dentry *dentry)
 		 * -1 at the end is to account for '\0' at the end
 		 * that needs to be removed as well
 		 */
-		const int delta = var->name - var->end - 1;
+		const ptrdiff_t delta = var->name - var->end - 1;
 
 		ubootvarfs_adjust(node, delta);
 
 		list_del(&var->list);
 		free(var);
+		/* open files keep the inode, see ubootvarfs_io() */
 		node->var = NULL;
+		inode->i_size = 0;
 	}
 
 	return simple_unlink(dir, dentry);
@@ -273,12 +283,17 @@ static int ubootvarfs_create(struct inode *dir, struct dentry *dentry,
 	struct inode *inode;
 	struct ubootvarfs_var *var;
 	size_t len = strlen(dentry->name);
+
+	/* U-Boot splits a variable at its first '=' */
+	if (strchr(dentry->name, '='))
+		return -EINVAL;
+
 	/*
 	 * We'll be adding <varname>=\0\0 to the end of our data, so
 	 * we need to make sure there's enough room for it. Note that
 	 * + 3 is to accoutn for '=', and two '\0' from above
 	 */
-	if (data->end + len + 3 > data->limit)
+	if (len + 3 > data->limit - data->end)
 		return -ENOSPC;
 
 	var = xmalloc(sizeof(*var));
@@ -323,7 +338,6 @@ static void ubootvarfs_destroy_inode(struct inode *inode)
 {
 	struct ubootvarfs_inode *node = inode_to_node(inode);
 
-	free(node->var);
 	free(node);
 }
 
@@ -336,7 +350,13 @@ static int ubootvarfs_io(struct file *f, void *buf, size_t insize, bool read)
 {
 	struct inode *inode = f->f_inode;
 	struct ubootvarfs_inode *node = inode_to_node(inode);
-	void *ptr = node->var->start + f->f_pos;
+	void *ptr;
+
+	/* the variable was removed while the file was open */
+	if (!node->var)
+		return -ENOENT;
+
+	ptr = node->var->start + f->f_pos;
 
 	if (read)
 		memcpy(buf, ptr, insize);
@@ -362,12 +382,19 @@ static int ubootvarfs_truncate(struct file *f, loff_t size)
 	struct ubootvarfs_inode *node = inode_to_node(inode);
 	struct ubootvarfs_data *data = node->data;
 	struct ubootvarfs_var *var = node->var;
-	const int delta = size - inode->i_size;
+	loff_t delta;
+
+	if (!var)
+		return -ENOENT;
+
+	if (size < 0)
+		return -EINVAL;
 
 	if (size == inode->i_size)
 		return 0;
 
-	if (data->end + delta >= data->limit)
+	delta = size - inode->i_size;
+	if (delta >= data->limit - data->end)
 		return -ENOSPC;
 
 	ubootvarfs_adjust(node, delta);
@@ -381,11 +408,31 @@ static int ubootvarfs_truncate(struct file *f, loff_t size)
 	return 0;
 }
 
+static int ubootvarfs_flush(struct file *f)
+{
+	struct inode *inode = f->f_inode;
+	struct ubootvarfs_inode *node = inode_to_node(inode);
+	struct ubootvarfs_data *data = node->data;
+
+	return flush(data->fd);
+}
+
 static const struct file_operations ubootvarfs_file_operations = {
 	.truncate = ubootvarfs_truncate,
 	.read = ubootvarfs_read,
 	.write = ubootvarfs_write,
+	.flush = ubootvarfs_flush,
 };
+
+static void ubootvarfs_free_vars(struct ubootvarfs_data *data)
+{
+	struct ubootvarfs_var *var, *tmp;
+
+	list_for_each_entry_safe(var, tmp, &data->var_list, list) {
+		list_del(&var->list);
+		free(var);
+	}
+}
 
 static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 			     size_t size)
@@ -398,23 +445,26 @@ static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 	data->limit = blob + size;
 	INIT_LIST_HEAD(&data->var_list);
 
-	while (*blob) {
-		var = xmalloc(sizeof(*var));
+	while (size && *blob) {
 		len = strnlen(blob, size);
+		if (len == size) {
+			pr_err("Unterminated data @ 0x%08tx. Skipped.\n",
+			       blob - start);
+			break;
+		}
 
-		var->name = blob;
-		var->end  = blob + len;
-
-		sep = strchr(blob, '=');
-		if (sep) {
+		sep = memchr(blob, '=', len);
+		if (sep && sep != blob) {
+			var = xmalloc(sizeof(*var));
+			var->name = blob;
+			var->end  = blob + len;
 			var->start = sep + 1;
 			var->name_len = sep - blob;
 
 			list_add_tail(&var->list, &data->var_list);
 		} else {
-			pr_err("No separator in data @ 0x%08tx. Skipped.",
+			pr_err("No separator in data @ 0x%08tx. Skipped.\n",
 			       blob - start);
-			free(var);
 		}
 
 		len++; /* account for '\0' */
@@ -436,6 +486,7 @@ static int ubootvarfs_probe(struct device *dev)
 	int ret;
 
 	dev->priv = data;
+	INIT_LIST_HEAD(&data->var_list);
 
 	data->fd = open(fsdev->backingstore, O_RDWR);
 	if (data->fd < 0) {
@@ -468,6 +519,7 @@ static int ubootvarfs_probe(struct device *dev)
 
 	return 0;
 exit:
+	ubootvarfs_free_vars(data);
 	close(data->fd);
 free_data:
 	free(data);
@@ -477,9 +529,12 @@ free_data:
 static void ubootvarfs_remove(struct device *dev)
 {
 	struct ubootvarfs_data *data = dev->priv;
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 
 	flush(data->fd);
 	close(data->fd);
+	fsdev->cdev = NULL;
+	ubootvarfs_free_vars(data);
 	free(data);
 }
 

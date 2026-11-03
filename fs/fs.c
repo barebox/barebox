@@ -373,6 +373,18 @@ static int fsdev_truncate(struct file *f, loff_t length)
 		f->f_inode->i_fop->truncate(f, length) : -EROFS;
 }
 
+/*
+ * Reads, writes and seeks are clamped to i_size, but only when i_size is a
+ * meaningful bound. A character device is a sizeless stream, and a file whose
+ * size is only discovered while reading (e.g. a tftp transfer without a
+ * negotiated size) starts out with i_size zero; for both, i_size must not clamp
+ * I/O and the driver reports the end of the file itself.
+ */
+static bool i_size_is_bound(const struct inode *inode)
+{
+	return !inode->i_stream && !inode->i_size_unknown;
+}
+
 int ftruncate(int fd, loff_t length)
 {
 	struct file *f = fd_to_file(fd, false);
@@ -381,7 +393,10 @@ int ftruncate(int fd, loff_t length)
 	if (IS_ERR(f))
 		return -errno;
 
-	if (f->f_size == FILE_SIZE_STREAM)
+	if (length < 0)
+		return errno_set(-EINVAL);
+
+	if (!i_size_is_bound(f->f_inode))
 		return 0;
 
 	ret = fsdev_truncate(f, length);
@@ -427,8 +442,12 @@ static ssize_t __read(struct file *f, void *buf, size_t count)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (f->f_size != FILE_SIZE_STREAM && f->f_pos + count > f->f_size)
-		count = f->f_size - f->f_pos;
+	if (i_size_is_bound(f->f_inode)) {
+		/* pread() can place the position beyond the end */
+		if (f->f_pos >= f->f_size)
+			return 0;
+		count = min_t(u64, count, f->f_size - f->f_pos);
+	}
 
 	if (!count)
 		return 0;
@@ -446,6 +465,8 @@ ssize_t pread(int fd, void *buf, size_t count, loff_t offset)
 
 	if (IS_ERR(f))
 		return -errno;
+	if (offset < 0)
+		return errno_set(-EINVAL);
 
 	pos = f->f_pos;
 	f->f_pos = offset;
@@ -487,16 +508,14 @@ static ssize_t __write(struct file *f, const void *buf, size_t count)
 	if (fsdrv != ramfs_driver)
 		assert_command_context();
 
-	if (f->f_size != FILE_SIZE_STREAM && f->f_pos + count > f->f_size) {
+	if (i_size_is_bound(f->f_inode) && f->f_pos + count > f->f_size) {
 		ret = fsdev_truncate(f, f->f_pos + count);
 		if (ret) {
 			if (ret == -EPERM)
 				ret = -ENOSPC;
-			if (ret != -ENOSPC)
+			if (ret != -ENOSPC || f->f_pos >= f->f_size)
 				goto out;
 			count = f->f_size - f->f_pos;
-			if (!count)
-				goto out;
 		} else {
 			f->f_size = f->f_pos + count;
 		}
@@ -515,6 +534,8 @@ ssize_t pwrite(int fd, const void *buf, size_t count, loff_t offset)
 
 	if (IS_ERR(f))
 		return -errno;
+	if (offset < 0)
+		return errno_set(-EINVAL);
 
 	pos = f->f_pos;
 	f->f_pos = offset;
@@ -592,7 +613,7 @@ loff_t lseek(int fd, loff_t offset, int whence)
 
 	pos += offset;
 
-	if (f->f_size != FILE_SIZE_STREAM && (pos < 0 || pos > f->f_size))
+	if (i_size_is_bound(f->f_inode) && (pos < 0 || pos > f->f_size))
 		goto out;
 
 	if (f->f_inode->i_fop->lseek) {
@@ -986,6 +1007,7 @@ int fsdev_open_cdev(struct fs_device *fsdev)
 static void init_super(struct super_block *sb)
 {
 	INIT_LIST_HEAD(&sb->s_inodes);
+	sb->s_maxbytes = MAX_LFS_FILESIZE;
 }
 
 static int fsdev_umount(struct fs_device *fsdev)
@@ -1049,6 +1071,11 @@ static int fillonedir(struct dir_context *ctx, const char *name, int namlen,
 	struct readdir_callback *rd = container_of(ctx, struct readdir_callback, ctx);
 	struct readdir_entry *entry;
 
+	if (namlen >= sizeof(entry->d.d_name)) {
+		pr_warn("skipping directory entry %.32s...: name too long\n", name);
+		return 0;
+	}
+
 	entry = xzalloc(sizeof(*entry));
 	memcpy(entry->d.d_name, name, namlen);
 	list_add_tail(&entry->list, &rd->dir->entries);
@@ -1105,6 +1132,8 @@ static void stat_inode(struct inode *inode, struct stat *s)
 		cdev = cdev_by_name(inode->cdevname);
 
 		s->st_size = cdev ? cdev_size(cdev) : 0;
+	} else if (!i_size_is_bound(inode)) {
+		s->st_size = FILE_SIZE_STREAM;
 	} else {
 		s->st_size = inode->i_size;
 	}
@@ -2613,6 +2642,14 @@ out:
 	return errno_set(error);
 }
 
+static bool i_size_valid(struct inode *inode)
+{
+	if (inode->i_stream)
+		return true;
+
+	return (u64)inode->i_size <= inode->i_sb->s_maxbytes;
+}
+
 static int do_dentry_open(struct file *f)
 {
 	int error;
@@ -2628,17 +2665,30 @@ static int do_dentry_open(struct file *f)
 			return error;
 	}
 
+	if (!i_size_valid(f->f_inode)) {
+		dev_warn(&f->fsdev->dev, "%s: bad i_size value: %lld\n",
+			 f->path, f->f_size);
+		error = -EUCLEAN;
+		goto err_release;
+	}
+
 	if (f->f_flags & O_TRUNC) {
 		error = fsdev_truncate(f, 0);
 		f->f_size = 0;
 		if (error)
-			return error;
+			goto err_release;
 	}
 
 	if (f->f_flags & O_APPEND)
 		f->f_pos = f->f_size;
 
 	return 0;
+
+err_release:
+	if (f->f_inode->i_fop->release)
+		f->f_inode->i_fop->release(f->f_inode, f);
+
+	return error;
 }
 
 /**
@@ -2748,8 +2798,11 @@ int openat(int dirfd, const char *pathname, int flags)
 	if (d_is_negative(dentry)) {
 		if (flags & O_CREAT) {
 			error = create(path.dentry, dentry);
-			if (error)
+			if (error) {
+				dput(dentry);
+				path_put(&path);
 				goto out1;
+			}
 			/* repoint path.dentry from parent to newly created entry.
 			 * path.mnt already points at the correct vfsmount, even
 			 * for a dirfd of the root directory, so that's fine.
@@ -2757,12 +2810,13 @@ int openat(int dirfd, const char *pathname, int flags)
 			dput(path.dentry);
 			path.dentry = dentry;
 		} else {
-			dput(dentry);
+			path_put(&path);
 			error = -ENOENT;
 			goto out1;
 		}
 	} else if (d_is_dir(dentry)) {
 		if (!(flags & (O_PATH | O_DIRECTORY)) && !dentry_is_tftp(dentry)) {
+			path_put(&path);
 			error = -EISDIR;
 			goto out1;
 		}
@@ -3031,7 +3085,9 @@ int readlinkat(int dirfd, const char *pathname, char *buf, size_t bufsiz)
 		goto out_put;
 	}
 
-	link = inode->i_op->get_link(dentry, inode);
+	link = inode->i_link;
+	if (!link)
+		link = inode->i_op->get_link(dentry, inode);
 	if (IS_ERR(link)) {
 		ret =  PTR_ERR(link);
 		goto out_put;
@@ -3354,6 +3410,8 @@ err_no_driver:
 	unregister_device(&fsdev->dev);
 err_register:
 	fs_remove(&fsdev->dev);
+	free(fsdev);
+	mntput(path.mnt);
 out:
 	path_put(&path);
 
@@ -3489,9 +3547,27 @@ void cdev_create_default_automount(struct cdev *cdev)
 	cmd = basprintf("mount %s", cdev->name);
 
 	make_directory(path);
-	automount_add(path, cmd);
+	if (!automount_add(path, cmd))
+		cdev->flags |= DEVFS_HAS_AUTOMOUNT;
 
 	free(cmd);
+	free(path);
+}
+
+void cdev_remove_default_automount(struct cdev *cdev)
+{
+	char *path;
+
+	if (!(cdev->flags & DEVFS_HAS_AUTOMOUNT))
+		return;
+
+	path = basprintf("/mnt/%s", cdev->name);
+
+	automount_remove(path);
+	rmdir(path);
+
+	cdev->flags &= ~DEVFS_HAS_AUTOMOUNT;
+
 	free(path);
 }
 

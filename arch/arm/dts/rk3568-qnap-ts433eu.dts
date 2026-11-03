@@ -27,6 +27,11 @@
 	};
 };
 
+/* Connected to usb_host0_xhci */
+&combphy0 {
+	status = "okay";
+};
+
 &combphy2 {
 	status = "okay";
 };
@@ -94,7 +99,7 @@
 };
 
 /* Internal SATA controllers not used, ASM1064 used instead */
-&sata1 {
+&sata2 {
 	status = "disabled";
 };
 

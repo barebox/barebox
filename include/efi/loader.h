@@ -19,7 +19,7 @@ struct efi_table_hdr;
 /* Key identifying current memory map */
 extern efi_uintn_t efi_memory_map_key;
 
-extern struct efi_runtime_services efi_runtime_services;
+extern struct efi_runtime_services efi_runtime_services_boot;
 extern struct efi_system_table systab;
 
 extern struct efi_simple_text_output_protocol efi_con_out;

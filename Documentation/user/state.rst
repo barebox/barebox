@@ -30,7 +30,7 @@ fail and be non-functional.
 For the Linux run-time there is a userspace tool_ to do
 the same.
 
-.. _tool: https://git.pengutronix.de/cgit/tools/dt-utils/
+.. _tool: https://github.com/barebox/dt-utils/
 
 To define a *state* variable set, a devicetree based description is used. Refer to
 :ref:`barebox,state` for further details.

@@ -53,13 +53,13 @@ static const char *squashfs_get_link(struct dentry *dentry, struct inode *inode)
 			"%llx, offset %x\n", block, offset);
 
 	if (i_size_read(inode) < 0)
-		return NULL;
+		return ERR_PTR(-EINVAL);
 
 	length = min_t(loff_t, i_size_read(inode), PAGE_SIZE);
 
 	symlink = malloc(length + 1);
 	if (!symlink)
-		return NULL;
+		return ERR_PTR(-ENOMEM);
 
 	symlink[length] = 0;
 
@@ -78,7 +78,7 @@ static const char *squashfs_get_link(struct dentry *dentry, struct inode *inode)
 error_out:
 	free(symlink);
 
-	return NULL;
+	return ERR_PTR(bytes);
 }
 
 const struct inode_operations squashfs_symlink_inode_ops = {

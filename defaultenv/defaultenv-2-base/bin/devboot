@@ -44,5 +44,8 @@ fi
 
 echo boot ${override_args} $*
 boot ${override_args} $*
+ret=$?
 
 cd "${saved_pwd}"
+
+exit $ret

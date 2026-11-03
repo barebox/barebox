@@ -176,10 +176,13 @@ int sdhci_send_command(struct sdhci *host, struct mci_cmd *cmd)
 	sdhci_read_response(host, cmd);
 	sdhci_write32(host, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);
 
-	if (cmd->data)
+	if (cmd->data) {
 		ret = sdhci_transfer_data_dma(host, cmd, cmd->data, dma);
+		if (ret)
+			goto error;
+	}
 
-	return ret;
+	return 0;
 
 error:
 	if (ret) {

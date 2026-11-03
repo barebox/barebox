@@ -760,7 +760,7 @@ static int mmc_change_freq(struct mci *mci)
 	char cardtype;
 	int err;
 
-	mci->ext_csd = dma_alloc(512);
+	mci->ext_csd = dma_zalloc(512);
 	mci->card_caps = 0;
 
 	/* Only version 4 supports high-speed */

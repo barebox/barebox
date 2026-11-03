@@ -406,9 +406,13 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if ((buf8[0] == 0x5a || buf8[0] == 0x69 || buf8[0] == 0x78 ||
 	     buf8[0] == 0x8b || buf8[0] == 0x9c) &&
-	    buf8[0x1] == 0 && buf8[0x2] == 0 && buf8[0x3] == 0 &&
 	    buf8[0x18] == 0 && buf8[0x1b] == 0 && buf8[0x1c] == 0) {
 
+		/*
+		 * In v0 headers byte 0x1 is the NAND ECC mode and bytes
+		 * 0x2-0x3 the NAND page size, both non-zero for NAND images.
+		 * Only v1 headers have them reserved.
+		 */
 		if (buf8[0x8] == 0) {
 			unsigned char sum = 0;
 			int i;
@@ -420,7 +424,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 			    fuzz_insecure_checksum_accepted(sum, buf8[0x1f]))
 				return filetype_kwbimage_v0;
 		} else if (buf8[0x8] == 1) {
-			if (buf8[0x1d] == 0 &&
+			if (buf8[0x1] == 0 && buf8[0x2] == 0 && buf8[0x3] == 0 &&
+			    buf8[0x1d] == 0 &&
 			    (buf8[0x1e] == 0 || buf8[0x1e] == 1))
 				return filetype_kwbimage_v1;
 		}

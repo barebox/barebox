@@ -5,7 +5,7 @@
 typedef u64 mmu_addr_t;
 
 #define CACHED_MEM      (PTE_BLOCK_MEMTYPE(MT_NORMAL) | \
-			 PTE_BLOCK_OUTER_SHARE | \
+			 PTE_BLOCK_INNER_SHARE | \
 			 PTE_BLOCK_AF)
 #define UNCACHED_MEM    (PTE_BLOCK_MEMTYPE(MT_DEVICE_nGnRnE) | \
 			 PTE_BLOCK_OUTER_SHARE | \

@@ -32,6 +32,7 @@
 #include <malloc.h>
 #include <linux/stat.h>
 #include <linux/time.h>
+#include <linux/log2.h>
 #include <linux/magic.h>
 #include <asm/byteorder.h>
 #include <dma.h>
@@ -560,7 +561,7 @@ int ext4fs_mount(struct ext_filesystem *fs)
 
 	if (le32_to_cpu(data->sblock.revision_level) == 0) {
 		fs->inodesz = 128;
-		fs->gdsize = 32;
+		fs->gdsize = EXT4_MIN_DESC_SIZE;
 	} else {
 		debug("EXT4 features COMPAT: %08x INCOMPAT: %08x RO_COMPAT: %08x\n",
 		      le32_to_cpu(data->sblock.feature_compatibility),
@@ -568,17 +569,28 @@ int ext4fs_mount(struct ext_filesystem *fs)
 		      le32_to_cpu(data->sblock.feature_ro_compat));
 
 		fs->inodesz = le16_to_cpu(data->sblock.inode_size);
-		fs->gdsize = le32_to_cpu(data->sblock.feature_incompat) &
-			EXT4_FEATURE_INCOMPAT_64BIT ?
-			le16_to_cpu(data->sblock.descriptor_size) : 32;
+		fs->gdsize = EXT4_MIN_DESC_SIZE;
+
+		if (le32_to_cpu(data->sblock.feature_incompat) &
+		    EXT4_FEATURE_INCOMPAT_64BIT) {
+			fs->gdsize = le16_to_cpu(data->sblock.descriptor_size);
+
+			if (fs->gdsize < EXT4_MIN_DESC_SIZE_64BIT ||
+			    fs->gdsize > EXT4_MAX_DESC_SIZE ||
+			    !is_power_of_2(fs->gdsize)) {
+				dev_err(fs->dev, "unsupported descriptor size %u\n",
+					fs->gdsize);
+				ret = -EINVAL;
+				goto fail;
+			}
+		}
 	}
 
 	dev_info(fs->dev, "EXT2 rev %d, inode_size %d, descriptor size %d\n",
 	      le32_to_cpu(data->sblock.revision_level),
 	      fs->inodesz, fs->gdsize);
 
-	if (!fs->inodesz || !fs->gdsize ||
-	    !le32_to_cpu(data->sblock.inodes_per_group)) {
+	if (!fs->inodesz || !le32_to_cpu(data->sblock.inodes_per_group)) {
 		dev_err(fs->dev, "invalid superblock: inodesz=%u gdsize=%u inodes_per_group=%u\n",
 			fs->inodesz, fs->gdsize,
 			le32_to_cpu(data->sblock.inodes_per_group));

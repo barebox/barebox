@@ -83,7 +83,7 @@ static int orion_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct orion_gpio_chip *gpio;
-	int id;
+	int id, ret;
 
 	gpio = xzalloc(sizeof(*gpio));
 	iores = dev_request_mem_resource(dev, 0);
@@ -95,14 +95,26 @@ static int orion_gpio_probe(struct device *dev)
 	gpio->chip.dev = dev;
 	gpio->chip.ops = &orion_gpio_ops;
 
+	/*
+	 * Without a gpio alias, let gpiolib pick the base. Defaulting to 0
+	 * made the second bank of Kirkwood SoCs collide with the first one.
+	 */
 	id = of_alias_get_id(dev->of_node, "gpio");
 	if (id >= 0)
 		gpio->chip.base = id * 32;
+	else
+		gpio->chip.base = -1;
 
 	gpio->chip.ngpio = 32;
 	of_property_read_u32(dev->of_node, "ngpios", &gpio->chip.ngpio);
 
-	gpiochip_add(&gpio->chip);
+	ret = gpiochip_add(&gpio->chip);
+	if (ret) {
+		dev_err(dev, "failed to register gpio chip: %pe\n", ERR_PTR(ret));
+		release_region(iores);
+		free(gpio);
+		return ret;
+	}
 
 	dev_dbg(dev, "probed gpio%d with base %d\n", dev->id, gpio->chip.base);
 

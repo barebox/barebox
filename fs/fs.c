@@ -1449,6 +1449,15 @@ void unlock_new_inode(struct inode *inode)
 	inode->i_state &= ~I_NEW;
 }
 
+/*
+ * Hide the inode from iget_locked(), so that a new inode with the same number
+ * can be set up while this one is still in use.
+ */
+void remove_inode_hash(struct inode *inode)
+{
+	list_del_init(&inode->i_sb_list);
+}
+
 void iget_failed(struct inode *inode)
 {
 	iput(inode);

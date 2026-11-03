@@ -132,4 +132,4 @@ static struct driver orion_gpio_driver = {
 	.probe = orion_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(orion_gpio_dt_ids),
 };
-device_platform_driver(orion_gpio_driver);
+coredevice_platform_driver(orion_gpio_driver);

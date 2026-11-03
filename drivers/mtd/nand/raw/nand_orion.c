@@ -73,6 +73,19 @@ static void orion_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int len)
 		buf[i++] = readb(io_base);
 }
 
+static int orion_nand_attach_chip(struct nand_chip *chip)
+{
+	if (chip->ecc.engine_type == NAND_ECC_ENGINE_TYPE_SOFT &&
+	    chip->ecc.algo == NAND_ECC_ALGO_UNKNOWN)
+		chip->ecc.algo = NAND_ECC_ALGO_HAMMING;
+
+	return 0;
+}
+
+static const struct nand_controller_ops orion_nand_controller_ops = {
+	.attach_chip = orion_nand_attach_chip,
+};
+
 static int orion_nand_probe(struct device *dev)
 {
 	struct resource *iores;
@@ -117,8 +130,13 @@ static int orion_nand_probe(struct device *dev)
 	chip->legacy.IO_ADDR_R = chip->legacy.IO_ADDR_W = io_base;
 	chip->legacy.cmd_ctrl = orion_nand_cmd_ctrl;
 	chip->legacy.read_buf = orion_nand_read_buf;
+	/*
+	 * The default ECC engine is software. The algorithm is set in
+	 * ->attach_chip(), after rawnand_dt_init() has overwritten it with the
+	 * (usually absent) device tree setting.
+	 */
 	chip->ecc.engine_type = NAND_ECC_ENGINE_TYPE_SOFT;
-	chip->ecc.algo = NAND_ECC_ALGO_HAMMING;
+	chip->legacy.dummy_controller.ops = &orion_nand_controller_ops;
 
 	WARN(width > 16, "%d bit bus width out of range", width);
 	if (width == 16)

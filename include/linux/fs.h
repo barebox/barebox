@@ -536,6 +536,7 @@ const char *simple_get_link(struct dentry *dentry, struct inode *inode);
 struct inode *iget_locked(struct super_block *, unsigned long);
 void iget_failed(struct inode *inode);
 void unlock_new_inode(struct inode *inode);
+void remove_inode_hash(struct inode *inode);
 
 static inline void inode_init_owner(struct inode *inode,
 				    const struct inode *dir, umode_t mode)

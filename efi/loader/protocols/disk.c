@@ -163,7 +163,8 @@ static bool efi_fs_exists(struct cdev *cdev)
 	enum filetype filetype;
 	struct driver *drv;
 
-	if (cdev_detect_type(cdev, &filetype))
+	/* drivers not backed by a cdev, e.g. ramfs, have no type to match */
+	if (cdev_detect_type(cdev, &filetype) || filetype == filetype_unknown)
 		return false;
 
 	bus_for_each_driver(&fs_bus, drv) {

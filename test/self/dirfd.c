@@ -98,6 +98,7 @@ static void do_test_dirfd(const char *at, int dirfd,
 
 static void test_dirfd(void)
 {
+	char *oldpwd;
 	int fd, ret;
 
 	fd = open("/", O_PATH | O_DIRECTORY);
@@ -138,6 +139,11 @@ static void test_dirfd(void)
 	do_test_dirfd("/dirfdtest O_CHROOT", open("/dirfdtest", O_PATH | O_CHROOT),
 		      B(111,111,111,000), B(000,000,000,000),
 		      B(111,111,111,000), B(111,111,111,000));
+
+	/* A former working directory must not keep the mount busy */
+	oldpwd = pushd("/dirfdtest");
+	if (expect(oldpwd != NULL, true, "pushd(\"/dirfdtest\")"))
+		popd(oldpwd);
 
 out:
 	ret = umount("/dirfdtest");

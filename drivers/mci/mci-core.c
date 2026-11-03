@@ -1215,7 +1215,7 @@ static void mci_correct_version_from_ext_csd(struct mci *mci)
  * meaning of the encoded 'unit' bits in the CSD's field 'TRAN_SPEED'
  * (divided by 10 to be nice to platforms without floating point)
  */
-static const unsigned tran_speed_unit[] = {
+static const unsigned tran_speed_unit[8] = {
 	[0] = 10000,		/* 100 kbit/s */
 	[1] = 100000,		/* 1 Mbit/s */
 	[2] = 1000000,		/* 10 Mbit/s */

@@ -7,16 +7,13 @@
 
 #define pr_fmt(fmt)  "HABv4: " fmt
 
-#include <common.h>
 #include <hab.h>
 #include <init.h>
 #include <types.h>
 #include <mmu.h>
-#include <dma.h>
 #include <zero_page.h>
 #include <linux/sizes.h>
 #include <linux/arm-smccc.h>
-#include <asm/cache.h>
 
 #include <mach/imx/generic.h>
 #include <mach/imx/imx8mq.h>
@@ -196,23 +193,9 @@ static enum hab_status hab_sip_report_event(enum hab_status status,
 {
 	struct arm_smccc_res res;
 
-	v8_flush_dcache_range((unsigned long)bytes,
-			      (unsigned long)bytes + sizeof(*bytes));
-
-	if (event)
-		v8_flush_dcache_range((unsigned long)event,
-				      (unsigned long)event + *bytes);
-
 	arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_REPORT_EVENT,
 		      (unsigned long)index, (unsigned long)event,
 		      (unsigned long)bytes, 0, 0, 0, &res);
-
-	v8_inv_dcache_range((unsigned long)bytes,
-			    (unsigned long)bytes + sizeof(*bytes));
-
-	if (event)
-		v8_inv_dcache_range((unsigned long)event,
-				    (unsigned long)event + *bytes);
 
 	return (enum hab_status)res.a0;
 }
@@ -222,22 +205,10 @@ static enum hab_status hab_sip_report_status(enum hab_config *config,
 {
 	struct arm_smccc_res res;
 
-	if (state)
-		v8_flush_dcache_range((unsigned long)state,
-				      (unsigned long)state + sizeof(*config));
-	if (config)
-		v8_flush_dcache_range((unsigned long)config,
-				      (unsigned long)config + sizeof(*state));
-
 	arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_REPORT_STATUS,
 		      (unsigned long) config,
 		      (unsigned long) state, 0, 0, 0, 0, &res);
-	if (state)
-		v8_inv_dcache_range((unsigned long)state,
-				    (unsigned long)state + sizeof(*config));
-	if (config)
-		v8_inv_dcache_range((unsigned long)config,
-				    (unsigned long)config + sizeof(*state));
+
 	return (enum hab_status)res.a0;
 }
 
@@ -587,7 +558,7 @@ static uint8_t *hab_get_event(const struct habv4_rvt *rvt, int index, size_t *le
 	if (err != HAB_STATUS_SUCCESS)
 		return NULL;
 
-	buf = dma_alloc(*len);
+	buf = malloc(*len);
 	if (!buf)
 		return NULL;
 

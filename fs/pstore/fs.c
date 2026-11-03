@@ -254,7 +254,6 @@ static const struct fs_legacy_ops pstore_ops = {
 
 static struct fs_driver pstore_driver = {
 	.legacy_ops = &pstore_ops,
-	.type = filetype_uimage,
 	.drv = {
 		.probe  = pstore_probe,
 		.remove = pstore_remove,

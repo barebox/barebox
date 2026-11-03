@@ -302,7 +302,7 @@ static struct partition bootloader;
 
 int arria10_prepare_mmc(int barebox_part, int rbf_part)
 {
-	uint8_t *buf = (void *)0xffe00000 + SZ_256K - 128 - SECTOR_SIZE;
+	static uint8_t buf[SECTOR_SIZE] __aligned(8);
 	struct partition_entry *table;
 	uint32_t i;
 	int ret;

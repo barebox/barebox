@@ -409,6 +409,11 @@ static int jffs2_probe(struct device *dev)
 	if (ret)
 		goto err_out;
 
+	if (!fsdev->cdev->mtd) {
+		dev_err(dev, "%s is not an MTD device\n", fsdev->backingstore);
+		return -EINVAL;
+	}
+
 	ctx = kzalloc(sizeof(struct jffs2_sb_info), GFP_KERNEL);
 	if (!ctx)
 		return -ENOMEM;

@@ -152,7 +152,7 @@ static int orion_nand_probe(struct device *dev)
 		goto no_dev;
 	}
 
-	add_mtd_nand_device(mtd, "orion_nand");
+	add_mtd_nand_device(mtd, "nand");
 	return 0;
 no_dev:
 	if (!IS_ERR(clk))

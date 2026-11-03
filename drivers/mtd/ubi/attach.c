@@ -1863,6 +1863,9 @@ static int self_check_ai(struct ubi_device *ubi, struct ubi_attach_info *ai)
 	list_for_each_entry(aeb, &ai->alien, u.list)
 		buf[aeb->pnum] = 1;
 
+	list_for_each_entry(aeb, &ai->fastmap, u.list)
+		buf[aeb->pnum] = 1;
+
 	err = 0;
 	for (pnum = 0; pnum < ubi->peb_count; pnum++)
 		if (!buf[pnum]) {

@@ -17,11 +17,11 @@ static struct pbl_bio bio;
 
 int arria10_read_blocks(void *dst, int blocknum, size_t len)
 {
-	int blocks;
+	int ret;
 
-	blocks = len / SECTOR_SIZE;
+	ret = pbl_bio_read(&bio, blocknum, dst, len / SECTOR_SIZE);
 
-	return pbl_bio_read(&bio, blocknum, dst, blocks);
+	return ret < 0 ? ret : 0;
 }
 
 void arria10_init_mmc(void)

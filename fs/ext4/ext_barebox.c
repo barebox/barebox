@@ -193,6 +193,7 @@ const struct file_operations ext_file_operations = {
 static const char *ext_get_link(struct dentry *dentry, struct inode *inode)
 {
 	struct ext2fs_node *node = to_ext2_node(inode);
+	unsigned int len;
 	int ret;
 
 	if (inode->i_size < sizeof(node->inode.b.symlink))
@@ -200,9 +201,12 @@ static const char *ext_get_link(struct dentry *dentry, struct inode *inode)
 
 	BUG_ON(inode->i_link);
 
-	inode->i_link = dma_xzalloc(size_add(inode->i_size, 1));
+	/* Like Linux, read at most the first block, less the terminator */
+	len = min_t(loff_t, inode->i_size, EXT2_BLOCK_SIZE(node->data) - 1);
 
-	ret = ext4fs_read_file(node, 0, inode->i_size, inode->i_link);
+	inode->i_link = dma_xzalloc(len + 1);
+
+	ret = ext4fs_read_file(node, 0, len, inode->i_link);
 	if (ret < 0) {
 		free(inode->i_link);
 		inode->i_link = NULL;

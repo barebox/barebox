@@ -218,6 +218,15 @@ For example:
   U-Boot: bootz $kernel_addr - $fdt_addr # On 32-bit ARM
   U-Boot: booti $kernel_addr - $fdt_addr # for other platforms
 
+On ARM, firmware that can't pass a device tree can start an image with the
+device tree appended instead. As the image expects to be loaded with the
+Linux kernel's boot protocol, the appended device tree is only used if no
+device tree is passed:
+
+.. code-block:: console
+
+  host$ cat images/barebox-dt-2nd.img my-board.dtb > barebox-my-board.img
+
 The barebox build can also generate a FIT image combining ``barebox-dt-2nd.img``
 and all enabled device trees. This image requires python3 and python3-libfdt
 and is thus only built by default if ``CONFIG_BOARD_GENERIC_FIT`` is enabled

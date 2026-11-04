@@ -15,6 +15,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 	build-essential \
 	coreutils \
 	dosfstools \
+	e2fsprogs \
 	flex \
 	gawk \
 	git \

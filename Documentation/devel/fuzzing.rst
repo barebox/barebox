@@ -21,6 +21,7 @@ options to crash barebox on detection of memory safety issues::
   barebox
   fuzz-dtb
   fuzz-dtb-overlay
+  fuzz-ext4
   fuzz-fat
   fuzz-fdt-compatible
   fuzz-filetype

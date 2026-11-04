@@ -25,6 +25,7 @@
 #include <linux/ctype.h>
 #include <xfuncs.h>
 #include <fcntl.h>
+#include <fuzz.h>
 #include "ext4_common.h"
 
 ssize_t ext4fs_devread(struct ext_filesystem *fs, sector_t __sector, int byte_offset,
@@ -328,6 +329,8 @@ static void ext_remove(struct device *dev)
 	ext4fs_umount(fs);
 	free(fs);
 }
+
+fuzz_test_fs(ext4, 512);
 
 static struct fs_driver ext_driver = {
 	.type      = filetype_ext,

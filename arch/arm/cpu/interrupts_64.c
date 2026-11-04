@@ -14,14 +14,14 @@
 #include <efi/mode.h>
 
 /* Avoid missing prototype warning, called from assembly */
-void do_bad_sync (struct pt_regs *pt_regs);
-void do_bad_irq (struct pt_regs *pt_regs);
-void do_bad_fiq (struct pt_regs *pt_regs);
-void do_bad_error (struct pt_regs *pt_regs);
-void do_fiq (struct pt_regs *pt_regs);
-void do_irq (struct pt_regs *pt_regs);
-void do_error (struct pt_regs *pt_regs);
-void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far);
+void do_sync_sp_el0 (struct pt_regs *pt_regs);
+void do_irq_sp_el0 (struct pt_regs *pt_regs);
+void do_fiq_sp_el0 (struct pt_regs *pt_regs);
+void do_serror_sp_el0 (struct pt_regs *pt_regs);
+void do_fiq_sp_elx (struct pt_regs *pt_regs);
+void do_irq_sp_elx (struct pt_regs *pt_regs);
+void do_serror_sp_elx (struct pt_regs *pt_regs);
+void do_sync_sp_elx(struct pt_regs *pt_regs, unsigned int esr, unsigned long far);
 
 static const char *esr_class_str[] = {
 	[0 ... ESR_ELx_EC_MAX]		= "UNRECOGNIZED EC",
@@ -103,9 +103,9 @@ static void __noreturn do_exception(const char *reason, struct pt_regs *pt_regs)
  *
  * We never enable FIQs, so this should not happen
  */
-void do_fiq(struct pt_regs *pt_regs)
+void do_fiq_sp_elx(struct pt_regs *pt_regs)
 {
-	do_exception("fast interrupt request", pt_regs);
+	do_exception("fiq request (SP_ELx)", pt_regs);
 }
 
 /**
@@ -114,29 +114,29 @@ void do_fiq(struct pt_regs *pt_regs)
  *
  * We never enable interrupts, so this should not happen
  */
-void do_irq(struct pt_regs *pt_regs)
+void do_irq_sp_elx(struct pt_regs *pt_regs)
 {
-	do_exception("interrupt request", pt_regs);
+	do_exception("irq request (SP_ELx)", pt_regs);
 }
 
-void do_bad_sync(struct pt_regs *pt_regs)
+void do_sync_sp_el0(struct pt_regs *pt_regs)
 {
-	do_exception("bad sync", pt_regs);
+	do_exception("sync exception (SP_EL0)", pt_regs);
 }
 
-void do_bad_irq(struct pt_regs *pt_regs)
+void do_irq_sp_el0(struct pt_regs *pt_regs)
 {
-	do_exception("bad irq", pt_regs);
+	do_exception("irq request (SP_EL0)", pt_regs);
 }
 
-void do_bad_fiq(struct pt_regs *pt_regs)
+void do_fiq_sp_el0(struct pt_regs *pt_regs)
 {
-	do_exception("bad fiq", pt_regs);
+	do_exception("fiq request (SP_EL0)", pt_regs);
 }
 
-void do_bad_error(struct pt_regs *pt_regs)
+void do_serror_sp_el0(struct pt_regs *pt_regs)
 {
-	do_exception("bad error", pt_regs);
+	do_exception("serror exception (SP_EL0)", pt_regs);
 }
 
 extern volatile int arm_ignore_data_abort;
@@ -153,7 +153,7 @@ static const char *data_abort_reason(ulong far)
 	return NULL;
 }
 
-void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
+void do_sync_sp_elx(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 {
 	const char *extra = NULL;
 
@@ -168,7 +168,7 @@ void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 	}
 
 	if (!extra)
-		extra = "paging request";
+		extra = "paging request - sync exception (SP_ELx)";
 
 	eprintf("PANIC: unable to handle %s at address 0x%016lx\n",
 		extra, far);
@@ -178,9 +178,9 @@ void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 }
 
 
-void do_error(struct pt_regs *pt_regs)
+void do_serror_sp_elx(struct pt_regs *pt_regs)
 {
-	do_exception("error exception", pt_regs);
+	do_exception("serror exception (SP_ELx)", pt_regs);
 }
 
 void data_abort_mask(void)

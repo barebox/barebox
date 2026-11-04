@@ -165,6 +165,10 @@ static int fat_truncate(struct file *f, loff_t size)
 	unsigned long lastofs;
 	int ret;
 
+	/* FAT can't hold files of 4 GiB or more */
+	if (size > U32_MAX)
+		return -EFBIG;
+
 	lastofs = f_file->fptr;
 
 	ret = f_lseek(f_file, size);
@@ -175,7 +179,8 @@ static int fat_truncate(struct file *f, loff_t size)
 	if (ret)
 		return ret;
 
-	ret = f_lseek(f_file, lastofs);
+	/* don't extend the file again in case it was shrunk */
+	ret = f_lseek(f_file, min_t(loff_t, lastofs, size));
 	if (ret)
 		return ret;
 
@@ -284,8 +289,10 @@ static DIR* fat_opendir(struct device *dev, const char *pathname)
 	else
 		ret = f_opendir(&priv->fat, ff_dir, "/");
 
-	if (ret)
+	if (ret) {
+		free(ff_dir);
 		return NULL;
+	}
 
 	dir = xzalloc(sizeof(*dir));
 

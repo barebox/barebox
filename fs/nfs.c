@@ -500,6 +500,14 @@ static void nfs_free_packet(struct packet *packet)
 	free(packet);
 }
 
+static void nfs_free_packets(struct nfs_priv *npriv)
+{
+	struct packet *packet, *tmp;
+
+	list_for_each_entry_safe(packet, tmp, &npriv->packets, list)
+		nfs_free_packet(packet);
+}
+
 /*
  * rpc_req - synchronous RPC request
  */
@@ -786,7 +794,7 @@ static int nfs_mount_req(struct nfs_priv *npriv)
 {
 	struct device *dev = npriv->dev;
 	uint32_t data[1024];
-	uint32_t *p, status;
+	uint32_t *p, status, fhsize;
 	int len;
 	int pathlen;
 	int ret;
@@ -839,13 +847,13 @@ static int nfs_mount_req(struct nfs_priv *npriv)
 		goto err_free_packet;
 	}
 
-	npriv->rootfh.size = ntoh32(net_read_uint32(p));
-	if (npriv->rootfh.size > NFS3_FHSIZE) {
-		dev_err(dev, "%s: file handle too big: %lu\n",
-		       __func__, (unsigned long)npriv->rootfh.size);
+	fhsize = ntoh32(net_read_uint32(p));
+	if (fhsize > NFS3_FHSIZE) {
+		dev_err(dev, "%s: file handle too big: %u\n", __func__, fhsize);
 		ret = -EIO;
 		goto err_free_packet;
 	}
+	npriv->rootfh.size = fhsize;
 
 	p = nfs_packet_read(nfs_packet, npriv->rootfh.size);
 	if (!p) {
@@ -902,7 +910,7 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 	struct device *dev = npriv->dev;
 	struct nfs_inode *ninode = nfsi(inode);
 	uint32_t data[1024];
-	uint32_t *p, status;
+	uint32_t *p, status, fhsize;
 	int len;
 	int ret = 0;
 	struct packet *nfs_packet;
@@ -953,7 +961,10 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 
 	status = ntoh32(net_read_uint32(p));
 	if (status != NFS3_OK) {
-		dev_dbg(dev, "Lookup failed: %s\n", nfserrstr(status, &ret));
+		/* dev_dbg() doesn't evaluate its arguments without DEBUG */
+		const char *errstr = nfserrstr(status, &ret);
+
+		dev_dbg(dev, "Lookup failed: %s\n", errstr);
 		goto err_free_packet;
 	}
 
@@ -963,13 +974,13 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 		goto err_free_packet;
 	}
 
-	ninode->fh.size = ntoh32(net_read_uint32(p));
-	if (ninode->fh.size > NFS3_FHSIZE) {
-		dev_dbg(dev, "%s: file handle too big: %u\n", __func__,
-		      ninode->fh.size);
+	fhsize = ntoh32(net_read_uint32(p));
+	if (fhsize > NFS3_FHSIZE) {
+		dev_dbg(dev, "%s: file handle too big: %u\n", __func__, fhsize);
 		ret = -EIO;
 		goto err_free_packet;
 	}
+	ninode->fh.size = fhsize;
 
 	p = nfs_packet_read(nfs_packet, ninode->fh.size);
 	if (!p) {
@@ -1189,6 +1200,13 @@ static int nfs_read_req(struct file_priv *priv, uint64_t offset,
 	 */
 	nfs_packet_read(nfs_packet, sizeof(uint32_t));
 
+	if (rlen > readlen) {
+		dev_err(dev, "%s: server returned more than requested: %u > %u\n",
+			__func__, rlen, readlen);
+		ret = -EIO;
+		goto err_free_packet;
+	}
+
 	if (readlen && !rlen && !eof) {
 		ret = -EIO;
 		goto err_free_packet;
@@ -1303,6 +1321,11 @@ static int nfs_readlink_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 	}
 
 	len = ntoh32(net_read_uint32(p)); /* new path length */
+	if (len >= PATH_MAX) {
+		dev_err(dev, "%s: link target too long: %u\n", __func__, len);
+		ret = -ENAMETOOLONG;
+		goto err_free_packet;
+	}
 
 	p = nfs_packet_read(nfs_packet, len);
 	if (!p) {
@@ -1401,6 +1424,8 @@ static int nfs_iterate(struct file *file, struct dir_context *ctx)
 	void *buf = NULL;
 	struct nfs_dir *ndir;
 	struct xdr_stream *xdr;
+	uint64_t *cookies = NULL;
+	unsigned int ncookies = 0, i;
 	int ret;
 	uint32_t *p, len;
 
@@ -1408,6 +1433,10 @@ static int nfs_iterate(struct file *file, struct dir_context *ctx)
 	ndir->fh = nfsi(dir)->fh;
 
 	while (1) {
+		/* remember the cookies we requested to detect loops */
+		cookies = xrealloc(cookies, (ncookies + 1) * sizeof(*cookies));
+		cookies[ncookies++] = ndir->cookie;
+
 		/* cookie == 0 and cookieverf == 0 means start of dir */
 		buf = nfs_readdirattr_req(npriv, ndir);
 		if (!buf) {
@@ -1457,11 +1486,26 @@ static int nfs_iterate(struct file *file, struct dir_context *ctx)
 			ndir->cookie = ntoh64(net_read_uint64(p));
 		}
 		free(buf);
+		buf = NULL;
+
+		/*
+		 * A reply without eof that has no entries, or that leads back
+		 * to a cookie we already requested, would make us request the
+		 * same entries again and again.
+		 */
+		for (i = 0; i < ncookies; i++) {
+			if (cookies[i] == ndir->cookie) {
+				pr_err("%s: READDIR doesn't make progress\n", __func__);
+				ret = -EIO;
+				goto out;
+			}
+		}
 	}
 
 	ret = 0;
 
 out:
+	free(cookies);
 	free(buf);
 	free(ndir);
 
@@ -1531,6 +1575,12 @@ static int nfs_init_inode(struct nfs_priv *npriv, struct inode *inode,
 	case S_IFLNK:
 		inode->i_op = &nfs_symlink_inode_operations;
 		break;
+	case S_IFBLK:
+	case S_IFCHR:
+	case S_IFSOCK:
+	case S_IFIFO:
+		/* No special files in barebox */
+		break;
 	}
 
 	return 0;
@@ -1545,17 +1595,28 @@ static struct dentry *nfs_lookup(struct inode *dir, struct dentry *dentry,
 	int ret;
 
 	if (!inode)
-		return NULL;
+		return ERR_PTR(-ENOMEM);
 
 	ret = nfs_lookup_req(npriv, &ndir->fh, dentry->name, inode);
 	if (ret)
-		return NULL;
+		goto err;
 
-	nfs_init_inode(npriv, inode, inode->i_mode);
+	ret = nfs_init_inode(npriv, inode, inode->i_mode);
+	if (ret)
+		goto err;
 
 	d_add(dentry, inode);
 
 	return NULL;
+
+err:
+	iput(inode);
+
+	/* leave a negative dentry for files that don't exist */
+	if (ret == -ENOENT)
+		return NULL;
+
+	return ERR_PTR(ret);
 }
 
 static const struct file_operations nfs_dir_operations = {
@@ -1682,7 +1743,8 @@ static int nfs_probe(struct device *dev)
 	} else {
 		if (nfsport_default > U16_MAX) {
 			dev_err(dev, "invalid NFS port: %d\n", nfsport_default);
-			return -EINVAL;
+			ret = -EINVAL;
+			goto err2;
 		}
 
 		npriv->mount_port = npriv->nfs_port = nfsport_default;
@@ -1714,6 +1776,7 @@ static int nfs_probe(struct device *dev)
 
 err2:
 	net_unregister(npriv->con);
+	nfs_free_packets(npriv);
 err1:
 	free(npriv->path);
 err:
@@ -1730,6 +1793,7 @@ static void nfs_remove(struct device *dev)
 	nfs_umount_req(npriv);
 
 	net_unregister(npriv->con);
+	nfs_free_packets(npriv);
 	free(npriv->path);
 	free(npriv);
 }

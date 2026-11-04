@@ -33,6 +33,7 @@
 #include <linux/stat.h>
 #include <linux/time.h>
 #include <linux/magic.h>
+#include <linux/log2.h>
 #include <asm/byteorder.h>
 #include <dma.h>
 
@@ -70,7 +71,11 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 	struct ext_filesystem *fs = data->fs;
 	int blksz = EXT2_BLOCK_SIZE(data);
 	ssize_t ret;
+	int depth = le16_to_cpu(ext_block->eh_depth);
 	int i;
+
+	if (depth > EXT4_MAX_EXTENT_DEPTH)
+		return NULL;
 
 	while (1) {
 		index = (struct ext4_extent_idx *)(ext_block + 1);
@@ -78,7 +83,11 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 		if (le16_to_cpu(ext_block->eh_magic) != EXT4_EXT_MAGIC)
 			return NULL;
 
-		if (ext_block->eh_depth == 0)
+		/* each level must be exactly one below its parent */
+		if (le16_to_cpu(ext_block->eh_depth) != depth)
+			return NULL;
+
+		if (depth == 0)
 			return ext_block;
 
 		if (ext4_check_eh_entries(ext_block, buf, blksz))
@@ -102,6 +111,8 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 			return NULL;
 		else
 			ext_block = (struct ext4_extent_header *)buf;
+
+		depth--;
 	}
 }
 
@@ -158,6 +169,12 @@ int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)
 	return 0;
 }
 
+/*
+ * Read the indirect block at sector @blkno into @indir->data, unless it's
+ * already there. Returns 0 on success, a negative error code on failure,
+ * or 1 without reading anything if @blkno is 0, i.e. if the indirect
+ * block is a hole.
+ */
 static int ext4fs_get_indir_block(struct ext2fs_node *node,
 				struct ext4fs_indir_block *indir, sector_t blkno)
 {
@@ -167,27 +184,33 @@ static int ext4fs_get_indir_block(struct ext2fs_node *node,
 
 	blksz = EXT2_BLOCK_SIZE(node->data);
 
+	if (!blkno)
+		return 1;
+
 	if (indir->blkno == blkno)
 		return 0;
 
 	ret = ext4fs_devread(fs, blkno, 0, blksz, (void *)indir->data);
 	if (ret) {
+		indir->blkno = 0;
 		dev_err(fs->dev, "** SI ext2fs read block (indir 1)"
 			"failed. **\n");
 		return ret;
 	}
 
+	indir->blkno = blkno;
+
 	return 0;
 }
 
-long int read_allocated_block(struct ext2fs_node *node, int fileblock)
+long read_allocated_block(struct ext2fs_node *node, uint32_t fileblock)
 {
 	long int blknr;
 	int blksz;
 	int log2_blksz;
-	long int rblock;
-	long int perblock_parent;
-	long int perblock_child;
+	unsigned long rblock;
+	unsigned long perblock_parent;
+	unsigned long perblock_child;
 	unsigned long long start;
 	struct ext2_inode *inode = &node->inode;
 	struct ext2_data *data = node->data;
@@ -254,7 +277,7 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 		ret = ext4fs_get_indir_block(node, &data->indir1,
 				le32_to_cpu(inode->b.blocks.indir_block) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 		blknr = le32_to_cpu(data->indir1.data[fileblock - INDIRECT_BLOCKS]);
 	} else if (fileblock < (INDIRECT_BLOCKS + (blksz / 4 *
 					(blksz / 4 + 1)))) {
@@ -265,12 +288,12 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 		ret = ext4fs_get_indir_block(node, &data->indir1,
 				le32_to_cpu(inode->b.blocks.double_indir_block) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 
 		ret = ext4fs_get_indir_block(node, &data->indir2,
 				le32_to_cpu(data->indir1.data[rblock / perblock]) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 
 		blknr = le32_to_cpu(data->indir2.data[rblock % perblock]);
 	} else {
@@ -280,20 +303,25 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 		perblock_child = blksz / 4;
 		perblock_parent = ((blksz / 4) * (blksz / 4));
 
+		/* beyond what triple indirection can map */
+		if (rblock / perblock_parent >= perblock_child)
+			return -EFBIG;
+
 		ret = ext4fs_get_indir_block(node, &data->indir1,
 				le32_to_cpu(inode->b.blocks.triple_indir_block) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 
 		ret = ext4fs_get_indir_block(node, &data->indir2,
 				le32_to_cpu(data->indir1.data[rblock / perblock_parent]) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 
 		ret = ext4fs_get_indir_block(node, &data->indir3,
-				le32_to_cpu(data->indir2.data[rblock / perblock_child]) << log2_blksz);
+				le32_to_cpu(data->indir2.data[(rblock / perblock_child) %
+							      perblock_child]) << log2_blksz);
 		if (ret)
-			return ret;
+			return ret < 0 ? ret : 0;
 
 		blknr = le32_to_cpu(data->indir3.data[rblock % perblock_child]);
 	}
@@ -586,14 +614,30 @@ int ext4fs_mount(struct ext_filesystem *fs)
 		goto fail;
 	}
 
+	blksz = EXT2_BLOCK_SIZE(data);
+
+	if (fs->inodesz < EXT2_GOOD_OLD_INODE_SIZE || fs->inodesz > blksz ||
+	    !is_power_of_2(fs->inodesz)) {
+		dev_err(fs->dev, "invalid inode size %u\n", fs->inodesz);
+		ret = -EINVAL;
+		goto fail;
+	}
+
+	if ((le32_to_cpu(data->sblock.feature_incompat) &
+	     EXT4_FEATURE_INCOMPAT_64BIT) &&
+	    (fs->gdsize < EXT4_MIN_DESC_SIZE_64BIT ||
+	     fs->gdsize > EXT4_MAX_DESC_SIZE || !is_power_of_2(fs->gdsize))) {
+		dev_err(fs->dev, "invalid descriptor size %u\n", fs->gdsize);
+		ret = -EINVAL;
+		goto fail;
+	}
+
 	data->diropen.data = data;
 	data->diropen.ino = 2;
 	data->diropen.inode_read = 1;
 	data->inode = &data->diropen.inode;
 	data->fs = fs;
 	fs->data = data;
-
-	blksz = EXT2_BLOCK_SIZE(data);
 
 	fs->data->indir1.data = malloc(blksz);
 	fs->data->indir2.data = malloc(blksz);
@@ -611,6 +655,9 @@ int ext4fs_mount(struct ext_filesystem *fs)
 
 	return 0;
 fail:
+	free(data->indir1.data);
+	free(data->indir2.data);
+	free(data->indir3.data);
 	free(data);
 
 	return ret;

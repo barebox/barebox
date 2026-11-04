@@ -26,10 +26,14 @@
 
 #define EXT4_EXTENTS_FL		0x00080000 /* Inode uses extents */
 #define EXT4_EXT_MAGIC			0xf30a
+#define EXT4_MAX_EXTENT_DEPTH		5
 #define EXT4_FEATURE_RO_COMPAT_GDT_CSUM	0x0010
 #define EXT4_FEATURE_INCOMPAT_EXTENTS	0x0040
 #define EXT4_FEATURE_INCOMPAT_64BIT	0x0080
 #define EXT4_INDIRECT_BLOCKS		12
+#define EXT2_GOOD_OLD_INODE_SIZE	128
+#define EXT4_MIN_DESC_SIZE_64BIT	64
+#define EXT4_MAX_DESC_SIZE		1024
 
 #define EXT4_BG_INODE_UNINIT		0x0001
 #define EXT4_BG_BLOCK_UNINIT		0x0002
@@ -96,6 +100,6 @@ void ext4fs_umount(struct ext_filesystem *fs);
 char *ext4fs_read_symlink(struct ext2fs_node *node);
 void ext4fs_free_node(struct ext2fs_node *node, struct ext2fs_node *currroot);
 ssize_t ext4fs_devread(struct ext_filesystem *fs, sector_t sector, int byte_offset, size_t byte_len, char *buf);
-long int read_allocated_block(struct ext2fs_node *node, int fileblock);
+long read_allocated_block(struct ext2fs_node *node, uint32_t fileblock);
 
 #endif

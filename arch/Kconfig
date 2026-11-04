@@ -47,6 +47,16 @@ config BOARD_GENERIC_FIT
 	  Note that this option requires python3 and its libfdt module to be
 	  installed on the build host.
 
+config BOARD_GENERIC_APPENDED_DTB
+	bool "Use a device tree appended to the generic DT image"
+	depends on BOARD_GENERIC_DT && ARM
+	help
+	  Say y here to have barebox-dt-2nd.img use a device tree appended
+	  to the image like Linux' ARM_APPENDED_DTB, e.g. for firmware that
+	  can't pass one and leaves arbitrary values in the register, which
+	  may not even be safe to dereference. If no device tree is appended,
+	  the one passed in the register is used as without this option.
+
 # Select if the architecture has support for applying RELR relocations.
 config ARCH_HAS_RELR
 	bool

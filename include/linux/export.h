@@ -37,6 +37,10 @@ struct kernel_symbol
 
 #endif /* CONFIG_MODULES */
 
+/* barebox has no symbol namespaces, export into the global one */
+#define EXPORT_SYMBOL_NS(sym, ns)	EXPORT_SYMBOL(sym)
+#define EXPORT_SYMBOL_NS_GPL(sym, ns)	EXPORT_SYMBOL_GPL(sym)
+
 #endif /* __ASSEMBLY__ */
 
 #endif /* _LINUX_EXPORT_H */

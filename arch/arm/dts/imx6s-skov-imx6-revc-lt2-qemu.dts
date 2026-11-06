@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+#include "imx6s-skov-imx6.dts"
+#include "imx6qdl-qemu.dtsi"
+
+/* Without "skov,imx6", whose board code reads the variant from GPIOs */
+/ {
+	compatible = "skov,imx6dl-skov-revc-lt2", "fsl,imx6dl";
+};
+
+/* QEMU doesn't emulate the IPU, but its driver probes and sets the clocks */
+&ipu1 {
+	status = "okay";
+};
+
+&{/display} {
+	status = "okay";
+};

@@ -1,0 +1,24 @@
+targets:
+  main:
+    drivers:
+      QEMUDriver:
+        qemu_bin: qemu-system-aarch64
+        machine: imx8mp-evk
+        cpu: cortex-a53
+        memory: 2048M
+        kernel: barebox-dt-2nd.img
+        dtb: imx8mp-skov-revb-lt6-qemu.dtb
+        display: qemu-default
+        extra_args: '-serial null'
+      BareboxDriver:
+        prompt: 'barebox@[^:]+:[^ ]+ '
+        bootstring: 'commandline:'
+      BareboxTestStrategy: {}
+    options:
+      tests:
+        - test_clk.py::test_clk_assigned_check
+images:
+  barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
+  imx8mp-skov-revb-lt6-qemu.dtb: !template "$LG_BUILDDIR/arch/arm/dts/imx8mp-skov-revb-lt6-qemu.dtb"
+imports:
+  -  ../strategy.py

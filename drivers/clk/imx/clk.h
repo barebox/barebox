@@ -307,7 +307,7 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 #define __imx8m_clk_composite(name, parent_names, reg, flags) \
 		imx8m_clk_composite_flags(name, parent_names, \
 			ARRAY_SIZE(parent_names), reg, 0, \
-			flags | CLK_OPS_PARENT_ENABLE)
+			flags | IMX_COMPOSITE_CLK_FLAGS_DEFAULT)
 
 #define imx8m_clk_composite(name, parent_names, reg) \
 	__imx8m_clk_composite(name, parent_names, reg, 0)
@@ -330,6 +330,10 @@ struct clk *imx93_clk_composite_flags(const char *name,
 struct clk *imx93_clk_gate(struct device *dev, const char *name, const char *parent_name,
 			   unsigned long flags, void __iomem *reg, u32 bit_idx, u32 val,
 			   u32 mask, u32 domain_id, unsigned int *share_count);
+
+struct clk *imx_clk_gpr_mux(const char *name, const char *compatible,
+			    u32 reg, const char **parent_names,
+			    u8 num_parents, const u32 *mux_table, u32 mask);
 
 /*
  * Names of the above functions used in the Linux Kernel. Added here

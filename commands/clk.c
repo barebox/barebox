@@ -7,6 +7,9 @@
 #include <linux/err.h>
 #include <environment.h>
 #include <malloc.h>
+#include <driver.h>
+#include <of.h>
+#include <stringlist.h>
 
 static int do_clk_enable(int argc, char *argv[])
 {

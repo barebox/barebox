@@ -25,6 +25,7 @@
 #include <linux/ctype.h>
 #include <xfuncs.h>
 #include <fcntl.h>
+#include <fuzz.h>
 #include "ext4_common.h"
 
 ssize_t ext4fs_devread(struct ext_filesystem *fs, sector_t __sector, int byte_offset,
@@ -79,7 +80,7 @@ struct inode *ext_get_inode(struct super_block *sb, int ino);
 
 static int ext4fs_get_ino(struct ext2fs_node *dir, struct qstr *name, int *inum)
 {
-	unsigned int fpos = 0;
+	loff_t fpos = 0;
 	int ret;
 
 	while (fpos < le32_to_cpu(dir->inode.size)) {
@@ -144,37 +145,43 @@ static int ext_iterate(struct file *file, struct dir_context *ctx)
 {
 	struct dentry *dentry = file->f_path.dentry;
 	struct inode *dir = d_inode(dentry);
-	unsigned int fpos = 0;
-	int status, ret;
 	struct ext2fs_node *diro = to_ext2_node(dir);
+	unsigned int blksz = EXT2_BLOCK_SIZE(diro->data);
+	loff_t pos;
+	int status, ret = 0;
 	void *buf;
 
-	buf = malloc(dir->i_size);
+	buf = malloc(blksz);
 	if (!buf)
 		return -ENOMEM;
 
-	status = ext4fs_read_file(diro, 0, dir->i_size, buf);
-	if (status < 1) {
-		ret = -EINVAL;
-		goto out;
+	/* Directory entries do not cross block boundaries */
+	for (pos = 0; pos < dir->i_size; pos += blksz) {
+		unsigned int len = min_t(loff_t, blksz, dir->i_size - pos);
+		unsigned int fpos = 0;
+
+		status = ext4fs_read_file(diro, pos, len, buf);
+		if (status < 1) {
+			ret = -EINVAL;
+			goto out;
+		}
+
+		while (fpos + sizeof(struct ext2_dirent) <= len) {
+			const struct ext2_dirent *dirent = buf + fpos;
+			const char *filename = buf + fpos + sizeof(*dirent);
+			uint16_t direntlen = le16_to_cpu(dirent->direntlen);
+
+			if (direntlen < sizeof(struct ext2_dirent))
+				goto out;
+
+			if (dirent->namelen != 0 &&
+			    fpos + sizeof(*dirent) + dirent->namelen <= len)
+				dir_emit(ctx, filename, dirent->namelen,
+					 le32_to_cpu(dirent->inode), DT_UNKNOWN);
+
+			fpos += direntlen;
+		}
 	}
-
-	while (fpos + sizeof(struct ext2_dirent) <= dir->i_size) {
-		const struct ext2_dirent *dirent = buf + fpos;
-		const char *filename = buf + fpos + sizeof(*dirent);
-		uint16_t direntlen = le16_to_cpu(dirent->direntlen);
-
-		if (direntlen < sizeof(struct ext2_dirent))
-			break;
-
-		if (dirent->namelen != 0 &&
-		    fpos + sizeof(*dirent) + dirent->namelen <= dir->i_size)
-			dir_emit(ctx, filename, dirent->namelen,
-				 le32_to_cpu(dirent->inode), DT_UNKNOWN);
-
-		fpos += direntlen;
-	}
-	ret = 0;
 out:
 	free(buf);
 
@@ -193,6 +200,7 @@ const struct file_operations ext_file_operations = {
 static const char *ext_get_link(struct dentry *dentry, struct inode *inode)
 {
 	struct ext2fs_node *node = to_ext2_node(inode);
+	unsigned int len;
 	int ret;
 
 	if (inode->i_size < sizeof(node->inode.b.symlink))
@@ -200,9 +208,12 @@ static const char *ext_get_link(struct dentry *dentry, struct inode *inode)
 
 	BUG_ON(inode->i_link);
 
-	inode->i_link = dma_xzalloc(size_add(inode->i_size, 1));
+	/* Like Linux, read at most the first block, less the terminator */
+	len = min_t(loff_t, inode->i_size, EXT2_BLOCK_SIZE(node->data) - 1);
 
-	ret = ext4fs_read_file(node, 0, inode->i_size, inode->i_link);
+	inode->i_link = dma_xzalloc(len + 1);
+
+	ret = ext4fs_read_file(node, 0, len, inode->i_link);
 	if (ret < 0) {
 		free(inode->i_link);
 		inode->i_link = NULL;
@@ -290,13 +301,21 @@ static int ext_probe(struct device *dev)
 	inode = ext_get_inode(sb, 2);
 	if (!inode) {
 		ret = -EINVAL;
-		goto err;
+		goto err_umount;
+	}
+
+	if (!S_ISDIR(inode->i_mode)) {
+		dev_err(dev, "root inode is not a directory\n");
+		ret = -EINVAL;
+		goto err_umount;
 	}
 
 	sb->s_root = d_make_root(inode);
 
 	return 0;
 
+err_umount:
+	ext4fs_umount(fs);
 err:
 	free(fs);
 
@@ -310,6 +329,8 @@ static void ext_remove(struct device *dev)
 	ext4fs_umount(fs);
 	free(fs);
 }
+
+fuzz_test_fs(ext4, 512);
 
 static struct fs_driver ext_driver = {
 	.type      = filetype_ext,

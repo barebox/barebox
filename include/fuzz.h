@@ -144,6 +144,40 @@ static inline void fuzz_call_init(void (*init)(void))
 	__fuzz_test(_name, _func##_ramdisk_##_sector_size,		\
 		    _func##_ramdisk_##_sector_size##_init)
 
+/**
+ * fuzz_fs() - mount a file system image and read what it describes
+ *
+ * Mounts @blk and walks the tree: every directory is read, as are the
+ * start and the end of every regular file and the target of every
+ * symlink. The entries walked and the depth are bounded, as a crafted
+ * image can describe an arbitrarily large or cyclic tree.
+ *
+ * @blk:	the block device holding the image
+ * @fstype:	the file system driver to mount it with
+ *
+ * Return: 0, as for every fuzz test function
+ */
+int fuzz_fs(struct block_device *blk, const char *fstype);
+void fuzz_fs_init(void);
+
+/**
+ * fuzz_test_fs() - register a fuzz test for a file system driver
+ *
+ * Each input is placed in a ramdisk, which is then mounted and walked,
+ * see fuzz_fs().
+ *
+ * @_fstype:	the name of the file system driver, which also names the
+ *		fuzz test
+ * @_sector_size: the sector size of the ramdisk
+ */
+#define fuzz_test_fs(_fstype, _sector_size)				\
+	static int fuzz_fs_##_fstype(struct block_device *blk)		\
+	{								\
+		return fuzz_fs(blk, #_fstype);				\
+	}								\
+	fuzz_test_ramdisk(#_fstype, fuzz_fs_##_fstype, _sector_size,	\
+			  fuzz_fs_init)
+
 #define fuzz_test_str(_name, _func)				\
 	static int _func##_str(const u8 *_data, size_t size)	\
 	{							\

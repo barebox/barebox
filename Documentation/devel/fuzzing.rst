@@ -21,6 +21,7 @@ options to crash barebox on detection of memory safety issues::
   barebox
   fuzz-dtb
   fuzz-dtb-overlay
+  fuzz-ext4
   fuzz-fat
   fuzz-fdt-compatible
   fuzz-filetype
@@ -187,6 +188,14 @@ This function then needs to be registered by name in
 Searching the source tree for ``fuzz_test`` will show more examples,
 e.g. how to wrap the received buffer in a ramdisk to interface
 with code that requires block devices.
+
+A file system on a block device is fuzzed by mounting each input from a
+ramdisk and walking the tree it describes, which a single line sets up::
+
+  fuzz_test_fs(squashfs, 512);
+
+The first argument names both the file system driver and the fuzz test,
+the second is the sector size of the ramdisk.
 
 When adding a new fuzzing test, please also `submit a pullrequest
 with a corpus <https://github.com/barebox/barebox-fuzz-corpora/compare>`_.

@@ -10,18 +10,20 @@
 #include <asm/unwind.h>
 #include <init.h>
 #include <asm/system.h>
+#include <asm/proc-armv/system.h>
+#include <asm/sysreg.h>
 #include <asm/esr.h>
 #include <efi/mode.h>
 
 /* Avoid missing prototype warning, called from assembly */
-void do_bad_sync (struct pt_regs *pt_regs);
-void do_bad_irq (struct pt_regs *pt_regs);
-void do_bad_fiq (struct pt_regs *pt_regs);
-void do_bad_error (struct pt_regs *pt_regs);
-void do_fiq (struct pt_regs *pt_regs);
-void do_irq (struct pt_regs *pt_regs);
-void do_error (struct pt_regs *pt_regs);
-void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far);
+void do_sync_sp_el0 (struct pt_regs *pt_regs);
+void do_irq_sp_el0 (struct pt_regs *pt_regs);
+void do_fiq_sp_el0 (struct pt_regs *pt_regs);
+void do_serror_sp_el0 (struct pt_regs *pt_regs);
+void do_fiq_sp_elx (struct pt_regs *pt_regs);
+void do_irq_sp_elx (struct pt_regs *pt_regs);
+void do_serror_sp_elx (struct pt_regs *pt_regs);
+void do_sync_sp_elx(struct pt_regs *pt_regs, unsigned int esr, unsigned long far);
 
 static const char *esr_class_str[] = {
 	[0 ... ESR_ELx_EC_MAX]		= "UNRECOGNIZED EC",
@@ -103,9 +105,9 @@ static void __noreturn do_exception(const char *reason, struct pt_regs *pt_regs)
  *
  * We never enable FIQs, so this should not happen
  */
-void do_fiq(struct pt_regs *pt_regs)
+void do_fiq_sp_elx(struct pt_regs *pt_regs)
 {
-	do_exception("fast interrupt request", pt_regs);
+	do_exception("fiq request (SP_ELx)", pt_regs);
 }
 
 /**
@@ -114,33 +116,35 @@ void do_fiq(struct pt_regs *pt_regs)
  *
  * We never enable interrupts, so this should not happen
  */
-void do_irq(struct pt_regs *pt_regs)
+void do_irq_sp_elx(struct pt_regs *pt_regs)
 {
-	do_exception("interrupt request", pt_regs);
+	do_exception("irq request (SP_ELx)", pt_regs);
 }
 
-void do_bad_sync(struct pt_regs *pt_regs)
+void do_sync_sp_el0(struct pt_regs *pt_regs)
 {
-	do_exception("bad sync", pt_regs);
+	do_exception("sync exception (SP_EL0)", pt_regs);
 }
 
-void do_bad_irq(struct pt_regs *pt_regs)
+void do_irq_sp_el0(struct pt_regs *pt_regs)
 {
-	do_exception("bad irq", pt_regs);
+	do_exception("irq request (SP_EL0)", pt_regs);
 }
 
-void do_bad_fiq(struct pt_regs *pt_regs)
+void do_fiq_sp_el0(struct pt_regs *pt_regs)
 {
-	do_exception("bad fiq", pt_regs);
+	do_exception("fiq request (SP_EL0)", pt_regs);
 }
 
-void do_bad_error(struct pt_regs *pt_regs)
+void do_serror_sp_el0(struct pt_regs *pt_regs)
 {
-	do_exception("bad error", pt_regs);
+	do_exception("serror exception (SP_EL0)", pt_regs);
 }
 
 extern volatile int arm_ignore_data_abort;
 extern volatile int arm_data_abort_occurred;
+extern volatile int arm_ignore_serror_exception;
+extern volatile int arm_serror_exception_occurred;
 
 static const char *data_abort_reason(ulong far)
 {
@@ -153,7 +157,7 @@ static const char *data_abort_reason(ulong far)
 	return NULL;
 }
 
-void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
+void do_sync_sp_elx(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 {
 	const char *extra = NULL;
 
@@ -168,7 +172,7 @@ void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 	}
 
 	if (!extra)
-		extra = "paging request";
+		extra = "paging request - sync exception (SP_ELx)";
 
 	eprintf("PANIC: unable to handle %s at address 0x%016lx\n",
 		extra, far);
@@ -177,10 +181,31 @@ void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 	do_exception(NULL, pt_regs);
 }
 
-
-void do_error(struct pt_regs *pt_regs)
+void do_serror_sp_elx(struct pt_regs *pt_regs)
 {
-	do_exception("error exception", pt_regs);
+	if (arm_ignore_serror_exception) {
+		arm_serror_exception_occurred = 1;
+		return;
+	}
+
+	do_exception("serror exception (SP_ELx)", pt_regs);
+}
+
+static void set_vbar_for_current_el(unsigned long *vectors)
+{
+	switch (current_el()) {
+	case 3:
+		write_sysreg(vectors, vbar_el3);
+		break;
+	case 2:
+		write_sysreg(vectors, vbar_el2);
+		break;
+	default:
+		write_sysreg(vectors, vbar_el1);
+		break;
+	}
+
+	isb();
 }
 
 void data_abort_mask(void)
@@ -196,29 +221,52 @@ int data_abort_unmask(void)
 	return arm_data_abort_occurred != 0;
 }
 
+void async_abort_mask(void)
+{
+	arm_serror_exception_occurred = 0;
+	arm_ignore_serror_exception = 1;
+}
+
+int async_abort_unmask(void)
+{
+	dsb();
+	isb();
+
+	arm_ignore_serror_exception = 0;
+
+	return arm_serror_exception_occurred != 0;
+}
+
+void set_exception_level_routing(bool enable)
+{
+	switch (current_el()) {
+	case 3:
+		/* Route all external Aborts and SError exceptions to EL3. */
+		if (enable)
+			sysreg_clear_set(scr_el3, 0, SCR_EL3_EA);
+		else
+			sysreg_clear_set(scr_el3, SCR_EL3_EA, 0);
+		break;
+	case 2:
+		/* Route all exceptions from EL1 to EL2. */
+		if (enable)
+			sysreg_clear_set(hcr_el2, 0, HCR_EL2_TGE);
+		else
+			sysreg_clear_set(hcr_el2, HCR_EL2_TGE, 0);
+		break;
+	}
+}
+
 extern unsigned long vectors;
 
 static int aarch64_init_vectors(void)
 {
-	unsigned int el;
-
 	if (efi_is_payload())
 		return 0;
 
-	el = current_el();
-	switch (el) {
-	case 3:
-		asm volatile("msr vbar_el3, %0" : : "r" (&vectors) : "cc");
-		fallthrough;
-	case 2:
-		asm volatile("msr vbar_el2, %0" : : "r" (&vectors) : "cc");
-		fallthrough;
-	case 1:
-		asm volatile("msr vbar_el1, %0" : : "r" (&vectors) : "cc");
-		fallthrough;
-	default:
-		break;
-	}
+	set_vbar_for_current_el(&vectors);
+	set_exception_level_routing(true);
+	local_async_abort_enable();
 
 	return 0;
 }

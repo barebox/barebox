@@ -10,6 +10,7 @@
 #include <fnmatch.h>
 #include <qsort.h>
 #include <glob.h>
+#include <libfile.h>
 
 static int glob_in_dir (const char *pattern, const char *directory,
 			    int flags,
@@ -219,10 +220,8 @@ int glob(const char *pattern, int flags,
 		/* Append slashes to directory names.  glob_in_dir has already
 		   allocated the extra character for us.  */
 		int i;
-		struct stat st;
 		for (i = oldcount; i < pglob->gl_pathc; ++i)
-			if (stat(pglob->gl_pathv[i], &st) == 0 &&
-			    S_ISDIR(st.st_mode))
+			if (file_exists_type(pglob->gl_pathv[i], S_IFDIR))
 				strcat(pglob->gl_pathv[i], "/");
 	}
 #ifdef CONFIG_GLOB_SORT

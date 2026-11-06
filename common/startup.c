@@ -100,7 +100,6 @@ static void env_merge_of_compat_overlays(const char *dir)
 {
 	struct device_node *root;
 	const char *compat;
-	struct stat s;
 	char *ofdir, *src;
 	int count;
 
@@ -110,7 +109,7 @@ static void env_merge_of_compat_overlays(const char *dir)
 
 	ofdir = xasprintf("%s/match.of_compatible", dir);
 
-	if (stat(ofdir, &s) || !S_ISDIR(s.st_mode))
+	if (!file_exists_type(ofdir, S_IFDIR))
 		goto out;
 
 	count = of_property_count_strings(root, "compatible");
@@ -126,7 +125,7 @@ static void env_merge_of_compat_overlays(const char *dir)
 
 		src = xasprintf("%s/%s", ofdir, compat);
 
-		if (stat(src, &s) == 0 && S_ISDIR(s.st_mode)) {
+		if (file_exists_type(src, S_IFDIR)) {
 			pr_debug("Applying '%s'-compatible environment overlay\n",
 				 compat);
 			copy_recursive(src, dir, 0);
@@ -239,7 +238,6 @@ enum autoboot_state do_autoboot_countdown(void)
 	static enum autoboot_state autoboot_state = AUTOBOOT_UNKNOWN;
 	unsigned flags = CONSOLE_COUNTDOWN_EXTERN;
 	int ret;
-	struct stat s;
 	bool menu_exists;
 	char abortkeys[3] = {};
 	unsigned char outkey;
@@ -257,7 +255,7 @@ enum autoboot_state do_autoboot_countdown(void)
 	if (global_autoboot_state != AUTOBOOT_COUNTDOWN)
 		return global_autoboot_state;
 
-	menu_exists = stat(MENUFILE, &s) == 0;
+	menu_exists = file_exists(MENUFILE);
 
 	if (menu_exists)
 		strcat(abortkeys, "m");
@@ -338,7 +336,6 @@ static int run_init(void)
 {
 	const char *bmode, *cmdline;
 	bool env_bin_init_exists;
-	struct stat s;
 	glob_t g;
 	int i, ret;
 	size_t size;
@@ -348,7 +345,7 @@ static int run_init(void)
 	export("PATH");
 
 	/* Run legacy /env/bin/init if it exists */
-	env_bin_init_exists = stat(INITFILE, &s) == 0;
+	env_bin_init_exists = file_exists(INITFILE);
 	if (env_bin_init_exists) {
 		pr_info("running legacy %s...\n", INITFILE);
 		run_command("source " INITFILE);
@@ -369,11 +366,7 @@ static int run_init(void)
 		for (i = 0; i < g.gl_pathc; i++) {
 			const char *path = g.gl_pathv[i];
 
-			ret = stat(path, &s);
-			if (ret)
-				continue;
-
-			if (!S_ISREG(s.st_mode))
+			if (!file_exists_type(path, S_IFREG))
 				continue;
 
 			pr_debug("Executing '%s'...\n", path);
@@ -404,7 +397,7 @@ static int run_init(void)
 
 		scr = xasprintf("source /env/bmode/%s", bmode);
 		path = &scr[strlen("source ")];
-		if (stat(path, &s) == 0) {
+		if (file_exists(path)) {
 			pr_info("Invoking '%s'...\n", path);
 			run_command("%s", scr);
 		}
@@ -436,7 +429,7 @@ static int run_init(void)
 		 * message is printed if the file doesn't exist
 		 */
 		run_command(MENUFILE);
-	} while (stat(MENUFILE, &s) == 0);
+	} while (file_exists(MENUFILE));
 
 	hang();
 }

@@ -10,6 +10,7 @@
 #include <fs.h>
 #include <malloc.h>
 #include <getopt.h>
+#include <libfile.h>
 
 enum can_mode { CAN_NONE, CAN_ALL_BUT_LAST, CAN_EXISTING };
 
@@ -25,7 +26,6 @@ static void output_result(const char *var, const char *val)
 static int canonicalize_filename_mode(const char *var, char *path, enum can_mode can_mode)
 {
 	char *buf = NULL, *file, *dir;
-	struct stat s;
 	int ret = -1;
 
 	buf = canonicalize_path(AT_FDCWD, path);
@@ -38,7 +38,7 @@ static int canonicalize_filename_mode(const char *var, char *path, enum can_mode
 		dir = dirname(path);
 
 		buf = canonicalize_path(AT_FDCWD, dir);
-		if (!buf || stat(dir, &s) || !S_ISDIR(s.st_mode))
+		if (!buf || !file_exists_type(dir, S_IFDIR))
 			goto err;
 
 		buf = xrasprintf(buf, "/%s", file);

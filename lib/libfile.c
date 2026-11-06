@@ -746,6 +746,34 @@ out:
 }
 
 /**
+ * file_exists_type - check whether a file of a given type exists
+ * @path: path of the file to check
+ * @type: file type the file must have, one of the S_IF* values like
+ *        S_IFREG or S_IFDIR, or 0 for any type
+ *
+ * Symbolic links are followed, unless @type is S_IFLNK, which checks
+ * for the link itself.
+ *
+ * Return: true if @path exists and is of type @type, false otherwise
+ */
+bool file_exists_type(const char *path, umode_t type)
+{
+	struct stat s;
+	int ret;
+
+	if (type == S_IFLNK)
+		ret = lstat(path, &s);
+	else
+		ret = stat(path, &s);
+
+	if (ret)
+		return false;
+
+	return !type || (s.st_mode & S_IFMT) == type;
+}
+EXPORT_SYMBOL(file_exists_type);
+
+/**
  * make_temp - create a name for a temporary file
  * @template:	The filename prefix
  *
@@ -759,14 +787,11 @@ out:
 char *make_temp(const char *template)
 {
 	char *name = NULL;
-	struct stat s;
-	int ret;
 
 	do {
 		free(name);
 		name = basprintf("/tmp/%s-%08x", template, random32());
-		ret = stat(name, &s);
-	} while (!ret);
+	} while (file_exists(name));
 
 	return name;
 }

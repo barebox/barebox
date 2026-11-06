@@ -252,16 +252,13 @@ static int file_remove_action(const char *filename, struct stat *statbuf,
 {
 	struct action_data *data = userdata;
 	char *envname;
-	struct stat s;
-	int ret;
 	struct envfs_entry *env;
 
 	filename += sizeof(TMPDIR) - 1;
 
 	envname = basprintf("%s/%s", data->base, filename);
 
-	ret = stat(envname, &s);
-	if (ret) {
+	if (!file_exists(envname)) {
 		char *base;
 
 		base = basename(envname);

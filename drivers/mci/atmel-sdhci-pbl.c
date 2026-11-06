@@ -69,8 +69,7 @@ static int at91_sdhci_bio_read(struct pbl_bio *bio, off_t start,
 	unsigned int blocks_done = 0;
 	unsigned int blocks;
 	unsigned int block_len = SECTOR_SIZE;
-	unsigned int blocks_read;
-	int ret;
+	int ret, stop;
 
 	/*
 	 * Refer to the at91sam9g20 datasheet:
@@ -80,19 +79,15 @@ static int at91_sdhci_bio_read(struct pbl_bio *bio, off_t start,
 	while (blocks_done < nblocks) {
 		blocks = min(nblocks - blocks_done, SUPPORT_MAX_BLOCKS);
 
-		blocks_read = sd_cmd_read_multiple_block(priv, buf,
-							 start + blocks_done,
-							 blocks);
+		ret = sd_cmd_read_multiple_block(priv, buf,
+						 start + blocks_done,
+						 blocks);
 
-		ret = sd_cmd_stop_transmission(priv);
-		if (ret)
-			return ret;
+		stop = sd_cmd_stop_transmission(priv);
+		if (ret || stop)
+			return ret ?: stop;
 
-		blocks_done += blocks_read;
-
-		if (blocks_read != blocks)
-			break;
-
+		blocks_done += blocks;
 		buf += blocks * block_len;
 	}
 

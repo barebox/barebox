@@ -164,6 +164,7 @@ static int mci_app_sd_status(struct mci *mci, __be32 *ssr)
 {
 	int err;
 	struct mci_cmd cmd = {0};
+	struct mci_data data = {};
 
 	cmd.cmdidx = MMC_CMD_APP_CMD;
 	cmd.resp_type = MMC_RSP_R1;
@@ -177,7 +178,7 @@ static int mci_app_sd_status(struct mci *mci, __be32 *ssr)
 	cmd.resp_type = MMC_RSP_R1;
 	cmd.cmdarg = 0;
 
-	cmd.data = xzalloc(sizeof(struct mci_data));
+	cmd.data = &data;
 
 	cmd.data->dest = (u8 *)ssr;
 	cmd.data->blocksize = 64;
@@ -265,6 +266,7 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 			   int blocks)
 {
 	struct mci_cmd cmd = {};
+	struct mci_data data = {};
 	unsigned mmccmd;
 	int ret, err;
 
@@ -289,7 +291,7 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 		mci->high_capacity != 0 ? blocknum : blocknum * mci->write_bl_len,
 		MMC_RSP_R1);
 
-	cmd.data = xzalloc(sizeof(struct mci_data));
+	cmd.data = &data;
 
 	cmd.data->src = src;
 	cmd.data->blocks = blocks;
@@ -386,6 +388,7 @@ static int mci_block_read(struct mci *mci, void *dst, int blocknum,
 			  int blocks)
 {
 	struct mci_cmd cmd = {};
+	struct mci_data data = {};
 	int ret;
 	unsigned mmccmd;
 
@@ -399,7 +402,7 @@ static int mci_block_read(struct mci *mci, void *dst, int blocknum,
 		mci->high_capacity != 0 ? blocknum : blocknum * mci->read_bl_len,
 		MMC_RSP_R1);
 
-	cmd.data = xzalloc(sizeof(struct mci_data));
+	cmd.data = &data;
 
 	cmd.data->dest = dst;
 	cmd.data->blocks = blocks;
@@ -580,11 +583,12 @@ static int mmc_send_op_cond(struct mci *mci)
 int mci_send_ext_csd(struct mci *mci, char *ext_csd)
 {
 	struct mci_cmd cmd = {};
+	struct mci_data data = {};
 
 	/* Get the Card Status Register */
 	mci_setup_cmd(&cmd, MMC_CMD_SEND_EXT_CSD, 0, MMC_RSP_R1);
 
-	cmd.data = xzalloc(sizeof(struct mci_data));
+	cmd.data = &data;
 
 	cmd.data->dest = ext_csd;
 	cmd.data->blocks = 1;
@@ -766,7 +770,7 @@ static int mmc_change_freq(struct mci *mci)
 	char cardtype;
 	int err;
 
-	mci->ext_csd = dma_xalloc(512);
+	mci->ext_csd = dma_xzalloc(512);
 	mci->card_caps = 0;
 
 	/* Only version 4 supports high-speed */
@@ -869,6 +873,7 @@ static int sd_switch(struct mci *mci, unsigned mode, unsigned group,
 			unsigned value, uint8_t *resp)
 {
 	struct mci_cmd cmd = {};
+	struct mci_data data = {};
 	unsigned arg;
 
 	arg = (mode << 31) | 0xffffff;
@@ -878,7 +883,7 @@ static int sd_switch(struct mci *mci, unsigned mode, unsigned group,
 	/* Switch the frequency */
 	mci_setup_cmd(&cmd, SD_CMD_SWITCH_FUNC, arg, MMC_RSP_R1);
 
-	cmd.data = xzalloc(sizeof(struct mci_data));
+	cmd.data = &data;
 	cmd.data->dest = resp;
 	cmd.data->blocksize = 64;
 	cmd.data->blocks = 1;
@@ -938,6 +943,7 @@ out:
 static int sd_change_freq(struct mci *mci)
 {
 	struct mci_cmd cmd = {0};
+	struct mci_data data = {};
 	struct mci_host *host = mci->host;
 	uint32_t *switch_status = sector_buf;
 	uint32_t *scr = sector_buf;
@@ -962,7 +968,7 @@ static int sd_change_freq(struct mci *mci)
 
 	timeout = 3;
 
-	cmd.data = xzalloc(sizeof(struct mci_data));
+	cmd.data = &data;
 
 retry_scr:
 	dev_dbg(&mci->dev, "Trying to read the SCR (try %d of %d)\n", 4 - timeout, 3);
@@ -1215,7 +1221,7 @@ static void mci_correct_version_from_ext_csd(struct mci *mci)
  * meaning of the encoded 'unit' bits in the CSD's field 'TRAN_SPEED'
  * (divided by 10 to be nice to platforms without floating point)
  */
-static const unsigned tran_speed_unit[] = {
+static const unsigned tran_speed_unit[8] = {
 	[0] = 10000,		/* 100 kbit/s */
 	[1] = 100000,		/* 1 Mbit/s */
 	[2] = 1000000,		/* 10 Mbit/s */
@@ -1676,6 +1682,7 @@ static const u8 tuning_blk_pattern_8bit[] = {
 int mmc_send_tuning(struct mci *mci, u32 opcode)
 {
 	struct mci_cmd cmd = {};
+	struct mci_data data = {};
 	const u8 *tuning_block_pattern;
 	int size, err = 0;
 	u8 *data_buf;
@@ -1695,7 +1702,7 @@ int mmc_send_tuning(struct mci *mci, u32 opcode)
 
 	mci_setup_cmd(&cmd, opcode, 0, MMC_RSP_R1 | MMC_CMD_ADTC);
 
-	cmd.data = xzalloc(sizeof(struct mci_data));
+	cmd.data = &data;
 	cmd.data->dest = data_buf;
 	cmd.data->blocksize = size;
 	cmd.data->blocks = 1;

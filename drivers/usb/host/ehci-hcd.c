@@ -1395,6 +1395,11 @@ struct ehci_host *ehci_register(struct device *dev, struct ehci_data *data)
 	host->submit_int_msg = submit_int_msg;
 	host->submit_control_msg = submit_control_msg;
 	host->submit_bulk_msg = submit_bulk_msg;
+	/*
+	 * A transfer has a single data qTD, whose buffer pointers cover only
+	 * four full pages when the buffer doesn't start on a page boundary
+	 */
+	host->max_xfer_size = (ARRAY_SIZE(ehci->td->qt_buffer) - 1) * SZ_4K;
 
 	if (ehci->flags & EHCI_HAS_TT) {
 		ehci_reset(ehci);

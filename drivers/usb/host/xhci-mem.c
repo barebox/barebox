@@ -76,6 +76,16 @@ static void xhci_free(struct xhci_ctrl *ctrl, void *ptr)
 	dev_dbg(ctrl->dev, "%s: 0x%p\n", __func__, ptr);
 }
 
+/*
+ * Rings and device contexts are allocated and freed again for every device
+ * that comes and goes, so unlike the rest they must really be freed.
+ */
+static void xhci_free_sized(struct xhci_ctrl *ctrl, void *ptr, dma_addr_t dma,
+			    size_t size)
+{
+	dma_free_coherent(DMA_DEVICE_BROKEN, ptr, dma, size);
+}
+
 /**
  * alloc coherent memory for xhci
  *
@@ -103,7 +113,7 @@ static void *xhci_malloc(struct xhci_ctrl *ctrl, unsigned int size, dma_addr_t *
  */
 static void xhci_segment_free(struct xhci_ctrl *ctrl, struct xhci_segment *seg)
 {
-	xhci_free(ctrl, seg->trbs);
+	xhci_free_sized(ctrl, seg->trbs, seg->dma, SEGMENT_SIZE);
 	seg->trbs = NULL;
 
 	free(seg);
@@ -160,7 +170,7 @@ static void xhci_scratchpad_free(struct xhci_ctrl *ctrl)
 static void xhci_free_container_ctx(struct xhci_ctrl *ctrl,
 				    struct xhci_container_ctx *ctx)
 {
-	xhci_free(ctrl, ctx->bytes);
+	xhci_free_sized(ctrl, ctx->bytes, ctx->dma, ctx->size);
 	free(ctx);
 }
 
@@ -170,36 +180,45 @@ static void xhci_free_container_ctx(struct xhci_ctrl *ctrl,
  * @param ptr	pointer to "xhci_ctrl" whose virtual devices are to be freed
  * @return none
  */
-static void xhci_free_virt_devices(struct xhci_ctrl *ctrl)
+void xhci_free_virt_device(struct xhci_ctrl *ctrl, unsigned int slot_id)
 {
 	int i;
-	int slot_id;
 	struct xhci_virt_device *virt_dev;
+
+	if (slot_id >= MAX_HC_SLOTS)
+		return;
+
+	virt_dev = ctrl->devs[slot_id];
+	if (!virt_dev)
+		return;
+
+	ctrl->dcbaa->dev_context_ptrs[slot_id] = 0;
+	xhci_flush_cache((uintptr_t)&ctrl->dcbaa->dev_context_ptrs[slot_id],
+			 sizeof(__le64));
+
+	for (i = 0; i < 31; ++i)
+		if (virt_dev->eps[i].ring)
+			xhci_ring_free(ctrl, virt_dev->eps[i].ring);
+
+	if (virt_dev->in_ctx)
+		xhci_free_container_ctx(ctrl, virt_dev->in_ctx);
+	if (virt_dev->out_ctx)
+		xhci_free_container_ctx(ctrl, virt_dev->out_ctx);
+
+	free(virt_dev);
+	ctrl->devs[slot_id] = NULL;
+}
+
+static void xhci_free_virt_devices(struct xhci_ctrl *ctrl)
+{
+	int slot_id;
 
 	/*
 	 * refactored here to loop through all virt_dev
 	 * Slot ID 0 is reserved
 	 */
-	for (slot_id = 0; slot_id < MAX_HC_SLOTS; slot_id++) {
-		virt_dev = ctrl->devs[slot_id];
-		if (!virt_dev)
-			continue;
-
-		ctrl->dcbaa->dev_context_ptrs[slot_id] = 0;
-
-		for (i = 0; i < 31; ++i)
-			if (virt_dev->eps[i].ring)
-				xhci_ring_free(ctrl, virt_dev->eps[i].ring);
-
-		if (virt_dev->in_ctx)
-			xhci_free_container_ctx(ctrl, virt_dev->in_ctx);
-		if (virt_dev->out_ctx)
-			xhci_free_container_ctx(ctrl, virt_dev->out_ctx);
-
-		free(virt_dev);
-		/* make sure we are pointing to NULL */
-		ctrl->devs[slot_id] = NULL;
-	}
+	for (slot_id = 0; slot_id < MAX_HC_SLOTS; slot_id++)
+		xhci_free_virt_device(ctrl, slot_id);
 }
 
 /**
@@ -741,7 +760,6 @@ void xhci_setup_addressable_virt_dev(struct xhci_ctrl *ctrl,
 	u64 trb_64 = 0;
 	int slot_id = udev->slot_id;
 	int speed = udev->speed;
-	int route = 0;
 	struct usb_device *dev = udev;
 	struct usb_hub_device *hub;
 
@@ -756,27 +774,9 @@ void xhci_setup_addressable_virt_dev(struct xhci_ctrl *ctrl,
 	/* Only the control endpoint is valid - one endpoint context */
 	slot_ctx->dev_info |= cpu_to_le32(LAST_CTX(1));
 
-	/* Calculate the route string for this device */
-	port_num = dev->portnr;
-	while (!usb_hub_is_root_hub(dev)) {
-		/*
-		 * Each hub in the topology is expected to have no more than
-		 * 15 ports in order for the route string of a device to be
-		 * unique. SuperSpeed hubs are restricted to only having 15
-		 * ports, but FS/LS/HS hubs are not. The xHCI specification
-		 * says that if the port number the device is greater than 15,
-		 * that portion of the route string shall be set to 15.
-		 */
-		if (port_num > 15)
-			port_num = 15;
-		route |= port_num << (dev->level * 4);
-		dev = dev->parent;
-		port_num = dev->portnr;
-	}
+	dev_dbg(&udev->dev, "route string 0x%x\n", udev->route);
 
-	dev_dbg(&udev->dev, "route string 0x%x\n", route);
-
-	slot_ctx->dev_info |= cpu_to_le32(route);
+	slot_ctx->dev_info |= cpu_to_le32(udev->route);
 
 	switch (speed) {
 	case USB_SPEED_SUPER:

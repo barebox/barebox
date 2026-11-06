@@ -129,6 +129,11 @@ $(obj)/%.s: $(obj)/% FORCE
 $(obj)/%.fit: $(obj)/$$(FILE_$$(@F)) $(dtstree)/dtbs-list FORCE
 	$(call if_changed,fit)
 
+ifdef CONFIG_PBL_IMAGE_ELF
+AFLAGS_piggy.o = -DPIGGY_MEMSZ=$(shell $(srctree)/scripts/extract_symbol_offset \
+	barebox_memory_size $(obj)/../barebox)
+endif
+
 $(obj)/piggy.o: $(obj)/barebox.z FORCE
 
 $(obj)/sha_sum.o: $(obj)/barebox.sha.bin FORCE

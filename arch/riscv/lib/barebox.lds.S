@@ -13,6 +13,7 @@
 
 #include <asm/barebox.lds.h>
 #include <asm-generic/pointer.h>
+#include <pbl/layout.h>
 
 OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(barebox_non_pbl_start)
@@ -23,6 +24,7 @@ PHDRS
 	text PT_LOAD FLAGS(5);		/* PF_R | PF_X */
 	rodata PT_LOAD FLAGS(4);	/* PF_R */
 	dynamic PT_DYNAMIC FLAGS(4);	/* PF_R */
+	layout PT_BAREBOX_LAYOUT FLAGS(4); /* PF_R */
 	data PT_LOAD FLAGS(6);		/* PF_R | PF_W */
 }
 
@@ -45,6 +47,7 @@ SECTIONS
 
 	. = ALIGN(4096);
 	__start_rodata = .;
+	.barebox_layout : { KEEP(*(.barebox_layout)) } :rodata :layout
 	.rodata : {
 		*(.rodata*)
 		RO_DATA_SECTION
@@ -86,4 +89,6 @@ SECTIONS
 	.__bss_stop :  { *(.__bss_stop) } :data
 	_end = .;
 	_barebox_image_size = __bss_start;
+	/* the PBL loads the file, where the first segment follows the headers */
+	barebox_memory_size = ALIGN(SIZEOF_HEADERS, CONSTANT(MAXPAGESIZE)) + .;
 }

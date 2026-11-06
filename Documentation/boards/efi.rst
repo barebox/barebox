@@ -110,8 +110,74 @@ means passing control to the calling instance. Note that currently the :ref:`com
 command will pass the control to the calling instance rather than resetting
 the CPU. This may change in the future.
 
+Arguments following the path on the command line are passed to the
+application as its load options, so an EFI shell can for example be
+started with:
+
+.. code-block:: sh
+
+  barebox:/ /boot/shell.efi -nostartup
+
 Although the Linux Kernel can be directly executed one should use the :ref:`command_bootm`
-command. Only the bootm command passes the Kernel commandline to the Kernel.
+command. Only the bootm command passes the Kernel commandline to the Kernel
+and provides it with an initrd and a device tree.
+
+The same holds for unified kernel images (UKIs). When executed directly,
+barebox as EFI payload starts them like any other EFI application and
+does not shut itself down before they take over the system.
+
+.. _efi_load_options:
+
+Load options
+^^^^^^^^^^^^
+
+When booting an EFI application via :ref:`command_bootm`, barebox populates
+its load options from the :ref:`global device<global_device>` variables
+beginning with ``global.efi.bootargs.``. Like the Linux bootargs, these are
+concatenated in lexicographical order of their names. For EFI-stubbed Linux
+kernels, the ``global.linux.bootargs.``-prefixed
+:ref:`kernel arguments <booting_linux>` are appended to the load options,
+so that the EFI stub sees both as the kernel command line:
+
+.. code-block:: sh
+
+  global efi.bootargs.base="efi=debug"
+  global linux.bootargs.base="console=ttyS0,115200"
+
+  bootm /boot/vmlinuz.efi
+
+  ...
+
+  Kernel command line: efi=debug console=ttyS0,115200
+
+This works both when barebox runs as EFI payload and when it acts as
+EFI loader for the application. The load options are not used when booting
+x86 kernels via the legacy handover protocol (``global.linux.efi.handover``),
+as the EFI stub, which would interpret them, is bypassed in that case.
+
+Like :ref:`boot entries <boot_entries>` do for the Linux
+bootargs, boot entries should add load options to variables with ``.dyn``
+in their name, e.g. ``global.efi.bootargs.dyn.initrd``. These are cleared
+after each boot entry, so that load options do not leak into subsequently
+booted entries.
+
+Unified kernel images (UKIs) are not detected as Linux kernels, but as
+regular EFI applications. Only ``global.efi.bootargs.*`` is passed to them
+as load options; the Linux bootargs, including the ``root=`` option added
+by ``global.bootm.appendroot``, are not appended. systemd-stub uses
+non-empty load options in place of the command line embedded in the UKI,
+unless Secure Boot is enabled and the UKI has an embedded command line, in
+which case the load options are ignored.
+
+To pass a ``root=`` option to a UKI, have :ref:`command_devlookup`
+generate it for the root partition, the same way ``global.bootm.appendroot``
+would, including the option name from ``global.bootm.root_param``:
+
+.. code-block:: sh
+
+  devlookup -v rootarg -k /dev/disk0.1
+  global efi.bootargs.root="${rootarg}"
+  bootm /boot/EFI/Linux/uki.efi
 
 Drivers
 ^^^^^^^

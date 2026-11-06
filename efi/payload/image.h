@@ -13,7 +13,8 @@ int efi_load_image(const char *file, struct efi_loaded_image **loaded_image,
 
 int efi_execute_image(efi_handle_t handle,
 		      struct efi_loaded_image *loaded_image,
-		      enum filetype filetype);
+		      bool is_bootm,
+		      enum filetype filetype, const char *options);
 
 extern struct image_handler efi_x86_linux_handle_tr;
 extern struct image_handler efi_x86_linux_handle_handover;

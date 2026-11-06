@@ -39,8 +39,6 @@ static int sama5d3_xplained_probe(struct device *dev)
 {
 	struct clk *clk;
 
-	barebox_set_hostname("sama5d3_xplained");
-
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
 		defaultenv_append_directory(defaultenv_sama5d3_xplained);
 

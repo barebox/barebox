@@ -991,7 +991,7 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 				if (pd->name)
 					ret = clk_cpy_name(&parent_names[i], pd->name, true);
 				else if (pd->hw)
-					ret = clk_cpy_name(&parent_names[i], pd->hw->clk.name, false);
+					clk->parents[i] = clk_hw_to_clk(pd->hw);
 				if (ret)
 					return ERR_PTR(ret);
 			}

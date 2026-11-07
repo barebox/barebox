@@ -8,6 +8,22 @@ config COMMON_CLK_MESON_DUALDIV
 	bool
 	select COMMON_CLK_MESON_REGMAP
 
+config COMMON_CLK_MESON_MPLL
+	bool
+	select COMMON_CLK_MESON_REGMAP
+
+config COMMON_CLK_MESON_PLL
+	bool
+	select COMMON_CLK_MESON_REGMAP
+
+config COMMON_CLK_MESON_VID_PLL_DIV
+	bool
+	select COMMON_CLK_MESON_REGMAP
+
+config COMMON_CLK_MESON_VCLK
+	bool
+	select COMMON_CLK_MESON_REGMAP
+
 config COMMON_CLK_MESON_CLKC_UTILS
 	bool
 	select MFD_SYSCON
@@ -18,6 +34,10 @@ config COMMON_CLK_MESON_AO_CLKC
 	select COMMON_CLK_MESON_CLKC_UTILS
 	select RESET_CONTROLLER
 
+config COMMON_CLK_MESON_CPU_DYNDIV
+	bool
+	select COMMON_CLK_MESON_REGMAP
+
 config COMMON_CLK_MESON_G12A
 	bool "Amlogic Meson G12A/G12B/SM1 clock controllers"
 	depends on COMMON_CLK_OF_PROVIDER
@@ -26,8 +46,14 @@ config COMMON_CLK_MESON_G12A
 	select COMMON_CLK_MESON_REGMAP
 	select COMMON_CLK_MESON_CLKC_UTILS
 	select COMMON_CLK_MESON_DUALDIV
+	select COMMON_CLK_MESON_MPLL
+	select COMMON_CLK_MESON_PLL
 	select COMMON_CLK_MESON_AO_CLKC
+	select COMMON_CLK_MESON_CPU_DYNDIV
+	select COMMON_CLK_MESON_VID_PLL_DIV
+	select COMMON_CLK_MESON_VCLK
 	select MFD_SYSCON
 	help
-	  Support for the Always-On clock controller of the Amlogic G12A
-	  (S905X2/D2), G12B (S922X, A311D) and SM1 (S905X3/D3) SoCs.
+	  Support for the Always-On and main clock controllers of the
+	  Amlogic G12A (S905X2/D2), G12B (S922X, A311D) and SM1
+	  (S905X3/D3) SoCs.

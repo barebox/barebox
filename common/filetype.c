@@ -152,23 +152,22 @@ static inline int pmbr_part_valid(const uint8_t *buf)
 }
 
 /**
- * is_gpt_valid(): test Protective MBR for validity and EFI PART
+ * is_gpt_valid(): test Protective MBR for validity
  * @mbr: pointer to a legacy mbr structure
  *
- * Description: Returns 1 if PMBR is valid and EFI PART, 0 otherwise.
- * Validity depends on three things:
+ * Description: Returns 1 if PMBR is valid, 0 otherwise.
+ * Validity depends on two things:
  *  1) MSDOS signature is in the last two bytes of the MBR
- *  2) One partition of type 0xEE is found
- *  3) EFI GPT signature is at the next logical block
+ *  2) One partition of type 0xEE starting at LBA 1 is found
+ *
+ * As in Linux, the primary GPT header doesn't count, the EFI partition
+ * parser can fall back to the alternate one.
  */
-static int is_gpt_valid(const uint8_t *buf, unsigned int sector_size)
+static int is_gpt_valid(const uint8_t *buf)
 {
 	int i;
 
 	if (get_unaligned_le16(&buf[BS_55AA]) != 0xAA55)
-		return 0;
-
-	if (strncmp(buf + sector_size, "EFI PART", 8))
 		return 0;
 
 	buf += MBR_Table;
@@ -284,7 +283,7 @@ enum filetype file_detect_partition_table(const void *_buf,
 	 * EFI GPT need to be detected before MBR otherwise
 	 * we will detect a MBR
 	 */
-	if (bufsize >= sector_size + 8 && is_gpt_valid(buf8, sector_size))
+	if (bufsize >= sector_size + 8 && is_gpt_valid(buf8))
 		return filetype_gpt;
 
 	type = is_fat_or_mbr(buf8, NULL);

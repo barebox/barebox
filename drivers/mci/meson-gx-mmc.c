@@ -8,22 +8,22 @@
  */
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/init.h>
-#include <linux/delay.h>
+#include <init.h>
+#include <clock.h>
 #include <linux/device.h>
 #include <linux/iopoll.h>
-#include <linux/of.h>
-#include <linux/platform_device.h>
+#include <of.h>
+#include <driver.h>
 #include <linux/ioport.h>
-#include <linux/dma-mapping.h>
-#include <linux/mmc/host.h>
+#include <dma.h>
+#include <mci.h>
 #include <linux/mmc/mmc.h>
 #include <linux/mmc/sdio.h>
 #include <linux/mmc/slot-gpio.h>
 #include <linux/io.h>
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
-#include <linux/regulator/consumer.h>
+#include <regulator.h>
 #include <linux/reset.h>
 #include <linux/interrupt.h>
 #include <linux/bitfield.h>
@@ -445,7 +445,7 @@ static int meson_mmc_clk_init(struct meson_host *host)
 		char name[16];
 
 		snprintf(name, sizeof(name), "clkin%d", i);
-		clk = devm_clk_get(host->dev, name);
+		clk = clk_get(host->dev, name);
 		if (IS_ERR(clk))
 			return dev_err_probe(host->dev, PTR_ERR(clk),
 					     "Missing clock %s\n", name);
@@ -1019,7 +1019,7 @@ static int meson_mmc_wait_desc_stop(struct meson_host *host)
 
 	return readl_poll_timeout(host->regs + SD_EMMC_STATUS, status,
 				  !(status & (STATUS_BUSY | STATUS_DESC_BUSY)),
-				  100, 5000);
+				  5000);
 }
 
 static irqreturn_t meson_mmc_irq_thread(int irq, void *dev_id)
@@ -1137,7 +1137,7 @@ static const struct mmc_host_ops meson_mmc_ops = {
 	.ack_sdio_irq	= meson_mmc_ack_sdio_irq,
 };
 
-static int meson_mmc_probe(struct platform_device *pdev)
+static int meson_mmc_probe(struct device *dev)
 {
 	struct resource *res;
 	struct meson_host *host;
@@ -1146,17 +1146,17 @@ static int meson_mmc_probe(struct platform_device *pdev)
 	int cd_irq = -ENXIO;
 	int ret;
 
-	mmc = devm_mmc_alloc_host(&pdev->dev, sizeof(struct meson_host));
+	mmc = devm_mmc_alloc_host(dev, sizeof(struct meson_host));
 	if (!mmc)
 		return -ENOMEM;
 	host = mmc_priv(mmc);
 	host->mmc = mmc;
-	host->dev = &pdev->dev;
-	dev_set_drvdata(&pdev->dev, host);
+	host->dev = dev;
+	dev_set_drvdata(dev, host);
 
 	/* The G12A SDIO Controller needs an SRAM bounce buffer */
-	host->dram_access_quirk = device_property_read_bool(&pdev->dev,
-					"amlogic,dram-access-quirk");
+	host->dram_access_quirk = device_property_read_bool(dev,
+							    "amlogic,dram-access-quirk");
 
 	/* Get regulators and the supported OCR mask */
 	ret = mmc_regulator_get_supply(mmc);
@@ -1165,58 +1165,58 @@ static int meson_mmc_probe(struct platform_device *pdev)
 
 	ret = mmc_of_parse(mmc);
 	if (ret)
-		return dev_err_probe(&pdev->dev, ret, "error parsing DT\n");
+		return dev_err_probe(dev, ret, "error parsing DT\n");
 
 	mmc->caps |= MMC_CAP_CMD23;
 
 	if (mmc->caps & MMC_CAP_SDIO_IRQ)
 		mmc->caps2 |= MMC_CAP2_SDIO_IRQ_NOTHREAD;
 
-	host->data = of_device_get_match_data(&pdev->dev);
+	host->data = of_device_get_match_data(dev);
 	if (!host->data)
 		return -EINVAL;
 
-	ret = device_reset_optional(&pdev->dev);
+	ret = device_reset_optional(dev);
 	if (ret)
-		return dev_err_probe(&pdev->dev, ret, "device reset failed\n");
+		return dev_err_probe(dev, ret, "device reset failed\n");
 
-	host->regs = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
+	host->regs = dev_platform_get_and_ioremap_resource(dev, 0, &res);
 	if (IS_ERR(host->regs))
 		return PTR_ERR(host->regs);
 
-	host->irq = platform_get_irq(pdev, 0);
+	host->irq = platform_get_irq(dev, 0);
 	if (host->irq < 0)
 		return host->irq;
 
-	ret = platform_get_irq_optional(pdev, 1);
+	ret = platform_get_irq_optional(dev, 1);
 	if (ret < 0 && ret != -ENXIO)
 		return ret;
 	if (ret > 0)
 		cd_irq = ret;
 	mmc_gpio_set_cd_irq(mmc, cd_irq);
 
-	host->pinctrl = devm_pinctrl_get(&pdev->dev);
+	host->pinctrl = devm_pinctrl_get(dev);
 	if (IS_ERR(host->pinctrl))
 		return PTR_ERR(host->pinctrl);
 
 	host->pins_clk_gate = pinctrl_lookup_state(host->pinctrl,
 						   "clk-gate");
 	if (IS_ERR(host->pins_clk_gate)) {
-		dev_warn(&pdev->dev,
+		dev_warn(dev,
 			 "can't get clk-gate pinctrl, using clk_stop bit\n");
 		host->pins_clk_gate = NULL;
 	}
 
-	core_clk = devm_clk_get_enabled(&pdev->dev, "core");
+	core_clk = clk_get_enabled(dev, "core");
 	if (IS_ERR(core_clk))
 		return PTR_ERR(core_clk);
 
 	if (host->data->has_pipeline_clk) {
 		struct clk *pipe_clk;
 
-		pipe_clk = devm_clk_get_enabled(&pdev->dev, "pipeline");
+		pipe_clk = clk_get_enabled(dev, "pipeline");
 		if (IS_ERR(pipe_clk))
-			return dev_err_probe(&pdev->dev, PTR_ERR(pipe_clk),
+			return dev_err_probe(dev, PTR_ERR(pipe_clk),
 					     "missing pipeline clock\n");
 	}
 
@@ -1237,7 +1237,7 @@ static int meson_mmc_probe(struct platform_device *pdev)
 
 	ret = request_threaded_irq(host->irq, meson_mmc_irq,
 				   meson_mmc_irq_thread, IRQF_ONESHOT,
-				   dev_name(&pdev->dev), host);
+				   dev_name(dev), host);
 	if (ret)
 		goto err_init_clk;
 
@@ -1278,8 +1278,8 @@ static int meson_mmc_probe(struct platform_device *pdev)
 		/* data bounce buffer */
 		host->bounce_buf_size = mmc->max_req_size;
 		host->bounce_buf =
-			dmam_alloc_coherent(host->dev, host->bounce_buf_size,
-					    &host->bounce_dma_addr, GFP_KERNEL);
+			dma_alloc_coherent(host->dev, host->bounce_buf_size,
+					   &host->bounce_dma_addr);
 		if (host->bounce_buf == NULL) {
 			dev_err(host->dev, "Unable to map allocate DMA bounce buffer.\n");
 			ret = -ENOMEM;
@@ -1287,8 +1287,8 @@ static int meson_mmc_probe(struct platform_device *pdev)
 		}
 	}
 
-	host->descs = dmam_alloc_coherent(host->dev, SD_EMMC_DESC_BUF_LEN,
-					  &host->descs_dma_addr, GFP_KERNEL);
+	host->descs = dma_alloc_coherent(host->dev, SD_EMMC_DESC_BUF_LEN,
+					 &host->descs_dma_addr);
 	if (!host->descs) {
 		dev_err(host->dev, "Allocating descriptor DMA buffer failed\n");
 		ret = -ENOMEM;
@@ -1309,9 +1309,9 @@ err_init_clk:
 	return ret;
 }
 
-static void meson_mmc_remove(struct platform_device *pdev)
+static void meson_mmc_remove(struct device *dev)
 {
-	struct meson_host *host = dev_get_drvdata(&pdev->dev);
+	struct meson_host *host = dev_get_drvdata(dev);
 
 	mmc_remove_host(host->mmc);
 
@@ -1358,17 +1358,14 @@ static const struct of_device_id meson_mmc_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, meson_mmc_of_match);
 
-static struct platform_driver meson_mmc_driver = {
+static struct driver meson_mmc_driver = {
 	.probe		= meson_mmc_probe,
 	.remove		= meson_mmc_remove,
-	.driver		= {
-		.name = DRIVER_NAME,
-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
-		.of_match_table = meson_mmc_of_match,
-	},
+	.name = DRIVER_NAME,
+	.of_match_table = meson_mmc_of_match,
 };
 
-module_platform_driver(meson_mmc_driver);
+device_platform_driver(meson_mmc_driver);
 
 MODULE_DESCRIPTION("Amlogic S905*/GX*/AXG SD/eMMC driver");
 MODULE_AUTHOR("Kevin Hilman <khilman@baylibre.com>");

@@ -23,6 +23,7 @@ ENTRY("start_dt_2nd")
 	.asciz "barebox"	   /* unused for now */
 2:
 	adr x1, _text - .
+	mov x5, #0			/* raw_entry */
 	/* Stack now grows into the 0x80000 image load offset specified
 	 * above. This is more than enough until FDT /memory is decoded.
 	 */
@@ -36,6 +37,7 @@ ENTRY("start_dt_2nd")
 	cbnz x1, 4f
 #endif
 	/* Else assume raw entry, stack 0x80000 past the image and FDT */
+	mov x5, #1
 	adrp x1, __image_end
 	add x1, x1, :lo12:__image_end
 	ldp w2, w3, [x1]			/* FDT magic, totalsize */
@@ -49,6 +51,7 @@ ENTRY("start_dt_2nd")
 	and x1, x1, #~0xf
 4:
 	mov sp, x1
+	mov x1, x5
 	b dt_2nd_aarch64
 
 	__EFI_PE_HEADER

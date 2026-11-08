@@ -5,9 +5,16 @@
 #include <of.h>
 #include <partitions.h>
 #include <mach/meson/g12.h>
+#include <mach/meson/gx.h>
 #include <mach/meson/meson.h>
 
 static const struct of_device_id meson_of_match[] = {
+#ifdef CONFIG_ARCH_MESON_GX
+	{ .compatible = "amlogic,meson-gxbb", .data = (void *)MESON_SOC_GX },
+	{ .compatible = "amlogic,meson-gxl", .data = (void *)MESON_SOC_GX },
+	{ .compatible = "amlogic,meson-gxlx", .data = (void *)MESON_SOC_GX },
+	{ .compatible = "amlogic,meson-gxm", .data = (void *)MESON_SOC_GX },
+#endif
 #ifdef CONFIG_ARCH_MESON_G12
 	{ .compatible = "amlogic,g12a", .data = (void *)MESON_SOC_G12 },
 	{ .compatible = "amlogic,g12b", .data = (void *)MESON_SOC_G12 },
@@ -42,6 +49,8 @@ static int meson_soc_init(void)
 	 */
 	gpt_suppress_fix_messages();
 
+	if (meson_is_gx())
+		return meson_gx_init();
 	if (meson_is_g12())
 		return meson_g12_init();
 
@@ -51,6 +60,8 @@ postcore_initcall(meson_soc_init);
 
 static int meson_mem_init(void)
 {
+	if (meson_is_gx())
+		return meson_gx_mem_init();
 	if (meson_is_g12())
 		return meson_g12_mem_init();
 

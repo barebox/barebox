@@ -75,3 +75,19 @@ config COMMON_CLK_MESON_G12A
 	  Support for the Always-On and main clock controllers of the
 	  Amlogic G12A (S905X2/D2), G12B (S922X, A311D) and SM1
 	  (S905X3/D3) SoCs.
+
+config COMMON_CLK_MESON_A9
+	bool "Amlogic Meson A9 clock controllers"
+	depends on COMMON_CLK_OF_PROVIDER
+	depends on ARCH_MESON || COMPILE_TEST
+	default ARCH_MESON_A9
+	select COMMON_CLK_MESON_REGMAP
+	select COMMON_CLK_MESON_CLKC_UTILS
+	select COMMON_CLK_MESON_DUALDIV
+	select COMMON_CLK_MESON_VID_PLL_DIV
+	imply COMMON_CLK_SCMI
+	help
+	  Support for the Always-On and peripherals clock controllers of
+	  the Amlogic A9 (A311Y3) SoCs. They are fed by the fixed PLL
+	  dividers, the system clock and some of the PLLs, which the
+	  firmware provides over SCMI.

@@ -4261,6 +4261,9 @@ sub process {
 			# cpp #elif statement condition may start with a (
 			} elsif ($ctx =~ /^.\s*\#\s*elif\s*$/) {
 
+			# the space lines the help text up with BAREBOX_CMD_HELP_TEXT(
+			} elsif ($name eq "BAREBOX_CMD_HELP_OPT") {
+
 			# If this whole things ends with a type its most
 			# likely a typedef for a function.
 			} elsif ($ctx =~ /$Type$/) {

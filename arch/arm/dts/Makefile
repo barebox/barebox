@@ -294,6 +294,11 @@ DTBO_BASE_meson-gx := meson-gx-symbols
 overlay-$(CONFIG_ARCH_MESON_G12) += meson-g12.dtbo
 DTBO_BASE_meson-g12 := meson-g12-symbols
 
+overlay-$(CONFIG_ARCH_MESON_A9) += amlogic-a9.dtbo
+DTBO_BASE_amlogic-a9 := amlogic-a9-symbols
+# the overlay adds the /chosen node the A9 device trees lack
+DTC_FLAGS_amlogic-a9 := -Wno-chosen_node_is_root
+
 clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts *.dtb.z
 clean-files += *.dtbo *.dtbo.S .*.dtso *-paths.h
 lwl-$(CONFIG_MACH_RAUMFELD_SPEAKER) += pxa300-raumfeld-speaker.dtb.o

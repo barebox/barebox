@@ -5,10 +5,13 @@
 
 #include <linux/io.h>
 #include <serial/meson.h>
+#include <mach/meson/a9.h>
 #include <mach/meson/g12.h>
 #include <mach/meson/gx.h>
 
-#ifdef CONFIG_DEBUG_MESON_GX_UART
+#if defined(CONFIG_DEBUG_MESON_A9_UART)
+#define MESON_DEBUG_UART_BASE	MESON_A9_UART_B_BASE
+#elif defined(CONFIG_DEBUG_MESON_GX_UART)
 #define MESON_DEBUG_UART_BASE	MESON_GX_UART_AO_BASE
 #else
 #define MESON_DEBUG_UART_BASE	MESON_G12_UART_AO_BASE

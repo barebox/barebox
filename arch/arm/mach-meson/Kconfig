@@ -17,4 +17,12 @@ config ARCH_MESON_G12
 	  is started as BL33 by the vendor firmware, as barebox-dt-2nd.img
 	  with the board's device tree appended.
 
+config ARCH_MESON_A9
+	bool "Amlogic A9 (A311Y3)"
+	select OF_OVERLAY_BUILTIN
+	help
+	  Say Y here to support the Amlogic A9 SoCs, like the A311Y3. barebox
+	  is started as BL33 by the vendor firmware, as barebox-dt-2nd.img
+	  with the board's device tree appended.
+
 endif

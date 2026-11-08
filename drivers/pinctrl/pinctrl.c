@@ -195,7 +195,7 @@ struct pinctrl_state *pinctrl_lookup_state(struct pinctrl *pinctrl,
 
 int pinctrl_select_state(struct pinctrl *pinctrl, struct pinctrl_state *state)
 {
-	int ret = -ENODEV;
+	int ret = 0;
 	const __be32 *list;
 	int size, config;
 	phandle phandle;

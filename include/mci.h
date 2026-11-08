@@ -527,6 +527,7 @@ struct mci_data {
 	unsigned blocks;	/**< block count to handle in this command */
 	unsigned blocksize;	/**< block size in bytes (mostly 512) */
 	unsigned timeout_ns;	/**< data timeout in ns */
+	s32      host_cookie;	/**< host private data */
 };
 
 enum mci_timing {

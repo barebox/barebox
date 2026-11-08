@@ -9,4 +9,5 @@ obj-$(CONFIG_COMMON_CLK_MESON_REGMAP) += clk-regmap.o
 obj-$(CONFIG_COMMON_CLK_MESON_VID_PLL_DIV) += vid-pll-div.o
 obj-$(CONFIG_COMMON_CLK_MESON_VCLK) += vclk.o
 
+obj-$(CONFIG_COMMON_CLK_MESON_GXBB) += gxbb.o gxbb-aoclk.o
 obj-$(CONFIG_COMMON_CLK_MESON_G12A) += g12a-aoclk.o g12a.o

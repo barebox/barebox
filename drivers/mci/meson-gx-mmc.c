@@ -13,6 +13,7 @@
 #include <linux/device.h>
 #include <linux/iopoll.h>
 #include <of.h>
+#include <of_device.h>
 #include <driver.h>
 #include <linux/ioport.h>
 #include <dma.h>
@@ -22,6 +23,8 @@
 #include <linux/clk-provider.h>
 #include <linux/reset.h>
 #include <linux/bitfield.h>
+#include <linux/log2.h>
+#include <linux/sprintf.h>
 #include <linux/pinctrl/consumer.h>
 
 #define DRIVER_NAME "meson-gx-mmc"
@@ -137,8 +140,8 @@ struct meson_mmc_data {
 struct meson_host {
 	struct	device		*dev;
 	const struct meson_mmc_data *data;
-	struct	mmc_host	*mmc;
-	struct	mmc_command	*cmd;
+	struct	mci_host	*mmc;
+	struct	mci_cmd	*cmd;
 
 	void __iomem *regs;
 	struct clk *mux_clk;
@@ -155,7 +158,12 @@ struct meson_host {
 	void *bounce_buf;
 	void __iomem *bounce_iomem_buf;
 	dma_addr_t bounce_dma_addr;
+
+	struct mci_host mci;
 };
+
+#define mmc_priv(mmc) container_of(mmc, struct meson_host, mci)
+#define mmc_dev(mmc) ((mmc)->hw_dev)
 
 #define CMD_CFG_LENGTH_MASK GENMASK(8, 0)
 #define CMD_CFG_BLOCK_MODE BIT(9)
@@ -180,7 +188,7 @@ struct meson_host {
 #define CMD_RESP_MASK GENMASK(31, 1)
 #define CMD_RESP_SRAM BIT(0)
 
-static unsigned int meson_mmc_get_timeout_msecs(struct mmc_data *data)
+static unsigned int meson_mmc_get_timeout_msecs(struct mci_data *data)
 {
 	unsigned int timeout = data->timeout_ns / NSEC_PER_MSEC;
 
@@ -269,7 +277,7 @@ static void meson_mmc_clk_ungate(struct meson_host *host)
 	u32 cfg;
 
 	if (host->pins_clk_gate)
-		pinctrl_select_default_state(host->dev);
+		pinctrl_select_state_default(host->dev);
 
 	/* Make sure the clock is not stopped in the controller */
 	cfg = readl(host->regs + SD_EMMC_CFG);
@@ -280,7 +288,7 @@ static void meson_mmc_clk_ungate(struct meson_host *host)
 static int meson_mmc_clk_set(struct meson_host *host, unsigned long rate,
 			     bool ddr)
 {
-	struct mmc_host *mmc = host->mmc;
+	struct mci_host *mmc = host->mmc;
 	int ret;
 	u32 cfg;
 
@@ -393,7 +401,7 @@ static int meson_mmc_clk_init(struct meson_host *host)
 	mux->mask = CLK_SRC_MASK >> mux->shift;
 	mux->hw.init = &init;
 
-	host->mux_clk = devm_clk_register(host->dev, &mux->hw);
+	host->mux_clk = clk_register(host->dev, &mux->hw);
 	if (WARN_ON(IS_ERR(host->mux_clk)))
 		return PTR_ERR(host->mux_clk);
 
@@ -416,7 +424,7 @@ static int meson_mmc_clk_init(struct meson_host *host)
 	div->hw.init = &init;
 	div->flags = CLK_DIVIDER_ONE_BASED;
 
-	host->mmc_clk = devm_clk_register(host->dev, &div->hw);
+	host->mmc_clk = clk_register(host->dev, &div->hw);
 	if (WARN_ON(IS_ERR(host->mmc_clk)))
 		return PTR_ERR(host->mmc_clk);
 
@@ -448,10 +456,10 @@ static void meson_mmc_reset_resampling(struct meson_host *host)
 	writel(val, host->regs + host->data->adjust);
 }
 
-static int meson_mmc_resampling_tuning(struct mmc_host *mmc, u32 opcode)
+static int meson_mmc_resampling_tuning(struct mci_host *mmc, u32 opcode)
 {
 	struct meson_host *host = mmc_priv(mmc);
-	unsigned int val, dly, max_dly, i;
+	unsigned int val, dly = 0, max_dly, i;
 	int ret;
 
 	/* Resampling is done using the source clock */
@@ -467,7 +475,7 @@ static int meson_mmc_resampling_tuning(struct mmc_host *mmc, u32 opcode)
 		val |= FIELD_PREP(ADJUST_ADJ_DELAY_MASK, (dly + i) % max_dly);
 		writel(val, host->regs + host->data->adjust);
 
-		ret = mmc_send_tuning(mmc, opcode, NULL);
+		ret = mmc_send_tuning(mmc->mci, opcode);
 		if (!ret) {
 			dev_dbg(mmc_dev(mmc), "resampling delay: %u\n",
 				(dly + i) % max_dly);
@@ -480,7 +488,7 @@ static int meson_mmc_resampling_tuning(struct mmc_host *mmc, u32 opcode)
 }
 
 static int meson_mmc_prepare_ios_clock(struct meson_host *host,
-				       struct mmc_ios *ios)
+				       struct mci_ios *ios)
 {
 	bool ddr;
 
@@ -499,7 +507,7 @@ static int meson_mmc_prepare_ios_clock(struct meson_host *host,
 }
 
 static void meson_mmc_check_resampling(struct meson_host *host,
-				       struct mmc_ios *ios)
+				       struct mci_ios *ios)
 {
 	switch (ios->timing) {
 	case MMC_TIMING_LEGACY:
@@ -508,10 +516,12 @@ static void meson_mmc_check_resampling(struct meson_host *host,
 	case MMC_TIMING_MMC_DDR52:
 		meson_mmc_disable_resampling(host);
 		break;
+	default:
+		break;
 	}
 }
 
-static void meson_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+static void meson_mmc_set_ios(struct mci_host *mmc, struct mci_ios *ios)
 {
 	struct meson_host *host = mmc_priv(mmc);
 	u32 bus_width, val;
@@ -547,7 +557,7 @@ static void meson_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 	dev_dbg(host->dev, "SD_EMMC_CFG:  0x%08x\n", val);
 }
 
-static void meson_mmc_set_blksz(struct mmc_host *mmc, unsigned int blksz)
+static void meson_mmc_set_blksz(struct mci_host *mmc, unsigned int blksz)
 {
 	struct meson_host *host = mmc_priv(mmc);
 	u32 cfg, blksz_old;
@@ -572,17 +582,17 @@ static void meson_mmc_set_blksz(struct mmc_host *mmc, unsigned int blksz)
 	writel(cfg, host->regs + SD_EMMC_CFG);
 }
 
-static void meson_mmc_set_response_bits(struct mmc_command *cmd, u32 *cmd_cfg)
+static void meson_mmc_set_response_bits(struct mci_cmd *cmd, u32 *cmd_cfg)
 {
-	if (cmd->flags & MMC_RSP_PRESENT) {
-		if (cmd->flags & MMC_RSP_136)
+	if (cmd->resp_type & MMC_RSP_PRESENT) {
+		if (cmd->resp_type & MMC_RSP_136)
 			*cmd_cfg |= CMD_CFG_RESP_128;
 		*cmd_cfg |= CMD_CFG_RESP_NUM;
 
-		if (!(cmd->flags & MMC_RSP_CRC))
+		if (!(cmd->resp_type & MMC_RSP_CRC))
 			*cmd_cfg |= CMD_CFG_RESP_NOCRC;
 
-		if (cmd->flags & MMC_RSP_BUSY)
+		if (cmd->resp_type & MMC_RSP_BUSY)
 			*cmd_cfg |= CMD_CFG_R1B;
 	} else {
 		*cmd_cfg |= CMD_CFG_NO_RESP;
@@ -623,16 +633,16 @@ static void meson_mmc_copy_buffer(struct meson_host *host, struct mmc_data *data
 	}
 }
 
-static void meson_mmc_start_cmd(struct mmc_host *mmc, struct mmc_command *cmd)
+static void meson_mmc_start_cmd(struct mci_host *mmc, struct mci_cmd *cmd)
 {
 	struct meson_host *host = mmc_priv(mmc);
-	struct mmc_data *data = cmd->data;
+	struct mci_data *data = cmd->data;
 	u32 cmd_cfg = 0, cmd_data = 0;
 	unsigned int xfer_bytes = 0;
 
 	host->cmd = cmd;
 
-	cmd_cfg |= FIELD_PREP(CMD_CFG_CMD_INDEX_MASK, cmd->opcode);
+	cmd_cfg |= FIELD_PREP(CMD_CFG_CMD_INDEX_MASK, cmd->cmdidx);
 	cmd_cfg |= CMD_CFG_OWNER;  /* owned by CPU */
 
 	meson_mmc_set_response_bits(cmd, &cmd_cfg);
@@ -647,12 +657,12 @@ static void meson_mmc_start_cmd(struct mmc_host *mmc, struct mmc_command *cmd)
 			cmd_cfg |= CMD_CFG_BLOCK_MODE;
 			cmd_cfg |= FIELD_PREP(CMD_CFG_LENGTH_MASK,
 					      data->blocks);
-			meson_mmc_set_blksz(mmc, data->blksz);
+			meson_mmc_set_blksz(mmc, data->blocksize);
 		} else {
-			cmd_cfg |= FIELD_PREP(CMD_CFG_LENGTH_MASK, data->blksz);
+			cmd_cfg |= FIELD_PREP(CMD_CFG_LENGTH_MASK, data->blocksize);
 		}
 
-		xfer_bytes = data->blksz * data->blocks;
+		xfer_bytes = data->blocksize * data->blocks;
 		if (data->flags & MMC_DATA_WRITE) {
 			cmd_cfg |= CMD_CFG_DATA_WR;
 			WARN_ON(xfer_bytes > host->bounce_buf_size);
@@ -674,7 +684,7 @@ static void meson_mmc_start_cmd(struct mmc_host *mmc, struct mmc_command *cmd)
 	writel(cmd_cfg, host->regs + SD_EMMC_CMD_CFG);
 	writel(cmd_data, host->regs + SD_EMMC_CMD_DAT);
 	writel(0, host->regs + SD_EMMC_CMD_RSP);
-	writel(cmd->arg, host->regs + SD_EMMC_CMD_ARG);
+	writel(cmd->cmdarg, host->regs + SD_EMMC_CMD_ARG);
 }
 
 static int meson_mmc_validate_dram_access(struct mmc_host *mmc, struct mmc_data *data)
@@ -695,24 +705,24 @@ static int meson_mmc_validate_dram_access(struct mmc_host *mmc, struct mmc_data 
 	return 0;
 }
 
-static void meson_mmc_read_resp(struct mmc_host *mmc, struct mmc_command *cmd)
+static void meson_mmc_read_resp(struct mci_host *mmc, struct mci_cmd *cmd)
 {
 	struct meson_host *host = mmc_priv(mmc);
 
-	if (cmd->flags & MMC_RSP_136) {
-		cmd->resp[0] = readl(host->regs + SD_EMMC_CMD_RSP3);
-		cmd->resp[1] = readl(host->regs + SD_EMMC_CMD_RSP2);
-		cmd->resp[2] = readl(host->regs + SD_EMMC_CMD_RSP1);
-		cmd->resp[3] = readl(host->regs + SD_EMMC_CMD_RSP);
-	} else if (cmd->flags & MMC_RSP_PRESENT) {
-		cmd->resp[0] = readl(host->regs + SD_EMMC_CMD_RSP);
+	if (cmd->resp_type & MMC_RSP_136) {
+		cmd->response[0] = readl(host->regs + SD_EMMC_CMD_RSP3);
+		cmd->response[1] = readl(host->regs + SD_EMMC_CMD_RSP2);
+		cmd->response[2] = readl(host->regs + SD_EMMC_CMD_RSP1);
+		cmd->response[3] = readl(host->regs + SD_EMMC_CMD_RSP);
+	} else if (cmd->resp_type & MMC_RSP_PRESENT) {
+		cmd->response[0] = readl(host->regs + SD_EMMC_CMD_RSP);
 	}
 }
 
 static irqreturn_t meson_mmc_irq(int irq, void *dev_id)
 {
 	struct meson_host *host = dev_id;
-	struct mmc_command *cmd;
+	struct mci_cmd *cmd;
 	u32 status, raw_status, irq_mask = IRQ_EN_MASK;
 	irqreturn_t ret = IRQ_NONE;
 
@@ -774,8 +784,8 @@ static int meson_mmc_wait_desc_stop(struct meson_host *host)
 static irqreturn_t meson_mmc_irq_thread(int irq, void *dev_id)
 {
 	struct meson_host *host = dev_id;
-	struct mmc_command *next_cmd, *cmd = host->cmd;
-	struct mmc_data *data;
+	struct mci_cmd *cmd = host->cmd;
+	struct mci_data *data;
 	unsigned int xfer_bytes;
 
 	if (cmd->error) {
@@ -785,7 +795,7 @@ static irqreturn_t meson_mmc_irq_thread(int irq, void *dev_id)
 
 	data = cmd->data;
 	if (meson_mmc_bounce_buf_read(data)) {
-		xfer_bytes = data->blksz * data->blocks;
+		xfer_bytes = data->blocksize * data->blocks;
 		WARN_ON(xfer_bytes > host->bounce_buf_size);
 		if (host->dram_access_quirk)
 			meson_mmc_copy_buffer(host, data, xfer_bytes, false);
@@ -810,7 +820,7 @@ static void meson_mmc_cfg_init(struct meson_host *host)
 	writel(cfg, host->regs + SD_EMMC_CFG);
 }
 
-static const struct mmc_host_ops meson_mmc_ops = {
+static const struct mci_ops meson_mmc_ops = {
 	.request	= meson_mmc_request,
 	.set_ios	= meson_mmc_set_ios,
 	.execute_tuning = meson_mmc_resampling_tuning,
@@ -820,23 +830,22 @@ static int meson_mmc_probe(struct device *dev)
 {
 	struct resource *res;
 	struct meson_host *host;
-	struct mmc_host *mmc;
+	struct mci_host *mmc;
 	struct clk *core_clk;
 	int ret;
 
-	mmc = devm_mmc_alloc_host(dev, sizeof(struct meson_host));
-	if (!mmc)
-		return -ENOMEM;
-	host = mmc_priv(mmc);
+	host = xzalloc(sizeof(*host));
+	mmc = &host->mci;
 	host->mmc = mmc;
 	host->dev = dev;
 	dev_set_drvdata(dev, host);
+	mmc->hw_dev = dev;
 
 	/* The G12A SDIO Controller needs an SRAM bounce buffer */
-	host->dram_access_quirk = device_property_read_bool(dev,
-							    "amlogic,dram-access-quirk");
+	host->dram_access_quirk = of_property_read_bool(dev->of_node,
+							"amlogic,dram-access-quirk");
 
-	ret = mmc_of_parse(mmc);
+	mci_of_parse(mmc);
 
 	host->data = of_device_get_match_data(dev);
 	if (!host->data)
@@ -850,7 +859,7 @@ static int meson_mmc_probe(struct device *dev)
 	if (IS_ERR(host->regs))
 		return PTR_ERR(host->regs);
 
-	host->pinctrl = devm_pinctrl_get(dev);
+	host->pinctrl = pinctrl_get(dev);
 	if (IS_ERR(host->pinctrl))
 		return PTR_ERR(host->pinctrl);
 
@@ -924,14 +933,14 @@ static int meson_mmc_probe(struct device *dev)
 		if (host->bounce_buf == NULL) {
 			dev_err(host->dev, "Unable to map allocate DMA bounce buffer.\n");
 			ret = -ENOMEM;
-			goto err_free_irq;
+			goto err_init_clk;
 		}
 	}
 
-	mmc->ops = &meson_mmc_ops;
-	ret = mmc_add_host(mmc);
+	mmc->ops = meson_mmc_ops;
+	ret = mci_register(mmc);
 	if (ret)
-		goto err_free_irq;
+		goto err_init_clk;
 
 	return 0;
 

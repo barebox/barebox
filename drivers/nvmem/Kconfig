@@ -129,6 +129,13 @@ config NVMEM_ATMEL_I2C
 	bool
 	select BITREVERSE
 
+config NVMEM_MESON_EFUSE
+	bool "Amlogic Meson GX eFuse"
+	depends on MESON_SM
+	help
+	  This is a driver to retrieve specific values from the eFuse found on
+	  the Amlogic Meson GX and G12 SoCs through the secure monitor.
+
 config TI_K3_OTP
 	bool "TI K3 OTP"
 	depends on ARCH_K3

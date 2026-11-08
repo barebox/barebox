@@ -221,7 +221,8 @@
 #define MAX_RD_TIME_V131(lbcc)		((lbcc) & 0x7fff)
 
 #define PHY_STATUS_TIMEOUT_US		10000
-#define CMD_PKT_STATUS_TIMEOUT_US	20000
+/* in video mode, LP transfers may wait for the blanking of the next frame */
+#define CMD_PKT_STATUS_TIMEOUT_US	100000
 
 enum vpg_mode {
 	VPG_DISABLED,

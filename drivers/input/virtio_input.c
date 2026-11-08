@@ -19,6 +19,7 @@ struct virtio_input {
 	struct virtio_input_event  evts[64];
 	struct poller_struct       poller;
 	struct sound_card          beeper;
+	bool                       beeper_registered;
 	unsigned long              sndbit[BITS_TO_LONGS(SND_CNT)];
 };
 
@@ -239,10 +240,12 @@ static int virtinput_probe(struct virtio_device *vdev)
 		beeper->beep = virtinput_send_status;
 
 		err = sound_card_register(&vi->beeper);
-		if (err)
+		if (err) {
 			dev_warn(&vdev->dev, "bell registration failed: %pe\n", ERR_PTR(err));
-		else
+		} else {
+			vi->beeper_registered = true;
 			dev_info(&vdev->dev, "bell registered\n");
+		}
 	}
 
 	return 0;
@@ -260,12 +263,13 @@ static void virtinput_remove(struct virtio_device *vdev)
 {
 	struct virtio_input *vi = vdev->priv;
 
+	if (vi->beeper_registered)
+		sound_card_disable(&vi->beeper);
+
 	vdev->config->reset(vdev);
 	poller_unregister(&vi->poller);
 	input_device_unregister(&vi->idev);
 	vdev->config->del_vqs(vdev);
-
-	kfree(vi);
 }
 
 static const struct virtio_device_id id_table[] = {

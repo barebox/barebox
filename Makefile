@@ -1439,11 +1439,13 @@ ifneq ($(dtstree),)
 
 # Build an upstream device tree by name, e.g.
 #   make dts/src/arm/st/stm32mp157c-dk2.dtb
+# dts/ is synced from upstream as is, so there's no Kbuild file to include
 dts/src/%.dtb: dtbs_prepare
-	$(Q)$(MAKE) $(build)=dts/src $@
+	$(Q)$(MAKE) $(build)=dts/src kbuild-file=/dev/null $@
 
+# without a dtb-y, Makefile.build includes Makefile.dtbs only for .dtb goals
 dts/src/%.dtbo: dtbs_prepare
-	$(Q)$(MAKE) $(build)=dts/src $@
+	$(Q)$(MAKE) $(build)=dts/src kbuild-file=/dev/null need-dtbslist=y $@
 
 PHONY += dtbs dtbs_prepare dtbs_install
 dtbs: dtbs_prepare

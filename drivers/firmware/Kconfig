@@ -70,6 +70,17 @@ config TI_SCI_PROTOCOL
 	  This protocol library is used by client drivers to use the features
 	  provided by the system controller.
 
+config MESON_SM
+	bool "Amlogic secure monitor"
+	depends on ARCH_MESON || COMPILE_TEST
+	depends on ARM
+	select ARM_SMCCC
+	default ARCH_MESON
+	help
+	  The SMC interface to the BL31 firmware of the Amlogic GX, G12 and
+	  A9 SoCs, through which the eFuse is read. The unique chip id it
+	  reports becomes the SoC UID, from which the machine id is derived.
+
 source "drivers/firmware/arm_scmi/Kconfig"
 
 endmenu

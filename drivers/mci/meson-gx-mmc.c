@@ -126,6 +126,8 @@
 #define SD_EMMC_CMD_TIMEOUT_DATA 4096 /* in ms */
 #define SD_EMMC_CFG_CMD_GAP 16 /* in clock cycles */
 
+#define SD_EMMC_DESC_CHAIN_MODE BIT(1)
+
 #define MUX_CLK_NUM_PARENTS 2
 
 struct meson_mmc_data {
@@ -158,6 +160,8 @@ struct meson_host {
 	void *bounce_buf;
 	void __iomem *bounce_iomem_buf;
 	dma_addr_t bounce_dma_addr;
+
+	dma_addr_t direct_dma_addr;
 
 	struct mci_host mci;
 };
@@ -200,8 +204,8 @@ static unsigned int meson_mmc_get_timeout_msecs(struct mci_data *data)
 	return min(timeout, 32768U); /* max. 2^15 ms */
 }
 
-static void meson_mmc_get_transfer_mode(struct mmc_host *mmc,
-					struct mmc_request *mrq)
+static void meson_mmc_get_transfer_mode(struct mci_host *mmc,
+					struct mci_data *data)
 {
 	struct meson_host *host = mmc_priv(mmc);
 
@@ -212,41 +216,55 @@ static void meson_mmc_get_transfer_mode(struct mmc_host *mmc,
 	 */
 	if (host->dram_access_quirk)
 		return;
+
+	/* dma_map_single() maintains the caches by whole lines */
+	if (!IS_ALIGNED((uintptr_t)data->dest, DMA_ALIGNMENT) ||
+	    !IS_ALIGNED(data->blocksize * data->blocks, DMA_ALIGNMENT))
+		return;
+
+	data->host_cookie |= SD_EMMC_DESC_CHAIN_MODE;
 }
 
-static inline bool meson_mmc_desc_chain_mode(struct mmc_host *mmc,
-					     const struct mmc_data *data)
+static inline bool meson_mmc_desc_chain_mode(const struct mci_data *data)
 {
-       return data->host_cookie & SD_EMMC_DESC_CHAIN_MODE;
+	return data->host_cookie & SD_EMMC_DESC_CHAIN_MODE;
 }
 
-static inline bool meson_mmc_bounce_buf_read(const struct mmc_data *data)
+static inline bool meson_mmc_bounce_buf_read(struct meson_host *host,
+					     const struct mci_data *data)
 {
 	return data && data->flags & MMC_DATA_READ &&
 	       !meson_mmc_desc_chain_mode(data);
 }
 
-static void meson_mmc_pre_req(struct mmc_host *mmc, struct mmc_request *mrq)
+static enum dma_data_direction mmc_get_dma_dir(struct mci_data *data)
 {
-	struct mmc_data *data = mrq->data;
+	return data->flags & MMC_DATA_WRITE ? DMA_TO_DEVICE : DMA_FROM_DEVICE;
+}
 
+static void meson_mmc_pre_req(struct mci_host *mmc, struct mci_data *data)
+{
+	struct meson_host *host = mmc_priv(mmc);
+
+	meson_mmc_get_transfer_mode(mmc, data);
 	if (!meson_mmc_desc_chain_mode(data))
 		return;
 
-	data->sg_count = dma_map_sg(mmc_dev(mmc), data->sg, data->sg_len,
-                                   mmc_get_dma_dir(data));
-	if (!data->sg_count)
-		dev_err(mmc_dev(mmc), "dma_map_sg failed");
+	host->direct_dma_addr = dma_map_single(mmc_dev(mmc), data->dest,
+					       data->blocksize * data->blocks,
+					       mmc_get_dma_dir(data));
+	if (dma_mapping_error(mmc_dev(mmc), host->direct_dma_addr))
+		data->host_cookie &= ~SD_EMMC_DESC_CHAIN_MODE;
 }
 
-static void meson_mmc_post_req(struct mmc_host *mmc, struct mmc_request *mrq,
-			       int err)
+static void meson_mmc_post_req(struct mci_host *mmc, struct mci_data *data)
 {
-	struct mmc_data *data = mrq->data;
+	struct meson_host *host = mmc_priv(mmc);
 
-	if (data && meson_mmc_desc_chain_mode(data) && data->sg_count)
-		dma_unmap_sg(mmc_dev(mmc), data->sg, data->sg_len,
-			     mmc_get_dma_dir(data));
+	if (meson_mmc_desc_chain_mode(data))
+		dma_unmap_single(mmc_dev(mmc), host->direct_dma_addr,
+				 data->blocksize * data->blocks,
+				 mmc_get_dma_dir(data));
 }
 
 /*
@@ -599,37 +617,28 @@ static void meson_mmc_set_response_bits(struct mci_cmd *cmd, u32 *cmd_cfg)
 	}
 }
 
-/* local sg copy for dram_access_quirk */
-static void meson_mmc_copy_buffer(struct meson_host *host, struct mmc_data *data,
+/* local copy for dram_access_quirk */
+static void meson_mmc_copy_buffer(struct meson_host *host, struct mci_data *data,
 				  size_t buflen, bool to_buffer)
 {
-	unsigned int offset = 0;
+	unsigned int buf_offset = 0;
+	unsigned int left = buflen;
+	u32 *buf = (u32 *)data->dest;
 
-	while ((offset < buflen) && sg_miter_next(&miter)) {
-		unsigned int buf_offset = 0;
-		unsigned int len, left;
-		u32 *buf = miter.addr;
+	if (to_buffer) {
+		do {
+			writel(*buf++, host->bounce_iomem_buf + buf_offset);
 
-		len = min(miter.length, buflen - offset);
-		left = len;
+			buf_offset += 4;
+			left -= 4;
+		} while (left);
+	} else {
+		do {
+			*buf++ = readl(host->bounce_iomem_buf + buf_offset);
 
-		if (to_buffer) {
-			do {
-				writel(*buf++, host->bounce_iomem_buf + offset + buf_offset);
-
-				buf_offset += 4;
-				left -= 4;
-			} while (left);
-		} else {
-			do {
-				*buf++ = readl(host->bounce_iomem_buf + offset + buf_offset);
-
-				buf_offset += 4;
-				left -= 4;
-			} while (left);
-		}
-
-		offset += len;
+			buf_offset += 4;
+			left -= 4;
+		} while (left);
 	}
 }
 
@@ -666,14 +675,19 @@ static void meson_mmc_start_cmd(struct mci_host *mmc, struct mci_cmd *cmd)
 		if (data->flags & MMC_DATA_WRITE) {
 			cmd_cfg |= CMD_CFG_DATA_WR;
 			WARN_ON(xfer_bytes > host->bounce_buf_size);
-			if (host->dram_access_quirk)
+			if (host->dram_access_quirk) {
 				meson_mmc_copy_buffer(host, data, xfer_bytes, true);
-			else
-				sg_copy_to_buffer(data->sg, data->sg_len,
-						  host->bounce_buf, xfer_bytes);
+			} else if (!meson_mmc_desc_chain_mode(data)) {
+				memcpy(host->bounce_buf, data->src, xfer_bytes);
+				dma_sync_single_for_device(host->dev, host->bounce_dma_addr,
+							   xfer_bytes, DMA_BIDIRECTIONAL);
+			}
 		}
 
-		cmd_data = host->bounce_dma_addr & CMD_DATA_MASK;
+		if (meson_mmc_desc_chain_mode(data))
+			cmd_data = host->direct_dma_addr & CMD_DATA_MASK;
+		else
+			cmd_data = host->bounce_dma_addr & CMD_DATA_MASK;
 	} else {
 		cmd_cfg |= FIELD_PREP(CMD_CFG_TIMEOUT_MASK,
 				      ilog2(SD_EMMC_CMD_TIMEOUT));
@@ -687,19 +701,16 @@ static void meson_mmc_start_cmd(struct mci_host *mmc, struct mci_cmd *cmd)
 	writel(cmd->cmdarg, host->regs + SD_EMMC_CMD_ARG);
 }
 
-static int meson_mmc_validate_dram_access(struct mmc_host *mmc, struct mmc_data *data)
+static int meson_mmc_validate_dram_access(struct mci_host *mmc, struct mci_data *data)
 {
-	struct scatterlist *sg;
-	int i;
+	unsigned int len = data->blocksize * data->blocks;
 
 	/* Reject request if any element offset or size is not 32bit aligned */
-	for_each_sg(data->sg, sg, data->sg_len, i) {
-		if (!IS_ALIGNED(sg->offset, sizeof(u32)) ||
-		    !IS_ALIGNED(sg->length, sizeof(u32))) {
-			dev_err(mmc_dev(mmc), "unaligned sg offset %u len %u\n",
-				data->sg->offset, data->sg->length);
-			return -EINVAL;
-		}
+	if (!IS_ALIGNED((uintptr_t)data->dest, sizeof(u32)) ||
+	    !IS_ALIGNED(len, sizeof(u32))) {
+		dev_err(mmc_dev(mmc), "unaligned buffer %p len %u\n",
+			data->dest, len);
+		return -EINVAL;
 	}
 
 	return 0;
@@ -719,12 +730,11 @@ static void meson_mmc_read_resp(struct mci_host *mmc, struct mci_cmd *cmd)
 	}
 }
 
-static irqreturn_t meson_mmc_irq(int irq, void *dev_id)
+static int meson_mmc_irq(struct meson_host *host)
 {
-	struct meson_host *host = dev_id;
 	struct mci_cmd *cmd;
 	u32 status, raw_status, irq_mask = IRQ_EN_MASK;
-	irqreturn_t ret = IRQ_NONE;
+	int ret = 0;
 
 	raw_status = readl(host->regs + SD_EMMC_STATUS);
 	status = raw_status & irq_mask;
@@ -736,24 +746,23 @@ static irqreturn_t meson_mmc_irq(int irq, void *dev_id)
 
 	if (status & IRQ_CRC_ERR) {
 		dev_dbg(host->dev, "CRC Error - status 0x%08x\n", status);
-		cmd->error = -EILSEQ;
+		ret = -EILSEQ;
 		goto out;
 	}
 
 	if (status & IRQ_TIMEOUTS) {
 		dev_dbg(host->dev, "Timeout - status 0x%08x\n", status);
-		cmd->error = -ETIMEDOUT;
+		ret = -ETIMEDOUT;
 		goto out;
 	}
 
 	meson_mmc_read_resp(host->mmc, cmd);
 
-	if (status & (IRQ_END_OF_CHAIN | IRQ_RESP_STATUS)) {
-		return IRQ_WAKE_THREAD;
-	}
+	if (status & (IRQ_END_OF_CHAIN | IRQ_RESP_STATUS))
+		return 0;
 
 out:
-	if (cmd->error) {
+	if (ret) {
 		/* Stop desc in case of errors */
 		u32 start = readl(host->regs + SD_EMMC_START);
 
@@ -781,28 +790,74 @@ static int meson_mmc_wait_desc_stop(struct meson_host *host)
 				  5000);
 }
 
-static irqreturn_t meson_mmc_irq_thread(int irq, void *dev_id)
+static void meson_mmc_irq_thread(struct meson_host *host, int err)
 {
-	struct meson_host *host = dev_id;
 	struct mci_cmd *cmd = host->cmd;
 	struct mci_data *data;
 	unsigned int xfer_bytes;
 
-	if (cmd->error) {
+	if (err) {
 		meson_mmc_wait_desc_stop(host);
-		return IRQ_HANDLED;
+		return;
 	}
 
 	data = cmd->data;
-	if (meson_mmc_bounce_buf_read(data)) {
+	if (meson_mmc_bounce_buf_read(host, data)) {
 		xfer_bytes = data->blocksize * data->blocks;
 		WARN_ON(xfer_bytes > host->bounce_buf_size);
-		if (host->dram_access_quirk)
+		if (host->dram_access_quirk) {
 			meson_mmc_copy_buffer(host, data, xfer_bytes, false);
-		else
-			sg_copy_from_buffer(data->sg, data->sg_len,
-					    host->bounce_buf, xfer_bytes);
+		} else {
+			dma_sync_single_for_cpu(host->dev, host->bounce_dma_addr,
+						xfer_bytes, DMA_BIDIRECTIONAL);
+			memcpy(data->dest, host->bounce_buf, xfer_bytes);
+		}
 	}
+}
+
+static int meson_mmc_send_cmd(struct mci_host *mmc, struct mci_cmd *cmd)
+{
+	struct meson_host *host = mmc_priv(mmc);
+	struct mci_data *data = cmd->data;
+	unsigned int timeout;
+	u32 status;
+	int ret;
+
+	/*
+	 * The memory at the end of the controller used as bounce buffer for
+	 * the dram_access_quirk only accepts 32bit read/write access,
+	 * check the alignment and length of the data before starting the request.
+	 */
+	if (host->dram_access_quirk && data) {
+		ret = meson_mmc_validate_dram_access(mmc, data);
+		if (ret)
+			return ret;
+	}
+
+	if (data)
+		meson_mmc_pre_req(mmc, data);
+
+	/* Stop execution */
+	writel(0, host->regs + SD_EMMC_START);
+
+	/* drop what an earlier command raised after its end */
+	writel(IRQ_EN_MASK, host->regs + SD_EMMC_STATUS);
+
+	meson_mmc_start_cmd(mmc, cmd);
+
+	/* the controller times out on its own, this is only a backstop */
+	timeout = data ? meson_mmc_get_timeout_msecs(data) : SD_EMMC_CMD_TIMEOUT;
+	ret = readl_poll_timeout(host->regs + SD_EMMC_STATUS, status,
+				 status & IRQ_EN_MASK, 2 * timeout * USEC_PER_MSEC);
+	if (!ret)
+		ret = meson_mmc_irq(host);
+
+	meson_mmc_irq_thread(host, ret);
+
+	if (data)
+		meson_mmc_post_req(mmc, data);
+
+	return ret;
 }
 
 static void meson_mmc_cfg_init(struct meson_host *host)
@@ -820,8 +875,14 @@ static void meson_mmc_cfg_init(struct meson_host *host)
 	writel(cfg, host->regs + SD_EMMC_CFG);
 }
 
+static int meson_mmc_init(struct mci_host *mmc, struct device *dev)
+{
+	return 0;
+}
+
 static const struct mci_ops meson_mmc_ops = {
-	.request	= meson_mmc_request,
+	.init		= meson_mmc_init,
+	.send_cmd	= meson_mmc_send_cmd,
 	.set_ios	= meson_mmc_set_ios,
 	.execute_tuning = meson_mmc_resampling_tuning,
 };
@@ -840,12 +901,27 @@ static int meson_mmc_probe(struct device *dev)
 	host->dev = dev;
 	dev_set_drvdata(dev, host);
 	mmc->hw_dev = dev;
+	dma_set_mask(dev, DMA_BIT_MASK(32));
 
 	/* The G12A SDIO Controller needs an SRAM bounce buffer */
 	host->dram_access_quirk = of_property_read_bool(dev->of_node,
 							"amlogic,dram-access-quirk");
 
+	mmc->voltages = MMC_VDD_31_32 | MMC_VDD_32_33 | MMC_VDD_33_34 |
+			MMC_VDD_165_195;
+
 	mci_of_parse(mmc);
+
+	/* mci_of_parse() leaves these to the host driver */
+	if (of_property_read_bool(dev->of_node, "cap-sd-highspeed"))
+		mmc->host_caps |= MMC_CAP_SD_HIGHSPEED;
+	if (of_property_read_bool(dev->of_node, "cap-mmc-highspeed"))
+		mmc->host_caps |= MMC_CAP_MMC_HIGHSPEED |
+				  MMC_CAP_MMC_HIGHSPEED_52MHZ;
+	if (of_property_read_bool(dev->of_node, "mmc-ddr-3_3v"))
+		mmc->host_caps |= MMC_CAP_3_3V_DDR;
+	if (of_property_read_bool(dev->of_node, "mmc-ddr-1_8v"))
+		mmc->host_caps |= MMC_CAP_1_8V_DDR;
 
 	host->data = of_device_get_match_data(dev);
 	if (!host->data)
@@ -894,18 +970,16 @@ static int meson_mmc_probe(struct device *dev)
 	/* Stop execution */
 	writel(0, host->regs + SD_EMMC_START);
 
-	/* clear, ack and enable interrupts */
+	/* clear and ack interrupts, they are polled */
 	writel(0, host->regs + SD_EMMC_IRQ_EN);
 	writel(IRQ_EN_MASK, host->regs + SD_EMMC_STATUS);
 
 	if (host->dram_access_quirk) {
 		/* Limit to the available sram memory */
-		mmc->max_blk_count = SD_EMMC_SRAM_DATA_BUF_LEN /
-				     mmc->max_blk_size;
+		mmc->max_req_size = SD_EMMC_SRAM_DATA_BUF_LEN;
 	} else {
-		mmc->max_blk_count = CMD_CFG_LENGTH_MASK;
+		mmc->max_req_size = CMD_CFG_LENGTH_MASK * SD_EMMC_CFG_BLK_SIZE;
 	}
-	mmc->max_req_size = mmc->max_blk_count * mmc->max_blk_size;
 
 	/*
 	 * At the moment, we don't know how to reliably enable HS400.
@@ -927,12 +1001,17 @@ static int meson_mmc_probe(struct device *dev)
 	} else {
 		/* data bounce buffer */
 		host->bounce_buf_size = mmc->max_req_size;
-		host->bounce_buf =
-			dma_alloc_coherent(host->dev, host->bounce_buf_size,
-					   &host->bounce_dma_addr);
+		host->bounce_buf = dma_alloc(host->bounce_buf_size);
 		if (host->bounce_buf == NULL) {
 			dev_err(host->dev, "Unable to map allocate DMA bounce buffer.\n");
 			ret = -ENOMEM;
+			goto err_init_clk;
+		}
+		host->bounce_dma_addr = dma_map_single(host->dev, host->bounce_buf,
+						       host->bounce_buf_size,
+						       DMA_BIDIRECTIONAL);
+		if (dma_mapping_error(host->dev, host->bounce_dma_addr)) {
+			ret = -EFAULT;
 			goto err_init_clk;
 		}
 	}

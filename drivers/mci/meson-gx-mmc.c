@@ -137,6 +137,7 @@ struct meson_mmc_data {
 	unsigned int adjust;
 	unsigned int irq_sdio_sleep;
 	bool has_pipeline_clk;
+	bool resample_mmc_hs;
 };
 
 struct meson_host {
@@ -474,6 +475,18 @@ static void meson_mmc_reset_resampling(struct meson_host *host)
 	writel(val, host->regs + host->data->adjust);
 }
 
+/* resampling with no delay, the vendor driver's setting for MMC high speed */
+static void meson_mmc_enable_resampling(struct meson_host *host)
+{
+	unsigned int val;
+
+	meson_mmc_reset_resampling(host);
+
+	val = readl(host->regs + host->data->adjust);
+	val |= ADJUST_ADJ_EN;
+	writel(val, host->regs + host->data->adjust);
+}
+
 static int meson_mmc_resampling_tuning(struct mci_host *mmc, u32 opcode)
 {
 	struct meson_host *host = mmc_priv(mmc);
@@ -528,8 +541,13 @@ static void meson_mmc_check_resampling(struct meson_host *host,
 				       struct mci_ios *ios)
 {
 	switch (ios->timing) {
-	case MMC_TIMING_LEGACY:
 	case MMC_TIMING_MMC_HS:
+		if (host->data->resample_mmc_hs) {
+			meson_mmc_enable_resampling(host);
+			break;
+		}
+		fallthrough;
+	case MMC_TIMING_LEGACY:
 	case MMC_TIMING_SD_HS:
 	case MMC_TIMING_MMC_DDR52:
 		meson_mmc_disable_resampling(host);
@@ -1053,6 +1071,15 @@ static const struct meson_mmc_data meson_t7_data = {
 	.has_pipeline_clk = true,
 };
 
+static const struct meson_mmc_data meson_a9_data = {
+	.tx_delay_mask	= CLK_V3_TX_DELAY_MASK,
+	.rx_delay_mask	= CLK_V3_RX_DELAY_MASK,
+	.always_on	= CLK_V3_ALWAYS_ON,
+	.adjust		= SD_EMMC_V3_ADJUST,
+	.irq_sdio_sleep	= CLK_V3_IRQ_SDIO_SLEEP,
+	.resample_mmc_hs = true,
+};
+
 static const struct of_device_id meson_mmc_of_match[] = {
 	{ .compatible = "amlogic,meson-gx-mmc",		.data = &meson_gx_data },
 	{ .compatible = "amlogic,meson-gxbb-mmc", 	.data = &meson_gx_data },
@@ -1060,6 +1087,8 @@ static const struct of_device_id meson_mmc_of_match[] = {
 	{ .compatible = "amlogic,meson-gxm-mmc",	.data = &meson_gx_data },
 	{ .compatible = "amlogic,meson-axg-mmc",	.data = &meson_axg_data },
 	{ .compatible = "amlogic,t7-mmc",		.data = &meson_t7_data },
+	/* barebox only, Linux has no binding for the A9 yet */
+	{ .compatible = "amlogic,a9-mmc",		.data = &meson_a9_data },
 	{}
 };
 MODULE_DEVICE_TABLE(of, meson_mmc_of_match);

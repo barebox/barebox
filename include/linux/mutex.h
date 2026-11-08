@@ -16,6 +16,7 @@
 
 #define mutex_init(...)
 #define mutex_lock(lock) ((void)0)
+#define mutex_lock_interruptible(lock) 0
 #define mutex_unlock(lock) ((void)0)
 #define mutex_lock_nested(...)
 #define mutex_unlock_nested(...)

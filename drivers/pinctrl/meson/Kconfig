@@ -20,4 +20,15 @@ config PINCTRL_MESON_G12A
 	select PINCTRL_MESON_AXG_PMX
 	default ARCH_MESON
 
+config PINCTRL_AMLOGIC_A4
+	bool "AMLOGIC pincontrol"
+	depends on ARM64 || COMPILE_TEST
+	default ARCH_MESON
+	help
+	  This is the driver for the pin controller found on Amlogic SoCs.
+
+	  This driver is simplify subsequent support for new amlogic SoCs,
+	  to support new Amlogic SoCs, only need to add the corresponding dts file,
+	  no additional binding header files or C file are added.
+
 endif

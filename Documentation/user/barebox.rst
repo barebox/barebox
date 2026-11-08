@@ -227,6 +227,18 @@ device tree is passed:
 
   host$ cat images/barebox-dt-2nd.img my-board.dtb > barebox-my-board.img
 
+Beyond use as a stand-in for a Linux kernel booted with a device tree,
+``barebox-dt-2nd.img`` can be repurposed for the following other boot
+protocols:
+
+- If ``CONFIG_EFI_STUB`` is enabled and barebox is invoked over the PE entry
+  point, it runs as EFI payload, see :ref:`barebox_on_uefi`.
+- If barebox is loaded to address 0, where a loader honouring the image header
+  never puts it, or, if ``CONFIG_BOARD_GENERIC_DT_RAW_ENTRY`` is enabled, to the
+  start of another RAM bank (detected by comparing the alignment of the image
+  start with that of the address 0x80000 below it), it sets up its stack behind
+  the image instead of below it.
+
 The barebox build can also generate a FIT image combining ``barebox-dt-2nd.img``
 and all enabled device trees. This image requires python3 and python3-libfdt
 and is thus only built by default if ``CONFIG_BOARD_GENERIC_FIT`` is enabled

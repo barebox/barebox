@@ -239,9 +239,7 @@ static inline int barebox_set_loglevel(int loglevel)
 }
 #endif
 
-#ifdef CONFIG_ARCH_HAS_CTRLC
 int arch_ctrlc(void);
-#endif
 
 #ifndef CONFIG_CONSOLE_NONE
 /* stdout */
@@ -255,6 +253,7 @@ int console_vprintf(struct console_device *con, const char *fmt, va_list args);
 
 int ctrlc(void);
 int ctrlc_non_interruptible(void);
+bool console_ctrlc(void);
 void ctrlc_handled(void);
 void console_ctrlc_allow(void);
 void console_ctrlc_forbid(void);
@@ -266,6 +265,7 @@ static inline void console_flush(void) {}
 /* test if ctrl-c was pressed */
 static inline int ctrlc (void) { return 0; }
 static inline int ctrlc_non_interruptible(void) { return 0; }
+static inline bool console_ctrlc(void) { return false; }
 static inline void ctrlc_handled(void) { }
 static inline void console_ctrlc_allow(void) { }
 static inline void console_ctrlc_forbid(void) { }

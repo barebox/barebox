@@ -28,12 +28,10 @@ int ctrlc_non_interruptible(void)
 	if (ctrlc_abort)
 		return 1;
 
-#ifdef CONFIG_ARCH_HAS_CTRLC
-	ret = arch_ctrlc();
-#else
-	if (tstc() && getchar() == 3)
-		ret = 1;
-#endif
+	if (IS_ENABLED(CONFIG_ARCH_HAS_CTRLC))
+		ret = arch_ctrlc();
+	else
+		ret = console_ctrlc();
 
 	if (ret)
 		ctrlc_abort = 1;

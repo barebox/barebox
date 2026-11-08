@@ -605,6 +605,16 @@ int pollchar(ktime_t duration)
 }
 EXPORT_SYMBOL(pollchar);
 
+/**
+ * console_ctrlc - check the console input for a Ctrl-C
+ *
+ * Return: true if Ctrl-C was pressed
+ */
+bool console_ctrlc(void)
+{
+	return tstc() && getchar() == 3;
+}
+
 int console_putc(struct console_device *con, char c)
 {
 	bool crlf = c == '\n';

@@ -8,6 +8,7 @@
 #include <linux/limits.h>
 #include <linux/list.h>
 #include <linux/err.h>
+#include <linux/cleanup.h>
 #include <asm/byteorder.h>
 
 /*
@@ -131,6 +132,7 @@ static inline struct device_node *of_node_get(struct device_node *node)
 	return node;
 }
 static inline void of_node_put(struct device_node *node) { }
+DEFINE_FREE(device_node, struct device_node *, if (_T) of_node_put(_T))
 
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
@@ -378,6 +380,46 @@ static inline int of_parse_phandle_with_args(const struct device_node *np,
 
 	return __of_parse_phandle_with_args(np, list_name, cells_name,
 					    cell_count, index, out_args);
+}
+
+/**
+ * of_parse_phandle_with_fixed_args() - Find a node pointed by phandle in a list
+ * @np:		pointer to a device tree node containing a list
+ * @list_name:	property name that contains a list
+ * @cell_count: number of argument cells following the phandle
+ * @index:	index of a phandle to parse out
+ * @out_args:	optional pointer to output arguments structure (will be filled)
+ *
+ * This function is useful to parse lists of phandles and their arguments.
+ * Returns 0 on success and fills out_args, on error returns appropriate
+ * errno value.
+ *
+ * Caller is responsible to call of_node_put() on the returned out_args->np
+ * pointer.
+ *
+ * Example::
+ *
+ *  phandle1: node1 {
+ *  };
+ *
+ *  phandle2: node2 {
+ *  };
+ *
+ *  node3 {
+ *	list = <&phandle1 0 2 &phandle2 2 3>;
+ *  };
+ *
+ * To get a device_node of the ``node2`` node you may call this:
+ * of_parse_phandle_with_fixed_args(node3, "list", 2, 1, &args);
+ */
+static inline int of_parse_phandle_with_fixed_args(const struct device_node *np,
+						   const char *list_name,
+						   int cell_count,
+						   int index,
+						   struct of_phandle_args *out_args)
+{
+	return __of_parse_phandle_with_args(np, list_name, NULL, cell_count,
+					    index, out_args);
 }
 
 /**

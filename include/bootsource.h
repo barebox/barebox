@@ -43,11 +43,11 @@ int bootsource_of_node_set(struct device_node *np);
  *
  * Returns computed bootsource instace
  *
- * Normal bootsource_set_raw_instance() expects numbering used by
+ * Normal bootsource_set_raw() expects numbering used by
  * bootrom for instance to align with DT aliases, e.g.
  * $bootsource = "mmc" && $bootsource_instance = 1 -> /aliases/mmc1
  * bootsource_set() will instead consult
- * /aliases/barebox,bootsource-mmc1 which may point at a different
+ * /chosen/barebox,bootsource-mmc1 which may point at a different
  * device than mmc1. In absence of appropriate barebox,bootsource-*
  * chosen property, instance is set without translation.
  */

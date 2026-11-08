@@ -9,6 +9,7 @@ enum meson_soc {
 	MESON_SOC_UNKNOWN,
 	MESON_SOC_GX,
 	MESON_SOC_G12,
+	MESON_SOC_A9,
 };
 
 /* the SoC family barebox runs on, as the device tree says */
@@ -24,6 +25,12 @@ static inline bool meson_is_g12(void)
 {
 	return IS_ENABLED(CONFIG_ARCH_MESON_G12) &&
 	       meson_soc() == MESON_SOC_G12;
+}
+
+static inline bool meson_is_a9(void)
+{
+	return IS_ENABLED(CONFIG_ARCH_MESON_A9) &&
+	       meson_soc() == MESON_SOC_A9;
 }
 
 #endif

@@ -4,6 +4,7 @@
 #include <init.h>
 #include <of.h>
 #include <partitions.h>
+#include <mach/meson/a9.h>
 #include <mach/meson/g12.h>
 #include <mach/meson/gx.h>
 #include <mach/meson/meson.h>
@@ -19,6 +20,9 @@ static const struct of_device_id meson_of_match[] = {
 	{ .compatible = "amlogic,g12a", .data = (void *)MESON_SOC_G12 },
 	{ .compatible = "amlogic,g12b", .data = (void *)MESON_SOC_G12 },
 	{ .compatible = "amlogic,sm1", .data = (void *)MESON_SOC_G12 },
+#endif
+#ifdef CONFIG_ARCH_MESON_A9
+	{ .compatible = "amlogic,a9", .data = (void *)MESON_SOC_A9 },
 #endif
 	{ /* sentinel */ },
 };
@@ -53,6 +57,8 @@ static int meson_soc_init(void)
 		return meson_gx_init();
 	if (meson_is_g12())
 		return meson_g12_init();
+	if (meson_is_a9())
+		return meson_a9_init();
 
 	return 0;
 }
@@ -64,7 +70,18 @@ static int meson_mem_init(void)
 		return meson_gx_mem_init();
 	if (meson_is_g12())
 		return meson_g12_mem_init();
+	if (meson_is_a9())
+		return meson_a9_mem_init();
 
 	return 0;
 }
 mem_initcall(meson_mem_init);
+
+static int meson_postmem_init(void)
+{
+	if (meson_is_a9())
+		return meson_a9_reserve_init();
+
+	return 0;
+}
+postmem_initcall(meson_postmem_init);

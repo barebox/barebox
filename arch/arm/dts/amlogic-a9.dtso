@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/* The barebox additions to an A9 device tree, applied to any DT it boots with */
+
+/dts-v1/;
+/plugin/;
+
+#include "amlogic-a9-symbols-paths.h"
+
+/ {
+	compatible = "amlogic,a9";
+};
+
+/* The A9 device trees have no /chosen and no MMC controller nodes yet */
+&{/} {
+	chosen {
+		/* the console the firmware sets up, at its baud rate */
+		stdout-path = "serial0:921600n8";
+
+		barebox,bootsource-mmc0 = BASE_SUBPATH(apb, mmc@88000);
+		barebox,bootsource-mmc1 = BASE_SUBPATH(apb, mmc@8a000);
+		barebox,bootsource-mmc2 = BASE_SUBPATH(apb, mmc@8c000);
+	};
+};

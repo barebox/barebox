@@ -162,6 +162,14 @@ config DEBUG_MESON_G12_UART
 	  Say Y here if you want barebox low-level debugging support
 	  on the Amlogic Meson G12A, G12B and SM1 SoCs.
 
+config DEBUG_MESON_A9_UART
+	bool "Amlogic A9 UART_B"
+	depends on ARCH_MESON_A9
+	select DEBUG_MESON_UART
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on the Amlogic A9 SoCs, on the UART the firmware prints on.
+
 config DEBUG_VEXPRESS_UART
 	bool "Vexpress Debug UART"
 	depends on ARCH_VEXPRESS

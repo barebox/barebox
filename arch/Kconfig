@@ -39,7 +39,8 @@ config BOARD_GENERIC_DT_RAW_ENTRY
 	  Say y here to also support firmware that ignores the header and
 	  starts barebox at other addresses, like the GX/G12
 	  Amlogic vendor firmware. barebox then sets up its stack behind the
-	  image. Images loaded like a Linux kernel aren't affected.
+	  image and prefers an appended device tree. Images loaded like a
+	  Linux kernel aren't affected.
 
 config BOARD_GENERIC_FIT
 	depends on BOARD_GENERIC_DT

@@ -237,7 +237,8 @@ protocols:
   never puts it, or, if ``CONFIG_BOARD_GENERIC_DT_RAW_ENTRY`` is enabled, to the
   start of another RAM bank (detected by comparing the alignment of the image
   start with that of the address 0x80000 below it), it sets up its stack behind
-  the image instead of below it.
+  the image instead of below it and a device tree appended to the image takes
+  precedence over one passed in a register.
 
 The barebox build can also generate a FIT image combining ``barebox-dt-2nd.img``
 and all enabled device trees. This image requires python3 and python3-libfdt

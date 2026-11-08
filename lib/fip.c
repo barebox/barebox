@@ -277,12 +277,7 @@ int fip_parse(struct fip_state *fip,
 		return ret;
 	}
 
-	ret = fip_do_parse_buf(fip, buf, size, toc_header_out);
-
-	if (ret)
-		free(buf);
-
-	return ret;
+	return fip_do_parse_buf(fip, buf, size, toc_header_out);
 }
 
 static struct fip_image *fip_read_image_from_file(const uuid_t *uuid, const char *filename)

@@ -112,7 +112,7 @@ config MCI_MESON_GX
 	depends on ARCH_MESON || COMPILE_TEST
 	help
 	  Support for the SD/eMMC host controller of the Amlogic Meson GX,
-	  AXG, G12 and T7 SoCs.
+	  AXG, G12 and T7 SoCs and of the A9.
 
 config MCI_DW
 	bool "Synopsys DesignWare Memory Card Interface"

@@ -2263,6 +2263,33 @@ config CMD_MIPI_DBI
 		  -d DEVICE	select specific device (default is first registered)
 		  -w		issue write command
 
+config CMD_MIPI_DSI
+	bool
+	depends on DRIVER_VIDEO_MIPI_DSI
+	select PRINTF_HEXSTR
+	prompt "mipi_dsi command"
+	help
+	  read/write DCS registers of MIPI DSI devices
+
+	  Usage: mipi_dsi [-lvdinwgLH] [-c CH] [-p on|off] [CMD] [DATA...]
+
+	  Without CMD, dump the standard DCS registers.
+	  CMD and DATA bytes are given in hex.
+
+	  Options:
+		  -l		list all MIPI DSI devices
+		  -v		list with host, channel, lanes, format and mode flags
+		  -d DEVICE	select specific device (default is first registered)
+		  -i		read the panel identification registers
+		  -n LEN	number of bytes to read (default: known length, else 1)
+		  -w		issue write command
+		  -g		send generic packets: CMD and DATA are the payload,
+				reads take up to two bytes
+		  -p on|off	send Turn On or Shutdown Peripheral
+		  -c CH		use virtual channel CH (0-3)
+		  -L		send in low power mode
+		  -H		send in high speed mode
+
 config CMD_LED_TRIGGER
 	bool
 	depends on LED_TRIGGERS

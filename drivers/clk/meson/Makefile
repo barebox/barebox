@@ -11,3 +11,4 @@ obj-$(CONFIG_COMMON_CLK_MESON_VCLK) += vclk.o
 
 obj-$(CONFIG_COMMON_CLK_MESON_GXBB) += gxbb.o gxbb-aoclk.o
 obj-$(CONFIG_COMMON_CLK_MESON_G12A) += g12a-aoclk.o g12a.o
+obj-$(CONFIG_COMMON_CLK_MESON_A9) += a9-aoclk.o a9-peripherals.o

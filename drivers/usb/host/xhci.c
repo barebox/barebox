@@ -574,8 +574,8 @@ static int xhci_set_configuration(struct usb_device *udev)
 
 		ep_ctx[ep_index]->ep_info2 = cpu_to_le32(EP_TYPE(ep_type));
 		ep_ctx[ep_index]->ep_info2 |=
-			cpu_to_le32(MAX_PACKET
-			(get_unaligned(&endpt_desc->wMaxPacketSize)));
+			cpu_to_le32(MAX_PACKET(get_unaligned(&endpt_desc->wMaxPacketSize) &
+					       USB_ENDPOINT_MAXP_MASK));
 
 		/* Allow 3 retries for everything but isoc, set CErr = 3 */
 		if (!usb_endpoint_xfer_isoc(endpt_desc))

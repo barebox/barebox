@@ -25,6 +25,12 @@ int sound_card_beep_wait(struct sound_card *card, unsigned timeout_us);
 int sound_card_beep(struct sound_card *card, int freq, unsigned int us);
 int sound_card_beep_cancel(struct sound_card *card);
 
+#ifdef CONFIG_SOUND
+void sound_card_disable(struct sound_card *card);
+#else
+static inline void sound_card_disable(struct sound_card *card) {}
+#endif
+
 struct sound_card *sound_card_get_default(void);
 
 static inline int beep(int freq, unsigned us)

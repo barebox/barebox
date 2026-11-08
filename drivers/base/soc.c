@@ -98,6 +98,11 @@ out1:
 }
 EXPORT_SYMBOL_GPL(soc_device_register);
 
+struct device *soc_device_to_device(struct soc_device *soc_dev)
+{
+	return &soc_dev->dev;
+}
+
 /* Ensure soc_dev->attr is freed after calling soc_device_unregister. */
 void soc_device_unregister(struct soc_device *soc_dev)
 {

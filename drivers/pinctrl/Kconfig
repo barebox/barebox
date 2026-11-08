@@ -152,6 +152,7 @@ config PINCTRL_OCELOT
 	  with the same identifiers as Linux's drivers/pinctrl/pinctrl-ocelot.c
 	  so future Linux patches backport with minimal churn.
 
+source "drivers/pinctrl/meson/Kconfig"
 source "drivers/pinctrl/sunxi/Kconfig"
 endif
 

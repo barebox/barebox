@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menuconfig PINCTRL_MESON
+	bool "Amlogic SoC pinctrl drivers"
+	depends on ARCH_MESON || COMPILE_TEST
+	depends on OFDEVICE
+	default ARCH_MESON
+	select GENERIC_PINCONF
+	select GPIOLIB
+	select OF_GPIO
+	select HAVE_GPIO_PINCONF
+
+if PINCTRL_MESON
+
+config PINCTRL_MESON_AXG_PMX
+	bool
+
+config PINCTRL_MESON_G12A
+	bool "Meson g12a Soc pinctrl driver"
+	depends on ARM64 || COMPILE_TEST
+	select PINCTRL_MESON_AXG_PMX
+	default ARCH_MESON
+
+endif

@@ -288,6 +288,9 @@ obj-$(CONFIG_MACH_WOLFVISION_PF5) += rk3568-wolfvision-pf5-io-expander.dtbo.o \
 overlay-$(CONFIG_ARCH_STM32MP157) += stm32mp151.dtbo
 DTBO_BASE_stm32mp151 := stm32mp151-symbols
 
+overlay-$(CONFIG_ARCH_MESON_GX) += meson-gx.dtbo
+DTBO_BASE_meson-gx := meson-gx-symbols
+
 overlay-$(CONFIG_ARCH_MESON_G12) += meson-g12.dtbo
 DTBO_BASE_meson-g12 := meson-g12-symbols
 

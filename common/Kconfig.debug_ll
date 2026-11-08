@@ -146,6 +146,14 @@ config DEBUG_LAYERSCAPE_UART
 	  Say Y here if you want barebox low-level debugging support
 	  on NXP Layerscape SoCs.
 
+config DEBUG_MESON_GX_UART
+	bool "Amlogic Meson GX Always-On UART"
+	depends on ARCH_MESON_GX
+	select DEBUG_MESON_UART
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on the Amlogic Meson GXBB, GXL and GXM SoCs.
+
 config DEBUG_MESON_G12_UART
 	bool "Amlogic Meson G12 Always-On UART"
 	depends on ARCH_MESON_G12

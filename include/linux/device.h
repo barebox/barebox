@@ -21,8 +21,7 @@
 #define devm_kstrdup(...)		__devm_wrapper(kstrdup, __VA_ARGS__)
 #define devm_kstrdup_const(...)		__devm_wrapper(kstrdup_const, __VA_ARGS__)
 #define devm_kmemdup(...)		__devm_wrapper(kmemdup, __VA_ARGS__)
-#define devm_bitmap_zalloc(dev, nbits, gfp)	\
-	__devm_wrapper(bitmap_zalloc, dev, nbits)
+#define devm_bitmap_zalloc(...)		__devm_wrapper(bitmap_zalloc, __VA_ARGS__)
 
 #define device_register register_device
 #define device_unregister unregister_device

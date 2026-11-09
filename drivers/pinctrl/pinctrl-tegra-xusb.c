@@ -67,7 +67,7 @@ struct tegra_xusb_padctl {
 	struct reset_control *rst;
 
 	const struct tegra_xusb_padctl_soc *soc;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 
 	struct phy_provider *provider;
 	struct phy *phys[2];
@@ -283,7 +283,7 @@ static struct phy *tegra_xusb_padctl_xlate(struct device *dev,
 	return padctl->phys[index];
 }
 
-static int pinctrl_tegra_xusb_set_state(struct pinctrl_device *pdev,
+static int pinctrl_tegra_xusb_set_state(struct pinctrl_dev *pdev,
 					struct device_node *np)
 {
 	struct tegra_xusb_padctl *padctl =
@@ -361,7 +361,7 @@ static int pinctrl_tegra_xusb_set_state(struct pinctrl_device *pdev,
 	return 0;
 }
 
-static struct pinctrl_ops pinctrl_tegra_xusb_ops = {
+static const struct pinctrl_ops pinctrl_tegra_xusb_ops = {
 	.set_state = pinctrl_tegra_xusb_set_state,
 };
 

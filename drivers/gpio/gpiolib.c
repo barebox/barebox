@@ -8,6 +8,9 @@
 #include <gpio.h>
 #include <of_gpio.h>
 #include <linux/gpio/consumer.h>
+#include <linux/gpio/driver.h>
+#include <linux/pinctrl/consumer.h>
+#include <linux/pinctrl/pinctrl.h>
 #include <linux/pinctrl/pinconf-generic.h>
 #include <linux/overflow.h>
 #include <errno.h>
@@ -259,9 +262,7 @@ EXPORT_SYMBOL_GPL(gpiod_put_array);
 static int gpio_do_set_config(struct gpio_chip *gc, unsigned int offset,
 			      unsigned long config)
 {
-	if (!IS_ENABLED(CONFIG_GPIO_PINCONF))
-		return -ENOSYS;
-	if (!gc->ops->set_config)
+	if (!IS_ENABLED(CONFIG_GPIO_PINCONF) || !gc->ops->set_config)
 		return -ENOTSUPP;
 
 	return gc->ops->set_config(gc, offset, config);
@@ -317,6 +318,22 @@ void gpio_set_value(unsigned gpio, int value)
 }
 EXPORT_SYMBOL(gpio_set_value);
 
+static int gpio_set_open_drain_value_commit(struct gpio_desc *desc, bool value)
+{
+	if (value)
+		return gpiod_direction_input(desc);
+
+	return gpiod_direction_output_raw(desc, 0);
+}
+
+static int gpio_set_open_source_value_commit(struct gpio_desc *desc, bool value)
+{
+	if (value)
+		return gpiod_direction_output_raw(desc, 1);
+
+	return gpiod_direction_input(desc);
+}
+
 /**
  * gpiod_set_value() - assign a gpio's value
  * @desc: gpio whose value will be assigned
@@ -327,8 +344,22 @@ EXPORT_SYMBOL(gpio_set_value);
  */
 int gpiod_set_value(struct gpio_desc *desc, int value)
 {
+	int raw_value;
+
 	VALIDATE_DESC(desc);
-	return gpiod_set_raw_value(desc, gpio_adjust_value(desc, value));
+
+	raw_value = gpio_adjust_value(desc, value);
+
+	/* the emulation toggles the direction, so it needs both callbacks */
+	if (IS_ENABLED(CONFIG_GPIO_PINCONF) &&
+	    desc->chip->ops->direction_input && desc->chip->ops->direction_output) {
+		if (desc->flags & OF_GPIO_OPEN_DRAIN)
+			return gpio_set_open_drain_value_commit(desc, raw_value);
+		else if (desc->flags & OF_GPIO_SINGLE_ENDED)
+			return gpio_set_open_source_value_commit(desc, raw_value);
+	}
+
+	return gpiod_set_raw_value(desc, raw_value);
 }
 EXPORT_SYMBOL_GPL(gpiod_set_value);
 
@@ -511,25 +542,27 @@ static int gpio_set_bias(struct gpio_desc *desc)
  */
 int gpiod_direction_output(struct gpio_desc *desc, int value)
 {
-	int ret;
+	int raw_value, ret;
 
 	VALIDATE_DESC(desc);
 
+	raw_value = gpio_adjust_value(desc, value);
+
 	if (IS_ENABLED(CONFIG_GPIO_PINCONF)) {
-		if (desc->flags & (OF_GPIO_OPEN_DRAIN | OF_GPIO_SINGLE_ENDED)) {
+		if (desc->flags & OF_GPIO_OPEN_DRAIN) {
 			/* First see if we can enable open drain in hardware */
 			ret = gpio_set_config(desc, PIN_CONFIG_DRIVE_OPEN_DRAIN);
 			if (!ret)
 				goto set_output_value;
 			/* Emulate open drain by not actively driving the line high */
-			if (value)
+			if (raw_value)
 				return gpiod_direction_input(desc);
 		} else if (desc->flags & OF_GPIO_SINGLE_ENDED) {
 			ret = gpio_set_config(desc, PIN_CONFIG_DRIVE_OPEN_SOURCE);
 			if (!ret)
 				goto set_output_value;
 			/* Emulate open source by not actively driving the line low */
-			if (!value)
+			if (!raw_value)
 				return gpiod_direction_input(desc);
 		} else {
 			gpio_set_config(desc, PIN_CONFIG_DRIVE_PUSH_PULL);
@@ -541,7 +574,7 @@ set_output_value:
 			return ret;
 	}
 
-	return gpiod_direction_output_raw(desc, gpio_adjust_value(desc, value));
+	return gpiod_direction_output_raw(desc, raw_value);
 }
 
 int gpio_direction_active(unsigned gpio, bool value)
@@ -575,7 +608,7 @@ int gpiod_direction_input(struct gpio_desc *desc)
 
 	ret = desc->chip->ops->direction_input(desc->chip,
 					       gpiodesc_chip_offset(desc));
-	if (ret == 0 && IS_ENABLED(CONFIG_GPIO_PINCONF))
+	if (ret == 0)
 		ret = gpio_set_bias(desc);
 
 	return ret;
@@ -950,6 +983,100 @@ static int of_gpio_simple_xlate(struct gpio_chip *gc,
 	return gc->base + gpio;
 }
 
+static int of_gpiochip_add_pin_range(struct gpio_chip *chip)
+{
+	struct of_phandle_args pinspec;
+	struct pinctrl_dev *pctldev;
+	struct device_node *np;
+	int index = 0, ret;
+	int offset; /* Offset of the first GPIO line on the chip */
+	int pin; /* Pin base number in the range */
+	int count; /* Number of pins/GPIO lines to map */
+	int trim;
+
+	if (!IS_ENABLED(CONFIG_PINCTRL))
+		return 0;
+
+	np = dev_of_node(chip->dev);
+	if (!np)
+		return 0;
+
+	for (;; index++) {
+		/*
+		 * Ordinary phandles contain 2-3 cells:
+		 * gpios = <&gpio [instance] offset flags>;
+		 * Ranges always contain one more cell:
+		 * gpio-ranges <&pinctrl [gpio_instance] gpio_offet pin_offet count>;
+		 * This is why we parse chip->of_gpio_n_cells + 1 cells
+		 */
+		ret = __of_parse_phandle_with_args(np, "gpio-ranges", NULL,
+						   chip->of_gpio_n_cells + 1,
+						   index, &pinspec);
+		if (ret)
+			break;
+
+		/*
+		 * Unlike Linux, skip a pin controller that isn't registered
+		 * yet, only pinctrl_gpio_*() users need the range.
+		 */
+		pctldev = of_pinctrl_get(pinspec.np);
+		if (!pctldev) {
+			of_device_ensure_probed(pinspec.np);
+			pctldev = of_pinctrl_get(pinspec.np);
+		}
+		if (!pctldev) {
+			dev_dbg(chip->dev, "%pOF: no pin controller for gpio-ranges[%d]\n",
+				np, index);
+			continue;
+		}
+
+		if (chip->of_gpio_n_cells == 3) {
+			/* First cell is the gpiochip instance number */
+			offset = pinspec.args[1];
+			pin = pinspec.args[2];
+			count = pinspec.args[3];
+		} else {
+			offset = pinspec.args[0];
+			pin = pinspec.args[1];
+			count = pinspec.args[2];
+		}
+
+		if (!count) {
+			dev_warn(chip->dev, "%pOF: GPIO group ranges are not supported\n",
+				 np);
+			continue;
+		}
+
+		/* Ignore ranges outside of this GPIO chip */
+		if (offset >= (chip->gpio_offset + chip->ngpio))
+			continue;
+		if (offset + count <= chip->gpio_offset)
+			continue;
+
+		/* Trim the range to fit this GPIO chip */
+		if (chip->gpio_offset > offset) {
+			trim = chip->gpio_offset - offset;
+			count -= trim;
+			pin += trim;
+			offset = 0;
+		} else {
+			offset -= chip->gpio_offset;
+		}
+		if ((offset + count) > chip->ngpio)
+			count = chip->ngpio - offset;
+
+		ret = gpiochip_add_pin_range(chip,
+				pinctrl_dev_get_devname(pctldev),
+				offset,
+				pin,
+				count);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
 static int of_gpiochip_add(struct gpio_chip *chip)
 {
 	struct device_node *np;
@@ -972,6 +1099,10 @@ static int of_gpiochip_add(struct gpio_chip *chip)
 
 	if (chip->of_gpio_n_cells > MAX_PHANDLE_ARGS)
 		return -EINVAL;
+
+	ret = of_gpiochip_add_pin_range(chip);
+	if (ret)
+		return ret;
 
 	ret = of_gpiochip_set_names(chip);
 	if (ret)
@@ -1253,7 +1384,7 @@ EXPORT_SYMBOL_GPL(gpiod_set_consumer_name);
 
 int gpiochip_add(struct gpio_chip *chip)
 {
-	int i;
+	int i, ret;
 
 	if (chip->base >= 0) {
 		for (i = 0; i < chip->ngpio; i++) {
@@ -1267,19 +1398,157 @@ int gpiochip_add(struct gpio_chip *chip)
 	}
 
 	slice_init(&chip->slice, dev_name(chip->dev));
+	INIT_LIST_HEAD(&chip->pin_ranges);
 
 	list_add_tail(&chip->list, &chip_list);
 
 	for (i = chip->base; i < chip->base + chip->ngpio; i++)
 		gpio_desc[i].chip = chip;
 
-	return of_gpiochip_add(chip);
+	ret = of_gpiochip_add(chip);
+	if (ret) {
+		for (i = chip->base; i < chip->base + chip->ngpio; i++) {
+			/* releases the hogs requested so far */
+			gpiodesc_free(&gpio_desc[i]);
+			gpio_desc[i].name = NULL;
+			gpio_desc[i].chip = NULL;
+		}
+		gpiochip_remove_pin_ranges(chip);
+		list_del(&chip->list);
+		slice_exit(&chip->slice);
+		return ret;
+	}
+
+	return 0;
 }
 
 void gpiochip_remove(struct gpio_chip *chip)
 {
+	gpiochip_remove_pin_ranges(chip);
 	list_del(&chip->list);
 }
+
+#ifdef CONFIG_PINCTRL
+
+/**
+ * gpiochip_add_pin_range() - add a range for GPIO <-> pin mapping
+ * @gc: the gpiochip to add the range for
+ * @pinctl_name: the dev_name() of the pin controller to map to
+ * @gpio_offset: the start offset in the current gpio_chip number space
+ * @pin_offset: the start offset in the pin controller number space
+ * @npins: the number of pins from the offset of each pin space (GPIO and
+ *	pin controller) to accumulate in this range
+ *
+ * Calling this function directly from a DeviceTree-supported
+ * pinctrl driver is DEPRECATED. Please see Section 2.1 of
+ * Documentation/devicetree/bindings/gpio/gpio.txt on how to
+ * bind pinctrl and gpio drivers via the "gpio-ranges" property.
+ *
+ * Returns:
+ * 0 on success, or a negative errno on failure.
+ */
+int gpiochip_add_pin_range(struct gpio_chip *gc, const char *pinctl_name,
+			   unsigned int gpio_offset, unsigned int pin_offset,
+			   unsigned int npins)
+{
+	struct gpio_pin_range *pin_range;
+	int ret;
+
+	pin_range = xzalloc(sizeof(*pin_range));
+
+	/* Use local offset as range ID */
+	pin_range->range.id = gpio_offset;
+	pin_range->range.gc = gc;
+	pin_range->range.name = dev_name(gc->dev);
+	pin_range->range.base = gc->base + gpio_offset;
+	pin_range->range.pin_base = pin_offset;
+	pin_range->range.npins = npins;
+	pin_range->pctldev = pinctrl_find_and_add_gpio_range(pinctl_name,
+			&pin_range->range);
+	if (IS_ERR(pin_range->pctldev)) {
+		ret = PTR_ERR(pin_range->pctldev);
+		dev_err(gc->dev, "could not create pin range\n");
+		free(pin_range);
+		return ret;
+	}
+	dev_dbg(gc->dev, "created GPIO range %d->%d ==> %s PIN %d->%d\n",
+		gpio_offset, gpio_offset + npins - 1, pinctl_name,
+		pin_offset, pin_offset + npins - 1);
+
+	list_add_tail(&pin_range->node, &gc->pin_ranges);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(gpiochip_add_pin_range);
+
+/**
+ * gpiochip_remove_pin_ranges() - remove all the GPIO <-> pin mappings
+ * @gc: the chip to remove all the mappings for
+ */
+void gpiochip_remove_pin_ranges(struct gpio_chip *gc)
+{
+	struct gpio_pin_range *pin_range, *tmp;
+
+	list_for_each_entry_safe(pin_range, tmp, &gc->pin_ranges, node) {
+		list_del(&pin_range->node);
+		pinctrl_remove_gpio_range(pin_range->pctldev,
+				&pin_range->range);
+		free(pin_range);
+	}
+}
+EXPORT_SYMBOL_GPL(gpiochip_remove_pin_ranges);
+
+#endif /* CONFIG_PINCTRL */
+
+/**
+ * gpiochip_generic_request() - request the gpio function for a pin
+ * @gc: the gpiochip owning the GPIO
+ * @offset: the offset of the GPIO to request for GPIO function
+ *
+ * Returns:
+ * 0 on success, or negative errno on failure.
+ */
+int gpiochip_generic_request(struct gpio_chip *gc, unsigned int offset)
+{
+	if (list_empty(&gc->pin_ranges))
+		return 0;
+
+	return pinctrl_gpio_request(gc, offset);
+}
+EXPORT_SYMBOL_GPL(gpiochip_generic_request);
+
+/**
+ * gpiochip_generic_free() - free the gpio function from a pin
+ * @gc: the gpiochip to request the gpio function for
+ * @offset: the offset of the GPIO to free from GPIO function
+ */
+void gpiochip_generic_free(struct gpio_chip *gc, unsigned int offset)
+{
+	if (list_empty(&gc->pin_ranges))
+		return;
+
+	pinctrl_gpio_free(gc, offset);
+}
+EXPORT_SYMBOL_GPL(gpiochip_generic_free);
+
+/**
+ * gpiochip_generic_config() - apply configuration for a pin
+ * @gc: the gpiochip owning the GPIO
+ * @offset: the offset of the GPIO to apply the configuration
+ * @config: the configuration to be applied
+ *
+ * Returns:
+ * 0 on success, or negative errno on failure.
+ */
+int gpiochip_generic_config(struct gpio_chip *gc, unsigned int offset,
+			    unsigned long config)
+{
+	if (list_empty(&gc->pin_ranges))
+		return -ENOTSUPP;
+
+	return pinctrl_gpio_set_config(gc, offset, config);
+}
+EXPORT_SYMBOL_GPL(gpiochip_generic_config);
 
 struct gpio_chip *gpio_get_chip_by_dev(struct device *dev)
 {

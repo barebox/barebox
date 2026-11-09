@@ -240,7 +240,7 @@ impl BitmapVec {
         }
         let nbits_u32 = u32::try_from(nbits).unwrap();
         // SAFETY: `BITS_PER_LONG < nbits` and `nbits <= i32::MAX`.
-        let ptr = unsafe { bindings::bitmap_zalloc(nbits_u32) };
+        let ptr = unsafe { bindings::bitmap_zalloc(nbits_u32, 0) };
         let ptr = NonNull::new(ptr).ok_or(AllocError)?;
         // INVARIANT: `ptr` returned by C `bitmap_zalloc` and `nbits` checked.
         Ok(BitmapVec {

@@ -1316,6 +1316,41 @@ int of_property_read_string(struct device_node *np, const char *propname,
 EXPORT_SYMBOL_GPL(of_property_read_string);
 
 /**
+ * of_property_match_property_string - find a property's string in an array
+ * @np: pointer to node containing string property
+ * @propname: string property name
+ * @array: array of strings to match the property value against
+ * @n: number of strings in the array
+ *
+ * Read a string property and look it up in an array of strings, like
+ * Linux' fwnode_property_match_property_string().
+ *
+ * Return: the index of the matching string in @array on success,
+ * -EINVAL if the property does not exist, -ENODATA if property does not
+ * have a value, -EILSEQ if the string is not null-terminated and
+ * -ENOENT if the value is not in @array.
+ */
+int of_property_match_property_string(const struct device_node *np,
+				      const char *propname,
+				      const char * const *array, size_t n)
+{
+	const char *string;
+	int ret;
+
+	ret = of_property_read_string((struct device_node *)np, propname,
+				      &string);
+	if (ret)
+		return ret;
+
+	ret = match_string(array, n, string);
+	if (ret < 0)
+		ret = -ENOENT;
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(of_property_match_property_string);
+
+/**
  * of_property_match_string() - Find string in a list and return index
  * @np: pointer to node containing string list property
  * @propname: string list property name
@@ -2274,6 +2309,9 @@ EXPORT_SYMBOL(of_get_parent);
 struct device_node *of_get_next_available_child(const struct device_node *node,
 	struct device_node *prev)
 {
+	if (!node)
+		return NULL;
+
 	prev = list_prepare_entry(prev, &node->children, parent_list);
 	list_for_each_entry_continue(prev, &node->children, parent_list)
 		if (of_device_is_available(prev))
@@ -2294,6 +2332,9 @@ struct device_node *of_get_next_child(const struct device_node *node,
 {
 	if (prev)
 		node = prev->parent;
+
+	if (!node)
+		return NULL;
 
 	prev = list_prepare_entry(prev, &node->children, parent_list);
 	list_for_each_entry_continue(prev, &node->children, parent_list)

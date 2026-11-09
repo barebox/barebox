@@ -14,7 +14,7 @@
 
 struct pinctrl_single {
 	void __iomem *base;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 	unsigned (*read)(void __iomem *reg);
 	void (*write)(unsigned val, void __iomem *reg);
 	unsigned int width;
@@ -57,7 +57,7 @@ static void __maybe_unused pcs_writel(unsigned val, void __iomem *reg)
 	writel(val, reg);
 }
 
-static int pcs_set_state(struct pinctrl_device *pdev, struct device_node *np)
+static int pcs_set_state(struct pinctrl_dev *pdev, struct device_node *np)
 {
 	struct pinctrl_single *pcs = container_of(pdev, struct pinctrl_single, pinctrl);
 	unsigned size = 0, index = 0;
@@ -114,7 +114,7 @@ static int pcs_set_state(struct pinctrl_device *pdev, struct device_node *np)
 	return 0;
 }
 
-static struct pinctrl_ops pcs_ops = {
+static const struct pinctrl_ops pcs_ops = {
 	.set_state = pcs_set_state,
 };
 

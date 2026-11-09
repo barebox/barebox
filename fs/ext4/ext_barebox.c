@@ -322,6 +322,7 @@ static int ext_probe(struct device *dev)
 
 	if (!S_ISDIR(inode->i_mode)) {
 		dev_err(dev, "root inode is not a directory\n");
+		iput(inode);
 		ret = -EINVAL;
 		goto err_umount;
 	}

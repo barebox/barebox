@@ -107,7 +107,6 @@ config SOC_SAMA5D2
 config SOC_SAMA5D3
 	bool
 	select SOC_SAMA5
-	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
 	select HAVE_AT91_SMD
 	select HAVE_AT91_USB_CLK

@@ -31,6 +31,7 @@
 #include <efi/payload/driver.h>
 #include <efi/error.h>
 #include <efi/initrd.h>
+#include <efi/bootargs.h>
 
 #include "image.h"
 
@@ -166,6 +167,7 @@ static int do_bootm_efi_stub(struct image_data *data)
 	bool image_freed = false;
 	efi_handle_t handle = NULL; /* silence compiler warning */
 	enum filetype type;
+	char *options;
 	int ret;
 
 	ret = efi_load_os(data, &loaded_image, &handle);
@@ -185,7 +187,11 @@ static int do_bootm_efi_stub(struct image_data *data)
 	if (data->dryrun)
 		goto unload_ramdisk;
 
-	ret = efi_execute_image(handle, loaded_image, type);
+	options = efi_bootargs_get(filetype_is_linux_efi_image(type));
+
+	ret = efi_execute_image(handle, loaded_image, true, type, options);
+
+	free(options);
 
 	/* efi_execute_image takes care to unload the image on error,
 	 * so we set image_freed and fall through to freeing ramdisk
@@ -212,6 +218,7 @@ static int efi_app_execute(struct image_data *data)
 	struct efi_loaded_image *loaded_image;
 	efi_handle_t handle;
 	enum filetype type;
+	char *options;
 	int ret;
 
 	ret = efi_load_image(data->os_file, &loaded_image, &handle);
@@ -220,7 +227,18 @@ static int efi_app_execute(struct image_data *data)
 
 	type = file_detect_type(loaded_image->image_base, PAGE_SIZE);
 
-	return efi_execute_image(handle, loaded_image, type);
+	if (data->dryrun) {
+		BS->unload_image(handle);
+		return 0;
+	}
+
+	options = efi_bootargs_get(filetype_is_linux_efi_image(type));
+
+	ret = efi_execute_image(handle, loaded_image, true, type, options);
+
+	free(options);
+
+	return ret;
 }
 
 static int linux_efi_handover = true;
@@ -258,12 +276,19 @@ static struct image_handler efi_arm64_handle_tr = {
 	.filetype = filetype_arm64_efi_linux_image,
 };
 
+static struct image_handler efi_zboot_handle_tr = {
+	.name = "EFI zboot Linux kernel",
+	.bootm = do_bootm_efi_stub,
+	.filetype = filetype_zboot_efi_linux_image,
+};
+
 BAREBOX_MAGICVAR(global.linux.efi.handover,
 		 "Use legacy x86 handover protocol instead of StartImage BootService");
 
 static int efi_register_bootm_handler(void)
 {
 	register_image_handler(&efi_app_handle_tr);
+	register_image_handler(&efi_zboot_handle_tr);
 
 	if (IS_ENABLED(CONFIG_X86)) {
 		if (IS_ENABLED(CONFIG_EFI_HANDOVER_PROTOCOL))

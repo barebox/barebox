@@ -73,6 +73,7 @@ enum filetype {
 	filetype_x86_linux_image,
 	filetype_x86_efi_linux_image,
 	filetype_pxa_ntim,
+	filetype_zboot_efi_linux_image,
 	filetype_max,
 };
 
@@ -180,6 +181,13 @@ static inline bool is_barebox_riscv_head(const void *header)
 {
 	return le32_to_cpup(header + 56) == 0x56435352 &&
 	       !memcmp(header + 48, "barebox", 8);
+}
+
+/* "zimg" image type and LINUX_PE_MAGIC, see Linux zboot-header.S */
+static inline bool is_zboot_efi_linux_image(const void *header)
+{
+	return !memcmp(header + 4, "zimg", 4) &&
+	       le32_to_cpup(header + 56) == 0x818223cd;
 }
 
 static inline bool is_x86_linux_bootimage(const void *header)

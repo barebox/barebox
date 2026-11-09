@@ -17,12 +17,10 @@ static int linux_bootargs_overwritten;
 /*
  * This returns the Linux bootargs
  *
- * There are two ways to handle bootargs. The old legacy way is to use the
- * 'bootargs' environment variable. The new and more flexible way is to use
- * global variables beginning with "global.linux.bootargs." and
- * "global.linux.mtdparts.". These variables will be concatenated together to
- * the resulting bootargs. If there are no "global.linux.bootargs." variables
- * we fall back to "bootargs"
+ * The bootargs are concatenated from the global variables beginning with
+ * "global.linux.bootargs.", "global.linux.mtdparts." and
+ * "global.linux.blkdevparts.". The legacy 'bootargs' environment variable
+ * is only used by the CONFIG_FLEXIBLE_BOOTARGS=n stub in <bootargs.h>.
  */
 const char *linux_bootargs_get(void)
 {
@@ -32,20 +30,12 @@ const char *linux_bootargs_get(void)
 		return linux_bootargs;
 
 	free(linux_bootargs);
-	linux_bootargs = NULL;
-
-	bootargs = globalvar_get_match("linux.bootargs.", " ");
-	if (!strlen(bootargs)) {
-		free(bootargs);
-		return getenv("bootargs");
-	}
-
-	linux_bootargs = bootargs;
+	linux_bootargs = globalvar_get_match("linux.bootargs.", " ");
 
 	parts = globalvar_get_match("linux.mtdparts.", ";");
 	if (strlen(parts)) {
-		bootargs = basprintf("%s mtdparts=%s", linux_bootargs,
-				       parts);
+		bootargs = basprintf("%s%smtdparts=%s", linux_bootargs,
+				     *linux_bootargs ? " " : "", parts);
 		free(linux_bootargs);
 		linux_bootargs = bootargs;
 	}
@@ -54,13 +44,18 @@ const char *linux_bootargs_get(void)
 
 	parts = globalvar_get_match("linux.blkdevparts.", ";");
 	if (strlen(parts)) {
-		bootargs = basprintf("%s blkdevparts=%s", linux_bootargs,
-				       parts);
+		bootargs = basprintf("%s%sblkdevparts=%s", linux_bootargs,
+				     *linux_bootargs ? " " : "", parts);
 		free(linux_bootargs);
 		linux_bootargs = bootargs;
 	}
 
 	free(parts);
+
+	if (!*linux_bootargs) {
+		free(linux_bootargs);
+		linux_bootargs = NULL;
+	}
 
 	return linux_bootargs;
 }

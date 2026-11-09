@@ -153,3 +153,29 @@ def test_barebox_test_var_exists(barebox, barebox_config):
 
     # Clean up
     barebox.run_check('rm /tmp/testvars')
+
+
+def test_boot_bootargs_dyn_cleared(barebox, barebox_config):
+    skip_disabled(barebox_config, "CONFIG_CMD_BOOT", "CONFIG_CMD_GLOBAL",
+                  "CONFIG_CMD_ECHO")
+
+    barebox.run_check("echo -o /env/boot/dyntest '#!/bin/sh'")
+    barebox.run_check("echo -a /env/boot/dyntest "
+                      "'global linux.bootargs.dyn.test=linux-dyn'")
+    barebox.run_check("echo -a /env/boot/dyntest "
+                      "'global efi.bootargs.dyn.test=efi-dyn'")
+    barebox.run_check("echo -a /env/boot/dyntest "
+                      "'global efi.bootargs.nodyntest=efi-static'")
+
+    # Run the script, but don't actually boot anything
+    barebox.run("boot -d -d dyntest")
+
+    # .dyn. variables must not leak into subsequent boot entries
+    assert barebox.run_check("echo ${global.linux.bootargs.dyn.test}") == [""]
+    assert barebox.run_check("echo ${global.efi.bootargs.dyn.test}") == [""]
+    # ... but other variables are left alone
+    assert barebox.run_check("echo ${global.efi.bootargs.nodyntest}") == \
+        ["efi-static"]
+
+    barebox.run_check("global -r efi.bootargs.nodyntest")
+    barebox.run_check("rm /env/boot/dyntest")

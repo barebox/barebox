@@ -567,8 +567,6 @@ static void abort_td(struct usb_device *udev, int ep_index)
 		field = le32_to_cpu(event->trans_event.flags);
 		BUG_ON(TRB_TO_SLOT_ID(field) != udev->slot_id);
 		BUG_ON(TRB_TO_EP_INDEX(field) != ep_index);
-		BUG_ON(GET_COMP_CODE(le32_to_cpu(event->trans_event.transfer_len
-			!= COMP_STOP)));
 		xhci_acknowledge_event(ctrl);
 
 		event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);

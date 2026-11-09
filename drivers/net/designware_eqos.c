@@ -317,6 +317,10 @@ void eqos_adjust_link(struct eth_device *edev)
 	struct eqos *eqos = edev->priv;
 	unsigned speed = edev->phydev->speed;
 
+	/* Like Linux, leave the MAC alone while the link is down */
+	if (!edev->phydev->link)
+		return;
+
 	if (edev->phydev->duplex)
 		eqos_set_full_duplex(eqos);
 	else

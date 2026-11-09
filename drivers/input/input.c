@@ -128,7 +128,7 @@ static void input_console_repeat(void *ctx)
 {
 	struct input_console *ic = ctx;
 
-	if (ic->current_key) {
+	if (ic->current_key && (ic->console.f_active & CONSOLE_STDIN)) {
 		kfifo_putc(ic->fifo, ic->current_key);
 		poller_call_async(&ic->poller, 40 * MSECOND,
 				  input_console_repeat, ic);
@@ -196,6 +196,9 @@ static void input_console_notify(struct input_notifier *in,
 	pr_debug("map %02x KEY: 0x%04x code: %d\n", modstate, ascii, ev->code);
 
 	if (ev->value) {
+		if (!(ic->console.f_active & CONSOLE_STDIN))
+			return;
+
 		kfifo_putc(ic->fifo, ascii);
 		ic->current_key = ascii;
 		poller_call_async(&ic->poller, 400 * MSECOND,

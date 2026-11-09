@@ -1,0 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+#include <arm/nxp/imx/imx6dl-skov-revc-lt2.dts>
+#include "imx6qdl-qemu.dtsi"

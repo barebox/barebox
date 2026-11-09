@@ -24,7 +24,7 @@
 #include <of_address.h>
 #include <linux/ctype.h>
 #include <init.h>
-#include <asm/barebox-arm.h>
+#include <pbl/layout.h>
 
 #include "internal.h"
 #include "ram_internal.h"
@@ -964,7 +964,7 @@ static void __init ramoops_register_dummy(void)
 
 	memset(&pdata, 0, sizeof(pdata));
 	pdata.mem_size = mem_size;
-	pdata.mem_address = arm_mem_ramoops_get();
+	pdata.mem_address = barebox_layout.ramoops.start;
 	pdata.mem_type = mem_type;
 	pdata.record_size = record_size;
 	pdata.console_size = ramoops_console_size;

@@ -11,6 +11,7 @@
 #include <malloc.h>
 #include <linux/math64.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/err.h>
 
 #include <mach/tegra/iomap.h>
@@ -332,28 +333,36 @@ static int _calc_rate(struct clk_hw *hw, struct tegra_clk_pll_freq_table *cfg,
 	return 0;
 }
 
-static long clk_pll_round_rate(struct clk_hw *hw, unsigned long rate,
-			unsigned long *prate)
+static int clk_pll_determine_rate(struct clk_hw *hw,
+				  struct clk_rate_request *req)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	struct tegra_clk_pll_freq_table cfg;
-	u64 output_rate = *prate;
+	u64 output_rate = req->best_parent_rate;
 
-	if (pll->flags & TEGRA_PLL_FIXED)
-		return pll->fixed_rate;
+	if (pll->flags & TEGRA_PLL_FIXED) {
+		req->rate = pll->fixed_rate;
+
+		return 0;
+	}
 
 	/* PLLM is used for memory; we do not change rate */
-	if (pll->flags & TEGRA_PLLM)
-		return clk_get_rate(clk_hw_to_clk(hw));
+	if (pll->flags & TEGRA_PLLM) {
+		req->rate = clk_hw_get_rate(hw);
 
-	if (_get_table_rate(hw, &cfg, rate, *prate) &&
-	    _calc_rate(hw, &cfg, rate, *prate))
+		return 0;
+	}
+
+	if (_get_table_rate(hw, &cfg, req->rate, req->best_parent_rate) &&
+	    _calc_rate(hw, &cfg, req->rate, req->best_parent_rate))
 		return -EINVAL;
 
 	output_rate *= cfg.n;
 	do_div(output_rate, cfg.m * cfg.p);
 
-	return output_rate;
+	req->rate = output_rate;
+
+	return 0;
 }
 
 static int _program_pll(struct clk_hw *hw, struct tegra_clk_pll_freq_table *cfg,
@@ -428,7 +437,7 @@ const struct clk_ops tegra_clk_pll_ops = {
 	.enable = clk_pll_enable,
 	.disable = clk_pll_disable,
 	.recalc_rate = clk_pll_recalc_rate,
-	.round_rate = clk_pll_round_rate,
+	.determine_rate = clk_pll_determine_rate,
 	.set_rate = clk_pll_set_rate,
 };
 

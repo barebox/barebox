@@ -6,6 +6,7 @@
 #include <common.h>
 #include <linux/err.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/math64.h>
 #include <malloc.h>
 
@@ -174,29 +175,32 @@ static unsigned long clk_di_recalc_rate(struct clk_hw *hw,
 	return outrate;
 }
 
-static long clk_di_round_rate(struct clk_hw *hw, unsigned long rate,
-				unsigned long *prate)
+static int clk_di_determine_rate(struct clk_hw *hw,
+				 struct clk_rate_request *req)
 {
 	struct clk *clk = clk_hw_to_clk(hw);
 	struct ipu_di *di = container_of(clk, struct ipu_di, clk_di_pixel);
+	unsigned long prate = req->best_parent_rate;
 	unsigned long outrate;
 	int div;
 	u32 val;
 
-	div = ipu_di_clk_calc_div(*prate, rate);
+	div = ipu_di_clk_calc_div(prate, req->rate);
 
-	outrate = (*prate / div) * 16;
+	outrate = (prate / div) * 16;
 
 	val = ipu_di_read(di, DI_GENERAL);
 
-	if (!(val & DI_GEN_DI_CLK_EXT) && outrate > *prate / 2)
-		outrate = *prate / 2;
+	if (!(val & DI_GEN_DI_CLK_EXT) && outrate > prate / 2)
+		outrate = prate / 2;
 
 	dev_dbg(di->ipu->dev,
 		"%s: inrate: %ld div: 0x%08x outrate: %ld wanted: %ld\n",
-			__func__, *prate, div, outrate, rate);
+			__func__, prate, div, outrate, req->rate);
 
-	return outrate;
+	req->rate = outrate;
+
+	return 0;
 }
 
 static int clk_di_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -248,7 +252,7 @@ static int clk_di_set_parent(struct clk_hw *hw, u8 index)
 }
 
 static struct clk_ops clk_di_ops = {
-	.round_rate = clk_di_round_rate,
+	.determine_rate = clk_di_determine_rate,
 	.set_rate = clk_di_set_rate,
 	.recalc_rate = clk_di_recalc_rate,
 	.set_parent = clk_di_set_parent,

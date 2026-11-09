@@ -47,6 +47,10 @@ SECTIONS
 
 	.data : { *(.data*) }
 
+	. = ALIGN(ASM_SZPTR);
+	.got : { *(.got) *(.got.plt) }
+	.dynamic : { *(.dynamic) }
+
 	__shasum_start = .;
 	.shasum : {
 		KEEP(*(.shasum))
@@ -84,7 +88,7 @@ SECTIONS
 
 	pbl_image_size =  .;
 
-	_barebox_image_size = __image_end;
+	_barebox_image_size = ABSOLUTE(__image_end - __image_start);
 	_barebox_pbl_size = __bss_start;
 
 	ASSERT(_stext == __image_start, "PBL entry code must be at the image start")

@@ -1134,6 +1134,24 @@ void of_clk_del_provider(struct device_node *np)
 }
 EXPORT_SYMBOL_GPL(of_clk_del_provider);
 
+/**
+ * of_clk_provider_registered() - Check whether a clock provider is registered
+ * @np: Device node pointer to look up
+ *
+ * Return: true if a clock provider was registered for @np
+ */
+bool of_clk_provider_registered(const struct device_node *np)
+{
+	struct of_clk_provider *cp;
+
+	list_for_each_entry(cp, &of_clk_providers, link) {
+		if (cp->node == np)
+			return true;
+	}
+
+	return false;
+}
+
 struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec)
 {
 	struct of_clk_provider *provider;

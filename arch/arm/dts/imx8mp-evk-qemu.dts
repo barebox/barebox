@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+#include "imx8mp-evk.dts"
+
+/* QEMU models neither the DDR controller nor eMMC, PMIC and GPIO expander */
+/delete-node/ &{/chosen/environment-emmc};
+
+&edacmc {
+	status = "disabled";
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+&pca6416 {
+	status = "disabled";
+};
+
+&reg_per_12v {
+	status = "disabled";
+};

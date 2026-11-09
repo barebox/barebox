@@ -169,6 +169,18 @@ lwl-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += imx6dl-hummingboard.dtb.o imx6q-hummingb
 				imx6q-h100.dtb.o
 lwl-$(CONFIG_MACH_SKOV_IMX6) += imx6s-skov-imx6.dtb.o imx6dl-skov-imx6.dtb.o imx6q-skov-imx6.dtb.o
 lwl-$(CONFIG_MACH_SKOV_IMX8MP) += imx8mp-skov.dtb.o
+dtb-$(CONFIG_MACH_SKOV_IMX6) += imx6q-skov-revc-lt2-qemu.dtb imx6q-skov-revc-lt6-qemu.dtb \
+				imx6q-skov-reve-mi1010ait-1cp1-qemu.dtb \
+				imx6dl-skov-revc-lt2-qemu.dtb imx6dl-skov-revc-lt6-qemu.dtb \
+				imx6q-skov-imx6-revc-lt6-qemu.dtb \
+				imx6q-skov-imx6-reve-mi1010ait-1cp1-qemu.dtb \
+				imx6s-skov-imx6-revc-lt2-qemu.dtb
+dtb-$(CONFIG_MACH_SKOV_IMX8MP) += imx8mp-skov-basic-qemu.dtb \
+				imx8mp-skov-revb-hdmi-qemu.dtb imx8mp-skov-revb-lt6-qemu.dtb \
+				imx8mp-skov-revb-mi1010ait-1cp1-qemu.dtb \
+				imx8mp-skov-revc-bd500-qemu.dtb imx8mp-skov-revc-hdmi-qemu.dtb \
+				imx8mp-skov-revc-jutouch-jt101tm023-qemu.dtb \
+				imx8mp-skov-revc-tian-g07017-qemu.dtb
 lwl-$(CONFIG_MACH_SKOV_ARM9CPU) += at91-skov-arm9cpu.dtb.o
 lwl-$(CONFIG_MACH_SEEED_ODYSSEY) += stm32mp157c-odyssey.dtb.o
 lwl-$(CONFIG_MACH_STM32MP15XX_DKX) += stm32mp157c-dk2.dtb.o stm32mp157a-dk1.dtb.o \
@@ -187,6 +199,7 @@ lwl-$(CONFIG_MACH_NXP_IMX6ULL_EVK) += imx6ull-14x14-evk.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX8MM_EVK) += imx8mm-evk.dtb.o imx8mm-evkb.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX8MN_EVK) += imx8mn-evk.dtb.o imx8mn-ddr4-evk.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX8MP_EVK) += imx8mp-evk.dtb.o
+dtb-$(CONFIG_MACH_NXP_IMX8MP_EVK) += imx8mp-evk-qemu.dtb
 lwl-$(CONFIG_MACH_NXP_IMX8MP_FRDM) += imx8mp-frdm.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += imx8mq-evk.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX93_FRDM) += imx93-frdm.dtb.o

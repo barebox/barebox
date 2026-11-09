@@ -155,6 +155,10 @@ configuration and that labgrid is available. If barebox has been
 built out-of-tree, the build directory must be pointed at by
 ``LG_BUILDDIR``, ``KBUILD_OUTPUT`` or a ``build`` symlink.
 
+Environment files can refer to build artifacts with
+``!template "$LG_BUILDDIR/..."`` and to files in the source tree,
+e.g. test data, with ``$LG_SRCDIR``.
+
 Additional QEMU command-line options can be added by specifying
 them after ``--qemu``::
 
@@ -184,6 +188,55 @@ For testing, the QEMU fw_cfg and virtfs support is particularly useful::
      --fs host=.
 
 For a complete listing of possible options run ``pytest --help``.
+
+Environments can restrict the tests they run with the ``tests`` option::
+
+  targets:
+    main:
+      options:
+        tests:
+          - test_shell.py
+          - test_fit.py::test_fit
+
+Commands to run after every boot can be listed in ``init_commands``.
+Unlike ``--env``, this doesn't need QEMU fw_cfg::
+
+  targets:
+    main:
+      drivers:
+        BareboxTestStrategy:
+          init_commands:
+            - fb0.enable=1
+
+Registers that QEMU emulates differently than the board, e.g. the SoC
+revision, can be overridden via qtest with ``qemu_writel``::
+
+  targets:
+    main:
+      drivers:
+        BareboxTestStrategy:
+          qemu_writel: {0x020c8260: 0x00630002}
+
+``test_clk.py`` runs ``clk_assigned_check`` on every target. Clocks
+that QEMU doesn't model correctly can be ignored via the ``clk_tests``
+key of the target::
+
+  targets:
+    main:
+      clk_tests:
+        assigned_check:
+          ignore: [sp810_0_0]
+
+If ``dump`` has a ``clk_dump -j`` ``reference``, e.g. from the real
+board, every clock enabled in it must have the same rate and parent in
+barebox, unless listed in ``ignore``::
+
+  targets:
+    main:
+      clk_tests:
+        dump:
+          reference: !template "$LG_SRCDIR/test/testdata/skov/imx6q-skov-imx6-revc-lt6.json"
+          ignore: [2400000.ipu@2400000.of_di0_pixel]
 
 The barebox-ci container already ships with labgrid and pytest.
 

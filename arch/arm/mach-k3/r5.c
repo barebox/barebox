@@ -364,7 +364,6 @@ static int do_dfu(void)
 {
 	struct usbgadget_funcs funcs = {};
 	int ret;
-	struct stat s;
 
 	funcs.flags |= USBGADGET_DFU;
 	funcs.dfu_opts = "/fip.img(fip)cs";
@@ -376,8 +375,7 @@ static int do_dfu(void)
 	}
 
 	while (1) {
-		ret = stat("/fip.img", &s);
-		if (!ret) {
+		if (file_exists("/fip.img")) {
 			printf("Downloaded FIP image, DFU done\n");
 			ret = load_fip("/fip.img", 0);
 			if (!ret)

@@ -10,6 +10,7 @@
 #include <linux/err.h>
 #include <driver.h>
 #include <block.h>
+#include <libfile.h>
 
 #define PARSE_DEVICE	0
 #define PARSE_NAME	1
@@ -283,11 +284,10 @@ out:
 int file_list_detect_all(const struct file_list *files)
 {
 	struct file_list_entry *fentry;
-	struct stat s;
 	int i = 0;
 
 	list_for_each_entry(fentry, &files->list, list) {
-		if (!stat(fentry->filename, &s))
+		if (file_exists(fentry->filename))
 			continue;
 		if (device_detect_by_name(devpath_to_name(fentry->filename)) == 0)
 			i++;

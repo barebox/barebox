@@ -14,6 +14,7 @@
 #include <xfuncs.h>
 #include <malloc.h>
 #include <environment.h>
+#include <libfile.h>
 
 /* concatenate path and file name to new allocation buffer,
  * not adding '/' if path name already has '/'
@@ -91,8 +92,7 @@ EXPORT_SYMBOL(find_path);
  */
 bool execable_file(const char *name)
 {
-	struct stat s;
-	return (!stat(name, &s) && S_ISREG(s.st_mode));
+	return file_exists_type(name, S_IFREG);
 }
 EXPORT_SYMBOL(execable_file);
 

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 obj-$(CONFIG_PINCTRL)	+= pinctrl.o
+obj-$(CONFIG_GENERIC_PINCONF) += pinconf-generic.o pinctrl-utils.o pinctrl-map.o
 obj-$(CONFIG_PINCTRL_AT91) += pinctrl-at91.o
 obj-$(CONFIG_PINCTRL_AT91PIO4) += pinctrl-at91-pio4.o
 obj-$(CONFIG_PINCTRL_BCM283X)	+= pinctrl-bcm2835.o
@@ -16,5 +17,6 @@ obj-$(CONFIG_PINCTRL_VF610) += pinctrl-vf610.o
 obj-$(CONFIG_PINCTRL_STM32) += pinctrl-stm32.o
 obj-$(CONFIG_PINCTRL_OCELOT) += pinctrl-ocelot.o
 
+obj-$(CONFIG_PINCTRL_MESON) += meson/
 obj-$(CONFIG_ARCH_MVEBU) += mvebu/
 obj-$(CONFIG_ARCH_SUNXI) += sunxi/

@@ -12,6 +12,7 @@ Contents:
    contributing
    patch-flow
    porting
+   pinctrl
    troubleshooting
    filesystems
    background-execution

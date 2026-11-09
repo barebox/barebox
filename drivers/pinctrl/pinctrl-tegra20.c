@@ -25,7 +25,7 @@ struct pinctrl_tegra20 {
 		u32 __iomem *mux;
 		u32 __iomem *pull;
 	} regs;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 };
 
 struct tegra20_pingroup {
@@ -204,7 +204,7 @@ static void pinctrl_tegra20_set_tristate(struct pinctrl_tegra20 *ctrl,
 	writel(reg, regaddr);
 }
 
-static int pinctrl_tegra20_set_state(struct pinctrl_device *pdev,
+static int pinctrl_tegra20_set_state(struct pinctrl_dev *pdev,
 				     struct device_node *np)
 {
 	struct pinctrl_tegra20 *ctrl =
@@ -278,7 +278,7 @@ static int pinctrl_tegra20_set_state(struct pinctrl_device *pdev,
 	return 0;
 }
 
-static struct pinctrl_ops pinctrl_tegra20_ops = {
+static const struct pinctrl_ops pinctrl_tegra20_ops = {
 	.set_state = pinctrl_tegra20_set_state,
 };
 

@@ -57,10 +57,12 @@ endif
 ifneq ($(findstring e, $(KBUILD_EXTRA_WARN))$(CONFIG_WERROR),)
 
 KBUILD_CPPFLAGS		+= -Werror
+KBUILD_RUSTFLAGS	+= -Dwarnings -A internal-features
 
 # While hostprog flags are used during build bootstrapping (thus should not
 # depend on CONFIG_ symbols), -Werror is disruptive and should be opted into.
 # Only apply -Werror to hostprogs built after the initial Kconfig stage.
 KBUILD_HOSTCFLAGS	+= -Werror
+KBUILD_HOSTRUSTFLAGS	+= -Dwarnings -A internal-features
 
 endif

@@ -105,7 +105,7 @@ int setup_external_fuzz(const char *fuzz_name,
 		if (streq_ptr(test->name, fuzz_name)) {
 			fuzz = test;
 			barebox_main = fuzz_main;
-			barebox_loglevel = MSG_CRIT;
+			barebox_loglevel = LOGLEVEL_CRIT;
 			return 0;
 		}
 	}

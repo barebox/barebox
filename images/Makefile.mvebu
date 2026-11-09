@@ -8,11 +8,24 @@
 $(obj)/%.kwbimg: $(obj)/% FORCE
 	$(call if_changed,kwb_image)
 
+# Binary headers (DDR training code, arch/arm/boards/*/binary.0) are not part
+# of barebox. If one is missing, report the image as missing firmware instead
+# of failing the build, so multi-board builds produce all other images. The
+# image is only skipped unless CONFIG_MISSING_FIRMWARE_ERROR=y.
+mvebu_missing_binhdr = $(filter-out $(wildcard $(BINHDR_$(@F))),$(BINHDR_$(@F)))
+
+define mvebu_binhdr_image
+	$(Q)$(if $(mvebu_missing_binhdr), \
+		echo $(patsubst $(srctree)/%,%,$(mvebu_missing_binhdr)) >$@.missing-firmware, \
+		rm -f $@.missing-firmware)
+	$(call if_changed,$(if $(mvebu_missing_binhdr),0size,$(1)))
+endef
+
 $(obj)/%.mvebu0img: $(obj)/% scripts/mvebuimg FORCE
-	$(call if_changed,mvebu0_image)
+	$(call mvebu_binhdr_image,mvebu0_image)
 
 $(obj)/%.mvebu1img: $(obj)/% scripts/mvebuimg FORCE
-	$(call if_changed,mvebu1_image)
+	$(call mvebu_binhdr_image,mvebu1_image)
 
 KWBOPTS = -c -d 0x1000000 -e 0x1000000
 
@@ -127,6 +140,6 @@ pblb-$(CONFIG_MACH_USI_TOPKICK) += start_usi_topkick
 image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick.img
 image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick-2nd.img
 
-# ensure that an image depends on its included binhdrs
-$(foreach f,$(pblb-y),$(eval $$(obj)/$f.pblb.mvebu0img: $$(BINHDR_$f.pblb.mvebu0img)))
-$(foreach f,$(pblb-y),$(eval $$(obj)/$f.pblb.mvebu1img: $$(BINHDR_$f.pblb.mvebu1img)))
+# ensure that an image depends on its included binhdrs, as far as they exist
+$(foreach f,$(pblb-y),$(eval $$(obj)/$f.pblb.mvebu0img: $$(wildcard $$(BINHDR_$f.pblb.mvebu0img))))
+$(foreach f,$(pblb-y),$(eval $$(obj)/$f.pblb.mvebu1img: $$(wildcard $$(BINHDR_$f.pblb.mvebu1img))))

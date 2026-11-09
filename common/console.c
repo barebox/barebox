@@ -20,6 +20,7 @@
 #include <module.h>
 #include <sched.h>
 #include <ratp_bb.h>
+#include <readkey.h>
 #include <magicvar.h>
 #include <globalvar.h>
 #include <linux/list.h>
@@ -604,6 +605,40 @@ int pollchar(ktime_t duration)
 	return getchar();
 }
 EXPORT_SYMBOL(pollchar);
+
+/**
+ * console_ctrlc - check the console input for a Ctrl-C
+ *
+ * Unlike reading the input with getchar(), this keeps all other characters
+ * queued, so that keys typed while a command runs aren't lost. As on a tty,
+ * a Ctrl-C discards all queued input.
+ *
+ * Return: true if Ctrl-C was pressed
+ */
+bool console_ctrlc(void)
+{
+	struct kfifo *fifo = console_input_fifo;
+	unsigned int i;
+
+	while (tstc_raw()) {
+		int c = getc_raw();
+
+		if (c < 0)
+			break;
+
+		kfifo_putc(fifo, c);
+	}
+
+	/* Check full FIFO: earlier getchar() may also have queued a Ctrl-C */
+	for (i = fifo->out; i != fifo->in; i++) {
+		if (fifo->buffer[i & (fifo->size - 1)] == CTL_CH('c')) {
+			kfifo_reset(fifo);
+			return true;
+		}
+	}
+
+	return false;
+}
 
 int console_putc(struct console_device *con, char c)
 {

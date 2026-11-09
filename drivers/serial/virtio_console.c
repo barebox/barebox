@@ -18,6 +18,7 @@
 #include <xfuncs.h>
 #include <linux/spinlock.h>
 #include <linux/virtio.h>
+#include <linux/virtio_config.h>
 #include <linux/virtio_ring.h>
 #include <linux/virtio_console.h>
 
@@ -105,6 +106,24 @@ static int virtcons_getc(struct console_device *cdev)
 	return ch;
 }
 
+static int virtcons_get_size(struct console_device *cdev, int *width, int *height)
+{
+	struct virtio_device *vdev = dev_to_virtio(cdev->dev);
+	u16 cols, rows;
+
+	virtio_cread(vdev, struct virtio_console_config, cols, &cols);
+	virtio_cread(vdev, struct virtio_console_config, rows, &rows);
+
+	/* the host may not have filled them in yet */
+	if (!cols || !rows)
+		return -ENODATA;
+
+	*width = cols;
+	*height = rows;
+
+	return 0;
+}
+
 static int virtcons_probe(struct virtio_device *vdev)
 {
 	struct virtqueue *vqs[2];
@@ -146,6 +165,8 @@ static int virtcons_probe(struct virtio_device *vdev)
 	virtcons->cdev.tstc = virtcons_tstc;
 	virtcons->cdev.getc = virtcons_getc;
 	virtcons->cdev.putc = virtcons_putc;
+	if (virtio_has_feature(vdev, VIRTIO_CONSOLE_F_SIZE))
+		virtcons->cdev.get_size = virtcons_get_size;
 
 	have_one = true;
 
@@ -168,9 +189,15 @@ static struct virtio_device_id id_table[] = {
 	{ 0 },
 };
 
+static const unsigned int features[] = {
+	VIRTIO_CONSOLE_F_SIZE,
+};
+
 static struct virtio_driver virtio_console = {
 	.driver.name =	"virtio_console",
 	.id_table =	id_table,
+	.feature_table = features,
+	.feature_table_size = ARRAY_SIZE(features),
 	.probe =	virtcons_probe,
 	.remove =	virtcons_remove,
 };

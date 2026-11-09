@@ -48,11 +48,6 @@ static inline void i_gid_write(struct inode *inode, gid_t gid)
 	inode->i_gid = gid;
 }
 
-static void unlock_new_inode(struct inode *inode)
-{
-	return;
-}
-
 /*
  * Maximum amount of memory we may 'kmalloc()' without worrying that we are
  * allocating too much.
@@ -1084,6 +1079,13 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
 	root = ubifs_iget(sb, UBIFS_ROOT_INO);
 	if (IS_ERR(root)) {
 		err = PTR_ERR(root);
+		goto out_umount;
+	}
+
+	if (!S_ISDIR(root->i_mode)) {
+		ubifs_err(c, "root inode is not a directory");
+		iput(root);
+		err = -EINVAL;
 		goto out_umount;
 	}
 

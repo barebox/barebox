@@ -50,6 +50,23 @@ static struct inode *jffs2_alloc_inode(struct super_block *sb)
 static void jffs2_destroy_inode(struct inode *inode)
 {
 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
+	struct jffs2_full_dirent *fd, *fds;
+
+	/*
+	 * Like jffs2_do_clear_inode(), but without touching the inode cache
+	 * or the superblock: on unmount, they are freed before the inodes.
+	 */
+	if (f->metadata)
+		jffs2_free_full_dnode(f->metadata);
+
+	jffs2_kill_fragtree(&f->fragtree, NULL);
+
+	fds = f->dents;
+	while (fds) {
+		fd = fds;
+		fds = fd->next;
+		jffs2_free_full_dirent(fd);
+	}
 
 	kfree(f->target);
 	kmem_cache_free(jffs2_inode_cachep, f);

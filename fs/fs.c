@@ -434,6 +434,11 @@ static ssize_t __read(struct file *f, void *buf, size_t count)
 		goto out;
 	}
 
+	if (!f->f_inode->i_fop->read) {
+		ret = -EINVAL;
+		goto out;
+	}
+
 	fsdrv = f->fsdev->driver;
 
 	if (fsdrv != ramfs_driver)
@@ -1439,6 +1444,20 @@ struct inode *iget_locked(struct super_block *sb, unsigned long ino)
 	return inode;
 }
 
+void unlock_new_inode(struct inode *inode)
+{
+	inode->i_state &= ~I_NEW;
+}
+
+/*
+ * Hide the inode from iget_locked(), so that a new inode with the same number
+ * can be set up while this one is still in use.
+ */
+void remove_inode_hash(struct inode *inode)
+{
+	list_del_init(&inode->i_sb_list);
+}
+
 void iget_failed(struct inode *inode)
 {
 	iput(inode);
@@ -1915,7 +1934,9 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 	dir = base->d_inode;
 	old = dir->i_op->lookup(dir, dentry, flags);
 	if (IS_ERR(old)) {
+		/* don't leave the name cached as nonexistent */
 		dput(dentry);
+		dentry_kill(dentry);
 		return old;
 	}
 
@@ -3040,6 +3061,9 @@ static int __opendir(DIR *d)
 
 	INIT_LIST_HEAD(&d->entries);
 	rd.dir = d;
+
+	if (!file->f_inode->i_fop->iterate)
+		return -ENOTDIR;
 
 	ret = file->f_inode->i_fop->iterate(file, &rd.ctx);
 	if (ret)

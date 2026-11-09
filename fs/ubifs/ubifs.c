@@ -46,7 +46,7 @@ static ZSTD_DCtx *ubifs_zstd_cctx;
 static int gzip_decompress(const unsigned char *in, size_t in_len,
 			   unsigned char *out, size_t *out_len)
 {
-	unsigned int olen;
+	unsigned int olen = *out_len;
 	int ret;
 
 	ret = deflate_decompress(&ubifs_zlib_stream, in, in_len, out, &olen);
@@ -149,7 +149,7 @@ static inline struct crypto_comp
 static inline int
 crypto_comp_decompress(const struct ubifs_info *c, struct crypto_comp *tfm,
 		       const u8 *src, unsigned int slen, u8 *dst,
-		       unsigned int *dlen)
+		       size_t *dlen)
 {
 	struct ubifs_compressor *compr = ubifs_compressors[tfm->compressor];
 	int err;
@@ -160,7 +160,7 @@ crypto_comp_decompress(const struct ubifs_info *c, struct crypto_comp *tfm,
 		return 0;
 	}
 
-	err = compr->decompress(src, slen, dst, (size_t *)dlen);
+	err = compr->decompress(src, slen, dst, dlen);
 	if (err)
 		ubifs_err(c, "cannot decompress %d bytes, compressor %s, "
 			  "error %d", slen, compr->name, err);
@@ -193,6 +193,7 @@ int ubifs_decompress(const struct ubifs_info *c, const void *in_buf,
 {
 	int err;
 	struct ubifs_compressor *compr;
+	size_t dlen = *out_len;
 
 	if (unlikely(compr_type < 0 || compr_type >= UBIFS_COMPR_TYPES_CNT)) {
 		ubifs_err(c, "invalid compression type %d", compr_type);
@@ -215,12 +216,14 @@ int ubifs_decompress(const struct ubifs_info *c, const void *in_buf,
 	if (compr->decomp_mutex)
 		mutex_lock(compr->decomp_mutex);
 	err = crypto_comp_decompress(c, compr->cc, in_buf, in_len, out_buf,
-				     (unsigned int *)out_len);
+				     &dlen);
 	if (compr->decomp_mutex)
 		mutex_unlock(compr->decomp_mutex);
 	if (err)
 		ubifs_err(c, "cannot decompress %d bytes, compressor %s,"
 			  " error %d", in_len, compr->name, err);
+	else
+		*out_len = dlen;
 
 	return err;
 }
@@ -367,15 +370,18 @@ int ubifs_close(struct inode *inode, struct file *f)
 	return 0;
 }
 
-static int ubifs_get_block(struct ubifs_file *uf, unsigned int pos)
+static int ubifs_get_block(struct ubifs_file *uf, loff_t pos)
 {
 	int ret;
-	unsigned int block = pos / UBIFS_BLOCK_SIZE;
+	unsigned int block = pos >> UBIFS_BLOCK_SHIFT;
 
 	if (block != uf->block) {
 		ret = read_block(uf->inode, uf->buf, block, uf->dn);
-		if (ret && ret != -ENOENT)
+		if (ret && ret != -ENOENT) {
+			/* uf->buf may be partially overwritten */
+			uf->block = -1;
 			return ret;
+		}
 		uf->block = block;
 	}
 
@@ -385,14 +391,14 @@ static int ubifs_get_block(struct ubifs_file *uf, unsigned int pos)
 int ubifs_read(struct file *f, void *buf, size_t insize)
 {
 	struct ubifs_file *uf = f->private_data;
-	unsigned int pos = f->f_pos;
+	loff_t pos = f->f_pos;
 	unsigned int ofs;
 	unsigned int now;
 	unsigned int size = insize;
 	int ret;
 
 	/* Read till end of current block */
-	ofs = f->f_pos % UBIFS_BLOCK_SIZE;
+	ofs = pos & (UBIFS_BLOCK_SIZE - 1);
 	if (ofs) {
 		ret = ubifs_get_block(uf, pos);
 		if (ret)

@@ -245,11 +245,15 @@ struct dentry *v9fs_vfs_lookup(struct inode *dir, struct dentry *dentry,
 	 * moved b under k and client parallely did a lookup for
 	 * k/b.
 	 */
-	if (!IS_ERR(inode)) {
-		d_add(dentry, inode);
+	if (IS_ERR(inode)) {
 		if (!IS_ERR(fid))
-			v9fs_fid_add(dentry, &fid);
+			p9_fid_put(fid);
+		return ERR_CAST(inode);
 	}
+
+	d_add(dentry, inode);
+	if (!IS_ERR(fid))
+		v9fs_fid_add(dentry, &fid);
 
 	return NULL;
 }

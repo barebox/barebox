@@ -39,6 +39,9 @@ static int jffs2_rtime_decompress(unsigned char *data_in,
 		int backoffs;
 		int repeat;
 
+		if (pos + 2 > srclen)
+			return -EIO;
+
 		value = data_in[pos++];
 		cpage_out[outpos++] = value; /* first the verbatim copied byte */
 		repeat = data_in[pos++];
@@ -46,6 +49,9 @@ static int jffs2_rtime_decompress(unsigned char *data_in,
 
 		positions[value]=outpos;
 		if (repeat) {
+			if (outpos + repeat > destlen)
+				return -EIO;
+
 			if (backoffs + repeat >= outpos) {
 				while(repeat) {
 					cpage_out[outpos++] = cpage_out[backoffs++];

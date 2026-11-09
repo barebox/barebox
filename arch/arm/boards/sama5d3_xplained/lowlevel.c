@@ -45,7 +45,7 @@ SAMA5D3_ENTRY_FUNCTION(start_sama5d3_xplained_xload_mmc, r4)
 	sama5d3_udelay_init(MASTER_CLOCK);
 	sama5d3_xplained_ddrconf();
 
-	sama5d3_atmci_start_image(0, MASTER_CLOCK, 0);
+	sama5d3_atmci_start_image(r4, MASTER_CLOCK, 0);
 }
 
 extern char __dtb_z_at91_sama5d3_xplained_start[];

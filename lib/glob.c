@@ -287,19 +287,31 @@ static int glob_in_dir(const char *pattern, const char *directory,
 	struct globlink *names = NULL;
 	size_t nfound = 0;
 	int meta;
+	bool escaped;
 
 	meta = glob_pattern_p(pattern, !(flags & GLOB_NOESCAPE));
+	escaped = !(flags & GLOB_NOESCAPE) && strchr(pattern, '\\');
 
 	if (meta)
 		flags |= GLOB_MAGCHAR;
 
-	if (meta)
+	/* fnmatch() resolves the escapes in a name without wildcards */
+	if (meta || (escaped && !(flags & GLOB_NOCHECK))) {
 		stream = opendir(directory);
+		if (stream == NULL) {
+			if ((errfunc != NULL && (*errfunc) (directory, errno)) ||
+			    (flags & GLOB_ERR))
+				return GLOB_ABORTED;
+		}
+	} else if (!(flags & GLOB_NOCHECK)) {
+		char *fullname = xasprintf("%s/%s", directory, pattern);
+		struct stat st;
 
-	if (stream == NULL) {
-		if ((errfunc != NULL && (*errfunc) (directory, errno)) ||
-		    (flags & GLOB_ERR))
-			return GLOB_ABORTED;
+		/* No need to read the directory to find a literal name */
+		if (lstat(fullname, &st) == 0)
+			flags |= GLOB_NOCHECK;
+
+		free(fullname);
 	}
 
 	while (1) {
@@ -313,10 +325,9 @@ static int glob_in_dir(const char *pattern, const char *directory,
 //			continue;
 		name = d->d_name;
 
-		if ((!meta && strcmp(pattern, name) == 0)
-		    || fnmatch(pattern, name,
-			       (!(flags & GLOB_PERIOD) ? FNM_PERIOD : 0) |
-			       ((flags & GLOB_NOESCAPE) ? FNM_NOESCAPE : 0)) == 0) {
+		if (fnmatch(pattern, name,
+			    (!(flags & GLOB_PERIOD) ? FNM_PERIOD : 0) |
+			    ((flags & GLOB_NOESCAPE) ? FNM_NOESCAPE : 0)) == 0) {
 			struct globlink *new =
 			    (struct globlink *)xmalloc(sizeof(struct globlink));
 			len = strlen(name);

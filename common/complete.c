@@ -14,6 +14,7 @@
 #include <libgen.h>
 #include <command.h>
 #include <environment.h>
+#include <libfile.h>
 
 #define DEVPARAM_COMPLETE_ASSIGNMENT	BIT(0)
 #define DEVPARAM_COMPLETE_DOLLAR	BIT(1)
@@ -86,7 +87,6 @@ out:
 
 static int path_command_complete(struct string_list *sl, char *instr)
 {
-	struct stat s;
 	DIR *dir;
 	struct dirent *d;
 	char tmp[PATH_MAX];
@@ -121,8 +121,7 @@ static int path_command_complete(struct string_list *sl, char *instr)
 
 			if (strstarts_escaped(d->d_name, instr)) {
 				strcpy(tmp, d->d_name);
-				if (!stat(tmp, &s) &&
-						S_ISDIR(s.st_mode))
+				if (file_exists_type(tmp, S_IFDIR))
 					continue;
 				else
 					strcat(tmp, " ");

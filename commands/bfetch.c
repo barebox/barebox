@@ -14,6 +14,7 @@
 #include <firmware.h>
 #include <getopt.h>
 #include <globalvar.h>
+#include <libfile.h>
 #include <machine_id.h>
 #include <memory.h>
 #include <net.h>
@@ -357,7 +358,6 @@ static void print_framebuffers(unsigned *line)
 
 static void print_features(unsigned *line)
 {
-	struct stat st;
 	struct string_list sl;
 	bool features = false;
 	size_t tmp;
@@ -373,7 +373,7 @@ static void print_features(unsigned *line)
 	if (IS_ENABLED(CONFIG_FEATURE_CONTROLLER) &&
 	    !list_empty(&of_feature_controllers))
 		string_list_add(&sl, "FEATCTL");
-	if (!stat("/dev/fw_cfg", &st))
+	if (file_exists("/dev/fw_cfg"))
 		string_list_add(&sl, "FW_CFG");
 	if (firmwaremgr_find_by_node(NULL))
 		string_list_add(&sl, "FWMGR");
@@ -440,7 +440,7 @@ static void print_features(unsigned *line)
 	if (IS_ENABLED(CONFIG_ARM_MMU_PERMISSIONS))
 		string_list_add(&sl, "W^X");
 
-	if (IS_ENABLED(CONFIG_FS_UBOOTVARFS) && !stat("/dev/ubootvar", &st))
+	if (IS_ENABLED(CONFIG_FS_UBOOTVARFS) && file_exists("/dev/ubootvar"))
 		string_list_add(&sl, "UBOOTVARFS");
 
 	/* TODO: detect semihosting */

@@ -284,6 +284,14 @@ struct resource *resource_iter_next(struct resource *current, struct resource *g
 struct resource *lookup_region(struct resource *parent,
 			       resource_size_t addr, struct resource *gap);
 
+struct resource *
+resource_tree_find(struct resource *root,
+		   bool (*match)(struct resource *res, const void *data),
+		   const void *data);
+
+struct resource *resource_find_by_name_prefix(struct resource *root,
+					      const char *prefix);
+
 /**
  * for_each_resource_region - Iterate over child resources and gaps between them
  * @parent: parent resource

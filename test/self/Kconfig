@@ -26,6 +26,13 @@ config SELFTEST_AUTORUN
 	  Self tests are run automatically after initcalls are done,
 	  but before barebox_main (shell or board-specific startup).
 
+config SELFTEST_AUTORUN_DESTRUCTIVE
+	bool "Run potentially destructive self-tests on startup"
+	depends on SELFTEST_AUTORUN
+	help
+	  Destructive self tests might leave the board in a unusable state on
+	  failure.
+
 config SELFTEST_ENABLE_ALL
 	bool "Enable all self-tests"
 	select SELFTEST_BASE64
@@ -36,6 +43,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_PROGRESS_NOTIFIER
 	select SELFTEST_OF_MANIPULATION
 	select SELFTEST_OF_OVERLAY
+	select SELFTEST_OPTEE if OPTEE && ARCH_HAS_DATA_ABORT_MASK
 	select SELFTEST_ENVIRONMENT_VARIABLES if ENVIRONMENT_VARIABLES
 	select SELFTEST_FS_RAMFS if FS_RAMFS
 	select SELFTEST_DIRFD if FS_RAMFS && FS_DEVFS
@@ -106,6 +114,10 @@ config SELFTEST_OF_OVERLAY
 	select OF_OVERLAY
 	help
 	  Tests devicetree overlay application
+
+config SELFTEST_OPTEE
+	bool "OPTEE memory isolation selftest"
+	depends on OPTEE && ARCH_HAS_DATA_ABORT_MASK
 
 config SELFTEST_PROGRESS_NOTIFIER
 	bool "progress notifier selftest"

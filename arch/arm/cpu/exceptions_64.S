@@ -55,69 +55,69 @@
 	.globl	vectors
 vectors:
 	.align	7
-	b	_do_bad_sync	/* Current EL Synchronous Thread */
+	b	_do_sync_sp_el0
 
 	.align	7
-	b	_do_bad_irq	/* Current EL IRQ Thread */
+	b	_do_irq_sp_el0
 
 	.align	7
-	b	_do_bad_fiq	/* Current EL FIQ Thread */
+	b	_do_fiq_sp_el0
 
 	.align	7
-	b	_do_bad_error	/* Current EL Error Thread */
+	b	_do_serror_sp_el0
 
 	.align	7
-	b	_do_sync	/* Current EL Synchronous Handler */
+	b	_do_sync_sp_elx
 
 	.align	7
-	b	_do_irq		/* Current EL IRQ Handler */
+	b	_do_irq_sp_elx
 
 	.align	7
-	b	_do_fiq		/* Current EL FIQ Handler */
+	b	_do_fiq_sp_elx
 
 	.align	7
-	b	_do_error	/* Current EL Error Handler */
+	b	_do_serror_sp_elx
 
 
-_do_bad_sync:
+_do_sync_sp_el0:
 	exception_entry
-	bl	do_bad_sync
+	bl	do_sync_sp_el0
 	b	exception_exit
 
-_do_bad_irq:
+_do_irq_sp_el0:
 	exception_entry
-	bl	do_bad_irq
+	bl	do_irq_sp_el0
 	b	exception_exit
 
-_do_bad_fiq:
+_do_fiq_sp_el0:
 	exception_entry
-	bl	do_bad_fiq
+	bl	do_fiq_sp_el0
 	b	exception_exit
 
-_do_bad_error:
+_do_serror_sp_el0:
 	exception_entry
-	bl	do_bad_error
+	bl	do_serror_sp_el0
 	b	exception_exit
 
-_do_sync:
+_do_sync_sp_elx:
 	exception_entry
 	mov	x2, x3
-	bl	do_sync
+	bl	do_sync_sp_elx
 	b	exception_exit
 
-_do_irq:
+_do_irq_sp_elx:
 	exception_entry
-	bl	do_irq
+	bl	do_irq_sp_elx
 	b	exception_exit
 
-_do_fiq:
+_do_fiq_sp_elx:
 	exception_entry
-	bl	do_fiq
+	bl	do_fiq_sp_elx
 	b	exception_exit
 
-_do_error:
+_do_serror_sp_elx:
 	exception_entry
-	bl	do_error
+	bl	do_serror_sp_elx
 	b	exception_exit
 
 exception_exit:
@@ -154,5 +154,11 @@ arm_ignore_data_abort:
 .global arm_data_abort_occurred
 arm_data_abort_occurred:
 .word 0 /* set != 0 by the data abort handler */
+.global arm_ignore_serror_exception
+arm_ignore_serror_exception:
+.word 0 /* When != 0 serror exceptions are ignored */
+.global arm_serror_exception_occurred
+arm_serror_exception_occurred:
+.word 0 /* set != 0 by the serror exception handler */
 abort_stack:
 .space 8

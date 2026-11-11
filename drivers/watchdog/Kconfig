@@ -71,6 +71,13 @@ config WATCHDOG_JZ4740
 	help
 	  Hardware driver for the built-in watchdog timer on Ingenic jz4740 SoCs.
 
+config WATCHDOG_MESON_GXBB
+	bool "Amlogic Meson GXBB watchdog"
+	depends on ARCH_MESON || COMPILE_TEST
+	help
+	  Add support for the watchdog of the Amlogic Meson SoCs from the
+	  GXBB on, like the GXL, G12 and SM1, and of the T7 generation.
+
 config WATCHDOG_OMAP
 	bool "TI OMAP"
 	depends on ARCH_OMAP || COMPILE_TEST

@@ -389,10 +389,13 @@ struct clk_init_data {
 
 struct clk {
 	const struct clk_ops *ops;
+	struct device *dev;
 	int enable_count;
+	bool enable_deferred;	/* critical, but a parent is not registered yet */
 	struct list_head list;
 	const char *name;
 	const char * const *parent_names;
+	const struct clk_parent_data *parent_data;
 	int num_parents;
 
 	struct clk **parents;

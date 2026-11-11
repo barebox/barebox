@@ -212,6 +212,19 @@ config ARCH_LAYERSCAPE
 	select COMMON_CLK_OF_PROVIDER
 	select OF_DMA_COHERENCY
 
+config ARCH_MESON
+	bool "Amlogic Meson SoCs"
+	depends on ARCH_MULTIARCH
+	depends on 64BIT
+	select BOARD_GENERIC_DT_RAW_ENTRY
+	select ARCH_HAS_RESET_CONTROLLER
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select GPIOLIB
+	select HAS_DEBUG_LL
+	select OFDEVICE
+	select OF_OVERLAY_BUILTIN
+
 config ARCH_OMAP_MULTI
 	bool "TI OMAP"
 	depends on 32BIT
@@ -300,6 +313,7 @@ source "arch/arm/mach-bcm283x/Kconfig"
 source "arch/arm/mach-clps711x/Kconfig"
 source "arch/arm/mach-imx/Kconfig"
 source "arch/arm/mach-layerscape/Kconfig"
+source "arch/arm/mach-meson/Kconfig"
 source "arch/arm/mach-mxs/Kconfig"
 source "arch/arm/mach-mvebu/Kconfig"
 source "arch/arm/mach-k3/Kconfig"

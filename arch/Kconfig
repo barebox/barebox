@@ -30,6 +30,18 @@ config BOARD_GENERIC_DT
 	  architecture and thus can be used anywhere that a Kernel image could be used.
 	  The image will be called images/barebox-dt-2nd.img
 
+config BOARD_GENERIC_DT_RAW_ENTRY
+	bool "Detect raw entry into the generic DT image by its alignment"
+	depends on BOARD_GENERIC_DT && ARM64
+	help
+	  barebox-dt-2nd.img started at address 0, where a loader honouring
+	  the Linux image header never puts it, always assumes raw entry.
+	  Say y here to also support firmware that ignores the header and
+	  starts barebox at other addresses, like the GX/G12
+	  Amlogic vendor firmware. barebox then sets up its stack behind the
+	  image and prefers an appended device tree. Images loaded like a
+	  Linux kernel aren't affected.
+
 config BOARD_GENERIC_FIT
 	depends on BOARD_GENERIC_DT
 	bool "Build generic device tree 2nd stage FIT image"

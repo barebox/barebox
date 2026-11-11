@@ -73,4 +73,12 @@ int partition_find_free_space(struct partition_desc *pdesc, uint64_t sectors, ui
 sector_t partition_first_usable_lba(const struct block_device *blk);
 sector_t partition_align_lba(const struct block_device *blk);
 
+#ifdef CONFIG_PARTITION_DISK_EFI
+void gpt_suppress_fix_messages(void);
+#else
+static inline void gpt_suppress_fix_messages(void)
+{
+}
+#endif
+
 #endif /* __PARTITIONS_PARSER_H__ */

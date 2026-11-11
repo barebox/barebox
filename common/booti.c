@@ -71,7 +71,9 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 	if (IS_ERR(os_res))
 		return ERR_CAST(os_res);
 
-	image_end = PAGE_ALIGN(kernel + image_size);
+	/* the file may hold more than the image, e.g. an appended device tree */
+	image_end = PAGE_ALIGN(kernel + max_t(unsigned long, image_size,
+					      resource_size(os_res)));
 
 	if (oftree) {
 		unsigned long devicetree;

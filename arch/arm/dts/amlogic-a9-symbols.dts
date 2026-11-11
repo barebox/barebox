@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/* The A9 device tree with dtc -@, for the overlay's label paths */
+
+/dts-v1/;
+
+#include <arm64/amlogic/amlogic-a9.dtsi>
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+};

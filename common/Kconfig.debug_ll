@@ -22,6 +22,9 @@ config DEBUG_LL
 config DEBUG_IMX_UART
 	bool
 
+config DEBUG_MESON_UART
+	bool
+
 config DEBUG_ROCKCHIP_UART
 	bool
 
@@ -142,6 +145,30 @@ config DEBUG_LAYERSCAPE_UART
 	help
 	  Say Y here if you want barebox low-level debugging support
 	  on NXP Layerscape SoCs.
+
+config DEBUG_MESON_GX_UART
+	bool "Amlogic Meson GX Always-On UART"
+	depends on ARCH_MESON_GX
+	select DEBUG_MESON_UART
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on the Amlogic Meson GXBB, GXL and GXM SoCs.
+
+config DEBUG_MESON_G12_UART
+	bool "Amlogic Meson G12 Always-On UART"
+	depends on ARCH_MESON_G12
+	select DEBUG_MESON_UART
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on the Amlogic Meson G12A, G12B and SM1 SoCs.
+
+config DEBUG_MESON_A9_UART
+	bool "Amlogic A9 UART_B"
+	depends on ARCH_MESON_A9
+	select DEBUG_MESON_UART
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on the Amlogic A9 SoCs, on the UART the firmware prints on.
 
 config DEBUG_VEXPRESS_UART
 	bool "Vexpress Debug UART"

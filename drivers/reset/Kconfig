@@ -39,6 +39,13 @@ config RESET_IMX7
 	help
 	  This enables the reset controller driver for i.MX7 SoCs.
 
+config RESET_MESON
+	bool "Amlogic Meson reset controller"
+	depends on ARCH_MESON || COMPILE_TEST
+	default ARCH_MESON
+	help
+	  This enables the reset controller driver for the Amlogic SoCs.
+
 config RESET_STARFIVE
 	bool "StarFive Controller Driver" if COMPILE_TEST
 	depends on COMMON_CLK

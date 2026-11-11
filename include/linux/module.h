@@ -14,5 +14,6 @@
 #define MODULE_ALIAS_DSA_TAG_DRIVER(drv)
 #define MODULE_ALIAS_CRYPTO(alias)
 #define MODULE_ALIAS_FS(alias)
+#define MODULE_IMPORT_NS(ns)
 
 #endif

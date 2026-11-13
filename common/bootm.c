@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include <bootargs.h>
+#include <boot.h>
 #include <bootm.h>
 #include <fs.h>
 #include <fcntl.h>
@@ -542,6 +543,8 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 
 	data = xzalloc(sizeof(*data));
 
+	data->globalvar_scope = boot_globalvar_scope_push();
+
 	bootm_image_name_and_part(bootm_data->os_file, &data->os_file, &data->os_part);
 	bootm_image_name_and_part(bootm_data->oftree_file, &data->oftree_file, &data->oftree_part);
 	bootm_image_name_and_part(bootm_data->initrd_file, &data->initrd_file, &data->initrd_part);
@@ -801,8 +804,7 @@ void bootm_boot_cleanup(struct image_data *data)
 	if (data->of_root_node)
 		of_delete_node(data->of_root_node);
 
-	globalvar_remove(LINUX_BOOTARGS_BOOTM_EARLY "*");
-	globalvar_remove(LINUX_BOOTARGS_BOOTM_LATE  "*");
+	globalvar_scope_pop(data->globalvar_scope);
 	free(data->os_header);
 	free(data->os_file);
 	free(data->oftree_file);

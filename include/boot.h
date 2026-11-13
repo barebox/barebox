@@ -7,6 +7,7 @@
 #include <environment.h>
 #include <bootm-overrides.h>
 #include <bootargs.h>
+#include <globalvar.h>
 
 struct bootentries {
 	struct list_head entries;
@@ -57,5 +58,20 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun);
 
 struct bootm_data;
 int bootm_entry(struct bootentry *be, const struct bootm_data *data);
+
+/*
+ * Snapshot all globalvars that configure booting. Whatever a boot script,
+ * a boot entry or bootm itself changes there is reverted again by
+ * globalvar_scope_pop(), so it doesn't leak into the next boot attempt.
+ *
+ * This deliberately doesn't cover all globalvars: booting may change
+ * others that must persist, e.g. DHCP sets global.net.* and
+ * global.hostname while the interface stays up.
+ */
+static inline struct globalvar_scope *boot_globalvar_scope_push(void)
+{
+	return globalvar_scope_push("bootm.*", "linux.*", "of.*",
+				    "boot.watchdog_timeout");
+}
 
 #endif /* __BOOT_H */

@@ -16,7 +16,8 @@
  *   !		0x21 is less than any non-space printable character
  *   ~		0x7e is greater than any printable character
  *
- * Users will never see those as bootm_boot_cleanup() will delete them again.
+ * Users will never see those as bootm_boot_cleanup() reverts the globalvars
+ * to the state before bootm_boot_prep().
  */
 #define LINUX_BOOTARGS_BOOTM_EARLY	"linux.bootargs.!bootm."
 #define LINUX_BOOTARGS_BOOTM_LATE	"linux.bootargs.~bootm."
@@ -80,7 +81,12 @@ int bootm_open_os_compressed(struct image_data *data);
 int bootm_boot_handler(struct image_data *data);
 void bootm_boot_cleanup(struct image_data *data);
 
+struct globalvar_scope;
+
 struct image_data {
+	/* globalvars to restore in bootm_boot_cleanup() */
+	struct globalvar_scope *globalvar_scope;
+
 	/* simplest case. barebox has already loaded the os here */
 	struct resource *os_res;
 

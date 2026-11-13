@@ -38,6 +38,7 @@
 #include <xfuncs.h>
 #include <init.h>
 #include <dma.h>
+#include <fuzz.h>
 
 #include <linux/bitmap.h>
 #include <linux/usb/usb.h>
@@ -209,6 +210,9 @@ static int usb_set_maxpacket(struct usb_device *dev)
 /**
  * Parse the config, located in buffer, and fills the dev->config structure.
  * Note that all little/big endian swapping are done automatically.
+ *
+ * Returns 0 on success, or -EINVAL if the buffer doesn't start with a
+ * configuration descriptor.
  */
 static int usb_parse_config(struct usb_device *dev, int cfgno,
 			    unsigned char *buffer, int length)
@@ -225,15 +229,20 @@ static int usb_parse_config(struct usb_device *dev, int cfgno,
 	curr_if_num = -1;
 
 	dev->configno = cfgno;
+
+	if (length < USB_DT_CONFIG_SIZE) {
+		dev_err(&dev->dev, "USB CFG descriptor too short (%d)\n", length);
+		return -EINVAL;
+	}
 	head = (struct usb_descriptor_header *) &buffer[0];
 	if (head->bDescriptorType != USB_DT_CONFIG) {
 		dev_err(&dev->dev, " ERROR: NOT USB_CONFIG_DESC %x\n",
 			head->bDescriptorType);
-		return -1;
+		return -EINVAL;
 	}
 	if (head->bLength != USB_DT_CONFIG_SIZE) {
 		dev_err(&dev->dev, "Invalid USB CFG length (%d)\n", head->bLength);
-		return -1;
+		return -EINVAL;
 	}
 	memcpy(&dev->config, head, USB_DT_CONFIG_SIZE);
 	dev->config.no_of_if = 0;
@@ -258,15 +267,16 @@ static int usb_parse_config(struct usb_device *dev, int cfgno,
 			     head)->bInterfaceNumber != curr_if_num) {
 				/* this is a new interface, copy new desc */
 				ifno = dev->config.no_of_if;
-				/* if ifno > USB_MAXINTERFACES, then
-				 * next memcpy() will corrupt dev->config
+				/*
+				 * if ifno >= USB_MAXINTERFACES, then
+				 * next memcpy() will corrupt dev->config.
+				 * Everything that follows belongs to this
+				 * or later interfaces, so stop here.
 				 */
-				if (ifno > USB_MAXINTERFACES) {
-					dev_err(&dev->dev, "ifno = %d > "
-						"USB_MAXINTERFACES = %d !\n",
-						ifno,
-						USB_MAXINTERFACES);
-					break;
+				if (ifno >= USB_MAXINTERFACES) {
+					dev_warn(&dev->dev, "only %d interfaces supported, ignoring the rest\n",
+						 USB_MAXINTERFACES);
+					goto out;
 				}
 				if_desc = &dev->config.interface[ifno];
 				dev->config.no_of_if++;
@@ -308,9 +318,12 @@ static int usb_parse_config(struct usb_device *dev, int cfgno,
 				break;
 			}
 			epno = dev->config.interface[ifno].no_of_ep;
-			if (epno > USB_MAXENDPOINTS) {
+			if (epno >= USB_MAXENDPOINTS) {
 				dev_err(&dev->dev, "Interface %d has too many endpoints!\n",
 					if_desc->desc.bInterfaceNumber);
+				/* ignore it, and its companion descriptor */
+				epno = -1;
+				skip_comp = true;
 				break;
 			}
 			/* found an endpoint */
@@ -358,6 +371,7 @@ static int usb_parse_config(struct usb_device *dev, int cfgno,
 		head = (struct usb_descriptor_header *)&buffer[index];
 	}
 
+out:
 	/*
 	 * The interfaces and endpoints are walked by the counts in their
 	 * descriptors later on, so don't let these claim more than we stored.
@@ -379,8 +393,45 @@ static int usb_parse_config(struct usb_device *dev, int cfgno,
 		}
 	}
 
-	return 1;
+	return 0;
 }
+
+static int fuzz_usb_config(const u8 *data, size_t size)
+{
+	struct usb_device *dev;
+	u8 *buf;
+	int i, j;
+
+	/* usb_get_configuration_no() reads at most USB_BUFSIZ bytes */
+	if (!size || size > USB_BUFSIZ)
+		return 0;
+
+	dev = xzalloc(sizeof(*dev));
+	buf = xmemdup(data, size);
+
+	if (!usb_parse_config(dev, 0, buf, size)) {
+		BUG_ON(dev->config.no_of_if > USB_MAXINTERFACES);
+		BUG_ON(dev->config.desc.bNumInterfaces > dev->config.no_of_if);
+
+		for (i = 0; i < dev->config.no_of_if; i++) {
+			struct usb_interface *intf = &dev->config.interface[i];
+
+			BUG_ON(intf->no_of_ep > USB_MAXENDPOINTS);
+			BUG_ON(intf->desc.bNumEndpoints > intf->no_of_ep);
+
+			for (j = 0; j < intf->no_of_ep; j++)
+				BUG_ON(!usb_endpoint_num(&intf->ep_desc[j]));
+		}
+
+		usb_set_maxpacket(dev);
+	}
+
+	free(buf);
+	free(dev);
+
+	return 0;
+}
+fuzz_test("usb-config", fuzz_usb_config);
 
 static int usb_get_descriptor(struct usb_device *dev, unsigned char type,
 			unsigned char index, void *buf, int size)
@@ -613,7 +664,10 @@ int usb_new_device(struct usb_device *dev)
 		goto err_out;
 	}
 
-	usb_parse_config(dev, 0, buf, length);
+	err = usb_parse_config(dev, 0, buf, length);
+	if (err)
+		goto err_out;
+
 	usb_set_maxpacket(dev);
 	/* we set the default configuration here */
 	err = usb_set_configuration(dev, dev->config.desc.bConfigurationValue);

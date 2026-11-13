@@ -23,8 +23,8 @@ if [ ! -f "$kernel" ]; then
 fi
 
 if [ -f "$cmdline" ]; then
-	global linux.bootargs.dyn.dfu
-	readf $cmdline global.linux.bootargs.dyn.dfu
+	global linux.bootargs.dfu
+	readf $cmdline global.linux.bootargs.dfu
 fi
 
 if [ -f "$dtb" ]; then

@@ -442,9 +442,10 @@ If the preconfigured paths or names are not suitable, they can be adjusted in
   fi
 
   nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
-  ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
+  global linux.bootargs.ip
+  ip_route_get -b ${global.net.server} global.linux.bootargs.ip
 
-  global.linux.bootargs.dyn.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"
+  global linux.bootargs.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"
 
 ``boot net`` will then retrieve the kernel (and also the device tree and
 initramfs, if used) over TFTP and boot it.

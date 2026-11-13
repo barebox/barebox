@@ -6,4 +6,4 @@ global.bootm.image=<path to image>
 
 #bootargs-ip
 
-global.linux.bootargs.dyn.root="root=<rootfs here>"
+global linux.bootargs.root="root=<rootfs here>"

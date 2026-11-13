@@ -204,6 +204,9 @@ static int do_boot(int argc, char *argv[])
 			goto out;
 		}
 
+		bootentries_for_each_entry(entries, entry)
+			bootm_merge_overrides(&entry->overrides, &overrides);
+
 		bootsources_menu(entries, idx, timeout);
 	}
 

@@ -12,7 +12,6 @@
 #include <environment.h>
 
 static char *linux_bootargs;
-static int linux_bootargs_overwritten;
 
 /*
  * This returns the Linux bootargs
@@ -27,9 +26,6 @@ static int linux_bootargs_overwritten;
 const char *linux_bootargs_get(void)
 {
 	char *bootargs, *parts;
-
-	if (linux_bootargs_overwritten)
-		return linux_bootargs;
 
 	free(linux_bootargs);
 	linux_bootargs = NULL;
@@ -63,19 +59,6 @@ const char *linux_bootargs_get(void)
 	free(parts);
 
 	return linux_bootargs;
-}
-
-int linux_bootargs_overwrite(const char *bootargs)
-{
-	if (bootargs) {
-		free(linux_bootargs);
-		linux_bootargs = xstrdup(bootargs);
-		linux_bootargs_overwritten = 1;
-	} else {
-		linux_bootargs_overwritten = 0;
-	}
-
-	return 0;
 }
 
 char *linux_bootargs_append_rootwait(char *rootarg_old)

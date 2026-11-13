@@ -577,23 +577,11 @@ static int usb_hub_configure(struct usb_device *dev)
 	/* adjust 16bit values */
 	hub->desc.wHubCharacteristics =
 				le16_to_cpu(descriptor->wHubCharacteristics);
-	/* set the bitmap */
-	bitmap = (unsigned char *)&hub->desc.u.hs.DeviceRemovable[0];
-	/* devices not removable by default */
-	memset(bitmap, 0xff, (USB_MAXCHILDREN+1+7)/8);
-	bitmap = (unsigned char *)&hub->desc.u.hs.PortPwrCtrlMask[0];
-	memset(bitmap, 0xff, (USB_MAXCHILDREN+1+7)/8); /* PowerMask = 1B */
-
-	for (i = 0; i < ((hub->desc.bNbrPorts + 1 + 7)/8); i++)
-		hub->desc.u.hs.DeviceRemovable[i] = descriptor->u.hs.DeviceRemovable[i];
-
-	for (i = 0; i < ((hub->desc.bNbrPorts + 1 + 7)/8); i++)
-		hub->desc.u.hs.PortPwrCtrlMask[i] = descriptor->u.hs.PortPwrCtrlMask[i];
-
 	/*
-	 * bNbrPorts comes from the device, while children[] and
-	 * overcurrent_count[] are sized after USB_MAXCHILDREN. Don't let a
-	 * hub that reports more ports than that write past their ends.
+	 * bNbrPorts comes from the device, while children[],
+	 * overcurrent_count[] and the port bitmaps below are sized after
+	 * USB_MAXCHILDREN. Don't let a hub that reports more ports than that
+	 * write past their ends.
 	 */
 	dev->maxchild = descriptor->bNbrPorts;
 	if (dev->maxchild > USB_MAXCHILDREN) {
@@ -602,6 +590,19 @@ static int usb_hub_configure(struct usb_device *dev)
 		dev->maxchild = USB_MAXCHILDREN;
 	}
 	dev_dbg(&dev->dev, "%d ports detected\n", dev->maxchild);
+
+	/* set the bitmap */
+	bitmap = (unsigned char *)&hub->desc.u.hs.DeviceRemovable[0];
+	/* devices not removable by default */
+	memset(bitmap, 0xff, (USB_MAXCHILDREN+1+7)/8);
+	bitmap = (unsigned char *)&hub->desc.u.hs.PortPwrCtrlMask[0];
+	memset(bitmap, 0xff, (USB_MAXCHILDREN+1+7)/8); /* PowerMask = 1B */
+
+	for (i = 0; i < ((dev->maxchild + 1 + 7)/8); i++)
+		hub->desc.u.hs.DeviceRemovable[i] = descriptor->u.hs.DeviceRemovable[i];
+
+	for (i = 0; i < ((dev->maxchild + 1 + 7)/8); i++)
+		hub->desc.u.hs.PortPwrCtrlMask[i] = descriptor->u.hs.PortPwrCtrlMask[i];
 
 	switch (hub->desc.wHubCharacteristics & HUB_CHAR_LPSM) {
 	case 0x00:

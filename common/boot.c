@@ -97,25 +97,13 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	int bootm_nattempts;
 	int ret;
 
-	struct bootm_data backup = {}, data = {};
+	struct bootm_data data = {};
 
 	if (dryrun == 1) {
 		printf("Would run %s%s%s\n", bs->entry.path,
 		       bs->args ? " " : "", bs->args ?: "");
 		return 0;
 	}
-
-	bootm_data_init_defaults(&backup);
-
-	/*
-	 * The strings point to the globalvars' current values, which the
-	 * script frees when it assigns new ones. Keep our own copies.
-	 */
-	backup.os_file = xstrdup(backup.os_file);
-	backup.initrd_file = xstrdup(backup.initrd_file);
-	backup.oftree_file = xstrdup(backup.oftree_file);
-	backup.root_dev = xstrdup(backup.root_dev);
-	backup.root_param = xstrdup(backup.root_param);
 
 	globalvar_add_simple("linux.bootargs.dyn.ip", NULL);
 	globalvar_add_simple("linux.bootargs.dyn.root", NULL);
@@ -129,12 +117,12 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	ret = execute_binfmt(bs->args ? 2 : 1, argv);
 	if (ret) {
 		pr_err("Running script '%s' failed: %s\n", bs->entry.path, strerror(-ret));
-		goto out;
+		return ret;
 	}
 
 	/* No point in repeating bootm if script already called it */
 	if (bootm_nattempts != bootm_command_attempts())
-		goto out;
+		return 0;
 
 	bootm_data_init_defaults(&data);
 
@@ -143,17 +131,7 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	if (dryrun >= 2)
 		data.dryrun = dryrun - 1;
 
-	ret = bootm_entry(entry, &data);
-out:
-	bootm_data_restore_defaults(&backup);
-
-	free_const(backup.os_file);
-	free_const(backup.initrd_file);
-	free_const(backup.oftree_file);
-	free_const(backup.root_dev);
-	free_const(backup.root_param);
-
-	return ret;
+	return bootm_entry(entry, &data);
 }
 
 static unsigned int boot_watchdog_timeout;
@@ -210,6 +188,7 @@ BAREBOX_MAGICVAR(global.user,
 
 int boot_entry(struct bootentry *be, int verbose, int dryrun)
 {
+	struct globalvar_scope *scope;
 	int ret;
 
 	pr_info("Booting entry '%s'\n", be->title);
@@ -224,11 +203,13 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 		}
 	}
 
+	scope = boot_globalvar_scope_push();
+
 	ret = be->boot(be, verbose, dryrun);
 	if (ret && ret != -ENOMEDIUM)
 		pr_err("Booting entry '%s' failed: %pe\n", be->title, ERR_PTR(ret));
 
-	globalvar_set_match("linux.bootargs.dyn.", "");
+	globalvar_scope_pop(scope);
 
 	return ret;
 }

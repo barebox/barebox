@@ -164,16 +164,24 @@ A simple boot entry in ``/env/boot/mmc`` could look like this:
   global.bootm.image=/mnt/mmc1/zImage
   global.bootm.oftree=/env/oftree
 
-  global linux.bootargs.dyn.root="root=PARTUUID=deadbeef:01"
+  global linux.bootargs.root="root=PARTUUID=deadbeef:01"
 
 This takes the kernel from ``/mnt/mmc1/zImage`` (which could be an
 :ref:`automount` path registered earlier). The devicetree will be used from
 ``/env/oftree``. The Kernel gets the command line
-``root=PARTUUID=deadbeef:01``. Note the ``.dyn`` in the bootargs variable name.
-boot entries should always add Kernel command line parameters to variables with
-``.dyn`` in it. These will be cleared before booting different boot entries.
-This is done so that following boot entries do not leak command line
-parameters from the previous boot entries.
+``root=PARTUUID=deadbeef:01``.
+
+All changes a boot entry makes to ``global.bootm.*``, ``global.linux.*``,
+``global.of.*`` and
+:ref:`global.boot.watchdog_timeout <magicvar_global_boot_watchdog_timeout>`
+are reverted when the boot entry returns:
+modified variables get their previous value back, variables created by
+the boot entry are removed and variables it removed are created again.
+This way a boot entry that fails to boot doesn't leak its settings into
+the following boot entries. Older boot entries put their Kernel command
+line parameters into ``global.linux.bootargs.dyn.*`` for this reason,
+which still works, but is no longer necessary. Settings meant for all
+boot entries belong into an init script or an nv variable instead.
 
 This entry can be booted with ``boot mmc``. It can also be made the default by
 setting the :ref:`global.boot.default <magicvar_global_boot_default>` variable

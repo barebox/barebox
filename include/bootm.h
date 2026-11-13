@@ -196,7 +196,6 @@ static inline int bootm_verbose(struct image_data *data)
 #endif
 
 void bootm_data_init_defaults(struct bootm_data *data);
-void bootm_data_restore_defaults(const struct bootm_data *data);
 
 const struct resource *
 bootm_load_os(struct image_data *data,

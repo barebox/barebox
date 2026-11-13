@@ -193,8 +193,8 @@ when ``CONFIG_BOOTM_OFTREE_FALLBACK`` is enabled), and appends the
 contains.
 
 Kernel command line fragments set by the script should use the
-``global.linux.bootargs.devboot.`` namespace. Unlike
-``global.linux.bootargs.dyn.``, which is cleared whenever a boot entry
+``global.linux.bootargs.devboot.`` namespace. Unlike variables set
+by the boot entries themselves, which are reverted whenever a boot entry
 returns, it survives falling through to the next boot target, e.g. for
 ``devboot system0 system1``. The ``devboot`` command removes the
 namespace after the boot command returns, so a subsequent plain

@@ -124,6 +124,8 @@ interleaved with externally provided command-line arguments:
   * ``systemd.machine_id=`` controlled by :ref:`global.bootm.provide_machine_id <magicvar_global_bootm_provide_machine_id>`
   * ``systemd.hostname=`` controlled by :ref:`global.bootm.provide_hostname <magicvar_global_bootm_provide_hostname>`
   * ``barebox.security.policy=`` controlled by :ref:`global.bootm.provide_policy <magicvar_global_bootm_provide_policy>`
+  * ``systemd.watchdog_device=`` controlled by ``CONFIG_SYSTEMD_OF_WATCHDOG``,
+    only when booting with a device tree
 
 Creating root= options for the Kernel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

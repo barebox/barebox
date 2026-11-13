@@ -456,6 +456,149 @@ void globalvar_set_match(const char *match, const char *val)
 	}
 }
 
+struct globalvar_scope_var {
+	struct list_head list;
+	char *name;
+	char *value;
+	bool unqualified;
+	bool seen;
+};
+
+struct globalvar_scope {
+	const char * const *patterns;
+	struct list_head vars;
+};
+
+static bool globalvar_scope_match(const struct globalvar_scope *scope,
+				  const char *name)
+{
+	const char * const *pattern;
+
+	for (pattern = scope->patterns; *pattern; pattern++)
+		if (!fnmatch(*pattern, name, 0))
+			return true;
+
+	return false;
+}
+
+static struct globalvar_scope_var *
+globalvar_scope_find(struct globalvar_scope *scope, const char *name)
+{
+	struct globalvar_scope_var *var;
+
+	list_for_each_entry(var, &scope->vars, list)
+		if (!strcmp(var->name, name))
+			return var;
+
+	return NULL;
+}
+
+/**
+ * __globalvar_scope_push - snapshot a set of globalvars
+ * @patterns: NULL terminated array of fnmatch() patterns of the names
+ *            to snapshot, which must stay valid until globalvar_scope_pop()
+ *
+ * Records the current value of all globalvars whose name matches one of
+ * @patterns, e.g. "bootm.*" for all variables in the bootm namespace. A
+ * later globalvar_scope_pop() reverts all changes done to these variables
+ * in the meantime, including adding and removing them. Scopes can be
+ * nested, but must be popped in reverse order.
+ *
+ * Return: the scope to be passed to globalvar_scope_pop()
+ */
+struct globalvar_scope *__globalvar_scope_push(const char * const *patterns)
+{
+	struct globalvar_scope *scope;
+	struct param_d *p;
+
+	scope = xzalloc(sizeof(*scope));
+	scope->patterns = patterns;
+	INIT_LIST_HEAD(&scope->vars);
+
+	dev_for_each_param(&global_device, p) {
+		struct globalvar_scope_var *var;
+
+		if (!globalvar_scope_match(scope, p->name))
+			continue;
+
+		var = xzalloc(sizeof(*var));
+		var->name = xstrdup(p->name);
+		var->value = xstrdup(p->get(p->bobj, p) ?: "");
+		var->unqualified = p->flags & PARAM_GLOBALVAR_UNQUALIFIED;
+		list_add_tail(&var->list, &scope->vars);
+	}
+
+	return scope;
+}
+
+/**
+ * globalvar_scope_pop - revert globalvars to a snapshot
+ * @scope: the scope returned by globalvar_scope_push()
+ *
+ * Restores all globalvars covered by @scope to the values they had when
+ * the scope was pushed: changed values are set back, variables created
+ * in the meantime are removed and removed variables are created again.
+ * Variables which were not created with globalvar_add_simple() are never
+ * removed or recreated, only their values are restored.
+ *
+ * @scope is freed afterwards.
+ */
+void globalvar_scope_pop(struct globalvar_scope *scope)
+{
+	struct globalvar_scope_var *var, *vtmp;
+	struct param_d *p, *tmp;
+	int ret;
+
+	if (!scope)
+		return;
+
+	dev_for_each_param_safe(&global_device, p, tmp) {
+		const char *cur;
+
+		if (!globalvar_scope_match(scope, p->name))
+			continue;
+
+		var = globalvar_scope_find(scope, p->name);
+		if (!var) {
+			if (!(p->flags & PARAM_GLOBALVAR_UNQUALIFIED))
+				continue;
+
+			pr_debug("scope: removing global.%s\n", p->name);
+			param_remove(p);
+			continue;
+		}
+
+		var->seen = true;
+
+		cur = p->get(p->bobj, p) ?: "";
+		if (!strcmp(cur, var->value))
+			continue;
+
+		pr_debug("scope: restoring global.%s: \"%s\" -> \"%s\"\n",
+			 p->name, cur, var->value);
+
+		ret = dev_set_param(&global_device, p->name, var->value);
+		if (ret)
+			pr_warn("Cannot restore global.%s=\"%s\": %pe\n",
+				p->name, var->value, ERR_PTR(ret));
+	}
+
+	list_for_each_entry_safe(var, vtmp, &scope->vars, list) {
+		if (!var->seen && var->unqualified) {
+			pr_debug("scope: recreating global.%s=\"%s\"\n",
+				 var->name, var->value);
+			globalvar_add_simple(var->name, var->value);
+		}
+
+		list_del(&var->list);
+		free(var->name);
+		free(var->value);
+		free(var);
+	}
+
+	free(scope);
+}
+
 void globalvar_set(const char *name, const char *val)
 {
 	dev_set_param(&global_device, name, val);

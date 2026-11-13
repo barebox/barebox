@@ -6,6 +6,7 @@
 #define pr_fmt(fmt)	"bootchooser: " fmt
 
 #include <bootchooser.h>
+#include <boot.h>
 #include <environment.h>
 #include <globalvar.h>
 #include <magicvar.h>
@@ -846,6 +847,7 @@ static int bootchooser_boot_one(struct bootchooser *bc, int *tryagain,
 	struct bootentries *entries;
 	struct bootentry *entry;
 	struct bootchooser_target *target;
+	struct globalvar_scope *scope = NULL;
 	int ret = 0;
 
 	entries = bootentries_alloc();
@@ -856,6 +858,8 @@ static int bootchooser_boot_one(struct bootchooser *bc, int *tryagain,
 		*tryagain = 0;
 		goto out;
 	}
+
+	scope = boot_globalvar_scope_push();
 
 	system = basprintf("bootchooser.active=%s", target->name);
 	globalvar_add_simple("linux.bootargs.bootchooser", system);
@@ -887,7 +891,7 @@ static int bootchooser_boot_one(struct bootchooser *bc, int *tryagain,
 
 	*tryagain = 1;
 out:
-	globalvar_set_match("linux.bootargs.bootchooser", NULL);
+	globalvar_scope_pop(scope);
 
 	bootentries_free(entries);
 

@@ -20,6 +20,7 @@ struct bootentry {
 	const char *title;
 	char *description;
 	const char *path;
+	/* 0 on success, else negative errno or a boot script's exit status */
 	int (*boot)(struct bootentry *entry, int verbose, int dryrun);
 	void (*release)(struct bootentry *entry);
 	struct bootm_overrides overrides;

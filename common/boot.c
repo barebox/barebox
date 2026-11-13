@@ -115,10 +115,11 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	 * without the shell expanding or splitting it first.
 	 */
 	ret = execute_binfmt(bs->args ? 2 : 1, argv);
-	if (ret) {
-		pr_err("Running script '%s' failed: %s\n", bs->entry.path, strerror(-ret));
+	if (ret < 0)
+		pr_err("Running script '%s' failed: %pe\n", bs->entry.path, ERR_PTR(ret));
+	/* positive values are the exit status, reported by boot_entry() */
+	if (ret)
 		return ret;
-	}
 
 	/* No point in repeating bootm if script already called it */
 	if (bootm_nattempts != bootm_command_attempts())
@@ -206,7 +207,9 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 	scope = boot_globalvar_scope_push();
 
 	ret = be->boot(be, verbose, dryrun);
-	if (ret && ret != -ENOMEDIUM)
+	if (ret > 0)
+		pr_err("Booting entry '%s' failed: exit status %d\n", be->title, ret);
+	else if (ret && ret != -ENOMEDIUM)
 		pr_err("Booting entry '%s' failed: %pe\n", be->title, ERR_PTR(ret));
 
 	globalvar_scope_pop(scope);

@@ -19,7 +19,12 @@
 #include <init.h>
 #include <xfuncs.h>
 
-static int of_parse_prop_cells(struct device_node *root, char * const *newval, int count, char *data, int *len)
+/*
+ * With @resolve false, node paths are only checked for syntax and
+ * converted to 0 instead of a phandle.
+ */
+static int of_parse_prop_cells(struct device_node *root, bool resolve,
+			       char * const *newval, int count, char *data, int *len)
 {
 	char *cp;
 	unsigned long tmp;	/* holds converted values */
@@ -58,6 +63,12 @@ static int of_parse_prop_cells(struct device_node *root, char * const *newval, i
 				len++;
 			}
 
+			if (!resolve) {
+				tmp = 0;
+				newp += len;
+				goto next;
+			}
+
 			str = xzalloc(len + 1);
 			strncpy(str, cp, len);
 
@@ -73,7 +84,7 @@ static int of_parse_prop_cells(struct device_node *root, char * const *newval, i
 			tmp = of_node_create_phandle(n);
 			newp += len;
 		}
-
+next:
 		*(__be32 *)data = __cpu_to_be32(tmp);
 		data  += 4;
 		*len += 4;
@@ -165,7 +176,8 @@ static int of_parse_prop_string(char * const *newval, int count, char *data, int
  * data: A bytestream to be placed in the property
  * len: The length of the resulting bytestream
  */
-static int of_parse_prop(struct device_node *root, char * const *newval, int count, char *data, int *len)
+static int of_parse_prop(struct device_node *root, bool resolve,
+			 char * const *newval, int count, char *data, int *len)
 {
 	char *newp;		/* temporary newval char pointer */
 
@@ -178,7 +190,7 @@ static int of_parse_prop(struct device_node *root, char * const *newval, int cou
 
 	switch (*newp) {
 	case '<':
-		return of_parse_prop_cells(root, newval, count, data, len);
+		return of_parse_prop_cells(root, resolve, newval, count, data, len);
 	case '[':
 		return of_parse_prop_stream(newval, count, data, len);
 	default:
@@ -189,8 +201,8 @@ static int of_parse_prop(struct device_node *root, char * const *newval, int cou
 struct of_fixup_property_data {
 	const char *path;
 	const char *propname;
-	void *data;
-	int len;
+	char **values;
+	int count;
 };
 
 static int do_of_property_delete_now(struct device_node *root, const char *path,
@@ -201,9 +213,20 @@ static int do_of_property_set_now(struct device_node *root, const char *path,
 static int of_fixup_property_set(struct device_node *root, void *context)
 {
 	struct of_fixup_property_data *fixup = context;
+	void *data;
+	int len, ret;
 
-	return do_of_property_set_now(root, fixup->path, fixup->propname,
-			fixup->data, fixup->len);
+	/* parse now, so node paths resolve against the tree being booted */
+	data = xmalloc(1024);
+
+	ret = of_parse_prop(root, true, fixup->values, fixup->count, data, &len);
+	if (!ret)
+		ret = do_of_property_set_now(root, fixup->path, fixup->propname,
+				data, len);
+
+	free(data);
+
+	return ret;
 }
 
 static int of_fixup_property_delete(struct device_node *root, void *context)
@@ -214,15 +237,19 @@ static int of_fixup_property_delete(struct device_node *root, void *context)
 }
 
 static int do_of_property_set_fixup(const char *path, const char *propname,
-		void *data, int len)
+		char * const *values, int count)
 {
 	struct of_fixup_property_data *fixup;
+	int i;
 
 	fixup = xzalloc(sizeof(*fixup));
 	fixup->path = xstrdup_const(path);
 	fixup->propname = xstrdup_const(propname);
-	fixup->data = data;
-	fixup->len = len;
+	fixup->values = xzalloc(count * sizeof(*fixup->values));
+	fixup->count = count;
+
+	for (i = 0; i < count; i++)
+		fixup->values[i] = xstrdup(values[i]);
 
 	return of_register_fixup(of_fixup_property_set, (void *)fixup);
 }
@@ -234,8 +261,6 @@ static int do_of_property_delete_fixup(const char *path, const char *propname)
 	fixup = xzalloc(sizeof(*fixup));
 	fixup->path = xstrdup_const(path);
 	fixup->propname = xstrdup_const(propname);
-	fixup->data = NULL;
-	fixup->len = 0;
 
 	return of_register_fixup(of_fixup_property_delete, (void *)fixup);
 }
@@ -338,7 +363,8 @@ static int do_of_property(int argc, char *argv[])
 	if ( !(set || delete))
 		return COMMAND_ERROR_USAGE;
 
-	if (dtbfile) {
+	/* fixups apply to the booted tree; -e is accepted but ignored */
+	if (dtbfile && !fixup) {
 		root = of_read_file(dtbfile);
 		if (IS_ERR(root))
 			return PTR_ERR(root);
@@ -356,20 +382,20 @@ static int do_of_property(int argc, char *argv[])
 		if (!data)
 			return -ENOMEM;
 
-		ret = of_parse_prop(root, &argv[optind + 2], argc - optind - 2, data, &len);
+		ret = of_parse_prop(root, !fixup, &argv[optind + 2],
+				    argc - optind - 2, data, &len);
 		if (ret) {
 			free(data);
 			goto out;
 		}
 
-		if (fixup) {
-			ret = do_of_property_set_fixup(path, propname, data, len);
-			if (ret)
-				free(data);
-		} else {
+		if (fixup)
+			ret = do_of_property_set_fixup(path, propname,
+					&argv[optind + 2], argc - optind - 2);
+		else
 			ret = do_of_property_set_now(root, path, propname, data, len);
-			free(data);
-		}
+
+		free(data);
 
 		if (ret)
 			goto out;
@@ -408,11 +434,12 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-s",  "set property to value")
 BAREBOX_CMD_HELP_OPT ("-d",  "delete property")
 BAREBOX_CMD_HELP_OPT ("-f",  "set/delete as a fixup (defer the action until booting)")
-BAREBOX_CMD_HELP_OPT ("-e dtb",  "set/delete/fixup from external dtb")
+BAREBOX_CMD_HELP_OPT ("-e dtb",  "set/delete in external dtb (ignored with -f)")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Valid formats for values:")
 BAREBOX_CMD_HELP_TEXT("<0x00112233 4 05> - an array of cells. cells not beginning with a digit are")
-BAREBOX_CMD_HELP_TEXT("                    interpreted as node paths and converted to phandles")
+BAREBOX_CMD_HELP_TEXT("                    interpreted as node paths and converted to phandles.")
+BAREBOX_CMD_HELP_TEXT("                    With -f, the paths are looked up in the booted tree")
 BAREBOX_CMD_HELP_TEXT("[00 11 22 .. nn]  - byte stream")
 BAREBOX_CMD_HELP_TEXT("If the value does not start with '<' or '[' it is interpreted as string")
 BAREBOX_CMD_HELP_END

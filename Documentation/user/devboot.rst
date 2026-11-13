@@ -5,9 +5,9 @@ Devboot
 
 Devboot is a development convenience that builds on top of the
 :ref:`boot override <boot_overrides>` mechanism. It sources a per-user,
-per-board script from the network and translates it into ``boot -o``
-arguments, making it easy to redirect any combination of kernel, device tree
-and initrd to network-hosted files without touching the boot medium.
+per-board script from the network and takes boot overrides from it,
+making it easy to redirect any combination of kernel, device tree and
+initrd to network-hosted files without touching the boot medium.
 
 .. _boot_overrides:
 
@@ -116,21 +116,32 @@ Override rules
    When secure boot is enforced (``bootm_signed_images_are_forced()``),
    overrides are silently ignored.
 
-The devboot script
-------------------
+Booting with devboot
+--------------------
 
-The ``devboot`` command (``/env/bin/devboot``) automates the override
-workflow for network-based development:
+With ``CONFIG_BOOT_DEVBOOT`` enabled, devboot is enabled for a boot by
+passing ``-D`` to the ``boot`` command or by setting
+:ref:`global.boot.devboot <magicvar_global_boot_devboot>`. Before booting
+the boot targets, the ``boot`` command then:
 
-1. Brings up the network (``ifup -a1``).
+1. Brings up the network, like ``ifup -a1``.
 2. Changes into the fetch directory
    (:ref:`global.net.fetchdir <magicvar_global_net_fetchdir>`, default
    ``/mnt/tftp``).
 3. Sources a configuration script named
    ``${global.user}-devboot-${global.hostname}``. If that file does not
    exist, it falls back to ``${global.user}-devboot-${global.arch}``.
-4. Translates the variables set by the script into ``boot -o`` arguments.
-5. Passes any extra arguments through to the ``boot`` command.
+   If neither exists or the script fails, the boot is aborted.
+4. Takes the variables set by the script as boot overrides. Overrides
+   given with ``-o`` take precedence.
+
+Once the boot command returns, it changes back to the previous
+directory and reverts the changes the script made to
+``global.linux.bootargs.*`` and ``global.bootm.*`` variables.
+
+As boot overrides are ignored when signed images are forced, devboot is
+refused then: the ``boot`` command fails before bringing up the network
+or sourcing any script.
 
 .. note::
 
@@ -144,10 +155,15 @@ Usage
 .. code-block:: sh
 
   # Boot from MMC with devboot overrides
-  devboot mmc
+  boot -D mmc
 
   # Boot from the default boot entry
-  devboot
+  boot -D
+
+``devboot`` is a shorthand for ``boot -D``, so ``devboot mmc`` does the
+same as ``boot -D mmc``. With the boot menu (``-m``), the script is
+sourced before the menu is shown and applies to all boot entries booted
+from it. Listing the boot entries (``-l``) doesn't source the script.
 
 Configuration script
 ^^^^^^^^^^^^^^^^^^^^
@@ -183,12 +199,15 @@ kernel command line fragments:
 
 With this script in place and :ref:`global.user=afa <magicvar_global_user>`,
 :ref:`global.hostname=rock3a <magicvar_global_hostname>`,
-running ``devboot mmc`` on the board expands to::
+running ``boot -D mmc`` on the board is equivalent to running::
 
   boot -o bootm.image="afa-fit-rock3a" \
        -o bootm.oftree="" \
        -o bootm.initrd=":afa-modules-arm64" \
        mmc
+
+from within the fetch directory, with ``rsinit.bind_modules`` added to the
+kernel command line.
 
 This fetches the FIT image ``afa-fit-rock3a`` from the fetch directory,
 discards the FIT's device tree (falling back to the barebox-internal one
@@ -196,13 +215,15 @@ when ``CONFIG_BOOTM_OFTREE_FALLBACK`` is enabled), and appends the
 ``afa-modules-arm64`` CPIO archive to whatever initrd the FIT already
 contains.
 
-Kernel command line fragments set by the script should use the
-``global.linux.bootargs.devboot.`` namespace. Unlike variables set
-by the boot entries themselves, which are reverted whenever a boot entry
-returns, it survives falling through to the next boot target, e.g. for
-``devboot system0 system1``. The ``devboot`` command removes the
-namespace after the boot command returns, so a subsequent plain
-``boot`` is unaffected by it.
+The script runs only once per ``boot`` command, even if multiple boot
+targets are given, e.g. for ``boot -D system0 system1``. Kernel
+command line fragments it sets apply to all of them. They are reverted
+once the ``boot`` command returns, so a subsequent ``boot`` without
+devboot is unaffected by them.
+
+A boot command started while devboot is active, e.g. by a boot script
+that boots other boot targets, doesn't source the script again, but
+applies the same overrides.
 
 Snippets under /env/devboot/
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -260,22 +281,16 @@ script is loaded. Make them persistent with:
 :ref:`global.hostname <magicvar_global_hostname>` is typically derived from
 the device tree, but can be overridden.
 
-devboot boot target
-^^^^^^^^^^^^^^^^^^^
+Booting with devboot by default
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``devboot`` is available as boot entry as well, so it can be used
-wherever a boot target is expected. The boot target to hand the
-overrides to is appended after an ``@``:
+To boot with devboot by default, including the boot on startup, set:
 
 .. code-block:: sh
 
-   boot devboot@system0
+   nv boot.devboot=1
 
-This is most useful to boot with the overrides by default:
-
-.. code-block:: sh
-
-   nv boot.default=devboot@system0
+``boot`` then always boots with devboot, whatever the boot targets.
 
 Forwarding a remote build directory over the internet
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

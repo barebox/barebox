@@ -353,7 +353,7 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
 /*
  * Only the first character of a boot script argument is restricted, so
  * that other forms can be added later without changing the meaning of
- * existing targets, e.g. devboot@@mmc0@mmc1 or devboot@[some-condition].
+ * existing targets, e.g. SCRIPT@@ARG1@ARG2 or SCRIPT@[some-condition].
  * Paths and URLs are fine as arguments.
  */
 static bool is_valid_bootarg(const char *s)
@@ -366,8 +366,8 @@ static bool is_valid_bootarg(const char *s)
  *
  * name is either an absolute path or a name relative to /env/boot. A name
  * of the form SCRIPT@ARGUMENT refers to the boot script SCRIPT and has
- * ARGUMENT passed to it as first argument, e.g. devboot@system0 runs
- * /env/boot/devboot with argument system0. A name that exists as-is takes
+ * ARGUMENT passed to it as first argument, e.g. mmc@1 runs /env/boot/mmc
+ * with argument 1. A name that exists as-is takes
  * precedence, so scripts and directories with an @ in their name keep
  * working. An empty SCRIPT is rejected, so that @ARGUMENT doesn't expand
  * to every script in /env/boot.
@@ -553,7 +553,7 @@ out:
  * name can be:
  * - a name of a boot script under /env/boot
  * - a name of a boot script under /env/boot followed by an @ and an
- *   argument to pass to the script, e.g. devboot@system0
+ *   argument to pass to the script, e.g. mmc@1
  * - a full path of a boot script
  * - a full path of a bootloader spec entry
  * - a device name

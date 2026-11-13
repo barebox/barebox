@@ -677,6 +677,16 @@ config BOOT_OVERRIDE
 	  Allow overriding of bootm image, oftree and initrd by passing
 	  -o as an argument to the boot command.
 
+config BOOT_DEVBOOT
+	bool "Support devboot"
+	depends on BOOT_OVERRIDE && SHELL_HUSH && BOOTM_OPTIONAL_SIGNED_IMAGES
+	default y
+	help
+	  Add a -D option to the boot command and a global.boot.devboot
+	  variable, which take boot overrides and kernel command line
+	  fragments from a per-user, per-board script in the network
+	  fetch directory. See Documentation/user/devboot.rst.
+
 config BOOTM_SHOW_TYPE
 	bool
 	depends on BOOTM && UIMAGE
@@ -1243,7 +1253,7 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW_SECURITY_POLICY
 config DEFAULT_ENVIRONMENT_GENERIC_NEW_DEVBOOT
 	bool "Reusable devboot snippets under /env/devboot/"
 	depends on DEFAULT_ENVIRONMENT_GENERIC_NEW
-	depends on BOOT_OVERRIDE
+	depends on BOOT_DEVBOOT
 	help
 	  Extend the defaultenv template with snippets under /env/devboot/
 	  that a devboot script can source: defaults for the image, oftree

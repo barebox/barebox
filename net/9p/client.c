@@ -26,6 +26,7 @@
 #include <net/9p/client.h>
 #include <net/9p/transport.h>
 #include <barebox-info.h>
+#include <clock.h>
 #include <stdio.h>
 #include "protocol.h"
 
@@ -556,6 +557,7 @@ p9_client_rpc(struct p9_client *c, int8_t type, const char *fmt, ...)
 	va_list ap;
 	int err;
 	struct p9_req_t *req;
+	u64 start;
 	/* Passing zero for tsize/rsize to p9_client_prepare_req() tells it to
 	 * auto determine an appropriate (small) request/response size
 	 * according to actual message data being sent. Currently RDMA
@@ -581,7 +583,10 @@ p9_client_rpc(struct p9_client *c, int8_t type, const char *fmt, ...)
 			c->status = Disconnected;
 		goto recalc_sigpending;
 	}
+
+	start = get_time_ns();
 again:
+	err = 0;
 	do {
 		c->trans_mod->poll(c);
 	} while (!completion_done(&req->completion) && !(err = ctrlc()));
@@ -589,9 +594,16 @@ again:
 	if (err)
 		err = -ERESTARTSYS;
 
+	/*
+	 * Ctrl-C stays pending until the shell handles it, so a flush is
+	 * always waited for with it pressed. Give the server a few seconds
+	 * to answer before considering it gone.
+	 */
 	if (err == -ERESTARTSYS && c->status == Connected &&
 	    type == P9_TFLUSH) {
-		goto again;
+		if (!is_timeout(start, 3 * SECOND))
+			goto again;
+		c->status = Disconnected;
 	}
 
 	if (READ_ONCE(req->status) == REQ_STATUS_ERROR) {

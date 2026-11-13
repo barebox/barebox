@@ -29,6 +29,7 @@
 #define pr_fmt(fmt) "usb: " fmt
 
 #include <common.h>
+#include <clock.h>
 #include <command.h>
 #include <malloc.h>
 #include <driver.h>
@@ -44,6 +45,9 @@
 #include "usb.h"
 
 #define USB_BUFSIZ	512
+
+/* Some devices miss a SETUP sent within a microframe of the previous one */
+#define USB_CONTROL_GAP_NS	(125 * USECOND)
 
 static int dev_count;
 static int dev_index;
@@ -334,22 +338,31 @@ static int usb_get_descriptor(struct usb_device *dev, unsigned char type,
 
 static int get_descriptor_len(struct usb_device *dev, int len, int expect_len)
 {
+	void *buf;
 	int err;
 
-	err = usb_get_descriptor(dev, USB_DT_DEVICE, 0, dev->descriptor, len);
+	/* len may exceed the descriptor and the device may send all of it */
+	buf = dma_xalloc(len);
+
+	err = usb_get_descriptor(dev, USB_DT_DEVICE, 0, buf, len);
 	if (err < expect_len) {
 		if (err < 0) {
 			dev_err(&dev->dev, "unable to get device descriptor (error=%d)\n",
 				err);
-			return err;
 		} else {
 			dev_err(&dev->dev, "USB device descriptor short read (expected %i, got %i)\n",
 				expect_len, err);
-			return -EIO;
+			err = -EIO;
 		}
+		goto out;
 	}
 
-        return 0;
+	memcpy(dev->descriptor, buf,
+	       min_t(int, err, sizeof(*dev->descriptor)));
+	err = 0;
+out:
+	dma_free(buf);
+	return err;
 }
 
 static int usb_setup_descriptor(struct usb_device *dev, bool do_read)
@@ -620,6 +633,9 @@ void usb_remove_device(struct usb_device *usbdev)
 
 	for (i = 0; i < usbdev->maxchild; i++)
 		usb_remove_device(usbdev->children[i]);
+
+	usb_hub_cancel_scans(usbdev);
+
 	if (usbdev->parent && usbdev->portnr)
 		usbdev->parent->children[usbdev->portnr - 1] = NULL;
 	list_del(&usbdev->list);
@@ -665,6 +681,7 @@ int usb_host_detect(struct usb_host *host)
 		ret = usb_new_device(host->root_dev);
 		if (ret) {
 			usb_free_device(host->root_dev);
+			host->root_dev = NULL;
 			return ret;
 		}
 	}
@@ -747,6 +764,7 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 	struct usb_host *host = dev->host;
 	int ret;
 	struct devrequest *setup_packet = dev->setup_packet;
+	u64 elapsed;
 
 	ret = usb_host_acquire(host);
 	if (ret)
@@ -763,8 +781,14 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 		   request, requesttype, value, index, size);
 	dev->status = USB_ST_NOT_PROC; /*not yet processed */
 
+	elapsed = get_time_ns() - dev->last_control_ns;
+	if (elapsed < USB_CONTROL_GAP_NS)
+		ndelay(USB_CONTROL_GAP_NS - elapsed);
+
 	ret = host->submit_control_msg(dev, pipe, data, size, setup_packet,
 			timeout_ms);
+
+	dev->last_control_ns = get_time_ns();
 
 	usb_host_release(host);
 

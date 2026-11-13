@@ -492,21 +492,17 @@ static int fit_verify_signature(struct fit_handle *handle,
 
 	ret = fit_digest(handle, digest, &inc_nodes, &exc_props, hashed_strings_size);
 	if (ret)
-		goto out_sl;
+		goto out_digest;
 
 	hash = xzalloc(digest_length(digest));
 	digest_final(digest, hash);
 
 	ret = fit_check_signature(handle, sig_node, algo, hash);
-	if (ret) {
+	if (ret)
 		fit_config_check_hash_nodes(sig_node, &inc_nodes);
-		goto out_free_hash;
-	}
 
-	ret = 0;
-
- out_free_hash:
 	free(hash);
+ out_digest:
 	digest_free(digest);
  out_sl:
 	string_list_free(&inc_nodes);
@@ -747,7 +743,6 @@ static int fit_handle_decompression(struct device_node *image,
 				    int *data_len)
 {
 	const char *compression;
-	struct property *pp;
 	void *uc_data;
 	int ret;
 
@@ -767,21 +762,18 @@ static int fit_handle_decompression(struct device_node *image,
 		return -ENOSYS;
 	}
 
-	pp = of_find_property(image, "$uncompressed-data", NULL);
-	if (!pp) {
-		ret = uncompress_buf_to_buf(*data, *data_len, &uc_data,
-					    fit_uncompress_error_fn);
-		if (ret < 0) {
-			pr_err("%s data couldn't be decompressed\n", compression);
-			return ret;
-		}
-
-		/* associate buffer with FIT, so it's not leaked */
-		pp = __of_new_property(image, "$uncompressed-data", uc_data, ret);
+	ret = uncompress_buf_to_buf(*data, *data_len, &uc_data,
+				    fit_uncompress_error_fn);
+	if (ret < 0) {
+		pr_err("%s data couldn't be decompressed\n", compression);
+		return ret;
 	}
 
-	*data = of_property_get_value(pp);
-	*data_len = pp->length;
+	*data = uc_data;
+	*data_len = ret;
+
+	/* associate buffer with FIT, so it's not leaked */
+	__of_new_property(image, "$uncompressed-data", uc_data, *data_len);
 
 	return 0;
 }

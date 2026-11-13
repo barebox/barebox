@@ -226,11 +226,19 @@ const struct resource *bootm_load_os(struct image_data *data,
 	    end_address <= load_address || !data->os)
 		return ERR_PTR(-EINVAL);
 
-	res = loadable_extract_into_sdram_all(data->os, load_address, end_address);
+	res = loadable_extract_into_sdram_all(data->os, load_address, end_address,
+					      NULL);
 	if (!IS_ERR(res))
 		data->os_res = res;
 
 	return res;
+}
+
+/* Linux only detects uncompressed cpio archives at 4-byte aligned offsets */
+static unsigned long bootm_initrd_fixup_adr(struct loadable *l,
+					    unsigned long adr)
+{
+	return ALIGN(adr, 4);
 }
 
 /**
@@ -266,7 +274,8 @@ bootm_load_initrd(struct image_data *data, ulong load_address, ulong end_address
 	if (end_address <= load_address)
 		return ERR_PTR(-EINVAL);
 
-	res = loadable_extract_into_sdram_all(data->initrd, load_address, end_address);
+	res = loadable_extract_into_sdram_all(data->initrd, load_address,
+					      end_address, bootm_initrd_fixup_adr);
 	if (!IS_ERR(res))
 		data->initrd_res = res;
 	return res;
@@ -312,7 +321,8 @@ void *bootm_get_devicetree(struct image_data *data)
 		}
 
 	} else {
-		data->of_root_node = of_dup_root_node_for_boot();
+		if (!data->of_root_node)
+			data->of_root_node = of_dup_root_node_for_boot();
 		if (!data->of_root_node)
 			return NULL;
 

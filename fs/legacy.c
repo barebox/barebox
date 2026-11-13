@@ -289,7 +289,7 @@ static const char *legacy_get_link(struct dentry *dentry, struct inode *inode)
 	free(pathname);
 
 	if (ret)
-		return NULL;
+		return ERR_PTR(ret);
 
 	inode->i_link = xstrdup(link);
 

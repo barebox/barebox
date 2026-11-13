@@ -11,7 +11,6 @@ targets:
       BareboxTestStrategy: {}
     runner:
       kconfig_add:
-        - CONFIG_CONSOLE_DISABLE_INPUT=n
-        - CONFIG_MALLOC_LIBC=y # for ASAN integration
+        - common/boards/configs/allyestest.config
 imports:
   -  ../strategy.py

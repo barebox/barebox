@@ -2322,6 +2322,19 @@ static void __dwc3_gadget_set_speed(struct dwc3 *dwc)
 	dwc3_writel(dwc->regs, DWC3_DCFG, reg);
 }
 
+static void dwc3_gadget_discard_events(struct dwc3 *dwc)
+{
+	struct dwc3_event_buffer *evt = dwc->ev_buf;
+	u32 count;
+
+	count = dwc3_readl(dwc->regs, DWC3_GEVNTCOUNT(0)) & DWC3_GEVNTCOUNT_MASK;
+	if (!count)
+		return;
+
+	evt->lpos = (evt->lpos + count) % evt->length;
+	dwc3_writel(dwc->regs, DWC3_GEVNTCOUNT(0), count);
+}
+
 static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
 {
 	u32			reg;
@@ -2356,6 +2369,9 @@ static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
 
 	do {
 		udelay(1000);
+		/* the controller only halts once pending events are acked */
+		if (!is_on)
+			dwc3_gadget_discard_events(dwc);
 		reg = dwc3_readl(dwc->regs, DWC3_DSTS);
 		reg &= DWC3_DSTS_DEVCTRLHLT;
 	} while (--timeout && !(!is_on ^ !reg));

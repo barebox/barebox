@@ -371,10 +371,16 @@ config CMD_BTHREAD
 	tristate
 	prompt "bthread"
 	depends on BTHREAD
+	depends on CLOCKSOURCE_EFI_X86 || !EFI_PAYLOAD
 	help
 	  barebox threads are cooperatively-scheduled (green) threads that are running in
 	  the background whenever code executes is_timeout() or one of the various delay
 	  functions. The bthread command prints informations about registered bthreads.
+
+	  EFI payloads other than x86 rely on the generic EFI clocksource, which only
+	  advances when the firmware signals its timer event. Firmware without timer
+	  interrupts, like barebox and U-Boot, does so only within boot service calls,
+	  so the busy loops of the bthread tests would never time out.
 
 config CMD_SLICE
 	tristate

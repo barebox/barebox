@@ -25,6 +25,23 @@ static char *next_word(void *context)
 	return strsep(context, " ");
 }
 
+static void boot_set_override(const char **override, const char *val)
+{
+	free_const(*override);
+	/*
+	 * Copy the value: if it was taken from a globalvar, the boot entry
+	 * may change that globalvar, freeing the original string.
+	 */
+	*override = val ? xstrdup(val) : NULL;
+}
+
+static void boot_free_overrides(struct bootm_overrides *overrides)
+{
+	free_const(overrides->os_file);
+	free_const(overrides->oftree_file);
+	free_const(overrides->initrd_file);
+}
+
 static int boot_add_override(struct bootm_overrides *overrides, char *var)
 {
 	const char *val;
@@ -44,11 +61,11 @@ static int boot_add_override(struct bootm_overrides *overrides, char *var)
 	if (!strcmp(var, "bootm.image")) {
 		if (isempty(val))
 			return -EINVAL;
-		overrides->os_file = val;
+		boot_set_override(&overrides->os_file, val);
 	} else if (!strcmp(var, "bootm.oftree")) {
-		overrides->oftree_file = val;
+		boot_set_override(&overrides->oftree_file, val);
 	} else if (!strcmp(var, "bootm.initrd")) {
-		overrides->initrd_file = val;
+		boot_set_override(&overrides->initrd_file, val);
 	} else {
 		return -EINVAL;
 	}
@@ -124,10 +141,11 @@ static int do_boot(int argc, char *argv[])
 		case 'o':
 			ret = boot_add_override(&overrides, optarg);
 			if (ret)
-				return ret;
+				goto out_overrides;
 			break;
 		default:
-			return COMMAND_ERROR_USAGE;
+			ret = COMMAND_ERROR_USAGE;
+			goto out_overrides;
 		}
 	}
 
@@ -139,7 +157,7 @@ static int do_boot(int argc, char *argv[])
 
 		def = getenv("global.boot.default");
 		if (!def)
-			return 0;
+			goto out_overrides;
 
 		handle = freep = xstrdup(def);
 		next = next_word;
@@ -181,8 +199,10 @@ static int do_boot(int argc, char *argv[])
 		int idx;
 
 		idx = bootentries_get_default_menu_entry(entries, default_menu_entry);
-		if (idx < 0)
-			return idx;
+		if (idx < 0) {
+			ret = idx;
+			goto out;
+		}
 
 		bootsources_menu(entries, idx, timeout);
 	}
@@ -191,6 +211,8 @@ static int do_boot(int argc, char *argv[])
 out:
 	bootentries_free(entries);
 	free(freep);
+out_overrides:
+	boot_free_overrides(&overrides);
 
 	return ret;
 }

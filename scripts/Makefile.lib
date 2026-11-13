@@ -393,6 +393,8 @@ DTC_FLAGS += -Wno-unit_address_vs_reg \
 	 -Wno-pci_device_reg \
 	 -Wno-interrupt_provider
 
+DTC_FLAGS += $(DTC_FLAGS_$(target-stem))
+
 ifeq ($(CONFIG_OF_OVERLAY_LIVE), y)
 DTC_FLAGS.dtb += -@
 endif

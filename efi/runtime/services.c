@@ -171,17 +171,80 @@ static efi_status_t EFIAPI efirt_set_wakeup_time(char enabled,
 	return efirt_unimplemented();
 }
 
+/**
+ * efirt_set_virtual_address_map() - change from physical to virtual mapping
+ *
+ * This function implements the SetVirtualAddressMap() runtime service.
+ * The barebox runtime isn't relocated and only an identity mapping
+ * is accepted.
+ *
+ * We intentionally don't announce support via the EFI_RT_PROPERTIES_TABLE,
+ * so only operating systems that ignore the table would end up here.
+ * If they configure a 1:1 mapping like NetBSD, we tolerate it and return
+ * success.
+ *
+ * See the Unified Extensible Firmware Interface (UEFI) specification for
+ * details.
+ *
+ * @memory_map_size:	size of the virtual map
+ * @descriptor_size:	size of an entry in the map
+ * @descriptor_version:	version of the map entries
+ * @virtmap:		virtual address mapping information
+ * Return:		status code
+ */
 static efi_status_t EFIAPI efirt_set_virtual_address_map(size_t memory_map_size,
 							 size_t descriptor_size,
 							 uint32_t descriptor_version,
 							 struct efi_memory_desc *virtmap)
 {
-	return efirt_unimplemented();
+	static bool efirt_virtmap_set;
+
+	EFI_ENTRY(L"");
+
+	if (efirt_virtmap_set)
+		return EFI_EXIT(EFI_UNSUPPORTED);
+
+	if (descriptor_version != EFI_MEMORY_DESCRIPTOR_VERSION ||
+	    descriptor_size < sizeof(*virtmap))
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
+
+	for (size_t off = 0; off < memory_map_size; off += descriptor_size) {
+		struct efi_memory_desc *md = (void *)virtmap + off;
+
+		if ((md->attrs & EFI_MEMORY_RUNTIME) &&
+		    efi_memory_desc_relocation_offset(md) != 0)
+			return EFI_EXIT(EFI_UNSUPPORTED);
+	}
+
+	efirt_virtmap_set = true;
+
+	return EFI_EXIT(EFI_SUCCESS);
 }
 
+/**
+ * efirt_convert_pointer() - convert pointer to virtual address
+ *
+ * This function implements the ConvertPointer() runtime service.
+ * Only identity mappings are accepted, so the pointer is left as-is.
+ *
+ * See the Unified Extensible Firmware Interface (UEFI) specification for
+ * details.
+ *
+ * @dbg:	EFI_OPTIONAL_PTR if the pointer may be NULL
+ * @address:	pointer to be converted
+ * Return:	status code
+ */
 static efi_status_t EFIAPI efirt_convert_pointer(unsigned long dbg, void **address)
 {
-	return efirt_unimplemented();
+	EFI_ENTRY(L"");
+
+	if (!address)
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
+
+	if (!*address && !(dbg & EFI_OPTIONAL_PTR))
+		return EFI_EXIT(EFI_INVALID_PARAMETER);
+
+	return EFI_EXIT(EFI_SUCCESS);
 }
 
 static efi_status_t EFIAPI
@@ -293,7 +356,8 @@ void efi_runtime_detach(struct efi_system_table *systab)
 	systab->std_err = NULL;
 	systab->boottime = NULL;
 
-	systab->runtime = &efi_runtime_services_detached;
+	/* Payloads may have cached systab->runtime, so patch it in place */
+	*systab->runtime = efi_runtime_services_detached;
 
 	/* Recalculate CRC32 */
 	efi_update_table_header_crc32(&systab->hdr);

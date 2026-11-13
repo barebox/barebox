@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+
+/ {
+	target: target-node {
+		existing-child {
+			old-prop = "old";
+		};
+	};
+
+	phandle_target: phandle-target-node {
+	};
+};

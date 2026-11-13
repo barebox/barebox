@@ -225,6 +225,8 @@ static inline void usb_hcd_giveback_urb(struct usb_hcd *hcd,
 					struct urb *urb,
 					int status)
 {
+	/* like Linux' __usb_hcd_giveback_urb(): the qh may be freed already */
+	urb->hcpriv = NULL;
 	urb->status = status;
 	if (urb->complete)
 		urb->complete(urb);

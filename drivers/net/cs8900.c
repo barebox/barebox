@@ -444,7 +444,7 @@ static int cs8900_probe(struct device *dev)
 
 	priv->rx_buf = xmalloc(PKTSIZE);
 
-	edev = (struct eth_device *)xmalloc(sizeof(struct eth_device));
+	edev = xzalloc(sizeof(*edev));
 	edev->priv = priv;
 
 	edev->init = cs8900_dev_init;

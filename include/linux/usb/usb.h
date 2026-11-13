@@ -101,6 +101,7 @@ struct usb_device {
 	struct usb_device_descriptor *descriptor; /* Device Descriptor */
 	struct usb_config config; /* config descriptor */
 	struct devrequest *setup_packet;
+	u64 last_control_ns;		/* end of the last control transfer */
 
 	int have_langid;		/* whether string_langid is valid yet */
 	int string_langid;		/* language ID for strings */

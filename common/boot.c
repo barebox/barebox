@@ -102,6 +102,17 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	bootm_data_init_defaults(&backup);
 
+	/*
+	 * The strings point to the globalvars' current values, which the
+	 * script frees when it assigns new ones. Keep our own copies.
+	 */
+	backup.os_file = xstrdup(backup.os_file);
+	backup.initrd_file = xstrdup(backup.initrd_file);
+	backup.oftree_file = xstrdup(backup.oftree_file);
+	backup.tee_file = xstrdup(backup.tee_file);
+	backup.root_dev = xstrdup(backup.root_dev);
+	backup.root_param = xstrdup(backup.root_param);
+
 	globalvar_add_simple("linux.bootargs.dyn.ip", NULL);
 	globalvar_add_simple("linux.bootargs.dyn.root", NULL);
 
@@ -127,6 +138,14 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	ret = bootm_entry(entry, &data);
 out:
 	bootm_data_restore_defaults(&backup);
+
+	free_const(backup.os_file);
+	free_const(backup.initrd_file);
+	free_const(backup.oftree_file);
+	free_const(backup.tee_file);
+	free_const(backup.root_dev);
+	free_const(backup.root_param);
+
 	return ret;
 }
 

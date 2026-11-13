@@ -572,6 +572,7 @@ extern struct list_head cdev_list;
 #define DEVFS_PARTITION_FOR_FIXUP	(1U << 13)
 #define DEVFS_WRITE_AUTOERASE		(1U << 14)
 #define DEVFS_PARTITION_CAN_OVERLAP	(1U << 15)
+#define DEVFS_HAS_AUTOMOUNT		(1U << 16)
 
 /**
  * cdev_write_requires_erase - Check whether writes must be done to erased blocks
@@ -615,8 +616,12 @@ cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, const guid_t *typeuuid);
 
 #ifdef CONFIG_FS_AUTOMOUNT
 void cdev_create_default_automount(struct cdev *cdev);
+void cdev_remove_default_automount(struct cdev *cdev);
 #else
 static inline void cdev_create_default_automount(struct cdev *cdev)
+{
+}
+static inline void cdev_remove_default_automount(struct cdev *cdev)
 {
 }
 #endif

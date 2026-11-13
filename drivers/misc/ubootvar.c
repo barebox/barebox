@@ -232,6 +232,13 @@ static int ubootenv_probe(struct device *dev)
 			goto out;
 		}
 
+		if (size[i] < sizeof(uint32_t) + (count > 1)) {
+			dev_err(dev, "U-Boot environment %s is too small\n",
+				ubdata->path[i]);
+			ret = -EINVAL;
+			goto out;
+		}
+
 		crc[i] = *(uint32_t *)data[i];
 
 		size[i] -= sizeof(uint32_t);

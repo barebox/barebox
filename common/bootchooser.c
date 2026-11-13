@@ -840,8 +840,7 @@ void bootchooser_lock_attempts(bool locked)
 	attempts_locked = locked;
 }
 
-static int bootchooser_boot_one(struct bootchooser *bc, int *tryagain,
-				struct bootentry *parent_entry)
+static int bootchooser_boot_one(struct bootchooser *bc, int *tryagain)
 {
 	char *system;
 	struct bootentries *entries;
@@ -878,10 +877,6 @@ static int bootchooser_boot_one(struct bootchooser *bc, int *tryagain,
 	ret = -ENOENT;
 
 	bootentries_for_each_entry(entries, entry) {
-		if (parent_entry)
-			bootm_merge_overrides(&entry->overrides,
-					      &parent_entry->overrides);
-
 		ret = boot_entry(entry, bc->verbose, bc->dryrun);
 		if (!ret) {
 			*tryagain = 0;
@@ -898,12 +893,12 @@ out:
 	return ret;
 }
 
-int bootchooser_boot(struct bootchooser *bc, struct bootentry *entry)
+int bootchooser_boot(struct bootchooser *bc)
 {
 	int ret, tryagain;
 
 	do {
-		ret = bootchooser_boot_one(bc, &tryagain, entry);
+		ret = bootchooser_boot_one(bc, &tryagain);
 
 		if (!retry)
 			break;
@@ -924,7 +919,7 @@ int bootchooser_entry_boot(struct bootentry *entry, int verbose, int dryrun)
 	bc->verbose = verbose;
 	bc->dryrun = dryrun;
 
-	ret = bootchooser_boot(bc, entry);
+	ret = bootchooser_boot(bc);
 
 	bootchooser_put(bc);
 

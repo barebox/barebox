@@ -38,6 +38,10 @@ Overrides are applied after the boot entry has been loaded, so the original
 entry still selects the boot handler, kernel arguments, etc. Only the
 specified components are replaced.
 
+Overrides also apply to whatever a boot entry boots itself, like a boot script
+calling ``boot`` or ``bootm``, even if that is passed an image explicitly. If
+a nested ``boot`` has overrides of its own, the outer ones take precedence.
+
 Override rules
 ^^^^^^^^^^^^^^
 

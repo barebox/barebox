@@ -56,6 +56,14 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 void bootsources_menu(struct bootentries *bootentries, unsigned default_entry, int timeout);
 void bootsources_list(struct bootentries *bootentries);
 int boot_entry(struct bootentry *be, int verbose, int dryrun);
+#ifdef CONFIG_BOOT
+const struct bootm_overrides *boot_get_active_overrides(void);
+#else
+static inline const struct bootm_overrides *boot_get_active_overrides(void)
+{
+	return NULL;
+}
+#endif
 
 struct bootm_data;
 int bootm_entry(struct bootentry *be, const struct bootm_data *data);

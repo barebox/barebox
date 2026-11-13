@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <fs.h>
 #include <errno.h>
+#include <boot.h>
 #include <bootm.h>
 #include <rtc.h>
 #include <init.h>
@@ -94,7 +95,7 @@ static int do_bootm(int argc, char *argv[])
 		goto err_out;
 	}
 
-	ret = bootm_boot(&data);
+	ret = bootm_boot_overrides(&data, boot_get_active_overrides());
 	if (ret) {
 		printf("handler failed with: %pe\n", ERR_PTR(ret));
 		goto err_out;

@@ -187,8 +187,23 @@ BAREBOX_MAGICVAR(global.boot.watchdog_timeout,
 BAREBOX_MAGICVAR(global.user,
 		"Username used by the default environment to construct network boot paths");
 
+/* The overrides of the boot entry currently being booted */
+static const struct bootm_overrides *boot_active_overrides;
+
+/**
+ * boot_get_active_overrides - get the overrides of the current boot entry
+ *
+ * Return: the overrides of the boot entry currently being booted, NULL if
+ * there is none
+ */
+const struct bootm_overrides *boot_get_active_overrides(void)
+{
+	return boot_active_overrides;
+}
+
 int boot_entry(struct bootentry *be, int verbose, int dryrun)
 {
+	const struct bootm_overrides *outer = boot_active_overrides;
 	struct globalvar_scope *scope;
 	int ret;
 
@@ -206,7 +221,19 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 
 	scope = boot_globalvar_scope_push();
 
+	/*
+	 * A boot entry may boot other entries, for example a boot script
+	 * calling boot. Hand the overrides on to them, the ones of the outer
+	 * entry take precedence.
+	 */
+	if (outer)
+		bootm_merge_overrides(&be->overrides, outer);
+	boot_active_overrides = &be->overrides;
+
 	ret = be->boot(be, verbose, dryrun);
+
+	boot_active_overrides = outer;
+
 	if (ret > 0)
 		pr_err("Booting entry '%s' failed: exit status %d\n", be->title, ret);
 	else if (ret && ret != -ENOMEDIUM)
@@ -643,20 +670,5 @@ BAREBOX_MAGICVAR(global.boot.default, "default boot order");
  */
 int bootm_entry(struct bootentry *be, const struct bootm_data *bootm_data)
 {
-	struct image_data *data;
-	int ret;
-
-	data = bootm_boot_prep(bootm_data);
-	if (IS_ERR(data))
-		return PTR_ERR(data);
-
-	ret = bootm_apply_overrides(data, &be->overrides);
-	if (ret)
-		goto out;
-
-	ret = bootm_boot_handler(data);
-
-out:
-	bootm_boot_cleanup(data);
-	return ret;
+	return bootm_boot_overrides(bootm_data, &be->overrides);
 }

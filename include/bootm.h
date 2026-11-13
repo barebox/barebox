@@ -75,6 +75,9 @@ struct bootm_data {
 int bootm_image_name_and_part(const char *name, char **filename, char **part);
 
 int bootm_boot(const struct bootm_data *data);
+struct bootm_overrides;
+int bootm_boot_overrides(const struct bootm_data *data,
+			 const struct bootm_overrides *overrides);
 
 struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data);
 int bootm_open_os_compressed(struct image_data *data);

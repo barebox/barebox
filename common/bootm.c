@@ -794,7 +794,15 @@ void bootm_boot_cleanup(struct image_data *data)
 /*
  * bootm_boot - Boot an application image described by bootm_data
  */
-int bootm_boot(const struct bootm_data *bootm_data)
+/**
+ * bootm_boot_overrides - boot with overrides applied
+ * @bootm_data: bootm data
+ * @overrides: overrides to apply, may be NULL
+ *
+ * Return: 0 on success, or negative error code otherwise
+ */
+int bootm_boot_overrides(const struct bootm_data *bootm_data,
+			 const struct bootm_overrides *overrides)
 {
 	struct image_data *data;
 	int ret;
@@ -803,10 +811,22 @@ int bootm_boot(const struct bootm_data *bootm_data)
 	if (IS_ERR(data))
 		return PTR_ERR(data);
 
+	if (overrides) {
+		ret = bootm_apply_overrides(data, overrides);
+		if (ret)
+			goto out;
+	}
+
 	ret = bootm_boot_handler(data);
 
+out:
 	bootm_boot_cleanup(data);
 	return ret;
+}
+
+int bootm_boot(const struct bootm_data *bootm_data)
+{
+	return bootm_boot_overrides(bootm_data, NULL);
 }
 
 bool bootm_efi_check_image(struct image_handler *handler,

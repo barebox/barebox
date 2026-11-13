@@ -796,7 +796,7 @@ config BOOTM_FORCE_SIGNED_IMAGES
 	  are refused to boot. Effectively this means only FIT images can be booted
 	  since they are the only supported image type that support signing.
 
-config BOOTM_OPTIONAL_SIGNED_IMAGES
+config BOOTM_ALLOW_UNSIGNED_IMAGES
 	def_bool !BOOTM_FORCE_SIGNED_IMAGES
 	select HAS_INSECURE_DEFAULTS
 	depends on BOOTM

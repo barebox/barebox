@@ -221,7 +221,8 @@
 #define MAX_RD_TIME_V131(lbcc)		((lbcc) & 0x7fff)
 
 #define PHY_STATUS_TIMEOUT_US		10000
-#define CMD_PKT_STATUS_TIMEOUT_US	20000
+/* in video mode, LP transfers may wait for the blanking of the next frame */
+#define CMD_PKT_STATUS_TIMEOUT_US	100000
 
 enum vpg_mode {
 	VPG_DISABLED,
@@ -906,6 +907,7 @@ static int dw_mipi_dsi_ioctl(struct vpl *vpl, unsigned int port,
 {
 	struct dw_mipi_dsi *dsi = container_of(vpl, struct dw_mipi_dsi, vpl);
 	struct drm_display_mode mode = {};
+	int ret;
 
 	switch (cmd) {
 	case VPL_ENABLE:
@@ -913,8 +915,10 @@ static int dw_mipi_dsi_ioctl(struct vpl *vpl, unsigned int port,
 		dw_mipi_dsi_set_mode(dsi, MIPI_DSI_MODE_VIDEO);
 		break;
 	case VPL_DISABLE:
+		/* The panel may still need the link to send its disable commands */
+		ret = vpl_bridge_ioctl(dsi->panel_bridge, cmd, data);
 		dw_mipi_dsi_bridge_post_atomic_disable(dsi);
-		break;
+		return ret;
 	case VPL_PREPARE:
 		/*
 		 * We store this to simplify debugging by allowing:

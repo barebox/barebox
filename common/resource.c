@@ -512,6 +512,59 @@ struct resource *lookup_region(struct resource *parent,
 	return NULL;
 }
 
+/**
+ * resource_tree_find - search a resource tree depth first
+ * @root: root resource whose children are searched
+ * @match: callback deciding whether a resource matches
+ * @data: opaque data passed to @match
+ *
+ * Walks the children of @root depth first and returns the first resource for
+ * which @match returns true. Gaps between resources are skipped as they are
+ * only a synthetic view of the resource tree.
+ *
+ * Return: The first matching resource, or NULL if none matches
+ */
+struct resource *resource_tree_find(struct resource *root,
+				    bool (*match)(struct resource *res,
+						  const void *data),
+				    const void *data)
+{
+	for_each_resource_region(root, region)
+	{
+		struct resource *found;
+
+		if (region_is_gap(region))
+			continue;
+
+		if (match(region, data))
+			return region;
+
+		found = resource_tree_find(region, match, data);
+		if (found)
+			return found;
+	}
+
+	return NULL;
+}
+
+static bool resource_name_has_prefix(struct resource *res, const void *data)
+{
+	return res->name && str_has_prefix(res->name, data);
+}
+
+/**
+ * resource_find_by_name_prefix - find a resource by name prefix
+ * @root: root resource whose children are searched
+ * @prefix: name prefix to look for
+ *
+ * Return: The first resource whose name starts with @prefix, or NULL if none
+ */
+struct resource *resource_find_by_name_prefix(struct resource *root,
+					      const char *prefix)
+{
+	return resource_tree_find(root, resource_name_has_prefix, prefix);
+}
+
 struct resource_entry *resource_list_create_entry(struct resource *res,
 						  size_t extra_size)
 {

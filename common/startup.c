@@ -457,7 +457,7 @@ void __noreturn start_barebox(void)
 
 
 	if (IS_ENABLED(CONFIG_SELFTEST_AUTORUN))
-		selftests_run();
+		selftests_run(IS_ENABLED(CONFIG_SELFTEST_AUTORUN_DESTRUCTIVE));
 
 	if (barebox_main)
 		barebox_main();

@@ -61,6 +61,32 @@
 	: "memory");						\
 	})
 
+/*
+ * Enable asynchronous aborts (SError).
+ */
+#define local_async_abort_enable()					\
+	({							\
+	asm volatile(						\
+	"msr	daifclr, #4\n\t"				\
+	"isb"							\
+	:							\
+	:							\
+	: "memory");						\
+	})
+
+/*
+ * Disable asynchronous aborts (SError).
+ */
+#define local_async_abort_disable()					\
+	({							\
+	asm volatile(						\
+	"msr	daifset, #4\n\t"				\
+	"isb"							\
+	:							\
+	:							\
+	: "memory");						\
+	})
+
 #else	/* CONFIG_ARM64 */
 
 #define local_irq_save(x)					\
@@ -156,6 +182,27 @@
 	:							\
 	: "r" (x)						\
 	: "memory")
+
+#if __LINUX_ARM_ARCH__ >= 6
+/*
+ * Enable asynchronous aborts (CPSR.A).
+ */
+#define local_async_abort_enable()					\
+	({							\
+	__asm__ __volatile__("cpsie a" : : : "memory", "cc");	\
+	})
+
+/*
+ * Disable asynchronous aborts (CPSR.A).
+ */
+#define local_async_abort_disable()					\
+	({							\
+	__asm__ __volatile__("cpsid a" : : : "memory", "cc");	\
+	})
+#else
+#define local_async_abort_enable()		do { } while (0)
+#define local_async_abort_disable()		do { } while (0)
+#endif
 
 #endif	/* CONFIG_ARM64 */
 

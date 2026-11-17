@@ -9,6 +9,8 @@
 #include <linux/bitops.h>
 #include <linux/string.h>
 #include <linux/kernel.h>
+#include <linux/cleanup.h>
+#include <linux/gfp.h>
 
 /*
  * bitmaps provide bit arrays that consume one or more unsigned
@@ -88,8 +90,11 @@
  * Allocation and deallocation of bitmap.
  * Provided in lib/bitmap.c to avoid circular dependency.
  */
-unsigned long *bitmap_zalloc(unsigned int nbits);
+unsigned long *bitmap_zalloc(unsigned int nbits, gfp_t flags);
 unsigned long *bitmap_xzalloc(unsigned int nbits);
+void bitmap_free(const unsigned long *bitmap);
+
+DEFINE_FREE(bitmap, unsigned long *, if (_T) bitmap_free(_T))
 
 /*
  * lib/bitmap.c provides these functions:

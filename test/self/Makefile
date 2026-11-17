@@ -9,6 +9,8 @@ obj-$(CONFIG_SELFTEST_TALLOC) += talloc.o
 obj-$(CONFIG_SELFTEST_PRINTF) += printf.o
 CFLAGS_printf.o += -Wno-format-security -Wno-format
 obj-$(CONFIG_SELFTEST_PROGRESS_NOTIFIER) += progress-notifier.o
+obj-$(CONFIG_SELFTEST_PINCTRL) += pinctrl.o pinctrl.dtb.o
+CFLAGS_pinctrl.o += -I$(srctree)/drivers/pinctrl
 obj-$(CONFIG_SELFTEST_OF_MANIPULATION) += of_manipulation.o of_manipulation.dtb.o
 obj-$(CONFIG_SELFTEST_OF_OVERLAY) += of_overlay.o
 # Enforce generation of __symbols__ table for overlay tests

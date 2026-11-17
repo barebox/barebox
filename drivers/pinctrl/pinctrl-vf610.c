@@ -24,10 +24,10 @@ enum {
 
 struct pinctrl_vf610 {
 	void __iomem *base;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 };
 
-static int pinctrl_vf610_set_state(struct pinctrl_device *pdev,
+static int pinctrl_vf610_set_state(struct pinctrl_dev *pdev,
 				   struct device_node *np)
 {
 	const __be32 *list;
@@ -64,7 +64,8 @@ static int pinctrl_vf610_set_state(struct pinctrl_device *pdev,
 	return 0;
 }
 
-static int pinctrl_vf610_set_direction(struct pinctrl_device *pdev,
+static int pinctrl_vf610_set_direction(struct pinctrl_dev *pdev,
+				       struct pinctrl_gpio_range *range,
 				       unsigned int pin, bool input)
 {
 	u32 pad_cr;
@@ -87,7 +88,8 @@ static int pinctrl_vf610_set_direction(struct pinctrl_device *pdev,
 	return 0;
 }
 
-static int pinctrl_vf610_get_direction(struct pinctrl_device *pdev,
+static int pinctrl_vf610_get_direction(struct pinctrl_dev *pdev,
+				       struct pinctrl_gpio_range *range,
 				       unsigned int pin)
 {
 	const u32 off = pin * sizeof(u32);
@@ -106,10 +108,13 @@ static int pinctrl_vf610_get_direction(struct pinctrl_device *pdev,
 	}
 }
 
-static struct pinctrl_ops pinctrl_vf610_ops = {
+static const struct pinctrl_ops pinctrl_vf610_ops = {
 	.set_state = pinctrl_vf610_set_state,
-	.set_direction = pinctrl_vf610_set_direction,
-	.get_direction = pinctrl_vf610_get_direction,
+};
+
+static const struct pinmux_ops pinmux_vf610_ops = {
+	.gpio_set_direction = pinctrl_vf610_set_direction,
+	.gpio_get_direction = pinctrl_vf610_get_direction,
 };
 
 static int pinctrl_vf610_probe(struct device *dev)
@@ -127,6 +132,7 @@ static int pinctrl_vf610_probe(struct device *dev)
 	iomux->base = IOMEM(io->start);
 	iomux->pinctrl.dev = dev;
 	iomux->pinctrl.ops = &pinctrl_vf610_ops;
+	iomux->pinctrl.pmxops = &pinmux_vf610_ops;
 	iomux->pinctrl.base = 0;
 	iomux->pinctrl.npins = ARCH_NR_GPIOS;
 

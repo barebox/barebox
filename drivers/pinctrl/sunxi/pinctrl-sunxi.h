@@ -110,7 +110,7 @@ struct sunxi_pinctrl_desc {
 struct sunxi_pinctrl {
 	void __iomem			*base;
 	struct gpio_chip		chip;
-	struct pinctrl_device		pdev;
+	struct pinctrl_dev		pdev;
 	const struct sunxi_pinctrl_desc	*desc;
 };
 

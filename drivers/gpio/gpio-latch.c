@@ -149,7 +149,8 @@ static int gpio_latch_probe(struct device *dev)
 		}
 	}
 
-	priv->shadow = bitmap_zalloc(n_latches * priv->n_latched_gpios);
+	priv->shadow = bitmap_zalloc(n_latches * priv->n_latched_gpios,
+				      GFP_KERNEL);
 
 	of_property_read_u32(np, "setup-duration-ns", &priv->setup_duration_ns);
 	if (priv->setup_duration_ns > DURATION_NS_MAX) {

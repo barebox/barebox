@@ -415,7 +415,7 @@ struct rockchip_pinctrl {
 	struct regmap			*regmap_ioc1;
 	struct device			*dev;
 	struct rockchip_pin_ctrl	*ctrl;
-	struct pinctrl_device		pctl_dev;
+	struct pinctrl_dev		pctl_dev;
 };
 
 #endif

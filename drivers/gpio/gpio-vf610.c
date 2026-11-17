@@ -97,7 +97,7 @@ static int vf610_gpio_direction_input(struct gpio_chip *chip, unsigned gpio)
 	}
 
 	if (port->need_pinctrl)
-		return pinctrl_gpio_direction_input(port->pinctrl_base + gpio);
+		return pinctrl_gpio_direction_input_pin(port->pinctrl_base + gpio);
 
 	return 0;
 }
@@ -119,7 +119,7 @@ static int vf610_gpio_direction_output(struct gpio_chip *chip, unsigned gpio,
 	}
 
 	if (port->need_pinctrl)
-		return pinctrl_gpio_direction_output(port->pinctrl_base + gpio);
+		return pinctrl_gpio_direction_output_pin(port->pinctrl_base + gpio);
 
 	return 0;
 }
@@ -139,7 +139,7 @@ static int vf610_gpio_get_direction(struct gpio_chip *chip, unsigned gpio)
 	}
 
 	if (port->need_pinctrl)
-		return pinctrl_gpio_get_direction(port->pinctrl_base + gpio);
+		return pinctrl_gpio_get_direction_pin(port->pinctrl_base + gpio);
 
 	return 0;
 }

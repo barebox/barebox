@@ -135,7 +135,7 @@ int device_probe(struct device *dev)
 
 	pr_report_probe("%*sprobe-> %s\n", depth * 4, "", dev_name(dev));
 
-	pinctrl_select_state_default(dev);
+	pinctrl_select_state_init(dev);
 	of_clk_set_defaults(dev->of_node, false);
 
 	list_add(&dev->active, &active_device_list);
@@ -146,6 +146,9 @@ int device_probe(struct device *dev)
 		ret = dev->driver->probe(dev);
 	else
 		ret = 0;
+
+	if (!ret)
+		pinctrl_init_done(dev);
 
 	depth--;
 

@@ -16,7 +16,7 @@
 
 struct imx_iomux_v3 {
 	void __iomem *base;
-	struct pinctrl_device pinctrl;
+	struct pinctrl_dev pinctrl;
 	unsigned int flags;
 };
 
@@ -68,7 +68,7 @@ EXPORT_SYMBOL(mxc_iomux_v3_setup_multiple_pads);
 
 #define IOMUXC_CONFIG_SION	(0x1 << 4)
 
-static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_node *np)
+static int imx_iomux_v3_set_state(struct pinctrl_dev *pdev, struct device_node *np)
 {
 	struct imx_iomux_v3 *iomux = container_of(pdev, struct imx_iomux_v3, pinctrl);
 	const __be32 *list;
@@ -151,7 +151,7 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 	return 0;
 }
 
-static struct pinctrl_ops imx_iomux_v3_ops = {
+static const struct pinctrl_ops imx_iomux_v3_ops = {
 	.set_state = imx_iomux_v3_set_state,
 };
 

@@ -296,7 +296,7 @@
 #define RK3588_PIN_BANK_FLAGS(ID, PIN, LABEL, M, P)			\
 	PIN_BANK_IOMUX_FLAGS_PULL_FLAGS(ID, PIN, LABEL, M, M, M, M, P, P, P, P)
 
-static struct rockchip_pinctrl *to_rockchip_pinctrl(struct pinctrl_device *pdev)
+static struct rockchip_pinctrl *to_rockchip_pinctrl(struct pinctrl_dev *pdev)
 {
 	return container_of(pdev, struct rockchip_pinctrl, pctl_dev);
 }
@@ -3214,7 +3214,7 @@ static void rockchip_set_gpio(struct rockchip_pin_bank *bank,
 	}
 }
 
-static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
+static int rockchip_pinctrl_set_state(struct pinctrl_dev *pdev,
 				      struct device_node *np)
 {
 	struct rockchip_pinctrl *info = to_rockchip_pinctrl(pdev);
@@ -3266,7 +3266,7 @@ static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 	return 0;
 }
 
-static struct pinctrl_ops rockchip_pinctrl_ops = {
+static const struct pinctrl_ops rockchip_pinctrl_ops = {
 	.set_state = rockchip_pinctrl_set_state,
 };
 

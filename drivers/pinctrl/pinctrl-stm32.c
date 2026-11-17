@@ -29,12 +29,12 @@ struct stm32_gpio_bank {
 };
 
 struct stm32_pinctrl {
-	struct pinctrl_device pdev;
+	struct pinctrl_dev pdev;
 	struct hwspinlock hws;
 	struct stm32_gpio_bank gpio_banks[];
 };
 
-static inline struct stm32_pinctrl *to_stm32_pinctrl(struct pinctrl_device *pdev)
+static inline struct stm32_pinctrl *to_stm32_pinctrl(struct pinctrl_dev *pdev)
 {
 	return container_of(pdev, struct stm32_pinctrl, pdev);
 }
@@ -87,101 +87,104 @@ static inline u32 stm32_gpio_get_alt(u32 function)
 	return 0;
 }
 
-static int __stm32_pinctrl_set_state(struct device *dev,
-				     struct device_node *pins)
+static int stm32_gpio_apply_config(struct stm32_gpio_bank *bank,
+				   unsigned int offset, unsigned int param,
+				   u32 arg)
 {
-	int ret;
-
-	int num_pins = 0, i;
-	u32 slew_rate;
-	bool adjust_slew_rate = false;
-	enum stm32_pin_bias bias = -1;
-	enum stm32_pin_out_type out_type = -1;
-	enum { PIN_INPUT, PIN_OUTPUT_LOW, PIN_OUTPUT_HIGH } dir = -1;
-
-	of_get_property(pins, "pinmux", &num_pins);
-	num_pins /= sizeof(__be32);
-	if (!num_pins) {
-		dev_err(dev, "Invalid pinmux property in %pOF\n", pins);
-		return -EINVAL;
-	}
-
-	ret = of_property_read_u32(pins, "slew-rate", &slew_rate);
-	if (!ret)
-		adjust_slew_rate = true;
-
-	if (of_get_property(pins, "bias-disable", NULL))
-		bias = STM32_PIN_NO_BIAS;
-	else if (of_get_property(pins, "bias-pull-up", NULL))
-		bias = STM32_PIN_PULL_UP;
-	else if (of_get_property(pins, "bias-pull-down", NULL))
-		bias = STM32_PIN_PULL_DOWN;
-
-	if (of_get_property(pins, "drive-push-pull", NULL))
-		out_type = STM32_PIN_OUT_PUSHPULL;
-	else if (of_get_property(pins, "drive-open-drain", NULL))
-		out_type = STM32_PIN_OUT_OPENDRAIN;
-
-	if (of_get_property(pins, "input-enable", NULL))
-		dir = PIN_INPUT;
-	else if (of_get_property(pins, "output-low", NULL))
-		dir = PIN_OUTPUT_LOW;
-	else if (of_get_property(pins, "output-high", NULL))
-		dir = PIN_OUTPUT_HIGH;
-
-	dev_dbg(dev, "%pOF: multiplexing %d pins\n", pins, num_pins);
-
-	for (i = 0; i < num_pins; i++) {
-		struct stm32_gpio_bank *bank = NULL;
-		u32 pinfunc, mode, alt;
-		unsigned func;
-		int offset;
-
-		ret = of_property_read_u32_index(pins, "pinmux",
-				i, &pinfunc);
-		if (ret)
-			return ret;
-
-		func = STM32_GET_PIN_FUNC(pinfunc);
-		offset = stm32_gpio_pin(STM32_GET_PIN_NO(pinfunc), &bank);
-		if (offset < 0)
-			return -ENODEV;
-
-		mode = stm32_gpio_get_mode(func);
-		alt = stm32_gpio_get_alt(func);
-
-		dev_dbg(dev, "configuring port %s pin %u with:\n\t"
-			"fn %u, mode %u, alt %u\n",
-			bank->name, offset, func, mode, alt);
-
-		__stm32_pmx_set_mode(bank->base, offset, mode, alt);
-
-		if (adjust_slew_rate)
-			__stm32_pmx_set_speed(bank->base, offset, slew_rate);
-
-		if (bias != -1)
-			__stm32_pmx_set_bias(bank->base, offset, bias);
-
-		if (out_type != -1)
-			__stm32_pmx_set_output_type(bank->base, offset, out_type);
-
-		if (dir == PIN_INPUT)
-			__stm32_pmx_gpio_input(bank->base, offset);
-		else if (dir == PIN_OUTPUT_LOW)
-			__stm32_pmx_gpio_output(bank->base, offset, 0);
-		else if (dir == PIN_OUTPUT_HIGH)
-			__stm32_pmx_gpio_output(bank->base, offset, 1);
+	switch (param) {
+	case PIN_CONFIG_DRIVE_PUSH_PULL:
+		__stm32_pmx_set_output_type(bank->base, offset, STM32_PIN_OUT_PUSHPULL);
+		break;
+	case PIN_CONFIG_DRIVE_OPEN_DRAIN:
+		__stm32_pmx_set_output_type(bank->base, offset, STM32_PIN_OUT_OPENDRAIN);
+		break;
+	case PIN_CONFIG_SLEW_RATE:
+		__stm32_pmx_set_speed(bank->base, offset, arg);
+		break;
+	case PIN_CONFIG_BIAS_DISABLE:
+		__stm32_pmx_set_bias(bank->base, offset, STM32_PIN_NO_BIAS);
+		break;
+	case PIN_CONFIG_BIAS_PULL_UP:
+		__stm32_pmx_set_bias(bank->base, offset, STM32_PIN_PULL_UP);
+		break;
+	case PIN_CONFIG_BIAS_PULL_DOWN:
+		__stm32_pmx_set_bias(bank->base, offset, STM32_PIN_PULL_DOWN);
+		break;
+	case PIN_CONFIG_INPUT_ENABLE:
+		if (!arg)
+			return -ENOTSUPP;
+		__stm32_pmx_gpio_input(bank->base, offset);
+		break;
+	case PIN_CONFIG_LEVEL:
+		__stm32_pmx_gpio_output(bank->base, offset, arg);
+		break;
+	default:
+		return -ENOTSUPP;
 	}
 
 	return 0;
 }
 
-static int stm32_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node *np)
+static int stm32_pinctrl_pinmux_property_set(struct pinctrl_dev *pdev,
+					     u32 pinmux_group)
+{
+	struct device *dev = pdev->dev;
+	struct stm32_gpio_bank *bank = NULL;
+	unsigned int pin = STM32_GET_PIN_NO(pinmux_group);
+	unsigned int func = STM32_GET_PIN_FUNC(pinmux_group);
+	u32 mode, alt;
+	int offset;
+
+	offset = stm32_gpio_pin(pin, &bank);
+	if (offset < 0)
+		return -ENODEV;
+
+	mode = stm32_gpio_get_mode(func);
+	alt = stm32_gpio_get_alt(func);
+
+	dev_dbg(dev, "configuring port %s pin %u with:\n\t"
+		"fn %u, mode %u, alt %u\n",
+		bank->name, offset, func, mode, alt);
+
+	__stm32_pmx_set_mode(bank->base, offset, mode, alt);
+
+	return pin;
+}
+
+static int stm32_pinctrl_pin_config_set(struct pinctrl_dev *pdev,
+					unsigned int pin,
+					unsigned long *configs,
+					unsigned int num_configs)
+{
+	struct stm32_gpio_bank *bank = NULL;
+	int offset, i, ret;
+
+	offset = stm32_gpio_pin(pin, &bank);
+	if (offset < 0)
+		return -ENODEV;
+
+	for (i = 0; i < num_configs; i++) {
+		unsigned int param = pinconf_to_config_param(configs[i]);
+
+		ret = stm32_gpio_apply_config(bank, offset, param,
+					      pinconf_to_config_argument(configs[i]));
+		if (ret == -ENOTSUPP) {
+			dev_warn(pdev->dev,
+				 "unsupported configuration parameter: %u\n",
+				 param);
+			continue;
+		}
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
+static int stm32_pinctrl_set_state(struct pinctrl_dev *pdev, struct device_node *np)
 {
 	struct stm32_pinctrl *pinctrl = to_stm32_pinctrl(pdev);
 	struct device *dev = pdev->dev;
-	struct device_node *pins;
-	void *prop;
 	int ret;
 
 	ret = hwspinlock_lock_timeout(&pinctrl->hws, 10);
@@ -190,19 +193,8 @@ static int stm32_pinctrl_set_state(struct pinctrl_device *pdev, struct device_no
 		return ret;
 	}
 
-	prop = of_find_property(np, "pinmux", NULL);
-	if (prop) {
-		ret = __stm32_pinctrl_set_state(dev, np);
-		goto out;
-	}
+	ret = pinctrl_map_set_state(pdev, np);
 
-	for_each_child_of_node(np, pins) {
-		ret = __stm32_pinctrl_set_state(dev, pins);
-		if (ret)
-			goto out;
-	}
-
-out:
 	hwspinlock_unlock(&pinctrl->hws);
 	return ret;
 }
@@ -264,39 +256,10 @@ static int stm32_gpio_set_config(struct gpio_chip *chip,
 				 unsigned int gpio, unsigned long config)
 {
 	struct stm32_gpio_bank *bank = to_stm32_gpio_bank(chip);
-	enum pin_config_param param;
-	u32 arg;
 
-	param = pinconf_to_config_param(config);
-	arg = pinconf_to_config_argument(config);
-
-	switch (param) {
-	case PIN_CONFIG_DRIVE_PUSH_PULL:
-		__stm32_pmx_set_output_type(bank->base, gpio, STM32_PIN_OUT_PUSHPULL);
-		break;
-	case PIN_CONFIG_DRIVE_OPEN_DRAIN:
-		__stm32_pmx_set_output_type(bank->base, gpio, STM32_PIN_OUT_OPENDRAIN);
-		break;
-	case PIN_CONFIG_SLEW_RATE:
-		__stm32_pmx_set_speed(bank->base, gpio, arg);
-		break;
-	case PIN_CONFIG_BIAS_DISABLE:
-		__stm32_pmx_set_bias(bank->base, gpio, STM32_PIN_NO_BIAS);
-		break;
-	case PIN_CONFIG_BIAS_PULL_UP:
-		__stm32_pmx_set_bias(bank->base, gpio, STM32_PIN_PULL_UP);
-		break;
-	case PIN_CONFIG_BIAS_PULL_DOWN:
-		__stm32_pmx_set_bias(bank->base, gpio, STM32_PIN_PULL_DOWN);
-		break;
-	case PIN_CONFIG_LEVEL:
-		__stm32_pmx_gpio_output(bank->base, gpio, arg);
-		break;
-	default:
-		return -ENOTSUPP;
-	}
-
-	return 0;
+	return stm32_gpio_apply_config(bank, gpio,
+				       pinconf_to_config_param(config),
+				       pinconf_to_config_argument(config));
 }
 
 static struct gpio_ops stm32_gpio_ops = {
@@ -376,8 +339,16 @@ static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,
 	return gpiochip_add(&bank->chip);
 }
 
-static struct pinctrl_ops stm32_pinctrl_ops = {
+static const struct pinctrl_ops stm32_pinctrl_ops = {
 	.set_state = stm32_pinctrl_set_state,
+};
+
+static const struct pinmux_ops stm32_pinctrl_pmxops = {
+	.pinmux_property_set = stm32_pinctrl_pinmux_property_set,
+};
+
+static const struct pinconf_ops stm32_pinctrl_confops = {
+	.pin_config_set = stm32_pinctrl_pin_config_set,
 };
 
 static int stm32_pinctrl_probe(struct device *dev)
@@ -396,6 +367,8 @@ static int stm32_pinctrl_probe(struct device *dev)
 
 	pinctrl->pdev.dev = dev;
 	pinctrl->pdev.ops = &stm32_pinctrl_ops;
+	pinctrl->pdev.pmxops = &stm32_pinctrl_pmxops;
+	pinctrl->pdev.confops = &stm32_pinctrl_confops;
 
 	/* hwspinlock property is optional, just log the error */
 	ret = hwspinlock_get_by_index(dev, 0, &pinctrl->hws);

@@ -176,9 +176,8 @@ static int edit_read_file(const char *path)
 	struct line *lastline = NULL;
 	char *filebuffer;
 	char *linestr, *lineend;
-	struct stat s;
 
-	if (!stat(path, &s)) {
+	if (file_exists(path)) {
 		filebuffer = read_file(path, NULL);
 		if (!filebuffer) {
 			printf("could not read %s: %m\n", path);

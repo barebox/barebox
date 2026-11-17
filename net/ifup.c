@@ -18,18 +18,15 @@
 #include <driver.h>
 #include <init.h>
 #include <magicvar.h>
+#include <libfile.h>
 #include <linux/stat.h>
 
 static int eth_discover(char *file)
 {
-	struct stat s;
-	int ret;
+	int ret = 0;
 
-	ret = stat(file, &s);
-	if (ret) {
-		ret = 0;
+	if (!file_exists(file))
 		goto out;
-	}
 
 	ret = run_command("%s", file);
 	if (ret) {
@@ -69,11 +66,9 @@ static int source_env_network(struct eth_device *edev)
 	char *file;
 	const char *ethaddrstr, *modestr, *linuxdevname;
 	int ret, mode, ethaddr_valid = 0, i;
-	struct stat s;
 
 	file = basprintf("/env/network/%s", edev->devname);
-	ret = stat(file, &s);
-	if (ret) {
+	if (!file_exists(file)) {
 		free(file);
 		return 0;
 	}

@@ -195,7 +195,6 @@ mem_initcall(rpi_mem_init);
 
 static int rpi_env_init(void)
 {
-	struct stat s;
 	const char *diskdev;
 	int ret;
 
@@ -205,13 +204,11 @@ static int rpi_env_init(void)
 	device_detect_by_name("mci1");
 
 	diskdev = "/dev/disk0.0";
-	ret = stat(diskdev, &s);
-	if (ret) {
+	if (!file_exists(diskdev)) {
 		device_detect_by_name("mmc0");
 		diskdev = "/dev/mmc0.0";
-		ret = stat(diskdev, &s);
 	}
-	if (ret) {
+	if (!file_exists(diskdev)) {
 		printf("no /dev/disk0.0 or /dev/mmc0.0. using default env\n");
 		return 0;
 	}

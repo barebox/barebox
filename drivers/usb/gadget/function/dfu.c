@@ -298,8 +298,6 @@ static void dfu_do_open_upload(struct dfu_work *dw)
 
 static void dfu_do_close(struct dfu_work *dw)
 {
-	struct stat s;
-
 	pr_debug("do close\n");
 
 	if (dfufd > 0) {
@@ -307,7 +305,7 @@ static void dfu_do_close(struct dfu_work *dw)
 		dfufd = -EINVAL;
 	}
 
-	if (!stat(DFU_TEMPFILE, &s))
+	if (file_exists(DFU_TEMPFILE))
 		unlink(DFU_TEMPFILE);
 
 	dw->dfu->dfu_state = DFU_STATE_dfuIDLE;

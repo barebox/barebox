@@ -561,10 +561,8 @@ static int blspec_scan_directory(struct bootscanner *bootscanner,
 
 	for (i = 0; i < globb.gl_pathc; i++) {
 		const char *configname = globb.gl_pathv[i];
-		struct stat s;
 
-		ret = stat(configname, &s);
-		if (ret || !S_ISREG(s.st_mode))
+		if (!file_exists_type(configname, S_IFREG))
 			continue;
 
 		ret = __blspec_scan_file(bootentries, root, configname);

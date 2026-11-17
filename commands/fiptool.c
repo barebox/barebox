@@ -174,13 +174,6 @@ static void parse_blob_opt(char *arg, uuid_t *uuid, char *filename, size_t len)
 	}
 }
 
-static inline bool file_exists(const char *filename)
-{
-	struct stat st;
-
-	return stat(filename, &st) == 0;
-}
-
 static __maybe_unused int create_cmd(struct fip_state *fip, int argc, char *argv[])
 {
 	unsigned long long toc_flags = 0;

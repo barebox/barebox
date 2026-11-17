@@ -365,7 +365,6 @@ static int bootscript_scan_name(struct bootentries *bootentries, const char *nam
 {
 	const char *args = NULL;
 	char *path, *at;
-	struct stat s;
 	int ret;
 
 	if (*name != '/')
@@ -374,7 +373,7 @@ static int bootscript_scan_name(struct bootentries *bootentries, const char *nam
 		path = xstrdup(name);
 
 	at = strchr(path, '@');
-	if (at && !stat(path, &s))
+	if (at && file_exists(path))
 		at = NULL;
 
 	if (at) {

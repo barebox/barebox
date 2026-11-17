@@ -44,13 +44,12 @@ void bbu_append_handlers_to_file_list(struct file_list *files)
 
 	list_for_each_entry(handler, &bbu_image_handlers, list) {
 		const char *devicefile;
-		struct stat s;
 
 		devicefile = handler->devicefile;
 
 		device_detect_by_name(devpath_to_name(devicefile));
 
-		if (stat(devicefile, &s) == 0) {
+		if (file_exists(devicefile)) {
 			append_bbu_entry(handler->name, devicefile, files);
 		} else {
 			pr_info("Skipping handler bbu-%s: %s unavailable\n",

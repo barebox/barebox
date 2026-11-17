@@ -21,7 +21,6 @@
 static int do_cp(int argc, char *argv[])
 {
 	int ret = 1;
-	struct stat statbuf;
 	int last_is_dir = 0;
 	int i;
 	int opt;
@@ -47,10 +46,8 @@ static int do_cp(int argc, char *argv[])
 	if (argc < argc_min)
 		return COMMAND_ERROR_USAGE;
 
-	if (!stat(argv[argc - 1], &statbuf)) {
-		if (S_ISDIR(statbuf.st_mode))
-			last_is_dir = 1;
-	}
+	if (file_exists_type(argv[argc - 1], S_IFDIR))
+		last_is_dir = 1;
 
 	if (((recursive && argc - optind > 2) || (argc > argc_min)) && !last_is_dir) {
 		printf("cp: target `%s' is not a directory\n", argv[argc - 1]);

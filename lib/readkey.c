@@ -80,8 +80,10 @@ int read_key(void)
 		if (poll_key_into_buf(&esc[i++]))
 			return '\e';
 
-		if (poll_key_into_buf(&esc[i++]))
+		if (esc[0] != '[' && esc[0] != 'O')
 			return -1;
+
+		esc[i++] = getchar();
 
 		if (isdigit(esc[1])) {
 			while(1) {

@@ -82,8 +82,9 @@ int term_cdev_get_size(struct console_device *cdev,
 	if (!(cdev->f_active & CONSOLE_STDOUT))
 		return -ENOENT;
 
-	if (cdev->get_size)
-		return cdev->get_size(cdev, screenwidth, screenheight);
+	/* ask the terminal only if the console can't tell size */
+	if (cdev->get_size && !cdev->get_size(cdev, screenwidth, screenheight))
+		return 0;
 
 	if (!(cdev->f_active & CONSOLE_STDIN))
 		return -ENOENT;

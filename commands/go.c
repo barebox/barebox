@@ -11,13 +11,51 @@
 #include <getopt.h>
 #include <linux/ctype.h>
 #include <errno.h>
+#include <libfile.h>
+#include <malloc.h>
+#include <linux/sizes.h>
 #include <security/config.h>
 
 #define INT_ARGS_MAX	4
 
+/* adrp, as used by e.g. barebox on ARM64, needs 4 KiB alignment */
+#define GO_ALIGN	SZ_4K
+
+static void *go_map(int fd, void **buf)
+{
+	struct stat st;
+	void *addr;
+	int ret;
+
+	addr = memmap(fd, PROT_READ);
+	if (addr != MAP_FAILED && IS_ALIGNED((ulong)addr, GO_ALIGN))
+		return addr;
+
+	ret = fstat(fd, &st);
+	if (ret)
+		return MAP_FAILED;
+
+	if (st.st_size == FILE_SIZE_STREAM || st.st_size > SIZE_MAX) {
+		errno = EFBIG;
+		return MAP_FAILED;
+	}
+
+	*buf = memalign(GO_ALIGN, st.st_size);
+	if (!*buf) {
+		errno = ENOMEM;
+		return MAP_FAILED;
+	}
+
+	ret = read_full(fd, *buf, st.st_size);
+	if (ret < 0)
+		return MAP_FAILED;
+
+	return *buf;
+}
+
 static int do_go(int argc, char *argv[])
 {
-	void	*addr;
+	void	*addr, *buf = NULL;
 	int     rcode = 1;
 	int	fd = -1;
 	void	(*func)(ulong r0, ulong r1, ulong r2, ulong r3);
@@ -55,9 +93,9 @@ static int do_go(int argc, char *argv[])
 			goto out;
 		}
 
-		addr = memmap(fd, PROT_READ);
+		addr = go_map(fd, &buf);
 		if (addr == MAP_FAILED) {
-			perror("memmap");
+			perror(argv[0]);
 			goto out;
 		}
 	} else
@@ -100,6 +138,7 @@ static int do_go(int argc, char *argv[])
 	while (1)
 		;
 out:
+	free(buf);
 	if (fd > 0)
 		close(fd);
 
@@ -110,7 +149,8 @@ BAREBOX_CMD_HELP_START(go)
 BAREBOX_CMD_HELP_TEXT("Start application at ADDR passing ARG as arguments.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("If addr does not start with a digit it is interpreted as a filename")
-BAREBOX_CMD_HELP_TEXT("in which case the file is memmapped and executed")
+BAREBOX_CMD_HELP_TEXT("in which case the file is memmapped and executed. Files that can't be")
+BAREBOX_CMD_HELP_TEXT("memmapped at a 4 KiB aligned address are read into memory first.")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-s", "pass all arguments as strings referenced by argc, argv arguments (default)")
 BAREBOX_CMD_HELP_OPT("-i", "pass up to four integer arguments using default calling convention")

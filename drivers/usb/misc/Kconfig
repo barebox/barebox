@@ -24,3 +24,14 @@ config USB_ONBOARD_DEV
 	  but need some non-trivial form of initialization, such as
 	  enabling a power regulator. An example for such device is the
 	  Realtek RTS5411 hub.
+
+config USB_ONBOARD_DEV_USB5744
+	bool "Onboard USB Microchip usb5744 hub with SMBus support"
+	depends on USB_ONBOARD_DEV && I2C
+	help
+	  Say Y here if you want to support onboard USB Microchip usb5744
+	  hub that requires SMBus initialization.
+
+	  This options enables usb5744 i2c default initialization sequence
+	  during hub start-up configuration stage. Without it, a hub that
+	  has an i2c-bus is not powered.

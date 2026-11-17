@@ -8,6 +8,7 @@
 #include <common.h>
 #include <driver.h>
 #include <watchdog.h>
+#include <reset_source.h>
 #include <superio.h>
 #include <linux/gpio/consumer.h>
 
@@ -18,7 +19,9 @@ enum {
 
 struct gpio_wdt_priv {
 	struct gpio_desc *gpiod;
+	struct gpio_desc *wdt_reset;
 	bool		state;
+	bool		always_running;
 	bool		started;
 	unsigned int	hw_algo;
 	struct watchdog	wdd;
@@ -63,13 +66,17 @@ static void gpio_wdt_start(struct gpio_wdt_priv *priv)
 	priv->state = false;
 	gpiod_direction_output(priv->gpiod, priv->state);
 	priv->started = true;
+
+	priv->wdd.running = WDOG_HW_RUNNING;
 }
 
 static int gpio_wdt_set_timeout(struct watchdog *wdd, unsigned int new_timeout)
 {
 	struct gpio_wdt_priv *priv = to_gpio_wdt_priv(wdd);
 
-	if (!new_timeout) {
+	if (!new_timeout && priv->always_running) {
+		return -ENOSYS;
+	} else if (!new_timeout) {
 		gpio_wdt_disable(priv);
 		return 0;
 	}
@@ -117,10 +124,29 @@ static int gpio_wdt_probe(struct device *dev)
 	if (IS_ERR(priv->gpiod))
 		return PTR_ERR(priv->gpiod);
 
+	priv->wdt_reset = gpiod_get_optional(dev, "reset-from-wdt", GPIOD_IN);
+	if (IS_ERR(priv->wdt_reset))
+		return dev_errp_probe(dev, priv->wdt_reset, "no reset-from-wdt found");
+
+	if (priv->wdt_reset) {
+		int val = gpiod_get_value(priv->wdt_reset);
+
+		if (val < 0)
+			return val;
+
+		if (val)
+			reset_source_set_device(dev, RESET_WDG, 200);
+	}
+
+	priv->always_running = of_property_read_bool(dev->of_node, "always-running");
+
 	priv->wdd.hwdev		= dev;
 	priv->wdd.timeout_max	= hw_margin / 1000;
 	priv->wdd.priority	= 129;
 	priv->wdd.set_timeout	= gpio_wdt_set_timeout;
+
+	if (priv->always_running)
+		gpio_wdt_start(priv);
 
 	return watchdog_register(&priv->wdd);
 }

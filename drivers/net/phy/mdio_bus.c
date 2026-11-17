@@ -12,10 +12,9 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <common.h>
-#include <of_gpio.h>
 #include <driver.h>
 #include <init.h>
-#include <gpio.h>
+#include <linux/gpio/consumer.h>
 #include <clock.h>
 #include <net.h>
 #include <sched.h>
@@ -217,25 +216,16 @@ static bool of_mdiobus_child_is_phy(struct device_node *np)
  */
 static u64 of_mdiobus_reset_phy(struct mii_bus *bus, struct device_node *np)
 {
-	enum of_gpio_flags of_flags;
 	u32 reset_deassert_delay;
 	u32 reset_assert_delay;
-	unsigned long flags;
-	int gpio;
-	int ret;
+	struct gpio_desc *gpiod;
 
-	gpio = of_get_named_gpio_flags(np, "reset-gpios", 0, &of_flags);
-	if (!gpio_is_valid(gpio))
-		return 0;
-
-	flags = GPIOF_OUT_INIT_INACTIVE;
-	if (of_flags & OF_GPIO_ACTIVE_LOW)
-		flags |= GPIOF_ACTIVE_LOW;
-
-	ret = gpio_request_one(gpio, flags, np->name);
-	if (ret) {
-		dev_err(&bus->dev, "failed to request reset gpio for: %s\n",
-			np->name);
+	/* requested asserted, released below once the pulse is over */
+	gpiod = dev_gpiod_get(&bus->dev, np, "reset", GPIOD_OUT_HIGH, np->name);
+	if (IS_ERR(gpiod)) {
+		if (PTR_ERR(gpiod) != -ENOENT)
+			dev_err(&bus->dev, "failed to request reset gpio for: %s\n",
+				np->name);
 		return 0;
 	}
 
@@ -246,10 +236,9 @@ static u64 of_mdiobus_reset_phy(struct mii_bus *bus, struct device_node *np)
 	of_property_read_u32(np, "reset-deassert-us", &reset_deassert_delay);
 
 	/* reset the PHY */
-	dev_dbg(&bus->dev, "reset PHY with GPIO: %d\n", gpio);
-	gpio_set_active(gpio, 1);
+	dev_dbg(&bus->dev, "reset PHY %s\n", np->name);
 	udelay(reset_assert_delay);
-	gpio_set_active(gpio, 0);
+	gpiod_set_value(gpiod, 0);
 
 	return get_time_ns() + (u64)reset_deassert_delay * 1000;
 }

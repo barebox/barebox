@@ -13,12 +13,6 @@ MAGICVAR_CONT = re.compile(r'(.*?)"\s*\)')
 
 UNESCAPE = re.compile(r'''\\(["\\])''')
 
-# Global override dictionary to map directories to specific arch or board
-DIRECTORY_OVERRIDES = {
-    'drivers/soc/kvx': {'arch': 'kvx'},
-}
-
-
 def string_unescape(s):
     return re.sub(UNESCAPE, r'\1', s.replace(r'\t', '').replace(r'\n', ''))
 
@@ -81,19 +75,6 @@ def categorize_file(filepath):
     arch = None
     board = None
     
-    # Check for directory overrides first
-    for override_path, override_spec in DIRECTORY_OVERRIDES.items():
-        override_parts = override_path.split('/')
-        # Check if the filepath starts with the override path
-        if len(parts) >= len(override_parts):
-            if all(parts[i] == override_parts[i] for i in range(len(override_parts))):
-                # This file matches the override path
-                if 'arch' in override_spec:
-                    arch = override_spec['arch']
-                if 'board' in override_spec:
-                    board = override_spec['board']
-                return arch, board
-
     # Check for arch
     if 'arch' in parts:
         arch_idx = parts.index('arch')

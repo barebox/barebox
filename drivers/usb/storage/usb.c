@@ -64,6 +64,10 @@ static const char *usb_stor_opcode_name(u8 opcode)
 		return "SCSI_READ10";
 	case SCSI_WRITE10:
 		return "SCSI_WRITE10";
+	case SCSI_READ16:
+		return "SCSI_READ16";
+	case SCSI_WRITE16:
+		return "SCSI_WRITE16";
 	};
 
 	return "UNKNOWN";
@@ -156,6 +160,26 @@ static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev, u64 timeout_n
 	} while (ret < 0 && !is_timeout(start, timeout_ns));
 
 	return ret ? -ENODEV : 0;
+}
+
+static int usb_stor_ensure_ready(struct us_blk_dev *usb_blkdev)
+{
+	struct device *dev = &usb_blkdev->us->pusb_dev->dev;
+	int ret;
+
+	if (usb_blkdev->ready)
+		return 0;
+
+	dev_dbg(dev, "Testing for unit ready\n");
+	ret = usb_stor_test_unit_ready(usb_blkdev, 0);
+	if (ret) {
+		dev_dbg(dev, "Device NOT ready\n");
+		return ret;
+	}
+
+	usb_blkdev->ready = true;
+
+	return 0;
 }
 
 static int usb_stor_set_capacity(struct us_blk_dev *usb_blkdev, sector_t lba,
@@ -285,6 +309,18 @@ static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 opcode,
 
 #define US_MAX_IO_BLK 32
 
+static blkcnt_t usb_stor_max_io_blocks(struct us_blk_dev *pblk_dev)
+{
+	size_t max_xfer_size = pblk_dev->us->pusb_dev->host->max_xfer_size;
+	blkcnt_t blocks = US_MAX_IO_BLK;
+
+	if (max_xfer_size)
+		blocks = min_t(blkcnt_t, blocks,
+			       max_xfer_size >> pblk_dev->blk.blockbits);
+
+	return max_t(blkcnt_t, blocks, 1);
+}
+
 /* Read / write a chunk of sectors on media */
 static int usb_stor_blk_io(struct block_device *disk_dev,
 			   sector_t sector_start, blkcnt_t sector_count, void *buffer,
@@ -295,14 +331,12 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 						   blk);
 	struct us_data *us = pblk_dev->us;
 	struct device *dev = &us->pusb_dev->dev;
+	blkcnt_t max_blocks = usb_stor_max_io_blocks(pblk_dev);
 	int result;
 
 	/* ensure unit ready */
-	dev_dbg(dev, "Testing for unit ready\n");
-	if (usb_stor_test_unit_ready(pblk_dev, 0)) {
-		dev_dbg(dev, "Device NOT ready\n");
+	if (usb_stor_ensure_ready(pblk_dev))
 		return -EIO;
-	}
 
 	/* read / write the requested data */
 	dev_dbg(dev, "%s %llu block(s), starting from %llu\n",
@@ -310,7 +344,7 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 		sector_count, sector_start);
 
 	while (sector_count > 0) {
-		u16 n = min_t(blkcnt_t, sector_count, US_MAX_IO_BLK);
+		u16 n = min_t(blkcnt_t, sector_count, max_blocks);
 
 		if (disk_dev->num_blocks > 0xffffffff) {
 			result = usb_stor_io_16(pblk_dev,
@@ -327,6 +361,7 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 
 		if (result) {
 			dev_dbg(dev, "I/O error at sector %llu\n", sector_start);
+			pblk_dev->ready = false;
 			break;
 		}
 
@@ -388,6 +423,8 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 		dev_dbg(dev, "Device NOT ready\n");
 		return result;
 	}
+
+	pblk_dev->ready = true;
 
 	/* read capacity */
 	dev_dbg(dev, "Reading capacity\n");
@@ -591,6 +628,9 @@ static int usb_stor_probe(struct usb_device *usbdev,
 	/* get standard transport and protocol settings */
 	get_transport(us);
 
+	us->cbw = dma_xalloc(sizeof(*us->cbw));
+	us->csw = dma_xalloc(sizeof(*us->csw));
+
 	/* find the endpoints needed by the transport */
 	result = get_pipes(us, intf);
 	if (result)
@@ -606,6 +646,8 @@ static int usb_stor_probe(struct usb_device *usbdev,
 
 BadDevice:
 	dev_dbg(dev, "%s failed with %d\n", __func__, result);
+	dma_free(us->cbw);
+	dma_free(us->csw);
 	free(us);
 	return result;
 }
@@ -641,8 +683,11 @@ static void usb_stor_disconnect(struct usb_device *usbdev)
 	usbdev->drv_data = NULL;
 
 	/* a leaked disk still refers to us, so that has to stay as well */
-	if (!busy)
+	if (!busy) {
+		dma_free(us->cbw);
+		dma_free(us->csw);
 		free(us);
+	}
 }
 
 #define USUAL_DEV(use_proto, use_trans, drv_info) \

@@ -96,6 +96,13 @@ static void usb_kbd_poll(void *arg)
 	int ret, i;
 
 	ret = data->do_poll(data);
+	/*
+	 * The interrupt endpoint NAKs while there is nothing to report, which
+	 * the host controller drivers turn into a timeout. That is not an
+	 * error: nothing changed during this interval.
+	 */
+	if (ret == -ETIMEDOUT && data->do_poll == usb_kbd_int_poll)
+		goto exit;
 	if (ret < 0)
 		usb_kbd_release_all_keys(data);
 	if (ret == -EAGAIN)

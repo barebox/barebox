@@ -11,6 +11,7 @@
 
 #include <common.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <mach/zynqmp/firmware-zynqmp.h>
 
 #include "clk-zynqmp.h"
@@ -46,14 +47,17 @@ static unsigned long zynqmp_clk_divider_recalc_rate(struct clk_hw *hw,
 	return DIV_ROUND_UP(parent_rate, value);
 }
 
-static long zynqmp_clk_divider_round_rate(struct clk_hw *hw, unsigned long rate,
-					  unsigned long *parent_rate)
+static int zynqmp_clk_divider_determine_rate(struct clk_hw *hw,
+					     struct clk_rate_request *req)
 {
 	int bestdiv;
 
-	bestdiv = zynqmp_clk_divider_bestdiv(rate, parent_rate);
+	bestdiv = zynqmp_clk_divider_bestdiv(req->rate,
+					     &req->best_parent_rate);
 
-	return *parent_rate / bestdiv;
+	req->rate = req->best_parent_rate / bestdiv;
+
+	return 0;
 }
 
 static int zynqmp_clk_divider_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -73,7 +77,7 @@ static int zynqmp_clk_divider_set_rate(struct clk_hw *hw, unsigned long rate,
 
 static const struct clk_ops zynqmp_clk_divider_ops = {
 	.recalc_rate = zynqmp_clk_divider_recalc_rate,
-	.round_rate = zynqmp_clk_divider_round_rate,
+	.determine_rate = zynqmp_clk_divider_determine_rate,
 	.set_rate = zynqmp_clk_divider_set_rate,
 };
 

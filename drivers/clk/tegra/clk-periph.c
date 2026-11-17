@@ -9,6 +9,7 @@
 #include <io.h>
 #include <malloc.h>
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/err.h>
 #include <linux/log2.h>
 
@@ -38,12 +39,13 @@ static unsigned long clk_periph_recalc_rate(struct clk_hw *hw,
 	return periph->div->ops->recalc_rate(clk_to_clk_hw(periph->div), parent_rate);
 }
 
-static long clk_periph_round_rate(struct clk_hw *hw, unsigned long rate,
-				  unsigned long *prate)
+static int clk_periph_determine_rate(struct clk_hw *hw,
+				     struct clk_rate_request *req)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
 
-	return periph->div->ops->round_rate(clk_to_clk_hw(periph->div), rate, prate);
+	return periph->div->ops->determine_rate(clk_to_clk_hw(periph->div),
+						req);
 }
 
 static int clk_periph_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -81,7 +83,7 @@ const struct clk_ops tegra_clk_periph_ops = {
 	.get_parent = clk_periph_get_parent,
 	.set_parent = clk_periph_set_parent,
 	.recalc_rate = clk_periph_recalc_rate,
-	.round_rate = clk_periph_round_rate,
+	.determine_rate = clk_periph_determine_rate,
 	.set_rate = clk_periph_set_rate,
 	.is_enabled = clk_periph_is_enabled,
 	.enable = clk_periph_enable,

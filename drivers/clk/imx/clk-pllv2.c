@@ -9,6 +9,7 @@
 #include <linux/err.h>
 #include <malloc.h>
 #include <linux/math64.h>
+#include <linux/clk-provider.h>
 
 #include "clk.h"
 
@@ -181,23 +182,26 @@ static int clk_pllv2_set_rate(struct clk_hw *hw, unsigned long rate,
 	return 0;
 }
 
-static long clk_pllv2_round_rate(struct clk_hw *hw, unsigned long rate,
-		unsigned long *prate)
+static int clk_pllv2_determine_rate(struct clk_hw *hw,
+				    struct clk_rate_request *req)
 {
 	u32 dp_op, dp_mfd, dp_mfn;
 	int ret;
 
-	ret = __clk_pllv2_set_rate(rate, *prate, &dp_op, &dp_mfd, &dp_mfn);
+	ret = __clk_pllv2_set_rate(req->rate, req->best_parent_rate,
+				   &dp_op, &dp_mfd, &dp_mfn);
 	if (ret)
 		return ret;
 
-	return __clk_pllv2_recalc_rate(*prate, MXC_PLL_DP_CTL_DPDCK0_2_EN,
-			dp_op, dp_mfd, dp_mfn);
+	req->rate = __clk_pllv2_recalc_rate(req->best_parent_rate,
+					    MXC_PLL_DP_CTL_DPDCK0_2_EN,
+					    dp_op, dp_mfd, dp_mfn);
+	return 0;
 }
 
 struct clk_ops clk_pllv2_ops = {
 	.recalc_rate = clk_pllv2_recalc_rate,
-	.round_rate = clk_pllv2_round_rate,
+	.determine_rate = clk_pllv2_determine_rate,
 	.set_rate = clk_pllv2_set_rate,
 };
 

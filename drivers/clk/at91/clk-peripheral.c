@@ -4,6 +4,8 @@
  */
 
 #include <linux/bitops.h>
+#include <linux/math.h>
+#include <linux/printk.h>
 #include <linux/clk-provider.h>
 #include <linux/clkdev.h>
 #include <linux/clk/at91_pmc.h>
@@ -247,50 +249,140 @@ clk_sam9x5_peripheral_recalc_rate(struct clk_hw *hw,
 	return parent_rate >> periph->div;
 }
 
-static long clk_sam9x5_peripheral_round_rate(struct clk_hw *hw,
-					     unsigned long rate,
-					     unsigned long *parent_rate)
+static void clk_sam9x5_peripheral_best_diff(struct clk_rate_request *req,
+					    struct clk_hw *parent,
+					    unsigned long parent_rate,
+					    u32 shift, long *best_diff,
+					    long *best_rate)
+{
+	unsigned long tmp_rate = parent_rate >> shift;
+	unsigned long tmp_diff = abs(req->rate - tmp_rate);
+
+	if (*best_diff < 0 || *best_diff >= tmp_diff) {
+		*best_rate = tmp_rate;
+		*best_diff = tmp_diff;
+		req->best_parent_rate = parent_rate;
+		req->best_parent_hw = parent;
+	}
+}
+
+static int clk_sam9x5_peripheral_determine_rate(struct clk_hw *hw,
+						struct clk_rate_request *req)
+{
+	struct clk_sam9x5_peripheral *periph = to_clk_sam9x5_peripheral(hw);
+	struct clk_hw *parent = clk_hw_get_parent(hw);
+	unsigned long parent_rate = clk_hw_get_rate(parent);
+	unsigned long tmp_rate;
+	long best_rate = LONG_MIN;
+	long best_diff = LONG_MIN;
+	u32 shift;
+
+	if (periph->id < PERIPHERAL_ID_MIN || !periph->range.max) {
+		req->rate = parent_rate;
+
+		return 0;
+	}
+
+	/* Fist step: check the available dividers. */
+	for (shift = 0; shift <= PERIPHERAL_MAX_SHIFT; shift++) {
+		tmp_rate = parent_rate >> shift;
+
+		if (periph->range.max && tmp_rate > periph->range.max)
+			continue;
+
+		clk_sam9x5_peripheral_best_diff(req, parent, parent_rate,
+						shift, &best_diff, &best_rate);
+
+		if (!best_diff || best_rate <= req->rate)
+			break;
+	}
+
+	if (periph->chg_pid < 0)
+		goto end;
+
+	/* Step two: try to request rate from parent. */
+	parent = clk_hw_get_parent_by_index(hw, periph->chg_pid);
+	if (!parent)
+		goto end;
+
+	for (shift = 0; shift <= PERIPHERAL_MAX_SHIFT; shift++) {
+		struct clk_rate_request req_parent;
+
+		clk_hw_forward_rate_request(hw, req, parent, &req_parent,
+					    req->rate << shift);
+		if (__clk_determine_rate(parent, &req_parent))
+			continue;
+
+		clk_sam9x5_peripheral_best_diff(req, parent, req_parent.rate,
+						shift, &best_diff, &best_rate);
+
+		if (!best_diff)
+			break;
+	}
+end:
+	if (best_rate < 0 ||
+	    (periph->range.max && best_rate > periph->range.max))
+		return -EINVAL;
+
+	pr_debug("PCK: %s, best_rate = %ld, parent clk: %s @ %ld\n",
+		 __func__, best_rate,
+		 clk_hw_get_name(req->best_parent_hw),
+		 req->best_parent_rate);
+
+	req->rate = best_rate;
+
+	return 0;
+}
+
+static int clk_sam9x5_peripheral_no_parent_determine_rate(struct clk_hw *hw,
+							  struct clk_rate_request *req)
 {
 	int shift = 0;
 	unsigned long best_rate;
 	unsigned long best_diff;
-	unsigned long cur_rate = *parent_rate;
+	unsigned long cur_rate = req->best_parent_rate;
 	unsigned long cur_diff;
 	struct clk_sam9x5_peripheral *periph = to_clk_sam9x5_peripheral(hw);
 
-	if (periph->id < PERIPHERAL_ID_MIN || !periph->range.max)
-		return *parent_rate;
+	if (periph->id < PERIPHERAL_ID_MIN || !periph->range.max) {
+		req->rate = req->best_parent_rate;
+		return 0;
+	}
 
 	if (periph->range.max) {
 		for (; shift <= PERIPHERAL_MAX_SHIFT; shift++) {
-			cur_rate = *parent_rate >> shift;
+			cur_rate = req->best_parent_rate >> shift;
 			if (cur_rate <= periph->range.max)
 				break;
 		}
 	}
 
-	if (rate >= cur_rate)
-		return cur_rate;
+	if (req->rate >= cur_rate) {
+		req->rate = cur_rate;
+		return 0;
+	}
 
-	best_diff = cur_rate - rate;
+	best_diff = cur_rate - req->rate;
 	best_rate = cur_rate;
 	for (; shift <= PERIPHERAL_MAX_SHIFT; shift++) {
-		cur_rate = *parent_rate >> shift;
-		if (cur_rate < rate)
-			cur_diff = rate - cur_rate;
+		cur_rate = req->best_parent_rate >> shift;
+		if (cur_rate < req->rate)
+			cur_diff = req->rate - cur_rate;
 		else
-			cur_diff = cur_rate - rate;
+			cur_diff = cur_rate - req->rate;
 
 		if (cur_diff < best_diff) {
 			best_diff = cur_diff;
 			best_rate = cur_rate;
 		}
 
-		if (!best_diff || cur_rate < rate)
+		if (!best_diff || cur_rate < req->rate)
 			break;
 	}
 
-	return best_rate;
+	req->rate = best_rate;
+
+	return 0;
 }
 
 static int clk_sam9x5_peripheral_set_rate(struct clk_hw *hw,
@@ -325,7 +417,7 @@ static const struct clk_ops sam9x5_peripheral_ops = {
 	.disable = clk_sam9x5_peripheral_disable,
 	.is_enabled = clk_sam9x5_peripheral_is_enabled,
 	.recalc_rate = clk_sam9x5_peripheral_recalc_rate,
-	.round_rate = clk_sam9x5_peripheral_round_rate,
+	.determine_rate = clk_sam9x5_peripheral_no_parent_determine_rate,
 	.set_rate = clk_sam9x5_peripheral_set_rate,
 };
 
@@ -334,6 +426,7 @@ static const struct clk_ops sam9x5_peripheral_chg_ops = {
 	.disable = clk_sam9x5_peripheral_disable,
 	.is_enabled = clk_sam9x5_peripheral_is_enabled,
 	.recalc_rate = clk_sam9x5_peripheral_recalc_rate,
+	.determine_rate = clk_sam9x5_peripheral_determine_rate,
 	.set_rate = clk_sam9x5_peripheral_set_rate,
 };
 

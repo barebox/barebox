@@ -246,16 +246,19 @@ static unsigned long pcf85063_clkout_recalc_rate(struct clk_hw *hw,
 	return clkout_rates[buf];
 }
 
-static long pcf85063_clkout_round_rate(struct clk_hw *hw, unsigned long rate,
-				       unsigned long *prate)
+static int pcf85063_clkout_determine_rate(struct clk_hw *hw,
+					  struct clk_rate_request *req)
 {
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(clkout_rates); i++)
-		if (clkout_rates[i] <= rate)
-			return clkout_rates[i];
+		if (clkout_rates[i] <= req->rate) {
+			req->rate = clkout_rates[i];
 
-	return 0;
+			return 0;
+		}
+
+	return -EINVAL;
 }
 
 static int pcf85063_clkout_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -327,7 +330,7 @@ static const struct clk_ops pcf85063_clkout_ops = {
 	.disable = pcf85063_clkout_unprepare,
 	.is_enabled = pcf85063_clkout_is_prepared,
 	.recalc_rate = pcf85063_clkout_recalc_rate,
-	.round_rate = pcf85063_clkout_round_rate,
+	.determine_rate = pcf85063_clkout_determine_rate,
 	.set_rate = pcf85063_clkout_set_rate,
 };
 

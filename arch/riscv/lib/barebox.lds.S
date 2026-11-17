@@ -12,6 +12,7 @@
  */
 
 #include <asm/barebox.lds.h>
+#include <asm-generic/pointer.h>
 
 OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(barebox_non_pbl_start)
@@ -58,6 +59,9 @@ SECTIONS
 	. = ALIGN(4096);
 
 	.data : { *(.data*) } :data
+
+	. = ALIGN(ASM_SZPTR);
+	.got : { *(.got) *(.got.plt) } :data
 
 	/DISCARD/ : { *(.rela.plt*) }
 	.rela.dyn : {

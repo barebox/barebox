@@ -46,10 +46,11 @@ static int unwind_frame(struct stackframe *frame, unsigned long *sp)
 	return 0;
 }
 
+register unsigned long current_sp asm ("sp");
+
 void unwind_backtrace(const struct pt_regs *regs)
 {
         struct stackframe frame = {};
-	register unsigned long current_sp asm ("sp");
 	unsigned long sp = 0;
 
 	if (regs) {

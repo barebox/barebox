@@ -914,6 +914,10 @@ LDFLAGS_common += -z noexecstack
 # Avoid '... has a LOAD segment with RWX permissions' warnings on binutils 2.39+
 LDFLAGS_common += $(call ld-option,--no-warn-rwx-segments)
 
+ifdef CONFIG_LD_IS_LLD
+LDFLAGS_common += -z notext -z norelro
+endif
+
 LDFLAGS_barebox += $(LDFLAGS_common)
 LDFLAGS_pbl += $(LDFLAGS_common)
 LDFLAGS_elf += $(LDFLAGS_common) --nmagic -s

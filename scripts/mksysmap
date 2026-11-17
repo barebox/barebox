@@ -33,6 +33,8 @@
 #   a - local absolute symbols
 #   U - undefined global symbols
 #   w - local weak symbols
+#
+# and assembler local symbols starting with '$', e.g. ARM mapping symbols.
 
 # readprofile starts reading symbols when _stext is found, and
 # continue until it finds a symbol which is not either of 'T', 't',
@@ -40,5 +42,5 @@
 # so we just ignore them to let readprofile continue to work.
 # (At least sparc64 has __crc_ in the middle).
 
-$NM -n $1 | grep -v '\( [aUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
+$NM -n $1 | grep -v '\( [aUw] \)\|\(__crc_\)\|\( \$\)' > $2
 

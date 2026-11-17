@@ -20,6 +20,7 @@ Contents:
    glossary
    devicetree/*
    devel/devel.rst
+   rust/*
    migration-guides/index
    talks
 

@@ -228,7 +228,7 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
 
 /**
  * print_hex_dump - print a text hex dump to syslog for a binary blob of data
- * @level: barebox log level (e.g. MSG_DEBUG)
+ * @level: barebox log level (e.g. LOGLEVEL_DEBUG)
  * @prefix_str: string to prefix each line with;
  *  caller supplies trailing spaces for alignment if desired
  * @prefix_type: controls whether prefix of an offset, address, or none

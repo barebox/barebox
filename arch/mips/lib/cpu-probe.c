@@ -20,7 +20,7 @@
 const char *__cpu_name = "unknown";
 struct cpuinfo_mips cpu_data[1];
 
-static char unknown_isa[] = KERN_ERR \
+static char unknown_isa[] =
 	"Unsupported ISA type, c0.config0: %d.";
 
 static inline unsigned int decode_config0(struct cpuinfo_mips *c)

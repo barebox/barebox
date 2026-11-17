@@ -154,7 +154,7 @@ static void test_of_overlay_missing_target(void)
 	/* Applying an overlay with a missing target prints an expected error, silence it
 	 * by decreasing the log level.
 	 */
-	old_loglevel = barebox_set_loglevel(MSG_CRIT);
+	old_loglevel = barebox_set_loglevel(LOGLEVEL_CRIT);
 
 	ret = of_overlay_apply_tree(root, overlay);
 

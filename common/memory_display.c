@@ -110,7 +110,7 @@ int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbyte
 			cp++;
 		}
 
-		if (level >= MSG_EMERG)
+		if (level >= LOGLEVEL_EMERG)
 			pr_print(level, "%pV%s\n", &vaf, line);
 		else
 			printf("%s\n", line);

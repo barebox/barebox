@@ -26,6 +26,7 @@ subdir-y :=
 subdir-m :=
 asflags-y  :=
 ccflags-y  :=
+rustflags-y :=
 cppflags-y :=
 ldflags-y  :=
 
@@ -43,6 +44,7 @@ include $(srctree)/scripts/Makefile.lib
 # flags that take effect in current and sub directories
 KBUILD_AFLAGS += $(subdir-asflags-y)
 KBUILD_CFLAGS += $(subdir-ccflags-y)
+KBUILD_RUSTFLAGS += $(subdir-rustflags-y)
 
 # barebox PBL handling
 # ===========================================================================
@@ -301,6 +303,78 @@ $(obj)/%.pbl.lst: $(obj)/%.c FORCE
 
 $(obj)/%.lst: $(obj)/%.c FORCE
 	$(call if_changed_dep,cc_lst_c)
+
+# Compile Rust sources (.rs)
+# ---------------------------------------------------------------------------
+
+# The features in this list are the ones allowed for non-`rust/` code.
+#
+#   - Stable since Rust 1.87.0: `feature(asm_goto)`.
+#   - Expected to become stable: `feature(arbitrary_self_types)`.
+#   - To be determined: `feature(used_with_arg)`.
+#
+# Please see https://github.com/Rust-for-Linux/linux/issues/2 for details on
+# the unstable features in use.
+rust_allowed_features := arbitrary_self_types,asm_goto,used_with_arg
+
+# `--out-dir` is required to avoid temporaries being created by `rustc` in the
+# current working directory, which may be not accessible in the out-of-tree
+# modules case.
+rust_common_cmd = \
+	OBJTREE=$(abspath $(objtree)) \
+	RUST_MODFILE=$(modfile) $(RUSTC_OR_CLIPPY) $(rust_flags) \
+	-Zallow-features=$(rust_allowed_features) \
+	-Zcrate-attr=no_std \
+	-Zcrate-attr='feature($(rust_allowed_features))' \
+	-Zunstable-options --extern pin_init --extern kernel \
+	--crate-type rlib -L $(objtree)/rust/ \
+	--crate-name $(basename $(notdir $@)) \
+	--sysroot=/dev/null \
+	--out-dir $(dir $@) --emit=dep-info=$(depfile)
+
+# `--emit=obj`, `--emit=asm` and `--emit=llvm-ir` imply a single codegen unit
+# will be used. We explicitly request `-Ccodegen-units=1` in any case, and
+# the compiler shows a warning if it is not 1. However, if we ever stop
+# requesting it explicitly and we start using some other `--emit` that does not
+# imply it (and for which codegen is performed), then we would be out of sync,
+# i.e. the outputs we would get for the different single targets (e.g. `.ll`)
+# would not match each other.
+
+quiet_cmd_rustc_o_rs = $(RUSTC_OR_CLIPPY_QUIET) $(quiet_modtag) $@
+      cmd_rustc_o_rs = $(rust_common_cmd) --emit=obj=$@ $< $(cmd_objtool)
+
+define rule_rustc_o_rs
+	$(call cmd_and_fixdep,rustc_o_rs)
+endef
+
+$(obj)/%.o: $(obj)/%.rs FORCE
+	+$(call if_changed_rule,rustc_o_rs)
+
+quiet_cmd_rustc_rsi_rs = $(RUSTC_OR_CLIPPY_QUIET) $(quiet_modtag) $@
+      cmd_rustc_rsi_rs = \
+	$(rust_common_cmd) -Zunpretty=expanded $< >$@; \
+	command -v $(RUSTFMT) >/dev/null && $(RUSTFMT) $@
+
+$(obj)/%.rsi: $(obj)/%.rs FORCE
+	+$(call if_changed_dep,rustc_rsi_rs)
+
+quiet_cmd_rustc_s_rs = $(RUSTC_OR_CLIPPY_QUIET) $(quiet_modtag) $@
+      cmd_rustc_s_rs = $(rust_common_cmd) --emit=asm=$@ $<
+
+$(obj)/%.s: $(obj)/%.rs FORCE
+	+$(call if_changed_dep,rustc_s_rs)
+
+quiet_cmd_rustc_ll_rs = $(RUSTC_OR_CLIPPY_QUIET) $(quiet_modtag) $@
+      cmd_rustc_ll_rs = $(rust_common_cmd) --emit=llvm-ir=$@ $<
+
+$(obj)/%.ll: $(obj)/%.rs FORCE
+	+$(call if_changed_dep,rustc_ll_rs)
+
+quiet_cmd_rustc_rs_rs_S = RSCPP $(quiet_modtag) $@
+      cmd_rustc_rs_rs_S = $(CPP) $(c_flags) -xc -C -P $< | sed '1,/^\/\/ Cut here.$$/d' >$@
+
+$(obj)/%.rs: $(obj)/%.rs.S FORCE
+	+$(call if_changed_dep,rustc_rs_rs_S)
 
 # Compile assembler sources (.S)
 # ---------------------------------------------------------------------------

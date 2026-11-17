@@ -102,7 +102,7 @@ int blob_encrypt(struct blobgen *bg, const char *modifier, const void *plain,
 		return -EINVAL;
 
 	pr_debug("%s plain:\n", __func__);
-	pr_memory_display(MSG_DEBUG, plain, 0, plainsize, 1, 0);
+	pr_memory_display(LOGLEVEL_DEBUG, plain, 0, plainsize, 1, 0);
 
 	blob = dma_alloc(MAX_BLOB_LEN);
 	if (!blob)
@@ -114,7 +114,7 @@ int blob_encrypt(struct blobgen *bg, const char *modifier, const void *plain,
 		free(blob);
 	} else {
 		pr_debug("%s encrypted:\n", __func__);
-		pr_memory_display(MSG_DEBUG, blob, 0, *blobsize, 1, 0);
+		pr_memory_display(LOGLEVEL_DEBUG, blob, 0, *blobsize, 1, 0);
 		*retblob = blob;
 	}
 
@@ -180,13 +180,13 @@ int blob_decrypt(struct blobgen *bg, const char *modifier, const void *blob,
 	int ret;
 
 	pr_debug("%s encrypted:\n", __func__);
-	pr_memory_display(MSG_DEBUG, blob, 0, blobsize, 1, 0);
+	pr_memory_display(LOGLEVEL_DEBUG, blob, 0, blobsize, 1, 0);
 
 	ret = bg->decrypt(bg, modifier, blob, blobsize, plain, plainsize);
 
 	if (!ret) {
 		pr_debug("%s decrypted:\n", __func__);
-		pr_memory_display(MSG_DEBUG, *plain, 0, *plainsize, 1, 0);
+		pr_memory_display(LOGLEVEL_DEBUG, *plain, 0, *plainsize, 1, 0);
 	}
 
 	return ret;

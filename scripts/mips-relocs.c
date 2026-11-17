@@ -120,6 +120,7 @@ static int add_reloc(unsigned int type, uint64_t off)
 	case R_MIPS_HIGHEST:
 	case R_MIPS_PC21_S2:
 	case R_MIPS_PC26_S2:
+	case R_MIPS_PC32:
 		/* Skip these relocs */
 		return 0;
 

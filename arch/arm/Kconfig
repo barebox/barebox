@@ -36,11 +36,14 @@ config ARCH_MKIMAGE_NAME
 config ARM32
 	def_bool CPU_32
 	select ARCH_HAS_MALLOC_SIZE
+	# rustc is passed the armv7a-none-eabi target, see arch/arm/Makefile
+	select HAVE_RUST if CPU_32v7 && !CPU_32v6 && !CPU_32v5 && !CPU_32v4T && AEABI
 
 config ARM64
 	def_bool CPU_64
 	select ARCH_HAS_RELR
 	select ARCH_HAS_BAREBOX_MEMORY_OFFSET
+	select HAVE_RUST
 
 config ARM64_STRICT_BUILD_ARCH
 	def_bool CC_IS_CLANG

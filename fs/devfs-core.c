@@ -815,7 +815,7 @@ static struct cdev *check_overlap(struct cdev *cdev,
 
 identical:
 conflict:
-	__pr_printk(ret ? MSG_WARNING : MSG_DEBUG,
+	__pr_printk(ret ? LOGLEVEL_WARNING : LOGLEVEL_DEBUG,
 		    "New partition %s (0x%08llx-0x%08llx) on %s "
 		    "%s with partition %s (0x%08llx-0x%08llx), not creating it\n",
 		    partinfo->name, offset, offset + size - 1, cdev->name,

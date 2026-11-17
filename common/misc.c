@@ -23,10 +23,9 @@ int errno;
 EXPORT_SYMBOL(errno);
 
 
-const char *strerror(int errnum)
+/* like GNU strerror_r(), but returns NULL for unknown errnos if buf is NULL */
+const char *strerror_r(int errnum, char *buf, size_t buflen)
 {
-	static char errno_string[sizeof("error -2147483648")];
-
 	switch(errnum) {
 #ifdef CONFIG_ERRNO_MESSAGES
 	case	0		: return "No error";
@@ -98,9 +97,19 @@ const char *strerror(int errnum)
 #endif
 #endif
 	default:
-		sprintf(errno_string, "error %d", errnum);
-		return errno_string;
+		if (!buf)
+			return NULL;
+		snprintf(buf, buflen, "error %d", errnum);
+		return buf;
 	};
+}
+EXPORT_SYMBOL(strerror_r);
+
+const char *strerror(int errnum)
+{
+	static char errno_string[sizeof("error -2147483648")];
+
+	return strerror_r(errnum, errno_string, sizeof(errno_string));
 }
 EXPORT_SYMBOL(strerror);
 

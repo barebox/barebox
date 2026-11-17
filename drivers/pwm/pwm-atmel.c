@@ -432,7 +432,7 @@ static int atmel_pwm_probe(struct device *dev)
 	atmel_pwm = xzalloc(sizeof(*atmel_pwm));
 	atmel_pwm->data = data;
 	atmel_pwm->dev = dev;
-	atmel_pwm->clk = clk_get(dev, "pwm_clk");
+	atmel_pwm->clk = clk_get(dev, NULL);
 	if (IS_ERR(atmel_pwm->clk))
 		return PTR_ERR(atmel_pwm->clk);
 

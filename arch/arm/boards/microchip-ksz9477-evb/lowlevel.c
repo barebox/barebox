@@ -44,7 +44,7 @@ SAMA5D3_ENTRY_FUNCTION(start_sama5d3_xplained_ung8071_xload_mmc, r4)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		dbgu_init();
 
-	sama5d3_atmci_start_image(0, MASTER_CLOCK, 0);
+	sama5d3_atmci_start_image(r4, MASTER_CLOCK, 0);
 }
 
 extern char __dtb_z_at91_microchip_ksz9477_evb_start[];

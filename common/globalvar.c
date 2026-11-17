@@ -7,6 +7,7 @@
 #include <init.h>
 #include <environment.h>
 #include <magicvar.h>
+#include <string.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <libfile.h>
@@ -419,7 +420,8 @@ void globalvar_print(void)
  * globalvar_get_match
  *
  * get a concatenated string of all globalvars beginning with 'match'.
- * This adds whitespaces between the different globalvars
+ * This adds the separator between the different globalvars. Variables
+ * without a value are skipped.
  */
 char *globalvar_get_match(const char *match, const char *separator)
 {
@@ -429,6 +431,8 @@ char *globalvar_get_match(const char *match, const char *separator)
 	dev_for_each_param(&global_device, param) {
 		if (!strncmp(match, param->name, strlen(match))) {
 			const char *p = dev_get_param(&global_device, param->name);
+			if (isempty(p))
+				continue;
 			if (val) {
 				char *new = basprintf("%s%s%s", val,
 							separator, p);

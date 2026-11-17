@@ -86,8 +86,10 @@ The simple method to pass bootargs to the kernel is with
 takes the bootargs from the :ref:`bootargs <magicvar_bootargs>` environment variable.
 
 With ``CONFIG_FLEXIBLE_BOOTARGS`` enabled, the bootargs are composed
-from different :ref:`global device<global_device>` variables. All variables beginning
-with ``global.linux.bootargs.`` will be concatenated to the bootargs:
+from different :ref:`global device<global_device>` variables and the
+:ref:`bootargs <magicvar_bootargs>` environment variable is ignored.
+All variables beginning with ``global.linux.bootargs.`` will be concatenated
+to the bootargs. Variables without a value are skipped:
 
 .. code-block:: sh
 
@@ -100,6 +102,9 @@ with ``global.linux.bootargs.`` will be concatenated to the bootargs:
   ...
 
   Kernel command line: ignore_loglevel console=ttyO0,115200 earlyprintk
+
+When booting an EFI-stubbed kernel as EFI application, the
+:ref:`EFI load options <efi_load_options>` precede the Linux bootargs.
 
 .. _bootargs_concat_order:
 
@@ -174,7 +179,7 @@ This takes the kernel from ``/mnt/mmc1/zImage`` (which could be an
 ``root=PARTUUID=deadbeef:01``.
 
 All changes a boot entry makes to ``global.bootm.*``, ``global.linux.*``,
-``global.of.*`` and
+``global.efi.bootargs.*``, ``global.of.*`` and
 :ref:`global.boot.watchdog_timeout <magicvar_global_boot_watchdog_timeout>`
 are reverted when the boot entry returns:
 modified variables get their previous value back, variables created by

@@ -79,7 +79,7 @@ int bootm_entry(struct bootentry *be, const struct bootm_data *data);
  */
 static inline struct globalvar_scope *boot_globalvar_scope_push(void)
 {
-	return globalvar_scope_push("bootm.*", "linux.*", "of.*",
+	return globalvar_scope_push("bootm.*", "linux.*", "of.*", "efi.bootargs.*",
 				    "boot.watchdog_timeout");
 }
 

@@ -10,6 +10,24 @@
 
 extern struct device global_device;
 
+struct globalvar_scope;
+
+/**
+ * globalvar_scope_push - snapshot a set of globalvars
+ * @...: fnmatch() patterns of the globalvar names to snapshot
+ *
+ * See __globalvar_scope_push(). The scope borrows the patterns until
+ * globalvar_scope_pop(). Collecting them in a static array makes the
+ * compiler reject patterns that don't live that long, as only string
+ * literals and addresses of static objects are allowed as initializers.
+ *
+ * Return: the scope to be passed to globalvar_scope_pop()
+ */
+#define globalvar_scope_push(...) ({					\
+	static const char * const __patterns[] = { __VA_ARGS__, NULL };	\
+	__globalvar_scope_push(__patterns);				\
+})
+
 #ifdef CONFIG_GLOBALVAR
 
 static inline const char *globalvar_get(const char *name)
@@ -23,6 +41,9 @@ void globalvar_remove(const char *name);
 char *globalvar_get_match(const char *match, const char *separator);
 void globalvar_set_match(const char *match, const char *val);
 void globalvar_set(const char *name, const char *val);
+
+struct globalvar_scope *__globalvar_scope_push(const char * const *patterns);
+void globalvar_scope_pop(struct globalvar_scope *scope);
 
 int globalvar_add_simple_string(const char *name, char **value);
 int globalvar_add_simple_int(const char *name, int *value,
@@ -125,6 +146,14 @@ static inline char *globalvar_get_match(const char *match, const char *separator
 static inline void globalvar_set_match(const char *match, const char *val) {}
 
 static inline void globalvar_set(const char *name, const char *val) {}
+
+static inline struct globalvar_scope *
+__globalvar_scope_push(const char * const *patterns)
+{
+	return NULL;
+}
+
+static inline void globalvar_scope_pop(struct globalvar_scope *scope) {}
 
 static inline int nvvar_load(void)
 {

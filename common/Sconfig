@@ -51,7 +51,7 @@ menu "Boot Policy"
 
 config BOOT_UNSIGNED_IMAGES
 	bool "Allow booting unsigned images"
-	depends on $(kconfig-enabled,BOOTM_OPTIONAL_SIGNED_IMAGES)
+	depends on $(kconfig-enabled,BOOTM_ALLOW_UNSIGNED_IMAGES)
 	help
 	  Say y here if you want to allow booting of images with
 	  an invalid signature or no signature at all.

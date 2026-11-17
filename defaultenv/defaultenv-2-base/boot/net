@@ -23,6 +23,7 @@ if [ -f "${initramfs}" ]; then
 	global.bootm.initrd="$initramfs"
 else
 	nfsroot="${nfsserver}:/home/${global.user}/nfsroot/${global.hostname}"
-	ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
-	global.linux.bootargs.dyn.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"
+	global linux.bootargs.ip
+	ip_route_get -b ${global.net.server} global.linux.bootargs.ip
+	global linux.bootargs.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"
 fi

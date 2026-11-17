@@ -85,7 +85,8 @@ static int do_devlookup(int argc, char *argv[])
 	}
 
 	if (kernelopt)
-		val = buf = cdev_get_linux_rootarg(cdev);
+		val = buf = cdev_get_linux_rootarg(cdev,
+			getenv_nonempty("global.bootm.root_param") ?: "root");
 	else if (paramname)
 		val = dev_get_param(cdev->dev, paramname);
 	else
@@ -109,7 +110,7 @@ BAREBOX_CMD_HELP_TEXT("parameter with that name is looked up.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-v",  "write output to VARIABLE instead of printing it")
-BAREBOX_CMD_HELP_OPT ("-k",  "output kernel rootarg line")
+BAREBOX_CMD_HELP_OPT ("-k",  "output kernel rootarg line (see global.bootm.root_param)")
 BAREBOX_CMD_HELP_OPT ("-a",  "output resolution of cdev alias")
 BAREBOX_CMD_HELP_END
 

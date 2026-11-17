@@ -97,25 +97,13 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	int bootm_nattempts;
 	int ret;
 
-	struct bootm_data backup = {}, data = {};
+	struct bootm_data data = {};
 
 	if (dryrun == 1) {
 		printf("Would run %s%s%s\n", bs->entry.path,
 		       bs->args ? " " : "", bs->args ?: "");
 		return 0;
 	}
-
-	bootm_data_init_defaults(&backup);
-
-	/*
-	 * The strings point to the globalvars' current values, which the
-	 * script frees when it assigns new ones. Keep our own copies.
-	 */
-	backup.os_file = xstrdup(backup.os_file);
-	backup.initrd_file = xstrdup(backup.initrd_file);
-	backup.oftree_file = xstrdup(backup.oftree_file);
-	backup.root_dev = xstrdup(backup.root_dev);
-	backup.root_param = xstrdup(backup.root_param);
 
 	globalvar_add_simple("linux.bootargs.dyn.ip", NULL);
 	globalvar_add_simple("linux.bootargs.dyn.root", NULL);
@@ -127,14 +115,15 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	 * without the shell expanding or splitting it first.
 	 */
 	ret = execute_binfmt(bs->args ? 2 : 1, argv);
-	if (ret) {
-		pr_err("Running script '%s' failed: %s\n", bs->entry.path, strerror(-ret));
-		goto out;
-	}
+	if (ret < 0)
+		pr_err("Running script '%s' failed: %pe\n", bs->entry.path, ERR_PTR(ret));
+	/* positive values are the exit status, reported by boot_entry() */
+	if (ret)
+		return ret;
 
 	/* No point in repeating bootm if script already called it */
 	if (bootm_nattempts != bootm_command_attempts())
-		goto out;
+		return 0;
 
 	bootm_data_init_defaults(&data);
 
@@ -143,17 +132,7 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 	if (dryrun >= 2)
 		data.dryrun = dryrun - 1;
 
-	ret = bootm_entry(entry, &data);
-out:
-	bootm_data_restore_defaults(&backup);
-
-	free_const(backup.os_file);
-	free_const(backup.initrd_file);
-	free_const(backup.oftree_file);
-	free_const(backup.root_dev);
-	free_const(backup.root_param);
-
-	return ret;
+	return bootm_entry(entry, &data);
 }
 
 static unsigned int boot_watchdog_timeout;
@@ -208,8 +187,24 @@ BAREBOX_MAGICVAR(global.boot.watchdog_timeout,
 BAREBOX_MAGICVAR(global.user,
 		"Username used by the default environment to construct network boot paths");
 
+/* The overrides of the boot entry currently being booted */
+static const struct bootm_overrides *boot_active_overrides;
+
+/**
+ * boot_get_active_overrides - get the overrides of the current boot entry
+ *
+ * Return: the overrides of the boot entry currently being booted, NULL if
+ * there is none
+ */
+const struct bootm_overrides *boot_get_active_overrides(void)
+{
+	return boot_active_overrides;
+}
+
 int boot_entry(struct bootentry *be, int verbose, int dryrun)
 {
+	const struct bootm_overrides *outer = boot_active_overrides;
+	struct globalvar_scope *scope;
 	int ret;
 
 	pr_info("Booting entry '%s'\n", be->title);
@@ -224,11 +219,27 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 		}
 	}
 
+	scope = boot_globalvar_scope_push();
+
+	/*
+	 * A boot entry may boot other entries, for example a boot script
+	 * calling boot. Hand the overrides on to them, the ones of the outer
+	 * entry take precedence.
+	 */
+	if (outer)
+		bootm_merge_overrides(&be->overrides, outer);
+	boot_active_overrides = &be->overrides;
+
 	ret = be->boot(be, verbose, dryrun);
-	if (ret && ret != -ENOMEDIUM)
+
+	boot_active_overrides = outer;
+
+	if (ret > 0)
+		pr_err("Booting entry '%s' failed: exit status %d\n", be->title, ret);
+	else if (ret && ret != -ENOMEDIUM)
 		pr_err("Booting entry '%s' failed: %pe\n", be->title, ERR_PTR(ret));
 
-	globalvar_set_match("linux.bootargs.dyn.", "");
+	globalvar_scope_pop(scope);
 
 	return ret;
 }
@@ -342,7 +353,7 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
 /*
  * Only the first character of a boot script argument is restricted, so
  * that other forms can be added later without changing the meaning of
- * existing targets, e.g. devboot@@mmc0@mmc1 or devboot@[some-condition].
+ * existing targets, e.g. SCRIPT@@ARG1@ARG2 or SCRIPT@[some-condition].
  * Paths and URLs are fine as arguments.
  */
 static bool is_valid_bootarg(const char *s)
@@ -355,8 +366,8 @@ static bool is_valid_bootarg(const char *s)
  *
  * name is either an absolute path or a name relative to /env/boot. A name
  * of the form SCRIPT@ARGUMENT refers to the boot script SCRIPT and has
- * ARGUMENT passed to it as first argument, e.g. devboot@system0 runs
- * /env/boot/devboot with argument system0. A name that exists as-is takes
+ * ARGUMENT passed to it as first argument, e.g. mmc@1 runs /env/boot/mmc
+ * with argument 1. A name that exists as-is takes
  * precedence, so scripts and directories with an @ in their name keep
  * working. An empty SCRIPT is rejected, so that @ARGUMENT doesn't expand
  * to every script in /env/boot.
@@ -541,7 +552,7 @@ out:
  * name can be:
  * - a name of a boot script under /env/boot
  * - a name of a boot script under /env/boot followed by an @ and an
- *   argument to pass to the script, e.g. devboot@system0
+ *   argument to pass to the script, e.g. mmc@1
  * - a full path of a boot script
  * - a full path of a bootloader spec entry
  * - a device name
@@ -658,20 +669,5 @@ BAREBOX_MAGICVAR(global.boot.default, "default boot order");
  */
 int bootm_entry(struct bootentry *be, const struct bootm_data *bootm_data)
 {
-	struct image_data *data;
-	int ret;
-
-	data = bootm_boot_prep(bootm_data);
-	if (IS_ERR(data))
-		return PTR_ERR(data);
-
-	ret = bootm_apply_overrides(data, &be->overrides);
-	if (ret)
-		goto out;
-
-	ret = bootm_boot_handler(data);
-
-out:
-	bootm_boot_cleanup(data);
-	return ret;
+	return bootm_boot_overrides(bootm_data, &be->overrides);
 }

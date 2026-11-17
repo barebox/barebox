@@ -86,8 +86,10 @@ The simple method to pass bootargs to the kernel is with
 takes the bootargs from the :ref:`bootargs <magicvar_bootargs>` environment variable.
 
 With ``CONFIG_FLEXIBLE_BOOTARGS`` enabled, the bootargs are composed
-from different :ref:`global device<global_device>` variables. All variables beginning
-with ``global.linux.bootargs.`` will be concatenated to the bootargs:
+from different :ref:`global device<global_device>` variables and the
+:ref:`bootargs <magicvar_bootargs>` environment variable is ignored.
+All variables beginning with ``global.linux.bootargs.`` will be concatenated
+to the bootargs. Variables without a value are skipped:
 
 .. code-block:: sh
 
@@ -100,6 +102,9 @@ with ``global.linux.bootargs.`` will be concatenated to the bootargs:
   ...
 
   Kernel command line: ignore_loglevel console=ttyO0,115200 earlyprintk
+
+When booting an EFI-stubbed kernel as EFI application, the
+:ref:`EFI load options <efi_load_options>` precede the Linux bootargs.
 
 .. _bootargs_concat_order:
 
@@ -124,6 +129,8 @@ interleaved with externally provided command-line arguments:
   * ``systemd.machine_id=`` controlled by :ref:`global.bootm.provide_machine_id <magicvar_global_bootm_provide_machine_id>`
   * ``systemd.hostname=`` controlled by :ref:`global.bootm.provide_hostname <magicvar_global_bootm_provide_hostname>`
   * ``barebox.security.policy=`` controlled by :ref:`global.bootm.provide_policy <magicvar_global_bootm_provide_policy>`
+  * ``systemd.watchdog_device=`` controlled by ``CONFIG_SYSTEMD_OF_WATCHDOG``,
+    only when booting with a device tree
 
 Creating root= options for the Kernel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -164,16 +171,24 @@ A simple boot entry in ``/env/boot/mmc`` could look like this:
   global.bootm.image=/mnt/mmc1/zImage
   global.bootm.oftree=/env/oftree
 
-  global linux.bootargs.dyn.root="root=PARTUUID=deadbeef:01"
+  global linux.bootargs.root="root=PARTUUID=deadbeef:01"
 
 This takes the kernel from ``/mnt/mmc1/zImage`` (which could be an
 :ref:`automount` path registered earlier). The devicetree will be used from
 ``/env/oftree``. The Kernel gets the command line
-``root=PARTUUID=deadbeef:01``. Note the ``.dyn`` in the bootargs variable name.
-boot entries should always add Kernel command line parameters to variables with
-``.dyn`` in it. These will be cleared before booting different boot entries.
-This is done so that following boot entries do not leak command line
-parameters from the previous boot entries.
+``root=PARTUUID=deadbeef:01``.
+
+All changes a boot entry makes to ``global.bootm.*``, ``global.linux.*``,
+``global.efi.bootargs.*``, ``global.of.*`` and
+:ref:`global.boot.watchdog_timeout <magicvar_global_boot_watchdog_timeout>`
+are reverted when the boot entry returns:
+modified variables get their previous value back, variables created by
+the boot entry are removed and variables it removed are created again.
+This way a boot entry that fails to boot doesn't leak its settings into
+the following boot entries. Older boot entries put their Kernel command
+line parameters into ``global.linux.bootargs.dyn.*`` for this reason,
+which still works, but is no longer necessary. Settings meant for all
+boot entries belong into an init script or an nv variable instead.
 
 This entry can be booted with ``boot mmc``. It can also be made the default by
 setting the :ref:`global.boot.default <magicvar_global_boot_default>` variable
@@ -432,9 +447,10 @@ If the preconfigured paths or names are not suitable, they can be adjusted in
   fi
 
   nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
-  ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
+  global linux.bootargs.ip
+  ip_route_get -b ${global.net.server} global.linux.bootargs.ip
 
-  global.linux.bootargs.dyn.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"
+  global linux.bootargs.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"
 
 ``boot net`` will then retrieve the kernel (and also the device tree and
 initramfs, if used) over TFTP and boot it.

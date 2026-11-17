@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include <bootargs.h>
+#include <boot.h>
 #include <bootm.h>
 #include <fs.h>
 #include <fcntl.h>
@@ -98,27 +99,6 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->verbose = bootm_verbosity;
 	data->dryrun = bootm_dryrun;
 	data->efi_boot = bootm_efi_mode;
-}
-
-void bootm_data_restore_defaults(const struct bootm_data *data)
-{
-	globalvar_set("bootm.oftree", data->oftree_file);
-	globalvar_set("bootm.image", data->os_file);
-	pr_setenv("global.bootm.image.loadaddr", "0x%lx", data->os_address);
-	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
-		pr_setenv("global.bootm.initrd.loadaddr", "0x%lx", data->initrd_address);
-		globalvar_set("bootm.initrd", data->initrd_file);
-	}
-	globalvar_set("bootm.root_dev", data->root_dev);
-	globalvar_set("bootm.root_param", data->root_param);
-	bootm_set_verify_mode(data->verify);
-	bootm_appendroot = data->appendroot;
-	bootm_provide_machine_id = data->provide_machine_id;
-	bootm_provide_hostname = data->provide_hostname;
-	bootm_provide_policy = data->provide_policy;
-	bootm_verbosity = data->verbose;
-	bootm_dryrun = data->dryrun;
-	bootm_efi_mode = data->efi_boot;
 }
 
 static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_AVAILABLE;
@@ -542,6 +522,8 @@ struct image_data *bootm_boot_prep(const struct bootm_data *bootm_data)
 
 	data = xzalloc(sizeof(*data));
 
+	data->globalvar_scope = boot_globalvar_scope_push();
+
 	bootm_image_name_and_part(bootm_data->os_file, &data->os_file, &data->os_part);
 	bootm_image_name_and_part(bootm_data->oftree_file, &data->oftree_file, &data->oftree_part);
 	bootm_image_name_and_part(bootm_data->initrd_file, &data->initrd_file, &data->initrd_part);
@@ -801,8 +783,7 @@ void bootm_boot_cleanup(struct image_data *data)
 	if (data->of_root_node)
 		of_delete_node(data->of_root_node);
 
-	globalvar_remove(LINUX_BOOTARGS_BOOTM_EARLY "*");
-	globalvar_remove(LINUX_BOOTARGS_BOOTM_LATE  "*");
+	globalvar_scope_pop(data->globalvar_scope);
 	free(data->os_header);
 	free(data->os_file);
 	free(data->oftree_file);
@@ -813,7 +794,15 @@ void bootm_boot_cleanup(struct image_data *data)
 /*
  * bootm_boot - Boot an application image described by bootm_data
  */
-int bootm_boot(const struct bootm_data *bootm_data)
+/**
+ * bootm_boot_overrides - boot with overrides applied
+ * @bootm_data: bootm data
+ * @overrides: overrides to apply, may be NULL
+ *
+ * Return: 0 on success, or negative error code otherwise
+ */
+int bootm_boot_overrides(const struct bootm_data *bootm_data,
+			 const struct bootm_overrides *overrides)
 {
 	struct image_data *data;
 	int ret;
@@ -822,10 +811,22 @@ int bootm_boot(const struct bootm_data *bootm_data)
 	if (IS_ERR(data))
 		return PTR_ERR(data);
 
+	if (overrides) {
+		ret = bootm_apply_overrides(data, overrides);
+		if (ret)
+			goto out;
+	}
+
 	ret = bootm_boot_handler(data);
 
+out:
 	bootm_boot_cleanup(data);
 	return ret;
+}
+
+int bootm_boot(const struct bootm_data *bootm_data)
+{
+	return bootm_boot_overrides(bootm_data, NULL);
 }
 
 bool bootm_efi_check_image(struct image_handler *handler,

@@ -329,7 +329,6 @@ static char **make_list_in(char **inp, char *name);
 static char *insert_var_value(char *inp);
 static int set_local_var(const char *s, int flg_export);
 static int execute_script(const char *path, int argc, char *argv[]);
-static int source_script(const char *path, int argc, char *argv[]);
 
 static int b_check_space(o_string *o, int len)
 {
@@ -1975,11 +1974,25 @@ static int execute_script(const char *path, int argc, char *argv[])
 	return ret;
 }
 
-static int source_script(const char *path, int argc, char *argv[])
+/**
+ * source_script - execute a shell script in the current environment
+ * @path: path of the script
+ * @argc: number of positional parameters, including $0
+ * @argv: positional parameters, starting with $0
+ *
+ * Unlike executing a script, variables set by it remain set in the current
+ * environment context after it returns.
+ *
+ * Return: exit status of the last command executed, or a negative error code
+ */
+int source_script(const char *path, int argc, char *argv[])
 {
 	struct p_context ctx = {};
 	char *script;
 	int ret;
+
+	if (!IS_ALLOWED(SCONFIG_SHELL))
+		return -EPERM;
 
 	initialize_context(&ctx, true);
 

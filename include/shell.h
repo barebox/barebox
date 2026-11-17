@@ -6,16 +6,24 @@
 #ifndef __SHELL_H__
 #define __SHELL_H__
 
+#include <linux/errno.h>
+
 int shell_get_last_return_code(void);
 
 int run_shell(void);
 
 #ifdef CONFIG_SHELL_HUSH
 char *shell_expand(char *str);
+int source_script(const char *path, int argc, char *argv[]);
 #else
 static inline char *shell_expand(char *str)
 {
 	return strdup(str);
+}
+
+static inline int source_script(const char *path, int argc, char *argv[])
+{
+	return -ENOSYS;
 }
 #endif
 

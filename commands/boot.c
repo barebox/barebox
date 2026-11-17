@@ -7,6 +7,7 @@
 #include <malloc.h>
 #include <boot.h>
 #include <bootm.h>
+#include <devboot.h>
 #include <fnmatch.h>
 #include <complete.h>
 
@@ -111,11 +112,13 @@ static int do_boot(int argc, char *argv[])
 	struct bootentries *entries;
 	struct bootentry *entry;
 	struct bootm_overrides overrides = {};
+	struct devboot *devboot = NULL;
+	bool do_devboot = devboot_enabled();
 	void *handle;
 	const char *name;
 	char *(*next)(void *);
 
-	while ((opt = getopt(argc, argv, "vldmM:t:w:o:")) > 0) {
+	while ((opt = getopt(argc, argv, "vldmM:t:w:o:D")) > 0) {
 		switch (opt) {
 		case 'v':
 			verbose++;
@@ -137,6 +140,13 @@ static int do_boot(int argc, char *argv[])
 			break;
 		case 'w':
 			boot_set_watchdog_timeout(simple_strtoul(optarg, NULL, 0));
+			break;
+		case 'D':
+			if (!IS_ENABLED(CONFIG_BOOT_DEVBOOT)) {
+				ret = -ENOSYS;
+				goto out_overrides;
+			}
+			do_devboot = true;
 			break;
 		case 'o':
 			ret = boot_add_override(&overrides, optarg);
@@ -161,6 +171,15 @@ static int do_boot(int argc, char *argv[])
 
 		handle = freep = xstrdup(def);
 		next = next_word;
+	}
+
+	if (do_devboot && !do_list) {
+		devboot = devboot_start(&overrides);
+		if (IS_ERR(devboot)) {
+			ret = PTR_ERR(devboot);
+			free(freep);
+			goto out_overrides;
+		}
 	}
 
 	entries = bootentries_alloc();
@@ -204,6 +223,9 @@ static int do_boot(int argc, char *argv[])
 			goto out;
 		}
 
+		bootentries_for_each_entry(entries, entry)
+			bootm_merge_overrides(&entry->overrides, &overrides);
+
 		bootsources_menu(entries, idx, timeout);
 	}
 
@@ -211,6 +233,7 @@ static int do_boot(int argc, char *argv[])
 out:
 	bootentries_free(entries);
 	free(freep);
+	devboot_finish(devboot);
 out_overrides:
 	boot_free_overrides(&overrides);
 
@@ -266,13 +289,16 @@ BAREBOX_CMD_HELP_OPT ("-w SECS","Start watchdog with timeout SECS before booting
 BAREBOX_CMD_HELP_OPT ("-o VAR[=VAL]","override VAR (bootm.{image,oftree,initrd}) with VAL")
 BAREBOX_CMD_HELP_OPT ("            ","if VAL is not specified, the value of VAR is taken")
 #endif
+#ifdef CONFIG_BOOT_DEVBOOT
+BAREBOX_CMD_HELP_OPT ("-D","devboot: take overrides from a script in global.net.fetchdir")
+#endif
 BAREBOX_CMD_HELP_OPT ("-t SECS","specify timeout in SECS")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(boot)
 	.cmd	= do_boot,
 	BAREBOX_CMD_DESC("boot from script, device, ...")
-	BAREBOX_CMD_OPTS("[-vdlmMwto] [BOOTSRC...]")
+	BAREBOX_CMD_OPTS("[-vdlmMwtoD] [BOOTSRC...]")
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_boot_help)
 BAREBOX_CMD_END

@@ -6,4 +6,4 @@ obj-$(CONFIG_EFI_RUNTIME)	+= runtime/
 obj-$(CONFIG_EFI_GUID)		+= guid.o
 obj-$(CONFIG_EFI_DEVICEPATH)	+= devicepath.o
 obj-$(CONFIG_EFI)		+= errno.o handle.o efivar.o efivar-filename.o
-obj-$(CONFIG_EFI)		+= initrd.o
+obj-$(CONFIG_EFI)		+= initrd.o bootargs.o

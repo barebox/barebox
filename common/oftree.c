@@ -160,22 +160,18 @@ static int of_fixup_bootargs_reset_source(struct device_node *root,
 	return of_property_write_string(chosen, "reset-source-device", np->full_name);
 }
 
-static void watchdog_build_bootargs(struct watchdog *watchdog, struct device_node *root)
+static char *watchdog_build_bootargs(struct watchdog *watchdog, struct device_node *root)
 {
 	int alias_id;
-	char *buf;
 
 	if (!watchdog)
-		return;
+		return NULL;
 
 	alias_id = watchdog_get_alias_id_from(watchdog, root);
 	if (alias_id < 0)
-		return;
+		return NULL;
 
-	buf = xasprintf("systemd.watchdog_device=/dev/watchdog%d", alias_id);
-
-	globalvar_add_simple("linux.bootargs.dyn.watchdog", buf);
-	free(buf);
+	return xasprintf("systemd.watchdog_device=/dev/watchdog%d", alias_id);
 }
 
 static int bootargs_append = 0;
@@ -183,31 +179,40 @@ BAREBOX_MAGICVAR(global.linux.bootargs_append, "append to original oftree bootar
 
 static int of_write_bootargs(struct device_node *node)
 {
-	const char *str;
+	const char *str, *oldstr;
+	char *watchdog = NULL;
 	char *buf = NULL;
 	int ret;
 
 	if (IS_ENABLED(CONFIG_SYSTEMD_OF_WATCHDOG))
-		watchdog_build_bootargs(boot_get_enabled_watchdog(), of_get_parent(node));
+		watchdog = watchdog_build_bootargs(boot_get_enabled_watchdog(),
+						   of_get_parent(node));
 
-	str = linux_bootargs_get();
-	if (!str)
-		return 0;
+	str = skip_spaces(linux_bootargs_get() ?: "");
 
-	str = skip_spaces(str);
+	if (watchdog) {
+		if (*str)
+			str = buf = xasprintf("%s %s", str, watchdog);
+		else
+			str = watchdog;
+	}
+
 	if (strlen(str) == 0)
 		return 0;
 
 	if (bootargs_append) {
-		const char *oldstr;
-
 		ret = of_property_read_string(node, "bootargs", &oldstr);
-		if (!ret)
-			str = buf = xasprintf("%s %s", oldstr, str);
+		if (!ret) {
+			char *tmp = xasprintf("%s %s", oldstr, str);
+
+			free(buf);
+			str = buf = tmp;
+		}
 	}
 
 	ret = of_property_write_string(node, "bootargs", str);
 	free(buf);
+	free(watchdog);
 	return ret;
 }
 

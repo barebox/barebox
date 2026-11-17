@@ -109,7 +109,8 @@ static inline int block_flush(struct block_device *blk)
 
 #ifdef CONFIG_BLOCK
 unsigned file_list_add_blockdevs(struct file_list *files);
-char *cdev_get_linux_rootarg(const struct cdev *partcdev);
+char *cdev_get_linux_rootarg(const struct cdev *partcdev,
+			     const char *root_param);
 int cdev_get_linux_root_and_opts(const struct cdev *partcdev, const char **root,
 				 const char **rootopts);
 #else
@@ -117,7 +118,8 @@ static inline unsigned file_list_add_blockdevs(struct file_list *files)
 {
 	return 0;
 }
-static inline char *cdev_get_linux_rootarg(const struct cdev *partcdev)
+static inline char *cdev_get_linux_rootarg(const struct cdev *partcdev,
+					   const char *root_param)
 {
 	return NULL;
 }

@@ -96,6 +96,64 @@ static void do_test_dirfd(const char *at, int dirfd,
 }
 
 
+static void check_link(const char *at, int dirfd, const char *path,
+		       const struct stat *target)
+{
+	struct stat s;
+	int ret;
+
+	ret = statat(dirfd, path, &s);
+	if (!expect(ret == 0, target != NULL, "statat(%s, %s): %m", at, path))
+		return;
+
+	if (target)
+		expect(s.st_ino == target->st_ino, true,
+		       "statat(%s, %s) resolved to the wrong file", at, path);
+}
+
+static void test_dirfd_symlinks(void)
+{
+	struct stat root, mntroot, testfile;
+	int fd, ret;
+
+	ret = mkdir("/dirfdtest/sub", 0777);
+	if (!expect(ret == 0, true, "mkdir(\"/dirfdtest/sub\") = %d", ret))
+		return;
+
+	ret = symlink("/testfile", "/dirfdtest/sub/abslink");
+	expect(ret == 0, true, "symlink(/testfile) = %d", ret);
+	ret = symlink("/dirfdtest/testfile", "/dirfdtest/sub/fulllink");
+	expect(ret == 0, true, "symlink(/dirfdtest/testfile) = %d", ret);
+	ret = symlink("/", "/dirfdtest/sub/rootlink");
+	expect(ret == 0, true, "symlink(/) = %d", ret);
+
+	if (!expect(stat("/", &root), 0, "stat(/)") ||
+	    !expect(stat("/dirfdtest", &mntroot), 0, "stat(/dirfdtest)") ||
+	    !expect(stat("/dirfdtest/testfile", &testfile), 0,
+		    "stat(/dirfdtest/testfile)"))
+		return;
+
+	/* absolute symlinks are resolved from the root directory... */
+	check_link("AT_FDCWD", AT_FDCWD, "/dirfdtest/sub/abslink", NULL);
+	check_link("AT_FDCWD", AT_FDCWD, "/dirfdtest/sub/fulllink", &testfile);
+	check_link("AT_FDCWD", AT_FDCWD, "/dirfdtest/sub/rootlink", &root);
+	check_link("AT_FDCWD", AT_FDCWD, "/dirfdtest/sub/rootlink/", &root);
+	check_link("AT_FDCWD", AT_FDCWD,
+		   "/dirfdtest/sub/rootlink/dirfdtest/testfile", &testfile);
+
+	/* ...which is the root of the mount for O_CHROOT */
+	fd = open("/dirfdtest", O_PATH | O_CHROOT);
+	if (!expect(fd >= 0, true, "open(/dirfdtest, O_PATH | O_CHROOT) = %d", fd))
+		return;
+
+	check_link("/dirfdtest O_CHROOT", fd, "sub/abslink", &testfile);
+	check_link("/dirfdtest O_CHROOT", fd, "sub/fulllink", NULL);
+	check_link("/dirfdtest O_CHROOT", fd, "sub/rootlink", &mntroot);
+	check_link("/dirfdtest O_CHROOT", fd, "sub/rootlink/testfile", &testfile);
+
+	close(fd);
+}
+
 static void test_dirfd(void)
 {
 	int fd, ret;
@@ -115,6 +173,8 @@ static void test_dirfd(void)
 	ret = write_file("/dirfdtest/testfile", __func__, strlen(__func__));
 	if (!expect(ret == 0, true, "write_file() = %d", ret))
 		goto out;
+
+	test_dirfd_symlinks();
 
 #define B(dot, dotdot, zero, dev) 0b##dev##zero##dotdot##dot
 	/* We do fiften tests for every configuration

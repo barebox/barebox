@@ -23,14 +23,25 @@
 #include <globalvar.h>
 #include <magicvar.h>
 #include <asm/system.h>
+#include <asm/irq.h>
 #include <io.h>
+#include <pbl/layout.h>
+
+/* traps go to the PBL's handler until barebox proper installs its own */
+static int riscv_init_vector(void)
+{
+	irq_init_vector(riscv_mode());
+	return 0;
+}
+pure_initcall(riscv_init_vector);
 
 static int riscv_request_stack(void)
 {
-	extern unsigned long riscv_stack_top;
-	return request_barebox_region("stack",
-				      riscv_stack_top - STACK_SIZE,
-				      STACK_SIZE, MEMATTRS_RW) ? 0 : -EINVAL;
+	ulong start = barebox_layout.stack.start;
+
+	return request_barebox_region("stack", start,
+				      barebox_layout.stack.end - start,
+				      MEMATTRS_RW) ? 0 : -EINVAL;
 }
 coredevice_initcall(riscv_request_stack);
 

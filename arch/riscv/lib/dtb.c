@@ -5,6 +5,7 @@
 #include <of.h>
 #include <asm/barebox-riscv.h>
 #include <asm/timer.h>
+#include <pbl/barebox-proper.h>
 
 static int of_riscv_init(void)
 {
@@ -12,7 +13,7 @@ static int of_riscv_init(void)
 	int ret;
 
 	/* See if we are provided a dtb in boarddata */
-	fdt = barebox_riscv_boot_dtb();
+	fdt = barebox_boot_dtb();
 	if (!fdt) {
 		pr_err("No DTB found\n");
 		return -ENODATA;

@@ -11,6 +11,8 @@
 #include <linux/sizes.h>
 #include <pbl.h>
 #include <pbl/mmu.h>
+#include <pbl/layout.h>
+#include <pbl/handoff-data.h>
 #include <asm/barebox-riscv.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
@@ -23,15 +25,28 @@
 
 #include "entry.h"
 
+static void riscv_fill_barebox_layout(struct elf_image *elf,
+				      unsigned long membase, unsigned long memsize)
+{
+	unsigned long endmem = membase + memsize;
+	struct barebox_layout *layout;
+
+	layout = pbl_barebox_layout(elf, membase, memsize);
+
+	layout->stack.start = riscv_mem_stack(membase, endmem);
+	layout->stack.end = riscv_mem_stack_top(membase, endmem);
+}
+
 void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 				  void *fdt)
 {
-	uint32_t pg_len, uncompressed_len;
+	uint32_t pg_len, uncompressed_len, barebox_size;
 	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
 	unsigned long endmem = membase + memsize;
 	unsigned long barebox_base;
 	void *pg_start, *pg_end;
 	unsigned long pc = get_pc();
+	void *handoff_data;
 	struct elf_image elf;
 	int ret;
 
@@ -53,12 +68,18 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	else
 		relocate_to_adr(membase);
 
-	barebox_base = riscv_mem_barebox_image(membase, endmem,
-					       uncompressed_len + MAX_BSS_SIZE);
-
 	setup_c();
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
+
+	/* Add handoff data now, so riscv_mem_barebox_image takes it into account */
+	if (fdt)
+		handoff_data_add_dt(fdt);
+
+	barebox_size = pbl_barebox_memsz(uncompressed_len);
+	barebox_base = riscv_mem_barebox_image(membase, endmem, barebox_size, NULL);
+
+	handoff_data = (void *)barebox_base + ALIGN(barebox_size, 8);
 
 	pbl_malloc_init(riscv_mem_early_malloc(membase, endmem), PBL_MALLOC_SIZE);
 
@@ -70,8 +91,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	if (IS_ENABLED(CONFIG_MMU))
 		mmu_early_enable(membase, memsize, barebox_base);
 
-	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x)\n",
-			pg_start, pg_len, barebox_base, uncompressed_len);
+	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x, in memory: 0x%08x)\n",
+			pg_start, pg_len, barebox_base, uncompressed_len, barebox_size);
 
 	pbl_barebox_uncompress((void*)barebox_base, pg_start, pg_len);
 
@@ -81,9 +102,16 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	if (ret)
 		panic("Failed to open ELF binary: %d\n", ret);
 
+	if (elf_inplace_size(&elf) > barebox_size)
+		panic("barebox proper needs 0x%llx bytes, but only 0x%x are reserved\n",
+		      elf_inplace_size(&elf), barebox_size);
+
 	ret = elf_load_inplace(&elf);
 	if (ret)
 		panic("Failed to relocate ELF: %d\n", ret);
+
+	/* must be done before the layout segment is mapped read-only */
+	riscv_fill_barebox_layout(&elf, membase, memsize);
 
 	/*
 	 * Now that the ELF image is relocated, we know the exact addresses
@@ -96,7 +124,9 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 
 	barebox = (void *)(unsigned long)elf.entry;
 
-	pr_debug("jumping to uncompressed image at 0x%p. dtb=0x%p\n", barebox, fdt);
+	handoff_data_move(handoff_data);
 
-	barebox(membase, memsize, fdt);
+	pr_debug("jumping to uncompressed image at 0x%p\n", barebox);
+
+	barebox(membase, memsize, handoff_data);
 }

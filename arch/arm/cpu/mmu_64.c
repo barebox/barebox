@@ -307,12 +307,11 @@ static void mmu_enable(void)
 
 static void create_guard_page(void)
 {
-	ulong guard_page;
+	ulong guard_page = barebox_layout.guard_page.start;
 
 	if (!IS_ENABLED(CONFIG_STACK_GUARD_PAGE))
 		return;
 
-	guard_page = arm_mem_guard_page_get();
 	request_barebox_region("guard page", guard_page, PAGE_SIZE,
 			       MEMATTRS_FAULT);
 	remap_range((void *)guard_page, PAGE_SIZE, MAP_FAULT);

@@ -202,7 +202,7 @@ will load the second stage.
 **Symptoms**:
 
 - You see debug messages starting with ``uncompress.c:``, but
-  none that start with ``start.c:``
+  none that start with ``barebox-proper.c:``
 
 **Common problems**:
 
@@ -263,8 +263,8 @@ in barebox proper. This function does:
 
 **Symptoms**:
 
-- You see debug messages starting with ``start.c:``, but none that start
-  with ``initcall->``
+- You see debug messages starting with ``barebox-proper.c:``, but none
+  that start with ``initcall->``
 
 **Common problems**:
 

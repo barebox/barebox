@@ -23,6 +23,7 @@
 #include <asm/system.h>
 #include <asm/cache.h>
 #include <asm/reloc.h>
+#include <pbl/handoff-data.h>
 
 void __noreturn __naked barebox_riscv_entry(unsigned long membase, unsigned long memsize,
 					    void *boarddata, unsigned int flags);
@@ -34,11 +35,6 @@ void __noreturn __naked barebox_riscv_entry(unsigned long membase, unsigned long
 	__asm__ volatile("mv tp, %0\n" : : "r"(hartid)); \
 	barebox_riscv_entry(membase, memsize, boarddata, RISCV_S_MODE); \
 } while (0)
-
-unsigned long riscv_mem_ramoops_get(void);
-unsigned long riscv_mem_endmem_get(void);
-
-void *barebox_riscv_boot_dtb(void);
 
 static inline unsigned long riscv_mem_stack_top(unsigned long membase,
 						unsigned long endmem)
@@ -61,7 +57,7 @@ static inline unsigned long riscv_mem_early_malloc(unsigned long membase,
 static inline unsigned long riscv_mem_ramoops(unsigned long membase,
 					      unsigned long endmem)
 {
-	endmem = riscv_mem_stack(membase, endmem);
+	endmem = riscv_mem_early_malloc(membase, endmem);
 #ifdef CONFIG_FS_PSTORE_RAMOOPS
 	endmem -= CONFIG_FS_PSTORE_RAMOOPS_SIZE;
 	endmem = ALIGN_DOWN(endmem, SZ_4K);
@@ -70,17 +66,20 @@ static inline unsigned long riscv_mem_ramoops(unsigned long membase,
 	return endmem;
 }
 
+/*
+ * Where the PBL places the barebox proper image, followed by the handoff
+ * data. @memsz is how much memory the image needs, see pbl_barebox_memsz().
+ */
 static inline unsigned long riscv_mem_barebox_image(unsigned long membase,
 						    unsigned long endmem,
-						    unsigned long size)
+						    unsigned long memsz,
+						    const struct handoff_data *handoff_data)
 {
-#ifdef __PBL__
+	unsigned long size = ALIGN(memsz, 8) + __handoff_data_size(handoff_data);
+
 	endmem = riscv_mem_ramoops(membase, endmem);
 
 	return ALIGN_DOWN(endmem - size, SZ_1M);
-#else
-	return (unsigned long)__image_start;
-#endif
 }
 
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)                          \
@@ -95,15 +94,6 @@ static inline unsigned long riscv_mem_barebox_image(unsigned long membase,
 	static void __naked __noreturn noinline __##name                \
 		(ulong arg0, ulong arg1, ulong arg2)
 
-
-/*
- * When using compressed images in conjunction with relocatable images
- * the PBL code must pick a suitable place where to uncompress the barebox
- * image. For doing this the PBL code must know the size of the final
- * image including the BSS segment. The BSS size is unknown to the PBL
- * code, so define a maximum BSS size here.
- */
-#define MAX_BSS_SIZE SZ_1M
 
 #define barebox_image_size (__image_end - __image_start)
 

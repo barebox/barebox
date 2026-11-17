@@ -73,7 +73,7 @@ const u32 *imx8m_scratch_get_bootrom_log(void)
 		if (IN_PBL)
 			return ERR_PTR(-EINVAL);
 		else
-			scratch = (void *)arm_mem_scratch_get();
+			scratch = (void *)barebox_layout.scratch.start;
 	}
 
 	return scratch->bootrom_log;
@@ -99,7 +99,7 @@ const struct optee_header *imx_scratch_get_optee_hdr(void)
 		if (IN_PBL)
 			return ERR_PTR(-EINVAL);
 		else
-			scratch = (void *)arm_mem_scratch_get();
+			scratch = (void *)barebox_layout.scratch.start;
 	}
 
 	return &scratch->optee_hdr;
@@ -113,7 +113,7 @@ u8 *imx_scratch_get_fdt(unsigned int *fdt_sz)
 		if (IN_PBL)
 			return ERR_PTR(-EINVAL);
 		else
-			scratch = (void *)arm_mem_scratch_get();
+			scratch = (void *)barebox_layout.scratch.start;
 	}
 
 	if (PBL_OPTEE_DTB_MAX_SIZE == 0)

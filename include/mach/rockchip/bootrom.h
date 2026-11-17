@@ -34,7 +34,7 @@ static inline void rockchip_store_bootrom_iram(const void *iram)
 
 static inline const struct rockchip_scratch_space *rockchip_scratch_space(void)
 {
-	return IN_PBL ? rk_scratch : arm_mem_scratch_get();
+	return IN_PBL ? rk_scratch : (const void *)barebox_layout.scratch.start;
 }
 
 void rockchip_parse_bootrom_iram(const void *iram);
@@ -48,7 +48,7 @@ static inline const struct optee_header *rk_scratch_get_optee_hdr(void)
 	if (IN_PBL)
 		scratch = rk_scratch;
 	else
-		scratch = (void *)arm_mem_scratch_get();
+		scratch = (void *)barebox_layout.scratch.start;
 
 	if (!scratch)
 		return ERR_PTR(-EINVAL);

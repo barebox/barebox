@@ -120,6 +120,7 @@ obj-$(CONFIG_CMD_READLINK)	+= readlink.o
 obj-$(CONFIG_CMD_LET)		+= let.o
 obj-$(CONFIG_CMD_LN)		+= ln.o
 obj-$(CONFIG_CMD_CLK)		+= clk.o
+obj-$(CONFIG_CMD_CLK_CHECK)	+= clk_check.o
 obj-$(CONFIG_CMD_KALLSYMS)	+= kallsyms.o
 obj-$(CONFIG_CMD_KEYSTORE)	+= keystore.o
 obj-$(CONFIG_CMD_KEYS)		+= keys.o

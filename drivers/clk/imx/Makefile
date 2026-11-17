@@ -11,6 +11,7 @@ obj-$(CONFIG_COMMON_CLK) +=	\
 	clk-cpu.o		\
 	clk-frac-pll.o		\
 	clk-sccg-pll.o		\
+	clk-gpr-mux.o		\
 	clk.o
 
 obj-$(CONFIG_ARCH_IMX1)   += clk-imx1.o

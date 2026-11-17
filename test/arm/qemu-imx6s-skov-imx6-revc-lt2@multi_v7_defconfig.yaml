@@ -1,0 +1,40 @@
+targets:
+  main:
+    drivers:
+      QEMUDriver:
+        qemu_bin: qemu-system-arm
+        machine: sabrelite
+        cpu: cortex-a9
+        memory: 1024M
+        kernel: barebox-dt-2nd.img
+        dtb: imx6s-skov-imx6-revc-lt2-qemu.dtb
+        display: qemu-default
+        # QEMU sets CBAR to 0 with a single core, so emulate an i.MX6DL
+        extra_args: '-serial null -smp 2'
+      BareboxDriver:
+        prompt: 'barebox@[^:]+:[^ ]+ '
+        bootstring: 'commandline:'
+      BareboxTestStrategy:
+        # i.MX6DL TO1.2 DIGPROG instead of QEMU's i.MX6Q TO1.0
+        qemu_writel: {0x020c8260: 0x00610002}
+        init_commands:
+          # Configured as barebox finds them on the board
+          - clk_set_parent periph_pre pll2_pfd2_396m
+          - clk_set_rate ahb 132000000
+          # Enable the display like the board code does
+          - fb0.enable=1
+          # Rate the GPMI driver sets for the NAND (ONFI timing mode 5)
+          - clk_set_rate gpmi_io 100000000
+    options:
+      tests:
+        - test_clk.py
+    clk_tests:
+      dump:
+        reference: !template "$LG_SRCDIR/test/testdata/skov/imx6s-skov-imx6-revc-lt2.json"
+        # IPU-internal clocks, which QEMU doesn't emulate
+        ignore: [2400000.ipu@2400000.of_di0_pixel]
+images:
+  barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
+  imx6s-skov-imx6-revc-lt2-qemu.dtb: !template "$LG_BUILDDIR/arch/arm/dts/imx6s-skov-imx6-revc-lt2-qemu.dtb"
+imports:
+  -  ../strategy.py

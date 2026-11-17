@@ -1979,6 +1979,22 @@ config CMD_CLK
 
 	  Set clock CLK to RATE Hz.
 
+config CMD_CLK_CHECK
+	tristate
+	depends on COMMON_CLK_OF_PROVIDER
+	default TEST
+	prompt "clk_assigned_check"
+	help
+	  clk_assigned_check - check assigned clocks against the device tree
+
+	  Usage: clk_assigned_check [-i CLK]
+
+	  Check that assigned clocks still have their assigned parents and
+	  rates.
+
+	  Options:
+	  -i CLK  ignore assignments to CLK, may be given multiple times
+
 config CMD_DETECT
 	tristate
 	prompt "detect"

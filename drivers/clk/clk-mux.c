@@ -10,7 +10,7 @@
 #include <linux/clk-provider.h>
 #include <linux/err.h>
 
-int clk_mux_val_to_index(struct clk_hw *hw, u32 *table, unsigned int flags,
+int clk_mux_val_to_index(struct clk_hw *hw, const u32 *table, unsigned int flags,
 			 unsigned int val)
 {
 	int num_parents = clk_hw_get_num_parents(hw);
@@ -28,7 +28,7 @@ int clk_mux_val_to_index(struct clk_hw *hw, u32 *table, unsigned int flags,
 }
 EXPORT_SYMBOL_GPL(clk_mux_val_to_index);
 
-unsigned int clk_mux_index_to_val(u32 *table, unsigned int flags, u8 index)
+unsigned int clk_mux_index_to_val(const u32 *table, unsigned int flags, u8 index)
 {
 	return table ? table[index] : index;
 }
@@ -150,7 +150,7 @@ struct clk_hw *__clk_hw_register_mux(struct device *dev,
 				     const char * const *parent_names,
 				     unsigned long flags, void __iomem *reg,
 				     u8 shift, u32 mask,
-				     u8 clk_mux_flags, u32 *table,
+				     u8 clk_mux_flags, const u32 *table,
 				     spinlock_t *lock)
 {
 	struct clk_mux *mux;

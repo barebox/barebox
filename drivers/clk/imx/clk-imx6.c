@@ -15,6 +15,7 @@
 #include <mach/imx/imx6-regs.h>
 #include <mach/imx/revision.h>
 #include <mach/imx/imx6.h>
+#include <mfd/imx6q-iomuxc-gpr.h>
 #include <dt-bindings/clock/imx6qdl-clock.h>
 
 #include "clk.h"
@@ -322,6 +323,24 @@ static struct clk_div_table video_div_table[] = {
 	{ .val = 3, .div = 4, },
 	{ /* sentinel */ }
 };
+
+static const char * enet_ref_sels[] = { "enet_ref", "enet_ref_pad", };
+static const u32 enet_ref_sels_table[] = { IMX6Q_GPR1_ENET_CLK_SEL_ANATOP, IMX6Q_GPR1_ENET_CLK_SEL_PAD };
+static const u32 enet_ref_sels_table_mask = IMX6Q_GPR1_ENET_CLK_SEL_ANATOP;
+
+static struct clk *imx6q_obtain_fixed_clk(struct device_node *np,
+					  const char *name,
+					  unsigned long rate)
+{
+	struct clk *clk = of_clk_get_by_name(np, name);
+
+	if (IS_ERR(clk))
+		clk = clk_lookup(name);
+	if (IS_ERR(clk))
+		clk = clk_fixed(name, rate);
+
+	return clk;
+}
 
 static int ldb_di_sel_by_clock_id(int clock_id)
 {
@@ -800,6 +819,12 @@ static int imx6_ccm_probe(struct device *dev)
 	clks[IMX6QDL_CLK_EIM_SLOW]     = imx_clk_gate2("eim_slow",      "eim_slow_podf",     base + 0x80, 10);
 	clks[IMX6QDL_CLK_CKO1]         = imx_clk_gate("cko1",           "cko1_podf",         base + 0x60, 7);
 	clks[IMX6QDL_CLK_CKO2]         = imx_clk_gate("cko2",           "cko2_podf",         base + 0x60, 24);
+
+	clks[IMX6QDL_CLK_ENET_REF_PAD] = imx6q_obtain_fixed_clk(dev->of_node, "enet_ref_pad", 0);
+
+	clks[IMX6QDL_CLK_ENET_REF_SEL] = imx_clk_gpr_mux("enet_ref_sel", "fsl,imx6q-iomuxc-gpr",
+				IOMUXC_GPR1, enet_ref_sels, ARRAY_SIZE(enet_ref_sels),
+				enet_ref_sels_table, enet_ref_sels_table_mask);
 
 	clkdev_add_physbase(clks[IMX6QDL_CLK_IPG], MX6_OCOTP_BASE_ADDR, NULL);
 

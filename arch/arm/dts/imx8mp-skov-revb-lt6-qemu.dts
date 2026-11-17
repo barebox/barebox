@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+#include <arm64/freescale/imx8mp-skov-revb-lt6.dts>

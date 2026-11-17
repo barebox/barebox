@@ -645,7 +645,7 @@ struct clk_mux {
 	u32 mask;
 	u8 shift;
 	unsigned flags;
-	u32 *table;
+	const u32 *table;
 	spinlock_t *lock;
 };
 
@@ -673,7 +673,7 @@ struct clk_hw *__clk_hw_register_mux(struct device *dev,
 				     const char * const *parent_names,
 				     unsigned long flags, void __iomem *reg,
 				     u8 shift, u32 mask,
-				     u8 clk_mux_flags, u32 *table,
+				     u8 clk_mux_flags, const u32 *table,
 				     spinlock_t *lock);
 
 #define clk_hw_register_mux(dev, name, parent_names,                  \
@@ -693,9 +693,9 @@ struct clk_hw *__clk_hw_register_mux(struct device *dev,
 			      (shift), (mask), (clk_mux_flags), (table),  \
 			      (lock))
 
-int clk_mux_val_to_index(struct clk_hw *hw, u32 *table, unsigned int flags,
+int clk_mux_val_to_index(struct clk_hw *hw, const u32 *table, unsigned int flags,
 			 unsigned int val);
-unsigned int clk_mux_index_to_val(u32 *table, unsigned int flags, u8 index);
+unsigned int clk_mux_index_to_val(const u32 *table, unsigned int flags, u8 index);
 
 int __clk_mux_determine_rate(struct clk_hw *hw,
 			     struct clk_rate_request *req);
@@ -853,6 +853,7 @@ const struct of_device_id __clk_of_table_##name				\
 	= { .compatible = compat, .data = fn }
 
 void of_clk_del_provider(struct device_node *np);
+bool of_clk_provider_registered(const struct device_node *np);
 
 typedef int (*of_clk_init_cb_t)(struct device_node *);
 
@@ -923,6 +924,11 @@ static inline struct clk *of_clk_get_by_name(struct device_node *np,
 static inline struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec)
 {
 	return ERR_PTR(-ENOENT);
+}
+
+static inline bool of_clk_provider_registered(const struct device_node *np)
+{
+	return false;
 }
 
 static inline unsigned int of_clk_get_parent_count(struct device_node *np)

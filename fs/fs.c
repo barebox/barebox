@@ -2003,6 +2003,7 @@ static void follow_mount(struct path *path)
 		if (!mounted)
 			break;
 		dput(path->dentry);
+		mntput(path->mnt);
 		path->mnt = mounted;
 		path->dentry = dget(mounted->mnt_root);
 	}

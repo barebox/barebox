@@ -1825,6 +1825,7 @@ static inline void put_link(struct nameidata *nd)
 }
 
 static int automount_mount(struct dentry *dentry);
+static void automount_remove_dentry(struct dentry *dentry);
 
 static void path_put_conditional(struct path *path, struct nameidata *nd)
 {
@@ -2635,8 +2636,10 @@ static int vfs_rmdir(struct inode *dir, struct dentry *dentry)
 out:
 	dput(dentry);
 
-	if (!error)
+	if (!error) {
+		automount_remove_dentry(dentry);
 		d_delete(dentry);
+	}
 
 	return error;
 }
@@ -3730,6 +3733,10 @@ static int automount_mount(struct dentry *dentry)
 BAREBOX_MAGICVAR(automount_path, "mountpath passed to automount scripts");
 
 #else
+static void automount_remove_dentry(struct dentry *dentry)
+{
+}
+
 static int automount_mount(struct dentry *dentry)
 {
 	return 0;

@@ -19,8 +19,6 @@
  */
 #include <arm64/microchip/lan9696-ev23x71a.dts>
 
-#include "lan9691-bb.dtsi"
-
 / {
 	model = "Novarq Tactical 1000 (pre-production, EV23X71A based)";
 	/*

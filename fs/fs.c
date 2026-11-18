@@ -810,6 +810,12 @@ static int fs_probe(struct device *dev)
 	return 0;
 }
 
+/* we have no dentry hash, d_lookup() searches the parent's d_subdirs */
+static inline bool d_unhashed(const struct dentry *dentry)
+{
+	return !IS_ROOT(dentry) && list_empty(&dentry->d_child);
+}
+
 static void dentry_kill(struct dentry *dentry)
 {
 	if (dentry->d_inode)
@@ -1485,6 +1491,10 @@ void dput(struct dentry *dentry)
 		return;
 
 	dentry->d_count--;
+
+	/* nothing can look up a dropped dentry, so free it once unused */
+	if (!dentry->d_count && d_unhashed(dentry))
+		dentry_kill(dentry);
 }
 
 struct dentry *dget(struct dentry *dentry)
@@ -1724,6 +1734,13 @@ static void dentry_unlink_inode(struct dentry * dentry)
 void d_delete(struct dentry * dentry)
 {
 	dentry_unlink_inode(dentry);
+
+	/* unused negative children would keep a removed directory alive */
+	d_invalidate(dentry);
+
+	/* still in use, e.g. as cwd: unhash, so the name gets a new dentry */
+	if (dentry->d_count > 1)
+		list_del_init(&dentry->d_child);
 }
 
 /*

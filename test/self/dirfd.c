@@ -205,6 +205,15 @@ static void test_dirfd_removed(void)
 	check_removed(path, fd);
 	expect(chdir("."), -ENOENT, "chdir(.)");
 
+	/* a new directory of the same name must not revive the old one */
+	ret = mkdir(path, 0777);
+	if (expect(ret == 0, true, "mkdir(%s) again = %d", path, ret)) {
+		check_removed("AT_FDCWD", AT_FDCWD);
+		check_removed(path, fd);
+		ret = rmdir(path);
+		expect(ret == 0, true, "rmdir(%s) again = %d", path, ret);
+	}
+
 	popd(oldpwd);
 out:
 	close(fd);

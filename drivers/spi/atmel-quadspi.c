@@ -1234,6 +1234,10 @@ static __maybe_unused const struct of_device_id atmel_qspi_dt_ids[] = {
 		.compatible = "microchip,lan966x-qspi",
 		.data = &atmel_lan966x_qspi_caps,
 	},
+	{
+		.compatible = "microchip,lan9691-qspi",
+		.data = &atmel_lan966x_qspi_caps,
+	},
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, atmel_qspi_dt_ids);

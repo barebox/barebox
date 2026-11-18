@@ -535,6 +535,7 @@ config MACH_TQMA6UL
 	select ARCH_IMX6UL
 	select BOARD_TQ
 	select I2C_IMX_EARLY
+	imply USB_ONBOARD_DEV
 
 config MACH_VARISCITE_MX6
 	bool "Variscite i.MX6 Quad SOM"

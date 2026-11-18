@@ -1185,7 +1185,10 @@ quiet_cmd_kallsyms_as_o_S = AS      $@
       cmd_kallsyms_as_o_S = $(CC) $(kallsyms_a_flags) -c -o $@ $<
 
 # barebox is relocated at runtime, so always use --pc-relative
-kallsyms_opts := --all-symbols --pc-relative
+kallsyms_opts := --pc-relative
+ifdef CONFIG_KALLSYMS_ALL
+kallsyms_opts += --all-symbols
+endif
 
 # Generate .S file with all barebox symbols, as filtered by mksysmap
 quiet_cmd_kallsyms = KSYM    $@

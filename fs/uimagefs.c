@@ -68,10 +68,18 @@ static struct uimagefs_handle_data *uimagefs_get_by_name(
 	return NULL;
 }
 
+/* an open file, the same one can be open more than once */
+struct uimagefs_file {
+	struct uimagefs_handle_data *d;
+	/* the uImage for data files, -1 otherwise */
+	int fd;
+};
+
 static int uimagefs_open(struct device *dev, struct file *file, const char *filename)
 {
 	struct uimagefs_handle *priv = dev->priv;
 	struct uimagefs_handle_data *d;
+	struct uimagefs_file *uf;
 
 	if (filename[0] == '/')
 		filename++;
@@ -80,36 +88,48 @@ static int uimagefs_open(struct device *dev, struct file *file, const char *file
 	if (!d)
 		return -EINVAL;
 
+	uf = xzalloc(sizeof(*uf));
+	uf->d = d;
+	uf->fd = -1;
+
 	if (uimagefs_is_data_file(d)) {
-		d->fd = open(priv->filename, O_RDONLY);
-		if (d->fd < 0)
-			return d->fd;
+		uf->fd = open(priv->filename, O_RDONLY);
+		if (uf->fd < 0) {
+			int ret = uf->fd;
+
+			free(uf);
+			return ret;
+		}
 	}
 
 	file->f_size = d->size;
-	file->private_data = d;
+	file->private_data = uf;
 
 	return 0;
 }
 
 static int uimagefs_close(struct device *dev, struct file *file)
 {
-	struct uimagefs_handle_data *d = file->private_data;
+	struct uimagefs_file *uf = file->private_data;
 
-	close(d->fd);
+	if (uf->fd >= 0)
+		close(uf->fd);
+
+	free(uf);
 
 	return 0;
 }
 
 static int uimagefs_read(struct file *file, void *buf, size_t insize)
 {
-	struct uimagefs_handle_data *d = file->private_data;
+	struct uimagefs_file *uf = file->private_data;
+	struct uimagefs_handle_data *d = uf->d;
 
 	if (!uimagefs_is_data_file(d)) {
 		memcpy(buf, &d->data[file->f_pos], insize);
 		return insize;
 	} else {
-		return pread(d->fd, buf, insize, d->offset + file->f_pos);
+		return pread(uf->fd, buf, insize, d->offset + file->f_pos);
 	}
 }
 

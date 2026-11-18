@@ -31,7 +31,6 @@ struct uimagefs_handle_data {
 	enum uimagefs_type type;
 	uint64_t size;
 
-	int fd;
 	size_t offset; /* offset in the image */
 	size_t pos; /* pos in the data */
 

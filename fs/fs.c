@@ -2675,22 +2675,27 @@ static int rmdirat(int dirfd, const char *pathname)
 	}
 
 	dentry = __lookup_hash(&last, path.dentry, 0);
+	if (IS_ERR(dentry)) {
+		error = PTR_ERR(dentry);
+		goto out;
+	}
 	if (d_is_negative(dentry)) {
 		error = -ENOENT;
-		goto out;
+		goto out_put;
 	}
 	if (d_mountpoint(dentry)) {
 		error = -EBUSY;
-		goto out;
+		goto out_put;
 	}
 
 	if (!d_is_dir(dentry)) {
 		error = -ENOTDIR;
-		goto out;
+		goto out_put;
 	}
 
 	error = vfs_rmdir(path.dentry->d_inode, dentry);
 
+out_put:
 	dput(dentry);
 out:
 	path_put(&path);

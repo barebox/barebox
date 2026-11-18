@@ -2394,8 +2394,10 @@ static const char *path_init(int dirfd, struct nameidata *nd, unsigned flags)
 		path_get(&nd->path);
 		follow_mount(&nd->path);
 
-		if (*s == '/')
-			nd->path.dentry = nd->path.mnt->mnt_root;
+		if (*s == '/') {
+			dput(nd->path.dentry);
+			nd->path.dentry = dget(nd->path.mnt->mnt_root);
+		}
 		if (chroot) {
 			nd->d_root = nd->path.mnt->mnt_root;
 			nd->mnt_root = nd->path.mnt;

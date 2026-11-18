@@ -257,8 +257,9 @@ static int legacy_symlink(struct inode *dir, struct dentry *dentry,
 	char *pathname;
 	int ret;
 
+	/* like the VFS does when a file system can't create symlinks */
 	if (!legacy_ops->symlink)
-		return -ENOSYS;
+		return -EPERM;
 
 	pathname = dpath(dentry, fsdev->vfsmount.mnt_root);
 

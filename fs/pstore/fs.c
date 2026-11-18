@@ -41,7 +41,6 @@ struct pstore_private {
 	struct list_head list;
 	struct pstore_record *record;
 	ssize_t	size;
-	ssize_t pos;
 };
 
 static void free_pstore_private(struct pstore_private *private)
@@ -118,7 +117,6 @@ static int pstore_open(struct device *dev, struct file *file, const char *filena
 
 	file->f_size = d->size;
 	file->private_data = d;
-	d->pos = 0;
 
 	return 0;
 }
@@ -133,19 +131,9 @@ static int pstore_read(struct file *file, void *buf,
 {
 	struct pstore_private *d = file->private_data;
 
-	memcpy(buf, &d->record->buf[d->pos], insize);
-	d->pos += insize;
+	memcpy(buf, &d->record->buf[file->f_pos], insize);
 
 	return insize;
-}
-
-static int pstore_lseek(struct file *file, loff_t pos)
-{
-	struct pstore_private *d = file->private_data;
-
-	d->pos = pos;
-
-	return 0;
 }
 
 static int pstore_unlink(struct device *dev, const char *filename)
@@ -249,7 +237,6 @@ static const struct fs_legacy_ops pstore_ops = {
 	.closedir  = pstore_closedir,
 	.stat      = pstore_stat,
 	.read      = pstore_read,
-	.lseek     = pstore_lseek,
 };
 
 static struct fs_driver pstore_driver = {

@@ -232,8 +232,11 @@ static int efivarfs_truncate(struct file *f, loff_t size)
 	struct efi_runtime_services *rt = efile->priv->rt;
 	efi_status_t efiret;
 
+	efile->buf = realloc(efile->buf, size + sizeof(uint32_t));
+	/* what a variable grows by reads back as zeroes */
+	if (size > efile->size)
+		memset(efile->buf + efile->size, 0, size - efile->size);
 	efile->size = size;
-	efile->buf = realloc(efile->buf, efile->size + sizeof(uint32_t));
 
 	efiret = rt->set_variable(efile->name, &efile->vendor,
 				  efile->attributes,

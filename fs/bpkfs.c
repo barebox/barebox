@@ -438,21 +438,25 @@ static int bpkfs_probe(struct device *dev)
 		offset += d->size;
 		size -= d->size;
 
+		/* to the next data header, also behind data that is ignored */
+		if (lseek(fd, d->size, SEEK_CUR) < 0) {
+			dev_err(dev, "could not seek: %m\n");
+			ret = -errno;
+			free(d->name);
+			free(d);
+			goto err;
+		}
+
 		if (bpkfs_get_by_type(priv, d->hw_id, d->type)) {
 			dev_info(dev, "ignore data %d type %s already present, ignored\n",
 				 i, type);
+			free(d->name);
 			free(d);
 			continue;
 		}
 
 		list_add_tail(&d->list, &h->list_data);
 		priv->nb_data_entries++;
-
-		if (lseek(fd, d->size, SEEK_CUR) < 0) {
-			dev_err(dev, "could not seek: %m\n");
-			ret = -errno;
-			goto err;
-		}
 
 		type = d->name;
 		d = xzalloc(sizeof(*d));

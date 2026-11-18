@@ -2023,8 +2023,16 @@ static int follow_dotdot(struct nameidata *nd)
 static inline int handle_dots(struct nameidata *nd, int type)
 {
 	if (type == LAST_DOTDOT) {
-		return follow_dotdot(nd);
+		int ret = follow_dotdot(nd);
+
+		if (ret)
+			return ret;
 	}
+
+	/* a removed directory, e.g. "." in a removed cwd */
+	if (unlikely(d_is_negative(nd->path.dentry)))
+		return -ENOENT;
+
 	return 0;
 }
 

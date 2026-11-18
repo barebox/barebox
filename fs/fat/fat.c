@@ -159,6 +159,34 @@ static int fat_write(struct file *f, const void *buf, size_t insize)
 	return outsize;
 }
 
+/*
+ * Grow @f_file to @size bytes. Seeking past the end would extend the file as
+ * well, but leave whatever the newly allocated clusters and the rest of the
+ * last one held before, so write zeroes instead.
+ */
+static int fat_extend(FIL *f_file, loff_t size)
+{
+	static const u8 zeroes[SZ_4K];
+	UINT now, written;
+	int ret;
+
+	ret = f_lseek(f_file, f_file->fsize);
+	if (ret)
+		return ret;
+
+	while (f_file->fsize < size) {
+		now = min_t(loff_t, size - f_file->fsize, sizeof(zeroes));
+
+		ret = f_write(f_file, zeroes, now, &written);
+		if (ret)
+			return ret;
+		if (written != now)
+			return -ENOSPC;
+	}
+
+	return 0;
+}
+
 static int fat_truncate(struct file *f, loff_t size)
 {
 	FIL *f_file = f->private_data;
@@ -171,13 +199,19 @@ static int fat_truncate(struct file *f, loff_t size)
 
 	lastofs = f_file->fptr;
 
-	ret = f_lseek(f_file, size);
-	if (ret)
-		return ret;
+	if (size > f_file->fsize) {
+		ret = fat_extend(f_file, size);
+		if (ret)
+			return ret;
+	} else {
+		ret = f_lseek(f_file, size);
+		if (ret)
+			return ret;
 
-	ret = f_truncate(f_file);
-	if (ret)
-		return ret;
+		ret = f_truncate(f_file);
+		if (ret)
+			return ret;
+	}
 
 	/* don't extend the file again in case it was shrunk */
 	ret = f_lseek(f_file, min_t(loff_t, lastofs, size));

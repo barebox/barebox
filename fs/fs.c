@@ -1904,6 +1904,11 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 	if (!base)
 		return ERR_PTR(-ENOENT);
 
+	/* Don't go there if it's already dead, e.g. a removed cwd */
+	dir = d_inode(base);
+	if (unlikely(!dir))
+		return ERR_PTR(-ENOENT);
+
 	dentry = lookup_dcache(name, base, flags);
 	if (dentry)
 		return dentry;
@@ -1912,7 +1917,6 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 	if (unlikely(!dentry))
 		return ERR_PTR(-ENOMEM);
 
-	dir = base->d_inode;
 	old = dir->i_op->lookup(dir, dentry, flags);
 	if (IS_ERR(old)) {
 		dput(dentry);

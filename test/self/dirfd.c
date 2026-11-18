@@ -154,6 +154,54 @@ static void test_dirfd_symlinks(void)
 	close(fd);
 }
 
+static void check_removed(const char *at, int dirfd)
+{
+	struct stat s;
+
+	expect(statat(dirfd, "file", &s), -ENOENT, "statat(%s, file)", at);
+	expect(statat(dirfd, "sub/file", &s), -ENOENT,
+	       "statat(%s, sub/file)", at);
+	expect(openat(dirfd, "file", O_WRONLY | O_CREAT), -ENOENT,
+	       "openat(%s, file, O_CREAT)", at);
+	expect(mkdirat(dirfd, "sub", 0777), -ENOENT, "mkdirat(%s, sub)", at);
+	expect(unlinkat(dirfd, "sub", AT_REMOVEDIR), -ENOENT,
+	       "unlinkat(%s, sub, AT_REMOVEDIR)", at);
+}
+
+static void test_dirfd_removed(void)
+{
+	const char *path = "/dirfdtest/removed";
+	struct stat s;
+	char *oldpwd;
+	int fd, ret;
+
+	ret = mkdir(path, 0777);
+	if (!expect(ret == 0, true, "mkdir(%s) = %d", path, ret))
+		return;
+
+	fd = open(path, O_PATH | O_DIRECTORY);
+	if (!expect(fd >= 0, true, "open(%s, O_PATH | O_DIRECTORY) = %d",
+		    path, fd))
+		return;
+
+	/* leave a negative dentry behind in the directory */
+	statat(fd, "file", &s);
+
+	oldpwd = pushd(path);
+	if (!expect(oldpwd != NULL, true, "pushd(%s)", path))
+		goto out;
+
+	ret = rmdir(path);
+	expect(ret == 0, true, "rmdir(%s) = %d", path, ret);
+
+	check_removed("AT_FDCWD", AT_FDCWD);
+	check_removed(path, fd);
+
+	popd(oldpwd);
+out:
+	close(fd);
+}
+
 static void test_dirfd(void)
 {
 	char *oldpwd;
@@ -176,6 +224,7 @@ static void test_dirfd(void)
 		goto out;
 
 	test_dirfd_symlinks();
+	test_dirfd_removed();
 
 #define B(dot, dotdot, zero, dev) 0b##dev##zero##dotdot##dot
 	/* We do fiften tests for every configuration

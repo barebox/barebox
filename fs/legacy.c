@@ -208,7 +208,6 @@ static int legacy_rmdir(struct inode *dir, struct dentry *dentry)
 		return ret;
 
 	drop_nlink(d_inode(dentry));
-	dput(dentry);
 	drop_nlink(dir);
 
 	return 0;
@@ -235,7 +234,6 @@ static int legacy_unlink(struct inode *dir, struct dentry *dentry)
 		return ret;
 
 	drop_nlink(d_inode(dentry));
-	dput(dentry);
 
 	return 0;
 }

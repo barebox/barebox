@@ -46,7 +46,6 @@ struct bpkfs_handle_data {
 	uint32_t hw_id;
 	uint64_t size;
 
-	int fd;
 	size_t offset; /* offset in the image */
 	size_t pos; /* pos in the data */
 	uint32_t crc;

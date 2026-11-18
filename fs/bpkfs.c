@@ -127,11 +127,19 @@ static struct bpkfs_handle_data *bpkfs_get_by_type(
 	return NULL;
 }
 
+/* an open file, the same one can be open more than once */
+struct bpkfs_file {
+	struct bpkfs_handle_data *d;
+	/* the package for data files, -1 otherwise */
+	int fd;
+};
+
 static int bpkfs_open(struct device *dev, struct file *f, const char *filename)
 {
 	struct bpkfs_handle *priv = dev->priv;
 	struct bpkfs_handle_data *d;
 	struct bpkfs_handle_hw *h;
+	struct bpkfs_file *bf;
 	const char *dir, *file;
 	int ret = -EINVAL;
 	char *tmp = xstrdup(filename);
@@ -151,16 +159,21 @@ static int bpkfs_open(struct device *dev, struct file *f, const char *filename)
 	if (!d)
 		goto out;
 
+	bf = xzalloc(sizeof(*bf));
+	bf->d = d;
+	bf->fd = -1;
+
 	if (!bpkfs_is_crc_file(d)) {
-		d->fd = open(priv->filename, O_RDONLY);
-		if (d->fd < 0) {
-			ret = d->fd;
+		bf->fd = open(priv->filename, O_RDONLY);
+		if (bf->fd < 0) {
+			ret = bf->fd;
+			free(bf);
 			goto out;
 		}
 	}
 
 	f->f_size = d->size;
-	f->private_data = d;
+	f->private_data = bf;
 	ret = 0;
 
 out:
@@ -171,9 +184,12 @@ out:
 
 static int bpkfs_close(struct device *dev, struct file *file)
 {
-	struct bpkfs_handle_data *d = file->private_data;
+	struct bpkfs_file *bf = file->private_data;
 
-	close(d->fd);
+	if (bf->fd >= 0)
+		close(bf->fd);
+
+	free(bf);
 
 	return 0;
 }
@@ -181,13 +197,14 @@ static int bpkfs_close(struct device *dev, struct file *file)
 static int bpkfs_read(struct file *file, void *buf,
 		      size_t insize)
 {
-	struct bpkfs_handle_data *d = file->private_data;
+	struct bpkfs_file *bf = file->private_data;
+	struct bpkfs_handle_data *d = bf->d;
 
 	if (bpkfs_is_crc_file(d)) {
 		memcpy(buf, &d->data[file->f_pos], insize);
 		return insize;
 	} else {
-		return pread(d->fd, buf, insize, d->offset + file->f_pos);
+		return pread(bf->fd, buf, insize, d->offset + file->f_pos);
 	}
 }
 

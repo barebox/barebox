@@ -3,6 +3,7 @@
 
 #include <command.h>
 #include <getopt.h>
+#include <console.h>
 #include <video/mipi_dsi.h>
 #include <video/mipi_display.h>
 

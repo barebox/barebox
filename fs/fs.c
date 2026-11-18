@@ -233,6 +233,7 @@ static int filename_lookup(int dirfd, struct filename *name, unsigned flags,
 			   struct path *path);;
 static struct filename *getname(const char *filename);
 static void path_put(const struct path *path);
+static void automount_remove_sb(struct super_block *sb);
 
 LIST_HEAD(fs_device_list);
 
@@ -893,6 +894,7 @@ static void fs_remove(struct device *dev)
 	if (fsdev->vfsmount.mountpoint)
 		fsdev->vfsmount.mountpoint->d_flags &= ~DCACHE_MOUNTED;
 
+	automount_remove_sb(sb);
 	dentry_delete_subtree(sb, sb->s_root);
 
 	list_for_each_entry_safe(inode, tmp, &sb->s_inodes, i_sb_list)
@@ -3584,23 +3586,36 @@ struct automount {
 
 static LIST_HEAD(automount_list);
 
-static void automount_remove_dentry(struct dentry *dentry)
+static void automount_free(struct automount *am)
 {
-	struct automount *am;
-
-	list_for_each_entry(am, &automount_list, list) {
-		if (dentry == am->dentry)
-			goto found;
-	}
-
-	return;
-found:
 	am->dentry->d_flags &= ~DCACHE_NEED_AUTOMOUNT;
 	list_del(&am->list);
 	dput(am->dentry);
 	free(am->path);
 	free(am->cmd);
 	free(am);
+}
+
+static void automount_remove_dentry(struct dentry *dentry)
+{
+	struct automount *am;
+
+	list_for_each_entry(am, &automount_list, list) {
+		if (dentry == am->dentry) {
+			automount_free(am);
+			return;
+		}
+	}
+}
+
+static void automount_remove_sb(struct super_block *sb)
+{
+	struct automount *am, *tmp;
+
+	list_for_each_entry_safe(am, tmp, &automount_list, list) {
+		if (am->dentry->d_sb == sb)
+			automount_free(am);
+	}
 }
 
 void automount_remove(const char *pathname)
@@ -3734,6 +3749,10 @@ BAREBOX_MAGICVAR(automount_path, "mountpath passed to automount scripts");
 
 #else
 static void automount_remove_dentry(struct dentry *dentry)
+{
+}
+
+static void automount_remove_sb(struct super_block *sb)
 {
 }
 

@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+from .helper import skip_disabled
 
-def test_boot_script_exit_status(barebox):
+
+def test_boot_script_exit_status(barebox, barebox_config):
+    skip_disabled(barebox_config, "CONFIG_CMD_BOOT", "CONFIG_CMD_ECHO")
+
     barebox.run_check("echo -o /env/boot/exit3 '#!/bin/sh'")
     barebox.run_check("echo -a /env/boot/exit3 'exit 3'")
 

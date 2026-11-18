@@ -207,5 +207,5 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: steps.build.outcome == 'success'
       with:
-      check_name: "Test Results (${{matrix.check || matrix.defconfig}}${{matrix.fragment && format(' + {0}', matrix.fragment) || ''}})"
-      files: ./*.tests.xml
+        check_name: "Test Results (${{matrix.check || matrix.defconfig}}${{matrix.fragment && format(' + {0}', matrix.fragment) || ''}})"
+        files: ./*.tests.xml

@@ -1153,10 +1153,19 @@ endif
 
 kallsyms.o := .tmp_kallsyms$(last_kallsyms).o
 
+# Only the binary search references the table, so without it,
+# --gc-sections must drop it
+kallsyms_check_no_seqs := $(and $(CONFIG_LD_DEAD_CODE_DATA_ELIMINATION), \
+				$(if $(CONFIG_KALLSYMS_LOOKUP_NAME_BSEARCH),,y))
+
 define verify_kallsyms
 	$(Q)cmp -s System.map .tmp_kallsyms$(last_kallsyms).S.syms ||         \
 		(echo >&2 Inconsistent kallsyms data;                        \
 		 rm .tmp_kallsyms* ; false )
+	$(if $(kallsyms_check_no_seqs),                                        \
+	$(Q)! grep -q ' kallsyms_seqs_of_names$$' System.map ||               \
+		(echo >&2 kallsyms_seqs_of_names linked in without            \
+		 CONFIG_KALLSYMS_LOOKUP_NAME_BSEARCH; false ))
 endef
 
 # Update barebox version before link

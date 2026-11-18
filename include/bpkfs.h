@@ -50,7 +50,8 @@ struct bpkfs_handle_data {
 	size_t pos; /* pos in the data */
 	uint32_t crc;
 
-	char data[8];
+	/* the checksum of the data as 8 hex digits for .crc files */
+	char data[9];
 
 	struct list_head list;
 };

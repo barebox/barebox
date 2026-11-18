@@ -313,6 +313,14 @@ static void ramfs_truncate_down(struct ramfs_inode *node, unsigned long size)
 			list_del(&data->list);
 			node->alloc_size -= data->size;
 			ramfs_put_chunk(data);
+		} else if (data->ofs + data->size > size) {
+			/*
+			 * Growing the file again reuses the rest of this
+			 * chunk, which must read back as zeroes then, like
+			 * newly allocated chunks do.
+			 */
+			memset(data->data + size - data->ofs, 0,
+			       data->ofs + data->size - size);
 		}
 	}
 

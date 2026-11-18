@@ -1245,11 +1245,6 @@ static void nfs_handler(void *ctx, char *p, unsigned len)
 	list_add_tail(&packet->list, &npriv->packets);
 }
 
-static int nfs_truncate(struct file *f, loff_t size)
-{
-	return -ENOSYS;
-}
-
 static void nfs_do_close(struct file_priv *priv)
 {
 	if (priv->fifo)
@@ -1384,11 +1379,6 @@ static int nfs_close(struct inode *inode, struct file *file)
 	nfs_do_close(priv);
 
 	return 0;
-}
-
-static int nfs_write(struct file *file, const void *inbuf, size_t insize)
-{
-	return -ENOSYS;
 }
 
 static int nfs_read(struct file *file, void *buf, size_t insize)
@@ -1543,8 +1533,6 @@ static const struct file_operations nfs_file_operations = {
 	.release     = nfs_close,
 	.read      = nfs_read,
 	.lseek     = nfs_lseek,
-	.write     = nfs_write,
-	.truncate  = nfs_truncate,
 };
 static const struct inode_operations nfs_symlink_inode_operations = {
 	.get_link = nfs_get_link,

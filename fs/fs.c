@@ -2761,9 +2761,9 @@ static int do_dentry_open(struct file *f)
 
 	if (f->f_flags & O_TRUNC) {
 		error = fsdev_truncate(f, 0);
-		f->f_size = 0;
 		if (error)
 			goto err_release;
+		f->f_size = 0;
 	}
 
 	if (f->f_flags & O_APPEND)

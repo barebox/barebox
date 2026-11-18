@@ -28,6 +28,9 @@ def booted(stdout):
 def override_env(barebox, barebox_config):
     skip_disabled(barebox_config, "CONFIG_BOOT_OVERRIDE", "CONFIG_CMD_ECHO",
                   "CONFIG_CMD_CAT", "CONFIG_CMD_MW")
+    # bootm refuses the fake images before reporting what it loads
+    if "CONFIG_BOOTM_FORCE_SIGNED_IMAGES" in barebox_config:
+        pytest.skip("bootm only boots signed FIT images")
 
     make_image(barebox, BASE)
     make_image(barebox, OVERRIDE)

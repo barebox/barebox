@@ -454,7 +454,9 @@ static int fuzz_fat(struct block_device *ramdisk)
 	BYTE buf[512];
 	UINT br;
 	int ret, i;
+#ifdef CONFIG_FS_FAT_LFN
 	char lfname[256];
+#endif
 
 	priv.cdev = &ramdisk->cdev;
 	fat.userdata = &priv;
@@ -475,10 +477,11 @@ static int fuzz_fat(struct block_device *ramdisk)
 	for (i = 0; i < 64; i++) {
 		memset(&finfo, 0, sizeof(finfo));
 
-		if (IS_ENABLED(CONFIG_FS_FAT_LFN)) {
-			finfo.lfname = lfname;
-			finfo.lfsize = sizeof(lfname);
-		}
+#ifdef CONFIG_FS_FAT_LFN
+		/* FILINFO only has the fields for long names with LFN */
+		finfo.lfname = lfname;
+		finfo.lfsize = sizeof(lfname);
+#endif
 
 		ret = f_readdir(&dir, &finfo);
 		if (ret || finfo.fname[0] == '\0')

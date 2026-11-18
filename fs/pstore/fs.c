@@ -208,15 +208,6 @@ static int pstore_stat(struct device *dev, const char *filename,
 	return 0;
 }
 
-static void pstore_remove(struct device *dev)
-{
-	struct pstore_private *d, *tmp;
-
-	list_for_each_entry_safe(d, tmp, &allpstore, list) {
-		free_pstore_private(d);
-	}
-}
-
 static int pstore_probe(struct device *dev)
 {
 	struct list_head *priv = &allpstore;
@@ -243,7 +234,6 @@ static struct fs_driver pstore_driver = {
 	.legacy_ops = &pstore_ops,
 	.drv = {
 		.probe  = pstore_probe,
-		.remove = pstore_remove,
 		.name = "pstore",
 	}
 };

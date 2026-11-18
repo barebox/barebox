@@ -170,12 +170,10 @@ def test_boot_bootargs_dyn_cleared(barebox, barebox_config):
     # Run the script, but don't actually boot anything
     barebox.run("boot -d -d dyntest")
 
-    # .dyn. variables must not leak into subsequent boot entries
+    # Changes a boot entry makes to the bootargs must not leak into
+    # subsequent boot entries, regardless of whether .dyn. is in the name
     assert barebox.run_check("echo ${global.linux.bootargs.dyn.test}") == [""]
     assert barebox.run_check("echo ${global.efi.bootargs.dyn.test}") == [""]
-    # ... but other variables are left alone
-    assert barebox.run_check("echo ${global.efi.bootargs.nodyntest}") == \
-        ["efi-static"]
+    assert barebox.run_check("echo ${global.efi.bootargs.nodyntest}") == [""]
 
-    barebox.run_check("global -r efi.bootargs.nodyntest")
     barebox.run_check("rm /env/boot/dyntest")

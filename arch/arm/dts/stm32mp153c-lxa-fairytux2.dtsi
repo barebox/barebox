@@ -7,8 +7,6 @@
 
 / {
 	chosen {
-		stdout-path = "serial0:115200n8";
-
 		environment {
 			compatible = "barebox,environment";
 			device-path = &sdmmc2, "partname:barebox-environment";

@@ -150,10 +150,48 @@ static void of_spi_parse_dt_cs_delay(struct device_node *nc,
 	}
 }
 
+static void spi_of_register_slave(struct spi_controller *ctrl,
+				  struct device_node *n)
+{
+	struct spi_board_info chip = {};
+	struct property *reg;
+
+	if (n->dev) {
+		dev_dbg(ctrl->dev, "skipping already registered %s\n",
+			dev_name(n->dev));
+		return;
+	}
+
+	chip.name = xstrdup(n->name);
+	chip.bus_num = ctrl->bus_num;
+	/* Mode (clock phase/polarity/etc.) */
+	if (of_property_read_bool(n, "spi-cpha"))
+		chip.mode |= SPI_CPHA;
+	if (of_property_read_bool(n, "spi-cpol"))
+		chip.mode |= SPI_CPOL;
+	if (of_property_read_bool(n, "spi-cs-high"))
+		chip.mode |= SPI_CS_HIGH;
+	if (of_property_read_bool(n, "spi-3wire"))
+		chip.mode |= SPI_3WIRE;
+	of_property_read_u32(n, "spi-max-frequency",
+			&chip.max_speed_hz);
+
+	/* Device CS delays */
+	of_spi_parse_dt_cs_delay(n, &chip.cs_setup, "spi-cs-setup-delay-ns");
+	of_spi_parse_dt_cs_delay(n, &chip.cs_hold, "spi-cs-hold-delay-ns");
+	of_spi_parse_dt_cs_delay(n, &chip.cs_inactive, "spi-cs-inactive-delay-ns");
+
+	reg = of_find_property(n, "reg", NULL);
+	if (!reg)
+		return;
+	chip.chip_select = of_read_number(reg->value, 1);
+	chip.device_node = n;
+	spi_new_device(ctrl, &chip);
+}
+
 static void spi_of_register_slaves(struct spi_controller *ctrl)
 {
 	struct device_node *n;
-	struct property *reg;
 	struct device_node *node = ctrl->dev->of_node;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
@@ -162,41 +200,8 @@ static void spi_of_register_slaves(struct spi_controller *ctrl)
 	if (!node)
 		return;
 
-	for_each_available_child_of_node(node, n) {
-		struct spi_board_info chip = {};
-
-		if (n->dev) {
-			dev_dbg(ctrl->dev, "skipping already registered %s\n",
-				dev_name(n->dev));
-			continue;
-		}
-
-		chip.name = xstrdup(n->name);
-		chip.bus_num = ctrl->bus_num;
-		/* Mode (clock phase/polarity/etc.) */
-		if (of_property_read_bool(n, "spi-cpha"))
-			chip.mode |= SPI_CPHA;
-		if (of_property_read_bool(n, "spi-cpol"))
-			chip.mode |= SPI_CPOL;
-		if (of_property_read_bool(n, "spi-cs-high"))
-			chip.mode |= SPI_CS_HIGH;
-		if (of_property_read_bool(n, "spi-3wire"))
-			chip.mode |= SPI_3WIRE;
-		of_property_read_u32(n, "spi-max-frequency",
-				&chip.max_speed_hz);
-
-		/* Device CS delays */
-		of_spi_parse_dt_cs_delay(n, &chip.cs_setup, "spi-cs-setup-delay-ns");
-		of_spi_parse_dt_cs_delay(n, &chip.cs_hold, "spi-cs-hold-delay-ns");
-		of_spi_parse_dt_cs_delay(n, &chip.cs_inactive, "spi-cs-inactive-delay-ns");
-
-		reg = of_find_property(n, "reg", NULL);
-		if (!reg)
-			continue;
-		chip.chip_select = of_read_number(reg->value, 1);
-		chip.device_node = n;
-		spi_new_device(ctrl, &chip);
-	}
+	for_each_available_child_of_node(node, n)
+		spi_of_register_slave(ctrl, n);
 }
 
 static void spi_controller_rescan(struct device *dev, struct device_node *np)

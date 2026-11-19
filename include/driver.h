@@ -98,10 +98,10 @@ static inline void put_device(struct device *dev) {}
 void free_device_res(struct device *dev);
 void free_device(struct device *dev);
 
-static inline void device_rescan(struct device *dev)
+static inline void device_rescan(struct device *dev, struct device_node *np)
 {
 	if (dev->rescan)
-		dev->rescan(dev);
+		dev->rescan(dev, np);
 }
 
 /* Iterate over a devices children

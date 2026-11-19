@@ -138,7 +138,7 @@ struct device *of_platform_device_create(struct device_node *np,
 	 * devices.
 	 */
 	if (np->dev) {
-		device_rescan(np->dev);
+		device_rescan(np->dev, NULL);
 		return np->dev;
 	}
 
@@ -450,7 +450,7 @@ static struct device *of_device_create_on_demand(struct device_node *np)
 		return NULL;
 
 	if (!np->dev && parent->dev)
-		device_rescan(parent->dev);
+		device_rescan(parent->dev, np);
 
 	/* Create all parent devices needed for the requested device */
 	parent_dev = parent->dev ? : of_device_create_on_demand(parent);

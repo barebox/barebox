@@ -199,7 +199,7 @@ static void spi_of_register_slaves(struct spi_controller *ctrl)
 	}
 }
 
-static void spi_controller_rescan(struct device *dev)
+static void spi_controller_rescan(struct device *dev, struct device_node *np)
 {
 	struct spi_controller *ctrl;
 

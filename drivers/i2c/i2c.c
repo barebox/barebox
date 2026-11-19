@@ -485,7 +485,7 @@ int of_i2c_register_devices_by_node(struct device_node *node)
 	return 0;
 }
 
-static void i2c_hw_rescan(struct device *dev)
+static void i2c_hw_rescan(struct device *dev, struct device_node *np)
 {
 	struct i2c_adapter *adap;
 

@@ -59,7 +59,8 @@ struct of_device_id;
  * @dma_offset: DMA offset.
  * @detect: For devices which take longer to probe, this is called when the driver
  *          should actually detect client devices.
- * @rescan: Callback to rescan the device.
+ * @rescan: Callback to rescan the device. If @np is not NULL, only the
+ *          device for that child node needs to be created.
  * @deferred_probe_reason: If a driver probe is deferred, this stores the last error.
  */
 struct device {
@@ -119,7 +120,7 @@ struct device {
 #endif
 
 	int (*detect)(struct device *);
-	void (*rescan)(struct device *);
+	void (*rescan)(struct device *dev, struct device_node *np);
 
 	char *deferred_probe_reason;
 };

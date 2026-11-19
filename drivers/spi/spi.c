@@ -125,7 +125,7 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 	if (status)
 		goto fail;
 
-	chip->device_node->dev = &proxy->dev;
+	of_node_set_dev(chip->device_node, &proxy->dev);
 
 	return proxy;
 fail:

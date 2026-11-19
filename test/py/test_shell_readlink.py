@@ -33,6 +33,7 @@ def test_cmd_readlink(barebox, barebox_config):
     assert stdout == ["/tmp"]
 
     # Cleanup
+    barebox.run_check('cd /')
     barebox.run_check('rm -r /tmp/readlink-test')
 
 
@@ -68,6 +69,7 @@ def test_cmd_readlink_nonexistent(barebox, barebox_config):
     assert returncode != 0
 
     # Cleanup
+    barebox.run_check('cd /')
     barebox.run_check('rm -r /tmp/readlink-test2')
 
 
@@ -128,6 +130,7 @@ def test_cmd_readlink_symlinks(barebox, barebox_config):
     assert returncode != 0
 
     # Cleanup
+    barebox.run_check('cd /')
     barebox.run_check('rm -r /tmp/readlink-test3')
 
 
@@ -165,6 +168,7 @@ def test_cmd_readlink_parent_refs(barebox, barebox_config):
     assert returncode != 0
 
     # Cleanup
+    barebox.run_check('cd /')
     barebox.run_check('rm -r /tmp/readlink-test4')
 
 
@@ -199,4 +203,5 @@ def test_cmd_readlink_edge_cases(barebox, barebox_config):
     assert stdout == ["/tmp/readlink-test5/dir"]
 
     # Cleanup
+    barebox.run_check('cd /')
     barebox.run_check('rm -r /tmp/readlink-test5')

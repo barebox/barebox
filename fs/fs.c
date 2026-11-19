@@ -1904,6 +1904,11 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 	if (!base)
 		return ERR_PTR(-ENOENT);
 
+	/* Don't go there if it's already dead, e.g. a removed cwd */
+	dir = d_inode(base);
+	if (unlikely(!dir))
+		return ERR_PTR(-ENOENT);
+
 	dentry = lookup_dcache(name, base, flags);
 	if (dentry)
 		return dentry;
@@ -1912,7 +1917,6 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 	if (unlikely(!dentry))
 		return ERR_PTR(-ENOMEM);
 
-	dir = base->d_inode;
 	old = dir->i_op->lookup(dir, dentry, flags);
 	if (IS_ERR(old)) {
 		dput(dentry);
@@ -2675,22 +2679,27 @@ static int rmdirat(int dirfd, const char *pathname)
 	}
 
 	dentry = __lookup_hash(&last, path.dentry, 0);
+	if (IS_ERR(dentry)) {
+		error = PTR_ERR(dentry);
+		goto out;
+	}
 	if (d_is_negative(dentry)) {
 		error = -ENOENT;
-		goto out;
+		goto out_put;
 	}
 	if (d_mountpoint(dentry)) {
 		error = -EBUSY;
-		goto out;
+		goto out_put;
 	}
 
 	if (!d_is_dir(dentry)) {
 		error = -ENOTDIR;
-		goto out;
+		goto out_put;
 	}
 
 	error = vfs_rmdir(path.dentry->d_inode, dentry);
 
+out_put:
 	dput(dentry);
 out:
 	path_put(&path);

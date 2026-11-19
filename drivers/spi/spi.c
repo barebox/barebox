@@ -121,11 +121,14 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 	if (status)
 		goto fail;
 
-	status = register_device(&proxy->dev);
-	if (status)
-		goto fail;
-
+	/* claim the node before probe can rescan the bus */
 	of_node_set_dev(chip->device_node, &proxy->dev);
+
+	status = register_device(&proxy->dev);
+	if (status) {
+		of_node_set_dev(chip->device_node, NULL);
+		goto fail;
+	}
 
 	return proxy;
 fail:
@@ -211,7 +214,12 @@ static void spi_controller_rescan(struct device *dev, struct device_node *np)
 	list_for_each_entry(ctrl, &spi_controller_list, list) {
 		if (ctrl->dev != dev)
 			continue;
-		spi_of_register_slaves(ctrl);
+
+		if (!np)
+			spi_of_register_slaves(ctrl);
+		else if (np->parent == ctrl->dev->of_node &&
+			 of_device_is_available(np))
+			spi_of_register_slave(ctrl, np);
 	}
 }
 
@@ -579,16 +587,16 @@ int spi_register_controller(struct spi_controller *ctrl)
 
 	list_add_tail(&ctrl->list, &spi_controller_list);
 
+	/* children probed below may need their siblings created on demand */
+	if (!ctrl->dev->rescan)
+		ctrl->dev->rescan = spi_controller_rescan;
+
 	spi_of_register_slaves(ctrl);
 
 	/* populate children from any spi device tables */
 	scan_boardinfo(ctrl);
-	status = 0;
 
-	if (!ctrl->dev->rescan)
-		ctrl->dev->rescan = spi_controller_rescan;
-
-	return status;
+	return 0;
 }
 EXPORT_SYMBOL(spi_register_controller);
 
